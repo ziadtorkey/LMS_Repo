@@ -6,6 +6,7 @@ public static class OrgUnitsModule
     {
         services.AddScoped<OrgUnitQueries>();
         services.AddScoped<DeleteOrgUnitHandler>();
+        services.AddScoped<AcademicFlagsHandler>();
         return services;
     }
 }

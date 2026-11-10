@@ -164,7 +164,7 @@ public sealed class DevSeeder(string connectionString, IHostEnvironment environm
                 : OrgUnit.CreateChild(parent, levelId, node.NameAr, node.NameEn, node.Code);
             if (node.IsLevelTransfer)
             {
-                unit.MarkAsLevelTransfer(null);
+                unit.SetAcademicFlags(true, null, false);
             }
 
             db.OrgUnits.Add(unit);
