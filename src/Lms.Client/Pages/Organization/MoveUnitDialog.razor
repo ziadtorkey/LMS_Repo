@@ -11,10 +11,10 @@
             {
                 <MudAlert Severity="Severity.Error" data-testid="dialog-error">@_error</MudAlert>
             }
-            <MudSelect T="Guid" @bind-Value="_newParentId" Label="@L["Move_NewParent"]" data-testid="move-parent">
+            <MudSelect T="Guid?" @bind-Value="_newParentId" Label="@L["Move_NewParent"]" data-testid="move-parent">
                 @foreach (var target in _targets)
                 {
-                    <MudSelectItem T="Guid" Value="@target.Id">@(new string(' ', target.Depth * 3) + Culture.Pick(target.NameAr, target.NameEn))</MudSelectItem>
+                    <MudSelectItem T="Guid?" Value="@((Guid?)target.Id)">@(new string(' ', target.Depth * 3) + Culture.Pick(target.NameAr, target.NameEn))</MudSelectItem>
                 }
             </MudSelect>
             @if (NewParent is not null)
@@ -27,7 +27,7 @@
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="() => MudDialog.Cancel()">@L["Common_Cancel"]</MudButton>
-        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="@(_saving || _newParentId == Guid.Empty)"
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="@(_saving || _newParentId is null)"
                    data-testid="dialog-save">@L["Move_Button"]</MudButton>
     </DialogActions>
 </MudDialog>
@@ -38,7 +38,7 @@
     [Parameter, EditorRequired] public IReadOnlyList<OrgUnitNodeDto> AllUnits { get; set; } = [];
 
     private IReadOnlyList<OrgUnitNodeDto> _targets = [];
-    private Guid _newParentId;
+    private Guid? _newParentId; // empty until the user chooses
     private string? _error;
     private bool _saving;
 
@@ -63,13 +63,12 @@
     protected override void OnParametersSet()
     {
         _targets = Candidates(Unit, AllUnits);
-        if (_newParentId == Guid.Empty) _newParentId = _targets.FirstOrDefault()?.Id ?? Guid.Empty;
     }
 
     private async Task SaveAsync()
     {
         _saving = true; _error = null;
-        var ok = await ApiCalls.RunAsync(() => Api.MoveOrgUnitAsync(Unit.Id, new MoveOrgUnitRequest(_newParentId)),
+        var ok = await ApiCalls.RunAsync(() => Api.MoveOrgUnitAsync(Unit.Id, new MoveOrgUnitRequest(_newParentId!.Value)),
             Navigation, L, message => _error = message);
         _saving = false;
 

@@ -182,10 +182,10 @@ else
 
     private async Task MoveAsync(OrgUnitNodeDto unit)
     {
+        _error = null;
         // The candidate list needs the whole tree, not just the current search result.
-        IReadOnlyList<OrgUnitNodeDto> all;
-        try { all = await Api.GetOrgUnitsAsync(null); }
-        catch (ApiProblemException ex) { _error = ProblemText.For(ex, L); return; }
+        IReadOnlyList<OrgUnitNodeDto> all = [];
+        if (!await RunAsync(async () => all = await Api.GetOrgUnitsAsync(null))) return;
         await ShowDialogAsync<MoveUnitDialog>(L["Move_Title"], new DialogParameters<MoveUnitDialog>
         {
             { x => x.Unit, unit }, { x => x.AllUnits, all },

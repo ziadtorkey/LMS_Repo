@@ -1,6 +1,9 @@
 using System.Globalization;
 using Bunit;
+using Lms.Client.Layout;
 using Lms.Client.Pages.Organization;
+using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
 using Lms.Client.Tests.Support;
 using Lms.Shared.Authorization;
 using Lms.Shared.Organizations;
@@ -56,11 +59,16 @@ public sealed class UnitSettingsTests : ClientTestContext
             { x => x.Unit, units.First(u => u.Id == _plainId) }, { x => x.AllUnits, units },
         });
         dialogs.WaitForElement("[data-testid=dialog-save]");
+        Assert.True(dialogs.Find("[data-testid=dialog-save]").HasAttribute("disabled")); // nothing preselected
+
+        var select = dialogs.FindComponent<MudSelect<Guid?>>();
+        await dialogs.InvokeAsync(() => select.Instance.ValueChanged.InvokeAsync((Guid?)_primaryId));
+        dialogs.WaitForAssertion(() => Assert.False(dialogs.Find("[data-testid=dialog-save]").HasAttribute("disabled")));
         await dialogs.Find("[data-testid=dialog-save]").ClickAsync(new());
 
         dialogs.WaitForAssertion(() => Assert.Single(Org.Moves));
         Assert.Equal(_plainId, Org.Moves[0].Id);
-        Assert.NotEqual(_rootId, Org.Moves[0].Request.NewParentId);
+        Assert.Equal(_primaryId, Org.Moves[0].Request.NewParentId);
     }
 
     [Fact]
@@ -87,6 +95,59 @@ public sealed class UnitSettingsTests : ClientTestContext
 
         Assert.Empty(page.FindAll($"[data-testid=org-move-{_rootId}]"));
         page.WaitForAssertion(() => Assert.NotEmpty(page.FindAll($"[data-testid=org-move-{_kgId}]")));
+    }
+
+    [Fact]
+    public async Task Stale_context_when_opening_move_goes_to_the_chooser()
+    {
+        Org.Units.AddRange(Units());
+        await GrantAsync(Permissions.OrgUnits.View, Permissions.OrgUnits.Move);
+        Render<MudPopoverProvider>(); Render<MudDialogProvider>();
+        var page = Render<OrgTreePage>();
+        page.WaitForElement($"[data-testid=org-move-{_kgId}]");
+
+        Org.ListFailure = new Lms.Client.Services.Api.ApiContextException("invalid_context");
+        await page.Find($"[data-testid=org-move-{_kgId}]").ClickAsync(new());
+
+        page.WaitForAssertion(() => Assert.EndsWith("/choose-context", Services.GetRequiredService<NavigationManager>().Uri));
+        Assert.Empty(page.FindAll("[data-testid=org-error]"));
+    }
+
+    [Fact]
+    public async Task Network_error_when_opening_move_shows_the_error_message()
+    {
+        CultureInfo.CurrentUICulture = new CultureInfo("en");
+        Org.Units.AddRange(Units());
+        await GrantAsync(Permissions.OrgUnits.View, Permissions.OrgUnits.Move);
+        Render<MudPopoverProvider>(); Render<MudDialogProvider>();
+        var page = Render<OrgTreePage>();
+        page.WaitForElement($"[data-testid=org-move-{_kgId}]");
+
+        Org.ListFailure = new HttpRequestException("offline");
+        await page.Find($"[data-testid=org-move-{_kgId}]").ClickAsync(new());
+
+        page.WaitForAssertion(() => Assert.Contains("Something went wrong", page.Find("[data-testid=org-error]").TextContent));
+    }
+
+    [Fact]
+    public async Task Settings_page_tabs_render_rtl_in_arabic()
+    {
+        Culture.Current = new CultureInfo("ar");
+        CultureInfo.CurrentUICulture = Culture.Current;
+        Org.Units.AddRange(Units());
+        await GrantAsync(Permissions.OrgUnits.View);
+
+        var layout = Render<MainLayout>(p => p.Add(l => l.Body, (RenderFragment)(b =>
+        {
+            b.OpenComponent<UnitSettingsPage>(0);
+            b.AddComponentParameter(1, "Id", _kgId);
+            b.CloseComponent();
+        })));
+
+        layout.WaitForElement("[data-testid=unit-tabs]");
+        Assert.Equal("rtl", layout.Find("[data-testid=app-root]").GetAttribute("dir"));
+        Assert.Contains("عام", layout.Find("[data-testid=unit-tabs]").TextContent);
+        Assert.Contains("ع-KG", layout.Find("[data-testid=unit-title]").TextContent);
     }
 
     // --- Academic tab ---

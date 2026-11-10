@@ -55,8 +55,13 @@
     public static IReadOnlyList<OrgUnitNodeDto> NextLevelCandidates(OrgUnitNodeDto unit, IReadOnlyList<OrgUnitNodeDto> all) =>
         all.Where(u => u.Id != unit.Id && u.IsLevelTransfer && u.LevelTypeId == unit.LevelTypeId).ToList();
 
+    private Guid? _initializedFor;
+
     protected override void OnParametersSet()
     {
+        // Keep unsaved edits across re-renders of the parent: initialise only when another unit is shown.
+        if (_initializedFor == Unit.Id) return;
+        _initializedFor = Unit.Id;
         _isTransfer = Unit.IsLevelTransfer;
         _nextId = Unit.NextTransferUnitId;
         _isCourse = Unit.IsCourseManagementLevel;

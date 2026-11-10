@@ -51,6 +51,7 @@ public sealed class StubOrgApi : IOrgApi
     public List<Guid> UnitsDeleted { get; } = [];
     public Exception? UnitDeleteFailure { get; set; }
     public Exception? StatusFailure { get; set; }
+    public Exception? ListFailure { get; set; }
     public Exception? LevelsFailure { get; set; }
 
     public List<(Guid Id, MoveOrgUnitRequest Request)> Moves { get; } = [];
@@ -75,6 +76,7 @@ public sealed class StubOrgApi : IOrgApi
 
     public Task<IReadOnlyList<OrgUnitNodeDto>> GetOrgUnitsAsync(string? search, CancellationToken ct = default)
     {
+        if (ListFailure is not null) return Task.FromException<IReadOnlyList<OrgUnitNodeDto>>(ListFailure);
         UnitSearches.Add(search);
         if (string.IsNullOrWhiteSpace(search)) return Task.FromResult<IReadOnlyList<OrgUnitNodeDto>>(Units.ToList());
         var keep = new HashSet<Guid>();

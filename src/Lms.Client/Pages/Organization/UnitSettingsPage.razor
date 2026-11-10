@@ -11,7 +11,7 @@
 
 <PageTitle>@L["OrgTree_Settings"]</PageTitle>
 <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
-    <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Href="org-units" aria-label="@L["UnitSettings_Back"]" data-testid="unit-back" />
+    <MudIconButton Icon="@(Culture.IsRightToLeft ? Icons.Material.Filled.ArrowForward : Icons.Material.Filled.ArrowBack)" Href="org-units" aria-label="@L["UnitSettings_Back"]" data-testid="unit-back" />
     <MudText Typo="Typo.h4" data-testid="unit-title">@(_unit is null ? L["OrgTree_Settings"].Value : Culture.Pick(_unit.NameAr, _unit.NameEn))</MudText>
 </MudStack>
 
