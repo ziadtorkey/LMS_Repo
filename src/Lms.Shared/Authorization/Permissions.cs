@@ -65,4 +65,10 @@ public static class Permissions
 
     /// <summary>Every permission in the catalog (reflection, cached).</summary>
     public static IReadOnlyList<string> All => AllLazy.Value;
+
+    /// <summary>
+    /// Permissions reserved for the Platform Admin (above all clients). No built-in or custom
+    /// client role may hold them. Empty in M0; M1 adds Clients.* here.
+    /// </summary>
+    public static IReadOnlyList<string> PlatformOnly { get; } = [];
 }

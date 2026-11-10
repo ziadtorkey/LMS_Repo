@@ -8,8 +8,8 @@ public static class PolicyCatalog
 {
     public const string CreateOrgUnits = "CreateOrgUnits";
 
-    public static IReadOnlyDictionary<string, string[]> BlockedPermissions { get; } =
-        new Dictionary<string, string[]>
+    public static IReadOnlyDictionary<string, IReadOnlyList<string>> BlockedPermissions { get; } =
+        new Dictionary<string, IReadOnlyList<string>>
         {
             [CreateOrgUnits] = [Permissions.OrgUnits.Create],
         };
