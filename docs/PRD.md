@@ -320,6 +320,7 @@ All tenant-owned tables: `OrganizationId`; unit-scoped tables: `OrgUnitId`, `Org
 | D12 | Promotion undo | Short undo window (default 10 min) before activity in the new year. |
 | D13 | Library "use dhcp" | Interpreted as in-browser protected reader with download disabled per resource. |
 | D14 | External exam cycle, AI, native mobile | Out of v1 scope. |
+| D15 | Access at an Inactive OrgUnit (2026-11-10) | An assignment at an Inactive unit, or below one, is not a valid active context (403, hidden from the context chooser). Admins assigned above the unit keep access to view and reactivate it. |
 
 ---
 

@@ -2,18 +2,18 @@
 
 _Updated by the Team Lead after every merge cycle._
 
-**Milestone:** M0 Foundation — in progress (5 / 17 issues closed)
-**Last update:** 2026-11-10 — Kernel PR #20 merged (closes #4). Owner approved a 2nd QA agent (being started) because review is the bottleneck: #23–#27 are queued. Access evaluator PR #27 (#9) up; Backend 1 on #11.
+**Milestone:** M0 Foundation — in progress (7 / 19 issues closed)
+**Last update:** 2026-11-10 — Audit PR #23 merged (closes #5). Approved and waiting for authors to merge main: #26 (#7), #25 (#8), #28 (#13). #27 (#9) needs QA spot-check of two new commits; #29 (#11) approved, merges after #27. Identity PR #31 (#6) up for review. New follow-up #32 (RF2 vs real PolicyEvaluator).
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |
 |---|---|---|---|---|
 | Team Lead | Opus | `local_95ef9dc7-9378-4012-a8f2-c7d1f944bdec` (lms-lead) | M0 coordination; M1 plan prep | coordinating |
-| Backend 1 | Sonnet | `local_19f31b04-ca2f-43d1-a2cb-8a128722a11f` (lms-backend) | PRs #26 (#7), #27 (#9) in review; #11 T9 Me endpoints | working |
-| Backend 2 | Sonnet | `local_d36e7dc2-e9e6-4f73-b7b3-b078b17bbe41` (lms-backend-2) | PR #25 (#8) in review; fixing QA changes on PR #23 (#5); then #6 | working |
-| Frontend | Sonnet | `local_40667dce-5be7-478b-95cb-4f14ecd203b9` (lms-frontend) | fixing QA changes on PR #24 (#12); #13 T11 context chooser | working |
-| QA | Opus | `local_91a7af3c-7b02-4d61-ac11-2c22629cf89f` (lms-qa) | #26, #27, then #11, #14 reviews; E2E #15 (#16) | reviewing |
-| QA 2 | Opus | (being started) | #24, #25, #23 reviews; then #6, #10, #13 | starting |
+| Backend 1 | Sonnet | `local_19f31b04-ca2f-43d1-a2cb-8a128722a11f` (lms-backend) | merging main into #26/#27/#29; #14 dev seed; then #32, #30 | working |
+| Backend 2 | Sonnet | `local_d36e7dc2-e9e6-4f73-b7b3-b078b17bbe41` (lms-backend-2) | merging main into #25 (#8) and #31 (#6); #10 files | working |
+| Frontend | Sonnet | `local_40667dce-5be7-478b-95cb-4f14ecd203b9` (lms-frontend) | merging main into PR #28 (#13, approved); resx parity test | working |
+| QA | Opus | `local_91a7af3c-7b02-4d61-ac11-2c22629cf89f` (lms-qa) | spot-checks #26/#27/#25/#28; review #31; E2E #15 (#16) | reviewing |
+| QA 2 | Opus | (waiting for owner to click Start) | #25, #28; then #6, #10 | not started |
 
 ## M0 issue map
 | Task | Issue | Lane | Depends on |
@@ -35,14 +35,18 @@ _Updated by the Team Lead after every merge cycle._
 | T12 E2E smoke | #15 | QA | #14, #13 |
 | M0 review checklist | #16 | QA | all |
 | Bug: OrgAdmin explicit permissions | #21 | Lead | — |
+| Audit roles/assignments; unique built-in role; D15 inactive units | #30 | BE1 | #5, #7 |
+| RF2 against real PolicyEvaluator | #32 | BE1 | #8, #9 |
 
 ## Blockers
 None. (Board: [LMS v1](https://github.com/users/ziadtorkey/projects/1) — Todo → In Progress → In Review → Done.)
 
 ## Decisions needed from the product owner
-None. (2026-11-10: owner approved Lead merging QA-approved green PRs, and a 2nd QA agent.)
+None. (2026-11-10: owner approved Lead merging QA-approved green PRs, and a 2nd QA agent; D15: no access via Inactive units.)
 
 ## Recently merged
+- #23 feat(audit): capture audit entries for audited entities (closes #5)
+- #24 feat(client): MudBlazor shell with OIDC auth and ar/en RTL (closes #12)
 - #20 feat(kernel): persistence kernel with client and subtree isolation (closes #4)
 - #22 fix(contracts): explicit OrgAdmin permission list and platform-only guard (fixes #21)
 - #19 feat(contracts): Me DTOs and API routes (closes #3)
