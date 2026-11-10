@@ -1,0 +1,92 @@
+@using System.Text.RegularExpressions
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Shared.Organizations
+@inject IOrgApi Api
+@inject ICultureService Culture
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form">
+            <MudStack Spacing="3">
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" data-testid="dialog-error">@_error</MudAlert>
+                }
+                <BilingualNameFields @bind-NameAr="_nameAr" @bind-NameEn="_nameEn" IdPrefix="unit-name" />
+                <MudTextField T="string" @bind-Value="_code" Label="@L["Common_Code"]" Required="true"
+                              RequiredError="@L["Common_Required"]" Validation="@(new Func<string, string?>(ValidateCode))"
+                              MaxLength="50" dir="ltr" data-testid="unit-code" />
+                <MudSelect T="Guid" @bind-Value="_levelTypeId" Label="@L["OrgTree_LevelType"]" data-testid="unit-level-type">
+                    @foreach (var level in AllowedLevels)
+                    {
+                        <MudSelectItem T="Guid" Value="@level.Id">@Culture.Pick(level.NameAr, level.NameEn)</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudStack>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()">@L["Common_Cancel"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="_saving"
+                   data-testid="dialog-save">@L["Common_Save"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    /// <summary>Create: the parent unit the new unit is added under. Edit: leave null and pass <see cref="Existing"/>.</summary>
+    [Parameter] public Guid? ParentId { get; set; }
+    [Parameter] public OrgUnitNodeDto? Existing { get; set; }
+
+    /// <summary>All level types of the client, ordered; only types deeper than the parent's are offered.</summary>
+    [Parameter] public IReadOnlyList<LevelTypeDto> LevelTypes { get; set; } = [];
+
+    /// <summary>Order of the parent unit's level type (children must have a greater order).</summary>
+    [Parameter] public int ParentLevelOrder { get; set; }
+
+    private MudForm _form = default!;
+    private string _nameAr = "", _nameEn = "", _code = "";
+    private Guid _levelTypeId;
+    private string? _error;
+    private bool _saving;
+
+    private IEnumerable<LevelTypeDto> AllowedLevels => LevelTypes.Where(l => l.Order > ParentLevelOrder).OrderBy(l => l.Order);
+
+    protected override void OnParametersSet()
+    {
+        if (Existing is not null)
+        {
+            _nameAr = Existing.NameAr; _nameEn = Existing.NameEn; _code = Existing.Code; _levelTypeId = Existing.LevelTypeId;
+        }
+        else if (_levelTypeId == Guid.Empty)
+        {
+            _levelTypeId = AllowedLevels.FirstOrDefault()?.Id ?? Guid.Empty;
+        }
+    }
+
+    private string? ValidateCode(string value) =>
+        Regex.IsMatch(value ?? "", "^[A-Za-z0-9_-]{1,50}$") ? null : L["Common_InvalidCode"].Value;
+
+    private async Task SaveAsync()
+    {
+        await _form.ValidateAsync();
+        if (!_form.IsValid) return;
+
+        _saving = true; _error = null;
+        try
+        {
+            if (Existing is null)
+                await Api.CreateOrgUnitAsync(new CreateOrgUnitRequest(ParentId!.Value, _levelTypeId, _nameAr.Trim(), _nameEn.Trim(), _code.Trim()));
+            else
+                await Api.UpdateOrgUnitAsync(Existing.Id, new UpdateOrgUnitRequest(_levelTypeId, _nameAr.Trim(), _nameEn.Trim(), _code.Trim()));
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        catch (ApiProblemException ex)
+        {
+            _error = ProblemText.For(ex, L);
+        }
+        finally { _saving = false; }
+    }
+}

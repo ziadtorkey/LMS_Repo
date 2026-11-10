@@ -125,4 +125,14 @@
   <data name="LevelTypes_OutOfScope" xml:space="preserve"><value>This can only be changed at the top level of the organization.</value></data>
   <data name="Common_Yes" xml:space="preserve"><value>Yes</value></data>
   <data name="Common_No" xml:space="preserve"><value>No</value></data>
+  <data name="OrgTree_Title" xml:space="preserve"><value>Organization tree</value></data>
+  <data name="OrgTree_AddChild" xml:space="preserve"><value>Add unit</value></data>
+  <data name="OrgTree_Search" xml:space="preserve"><value>Search units</value></data>
+  <data name="OrgTree_LevelType" xml:space="preserve"><value>Level type</value></data>
+  <data name="OrgTree_Deactivate" xml:space="preserve"><value>Deactivate</value></data>
+  <data name="OrgTree_Activate" xml:space="preserve"><value>Activate</value></data>
+  <data name="OrgTree_Inactive" xml:space="preserve"><value>Inactive</value></data>
+  <data name="OrgTree_Settings" xml:space="preserve"><value>Unit settings</value></data>
+  <data name="OrgTree_DeleteConfirm" xml:space="preserve"><value>Delete this unit? It can be restored by support only.</value></data>
+  <data name="OrgTree_NoMatches" xml:space="preserve"><value>No units match your search.</value></data>
 </root>
