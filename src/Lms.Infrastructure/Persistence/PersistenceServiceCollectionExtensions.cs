@@ -8,7 +8,7 @@ namespace Lms.Infrastructure.Persistence;
 public static class PersistenceServiceCollectionExtensions
 {
     public static DbContextOptionsBuilder UseLmsMySql(this DbContextOptionsBuilder builder, string connectionString) =>
-        builder.UseMySQL(connectionString);
+        builder.UseMySQL(connectionString).UseOpenIddict<Guid>();
 
     public static IServiceCollection AddPersistence(this IServiceCollection services, IConfiguration configuration)
     {
