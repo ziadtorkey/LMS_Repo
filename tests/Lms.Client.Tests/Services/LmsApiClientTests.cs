@@ -73,6 +73,16 @@ public sealed class LmsApiClientTests
     }
 
     [Fact]
+    public async Task Post_403_does_not_redirect_to_forbidden_page()
+    {
+        var nav = new TestNav();
+        var handler = new ForbiddenRedirectHandler(nav) { InnerHandler = new CaptureHandler(HttpStatusCode.Forbidden) };
+        await new HttpClient(handler) { BaseAddress = new Uri("http://localhost/") }.PostAsync("/api/x", new StringContent("{}"));
+
+        Assert.DoesNotContain("/forbidden", nav.Uri);
+    }
+
+    [Fact]
     public async Task Client_throws_ApiForbiddenException_on_403()
     {
         var handler = new CaptureHandler(HttpStatusCode.Forbidden);

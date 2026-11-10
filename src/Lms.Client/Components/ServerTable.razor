@@ -1,0 +1,27 @@
+@typeparam T
+
+@* Server-paged table (page size 50) with the shared empty/loading states. Pages supply the columns. *@
+<MudTable @ref="_table" T="T" ServerData="ServerData" RowsPerPage="50" Hover="true" Dense="true"
+          Loading="false" Class="lms-server-table">
+    <HeaderContent>@HeaderContent</HeaderContent>
+    <RowTemplate>@RowTemplate(context)</RowTemplate>
+    <NoRecordsContent>
+        <MudText Class="pa-4" data-testid="table-empty">@L["Common_Empty"]</MudText>
+    </NoRecordsContent>
+    <LoadingContent>
+        <MudText Class="pa-4">@L["Common_Loading"]</MudText>
+    </LoadingContent>
+    <PagerContent>
+        <MudTablePager PageSizeOptions="@(new[] { 50, 100, 200 })" />
+    </PagerContent>
+</MudTable>
+
+@code {
+    private MudTable<T> _table = default!;
+
+    [Parameter, EditorRequired] public Func<TableState, CancellationToken, Task<TableData<T>>> ServerData { get; set; } = default!;
+    [Parameter, EditorRequired] public RenderFragment<T> RowTemplate { get; set; } = default!;
+    [Parameter] public RenderFragment? HeaderContent { get; set; }
+
+    public Task ReloadAsync() => _table.ReloadServerData();
+}

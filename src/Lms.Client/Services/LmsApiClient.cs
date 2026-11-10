@@ -39,13 +39,15 @@ public sealed class ApiForbiddenException : HttpRequestException
     public ApiForbiddenException() : base("Forbidden", null, HttpStatusCode.Forbidden) { }
 }
 
-/// <summary>Sends the user to the Forbidden page whenever the API answers 403.</summary>
+/// <summary>Sends the user to the Forbidden page when a GET is answered with 403.</summary>
 public sealed class ForbiddenRedirectHandler(NavigationManager navigation) : DelegatingHandler
 {
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
     {
         var response = await base.SendAsync(request, ct);
-        if (response.StatusCode == HttpStatusCode.Forbidden)
+        // Only a forbidden GET means the whole page is off limits; a forbidden action (POST/PUT/DELETE)
+        // keeps the page so the caller can show the problem (ApiProblemException).
+        if (response.StatusCode == HttpStatusCode.Forbidden && request.Method == HttpMethod.Get)
             navigation.NavigateTo("forbidden");
         return response;
     }
