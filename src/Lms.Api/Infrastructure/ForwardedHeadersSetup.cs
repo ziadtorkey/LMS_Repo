@@ -53,6 +53,13 @@ public static class ForwardedHeadersSetup
         {
             app.UseForwardedHeaders();
         }
+        else if (!app.Environment.IsDevelopment())
+        {
+            // Behind a reverse proxy this means one rate-limit bucket and one audit IP for every user: worth a loud hint.
+            app.Logger.LogWarning(
+                "No ForwardedHeaders:KnownProxies or KnownNetworks configured: X-Forwarded-For is ignored. Behind a reverse " +
+                "proxy, rate limits and audit IPs will see the proxy address. Configure the proxy address if there is one.");
+        }
 
         return app;
     }

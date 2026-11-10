@@ -107,4 +107,20 @@ public sealed class ForwardedHeadersTests(LmsApiFactory factory)
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
+
+    [Fact]
+    public async Task A_spoofed_left_part_of_the_forwarded_chain_is_ignored_even_from_a_known_proxy()
+    {
+        // The client sent "X-Forwarded-For: 203.0.113.1" itself; the trusted proxy appended the address it really saw.
+        // Only the entry added by the proxy counts, so rotating the spoofed part must not give a fresh rate-limit bucket.
+        var host = new AuthTestHost(factory, permitLimit: 5, remoteIp: "198.51.100.210", knownProxies: ["198.51.100.210"]);
+        using var browser = host.NewBrowser();
+
+        for (var i = 0; i < 5; i++)
+        {
+            Assert.Equal(HttpStatusCode.OK, await ForgotAsync(browser, $"203.0.113.{i}, 203.0.113.99"));
+        }
+
+        Assert.Equal(HttpStatusCode.TooManyRequests, await ForgotAsync(browser, "203.0.113.200, 203.0.113.99"));
+    }
 }
