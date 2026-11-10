@@ -23,6 +23,7 @@ internal static class AcademicYearMapper
                 .ToListAsync(ct))
             .GroupBy(t => t.AcademicYearId)
             .ToDictionary(g => g.Key, g => g.OrderBy(t => t.StartDate).ToList());
+        // ISOLATION-BYPASS: name of the (possibly ancestor) defining unit, restricted to the years' client and live rows.
         var units = await db.OrgUnits.IgnoreQueryFilters()
             .Where(u => !u.IsDeleted && u.OrganizationId == organizationId && unitIds.Contains(u.Id))
             .Select(u => new { u.Id, u.NameAr, u.NameEn })
