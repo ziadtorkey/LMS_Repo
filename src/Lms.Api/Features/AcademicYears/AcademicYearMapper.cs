@@ -12,17 +12,19 @@ internal static class AcademicYearMapper
         LmsDbContext db, IReadOnlyList<AcademicYear> years, Guid viewedUnitId, DateOnly today, CancellationToken ct)
     {
         var yearIds = years.Select(y => y.Id).ToList();
+        var organizationId = years.Count > 0 ? years[0].OrganizationId : Guid.Empty; // all years of one call share a client
         var unitIds = years.Select(y => y.OrgUnitId).Distinct().ToList();
 
         // ISOLATION-BYPASS: years may be inherited from an ancestor unit outside the caller's own subtree; their terms
-        // and the defining unit's name are read by the ids of years the caller is already entitled to see.
-        var terms = (await db.Terms.IgnoreQueryFilters()
-                .Where(t => !t.IsDeleted && yearIds.Contains(t.AcademicYearId))
+        // and the defining unit's name are read by the ids of years the caller is already entitled to see, and are
+        // re-restricted to that years' client (OrganizationId) and to live rows.
+        var terms = (await db.Set<Term>().IgnoreQueryFilters()
+                .Where(t => !t.IsDeleted && t.OrganizationId == organizationId && yearIds.Contains(t.AcademicYearId))
                 .ToListAsync(ct))
             .GroupBy(t => t.AcademicYearId)
             .ToDictionary(g => g.Key, g => g.OrderBy(t => t.StartDate).ToList());
         var units = await db.OrgUnits.IgnoreQueryFilters()
-            .Where(u => unitIds.Contains(u.Id))
+            .Where(u => !u.IsDeleted && u.OrganizationId == organizationId && unitIds.Contains(u.Id))
             .Select(u => new { u.Id, u.NameAr, u.NameEn })
             .ToDictionaryAsync(u => u.Id, ct);
 

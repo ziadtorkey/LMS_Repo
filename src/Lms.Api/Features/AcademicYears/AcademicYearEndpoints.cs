@@ -69,13 +69,13 @@ public static class AcademicYearEndpoints
         }
 
         var unit = access.Unit!;
-        if (await db.AcademicYears.AnyAsync(y => y.OrgUnitId == unit.Id && y.StartDate <= request.EndDate && request.StartDate <= y.EndDate, ct))
+        if (await db.Set<AcademicYear>().AnyAsync(y => y.OrgUnitId == unit.Id && y.StartDate <= request.EndDate && request.StartDate <= y.EndDate, ct))
         {
             return ApiProblems.Conflict(ProblemCodes.year_overlap, "Another academic year of this unit overlaps these dates.");
         }
 
         var year = new AcademicYear(unit, request.NameAr.Trim(), request.NameEn.Trim(), request.StartDate, request.EndDate);
-        db.AcademicYears.Add(year);
+        db.Set<AcademicYear>().Add(year);
         await db.SaveChangesAsync(ct);
         return Results.Created(Routes.AcademicYear(year.Id), await ToDtoAsync(db, year, clock, ct));
     }
@@ -99,13 +99,13 @@ public static class AcademicYearEndpoints
             return ApiProblems.Conflict(ProblemCodes.year_closed, "A closed academic year is read-only.");
         }
 
-        if (await db.AcademicYears.AnyAsync(
+        if (await db.Set<AcademicYear>().AnyAsync(
                 y => y.OrgUnitId == year.OrgUnitId && y.Id != year.Id && y.StartDate <= request.EndDate && request.StartDate <= y.EndDate, ct))
         {
             return ApiProblems.Conflict(ProblemCodes.year_overlap, "Another academic year of this unit overlaps these dates.");
         }
 
-        if (await db.Terms.AnyAsync(t => t.AcademicYearId == year.Id && (t.StartDate < request.StartDate || t.EndDate > request.EndDate), ct))
+        if (await db.Set<Term>().AnyAsync(t => t.AcademicYearId == year.Id && (t.StartDate < request.StartDate || t.EndDate > request.EndDate), ct))
         {
             return ApiProblems.Conflict(ProblemCodes.term_outside_year, "A term of this year would fall outside the new dates.");
         }
@@ -131,7 +131,7 @@ public static class AcademicYearEndpoints
 
         if (year.Status != AcademicYearStatus.Active)
         {
-            if (await db.AcademicYears.AnyAsync(y => y.OrgUnitId == year.OrgUnitId && y.Id != year.Id && y.Status == AcademicYearStatus.Active, ct))
+            if (await db.Set<AcademicYear>().AnyAsync(y => y.OrgUnitId == year.OrgUnitId && y.Id != year.Id && y.Status == AcademicYearStatus.Active, ct))
             {
                 return ApiProblems.Conflict(ProblemCodes.active_year_exists, "Another academic year of this unit is already active.");
             }
@@ -161,8 +161,8 @@ public static class AcademicYearEndpoints
             return ApiProblems.Conflict(ProblemCodes.year_closed, "A closed academic year cannot be deleted.");
         }
 
-        db.Terms.RemoveRange(await db.Terms.Where(t => t.AcademicYearId == year.Id).ToListAsync(ct));
-        db.AcademicYears.Remove(year);
+        db.Set<Term>().RemoveRange(await db.Set<Term>().Where(t => t.AcademicYearId == year.Id).ToListAsync(ct));
+        db.Set<AcademicYear>().Remove(year);
         await db.SaveChangesAsync(ct);
         return Results.NoContent();
     }
@@ -171,7 +171,7 @@ public static class AcademicYearEndpoints
     internal static async Task<(AcademicYear? Year, IResult? Problem)> LoadForAsync(
         string permission, Guid yearId, HttpContext http, LmsDbContext db, CancellationToken ct)
     {
-        var year = await db.AcademicYears.SingleOrDefaultAsync(y => y.Id == yearId, ct);
+        var year = await db.Set<AcademicYear>().SingleOrDefaultAsync(y => y.Id == yearId, ct);
         if (year is null)
         {
             return (null, ApiProblems.NotFound());

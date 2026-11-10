@@ -63,7 +63,7 @@ internal static class YearTestKit
             year.Close();
         }
 
-        db.AcademicYears.Add(year);
+        db.Set<AcademicYear>().Add(year);
         await db.SaveChangesAsync();
         return year;
     }

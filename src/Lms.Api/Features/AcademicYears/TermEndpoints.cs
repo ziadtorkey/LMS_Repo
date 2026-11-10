@@ -36,14 +36,14 @@ public static class TermEndpoints
             return problem!;
         }
 
-        var terms = await db.Terms.Where(t => t.AcademicYearId == year.Id).ToListAsync(ct);
+        var terms = await db.Set<Term>().Where(t => t.AcademicYearId == year.Id).ToListAsync(ct);
         if (Check(year, terms, null, request) is { } conflict)
         {
             return conflict;
         }
 
         var term = new Term(year, request.NameAr.Trim(), request.NameEn.Trim(), request.StartDate, request.EndDate);
-        db.Terms.Add(term);
+        db.Set<Term>().Add(term);
         terms.Add(term);
         Reorder(terms);
         await db.SaveChangesAsync(ct);
@@ -64,7 +64,7 @@ public static class TermEndpoints
             return problem!;
         }
 
-        var terms = await db.Terms.Where(t => t.AcademicYearId == year.Id).ToListAsync(ct);
+        var terms = await db.Set<Term>().Where(t => t.AcademicYearId == year.Id).ToListAsync(ct);
         if (Check(year, terms, term.Id, request) is { } conflict)
         {
             return conflict;
@@ -84,8 +84,8 @@ public static class TermEndpoints
             return problem!;
         }
 
-        var remaining = await db.Terms.Where(t => t.AcademicYearId == year.Id && t.Id != term.Id).ToListAsync(ct);
-        db.Terms.Remove(term);
+        var remaining = await db.Set<Term>().Where(t => t.AcademicYearId == year.Id && t.Id != term.Id).ToListAsync(ct);
+        db.Set<Term>().Remove(term);
         Reorder(remaining);
         await db.SaveChangesAsync(ct);
         return Results.NoContent();
@@ -94,7 +94,7 @@ public static class TermEndpoints
     private static async Task<(Term? Term, AcademicYear? Year, IResult? Problem)> LoadAsync(
         Guid termId, HttpContext http, LmsDbContext db, CancellationToken ct)
     {
-        var term = await db.Terms.SingleOrDefaultAsync(t => t.Id == termId, ct);
+        var term = await db.Set<Term>().SingleOrDefaultAsync(t => t.Id == termId, ct);
         if (term is null)
         {
             return (null, null, ApiProblems.NotFound());

@@ -45,11 +45,32 @@ public sealed class AcademicYearIsolationTests(LmsApiFactory factory)
 
         // The query filters themselves (both tables) hide rows outside the caller's scope.
         await using var db = factory.CreateDbContext(TestCurrentContext.For(a.Org.Id, a.School1.Path));
-        Assert.False(await db.AcademicYears.AnyAsync(y => y.Id == year2.Id));
-        Assert.False(await db.Terms.AnyAsync(t => t.AcademicYearId == year2.Id));
+        Assert.False(await db.Set<AcademicYear>().AnyAsync(y => y.Id == year2.Id));
+        Assert.False(await db.Set<Term>().AnyAsync(t => t.AcademicYearId == year2.Id));
         await using var dbB = factory.CreateDbContext(TestCurrentContext.For(b.Org.Id, b.Root.Path));
-        Assert.False(await dbB.AcademicYears.AnyAsync(y => y.Id == year2.Id));
-        Assert.False(await dbB.Terms.AnyAsync(t => t.AcademicYearId == year2.Id));
+        Assert.False(await dbB.Set<AcademicYear>().AnyAsync(y => y.Id == year2.Id));
+        Assert.False(await dbB.Set<Term>().AnyAsync(t => t.AcademicYearId == year2.Id));
+    }
+
+    [Fact]
+    public async Task Another_clients_unit_name_is_never_resolved()
+    {
+        var a = await AccessTestData.SeedAsync(factory, "AI4A");
+        var b = await AccessTestData.SeedAsync(factory, "AI4B");
+        var adminA = await AccessTestData.AssignAsync(factory, a, a.Root, BuiltInRoles.OrgAdmin, Guid.NewGuid());
+        var year = await CreateYearAsync(factory, adminA, a.Root, "Forged", Y1, Y1.AddMonths(10));
+
+        // Corrupt row: client A's year points at client B's unit.
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            await db.Database.ExecuteSqlInterpolatedAsync($"UPDATE AcademicYears SET OrgUnitId = {b.Root.Id} WHERE Id = {year.Id}");
+        }
+
+        var ctx = await EffectiveAsync(factory, adminA, a.Root);
+
+        var row = Assert.Single(ctx.Years);
+        Assert.NotEqual(b.Root.NameEn, row.OrgUnitNameEn);
+        Assert.Equal(string.Empty, row.OrgUnitNameEn);
     }
 
     [Fact]

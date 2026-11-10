@@ -1,3 +1,4 @@
+using Lms.Domain.Abstractions;
 using Lms.Domain.AcademicYears;
 using Lms.Domain.Organizations;
 using Lms.Infrastructure.Persistence;
@@ -5,18 +6,28 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Lms.Infrastructure.AcademicYears;
 
-internal sealed class AcademicYearResolver(LmsDbContext db) : IAcademicYearResolver
+internal sealed class AcademicYearResolver(LmsDbContext db, ICurrentContext context) : IAcademicYearResolver
 {
     public async Task<(IReadOnlyList<AcademicYear> Years, Guid DefiningOrgUnitId)> GetEffectiveAsync(
         string orgUnitPath, CancellationToken cancellationToken)
     {
         var chain = OrgUnitPath.AncestorsAndSelf(orgUnitPath);
 
-        // ISOLATION-BYPASS: inherited years live at ancestors, outside the caller's own subtree filter. The lookup is
-        // bound to the exact ancestor paths of a unit the caller was already allowed to see (paths embed globally
-        // unique unit ids, so no other client can match) and still excludes soft-deleted rows.
-        var years = await db.AcademicYears.IgnoreQueryFilters()
-            .Where(y => !y.IsDeleted && chain.Contains(y.OrgUnitPath))
+        // The client is the caller's own; a platform admin without a client takes the organization of the unit itself.
+        // ISOLATION-BYPASS: reading the unit by exact path (globally unique) only to learn its organization.
+        var organizationId = context.OrganizationId
+            ?? await db.Set<OrgUnit>().IgnoreQueryFilters().Where(u => u.Path == orgUnitPath)
+                .Select(u => (Guid?)u.OrganizationId).FirstOrDefaultAsync(cancellationToken);
+        if (organizationId is null)
+        {
+            return ([], SelfId(orgUnitPath));
+        }
+
+        // ISOLATION-BYPASS: inherited years live at ancestors, outside the caller's own subtree filter. The lookup
+        // re-applies the client (OrganizationId) and the soft-delete filter explicitly and is bound to the exact
+        // ancestor paths of a unit the caller was already allowed to see.
+        var years = await db.Set<AcademicYear>().IgnoreQueryFilters()
+            .Where(y => !y.IsDeleted && y.OrganizationId == organizationId && chain.Contains(y.OrgUnitPath))
             .OrderBy(y => y.StartDate)
             .ToListAsync(cancellationToken);
 

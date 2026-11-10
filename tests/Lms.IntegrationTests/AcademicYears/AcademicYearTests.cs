@@ -159,8 +159,8 @@ public sealed class AcademicYearTests(LmsApiFactory factory)
         var ctx = await EffectiveAsync(factory, admin, tree.Root);
         Assert.Equal(new[] { active.Id }, ctx.Years.Select(y => y.Id));
         await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
-        Assert.True(await db.AcademicYears.IgnoreQueryFilters().AnyAsync(y => y.Id == planned.Id && y.IsDeleted));
-        Assert.True(await db.Terms.IgnoreQueryFilters().AnyAsync(t => t.AcademicYearId == planned.Id && t.IsDeleted));
+        Assert.True(await db.Set<AcademicYear>().IgnoreQueryFilters().AnyAsync(y => y.Id == planned.Id && y.IsDeleted));
+        Assert.True(await db.Set<Term>().IgnoreQueryFilters().AnyAsync(t => t.AcademicYearId == planned.Id && t.IsDeleted));
     }
 
     [Fact]
