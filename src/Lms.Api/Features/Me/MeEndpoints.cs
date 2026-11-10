@@ -15,7 +15,6 @@ public static class MeEndpoints
     public static IServiceCollection AddMe(this IServiceCollection services)
     {
         services.AddHttpContextAccessor();
-        services.AddScoped<IUserProfileReader, ClaimsUserProfileReader>();
         return services;
     }
 

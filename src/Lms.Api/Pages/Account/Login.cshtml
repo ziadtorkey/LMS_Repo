@@ -1,0 +1,47 @@
+@page "/Account/Login"
+@using System.Globalization
+@using Lms.Api.Resources
+@using Microsoft.Extensions.Localization
+@model Lms.Api.Pages.Account.LoginModel
+@inject IStringLocalizer<AccountResource> L
+@{
+    var isArabic = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "ar";
+    var otherCulture = isArabic ? "en" : "ar";
+}
+<!DOCTYPE html>
+<html lang="@(isArabic ? "ar" : "en")" dir="@(isArabic ? "rtl" : "ltr")">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@L["PageTitle"]</title>
+    <style>
+        body { font-family: system-ui, sans-serif; background: #f4f5f7; margin: 0; display: grid; place-items: center; min-height: 100vh; }
+        main { background: #fff; padding: 2rem; border-radius: 8px; width: min(24rem, 92vw); box-shadow: 0 1px 6px rgba(0,0,0,.12); }
+        label { display: block; margin-top: 1rem; font-size: .9rem; }
+        input { width: 100%; padding: .6rem; margin-top: .3rem; box-sizing: border-box; }
+        button { margin-top: 1.5rem; width: 100%; padding: .7rem; cursor: pointer; }
+        .error { color: #b00020; margin-top: 1rem; }
+        .lang { text-align: end; font-size: .85rem; }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="lang"><a href="?culture=@otherCulture&ui-culture=@otherCulture&returnUrl=@Uri.EscapeDataString(Model.ReturnUrl ?? "/")">@L["SwitchLanguage"]</a></div>
+        <h1>@L["Heading"]</h1>
+        <form method="post">
+            <input type="hidden" name="ReturnUrl" value="@Model.ReturnUrl" />
+            <label>@L["Email"]
+                <input data-testid="login-email" name="Input.Email" type="email" autocomplete="username" value="@Model.Input.Email" required />
+            </label>
+            <label>@L["Password"]
+                <input data-testid="login-password" name="Input.Password" type="password" autocomplete="current-password" required />
+            </label>
+            @if (Model.Error is not null)
+            {
+                <div class="error" role="alert" data-testid="login-error">@Model.Error</div>
+            }
+            <button data-testid="login-submit" type="submit">@L["SignIn"]</button>
+        </form>
+    </main>
+</body>
+</html>
