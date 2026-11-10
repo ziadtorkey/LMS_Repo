@@ -151,4 +151,24 @@ public sealed class MeEndpointsTests(LmsApiFactory factory)
 
         Assert.Equal(HttpStatusCode.Forbidden, (await GetAsync(Routes.MyPermissions, Guid.NewGuid(), a.Id)).StatusCode);
     }
+
+    [Fact]
+    public async Task Me_omits_contexts_at_inactive_units()
+    {
+        var tree = await AccessTestData.SeedAsync(factory, "ME7");
+        var user = Guid.NewGuid();
+        var atInactive = await AccessTestData.AssignAsync(factory, tree, tree.School1, BuiltInRoles.Teacher, user);
+        var atActive = await AccessTestData.AssignAsync(factory, tree, tree.School2, BuiltInRoles.Teacher, user);
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            var unit = await db.OrgUnits.SingleAsync(u => u.Id == tree.School1.Id);
+            db.Entry(unit).Property(nameof(Lms.Domain.Organizations.OrgUnit.Status)).CurrentValue = Lms.Domain.Organizations.OrgUnitStatus.Inactive;
+            await db.SaveChangesAsync();
+        }
+
+        var me = (await (await GetAsync(Routes.Me, user)).Content.ReadFromJsonAsync<MeDto>())!;
+
+        Assert.Equal([atActive.Id], me.Contexts.Select(c => c.AssignmentId));
+        Assert.DoesNotContain(me.Contexts, c => c.AssignmentId == atInactive.Id);
+    }
 }

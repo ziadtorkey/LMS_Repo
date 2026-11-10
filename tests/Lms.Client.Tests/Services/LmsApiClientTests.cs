@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using Bunit;
 using Lms.Client.Services;
+using Lms.Client.Services.Api;
 using Lms.Client.Tests.Support;
 using Lms.Shared;
 using Lms.Shared.Authorization;
@@ -65,11 +66,61 @@ public sealed class LmsApiClientTests
     public async Task Forbidden_response_redirects_to_forbidden_page()
     {
         var nav = new TestNav();
-        var handler = new ForbiddenRedirectHandler(nav) { InnerHandler = new CaptureHandler(HttpStatusCode.Forbidden) };
+        var handler = new ForbiddenRedirectHandler(nav, new InMemoryContextStore()) { InnerHandler = new CaptureHandler(HttpStatusCode.Forbidden) };
         var response = await new HttpClient(handler) { BaseAddress = new Uri("http://localhost/") }.GetAsync("/api/x");
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         Assert.EndsWith("/forbidden", nav.Uri);
+    }
+
+    [Fact]
+    public async Task Post_403_does_not_redirect_to_forbidden_page()
+    {
+        var nav = new TestNav();
+        var handler = new ForbiddenRedirectHandler(nav, new InMemoryContextStore()) { InnerHandler = new CaptureHandler(HttpStatusCode.Forbidden) };
+        await new HttpClient(handler) { BaseAddress = new Uri("http://localhost/") }.PostAsync("/api/x", new StringContent("{}"));
+
+        Assert.DoesNotContain("/forbidden", nav.Uri);
+    }
+
+    [Fact]
+    public async Task Stale_context_403_clears_stored_context_and_goes_to_chooser_not_forbidden()
+    {
+        var nav = new TestNav();
+        var store = new InMemoryContextStore();
+        await store.SetAsync(Guid.NewGuid());
+        var body = new { status = 403, code = "invalid_context" };
+        var handler = new ForbiddenRedirectHandler(nav, store) { InnerHandler = new CaptureHandler(HttpStatusCode.Forbidden, body) };
+
+        var response = await new HttpClient(handler) { BaseAddress = new Uri("http://localhost/") }.GetAsync("/api/me/permissions");
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.Null(store.ActiveAssignmentId);
+        Assert.EndsWith("/choose-context", nav.Uri);
+    }
+
+    [Fact]
+    public async Task Missing_context_403_goes_to_chooser_but_keeps_the_stored_context()
+    {
+        var nav = new TestNav();
+        var store = new InMemoryContextStore();
+        var id = Guid.NewGuid();
+        await store.SetAsync(id);
+        var handler = new ForbiddenRedirectHandler(nav, store) { InnerHandler = new CaptureHandler(HttpStatusCode.Forbidden, new { code = "context_required" }) };
+
+        await new HttpClient(handler) { BaseAddress = new Uri("http://localhost/") }.GetAsync("/api/x");
+
+        Assert.Equal(id, store.ActiveAssignmentId);
+        Assert.EndsWith("/choose-context", nav.Uri);
+    }
+
+    [Fact]
+    public async Task Client_throws_ApiContextException_for_a_stale_context()
+    {
+        var handler = new CaptureHandler(HttpStatusCode.Forbidden, new { code = "invalid_context" });
+        var client = new LmsApiClient(new HttpClient(handler) { BaseAddress = new Uri("http://localhost/") }, new InMemoryContextStore());
+
+        await Assert.ThrowsAsync<ApiContextException>(() => client.GetMeAsync());
     }
 
     [Fact]

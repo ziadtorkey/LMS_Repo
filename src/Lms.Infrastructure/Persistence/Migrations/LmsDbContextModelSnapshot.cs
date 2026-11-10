@@ -74,7 +74,8 @@ namespace Lms.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OrganizationId", "BuiltInKey");
+                    b.HasIndex("OrganizationId", "BuiltInKey")
+                        .IsUnique();
 
                     b.ToTable("Roles", (string)null);
                 });
