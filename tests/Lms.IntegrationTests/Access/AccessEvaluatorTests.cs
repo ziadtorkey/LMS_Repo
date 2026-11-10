@@ -148,4 +148,28 @@ public sealed class AccessEvaluatorTests(LmsApiFactory factory)
         Assert.True((await new AccessEvaluator(db2, context, new TestPolicyEvaluator(), cache)
             .EvaluateAsync(Permissions.OrgUnits.View, null, CancellationToken.None)).Allowed);
     }
+
+    [Fact]
+    public async Task Platform_only_permission_is_denied_to_non_admins_even_if_a_role_row_holds_it()
+    {
+        var tree = await AccessTestData.SeedAsync(factory, "AE9");
+        var a = await AccessTestData.AssignAsync(factory, tree, tree.Root, BuiltInRoles.OrgAdmin, Guid.NewGuid());
+        await using (var admin = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            admin.RolePermissions.Add(new RolePermission(tree.Org.Id, tree.Roles[BuiltInRoles.OrgAdmin].Id, Permissions.Clients.View));
+            await admin.SaveChangesAsync();
+        }
+
+        var decision = await EvaluateAsync(ActAs(tree, a, tree.Root.Path), Permissions.Clients.View);
+
+        Assert.Equal(AccessDenialReason.MissingPermission, decision.Reason);
+    }
+
+    [Fact]
+    public async Task Platform_admin_may_use_platform_only_permissions()
+    {
+        var decision = await EvaluateAsync(TestCurrentContext.PlatformAdmin(), Permissions.Clients.View);
+
+        Assert.True(decision.Allowed);
+    }
 }

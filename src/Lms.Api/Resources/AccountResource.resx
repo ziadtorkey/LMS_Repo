@@ -30,4 +30,25 @@
   <data name="AccountDeactivated" xml:space="preserve"><value>This account is deactivated. Please contact your administrator.</value></data>
   <data name="FieldsRequired" xml:space="preserve"><value>Enter your email and password.</value></data>
   <data name="SwitchLanguage" xml:space="preserve"><value>العربية</value></data>
+  <data name="ForgotPassword" xml:space="preserve"><value>Forgot password?</value></data>
+  <data name="ForgotHeading" xml:space="preserve"><value>Reset your password</value></data>
+  <data name="SendLink" xml:space="preserve"><value>Send reset link</value></data>
+  <data name="ResetSent" xml:space="preserve"><value>If an account exists for this email, we have sent a password reset link.</value></data>
+  <data name="ResetHeading" xml:space="preserve"><value>Choose a new password</value></data>
+  <data name="NewPassword" xml:space="preserve"><value>New password</value></data>
+  <data name="ConfirmPassword" xml:space="preserve"><value>Confirm password</value></data>
+  <data name="PasswordsDiffer" xml:space="preserve"><value>Passwords do not match.</value></data>
+  <data name="PasswordRules" xml:space="preserve"><value>The password must be at least 8 characters and include an uppercase letter, a lowercase letter and a digit.</value></data>
+  <data name="SetPassword" xml:space="preserve"><value>Set password</value></data>
+  <data name="InviteHeading" xml:space="preserve"><value>Welcome — choose your password</value></data>
+  <data name="LinkInvalid" xml:space="preserve"><value>This link is invalid or has expired. Request a new one.</value></data>
+  <data name="PasswordChanged" xml:space="preserve"><value>Your password was changed. You can sign in now.</value></data>
+  <data name="BackToSignIn" xml:space="preserve"><value>Back to sign in</value></data>
+  <data name="AccountExpired" xml:space="preserve"><value>Your account has expired. Please contact your administrator.</value></data>
+  <data name="AccountWithdrawn" xml:space="preserve"><value>This account is no longer active. Please contact your school or university.</value></data>
+  <data name="TooManyRequests" xml:space="preserve"><value>Too many attempts. Try again in a minute.</value></data>
+  <data name="ResetEmailSubject" xml:space="preserve"><value>Reset your LMS password</value></data>
+  <data name="ResetEmailBody" xml:space="preserve"><value>We received a request to reset your password. Open the link below within 60 minutes. If you did not ask for this, you can ignore this email.</value></data>
+  <data name="InviteEmailSubject" xml:space="preserve"><value>Your LMS account is ready</value></data>
+  <data name="InviteEmailBody" xml:space="preserve"><value>An account was created for you. Open the link below within 72 hours to choose your password.</value></data>
 </root>

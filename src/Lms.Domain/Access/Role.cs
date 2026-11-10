@@ -1,7 +1,9 @@
+using Lms.Domain.Auditing;
 using Lms.Domain.Common;
 
 namespace Lms.Domain.Access;
 
+[Audited]
 public sealed class Role : AuditableEntity, ITenantOwned
 {
     private Role()
@@ -25,4 +27,9 @@ public sealed class Role : AuditableEntity, ITenantOwned
     public string NameEn { get; private set; }
     public RoleBaseKind BaseKind { get; private set; }
     public bool IsBuiltIn { get; private set; }
+
+    /// <summary>Version of the built-in default permission set this role has received (0 = provisioned before versioning).</summary>
+    public int DefaultsVersion { get; private set; }
+
+    public void MarkDefaultsApplied(int version) => DefaultsVersion = version;
 }
