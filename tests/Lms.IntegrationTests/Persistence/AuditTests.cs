@@ -122,4 +122,31 @@ public sealed class AuditTests(LmsApiFactory factory)
         Assert.Null(entry.OrganizationId);
         Assert.Equal("{\"reason\":\"bad password\"}", entry.AfterJson);
     }
+
+    [Fact]
+    public async Task Security_event_writer_stores_the_ip_address()
+    {
+        var userId = Guid.NewGuid();
+        using (var scope = factory.Services.CreateScope())
+        {
+            await scope.ServiceProvider.GetRequiredService<IAuditWriter>()
+                .WriteSecurityEventAsync("LoginSucceeded", userId, null, ipAddress: "203.0.113.7");
+        }
+
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        Assert.Equal("203.0.113.7", (await db.AuditEntries.SingleAsync(x => x.UserId == userId)).IpAddress);
+    }
+
+    [Fact]
+    public async Task No_client_context_sees_no_audit_entries()
+    {
+        var userId = Guid.NewGuid();
+        using (var scope = factory.Services.CreateScope())
+        {
+            await scope.ServiceProvider.GetRequiredService<IAuditWriter>().WriteSecurityEventAsync("LoginFailed", userId, null);
+        }
+
+        await using var noClient = factory.CreateDbContext(new TestCurrentContext { UserId = Guid.NewGuid() });
+        Assert.Empty(await noClient.AuditEntries.ToListAsync());
+    }
 }
