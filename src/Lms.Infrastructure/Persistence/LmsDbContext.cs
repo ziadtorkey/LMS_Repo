@@ -1,6 +1,7 @@
 using Lms.Domain.Abstractions;
 using Lms.Domain.Auditing;
 using Lms.Domain.Common;
+using Lms.Domain.Configuration;
 using Lms.Domain.Organizations;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,6 +22,8 @@ public sealed class LmsDbContext(DbContextOptions<LmsDbContext> options, ICurren
     public DbSet<LevelType> LevelTypes => Set<LevelType>();
     public DbSet<OrgUnit> OrgUnits => Set<OrgUnit>();
     public DbSet<AuditEntry> AuditEntries => Set<AuditEntry>();
+    public DbSet<OrgUnitSetting> OrgUnitSettings => Set<OrgUnitSetting>();
+    public DbSet<OrgUnitPolicy> OrgUnitPolicies => Set<OrgUnitPolicy>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

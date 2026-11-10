@@ -2,6 +2,7 @@ using Lms.Domain.Configuration;
 using Lms.Infrastructure.Configuration;
 using Lms.IntegrationTests.Infrastructure;
 using Lms.Shared.Authorization;
+using Microsoft.EntityFrameworkCore;
 
 namespace Lms.IntegrationTests.Configuration;
 
@@ -102,5 +103,45 @@ public sealed class PolicyEvaluatorTests(LmsApiFactory factory)
         await using var _a = dbA;
 
         Assert.Null(await evaluatorA.FindBlockingUnitAsync(Permissions.OrgUnits.Create, b.Section.Path));
+    }
+
+    [Fact]
+    public async Task Policy_can_be_reenabled_after_removal()
+    {
+        var tree = await ConfigurationTestTree.SeedAsync(factory, "Pol8");
+        var ctx = tree.AtRoot();
+        await using var db = factory.CreateDbContext(ctx);
+        var manager = new PolicyManager(db);
+        var evaluator = new PolicyEvaluator(db, ctx);
+
+        await manager.EnableAsync(tree.Root.Id, PolicyCatalog.CreateOrgUnits);
+        await manager.DisableAsync(tree.Root.Id, PolicyCatalog.CreateOrgUnits);
+        Assert.Null(await evaluator.FindBlockingUnitAsync(Permissions.OrgUnits.Create, tree.Section.Path));
+
+        await manager.EnableAsync(tree.Root.Id, PolicyCatalog.CreateOrgUnits);
+        await manager.EnableAsync(tree.Root.Id, PolicyCatalog.CreateOrgUnits); // idempotent
+
+        Assert.Equal(tree.Root.Id, await evaluator.FindBlockingUnitAsync(Permissions.OrgUnits.Create, tree.Section.Path));
+        Assert.Equal(1, await db.Set<OrgUnitPolicy>().IgnoreQueryFilters().CountAsync(x => x.OrgUnitId == tree.Root.Id));
+    }
+
+    [Fact]
+    public async Task Policies_are_isolated_by_subtree_and_client()
+    {
+        var a = await ConfigurationTestTree.SeedAsync(factory, "Pol9A");
+        var b = await ConfigurationTestTree.SeedAsync(factory, "Pol9B");
+        var ctx = a.AtRoot();
+        await using var db = factory.CreateDbContext(ctx);
+        var manager = new PolicyManager(db);
+        await manager.EnableAsync(a.School1.Id, PolicyCatalog.CreateOrgUnits);
+        await manager.EnableAsync(a.School2.Id, PolicyCatalog.CreateOrgUnits);
+
+        await using var asSchool1 = factory.CreateDbContext(TestCurrentContext.For(a.Org.Id, a.School1.Path));
+        Assert.Equal([a.School1.Id], await asSchool1.Set<OrgUnitPolicy>().Select(x => x.OrgUnitId).ToListAsync());
+
+        await using var asB = factory.CreateDbContext(b.AtRoot());
+        Assert.Empty(await asB.Set<OrgUnitPolicy>().ToListAsync());
+        await using var noScope = factory.CreateDbContext(TestCurrentContext.For(a.Org.Id, null));
+        Assert.Empty(await noScope.Set<OrgUnitPolicy>().ToListAsync());
     }
 }

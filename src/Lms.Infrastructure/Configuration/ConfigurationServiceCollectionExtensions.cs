@@ -8,6 +8,7 @@ public static class ConfigurationServiceCollectionExtensions
     {
         services.AddScoped<ISettingsResolver, SettingsResolver>();
         services.AddScoped<IPolicyEvaluator, PolicyEvaluator>();
+        services.AddScoped<IPolicyManager, PolicyManager>();
         return services;
     }
 }

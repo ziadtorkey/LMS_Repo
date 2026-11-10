@@ -38,14 +38,24 @@ public sealed class SettingsResolver(LmsDbContext db, ICurrentContext context) :
         }
 
         var json = JsonSerializer.Serialize(value);
-        var existing = await db.Set<OrgUnitSetting>()
-            .SingleOrDefaultAsync(x => x.OrgUnitId == orgUnitId && x.Key == key.Name, cancellationToken);
+        // IgnoreQueryFilters only to see soft-deleted rows: the unique (OrgUnitId, Key) index still holds them, so
+        // setting the key again must restore the old row instead of inserting. The unit was already resolved through
+        // the scoped set above, and the client is re-applied explicitly.
+        var existing = await db.Set<OrgUnitSetting>().IgnoreQueryFilters()
+            .SingleOrDefaultAsync(
+                x => x.OrganizationId == unit.OrganizationId && x.OrgUnitId == orgUnitId && x.Key == key.Name,
+                cancellationToken);
         if (existing is null)
         {
             db.Add(new OrgUnitSetting(unit.OrganizationId, unit.Id, unit.Path, key.Name, json, isLocked));
         }
         else
         {
+            if (existing.IsDeleted)
+            {
+                existing.Restore();
+            }
+
             existing.Change(json, isLocked);
         }
 

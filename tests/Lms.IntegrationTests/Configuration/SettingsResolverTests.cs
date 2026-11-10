@@ -151,4 +151,43 @@ public sealed class SettingsResolverTests(LmsApiFactory factory)
         Assert.Equal("مدرسة 🌟", (await again.ResolveAsync(Key, tree.Root.Path)).Value);
         Assert.True(await fresh.AuditEntries.AnyAsync(x => x.EntityType == nameof(OrgUnitSetting)));
     }
+
+    [Fact]
+    public async Task Set_after_soft_delete_restores_value()
+    {
+        var tree = await ConfigurationTestTree.SeedAsync(factory, "Set9");
+        var (_, resolver, db) = Open(factory, tree);
+        await using var _db = db;
+        await resolver.SetAsync(Key, tree.Root.Id, "en", isLocked: true);
+        db.Remove(await db.Set<OrgUnitSetting>().SingleAsync(x => x.OrgUnitId == tree.Root.Id));
+        await db.SaveChangesAsync();
+
+        await resolver.SetAsync(Key, tree.Root.Id, "fr", isLocked: false);
+
+        var result = await resolver.ResolveAsync(Key, tree.Section.Path);
+        Assert.Equal("fr", result.Value);
+        Assert.False(result.IsLocked);
+        Assert.Equal(1, await db.Set<OrgUnitSetting>().IgnoreQueryFilters().CountAsync(x => x.OrgUnitId == tree.Root.Id));
+    }
+
+    [Fact]
+    public async Task Settings_are_isolated_by_subtree_and_client()
+    {
+        var a = await ConfigurationTestTree.SeedAsync(factory, "Set10A");
+        var b = await ConfigurationTestTree.SeedAsync(factory, "Set10B");
+        var (_, resolverA, dbA) = Open(factory, a);
+        await using var _dbA = dbA;
+        await resolverA.SetAsync(Key, a.School1.Id, "en", isLocked: false);
+        await resolverA.SetAsync(Key, a.School2.Id, "fr", isLocked: false);
+
+        // School1 scope sees its own row only; the sibling's row is outside the subtree.
+        await using var asSchool1 = factory.CreateDbContext(TestCurrentContext.For(a.Org.Id, a.School1.Path));
+        Assert.Equal([a.School1.Id], await asSchool1.Set<OrgUnitSetting>().Select(x => x.OrgUnitId).ToListAsync());
+
+        // Another client sees nothing of client A, and a caller without a scope sees nothing at all.
+        await using var asB = factory.CreateDbContext(b.AtRoot());
+        Assert.Empty(await asB.Set<OrgUnitSetting>().ToListAsync());
+        await using var noScope = factory.CreateDbContext(TestCurrentContext.For(a.Org.Id, null));
+        Assert.Empty(await noScope.Set<OrgUnitSetting>().ToListAsync());
+    }
 }
