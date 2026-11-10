@@ -5,17 +5,19 @@ Browser tests against the **running** app: real OIDC login (authorization code +
 ## Run locally
 
 ```bash
-docker compose up -d                                   # MySQL 8.4, MinIO, Mailpit
-dotnet run --project src/Lms.Api --launch-profile http # Development: migrates + seeds, serves the app on :5132
+docker compose up -d --wait mysql minio                # waits until MySQL accepts TCP connections
+RateLimiting__Auth__PermitLimit=1000 dotnet run --project src/Lms.Api --launch-profile http
 dotnet build tests/Lms.E2ETests
 pwsh tests/Lms.E2ETests/bin/Debug/net10.0/playwright.ps1 install chromium   # once per machine
 dotnet test tests/Lms.E2ETests
 ```
 
-The fixture waits up to 90 s for `GET /health` to answer `Healthy`, then fails with a hint if the API isn't running.
+The API runs in Development, so it migrates, seeds and serves the app on `:5132`. The fixture waits up to 90 s for `GET /health` to answer `Healthy`, then fails with a hint if the API isn't running.
 
-If port 3306 is taken by a local MySQL service, map compose's MySQL elsewhere and point the API at it:
-`ConnectionStrings__Lms="Server=localhost;Port=3307;Database=lms;User=lms;Password=lms_dev_pw"`.
+**Why the rate-limit override:** login and forgot-password POSTs are limited to 5 per minute per IP (X-08, #82). The suite signs in many times from one IP, so the E2E API gets a high limit (the CI `e2e` job sets the same). The limiter itself is covered by integration tests (`PasswordResetTests`).
+
+If port 3306 is taken by a local MySQL service, set `LMS_MYSQL_PORT=3307` for compose and point the API at it with `127.0.0.1` (on Windows, `localhost` may resolve to IPv6 and reach another process):
+`ConnectionStrings__Lms="Server=127.0.0.1;Port=3307;Database=lms;User=lms;Password=lms_dev_pw"`.
 
 ### Settings (environment variables override the defaults)
 

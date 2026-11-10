@@ -41,7 +41,7 @@ public sealed class ServerTableTests : ClientTestContext
         cut.WaitForAssertion(() =>
         {
             Assert.Contains("عدد الصفوف في الصفحة", cut.Markup);
-            Assert.Contains("من 60", cut.Markup);
+            Assert.Contains("الإجمالي: 60", cut.Markup);
             Assert.DoesNotContain("Rows per page", cut.Markup);
         });
     }
