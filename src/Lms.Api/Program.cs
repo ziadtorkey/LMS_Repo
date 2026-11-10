@@ -4,6 +4,7 @@ using Lms.Api.Features.Me;
 using Lms.Api.Infrastructure;
 using Lms.Infrastructure;
 using Lms.Infrastructure.Access;
+using Lms.Infrastructure.Seeding;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,7 +26,14 @@ builder.Services.AddHealthChecks()
 
 var app = builder.Build();
 
-// Existing clients provisioned under an older defaults version get the new built-in permissions (add-only, once per role).
+// Development only: migrate the local database and load the sample clients (no-op in every other environment).
+if (app.Environment.IsDevelopment() && app.Configuration.GetValue("Seed:RunOnStartup", true))
+{
+    await app.Services.GetRequiredService<DevSeeder>().SeedAsync();
+}
+
+// After the Development seed has migrated the database: existing clients provisioned under an older defaults version
+// get the new built-in permissions (add-only, once per role). Skipped while migrations are pending.
 await app.Services.GetRequiredService<BuiltInRoleStartupReconciler>().RunAsync();
 
 app.UseMiddleware<CorrelationIdMiddleware>();
