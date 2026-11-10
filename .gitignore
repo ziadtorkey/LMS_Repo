@@ -8,3 +8,7 @@ playwright-report/
 .env
 appsettings.*.local.json
 .dashboard/
+
+# Other coding assistants' local config (not part of this project)
+.codex/
+AGENTS.md
