@@ -22,6 +22,11 @@ public static class AuditEndpoints
     private static async Task<IResult> QueryAsync(
         [AsParameters] AuditQuery query, LmsDbContext db, ICurrentContext context, CancellationToken ct)
     {
+        if (InvalidAction(query) is { } invalid)
+        {
+            return invalid;
+        }
+
         var (page, pageSize) = AuditQueryBuilder.NormalizePaging(query);
         var filtered = AuditQueryBuilder.Build(db.AuditEntries.AsNoTracking(), query, context);
         var total = await filtered.CountAsync(ct);
@@ -48,6 +53,11 @@ public static class AuditEndpoints
         [AsParameters] AuditQuery query, [FromQuery] string? format, LmsDbContext db, ICurrentContext context,
         AuditExportLimit limit, IClock clock, CancellationToken ct)
     {
+        if (InvalidAction(query) is { } invalidAction)
+        {
+            return invalidAction;
+        }
+
         var isCsv = string.Equals(format, AuditExportFormats.Csv, StringComparison.OrdinalIgnoreCase);
         if (!isCsv && !string.Equals(format, AuditExportFormats.Xlsx, StringComparison.OrdinalIgnoreCase))
         {
@@ -80,4 +90,9 @@ public static class AuditEndpoints
             isCsv ? "text/csv; charset=utf-8" : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             $"audit-{stamp}.{(isCsv ? "csv" : "xlsx")}");
     }
+
+    private static IResult? InvalidAction(AuditQuery query) =>
+        string.IsNullOrWhiteSpace(query.Action) || AuditActions.All.Contains(query.Action, StringComparer.OrdinalIgnoreCase)
+            ? null
+            : ApiProblems.BadRequest(ProblemCodes.validation_failed, "Unknown action filter.");
 }

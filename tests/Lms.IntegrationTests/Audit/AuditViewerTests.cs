@@ -206,6 +206,40 @@ public sealed class AuditViewerTests(LmsApiFactory factory)
     }
 
     [Fact]
+    public async Task Unknown_action_filter_is_400()
+    {
+        var tree = await AccessTestData.SeedAsync(factory, "AV11");
+        var admin = await AccessTestData.AssignAsync(factory, tree, tree.Root, BuiltInRoles.OrgAdmin, Guid.NewGuid());
+
+        Assert.Equal(HttpStatusCode.BadRequest, (await factory.CreateClient().SendAsync(Request("/api/audit?action=Bogus", admin))).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await factory.CreateClient().SendAsync(Request("/api/audit/export?format=csv&action=Bogus", admin))).StatusCode);
+    }
+
+    [Fact]
+    public async Task Another_clients_role_and_unit_names_are_not_resolved()
+    {
+        var a = await AccessTestData.SeedAsync(factory, "AV12A");
+        var b = await AccessTestData.SeedAsync(factory, "AV12B");
+        var adminA = await AccessTestData.AssignAsync(factory, a, a.Root, BuiltInRoles.OrgAdmin, Guid.NewGuid());
+        var foreign = await AccessTestData.AssignAsync(factory, b, b.Root, BuiltInRoles.Manager, Guid.NewGuid());
+
+        // A client-A entry that (corrupt or forged) points at client B's assignment and unit.
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            db.AuditEntries.Add(new AuditEntry(
+                a.Org.Id, Guid.NewGuid(), foreign.Id, AuditAction.Updated, "Probe", Guid.NewGuid(), null, null,
+                DateTime.UtcNow, null, a.Root.Path + b.Root.Id.ToString("N") + "/"));
+            await db.SaveChangesAsync();
+        }
+
+        var page = await QueryAsync("?entityType=Probe&pageSize=200", adminA);
+
+        var row = Assert.Single(page.Items);
+        Assert.Null(row.RoleNameEn);
+        Assert.Null(row.OrgUnitNameEn);
+    }
+
+    [Fact]
     public async Task Interceptor_stamps_the_unit_path()
     {
         var tree = await AccessTestData.SeedAsync(factory, "AV9");
