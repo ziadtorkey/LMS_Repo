@@ -24,12 +24,26 @@ internal sealed class AuthTestHost
 
     private readonly WebApplicationFactory<Program> _host;
 
-    public AuthTestHost(LmsApiFactory factory)
+    /// <param name="permitLimit">Requests per minute the auth rate limiter allows (high by default so flows can repeat).</param>
+    /// <param name="remoteIp">Address the in-memory server reports; rate limit tests use their own to stay isolated.</param>
+    /// <param name="resetLifespan">Overrides the reset/default token lifespan (the real one is 60 minutes).</param>
+    public AuthTestHost(
+        LmsApiFactory factory, int permitLimit = 1000, string remoteIp = RemoteIp, TimeSpan? resetLifespan = null)
     {
+        Emails = new FakeEmailSender();
         // A fixed remote address: the in-memory test server has none, but login events must record one.
-        _host = factory.WithWebHostBuilder(builder => builder.ConfigureServices(services =>
+        _host = factory.WithWebHostBuilder(builder =>
         {
-            services.AddSingleton<Microsoft.AspNetCore.Hosting.IStartupFilter>(new RemoteIpStartupFilter(RemoteIp));
+            builder.UseSetting("RateLimiting:Auth:PermitLimit", permitLimit.ToString());
+            builder.UseSetting("App:PublicBaseUrl", "http://localhost");
+            builder.ConfigureServices(services =>
+        {
+            services.AddSingleton<Microsoft.AspNetCore.Hosting.IStartupFilter>(new RemoteIpStartupFilter(remoteIp));
+            services.AddSingleton<Lms.Domain.Abstractions.IEmailSender>(Emails);
+            if (resetLifespan is { } lifespan)
+            {
+                services.Configure<Microsoft.AspNetCore.Identity.DataProtectionTokenProviderOptions>(o => o.TokenLifespan = lifespan);
+            }
 
             // The shared factory installs a header-driven test scheme as the default; these tests exercise the real
             // OpenIddict bearer validation instead.
@@ -40,8 +54,11 @@ internal sealed class AuthTestHost
                 options.DefaultAuthenticateScheme = scheme;
                 options.DefaultChallengeScheme = scheme;
             });
-        }));
+            });
+        });
     }
+
+    public FakeEmailSender Emails { get; }
 
     public IServiceProvider Services => _host.Services;
 
@@ -130,14 +147,39 @@ internal sealed class AuthTestHost
         return (body.GetProperty("access_token").GetString()!, body.GetProperty("refresh_token").GetString()!);
     }
 
-    public async Task DeactivateAsync(User user)
+    public Task DeactivateAsync(User user) => SetStatusAsync(user, UserStatus.Deactivated);
+
+    public async Task SetStatusAsync(User user, UserStatus status)
     {
         using var scope = Services.CreateScope();
         var users = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
         var stored = (await users.FindByIdAsync(user.Id.ToString()))!;
-        stored.Status = UserStatus.Deactivated;
+        stored.Status = status;
         Assert.True((await users.UpdateAsync(stored)).Succeeded);
     }
+
+    /// <summary>GETs the page (for the antiforgery token) and posts the fields back to the same url.</summary>
+    public static async Task<HttpResponseMessage> PostFormAsync(
+        HttpClient browser, string url, Dictionary<string, string> fields, string? tokenFrom = null)
+    {
+        var page = await browser.GetAsync(tokenFrom ?? url);
+        var html = await page.Content.ReadAsStringAsync();
+        var token = Regex.Match(html, "name=\"__RequestVerificationToken\"[^>]*value=\"([^\"]+)\"").Groups[1].Value;
+        Assert.False(string.IsNullOrEmpty(token), "antiforgery token not found on " + url);
+        var form = new Dictionary<string, string>(fields) { ["__RequestVerificationToken"] = token };
+        return await browser.PostAsync(url, new FormUrlEncodedContent(form));
+    }
+
+    /// <summary>The first link in an email body, as a path and query for the in-memory server.</summary>
+    public static string FirstLink(Lms.Domain.Abstractions.EmailMessage message)
+    {
+        var href = WebUtility.HtmlDecode(Regex.Match(message.HtmlBody, "href=\"([^\"]+)\"").Groups[1].Value);
+        return new Uri(href).PathAndQuery;
+    }
+
+    /// <summary>The text of an element carrying the given data-testid.</summary>
+    public static string TestId(string html, string id) =>
+        WebUtility.HtmlDecode(Regex.Match(html, $"data-testid=\"{id}\"[^>]*>([^<]*)<").Groups[1].Value).Trim();
 
     public static string ExtractError(string html) =>
         Regex.Match(html, "data-testid=\"login-error\">([^<]*)<").Groups[1].Value;

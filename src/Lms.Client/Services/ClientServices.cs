@@ -16,9 +16,12 @@ public static class ClientServices
     {
         services.AddLocalization();
         services.AddMudServices();
+        services.AddTransient<MudBlazor.MudLocalizer, LmsMudLocalizer>();
         services.AddScoped<ICultureService, CultureService>();
-        services.AddScoped<ContextStore>();
-        services.AddScoped<IContextStore>(sp => sp.GetRequiredService<ContextStore>());
+        // Singleton on purpose: IHttpClientFactory builds its message handlers in their own DI scope, and the
+        // handler must see (and clear) the same stored context as the UI.
+        services.AddSingleton<ContextStore>();
+        services.AddSingleton<IContextStore>(sp => sp.GetRequiredService<ContextStore>());
         services.AddScoped<PermissionState>();
 
         if (configuration.GetValue<bool>("Lms:UseFakeApi"))

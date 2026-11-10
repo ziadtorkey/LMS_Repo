@@ -162,4 +162,58 @@ public sealed class CurrentContextTests(LmsApiFactory factory)
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         Assert.Equal("application/problem+json", response.Content.Headers.ContentType?.MediaType);
     }
+
+    private async Task DeactivateAsync(Lms.Domain.Organizations.OrgUnit unit)
+    {
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        var row = await db.OrgUnits.SingleAsync(u => u.Id == unit.Id);
+        db.Entry(row).Property(nameof(Lms.Domain.Organizations.OrgUnit.Status)).CurrentValue = Lms.Domain.Organizations.OrgUnitStatus.Inactive;
+        await db.SaveChangesAsync();
+    }
+
+    [Fact]
+    public async Task Assignment_at_inactive_unit_gets_403()
+    {
+        var tree = await AccessTestData.SeedAsync(factory, "CC6");
+        var user = Guid.NewGuid();
+        var assignment = await AccessTestData.AssignAsync(factory, tree, tree.School1, BuiltInRoles.Teacher, user);
+        await DeactivateAsync(tree.School1);
+
+        await AssertInvalidContextAsync(await GetAsync(user, assignment.Id.ToString()));
+    }
+
+    [Fact]
+    public async Task Assignment_below_inactive_unit_gets_403()
+    {
+        var tree = await AccessTestData.SeedAsync(factory, "CC7");
+        var user = Guid.NewGuid();
+        var assignment = await AccessTestData.AssignAsync(factory, tree, tree.School1, BuiltInRoles.Teacher, user);
+        await DeactivateAsync(tree.Root);
+
+        await AssertInvalidContextAsync(await GetAsync(user, assignment.Id.ToString()));
+    }
+
+    [Fact]
+    public async Task Admin_assigned_above_an_inactive_unit_keeps_access()
+    {
+        var tree = await AccessTestData.SeedAsync(factory, "CC8");
+        var user = Guid.NewGuid();
+        var assignment = await AccessTestData.AssignAsync(factory, tree, tree.Root, BuiltInRoles.OrgAdmin, user);
+        await DeactivateAsync(tree.School1);
+
+        var response = await GetAsync(user, assignment.Id.ToString());
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Inactive_sibling_does_not_affect_an_assignment_at_the_other_sibling()
+    {
+        var tree = await AccessTestData.SeedAsync(factory, "CC9");
+        var user = Guid.NewGuid();
+        var assignment = await AccessTestData.AssignAsync(factory, tree, tree.School1, BuiltInRoles.Teacher, user);
+        await DeactivateAsync(tree.School2);
+
+        Assert.Equal(HttpStatusCode.OK, (await GetAsync(user, assignment.Id.ToString())).StatusCode);
+    }
 }

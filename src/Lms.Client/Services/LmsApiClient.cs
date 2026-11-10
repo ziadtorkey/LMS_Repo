@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using Lms.Client.Services.Api;
 using Lms.Shared;
 using Lms.Shared.Authorization;
 using Lms.Shared.Me;
@@ -27,8 +28,8 @@ public sealed class LmsApiClient(HttpClient http, IContextStore context) : ILmsA
         if (context.ActiveAssignmentId is { } id)
             request.Headers.Add(ContextHeader.Name, id.ToString());
         using var response = await http.SendAsync(request, ct);
-        if (response.StatusCode == HttpStatusCode.Forbidden) throw new ApiForbiddenException();
-        response.EnsureSuccessStatusCode();
+        if (!response.IsSuccessStatusCode)
+            throw await ApiProblemException.ClassifyAsync(response, HttpMethod.Get, ct);
         return (await response.Content.ReadFromJsonAsync<T>(ct))!;
     }
 }
@@ -39,14 +40,31 @@ public sealed class ApiForbiddenException : HttpRequestException
     public ApiForbiddenException() : base("Forbidden", null, HttpStatusCode.Forbidden) { }
 }
 
-/// <summary>Sends the user to the Forbidden page whenever the API answers 403.</summary>
-public sealed class ForbiddenRedirectHandler(NavigationManager navigation) : DelegatingHandler
+/// <summary>
+/// Central 403 handling for every API call:
+/// a missing/stale context (invalid_context, context_required) → clear the stored context and go to the chooser (bug #84);
+/// a forbidden GET → Forbidden page. A forbidden action (POST/PUT/DELETE) keeps the page so the caller can show the problem.
+/// </summary>
+public sealed class ForbiddenRedirectHandler(NavigationManager navigation, IContextStore context) : DelegatingHandler
 {
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
     {
         var response = await base.SendAsync(request, ct);
-        if (response.StatusCode == HttpStatusCode.Forbidden)
+        if (response.StatusCode != HttpStatusCode.Forbidden) return response;
+
+        // Buffer so the caller can still read the body after we peek at the problem code.
+        await response.Content.LoadIntoBufferAsync(ct);
+        var problem = await ApiProblemException.FromResponseAsync(response, ct);
+        if (problem.IsContextProblem)
+        {
+            if (problem.Code == ApiProblemException.InvalidContext)
+                await context.ClearAsync();
+            navigation.NavigateTo("choose-context");
+        }
+        else if (request.Method == HttpMethod.Get)
+        {
             navigation.NavigateTo("forbidden");
+        }
         return response;
     }
 }

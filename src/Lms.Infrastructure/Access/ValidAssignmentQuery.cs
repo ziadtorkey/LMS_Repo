@@ -1,3 +1,4 @@
+using Lms.Domain.Organizations;
 using Lms.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -36,6 +37,11 @@ public static class ValidAssignmentQuery
         where a.UserId == userId
               && !a.IsDeleted && !r.IsDeleted && !u.IsDeleted && !o.IsDeleted
               && r.OrganizationId == a.OrganizationId && u.OrganizationId == a.OrganizationId
+              // D15: a unit that is Inactive, or has an Inactive ancestor, is not a valid context. ISOLATION-BYPASS: the
+              // inactive ancestor lies above the assignment's scope; the client is matched and deleted units excluded by hand.
+              && u.Status == OrgUnitStatus.Active
+              && !db.OrgUnits.IgnoreQueryFilters().Any(x => x.OrganizationId == a.OrganizationId && !x.IsDeleted
+                                                           && x.Status == OrgUnitStatus.Inactive && u.Path.StartsWith(x.Path))
               && (a.ValidFrom == null || a.ValidFrom <= today)
               && (a.ValidTo == null || a.ValidTo >= today)
         select new ValidAssignment

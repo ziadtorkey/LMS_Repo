@@ -1,9 +1,11 @@
 using Lms.Api.Features.Files;
 using Lms.Api.Features.Notifications;
+using Lms.Api.Features.Account;
 using Lms.Api.Features.Auth;
 using Lms.Api.Features.Me;
 using Lms.Api.Infrastructure;
 using Lms.Infrastructure;
+using Lms.Infrastructure.Access;
 using Lms.Infrastructure.Seeding;
 using Serilog;
 
@@ -21,6 +23,7 @@ builder.Services.AddMe();
 builder.Services.AddNotifications();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddLmsAuth(builder.Configuration, builder.Environment);
+builder.Services.AddAccount(builder.Configuration);
 
 builder.Services.AddHealthChecks()
     .AddCheck<MySqlHealthCheck>("mysql");
@@ -32,6 +35,10 @@ if (app.Environment.IsDevelopment() && app.Configuration.GetValue("Seed:RunOnSta
 {
     await app.Services.GetRequiredService<DevSeeder>().SeedAsync();
 }
+
+// After the Development seed has migrated the database: existing clients provisioned under an older defaults version
+// get the new built-in permissions (add-only, once per role). Skipped while migrations are pending.
+await app.Services.GetRequiredService<BuiltInRoleStartupReconciler>().RunAsync();
 
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseMiddleware<SecurityHeadersMiddleware>();
@@ -47,6 +54,7 @@ app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
 
 app.UseRequestLocalization();
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseMiddleware<CurrentContextMiddleware>();
 app.UseAuthorization();

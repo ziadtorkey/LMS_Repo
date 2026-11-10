@@ -2,8 +2,10 @@ using Lms.Domain.Abstractions;
 using Lms.Infrastructure.Access;
 using Lms.Infrastructure.Auditing;
 using Lms.Infrastructure.Files;
+using Lms.Infrastructure.Email;
 using Lms.Infrastructure.Identity;
 using Lms.Infrastructure.Configuration;
+using Lms.Infrastructure.Organizations;
 using Lms.Infrastructure.Notifications;
 using Lms.Infrastructure.Persistence;
 using Lms.Infrastructure.Seeding;
@@ -20,11 +22,13 @@ public static class DependencyInjection
         services.AddSingleton<IClock, SystemClock>();
         services.AddPersistence(configuration);
         services.AddAccess();
+        services.AddOrganizations();
         services.AddDevSeeding();
         services.AddAuditing();
         services.AddNotificationCore();
         services.AddFileStorage(configuration);
         services.AddLmsIdentityStores();
+        services.AddEmail(configuration);
         services.AddSettingsAndPolicies();
         return services;
     }

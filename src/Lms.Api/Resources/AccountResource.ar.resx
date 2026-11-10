@@ -30,4 +30,25 @@
   <data name="AccountDeactivated" xml:space="preserve"><value>هذا الحساب معطّل. يرجى التواصل مع المسؤول.</value></data>
   <data name="FieldsRequired" xml:space="preserve"><value>أدخل البريد الإلكتروني وكلمة المرور.</value></data>
   <data name="SwitchLanguage" xml:space="preserve"><value>English</value></data>
+  <data name="ForgotPassword" xml:space="preserve"><value>نسيت كلمة المرور؟</value></data>
+  <data name="ForgotHeading" xml:space="preserve"><value>إعادة تعيين كلمة المرور</value></data>
+  <data name="SendLink" xml:space="preserve"><value>إرسال رابط إعادة التعيين</value></data>
+  <data name="ResetSent" xml:space="preserve"><value>إذا كان هناك حساب بهذا البريد الإلكتروني، فقد أرسلنا رابط إعادة تعيين كلمة المرور.</value></data>
+  <data name="ResetHeading" xml:space="preserve"><value>اختر كلمة مرور جديدة</value></data>
+  <data name="NewPassword" xml:space="preserve"><value>كلمة المرور الجديدة</value></data>
+  <data name="ConfirmPassword" xml:space="preserve"><value>تأكيد كلمة المرور</value></data>
+  <data name="PasswordsDiffer" xml:space="preserve"><value>كلمتا المرور غير متطابقتين.</value></data>
+  <data name="PasswordRules" xml:space="preserve"><value>يجب أن تتكون كلمة المرور من 8 أحرف على الأقل وتتضمن حرفًا كبيرًا وحرفًا صغيرًا ورقمًا.</value></data>
+  <data name="SetPassword" xml:space="preserve"><value>تعيين كلمة المرور</value></data>
+  <data name="InviteHeading" xml:space="preserve"><value>مرحبًا — اختر كلمة المرور</value></data>
+  <data name="LinkInvalid" xml:space="preserve"><value>هذا الرابط غير صالح أو منتهي الصلاحية. اطلب رابطًا جديدًا.</value></data>
+  <data name="PasswordChanged" xml:space="preserve"><value>تم تغيير كلمة المرور. يمكنك تسجيل الدخول الآن.</value></data>
+  <data name="BackToSignIn" xml:space="preserve"><value>العودة إلى تسجيل الدخول</value></data>
+  <data name="AccountExpired" xml:space="preserve"><value>انتهت صلاحية حسابك. يرجى التواصل مع مسؤول النظام.</value></data>
+  <data name="AccountWithdrawn" xml:space="preserve"><value>هذا الحساب لم يعد نشطًا. يرجى التواصل مع المدرسة أو الجامعة.</value></data>
+  <data name="TooManyRequests" xml:space="preserve"><value>محاولات كثيرة. حاول مرة أخرى بعد دقيقة.</value></data>
+  <data name="ResetEmailSubject" xml:space="preserve"><value>إعادة تعيين كلمة مرور المنصة</value></data>
+  <data name="ResetEmailBody" xml:space="preserve"><value>تلقينا طلبًا لإعادة تعيين كلمة المرور. افتح الرابط أدناه خلال 60 دقيقة. إذا لم تطلب ذلك فتجاهل هذه الرسالة.</value></data>
+  <data name="InviteEmailSubject" xml:space="preserve"><value>حسابك على المنصة جاهز</value></data>
+  <data name="InviteEmailBody" xml:space="preserve"><value>تم إنشاء حساب لك. افتح الرابط أدناه خلال 72 ساعة لاختيار كلمة المرور.</value></data>
 </root>

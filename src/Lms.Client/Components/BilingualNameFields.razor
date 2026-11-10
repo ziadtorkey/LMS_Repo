@@ -1,0 +1,17 @@
+@* Arabic and English name inputs (dir/lang land on the input element); the Arabic field is always RTL and the English field always LTR, whatever the UI language. *@
+<MudStack Spacing="2">
+    <MudTextField T="string" Label="@L["Common_NameAr"]" Value="NameAr" ValueChanged="NameArChanged"
+                  Required="Required" RequiredError="@L["Common_Required"]" MaxLength="200"
+                  dir="rtl" lang="ar" data-testid="name-ar" />
+    <MudTextField T="string" Label="@L["Common_NameEn"]" Value="NameEn" ValueChanged="NameEnChanged"
+                  Required="Required" RequiredError="@L["Common_Required"]" MaxLength="200"
+                  dir="ltr" lang="en" data-testid="name-en" />
+</MudStack>
+
+@code {
+    [Parameter] public string NameAr { get; set; } = "";
+    [Parameter] public EventCallback<string> NameArChanged { get; set; }
+    [Parameter] public string NameEn { get; set; } = "";
+    [Parameter] public EventCallback<string> NameEnChanged { get; set; }
+    [Parameter] public bool Required { get; set; } = true;
+}
