@@ -140,4 +140,21 @@
   <data name="Roles_Name" xml:space="preserve"><value>الدور</value></data>
   <data name="Roles_Permissions" xml:space="preserve"><value>الصلاحيات</value></data>
   <data name="Roles_DeleteConfirm" xml:space="preserve"><value>حذف الدور {0}؟</value></data>
+  <data name="Nav_Assignments" xml:space="preserve"><value>تعيين الأدوار</value></data>
+  <data name="Assignments_Title" xml:space="preserve"><value>تعيين الأدوار</value></data>
+  <data name="Assignments_Assign" xml:space="preserve"><value>تعيين دور</value></data>
+  <data name="Assignments_Email" xml:space="preserve"><value>البريد الإلكتروني</value></data>
+  <data name="Assignments_NewUserHint" xml:space="preserve"><value>تُستخدم الأسماء فقط إذا لم يكن لهذا البريد حساب، وسيتلقى الشخص دعوة.</value></data>
+  <data name="Assignments_ValidFrom" xml:space="preserve"><value>صالح من</value></data>
+  <data name="Assignments_ValidTo" xml:space="preserve"><value>صالح حتى</value></data>
+  <data name="Assignments_IncludeBelow" xml:space="preserve"><value>تضمين الوحدات الأدنى</value></data>
+  <data name="AssignmentStatus_Valid" xml:space="preserve"><value>ساري</value></data>
+  <data name="AssignmentStatus_Future" xml:space="preserve"><value>لم يبدأ بعد</value></data>
+  <data name="AssignmentStatus_Expired" xml:space="preserve"><value>منتهي</value></data>
+  <data name="Assignments_RemoveConfirm" xml:space="preserve"><value>إزالة هذا الدور من {0}؟</value></data>
+  <data name="Assignments_Person" xml:space="preserve"><value>الشخص</value></data>
+  <data name="Assignments_Role" xml:space="preserve"><value>الدور</value></data>
+  <data name="Assignments_Unit" xml:space="preserve"><value>الوحدة</value></data>
+  <data name="Assignments_EditValidity" xml:space="preserve"><value>تعديل الصلاحية</value></data>
+  <data name="Assignments_DateOrder" xml:space="preserve"><value>يجب ألا يسبق تاريخ الانتهاء تاريخ البدء.</value></data>
 </root>
