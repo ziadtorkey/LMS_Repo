@@ -10,4 +10,8 @@
     <PackageReference Include="MySql.EntityFrameworkCore" />
     <PackageReference Include="MySqlConnector" />
   </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Lms.IntegrationTests" />
+  </ItemGroup>
 </Project>

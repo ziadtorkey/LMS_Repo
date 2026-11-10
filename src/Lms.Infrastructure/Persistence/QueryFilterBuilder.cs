@@ -42,6 +42,16 @@ internal static class QueryFilterBuilder
                 Expression.Property(ctx, nameof(Lms.Domain.Abstractions.ICurrentContext.OrganizationId))));
         }
 
+        if (typeof(IOptionalTenantOwned).IsAssignableFrom(clrType))
+        {
+            // Visible only when the caller has an organization AND the row belongs to it. A null caller organization
+            // must not match platform-level (null) rows, hence the explicit check on the context side.
+            var callerOrg = Expression.Property(ctx, nameof(Lms.Domain.Abstractions.ICurrentContext.OrganizationId));
+            tenantScope = And(tenantScope, Expression.AndAlso(
+                Expression.NotEqual(callerOrg, Expression.Constant(null, typeof(Guid?))),
+                Expression.Equal(Expression.Property(e, nameof(IOptionalTenantOwned.OrganizationId)), callerOrg)));
+        }
+
         if (typeof(IOrgUnitScoped).IsAssignableFrom(clrType))
         {
             // OrgUnit maps its path to the "Path" column; OrgUnitPath is a computed alias there.
