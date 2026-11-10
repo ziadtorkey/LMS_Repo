@@ -110,7 +110,7 @@ else
         var (units, failedUnits) = await ApiCalls.RunAsync(() => UnitsApi.GetUnitsAsync(), Navigation);
         var (roles, failedRoles) = await ApiCalls.RunAsync(() => Api.GetRolesAsync(), Navigation);
         _failed = failedUnits || failedRoles;
-        _units = (units ?? []).OrderBy(u => u.Depth).ThenBy(u => u.NameEn, StringComparer.OrdinalIgnoreCase).ToList();
+        _units = UnitTree.Order(units ?? []);
         _roles = roles ?? [];
         _unitId = UnitId is { } q && _units.Any(u => u.Id == q) ? q : _units.FirstOrDefault()?.Id ?? Guid.Empty;
         _loading = false;
@@ -162,15 +162,8 @@ else
         var who = CultureText.Pick(a.UserDisplayNameAr, a.UserDisplayNameEn);
         if (!await ConfirmDialog.AskAsync(Dialogs, L["Confirm_DeleteTitle"], string.Format(L["Assignments_RemoveConfirm"], who)))
             return;
-        try
-        {
-            await Api.DeleteAssignmentAsync(a.Id);
+        if (await ActionCalls.TryAsync(() => Api.DeleteAssignmentAsync(a.Id), Navigation, L, m => Snackbar.Add(m, Severity.Error)))
             await ReloadAsync();
-        }
-        catch (ApiProblemException ex)
-        {
-            Snackbar.Add(ProblemText.For(ex, L), Severity.Error);
-        }
     }
 
     /// <summary>Valid / Future / Expired, from the dates (not the server flag alone, so "not yet valid" is told apart).</summary>

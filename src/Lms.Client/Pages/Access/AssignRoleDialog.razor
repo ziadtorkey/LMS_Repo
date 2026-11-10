@@ -2,6 +2,7 @@
 @using Lms.Shared.Access
 @using Lms.Shared.Organizations
 @inject IAccessAdminApi Api
+@inject NavigationManager Navigation
 
 @* Assign a role by email (new users are invited), or edit the validity of an existing assignment. *@
 <MudDialog>
@@ -96,25 +97,16 @@
         }
 
         _saving = true;
-        try
-        {
-            var from = _validFrom is { } f ? DateOnly.FromDateTime(f) : (DateOnly?)null;
-            var to = _validTo is { } t ? DateOnly.FromDateTime(t) : (DateOnly?)null;
-            if (Existing is null)
-                await Api.CreateAssignmentAsync(new CreateAssignmentRequest(_email.Trim(),
+        var from = _validFrom is { } f ? DateOnly.FromDateTime(f) : (DateOnly?)null;
+        var to = _validTo is { } t ? DateOnly.FromDateTime(t) : (DateOnly?)null;
+        var saved = await ActionCalls.TryAsync(
+            () => Existing is null
+                ? Api.CreateAssignmentAsync(new CreateAssignmentRequest(_email.Trim(),
                     string.IsNullOrWhiteSpace(_nameAr) ? null : _nameAr.Trim(),
-                    string.IsNullOrWhiteSpace(_nameEn) ? null : _nameEn.Trim(), _roleId, _unitId, from, to));
-            else
-                await Api.UpdateAssignmentAsync(Existing.Id, new UpdateAssignmentRequest(from, to));
-            MudDialog.Close(DialogResult.Ok(true));
-        }
-        catch (ApiProblemException ex)
-        {
-            _error = ProblemText.For(ex, L);
-        }
-        finally
-        {
-            _saving = false;
-        }
+                    string.IsNullOrWhiteSpace(_nameEn) ? null : _nameEn.Trim(), _roleId, _unitId, from, to))
+                : Api.UpdateAssignmentAsync(Existing.Id, new UpdateAssignmentRequest(from, to)),
+            Navigation, L, message => _error = message);
+        _saving = false;
+        if (saved) MudDialog.Close(DialogResult.Ok(true));
     }
 }

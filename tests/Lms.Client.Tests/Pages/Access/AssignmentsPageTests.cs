@@ -14,6 +14,7 @@ public sealed class AssignmentsPageTests : ClientTestContext
 {
     private readonly FakeAccessAdminApi _access = new();
     private IRenderedComponent<MudDialogProvider> _dialogs = default!;
+    private IRenderedComponent<MudSnackbarProvider> _snackbars = default!;
 
     public AssignmentsPageTests()
     {
@@ -32,7 +33,7 @@ public sealed class AssignmentsPageTests : ClientTestContext
     {
         Render<MudPopoverProvider>();
         _dialogs = Render<MudDialogProvider>();
-        Render<MudSnackbarProvider>();
+        _snackbars = Render<MudSnackbarProvider>();
         return Render<AssignmentsPage>();
     }
 
@@ -135,6 +136,78 @@ public sealed class AssignmentsPageTests : ClientTestContext
         await _dialogs.Find("[data-testid=assign-save]").ClickAsync(new());
 
         Assert.Contains(expected, _dialogs.WaitForElement("[data-testid=assign-error]").TextContent);
+    }
+
+
+    [Fact]
+    public void Unit_picker_order_is_depth_first_by_current_culture_name()
+    {
+        CultureInfo.CurrentUICulture = new CultureInfo("en");
+        Lms.Shared.Organizations.OrgUnitNodeDto Unit(string en, Guid id, Guid? parent, int depth) =>
+            new(id, parent, Guid.NewGuid(), en, en, en, depth, "Active", false, null, false, false, []);
+        var root = Guid.NewGuid(); var b = Guid.NewGuid(); var a = Guid.NewGuid();
+        var units = new[]
+        {
+            Unit("Grade B1", Guid.NewGuid(), b, 2), Unit("School A", a, root, 1), Unit("Root", root, null, 0),
+            Unit("Grade A1", Guid.NewGuid(), a, 2), Unit("School B", b, root, 1),
+        };
+
+        var ordered = UnitTree.Order(units).Select(u => u.NameEn);
+
+        Assert.Equal(["Root", "School A", "Grade A1", "School B", "Grade B1"], ordered);
+    }
+
+    public static TheoryData<Exception> RedirectingFailures => new()
+    {
+        { new ApiContextException("invalid_context") },
+        { new ApiForbiddenException() },
+    };
+
+    [Theory]
+    [MemberData(nameof(RedirectingFailures))]
+    public async Task Assign_with_stale_context_or_forbidden_redirects_instead_of_crashing(Exception failure)
+    {
+        await GrantAsync(Permissions.Assignments.View, Permissions.Assignments.Create);
+        var cut = RenderPage();
+        await cut.WaitForElement("[data-testid=assign-new]").ClickAsync(new());
+        _dialogs.WaitForElement("[data-testid=assign-email]").Change("new@x.test");
+        _access.NextFailure = failure;
+
+        await _dialogs.Find("[data-testid=assign-save]").ClickAsync(new());
+
+        var navigation = Services.GetRequiredService<Microsoft.AspNetCore.Components.NavigationManager>();
+        Assert.EndsWith(failure is ApiContextException ? "/choose-context" : "/forbidden", navigation.Uri);
+    }
+
+    [Fact]
+    public async Task Assign_offline_shows_the_generic_error()
+    {
+        CultureInfo.CurrentUICulture = new CultureInfo("en");
+        await GrantAsync(Permissions.Assignments.View, Permissions.Assignments.Create);
+        var cut = RenderPage();
+        await cut.WaitForElement("[data-testid=assign-new]").ClickAsync(new());
+        _dialogs.WaitForElement("[data-testid=assign-email]").Change("new@x.test");
+        _access.NextFailure = new HttpRequestException("offline");
+
+        await _dialogs.Find("[data-testid=assign-save]").ClickAsync(new());
+
+        Assert.Contains("Could not load data", _dialogs.WaitForElement("[data-testid=assign-error]").TextContent);
+    }
+
+    [Fact]
+    public async Task Remove_offline_shows_a_snackbar_instead_of_crashing()
+    {
+        CultureInfo.CurrentUICulture = new CultureInfo("en");
+        await GrantAsync(Permissions.Assignments.View, Permissions.Assignments.Delete);
+        var row = _access.Seed("a@x.test", TeacherRole, FakeUnits.GroupId);
+        var cut = RenderPage();
+        _access.NextFailure = new HttpRequestException("offline");
+
+        var click = cut.WaitForElement($"[data-testid=assignment-delete-{row.Id}]").ClickAsync(new());
+        await _dialogs.WaitForElement("[data-testid=confirm-yes]").ClickAsync(new());
+        await click;
+
+        cut.WaitForAssertion(() => Assert.Contains("Could not load data", _snackbars.Markup));
     }
 
     [Fact]

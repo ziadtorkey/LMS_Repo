@@ -15,6 +15,30 @@ public sealed class UnitLookupApi(ApiHttp http) : IUnitLookupApi
         await http.GetAsync<List<OrgUnitNodeDto>>(Routes.OrgUnits, ct);
 }
 
+/// <summary>Orders units for pickers: depth-first (each unit followed by its children), siblings by name in the current culture.</summary>
+public static class UnitTree
+{
+    public static IReadOnlyList<OrgUnitNodeDto> Order(IReadOnlyList<OrgUnitNodeDto> units)
+    {
+        var ids = units.Select(u => u.Id).ToHashSet();
+        var byParent = units.ToLookup(u => u.ParentId is { } p && ids.Contains(p) ? p : (Guid?)null);
+        var comparer = StringComparer.Create(System.Globalization.CultureInfo.CurrentUICulture, ignoreCase: true);
+        var result = new List<OrgUnitNodeDto>(units.Count);
+
+        void Walk(Guid? parent)
+        {
+            foreach (var unit in byParent[parent].OrderBy(u => CultureText.Pick(u.NameAr, u.NameEn), comparer))
+            {
+                result.Add(unit);
+                Walk(unit.Id);
+            }
+        }
+
+        Walk(null);
+        return result;
+    }
+}
+
 /// <summary>Fixed sample units shared by the fakes (standalone dev server and tests).</summary>
 public static class FakeUnits
 {
