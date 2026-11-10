@@ -64,8 +64,8 @@ internal sealed class AuthTestHost
         return (verifier, challenge);
     }
 
-    public static string AuthorizeUrl(string challenge) =>
-        "/connect/authorize?client_id=lms-wasm&response_type=code&scope=" + Uri.EscapeDataString("openid profile lms_api")
+    public static string AuthorizeUrl(string challenge, string scope = "openid profile lms_api") =>
+        "/connect/authorize?client_id=lms-wasm&response_type=code&scope=" + Uri.EscapeDataString(scope)
         + "&redirect_uri=" + Uri.EscapeDataString(RedirectUri)
         + "&code_challenge=" + challenge + "&code_challenge_method=S256&state=xyz";
 
@@ -90,6 +90,37 @@ internal sealed class AuthTestHost
         }
 
         return await browser.PostAsync(loginUrl, new FormUrlEncodedContent(form));
+    }
+
+    /// <summary>Runs the whole browser flow for the user and returns the issued access and refresh tokens.</summary>
+    public async Task<(string Access, string Refresh)> SignInForTokensAsync(User user)
+    {
+        using var browser = NewBrowser();
+        var (verifier, challenge) = NewPkcePair();
+        var authorizeUrl = AuthorizeUrl(challenge, "openid profile offline_access lms_api");
+        var login = await PostLoginAsync(browser, user.Email!, Password, authorizeUrl);
+        Assert.Equal(HttpStatusCode.Redirect, login.StatusCode);
+        var back = await browser.GetAsync(login.Headers.Location);
+        var code = System.Web.HttpUtility.ParseQueryString(back.Headers.Location!.Query)["code"]!;
+        var token = await browser.PostAsync("/connect/token", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["grant_type"] = "authorization_code",
+            ["client_id"] = "lms-wasm",
+            ["code"] = code,
+            ["redirect_uri"] = RedirectUri,
+            ["code_verifier"] = verifier,
+        }));
+        var body = System.Text.Json.JsonDocument.Parse(await token.Content.ReadAsStringAsync()).RootElement;
+        return (body.GetProperty("access_token").GetString()!, body.GetProperty("refresh_token").GetString()!);
+    }
+
+    public async Task DeactivateAsync(User user)
+    {
+        using var scope = Services.CreateScope();
+        var users = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+        var stored = (await users.FindByIdAsync(user.Id.ToString()))!;
+        stored.Status = UserStatus.Deactivated;
+        Assert.True((await users.UpdateAsync(stored)).Succeeded);
     }
 
     public static string ExtractError(string html) =>

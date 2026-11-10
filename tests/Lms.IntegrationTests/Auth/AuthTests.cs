@@ -225,6 +225,41 @@ public sealed class AuthTests(LmsApiFactory factory)
     }
 
     [Fact]
+    public async Task Deactivated_users_existing_tokens_stop_working()
+    {
+        var user = await _host.CreateUserAsync();
+        var (access, refresh) = await _host.SignInForTokensAsync(user);
+        using var api = _host.NewBrowser();
+        api.DefaultRequestHeaders.Authorization = new("Bearer", access);
+        Assert.Equal(HttpStatusCode.OK, (await api.GetAsync("/api/auth/whoami")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await api.GetAsync("/connect/userinfo")).StatusCode);
+
+        await _host.DeactivateAsync(user);
+
+        // The access token is still cryptographically valid but the account is not: API, userinfo and refresh all refuse.
+        Assert.Equal(HttpStatusCode.Unauthorized, (await api.GetAsync("/api/auth/whoami")).StatusCode);
+        Assert.NotEqual(HttpStatusCode.OK, (await api.GetAsync("/connect/userinfo")).StatusCode);
+        using var anonymous = _host.NewBrowser();
+        var refreshed = await anonymous.PostAsync("/connect/token", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["grant_type"] = "refresh_token",
+            ["client_id"] = "lms-wasm",
+            ["refresh_token"] = refresh,
+        }));
+        Assert.Equal(HttpStatusCode.BadRequest, refreshed.StatusCode);
+        Assert.Equal("invalid_grant",
+            JsonDocument.Parse(await refreshed.Content.ReadAsStringAsync()).RootElement.GetProperty("error").GetString());
+    }
+
+    [Fact]
+    public async Task Whoami_requires_a_token()
+    {
+        using var client = _host.NewBrowser();
+
+        Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync("/api/auth/whoami")).StatusCode);
+    }
+
+    [Fact]
     public async Task Responses_carry_security_headers()
     {
         using var client = _host.NewBrowser();

@@ -26,6 +26,13 @@ public static class AuthorizationEndpoints
         app.MapPost("/connect/token", Exchange).AllowAnonymous().ExcludeFromDescription();
         app.MapMethods("/connect/logout", both, (Delegate)Logout).AllowAnonymous().ExcludeFromDescription();
         app.MapMethods("/connect/userinfo", both, (Delegate)UserInfo).AllowAnonymous().ExcludeFromDescription();
+
+        // Identity only (no permission): tells callers who their token says they are.
+        app.MapGet("/api/auth/whoami", (ClaimsPrincipal user) => Results.Ok(new
+        {
+            sub = user.GetClaim(Claims.Subject),
+            platformAdmin = user.GetClaim(PlatformAdminClaim) == "true",
+        })).RequireAuthorization();
         return app;
     }
 
@@ -93,11 +100,12 @@ public static class AuthorizationEndpoints
             [OpenIddictServerAspNetCoreDefaults.AuthenticationScheme]);
     }
 
-    private static async Task<IResult> UserInfo(HttpContext http)
+    private static async Task<IResult> UserInfo(HttpContext http, UserManager<User> users)
     {
         var result = await http.AuthenticateAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
         var principal = result.Principal;
-        if (principal is null)
+        var user = principal?.GetClaim(Claims.Subject) is { } id ? await users.FindByIdAsync(id) : null;
+        if (principal is null || user is null || !CanSignIn(user))
         {
             return Forbid(Errors.InvalidToken, "The access token is not valid.");
         }

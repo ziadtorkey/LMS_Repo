@@ -79,6 +79,7 @@ public static class AuthServiceCollectionExtensions
             {
                 options.UseLocalServer();
                 options.UseAspNetCore();
+                options.AddEventHandler(ValidateUserIsActiveHandler.Descriptor);
             });
 
         services.AddHostedService<OpenIddictClientSeeder>();
