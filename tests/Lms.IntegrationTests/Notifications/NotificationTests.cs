@@ -33,7 +33,7 @@ public sealed class NotificationTests(LmsApiFactory factory)
     {
         public List<(Guid UserId, NotificationDto Dto)> Pushed { get; } = [];
 
-        public Task PushAsync(Guid userId, NotificationDto notification, CancellationToken cancellationToken)
+        public Task PushAsync(Guid userId, Guid? organizationId, NotificationDto notification, CancellationToken cancellationToken)
         {
             lock (Pushed)
             {
@@ -80,7 +80,7 @@ public sealed class NotificationTests(LmsApiFactory factory)
         // A real hub connection for the user, over the in-memory server (long polling: no websockets in TestServer).
         var received = new TaskCompletionSource<NotificationDto>();
         await using var connection = new HubConnectionBuilder()
-            .WithUrl(new Uri(factory.Server.BaseAddress, NotificationHub.Path), options =>
+            .WithUrl(new Uri(factory.Server.BaseAddress, NotificationHub.Path + $"?context={assignment.Id}"), options =>
             {
                 options.HttpMessageHandlerFactory = _ => factory.Server.CreateHandler();
                 options.Transports = Microsoft.AspNetCore.Http.Connections.HttpTransportType.LongPolling;
@@ -89,6 +89,7 @@ public sealed class NotificationTests(LmsApiFactory factory)
             .Build();
         connection.On<NotificationDto>(NotificationHub.ReceiveMethod, dto => received.TrySetResult(dto));
         await connection.StartAsync();
+        await connection.InvokeAsync("SwitchContext", assignment.Id); // barrier: the group join runs in OnConnectedAsync
 
         using var scope = factory.Services.CreateScope();
         await scope.ServiceProvider.GetRequiredService<INotificationPublisher>().PublishAsync(new NotificationRequest(
