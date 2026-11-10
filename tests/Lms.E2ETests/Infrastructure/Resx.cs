@@ -15,6 +15,9 @@ public static class Resx
 
     public static string En(string key) => Get(English.Value, key, "en");
 
+    /// <summary>The label in the given UI culture ("ar" or "en").</summary>
+    public static string In(string culture, string key) => culture == "ar" ? Ar(key) : En(key);
+
     private static string Get(IReadOnlyDictionary<string, string> values, string key, string culture) =>
         values.TryGetValue(key, out var value)
             ? value
