@@ -3,16 +3,16 @@
 _Updated by the Team Lead after every merge cycle._
 
 **Milestone:** M0 Foundation — in progress (4 / 17 issues closed)
-**Last update:** 2026-11-10 — QA requested changes on #20 (kernel), #23 (audit) and #24 (client shell: 360px header, error states, fake API must be opt-in). All three authors are fixing. Settings PR #25 (#8) is queued.
+**Last update:** 2026-11-10 — Kernel PR #20 fixed (incl. IOptionalTenantOwned) and back with QA for re-review. Roles + active context PR #26 (#7) up. Audit #23 and shell #24 being fixed; settings #25 queued. Backend 1 starting #9.
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |
 |---|---|---|---|---|
 | Team Lead | Opus | `local_95ef9dc7-9378-4012-a8f2-c7d1f944bdec` (lms-lead) | M0 coordination; M1 plan prep | coordinating |
-| Backend 1 | Sonnet | `local_19f31b04-ca2f-43d1-a2cb-8a128722a11f` (lms-backend) | fixing QA changes on PR #20 (#4); then #7 | working |
+| Backend 1 | Sonnet | `local_19f31b04-ca2f-43d1-a2cb-8a128722a11f` (lms-backend) | PRs #20 (#4) and #26 (#7) in review; #9 T7 access evaluator | working |
 | Backend 2 | Sonnet | `local_d36e7dc2-e9e6-4f73-b7b3-b078b17bbe41` (lms-backend-2) | PR #25 (#8) in review; fixing QA changes on PR #23 (#5); then #6 | working |
 | Frontend | Sonnet | `local_40667dce-5be7-478b-95cb-4f14ecd203b9` (lms-frontend) | fixing QA changes on PR #24 (#12); #13 T11 context chooser | working |
-| QA | Opus | `local_91a7af3c-7b02-4d61-ac11-2c22629cf89f` (lms-qa) | #20, #23, #24 changes requested; #25 queued (#16) | waiting on fixes |
+| QA | Opus | `local_91a7af3c-7b02-4d61-ac11-2c22629cf89f` (lms-qa) | re-reviewing #20; then #26, #25; #23, #24 after fixes (#16) | reviewing |
 
 ## M0 issue map
 | Task | Issue | Lane | Depends on |
