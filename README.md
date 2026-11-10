@@ -9,6 +9,8 @@ dotnet run --project src/Lms.Api
 dotnet test LMS.slnx          # integration tests use Testcontainers (Docker required)
 ```
 Health check: `GET /health`.
+
+In the `Development` environment the API migrates the local database and loads sample data on startup (idempotent): the *Altagamo3 Schools* school group (School › KG / Primary › Sections) and *MNF University* (FCI / F-E › First / Second › specializations), each with the seven built-in roles. Other environments never seed.
 ## Container images
 MySQL, MinIO (`chainguard/minio`) and Mailpit are pinned by digest in `docker-compose.yml` and `LmsApiFactory`; see `docs/adr/0002-minio-image.md`. Bump digests in a dedicated `chore:` PR.
 
