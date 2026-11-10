@@ -14,6 +14,7 @@ public sealed class TestAuthHandler(
     public const string SchemeName = "Test";
     public const string UserHeader = "X-Test-User";
     public const string AdminHeader = "X-Test-Admin";
+    public const string NameHeader = "X-Test-Name";
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
@@ -23,6 +24,11 @@ public sealed class TestAuthHandler(
         }
 
         var claims = new List<Claim> { new("sub", user.ToString()) };
+        if (Request.Headers.TryGetValue(NameHeader, out var name))
+        {
+            claims.Add(new Claim("name", name.ToString()));
+        }
+
         if (Request.Headers[AdminHeader] == "true")
         {
             claims.Add(new Claim("platform_admin", "true"));

@@ -1,5 +1,6 @@
 using Lms.Api.Infrastructure;
 using Lms.Domain.Abstractions;
+using Lms.Shared.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -9,7 +10,8 @@ namespace Lms.IntegrationTests.Infrastructure;
 /// <summary>Test-only endpoint reporting the resolved current context.</summary>
 public sealed class TestEndpoints : IEndpointModule
 {
-    public void Map(IEndpointRouteBuilder endpoints) =>
+    public void Map(IEndpointRouteBuilder endpoints)
+    {
         endpoints.MapGet("/test/scoped", (ICurrentContext ctx) =>
             ctx.ScopePath is null && !ctx.IsPlatformAdmin
                 ? Results.Problem(statusCode: 403, title: "no context")
@@ -17,4 +19,9 @@ public sealed class TestEndpoints : IEndpointModule
                 {
                     ctx.ScopePath, ctx.OrganizationId, ctx.AssignmentId, ctx.UserId, ctx.IsPlatformAdmin,
                 }));
+
+        endpoints.MapGet("/test/org-units/view", () => Results.Ok()).RequirePermission(Permissions.OrgUnits.View);
+        endpoints.MapPost("/test/org-units/create", () => Results.Ok()).RequirePermission(Permissions.OrgUnits.Create);
+        endpoints.MapGroup("/test/audit").RequirePermission(Permissions.Audit.View).MapGet("/", () => Results.Ok());
+    }
 }
