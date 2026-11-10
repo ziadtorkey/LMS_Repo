@@ -80,16 +80,9 @@
 
     private async Task<TableData<ClientDto>> LoadAsync(TableState state, CancellationToken ct)
     {
-        try
-        {
-            var result = await Api.ListAsync(state.Page + 1, state.PageSize, _search, ct);
-            return new TableData<ClientDto> { Items = result.Items, TotalItems = result.Total };
-        }
-        catch (ApiForbiddenException)
-        {
-            Navigation.NavigateTo("forbidden");
-            return new TableData<ClientDto> { Items = [], TotalItems = 0 };
-        }
+        // Failures (403, stale context, 5xx…) are handled by ServerTable.
+        var result = await Api.ListAsync(state.Page + 1, state.PageSize, _search, ct);
+        return new TableData<ClientDto> { Items = result.Items, TotalItems = result.Total };
     }
 
     private Task SearchAsync()

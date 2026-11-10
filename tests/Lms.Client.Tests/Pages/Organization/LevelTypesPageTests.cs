@@ -84,6 +84,31 @@ public sealed class LevelTypesPageTests : ClientTestContext
     }
 
     [Fact]
+    public async Task Out_of_scope_admin_sees_the_top_level_only_message()
+    {
+        CultureInfo.CurrentUICulture = new CultureInfo("en");
+        Org.DeleteFailure = new ApiProblemException(403, "OutOfScope", null, null);
+        var (page, dialogs) = await RenderPageAsync(Permissions.LevelTypes.View, Permissions.LevelTypes.Delete);
+
+        _ = page.Find($"[data-testid=level-delete-{_unused.Id}]").ClickAsync(new());
+        dialogs.WaitForElement("[data-testid=confirm-yes]");
+        await dialogs.Find("[data-testid=confirm-yes]").ClickAsync(new());
+
+        page.WaitForAssertion(() => Assert.Contains("top level of the organization", page.Find("[data-testid=level-error]").TextContent));
+    }
+
+    [Fact]
+    public async Task Host_classes_column_uses_words_for_screen_readers()
+    {
+        CultureInfo.CurrentUICulture = new CultureInfo("en");
+        var (page, _) = await RenderPageAsync(Permissions.LevelTypes.View);
+
+        var row = page.Find($"[data-testid=level-row-{_unused.Id}]").TextContent;
+        Assert.Contains("Yes", row);
+        Assert.DoesNotContain("✓", row);
+    }
+
+    [Fact]
     public async Task Create_adds_a_level_type()
     {
         var (page, dialogs) = await RenderPageAsync(Permissions.LevelTypes.View, Permissions.LevelTypes.Create);

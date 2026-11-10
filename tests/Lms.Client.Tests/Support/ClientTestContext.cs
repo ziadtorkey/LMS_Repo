@@ -34,6 +34,7 @@ public abstract class ClientTestContext : BunitContext, IAsyncLifetime
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddMudServices();
+        Services.AddTransient<MudBlazor.MudLocalizer, LmsMudLocalizer>();
         Services.AddLocalization();
         Services.AddSingleton<ICultureService>(Culture);
         Services.AddSingleton<IContextStore>(Context);

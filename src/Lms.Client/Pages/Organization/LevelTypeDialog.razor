@@ -54,7 +54,7 @@
         }
         catch (ApiProblemException ex)
         {
-            _error = ProblemText.For(ex, L);
+            _error = ProblemText.ForClientWide(ex, L);
         }
         finally { _saving = false; }
     }

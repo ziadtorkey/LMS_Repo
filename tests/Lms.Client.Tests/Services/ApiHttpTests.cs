@@ -85,6 +85,38 @@ public sealed class ApiHttpTests : ClientTestContext
         Assert.Equal("download", name);
     }
 
+
+    [Fact]
+    public async Task Get_403_invalid_context_throws_ApiContextException_not_forbidden()
+    {
+        var handler = new StubHandler(HttpStatusCode.Forbidden, "{\"code\":\"invalid_context\"}");
+        await Assert.ThrowsAsync<ApiContextException>(() => Create(handler).GetAsync<object>("/api/x"));
+    }
+
+    [Fact]
+    public async Task Post_403_context_required_also_throws_ApiContextException()
+    {
+        var handler = new StubHandler(HttpStatusCode.Forbidden, "{\"code\":\"context_required\"}");
+        await Assert.ThrowsAsync<ApiContextException>(() => Create(handler).SendAsync(HttpMethod.Post, "/api/x", new { }));
+    }
+
+    [Fact]
+    public async Task Empty_success_body_returns_default()
+    {
+        var handler = new StubHandler(HttpStatusCode.OK, "", "application/json");
+        Assert.Null(await Create(handler).SendAsync<Dictionary<string, int>>(HttpMethod.Post, "/api/x", new { }));
+    }
+
+    [Theory]
+    [InlineData("en", "MissingPermission", "You don't have permission to do this.")]
+    [InlineData("ar", "MissingPermission", "ليست لديك صلاحية للقيام بذلك.")]
+    [InlineData("en", "OutOfScope", "This item is outside your scope.")]
+    public void Access_denial_reasons_have_their_own_messages(string culture, string code, string expected)
+    {
+        CultureInfo.CurrentUICulture = new CultureInfo(culture);
+        Assert.Equal(expected, ProblemText.For(new ApiProblemException(403, code, null, null), Loc));
+    }
+
     [Theory]
     [InlineData("ar", "هذا الرمز مستخدم بالفعل.")]
     [InlineData("en", "This code is already used.")]

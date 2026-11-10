@@ -22,6 +22,15 @@ public sealed class TestEndpoints : IEndpointModule
 
         endpoints.MapGet("/test/org-units/view", () => Results.Ok()).RequirePermission(Permissions.OrgUnits.View);
         endpoints.MapPost("/test/org-units/create", () => Results.Ok()).RequirePermission(Permissions.OrgUnits.Create);
+        // Unit-targeted and client-root checks (the helpers M1 endpoints use).
+        endpoints.MapPost("/test/units/{id:guid}/create-child", async (Guid id, HttpContext http, CancellationToken ct) =>
+        {
+            var access = await http.CheckUnitAsync(Permissions.OrgUnits.Create, id, ct);
+            return access.Problem ?? Results.Ok(new { unitId = access.Unit!.Id });
+        });
+        endpoints.MapGet("/test/client-root/level-types", async (HttpContext http, CancellationToken ct) =>
+            await http.CheckClientRootAsync(Permissions.LevelTypes.Create, ct) ?? Results.Ok());
+
         endpoints.MapGroup("/test/audit").RequirePermission(Permissions.Audit.View).MapGet("/", () => Results.Ok());
     }
 }

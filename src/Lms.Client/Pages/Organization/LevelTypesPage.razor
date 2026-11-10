@@ -55,7 +55,7 @@ else
                 <tr data-testid="@($"level-row-{level.Id}")">
                     <td>@(index + 1)</td>
                     <td>@Culture.Pick(level.NameAr, level.NameEn)</td>
-                    <td>@(level.CanHostClasses ? "✓" : "—")</td>
+                    <td>@(level.CanHostClasses ? L["Common_Yes"] : L["Common_No"])</td>
                     <td>@level.UnitCount</td>
                     <td>
                         @if (PermState.Has(Permissions.LevelTypes.Update))
@@ -100,8 +100,8 @@ else
     {
         _loading = true;
         try { _levels = [.. await Api.GetLevelTypesAsync()]; }
-        catch (ApiForbiddenException) { Navigation.NavigateTo("forbidden"); }
-        catch (ApiProblemException ex) { _error = ProblemText.For(ex, L); }
+        catch (Exception ex) when (ApiCalls.TryRedirect(ex, Navigation)) { }
+        catch (ApiProblemException ex) { _error = ProblemText.ForClientWide(ex, L); }
         _loading = false;
     }
 
@@ -111,7 +111,7 @@ else
         (order[index], order[index + direction]) = (order[index + direction], order[index]);
         _error = null;
         try { await Api.ReorderLevelTypesAsync(new ReorderLevelTypesRequest(order)); }
-        catch (ApiProblemException ex) { _error = ProblemText.For(ex, L); }
+        catch (ApiProblemException ex) { _error = ProblemText.ForClientWide(ex, L); }
         await LoadAsync();
     }
 
@@ -134,7 +134,7 @@ else
             return;
         _error = null;
         try { await Api.DeleteLevelTypeAsync(level.Id); }
-        catch (ApiProblemException ex) { _error = ProblemText.For(ex, L); }
+        catch (ApiProblemException ex) { _error = ProblemText.ForClientWide(ex, L); }
         await LoadAsync();
     }
 

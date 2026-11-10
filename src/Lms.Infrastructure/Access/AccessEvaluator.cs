@@ -3,6 +3,7 @@ using Lms.Domain.Access;
 using Lms.Domain.Organizations;
 using Lms.Infrastructure.Configuration;
 using Lms.Infrastructure.Persistence;
+using Lms.Shared.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -22,6 +23,12 @@ public sealed class AccessEvaluator(
         }
 
         var path = resourceOrgUnitPath ?? context.ScopePath;
+
+        // Defence in depth: platform-only permissions belong to the Platform Admin, whatever a role row says.
+        if (!context.IsPlatformAdmin && Permissions.PlatformOnly.Contains(permission))
+        {
+            return AccessDecision.Deny(AccessDenialReason.MissingPermission);
+        }
 
         // Platform admins skip the role and scope checks (never the policy check).
         if (!context.IsPlatformAdmin)

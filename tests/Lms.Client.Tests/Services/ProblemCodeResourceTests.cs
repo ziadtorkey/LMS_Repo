@@ -13,7 +13,7 @@ public sealed class ProblemCodeResourceTests : ClientTestContext
         .GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)
         .Where(f => f.IsLiteral && f.FieldType == typeof(string))
         .Select(f => (string)f.GetRawConstantValue()!)
-        .ToArray();
+        .Concat(["MissingPermission", "OutOfScope", "invalid_context", "context_required"]).ToArray();
 
     [Fact]
     public void ProblemCodes_are_discovered() => Assert.NotEmpty(Codes);
