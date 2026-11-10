@@ -19,11 +19,12 @@
     </div>
 
     <div id="blazor-error-ui">
-        An unhandled error has occurred.
-        <a href="." class="reload">Reload</a>
+        حدث خطأ غير متوقع / An unhandled error has occurred.
+        <a href="." class="reload">إعادة تحميل / Reload</a>
         <span class="dismiss">🗙</span>
     </div>
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>
+    <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
     <script src="_framework/blazor.webassembly#[.{fingerprint}].js" autostart="false"></script>
     <script>
         // Culture is chosen before Blazor starts: ar (default, RTL) or en. Persisted by CultureService as lms.culture.
@@ -32,7 +33,10 @@
             if (c !== 'ar' && c !== 'en') c = 'ar';
             document.documentElement.lang = c;
             document.documentElement.dir = c === 'ar' ? 'rtl' : 'ltr';
-            Blazor.start({ applicationCulture: c });
+            // The standalone dev server (launchSettings port 5078) runs on fakes; the API-hosted app never does.
+            var opts = { applicationCulture: c };
+            if (location.port === '5078') opts.environment = 'Standalone';
+            Blazor.start(opts);
         })();
     </script>
 </body>

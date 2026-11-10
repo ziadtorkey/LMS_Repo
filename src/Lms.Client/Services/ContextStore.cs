@@ -6,6 +6,7 @@ public interface IContextStore
 {
     Guid? ActiveAssignmentId { get; }
     Task SetAsync(Guid assignmentId);
+    Task ClearAsync();
     event Action? Changed;
 }
 
@@ -21,6 +22,13 @@ public sealed class ContextStore(IJSRuntime js) : IContextStore
     {
         var stored = await js.InvokeAsync<string?>("localStorage.getItem", StorageKey);
         ActiveAssignmentId = Guid.TryParse(stored, out var id) ? id : null;
+    }
+
+    public async Task ClearAsync()
+    {
+        ActiveAssignmentId = null;
+        await js.InvokeVoidAsync("localStorage.removeItem", StorageKey);
+        Changed?.Invoke();
     }
 
     public async Task SetAsync(Guid assignmentId)

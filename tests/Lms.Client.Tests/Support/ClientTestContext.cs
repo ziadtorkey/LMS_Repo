@@ -43,12 +43,15 @@ public sealed class InMemoryContextStore : IContextStore
     public Guid? ActiveAssignmentId { get; private set; }
     public event Action? Changed;
     public Task SetAsync(Guid assignmentId) { ActiveAssignmentId = assignmentId; Changed?.Invoke(); return Task.CompletedTask; }
+    public Task ClearAsync() { ActiveAssignmentId = null; Changed?.Invoke(); return Task.CompletedTask; }
 }
 
 public sealed class StubLmsApi : ILmsApi
 {
     public MeDto Me { get; set; } = new(Guid.NewGuid(), "مستخدم", "Tester", false, []);
     public EffectivePermissionsDto Permissions { get; set; } = new(null, []);
-    public Task<MeDto> GetMeAsync(CancellationToken ct = default) => Task.FromResult(Me);
+    public Exception? Failure { get; set; }
+    public Task<MeDto> GetMeAsync(CancellationToken ct = default) =>
+        Failure is null ? Task.FromResult(Me) : Task.FromException<MeDto>(Failure);
     public Task<EffectivePermissionsDto> GetMyPermissionsAsync(CancellationToken ct = default) => Task.FromResult(Permissions);
 }

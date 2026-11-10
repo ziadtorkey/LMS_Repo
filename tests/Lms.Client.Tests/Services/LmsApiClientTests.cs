@@ -71,4 +71,13 @@ public sealed class LmsApiClientTests
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         Assert.EndsWith("/forbidden", nav.Uri);
     }
+
+    [Fact]
+    public async Task Client_throws_ApiForbiddenException_on_403()
+    {
+        var handler = new CaptureHandler(HttpStatusCode.Forbidden);
+        var client = new LmsApiClient(new HttpClient(handler) { BaseAddress = new Uri("http://localhost/") }, new InMemoryContextStore());
+
+        await Assert.ThrowsAsync<ApiForbiddenException>(() => client.GetMeAsync());
+    }
 }

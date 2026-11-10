@@ -20,4 +20,7 @@
   <data name="NotFound_Body" xml:space="preserve"><value>عذراً، المحتوى الذي تبحث عنه غير موجود.</value></data>
   <data name="Auth_Processing" xml:space="preserve"><value>جارٍ المعالجة...</value></data>
   <data name="Auth_Error" xml:space="preserve"><value>حدث خطأ أثناء المصادقة: {0}</value></data>
+  <data name="Api_Error" xml:space="preserve"><value>تعذر تحميل البيانات. حاول مرة أخرى.</value></data>
+  <data name="Common_Retry" xml:space="preserve"><value>إعادة المحاولة</value></data>
+  <data name="Common_Loading" xml:space="preserve"><value>جارٍ التحميل</value></data>
 </root>

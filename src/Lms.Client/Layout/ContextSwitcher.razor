@@ -1,8 +1,11 @@
 @inject ILmsApi Api
 @inject IContextStore Store
+@inject NavigationManager Navigation
 @implements IDisposable
 
-<MudButton Color="Color.Inherit" Href="choose-context" data-testid="context-switcher">@_label</MudButton>
+<MudTooltip Text="@_label">
+    <MudButton Color="Color.Inherit" Href="choose-context" data-testid="context-switcher" Class="lms-context-label">@_label</MudButton>
+</MudTooltip>
 
 @code {
     private string _label = "";
@@ -16,8 +19,8 @@
 
     private async Task LoadAsync()
     {
-        var me = await Api.GetMeAsync();
-        var active = me.Contexts.FirstOrDefault(c => c.AssignmentId == Store.ActiveAssignmentId);
+        var (me, _) = await ApiCalls.RunAsync(() => Api.GetMeAsync(), Navigation);
+        var active = me?.Contexts.FirstOrDefault(c => c.AssignmentId == Store.ActiveAssignmentId);
         if (active is null) { _label = L["Context_Choose"]; return; }
         var ar = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "ar";
         _label = string.Format(L["Context_Format"].Value,
@@ -26,7 +29,7 @@
             ar ? active.RoleNameAr : active.RoleNameEn);
     }
 
-    private async void OnChanged() { await LoadAsync(); await InvokeAsync(StateHasChanged); }
+    private void OnChanged() => _ = InvokeAsync(async () => { await LoadAsync(); StateHasChanged(); });
 
     public void Dispose() => Store.Changed -= OnChanged;
 }

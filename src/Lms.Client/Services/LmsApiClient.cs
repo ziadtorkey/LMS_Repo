@@ -27,9 +27,16 @@ public sealed class LmsApiClient(HttpClient http, IContextStore context) : ILmsA
         if (context.ActiveAssignmentId is { } id)
             request.Headers.Add(ContextHeader.Name, id.ToString());
         using var response = await http.SendAsync(request, ct);
+        if (response.StatusCode == HttpStatusCode.Forbidden) throw new ApiForbiddenException();
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<T>(ct))!;
     }
+}
+
+/// <summary>The API answered 403; callers show the Forbidden page instead of an error state.</summary>
+public sealed class ApiForbiddenException : HttpRequestException
+{
+    public ApiForbiddenException() : base("Forbidden", null, HttpStatusCode.Forbidden) { }
 }
 
 /// <summary>Sends the user to the Forbidden page whenever the API answers 403.</summary>

@@ -1,20 +1,40 @@
-﻿@page "/"
+@page "/"
 @attribute [Authorize]
 @inject ILmsApi Api
+@inject NavigationManager Navigation
 
 <PageTitle>@L["Home_Title"]</PageTitle>
 <MudText Typo="Typo.h4" Class="mb-4">@L["Home_Title"]</MudText>
-@if (_name is not null)
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+}
+else if (_failed)
+{
+    <MudAlert Severity="Severity.Error" data-testid="api-error">
+        @L["Api_Error"]
+        <MudButton Variant="Variant.Text" OnClick="LoadAsync">@L["Common_Retry"]</MudButton>
+    </MudAlert>
+}
+else if (_name is not null)
 {
     <MudText>@string.Format(L["Home_Welcome"].Value, _name)</MudText>
 }
 
 @code {
     private string? _name;
+    private bool _loading = true;
+    private bool _failed;
 
-    protected override async Task OnInitializedAsync()
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
     {
-        var me = await Api.GetMeAsync();
-        _name = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "ar" ? me.DisplayNameAr : me.DisplayNameEn;
+        _loading = true; _failed = false;
+        var (me, failed) = await ApiCalls.RunAsync(() => Api.GetMeAsync(), Navigation);
+        _failed = failed;
+        if (me is not null)
+            _name = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "ar" ? me.DisplayNameAr : me.DisplayNameEn;
+        _loading = false;
     }
 }

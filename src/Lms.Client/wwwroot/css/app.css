@@ -7,3 +7,6 @@ html, body { margin: 0; font-family: Roboto, "Segoe UI", Tahoma, sans-serif; }
 #blazor-error-ui .dismiss { cursor: pointer; position: absolute; inset-inline-end: .75rem; top: .5rem; }
 
 .loading-progress-text { text-align: center; margin-top: 30vh; font-weight: bold; }
+
+/* Long "org — unit (role)" labels must not squeeze the app bar on phones. */
+.lms-context-label { max-width: 40vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; }

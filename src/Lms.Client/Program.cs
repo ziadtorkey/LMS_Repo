@@ -16,9 +16,11 @@ builder.Services.AddScoped<ICultureService, CultureService>();
 builder.Services.AddScoped<ContextStore>();
 builder.Services.AddScoped<IContextStore>(sp => sp.GetRequiredService<ContextStore>());
 
-if (builder.Configuration.GetValue<bool>("Lms:UseFakeApi"))
+// Only the standalone dev profile ("Standalone" environment, see launchSettings.json) runs on fakes.
+// The API-hosted client (Development/CI/Production) always uses the real API + OIDC.
+if (builder.HostEnvironment.Environment == "Standalone")
 {
-    // Dev only: no backend/OIDC needed to run the shell.
+    // No backend/OIDC needed to run the shell.
     builder.Services.AddScoped<ILmsApi, FakeLmsApi>();
     builder.Services.AddScoped<AuthenticationStateProvider, FakeAuthenticationStateProvider>();
     builder.Services.AddAuthorizationCore();
