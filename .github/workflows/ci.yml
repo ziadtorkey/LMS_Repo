@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Build
+        run: dotnet build LMS.slnx -c Release
+      - name: Unit tests
+        run: dotnet test tests/Lms.UnitTests -c Release --no-build
+      - name: Integration tests (Testcontainers)
+        run: dotnet test tests/Lms.IntegrationTests -c Release --no-build
+      - name: Client tests
+        run: dotnet test tests/Lms.Client.Tests -c Release --no-build
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Build E2E project
+        run: dotnet build tests/Lms.E2ETests -c Release
+      # Placeholder: QA adds real tests in issue #15. Until then there is nothing to run.
+      # When tests exist: docker compose up -d; run the API in the background;
+      #   pwsh tests/Lms.E2ETests/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+      #   dotnet test tests/Lms.E2ETests -c Release --no-build
+      - name: Run E2E tests
+        run: |
+          if grep -rqE "\[(Fact|Theory)" tests/Lms.E2ETests --include=*.cs; then
+            docker compose up -d --wait mysql minio
+            dotnet run --project src/Lms.Api -c Release --no-build > api.log 2>&1 &
+            pwsh tests/Lms.E2ETests/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+            dotnet test tests/Lms.E2ETests -c Release --no-build
+          else
+            echo "No E2E tests yet (placeholder until #15)."
+          fi
