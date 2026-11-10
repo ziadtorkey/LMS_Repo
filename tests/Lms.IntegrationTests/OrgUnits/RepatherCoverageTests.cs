@@ -31,4 +31,30 @@ public sealed class RepatherCoverageTests(LmsApiFactory factory)
             Assert.False(string.IsNullOrWhiteSpace(target.OrganizationColumn));
         }
     }
+
+    [Fact]
+    public void Every_entity_with_an_OrgUnitPath_column_is_a_target_whether_or_not_it_implements_IOrgUnitScoped()
+    {
+        using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+
+        var covered = OrgUnitRepather.DiscoverTargets(db.Model).Select(t => t.ClrType).ToHashSet();
+        var withPathColumn = db.Model.GetEntityTypes()
+            .Where(t => t.FindProperty("OrgUnitPath") is { } p && p.ClrType == typeof(string))
+            .Select(t => t.ClrType)
+            .ToList();
+
+        // Includes audit entries, academic years, terms and any later table, as soon as they map an OrgUnitPath.
+        Assert.All(withPathColumn, type => Assert.Contains(type, covered));
+    }
+
+    [Fact]
+    public void Tables_with_a_path_column_but_no_organization_column_are_rejected_loudly()
+    {
+        // A table that stores an OrgUnitPath without OrganizationId could not be re-pathed safely (no client filter).
+        using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+
+        var ex = Record.Exception(() => OrgUnitRepather.DiscoverTargets(db.Model));
+
+        Assert.Null(ex); // today's model is consistent; the guard in DiscoverTargets throws for an inconsistent one
+    }
 }
