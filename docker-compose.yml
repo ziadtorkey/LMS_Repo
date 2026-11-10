@@ -13,10 +13,13 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-plms_root_pw"]
+      # TCP + app user + real query: during first-time init MySQL runs a temporary server on the
+      # socket only, which answers `mysqladmin ping -h localhost` before the real server is up (CI race).
+      test: ["CMD", "mysql", "-h", "127.0.0.1", "-P", "3306", "-ulms", "-plms_dev_pw", "-e", "SELECT 1", "lms"]
       interval: 5s
       timeout: 5s
-      retries: 20
+      retries: 30
+      start_period: 20s
 
   minio:
     # Upstream minio/minio is no longer published on Docker Hub; chainguard/minio is a maintained build.
