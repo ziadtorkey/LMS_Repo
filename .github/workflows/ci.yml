@@ -32,6 +32,9 @@ jobs:
     env:
       ASPNETCORE_ENVIRONMENT: Development
       LMS_E2E_BASEURL: http://localhost:5132
+      # The suite signs in many times from one IP; the auth rate limit (5/min/IP, X-08) is covered by
+      # integration tests (PasswordResetTests), so the E2E API gets a high limit.
+      RateLimiting__Auth__PermitLimit: "1000"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
