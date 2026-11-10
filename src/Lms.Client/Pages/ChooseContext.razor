@@ -1,0 +1,68 @@
+@page "/choose-context"
+@attribute [Authorize]
+@inject ILmsApi Api
+@inject IContextStore Store
+@inject NavigationManager Navigation
+
+<PageTitle>@L["Choose_Title"]</PageTitle>
+<MudText Typo="Typo.h4" Class="mb-2">@L["Choose_Title"]</MudText>
+
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+}
+else if (_failed)
+{
+    <MudAlert Severity="Severity.Error" data-testid="api-error">
+        @L["Api_Error"]
+        <MudButton Variant="Variant.Text" OnClick="LoadAsync">@L["Common_Retry"]</MudButton>
+    </MudAlert>
+}
+else if (_contexts.Count == 0)
+{
+    <MudAlert Severity="Severity.Info" data-testid="no-contexts">
+        <MudText Typo="Typo.subtitle1">@L["Choose_Empty_Title"]</MudText>
+        <MudText>@L["Choose_Empty_Body"]</MudText>
+    </MudAlert>
+}
+else
+{
+    <MudText Class="mb-4">@L["Choose_Subtitle"]</MudText>
+    <MudStack Spacing="2">
+        @foreach (var c in _contexts)
+        {
+            var current = c;
+            <MudButton Variant="Variant.Outlined" FullWidth="true"
+                       Color="@(Store.ActiveAssignmentId == current.AssignmentId ? Color.Primary : Color.Default)"
+                       OnClick="() => SelectAsync(current)" data-testid="@($"context-option-{current.AssignmentId}")">
+                <MudStack Spacing="0" Class="align-start">
+                    <MudText Typo="Typo.subtitle1">@CultureText.Pick(current.OrganizationNameAr, current.OrganizationNameEn)</MudText>
+                    <MudText Typo="Typo.body2">@CultureText.Pick(current.OrgUnitNameAr, current.OrgUnitNameEn) · @CultureText.Pick(current.RoleNameAr, current.RoleNameEn)</MudText>
+                </MudStack>
+            </MudButton>
+        }
+    </MudStack>
+}
+
+@code {
+    private IReadOnlyList<Lms.Shared.Me.UserContextDto> _contexts = [];
+    private bool _loading = true;
+    private bool _failed;
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true; _failed = false;
+        var (me, failed) = await ApiCalls.RunAsync(() => Api.GetMeAsync(), Navigation);
+        _failed = failed;
+        _contexts = me?.Contexts ?? [];
+        _loading = false;
+    }
+
+    private async Task SelectAsync(Lms.Shared.Me.UserContextDto context)
+    {
+        await Store.SetAsync(context.AssignmentId);
+        Navigation.NavigateTo("");
+    }
+}

@@ -2,18 +2,18 @@
 
 _Updated by the Team Lead after every merge cycle._
 
-**Milestone:** M0 Foundation — in progress (8 / 19 issues closed)
-**Last update:** 2026-11-10 — Roles + active context PR #26 merged (closes #7). Settings #25 (approved) is merging main again; #27 waits on QA's spot-check, then #29; identity #31 waits on a main merge + review; #28 waits on a main merge.
+**Milestone:** M0 Foundation — in progress (11 / 19 issues closed)
+**Last update:** 2026-11-10 — Settings PR #25 (closes #8) and access evaluator PR #27 (closes #9) merged. Me endpoints #29 (#11) and identity #31 (#6) are approved and merging main again. Then the dev seed (#14), files (#10), the E2E (#15) and follow-ups #30/#32 remain.
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |
 |---|---|---|---|---|
 | Team Lead | Opus | `local_95ef9dc7-9378-4012-a8f2-c7d1f944bdec` (lms-lead) | M0 coordination; M1 plan prep | coordinating |
-| Backend 1 | Sonnet | `local_19f31b04-ca2f-43d1-a2cb-8a128722a11f` (lms-backend) | PRs #27 (#9), #29 (#11) waiting; #14 dev seed; then #32, #30 | working |
-| Backend 2 | Sonnet | `local_d36e7dc2-e9e6-4f73-b7b3-b078b17bbe41` (lms-backend-2) | merging main into #25 (#8) and #31 (#6); #10 files | working |
-| Frontend | Sonnet | `local_40667dce-5be7-478b-95cb-4f14ecd203b9` (lms-frontend) | merging main into PR #28 (#13, approved); resx parity test | working |
-| QA | Opus | `local_91a7af3c-7b02-4d61-ac11-2c22629cf89f` (lms-qa) | spot-checks #26/#27/#25/#28; review #31; E2E #15 (#16) | reviewing |
-| QA 2 | Opus | (waiting for owner to click Start) | #25, #28; then #6, #10 | not started |
+| Backend 1 | Sonnet | `local_19f31b04-ca2f-43d1-a2cb-8a128722a11f` (lms-backend) | PR #29 (#11) merging main; #32; #14 after #31; then #30 | working |
+| Backend 2 | Sonnet | `local_d36e7dc2-e9e6-4f73-b7b3-b078b17bbe41` (lms-backend-2) | PR #31 (#6) merging main; #10 files endpoints | working |
+| Frontend | Sonnet | `local_40667dce-5be7-478b-95cb-4f14ecd203b9` (lms-frontend) | M0 FE done (#12, #13); waiting for M1 FE issues | idle |
+| QA | Opus | `local_91a7af3c-7b02-4d61-ac11-2c22629cf89f` (lms-qa) | #14 seed review; E2E #15 (#16) | working |
+| QA 2 | Opus | `local_54d26c64-4403-4a13-b128-5be5e9752d97` (lms-qa-2) | spot-checks #25, #31; then #10, #30, #32 | reviewing |
 
 ## M0 issue map
 | Task | Issue | Lane | Depends on |
@@ -45,6 +45,9 @@ None. (Board: [LMS v1](https://github.com/users/ziadtorkey/projects/1) — Todo 
 None. (2026-11-10: owner approved Lead merging QA-approved green PRs, and a 2nd QA agent; D15: no access via Inactive units.)
 
 ## Recently merged
+- #27 feat(access): access evaluator and RequirePermission endpoint filter (closes #9)
+- #25 feat(config): inheritable settings with locks and policy evaluator (closes #8)
+- #28 feat(client): context chooser and permission-driven navigation (closes #13)
 - #26 feat(access): roles, assignments, default role provisioner and active context (closes #7)
 - #23 feat(audit): capture audit entries for audited entities (closes #5)
 - #24 feat(client): MudBlazor shell with OIDC auth and ar/en RTL (closes #12)
