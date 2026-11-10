@@ -29,9 +29,15 @@ public sealed class OrgUnitRepather(LmsDbContext db) : IOrgUnitRepather
             // OrgUnit maps its own path to "Path" (OrgUnitPath is a computed alias there).
             var path = entityType.FindProperty("OrgUnitPath") ?? (entityType.ClrType == typeof(OrgUnit) ? entityType.FindProperty("Path") : null);
             var organization = entityType.FindProperty("OrganizationId");
-            if (path is null || organization is null || path.ClrType != typeof(string))
+            if (path is null || path.ClrType != typeof(string))
             {
                 continue;
+            }
+
+            // A path column without a client column cannot be re-pathed safely: fail loudly instead of skipping it.
+            if (organization is null)
+            {
+                throw new InvalidOperationException($"{entityType.ClrType.Name} stores an org unit path but has no OrganizationId; it cannot be re-pathed.");
             }
 
             var depth = entityType.ClrType == typeof(OrgUnit) ? entityType.FindProperty("Depth") : null;
