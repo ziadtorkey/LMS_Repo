@@ -14,7 +14,8 @@ public sealed class LmsDbContextFactory : IDesignTimeDbContextFactory<LmsDbConte
     {
         var builder = new DbContextOptionsBuilder<LmsDbContext>();
         builder.UseLmsMySql(connectionString);
-        builder.AddInterceptors(new StampingInterceptor(context, clock ?? new SystemClock()));
+        clock ??= new SystemClock();
+        builder.AddInterceptors(new StampingInterceptor(context, clock), new AuditInterceptor(context, clock));
         return new LmsDbContext(builder.Options, context);
     }
 

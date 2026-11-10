@@ -1,7 +1,9 @@
+using Lms.Domain.Auditing;
 using Lms.Domain.Common;
 
 namespace Lms.Domain.Organizations;
 
+[Audited]
 public sealed class OrgUnit : AuditableEntity, IOrgUnitScoped
 {
     private OrgUnit()

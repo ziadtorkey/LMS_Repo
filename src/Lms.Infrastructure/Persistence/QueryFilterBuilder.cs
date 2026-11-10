@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using Lms.Domain.Auditing;
 using Lms.Domain.Common;
 using Lms.Domain.Organizations;
 
@@ -32,6 +33,14 @@ internal static class QueryFilterBuilder
             // The tenant root: a client sees only itself.
             tenantScope = And(tenantScope, Expression.Equal(
                 Expression.Convert(Expression.Property(e, nameof(Entity.Id)), typeof(Guid?)),
+                Expression.Property(ctx, nameof(Lms.Domain.Abstractions.ICurrentContext.OrganizationId))));
+        }
+
+        if (clrType == typeof(AuditEntry))
+        {
+            // Not ITenantOwned: OrganizationId is nullable (events outside any client). A client sees only its own entries.
+            tenantScope = And(tenantScope, Expression.Equal(
+                Expression.Property(e, nameof(AuditEntry.OrganizationId)),
                 Expression.Property(ctx, nameof(Lms.Domain.Abstractions.ICurrentContext.OrganizationId))));
         }
 
