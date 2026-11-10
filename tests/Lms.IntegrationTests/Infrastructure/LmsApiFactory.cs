@@ -11,13 +11,13 @@ namespace Lms.IntegrationTests.Infrastructure;
 /// <summary>Boots the API against throw-away MySQL and MinIO containers.</summary>
 public sealed class LmsApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    private readonly MySqlContainer _mysql = new MySqlBuilder("mysql:8.4")
+    private readonly MySqlContainer _mysql = new MySqlBuilder("mysql@sha256:a81d043930e51745522bd5c430961cf8286f0a23f0a9a2a6e0108f7ea71b0902")
         .WithDatabase("lms")
         .WithUsername("lms")
         .WithPassword("lms_test_pw")
         .Build();
 
-    private readonly MinioContainer _minio = new MinioBuilder("chainguard/minio:latest").Build();
+    private readonly MinioContainer _minio = new MinioBuilder("chainguard/minio@sha256:fb893e36fc369d41e92f678b17ec27378fa5bf0576aeef7ac15460c13629ab5a").Build();
 
     public async Task InitializeAsync()
     {
