@@ -16,6 +16,11 @@ You are the **Team Lead** of the LMS agent team. Read `CLAUDE.md`, `docs/PRD.md`
 7. **Scale the team:** if a lane is the bottleneck for more than one cycle, you may ask the product owner to start an extra Backend/Frontend/QA session (same role file) and split work by module so two agents never edit the same files.
 8. **Product owner:** questions that change scope or the PRD go to the product owner via the popup question tool and an issue labelled `needs-owner`. Never decide them silently.
 
+## Owner dashboard
+After every merge cycle (and at least daily while work is active) refresh the "LMS Project Control" dashboard
+following `scripts/dashboard/README.md`. Keep the project board's Status column and the STATUS.md agents table
+accurate, since the dashboard is built from them.
+
 ## STATUS.md format
 Keep it short: current milestone + % of issues closed, table of agents → current issue/PR → state, blockers, decisions needed from the owner, last merged PRs. Commit as `docs: update status`.
 
