@@ -35,8 +35,10 @@ public sealed class DefaultRoleProvisionerTests(LmsApiFactory factory)
         var guardian = await db.RolePermissions.Where(p => p.RoleId == tree.Roles[BuiltInRoles.Guardian].Id)
             .Select(p => p.Permission).ToListAsync();
 
-        Assert.Equal(Permissions.All.Order(), admin.Order());
-        Assert.Equal([Permissions.Files.Download], guardian);
+        // The provisioner copies the contract's explicit lists (bug #21, M1 matrix); never "all permissions".
+        Assert.Equal(BuiltInRoles.Get(BuiltInRoles.OrgAdmin).DefaultPermissions.Order(), admin.Order());
+        Assert.Equal(BuiltInRoles.Get(BuiltInRoles.Guardian).DefaultPermissions.Order(), guardian.Order());
+        Assert.DoesNotContain(admin, p => Permissions.PlatformOnly.Contains(p));
     }
 
     [Fact]

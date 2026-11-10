@@ -2,19 +2,19 @@
 
 _Updated by the Team Lead after every merge cycle._
 
-**Milestone:** M0 Foundation — in progress (12 / 19 issues closed)
-**Last update:** 2026-11-10 — M1 plan APPROVED by the owner (decisions D16–D22); M1 issues #36–#73 opened (plan Task N = issue #N+35); Lead contract PRs T1–T4 (#36–#39) in progress; 2nd Frontend agent approved (starting). M0 remaining: #6 (PR #31), #10 (PR #35), #14, #15 (PR #34), #16, #30, #32 (PR #33).
+**Milestone:** M0 Foundation — finishing (16 / 19 issues closed) · M1 Organization & Access — started (4 / 38 issues closed)
+**Last update:** 2026-11-10 — Dev seed PR #77 merged (closes #14). M0 left: #15 E2E (PR #34, QA 2 full run), #30, #16. M1 PRs: #80 (#40, QA 2), #82 (#41, approved, waiting on AGENTS.md removal), #83 (#43, approved, stacked on #80), #74 (#58, changes requested), #81 (#59). New issue #85 (forwarded headers).
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |
 |---|---|---|---|---|
-| Team Lead | Opus | `local_95ef9dc7-9378-4012-a8f2-c7d1f944bdec` (lms-lead) | M0 merges; M1 contracts #36–#39 | coordinating |
-| Backend 1 | Sonnet | `local_19f31b04-ca2f-43d1-a2cb-8a128722a11f` (lms-backend) | #32 PR; #14 after #31; then #30 | working |
-| Backend 2 | Sonnet | `local_d36e7dc2-e9e6-4f73-b7b3-b078b17bbe41` (lms-backend-2) | PR #31 (#6) merging main; #10 files endpoints | working |
-| Frontend | Sonnet | `local_40667dce-5be7-478b-95cb-4f14ecd203b9` (lms-frontend) | M1 #58 T23 API plumbing (after contract #36) | starting |
-| Frontend 2 | Sonnet | (being started) | M1 #64–#69 (T29–T34) after #58 | not started |
-| QA | Opus | `local_91a7af3c-7b02-4d61-ac11-2c22629cf89f` (lms-qa) | #14 seed review; E2E #15 (#16) | working |
-| QA 2 | Opus | `local_54d26c64-4403-4a13-b128-5be5e9752d97` (lms-qa-2) | spot-checks #25, #31; then #10, #30, #32 | reviewing |
+| Team Lead | Opus | `local_95ef9dc7-9378-4012-a8f2-c7d1f944bdec` (lms-lead) | coordinating M0 close-out + M1 | coordinating |
+| Backend 1 | Sonnet | `local_19f31b04-ca2f-43d1-a2cb-8a128722a11f` (lms-backend) | PR #80 (#40) in review; then #30, #42 | working |
+| Backend 2 | Sonnet | `local_d36e7dc2-e9e6-4f73-b7b3-b078b17bbe41` (lms-backend-2) | PRs #82 (#41), #83 (#43); then #45 | working |
+| Frontend | Sonnet | `local_40667dce-5be7-478b-95cb-4f14ecd203b9` (lms-frontend) | PRs #74 (#58, changes requested), #81 (#59); #60 org tree | working |
+| Frontend 2 | Sonnet | (waiting for owner to click Start) | M1 #64–#69 (T29–T34) after #58 | not started |
+| QA | Opus | `local_91a7af3c-7b02-4d61-ac11-2c22629cf89f` (lms-qa) | review #74 (M1), #14; fix + un-draft E2E PR #34 (#15) | working |
+| QA 2 | Opus | `local_54d26c64-4403-4a13-b128-5be5e9752d97` (lms-qa-2) | #34 full run; #30; M1 BE2 PRs | reviewing |
 
 ## M0 issue map
 | Task | Issue | Lane | Depends on |
@@ -46,6 +46,12 @@ None. (Board: [LMS v1](https://github.com/users/ziadtorkey/projects/1) — Todo 
 None. (2026-11-10: M1 plan approved; D16–D22 recorded; 2nd FE approved.) (2026-11-10: owner approved Lead merging QA-approved green PRs, and a 2nd QA agent; D15: no access via Inactive units.)
 
 ## Recently merged
+- #77 feat(seed): dev seed with sample clients, roles and users (closes #14)
+- #79 feat(contracts): M1 contracts T2–T4 (closes #37, #38, #39)
+- #75 feat(contracts): M1 permissions, built-in matrix, problem codes, organization DTOs (closes #36)
+- #35 feat(files): MinIO file storage with presigned downloads (closes #10)
+- #31 feat(auth): identity with OpenIddict authorization code + PKCE (closes #6)
+- #33 test(access): Review Focus 2 against the real PolicyEvaluator (closes #32)
 - #29 feat(me): current user contexts and effective permissions (closes #11)
 - #27 feat(access): access evaluator and RequirePermission endpoint filter (closes #9)
 - #25 feat(config): inheritable settings with locks and policy evaluator (closes #8)

@@ -118,7 +118,9 @@ public sealed class MeEndpointsTests(LmsApiFactory factory)
         Assert.Equal(a.Id, dto.AssignmentId);
         Assert.DoesNotContain(Permissions.OrgUnits.Create, dto.Permissions);
         Assert.Equal(
-            Permissions.All.Where(p => p != Permissions.OrgUnits.Create).Order(), dto.Permissions.Order());
+            BuiltInRoles.Get(BuiltInRoles.OrgAdmin).DefaultPermissions
+                .Where(p => p != Permissions.OrgUnits.Create).Order(),
+            dto.Permissions.Order());
     }
 
     [Fact]

@@ -9,7 +9,7 @@ services:
       MYSQL_USER: lms
       MYSQL_PASSWORD: lms_dev_pw
     ports:
-      - "3306:3306"
+      - "${LMS_MYSQL_PORT:-3306}:3306"
     volumes:
       - mysql-data:/var/lib/mysql
     healthcheck:

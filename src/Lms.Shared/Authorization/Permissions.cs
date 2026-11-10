@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Reflection;
 
 namespace Lms.Shared.Authorization;
@@ -14,6 +15,7 @@ public static class Permissions
         public const string Create = "OrgUnits.Create";
         public const string Update = "OrgUnits.Update";
         public const string Delete = "OrgUnits.Delete";
+        public const string Move = "OrgUnits.Move";
     }
 
     public static class Roles
@@ -28,6 +30,7 @@ public static class Permissions
     {
         public const string View = "Assignments.View";
         public const string Create = "Assignments.Create";
+        public const string Update = "Assignments.Update";
         public const string Delete = "Assignments.Delete";
     }
 
@@ -55,20 +58,55 @@ public static class Permissions
         public const string Download = "Files.Download";
     }
 
+    /// <summary>Platform Admin only (see <see cref="PlatformOnly"/>).</summary>
+    public static class Clients
+    {
+        public const string View = "Clients.View";
+        public const string Create = "Clients.Create";
+        public const string Update = "Clients.Update";
+    }
+
+    public static class LevelTypes
+    {
+        public const string View = "LevelTypes.View";
+        public const string Create = "LevelTypes.Create";
+        public const string Update = "LevelTypes.Update";
+        public const string Delete = "LevelTypes.Delete";
+    }
+
+    public static class Templates
+    {
+        public const string View = "Templates.View";
+        public const string Create = "Templates.Create";
+        public const string Delete = "Templates.Delete";
+        public const string Apply = "Templates.Apply";
+    }
+
+    public static class AcademicYears
+    {
+        public const string View = "AcademicYears.View";
+        public const string Create = "AcademicYears.Create";
+        public const string Update = "AcademicYears.Update";
+        public const string Delete = "AcademicYears.Delete";
+    }
+
+    // Immutable list (not a FrozenSet) so existing consumers typed IReadOnlyList<string> keep compiling;
+    // ImmutableArray rejects every mutation through IList<string>/ICollection<string>.
     private static readonly Lazy<IReadOnlyList<string>> AllLazy = new(() =>
         typeof(Permissions)
             .GetNestedTypes(BindingFlags.Public | BindingFlags.Static)
             .SelectMany(t => t.GetFields(BindingFlags.Public | BindingFlags.Static))
             .Where(f => f.IsLiteral && f.FieldType == typeof(string))
             .Select(f => (string)f.GetRawConstantValue()!)
-            .ToArray());
+            .ToImmutableArray());
 
-    /// <summary>Every permission in the catalog (reflection, cached).</summary>
+    /// <summary>Every permission in the catalog (reflection, cached, immutable).</summary>
     public static IReadOnlyList<string> All => AllLazy.Value;
 
     /// <summary>
     /// Permissions reserved for the Platform Admin (above all clients). No built-in or custom
-    /// client role may hold them. Empty in M0; M1 adds Clients.* here.
+    /// client role may hold them (enforced by contract tests and by the roles API).
     /// </summary>
-    public static IReadOnlyList<string> PlatformOnly { get; } = [];
+    public static IReadOnlyList<string> PlatformOnly { get; } =
+        ImmutableArray.Create(Clients.View, Clients.Create, Clients.Update);
 }

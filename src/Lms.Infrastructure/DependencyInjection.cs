@@ -1,9 +1,11 @@
 using Lms.Domain.Abstractions;
 using Lms.Infrastructure.Access;
 using Lms.Infrastructure.Auditing;
+using Lms.Infrastructure.Files;
 using Lms.Infrastructure.Identity;
 using Lms.Infrastructure.Configuration;
 using Lms.Infrastructure.Persistence;
+using Lms.Infrastructure.Seeding;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -17,7 +19,9 @@ public static class DependencyInjection
         services.AddSingleton<IClock, SystemClock>();
         services.AddPersistence(configuration);
         services.AddAccess();
+        services.AddDevSeeding();
         services.AddAuditing();
+        services.AddFileStorage(configuration);
         services.AddLmsIdentityStores();
         services.AddSettingsAndPolicies();
         return services;

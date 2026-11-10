@@ -1,7 +1,9 @@
+using Lms.Api.Features.Files;
 using Lms.Api.Features.Auth;
 using Lms.Api.Features.Me;
 using Lms.Api.Infrastructure;
 using Lms.Infrastructure;
+using Lms.Infrastructure.Seeding;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,6 +24,12 @@ builder.Services.AddHealthChecks()
     .AddCheck<MySqlHealthCheck>("mysql");
 
 var app = builder.Build();
+
+// Development only: migrate the local database and load the sample clients (no-op in every other environment).
+if (app.Environment.IsDevelopment() && app.Configuration.GetValue("Seed:RunOnStartup", true))
+{
+    await app.Services.GetRequiredService<DevSeeder>().SeedAsync();
+}
 
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseMiddleware<SecurityHeadersMiddleware>();
@@ -44,6 +52,7 @@ app.UseAuthorization();
 app.MapAuthorizationEndpoints();
 app.MapRazorPages();
 app.MapHealthChecks("/health");
+app.MapFileEndpoints();
 foreach (var module in app.Services.GetServices<IEndpointModule>())
 {
     module.Map(app);

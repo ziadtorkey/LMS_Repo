@@ -9,7 +9,9 @@
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
     <PackageReference Include="OpenIddict.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <PackageReference Include="MySql.EntityFrameworkCore" />
+    <PackageReference Include="Minio" />
     <PackageReference Include="MySqlConnector" />
   </ItemGroup>
 
