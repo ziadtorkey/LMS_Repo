@@ -1,34 +1,44 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Lms.Client</title>
+    <title>LMS</title>
     <base href="/" />
     <link rel="preload" id="webassembly" />
-    <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="_content/MudBlazor/MudBlazor.min.css" />
     <link rel="stylesheet" href="css/app.css" />
     <link rel="icon" type="image/png" href="favicon.png" />
-    <link href="Lms.Client.styles.css" rel="stylesheet" />
     <script type="importmap"></script>
 </head>
 
 <body>
     <div id="app">
-        <svg class="loading-progress">
-            <circle r="40%" cx="50%" cy="50%" />
-            <circle r="40%" cx="50%" cy="50%" />
-        </svg>
-        <div class="loading-progress-text"></div>
+        <div class="loading-progress-text">LMS …</div>
     </div>
 
     <div id="blazor-error-ui">
-        An unhandled error has occurred.
-        <a href="." class="reload">Reload</a>
+        حدث خطأ غير متوقع / An unhandled error has occurred.
+        <a href="." class="reload">إعادة تحميل / Reload</a>
         <span class="dismiss">🗙</span>
     </div>
-    <script src="_framework/blazor.webassembly#[.{fingerprint}].js"></script>
+    <script src="_content/MudBlazor/MudBlazor.min.js"></script>
+    <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
+    <script src="_framework/blazor.webassembly#[.{fingerprint}].js" autostart="false"></script>
+    <script>
+        // Culture is chosen before Blazor starts: ar (default, RTL) or en. Persisted by CultureService as lms.culture.
+        (function () {
+            var c = localStorage.getItem('lms.culture');
+            if (c !== 'ar' && c !== 'en') c = 'ar';
+            document.documentElement.lang = c;
+            document.documentElement.dir = c === 'ar' ? 'rtl' : 'ltr';
+            // The standalone dev server (launchSettings port 5078) runs on fakes; the API-hosted app never does.
+            var opts = { applicationCulture: c };
+            if (location.port === '5078') opts.environment = 'Standalone';
+            Blazor.start(opts);
+        })();
+    </script>
 </body>
 
 </html>

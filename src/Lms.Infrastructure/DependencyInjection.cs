@@ -1,6 +1,5 @@
 using Lms.Domain.Abstractions;
 using Lms.Infrastructure.Auditing;
-using Lms.Infrastructure.Configuration;
 using Lms.Infrastructure.Persistence;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,7 +14,6 @@ public static class DependencyInjection
         services.AddSingleton<IClock, SystemClock>();
         services.AddPersistence(configuration);
         services.AddAuditing();
-        services.AddSettingsAndPolicies();
         return services;
     }
 }
