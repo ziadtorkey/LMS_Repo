@@ -34,7 +34,7 @@ _Updated by the Team Lead after every merge cycle._
 | M0 review checklist | #16 | QA | all |
 
 ## Blockers
-- GitHub Project board "LMS v1" not created yet: the `gh` token lacks the `project` scope (owner granting it). Issues will be added once available.
+None. (Board: [LMS v1](https://github.com/users/ziadtorkey/projects/1) — Todo → In Progress → In Review → Done.)
 
 ## Decisions needed from the product owner
 None.
