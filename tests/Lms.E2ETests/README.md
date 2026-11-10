@@ -34,7 +34,8 @@ Credentials are never copied into the tests: they come from the dev seed config.
 - **Selectors:** `data-testid` only (`login-*`, `app-root`, `lang-switch`, `user-menu`, `context-switcher`, `context-option-<assignmentId>`, `no-contexts`, `nav-toggle`, `nav-<key>`, `forbidden-page`). Ask FE for a test id rather than selecting by CSS or text structure.
 - **Expected text** comes from `src/Lms.Client/Resources/SharedResource.{ar,en}.resx` (`Resx.Ar/En`), never hard-coded UI strings. Seeded business data (role labels, unit names) may be literal.
 - **Isolation:** every test gets a fresh browser context (empty `localStorage`), so it starts in Arabic with no stored context. Tests share the seeded database and run sequentially (`[Collection("e2e")]`).
-- **Never break shared users:** the lockout test uses the dedicated `lockout-e2e@altagamo3.test`.
+- **Never break shared users:** the lockout test uses the dedicated `lockout-e2e@altagamo3.test`. That account stays locked for 15 minutes after a run, and longer across local re-runs on the same database volume. That is expected: a locked account shows the same message as an unknown one, so the test still passes. Don't "fix" it by unlocking the user in the seed.
+- **Form posts:** after submitting a form, wait for that request's response (`RunAndWaitForResponseAsync`), not just a load state. The current page counts as loaded already, so a load-state wait returns before the server answers.
 - **Waiting:** Playwright auto-waiting (`Expect(...)`, `WaitForURLAsync`); no fixed sleeps.
 
 ## Artifacts
