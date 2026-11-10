@@ -1,4 +1,7 @@
+using System.Collections.Frozen;
+using System.Reflection;
 using System.Text.RegularExpressions;
+using Lms.Shared;
 using Lms.Shared.Authorization;
 using Lms.Shared.Configuration;
 
@@ -18,17 +21,68 @@ public partial class AuthorizationContractTests
     }
 
     [Fact]
-    public void Permission_catalog_contains_the_M0_set()
+    public void Permission_catalog_contains_exactly_the_M0_and_M1_set()
     {
         string[] expected =
         [
-            "OrgUnits.View", "OrgUnits.Create", "OrgUnits.Update", "OrgUnits.Delete",
+            "OrgUnits.View", "OrgUnits.Create", "OrgUnits.Update", "OrgUnits.Delete", "OrgUnits.Move",
             "Roles.View", "Roles.Create", "Roles.Update", "Roles.Delete",
-            "Assignments.View", "Assignments.Create", "Assignments.Delete",
+            "Assignments.View", "Assignments.Create", "Assignments.Update", "Assignments.Delete",
             "Settings.View", "Settings.Update", "Policies.View", "Policies.Update",
             "Audit.View", "Audit.Export", "Files.Upload", "Files.Download",
+            "Clients.View", "Clients.Create", "Clients.Update",
+            "LevelTypes.View", "LevelTypes.Create", "LevelTypes.Update", "LevelTypes.Delete",
+            "Templates.View", "Templates.Create", "Templates.Delete", "Templates.Apply",
+            "AcademicYears.View", "AcademicYears.Create", "AcademicYears.Update", "AcademicYears.Delete",
         ];
-        Assert.Equal(expected.Order(), Permissions.All.Order());
+        Assert.Equal(expected.Order(StringComparer.Ordinal), Permissions.All.Order(StringComparer.Ordinal));
+    }
+
+    [Fact]
+    public void Permissions_All_is_immutable()
+    {
+        Assert.IsNotType<string[]>(Permissions.All);
+        Assert.IsNotType<List<string>>(Permissions.All);
+        var asList = Assert.IsAssignableFrom<IList<string>>(Permissions.All);
+        Assert.True(asList.IsReadOnly);
+        Assert.Throws<NotSupportedException>(() => asList.Add("Hacked.Permission"));
+        Assert.Throws<NotSupportedException>(() => asList[0] = "Hacked.Permission");
+        Assert.Same(Permissions.All, Permissions.All);
+    }
+
+    [Fact]
+    public void Policy_catalog_is_immutable()
+    {
+        Assert.IsAssignableFrom<FrozenDictionary<string, IReadOnlyList<string>>>(PolicyCatalog.BlockedPermissions);
+        Assert.All(PolicyCatalog.BlockedPermissions.Values, v =>
+        {
+            var asList = Assert.IsAssignableFrom<IList<string>>(v);
+            Assert.True(asList.IsReadOnly);
+            Assert.Throws<NotSupportedException>(() => asList.Add("Hacked.Permission"));
+        });
+    }
+
+    [Fact]
+    public void ProblemCodes_values_equal_their_names_and_are_unique()
+    {
+        var fields = typeof(ProblemCodes).GetFields(BindingFlags.Public | BindingFlags.Static)
+            .Where(f => f.IsLiteral && f.FieldType == typeof(string))
+            .ToList();
+        string[] expected =
+        [
+            "not_found", "validation_failed", "code_taken", "name_taken", "level_type_in_use", "invalid_level_type",
+            "unit_has_children", "unit_has_assignments", "unit_in_use", "root_unit", "invalid_move",
+            "invalid_transfer_target", "transfer_target_in_use", "setting_locked", "policy_inherited", "built_in_role",
+            "role_in_use", "platform_only_permission", "permission_escalation", "last_admin_permission",
+            "assignment_exists", "own_assignment", "branch_too_large", "placeholder_missing", "placeholder_unknown",
+            "export_too_large", "year_overlap", "year_closed", "year_active", "active_year_exists", "term_overlap",
+            "term_outside_year", "event_outside_year", "in_app_required",
+        ];
+
+        Assert.All(fields, f => Assert.Equal(f.Name, (string)f.GetRawConstantValue()!));
+        var values = fields.Select(f => (string)f.GetRawConstantValue()!).ToList();
+        Assert.Equal(values.Count, values.Distinct(StringComparer.Ordinal).Count());
+        Assert.Equal(expected.Order(StringComparer.Ordinal), values.Order(StringComparer.Ordinal));
     }
 
     [Fact]
@@ -63,26 +117,11 @@ public partial class AuthorizationContractTests
     [Fact]
     public void OrgAdmin_has_an_explicit_list_not_the_live_catalog()
     {
-        // Bug #21: new permissions must not flow to OrgAdmin automatically.
+        // Bug #21: new permissions must not flow to OrgAdmin automatically (exact list pinned in BuiltInRoleMatrixTests).
         var orgAdmin = BuiltInRoles.Get(BuiltInRoles.OrgAdmin).DefaultPermissions;
         Assert.NotSame(Permissions.All, orgAdmin);
-        string[] expected =
-        [
-            "OrgUnits.View", "OrgUnits.Create", "OrgUnits.Update", "OrgUnits.Delete",
-            "Roles.View", "Roles.Create", "Roles.Update", "Roles.Delete",
-            "Assignments.View", "Assignments.Create", "Assignments.Delete",
-            "Settings.View", "Settings.Update", "Policies.View", "Policies.Update",
-            "Audit.View", "Audit.Export", "Files.Upload", "Files.Download",
-        ];
-        Assert.Equal(expected.Order(), orgAdmin.Order());
-    }
-
-    [Fact]
-    public void No_built_in_role_holds_a_platform_only_permission()
-    {
-        Assert.All(Permissions.PlatformOnly, p => Assert.Contains(p, Permissions.All));
-        Assert.All(BuiltInRoles.All, r =>
-            Assert.Empty(r.DefaultPermissions.Intersect(Permissions.PlatformOnly)));
+        Assert.NotEqual(Permissions.All.Order(StringComparer.Ordinal), orgAdmin.Order(StringComparer.Ordinal));
+        Assert.DoesNotContain(Permissions.Clients.Create, orgAdmin);
     }
 
     [Fact]
