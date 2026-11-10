@@ -132,7 +132,21 @@ public sealed class AcademicYearTests(LmsApiFactory factory)
         var addTerm = await SendAsync(factory, HttpMethod.Post, $"/api/academic-years/{closed.Id}/terms", admin,
             new SaveTermRequest("ف", "T", Y1.AddYears(-5), Y1.AddYears(-5).AddMonths(2)));
 
-        foreach (var response in new[] { update, activate, delete, addTerm })
+        // Term update and delete on a term of a (now) closed year.
+        var openYear = await CreateYearAsync(factory, admin, tree.Root, "Open", Y1, Y1.AddMonths(10));
+        var termResponse = await SendAsync(factory, HttpMethod.Post, $"/api/academic-years/{openYear.Id}/terms", admin,
+            new SaveTermRequest("ف", "T", Y1, Y1.AddMonths(2)));
+        var term = (await termResponse.Content.ReadFromJsonAsync<TermDto>(Web))!;
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            (await db.Set<AcademicYear>().SingleAsync(y => y.Id == openYear.Id)).Close();
+            await db.SaveChangesAsync();
+        }
+
+        var putTerm = await SendAsync(factory, HttpMethod.Put, $"/api/terms/{term.Id}", admin, new SaveTermRequest("ف", "T2", Y1, Y1.AddMonths(1)));
+        var delTerm = await SendAsync(factory, HttpMethod.Delete, $"/api/terms/{term.Id}", admin);
+
+        foreach (var response in new[] { update, activate, delete, addTerm, putTerm, delTerm })
         {
             Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
             Assert.Contains("year_closed", await response.Content.ReadAsStringAsync());

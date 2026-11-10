@@ -84,6 +84,11 @@ public static class TermEndpoints
             return problem!;
         }
 
+        if (year.Status == AcademicYearStatus.Closed)
+        {
+            return ApiProblems.Conflict(ProblemCodes.year_closed, "A closed academic year is read-only.");
+        }
+
         var remaining = await db.Set<Term>().Where(t => t.AcademicYearId == year.Id && t.Id != term.Id).ToListAsync(ct);
         db.Set<Term>().Remove(term);
         Reorder(remaining);
