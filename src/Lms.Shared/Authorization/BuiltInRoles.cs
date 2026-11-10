@@ -21,42 +21,57 @@ public static class BuiltInRoles
     public const string Student = "Student";
     public const string Guardian = "Guardian";
 
+    // Explicit lists (bug #21, M1 Global Constraints): every permission is added by hand to each role it
+    // belongs to (PRD §3.4). Never "all permissions"; never a Permissions.PlatformOnly entry.
     public static IReadOnlyList<BuiltInRoleDefinition> All { get; } =
     [
         new(OrgAdmin, RoleBaseKinds.Staff,
             new("مسؤول النظام", "Admin"),
             new("مسؤول النظام", "Admin"),
-            // Explicit list (bug #21): new permissions are never granted to OrgAdmin implicitly.
             [Permissions.OrgUnits.View, Permissions.OrgUnits.Create, Permissions.OrgUnits.Update, Permissions.OrgUnits.Delete,
+             Permissions.OrgUnits.Move,
              Permissions.Roles.View, Permissions.Roles.Create, Permissions.Roles.Update, Permissions.Roles.Delete,
-             Permissions.Assignments.View, Permissions.Assignments.Create, Permissions.Assignments.Delete,
+             Permissions.Assignments.View, Permissions.Assignments.Create, Permissions.Assignments.Update,
+             Permissions.Assignments.Delete,
              Permissions.Settings.View, Permissions.Settings.Update, Permissions.Policies.View, Permissions.Policies.Update,
-             Permissions.Audit.View, Permissions.Audit.Export, Permissions.Files.Upload, Permissions.Files.Download]),
+             Permissions.Audit.View, Permissions.Audit.Export, Permissions.Files.Upload, Permissions.Files.Download,
+             Permissions.LevelTypes.View, Permissions.LevelTypes.Create, Permissions.LevelTypes.Update,
+             Permissions.LevelTypes.Delete,
+             Permissions.Templates.View, Permissions.Templates.Create, Permissions.Templates.Delete,
+             Permissions.Templates.Apply,
+             Permissions.AcademicYears.View, Permissions.AcademicYears.Create, Permissions.AcademicYears.Update,
+             Permissions.AcademicYears.Delete]),
         new(Manager, RoleBaseKinds.Staff,
             new("مدير المدرسة", "School Manager"),
             new("العميد", "Dean"),
-            [Permissions.OrgUnits.View, Permissions.Roles.View, Permissions.Assignments.View,
-             Permissions.Settings.View, Permissions.Policies.View, Permissions.Audit.View, Permissions.Files.Upload, Permissions.Files.Download]),
+            // D16: a Manager may assign roles; which roles is limited by the escalation guard (M1 Task 21).
+            [Permissions.OrgUnits.View, Permissions.Roles.View,
+             Permissions.Assignments.View, Permissions.Assignments.Create, Permissions.Assignments.Delete,
+             Permissions.Settings.View, Permissions.Policies.View, Permissions.Audit.View,
+             Permissions.Files.Upload, Permissions.Files.Download,
+             Permissions.LevelTypes.View, Permissions.Templates.View, Permissions.AcademicYears.View]),
         new(Supervisor, RoleBaseKinds.Staff,
             new("المشرف الأكاديمي", "Academic Supervisor"),
             new("رئيس القسم", "Head of Department"),
-            [Permissions.OrgUnits.View, Permissions.Settings.View, Permissions.Policies.View, Permissions.Files.Upload, Permissions.Files.Download]),
+            [Permissions.OrgUnits.View, Permissions.Settings.View, Permissions.Policies.View,
+             Permissions.Files.Upload, Permissions.Files.Download,
+             Permissions.LevelTypes.View, Permissions.Templates.View, Permissions.AcademicYears.View]),
         new(Counselor, RoleBaseKinds.Staff,
             new("الأخصائي الاجتماعي", "Social Worker"),
             new("شؤون الطلاب", "Student Affairs"),
-            [Permissions.Files.Upload, Permissions.Files.Download]),
+            [Permissions.Files.Upload, Permissions.Files.Download, Permissions.AcademicYears.View]),
         new(Teacher, RoleBaseKinds.Staff,
             new("المعلم", "Teacher"),
             new("عضو هيئة التدريس", "Instructor"),
-            [Permissions.Files.Upload, Permissions.Files.Download]),
+            [Permissions.Files.Upload, Permissions.Files.Download, Permissions.AcademicYears.View]),
         new(Student, RoleBaseKinds.Student,
             new("الطالب", "Student"),
             new("الطالب", "Student"),
-            [Permissions.Files.Upload, Permissions.Files.Download]),
+            [Permissions.Files.Upload, Permissions.Files.Download, Permissions.AcademicYears.View]),
         new(Guardian, RoleBaseKinds.Guardian,
             new("ولي الأمر", "Parent"),
             new("ولي الأمر", "Parent"),
-            [Permissions.Files.Download]),
+            [Permissions.Files.Download, Permissions.AcademicYears.View]),
     ];
 
     public static BuiltInRoleDefinition Get(string key) =>
