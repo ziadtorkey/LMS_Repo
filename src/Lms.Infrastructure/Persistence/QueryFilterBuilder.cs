@@ -39,9 +39,12 @@ internal static class QueryFilterBuilder
         if (clrType == typeof(AuditEntry))
         {
             // Not ITenantOwned: OrganizationId is nullable (events outside any client). A client sees only its own entries.
-            tenantScope = And(tenantScope, Expression.Equal(
-                Expression.Property(e, nameof(AuditEntry.OrganizationId)),
-                Expression.Property(ctx, nameof(Lms.Domain.Abstractions.ICurrentContext.OrganizationId))));
+            // EF turns Guid? == Guid? into "a = b OR (a IS NULL AND b IS NULL)", so a caller without a client would
+            // match every client-less entry; the explicit not-null check on the caller side prevents that.
+            var callerOrg = Expression.Property(ctx, nameof(Lms.Domain.Abstractions.ICurrentContext.OrganizationId));
+            tenantScope = And(tenantScope, Expression.AndAlso(
+                Expression.NotEqual(callerOrg, Expression.Constant(null, typeof(Guid?))),
+                Expression.Equal(Expression.Property(e, nameof(AuditEntry.OrganizationId)), callerOrg)));
         }
 
         if (typeof(ITenantOwned).IsAssignableFrom(clrType))
