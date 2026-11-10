@@ -52,12 +52,23 @@ public sealed class MeEndpointsTests(LmsApiFactory factory)
             await db.SaveChangesAsync();
         }
 
-        var response = await GetAsync(Routes.Me, user, name: "Teacher Tarek");
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            db.Users.Add(new Lms.Domain.Identity.User
+            {
+                Id = user, UserName = "tarek@lms.test", NormalizedUserName = "TAREK@LMS.TEST",
+                DisplayNameAr = "المعلم طارق", DisplayNameEn = "Teacher Tarek",
+            });
+            await db.SaveChangesAsync();
+        }
+
+        var response = await GetAsync(Routes.Me, user);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var me = (await response.Content.ReadFromJsonAsync<MeDto>())!;
         Assert.Equal(user, me.UserId);
         Assert.Equal("Teacher Tarek", me.DisplayNameEn);
+        Assert.Equal("المعلم طارق", me.DisplayNameAr);
         Assert.False(me.IsPlatformAdmin);
         var context = Assert.Single(me.Contexts);
         Assert.Equal(valid.Id, context.AssignmentId);
