@@ -1,6 +1,7 @@
 using Lms.Api.Features.Files;
 using Lms.Api.Features.Account;
 using Lms.Api.Features.Auth;
+using Lms.Api.Features.Assignments;
 using Lms.Api.Features.Me;
 using Lms.Api.Features.Roles;
 using Lms.Api.Infrastructure;
@@ -24,6 +25,7 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddLmsAuth(builder.Configuration, builder.Environment);
 builder.Services.AddAccount(builder.Configuration);
 builder.Services.AddRoles();
+builder.Services.AddAssignments();
 
 builder.Services.AddHealthChecks()
     .AddCheck<MySqlHealthCheck>("mysql");
@@ -70,6 +72,7 @@ foreach (var module in app.Services.GetServices<IEndpointModule>())
 
 app.MapMeEndpoints();
 app.MapRoleEndpoints();
+app.MapAssignmentEndpoints();
 
 // Unknown API routes must be 404, not the SPA's index.html.
 app.MapFallback("/api/{**path}", () => Results.Problem(statusCode: StatusCodes.Status404NotFound, title: "Not found"));
