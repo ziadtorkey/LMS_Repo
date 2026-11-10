@@ -135,4 +135,6 @@
   <data name="OrgTree_Settings" xml:space="preserve"><value>Unit settings</value></data>
   <data name="OrgTree_DeleteConfirm" xml:space="preserve"><value>Delete this unit? It can be restored by support only.</value></data>
   <data name="OrgTree_NoMatches" xml:space="preserve"><value>No units match your search.</value></data>
+  <data name="Confirm_DeactivateTitle" xml:space="preserve"><value>Deactivate unit?</value></data>
+  <data name="OrgTree_DeactivateOwnWarning" xml:space="preserve"><value>You are working in this unit (or in one inside it). If you deactivate it you will lose access until an administrator above it reactivates it. Continue?</value></data>
 </root>

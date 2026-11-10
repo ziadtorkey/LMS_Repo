@@ -50,6 +50,8 @@ public sealed class StubOrgApi : IOrgApi
     public List<(Guid Id, string Status)> StatusChanges { get; } = [];
     public List<Guid> UnitsDeleted { get; } = [];
     public Exception? UnitDeleteFailure { get; set; }
+    public Exception? StatusFailure { get; set; }
+    public Exception? LevelsFailure { get; set; }
 
     public Task<IReadOnlyList<OrgUnitNodeDto>> GetOrgUnitsAsync(string? search, CancellationToken ct = default)
     {
@@ -78,6 +80,7 @@ public sealed class StubOrgApi : IOrgApi
 
     public Task SetOrgUnitStatusAsync(Guid id, SetOrgUnitStatusRequest request, CancellationToken ct = default)
     {
+        if (StatusFailure is not null) return Task.FromException(StatusFailure);
         StatusChanges.Add((id, request.Status));
         var i = Units.FindIndex(u => u.Id == id);
         Units[i] = Units[i] with { Status = request.Status };
@@ -93,7 +96,9 @@ public sealed class StubOrgApi : IOrgApi
     }
 
     public Task<IReadOnlyList<LevelTypeDto>> GetLevelTypesAsync(CancellationToken ct = default) =>
-        Task.FromResult<IReadOnlyList<LevelTypeDto>>(Levels.OrderBy(l => l.Order).ToList());
+        LevelsFailure is not null
+            ? Task.FromException<IReadOnlyList<LevelTypeDto>>(LevelsFailure)
+            : Task.FromResult<IReadOnlyList<LevelTypeDto>>(Levels.OrderBy(l => l.Order).ToList());
 
     public Task<LevelTypeDto> CreateLevelTypeAsync(SaveLevelTypeRequest request, CancellationToken ct = default)
     {

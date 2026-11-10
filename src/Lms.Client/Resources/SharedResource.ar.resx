@@ -135,4 +135,6 @@
   <data name="OrgTree_Settings" xml:space="preserve"><value>إعدادات الوحدة</value></data>
   <data name="OrgTree_DeleteConfirm" xml:space="preserve"><value>حذف هذه الوحدة؟ لا يمكن استعادتها إلا عن طريق الدعم الفني.</value></data>
   <data name="OrgTree_NoMatches" xml:space="preserve"><value>لا توجد وحدات مطابقة للبحث.</value></data>
+  <data name="Confirm_DeactivateTitle" xml:space="preserve"><value>إيقاف الوحدة؟</value></data>
+  <data name="OrgTree_DeactivateOwnWarning" xml:space="preserve"><value>أنت تعمل في هذه الوحدة (أو في وحدة تابعة لها). إذا أوقفتها فستفقد الوصول إلى أن يعيد مسؤول أعلى منها تفعيلها. هل تريد المتابعة؟</value></data>
 </root>

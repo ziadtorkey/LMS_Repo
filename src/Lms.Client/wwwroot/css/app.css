@@ -16,4 +16,5 @@ html, body { margin: 0; font-family: Roboto, "Segoe UI", Tahoma, sans-serif; }
 
 /* Org tree: inactive units greyed, search matches highlighted. */
 .lms-org-inactive { opacity: .6; }
-.lms-org-match .mud-typography { background: var(--mud-palette-warning-hover, rgba(255, 152, 0, .2)); border-radius: 4px; padding: 0 4px; }
+.lms-org-match .mud-typography { background: rgba(255, 193, 7, .45); border-radius: 4px; padding: 0 4px; }
+
