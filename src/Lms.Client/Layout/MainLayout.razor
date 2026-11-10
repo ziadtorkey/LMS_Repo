@@ -3,6 +3,7 @@
 @inject ICultureService Culture
 @inject NavigationManager Navigation
 @inject IContextStore ContextStore
+@inject PermissionState Permissions
 
 <div data-testid="app-root" dir="@(Culture.IsRightToLeft ? "rtl" : "ltr")" lang="@Culture.Current.TwoLetterISOLanguageName">
     <MudRTLProvider RightToLeft="@Culture.IsRightToLeft">
@@ -12,6 +13,12 @@
         <MudSnackbarProvider />
         <MudLayout>
             <MudAppBar Elevation="1">
+                <AuthorizeView>
+                    <Authorized>
+                        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start"
+                                       aria-label="@L["Nav_Menu"]" OnClick="() => _drawerOpen = !_drawerOpen" data-testid="nav-toggle" />
+                    </Authorized>
+                </AuthorizeView>
                 <MudText Typo="Typo.h6" Class="d-none d-sm-flex">@L["App_Title"]</MudText>
                 <MudSpacer />
                 <AuthorizeView>
@@ -33,6 +40,14 @@
                     </NotAuthorized>
                 </AuthorizeView>
             </MudAppBar>
+            <AuthorizeView>
+                <Authorized>
+                    <ContextGate />
+                    <MudDrawer @bind-Open="_drawerOpen" Variant="DrawerVariant.Responsive" ClipMode="DrawerClipMode.Always" Elevation="1">
+                        <NavMenu />
+                    </MudDrawer>
+                </Authorized>
+            </AuthorizeView>
             <MudMainContent>
                 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
                     @Body
@@ -43,9 +58,12 @@
 </div>
 
 @code {
+    private bool _drawerOpen = true;
+
     private async Task Logout()
     {
         await ContextStore.ClearAsync();
+        Permissions.Clear();
         Navigation.NavigateToLogout("authentication/logout");
     }
 }

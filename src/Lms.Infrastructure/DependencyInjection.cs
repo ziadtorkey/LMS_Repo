@@ -1,6 +1,7 @@
 using Lms.Domain.Abstractions;
 using Lms.Infrastructure.Access;
 using Lms.Infrastructure.Auditing;
+using Lms.Infrastructure.Configuration;
 using Lms.Infrastructure.Persistence;
 using Lms.Infrastructure.Seeding;
 using Microsoft.Extensions.Configuration;
@@ -18,6 +19,7 @@ public static class DependencyInjection
         services.AddAccess();
         services.AddDevSeeding();
         services.AddAuditing();
+        services.AddSettingsAndPolicies();
         return services;
     }
 }

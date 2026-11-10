@@ -23,4 +23,15 @@
   <data name="Api_Error" xml:space="preserve"><value>Could not load data. Please try again.</value></data>
   <data name="Common_Retry" xml:space="preserve"><value>Retry</value></data>
   <data name="Common_Loading" xml:space="preserve"><value>Loading</value></data>
+  <data name="Nav_Home" xml:space="preserve"><value>Home</value></data>
+  <data name="Nav_OrgUnits" xml:space="preserve"><value>Organization</value></data>
+  <data name="Nav_Roles" xml:space="preserve"><value>Roles</value></data>
+  <data name="Nav_Settings" xml:space="preserve"><value>Settings</value></data>
+  <data name="Nav_Audit" xml:space="preserve"><value>Audit log</value></data>
+  <data name="Nav_Clients" xml:space="preserve"><value>Clients</value></data>
+  <data name="Nav_Menu" xml:space="preserve"><value>Menu</value></data>
+  <data name="Choose_Title" xml:space="preserve"><value>Choose context</value></data>
+  <data name="Choose_Subtitle" xml:space="preserve"><value>Pick the role and unit you want to work in. You can switch at any time.</value></data>
+  <data name="Choose_Empty_Title" xml:space="preserve"><value>No roles assigned to you</value></data>
+  <data name="Choose_Empty_Body" xml:space="preserve"><value>No role has been assigned to your account yet. Contact your system administrator.</value></data>
 </root>

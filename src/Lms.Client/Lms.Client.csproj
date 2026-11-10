@@ -5,6 +5,11 @@
     <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
   </PropertyGroup>
 
+  <!-- Dev-only fake-API config must never ship in a published/hosted client. -->
+  <ItemGroup Condition="'$(_IsPublishing)' == 'true'">
+    <Content Remove="wwwroot/appsettings.Standalone.json" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Lms.Shared\Lms.Shared.csproj" />
   </ItemGroup>
