@@ -1,4 +1,5 @@
 using Lms.Domain.Abstractions;
+using Lms.Infrastructure.Access;
 using Lms.Infrastructure.Persistence;
 using Lms.Shared.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -40,30 +41,16 @@ public sealed class CurrentContextMiddleware(RequestDelegate next)
 
         var today = DateOnly.FromDateTime(clock.UtcNow);
 
-        // IgnoreQueryFilters: the caller has no scope yet (that is what we are resolving). Every filter we skip is
-        // re-applied explicitly below: assignment, role, unit and client must be live, owned by this user, and the
-        // role/unit must belong to the assignment's client.
-        var assignment = await (
-            from a in db.RoleAssignments.IgnoreQueryFilters()
-            join r in db.Roles.IgnoreQueryFilters() on a.RoleId equals r.Id
-            join u in db.OrgUnits.IgnoreQueryFilters() on a.OrgUnitId equals u.Id
-            join o in db.Organizations.IgnoreQueryFilters() on a.OrganizationId equals o.Id
-            where a.Id == assignmentId
-                  && a.UserId == userId.Value
-                  && !a.IsDeleted && !r.IsDeleted && !u.IsDeleted && !o.IsDeleted
-                  && r.OrganizationId == a.OrganizationId && u.OrganizationId == a.OrganizationId
-                  && (a.ValidFrom == null || a.ValidFrom <= today)
-                  && (a.ValidTo == null || a.ValidTo >= today)
-            select new { a.OrganizationId, ScopePath = u.Path })
+        var assignment = await db.ValidAssignmentsFor(userId.Value, today)
+            .Where(a => a.AssignmentId == assignmentId)
             .FirstOrDefaultAsync(http.RequestAborted);
-
         if (assignment is null)
         {
             await RejectAsync(http);
             return;
         }
 
-        current.SetAssignment(assignmentId, assignment.OrganizationId, assignment.ScopePath);
+        current.SetAssignment(assignmentId, assignment.OrganizationId, assignment.OrgUnitPath);
         await next(http);
     }
 
