@@ -1,4 +1,7 @@
+using Lms.Domain.Access;
+using Lms.Domain.Identity;
 using Lms.Domain.Organizations;
+using Microsoft.AspNetCore.Identity;
 using Lms.Infrastructure.Persistence;
 using Lms.Infrastructure.Seeding;
 using Lms.IntegrationTests.Infrastructure;
@@ -21,8 +24,12 @@ public sealed class DevSeederTests(LmsApiFactory factory)
     private static LmsDbContext Open(string connectionString) =>
         LmsDbContextFactory.Create(connectionString, TestCurrentContext.PlatformAdmin());
 
-    private static DevSeeder SeederFor(string connectionString, string environment = "Development") =>
-        new(connectionString, new FakeEnvironment(environment));
+    private const string Password = "DevPass123";
+    private const string AdminEmail = "admin@lms.test";
+
+    private static DevSeeder SeederFor(string connectionString, string environment = "Development", bool withUsers = true) =>
+        new(connectionString, new FakeEnvironment(environment),
+            withUsers ? new SeedOptions(AdminEmail, Password) : new SeedOptions(null, null));
 
     [Fact]
     public async Task Seeding_creates_the_school_group_and_university_trees()
@@ -111,6 +118,102 @@ public sealed class DevSeederTests(LmsApiFactory factory)
         Assert.Empty(await db.Organizations.ToListAsync());
     }
 
+    private static async Task<List<(string Email, string Role, string Unit)>> AssignmentsAsync(LmsDbContext db) =>
+        (await (
+            from a in db.RoleAssignments
+            join u in db.Users on a.UserId equals u.Id
+            join r in db.Roles on a.RoleId equals r.Id
+            join unit in db.OrgUnits on a.OrgUnitId equals unit.Id
+            select new { u.Email, r.BuiltInKey, unit.Code }).ToListAsync())
+        .Select(x => (x.Email!, x.BuiltInKey!, x.Code)).ToList();
+
+    [Fact]
+    public async Task Seeding_creates_a_platform_admin_and_one_user_per_built_in_role()
+    {
+        var cs = await factory.CreateIsolatedDatabaseAsync();
+        await SeederFor(cs).SeedAsync();
+
+        await using var db = Open(cs);
+        var admin = await db.Users.SingleAsync(x => x.Email == AdminEmail);
+        Assert.True(admin.IsPlatformAdmin);
+        Assert.True(admin.EmailConfirmed);
+        Assert.Equal(UserStatus.Active, admin.Status);
+        Assert.Equal(PasswordVerificationResult.Success,
+            new PasswordHasher<User>().VerifyHashedPassword(admin, admin.PasswordHash!, Password));
+
+        var assignments = await AssignmentsAsync(db);
+        foreach (var (prefix, role) in new[]
+                 {
+                     ("orgadmin", "OrgAdmin"), ("manager", "Manager"), ("supervisor", "Supervisor"),
+                     ("counselor", "Counselor"), ("teacher", "Teacher"), ("student", "Student"), ("guardian", "Guardian"),
+                 })
+        {
+            var mine = assignments.Where(a => a.Email == $"{prefix}@altagamo3.test").ToList();
+            Assert.Single(mine);
+            Assert.Equal(role, mine[0].Role);
+        }
+
+        Assert.All(await db.Users.Where(x => x.Email!.EndsWith("@altagamo3.test")).ToListAsync(), x =>
+        {
+            Assert.False(x.IsPlatformAdmin);
+            Assert.True(x.LockoutEnabled);
+            Assert.NotEmpty(x.DisplayNameAr);
+            Assert.NotEmpty(x.DisplayNameEn);
+        });
+    }
+
+    [Fact]
+    public async Task Multi_context_user_is_teacher_in_KG_and_supervisor_in_Primary()
+    {
+        var cs = await factory.CreateIsolatedDatabaseAsync();
+        await SeederFor(cs).SeedAsync();
+
+        await using var db = Open(cs);
+        var mine = (await AssignmentsAsync(db)).Where(a => a.Email == "multi@altagamo3.test").OrderBy(a => a.Role).ToList();
+
+        Assert.Equal([("multi@altagamo3.test", "Supervisor", "PRI"), ("multi@altagamo3.test", "Teacher", "KG")], mine);
+    }
+
+    [Fact]
+    public async Task Lockout_user_is_a_teacher_in_KG_used_only_by_the_lockout_e2e()
+    {
+        var cs = await factory.CreateIsolatedDatabaseAsync();
+        await SeederFor(cs).SeedAsync();
+
+        await using var db = Open(cs);
+        var mine = (await AssignmentsAsync(db)).Where(a => a.Email == "lockout-e2e@altagamo3.test").ToList();
+
+        Assert.Equal([("lockout-e2e@altagamo3.test", "Teacher", "KG")], mine);
+    }
+
+    [Fact]
+    public async Task Seeding_twice_does_not_duplicate_users_or_assignments_and_keeps_passwords_working()
+    {
+        var cs = await factory.CreateIsolatedDatabaseAsync();
+        await SeederFor(cs).SeedAsync();
+        await using var first = Open(cs);
+        var users = await first.Users.CountAsync();
+        var assignments = await first.RoleAssignments.CountAsync();
+
+        await SeederFor(cs).SeedAsync();
+
+        await using var second = Open(cs);
+        Assert.Equal(users, await second.Users.CountAsync());
+        Assert.Equal(assignments, await second.RoleAssignments.CountAsync());
+        Assert.Equal(10, users); // admin + 7 role users + multi + lockout-e2e
+    }
+
+    [Fact]
+    public async Task Without_a_configured_password_no_users_are_created()
+    {
+        var cs = await factory.CreateIsolatedDatabaseAsync();
+
+        await SeederFor(cs, withUsers: false).SeedAsync();
+
+        await using var db = Open(cs);
+        Assert.Empty(await db.Users.ToListAsync());
+        Assert.NotEmpty(await db.Organizations.ToListAsync());
+    }
     private static async Task<Dictionary<string, OrgUnit>> UnitsOf(LmsDbContext db, Guid organizationId) =>
         (await db.OrgUnits.Where(u => u.OrganizationId == organizationId).ToListAsync()).ToDictionary(u => u.Code);
 }

@@ -11,7 +11,10 @@ public static class SeedingServiceCollectionExtensions
         services.AddSingleton(sp => new DevSeeder(
             sp.GetRequiredService<IConfiguration>().GetConnectionString("Lms")
                 ?? throw new InvalidOperationException("ConnectionStrings:Lms is not configured."),
-            sp.GetRequiredService<IHostEnvironment>()));
+            sp.GetRequiredService<IHostEnvironment>(),
+            new SeedOptions(
+                sp.GetRequiredService<IConfiguration>()["Seed:PlatformAdminEmail"],
+                sp.GetRequiredService<IConfiguration>()["Seed:DefaultPassword"])));
         return services;
     }
 }

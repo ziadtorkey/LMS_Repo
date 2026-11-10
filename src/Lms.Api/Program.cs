@@ -25,7 +25,7 @@ builder.Services.AddHealthChecks()
 var app = builder.Build();
 
 // Development only: migrate the local database and load the sample clients (no-op in every other environment).
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() && app.Configuration.GetValue("Seed:RunOnStartup", true))
 {
     await app.Services.GetRequiredService<DevSeeder>().SeedAsync();
 }

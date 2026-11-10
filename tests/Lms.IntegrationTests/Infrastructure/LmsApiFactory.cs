@@ -65,8 +65,8 @@ public sealed class LmsApiFactory : WebApplicationFactory<Program>, IAsyncLifeti
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        // Not Development: the dev seeder must not run inside the shared test database.
-        builder.UseEnvironment("Testing");
+        // The host runs as Development (auth config expects it); keep the dev seeder out of the shared test database.
+        builder.UseSetting("Seed:RunOnStartup", "false");
         builder.UseSetting("ConnectionStrings:Lms", _mysql.GetConnectionString());
         builder.UseSetting("Storage:Endpoint", _minio.GetConnectionString());
         builder.UseSetting("Auth:WasmOrigins:0", "http://localhost");

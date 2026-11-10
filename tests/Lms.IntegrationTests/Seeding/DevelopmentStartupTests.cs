@@ -22,6 +22,7 @@ public sealed class DevelopmentStartupTests(LmsApiFactory factory)
         {
             builder.UseEnvironment("Development");
             builder.UseSetting("ConnectionStrings:Lms", connectionString);
+            builder.UseSetting("Seed:RunOnStartup", "true");
         });
 
         var health = await host.CreateClient().GetAsync("/health");
