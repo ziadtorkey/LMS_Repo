@@ -64,15 +64,12 @@ else
 
     private async Task LoadAsync()
     {
-        try
+        await ApiCalls.RunAsync(async () =>
         {
             _all = await Api.GetOrgUnitsAsync(null);
             _unit = _all.FirstOrDefault(u => u.Id == Id);
             if (_unit is null) _error = L["Error_not_found"];
-        }
-        catch (Exception ex) when (ApiCalls.TryRedirect(ex, Navigation)) { }
-        catch (ApiProblemException ex) { _error = ProblemText.For(ex, L); }
-        catch (HttpRequestException) { _error = L["Error_Generic"]; }
+        }, Navigation, L, message => _error = message);
     }
 
     public void Dispose() => PermState.Changed -= OnPermissionsChanged;

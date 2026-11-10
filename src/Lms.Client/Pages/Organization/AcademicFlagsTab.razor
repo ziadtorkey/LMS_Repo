@@ -3,6 +3,7 @@
 @inject IOrgApi Api
 @inject ICultureService Culture
 @inject ISnackbar Snackbar
+@inject NavigationManager Navigation
 
 <MudStack Spacing="3">
     @if (_error is not null)
@@ -83,16 +84,15 @@
     private async Task SaveAsync()
     {
         _saving = true; _error = null;
-        try
+        var ok = await ApiCalls.RunAsync(
+            () => Api.SetAcademicFlagsAsync(Unit.Id, new OrgUnitAcademicFlagsRequest(_isTransfer, _isTransfer ? _nextId : null, _isCourse)),
+            Navigation, L, message => _error = message);
+        _saving = false;
+
+        if (ok)
         {
-            await Api.SetAcademicFlagsAsync(Unit.Id, new OrgUnitAcademicFlagsRequest(_isTransfer, _isTransfer ? _nextId : null, _isCourse));
             Snackbar.Add(L["Common_Saved"], Severity.Success);
             await OnSaved.InvokeAsync();
         }
-        catch (ApiProblemException ex)
-        {
-            _error = ProblemText.For(ex, L);
-        }
-        finally { _saving = false; }
     }
 }

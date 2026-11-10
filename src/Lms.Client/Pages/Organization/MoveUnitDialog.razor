@@ -2,6 +2,7 @@
 @using Lms.Shared.Organizations
 @inject IOrgApi Api
 @inject ICultureService Culture
+@inject NavigationManager Navigation
 
 <MudDialog>
     <DialogContent>
@@ -68,15 +69,11 @@
     private async Task SaveAsync()
     {
         _saving = true; _error = null;
-        try
-        {
-            await Api.MoveOrgUnitAsync(Unit.Id, new MoveOrgUnitRequest(_newParentId));
-            MudDialog.Close(DialogResult.Ok(true));
-        }
-        catch (ApiProblemException ex)
-        {
-            _error = ProblemText.For(ex, L);
-        }
-        finally { _saving = false; }
+        var ok = await ApiCalls.RunAsync(() => Api.MoveOrgUnitAsync(Unit.Id, new MoveOrgUnitRequest(_newParentId)),
+            Navigation, L, message => _error = message);
+        _saving = false;
+
+        if (ok) MudDialog.Close(DialogResult.Ok(true));
+        else if (_error is null) MudDialog.Cancel(); // redirected (stale context / forbidden)
     }
 }
