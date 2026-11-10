@@ -16,11 +16,14 @@ public static class PersistenceServiceCollectionExtensions
             ?? throw new InvalidOperationException("ConnectionStrings:Lms is not configured.");
 
         services.AddScoped<StampingInterceptor>();
+        services.AddScoped<AuditInterceptor>();
         services.AddDbContext<LmsDbContext>((sp, options) =>
         {
             options.UseLmsMySql(connectionString);
             // Order matters: stamping first, audit (added by the audit module) after it.
-            options.AddInterceptors(sp.GetRequiredService<StampingInterceptor>());
+            options.AddInterceptors(
+                sp.GetRequiredService<StampingInterceptor>(),
+                sp.GetRequiredService<AuditInterceptor>());
         });
 
         return services;
