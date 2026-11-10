@@ -1,4 +1,5 @@
 using Lms.Domain.Abstractions;
+using Lms.Infrastructure.Access;
 using Lms.Infrastructure.Auditing;
 using Lms.Infrastructure.Configuration;
 using Lms.Infrastructure.Persistence;
@@ -14,6 +15,7 @@ public static class DependencyInjection
     {
         services.AddSingleton<IClock, SystemClock>();
         services.AddPersistence(configuration);
+        services.AddAccess();
         services.AddAuditing();
         services.AddSettingsAndPolicies();
         return services;
