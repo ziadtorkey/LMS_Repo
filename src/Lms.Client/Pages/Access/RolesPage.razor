@@ -1,0 +1,136 @@
+@page "/roles"
+@attribute [Authorize]
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Shared.Access
+@using Lms.Shared.Authorization
+@implements IDisposable
+@inject IAccessAdminApi Api
+@inject PermissionState Perms
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<PageTitle>@L["Roles_Title"]</PageTitle>
+
+<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3" Wrap="Wrap.Wrap">
+    <MudText Typo="Typo.h4">@L["Roles_Title"]</MudText>
+    @if (_mode == Mode.List && Perms.Has(Permissions.Roles.Create))
+    {
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="StartCreate" data-testid="role-new">@L["Roles_New"]</MudButton>
+    }
+</MudStack>
+
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+}
+else if (_failed)
+{
+    <MudAlert Severity="Severity.Error" data-testid="api-error">
+        @L["Api_Error"]
+        <MudButton Variant="Variant.Text" OnClick="LoadAsync">@L["Common_Retry"]</MudButton>
+    </MudAlert>
+}
+else if (_mode != Mode.List)
+{
+    <RoleEditor Role="_editing" Groups="_groups" OnSaved="SavedAsync" OnCancel="BackToList" />
+}
+else if (_roles.Count == 0)
+{
+    <MudText data-testid="table-empty">@L["Common_Empty"]</MudText>
+}
+else
+{
+    <MudTable T="RoleDto" Items="_roles" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm">
+        <HeaderContent>
+            <MudTh>@L["Roles_Name"]</MudTh>
+            <MudTh>@L["Roles_BaseKind"]</MudTh>
+            <MudTh>@L["Roles_Assignments"]</MudTh>
+            <MudTh>@L["Common_Actions"]</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="@L["Roles_Name"]">
+                @CultureText.Pick(context.NameAr, context.NameEn)
+                @if (context.IsBuiltIn)
+                {
+                    <MudChip T="string" Size="Size.Small" Class="ms-2" data-testid="@($"role-builtin-{context.Id}")">@L["Roles_BuiltIn"]</MudChip>
+                }
+            </MudTd>
+            <MudTd DataLabel="@L["Roles_BaseKind"]">@L[$"BaseKind_{context.BaseKind}"]</MudTd>
+            <MudTd DataLabel="@L["Roles_Assignments"]">@context.AssignmentCount</MudTd>
+            <MudTd DataLabel="@L["Common_Actions"]">
+                @if (Perms.Has(Permissions.Roles.Update))
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" aria-label="@L["Common_Edit"]"
+                                   OnClick="() => StartEdit(context)" data-testid="@($"role-edit-{context.Id}")" />
+                }
+                @if (Perms.Has(Permissions.Roles.Delete))
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="@L["Common_Delete"]"
+                                   Disabled="@(context.IsBuiltIn)" OnClick="() => DeleteAsync(context)"
+                                   data-testid="@($"role-delete-{context.Id}")" />
+                }
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+}
+
+@code {
+    private enum Mode { List, Editor }
+
+    private IReadOnlyList<RoleDto> _roles = [];
+    private IReadOnlyList<PermissionGroupDto> _groups = [];
+    private RoleDto? _editing;
+    private Mode _mode = Mode.List;
+    private bool _loading = true, _failed;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Perms.Changed += OnPermissionsChanged;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true; _failed = false;
+        var (roles, failed) = await ApiCalls.RunAsync(() => Api.GetRolesAsync(), Navigation);
+        var (groups, failedGroups) = await ApiCalls.RunAsync(() => Api.GetPermissionGroupsAsync(), Navigation);
+        _failed = failed || failedGroups;
+        _roles = roles ?? [];
+        _groups = groups ?? [];
+        _loading = false;
+    }
+
+    private void StartCreate() { _editing = null; _mode = Mode.Editor; }
+    private void StartEdit(RoleDto role) { _editing = role; _mode = Mode.Editor; }
+    private void BackToList() => _mode = Mode.List;
+
+    private async Task SavedAsync()
+    {
+        _mode = Mode.List;
+        Snackbar.Add(L["Common_Saved"], Severity.Success);
+        await LoadAsync();
+    }
+
+    private async Task DeleteAsync(RoleDto role)
+    {
+        var confirmed = await ConfirmDialog.AskAsync(Dialogs, L["Confirm_DeleteTitle"],
+            string.Format(L["Roles_DeleteConfirm"], CultureText.Pick(role.NameAr, role.NameEn)));
+        if (!confirmed) return;
+        try
+        {
+            await Api.DeleteRoleAsync(role.Id);
+            await LoadAsync();
+        }
+        catch (ApiProblemException ex)
+        {
+            Snackbar.Add(ProblemText.For(ex, L), Severity.Error);
+        }
+    }
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Perms.Changed -= OnPermissionsChanged;
+}
