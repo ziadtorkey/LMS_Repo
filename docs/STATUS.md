@@ -2,17 +2,17 @@
 
 _Updated by the Team Lead after every merge cycle._
 
-**Milestone:** M0 Foundation — finishing (15 / 19 issues closed) · M1 Organization & Access — started (4 / 38 issues closed)
-**Last update:** 2026-11-10 — M1 contracts merged: #75 (closes #36) and #79 (closes #37–#39; #76/#78 included). M0 left: #14 seed, #15 E2E (PR #34), #30, #16. M1 dev work starting: BE1 #40, BE2 #41, FE1 #74 (#58) in review then #59.
+**Milestone:** M0 Foundation — finishing (16 / 19 issues closed) · M1 Organization & Access — started (4 / 38 issues closed)
+**Last update:** 2026-11-10 — Dev seed PR #77 merged (closes #14). M0 left: #15 E2E (PR #34, QA 2 full run), #30, #16. M1 PRs: #80 (#40, QA 2), #82 (#41, approved, waiting on AGENTS.md removal), #83 (#43, approved, stacked on #80), #74 (#58, changes requested), #81 (#59). New issue #85 (forwarded headers).
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |
 |---|---|---|---|---|
 | Team Lead | Opus | `local_95ef9dc7-9378-4012-a8f2-c7d1f944bdec` (lms-lead) | coordinating M0 close-out + M1 | coordinating |
-| Backend 1 | Sonnet | `local_19f31b04-ca2f-43d1-a2cb-8a128722a11f` (lms-backend) | #14 dev seed (users now unblocked); then #30; M1 #40 after contract #36 | working |
-| Backend 2 | Sonnet | `local_d36e7dc2-e9e6-4f73-b7b3-b078b17bbe41` (lms-backend-2) | M1 #41 T6 forgot/reset password | working |
-| Frontend | Sonnet | `local_40667dce-5be7-478b-95cb-4f14ecd203b9` (lms-frontend) | PR #74 (#58 T23) in review; next #59 | working |
-| Frontend 2 | Sonnet | (waiting for owner to click Start) | M1 #64–#69 (T29–T34) after #58 | not started |
+| Backend 1 | Sonnet | `local_19f31b04-ca2f-43d1-a2cb-8a128722a11f` (lms-backend) | PR #80 (#40) in review; then #30, #42 | working |
+| Backend 2 | Sonnet | `local_d36e7dc2-e9e6-4f73-b7b3-b078b17bbe41` (lms-backend-2) | PRs #82 (#41), #83 (#43); then #45 | working |
+| Frontend | Sonnet | `local_40667dce-5be7-478b-95cb-4f14ecd203b9` (lms-frontend) | PRs #74 (#58, changes requested), #81 (#59); #60 org tree | working |
+| Frontend 2 | Sonnet | `local_3d9e8938-4064-4f83-a04d-920704d41a87` (lms-frontend-2) | M1 #64 T29 roles admin (then #65–#69) | working |
 | QA | Opus | `local_91a7af3c-7b02-4d61-ac11-2c22629cf89f` (lms-qa) | review #74 (M1), #14; fix + un-draft E2E PR #34 (#15) | working |
 | QA 2 | Opus | `local_54d26c64-4403-4a13-b128-5be5e9752d97` (lms-qa-2) | #34 full run; #30; M1 BE2 PRs | reviewing |
 
@@ -46,6 +46,7 @@ None. (Board: [LMS v1](https://github.com/users/ziadtorkey/projects/1) — Todo 
 None. (2026-11-10: M1 plan approved; D16–D22 recorded; 2nd FE approved.) (2026-11-10: owner approved Lead merging QA-approved green PRs, and a 2nd QA agent; D15: no access via Inactive units.)
 
 ## Recently merged
+- #77 feat(seed): dev seed with sample clients, roles and users (closes #14)
 - #79 feat(contracts): M1 contracts T2–T4 (closes #37, #38, #39)
 - #75 feat(contracts): M1 permissions, built-in matrix, problem codes, organization DTOs (closes #36)
 - #35 feat(files): MinIO file storage with presigned downloads (closes #10)
