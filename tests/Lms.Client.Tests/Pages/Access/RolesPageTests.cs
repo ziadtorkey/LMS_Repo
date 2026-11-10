@@ -20,7 +20,7 @@ public sealed class RolesPageTests : ClientTestContext
 
     public RolesPageTests() => Services.AddSingleton<IAccessAdminApi>(_roles);
 
-    private async Task GrantAsync(params string[] permissions)
+    private new async Task GrantAsync(params string[] permissions)
     {
         Api.Permissions = new(null, permissions);
         await Context.SetAsync(Guid.NewGuid());
