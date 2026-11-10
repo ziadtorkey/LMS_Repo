@@ -13,6 +13,7 @@ public static class EndpointAuthorizationExtensions
             throw new ArgumentException($"Unknown permission '{permission}'.", nameof(permission));
         }
 
+        builder.Add(endpoint => endpoint.Metadata.Add(new RequiresPermissionMetadata(permission)));
         return builder.AddEndpointFilter(new PermissionEndpointFilter(permission));
     }
 }
