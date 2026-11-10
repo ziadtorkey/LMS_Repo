@@ -65,4 +65,28 @@ public static class Routes
     public static string Assignment(Guid id) => $"{Assignments}/{id}";
     public static string OrgUnitAssignments(Guid id) => $"{OrgUnit(id)}/assignments";
     public static string AuditEntry(Guid id) => $"{Audit}/{id}";
+
+    // M1 academic years, calendar and notifications (Task 4)
+    public const string AcademicYears = "/api/academic-years";
+    public const string AcademicYearsEffective = AcademicYears + "/effective";
+    public const string AcademicYearPattern = AcademicYears + "/{id:guid}";
+    public const string AcademicYearActivatePattern = AcademicYearPattern + "/activate";
+    public const string AcademicYearTermsPattern = AcademicYearPattern + "/terms";
+    public const string AcademicYearCalendarPattern = AcademicYearPattern + "/calendar";
+    public const string Terms = "/api/terms";
+    public const string TermPattern = Terms + "/{id:guid}";
+    public const string CalendarEvents = "/api/calendar-events";
+    public const string CalendarEventPattern = CalendarEvents + "/{id:guid}";
+    public const string MyNotifications = Me + "/notifications";
+    public const string MyNotificationReadPattern = MyNotifications + "/{id:guid}/read";
+    public const string MyNotificationsReadAll = MyNotifications + "/read-all";
+    public const string MyNotificationPreferences = Me + "/notification-preferences";
+
+    public static string AcademicYear(Guid id) => $"{AcademicYears}/{id}";
+    public static string AcademicYearActivate(Guid id) => $"{AcademicYear(id)}/activate";
+    public static string AcademicYearTerms(Guid id) => $"{AcademicYear(id)}/terms";
+    public static string AcademicYearCalendar(Guid id) => $"{AcademicYear(id)}/calendar";
+    public static string Term(Guid id) => $"{Terms}/{id}";
+    public static string CalendarEvent(Guid id) => $"{CalendarEvents}/{id}";
+    public static string MyNotificationRead(Guid id) => $"{MyNotifications}/{id}/read";
 }
