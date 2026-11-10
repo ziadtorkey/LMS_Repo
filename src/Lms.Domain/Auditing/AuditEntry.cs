@@ -6,7 +6,7 @@ namespace Lms.Domain.Auditing;
 /// One immutable audit record. OrganizationId is null for events outside any client (platform admin, failed logins).
 /// Entries are never soft-deleted.
 /// </summary>
-public sealed class AuditEntry : Entity
+public sealed class AuditEntry : Entity, IOptionalTenantOwned
 {
     private AuditEntry()
     {

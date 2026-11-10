@@ -1,5 +1,4 @@
 using System.Linq.Expressions;
-using Lms.Domain.Auditing;
 using Lms.Domain.Common;
 using Lms.Domain.Organizations;
 
@@ -36,17 +35,6 @@ internal static class QueryFilterBuilder
                 Expression.Property(ctx, nameof(Lms.Domain.Abstractions.ICurrentContext.OrganizationId))));
         }
 
-        if (clrType == typeof(AuditEntry))
-        {
-            // Not ITenantOwned: OrganizationId is nullable (events outside any client). A client sees only its own entries.
-            // EF turns Guid? == Guid? into "a = b OR (a IS NULL AND b IS NULL)", so a caller without a client would
-            // match every client-less entry; the explicit not-null check on the caller side prevents that.
-            var callerOrg = Expression.Property(ctx, nameof(Lms.Domain.Abstractions.ICurrentContext.OrganizationId));
-            tenantScope = And(tenantScope, Expression.AndAlso(
-                Expression.NotEqual(callerOrg, Expression.Constant(null, typeof(Guid?))),
-                Expression.Equal(Expression.Property(e, nameof(AuditEntry.OrganizationId)), callerOrg)));
-        }
-
         if (typeof(ITenantOwned).IsAssignableFrom(clrType))
         {
             tenantScope = And(tenantScope, Expression.Equal(
@@ -54,11 +42,22 @@ internal static class QueryFilterBuilder
                 Expression.Property(ctx, nameof(Lms.Domain.Abstractions.ICurrentContext.OrganizationId))));
         }
 
+        if (typeof(IOptionalTenantOwned).IsAssignableFrom(clrType))
+        {
+            // Visible only when the caller has an organization AND the row belongs to it. A null caller organization
+            // must not match platform-level (null) rows, hence the explicit check on the context side.
+            var callerOrg = Expression.Property(ctx, nameof(Lms.Domain.Abstractions.ICurrentContext.OrganizationId));
+            tenantScope = And(tenantScope, Expression.AndAlso(
+                Expression.NotEqual(callerOrg, Expression.Constant(null, typeof(Guid?))),
+                Expression.Equal(Expression.Property(e, nameof(IOptionalTenantOwned.OrganizationId)), callerOrg)));
+        }
+
         if (typeof(IOrgUnitScoped).IsAssignableFrom(clrType))
         {
             // OrgUnit maps its path to the "Path" column; OrgUnitPath is a computed alias there.
             var pathProperty = clrType == typeof(OrgUnit) ? nameof(OrgUnit.Path) : nameof(IOrgUnitScoped.OrgUnitPath);
-            var scopePath = Expression.Property(ctx, nameof(Lms.Domain.Abstractions.ICurrentContext.ScopePath));
+            // Malformed paths ("" or without leading/trailing "/") count as no scope: they must never widen the filter.
+            var scopePath = Expression.Property(Expression.Constant(db), nameof(LmsDbContext.ValidScopePath));
             var startsWith = Expression.Call(
                 Expression.Property(e, pathProperty),
                 typeof(string).GetMethod(nameof(string.StartsWith), [typeof(string)])!,
