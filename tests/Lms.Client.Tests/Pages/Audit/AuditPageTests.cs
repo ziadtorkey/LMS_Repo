@@ -18,7 +18,7 @@ public sealed class AuditPageTests : ClientTestContext
 
     public AuditPageTests() => Services.AddSingleton<IAuditApi>(_audit);
 
-    private async Task GrantAsync(params string[] permissions)
+    private new async Task GrantAsync(params string[] permissions)
     {
         Api.Permissions = new(null, permissions);
         await Context.SetAsync(Guid.NewGuid());
