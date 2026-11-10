@@ -95,4 +95,34 @@
   <data name="Error_OutOfScope" xml:space="preserve"><value>This item is outside your scope.</value></data>
   <data name="Error_invalid_context" xml:space="preserve"><value>Your selected role is no longer valid. Please choose a role again.</value></data>
   <data name="Error_context_required" xml:space="preserve"><value>Please choose a role first.</value></data>
+  <data name="Clients_Title" xml:space="preserve"><value>Clients</value></data>
+  <data name="Clients_New" xml:space="preserve"><value>New client</value></data>
+  <data name="Clients_Type" xml:space="preserve"><value>Type</value></data>
+  <data name="ClientType_SchoolGroup" xml:space="preserve"><value>School group</value></data>
+  <data name="ClientType_University" xml:space="preserve"><value>University</value></data>
+  <data name="ClientStatus_Active" xml:space="preserve"><value>Active</value></data>
+  <data name="ClientStatus_Suspended" xml:space="preserve"><value>Suspended</value></data>
+  <data name="Clients_RootLevel" xml:space="preserve"><value>First level name</value></data>
+  <data name="Clients_RootCode" xml:space="preserve"><value>Root unit code</value></data>
+  <data name="Clients_AdminEmail" xml:space="preserve"><value>Admin email</value></data>
+  <data name="Clients_AdminName" xml:space="preserve"><value>Admin name</value></data>
+  <data name="Clients_Created" xml:space="preserve"><value>Client created. An invitation was sent to the admin.</value></data>
+  <data name="Nav_LevelTypes" xml:space="preserve"><value>Level types</value></data>
+  <data name="LevelTypes_Title" xml:space="preserve"><value>Level types</value></data>
+  <data name="LevelTypes_CanHostClasses" xml:space="preserve"><value>Can host classes</value></data>
+  <data name="LevelTypes_MoveUp" xml:space="preserve"><value>Move up</value></data>
+  <data name="LevelTypes_MoveDown" xml:space="preserve"><value>Move down</value></data>
+  <data name="LevelTypes_Units" xml:space="preserve"><value>Units</value></data>
+  <data name="Clients_Name" xml:space="preserve"><value>Client name</value></data>
+  <data name="Clients_Suspend" xml:space="preserve"><value>Suspend</value></data>
+  <data name="Clients_Activate" xml:space="preserve"><value>Activate</value></data>
+  <data name="Clients_CreatedOn" xml:space="preserve"><value>Created</value></data>
+  <data name="LevelTypes_New" xml:space="preserve"><value>New level type</value></data>
+  <data name="LevelTypes_Order" xml:space="preserve"><value>Order</value></data>
+  <data name="Common_InvalidEmail" xml:space="preserve"><value>Enter a valid email address.</value></data>
+  <data name="Common_InvalidCode" xml:space="preserve"><value>Use letters, digits, dash or underscore (max 50).</value></data>
+  <data name="Common_Name" xml:space="preserve"><value>Name</value></data>
+  <data name="LevelTypes_OutOfScope" xml:space="preserve"><value>This can only be changed at the top level of the organization.</value></data>
+  <data name="Common_Yes" xml:space="preserve"><value>Yes</value></data>
+  <data name="Common_No" xml:space="preserve"><value>No</value></data>
 </root>

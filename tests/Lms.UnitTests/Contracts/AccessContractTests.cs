@@ -18,7 +18,7 @@ public class AccessContractTests
         Assert.Equal(
         [
             "Organization", "LevelType", "OrgUnit", "Role", "RolePermission", "RoleAssignment", "OrgUnitSetting",
-            "OrgUnitPolicy", "User", "OrgTemplate", "AcademicYear", "Term", "CalendarEvent",
+            "OrgUnitPolicy", "User", "OrgTemplate", "AcademicYear", "Term", "CalendarEvent", "StoredFile",
         ], AuditCatalog.EntityTypes);
     }
 
