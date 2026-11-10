@@ -57,8 +57,47 @@ public partial class AuthorizationContractTests
             }
         });
 
-        Assert.Equal(Permissions.All, BuiltInRoles.Get(BuiltInRoles.OrgAdmin).DefaultPermissions);
         Assert.Equal("Dean", BuiltInRoles.Get(BuiltInRoles.Manager).UniversityLabel.NameEn);
+    }
+
+    [Fact]
+    public void OrgAdmin_has_an_explicit_list_not_the_live_catalog()
+    {
+        // Bug #21: new permissions must not flow to OrgAdmin automatically.
+        var orgAdmin = BuiltInRoles.Get(BuiltInRoles.OrgAdmin).DefaultPermissions;
+        Assert.NotSame(Permissions.All, orgAdmin);
+        string[] expected =
+        [
+            "OrgUnits.View", "OrgUnits.Create", "OrgUnits.Update", "OrgUnits.Delete",
+            "Roles.View", "Roles.Create", "Roles.Update", "Roles.Delete",
+            "Assignments.View", "Assignments.Create", "Assignments.Delete",
+            "Settings.View", "Settings.Update", "Policies.View", "Policies.Update",
+            "Audit.View", "Audit.Export", "Files.Upload", "Files.Download",
+        ];
+        Assert.Equal(expected.Order(), orgAdmin.Order());
+    }
+
+    [Fact]
+    public void No_built_in_role_holds_a_platform_only_permission()
+    {
+        Assert.All(Permissions.PlatformOnly, p => Assert.Contains(p, Permissions.All));
+        Assert.All(BuiltInRoles.All, r =>
+            Assert.Empty(r.DefaultPermissions.Intersect(Permissions.PlatformOnly)));
+    }
+
+    [Fact]
+    public void Built_in_roles_do_not_share_permission_list_instances()
+    {
+        var lists = BuiltInRoles.All.Select(r => r.DefaultPermissions).ToList();
+        Assert.Equal(lists.Count, lists.Distinct(ReferenceEqualityComparer.Instance).Count());
+    }
+
+    [Fact]
+    public void OrgAdmin_arabic_label_is_distinct_from_manager_label()
+    {
+        var orgAdmin = BuiltInRoles.Get(BuiltInRoles.OrgAdmin).SchoolGroupLabel.NameAr;
+        Assert.Equal("مسؤول النظام", orgAdmin);
+        Assert.NotEqual(BuiltInRoles.Get(BuiltInRoles.Manager).SchoolGroupLabel.NameAr, orgAdmin);
     }
 
     [Fact]

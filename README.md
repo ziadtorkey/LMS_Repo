@@ -9,3 +9,8 @@ dotnet run --project src/Lms.Api
 dotnet test LMS.slnx          # integration tests use Testcontainers (Docker required)
 ```
 Health check: `GET /health`.
+## Container images
+MySQL, MinIO (`chainguard/minio`) and Mailpit are pinned by digest in `docker-compose.yml` and `LmsApiFactory`; see `docs/adr/0002-minio-image.md`. Bump digests in a dedicated `chore:` PR.
+
+## MySQL provider
+Oracle `MySql.EntityFrameworkCore` (Pomelo has no EF Core 10 release); see `docs/adr/0001-mysql-provider.md`.

@@ -21,35 +21,38 @@ public static class BuiltInRoles
     public const string Student = "Student";
     public const string Guardian = "Guardian";
 
-    private static readonly string[] FilesBoth = [Permissions.Files.Upload, Permissions.Files.Download];
-
     public static IReadOnlyList<BuiltInRoleDefinition> All { get; } =
     [
         new(OrgAdmin, RoleBaseKinds.Staff,
-            new("مدير النظام", "Admin"),
-            new("مدير النظام", "Admin"),
-            Permissions.All),
+            new("مسؤول النظام", "Admin"),
+            new("مسؤول النظام", "Admin"),
+            // Explicit list (bug #21): new permissions are never granted to OrgAdmin implicitly.
+            [Permissions.OrgUnits.View, Permissions.OrgUnits.Create, Permissions.OrgUnits.Update, Permissions.OrgUnits.Delete,
+             Permissions.Roles.View, Permissions.Roles.Create, Permissions.Roles.Update, Permissions.Roles.Delete,
+             Permissions.Assignments.View, Permissions.Assignments.Create, Permissions.Assignments.Delete,
+             Permissions.Settings.View, Permissions.Settings.Update, Permissions.Policies.View, Permissions.Policies.Update,
+             Permissions.Audit.View, Permissions.Audit.Export, Permissions.Files.Upload, Permissions.Files.Download]),
         new(Manager, RoleBaseKinds.Staff,
             new("مدير المدرسة", "School Manager"),
             new("العميد", "Dean"),
             [Permissions.OrgUnits.View, Permissions.Roles.View, Permissions.Assignments.View,
-             Permissions.Settings.View, Permissions.Policies.View, Permissions.Audit.View, .. FilesBoth]),
+             Permissions.Settings.View, Permissions.Policies.View, Permissions.Audit.View, Permissions.Files.Upload, Permissions.Files.Download]),
         new(Supervisor, RoleBaseKinds.Staff,
             new("المشرف الأكاديمي", "Academic Supervisor"),
             new("رئيس القسم", "Head of Department"),
-            [Permissions.OrgUnits.View, Permissions.Settings.View, Permissions.Policies.View, .. FilesBoth]),
+            [Permissions.OrgUnits.View, Permissions.Settings.View, Permissions.Policies.View, Permissions.Files.Upload, Permissions.Files.Download]),
         new(Counselor, RoleBaseKinds.Staff,
             new("الأخصائي الاجتماعي", "Social Worker"),
             new("شؤون الطلاب", "Student Affairs"),
-            FilesBoth),
+            [Permissions.Files.Upload, Permissions.Files.Download]),
         new(Teacher, RoleBaseKinds.Staff,
             new("المعلم", "Teacher"),
             new("عضو هيئة التدريس", "Instructor"),
-            FilesBoth),
+            [Permissions.Files.Upload, Permissions.Files.Download]),
         new(Student, RoleBaseKinds.Student,
             new("الطالب", "Student"),
             new("الطالب", "Student"),
-            FilesBoth),
+            [Permissions.Files.Upload, Permissions.Files.Download]),
         new(Guardian, RoleBaseKinds.Guardian,
             new("ولي الأمر", "Parent"),
             new("ولي الأمر", "Parent"),
