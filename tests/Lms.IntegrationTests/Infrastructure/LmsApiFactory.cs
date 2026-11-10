@@ -45,6 +45,7 @@ public sealed class LmsApiFactory : WebApplicationFactory<Program>, IAsyncLifeti
     {
         builder.UseSetting("ConnectionStrings:Lms", _mysql.GetConnectionString());
         builder.UseSetting("Storage:Endpoint", _minio.GetConnectionString());
+        builder.UseSetting("Auth:WasmOrigins:0", "http://localhost");
         builder.ConfigureServices(services =>
         {
             services.AddAuthentication(TestAuthHandler.SchemeName)

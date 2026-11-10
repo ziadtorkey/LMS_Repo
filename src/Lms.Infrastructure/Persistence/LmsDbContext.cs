@@ -4,12 +4,14 @@ using Lms.Domain.Auditing;
 using Lms.Domain.Common;
 using Lms.Domain.Configuration;
 using Lms.Domain.Organizations;
+using Lms.Domain.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Lms.Infrastructure.Persistence;
 
 public sealed class LmsDbContext(DbContextOptions<LmsDbContext> options, ICurrentContext currentContext)
-    : DbContext(options)
+    : IdentityUserContext<User, Guid>(options)
 {
     // Read by the global query filters; EF re-evaluates it per context instance.
     internal ICurrentContext CurrentContext { get; } = currentContext;
@@ -31,6 +33,7 @@ public sealed class LmsDbContext(DbContextOptions<LmsDbContext> options, ICurren
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(LmsDbContext).Assembly);
 
         foreach (var entityType in modelBuilder.Model.GetEntityTypes().Where(t => !t.IsOwned()))
