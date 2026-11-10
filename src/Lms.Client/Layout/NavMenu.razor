@@ -1,0 +1,27 @@
+@using Lms.Client.Navigation
+@inject PermissionState Permissions
+@implements IDisposable
+
+<MudNavMenu>
+    @foreach (var item in Visible)
+    {
+        <MudNavLink Href="@item.Href" Match="@(item.Href == "" ? NavLinkMatch.All : NavLinkMatch.Prefix)"
+                    Icon="@item.Icon" data-testid="@($"nav-{item.Key}")">@L[item.ResourceKey]</MudNavLink>
+    }
+</MudNavMenu>
+
+@code {
+    private IEnumerable<NavItem> Visible => NavCatalog.Items.Where(i =>
+        (!i.PlatformAdminOnly || Permissions.IsPlatformAdmin) &&
+        (i.RequiredPermission is null || Permissions.Has(i.RequiredPermission)));
+
+    protected override async Task OnInitializedAsync()
+    {
+        Permissions.Changed += OnChanged;
+        await Permissions.RefreshAsync();
+    }
+
+    private void OnChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Permissions.Changed -= OnChanged;
+}

@@ -26,6 +26,7 @@ public abstract class ClientTestContext : BunitContext, IAsyncLifetime
         Services.AddSingleton<ICultureService>(Culture);
         Services.AddSingleton<IContextStore>(Context);
         Services.AddSingleton<ILmsApi>(Api);
+        Services.AddScoped<PermissionState>();
         AddAuthorization().SetAuthorized("tester");
     }
 }

@@ -33,9 +33,9 @@
             if (c !== 'ar' && c !== 'en') c = 'ar';
             document.documentElement.lang = c;
             document.documentElement.dir = c === 'ar' ? 'rtl' : 'ltr';
-            // The standalone dev server (launchSettings port 5078) runs on fakes; the API-hosted app never does.
+            // The standalone dev server (launchSettings port 5078; 5079 for a second worktree) runs on fakes; the API-hosted app never does.
             var opts = { applicationCulture: c };
-            if (location.port === '5078') opts.environment = 'Standalone';
+            if (location.port === '5078' || location.port === '5079') opts.environment = 'Standalone';
             Blazor.start(opts);
         })();
     </script>
