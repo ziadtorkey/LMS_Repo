@@ -47,7 +47,7 @@ public static class RoleEndpoints
         }
 
         var permissions = request.Permissions?.Distinct(StringComparer.Ordinal).ToList() ?? [];
-        if (await CheckPermissionsAsync(permissions, caller, null, ct) is { } problem)
+        if (await CheckPermissionsAsync(permissions, [], caller, null, ct) is { } problem)
         {
             return problem;
         }
@@ -91,7 +91,8 @@ public static class RoleEndpoints
         }
 
         var requested = request.Permissions?.Distinct(StringComparer.Ordinal).ToList() ?? [];
-        if (await CheckPermissionsAsync(requested, caller, role.BuiltInKey, ct) is { } problem)
+        var current = await db.RolePermissions.Where(p => p.RoleId == id).ToListAsync(ct);
+        if (await CheckPermissionsAsync(requested, current.Select(p => p.Permission).ToList(), caller, role.BuiltInKey, ct) is { } problem)
         {
             return problem;
         }
@@ -104,19 +105,20 @@ public static class RoleEndpoints
         }
 
         role.Rename(nameAr, nameEn);
-        var current = await db.RolePermissions.Where(p => p.RoleId == id).ToListAsync(ct);
         db.RolePermissions.RemoveRange(current.Where(p => !requested.Contains(p.Permission)));
         db.RolePermissions.AddRange(requested
             .Where(p => current.All(c => c.Permission != p))
             .Select(p => new RolePermission(role.OrganizationId, id, p)));
         await db.SaveChangesAsync(ct);
+        // Known limit: an access check that read the old permissions just before the commit can repopulate the cache
+        // after this invalidation and keep them for up to the 60 s TTL. Accepted for M1.
         cache.Invalidate(id);
 
         return Results.Ok((await ToDtosAsync(db, [role], ct))[0]);
     }
 
     private static async Task<IResult> DeleteAsync(
-        Guid id, HttpContext http, LmsDbContext db, IRolePermissionCache cache, CancellationToken ct)
+        Guid id, HttpContext http, LmsDbContext db, CallerPermissions caller, IRolePermissionCache cache, CancellationToken ct)
     {
         if (await http.CheckClientRootAsync(Permissions.Roles.Delete, ct) is { } denied)
         {
@@ -138,6 +140,13 @@ public static class RoleEndpoints
         if (await db.RoleAssignments.AnyAsync(a => a.RoleId == id, ct))
         {
             return ApiProblems.Conflict(ProblemCodes.role_in_use);
+        }
+
+        // Deleting is editing: the role may not currently hold more than the caller does.
+        var held = await db.RolePermissions.Where(p => p.RoleId == id).Select(p => p.Permission).ToListAsync(ct);
+        if (!RolePermissionRules.CanModify(held, await caller.GetAsync(ct), caller.IsPlatformAdmin))
+        {
+            return Escalation();
         }
 
         db.Roles.Remove(role);
@@ -170,16 +179,19 @@ public static class RoleEndpoints
     private static IResult ValidationFailed(IDictionary<string, string[]> errors) =>
         Results.ValidationProblem(errors, extensions: new Dictionary<string, object?> { ["code"] = ProblemCodes.validation_failed });
 
+    private static IResult Escalation() =>
+        Results.Problem(
+            statusCode: StatusCodes.Status403Forbidden, title: "Forbidden",
+            extensions: new Dictionary<string, object?> { ["code"] = ProblemCodes.permission_escalation });
+
     private static async Task<IResult?> CheckPermissionsAsync(
-        IReadOnlyCollection<string> requested, CallerPermissions caller, string? builtInKey, CancellationToken ct)
+        IReadOnlyCollection<string> requested, IReadOnlyCollection<string> current, CallerPermissions caller, string? builtInKey, CancellationToken ct)
     {
-        var code = RolePermissionRules.Validate(requested, await caller.GetAsync(ct), caller.IsPlatformAdmin, builtInKey);
+        var code = RolePermissionRules.Validate(requested, current, await caller.GetAsync(ct), caller.IsPlatformAdmin, builtInKey);
         return code switch
         {
             null => null,
-            ProblemCodes.permission_escalation => Results.Problem(
-                statusCode: StatusCodes.Status403Forbidden, title: "Forbidden",
-                extensions: new Dictionary<string, object?> { ["code"] = code }),
+            ProblemCodes.permission_escalation => Escalation(),
             ProblemCodes.last_admin_permission => ApiProblems.Conflict(code),
             ProblemCodes.validation_failed => ValidationFailed(new Dictionary<string, string[]>
             {

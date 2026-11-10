@@ -271,4 +271,51 @@ public sealed class RoleEndpointsTests(LmsApiFactory factory)
         Assert.Contains(entries, e => e.Action == AuditAction.Created && e.AfterJson!.Contains(Permissions.Audit.View));
         Assert.Contains(entries, e => e.Action == AuditAction.Deleted);
     }
+
+    private async Task<RoleAssignment> CallerWithAsync(AccessTree tree, params string[] permissions)
+    {
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        var role = new Role(tree.Org.Id, null, "محرر", "Editor " + Guid.NewGuid().ToString("N")[..6], RoleBaseKind.Staff);
+        db.Roles.Add(role);
+        db.RolePermissions.AddRange(permissions.Select(p => new RolePermission(tree.Org.Id, role.Id, p)));
+        var assignment = new RoleAssignment(tree.Root, Guid.NewGuid(), role.Id);
+        db.RoleAssignments.Add(assignment);
+        await db.SaveChangesAsync();
+        return assignment;
+    }
+
+    [Fact]
+    public async Task Lesser_role_editor_cannot_strip_the_OrgAdmin_role()
+    {
+        var tree = await AccessTestData.SeedAsync(factory, "RL14");
+        var editor = await CallerWithAsync(tree, Permissions.Roles.View, Permissions.Roles.Update);
+        var orgAdmin = tree.Roles[BuiltInRoles.OrgAdmin];
+
+        var response = await SendAsync(HttpMethod.Put, Routes.Role(orgAdmin.Id), editor,
+            new UpdateRoleRequest(orgAdmin.NameAr, orgAdmin.NameEn, [Permissions.Roles.View, Permissions.Roles.Update]));
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.Equal(ProblemCodes.permission_escalation, await CodeAsync(response));
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        Assert.True(await db.RolePermissions.CountAsync(p => p.RoleId == orgAdmin.Id) > 2);
+    }
+
+    [Fact]
+    public async Task Lesser_role_deleter_cannot_delete_a_role_holding_more_than_they_do()
+    {
+        var tree = await AccessTestData.SeedAsync(factory, "RL15");
+        var admin = await AccessTestData.AssignAsync(factory, tree, tree.Root, BuiltInRoles.OrgAdmin, Guid.NewGuid());
+        var deleter = await CallerWithAsync(tree, Permissions.Roles.View, Permissions.Roles.Delete);
+        var big = (await (await SendAsync(HttpMethod.Post, Routes.Roles, admin,
+            NewRole("Big", Permissions.Audit.View, Permissions.Audit.Export))).Content.ReadFromJsonAsync<RoleDto>())!;
+        var small = (await (await SendAsync(HttpMethod.Post, Routes.Roles, admin,
+            NewRole("Small", Permissions.Roles.View))).Content.ReadFromJsonAsync<RoleDto>())!;
+
+        var denied = await SendAsync(HttpMethod.Delete, Routes.Role(big.Id), deleter);
+        var allowed = await SendAsync(HttpMethod.Delete, Routes.Role(small.Id), deleter);
+
+        Assert.Equal(HttpStatusCode.Forbidden, denied.StatusCode);
+        Assert.Equal(ProblemCodes.permission_escalation, await CodeAsync(denied));
+        Assert.Equal(HttpStatusCode.NoContent, allowed.StatusCode);
+    }
 }
