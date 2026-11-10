@@ -1,3 +1,4 @@
+using Lms.Api.Features.Auth;
 using Lms.Api.Infrastructure;
 using Lms.Infrastructure;
 using Serilog;
@@ -12,6 +13,7 @@ builder.Host.UseSerilog((context, services, configuration) => configuration
 
 builder.Services.AddScoped<Lms.Domain.Abstractions.ICurrentContext, AnonymousCurrentContext>();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddLmsAuth(builder.Configuration, builder.Environment);
 
 builder.Services.AddHealthChecks()
     .AddCheck<MySqlHealthCheck>("mysql");
@@ -19,11 +21,22 @@ builder.Services.AddHealthChecks()
 var app = builder.Build();
 
 app.UseMiddleware<CorrelationIdMiddleware>();
+app.UseMiddleware<SecurityHeadersMiddleware>();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
+}
+
+app.UseHttpsRedirection();
 app.UseSerilogRequestLogging();
 
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
 
+app.UseLmsAuth();
+
+app.MapAuthorizationEndpoints();
+app.MapRazorPages();
 app.MapHealthChecks("/health");
 app.MapFallbackToFile("index.html");
 
