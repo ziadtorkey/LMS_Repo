@@ -39,6 +39,8 @@ public sealed class LmsApiFactory : WebApplicationFactory<Program>, IAsyncLifeti
     {
         builder.UseSetting("ConnectionStrings:Lms", _mysql.GetConnectionString());
         builder.UseSetting("Storage:Endpoint", _minio.GetConnectionString());
+        builder.UseSetting("Storage:AccessKey", MinioBuilder.DefaultUsername);
+        builder.UseSetting("Storage:SecretKey", MinioBuilder.DefaultPassword);
     }
 }
 
