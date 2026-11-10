@@ -142,6 +142,19 @@ public sealed class NotificationPreferenceTests(LmsApiFactory factory)
     }
 
     [Fact]
+    public async Task Null_items_in_the_list_are_400_validation_failed()
+    {
+        var user = Guid.NewGuid();
+        var request = Request(HttpMethod.Put, user);
+        request.Content = new StringContent("{\"preferences\":[null]}", System.Text.Encoding.UTF8, "application/json");
+
+        var response = await Client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(ProblemCodes.validation_failed, (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("code").GetString());
+    }
+
+    [Fact]
     public async Task User_cannot_see_or_change_another_users_preferences()
     {
         var alice = Guid.NewGuid();

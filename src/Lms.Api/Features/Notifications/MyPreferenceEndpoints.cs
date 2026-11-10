@@ -20,16 +20,28 @@ public static class MyPreferenceEndpoints
     }
 
     private static async Task<IResult> ListAsync(NotificationPreferences preferences, ICurrentContext context, CancellationToken ct) =>
-        Results.Ok(await preferences.ListAsync(context.UserId!.Value, ct));
+        context.UserId is { } userId
+            ? Results.Ok(await preferences.ListAsync(userId, ct))
+            : Results.Unauthorized();
 
     private static async Task<IResult> ReplaceAsync(
         SetNotificationPreferencesRequest? body, NotificationPreferences preferences, ICurrentContext context, CancellationToken ct)
     {
+        if (context.UserId is not { } userId)
+        {
+            return Results.Unauthorized();
+        }
+
         var errors = new Dictionary<string, string[]>();
         var list = body?.Preferences;
         if (list is null)
         {
             errors["preferences"] = ["preferences_required"];
+        }
+        else if (list.Any(p => p is null))
+        {
+            // A JSON null item would otherwise fail below with a 500.
+            errors["preferences"] = ["preference_required"];
         }
         else
         {
@@ -60,7 +72,7 @@ public static class MyPreferenceEndpoints
                 errors, extensions: new Dictionary<string, object?> { ["code"] = ProblemCodes.validation_failed });
         }
 
-        await preferences.ReplaceAsync(context.UserId!.Value, list!.Select(p => (p.EventKey, p.Channel, p.Enabled)), ct);
+        await preferences.ReplaceAsync(userId, list!.Select(p => (p.EventKey, p.Channel, p.Enabled)), ct);
         return Results.NoContent();
     }
 }
