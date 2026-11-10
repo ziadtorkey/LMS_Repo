@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
+using Lms.Api.Features.Account;
 using Lms.Api.Resources;
 using Lms.Domain.Auditing;
 using Lms.Domain.Identity;
@@ -7,11 +8,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Localization;
 
 namespace Lms.Api.Pages.Account;
 
 [AllowAnonymous]
+[EnableRateLimiting(AccountModule.AuthRateLimitPolicy)]
 public sealed class LoginModel(
     UserManager<User> users,
     SignInManager<User> signIn,
@@ -62,10 +65,16 @@ public sealed class LoginModel(
             return Fail();
         }
 
+        // Reached only with the right password, so the status of an account is never shown to guessers.
         if (user.Status != UserStatus.Active)
         {
-            await WriteFailureAsync(user.Id, "Deactivated", ip, cancellationToken);
-            Error = localizer["AccountDeactivated"];
+            await WriteFailureAsync(user.Id, user.Status.ToString(), ip, cancellationToken);
+            Error = user.Status switch
+            {
+                UserStatus.Expired => localizer["AccountExpired"],
+                UserStatus.Withdrawn => localizer["AccountWithdrawn"],
+                _ => localizer["AccountDeactivated"],
+            };
             return Page();
         }
 
