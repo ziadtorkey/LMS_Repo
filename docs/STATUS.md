@@ -3,16 +3,16 @@
 _Updated by the Team Lead after every merge cycle._
 
 **Milestone:** M0 Foundation — in progress (0 / 16 issues closed)
-**Last update:** 2026-11-10 — M0 issues #1–#16 opened and on the board; T1 scaffold (#1) with Backend 1; Backend 2 joined (audit, settings, identity, files after #4); FE reviewing T10/T11; QA on review duty (#16).
+**Last update:** 2026-11-10 — PR #17 (T1 scaffold, closes #1) green and in QA review; Backend 1 started #4 on top of it; contract PRs for #2/#3 ready, open after #17 merges; Backend 2 waiting on #4.
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |
 |---|---|---|---|---|
-| Team Lead | Opus | `local_95ef9dc7-9378-4012-a8f2-c7d1f944bdec` (lms-lead) | #2, #3 contract PRs (after #1) | coordinating |
-| Backend 1 | Sonnet | `local_19f31b04-ca2f-43d1-a2cb-8a128722a11f` (lms-backend) | #1 T1 scaffold + CI | working |
+| Team Lead | Opus | `local_95ef9dc7-9378-4012-a8f2-c7d1f944bdec` (lms-lead) | #2, #3 contract branches ready (open after #17 merges) | coordinating |
+| Backend 1 | Sonnet | `local_19f31b04-ca2f-43d1-a2cb-8a128722a11f` (lms-backend) | PR #17 (#1) in review; #4 T2 kernel | working |
 | Backend 2 | Sonnet | `local_d36e7dc2-e9e6-4f73-b7b3-b078b17bbe41` (lms-backend-2) | #5, #8 (start after #4 merges) | waiting on #4 |
 | Frontend | Sonnet | `local_40667dce-5be7-478b-95cb-4f14ecd203b9` (lms-frontend) | #12, #13 (review only until #1 merges) | waiting on #1 |
-| QA | Opus | `local_91a7af3c-7b02-4d61-ac11-2c22629cf89f` (lms-qa) | #16 review duty, #15 E2E prep | waiting for first PR |
+| QA | Opus | `local_91a7af3c-7b02-4d61-ac11-2c22629cf89f` (lms-qa) | reviewing PR #17 (#16) | reviewing |
 
 ## M0 issue map
 | Task | Issue | Lane | Depends on |
