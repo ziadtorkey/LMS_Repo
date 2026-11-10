@@ -105,8 +105,8 @@
 
     private AuditQuery Query(int page = 1, int pageSize = Lms.Shared.Paging.DefaultPageSize) => new(
         null, _userId, _entityType, null, _action,
-        _from is { } f ? DateTime.SpecifyKind(f.Date, DateTimeKind.Utc) : null,
-        _to is { } t ? DateTime.SpecifyKind(t.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc) : null,
+        _from is { } f ? AuditDateRange.StartUtc(f, TimeZoneInfo.Local) : null,
+        _to is { } t ? AuditDateRange.EndUtc(t, TimeZoneInfo.Local) : null,
         page, pageSize);
 
     private async Task<TableData<AuditEntryDto>> LoadPageAsync(TableState state, CancellationToken ct)
@@ -134,16 +134,12 @@
 
     private async Task ExportAsync(string format)
     {
-        try
+        await ActionCalls.TryAsync(async () =>
         {
             var (content, fileName) = await Api.ExportAsync(Query(), format);
             using var reference = new DotNetStreamReference(content);
             await Js.InvokeVoidAsync("lmsDownloadFile", fileName, reference);
-        }
-        catch (ApiProblemException ex)
-        {
-            Snackbar.Add(ProblemText.For(ex, L), Severity.Error);
-        }
+        }, Navigation, L, message => Snackbar.Add(message, Severity.Error));
     }
 
     private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);

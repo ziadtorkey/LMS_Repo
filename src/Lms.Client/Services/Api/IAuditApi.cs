@@ -52,6 +52,8 @@ public sealed class FakeAuditApi : IAuditApi
     public Guid AdminId { get; } = Guid.NewGuid();
     public AuditQuery? LastQuery { get; private set; }
     public string? LastExportFormat { get; private set; }
+    /// <summary>When set, the next export throws it (tests simulate failures).</summary>
+    public Exception? NextExportFailure { get; set; }
 
     public FakeAuditApi()
     {
@@ -90,6 +92,7 @@ public sealed class FakeAuditApi : IAuditApi
 
     public Task<(Stream Content, string FileName)> ExportAsync(AuditQuery query, string format, CancellationToken ct = default)
     {
+        if (NextExportFailure is { } ex) { NextExportFailure = null; throw ex; }
         LastQuery = query;
         LastExportFormat = format;
         return Task.FromResult<(Stream, string)>((new MemoryStream([105, 100, 10]), $"audit.{format}"));

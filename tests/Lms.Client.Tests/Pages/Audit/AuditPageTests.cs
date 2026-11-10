@@ -73,7 +73,7 @@ public sealed class AuditPageTests : ClientTestContext
         // The date filters become UTC bounds of whole days.
         var from = cut.FindComponents<MudDatePicker>()[0];
         await cut.InvokeAsync(() => from.Instance.DateChanged.InvokeAsync(new DateTime(2026, 9, 1)));
-        cut.WaitForAssertion(() => Assert.Equal(new DateTime(2026, 9, 1), _audit.LastQuery!.FromUtc));
+        cut.WaitForAssertion(() => Assert.Equal(AuditDateRange.StartUtc(new DateTime(2026, 9, 1), TimeZoneInfo.Local), _audit.LastQuery!.FromUtc));
     }
 
     [Fact]
@@ -111,6 +111,54 @@ public sealed class AuditPageTests : ClientTestContext
         cut.WaitForElement("[data-testid=diff-NameEn]");
         Assert.Contains("Instructor", cut.Markup);
         Assert.Empty(cut.FindAll("[data-testid=diff-NameAr]")); // unchanged property is not listed
+    }
+
+
+    public static TheoryData<Exception> RedirectingFailures => new()
+    {
+        { new ApiContextException("invalid_context") },
+        { new ApiForbiddenException() },
+    };
+
+    [Theory]
+    [MemberData(nameof(RedirectingFailures))]
+    public async Task Export_with_stale_context_or_forbidden_redirects_instead_of_crashing(Exception failure)
+    {
+        await GrantAsync(Permissions.Audit.View, Permissions.Audit.Export);
+        var cut = RenderPage();
+        _audit.NextExportFailure = failure;
+
+        await cut.Find("[data-testid=audit-export-csv]").ClickAsync(new());
+
+        var navigation = Services.GetRequiredService<Microsoft.AspNetCore.Components.NavigationManager>();
+        Assert.EndsWith(failure is ApiContextException ? "/choose-context" : "/forbidden", navigation.Uri);
+    }
+
+    [Theory]
+    [InlineData("export_too_large", "Too many rows to export")]
+    [InlineData(null, "Could not load data")]
+    public async Task Export_problem_or_offline_shows_a_snackbar(string? code, string expected)
+    {
+        CultureInfo.CurrentUICulture = new CultureInfo("en");
+        await GrantAsync(Permissions.Audit.View, Permissions.Audit.Export);
+        Render<MudPopoverProvider>();
+        var snackbars = Render<MudSnackbarProvider>();
+        var cut = Render<AuditPage>();
+        _audit.NextExportFailure = code is null ? new HttpRequestException("offline") : new ApiProblemException(409, code, null, null);
+
+        await cut.Find("[data-testid=audit-export-csv]").ClickAsync(new());
+
+        cut.WaitForAssertion(() => Assert.Contains(expected, snackbars.Markup));
+    }
+
+    [Fact]
+    public void Date_filter_uses_the_users_local_days_as_utc_bounds()
+    {
+        var riyadh = TimeZoneInfo.CreateCustomTimeZone("UTC+3", TimeSpan.FromHours(3), "UTC+3", "UTC+3");
+        var day = new DateTime(2026, 11, 11);
+
+        Assert.Equal(new DateTime(2026, 11, 10, 21, 0, 0), AuditDateRange.StartUtc(day, riyadh));
+        Assert.Equal(new DateTime(2026, 11, 11, 21, 0, 0).AddTicks(-1), AuditDateRange.EndUtc(day, riyadh));
     }
 
     [Fact]
