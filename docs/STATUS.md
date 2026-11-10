@@ -12,7 +12,7 @@ _Updated by the Team Lead after every merge cycle._
 | Backend 1 | Sonnet | `local_19f31b04-ca2f-43d1-a2cb-8a128722a11f` (lms-backend) | PR #80 (#40) in review; then #30, #42 | working |
 | Backend 2 | Sonnet | `local_d36e7dc2-e9e6-4f73-b7b3-b078b17bbe41` (lms-backend-2) | PRs #82 (#41), #83 (#43); then #45 | working |
 | Frontend | Sonnet | `local_40667dce-5be7-478b-95cb-4f14ecd203b9` (lms-frontend) | PRs #74 (#58, changes requested), #81 (#59); #60 org tree | working |
-| Frontend 2 | Sonnet | (waiting for owner to click Start) | M1 #64–#69 (T29–T34) after #58 | not started |
+| Frontend 2 | Sonnet | `local_3d9e8938-4064-4f83-a04d-920704d41a87` (lms-frontend-2) | M1 #64 T29 roles admin (then #65–#69) | working |
 | QA | Opus | `local_91a7af3c-7b02-4d61-ac11-2c22629cf89f` (lms-qa) | review #74 (M1), #14; fix + un-draft E2E PR #34 (#15) | working |
 | QA 2 | Opus | `local_54d26c64-4403-4a13-b128-5be5e9752d97` (lms-qa-2) | #34 full run; #30; M1 BE2 PRs | reviewing |
 
