@@ -1,5 +1,8 @@
 using Bunit;
 using Lms.Client.Services;
+using Lms.Client.Services.Api;
+using Lms.Shared;
+using Lms.Shared.Organizations;
 using Lms.Shared.Me;
 using Microsoft.Extensions.DependencyInjection;
 using MudBlazor.Services;
@@ -17,6 +20,15 @@ public abstract class ClientTestContext : BunitContext, IAsyncLifetime
     protected FakeCultureService Culture { get; } = new();
     protected InMemoryContextStore Context { get; } = new();
     protected StubLmsApi Api { get; } = new();
+    protected StubClientsApi Clients { get; } = new();
+    protected StubOrgApi Org { get; } = new();
+
+    /// <summary>Grants the active context these permissions (and selects a context).</summary>
+    protected async Task GrantAsync(params string[] permissions)
+    {
+        Api.Permissions = new Lms.Shared.Me.EffectivePermissionsDto(null, permissions);
+        await Context.SetAsync(Guid.NewGuid());
+    }
 
     protected ClientTestContext()
     {
@@ -28,6 +40,8 @@ public abstract class ClientTestContext : BunitContext, IAsyncLifetime
         Services.AddSingleton<IContextStore>(Context);
         Services.AddSingleton<ILmsApi>(Api);
         Services.AddScoped<PermissionState>();
+        Services.AddSingleton<IClientsApi>(Clients);
+        Services.AddSingleton<IOrgApi>(Org);
         AddAuthorization().SetAuthorized("tester");
     }
 }
