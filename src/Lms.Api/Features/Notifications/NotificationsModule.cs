@@ -19,6 +19,7 @@ public static class NotificationsModule
     {
         app.MapHub<NotificationsHub>(NotificationHub.Path).RequireAuthorization();
         app.MapMyNotificationEndpoints();
+        app.MapMyPreferenceEndpoints();
         return app;
     }
 }
