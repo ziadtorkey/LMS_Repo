@@ -21,3 +21,10 @@ public sealed class StoredFileNotFoundException(Guid fileId)
 {
     public Guid FileId { get; } = fileId;
 }
+
+/// <summary>The target org unit does not exist in the caller scope (nonexistent, other client, or outside the subtree).</summary>
+public sealed class UploadTargetNotFoundException(Guid orgUnitId)
+    : InvalidOperationException("The target org unit was not found.")
+{
+    public Guid OrgUnitId { get; } = orgUnitId;
+}

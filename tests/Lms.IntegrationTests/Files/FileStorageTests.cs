@@ -127,7 +127,7 @@ public sealed class FileStorageTests(LmsApiFactory factory)
         var (storage, db, _) = Open(TestCurrentContext.For(tree.Org.Id, tree.School1.Path));
         await using var _db = db;
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<UploadTargetNotFoundException>(
             () => storage.UploadAsync(Request(tree.School2.Id), new MemoryStream(Pdf)));
     }
 

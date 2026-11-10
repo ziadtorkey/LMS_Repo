@@ -29,7 +29,7 @@ public sealed class MinioFileStorage(
 
         // Through the filtered set: the caller can only upload into units inside its own scope.
         var unit = await db.OrgUnits.SingleOrDefaultAsync(x => x.Id == request.OrgUnitId, cancellationToken)
-            ?? throw new InvalidOperationException("Org unit not found in the current scope.");
+            ?? throw new UploadTargetNotFoundException(request.OrgUnitId);
 
         var maxMb = (await settings.ResolveAsync(SettingKeys.FilesMaxUploadMb, unit.Path, cancellationToken)).Value;
         var maxBytes = maxMb * 1024L * 1024L;

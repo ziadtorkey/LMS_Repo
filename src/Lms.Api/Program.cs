@@ -1,3 +1,4 @@
+using Lms.Api.Features.Files;
 using Lms.Api.Infrastructure;
 using Lms.Infrastructure;
 using Serilog;
@@ -30,6 +31,7 @@ app.UseAuthentication();
 app.UseMiddleware<CurrentContextMiddleware>();
 
 app.MapHealthChecks("/health");
+app.MapFileEndpoints();
 foreach (var module in app.Services.GetServices<IEndpointModule>())
 {
     module.Map(app);
