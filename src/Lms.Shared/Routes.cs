@@ -49,4 +49,20 @@ public static class Routes
     public static string OrgUnitPolicy(Guid id, string key) => $"{OrgUnitPolicies(id)}/{Uri.EscapeDataString(key)}";
     public static string Template(Guid id) => $"{Templates}/{id}";
     public static string TemplateApply(Guid id) => $"{Template(id)}/apply";
+
+    // M1 roles, assignments and audit (Task 3)
+    public const string Permissions = "/api/permissions";
+    public const string Roles = "/api/roles";
+    public const string RolePattern = Roles + "/{id:guid}";
+    public const string Assignments = "/api/assignments";
+    public const string AssignmentPattern = Assignments + "/{id:guid}";
+    public const string OrgUnitAssignmentsPattern = OrgUnitPattern + "/assignments";
+    public const string Audit = "/api/audit";
+    public const string AuditEntryPattern = Audit + "/{id:guid}";
+    public const string AuditExport = Audit + "/export";
+
+    public static string Role(Guid id) => $"{Roles}/{id}";
+    public static string Assignment(Guid id) => $"{Assignments}/{id}";
+    public static string OrgUnitAssignments(Guid id) => $"{OrgUnit(id)}/assignments";
+    public static string AuditEntry(Guid id) => $"{Audit}/{id}";
 }
