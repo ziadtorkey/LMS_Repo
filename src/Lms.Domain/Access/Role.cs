@@ -1,7 +1,9 @@
+using Lms.Domain.Auditing;
 using Lms.Domain.Common;
 
 namespace Lms.Domain.Access;
 
+[Audited]
 public sealed class Role : AuditableEntity, ITenantOwned
 {
     private Role()
