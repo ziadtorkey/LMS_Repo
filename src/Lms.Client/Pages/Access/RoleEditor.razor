@@ -3,6 +3,7 @@
 @using Lms.Shared.Access
 @using Lms.Shared.Authorization
 @inject IAccessAdminApi Api
+@inject NavigationManager Navigation
 
 @* Create or edit one role. The base kind of an existing role (built-in or custom) is never editable. *@
 <MudPaper Class="pa-4" data-testid="role-editor">
@@ -66,22 +67,13 @@
             return;
         }
         _saving = true; _error = null;
-        try
-        {
-            var permissions = _selected.OrderBy(p => p, StringComparer.Ordinal).ToArray();
-            if (Role is null)
-                await Api.CreateRoleAsync(new CreateRoleRequest(_nameAr, _nameEn, _baseKind, permissions));
-            else
-                await Api.UpdateRoleAsync(Role.Id, new UpdateRoleRequest(_nameAr, _nameEn, permissions));
-            await OnSaved.InvokeAsync();
-        }
-        catch (ApiProblemException ex)
-        {
-            _error = ProblemText.For(ex, L);
-        }
-        finally
-        {
-            _saving = false;
-        }
+        var permissions = _selected.OrderBy(p => p, StringComparer.Ordinal).ToArray();
+        var saved = await ActionCalls.TryAsync(
+            () => Role is null
+                ? Api.CreateRoleAsync(new CreateRoleRequest(_nameAr, _nameEn, _baseKind, permissions))
+                : Api.UpdateRoleAsync(Role.Id, new UpdateRoleRequest(_nameAr, _nameEn, permissions)),
+            Navigation, L, message => _error = message);
+        _saving = false;
+        if (saved) await OnSaved.InvokeAsync();
     }
 }

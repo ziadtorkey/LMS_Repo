@@ -8,7 +8,7 @@
         <MudPaper Outlined="true" Class="pa-3" data-testid="@($"module-{g.Module}")">
             <MudCheckBox T="bool" Value="AllSelected(g)" ValueChanged="v => ToggleModuleAsync(g, v)"
                          Label="@L[$"PermModule_{g.Module}"]" Disabled="ReadOnly"
-                         Color="Color.Primary" data-testid="@($"select-module-{g.Module}")" />
+                         Color="Color.Primary" aria-label="@($"{L["Roles_SelectModule"]}: {L[$"PermModule_{g.Module}"]}")" data-testid="@($"select-module-{g.Module}")" />
             <MudDivider Class="mb-2" />
             <MudGrid Spacing="1">
                 @foreach (var permission in g.Permissions)
