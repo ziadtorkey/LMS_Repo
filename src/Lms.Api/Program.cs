@@ -21,6 +21,7 @@ builder.Services.AddMe();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddLmsAuth(builder.Configuration, builder.Environment);
 builder.Services.AddAccount(builder.Configuration);
+builder.Services.AddLmsForwardedHeaders(builder.Configuration);
 
 builder.Services.AddHealthChecks()
     .AddCheck<MySqlHealthCheck>("mysql");
@@ -33,6 +34,8 @@ if (app.Environment.IsDevelopment() && app.Configuration.GetValue("Seed:RunOnSta
     await app.Services.GetRequiredService<DevSeeder>().SeedAsync();
 }
 
+// First: everything after it (HTTPS redirection, rate limits, audit IPs) sees the real client address and scheme.
+app.UseLmsForwardedHeaders();
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseMiddleware<SecurityHeadersMiddleware>();
 if (!app.Environment.IsDevelopment())
