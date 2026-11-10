@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Lms.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(LmsDbContext))]
-    [Migration("20261110192716_AddSettings")]
+    [Migration("20261110193321_AddSettings")]
     partial class AddSettings
     {
         /// <inheritdoc />
