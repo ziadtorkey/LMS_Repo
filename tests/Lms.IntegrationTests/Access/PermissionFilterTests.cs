@@ -45,6 +45,19 @@ public sealed class PermissionFilterTests(LmsApiFactory factory)
     }
 
     [Fact]
+    public async Task Authenticated_non_admin_without_context_is_denied()
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, "/test/org-units/view");
+        request.Headers.Add(TestAuthHandler.UserHeader, Guid.NewGuid().ToString());
+
+        var response = await factory.CreateClient().SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal("MissingPermission", body.GetProperty("reason").GetString());
+    }
+
+    [Fact]
     public async Task Missing_permission_gets_403_with_reason()
     {
         var tree = await AccessTestData.SeedAsync(factory, "PF2");
