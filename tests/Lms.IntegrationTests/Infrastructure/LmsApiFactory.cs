@@ -41,8 +41,32 @@ public sealed class LmsApiFactory : WebApplicationFactory<Program>, IAsyncLifeti
     public LmsDbContext CreateDbContext(ICurrentContext context) =>
         LmsDbContextFactory.Create(_mysql.GetConnectionString(), context);
 
+    /// <summary>Creates a fresh, migrated database on the shared MySQL container and returns its connection string.</summary>
+    public async Task<string> CreateIsolatedDatabaseAsync()
+    {
+        var name = "lms_" + Guid.NewGuid().ToString("N")[..12];
+        var root = new MySqlConnector.MySqlConnectionStringBuilder(_mysql.GetConnectionString())
+        {
+            UserID = "root",
+            Password = "lms_test_pw",
+        };
+        await using (var admin = new MySqlConnector.MySqlConnection(root.ConnectionString))
+        {
+            await admin.OpenAsync();
+            await using var create = new MySqlConnector.MySqlCommand($"CREATE DATABASE `{name}` CHARACTER SET utf8mb4", admin);
+            await create.ExecuteNonQueryAsync();
+        }
+
+        var cs = new MySqlConnector.MySqlConnectionStringBuilder(root.ConnectionString) { Database = name }.ConnectionString;
+        await using var db = LmsDbContextFactory.Create(cs, TestCurrentContext.PlatformAdmin());
+        await db.Database.MigrateAsync();
+        return cs;
+    }
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        // Not Development: the dev seeder must not run inside the shared test database.
+        builder.UseEnvironment("Testing");
         builder.UseSetting("ConnectionStrings:Lms", _mysql.GetConnectionString());
         builder.UseSetting("Storage:Endpoint", _minio.GetConnectionString());
         builder.ConfigureServices(services =>
