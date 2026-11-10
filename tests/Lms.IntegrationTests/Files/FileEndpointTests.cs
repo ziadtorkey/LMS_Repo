@@ -19,11 +19,12 @@ public sealed class FileEndpointTests(LmsApiFactory factory)
     private static readonly byte[] Content = Encoding.UTF8.GetBytes("%PDF-1.7 تقرير 🌟 endpoint bytes");
 
     private static HttpRequestMessage Upload(
-        RoleAssignment? who, Guid unitId, string fileName = "report.pdf", byte[]? bytes = null)
+        RoleAssignment? who, Guid unitId, string fileName = "report.pdf", byte[]? bytes = null,
+        string declaredContentType = "application/pdf")
     {
         var form = new MultipartFormDataContent { { new StringContent(unitId.ToString()), "orgUnitId" } };
         var file = new ByteArrayContent(bytes ?? Content);
-        file.Headers.ContentType = new MediaTypeHeaderValue("application/pdf");
+        file.Headers.ContentType = new MediaTypeHeaderValue(declaredContentType);
         form.Add(file, "file", fileName);
 
         var request = new HttpRequestMessage(HttpMethod.Post, "/api/files") { Content = form };
@@ -181,5 +182,67 @@ public sealed class FileEndpointTests(LmsApiFactory factory)
         As(request, teacher);
 
         Assert.Equal(HttpStatusCode.BadRequest, (await factory.CreateClient().SendAsync(request)).StatusCode);
+    }
+
+    private static HttpRequestMessage MalformedUpload(RoleAssignment? who)
+    {
+        var content = new ByteArrayContent("this is not a multipart body"u8.ToArray());
+        content.Headers.ContentType = MediaTypeHeaderValue.Parse("multipart/form-data; boundary=nope");
+        var request = new HttpRequestMessage(HttpMethod.Post, "/api/files") { Content = content };
+        As(request, who);
+        return request;
+    }
+
+    [Fact]
+    public async Task Anonymous_upload_is_401_before_the_body_is_read()
+    {
+        var response = await factory.CreateClient().SendAsync(MalformedUpload(null));
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Upload_without_permission_is_403_even_with_a_malformed_form()
+    {
+        var tree = await AccessTestData.SeedAsync(factory, "FE9");
+        var guardian = await AccessTestData.AssignAsync(factory, tree, tree.School1, BuiltInRoles.Guardian, Guid.NewGuid());
+
+        var response = await factory.CreateClient().SendAsync(MalformedUpload(guardian));
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Malformed_form_from_an_allowed_caller_is_400()
+    {
+        var tree = await AccessTestData.SeedAsync(factory, "FE10");
+        var teacher = await AccessTestData.AssignAsync(factory, tree, tree.School1, BuiltInRoles.Teacher, Guid.NewGuid());
+
+        var response = await factory.CreateClient().SendAsync(MalformedUpload(teacher));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Client_declared_content_type_is_ignored_and_download_is_an_attachment_with_the_original_name()
+    {
+        var tree = await AccessTestData.SeedAsync(factory, "FE11");
+        var teacher = await AccessTestData.AssignAsync(factory, tree, tree.School1, BuiltInRoles.Teacher, Guid.NewGuid());
+        var client = factory.CreateClient();
+        var html = Encoding.UTF8.GetBytes("<script>alert(1)</script>");
+
+        var upload = await client.SendAsync(Upload(teacher, tree.School1.Id, "تقرير.png", html, "text/html"));
+        var created = await upload.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal("image/png", created.GetProperty("contentType").GetString());
+
+        var url = (await (await client.SendAsync(Url(teacher, created.GetProperty("id").GetGuid())))
+            .Content.ReadFromJsonAsync<JsonElement>()).GetProperty("url").GetString();
+        using var plain = new HttpClient();
+        var download = await plain.GetAsync(url);
+
+        Assert.Equal("image/png", download.Content.Headers.ContentType!.MediaType);
+        var disposition = download.Content.Headers.ContentDisposition!;
+        Assert.Equal("attachment", disposition.DispositionType);
+        Assert.Equal("تقرير.png", disposition.FileNameStar);
     }
 }

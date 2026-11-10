@@ -321,6 +321,13 @@ All tenant-owned tables: `OrganizationId`; unit-scoped tables: `OrgUnitId`, `Org
 | D13 | Library "use dhcp" | Interpreted as in-browser protected reader with download disabled per resource. |
 | D14 | External exam cycle, AI, native mobile | Out of v1 scope. |
 | D15 | Access at an Inactive OrgUnit (2026-11-10) | An assignment at an Inactive unit, or below one, is not a valid active context (403, hidden from the context chooser). Admins assigned above the unit keep access to view and reactivate it. |
+| D16 | Manager role assignments (2026-11-10) | Manager gets `Assignments.Create/Delete`, limited by an escalation guard to roles whose permissions are a subset of their own (e.g. Teacher, Counselor, Supervisor; never Org Admin or Manager). |
+| D17 | Academic years visibility | All built-in roles may view academic years, terms and calendar; only Org Admin creates/edits/deletes them. |
+| D18 | Client-wide configuration | Level types, custom roles and built-in role permission sets are editable only by admins assigned at the client root. |
+| D19 | Deleting an OrgUnit | Also blocked while the unit has live child units or live role assignments (in addition to FR-ORG-04's rules). |
+| D20 | Audit visibility | Audit entries are visible within the viewer's subtree; entries with no unit (logins, client-level changes) only to root-level viewers. |
+| D21 | Assigning roles before M2 staff profiles | Assign by email; an unknown email creates a bare user and sends an invitation; no cross-client user search. |
+| D22 | Academic year scope | A unit may define its own year list (replacing its parent's); at most one Active year per defining unit. |
 
 ---
 

@@ -13,6 +13,9 @@ public sealed class EndpointCoverageTests(LmsApiFactory factory)
     private static readonly Dictionary<string, string> Exemptions = new()
     {
         ["/api/{**path}"] = "404 fallback for unknown API routes",
+        ["/api/auth/whoami"] = "identity only: reports who the bearer token belongs to, grants no data",
+        ["/api/me"] = "authentication only: the caller lists their own contexts before choosing one",
+        ["/api/me/permissions"] = "authentication + valid context; returns the caller's own permissions",
     };
 
     [Fact]

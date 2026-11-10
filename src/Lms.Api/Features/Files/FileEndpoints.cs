@@ -1,7 +1,8 @@
 using Lms.Api.Infrastructure;
+using Lms.Domain.Abstractions;
 using Lms.Domain.Files;
 using Lms.Shared.Authorization;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Lms.Api.Features.Files;
 
@@ -14,32 +15,59 @@ public static class FileEndpoints
 {
     public const string Route = "/api/files";
 
-    /// <summary>Upper bound for the request body itself; the real, per-unit limit is applied after the file is read.</summary>
+    /// <summary>Coarse transport ceiling; the real, per-unit limit is applied after the file is read.</summary>
     private const long TransportLimitBytes = 1024L * 1024 * 1024;
+
+    private static readonly TimeSpan UrlLifetime = TimeSpan.FromMinutes(10);
 
     public static IEndpointRouteBuilder MapFileEndpoints(this IEndpointRouteBuilder app)
     {
+        // Authentication (middleware) and the permission (endpoint filter) both run before the handler. The handler is
+        // the only place the multipart body is read, so callers who are refused never make the server buffer a body.
         app.MapPost(Route, UploadAsync)
-            .RequirePermission(Permissions.Files.Upload)
-            // Bearer-token API without cookies: antiforgery does not apply to it.
-            .DisableAntiforgery()
-            // Kestrel's default body limit (about 30 MB) is far below the configurable Files.MaxUploadMb; the setting
-            // decides per unit, so the transport limit is only a coarse ceiling.
-            .WithMetadata(new RequestSizeLimitAttribute(TransportLimitBytes))
-            .WithMetadata(new RequestFormLimitsAttribute { MultipartBodyLengthLimit = TransportLimitBytes });
+            .RequireAuthorization()
+            .RequirePermission(Permissions.Files.Upload);
 
         app.MapGet(Route + "/{id:guid}/url", GetUrlAsync)
+            .RequireAuthorization()
             .RequirePermission(Permissions.Files.Download);
 
         return app;
     }
 
-    private static async Task<IResult> UploadAsync(
-        IFileStorage storage, [FromForm] Guid orgUnitId, IFormFile? file, CancellationToken cancellationToken)
+    private static async Task<IResult> UploadAsync(HttpContext http, IFileStorage storage, CancellationToken cancellationToken)
     {
-        if (file is null || file.Length == 0)
+        var request = http.Request;
+        if (!request.HasFormContentType)
         {
-            return Results.Problem(statusCode: StatusCodes.Status400BadRequest, title: "A non-empty file is required.");
+            return BadRequest("A multipart form with a file is required.");
+        }
+
+        // Kestrel's default body limit (about 30 MB) is far below the configurable Files.MaxUploadMb, which decides per
+        // unit. Lift the transport limit here, before the body is touched; the cap is a coarse ceiling only.
+        if (http.Features.Get<IHttpMaxRequestBodySizeFeature>() is { IsReadOnly: false } bodyLimit)
+        {
+            bodyLimit.MaxRequestBodySize = TransportLimitBytes;
+        }
+
+        IFormCollection form;
+        try
+        {
+            http.Features.Set<IFormFeature>(new FormFeature(request, new FormOptions
+            {
+                MultipartBodyLengthLimit = TransportLimitBytes,
+            }));
+            form = await request.ReadFormAsync(cancellationToken);
+        }
+        catch (Exception ex) when (ex is InvalidDataException or BadHttpRequestException or IOException)
+        {
+            return BadRequest("The multipart form is malformed or too large.");
+        }
+
+        var file = form.Files.GetFile("file");
+        if (!Guid.TryParse(form["orgUnitId"], out var orgUnitId) || file is null || file.Length == 0)
+        {
+            return BadRequest("A non-empty file and a valid orgUnitId are required.");
         }
 
         var fileName = Path.GetFileName(file.FileName);
@@ -51,9 +79,8 @@ public static class FileEndpoints
         try
         {
             await using var stream = file.OpenReadStream();
-            var contentType = string.IsNullOrWhiteSpace(file.ContentType) ? "application/octet-stream" : file.ContentType;
             var stored = await storage.UploadAsync(
-                new FileUploadRequest(fileName, contentType, file.Length, orgUnitId), stream, cancellationToken);
+                new FileUploadRequest(fileName, file.ContentType, file.Length, orgUnitId), stream, cancellationToken);
             return Results.Created(
                 $"{Route}/{stored.Id}",
                 new FileDto(stored.Id, stored.FileName, stored.ContentType, stored.SizeBytes, stored.OrgUnitId));
@@ -75,17 +102,20 @@ public static class FileEndpoints
         }
     }
 
-    private static async Task<IResult> GetUrlAsync(Guid id, IFileStorage storage, CancellationToken cancellationToken)
+    private static async Task<IResult> GetUrlAsync(
+        Guid id, IFileStorage storage, IClock clock, CancellationToken cancellationToken)
     {
         try
         {
-            var ttl = TimeSpan.FromMinutes(10);
-            var url = await storage.GetDownloadUrlAsync(id, ttl, cancellationToken);
-            return Results.Ok(new FileUrlDto(url.ToString(), DateTime.UtcNow.Add(ttl)));
+            var url = await storage.GetDownloadUrlAsync(id, UrlLifetime, cancellationToken);
+            return Results.Ok(new FileUrlDto(url.ToString(), clock.UtcNow.Add(UrlLifetime)));
         }
         catch (StoredFileNotFoundException)
         {
             return Results.Problem(statusCode: StatusCodes.Status404NotFound, title: "Not found");
         }
     }
+
+    private static IResult BadRequest(string title) =>
+        Results.Problem(statusCode: StatusCodes.Status400BadRequest, title: title);
 }

@@ -38,8 +38,11 @@ public sealed class MinioFileStorage(
             throw new FileTooLargeException(request.SizeBytes, maxBytes);
         }
 
+        // The client-declared content type is ignored: the type comes from the allow-listed extension, and downloads are
+        // forced to attachments, so an uploaded file can never be rendered as a page from the storage origin.
+        var contentType = FileContentTypes.ForExtension(extension);
         var file = new StoredFile(
-            unit.OrganizationId, unit.Id, unit.Path, request.FileName, request.ContentType, request.SizeBytes, clock.UtcNow);
+            unit.OrganizationId, unit.Id, unit.Path, request.FileName, contentType, request.SizeBytes, clock.UtcNow);
         var bucket = BucketFor(unit.OrganizationId);
 
         await clients.EnsureBucketAsync(bucket, cancellationToken);
@@ -49,7 +52,7 @@ public sealed class MinioFileStorage(
                 .WithObject(file.ObjectKey)
                 .WithStreamData(content)
                 .WithObjectSize(request.SizeBytes)
-                .WithContentType(request.ContentType),
+                .WithContentType(contentType),
             cancellationToken);
 
         try
@@ -79,7 +82,15 @@ public sealed class MinioFileStorage(
             new PresignedGetObjectArgs()
                 .WithBucket(BucketFor(file.OrganizationId))
                 .WithObject(file.ObjectKey)
-                .WithExpiry(seconds));
+                .WithExpiry(seconds)
+                // Signed into the url (storage rejects Content-Disposition as an upload header): the response is
+                // always a download under the original name, typed by extension.
+                .WithHeaders(new Dictionary<string, string>
+                {
+                    ["response-content-disposition"] =
+                        FileContentTypes.AttachmentDisposition(file.FileName, Path.GetExtension(file.FileName)),
+                    ["response-content-type"] = file.ContentType,
+                }));
         return new Uri(url);
     }
 
