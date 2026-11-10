@@ -70,7 +70,7 @@ public sealed class AuditTests(LmsApiFactory factory)
         var seed = await SeedAsync("Audit2");
 
         Assert.Empty(await EntriesForAsync(seed.Level.Id));
-        Assert.Empty(await EntriesForAsync(seed.Org.Id));
+        // Organization is audited since the clients module (create, rename and suspend are admin actions worth recording).
     }
 
     [Fact]
