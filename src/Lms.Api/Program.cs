@@ -10,7 +10,9 @@ builder.Host.UseSerilog((context, services, configuration) => configuration
     .WriteTo.Console(outputTemplate:
         "[{Timestamp:HH:mm:ss} {Level:u3}] {CorrelationId} {Message:lj}{NewLine}{Exception}"));
 
-builder.Services.AddScoped<Lms.Domain.Abstractions.ICurrentContext, AnonymousCurrentContext>();
+builder.Services.AddScoped<HttpCurrentContext>();
+builder.Services.AddScoped<Lms.Domain.Abstractions.ICurrentContext>(sp => sp.GetRequiredService<HttpCurrentContext>());
+builder.Services.AddAuthentication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddHealthChecks()
@@ -24,7 +26,17 @@ app.UseSerilogRequestLogging();
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
 
+app.UseAuthentication();
+app.UseMiddleware<CurrentContextMiddleware>();
+
 app.MapHealthChecks("/health");
+foreach (var module in app.Services.GetServices<IEndpointModule>())
+{
+    module.Map(app);
+}
+
+// Unknown API routes must be 404, not the SPA's index.html.
+app.MapFallback("/api/{**path}", () => Results.Problem(statusCode: StatusCodes.Status404NotFound, title: "Not found"));
 app.MapFallbackToFile("index.html");
 
 app.Run();
