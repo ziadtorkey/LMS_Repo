@@ -135,4 +135,17 @@
   <data name="OrgTree_Settings" xml:space="preserve"><value>إعدادات الوحدة</value></data>
   <data name="OrgTree_DeleteConfirm" xml:space="preserve"><value>حذف هذه الوحدة؟ لا يمكن استعادتها إلا عن طريق الدعم الفني.</value></data>
   <data name="OrgTree_NoMatches" xml:space="preserve"><value>لا توجد وحدات مطابقة للبحث.</value></data>
+  <data name="Move_Title" xml:space="preserve"><value>نقل الوحدة</value></data>
+  <data name="Move_NewParent" xml:space="preserve"><value>الوحدة الأم الجديدة</value></data>
+  <data name="Move_Confirm" xml:space="preserve"><value>نقل &quot;{0}&quot; من &quot;{1}&quot; إلى &quot;{2}&quot;؟</value></data>
+  <data name="Move_Button" xml:space="preserve"><value>نقل</value></data>
+  <data name="UnitSettings_General" xml:space="preserve"><value>عام</value></data>
+  <data name="UnitSettings_Academic" xml:space="preserve"><value>أكاديمي</value></data>
+  <data name="UnitSettings_Settings" xml:space="preserve"><value>الإعدادات</value></data>
+  <data name="UnitSettings_Policies" xml:space="preserve"><value>السياسات</value></data>
+  <data name="UnitSettings_Back" xml:space="preserve"><value>العودة إلى الهيكل التنظيمي</value></data>
+  <data name="Academic_LevelTransfer" xml:space="preserve"><value>مستوى انتقال (ترفيع)</value></data>
+  <data name="Academic_NextLevel" xml:space="preserve"><value>المستوى التالي</value></data>
+  <data name="Academic_TransferPath" xml:space="preserve"><value>مسار الانتقال</value></data>
+  <data name="Academic_CourseManagement" xml:space="preserve"><value>مستوى إدارة المقررات</value></data>
 </root>

@@ -1,0 +1,79 @@
+@page "/org-units/{Id:guid}"
+@attribute [Authorize]
+@using Lms.Client.Services.Api
+@using Lms.Shared.Authorization
+@using Lms.Shared.Organizations
+@inject IOrgApi Api
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<PageTitle>@L["OrgTree_Settings"]</PageTitle>
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
+    <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Href="org-units" aria-label="@L["UnitSettings_Back"]" data-testid="unit-back" />
+    <MudText Typo="Typo.h4" data-testid="unit-title">@(_unit is null ? L["OrgTree_Settings"].Value : Culture.Pick(_unit.NameAr, _unit.NameEn))</MudText>
+</MudStack>
+
+@if (_error is not null)
+{
+    <MudAlert Severity="Severity.Error" data-testid="unit-error">@_error</MudAlert>
+}
+else if (_unit is null)
+{
+    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+}
+else
+{
+    <MudTabs Elevation="0" Rounded="false" ApplyEffectsToContainer="true" TabPanelsClass="pa-4" data-testid="unit-tabs">
+        <MudTabPanel Text="@L["UnitSettings_General"]">
+            <MudSimpleTable Dense="true" data-testid="tab-general">
+                <tbody>
+                    <tr><th>@L["Common_NameAr"]</th><td dir="rtl">@_unit.NameAr</td></tr>
+                    <tr><th>@L["Common_NameEn"]</th><td dir="ltr">@_unit.NameEn</td></tr>
+                    <tr><th>@L["Common_Code"]</th><td dir="ltr">@_unit.Code</td></tr>
+                    <tr><th>@L["Common_Status"]</th><td>@(_unit.Status == OrgUnitStatuses.Inactive ? L["OrgTree_Inactive"] : L["ClientStatus_Active"])</td></tr>
+                </tbody>
+            </MudSimpleTable>
+        </MudTabPanel>
+        <MudTabPanel Text="@L["UnitSettings_Academic"]">
+            <AcademicFlagsTab Unit="_unit" AllUnits="_all" CanEdit="PermState.Has(Permissions.OrgUnits.Update)" OnSaved="LoadAsync" />
+        </MudTabPanel>
+        @* Settings and Policies tab bodies arrive with Task 27. *@
+        <MudTabPanel Text="@L["UnitSettings_Settings"]" data-testid="tab-settings" />
+        <MudTabPanel Text="@L["UnitSettings_Policies"]" data-testid="tab-policies" />
+    </MudTabs>
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private OrgUnitNodeDto? _unit;
+    private IReadOnlyList<OrgUnitNodeDto> _all = [];
+    private string? _error;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        PermState.Changed -= OnPermissionsChanged;
+        PermState.Changed += OnPermissionsChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        await LoadAsync();
+    }
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    private async Task LoadAsync()
+    {
+        try
+        {
+            _all = await Api.GetOrgUnitsAsync(null);
+            _unit = _all.FirstOrDefault(u => u.Id == Id);
+            if (_unit is null) _error = L["Error_not_found"];
+        }
+        catch (Exception ex) when (ApiCalls.TryRedirect(ex, Navigation)) { }
+        catch (ApiProblemException ex) { _error = ProblemText.For(ex, L); }
+        catch (HttpRequestException) { _error = L["Error_Generic"]; }
+    }
+
+    public void Dispose() => PermState.Changed -= OnPermissionsChanged;
+}

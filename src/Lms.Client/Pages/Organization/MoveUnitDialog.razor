@@ -1,0 +1,82 @@
+@using Lms.Client.Services.Api
+@using Lms.Shared.Organizations
+@inject IOrgApi Api
+@inject ICultureService Culture
+
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="3">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" data-testid="dialog-error">@_error</MudAlert>
+            }
+            <MudSelect T="Guid" @bind-Value="_newParentId" Label="@L["Move_NewParent"]" data-testid="move-parent">
+                @foreach (var target in _targets)
+                {
+                    <MudSelectItem T="Guid" Value="@target.Id">@(new string(' ', target.Depth * 3) + Culture.Pick(target.NameAr, target.NameEn))</MudSelectItem>
+                }
+            </MudSelect>
+            @if (NewParent is not null)
+            {
+                <MudText Typo="Typo.body2" data-testid="move-confirm-text">
+                    @string.Format(L["Move_Confirm"].Value, Name(Unit), OldParent is null ? "" : Name(OldParent), Name(NewParent))
+                </MudText>
+            }
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()">@L["Common_Cancel"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="@(_saving || _newParentId == Guid.Empty)"
+                   data-testid="dialog-save">@L["Move_Button"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter, EditorRequired] public OrgUnitNodeDto Unit { get; set; } = default!;
+    [Parameter, EditorRequired] public IReadOnlyList<OrgUnitNodeDto> AllUnits { get; set; } = [];
+
+    private IReadOnlyList<OrgUnitNodeDto> _targets = [];
+    private Guid _newParentId;
+    private string? _error;
+    private bool _saving;
+
+    private OrgUnitNodeDto? OldParent => AllUnits.FirstOrDefault(u => u.Id == Unit.ParentId);
+    private OrgUnitNodeDto? NewParent => AllUnits.FirstOrDefault(u => u.Id == _newParentId);
+    private string Name(OrgUnitNodeDto u) => Culture.Pick(u.NameAr, u.NameEn);
+
+    /// <summary>Valid new parents: everything outside the unit's own branch, except its current parent (a no-op).</summary>
+    public static IReadOnlyList<OrgUnitNodeDto> Candidates(OrgUnitNodeDto unit, IReadOnlyList<OrgUnitNodeDto> all)
+    {
+        var branch = new HashSet<Guid> { unit.Id };
+        bool grew;
+        do
+        {
+            grew = false;
+            foreach (var u in all)
+                if (u.ParentId is { } p && branch.Contains(p) && branch.Add(u.Id)) grew = true;
+        } while (grew);
+        return all.Where(u => !branch.Contains(u.Id) && u.Id != unit.ParentId).OrderBy(u => u.Depth).ThenBy(u => u.NameEn).ToList();
+    }
+
+    protected override void OnParametersSet()
+    {
+        _targets = Candidates(Unit, AllUnits);
+        if (_newParentId == Guid.Empty) _newParentId = _targets.FirstOrDefault()?.Id ?? Guid.Empty;
+    }
+
+    private async Task SaveAsync()
+    {
+        _saving = true; _error = null;
+        try
+        {
+            await Api.MoveOrgUnitAsync(Unit.Id, new MoveOrgUnitRequest(_newParentId));
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        catch (ApiProblemException ex)
+        {
+            _error = ProblemText.For(ex, L);
+        }
+        finally { _saving = false; }
+    }
+}
