@@ -1,3 +1,4 @@
+using Lms.Api.Features.Files;
 using Lms.Api.Features.Auth;
 using Lms.Api.Features.Me;
 using Lms.Api.Infrastructure;
@@ -44,6 +45,7 @@ app.UseAuthorization();
 app.MapAuthorizationEndpoints();
 app.MapRazorPages();
 app.MapHealthChecks("/health");
+app.MapFileEndpoints();
 foreach (var module in app.Services.GetServices<IEndpointModule>())
 {
     module.Map(app);

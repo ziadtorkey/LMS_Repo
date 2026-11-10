@@ -310,6 +310,66 @@ namespace Lms.Infrastructure.Persistence.Migrations
                     b.ToTable("OrgUnitSettings", (string)null);
                 });
 
+            modelBuilder.Entity("Lms.Domain.Files.StoredFile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("ObjectKey")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<Guid>("OrgUnitId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("OrgUnitPath")
+                        .IsRequired()
+                        .HasColumnType("varchar(400) CHARACTER SET ascii COLLATE ascii_general_ci");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrgUnitId");
+
+                    b.HasIndex("OrganizationId", "OrgUnitPath");
+
+                    b.ToTable("StoredFiles", (string)null);
+                });
+
             modelBuilder.Entity("Lms.Domain.Identity.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -865,6 +925,15 @@ namespace Lms.Infrastructure.Persistence.Migrations
                 });
 
             modelBuilder.Entity("Lms.Domain.Configuration.OrgUnitSetting", b =>
+                {
+                    b.HasOne("Lms.Domain.Organizations.OrgUnit", null)
+                        .WithMany()
+                        .HasForeignKey("OrgUnitId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Lms.Domain.Files.StoredFile", b =>
                 {
                     b.HasOne("Lms.Domain.Organizations.OrgUnit", null)
                         .WithMany()
