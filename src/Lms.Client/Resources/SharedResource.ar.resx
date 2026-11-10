@@ -85,4 +85,14 @@
   <data name="Error_term_outside_year" xml:space="preserve"><value>يجب أن يقع الفصل ضمن السنة الدراسية.</value></data>
   <data name="Error_event_outside_year" xml:space="preserve"><value>يجب أن يقع الحدث ضمن السنة الدراسية.</value></data>
   <data name="Error_in_app_required" xml:space="preserve"><value>لا يمكن إيقاف الإشعارات داخل التطبيق.</value></data>
+  <data name="Table_RowsPerPage" xml:space="preserve"><value>عدد الصفوف في الصفحة:</value></data>
+  <data name="Table_InfoFormat" xml:space="preserve"><value>{first_item}-{last_item} من {all_items}</value></data>
+  <data name="MudTablePager_FirstPage" xml:space="preserve"><value>الصفحة الأولى</value></data>
+  <data name="MudTablePager_LastPage" xml:space="preserve"><value>الصفحة الأخيرة</value></data>
+  <data name="MudTablePager_NextPage" xml:space="preserve"><value>الصفحة التالية</value></data>
+  <data name="MudTablePager_PreviousPage" xml:space="preserve"><value>الصفحة السابقة</value></data>
+  <data name="Error_MissingPermission" xml:space="preserve"><value>ليست لديك صلاحية للقيام بذلك.</value></data>
+  <data name="Error_OutOfScope" xml:space="preserve"><value>هذا العنصر خارج نطاق صلاحياتك.</value></data>
+  <data name="Error_invalid_context" xml:space="preserve"><value>الدور الذي اخترته لم يعد صالحًا. يرجى اختيار دور مرة أخرى.</value></data>
+  <data name="Error_context_required" xml:space="preserve"><value>يرجى اختيار دور أولًا.</value></data>
 </root>

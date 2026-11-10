@@ -21,6 +21,17 @@ public sealed class ApiErrorTests : ClientTestContext
         Assert.Empty(cut.FindAll("[data-testid=api-error]"));
     }
 
+    [Fact]
+    public void Stale_context_goes_to_the_chooser_without_error_ui()
+    {
+        Api.Failure = new Lms.Client.Services.Api.ApiContextException("invalid_context");
+
+        var cut = Render<Home>();
+
+        Assert.EndsWith("/choose-context", Services.GetRequiredService<NavigationManager>().Uri);
+        Assert.Empty(cut.FindAll("[data-testid=api-error]"));
+    }
+
     [Theory]
     [InlineData("ar", "تعذر تحميل البيانات")]
     [InlineData("en", "Could not load data")]
