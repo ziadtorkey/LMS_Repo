@@ -54,7 +54,8 @@ public sealed class RealPolicyEvaluationTests(LmsApiFactory factory)
         var admin = await AccessTestData.AssignAsync(factory, tree, tree.School1, BuiltInRoles.OrgAdmin, Guid.NewGuid());
         await AddPolicyAsync(tree, tree.Root);
 
-        var response = await CreateOrgUnitAsync(RealEvaluatorHost().CreateClient(), admin, "en");
+        using var host = RealEvaluatorHost();
+        var response = await CreateOrgUnitAsync(host.CreateClient(), admin, "en");
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         var body = await response.Content.ReadFromJsonAsync<JsonElement>();
@@ -70,7 +71,8 @@ public sealed class RealPolicyEvaluationTests(LmsApiFactory factory)
         var admin = await AccessTestData.AssignAsync(factory, tree, tree.School1, BuiltInRoles.OrgAdmin, Guid.NewGuid());
         await AddPolicyAsync(tree, tree.Root);
 
-        var response = await CreateOrgUnitAsync(RealEvaluatorHost().CreateClient(), admin, "ar");
+        using var host = RealEvaluatorHost();
+        var response = await CreateOrgUnitAsync(host.CreateClient(), admin, "ar");
 
         var body = await response.Content.ReadFromJsonAsync<JsonElement>();
         Assert.Equal(PolicyCatalog.BlockedMessageAr, body.GetProperty("detail").GetString());
@@ -83,7 +85,8 @@ public sealed class RealPolicyEvaluationTests(LmsApiFactory factory)
         var admin = await AccessTestData.AssignAsync(factory, tree, tree.Root, BuiltInRoles.OrgAdmin, Guid.NewGuid());
         await AddPolicyAsync(tree, tree.School1); // below the admin's unit, not an ancestor of it
 
-        var response = await CreateOrgUnitAsync(RealEvaluatorHost().CreateClient(), admin);
+        using var host = RealEvaluatorHost();
+        var response = await CreateOrgUnitAsync(host.CreateClient(), admin);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
@@ -96,7 +99,8 @@ public sealed class RealPolicyEvaluationTests(LmsApiFactory factory)
         var admin = await AccessTestData.AssignAsync(factory, a, a.School1, BuiltInRoles.OrgAdmin, Guid.NewGuid());
         await AddPolicyAsync(b, b.Root);
 
-        var response = await CreateOrgUnitAsync(RealEvaluatorHost().CreateClient(), admin);
+        using var host = RealEvaluatorHost();
+        var response = await CreateOrgUnitAsync(host.CreateClient(), admin);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
@@ -113,7 +117,40 @@ public sealed class RealPolicyEvaluationTests(LmsApiFactory factory)
             await db.SaveChangesAsync();
         }
 
-        var response = await CreateOrgUnitAsync(RealEvaluatorHost().CreateClient(), admin);
+        using var host = RealEvaluatorHost();
+        var response = await CreateOrgUnitAsync(host.CreateClient(), admin);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Policy_on_a_true_sibling_unit_does_not_block()
+    {
+        var tree = await AccessTestData.SeedAsync(factory, "RP7");
+        var admin = await AccessTestData.AssignAsync(factory, tree, tree.School1, BuiltInRoles.OrgAdmin, Guid.NewGuid());
+        await AddPolicyAsync(tree, tree.School2); // sibling of the admin's unit, shares only the root
+
+        using var host = RealEvaluatorHost();
+        var response = await CreateOrgUnitAsync(host.CreateClient(), admin);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Forged_policy_row_of_another_client_on_this_clients_path_does_not_block()
+    {
+        var a = await AccessTestData.SeedAsync(factory, "RP8");
+        var b = await AccessTestData.SeedAsync(factory, "RP9");
+        var admin = await AccessTestData.AssignAsync(factory, a, a.School1, BuiltInRoles.OrgAdmin, Guid.NewGuid());
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            // Client B's policy row, but pointing at client A's root path (as a bug or forgery could create it).
+            db.Add(new OrgUnitPolicy(b.Org.Id, a.Root.Id, a.Root.Path, PolicyCatalog.CreateOrgUnits));
+            await db.SaveChangesAsync();
+        }
+
+        using var host = RealEvaluatorHost();
+        var response = await CreateOrgUnitAsync(host.CreateClient(), admin);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }

@@ -1,8 +1,10 @@
+using Lms.Domain.Auditing;
 using Lms.Domain.Common;
 
 namespace Lms.Domain.Access;
 
 /// <summary>One permission granted by a role. Hard-deleted when a role's permission set is edited.</summary>
+[Audited]
 public sealed class RolePermission : Entity, ITenantOwned
 {
     private RolePermission()
