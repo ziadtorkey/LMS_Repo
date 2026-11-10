@@ -1,4 +1,5 @@
 using Lms.Api.Infrastructure;
+using Lms.Infrastructure;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,6 +9,9 @@ builder.Host.UseSerilog((context, services, configuration) => configuration
     .Enrich.FromLogContext()
     .WriteTo.Console(outputTemplate:
         "[{Timestamp:HH:mm:ss} {Level:u3}] {CorrelationId} {Message:lj}{NewLine}{Exception}"));
+
+builder.Services.AddScoped<Lms.Domain.Abstractions.ICurrentContext, AnonymousCurrentContext>();
+builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddHealthChecks()
     .AddCheck<MySqlHealthCheck>("mysql");
