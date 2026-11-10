@@ -2,17 +2,17 @@
 
 _Updated by the Team Lead after every merge cycle._
 
-**Milestone:** M0 Foundation — in progress (1 / 16 issues closed)
-**Last update:** 2026-11-10 — PR #20 (T2 kernel, closes #4) up; QA queue: #18, #19, #20. Backend 1 starting #7 and Backend 2 starting #5/#8, stacked on #20. MySQL provider: Oracle MySql.EntityFrameworkCore (ADR 0001, in #20).
+**Milestone:** M0 Foundation — in progress (3 / 17 issues closed)
+**Last update:** 2026-11-10 — contract PRs #18 (#2) and #19 (#3) merged. QA bug #21 (OrgAdmin over-grant) fixed in PR #22, in review. QA queue: #22, then #20 (kernel). Frontend on #12; Backend 1 on #7; Backend 2 on #5/#8.
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |
 |---|---|---|---|---|
-| Team Lead | Opus | `local_95ef9dc7-9378-4012-a8f2-c7d1f944bdec` (lms-lead) | PRs #18 (#2), #19 (#3) in review | coordinating |
+| Team Lead | Opus | `local_95ef9dc7-9378-4012-a8f2-c7d1f944bdec` (lms-lead) | PR #22 (fixes #21) in review | coordinating |
 | Backend 1 | Sonnet | `local_19f31b04-ca2f-43d1-a2cb-8a128722a11f` (lms-backend) | PR #20 (#4) in review; #7 T5 roles + context | working |
 | Backend 2 | Sonnet | `local_d36e7dc2-e9e6-4f73-b7b3-b078b17bbe41` (lms-backend-2) | #5 T3 audit, #8 T6 settings (stacked on #20) | working |
 | Frontend | Sonnet | `local_40667dce-5be7-478b-95cb-4f14ecd203b9` (lms-frontend) | #12 T10 client shell | working |
-| QA | Opus | `local_91a7af3c-7b02-4d61-ac11-2c22629cf89f` (lms-qa) | reviewing PRs #18, #19, #20 (#16) | reviewing |
+| QA | Opus | `local_91a7af3c-7b02-4d61-ac11-2c22629cf89f` (lms-qa) | reviewing PRs #22, #20 (#16) | reviewing |
 
 ## M0 issue map
 | Task | Issue | Lane | Depends on |
@@ -33,6 +33,7 @@ _Updated by the Team Lead after every merge cycle._
 | T12 dev seed | #14 | BE1 | #7, #11 |
 | T12 E2E smoke | #15 | QA | #14, #13 |
 | M0 review checklist | #16 | QA | all |
+| Bug: OrgAdmin explicit permissions | #21 | Lead | — |
 
 ## Blockers
 None. (Board: [LMS v1](https://github.com/users/ziadtorkey/projects/1) — Todo → In Progress → In Review → Done.)
@@ -41,4 +42,6 @@ None. (Board: [LMS v1](https://github.com/users/ziadtorkey/projects/1) — Todo 
 None.
 
 ## Recently merged
+- #19 feat(contracts): Me DTOs and API routes (closes #3)
+- #18 feat(contracts): permission catalog, built-in roles, policy catalog, context header (closes #2)
 - #17 chore: scaffold solution, docker compose and CI (closes #1)
