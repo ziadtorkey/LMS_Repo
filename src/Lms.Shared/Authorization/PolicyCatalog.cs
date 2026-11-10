@@ -1,3 +1,6 @@
+using System.Collections.Frozen;
+using System.Collections.Immutable;
+
 namespace Lms.Shared.Authorization;
 
 /// <summary>
@@ -8,11 +11,12 @@ public static class PolicyCatalog
 {
     public const string CreateOrgUnits = "CreateOrgUnits";
 
+    /// <summary>Policy key → permissions it blocks. Immutable (FrozenDictionary of immutable lists).</summary>
     public static IReadOnlyDictionary<string, IReadOnlyList<string>> BlockedPermissions { get; } =
         new Dictionary<string, IReadOnlyList<string>>
         {
-            [CreateOrgUnits] = [Permissions.OrgUnits.Create],
-        };
+            [CreateOrgUnits] = ImmutableArray.Create(Permissions.OrgUnits.Create),
+        }.ToFrozenDictionary(StringComparer.Ordinal);
 
     /// <summary>Exact policy-block message copy (M0 plan, Global Constraints).</summary>
     public const string BlockedMessageEn = "Blocked by parent organization policy";

@@ -70,7 +70,7 @@ public sealed class AuditInterceptor(ICurrentContext context, IClock clock) : Sa
 
     private static bool IsAuditable(PropertyEntry property) =>
         !Stamps.Contains(property.Metadata.Name)
-        && !(property.Metadata.PropertyInfo?.IsDefined(typeof(AuditIgnoreAttribute), inherit: true) ?? false);
+        && !(property.Metadata.PropertyInfo is { } info && Attribute.IsDefined(info, typeof(AuditIgnoreAttribute), inherit: true));
 
     private static bool IsAudited(EntityEntry entry) =>
         entry.State is EntityState.Added or EntityState.Modified or EntityState.Deleted

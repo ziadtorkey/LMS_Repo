@@ -2,14 +2,17 @@ using Lms.Domain.Abstractions;
 using Lms.Domain.Access;
 using Lms.Domain.Auditing;
 using Lms.Domain.Common;
+using Lms.Domain.Files;
 using Lms.Domain.Configuration;
 using Lms.Domain.Organizations;
+using Lms.Domain.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Lms.Infrastructure.Persistence;
 
 public sealed class LmsDbContext(DbContextOptions<LmsDbContext> options, ICurrentContext currentContext)
-    : DbContext(options)
+    : IdentityUserContext<User, Guid>(options)
 {
     // Read by the global query filters; EF re-evaluates it per context instance.
     internal ICurrentContext CurrentContext { get; } = currentContext;
@@ -28,9 +31,11 @@ public sealed class LmsDbContext(DbContextOptions<LmsDbContext> options, ICurren
     public DbSet<AuditEntry> AuditEntries => Set<AuditEntry>();
     public DbSet<OrgUnitSetting> OrgUnitSettings => Set<OrgUnitSetting>();
     public DbSet<OrgUnitPolicy> OrgUnitPolicies => Set<OrgUnitPolicy>();
+    public DbSet<StoredFile> StoredFiles => Set<StoredFile>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(LmsDbContext).Assembly);
 
         foreach (var entityType in modelBuilder.Model.GetEntityTypes().Where(t => !t.IsOwned()))
