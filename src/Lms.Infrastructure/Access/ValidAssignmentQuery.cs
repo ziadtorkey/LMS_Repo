@@ -37,9 +37,9 @@ public static class ValidAssignmentQuery
         where a.UserId == userId
               && !a.IsDeleted && !r.IsDeleted && !u.IsDeleted && !o.IsDeleted
               && r.OrganizationId == a.OrganizationId && u.OrganizationId == a.OrganizationId
+              && o.Status == OrganizationStatus.Active // a suspended client has no valid contexts
               // D15: a unit that is Inactive, or has an Inactive ancestor, is not a valid context. ISOLATION-BYPASS: the
               // inactive ancestor lies above the assignment's scope; the client is matched and deleted units excluded by hand.
-              && o.Status == OrganizationStatus.Active // a suspended client has no valid contexts
               && u.Status == OrgUnitStatus.Active
               && !db.OrgUnits.IgnoreQueryFilters().Any(x => x.OrganizationId == a.OrganizationId && !x.IsDeleted
                                                            && x.Status == OrgUnitStatus.Inactive && u.Path.StartsWith(x.Path))

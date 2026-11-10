@@ -357,4 +357,19 @@ public sealed class ClientEndpointsTests(LmsApiFactory factory) : IDisposable
         await using var db = Admin();
         Assert.True(await db.AuditEntries.AnyAsync(e => e.EntityType == nameof(Organization) && e.EntityId == dto.Id));
     }
+
+    [Theory]
+    [InlineData("o'brien")]
+    [InlineData("élise")]
+    [InlineData("مدير")]
+    public async Task Valid_admin_email_with_an_apostrophe_or_non_ascii_letters_creates_the_client(string local)
+    {
+        var email = $"{local}-{Guid.NewGuid():N}@clients.test";
+
+        var dto = await CreateAsync(NewClient("UN" + Guid.NewGuid().ToString("N")[..4], adminEmail: email));
+
+        await using var db = Admin();
+        Assert.True(await db.Users.AnyAsync(u => u.Email == email));
+        Assert.True(await db.Organizations.AnyAsync(o => o.Id == dto.Id));
+    }
 }
