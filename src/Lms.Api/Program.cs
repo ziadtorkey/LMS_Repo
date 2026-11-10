@@ -1,6 +1,7 @@
 using Lms.Api.Features.Files;
 using Lms.Api.Features.Account;
 using Lms.Api.Features.Auth;
+using Lms.Api.Features.AcademicYears;
 using Lms.Api.Features.Me;
 using Lms.Api.Infrastructure;
 using Lms.Infrastructure;
@@ -67,6 +68,7 @@ foreach (var module in app.Services.GetServices<IEndpointModule>())
 }
 
 app.MapMeEndpoints();
+app.MapAcademicYears();
 
 // Unknown API routes must be 404, not the SPA's index.html.
 app.MapFallback("/api/{**path}", () => Results.Problem(statusCode: StatusCodes.Status404NotFound, title: "Not found"));

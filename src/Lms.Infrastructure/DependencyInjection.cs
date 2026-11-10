@@ -1,5 +1,6 @@
 using Lms.Domain.Abstractions;
 using Lms.Infrastructure.Access;
+using Lms.Infrastructure.AcademicYears;
 using Lms.Infrastructure.Auditing;
 using Lms.Infrastructure.Files;
 using Lms.Infrastructure.Email;
@@ -28,6 +29,7 @@ public static class DependencyInjection
         services.AddLmsIdentityStores();
         services.AddEmail(configuration);
         services.AddSettingsAndPolicies();
+        services.AddAcademicYears();
         return services;
     }
 }

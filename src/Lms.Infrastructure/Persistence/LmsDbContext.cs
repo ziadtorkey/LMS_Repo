@@ -1,4 +1,5 @@
 using Lms.Domain.Abstractions;
+using Lms.Domain.AcademicYears;
 using Lms.Domain.Access;
 using Lms.Domain.Auditing;
 using Lms.Domain.Common;
@@ -32,6 +33,8 @@ public sealed class LmsDbContext(DbContextOptions<LmsDbContext> options, ICurren
     public DbSet<OrgUnitSetting> OrgUnitSettings => Set<OrgUnitSetting>();
     public DbSet<OrgUnitPolicy> OrgUnitPolicies => Set<OrgUnitPolicy>();
     public DbSet<StoredFile> StoredFiles => Set<StoredFile>();
+    public DbSet<AcademicYear> AcademicYears => Set<AcademicYear>();
+    public DbSet<Term> Terms => Set<Term>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
