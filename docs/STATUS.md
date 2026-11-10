@@ -2,19 +2,22 @@
 
 _Updated by the Team Lead after every merge cycle._
 
-**Milestone:** M0 Foundation — finishing (17 / 19 issues closed) · M1 Organization & Access — in progress (6 / 40 issues closed)
-**Last update:** 2026-11-11 — Merged: E2E smoke tests #34 (closes #15), UnitAccess #80 (closes #40), password/invitations #82 (closes #41). M0 left: #30 (PR #86, QA 1) and the QA checklist #16. M1 in review: #83 (#43, merging main), #74/#81 (FE1), #87 (FE2).
+**Milestone:** M0 Foundation — all code merged (18 / 19; QA closing checklist #16) · M1 Organization & Access — in progress (8 / 40 issues closed)
+**Last update:** 2026-11-11 — Merged #86 (closes #30) and #74 (closes #58; also fixed bug #84). M0 code complete; QA 1 runs the exit demo and closes #16. M1 in review: #83 (#43), #81 (#59), #87/#89 (#64/#65), #88 (#85), #90 (#45).
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |
 |---|---|---|---|---|
 | Team Lead | Opus | `local_95ef9dc7-9378-4012-a8f2-c7d1f944bdec` (lms-lead) | coordinating M0 close-out + M1 | coordinating |
-| Backend 1 | Sonnet | `local_19f31b04-ca2f-43d1-a2cb-8a128722a11f` (lms-backend) | PR #86 (#30) in review; #42 clients | working |
-| Backend 2 | Sonnet | `local_d36e7dc2-e9e6-4f73-b7b3-b078b17bbe41` (lms-backend-2) | PR #83 (#43) merging main; #85; then #45 | working |
-| Frontend | Sonnet | `local_40667dce-5be7-478b-95cb-4f14ecd203b9` (lms-frontend) | PRs #74 (#58, changes requested), #81 (#59); #60 org tree | working |
-| Frontend 2 | Sonnet | `local_3d9e8938-4064-4f83-a04d-920704d41a87` (lms-frontend-2) | M1 #64 T29 roles admin (then #65–#69) | working |
+| Backend 1 | Sonnet | `local_19f31b04-ca2f-43d1-a2cb-8a128722a11f` (lms-backend) | M1 #42 clients; then #44, #46, #48, #50, #52 | working |
+| Backend 2 | Sonnet | `local_d36e7dc2-e9e6-4f73-b7b3-b078b17bbe41` (lms-backend-2) | PRs #83 (#43), #88 (#85), #90 (#45); then #47, #49, #51 | working |
+| Frontend | Sonnet | `local_40667dce-5be7-478b-95cb-4f14ecd203b9` (lms-frontend) | PR #81 (#59) fixes; then #60 org tree | working |
+| Frontend 2 | Sonnet | `local_3d9e8938-4064-4f83-a04d-920704d41a87` (lms-frontend-2) | PRs #87 (#64), #89 (#65); #66 audit viewer | working |
 | QA | Opus | `local_91a7af3c-7b02-4d61-ac11-2c22629cf89f` (lms-qa) | review #74 (M1), #14; fix + un-draft E2E PR #34 (#15) | working |
 | QA 2 | Opus | `local_54d26c64-4403-4a13-b128-5be5e9752d97` (lms-qa-2) | #34 full run; #30; M1 BE2 PRs | reviewing |
+| Backend 3 | Sonnet | `local_2e8038c6-e5ba-4e13-ade0-9440d9beb565` (lms-backend-3) | M1 #53 audit viewer; then #55, #57 | working |
+| Backend 4 | Sonnet | `local_fd5c4410-8364-4c55-a5a8-3b8aa37afc1f` (lms-backend-4) | M1 #54 roles admin; then #56 | working |
+| QA 3 | Opus | `local_6d46b60b-d70a-4cfa-af2f-5bf90cdf7c08` (lms-qa-3) | reviews BE3, BE4, FE2 PRs (#87, #89 now) | reviewing |
 
 ## M0 issue map
 | Task | Issue | Lane | Depends on |
@@ -43,9 +46,11 @@ _Updated by the Team Lead after every merge cycle._
 None. (Board: [LMS v1](https://github.com/users/ziadtorkey/projects/1) — Todo → In Progress → In Review → Done.)
 
 ## Decisions needed from the product owner
-None. (2026-11-10: M1 plan approved; D16–D22 recorded; 2nd FE approved.) (2026-11-10: owner approved Lead merging QA-approved green PRs, and a 2nd QA agent; D15: no access via Inactive units.)
+None. (2026-11-11: owner authorized the Lead to add agents without approval; BE3, BE4, QA3 added.) (2026-11-10: owner approved Lead merging QA-approved green PRs, and a 2nd QA agent; D15: no access via Inactive units.)
 
 ## Recently merged
+- #74 feat(client): API plumbing, problem messages and shared admin components (closes #58, fixes #84)
+- #86 feat(access): audit role changes, unique built-in roles, inactive-unit contexts (closes #30)
 - #82 feat(auth): forgot/reset password, invitations and blocked-login messages (closes #41)
 - #80 feat(access): unit-targeted access checks and org tree service (closes #40)
 - #34 test(e2e): Playwright smoke tests (closes #15)
