@@ -1,7 +1,7 @@
 # Local infrastructure. Dev-only credentials; never reuse in production.
 services:
   mysql:
-    image: mysql:8.4
+    image: mysql@sha256:a81d043930e51745522bd5c430961cf8286f0a23f0a9a2a6e0108f7ea71b0902  # mysql:8.4
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_0900_ai_ci
     environment:
       MYSQL_ROOT_PASSWORD: lms_root_pw
@@ -20,7 +20,7 @@ services:
 
   minio:
     # Upstream minio/minio is no longer published on Docker Hub; chainguard/minio is a maintained build.
-    image: chainguard/minio:latest
+    image: chainguard/minio@sha256:fb893e36fc369d41e92f678b17ec27378fa5bf0576aeef7ac15460c13629ab5a
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: lms_minio
@@ -32,7 +32,7 @@ services:
       - minio-data:/data
 
   mailpit:
-    image: axllent/mailpit:latest
+    image: axllent/mailpit@sha256:aef2aacc11f075ec0fb6874275ee4a421e688e11a96ebb296134d1735c7761ce  # see docs/adr/0002-minio-image.md
     ports:
       - "1025:1025"
       - "8025:8025"
