@@ -102,7 +102,6 @@ else
 
     private async Task LoadAsync()
     {
-        _error = null;
         try
         {
             _units = await Api.GetOrgUnitsAsync(_search);
@@ -125,6 +124,7 @@ else
     private async Task OnSearchChanged(string? text)
     {
         _searchText = text;
+        _error = null;
         _search = string.IsNullOrWhiteSpace(text) ? null : text.Trim();
         await LoadAsync();
     }

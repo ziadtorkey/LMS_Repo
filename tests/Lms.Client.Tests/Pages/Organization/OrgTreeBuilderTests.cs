@@ -1,5 +1,6 @@
 using Lms.Client.Pages.Organization;
 using Lms.Shared.Organizations;
+using MudBlazor;
 
 namespace Lms.Client.Tests.Pages.Organization;
 
@@ -25,10 +26,11 @@ public sealed class OrgTreeBuilderTests
         var arabic = OrgTreeBuilder.Build(Units(), n => n.NameAr, null, []);
 
         var root = Assert.Single(english);
+        var rootKids = root.Children!.ToList();
         Assert.Equal(_root, root.Value!.Id);
-        Assert.Equal(["Alpha", "Zulu"], root.Children!.Select(c => c.Value!.NameEn));
+        Assert.Equal(["Alpha", "Zulu"], rootKids.Select(c => c.Value!.NameEn));
         Assert.Equal(["ألف", "باء"], arabic[0].Children!.Select(c => c.Value!.NameAr));
-        Assert.Equal(_a1, root.Children![1].Children!.Single().Value!.Id);
+        Assert.Equal(_a1, rootKids[1].Children!.Single().Value!.Id);
     }
 
     [Fact]
