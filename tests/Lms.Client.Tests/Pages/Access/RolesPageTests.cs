@@ -15,6 +15,8 @@ namespace Lms.Client.Tests.Pages.Access;
 public sealed class RolesPageTests : ClientTestContext
 {
     private readonly FakeAccessAdminApi _roles = new();
+    private IRenderedComponent<MudDialogProvider> _dialogs = default!;
+    private IRenderedComponent<MudSnackbarProvider> _snackbars = default!;
 
     public RolesPageTests() => Services.AddSingleton<IAccessAdminApi>(_roles);
 
@@ -28,8 +30,8 @@ public sealed class RolesPageTests : ClientTestContext
     private IRenderedComponent<RolesPage> RenderPage()
     {
         Render<MudPopoverProvider>();
-        Render<MudDialogProvider>();
-        Render<MudSnackbarProvider>();
+        _dialogs = Render<MudDialogProvider>();
+        _snackbars = Render<MudSnackbarProvider>();
         return Render<RolesPage>();
     }
 
@@ -144,6 +146,58 @@ public sealed class RolesPageTests : ClientTestContext
         cut.WaitForAssertion(() => Assert.NotNull(_roles.LastCreate));
         Assert.Equal(["Audit.View"], _roles.LastCreate!.Permissions);
         Assert.Equal(RoleBaseKinds.Staff, _roles.LastCreate.BaseKind);
+    }
+
+
+    public static TheoryData<Exception> RedirectingFailures => new()
+    {
+        { new ApiContextException("invalid_context") },
+        { new ApiForbiddenException() },
+    };
+
+    [Theory]
+    [MemberData(nameof(RedirectingFailures))]
+    public async Task Save_with_stale_context_or_forbidden_redirects_instead_of_crashing(Exception failure)
+    {
+        await GrantAsync(Permissions.Roles.View, Permissions.Roles.Update);
+        var cut = RenderPage();
+        _roles.NextFailure = failure;
+
+        await cut.WaitForElement($"[data-testid=role-edit-{_roles.Roles.First().Id}]").ClickAsync(new());
+        await cut.WaitForElement("[data-testid=role-save]").ClickAsync(new());
+
+        var navigation = Services.GetRequiredService<Microsoft.AspNetCore.Components.NavigationManager>();
+        Assert.EndsWith(failure is ApiContextException ? "/choose-context" : "/forbidden", navigation.Uri);
+    }
+
+    [Fact]
+    public async Task Save_offline_shows_the_generic_error()
+    {
+        CultureInfo.CurrentUICulture = new CultureInfo("en");
+        await GrantAsync(Permissions.Roles.View, Permissions.Roles.Update);
+        var cut = RenderPage();
+        _roles.NextFailure = new HttpRequestException("offline");
+
+        await cut.WaitForElement($"[data-testid=role-edit-{_roles.Roles.First().Id}]").ClickAsync(new());
+        await cut.WaitForElement("[data-testid=role-save]").ClickAsync(new());
+
+        Assert.Contains("Could not load data", cut.WaitForElement("[data-testid=role-error]").TextContent);
+    }
+
+    [Fact]
+    public async Task Delete_offline_shows_a_snackbar_instead_of_crashing()
+    {
+        CultureInfo.CurrentUICulture = new CultureInfo("en");
+        await GrantAsync(Permissions.Roles.View, Permissions.Roles.Delete);
+        var custom = await _roles.CreateRoleAsync(new CreateRoleRequest("دور", "Custom", RoleBaseKinds.Staff, []));
+        var cut = RenderPage();
+        _roles.NextFailure = new HttpRequestException("offline");
+
+        var click = cut.WaitForElement($"[data-testid=role-delete-{custom.Id}]").ClickAsync(new());
+        await _dialogs.WaitForElement("[data-testid=confirm-yes]").ClickAsync(new());
+        await click;
+
+        cut.WaitForAssertion(() => Assert.Contains("Could not load data", _snackbars.Markup));
     }
 
     [Fact]
