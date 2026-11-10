@@ -18,5 +18,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Lms.Domain\Lms.Domain.csproj" />
     <ProjectReference Include="..\..\src\Lms.Shared\Lms.Shared.csproj" />
+    <ProjectReference Include="..\..\src\Lms.Infrastructure\Lms.Infrastructure.csproj" />
   </ItemGroup>
 </Project>
