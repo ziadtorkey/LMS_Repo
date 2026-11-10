@@ -3,6 +3,7 @@ using Lms.Api.Features.Auth;
 using Lms.Api.Features.Me;
 using Lms.Api.Infrastructure;
 using Lms.Infrastructure;
+using Lms.Infrastructure.Access;
 using Lms.Infrastructure.Seeding;
 using Serilog;
 
@@ -30,6 +31,10 @@ if (app.Environment.IsDevelopment() && app.Configuration.GetValue("Seed:RunOnSta
 {
     await app.Services.GetRequiredService<DevSeeder>().SeedAsync();
 }
+
+// After the Development seed has migrated the database: existing clients provisioned under an older defaults version
+// get the new built-in permissions (add-only, once per role). Skipped while migrations are pending.
+await app.Services.GetRequiredService<BuiltInRoleStartupReconciler>().RunAsync();
 
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseMiddleware<SecurityHeadersMiddleware>();
