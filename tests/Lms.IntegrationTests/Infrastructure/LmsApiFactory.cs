@@ -41,6 +41,21 @@ public sealed class LmsApiFactory : WebApplicationFactory<Program>, IAsyncLifeti
     public LmsDbContext CreateDbContext(ICurrentContext context) =>
         LmsDbContextFactory.Create(_mysql.GetConnectionString(), context);
 
+    /// <summary>Creates a fresh database with no schema at all and returns its connection string.</summary>
+    public async Task<string> CreateEmptyDatabaseAsync()
+    {
+        var name = "lms_" + Guid.NewGuid().ToString("N")[..12];
+        var root = new MySqlConnector.MySqlConnectionStringBuilder(_mysql.GetConnectionString()) { UserID = "root", Password = "lms_test_pw" };
+        await using (var admin = new MySqlConnector.MySqlConnection(root.ConnectionString))
+        {
+            await admin.OpenAsync();
+            await using var create = new MySqlConnector.MySqlCommand($"CREATE DATABASE `{name}` CHARACTER SET utf8mb4", admin);
+            await create.ExecuteNonQueryAsync();
+        }
+
+        return new MySqlConnector.MySqlConnectionStringBuilder(root.ConnectionString) { Database = name }.ConnectionString;
+    }
+
     /// <summary>Creates a fresh, migrated database on the shared MySQL container and returns its connection string.</summary>
     public async Task<string> CreateIsolatedDatabaseAsync()
     {
