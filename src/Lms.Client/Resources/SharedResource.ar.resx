@@ -148,4 +148,6 @@
   <data name="Academic_NextLevel" xml:space="preserve"><value>المستوى التالي</value></data>
   <data name="Academic_TransferPath" xml:space="preserve"><value>مسار الانتقال</value></data>
   <data name="Academic_CourseManagement" xml:space="preserve"><value>مستوى إدارة المقررات</value></data>
+  <data name="Confirm_DeactivateTitle" xml:space="preserve"><value>إيقاف الوحدة؟</value></data>
+  <data name="OrgTree_DeactivateOwnWarning" xml:space="preserve"><value>أنت تعمل في هذه الوحدة (أو في وحدة تابعة لها). إذا أوقفتها فستفقد الوصول إلى أن يعيد مسؤول أعلى منها تفعيلها. هل تريد المتابعة؟</value></data>
 </root>

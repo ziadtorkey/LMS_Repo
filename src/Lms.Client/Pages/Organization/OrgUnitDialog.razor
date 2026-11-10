@@ -4,6 +4,7 @@
 @using Lms.Shared.Organizations
 @inject IOrgApi Api
 @inject ICultureService Culture
+@inject NavigationManager Navigation
 
 <MudDialog>
     <DialogContent>
@@ -75,18 +76,14 @@
         if (!_form.IsValid) return;
 
         _saving = true; _error = null;
-        try
-        {
-            if (Existing is null)
-                await Api.CreateOrgUnitAsync(new CreateOrgUnitRequest(ParentId!.Value, _levelTypeId, _nameAr.Trim(), _nameEn.Trim(), _code.Trim()));
-            else
-                await Api.UpdateOrgUnitAsync(Existing.Id, new UpdateOrgUnitRequest(_levelTypeId, _nameAr.Trim(), _nameEn.Trim(), _code.Trim()));
-            MudDialog.Close(DialogResult.Ok(true));
-        }
-        catch (ApiProblemException ex)
-        {
-            _error = ProblemText.For(ex, L);
-        }
-        finally { _saving = false; }
+        var ok = await ApiCalls.RunAsync(
+            () => Existing is null
+                ? Api.CreateOrgUnitAsync(new CreateOrgUnitRequest(ParentId!.Value, _levelTypeId, _nameAr.Trim(), _nameEn.Trim(), _code.Trim()))
+                : Api.UpdateOrgUnitAsync(Existing.Id, new UpdateOrgUnitRequest(_levelTypeId, _nameAr.Trim(), _nameEn.Trim(), _code.Trim())),
+            Navigation, L, message => _error = message);
+        _saving = false;
+
+        if (ok) MudDialog.Close(DialogResult.Ok(true));
+        else if (_error is null) MudDialog.Cancel(); // the user was redirected (stale context / forbidden): leave the dialog
     }
 }

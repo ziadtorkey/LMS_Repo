@@ -1,4 +1,6 @@
+using Lms.Client.Resources;
 using Lms.Client.Services.Api;
+using Microsoft.Extensions.Localization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 
@@ -23,6 +25,38 @@ public static class ApiCalls
         catch (HttpRequestException)
         {
             return (default, true);
+        }
+    }
+
+    /// <summary>
+    /// Runs a write/action handler with the standard failure handling, so no exception reaches the global error bar:
+    /// redirects first (stale context → chooser, forbidden → Forbidden page, missing token → login), then
+    /// <see cref="ApiProblemException"/> → <paramref name="onError"/> with <see cref="ProblemText"/>, then any other
+    /// <see cref="HttpRequestException"/> → <paramref name="onError"/> with the generic message.
+    /// Returns true on success; false when it failed or the user was redirected (<paramref name="onError"/> is then not called
+    /// for redirects).
+    /// </summary>
+    public static async Task<bool> RunAsync(
+        Func<Task> action, NavigationManager navigation, IStringLocalizer<SharedResource> localizer, Action<string> onError)
+    {
+        try
+        {
+            await action();
+            return true;
+        }
+        catch (Exception ex) when (TryRedirect(ex, navigation))
+        {
+            return false;
+        }
+        catch (ApiProblemException ex)
+        {
+            onError(ProblemText.For(ex, localizer));
+            return false;
+        }
+        catch (HttpRequestException)
+        {
+            onError(localizer["Error_Generic"].Value);
+            return false;
         }
     }
 

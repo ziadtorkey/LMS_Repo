@@ -5,6 +5,8 @@
 @using Lms.Shared.Authorization
 @using Lms.Shared.Organizations
 @inject IOrgApi Api
+@inject ILmsApi LmsApi
+@inject IContextStore ContextStore
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
 @inject PermissionState PermState
@@ -105,16 +107,16 @@ else
     private bool CanAddChild(OrgUnitNodeDto unit) =>
         PermState.Has(Permissions.OrgUnits.Create) && !unit.BlockedPermissions.Contains(Permissions.OrgUnits.Create);
 
+    // Every handler goes through the shared helper: redirects, API problems and network errors never reach the global error bar.
+    private Task<bool> RunAsync(Func<Task> action) => ApiCalls.RunAsync(action, Navigation, L, message => _error = message);
+
     private async Task LoadAsync()
     {
-        try
+        await RunAsync(async () =>
         {
             _units = await Api.GetOrgUnitsAsync(_search);
             Rebuild();
-        }
-        catch (Exception ex) when (ApiCalls.TryRedirect(ex, Navigation)) { }
-        catch (ApiProblemException ex) { _error = ProblemText.For(ex, L); }
-        catch (HttpRequestException) { _error = L["Error_Generic"]; }
+        });
         _loading = false;
     }
 
@@ -134,11 +136,17 @@ else
         await LoadAsync();
     }
 
-    private async Task<IReadOnlyList<LevelTypeDto>> LevelsAsync() => _levels ??= await Api.GetLevelTypesAsync();
+    private async Task<IReadOnlyList<LevelTypeDto>?> LevelsAsync()
+    {
+        if (_levels is null)
+            await RunAsync(async () => _levels = await Api.GetLevelTypesAsync());
+        return _levels;
+    }
 
     private async Task AddChildAsync(OrgUnitNodeDto parent)
     {
-        var levels = await LevelsAsync();
+        _error = null;
+        if (await LevelsAsync() is not { } levels) return;
         var parentOrder = levels.FirstOrDefault(l => l.Id == parent.LevelTypeId)?.Order ?? 0;
         await ShowDialogAsync(L["OrgTree_AddChild"], new DialogParameters<OrgUnitDialog>
         {
@@ -148,7 +156,8 @@ else
 
     private async Task EditAsync(OrgUnitNodeDto unit)
     {
-        var levels = await LevelsAsync();
+        _error = null;
+        if (await LevelsAsync() is not { } levels) return;
         var parent = _units.FirstOrDefault(u => u.Id == unit.ParentId);
         var parentOrder = parent is null ? 0 : levels.FirstOrDefault(l => l.Id == parent.LevelTypeId)?.Order ?? 0;
         await ShowDialogAsync(L["Common_Edit"], new DialogParameters<OrgUnitDialog>
@@ -187,17 +196,37 @@ else
     {
         var status = unit.Status == OrgUnitStatuses.Inactive ? OrgUnitStatuses.Active : OrgUnitStatuses.Inactive;
         _error = null;
-        try { await Api.SetOrgUnitStatusAsync(unit.Id, new SetOrgUnitStatusRequest(status)); }
-        catch (ApiProblemException ex) { _error = ProblemText.For(ex, L); }
+        // Deactivating the unit the caller works in (or one above it) cuts off their own access: make them confirm.
+        if (status == OrgUnitStatuses.Inactive && await CutsOffOwnAccessAsync(unit)
+            && !await ConfirmDialog.AskAsync(Dialogs, L["Confirm_DeactivateTitle"], L["OrgTree_DeactivateOwnWarning"], L["OrgTree_Deactivate"]))
+            return;
+        await RunAsync(() => Api.SetOrgUnitStatusAsync(unit.Id, new SetOrgUnitStatusRequest(status)));
         await LoadAsync();
+    }
+
+    /// <summary>True when <paramref name="unit"/> is the caller's active context unit or one of its ancestors.</summary>
+    private async Task<bool> CutsOffOwnAccessAsync(OrgUnitNodeDto unit)
+    {
+        var (me, _) = await ApiCalls.RunAsync(() => LmsApi.GetMeAsync(), Navigation);
+        var contextUnit = me?.Contexts.FirstOrDefault(c => c.AssignmentId == ContextStore.ActiveAssignmentId)?.OrgUnitId;
+        if (contextUnit is null) return false;
+
+        // While searching, the visible list may not contain the caller's unit: use the whole tree for the ancestor walk.
+        IReadOnlyList<OrgUnitNodeDto> all = _units;
+        if (_search is not null)
+            await RunAsync(async () => all = await Api.GetOrgUnitsAsync(null));
+
+        var byId = all.ToDictionary(u => u.Id);
+        for (var id = contextUnit; id is { } current; id = byId.TryGetValue(current, out var u) ? u.ParentId : null)
+            if (current == unit.Id) return true;
+        return false;
     }
 
     private async Task DeleteAsync(OrgUnitNodeDto unit)
     {
         if (!await ConfirmDialog.AskAsync(Dialogs, L["Confirm_DeleteTitle"], L["OrgTree_DeleteConfirm"], L["Common_Delete"])) return;
         _error = null;
-        try { await Api.DeleteOrgUnitAsync(unit.Id); }
-        catch (ApiProblemException ex) { _error = ProblemText.For(ex, L); }
+        await RunAsync(() => Api.DeleteOrgUnitAsync(unit.Id));
         await LoadAsync();
     }
 
