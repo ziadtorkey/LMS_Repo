@@ -23,4 +23,15 @@
   <data name="Api_Error" xml:space="preserve"><value>تعذر تحميل البيانات. حاول مرة أخرى.</value></data>
   <data name="Common_Retry" xml:space="preserve"><value>إعادة المحاولة</value></data>
   <data name="Common_Loading" xml:space="preserve"><value>جارٍ التحميل</value></data>
+  <data name="Nav_Home" xml:space="preserve"><value>الرئيسية</value></data>
+  <data name="Nav_OrgUnits" xml:space="preserve"><value>الهيكل التنظيمي</value></data>
+  <data name="Nav_Roles" xml:space="preserve"><value>الأدوار</value></data>
+  <data name="Nav_Settings" xml:space="preserve"><value>الإعدادات</value></data>
+  <data name="Nav_Audit" xml:space="preserve"><value>سجل التدقيق</value></data>
+  <data name="Nav_Clients" xml:space="preserve"><value>العملاء</value></data>
+  <data name="Nav_Menu" xml:space="preserve"><value>القائمة</value></data>
+  <data name="Choose_Title" xml:space="preserve"><value>اختر السياق</value></data>
+  <data name="Choose_Subtitle" xml:space="preserve"><value>اختر الدور والجهة التي ستعمل بها الآن. يمكنك التبديل في أي وقت.</value></data>
+  <data name="Choose_Empty_Title" xml:space="preserve"><value>لا توجد صلاحيات مسندة إليك</value></data>
+  <data name="Choose_Empty_Body" xml:space="preserve"><value>لم يتم إسناد أي دور لحسابك بعد. تواصل مع مسؤول النظام.</value></data>
 </root>

@@ -19,6 +19,7 @@ public static class ClientServices
         services.AddScoped<ICultureService, CultureService>();
         services.AddScoped<ContextStore>();
         services.AddScoped<IContextStore>(sp => sp.GetRequiredService<ContextStore>());
+        services.AddScoped<PermissionState>();
 
         if (configuration.GetValue<bool>("Lms:UseFakeApi"))
         {
