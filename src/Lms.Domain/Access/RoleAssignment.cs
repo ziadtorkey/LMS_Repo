@@ -1,9 +1,11 @@
+using Lms.Domain.Auditing;
 using Lms.Domain.Common;
 using Lms.Domain.Organizations;
 
 namespace Lms.Domain.Access;
 
 /// <summary>A user holding a role at an org unit, optionally within a validity window.</summary>
+[Audited]
 public sealed class RoleAssignment : AuditableEntity, IOrgUnitScoped
 {
     private RoleAssignment()

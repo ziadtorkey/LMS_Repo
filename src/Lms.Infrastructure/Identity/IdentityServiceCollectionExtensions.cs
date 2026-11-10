@@ -25,7 +25,6 @@ public static class IdentityServiceCollectionExtensions
             .AddEntityFrameworkStores<LmsDbContext>();
 
         services.AddScoped<IUserProfileReader, UserStoreProfileReader>();
-
         return services;
     }
 }
