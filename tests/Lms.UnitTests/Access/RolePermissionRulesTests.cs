@@ -11,20 +11,20 @@ public sealed class RolePermissionRulesTests
 
     [Fact]
     public void Valid_subset_passes() =>
-        Assert.Null(RolePermissionRules.Validate([Permissions.Roles.View], Admin, false, null));
+        Assert.Null(RolePermissionRules.Validate([Permissions.Roles.View], [], Admin, false, null));
 
     [Fact]
     public void Unknown_permission_is_validation_failed() =>
         Assert.Equal(ProblemCodes.validation_failed,
-            RolePermissionRules.Validate(["Nope.Nothing"], Admin, false, null));
+            RolePermissionRules.Validate(["Nope.Nothing"], [], Admin, false, null));
 
     [Fact]
     public void Platform_only_permission_is_refused_even_for_platform_admin()
     {
         Assert.Equal(ProblemCodes.platform_only_permission,
-            RolePermissionRules.Validate([Permissions.Clients.Create], Admin, false, null));
+            RolePermissionRules.Validate([Permissions.Clients.Create], [], Admin, false, null));
         Assert.Equal(ProblemCodes.platform_only_permission,
-            RolePermissionRules.Validate([Permissions.Clients.Create], Admin, true, null));
+            RolePermissionRules.Validate([Permissions.Clients.Create], [], Admin, true, null));
     }
 
     [Fact]
@@ -32,12 +32,12 @@ public sealed class RolePermissionRulesTests
     {
         var caller = new HashSet<string> { Permissions.Roles.View };
         Assert.Equal(ProblemCodes.permission_escalation,
-            RolePermissionRules.Validate([Permissions.Roles.View, Permissions.Audit.View], caller, false, null));
+            RolePermissionRules.Validate([Permissions.Roles.View, Permissions.Audit.View], [], caller, false, null));
     }
 
     [Fact]
     public void Platform_admin_may_grant_any_client_permission() =>
-        Assert.Null(RolePermissionRules.Validate([Permissions.Audit.View], new HashSet<string>(), true, null));
+        Assert.Null(RolePermissionRules.Validate([Permissions.Audit.View], [], new HashSet<string>(), true, null));
 
     [Theory]
     [InlineData("Roles.View")]
@@ -46,11 +46,35 @@ public sealed class RolePermissionRulesTests
     {
         var other = kept == Permissions.Roles.View ? Permissions.Roles.Update : Permissions.Roles.View;
         Assert.Equal(ProblemCodes.last_admin_permission,
-            RolePermissionRules.Validate([kept, Permissions.Audit.View], Admin, false, BuiltInRoles.OrgAdmin));
-        Assert.Null(RolePermissionRules.Validate([kept, other], Admin, false, BuiltInRoles.OrgAdmin));
+            RolePermissionRules.Validate([kept, Permissions.Audit.View], [], Admin, false, BuiltInRoles.OrgAdmin));
+        Assert.Null(RolePermissionRules.Validate([kept, other], [], Admin, false, BuiltInRoles.OrgAdmin));
     }
 
     [Fact]
     public void Other_built_in_roles_may_lose_roles_permissions() =>
-        Assert.Null(RolePermissionRules.Validate([Permissions.Audit.View], Admin, false, BuiltInRoles.Teacher));
+        Assert.Null(RolePermissionRules.Validate([Permissions.Audit.View], [], Admin, false, BuiltInRoles.Teacher));
+
+    [Fact]
+    public void Editing_a_role_that_currently_holds_more_than_the_caller_is_escalation()
+    {
+        var caller = new HashSet<string> { Permissions.Roles.View, Permissions.Roles.Update };
+        Assert.Equal(ProblemCodes.permission_escalation, RolePermissionRules.Validate(
+            [Permissions.Roles.View, Permissions.Roles.Update], Admin, caller, false, BuiltInRoles.OrgAdmin));
+        Assert.Null(RolePermissionRules.Validate(
+            [Permissions.Roles.View], [Permissions.Roles.View, Permissions.Roles.Update], caller, false, null));
+    }
+
+    [Fact]
+    public void Platform_admin_may_edit_any_role() =>
+        Assert.Null(RolePermissionRules.Validate(
+            [Permissions.Roles.View, Permissions.Roles.Update], Admin, new HashSet<string>(), true, BuiltInRoles.OrgAdmin));
+
+    [Fact]
+    public void CanModify_requires_the_current_set_to_be_within_the_callers()
+    {
+        var caller = new HashSet<string> { Permissions.Roles.View };
+        Assert.True(RolePermissionRules.CanModify([Permissions.Roles.View], caller, false));
+        Assert.False(RolePermissionRules.CanModify([Permissions.Roles.View, Permissions.Audit.Export], caller, false));
+        Assert.True(RolePermissionRules.CanModify([Permissions.Audit.Export], caller, true));
+    }
 }
