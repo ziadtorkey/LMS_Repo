@@ -1,5 +1,6 @@
 using Lms.Domain.Abstractions;
 using Lms.Domain.Common;
+using Lms.Domain.Organizations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -54,6 +55,43 @@ public sealed class StampingInterceptor(ICurrentContext context, IClock clock) :
                     entry.State = EntityState.Modified;
                     deleted.MarkDeleted(now, context.UserId);
                     break;
+            }
+
+            if (entry.State is EntityState.Added or EntityState.Modified)
+            {
+                EnforceScope(entry);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Non-platform-admins may not move a row to another client, nor write a unit-scoped row outside their subtree.
+    /// </summary>
+    private void EnforceScope(EntityEntry entry)
+    {
+        if (context.IsPlatformAdmin)
+        {
+            return;
+        }
+
+        var name = entry.Metadata.ClrType.Name;
+
+        if (entry.Entity is ITenantOwned && entry.State == EntityState.Modified)
+        {
+            var org = entry.Property(nameof(ITenantOwned.OrganizationId));
+            if (org.IsModified && !Equals(org.OriginalValue, org.CurrentValue))
+            {
+                throw new InvalidOperationException($"Cannot change the client of an existing {name}.");
+            }
+        }
+
+        if (entry.Entity is IOrgUnitScoped scoped)
+        {
+            var scope = context.ScopePath;
+            var valid = scope is { Length: > 1 } && scope[0] == '/' && scope[^1] == '/';
+            if (!valid || !OrgUnitPath.IsWithin(scoped.OrgUnitPath, scope!))
+            {
+                throw new InvalidOperationException($"Cannot write {name} outside the active scope.");
             }
         }
     }
