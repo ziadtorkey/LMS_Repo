@@ -139,6 +139,25 @@ public sealed class CalendarTests(LmsApiFactory factory)
     }
 
     [Fact]
+    public async Task School_with_own_years_cannot_use_the_replaced_root_year()
+    {
+        var tree = await AccessTestData.SeedAsync(factory, "CL8");
+        var admin = await AccessTestData.AssignAsync(factory, tree, tree.Root, BuiltInRoles.OrgAdmin, Guid.NewGuid());
+        var rootYear = await CreateYearAsync(factory, admin, tree.Root, "Root", Y1, Y1.AddMonths(10));
+        var ownYear = await CreateYearAsync(factory, admin, tree.School1, "Own", Y1, Y1.AddMonths(9));
+
+        var replaced = await SendAsync(factory, HttpMethod.Post, "/api/calendar-events", admin, Event(rootYear.Id, tree.School1.Id, "R", Y1.AddDays(2), Y1.AddDays(3)));
+        var own = await SendAsync(factory, HttpMethod.Post, "/api/calendar-events", admin, Event(ownYear.Id, tree.School1.Id, "O", Y1.AddDays(2), Y1.AddDays(3)));
+        var read = await SendAsync(factory, HttpMethod.Get, $"/api/academic-years/{rootYear.Id}/calendar?orgUnitId={tree.School1.Id}", admin);
+        var sibling = await SendAsync(factory, HttpMethod.Post, "/api/calendar-events", admin, Event(rootYear.Id, tree.School2.Id, "S2", Y1.AddDays(2), Y1.AddDays(3)));
+
+        Assert.Equal(HttpStatusCode.NotFound, replaced.StatusCode);
+        Assert.Equal(HttpStatusCode.Created, own.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, read.StatusCode);
+        Assert.Equal(HttpStatusCode.Created, sibling.StatusCode); // School 2 still inherits the root year
+    }
+
+    [Fact]
     public async Task Teacher_cannot_write_the_calendar()
     {
         var tree = await AccessTestData.SeedAsync(factory, "CL7");

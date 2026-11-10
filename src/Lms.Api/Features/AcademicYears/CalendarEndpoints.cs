@@ -46,7 +46,7 @@ public static class CalendarEndpoints
         }
 
         var unit = access.Unit!;
-        if (await FindYearForAsync(db, id, unit, ct) is null)
+        if (await FindYearForAsync(http, id, unit, ct) is null)
         {
             return ApiProblems.NotFound();
         }
@@ -77,7 +77,7 @@ public static class CalendarEndpoints
         }
 
         var unit = access.Unit!;
-        var year = await FindYearForAsync(db, request.AcademicYearId, unit, ct);
+        var year = await FindYearForAsync(http, request.AcademicYearId, unit, ct);
         if (year is null)
         {
             return ApiProblems.NotFound();
@@ -152,20 +152,19 @@ public static class CalendarEndpoints
             return (null, null, access.Problem);
         }
 
-        var year = await FindYearForAsync(db, entity.AcademicYearId, access.Unit!, ct);
+        var year = await FindYearForAsync(http, entity.AcademicYearId, access.Unit!, ct);
         return year is null ? (null, null, ApiProblems.NotFound()) : (entity, year, null);
     }
 
-    /// <summary>The year, if it is defined at the unit or one of its ancestors (the years the unit effectively has).</summary>
-    private static async Task<AcademicYear?> FindYearForAsync(LmsDbContext db, Guid yearId, OrgUnit unit, CancellationToken ct)
+    /// <summary>
+    /// The year, only if it is one of the unit's effective years (D17/D22): a unit that defines its own years has
+    /// replaced its ancestors' years, so those can no longer take events at (or be read through) this unit.
+    /// </summary>
+    private static async Task<AcademicYear?> FindYearForAsync(HttpContext http, Guid yearId, OrgUnit unit, CancellationToken ct)
     {
-        var chain = OrgUnitPath.AncestorsAndSelf(unit.Path);
-
-        // ISOLATION-BYPASS: the year may be inherited from an ancestor outside the caller's subtree filter; restricted to
-        // the same client and to the unit's own ancestor paths.
-        return await db.Set<AcademicYear>().IgnoreQueryFilters()
-            .SingleOrDefaultAsync(
-                y => y.Id == yearId && !y.IsDeleted && y.OrganizationId == unit.OrganizationId && chain.Contains(y.OrgUnitPath), ct);
+        var resolver = http.RequestServices.GetRequiredService<IAcademicYearResolver>();
+        var (years, _) = await resolver.GetEffectiveAsync(unit.Path, ct);
+        return years.FirstOrDefault(y => y.Id == yearId && y.OrganizationId == unit.OrganizationId);
     }
 
     private static IResult? CheckYear(AcademicYear year, DateOnly start, DateOnly end)
