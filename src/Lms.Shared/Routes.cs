@@ -29,4 +29,24 @@ public static class Routes
     public static string OrgUnitStatus(Guid id) => $"{OrgUnit(id)}/status";
     public static string OrgUnitMove(Guid id) => $"{OrgUnit(id)}/move";
     public static string OrgUnitAcademicFlags(Guid id) => $"{OrgUnit(id)}/academic-flags";
+
+    // M1 settings, policies, branch copy and templates (Task 2)
+    public const string PoliciesCatalog = "/api/policies/catalog";
+    public const string SettingsCatalog = "/api/settings/catalog";
+    public const string OrgUnitSettingsPattern = OrgUnitPattern + "/settings";
+    public const string OrgUnitSettingPattern = OrgUnitSettingsPattern + "/{name}";
+    public const string OrgUnitPoliciesPattern = OrgUnitPattern + "/policies";
+    public const string OrgUnitPolicyPattern = OrgUnitPoliciesPattern + "/{key}";
+    public const string OrgUnitsCopy = OrgUnits + "/copy";
+
+    public const string Templates = "/api/templates";
+    public const string TemplatePattern = Templates + "/{id:guid}";
+    public const string TemplateApplyPattern = TemplatePattern + "/apply";
+
+    public static string OrgUnitSettings(Guid id) => $"{OrgUnit(id)}/settings";
+    public static string OrgUnitSetting(Guid id, string name) => $"{OrgUnitSettings(id)}/{Uri.EscapeDataString(name)}";
+    public static string OrgUnitPolicies(Guid id) => $"{OrgUnit(id)}/policies";
+    public static string OrgUnitPolicy(Guid id, string key) => $"{OrgUnitPolicies(id)}/{Uri.EscapeDataString(key)}";
+    public static string Template(Guid id) => $"{Templates}/{id}";
+    public static string TemplateApply(Guid id) => $"{Template(id)}/apply";
 }
