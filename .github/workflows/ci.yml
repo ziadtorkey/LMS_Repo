@@ -45,6 +45,9 @@ jobs:
         run: docker compose up -d --wait mysql minio
       # In Development the API applies migrations and seeds the dev data (#14) at startup.
       - name: Start the API in Development
+        env:
+          # All E2E logins come from one IP; the 5/min auth rate limit (#82) would turn the lockout test into 429s.
+          RateLimiting__Auth__PermitLimit: "1000"
         run: |
           nohup dotnet run --project src/Lms.Api -c Release --no-build --no-launch-profile --urls "$LMS_E2E_BASEURL" > api.log 2>&1 &
           for i in $(seq 1 90); do

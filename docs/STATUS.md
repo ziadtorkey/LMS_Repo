@@ -2,8 +2,8 @@
 
 _Updated by the Team Lead after every merge cycle._
 
-**Milestone:** M0 Foundation — all code merged (18 / 19; QA closing checklist #16) · M1 Organization & Access — in progress (8 / 40 issues closed)
-**Last update:** 2026-11-11 — Merged #86 (closes #30) and #74 (closes #58; also fixed bug #84). M0 code complete; QA 1 runs the exit demo and closes #16. M1 in review: #83 (#43), #81 (#59), #87/#89 (#64/#65), #88 (#85), #90 (#45).
+**Milestone:** M0 Foundation — all code merged (18 / 19; QA closing checklist #16) · M1 Organization & Access — in progress (9 / 44 issues closed)
+**Last update:** 2026-11-11 — Merged CI fix #95 (MySQL healthcheck + E2E rate limit), contract #98 (StoredFile in audit catalog), FE clients/level-types pages #81 (closes #59). Most open PRs need `main` merged in for the CI fix. Approved and waiting for that: #88, #100, #110. QA 4/5 could not be started over Remote Control; two QA subagents review #92/#99 and #94/#100/#105. M2 plan drafted (#103).
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |
@@ -46,9 +46,12 @@ _Updated by the Team Lead after every merge cycle._
 None. (Board: [LMS v1](https://github.com/users/ziadtorkey/projects/1) — Todo → In Progress → In Review → Done.)
 
 ## Decisions needed from the product owner
-None. (2026-11-11: owner authorized the Lead to add agents without approval; BE3, BE4, QA3 added.) (2026-11-10: owner approved Lead merging QA-approved green PRs, and a 2nd QA agent; D15: no access via Inactive units.)
+- M2 plan approval + 13 questions: issue #103 (draft plan on main; Lead asks via popup when M1 is near done — not blocking anything now).
 
 ## Recently merged
+- #81 feat(client): clients and level types pages (closes #59)
+- #98 feat(contracts): StoredFile in the audit catalog
+- #95 fix(ci): MySQL healthcheck over TCP + E2E auth rate limit
 - #74 feat(client): API plumbing, problem messages and shared admin components (closes #58, fixes #84)
 - #86 feat(access): audit role changes, unique built-in roles, inactive-unit contexts (closes #30)
 - #82 feat(auth): forgot/reset password, invitations and blocked-login messages (closes #41)
