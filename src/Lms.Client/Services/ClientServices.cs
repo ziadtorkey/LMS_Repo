@@ -1,3 +1,4 @@
+using Lms.Client.Services.Api;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.Extensions.Configuration;
@@ -27,6 +28,7 @@ public static class ClientServices
         if (configuration.GetValue<bool>("Lms:UseFakeApi"))
         {
             services.AddScoped<ILmsApi, FakeLmsApi>();
+            services.AddScoped<IAuditApi, FakeAuditApi>();
             services.AddScoped<AuthenticationStateProvider, FakeAuthenticationStateProvider>();
             services.AddAuthorizationCore();
             return;
@@ -40,7 +42,11 @@ public static class ClientServices
             options.ProviderOptions.DefaultScopes.Add("lms_api");
         });
         services.AddTransient<ForbiddenRedirectHandler>();
+        services.AddScoped<IAuditApi, AuditApi>();
         services.AddHttpClient<ILmsApi, LmsApiClient>(c => c.BaseAddress = new Uri(baseAddress))
+            .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>()
+            .AddHttpMessageHandler<ForbiddenRedirectHandler>();
+        services.AddHttpClient<ApiHttp>(c => c.BaseAddress = new Uri(baseAddress))
             .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>()
             .AddHttpMessageHandler<ForbiddenRedirectHandler>();
     }
