@@ -18,4 +18,11 @@ public static class ProblemText
         }
         return l["Error_Generic"].Value;
     }
+
+    /// <summary>
+    /// Like <see cref="For"/> for client-wide resources (level types, custom roles): an admin assigned below the
+    /// client root gets OutOfScope, which is explained as "only at the top level".
+    /// </summary>
+    public static string ForClientWide(ApiProblemException ex, IStringLocalizer<SharedResource> l) =>
+        ex.Code == "OutOfScope" ? l["LevelTypes_OutOfScope"].Value : For(ex, l);
 }

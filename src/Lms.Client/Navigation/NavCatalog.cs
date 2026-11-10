@@ -10,6 +10,7 @@ public static class NavCatalog
     [
         new("Nav_Home", "", Icons.Material.Filled.Home, null),
         new("Nav_OrgUnits", "org-units", Icons.Material.Filled.AccountTree, Permissions.OrgUnits.View),
+        new("Nav_LevelTypes", "level-types", Icons.Material.Filled.Layers, Permissions.LevelTypes.View),
         new("Nav_Roles", "roles", Icons.Material.Filled.AdminPanelSettings, Permissions.Roles.View),
         new("Nav_Settings", "settings", Icons.Material.Filled.Settings, Permissions.Settings.View),
         new("Nav_Audit", "audit", Icons.Material.Filled.History, Permissions.Audit.View),

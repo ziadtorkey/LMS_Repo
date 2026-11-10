@@ -1,0 +1,84 @@
+@using System.ComponentModel.DataAnnotations
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Shared.Organizations
+@inject IClientsApi Api
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form">
+            <MudStack Spacing="3">
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" data-testid="dialog-error">@_error</MudAlert>
+                }
+
+                <MudText Typo="Typo.subtitle2">@L["Clients_Name"]</MudText>
+                <BilingualNameFields @bind-NameAr="_nameAr" @bind-NameEn="_nameEn" IdPrefix="client-name" />
+
+                <MudSelect T="string" @bind-Value="_type" Label="@L["Clients_Type"]" data-testid="client-type">
+                    @foreach (var type in OrganizationTypes.All)
+                    {
+                        <MudSelectItem T="string" Value="@type">@L[$"ClientType_{type}"]</MudSelectItem>
+                    }
+                </MudSelect>
+
+                <MudText Typo="Typo.subtitle2">@L["Clients_RootLevel"]</MudText>
+                <BilingualNameFields @bind-NameAr="_rootLevelAr" @bind-NameEn="_rootLevelEn" IdPrefix="root-level" />
+
+                <MudTextField T="string" @bind-Value="_rootCode" Label="@L["Clients_RootCode"]" Required="true"
+                              RequiredError="@L["Common_Required"]" Validation="@(new Func<string, string?>(ValidateCode))"
+                              MaxLength="50" dir="ltr" data-testid="root-code" />
+
+                <MudText Typo="Typo.subtitle2">@L["Clients_AdminName"]</MudText>
+                <BilingualNameFields @bind-NameAr="_adminAr" @bind-NameEn="_adminEn" IdPrefix="admin-name" />
+
+                <MudTextField T="string" @bind-Value="_adminEmail" Label="@L["Clients_AdminEmail"]" Required="true"
+                              RequiredError="@L["Common_Required"]" Validation="@(new Func<string, string?>(ValidateEmail))"
+                              InputType="InputType.Email" dir="ltr" data-testid="admin-email" />
+            </MudStack>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="_saving"
+                   data-testid="dialog-save">@L["Common_Save"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    private MudForm _form = default!;
+    private string _nameAr = "", _nameEn = "", _rootLevelAr = "", _rootLevelEn = "", _rootCode = "";
+    private string _adminAr = "", _adminEn = "", _adminEmail = "";
+    private string _type = OrganizationTypes.SchoolGroup;
+    private string? _error;
+    private bool _saving;
+
+    private string? ValidateCode(string value) =>
+        System.Text.RegularExpressions.Regex.IsMatch(value ?? "", "^[A-Za-z0-9_-]{1,50}$") ? null : L["Common_InvalidCode"].Value;
+
+    private string? ValidateEmail(string value) =>
+        new EmailAddressAttribute().IsValid(value) ? null : L["Common_InvalidEmail"].Value;
+
+    private async Task SaveAsync()
+    {
+        await _form.ValidateAsync();
+        if (!_form.IsValid) return;
+
+        _saving = true; _error = null;
+        try
+        {
+            await Api.CreateAsync(new CreateClientRequest(
+                _nameAr.Trim(), _nameEn.Trim(), _type, _rootLevelAr.Trim(), _rootLevelEn.Trim(),
+                _rootCode.Trim(), _adminEmail.Trim(), _adminAr.Trim(), _adminEn.Trim()));
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        catch (ApiProblemException ex)
+        {
+            _error = ProblemText.For(ex, L);
+        }
+        finally { _saving = false; }
+    }
+}
