@@ -13,3 +13,11 @@ html, body { margin: 0; font-family: Roboto, "Segoe UI", Tahoma, sans-serif; }
 
 /* Programmatic focus on the page heading (FocusOnNavigate) should not draw a box. */
 [tabindex="-1"]:focus { outline: none; }
+
+/* Calendar month grid */
+.lms-month-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; }
+.lms-month-head { text-align: center; font-size: 0.75rem; opacity: 0.7; }
+.lms-month-day { min-height: 44px; padding: 2px 4px; border: 1px solid var(--mud-palette-lines-default); border-radius: 4px; overflow: hidden; }
+.lms-month-holiday { background: rgba(255, 152, 0, 0.18); }
+.lms-month-num { font-size: 0.75rem; display: block; }
+.lms-month-entry { font-size: 0.65rem; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

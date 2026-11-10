@@ -1,0 +1,149 @@
+@using System.Globalization
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Shared.AcademicYears
+@inject IYearsApi Api
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+@* Calendar of one year as seen from UnitId: a month grid (holidays marked) and the list of entries. *@
+<MudStack Spacing="2" data-testid="@($"calendar-{Year.Id}")">
+    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+        <MudText Typo="Typo.subtitle1">@L["Calendar_Title"]</MudText>
+        @if (CanEdit)
+        {
+            <MudButton Size="Size.Small" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Add" OnClick="() => OpenAsync(null)"
+                       data-testid="@($"event-new-{Year.Id}")">@L["Calendar_New"]</MudButton>
+        }
+    </MudStack>
+
+    @if (_failed)
+    {
+        <MudAlert Severity="Severity.Error" data-testid="calendar-error">@L["Api_Error"]</MudAlert>
+    }
+    else
+    {
+        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.Center">
+            <MudIconButton Icon="@(IsRtl ? Icons.Material.Filled.ChevronRight : Icons.Material.Filled.ChevronLeft)" Size="Size.Small"
+                           aria-label="@L["Calendar_PrevMonth"]" OnClick="() => Move(-1)" />
+            <MudText Typo="Typo.subtitle2" data-testid="calendar-month">@_month.ToString("MMMM yyyy", CultureInfo.CurrentUICulture)</MudText>
+            <MudIconButton Icon="@(IsRtl ? Icons.Material.Filled.ChevronLeft : Icons.Material.Filled.ChevronRight)" Size="Size.Small"
+                           aria-label="@L["Calendar_NextMonth"]" OnClick="() => Move(1)" />
+        </MudStack>
+        <div class="lms-month-grid" role="grid">
+            @foreach (var name in DayHeaders())
+            {
+                <div class="lms-month-head" role="columnheader">@name</div>
+            }
+            @foreach (var day in Days())
+            {
+                var entries = day is null ? [] : EntriesOn(day.Value);
+                var holiday = entries.Any(e => e.Kind == CalendarEventKinds.Holiday);
+                <div class="lms-month-day @(holiday ? "lms-month-holiday" : null)" role="gridcell"
+                     data-holiday="@(holiday ? "true" : null)" data-date="@(day?.ToString("yyyy-MM-dd"))">
+                    @if (day is not null)
+                    {
+                        <span class="lms-month-num">@day.Value.Day</span>
+                        @foreach (var e in entries)
+                        {
+                            <span class="lms-month-entry" title="@CultureText.Pick(e.TitleAr, e.TitleEn)">@CultureText.Pick(e.TitleAr, e.TitleEn)</span>
+                        }
+                    }
+                </div>
+            }
+        </div>
+
+        @if (_events.Count == 0)
+        {
+            <MudText Typo="Typo.body2">@L["Common_Empty"]</MudText>
+        }
+        @foreach (var e in _events)
+        {
+            var ev = e;
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Wrap="Wrap.Wrap" data-testid="@($"event-{ev.Id}")">
+                <MudChip T="string" Size="Size.Small" Color="@(ev.Kind == CalendarEventKinds.Holiday ? Color.Warning : Color.Info)">
+                    @L[ev.Kind == CalendarEventKinds.Holiday ? "Calendar_Holiday" : "Calendar_Event"]
+                </MudChip>
+                <MudText>@CultureText.Pick(ev.TitleAr, ev.TitleEn)</MudText>
+                <MudText Typo="Typo.body2" dir="ltr">@ev.StartDate.ToString("yyyy-MM-dd") – @ev.EndDate.ToString("yyyy-MM-dd")</MudText>
+                @if (ev.IsInherited)
+                {
+                    <MudText Typo="Typo.caption" data-testid="@($"event-inherited-{ev.Id}")">
+                        @string.Format(L["Calendar_InheritedFrom"], CultureText.Pick(ev.OrgUnitNameAr, ev.OrgUnitNameEn))
+                    </MudText>
+                }
+                else if (CanEdit)
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" aria-label="@L["Common_Edit"]"
+                                   OnClick="() => OpenAsync(ev)" data-testid="@($"event-edit-{ev.Id}")" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" aria-label="@L["Common_Delete"]"
+                                   OnClick="() => DeleteAsync(ev)" data-testid="@($"event-delete-{ev.Id}")" />
+                }
+            </MudStack>
+        }
+    }
+</MudStack>
+
+@code {
+    private IReadOnlyList<CalendarEventDto> _events = [];
+    private DateOnly _month;
+    private bool _failed;
+    private Guid _loadedFor;
+
+    [Parameter, EditorRequired] public AcademicYearDto Year { get; set; } = default!;
+    [Parameter, EditorRequired] public Guid UnitId { get; set; }
+    /// <summary>False for closed years or without AcademicYears.Update (inherited entries are always read-only).</summary>
+    [Parameter] public bool CanEdit { get; set; }
+
+    private bool IsRtl => CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_loadedFor == Year.Id) return;
+        _loadedFor = Year.Id;
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var anchor = today < Year.StartDate ? Year.StartDate : today > Year.EndDate ? Year.EndDate : today;
+        _month = new DateOnly(anchor.Year, anchor.Month, 1);
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        var (events, failed) = await ApiCalls.RunAsync(() => Api.GetCalendarAsync(Year.Id, UnitId), Navigation);
+        _failed = failed;
+        _events = events ?? [];
+    }
+
+    private void Move(int months) => _month = _month.AddMonths(months);
+
+    private IEnumerable<string> DayHeaders()
+    {
+        var format = CultureInfo.CurrentUICulture.DateTimeFormat;
+        for (var i = 0; i < 7; i++)
+            yield return format.AbbreviatedDayNames[((int)format.FirstDayOfWeek + i) % 7];
+    }
+
+    private IEnumerable<DateOnly?> Days()
+    {
+        var first = (int)CultureInfo.CurrentUICulture.DateTimeFormat.FirstDayOfWeek;
+        var lead = ((int)_month.DayOfWeek - first + 7) % 7;
+        for (var i = 0; i < lead; i++) yield return null;
+        for (var d = 0; d < DateTime.DaysInMonth(_month.Year, _month.Month); d++) yield return _month.AddDays(d);
+    }
+
+    private List<CalendarEventDto> EntriesOn(DateOnly day) => _events.Where(e => e.StartDate <= day && day <= e.EndDate).ToList();
+
+    private Task OpenAsync(CalendarEventDto? entry) =>
+        DialogFlow.ShowAsync(Dialogs, entry is null ? L["Calendar_New"] : L["Common_Edit"],
+            new DialogParameters<CalendarEventDialog> { { x => x.YearId, Year.Id }, { x => x.UnitId, UnitId }, { x => x.Existing, entry } },
+            () => InvokeAsync(async () => { await LoadAsync(); StateHasChanged(); }));
+
+    private async Task DeleteAsync(CalendarEventDto entry)
+    {
+        var title = CultureText.Pick(entry.TitleAr, entry.TitleEn);
+        if (!await ConfirmDialog.AskAsync(Dialogs, L["Confirm_DeleteTitle"], string.Format(L["Calendar_DeleteConfirm"], title))) return;
+        if (await ActionCalls.TryAsync(() => Api.DeleteEventAsync(entry.Id), Navigation, L, m => Snackbar.Add(m, Severity.Error)))
+            await LoadAsync();
+    }
+}

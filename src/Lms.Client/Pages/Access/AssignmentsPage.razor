@@ -96,7 +96,7 @@ else
     private bool _includeBelow, _loading = true, _failed;
 
     /// <summary>Optional ?unit= deep link (e.g. from the unit settings page).</summary>
-    [SupplyParameterFromQuery(Name = "unit")] public Guid? UnitId { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "unit")] public Guid? UnitId { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
