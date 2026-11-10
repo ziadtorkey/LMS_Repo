@@ -1,5 +1,8 @@
+using Lms.Domain.Abstractions;
+using Lms.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore;
 using Testcontainers.MySql;
 using Testcontainers.Minio;
 
@@ -19,12 +22,18 @@ public sealed class LmsApiFactory : WebApplicationFactory<Program>, IAsyncLifeti
     public async Task InitializeAsync()
     {
         await Task.WhenAll(_mysql.StartAsync(), _minio.StartAsync());
+        await using var db = CreateDbContext(TestCurrentContext.PlatformAdmin());
+        await db.Database.MigrateAsync();
     }
 
     async Task IAsyncLifetime.DisposeAsync()
     {
         await Task.WhenAll(_mysql.DisposeAsync().AsTask(), _minio.DisposeAsync().AsTask());
     }
+
+    /// <summary>A DbContext over the test database acting as the given caller.</summary>
+    public LmsDbContext CreateDbContext(ICurrentContext context) =>
+        LmsDbContextFactory.Create(_mysql.GetConnectionString(), context);
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
