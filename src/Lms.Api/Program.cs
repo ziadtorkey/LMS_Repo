@@ -3,6 +3,7 @@ using Lms.Api.Features.Auth;
 using Lms.Api.Features.Me;
 using Lms.Api.Infrastructure;
 using Lms.Infrastructure;
+using Lms.Infrastructure.Access;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,6 +24,9 @@ builder.Services.AddHealthChecks()
     .AddCheck<MySqlHealthCheck>("mysql");
 
 var app = builder.Build();
+
+// Existing clients provisioned under an older defaults version get the new built-in permissions (add-only, once per role).
+await app.Services.GetRequiredService<BuiltInRoleStartupReconciler>().RunAsync();
 
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseMiddleware<SecurityHeadersMiddleware>();

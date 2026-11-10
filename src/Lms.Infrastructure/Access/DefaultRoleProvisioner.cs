@@ -21,6 +21,7 @@ public sealed class DefaultRoleProvisioner(LmsDbContext db) : IDefaultRoleProvis
             var role = new Role(
                 organizationId, definition.Key, label.NameAr, label.NameEn,
                 Enum.Parse<RoleBaseKind>(definition.BaseKind));
+            role.MarkDefaultsApplied(BuiltInRoleDefaults.CurrentVersion);
             db.Roles.Add(role);
             db.RolePermissions.AddRange(
                 definition.DefaultPermissions.Select(p => new RolePermission(organizationId, role.Id, p)));
