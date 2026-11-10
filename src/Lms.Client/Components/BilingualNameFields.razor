@@ -2,10 +2,10 @@
 <MudStack Spacing="2">
     <MudTextField T="string" Label="@L["Common_NameAr"]" Value="NameAr" ValueChanged="NameArChanged"
                   Required="Required" RequiredError="@L["Common_Required"]" MaxLength="200"
-                  dir="rtl" lang="ar" data-testid="name-ar" />
+                  dir="rtl" lang="ar" data-testid="@($"{IdPrefix}-ar")" />
     <MudTextField T="string" Label="@L["Common_NameEn"]" Value="NameEn" ValueChanged="NameEnChanged"
                   Required="Required" RequiredError="@L["Common_Required"]" MaxLength="200"
-                  dir="ltr" lang="en" data-testid="name-en" />
+                  dir="ltr" lang="en" data-testid="@($"{IdPrefix}-en")" />
 </MudStack>
 
 @code {
@@ -14,4 +14,7 @@
     [Parameter] public string NameEn { get; set; } = "";
     [Parameter] public EventCallback<string> NameEnChanged { get; set; }
     [Parameter] public bool Required { get; set; } = true;
+
+    /// <summary>Prefix of the data-testid values (name-ar / name-en by default); set it when a form holds several pairs.</summary>
+    [Parameter] public string IdPrefix { get; set; } = "name";
 }
