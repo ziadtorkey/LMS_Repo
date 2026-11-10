@@ -1,5 +1,6 @@
 using Lms.Api.Infrastructure;
 using Lms.Domain.Abstractions;
+using Lms.Infrastructure.Configuration;
 using Lms.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
@@ -34,6 +35,8 @@ public sealed class LmsApiFactory : WebApplicationFactory<Program>, IAsyncLifeti
         await Task.WhenAll(_mysql.DisposeAsync().AsTask(), _minio.DisposeAsync().AsTask());
     }
 
+    public TestPolicyEvaluator Policies => Services.GetRequiredService<TestPolicyEvaluator>();
+
     /// <summary>A DbContext over the test database acting as the given caller.</summary>
     public LmsDbContext CreateDbContext(ICurrentContext context) =>
         LmsDbContextFactory.Create(_mysql.GetConnectionString(), context);
@@ -49,6 +52,8 @@ public sealed class LmsApiFactory : WebApplicationFactory<Program>, IAsyncLifeti
             services.AddAuthentication(TestAuthHandler.SchemeName)
                 .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(TestAuthHandler.SchemeName, _ => { });
             services.AddSingleton<IEndpointModule, TestEndpoints>();
+            services.AddSingleton<TestPolicyEvaluator>();
+            services.AddScoped<IPolicyEvaluator>(sp => sp.GetRequiredService<TestPolicyEvaluator>());
         });
     }
 }
