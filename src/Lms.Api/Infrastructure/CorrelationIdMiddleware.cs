@@ -24,6 +24,6 @@ public sealed partial class CorrelationIdMiddleware(RequestDelegate next)
         }
     }
 
-    [GeneratedRegex("^[A-Za-z0-9._-]{1,64}$")]
+    [GeneratedRegex(@"^[A-Za-z0-9._-]{1,64}\z")]
     private static partial Regex ValidId();
 }

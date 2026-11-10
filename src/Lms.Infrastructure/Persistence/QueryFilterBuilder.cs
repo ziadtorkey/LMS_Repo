@@ -46,7 +46,8 @@ internal static class QueryFilterBuilder
         {
             // OrgUnit maps its path to the "Path" column; OrgUnitPath is a computed alias there.
             var pathProperty = clrType == typeof(OrgUnit) ? nameof(OrgUnit.Path) : nameof(IOrgUnitScoped.OrgUnitPath);
-            var scopePath = Expression.Property(ctx, nameof(Lms.Domain.Abstractions.ICurrentContext.ScopePath));
+            // Malformed paths ("" or without leading/trailing "/") count as no scope: they must never widen the filter.
+            var scopePath = Expression.Property(Expression.Constant(db), nameof(LmsDbContext.ValidScopePath));
             var startsWith = Expression.Call(
                 Expression.Property(e, pathProperty),
                 typeof(string).GetMethod(nameof(string.StartsWith), [typeof(string)])!,

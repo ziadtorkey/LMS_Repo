@@ -12,7 +12,7 @@ public sealed class IsolationTests(LmsApiFactory factory)
         Organization Org, LevelType Level, OrgUnit Root, OrgUnit School1, OrgUnit School2);
 
     /// <summary>Seeds one client with Root → School1, School2 using a platform-admin context.</summary>
-    private async Task<Tree> SeedClientAsync(string name, Guid? school1Id = null, Guid? school2Id = null)
+    private async Task<Tree> SeedClientAsync(string name)
     {
         await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
         var org = new Organization(Guid.NewGuid(), "مجموعة " + name, name, OrganizationType.SchoolGroup);
@@ -66,18 +66,74 @@ public sealed class IsolationTests(LmsApiFactory factory)
         Assert.Equal([a.School1.Id], ids);
     }
 
-    [Fact]
-    public async Task Sibling_whose_id_shares_a_hex_prefix_is_not_in_scope()
+    [Theory]
+    [InlineData("")]
+    [InlineData("/")]
+    public async Task Empty_or_root_only_scope_returns_no_scoped_rows(string scope)
     {
-        // ids differ only in the last hex digit: a non-segment-safe prefix match would leak.
-        var a = await SeedClientAsync(
-            "A4", Guid.Parse("11111111-1111-7111-8111-111111111111"), Guid.Parse("11111111-1111-7111-8111-111111111112"));
+        var a = await SeedClientAsync("A4");
 
-        await using var db = As(a, a.School1);
+        await using var db = factory.CreateDbContext(TestCurrentContext.For(a.Org.Id, scope));
 
-        Assert.Equal([a.School1.Id], await db.OrgUnits.Select(x => x.Id).ToListAsync());
+        Assert.Empty(await db.OrgUnits.ToListAsync());
     }
 
+    [Fact]
+    public async Task Scope_without_trailing_slash_returns_no_scoped_rows()
+    {
+        var a = await SeedClientAsync("A4b");
+        var truncated = a.School1.Path[..^1];
+
+        await using var db = factory.CreateDbContext(TestCurrentContext.For(a.Org.Id, truncated));
+
+        Assert.Empty(await db.OrgUnits.ToListAsync());
+    }
+
+    [Fact]
+    public async Task Scope_without_leading_slash_returns_no_scoped_rows()
+    {
+        var a = await SeedClientAsync("A4c");
+
+        await using var db = factory.CreateDbContext(TestCurrentContext.For(a.Org.Id, a.School1.Path[1..]));
+
+        Assert.Empty(await db.OrgUnits.ToListAsync());
+    }
+
+    [Fact]
+    public async Task Scoped_user_cannot_insert_unit_outside_own_subtree()
+    {
+        var a = await SeedClientAsync("A4d");
+
+        await using var db = As(a, a.School1);
+        db.OrgUnits.Add(OrgUnit.CreateChild(a.School2, a.Level.Id, "ب", "Sneaky", "X"));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => db.SaveChangesAsync());
+    }
+
+    [Fact]
+    public async Task Scoped_user_can_insert_unit_inside_own_subtree()
+    {
+        var a = await SeedClientAsync("A4e");
+
+        await using var db = As(a, a.School1);
+        db.OrgUnits.Add(OrgUnit.CreateChild(a.School1, a.Level.Id, "ب", "Inside", "X"));
+        await db.SaveChangesAsync();
+
+        Assert.Equal(2, await db.OrgUnits.CountAsync());
+    }
+
+    [Fact]
+    public async Task Update_cannot_move_a_row_to_another_client()
+    {
+        var a = await SeedClientAsync("A4f");
+        var b = await SeedClientAsync("B4f");
+
+        await using var db = As(a, a.Root);
+        var level = await db.LevelTypes.SingleAsync();
+        db.Entry(level).Property(nameof(LevelType.OrganizationId)).CurrentValue = b.Org.Id;
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => db.SaveChangesAsync());
+    }
     [Fact]
     public async Task Root_scope_sees_all_units_of_its_client()
     {
@@ -195,9 +251,9 @@ public sealed class IsolationTests(LmsApiFactory factory)
     {
         await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
         var charset = await db.Database.SqlQueryRaw<string>(
-            "SELECT CHARACTER_SET_NAME AS Value FROM information_schema.COLUMNS " +
+            "SELECT CONCAT(CHARACTER_SET_NAME, '/', COLLATION_NAME) AS Value FROM information_schema.COLUMNS " +
             "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'OrgUnits' AND COLUMN_NAME = 'Path'").SingleAsync();
 
-        Assert.Equal("ascii", charset);
+        Assert.Equal("ascii/ascii_general_ci", charset);
     }
 }

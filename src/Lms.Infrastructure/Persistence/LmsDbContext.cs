@@ -12,6 +12,10 @@ public sealed class LmsDbContext(DbContextOptions<LmsDbContext> options, ICurren
     // Read by the global query filters; EF re-evaluates it per context instance.
     internal ICurrentContext CurrentContext { get; } = currentContext;
 
+    /// <summary>The caller's scope path if well formed ("/" + segments, trailing "/"), otherwise null (= no scope).</summary>
+    internal string? ValidScopePath =>
+        CurrentContext.ScopePath is { Length: > 1 } p && p[0] == '/' && p[^1] == '/' ? p : null;
+
     // One DbSet line per entity; modules add their own configuration file under Persistence/Configurations/<Module>/.
     public DbSet<Organization> Organizations => Set<Organization>();
     public DbSet<LevelType> LevelTypes => Set<LevelType>();
