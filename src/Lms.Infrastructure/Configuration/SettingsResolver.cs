@@ -38,7 +38,7 @@ public sealed class SettingsResolver(LmsDbContext db, ICurrentContext context) :
         }
 
         var json = JsonSerializer.Serialize(value);
-        // IgnoreQueryFilters only to see soft-deleted rows: the unique (OrgUnitId, Key) index still holds them, so
+        // ISOLATION-BYPASS: only to see soft-deleted rows: the unique (OrgUnitId, Key) index still holds them, so
         // setting the key again must restore the old row instead of inserting. The unit was already resolved through
         // the scoped set above, and the client is re-applied explicitly.
         var existing = await db.Set<OrgUnitSetting>().IgnoreQueryFilters()
@@ -76,7 +76,7 @@ public sealed class SettingsResolver(LmsDbContext db, ICurrentContext context) :
 
     private Task<List<OrgUnitSetting>> LoadRowsAsync(
         string key, IReadOnlyList<string> paths, Guid? organizationId, CancellationToken ct) =>
-        // IgnoreQueryFilters: ancestors lie outside the scope of the caller, so the scope filter would hide them.
+        // ISOLATION-BYPASS: ancestors lie outside the scope of the caller, so the scope filter would hide them.
         // The soft-delete and client filters are therefore re-applied by hand below.
         db.Set<OrgUnitSetting>().IgnoreQueryFilters()
             .Where(x => !x.IsDeleted && x.Key == key && paths.Contains(x.OrgUnitPath)
