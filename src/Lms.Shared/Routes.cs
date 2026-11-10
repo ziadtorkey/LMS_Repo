@@ -29,4 +29,64 @@ public static class Routes
     public static string OrgUnitStatus(Guid id) => $"{OrgUnit(id)}/status";
     public static string OrgUnitMove(Guid id) => $"{OrgUnit(id)}/move";
     public static string OrgUnitAcademicFlags(Guid id) => $"{OrgUnit(id)}/academic-flags";
+
+    // M1 settings, policies, branch copy and templates (Task 2)
+    public const string PoliciesCatalog = "/api/policies/catalog";
+    public const string SettingsCatalog = "/api/settings/catalog";
+    public const string OrgUnitSettingsPattern = OrgUnitPattern + "/settings";
+    public const string OrgUnitSettingPattern = OrgUnitSettingsPattern + "/{name}";
+    public const string OrgUnitPoliciesPattern = OrgUnitPattern + "/policies";
+    public const string OrgUnitPolicyPattern = OrgUnitPoliciesPattern + "/{key}";
+    public const string OrgUnitsCopy = OrgUnits + "/copy";
+
+    public const string Templates = "/api/templates";
+    public const string TemplatePattern = Templates + "/{id:guid}";
+    public const string TemplateApplyPattern = TemplatePattern + "/apply";
+
+    public static string OrgUnitSettings(Guid id) => $"{OrgUnit(id)}/settings";
+    public static string OrgUnitSetting(Guid id, string name) => $"{OrgUnitSettings(id)}/{Uri.EscapeDataString(name)}";
+    public static string OrgUnitPolicies(Guid id) => $"{OrgUnit(id)}/policies";
+    public static string OrgUnitPolicy(Guid id, string key) => $"{OrgUnitPolicies(id)}/{Uri.EscapeDataString(key)}";
+    public static string Template(Guid id) => $"{Templates}/{id}";
+    public static string TemplateApply(Guid id) => $"{Template(id)}/apply";
+
+    // M1 roles, assignments and audit (Task 3)
+    public const string Permissions = "/api/permissions";
+    public const string Roles = "/api/roles";
+    public const string RolePattern = Roles + "/{id:guid}";
+    public const string Assignments = "/api/assignments";
+    public const string AssignmentPattern = Assignments + "/{id:guid}";
+    public const string OrgUnitAssignmentsPattern = OrgUnitPattern + "/assignments";
+    public const string Audit = "/api/audit";
+    public const string AuditEntryPattern = Audit + "/{id:guid}";
+    public const string AuditExport = Audit + "/export";
+
+    public static string Role(Guid id) => $"{Roles}/{id}";
+    public static string Assignment(Guid id) => $"{Assignments}/{id}";
+    public static string OrgUnitAssignments(Guid id) => $"{OrgUnit(id)}/assignments";
+    public static string AuditEntry(Guid id) => $"{Audit}/{id}";
+
+    // M1 academic years, calendar and notifications (Task 4)
+    public const string AcademicYears = "/api/academic-years";
+    public const string AcademicYearsEffective = AcademicYears + "/effective";
+    public const string AcademicYearPattern = AcademicYears + "/{id:guid}";
+    public const string AcademicYearActivatePattern = AcademicYearPattern + "/activate";
+    public const string AcademicYearTermsPattern = AcademicYearPattern + "/terms";
+    public const string AcademicYearCalendarPattern = AcademicYearPattern + "/calendar";
+    public const string Terms = "/api/terms";
+    public const string TermPattern = Terms + "/{id:guid}";
+    public const string CalendarEvents = "/api/calendar-events";
+    public const string CalendarEventPattern = CalendarEvents + "/{id:guid}";
+    public const string MyNotifications = Me + "/notifications";
+    public const string MyNotificationReadPattern = MyNotifications + "/{id:guid}/read";
+    public const string MyNotificationsReadAll = MyNotifications + "/read-all";
+    public const string MyNotificationPreferences = Me + "/notification-preferences";
+
+    public static string AcademicYear(Guid id) => $"{AcademicYears}/{id}";
+    public static string AcademicYearActivate(Guid id) => $"{AcademicYear(id)}/activate";
+    public static string AcademicYearTerms(Guid id) => $"{AcademicYear(id)}/terms";
+    public static string AcademicYearCalendar(Guid id) => $"{AcademicYear(id)}/calendar";
+    public static string Term(Guid id) => $"{Terms}/{id}";
+    public static string CalendarEvent(Guid id) => $"{CalendarEvents}/{id}";
+    public static string MyNotificationRead(Guid id) => $"{MyNotifications}/{id}/read";
 }
