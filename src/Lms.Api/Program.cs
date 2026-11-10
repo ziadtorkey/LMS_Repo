@@ -1,3 +1,4 @@
+using Lms.Api.Features.Branches;
 using Lms.Api.Features.Files;
 using Lms.Api.Features.Policies;
 using Lms.Api.Features.Notifications;
@@ -27,6 +28,7 @@ builder.Services.AddOrgUnits();
 builder.Services.AddPolicies();
 builder.Services.AddNotifications();
 builder.Services.AddSettings();
+builder.Services.AddBranches();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddLmsAuth(builder.Configuration, builder.Environment);
 builder.Services.AddAccount(builder.Configuration);
@@ -79,6 +81,7 @@ app.MapOrgUnitEndpoints();
 app.MapPolicyEndpoints();
 app.MapNotificationEndpoints();
 app.MapSettingEndpoints();
+app.MapBranchEndpoints();
 
 // Unknown API routes must be 404, not the SPA's index.html.
 app.MapFallback("/api/{**path}", () => Results.Problem(statusCode: StatusCodes.Status404NotFound, title: "Not found"));
