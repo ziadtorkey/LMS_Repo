@@ -4,6 +4,7 @@ using Lms.Infrastructure.Auditing;
 using Lms.Infrastructure.Files;
 using Lms.Infrastructure.Identity;
 using Lms.Infrastructure.Configuration;
+using Lms.Infrastructure.Notifications;
 using Lms.Infrastructure.Persistence;
 using Lms.Infrastructure.Seeding;
 using Microsoft.Extensions.Configuration;
@@ -21,6 +22,7 @@ public static class DependencyInjection
         services.AddAccess();
         services.AddDevSeeding();
         services.AddAuditing();
+        services.AddNotificationCore();
         services.AddFileStorage(configuration);
         services.AddLmsIdentityStores();
         services.AddSettingsAndPolicies();
