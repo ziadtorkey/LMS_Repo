@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Lms.Infrastructure\Lms.Infrastructure.csproj" />
+    <ProjectReference Include="..\Lms.Shared\Lms.Shared.csproj" />
+    <ProjectReference Include="..\Lms.Client\Lms.Client.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
+    <PackageReference Include="Serilog.AspNetCore" />
+  </ItemGroup>
+</Project>
