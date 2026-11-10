@@ -1,0 +1,54 @@
+using Bunit;
+using Lms.Client.Services;
+using Lms.Shared.Me;
+using Microsoft.Extensions.DependencyInjection;
+using MudBlazor.Services;
+
+namespace Lms.Client.Tests.Support;
+
+/// <summary>Shared bUnit setup: MudBlazor, localization, fake services, authenticated user.</summary>
+public abstract class ClientTestContext : BunitContext, IAsyncLifetime
+{
+    // MudBlazor services are IAsyncDisposable only: dispose asynchronously (xunit v2) and skip bUnit's sync dispose.
+    Task IAsyncLifetime.InitializeAsync() => Task.CompletedTask;
+    Task IAsyncLifetime.DisposeAsync() => base.DisposeAsync().AsTask();
+    protected override void Dispose(bool disposing) { }
+
+    protected FakeCultureService Culture { get; } = new();
+    protected InMemoryContextStore Context { get; } = new();
+    protected StubLmsApi Api { get; } = new();
+
+    protected ClientTestContext()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        Services.AddMudServices();
+        Services.AddLocalization();
+        Services.AddSingleton<ICultureService>(Culture);
+        Services.AddSingleton<IContextStore>(Context);
+        Services.AddSingleton<ILmsApi>(Api);
+        AddAuthorization().SetAuthorized("tester");
+    }
+}
+
+public sealed class FakeCultureService : ICultureService
+{
+    public System.Globalization.CultureInfo Current { get; set; } = new("ar");
+    public bool IsRightToLeft => Current.TextInfo.IsRightToLeft;
+    public string? LastSet { get; private set; }
+    public Task SetAsync(string culture) { LastSet = culture; return Task.CompletedTask; }
+}
+
+public sealed class InMemoryContextStore : IContextStore
+{
+    public Guid? ActiveAssignmentId { get; private set; }
+    public event Action? Changed;
+    public Task SetAsync(Guid assignmentId) { ActiveAssignmentId = assignmentId; Changed?.Invoke(); return Task.CompletedTask; }
+}
+
+public sealed class StubLmsApi : ILmsApi
+{
+    public MeDto Me { get; set; } = new(Guid.NewGuid(), "مستخدم", "Tester", false, []);
+    public EffectivePermissionsDto Permissions { get; set; } = new(null, []);
+    public Task<MeDto> GetMeAsync(CancellationToken ct = default) => Task.FromResult(Me);
+    public Task<EffectivePermissionsDto> GetMyPermissionsAsync(CancellationToken ct = default) => Task.FromResult(Permissions);
+}

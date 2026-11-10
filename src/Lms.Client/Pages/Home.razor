@@ -1,7 +1,20 @@
 ﻿@page "/"
+@attribute [Authorize]
+@inject ILmsApi Api
 
-<PageTitle>Home</PageTitle>
+<PageTitle>@L["Home_Title"]</PageTitle>
+<MudText Typo="Typo.h4" Class="mb-4">@L["Home_Title"]</MudText>
+@if (_name is not null)
+{
+    <MudText>@string.Format(L["Home_Welcome"].Value, _name)</MudText>
+}
 
-<h1>Hello, world!</h1>
+@code {
+    private string? _name;
 
-Welcome to your new app.
+    protected override async Task OnInitializedAsync()
+    {
+        var me = await Api.GetMeAsync();
+        _name = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "ar" ? me.DisplayNameAr : me.DisplayNameEn;
+    }
+}

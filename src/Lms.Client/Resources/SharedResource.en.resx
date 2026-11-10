@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="App_Title" xml:space="preserve"><value>Learning Management System</value></data>
+  <data name="Lang_Other" xml:space="preserve"><value>العربية</value></data>
+  <data name="Menu_User" xml:space="preserve"><value>User menu</value></data>
+  <data name="Menu_Logout" xml:space="preserve"><value>Sign out</value></data>
+  <data name="Menu_Login" xml:space="preserve"><value>Sign in</value></data>
+  <data name="Context_Choose" xml:space="preserve"><value>Choose context</value></data>
+  <data name="Context_Format" xml:space="preserve"><value>{0} — {1} ({2})</value></data>
+  <data name="Home_Title" xml:space="preserve"><value>Home</value></data>
+  <data name="Home_Welcome" xml:space="preserve"><value>Welcome, {0}</value></data>
+  <data name="Forbidden_Title" xml:space="preserve"><value>You do not have permission to access this page</value></data>
+  <data name="Forbidden_Body" xml:space="preserve"><value>If you believe this is a mistake, contact your system administrator.</value></data>
+  <data name="Forbidden_Home" xml:space="preserve"><value>Back to home</value></data>
+  <data name="NotFound_Title" xml:space="preserve"><value>Page not found</value></data>
+  <data name="NotFound_Body" xml:space="preserve"><value>Sorry, the content you are looking for does not exist.</value></data>
+  <data name="Auth_Processing" xml:space="preserve"><value>Processing...</value></data>
+  <data name="Auth_Error" xml:space="preserve"><value>An authentication error occurred: {0}</value></data>
+</root>

@@ -1,0 +1,32 @@
+@inject ILmsApi Api
+@inject IContextStore Store
+@implements IDisposable
+
+<MudButton Color="Color.Inherit" Href="choose-context" data-testid="context-switcher">@_label</MudButton>
+
+@code {
+    private string _label = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        Store.Changed += OnChanged;
+        _label = L["Context_Choose"];
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        var me = await Api.GetMeAsync();
+        var active = me.Contexts.FirstOrDefault(c => c.AssignmentId == Store.ActiveAssignmentId);
+        if (active is null) { _label = L["Context_Choose"]; return; }
+        var ar = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "ar";
+        _label = string.Format(L["Context_Format"].Value,
+            ar ? active.OrganizationNameAr : active.OrganizationNameEn,
+            ar ? active.OrgUnitNameAr : active.OrgUnitNameEn,
+            ar ? active.RoleNameAr : active.RoleNameEn);
+    }
+
+    private async void OnChanged() { await LoadAsync(); await InvokeAsync(StateHasChanged); }
+
+    public void Dispose() => Store.Changed -= OnChanged;
+}
