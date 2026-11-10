@@ -1,3 +1,4 @@
+using Lms.Api.Features.Audit;
 using Lms.Api.Features.Files;
 using Lms.Api.Features.Account;
 using Lms.Api.Features.Auth;
@@ -22,6 +23,7 @@ builder.Services.AddMe();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddLmsAuth(builder.Configuration, builder.Environment);
 builder.Services.AddAccount(builder.Configuration);
+builder.Services.AddAuditViewer();
 
 builder.Services.AddHealthChecks()
     .AddCheck<MySqlHealthCheck>("mysql");
@@ -61,6 +63,7 @@ app.MapAuthorizationEndpoints();
 app.MapRazorPages();
 app.MapHealthChecks("/health");
 app.MapFileEndpoints();
+app.MapAuditEndpoints();
 foreach (var module in app.Services.GetServices<IEndpointModule>())
 {
     module.Map(app);

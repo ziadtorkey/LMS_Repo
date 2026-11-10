@@ -18,7 +18,7 @@ internal sealed class AuditWriter(
         await using var db = new LmsDbContext(options, context);
         db.AuditEntries.Add(new AuditEntry(
             context.OrganizationId, userId ?? context.UserId, context.AssignmentId, AuditAction.SecurityEvent,
-            eventName, Guid.Empty, beforeJson: null, afterJson: details, clock.UtcNow, ipAddress));
+            eventName, Guid.Empty, beforeJson: null, afterJson: details, clock.UtcNow, ipAddress, orgUnitPath: context.ScopePath));
         await db.SaveChangesAsync(cancellationToken);
     }
 }
