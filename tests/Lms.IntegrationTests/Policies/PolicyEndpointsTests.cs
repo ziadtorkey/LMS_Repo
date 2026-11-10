@@ -127,7 +127,7 @@ public sealed class PolicyEndpointsTests(LmsApiFactory factory)
         Assert.Equal(HttpStatusCode.OK, (await EnableAsync(admin, tree.School1.Id)).StatusCode); // idempotent
         Assert.Equal(PolicyStates.SetHere, (await EffectiveAsync(admin, tree.School1.Id)).State);
 
-        Assert.Equal(HttpStatusCode.NoContent, (await DisableAsync(admin, tree.School1.Id)).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await DisableAsync(admin, tree.School1.Id)).StatusCode);
         Assert.Equal(PolicyStates.Off, (await EffectiveAsync(admin, tree.School1.Id)).State);
 
         // And on again after being off.
@@ -148,7 +148,7 @@ public sealed class PolicyEndpointsTests(LmsApiFactory factory)
         Assert.Equal(PolicyStates.Inherited, (await EffectiveAsync(admin, tree.School1.Id)).State);
 
         // Only the unit that holds it can remove it.
-        Assert.Equal(HttpStatusCode.NoContent, (await DisableAsync(admin, tree.Root.Id)).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await DisableAsync(admin, tree.Root.Id)).StatusCode);
         Assert.Equal(PolicyStates.Off, (await EffectiveAsync(admin, tree.School1.Id)).State);
     }
 
@@ -319,5 +319,46 @@ public sealed class PolicyEndpointsTests(LmsApiFactory factory)
             new TestCurrentContext { UserId = schoolAdmin.UserId, OrganizationId = tree.Org.Id, ScopePath = tree.School1.Path });
 
         Assert.Equal(tree.School1.Id, await evaluator.FindBlockingUnitAsync(Permissions.OrgUnits.Create, tree.School1.Path));
+    }
+
+    [Fact]
+    public async Task Delete_returns_the_effective_state_that_remains()
+    {
+        var (tree, admin) = await RootAdminAsync("PO14");
+        await EnableAsync(admin, tree.School1.Id);
+
+        var off = await DisableAsync(admin, tree.School1.Id);
+        Assert.Equal(HttpStatusCode.OK, off.StatusCode);
+        Assert.Equal(PolicyStates.Off, (await off.Content.ReadFromJsonAsync<EffectivePolicyDto>())!.State);
+
+        // With the root holding it too, removing the school row leaves the rule in force, inherited from the root.
+        await EnableAsync(admin, tree.Root.Id);
+        await EnableAsync(admin, tree.School1.Id);
+        var remains = (await (await DisableAsync(admin, tree.School1.Id)).Content.ReadFromJsonAsync<EffectivePolicyDto>())!;
+        Assert.Equal(PolicyStates.Inherited, remains.State);
+        Assert.Equal(tree.Root.Id, remains.SourceOrgUnitId);
+    }
+
+    [Fact]
+    public async Task Notifies_only_when_the_effective_state_changes()
+    {
+        var (tree, admin) = await RootAdminAsync("PO15");
+        var manager = Guid.NewGuid();
+        await AccessTestData.AssignAsync(factory, tree, tree.School1, BuiltInRoles.Manager, manager);
+
+        async Task<int> CountAsync()
+        {
+            await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+            return await db.Set<Notification>().CountAsync(x => x.UserId == manager);
+        }
+
+        await EnableAsync(admin, tree.Root.Id);          // off -> on for the whole client: news
+        Assert.Equal(1, await CountAsync());
+        await EnableAsync(admin, tree.School1.Id);       // already in force from above: not news
+        Assert.Equal(1, await CountAsync());
+        await DisableAsync(admin, tree.School1.Id);      // still in force from above: not news
+        Assert.Equal(1, await CountAsync());
+        await DisableAsync(admin, tree.Root.Id);         // on -> off: news
+        Assert.Equal(2, await CountAsync());
     }
 }

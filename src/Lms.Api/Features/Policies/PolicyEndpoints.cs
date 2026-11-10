@@ -52,7 +52,12 @@ public static class PolicyEndpoints
         if (before.State != PolicyStates.SetHere)
         {
             await policies.EnableAsync(unit.Id, key, ct);
-            await NotifyAsync(notifications, unit, key, state: "On", ct);
+
+            // Only a change of the effective rule is news: adding a policy that is already inherited changes nothing.
+            if (before.State == PolicyStates.Off)
+            {
+                await NotifyAsync(notifications, unit, key, state: "On", ct);
+            }
         }
 
         return Results.Ok((await reader.ReadAsync(unit, ct)).Single(x => x.Key == key));
@@ -90,8 +95,16 @@ public static class PolicyEndpoints
         }
 
         await policies.DisableAsync(unit.Id, key, ct);
-        await NotifyAsync(notifications, unit, key, state: "Off", ct);
-        return Results.NoContent();
+
+        // Removing the row at this unit leaves the rule in force when an ancestor holds it too: then nothing changed
+        // for the people below, so nobody is notified, and the response shows the state that remains.
+        var after = (await reader.ReadAsync(unit, ct)).Single(x => x.Key == key);
+        if (after.State == PolicyStates.Off)
+        {
+            await NotifyAsync(notifications, unit, key, state: "Off", ct);
+        }
+
+        return Results.Ok(after);
     }
 
     /// <summary>Tells the admins and managers at and below the unit (not the actor) that a policy changed.</summary>
