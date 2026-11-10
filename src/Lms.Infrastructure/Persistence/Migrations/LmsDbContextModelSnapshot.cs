@@ -158,6 +158,55 @@ namespace Lms.Infrastructure.Persistence.Migrations
                     b.ToTable("RolePermissions", (string)null);
                 });
 
+            modelBuilder.Entity("Lms.Domain.Auditing.AuditEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)");
+
+                    b.Property<string>("AfterJson")
+                        .HasColumnType("longtext");
+
+                    b.Property<Guid?>("AssignmentId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("BeforeJson")
+                        .HasColumnType("longtext");
+
+                    b.Property<Guid>("EntityId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<string>("IpAddress")
+                        .HasMaxLength(64)
+                        .HasColumnType("varchar(64)");
+
+                    b.Property<Guid?>("OrganizationId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("TimestampUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EntityType", "EntityId");
+
+                    b.HasIndex("OrganizationId", "TimestampUtc");
+
+                    b.ToTable("AuditEntries", (string)null);
+                });
+
             modelBuilder.Entity("Lms.Domain.Organizations.LevelType", b =>
                 {
                     b.Property<Guid>("Id")

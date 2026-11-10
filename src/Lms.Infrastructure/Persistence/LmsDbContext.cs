@@ -1,5 +1,6 @@
 using Lms.Domain.Abstractions;
 using Lms.Domain.Access;
+using Lms.Domain.Auditing;
 using Lms.Domain.Common;
 using Lms.Domain.Organizations;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +24,7 @@ public sealed class LmsDbContext(DbContextOptions<LmsDbContext> options, ICurren
     public DbSet<Role> Roles => Set<Role>();
     public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
     public DbSet<RoleAssignment> RoleAssignments => Set<RoleAssignment>();
+    public DbSet<AuditEntry> AuditEntries => Set<AuditEntry>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
