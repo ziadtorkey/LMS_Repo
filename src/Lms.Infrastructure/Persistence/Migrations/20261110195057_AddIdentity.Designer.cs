@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Lms.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(LmsDbContext))]
-    [Migration("20261110194859_AddIdentity")]
+    [Migration("20261110195057_AddIdentity")]
     partial class AddIdentity
     {
         /// <inheritdoc />
