@@ -1,0 +1,120 @@
+@page "/clients"
+@attribute [Authorize]
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Shared
+@using Lms.Shared.Authorization
+@using Lms.Shared.Organizations
+@inject IClientsApi Api
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<PageTitle>@L["Clients_Title"]</PageTitle>
+<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4" Wrap="Wrap.Wrap">
+    <MudText Typo="Typo.h4" data-testid="clients-title">@L["Clients_Title"]</MudText>
+    @if (CanCreate)
+    {
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="NewClientAsync" data-testid="clients-new">@L["Clients_New"]</MudButton>
+    }
+</MudStack>
+
+<MudStack Row="true" Spacing="2" Class="mb-3" AlignItems="AlignItems.Center">
+    <MudTextField T="string" @bind-Value="_searchText" Label="@L["Common_Search"]" Immediate="true" Clearable="true"
+                  OnKeyDown="OnSearchKey" data-testid="clients-search" />
+    <MudIconButton Icon="@Icons.Material.Filled.Search" aria-label="@L["Common_Search"]" OnClick="SearchAsync"
+                   data-testid="clients-search-button" />
+</MudStack>
+
+<ServerTable @ref="_table" T="ClientDto" ServerData="LoadAsync">
+    <HeaderContent>
+        <MudTh>@L["Common_Name"]</MudTh>
+        <MudTh>@L["Clients_Type"]</MudTh>
+        <MudTh>@L["Common_Status"]</MudTh>
+        <MudTh>@L["Clients_CreatedOn"]</MudTh>
+        <MudTh>@L["Common_Actions"]</MudTh>
+    </HeaderContent>
+    <RowTemplate Context="client">
+        <MudTd>@Culture.Pick(client.NameAr, client.NameEn)</MudTd>
+        <MudTd>@L[$"ClientType_{client.Type}"]</MudTd>
+        <MudTd>
+            <MudChip T="string" Size="Size.Small" Color="@(client.Status == OrganizationStatuses.Active ? Color.Success : Color.Warning)">
+                @L[$"ClientStatus_{client.Status}"]
+            </MudChip>
+        </MudTd>
+        <MudTd>@client.CreatedAt.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)</MudTd>
+        <MudTd>
+            @if (CanUpdate)
+            {
+                <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="() => ToggleAsync(client)"
+                           data-testid="@($"client-toggle-{client.Id}")">
+                    @(client.Status == OrganizationStatuses.Active ? L["Clients_Suspend"] : L["Clients_Activate"])
+                </MudButton>
+            }
+        </MudTd>
+    </RowTemplate>
+</ServerTable>
+
+@code {
+    private ServerTable<ClientDto> _table = default!;
+    private string? _searchText;
+    private string? _search;
+
+    // A platform admin may have no active context (so no cached permissions); the server still enforces every call.
+    private bool CanCreate => PermState.IsPlatformAdmin || PermState.Has(Permissions.Clients.Create);
+    private bool CanUpdate => PermState.IsPlatformAdmin || PermState.Has(Permissions.Clients.Update);
+
+    protected override async Task OnInitializedAsync()
+    {
+        PermState.Changed += OnPermissionsChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+    }
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => PermState.Changed -= OnPermissionsChanged;
+
+    private async Task<TableData<ClientDto>> LoadAsync(TableState state, CancellationToken ct)
+    {
+        // Failures (403, stale context, 5xx…) are handled by ServerTable.
+        var result = await Api.ListAsync(state.Page + 1, state.PageSize, _search, ct);
+        return new TableData<ClientDto> { Items = result.Items, TotalItems = result.Total };
+    }
+
+    private Task SearchAsync()
+    {
+        _search = string.IsNullOrWhiteSpace(_searchText) ? null : _searchText.Trim();
+        return _table.ReloadAsync();
+    }
+
+    private Task OnSearchKey(KeyboardEventArgs e) => e.Key == "Enter" ? SearchAsync() : Task.CompletedTask;
+
+    private async Task NewClientAsync()
+    {
+        var dialog = await Dialogs.ShowAsync<CreateClientDialog>(L["Clients_New"], new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            Snackbar.Add(L["Clients_Created"], Severity.Success);
+            await _table.ReloadAsync();
+        }
+    }
+
+    private async Task ToggleAsync(ClientDto client)
+    {
+        var status = client.Status == OrganizationStatuses.Active ? OrganizationStatuses.Suspended : OrganizationStatuses.Active;
+        try
+        {
+            await Api.UpdateAsync(client.Id, new UpdateClientRequest(client.NameAr, client.NameEn, status));
+            await _table.ReloadAsync();
+        }
+        catch (ApiProblemException ex)
+        {
+            Snackbar.Add(ProblemText.For(ex, L), Severity.Error);
+        }
+    }
+}

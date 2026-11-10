@@ -19,7 +19,7 @@ public static class AuditCatalog
     public static IReadOnlyList<string> EntityTypes { get; } =
     [
         "Organization", "LevelType", "OrgUnit", "Role", "RolePermission", "RoleAssignment", "OrgUnitSetting",
-        "OrgUnitPolicy", "User", "OrgTemplate", "AcademicYear", "Term", "CalendarEvent",
+        "OrgUnitPolicy", "User", "OrgTemplate", "AcademicYear", "Term", "CalendarEvent", "StoredFile",
     ];
 
     public static IReadOnlyList<string> SecurityEvents { get; } =
