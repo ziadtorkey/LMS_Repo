@@ -53,6 +53,19 @@ public sealed class OrgUnitTestHost : IDisposable
         return _host.CreateClient().SendAsync(request);
     }
 
+    public Task<HttpResponseMessage> SendAsPlatformAdminAsync(HttpMethod method, string url, object? body = null)
+    {
+        var request = new HttpRequestMessage(method, url);
+        request.Headers.Add(TestAuthHandler.UserHeader, Guid.NewGuid().ToString());
+        request.Headers.Add(TestAuthHandler.AdminHeader, "true");
+        if (body is not null)
+        {
+            request.Content = JsonContent.Create(body);
+        }
+
+        return _host.CreateClient().SendAsync(request);
+    }
+
     /// <summary>Adds a deeper level type (order 2) to the client so children can be created below the seeded units.</summary>
     public async Task<LevelType> AddDeeperLevelAsync(AccessTree tree)
     {

@@ -127,8 +127,6 @@ public sealed class OrgUnitEndpointsTests(LmsApiFactory factory) : IDisposable
     public async Task Child_level_type_must_be_deeper_than_parent()
     {
         var (tree, admin, deeper) = await SetUpAsync("OU6");
-        var sameLevel = new LevelType(tree.Org.Id, "x", "x", 1, false);
-        _ = sameLevel;
 
         var response = await _host.SendAsync(HttpMethod.Post, Routes.OrgUnits, admin,
             new CreateOrgUnitRequest(tree.School1.Id, tree.School1.LevelTypeId, "ب", "Same", "SAME"));
@@ -308,5 +306,53 @@ public sealed class OrgUnitEndpointsTests(LmsApiFactory factory) : IDisposable
         var response = await _host.SendAsync(HttpMethod.Put, Routes.OrgUnitStatus(tree.School1.Id), admin, new SetOrgUnitStatusRequest("Gone"));
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Admin_acting_on_their_own_scope_unit_still_gets_the_level_depth_rule()
+    {
+        var (tree, rootAdmin, deeper) = await SetUpAsync("OU16");
+        var created = await _host.SendAsync(HttpMethod.Post, Routes.OrgUnits, rootAdmin, Child(tree.School1, deeper, "OWN"));
+        var own = (await created.Content.ReadFromJsonAsync<OrgUnitNodeDto>())!;
+        var admin = await AccessTestData.AssignAsync(factory, tree, await FindAsync(own.Id), BuiltInRoles.OrgAdmin, Guid.NewGuid());
+
+        // the unit is the admin's scope: its parent is outside the scope but the depth rule must still apply
+        var shallow = await _host.SendAsync(HttpMethod.Put, Routes.OrgUnit(own.Id), admin,
+            new UpdateOrgUnitRequest(tree.School1.LevelTypeId, "ا", "A", "OWN"));
+        var fine = await _host.SendAsync(HttpMethod.Put, Routes.OrgUnit(own.Id), admin,
+            new UpdateOrgUnitRequest(deeper.Id, "ا", "A", "OWN"));
+
+        Assert.Equal(HttpStatusCode.BadRequest, shallow.StatusCode);
+        Assert.Equal(ProblemCodes.invalid_level_type, (await JsonAsync(shallow)).GetProperty("code").GetString());
+        Assert.Equal(HttpStatusCode.OK, fine.StatusCode);
+    }
+
+    private async Task<OrgUnit> FindAsync(Guid id)
+    {
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        return await db.OrgUnits.SingleAsync(u => u.Id == id);
+    }
+
+    [Fact]
+    public async Task Level_type_of_another_client_is_rejected_even_for_a_platform_admin()
+    {
+        var a = await AccessTestData.SeedAsync(factory, "OU17");
+        var b = await AccessTestData.SeedAsync(factory, "OU17b");
+        var foreignLevel = await _host.AddDeeperLevelAsync(b);
+        var local = await _host.AddDeeperLevelAsync(a);
+
+        var create = await _host.SendAsPlatformAdminAsync(HttpMethod.Post, Routes.OrgUnits,
+            Child(a.School1, foreignLevel, "XLVL"));
+        var update = await _host.SendAsPlatformAdminAsync(HttpMethod.Put, Routes.OrgUnit(a.School1.Id),
+            new UpdateOrgUnitRequest(foreignLevel.Id, "ا", "A", a.School1.Code));
+        var ok = await _host.SendAsPlatformAdminAsync(HttpMethod.Post, Routes.OrgUnits, Child(a.School1, local, "OKLVL"));
+
+        foreach (var response in new[] { create, update })
+        {
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.Equal(ProblemCodes.invalid_level_type, (await JsonAsync(response)).GetProperty("code").GetString());
+        }
+
+        Assert.Equal(HttpStatusCode.Created, ok.StatusCode);
     }
 }
