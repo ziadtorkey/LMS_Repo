@@ -1,0 +1,142 @@
+@page "/level-types"
+@attribute [Authorize]
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Shared.Authorization
+@using Lms.Shared.Organizations
+@inject IOrgApi Api
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<PageTitle>@L["LevelTypes_Title"]</PageTitle>
+<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4" Wrap="Wrap.Wrap">
+    <MudText Typo="Typo.h4" data-testid="level-types-title">@L["LevelTypes_Title"]</MudText>
+    @if (PermState.Has(Permissions.LevelTypes.Create))
+    {
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="() => EditAsync(null)" data-testid="level-new">@L["LevelTypes_New"]</MudButton>
+    }
+</MudStack>
+
+@if (_error is not null)
+{
+    <MudAlert Severity="Severity.Error" Class="mb-3" data-testid="level-error">@_error</MudAlert>
+}
+
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+}
+else if (_levels.Count == 0)
+{
+    <MudText data-testid="table-empty">@L["Common_Empty"]</MudText>
+}
+else
+{
+    <MudSimpleTable Dense="true" Hover="true">
+        <thead>
+            <tr>
+                <th>@L["LevelTypes_Order"]</th>
+                <th>@L["Common_Name"]</th>
+                <th>@L["LevelTypes_CanHostClasses"]</th>
+                <th>@L["LevelTypes_Units"]</th>
+                <th>@L["Common_Actions"]</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (var i = 0; i < _levels.Count; i++)
+            {
+                var index = i;
+                var level = _levels[i];
+                <tr data-testid="@($"level-row-{level.Id}")">
+                    <td>@(index + 1)</td>
+                    <td>@Culture.Pick(level.NameAr, level.NameEn)</td>
+                    <td>@(level.CanHostClasses ? "✓" : "—")</td>
+                    <td>@level.UnitCount</td>
+                    <td>
+                        @if (PermState.Has(Permissions.LevelTypes.Update))
+                        {
+                            <MudIconButton Icon="@Icons.Material.Filled.ArrowUpward" Size="Size.Small" Disabled="@(index == 0)"
+                                           aria-label="@L["LevelTypes_MoveUp"]" OnClick="() => MoveAsync(index, -1)"
+                                           data-testid="@($"level-up-{level.Id}")" />
+                            <MudIconButton Icon="@Icons.Material.Filled.ArrowDownward" Size="Size.Small" Disabled="@(index == _levels.Count - 1)"
+                                           aria-label="@L["LevelTypes_MoveDown"]" OnClick="() => MoveAsync(index, 1)"
+                                           data-testid="@($"level-down-{level.Id}")" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" aria-label="@L["Common_Edit"]"
+                                           OnClick="() => EditAsync(level)" data-testid="@($"level-edit-{level.Id}")" />
+                        }
+                        @if (PermState.Has(Permissions.LevelTypes.Delete))
+                        {
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error"
+                                           aria-label="@L["Common_Delete"]" OnClick="() => DeleteAsync(level)"
+                                           data-testid="@($"level-delete-{level.Id}")" />
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </MudSimpleTable>
+}
+
+@code {
+    private List<LevelTypeDto> _levels = [];
+    private bool _loading = true;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        PermState.Changed += OnPermissionsChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        await LoadAsync();
+    }
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        try { _levels = [.. await Api.GetLevelTypesAsync()]; }
+        catch (ApiForbiddenException) { Navigation.NavigateTo("forbidden"); }
+        catch (ApiProblemException ex) { _error = ProblemText.For(ex, L); }
+        _loading = false;
+    }
+
+    private async Task MoveAsync(int index, int direction)
+    {
+        var order = _levels.Select(l => l.Id).ToList();
+        (order[index], order[index + direction]) = (order[index + direction], order[index]);
+        _error = null;
+        try { await Api.ReorderLevelTypesAsync(new ReorderLevelTypesRequest(order)); }
+        catch (ApiProblemException ex) { _error = ProblemText.For(ex, L); }
+        await LoadAsync();
+    }
+
+    private async Task EditAsync(LevelTypeDto? existing)
+    {
+        var parameters = new DialogParameters<LevelTypeDialog> { { x => x.Existing, existing } };
+        var title = existing is null ? L["LevelTypes_New"].Value : L["Common_Edit"].Value;
+        var dialog = await Dialogs.ShowAsync<LevelTypeDialog>(title, parameters, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            Snackbar.Add(L["Common_Saved"], Severity.Success);
+            await LoadAsync();
+        }
+    }
+
+    private async Task DeleteAsync(LevelTypeDto level)
+    {
+        if (!await ConfirmDialog.AskAsync(Dialogs, L["Confirm_DeleteTitle"], Culture.Pick(level.NameAr, level.NameEn), L["Common_Delete"]))
+            return;
+        _error = null;
+        try { await Api.DeleteLevelTypeAsync(level.Id); }
+        catch (ApiProblemException ex) { _error = ProblemText.For(ex, L); }
+        await LoadAsync();
+    }
+
+    public void Dispose() => PermState.Changed -= OnPermissionsChanged;
+}

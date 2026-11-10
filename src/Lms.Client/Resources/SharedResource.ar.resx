@@ -85,4 +85,37 @@
   <data name="Error_term_outside_year" xml:space="preserve"><value>يجب أن يقع الفصل ضمن السنة الدراسية.</value></data>
   <data name="Error_event_outside_year" xml:space="preserve"><value>يجب أن يقع الحدث ضمن السنة الدراسية.</value></data>
   <data name="Error_in_app_required" xml:space="preserve"><value>لا يمكن إيقاف الإشعارات داخل التطبيق.</value></data>
+  <data name="Clients_Title" xml:space="preserve"><value>العملاء</value></data>
+  <data name="Clients_New" xml:space="preserve"><value>عميل جديد</value></data>
+  <data name="Clients_Type" xml:space="preserve"><value>النوع</value></data>
+  <data name="ClientType_SchoolGroup" xml:space="preserve"><value>مجموعة مدارس</value></data>
+  <data name="ClientType_University" xml:space="preserve"><value>جامعة</value></data>
+  <data name="ClientStatus_Active" xml:space="preserve"><value>نشط</value></data>
+  <data name="ClientStatus_Suspended" xml:space="preserve"><value>موقوف</value></data>
+  <data name="Clients_RootLevel" xml:space="preserve"><value>اسم المستوى الأول</value></data>
+  <data name="Clients_RootCode" xml:space="preserve"><value>رمز الوحدة الرئيسية</value></data>
+  <data name="Clients_AdminEmail" xml:space="preserve"><value>بريد المسؤول</value></data>
+  <data name="Clients_AdminName" xml:space="preserve"><value>اسم المسؤول</value></data>
+  <data name="Clients_Created" xml:space="preserve"><value>تم إنشاء العميل وإرسال دعوة إلى المسؤول.</value></data>
+  <data name="Nav_LevelTypes" xml:space="preserve"><value>أنواع المستويات</value></data>
+  <data name="LevelTypes_Title" xml:space="preserve"><value>أنواع المستويات</value></data>
+  <data name="LevelTypes_CanHostClasses" xml:space="preserve"><value>يمكن أن تحتوي على فصول</value></data>
+  <data name="LevelTypes_MoveUp" xml:space="preserve"><value>تحريك لأعلى</value></data>
+  <data name="LevelTypes_MoveDown" xml:space="preserve"><value>تحريك لأسفل</value></data>
+  <data name="LevelTypes_Units" xml:space="preserve"><value>الوحدات</value></data>
+  <data name="Clients_Name" xml:space="preserve"><value>اسم العميل</value></data>
+  <data name="Clients_Suspend" xml:space="preserve"><value>إيقاف</value></data>
+  <data name="Clients_Activate" xml:space="preserve"><value>تفعيل</value></data>
+  <data name="Clients_CreatedOn" xml:space="preserve"><value>تاريخ الإنشاء</value></data>
+  <data name="LevelTypes_New" xml:space="preserve"><value>نوع مستوى جديد</value></data>
+  <data name="LevelTypes_Order" xml:space="preserve"><value>الترتيب</value></data>
+  <data name="Common_InvalidEmail" xml:space="preserve"><value>أدخل بريدًا إلكترونيًا صالحًا.</value></data>
+  <data name="Common_InvalidCode" xml:space="preserve"><value>استخدم أحرفًا أو أرقامًا أو شرطة (حد أقصى 50).</value></data>
+  <data name="Common_Name" xml:space="preserve"><value>الاسم</value></data>
+  <data name="Table_RowsPerPage" xml:space="preserve"><value>عدد الصفوف في الصفحة:</value></data>
+  <data name="Table_InfoFormat" xml:space="preserve"><value>{first_item}-{last_item} من {all_items}</value></data>
+  <data name="MudTablePager_FirstPage" xml:space="preserve"><value>الصفحة الأولى</value></data>
+  <data name="MudTablePager_LastPage" xml:space="preserve"><value>الصفحة الأخيرة</value></data>
+  <data name="MudTablePager_NextPage" xml:space="preserve"><value>الصفحة التالية</value></data>
+  <data name="MudTablePager_PreviousPage" xml:space="preserve"><value>الصفحة السابقة</value></data>
 </root>

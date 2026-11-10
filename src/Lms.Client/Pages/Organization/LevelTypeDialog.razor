@@ -1,0 +1,61 @@
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Shared.Organizations
+@inject IOrgApi Api
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form">
+            <MudStack Spacing="3">
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" data-testid="dialog-error">@_error</MudAlert>
+                }
+                <BilingualNameFields @bind-NameAr="_nameAr" @bind-NameEn="_nameEn" IdPrefix="level-name" />
+                <MudCheckBox T="bool" @bind-Value="_canHostClasses" Label="@L["LevelTypes_CanHostClasses"]" />
+            </MudStack>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()">@L["Common_Cancel"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="_saving"
+                   data-testid="dialog-save">@L["Common_Save"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public LevelTypeDto? Existing { get; set; }
+
+    private MudForm _form = default!;
+    private string _nameAr = "", _nameEn = "";
+    private bool _canHostClasses;
+    private string? _error;
+    private bool _saving;
+
+    protected override void OnParametersSet()
+    {
+        if (Existing is null) return;
+        _nameAr = Existing.NameAr; _nameEn = Existing.NameEn; _canHostClasses = Existing.CanHostClasses;
+    }
+
+    private async Task SaveAsync()
+    {
+        await _form.ValidateAsync();
+        if (!_form.IsValid) return;
+
+        _saving = true; _error = null;
+        var request = new SaveLevelTypeRequest(_nameAr.Trim(), _nameEn.Trim(), _canHostClasses);
+        try
+        {
+            if (Existing is null) await Api.CreateLevelTypeAsync(request);
+            else await Api.UpdateLevelTypeAsync(Existing.Id, request);
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        catch (ApiProblemException ex)
+        {
+            _error = ProblemText.For(ex, L);
+        }
+        finally { _saving = false; }
+    }
+}
