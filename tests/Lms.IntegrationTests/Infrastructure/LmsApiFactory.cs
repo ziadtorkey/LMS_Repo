@@ -1,8 +1,11 @@
+using Lms.Api.Infrastructure;
 using Lms.Domain.Abstractions;
 using Lms.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Testcontainers.MySql;
 using Testcontainers.Minio;
 
@@ -40,6 +43,12 @@ public sealed class LmsApiFactory : WebApplicationFactory<Program>, IAsyncLifeti
         builder.UseSetting("ConnectionStrings:Lms", _mysql.GetConnectionString());
         builder.UseSetting("Storage:Endpoint", _minio.GetConnectionString());
         builder.UseSetting("Auth:WasmOrigins:0", "http://localhost");
+        builder.ConfigureServices(services =>
+        {
+            services.AddAuthentication(TestAuthHandler.SchemeName)
+                .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(TestAuthHandler.SchemeName, _ => { });
+            services.AddSingleton<IEndpointModule, TestEndpoints>();
+        });
     }
 }
 

@@ -1,0 +1,25 @@
+@inject ILmsApi Api
+@inject IContextStore Store
+@inject NavigationManager Navigation
+
+@code {
+    /// <summary>
+    /// After login: discard a stored context the user no longer has, auto-select the only one,
+    /// or send the user to the chooser when there is a choice to make (or none).
+    /// </summary>
+    protected override async Task OnInitializedAsync()
+    {
+        var (me, _) = await ApiCalls.RunAsync(() => Api.GetMeAsync(), Navigation);
+        if (me is null) return;
+
+        var ids = me.Contexts.Select(c => c.AssignmentId).ToList();
+        if (Store.ActiveAssignmentId is { } stored && !ids.Contains(stored))
+            await Store.ClearAsync();
+        if (Store.ActiveAssignmentId is not null) return;
+
+        if (ids.Count == 1)
+            await Store.SetAsync(ids[0]);
+        else if (!(ids.Count == 0 && me.IsPlatformAdmin) && !Navigation.Uri.Contains("/choose-context"))
+            Navigation.NavigateTo("choose-context");
+    }
+}

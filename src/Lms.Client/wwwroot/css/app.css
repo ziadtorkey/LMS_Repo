@@ -10,3 +10,6 @@ html, body { margin: 0; font-family: Roboto, "Segoe UI", Tahoma, sans-serif; }
 
 /* Long "org — unit (role)" labels must not squeeze the app bar on phones. */
 .lms-context-label { max-width: 40vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; }
+
+/* Programmatic focus on the page heading (FocusOnNavigate) should not draw a box. */
+[tabindex="-1"]:focus { outline: none; }

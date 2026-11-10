@@ -86,14 +86,6 @@ public static class AuthServiceCollectionExtensions
         return services;
     }
 
-    public static WebApplication UseLmsAuth(this WebApplication app)
-    {
-        app.UseRequestLocalization();
-        app.UseAuthentication();
-        app.UseAuthorization();
-        return app;
-    }
-
     private static void ConfigureKeys(
         OpenIddictServerBuilder options, IConfiguration configuration, IHostEnvironment environment)
     {

@@ -5,11 +5,13 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Lms.Domain.Identity;
 using Lms.IntegrationTests.Infrastructure;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using OpenIddict.Validation.AspNetCore;
 
 namespace Lms.IntegrationTests.Auth;
 
@@ -26,7 +28,19 @@ internal sealed class AuthTestHost
     {
         // A fixed remote address: the in-memory test server has none, but login events must record one.
         _host = factory.WithWebHostBuilder(builder => builder.ConfigureServices(services =>
-            services.AddSingleton<Microsoft.AspNetCore.Hosting.IStartupFilter>(new RemoteIpStartupFilter(RemoteIp))));
+        {
+            services.AddSingleton<Microsoft.AspNetCore.Hosting.IStartupFilter>(new RemoteIpStartupFilter(RemoteIp));
+
+            // The shared factory installs a header-driven test scheme as the default; these tests exercise the real
+            // OpenIddict bearer validation instead.
+            services.PostConfigure<AuthenticationOptions>(options =>
+            {
+                var scheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
+                options.DefaultScheme = scheme;
+                options.DefaultAuthenticateScheme = scheme;
+                options.DefaultChallengeScheme = scheme;
+            });
+        }));
     }
 
     public IServiceProvider Services => _host.Services;

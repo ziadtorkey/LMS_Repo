@@ -33,10 +33,13 @@
             if (c !== 'ar' && c !== 'en') c = 'ar';
             document.documentElement.lang = c;
             document.documentElement.dir = c === 'ar' ? 'rtl' : 'ltr';
-            // The standalone dev server (launchSettings port 5078) runs on fakes; the API-hosted app never does.
             var opts = { applicationCulture: c };
-            if (location.port === '5078') opts.environment = 'Standalone';
-            Blazor.start(opts);
+            // Starting Blazor manually ignores the server's Blazor-Environment header (launchSettings: Standalone),
+            // so pass it on explicitly; hosts that do not send the header keep the default environment.
+            fetch('_framework/blazor.boot.json', { method: 'HEAD' })
+                .then(function (r) { var env = r.headers.get('Blazor-Environment'); if (env) opts.environment = env; })
+                .catch(function () { })
+                .then(function () { Blazor.start(opts); });
         })();
     </script>
 </body>

@@ -2,18 +2,18 @@
 
 _Updated by the Team Lead after every merge cycle._
 
-**Milestone:** M0 Foundation — in progress (7 / 19 issues closed)
-**Last update:** 2026-11-10 — Audit PR #23 merged (closes #5). Approved and waiting for authors to merge main: #26 (#7), #25 (#8), #28 (#13). #27 (#9) needs QA spot-check of two new commits; #29 (#11) approved, merges after #27. Identity PR #31 (#6) up for review. New follow-up #32 (RF2 vs real PolicyEvaluator).
+**Milestone:** M0 Foundation — in progress (9 / 19 issues closed)
+**Last update:** 2026-11-10 — Context chooser PR #28 merged (closes #13). #27 (#9) then #29 (#11) merge on green CI. #25 (#8) and #31 (#6) are approved but must merge main again. QA 2 is online. M1 plan draft in progress.
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |
 |---|---|---|---|---|
 | Team Lead | Opus | `local_95ef9dc7-9378-4012-a8f2-c7d1f944bdec` (lms-lead) | M0 coordination; M1 plan prep | coordinating |
-| Backend 1 | Sonnet | `local_19f31b04-ca2f-43d1-a2cb-8a128722a11f` (lms-backend) | merging main into #26/#27/#29; #14 dev seed; then #32, #30 | working |
+| Backend 1 | Sonnet | `local_19f31b04-ca2f-43d1-a2cb-8a128722a11f` (lms-backend) | PRs #27 (#9), #29 (#11) waiting; #14 dev seed; then #32, #30 | working |
 | Backend 2 | Sonnet | `local_d36e7dc2-e9e6-4f73-b7b3-b078b17bbe41` (lms-backend-2) | merging main into #25 (#8) and #31 (#6); #10 files | working |
-| Frontend | Sonnet | `local_40667dce-5be7-478b-95cb-4f14ecd203b9` (lms-frontend) | merging main into PR #28 (#13, approved); resx parity test | working |
-| QA | Opus | `local_91a7af3c-7b02-4d61-ac11-2c22629cf89f` (lms-qa) | spot-checks #26/#27/#25/#28; review #31; E2E #15 (#16) | reviewing |
-| QA 2 | Opus | (waiting for owner to click Start) | #25, #28; then #6, #10 | not started |
+| Frontend | Sonnet | `local_40667dce-5be7-478b-95cb-4f14ecd203b9` (lms-frontend) | M0 FE done (#12, #13); waiting for M1 FE issues | idle |
+| QA | Opus | `local_91a7af3c-7b02-4d61-ac11-2c22629cf89f` (lms-qa) | #14 seed review; E2E #15 (#16) | working |
+| QA 2 | Opus | `local_54d26c64-4403-4a13-b128-5be5e9752d97` (lms-qa-2) | spot-checks #25, #31; then #10, #30, #32 | reviewing |
 
 ## M0 issue map
 | Task | Issue | Lane | Depends on |
@@ -45,6 +45,8 @@ None. (Board: [LMS v1](https://github.com/users/ziadtorkey/projects/1) — Todo 
 None. (2026-11-10: owner approved Lead merging QA-approved green PRs, and a 2nd QA agent; D15: no access via Inactive units.)
 
 ## Recently merged
+- #28 feat(client): context chooser and permission-driven navigation (closes #13)
+- #26 feat(access): roles, assignments, default role provisioner and active context (closes #7)
 - #23 feat(audit): capture audit entries for audited entities (closes #5)
 - #24 feat(client): MudBlazor shell with OIDC auth and ar/en RTL (closes #12)
 - #20 feat(kernel): persistence kernel with client and subtree isolation (closes #4)
