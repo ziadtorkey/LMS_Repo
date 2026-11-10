@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Lms.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(LmsDbContext))]
-    [Migration("20261110213213_AddNotifications")]
+    [Migration("20261110220857_AddNotifications")]
     partial class AddNotifications
     {
         /// <inheritdoc />
@@ -41,6 +41,11 @@ namespace Lms.Infrastructure.Persistence.Migrations
 
                     b.Property<Guid?>("CreatedBy")
                         .HasColumnType("char(36)");
+
+                    b.Property<int>("DefaultsVersion")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime(6)");
@@ -72,7 +77,8 @@ namespace Lms.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OrganizationId", "BuiltInKey");
+                    b.HasIndex("OrganizationId", "BuiltInKey")
+                        .IsUnique();
 
                     b.ToTable("Roles", (string)null);
                 });
