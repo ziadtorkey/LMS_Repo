@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Lms.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(LmsDbContext))]
-    [Migration("20261110190227_AddAudit")]
+    [Migration("20261110192620_AddAudit")]
     partial class AddAudit
     {
         /// <inheritdoc />
