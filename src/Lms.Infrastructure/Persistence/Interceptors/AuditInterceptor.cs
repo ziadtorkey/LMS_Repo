@@ -68,6 +68,10 @@ public sealed class AuditInterceptor(ICurrentContext context, IClock clock) : Sa
         db.Set<AuditEntry>().AddRange(entries);
     }
 
+    private static bool IsAuditable(PropertyEntry property) =>
+        !Stamps.Contains(property.Metadata.Name)
+        && !(property.Metadata.PropertyInfo?.IsDefined(typeof(AuditIgnoreAttribute), inherit: true) ?? false);
+
     private static bool IsAudited(EntityEntry entry) =>
         entry.State is EntityState.Added or EntityState.Modified or EntityState.Deleted
         && Attribute.IsDefined(entry.Metadata.ClrType, typeof(AuditedAttribute), inherit: true);
@@ -77,7 +81,7 @@ public sealed class AuditInterceptor(ICurrentContext context, IClock clock) : Sa
         var before = new Dictionary<string, object?>();
         var after = new Dictionary<string, object?>();
 
-        foreach (var property in entry.Properties.Where(p => p.IsModified && !Stamps.Contains(p.Metadata.Name)))
+        foreach (var property in entry.Properties.Where(p => p.IsModified && IsAuditable(p)))
         {
             if (Equals(property.OriginalValue, property.CurrentValue))
             {
@@ -115,7 +119,7 @@ public sealed class AuditInterceptor(ICurrentContext context, IClock clock) : Sa
     private static string Snapshot(EntityEntry entry, bool current) =>
         JsonSerializer.Serialize(
             entry.Properties
-                .Where(p => !Stamps.Contains(p.Metadata.Name))
+                .Where(IsAuditable)
                 .ToDictionary(p => p.Metadata.Name, p => current ? p.CurrentValue : p.OriginalValue),
             Json);
 }
