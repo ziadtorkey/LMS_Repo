@@ -1,4 +1,5 @@
 using Lms.Api.Features.Files;
+using Lms.Api.Features.Account;
 using Lms.Api.Features.Auth;
 using Lms.Api.Features.Me;
 using Lms.Api.Infrastructure;
@@ -18,6 +19,7 @@ builder.Services.AddScoped<Lms.Domain.Abstractions.ICurrentContext>(sp => sp.Get
 builder.Services.AddMe();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddLmsAuth(builder.Configuration, builder.Environment);
+builder.Services.AddAccount(builder.Configuration);
 
 builder.Services.AddHealthChecks()
     .AddCheck<MySqlHealthCheck>("mysql");
@@ -38,6 +40,7 @@ app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
 
 app.UseRequestLocalization();
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseMiddleware<CurrentContextMiddleware>();
 app.UseAuthorization();

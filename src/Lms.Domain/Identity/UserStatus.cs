@@ -4,4 +4,6 @@ public enum UserStatus
 {
     Active,
     Deactivated,
+    Expired,
+    Withdrawn,
 }
