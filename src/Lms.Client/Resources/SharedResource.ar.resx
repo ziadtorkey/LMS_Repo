@@ -34,4 +34,65 @@
   <data name="Choose_Subtitle" xml:space="preserve"><value>اختر الدور والجهة التي ستعمل بها الآن. يمكنك التبديل في أي وقت.</value></data>
   <data name="Choose_Empty_Title" xml:space="preserve"><value>لا توجد صلاحيات مسندة إليك</value></data>
   <data name="Choose_Empty_Body" xml:space="preserve"><value>لم يتم إسناد أي دور لحسابك بعد. تواصل مع مسؤول النظام.</value></data>
+  <data name="Common_Save" xml:space="preserve"><value>حفظ</value></data>
+  <data name="Common_Cancel" xml:space="preserve"><value>إلغاء</value></data>
+  <data name="Common_Delete" xml:space="preserve"><value>حذف</value></data>
+  <data name="Common_Edit" xml:space="preserve"><value>تعديل</value></data>
+  <data name="Common_Add" xml:space="preserve"><value>إضافة</value></data>
+  <data name="Common_Confirm" xml:space="preserve"><value>تأكيد</value></data>
+  <data name="Common_Search" xml:space="preserve"><value>بحث</value></data>
+  <data name="Common_NameAr" xml:space="preserve"><value>الاسم بالعربية</value></data>
+  <data name="Common_NameEn" xml:space="preserve"><value>الاسم بالإنجليزية</value></data>
+  <data name="Common_Code" xml:space="preserve"><value>الرمز</value></data>
+  <data name="Common_Status" xml:space="preserve"><value>الحالة</value></data>
+  <data name="Common_Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="Common_Empty" xml:space="preserve"><value>لا توجد بيانات بعد.</value></data>
+  <data name="Common_Saved" xml:space="preserve"><value>تم الحفظ.</value></data>
+  <data name="Common_Required" xml:space="preserve"><value>مطلوب</value></data>
+  <data name="Confirm_DeleteTitle" xml:space="preserve"><value>تأكيد الحذف؟</value></data>
+  <data name="Error_Generic" xml:space="preserve"><value>حدث خطأ. حاول مرة أخرى.</value></data>
+  <data name="Error_not_found" xml:space="preserve"><value>العنصر غير موجود.</value></data>
+  <data name="Error_validation_failed" xml:space="preserve"><value>يرجى مراجعة الحقول المحددة.</value></data>
+  <data name="Error_code_taken" xml:space="preserve"><value>هذا الرمز مستخدم بالفعل.</value></data>
+  <data name="Error_name_taken" xml:space="preserve"><value>هذا الاسم مستخدم بالفعل.</value></data>
+  <data name="Error_level_type_in_use" xml:space="preserve"><value>نوع المستوى مستخدم في وحدات قائمة.</value></data>
+  <data name="Error_invalid_level_type" xml:space="preserve"><value>نوع المستوى غير مسموح به هنا.</value></data>
+  <data name="Error_unit_has_children" xml:space="preserve"><value>احذف الوحدات الفرعية أو انقلها أولًا.</value></data>
+  <data name="Error_unit_has_assignments" xml:space="preserve"><value>أزل إسنادات الأدوار الخاصة بهذه الوحدة أولًا.</value></data>
+  <data name="Error_unit_in_use" xml:space="preserve"><value>هذه الوحدة مستخدمة ولا يمكن حذفها.</value></data>
+  <data name="Error_root_unit" xml:space="preserve"><value>لا يمكن تعديل الوحدة الجذرية بهذه الطريقة.</value></data>
+  <data name="Error_invalid_move" xml:space="preserve"><value>لا يمكن نقل الوحدة إلى هذا المكان.</value></data>
+  <data name="Error_invalid_transfer_target" xml:space="preserve"><value>اختر وحدة صالحة للنقل إليها.</value></data>
+  <data name="Error_transfer_target_in_use" xml:space="preserve"><value>الوحدة المستهدفة تحتوي على بيانات مرتبطة بالفعل.</value></data>
+  <data name="Error_setting_locked" xml:space="preserve"><value>قامت وحدة أعلى بقفل هذا الإعداد.</value></data>
+  <data name="Error_policy_inherited" xml:space="preserve"><value>هذه السياسة مفروضة من وحدة أعلى ولا يمكن إزالتها هنا.</value></data>
+  <data name="Error_built_in_role" xml:space="preserve"><value>لا يمكن تعديل الأدوار الأساسية بهذه الطريقة.</value></data>
+  <data name="Error_role_in_use" xml:space="preserve"><value>هذا الدور مُسند إلى مستخدمين.</value></data>
+  <data name="Error_platform_only_permission" xml:space="preserve"><value>هذه الصلاحية مخصصة للمنصة فقط.</value></data>
+  <data name="Error_permission_escalation" xml:space="preserve"><value>لا يمكنك منح صلاحيات لا تملكها.</value></data>
+  <data name="Error_last_admin_permission" xml:space="preserve"><value>يجب أن يحتفظ مسؤول واحد على الأقل بهذه الصلاحية.</value></data>
+  <data name="Error_assignment_exists" xml:space="preserve"><value>هذا الدور مُسند بالفعل.</value></data>
+  <data name="Error_own_assignment" xml:space="preserve"><value>لا يمكنك تعديل إسنادك الخاص.</value></data>
+  <data name="Error_branch_too_large" xml:space="preserve"><value>هذا الفرع كبير جدًا للنسخ.</value></data>
+  <data name="Error_placeholder_missing" xml:space="preserve"><value>قيمة أحد المتغيرات مفقودة.</value></data>
+  <data name="Error_placeholder_unknown" xml:space="preserve"><value>القالب يحتوي على متغير غير معروف.</value></data>
+  <data name="Error_export_too_large" xml:space="preserve"><value>عدد الصفوف كبير جدًا للتصدير. قلّل نطاق التصفية.</value></data>
+  <data name="Error_year_overlap" xml:space="preserve"><value>هذه السنة تتداخل مع سنة دراسية أخرى.</value></data>
+  <data name="Error_year_closed" xml:space="preserve"><value>هذه السنة الدراسية مغلقة.</value></data>
+  <data name="Error_year_active" xml:space="preserve"><value>هذه السنة الدراسية نشطة.</value></data>
+  <data name="Error_active_year_exists" xml:space="preserve"><value>توجد سنة دراسية نشطة بالفعل.</value></data>
+  <data name="Error_term_overlap" xml:space="preserve"><value>هذا الفصل يتداخل مع فصل آخر.</value></data>
+  <data name="Error_term_outside_year" xml:space="preserve"><value>يجب أن يقع الفصل ضمن السنة الدراسية.</value></data>
+  <data name="Error_event_outside_year" xml:space="preserve"><value>يجب أن يقع الحدث ضمن السنة الدراسية.</value></data>
+  <data name="Error_in_app_required" xml:space="preserve"><value>لا يمكن إيقاف الإشعارات داخل التطبيق.</value></data>
+  <data name="Table_RowsPerPage" xml:space="preserve"><value>عدد الصفوف في الصفحة:</value></data>
+  <data name="Table_InfoFormat" xml:space="preserve"><value>{first_item}-{last_item} من {all_items}</value></data>
+  <data name="MudTablePager_FirstPage" xml:space="preserve"><value>الصفحة الأولى</value></data>
+  <data name="MudTablePager_LastPage" xml:space="preserve"><value>الصفحة الأخيرة</value></data>
+  <data name="MudTablePager_NextPage" xml:space="preserve"><value>الصفحة التالية</value></data>
+  <data name="MudTablePager_PreviousPage" xml:space="preserve"><value>الصفحة السابقة</value></data>
+  <data name="Error_MissingPermission" xml:space="preserve"><value>ليست لديك صلاحية للقيام بذلك.</value></data>
+  <data name="Error_OutOfScope" xml:space="preserve"><value>هذا العنصر خارج نطاق صلاحياتك.</value></data>
+  <data name="Error_invalid_context" xml:space="preserve"><value>الدور الذي اخترته لم يعد صالحًا. يرجى اختيار دور مرة أخرى.</value></data>
+  <data name="Error_context_required" xml:space="preserve"><value>يرجى اختيار دور أولًا.</value></data>
 </root>

@@ -1,0 +1,28 @@
+<MudDialog>
+    <DialogContent>
+        <MudText>@Message</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="confirm-no">@L["Common_Cancel"]</MudButton>
+        <MudButton Color="Color.Error" Variant="Variant.Filled" OnClick="() => MudDialog.Close(DialogResult.Ok(true))"
+                   data-testid="confirm-yes">@(ConfirmText ?? L["Common_Confirm"].Value)</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public string Message { get; set; } = "";
+    [Parameter] public string? ConfirmText { get; set; }
+
+    /// <summary>Shows the dialog; true only when the user confirms.</summary>
+    public static async Task<bool> AskAsync(IDialogService dialogs, string title, string message, string? confirmText = null)
+    {
+        var reference = await dialogs.ShowAsync<ConfirmDialog>(title, new DialogParameters<ConfirmDialog>
+        {
+            { x => x.Message, message },
+            { x => x.ConfirmText, confirmText },
+        }, new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small });
+        var result = await reference.Result;
+        return result is { Canceled: false };
+    }
+}
