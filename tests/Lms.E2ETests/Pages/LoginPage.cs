@@ -23,19 +23,20 @@ public sealed class LoginPage(IPage page)
     }
 
     /// <summary>
-    /// Submits credentials for a failure case and waits until the server has answered that very POST and the
-    /// re-rendered page is loaded. Waiting only for a load state would return at once (the current page is already
-    /// loaded) and the next attempt could be typed into the page that is about to be replaced.
+    /// Submits credentials for a failure case and returns only once the server's re-rendered page has replaced the
+    /// current one. The failed login re-renders at the same URL, so neither the URL, a load state nor the response
+    /// event tells the old document from the new one; instead the current document is marked before the click and
+    /// we wait for a loaded document without the mark. Otherwise the next attempt could be typed into the page that
+    /// is about to be replaced, and a lockout attempt would be lost.
     /// </summary>
     public async Task SubmitAsync(string email, string password)
     {
         await Email.FillAsync(email);
         await Password.FillAsync(password);
-        await page.RunAndWaitForResponseAsync(
-            () => Submit.ClickAsync(),
-            response => response.Request.Method == "POST"
-                        && response.Url.Contains("/Account/Login", StringComparison.OrdinalIgnoreCase));
-        await page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
+        await page.EvaluateAsync("() => { window.__lmsBeforeSubmit = true; }");
+        await Submit.ClickAsync();
+        await page.WaitForFunctionAsync(
+            "() => window.__lmsBeforeSubmit !== true && document.readyState === 'complete'");
         await Email.WaitForAsync();
     }
 }

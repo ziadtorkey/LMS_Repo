@@ -35,7 +35,8 @@ Credentials are never copied into the tests: they come from the dev seed config.
 - **Expected text** comes from `src/Lms.Client/Resources/SharedResource.{ar,en}.resx` (`Resx.Ar/En`), never hard-coded UI strings. Seeded business data (role labels, unit names) may be literal.
 - **Isolation:** every test gets a fresh browser context (empty `localStorage`), so it starts in Arabic with no stored context. Tests share the seeded database and run sequentially (`[Collection("e2e")]`).
 - **Never break shared users:** the lockout test uses the dedicated `lockout-e2e@altagamo3.test`. That account stays locked for 15 minutes after a run, and longer across local re-runs on the same database volume. That is expected: a locked account shows the same message as an unknown one, so the test still passes. Don't "fix" it by unlocking the user in the seed.
-- **Form posts:** after submitting a form, wait for that request's response (`RunAndWaitForResponseAsync`), not just a load state. The current page counts as loaded already, so a load-state wait returns before the server answers.
+- **Form posts that re-render the same URL** (e.g. a failed login): neither the URL, a load state nor the response event distinguishes the old document from the new one. Mark the current document before clicking and wait for a loaded document without the mark (see `LoginPage.SubmitAsync`).
+- **One E2E stack at a time** on a machine (port 5132 is the registered OIDC redirect origin). Take `e2e.lock` in the team's shared notes folder before starting compose and the API, remove it when done, and never stop another session's API (rules: `E2E-RUN-RULES.md` there).
 - **Waiting:** Playwright auto-waiting (`Expect(...)`, `WaitForURLAsync`); no fixed sleeps.
 
 ## Artifacts
