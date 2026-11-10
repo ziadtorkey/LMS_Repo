@@ -1,7 +1,9 @@
 @inject ICultureService Culture
 
-<MudButton Color="Color.Inherit" OnClick="Switch" data-testid="lang-switch">@L["Lang_Other"]</MudButton>
+<MudButton Color="Color.Inherit" OnClick="Switch" data-testid="lang-switch" lang="@OtherLanguage">@L["Lang_Other"]</MudButton>
 
 @code {
-    private Task Switch() => Culture.SetAsync(Culture.Current.TwoLetterISOLanguageName == "ar" ? "en" : "ar");
+    private string OtherLanguage => Culture.Current.TwoLetterISOLanguageName == "ar" ? "en" : "ar";
+
+    private Task Switch() => Culture.SetAsync(OtherLanguage);
 }
