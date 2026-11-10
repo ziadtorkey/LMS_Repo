@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using Lms.Domain.AcademicYears;
 using Lms.IntegrationTests.Access;
 using Lms.IntegrationTests.Infrastructure;
 using Lms.Shared.AcademicYears;

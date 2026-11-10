@@ -163,7 +163,7 @@ public static class CalendarEndpoints
 
         // ISOLATION-BYPASS: the year may be inherited from an ancestor outside the caller's subtree filter; restricted to
         // the same client and to the unit's own ancestor paths.
-        return await db.AcademicYears.IgnoreQueryFilters()
+        return await db.Set<AcademicYear>().IgnoreQueryFilters()
             .SingleOrDefaultAsync(
                 y => y.Id == yearId && !y.IsDeleted && y.OrganizationId == unit.OrganizationId && chain.Contains(y.OrgUnitPath), ct);
     }

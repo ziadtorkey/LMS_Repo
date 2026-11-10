@@ -104,7 +104,7 @@ public sealed class CalendarTests(LmsApiFactory factory)
         var ev = (await (await SendAsync(factory, HttpMethod.Post, "/api/calendar-events", admin, Event(year.Id, tree.Root.Id, "H", Y1.AddDays(2), Y1.AddDays(3)))).Content.ReadFromJsonAsync<CalendarEventDto>(Web))!;
         await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
         {
-            var y = await db.AcademicYears.SingleAsync(x => x.Id == year.Id);
+            var y = await db.Set<AcademicYear>().SingleAsync(x => x.Id == year.Id);
             y.Close();
             await db.SaveChangesAsync();
         }
