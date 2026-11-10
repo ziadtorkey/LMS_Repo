@@ -1,6 +1,6 @@
 # M1 Organization & Access Implementation Plan
 
-> **Status: DRAFT — awaiting product owner approval (Team Lead, 2026-11-10).** Owner questions are in the "Questions for the product owner" section; answers will be folded in before M1 issues are opened.
+> **Status: APPROVED by the product owner (2026-11-10).** Owner answers are recorded as PRD decisions D16–D22 (see "Owner decisions" below). Team: Lead, BE1, BE2, FE1, FE2, QA1, QA2.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking. In this project each task = one GitHub issue and one PR; the lane (Lead contract / BE1 / BE2 / FE / QA) is marked on each task.
 
@@ -56,7 +56,7 @@
 - Produces permissions (append; never rename): `Clients.{View,Create,Update}`; `LevelTypes.{View,Create,Update,Delete}`; `OrgUnits.Move`; `Templates.{View,Create,Delete,Apply}`; `Assignments.Update`; `AcademicYears.{View,Create,Update,Delete}`. `PlatformOnly = [Clients.View, Clients.Create, Clients.Update]`; `Permissions.All` and `PolicyCatalog.BlockedPermissions` become immutable (`FrozenSet`/`FrozenDictionary`).
 - Built-in matrix (explicit lists; M0 permissions unchanged):
   - OrgAdmin: + `LevelTypes.{View,Create,Update,Delete}`, `OrgUnits.Move`, `Templates.{View,Create,Delete,Apply}`, `Assignments.Update`, `AcademicYears.{View,Create,Update,Delete}`.
-  - Manager: + `LevelTypes.View`, `Templates.View`, `AcademicYears.View` (**not** `Assignments.Create` — owner question Q1).
+  - Manager: + `LevelTypes.View`, `Templates.View`, `AcademicYears.View`, `Assignments.Create`, `Assignments.Delete` (D16: assignable roles limited by Task 21's escalation guard).
   - Supervisor: + `LevelTypes.View`, `Templates.View`, `AcademicYears.View`.
   - Counselor, Teacher, Student, Guardian: + `AcademicYears.View` (owner question Q2).
 - `public static class ProblemCodes` — `const string` values equal to their names: `not_found, validation_failed, code_taken, name_taken, level_type_in_use, invalid_level_type, unit_has_children, unit_has_assignments, unit_in_use, root_unit, invalid_move, invalid_transfer_target, transfer_target_in_use, setting_locked, policy_inherited, built_in_role, role_in_use, platform_only_permission, permission_escalation, last_admin_permission, assignment_exists, own_assignment, branch_too_large, placeholder_missing, placeholder_unknown, export_too_large, year_overlap, year_closed, year_active, active_year_exists, term_overlap, term_outside_year, event_outside_year, in_app_required`.
@@ -771,8 +771,8 @@
 
 ---
 
-## Questions for the product owner
-Ask with AskUserQuestion and a `needs-owner` issue before opening the issues they affect.
+## Owner decisions (answered 2026-11-10; recorded in PRD as D16–D22)
+All seven recommendations below were accepted as written: Q1 → D16, Q2 → D17, Q3 → D18, Q4 → D19, Q5 → D20, Q6 → D21, Q7 → D22. Q1 is applied to Task 1's matrix above.
 
 1. **Does Manager get `Assignments.Create` (and `Delete`)?** PRD §3.4 gives Manager "Staff users: View, Create", and FR-STF-02 creates staff *with* role assignments, but M0 shipped Manager with `Assignments.View` only. *Recommendation:* yes — grant Manager `Assignments.Create` and `Assignments.Delete` in M1, relying on Task 21's escalation guard so a Manager can only assign roles whose permissions are a subset of their own (Teacher, Counselor, Supervisor — never OrgAdmin or Manager). This plan keeps the M0 state until the answer; a "yes" changes one list in Task 1 and the matrix test. Affects Tasks 1, 21, 37.
 2. **Who may see academic years?** §3.4 has no row for academic years/terms/calendar. *Recommendation:* `AcademicYears.View` for all seven roles (everyone needs the year selector and holidays); Create/Update/Delete for Org Admin only (Manager view, like "Org tree, policies, settings"). Plan uses this. Affects Tasks 1, 20, 22.
@@ -788,7 +788,7 @@ Ask with AskUserQuestion and a `needs-owner` issue before opening the issues the
 - **BE1 (Organization & Access folders: `Features/{Clients,OrgUnits,Branches,Templates,Roles,Assignments}`, `Infrastructure/{Organizations,Branches,Access}`):** 5 → 7 → 9 → 11 → 13 → 15 → 17 → 19 → 21.
 - **BE2 (Account & Configuration folders: `Pages/Account`, `Features/{Account,LevelTypes,Notifications,Policies,Settings,Audit,AcademicYears}`, `Infrastructure/{Email,Identity,Notifications,Configuration,Auditing,AcademicYears}`):** 6 → 8 → 10 → 12 → 14 → 16 → 18 → 20 → 22. The two BE devs never edit the same file except `Program.cs` (two lines per module) and `EndpointCoverageTests.cs` (BE2 only adds exemptions). `OrgUnit.cs` is BE1-only; `LevelType.cs`, `AuditEntry.cs`, `UserStatus.cs` are BE2-only.
 - **Migrations:** Tasks 7, 10, 16, 17, 18, 20, 22 each add exactly one; whoever merges second regenerates on top of `main`.
-- **FE (one dev, the critical path — 12 tasks):** 23 → 24 → 25 → 26 → 27 → 28 → 29 → 30 → 31 → 32 → 33 → 34, each starting on fakes as soon as its contract merges. Consider adding a second FE agent for 29–34 (they touch separate folders: `Pages/Access`, `Pages/Audit`, `Pages/AcademicYears`, `Pages/Notifications`); shared files are `NavCatalog.cs`, `ClientServices.cs`, `MainLayout.razor` and the two resx files — serialize merges of those.
+- **FE1:** 23 → 24 → 25 → 26 → 27 → 28. **FE2 (owner approved a second FE agent):** 29 → 30 → 31 → 32 → 33 → 34 (FE2 starts after Task 23 merges). Each starts on fakes as soon as its contract merges. FE2's tasks are (they touch separate folders: `Pages/Access`, `Pages/Audit`, `Pages/AcademicYears`, `Pages/Notifications`); shared files are `NavCatalog.cs`, `ClientServices.cs`, `MainLayout.razor` and the two resx files — serialize merges of those.
 - **QA:** QA1 reviews BE1/FE PRs and owns Tasks 36–37; QA2 reviews BE2 PRs and owns Tasks 35 and 38. Every review checks the Review Focus items, the `ISOLATION-BYPASS` marker, the explicit-permission rule, the resource parity test, and RTL screenshots.
 - **Splits made from DEV-PLAN §2 M1:** item 3 → Tasks 9 + 11 (BE) and 25 + 26 (FE); item 7 → Tasks 15 + 17 (BE); item 12 → Tasks 20 + 22 (BE) and 32 + 33 (FE); item 13 → Tasks 10 + 16 (BE). Items 1+2 share FE Task 24 and items 5+6 share FE Task 27; item 4's FE lives in Task 26. Item 10 has no FE task (server-rendered account pages).
 - **Exit demo:** Tasks 36–38 green in CI in ar and en = M1 done; then update `docs/STATUS.md` and write the M2 plan.
