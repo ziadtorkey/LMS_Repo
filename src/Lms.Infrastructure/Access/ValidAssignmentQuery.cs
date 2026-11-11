@@ -28,14 +28,21 @@ public static class ValidAssignmentQuery
     /// with role and unit belonging to the assignment's client.
     /// </summary>
     public static IQueryable<ValidAssignment> ValidAssignmentsFor(this LmsDbContext db, Guid userId, DateOnly today) =>
+        db.ValidAssignments(today).Where(a => a.UserId == userId);
+
+    /// <summary>The same definition for several users at once (one query, e.g. a notification fan-out).</summary>
+    public static IQueryable<ValidAssignment> ValidAssignmentsForUsers(
+        this LmsDbContext db, IReadOnlyCollection<Guid> userIds, DateOnly today) =>
+        db.ValidAssignments(today).Where(a => userIds.Contains(a.UserId));
+
+    private static IQueryable<ValidAssignment> ValidAssignments(this LmsDbContext db, DateOnly today) =>
         // ISOLATION-BYPASS: the caller has no (or another) scope when asking "which contexts can I pick?".
         // Every skipped condition (soft delete, client match) is re-applied explicitly in the where clause.
         from a in db.RoleAssignments.IgnoreQueryFilters()
         join r in db.Roles.IgnoreQueryFilters() on a.RoleId equals r.Id
         join u in db.OrgUnits.IgnoreQueryFilters() on a.OrgUnitId equals u.Id
         join o in db.Organizations.IgnoreQueryFilters() on a.OrganizationId equals o.Id
-        where a.UserId == userId
-              && !a.IsDeleted && !r.IsDeleted && !u.IsDeleted && !o.IsDeleted
+        where !a.IsDeleted && !r.IsDeleted && !u.IsDeleted && !o.IsDeleted
               && r.OrganizationId == a.OrganizationId && u.OrganizationId == a.OrganizationId
               && o.Status == OrganizationStatus.Active // a suspended client has no valid contexts
               // D15: a unit that is Inactive, or has an Inactive ancestor, is not a valid context. ISOLATION-BYPASS: the
