@@ -25,6 +25,16 @@ public sealed class IsolationBypassGuardTests
             "effective settings and locks inherited from ancestors above the caller's scope (M1 Task 14, #100)",
         ["src/Lms.Infrastructure/Notifications/NotificationRecipientResolver.cs"] =
             "recipients at or below the event unit, raised by someone above or beside them (M1 Task 10, #90)",
+        ["src/Lms.Infrastructure/AcademicYears/AcademicYearResolver.cs"] =
+            "years inherited from ancestor units above the caller's scope, re-restricted to the client (M1 Task 20, #102)",
+        ["src/Lms.Api/Features/AcademicYears/AcademicYearMapper.cs"] =
+            "terms and defining-unit names of inherited years, restricted to the years' client (M1 Task 20, #102)",
+        ["src/Lms.Api/Features/AcademicYears/AcademicYearEndpoints.cs"] =
+            "delete also removes calendar events at descendant units, restricted to the year's client (M1 Task 22, #57)",
+        ["src/Lms.Api/Features/AcademicYears/CalendarEndpoints.cs"] =
+            "events and names inherited from ancestor units, restricted to the unit's client (M1 Task 22, #57)",
+        ["src/Lms.Infrastructure/AcademicYears/AcademicCalendar.cs"] =
+            "holidays of ancestor units apply to descendants, restricted to the client and effective years (M1 Task 22, #57)",
     };
 
     [Fact]
