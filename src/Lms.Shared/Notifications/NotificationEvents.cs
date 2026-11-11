@@ -48,6 +48,15 @@ public static class NotificationEvents
     public const string StaffExpired = "Staff.Expired";
     public const string ImportsCompleted = "Imports.Completed";
 
+    // M3 students and academic structure.
+    public const string StudentsChangeRequested = "Students.ChangeRequested";
+    public const string StudentsChangeRequestDecided = "Students.ChangeRequestDecided";
+    public const string TeachingAssigned = "Teaching.Assigned";
+    public const string BlueprintsPushed = "Blueprints.Pushed";
+    public const string EnrollmentExceptionRequested = "Enrollment.ExceptionRequested";
+    public const string EnrollmentExceptionDecided = "Enrollment.ExceptionDecided";
+    public const string EnrollmentStudentTransferred = "Enrollment.StudentTransferred";
+
     public static IReadOnlyList<NotificationEventDefinition> All { get; } =
     [
         new(AccessRoleAssigned, [], ["RoleNameAr", "RoleNameEn", "OrgUnitNameAr", "OrgUnitNameEn"]),
@@ -60,6 +69,23 @@ public static class NotificationEvents
             ["StaffNameAr", "StaffNameEn", "ExpiresOn"], RecipientScopes.AncestorsAndSelf),
         // Named recipient: the user who requested the import.
         new(ImportsCompleted, [], ["Kind", "Status", "RowCount"]),
+        new(StudentsChangeRequested, [BuiltInRoles.OrgAdmin, BuiltInRoles.Manager, BuiltInRoles.Counselor],
+            ["StudentNameAr", "StudentNameEn"], RecipientScopes.AncestorsAndSelf),
+        // Named recipient: the student who requested the change.
+        new(StudentsChangeRequestDecided, [], ["StudentNameAr", "StudentNameEn", "Decision"]),
+        // Named recipient: the assigned teacher. Role = TeacherRoles value.
+        new(TeachingAssigned, [], ["ClassNameAr", "ClassNameEn", "CourseNameAr", "CourseNameEn", "Role"]),
+        // Named recipients: teachers of the classes whose plan changed.
+        new(BlueprintsPushed, [], ["CourseNameAr", "CourseNameEn", "Version"]),
+        // Named recipients: the course supervisors; without supervisors the Managers above the class.
+        new(EnrollmentExceptionRequested, [BuiltInRoles.Manager],
+            ["StudentNameAr", "StudentNameEn", "CourseNameAr", "CourseNameEn"], RecipientScopes.AncestorsAndSelf),
+        // Named recipient: the requester.
+        new(EnrollmentExceptionDecided, [],
+            ["StudentNameAr", "StudentNameEn", "CourseNameAr", "CourseNameEn", "Decision"]),
+        // Named recipients: guardians of the student and teachers of both classes.
+        new(EnrollmentStudentTransferred, [],
+            ["StudentNameAr", "StudentNameEn", "FromClassAr", "FromClassEn", "ToClassAr", "ToClassEn", "EffectiveOn"]),
     ];
 
     /// <summary>The definition with this exact (case-sensitive) key, or null.</summary>

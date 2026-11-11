@@ -26,6 +26,17 @@
             }
         </MudSelect>
         break;
+    case SettingValueKinds.StringSet:
+        <div class="d-flex flex-wrap gap-2" role="group" aria-label="@Label" data-testid="@($"setting-input-{Definition.Name}")">
+            @foreach (var allowed in Definition.AllowedValues ?? [])
+            {
+                var item = allowed;
+                <MudCheckBox T="bool" Value="@SetValues.Contains(item)" ValueChanged="@(v => OnSetChangedAsync(item, v))"
+                             Label="@ValueLabel(item)" Disabled="Disabled" Color="Color.Primary" Dense="true"
+                             data-testid="@($"setting-input-{Definition.Name}-{item}")" />
+            }
+        </div>
+        break;
     default:
         <MudTextField T="string" Value="@StringValue" ValueChanged="@(v => EmitAsync(JsonSerializer.Serialize(v)))" Disabled="Disabled"
                       Variant="Variant.Outlined" Margin="Margin.Dense" data-testid="@($"setting-input-{Definition.Name}")" aria-label="@Label" />
@@ -52,6 +63,24 @@
             try { return JsonSerializer.Deserialize<string>(Value); }
             catch (JsonException) { return null; }
         }
+    }
+
+    private IReadOnlySet<string> SetValues
+    {
+        get
+        {
+            try { return (JsonSerializer.Deserialize<string[]>(Value) ?? []).ToHashSet(StringComparer.Ordinal); }
+            catch (JsonException) { return new HashSet<string>(); }
+        }
+    }
+
+    // Emits the selected values in catalog order so the stored JSON is stable.
+    private Task OnSetChangedAsync(string item, bool selected)
+    {
+        var current = SetValues.ToHashSet(StringComparer.Ordinal);
+        if (selected) current.Add(item); else current.Remove(item);
+        var ordered = (Definition.AllowedValues ?? []).Where(current.Contains).ToArray();
+        return EmitAsync(JsonSerializer.Serialize(ordered));
     }
 
     private string ValueLabel(string allowed)
