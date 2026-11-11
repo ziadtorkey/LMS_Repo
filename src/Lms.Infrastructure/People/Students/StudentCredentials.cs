@@ -38,16 +38,15 @@ public sealed class StudentCredentials(
         }
         else
         {
-            // An existing account is reused only when its owner already has a profile in THIS client (a staff member who is also a
-            // parent, a guardian, another student): otherwise setting its password would take over another client's account.
+            // An email or sign-in name that belongs to another account is never reused (D47 decision): setting or resetting a password on
+            // someone else's account, even inside the same client, would let one school's admin take over e.g. the Org Admin.
             var emailOwner = PersonNormalizer.Email(student.Email) is { } email ? await users.FindByEmailAsync(email) : null;
-            if (emailOwner is not null && !await HasProfileInClientAsync(emailOwner.Id, student.OrganizationId, ct))
+            if (emailOwner is not null)
             {
                 throw new DuplicateAccountException("Email");
             }
 
-            var nameOwner = await users.FindByNameAsync(userName);
-            if (nameOwner is not null && !await HasProfileInClientAsync(nameOwner.Id, student.OrganizationId, ct))
+            if (await users.FindByNameAsync(userName) is not null)
             {
                 throw new DuplicateAccountException("StudentCode");
             }
@@ -99,16 +98,6 @@ public sealed class StudentCredentials(
                 logger.LogWarning(ex, "Credentials email for student account {UserName} could not be sent", userName);
             }
         }
-    }
-
-    private async Task<bool> HasProfileInClientAsync(Guid userId, Guid organizationId, CancellationToken ct)
-    {
-        // ISOLATION-BYPASS: the caller may be scoped to one school; an account is shared when its owner has a profile anywhere in the
-        // same client, which is exactly what this explicit OrganizationId filter decides (never another client's).
-        var inClient = await db.Set<StaffProfile>().IgnoreQueryFilters().AnyAsync(p => p.UserId == userId && p.OrganizationId == organizationId, ct)
-            || await db.Set<StudentProfile>().IgnoreQueryFilters().AnyAsync(p => p.UserId == userId && p.OrganizationId == organizationId, ct)
-            || await db.Set<GuardianProfile>().IgnoreQueryFilters().AnyAsync(p => p.UserId == userId && p.OrganizationId == organizationId, ct);
-        return inClient;
     }
 
     private async Task<(string? ToEmail, string Delivered)> ResolveRecipientAsync(StudentProfile student, CancellationToken ct)
