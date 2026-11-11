@@ -12,7 +12,15 @@ concurrency:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    env:
+      # Each WebApplicationFactory host watches appsettings files; with many hosts the runner's default of
+      # 128 inotify instances runs out ("The configured user limit (128) on the number of inotify instances").
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
     steps:
+      - name: Raise inotify limits
+        run: |
+          sudo sysctl -w fs.inotify.max_user_instances=8192
+          sudo sysctl -w fs.inotify.max_user_watches=524288
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with:
@@ -59,7 +67,19 @@ jobs:
           done
           echo "API did not become healthy"; cat api.log; exit 1
       - name: Install Playwright Chromium
-        run: pwsh tests/Lms.E2ETests/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+        # The runner's apt mirrors intermittently fail DNS ("Temporary failure resolving"), and apt can then hang.
+        # Try with system deps twice (time-boxed); otherwise install the browser alone: ubuntu-latest images already
+        # ship the libraries Chromium needs.
+        timeout-minutes: 15
+        run: |
+          PW=tests/Lms.E2ETests/bin/Release/net10.0/playwright.ps1
+          for attempt in 1 2; do
+            if timeout 300 pwsh $PW install --with-deps chromium; then exit 0; fi
+            echo "Playwright install with deps failed (attempt $attempt)"
+            [ "$attempt" -lt 2 ] && sleep 30
+          done
+          echo "Falling back to installing Chromium without system deps"
+          pwsh $PW install chromium
       - name: Run E2E tests
         run: dotnet test tests/Lms.E2ETests -c Release --no-build --logger "trx;LogFileName=e2e.trx" --results-directory TestResults
       - name: Upload E2E traces, screenshots and API log
