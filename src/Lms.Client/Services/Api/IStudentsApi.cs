@@ -12,6 +12,16 @@ public interface IStudentsApi
 
     /// <summary>Creates the student; the response is the only place the issued password is ever shown (D24).</summary>
     Task<StudentCreatedDto> CreateAsync(CreateStudentRequest request, CancellationToken ct = default);
+
+    Task UpdateAsync(Guid id, UpdateStudentRequest request, CancellationToken ct = default);
+    Task SetStatusAsync(Guid id, SetPersonStatusRequest request, CancellationToken ct = default);
+    Task DeleteAsync(Guid id, CancellationToken ct = default);
+
+    /// <summary>Flag name to value; null = inherit (section 4.4).</summary>
+    Task SetFeatureFlagsAsync(Guid id, SetStudentFeatureFlagsRequest request, CancellationToken ct = default);
+
+    /// <summary>Issues a new default password; like create, the response is the only place it is ever shown (D24).</summary>
+    Task<StudentCreatedDto> ResetPasswordAsync(Guid id, ResetStudentPasswordRequest request, CancellationToken ct = default);
 }
 
 public sealed class StudentsApi(ApiHttp http) : IStudentsApi
@@ -24,6 +34,21 @@ public sealed class StudentsApi(ApiHttp http) : IStudentsApi
 
     public async Task<StudentCreatedDto> CreateAsync(CreateStudentRequest request, CancellationToken ct = default) =>
         (await http.SendAsync<StudentCreatedDto>(HttpMethod.Post, Routes.Students, request, ct))!;
+
+    public Task UpdateAsync(Guid id, UpdateStudentRequest request, CancellationToken ct = default) =>
+        http.SendAsync(HttpMethod.Put, Routes.Student(id), request, ct);
+
+    public Task SetStatusAsync(Guid id, SetPersonStatusRequest request, CancellationToken ct = default) =>
+        http.SendAsync(HttpMethod.Put, Routes.StudentStatus(id), request, ct);
+
+    public Task DeleteAsync(Guid id, CancellationToken ct = default) =>
+        http.SendAsync(HttpMethod.Delete, Routes.Student(id), null, ct);
+
+    public Task SetFeatureFlagsAsync(Guid id, SetStudentFeatureFlagsRequest request, CancellationToken ct = default) =>
+        http.SendAsync(HttpMethod.Put, Routes.StudentFeatureFlags(id), request, ct);
+
+    public async Task<StudentCreatedDto> ResetPasswordAsync(Guid id, ResetStudentPasswordRequest request, CancellationToken ct = default) =>
+        (await http.SendAsync<StudentCreatedDto>(HttpMethod.Post, Routes.StudentResetPassword(id), request, ct))!;
 
     /// <summary>Query string of a student list request; unset filters are left out.</summary>
     public static string ToQueryString(StudentQuery q)
