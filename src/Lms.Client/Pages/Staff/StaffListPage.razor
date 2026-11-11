@@ -18,11 +18,18 @@
 <PageTitle>@L["Staff_Title"]</PageTitle>
 <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4" Wrap="Wrap.Wrap">
     <MudText Typo="Typo.h4" data-testid="staff-title">@L["Staff_Title"]</MudText>
+    <MudStack Row="true" Spacing="2">
+    @if (PermState.Has(Permissions.Staff.Import))
+    {
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.UploadFile"
+                   Href="staff/import" data-testid="staff-import">@L["Import_Button"]</MudButton>
+    }
     @if (PermState.Has(Permissions.Staff.Create))
     {
         <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
                    OnClick="NewStaffAsync" data-testid="staff-new">@L["Staff_New"]</MudButton>
     }
+    </MudStack>
 </MudStack>
 
 <MudStack Row="true" Spacing="2" Class="mb-3" Wrap="Wrap.Wrap" AlignItems="AlignItems.Center">
@@ -87,8 +94,12 @@
     private string? _searchText, _status;
     private Guid? _unitId, _roleId;
 
+    /// <summary>Pre-selects the unit filter (the import page returns here with <c>?unit=</c>).</summary>
+    [SupplyParameterFromQuery(Name = "unit")] public Guid? UnitQuery { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
+        _unitId ??= UnitQuery;
         PermState.Changed += OnPermissionsChanged;
         if (!PermState.Loaded) await PermState.RefreshAsync();
         // The role filter is a convenience: without permission to read roles the list still works.
