@@ -3,6 +3,7 @@ using System.Net;
 using Hangfire;
 using Hangfire.Storage;
 using Lms.Domain.Abstractions;
+using Lms.Shared.Authorization;
 using Lms.Infrastructure.Jobs;
 using Lms.Infrastructure.Persistence;
 using Lms.IntegrationTests.Access;
@@ -50,10 +51,11 @@ public sealed class BackgroundJobTests(LmsApiFactory factory)
         var a = await AccessTestData.SeedAsync(factory, "BJ1");
         var b = await AccessTestData.SeedAsync(factory, "BJ2");
         var user = Guid.NewGuid();
+        var assignment = await AccessTestData.AssignAsync(factory, a, a.Root, BuiltInRoles.OrgAdmin, user);
         var token = Guid.NewGuid().ToString("N");
         using var scope = factory.Services.CreateScope();
 
-        Jobs(scope).Enqueue<ProbeJob>(new JobContextSnapshot(user, a.Org.Id, Guid.NewGuid(), a.Root.Path, false), j => j.SeeOrgUnits(token));
+        Jobs(scope).Enqueue<ProbeJob>(new JobContextSnapshot(user, a.Org.Id, assignment.Id, a.Root.Path, false), j => j.SeeOrgUnits(token));
 
         var result = await WaitAsync(token);
         Assert.Equal([a.Org.Id], result.OrganizationIds);
@@ -66,13 +68,77 @@ public sealed class BackgroundJobTests(LmsApiFactory factory)
     public async Task Job_runs_inside_the_subtree_of_the_enqueuing_assignment()
     {
         var a = await AccessTestData.SeedAsync(factory, "BJ3");
+        var user = Guid.NewGuid();
+        var assignment = await AccessTestData.AssignAsync(factory, a, a.School1, BuiltInRoles.Teacher, user);
         var token = Guid.NewGuid().ToString("N");
         using var scope = factory.Services.CreateScope();
 
         // Scoped to School1: the client's other units are outside the subtree, so only the client's own rows show.
-        Jobs(scope).Enqueue<ProbeJob>(new JobContextSnapshot(Guid.NewGuid(), a.Org.Id, Guid.NewGuid(), a.School1.Path, false), j => j.SeeOrgUnits(token));
+        Jobs(scope).Enqueue<ProbeJob>(new JobContextSnapshot(user, a.Org.Id, assignment.Id, a.School1.Path, false), j => j.SeeOrgUnits(token));
 
         Assert.Equal([a.Org.Id], (await WaitAsync(token)).OrganizationIds);
+    }
+
+    [Fact]
+    public async Task Job_whose_assignment_was_deleted_runs_with_an_empty_context()
+    {
+        var a = await AccessTestData.SeedAsync(factory, "BJ7");
+        var user = Guid.NewGuid();
+        var assignment = await AccessTestData.AssignAsync(factory, a, a.Root, BuiltInRoles.OrgAdmin, user);
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            db.RoleAssignments.Remove(await db.RoleAssignments.SingleAsync(x => x.Id == assignment.Id));
+            await db.SaveChangesAsync();
+        }
+
+        await AssertEmptyAsync(new JobContextSnapshot(user, a.Org.Id, assignment.Id, a.Root.Path, false));
+    }
+
+    [Fact]
+    public async Task Job_whose_assignment_has_expired_runs_with_an_empty_context()
+    {
+        var a = await AccessTestData.SeedAsync(factory, "BJ8");
+        var user = Guid.NewGuid();
+        var yesterday = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1));
+        var assignment = await AccessTestData.AssignAsync(factory, a, a.Root, BuiltInRoles.OrgAdmin, user, null, yesterday);
+
+        await AssertEmptyAsync(new JobContextSnapshot(user, a.Org.Id, assignment.Id, a.Root.Path, false));
+    }
+
+    [Fact]
+    public async Task Job_whose_unit_became_inactive_runs_with_an_empty_context()
+    {
+        var a = await AccessTestData.SeedAsync(factory, "BJ9");
+        var user = Guid.NewGuid();
+        var assignment = await AccessTestData.AssignAsync(factory, a, a.School1, BuiltInRoles.Teacher, user);
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            var unit = await db.OrgUnits.SingleAsync(u => u.Id == a.School1.Id);
+            unit.Deactivate();
+            await db.SaveChangesAsync();
+        }
+
+        await AssertEmptyAsync(new JobContextSnapshot(user, a.Org.Id, assignment.Id, a.School1.Path, false));
+    }
+
+    [Fact]
+    public async Task Job_with_an_assignment_that_is_not_the_users_runs_with_an_empty_context()
+    {
+        var a = await AccessTestData.SeedAsync(factory, "BJ10");
+        var assignment = await AccessTestData.AssignAsync(factory, a, a.Root, BuiltInRoles.OrgAdmin, Guid.NewGuid());
+
+        await AssertEmptyAsync(new JobContextSnapshot(Guid.NewGuid(), a.Org.Id, assignment.Id, a.Root.Path, false));
+    }
+
+    private async Task AssertEmptyAsync(JobContextSnapshot snapshot)
+    {
+        var token = Guid.NewGuid().ToString("N");
+        using var scope = factory.Services.CreateScope();
+        Jobs(scope).Enqueue<ProbeJob>(snapshot, j => j.SeeOrgUnits(token));
+
+        var result = await WaitAsync(token);
+        Assert.Empty(result.OrganizationIds);
+        Assert.False(result.Platform);
     }
 
     [Fact]

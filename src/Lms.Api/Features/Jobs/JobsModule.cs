@@ -3,7 +3,10 @@ using Hangfire;
 using Hangfire.Dashboard;
 using Hangfire.MySql;
 using Lms.Api.Infrastructure;
+using Lms.Domain.Abstractions;
+using Lms.Infrastructure.Access;
 using Lms.Infrastructure.Jobs;
+using Lms.Infrastructure.Persistence;
 using Hangfire.Server;
 
 namespace Lms.Api.Features.Jobs;
@@ -80,20 +83,42 @@ public sealed class LmsJobActivator(IServiceScopeFactory scopes) : JobActivator
         if (context.GetJobParameter<string>(JobContextSnapshot.ParameterName) is { Length: > 0 } json
             && JsonSerializer.Deserialize<JobContextSnapshot>(json) is { } snapshot)
         {
-            Restore(current, snapshot);
+            Restore(scope.ServiceProvider, current, snapshot);
         }
 
         // No captured context: the scope keeps an empty context, so scoped queries return nothing.
         return new ActivatorScope(scope);
     }
 
-    private static void Restore(HttpCurrentContext current, JobContextSnapshot snapshot)
+    private static void Restore(IServiceProvider services, HttpCurrentContext current, JobContextSnapshot snapshot)
     {
-        current.SetUser(snapshot.UserId ?? Guid.Empty, snapshot.IsPlatformAdmin);
-        if (snapshot.OrganizationId is { } organizationId && snapshot.ScopePath is { } scopePath)
+        if (snapshot.IsPlatformAdmin)
         {
-            current.SetAssignment(snapshot.AssignmentId ?? Guid.Empty, organizationId, scopePath);
+            current.SetUser(snapshot.UserId ?? Guid.Empty, true);
+            return;
         }
+
+        if (snapshot.OrganizationId is null)
+        {
+            current.SetUser(snapshot.UserId ?? Guid.Empty, false);
+            return;
+        }
+
+        // A job may run long after it was enqueued (queued, retried). The assignment it was enqueued under must still be
+        // valid now (not deleted, expired or in an inactive unit, D15); otherwise the job runs with an empty context.
+        // The scope comes from the live assignment, not from the snapshot, so a moved unit is honoured too.
+        var db = services.GetRequiredService<LmsDbContext>();
+        var today = DateOnly.FromDateTime(services.GetRequiredService<IClock>().UtcNow);
+        var valid = snapshot is { UserId: { } userId, AssignmentId: { } assignmentId }
+            ? db.ValidAssignmentsFor(userId, today).Where(a => a.AssignmentId == assignmentId).FirstOrDefault()
+            : null;
+        if (valid is null || valid.OrganizationId != snapshot.OrganizationId)
+        {
+            return;
+        }
+
+        current.SetUser(valid.UserId, false);
+        current.SetAssignment(valid.AssignmentId, valid.OrganizationId, valid.OrgUnitPath);
     }
 
     private sealed class ActivatorScope(IServiceScope scope) : JobActivatorScope
