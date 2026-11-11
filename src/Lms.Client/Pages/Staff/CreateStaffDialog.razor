@@ -86,12 +86,13 @@
         }
 
         _saving = true;
+        StaffDetailDto? created = null;
         var saved = await ApiCalls.RunAsync(
-            () => Api.CreateAsync(new CreateStaffRequest(_nameAr.Trim(), _nameEn.Trim(), _email.Trim(), Blank(_mobile),
+            async () => created = await Api.CreateAsync(new CreateStaffRequest(_nameAr.Trim(), _nameEn.Trim(), _email.Trim(), Blank(_mobile),
                 Blank(_nationalId), Blank(_jobTitleAr), Blank(_jobTitleEn), _photoId, _homeUnitId.Value,
                 _expiresOn is { } d ? DateOnly.FromDateTime(d) : null, roles)),
             Navigation, L, message => _error = message);
         _saving = false;
-        if (saved) MudDialog.Close(DialogResult.Ok(true));
+        if (saved) MudDialog.Close(DialogResult.Ok(created));
     }
 }

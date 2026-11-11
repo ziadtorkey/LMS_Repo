@@ -23,13 +23,13 @@ public interface IBackgroundJobs
 
     /// <summary>
     /// Registers (or updates in place) a recurring system job. Safe to call on every start: one id is one schedule.
-    /// Recurring jobs always run with the platform context.
+    /// Recurring jobs always run with the platform context; the cron is read in the <c>Jobs:TimeZone</c> zone.
     /// </summary>
     void AddOrUpdateRecurring<T>(string recurringJobId, Expression<Func<T, Task>> job, string cronExpression);
 }
 
 public sealed class BackgroundJobs(
-    IBackgroundJobClient client, IRecurringJobManager recurring, ICurrentContext current) : IBackgroundJobs
+    IBackgroundJobClient client, IRecurringJobManager recurring, ICurrentContext current, JobSettings settings) : IBackgroundJobs
 {
     public string Enqueue<T>(Expression<Func<T, Task>> job) => Enqueue(JobContextSnapshot.From(current), job);
 
@@ -44,7 +44,7 @@ public sealed class BackgroundJobs(
     public string EnqueueAsSystem<T>(Expression<Func<T, Task>> job) => Enqueue(JobContextSnapshot.System, job);
 
     public void AddOrUpdateRecurring<T>(string recurringJobId, Expression<Func<T, Task>> job, string cronExpression) =>
-        recurring.AddOrUpdate(recurringJobId, job, cronExpression);
+        recurring.AddOrUpdate(recurringJobId, job, cronExpression, new RecurringJobOptions { TimeZone = settings.TimeZone });
 }
 
 /// <summary>

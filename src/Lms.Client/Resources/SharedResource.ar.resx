@@ -441,5 +441,8 @@
   <data name="Error_duplicate_person_email" xml:space="preserve"><value>هذا البريد الإلكتروني مستخدم لشخص آخر في المؤسسة.</value></data>
   <data name="Error_duplicate_person_mobile" xml:space="preserve"><value>رقم الجوال مستخدم لشخص آخر في المؤسسة.</value></data>
   <data name="Error_duplicate_person_nationalId" xml:space="preserve"><value>رقم الهوية الوطنية مسجل لشخص آخر في المؤسسة.</value></data>
+  <data name="Assign_Person" xml:space="preserve"><value>الموظف</value></data>
+  <data name="Assign_PersonSearch" xml:space="preserve"><value>ابحث عن موظف بالاسم أو البريد</value></data>
+  <data name="Assign_CreateStaff" xml:space="preserve"><value>إنشاء موظف جديد</value></data>
   <data name="Staff_RoleIncomplete" xml:space="preserve"><value>اختر الدور والوحدة معًا.</value></data>
 </root>

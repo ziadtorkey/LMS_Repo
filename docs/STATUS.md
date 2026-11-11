@@ -2,22 +2,22 @@
 
 _Updated by the Team Lead after every merge cycle._
 
-**Milestone:** M0 Foundation — DONE (19 / 19) · M1 Organization & Access — in progress (42 / 49 issues closed) · M2 People — in progress (6 / 27)
-**Last update:** 2026-11-11 — Merged #183 (identity provider config, closes #167) and #188 (SSRF fix, closes #185). E2E stack freed. In review: #181 people kernel (approved; re-merging main), #193 external sign-in (QA3), #194 key-ring protection #186 (extra QA), #189/#190/#192 FE1 staff pages, #184 role blocking (changes requested), #121 M1 E2E (QA2). Open: #187 staff create (BE2), #191 person gate (BE4), #195 import wizard (FE2, draft), #182 M2 probes (QA2, draft).
+**Milestone:** M0 Foundation — DONE (19 / 19) · M1 Organization & Access — in progress (42 / 49 issues closed) · M2 People — in progress (12 / 28)
+**Last update:** 2026-11-11 — Merged #181 people kernel (#157), #189 staff pages (#170), #121 M1 E2E clients/trees, #191 person gate (#158), #197 staff expiry job (#166), #194 key-ring protection (#186), #201 dev job trigger (#199), #192 assign staff roles (#174). Approved, waiting on CI: #182 M2 probes, #190 staff lifecycle UI. Approved but draft (owner must allow `gh pr ready` in FE2/BE1 sessions): #195 import wizard; #204 follows it. In re-review: #187 staff create, #184 role blocking, #148 (M1), #193 external sign-in. M3 plan being drafted.
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |
 |---|---|---|---|---|
-| Team Lead | Opus | `local_95ef9dc7-9378-4012-a8f2-c7d1f944bdec` (lms-lead) | merges; M2 coordination | coordinating |
-| Backend 1 | Sonnet | `local_19f31b04-ca2f-43d1-a2cb-8a128722a11f` (lms-backend) | #148 fix; then M2 #160 (T8), #159 (T7), #161 (T9) | working |
-| Backend 2 | Sonnet | `local_d36e7dc2-e9e6-4f73-b7b3-b078b17bbe41` (lms-backend-2) | M2 #162 (T10 staff), then #163, #164, #165 | working |
-| Frontend | Sonnet | `local_40667dce-5be7-478b-95cb-4f14ecd203b9` (lms-frontend) | M2 #170 (T24 staff pages), then #171, #174 | working |
-| Frontend 2 | Sonnet | `local_3d9e8938-4064-4f83-a04d-920704d41a87` (lms-frontend-2) | E2E #72; then M2 #169 (T23), #172, #173 | working |
-| QA | Sonnet | `local_91a7af3c-7b02-4d61-ac11-2c22629cf89f` (lms-qa) | E2E #121/#72; M2 reviews; then #176, #177 | working |
-| QA 2 | Sonnet | `local_54d26c64-4403-4a13-b128-5be5e9752d97` (lms-qa-2) | #145; #149/#153 dedupe; then M2 #175 (T34 probes) | working |
-| Backend 3 | Sonnet | `local_2e8038c6-e5ba-4e13-ade0-9440d9beb565` (lms-backend-3) | M2 #167 (T21 IdP), #168 (T22); M1 #52 after #50 | working |
-| Backend 4 | Sonnet | `local_fd5c4410-8364-4c55-a5a8-3b8aa37afc1f` (lms-backend-4) | M2 #157 (T5 people kernel, critical path), #158, #166; M1 #50 | working |
-| QA 3 | Sonnet | `local_6d46b60b-d70a-4cfa-af2f-5bf90cdf7c08` (lms-qa-3) | #145 spot-check; E2E #120; then M2 #178 (T38) | reviewing |
+| Team Lead | Opus | `local_95ef9dc7-9378-4012-a8f2-c7d1f944bdec` (lms-lead) | merges; M3 plan draft | coordinating |
+| Backend 1 | Sonnet | `local_19f31b04-ca2f-43d1-a2cb-8a128722a11f` (lms-backend) | #148 (M1), #184 (#160), draft #202 (#159 imports) | working |
+| Backend 2 | Sonnet | `local_d36e7dc2-e9e6-4f73-b7b3-b078b17bbe41` (lms-backend-2) | #187 (#162 staff create/list) | working |
+| Frontend | Sonnet | `local_40667dce-5be7-478b-95cb-4f14ecd203b9` (lms-frontend) | #190 (#171); then review nits follow-up | working |
+| Frontend 2 | Sonnet | `local_3d9e8938-4064-4f83-a04d-920704d41a87` (lms-frontend-2) | #195 (#169), #204 (#172); then #173 | working |
+| QA | Sonnet | `local_91a7af3c-7b02-4d61-ac11-2c22629cf89f` (lms-qa) | re-review #184; draft #206 (#176 staff E2E) | working |
+| QA 2 | Sonnet | `local_54d26c64-4403-4a13-b128-5be5e9752d97` (lms-qa-2) | #182 (#175 probes); FE reviews | working |
+| Backend 3 | Sonnet | `local_2e8038c6-e5ba-4e13-ade0-9440d9beb565` (lms-backend-3) | #193 (#168); drafts #196 (#164), #198 (#163), #205 (#165), #207 (#52) | working |
+| Backend 4 | Sonnet | `local_fd5c4410-8364-4c55-a5a8-3b8aa37afc1f` (lms-backend-4) | draft #208 (#161); #50 after #148 | working |
+| QA 3 | Sonnet | `local_6d46b60b-d70a-4cfa-af2f-5bf90cdf7c08` (lms-qa-3) | re-review #193; #200 (#73 E2E) | reviewing |
 
 ## M0 issue map
 | Task | Issue | Lane | Depends on |
@@ -43,6 +43,8 @@ _Updated by the Team Lead after every merge cycle._
 | RF2 against real PolicyEvaluator | #32 | BE1 | #8, #9 |
 
 ## Blockers
+- `gh pr ready` is denied by the permission classifier in the FE2 and BE1 sessions (#195, #202); the owner has been asked to allow it there.
+- Production prerequisite from #194: the Data Protection certificate (PFX) must be provisioned on every node (`docs/runbook-key-protection.md`).
 None. (Board: [LMS v1](https://github.com/users/ziadtorkey/projects/1) — Todo → In Progress → In Review → Done.)
 
 ## Decisions needed from the product owner
@@ -51,6 +53,7 @@ None. (Board: [LMS v1](https://github.com/users/ziadtorkey/projects/1) — Todo 
 - 2026-11-11: M2 plan approved; 13 answers recorded as D23–D36 (students, guardians and change requests move to M3). #103 closed.
 
 ## Recently merged
+- #192 assign roles to existing staff (closes #174) · #201 dev-only job trigger + Jobs:TimeZone (closes #199) · #194 key-ring certificate protection (closes #186) · #197 staff expiry job (closes #166) · #191 person status gate (closes #158) · #121 M1 E2E clients and trees · #189 staff pages (closes #170) · #181 people kernel (closes #157)
 - #188 fix(identity): SSRF guard for provider discovery and backchannel (closes #185) · #183 feat(identity): per-client identity provider configuration (closes #167)
 - #179 M2 contracts: staff, imports, identity providers (closes #154, #155, #156)
 - #180 test(security): dedupe #149/#153 isolation tests · #120 test(e2e): blocked-login E2E ar/en (part of #73) · #145 test(security): one probe-row file per module

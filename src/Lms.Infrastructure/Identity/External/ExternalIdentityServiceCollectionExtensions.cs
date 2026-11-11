@@ -16,11 +16,12 @@ public static class ExternalIdentityServiceCollectionExtensions
     /// Data Protection with the key ring in MySQL (shared by all nodes), the secret protector, and the dynamic
     /// OpenID Connect scheme registry (schemes are added at runtime, so the handler's option plumbing is registered here).
     /// </summary>
-    public static IServiceCollection AddExternalIdentity(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddExternalIdentity(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
     {
         services.AddSingleton(sp => OutboundGuard.Create(
             sp.GetRequiredService<IHostEnvironment>().IsDevelopment(), configuration.GetValue<bool>(OutboundGuard.ConfigKey)));
-        services.AddDataProtection().SetApplicationName("Lms");
+        // Outside Development the key ring must be certificate-protected; a missing certificate stops startup here (#186).
+        KeyProtection.Apply(services.AddDataProtection().SetApplicationName("Lms"), configuration, environment.IsDevelopment());
         services.AddOptions<KeyManagementOptions>()
             .Configure<IServiceScopeFactory>((options, scopes) => options.XmlRepository = new EfXmlRepository(scopes));
         services.AddSingleton<ProviderSecretProtector>();

@@ -21,7 +21,7 @@ namespace Lms.Api.Features.Assignments;
 /// </summary>
 public sealed class CreateAssignmentHandler(
     LmsDbContext db, IClock clock, CallerPermissions caller, IAccountEmails emails, ISettingsResolver settings,
-    AssignmentNotifier notifier, ILogger<CreateAssignmentHandler> logger)
+    AssignmentNotifier notifier, IRoleGrantGuard roleGuard, ILogger<CreateAssignmentHandler> logger)
 {
     private const int MaxEmailLength = 256;
 
@@ -52,11 +52,23 @@ public sealed class CreateAssignmentHandler(
             return ApiProblems.NotFound();
         }
 
+        // Student and guardian assignments are managed by the people services, never by hand.
+        if (role.BaseKind != RoleBaseKind.Staff)
+        {
+            return ApiProblems.BadRequest(ProblemCodes.invalid_role_kind);
+        }
+
         if (!await AssignmentQueries.CallerMayManageRoleAsync(db, caller, role.Id, ct))
         {
             return Results.Problem(
                 statusCode: StatusCodes.Status403Forbidden, title: "Forbidden",
                 extensions: new Dictionary<string, object?> { ["code"] = ProblemCodes.permission_escalation });
+        }
+
+        var grant = await roleGuard.CheckAsync(role, unit, ct);
+        if (!grant.Allowed)
+        {
+            return AccessProblem.From(grant, http);
         }
 
         var normalized = email.ToUpperInvariant();
