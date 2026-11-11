@@ -37,6 +37,22 @@ public sealed class TestEndpoints : IEndpointModule
             return problem ?? Results.Ok(new { cc!.Id });
         });
 
+        endpoints.MapGet("/test/relationship/course/{id:guid}", async (Guid id, HttpContext http, CancellationToken ct) =>
+        {
+            var (course, problem) = await http.CheckCourseAsync(Permissions.Courses.Update, id, ct);
+            return problem ?? Results.Ok(new { course!.Id });
+        });
+        endpoints.MapGet("/test/relationship/class/{id:guid}", async (Guid id, HttpContext http, CancellationToken ct) =>
+        {
+            var (cls, problem) = await http.CheckClassAsync(Permissions.Classes.View, id, ct);
+            return problem ?? Results.Ok(new { cls!.Id });
+        });
+        endpoints.MapGet("/test/relationship/student/{id:guid}", async (Guid id, HttpContext http, CancellationToken ct) =>
+        {
+            var (student, problem) = await http.CheckStudentAsync(Permissions.Students.View, id, ct);
+            return problem ?? Results.Ok(new { student!.Id });
+        });
+
         endpoints.MapGroup("/test/audit").RequirePermission(Permissions.Audit.View).MapGet("/", () => Results.Ok());
     }
 }
