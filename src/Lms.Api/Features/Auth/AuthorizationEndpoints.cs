@@ -92,7 +92,7 @@ public static class AuthorizationEndpoints
         }
 
         // The binding to the provider's client survives code exchange and refresh.
-        var principal = BuildPrincipal(user, result.Principal!.GetScopes(), result.Principal.GetClaim(ExternalOrgClaim));
+        var principal = BuildPrincipal(user, result.Principal!.GetScopes(), result.Principal!.GetClaim(ExternalOrgClaim));
         return Results.SignIn(principal, authenticationScheme: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
     }
 
