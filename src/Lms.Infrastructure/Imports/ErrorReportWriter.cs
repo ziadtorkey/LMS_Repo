@@ -41,7 +41,7 @@ public static class ErrorReportWriter
             var messagesOfRow = new List<string>();
             for (var i = 0; i < columns.Count; i++)
             {
-                sheet.Cell(line, i + 1).Value = row.Get(columns[i].Key) ?? string.Empty;
+                sheet.Cell(line, i + 1).Value = ImportColumn.Display(columns[i], row.Get(columns[i].Key)) ?? string.Empty;
             }
 
             foreach (var error in byRow[row.RowNumber])

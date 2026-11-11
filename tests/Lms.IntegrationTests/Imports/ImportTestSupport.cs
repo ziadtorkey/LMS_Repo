@@ -112,7 +112,7 @@ public sealed class ImportTestHost : IDisposable
 {
     private readonly WebApplicationFactory<Program> _host;
 
-    public ImportTestHost(LmsApiFactory factory)
+    public ImportTestHost(LmsApiFactory factory, Action<IServiceCollection>? configure = null)
     {
         _host = factory.WithWebHostBuilder(builder =>
         {
@@ -122,6 +122,7 @@ public sealed class ImportTestHost : IDisposable
                 services.AddImportDefinition<TestImportDefinition>();
                 services.RemoveAll<IBackgroundJobs>();
                 services.AddScoped<IBackgroundJobs, RecordingBackgroundJobs>();
+                configure?.Invoke(services);
             });
         });
     }

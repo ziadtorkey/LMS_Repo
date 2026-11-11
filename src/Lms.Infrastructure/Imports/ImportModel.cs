@@ -11,7 +11,16 @@ public sealed record ImportColumn(
     bool Required,
     IReadOnlyList<string>? AllowedValues = null,
     string? ExampleValue = null,
-    bool AsText = false);
+    bool AsText = false,
+    bool Sensitive = false)
+{
+    /// <summary>
+    /// A sensitive cell (the student default password, D24) is never stored, previewed or reported: it shows
+    /// <see cref="Lms.Shared.Imports.ImportMasks.Sensitive"/> when filled and nothing when empty. Only the commit reads the real value, from the uploaded file.
+    /// </summary>
+    public static string? Display(ImportColumn column, string? value) =>
+        !column.Sensitive ? value : string.IsNullOrEmpty(value) ? null : Lms.Shared.Imports.ImportMasks.Sensitive;
+}
 
 /// <summary>One data row as read from the sheet; <c>RowNumber</c> is the Excel row number (data starts at 2).</summary>
 public sealed record ImportRowValues(int RowNumber, IReadOnlyDictionary<string, string?> Values)

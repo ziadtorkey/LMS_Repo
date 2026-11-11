@@ -1,3 +1,5 @@
+using Lms.Api.Features.Students.Import;
+using Lms.Infrastructure.Imports;
 using Lms.Api.Infrastructure;
 
 namespace Lms.Api.Features.Students;
@@ -8,10 +10,17 @@ public sealed class StudentsModule : ILmsModule
     public void AddServices(IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<StudentMapper>();
+        services.AddScoped<StudentCreator>();
+        services.AddSingleton<ImportCredentialsStore>();
+        services.AddImportDefinition<StudentImportDefinition>();
         services.AddScoped<StudentQueries>();
         services.AddScoped<CreateStudentHandler>();
         services.AddScoped<StudentLifecycleHandler>();
     }
 
-    public void MapEndpoints(IEndpointRouteBuilder app) => StudentEndpoints.Map(app);
+    public void MapEndpoints(IEndpointRouteBuilder app)
+    {
+        StudentEndpoints.Map(app);
+        CredentialsSheetEndpoint.Map(app);
+    }
 }

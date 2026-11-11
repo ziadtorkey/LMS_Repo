@@ -52,7 +52,7 @@ public abstract class ImportJobBase(
         {
             var errors = errorsByRow[row.RowNumber].Select(e => new StoredError(e.ColumnKey, e.Code, e.Args)).ToList();
             db.Add(new ImportRow(
-                batch, row.RowNumber, JsonSerializer.Serialize(row.Values),
+                batch, row.RowNumber, JsonSerializer.Serialize(Display(definition, row.Values)),
                 errors.Count == 0 ? null : JsonSerializer.Serialize(errors)));
         }
 
@@ -68,6 +68,42 @@ public abstract class ImportJobBase(
 
         batch.RecordValidation(result.Rows.Count, result.Errors.Count, reportId);
         await db.SaveChangesAsync(ct);
+        if (result.Errors.Count > 0)
+        {
+            await PurgeSourceIfSensitiveAsync(batch, definition, ct); // an invalid file is fixed and uploaded again, not reused
+        }
+    }
+
+    private static Dictionary<string, string?> Display(IImportDefinition definition, IReadOnlyDictionary<string, string?> values)
+    {
+        var shown = new Dictionary<string, string?>(values);
+        foreach (var column in definition.Columns.Where(c => c.Sensitive))
+        {
+            shown[column.Key] = ImportColumn.Display(column, values.GetValueOrDefault(column.Key));
+        }
+
+        return shown;
+    }
+
+    /// <summary>
+    /// A kind with a sensitive column (D24) keeps its uploaded file only until the file has done its job: the commit re-reads it, and
+    /// nothing else needs it, so it is deleted when the batch is committed, invalid or failed (and by the discard).
+    /// </summary>
+    protected async Task PurgeSourceIfSensitiveAsync(ImportBatch batch, IImportDefinition definition, CancellationToken ct)
+    {
+        if (!definition.Columns.Any(c => c.Sensitive))
+        {
+            return;
+        }
+
+        try
+        {
+            await files.DeleteAsync(batch.SourceFileId, ct);
+        }
+        catch (StoredFileNotFoundException)
+        {
+            // already gone
+        }
     }
 
     protected async Task NotifyAsync(ImportBatch batch, CancellationToken ct)
@@ -194,10 +230,12 @@ public sealed class CommitImportJob(
             var failed = await Db.Set<ImportBatch>().FirstAsync(b => b.Id == batchId);
             failed.MarkFailed("unexpected");
             await Db.SaveChangesAsync();
+            await PurgeSourceIfSensitiveAsync(failed, definition, CancellationToken.None);
             await NotifyAsync(failed, CancellationToken.None);
             return;
         }
 
+        await PurgeSourceIfSensitiveAsync(batch, definition, CancellationToken.None); // the commit has read it for the last time
         foreach (var action in afterCommit)
         {
             try

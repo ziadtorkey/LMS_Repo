@@ -37,4 +37,22 @@
   <data name="ImportError_invalid_date" xml:space="preserve"><value>استخدم تاريخًا مثل 2026-09-01.</value></data>
   <data name="ImportError_unknown_unit" xml:space="preserve"><value>لا توجد وحدة بالرمز "{value}" في هذا الفرع.</value></data>
   <data name="ImportError_unexpected" xml:space="preserve"><value>فشل الاستيراد ولم يُحفظ أي شيء.</value></data>
+  <data name="ImportError_invalid_email" xml:space="preserve"><value>أدخل بريدًا إلكترونيًا صحيحًا.</value></data>
+  <data name="ImportError_invalid_mobile" xml:space="preserve"><value>أدخل رقم جوال صحيحًا، مثل ‎+201001234567.</value></data>
+  <data name="ImportError_invalid_national_id" xml:space="preserve"><value>يجب أن يتكون رقم الهوية من 5 إلى 20 حرفًا أو رقمًا.</value></data>
+  <data name="ImportError_duplicate_person" xml:space="preserve"><value>هذا الشخص موجود بالفعل في هذه الجهة (نفس القيمة: {field}).</value></data>
+  <data name="ImportError_blocked_by_policy" xml:space="preserve"><value>محظور بسياسة الوحدة الأعلى</value></data>
+  <data name="ImportError_invalid_level_type" xml:space="preserve"><value>يُسجَّل الطلاب في وحدات تستضيف الفصول، وهذه الوحدة ليست كذلك.</value></data>
+  <data name="ImportError_possible_duplicate" xml:space="preserve"><value>يوجد طالب بالاسم وتاريخ الميلاد نفسيهما. احذف هذا الصف أو عدّله.</value></data>
+  <data name="ImportError_student_code_required" xml:space="preserve"><value>كود الطالب مطلوب (تُدخل الأكواد يدويًا في هذه الوحدة).</value></data>
+  <data name="ImportError_student_code_not_allowed" xml:space="preserve"><value>اترك الكود فارغًا: تُنشأ الأكواد تلقائيًا في هذه الوحدة.</value></data>
+  <data name="ImportError_student_code_taken" xml:space="preserve"><value>كود الطالب مستخدم بالفعل لدى العميل.</value></data>
+  <data name="ImportError_invalid_student_code" xml:space="preserve"><value>استخدم من 1 إلى 30 حرفًا أو رقمًا أو شرطة.</value></data>
+  <data name="ImportError_guardian_required" xml:space="preserve"><value>ولي الأمر مطلوب في هذه الوحدة.</value></data>
+  <data name="ImportError_guardian_incomplete" xml:space="preserve"><value>أكمل اسم ولي الأمر (بالعربية والإنجليزية) وصلة القرابة والجوال.</value></data>
+  <data name="ImportError_unknown_class" xml:space="preserve"><value>لا يوجد فصل بالرمز "{value}" في العام الدراسي الحالي.</value></data>
+  <data name="ImportError_class_closed" xml:space="preserve"><value>الفصل مغلق.</value></data>
+  <data name="ImportError_class_full" xml:space="preserve"><value>الفصل ممتلئ.</value></data>
+  <data name="ImportError_class_unit_mismatch" xml:space="preserve"><value>الفصل يتبع وحدة غير وحدة الطالب.</value></data>
+  <data name="ImportError_invalid_password" xml:space="preserve"><value>كلمة المرور الافتراضية لا تستوفي قواعد كلمات المرور.</value></data>
 </root>
