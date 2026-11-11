@@ -59,7 +59,17 @@ CI uploads `TestResults/` and `api.log` as the `e2e-artifacts` artifact when the
 | `Login_page_is_arabic_rtl_by_default` | X-01 on the server-rendered login page |
 | `Shell_is_usable_at_360px_in_arabic` | X-10 (360 px) |
 
-## Scenarios (M1, plan Task 38): `M1/AuditAndNotificationsTests.cs`, `M1/YearsTests.cs`
+## Scenarios (M1, plan Task 38): `M1/YearsTests.cs`, `M1/AuditAndNotificationsTests.cs` (each in ar and en)
 | Test | Covers |
 |---|---|
-| `Deactivated_user_sees_blocked_message_on_login` (ar, en × deactivated, expired, withdrawn) | FR-SEC-07: exact blocked-login copy, no session |
+| `Deactivated_user_sees_blocked_message_on_login` (× deactivated, expired, withdrawn) | FR-SEC-07: exact blocked-login copy, no session |
+| `Root_admin_defines_2026_year_with_two_terms_and_a_holiday_school_inherits_it` | FR-YEAR-01..03, D22: year, two terms and a holiday on a fresh stage; the section below inherits them read-only |
+| `Year_selector_defaults_to_active_year_and_switches` | X-04: app-bar selector starts on the Active year, switches, and keeps the choice across a reload |
+| `Audit_viewer_shows_unit_move_with_before_after_and_exports_csv_and_xlsx` | FR-AUD-03/04: unit move shown with old/new parent, CSV (UTF-8 BOM) and XLSX downloads |
+| `Assignee_sees_realtime_bell_notification_without_reload` | FR-NOT-02: two browsers; the assignee's bell and snackbar update live (SignalR) |
+
+Notes for these scenarios:
+- **Fresh data per run:** units are created with a run id in their names and codes, so the suite can run again on the same database. The Active/Planned school years of the selector scenario are created once and reused.
+- **Dedicated seed user `notify-e2e`** (a Teacher in KG) receives the role assigned in the bell scenario. The test removes that role again in a `finally`, because a second context makes the app open the context chooser, which has no bell.
+- **MudBlazor inputs:** use `MudControls` (selects open a popover list; date pickers are read-only inputs that open a calendar, so a date is picked by stepping months). While a picker is open it copies its `data-testid` onto the popover, so target `input[data-testid=...]`.
+- **Selected text of a MudSelect** is rendered as text, not as an input value: assert with `ToContainTextAsync`.

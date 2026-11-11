@@ -102,6 +102,8 @@ public sealed class DevSeeder(string connectionString, IHostEnvironment environm
             ("guardian@altagamo3.test", "ولي الأمر", "Parent", [("Guardian", "S")]),
             ("multi@altagamo3.test", "معلم ومشرف", "Teacher and Supervisor", [("Teacher", "KG"), ("Supervisor", "PRI")]),
             ("lockout-e2e@altagamo3.test", "مستخدم القفل", "Lockout Test User", [("Teacher", "KG")]),
+            // Receives the role assigned live in the notification E2E (bell without reload); used by no other test.
+            ("notify-e2e@altagamo3.test", "مستخدم الإشعارات", "Notification Test User", [("Teacher", "KG")]),
         ];
 
         // Accounts in each blocked status (FR-SEC-07), used only by the blocked-login E2E: the right password must show
