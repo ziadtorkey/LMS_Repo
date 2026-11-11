@@ -33,6 +33,8 @@ public sealed class IsolationBypassGuardTests
             "effective year list inherited from ancestors above the caller's scope (M1 Task 20, #102)",
         ["src/Lms.Api/Features/AcademicYears/AcademicYearMapper.cs"] =
             "names of the defining unit of an inherited year, restricted to the caller's organization (M1 Task 20, #102)",
+        ["src/Lms.Api/Features/Audit/AuditRows.cs"] =
+            "role and unit names of audit rows the caller may already see, restricted to the entries' clients (M1 Task 18, #97)",
         ["src/Lms.Api/Features/AcademicYears/AcademicYearEndpoints.cs"] =
             "delete also removes calendar events at descendant units, restricted to the year's client (M1 Task 22, #57)",
         ["src/Lms.Api/Features/AcademicYears/CalendarEndpoints.cs"] =
