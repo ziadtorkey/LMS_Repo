@@ -78,3 +78,11 @@ Each runs in Arabic and English (`[Theory]` with `"ar"`/`"en"`; `StartAsync(cult
 | Test | Covers |
 |---|---|
 | `Deactivated_user_sees_blocked_message_on_login` (ar, en × deactivated, expired, withdrawn) | FR-SEC-07: exact blocked-login copy, no session |
+
+## Scenarios (M3, plan Task 46: `M3/AcademicStructureTests`)
+Run as the seeded school group's Org Admin with unique names per test (`M3Names`). Prerequisites a scenario is not testing are created through the API (`Infrastructure/ApiSetup`: authenticated `fetch` from the signed-in page); only the named feature is driven through the UI. The seed has a current academic year since M1; if it is not the effective year on the run date, set-up creates one through the API.
+
+| Test | Covers | Status |
+|---|---|---|
+| `Root_admin_creates_course_and_allocates_it_below_the_school` | FR-CRS-01/02, D38 duplicate code | skipped until #264, #214, #215 |
+| supervisor assigned; blueprint builder and publish v1; classes bulk create and matrix; teacher assignment; teacher sees only own class-course; publish v2 with push (polled up to 30 s); copy classes to next year | FR-CRS-04, FR-LP-*, FR-CLS-*, FR-TCH-* | to write as the FE pages (#238, #239, #240 to #243) and BE (#217, #221 to #225) land |
