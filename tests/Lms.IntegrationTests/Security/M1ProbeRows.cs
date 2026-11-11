@@ -166,7 +166,8 @@ public static class M1ProbeRows
         new("org-units academic flags", HttpMethod.Put, Routes.OrgUnitAcademicFlagsPattern,
             async (w, _) => new ProbeRequest(Routes.OrgUnitAcademicFlags((await w.NewUnitAsync(w.Callers.A.School1)).Id),
                 new OrgUnitAcademicFlagsRequest(false, null, true)),
-            Expect(Ok, Ok, NotFound, Forbidden, NotFound, Ok)),        new("org-units delete (leaf)", HttpMethod.Delete, Routes.OrgUnitPattern,
+            Expect(Ok, Ok, NotFound, Forbidden, NotFound, Ok)),
+        new("org-units delete (leaf)", HttpMethod.Delete, Routes.OrgUnitPattern,
             async (w, _) => new ProbeRequest(Routes.OrgUnit((await w.NewUnitAsync(w.Callers.A.School1)).Id)),
             Expect(NoContent, NoContent, NotFound, Forbidden, NotFound, NoContent)),
 

@@ -1,4 +1,5 @@
 using Lms.Api.Infrastructure;
+using Lms.Domain.Organizations;
 
 namespace Lms.Api.Features.OrgUnits;
 
@@ -10,6 +11,7 @@ public sealed class OrgUnitsModule : ILmsModule
         services.AddScoped<OrgUnitQueries>();
         services.AddScoped<DeleteOrgUnitHandler>();
         services.AddScoped<AcademicFlagsHandler>();
+        services.AddScoped<IOrgUnitUsageCheck, TransferTargetUsageCheck>();
     }
 
     public void MapEndpoints(IEndpointRouteBuilder app) => app.MapOrgUnitEndpoints();
