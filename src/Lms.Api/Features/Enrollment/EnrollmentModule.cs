@@ -9,7 +9,6 @@ public sealed class EnrollmentModule : ILmsModule
 {
     public void AddServices(IServiceCollection services, IConfiguration configuration)
     {
-        services.AddScoped<EnrollmentRelationship>();
         services.AddScoped<EnrollmentQueries>();
         services.AddImportDefinition<ClassStudentsImportDefinition>();
     }
