@@ -78,7 +78,9 @@ public sealed class AuditAndNotificationsTests(E2EFixture fixture) : E2ETestBase
             await admin.GotoAsync("/assignments");
             await admin.GetByTestId("assign-new").WaitForAsync();
             await admin.GetByTestId("assign-new").ClickAsync();
-            await admin.GetByTestId("assign-email").FillAsync(E2ESettings.SeedUser("notify-e2e"));
+            // The person comes from the staff picker (people with a staff profile); notify-e2e has one in the dev seed.
+            await MudControls.AutocompleteAsync(admin, admin.Locator("input[data-testid='assign-person']"),
+                E2ESettings.SeedUser("notify-e2e"), E2ESettings.SeedUser("notify-e2e"));
             await MudControls.SelectAsync(admin, admin.GetByTestId("assign-role"), SupervisorRole(culture));
             await MudControls.SelectAsync(admin, admin.GetByTestId("assign-unit"), Pick(culture, unitAr, unitEn));
             await admin.GetByTestId("assign-save").ClickAsync();
@@ -101,10 +103,12 @@ public sealed class AuditAndNotificationsTests(E2EFixture fixture) : E2ETestBase
         }
     }
 
-    /// <summary>Removes the Supervisor assignment this run added (if it got that far) from the section's assignment list.</summary>
+    /// <summary>
+    /// Removes the Supervisor assignment this run added (if it got that far), looking only at rows of the notify-e2e user
+    /// with that role in the run's own unit, so no other assignment can be touched.
+    /// </summary>
     private static async Task RemoveAddedRoleAsync(Microsoft.Playwright.IPage admin, string culture, string unitAr, string unitEn)
     {
-        var rows = admin.Locator("[data-testid^='assignment-delete-']");
         try
         {
             await admin.GotoAsync("/assignments");
@@ -118,17 +122,22 @@ public sealed class AuditAndNotificationsTests(E2EFixture fixture) : E2ETestBase
             }
 
             await item.First.ClickAsync();
-            while (await rows.CountAsync() > 0)
+            var mine = admin.Locator("tr")
+                .Filter(new() { HasText = E2ESettings.SeedUser("notify-e2e") })
+                .Filter(new() { HasText = SupervisorRole(culture) })
+                .Filter(new() { HasText = option });
+            await Expect(admin.Locator("[data-testid='unit-picker']")).ToContainTextAsync(option);
+            while (await mine.CountAsync() > 0)
             {
-                var before = await rows.CountAsync();
-                await rows.First.ClickAsync();
+                var before = await mine.CountAsync();
+                await mine.First.Locator("[data-testid^='assignment-delete-']").ClickAsync();
                 await admin.GetByTestId("confirm-yes").ClickAsync();
-                await Expect(rows).ToHaveCountAsync(before - 1);
+                await Expect(mine).ToHaveCountAsync(before - 1);
             }
         }
-        catch (Microsoft.Playwright.PlaywrightException)
+        catch (Exception ex) when (ex is Microsoft.Playwright.PlaywrightException or TimeoutException)
         {
-            // Best effort: a page that never loaded (the run failed early) has nothing to remove.
+            // Best effort: when the run failed early there is nothing to remove, and this must not hide the real failure.
         }
     }
 

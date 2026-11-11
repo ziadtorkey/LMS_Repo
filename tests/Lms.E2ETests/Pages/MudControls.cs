@@ -19,6 +19,19 @@ public static class MudControls
     }
 
     /// <summary>
+    /// Types into a MudAutocomplete's input (its <c>data-testid</c> sits on the input) and clicks the suggestion containing
+    /// <paramref name="optionText"/>.
+    /// </summary>
+    public static async Task AutocompleteAsync(IPage page, ILocator input, string search, string optionText)
+    {
+        await input.ClickAsync();
+        await input.PressSequentiallyAsync(search); // the search is debounced and runs after typing stops
+        var option = page.Locator(".mud-popover-open .mud-list-item").Filter(new LocatorFilterOptions { HasText = optionText }).First;
+        await option.ClickAsync();
+        await Microsoft.Playwright.Assertions.Expect(page.Locator(".mud-popover-open .mud-list-item")).ToHaveCountAsync(0);
+    }
+
+    /// <summary>
     /// Opens the date picker of an empty input (the calendar starts at the current month), steps to the target month
     /// and clicks the day. The picker closes when the input loses focus, so the caller clicks elsewhere afterwards.
     /// </summary>

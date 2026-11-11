@@ -198,6 +198,25 @@ public sealed class DevSeederTests(LmsApiFactory factory)
         Assert.Equal([("notify-e2e@altagamo3.test", "Teacher", "KG")], mine);
     }
 
+    [Fact]
+    public async Task Notification_user_has_an_active_staff_profile_so_the_assignment_picker_finds_them()
+    {
+        var cs = await factory.CreateIsolatedDatabaseAsync();
+        await SeederFor(cs).SeedAsync();
+        await SeederFor(cs).SeedAsync(); // seeding again must not add a second profile
+
+        await using var db = Open(cs);
+        var profiles = await db.Set<Lms.Domain.People.StaffProfile>().IgnoreQueryFilters()
+            .Where(p => p.Email == "notify-e2e@altagamo3.test").ToListAsync();
+
+        var profile = Assert.Single(profiles);
+        Assert.Equal(Lms.Domain.People.PersonStatus.Active, profile.Status);
+        Assert.False(profile.IsDeleted);
+        var home = await db.OrgUnits.SingleAsync(u => u.Id == profile.OrgUnitId);
+        Assert.Equal("KG", home.Code);
+        Assert.Equal(home.OrganizationId, profile.OrganizationId);
+    }
+
     [Theory]
     [InlineData("deactivated-e2e@altagamo3.test", UserStatus.Deactivated)]
     [InlineData("expired-e2e@altagamo3.test", UserStatus.Expired)]

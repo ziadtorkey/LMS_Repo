@@ -134,6 +134,18 @@ public sealed class DevSeeder(string connectionString, IHostEnvironment environm
             await db.SaveChangesAsync(ct);
         }
 
+        // The notification E2E assigns a role to notify-e2e through the staff picker, which lists only people with a staff
+        // profile (people kernel); the home unit is KG, where the user already holds the Teacher role.
+        const string notifyEmail = "notify-e2e@altagamo3.test";
+        var notifyUser = await db.Users.SingleAsync(u => u.NormalizedEmail == notifyEmail.ToUpperInvariant(), ct);
+        if (!await db.Set<Lms.Domain.People.StaffProfile>().IgnoreQueryFilters().AnyAsync(p => p.UserId == notifyUser.Id, ct))
+        {
+            db.Set<Lms.Domain.People.StaffProfile>().Add(new Lms.Domain.People.StaffProfile(
+                school.Units["KG"], notifyUser.Id, notifyUser.DisplayNameAr, notifyUser.DisplayNameEn, notifyEmail,
+                null, null, null, null, null, null));
+            await db.SaveChangesAsync(ct);
+        }
+
         foreach (var b in blocked)
         {
             var user = await db.Users.SingleAsync(u => u.NormalizedEmail == b.Email.ToUpperInvariant(), ct);
