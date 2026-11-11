@@ -1,4 +1,6 @@
+using Lms.Domain.Access;
 using Lms.Domain.Organizations;
+using Lms.Domain.People;
 using Lms.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -52,6 +54,19 @@ public static class ValidAssignmentQuery
                                                            && x.Status == OrgUnitStatus.Inactive && u.Path.StartsWith(x.Path))
               && (a.ValidFrom == null || a.ValidFrom <= today)
               && (a.ValidTo == null || a.ValidTo >= today)
+              // Person status gate (M2 Task 6): the holder's profile of the role's base kind in this client, when there is
+              // one, must be Active (and, for staff, not past ExpiresOn). No profile = a legacy bare user: no gate.
+              // ISOLATION-BYPASS: the profile lies outside the caller's scope (or there is none yet); matched by user
+              // and client explicitly, deleted profiles excluded.
+              && !(r.BaseKind == RoleBaseKind.Staff
+                   && db.Set<StaffProfile>().IgnoreQueryFilters().Any(p =>
+                       p.UserId == a.UserId && p.OrganizationId == a.OrganizationId && !p.IsDeleted
+                       && (p.Status != PersonStatus.Active || (p.ExpiresOn != null && p.ExpiresOn < today))))
+              // ISOLATION-BYPASS: same as above, for the student profile of the user in this client.
+              && !(r.BaseKind == RoleBaseKind.Student
+                   && db.Set<StudentProfile>().IgnoreQueryFilters().Any(p =>
+                       p.UserId == a.UserId && p.OrganizationId == a.OrganizationId && !p.IsDeleted
+                       && p.Status != PersonStatus.Active))
         select new ValidAssignment
         {
             AssignmentId = a.Id,

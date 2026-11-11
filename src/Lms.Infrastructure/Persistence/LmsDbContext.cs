@@ -6,6 +6,7 @@ using Lms.Domain.Files;
 using Lms.Domain.Configuration;
 using Lms.Domain.Organizations;
 using Lms.Domain.Identity;
+using Lms.Domain.People;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;

@@ -41,8 +41,9 @@ jobs:
         run: |
           dotnet build src/Lms.Api -c Release
           dotnet build tests/Lms.E2ETests -c Release
-      - name: Start MySQL and MinIO
-        run: docker compose up -d --wait mysql minio
+      # Mailpit receives the invitation and reset emails the M1 E2E tests read (MailpitClient, :8025).
+      - name: Start MySQL, MinIO and Mailpit
+        run: docker compose up -d --wait mysql minio mailpit
       # In Development the API applies migrations and seeds the dev data (#14) at startup.
       - name: Start the API in Development
         env:
