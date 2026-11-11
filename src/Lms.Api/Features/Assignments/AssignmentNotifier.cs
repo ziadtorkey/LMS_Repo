@@ -9,12 +9,12 @@ namespace Lms.Api.Features.Assignments;
 public sealed class AssignmentNotifier(INotificationPublisher publisher, ILogger<AssignmentNotifier> logger)
 {
     public Task RoleAssignedAsync(RoleAssignment assignment, Role role, OrgUnit unit, CancellationToken ct) =>
-        SendAsync(NotificationEvents.AccessRoleAssigned, assignment, role, unit, ct);
+        SendAsync(NotificationEvents.AccessRoleAssigned, assignment, role, unit, "/choose-context", ct);
 
     public Task RoleRemovedAsync(RoleAssignment assignment, Role role, OrgUnit unit, CancellationToken ct) =>
-        SendAsync(NotificationEvents.AccessRoleRemoved, assignment, role, unit, ct);
+        SendAsync(NotificationEvents.AccessRoleRemoved, assignment, role, unit, null, ct); // nothing left to open
 
-    private async Task SendAsync(string eventKey, RoleAssignment assignment, Role role, OrgUnit unit, CancellationToken ct)
+    private async Task SendAsync(string eventKey, RoleAssignment assignment, Role role, OrgUnit unit, string? deepLink, CancellationToken ct)
     {
         try
         {
@@ -27,7 +27,7 @@ public sealed class AssignmentNotifier(INotificationPublisher publisher, ILogger
                     ["OrgUnitNameAr"] = unit.NameAr,
                     ["OrgUnitNameEn"] = unit.NameEn,
                 },
-                DeepLink: "/me"), ct);
+                DeepLink: deepLink), ct);
         }
         catch (Exception ex)
         {

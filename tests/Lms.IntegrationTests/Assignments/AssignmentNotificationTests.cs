@@ -73,7 +73,7 @@ public sealed class AssignmentNotificationTests
         var row = Assert.Single(await RowsAsync(user.Id));
         Assert.Equal(NotificationEvents.AccessRoleAssigned, row.EventKey);
         Assert.Equal(tree.Org.Id, row.OrganizationId);
-        Assert.StartsWith("/", row.DeepLink);
+        Assert.Equal("/choose-context", row.DeepLink);
         var parameters = JsonSerializer.Deserialize<Dictionary<string, string>>(row.ParametersJson)!;
         Assert.Equal(teacher.NameEn, parameters["RoleNameEn"]);
         Assert.Equal(teacher.NameAr, parameters["RoleNameAr"]);
@@ -94,6 +94,7 @@ public sealed class AssignmentNotificationTests
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         var row = Assert.Single(await RowsAsync(user.Id));
         Assert.Equal(NotificationEvents.AccessRoleRemoved, row.EventKey);
+        Assert.Null(row.DeepLink);
         Assert.Equal(tree.Org.Id, row.OrganizationId);
         var parameters = JsonSerializer.Deserialize<Dictionary<string, string>>(row.ParametersJson)!;
         Assert.Equal(tree.School2.NameEn, parameters["OrgUnitNameEn"]);
