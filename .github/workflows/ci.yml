@@ -57,7 +57,15 @@ jobs:
           done
           echo "API did not become healthy"; cat api.log; exit 1
       - name: Install Playwright Chromium
-        run: pwsh tests/Lms.E2ETests/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+        # Retries: the runner's apt mirrors intermittently fail DNS ("Temporary failure resolving"), which used to fail
+        # the whole e2e job before any test ran.
+        run: |
+          for attempt in 1 2 3 4 5; do
+            if pwsh tests/Lms.E2ETests/bin/Release/net10.0/playwright.ps1 install --with-deps chromium; then exit 0; fi
+            echo "Playwright install failed (attempt $attempt); retrying in $((attempt * 20)) s"
+            sleep $((attempt * 20))
+          done
+          echo "Playwright install failed after 5 attempts"; exit 1
       - name: Run E2E tests
         run: dotnet test tests/Lms.E2ETests -c Release --no-build --logger "trx;LogFileName=e2e.trx" --results-directory TestResults
       - name: Upload E2E traces, screenshots and API log
