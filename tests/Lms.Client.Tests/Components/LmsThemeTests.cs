@@ -14,11 +14,12 @@ public sealed class LmsThemeTests
     }
 
     [Fact]
-    public void English_ui_prefers_Aptos_with_a_hosted_free_fallback_and_Cairo_for_arabic_names()
+    public void English_ui_uses_Inter_with_Cairo_for_arabic_names()
     {
         var stack = LmsTheme.Create(rightToLeft: false).Typography.Default.FontFamily!;
 
-        Assert.Equal(["Aptos Display", "Aptos", "Inter"], stack.Take(3));
+        Assert.Equal("Inter", stack[0]);
+        Assert.DoesNotContain(stack, f => f.Contains("Aptos", StringComparison.Ordinal));
         Assert.Contains("Cairo", stack);
         Assert.Equal("sans-serif", stack[^1]);
     }

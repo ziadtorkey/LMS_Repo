@@ -4,21 +4,20 @@ namespace Lms.Client.Theme;
 
 /// <summary>
 /// The LMS look: brand green #00663D on calm neutral surfaces with a light sidebar; Cairo for Arabic and
-/// Aptos Display for English. Colours are chosen for WCAG AA text contrast in both palettes.
+/// Inter for English. See docs/DESIGN.md. Colours are chosen for WCAG AA text contrast in both palettes.
 /// Tokens the theme cannot express live in wwwroot/css/lms-theme.css (keep the font stacks there in sync).
 /// </summary>
 public static class LmsTheme
 {
     /// <summary>
     /// Arabic UI: Cairo (Google Fonts) for Arabic and its own Latin glyphs.
-    /// English UI: Aptos Display / Aptos when installed (Windows with Microsoft 365); Aptos is not licensed for
-    /// web hosting, so devices without it get Inter (Google Fonts). Cairo stays in the stack for Arabic names.
+    /// English UI: Inter (Google Fonts) for everyone; Cairo stays in the stack for Arabic names.
     /// </summary>
     public static readonly string[] ArabicFontStack =
         ["Cairo", "Segoe UI", "Tahoma", "Arial", "sans-serif"];
 
     public static readonly string[] EnglishFontStack =
-        ["Aptos Display", "Aptos", "Inter", "Segoe UI", "Cairo", "Arial", "sans-serif"];
+        ["Inter", "Segoe UI", "Cairo", "Arial", "sans-serif"];
 
     public static MudTheme Create(bool rightToLeft) => new()
     {
