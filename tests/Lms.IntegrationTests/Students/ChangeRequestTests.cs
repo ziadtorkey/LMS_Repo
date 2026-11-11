@@ -234,8 +234,9 @@ public sealed class ChangeRequestTests
         var request = await FileAsync(w);
         await FileAsync(other);
 
-        var pending = await _kit.ReadAsync<PagedResult<StudentChangeRequestDto>>(await _kit.SendAsync(HttpMethod.Get, Routes.StudentChangeRequests, w.Admin));
+        var pending = await _kit.ReadAsync<PagedResult<StudentChangeRequestDto>>(await _kit.SendAsync(HttpMethod.Get, Routes.StudentChangeRequests + "?status=Pending", w.Admin));
         var rejected = await _kit.ReadAsync<PagedResult<StudentChangeRequestDto>>(await _kit.SendAsync(HttpMethod.Get, Routes.StudentChangeRequests + "?status=Rejected", w.Admin));
+        var all = await _kit.ReadAsync<PagedResult<StudentChangeRequestDto>>(await _kit.SendAsync(HttpMethod.Get, Routes.StudentChangeRequests, w.Admin));
         var bad = await _kit.SendAsync(HttpMethod.Get, Routes.StudentChangeRequests + "?status=Nope", w.Admin);
         var school2 = await _kit.ReadAsync<PagedResult<StudentChangeRequestDto>>(
             await _kit.SendAsync(HttpMethod.Get, Routes.StudentChangeRequests + "?orgUnitId=" + w.Tree.School2.Id, w.Admin));
@@ -243,6 +244,7 @@ public sealed class ChangeRequestTests
         Assert.Equal([request.Id], pending.Items.Select(r => r.Id));
         Assert.Equal(w.Student.StudentCode, pending.Items[0].StudentCode);
         Assert.Empty(rejected.Items);
+        Assert.Contains(request.Id, all.Items.Select(r => r.Id)); // no status filter = every status (#329)
         Assert.Equal(HttpStatusCode.BadRequest, bad.StatusCode);
         Assert.Empty(school2.Items); // only the unit asked for (and below)
     }
@@ -275,7 +277,7 @@ public sealed class ChangeRequestTests
             Assert.Equal(HttpStatusCode.NotFound, (await _kit.SendAsync(HttpMethod.Post, Routes.StudentChangeRequestReject(request.Id), who, new DecideChangeRequestRequest("x"))).StatusCode);
         }
 
-        var list = await _kit.ReadAsync<PagedResult<StudentChangeRequestDto>>(await _kit.SendAsync(HttpMethod.Get, Routes.StudentChangeRequests, counselor2));
+        var list = await _kit.ReadAsync<PagedResult<StudentChangeRequestDto>>(await _kit.SendAsync(HttpMethod.Get, Routes.StudentChangeRequests + "?status=Pending", counselor2));
         Assert.Empty(list.Items);
     }
 
