@@ -1,0 +1,112 @@
+@using Lms.Client.Services.Api
+@using Lms.Shared.Access
+@using Lms.Shared.Organizations
+@inject IAccessAdminApi Api
+@inject NavigationManager Navigation
+
+@* Assign a role by email (new users are invited), or edit the validity of an existing assignment. *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="2">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" data-testid="assign-error">@_error</MudAlert>
+            }
+
+            @if (Existing is null)
+            {
+                <MudTextField T="string" @bind-Value="_email" Label="@L["Assignments_Email"]" InputType="InputType.Email"
+                              Required="true" RequiredError="@L["Common_Required"]" dir="ltr" data-testid="assign-email" />
+                <MudText Typo="Typo.caption">@L["Assignments_NewUserHint"]</MudText>
+                <MudTextField T="string" @bind-Value="_nameAr" Label="@L["Common_NameAr"]" dir="rtl" lang="ar" data-testid="assign-name-ar" />
+                <MudTextField T="string" @bind-Value="_nameEn" Label="@L["Common_NameEn"]" dir="ltr" lang="en" data-testid="assign-name-en" />
+                <MudSelect T="Guid" @bind-Value="_roleId" Label="@L["Assignments_Role"]" data-testid="assign-role">
+                    @foreach (var role in Roles)
+                    {
+                        <MudSelectItem Value="@role.Id">@CultureText.Pick(role.NameAr, role.NameEn)</MudSelectItem>
+                    }
+                </MudSelect>
+                <MudSelect T="Guid" @bind-Value="_unitId" Label="@L["Assignments_Unit"]" data-testid="assign-unit">
+                    @foreach (var unit in Units)
+                    {
+                        <MudSelectItem Value="@unit.Id">@(new string(' ', unit.Depth * 3) + CultureText.Pick(unit.NameAr, unit.NameEn))</MudSelectItem>
+                    }
+                </MudSelect>
+            }
+            else
+            {
+                <MudText data-testid="assign-existing">
+                    @CultureText.Pick(Existing.UserDisplayNameAr, Existing.UserDisplayNameEn) — @CultureText.Pick(Existing.RoleNameAr, Existing.RoleNameEn)
+                </MudText>
+            }
+
+            <MudDatePicker Date="_validFrom" DateChanged="d => _validFrom = d" Label="@L["Assignments_ValidFrom"]"
+                           Clearable="true" data-testid="assign-from" />
+            <MudDatePicker Date="_validTo" DateChanged="d => _validTo = d" Label="@L["Assignments_ValidTo"]"
+                           Clearable="true" data-testid="assign-to" />
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="assign-cancel">@L["Common_Cancel"]</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_saving"
+                   data-testid="assign-save">@L["Common_Save"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private string _email = "", _nameAr = "", _nameEn = "";
+    private Guid _roleId, _unitId;
+    private DateTime? _validFrom, _validTo;
+    private string? _error;
+    private bool _saving;
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public IReadOnlyList<RoleDto> Roles { get; set; } = [];
+    [Parameter] public IReadOnlyList<OrgUnitNodeDto> Units { get; set; } = [];
+    [Parameter] public Guid? DefaultUnitId { get; set; }
+    /// <summary>When set the dialog only edits the validity dates of this assignment.</summary>
+    [Parameter] public AssignmentDto? Existing { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (Existing is not null)
+        {
+            _validFrom = Existing.ValidFrom?.ToDateTime(TimeOnly.MinValue);
+            _validTo = Existing.ValidTo?.ToDateTime(TimeOnly.MinValue);
+            return;
+        }
+        _roleId = Roles.FirstOrDefault()?.Id ?? Guid.Empty;
+        _unitId = DefaultUnitId ?? Units.FirstOrDefault()?.Id ?? Guid.Empty;
+    }
+
+    /// <summary>True when the validity window is empty-ended or ordered.</summary>
+    public static bool DatesValid(DateTime? from, DateTime? to) => from is null || to is null || to >= from;
+
+    private async Task SaveAsync()
+    {
+        _error = null;
+        if (!DatesValid(_validFrom, _validTo))
+        {
+            _error = L["Assignments_DateOrder"];
+            return;
+        }
+        if (Existing is null && string.IsNullOrWhiteSpace(_email))
+        {
+            _error = L["Common_Required"];
+            return;
+        }
+
+        _saving = true;
+        var from = _validFrom is { } f ? DateOnly.FromDateTime(f) : (DateOnly?)null;
+        var to = _validTo is { } t ? DateOnly.FromDateTime(t) : (DateOnly?)null;
+        var saved = await ApiCalls.RunAsync(
+            () => Existing is null
+                ? Api.CreateAssignmentAsync(new CreateAssignmentRequest(_email.Trim(),
+                    string.IsNullOrWhiteSpace(_nameAr) ? null : _nameAr.Trim(),
+                    string.IsNullOrWhiteSpace(_nameEn) ? null : _nameEn.Trim(), _roleId, _unitId, from, to))
+                : Api.UpdateAssignmentAsync(Existing.Id, new UpdateAssignmentRequest(from, to)),
+            Navigation, L, message => _error = message);
+        _saving = false;
+        if (saved) MudDialog.Close(DialogResult.Ok(true));
+    }
+}

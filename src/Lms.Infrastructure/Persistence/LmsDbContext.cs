@@ -8,6 +8,7 @@ using Lms.Domain.Organizations;
 using Lms.Domain.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Lms.Infrastructure.Persistence;
 
@@ -32,6 +33,23 @@ public sealed class LmsDbContext(DbContextOptions<LmsDbContext> options, ICurren
     public DbSet<OrgUnitSetting> OrgUnitSettings => Set<OrgUnitSetting>();
     public DbSet<OrgUnitPolicy> OrgUnitPolicies => Set<OrgUnitPolicy>();
     public DbSet<StoredFile> StoredFiles => Set<StoredFile>();
+
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        base.ConfigureConventions(configurationBuilder);
+
+        // The MySQL provider's data reader hands back DateTime for `date` columns, so DateOnly values cannot be read
+        // without a converter. The column type is pinned to `date` (the converter alone would make it datetime(6)), so no migration is needed.
+        configurationBuilder.Properties<DateOnly>().HaveConversion<DateOnlyConverter>().HaveColumnType("date");
+        configurationBuilder.Properties<DateOnly?>().HaveConversion<NullableDateOnlyConverter>().HaveColumnType("date");
+    }
+
+    private sealed class DateOnlyConverter() : ValueConverter<DateOnly, DateTime>(
+        d => d.ToDateTime(TimeOnly.MinValue), d => DateOnly.FromDateTime(d));
+
+    private sealed class NullableDateOnlyConverter() : ValueConverter<DateOnly?, DateTime?>(
+        d => d.HasValue ? d.Value.ToDateTime(TimeOnly.MinValue) : null,
+        d => d.HasValue ? DateOnly.FromDateTime(d.Value) : null);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

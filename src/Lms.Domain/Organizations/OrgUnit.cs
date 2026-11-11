@@ -61,6 +61,26 @@ public sealed class OrgUnit : AuditableEntity, IOrgUnitScoped
         return unit;
     }
 
+    public void Update(Guid levelTypeId, string nameAr, string nameEn, string code)
+    {
+        LevelTypeId = levelTypeId;
+        NameAr = nameAr;
+        NameEn = nameEn;
+        Code = code;
+    }
+
+    /// <summary>Re-parents the unit: sets ParentId, Path and Depth. Rows below it are re-pathed by <see cref="IOrgUnitRepather"/>.</summary>
+    public void MoveUnder(OrgUnit newParent)
+    {
+        ParentId = newParent.Id;
+        Depth = newParent.Depth + 1;
+        Path = Organizations.OrgUnitPath.Append(newParent.Path, Id);
+    }
+
+    public void Deactivate() => Status = OrgUnitStatus.Inactive;
+
+    public void Activate() => Status = OrgUnitStatus.Active;
+
     public void MarkAsLevelTransfer(Guid? nextTransferUnitId)
     {
         IsLevelTransfer = true;

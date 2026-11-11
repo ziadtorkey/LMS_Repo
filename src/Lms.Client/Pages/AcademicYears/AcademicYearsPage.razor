@@ -1,0 +1,190 @@
+@page "/academic-years"
+@attribute [Authorize]
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Shared.AcademicYears
+@using Lms.Shared.Authorization
+@using Lms.Shared.Organizations
+@implements IDisposable
+@inject IYearsApi Api
+@inject IUnitLookupApi UnitsApi
+@inject PermissionState Perms
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<PageTitle>@L["Years_Title"]</PageTitle>
+
+<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3" Wrap="Wrap.Wrap">
+    <MudText Typo="Typo.h4">@L["Years_Title"]</MudText>
+    @if (CanCreateHere)
+    {
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="() => OpenYearAsync(null)" data-testid="year-new">@L["Years_New"]</MudButton>
+    }
+</MudStack>
+
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+}
+else if (_failed)
+{
+    <MudAlert Severity="Severity.Error" data-testid="api-error">
+        @L["Api_Error"]
+        <MudButton Variant="Variant.Text" OnClick="LoadAsync">@L["Common_Retry"]</MudButton>
+    </MudAlert>
+}
+else
+{
+    @if (_hasPicker)
+    {
+    <MudSelect T="Guid" Value="_unitId" ValueChanged="UnitChangedAsync" Label="@L["Assignments_Unit"]" Class="mb-3"
+               Style="max-width:360px" data-testid="unit-picker">
+        @foreach (var unit in _units)
+        {
+            <MudSelectItem Value="@unit.Id">@(new string(' ', unit.Depth * 3) + CultureText.Pick(unit.NameAr, unit.NameEn))</MudSelectItem>
+        }
+    </MudSelect>
+    }
+
+    @if (_context is { } ctx)
+    {
+        @if (Inherited)
+        {
+            <MudAlert Severity="Severity.Info" Class="mb-3" data-testid="years-inherited">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Wrap="Wrap.Wrap">
+                    <span>@string.Format(L["Years_DefinedAt"], DefiningUnitName)</span>
+                    @if (Perms.Has(Permissions.AcademicYears.Create))
+                    {
+                        <MudButton Size="Size.Small" Variant="Variant.Outlined" OnClick="() => OpenYearAsync(null)"
+                                   data-testid="years-define-own">@L["Years_DefineOwn"]</MudButton>
+                    }
+                </MudStack>
+            </MudAlert>
+        }
+
+        @if (ctx.Years.Count == 0)
+        {
+            <MudText data-testid="years-empty">@L["Years_Empty"]</MudText>
+        }
+        <MudStack Spacing="3">
+            @foreach (var year in ctx.Years)
+            {
+                var y = year;
+                var closed = y.Status == AcademicYearStatuses.Closed;
+                var editable = !y.IsInherited && !closed && Perms.Has(Permissions.AcademicYears.Update);
+                var calendarEditable = !closed && Perms.Has(Permissions.AcademicYears.Update); // a unit may add entries to an inherited year
+                <MudPaper Outlined="true" Class="pa-3" data-testid="@($"year-{y.Id}")">
+                    <MudStack Spacing="2">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Wrap="Wrap.Wrap">
+                            <MudText Typo="Typo.h6">@CultureText.Pick(y.NameAr, y.NameEn)</MudText>
+                            <MudChip T="string" Size="Size.Small" Color="@StatusColor(y.Status)" data-testid="@($"year-status-{y.Id}")" data-status="@y.Status">
+                                @L[$"YearStatus_{y.Status}"]
+                            </MudChip>
+                            @if (closed)
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.Lock" Size="Size.Small" title="@L["Years_ClosedHint"]" data-testid="@($"year-lock-{y.Id}")" />
+                            }
+                            <MudText Typo="Typo.body2" dir="ltr">@y.StartDate.ToString("yyyy-MM-dd") – @y.EndDate.ToString("yyyy-MM-dd")</MudText>
+                        </MudStack>
+                        @if (editable)
+                        {
+                            <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap">
+                                <MudButton Size="Size.Small" Variant="Variant.Outlined" OnClick="() => OpenYearAsync(y)"
+                                           data-testid="@($"year-edit-{y.Id}")">@L["Common_Edit"]</MudButton>
+                                @if (y.Status == AcademicYearStatuses.Planned)
+                                {
+                                    <MudButton Size="Size.Small" Variant="Variant.Outlined" OnClick="() => ActivateAsync(y)"
+                                               data-testid="@($"year-activate-{y.Id}")">@L["Years_Activate"]</MudButton>
+                                    @if (Perms.Has(Permissions.AcademicYears.Delete))
+                                    {
+                                        <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Error" OnClick="() => DeleteAsync(y)"
+                                                   data-testid="@($"year-delete-{y.Id}")">@L["Common_Delete"]</MudButton>
+                                    }
+                                }
+                            </MudStack>
+                        }
+                        <TermsPanel Year="y" CanEdit="editable" OnChanged="LoadAsync" />
+                        <CalendarPanel Year="y" UnitId="@(_hasPicker ? _unitId : null)" CanEdit="calendarEditable" />
+                    </MudStack>
+                </MudPaper>
+            }
+        </MudStack>
+    }
+}
+
+@code {
+    private IReadOnlyList<OrgUnitNodeDto> _units = [];
+    private YearContextDto? _context;
+    private Guid _unitId;
+    private bool _loading = true, _failed, _hasPicker;
+
+    [Parameter, SupplyParameterFromQuery(Name = "unit")] public Guid? UnitId { get; set; }
+
+    private bool Inherited => _hasPicker && _context is { } c && c.DefiningOrgUnitId != _unitId;
+    private bool CanCreateHere => !_loading && !_failed && _hasPicker && _unitId != Guid.Empty && Perms.Has(Permissions.AcademicYears.Create) && !Inherited;
+    /// <summary>Name of the unit that defines the years, taken from the years themselves (it may not be in the user's unit list).</summary>
+    private string DefiningUnitName => _context?.Years.FirstOrDefault(y => y.OrgUnitId == _context.DefiningOrgUnitId) is { } y
+        ? CultureText.Pick(y.OrgUnitNameAr, y.OrgUnitNameEn) : "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        Perms.Changed += OnPermissionsChanged;
+        if (!Perms.Loaded) await Perms.RefreshAsync();
+        // Only users who may see units get the unit picker (listing units needs OrgUnits.View); everyone else
+        // sees the years of their own context unit.
+        _hasPicker = Perms.Has(Permissions.OrgUnits.View);
+        if (_hasPicker)
+        {
+            var (units, failed) = await ApiCalls.RunAsync(() => UnitsApi.GetUnitsAsync(), Navigation);
+            _failed = failed;
+            _units = UnitTree.Order(units ?? []);
+            _unitId = UnitId is { } q && _units.Any(u => u.Id == q) ? q : _units.FirstOrDefault()?.Id ?? Guid.Empty;
+        }
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        if (_hasPicker && _unitId == Guid.Empty) { _loading = false; return; }
+        _loading = true; _failed = false;
+        var (context, failed) = await ApiCalls.RunAsync(() => Api.GetEffectiveAsync(_hasPicker ? _unitId : null), Navigation);
+        _failed = failed;
+        _context = context;
+        _loading = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task UnitChangedAsync(Guid id) { _unitId = id; await LoadAsync(); }
+
+    private Task OpenYearAsync(AcademicYearDto? year) =>
+        DialogFlow.ShowAsync(Dialogs, year is null ? L["Years_New"] : L["Common_Edit"],
+            new DialogParameters<YearDialog> { { x => x.UnitId, _unitId }, { x => x.Existing, year } },
+            () => { Snackbar.Add(L["Common_Saved"], Severity.Success); return LoadAsync(); });
+
+    private async Task ActivateAsync(AcademicYearDto year)
+    {
+        if (await ApiCalls.RunAsync(() => Api.ActivateYearAsync(year.Id), Navigation, L, m => Snackbar.Add(m, Severity.Error)))
+            await LoadAsync();
+    }
+
+    private async Task DeleteAsync(AcademicYearDto year)
+    {
+        var name = CultureText.Pick(year.NameAr, year.NameEn);
+        if (!await ConfirmDialog.AskAsync(Dialogs, L["Confirm_DeleteTitle"], string.Format(L["Years_DeleteConfirm"], name))) return;
+        if (await ApiCalls.RunAsync(() => Api.DeleteYearAsync(year.Id), Navigation, L, m => Snackbar.Add(m, Severity.Error)))
+            await LoadAsync();
+    }
+
+    private static Color StatusColor(string status) => status switch
+    {
+        AcademicYearStatuses.Active => Color.Success,
+        AcademicYearStatuses.Planned => Color.Info,
+        _ => Color.Default,
+    };
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Perms.Changed -= OnPermissionsChanged;
+}

@@ -18,6 +18,13 @@
     <PackageVersion Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.15" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12" />
     <PackageVersion Include="MySql.EntityFrameworkCore" Version="10.0.12" />
+    <PackageVersion Include="Hangfire.Core" Version="1.8.22" />
+    <PackageVersion Include="Hangfire.AspNetCore" Version="1.8.22" />
+    <PackageVersion Include="Hangfire.MySqlStorage" Version="2.0.3" />
+    <!-- Hangfire.MySqlStorage 2.0.3 and Hangfire.NetCore drag in vulnerable old transitives: referenced directly by Lms.Api at patched versions (ADR 0003). -->
+    <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageVersion Include="System.Data.SqlClient" Version="4.9.0" />
+    <PackageVersion Include="ClosedXML" Version="0.105.0" />
     <PackageVersion Include="MailKit" Version="4.18.2" />
     <PackageVersion Include="Minio" Version="7.0.0" />
     <PackageVersion Include="MySqlConnector" Version="2.6.2" />

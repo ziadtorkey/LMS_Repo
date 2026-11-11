@@ -1,0 +1,261 @@
+@page "/org-units"
+@attribute [Authorize]
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Shared.Authorization
+@using Lms.Shared.Organizations
+@inject IOrgApi Api
+@inject ILmsApi LmsApi
+@inject IContextStore ContextStore
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<PageTitle>@L["OrgTree_Title"]</PageTitle>
+<MudText Typo="Typo.h4" Class="mb-4" data-testid="org-title">@L["OrgTree_Title"]</MudText>
+
+<MudTextField T="string" Value="_searchText" ValueChanged="OnSearchChanged" Label="@L["OrgTree_Search"]"
+              DebounceInterval="300" Clearable="true" Immediate="true" Class="mb-3"
+              Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" data-testid="org-search" />
+
+@if (_error is not null)
+{
+    <MudAlert Severity="Severity.Error" Class="mb-3" data-testid="org-error">@_error</MudAlert>
+}
+
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+}
+else if (_items.Count == 0)
+{
+    <MudText data-testid="org-no-matches">@(string.IsNullOrWhiteSpace(_search) ? L["Common_Empty"] : L["OrgTree_NoMatches"])</MudText>
+}
+else
+{
+    <MudTreeView T="OrgUnitNodeDto" Items="_items" Dense="true">
+        <ItemTemplate Context="item">
+            <MudTreeViewItem T="OrgUnitNodeDto" Value="item.Value" Items="item.Children" Expanded="item.Expanded"
+                             ExpandedChanged="@(open => SetExpanded(item.Value!.Id, open))" Icon="@Icons.Material.Filled.AccountTree">
+                <BodyContent>
+                    @{ var unit = item.Value!; var inactive = unit.Status == OrgUnitStatuses.Inactive; var match = item is OrgTreeItem { IsMatch: true }; }
+                    <div class="d-flex align-center flex-wrap gap-1 lms-org-node @(inactive ? "lms-org-inactive" : "") @(match ? "lms-org-match" : "")"
+                         data-testid="@($"org-node-{unit.Id}")">
+                        <MudText Typo="Typo.body1" Class="me-1">@Culture.Pick(unit.NameAr, unit.NameEn)</MudText>
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@unit.Code</MudChip>
+                        @if (inactive)
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Warning">@L["OrgTree_Inactive"]</MudChip>
+                        }
+                        <MudSpacer />
+                        @if (CanAddChild(unit))
+                        {
+                            <MudIconButton Icon="@Icons.Material.Filled.Add" Size="Size.Small" aria-label="@L["OrgTree_AddChild"]"
+                                           OnClick="() => AddChildAsync(unit)" data-testid="@($"org-add-{unit.Id}")" />
+                        }
+                        @if (PermState.Has(Permissions.OrgUnits.Update))
+                        {
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" aria-label="@L["Common_Edit"]"
+                                           OnClick="() => EditAsync(unit)" data-testid="@($"org-edit-{unit.Id}")" />
+                            @if (unit.ParentId is not null)
+                            {
+                                <MudIconButton Icon="@(inactive ? Icons.Material.Filled.PlayCircle : Icons.Material.Filled.PauseCircle)" Size="Size.Small"
+                                               aria-label="@(inactive ? L["OrgTree_Activate"] : L["OrgTree_Deactivate"])"
+                                               OnClick="() => ToggleAsync(unit)" data-testid="@($"org-toggle-{unit.Id}")" />
+                            }
+                        }
+                        @if (PermState.Has(Permissions.OrgUnits.Move) && unit.ParentId is not null)
+                        {
+                            <MudIconButton Icon="@Icons.Material.Filled.DriveFileMove" Size="Size.Small" aria-label="@L["Move_Title"]"
+                                           OnClick="() => MoveAsync(unit)" data-testid="@($"org-move-{unit.Id}")" />
+                        }
+                        @if (PermState.Has(Permissions.OrgUnits.Create) && unit.ParentId is not null)
+                        {
+                            <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" Size="Size.Small" aria-label="@L["Copy_Title"]"
+                                           OnClick="() => CopyAsync(unit)" data-testid="@($"org-copy-{unit.Id}")" />
+                        }
+                        @if (PermState.Has(Permissions.Templates.Create))
+                        {
+                            <MudIconButton Icon="@Icons.Material.Filled.Bookmark" Size="Size.Small" aria-label="@L["Templates_SaveAs"]"
+                                           OnClick="() => SaveTemplateAsync(unit)" data-testid="@($"org-template-{unit.Id}")" />
+                        }
+                        @if (PermState.Has(Permissions.OrgUnits.Delete) && unit.ParentId is not null)
+                        {
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error"
+                                           aria-label="@L["Common_Delete"]" OnClick="() => DeleteAsync(unit)" data-testid="@($"org-delete-{unit.Id}")" />
+                        }
+                        <MudIconButton Icon="@Icons.Material.Filled.Settings" Size="Size.Small" aria-label="@L["OrgTree_Settings"]"
+                                       Href="@($"org-units/{unit.Id}")" data-testid="@($"org-settings-{unit.Id}")" />
+                    </div>
+                </BodyContent>
+            </MudTreeViewItem>
+        </ItemTemplate>
+    </MudTreeView>
+}
+
+@code {
+    private IReadOnlyList<TreeItemData<OrgUnitNodeDto>> _items = [];
+    private IReadOnlyList<OrgUnitNodeDto> _units = [];
+    private readonly HashSet<Guid> _expanded = [];
+    private IReadOnlyList<LevelTypeDto>? _levels;
+    private string? _searchText, _search, _error;
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        PermState.Changed += OnPermissionsChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        await LoadAsync();
+    }
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    // FR-ORG-10: hide "add" when the role lacks the permission or a policy blocks it at this unit (the server still enforces both).
+    private bool CanAddChild(OrgUnitNodeDto unit) =>
+        PermState.Has(Permissions.OrgUnits.Create) && !unit.BlockedPermissions.Contains(Permissions.OrgUnits.Create);
+
+    // Every handler goes through the shared helper: redirects, API problems and network errors never reach the global error bar.
+    private Task<bool> RunAsync(Func<Task> action) => ApiCalls.RunAsync(action, Navigation, L, message => _error = message);
+
+    private async Task LoadAsync()
+    {
+        await RunAsync(async () =>
+        {
+            _units = await Api.GetOrgUnitsAsync(_search);
+            Rebuild();
+        });
+        _loading = false;
+    }
+
+    private void Rebuild() =>
+        _items = OrgTreeBuilder.Build(_units, u => Culture.Pick(u.NameAr, u.NameEn), _search, _expanded);
+
+    private void SetExpanded(Guid id, bool open)
+    {
+        if (open) _expanded.Add(id); else _expanded.Remove(id);
+    }
+
+    private async Task OnSearchChanged(string? text)
+    {
+        _searchText = text;
+        _error = null;
+        _search = string.IsNullOrWhiteSpace(text) ? null : text.Trim();
+        await LoadAsync();
+    }
+
+    private async Task<IReadOnlyList<LevelTypeDto>?> LevelsAsync()
+    {
+        if (_levels is null)
+            await RunAsync(async () => _levels = await Api.GetLevelTypesAsync());
+        return _levels;
+    }
+
+    private async Task AddChildAsync(OrgUnitNodeDto parent)
+    {
+        _error = null;
+        if (await LevelsAsync() is not { } levels) return;
+        var parentOrder = levels.FirstOrDefault(l => l.Id == parent.LevelTypeId)?.Order ?? 0;
+        await ShowDialogAsync(L["OrgTree_AddChild"], new DialogParameters<OrgUnitDialog>
+        {
+            { x => x.ParentId, parent.Id }, { x => x.LevelTypes, levels }, { x => x.ParentLevelOrder, parentOrder },
+        });
+    }
+
+    private async Task EditAsync(OrgUnitNodeDto unit)
+    {
+        _error = null;
+        if (await LevelsAsync() is not { } levels) return;
+        var parent = _units.FirstOrDefault(u => u.Id == unit.ParentId);
+        var parentOrder = parent is null ? 0 : levels.FirstOrDefault(l => l.Id == parent.LevelTypeId)?.Order ?? 0;
+        await ShowDialogAsync(L["Common_Edit"], new DialogParameters<OrgUnitDialog>
+        {
+            { x => x.Existing, unit }, { x => x.LevelTypes, levels }, { x => x.ParentLevelOrder, parentOrder },
+        });
+    }
+
+    private Task ShowDialogAsync(string title, DialogParameters<OrgUnitDialog> parameters) =>
+        ShowDialogAsync<OrgUnitDialog>(title, parameters);
+
+    private async Task ShowDialogAsync<TDialog>(string title, DialogParameters<TDialog> parameters) where TDialog : ComponentBase
+    {
+        var dialog = await Dialogs.ShowAsync<TDialog>(title, parameters, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            Snackbar.Add(L["Common_Saved"], Severity.Success);
+            await LoadAsync();
+        }
+    }
+
+    private async Task CopyAsync(OrgUnitNodeDto unit)
+    {
+        _error = null;
+        IReadOnlyList<OrgUnitNodeDto> all = [];
+        if (!await RunAsync(async () => all = await Api.GetOrgUnitsAsync(null))) return;
+        await ShowDialogAsync<CopyBranchDialog>(L["Copy_Title"], new DialogParameters<CopyBranchDialog>
+        {
+            { x => x.Source, unit }, { x => x.AllUnits, all },
+        });
+    }
+
+    private Task SaveTemplateAsync(OrgUnitNodeDto unit)
+    {
+        _error = null;
+        return ShowDialogAsync<SaveTemplateDialog>(L["Templates_SaveAs"], new DialogParameters<SaveTemplateDialog> { { x => x.Source, unit } });
+    }
+
+    private async Task MoveAsync(OrgUnitNodeDto unit)
+    {
+        _error = null;
+        // The candidate list needs the whole tree, not just the current search result.
+        IReadOnlyList<OrgUnitNodeDto> all = [];
+        if (!await RunAsync(async () => all = await Api.GetOrgUnitsAsync(null))) return;
+        await ShowDialogAsync<MoveUnitDialog>(L["Move_Title"], new DialogParameters<MoveUnitDialog>
+        {
+            { x => x.Unit, unit }, { x => x.AllUnits, all },
+        });
+    }
+
+    private async Task ToggleAsync(OrgUnitNodeDto unit)
+    {
+        var status = unit.Status == OrgUnitStatuses.Inactive ? OrgUnitStatuses.Active : OrgUnitStatuses.Inactive;
+        _error = null;
+        // Deactivating the unit the caller works in (or one above it) cuts off their own access: make them confirm.
+        if (status == OrgUnitStatuses.Inactive && await CutsOffOwnAccessAsync(unit)
+            && !await ConfirmDialog.AskAsync(Dialogs, L["Confirm_DeactivateTitle"], L["OrgTree_DeactivateOwnWarning"], L["OrgTree_Deactivate"]))
+            return;
+        await RunAsync(() => Api.SetOrgUnitStatusAsync(unit.Id, new SetOrgUnitStatusRequest(status)));
+        await LoadAsync();
+    }
+
+    /// <summary>True when <paramref name="unit"/> is the caller's active context unit or one of its ancestors.</summary>
+    private async Task<bool> CutsOffOwnAccessAsync(OrgUnitNodeDto unit)
+    {
+        var (me, _) = await ApiCalls.RunAsync(() => LmsApi.GetMeAsync(), Navigation);
+        var contextUnit = me?.Contexts.FirstOrDefault(c => c.AssignmentId == ContextStore.ActiveAssignmentId)?.OrgUnitId;
+        if (contextUnit is null) return false;
+
+        // While searching, the visible list may not contain the caller's unit: use the whole tree for the ancestor walk.
+        IReadOnlyList<OrgUnitNodeDto> all = _units;
+        if (_search is not null)
+            await RunAsync(async () => all = await Api.GetOrgUnitsAsync(null));
+
+        var byId = all.ToDictionary(u => u.Id);
+        for (var id = contextUnit; id is { } current; id = byId.TryGetValue(current, out var u) ? u.ParentId : null)
+            if (current == unit.Id) return true;
+        return false;
+    }
+
+    private async Task DeleteAsync(OrgUnitNodeDto unit)
+    {
+        if (!await ConfirmDialog.AskAsync(Dialogs, L["Confirm_DeleteTitle"], L["OrgTree_DeleteConfirm"], L["Common_Delete"])) return;
+        _error = null;
+        await RunAsync(() => Api.DeleteOrgUnitAsync(unit.Id));
+        await LoadAsync();
+    }
+
+    public void Dispose() => PermState.Changed -= OnPermissionsChanged;
+}

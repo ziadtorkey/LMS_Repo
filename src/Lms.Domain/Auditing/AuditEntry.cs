@@ -15,7 +15,7 @@ public sealed class AuditEntry : Entity, IOptionalTenantOwned
 
     public AuditEntry(
         Guid? organizationId, Guid? userId, Guid? assignmentId, AuditAction action, string entityType, Guid entityId,
-        string? beforeJson, string? afterJson, DateTime timestampUtc, string? ipAddress = null)
+        string? beforeJson, string? afterJson, DateTime timestampUtc, string? ipAddress = null, string? orgUnitPath = null)
     {
         OrganizationId = organizationId;
         UserId = userId;
@@ -27,6 +27,7 @@ public sealed class AuditEntry : Entity, IOptionalTenantOwned
         AfterJson = afterJson;
         TimestampUtc = timestampUtc;
         IpAddress = ipAddress;
+        OrgUnitPath = orgUnitPath;
     }
 
     public Guid? OrganizationId { get; private set; }
@@ -39,4 +40,10 @@ public sealed class AuditEntry : Entity, IOptionalTenantOwned
     public string? AfterJson { get; private set; }
     public DateTime TimestampUtc { get; private set; }
     public string? IpAddress { get; private set; }
+
+    /// <summary>
+    /// Path of the org unit the change happened at (the entity's own path when it is unit-scoped, the unit's path for an
+    /// OrgUnit, else the actor's scope); null for platform-level events. Drives subtree visibility in the audit viewer.
+    /// </summary>
+    public string? OrgUnitPath { get; private set; }
 }

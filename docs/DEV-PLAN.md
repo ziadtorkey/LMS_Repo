@@ -19,8 +19,8 @@ Each milestone ends with a demo-able, fully tested increment merged to `main`.
 |---|---|---|---|---|
 | M0 | **Foundation** | §1.3, §4.2, §4.3 engine, X-01..X-03, X-05, X-08, X-11, FR-SEC-01/03/04/05 | — | Log in, pick a context, see an Arabic RTL shell whose menu reflects permissions; isolation tests green. |
 | M1 | **Organization & Access** | FR-ORG-*, FR-YEAR-01..03, FR-SEC-02/06/07, FR-AUD-*, §4.4, FR-NOT-01/02 (in-app core) | M0 | Platform Admin creates the sample school group and university; admins build trees, policies, settings, roles, years; audit viewer works. |
-| M2 | **People** | FR-STF-*, FR-STU-01..06, X-06 import framework, FR-SEC-08 (OIDC/Azure AD) | M1 | Staff and students (with guardians) created and imported from Excel; change requests approved; expiry job runs. |
-| M3 | **Academic Structure** | FR-CRS-*, FR-LP-*, FR-CLS-*, FR-GRP-*, FR-ENR-*, FR-TCH-* | M2 | Courses allocated in the tree, blueprint published, classes created, students auto-enrolled, teachers assigned, groups formed, a transfer performed. |
+| M2 | **People** | FR-STF-*, X-06 import framework, FR-SEC-08 (OIDC/Azure AD); student/guardian data model (D23) | M1 | Staff created, shared and imported from Excel; expiry job runs; external sign-in works. |
+| M3 | **Academic Structure** | FR-CRS-*, FR-LP-*, FR-CLS-*, FR-GRP-*, FR-ENR-*, FR-TCH-*, FR-STU-01..06 (from M2, D23) | M2 | Courses allocated in the tree, blueprint published, classes created, students auto-enrolled, teachers assigned, groups formed, a transfer performed. |
 | M4 | **Teaching & Learning** | FR-CNT-*, FR-ASG-*, FR-QZ-*, FR-LIB-*, FR-FOR-*, FR-VC-*, FR-STD-* | M3 | Teacher builds lessons with every module type; student completes content, submits assignment, takes quiz. |
 | M5 | **Assessment, Timetable & Attendance** | FR-GRD-*, FR-TT-*, FR-ATT-*, FR-EXC-* | M4 | Gradebook with weights and publishing; timetable published; attendance generated and taken; excuse workflow end to end. |
 | M6 | **Communication** | FR-NOT-03, FR-MSG-* | M1 (can run in parallel with M3–M5 once M2 is done) | Email/SMS/push delivery, messaging with rules, targeted announcements, moderation. |
@@ -51,19 +51,17 @@ Each line becomes one GitHub issue per lane (`[BE]`, `[FE]`, `[QA]`), labelled `
 12. Academic years, terms, calendar (FR-YEAR-01..03) + global year selector (X-04)
 13. Notification core: event catalog, in-app center, SignalR (FR-NOT-01/02)
 
-### M2 People
-1. Import framework: template → upload → validate → preview → all-or-nothing commit → error report (X-06), Hangfire job
+### M2 People (re-scoped by the owner 2026-11-11, D23: students move to M3)
+1. Import framework: template → upload → validate → preview → all-or-nothing commit → error report (X-06), Hangfire job (jobs kernel delivered in M1, #144)
 2. Staff CRUD + duplicate checks + activation email (FR-STF-01..03)
 3. Staff import (FR-STF-04)
 4. Share user across units (FR-STF-05)
 5. Staff expiry job + pre-expiry notification (FR-STF-06)
-6. Student CRUD + duplicate detection + code generator (FR-STU-01..03)
-7. Student self-edit + change-request approval queue (FR-STU-04)
-8. Guardians: model, linking, siblings, accounts, mandatory setting (FR-STU-06)
-9. Student import incl. guardians (FR-STU-05)
-10. External identity providers: config UI + OIDC/Azure AD (FR-SEC-08 part 1)
+6. People kernel incl. the guardian/student data model (groundwork for M3)
+7. External identity providers: config UI + OIDC/Azure AD (FR-SEC-08 part 1)
 
 ### M3 Academic Structure
+0. (from M2, D23) Student CRUD + duplicate detection + code generator (FR-STU-01..03), self-edit + change requests (FR-STU-04), guardians linking/portal (FR-STU-06), student import incl. guardians (FR-STU-05); see the M2 plan appendix "Deferred to M3"
 1. Courses CRUD + import (FR-CRS-01)
 2. Course allocations in the tree (FR-CRS-02)
 3. Course restrictions + exceptional enrollment approval (FR-CRS-03)

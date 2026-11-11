@@ -19,6 +19,203 @@ namespace Lms.Infrastructure.Persistence.Migrations
                 .HasAnnotation("ProductVersion", "10.0.15")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
+            modelBuilder.Entity("Lms.Domain.AcademicYears.AcademicYear", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("date");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("NameAr")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<string>("NameEn")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<Guid>("OrgUnitId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("OrgUnitPath")
+                        .IsRequired()
+                        .HasColumnType("varchar(400) CHARACTER SET ascii COLLATE ascii_general_ci");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrgUnitId", "StartDate");
+
+                    b.HasIndex("OrganizationId", "OrgUnitPath");
+
+                    b.ToTable("AcademicYears", (string)null);
+                });
+
+            modelBuilder.Entity("Lms.Domain.AcademicYears.CalendarEvent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("AcademicYearId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("date");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<Guid>("OrgUnitId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("OrgUnitPath")
+                        .IsRequired()
+                        .HasColumnType("varchar(400) CHARACTER SET ascii COLLATE ascii_general_ci");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("TitleAr")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<string>("TitleEn")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrgUnitId");
+
+                    b.HasIndex("AcademicYearId", "StartDate");
+
+                    b.HasIndex("OrganizationId", "OrgUnitPath");
+
+                    b.ToTable("CalendarEvents", (string)null);
+                });
+
+            modelBuilder.Entity("Lms.Domain.AcademicYears.Term", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("AcademicYearId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("date");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("NameAr")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<string>("NameEn")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("OrgUnitId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("OrgUnitPath")
+                        .IsRequired()
+                        .HasColumnType("varchar(400) CHARACTER SET ascii COLLATE ascii_general_ci");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrgUnitId");
+
+                    b.HasIndex("AcademicYearId", "StartDate");
+
+                    b.HasIndex("OrganizationId", "OrgUnitPath");
+
+                    b.ToTable("Terms", (string)null);
+                });
+
             modelBuilder.Entity("Lms.Domain.Access.Role", b =>
                 {
                     b.Property<Guid>("Id")
@@ -195,6 +392,9 @@ namespace Lms.Infrastructure.Persistence.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("varchar(64)");
 
+                    b.Property<string>("OrgUnitPath")
+                        .HasColumnType("varchar(400) CHARACTER SET ascii COLLATE ascii_general_ci");
+
                     b.Property<Guid?>("OrganizationId")
                         .HasColumnType("char(36)");
 
@@ -209,6 +409,8 @@ namespace Lms.Infrastructure.Persistence.Migrations
                     b.HasIndex("EntityType", "EntityId");
 
                     b.HasIndex("OrganizationId", "TimestampUtc");
+
+                    b.HasIndex("OrganizationId", "OrgUnitPath", "TimestampUtc");
 
                     b.ToTable("AuditEntries", (string)null);
                 });
@@ -499,6 +701,35 @@ namespace Lms.Infrastructure.Persistence.Migrations
                     b.ToTable("Notifications", (string)null);
                 });
 
+            modelBuilder.Entity("Lms.Domain.Notifications.NotificationPreference", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Channel")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<bool>("Enabled")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("EventKey")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "EventKey", "Channel")
+                        .IsUnique();
+
+                    b.ToTable("NotificationPreferences", (string)null);
+                });
+
             modelBuilder.Entity("Lms.Domain.Organizations.LevelType", b =>
                 {
                     b.Property<Guid>("Id")
@@ -651,6 +882,13 @@ namespace Lms.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("varchar(200)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasDefaultValue("Active");
 
                     b.Property<int>("Type")
                         .HasColumnType("int");
@@ -934,6 +1172,45 @@ namespace Lms.Infrastructure.Persistence.Migrations
                     b.HasIndex("ApplicationId", "Status", "Subject", "Type");
 
                     b.ToTable("OpenIddictTokens", (string)null);
+                });
+
+            modelBuilder.Entity("Lms.Domain.AcademicYears.AcademicYear", b =>
+                {
+                    b.HasOne("Lms.Domain.Organizations.OrgUnit", null)
+                        .WithMany()
+                        .HasForeignKey("OrgUnitId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Lms.Domain.AcademicYears.CalendarEvent", b =>
+                {
+                    b.HasOne("Lms.Domain.AcademicYears.AcademicYear", null)
+                        .WithMany()
+                        .HasForeignKey("AcademicYearId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Lms.Domain.Organizations.OrgUnit", null)
+                        .WithMany()
+                        .HasForeignKey("OrgUnitId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Lms.Domain.AcademicYears.Term", b =>
+                {
+                    b.HasOne("Lms.Domain.AcademicYears.AcademicYear", null)
+                        .WithMany()
+                        .HasForeignKey("AcademicYearId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Lms.Domain.Organizations.OrgUnit", null)
+                        .WithMany()
+                        .HasForeignKey("OrgUnitId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Lms.Domain.Access.RoleAssignment", b =>

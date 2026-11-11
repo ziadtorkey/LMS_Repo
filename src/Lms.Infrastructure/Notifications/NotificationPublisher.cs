@@ -58,11 +58,11 @@ public sealed class NotificationPublisher(
             await db.SaveChangesAsync(cancellationToken);
         }
 
-        foreach (var row in rows)
-        {
-            var dto = new NotificationDto(row.Id, row.EventKey, parameters, row.DeepLink, row.CreatedAt, IsRead: false);
-            await pusher.PushAsync(row.UserId, dto, cancellationToken);
-        }
+        await pusher.PushManyAsync(
+            rows.Select(row => new PendingPush(
+                row.UserId, row.OrganizationId,
+                new NotificationDto(row.Id, row.EventKey, parameters, row.DeepLink, row.CreatedAt, IsRead: false))).ToList(),
+            cancellationToken);
     }
 
     private async Task<IReadOnlyList<Guid>> RecipientsAsync(

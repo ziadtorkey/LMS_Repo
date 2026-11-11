@@ -1,0 +1,184 @@
+@page "/assignments"
+@attribute [Authorize]
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Shared.Access
+@using Lms.Shared.Authorization
+@using Lms.Shared.Organizations
+@implements IDisposable
+@inject IAccessAdminApi Api
+@inject IUnitLookupApi UnitsApi
+@inject PermissionState Perms
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<PageTitle>@L["Assignments_Title"]</PageTitle>
+
+<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3" Wrap="Wrap.Wrap">
+    <MudText Typo="Typo.h4">@L["Assignments_Title"]</MudText>
+    @if (Perms.Has(Permissions.Assignments.Create) && _units.Count > 0)
+    {
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PersonAdd"
+                   OnClick="AssignAsync" data-testid="assign-new">@L["Assignments_Assign"]</MudButton>
+    }
+</MudStack>
+
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+}
+else if (_failed)
+{
+    <MudAlert Severity="Severity.Error" data-testid="api-error">
+        @L["Api_Error"]
+        <MudButton Variant="Variant.Text" OnClick="LoadLookupsAsync">@L["Common_Retry"]</MudButton>
+    </MudAlert>
+}
+else
+{
+    <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Class="mb-3">
+        <MudSelect T="Guid" Value="_unitId" ValueChanged="UnitChangedAsync" Label="@L["Assignments_Unit"]"
+                   Style="min-width:220px" data-testid="unit-picker">
+            @foreach (var unit in _units)
+            {
+                <MudSelectItem Value="@unit.Id">@(new string(' ', unit.Depth * 3) + CultureText.Pick(unit.NameAr, unit.NameEn))</MudSelectItem>
+            }
+        </MudSelect>
+        <MudSwitch T="bool" Value="_includeBelow" ValueChanged="IncludeChangedAsync" Color="Color.Primary"
+                   Label="@L["Assignments_IncludeBelow"]" data-testid="include-below" />
+    </MudStack>
+
+    <ServerTable T="AssignmentDto" @ref="_table" ServerData="LoadPageAsync">
+        <HeaderContent>
+            <MudTh>@L["Assignments_Person"]</MudTh>
+            <MudTh>@L["Assignments_Email"]</MudTh>
+            <MudTh>@L["Assignments_Role"]</MudTh>
+            <MudTh>@L["Assignments_Unit"]</MudTh>
+            <MudTh>@L["Assignments_ValidFrom"]</MudTh>
+            <MudTh>@L["Assignments_ValidTo"]</MudTh>
+            <MudTh>@L["Common_Status"]</MudTh>
+            <MudTh>@L["Common_Actions"]</MudTh>
+        </HeaderContent>
+        <RowTemplate Context="a">
+            <MudTd DataLabel="@L["Assignments_Person"]">@CultureText.Pick(a.UserDisplayNameAr, a.UserDisplayNameEn)</MudTd>
+            <MudTd DataLabel="@L["Assignments_Email"]"><span dir="ltr">@a.UserEmail</span></MudTd>
+            <MudTd DataLabel="@L["Assignments_Role"]">@CultureText.Pick(a.RoleNameAr, a.RoleNameEn)</MudTd>
+            <MudTd DataLabel="@L["Assignments_Unit"]">@CultureText.Pick(a.OrgUnitNameAr, a.OrgUnitNameEn)</MudTd>
+            <MudTd DataLabel="@L["Assignments_ValidFrom"]">@a.ValidFrom?.ToString("yyyy-MM-dd")</MudTd>
+            <MudTd DataLabel="@L["Assignments_ValidTo"]">@a.ValidTo?.ToString("yyyy-MM-dd")</MudTd>
+            <MudTd DataLabel="@L["Common_Status"]">
+                <MudChip T="string" Size="Size.Small" Color="@StatusColor(a)" data-testid="@($"status-{a.Id}")" data-status="@Status(a)">
+                    @L[$"AssignmentStatus_{Status(a)}"]
+                </MudChip>
+            </MudTd>
+            <MudTd DataLabel="@L["Common_Actions"]">
+                @if (Perms.Has(Permissions.Assignments.Update))
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" aria-label="@L["Common_Edit"]"
+                                   OnClick="() => EditAsync(a)" data-testid="@($"assignment-edit-{a.Id}")" />
+                }
+                @if (Perms.Has(Permissions.Assignments.Delete))
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="@L["Common_Delete"]"
+                                   OnClick="() => RemoveAsync(a)" data-testid="@($"assignment-delete-{a.Id}")" />
+                }
+            </MudTd>
+        </RowTemplate>
+    </ServerTable>
+}
+
+@code {
+    private ServerTable<AssignmentDto>? _table;
+    private IReadOnlyList<OrgUnitNodeDto> _units = [];
+    private IReadOnlyList<RoleDto> _roles = [];
+    private Guid _unitId;
+    private bool _includeBelow, _loading = true, _failed;
+
+    /// <summary>Optional ?unit= deep link (e.g. from the unit settings page).</summary>
+    [Parameter, SupplyParameterFromQuery(Name = "unit")] public Guid? UnitId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Perms.Changed += OnPermissionsChanged;
+        await LoadLookupsAsync();
+    }
+
+    private async Task LoadLookupsAsync()
+    {
+        _loading = true; _failed = false;
+        var (units, failedUnits) = await ApiCalls.RunAsync(() => UnitsApi.GetUnitsAsync(), Navigation);
+        var (roles, failedRoles) = await ApiCalls.RunAsync(() => Api.GetRolesAsync(), Navigation);
+        _failed = failedUnits || failedRoles;
+        _units = UnitTree.Order(units ?? []);
+        _roles = roles ?? [];
+        _unitId = UnitId is { } q && _units.Any(u => u.Id == q) ? q : _units.FirstOrDefault()?.Id ?? Guid.Empty;
+        _loading = false;
+    }
+
+    private async Task<TableData<AssignmentDto>> LoadPageAsync(TableState state, CancellationToken ct)
+    {
+        if (_unitId == Guid.Empty) return new TableData<AssignmentDto> { Items = [], TotalItems = 0 };
+        var (page, failed) = await ApiCalls.RunAsync(
+            () => Api.GetAssignmentsAsync(_unitId, _includeBelow, state.Page + 1, state.PageSize, ct), Navigation);
+        if (failed) Snackbar.Add(L["Api_Error"], Severity.Error);
+        return new TableData<AssignmentDto> { Items = page?.Items ?? [], TotalItems = page?.Total ?? 0 };
+    }
+
+    private Task ReloadAsync() => _table is null ? Task.CompletedTask : _table.ReloadAsync();
+
+    private async Task UnitChangedAsync(Guid id) { _unitId = id; await ReloadAsync(); }
+    private async Task IncludeChangedAsync(bool on) { _includeBelow = on; await ReloadAsync(); }
+
+    private async Task AssignAsync()
+    {
+        var parameters = new DialogParameters<AssignRoleDialog>
+        {
+            { x => x.Roles, _roles }, { x => x.Units, _units }, { x => x.DefaultUnitId, _unitId },
+        };
+        await ShowDialogAsync(parameters, L["Assignments_Assign"]);
+    }
+
+    private Task EditAsync(AssignmentDto a) =>
+        ShowDialogAsync(new DialogParameters<AssignRoleDialog> { { x => x.Existing, a } }, L["Assignments_EditValidity"]);
+
+    private async Task ShowDialogAsync(DialogParameters<AssignRoleDialog> parameters, string title)
+    {
+        var reference = await Dialogs.ShowAsync<AssignRoleDialog>(title, parameters,
+            new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true });
+        _ = AfterDialogAsync(reference); // not awaited: the click handler must return while the dialog is open
+    }
+
+    private async Task AfterDialogAsync(IDialogReference reference)
+    {
+        var result = await reference.Result;
+        if (result is not { Canceled: false }) return;
+        Snackbar.Add(L["Common_Saved"], Severity.Success);
+        await InvokeAsync(ReloadAsync);
+    }
+
+    private async Task RemoveAsync(AssignmentDto a)
+    {
+        var who = CultureText.Pick(a.UserDisplayNameAr, a.UserDisplayNameEn);
+        if (!await ConfirmDialog.AskAsync(Dialogs, L["Confirm_DeleteTitle"], string.Format(L["Assignments_RemoveConfirm"], who)))
+            return;
+        if (await ApiCalls.RunAsync(() => Api.DeleteAssignmentAsync(a.Id), Navigation, L, m => Snackbar.Add(m, Severity.Error)))
+            await ReloadAsync();
+    }
+
+    /// <summary>Valid / Future / Expired, from the dates (not the server flag alone, so "not yet valid" is told apart).</summary>
+    private static string Status(AssignmentDto a)
+    {
+        if (a.IsCurrentlyValid) return "Valid";
+        return a.ValidFrom is { } from && from > DateOnly.FromDateTime(DateTime.Today) ? "Future" : "Expired";
+    }
+
+    private static Color StatusColor(AssignmentDto a) => Status(a) switch
+    {
+        "Valid" => Color.Success, "Future" => Color.Info, _ => Color.Default,
+    };
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Perms.Changed -= OnPermissionsChanged;
+}

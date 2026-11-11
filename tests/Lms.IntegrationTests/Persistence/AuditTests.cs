@@ -69,9 +69,17 @@ public sealed class AuditTests(LmsApiFactory factory)
     {
         var seed = await SeedAsync("Audit2");
 
-        Assert.Empty(await EntriesForAsync(seed.Level.Id));
-        Assert.Empty(await EntriesForAsync(seed.Org.Id));
-    }
+        // Level types and organizations are audited now; a notification preference (a user's own setting) is not.
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            var user = new Lms.Domain.Identity.User { UserName = $"audit2-{seed.Org.Id:N}@audit.test", Email = $"audit2-{seed.Org.Id:N}@audit.test" };
+            db.Users.Add(user);
+            var preference = new Lms.Domain.Notifications.NotificationPreference(user.Id, "audit.probe", "email", true);
+            db.Add(preference);
+            await db.SaveChangesAsync();
+
+            Assert.Empty(await EntriesForAsync(preference.Id));
+        }    }
 
     [Fact]
     public async Task Arabic_and_emoji_round_trip_in_names_and_audit_json()

@@ -2,6 +2,7 @@ using Lms.Api.Infrastructure;
 using Lms.Domain.Abstractions;
 using Lms.Domain.Files;
 using Lms.Shared.Authorization;
+using Lms.Shared.Configuration;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Lms.Api.Features.Files;
@@ -15,8 +16,13 @@ public static class FileEndpoints
 {
     public const string Route = "/api/files";
 
-    /// <summary>Coarse transport ceiling; the real, per-unit limit is applied after the file is read.</summary>
-    private const long TransportLimitBytes = 1024L * 1024 * 1024;
+    /// <summary>
+    /// Coarse transport ceiling; the real, per-unit limit is applied after the file is read. Derived from the largest
+    /// value the Files.MaxUploadMb setting accepts (plus 1 MB for the form around the file), so the setting can never
+    /// promise more than this endpoint transports.
+    /// </summary>
+    public static readonly long TransportLimitBytes =
+        (SettingCatalog.Find(SettingKeys.FilesMaxUploadMb.Name)!.Max!.Value + 1L) * 1024 * 1024;
 
     private static readonly TimeSpan UrlLifetime = TimeSpan.FromMinutes(10);
 

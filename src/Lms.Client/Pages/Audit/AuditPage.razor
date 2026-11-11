@@ -1,0 +1,148 @@
+@page "/audit"
+@attribute [Authorize]
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Shared.Auditing
+@using Lms.Shared.Authorization
+@implements IDisposable
+@inject IAuditApi Api
+@inject PermissionState Perms
+@inject ISnackbar Snackbar
+@inject IJSRuntime Js
+@inject NavigationManager Navigation
+
+<PageTitle>@L["Audit_Title"]</PageTitle>
+
+<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3" Wrap="Wrap.Wrap">
+    <MudText Typo="Typo.h4">@L["Audit_Title"]</MudText>
+    @if (Perms.Has(Permissions.Audit.Export))
+    {
+        <MudStack Row="true" Spacing="2">
+            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Download"
+                       OnClick="() => ExportAsync(AuditExportFormats.Csv)" data-testid="audit-export-csv">@L["Audit_ExportCsv"]</MudButton>
+            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.TableView"
+                       OnClick="() => ExportAsync(AuditExportFormats.Xlsx)" data-testid="audit-export-xlsx">@L["Audit_ExportExcel"]</MudButton>
+        </MudStack>
+    }
+</MudStack>
+
+<MudGrid Spacing="2" Class="mb-3">
+    <MudItem xs="12" sm="6" md="3">
+        <MudSelect T="string" Value="_entityType" ValueChanged="v => FilterAsync(() => _entityType = v)" Clearable="true"
+                   Label="@L["Audit_Entity"]" data-testid="filter-entity">
+            @foreach (var type in AuditCatalog.EntityTypes)
+            {
+                <MudSelectItem Value="@type">@L[$"AuditEntity_{type}"]</MudSelectItem>
+            }
+            @foreach (var ev in AuditCatalog.SecurityEvents)
+            {
+                <MudSelectItem Value="@ev">@L[$"AuditEvent_{ev}"]</MudSelectItem>
+            }
+        </MudSelect>
+    </MudItem>
+    <MudItem xs="12" sm="6" md="3">
+        <MudSelect T="string" Value="_action" ValueChanged="v => FilterAsync(() => _action = v)" Clearable="true"
+                   Label="@L["Audit_Action"]" data-testid="filter-action">
+            @foreach (var action in AuditActions.All)
+            {
+                <MudSelectItem Value="@action">@L[$"AuditAction_{action}"]</MudSelectItem>
+            }
+        </MudSelect>
+    </MudItem>
+    <MudItem xs="6" md="3">
+        <MudDatePicker Date="_from" DateChanged="d => FilterAsync(() => _from = d)" Label="@L["Audit_From"]" Clearable="true" data-testid="filter-from" />
+    </MudItem>
+    <MudItem xs="6" md="3">
+        <MudDatePicker Date="_to" DateChanged="d => FilterAsync(() => _to = d)" Label="@L["Audit_To"]" Clearable="true" data-testid="filter-to" />
+    </MudItem>
+    @if (_userId is not null)
+    {
+        <MudItem xs="12">
+            <MudChip T="string" OnClose="() => FilterAsync(() => _userId = null)" data-testid="filter-user">@_userLabel</MudChip>
+        </MudItem>
+    }
+</MudGrid>
+
+<ServerTable T="AuditEntryDto" @ref="_table" ServerData="LoadPageAsync">
+    <HeaderContent>
+        <MudTh>@L["Audit_When"]</MudTh>
+        <MudTh>@L["Audit_Who"]</MudTh>
+        <MudTh>@L["Audit_Role"]</MudTh>
+        <MudTh>@L["Audit_Unit"]</MudTh>
+        <MudTh>@L["Audit_Action"]</MudTh>
+        <MudTh>@L["Audit_Entity"]</MudTh>
+    </HeaderContent>
+    <RowTemplate Context="e">
+        <MudTd DataLabel="@L["Audit_When"]"><span dir="ltr">@e.TimestampUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</span></MudTd>
+        <MudTd DataLabel="@L["Audit_Who"]">
+            @if (e.UserId is { } uid)
+            {
+                <MudLink Typo="Typo.body2" OnClick="() => FilterByUser(e)" data-testid="@($"audit-user-{e.Id}")">@UserName(e)</MudLink>
+            }
+        </MudTd>
+        <MudTd DataLabel="@L["Audit_Role"]">@(e.RoleNameAr is null ? "" : CultureText.Pick(e.RoleNameAr, e.RoleNameEn ?? e.RoleNameAr))</MudTd>
+        <MudTd DataLabel="@L["Audit_Unit"]">@(e.OrgUnitNameAr is null ? "" : CultureText.Pick(e.OrgUnitNameAr, e.OrgUnitNameEn ?? e.OrgUnitNameAr))</MudTd>
+        <MudTd DataLabel="@L["Audit_Action"]">@L[$"AuditAction_{e.Action}"]</MudTd>
+        <MudTd DataLabel="@L["Audit_Entity"]">
+            <MudLink Typo="Typo.body2" OnClick="() => Show(e)" data-testid="@($"audit-open-{e.Id}")">
+                @(e.Action == AuditActions.SecurityEvent ? L[$"AuditEvent_{e.EntityType}"] : L[$"AuditEntity_{e.EntityType}"])
+            </MudLink>
+        </MudTd>
+    </RowTemplate>
+</ServerTable>
+
+<AuditDetailDrawer Entry="_selected" @bind-Open="_drawerOpen" />
+
+@code {
+    private ServerTable<AuditEntryDto>? _table;
+    private string? _entityType, _action, _userLabel;
+    private DateTime? _from, _to;
+    private Guid? _userId;
+    private AuditEntryDto? _selected;
+    private bool _drawerOpen;
+
+    protected override void OnInitialized() => Perms.Changed += OnPermissionsChanged;
+
+    private AuditQuery Query(int page = 1, int pageSize = Lms.Shared.Paging.DefaultPageSize) => new(
+        null, _userId, _entityType, null, _action,
+        _from is { } f ? AuditDateRange.StartUtc(f, TimeZoneInfo.Local) : null,
+        _to is { } t ? AuditDateRange.EndUtc(t, TimeZoneInfo.Local) : null,
+        page, pageSize);
+
+    private async Task<TableData<AuditEntryDto>> LoadPageAsync(TableState state, CancellationToken ct)
+    {
+        var result = await Api.QueryAsync(Query(state.Page + 1, state.PageSize), ct);
+        return new TableData<AuditEntryDto> { Items = result.Items, TotalItems = result.Total };
+    }
+
+    private async Task FilterAsync(Action set)
+    {
+        set();
+        if (_table is not null) await _table.ReloadAsync();
+    }
+
+    private void FilterByUser(AuditEntryDto e)
+    {
+        _userLabel = UserName(e);
+        _ = FilterAsync(() => _userId = e.UserId);
+    }
+
+    private void Show(AuditEntryDto e) { _selected = e; _drawerOpen = true; }
+
+    private static string UserName(AuditEntryDto e) =>
+        CultureText.Pick(e.UserDisplayNameAr ?? e.UserEmail ?? "", e.UserDisplayNameEn ?? e.UserEmail ?? "");
+
+    private async Task ExportAsync(string format)
+    {
+        await ApiCalls.RunAsync(async () =>
+        {
+            var (content, fileName) = await Api.ExportAsync(Query(), format);
+            using var reference = new DotNetStreamReference(content);
+            await Js.InvokeVoidAsync("lmsDownloadFile", fileName, reference);
+        }, Navigation, L, message => Snackbar.Add(message, Severity.Error));
+    }
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Perms.Changed -= OnPermissionsChanged;
+}

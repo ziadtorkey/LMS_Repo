@@ -24,13 +24,22 @@ public static class ClientServices
         services.AddSingleton<ContextStore>();
         services.AddSingleton<IContextStore>(sp => sp.GetRequiredService<ContextStore>());
         services.AddScoped<PermissionState>();
+        services.AddScoped<IYearStore, YearStore>();
+        services.AddScoped<INotificationFeed, NotificationFeed>();
 
         if (configuration.GetValue<bool>("Lms:UseFakeApi"))
         {
             services.AddScoped<ILmsApi, FakeLmsApi>();
+            services.AddScoped<IAuditApi, FakeAuditApi>();
             services.AddScoped<IAccessAdminApi, FakeAccessAdminApi>();
+            services.AddScoped<IUnitLookupApi, FakeUnitLookupApi>();
+            services.AddScoped<IYearsApi, FakeYearsApi>();
+            services.AddScoped<INotificationsApi, FakeNotificationsApi>();
+            services.AddScoped<INotificationConnection, FakeNotificationConnection>();
             services.AddSingleton<IClientsApi, FakeClientsApi>();
             services.AddSingleton<IOrgApi, FakeOrgApi>();
+            services.AddSingleton<ITemplatesApi, FakeTemplatesApi>();
+            services.AddSingleton<IConfigApi, FakeConfigApi>();
             services.AddScoped<AuthenticationStateProvider, FakeAuthenticationStateProvider>();
             services.AddAuthorizationCore();
             return;
@@ -44,7 +53,12 @@ public static class ClientServices
             options.ProviderOptions.DefaultScopes.Add("lms_api");
         });
         services.AddTransient<ForbiddenRedirectHandler>();
+        services.AddScoped<IAuditApi, AuditApi>();
         services.AddScoped<IAccessAdminApi, AccessAdminApi>();
+        services.AddScoped<IUnitLookupApi, UnitLookupApi>();
+        services.AddScoped<IYearsApi, YearsApi>();
+        services.AddScoped<INotificationsApi, NotificationsApi>();
+        services.AddScoped<INotificationConnection, NotificationConnection>();
         services.AddHttpClient<ILmsApi, LmsApiClient>(c => c.BaseAddress = new Uri(baseAddress))
             .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>()
             .AddHttpMessageHandler<ForbiddenRedirectHandler>();
@@ -55,5 +69,7 @@ public static class ClientServices
             .AddHttpMessageHandler<ForbiddenRedirectHandler>();
         services.AddScoped<IClientsApi, ClientsApi>();
         services.AddScoped<IOrgApi, OrgApi>();
+        services.AddScoped<ITemplatesApi, TemplatesApi>();
+        services.AddScoped<IConfigApi, ConfigApi>();
     }
 }
