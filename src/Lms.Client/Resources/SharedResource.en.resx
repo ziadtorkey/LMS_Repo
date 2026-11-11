@@ -401,6 +401,7 @@
   <data name="AuditEvent_ExternalLoginLinked" xml:space="preserve"><value>Organization account linked</value></data>
   <data name="AuditEvent_ExternalLoginSucceeded" xml:space="preserve"><value>Successful organization sign-in</value></data>
   <data name="AuditEvent_ExternalLoginFailed" xml:space="preserve"><value>Failed organization sign-in</value></data>
+  <data name="AuditEvent_PasswordChanged" xml:space="preserve"><value>Password changed</value></data>
   <data name="Notif_Staff_ExpiringSoon" xml:space="preserve"><value>The access of {StaffName} expires on {ExpiresOn}.</value></data>
   <data name="Notif_Staff_Expired" xml:space="preserve"><value>The access of {StaffName} expired on {ExpiresOn}.</value></data>
   <data name="Notif_Imports_Completed" xml:space="preserve"><value>Your {Kind} import finished: {Status} ({RowCount} rows).</value></data>

@@ -22,7 +22,8 @@ public sealed record StudentDataInput(
 /// Body of POST /api/students. <c>StudentCode</c> must be empty when <c>Students.CodeMode</c> is <c>Auto</c> and is
 /// required when it is <c>Manual</c> (D25). <c>ClassId</c> places the student (optional, D45). <c>DefaultPassword</c>
 /// blank = a strong password is generated (D24, D45). <c>ConfirmPossibleDuplicate</c> answers 409
-/// <c>possible_duplicate</c>.
+/// <c>possible_duplicate</c>. <c>ConfirmOverCapacity</c> answers 409 <c>over_capacity</c> when
+/// <c>ClassId</c> is full and <c>Classes.CapacityMode</c> is <c>Warn</c> (as for <see cref="Lms.Shared.Enrollment.AddStudentsToClassRequest"/>).
 /// </summary>
 public sealed record CreateStudentRequest(
     StudentDataInput Data,
@@ -31,7 +32,8 @@ public sealed record CreateStudentRequest(
     bool ConfirmPossibleDuplicate,
     IReadOnlyList<GuardianLinkInput> Guardians,
     Guid? ClassId = null,
-    string? DefaultPassword = null);
+    string? DefaultPassword = null,
+    bool ConfirmOverCapacity = false);
 
 /// <summary>Body of PUT /api/students/{id}.</summary>
 public sealed record UpdateStudentRequest(

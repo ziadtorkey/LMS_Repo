@@ -401,6 +401,7 @@
   <data name="AuditEvent_ExternalLoginLinked" xml:space="preserve"><value>ربط حساب الجهة</value></data>
   <data name="AuditEvent_ExternalLoginSucceeded" xml:space="preserve"><value>دخول ناجح بحساب الجهة</value></data>
   <data name="AuditEvent_ExternalLoginFailed" xml:space="preserve"><value>دخول فاشل بحساب الجهة</value></data>
+  <data name="AuditEvent_PasswordChanged" xml:space="preserve"><value>تغيير كلمة المرور</value></data>
   <data name="Notif_Staff_ExpiringSoon" xml:space="preserve"><value>تنتهي صلاحية وصول {StaffName} في {ExpiresOn}.</value></data>
   <data name="Notif_Staff_Expired" xml:space="preserve"><value>انتهت صلاحية وصول {StaffName} في {ExpiresOn}.</value></data>
   <data name="Notif_Imports_Completed" xml:space="preserve"><value>اكتمل استيراد {Kind}: {Status} ({RowCount} صف).</value></data>
