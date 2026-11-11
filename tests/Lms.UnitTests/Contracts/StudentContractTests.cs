@@ -164,7 +164,7 @@ public sealed partial class StudentContractTests
         Assert.Equal((Paging.DefaultPageSize, true, null), (query.PageSize, RoundTrip(query).Unplaced, query.ClassId));
         Assert.Null(RoundTrip(new SetStudentFeatureFlagsRequest(new Dictionary<string, bool?> { ["Features.Messaging"] = null }))
             .Overrides["Features.Messaging"]);
-        Assert.Equal(ChangeRequestStatuses.Pending, new ChangeRequestQuery(null).Status);
+        Assert.Null(new ChangeRequestQuery(null).Status);
         Assert.Equal("+*********123", RoundTrip(new GuardianMatchDto(Guid.NewGuid(), "محمد", "Mohammed", "+*********123", 2)).MaskedMobile);
     }
 
