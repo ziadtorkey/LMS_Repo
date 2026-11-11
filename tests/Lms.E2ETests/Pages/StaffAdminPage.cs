@@ -7,7 +7,7 @@ namespace Lms.E2ETests.Pages;
 public sealed class StaffAdminPage(IPage page)
 {
     public sealed record NewStaff(
-        string NameAr, string NameEn, string Email, string? Mobile, string HomeUnitName, string RoleName, string RoleUnitName, DateOnly? ExpiresOn = null);
+        string NameAr, string NameEn, string Email, string? Mobile, string HomeUnitName, string RoleName, string RoleUnitName, DateOnly? ExpiresOn = null, string? RoleUnitParent = null);
 
     public ILocator Title => page.GetByTestId("staff-title");
     public ILocator DialogError => page.GetByTestId("dialog-error");
@@ -80,7 +80,7 @@ public sealed class StaffAdminPage(IPage page)
 
         await PickAsync("staff-home-unit", staff.HomeUnitName);
         await PickAsync("staff-role-0", staff.RoleName);
-        await PickAsync("staff-role-unit-0", staff.RoleUnitName);
+        await PickAsync("staff-role-unit-0", staff.RoleUnitName, staff.RoleUnitParent);
         await page.GetByTestId("dialog-save").ClickAsync();
     }
 
@@ -114,13 +114,30 @@ public sealed class StaffAdminPage(IPage page)
         await popup.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Detached });
     }
 
-    /// <summary>Opens a MudSelect and picks the option whose text is exactly <paramref name="text"/> (indent ignored).</summary>
-    private async Task PickAsync(string testId, string text)
+    /// <summary>
+    /// Opens a MudSelect and picks the option whose text is exactly <paramref name="text"/> (indent ignored). Several
+    /// units can share a name ("Section 1" under each stage), and the list order follows the culture's sort, so with
+    /// <paramref name="afterText"/> the pick is the first match that comes after the option with that text.
+    /// </summary>
+    private async Task PickAsync(string testId, string text, string? afterText = null)
     {
         await page.GetByTestId(testId).ClickAsync();
-        await page.Locator(".mud-popover-open .mud-list-item")
-            .Filter(new LocatorFilterOptions { HasTextRegex = new Regex("^\\s*" + Regex.Escape(text) + "\\s*$") })
-            .First.ClickAsync();
+        var items = page.Locator(".mud-popover-open .mud-list-item");
+        await items.First.WaitForAsync();
+        var texts = (await items.AllInnerTextsAsync()).Select(t => t.Trim()).ToList();
+        var start = afterText is null ? 0 : texts.IndexOf(afterText);
+        if (start < 0)
+        {
+            throw new InvalidOperationException($"Option '{afterText}' not found in {testId}: {string.Join(" | ", texts)}");
+        }
+
+        var index = texts.FindIndex(start, t => t == text);
+        if (index < 0)
+        {
+            throw new InvalidOperationException($"Option '{text}' not found after '{afterText}' in {testId}: {string.Join(" | ", texts)}");
+        }
+
+        await items.Nth(index).ClickAsync();
     }
 
     private ILocator Field(string testId) =>

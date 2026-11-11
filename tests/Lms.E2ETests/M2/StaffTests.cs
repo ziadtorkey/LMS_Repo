@@ -26,7 +26,8 @@ public sealed class StaffTests(E2EFixture fixture) : E2ETestBase(fixture)
             names.NameAr("معلم"), names.NameEn("Teacher"), email, names.Mobile,
             HomeUnitName: Pick(culture, "رياض الأطفال", "KG"),
             RoleName: Pick(culture, "المعلم", "Teacher"),
-            RoleUnitName: Pick(culture, "الفصل 1", "Section 1")));
+            RoleUnitName: Pick(culture, "الفصل 1", "Section 1"),
+            RoleUnitParent: Pick(culture, "رياض الأطفال", "KG")));
         await Expect(staff.Snackbar).ToContainTextAsync(Resx.In(culture, "Staff_Created"));
         await staff.SearchAsync(email);
         await Expect(staff.Row(email)).ToBeVisibleAsync();
@@ -57,7 +58,8 @@ public sealed class StaffTests(E2EFixture fixture) : E2ETestBase(fixture)
         await staff.OpenAsync();
         await staff.CreateAsync(new StaffAdminPage.NewStaff(
             names.NameAr("معلم"), names.NameEn("Teacher"), email, null,
-            Pick(culture, "رياض الأطفال", "KG"), Pick(culture, "المعلم", "Teacher"), Pick(culture, "الفصل 1", "Section 1")));
+            Pick(culture, "رياض الأطفال", "KG"), Pick(culture, "المعلم", "Teacher"), Pick(culture, "الفصل 1", "Section 1"),
+            RoleUnitParent: Pick(culture, "رياض الأطفال", "KG")));
 
         // The same email under the other stage is refused (checks are client-wide, D26) and names only the field.
         await staff.FillAndSaveAsync(new StaffAdminPage.NewStaff(
@@ -68,6 +70,11 @@ public sealed class StaffTests(E2EFixture fixture) : E2ETestBase(fixture)
         await AssertDirectionAsync(culture);
     }
 
+    /// <remarks>
+    /// The job is system-wide: <c>staff-expiry</c> runs for every client and every staff member of the shared test
+    /// database, not only the person created here. Running it for the far days (+11) may also expire leftover
+    /// people of earlier runs, which is harmless. This test therefore asserts only on its own person.
+    /// </remarks>
     [Theory]
     [InlineData("ar")]
     [InlineData("en")]
@@ -143,10 +150,7 @@ public sealed class StaffTests(E2EFixture fixture) : E2ETestBase(fixture)
         await new ShellPage(Page).WaitReadyAsync();
     }
 
-    /// <summary>Un-skip when the staff share API (#196) is on main.</summary>
-    private const string NeedsShareApi = "Needs the staff share API (#196) on main";
-
-    [Theory(Skip = NeedsShareApi)]
+    [Theory]
     [InlineData("ar")]
     [InlineData("en")]
     public async Task Root_admin_shares_teacher_to_a_sibling_stage_and_the_list_shows_them_as_shared(string culture)
@@ -169,7 +173,7 @@ public sealed class StaffTests(E2EFixture fixture) : E2ETestBase(fixture)
 
     private static StaffAdminPage.NewStaff NewTeacher(string culture, M2Names names, string email, DateOnly? expiresOn = null) =>
         new(names.NameAr("معلم"), names.NameEn("Teacher"), email, null,
-            Pick(culture, "رياض الأطفال", "KG"), Pick(culture, "المعلم", "Teacher"), Pick(culture, "الفصل 1", "Section 1"), expiresOn);
+            Pick(culture, "رياض الأطفال", "KG"), Pick(culture, "المعلم", "Teacher"), Pick(culture, "الفصل 1", "Section 1"), expiresOn, RoleUnitParent: Pick(culture, "رياض الأطفال", "KG"));
 
     /// <summary>The new person follows the emailed link, sets a password and signs in once (the account is then active).</summary>
     private async Task ActivateAsync(string email, string password)
@@ -188,6 +192,8 @@ public sealed class StaffTests(E2EFixture fixture) : E2ETestBase(fixture)
         await shell.WaitReadyAsync();
         // The context is picked after the shell renders; opening a page before that answers 403 and shows "no access".
         await Expect(shell.ContextSwitcher).ToBeVisibleAsync();
+        // ... and stored: a page opened by URL reads the context from local storage (cold-start races, see #275).
+        await Page.WaitForFunctionAsync("() => !!localStorage.getItem('lms.context')");
     }
 
     /// <summary>Signs out of the app and the identity server so the next sign-in starts clean.</summary>
