@@ -2,13 +2,13 @@
 
 _Updated by the Team Lead after every merge cycle._
 
-**Milestone:** M0 Foundation — DONE (19 / 19) · M1 Organization & Access — in progress (42 / 49 issues closed) · M2 People — started (1 / 26; 25 issues #154–#178 opened and dispatched)
-**Last update:** 2026-11-11 — Merged #141 (copy branch + template library, closes #63). M2 plan approved (D23–D36, students move to M3); 25 M2 issues #154–#178 opened and dispatched; Lead contract PR for #154–#156 in progress. M1 remaining: #145 (QA3 spot-check), #148 (BE1 fix), #50 (BE4), #52 (BE3), E2E #71/#72/#73.
+**Milestone:** M0 Foundation — DONE (19 / 19) · M1 Organization & Access — in progress (42 / 49 issues closed) · M2 People — in progress (4 / 26; contracts merged)
+**Last update:** 2026-11-11 — Merged #179 (M2 contracts, closes #154–#156), #145 (probe rows per module), #120 (blocked-login E2E, part of #73), #180 (isolation test dedupe). In review: #181 people kernel (BE4 → QA2), #182 M2 probe rows (QA2, draft). M1 remaining: #148 (BE1 fix), #50 (BE4), #52 (BE3), E2E #121 (conflicts + e2e failure, QA1), #72 (FE2), rest of #73 (QA3).
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |
 |---|---|---|---|---|
-| Team Lead | Opus | `local_95ef9dc7-9378-4012-a8f2-c7d1f944bdec` (lms-lead) | M2 contracts #154–#156; merges | coordinating |
+| Team Lead | Opus | `local_95ef9dc7-9378-4012-a8f2-c7d1f944bdec` (lms-lead) | merges; M2 coordination | coordinating |
 | Backend 1 | Sonnet | `local_19f31b04-ca2f-43d1-a2cb-8a128722a11f` (lms-backend) | #148 fix; then M2 #160 (T8), #159 (T7), #161 (T9) | working |
 | Backend 2 | Sonnet | `local_d36e7dc2-e9e6-4f73-b7b3-b078b17bbe41` (lms-backend-2) | M2 #162 (T10 staff), then #163, #164, #165 | working |
 | Frontend | Sonnet | `local_40667dce-5be7-478b-95cb-4f14ecd203b9` (lms-frontend) | M2 #170 (T24 staff pages), then #171, #174 | working |
@@ -50,6 +50,8 @@ None. (Board: [LMS v1](https://github.com/users/ziadtorkey/projects/1) — Todo 
 - 2026-11-11: M2 plan approved; 13 answers recorded as D23–D36 (students, guardians and change requests move to M3). #103 closed.
 
 ## Recently merged
+- #179 M2 contracts: staff, imports, identity providers (closes #154, #155, #156)
+- #180 test(security): dedupe #149/#153 isolation tests · #120 test(e2e): blocked-login E2E ar/en (part of #73) · #145 test(security): one probe-row file per module
 - #141 copy branch and template library (closes #63)
 - #97 audit viewer, subtree visibility and export (closes #53)
 - #99 org units (closes #44) · #129 notification center (closes #69) · #136 assignment Lows · #128 year selector (closes #68) · #135 403 handling (closes #132)
