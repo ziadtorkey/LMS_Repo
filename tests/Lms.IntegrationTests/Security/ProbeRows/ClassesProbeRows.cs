@@ -59,6 +59,7 @@ public sealed class ClassesProbeRows : IProbeRowModule
             Expect(Ok, Ok, NotFound, Forbidden, NotFound, Ok)),
     ];
 
+    // At School1 (not the root): a year defined at School1 by another module's rows would otherwise hide the root one.
     private static async Task<Guid> YearAsync(M1ProbeWorld w) =>
         (await AcademicTestKit.AddYearAsync(w.Callers.Factory, w.Callers.A.School1)).Id;
 

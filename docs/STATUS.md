@@ -2,8 +2,8 @@
 
 _Updated by the Team Lead after every merge cycle._
 
-**Milestone:** M0 — DONE · M1 Organization & Access — closing (48 / 49; last: #73 via #200) · M2 People — closing (27 / 29; #175 via #308, #176/#177 via E2E PRs) · M3 Academic Structure — in progress (12 / 49)
-**Last update:** 2026-11-11 20:55 — UI/UX designer joined (#328 merged; pilot #327 on Staff list + Staff profile). Approved, waiting on CI: #200, #279, #282, #283, #320. Re-approved: #306, #302 (need main merged in). Many M3 PRs need main merged in after recent merges.
+**Milestone:** M0 — DONE · M1 Organization & Access — DONE (#73 via #200) · M2 People — closing (#177 via #321) · M3 Academic Structure — in progress
+**Last update:** 2026-11-11 21:55 — Merged: #283 student accounts, #200 M1 E2E (closes M1), #321 staff import E2E, #328 UI/UX designer. Design pilot #334: owner feedback (green #00663D, light sidebar, Cairo + Aptos Display, dense, dark mode) being applied. #310 fix in #326 under review. Waiting on CI: #320, #279 (QA spot-check), #306, #302.
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |

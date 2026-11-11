@@ -1,3 +1,4 @@
+using Lms.Api.Features.Enrollment.Groups;
 using Lms.Api.Features.Enrollment.Import;
 using Lms.Api.Infrastructure;
 using Lms.Infrastructure.Imports;
@@ -17,5 +18,6 @@ public sealed class EnrollmentModule : ILmsModule
     {
         ClassStudentEndpoints.Map(app);
         EnrollmentEndpoints.Map(app);
+        GroupEndpoints.Map(app);
     }
 }
