@@ -2,8 +2,8 @@
 
 _Updated by the Team Lead after every merge cycle._
 
-**Milestone:** M0 — DONE · M1 Organization & Access — closing (47 / 49; left: #72 via #305, #73 via #200) · M2 People — in progress (23 / 29) · M3 Academic Structure — in progress (6 / 49)
-**Last update:** 2026-11-11 18:40 — Merged since 17:17: #265 academic kernel, #281 (closes M1 #70), #280 contracts (D47), #208, #264 courses UI, #202 import framework, #198 staff lifecycle, #295, #296, #261, #271 IdP UI. Lead error: #204/#269/#289 were merged into already-squashed parent branches and never reached main; re-landed as #300/#298/#299 (QA-verified identical, merging on green). Approved and in CI: #298, #299, #300, #273, #270, #267, #200. In review: #205 staff import, #283, #286, #284, #277, #290, #293, #279, #304, #305.
+**Milestone:** M0 — DONE · M1 Organization & Access — closing (48 / 49; last: #73 via #200) · M2 People — closing (27 / 29; #175 via #308, #176/#177 via E2E PRs) · M3 Academic Structure — in progress (12 / 49)
+**Last update:** 2026-11-11 20:25 — Merged since 19:28: #277 classes, #284 enrollment engine, #276 student profile. Approved and in CI: #200, #308, #283, #279, #320. Lead contract PRs: #320 (IncludeCourses, ClassLessonPlan audit). M3 work in review: #286, #290, #292, #293, #297, #302, #303, #306, #309, #313, #315, #316, #318, #319, #321, #323.
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |
@@ -53,6 +53,8 @@ None. (Board: [LMS v1](https://github.com/users/ziadtorkey/projects/1) — Todo 
 - 2026-11-11: M2 plan approved; 13 answers recorded as D23–D36 (students, guardians and change requests move to M3). #103 closed.
 
 ## Recently merged
+- #276 student profile (closes #246) · #284 enrollment engine (closes #232) · #277 classes (closes #221)
+- #305 (closes #72) · #304 · #205 staff import (closes #165) · #300 staff import page (closes #172) · #270 students UI (closes #245) · #267 external-login E2E (closes #178) · #273 guardians (closes #227) · #299 short codes (closes #288) · #298 relationship scopes (closes #220)
 - #271 IdP admin UI (closes #173) · #261 M1 config/roles E2E · #296 · #295 · #198 staff lifecycle (closes #163) · #202 import framework (closes #159) · #264 courses UI (closes #237) · #208 (closes #161) · #280 contracts · #281 (closes #70) · #265 academic kernel (closes #213)
 - #206 test(e2e): M2 staff lifecycle, sharing and expiry (closes #176) · #278 fix(ci): Playwright install fallback, inotify limits
 - #259 M3 contracts (closes #209–#212) · #207 branch templates (closes #52) · #258 copy branch (closes #50) · #196 staff sharing (closes #164) · #268 OIDC SameSite fix (closes #266) · #257 · #187 staff create/list (closes #162) · #262 · #263 · #260 (closes #71) · #204 staff import page (closes #172) · #195 import wizard (closes #169) · #190 (closes #171) · #192 (closes #174) · #182 M2 probes · #193 external sign-in (closes #168) · #148 level transfer (closes #48) · #184 role blocking (closes #160)
