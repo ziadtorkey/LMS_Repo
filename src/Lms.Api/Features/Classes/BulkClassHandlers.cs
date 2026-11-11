@@ -1,5 +1,6 @@
 using Lms.Api.Infrastructure;
 using Lms.Domain.AcademicYears;
+using Lms.Domain.Access;
 using Lms.Domain.Classes;
 using Lms.Infrastructure.Persistence;
 using Lms.Shared;
@@ -11,7 +12,8 @@ namespace Lms.Api.Features.Classes;
 
 /// <summary>POST /api/classes/bulk and /api/classes/copy: many classes in one transaction.</summary>
 public sealed class BulkClassHandlers(
-    LmsDbContext db, ClassHandlers single, ClassLookups lookups, ClassMapper mapper, IAcademicYearResolver years)
+    LmsDbContext db, ClassHandlers single, ClassLookups lookups, ClassMapper mapper, IAcademicYearResolver years,
+    IAccessEvaluator accessEvaluator)
 {
     public async Task<IResult> BulkAsync(BulkCreateClassesRequest request, HttpContext http, CancellationToken ct)
     {
@@ -59,7 +61,21 @@ public sealed class BulkClassHandlers(
 
         var created = rendered.Select(r => new Class(unit, request.AcademicYearId, r.Code, r.NameAr, r.NameEn, request.Capacity)).ToList();
         db.AddRange(created);
-        await db.SaveChangesAsync(ct);
+        try
+        {
+            await db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException ex) when (DbErrors.IsConcurrentKeyConflict(ex))
+        {
+            // A concurrent request took one of the codes between the check and the insert: nothing was created.
+            return Results.Problem(
+                statusCode: StatusCodes.Status409Conflict, title: "Conflict",
+                extensions: new Dictionary<string, object?>
+                {
+                    ["code"] = ProblemCodes.class_code_taken, ["codes"] = rendered.Select(r => r.Code).Order().ToList(),
+                });
+        }
+
         return Results.Created(Routes.Classes, await mapper.ToDtosAsync(created, ct));
     }
 
@@ -94,7 +110,7 @@ public sealed class BulkClassHandlers(
             .OrderBy(c => c.Code).Take(ClassValidators.MaxCopy + 1).ToListAsync(ct);
         if (sources.Count > ClassValidators.MaxCopy)
         {
-            return ClassValidators.Invalid(nameof(request.SourceYearId), "too_many_classes");
+            return ClassValidators.TooMany(nameof(request.SourceYearId), ClassValidators.MaxCopy);
         }
 
         var from = request.ReplaceFrom;
@@ -104,6 +120,7 @@ public sealed class BulkClassHandlers(
         var plans = sources.Select(c => (Source: c, Code: Replace(c.Code).Trim().ToUpperInvariant(), NameAr: Replace(c.NameAr).Trim(), NameEn: Replace(c.NameEn).Trim())).ToList();
         var existing = (await lookups.TakenCodesAsync(unit.OrganizationId, request.TargetYearId, plans.Select(p => p.Code).Distinct().ToList(), null, ct)).ToHashSet();
         var effectiveAt = new Dictionary<Guid, bool>();
+        var allowedAt = new Dictionary<Guid, bool>();
         var skipped = new List<string>();
         var created = new List<Class>();
         var seen = new HashSet<string>();
@@ -120,6 +137,20 @@ public sealed class BulkClassHandlers(
                 continue; // the target year does not apply at that unit: nothing to copy there
             }
 
+            // A CreateClasses policy set on a unit below the request unit still applies to the classes created there:
+            // blocked units are skipped and their codes reported, never written into.
+            if (!allowedAt.TryGetValue(source.OrgUnitId, out var allowed))
+            {
+                allowed = (await accessEvaluator.EvaluateAsync(Permissions.Classes.Create, source.OrgUnitPath, ct)).Allowed;
+                allowedAt[source.OrgUnitId] = allowed;
+            }
+
+            if (!allowed)
+            {
+                skipped.Add(code);
+                continue;
+            }
+
             if (!ClassValidators.IsValidCode(code) || !ClassValidators.ValidName(nameAr) || !ClassValidators.ValidName(nameEn)
                 || existing.Contains(code) || !seen.Add(code))
             {
@@ -134,7 +165,16 @@ public sealed class BulkClassHandlers(
         }
 
         db.AddRange(created);
-        await db.SaveChangesAsync(ct);
+        try
+        {
+            await db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException ex) when (DbErrors.IsConcurrentKeyConflict(ex))
+        {
+            // Another copy (or create) took one of the codes after the check: nothing was written, retry to see the skips.
+            return ApiProblems.Conflict(ProblemCodes.class_code_taken, "A class code was taken by a concurrent request.");
+        }
+
         return Results.Ok(new CopyClassesResultDto(created.Count, skipped));
     }
 }

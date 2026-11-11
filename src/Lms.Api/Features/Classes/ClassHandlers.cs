@@ -50,7 +50,15 @@ public sealed class ClassHandlers(
         var cls = new Class(unit, request.AcademicYearId, code, request.NameAr, request.NameEn, request.Capacity);
         cls.Update(code, request.NameAr, request.NameEn, request.Capacity, request.HomeroomTeacherUserId);
         db.Add(cls);
-        await db.SaveChangesAsync(ct);
+        try
+        {
+            await db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException ex) when (DbErrors.IsConcurrentKeyConflict(ex))
+        {
+            return ApiProblems.Conflict(ProblemCodes.class_code_taken); // a concurrent request took the code first
+        }
+
         return Results.Created(Routes.Class(cls.Id), await mapper.ToDtoAsync(cls, ct));
     }
 
@@ -176,7 +184,15 @@ public sealed class ClassHandlers(
         }
 
         cls.Update(code, request.NameAr, request.NameEn, request.Capacity, request.HomeroomTeacherUserId);
-        await db.SaveChangesAsync(ct);
+        try
+        {
+            await db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException ex) when (DbErrors.IsConcurrentKeyConflict(ex))
+        {
+            return ApiProblems.Conflict(ProblemCodes.class_code_taken);
+        }
+
         return Results.Ok(await mapper.ToDtoAsync(cls, ct));
     }
 
