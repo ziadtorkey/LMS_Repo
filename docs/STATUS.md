@@ -2,8 +2,8 @@
 
 _Updated by the Team Lead after every merge cycle._
 
-**Milestone:** M0 Foundation — DONE (19 / 19) · M1 Organization & Access — in progress (42 / 49 issues closed) · M2 People — in progress (12 / 28)
-**Last update:** 2026-11-11 — Merged #181 people kernel (#157), #189 staff pages (#170), #121 M1 E2E clients/trees, #191 person gate (#158), #197 staff expiry job (#166), #194 key-ring protection (#186), #201 dev job trigger (#199), #192 assign staff roles (#174). Approved, waiting on CI: #182 M2 probes, #190 staff lifecycle UI. Approved but draft (owner must allow `gh pr ready` in FE2/BE1 sessions): #195 import wizard; #204 follows it. In re-review: #187 staff create, #184 role blocking, #148 (M1), #193 external sign-in. M3 plan being drafted.
+**Milestone:** M0 Foundation — DONE (19 / 19) · M1 Organization & Access — closing (46 / 49; left: #70 probe check, #72 via #261, #73 via #200) · M2 People — in progress (19 / 29) · M3 Academic Structure — started (4 / 48; contracts #259 merged, kernel #265 approved)
+**Last update:** 2026-11-11 15:00 — Merged since 11:34: #184 role blocking, #148 level transfer (M1), #193 external sign-in, #182 M2 probes, #190/#192 staff UI, #195/#204 import wizard + staff import page, #263 guard fix, #260, #262, #187 staff create, #258 copy branch (M1), #257, #268 SameSite fix, #196 staff sharing, #207 templates (M1), #259 M3 contracts. M3 plan approved (D37–D46), 48 issues #209–#256. Approved, waiting on CI: #265, #269, #200, #261, #274, #202, #198. CI flakes (apt DNS, inotify limit) fixed by #278 (in review).
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |
@@ -53,6 +53,7 @@ None. (Board: [LMS v1](https://github.com/users/ziadtorkey/projects/1) — Todo 
 - 2026-11-11: M2 plan approved; 13 answers recorded as D23–D36 (students, guardians and change requests move to M3). #103 closed.
 
 ## Recently merged
+- #259 M3 contracts (closes #209–#212) · #207 branch templates (closes #52) · #258 copy branch (closes #50) · #196 staff sharing (closes #164) · #268 OIDC SameSite fix (closes #266) · #257 · #187 staff create/list (closes #162) · #262 · #263 · #260 (closes #71) · #204 staff import page (closes #172) · #195 import wizard (closes #169) · #190 (closes #171) · #192 (closes #174) · #182 M2 probes · #193 external sign-in (closes #168) · #148 level transfer (closes #48) · #184 role blocking (closes #160)
 - #192 assign roles to existing staff (closes #174) · #201 dev-only job trigger + Jobs:TimeZone (closes #199) · #194 key-ring certificate protection (closes #186) · #197 staff expiry job (closes #166) · #191 person status gate (closes #158) · #121 M1 E2E clients and trees · #189 staff pages (closes #170) · #181 people kernel (closes #157)
 - #188 fix(identity): SSRF guard for provider discovery and backchannel (closes #185) · #183 feat(identity): per-client identity provider configuration (closes #167)
 - #179 M2 contracts: staff, imports, identity providers (closes #154, #155, #156)
