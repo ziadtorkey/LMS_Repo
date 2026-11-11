@@ -28,7 +28,7 @@ public sealed class FakeCoursesApi : ICoursesApi
     public CourseDetailDto Add(string code, string nameAr, string nameEn, Guid ownerId, string ownerAr, string ownerEn,
         int periods, string language, int allocations, string status = CourseStatuses.Active, bool inherited = false)
     {
-        var summary = new CourseSummaryDto(Guid.NewGuid(), code, nameAr, nameEn, language, periods, ownerId, ownerAr, ownerEn,
+        var summary = new CourseSummaryDto(FakeCourseIds.For(code), code, nameAr, nameEn, language, periods, ownerId, ownerAr, ownerEn,
             status, inherited, allocations, false);
         var detail = new CourseDetailDto(summary, null, null, [], [], !inherited);
         _courses.Add(detail);
@@ -91,4 +91,15 @@ public sealed class FakeCoursesApi : ICoursesApi
 
     private bool CodeTaken(string code, Guid? except) =>
         _courses.Any(c => c.Summary.Id != except && string.Equals(c.Summary.Code, code, StringComparison.OrdinalIgnoreCase));
+}
+
+/// <summary>Stable ids of the fake courses by code, so the fake class courses and the fake catalog agree on which course is which.</summary>
+public static class FakeCourseIds
+{
+    public static Guid For(string code)
+    {
+        var bytes = new byte[16];
+        System.Text.Encoding.UTF8.GetBytes(code, bytes.AsSpan(0, Math.Min(code.Length, 16)));
+        return new Guid(bytes);
+    }
 }

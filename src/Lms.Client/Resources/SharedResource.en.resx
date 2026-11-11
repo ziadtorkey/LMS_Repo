@@ -826,4 +826,29 @@
   <data name="Flag_Inherit" xml:space="preserve"><value>Inherit ({0})</value></data>
   <data name="Flag_On" xml:space="preserve"><value>On</value></data>
   <data name="Flag_Off" xml:space="preserve"><value>Off</value></data>
+  <data name="ClassPage_Students" xml:space="preserve"><value>Students</value></data>
+  <data name="ClassPage_Courses" xml:space="preserve"><value>Courses</value></data>
+  <data name="ClassPage_Teachers" xml:space="preserve"><value>Teachers</value></data>
+  <data name="ClassPage_OpenStudents" xml:space="preserve"><value>Open the students of this class</value></data>
+  <data name="ClassPage_TeachersSoon" xml:space="preserve"><value>Teachers of this class's courses are managed here once the teachers screen is available.</value></data>
+  <data name="ClassPage_NotFound" xml:space="preserve"><value>This class was not found.</value></data>
+  <data name="ClassCourse_Add" xml:space="preserve"><value>Add courses</value></data>
+  <data name="ClassCourse_Optional" xml:space="preserve"><value>Optional</value></data>
+  <data name="ClassCourse_Enrolled" xml:space="preserve"><value>Enrolled</value></data>
+  <data name="ClassCourse_Teachers" xml:space="preserve"><value>Teachers</value></data>
+  <data name="ClassCourse_LessonPlan" xml:space="preserve"><value>Lesson plan</value></data>
+  <data name="ClassCourse_Empty" xml:space="preserve"><value>No courses in this class yet.</value></data>
+  <data name="ClassCourse_Remove" xml:space="preserve"><value>Remove</value></data>
+  <data name="ClassCourse_RemoveConfirm" xml:space="preserve"><value>Remove {0} from this class?</value></data>
+  <data name="ClassCourse_NoneAvailable" xml:space="preserve"><value>Every course available at this unit is already in the class.</value></data>
+  <data name="ClassCourse_AddOptional" xml:space="preserve"><value>Add as optional courses</value></data>
+  <data name="ClassCourse_Available" xml:space="preserve"><value>Available courses</value></data>
+  <data name="Matrix_Title" xml:space="preserve"><value>Distribution matrix</value></data>
+  <data name="Matrix_Help" xml:space="preserve"><value>Tick a cell to give the class the course; untick to remove it. A cell marked optional is an optional course.</value></data>
+  <data name="Matrix_AssignAll" xml:space="preserve"><value>All classes</value></data>
+  <data name="Matrix_AssignAllTitle" xml:space="preserve"><value>Assign {0} to every class of this unit</value></data>
+  <data name="Matrix_AssignResult" xml:space="preserve"><value>{0} classes got the course, {1} already had it.</value></data>
+  <data name="Matrix_OptionalMark" xml:space="preserve"><value>opt.</value></data>
+  <data name="Matrix_ChooseUnit" xml:space="preserve"><value>Choose a unit to see its classes.</value></data>
+  <data name="Matrix_NoClasses" xml:space="preserve"><value>This unit has no classes in the selected year.</value></data>
 </root>

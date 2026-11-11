@@ -1,0 +1,104 @@
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Shared.Classes
+@inject IClassCoursesApi Api
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+@* The courses of a class: add from the available ones, mark optional, remove (blocked while the course is in use). *@
+<MudStack Spacing="2" data-testid="class-courses-tab">
+    @if (CanManage && !Class.IsReadOnly)
+    {
+        <div>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="AddAsync"
+                       data-testid="class-courses-add">@L["ClassCourse_Add"]</MudButton>
+        </div>
+    }
+    @if (_failed)
+    {
+        <MudAlert Severity="Severity.Error" data-testid="api-error">@L["Api_Error"]</MudAlert>
+    }
+    else if (_items.Count == 0)
+    {
+        <MudText data-testid="class-courses-empty">@L["ClassCourse_Empty"]</MudText>
+    }
+    else
+    {
+        <MudTable Items="_items" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" data-testid="class-courses-table">
+            <HeaderContent>
+                <MudTh>@L["Course_Code"]</MudTh>
+                <MudTh>@L["Common_Name"]</MudTh>
+                <MudTh>@L["ClassCourse_Optional"]</MudTh>
+                <MudTh>@L["ClassCourse_Enrolled"]</MudTh>
+                <MudTh>@L["ClassCourse_Teachers"]</MudTh>
+                <MudTh>@L["ClassCourse_LessonPlan"]</MudTh>
+                <MudTh></MudTh>
+            </HeaderContent>
+            <RowTemplate Context="cc">
+                <MudTd DataLabel="@L["Course_Code"]"><span dir="ltr">@cc.CourseCode</span></MudTd>
+                <MudTd DataLabel="@L["Common_Name"]">@Culture.Pick(cc.CourseNameAr, cc.CourseNameEn)</MudTd>
+                <MudTd DataLabel="@L["ClassCourse_Optional"]">
+                    <MudSwitch T="bool" Value="cc.IsOptional" ValueChanged="v => SetOptionalAsync(cc, v)" Color="Color.Primary"
+                               Disabled="@(!CanManage || Class.IsReadOnly)" aria-label="@L["ClassCourse_Optional"]" data-testid="@($"class-course-optional-{cc.CourseCode}")" />
+                </MudTd>
+                <MudTd DataLabel="@L["ClassCourse_Enrolled"]">@cc.EnrolledCount</MudTd>
+                <MudTd DataLabel="@L["ClassCourse_Teachers"]">@string.Join("، ", cc.CurrentTeachers.Select(t => Culture.Pick(t.NameAr, t.NameEn)))</MudTd>
+                <MudTd DataLabel="@L["ClassCourse_LessonPlan"]">@(cc.LessonPlanVersion is { } v ? $"v{v}" : "—")</MudTd>
+                <MudTd>
+                    @if (CanManage && !Class.IsReadOnly)
+                    {
+                        <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Error" OnClick="() => RemoveAsync(cc)"
+                                   data-testid="@($"class-course-remove-{cc.CourseCode}")">@L["ClassCourse_Remove"]</MudButton>
+                    }
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    }
+</MudStack>
+
+@code {
+    private IReadOnlyList<ClassCourseDto> _items = [];
+    private bool _failed;
+
+    [Parameter, EditorRequired] public ClassSummaryDto Class { get; set; } = default!;
+
+    /// <summary>True with Classes.ManageCourses.</summary>
+    [Parameter] public bool CanManage { get; set; }
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _failed = false;
+        var (items, failed) = await ApiCalls.RunAsync(() => Api.ListForClassAsync(Class.Id), Navigation);
+        _failed = failed;
+        _items = items ?? [];
+    }
+
+    private async Task AddAsync()
+    {
+        var dialog = await Dialogs.ShowAsync<AddClassCoursesDialog>(L["ClassCourse_Add"],
+            new DialogParameters<AddClassCoursesDialog>
+            {
+                { x => x.ClassId, Class.Id }, { x => x.OrgUnitId, Class.OrgUnitId },
+                { x => x.HavingCourseIds, _items.Select(i => i.CourseId).ToHashSet() },
+            }, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        if (await dialog.Result is { Canceled: false }) { Snackbar.Add(L["Common_Saved"], Severity.Success); await LoadAsync(); }
+    }
+
+    private async Task SetOptionalAsync(ClassCourseDto item, bool optional)
+    {
+        var ok = await ApiCalls.RunAsync(() => Api.UpdateAsync(item.Id, new UpdateClassCourseRequest(optional)), Navigation, L, message => Snackbar.Add(message, Severity.Error));
+        if (ok) await LoadAsync();
+    }
+
+    private async Task RemoveAsync(ClassCourseDto item)
+    {
+        if (!await ConfirmDialog.AskAsync(Dialogs, L["ClassCourse_Remove"], L["ClassCourse_RemoveConfirm", Culture.Pick(item.CourseNameAr, item.CourseNameEn)].Value, L["ClassCourse_Remove"])) return;
+        // class_course_in_use (enrolled students or lesson-plan progress) comes back as the localized message.
+        var ok = await ApiCalls.RunAsync(() => Api.RemoveAsync(item.Id), Navigation, L, message => Snackbar.Add(message, Severity.Error));
+        if (ok) await LoadAsync();
+    }
+}
