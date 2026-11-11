@@ -6,6 +6,7 @@ public static class AcademicYearsModule
     {
         app.MapAcademicYearEndpoints();
         app.MapTermEndpoints();
+        app.MapCalendarEndpoints();
         return app;
     }
 }
