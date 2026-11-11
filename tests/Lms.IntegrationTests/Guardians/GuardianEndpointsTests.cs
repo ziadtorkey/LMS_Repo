@@ -1,7 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
-using Lms.Api.Features.Guardians;
 using Lms.Domain.Auditing;
 using Lms.Domain.People;
 using Lms.IntegrationTests.Access;
@@ -62,9 +61,9 @@ public sealed class GuardianEndpointsTests
         var mobile = "+201001234123";
         await _kit.LinkOkAsync(school1Admin, student.Id, NewGuardian(nationalId, mobile, primary: true, name: "Mona Guardian"));
 
-        var byId = await _kit.SendAsync(HttpMethod.Get, $"{GuardianRoutes.GuardianMatch}?nationalId={nationalId}", school2Admin);
-        var byMobile = await _kit.SendAsync(HttpMethod.Get, $"{GuardianRoutes.GuardianMatch}?mobile={Uri.EscapeDataString(mobile)}", school2Admin);
-        var none = await _kit.SendAsync(HttpMethod.Get, $"{GuardianRoutes.GuardianMatch}?nationalId=NOSUCH1234", school2Admin);
+        var byId = await _kit.SendAsync(HttpMethod.Get, $"{Routes.GuardiansMatch}?nationalId={nationalId}", school2Admin);
+        var byMobile = await _kit.SendAsync(HttpMethod.Get, $"{Routes.GuardiansMatch}?mobile={Uri.EscapeDataString(mobile)}", school2Admin);
+        var none = await _kit.SendAsync(HttpMethod.Get, $"{Routes.GuardiansMatch}?nationalId=NOSUCH1234", school2Admin);
 
         Assert.Equal(HttpStatusCode.OK, byId.StatusCode);
         var match = (await byId.Content.ReadFromJsonAsync<GuardianMatchDto>(Web))!;
@@ -78,8 +77,8 @@ public sealed class GuardianEndpointsTests
         Assert.Equal(match.Id, (await byMobile.Content.ReadFromJsonAsync<GuardianMatchDto>(Web))!.Id);
         Assert.Equal(HttpStatusCode.NoContent, none.StatusCode);
         // matching is exact: a partial national id finds nothing
-        Assert.Equal(HttpStatusCode.NoContent, (await _kit.SendAsync(HttpMethod.Get, $"{GuardianRoutes.GuardianMatch}?nationalId={nationalId[..6]}", school2Admin)).StatusCode);
-        Assert.Equal(HttpStatusCode.BadRequest, (await _kit.SendAsync(HttpMethod.Get, GuardianRoutes.GuardianMatch, school2Admin)).StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, (await _kit.SendAsync(HttpMethod.Get, $"{Routes.GuardiansMatch}?nationalId={nationalId[..6]}", school2Admin)).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await _kit.SendAsync(HttpMethod.Get, Routes.GuardiansMatch, school2Admin)).StatusCode);
     }
 
     [Fact]
@@ -92,7 +91,7 @@ public sealed class GuardianEndpointsTests
         var origin = await _kit.LinkOkAsync(school1Admin, (await _kit.StudentAsync(tree.School1)).Id, NewGuardian(nationalId, primary: true));
         var sibling = await _kit.StudentAsync(tree.School2);
 
-        var matched = (await (await _kit.SendAsync(HttpMethod.Get, $"{GuardianRoutes.GuardianMatch}?nationalId={nationalId}", school2Admin))
+        var matched = (await (await _kit.SendAsync(HttpMethod.Get, $"{Routes.GuardiansMatch}?nationalId={nationalId}", school2Admin))
             .Content.ReadFromJsonAsync<GuardianMatchDto>(Web))!;
         var linked = await _kit.LinkOkAsync(school2Admin, sibling.Id, new GuardianLinkInput(matched.Id, null, "Mother", true));
 
@@ -114,17 +113,17 @@ public sealed class GuardianEndpointsTests
         Assert.Equal([second.GuardianId], links.Where(l => l.IsPrimary).Select(l => l.GuardianId));
 
         // switching the primary through update moves the flag
-        var switched = await _kit.SendAsync(HttpMethod.Put, GuardianRoutes.StudentGuardian(student.Id, third.GuardianId), admin, new UpdateStudentGuardianRequest("Uncle", true));
+        var switched = await _kit.SendAsync(HttpMethod.Put, Routes.StudentGuardian(student.Id, third.GuardianId), admin, new UpdateStudentGuardianRequest("Uncle", true));
         Assert.Equal(HttpStatusCode.OK, switched.StatusCode);
         Assert.Equal([third.GuardianId], (await _kit.LinksAsync(admin, student.Id)).Where(l => l.IsPrimary).Select(l => l.GuardianId));
 
         // unsetting the only primary is refused
-        var unset = await _kit.SendAsync(HttpMethod.Put, GuardianRoutes.StudentGuardian(student.Id, third.GuardianId), admin, new UpdateStudentGuardianRequest("Uncle", false));
+        var unset = await _kit.SendAsync(HttpMethod.Put, Routes.StudentGuardian(student.Id, third.GuardianId), admin, new UpdateStudentGuardianRequest("Uncle", false));
         Assert.Equal(HttpStatusCode.Conflict, unset.StatusCode);
         Assert.Equal(ProblemCodes.primary_guardian_required, (await unset.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("code").GetString());
 
         // removing the primary hands over to the oldest remaining link
-        var removed = await _kit.SendAsync(HttpMethod.Delete, GuardianRoutes.StudentGuardian(student.Id, third.GuardianId), admin);
+        var removed = await _kit.SendAsync(HttpMethod.Delete, Routes.StudentGuardian(student.Id, third.GuardianId), admin);
         Assert.Equal(HttpStatusCode.NoContent, removed.StatusCode);
         var after = await _kit.LinksAsync(admin, student.Id);
         Assert.Equal(2, after.Count);
@@ -139,7 +138,7 @@ public sealed class GuardianEndpointsTests
         var nationalId = UniqueNationalId();
         await _kit.LinkOkAsync(admin, student.Id, NewGuardian(nationalId));
 
-        var again = await _kit.SendAsync(HttpMethod.Post, GuardianRoutes.StudentGuardians(student.Id), admin, NewGuardian(nationalId, relation: "Mother"));
+        var again = await _kit.SendAsync(HttpMethod.Post, Routes.StudentGuardians(student.Id), admin, NewGuardian(nationalId, relation: "Mother"));
 
         Assert.Equal(HttpStatusCode.Conflict, again.StatusCode);
         Assert.Equal(ProblemCodes.guardian_link_exists, (await again.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("code").GetString());
@@ -153,7 +152,7 @@ public sealed class GuardianEndpointsTests
         var student = await _kit.StudentAsync(tree.School1);
         var only = await _kit.LinkOkAsync(admin, student.Id, NewGuardian(primary: true));
 
-        var blocked = await _kit.SendAsync(HttpMethod.Delete, GuardianRoutes.StudentGuardian(student.Id, only.GuardianId), admin);
+        var blocked = await _kit.SendAsync(HttpMethod.Delete, Routes.StudentGuardian(student.Id, only.GuardianId), admin);
 
         Assert.Equal(HttpStatusCode.Conflict, blocked.StatusCode);
         Assert.Equal(ProblemCodes.guardian_required, (await blocked.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("code").GetString());
@@ -171,8 +170,8 @@ public sealed class GuardianEndpointsTests
         var g1 = await _kit.LinkOkAsync(admin, inherited.Id, NewGuardian(primary: true));
         var g2 = await _kit.LinkOkAsync(admin, overridden.Id, NewGuardian(primary: true));
 
-        var school1 = await _kit.SendAsync(HttpMethod.Delete, GuardianRoutes.StudentGuardian(inherited.Id, g1.GuardianId), admin);
-        var school2 = await _kit.SendAsync(HttpMethod.Delete, GuardianRoutes.StudentGuardian(overridden.Id, g2.GuardianId), admin);
+        var school1 = await _kit.SendAsync(HttpMethod.Delete, Routes.StudentGuardian(inherited.Id, g1.GuardianId), admin);
+        var school2 = await _kit.SendAsync(HttpMethod.Delete, Routes.StudentGuardian(overridden.Id, g2.GuardianId), admin);
 
         Assert.Equal(HttpStatusCode.Conflict, school1.StatusCode);
         Assert.Equal(HttpStatusCode.NoContent, school2.StatusCode);
@@ -187,14 +186,14 @@ public sealed class GuardianEndpointsTests
         var student = await _kit.StudentAsync(tree.School1);
         var link = await _kit.LinkOkAsync(school1Admin, student.Id, NewGuardian(primary: true));
 
-        Assert.Equal(HttpStatusCode.NotFound, (await _kit.SendAsync(HttpMethod.Get, GuardianRoutes.Guardian(link.GuardianId), school2Admin)).StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, (await _kit.SendAsync(HttpMethod.Put, GuardianRoutes.Guardian(link.GuardianId), school2Admin,
+        Assert.Equal(HttpStatusCode.NotFound, (await _kit.SendAsync(HttpMethod.Get, Routes.Guardian(link.GuardianId), school2Admin)).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await _kit.SendAsync(HttpMethod.Put, Routes.Guardian(link.GuardianId), school2Admin,
             new UpdateGuardianRequest(new GuardianDataInput("س", "Edited", UniqueMobile(), null, null)))).StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, (await _kit.SendAsync(HttpMethod.Get, GuardianRoutes.StudentGuardians(student.Id), school2Admin)).StatusCode);
-        var list = (await (await _kit.SendAsync(HttpMethod.Get, GuardianRoutes.Guardians, school2Admin))
+        Assert.Equal(HttpStatusCode.NotFound, (await _kit.SendAsync(HttpMethod.Get, Routes.StudentGuardians(student.Id), school2Admin)).StatusCode);
+        var list = (await (await _kit.SendAsync(HttpMethod.Get, Routes.Guardians, school2Admin))
             .Content.ReadFromJsonAsync<PagedResult<GuardianSummaryDto>>(Web))!;
         Assert.DoesNotContain(list.Items, g => g.Id == link.GuardianId);
-        Assert.Equal(HttpStatusCode.OK, (await _kit.SendAsync(HttpMethod.Get, GuardianRoutes.Guardian(link.GuardianId), admin)).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await _kit.SendAsync(HttpMethod.Get, Routes.Guardian(link.GuardianId), admin)).StatusCode);
     }
 
     [Fact]
@@ -209,14 +208,14 @@ public sealed class GuardianEndpointsTests
         var link = await _kit.LinkOkAsync(school1Admin, child1.Id, NewGuardian(nationalId, primary: true));
         await _kit.LinkOkAsync(school2Admin, child2.Id, new GuardianLinkInput(link.GuardianId, null, "Mother", true));
 
-        var seenBy1 = (await (await _kit.SendAsync(HttpMethod.Get, GuardianRoutes.Guardian(link.GuardianId), school1Admin)).Content.ReadFromJsonAsync<GuardianDetailDto>(Web))!;
-        var seenBy2 = (await (await _kit.SendAsync(HttpMethod.Get, GuardianRoutes.Guardian(link.GuardianId), school2Admin)).Content.ReadFromJsonAsync<GuardianDetailDto>(Web))!;
+        var seenBy1 = (await (await _kit.SendAsync(HttpMethod.Get, Routes.Guardian(link.GuardianId), school1Admin)).Content.ReadFromJsonAsync<GuardianDetailDto>(Web))!;
+        var seenBy2 = (await (await _kit.SendAsync(HttpMethod.Get, Routes.Guardian(link.GuardianId), school2Admin)).Content.ReadFromJsonAsync<GuardianDetailDto>(Web))!;
 
         Assert.Equal([child1.Id], seenBy1.Children.Select(c => c.StudentId));
         Assert.Equal([child2.Id], seenBy2.Children.Select(c => c.StudentId));
         Assert.Equal(1, seenBy1.Summary.ChildrenInScope);
         // any school with a child of the guardian may edit the shared guardian (D30)
-        var edit = await _kit.SendAsync(HttpMethod.Put, GuardianRoutes.Guardian(link.GuardianId), school2Admin,
+        var edit = await _kit.SendAsync(HttpMethod.Put, Routes.Guardian(link.GuardianId), school2Admin,
             new UpdateGuardianRequest(new GuardianDataInput("ولي", "Edited By School2", UniqueMobile(), null, nationalId)));
         Assert.Equal(HttpStatusCode.OK, edit.StatusCode);
     }
@@ -232,9 +231,9 @@ public sealed class GuardianEndpointsTests
         await _kit.LinkOkAsync(admin, other.Id, NewGuardian(firstNid, firstMobile, primary: true));
         var mine = await _kit.LinkOkAsync(admin, student.Id, NewGuardian(UniqueNationalId(), primary: true));
 
-        var byNid = await _kit.SendAsync(HttpMethod.Put, GuardianRoutes.Guardian(mine.GuardianId), admin, new UpdateGuardianRequest(new GuardianDataInput("س", "Same", UniqueMobile(), null, firstNid)));
-        var byMobile = await _kit.SendAsync(HttpMethod.Put, GuardianRoutes.Guardian(mine.GuardianId), admin, new UpdateGuardianRequest(new GuardianDataInput("س", "Same", firstMobile, null, UniqueNationalId())));
-        var self = await _kit.SendAsync(HttpMethod.Put, GuardianRoutes.Guardian(mine.GuardianId), admin, new UpdateGuardianRequest(new GuardianDataInput("س", "Renamed", mine.Mobile, null, mine.NationalId)));
+        var byNid = await _kit.SendAsync(HttpMethod.Put, Routes.Guardian(mine.GuardianId), admin, new UpdateGuardianRequest(new GuardianDataInput("س", "Same", UniqueMobile(), null, firstNid)));
+        var byMobile = await _kit.SendAsync(HttpMethod.Put, Routes.Guardian(mine.GuardianId), admin, new UpdateGuardianRequest(new GuardianDataInput("س", "Same", firstMobile, null, UniqueNationalId())));
+        var self = await _kit.SendAsync(HttpMethod.Put, Routes.Guardian(mine.GuardianId), admin, new UpdateGuardianRequest(new GuardianDataInput("س", "Renamed", mine.Mobile, null, mine.NationalId)));
 
         Assert.Equal(HttpStatusCode.Conflict, byNid.StatusCode);
         var body = await byNid.Content.ReadFromJsonAsync<JsonElement>();
@@ -252,13 +251,13 @@ public sealed class GuardianEndpointsTests
         var nationalId = UniqueNationalId();
         var link = await _kit.LinkOkAsync(adminA, (await _kit.StudentAsync(a.School1)).Id, NewGuardian(nationalId, primary: true));
 
-        Assert.Equal(HttpStatusCode.NoContent, (await _kit.SendAsync(HttpMethod.Get, $"{GuardianRoutes.GuardianMatch}?nationalId={nationalId}", adminB)).StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, (await _kit.SendAsync(HttpMethod.Get, GuardianRoutes.Guardian(link.GuardianId), adminB)).StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, (await _kit.SendAsync(HttpMethod.Get, $"{Routes.GuardiansMatch}?nationalId={nationalId}", adminB)).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await _kit.SendAsync(HttpMethod.Get, Routes.Guardian(link.GuardianId), adminB)).StatusCode);
         // linking by the id of another client's guardian is refused as if it did not exist
         var intruder = await _kit.StudentAsync((await _kit.SetUpAsync("GD11C")).Tree.School1);
         var other = await _kit.SetUpAsync("GD11D");
         var foreign = await _kit.StudentAsync(other.Tree.School1);
-        var response = await _kit.SendAsync(HttpMethod.Post, GuardianRoutes.StudentGuardians(foreign.Id), other.Admin, new GuardianLinkInput(link.GuardianId, null, "Father", true));
+        var response = await _kit.SendAsync(HttpMethod.Post, Routes.StudentGuardians(foreign.Id), other.Admin, new GuardianLinkInput(link.GuardianId, null, "Father", true));
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         Assert.NotNull(intruder);
     }
@@ -269,7 +268,7 @@ public sealed class GuardianEndpointsTests
         var (tree, admin) = await _kit.SetUpAsync("GD12");
         var student = await _kit.StudentAsync(tree.School1);
         var link = await _kit.LinkOkAsync(admin, student.Id, NewGuardian(primary: true));
-        await _kit.SendAsync(HttpMethod.Put, GuardianRoutes.Guardian(link.GuardianId), admin,
+        await _kit.SendAsync(HttpMethod.Put, Routes.Guardian(link.GuardianId), admin,
             new UpdateGuardianRequest(new GuardianDataInput("ولي", "Audited Name", link.Mobile, null, null)));
 
         await using var db = _factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
@@ -287,12 +286,12 @@ public sealed class GuardianEndpointsTests
         var link = await _kit.LinkOkAsync(admin, student.Id, NewGuardian(primary: true));
         var supervisor = await _kit.CallerWithRoleAsync(tree, tree.Root, BuiltInRoles.Supervisor);
 
-        Assert.Equal(HttpStatusCode.OK, (await _kit.SendAsync(HttpMethod.Get, GuardianRoutes.StudentGuardians(student.Id), supervisor)).StatusCode);
-        Assert.Equal(HttpStatusCode.OK, (await _kit.SendAsync(HttpMethod.Get, GuardianRoutes.Guardian(link.GuardianId), supervisor)).StatusCode);
-        Assert.Equal(HttpStatusCode.Forbidden, (await _kit.SendAsync(HttpMethod.Post, GuardianRoutes.StudentGuardians(student.Id), supervisor, NewGuardian())).StatusCode);
-        Assert.Equal(HttpStatusCode.Forbidden, (await _kit.SendAsync(HttpMethod.Put, GuardianRoutes.StudentGuardian(student.Id, link.GuardianId), supervisor, new UpdateStudentGuardianRequest("Father", true))).StatusCode);
-        Assert.Equal(HttpStatusCode.Forbidden, (await _kit.SendAsync(HttpMethod.Delete, GuardianRoutes.StudentGuardian(student.Id, link.GuardianId), supervisor)).StatusCode);
-        Assert.Equal(HttpStatusCode.Forbidden, (await _kit.SendAsync(HttpMethod.Get, $"{GuardianRoutes.GuardianMatch}?nationalId=X12345", supervisor)).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await _kit.SendAsync(HttpMethod.Get, Routes.StudentGuardians(student.Id), supervisor)).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await _kit.SendAsync(HttpMethod.Get, Routes.Guardian(link.GuardianId), supervisor)).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await _kit.SendAsync(HttpMethod.Post, Routes.StudentGuardians(student.Id), supervisor, NewGuardian())).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await _kit.SendAsync(HttpMethod.Put, Routes.StudentGuardian(student.Id, link.GuardianId), supervisor, new UpdateStudentGuardianRequest("Father", true))).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await _kit.SendAsync(HttpMethod.Delete, Routes.StudentGuardian(student.Id, link.GuardianId), supervisor)).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await _kit.SendAsync(HttpMethod.Get, $"{Routes.GuardiansMatch}?nationalId=X12345", supervisor)).StatusCode);
     }
 
     [Fact]
@@ -300,7 +299,7 @@ public sealed class GuardianEndpointsTests
     {
         var (tree, admin) = await _kit.SetUpAsync("GD14");
         var student = await _kit.StudentAsync(tree.School1);
-        var url = GuardianRoutes.StudentGuardians(student.Id);
+        var url = Routes.StudentGuardians(student.Id);
 
         Assert.Equal(HttpStatusCode.BadRequest, (await _kit.SendAsync(HttpMethod.Post, url, admin, NewGuardian(mobile: "12"))).StatusCode);
         Assert.Equal(HttpStatusCode.BadRequest, (await _kit.SendAsync(HttpMethod.Post, url, admin, NewGuardian(nationalId: "no spaces!"))).StatusCode);
@@ -309,7 +308,7 @@ public sealed class GuardianEndpointsTests
         Assert.Equal(HttpStatusCode.BadRequest, (await _kit.SendAsync(HttpMethod.Post, url, admin,
             new GuardianLinkInput(Guid.NewGuid(), new GuardianDataInput("س", "Both", UniqueMobile(), null, null), "Father", true))).StatusCode); // both
         Assert.Equal(HttpStatusCode.NotFound, (await _kit.SendAsync(HttpMethod.Post, url, admin, new GuardianLinkInput(Guid.NewGuid(), null, "Father", true))).StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, (await _kit.SendAsync(HttpMethod.Get, GuardianRoutes.StudentGuardians(Guid.NewGuid()), admin)).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await _kit.SendAsync(HttpMethod.Get, Routes.StudentGuardians(Guid.NewGuid()), admin)).StatusCode);
         Assert.Empty(await _kit.LinksAsync(admin, student.Id));
     }
 }
