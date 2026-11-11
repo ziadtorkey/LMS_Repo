@@ -21,6 +21,7 @@ public static class OrgUnitEndpoints
         app.MapPost(Routes.OrgUnits, CreateAsync).RequireAuthorization().RequirePermission(Permissions.OrgUnits.Create);
         app.MapPut(Routes.OrgUnitPattern, UpdateAsync).RequireAuthorization().RequirePermission(Permissions.OrgUnits.Update);
         app.MapPut(Routes.OrgUnitStatusPattern, SetStatusAsync).RequireAuthorization().RequirePermission(Permissions.OrgUnits.Update);
+        app.MapPut(Routes.OrgUnitAcademicFlagsPattern, AcademicFlagsAsync).RequireAuthorization().RequirePermission(Permissions.OrgUnits.Update);
         app.MapPut(Routes.OrgUnitMovePattern, MoveAsync).RequireAuthorization().RequirePermission(Permissions.OrgUnits.Move);
         app.MapDelete(Routes.OrgUnitPattern, DeleteAsync).RequireAuthorization().RequirePermission(Permissions.OrgUnits.Delete);
         return app;
@@ -141,6 +142,13 @@ public static class OrgUnitEndpoints
 
         await db.SaveChangesAsync(ct);
         return Results.Ok(await queries.GetNodeAsync(unit, ct));
+    }
+
+    private static async Task<IResult> AcademicFlagsAsync(
+        Guid id, OrgUnitAcademicFlagsRequest request, HttpContext http, AcademicFlagsHandler handler, CancellationToken ct)
+    {
+        var access = await http.CheckUnitAsync(Permissions.OrgUnits.Update, id, ct);
+        return access.Problem ?? await handler.HandleAsync(access.Unit!, request, ct);
     }
 
     private static async Task<IResult> MoveAsync(
