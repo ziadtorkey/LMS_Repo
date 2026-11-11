@@ -11,6 +11,8 @@ public sealed class IsolationBypassGuardTests
     /// <summary>Repository-relative files allowed to bypass the global query filters, with the reason.</summary>
     private static readonly IReadOnlyDictionary<string, string> AllowList = new Dictionary<string, string>
     {
+        ["src/Lms.Api/Features/Guardians/GuardianEndpoints.cs"] =
+            "match endpoint: a bare children count of the guardian in the caller's own client, no student or unit leaves the query (M3 Task 19, #227)",
         ["src/Lms.Infrastructure/Organizations/OrgTree.cs"] =
             "client root and ancestors lie above a unit-level caller's scope (M1 Task 5)",
         ["src/Lms.Infrastructure/Access/ValidAssignmentQuery.cs"] =
