@@ -9,6 +9,7 @@ using Lms.Infrastructure.Identity.External;
 using Lms.Infrastructure.Configuration;
 using Lms.Infrastructure.Organizations;
 using Lms.Infrastructure.Notifications;
+using Lms.Infrastructure.Courses;
 using Lms.Infrastructure.People;
 using Lms.Infrastructure.Persistence;
 using Lms.Infrastructure.Seeding;
@@ -36,6 +37,7 @@ public static class DependencyInjection
         services.AddSettingsAndPolicies();
         services.AddAcademicYears();
         services.AddPeople();
+        services.AddAcademic();
         services.AddExternalIdentity(configuration, environment);
         return services;
     }

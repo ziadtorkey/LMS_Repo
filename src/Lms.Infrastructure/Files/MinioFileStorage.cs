@@ -94,6 +94,22 @@ public sealed class MinioFileStorage(
         return new Uri(url);
     }
 
+    public async Task<Stream> OpenReadAsync(Guid fileId, CancellationToken cancellationToken = default)
+    {
+        var file = await db.Set<StoredFile>().SingleOrDefaultAsync(x => x.Id == fileId, cancellationToken)
+            ?? throw new StoredFileNotFoundException(fileId);
+
+        var buffer = new MemoryStream();
+        await clients.Client.GetObjectAsync(
+            new GetObjectArgs()
+                .WithBucket(BucketFor(file.OrganizationId))
+                .WithObject(file.ObjectKey)
+                .WithCallbackStream(stream => stream.CopyTo(buffer)),
+            cancellationToken);
+        buffer.Position = 0;
+        return buffer;
+    }
+
     public async Task DeleteAsync(Guid fileId, CancellationToken cancellationToken = default)
     {
         var file = await db.Set<StoredFile>().SingleOrDefaultAsync(x => x.Id == fileId, cancellationToken)
