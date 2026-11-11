@@ -44,4 +44,13 @@
   <data name="ImportError_blocked_by_policy" xml:space="preserve"><value>إنشاء المواد هنا محظور بسياسة الوحدة الأعلى.</value></data>
   <data name="ImportError_course_not_available" xml:space="preserve"><value>لا يمكن تخصيص المادة إلا لوحدة المالك أو ما دونها.</value></data>
   <data name="ImportError_unexpected" xml:space="preserve"><value>فشل الاستيراد ولم يُحفظ أي شيء.</value></data>
+  <data name="ImportError_invalid_email" xml:space="preserve"><value>أدخل بريدًا إلكترونيًا صحيحًا.</value></data>
+  <data name="ImportError_invalid_mobile" xml:space="preserve"><value>أدخل رقم جوال صحيحًا، مثل ‎+201001234567.</value></data>
+  <data name="ImportError_invalid_national_id" xml:space="preserve"><value>يجب أن يتكون رقم الهوية من 5 إلى 20 حرفًا أو رقمًا.</value></data>
+  <data name="ImportError_duplicate_person" xml:space="preserve"><value>هذا الشخص موجود بالفعل في هذه الجهة (نفس القيمة: {field}).</value></data>
+  <data name="ImportError_unknown_role" xml:space="preserve"><value>لا يوجد دور باسم "{value}".</value></data>
+  <data name="ImportError_invalid_role_kind" xml:space="preserve"><value>لا يمكن منح هذا الدور للموظفين من هنا.</value></data>
+  <data name="ImportError_permission_escalation" xml:space="preserve"><value>لا يمكنك منح دور بصلاحيات لا تملكها.</value></data>
+  <data name="ImportError_blocked_by_policy" xml:space="preserve"><value>محظور بسياسة الوحدة الأعلى</value></data>
+  <data name="ImportError_invalid_expiry" xml:space="preserve"><value>يجب أن يكون تاريخ الانتهاء اليوم أو بعده.</value></data>
 </root>
