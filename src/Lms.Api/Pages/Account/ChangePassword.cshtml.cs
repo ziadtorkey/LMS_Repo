@@ -3,6 +3,7 @@ using Lms.Api.Features.Account;
 using Lms.Api.Resources;
 using Lms.Domain.Auditing;
 using Lms.Domain.Identity;
+using Lms.Shared.Auditing;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -56,7 +57,7 @@ public sealed class ChangePasswordModel(
         user.MustChangePassword = false;
         await users.UpdateAsync(user);
         await signIn.RefreshSignInAsync(user); // the security stamp changed: keep this session
-        await audit.WriteSecurityEventAsync("PasswordChanged", user.Id, null, HttpContext.Connection.RemoteIpAddress?.ToString(), cancellationToken);
+        await audit.WriteSecurityEventAsync(AuditSecurityEvents.PasswordChanged, user.Id, null, HttpContext.Connection.RemoteIpAddress?.ToString(), cancellationToken);
         return LocalRedirect(ReturnUrl!);
     }
 

@@ -273,7 +273,7 @@ public sealed class StudentLifecycleHandler(
 
             await transaction.CommitAsync(ct);
             await credentials.FlushDeliveriesAsync(ct);
-            return Results.Ok(new StudentCreatedDto(await mapper.DetailAsync(student, ct), issued.Password ?? string.Empty, issued.DeliveredTo));
+            return Results.Ok(new StudentCreatedDto(await mapper.DetailAsync(student, ct), issued.Password ?? string.Empty, issued.DeliveredTo, issued.User.UserName ?? string.Empty));
         }
         catch (Exception ex) when (StudentProblems.From(ex) is { } refused)
         {

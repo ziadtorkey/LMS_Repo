@@ -24,6 +24,15 @@ public sealed class CreateClientHandler(
 {
     private const string InvitationCulture = "ar";
 
+    /// <summary>The requested short code, or (D47) the lower-cased root unit code with '_' turned into '-', cut to 20.</summary>
+    public static string ResolveShortCode(CreateClientRequest request)
+    {
+        var value = string.IsNullOrWhiteSpace(request.ShortCode)
+            ? request.RootUnitCode.Trim().ToLowerInvariant().Replace('_', '-')
+            : request.ShortCode.Trim();
+        return string.IsNullOrWhiteSpace(request.ShortCode) && value.Length > 20 ? value[..20] : value;
+    }
+
     public async Task<ClientDto> HandleAsync(CreateClientRequest request, CancellationToken ct)
     {
         var type = Enum.Parse<OrganizationType>(request.Type);
@@ -35,7 +44,13 @@ public sealed class CreateClientHandler(
 
         await using (var transaction = await db.Database.BeginTransactionAsync(ct))
         {
-            var organization = new Organization(Guid.CreateVersion7(), request.NameAr.Trim(), request.NameEn.Trim(), type);
+            var shortCode = ResolveShortCode(request);
+            if (await db.Organizations.AnyAsync(o => o.ShortCode == shortCode, ct))
+            {
+                throw new ShortCodeTakenException();
+            }
+
+            var organization = new Organization(Guid.CreateVersion7(), request.NameAr.Trim(), request.NameEn.Trim(), type, shortCode);
             var level = new LevelType(organization.Id, request.RootLevelNameAr.Trim(), request.RootLevelNameEn.Trim(), 1, false);
             var root = OrgUnit.CreateRoot(
                 organization.Id, level.Id, request.NameAr.Trim(), request.NameEn.Trim(), request.RootUnitCode.Trim());
@@ -87,3 +102,6 @@ public sealed class CreateClientHandler(
         return result;
     }
 }
+
+/// <summary>The short code (D47) is already used by another client.</summary>
+public sealed class ShortCodeTakenException : Exception;

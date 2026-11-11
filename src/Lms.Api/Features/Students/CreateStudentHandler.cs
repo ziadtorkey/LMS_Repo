@@ -145,7 +145,7 @@ public sealed class CreateStudentHandler(
             await credentials.FlushDeliveriesAsync(ct);
 
             var detail = await mapper.DetailAsync(student, ct);
-            return Results.Created(Routes.Student(student.Id), new StudentCreatedDto(detail, issued.Password ?? string.Empty, issued.DeliveredTo));
+            return Results.Created(Routes.Student(student.Id), new StudentCreatedDto(detail, issued.Password ?? string.Empty, issued.DeliveredTo, issued.User.UserName ?? string.Empty));
         }
         catch (Exception ex) when (StudentProblems.From(ex) is { } problem)
         {
