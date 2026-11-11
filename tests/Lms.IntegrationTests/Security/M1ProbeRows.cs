@@ -188,6 +188,20 @@ public static class M1ProbeRows
                 Routes.Client(w.Callers.A.Org.Id), new UpdateClientRequest(w.Callers.A.Org.NameAr, w.Callers.A.Org.NameEn, "Active"))),
             Expect(Forbidden, Forbidden, Forbidden, Forbidden, Forbidden, Ok)),
 
+        // ---- Policies (Task 12, #94): unit-targeted like the settings rows; DELETE returns the remaining effective state (200).
+        new("policies catalog", HttpMethod.Get, Routes.PoliciesCatalog,
+            (_, _) => Task.FromResult(new ProbeRequest(Routes.PoliciesCatalog)),
+            Expect(Ok, Ok, Ok, Forbidden, Ok, Ok)),
+        new("unit policies read", HttpMethod.Get, Routes.OrgUnitPoliciesPattern,
+            async (w, _) => new ProbeRequest(Routes.OrgUnitPolicies((await w.NewUnitAsync(w.Callers.A.School1)).Id)),
+            Expect(Ok, Ok, NotFound, Forbidden, NotFound, Ok)),
+        new("unit policy enable", HttpMethod.Put, Routes.OrgUnitPolicyPattern,
+            async (w, _) => new ProbeRequest(Routes.OrgUnitPolicy((await w.NewUnitAsync(w.Callers.A.School1)).Id, ProbePolicy)),
+            Expect(Ok, Ok, NotFound, Forbidden, NotFound, Ok)),
+        new("unit policy disable", HttpMethod.Delete, Routes.OrgUnitPolicyPattern,
+            async (w, _) => new ProbeRequest(Routes.OrgUnitPolicy(await NewUnitWithPolicyAsync(w), ProbePolicy)),
+            Expect(Ok, Ok, NotFound, Forbidden, NotFound, Ok)),
+
         // ---- Roles (Task 19, #96): client-wide. Reads at any scope; writes only at the client root (D18, Review Focus 4);
         // a platform admin has no client, so client-root writes are refused; roles of another client are invisible (404).
         new("permissions catalog", HttpMethod.Get, Routes.Permissions,
@@ -280,6 +294,15 @@ public static class M1ProbeRows
     }
 
     private const string ProbeSetting = "Ui.ShowHijriDates";
+
+    private const string ProbePolicy = Lms.Shared.Authorization.PolicyCatalog.CreateOrgUnits;
+
+    private static async Task<Guid> NewUnitWithPolicyAsync(M1ProbeWorld w)
+    {
+        var unit = await w.NewUnitAsync(w.Callers.A.School1);
+        await w.Callers.SendOkAsync(RootAdmin, HttpMethod.Put, Routes.OrgUnitPolicy(unit.Id, ProbePolicy));
+        return unit.Id;
+    }
 
     private static async Task<Guid> NewUnitWithSettingAsync(M1ProbeWorld w)
     {
