@@ -42,8 +42,15 @@ jobs:
           dotnet build src/Lms.Api -c Release
           dotnet build tests/Lms.E2ETests -c Release
       # Mailpit receives the invitation and reset emails the M1 E2E tests read (MailpitClient, :8025).
-      - name: Start MySQL, MinIO and Mailpit
-        run: docker compose up -d --wait mysql minio mailpit
+      # mock-oidc is the external OpenID Connect provider of the M2 external-login E2E (navikt/mock-oauth2-server, :8090).
+      - name: Start MySQL, MinIO, Mailpit and the mock OpenID Connect provider
+        run: |
+          docker compose up -d --wait mysql minio mailpit mock-oidc
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:8090/client-a/.well-known/openid-configuration > /dev/null; then echo "mock-oidc ready after ${i}s"; exit 0; fi
+            sleep 1
+          done
+          echo "mock-oidc did not become ready"; docker compose logs mock-oidc; exit 1
       # In Development the API applies migrations and seeds the dev data (#14) at startup.
       - name: Start the API in Development
         env:
