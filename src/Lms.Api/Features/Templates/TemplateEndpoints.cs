@@ -1,6 +1,7 @@
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Lms.Api.Features.Branches;
 using Lms.Api.Infrastructure;
 using Lms.Domain.Abstractions;
 using Lms.Domain.Organizations;
@@ -150,12 +151,25 @@ public static partial class TemplateEndpoints
             return ApiProblems.BadRequest(ProblemCodes.validation_failed, "A unit code or name produced by the placeholders is invalid.");
         }
 
+        // A template carries policies and settings, but applying it is not a way around their permissions: they are written
+        // only when the caller may set them at the target by hand (same rule as copy branch).
+        var extras = await BranchExtrasPermission.ResolveAsync(
+            http, request.TargetParentId, nodes.Any(n => n.PolicyKeys.Count > 0), nodes.Any(n => n.Settings.Count > 0), ct);
+        if (!extras.Policies || !extras.Settings)
+        {
+            nodes = nodes.Select(n => n with
+            {
+                PolicyKeys = extras.Policies ? n.PolicyKeys : [],
+                Settings = extras.Settings ? n.Settings : [],
+            }).ToList();
+        }
+
         try
         {
             var result = await materializer.MaterializeAsync(
                 new BranchSnapshot(nodes), apply.Unit!, name => name, code => code, ct);
             return Results.Created(Routes.OrgUnit(result.NewRoot.Id),
-                new ApplyTemplateResultDto(result.NewRoot.Id, result.UnitsCreated, result.SkippedLockedSettings));
+                new ApplyTemplateResultDto(result.NewRoot.Id, result.UnitsCreated, [.. extras.Skipped, .. result.SkippedLockedSettings]));
         }
         catch (BranchCodeConflictException conflict)
         {

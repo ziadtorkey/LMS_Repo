@@ -107,6 +107,8 @@ public sealed class TemplateEndpointsTests(LmsApiFactory factory) : IDisposable
         Assert.Equal(HttpStatusCode.BadRequest, invalid.StatusCode);
         Assert.Equal(HttpStatusCode.Conflict, taken.StatusCode);
         Assert.Contains("code_taken", await taken.Content.ReadAsStringAsync());
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        Assert.False(await db.OrgUnits.AnyAsync(u => u.ParentId == f.Tree.School2.Id)); // neither failed apply created anything
     }
 
     [Fact]
