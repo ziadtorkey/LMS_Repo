@@ -29,6 +29,9 @@ public sealed class ProviderLookup(LmsDbContext db)
     public async Task<IdentityProviderConfig?> FindBySlugAsync(string slug, CancellationToken ct) =>
         await Enabled().FirstOrDefaultAsync(p => p.Slug == slug, ct);
 
+    public async Task<IdentityProviderConfig?> FindByIdAsync(Guid id, CancellationToken ct) =>
+        await Enabled().FirstOrDefaultAsync(p => p.Id == id, ct);
+
     private IQueryable<IdentityProviderConfig> Enabled()
     {
         // ISOLATION-BYPASS: before sign-in there is no client; read-only, enabled live rows of active clients, re-applied explicitly.
