@@ -64,4 +64,27 @@ public sealed class ExternalSessionTests(LmsApiFactory factory)
         Assert.Equal([inA.Id], external.Contexts.Select(c => c.AssignmentId));
         Assert.Equal(2, password.Contexts.Count); // a normal (password) session is unchanged
     }
+
+    [Fact]
+    public async Task Platform_admin_claim_never_counts_on_an_external_session()
+    {
+        var a = await AccessTestData.SeedAsync(factory, "ES3");
+        var user = Guid.NewGuid();
+
+        async Task<HttpStatusCode> ClientsAsync(Guid? externalOrg)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, Routes.Clients);
+            request.Headers.Add(TestAuthHandler.UserHeader, user.ToString());
+            request.Headers.Add(TestAuthHandler.AdminHeader, "true");
+            if (externalOrg is { } org)
+            {
+                request.Headers.Add(TestAuthHandler.ExternalOrgHeader, org.ToString());
+            }
+
+            return (await factory.CreateClient().SendAsync(request)).StatusCode;
+        }
+
+        Assert.Equal(HttpStatusCode.OK, await ClientsAsync(null)); // a normal platform admin session
+        Assert.NotEqual(HttpStatusCode.OK, await ClientsAsync(a.Org.Id)); // the same claim on an external session
+    }
 }

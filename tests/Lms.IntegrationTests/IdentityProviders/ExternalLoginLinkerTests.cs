@@ -33,10 +33,10 @@ public sealed class ExternalLoginLinkerTests(LmsApiFactory factory)
         return provider;
     }
 
-    private async Task<User> UserAsync(string email)
+    private async Task<User> UserAsync(string email, bool platformAdmin = false)
     {
         using var scope = factory.Services.CreateScope();
-        var user = new User { UserName = email, Email = email, DisplayNameEn = "Person" };
+        var user = new User { UserName = email, Email = email, DisplayNameEn = "Person", IsPlatformAdmin = platformAdmin };
         var result = await scope.ServiceProvider.GetRequiredService<UserManager<User>>().CreateAsync(user);
         Assert.True(result.Succeeded);
         return user;
@@ -196,5 +196,70 @@ public sealed class ExternalLoginLinkerTests(LmsApiFactory factory)
         Assert.Contains(entries, e => e.EntityType == "ExternalLoginSucceeded" && e.UserId == user.Id);
         Assert.Contains(entries, e => e.EntityType == "ExternalLoginFailed" && e.UserId == null
             && e.AfterJson!.Contains(provider.Slug) && e.AfterJson.Contains("external_account_not_found"));
+    }
+
+    [Fact]
+    public async Task National_id_of_a_person_in_another_client_is_not_found_and_not_ambiguous()
+    {
+        var a = await AccessTestData.SeedAsync(factory, "ELL9A");
+        var b = await AccessTestData.SeedAsync(factory, "ELL9B");
+        var provider = await ProviderAsync(a.Org.Id, matchBy: ExternalMatchBy.NationalId, nationalIdClaim: "nid");
+        var nationalId = "X" + Guid.NewGuid().ToString("N")[..10].ToUpperInvariant();
+        await StaffAsync(b, await UserAsync(Unique("g1") + "@school.example"), nationalId); // same id, other client
+
+        var onlyOther = await ResolveAsync(provider, External(Unique("sub-"), ("nid", nationalId)));
+        Assert.Equal("external_account_not_found", onlyOther.ErrorCode);
+
+        // one match in client A plus one in client B is a single match, not an ambiguity
+        var mine = await UserAsync(Unique("g2") + "@school.example");
+        await StaffAsync(a, mine, nationalId);
+        var result = await ResolveAsync(provider, External(Unique("sub-"), ("nid", nationalId)));
+        Assert.Equal(mine.Id, result.User!.Id);
+    }
+
+    [Fact]
+    public async Task Platform_admin_is_refused_with_the_generic_message_and_an_audited_reason()
+    {
+        var tree = await AccessTestData.SeedAsync(factory, "ELL10");
+        var provider = await ProviderAsync(tree.Org.Id);
+        var email = Unique("pa") + "@school.example";
+        var admin = await UserAsync(email, platformAdmin: true);
+        await StaffAsync(tree, admin); // a platform admin who also has a profile in this client
+        var sub = Unique("sub-");
+
+        var result = await ResolveAsync(provider, External(sub, ("email", email)));
+
+        Assert.Null(result.User);
+        Assert.Equal("external_account_not_found", result.ErrorCode);
+        using var scope = factory.Services.CreateScope();
+        Assert.Null(await scope.ServiceProvider.GetRequiredService<UserManager<Lms.Domain.Identity.User>>()
+            .FindByLoginAsync(ExternalSchemeRegistry.SchemeName(provider.Id), sub)); // nothing was linked
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        Assert.Contains(await db.AuditEntries.IgnoreQueryFilters().Where(e => e.EntityType == "ExternalLoginFailed" && e.UserId == admin.Id).ToListAsync(),
+            e => e.AfterJson!.Contains("platform_admin"));
+    }
+
+    [Fact]
+    public async Task Existing_link_is_refused_once_the_person_left_the_client()
+    {
+        var tree = await AccessTestData.SeedAsync(factory, "ELL11");
+        var provider = await ProviderAsync(tree.Org.Id);
+        var email = Unique("gone") + "@school.example";
+        var user = await UserAsync(email);
+        var staff = await StaffAsync(tree, user);
+        var sub = Unique("sub-");
+        Assert.NotNull((await ResolveAsync(provider, External(sub, ("email", email)))).User);
+
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            var row = await db.Set<StaffProfile>().SingleAsync(p => p.Id == staff.Id);
+            db.Remove(row); // soft delete: no longer a member of the client
+            await db.SaveChangesAsync();
+        }
+
+        var again = await ResolveAsync(provider, External(sub, ("email", email)));
+
+        Assert.Null(again.User);
+        Assert.Equal("external_account_not_found", again.ErrorCode);
     }
 }

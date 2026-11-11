@@ -23,7 +23,8 @@ public sealed class CurrentContextMiddleware(RequestDelegate next)
             return;
         }
 
-        var isAdmin = http.User.HasClaim("platform_admin", "true");
+        // A session started through a client's identity provider never carries platform rights, whatever the token says.
+        var isAdmin = http.User.HasClaim("platform_admin", "true") && ExternalSession.Organization(http.User) is null;
         current.SetUser(userId.Value, isAdmin);
 
         var header = http.Request.Headers[ContextHeader.Name];

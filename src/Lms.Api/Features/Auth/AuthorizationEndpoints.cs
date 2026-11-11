@@ -145,7 +145,8 @@ public static class AuthorizationEndpoints
             TokenValidationParameters.DefaultAuthenticationType, Claims.Name, Claims.Role);
         identity.SetClaim(Claims.Subject, user.Id.ToString())
             .SetClaim(Claims.Name, string.IsNullOrWhiteSpace(user.DisplayNameEn) ? user.Email : user.DisplayNameEn);
-        if (user.IsPlatformAdmin)
+        // Never on a session started through a client's identity provider: the tenant controls that provider.
+        if (user.IsPlatformAdmin && string.IsNullOrEmpty(externalOrganization))
         {
             identity.SetClaim(PlatformAdminClaim, "true");
         }

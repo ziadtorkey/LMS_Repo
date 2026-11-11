@@ -18,7 +18,8 @@ namespace Lms.Api.Pages.Account;
 [AllowAnonymous]
 [EnableRateLimiting(AccountModule.AuthRateLimitPolicy)]
 public sealed class ExternalLoginModel(
-    ProviderLookup providers, IAuthenticationSchemeProvider schemes, IStringLocalizer<AccountResource> localizer) : PageModel
+    ProviderLookup providers, IAuthenticationSchemeProvider schemes, ExternalSchemeRegistry registry,
+    IStringLocalizer<AccountResource> localizer) : PageModel
 {
     /// <summary>Remembers, across the round trip, which provider scheme this sign-in started with.</summary>
     public const string ProviderItem = "lms_provider";
@@ -46,6 +47,12 @@ public sealed class ExternalLoginModel(
     private async Task<IActionResult> ChallengeAsync(IdentityProviderConfig? provider)
     {
         var scheme = provider is null ? null : ExternalSchemeRegistry.SchemeName(provider.Id);
+        // A provider saved through another node is unknown to this one until it restarts: register it on demand.
+        if (scheme is not null && await schemes.GetSchemeAsync(scheme) is null)
+        {
+            await registry.SyncAsync(HttpContext.RequestAborted);
+        }
+
         if (scheme is null || await schemes.GetSchemeAsync(scheme) is null)
         {
             Error = localizer["ExternalNoProvider"];

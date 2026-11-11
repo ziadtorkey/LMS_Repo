@@ -150,4 +150,48 @@ public sealed class ExternalLoginFlowTests(LmsApiFactory factory)
         var authorize = await browser.GetAsync(AuthTestHost.AuthorizeUrl(challenge));
         Assert.Contains("/Account/Login", authorize.Headers.Location!.ToString());
     }
+
+    private async Task<(string Slug, IdentityProviderConfig Row)> AddProviderWithoutSyncAsync(MockOidcServer provider, string tag)
+    {
+        _ = _host.Services; // the host (this "node") is already running: its startup sync has passed
+        var a = await AccessTestData.SeedAsync(factory, tag);
+        var slug = "lazy-" + Guid.NewGuid().ToString("N")[..8];
+        var row = new IdentityProviderConfig(
+            a.Org.Id, IdentityProviderKind.Oidc, slug, "مزود", "Mock", provider.Authority, null, "lms-client",
+            _host.Services.GetRequiredService<ProviderSecretProtector>().Protect("lms-secret"), "openid email",
+            ExternalMatchBy.Email, null, "school.example", enabled: true);
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        db.Set<IdentityProviderConfig>().Add(row); // as if another node saved it: this node was not told
+        await db.SaveChangesAsync();
+        return (slug, row);
+    }
+
+    [Fact]
+    public async Task Provider_saved_on_another_node_is_resolved_lazily_when_the_login_starts()
+    {
+        await using var provider = await MockOidcServer.StartAsync($"ext-sub-{Guid.NewGuid():N}", new Dictionary<string, string> { ["email"] = "lazy@school.example" });
+        var (slug, _) = await AddProviderWithoutSyncAsync(provider, "FLOW-L1");
+        using var browser = _host.NewBrowser();
+
+        var start = await browser.GetAsync($"/Account/ExternalLogin/{slug}");
+
+        Assert.Equal(HttpStatusCode.Redirect, start.StatusCode);
+        Assert.StartsWith(provider.Authority, start.Headers.Location!.ToString());
+    }
+
+    [Fact]
+    public async Task Callback_path_of_a_provider_this_node_has_not_seen_registers_its_scheme()
+    {
+        await using var provider = await MockOidcServer.StartAsync($"ext-sub-{Guid.NewGuid():N}", new Dictionary<string, string> { ["email"] = "lazy2@school.example" });
+        var (slug, row) = await AddProviderWithoutSyncAsync(provider, "FLOW-L2");
+        var registry = _host.Services.GetRequiredService<ExternalSchemeRegistry>();
+        Assert.Null(registry.Find(ExternalSchemeRegistry.SchemeName(row.Id)));
+        using var browser = _host.NewBrowser();
+
+        await browser.GetAsync($"/signin-oidc/{slug}?error=access_denied");
+
+        Assert.NotNull(registry.Find(ExternalSchemeRegistry.SchemeName(row.Id)));
+        // an unknown slug is just an unhandled path (no provider, nothing registered, no error)
+        Assert.NotEqual(HttpStatusCode.InternalServerError, (await browser.GetAsync("/signin-oidc/no-such-provider?error=x")).StatusCode);
+    }
 }

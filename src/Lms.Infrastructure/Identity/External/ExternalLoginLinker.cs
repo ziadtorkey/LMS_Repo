@@ -38,6 +38,17 @@ public sealed class ExternalLoginLinker(UserManager<User> users, LmsDbContext db
         var linked = await users.FindByLoginAsync(scheme, subject);
         if (linked is not null)
         {
+            // A link is not a membership: the person may have left the client since, and must never be a platform admin.
+            if (linked.IsPlatformAdmin)
+            {
+                return await FailAsync(provider, NotFound, ct, linked.Id, "platform_admin");
+            }
+
+            if (!await BelongsToClientAsync(linked.Id, provider.OrganizationId, ct))
+            {
+                return await FailAsync(provider, NotFound, ct, linked.Id, "not_member");
+            }
+
             await audit.WriteSecurityEventAsync("ExternalLoginSucceeded", linked.Id, Details(provider), null, ct);
             return new ExternalLinkResult(linked, null);
         }
@@ -49,6 +60,13 @@ public sealed class ExternalLoginLinker(UserManager<User> users, LmsDbContext db
         if (candidate is null)
         {
             return await FailAsync(provider, error!, ct);
+        }
+
+        // A session started through a client's provider never carries platform rights (the tenant controls that provider).
+        // The caller sees the same generic message as for an unknown identity; the reason is only in the audit log.
+        if (candidate.IsPlatformAdmin)
+        {
+            return await FailAsync(provider, NotFound, ct, candidate.Id, "platform_admin");
         }
 
         // 3) Link and sign in.
@@ -128,9 +146,10 @@ public sealed class ExternalLoginLinker(UserManager<User> users, LmsDbContext db
         return await staff.AnyAsync(ct) || await students.AnyAsync(ct) || await guardians.AnyAsync(ct) || await assignments.AnyAsync(ct);
     }
 
-    private async Task<ExternalLinkResult> FailAsync(IdentityProviderConfig provider, string code, CancellationToken ct)
+    private async Task<ExternalLinkResult> FailAsync(
+        IdentityProviderConfig provider, string code, CancellationToken ct, Guid? userId = null, string? reason = null)
     {
-        await audit.WriteSecurityEventAsync("ExternalLoginFailed", null, Details(provider, code), null, ct);
+        await audit.WriteSecurityEventAsync("ExternalLoginFailed", userId, Details(provider, reason ?? code), null, ct);
         return new ExternalLinkResult(null, code);
     }
 
