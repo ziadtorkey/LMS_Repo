@@ -95,4 +95,25 @@ public sealed class SettingValueValidatorTests
         Assert.Equal("must_be_string", SettingValueValidator.Validate(text, "5"));
         Assert.Equal("too_long", SettingValueValidator.Validate(text, "\"" + new string('x', 501) + "\""));
     }
+
+    private static readonly SettingDefinition SetSetting = Def(SettingKeys.StudentsCriticalFields.Name);
+
+    [Theory]
+    [InlineData("[]")]
+    [InlineData("[\"NameAr\"]")]
+    [InlineData("[\"NameAr\",\"Gender\",\"Photo\"]")]
+    public void StringSet_of_distinct_allowed_values_is_valid(string json) =>
+        Assert.Null(SettingValueValidator.Validate(SetSetting, json));
+
+    [Theory]
+    [InlineData("[\"StudentCode\"]", "not_allowed")]
+    [InlineData("[\"Email\"]", "not_allowed")]
+    [InlineData("[\"nameAr\"]", "not_allowed")]
+    [InlineData("[\"NameAr\",\"NameAr\"]", "duplicate_value")]
+    [InlineData("\"NameAr\"", "must_be_array")]
+    [InlineData("null", "must_be_array")]
+    [InlineData("[1]", "must_be_string")]
+    [InlineData("[null]", "must_be_string")]
+    public void StringSet_rejects_bad_values(string json, string expected) =>
+        Assert.Equal(expected, SettingValueValidator.Validate(SetSetting, json));
 }

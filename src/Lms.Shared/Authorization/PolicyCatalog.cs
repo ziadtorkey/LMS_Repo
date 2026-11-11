@@ -24,6 +24,15 @@ public static class PolicyCatalog
     /// </summary>
     public const string CreateAdmins = "CreateAdmins";
 
+    /// <summary>Blocks creating and importing students (§4.3, M3).</summary>
+    public const string CreateStudents = "CreateStudents";
+
+    /// <summary>Blocks creating and importing courses (§4.3, M3).</summary>
+    public const string CreateCourses = "CreateCourses";
+
+    /// <summary>Blocks creating classes (§4.3, M3).</summary>
+    public const string CreateClasses = "CreateClasses";
+
     /// <summary>Policy key → permissions it blocks. Immutable (FrozenDictionary of immutable lists).</summary>
     public static IReadOnlyDictionary<string, IReadOnlyList<string>> BlockedPermissions { get; } =
         new Dictionary<string, IReadOnlyList<string>>
@@ -32,6 +41,9 @@ public static class PolicyCatalog
             [CreateStaff] = ImmutableArray.Create(Permissions.Staff.Create, Permissions.Staff.Import),
             [CreateTeachers] = ImmutableArray<string>.Empty,
             [CreateAdmins] = ImmutableArray<string>.Empty,
+            [CreateStudents] = ImmutableArray.Create(Permissions.Students.Create, Permissions.Students.Import),
+            [CreateCourses] = ImmutableArray.Create(Permissions.Courses.Create, Permissions.Courses.Import),
+            [CreateClasses] = ImmutableArray.Create(Permissions.Classes.Create),
         }.ToFrozenDictionary(StringComparer.Ordinal);
 
     /// <summary>

@@ -28,6 +28,7 @@ public static class SettingValueValidator
             SettingValueKinds.Int => ValidateInt(definition, value),
             SettingValueKinds.String => ValidateString(value),
             SettingValueKinds.Enum => ValidateEnum(definition, value),
+            SettingValueKinds.StringSet => ValidateStringSet(definition, value),
             _ => "unsupported_kind",
         };
     }
@@ -53,4 +54,34 @@ public static class SettingValueValidator
         value.ValueKind != JsonValueKind.String ? "must_be_string"
         : definition.AllowedValues?.Contains(value.GetString(), StringComparer.Ordinal) == true ? null
         : "not_allowed";
+
+    private static string? ValidateStringSet(SettingDefinition definition, JsonElement value)
+    {
+        if (value.ValueKind != JsonValueKind.Array)
+        {
+            return "must_be_array";
+        }
+
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var item in value.EnumerateArray())
+        {
+            if (item.ValueKind != JsonValueKind.String)
+            {
+                return "must_be_string";
+            }
+
+            var text = item.GetString()!;
+            if (definition.AllowedValues?.Contains(text, StringComparer.Ordinal) != true)
+            {
+                return "not_allowed";
+            }
+
+            if (!seen.Add(text))
+            {
+                return "duplicate_value";
+            }
+        }
+
+        return null;
+    }
 }
