@@ -1,0 +1,104 @@
+@using Lms.Client.Services.Api
+@using Lms.Shared.Organizations
+@inject IOrgApi Api
+@inject ICultureService Culture
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<MudStack Spacing="3">
+    @if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error" data-testid="academic-error">@_error</MudAlert>
+    }
+
+    <MudSwitch T="bool" Value="_isTransfer" ValueChanged="OnTransferChanged" Disabled="!CanEdit" Color="Color.Primary"
+               Label="@L["Academic_LevelTransfer"]" data-testid="flag-transfer" />
+
+    @if (_isTransfer)
+    {
+        <MudSelect T="Guid?" @bind-Value="_nextId" Label="@L["Academic_NextLevel"]" Disabled="!CanEdit" Clearable="true"
+                   data-testid="next-level">
+            @foreach (var candidate in NextLevelCandidates(Unit, AllUnits))
+            {
+                <MudSelectItem T="Guid?" Value="@((Guid?)candidate.Id)">@Culture.Pick(candidate.NameAr, candidate.NameEn)</MudSelectItem>
+            }
+        </MudSelect>
+        <div>
+            <MudText Typo="Typo.caption">@L["Academic_TransferPath"]</MudText>
+            <MudText data-testid="transfer-path">@TransferPath()</MudText>
+        </div>
+    }
+
+    <MudSwitch T="bool" @bind-Value="_isCourse" Disabled="!CanEdit" Color="Color.Primary"
+               Label="@L["Academic_CourseManagement"]" data-testid="flag-course" />
+
+    @if (CanEdit)
+    {
+        <div>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_saving"
+                       data-testid="academic-save">@L["Common_Save"]</MudButton>
+        </div>
+    }
+</MudStack>
+
+@code {
+    [Parameter, EditorRequired] public OrgUnitNodeDto Unit { get; set; } = default!;
+    [Parameter, EditorRequired] public IReadOnlyList<OrgUnitNodeDto> AllUnits { get; set; } = [];
+    [Parameter] public bool CanEdit { get; set; }
+    [Parameter] public EventCallback OnSaved { get; set; }
+
+    private bool _isTransfer, _isCourse, _saving;
+    private Guid? _nextId;
+    private string? _error;
+
+    /// <summary>"Next level" targets: other transfer units of the same level type.</summary>
+    public static IReadOnlyList<OrgUnitNodeDto> NextLevelCandidates(OrgUnitNodeDto unit, IReadOnlyList<OrgUnitNodeDto> all) =>
+        all.Where(u => u.Id != unit.Id && u.IsLevelTransfer && u.LevelTypeId == unit.LevelTypeId).ToList();
+
+    private Guid? _initializedFor;
+
+    protected override void OnParametersSet()
+    {
+        // Keep unsaved edits across re-renders of the parent: initialise only when another unit is shown.
+        if (_initializedFor == Unit.Id) return;
+        _initializedFor = Unit.Id;
+        _isTransfer = Unit.IsLevelTransfer;
+        _nextId = Unit.NextTransferUnitId;
+        _isCourse = Unit.IsCourseManagementLevel;
+    }
+
+    private void OnTransferChanged(bool on)
+    {
+        _isTransfer = on;
+        if (!on) _nextId = null; // turning transfer off clears the next level
+    }
+
+    private string TransferPath()
+    {
+        var names = new List<string> { Culture.Pick(Unit.NameAr, Unit.NameEn) };
+        var seen = new HashSet<Guid> { Unit.Id };
+        var next = _nextId;
+        while (next is { } id && seen.Add(id) && AllUnits.FirstOrDefault(u => u.Id == id) is { } step)
+        {
+            names.Add(Culture.Pick(step.NameAr, step.NameEn));
+            next = step.NextTransferUnitId;
+        }
+        // The arrow follows the reading direction: right-to-left text reads ← from one step to the next.
+        return string.Join(Culture.IsRightToLeft ? " ← " : " → ", names);
+    }
+
+    private async Task SaveAsync()
+    {
+        _saving = true; _error = null;
+        var ok = await ApiCalls.RunAsync(
+            () => Api.SetAcademicFlagsAsync(Unit.Id, new OrgUnitAcademicFlagsRequest(_isTransfer, _isTransfer ? _nextId : null, _isCourse)),
+            Navigation, L, message => _error = message);
+        _saving = false;
+
+        if (ok)
+        {
+            Snackbar.Add(L["Common_Saved"], Severity.Success);
+            await OnSaved.InvokeAsync();
+        }
+    }
+}

@@ -59,7 +59,7 @@
         _saving = true;
         var request = new SaveAcademicYearRequest(UnitId, _nameAr.Trim(), _nameEn.Trim(),
             DateOnly.FromDateTime(_start.Value), DateOnly.FromDateTime(_end.Value));
-        var saved = await ActionCalls.TryAsync(
+        var saved = await ApiCalls.RunAsync(
             () => Existing is null ? Api.CreateYearAsync(request) : Api.UpdateYearAsync(Existing.Id, request),
             Navigation, L, m => _error = m);
         _saving = false;

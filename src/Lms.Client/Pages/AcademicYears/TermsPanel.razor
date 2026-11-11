@@ -55,7 +55,7 @@
     {
         var name = CultureText.Pick(term.NameAr, term.NameEn);
         if (!await ConfirmDialog.AskAsync(Dialogs, L["Confirm_DeleteTitle"], string.Format(L["Terms_DeleteConfirm"], name))) return;
-        if (await ActionCalls.TryAsync(() => Api.DeleteTermAsync(term.Id), Navigation, L, m => Snackbar.Add(m, Severity.Error)))
+        if (await ApiCalls.RunAsync(() => Api.DeleteTermAsync(term.Id), Navigation, L, m => Snackbar.Add(m, Severity.Error)))
             await OnChanged.InvokeAsync();
     }
 }

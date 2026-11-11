@@ -19,8 +19,12 @@ public sealed class FakeYearsApi : IYearsApi
 
     /// <summary>When set, the next mutating call throws it (tests simulate server problems).</summary>
     public Exception? NextFailure { get; set; }
+    /// <summary>When set, every effective-years read throws it (tests simulate a forbidden or offline API).</summary>
+    public Exception? EffectiveFailure { get; set; }
     /// <summary>Unit asked in the last effective-years read (null = context default).</summary>
     public Guid? LastEffectiveUnit { get; private set; }
+    /// <summary>How many times the effective years were requested.</summary>
+    public int EffectiveCalls { get; private set; }
     public SaveAcademicYearRequest? LastYear { get; private set; }
     public SaveTermRequest? LastTerm { get; private set; }
     public SaveCalendarEventRequest? LastEvent { get; private set; }
@@ -62,6 +66,9 @@ public sealed class FakeYearsApi : IYearsApi
 
     public Task<YearContextDto> GetEffectiveAsync(Guid? orgUnitId, CancellationToken ct = default)
     {
+        EffectiveCalls++;
+        LastEffectiveUnit = orgUnitId;
+        if (EffectiveFailure is { } failure) throw failure;
         var unitId = orgUnitId ?? FakeUnits.GroupId;
         for (var u = FakeUnits.All.FirstOrDefault(x => x.Id == unitId); u is not null;
              u = u.ParentId is { } p ? FakeUnits.All.First(x => x.Id == p) : null)

@@ -1,9 +1,13 @@
+using Lms.Domain.Organizations;
 using Lms.Shared;
 using Lms.Shared.AcademicYears;
 using Lms.Shared.Access;
 using Lms.Shared.Authorization;
+using Lms.Domain.Identity;
+using Lms.IntegrationTests.Infrastructure;
 using Lms.Shared.Configuration;
 using Lms.Shared.Organizations;
+using Microsoft.EntityFrameworkCore;
 using static Lms.IntegrationTests.Security.Caller;
 
 namespace Lms.IntegrationTests.Security;
@@ -133,6 +137,57 @@ public static class M1ProbeRows
             async (w, _) => new ProbeRequest(Routes.OrgUnitSetting(await NewUnitWithSettingAsync(w), ProbeSetting)),
             Expect(NoContent, NoContent, NotFound, Forbidden, NotFound, NoContent)),
 
+        // ---- Org units (Task 9, #99): unit-targeted, target unit below School1 (Review Focus 1: sibling/other client 404).
+        new("org-units list", HttpMethod.Get, Routes.OrgUnits,
+            (_, _) => Task.FromResult(new ProbeRequest(Routes.OrgUnits)),
+            Expect(Ok, Ok, Ok, Forbidden, Ok, Ok)),
+        new("org-units get", HttpMethod.Get, Routes.OrgUnitPattern,
+            async (w, _) => new ProbeRequest(Routes.OrgUnit((await w.NewUnitAsync(w.Callers.A.School1)).Id)),
+            Expect(Ok, Ok, NotFound, Forbidden, NotFound, Ok)),
+        new("org-units create (under a unit below School1)", HttpMethod.Post, Routes.OrgUnits,
+            async (w, _) =>
+            {
+                var parent = await w.NewUnitAsync(w.Callers.A.School1);
+                return new ProbeRequest(Routes.OrgUnits, new CreateOrgUnitRequest(
+                    parent.Id, await NewDeeperLevelIdAsync(w, parent), "وحدة", "Probe child", "C" + w.Next()));
+            },
+            Expect(Created, Created, NotFound, Forbidden, NotFound, Created)),
+        new("org-units update", HttpMethod.Put, Routes.OrgUnitPattern,
+            async (w, _) =>
+            {
+                var unit = await NewDeeperUnitAsync(w);
+                return new ProbeRequest(Routes.OrgUnit(unit.Id), new UpdateOrgUnitRequest(unit.LevelTypeId, "وحدة", "Renamed", unit.Code));
+            },
+            Expect(Ok, Ok, NotFound, Forbidden, NotFound, Ok)),
+        new("org-units status", HttpMethod.Put, Routes.OrgUnitStatusPattern,
+            async (w, _) => new ProbeRequest(Routes.OrgUnitStatus((await w.NewUnitAsync(w.Callers.A.School1)).Id),
+                new SetOrgUnitStatusRequest(OrgUnitStatuses.Inactive)),
+            Expect(Ok, Ok, NotFound, Forbidden, NotFound, Ok)),
+        new("org-units delete (leaf)", HttpMethod.Delete, Routes.OrgUnitPattern,
+            async (w, _) => new ProbeRequest(Routes.OrgUnit((await w.NewUnitAsync(w.Callers.A.School1)).Id)),
+            Expect(NoContent, NoContent, NotFound, Forbidden, NotFound, NoContent)),
+
+        // ---- Clients (Task 7, #92): Platform Admin only (platform-only permissions); everyone else 403, anonymous 401.
+        new("clients list", HttpMethod.Get, Routes.Clients,
+            (_, _) => Task.FromResult(new ProbeRequest(Routes.Clients)),
+            Expect(Forbidden, Forbidden, Forbidden, Forbidden, Forbidden, Ok)),
+        new("clients get", HttpMethod.Get, Routes.ClientPattern,
+            (w, _) => Task.FromResult(new ProbeRequest(Routes.Client(w.Callers.A.Org.Id))),
+            Expect(Forbidden, Forbidden, Forbidden, Forbidden, Forbidden, Ok)),
+        new("clients create", HttpMethod.Post, Routes.Clients,
+            (w, _) =>
+            {
+                var n = w.Next();
+                return Task.FromResult(new ProbeRequest(Routes.Clients, new CreateClientRequest(
+                    "عميل " + n, "Probe client " + n, OrganizationTypes.SchoolGroup, "مدرسة", "School", "PC" + n,
+                    $"probe-client-{n}-{Guid.NewGuid():N}@clients.test", "مدير", "Admin")));
+            },
+            Expect(Forbidden, Forbidden, Forbidden, Forbidden, Forbidden, Created)),
+        new("clients update", HttpMethod.Put, Routes.ClientPattern,
+            (w, _) => Task.FromResult(new ProbeRequest(
+                Routes.Client(w.Callers.A.Org.Id), new UpdateClientRequest(w.Callers.A.Org.NameAr, w.Callers.A.Org.NameEn, "Active"))),
+            Expect(Forbidden, Forbidden, Forbidden, Forbidden, Forbidden, Ok)),
+
         // ---- Roles (Task 19, #96): client-wide. Reads at any scope; writes only at the client root (D18, Review Focus 4);
         // a platform admin has no client, so client-root writes are refused; roles of another client are invisible (404).
         new("permissions catalog", HttpMethod.Get, Routes.Permissions,
@@ -150,7 +205,51 @@ public static class M1ProbeRows
         new("roles delete (unused client A custom role)", HttpMethod.Delete, Routes.RolePattern,
             async (w, _) => new ProbeRequest(Routes.Role(await NewRoleAsync(w))),
             Expect(NoContent, Forbidden, Forbidden, Forbidden, NotFound, Forbidden)),
+
+        // ---- Role assignments (Task 21, #107): checked at the target unit (below School1); sibling/other client 404, no
+        // Assignments permission 403. Targets are created as the root admin.
+        new("assignments list for unit", HttpMethod.Get, Routes.OrgUnitAssignmentsPattern,
+            async (w, _) => new ProbeRequest(Routes.OrgUnitAssignments((await w.NewUnitAsync(w.Callers.A.School1)).Id)),
+            Expect(Ok, Ok, NotFound, Forbidden, NotFound, Ok)),
+        new("assignments create", HttpMethod.Post, Routes.Assignments,
+            async (w, _) => new ProbeRequest(Routes.Assignments, await AssignmentBodyAsync(w, (await w.NewUnitAsync(w.Callers.A.School1)).Id)),
+            Expect(Created, Created, NotFound, Forbidden, NotFound, Created)),
+        new("assignments update", HttpMethod.Put, Routes.AssignmentPattern,
+            async (w, _) => new ProbeRequest(Routes.Assignment(await NewAssignmentAsync(w)), new UpdateAssignmentRequest(null, null)),
+            Expect(Ok, Ok, NotFound, Forbidden, NotFound, Ok)),
+        new("assignments delete", HttpMethod.Delete, Routes.AssignmentPattern,
+            async (w, _) => new ProbeRequest(Routes.Assignment(await NewAssignmentAsync(w))),
+            Expect(NoContent, NoContent, NotFound, Forbidden, NotFound, NoContent)),
+
+        // ---- Audit viewer (Task 18, #97): permission-gated; rows are filtered to the caller's client and subtree, so an
+        // unknown id (or another client's entry) is a 404 for everyone who may view.
+        new("audit list", HttpMethod.Get, Routes.Audit,
+            (_, _) => Task.FromResult(new ProbeRequest(Routes.Audit)),
+            Expect(Ok, Ok, Ok, Forbidden, Ok, Ok)),
+        new("audit entry (client A entry under School1)", HttpMethod.Get, Routes.AuditEntryPattern,
+            async (w, _) => new ProbeRequest(Routes.AuditEntry(await NewAuditEntryAsync(w))),
+            Expect(Ok, Ok, NotFound, Forbidden, NotFound, Ok)),
+        new("audit export (csv)", HttpMethod.Get, Routes.AuditExport,
+            (_, _) => Task.FromResult(new ProbeRequest(Routes.AuditExport + "?format=csv")),
+            Expect(Ok, Ok, Ok, Forbidden, Ok, Ok)),
     ];
+
+    private static async Task<CreateAssignmentRequest> AssignmentBodyAsync(M1ProbeWorld w, Guid unitId)
+    {
+        // A real user each time, so the probe never sends an invitation email.
+        var email = $"probe-{w.Next()}@lms.test";
+        await using (var db = w.Callers.Factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            db.Users.Add(new User { UserName = email, Email = email, NormalizedEmail = email.ToUpperInvariant(), DisplayNameAr = "مستخدم", DisplayNameEn = "Probe user" });
+            await db.SaveChangesAsync();
+        }
+
+        return new CreateAssignmentRequest(email, null, null, w.Callers.A.Roles[BuiltInRoles.Teacher].Id, unitId, null, null);
+    }
+
+    private static async Task<Guid> NewAssignmentAsync(M1ProbeWorld w) =>
+        (await w.Callers.SendOkAsync(RootAdmin, HttpMethod.Post, Routes.Assignments,
+            await AssignmentBodyAsync(w, (await w.NewUnitAsync(w.Callers.A.School1)).Id))).GetProperty("id").GetGuid();
 
     private static CreateRoleRequest RoleBody(M1ProbeWorld w)
     {
@@ -167,6 +266,19 @@ public static class M1ProbeRows
     private static async Task<Guid> NewRoleAsync(M1ProbeWorld w) =>
         (await w.Callers.SendOkAsync(RootAdmin, HttpMethod.Post, Routes.Roles, RoleBody(w))).GetProperty("id").GetGuid();
 
+    /// <summary>A fresh client A audit entry stamped at a new unit below School1 (D20: invisible to School2 and client B).</summary>
+    private static async Task<Guid> NewAuditEntryAsync(M1ProbeWorld w)
+    {
+        var unit = await w.NewUnitAsync(w.Callers.A.School1);
+        await using var db = w.Callers.Factory.CreateDbContext(Lms.IntegrationTests.Infrastructure.TestCurrentContext.PlatformAdmin());
+        var entry = new Lms.Domain.Auditing.AuditEntry(
+            w.Callers.A.Org.Id, Guid.NewGuid(), null, Lms.Domain.Auditing.AuditAction.Updated, "Probe", Guid.NewGuid(),
+            null, null, DateTime.UtcNow, null, unit.Path);
+        db.AuditEntries.Add(entry);
+        await db.SaveChangesAsync();
+        return entry.Id;
+    }
+
     private const string ProbeSetting = "Ui.ShowHijriDates";
 
     private static async Task<Guid> NewUnitWithSettingAsync(M1ProbeWorld w)
@@ -177,6 +289,29 @@ public static class M1ProbeRows
     }
 
     // ---- Target builders (always created as client A's root admin).
+
+    /// <summary>A level type of client A that is deeper than the unit's own (created directly; orders need not be dense).</summary>
+    private static async Task<Guid> NewDeeperLevelIdAsync(M1ProbeWorld w, OrgUnit parent)
+    {
+        await using var db = w.Callers.Factory.CreateDbContext(Lms.IntegrationTests.Infrastructure.TestCurrentContext.PlatformAdmin());
+        var parentLevel = await db.LevelTypes.SingleAsync(l => l.Id == parent.LevelTypeId);
+        var level = new LevelType(w.Callers.A.Org.Id, "مستوى", "Probe deeper level", parentLevel.Order + 1 + w.Next() % 1000, true);
+        db.Add(level);
+        await db.SaveChangesAsync();
+        return level.Id;
+    }
+
+    /// <summary>A unit below School1 whose level is deeper than School1's, so updating it keeps the depth rule satisfied.</summary>
+    private static async Task<OrgUnit> NewDeeperUnitAsync(M1ProbeWorld w)
+    {
+        var school1 = w.Callers.A.School1;
+        var levelId = await NewDeeperLevelIdAsync(w, school1);
+        await using var db = w.Callers.Factory.CreateDbContext(Lms.IntegrationTests.Infrastructure.TestCurrentContext.PlatformAdmin());
+        var unit = OrgUnit.CreateChild(school1, levelId, "وحدة", "Probe deeper unit", "D" + w.Next());
+        db.Add(unit);
+        await db.SaveChangesAsync();
+        return unit;
+    }
 
     private static SaveLevelTypeRequest LevelTypeBody(M1ProbeWorld w)
     {

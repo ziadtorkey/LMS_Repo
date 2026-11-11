@@ -106,7 +106,7 @@ public sealed class AssignmentsPageTests : ClientTestContext
     [Fact]
     public async Task Assign_dialog_rejects_valid_to_before_valid_from()
     {
-        CultureInfo.CurrentUICulture = new CultureInfo("ar");
+        Culture.Current = new CultureInfo("ar");
         await GrantAsync(Permissions.Assignments.View, Permissions.Assignments.Create);
         var cut = RenderPage();
         await cut.WaitForElement("[data-testid=assign-new]").ClickAsync(new());
@@ -126,7 +126,7 @@ public sealed class AssignmentsPageTests : ClientTestContext
     [InlineData("own_assignment", "لا يمكنك تعديل إسنادك الخاص")]
     public async Task Guard_errors_are_shown_from_problem_code(string code, string expected)
     {
-        CultureInfo.CurrentUICulture = new CultureInfo("ar");
+        Culture.Current = new CultureInfo("ar");
         await GrantAsync(Permissions.Assignments.View, Permissions.Assignments.Create);
         var cut = RenderPage();
         await cut.WaitForElement("[data-testid=assign-new]").ClickAsync(new());
@@ -142,7 +142,7 @@ public sealed class AssignmentsPageTests : ClientTestContext
     [Fact]
     public void Unit_picker_order_is_depth_first_by_current_culture_name()
     {
-        CultureInfo.CurrentUICulture = new CultureInfo("en");
+        Culture.Current = new CultureInfo("en");
         Lms.Shared.Organizations.OrgUnitNodeDto Unit(string en, Guid id, Guid? parent, int depth) =>
             new(id, parent, Guid.NewGuid(), en, en, en, depth, "Active", false, null, false, false, []);
         var root = Guid.NewGuid(); var b = Guid.NewGuid(); var a = Guid.NewGuid();
@@ -182,7 +182,7 @@ public sealed class AssignmentsPageTests : ClientTestContext
     [Fact]
     public async Task Assign_offline_shows_the_generic_error()
     {
-        CultureInfo.CurrentUICulture = new CultureInfo("en");
+        Culture.Current = new CultureInfo("en");
         await GrantAsync(Permissions.Assignments.View, Permissions.Assignments.Create);
         var cut = RenderPage();
         await cut.WaitForElement("[data-testid=assign-new]").ClickAsync(new());
@@ -191,13 +191,13 @@ public sealed class AssignmentsPageTests : ClientTestContext
 
         await _dialogs.Find("[data-testid=assign-save]").ClickAsync(new());
 
-        Assert.Contains("Could not load data", _dialogs.WaitForElement("[data-testid=assign-error]").TextContent);
+        Assert.Contains("Something went wrong", _dialogs.WaitForElement("[data-testid=assign-error]").TextContent);
     }
 
     [Fact]
     public async Task Remove_offline_shows_a_snackbar_instead_of_crashing()
     {
-        CultureInfo.CurrentUICulture = new CultureInfo("en");
+        Culture.Current = new CultureInfo("en");
         await GrantAsync(Permissions.Assignments.View, Permissions.Assignments.Delete);
         var row = _access.Seed("a@x.test", TeacherRole, FakeUnits.GroupId);
         var cut = RenderPage();
@@ -207,13 +207,13 @@ public sealed class AssignmentsPageTests : ClientTestContext
         await _dialogs.WaitForElement("[data-testid=confirm-yes]").ClickAsync(new());
         await click;
 
-        cut.WaitForAssertion(() => Assert.Contains("Could not load data", _snackbars.Markup));
+        cut.WaitForAssertion(() => Assert.Contains("Something went wrong", _snackbars.Markup));
     }
 
     [Fact]
     public async Task Page_renders_rtl_in_arabic()
     {
-        CultureInfo.CurrentUICulture = new CultureInfo("ar");
+        Culture.Current = new CultureInfo("ar");
         await GrantAsync(Permissions.Assignments.View);
         _access.Seed("a@x.test", TeacherRole, FakeUnits.GroupId);
         Render<MudPopoverProvider>();

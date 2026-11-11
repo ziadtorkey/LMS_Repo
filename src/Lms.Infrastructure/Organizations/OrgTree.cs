@@ -29,4 +29,11 @@ public sealed class OrgTree(LmsDbContext db) : IOrgTree
             .OrderBy(u => u.Depth)
             .ToListAsync(cancellationToken);
     }
+
+    public Task<bool> CodeExistsAsync(Guid organizationId, string code, Guid? exceptUnitId, CancellationToken cancellationToken) =>
+        // ISOLATION-BYPASS: codes are unique per client, so a unit in a subtree the caller cannot see still counts;
+        // the client is filtered explicitly and deleted units are excluded by hand.
+        db.OrgUnits.IgnoreQueryFilters().AnyAsync(
+            u => u.OrganizationId == organizationId && !u.IsDeleted && u.Code == code && u.Id != exceptUnitId,
+            cancellationToken);
 }
