@@ -1,0 +1,68 @@
+@using System.Text.Json
+@using Lms.Client.Services.Api
+@using Lms.Shared.Configuration
+@using Lms.Shared.People
+@inject IStudentsApi Api
+@inject IConfigApi Config
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+@* One row per feature flag with a three-state choice: inherit the unit's value, force on, or force off (section 4.4). *@
+<MudStack Spacing="2" data-testid="flags-tab">
+    <MudText Typo="Typo.body2">@L["Student_FeatureFlagsHelp"]</MudText>
+    @foreach (var flag in FeatureFlags.All)
+    {
+        var name = flag.Name;
+        <MudSelect T="string" Value="_choices[name]" ValueChanged="v => _choices[name] = v" Label="@L[$"Setting_{name.Replace('.', '_')}"]"
+                   Disabled="!CanEdit" data-testid="@($"flag-{name}")">
+            <MudSelectItem T="string" Value="@Inherit">@L["Flag_Inherit", L[InheritedOn(name) ? "Flag_On" : "Flag_Off"].Value]</MudSelectItem>
+            <MudSelectItem T="string" Value="@On">@L["Flag_On"]</MudSelectItem>
+            <MudSelectItem T="string" Value="@Off">@L["Flag_Off"]</MudSelectItem>
+        </MudSelect>
+    }
+    @if (CanEdit)
+    {
+        <div>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_saving"
+                       data-testid="flags-save">@L["Common_Save"]</MudButton>
+        </div>
+    }
+</MudStack>
+
+@code {
+    private const string Inherit = "inherit", On = "on", Off = "off";
+
+    private readonly Dictionary<string, string> _choices = FeatureFlags.All.ToDictionary(f => f.Name, _ => Inherit);
+    private IReadOnlyList<EffectiveSettingDto> _unitSettings = [];
+    private bool _saving;
+
+    [Parameter, EditorRequired] public StudentDetailDto Student { get; set; } = default!;
+
+    /// <summary>False when the user may read but not update students: the choices are then shown read-only.</summary>
+    [Parameter] public bool CanEdit { get; set; }
+
+    /// <summary>Raised after the overrides were saved so the page can reload the student.</summary>
+    [Parameter] public EventCallback OnSaved { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        foreach (var (name, value) in Student.FeatureFlagOverrides) _choices[name] = value ? On : Off;
+        // The inherited value is shown for orientation: if it cannot be read, it shows as Off (the catalog default).
+        await ApiCalls.RunAsync(async () => _unitSettings = await Config.GetSettingsAsync(Student.Summary.HomeOrgUnitId), Navigation, L, _ => { });
+    }
+
+    private bool InheritedOn(string name) =>
+        _unitSettings.FirstOrDefault(s => s.Name == name) is { } s && JsonSerializer.Deserialize<bool>(s.ValueJson);
+
+    private async Task SaveAsync()
+    {
+        var overrides = _choices.ToDictionary(c => c.Key, c => c.Value switch { On => (bool?)true, Off => false, _ => null });
+        _saving = true;
+        var ok = await ApiCalls.RunAsync(() => Api.SetFeatureFlagsAsync(Student.Summary.Id, new SetStudentFeatureFlagsRequest(overrides)),
+            Navigation, L, message => Snackbar.Add(message, Severity.Error));
+        _saving = false;
+        if (!ok) return;
+        Snackbar.Add(L["Common_Saved"], Severity.Success);
+        await OnSaved.InvokeAsync();
+    }
+}
