@@ -134,6 +134,11 @@ public sealed class StudentLifecycleHandler(
                 link.Repoint(student); // guardian links follow the student
             }
 
+            foreach (var open in await db.Set<StudentChangeRequest>().Where(r => r.StudentId == id && r.Status == ChangeRequestStatus.Pending).ToListAsync(ct))
+            {
+                open.MoveHome(newHome); // a pending request is decided where the student now is
+            }
+
             foreach (var change in await db.Set<PersonStatusChange>().Where(c => c.Kind == PersonKind.Student && c.ProfileId == id).ToListAsync(ct))
             {
                 change.MoveHome(newHome.Id, newHome.Path); // the history follows the student, as for staff
@@ -200,6 +205,11 @@ public sealed class StudentLifecycleHandler(
         foreach (var placement in await db.Set<ClassStudent>().Where(c => c.StudentId == id && c.Status == ClassStudent.ActiveStatus).ToListAsync(ct))
         {
             await enrollment.RemoveFromClassAsync(placement, "Student deleted", DateOnly.FromDateTime(clock.UtcNow), ct);
+        }
+
+        foreach (var pending in await db.Set<StudentChangeRequest>().Where(r => r.StudentId == id && r.Status == ChangeRequestStatus.Pending).ToListAsync(ct))
+        {
+            pending.Cancel(clock.UtcNow); // nobody is left to decide it
         }
 
         foreach (var link in await db.Set<StudentGuardian>().Where(l => l.StudentId == id).ToListAsync(ct))
