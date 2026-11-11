@@ -76,6 +76,11 @@ public sealed class EnrollmentEngine(
             throw new ArgumentException("Manual enrollment is for the sources Manual and Exceptional.", nameof(source));
         }
 
+        if (student.Status != PersonStatus.Active)
+        {
+            throw new EnrollmentRuleException(ProblemCodes.validation_failed, 400);
+        }
+
         var cls = await db.Set<Class>().FirstOrDefaultAsync(c => c.Id == classCourse.ClassId, cancellationToken)
             ?? throw new KeyNotFoundException("The class is not visible.");
         await guard.EnsureWritableAsync(cls, cancellationToken);
