@@ -56,5 +56,10 @@ public sealed class ExternalSchemeRegistryTests(LmsApiFactory factory)
         Assert.Equal(Microsoft.AspNetCore.Identity.IdentityConstants.ExternalScheme, options.SignInScheme);
         Assert.False(options.MapInboundClaims);
         Assert.Contains("email", options.Scope);
+        // Provider calls from the server: short timeout, never a redirect or proxy (SSRF guard, #185).
+        Assert.Equal(TimeSpan.FromSeconds(5), options.BackchannelTimeout);
+        var handler = Assert.IsType<SocketsHttpHandler>(options.BackchannelHttpHandler);
+        Assert.False(handler.AllowAutoRedirect);
+        Assert.False(handler.UseProxy);
     }
 }
