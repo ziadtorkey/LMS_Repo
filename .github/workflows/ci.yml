@@ -12,7 +12,15 @@ concurrency:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    env:
+      # Each WebApplicationFactory host watches appsettings files; with many hosts the runner's default of
+      # 128 inotify instances runs out ("The configured user limit (128) on the number of inotify instances").
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
     steps:
+      - name: Raise inotify limits
+        run: |
+          sudo sysctl -w fs.inotify.max_user_instances=8192
+          sudo sysctl -w fs.inotify.max_user_watches=524288
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with:
