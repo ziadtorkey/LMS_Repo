@@ -30,6 +30,10 @@ public sealed class ExternalOidcOptionsSetup(ExternalSchemeRegistry registry, Ou
         // Secure whenever the request is https; the correlation cookies must also work over plain http in development.
         options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
         options.NonceCookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+        // The default is SameSite=None, which browsers reject without Secure (plain http): the callback then fails with
+        // "Correlation failed". Lax is right for the query response mode: the return is a top-level GET navigation.
+        options.CorrelationCookie.SameSite = SameSiteMode.Lax;
+        options.NonceCookie.SameSite = SameSiteMode.Lax;
         options.BackchannelHttpHandler = guard.CreateHandler();
         options.BackchannelTimeout = OutboundGuard.Timeout;
         options.RequireHttpsMetadata = provider.Authority.StartsWith("https://", StringComparison.OrdinalIgnoreCase);

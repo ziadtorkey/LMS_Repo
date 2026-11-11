@@ -11,6 +11,10 @@ public sealed class IsolationBypassGuardTests
     /// <summary>Repository-relative files allowed to bypass the global query filters, with the reason.</summary>
     private static readonly IReadOnlyDictionary<string, string> AllowList = new Dictionary<string, string>
     {
+        ["src/Lms.Api/Features/Templates/TemplateMapper.cs"] =
+            "owner unit name of a Shared template that sits outside the caller's scope, restricted to the client (M1 Task 17, #52)",
+        ["src/Lms.Api/Features/Staff/ShareStaffHandler.cs"] =
+            "removing a share: the person's home may lie outside the scope of the admin of the shared-to unit; own client, live rows, assignment lookup stays filtered (M2 Task 16, #164)",
         ["src/Lms.Infrastructure/Organizations/OrgTree.cs"] =
             "client root and ancestors lie above a unit-level caller's scope (M1 Task 5)",
         ["src/Lms.Infrastructure/Access/ValidAssignmentQuery.cs"] =
@@ -35,10 +39,14 @@ public sealed class IsolationBypassGuardTests
             "effective policies set on ancestors above the caller's scope (M1 Task 12, #94)",
         ["src/Lms.Infrastructure/Organizations/OrgPolicyReader.cs"] =
             "policies set on ancestors above the caller's scope, to show blocked permissions in the org tree (M1 Task 9, #99)",
+        ["src/Lms.Api/Features/Staff/StaffQueries.cs"] =
+            "staff shared into the caller's scope have a home unit outside it; rows limited to this client and an in-scope assignment (M2 Task 10)",
         ["src/Lms.Api/Features/OrgUnits/AcademicFlagsHandler.cs"] =
             "read-only check of the client's level-transfer units (chains and references run through units the caller cannot see) (M1 Task 13, #48)",
         ["src/Lms.Api/Features/OrgUnits/TransferTargetUsageCheck.cs"] =
             "existence check of a unit that names the deleted unit as its transfer target; it can sit outside the caller's scope (M1 Task 13, #48)",
+        ["src/Lms.Infrastructure/Branches/BranchMaterializer.cs"] =
+            "setting locks sit on ancestors above the caller's scope when a copied branch is materialized (M1 Task 15, #50)",
         ["src/Lms.Api/Features/LevelTypes/LevelTypeEndpoints.cs"] =
             "level types are client-wide, so the in-use count covers the whole client, not the caller subtree (M1 Task 8, #83)",
         ["src/Lms.Infrastructure/Notifications/NotificationRecipientResolver.cs"] =

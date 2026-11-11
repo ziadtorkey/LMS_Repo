@@ -87,4 +87,18 @@ public sealed class ExternalSessionTests(LmsApiFactory factory)
         Assert.Equal(HttpStatusCode.OK, await ClientsAsync(null)); // a normal platform admin session
         Assert.NotEqual(HttpStatusCode.OK, await ClientsAsync(a.Org.Id)); // the same claim on an external session
     }
+
+    [Fact]
+    public void Token_of_an_external_session_never_carries_platform_admin_but_a_normal_one_does()
+    {
+        var admin = new Lms.Domain.Identity.User { Email = "a@lms.test", DisplayNameEn = "A", IsPlatformAdmin = true };
+        string[] scopes = ["openid", "lms_api"];
+
+        var external = Lms.Api.Features.Auth.AuthorizationEndpoints.BuildPrincipal(admin, scopes, Guid.NewGuid().ToString());
+        var normal = Lms.Api.Features.Auth.AuthorizationEndpoints.BuildPrincipal(admin, scopes);
+
+        Assert.Null(external.FindFirst("platform_admin"));
+        Assert.NotNull(external.FindFirst("lms_ext_org"));
+        Assert.Equal("true", normal.FindFirst("platform_admin")?.Value);
+    }
 }
