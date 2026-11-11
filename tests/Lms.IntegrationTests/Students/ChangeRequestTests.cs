@@ -123,6 +123,28 @@ public sealed class ChangeRequestTests
     }
 
     [Fact]
+    public async Task A_student_cannot_cancel_or_read_the_request_of_another_student_of_the_same_unit()
+    {
+        var a = await _kit.SetUpAsync("CR5S");
+        // a second student of the same school, with a login of their own
+        var other = await _kit.Kit.StudentAsync(a.Tree.School1);
+        var otherUser = Guid.NewGuid();
+        await using (var db = _factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            (await db.Set<StudentProfile>().IgnoreQueryFilters().SingleAsync(x => x.Id == other.Id)).LinkUser(otherUser);
+            await db.SaveChangesAsync();
+        }
+
+        var b = await AccessTestData.AssignAsync(_factory, a.Tree, a.Tree.School1, BuiltInRoles.Student, otherUser);
+        var request = await FileAsync(new SelfServiceKit.World(a.Tree, a.Admin, other, b), NameChange("B wants this"));
+
+        Assert.Equal(HttpStatusCode.NotFound, (await _kit.SendAsync(HttpMethod.Delete, Routes.MyChangeRequest(request.Id), a.Me)).StatusCode);
+        Assert.Empty(await _kit.ReadAsync<List<StudentChangeRequestDto>>(await _kit.SendAsync(HttpMethod.Get, Routes.MyChangeRequests, a.Me)));
+        // B's request is untouched and still B's to cancel
+        Assert.Equal(HttpStatusCode.NoContent, (await _kit.SendAsync(HttpMethod.Delete, Routes.MyChangeRequest(request.Id), b)).StatusCode);
+    }
+
+    [Fact]
     public async Task Counselor_approves_and_student_profile_changes_and_student_is_notified()
     {
         var w = await _kit.SetUpAsync("CR7");
