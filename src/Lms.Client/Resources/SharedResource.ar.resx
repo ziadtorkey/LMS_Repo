@@ -540,6 +540,8 @@
   <data name="Error_course_code_taken" xml:space="preserve"><value>يوجد مقرر آخر يستخدم هذا الكود.</value></data>
   <data name="Error_short_code_taken" xml:space="preserve"><value>يستخدم عميل آخر هذا الرمز المختصر.</value></data>
   <data name="Error_invalid_short_code" xml:space="preserve"><value>الرمز المختصر غير صالح: من 2 إلى 20 حرفًا لاتينيًا صغيرًا أو رقمًا أو شرطة.</value></data>
+  <data name="Error_teacher_already_assigned" xml:space="preserve"><value>هذا المعلم مُسنَد بالفعل إلى هذا المقرر في هذا الصف.</value></data>
+  <data name="Error_assignment_ended" xml:space="preserve"><value>انتهى هذا الإسناد بالفعل ولا يمكن تعديله.</value></data>
   <data name="Error_course_in_use" xml:space="preserve"><value>المقرر مستخدم في فصول ولا يمكن حذفه.</value></data>
   <data name="Error_course_not_available" xml:space="preserve"><value>هذا المقرر غير متاح في هذه الوحدة.</value></data>
   <data name="Error_allocation_exists" xml:space="preserve"><value>المقرر مخصص لهذه الوحدة من قبل.</value></data>
