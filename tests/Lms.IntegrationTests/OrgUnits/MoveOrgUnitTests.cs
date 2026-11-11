@@ -189,6 +189,28 @@ public sealed class MoveOrgUnitTests(LmsApiFactory factory) : IDisposable
     }
 
     [Fact]
+    public async Task Move_repaths_audit_entries()
+    {
+        var w = await BuildAsync("MV8A");
+        await using (var before = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            // The creation entries of the branch carry the old paths (audit entries are unit-scoped since the audit viewer).
+            Assert.Equal(w.SectionA.Path, (await before.AuditEntries.FirstAsync(e => e.EntityId == w.SectionA.Id && e.Action == AuditAction.Created)).OrgUnitPath);
+        }
+
+        var response = await MoveAsync(w.RootAdmin, w.SectionA, w.Tree.Root.Id);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var newSectionPath = OrgUnitPath.Append(w.Tree.Root.Path, w.SectionA.Id);
+        var newGroupPath = OrgUnitPath.Append(newSectionPath, w.Group.Id);
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        Assert.Equal(newSectionPath, (await db.AuditEntries.FirstAsync(e => e.EntityId == w.SectionA.Id && e.Action == AuditAction.Created)).OrgUnitPath);
+        Assert.Equal(newGroupPath, (await db.AuditEntries.FirstAsync(e => e.EntityId == w.Group.Id && e.Action == AuditAction.Created)).OrgUnitPath);
+        // Entries of units outside the moved branch keep their path.
+        Assert.Equal(w.Tree.School1.Path, (await db.AuditEntries.FirstAsync(e => e.EntityId == w.Tree.School1.Id && e.Action == AuditAction.Created)).OrgUnitPath);
+    }
+
+    [Fact]
     public async Task Move_writes_audit_entry_with_old_and_new_parent()
     {
         var w = await BuildAsync("MV9");
