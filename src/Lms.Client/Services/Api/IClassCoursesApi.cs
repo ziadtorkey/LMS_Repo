@@ -1,6 +1,7 @@
 using Lms.Shared;
 using Lms.Shared.Classes;
 using Lms.Shared.Courses;
+using Lms.Shared.Teaching;
 
 namespace Lms.Client.Services.Api;
 
@@ -83,6 +84,13 @@ public sealed class FakeClassCoursesApi : IClassCoursesApi
         var item = new ClassCourseDto(Guid.NewGuid(), cls.Id, cls.NameAr, cls.NameEn, course.Id, course.Code, course.NameAr, course.NameEn, optional, enrolled, [], null);
         _classCourses.Add(item);
         return item;
+    }
+
+    /// <summary>Sets the current teachers shown for a class course (tests).</summary>
+    public void ReplaceTeachers(Guid classCourseId, IReadOnlyList<ClassCourseTeacherDto> teachers)
+    {
+        var index = _classCourses.FindIndex(c => c.Id == classCourseId);
+        _classCourses[index] = _classCourses[index] with { CurrentTeachers = teachers };
     }
 
     private void FailIfSet()

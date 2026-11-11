@@ -851,4 +851,5 @@
   <data name="Matrix_OptionalMark" xml:space="preserve"><value>اخت.</value></data>
   <data name="Matrix_ChooseUnit" xml:space="preserve"><value>اختر وحدة لعرض فصولها.</value></data>
   <data name="Matrix_NoClasses" xml:space="preserve"><value>لا توجد فصول لهذه الوحدة في العام المحدد.</value></data>
+  <data name="List_Separator" xml:space="preserve"><value>، </value></data>
 </root>

@@ -851,4 +851,5 @@
   <data name="Matrix_OptionalMark" xml:space="preserve"><value>opt.</value></data>
   <data name="Matrix_ChooseUnit" xml:space="preserve"><value>Choose a unit to see its classes.</value></data>
   <data name="Matrix_NoClasses" xml:space="preserve"><value>This unit has no classes in the selected year.</value></data>
+  <data name="List_Separator" xml:space="preserve"><value>, </value></data>
 </root>
