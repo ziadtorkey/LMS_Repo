@@ -12,7 +12,7 @@
     {
         var row = Rows[i];
         var index = i;
-        <MudPaper Outlined="true" Class="pa-2">
+        <MudPaper Outlined="true" Class="@(row.Problem is null ? "pa-2" : "pa-2 lms-row-invalid")" Style="@(row.Problem is null ? null : "border-color: var(--mud-palette-error)")">
             <MudStack Spacing="2">
                 <MudSelect T="Guid?" @bind-Value="row.RoleId" Label="@L["Staff_Role"]" data-testid="@($"staff-role-{index}")">
                     @foreach (var role in _roles)
@@ -25,6 +25,10 @@
                     <MudDatePicker Date="row.ValidFrom" DateChanged="d => row.ValidFrom = d" Label="@L["Staff_ValidFrom"]" Clearable="true" />
                     <MudDatePicker Date="row.ValidTo" DateChanged="d => row.ValidTo = d" Label="@L["Staff_ValidTo"]" Clearable="true" />
                 </MudStack>
+                @if (row.Problem is not null)
+                {
+                    <MudText Color="Color.Error" Typo="Typo.caption" data-testid="@($"staff-role-error-{index}")">@L[row.Problem]</MudText>
+                }
                 @if (Rows.Count > 1)
                 {
                     <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Error" OnClick="() => Rows.RemoveAt(index)"
