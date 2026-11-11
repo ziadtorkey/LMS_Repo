@@ -1,0 +1,105 @@
+@using Lms.Client.Services.Api
+@using Lms.Shared.People
+@inject IGuardiansApi Guardians
+@inject NavigationManager Navigation
+
+@* Guardian rows of the create-student form. Typing a national id or mobile looks for a registered guardian (debounced) and offers to link it. *@
+<MudStack Spacing="2">
+    <MudText Typo="Typo.subtitle2" data-testid="guardians-title">@L["Guardians_Title"]@(Required ? " *" : "")</MudText>
+    @if (Required)
+    {
+        <MudText Typo="Typo.caption" data-testid="guardians-required">@L["Guardian_Required"]</MudText>
+    }
+    @for (var i = 0; i < Rows.Count; i++)
+    {
+        var row = Rows[i];
+        var index = i;
+        <MudPaper Outlined="true" Class="@(row.Problem is null ? "pa-2" : "pa-2 lms-row-invalid")" Style="@(row.Problem is null ? null : "border-color: var(--mud-palette-error)")">
+            <MudStack Spacing="2">
+                @if (row.LinkedGuardianId is not null && row.Match is { } linked)
+                {
+                    <MudAlert Severity="Severity.Success" data-testid="@($"guardian-linked-{index}")">@L["Guardian_Linked", CultureText.Pick(linked.NameAr, linked.NameEn), linked.MaskedMobile]</MudAlert>
+                    <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="() => Unlink(row)" data-testid="@($"guardian-unlink-{index}")">@L["Guardian_Unlink"]</MudButton>
+                }
+                else
+                {
+                    <MudTextField T="string" Value="row.NationalId" ValueChanged="v => OnLookupFieldAsync(row, nationalId: v)" Label="@L["Student_NationalId"]"
+                                  Immediate="true" DebounceInterval="500" MaxLength="30" dir="ltr" data-testid="@($"guardian-national-id-{index}")" />
+                    <MudTextField T="string" Value="row.Mobile" ValueChanged="v => OnLookupFieldAsync(row, mobile: v)" Label="@L["Student_Mobile"]"
+                                  Immediate="true" DebounceInterval="500" MaxLength="20" InputType="InputType.Telephone" dir="ltr" data-testid="@($"guardian-mobile-{index}")" />
+                    @if (row.Match is { } match)
+                    {
+                        <MudAlert Severity="Severity.Info" data-testid="@($"guardian-match-{index}")">
+                            @L["Guardian_LinkExisting", CultureText.Pick(match.NameAr, match.NameEn), match.MaskedMobile]
+                            <MudButton Size="Size.Small" Variant="Variant.Filled" OnClick="() => Link(row, match)"
+                                       data-testid="@($"guardian-link-{index}")">@L["Guardian_Link"]</MudButton>
+                        </MudAlert>
+                    }
+                    <MudTextField T="string" @bind-Value="row.NameAr" Label="@L["Common_NameAr"]" MaxLength="200" dir="rtl" lang="ar" data-testid="@($"guardian-name-ar-{index}")" />
+                    <MudTextField T="string" @bind-Value="row.NameEn" Label="@L["Common_NameEn"]" MaxLength="200" dir="ltr" lang="en" data-testid="@($"guardian-name-en-{index}")" />
+                    <MudTextField T="string" @bind-Value="row.Email" Label="@L["Student_Email"]" InputType="InputType.Email" MaxLength="256" dir="ltr"
+                                  data-testid="@($"guardian-email-{index}")" />
+                }
+                <MudSelect T="string" @bind-Value="row.Relation" Label="@L["Guardian_Relation"]" data-testid="@($"guardian-relation-{index}")">
+                    @foreach (var relation in GuardianRelations.All)
+                    {
+                        <MudSelectItem T="string" Value="@relation">@L[$"Relation_{relation}"]</MudSelectItem>
+                    }
+                </MudSelect>
+                <MudCheckBox T="bool" Value="row.IsPrimary" ValueChanged="v => OnPrimary(row, v)" Label="@L["Guardian_Primary"]"
+                             data-testid="@($"guardian-primary-{index}")" />
+                @if (row.Problem is not null)
+                {
+                    <MudText Color="Color.Error" Typo="Typo.caption" data-testid="@($"guardian-error-{index}")">@L[row.Problem]</MudText>
+                }
+                @if (Rows.Count > 1)
+                {
+                    <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Error" OnClick="() => Rows.RemoveAt(index)"
+                               data-testid="@($"guardian-remove-{index}")">@L["Common_Delete"]</MudButton>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+    <MudButton Variant="Variant.Text" StartIcon="@Icons.Material.Filled.Add" OnClick="() => Rows.Add(new GuardianRow())"
+               data-testid="guardian-add">@L["Guardian_Add"]</MudButton>
+</MudStack>
+
+@code {
+    [Parameter, EditorRequired] public List<GuardianRow> Rows { get; set; } = [];
+
+    /// <summary>The setting <c>Guardians.DataRequired</c> at the chosen unit: at least one guardian must be given.</summary>
+    [Parameter] public bool Required { get; set; }
+
+    private async Task OnLookupFieldAsync(GuardianRow row, string? nationalId = null, string? mobile = null)
+    {
+        if (nationalId is not null) row.NationalId = nationalId;
+        if (mobile is not null) row.Mobile = mobile;
+        row.Match = null;
+        if (string.IsNullOrWhiteSpace(row.NationalId) && string.IsNullOrWhiteSpace(row.Mobile)) return;
+        try
+        {
+            row.Match = await Guardians.MatchAsync(row.NationalId, row.Mobile);
+        }
+        catch (Exception ex) when (ApiCalls.TryRedirect(ex, Navigation))
+        {
+        }
+        catch (Exception ex) when (ex is ApiProblemException or HttpRequestException)
+        {
+            // The lookup is a convenience: without it the guardian is simply entered as a new one.
+        }
+    }
+
+    private static void Link(GuardianRow row, GuardianMatchDto match) => row.LinkedGuardianId = match.Id;
+
+    private static void Unlink(GuardianRow row)
+    {
+        row.LinkedGuardianId = null;
+        row.Match = null;
+    }
+
+    private void OnPrimary(GuardianRow row, bool value)
+    {
+        if (value) GuardianRow.SetPrimary(Rows, row);
+        else row.IsPrimary = false;
+    }
+}

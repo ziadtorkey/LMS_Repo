@@ -96,6 +96,23 @@ public sealed class OrgTreeAdminPage(IPage page)
         return text;
     }
 
+    /// <summary>
+    /// Saves the branch as a private template, replacing <paramref name="literal"/> in its names and codes by the
+    /// <paramref name="token"/> placeholder; returns once the dialog has closed.
+    /// </summary>
+    public async Task SaveAsTemplateAsync(string code, string nameAr, string nameEn, string literal, string token)
+    {
+        var id = await RevealAsync(code);
+        await page.GetByTestId($"org-template-{id}").ClickAsync();
+        await Field("template-name-ar").FillAsync(nameAr);
+        await Field("template-name-en").FillAsync(nameEn);
+        await page.GetByTestId("template-add-replacement").ClickAsync();
+        await Field("replace-literal-0").FillAsync(literal);
+        await Field("replace-token-0").FillAsync(token);
+        await Field("replace-token-0").PressAsync("Tab"); // the field commits on blur
+        await SaveDialogAsync();
+    }
+
     /// <summary>Clicks delete on the unit and confirms; the caller checks the outcome.</summary>
     public async Task DeleteAsync(string code)
     {
