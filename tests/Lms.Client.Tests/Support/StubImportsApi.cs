@@ -21,6 +21,8 @@ public sealed class StubImportsApi : IImportsApi
     public List<(bool ErrorsOnly, int Page)> RowRequests { get; } = [];
     public List<Guid> Committed { get; } = [];
     public List<Guid> Discarded { get; } = [];
+    public string? LastKind { get; private set; }
+    public Guid UnitId { get; } = Guid.NewGuid();
     public int ErrorReports { get; private set; }
     public int BatchReads => _reads;
 
@@ -36,6 +38,7 @@ public sealed class StubImportsApi : IImportsApi
 
     public Task<(Stream Content, string FileName)> DownloadTemplateAsync(string kind, string culture, CancellationToken ct = default)
     {
+        LastKind = kind;
         TemplateCultures.Add(culture);
         return Task.FromResult<(Stream, string)>((new MemoryStream([1]), "template.xlsx"));
     }
@@ -85,7 +88,7 @@ public sealed class StubImportsApi : IImportsApi
         Task.FromResult(new PagedResult<ImportBatchDto>([Batch(ImportStatuses.Committed)], 1, page, pageSize));
 
     public ImportBatchDto Batch(string status) => new(
-        BatchId, ImportKinds.Staff, status, Guid.NewGuid(), "مدرسة", "School", "staff.xlsx", RowCount, ErrorCount,
+        BatchId, ImportKinds.Staff, status, UnitId, "مدرسة", "School", "staff.xlsx", RowCount, ErrorCount,
         ErrorCount > 0, status == ImportStatuses.Committed ? RowCount : null, Guid.NewGuid(), null, null, DateTime.UtcNow, null);
 
     public Guid BatchId { get; } = Guid.NewGuid();
