@@ -46,6 +46,7 @@ _Updated by the Team Lead after every merge cycle._
 None. (Board: [LMS v1](https://github.com/users/ziadtorkey/projects/1) — Todo → In Progress → In Review → Done.)
 
 ## Decisions needed from the product owner
+- 2026-11-11: CI was blocked by GitHub Actions billing on the private repo (#152); owner chose to **make the repo public** — done after a secrets scan; CI running again.
 - M2 plan approval + 13 questions: issue #103 (draft plan on main; Lead asks via popup when M1 is near done — not blocking anything now).
 
 ## Recently merged
