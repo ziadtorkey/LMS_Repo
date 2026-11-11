@@ -495,4 +495,29 @@
   <data name="Assign_PersonSearch" xml:space="preserve"><value>ابحث عن موظف بالاسم أو البريد</value></data>
   <data name="Assign_CreateStaff" xml:space="preserve"><value>إنشاء موظف جديد</value></data>
   <data name="Staff_RoleIncomplete" xml:space="preserve"><value>اختر الدور والوحدة معًا.</value></data>
+  <data name="Nav_IdentityProviders" xml:space="preserve"><value>تسجيل الدخول الموحد</value></data>
+  <data name="Idp_Title" xml:space="preserve"><value>مزودو تسجيل الدخول الموحد</value></data>
+  <data name="Idp_New" xml:space="preserve"><value>إضافة مزود</value></data>
+  <data name="Idp_Kind" xml:space="preserve"><value>النوع</value></data>
+  <data name="IdpKind_Oidc" xml:space="preserve"><value>OpenID Connect</value></data>
+  <data name="IdpKind_AzureAd" xml:space="preserve"><value>Microsoft Entra ID (Azure AD)</value></data>
+  <data name="Idp_Slug" xml:space="preserve"><value>الاسم المختصر (للرابط)</value></data>
+  <data name="Idp_Authority" xml:space="preserve"><value>رابط مزود الهوية</value></data>
+  <data name="Idp_TenantId" xml:space="preserve"><value>معرّف الدليل (المستأجر)</value></data>
+  <data name="Idp_ClientId" xml:space="preserve"><value>معرّف التطبيق</value></data>
+  <data name="Idp_ClientSecret" xml:space="preserve"><value>السر الخاص بالتطبيق</value></data>
+  <data name="Idp_SecretKeep" xml:space="preserve"><value>اتركه فارغًا للإبقاء على السر الحالي</value></data>
+  <data name="Idp_Scopes" xml:space="preserve"><value>النطاقات</value></data>
+  <data name="Idp_MatchBy" xml:space="preserve"><value>مطابقة المستخدمين حسب</value></data>
+  <data name="IdpMatch_Email" xml:space="preserve"><value>البريد الإلكتروني</value></data>
+  <data name="IdpMatch_NationalId" xml:space="preserve"><value>رقم الهوية الوطنية</value></data>
+  <data name="Idp_NationalIdClaim" xml:space="preserve"><value>اسم المطالبة الخاصة برقم الهوية</value></data>
+  <data name="Idp_EmailDomains" xml:space="preserve"><value>نطاقات البريد الإلكتروني</value></data>
+  <data name="Idp_CallbackUrl" xml:space="preserve"><value>رابط إعادة التوجيه الذي يُسجَّل لدى المزود</value></data>
+  <data name="Idp_Copy" xml:space="preserve"><value>نسخ</value></data>
+  <data name="Idp_Test" xml:space="preserve"><value>اختبار الاتصال</value></data>
+  <data name="Idp_TestOk" xml:space="preserve"><value>تم الاتصال بـ {0}</value></data>
+  <data name="Idp_TestFailed" xml:space="preserve"><value>تعذر الوصول إلى المزود: {0}</value></data>
+  <data name="Idp_DeleteConfirm" xml:space="preserve"><value>هل تريد حذف المزود "{0}"؟ لن يتمكن من يستخدمونه من تسجيل الدخول به.</value></data>
+  <data name="Common_Enabled" xml:space="preserve"><value>مفعّل</value></data>
 </root>

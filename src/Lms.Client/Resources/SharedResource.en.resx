@@ -495,4 +495,29 @@
   <data name="Assign_PersonSearch" xml:space="preserve"><value>Search staff by name or email</value></data>
   <data name="Assign_CreateStaff" xml:space="preserve"><value>Create a new staff member</value></data>
   <data name="Staff_RoleIncomplete" xml:space="preserve"><value>Choose both a role and a unit.</value></data>
+  <data name="Nav_IdentityProviders" xml:space="preserve"><value>Single sign-on</value></data>
+  <data name="Idp_Title" xml:space="preserve"><value>Single sign-on providers</value></data>
+  <data name="Idp_New" xml:space="preserve"><value>Add provider</value></data>
+  <data name="Idp_Kind" xml:space="preserve"><value>Type</value></data>
+  <data name="IdpKind_Oidc" xml:space="preserve"><value>OpenID Connect</value></data>
+  <data name="IdpKind_AzureAd" xml:space="preserve"><value>Microsoft Entra ID (Azure AD)</value></data>
+  <data name="Idp_Slug" xml:space="preserve"><value>Short name (URL)</value></data>
+  <data name="Idp_Authority" xml:space="preserve"><value>Authority URL</value></data>
+  <data name="Idp_TenantId" xml:space="preserve"><value>Directory (tenant) ID</value></data>
+  <data name="Idp_ClientId" xml:space="preserve"><value>Client ID</value></data>
+  <data name="Idp_ClientSecret" xml:space="preserve"><value>Client secret</value></data>
+  <data name="Idp_SecretKeep" xml:space="preserve"><value>Leave empty to keep the current secret</value></data>
+  <data name="Idp_Scopes" xml:space="preserve"><value>Scopes</value></data>
+  <data name="Idp_MatchBy" xml:space="preserve"><value>Match users by</value></data>
+  <data name="IdpMatch_Email" xml:space="preserve"><value>Email</value></data>
+  <data name="IdpMatch_NationalId" xml:space="preserve"><value>National ID</value></data>
+  <data name="Idp_NationalIdClaim" xml:space="preserve"><value>National ID claim name</value></data>
+  <data name="Idp_EmailDomains" xml:space="preserve"><value>Email domains</value></data>
+  <data name="Idp_CallbackUrl" xml:space="preserve"><value>Redirect URL to register at the provider</value></data>
+  <data name="Idp_Copy" xml:space="preserve"><value>Copy</value></data>
+  <data name="Idp_Test" xml:space="preserve"><value>Test connection</value></data>
+  <data name="Idp_TestOk" xml:space="preserve"><value>Connected to {0}</value></data>
+  <data name="Idp_TestFailed" xml:space="preserve"><value>Could not reach the provider: {0}</value></data>
+  <data name="Idp_DeleteConfirm" xml:space="preserve"><value>Delete the provider "{0}"? People who use it will no longer be able to sign in with it.</value></data>
+  <data name="Common_Enabled" xml:space="preserve"><value>Enabled</value></data>
 </root>
