@@ -10,6 +10,7 @@ using Lms.IntegrationTests.Infrastructure;
 using Lms.Shared;
 using Lms.Shared.Authorization;
 using Lms.Shared.Notifications;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -89,7 +90,7 @@ public sealed class NotificationTests(LmsApiFactory factory)
             .Build();
         connection.On<NotificationDto>(NotificationHub.ReceiveMethod, dto => received.TrySetResult(dto));
         await connection.StartAsync();
-        await connection.InvokeAsync("SwitchContext", assignment.Id); // barrier: the group join runs in OnConnectedAsync
+        await Assert.ThrowsAsync<HubException>(() => connection.InvokeAsync("SwitchContext", Guid.NewGuid())); // barrier: OnConnectedAsync (the group join) has finished; the refused switch leaves groups alone
 
         using var scope = factory.Services.CreateScope();
         await scope.ServiceProvider.GetRequiredService<INotificationPublisher>().PublishAsync(new NotificationRequest(
@@ -142,6 +143,7 @@ public sealed class NotificationTests(LmsApiFactory factory)
             .Build();
         connection.On<NotificationDto>(NotificationHub.ReceiveMethod, dto => received.TrySetResult(dto));
         await connection.StartAsync();
+        await Assert.ThrowsAsync<HubException>(() => connection.InvokeAsync("SwitchContext", Guid.NewGuid())); // connect barrier
 
         using (var scope = auth.Services.CreateScope())
         {
