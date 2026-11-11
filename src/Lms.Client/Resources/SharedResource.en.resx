@@ -407,4 +407,38 @@
   <data name="NotifEvent_Staff_ExpiringSoon" xml:space="preserve"><value>Staff access expiring soon</value></data>
   <data name="NotifEvent_Staff_Expired" xml:space="preserve"><value>Staff access expired</value></data>
   <data name="NotifEvent_Imports_Completed" xml:space="preserve"><value>Import finished</value></data>
+  <data name="Nav_Staff" xml:space="preserve"><value>Staff</value></data>
+  <data name="Staff_Title" xml:space="preserve"><value>Staff</value></data>
+  <data name="Staff_New" xml:space="preserve"><value>New staff member</value></data>
+  <data name="Staff_Email" xml:space="preserve"><value>Email</value></data>
+  <data name="Staff_Mobile" xml:space="preserve"><value>Mobile</value></data>
+  <data name="Staff_NationalId" xml:space="preserve"><value>National ID</value></data>
+  <data name="Staff_JobTitleAr" xml:space="preserve"><value>Job title (Arabic)</value></data>
+  <data name="Staff_JobTitleEn" xml:space="preserve"><value>Job title (English)</value></data>
+  <data name="Staff_HomeUnit" xml:space="preserve"><value>Home unit</value></data>
+  <data name="Staff_ExpiresOn" xml:space="preserve"><value>Account expires on</value></data>
+  <data name="Staff_Roles" xml:space="preserve"><value>Roles</value></data>
+  <data name="Staff_AddRole" xml:space="preserve"><value>Add role</value></data>
+  <data name="Staff_Role" xml:space="preserve"><value>Role</value></data>
+  <data name="Staff_RoleUnit" xml:space="preserve"><value>At unit</value></data>
+  <data name="Staff_ValidFrom" xml:space="preserve"><value>From</value></data>
+  <data name="Staff_ValidTo" xml:space="preserve"><value>To</value></data>
+  <data name="Staff_RoleRequired" xml:space="preserve"><value>Add at least one role.</value></data>
+  <data name="Staff_Created" xml:space="preserve"><value>Staff member created. An activation email was sent.</value></data>
+  <data name="Staff_Shared" xml:space="preserve"><value>Shared</value></data>
+  <data name="Staff_NotActivated" xml:space="preserve"><value>Not activated yet</value></data>
+  <data name="Staff_StatusHistory" xml:space="preserve"><value>Status history</value></data>
+  <data name="Staff_Reason" xml:space="preserve"><value>Reason</value></data>
+  <data name="Staff_LimitedView" xml:space="preserve"><value>This person belongs to another unit; some details are hidden.</value></data>
+  <data name="Person_Photo" xml:space="preserve"><value>Photo</value></data>
+  <data name="Person_ChangePhoto" xml:space="preserve"><value>Change photo</value></data>
+  <data name="Person_RemovePhoto" xml:space="preserve"><value>Remove photo</value></data>
+  <data name="Person_PhotoType" xml:space="preserve"><value>Choose a JPG or PNG image.</value></data>
+  <data name="Person_PhotoTooLarge" xml:space="preserve"><value>The image is larger than 5 MB.</value></data>
+  <data name="PersonStatus_Active" xml:space="preserve"><value>Active</value></data>
+  <data name="PersonStatus_Deactivated" xml:space="preserve"><value>Deactivated</value></data>
+  <data name="PersonStatus_Expired" xml:space="preserve"><value>Expired</value></data>
+  <data name="Error_duplicate_person_email" xml:space="preserve"><value>Someone in this organization already uses this email.</value></data>
+  <data name="Error_duplicate_person_mobile" xml:space="preserve"><value>Someone in this organization already uses this mobile number.</value></data>
+  <data name="Error_duplicate_person_nationalId" xml:space="preserve"><value>Someone in this organization already has this national ID.</value></data>
 </root>

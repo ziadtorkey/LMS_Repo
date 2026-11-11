@@ -1,0 +1,127 @@
+@page "/staff"
+@attribute [Authorize]
+@using Lms.Client.Components
+@using Lms.Client.Components.People
+@using Lms.Client.Services.Api
+@using Lms.Shared.Access
+@using Lms.Shared.Authorization
+@using Lms.Shared.People
+@inject IStaffApi Api
+@inject IAccessAdminApi Access
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<PageTitle>@L["Staff_Title"]</PageTitle>
+<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4" Wrap="Wrap.Wrap">
+    <MudText Typo="Typo.h4" data-testid="staff-title">@L["Staff_Title"]</MudText>
+    @if (PermState.Has(Permissions.Staff.Create))
+    {
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="NewStaffAsync" data-testid="staff-new">@L["Staff_New"]</MudButton>
+    }
+</MudStack>
+
+<MudStack Row="true" Spacing="2" Class="mb-3" Wrap="Wrap.Wrap" AlignItems="AlignItems.Center">
+    <MudTextField T="string" Value="_searchText" ValueChanged="OnSearchChanged" Label="@L["Common_Search"]" Immediate="true"
+                  DebounceInterval="300" Clearable="true" data-testid="staff-search" />
+    <MudItem xs="12" sm="3">
+        <UnitPicker Value="_unitId" ValueChanged="OnUnitChanged" Label="@L["Staff_HomeUnit"]" Clearable="true" TestId="staff-filter-unit" />
+    </MudItem>
+    <MudSelect T="Guid?" Value="_roleId" ValueChanged="OnRoleChanged" Label="@L["Staff_Role"]" Clearable="true"
+               data-testid="staff-filter-role" Style="min-width: 10rem">
+        @foreach (var role in _roles)
+        {
+            <MudSelectItem T="Guid?" Value="@((Guid?)role.Id)">@Culture.Pick(role.NameAr, role.NameEn)</MudSelectItem>
+        }
+    </MudSelect>
+    <MudSelect T="string" Value="_status" ValueChanged="OnStatusChanged" Label="@L["Common_Status"]" Clearable="true"
+               data-testid="staff-filter-status" Style="min-width: 10rem">
+        @foreach (var status in PersonStatuses.All)
+        {
+            <MudSelectItem T="string" Value="@status">@L[$"PersonStatus_{status}"]</MudSelectItem>
+        }
+    </MudSelect>
+</MudStack>
+
+<ServerTable @ref="_table" T="StaffSummaryDto" ServerData="LoadAsync">
+    <HeaderContent>
+        <MudTh>@L["Person_Photo"]</MudTh>
+        <MudTh>@L["Common_Name"]</MudTh>
+        <MudTh>@L["Staff_Email"]</MudTh>
+        <MudTh>@L["Staff_Roles"]</MudTh>
+        <MudTh>@L["Staff_HomeUnit"]</MudTh>
+        <MudTh>@L["Common_Status"]</MudTh>
+        <MudTh>@L["Staff_ExpiresOn"]</MudTh>
+    </HeaderContent>
+    <RowTemplate Context="person">
+        <MudTd><MudAvatar Size="Size.Small"><MudIcon Icon="@Icons.Material.Filled.Person" /></MudAvatar></MudTd>
+        <MudTd>
+            <MudLink Href="@($"staff/{person.Id}")" data-testid="@($"staff-link-{person.Id}")">@Culture.Pick(person.NameAr, person.NameEn)</MudLink>
+        </MudTd>
+        <MudTd><span dir="ltr">@person.Email</span></MudTd>
+        <MudTd>
+            <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap">
+                @foreach (var role in person.Roles)
+                {
+                    <MudChip T="string" Size="Size.Small" data-testid="@($"role-chip-{role.AssignmentId}")">@Culture.Pick(role.RoleNameAr, role.RoleNameEn)</MudChip>
+                }
+                @if (person.IsSharedIn || person.Roles.Any(r => r.IsShare))
+                {
+                    <MudChip T="string" Size="Size.Small" Color="Color.Info" data-testid="@($"shared-chip-{person.Id}")">@L["Staff_Shared"]</MudChip>
+                }
+            </MudStack>
+        </MudTd>
+        <MudTd>@Culture.Pick(person.HomeOrgUnitNameAr, person.HomeOrgUnitNameEn)</MudTd>
+        <MudTd><PersonStatusChip Status="@person.Status" /></MudTd>
+        <MudTd>@(person.ExpiresOn?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture))</MudTd>
+    </RowTemplate>
+</ServerTable>
+
+@code {
+    private ServerTable<StaffSummaryDto> _table = default!;
+    private IReadOnlyList<RoleDto> _roles = [];
+    private string? _searchText, _status;
+    private Guid? _unitId, _roleId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        PermState.Changed += OnPermissionsChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        // The role filter is a convenience: without permission to read roles the list still works.
+        await ApiCalls.RunAsync(
+            async () => _roles = (await Access.GetRolesAsync()).Where(r => r.BaseKind == RoleBaseKinds.Staff).ToList(),
+            Navigation, L, _ => { });
+    }
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => PermState.Changed -= OnPermissionsChanged;
+
+    private async Task<TableData<StaffSummaryDto>> LoadAsync(TableState state, CancellationToken ct)
+    {
+        var query = new StaffQuery(_unitId, true, _roleId, _status,
+            string.IsNullOrWhiteSpace(_searchText) ? null : _searchText.Trim(), true, null, state.Page + 1, state.PageSize);
+        var result = await Api.ListAsync(query, ct);
+        return new TableData<StaffSummaryDto> { Items = result.Items, TotalItems = result.Total };
+    }
+
+    private Task OnSearchChanged(string? text) { _searchText = text; return _table.ReloadAsync(); }
+    private Task OnUnitChanged(Guid? id) { _unitId = id; return _table.ReloadAsync(); }
+    private Task OnRoleChanged(Guid? id) { _roleId = id; return _table.ReloadAsync(); }
+    private Task OnStatusChanged(string? status) { _status = status; return _table.ReloadAsync(); }
+
+    private async Task NewStaffAsync()
+    {
+        var dialog = await Dialogs.ShowAsync<CreateStaffDialog>(L["Staff_New"], new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            Snackbar.Add(L["Staff_Created"], Severity.Success);
+            await _table.ReloadAsync();
+        }
+    }
+}

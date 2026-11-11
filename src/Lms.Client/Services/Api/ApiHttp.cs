@@ -27,6 +27,26 @@ public sealed class ApiHttp(HttpClient http, IContextStore context)
         using var response = await SendCoreAsync(method, route, body, ct);
     }
 
+    /// <summary>Uploads one file as multipart/form-data (field "file") and returns the JSON response.</summary>
+    public async Task<TResponse> UploadAsync<TResponse>(string route, string fileName, string contentType, Stream content, IReadOnlyDictionary<string, string>? fields = null, CancellationToken ct = default)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, route.TrimStart('/'));
+        if (context.ActiveAssignmentId is { } id)
+            request.Headers.Add(ContextHeader.Name, id.ToString());
+        request.Headers.AcceptLanguage.ParseAdd(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName);
+        var file = new StreamContent(content);
+        file.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
+        var form = new MultipartFormDataContent { { file, "file", fileName } };
+        foreach (var (name, value) in fields ?? new Dictionary<string, string>())
+            form.Add(new StringContent(value), name);
+        request.Content = form;
+
+        using var response = await http.SendAsync(request, ct);
+        if (!response.IsSuccessStatusCode)
+            throw await ApiProblemException.ClassifyAsync(response, HttpMethod.Post, ct);
+        return JsonSerializer.Deserialize<TResponse>(await response.Content.ReadAsStringAsync(ct), JsonSerializerOptions.Web)!;
+    }
+
     public async Task<(Stream Content, string FileName)> DownloadAsync(string route, CancellationToken ct = default)
     {
         using var response = await SendCoreAsync(HttpMethod.Get, route, null, ct);
