@@ -1,3 +1,4 @@
+using Lms.Client.Services.Api;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.Extensions.Configuration;
@@ -27,6 +28,12 @@ public static class ClientServices
         if (configuration.GetValue<bool>("Lms:UseFakeApi"))
         {
             services.AddScoped<ILmsApi, FakeLmsApi>();
+            services.AddScoped<IAuditApi, FakeAuditApi>();
+            services.AddScoped<IAccessAdminApi, FakeAccessAdminApi>();
+            services.AddScoped<IUnitLookupApi, FakeUnitLookupApi>();
+            services.AddScoped<IYearsApi, FakeYearsApi>();
+            services.AddSingleton<IClientsApi, FakeClientsApi>();
+            services.AddSingleton<IOrgApi, FakeOrgApi>();
             services.AddScoped<AuthenticationStateProvider, FakeAuthenticationStateProvider>();
             services.AddAuthorizationCore();
             return;
@@ -40,8 +47,19 @@ public static class ClientServices
             options.ProviderOptions.DefaultScopes.Add("lms_api");
         });
         services.AddTransient<ForbiddenRedirectHandler>();
+        services.AddScoped<IAuditApi, AuditApi>();
+        services.AddScoped<IAccessAdminApi, AccessAdminApi>();
+        services.AddScoped<IUnitLookupApi, UnitLookupApi>();
+        services.AddScoped<IYearsApi, YearsApi>();
         services.AddHttpClient<ILmsApi, LmsApiClient>(c => c.BaseAddress = new Uri(baseAddress))
             .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>()
             .AddHttpMessageHandler<ForbiddenRedirectHandler>();
+
+        // Module APIs share one authorized HttpClient through ApiHttp.
+        services.AddHttpClient<ApiHttp>(c => c.BaseAddress = new Uri(baseAddress))
+            .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>()
+            .AddHttpMessageHandler<ForbiddenRedirectHandler>();
+        services.AddScoped<IClientsApi, ClientsApi>();
+        services.AddScoped<IOrgApi, OrgApi>();
     }
 }
