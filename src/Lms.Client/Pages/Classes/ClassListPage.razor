@@ -1,0 +1,196 @@
+@page "/classes"
+@attribute [Authorize]
+@using Lms.Client.Components
+@using Lms.Client.Components.People
+@using Lms.Client.Services
+@using Lms.Client.Services.Api
+@using Lms.Shared.Authorization
+@using Lms.Shared.Classes
+@inject IClassesApi Api
+@inject IYearStore Years
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<PageTitle>@L["Classes_Title"]</PageTitle>
+<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-2" Wrap="Wrap.Wrap">
+    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+        <MudText Typo="Typo.h4" data-testid="classes-title">@L["Classes_Title"]</MudText>
+        @if (Years.Selected is { } year)
+        {
+            <MudChip T="string" Color="@(Years.IsReadOnly ? Color.Default : Color.Primary)" data-testid="classes-year">@Culture.Pick(year.NameAr, year.NameEn)</MudChip>
+        }
+    </MudStack>
+    @if (!Years.IsReadOnly)
+    {
+        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap">
+            @if (PermState.Has(Permissions.Classes.Create))
+            {
+                <MudButton Variant="Variant.Outlined" OnClick="CopyAsync" data-testid="class-copy">@L["CopyClasses_Title"]</MudButton>
+                <MudButton Variant="Variant.Outlined" OnClick="BulkAsync" data-testid="class-bulk">@L["BulkClasses_Title"]</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="NewAsync"
+                           data-testid="class-new">@L["Class_New"]</MudButton>
+            }
+        </MudStack>
+    }
+</MudStack>
+
+@if (Years.IsReadOnly)
+{
+    <MudAlert Severity="Severity.Info" Class="mb-3" data-testid="classes-readonly">@L["Classes_YearClosed"]</MudAlert>
+}
+
+<MudStack Row="true" Spacing="2" Class="mb-3" Wrap="Wrap.Wrap" AlignItems="AlignItems.Center">
+    <MudTextField T="string" Value="_searchText" ValueChanged="OnSearchChanged" Label="@L["Common_Search"]" Immediate="true"
+                  DebounceInterval="300" Clearable="true" data-testid="class-search" />
+    <MudItem xs="12" sm="3">
+        <UnitPicker Value="_unitId" ValueChanged="OnUnitChanged" Label="@L["Class_Unit"]" Clearable="true" TestId="class-filter-unit" />
+    </MudItem>
+    <MudSelect T="string" Value="_status" ValueChanged="OnStatusChanged" Label="@L["Common_Status"]" Clearable="true"
+               data-testid="class-filter-status" Style="min-width: 10rem">
+        @foreach (var status in ClassStatuses.All)
+        {
+            <MudSelectItem T="string" Value="@status">@L[$"ClassStatus_{status}"]</MudSelectItem>
+        }
+    </MudSelect>
+</MudStack>
+
+<ServerTable @ref="_table" T="ClassSummaryDto" ServerData="LoadAsync">
+    <HeaderContent>
+        <MudTh>@L["Class_Code"]</MudTh>
+        <MudTh>@L["Common_Name"]</MudTh>
+        <MudTh>@L["Class_Unit"]</MudTh>
+        <MudTh>@L["Class_Students"]</MudTh>
+        <MudTh>@L["Class_Homeroom"]</MudTh>
+        <MudTh>@L["Class_Courses"]</MudTh>
+        <MudTh>@L["Common_Status"]</MudTh>
+        <MudTh></MudTh>
+    </HeaderContent>
+    <RowTemplate Context="cls">
+        <MudTd DataLabel="@L["Class_Code"]"><span dir="ltr">@cls.Code</span></MudTd>
+        <MudTd DataLabel="@L["Common_Name"]">@Culture.Pick(cls.NameAr, cls.NameEn)</MudTd>
+        <MudTd DataLabel="@L["Class_Unit"]">@Culture.Pick(cls.OrgUnitNameAr, cls.OrgUnitNameEn)</MudTd>
+        <MudTd DataLabel="@L["Class_Students"]">
+            <MudText Color="@(IsFull(cls) ? Color.Warning : Color.Default)" data-testid="@($"class-students-{cls.Id}")">
+                @cls.StudentCount@(cls.Capacity is { } cap ? $" / {cap}" : "")
+            </MudText>
+        </MudTd>
+        <MudTd DataLabel="@L["Class_Homeroom"]">@(cls.HomeroomTeacherNameAr is null ? "" : Culture.Pick(cls.HomeroomTeacherNameAr, cls.HomeroomTeacherNameEn ?? cls.HomeroomTeacherNameAr))</MudTd>
+        <MudTd DataLabel="@L["Class_Courses"]">@cls.CourseCount</MudTd>
+        <MudTd DataLabel="@L["Common_Status"]">
+            <MudChip T="string" Size="Size.Small" Color="@(cls.Status == ClassStatuses.Active ? Color.Success : Color.Default)">@L[$"ClassStatus_{cls.Status}"]</MudChip>
+        </MudTd>
+        <MudTd>
+            @if (!cls.IsReadOnly && !Years.IsReadOnly)
+            {
+                @if (PermState.Has(Permissions.Classes.Update))
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" aria-label="@L["Common_Edit"]" OnClick="() => EditAsync(cls)"
+                                   data-testid="@($"class-edit-{cls.Id}")" />
+                }
+                @if (PermState.Has(Permissions.Classes.Close))
+                {
+                    <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="() => CloseAsync(cls)" data-testid="@($"class-close-{cls.Id}")">@L["Class_Close"]</MudButton>
+                }
+            }
+        </MudTd>
+    </RowTemplate>
+</ServerTable>
+
+@code {
+    private ServerTable<ClassSummaryDto> _table = default!;
+    private string? _searchText, _status;
+    private Guid? _unitId;
+
+    private static readonly DialogOptions DialogSize = new() { MaxWidth = MaxWidth.Medium, FullWidth = true };
+
+    protected override async Task OnInitializedAsync()
+    {
+        PermState.Changed += OnPermissionsChanged;
+        Years.Changed += OnYearChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        if (Years.SelectedYearId is null) await Years.LoadAsync();
+    }
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    private void OnYearChanged() => _ = InvokeAsync(async () =>
+    {
+        StateHasChanged();
+        if (_table is not null) await _table.ReloadAsync();
+    });
+
+    public void Dispose()
+    {
+        PermState.Changed -= OnPermissionsChanged;
+        Years.Changed -= OnYearChanged;
+    }
+
+    private static bool IsFull(ClassSummaryDto cls) => cls.Capacity is { } cap && cls.StudentCount >= cap;
+
+    private async Task<TableData<ClassSummaryDto>> LoadAsync(TableState state, CancellationToken ct)
+    {
+        var query = new ClassQuery(_unitId, true, Years.SelectedYearId, _status, string.IsNullOrWhiteSpace(_searchText) ? null : _searchText.Trim(), null,
+            state.Page + 1, state.PageSize);
+        var result = await Api.ListAsync(query, ct);
+        return new TableData<ClassSummaryDto> { Items = result.Items, TotalItems = result.Total };
+    }
+
+    private Task OnSearchChanged(string? text) { _searchText = text; return _table.ReloadAsync(); }
+    private Task OnUnitChanged(Guid? id) { _unitId = id; return _table.ReloadAsync(); }
+    private Task OnStatusChanged(string? status) { _status = status; return _table.ReloadAsync(); }
+
+    private async Task NewAsync()
+    {
+        if (Years.SelectedYearId is not { } year) return;
+        var dialog = await Dialogs.ShowAsync<ClassDialog>(L["Class_New"], new DialogParameters<ClassDialog> { { x => x.AcademicYearId, year } }, DialogSize);
+        if (await dialog.Result is { Canceled: false })
+        {
+            Snackbar.Add(L["Class_Created"], Severity.Success);
+            await _table.ReloadAsync();
+        }
+    }
+
+    private async Task EditAsync(ClassSummaryDto cls)
+    {
+        var dialog = await Dialogs.ShowAsync<ClassDialog>(L["Class_Edit"],
+            new DialogParameters<ClassDialog> { { x => x.AcademicYearId, cls.AcademicYearId }, { x => x.Existing, cls } }, DialogSize);
+        if (await dialog.Result is { Canceled: false })
+        {
+            Snackbar.Add(L["Common_Saved"], Severity.Success);
+            await _table.ReloadAsync();
+        }
+    }
+
+    private async Task BulkAsync()
+    {
+        if (Years.SelectedYearId is not { } year) return;
+        var dialog = await Dialogs.ShowAsync<BulkClassesDialog>(L["BulkClasses_Title"], new DialogParameters<BulkClassesDialog> { { x => x.AcademicYearId, year } }, DialogSize);
+        if (await dialog.Result is { Canceled: false, Data: int count })
+        {
+            Snackbar.Add(L["BulkClasses_Created", count], Severity.Success);
+            await _table.ReloadAsync();
+        }
+    }
+
+    private async Task CopyAsync()
+    {
+        var dialog = await Dialogs.ShowAsync<CopyClassesDialog>(L["CopyClasses_Title"], new DialogParameters<CopyClassesDialog> { { x => x.UnitId, _unitId } }, DialogSize);
+        await dialog.Result;
+        await _table.ReloadAsync();
+    }
+
+    private async Task CloseAsync(ClassSummaryDto cls)
+    {
+        if (!await ConfirmDialog.AskAsync(Dialogs, L["Class_Close"], L["Class_CloseConfirm", Culture.Pick(cls.NameAr, cls.NameEn)], L["Class_Close"])) return;
+        var ok = await ApiCalls.RunAsync(() => Api.CloseAsync(cls.Id), Navigation, L, message => Snackbar.Add(message, Severity.Error));
+        if (ok)
+        {
+            Snackbar.Add(L["Common_Saved"], Severity.Success);
+            await _table.ReloadAsync();
+        }
+    }
+}

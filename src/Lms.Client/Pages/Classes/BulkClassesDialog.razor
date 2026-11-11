@@ -1,0 +1,112 @@
+@using Lms.Client.Components.People
+@using Lms.Client.Services.Api
+@using Lms.Shared.Classes
+@using Lms.Shared.Organizations
+@inject IClassesApi Api
+@inject IOrgApi Org
+@inject NavigationManager Navigation
+
+@* Creates classes From..To at one unit from patterns; {N} is replaced by the number. The preview shows what will be created. *@
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form">
+            <MudStack Spacing="3">
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" data-testid="dialog-error">@_error</MudAlert>
+                }
+                <UnitPicker Value="_unitId" ValueChanged="id => _unitId = id" Label="@L["Class_Unit"]" Required="true" Filter="IsHostingUnit" TestId="bulk-unit" />
+                <MudTextField T="string" @bind-Value="_namePatternAr" Label="@L["BulkClasses_NamePatternAr"]" HelperText="@L["BulkClasses_PatternHelp"]" Immediate="true"
+                              dir="rtl" lang="ar" MaxLength="200" data-testid="bulk-pattern-ar" />
+                <MudTextField T="string" @bind-Value="_namePatternEn" Label="@L["BulkClasses_NamePatternEn"]" HelperText="@L["BulkClasses_PatternHelp"]" Immediate="true"
+                              dir="ltr" lang="en" MaxLength="200" data-testid="bulk-pattern-en" />
+                <MudTextField T="string" @bind-Value="_codePattern" Label="@L["BulkClasses_CodePattern"]" HelperText="@L["BulkClasses_PatternHelp"]" Immediate="true"
+                              dir="ltr" MaxLength="50" data-testid="bulk-pattern-code" />
+                <MudStack Row="true" Spacing="2">
+                    <MudNumericField T="int" @bind-Value="_from" Label="@L["BulkClasses_From"]" Min="0" Immediate="true" data-testid="bulk-from" />
+                    <MudNumericField T="int" @bind-Value="_to" Label="@L["BulkClasses_To"]" Min="0" Immediate="true" data-testid="bulk-to" />
+                </MudStack>
+                <MudNumericField T="int?" @bind-Value="_capacity" Label="@L["Class_Capacity"]" Min="1" Max="500" Clearable="true" data-testid="bulk-capacity" />
+
+                <MudText Typo="Typo.subtitle2">@L["BulkClasses_Preview"]</MudText>
+                @if (_problem is not null)
+                {
+                    <MudAlert Severity="Severity.Warning" data-testid="bulk-problem">@(_problem == "BulkClasses_TooMany" ? L[_problem, MaxCount] : L[_problem])</MudAlert>
+                }
+                else
+                {
+                    <MudSimpleTable Dense="true" data-testid="bulk-preview">
+                        <tbody>
+                            @foreach (var row in PreviewRows)
+                            {
+                                <tr>
+                                    <td><span dir="ltr">@row.Code</span></td>
+                                    <td>@CultureText.Pick(row.NameAr, row.NameEn)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </MudSimpleTable>
+                    <MudText Typo="Typo.caption" data-testid="bulk-count">@L["BulkClasses_Count", Count]</MudText>
+                }
+            </MudStack>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="_saving || _problem is not null || _unitId is null"
+                   data-testid="dialog-save">@L["BulkClasses_Create"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private const int MaxCount = 50;
+    private const int PreviewLimit = 5;
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired] public Guid AcademicYearId { get; set; }
+
+    private MudForm _form = default!;
+    private HashSet<Guid> _hostingLevels = [];
+    private Guid? _unitId;
+    private string _namePatternAr = "", _namePatternEn = "", _codePattern = "";
+    private int _from = 1, _to = 5;
+    private int? _capacity;
+    private string? _error;
+    private bool _saving;
+
+    protected override async Task OnInitializedAsync() =>
+        await ApiCalls.RunAsync(async () => _hostingLevels = (await Org.GetLevelTypesAsync()).Where(l => l.CanHostClasses).Select(l => l.Id).ToHashSet(),
+            Navigation, L, _ => { });
+
+    private bool IsHostingUnit(OrgUnitNodeDto unit) => _hostingLevels.Contains(unit.LevelTypeId);
+
+    private static int Occurrences(string pattern) => pattern.Split("{N}").Length - 1;
+
+    /// <summary>Resource key of what is wrong with the patterns or range; null when the preview can be shown.</summary>
+    private string? _problem =>
+        Occurrences(_namePatternAr) != 1 || Occurrences(_namePatternEn) != 1 || Occurrences(_codePattern) != 1 ? "BulkClasses_PatternProblem"
+        : _to < _from ? "BulkClasses_RangeProblem"
+        : _to - _from + 1 > MaxCount ? "BulkClasses_TooMany"
+        : null;
+
+    private int Count => _to - _from + 1;
+
+    private IEnumerable<(string Code, string NameAr, string NameEn)> PreviewRows =>
+        Enumerable.Range(_from, Math.Min(Count, PreviewLimit)).Select(n => Render(n))
+            .Concat(Count > PreviewLimit ? [Render(_to)] : []);
+
+    private (string Code, string NameAr, string NameEn) Render(int n) =>
+        (_codePattern.Replace("{N}", n.ToString()), _namePatternAr.Replace("{N}", n.ToString()), _namePatternEn.Replace("{N}", n.ToString()));
+
+    private async Task SaveAsync()
+    {
+        _error = null;
+        if (_problem is not null || _unitId is not { } unit) return;
+        _saving = true;
+        var ok = await ApiCalls.RunAsync(() => Api.BulkCreateAsync(new BulkCreateClassesRequest(unit, AcademicYearId, _namePatternAr.Trim(),
+            _namePatternEn.Trim(), _codePattern.Trim(), _from, _to, _capacity)), Navigation, L, message => _error = message);
+        _saving = false;
+        if (ok) MudDialog.Close(DialogResult.Ok(Count));
+    }
+}

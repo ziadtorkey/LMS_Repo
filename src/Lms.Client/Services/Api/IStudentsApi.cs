@@ -1,5 +1,4 @@
 using Lms.Shared;
-using Lms.Shared.Classes;
 using Lms.Shared.People;
 
 namespace Lms.Client.Services.Api;
@@ -70,24 +69,5 @@ public sealed class GuardiansApi(ApiHttp http) : IGuardiansApi
         {
             return null;
         }
-    }
-}
-
-/// <summary>Classes as far as the student pages need them: the classes of a unit and year (the class tasks add the rest).</summary>
-public interface IClassesApi
-{
-    Task<PagedResult<ClassSummaryDto>> ListAsync(ClassQuery query, CancellationToken ct = default);
-}
-
-public sealed class ClassesApi(ApiHttp http) : IClassesApi
-{
-    public Task<PagedResult<ClassSummaryDto>> ListAsync(ClassQuery query, CancellationToken ct = default)
-    {
-        var parts = new List<string> { $"page={query.Page}", $"pageSize={query.PageSize}", $"includeDescendants={query.IncludeDescendants.ToString().ToLowerInvariant()}" };
-        if (query.OrgUnitId is { } unit) parts.Add($"orgUnitId={unit}");
-        if (query.AcademicYearId is { } year) parts.Add($"academicYearId={year}");
-        if (!string.IsNullOrWhiteSpace(query.Status)) parts.Add($"status={Uri.EscapeDataString(query.Status)}");
-        if (!string.IsNullOrWhiteSpace(query.Search)) parts.Add($"search={Uri.EscapeDataString(query.Search)}");
-        return http.GetAsync<PagedResult<ClassSummaryDto>>("/api/classes?" + string.Join('&', parts), ct);
     }
 }

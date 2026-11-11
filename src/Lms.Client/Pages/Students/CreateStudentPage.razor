@@ -156,6 +156,7 @@ else
         _saving = true;
         StudentCreatedDto? created = null;
         var confirmDuplicate = false;
+        var confirmCapacity = false;
         var saved = await ApiCalls.RunAsync(
             async () =>
             {
@@ -168,6 +169,10 @@ else
                     confirmDuplicate = true;
                     _duplicateCount = ex.Count;
                 }
+                catch (ApiProblemException ex) when (ex.Code == "over_capacity")
+                {
+                    confirmCapacity = true;
+                }
             },
             Navigation, L, message => _error = message);
         _saving = false;
@@ -177,6 +182,13 @@ else
             var confirmed = await Dialogs.ShowMessageBoxAsync(L["Students_New"], _duplicateCount is { } n ? L["Student_PossibleDuplicate", n].Value : L["Error_possible_duplicate"].Value,
                 yesText: L["Student_CreateAnyway"], cancelText: L["Common_Cancel"]);
             if (confirmed == true) await CreateAsync(request with { ConfirmPossibleDuplicate = true });
+            return;
+        }
+        if (confirmCapacity)
+        {
+            var confirmed = await Dialogs.ShowMessageBoxAsync(L["Students_New"], L["Student_OverCapacityConfirm"].Value,
+                yesText: L["Student_PlaceAnyway"], cancelText: L["Common_Cancel"]);
+            if (confirmed == true) await CreateAsync(request with { ConfirmOverCapacity = true });
             return;
         }
         if (!saved || created is null) return;

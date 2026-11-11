@@ -76,6 +76,9 @@ public sealed class FakeStudentsApi : IStudentsApi
         var dups = _students.Count(s => s.Summary.NameEn.Equals(d.NameEn, StringComparison.OrdinalIgnoreCase) && s.Summary.DateOfBirth == d.DateOfBirth);
         if (DetectDuplicates && dups > 0 && !request.ConfirmPossibleDuplicate)
             return Task.FromException<StudentCreatedDto>(new ApiProblemException(409, "possible_duplicate", null, null, count: dups));
+        if (request.ClassId is { } classId && FakeClasses.All.FirstOrDefault(c => c.Id == classId) is { Capacity: { } cap } full
+            && full.StudentCount >= cap && !request.ConfirmOverCapacity)
+            return Task.FromException<StudentCreatedDto>(new ApiProblemException(409, "over_capacity", null, null));
         var code = string.IsNullOrWhiteSpace(request.StudentCode) ? $"S-{++_nextCode}" : request.StudentCode;
         var cls = request.ClassId is { } id ? FakeClasses.All.FirstOrDefault(c => c.Id == id) : null;
         var created = Add(d.NameAr, d.NameEn, d.Gender, d.DateOfBirth, code, null, null, null, cls);
@@ -109,16 +112,4 @@ public static class FakeClasses
     private static ClassSummaryDto Make(string id, string code, string ar, string en, int capacity, int students) =>
         new(Guid.Parse(id), code, ar, en, FakeUnits.SchoolId, "المدرسة الرئيسية", "Main School", Guid.Empty, "", "", capacity, students, 0,
             null, null, null, ClassStatuses.Active, false);
-}
-
-public sealed class FakeClassesApi : IClassesApi
-{
-    public ClassQuery? LastQuery { get; private set; }
-
-    public Task<PagedResult<ClassSummaryDto>> ListAsync(ClassQuery query, CancellationToken ct = default)
-    {
-        LastQuery = query;
-        var rows = FakeClasses.All.Where(c => query.OrgUnitId is null || c.OrgUnitId == query.OrgUnitId).ToList();
-        return Task.FromResult(new PagedResult<ClassSummaryDto>(rows, rows.Count, query.Page, query.PageSize));
-    }
 }
