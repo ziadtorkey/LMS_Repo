@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
@@ -15,8 +16,10 @@ public static class ExternalIdentityServiceCollectionExtensions
     /// Data Protection with the key ring in MySQL (shared by all nodes), the secret protector, and the dynamic
     /// OpenID Connect scheme registry (schemes are added at runtime, so the handler's option plumbing is registered here).
     /// </summary>
-    public static IServiceCollection AddExternalIdentity(this IServiceCollection services)
+    public static IServiceCollection AddExternalIdentity(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddSingleton(sp => OutboundGuard.Create(
+            sp.GetRequiredService<IHostEnvironment>().IsDevelopment(), configuration.GetValue<bool>(OutboundGuard.ConfigKey)));
         services.AddDataProtection().SetApplicationName("Lms");
         services.AddOptions<KeyManagementOptions>()
             .Configure<IServiceScopeFactory>((options, scopes) => options.XmlRepository = new EfXmlRepository(scopes));
@@ -30,10 +33,12 @@ public static class ExternalIdentityServiceCollectionExtensions
     }
 
     /// <summary>Registers the schemes of the stored providers when the host starts.</summary>
-    private sealed class ExternalSchemeStartup(ExternalSchemeRegistry registry, ILogger<ExternalSchemeStartup> logger) : IHostedService
+    private sealed class ExternalSchemeStartup(ExternalSchemeRegistry registry, OutboundGuard guard, ILogger<ExternalSchemeStartup> logger) : IHostedService
     {
         public async Task StartAsync(CancellationToken cancellationToken)
         {
+            // Resolving the guard here makes a forbidden AllowPrivateNetwork setting stop the host at startup.
+            logger.LogDebug("Outbound guard active (private network allowed: {Allowed})", guard.AllowPrivateNetwork);
             try
             {
                 await registry.SyncAsync(cancellationToken);

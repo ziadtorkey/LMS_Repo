@@ -33,7 +33,7 @@ public static class DependencyInjection
         services.AddEmail(configuration);
         services.AddSettingsAndPolicies();
         services.AddAcademicYears();
-        services.AddExternalIdentity();
+        services.AddExternalIdentity(configuration);
         return services;
     }
 }
