@@ -110,6 +110,23 @@ public sealed class StudentGuardiansTabTests : StudentsTestContext
     }
 
     [Fact]
+    public async Task Match_alert_shows_only_name_and_masked_mobile_and_dialog_is_titled()
+    {
+        Culture.Current = new CultureInfo("en");
+        var cut = RenderTab();
+        _ = cut.Find("[data-testid=guardian-link-new]").ClickAsync(new());
+        Assert.Contains("Link guardian", (await Dialogs.WaitForElementAsync(".mud-dialog-title")).TextContent);
+        (await Dialogs.WaitForElementAsync("input[data-testid=guardian-national-id-0]")).Input("29001010101");
+
+        var alert = (await Dialogs.WaitForElementAsync("[data-testid=guardian-match-0]", TimeSpan.FromSeconds(5))).TextContent;
+        Assert.Contains("Mona", alert);
+        Assert.Contains("+*********111", alert);
+        // D30: the registered guardian's national id and full mobile are never revealed before linking.
+        Assert.DoesNotContain("29001010101", alert);
+        Assert.DoesNotContain("0501111111", alert);
+    }
+
+    [Fact]
     public async Task Link_new_guardian_requires_names_and_mobile()
     {
         var cut = RenderTab();

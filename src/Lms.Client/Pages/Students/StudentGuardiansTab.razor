@@ -19,7 +19,7 @@
     {
         <div>
             <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.PersonAdd" OnClick="LinkAsync"
-                       data-testid="guardian-link-new">@L["Guardian_Link"]</MudButton>
+                       data-testid="guardian-link-new">@L["Guardian_LinkTitle"]</MudButton>
         </div>
     }
     @if (Student.Guardians.Count == 0)
@@ -134,7 +134,7 @@
 
     private async Task LinkAsync()
     {
-        var dialog = await Dialogs.ShowAsync<LinkGuardianDialog>(L["Guardian_Link"],
+        var dialog = await Dialogs.ShowAsync<LinkGuardianDialog>(L["Guardian_LinkTitle"],
             new DialogParameters<LinkGuardianDialog> { { x => x.StudentId, Student.Summary.Id } },
             new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
         if (await dialog.Result is { Canceled: false }) { Snackbar.Add(L["Common_Saved"], Severity.Success); await OnChanged.InvokeAsync(); }

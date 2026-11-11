@@ -733,4 +733,5 @@
   <data name="Guardian_NoEmail" xml:space="preserve"><value>أضف بريدًا إلكترونيًا لدعوة ولي الأمر.</value></data>
   <data name="Guardian_UnlinkConfirm" xml:space="preserve"><value>إزالة {0} من هذا الطالب؟</value></data>
   <data name="Guardian_InvitationSent" xml:space="preserve"><value>تم إرسال الدعوة</value></data>
+  <data name="Guardian_LinkTitle" xml:space="preserve"><value>ربط ولي أمر</value></data>
 </root>

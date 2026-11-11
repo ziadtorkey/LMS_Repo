@@ -733,4 +733,5 @@
   <data name="Guardian_NoEmail" xml:space="preserve"><value>Add an email address to invite this guardian.</value></data>
   <data name="Guardian_UnlinkConfirm" xml:space="preserve"><value>Remove {0} from this student?</value></data>
   <data name="Guardian_InvitationSent" xml:space="preserve"><value>Invitation sent</value></data>
+  <data name="Guardian_LinkTitle" xml:space="preserve"><value>Link guardian</value></data>
 </root>
