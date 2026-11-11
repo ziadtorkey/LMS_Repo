@@ -401,12 +401,49 @@
   <data name="AuditEvent_ExternalLoginLinked" xml:space="preserve"><value>Organization account linked</value></data>
   <data name="AuditEvent_ExternalLoginSucceeded" xml:space="preserve"><value>Successful organization sign-in</value></data>
   <data name="AuditEvent_ExternalLoginFailed" xml:space="preserve"><value>Failed organization sign-in</value></data>
+  <data name="AuditEvent_PasswordChanged" xml:space="preserve"><value>Password changed</value></data>
   <data name="Notif_Staff_ExpiringSoon" xml:space="preserve"><value>The access of {StaffName} expires on {ExpiresOn}.</value></data>
   <data name="Notif_Staff_Expired" xml:space="preserve"><value>The access of {StaffName} expired on {ExpiresOn}.</value></data>
   <data name="Notif_Imports_Completed" xml:space="preserve"><value>Your {Kind} import finished: {Status} ({RowCount} rows).</value></data>
   <data name="NotifEvent_Staff_ExpiringSoon" xml:space="preserve"><value>Staff access expiring soon</value></data>
   <data name="NotifEvent_Staff_Expired" xml:space="preserve"><value>Staff access expired</value></data>
   <data name="NotifEvent_Imports_Completed" xml:space="preserve"><value>Import finished</value></data>
+  <data name="Common_Next" xml:space="preserve"><value>Next</value></data>
+  <data name="Common_Back" xml:space="preserve"><value>Back</value></data>
+  <data name="Import_Title" xml:space="preserve"><value>Import from Excel</value></data>
+  <data name="Import_Step_Template" xml:space="preserve"><value>Template</value></data>
+  <data name="Import_Step_Upload" xml:space="preserve"><value>Upload</value></data>
+  <data name="Import_Step_Review" xml:space="preserve"><value>Review</value></data>
+  <data name="Import_Step_Done" xml:space="preserve"><value>Done</value></data>
+  <data name="Import_DownloadTemplate" xml:space="preserve"><value>Download template</value></data>
+  <data name="Import_TemplateLanguage" xml:space="preserve"><value>Template language</value></data>
+  <data name="Import_TargetUnit" xml:space="preserve"><value>Import into unit</value></data>
+  <data name="Import_ChooseFile" xml:space="preserve"><value>Choose an .xlsx file</value></data>
+  <data name="Import_FileTooLarge" xml:space="preserve"><value>The file is larger than 10 MB.</value></data>
+  <data name="Import_Validating" xml:space="preserve"><value>Checking your file…</value></data>
+  <data name="Import_Committing" xml:space="preserve"><value>Importing…</value></data>
+  <data name="Import_RowsSummary" xml:space="preserve"><value>{0} rows, {1} with errors</value></data>
+  <data name="Import_ErrorsOnly" xml:space="preserve"><value>Rows with errors only</value></data>
+  <data name="Import_DownloadErrors" xml:space="preserve"><value>Download error report</value></data>
+  <data name="Import_BlockedByErrors" xml:space="preserve"><value>Nothing was imported. Fix every error in the file and upload it again.</value></data>
+  <data name="Import_Commit" xml:space="preserve"><value>Import {0} rows</value></data>
+  <data name="Import_CommitConfirm" xml:space="preserve"><value>Import all {0} rows now?</value></data>
+  <data name="Import_Done" xml:space="preserve"><value>{0} records imported.</value></data>
+  <data name="Import_Failed" xml:space="preserve"><value>The import failed and nothing was saved. Try again.</value></data>
+  <data name="Import_Discard" xml:space="preserve"><value>Discard</value></data>
+  <data name="Import_History" xml:space="preserve"><value>Import history</value></data>
+  <data name="Import_Row" xml:space="preserve"><value>Row</value></data>
+  <data name="Import_Upload" xml:space="preserve"><value>Upload and check</value></data>
+  <data name="Import_File" xml:space="preserve"><value>File</value></data>
+  <data name="Import_Rows" xml:space="preserve"><value>Rows</value></data>
+  <data name="Import_Another" xml:space="preserve"><value>Import another file</value></data>
+  <data name="ImportStatus_Uploaded" xml:space="preserve"><value>Uploaded</value></data>
+  <data name="ImportStatus_Validating" xml:space="preserve"><value>Checking</value></data>
+  <data name="ImportStatus_Valid" xml:space="preserve"><value>Ready to import</value></data>
+  <data name="ImportStatus_Invalid" xml:space="preserve"><value>Has errors</value></data>
+  <data name="ImportStatus_Committing" xml:space="preserve"><value>Importing</value></data>
+  <data name="ImportStatus_Committed" xml:space="preserve"><value>Imported</value></data>
+  <data name="ImportStatus_Failed" xml:space="preserve"><value>Failed</value></data>
   <data name="Nav_Staff" xml:space="preserve"><value>Staff</value></data>
   <data name="Staff_Title" xml:space="preserve"><value>Staff</value></data>
   <data name="Staff_New" xml:space="preserve"><value>New staff member</value></data>
@@ -459,4 +496,213 @@
   <data name="Assign_PersonSearch" xml:space="preserve"><value>Search staff by name or email</value></data>
   <data name="Assign_CreateStaff" xml:space="preserve"><value>Create a new staff member</value></data>
   <data name="Staff_RoleIncomplete" xml:space="preserve"><value>Choose both a role and a unit.</value></data>
+  <data name="Nav_IdentityProviders" xml:space="preserve"><value>Single sign-on</value></data>
+  <data name="Idp_Title" xml:space="preserve"><value>Single sign-on providers</value></data>
+  <data name="Idp_New" xml:space="preserve"><value>Add provider</value></data>
+  <data name="Idp_Kind" xml:space="preserve"><value>Type</value></data>
+  <data name="IdpKind_Oidc" xml:space="preserve"><value>OpenID Connect</value></data>
+  <data name="IdpKind_AzureAd" xml:space="preserve"><value>Microsoft Entra ID (Azure AD)</value></data>
+  <data name="Idp_Slug" xml:space="preserve"><value>Short name (URL)</value></data>
+  <data name="Idp_Authority" xml:space="preserve"><value>Authority URL</value></data>
+  <data name="Idp_TenantId" xml:space="preserve"><value>Directory (tenant) ID</value></data>
+  <data name="Idp_ClientId" xml:space="preserve"><value>Client ID</value></data>
+  <data name="Idp_ClientSecret" xml:space="preserve"><value>Client secret</value></data>
+  <data name="Idp_SecretKeep" xml:space="preserve"><value>Leave empty to keep the current secret</value></data>
+  <data name="Idp_Scopes" xml:space="preserve"><value>Scopes</value></data>
+  <data name="Idp_MatchBy" xml:space="preserve"><value>Match users by</value></data>
+  <data name="IdpMatch_Email" xml:space="preserve"><value>Email</value></data>
+  <data name="IdpMatch_NationalId" xml:space="preserve"><value>National ID</value></data>
+  <data name="Idp_NationalIdClaim" xml:space="preserve"><value>National ID claim name</value></data>
+  <data name="Idp_EmailDomains" xml:space="preserve"><value>Email domains</value></data>
+  <data name="Idp_CallbackUrl" xml:space="preserve"><value>Redirect URL to register at the provider</value></data>
+  <data name="Idp_Copy" xml:space="preserve"><value>Copy</value></data>
+  <data name="Idp_Test" xml:space="preserve"><value>Test connection</value></data>
+  <data name="Idp_TestOk" xml:space="preserve"><value>Connected to {0}</value></data>
+  <data name="Idp_TestFailed" xml:space="preserve"><value>Could not reach the provider: {0}</value></data>
+  <data name="Idp_DeleteConfirm" xml:space="preserve"><value>Delete the provider "{0}"? People who use it will no longer be able to sign in with it.</value></data>
+  <data name="Common_Enabled" xml:space="preserve"><value>Enabled</value></data>
+  <data name="Error_possible_duplicate" xml:space="preserve"><value>A student with the same name and date of birth already exists. Confirm to continue.</value></data>
+  <data name="Error_student_code_taken" xml:space="preserve"><value>This student code is already used in this client.</value></data>
+  <data name="Error_student_code_required" xml:space="preserve"><value>A student code is required.</value></data>
+  <data name="Error_student_code_not_allowed" xml:space="preserve"><value>Student codes are generated automatically; leave the code empty.</value></data>
+  <data name="Error_student_code_exhausted" xml:space="preserve"><value>The student code pattern has no free numbers left. Change the pattern.</value></data>
+  <data name="Error_invalid_code_pattern" xml:space="preserve"><value>The code pattern is not valid. Use letters, digits, hyphens and {Seq:N} exactly once.</value></data>
+  <data name="Error_guardian_required" xml:space="preserve"><value>At least one guardian with complete data is required.</value></data>
+  <data name="Error_primary_guardian_required" xml:space="preserve"><value>Exactly one guardian must be the primary guardian.</value></data>
+  <data name="Error_guardian_link_exists" xml:space="preserve"><value>This guardian is already linked to the student.</value></data>
+  <data name="Error_guardian_incomplete" xml:space="preserve"><value>The guardian's data is incomplete.</value></data>
+  <data name="Error_critical_field" xml:space="preserve"><value>This field cannot be changed directly; send a change request.</value></data>
+  <data name="Error_change_request_pending" xml:space="preserve"><value>A change request is already pending.</value></data>
+  <data name="Error_change_request_closed" xml:space="preserve"><value>This change request was already decided or cancelled.</value></data>
+  <data name="Error_change_request_stale" xml:space="preserve"><value>The student's data changed after the request was sent.</value></data>
+  <data name="Error_password_change_required" xml:space="preserve"><value>You must change your password before you continue.</value></data>
+  <data name="Error_invalid_owner_unit" xml:space="preserve"><value>A course can be owned only by the client root or a course-management level.</value></data>
+  <data name="Error_course_code_taken" xml:space="preserve"><value>Another course already uses this code.</value></data>
+  <data name="Error_short_code_taken" xml:space="preserve"><value>Another client already uses this short code.</value></data>
+  <data name="Error_invalid_short_code" xml:space="preserve"><value>Invalid short code: 2–20 lower-case letters, digits or hyphens.</value></data>
+  <data name="Error_teacher_already_assigned" xml:space="preserve"><value>This teacher is already assigned to this class course.</value></data>
+  <data name="Error_assignment_ended" xml:space="preserve"><value>This assignment has already ended and cannot be changed.</value></data>
+  <data name="Error_course_in_use" xml:space="preserve"><value>The course is used by classes and cannot be removed.</value></data>
+  <data name="Error_course_not_available" xml:space="preserve"><value>This course is not available at this unit.</value></data>
+  <data name="Error_allocation_exists" xml:space="preserve"><value>The course is already allocated at this unit.</value></data>
+  <data name="Error_allocation_in_use" xml:space="preserve"><value>Classes below this unit use the course; remove them first.</value></data>
+  <data name="Error_restriction_not_met" xml:space="preserve"><value>The student does not meet the course restrictions.</value></data>
+  <data name="Error_exception_pending" xml:space="preserve"><value>An exception request is already pending for this student and course.</value></data>
+  <data name="Error_exception_closed" xml:space="preserve"><value>This exception request was already decided or cancelled.</value></data>
+  <data name="Error_blueprint_draft_exists" xml:space="preserve"><value>A draft of this blueprint already exists.</value></data>
+  <data name="Error_blueprint_no_draft" xml:space="preserve"><value>This blueprint has no draft.</value></data>
+  <data name="Error_blueprint_stale" xml:space="preserve"><value>Someone else changed the draft. Reload and try again.</value></data>
+  <data name="Error_blueprint_empty" xml:space="preserve"><value>A blueprint needs at least one section with a lesson.</value></data>
+  <data name="Error_class_code_taken" xml:space="preserve"><value>Another class of this academic year already uses this code.</value></data>
+  <data name="Error_class_in_use" xml:space="preserve"><value>The class has students or courses and cannot be removed.</value></data>
+  <data name="Error_class_closed" xml:space="preserve"><value>The class is closed and cannot be changed.</value></data>
+  <data name="Error_class_full" xml:space="preserve"><value>The class is full.</value></data>
+  <data name="Error_over_capacity" xml:space="preserve"><value>This goes over the class capacity. Confirm to continue.</value></data>
+  <data name="Error_year_not_effective" xml:space="preserve"><value>This academic year does not apply to this unit.</value></data>
+  <data name="Error_class_course_exists" xml:space="preserve"><value>The class already has this course.</value></data>
+  <data name="Error_class_course_in_use" xml:space="preserve"><value>The class course has enrollments or content and cannot be removed.</value></data>
+  <data name="Error_enrollment_not_optional" xml:space="preserve"><value>Students can be enrolled by hand only in optional courses.</value></data>
+  <data name="Error_already_enrolled" xml:space="preserve"><value>The student is already enrolled.</value></data>
+  <data name="Error_not_in_class" xml:space="preserve"><value>The student is not in this class.</value></data>
+  <data name="Error_already_placed" xml:space="preserve"><value>The student is already in a class this academic year.</value></data>
+  <data name="Error_class_unit_mismatch" xml:space="preserve"><value>The class is not in the student's unit.</value></data>
+  <data name="Error_teacher_not_eligible" xml:space="preserve"><value>The teacher is not eligible to teach this course here.</value></data>
+  <data name="Error_teacher_not_in_unit" xml:space="preserve"><value>The teacher has no teacher role at this unit.</value></data>
+  <data name="Error_primary_teacher_exists" xml:space="preserve"><value>This class course already has a primary teacher.</value></data>
+  <data name="Error_already_in_group" xml:space="preserve"><value>The student is already in a group of this class course.</value></data>
+  <data name="Error_not_enrolled" xml:space="preserve"><value>The student is not enrolled in this class course.</value></data>
+  <data name="Error_transfer_invalid" xml:space="preserve"><value>The student cannot be transferred to this class.</value></data>
+  <data name="Error_too_many_items" xml:space="preserve"><value>Too many items in one request.</value></data>
+  <data name="PermModule_Students" xml:space="preserve"><value>Students</value></data>
+  <data name="Perm_Students_View" xml:space="preserve"><value>View students</value></data>
+  <data name="Perm_Students_Create" xml:space="preserve"><value>Create students</value></data>
+  <data name="Perm_Students_Update" xml:space="preserve"><value>Edit students</value></data>
+  <data name="Perm_Students_Delete" xml:space="preserve"><value>Delete students</value></data>
+  <data name="Perm_Students_Import" xml:space="preserve"><value>Import students</value></data>
+  <data name="Perm_Students_ApproveChanges" xml:space="preserve"><value>Approve student change requests</value></data>
+  <data name="Perm_Students_SelfEdit" xml:space="preserve"><value>Edit own student profile</value></data>
+  <data name="Perm_Students_ViewChildren" xml:space="preserve"><value>View own children</value></data>
+  <data name="PermModule_Courses" xml:space="preserve"><value>Courses</value></data>
+  <data name="Perm_Courses_View" xml:space="preserve"><value>View courses</value></data>
+  <data name="Perm_Courses_Create" xml:space="preserve"><value>Create courses</value></data>
+  <data name="Perm_Courses_Update" xml:space="preserve"><value>Edit courses</value></data>
+  <data name="Perm_Courses_Delete" xml:space="preserve"><value>Delete courses</value></data>
+  <data name="Perm_Courses_Import" xml:space="preserve"><value>Import courses</value></data>
+  <data name="Perm_Courses_Allocate" xml:space="preserve"><value>Allocate courses</value></data>
+  <data name="Perm_Courses_ManageSupervisors" xml:space="preserve"><value>Manage course supervisors</value></data>
+  <data name="PermModule_Blueprints" xml:space="preserve"><value>Blueprints</value></data>
+  <data name="Perm_Blueprints_View" xml:space="preserve"><value>View blueprints</value></data>
+  <data name="Perm_Blueprints_Edit" xml:space="preserve"><value>Edit blueprints</value></data>
+  <data name="Perm_Blueprints_Publish" xml:space="preserve"><value>Publish blueprints</value></data>
+  <data name="PermModule_Classes" xml:space="preserve"><value>Classes</value></data>
+  <data name="Perm_Classes_View" xml:space="preserve"><value>View classes</value></data>
+  <data name="Perm_Classes_Create" xml:space="preserve"><value>Create classes</value></data>
+  <data name="Perm_Classes_Update" xml:space="preserve"><value>Edit classes</value></data>
+  <data name="Perm_Classes_Delete" xml:space="preserve"><value>Delete classes</value></data>
+  <data name="Perm_Classes_Close" xml:space="preserve"><value>Close classes</value></data>
+  <data name="Perm_Classes_ManageCourses" xml:space="preserve"><value>Manage class courses</value></data>
+  <data name="PermModule_TeacherAssignments" xml:space="preserve"><value>Teacher assignments</value></data>
+  <data name="Perm_TeacherAssignments_View" xml:space="preserve"><value>View teacher assignments</value></data>
+  <data name="Perm_TeacherAssignments_Manage" xml:space="preserve"><value>Manage teacher assignments</value></data>
+  <data name="PermModule_Enrollment" xml:space="preserve"><value>Enrollment</value></data>
+  <data name="Perm_Enrollment_View" xml:space="preserve"><value>View enrollments</value></data>
+  <data name="Perm_Enrollment_Manage" xml:space="preserve"><value>Manage enrollments</value></data>
+  <data name="Perm_Enrollment_Import" xml:space="preserve"><value>Import class students</value></data>
+  <data name="Perm_Enrollment_Transfer" xml:space="preserve"><value>Transfer students</value></data>
+  <data name="Perm_Enrollment_RequestException" xml:space="preserve"><value>Request enrollment exceptions</value></data>
+  <data name="Perm_Enrollment_ApproveException" xml:space="preserve"><value>Approve enrollment exceptions</value></data>
+  <data name="PermModule_Groups" xml:space="preserve"><value>Groups</value></data>
+  <data name="Perm_Groups_View" xml:space="preserve"><value>View groups</value></data>
+  <data name="Perm_Groups_Manage" xml:space="preserve"><value>Manage groups</value></data>
+  <data name="PermModule_LessonPlans" xml:space="preserve"><value>Lesson plans</value></data>
+  <data name="Perm_LessonPlans_View" xml:space="preserve"><value>View lesson plans</value></data>
+  <data name="Policy_CreateStudents" xml:space="preserve"><value>Block creating and importing students</value></data>
+  <data name="Policy_CreateCourses" xml:space="preserve"><value>Block creating and importing courses</value></data>
+  <data name="Policy_CreateClasses" xml:space="preserve"><value>Block creating classes</value></data>
+  <data name="SettingCategory_Academic" xml:space="preserve"><value>Academic</value></data>
+  <data name="Setting_Students_CodeMode" xml:space="preserve"><value>Student code</value></data>
+  <data name="SettingValue_Students_CodeMode_Auto" xml:space="preserve"><value>Generated automatically</value></data>
+  <data name="SettingValue_Students_CodeMode_Manual" xml:space="preserve"><value>Entered by hand</value></data>
+  <data name="Setting_Students_CodePattern" xml:space="preserve"><value>Student code pattern</value></data>
+  <data name="Setting_Students_CriticalFields" xml:space="preserve"><value>Student fields that need approval to change</value></data>
+  <data name="Setting_Guardians_DataRequired" xml:space="preserve"><value>Guardian data is required</value></data>
+  <data name="Setting_Classes_CapacityMode" xml:space="preserve"><value>When a class is full</value></data>
+  <data name="SettingValue_Classes_CapacityMode_Warn" xml:space="preserve"><value>Warn and allow</value></data>
+  <data name="SettingValue_Classes_CapacityMode_Block" xml:space="preserve"><value>Block</value></data>
+  <data name="Setting_Blueprints_SectionLabel" xml:space="preserve"><value>Blueprint section label</value></data>
+  <data name="SettingValue_Blueprints_SectionLabel_Week" xml:space="preserve"><value>Week</value></data>
+  <data name="SettingValue_Blueprints_SectionLabel_Unit" xml:space="preserve"><value>Unit</value></data>
+  <data name="SettingValue_Blueprints_SectionLabel_Chapter" xml:space="preserve"><value>Chapter</value></data>
+  <data name="Setting_Enrollment_TransferCarriesGrades" xml:space="preserve"><value>Grades follow a transferred student</value></data>
+  <data name="SettingValue_Students_CriticalFields_NameAr" xml:space="preserve"><value>Arabic name</value></data>
+  <data name="SettingValue_Students_CriticalFields_NameEn" xml:space="preserve"><value>English name</value></data>
+  <data name="SettingValue_Students_CriticalFields_NicknameAr" xml:space="preserve"><value>Arabic nickname</value></data>
+  <data name="SettingValue_Students_CriticalFields_NicknameEn" xml:space="preserve"><value>English nickname</value></data>
+  <data name="SettingValue_Students_CriticalFields_DateOfBirth" xml:space="preserve"><value>Date of birth</value></data>
+  <data name="SettingValue_Students_CriticalFields_Gender" xml:space="preserve"><value>Gender</value></data>
+  <data name="SettingValue_Students_CriticalFields_Religion" xml:space="preserve"><value>Religion</value></data>
+  <data name="SettingValue_Students_CriticalFields_Nationality" xml:space="preserve"><value>Nationality</value></data>
+  <data name="SettingValue_Students_CriticalFields_NationalId" xml:space="preserve"><value>National ID</value></data>
+  <data name="SettingValue_Students_CriticalFields_Mobile" xml:space="preserve"><value>Mobile</value></data>
+  <data name="SettingValue_Students_CriticalFields_Photo" xml:space="preserve"><value>Photo</value></data>
+  <data name="AuditEntity_StudentChangeRequest" xml:space="preserve"><value>Student change request</value></data>
+  <data name="AuditEntity_Course" xml:space="preserve"><value>Course</value></data>
+  <data name="AuditEntity_CourseAllocation" xml:space="preserve"><value>Course allocation</value></data>
+  <data name="AuditEntity_CourseRestriction" xml:space="preserve"><value>Course restriction</value></data>
+  <data name="AuditEntity_CourseSupervisor" xml:space="preserve"><value>Course supervisor</value></data>
+  <data name="AuditEntity_Blueprint" xml:space="preserve"><value>Blueprint</value></data>
+  <data name="AuditEntity_Class" xml:space="preserve"><value>Class</value></data>
+  <data name="AuditEntity_ClassStudent" xml:space="preserve"><value>Class student</value></data>
+  <data name="AuditEntity_ClassCourse" xml:space="preserve"><value>Class course</value></data>
+  <data name="AuditEntity_ClassCourseTeacher" xml:space="preserve"><value>Class course teacher</value></data>
+  <data name="AuditEntity_TeacherCourseEligibility" xml:space="preserve"><value>Teacher eligibility</value></data>
+  <data name="AuditEntity_CourseEnrollment" xml:space="preserve"><value>Enrollment</value></data>
+  <data name="AuditEntity_EnrollmentException" xml:space="preserve"><value>Enrollment exception</value></data>
+  <data name="AuditEntity_StudentGroup" xml:space="preserve"><value>Student group</value></data>
+  <data name="AuditEntity_GroupMember" xml:space="preserve"><value>Group member</value></data>
+  <data name="AuditEntity_StudentTransfer" xml:space="preserve"><value>Student transfer</value></data>
+  <data name="Notif_Students_ChangeRequested" xml:space="preserve"><value>{StudentName} sent a change request.</value></data>
+  <data name="NotifEvent_Students_ChangeRequested" xml:space="preserve"><value>Student change request</value></data>
+  <data name="Notif_Students_ChangeRequestDecided" xml:space="preserve"><value>The change request for {StudentName} was {Decision}.</value></data>
+  <data name="NotifEvent_Students_ChangeRequestDecided" xml:space="preserve"><value>Change request decided</value></data>
+  <data name="Notif_Teaching_Assigned" xml:space="preserve"><value>You were assigned to teach {CourseName} in {ClassName} ({Role}).</value></data>
+  <data name="NotifEvent_Teaching_Assigned" xml:space="preserve"><value>Teaching assignment</value></data>
+  <data name="Notif_Blueprints_Pushed" xml:space="preserve"><value>The lesson plan of {CourseName} was updated to version {Version}.</value></data>
+  <data name="NotifEvent_Blueprints_Pushed" xml:space="preserve"><value>Lesson plan updated</value></data>
+  <data name="Notif_Enrollment_ExceptionRequested" xml:space="preserve"><value>An enrollment exception was requested for {StudentName} in {CourseName}.</value></data>
+  <data name="NotifEvent_Enrollment_ExceptionRequested" xml:space="preserve"><value>Enrollment exception requested</value></data>
+  <data name="Notif_Enrollment_ExceptionDecided" xml:space="preserve"><value>The enrollment exception for {StudentName} in {CourseName} was {Decision}.</value></data>
+  <data name="NotifEvent_Enrollment_ExceptionDecided" xml:space="preserve"><value>Enrollment exception decided</value></data>
+  <data name="Notif_Enrollment_StudentTransferred" xml:space="preserve"><value>{StudentName} moves from {FromClass} to {ToClass} on {EffectiveOn}.</value></data>
+  <data name="NotifEvent_Enrollment_StudentTransferred" xml:space="preserve"><value>Student transferred</value></data>
+  <data name="Nav_Courses" xml:space="preserve"><value>Courses</value></data>
+  <data name="Course_Title" xml:space="preserve"><value>Courses</value></data>
+  <data name="Course_New" xml:space="preserve"><value>New course</value></data>
+  <data name="Course_Edit" xml:space="preserve"><value>Edit course</value></data>
+  <data name="Course_View" xml:space="preserve"><value>Course</value></data>
+  <data name="Course_Import" xml:space="preserve"><value>Import courses</value></data>
+  <data name="Course_Created" xml:space="preserve"><value>Course created.</value></data>
+  <data name="Course_ReadOnly" xml:space="preserve"><value>This course belongs to a higher unit or you cannot edit it, so it is shown read-only.</value></data>
+  <data name="Course_Code" xml:space="preserve"><value>Code</value></data>
+  <data name="Course_CodeFormat" xml:space="preserve"><value>Letters, digits, - and _ only (up to 50 characters).</value></data>
+  <data name="Course_DescriptionAr" xml:space="preserve"><value>Description (Arabic)</value></data>
+  <data name="Course_DescriptionEn" xml:space="preserve"><value>Description (English)</value></data>
+  <data name="Course_Language" xml:space="preserve"><value>Language of instruction</value></data>
+  <data name="Course_Language_ar" xml:space="preserve"><value>Arabic</value></data>
+  <data name="Course_Language_en" xml:space="preserve"><value>English</value></data>
+  <data name="Course_Language_fr" xml:space="preserve"><value>French</value></data>
+  <data name="Course_Language_de" xml:space="preserve"><value>German</value></data>
+  <data name="Course_WeeklyPeriods" xml:space="preserve"><value>Weekly periods</value></data>
+  <data name="Course_Owner" xml:space="preserve"><value>Owner unit</value></data>
+  <data name="Course_AllocateTo" xml:space="preserve"><value>Also allocate to</value></data>
+  <data name="Course_AllocateToHelp" xml:space="preserve"><value>Optional: units that get this course right away.</value></data>
+  <data name="Course_Unit" xml:space="preserve"><value>Available at unit</value></data>
+  <data name="Course_Inherited" xml:space="preserve"><value>Inherited</value></data>
+  <data name="Course_Allocations" xml:space="preserve"><value>Allocations</value></data>
+  <data name="Course_SupervisedByMe" xml:space="preserve"><value>Supervised by me</value></data>
+  <data name="CourseStatus_Active" xml:space="preserve"><value>Active</value></data>
+  <data name="CourseStatus_Inactive" xml:space="preserve"><value>Inactive</value></data>
+  <data name="CourseImport_Title" xml:space="preserve"><value>Import courses from Excel</value></data>
+  <data name="Clients_ShortCode" xml:space="preserve"><value>Short code</value></data>
+  <data name="Clients_ShortCodeHelp" xml:space="preserve"><value>Used in student sign-in names (code@shortcode): 2-20 lower-case letters, digits or hyphens. Leave empty to derive it from the root unit code.</value></data>
 </root>

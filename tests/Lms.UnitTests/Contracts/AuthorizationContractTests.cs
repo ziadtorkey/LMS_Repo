@@ -21,7 +21,7 @@ public partial class AuthorizationContractTests
     }
 
     [Fact]
-    public void Permission_catalog_contains_exactly_the_M0_M1_and_M2_set()
+    public void Permission_catalog_contains_exactly_the_M0_to_M3_set()
     {
         string[] expected =
         [
@@ -36,6 +36,16 @@ public partial class AuthorizationContractTests
             "AcademicYears.View", "AcademicYears.Create", "AcademicYears.Update", "AcademicYears.Delete",
             "Staff.View", "Staff.Create", "Staff.Update", "Staff.Delete", "Staff.Import",
             "IdentityProviders.View", "IdentityProviders.Manage",
+            "Students.View", "Students.Create", "Students.Update", "Students.Delete", "Students.Import",
+            "Students.ApproveChanges", "Students.SelfEdit", "Students.ViewChildren",
+            "Courses.View", "Courses.Create", "Courses.Update", "Courses.Delete", "Courses.Import", "Courses.Allocate",
+            "Courses.ManageSupervisors",
+            "Blueprints.View", "Blueprints.Edit", "Blueprints.Publish",
+            "Classes.View", "Classes.Create", "Classes.Update", "Classes.Delete", "Classes.Close", "Classes.ManageCourses",
+            "TeacherAssignments.View", "TeacherAssignments.Manage",
+            "Enrollment.View", "Enrollment.Manage", "Enrollment.Import", "Enrollment.Transfer",
+            "Enrollment.RequestException", "Enrollment.ApproveException",
+            "Groups.View", "Groups.Manage", "LessonPlans.View",
         ];
         Assert.Equal(expected.Order(StringComparer.Ordinal), Permissions.All.Order(StringComparer.Ordinal));
     }
@@ -84,6 +94,18 @@ public partial class AuthorizationContractTests
             "invalid_expiry", "import_file_invalid", "import_too_many_rows", "import_not_valid", "import_in_progress",
             "import_already_committed", "provider_slug_taken", "provider_unreachable", "external_account_not_found",
             "external_account_ambiguous",
+            // M3 (students, guardians, change requests; academic structure)
+            "possible_duplicate", "student_code_taken", "student_code_required", "student_code_not_allowed",
+            "student_code_exhausted", "invalid_code_pattern", "guardian_required", "primary_guardian_required",
+            "guardian_link_exists", "guardian_incomplete", "critical_field", "change_request_pending",
+            "change_request_closed", "change_request_stale", "password_change_required",
+            "invalid_owner_unit", "course_code_taken", "course_in_use", "course_not_available", "allocation_exists",
+            "allocation_in_use", "restriction_not_met", "exception_pending", "exception_closed", "blueprint_draft_exists",
+            "blueprint_no_draft", "blueprint_stale", "blueprint_empty", "class_code_taken", "class_in_use", "class_closed",
+            "class_full", "over_capacity", "year_not_effective", "class_course_exists", "class_course_in_use",
+            "enrollment_not_optional", "already_enrolled", "not_in_class", "already_placed", "class_unit_mismatch",
+            "teacher_not_eligible", "teacher_not_in_unit", "primary_teacher_exists", "already_in_group", "not_enrolled",
+            "transfer_invalid", "too_many_items", "short_code_taken", "invalid_short_code", "teacher_already_assigned", "assignment_ended",
         ];
 
         Assert.All(fields, f => Assert.Equal(f.Name, (string)f.GetRawConstantValue()!));

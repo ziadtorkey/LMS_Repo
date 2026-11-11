@@ -12,6 +12,10 @@ public sealed class StaffModule : ILmsModule
         services.AddScoped<StaffCreator>();
         services.AddImportDefinition<Import.StaffImportDefinition>();
         services.AddScoped<StaffQueries>();
+        services.AddScoped<UpdateStaffHandler>();
+        services.AddScoped<StaffStatusHandler>();
+        services.AddScoped<DeleteStaffHandler>();
+        services.AddScoped<ShareStaffHandler>();
     }
 
     public void MapEndpoints(IEndpointRouteBuilder app) => StaffEndpoints.Map(app);

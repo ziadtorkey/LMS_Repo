@@ -36,4 +36,21 @@ public sealed class RoleAssignmentRulesTests
     public void A_role_with_a_permission_the_caller_lacks_is_refused() =>
         Assert.False(RoleAssignmentRules.CanAssign(
             new HashSet<string> { Permissions.Audit.View }, new HashSet<string> { Permissions.Roles.View }, false));
+
+    [Theory]
+    [InlineData(BuiltInRoles.Student)]
+    [InlineData(BuiltInRoles.Guardian)]
+    [InlineData(BuiltInRoles.Teacher)]
+    public void OrgAdmin_can_assign_roles_holding_self_service_permissions_nobody_on_staff_holds(string target) =>
+        Assert.True(CanAssign(BuiltInRoles.OrgAdmin, target));
+
+    [Theory]
+    [InlineData(BuiltInRoles.Student)]
+    [InlineData(BuiltInRoles.Guardian)]
+    public void Manager_can_assign_Student_and_Guardian(string target) =>
+        Assert.True(CanAssign(BuiltInRoles.Manager, target));
+
+    [Fact]
+    public void Self_service_permissions_are_only_the_own_data_ones() =>
+        Assert.Equal(["Students.SelfEdit", "Students.ViewChildren"], Permissions.SelfService.Order(StringComparer.Ordinal));
 }

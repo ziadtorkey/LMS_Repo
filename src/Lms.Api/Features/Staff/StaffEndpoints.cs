@@ -20,5 +20,27 @@ public static class StaffEndpoints
         app.MapGet(Routes.StaffPattern,
                 (Guid id, StaffQueries queries, CancellationToken ct) => queries.GetAsync(id, ct))
             .RequirePermission(Permissions.Staff.View);
+        app.MapPut(Routes.StaffPattern,
+                (Guid id, UpdateStaffRequest? request, HttpContext http, UpdateStaffHandler handler, CancellationToken ct) =>
+                    handler.UpdateAsync(id, request, http, ct))
+            .RequirePermission(Permissions.Staff.Update);
+        app.MapPut(Routes.StaffStatusPattern,
+                (Guid id, SetPersonStatusRequest? request, HttpContext http, StaffStatusHandler handler, CancellationToken ct) =>
+                    handler.SetAsync(id, request, http, ct))
+            .RequirePermission(Permissions.Staff.Update);
+        app.MapDelete(Routes.StaffPattern,
+                (Guid id, HttpContext http, DeleteStaffHandler handler, CancellationToken ct) => handler.DeleteAsync(id, http, ct))
+            .RequirePermission(Permissions.Staff.Delete);
+        app.MapPost(Routes.StaffResendInvitationPattern,
+                (Guid id, HttpContext http, UpdateStaffHandler handler, CancellationToken ct) => handler.ResendInvitationAsync(id, http, ct))
+            .RequirePermission(Permissions.Staff.Update);
+        app.MapPost(Routes.StaffSharesPattern,
+                (Guid id, ShareStaffRequest? request, HttpContext http, ShareStaffHandler handler, CancellationToken ct) =>
+                    handler.ShareAsync(id, request, http, ct))
+            .RequirePermission(Permissions.Assignments.Create);
+        app.MapDelete(Routes.StaffSharePattern,
+                (Guid id, Guid assignmentId, HttpContext http, ShareStaffHandler handler, CancellationToken ct) =>
+                    handler.UnshareAsync(id, assignmentId, http, ct))
+            .RequirePermission(Permissions.Assignments.Delete);
     }
 }

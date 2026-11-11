@@ -35,12 +35,15 @@ public static class ClientServices
             services.AddScoped<IUnitLookupApi, FakeUnitLookupApi>();
             services.AddScoped<IYearsApi, FakeYearsApi>();
             services.AddScoped<INotificationsApi, FakeNotificationsApi>();
+            services.AddSingleton<IImportsApi, FakeImportsApi>();
             services.AddScoped<INotificationConnection, FakeNotificationConnection>();
             services.AddSingleton<IClientsApi, FakeClientsApi>();
             services.AddSingleton<IOrgApi, FakeOrgApi>();
             services.AddSingleton<ITemplatesApi, FakeTemplatesApi>();
             services.AddSingleton<IConfigApi, FakeConfigApi>();
             services.AddSingleton<IStaffApi, FakeStaffApi>();
+            services.AddSingleton<IIdentityProvidersApi, FakeIdentityProvidersApi>();
+            services.AddSingleton<ICoursesApi, FakeCoursesApi>();
             services.AddSingleton<IFileUploadApi, FakeFileUploadApi>();
             services.AddScoped<AuthenticationStateProvider, FakeAuthenticationStateProvider>();
             services.AddAuthorizationCore();
@@ -60,6 +63,7 @@ public static class ClientServices
         services.AddScoped<IUnitLookupApi, UnitLookupApi>();
         services.AddScoped<IYearsApi, YearsApi>();
         services.AddScoped<INotificationsApi, NotificationsApi>();
+        services.AddScoped<IImportsApi, ImportsApi>();
         services.AddScoped<INotificationConnection, NotificationConnection>();
         services.AddHttpClient<ILmsApi, LmsApiClient>(c => c.BaseAddress = new Uri(baseAddress))
             .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>()
@@ -74,6 +78,8 @@ public static class ClientServices
         services.AddScoped<ITemplatesApi, TemplatesApi>();
         services.AddScoped<IConfigApi, ConfigApi>();
         services.AddScoped<IStaffApi, StaffApi>();
+        services.AddScoped<IIdentityProvidersApi, IdentityProvidersApi>();
+        services.AddScoped<ICoursesApi, CoursesApi>();
         services.AddScoped<IFileUploadApi, FileUploadApi>();
     }
 }
