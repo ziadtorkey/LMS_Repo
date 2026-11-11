@@ -63,8 +63,8 @@
 **Interfaces:**
 - Permissions (append): `Students.{View, Create, Update, Delete, Import, ApproveChanges, SelfEdit, ViewChildren}` (M2 appendix); `Courses.{View, Create, Update, Delete, Import, Allocate, ManageSupervisors}`; `Blueprints.{View, Edit, Publish}`; `Classes.{View, Create, Update, Delete, Close, ManageCourses}`; `TeacherAssignments.{View, Manage}`; `Enrollment.{View, Manage, Import, Transfer, RequestException, ApproveException}`; `Groups.{View, Manage}`; `LessonPlans.View`.
 - Matrix additions (explicit lists; Import only for OrgAdmin as in §3.4):
-  - OrgAdmin + `Students.{View, Create, Update, Delete, Import, ApproveChanges}`, `Courses.*` (7), `Blueprints.View`, `Classes.*` (6), `TeacherAssignments.*`, `Enrollment.*` (6), `Groups.*`, `LessonPlans.View`.
-  - Manager + `Students.{View, Create, Update, Delete, ApproveChanges}`, `Courses.{View, Create, Update, Delete, Allocate, ManageSupervisors}`, `Blueprints.View`, `Classes.*` (6), `TeacherAssignments.*`, `Enrollment.{View, Manage, Transfer, RequestException, ApproveException}`, `Groups.*`, `LessonPlans.View`.
+  - OrgAdmin + `Students.{View, Create, Update, Delete, Import, ApproveChanges}`, `Courses.*` (7), `Blueprints.*` (D46), `Classes.*` (6), `TeacherAssignments.*`, `Enrollment.*` (6), `Groups.*`, `LessonPlans.View`.
+  - Manager + `Students.{View, Create, Update, Delete, ApproveChanges}`, `Courses.{View, Create, Update, Delete, Allocate, ManageSupervisors}`, `Blueprints.*` (D46), `Classes.*` (6), `TeacherAssignments.*`, `Enrollment.{View, Manage, Transfer, RequestException, ApproveException}`, `Groups.*`, `LessonPlans.View`.
   - Supervisor + `Students.View`, `Courses.{View, Create, Update, Delete, Allocate}`, `Blueprints.*`, `Classes.View`, `TeacherAssignments.*`, `Enrollment.{View, ApproveException}`, `Groups.View`, `LessonPlans.View`.
   - Counselor + `Students.{View, Update, ApproveChanges}`, `Classes.View`, `Enrollment.{View, RequestException}`, `Groups.View`.
   - Teacher + `Students.View`, `Courses.View`, `Blueprints.View`, `Classes.View`, `TeacherAssignments.View`, `Enrollment.View`, `Groups.*`, `LessonPlans.View` (all relationship-scoped, D32).
