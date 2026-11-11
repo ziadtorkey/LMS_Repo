@@ -13,6 +13,8 @@ public static class IdentityServiceCollectionExtensions
         services.AddIdentityCore<User>(options =>
             {
                 options.User.RequireUniqueEmail = true;
+                // The user name is the email, which is validated separately: apostrophes and non-ASCII letters are legal.
+                options.User.AllowedUserNameCharacters = string.Empty;
                 options.Password.RequiredLength = 8;
                 options.Password.RequireUppercase = true;
                 options.Password.RequireLowercase = true;
