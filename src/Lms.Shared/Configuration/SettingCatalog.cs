@@ -1,3 +1,5 @@
+using Lms.Shared.People;
+
 namespace Lms.Shared.Configuration;
 
 /// <summary>JSON value kind of a setting.</summary>
@@ -7,6 +9,9 @@ public static class SettingValueKinds
     public const string Int = "Int";
     public const string String = "String";
     public const string Enum = "Enum";
+
+    /// <summary>A JSON array of distinct strings, each one of <c>AllowedValues</c> (M3).</summary>
+    public const string StringSet = "StringSet";
 }
 
 /// <summary>UI grouping of settings.</summary>
@@ -16,6 +21,7 @@ public static class SettingCategories
     public const string Files = "Files";
     public const string Features = "Features";
     public const string People = "People";
+    public const string Academic = "Academic";
 }
 
 /// <summary>
@@ -46,6 +52,18 @@ public static class SettingCatalog
         new(FeatureFlags.Messaging.Name, SettingValueKinds.Bool, SettingCategories.Features, "false"),
         new(FeatureFlags.GuardianPortal.Name, SettingValueKinds.Bool, SettingCategories.Features, "false"),
         new(SettingKeys.StaffExpiryNoticeDays.Name, SettingValueKinds.Int, SettingCategories.People, "14", Min: 0, Max: 90),
+        new(SettingKeys.StudentsCodeMode.Name, SettingValueKinds.Enum, SettingCategories.People, "\"Auto\"",
+            AllowedValues: StudentCodeModes.All),
+        new(SettingKeys.StudentsCodePattern.Name, SettingValueKinds.String, SettingCategories.People, "\"{Seq:6}\""),
+        new(SettingKeys.StudentsCriticalFields.Name, SettingValueKinds.StringSet, SettingCategories.People,
+            "[\"NameAr\",\"NameEn\",\"DateOfBirth\",\"Gender\",\"Religion\",\"Nationality\",\"NationalId\"]",
+            AllowedValues: StudentFields.Requestable),
+        new(SettingKeys.GuardiansDataRequired.Name, SettingValueKinds.Bool, SettingCategories.People, "false"),
+        new(SettingKeys.ClassesCapacityMode.Name, SettingValueKinds.Enum, SettingCategories.Academic, "\"Warn\"",
+            AllowedValues: ["Warn", "Block"]),
+        new(SettingKeys.BlueprintsSectionLabel.Name, SettingValueKinds.Enum, SettingCategories.Academic, "\"Week\"",
+            AllowedValues: ["Week", "Unit", "Chapter"]),
+        new(SettingKeys.EnrollmentTransferCarriesGrades.Name, SettingValueKinds.Bool, SettingCategories.Academic, "true"),
     ];
 
     /// <summary>The definition with this exact (case-sensitive) name, or null.</summary>
