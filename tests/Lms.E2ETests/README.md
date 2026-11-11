@@ -131,3 +131,13 @@ Notes:
 - **`MockOidc.SignInAsync`** fills the mock's sign-in form: the user name becomes `sub`, the claims JSON carries `email`. The issuer is `http://localhost:8090/client-a` for the browser *and* the API (the server builds `iss` from the request host), so never use the container name.
 - **Dedicated seed user `dual-e2e`** is a Teacher in the school (KG) and in the university (FCI-1-GEN), used only here.
 - The person signs in from the base browser context; the admin works in a second one, so no password session interferes.
+
+## Scenarios (M2, plan Task 36: `M2/ImportTests`)
+Staff Excel import as the seeded school group's Org Admin: the template is downloaded in the wizard, filled with ClosedXML (`Infrastructure/XlsxFiles`) and uploaded; people are teachers at the seeded KG section with unique emails (`M2Names`). The wizard does not move on after Commit (#314), so the outcome is checked through the batch API and the staff list.
+
+| Test | Covers |
+|---|---|
+| `Staff_import_with_one_bad_row_shows_preview_errors_and_error_report_then_fixed_file_imports_all` | X-06, FR-STF-04: 20 rows with one existing email are Invalid, no commit offered, the error report has an `Errors` / `الأخطاء` column and the bad row filled #FFC7CE; the fixed file commits, the list shows 20, Mailpit has 20 invitations |
+| `Arabic_template_headers_are_accepted` | X-06, D34: a file with Arabic headers validates in either UI language |
+| `Commit_after_a_conflicting_person_appears_imports_nothing` | all-or-nothing (Review Focus 3): a person created between preview and commit makes the commit refuse; nobody is imported, no invitation is sent |
+| `Wizard_shows_the_done_step_after_a_successful_commit` (skipped) | expected Done step, waits for #314 |
