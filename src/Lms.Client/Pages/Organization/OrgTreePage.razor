@@ -72,6 +72,16 @@ else
                             <MudIconButton Icon="@Icons.Material.Filled.DriveFileMove" Size="Size.Small" aria-label="@L["Move_Title"]"
                                            OnClick="() => MoveAsync(unit)" data-testid="@($"org-move-{unit.Id}")" />
                         }
+                        @if (PermState.Has(Permissions.OrgUnits.Create) && unit.ParentId is not null)
+                        {
+                            <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" Size="Size.Small" aria-label="@L["Copy_Title"]"
+                                           OnClick="() => CopyAsync(unit)" data-testid="@($"org-copy-{unit.Id}")" />
+                        }
+                        @if (PermState.Has(Permissions.Templates.Create))
+                        {
+                            <MudIconButton Icon="@Icons.Material.Filled.Bookmark" Size="Size.Small" aria-label="@L["Templates_SaveAs"]"
+                                           OnClick="() => SaveTemplateAsync(unit)" data-testid="@($"org-template-{unit.Id}")" />
+                        }
                         @if (PermState.Has(Permissions.OrgUnits.Delete) && unit.ParentId is not null)
                         {
                             <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error"
@@ -178,6 +188,23 @@ else
             Snackbar.Add(L["Common_Saved"], Severity.Success);
             await LoadAsync();
         }
+    }
+
+    private async Task CopyAsync(OrgUnitNodeDto unit)
+    {
+        _error = null;
+        IReadOnlyList<OrgUnitNodeDto> all = [];
+        if (!await RunAsync(async () => all = await Api.GetOrgUnitsAsync(null))) return;
+        await ShowDialogAsync<CopyBranchDialog>(L["Copy_Title"], new DialogParameters<CopyBranchDialog>
+        {
+            { x => x.Source, unit }, { x => x.AllUnits, all },
+        });
+    }
+
+    private Task SaveTemplateAsync(OrgUnitNodeDto unit)
+    {
+        _error = null;
+        return ShowDialogAsync<SaveTemplateDialog>(L["Templates_SaveAs"], new DialogParameters<SaveTemplateDialog> { { x => x.Source, unit } });
     }
 
     private async Task MoveAsync(OrgUnitNodeDto unit)

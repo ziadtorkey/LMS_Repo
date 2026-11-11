@@ -140,6 +140,24 @@ public sealed class AcademicFlagsTests(LmsApiFactory factory) : IDisposable
     }
 
     [Fact]
+    public async Task Deleting_a_unit_that_is_a_transfer_target_is_409_unit_in_use()
+    {
+        var (tree, admin) = await SetUpAsync("AF9");
+        await PutAsync(admin, tree.School2, true, null);
+        await PutAsync(admin, tree.School1, true, tree.School2.Id);
+
+        var response = await _host.SendAsync(HttpMethod.Delete, Routes.OrgUnit(tree.School2.Id), admin);
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        Assert.Equal(ProblemCodes.unit_in_use, await CodeAsync(response));
+
+        // Deactivating a referenced target is allowed; only deleting is refused. Once nobody points at it, delete works.
+        Assert.Equal(HttpStatusCode.OK, (await PutAsync(admin, tree.School1, true, null)).StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent,
+            (await _host.SendAsync(HttpMethod.Delete, Routes.OrgUnit(tree.School2.Id), admin)).StatusCode);
+    }
+
+    [Fact]
     public async Task Clearing_flag_on_a_unit_also_clears_its_own_mapping_target()
     {
         var (tree, admin) = await SetUpAsync("AF7");

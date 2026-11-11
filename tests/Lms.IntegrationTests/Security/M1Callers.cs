@@ -88,6 +88,20 @@ public sealed class M1Callers(LmsApiFactory factory)
         return Factory.CreateClient().SendAsync(request);
     }
 
+    /// <summary>Sends as the user of any role assignment, in that assignment's context.</summary>
+    public Task<HttpResponseMessage> SendAsAsync(RoleAssignment assignment, HttpMethod method, string url, object? body = null)
+    {
+        var request = new HttpRequestMessage(method, url);
+        if (body is not null)
+        {
+            request.Content = JsonContent.Create(body, body.GetType(), options: Json);
+        }
+
+        request.Headers.Add(TestAuthHandler.UserHeader, assignment.UserId.ToString());
+        request.Headers.Add(ContextHeader.Name, assignment.Id.ToString());
+        return Factory.CreateClient().SendAsync(request);
+    }
+
     /// <summary>Sends as the caller and returns the JSON body; fails when the status is not a success.</summary>
     public async Task<JsonElement> SendOkAsync(Caller caller, HttpMethod method, string url, object? body = null)
     {

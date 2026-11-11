@@ -31,8 +31,9 @@ public sealed class BuiltInRoleReconciler(LmsDbContext db)
             var definition = BuiltInRoles.All.FirstOrDefault(d => d.Key == role.BuiltInKey);
             if (definition is not null)
             {
-                // Versions 0 → 1: the defaults that did not exist in M0.
-                foreach (var permission in definition.DefaultPermissions.Where(p => !BuiltInRoleDefaults.M0Baseline.Contains(p)))
+                // Only the defaults introduced after the role's version (0 → M1 + M2 sets, 1 → M2 set).
+                var version = role.DefaultsVersion;
+                foreach (var permission in definition.DefaultPermissions.Where(p => BuiltInRoleDefaults.IntroducedIn(p) > version))
                 {
                     if (!existing.Contains((role.Id, permission)))
                     {

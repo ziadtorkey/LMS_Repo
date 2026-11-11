@@ -20,7 +20,8 @@ namespace Lms.Api.Features.Assignments;
 /// invitation; there is no user lookup, so one client cannot browse another client's users.
 /// </summary>
 public sealed class CreateAssignmentHandler(
-    LmsDbContext db, IClock clock, CallerPermissions caller, IAccountEmails emails, ISettingsResolver settings, ILogger<CreateAssignmentHandler> logger)
+    LmsDbContext db, IClock clock, CallerPermissions caller, IAccountEmails emails, ISettingsResolver settings,
+    AssignmentNotifier notifier, IRoleGrantGuard roleGuard, ILogger<CreateAssignmentHandler> logger)
 {
     private const int MaxEmailLength = 256;
 
@@ -51,11 +52,23 @@ public sealed class CreateAssignmentHandler(
             return ApiProblems.NotFound();
         }
 
+        // Student and guardian assignments are managed by the people services, never by hand.
+        if (role.BaseKind != RoleBaseKind.Staff)
+        {
+            return ApiProblems.BadRequest(ProblemCodes.invalid_role_kind);
+        }
+
         if (!await AssignmentQueries.CallerMayManageRoleAsync(db, caller, role.Id, ct))
         {
             return Results.Problem(
                 statusCode: StatusCodes.Status403Forbidden, title: "Forbidden",
                 extensions: new Dictionary<string, object?> { ["code"] = ProblemCodes.permission_escalation });
+        }
+
+        var grant = await roleGuard.CheckAsync(role, unit, ct);
+        if (!grant.Allowed)
+        {
+            return AccessProblem.From(grant, http);
         }
 
         var normalized = email.ToUpperInvariant();
@@ -99,6 +112,8 @@ public sealed class CreateAssignmentHandler(
         {
             await InviteAsync(user, unit, ct);
         }
+
+        await notifier.RoleAssignedAsync(assignment, role, unit, ct);
 
         return await AssignmentQueries.GetAsync(db, clock, assignment.Id, ct) is { } dto
             ? Results.Created(Routes.Assignment(assignment.Id), dto)

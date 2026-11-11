@@ -22,6 +22,7 @@ public static class OrgUnitEndpoints
         app.MapPut(Routes.OrgUnitPattern, UpdateAsync).RequireAuthorization().RequirePermission(Permissions.OrgUnits.Update);
         app.MapPut(Routes.OrgUnitStatusPattern, SetStatusAsync).RequireAuthorization().RequirePermission(Permissions.OrgUnits.Update);
         app.MapPut(Routes.OrgUnitAcademicFlagsPattern, AcademicFlagsAsync).RequireAuthorization().RequirePermission(Permissions.OrgUnits.Update);
+        app.MapPut(Routes.OrgUnitMovePattern, MoveAsync).RequireAuthorization().RequirePermission(Permissions.OrgUnits.Move);
         app.MapDelete(Routes.OrgUnitPattern, DeleteAsync).RequireAuthorization().RequirePermission(Permissions.OrgUnits.Delete);
         return app;
     }
@@ -148,6 +149,30 @@ public static class OrgUnitEndpoints
     {
         var access = await http.CheckUnitAsync(Permissions.OrgUnits.Update, id, ct);
         return access.Problem ?? await handler.HandleAsync(access.Unit!, request, ct);
+    }
+
+    private static async Task<IResult> MoveAsync(
+        Guid id, MoveOrgUnitRequest request, HttpContext http, MoveOrgUnitHandler handler, OrgUnitQueries queries, CancellationToken ct)
+    {
+        if (request.NewParentId == Guid.Empty)
+        {
+            return OrgUnitValidators.ToProblem(new Dictionary<string, string[]> { [nameof(request.NewParentId)] = ["required"] });
+        }
+
+        // Both ends need the permission at their own unit; either one outside the caller's scope is a 404.
+        var source = await http.CheckUnitAsync(Permissions.OrgUnits.Move, id, ct);
+        if (source.Problem is not null)
+        {
+            return source.Problem;
+        }
+
+        var target = await http.CheckUnitAsync(Permissions.OrgUnits.Move, request.NewParentId, ct);
+        if (target.Problem is not null)
+        {
+            return target.Problem;
+        }
+
+        return await handler.HandleAsync(source.Unit!, target.Unit!, ct) ?? Results.Ok(await queries.GetNodeAsync(source.Unit!, ct));
     }
 
     private static async Task<IResult> DeleteAsync(Guid id, HttpContext http, DeleteOrgUnitHandler handler, CancellationToken ct)

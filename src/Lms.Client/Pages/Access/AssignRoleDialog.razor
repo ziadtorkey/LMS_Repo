@@ -1,7 +1,12 @@
 @using Lms.Client.Services.Api
 @using Lms.Shared.Access
+@using Lms.Client.Pages.Staff
+@using Lms.Shared.Authorization
 @using Lms.Shared.Organizations
+@using Lms.Shared.People
 @inject IAccessAdminApi Api
+@inject IStaffApi StaffApi
+@inject IDialogService Dialogs
 @inject NavigationManager Navigation
 
 @* Assign a role by email (new users are invited), or edit the validity of an existing assignment. *@
@@ -15,13 +20,14 @@
 
             @if (Existing is null)
             {
-                <MudTextField T="string" @bind-Value="_email" Label="@L["Assignments_Email"]" InputType="InputType.Email"
-                              Required="true" RequiredError="@L["Common_Required"]" dir="ltr" data-testid="assign-email" />
-                <MudText Typo="Typo.caption">@L["Assignments_NewUserHint"]</MudText>
-                <MudTextField T="string" @bind-Value="_nameAr" Label="@L["Common_NameAr"]" dir="rtl" lang="ar" data-testid="assign-name-ar" />
-                <MudTextField T="string" @bind-Value="_nameEn" Label="@L["Common_NameEn"]" dir="ltr" lang="en" data-testid="assign-name-en" />
+                <MudAutocomplete T="StaffSummaryDto" Label="@L["Assign_Person"]" Placeholder="@L["Assign_PersonSearch"]"
+                                 Value="_person" ValueChanged="p => _person = p" SearchFunc="SearchStaffAsync"
+                                 ToStringFunc="DisplayStaff" DebounceInterval="300" MaxItems="20" Clearable="true"
+                                 data-testid="assign-person" />
+                <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="CreateStaffAsync"
+                           data-testid="assign-create-staff">@L["Assign_CreateStaff"]</MudButton>
                 <MudSelect T="Guid" @bind-Value="_roleId" Label="@L["Assignments_Role"]" data-testid="assign-role">
-                    @foreach (var role in Roles)
+                    @foreach (var role in StaffRoles)
                     {
                         <MudSelectItem Value="@role.Id">@CultureText.Pick(role.NameAr, role.NameEn)</MudSelectItem>
                     }
@@ -54,7 +60,7 @@
 </MudDialog>
 
 @code {
-    private string _email = "", _nameAr = "", _nameEn = "";
+    private StaffSummaryDto? _person;
     private Guid _roleId, _unitId;
     private DateTime? _validFrom, _validTo;
     private string? _error;
@@ -62,6 +68,8 @@
 
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public IReadOnlyList<RoleDto> Roles { get; set; } = [];
+    /// <summary>Only Staff-kind roles can be given to staff members.</summary>
+    private IEnumerable<RoleDto> StaffRoles => Roles.Where(r => r.BaseKind == RoleBaseKinds.Staff);
     [Parameter] public IReadOnlyList<OrgUnitNodeDto> Units { get; set; } = [];
     [Parameter] public Guid? DefaultUnitId { get; set; }
     /// <summary>When set the dialog only edits the validity dates of this assignment.</summary>
@@ -75,8 +83,28 @@
             _validTo = Existing.ValidTo?.ToDateTime(TimeOnly.MinValue);
             return;
         }
-        _roleId = Roles.FirstOrDefault()?.Id ?? Guid.Empty;
+        _roleId = StaffRoles.FirstOrDefault()?.Id ?? Guid.Empty;
         _unitId = DefaultUnitId ?? Units.FirstOrDefault()?.Id ?? Guid.Empty;
+    }
+
+    private string DisplayStaff(StaffSummaryDto? person) => person is null ? "" :
+        $"{CultureText.Pick(person.NameAr, person.NameEn)} ({person.Email})";
+
+    private async Task<IEnumerable<StaffSummaryDto>> SearchStaffAsync(string? text, CancellationToken ct)
+    {
+        IEnumerable<StaffSummaryDto> found = [];
+        await ApiCalls.RunAsync(async () =>
+            found = (await StaffApi.ListAsync(new StaffQuery(null, true, null, PersonStatuses.Active,
+                string.IsNullOrWhiteSpace(text) ? null : text.Trim(), true, null, 1, 20), ct)).Items,
+            Navigation, L, message => _error = message);
+        return found;
+    }
+
+    private async Task CreateStaffAsync()
+    {
+        var dialog = await Dialogs.ShowAsync<CreateStaffDialog>(L["Staff_New"], new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        if (await dialog.Result is { Canceled: false, Data: StaffDetailDto created })
+            _person = created.Summary;
     }
 
     /// <summary>True when the validity window is empty-ended or ordered.</summary>
@@ -90,7 +118,7 @@
             _error = L["Assignments_DateOrder"];
             return;
         }
-        if (Existing is null && string.IsNullOrWhiteSpace(_email))
+        if (Existing is null && _person is null)
         {
             _error = L["Common_Required"];
             return;
@@ -101,9 +129,7 @@
         var to = _validTo is { } t ? DateOnly.FromDateTime(t) : (DateOnly?)null;
         var saved = await ApiCalls.RunAsync(
             () => Existing is null
-                ? Api.CreateAssignmentAsync(new CreateAssignmentRequest(_email.Trim(),
-                    string.IsNullOrWhiteSpace(_nameAr) ? null : _nameAr.Trim(),
-                    string.IsNullOrWhiteSpace(_nameEn) ? null : _nameEn.Trim(), _roleId, _unitId, from, to))
+                ? Api.CreateAssignmentAsync(new CreateAssignmentRequest(_person!.Email, null, null, _roleId, _unitId, from, to))
                 : Api.UpdateAssignmentAsync(Existing.Id, new UpdateAssignmentRequest(from, to)),
             Navigation, L, message => _error = message);
         _saving = false;
