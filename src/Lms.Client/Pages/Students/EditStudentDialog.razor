@@ -1,0 +1,109 @@
+@using System.Text.Json
+@using Lms.Client.Components
+@using Lms.Client.Components.People
+@using Lms.Client.Services.Api
+@using Lms.Shared.Configuration
+@using Lms.Shared.People
+@inject IStudentsApi Api
+@inject IConfigApi Config
+@inject IDialogService Dialogs
+@inject NavigationManager Navigation
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form">
+            <MudStack Spacing="3">
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" data-testid="dialog-error">@_error</MudAlert>
+                }
+
+                @if (_manualCode)
+                {
+                    <MudTextField T="string" @bind-Value="_code" Label="@L["Student_Code"]" Required="true" RequiredError="@L["Common_Required"]"
+                                  MaxLength="30" dir="ltr" data-testid="student-code" />
+                }
+
+                <StudentDataFields Model="_data" HomeUnitId="_homeUnitId" />
+                <UnitPicker Value="_homeUnitId" ValueChanged="OnHomeUnitChanged" Label="@L["Staff_HomeUnit"]" Required="true" TestId="student-home-unit" />
+            </MudStack>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="() => SaveAsync(false)" Disabled="_saving"
+                   data-testid="dialog-save">@L["Common_Save"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired] public StudentDetailDto Student { get; set; } = default!;
+
+    private MudForm _form = default!;
+    private StudentDataModel _data = new();
+    private Guid? _homeUnitId;
+    private string _code = "";
+    private bool _manualCode, _saving;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _data = StudentDataModel.From(Student);
+        _homeUnitId = Student.Summary.HomeOrgUnitId;
+        _code = Student.Summary.StudentCode;
+        await LoadModeAsync(Student.Summary.HomeOrgUnitId);
+    }
+
+    /// <summary>The code can be edited by hand only while the unit's code mode is Manual (D25); the mode is a convenience, so a failed read means Auto.</summary>
+    private async Task LoadModeAsync(Guid unit)
+    {
+        _manualCode = false;
+        await ApiCalls.RunAsync(async () =>
+        {
+            var settings = await Config.GetSettingsAsync(unit);
+            var mode = settings.FirstOrDefault(s => s.Name == SettingKeys.StudentsCodeMode.Name)?.ValueJson;
+            _manualCode = mode is not null && JsonSerializer.Deserialize<string>(mode) == StudentCodeModes.Manual;
+        }, Navigation, L, _ => { });
+    }
+
+    /// <summary>A stored photo belongs to the unit it was uploaded for, so a new home unit clears it.</summary>
+    private async Task OnHomeUnitChanged(Guid? id)
+    {
+        if (id is not { } unit || unit == _homeUnitId) return;
+        _data.PhotoFileId = null;
+        _homeUnitId = unit;
+        await LoadModeAsync(unit);
+    }
+
+    private async Task SaveAsync(bool confirmDuplicate)
+    {
+        _error = null;
+        await _form.ValidateAsync();
+        if (!_form.IsValid || _homeUnitId is null) return;
+        var request = new UpdateStudentRequest(_data.ToInput(), _homeUnitId.Value, _manualCode ? _code.Trim() : null, confirmDuplicate);
+
+        _saving = true;
+        var duplicate = false;
+        int? count = null;
+        var saved = await ApiCalls.RunAsync(
+            async () =>
+            {
+                try { await Api.UpdateAsync(Student.Summary.Id, request); }
+                catch (ApiProblemException ex) when (ex.Code == "possible_duplicate") { duplicate = true; count = ex.Count; }
+            },
+            Navigation, L, message => _error = message);
+        _saving = false;
+
+        if (duplicate)
+        {
+            var confirmed = await Dialogs.ShowMessageBoxAsync(L["Student_Edit"],
+                count is { } n ? L["Student_PossibleDuplicate", n].Value : L["Error_possible_duplicate"].Value,
+                yesText: L["Student_SaveAnyway"], cancelText: L["Common_Cancel"]);
+            if (confirmed == true) await SaveAsync(true);
+            return;
+        }
+        if (saved) MudDialog.Close(DialogResult.Ok(true));
+    }
+}

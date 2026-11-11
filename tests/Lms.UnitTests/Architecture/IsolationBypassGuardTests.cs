@@ -45,6 +45,8 @@ public sealed class IsolationBypassGuardTests
             "effective policies set on ancestors above the caller's scope (M1 Task 12, #94)",
         ["src/Lms.Infrastructure/Organizations/OrgPolicyReader.cs"] =
             "policies set on ancestors above the caller's scope, to show blocked permissions in the org tree (M1 Task 9, #99)",
+        ["src/Lms.Api/Features/Classes/ClassLookups.cs"] =
+            "years inherited from ancestors, per-client class code uniqueness and ancestor Teacher assignments for the homeroom check; client-limited, live rows, no rows returned (M3 Task 13)",
         ["src/Lms.Api/Features/Staff/StaffQueries.cs"] =
             "staff shared into the caller's scope have a home unit outside it; rows limited to this client and an in-scope assignment (M2 Task 10)",
         ["src/Lms.Api/Features/OrgUnits/AcademicFlagsHandler.cs"] =
@@ -75,6 +77,8 @@ public sealed class IsolationBypassGuardTests
             "a user's account status derives from their profiles in every client; only that user's statuses are read (M2 Task 6, #158)",
         ["src/Lms.Infrastructure/People/StudentCodeGenerator.cs"] =
             "student codes are unique per client across all schools and for deleted students; client matched, only a yes/no leaves (M3 Task 18, #226)",
+        ["src/Lms.Api/Features/Enrollment/EnrollmentQueries.cs"] =
+            "names of the course of a class course, owned by an ancestor unit above the caller's scope; names only, for class courses the caller already sees; client matched, deleted excluded (M3 Task 24, #232)",
         ["src/Lms.Infrastructure/Enrollment/PlacementGuard.cs"] =
             "the academic year and the course restrictions of a class sit at ancestor units above the caller's scope; an invisible restriction must never mean no restriction; client matched, deleted rows excluded (M3 Task 24, #232)",
         ["src/Lms.Infrastructure/People/StaffBackfill.cs"] =
