@@ -27,6 +27,14 @@ public sealed class ApiHttp(HttpClient http, IContextStore context)
         using var response = await SendCoreAsync(method, route, body, ct);
     }
 
+    /// <summary>Sends a multipart/raw body (file uploads) and reads the JSON response.</summary>
+    public async Task<TResponse?> UploadAsync<TResponse>(string route, HttpContent content, CancellationToken ct = default)
+    {
+        using var response = await SendCoreAsync(HttpMethod.Post, route, null, ct, content);
+        var text = await response.Content.ReadAsStringAsync(ct);
+        return string.IsNullOrWhiteSpace(text) ? default : JsonSerializer.Deserialize<TResponse>(text, JsonSerializerOptions.Web);
+    }
+
     public async Task<(Stream Content, string FileName)> DownloadAsync(string route, CancellationToken ct = default)
     {
         using var response = await SendCoreAsync(HttpMethod.Get, route, null, ct);
@@ -39,13 +47,16 @@ public sealed class ApiHttp(HttpClient http, IContextStore context)
         return (buffer, name);
     }
 
-    private async Task<HttpResponseMessage> SendCoreAsync(HttpMethod method, string route, object? body, CancellationToken ct)
+    private async Task<HttpResponseMessage> SendCoreAsync(
+        HttpMethod method, string route, object? body, CancellationToken ct, HttpContent? raw = null)
     {
         using var request = new HttpRequestMessage(method, route.TrimStart('/'));
         if (context.ActiveAssignmentId is { } id)
             request.Headers.Add(ContextHeader.Name, id.ToString());
         request.Headers.AcceptLanguage.ParseAdd(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName);
-        if (body is not null)
+        if (raw is not null)
+            request.Content = raw;
+        else if (body is not null)
             request.Content = JsonContent.Create(body, body.GetType());
 
         var response = await http.SendAsync(request, ct);

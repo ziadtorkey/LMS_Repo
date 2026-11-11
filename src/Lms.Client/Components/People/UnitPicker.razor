@@ -1,0 +1,26 @@
+@using Lms.Client.Services.Api
+@using Lms.Shared.Organizations
+
+@* Org unit dropdown over the units the user can see, ordered as a tree (depth-indented). *@
+<MudSelect T="Guid" Value="Value" ValueChanged="ValueChanged" Label="@(Label ?? L["Assignments_Unit"].Value)"
+           Required="Required" RequiredError="@L["Common_Required"]" data-testid="@TestId">
+    @foreach (var unit in _ordered)
+    {
+        <MudSelectItem Value="@unit.Id" data-testid="@($"{TestId}-option-{unit.Code}")">
+            @(new string(' ', unit.Depth * 3) + CultureText.Pick(unit.NameAr, unit.NameEn))
+        </MudSelectItem>
+    }
+</MudSelect>
+
+@code {
+    private IReadOnlyList<OrgUnitNodeDto> _ordered = [];
+
+    [Parameter] public IReadOnlyList<OrgUnitNodeDto> Units { get; set; } = [];
+    [Parameter] public Guid Value { get; set; }
+    [Parameter] public EventCallback<Guid> ValueChanged { get; set; }
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public bool Required { get; set; } = true;
+    [Parameter] public string TestId { get; set; } = "unit-picker";
+
+    protected override void OnParametersSet() => _ordered = UnitTree.Order(Units);
+}

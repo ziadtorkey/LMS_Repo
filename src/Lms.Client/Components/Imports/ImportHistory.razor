@@ -1,0 +1,36 @@
+@using Lms.Client.Services.Api
+@using Lms.Shared.Imports
+@inject IImportsApi Api
+
+<MudText Typo="Typo.h6" Class="mt-4 mb-2">@L["Import_History"]</MudText>
+<ServerTable T="ImportBatchDto" @ref="_table" ServerData="LoadAsync">
+    <HeaderContent>
+        <MudTh>@L["Import_File"]</MudTh>
+        <MudTh>@L["Assignments_Unit"]</MudTh>
+        <MudTh>@L["Common_Status"]</MudTh>
+        <MudTh>@L["Import_Rows"]</MudTh>
+        <MudTh>@L["Audit_When"]</MudTh>
+    </HeaderContent>
+    <RowTemplate Context="batch">
+        <MudTd DataLabel="@L["Import_File"]"><span dir="ltr">@batch.FileName</span></MudTd>
+        <MudTd DataLabel="@L["Assignments_Unit"]">@CultureText.Pick(batch.OrgUnitNameAr, batch.OrgUnitNameEn)</MudTd>
+        <MudTd DataLabel="@L["Common_Status"]"><ImportStatusChip Status="@batch.Status" /></MudTd>
+        <MudTd DataLabel="@L["Import_Rows"]">@(batch.CreatedCount ?? batch.RowCount)</MudTd>
+        <MudTd DataLabel="@L["Audit_When"]"><span dir="ltr">@batch.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</span></MudTd>
+    </RowTemplate>
+</ServerTable>
+
+@code {
+    private ServerTable<ImportBatchDto> _table = default!;
+
+    [Parameter, EditorRequired] public string Kind { get; set; } = "";
+
+    /// <summary>Reloads the list (call after a batch is committed or discarded).</summary>
+    public Task ReloadAsync() => _table.ReloadAsync();
+
+    private async Task<TableData<ImportBatchDto>> LoadAsync(TableState state, CancellationToken ct)
+    {
+        var page = await Api.ListAsync(Kind, state.Page + 1, state.PageSize, ct);
+        return new TableData<ImportBatchDto> { Items = page.Items, TotalItems = page.Total };
+    }
+}
