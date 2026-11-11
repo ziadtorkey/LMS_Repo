@@ -131,7 +131,10 @@ public sealed class ConfigurationTests(E2EFixture fixture) : E2ETestBase(fixture
     private async Task SignInAsOrgAdminAsync()
     {
         await new LoginPage(Page).SignInAsync(E2ESettings.SeedUser("orgadmin"), Settings.Password);
-        await new ShellPage(Page).WaitReadyAsync();
+        var shell = new ShellPage(Page);
+        await shell.WaitReadyAsync();
+        // The context is picked after the shell renders; opening a page before that answers 403 and shows "no access".
+        await Expect(shell.ContextSwitcher).ToBeVisibleAsync();
     }
 
     private async Task AssertDirectionAsync(string culture) =>

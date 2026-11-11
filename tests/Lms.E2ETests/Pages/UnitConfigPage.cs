@@ -60,7 +60,11 @@ public sealed class UnitConfigPage(IPage page, string culture)
     {
         if (await PolicySwitch(key).IsCheckedAsync() != on)
         {
-            await PolicySwitch(key).SetCheckedAsync(on);
+            // The switch flips at once; wait for the server to answer before the test navigates away, or the
+            // request can be cancelled mid-flight and the policy is never stored.
+            await page.RunAndWaitForResponseAsync(
+                async () => await PolicySwitch(key).SetCheckedAsync(on),
+                response => response.Url.Contains("/policies/", StringComparison.Ordinal) && response.Request.Method != "GET");
         }
 
         await Expect(PolicySwitch(key)).ToBeCheckedAsync(new() { Checked = on });

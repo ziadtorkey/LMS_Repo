@@ -11,7 +11,8 @@ public sealed class RolesAdminPage(IPage page)
     public async Task OpenAsync()
     {
         await page.GotoAsync("/roles");
-        await Expect(Table).ToBeVisibleAsync();
+        // A full page load takes about 11 s before the shell renders (#275); the 5 s expect default is too short.
+        await Table.WaitForAsync();
     }
 
     /// <summary>The table row whose text contains <paramref name="name"/> (current UI language).</summary>
