@@ -43,6 +43,20 @@ public sealed class StudentProfilePageTests : StudentsTestContext
     }
 
     [Fact]
+    public async Task Nationality_is_shown_as_the_localized_country_name()
+    {
+        Culture.Current = new CultureInfo("en");
+        var cut = await RenderPageAsync(Permissions.Students.View);
+        var english = Nationalities.Find("EG")!.NameEn;
+        Assert.Contains(english, cut.WaitForElement("[data-testid=profile-nationality]").TextContent);
+        Assert.DoesNotContain("EG", cut.Find("[data-testid=profile-nationality]").TextContent.Replace(english, ""));
+
+        Culture.Current = new CultureInfo("ar");
+        var arabic = Render<StudentProfilePage>(p => p.Add(x => x.Id, Student.Summary.Id));
+        Assert.Contains(Nationalities.Find("EG")!.NameAr, arabic.WaitForElement("[data-testid=profile-nationality]").TextContent);
+    }
+
+    [Fact]
     public async Task Header_links_to_current_class_or_shows_unplaced()
     {
         var cut = await RenderPageAsync(Permissions.Students.View);
