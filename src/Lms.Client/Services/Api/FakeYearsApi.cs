@@ -19,6 +19,8 @@ public sealed class FakeYearsApi : IYearsApi
 
     /// <summary>When set, the next mutating call throws it (tests simulate server problems).</summary>
     public Exception? NextFailure { get; set; }
+    /// <summary>Unit asked in the last effective-years read (null = context default).</summary>
+    public Guid? LastEffectiveUnit { get; private set; }
     public SaveAcademicYearRequest? LastYear { get; private set; }
     public SaveTermRequest? LastTerm { get; private set; }
     public SaveCalendarEventRequest? LastEvent { get; private set; }
@@ -135,9 +137,9 @@ public sealed class FakeYearsApi : IYearsApi
         return Task.CompletedTask;
     }
 
-    public Task<IReadOnlyList<CalendarEventDto>> GetCalendarAsync(Guid yearId, Guid orgUnitId, CancellationToken ct = default) =>
+    public Task<IReadOnlyList<CalendarEventDto>> GetCalendarAsync(Guid yearId, Guid? orgUnitId, CancellationToken ct = default) =>
         Task.FromResult<IReadOnlyList<CalendarEventDto>>(_events.Where(e => e.AcademicYearId == yearId)
-            .Select(e => e with { IsInherited = e.OrgUnitId != orgUnitId }).OrderBy(e => e.StartDate).ToList());
+            .Select(e => e with { IsInherited = e.OrgUnitId != (orgUnitId ?? FakeUnits.GroupId) }).OrderBy(e => e.StartDate).ToList());
 
     public Task<CalendarEventDto> CreateEventAsync(SaveCalendarEventRequest request, CancellationToken ct = default)
     {

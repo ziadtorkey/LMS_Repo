@@ -37,6 +37,8 @@ else if (_failed)
 }
 else
 {
+    @if (_hasPicker)
+    {
     <MudSelect T="Guid" Value="_unitId" ValueChanged="UnitChangedAsync" Label="@L["Assignments_Unit"]" Class="mb-3"
                Style="max-width:360px" data-testid="unit-picker">
         @foreach (var unit in _units)
@@ -44,6 +46,7 @@ else
             <MudSelectItem Value="@unit.Id">@(new string(' ', unit.Depth * 3) + CultureText.Pick(unit.NameAr, unit.NameEn))</MudSelectItem>
         }
     </MudSelect>
+    }
 
     @if (_context is { } ctx)
     {
@@ -71,6 +74,7 @@ else
                 var y = year;
                 var closed = y.Status == AcademicYearStatuses.Closed;
                 var editable = !y.IsInherited && !closed && Perms.Has(Permissions.AcademicYears.Update);
+                var calendarEditable = !closed && Perms.Has(Permissions.AcademicYears.Update); // a unit may add entries to an inherited year
                 <MudPaper Outlined="true" Class="pa-3" data-testid="@($"year-{y.Id}")">
                     <MudStack Spacing="2">
                         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Wrap="Wrap.Wrap">
@@ -102,7 +106,7 @@ else
                             </MudStack>
                         }
                         <TermsPanel Year="y" CanEdit="editable" OnChanged="LoadAsync" />
-                        <CalendarPanel Year="y" UnitId="_unitId" CanEdit="editable" />
+                        <CalendarPanel Year="y" UnitId="@(_hasPicker ? _unitId : null)" CanEdit="calendarEditable" />
                     </MudStack>
                 </MudPaper>
             }
@@ -114,30 +118,38 @@ else
     private IReadOnlyList<OrgUnitNodeDto> _units = [];
     private YearContextDto? _context;
     private Guid _unitId;
-    private bool _loading = true, _failed;
+    private bool _loading = true, _failed, _hasPicker;
 
     [Parameter, SupplyParameterFromQuery(Name = "unit")] public Guid? UnitId { get; set; }
 
-    private bool Inherited => _context is { } c && c.DefiningOrgUnitId != _unitId;
-    private bool CanCreateHere => !_loading && !_failed && _unitId != Guid.Empty && Perms.Has(Permissions.AcademicYears.Create) && !Inherited;
-    private string DefiningUnitName => _units.FirstOrDefault(u => u.Id == _context?.DefiningOrgUnitId) is { } u
-        ? CultureText.Pick(u.NameAr, u.NameEn) : "";
+    private bool Inherited => _hasPicker && _context is { } c && c.DefiningOrgUnitId != _unitId;
+    private bool CanCreateHere => !_loading && !_failed && _hasPicker && _unitId != Guid.Empty && Perms.Has(Permissions.AcademicYears.Create) && !Inherited;
+    /// <summary>Name of the unit that defines the years, taken from the years themselves (it may not be in the user's unit list).</summary>
+    private string DefiningUnitName => _context?.Years.FirstOrDefault(y => y.OrgUnitId == _context.DefiningOrgUnitId) is { } y
+        ? CultureText.Pick(y.OrgUnitNameAr, y.OrgUnitNameEn) : "";
 
     protected override async Task OnInitializedAsync()
     {
         Perms.Changed += OnPermissionsChanged;
-        var (units, failed) = await ApiCalls.RunAsync(() => UnitsApi.GetUnitsAsync(), Navigation);
-        _failed = failed;
-        _units = UnitTree.Order(units ?? []);
-        _unitId = UnitId is { } q && _units.Any(u => u.Id == q) ? q : _units.FirstOrDefault()?.Id ?? Guid.Empty;
+        if (!Perms.Loaded) await Perms.RefreshAsync();
+        // Only users who may see units get the unit picker (listing units needs OrgUnits.View); everyone else
+        // sees the years of their own context unit.
+        _hasPicker = Perms.Has(Permissions.OrgUnits.View);
+        if (_hasPicker)
+        {
+            var (units, failed) = await ApiCalls.RunAsync(() => UnitsApi.GetUnitsAsync(), Navigation);
+            _failed = failed;
+            _units = UnitTree.Order(units ?? []);
+            _unitId = UnitId is { } q && _units.Any(u => u.Id == q) ? q : _units.FirstOrDefault()?.Id ?? Guid.Empty;
+        }
         await LoadAsync();
     }
 
     private async Task LoadAsync()
     {
-        if (_unitId == Guid.Empty) { _loading = false; return; }
+        if (_hasPicker && _unitId == Guid.Empty) { _loading = false; return; }
         _loading = true; _failed = false;
-        var (context, failed) = await ApiCalls.RunAsync(() => Api.GetEffectiveAsync(_unitId), Navigation);
+        var (context, failed) = await ApiCalls.RunAsync(() => Api.GetEffectiveAsync(_hasPicker ? _unitId : null), Navigation);
         _failed = failed;
         _context = context;
         _loading = false;
