@@ -94,12 +94,12 @@ public sealed class M2EndpointMatrixTests(LmsApiFactory factory, ITestOutputHelp
             .ToList();
         Assert.True(noRow.Count == 0, "M2 endpoints without a probe row (add one under Security/ProbeRows):\n" + string.Join('\n', noRow));
 
+        // M2 is closed: every mapped M2 route must also state what each staff caller gets.
         var noExpectations = M2Rows.Where(r => IsMapped(r) && !M2StaffCallerExpectations.TryGet(r.Method, r.Pattern, out _))
             .Select(r => $"{r.Method} {r.Pattern} ({r.Name})")
             .ToList();
-        output.WriteLine(noExpectations.Count == 0
-            ? "Every mapped M2 row has staff-caller expectations."
-            : "Mapped M2 rows without staff-caller expectations (add them to M2StaffCallerExpectations):\n" + string.Join('\n', noExpectations));
+        Assert.True(noExpectations.Count == 0,
+            "Mapped M2 rows without staff-caller expectations (add them to M2StaffCallerExpectations):\n" + string.Join('\n', noExpectations));
     }
 
     [Theory]
@@ -121,11 +121,12 @@ public sealed class M2EndpointMatrixTests(LmsApiFactory factory, ITestOutputHelp
     }
 
     [Fact]
-    public void Pending_M2_rows_are_listed()
+    public void No_M2_row_is_pending()
     {
-        // Informational: must be empty on main at milestone end (Task 34 step 4).
+        // M2 is closed (Task 34 step 4): a row whose route is not mapped means a route was lost or renamed.
         var pending = M2Rows.Where(r => !IsMapped(r)).Select(r => $"{r.Method} {r.Pattern} ({r.Name})").ToList();
-        output.WriteLine(pending.Count == 0 ? "No pending M2 rows." : "Pending M2 rows:\n" + string.Join('\n', pending));
+
+        Assert.True(pending.Count == 0, "M2 probe rows whose route is not mapped:\n" + string.Join('\n', pending));
     }
 
     [Theory]

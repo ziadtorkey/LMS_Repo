@@ -2,6 +2,7 @@ using Lms.Domain.Abstractions;
 using Lms.Infrastructure.Access;
 using Lms.Infrastructure.AcademicYears;
 using Lms.Infrastructure.Auditing;
+using Lms.Infrastructure.Enrollment;
 using Lms.Infrastructure.Files;
 using Lms.Infrastructure.Email;
 using Lms.Infrastructure.Identity;
@@ -37,6 +38,7 @@ public static class DependencyInjection
         services.AddSettingsAndPolicies();
         services.AddAcademicYears();
         services.AddPeople();
+        services.AddEnrollment();
         services.AddAcademic();
         services.AddExternalIdentity(configuration, environment);
         return services;
