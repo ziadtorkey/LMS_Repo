@@ -154,6 +154,20 @@ public sealed class ClassStudentsTabTests : StudentsTestContext
     }
 
     [Fact]
+    public async Task Page_subtitle_has_no_lone_separator_when_the_year_name_is_empty()
+    {
+        Culture.Current = new CultureInfo("en");
+        await GrantAsync(Permissions.Classes.View);
+        RenderProviders();
+        var page = Render<ClassStudentsPage>(p => p.Add(x => x.ClassId, Class.Id));
+
+        var subtitle = page.WaitForElement("[data-testid=class-subtitle]").TextContent.Trim();
+
+        Assert.Equal("Main School", subtitle); // the fake class has no year name: no leading "·"
+        await Task.CompletedTask;
+    }
+
+    [Fact]
     public async Task Tab_renders_rtl_in_arabic()
     {
         Culture.Current = new CultureInfo("ar");
