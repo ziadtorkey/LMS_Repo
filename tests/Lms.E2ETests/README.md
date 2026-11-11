@@ -36,7 +36,7 @@ Credentials are never copied into the tests: they come from the dev seed config.
 - **Selectors:** `data-testid` only (`login-*`, `app-root`, `lang-switch`, `user-menu`, `context-switcher`, `context-option-<assignmentId>`, `no-contexts`, `nav-toggle`, `nav-<key>`, `forbidden-page`). Ask FE for a test id rather than selecting by CSS or text structure.
 - **Expected text** comes from `src/Lms.Client/Resources/SharedResource.{ar,en}.resx` (`Resx.Ar/En`), never hard-coded UI strings. Seeded business data (role labels, unit names) may be literal.
 - **Isolation:** every test gets a fresh browser context (empty `localStorage`), so it starts in Arabic with no stored context. Tests share the seeded database and run sequentially (`[Collection("e2e")]`).
-- **Never break shared users:** the lockout test uses the dedicated `lockout-e2e@altagamo3.test`. That account stays locked for 15 minutes after a run, and longer across local re-runs on the same database volume. That is expected: a locked account shows the same message as an unknown one, so the test still passes. Don't "fix" it by unlocking the user in the seed.
+- **Never break shared users:** the blocked-login test uses the dedicated `deactivated-e2e`, `expired-e2e` and `withdrawn-e2e` seed users (one per blocked status). The lockout test uses the dedicated `lockout-e2e@altagamo3.test`. That account stays locked for 15 minutes after a run, and longer across local re-runs on the same database volume. That is expected: a locked account shows the same message as an unknown one, so the test still passes. Don't "fix" it by unlocking the user in the seed.
 - **Form posts that re-render the same URL** (e.g. a failed login): neither the URL, a load state nor the response event distinguishes the old document from the new one. Mark the current document before clicking and wait for a loaded document without the mark (see `LoginPage.SubmitAsync`).
 - **One E2E stack at a time** on a machine (port 5132 is the registered OIDC redirect origin). Take `e2e.lock` in the team's shared notes folder before starting compose and the API, remove it when done, and never stop another session's API (rules: `E2E-RUN-RULES.md` there).
 - **Waiting:** Playwright auto-waiting (`Expect(...)`, `WaitForURLAsync`); no fixed sleeps.
@@ -58,3 +58,8 @@ CI uploads `TestResults/` and `api.log` as the `e2e-artifacts` artifact when the
 | `Locked_out_after_five_failed_logins_with_same_message_as_unknown_user` | X-08 lockout, no user enumeration |
 | `Login_page_is_arabic_rtl_by_default` | X-01 on the server-rendered login page |
 | `Shell_is_usable_at_360px_in_arabic` | X-10 (360 px) |
+
+## Scenarios (M1, plan Task 38): `M1/AuditAndNotificationsTests.cs`, `M1/YearsTests.cs`
+| Test | Covers |
+|---|---|
+| `Deactivated_user_sees_blocked_message_on_login` (ar, en × deactivated, expired, withdrawn) | FR-SEC-07: exact blocked-login copy, no session |

@@ -19,7 +19,9 @@ public partial class YearsAndNotificationsContractTests
     {
         var keys = NotificationEvents.All.Select(e => e.Key).ToList();
 
-        Assert.Equal(["Access.RoleAssigned", "Access.RoleRemoved", "Organization.PolicyChanged"], keys);
+        Assert.Equal(
+            ["Access.RoleAssigned", "Access.RoleRemoved", "Organization.PolicyChanged",
+             "Staff.ExpiringSoon", "Staff.Expired", "Imports.Completed"], keys);
         Assert.All(keys, k => Assert.Matches(ModuleEventFormat(), k));
         Assert.Equal(keys.Count, keys.Distinct(StringComparer.Ordinal).Count());
         Assert.Equal("Access.RoleAssigned", NotificationEvents.AccessRoleAssigned);

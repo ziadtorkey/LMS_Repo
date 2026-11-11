@@ -9,4 +9,7 @@ public static class SettingKeys
     public static readonly SettingKey<string> UiDefaultCulture = new("Ui.DefaultCulture", "ar");
     public static readonly SettingKey<int> FilesMaxUploadMb = new("Files.MaxUploadMb", 200);
     public static readonly SettingKey<bool> UiShowHijriDates = new("Ui.ShowHijriDates", false);
+
+    /// <summary>Days before a staff member's <c>ExpiresOn</c> that admins get a notice (D35); 0 = no pre-expiry notice.</summary>
+    public static readonly SettingKey<int> StaffExpiryNoticeDays = new("Staff.ExpiryNoticeDays", 14);
 }
