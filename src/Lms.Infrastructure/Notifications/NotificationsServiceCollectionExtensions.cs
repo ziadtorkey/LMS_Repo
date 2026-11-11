@@ -11,6 +11,8 @@ public static class NotificationsServiceCollectionExtensions
     public static IServiceCollection AddNotificationCore(this IServiceCollection services)
     {
         services.AddScoped<INotificationRecipientResolver, NotificationRecipientResolver>();
+        services.AddScoped<NotificationPreferences>();
+        services.AddScoped<INotificationPreferences>(sp => sp.GetRequiredService<NotificationPreferences>());
         services.AddScoped<INotificationPublisher>(sp => new NotificationPublisher(
             () => new LmsDbContext(
                 sp.GetRequiredService<DbContextOptions<LmsDbContext>>(), sp.GetRequiredService<ICurrentContext>()),
