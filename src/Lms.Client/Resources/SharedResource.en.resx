@@ -441,6 +441,20 @@
   <data name="Error_duplicate_person_email" xml:space="preserve"><value>Someone in this organization already uses this email.</value></data>
   <data name="Error_duplicate_person_mobile" xml:space="preserve"><value>Someone in this organization already uses this mobile number.</value></data>
   <data name="Error_duplicate_person_nationalId" xml:space="preserve"><value>Someone in this organization already has this national ID.</value></data>
+  <data name="Staff_Edit" xml:space="preserve"><value>Edit staff member</value></data>
+  <data name="Staff_Deactivate" xml:space="preserve"><value>Deactivate</value></data>
+  <data name="Staff_Reactivate" xml:space="preserve"><value>Reactivate</value></data>
+  <data name="Staff_DeactivateTitle" xml:space="preserve"><value>Deactivate {0}?</value></data>
+  <data name="Staff_ReactivateTitle" xml:space="preserve"><value>Reactivate {0}?</value></data>
+  <data name="Staff_ReasonRequired" xml:space="preserve"><value>Enter a reason.</value></data>
+  <data name="Staff_DeleteConfirm" xml:space="preserve"><value>Delete this staff member? Their roles in this organization will be removed.</value></data>
+  <data name="Staff_ResendInvitation" xml:space="preserve"><value>Resend activation email</value></data>
+  <data name="Staff_InvitationSent" xml:space="preserve"><value>Activation email sent.</value></data>
+  <data name="Staff_Share" xml:space="preserve"><value>Share with other units</value></data>
+  <data name="Staff_ShareTargets" xml:space="preserve"><value>Units and roles</value></data>
+  <data name="Staff_RemoveShare" xml:space="preserve"><value>Remove share</value></data>
+  <data name="Staff_ExpiresSoon" xml:space="preserve"><value>Expires in {0} days</value></data>
+  <data name="Staff_ExpiredOn" xml:space="preserve"><value>Expired on {0}</value></data>
   <data name="Assign_Person" xml:space="preserve"><value>Staff member</value></data>
   <data name="Assign_PersonSearch" xml:space="preserve"><value>Search staff by name or email</value></data>
   <data name="Assign_CreateStaff" xml:space="preserve"><value>Create a new staff member</value></data>
