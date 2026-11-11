@@ -99,24 +99,7 @@ public sealed class ImportsProbeRows : IProbeRowModule
     {
         var unit = await w.NewUnitAsync(w.Callers.A.School1);
         var batch = await w.Callers.SendOkAsync(RootAdmin, HttpMethod.Post, Routes.ImportsOfKind(Kind), await UploadBodyAsync(w, unit));
-        var id = batch.GetProperty("id").GetGuid();
-        await WaitForValidationAsync(w, Kind, id);
-        return id;
-    }
-
-    /// <summary>The validation job runs in the background: wait until the batch has its verdict (and its error report).</summary>
-    public static async Task WaitForValidationAsync(M1ProbeWorld w, string kind, Guid id)
-    {
-        for (var i = 0; i < 100; i++)
-        {
-            var batch = await w.Callers.SendOkAsync(RootAdmin, HttpMethod.Get, Routes.ImportBatch(kind, id));
-            if (batch.GetProperty("status").GetString() is "Valid" or "Invalid" or "Failed")
-            {
-                return;
-            }
-
-            await Task.Delay(100);
-        }
+        return batch.GetProperty("id").GetGuid();
     }
 
     /// <summary>The staff template as downloaded (headers only), posted as the multipart <c>file</c> + <c>orgUnitId</c>.</summary>

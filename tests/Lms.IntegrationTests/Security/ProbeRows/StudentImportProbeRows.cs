@@ -32,8 +32,6 @@ public sealed class StudentImportProbeRows : IProbeRowModule
         file.Headers.ContentType = new MediaTypeHeaderValue("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         var body = new MultipartFormDataContent { { file, "file", "students-probe.xlsx" }, { new StringContent(unit.Id.ToString()), "orgUnitId" } };
         var batch = await w.Callers.SendOkAsync(RootAdmin, HttpMethod.Post, Routes.ImportsOfKind(ImportKinds.Students), body);
-        var id = batch.GetProperty("id").GetGuid();
-        await ImportsProbeRows.WaitForValidationAsync(w, ImportKinds.Students, id);
-        return id;
+        return batch.GetProperty("id").GetGuid();
     }
 }
