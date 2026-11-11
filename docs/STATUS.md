@@ -2,8 +2,8 @@
 
 _Updated by the Team Lead after every merge cycle._
 
-**Milestone:** M0 Foundation — DONE (19 / 19) · M1 Organization & Access — in progress (42 / 49 issues closed) · M2 People — in progress (4 / 26; contracts merged)
-**Last update:** 2026-11-11 — Merged #179 (M2 contracts, closes #154–#156), #145 (probe rows per module), #120 (blocked-login E2E, part of #73), #180 (isolation test dedupe). In review: #181 people kernel (BE4 → QA2), #182 M2 probe rows (QA2, draft). M1 remaining: #148 (BE1 fix), #50 (BE4), #52 (BE3), E2E #121 (conflicts + e2e failure, QA1), #72 (FE2), rest of #73 (QA3).
+**Milestone:** M0 Foundation — DONE (19 / 19) · M1 Organization & Access — in progress (42 / 49 issues closed) · M2 People — in progress (6 / 27)
+**Last update:** 2026-11-11 — Merged #183 (identity provider config, closes #167) and #188 (SSRF fix, closes #185). E2E stack freed. In review: #181 people kernel (approved; re-merging main), #193 external sign-in (QA3), #194 key-ring protection #186 (extra QA), #189/#190/#192 FE1 staff pages, #184 role blocking (changes requested), #121 M1 E2E (QA2). Open: #187 staff create (BE2), #191 person gate (BE4), #195 import wizard (FE2, draft), #182 M2 probes (QA2, draft).
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |
@@ -50,6 +50,7 @@ None. (Board: [LMS v1](https://github.com/users/ziadtorkey/projects/1) — Todo 
 - 2026-11-11: M2 plan approved; 13 answers recorded as D23–D36 (students, guardians and change requests move to M3). #103 closed.
 
 ## Recently merged
+- #188 fix(identity): SSRF guard for provider discovery and backchannel (closes #185) · #183 feat(identity): per-client identity provider configuration (closes #167)
 - #179 M2 contracts: staff, imports, identity providers (closes #154, #155, #156)
 - #180 test(security): dedupe #149/#153 isolation tests · #120 test(e2e): blocked-login E2E ar/en (part of #73) · #145 test(security): one probe-row file per module
 - #141 copy branch and template library (closes #63)
