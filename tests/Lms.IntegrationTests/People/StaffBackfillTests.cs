@@ -1,4 +1,6 @@
+using Lms.Domain.Identity;
 using Lms.Domain.People;
+using Lms.Infrastructure.Access;
 using Lms.Infrastructure.People;
 using Lms.IntegrationTests.Access;
 using Lms.IntegrationTests.Infrastructure;
@@ -48,6 +50,33 @@ public sealed class StaffBackfillTests(LmsApiFactory factory)
         Assert.Equal((PersonStatus.Active, user.DisplayNameEn, user.DisplayNameAr), (inA.Status, inA.NameEn, inA.NameAr));
         Assert.Equal(0, again);
         Assert.Equal(2, (await ProfilesAsync(user.Id)).Count);
+    }
+
+    [Theory]
+    [InlineData(UserStatus.Active, PersonStatus.Active)]
+    [InlineData(UserStatus.Deactivated, PersonStatus.Deactivated)]
+    [InlineData(UserStatus.Expired, PersonStatus.Expired)]
+    [InlineData(UserStatus.Withdrawn, PersonStatus.Deactivated)]
+    public async Task Backfill_carries_over_the_M1_account_status(UserStatus userStatus, PersonStatus expected)
+    {
+        var tree = await AccessTestData.SeedAsync(factory, "BF4" + userStatus);
+        var user = await PeopleTestKit.AddUserAsync(factory);
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            (await db.Users.SingleAsync(u => u.Id == user.Id)).Status = userStatus;
+            await db.SaveChangesAsync();
+        }
+
+        var assignment = await AccessTestData.AssignAsync(factory, tree, tree.School1, BuiltInRoles.Teacher, user.Id);
+        await RunAsync();
+
+        var profile = Assert.Single(await ProfilesAsync(user.Id));
+        Assert.Equal(expected, profile.Status);
+        // A deactivated or expired person must not regain access through the profile the backfill created.
+        await using var read = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        var valid = await read.ValidAssignmentsFor(user.Id, DateOnly.FromDateTime(DateTime.UtcNow))
+            .AnyAsync(a => a.AssignmentId == assignment.Id);
+        Assert.Equal(expected == PersonStatus.Active, valid);
     }
 
     [Fact]

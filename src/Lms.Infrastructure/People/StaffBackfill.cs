@@ -1,4 +1,5 @@
 using Lms.Domain.Access;
+using Lms.Domain.Identity;
 using Lms.Domain.Organizations;
 using Lms.Domain.People;
 using Lms.Infrastructure.Persistence;
@@ -10,7 +11,7 @@ namespace Lms.Infrastructure.People;
 /// <summary>
 /// M1 created "bare" users by email when assigning a role. Every user with a live staff-kind assignment in a client and
 /// no live staff profile there gets one: names and email from the user, home unit = the unit of their highest (shortest
-/// path) such assignment, status Active. Idempotent; safe to run at every start.
+/// path) such assignment, status taken from the M1 account status (Withdrawn counts as Deactivated). Idempotent; safe to run at every start.
 /// </summary>
 public sealed class StaffBackfill(LmsDbContext db, ILogger<StaffBackfill> logger)
 {
@@ -55,7 +56,15 @@ public sealed class StaffBackfill(LmsDbContext db, ILogger<StaffBackfill> logger
 
             var nameEn = string.IsNullOrWhiteSpace(user.DisplayNameEn) ? email : user.DisplayNameEn;
             var nameAr = string.IsNullOrWhiteSpace(user.DisplayNameAr) ? nameEn : user.DisplayNameAr;
-            db.Set<StaffProfile>().Add(new StaffProfile(home, userId, nameAr, nameEn, email, null, null, null, null, null, null));
+            var profile = new StaffProfile(home, userId, nameAr, nameEn, email, null, null, null, null, null, null);
+            // The M1 account status carries over: a deactivated or expired user must not become active through the backfill.
+            profile.SetStatus(user.Status switch
+            {
+                UserStatus.Expired => PersonStatus.Expired,
+                UserStatus.Deactivated or UserStatus.Withdrawn => PersonStatus.Deactivated,
+                _ => PersonStatus.Active,
+            });
+            db.Set<StaffProfile>().Add(profile);
             created++;
         }
 
