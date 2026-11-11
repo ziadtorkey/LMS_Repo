@@ -1,4 +1,5 @@
 using Lms.Api.Infrastructure;
+using Lms.Domain.Access;
 using Lms.Domain.Classes;
 using Lms.Domain.Enrollment;
 using Lms.Domain.Organizations;
@@ -27,7 +28,7 @@ public static class GroupMemberEndpoints
     }
 
     private static async Task<(StudentGroup? Group, ClassCourse? ClassCourse, IResult? Problem)> LoadAsync(
-        Guid id, string permission, HttpContext http, LmsDbContext db, EnrollmentRelationship relationship, CancellationToken ct)
+        Guid id, string permission, HttpContext http, LmsDbContext db, IRelationshipScope scope, CancellationToken ct)
     {
         var studentGroup = await db.Set<StudentGroup>().FirstOrDefaultAsync(g => g.Id == id, ct);
         var classCourse = studentGroup is null ? null : await GroupSupport.ClassCourseAsync(db, studentGroup.ClassCourseId, ct);
@@ -36,7 +37,7 @@ public static class GroupMemberEndpoints
             return (null, null, ApiProblems.NotFound());
         }
 
-        return (studentGroup, classCourse, await GroupEndpoints.AccessAsync(classCourse, permission, http, relationship, ct));
+        return (studentGroup, classCourse, await GroupEndpoints.AccessAsync(classCourse, permission, http, scope, ct));
     }
 
     private static IResult? CheckIds(GroupMembersRequest request, out List<Guid> ids)
@@ -51,9 +52,9 @@ public static class GroupMemberEndpoints
     }
 
     private static async Task<IResult> AddAsync(
-        Guid id, GroupMembersRequest request, HttpContext http, LmsDbContext db, EnrollmentRelationship relationship, CancellationToken ct)
+        Guid id, GroupMembersRequest request, HttpContext http, LmsDbContext db, IRelationshipScope scope, CancellationToken ct)
     {
-        var (studentGroup, classCourse, problem) = await LoadAsync(id, Permissions.Groups.Manage, http, db, relationship, ct);
+        var (studentGroup, classCourse, problem) = await LoadAsync(id, Permissions.Groups.Manage, http, db, scope, ct);
         if (problem is not null)
         {
             return problem;
@@ -95,9 +96,9 @@ public static class GroupMemberEndpoints
     }
 
     private static async Task<IResult> RemoveAsync(
-        Guid id, GroupMembersRequest request, HttpContext http, LmsDbContext db, EnrollmentRelationship relationship, CancellationToken ct)
+        Guid id, GroupMembersRequest request, HttpContext http, LmsDbContext db, IRelationshipScope scope, CancellationToken ct)
     {
-        var (studentGroup, _, problem) = await LoadAsync(id, Permissions.Groups.Manage, http, db, relationship, ct);
+        var (studentGroup, _, problem) = await LoadAsync(id, Permissions.Groups.Manage, http, db, scope, ct);
         if (problem is not null)
         {
             return problem;
@@ -115,9 +116,9 @@ public static class GroupMemberEndpoints
     }
 
     private static async Task<IResult> ListAsync(
-        Guid id, HttpContext http, LmsDbContext db, EnrollmentRelationship relationship, CancellationToken ct)
+        Guid id, HttpContext http, LmsDbContext db, IRelationshipScope scope, CancellationToken ct)
     {
-        var (studentGroup, _, problem) = await LoadAsync(id, Permissions.Groups.View, http, db, relationship, ct);
+        var (studentGroup, _, problem) = await LoadAsync(id, Permissions.Groups.View, http, db, scope, ct);
         if (problem is not null)
         {
             return problem;
@@ -135,9 +136,9 @@ public static class GroupMemberEndpoints
 
     /// <summary>Enrolled students in no group of the class course whose gender, religion or level matches the group's rule (FR-GRP-01).</summary>
     private static async Task<IResult> SuggestAsync(
-        Guid id, HttpContext http, LmsDbContext db, EnrollmentRelationship relationship, CancellationToken ct)
+        Guid id, HttpContext http, LmsDbContext db, IRelationshipScope scope, CancellationToken ct)
     {
-        var (studentGroup, classCourse, problem) = await LoadAsync(id, Permissions.Groups.View, http, db, relationship, ct);
+        var (studentGroup, classCourse, problem) = await LoadAsync(id, Permissions.Groups.View, http, db, scope, ct);
         if (problem is not null)
         {
             return problem;
