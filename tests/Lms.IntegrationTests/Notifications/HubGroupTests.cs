@@ -1,3 +1,4 @@
+using Lms.Domain.Access;
 using Lms.Domain.Notifications;
 using Lms.Domain.Organizations;
 using Lms.IntegrationTests.Access;
@@ -227,4 +228,70 @@ public sealed class HubGroupTests(LmsApiFactory factory)
             await Assert.ThrowsAsync<HubException>(() => listener.Connection.InvokeAsync("SwitchContext", id));
         }
     }
+
+    /// <summary>Connects in the client, then makes the assignment invalid, then publishes: the stale connection must stay silent.</summary>
+    private async Task AssertSilentAfterAsync(string name, Func<AccessTree, RoleAssignment, Task> invalidate, bool spare = false)
+    {
+        var a = await AccessTestData.SeedAsync(factory, name);
+        var user = Guid.NewGuid();
+        var assignment = await AccessTestData.AssignAsync(factory, a, a.School1, BuiltInRoles.Teacher, user);
+        if (spare)
+        {
+            await AccessTestData.AssignAsync(factory, a, a.School2, BuiltInRoles.Teacher, user);
+        }
+
+        await using var listener = new Listener(factory, user, assignment.Id);
+        await listener.StartAsync();
+        await invalidate(a, assignment);
+
+        await PublishAsync(a.Org.Id, user);
+
+        await Task.Delay(1000);
+        if (spare)
+        {
+            Assert.Single(listener.Received); // still entitled to the client through the other assignment
+        }
+        else
+        {
+            Assert.Empty(listener.Received);
+        }
+    }
+
+    [Fact]
+    public async Task Deleted_assignment_stops_live_pushes_on_an_open_connection() =>
+        await AssertSilentAfterAsync("HG10", async (_, assignment) =>
+        {
+            await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+            db.RoleAssignments.Remove(await db.RoleAssignments.SingleAsync(x => x.Id == assignment.Id));
+            await db.SaveChangesAsync();
+        });
+
+    [Fact]
+    public async Task Expired_assignment_stops_live_pushes_on_an_open_connection() =>
+        await AssertSilentAfterAsync("HG11", async (_, assignment) =>
+        {
+            await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+            db.Entry(await db.RoleAssignments.SingleAsync(x => x.Id == assignment.Id)).Property(nameof(RoleAssignment.ValidTo))
+                .CurrentValue = (DateOnly?)DateOnly.FromDateTime(DateTime.UtcNow).AddDays(-1);
+            await db.SaveChangesAsync();
+        });
+
+    [Fact]
+    public async Task Deactivated_unit_stops_live_pushes_on_an_open_connection() =>
+        await AssertSilentAfterAsync("HG12", async (tree, _) =>
+        {
+            await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+            db.Entry(await db.OrgUnits.SingleAsync(u => u.Id == tree.School1.Id)).Property(nameof(OrgUnit.Status))
+                .CurrentValue = OrgUnitStatus.Inactive;
+            await db.SaveChangesAsync();
+        });
+
+    [Fact]
+    public async Task Another_valid_assignment_in_the_same_client_keeps_pushes_flowing() =>
+        await AssertSilentAfterAsync("HG13", async (_, assignment) =>
+        {
+            await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+            db.RoleAssignments.Remove(await db.RoleAssignments.SingleAsync(x => x.Id == assignment.Id));
+            await db.SaveChangesAsync();
+        }, spare: true);
 }
