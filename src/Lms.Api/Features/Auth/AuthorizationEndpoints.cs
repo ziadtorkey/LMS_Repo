@@ -66,7 +66,17 @@ public static class AuthorizationEndpoints
                 [IdentityConstants.ApplicationScheme]);
         }
 
-        var principal = BuildPrincipal(user, request.GetScopes(), cookie.Principal!.FindFirst(ExternalOrgClaim)?.Value);
+        // A temporary password (D24) must be replaced before any token is issued; a sign-in through the organization's provider has
+        // no temporary password and skips this.
+        var external = cookie.Principal!.FindFirst(ExternalOrgClaim)?.Value;
+        if (user.MustChangePassword && external is null)
+        {
+            var parameters = http.Request.HasFormContentType ? http.Request.Form.ToList() : http.Request.Query.ToList();
+            var back = http.Request.PathBase + http.Request.Path + QueryString.Create(parameters);
+            return Results.Redirect("/Account/ChangePassword?returnUrl=" + Uri.EscapeDataString(back));
+        }
+
+        var principal = BuildPrincipal(user, request.GetScopes(), external);
         return Results.SignIn(principal, authenticationScheme: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
     }
 
@@ -86,7 +96,8 @@ public static class AuthorizationEndpoints
         var user = subject is null ? null : await users.FindByIdAsync(subject);
 
         // The account may have been deactivated or locked since the code or refresh token was issued.
-        if (user is null || !CanSignIn(user) || await users.IsLockedOutAsync(user))
+        if (user is null || !CanSignIn(user) || await users.IsLockedOutAsync(user)
+            || (user.MustChangePassword && result.Principal!.GetClaim(ExternalOrgClaim) is null))
         {
             return Forbid(Errors.InvalidGrant, "The account is no longer allowed to sign in.");
         }

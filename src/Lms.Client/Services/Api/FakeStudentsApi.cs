@@ -13,6 +13,11 @@ public sealed class FakeStudentsApi : IStudentsApi
     public StudentQuery? LastQuery { get; private set; }
     public CreateStudentRequest? LastCreate { get; private set; }
     public List<CreateStudentRequest> Creates { get; } = [];
+    public List<(Guid Id, UpdateStudentRequest Request)> Updates { get; } = [];
+    public List<(Guid Id, SetPersonStatusRequest Request)> StatusChanges { get; } = [];
+    public List<Guid> Deleted { get; } = [];
+    public List<(Guid Id, SetStudentFeatureFlagsRequest Request)> FlagUpdates { get; } = [];
+    public List<Guid> PasswordResets { get; } = [];
 
     /// <summary>Same name and date of birth as an existing student → 409 possible_duplicate until confirmed.</summary>
     public bool DetectDuplicates { get; set; } = true;
@@ -81,6 +86,67 @@ public sealed class FakeStudentsApi : IStudentsApi
         var created = Add(d.NameAr, d.NameEn, d.Gender, d.DateOfBirth, code, null, null, null, cls);
         var password = string.IsNullOrWhiteSpace(request.DefaultPassword) ? "Gen#Pass-4821" : request.DefaultPassword;
         return Task.FromResult(new StudentCreatedDto(created, password, request.Guardians.Count > 0 ? CredentialsDelivery.PrimaryGuardian : CredentialsDelivery.None));
+    }
+
+    private void Replace(Guid id, Func<StudentDetailDto, StudentDetailDto> change)
+    {
+        var index = _students.FindIndex(s => s.Summary.Id == id);
+        if (index < 0) throw new ApiProblemException(404, "not_found", null, null);
+        _students[index] = change(_students[index]);
+    }
+
+    public Task UpdateAsync(Guid id, UpdateStudentRequest request, CancellationToken ct = default)
+    {
+        Updates.Add((id, request));
+        var d = request.Data;
+        Replace(id, old => old with
+        {
+            Summary = old.Summary with
+            {
+                NameAr = d.NameAr, NameEn = d.NameEn, DateOfBirth = d.DateOfBirth, Gender = d.Gender,
+                StudentCode = string.IsNullOrWhiteSpace(request.StudentCode) ? old.Summary.StudentCode : request.StudentCode,
+            },
+            NicknameAr = d.NicknameAr, NicknameEn = d.NicknameEn, Religion = d.Religion, Nationality = d.Nationality,
+            NationalId = d.NationalId, Mobile = d.Mobile, Email = d.Email,
+        });
+        return Task.CompletedTask;
+    }
+
+    public Task SetStatusAsync(Guid id, SetPersonStatusRequest request, CancellationToken ct = default)
+    {
+        StatusChanges.Add((id, request));
+        Replace(id, old => old with
+        {
+            Summary = old.Summary with { Status = request.Status },
+            StatusHistory = [new PersonStatusChangeDto(old.Summary.Status, request.Status, request.Reason, DateTime.UtcNow, null, null), .. old.StatusHistory],
+        });
+        return Task.CompletedTask;
+    }
+
+    public Task DeleteAsync(Guid id, CancellationToken ct = default)
+    {
+        Deleted.Add(id);
+        _students.RemoveAll(s => s.Summary.Id == id);
+        return Task.CompletedTask;
+    }
+
+    public Task SetFeatureFlagsAsync(Guid id, SetStudentFeatureFlagsRequest request, CancellationToken ct = default)
+    {
+        FlagUpdates.Add((id, request));
+        Replace(id, old => old with
+        {
+            FeatureFlagOverrides = request.Overrides.Where(o => o.Value.HasValue).ToDictionary(o => o.Key, o => o.Value!.Value),
+        });
+        return Task.CompletedTask;
+    }
+
+    public Task<StudentCreatedDto> ResetPasswordAsync(Guid id, ResetStudentPasswordRequest request, CancellationToken ct = default)
+    {
+        PasswordResets.Add(id);
+        Replace(id, old => old with { HasAccount = true, MustChangePassword = true });
+        var detail = _students.First(s => s.Summary.Id == id);
+        var password = string.IsNullOrWhiteSpace(request.DefaultPassword) ? "Reset#Pass-7342" : request.DefaultPassword;
+        return Task.FromResult(new StudentCreatedDto(detail, password, CredentialsDelivery.None));
     }
 }
 

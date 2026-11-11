@@ -103,6 +103,8 @@ public sealed class DevSeeder(string connectionString, IHostEnvironment environm
             ("guardian@altagamo3.test", "ولي الأمر", "Parent", [("Guardian", "S")]),
             ("multi@altagamo3.test", "معلم ومشرف", "Teacher and Supervisor", [("Teacher", "KG"), ("Supervisor", "PRI")]),
             ("lockout-e2e@altagamo3.test", "مستخدم القفل", "Lockout Test User", [("Teacher", "KG")]),
+            // Receives the role assigned live in the notification E2E (bell without reload); used by no other test.
+            ("notify-e2e@altagamo3.test", "مستخدم الإشعارات", "Notification Test User", [("Teacher", "KG")]),
         ];
 
         // Accounts in each blocked status (FR-SEC-07), used only by the blocked-login E2E: the right password must show
@@ -130,6 +132,18 @@ public sealed class DevSeeder(string connectionString, IHostEnvironment environm
                 }
             }
 
+            await db.SaveChangesAsync(ct);
+        }
+
+        // The notification E2E assigns a role to notify-e2e through the staff picker, which lists only people with a staff
+        // profile (people kernel); the home unit is KG, where the user already holds the Teacher role.
+        const string notifyEmail = "notify-e2e@altagamo3.test";
+        var notifyUser = await db.Users.SingleAsync(u => u.NormalizedEmail == notifyEmail.ToUpperInvariant(), ct);
+        if (!await db.Set<Lms.Domain.People.StaffProfile>().AnyAsync(p => p.UserId == notifyUser.Id, ct))
+        {
+            db.Set<Lms.Domain.People.StaffProfile>().Add(new Lms.Domain.People.StaffProfile(
+                school.Units["KG"], notifyUser.Id, notifyUser.DisplayNameAr, notifyUser.DisplayNameEn, notifyEmail,
+                null, null, null, null, null, null));
             await db.SaveChangesAsync(ct);
         }
 

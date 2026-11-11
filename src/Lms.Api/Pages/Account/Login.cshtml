@@ -14,7 +14,7 @@
 <form method="post">
     <input type="hidden" name="ReturnUrl" value="@Model.ReturnUrl" />
     <label>@L["Email"]
-        <input data-testid="login-email" name="Input.Email" type="email" autocomplete="username" value="@Model.Input.Email" required />
+        <input data-testid="login-email" name="Input.Email" type="text" autocomplete="username" value="@Model.Input.Email" required />
     </label>
     <label>@L["Password"]
         <input data-testid="login-password" name="Input.Password" type="password" autocomplete="current-password" required />

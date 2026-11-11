@@ -18,6 +18,15 @@ public sealed class StudentDataModel
     public string Email { get; set; } = "";
     public Guid? PhotoFileId { get; set; }
 
+    /// <summary>Fills the model from a stored student (the edit dialog).</summary>
+    public static StudentDataModel From(StudentDetailDto d) => new()
+    {
+        NameAr = d.Summary.NameAr, NameEn = d.Summary.NameEn, NicknameAr = d.NicknameAr ?? "", NicknameEn = d.NicknameEn ?? "",
+        DateOfBirth = d.Summary.DateOfBirth.ToDateTime(TimeOnly.MinValue), Gender = d.Summary.Gender, Religion = d.Religion,
+        Nationality = d.Nationality, NationalId = d.NationalId ?? "", Mobile = d.Mobile ?? "", Email = d.Email ?? "",
+        PhotoFileId = d.Summary.PhotoFileId,
+    };
+
     private static string? Blank(string value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     /// <summary>The request data; call only after the form validated (required fields are set).</summary>
