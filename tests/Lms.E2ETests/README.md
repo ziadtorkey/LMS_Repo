@@ -89,7 +89,7 @@ Run as the seeded school client's Org Admin. Each test puts the shared seeded da
 | `Feature_flag_enabled_at_KG_only_is_off_at_Primary` | FR-ORG-08: flag set at KG is inherited by its sections, default at Primary |
 | `Root_admin_creates_Exam_Officer_custom_role_and_renames_Manager_label` | FR-SEC-06, §3.3: custom role with one permission; built-in label renamed and restored |
 | `Copy_Primary_branch_under_the_school_with_a_code_suffix` | FR-ORG-11: copy a stage with its sections, codes get the suffix, parent kept |
-| save as template and apply with the Year placeholder | FR-ORG-11: waits for #207 |
+| `Save_branch_as_template_with_a_Year_placeholder_then_apply_for_2027` | FR-ORG-11: save a branch as a template with a {Year} placeholder, apply it for 2027 below the school, codes and names follow |
 
 Assigning a role to a person moved to the M2 staff demo (D31: roles go to existing staff members).
 
