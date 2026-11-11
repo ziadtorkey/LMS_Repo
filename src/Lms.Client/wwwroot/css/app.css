@@ -21,3 +21,6 @@ html, body { margin: 0; font-family: Roboto, "Segoe UI", Tahoma, sans-serif; }
 .lms-month-holiday { background: rgba(255, 152, 0, 0.18); }
 .lms-month-num { font-size: 0.75rem; display: block; }
 .lms-month-entry { font-size: 0.65rem; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Audit diff: changed values */
+.lms-diff-before { background: rgba(244, 67, 54, 0.14); }
+.lms-diff-after { background: rgba(76, 175, 80, 0.18); }
