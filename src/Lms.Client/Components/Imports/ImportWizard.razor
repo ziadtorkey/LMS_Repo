@@ -5,7 +5,7 @@
 @using Lms.Shared.Organizations
 @implements IDisposable
 @inject IImportsApi Api
-@inject IOrgApi Org
+@inject IUnitLookupApi UnitLookup
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
@@ -49,7 +49,7 @@
 
         case 1:
             <MudStack Spacing="3" data-testid="import-step-upload">
-                <UnitPicker Units="_units" Value="_unitId" ValueChanged="id => _unitId = id"
+                <UnitPicker Value="_unitId" ValueChanged="id => _unitId = id ?? Guid.Empty"
                             Label="@L["Import_TargetUnit"]" TestId="import-unit" />
                 <InputFile accept=".xlsx" OnChange="FileChosenAsync" data-testid="import-file" aria-label="@L["Import_ChooseFile"]" />
                 @if (_file is not null)
@@ -158,10 +158,10 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var (units, failed) = await ApiCalls.RunAsync(() => Org.GetOrgUnitsAsync(null), Navigation);
+        var (units, failed) = await ApiCalls.RunAsync(() => UnitLookup.GetUnitsAsync(), Navigation);
         if (failed) { _error = L["Api_Error"]; return; }
         _units = units ?? [];
-        _unitId = DefaultOrgUnitId ?? _units.FirstOrDefault()?.Id ?? Guid.Empty;
+        _unitId = DefaultOrgUnitId ?? UnitTree.Order(_units).FirstOrDefault()?.Id ?? Guid.Empty;
         var (columns, _) = await ApiCalls.RunAsync(() => Api.GetColumnsAsync(Kind), Navigation);
         _columns = columns ?? [];
     }

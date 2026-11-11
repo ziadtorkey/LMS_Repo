@@ -1,0 +1,17 @@
+@using Lms.Shared.People
+
+@* A person's status as a coloured chip (PersonStatus_* resources). *@
+<MudChip T="string" Size="Size.Small" Color="@ColorFor(Status)" data-testid="person-status" data-status="@Status">
+    @L[$"PersonStatus_{Status}"]
+</MudChip>
+
+@code {
+    [Parameter, EditorRequired] public string Status { get; set; } = PersonStatuses.Active;
+
+    private static Color ColorFor(string status) => status switch
+    {
+        PersonStatuses.Active => Color.Success,
+        PersonStatuses.Expired => Color.Warning,
+        _ => Color.Default,
+    };
+}

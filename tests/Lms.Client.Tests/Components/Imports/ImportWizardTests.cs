@@ -22,7 +22,8 @@ public sealed class ImportWizardTests : ClientTestContext
     public ImportWizardTests()
     {
         Services.AddSingleton<IImportsApi>(_imports);
-        Org.Units.Add(new OrgUnitNodeDto(_unitId, null, Guid.NewGuid(), "مدرسة", "School", "SCH", 0, "Active", false, null, false, false, []));
+        var unit = new OrgUnitNodeDto(_unitId, null, Guid.NewGuid(), "مدرسة", "School", "SCH", 0, "Active", false, null, false, false, []);
+        Services.AddSingleton<IUnitLookupApi>(new SingleUnit(unit));
     }
 
     private IRenderedComponent<ImportWizard> RenderWizard()
@@ -144,5 +145,11 @@ public sealed class ImportWizardTests : ClientTestContext
         // The file name stays LTR whatever the page direction.
         await ChooseFileAsync(cut.FindComponent<ImportWizard>(), "staff.xlsx");
         Assert.Equal("ltr", cut.WaitForElement("[data-testid=import-file-name]").GetAttribute("dir"));
+    }
+
+    private sealed class SingleUnit(OrgUnitNodeDto unit) : IUnitLookupApi
+    {
+        public Task<IReadOnlyList<OrgUnitNodeDto>> GetUnitsAsync(CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<OrgUnitNodeDto>>([unit]);
     }
 }

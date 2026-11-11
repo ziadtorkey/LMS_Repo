@@ -15,14 +15,11 @@ public sealed class ImportsApi(ApiHttp http) : IImportsApi
 
     public async Task<ImportBatchDto> UploadAsync(string kind, Guid orgUnitId, IBrowserFile file, CancellationToken ct = default)
     {
-        using var content = new MultipartFormDataContent();
         await using var stream = file.OpenReadStream(ImportLimits.MaxFileBytes, ct);
-        var part = new StreamContent(stream);
-        part.Headers.ContentType = new MediaTypeHeaderValue(
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        content.Add(part, "file", file.Name);
-        content.Add(new StringContent(orgUnitId.ToString()), "orgUnitId");
-        return (await http.UploadAsync<ImportBatchDto>(Routes.ImportsOfKind(kind), content, ct))!;
+        return await http.UploadAsync<ImportBatchDto>(
+            Routes.ImportsOfKind(kind), file.Name,
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", stream,
+            new Dictionary<string, string> { ["orgUnitId"] = orgUnitId.ToString() }, ct);
     }
 
     public Task<ImportBatchDto> GetBatchAsync(string kind, Guid id, CancellationToken ct = default) =>

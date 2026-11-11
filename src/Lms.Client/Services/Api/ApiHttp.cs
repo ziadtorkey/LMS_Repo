@@ -27,12 +27,24 @@ public sealed class ApiHttp(HttpClient http, IContextStore context)
         using var response = await SendCoreAsync(method, route, body, ct);
     }
 
-    /// <summary>Sends a multipart/raw body (file uploads) and reads the JSON response.</summary>
-    public async Task<TResponse?> UploadAsync<TResponse>(string route, HttpContent content, CancellationToken ct = default)
+    /// <summary>Uploads one file as multipart/form-data (field "file") and returns the JSON response.</summary>
+    public async Task<TResponse> UploadAsync<TResponse>(string route, string fileName, string contentType, Stream content, IReadOnlyDictionary<string, string>? fields = null, CancellationToken ct = default)
     {
-        using var response = await SendCoreAsync(HttpMethod.Post, route, null, ct, content);
-        var text = await response.Content.ReadAsStringAsync(ct);
-        return string.IsNullOrWhiteSpace(text) ? default : JsonSerializer.Deserialize<TResponse>(text, JsonSerializerOptions.Web);
+        using var request = new HttpRequestMessage(HttpMethod.Post, route.TrimStart('/'));
+        if (context.ActiveAssignmentId is { } id)
+            request.Headers.Add(ContextHeader.Name, id.ToString());
+        request.Headers.AcceptLanguage.ParseAdd(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName);
+        var file = new StreamContent(content);
+        file.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
+        var form = new MultipartFormDataContent { { file, "file", fileName } };
+        foreach (var (name, value) in fields ?? new Dictionary<string, string>())
+            form.Add(new StringContent(value), name);
+        request.Content = form;
+
+        using var response = await http.SendAsync(request, ct);
+        if (!response.IsSuccessStatusCode)
+            throw await ApiProblemException.ClassifyAsync(response, HttpMethod.Post, ct);
+        return JsonSerializer.Deserialize<TResponse>(await response.Content.ReadAsStringAsync(ct), JsonSerializerOptions.Web)!;
     }
 
     public async Task<(Stream Content, string FileName)> DownloadAsync(string route, CancellationToken ct = default)
@@ -47,16 +59,13 @@ public sealed class ApiHttp(HttpClient http, IContextStore context)
         return (buffer, name);
     }
 
-    private async Task<HttpResponseMessage> SendCoreAsync(
-        HttpMethod method, string route, object? body, CancellationToken ct, HttpContent? raw = null)
+    private async Task<HttpResponseMessage> SendCoreAsync(HttpMethod method, string route, object? body, CancellationToken ct)
     {
         using var request = new HttpRequestMessage(method, route.TrimStart('/'));
         if (context.ActiveAssignmentId is { } id)
             request.Headers.Add(ContextHeader.Name, id.ToString());
         request.Headers.AcceptLanguage.ParseAdd(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName);
-        if (raw is not null)
-            request.Content = raw;
-        else if (body is not null)
+        if (body is not null)
             request.Content = JsonContent.Create(body, body.GetType());
 
         var response = await http.SendAsync(request, ct);
