@@ -42,5 +42,6 @@
   <data name="ImportError_invalid_owner_unit" xml:space="preserve"><value>This unit cannot own courses (only the client root or a course-management level).</value></data>
   <data name="ImportError_course_code_taken" xml:space="preserve"><value>Another course already uses this code.</value></data>
   <data name="ImportError_blocked_by_policy" xml:space="preserve"><value>Creating courses here is blocked by a parent organization policy.</value></data>
+  <data name="ImportError_course_not_available" xml:space="preserve"><value>A course can only be allocated at its owner unit or below it.</value></data>
   <data name="ImportError_unexpected" xml:space="preserve"><value>The import failed; nothing was saved.</value></data>
 </root>
