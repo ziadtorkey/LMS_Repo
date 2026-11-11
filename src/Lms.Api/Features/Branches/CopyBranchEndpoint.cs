@@ -5,12 +5,19 @@ using Lms.Infrastructure.Branches;
 using Lms.Shared;
 using Lms.Shared.Authorization;
 using Lms.Shared.Organizations;
+using Microsoft.EntityFrameworkCore;
 
 namespace Lms.Api.Features.Branches;
 
 public static partial class CopyBranchEndpoint
 {
     private const int MaxCodeLength = 50;
+
+    /// <summary>Reported in <c>SkippedLockedSettings</c> when the caller may not manage policies at the target.</summary>
+    public const string PoliciesSkipped = "permission:" + Permissions.Policies.Update;
+
+    /// <summary>Reported in <c>SkippedLockedSettings</c> when the caller may not manage settings at the target.</summary>
+    public const string SettingsSkipped = "permission:" + Permissions.Settings.Update;
 
     [GeneratedRegex("^[A-Za-z0-9_-]{1,50}$")]
     private static partial Regex CodePattern();
@@ -46,9 +53,26 @@ public static partial class CopyBranchEndpoint
             return ApiProblems.Conflict(ProblemCodes.invalid_move);
         }
 
+        // Copying must not be a way around the permissions of the thing copied: policies and settings are written at the
+        // target only when the caller could also set them there by hand; otherwise they are skipped and reported.
+        var skippedForPermission = new List<string>();
+        var includePolicies = request.IncludePolicies;
+        if (includePolicies && (await http.CheckUnitAsync(Permissions.Policies.Update, request.TargetParentId, ct)).Problem is not null)
+        {
+            includePolicies = false;
+            skippedForPermission.Add(PoliciesSkipped);
+        }
+
+        var includeSettings = request.IncludeSettings;
+        if (includeSettings && (await http.CheckUnitAsync(Permissions.Settings.Update, request.TargetParentId, ct)).Problem is not null)
+        {
+            includeSettings = false;
+            skippedForPermission.Add(SettingsSkipped);
+        }
+
         try
         {
-            var snapshot = await snapshotter.CaptureAsync(source.Unit, request.IncludePolicies, request.IncludeSettings, ct);
+            var snapshot = await snapshotter.CaptureAsync(source.Unit, includePolicies, includeSettings, ct);
             var root = snapshot.Nodes[0] with
             {
                 NameAr = string.IsNullOrWhiteSpace(request.NewRootNameAr) ? snapshot.Nodes[0].NameAr : request.NewRootNameAr.Trim(),
@@ -64,7 +88,8 @@ public static partial class CopyBranchEndpoint
             var result = await materializer.MaterializeAsync(
                 snapshot, target.Unit, name => name, code => code + request.CodeSuffix, ct);
             return Results.Created(Routes.OrgUnit(result.NewRoot.Id),
-                new CopyBranchResultDto(result.NewRoot.Id, result.UnitsCreated, result.SkippedLockedSettings));
+                new CopyBranchResultDto(
+                    result.NewRoot.Id, result.UnitsCreated, [.. skippedForPermission, .. result.SkippedLockedSettings]));
         }
         catch (BranchTooLargeException)
         {
@@ -77,6 +102,11 @@ public static partial class CopyBranchEndpoint
         catch (BranchInvalidException)
         {
             return ApiProblems.BadRequest(ProblemCodes.invalid_level_type);
+        }
+        catch (DbUpdateException ex) when (ex.InnerException?.Message.Contains("Duplicate entry", StringComparison.OrdinalIgnoreCase) == true)
+        {
+            // Another request took a code between the conflict check and the insert (unique index): same answer, no 500.
+            return ApiProblems.Conflict(ProblemCodes.code_taken);
         }
     }
 

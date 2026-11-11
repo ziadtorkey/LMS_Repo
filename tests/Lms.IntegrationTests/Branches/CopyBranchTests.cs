@@ -162,6 +162,82 @@ public sealed class CopyBranchTests(LmsApiFactory factory) : IDisposable
     }
 
     [Fact]
+    public async Task Source_in_other_client_is_404()
+    {
+        var f = await SetUpAsync("CB6A");
+        var other = await SetUpAsync("CB6B");
+
+        // A client A admin, a valid target of client A, a source id of client B.
+        var response = await CopyAsync(f.Admin, other.X, f.Tree.School2);
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Empty(await UnitsAsync(f.Tree.Org.Id, "X-C"));
+        Assert.Empty(await UnitsAsync(other.Tree.Org.Id, "X-C"));
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        Assert.False(await db.OrgUnits.AnyAsync(u => u.ParentId == f.Tree.School2.Id)); // nothing was created below the target
+    }
+
+    /// <summary>A caller at the root with exactly the given permissions (a custom role).</summary>
+    private async Task<RoleAssignment> CallerWithAsync(AccessTree tree, params string[] permissions)
+    {
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        var role = new Role(tree.Org.Id, null, "دور", "Copier " + Guid.NewGuid().ToString("N")[..6], RoleBaseKind.Staff);
+        db.Add(role);
+        db.AddRange(permissions.Select(permission => new RolePermission(tree.Org.Id, role.Id, permission)));
+        var assignment = new RoleAssignment(tree.Root, Guid.NewGuid(), role.Id);
+        db.Add(assignment);
+        await db.SaveChangesAsync();
+        return assignment;
+    }
+
+    private async Task<(int Policies, int Settings)> CopiedRowsAsync(Guid orgId, string suffix)
+    {
+        var copies = (await UnitsAsync(orgId, "X" + suffix)).Concat(await UnitsAsync(orgId, "Y" + suffix)).Select(u => u.Id).ToList();
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        return (await db.Set<OrgUnitPolicy>().CountAsync(p => copies.Contains(p.OrgUnitId)),
+            await db.Set<OrgUnitSetting>().CountAsync(p => copies.Contains(p.OrgUnitId)));
+    }
+
+    [Fact]
+    public async Task Policies_and_settings_are_copied_only_with_their_update_permissions()
+    {
+        string[] copy = [Permissions.OrgUnits.Create, Permissions.OrgUnits.View];
+        var f = await SetUpAsync("CB7");
+        await _host.AddPolicyAsync(f.Tree, f.X, PolicyCatalog.CreateOrgUnits);
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            db.Add(new OrgUnitSetting(f.Tree.Org.Id, f.Y.Id, f.Y.Path, SettingKeys.FilesMaxUploadMb.Name, "50", false));
+            await db.SaveChangesAsync();
+        }
+
+        // Neither update permission: the structure is copied, both extras are skipped and reported.
+        var neither = await CallerWithAsync(f.Tree, copy);
+        var first = await CopyAsync(neither, f.X, f.Tree.School2, policies: true, settings: true, suffix: "-N");
+        Assert.Equal(HttpStatusCode.Created, first.StatusCode);
+        var firstResult = (await first.Content.ReadFromJsonAsync<CopyBranchResultDto>())!;
+        Assert.Equal(3, firstResult.UnitsCreated);
+        Assert.Equal([Lms.Api.Features.Branches.CopyBranchEndpoint.PoliciesSkipped, Lms.Api.Features.Branches.CopyBranchEndpoint.SettingsSkipped], firstResult.SkippedLockedSettings);
+        Assert.Equal((0, 0), await CopiedRowsAsync(f.Tree.Org.Id, "-N"));
+
+        // Settings.Update only: settings are copied, policies skipped.
+        var settingsOnly = await CallerWithAsync(f.Tree, [.. copy, Permissions.Settings.Update]);
+        var second = await CopyAsync(settingsOnly, f.X, f.Tree.School2, policies: true, settings: true, suffix: "-S");
+        var secondResult = (await second.Content.ReadFromJsonAsync<CopyBranchResultDto>())!;
+        Assert.Equal([Lms.Api.Features.Branches.CopyBranchEndpoint.PoliciesSkipped], secondResult.SkippedLockedSettings);
+        Assert.Equal((0, 1), await CopiedRowsAsync(f.Tree.Org.Id, "-S"));
+
+        // Both: everything is copied, nothing skipped.
+        var both = await CallerWithAsync(f.Tree, [.. copy, Permissions.Settings.Update, Permissions.Policies.Update]);
+        var third = await CopyAsync(both, f.X, f.Tree.School2, policies: true, settings: true, suffix: "-B");
+        Assert.Empty((await third.Content.ReadFromJsonAsync<CopyBranchResultDto>())!.SkippedLockedSettings);
+        Assert.Equal((1, 1), await CopiedRowsAsync(f.Tree.Org.Id, "-B"));
+
+        // Not asking for the extras never reports them as skipped.
+        var plain = await CopyAsync(neither, f.X, f.Tree.School2, suffix: "-P");
+        Assert.Empty((await plain.Content.ReadFromJsonAsync<CopyBranchResultDto>())!.SkippedLockedSettings);
+    }
+
+    [Fact]
     public async Task Source_in_other_subtree_is_404()
     {
         var f = await SetUpAsync("CB6");
