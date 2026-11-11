@@ -74,21 +74,21 @@ Each runs in Arabic and English (`[Theory]` with `"ar"`/`"en"`; `StartAsync(cult
 
 **Mailpit:** invitation and reset emails are read from Mailpit (`MailpitClient`, `LMS_E2E_MAILPIT`, default `http://localhost:8025`). Start it with the stack (`docker compose up -d --wait mysql minio mailpit`; the CI `e2e` job does). Only the link's **path and query** are used: `App:PublicBaseUrl` in Development points at the https profile, while E2E runs on `:5132`.
 
-## Scenarios (M1, plan Task 38): `M1/AuditAndNotificationsTests.cs`, `M1/YearsTests.cs`
+## Scenarios (M1, plan Task 38): `M1/YearsTests.cs`, `M1/AuditAndNotificationsTests.cs` (each in ar and en)
 | Test | Covers |
 |---|---|
 | `Deactivated_user_sees_blocked_message_on_login` (ar, en × deactivated, expired, withdrawn) | FR-SEC-07: exact blocked-login copy, no session |
+| `Root_admin_defines_2026_year_with_two_terms_and_a_holiday_school_inherits_it` | FR-YEAR-01..03, D22: year, two terms and a holiday on a fresh stage; the section below inherits them read-only |
+| `Year_selector_defaults_to_active_year_and_switches` | X-04: app-bar selector starts on the Active year, switches, and keeps the choice across a reload |
+| `Audit_viewer_shows_unit_move_with_before_after_and_exports_csv_and_xlsx` | FR-AUD-03/04: unit move shown with old/new parent, CSV (UTF-8 BOM) and XLSX downloads |
+| `Assignee_sees_realtime_bell_notification_without_reload` | FR-NOT-02: two browsers; the assignee's bell and snackbar update live (SignalR) |
 
-<<<<<<< HEAD
-## Scenarios (M3, plan Task 46: `M3/AcademicStructureTests`)
-Run as the seeded school group's Org Admin with unique names per test (`M3Names`). Prerequisites a scenario is not testing are created through the API (`Infrastructure/ApiSetup`: authenticated `fetch` from the signed-in page); only the named feature is driven through the UI. The seed has a current academic year since M1; if it is not the effective year on the run date, set-up creates one through the API.
+Notes for these scenarios:
+- **Fresh data per run:** units are created with a run id in their names and codes, so the suite can run again on the same database. The Active/Planned school years of the selector scenario are created once and reused.
+- **Dedicated seed user `notify-e2e`** (a Teacher in KG) receives the role assigned in the bell scenario. The test removes that role again in a `finally`, because a second context makes the app open the context chooser, which has no bell.
+- **MudBlazor inputs:** use `MudControls` (selects open a popover list; date pickers are read-only inputs that open a calendar, so a date is picked by stepping months). While a picker is open it copies its `data-testid` onto the popover, so target `input[data-testid=...]`.
+- **Selected text of a MudSelect** is rendered as text, not as an input value: assert with `ToContainTextAsync`.
 
-| Test | Covers | Status |
-|---|---|---|
-| `Root_admin_creates_course_and_a_duplicate_code_is_refused` | FR-CRS-01, D38 duplicate code | runs (needs #279) |
-| `Root_admin_allocates_a_new_course_below_the_school` | FR-CRS-02 | skipped until #215 |
-| supervisor assigned; blueprint builder and publish v1; classes bulk create and matrix; teacher assignment; teacher sees only own class-course; publish v2 with push (polled up to 30 s); copy classes to next year | FR-CRS-04, FR-LP-*, FR-CLS-*, FR-TCH-* | to write as the FE pages (#238, #239, #240 to #243) and BE (#217, #221 to #225) land |
-=======
 ## Scenarios (M1, plan Task 37: `M1/ConfigurationTests`, `M1/AccessAdminTests`)
 Run as the seeded school client's Org Admin. Each test puts the shared seeded data back in a `finally` block (policy off, value reset).
 
@@ -131,4 +131,22 @@ Notes:
 - **`MockOidc.SignInAsync`** fills the mock's sign-in form: the user name becomes `sub`, the claims JSON carries `email`. The issuer is `http://localhost:8090/client-a` for the browser *and* the API (the server builds `iss` from the request host), so never use the container name.
 - **Dedicated seed user `dual-e2e`** is a Teacher in the school (KG) and in the university (FCI-1-GEN), used only here.
 - The person signs in from the base browser context; the admin works in a second one, so no password session interferes.
->>>>>>> origin/main
+
+## Scenarios (M2, plan Task 36: `M2/ImportTests`)
+Staff Excel import as the seeded school group's Org Admin: the template is downloaded in the wizard, filled with ClosedXML (`Infrastructure/XlsxFiles`) and uploaded; people are teachers at the seeded KG section with unique emails (`M2Names`). The wizard does not move on after Commit (#314), so the outcome is checked through the batch API and the staff list.
+
+| Test | Covers |
+|---|---|
+| `Staff_import_with_one_bad_row_shows_preview_errors_and_error_report_then_fixed_file_imports_all` | X-06, FR-STF-04: 20 rows with one existing email are Invalid, no commit offered, the error report has an `Errors` / `الأخطاء` column and the bad row filled #FFC7CE; the fixed file commits, the list shows 20, Mailpit has 20 invitations |
+| `Arabic_template_headers_are_accepted` | X-06, D34: a file with Arabic headers validates in either UI language |
+| `Commit_after_a_conflicting_person_appears_imports_nothing` | all-or-nothing (Review Focus 3): a person created between preview and commit makes the commit refuse; nobody is imported, no invitation is sent |
+| `Wizard_shows_the_done_step_after_a_successful_commit` (skipped) | expected Done step, waits for #314 |
+
+## Scenarios (M3, plan Task 46: `M3/AcademicStructureTests`)
+Run as the seeded school group's Org Admin with unique names per test (`M3Names`). Prerequisites a scenario is not testing are created through the API (`Infrastructure/ApiSetup`: authenticated `fetch` from the signed-in page); only the named feature is driven through the UI. The seed has a current academic year since M1; if it is not the effective year on the run date, set-up creates one through the API.
+
+| Test | Covers | Status |
+|---|---|---|
+| `Root_admin_creates_course_and_a_duplicate_code_is_refused` | FR-CRS-01, D38 duplicate code | runs (needs #279) |
+| `Root_admin_allocates_a_new_course_below_the_school` | FR-CRS-02 | skipped until #215 |
+| supervisor assigned; blueprint builder and publish v1; classes bulk create and matrix; teacher assignment; teacher sees only own class-course; publish v2 with push (polled up to 30 s); copy classes to next year | FR-CRS-04, FR-LP-*, FR-CLS-*, FR-TCH-* | to write as the FE pages (#238, #239, #240 to #243) and BE (#217, #221 to #225) land |
