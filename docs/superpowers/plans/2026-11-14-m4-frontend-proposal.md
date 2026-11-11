@@ -83,7 +83,7 @@ Per-type editor and viewer: File/Video/Audio use `AssetUploader` + `AssetPreview
 **PRD:** D48. **Depends:** nothing (starts against a fake).
 `Components/Editors/RichTextEditor.razor` wrapping **Quill 2.x** through JS interop (`wwwroot/js/richtext.js`; Quill JS/CSS vendored under `wwwroot/lib/quill/`, **no CDN**). Toolbar: bold, italic, underline, headings, ordered and bullet lists, link, blockquote, alignment, **text direction toggle (RTL/LTR per block)**, clear formatting. No image or video embeds in the first iteration (Q2a). Parameters: `Value` / `ValueChanged` (HTML string), `Label`, `Required`, `MaxLength`, `Disabled`, `HelperText`; the initial direction follows the UI language. Companion `SanitizedHtml` display component: renders server-sanitised HTML in `<div class="lms-rich">` with consistent typography per DESIGN.md and links forced to `rel="noopener noreferrer"`. Keyboard-accessible toolbar with an `aria-label` per button from resources; the toolbar wraps at 360 px; dark mode through theme tokens.
 **Tests (bUnit, stubbed JS interop):** `Initial_html_is_passed_to_editor`, `Change_event_updates_bound_value`, `Required_blocks_form_when_empty` (an empty editor serialises as `<p><br></p>`, treated as empty), `Max_length_counts_text_not_markup`, `Disabled_editor_is_read_only`, `Direction_follows_ui_language`, rtl.
-**Licence note (D48):** **Quill is BSD-3-Clause**: free for commercial use, no key, no usage cap, self-hosted. Chosen over TinyMCE because self-hosted TinyMCE 7 is GPL-2.0-or-later (or a paid commercial licence) and its cloud build needs an API key and reports usage; either would be a legal or operational decision the owner has not been asked to make. Gaps to accept: no tables or image resizing out of the box, and RTL relies on the `direction`/`align` formats (included here). Only `RichTextEditor` touches the library, so it can be re-backed by TinyMCE later without touching pages. **Needs the Lead's OK for the new JS dependency** (the server-side `HtmlSanitizer` package is already approved).
+**Licence note (D48):** **Quill is BSD-3-Clause**: free for commercial use, no key, no usage cap, self-hosted. Chosen over TinyMCE because self-hosted TinyMCE 7 is GPL-2.0-or-later (or a paid commercial licence) and its cloud build needs an API key and reports usage; either would be a legal or operational decision the owner has not been asked to make. Gaps to accept: no tables or image resizing out of the box, and RTL relies on the `direction`/`align` formats (included here). Only `RichTextEditor` touches the library, so it can be re-backed by TinyMCE later without touching pages. **Approved by the Lead: Quill 2.x, self-hosted, in M4a as F4a** (the server-side `HtmlSanitizer` package is approved too).
 
 ### F5 — Student content view and completion (M)
 **PRD:** FR-CNT-04, item 3. **Depends:** F4.
@@ -175,7 +175,7 @@ M4b:  F0b (Lead) ── F13, F14 (spike, then build), F15/F16 additions
 | 3 | Asset flow | v1 streams through the API (`POST /api/assets` multipart); limits from `GET /api/assets/limits` (`allowedTypes`, `maxBytes`) so `AssetUploader` validates up front. Presigned direct upload is a later optimisation behind the same component; the FE hides the transport. |
 | 4 | Server time | `serverNow` next to every compared date; `remainingSeconds` on attempts; the FE only displays and counts down locally. |
 | 5 | Problem codes | The eleven codes in F0, each with an `Error_{code}` resource pair in ar and en. |
-| 6 | Completion | Manual mark is idempotent; automatic completion from events; `GET /api/class-courses/{id}/progress` plus progress on lesson and module nodes. **To fix in the contract:** #343 §3 says `POST /api/modules/{id}/complete`, its §8 says `…/completion`; the FE needs only one, whichever F0 publishes. |
+| 6 | Completion | Manual mark is idempotent; automatic completion from events; `GET /api/class-courses/{id}/progress` plus progress on lesson and module nodes. **Decided by the Lead:** the route is `/api/modules/{id}/completion` (GET and PUT). |
 
 ## 5. Decisions taken (D48–D51) and what is still open
 
@@ -187,8 +187,7 @@ Decided by the owner or accepted by the Lead:
 - Agreed with BE4 (#343): permission granularity, teacher progress view in M5, edits to correct answers rejected after the first attempt (`quiz_has_attempts`).
 - Defaults kept: annotated feedback is an uploaded marked-up file; quiz attempts autosave with a visible state and retry, no offline mode.
 
-Still open (for the Lead):
-- **Q2 Quill vs TinyMCE:** Quill is my recommendation and not yet approved; it adds a third-party JS dependency.
+Still open (for the Lead; Quill and the `/completion` route are settled):
 - **Q2a Images inside rich text:** not in the first iteration. If wanted later: upload through `AssetUploader` and insert a signed asset reference, never a base64 image.
 - **Library phase:** M4a (assumed) or M4b.
 
