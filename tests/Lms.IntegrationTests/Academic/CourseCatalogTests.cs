@@ -130,4 +130,21 @@ public sealed class CourseCatalogTests(LmsApiFactory factory)
         Assert.Equal([own1.Id], searched.Items.Select(i => i.Course.Id));
         Assert.Empty((await WithCatalogAsync(TestCurrentContext.For(a.Org.Id, null), c => c.ListVisibleAsync(Q()))).Items);
     }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("/")]
+    [InlineData("x")]
+    public async Task Malformed_scope_sees_nothing_through_the_catalog(string scope)
+    {
+        var a = await AccessTestData.SeedAsync(factory, "CC6" + scope.Length);
+        var course = await AcademicTestKit.AddCourseAsync(factory, a.School2);
+        var who = TestCurrentContext.For(a.Org.Id, scope);
+        await using var db = factory.CreateDbContext(who);
+        var catalog = new CourseCatalog(db, who);
+
+        Assert.Null(await catalog.FindAsync(course.Id));
+        var listed = await catalog.ListVisibleAsync(new CourseListQuery(null, true, null, null, null, null, 1, 50));
+        Assert.DoesNotContain(course.Id, listed.Items.Select(i => i.Course.Id));
+    }
 }
