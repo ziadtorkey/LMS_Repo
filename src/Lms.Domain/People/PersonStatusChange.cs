@@ -2,7 +2,10 @@ using Lms.Domain.Common;
 
 namespace Lms.Domain.People;
 
-/// <summary>One row of the append-only status history of a profile. Never updated, never soft-deleted.</summary>
+/// <summary>
+/// One row of the append-only status history of a profile. Never soft-deleted, and its content never changes; only its
+/// location moves with the person when their home unit changes, so the new home's admins see the history.
+/// </summary>
 public sealed class PersonStatusChange : Entity, IOrgUnitScoped
 {
     private PersonStatusChange()
@@ -36,6 +39,13 @@ public sealed class PersonStatusChange : Entity, IOrgUnitScoped
     public string Reason { get; private set; }
     public Guid? ChangedBy { get; private set; }
     public DateTime ChangedAt { get; private set; }
+
+    /// <summary>The person moved to another home unit of the same client: their history follows them.</summary>
+    public void MoveHome(Guid orgUnitId, string orgUnitPath)
+    {
+        OrgUnitId = orgUnitId;
+        OrgUnitPath = orgUnitPath;
+    }
 
     public static PersonStatusChange For(
         StaffProfile profile, PersonStatus from, PersonStatus to, string reason, Guid? changedBy, DateTime changedAt) =>
