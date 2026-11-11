@@ -10,7 +10,11 @@ namespace Lms.E2ETests.M1;
 /// </summary>
 public sealed class ClientsAndTreesTests(E2EFixture fixture) : E2ETestBase(fixture)
 {
-    [Theory]
+    // Verified green locally against main + #92 + #83 (6/6, ar and en). Remove each skip when its PR is on main.
+    private const string NeedsClientsApi = "Needs #92 (clients API, closes #42) on main.";
+    private const string NeedsClientsAndLevelTypesApi = "Needs #92 (clients API) and #83 (level types API) on main.";
+
+    [Theory(Skip = NeedsClientsApi)]
     [InlineData("ar")]
     [InlineData("en")]
     public async Task Platform_admin_creates_school_group_and_university_with_first_admins(string culture)
@@ -38,7 +42,7 @@ public sealed class ClientsAndTreesTests(E2EFixture fixture) : E2ETestBase(fixtu
         Assert.Contains("/Account/ResetPassword", await mail.WaitForAccountLinkAsync(names.AdminEmail("uni")));
     }
 
-    [Theory]
+    [Theory(Skip = NeedsClientsApi)]
     [InlineData("ar")]
     [InlineData("en")]
     public async Task Org_admin_sets_password_from_invitation_email_and_logs_in(string culture)
@@ -61,7 +65,7 @@ public sealed class ClientsAndTreesTests(E2EFixture fixture) : E2ETestBase(fixtu
         await AssertDirectionAsync(culture);
     }
 
-    [Theory]
+    [Theory(Skip = NeedsClientsAndLevelTypesApi)]
     [InlineData("ar")]
     [InlineData("en")]
     public async Task School_admin_builds_level_types(string culture)

@@ -58,3 +58,15 @@ CI uploads `TestResults/` and `api.log` as the `e2e-artifacts` artifact when the
 | `Locked_out_after_five_failed_logins_with_same_message_as_unknown_user` | X-08 lockout, no user enumeration |
 | `Login_page_is_arabic_rtl_by_default` | X-01 on the server-rendered login page |
 | `Shell_is_usable_at_360px_in_arabic` | X-10 (360 px) |
+
+## Scenarios (M1, plan Task 36 — `M1/ClientsAndTreesTests`)
+Each runs in Arabic and English (`[Theory]` with `"ar"`/`"en"`; `StartAsync(culture:)` sets the browser language and the app's `lms.culture`). Every test creates its own client with unique names and emails (`M1Names`), so reruns never collide.
+
+| Test | Covers | Needs on main |
+|---|---|---|
+| `Platform_admin_creates_school_group_and_university_with_first_admins` | FR-ORG-01, both sample client types, invitation sent | #92 |
+| `Org_admin_sets_password_from_invitation_email_and_logs_in` | FR-SEC-02 invitation → set password → sign in → client menu | #92 |
+| `School_admin_builds_level_types` | FR-ORG-02, School › Stage › Section in order | #92, #83 |
+| tree, transfer levels, move, delete-with-children | FR-ORG-03/04/05/09 | tree page (FE Task 25/26) + move (Task 11) — not written yet |
+
+**Mailpit:** invitation and reset emails are read from Mailpit (`MailpitClient`, `LMS_E2E_MAILPIT`, default `http://localhost:8025`). Start it with the stack (`docker compose up -d --wait mysql minio mailpit`; the CI `e2e` job does). Only the link's **path and query** are used: `App:PublicBaseUrl` in Development points at the https profile, while E2E runs on `:5132`.

@@ -30,6 +30,19 @@ public sealed class LevelTypesAdminPage(IPage page, string culture)
 
         await page.GetByTestId("dialog-save").ClickAsync();
         await Assertions.Expect(Rows).ToHaveCountAsync(before + 1);
+        await DismissSnackbarsAsync();
+    }
+
+    /// <summary>
+    /// The "Saved." snackbar sits over the top-right action button and pauses while hovered (the mouse rests there after
+    /// clicking Save). Move the mouse away so its timer runs, then wait until it has gone (its close button re-renders
+    /// while animating, so clicking it is racy).
+    /// </summary>
+    private async Task DismissSnackbarsAsync()
+    {
+        await page.Mouse.MoveAsync(0, 0);
+        await Assertions.Expect(page.Locator(".mud-snackbar"))
+            .ToHaveCountAsync(0, new LocatorAssertionsToHaveCountOptions { Timeout = 15_000 });
     }
 
     /// <summary>The level names in display order, in the current UI language.</summary>
