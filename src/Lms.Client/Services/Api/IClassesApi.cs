@@ -18,25 +18,23 @@ public interface IClassesApi
 
 public sealed class ClassesApi(ApiHttp http) : IClassesApi
 {
-    private const string Route = "/api/classes";
-
     public Task<PagedResult<ClassSummaryDto>> ListAsync(ClassQuery query, CancellationToken ct = default) =>
-        http.GetAsync<PagedResult<ClassSummaryDto>>(Route + ToQueryString(query), ct);
+        http.GetAsync<PagedResult<ClassSummaryDto>>(Routes.Classes + ToQueryString(query), ct);
 
     public async Task<ClassSummaryDto> CreateAsync(SaveClassRequest request, CancellationToken ct = default) =>
-        (await http.SendAsync<ClassSummaryDto>(HttpMethod.Post, Route, request, ct))!;
+        (await http.SendAsync<ClassSummaryDto>(HttpMethod.Post, Routes.Classes, request, ct))!;
 
     public Task UpdateAsync(Guid id, SaveClassRequest request, CancellationToken ct = default) =>
-        http.SendAsync(HttpMethod.Put, $"{Route}/{id}", request, ct);
+        http.SendAsync(HttpMethod.Put, Routes.Class(id), request, ct);
 
     public Task CloseAsync(Guid id, CancellationToken ct = default) =>
-        http.SendAsync(HttpMethod.Post, $"{Route}/{id}/close", null, ct);
+        http.SendAsync(HttpMethod.Post, Routes.ClassClose(id), null, ct);
 
     public async Task<IReadOnlyList<ClassSummaryDto>> BulkCreateAsync(BulkCreateClassesRequest request, CancellationToken ct = default) =>
-        (await http.SendAsync<List<ClassSummaryDto>>(HttpMethod.Post, $"{Route}/bulk", request, ct)) ?? [];
+        (await http.SendAsync<List<ClassSummaryDto>>(HttpMethod.Post, Routes.ClassesBulk, request, ct)) ?? [];
 
     public async Task<CopyClassesResultDto> CopyAsync(CopyClassesRequest request, CancellationToken ct = default) =>
-        (await http.SendAsync<CopyClassesResultDto>(HttpMethod.Post, $"{Route}/copy", request, ct))!;
+        (await http.SendAsync<CopyClassesResultDto>(HttpMethod.Post, Routes.ClassesCopy, request, ct))!;
 
     /// <summary>Query string of a class list request; unset filters are left out.</summary>
     public static string ToQueryString(ClassQuery q)

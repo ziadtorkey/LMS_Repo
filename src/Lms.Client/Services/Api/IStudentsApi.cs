@@ -15,16 +15,14 @@ public interface IStudentsApi
 
 public sealed class StudentsApi(ApiHttp http) : IStudentsApi
 {
-    private const string Route = "/api/students";
-
     public Task<PagedResult<StudentSummaryDto>> ListAsync(StudentQuery query, CancellationToken ct = default) =>
-        http.GetAsync<PagedResult<StudentSummaryDto>>(Route + ToQueryString(query), ct);
+        http.GetAsync<PagedResult<StudentSummaryDto>>(Routes.Students + ToQueryString(query), ct);
 
     public Task<StudentDetailDto> GetAsync(Guid id, CancellationToken ct = default) =>
-        http.GetAsync<StudentDetailDto>($"{Route}/{id}", ct);
+        http.GetAsync<StudentDetailDto>(Routes.Student(id), ct);
 
     public async Task<StudentCreatedDto> CreateAsync(CreateStudentRequest request, CancellationToken ct = default) =>
-        (await http.SendAsync<StudentCreatedDto>(HttpMethod.Post, Route, request, ct))!;
+        (await http.SendAsync<StudentCreatedDto>(HttpMethod.Post, Routes.Students, request, ct))!;
 
     /// <summary>Query string of a student list request; unset filters are left out.</summary>
     public static string ToQueryString(StudentQuery q)
@@ -63,7 +61,7 @@ public sealed class GuardiansApi(ApiHttp http) : IGuardiansApi
         if (parts.Count == 0) return null;
         try
         {
-            return await http.GetAsync<GuardianMatchDto?>("/api/guardians/match?" + string.Join('&', parts), ct);
+            return await http.GetAsync<GuardianMatchDto?>(Routes.GuardiansMatch + "?" + string.Join('&', parts), ct);
         }
         catch (ApiProblemException ex) when (ex.Status == 404)
         {
