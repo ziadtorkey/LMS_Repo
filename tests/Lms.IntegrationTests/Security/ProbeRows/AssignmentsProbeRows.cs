@@ -32,14 +32,17 @@ public sealed class AssignmentsProbeRows : IProbeRowModule
 
     private static async Task<CreateAssignmentRequest> AssignmentBodyAsync(M1ProbeWorld w, Guid unitId)
     {
-        // A real user each time, so the probe never sends an invitation email.
+        // An existing staff member each time (roles go to existing staff only, D31).
         var email = $"probe-{w.Next()}@lms.test";
+        User probeUser;
         await using (var db = w.Callers.Factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
         {
-            db.Users.Add(new User { UserName = email, Email = email, NormalizedEmail = email.ToUpperInvariant(), DisplayNameAr = "مستخدم", DisplayNameEn = "Probe user" });
+            probeUser = new User { UserName = email, Email = email, NormalizedEmail = email.ToUpperInvariant(), DisplayNameAr = "مستخدم", DisplayNameEn = "Probe user" };
+            db.Users.Add(probeUser);
             await db.SaveChangesAsync();
         }
 
+        await Lms.IntegrationTests.People.PeopleTestKit.AddStaffAsync(w.Callers.Factory, w.Callers.A.School1, email, userId: probeUser.Id);
         return new CreateAssignmentRequest(email, null, null, w.Callers.A.Roles[BuiltInRoles.Teacher].Id, unitId, null, null);
     }
 
