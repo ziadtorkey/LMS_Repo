@@ -2,22 +2,22 @@
 
 _Updated by the Team Lead after every merge cycle._
 
-**Milestone:** M0 Foundation — DONE (19 / 19) · M1 Organization & Access — in progress (34 / 49 issues closed)
-**Last update:** 2026-11-11 — Resumed after the usage-limit pause. Merged #97 (audit viewer, closes #53). Next: #146 (fix for bug #140 model drift, QA 3 first), #134, then #138/#139 (FE2), #141 (FE1, #63), #144 (jobs kernel), #145 (probe rows split), #94, #133. Remaining build: #46 (BE2), #48 (BE1), #50 (BE4), #52/#147 (BE3), E2E #71/#72/#73, probes #70.
+**Milestone:** M0 Foundation — DONE (19 / 19) · M1 Organization & Access — in progress (42 / 49 issues closed) · M2 People — started (1 / 26; 25 issues #154–#178 opened and dispatched)
+**Last update:** 2026-11-11 — Merged #141 (copy branch + template library, closes #63). M2 plan approved (D23–D36, students move to M3); 25 M2 issues #154–#178 opened and dispatched; Lead contract PR for #154–#156 in progress. M1 remaining: #145 (QA3 spot-check), #148 (BE1 fix), #50 (BE4), #52 (BE3), E2E #71/#72/#73.
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |
 |---|---|---|---|---|
-| Team Lead | Opus | `local_95ef9dc7-9378-4012-a8f2-c7d1f944bdec` (lms-lead) | coordinating M0 close-out + M1 | coordinating |
-| Backend 1 | Sonnet | `local_19f31b04-ca2f-43d1-a2cb-8a128722a11f` (lms-backend) | M1 #42 clients; then #44, #46, #48, #50, #52 | working |
-| Backend 2 | Sonnet | `local_d36e7dc2-e9e6-4f73-b7b3-b078b17bbe41` (lms-backend-2) | PRs #83 (#43), #88 (#85), #90 (#45); then #47, #49, #51 | working |
-| Frontend | Sonnet | `local_40667dce-5be7-478b-95cb-4f14ecd203b9` (lms-frontend) | PR #81 (#59) fixes; then #60 org tree | working |
-| Frontend 2 | Sonnet | `local_3d9e8938-4064-4f83-a04d-920704d41a87` (lms-frontend-2) | PRs #87 (#64), #89 (#65); #66 audit viewer | working |
-| QA | Opus | `local_91a7af3c-7b02-4d61-ac11-2c22629cf89f` (lms-qa) | review #74 (M1), #14; fix + un-draft E2E PR #34 (#15) | working |
-| QA 2 | Opus | `local_54d26c64-4403-4a13-b128-5be5e9752d97` (lms-qa-2) | #34 full run; #30; M1 BE2 PRs | reviewing |
-| Backend 3 | Sonnet | `local_2e8038c6-e5ba-4e13-ade0-9440d9beb565` (lms-backend-3) | M1 #53 audit viewer; then #55, #57 | working |
-| Backend 4 | Sonnet | `local_fd5c4410-8364-4c55-a5a8-3b8aa37afc1f` (lms-backend-4) | M1 #54 roles admin; then #56 | working |
-| QA 3 | Opus | `local_6d46b60b-d70a-4cfa-af2f-5bf90cdf7c08` (lms-qa-3) | reviews BE3, BE4, FE2 PRs (#87, #89 now) | reviewing |
+| Team Lead | Opus | `local_95ef9dc7-9378-4012-a8f2-c7d1f944bdec` (lms-lead) | M2 contracts #154–#156; merges | coordinating |
+| Backend 1 | Sonnet | `local_19f31b04-ca2f-43d1-a2cb-8a128722a11f` (lms-backend) | #148 fix; then M2 #160 (T8), #159 (T7), #161 (T9) | working |
+| Backend 2 | Sonnet | `local_d36e7dc2-e9e6-4f73-b7b3-b078b17bbe41` (lms-backend-2) | M2 #162 (T10 staff), then #163, #164, #165 | working |
+| Frontend | Sonnet | `local_40667dce-5be7-478b-95cb-4f14ecd203b9` (lms-frontend) | M2 #170 (T24 staff pages), then #171, #174 | working |
+| Frontend 2 | Sonnet | `local_3d9e8938-4064-4f83-a04d-920704d41a87` (lms-frontend-2) | E2E #72; then M2 #169 (T23), #172, #173 | working |
+| QA | Opus | `local_91a7af3c-7b02-4d61-ac11-2c22629cf89f` (lms-qa) | E2E #121/#72; M2 reviews; then #176, #177 | working |
+| QA 2 | Opus | `local_54d26c64-4403-4a13-b128-5be5e9752d97` (lms-qa-2) | #145; #149/#153 dedupe; then M2 #175 (T34 probes) | working |
+| Backend 3 | Sonnet | `local_2e8038c6-e5ba-4e13-ade0-9440d9beb565` (lms-backend-3) | M2 #167 (T21 IdP), #168 (T22); M1 #52 after #50 | working |
+| Backend 4 | Sonnet | `local_fd5c4410-8364-4c55-a5a8-3b8aa37afc1f` (lms-backend-4) | M2 #157 (T5 people kernel, critical path), #158, #166; M1 #50 | working |
+| QA 3 | Opus | `local_6d46b60b-d70a-4cfa-af2f-5bf90cdf7c08` (lms-qa-3) | #145 spot-check; E2E #120; then M2 #178 (T38) | reviewing |
 
 ## M0 issue map
 | Task | Issue | Lane | Depends on |
@@ -47,9 +47,10 @@ None. (Board: [LMS v1](https://github.com/users/ziadtorkey/projects/1) — Todo 
 
 ## Decisions needed from the product owner
 - 2026-11-11: CI was blocked by GitHub Actions billing on the private repo (#152); owner chose to **make the repo public** — done after a secrets scan; CI running again.
-- M2 plan approval + 13 questions: issue #103 (draft plan on main; Lead asks via popup when M1 is near done — not blocking anything now).
+- 2026-11-11: M2 plan approved; 13 answers recorded as D23–D36 (students, guardians and change requests move to M3). #103 closed.
 
 ## Recently merged
+- #141 copy branch and template library (closes #63)
 - #97 audit viewer, subtree visibility and export (closes #53)
 - #99 org units (closes #44) · #129 notification center (closes #69) · #136 assignment Lows · #128 year selector (closes #68) · #135 403 handling (closes #132)
 - #114 move unit + unit settings (closes #61) · #92 clients + first Org Admin (closes #42) · #107 role assignments (closes #56) · #116 academic years pages (closes #67)
