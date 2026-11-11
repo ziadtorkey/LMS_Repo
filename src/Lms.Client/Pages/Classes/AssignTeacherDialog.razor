@@ -1,0 +1,89 @@
+@using Lms.Client.Services.Api
+@using Lms.Shared.Teaching
+@inject ITeachingApi Api
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+@* Assigns a teacher to a class course. Only teachers who are eligible to teach the course at the class's unit are offered. *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="2">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" data-testid="dialog-error">@_error</MudAlert>
+            }
+            @if (_hint is not null)
+            {
+                <MudAlert Severity="Severity.Info" data-testid="replace-hint">@_hint</MudAlert>
+            }
+            <MudSelect T="Guid?" @bind-Value="_userId" Label="@L["Teacher_Teacher"]" Required="true" RequiredError="@L["Common_Required"]" data-testid="assign-teacher">
+                @foreach (var teacher in _eligible)
+                {
+                    <MudSelectItem T="Guid?" Value="@((Guid?)teacher.UserId)">@Culture.Pick(teacher.TeacherNameAr, teacher.TeacherNameEn)</MudSelectItem>
+                }
+            </MudSelect>
+            @if (_loaded && _eligible.Count == 0)
+            {
+                <MudText Typo="Typo.caption" data-testid="assign-none">@L["Teacher_NoneEligible"]</MudText>
+            }
+            <MudSelect T="string" @bind-Value="_role" Label="@L["Teacher_Role"]" data-testid="assign-role">
+                @foreach (var role in TeacherRoles.All)
+                {
+                    <MudSelectItem T="string" Value="@role">@L[$"TeacherRole_{role}"]</MudSelectItem>
+                }
+            </MudSelect>
+            <MudDatePicker Date="_from" DateChanged="d => _from = d" Label="@L["Teacher_From"]" data-testid="assign-from" />
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="@(_saving || _userId is null)"
+                   data-testid="dialog-save">@L["Teacher_Assign"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired] public Guid ClassCourseId { get; set; }
+    [Parameter, EditorRequired] public Guid CourseId { get; set; }
+    [Parameter, EditorRequired] public Guid OrgUnitId { get; set; }
+
+    private IReadOnlyList<TeacherEligibilityDto> _eligible = [];
+    private Guid? _userId;
+    private string _role = TeacherRoles.Primary;
+    private DateTime? _from = DateTime.Today;
+    private string? _error, _hint;
+    private bool _saving, _loaded;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ApiCalls.RunAsync(async () =>
+            _eligible = (await Api.ListEligibilityAsync(new EligibilityQuery(OrgUnitId, null, CourseId, 1, 200))).Items
+                .GroupBy(e => e.UserId).Select(g => g.First()).ToList(),
+            Navigation, L, message => _error = message);
+        _loaded = true;
+    }
+
+    private async Task SaveAsync()
+    {
+        _error = _hint = null;
+        _saving = true;
+        var request = new AssignTeacherRequest(_userId!.Value, _role, _from is { } d ? DateOnly.FromDateTime(d) : null);
+        var problem = false;
+        var saved = await ApiCalls.RunAsync(async () =>
+        {
+            try { await Api.AssignAsync(ClassCourseId, request); }
+            catch (ApiProblemException ex) when (ex.Code == "primary_teacher_exists") { problem = true; }
+        }, Navigation, L, message => _error = message);
+        _saving = false;
+
+        // A second primary is not allowed: point at replacing the current one instead of just failing.
+        if (problem)
+        {
+            _hint = L["Teacher_ReplaceHint"];
+            return;
+        }
+        if (saved) MudDialog.Close(DialogResult.Ok(true));
+    }
+}

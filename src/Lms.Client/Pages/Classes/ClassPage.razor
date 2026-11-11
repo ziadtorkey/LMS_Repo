@@ -53,7 +53,7 @@ else
             <ClassCoursesTab Class="_class" CanManage="PermState.Has(Permissions.Classes.ManageCourses)" />
         </MudTabPanel>
         <MudTabPanel Text="@L["ClassPage_Teachers"]" data-testid="tab-teachers">
-            <MudText data-testid="teachers-soon">@L["ClassPage_TeachersSoon"]</MudText>
+            <ClassTeachersTab Class="_class" CanManage="PermState.Has(Permissions.TeacherAssignments.Manage)" />
         </MudTabPanel>
     </MudTabs>
 }

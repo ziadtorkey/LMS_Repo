@@ -851,4 +851,38 @@
   <data name="Matrix_OptionalMark" xml:space="preserve"><value>opt.</value></data>
   <data name="Matrix_ChooseUnit" xml:space="preserve"><value>Choose a unit to see its classes.</value></data>
   <data name="Matrix_NoClasses" xml:space="preserve"><value>This unit has no classes in the selected year.</value></data>
+  <data name="Nav_Eligibility" xml:space="preserve"><value>Teacher eligibility</value></data>
+  <data name="Eligibility_Title" xml:space="preserve"><value>Teacher eligibility</value></data>
+  <data name="Eligibility_Help" xml:space="preserve"><value>Say which teachers may teach which courses at a unit. Only eligible teachers can be assigned to a class course.</value></data>
+  <data name="Eligibility_Grant" xml:space="preserve"><value>Grant eligibility</value></data>
+  <data name="Eligibility_Revoke" xml:space="preserve"><value>Revoke</value></data>
+  <data name="Eligibility_RevokeConfirm" xml:space="preserve"><value>Revoke the eligibility of {0} for {1}?</value></data>
+  <data name="Eligibility_Unit" xml:space="preserve"><value>Unit</value></data>
+  <data name="Eligibility_Teacher" xml:space="preserve"><value>Teacher</value></data>
+  <data name="Eligibility_Course" xml:space="preserve"><value>Course</value></data>
+  <data name="Eligibility_Teachers" xml:space="preserve"><value>Teachers</value></data>
+  <data name="Eligibility_Courses" xml:space="preserve"><value>Courses</value></data>
+  <data name="Eligibility_Pairs" xml:space="preserve"><value>{0} teacher-course pairs (at most {1})</value></data>
+  <data name="Teacher_Teacher" xml:space="preserve"><value>Teacher</value></data>
+  <data name="Teacher_NewTeacher" xml:space="preserve"><value>New teacher</value></data>
+  <data name="Teacher_Role" xml:space="preserve"><value>Role</value></data>
+  <data name="Teacher_From" xml:space="preserve"><value>From</value></data>
+  <data name="Teacher_To" xml:space="preserve"><value>To</value></data>
+  <data name="Teacher_Assign" xml:space="preserve"><value>Assign teacher</value></data>
+  <data name="Teacher_Replace" xml:space="preserve"><value>Replace</value></data>
+  <data name="Teacher_End" xml:space="preserve"><value>End</value></data>
+  <data name="Teacher_LastDay" xml:space="preserve"><value>Last day</value></data>
+  <data name="Teacher_EffectiveOn" xml:space="preserve"><value>Effective date</value></data>
+  <data name="Teacher_Replacing" xml:space="preserve"><value>Replacing {0}. They teach until the day before the effective date.</value></data>
+  <data name="Teacher_EndConfirm" xml:space="preserve"><value>End the assignment of {0}?</value></data>
+  <data name="Teacher_ShowHistory" xml:space="preserve"><value>Show history</value></data>
+  <data name="Teacher_None" xml:space="preserve"><value>No teacher assigned yet.</value></data>
+  <data name="Teacher_NoneEligible" xml:space="preserve"><value>No teacher is eligible to teach this course here. Grant eligibility first.</value></data>
+  <data name="Teacher_ReplaceHint" xml:space="preserve"><value>This course already has a primary teacher. Use Replace on the current primary teacher, or assign this teacher as an assistant.</value></data>
+  <data name="Teacher_BulkAssign" xml:space="preserve"><value>Assign to classes</value></data>
+  <data name="Teacher_PickClassCourses" xml:space="preserve"><value>Class courses the teacher is eligible for</value></data>
+  <data name="Teacher_NoClassCourses" xml:space="preserve"><value>No class course in the selected year matches the teacher's eligible courses.</value></data>
+  <data name="Teacher_BulkResult" xml:space="preserve"><value>{0} assignments created, {1} skipped (already assigned).</value></data>
+  <data name="TeacherRole_Primary" xml:space="preserve"><value>Primary</value></data>
+  <data name="TeacherRole_Assistant" xml:space="preserve"><value>Assistant</value></data>
 </root>

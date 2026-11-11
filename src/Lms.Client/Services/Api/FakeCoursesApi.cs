@@ -96,10 +96,12 @@ public sealed class FakeCoursesApi : ICoursesApi
 /// <summary>Stable ids of the fake courses by code, so the fake class courses and the fake catalog agree on which course is which.</summary>
 public static class FakeCourseIds
 {
-    public static Guid For(string code)
+    /// <summary>A stable id for a key (a course code, "class:course"): the key's bytes folded into 16 bytes.</summary>
+    public static Guid For(string key)
     {
         var bytes = new byte[16];
-        System.Text.Encoding.UTF8.GetBytes(code, bytes.AsSpan(0, Math.Min(code.Length, 16)));
+        var utf8 = System.Text.Encoding.UTF8.GetBytes(key);
+        for (var i = 0; i < utf8.Length; i++) bytes[i % 16] = (byte)(bytes[i % 16] * 31 + utf8[i] + i);
         return new Guid(bytes);
     }
 }
