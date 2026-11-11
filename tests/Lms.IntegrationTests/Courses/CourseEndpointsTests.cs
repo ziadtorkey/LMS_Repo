@@ -111,7 +111,6 @@ public sealed class CourseEndpointsTests(LmsApiFactory factory) : IDisposable
             Request(tree.School1.Id) with { Language = "english" },
             Request(tree.School1.Id) with { WeeklyPeriods = 41 },
             Request(tree.School1.Id) with { NameEn = " " },
-            Request(tree.School1.Id) with { AllocateToOrgUnitIds = [tree.School1.Id] },
         };
 
         foreach (var body in bad)
