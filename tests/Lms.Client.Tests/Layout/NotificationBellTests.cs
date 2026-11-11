@@ -16,7 +16,7 @@ public sealed class NotificationBellTests : ClientTestContext
 
     private async Task<IRenderedComponent<NotificationBell>> RenderAsync()
     {
-        CultureInfo.CurrentUICulture = new CultureInfo("en");
+        Culture.Current = new CultureInfo("en");
         await GrantAsync();
         _popover = Render<MudPopoverProvider>();
         _snackbars = Render<MudSnackbarProvider>();

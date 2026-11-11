@@ -19,7 +19,7 @@ public sealed class NotificationsPagesTests : ClientTestContext
     [Fact]
     public async Task List_shows_unread_marker_and_unread_filter_hides_read_ones()
     {
-        CultureInfo.CurrentUICulture = new CultureInfo("en");
+        Culture.Current = new CultureInfo("en");
         await GrantAsync();
         var cut = Page<NotificationsPage>();
         var read = NotificationsApi.Items.First(n => n.IsRead);
@@ -47,7 +47,7 @@ public sealed class NotificationsPagesTests : ClientTestContext
     [Fact]
     public async Task Offline_mark_all_shows_a_snackbar_instead_of_crashing()
     {
-        CultureInfo.CurrentUICulture = new CultureInfo("en");
+        Culture.Current = new CultureInfo("en");
         await GrantAsync();
         Render<MudPopoverProvider>();
         var snackbars = Render<MudSnackbarProvider>();
@@ -63,14 +63,21 @@ public sealed class NotificationsPagesTests : ClientTestContext
     [Fact]
     public async Task In_app_preference_switch_is_locked_on()
     {
+        Culture.Current = new CultureInfo("ar");
         await GrantAsync();
         var cut = Page<NotificationPreferencesPage>();
 
         var inApp = cut.WaitForElement($"[data-testid=\"pref-{NotificationEvents.AccessRoleAssigned}-InApp\"]");
         var email = cut.Find($"[data-testid=\"pref-{NotificationEvents.AccessRoleAssigned}-Email\"]");
 
-        Assert.True(inApp.HasAttribute("disabled"));
-        Assert.False(email.HasAttribute("disabled"));
+        Assert.True(inApp.HasAttribute("checked")); // reads as ON, not as a greyed-out OFF
+        Assert.False(inApp.HasAttribute("disabled"));
+        Assert.False(email.HasAttribute("readonly"));
+        await inApp.ChangeAsync(new() { Value = false });
+        await cut.Find("[data-testid=prefs-save]").ClickAsync(new());
+        cut.WaitForAssertion(() => Assert.NotNull(NotificationsApi.LastSaved));
+        Assert.Contains(NotificationsApi.LastSaved!.Preferences, p => p.Channel == "InApp" && p.Enabled);
+        Assert.All(NotificationsApi.LastSaved!.Preferences.Where(p => p.Channel == "InApp"), p => Assert.True(p.Enabled));
     }
 
     [Fact]
@@ -91,7 +98,7 @@ public sealed class NotificationsPagesTests : ClientTestContext
     [Fact]
     public async Task Pages_render_rtl_in_arabic()
     {
-        CultureInfo.CurrentUICulture = new CultureInfo("ar");
+        Culture.Current = new CultureInfo("ar");
         await GrantAsync();
         Render<MudPopoverProvider>();
         var list = Render<MudRTLProvider>(p => p.Add(r => r.RightToLeft, true).AddChildContent<NotificationsPage>());

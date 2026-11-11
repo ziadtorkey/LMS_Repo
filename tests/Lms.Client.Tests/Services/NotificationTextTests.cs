@@ -17,7 +17,7 @@ public sealed class NotificationTextTests : ClientTestContext
 
     private string Format(NotificationDto n, string culture)
     {
-        CultureInfo.CurrentUICulture = new CultureInfo(culture);
+        Culture.Current = new CultureInfo(culture);
         return NotificationText.Format(n, Services.GetRequiredService<IStringLocalizer<SharedResource>>(), new CultureInfo(culture));
     }
 

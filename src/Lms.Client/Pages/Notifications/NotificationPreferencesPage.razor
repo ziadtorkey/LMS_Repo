@@ -47,8 +47,8 @@ else
                         var c = channel;
                         var pref = Find(key, c);
                         <td>
-                            <MudSwitch T="bool" Value="pref?.Enabled ?? false" ValueChanged="v => Toggle(key, c, v)" Color="Color.Primary"
-                                       Disabled="@(pref is null || pref.Locked)"
+                            <MudSwitch T="bool" Value="pref?.Enabled ?? false" ValueChanged="v => Toggle(key, c, v)" Color="@(pref?.Locked == true ? Color.Success : Color.Primary)"
+                                       ReadOnly="@(pref?.Locked == true)" Disabled="@(pref is null)"
                                        aria-label="@($"{L[NotificationText.EventLabelKey(key)]} – {L[$"Channel_{c}"]}")"
                                        data-testid="@($"pref-{key}-{c}")" />
                         </td>
