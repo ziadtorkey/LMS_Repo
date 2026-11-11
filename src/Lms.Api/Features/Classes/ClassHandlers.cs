@@ -244,7 +244,7 @@ public sealed class ClassHandlers(
             ? ApiProblems.BadRequest(ProblemCodes.teacher_not_in_unit, "The homeroom teacher has no Teacher role at this unit.")
             : null;
 
-    private async Task<IResult?> ClosedProblemAsync(Class cls, CancellationToken ct)
+    internal async Task<IResult?> ClosedProblemAsync(Class cls, CancellationToken ct)
     {
         if (cls.Status == Class.ClosedStatus)
         {

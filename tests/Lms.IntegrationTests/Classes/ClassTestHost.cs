@@ -15,9 +15,9 @@ using Microsoft.EntityFrameworkCore;
 namespace Lms.IntegrationTests.Classes;
 
 /// <summary>Shared setup of the class endpoint tests: a client with an active year at the root and an admin.</summary>
-internal sealed class ClassTestHost(LmsApiFactory factory) : IDisposable
+internal sealed class ClassTestHost(LmsApiFactory factory, Action<Microsoft.Extensions.DependencyInjection.IServiceCollection>? configure = null) : IDisposable
 {
-    public OrgUnitTestHost Host { get; } = new(factory);
+    public OrgUnitTestHost Host { get; } = new(factory, configure);
 
     public void Dispose() => Host.Dispose();
 
