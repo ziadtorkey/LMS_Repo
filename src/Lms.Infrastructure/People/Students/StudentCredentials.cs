@@ -21,7 +21,7 @@ public sealed class StudentCredentials(
     public async Task<IssuedCredentials> IssueAsync(
         StudentProfile student, string? requestedPassword, bool reset, CancellationToken ct)
     {
-        var userName = student.StudentCode.ToLowerInvariant();
+        var userName = student.StudentCode.ToLowerInvariant(); // the account's user name; see the collision rule below
         var password = string.IsNullOrEmpty(requestedPassword) ? PasswordGenerator.Generate() : requestedPassword;
         if (!string.IsNullOrEmpty(requestedPassword))
         {
@@ -36,6 +36,15 @@ public sealed class StudentCredentials(
         }
         else
         {
+            // Student codes are unique per client, user names are unique platform-wide: another client's student with the same
+            // code must never be taken for this one (its password would be reset or shared). The account of an email match is still
+            // the same person's; otherwise a taken user name gets the client's short id appended.
+            var emailOwner = PersonNormalizer.Email(student.Email) is { } email ? await users.FindByEmailAsync(email) : null;
+            if (emailOwner is null && await users.FindByNameAsync(userName) is not null)
+            {
+                userName = $"{userName}.{student.OrganizationId:N}"[..(userName.Length + 7)];
+            }
+
             (user, created) = await accounts.EnsureUserAsync(student.Email, userName, student.NameAr, student.NameEn, ct);
         }
 

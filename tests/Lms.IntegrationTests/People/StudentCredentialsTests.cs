@@ -246,4 +246,30 @@ public sealed class StudentCredentialsTests
         Assert.True(await users2.CheckPasswordAsync(stored, second.Password!));
         Assert.False(await users2.CheckPasswordAsync(stored, first.Password!));
     }
+
+    [Fact]
+    public async Task Same_student_code_in_two_clients_never_shares_an_account()
+    {
+        var (first, treeA) = await StudentAsync("SC8A");
+        var (second, treeB) = await StudentAsync("SC8B");
+        await using (var db = _factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            var stored = await db.Set<StudentProfile>().IgnoreQueryFilters().SingleAsync(s => s.Id == second.Id);
+            stored.ChangeCode(first.StudentCode); // codes are unique per client, so another client may use the same one
+            await db.SaveChangesAsync();
+        }
+
+        var a = await IssueAsync(first.Id);
+        var b = await IssueAsync(second.Id);
+
+        Assert.NotEqual(a.User.Id, b.User.Id); // the second student did not take over the first one's account
+        Assert.NotNull(b.Password);
+        Assert.Equal(first.StudentCode.ToLowerInvariant(), a.User.UserName);
+        Assert.StartsWith(first.StudentCode.ToLowerInvariant() + ".", b.User.UserName);
+        using var scope = _host.Services.CreateScope();
+        var users = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+        Assert.True(await users.CheckPasswordAsync((await users.FindByIdAsync(a.User.Id.ToString()))!, a.Password!)); // the first account is untouched
+        Assert.NotNull(treeA);
+        Assert.NotNull(treeB);
+    }
 }
