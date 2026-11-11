@@ -10,6 +10,7 @@ using Lms.IntegrationTests.Infrastructure;
 using Lms.Shared;
 using Lms.Shared.Authorization;
 using Lms.Shared.Notifications;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,7 +34,7 @@ public sealed class NotificationTests(LmsApiFactory factory)
     {
         public List<(Guid UserId, NotificationDto Dto)> Pushed { get; } = [];
 
-        public Task PushAsync(Guid userId, NotificationDto notification, CancellationToken cancellationToken)
+        public Task PushAsync(Guid userId, Guid? organizationId, NotificationDto notification, CancellationToken cancellationToken)
         {
             lock (Pushed)
             {
@@ -80,7 +81,7 @@ public sealed class NotificationTests(LmsApiFactory factory)
         // A real hub connection for the user, over the in-memory server (long polling: no websockets in TestServer).
         var received = new TaskCompletionSource<NotificationDto>();
         await using var connection = new HubConnectionBuilder()
-            .WithUrl(new Uri(factory.Server.BaseAddress, NotificationHub.Path), options =>
+            .WithUrl(new Uri(factory.Server.BaseAddress, NotificationHub.Path + $"?context={assignment.Id}"), options =>
             {
                 options.HttpMessageHandlerFactory = _ => factory.Server.CreateHandler();
                 options.Transports = Microsoft.AspNetCore.Http.Connections.HttpTransportType.LongPolling;
@@ -89,6 +90,7 @@ public sealed class NotificationTests(LmsApiFactory factory)
             .Build();
         connection.On<NotificationDto>(NotificationHub.ReceiveMethod, dto => received.TrySetResult(dto));
         await connection.StartAsync();
+        await Assert.ThrowsAsync<HubException>(() => connection.InvokeAsync("SwitchContext", Guid.NewGuid())); // barrier: OnConnectedAsync (the group join) has finished; the refused switch leaves groups alone
 
         using var scope = factory.Services.CreateScope();
         await scope.ServiceProvider.GetRequiredService<INotificationPublisher>().PublishAsync(new NotificationRequest(
@@ -141,6 +143,7 @@ public sealed class NotificationTests(LmsApiFactory factory)
             .Build();
         connection.On<NotificationDto>(NotificationHub.ReceiveMethod, dto => received.TrySetResult(dto));
         await connection.StartAsync();
+        await Assert.ThrowsAsync<HubException>(() => connection.InvokeAsync("SwitchContext", Guid.NewGuid())); // connect barrier
 
         using (var scope = auth.Services.CreateScope())
         {

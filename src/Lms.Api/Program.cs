@@ -1,4 +1,3 @@
-using Lms.Api.Features.Audit;
 using Lms.Api.Features.Files;
 using Lms.Api.Features.Settings;
 using Lms.Api.Features.Notifications;
@@ -26,9 +25,10 @@ builder.Services.AddMe();
 builder.Services.AddSettings();
 builder.Services.AddNotifications();
 builder.Services.AddInfrastructure(builder.Configuration);
+// Feature modules implementing ILmsModule register themselves; new modules don't edit this file.
+builder.Services.AddLmsModules(builder.Configuration);
 builder.Services.AddLmsAuth(builder.Configuration, builder.Environment);
 builder.Services.AddAccount(builder.Configuration);
-builder.Services.AddAuditViewer();
 builder.Services.AddLmsForwardedHeaders(builder.Configuration);
 
 builder.Services.AddHealthChecks()
@@ -71,11 +71,11 @@ app.MapAuthorizationEndpoints();
 app.MapRazorPages();
 app.MapHealthChecks("/health");
 app.MapFileEndpoints();
-app.MapAuditEndpoints();
 foreach (var module in app.Services.GetServices<IEndpointModule>())
 {
     module.Map(app);
 }
+app.MapLmsModules();
 
 app.MapMeEndpoints();
 app.MapAcademicYears();
