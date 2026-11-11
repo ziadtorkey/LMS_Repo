@@ -35,7 +35,7 @@ internal static class PeopleTestKit
         await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
         var staff = new StaffProfile(
             home, user.Id, "موظف", nameEn, email ?? user.Email!, mobile, nationalId, null, null, null, null);
-        db.StaffProfiles.Add(staff);
+        db.Set<StaffProfile>().Add(staff);
         await db.SaveChangesAsync();
         return staff;
     }
@@ -48,7 +48,7 @@ internal static class PeopleTestKit
         var student = new StudentProfile(
             home, code, nameAr, nameEn, dob ?? new DateOnly(2015, 5, 5), "female", "muslim", "EG");
         student.Update(nameAr, nameEn, null, null, dob ?? new DateOnly(2015, 5, 5), "female", "muslim", "EG", nationalId, null, null, null);
-        db.StudentProfiles.Add(student);
+        db.Set<StudentProfile>().Add(student);
         await db.SaveChangesAsync();
         return student;
     }
@@ -58,7 +58,7 @@ internal static class PeopleTestKit
     {
         await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
         var guardian = new GuardianProfile(organizationId, "ولي أمر", "Guardian", mobile, null, nationalId);
-        db.GuardianProfiles.Add(guardian);
+        db.Set<GuardianProfile>().Add(guardian);
         await db.SaveChangesAsync();
         return guardian;
     }
