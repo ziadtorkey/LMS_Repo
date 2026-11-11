@@ -75,6 +75,10 @@ public sealed class IsolationBypassGuardTests
             "a user's account status derives from their profiles in every client; only that user's statuses are read (M2 Task 6, #158)",
         ["src/Lms.Infrastructure/People/StaffBackfill.cs"] =
             "startup backfill of staff profiles for M1 bare users across every client; client matched, deleted rows excluded (M2 Task 9, #161)",
+        ["src/Lms.Infrastructure/Classes/LessonPlans/LessonPlanReads.cs"] =
+            "the blueprint of a course (owned by an ancestor unit) and the academic year of a class are read for classes anywhere in the client; client matched, deleted rows excluded (M3 Task 17, #225)",
+        ["src/Lms.Infrastructure/Classes/LessonPlans/ClassLessonPlanSync.cs"] =
+            "counting the plans of a published course across the whole client (classes outside the publisher's scope); client matched, deleted rows excluded (M3 Task 17, #225)",
         ["src/Lms.Infrastructure/People/PersonDuplicateFinder.cs"] =
             "client-wide duplicate checks reach sibling subtrees outside the caller's scope; client matched, deleted rows excluded, only the field name leaves (M2 Task 5, #157)",
     };
