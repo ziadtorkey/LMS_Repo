@@ -47,6 +47,8 @@ public sealed class IsolationBypassGuardTests
             "events and names inherited from ancestor units, restricted to the unit's client (M1 Task 22, #57)",
         ["src/Lms.Infrastructure/AcademicYears/AcademicCalendar.cs"] =
             "holidays of ancestor units apply to descendants, restricted to the client and effective years (M1 Task 22, #57)",
+        ["src/Lms.Infrastructure/People/PersonDuplicateFinder.cs"] =
+            "client-wide duplicate checks reach sibling subtrees outside the caller's scope; client matched, deleted rows excluded, only the field name leaves (M2 Task 5, #157)",
     };
 
     [Fact]
