@@ -1,0 +1,63 @@
+@using Lms.Client.Components.People
+@using Lms.Client.Services.Api
+@using Lms.Shared.Access
+@using Lms.Shared.Authorization
+@inject IAccessAdminApi Access
+@inject NavigationManager Navigation
+
+@* Role rows of the create-staff form: only Staff-kind roles can be given to staff; each row has a unit and a validity window. *@
+<MudStack Spacing="2">
+    <MudText Typo="Typo.subtitle2">@L["Staff_Roles"]</MudText>
+    @for (var i = 0; i < Rows.Count; i++)
+    {
+        var row = Rows[i];
+        var index = i;
+        <MudPaper Outlined="true" Class="@(row.Problem is null ? "pa-2" : "pa-2 lms-row-invalid")" Style="@(row.Problem is null ? null : "border-color: var(--mud-palette-error)")">
+            <MudStack Spacing="2">
+                <MudSelect T="Guid?" @bind-Value="row.RoleId" Label="@L["Staff_Role"]" data-testid="@($"staff-role-{index}")">
+                    @foreach (var role in _roles)
+                    {
+                        <MudSelectItem T="Guid?" Value="@((Guid?)role.Id)">@CultureText.Pick(role.NameAr, role.NameEn)</MudSelectItem>
+                    }
+                </MudSelect>
+                <UnitPicker @bind-Value="row.UnitId" Label="@L["Staff_RoleUnit"]" TestId="@($"staff-role-unit-{index}")" />
+                <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                    <MudDatePicker Date="row.ValidFrom" DateChanged="d => row.ValidFrom = d" Label="@L["Staff_ValidFrom"]" Clearable="true" />
+                    <MudDatePicker Date="row.ValidTo" DateChanged="d => row.ValidTo = d" Label="@L["Staff_ValidTo"]" Clearable="true" />
+                </MudStack>
+                @if (row.Problem is not null)
+                {
+                    <MudText Color="Color.Error" Typo="Typo.caption" data-testid="@($"staff-role-error-{index}")">@L[row.Problem]</MudText>
+                }
+                @if (Rows.Count > 1)
+                {
+                    <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Error" OnClick="() => Rows.RemoveAt(index)"
+                               data-testid="@($"staff-role-remove-{index}")">@L["Common_Delete"]</MudButton>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+    <MudButton Variant="Variant.Text" StartIcon="@Icons.Material.Filled.Add" OnClick="() => Rows.Add(new StaffRoleRow())"
+               data-testid="staff-role-add">@L["Staff_AddRole"]</MudButton>
+</MudStack>
+
+@code {
+    private IReadOnlyList<RoleDto> _roles = [];
+
+    [Parameter, EditorRequired] public List<StaffRoleRow> Rows { get; set; } = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _roles = (await Access.GetRolesAsync()).Where(r => r.BaseKind == RoleBaseKinds.Staff).ToList();
+        }
+        catch (Exception ex) when (ApiCalls.TryRedirect(ex, Navigation))
+        {
+        }
+        catch (Exception ex) when (ex is ApiProblemException or HttpRequestException)
+        {
+            _roles = [];
+        }
+    }
+}

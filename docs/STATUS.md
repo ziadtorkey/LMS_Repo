@@ -2,8 +2,8 @@
 
 _Updated by the Team Lead after every merge cycle._
 
-**Milestone:** M0 Foundation — DONE (19 / 19) · M1 Organization & Access — in progress (42 / 49 issues closed) · M2 People — in progress (4 / 26; contracts merged)
-**Last update:** 2026-11-11 — Merged #179 (M2 contracts, closes #154–#156), #145 (probe rows per module), #120 (blocked-login E2E, part of #73), #180 (isolation test dedupe). In review: #181 people kernel (BE4 → QA2), #182 M2 probe rows (QA2, draft). M1 remaining: #148 (BE1 fix), #50 (BE4), #52 (BE3), E2E #121 (conflicts + e2e failure, QA1), #72 (FE2), rest of #73 (QA3).
+**Milestone:** M0 Foundation — DONE (19 / 19) · M1 Organization & Access — in progress (42 / 49 issues closed) · M2 People — in progress (6 / 27)
+**Last update:** 2026-11-11 — Merged #183 (identity provider config, closes #167) and #188 (SSRF fix, closes #185). E2E stack freed. In review: #181 people kernel (approved; re-merging main), #193 external sign-in (QA3), #194 key-ring protection #186 (extra QA), #189/#190/#192 FE1 staff pages, #184 role blocking (changes requested), #121 M1 E2E (QA2). Open: #187 staff create (BE2), #191 person gate (BE4), #195 import wizard (FE2, draft), #182 M2 probes (QA2, draft).
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |
@@ -13,11 +13,11 @@ _Updated by the Team Lead after every merge cycle._
 | Backend 2 | Sonnet | `local_d36e7dc2-e9e6-4f73-b7b3-b078b17bbe41` (lms-backend-2) | M2 #162 (T10 staff), then #163, #164, #165 | working |
 | Frontend | Sonnet | `local_40667dce-5be7-478b-95cb-4f14ecd203b9` (lms-frontend) | M2 #170 (T24 staff pages), then #171, #174 | working |
 | Frontend 2 | Sonnet | `local_3d9e8938-4064-4f83-a04d-920704d41a87` (lms-frontend-2) | E2E #72; then M2 #169 (T23), #172, #173 | working |
-| QA | Opus | `local_91a7af3c-7b02-4d61-ac11-2c22629cf89f` (lms-qa) | E2E #121/#72; M2 reviews; then #176, #177 | working |
-| QA 2 | Opus | `local_54d26c64-4403-4a13-b128-5be5e9752d97` (lms-qa-2) | #145; #149/#153 dedupe; then M2 #175 (T34 probes) | working |
+| QA | Sonnet | `local_91a7af3c-7b02-4d61-ac11-2c22629cf89f` (lms-qa) | E2E #121/#72; M2 reviews; then #176, #177 | working |
+| QA 2 | Sonnet | `local_54d26c64-4403-4a13-b128-5be5e9752d97` (lms-qa-2) | #145; #149/#153 dedupe; then M2 #175 (T34 probes) | working |
 | Backend 3 | Sonnet | `local_2e8038c6-e5ba-4e13-ade0-9440d9beb565` (lms-backend-3) | M2 #167 (T21 IdP), #168 (T22); M1 #52 after #50 | working |
 | Backend 4 | Sonnet | `local_fd5c4410-8364-4c55-a5a8-3b8aa37afc1f` (lms-backend-4) | M2 #157 (T5 people kernel, critical path), #158, #166; M1 #50 | working |
-| QA 3 | Opus | `local_6d46b60b-d70a-4cfa-af2f-5bf90cdf7c08` (lms-qa-3) | #145 spot-check; E2E #120; then M2 #178 (T38) | reviewing |
+| QA 3 | Sonnet | `local_6d46b60b-d70a-4cfa-af2f-5bf90cdf7c08` (lms-qa-3) | #145 spot-check; E2E #120; then M2 #178 (T38) | reviewing |
 
 ## M0 issue map
 | Task | Issue | Lane | Depends on |
@@ -46,10 +46,12 @@ _Updated by the Team Lead after every merge cycle._
 None. (Board: [LMS v1](https://github.com/users/ziadtorkey/projects/1) — Todo → In Progress → In Review → Done.)
 
 ## Decisions needed from the product owner
+- 2026-11-11: QA agents run on Sonnet instead of Opus (owner decision); `.claude/agents/qa-engineer.md` and DEV-PLAN updated.
 - 2026-11-11: CI was blocked by GitHub Actions billing on the private repo (#152); owner chose to **make the repo public** — done after a secrets scan; CI running again.
 - 2026-11-11: M2 plan approved; 13 answers recorded as D23–D36 (students, guardians and change requests move to M3). #103 closed.
 
 ## Recently merged
+- #188 fix(identity): SSRF guard for provider discovery and backchannel (closes #185) · #183 feat(identity): per-client identity provider configuration (closes #167)
 - #179 M2 contracts: staff, imports, identity providers (closes #154, #155, #156)
 - #180 test(security): dedupe #149/#153 isolation tests · #120 test(e2e): blocked-login E2E ar/en (part of #73) · #145 test(security): one probe-row file per module
 - #141 copy branch and template library (closes #63)
