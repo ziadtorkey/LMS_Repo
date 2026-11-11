@@ -101,10 +101,7 @@ public sealed class ClientsAndTreesTests(E2EFixture fixture) : E2ETestBase(fixtu
         await AssertDirectionAsync(culture);
     }
 
-    /// <summary>The level-transfer flags endpoint (PUT /api/org-units/{id}/academic-flags) arrives with BE PR #148.</summary>
-    private const string NeedsAcademicFlags = "Needs PUT /api/org-units/{id}/academic-flags (#148, not on main yet)";
-
-    [Theory(Skip = NeedsAcademicFlags)]
+    [Theory]
     [InlineData("ar")]
     [InlineData("en")]
     public async Task Stages_marked_as_level_transfer_show_the_transfer_path(string culture)
