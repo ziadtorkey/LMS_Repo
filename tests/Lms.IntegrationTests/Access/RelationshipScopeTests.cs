@@ -273,4 +273,93 @@ public sealed class RelationshipScopeTests(LmsApiFactory factory)
 
         Assert.Same(first, second);
     }
+
+    private Task<HttpResponseMessage> GetAsync(RoleAssignment caller, string url)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, url);
+        request.Headers.Add(TestAuthHandler.UserHeader, caller.UserId.ToString());
+        request.Headers.Add(ContextHeader.Name, caller.Id.ToString());
+        return factory.CreateClient().SendAsync(request);
+    }
+
+    private async Task EnrollAsync(ClassCourse cc, ClassStudent placement)
+    {
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        db.Add(new CourseEnrollment(cc, placement, "Manual", Today.AddDays(-3)));
+        await db.SaveChangesAsync();
+    }
+
+    [Fact]
+    public async Task Check_course_404_for_unsupervised_course_of_same_unit()
+    {
+        var w = await SeedAsync("RS8");
+        var supervisor = await AccessTestData.AssignAsync(factory, w.Tree, w.Tree.School1, BuiltInRoles.Supervisor, await UserIdAsync());
+        var admin = await AccessTestData.AssignAsync(factory, w.Tree, w.Tree.Root, BuiltInRoles.OrgAdmin, await UserIdAsync());
+        var supervised = await AcademicTestKit.AddCourseAsync(factory, w.Tree.School1);
+        var other = await AcademicTestKit.AddCourseAsync(factory, w.Tree.School1);
+        await using (var write = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            write.Add(new CourseSupervisor(supervised, supervisor.UserId));
+            await write.SaveChangesAsync();
+        }
+
+        Assert.Equal(HttpStatusCode.OK, (await GetAsync(supervisor, $"/test/relationship/course/{supervised.Id}")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await GetAsync(supervisor, $"/test/relationship/course/{other.Id}")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await GetAsync(supervisor, $"/test/relationship/course/{Guid.NewGuid()}")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await GetAsync(admin, $"/test/relationship/course/{supervised.Id}")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await GetAsync(admin, $"/test/relationship/course/{other.Id}")).StatusCode);
+    }
+
+    [Fact]
+    public async Task Check_class_404_for_other_class_of_same_school()
+    {
+        var w = await SeedAsync("RS9");
+        var teacher = await AccessTestData.AssignAsync(factory, w.Tree, w.Tree.School1, BuiltInRoles.Teacher, await UserIdAsync());
+        var mine = await AcademicTestKit.AddClassAsync(factory, w.Tree.School1, w.Year);
+        var other = await AcademicTestKit.AddClassAsync(factory, w.Tree.School1, w.Year);
+        await TeachAsync(await CourseInAsync(mine), teacher.UserId, Today.AddDays(-1));
+
+        Assert.Equal(HttpStatusCode.OK, (await GetAsync(teacher, $"/test/relationship/class/{mine.Id}")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await GetAsync(teacher, $"/test/relationship/class/{other.Id}")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await GetAsync(teacher, $"/test/relationship/class/{Guid.NewGuid()}")).StatusCode);
+    }
+
+    [Fact]
+    public async Task Check_student_reaches_enrolled_and_homeroom_students_only()
+    {
+        var w = await SeedAsync("RS10");
+        var teacher = await AccessTestData.AssignAsync(factory, w.Tree, w.Tree.School1, BuiltInRoles.Teacher, await UserIdAsync());
+        var teaching = await AcademicTestKit.AddClassAsync(factory, w.Tree.School1, w.Year);
+        var homeroom = await AcademicTestKit.AddClassAsync(factory, w.Tree.School1, w.Year);
+        await using (var write = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            var tracked = await write.Set<Class>().SingleAsync(c => c.Id == homeroom.Id);
+            tracked.Update(tracked.Code, tracked.NameAr, tracked.NameEn, tracked.Capacity, teacher.UserId);
+            await write.SaveChangesAsync();
+        }
+
+        var optionalCourse = await CourseInAsync(teaching);
+        await TeachAsync(optionalCourse, teacher.UserId, Today.AddDays(-1));
+        var enrolled = await PeopleTestKit.AddStudentAsync(factory, w.Tree.School1, PeopleTestKit.NewCode());
+        var sameClassNotEnrolled = await PeopleTestKit.AddStudentAsync(factory, w.Tree.School1, PeopleTestKit.NewCode());
+        var homeroomStudent = await PeopleTestKit.AddStudentAsync(factory, w.Tree.School1, PeopleTestKit.NewCode());
+        var unrelated = await PeopleTestKit.AddStudentAsync(factory, w.Tree.School1, PeopleTestKit.NewCode());
+        await EnrollAsync(optionalCourse, await AcademicTestKit.PlaceAsync(factory, teaching, enrolled));
+        await AcademicTestKit.PlaceAsync(factory, teaching, sameClassNotEnrolled);
+        await AcademicTestKit.PlaceAsync(factory, homeroom, homeroomStudent);
+
+        string Url(Guid id) => $"/test/relationship/student/{id}";
+        Assert.Equal(HttpStatusCode.OK, (await GetAsync(teacher, Url(enrolled.Id))).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await GetAsync(teacher, Url(homeroomStudent.Id))).StatusCode);
+        // In the class of a course the teacher teaches but not enrolled in it (D42): not reachable.
+        Assert.Equal(HttpStatusCode.NotFound, (await GetAsync(teacher, Url(sameClassNotEnrolled.Id))).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await GetAsync(teacher, Url(unrelated.Id))).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await GetAsync(teacher, Url(Guid.NewGuid()))).StatusCode);
+
+        var (_, scope, db) = ScopeFor(w.Tree, teacher);
+        await using var _db = db;
+        var filter = await scope.ForAsync(Permissions.Students.View, default);
+        var visible = await filter.Students(db.Set<StudentProfile>(), db).Select(s => s.Id).ToListAsync();
+        Assert.Equal(new[] { enrolled.Id, homeroomStudent.Id }.Order(), visible.Order());
+    }
 }

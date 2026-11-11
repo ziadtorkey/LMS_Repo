@@ -109,8 +109,9 @@ public sealed class RelationshipScope(LmsDbContext db, ICurrentContext context, 
 public static class RelationshipFilterExtensions
 {
     /// <summary>
-    /// Students reached through the relationship: an active enrollment in an allowed class course or an active
-    /// placement in an allowed class. Unrestricted filters return the query unchanged.
+    /// Students reached through the relationship (D42): an active enrollment in an allowed class course, or an active
+    /// placement in a homeroom class of the caller. A class the caller only teaches a course in does not open its
+    /// whole roster. Unrestricted filters return the query unchanged.
     /// </summary>
     public static IQueryable<StudentProfile> Students(
         this RelationshipFilter filter, IQueryable<StudentProfile> students, LmsDbContext db)
@@ -121,11 +122,11 @@ public static class RelationshipFilterExtensions
         }
 
         var classCourseIds = filter.ClassCourseIds;
-        var classIds = filter.ClassIds;
+        var homeroomIds = filter.HomeroomClassIds;
         return students.Where(s =>
             db.Set<CourseEnrollment>().Any(e => e.StudentId == s.Id && e.Status == CourseEnrollment.ActiveStatus
                 && classCourseIds.Contains(e.ClassCourseId))
             || db.Set<ClassStudent>().Any(p => p.StudentId == s.Id && p.Status == ClassStudent.ActiveStatus
-                && classIds.Contains(p.ClassId)));
+                && homeroomIds.Contains(p.ClassId)));
     }
 }
