@@ -1,3 +1,4 @@
+using Lms.Shared;
 using Lms.Shared.Blueprints;
 
 namespace Lms.Client.Services.Api;
@@ -24,19 +25,17 @@ public interface IBlueprintsApi
 
 public sealed class BlueprintsApi(ApiHttp http) : IBlueprintsApi
 {
-    private static string Route(Guid courseId) => $"/api/courses/{courseId}/blueprints";
-
     public async Task<IReadOnlyList<BlueprintSummaryDto>> ListVersionsAsync(Guid courseId, CancellationToken ct = default) =>
-        await http.GetAsync<List<BlueprintSummaryDto>>(Route(courseId), ct);
+        await http.GetAsync<List<BlueprintSummaryDto>>(Routes.CourseBlueprints(courseId), ct);
 
     public Task<BlueprintDto> GetVersionAsync(Guid courseId, int version, CancellationToken ct = default) =>
-        http.GetAsync<BlueprintDto>($"{Route(courseId)}/{version}", ct);
+        http.GetAsync<BlueprintDto>(Routes.CourseBlueprintVersion(courseId, version), ct);
 
     public async Task<BlueprintDto?> GetDraftAsync(Guid courseId, CancellationToken ct = default)
     {
         try
         {
-            return await http.GetAsync<BlueprintDto>($"{Route(courseId)}/draft", ct);
+            return await http.GetAsync<BlueprintDto>(Routes.CourseBlueprintDraft(courseId), ct);
         }
         catch (ApiProblemException ex) when (ex.Status == 404)
         {
@@ -45,14 +44,14 @@ public sealed class BlueprintsApi(ApiHttp http) : IBlueprintsApi
     }
 
     public async Task<BlueprintDto> CreateDraftAsync(Guid courseId, CancellationToken ct = default) =>
-        (await http.SendAsync<BlueprintDto>(HttpMethod.Post, $"{Route(courseId)}/draft", null, ct))!;
+        (await http.SendAsync<BlueprintDto>(HttpMethod.Post, Routes.CourseBlueprintDraft(courseId), null, ct))!;
 
     public async Task<BlueprintDto> SaveDraftAsync(Guid courseId, SaveBlueprintDraftRequest request, CancellationToken ct = default) =>
-        (await http.SendAsync<BlueprintDto>(HttpMethod.Put, $"{Route(courseId)}/draft", request, ct))!;
+        (await http.SendAsync<BlueprintDto>(HttpMethod.Put, Routes.CourseBlueprintDraft(courseId), request, ct))!;
 
     public async Task<PublishBlueprintResultDto> PublishAsync(Guid courseId, PublishBlueprintRequest request, CancellationToken ct = default) =>
-        (await http.SendAsync<PublishBlueprintResultDto>(HttpMethod.Post, $"{Route(courseId)}/draft/publish", request, ct))!;
+        (await http.SendAsync<PublishBlueprintResultDto>(HttpMethod.Post, Routes.CourseBlueprintPublish(courseId), request, ct))!;
 
     public async Task<BlueprintDto> CopyFromAsync(Guid courseId, CopyBlueprintRequest request, CancellationToken ct = default) =>
-        (await http.SendAsync<BlueprintDto>(HttpMethod.Post, $"{Route(courseId)}/draft/copy-from", request, ct))!;
+        (await http.SendAsync<BlueprintDto>(HttpMethod.Post, Routes.CourseBlueprintCopyFrom(courseId), request, ct))!;
 }
