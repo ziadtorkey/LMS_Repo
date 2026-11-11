@@ -42,9 +42,9 @@ public sealed class StaffStatusHandler(
 
         var to = Enum.Parse<PersonStatus>(request.Status);
 
-        // Deactivating takes access away (D16): the caller must be allowed to manage every role the person holds.
-        // Reactivating gives back what was there, so it is not guarded.
-        if (to == PersonStatus.Deactivated && await StaffAssignments.CheckCallerMayRemoveAccessAsync(db, caller, profile, ct) is { } refused)
+        // Changing the status switches the person's access on or off (D16): the caller must be allowed to manage every role
+        // the person holds, whichever direction the change goes.
+        if (await StaffAssignments.CheckCallerMayRemoveAccessAsync(db, caller, profile, ct) is { } refused)
         {
             return refused;
         }

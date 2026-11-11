@@ -368,7 +368,14 @@ public sealed class StaffLifecycleTests
             Assert.Equal(1, await db.RoleAssignments.CountAsync(a => a.UserId == secondAdmin.Summary.UserId && !a.IsDeleted));
         }
 
-        // a narrower target is fine, and reactivating is never guarded
+        // reactivating a broader target is refused too (it switches the same access back on)
+        Assert.Equal(HttpStatusCode.OK, (await StatusAsync(admin, secondAdmin.Summary.Id, PersonStatuses.Deactivated)).StatusCode);
+        var reactivate = await StatusAsync(hr, secondAdmin.Summary.Id, PersonStatuses.Active, "back");
+        Assert.Equal(HttpStatusCode.Forbidden, reactivate.StatusCode);
+        Assert.Equal(ProblemCodes.permission_escalation, await CodeAsync(reactivate));
+        Assert.Equal(HttpStatusCode.OK, (await StatusAsync(admin, secondAdmin.Summary.Id, PersonStatuses.Active, "back")).StatusCode);
+
+        // a narrower target is fine
         Assert.Equal(HttpStatusCode.OK, (await StatusAsync(hr, teacher.Summary.Id, PersonStatuses.Deactivated)).StatusCode);
         Assert.Equal(HttpStatusCode.OK, (await StatusAsync(hr, teacher.Summary.Id, PersonStatuses.Active, "back")).StatusCode);
         Assert.Equal(HttpStatusCode.NoContent, (await SendAsync(HttpMethod.Delete, Routes.StaffMember(teacher.Summary.Id), hr)).StatusCode);
