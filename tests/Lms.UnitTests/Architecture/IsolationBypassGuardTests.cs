@@ -27,6 +27,10 @@ public sealed class IsolationBypassGuardTests
             "level types are client-wide, so the in-use count covers the whole client, not the caller subtree (M1 Task 8, #83)",
         ["src/Lms.Infrastructure/Notifications/NotificationRecipientResolver.cs"] =
             "recipients at or below the event unit, raised by someone above or beside them (M1 Task 10, #90)",
+        ["src/Lms.Infrastructure/AcademicYears/AcademicYearResolver.cs"] =
+            "effective year list inherited from ancestors above the caller's scope (M1 Task 20, #102)",
+        ["src/Lms.Api/Features/AcademicYears/AcademicYearMapper.cs"] =
+            "names of the defining unit of an inherited year, restricted to the caller's organization (M1 Task 20, #102)",
     };
 
     [Fact]
