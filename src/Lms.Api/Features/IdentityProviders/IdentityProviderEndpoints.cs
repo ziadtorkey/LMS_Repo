@@ -175,6 +175,10 @@ public static class IdentityProviderEndpoints
         {
             return Results.Ok(new ProviderTestResultDto(false, null, "discovery_invalid"));
         }
+        catch (HttpRequestException ex) when (ex.InnerException is BlockedAddressException)
+        {
+            return Results.Ok(new ProviderTestResultDto(false, null, "authority_not_allowed"));
+        }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or InvalidOperationException)
         {
             return Results.Ok(new ProviderTestResultDto(false, null, "provider_unreachable"));
