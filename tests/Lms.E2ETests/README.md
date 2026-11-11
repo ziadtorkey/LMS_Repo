@@ -67,7 +67,7 @@ Each runs in Arabic and English (`[Theory]` with `"ar"`/`"en"`; `StartAsync(cult
 | `Platform_admin_creates_school_group_and_university_with_first_admins` | FR-ORG-01, both sample client types, invitation sent | #92 |
 | `Org_admin_sets_password_from_invitation_email_and_logs_in` | FR-SEC-02 invitation → set password → sign in → client menu | #92 |
 | `School_admin_builds_level_types_and_tree` | FR-ORG-02/03: levels, School › Stage › Section tree | #92, #83, #99, #114 |
-| `Stages_marked_as_level_transfer_show_the_transfer_path` (skipped) | FR-ORG-09: transfer flag, next level, RTL arrow | academic-flags API (#148) |
+| `Stages_marked_as_level_transfer_show_the_transfer_path` | FR-ORG-09: transfer flag, next level, RTL arrow | #148, #114 |
 | `University_admin_builds_faculty_tree_and_moves_a_specialization` | FR-ORG-03/04: faculty tree, move with confirm | #99, #114 |
 | `Delete_unit_with_children_is_refused_with_message` | FR-ORG-05 | #99 |
 | `Seeded_org_admin_adds_reorders_and_deletes_a_level_type` | FR-ORG-02 | #83 |
