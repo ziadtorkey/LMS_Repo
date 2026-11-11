@@ -113,7 +113,18 @@ public sealed class StudentLifecycleHandler(
             {
                 return Results.Problem(
                     statusCode: StatusCodes.Status409Conflict, title: "Conflict",
-                    extensions: new Dictionary<string, object?> { ["code"] = ProblemCodes.possible_duplicate, ["count"] = same });
+                    extensions: new Dictionary<string, object?> { ["code"] = ProblemCodes.possible_duplicate });
+            }
+        }
+
+        string? newUserName = null;
+        if (codeChanged && student.UserId is { } linkedUser)
+        {
+            var shortCode = await db.Organizations.Where(o => o.Id == student.OrganizationId).Select(o => o.ShortCode).SingleAsync(ct);
+            newUserName = $"{requestedCode.ToLowerInvariant()}@{shortCode}";
+            if (await users.FindByNameAsync(newUserName) is { } owner && owner.Id != linkedUser)
+            {
+                return StudentProblems.Duplicate("StudentCode"); // the new sign-in name belongs to another account
             }
         }
 
@@ -143,11 +154,14 @@ public sealed class StudentLifecycleHandler(
         await db.SaveChangesAsync(ct);
         if (student.UserId is { } userId)
         {
-            if (codeChanged && await users.FindByIdAsync(userId.ToString()) is { } account
-                && string.Equals(account.UserName, student.StudentCode, StringComparison.OrdinalIgnoreCase) is false
-                && account.UserName is { } oldName && !oldName.Contains('@'))
+            if (codeChanged && await users.FindByIdAsync(userId.ToString()) is { } account && newUserName is not null)
             {
-                await users.SetUserNameAsync(account, requestedCode.ToLowerInvariant()); // the user name is the student code
+                // D47: the sign-in name always matches the current code; this frees the old code and rotates the stamp.
+                var renamed = await users.SetUserNameAsync(account, newUserName);
+                if (!renamed.Succeeded)
+                {
+                    throw new InvalidOperationException("The student's account could not be renamed: " + string.Join(", ", renamed.Errors.Select(e => e.Code)));
+                }
             }
 
             if (newHome is not null)
