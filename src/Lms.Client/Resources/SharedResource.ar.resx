@@ -233,5 +233,47 @@
   <data name="LevelTypes_OutOfScope" xml:space="preserve"><value>يمكن تغيير ذلك فقط من المستوى الأعلى للمؤسسة.</value></data>
   <data name="Common_Yes" xml:space="preserve"><value>نعم</value></data>
   <data name="Common_No" xml:space="preserve"><value>لا</value></data>
+  <data name="Nav_AcademicYears" xml:space="preserve"><value>الأعوام الدراسية</value></data>
+  <data name="Years_Title" xml:space="preserve"><value>الأعوام الدراسية</value></data>
+  <data name="Years_New" xml:space="preserve"><value>عام جديد</value></data>
+  <data name="Years_Start" xml:space="preserve"><value>تاريخ البدء</value></data>
+  <data name="Years_End" xml:space="preserve"><value>تاريخ الانتهاء</value></data>
+  <data name="Years_Activate" xml:space="preserve"><value>تعيين كعام نشط</value></data>
+  <data name="YearStatus_Planned" xml:space="preserve"><value>مخطط</value></data>
+  <data name="YearStatus_Active" xml:space="preserve"><value>نشط</value></data>
+  <data name="YearStatus_Closed" xml:space="preserve"><value>مغلق</value></data>
+  <data name="Years_DefinedAt" xml:space="preserve"><value>محدد في {0}</value></data>
+  <data name="Years_DefineOwn" xml:space="preserve"><value>تحديد أعوام خاصة بهذه الوحدة</value></data>
+  <data name="Terms_Title" xml:space="preserve"><value>الفصول الدراسية</value></data>
+  <data name="Terms_Current" xml:space="preserve"><value>الحالي</value></data>
+  <data name="Calendar_Title" xml:space="preserve"><value>التقويم</value></data>
+  <data name="Calendar_Holiday" xml:space="preserve"><value>عطلة</value></data>
+  <data name="Calendar_Event" xml:space="preserve"><value>مناسبة</value></data>
+  <data name="Calendar_InheritedFrom" xml:space="preserve"><value>من {0}</value></data>
+  <data name="Years_DateOrder" xml:space="preserve"><value>يجب ألا يسبق تاريخ الانتهاء تاريخ البدء.</value></data>
+  <data name="Years_Empty" xml:space="preserve"><value>لا توجد أعوام دراسية محددة لهذه الوحدة بعد.</value></data>
+  <data name="Years_ClosedHint" xml:space="preserve"><value>هذا العام مغلق ولا يمكن تعديله.</value></data>
+  <data name="Years_DeleteConfirm" xml:space="preserve"><value>حذف العام الدراسي {0}؟</value></data>
+  <data name="Terms_New" xml:space="preserve"><value>فصل جديد</value></data>
+  <data name="Terms_DeleteConfirm" xml:space="preserve"><value>حذف الفصل {0}؟</value></data>
+  <data name="Calendar_New" xml:space="preserve"><value>إدخال جديد</value></data>
+  <data name="Calendar_Kind" xml:space="preserve"><value>النوع</value></data>
+  <data name="Calendar_TitleAr" xml:space="preserve"><value>العنوان بالعربية</value></data>
+  <data name="Calendar_TitleEn" xml:space="preserve"><value>العنوان بالإنجليزية</value></data>
+  <data name="Calendar_DeleteConfirm" xml:space="preserve"><value>حذف {0}؟</value></data>
+  <data name="Calendar_PrevMonth" xml:space="preserve"><value>الشهر السابق</value></data>
+  <data name="Calendar_NextMonth" xml:space="preserve"><value>الشهر التالي</value></data>
+  <data name="OrgTree_Title" xml:space="preserve"><value>الهيكل التنظيمي</value></data>
+  <data name="OrgTree_AddChild" xml:space="preserve"><value>إضافة وحدة</value></data>
+  <data name="OrgTree_Search" xml:space="preserve"><value>البحث في الوحدات</value></data>
+  <data name="OrgTree_LevelType" xml:space="preserve"><value>نوع المستوى</value></data>
+  <data name="OrgTree_Deactivate" xml:space="preserve"><value>إيقاف</value></data>
+  <data name="OrgTree_Activate" xml:space="preserve"><value>تفعيل</value></data>
+  <data name="OrgTree_Inactive" xml:space="preserve"><value>غير نشط</value></data>
+  <data name="OrgTree_Settings" xml:space="preserve"><value>إعدادات الوحدة</value></data>
+  <data name="OrgTree_DeleteConfirm" xml:space="preserve"><value>حذف هذه الوحدة؟ لا يمكن استعادتها إلا عن طريق الدعم الفني.</value></data>
+  <data name="OrgTree_NoMatches" xml:space="preserve"><value>لا توجد وحدات مطابقة للبحث.</value></data>
+  <data name="Confirm_DeactivateTitle" xml:space="preserve"><value>إيقاف الوحدة؟</value></data>
+  <data name="OrgTree_DeactivateOwnWarning" xml:space="preserve"><value>أنت تعمل في هذه الوحدة (أو في وحدة تابعة لها). إذا أوقفتها فستفقد الوصول إلى أن يعيد مسؤول أعلى منها تفعيلها. هل تريد المتابعة؟</value></data>
   <data name="AuditEntity_StoredFile" xml:space="preserve"><value>ملف</value></data>
 </root>
