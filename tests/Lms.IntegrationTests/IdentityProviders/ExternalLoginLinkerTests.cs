@@ -262,4 +262,29 @@ public sealed class ExternalLoginLinkerTests(LmsApiFactory factory)
         Assert.Null(again.User);
         Assert.Equal("external_account_not_found", again.ErrorCode);
     }
+
+    [Fact]
+    public async Task Platform_admin_with_an_existing_link_is_refused_too()
+    {
+        var tree = await AccessTestData.SeedAsync(factory, "ELL12");
+        var provider = await ProviderAsync(tree.Org.Id);
+        var email = Unique("pl") + "@school.example";
+        var user = await UserAsync(email);
+        await StaffAsync(tree, user);
+        var sub = Unique("sub-");
+        Assert.NotNull((await ResolveAsync(provider, External(sub, ("email", email)))).User); // linked while still an ordinary user
+
+        using (var scope = factory.Services.CreateScope())
+        {
+            var users = scope.ServiceProvider.GetRequiredService<UserManager<Lms.Domain.Identity.User>>();
+            var stored = (await users.FindByIdAsync(user.Id.ToString()))!;
+            stored.IsPlatformAdmin = true; // promoted afterwards
+            Assert.True((await users.UpdateAsync(stored)).Succeeded);
+        }
+
+        var again = await ResolveAsync(provider, External(sub, ("email", email)));
+
+        Assert.Null(again.User);
+        Assert.Equal("external_account_not_found", again.ErrorCode);
+    }
 }

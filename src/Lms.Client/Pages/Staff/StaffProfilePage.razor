@@ -61,7 +61,7 @@ else
                 {
                     <MudButton Variant="Variant.Outlined" OnClick="ResendAsync" data-testid="action-resend">@L["Staff_ResendInvitation"]</MudButton>
                 }
-                @if (PermState.Has(Permissions.Assignments.Create))
+                @if (PermState.Has(Permissions.Staff.Update) && PermState.Has(Permissions.Assignments.Create))
                 {
                     <MudButton Variant="Variant.Outlined" OnClick="ShareAsync" data-testid="action-share">@L["Staff_Share"]</MudButton>
                 }
@@ -129,7 +129,7 @@ else
                     <MudTh>@L["Audit_When"]</MudTh>
                 </HeaderContent>
                 <RowTemplate Context="change">
-                    <MudTd>@L[$"PersonStatus_{change.FromStatus}"] → @L[$"PersonStatus_{change.ToStatus}"]</MudTd>
+                    <MudTd>@L[$"PersonStatus_{change.FromStatus}"] <MudIcon Icon="@(Culture.IsRightToLeft ? Icons.Material.Filled.ArrowBack : Icons.Material.Filled.ArrowForward)" Size="Size.Small" Class="align-middle" data-testid="history-arrow" /> @L[$"PersonStatus_{change.ToStatus}"]</MudTd>
                     <MudTd>@change.Reason</MudTd>
                     <MudTd><span dir="ltr">@change.ChangedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm", System.Globalization.CultureInfo.InvariantCulture)</span></MudTd>
                 </RowTemplate>

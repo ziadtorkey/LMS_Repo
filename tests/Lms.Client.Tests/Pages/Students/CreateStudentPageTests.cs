@@ -53,6 +53,14 @@ public sealed class CreateStudentPageTests : StudentsTestContext
     private static async Task SaveAsync(IRenderedComponent<CreateStudentPage> page) =>
         await page.Find("[data-testid=student-save]").ClickAsync(new());
 
+    /// <summary>Closes the credentials dialog (the page then navigates away) so no handler is left awaiting when the test ends.</summary>
+    private async Task CloseCredentialsAsync()
+    {
+        var done = Dialogs.WaitForElement("[data-testid=credentials-done]", Wait);
+        await done.ClickAsync(new());
+        Dialogs.WaitForAssertion(() => Assert.Empty(Dialogs.FindAll("[data-testid=credentials-done]")), Wait);
+    }
+
     /// <summary>For saves that end in a dialog: the click handler awaits the dialog result, so it must not be awaited.</summary>
     private static void SaveWithDialog(IRenderedComponent<CreateStudentPage> page) =>
         _ = page.Find("[data-testid=student-save]").ClickAsync(new());
@@ -80,8 +88,9 @@ public sealed class CreateStudentPageTests : StudentsTestContext
         Assert.Empty(Students.Creates);
 
         Type(page, "student-code", "ST-77");
-        await SaveAsync(page);
+        SaveWithDialog(page);
         page.WaitForAssertion(() => Assert.Equal("ST-77", Students.LastCreate!.StudentCode));
+        await CloseCredentialsAsync();
     }
 
     [Fact]
@@ -95,7 +104,7 @@ public sealed class CreateStudentPageTests : StudentsTestContext
         Type(page, "guardian-name-en-0", "Majed");
         Type(page, "guardian-mobile-0", "0509999999");
 
-        await SaveAsync(page);
+        SaveWithDialog(page);
 
         page.WaitForAssertion(() => Assert.NotNull(Students.LastCreate));
         var sent = Students.LastCreate!;
@@ -109,6 +118,7 @@ public sealed class CreateStudentPageTests : StudentsTestContext
         var guardian = Assert.Single(sent.Guardians);
         Assert.Equal("Majed", guardian.NewGuardian!.NameEn);
         Assert.True(guardian.IsPrimary);
+        await CloseCredentialsAsync();
     }
 
     [Fact]
@@ -161,12 +171,13 @@ public sealed class CreateStudentPageTests : StudentsTestContext
         await page.Find("[data-testid=guardian-link-0]").ClickAsync(new());
         page.WaitForElement("[data-testid=guardian-linked-0]");
 
-        await SaveAsync(page);
+        SaveWithDialog(page);
 
         page.WaitForAssertion(() => Assert.NotNull(Students.LastCreate));
         var link = Assert.Single(Students.LastCreate!.Guardians);
         Assert.Equal(FakeGuardiansApi.MonaId, link.ExistingGuardianId);
         Assert.Null(link.NewGuardian);
+        await CloseCredentialsAsync();
     }
 
     [Fact]
@@ -244,6 +255,7 @@ public sealed class CreateStudentPageTests : StudentsTestContext
         page.WaitForAssertion(() => Assert.Equal(2, Students.Creates.Count), Wait);
         Assert.False(Students.Creates[0].ConfirmPossibleDuplicate);
         Assert.True(Students.Creates[1].ConfirmPossibleDuplicate);
+        await CloseCredentialsAsync();
     }
 
     [Fact]
@@ -289,6 +301,7 @@ public sealed class CreateStudentPageTests : StudentsTestContext
         Assert.StartsWith("S-", Dialogs.Find("input[data-testid=credentials-code]").GetAttribute("value"));
         Assert.Contains("primary guardian", Dialogs.Find("[data-testid=credentials-delivery]").TextContent);
         Assert.NotNull(Dialogs.Find("[data-testid=credentials-once]"));
+        await CloseCredentialsAsync();
     }
 
     [Fact]
@@ -301,6 +314,7 @@ public sealed class CreateStudentPageTests : StudentsTestContext
 
         Dialogs.WaitForElement("[data-testid=credentials-delivery]", Wait);
         Assert.Contains("Hand the credentials", Dialogs.Find("[data-testid=credentials-delivery]").TextContent);
+        await CloseCredentialsAsync();
     }
 
     [Fact]

@@ -1,0 +1,18 @@
+@using Lms.Shared.Imports
+
+<MudChip T="string" Size="Size.Small" Color="ColorFor(Status)" Variant="Variant.Text" data-testid="import-status">
+    @L[$"ImportStatus_{Status}"]
+</MudChip>
+
+@code {
+    [Parameter, EditorRequired] public string Status { get; set; } = ImportStatuses.Uploaded;
+
+    private static Color ColorFor(string status) => status switch
+    {
+        ImportStatuses.Valid => Color.Info,
+        ImportStatuses.Committed => Color.Success,
+        ImportStatuses.Invalid or ImportStatuses.Failed => Color.Error,
+        ImportStatuses.Validating or ImportStatuses.Committing => Color.Warning,
+        _ => Color.Default,
+    };
+}
