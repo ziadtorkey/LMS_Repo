@@ -1,5 +1,4 @@
 using Lms.Api.Features.Files;
-using Lms.Api.Features.LevelTypes;
 using Lms.Api.Features.Settings;
 using Lms.Api.Features.Notifications;
 using Lms.Api.Features.Account;
@@ -23,7 +22,6 @@ builder.Host.UseSerilog((context, services, configuration) => configuration
 builder.Services.AddScoped<HttpCurrentContext>();
 builder.Services.AddScoped<Lms.Domain.Abstractions.ICurrentContext>(sp => sp.GetRequiredService<HttpCurrentContext>());
 builder.Services.AddMe();
-builder.Services.AddLevelTypes();
 builder.Services.AddSettings();
 builder.Services.AddNotifications();
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -80,7 +78,6 @@ foreach (var module in app.Services.GetServices<IEndpointModule>())
 app.MapLmsModules();
 
 app.MapMeEndpoints();
-app.MapLevelTypeEndpoints();
 app.MapAcademicYears();
 app.MapSettingEndpoints();
 app.MapNotificationEndpoints();

@@ -1,7 +1,13 @@
+using Lms.Api.Infrastructure;
+
 namespace Lms.Api.Features.LevelTypes;
 
 /// <summary>Level types of a client (FR-ORG-02): the kinds of node its org tree is built from.</summary>
-public static class LevelTypesModule
+public sealed class LevelTypesModule : ILmsModule
 {
-    public static IServiceCollection AddLevelTypes(this IServiceCollection services) => services;
+    public void AddServices(IServiceCollection services, IConfiguration configuration)
+    {
+    }
+
+    public void MapEndpoints(IEndpointRouteBuilder app) => app.MapLevelTypeEndpoints();
 }
