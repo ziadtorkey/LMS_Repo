@@ -59,6 +59,21 @@ CI uploads `TestResults/` and `api.log` as the `e2e-artifacts` artifact when the
 | `Login_page_is_arabic_rtl_by_default` | X-01 on the server-rendered login page |
 | `Shell_is_usable_at_360px_in_arabic` | X-10 (360 px) |
 
+## Scenarios (M1, plan Task 36 — `M1/ClientsAndTreesTests`)
+Each runs in Arabic and English (`[Theory]` with `"ar"`/`"en"`; `StartAsync(culture:)` sets the browser language and the app's `lms.culture`). Every test creates its own client with unique names and emails (`M1Names`), so reruns never collide.
+
+| Test | Covers | Needs on main |
+|---|---|---|
+| `Platform_admin_creates_school_group_and_university_with_first_admins` | FR-ORG-01, both sample client types, invitation sent | #92 |
+| `Org_admin_sets_password_from_invitation_email_and_logs_in` | FR-SEC-02 invitation → set password → sign in → client menu | #92 |
+| `School_admin_builds_level_types_and_tree` | FR-ORG-02/03: levels, School › Stage › Section tree | #92, #83, #99, #114 |
+| `Stages_marked_as_level_transfer_show_the_transfer_path` (skipped) | FR-ORG-09: transfer flag, next level, RTL arrow | academic-flags API (#148) |
+| `University_admin_builds_faculty_tree_and_moves_a_specialization` | FR-ORG-03/04: faculty tree, move with confirm | #99, #114 |
+| `Delete_unit_with_children_is_refused_with_message` | FR-ORG-05 | #99 |
+| `Seeded_org_admin_adds_reorders_and_deletes_a_level_type` | FR-ORG-02 | #83 |
+
+**Mailpit:** invitation and reset emails are read from Mailpit (`MailpitClient`, `LMS_E2E_MAILPIT`, default `http://localhost:8025`). Start it with the stack (`docker compose up -d --wait mysql minio mailpit`; the CI `e2e` job does). Only the link's **path and query** are used: `App:PublicBaseUrl` in Development points at the https profile, while E2E runs on `:5132`.
+
 ## Scenarios (M1, plan Task 38): `M1/AuditAndNotificationsTests.cs`, `M1/YearsTests.cs`
 | Test | Covers |
 |---|---|
