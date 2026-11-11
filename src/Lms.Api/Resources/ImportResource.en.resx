@@ -37,4 +37,13 @@
   <data name="ImportError_invalid_date" xml:space="preserve"><value>Use a date like 2026-09-01.</value></data>
   <data name="ImportError_unknown_unit" xml:space="preserve"><value>No unit with code "{value}" in this branch.</value></data>
   <data name="ImportError_unexpected" xml:space="preserve"><value>The import failed; nothing was saved.</value></data>
+  <data name="ImportError_invalid_email" xml:space="preserve"><value>Enter a valid email address.</value></data>
+  <data name="ImportError_invalid_mobile" xml:space="preserve"><value>Enter a valid mobile number, for example +201001234567.</value></data>
+  <data name="ImportError_invalid_national_id" xml:space="preserve"><value>The national ID must be 5 to 20 letters and digits.</value></data>
+  <data name="ImportError_duplicate_person" xml:space="preserve"><value>This person already exists in this organization (same {field}).</value></data>
+  <data name="ImportError_unknown_role" xml:space="preserve"><value>No role named "{value}".</value></data>
+  <data name="ImportError_invalid_role_kind" xml:space="preserve"><value>This role cannot be given to staff here.</value></data>
+  <data name="ImportError_permission_escalation" xml:space="preserve"><value>You cannot give a role with permissions you do not have.</value></data>
+  <data name="ImportError_blocked_by_policy" xml:space="preserve"><value>Blocked by parent organization policy</value></data>
+  <data name="ImportError_invalid_expiry" xml:space="preserve"><value>The expiry date must be today or later.</value></data>
 </root>
