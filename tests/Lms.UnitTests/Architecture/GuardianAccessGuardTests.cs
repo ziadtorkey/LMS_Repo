@@ -15,6 +15,8 @@ public sealed partial class GuardianAccessGuardTests
     /// <summary>Repository-relative files that may read the guardian table directly, with the reason.</summary>
     private static readonly IReadOnlyDictionary<string, string> AllowList = new Dictionary<string, string>
     {
+        ["src/Lms.Infrastructure/People/Students/StudentCredentials.cs"] =
+            "existence check only: does the owner of an existing account have a guardian profile in the student's own client (user id + client id, nothing is returned), so the account is never taken over from another client (#228)",
         ["src/Lms.Infrastructure/People/PersonDuplicateFinder.cs"] =
             "client-wide match by national id or mobile (guardians may already exist through a sibling subtree); returns the entity to "
             + "Infrastructure callers only, the M3 match endpoint projects name and masked mobile (M2 Task 5, #157)",
