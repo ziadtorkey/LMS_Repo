@@ -162,4 +162,36 @@ public sealed class EligibilityTests(LmsApiFactory factory) : IDisposable
 
     private static async Task<string?> ClassTestHostCode(HttpResponseMessage response) =>
         (await response.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>()).GetProperty("code").GetString();
+
+    [Fact]
+    public async Task IncludeAncestors_returns_the_eligibilities_that_apply_to_a_class_at_the_unit()
+    {
+        var w = await _t.Classes.SeedAsync("EL7", currentYear: true);
+        var atRoot = await AcademicTestKit.AddCourseAsync(factory, w.Tree.Root);
+        var atSchool = await AcademicTestKit.AddCourseAsync(factory, w.Tree.Root);
+        var atOther = await AcademicTestKit.AddCourseAsync(factory, w.Tree.Root);
+        foreach (var course in new[] { atRoot, atSchool, atOther })
+        {
+            await AcademicTestKit.AllocateAsync(factory, course, w.Tree.Root);
+        }
+
+        var teacher = await _t.TeacherAsync(w);
+        await _t.GrantAsync(w, w.Tree.Root.Id, [teacher.User.Id], [atRoot.Id]);
+        await _t.GrantAsync(w, w.Tree.School1.Id, [teacher.User.Id], [atSchool.Id]);
+        await _t.GrantAsync(w, w.Tree.School2.Id, [teacher.User.Id], [atOther.Id]);
+        var schoolAdminUser = await PeopleTestKit.AddUserAsync(factory);
+        var schoolAdmin = await AccessTestData.AssignAsync(factory, w.Tree, w.Tree.School1, BuiltInRoles.OrgAdmin, schoolAdminUser.Id);
+        var query = $"?orgUnitId={w.Tree.School1.Id}&includeAncestors=true";
+
+        var applying = await ListAsync(w.Admin, query);
+        var byUnitAdmin = await ListAsync(schoolAdmin, query); // the root grant sits above the caller's subtree
+        var descendants = await ListAsync(w.Admin, $"?orgUnitId={w.Tree.School1.Id}");
+
+        Assert.Equal(2, applying.Total);
+        Assert.Contains(applying.Items, e => e.CourseId == atRoot.Id);
+        Assert.Contains(applying.Items, e => e.CourseId == atSchool.Id);
+        Assert.DoesNotContain(applying.Items, e => e.CourseId == atOther.Id);
+        Assert.Equal(2, byUnitAdmin.Total);
+        Assert.Equal([atSchool.Id], descendants.Items.Select(e => e.CourseId).ToList());
+    }
 }

@@ -116,7 +116,9 @@ public sealed class EligibilityHandlers(
 
         var unit = access.Unit!;
         var path = unit.Path;
-        var rows = db.Set<TeacherCourseEligibility>().Where(e => e.OrgUnitPath.StartsWith(path));
+        var rows = query.IncludeAncestors
+            ? teaching.EligibilitiesAppliedAt(unit.OrganizationId, path)
+            : db.Set<TeacherCourseEligibility>().Where(e => e.OrgUnitPath.StartsWith(path));
         if (query.UserId is { } userId)
         {
             rows = rows.Where(e => e.UserId == userId);

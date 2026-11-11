@@ -38,4 +38,23 @@ public sealed class TeachingLookups(LmsDbContext db, IClock clock)
             .Select(e => e.OrgUnitPath).ToListAsync(ct);
         return rows.Any(path => classUnitPath.StartsWith(path, StringComparison.Ordinal));
     }
+
+    /// <summary>Eligibilities that apply to a class at the unit: granted at that unit or any ancestor (the assign rule).</summary>
+    public IQueryable<TeacherCourseEligibility> EligibilitiesAppliedAt(Guid organizationId, string unitPath)
+    {
+        // "/a/b/c/" -> "/a/", "/a/b/", "/a/b/c/": a path is an ancestor-or-self when it is a prefix ending at a separator.
+        var segments = unitPath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        var paths = new List<string>(segments.Length);
+        var current = "/";
+        foreach (var segment in segments)
+        {
+            current += segment + "/";
+            paths.Add(current);
+        }
+
+        // ISOLATION-BYPASS: the eligibility may be granted at an ancestor of the class unit, above the caller's subtree;
+        // limited to the client, live rows and the ancestor-or-self paths of one unit; the caller adds user filters.
+        return db.Set<TeacherCourseEligibility>().IgnoreQueryFilters()
+            .Where(e => !e.IsDeleted && e.OrganizationId == organizationId && paths.Contains(e.OrgUnitPath));
+    }
 }
