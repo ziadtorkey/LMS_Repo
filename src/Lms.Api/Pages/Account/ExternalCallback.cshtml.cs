@@ -32,17 +32,19 @@ public sealed class ExternalCallbackModel(
     public async Task<IActionResult> OnGetAsync(CancellationToken ct)
     {
         var returnUrl = !string.IsNullOrEmpty(ReturnUrl) && Url.IsLocalUrl(ReturnUrl) ? ReturnUrl : "/";
-        var info = await signIn.GetExternalLoginInfoAsync();
-        var provider = info is not null && info.LoginProvider.StartsWith(SchemePrefix, StringComparison.Ordinal)
-            && Guid.TryParseExact(info.LoginProvider[SchemePrefix.Length..], "N", out var id)
+        // SignInManager.GetExternalLoginInfoAsync needs a NameIdentifier claim; provider claims are kept as issued (sub).
+        var external = await HttpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
+        var scheme = external.Properties?.Items.TryGetValue(ExternalLoginModel.ProviderItem, out var item) == true ? item : null;
+        var provider = external.Succeeded && scheme is not null && scheme.StartsWith(SchemePrefix, StringComparison.Ordinal)
+            && Guid.TryParseExact(scheme[SchemePrefix.Length..], "N", out var id)
                 ? await providers.FindByIdAsync(id, ct)
                 : null;
-        if (info is null || provider is null)
+        if (external.Principal is null || provider is null)
         {
             return await BackAsync(ExternalLoginLinker.Failed, returnUrl);
         }
 
-        var result = await linker.ResolveAsync(provider, info.Principal, ct);
+        var result = await linker.ResolveAsync(provider, external.Principal, ct);
         if (result.User is not { } user)
         {
             return await BackAsync(result.ErrorCode ?? ExternalLoginLinker.Failed, returnUrl);

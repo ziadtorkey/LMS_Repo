@@ -20,6 +20,9 @@ namespace Lms.Api.Pages.Account;
 public sealed class ExternalLoginModel(
     ProviderLookup providers, IAuthenticationSchemeProvider schemes, IStringLocalizer<AccountResource> localizer) : PageModel
 {
+    /// <summary>Remembers, across the round trip, which provider scheme this sign-in started with.</summary>
+    public const string ProviderItem = "lms_provider";
+
     [BindProperty]
     public string Email { get; set; } = string.Empty;
 
@@ -52,6 +55,7 @@ public sealed class ExternalLoginModel(
         var properties = new AuthenticationProperties
         {
             RedirectUri = Url.Page("/Account/ExternalCallback", values: new { returnUrl = ReturnUrl }),
+            Items = { [ProviderItem] = scheme },
         };
         return Challenge(properties, scheme);
     }
