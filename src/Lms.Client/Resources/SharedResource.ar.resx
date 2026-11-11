@@ -496,6 +496,31 @@
   <data name="Assign_PersonSearch" xml:space="preserve"><value>ابحث عن موظف بالاسم أو البريد</value></data>
   <data name="Assign_CreateStaff" xml:space="preserve"><value>إنشاء موظف جديد</value></data>
   <data name="Staff_RoleIncomplete" xml:space="preserve"><value>اختر الدور والوحدة معًا.</value></data>
+  <data name="Nav_IdentityProviders" xml:space="preserve"><value>تسجيل الدخول الموحد</value></data>
+  <data name="Idp_Title" xml:space="preserve"><value>مزودو تسجيل الدخول الموحد</value></data>
+  <data name="Idp_New" xml:space="preserve"><value>إضافة مزود</value></data>
+  <data name="Idp_Kind" xml:space="preserve"><value>النوع</value></data>
+  <data name="IdpKind_Oidc" xml:space="preserve"><value>OpenID Connect</value></data>
+  <data name="IdpKind_AzureAd" xml:space="preserve"><value>Microsoft Entra ID (Azure AD)</value></data>
+  <data name="Idp_Slug" xml:space="preserve"><value>الاسم المختصر (للرابط)</value></data>
+  <data name="Idp_Authority" xml:space="preserve"><value>رابط مزود الهوية</value></data>
+  <data name="Idp_TenantId" xml:space="preserve"><value>معرّف الدليل (المستأجر)</value></data>
+  <data name="Idp_ClientId" xml:space="preserve"><value>معرّف التطبيق</value></data>
+  <data name="Idp_ClientSecret" xml:space="preserve"><value>السر الخاص بالتطبيق</value></data>
+  <data name="Idp_SecretKeep" xml:space="preserve"><value>اتركه فارغًا للإبقاء على السر الحالي</value></data>
+  <data name="Idp_Scopes" xml:space="preserve"><value>النطاقات</value></data>
+  <data name="Idp_MatchBy" xml:space="preserve"><value>مطابقة المستخدمين حسب</value></data>
+  <data name="IdpMatch_Email" xml:space="preserve"><value>البريد الإلكتروني</value></data>
+  <data name="IdpMatch_NationalId" xml:space="preserve"><value>رقم الهوية الوطنية</value></data>
+  <data name="Idp_NationalIdClaim" xml:space="preserve"><value>اسم المطالبة الخاصة برقم الهوية</value></data>
+  <data name="Idp_EmailDomains" xml:space="preserve"><value>نطاقات البريد الإلكتروني</value></data>
+  <data name="Idp_CallbackUrl" xml:space="preserve"><value>رابط إعادة التوجيه الذي يُسجَّل لدى المزود</value></data>
+  <data name="Idp_Copy" xml:space="preserve"><value>نسخ</value></data>
+  <data name="Idp_Test" xml:space="preserve"><value>اختبار الاتصال</value></data>
+  <data name="Idp_TestOk" xml:space="preserve"><value>تم الاتصال بـ {0}</value></data>
+  <data name="Idp_TestFailed" xml:space="preserve"><value>تعذر الوصول إلى المزود: {0}</value></data>
+  <data name="Idp_DeleteConfirm" xml:space="preserve"><value>هل تريد حذف المزود "{0}"؟ لن يتمكن من يستخدمونه من تسجيل الدخول به.</value></data>
+  <data name="Common_Enabled" xml:space="preserve"><value>مفعّل</value></data>
   <data name="Error_possible_duplicate" xml:space="preserve"><value>يوجد طالب بالاسم وتاريخ الميلاد نفسيهما. أكّد للمتابعة.</value></data>
   <data name="Error_student_code_taken" xml:space="preserve"><value>كود الطالب مستخدم من قبل لدى هذا العميل.</value></data>
   <data name="Error_student_code_required" xml:space="preserve"><value>كود الطالب مطلوب.</value></data>
@@ -515,6 +540,8 @@
   <data name="Error_course_code_taken" xml:space="preserve"><value>يوجد مقرر آخر يستخدم هذا الكود.</value></data>
   <data name="Error_short_code_taken" xml:space="preserve"><value>يستخدم عميل آخر هذا الرمز المختصر.</value></data>
   <data name="Error_invalid_short_code" xml:space="preserve"><value>الرمز المختصر غير صالح: من 2 إلى 20 حرفًا لاتينيًا صغيرًا أو رقمًا أو شرطة.</value></data>
+  <data name="Error_teacher_already_assigned" xml:space="preserve"><value>هذا المعلم مُسنَد بالفعل إلى هذا المقرر في هذا الصف.</value></data>
+  <data name="Error_assignment_ended" xml:space="preserve"><value>انتهى هذا الإسناد بالفعل ولا يمكن تعديله.</value></data>
   <data name="Error_course_in_use" xml:space="preserve"><value>المقرر مستخدم في فصول ولا يمكن حذفه.</value></data>
   <data name="Error_course_not_available" xml:space="preserve"><value>هذا المقرر غير متاح في هذه الوحدة.</value></data>
   <data name="Error_allocation_exists" xml:space="preserve"><value>المقرر مخصص لهذه الوحدة من قبل.</value></data>
@@ -648,6 +675,63 @@
   <data name="NotifEvent_Enrollment_ExceptionDecided" xml:space="preserve"><value>البت في استثناء تسجيل</value></data>
   <data name="Notif_Enrollment_StudentTransferred" xml:space="preserve"><value>يُنقل {StudentName} من {FromClass} إلى {ToClass} في {EffectiveOn}.</value></data>
   <data name="NotifEvent_Enrollment_StudentTransferred" xml:space="preserve"><value>نقل طالب</value></data>
+  <data name="Nav_Students" xml:space="preserve"><value>الطلاب</value></data>
+  <data name="Students_Title" xml:space="preserve"><value>الطلاب</value></data>
+  <data name="Students_New" xml:space="preserve"><value>طالب جديد</value></data>
+  <data name="Student_Code" xml:space="preserve"><value>كود الطالب</value></data>
+  <data name="Student_CodeAuto" xml:space="preserve"><value>يُنشأ كود الطالب تلقائيًا.</value></data>
+  <data name="Student_NicknameAr" xml:space="preserve"><value>اسم الشهرة بالعربية</value></data>
+  <data name="Student_NicknameEn" xml:space="preserve"><value>اسم الشهرة بالإنجليزية</value></data>
+  <data name="Student_DateOfBirth" xml:space="preserve"><value>تاريخ الميلاد</value></data>
+  <data name="Student_Gender" xml:space="preserve"><value>النوع</value></data>
+  <data name="Student_Religion" xml:space="preserve"><value>الديانة</value></data>
+  <data name="Student_Nationality" xml:space="preserve"><value>الجنسية</value></data>
+  <data name="Student_NationalId" xml:space="preserve"><value>رقم الهوية الوطنية</value></data>
+  <data name="Student_Mobile" xml:space="preserve"><value>رقم الجوال</value></data>
+  <data name="Student_Email" xml:space="preserve"><value>البريد الإلكتروني</value></data>
+  <data name="Student_HomeUnit" xml:space="preserve"><value>الوحدة</value></data>
+  <data name="Student_Class" xml:space="preserve"><value>الفصل</value></data>
+  <data name="Student_ClassHelp" xml:space="preserve"><value>اختياري: وضع الطالب في فصل من العام الحالي.</value></data>
+  <data name="Student_ClassFull" xml:space="preserve"><value>هذا الفصل مكتمل. قد يُرفض وضع الطالب فيه أو يحتاج إلى تأكيد.</value></data>
+  <data name="Student_Unplaced" xml:space="preserve"><value>بدون فصل</value></data>
+  <data name="Student_PrimaryGuardian" xml:space="preserve"><value>ولي الأمر الأساسي</value></data>
+  <data name="Student_DefaultPassword" xml:space="preserve"><value>كلمة المرور الافتراضية</value></data>
+  <data name="Student_DefaultPasswordHelp" xml:space="preserve"><value>اتركها فارغة لإنشاء كلمة مرور قوية. يجب على الطالب تغييرها عند أول دخول.</value></data>
+  <data name="Student_Created" xml:space="preserve"><value>تم إنشاء الطالب.</value></data>
+  <data name="Student_PossibleDuplicate" xml:space="preserve"><value>يوجد {0} طالب بالاسم وتاريخ الميلاد نفسيهما. هل تريد الإنشاء على أي حال؟</value></data>
+  <data name="Student_CreateAnyway" xml:space="preserve"><value>إنشاء على أي حال</value></data>
+  <data name="Gender_Male" xml:space="preserve"><value>ذكر</value></data>
+  <data name="Gender_Female" xml:space="preserve"><value>أنثى</value></data>
+  <data name="Religion_Muslim" xml:space="preserve"><value>مسلم</value></data>
+  <data name="Religion_Christian" xml:space="preserve"><value>مسيحي</value></data>
+  <data name="Religion_Other" xml:space="preserve"><value>أخرى</value></data>
+  <data name="Guardians_Title" xml:space="preserve"><value>أولياء الأمور</value></data>
+  <data name="Guardian_Add" xml:space="preserve"><value>إضافة ولي أمر</value></data>
+  <data name="Guardian_Relation" xml:space="preserve"><value>صلة القرابة</value></data>
+  <data name="Guardian_Primary" xml:space="preserve"><value>ولي الأمر الأساسي</value></data>
+  <data name="Guardian_LinkExisting" xml:space="preserve"><value>ربط ولي الأمر المسجل {0} ({1})</value></data>
+  <data name="Guardian_Link" xml:space="preserve"><value>ربط</value></data>
+  <data name="Guardian_Unlink" xml:space="preserve"><value>إدخال ولي أمر آخر</value></data>
+  <data name="Guardian_Linked" xml:space="preserve"><value>مرتبط بولي الأمر المسجل {0} ({1})</value></data>
+  <data name="Guardian_Required" xml:space="preserve"><value>يجب إضافة ولي أمر واحد على الأقل في هذه الوحدة.</value></data>
+  <data name="Guardian_Incomplete" xml:space="preserve"><value>أدخل اسم ولي الأمر بالعربية والإنجليزية ورقم جواله.</value></data>
+  <data name="Relation_Father" xml:space="preserve"><value>الأب</value></data>
+  <data name="Relation_Mother" xml:space="preserve"><value>الأم</value></data>
+  <data name="Relation_Brother" xml:space="preserve"><value>الأخ</value></data>
+  <data name="Relation_Sister" xml:space="preserve"><value>الأخت</value></data>
+  <data name="Relation_Grandfather" xml:space="preserve"><value>الجد</value></data>
+  <data name="Relation_Grandmother" xml:space="preserve"><value>الجدة</value></data>
+  <data name="Relation_Uncle" xml:space="preserve"><value>العم أو الخال</value></data>
+  <data name="Relation_Aunt" xml:space="preserve"><value>العمة أو الخالة</value></data>
+  <data name="Relation_Other" xml:space="preserve"><value>أخرى</value></data>
+  <data name="Credentials_Title" xml:space="preserve"><value>بيانات دخول الطالب</value></data>
+  <data name="Credentials_Once" xml:space="preserve"><value>تظهر كلمة المرور الآن فقط ولا يمكن استرجاعها لاحقًا. انسخها قبل الإغلاق.</value></data>
+  <data name="Credentials_Password" xml:space="preserve"><value>كلمة المرور الافتراضية</value></data>
+  <data name="Credentials_Copy" xml:space="preserve"><value>نسخ</value></data>
+  <data name="Credentials_Copied" xml:space="preserve"><value>تم النسخ.</value></data>
+  <data name="CredentialsDelivery_Student" xml:space="preserve"><value>أُرسلت بيانات الدخول بالبريد إلى الطالب.</value></data>
+  <data name="CredentialsDelivery_PrimaryGuardian" xml:space="preserve"><value>أُرسلت بيانات الدخول بالبريد إلى ولي الأمر الأساسي.</value></data>
+  <data name="CredentialsDelivery_None" xml:space="preserve"><value>لم يُرسل بريد إلكتروني. سلّم بيانات الدخول إلى ولي الأمر.</value></data>
   <data name="Nav_Courses" xml:space="preserve"><value>المقررات</value></data>
   <data name="Course_Title" xml:space="preserve"><value>المقررات</value></data>
   <data name="Course_New" xml:space="preserve"><value>مقرر جديد</value></data>
@@ -676,4 +760,6 @@
   <data name="CourseStatus_Active" xml:space="preserve"><value>نشط</value></data>
   <data name="CourseStatus_Inactive" xml:space="preserve"><value>غير نشط</value></data>
   <data name="CourseImport_Title" xml:space="preserve"><value>استيراد المقررات من Excel</value></data>
+  <data name="Clients_ShortCode" xml:space="preserve"><value>الرمز المختصر</value></data>
+  <data name="Clients_ShortCodeHelp" xml:space="preserve"><value>يُستخدم في أسماء دخول الطلاب (الكود@الرمز): من 2 إلى 20 حرفًا إنجليزيًا صغيرًا أو رقمًا أو شرطة. اتركه فارغًا ليُشتق من رمز الوحدة الجذرية.</value></data>
 </root>
