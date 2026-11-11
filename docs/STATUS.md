@@ -2,8 +2,8 @@
 
 _Updated by the Team Lead after every merge cycle._
 
-**Milestone:** M0 Foundation — DONE (19 / 19) · M1 Organization & Access — in progress (25 / 45 issues closed)
-**Last update:** 2026-11-11 — Merged: #119 (M1 probe suite part 1), #112 (org tree page, closes #60), #83 (level types, closes #43), #130 (revoke live pushes, closes #122), #124 (calendar, closes #57), #96 (roles admin, closes #54), #105 (notification prefs, closes #51). Next: #92, #99 (BE1, approved), #107 (BE4), #97 (BE3), #114, #116 (FE), #94 (BE2).
+**Milestone:** M0 Foundation — DONE (19 / 19) · M1 Organization & Access — in progress (29 / 46 issues closed)
+**Last update:** 2026-11-11 — Merged: #116 (academic years pages, closes #67), #107 (role assignments, closes #56), #92 (clients + first Org Admin, closes #42), #114 (move unit + unit settings, closes #61). Next: #99 (org units), #97 (audit viewer), #94 (policies), #134, #128/#129, bug #132 fix. Remaining build: #46 (BE2), #48 (BE1), #50 (BE4), #52 (BE3), #62/#63 (FE1), #69 (FE2), E2E #71–#73, probes #70.
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |
@@ -49,6 +49,7 @@ None. (Board: [LMS v1](https://github.com/users/ziadtorkey/projects/1) — Todo 
 - M2 plan approval + 13 questions: issue #103 (draft plan on main; Lead asks via popup when M1 is near done — not blocking anything now).
 
 ## Recently merged
+- #114 move unit + unit settings (closes #61) · #92 clients + first Org Admin (closes #42) · #107 role assignments (closes #56) · #116 academic years pages (closes #67)
 - #105 notification preferences (closes #51) · #96 roles admin (closes #54) · #124 academic calendar (closes #57) · #130 revoke live pushes (closes #122) · #83 level types (closes #43) · #112 org tree page (closes #60) · #119 M1 probe suite part 1
 - #118 fix(notifications): scope live pushes to the active client (closes #93)
 - #123 refactor(api): self-registering ILmsModule

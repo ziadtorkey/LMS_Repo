@@ -18,10 +18,22 @@ public interface IOrgApi
     Task<OrgUnitNodeDto> UpdateOrgUnitAsync(Guid id, UpdateOrgUnitRequest request, CancellationToken ct = default);
     Task SetOrgUnitStatusAsync(Guid id, SetOrgUnitStatusRequest request, CancellationToken ct = default);
     Task DeleteOrgUnitAsync(Guid id, CancellationToken ct = default);
+    Task<OrgUnitNodeDto> GetOrgUnitAsync(Guid id, CancellationToken ct = default);
+    Task MoveOrgUnitAsync(Guid id, MoveOrgUnitRequest request, CancellationToken ct = default);
+    Task SetAcademicFlagsAsync(Guid id, OrgUnitAcademicFlagsRequest request, CancellationToken ct = default);
 }
 
 public sealed class OrgApi(ApiHttp http) : IOrgApi
 {
+    public Task<OrgUnitNodeDto> GetOrgUnitAsync(Guid id, CancellationToken ct = default) =>
+        http.GetAsync<OrgUnitNodeDto>(Routes.OrgUnit(id), ct);
+
+    public Task MoveOrgUnitAsync(Guid id, MoveOrgUnitRequest request, CancellationToken ct = default) =>
+        http.SendAsync(HttpMethod.Put, Routes.OrgUnitMove(id), request, ct);
+
+    public Task SetAcademicFlagsAsync(Guid id, OrgUnitAcademicFlagsRequest request, CancellationToken ct = default) =>
+        http.SendAsync(HttpMethod.Put, Routes.OrgUnitAcademicFlags(id), request, ct);
+
     public async Task<IReadOnlyList<LevelTypeDto>> GetLevelTypesAsync(CancellationToken ct = default) =>
         await http.GetAsync<List<LevelTypeDto>>(Routes.LevelTypes, ct);
 
@@ -153,6 +165,28 @@ public sealed class FakeOrgApi : IOrgApi
     {
         var i = _units.FindIndex(u => u.Id == id);
         _units[i] = _units[i] with { Status = request.Status };
+        return Task.CompletedTask;
+    }
+
+    public Task<OrgUnitNodeDto> GetOrgUnitAsync(Guid id, CancellationToken ct = default) =>
+        Task.FromResult(_units.First(u => u.Id == id));
+
+    public Task MoveOrgUnitAsync(Guid id, MoveOrgUnitRequest request, CancellationToken ct = default)
+    {
+        var i = _units.FindIndex(u => u.Id == id);
+        var parent = _units.First(u => u.Id == request.NewParentId);
+        _units[i] = _units[i] with { ParentId = parent.Id, Depth = parent.Depth + 1 };
+        return Task.CompletedTask;
+    }
+
+    public Task SetAcademicFlagsAsync(Guid id, OrgUnitAcademicFlagsRequest request, CancellationToken ct = default)
+    {
+        var i = _units.FindIndex(u => u.Id == id);
+        _units[i] = _units[i] with
+        {
+            IsLevelTransfer = request.IsLevelTransfer, NextTransferUnitId = request.NextTransferUnitId,
+            IsCourseManagementLevel = request.IsCourseManagementLevel,
+        };
         return Task.CompletedTask;
     }
 

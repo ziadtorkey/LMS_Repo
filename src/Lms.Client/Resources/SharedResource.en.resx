@@ -273,7 +273,23 @@
   <data name="OrgTree_Settings" xml:space="preserve"><value>Unit settings</value></data>
   <data name="OrgTree_DeleteConfirm" xml:space="preserve"><value>Delete this unit? It can be restored by support only.</value></data>
   <data name="OrgTree_NoMatches" xml:space="preserve"><value>No units match your search.</value></data>
+  <data name="Move_Title" xml:space="preserve"><value>Move unit</value></data>
+  <data name="Move_NewParent" xml:space="preserve"><value>New parent</value></data>
+  <data name="Move_Confirm" xml:space="preserve"><value>Move &quot;{0}&quot; from &quot;{1}&quot; to &quot;{2}&quot;?</value></data>
+  <data name="Move_Button" xml:space="preserve"><value>Move</value></data>
+  <data name="UnitSettings_General" xml:space="preserve"><value>General</value></data>
+  <data name="UnitSettings_Academic" xml:space="preserve"><value>Academic</value></data>
+  <data name="UnitSettings_Settings" xml:space="preserve"><value>Settings</value></data>
+  <data name="UnitSettings_Policies" xml:space="preserve"><value>Policies</value></data>
+  <data name="UnitSettings_Back" xml:space="preserve"><value>Back to the organization tree</value></data>
+  <data name="Academic_LevelTransfer" xml:space="preserve"><value>Level transfer (promotion level)</value></data>
+  <data name="Academic_NextLevel" xml:space="preserve"><value>Next level</value></data>
+  <data name="Academic_TransferPath" xml:space="preserve"><value>Transfer path</value></data>
+  <data name="Academic_CourseManagement" xml:space="preserve"><value>Course management level</value></data>
   <data name="Confirm_DeactivateTitle" xml:space="preserve"><value>Deactivate unit?</value></data>
   <data name="OrgTree_DeactivateOwnWarning" xml:space="preserve"><value>You are working in this unit (or in one inside it). If you deactivate it you will lose access until an administrator above it reactivates it. Continue?</value></data>
   <data name="AuditEntity_StoredFile" xml:space="preserve"><value>File</value></data>
+  <data name="Year_Selector" xml:space="preserve"><value>Academic year</value></data>
+  <data name="Year_None" xml:space="preserve"><value>No academic year</value></data>
+  <data name="Year_ReadOnly" xml:space="preserve"><value>Closed year — read only</value></data>
 </root>
