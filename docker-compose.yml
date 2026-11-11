@@ -40,6 +40,17 @@ services:
       - "1025:1025"
       - "8025:8025"
 
+  # External OpenID Connect provider for local development and the identity-provider E2E tests (M2 Task 22).
+  # Interactive login: the sign-in page lets you type a username and the claims JSON (sub, email, ...).
+  # Issuer: http://localhost:8090/client-a. The same image digest is used by MockOidcServer in the integration tests.
+  mock-oidc:
+    image: ghcr.io/navikt/mock-oauth2-server@sha256:65d4ed47ce094cc3849e41e03499bfb32372d69c726ec22b3d5a19eba9bc787e
+    environment:
+      SERVER_PORT: "8080"
+      JSON_CONFIG: '{"interactiveLogin": true}'
+    ports:
+      - "8090:8080"
+
 volumes:
   mysql-data:
   minio-data:

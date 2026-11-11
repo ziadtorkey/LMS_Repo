@@ -25,6 +25,8 @@ public static class ExternalIdentityServiceCollectionExtensions
         services.AddOptions<KeyManagementOptions>()
             .Configure<IServiceScopeFactory>((options, scopes) => options.XmlRepository = new EfXmlRepository(scopes));
         services.AddSingleton<ProviderSecretProtector>();
+        services.AddScoped<ExternalLoginLinker>();
+        services.AddScoped<ProviderLookup>();
 
         services.AddSingleton<ExternalSchemeRegistry>();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<OpenIdConnectOptions>, ExternalOidcOptionsSetup>());
