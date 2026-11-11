@@ -89,4 +89,45 @@ public static class Routes
     public static string Term(Guid id) => $"{Terms}/{id}";
     public static string CalendarEvent(Guid id) => $"{CalendarEvents}/{id}";
     public static string MyNotificationRead(Guid id) => $"{MyNotifications}/{id}/read";
+
+    // M2 staff (Task 2; student, guardian and change-request routes arrive in M3, D23)
+    public const string Staff = "/api/staff";
+    public const string StaffPattern = Staff + "/{id:guid}";
+    public const string StaffStatusPattern = StaffPattern + "/status";
+    public const string StaffSharesPattern = StaffPattern + "/shares";
+    public const string StaffSharePattern = StaffSharesPattern + "/{assignmentId:guid}";
+    public const string StaffResendInvitationPattern = StaffPattern + "/resend-invitation";
+
+    public static string StaffMember(Guid id) => $"{Staff}/{id}";
+    public static string StaffStatus(Guid id) => $"{StaffMember(id)}/status";
+    public static string StaffShares(Guid id) => $"{StaffMember(id)}/shares";
+    public static string StaffShare(Guid id, Guid assignmentId) => $"{StaffShares(id)}/{assignmentId}";
+    public static string StaffResendInvitation(Guid id) => $"{StaffMember(id)}/resend-invitation";
+
+    // M2 imports (Task 3, X-06). GET {kind} lists batches, POST {kind} uploads; {kind} from ImportKinds.
+    public const string Imports = "/api/imports";
+    public const string ImportKindPattern = Imports + "/{kind}";
+    public const string ImportColumnsPattern = ImportKindPattern + "/columns";
+    public const string ImportTemplatePattern = ImportKindPattern + "/template";
+    public const string ImportBatchPattern = ImportKindPattern + "/{id:guid}";
+    public const string ImportRowsPattern = ImportBatchPattern + "/rows";
+    public const string ImportErrorReportPattern = ImportBatchPattern + "/error-report";
+    public const string ImportCommitPattern = ImportBatchPattern + "/commit";
+
+    public static string ImportsOfKind(string kind) => $"{Imports}/{Uri.EscapeDataString(kind)}";
+    public static string ImportColumns(string kind) => $"{ImportsOfKind(kind)}/columns";
+    public static string ImportTemplate(string kind, string culture) =>
+        $"{ImportsOfKind(kind)}/template?culture={Uri.EscapeDataString(culture)}";
+    public static string ImportBatch(string kind, Guid id) => $"{ImportsOfKind(kind)}/{id}";
+    public static string ImportRows(string kind, Guid id) => $"{ImportBatch(kind, id)}/rows";
+    public static string ImportErrorReport(string kind, Guid id) => $"{ImportBatch(kind, id)}/error-report";
+    public static string ImportCommit(string kind, Guid id) => $"{ImportBatch(kind, id)}/commit";
+
+    // M2 identity providers (Task 3, FR-SEC-08)
+    public const string IdentityProviders = "/api/identity-providers";
+    public const string IdentityProviderPattern = IdentityProviders + "/{id:guid}";
+    public const string IdentityProviderTestPattern = IdentityProviderPattern + "/test";
+
+    public static string IdentityProvider(Guid id) => $"{IdentityProviders}/{id}";
+    public static string IdentityProviderTest(Guid id) => $"{IdentityProvider(id)}/test";
 }

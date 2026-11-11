@@ -2,7 +2,7 @@ using Lms.Shared.Authorization;
 
 namespace Lms.UnitTests.Contracts;
 
-/// <summary>Pins the M1 built-in role matrix (PRD §3.4, M1 plan Task 1, D16). Every list is written out literally.</summary>
+/// <summary>Pins the M2 built-in role matrix (PRD §3.4, M1 plan Task 1, D16, M2 plan Task 1, D23, D32). Every list is written out literally.</summary>
 public class BuiltInRoleMatrixTests
 {
     private static readonly string[] M0OrgAdmin =
@@ -25,6 +25,8 @@ public class BuiltInRoleMatrixTests
                 "Templates.View", "Templates.Create", "Templates.Delete", "Templates.Apply",
                 "Assignments.Update",
                 "AcademicYears.View", "AcademicYears.Create", "AcademicYears.Update", "AcademicYears.Delete",
+                "Staff.View", "Staff.Create", "Staff.Update", "Staff.Delete", "Staff.Import",
+                "IdentityProviders.View", "IdentityProviders.Manage",
             ]
         },
         {
@@ -33,16 +35,17 @@ public class BuiltInRoleMatrixTests
                 "OrgUnits.View", "Roles.View", "Assignments.View", "Settings.View", "Policies.View",
                 "Audit.View", "Files.Upload", "Files.Download",
                 "LevelTypes.View", "Templates.View", "AcademicYears.View", "Assignments.Create", "Assignments.Delete",
+                "Staff.View", "Staff.Create",
             ]
         },
         {
             "Supervisor",
             [
                 "OrgUnits.View", "Settings.View", "Policies.View", "Files.Upload", "Files.Download",
-                "LevelTypes.View", "Templates.View", "AcademicYears.View",
+                "LevelTypes.View", "Templates.View", "AcademicYears.View", "Staff.View",
             ]
         },
-        { "Counselor", ["Files.Upload", "Files.Download", "AcademicYears.View"] },
+        { "Counselor", ["Files.Upload", "Files.Download", "AcademicYears.View", "Staff.View"] },
         { "Teacher", ["Files.Upload", "Files.Download", "AcademicYears.View"] },
         { "Student", ["Files.Upload", "Files.Download", "AcademicYears.View"] },
         { "Guardian", ["Files.Download", "AcademicYears.View"] },
@@ -50,7 +53,7 @@ public class BuiltInRoleMatrixTests
 
     [Theory]
     [MemberData(nameof(Matrix))]
-    public void Built_in_roles_match_the_M1_matrix_exactly(string roleKey, string[] expected)
+    public void Built_in_roles_match_the_M2_matrix_exactly(string roleKey, string[] expected)
     {
         var actual = BuiltInRoles.Get(roleKey).DefaultPermissions;
 

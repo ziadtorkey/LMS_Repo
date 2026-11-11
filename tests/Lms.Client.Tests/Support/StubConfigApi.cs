@@ -26,7 +26,7 @@ public sealed class StubConfigApi : IConfigApi
 
     public Task<IReadOnlyList<PolicyDefinitionDto>> GetPolicyCatalogAsync(CancellationToken ct = default) =>
         Task.FromResult<IReadOnlyList<PolicyDefinitionDto>>(
-            PolicyCatalog.BlockedPermissions.Select(p => new PolicyDefinitionDto(p.Key, p.Value)).ToList());
+            PolicyCatalog.BlockedPermissions.Select(p => new PolicyDefinitionDto(p.Key, p.Value, PolicyCatalog.BlockedRoles.GetValueOrDefault(p.Key))).ToList());
 
     public Task<IReadOnlyList<EffectivePolicyDto>> GetPoliciesAsync(Guid unitId, CancellationToken ct = default) =>
         Task.FromResult<IReadOnlyList<EffectivePolicyDto>>(Policies.ToList());

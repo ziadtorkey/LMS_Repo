@@ -363,4 +363,48 @@
   <data name="NotifEvent_Access_RoleAssigned" xml:space="preserve"><value>Role assigned</value></data>
   <data name="NotifEvent_Access_RoleRemoved" xml:space="preserve"><value>Role removed</value></data>
   <data name="NotifEvent_Organization_PolicyChanged" xml:space="preserve"><value>Policy changed</value></data>
+  <data name="Error_duplicate_person" xml:space="preserve"><value>A person with the same email, mobile or national ID already exists in this client.</value></data>
+  <data name="Error_person_not_found" xml:space="preserve"><value>The person was not found.</value></data>
+  <data name="Error_invalid_role_kind" xml:space="preserve"><value>This role cannot be given to this kind of person.</value></data>
+  <data name="Error_cannot_change_own_status" xml:space="preserve"><value>You cannot change your own status.</value></data>
+  <data name="Error_already_activated" xml:space="preserve"><value>This account is already activated.</value></data>
+  <data name="Error_invalid_expiry" xml:space="preserve"><value>The expiry date is not valid.</value></data>
+  <data name="Error_import_file_invalid" xml:space="preserve"><value>The file is not a valid Excel (.xlsx) file of at most 10 MB.</value></data>
+  <data name="Error_import_too_many_rows" xml:space="preserve"><value>The file has more than 5,000 data rows.</value></data>
+  <data name="Error_import_not_valid" xml:space="preserve"><value>Only a valid import can be committed.</value></data>
+  <data name="Error_import_in_progress" xml:space="preserve"><value>This import is still being processed.</value></data>
+  <data name="Error_import_already_committed" xml:space="preserve"><value>This import was already committed.</value></data>
+  <data name="Error_provider_slug_taken" xml:space="preserve"><value>Another sign-in provider already uses this short name.</value></data>
+  <data name="Error_provider_unreachable" xml:space="preserve"><value>The sign-in provider could not be reached.</value></data>
+  <data name="Error_external_account_not_found" xml:space="preserve"><value>No account in this organization matches your organization sign-in.</value></data>
+  <data name="Error_external_account_ambiguous" xml:space="preserve"><value>More than one account matches your organization sign-in. Contact your administrator.</value></data>
+  <data name="PermModule_Staff" xml:space="preserve"><value>Staff</value></data>
+  <data name="Perm_Staff_View" xml:space="preserve"><value>View staff</value></data>
+  <data name="Perm_Staff_Create" xml:space="preserve"><value>Create staff</value></data>
+  <data name="Perm_Staff_Update" xml:space="preserve"><value>Edit staff</value></data>
+  <data name="Perm_Staff_Delete" xml:space="preserve"><value>Delete staff</value></data>
+  <data name="Perm_Staff_Import" xml:space="preserve"><value>Import staff</value></data>
+  <data name="PermModule_IdentityProviders" xml:space="preserve"><value>Sign-in providers</value></data>
+  <data name="Perm_IdentityProviders_View" xml:space="preserve"><value>View sign-in providers</value></data>
+  <data name="Perm_IdentityProviders_Manage" xml:space="preserve"><value>Manage sign-in providers</value></data>
+  <data name="Policy_CreateStaff" xml:space="preserve"><value>Block creating and importing staff</value></data>
+  <data name="Policy_CreateTeachers" xml:space="preserve"><value>Block assigning the teacher role</value></data>
+  <data name="Policy_CreateAdmins" xml:space="preserve"><value>Block assigning admin roles</value></data>
+  <data name="SettingCategory_People" xml:space="preserve"><value>People</value></data>
+  <data name="Setting_Staff_ExpiryNoticeDays" xml:space="preserve"><value>Staff expiry notice (days before)</value></data>
+  <data name="AuditEntity_StaffProfile" xml:space="preserve"><value>Staff member</value></data>
+  <data name="AuditEntity_StudentProfile" xml:space="preserve"><value>Student</value></data>
+  <data name="AuditEntity_GuardianProfile" xml:space="preserve"><value>Guardian</value></data>
+  <data name="AuditEntity_StudentGuardian" xml:space="preserve"><value>Student guardian link</value></data>
+  <data name="AuditEntity_ImportBatch" xml:space="preserve"><value>Import</value></data>
+  <data name="AuditEntity_IdentityProviderConfig" xml:space="preserve"><value>Sign-in provider</value></data>
+  <data name="AuditEvent_ExternalLoginLinked" xml:space="preserve"><value>Organization account linked</value></data>
+  <data name="AuditEvent_ExternalLoginSucceeded" xml:space="preserve"><value>Successful organization sign-in</value></data>
+  <data name="AuditEvent_ExternalLoginFailed" xml:space="preserve"><value>Failed organization sign-in</value></data>
+  <data name="Notif_Staff_ExpiringSoon" xml:space="preserve"><value>The access of {StaffName} expires on {ExpiresOn}.</value></data>
+  <data name="Notif_Staff_Expired" xml:space="preserve"><value>The access of {StaffName} expired on {ExpiresOn}.</value></data>
+  <data name="Notif_Imports_Completed" xml:space="preserve"><value>Your {Kind} import finished: {Status} ({RowCount} rows).</value></data>
+  <data name="NotifEvent_Staff_ExpiringSoon" xml:space="preserve"><value>Staff access expiring soon</value></data>
+  <data name="NotifEvent_Staff_Expired" xml:space="preserve"><value>Staff access expired</value></data>
+  <data name="NotifEvent_Imports_Completed" xml:space="preserve"><value>Import finished</value></data>
 </root>

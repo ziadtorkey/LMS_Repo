@@ -67,6 +67,6 @@ public sealed class DevelopmentStartupTests(LmsApiFactory factory)
         var permissions = await db.RolePermissions.Where(p => p.RoleId == roleId).Select(p => p.Permission).ToListAsync();
         Assert.Contains(Lms.Shared.Authorization.Permissions.OrgUnits.View, permissions);
         Assert.Contains(Lms.Shared.Authorization.Permissions.LevelTypes.View, permissions);
-        Assert.Equal(1, (await db.Roles.SingleAsync(r => r.Id == roleId)).DefaultsVersion);
+        Assert.Equal(Lms.Infrastructure.Access.BuiltInRoleDefaults.CurrentVersion, (await db.Roles.SingleAsync(r => r.Id == roleId)).DefaultsVersion);
     }
 }

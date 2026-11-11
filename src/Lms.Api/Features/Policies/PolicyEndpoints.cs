@@ -22,7 +22,7 @@ public static class PolicyEndpoints
     private static IResult GetCatalog() =>
         Results.Ok(PolicyCatalog.BlockedPermissions
             .OrderBy(x => x.Key, StringComparer.Ordinal)
-            .Select(x => new PolicyDefinitionDto(x.Key, x.Value))
+            .Select(x => new PolicyDefinitionDto(x.Key, x.Value, PolicyCatalog.BlockedRoles.GetValueOrDefault(x.Key)))
             .ToList());
 
     private static async Task<IResult> GetEffectiveAsync(
