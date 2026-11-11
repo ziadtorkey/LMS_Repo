@@ -10,7 +10,6 @@ public static class PeopleServiceCollectionExtensions
     {
         services.AddScoped<IPersonDuplicateFinder, PersonDuplicateFinder>();
         services.AddScoped<IGuardianLinker, Guardians.GuardianLinker>();
-        services.AddScoped<IStudentCredentials, Students.StudentCredentials>();
         services.AddScoped<IOrgUnitUsageCheck, PeopleUsageCheck>();
         services.AddScoped<IPersonAccounts, PersonAccounts>();
         services.AddScoped<IPersonStatusService, PersonStatusService>();

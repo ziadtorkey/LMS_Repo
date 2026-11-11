@@ -1,6 +1,6 @@
+using Lms.Shared;
 using System.Net.Http.Json;
 using System.Text.Json;
-using Lms.Api.Features.Guardians;
 using Lms.Domain.Access;
 using Lms.Domain.Configuration;
 using Lms.Domain.Organizations;
@@ -68,12 +68,12 @@ internal sealed class GuardianTestKit(LmsApiFactory factory, WebApplicationFacto
         new(null, new GuardianDataInput("ولي أمر", name ?? "Guardian " + Guid.NewGuid().ToString("N")[..6], mobile ?? UniqueMobile(), null, nationalId), relation, primary);
 
     public async Task<IReadOnlyList<StudentGuardianDto>> LinksAsync(RoleAssignment who, Guid studentId) =>
-        (await (await SendAsync(HttpMethod.Get, GuardianRoutes.StudentGuardians(studentId), who))
+        (await (await SendAsync(HttpMethod.Get, Routes.StudentGuardians(studentId), who))
             .Content.ReadFromJsonAsync<List<StudentGuardianDto>>(Web))!;
 
     public async Task<StudentGuardianDto> LinkOkAsync(RoleAssignment who, Guid studentId, GuardianLinkInput input)
     {
-        var response = await SendAsync(HttpMethod.Post, GuardianRoutes.StudentGuardians(studentId), who, input);
+        var response = await SendAsync(HttpMethod.Post, Routes.StudentGuardians(studentId), who, input);
         Assert.Equal(System.Net.HttpStatusCode.Created, response.StatusCode);
         return (await response.Content.ReadFromJsonAsync<StudentGuardianDto>(Web))!;
     }

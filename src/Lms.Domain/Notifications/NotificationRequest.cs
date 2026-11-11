@@ -2,7 +2,8 @@ namespace Lms.Domain.Notifications;
 
 /// <summary>
 /// What to publish. <c>UserIds</c> names the recipients; when empty, the event's default recipient roles are resolved at
-/// <c>OrgUnitPath</c> and below. <c>DeepLink</c> must be an app-relative path (starts with "/").
+/// <c>OrgUnitPath</c> and below. The acting user is never notified unless <c>NotifyActor</c> is set (a background job
+/// that reports back to the user it runs for). <c>DeepLink</c> must be an app-relative path (starts with "/").
 /// </summary>
 public sealed record NotificationRequest(
     string EventKey,
@@ -10,4 +11,5 @@ public sealed record NotificationRequest(
     IReadOnlyList<Guid> UserIds,
     IReadOnlyDictionary<string, string> Parameters,
     string? DeepLink = null,
-    string? OrgUnitPath = null);
+    string? OrgUnitPath = null,
+    bool NotifyActor = false);

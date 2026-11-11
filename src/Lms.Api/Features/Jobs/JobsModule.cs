@@ -75,7 +75,11 @@ public sealed class JobsModule : ILmsModule
 
         if (configuration.GetValue("Jobs:ServerEnabled", true))
         {
-            services.AddHangfireServer(options => options.WorkerCount = Math.Max(1, configuration.GetValue("Jobs:WorkerCount", 2)));
+            services.AddHangfireServer(options =>
+            {
+                options.WorkerCount = Math.Max(1, configuration.GetValue("Jobs:WorkerCount", 2));
+                options.Queues = JobQueues.All;
+            });
         }
 
         services.AddSingleton(JobSettings.Parse(configuration[JobSettings.TimeZoneKey]));
