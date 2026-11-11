@@ -103,3 +103,21 @@ Run as the seeded school group's Org Admin with unique people per test (`M2Names
 | `Staff_expiring_soon_notifies_admins_then_expired_staff_is_blocked_after_the_job_run` | FR-STF-06, D35: notice in the bell, then Expired and the login message | runs |
 | `Admin_deactivates_teacher_with_reason_teacher_sees_blocked_message_then_reactivated_can_log_in` | FR-STF-03, FR-SEC-07 | skipped until #198 |
 | `Root_admin_shares_teacher_to_a_sibling_stage_and_the_list_shows_them_as_shared` | FR-STF-05, D29 | runs |
+
+## Scenarios (M2, plan Task 38 — `M2/ExternalLoginTests`)
+Each runs in Arabic and English. They need the `mock-oidc` compose service (navikt/mock-oauth2-server, interactive login, `http://localhost:8090/client-a`; `LMS_E2E_MOCK_OIDC` overrides the host): `docker compose up -d --wait mysql minio mailpit mock-oidc`.
+
+| Test | Covers |
+|---|---|
+| `Root_admin_configures_oidc_provider_tests_connection_and_staff_signs_in_with_organization_account` | FR-SEC-08: provider created and tested through the API, staff member found by e-mail domain, first sign-in links the account and lands in their own context |
+| `Unknown_identity_sees_not_found_message` | FR-SEC-08: identity nobody owns → generic message in `login-error`, no account, no session |
+| `Dual_client_user_signed_in_via_client_A_provider_does_not_see_client_B_context` | Review Focus 2: session bound to the provider's client; the other client's context is refused (403 OutOfScope) and absent from `/api/me` |
+
+| `Blocked_account_signing_in_through_the_provider_sees_the_blocked_message` (× deactivated, expired, withdrawn) | FR-SEC-07: the blocked-status message appears in `login-error` on the external path too, and no session starts |
+
+Notes:
+- **Not covered here, on purpose:** a person who belongs *only* to another client (client B) and tries client A's provider is refused with the generic not-found message. That is `ExternalLoginLinkerTests.Email_of_user_without_profile_in_this_client_is_not_found` (no E2E duplicate; the dual-client scenario above covers the session binding).
+- **The provider admin page is a separate task (T32).** Until it lands the provider is created and deleted through the API with the signed-in Org Admin's own token (`E2EApi`: token from sessionStorage, context from `/api/me` when the app has not stored one). The "configures in the UI" step joins the first scenario then.
+- **`MockOidc.SignInAsync`** fills the mock's sign-in form: the user name becomes `sub`, the claims JSON carries `email`. The issuer is `http://localhost:8090/client-a` for the browser *and* the API (the server builds `iss` from the request host), so never use the container name.
+- **Dedicated seed user `dual-e2e`** is a Teacher in the school (KG) and in the university (FCI-1-GEN), used only here.
+- The person signs in from the base browser context; the admin works in a second one, so no password session interferes.
