@@ -28,8 +28,8 @@ public sealed class PolicyEvaluator(LmsDbContext db, ICurrentContext context) : 
             .Select(p => p.Key)
             .ToList();
 
-        // A custom role that can assign or edit roles counts as an admin role (D28).
-        if (!role.IsBuiltIn && await HoldsAdminMarkerAsync(role, cancellationToken))
+        // Any role that can assign or edit roles counts as an admin role, built-in roles included: their permissions are editable (D28).
+        if (await HoldsAdminMarkerAsync(role, cancellationToken))
         {
             policyKeys.Add(PolicyCatalog.CreateAdmins);
         }

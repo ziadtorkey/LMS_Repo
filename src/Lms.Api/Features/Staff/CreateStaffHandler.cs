@@ -24,7 +24,7 @@ namespace Lms.Api.Features.Staff;
 /// </summary>
 public sealed class CreateStaffHandler(
     LmsDbContext db, IClock clock, CallerPermissions caller, IPersonDuplicateFinder duplicates, IAccountEmails emails,
-    ISettingsResolver settings, StaffQueries queries, ILogger<CreateStaffHandler> logger)
+    ISettingsResolver settings, IRoleGrantGuard roleGuard, StaffQueries queries, ILogger<CreateStaffHandler> logger)
 {
     public async Task<IResult> HandleAsync(CreateStaffRequest request, HttpContext http, CancellationToken ct)
     {
@@ -126,6 +126,12 @@ public sealed class CreateStaffHandler(
                 return (targets, Results.Problem(
                     statusCode: StatusCodes.Status403Forbidden, title: "Forbidden",
                     extensions: new Dictionary<string, object?> { ["code"] = ProblemCodes.permission_escalation }));
+            }
+
+            var grant = await roleGuard.CheckAsync(role, access.Unit!, ct);
+            if (!grant.Allowed)
+            {
+                return (targets, AccessProblem.From(grant, http));
             }
 
             targets.Add((role, access.Unit!, input));

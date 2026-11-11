@@ -128,7 +128,8 @@ public sealed class CreateStaffTests
         var email = $"{Unique()}@lms.test";
         var mobile = "+2010" + Random.Shared.Next(10000000, 99999999);
         var nationalId = Unique("N").ToUpperInvariant();
-        await CreateOkAsync(admin, Request(tree, email: email, mobile: mobile, nationalId: nationalId, unit: tree.School1.Id));
+        var first = await CreateOkAsync(admin, Request(tree, email: email, mobile: mobile, nationalId: nationalId, unit: tree.School1.Id)
+            with { NameAr = "اسم-فريد-" + field, NameEn = "Unique-Name-" + field });
 
         var duplicate = Request(
             tree, unit: tree.School2.Id,
@@ -139,11 +140,16 @@ public sealed class CreateStaffTests
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
         var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        // Only the standard problem fields plus code and field: nothing that identifies the other person.
+        var allowed = new HashSet<string> { "type", "title", "status", "detail", "instance", "traceId", "code", "field" };
+        Assert.All(body.EnumerateObject(), p => Assert.Contains(p.Name, allowed));
         Assert.Equal(ProblemCodes.duplicate_person, body.GetProperty("code").GetString());
         Assert.Equal(field, body.GetProperty("field").GetString());
         var raw = body.GetRawText();
-        Assert.DoesNotContain("School", raw);
-        Assert.DoesNotContain(email, raw.Replace(duplicate.Email, ""));
+        foreach (var secret in new[] { first.Summary.Id.ToString(), first.Summary.UserId.ToString(), "Unique-Name", "اسم-فريد", "School", "مدرسة", tree.School1.Id.ToString() })
+        {
+            Assert.DoesNotContain(secret, raw);
+        }
     }
 
     [Fact]

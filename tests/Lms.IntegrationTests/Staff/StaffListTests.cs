@@ -148,4 +148,47 @@ public sealed class StaffListTests
         Assert.Equal(["Charlie"], desc.Items.Select(x => x.NameEn));
         Assert.Equal(HttpStatusCode.BadRequest, (await SendAsync(HttpMethod.Get, Routes.Staff + "?pageSize=201", admin)).StatusCode);
     }
+
+    [Fact]
+    public async Task Another_clients_admin_sees_no_staff_of_this_client_in_list_search_or_profile()
+    {
+        var (tree, admin) = await AdminAsync("SL6A");
+        var (treeB, adminB) = await AdminAsync("SL6B");
+        var a = await CreateAsync(admin, tree, tree.School1.Id, "عميل-أ", "Client-A-Person", mobile: "+201005550001");
+        var b = await CreateAsync(adminB, treeB, treeB.School1.Id, "عميل-ب", "Client-B-Person");
+
+        var list = await ListAsync(adminB);
+        var searchByName = await ListAsync(adminB, "?search=Client-A");
+        var searchByEmail = await ListAsync(adminB, $"?search={Uri.EscapeDataString(a.Summary.Email)}");
+        var searchByMobile = await ListAsync(adminB, "?search=%2B201005550001");
+
+        Assert.Equal(b.Summary.Id, Assert.Single(list.Items).Id);
+        Assert.Empty(searchByName.Items);
+        Assert.Empty(searchByEmail.Items);
+        Assert.Empty(searchByMobile.Items);
+        Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(HttpMethod.Get, Routes.StaffMember(a.Summary.Id), adminB)).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await SendAsync(HttpMethod.Get, Routes.StaffMember(b.Summary.Id), adminB)).StatusCode);
+    }
+
+    [Fact]
+    public async Task Search_does_not_match_mobile_or_national_id_of_shared_in_staff()
+    {
+        var (tree, admin) = await AdminAsync("SL7");
+        var request = new CreateStaffRequest(
+            "مشترك", "Shared Search", $"s{Guid.NewGuid():N}@lms.test", "+201007770001", "HID7777", null, null, null,
+            tree.School1.Id, null, [new StaffRoleInput(tree.Roles[BuiltInRoles.Teacher].Id, tree.School2.Id, null, null)]);
+        var response = await SendAsync(HttpMethod.Post, Routes.Staff, admin, request);
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var school2Admin = await AccessTestData.AssignAsync(_factory, tree, tree.School2, BuiltInRoles.OrgAdmin, Guid.NewGuid());
+
+        var byMobile = await ListAsync(school2Admin, "?search=%2B201007770001");
+        var byNationalId = await ListAsync(school2Admin, "?search=HID7777");
+        var byName = await ListAsync(school2Admin, "?search=Shared");
+        var homeSideByMobile = await ListAsync(admin, $"?orgUnitId={tree.School1.Id}&search=%2B201007770001");
+
+        Assert.Empty(byMobile.Items);
+        Assert.Empty(byNationalId.Items);
+        Assert.Single(byName.Items); // still found by the fields the share target may see
+        Assert.Single(homeSideByMobile.Items);
+    }
 }

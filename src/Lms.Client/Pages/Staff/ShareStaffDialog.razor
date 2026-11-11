@@ -1,0 +1,50 @@
+@using Lms.Client.Services.Api
+@using Lms.Shared.People
+@inject IStaffApi Api
+@inject NavigationManager Navigation
+
+@* Share a staff member with other units: one role at one unit per row (D29). Policy blocks come back as the server's message. *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="2">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" data-testid="share-error">@_error</MudAlert>
+            }
+            <MudText Typo="Typo.subtitle2">@L["Staff_ShareTargets"]</MudText>
+            <StaffRoleRows Rows="_rows" />
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="share-cancel">@L["Common_Cancel"]</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_saving"
+                   data-testid="share-save">@L["Common_Save"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter, EditorRequired] public Guid StaffId { get; set; }
+
+    private readonly List<StaffRoleRow> _rows = [new()];
+    private string? _error;
+    private bool _saving;
+
+    private async Task SaveAsync()
+    {
+        _error = null;
+        if (!StaffRoleRow.ValidateAll(_rows)) return;
+        var targets = _rows.Where(r => !r.IsEmpty).Select(r => r.ToInput()).ToList();
+        if (targets.Count == 0)
+        {
+            _error = L["Staff_RoleRequired"];
+            return;
+        }
+
+        _saving = true;
+        var saved = await ApiCalls.RunAsync(() => Api.ShareAsync(StaffId, new ShareStaffRequest(targets)),
+            Navigation, L, message => _error = message);
+        _saving = false;
+        if (saved) MudDialog.Close(DialogResult.Ok(true));
+    }
+}

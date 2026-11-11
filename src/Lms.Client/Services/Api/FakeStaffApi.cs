@@ -17,6 +17,64 @@ public sealed class FakeStaffApi : IStaffApi
 
     public IReadOnlyList<StaffDetailDto> All => _staff;
 
+    public List<(Guid Id, UpdateStaffRequest Request)> Updates { get; } = [];
+    public List<(Guid Id, SetPersonStatusRequest Request)> StatusChanges { get; } = [];
+    public List<Guid> Deleted { get; } = [];
+    public List<Guid> Invitations { get; } = [];
+    public List<(Guid Id, ShareStaffRequest Request)> Shares { get; } = [];
+    public List<(Guid Id, Guid AssignmentId)> RemovedShares { get; } = [];
+
+    /// <summary>When set, the next write (update, status, delete, invitation, share) throws it.</summary>
+    public Exception? WriteFailure { get; set; }
+
+    private Task Write(Guid id, Func<StaffDetailDto, StaffDetailDto>? change, Action record)
+    {
+        if (WriteFailure is not null) return Task.FromException(WriteFailure);
+        var i = _staff.FindIndex(s => s.Summary.Id == id);
+        if (i < 0) return Task.FromException(new ApiProblemException(404, "person_not_found", null, null));
+        record();
+        if (change is not null) _staff[i] = change(_staff[i]);
+        return Task.CompletedTask;
+    }
+
+    public Task UpdateAsync(Guid id, UpdateStaffRequest r, CancellationToken ct = default) =>
+        Write(id, d => d with
+        {
+            NationalId = r.NationalId,
+            Summary = d.Summary with
+            {
+                NameAr = r.NameAr, NameEn = r.NameEn, Mobile = r.Mobile, JobTitleAr = r.JobTitleAr, JobTitleEn = r.JobTitleEn,
+                HomeOrgUnitId = r.HomeOrgUnitId, ExpiresOn = r.ExpiresOn, PhotoFileId = r.PhotoFileId,
+            },
+        }, () => Updates.Add((id, r)));
+
+    public Task SetStatusAsync(Guid id, SetPersonStatusRequest r, CancellationToken ct = default) =>
+        Write(id, d => d with
+        {
+            Summary = d.Summary with { Status = r.Status },
+            StatusHistory = [new PersonStatusChangeDto(d.Summary.Status, r.Status, r.Reason, DateTime.UtcNow, "المدير", "Admin"), .. d.StatusHistory],
+        }, () => StatusChanges.Add((id, r)));
+
+    public Task DeleteAsync(Guid id, CancellationToken ct = default) =>
+        Write(id, null, () => { Deleted.Add(id); _staff.RemoveAll(s => s.Summary.Id == id); });
+
+    public Task ResendInvitationAsync(Guid id, CancellationToken ct = default) =>
+        Write(id, null, () => Invitations.Add(id));
+
+    public Task ShareAsync(Guid id, ShareStaffRequest r, CancellationToken ct = default) =>
+        Write(id, d => d with
+        {
+            Summary = d.Summary with
+            {
+                Roles = [.. d.Summary.Roles, .. r.Targets.Select(t => new StaffRoleDto(Guid.NewGuid(), t.RoleId, "دور", "Role", t.OrgUnitId,
+                    "وحدة", "Unit", t.ValidFrom, t.ValidTo, true))],
+            },
+        }, () => Shares.Add((id, r)));
+
+    public Task RemoveShareAsync(Guid id, Guid assignmentId, CancellationToken ct = default) =>
+        Write(id, d => d with { Summary = d.Summary with { Roles = d.Summary.Roles.Where(x => x.AssignmentId != assignmentId).ToList() } },
+            () => RemovedShares.Add((id, assignmentId)));
+
     public FakeStaffApi()
     {
         var manager = new StaffRoleDto(Guid.NewGuid(), Guid.NewGuid(), "مدير", "Manager", FakeUnits.SchoolId,
@@ -33,12 +91,12 @@ public sealed class FakeStaffApi : IStaffApi
 
     /// <summary>Adds a staff member and returns its detail.</summary>
     public StaffDetailDto Add(string nameAr, string nameEn, string email, string status, IReadOnlyList<StaffRoleDto> roles,
-        DateOnly? expiresOn = null, bool limited = false)
+        DateOnly? expiresOn = null, bool limited = false, bool activated = true, Guid? photoFileId = null)
     {
         var id = Guid.NewGuid();
         var summary = new StaffSummaryDto(id, Guid.NewGuid(), nameAr, nameEn, email, limited ? null : "0500000000", null, null,
-            FakeUnits.SchoolId, "المدرسة الرئيسية", "Main School", status, expiresOn, null, limited, roles);
-        var detail = new StaffDetailDto(summary, limited ? null : "1234567890", true, limited,
+            FakeUnits.SchoolId, "المدرسة الرئيسية", "Main School", status, expiresOn, photoFileId, limited, roles);
+        var detail = new StaffDetailDto(summary, limited ? null : "1234567890", activated, limited,
             limited ? [] : [new PersonStatusChangeDto(PersonStatuses.Active, status, "Initial", DateTime.UtcNow.AddDays(-1), "المدير", "Admin")]);
         _staff.Add(detail);
         return detail;
@@ -49,6 +107,7 @@ public sealed class FakeStaffApi : IStaffApi
         LastQuery = query;
         var rows = _staff.Select(s => s.Summary)
             .Where(s => query.Status is null || s.Status == query.Status)
+            .Where(s => query.OrgUnitId is null || s.HomeOrgUnitId == query.OrgUnitId || s.Roles.Any(r => r.OrgUnitId == query.OrgUnitId))
             .Where(s => query.RoleId is null || s.Roles.Any(r => r.RoleId == query.RoleId))
             .Where(s => string.IsNullOrWhiteSpace(query.Search)
                 || s.NameEn.Contains(query.Search, StringComparison.OrdinalIgnoreCase)

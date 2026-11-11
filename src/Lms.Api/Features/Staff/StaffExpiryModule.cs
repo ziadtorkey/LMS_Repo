@@ -10,6 +10,8 @@ public sealed class StaffExpiryModule : ILmsModule
     public void AddServices(IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<StaffExpiryJob>();
+        services.AddSingleton(new DevJobDefinition(
+            StaffExpiryJob.RecurringJobId, (sp, asOf, ct) => sp.GetRequiredService<StaffExpiryJob>().RunAsync(asOf, ct)));
         if (configuration.GetValue("Jobs:ServerEnabled", true))
         {
             services.AddHostedService<StaffExpiryRegistration>();

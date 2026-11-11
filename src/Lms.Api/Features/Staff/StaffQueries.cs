@@ -67,7 +67,7 @@ public sealed class StaffQueries(LmsDbContext db, ICurrentContext context)
 
         if (!string.IsNullOrWhiteSpace(query.Search))
         {
-            profiles = ApplySearch(profiles, query.Search);
+            profiles = ApplySearch(profiles, query.Search, unit, query.IncludeDescendants);
         }
 
         var ordered = query.Sort switch
@@ -132,17 +132,22 @@ public sealed class StaffQueries(LmsDbContext db, ICurrentContext context)
         ? null
         : db.RoleAssignments.Where(a => a.RoleId == roleId).Select(a => a.UserId);
 
-    private static IQueryable<StaffProfile> ApplySearch(IQueryable<StaffProfile> profiles, string search)
+    private static IQueryable<StaffProfile> ApplySearch(
+        IQueryable<StaffProfile> profiles, string search, OrgUnit unit, bool descendants)
     {
         var text = search.Trim();
         var emailPrefix = text.ToLowerInvariant();
         var mobile = PersonNormalizer.Mobile(text);
         var nationalId = PersonNormalizer.NationalId(text);
         var key = PersonNormalizer.NameKey(text);
+        var path = unit.Path;
+        var unitId = unit.Id;
+        // Mobile and national id are matched only on people homed in the searched range: a share target sees neither
+        // field, so a search must not confirm them (D29).
         return profiles.Where(p =>
             p.Email.StartsWith(emailPrefix)
-            || (mobile != null && p.Mobile == mobile)
-            || (nationalId != null && p.NationalId == nationalId)
+            || ((descendants ? p.OrgUnitPath.StartsWith(path) : p.OrgUnitId == unitId)
+                && ((mobile != null && p.Mobile == mobile) || (nationalId != null && p.NationalId == nationalId)))
             || (key != string.Empty && (p.NameArKey.Contains(key) || p.NameEnKey.Contains(key))));
     }
 

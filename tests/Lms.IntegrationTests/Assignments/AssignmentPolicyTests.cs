@@ -94,6 +94,44 @@ public sealed class AssignmentPolicyTests(LmsApiFactory factory) : IDisposable
         Assert.Equal(HttpStatusCode.Created, (await AssignAsync(admin, tree.Roles[BuiltInRoles.Teacher], tree.School1)).StatusCode);
     }
 
+    [Theory]
+    [InlineData(BuiltInRoles.Supervisor, "Assignments.Create")]
+    [InlineData(BuiltInRoles.Counselor, "Roles.Update")]
+    public async Task CreateAdmins_blocks_an_edited_built_in_role_holding_an_admin_marker(string key, string marker)
+    {
+        var (tree, admin) = await SetUpAsync("AP8" + key[..2]);
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            db.Add(new RolePermission(tree.Org.Id, tree.Roles[key].Id, marker));
+            await db.SaveChangesAsync();
+        }
+
+        await _host.AddPolicyAsync(tree, tree.Root, PolicyCatalog.CreateAdmins);
+
+        var response = await AssignAsync(admin, tree.Roles[key], tree.School1);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.Equal("BlockedByPolicy", (await JsonAsync(response)).GetProperty("reason").GetString());
+    }
+
+    [Fact]
+    public async Task CreateAdmins_blocks_a_custom_role_holding_Roles_Update()
+    {
+        var (tree, admin) = await SetUpAsync("AP9");
+        Role custom;
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            custom = new Role(tree.Org.Id, null, "مخصص", "Role editor", RoleBaseKind.Staff);
+            db.Add(custom);
+            db.Add(new RolePermission(tree.Org.Id, custom.Id, Permissions.Roles.Update));
+            await db.SaveChangesAsync();
+        }
+
+        await _host.AddPolicyAsync(tree, tree.Root, PolicyCatalog.CreateAdmins);
+
+        Assert.Equal(HttpStatusCode.Forbidden, (await AssignAsync(admin, custom, tree.School1)).StatusCode);
+    }
+
     [Fact]
     public async Task Policy_at_sibling_does_not_block()
     {

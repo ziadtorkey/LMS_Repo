@@ -4,6 +4,7 @@ using Lms.Domain.Notifications;
 using Lms.Domain.Organizations;
 using Lms.Domain.People;
 using Lms.Infrastructure.Configuration;
+using Lms.Infrastructure.Jobs;
 using Lms.Infrastructure.Persistence;
 using Lms.Shared.Configuration;
 using Lms.Shared.Notifications;
@@ -25,19 +26,20 @@ public sealed class StaffExpiryJob(
     INotificationPublisher publisher,
     ISettingsResolver settings,
     IClock clock,
+    JobSettings jobSettings,
     ILogger<StaffExpiryJob> logger)
 {
     public const string RecurringJobId = "staff-expiry";
 
-    /// <summary>Every day at 02:00 UTC (D35).</summary>
+    /// <summary>Every day at 02:00 in <c>Jobs:TimeZone</c> (UTC by default, D35).</summary>
     public const string Cron = "0 2 * * *";
 
     public const string ExpiredReason = "Expired automatically";
 
-    /// <param name="asOf">The day to evaluate; default today (UTC). The dev trigger passes it for E2E.</param>
+    /// <param name="asOf">The day to evaluate; default today in <c>Jobs:TimeZone</c>. The dev trigger passes it for E2E.</param>
     public async Task RunAsync(DateOnly? asOf, CancellationToken cancellationToken)
     {
-        var day = asOf ?? DateOnly.FromDateTime(clock.UtcNow);
+        var day = asOf ?? jobSettings.Today(clock);
         // The platform context sees every client; the list of clients is platform-level data.
         var organizationIds = await db.Set<Organization>().Select(o => o.Id).ToListAsync(cancellationToken);
         foreach (var organizationId in organizationIds)
