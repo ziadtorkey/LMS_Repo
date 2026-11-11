@@ -407,4 +407,39 @@
   <data name="NotifEvent_Staff_ExpiringSoon" xml:space="preserve"><value>قرب انتهاء صلاحية موظف</value></data>
   <data name="NotifEvent_Staff_Expired" xml:space="preserve"><value>انتهاء صلاحية موظف</value></data>
   <data name="NotifEvent_Imports_Completed" xml:space="preserve"><value>اكتمال الاستيراد</value></data>
+  <data name="Nav_Staff" xml:space="preserve"><value>الموظفون</value></data>
+  <data name="Staff_Title" xml:space="preserve"><value>الموظفون</value></data>
+  <data name="Staff_New" xml:space="preserve"><value>موظف جديد</value></data>
+  <data name="Staff_Email" xml:space="preserve"><value>البريد الإلكتروني</value></data>
+  <data name="Staff_Mobile" xml:space="preserve"><value>رقم الجوال</value></data>
+  <data name="Staff_NationalId" xml:space="preserve"><value>رقم الهوية الوطنية</value></data>
+  <data name="Staff_JobTitleAr" xml:space="preserve"><value>المسمى الوظيفي بالعربية</value></data>
+  <data name="Staff_JobTitleEn" xml:space="preserve"><value>المسمى الوظيفي بالإنجليزية</value></data>
+  <data name="Staff_HomeUnit" xml:space="preserve"><value>الوحدة الأساسية</value></data>
+  <data name="Staff_ExpiresOn" xml:space="preserve"><value>تاريخ انتهاء الحساب</value></data>
+  <data name="Staff_Roles" xml:space="preserve"><value>الأدوار</value></data>
+  <data name="Staff_AddRole" xml:space="preserve"><value>إضافة دور</value></data>
+  <data name="Staff_Role" xml:space="preserve"><value>الدور</value></data>
+  <data name="Staff_RoleUnit" xml:space="preserve"><value>في الوحدة</value></data>
+  <data name="Staff_ValidFrom" xml:space="preserve"><value>من</value></data>
+  <data name="Staff_ValidTo" xml:space="preserve"><value>إلى</value></data>
+  <data name="Staff_RoleRequired" xml:space="preserve"><value>أضف دورًا واحدًا على الأقل.</value></data>
+  <data name="Staff_Created" xml:space="preserve"><value>تم إنشاء الموظف وإرسال بريد التفعيل.</value></data>
+  <data name="Staff_Shared" xml:space="preserve"><value>مُشارَك</value></data>
+  <data name="Staff_NotActivated" xml:space="preserve"><value>لم يُفعَّل بعد</value></data>
+  <data name="Staff_StatusHistory" xml:space="preserve"><value>سجل الحالة</value></data>
+  <data name="Staff_Reason" xml:space="preserve"><value>السبب</value></data>
+  <data name="Staff_LimitedView" xml:space="preserve"><value>ينتمي هذا الشخص إلى وحدة أخرى، لذلك بعض البيانات مخفية.</value></data>
+  <data name="Person_Photo" xml:space="preserve"><value>الصورة</value></data>
+  <data name="Person_ChangePhoto" xml:space="preserve"><value>تغيير الصورة</value></data>
+  <data name="Person_RemovePhoto" xml:space="preserve"><value>إزالة الصورة</value></data>
+  <data name="Person_PhotoType" xml:space="preserve"><value>اختر صورة بصيغة JPG أو PNG.</value></data>
+  <data name="Person_PhotoTooLarge" xml:space="preserve"><value>حجم الصورة أكبر من 5 ميغابايت.</value></data>
+  <data name="PersonStatus_Active" xml:space="preserve"><value>نشط</value></data>
+  <data name="PersonStatus_Deactivated" xml:space="preserve"><value>موقوف</value></data>
+  <data name="PersonStatus_Expired" xml:space="preserve"><value>منتهي الصلاحية</value></data>
+  <data name="Error_duplicate_person_email" xml:space="preserve"><value>هذا البريد الإلكتروني مستخدم لشخص آخر في المؤسسة.</value></data>
+  <data name="Error_duplicate_person_mobile" xml:space="preserve"><value>رقم الجوال مستخدم لشخص آخر في المؤسسة.</value></data>
+  <data name="Error_duplicate_person_nationalId" xml:space="preserve"><value>رقم الهوية الوطنية مسجل لشخص آخر في المؤسسة.</value></data>
+  <data name="Staff_RoleIncomplete" xml:space="preserve"><value>اختر الدور والوحدة معًا.</value></data>
 </root>
