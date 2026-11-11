@@ -49,12 +49,12 @@ public static class FakeUnits
     public static IReadOnlyList<OrgUnitNodeDto> All { get; } =
     [
         Node(GroupId, null, "مدارس النور", "Al Noor Schools", "AN", 0),
-        Node(SchoolId, GroupId, "المدرسة الرئيسية", "Main School", "MS", 1),
+        Node(SchoolId, GroupId, "المدرسة الرئيسية", "Main School", "MS", 1, courseManagement: true),
         Node(GradeId, SchoolId, "الصف الأول", "Grade 1", "G1", 2),
     ];
 
-    private static OrgUnitNodeDto Node(Guid id, Guid? parent, string ar, string en, string code, int depth) =>
-        new(id, parent, Guid.NewGuid(), ar, en, code, depth, "Active", false, null, false, depth < 2, []);
+    private static OrgUnitNodeDto Node(Guid id, Guid? parent, string ar, string en, string code, int depth, bool courseManagement = false) =>
+        new(id, parent, Guid.NewGuid(), ar, en, code, depth, "Active", false, null, courseManagement, depth < 2, []);
 }
 
 public sealed class FakeUnitLookupApi : IUnitLookupApi

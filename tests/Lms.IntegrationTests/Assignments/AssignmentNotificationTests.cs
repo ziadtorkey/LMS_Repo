@@ -48,13 +48,14 @@ public sealed class AssignmentNotificationTests
         return await db.Set<Notification>().Where(n => n.UserId == userId).OrderBy(n => n.CreatedAt).ToListAsync();
     }
 
-    private async Task<User> CreateUserAsync()
+    private async Task<User> CreateUserAsync(Lms.Domain.Organizations.OrgUnit home)
     {
         var email = $"n-{Guid.NewGuid():N}@lms.test";
         await using var db = _factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
         var user = new User { UserName = email, Email = email, NormalizedEmail = email.ToUpperInvariant(), DisplayNameAr = "مستخدم", DisplayNameEn = "User" };
         db.Users.Add(user);
         await db.SaveChangesAsync();
+        await Lms.IntegrationTests.People.PeopleTestKit.AddStaffAsync(_factory, home, email, userId: user.Id); // existing staff only (D31)
         return user;
     }
 
@@ -63,7 +64,7 @@ public sealed class AssignmentNotificationTests
     {
         var tree = await AccessTestData.SeedAsync(_factory, "AN1");
         var admin = await AccessTestData.AssignAsync(_factory, tree, tree.Root, BuiltInRoles.OrgAdmin, Guid.NewGuid());
-        var user = await CreateUserAsync();
+        var user = await CreateUserAsync(tree.School1);
         var teacher = tree.Roles[BuiltInRoles.Teacher];
 
         var response = await SendAsync(HttpMethod.Post, Routes.Assignments, admin,
@@ -86,7 +87,7 @@ public sealed class AssignmentNotificationTests
     {
         var tree = await AccessTestData.SeedAsync(_factory, "AN2");
         var admin = await AccessTestData.AssignAsync(_factory, tree, tree.Root, BuiltInRoles.OrgAdmin, Guid.NewGuid());
-        var user = await CreateUserAsync();
+        var user = await CreateUserAsync(tree.School1);
         var assigned = await AccessTestData.AssignAsync(_factory, tree, tree.School2, BuiltInRoles.Teacher, user.Id);
 
         var response = await SendAsync(HttpMethod.Delete, Routes.Assignment(assigned.Id), admin);
@@ -106,7 +107,7 @@ public sealed class AssignmentNotificationTests
     {
         var tree = await AccessTestData.SeedAsync(_factory, "AN3");
         var manager = await AccessTestData.AssignAsync(_factory, tree, tree.Root, BuiltInRoles.Manager, Guid.NewGuid());
-        var user = await CreateUserAsync();
+        var user = await CreateUserAsync(tree.School1);
 
         var response = await SendAsync(HttpMethod.Post, Routes.Assignments, manager,
             new CreateAssignmentRequest(user.Email!, null, null, tree.Roles[BuiltInRoles.OrgAdmin].Id, tree.School1.Id, null, null));

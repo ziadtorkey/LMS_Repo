@@ -169,6 +169,42 @@ public sealed class M1TableIsolationTests(LmsApiFactory factory)
         Assert.Equal([a.Org.Id], await OrgsSeenBy(TestCurrentContext.PlatformAdmin())); // and from the platform admin
     }
 
+    // ---- OrgTemplate (M1 Task 24, #52): client-level table (ITenantOwned); Private/Shared visibility is enforced by the endpoint.
+
+    [Fact]
+    public async Task OrgTemplate_is_visible_to_its_own_client_at_any_scope_never_to_another_and_not_when_deleted()
+    {
+        var (a, b) = await TwoClientsAsync("TI7");
+        async Task<Guid> AddTemplateAsync(AccessTree tree, OrgUnit owner)
+        {
+            await using var db = As(TestCurrentContext.PlatformAdmin());
+            var template = new OrgTemplate(owner, "قالب", "Template " + owner.Code, TemplateVisibility.Private, "{}", 1, []);
+            db.Set<OrgTemplate>().Add(template);
+            await db.SaveChangesAsync();
+            return template.Id;
+        }
+
+        var ofA = await AddTemplateAsync(a, a.School1);
+        var ofB = await AddTemplateAsync(b, b.Root);
+        Guid[] all = [ofA, ofB];
+        async Task<List<Guid>> Seen(TestCurrentContext who)
+        {
+            await using var db = As(who);
+            return (await db.Set<OrgTemplate>().Select(t => t.Id).ToListAsync()).Where(all.Contains).Order().ToList();
+        }
+
+        // client level: the table filter is the client only (who may use a Private template is the endpoint's rule)
+        Assert.Equal([ofA], await Seen(In(a, a.Root)));
+        Assert.Equal([ofA], await Seen(In(a, a.School2)));
+        Assert.Equal([ofB], await Seen(In(b, b.Root)));
+        Assert.Empty(await Seen(new TestCurrentContext { UserId = Guid.NewGuid() }));   // no client: nothing
+        Assert.Equal(all.Order(), await Seen(TestCurrentContext.PlatformAdmin()));
+
+        await SoftDeleteAsync<OrgTemplate>(ofA);
+        Assert.Empty(await Seen(In(a, a.Root)));
+        Assert.Equal([ofB], await Seen(TestCurrentContext.PlatformAdmin()));
+    }
+
     // ---- NotificationPreference (Task 10): a user-level table, never visible to another user (enforced by the endpoint).
 
     [Fact]
