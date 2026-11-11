@@ -36,6 +36,14 @@ public sealed class OrgUnitsProbeRows : IProbeRowModule
             async (w, _) => new ProbeRequest(Routes.OrgUnitStatus((await w.NewUnitAsync(w.Callers.A.School1)).Id),
                 new SetOrgUnitStatusRequest(OrgUnitStatuses.Inactive)),
             Expect(Ok, Ok, NotFound, Forbidden, NotFound, Ok)),
+        new("org-units move (to another unit below School1)", HttpMethod.Put, Routes.OrgUnitMovePattern,
+            async (w, _) =>
+            {
+                var unit = await NewDeeperUnitAsync(w); // deeper level than the new parent, so the level rule holds
+                var target = await w.NewUnitAsync(w.Callers.A.School1);
+                return new ProbeRequest(Routes.OrgUnitMove(unit.Id), new MoveOrgUnitRequest(target.Id));
+            },
+            Expect(Ok, Ok, NotFound, Forbidden, NotFound, Ok)),
         new("org-units delete (leaf)", HttpMethod.Delete, Routes.OrgUnitPattern,
             async (w, _) => new ProbeRequest(Routes.OrgUnit((await w.NewUnitAsync(w.Callers.A.School1)).Id)),
             Expect(NoContent, NoContent, NotFound, Forbidden, NotFound, NoContent)),

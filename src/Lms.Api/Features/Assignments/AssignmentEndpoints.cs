@@ -85,7 +85,8 @@ public static class AssignmentEndpoints
     }
 
     private static async Task<IResult> DeleteAsync(
-        Guid id, HttpContext http, LmsDbContext db, ICurrentContext context, CallerPermissions caller, CancellationToken ct)
+        Guid id, HttpContext http, LmsDbContext db, ICurrentContext context, CallerPermissions caller,
+        AssignmentNotifier notifier, CancellationToken ct)
     {
         var assignment = await db.RoleAssignments.FirstOrDefaultAsync(a => a.Id == id, ct);
         if (assignment is null)
@@ -110,8 +111,14 @@ public static class AssignmentEndpoints
             return Forbidden();
         }
 
+        var role = await db.Roles.FirstOrDefaultAsync(r => r.Id == assignment.RoleId, ct);
         db.RoleAssignments.Remove(assignment);
         await db.SaveChangesAsync(ct);
+        if (role is not null)
+        {
+            await notifier.RoleRemovedAsync(assignment, role, access.Unit!, ct);
+        }
+
         return Results.NoContent();
     }
 

@@ -38,6 +38,7 @@ public static class ClientServices
             services.AddScoped<INotificationConnection, FakeNotificationConnection>();
             services.AddSingleton<IClientsApi, FakeClientsApi>();
             services.AddSingleton<IOrgApi, FakeOrgApi>();
+            services.AddSingleton<IConfigApi, FakeConfigApi>();
             services.AddScoped<AuthenticationStateProvider, FakeAuthenticationStateProvider>();
             services.AddAuthorizationCore();
             return;
@@ -67,5 +68,6 @@ public static class ClientServices
             .AddHttpMessageHandler<ForbiddenRedirectHandler>();
         services.AddScoped<IClientsApi, ClientsApi>();
         services.AddScoped<IOrgApi, OrgApi>();
+        services.AddScoped<IConfigApi, ConfigApi>();
     }
 }
