@@ -1,0 +1,148 @@
+@page "/identity-providers"
+@attribute [Authorize]
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Shared.Authorization
+@using Lms.Shared.IdentityProviders
+@implements IDisposable
+@inject IIdentityProvidersApi Api
+@inject PermissionState Perms
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<PageTitle>@L["Idp_Title"]</PageTitle>
+@if (!Perms.Loaded)
+{
+    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+}
+else if (!Perms.Has(Permissions.IdentityProviders.View))
+{
+    <Forbidden />
+}
+else
+{
+    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3" Wrap="Wrap.Wrap">
+        <MudText Typo="Typo.h4" data-testid="idp-title">@L["Idp_Title"]</MudText>
+        @if (Perms.Has(Permissions.IdentityProviders.Manage))
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="() => OpenAsync(null)" data-testid="idp-new">@L["Idp_New"]</MudButton>
+        }
+    </MudStack>
+
+    @if (_loading)
+    {
+        <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+    }
+    else if (_failed)
+    {
+        <MudAlert Severity="Severity.Error" data-testid="api-error">
+            @L["Api_Error"]
+            <MudButton Variant="Variant.Text" OnClick="LoadAsync">@L["Common_Retry"]</MudButton>
+        </MudAlert>
+    }
+    else if (_items.Count == 0)
+    {
+        <MudText data-testid="table-empty">@L["Common_Empty"]</MudText>
+    }
+    else
+    {
+        <MudTable T="IdentityProviderDto" Items="_items" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm">
+            <HeaderContent>
+                <MudTh>@L["Common_Name"]</MudTh>
+                <MudTh>@L["Idp_Kind"]</MudTh>
+                <MudTh>@L["Idp_Slug"]</MudTh>
+                <MudTh>@L["Idp_EmailDomains"]</MudTh>
+                <MudTh>@L["Common_Enabled"]</MudTh>
+                <MudTh>@L["Common_Actions"]</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="@L["Common_Name"]">@CultureText.Pick(context.DisplayNameAr, context.DisplayNameEn)</MudTd>
+                <MudTd DataLabel="@L["Idp_Kind"]">@L[$"IdpKind_{context.Kind}"]</MudTd>
+                <MudTd DataLabel="@L["Idp_Slug"]"><span dir="ltr">@context.Slug</span></MudTd>
+                <MudTd DataLabel="@L["Idp_EmailDomains"]">
+                    <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap">
+                        @foreach (var domain in context.EmailDomains)
+                        {
+                            <MudChip T="string" Size="Size.Small"><span dir="ltr">@domain</span></MudChip>
+                        }
+                    </MudStack>
+                </MudTd>
+                <MudTd DataLabel="@L["Common_Enabled"]">
+                    <MudSwitch T="bool" Value="context.Enabled" ValueChanged="v => ToggleAsync(context, v)" Color="Color.Primary"
+                               Disabled="@(!Perms.Has(Permissions.IdentityProviders.Manage))" aria-label="@L["Common_Enabled"]"
+                               data-testid="@($"idp-enabled-{context.Id}")" />
+                </MudTd>
+                <MudTd DataLabel="@L["Common_Actions"]">
+                    @if (Perms.Has(Permissions.IdentityProviders.Manage))
+                    {
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" aria-label="@L["Common_Edit"]"
+                                       OnClick="() => OpenAsync(context)" data-testid="@($"idp-edit-{context.Id}")" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="@L["Common_Delete"]"
+                                       OnClick="() => DeleteAsync(context)" data-testid="@($"idp-delete-{context.Id}")" />
+                    }
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    }
+}
+
+@code {
+    private IReadOnlyList<IdentityProviderDto> _items = [];
+    private bool _loading = true, _failed;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Perms.Changed += OnPermissionsChanged;
+        if (!Perms.Loaded) await Perms.RefreshAsync();
+        if (Perms.Has(Permissions.IdentityProviders.View)) await LoadAsync();
+        else _loading = false;
+    }
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Perms.Changed -= OnPermissionsChanged;
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _failed = false;
+        var (items, failed) = await ApiCalls.RunAsync(() => Api.ListAsync(), Navigation);
+        _failed = failed;
+        _items = items ?? [];
+        _loading = false;
+    }
+
+    private async Task OpenAsync(IdentityProviderDto? existing)
+    {
+        var parameters = new DialogParameters<IdentityProviderDialog> { { d => d.Existing, existing } };
+        var dialog = await Dialogs.ShowAsync<IdentityProviderDialog>(
+            existing is null ? L["Idp_New"] : CultureText.Pick(existing.DisplayNameAr, existing.DisplayNameEn), parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            Snackbar.Add(L["Common_Saved"], Severity.Success);
+            await LoadAsync();
+        }
+    }
+
+    /// <summary>The switch saves the whole provider with the new flag; the stored secret is kept (null).</summary>
+    private async Task ToggleAsync(IdentityProviderDto p, bool enabled)
+    {
+        var request = new SaveIdentityProviderRequest(p.Kind, p.Slug, p.DisplayNameAr, p.DisplayNameEn,
+            p.Authority, p.AzureTenantId, p.ClientId, null, p.Scopes, p.MatchBy, p.NationalIdClaim, p.EmailDomains, enabled);
+        await ApiCalls.RunAsync(() => Api.UpdateAsync(p.Id, request), Navigation, L, m => Snackbar.Add(m, Severity.Error));
+        await LoadAsync();
+    }
+
+    private async Task DeleteAsync(IdentityProviderDto p)
+    {
+        var confirmed = await ConfirmDialog.AskAsync(Dialogs, L["Confirm_DeleteTitle"],
+            string.Format(L["Idp_DeleteConfirm"], CultureText.Pick(p.DisplayNameAr, p.DisplayNameEn)));
+        if (!confirmed) return;
+        if (await ApiCalls.RunAsync(() => Api.DeleteAsync(p.Id), Navigation, L, m => Snackbar.Add(m, Severity.Error)))
+            await LoadAsync();
+    }
+}

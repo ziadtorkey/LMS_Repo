@@ -18,6 +18,7 @@ public static class NavCatalog
         new("Nav_Assignments", "assignments", Icons.Material.Filled.GroupAdd, Permissions.Assignments.View),
         new("Nav_AcademicYears", "academic-years", Icons.Material.Filled.CalendarMonth, Permissions.AcademicYears.View),
         new("Nav_Templates", "templates", Icons.Material.Filled.ContentCopy, Permissions.Templates.View),
+        new("Nav_IdentityProviders", "identity-providers", Icons.Material.Filled.Login, Permissions.IdentityProviders.View),
         new("Nav_Settings", "settings", Icons.Material.Filled.Settings, Permissions.Settings.View),
         new("Nav_Audit", "audit", Icons.Material.Filled.History, Permissions.Audit.View),
         new("Nav_Clients", "clients", Icons.Material.Filled.Business, null, PlatformAdminOnly: true),

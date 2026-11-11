@@ -37,7 +37,7 @@ public sealed class NotificationPublisher(
         var recipients = await RecipientsAsync(request, definition, cancellationToken);
 
         // Never the acting user, each recipient once.
-        var userIds = recipients.Where(id => id != context.UserId).Distinct().ToList();
+        var userIds = recipients.Where(id => request.NotifyActor || id != context.UserId).Distinct().ToList();
         if (userIds.Count == 0)
         {
             return;
