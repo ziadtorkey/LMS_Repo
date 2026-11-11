@@ -8,6 +8,7 @@ using Lms.Domain.Enrollment;
 using Lms.Domain.Identity;
 using Lms.Domain.Organizations;
 using Lms.Domain.People;
+using Lms.Domain.Teaching;
 using Lms.IntegrationTests.Access;
 using Lms.IntegrationTests.Academic;
 using Lms.IntegrationTests.Enrollment;
@@ -259,6 +260,35 @@ public sealed class StudentEndpointsTests
         var all = (await (await _kit.SendAsync(HttpMethod.Get, Routes.Students, admin)).Content.ReadFromJsonAsync<PagedResult<StudentSummaryDto>>(Web))!;
         Assert.Contains(all.Items, s => s.Id == own);
         Assert.Contains(all.Items, s => s.Id == other);
+    }
+
+    [Fact]
+    public async Task Teacher_sees_guardians_only_of_students_they_reach()
+    {
+        var w = await EnrollmentWorld.CreateAsync(_factory, "ST7G");
+        var admin = await AccessTestData.AssignAsync(_factory, w.Tree, w.Tree.Root, BuiltInRoles.OrgAdmin, Guid.NewGuid());
+        var teacherUser = await Lms.IntegrationTests.People.PeopleTestKit.AddUserAsync(_factory);
+        var teacher = await AccessTestData.AssignAsync(_factory, w.Tree, w.Tree.School1, BuiltInRoles.Teacher, teacherUser.Id);
+        var reached = await CreateOkAsync(admin, Create(w.Tree.School1.Id, classId: w.Class.Id, guardians: [NewGuardian(primary: true, name: "Parent Reached")]));
+        var other = await CreateOkAsync(admin, Create(w.Tree.School1.Id, guardians: [NewGuardian(primary: true, name: "Parent Other")])); // not enrolled with this teacher
+        await using (var db = _factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            db.Add(new ClassCourseTeacher(w.CcA, teacherUser.Id, ClassCourseTeacher.PrimaryRole, DateOnly.FromDateTime(DateTime.UtcNow).AddDays(-1)));
+            await db.SaveChangesAsync();
+        }
+
+        var reachedGuardian = reached.Student.Guardians.Single().GuardianId;
+        var otherGuardian = other.Student.Guardians.Single().GuardianId;
+
+        var list = (await (await _kit.SendAsync(HttpMethod.Get, Routes.Guardians, teacher)).Content.ReadFromJsonAsync<PagedResult<GuardianSummaryDto>>(Web))!;
+        Assert.Equal([reachedGuardian], list.Items.Select(g => g.Id));
+        Assert.Equal(HttpStatusCode.OK, (await _kit.SendAsync(HttpMethod.Get, Routes.Guardian(reachedGuardian), teacher)).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await _kit.SendAsync(HttpMethod.Get, Routes.Guardian(otherGuardian), teacher)).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await _kit.SendAsync(HttpMethod.Get, Routes.StudentGuardians(reached.Student.Summary.Id), teacher)).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await _kit.SendAsync(HttpMethod.Get, Routes.StudentGuardians(other.Student.Summary.Id), teacher)).StatusCode);
+
+        var all = (await (await _kit.SendAsync(HttpMethod.Get, Routes.Guardians, admin)).Content.ReadFromJsonAsync<PagedResult<GuardianSummaryDto>>(Web))!;
+        Assert.Equal(2, all.Items.Count);
     }
 
     [Fact]
