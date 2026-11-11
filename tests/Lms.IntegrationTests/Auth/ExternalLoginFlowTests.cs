@@ -194,4 +194,25 @@ public sealed class ExternalLoginFlowTests(LmsApiFactory factory)
         // an unknown slug is just an unhandled path (no provider, nothing registered, no error)
         Assert.NotEqual(HttpStatusCode.InternalServerError, (await browser.GetAsync("/signin-oidc/no-such-provider?error=x")).StatusCode);
     }
+
+    [Theory]
+    [InlineData("http", false)]
+    [InlineData("https", true)]
+    public async Task Correlation_and_nonce_cookies_are_Lax_and_Secure_only_over_https(string scheme, bool secure)
+    {
+        await using var provider = await MockOidcServer.StartAsync($"ext-sub-{Guid.NewGuid():N}", new Dictionary<string, string> { ["email"] = "cookie@school.example" });
+        var (slug, _) = await AddProviderWithoutSyncAsync(provider, "FLOW-C" + scheme[..1]);
+        using var client = _host.NewClientAt(new Uri($"{scheme}://localhost"));
+
+        var response = await client.GetAsync($"/Account/ExternalLogin/{slug}");
+
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        var cookies = response.Headers.GetValues("Set-Cookie").Where(c => c.Contains(".AspNetCore.OpenIdConnect.Nonce") || c.Contains(".AspNetCore.Correlation")).ToList();
+        Assert.Equal(2, cookies.Count); // one correlation, one nonce
+        Assert.All(cookies, c =>
+        {
+            Assert.Contains("samesite=lax", c, StringComparison.OrdinalIgnoreCase);
+            Assert.Equal(secure, c.Contains("secure", StringComparison.OrdinalIgnoreCase));
+        });
+    }
 }
