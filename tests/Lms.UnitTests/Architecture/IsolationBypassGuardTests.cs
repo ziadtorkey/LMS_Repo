@@ -25,6 +25,10 @@ public sealed class IsolationBypassGuardTests
             "effective settings and locks inherited from ancestors above the caller's scope (M1 Task 14, #100)",
         ["src/Lms.Infrastructure/Notifications/NotificationRecipientResolver.cs"] =
             "recipients at or below the event unit, raised by someone above or beside them (M1 Task 10, #90)",
+        ["src/Lms.Infrastructure/AcademicYears/AcademicYearResolver.cs"] =
+            "effective years inherited from the nearest defining ancestor, above the caller's scope (M1 Task 20, #102)",
+        ["src/Lms.Api/Features/AcademicYears/AcademicYearMapper.cs"] =
+            "terms and defining-unit names of inherited (ancestor) years the caller may see (M1 Task 20, #102)",
     };
 
     [Fact]
