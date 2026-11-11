@@ -61,6 +61,18 @@ public sealed class OrgUnit : AuditableEntity, IOrgUnitScoped
         return unit;
     }
 
+    public void Update(Guid levelTypeId, string nameAr, string nameEn, string code)
+    {
+        LevelTypeId = levelTypeId;
+        NameAr = nameAr;
+        NameEn = nameEn;
+        Code = code;
+    }
+
+    public void Deactivate() => Status = OrgUnitStatus.Inactive;
+
+    public void Activate() => Status = OrgUnitStatus.Active;
+
     public void MarkAsLevelTransfer(Guid? nextTransferUnitId)
     {
         IsLevelTransfer = true;

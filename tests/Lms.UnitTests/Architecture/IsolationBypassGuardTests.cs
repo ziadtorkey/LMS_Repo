@@ -25,6 +25,8 @@ public sealed class IsolationBypassGuardTests
             "effective settings and locks inherited from ancestors above the caller's scope (M1 Task 14, #100)",
         ["src/Lms.Infrastructure/Configuration/EffectivePolicyReader.cs"] =
             "effective policies set on ancestors above the caller's scope (M1 Task 12, #94)",
+        ["src/Lms.Infrastructure/Organizations/OrgPolicyReader.cs"] =
+            "policies set on ancestors above the caller's scope, to show blocked permissions in the org tree (M1 Task 9, #99)",
         ["src/Lms.Api/Features/LevelTypes/LevelTypeEndpoints.cs"] =
             "level types are client-wide, so the in-use count covers the whole client, not the caller subtree (M1 Task 8, #83)",
         ["src/Lms.Infrastructure/Notifications/NotificationRecipientResolver.cs"] =
@@ -33,6 +35,8 @@ public sealed class IsolationBypassGuardTests
             "effective year list inherited from ancestors above the caller's scope (M1 Task 20, #102)",
         ["src/Lms.Api/Features/AcademicYears/AcademicYearMapper.cs"] =
             "names of the defining unit of an inherited year, restricted to the caller's organization (M1 Task 20, #102)",
+        ["src/Lms.Api/Features/Audit/AuditRows.cs"] =
+            "role and unit names of audit rows the caller may already see, restricted to the entries' clients (M1 Task 18, #97)",
         ["src/Lms.Api/Features/AcademicYears/AcademicYearEndpoints.cs"] =
             "delete also removes calendar events at descendant units, restricted to the year's client (M1 Task 22, #57)",
         ["src/Lms.Api/Features/AcademicYears/CalendarEndpoints.cs"] =

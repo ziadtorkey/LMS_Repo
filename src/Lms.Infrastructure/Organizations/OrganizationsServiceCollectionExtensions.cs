@@ -8,6 +8,8 @@ public static class OrganizationsServiceCollectionExtensions
     public static IServiceCollection AddOrganizations(this IServiceCollection services)
     {
         services.AddScoped<IOrgTree, OrgTree>();
+        services.AddScoped<AssignmentUsageCheck>();
+        services.AddScoped<IOrgPolicyReader, OrgPolicyReader>();
         return services;
     }
 }

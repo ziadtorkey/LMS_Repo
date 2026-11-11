@@ -289,4 +289,26 @@
   <data name="Confirm_DeactivateTitle" xml:space="preserve"><value>إيقاف الوحدة؟</value></data>
   <data name="OrgTree_DeactivateOwnWarning" xml:space="preserve"><value>أنت تعمل في هذه الوحدة (أو في وحدة تابعة لها). إذا أوقفتها فستفقد الوصول إلى أن يعيد مسؤول أعلى منها تفعيلها. هل تريد المتابعة؟</value></data>
   <data name="AuditEntity_StoredFile" xml:space="preserve"><value>ملف</value></data>
+  <data name="Year_Selector" xml:space="preserve"><value>العام الدراسي</value></data>
+  <data name="Year_None" xml:space="preserve"><value>لا يوجد عام دراسي</value></data>
+  <data name="Year_ReadOnly" xml:space="preserve"><value>عام مغلق — للقراءة فقط</value></data>
+  <data name="Notif_Title" xml:space="preserve"><value>الإشعارات</value></data>
+  <data name="Notif_MarkAllRead" xml:space="preserve"><value>تعيين الكل كمقروء</value></data>
+  <data name="Notif_Empty" xml:space="preserve"><value>لا توجد إشعارات.</value></data>
+  <data name="Notif_Preferences" xml:space="preserve"><value>تفضيلات الإشعارات</value></data>
+  <data name="Channel_InApp" xml:space="preserve"><value>داخل المنصة</value></data>
+  <data name="Channel_Email" xml:space="preserve"><value>البريد الإلكتروني</value></data>
+  <data name="Channel_Sms" xml:space="preserve"><value>رسائل نصية</value></data>
+  <data name="Channel_Push" xml:space="preserve"><value>إشعارات فورية</value></data>
+  <data name="Notif_Access_RoleAssigned" xml:space="preserve"><value>تم منحك دور {RoleName} في {OrgUnitName}.</value></data>
+  <data name="Notif_Access_RoleRemoved" xml:space="preserve"><value>تمت إزالة دورك {RoleName} في {OrgUnitName}.</value></data>
+  <data name="Notif_Organization_PolicyChanged" xml:space="preserve"><value>تم تغيير سياسة في {OrgUnitName}.</value></data>
+  <data name="Notif_Unknown" xml:space="preserve"><value>إشعار جديد</value></data>
+  <data name="Notif_Unread" xml:space="preserve"><value>غير مقروء</value></data>
+  <data name="Notif_UnreadOnly" xml:space="preserve"><value>غير المقروءة فقط</value></data>
+  <data name="Notif_ViewAll" xml:space="preserve"><value>عرض الكل</value></data>
+  <data name="Notif_Message" xml:space="preserve"><value>الإشعار</value></data>
+  <data name="NotifEvent_Access_RoleAssigned" xml:space="preserve"><value>تعيين دور</value></data>
+  <data name="NotifEvent_Access_RoleRemoved" xml:space="preserve"><value>إزالة دور</value></data>
+  <data name="NotifEvent_Organization_PolicyChanged" xml:space="preserve"><value>تغيير سياسة</value></data>
 </root>

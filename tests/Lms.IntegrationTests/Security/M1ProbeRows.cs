@@ -1,3 +1,4 @@
+using Lms.Domain.Organizations;
 using Lms.Shared;
 using Lms.Shared.AcademicYears;
 using Lms.Shared.Access;
@@ -6,6 +7,7 @@ using Lms.Domain.Identity;
 using Lms.IntegrationTests.Infrastructure;
 using Lms.Shared.Configuration;
 using Lms.Shared.Organizations;
+using Microsoft.EntityFrameworkCore;
 using static Lms.IntegrationTests.Security.Caller;
 
 namespace Lms.IntegrationTests.Security;
@@ -135,6 +137,36 @@ public static class M1ProbeRows
             async (w, _) => new ProbeRequest(Routes.OrgUnitSetting(await NewUnitWithSettingAsync(w), ProbeSetting)),
             Expect(NoContent, NoContent, NotFound, Forbidden, NotFound, NoContent)),
 
+        // ---- Org units (Task 9, #99): unit-targeted, target unit below School1 (Review Focus 1: sibling/other client 404).
+        new("org-units list", HttpMethod.Get, Routes.OrgUnits,
+            (_, _) => Task.FromResult(new ProbeRequest(Routes.OrgUnits)),
+            Expect(Ok, Ok, Ok, Forbidden, Ok, Ok)),
+        new("org-units get", HttpMethod.Get, Routes.OrgUnitPattern,
+            async (w, _) => new ProbeRequest(Routes.OrgUnit((await w.NewUnitAsync(w.Callers.A.School1)).Id)),
+            Expect(Ok, Ok, NotFound, Forbidden, NotFound, Ok)),
+        new("org-units create (under a unit below School1)", HttpMethod.Post, Routes.OrgUnits,
+            async (w, _) =>
+            {
+                var parent = await w.NewUnitAsync(w.Callers.A.School1);
+                return new ProbeRequest(Routes.OrgUnits, new CreateOrgUnitRequest(
+                    parent.Id, await NewDeeperLevelIdAsync(w, parent), "وحدة", "Probe child", "C" + w.Next()));
+            },
+            Expect(Created, Created, NotFound, Forbidden, NotFound, Created)),
+        new("org-units update", HttpMethod.Put, Routes.OrgUnitPattern,
+            async (w, _) =>
+            {
+                var unit = await NewDeeperUnitAsync(w);
+                return new ProbeRequest(Routes.OrgUnit(unit.Id), new UpdateOrgUnitRequest(unit.LevelTypeId, "وحدة", "Renamed", unit.Code));
+            },
+            Expect(Ok, Ok, NotFound, Forbidden, NotFound, Ok)),
+        new("org-units status", HttpMethod.Put, Routes.OrgUnitStatusPattern,
+            async (w, _) => new ProbeRequest(Routes.OrgUnitStatus((await w.NewUnitAsync(w.Callers.A.School1)).Id),
+                new SetOrgUnitStatusRequest(OrgUnitStatuses.Inactive)),
+            Expect(Ok, Ok, NotFound, Forbidden, NotFound, Ok)),
+        new("org-units delete (leaf)", HttpMethod.Delete, Routes.OrgUnitPattern,
+            async (w, _) => new ProbeRequest(Routes.OrgUnit((await w.NewUnitAsync(w.Callers.A.School1)).Id)),
+            Expect(NoContent, NoContent, NotFound, Forbidden, NotFound, NoContent)),
+
         // ---- Clients (Task 7, #92): Platform Admin only (platform-only permissions); everyone else 403, anonymous 401.
         new("clients list", HttpMethod.Get, Routes.Clients,
             (_, _) => Task.FromResult(new ProbeRequest(Routes.Clients)),
@@ -202,6 +234,18 @@ public static class M1ProbeRows
         new("assignments delete", HttpMethod.Delete, Routes.AssignmentPattern,
             async (w, _) => new ProbeRequest(Routes.Assignment(await NewAssignmentAsync(w))),
             Expect(NoContent, NoContent, NotFound, Forbidden, NotFound, NoContent)),
+
+        // ---- Audit viewer (Task 18, #97): permission-gated; rows are filtered to the caller's client and subtree, so an
+        // unknown id (or another client's entry) is a 404 for everyone who may view.
+        new("audit list", HttpMethod.Get, Routes.Audit,
+            (_, _) => Task.FromResult(new ProbeRequest(Routes.Audit)),
+            Expect(Ok, Ok, Ok, Forbidden, Ok, Ok)),
+        new("audit entry (client A entry under School1)", HttpMethod.Get, Routes.AuditEntryPattern,
+            async (w, _) => new ProbeRequest(Routes.AuditEntry(await NewAuditEntryAsync(w))),
+            Expect(Ok, Ok, NotFound, Forbidden, NotFound, Ok)),
+        new("audit export (csv)", HttpMethod.Get, Routes.AuditExport,
+            (_, _) => Task.FromResult(new ProbeRequest(Routes.AuditExport + "?format=csv")),
+            Expect(Ok, Ok, Ok, Forbidden, Ok, Ok)),
     ];
 
     private static async Task<CreateAssignmentRequest> AssignmentBodyAsync(M1ProbeWorld w, Guid unitId)
@@ -236,6 +280,19 @@ public static class M1ProbeRows
     private static async Task<Guid> NewRoleAsync(M1ProbeWorld w) =>
         (await w.Callers.SendOkAsync(RootAdmin, HttpMethod.Post, Routes.Roles, RoleBody(w))).GetProperty("id").GetGuid();
 
+    /// <summary>A fresh client A audit entry stamped at a new unit below School1 (D20: invisible to School2 and client B).</summary>
+    private static async Task<Guid> NewAuditEntryAsync(M1ProbeWorld w)
+    {
+        var unit = await w.NewUnitAsync(w.Callers.A.School1);
+        await using var db = w.Callers.Factory.CreateDbContext(Lms.IntegrationTests.Infrastructure.TestCurrentContext.PlatformAdmin());
+        var entry = new Lms.Domain.Auditing.AuditEntry(
+            w.Callers.A.Org.Id, Guid.NewGuid(), null, Lms.Domain.Auditing.AuditAction.Updated, "Probe", Guid.NewGuid(),
+            null, null, DateTime.UtcNow, null, unit.Path);
+        db.AuditEntries.Add(entry);
+        await db.SaveChangesAsync();
+        return entry.Id;
+    }
+
     private const string ProbeSetting = "Ui.ShowHijriDates";
 
     private const string ProbePolicy = Lms.Shared.Authorization.PolicyCatalog.CreateOrgUnits;
@@ -255,6 +312,29 @@ public static class M1ProbeRows
     }
 
     // ---- Target builders (always created as client A's root admin).
+
+    /// <summary>A level type of client A that is deeper than the unit's own (created directly; orders need not be dense).</summary>
+    private static async Task<Guid> NewDeeperLevelIdAsync(M1ProbeWorld w, OrgUnit parent)
+    {
+        await using var db = w.Callers.Factory.CreateDbContext(Lms.IntegrationTests.Infrastructure.TestCurrentContext.PlatformAdmin());
+        var parentLevel = await db.LevelTypes.SingleAsync(l => l.Id == parent.LevelTypeId);
+        var level = new LevelType(w.Callers.A.Org.Id, "مستوى", "Probe deeper level", parentLevel.Order + 1 + w.Next() % 1000, true);
+        db.Add(level);
+        await db.SaveChangesAsync();
+        return level.Id;
+    }
+
+    /// <summary>A unit below School1 whose level is deeper than School1's, so updating it keeps the depth rule satisfied.</summary>
+    private static async Task<OrgUnit> NewDeeperUnitAsync(M1ProbeWorld w)
+    {
+        var school1 = w.Callers.A.School1;
+        var levelId = await NewDeeperLevelIdAsync(w, school1);
+        await using var db = w.Callers.Factory.CreateDbContext(Lms.IntegrationTests.Infrastructure.TestCurrentContext.PlatformAdmin());
+        var unit = OrgUnit.CreateChild(school1, levelId, "وحدة", "Probe deeper unit", "D" + w.Next());
+        db.Add(unit);
+        await db.SaveChangesAsync();
+        return unit;
+    }
 
     private static SaveLevelTypeRequest LevelTypeBody(M1ProbeWorld w)
     {
