@@ -67,6 +67,54 @@ public sealed class ClassTeachersTabTests : ClassesTestContext
     }
 
     [Fact]
+    public async Task Teacher_eligible_at_the_school_is_offered_for_a_class_in_a_child_unit()
+    {
+        // The eligibility is granted at the school (Sara, Omar: Mathematics); the class belongs to the Grade 1 unit below it.
+        var childClass = Class with { Id = Guid.NewGuid(), Code = "G1X", OrgUnitId = FakeUnits.GradeId };
+        var cc = _classCourses.Add(childClass, FakeClassCoursesApi.Catalog.First(c => c.Code == "MATH101"), false, 0);
+        Services.AddSingleton<IClassesApi>(new FakeClassesApi());
+        var cut = RenderTab(cls: childClass);
+        _ = cut.WaitForElement("[data-testid=teacher-assign-MATH101]").ClickAsync(new());
+        await Dialogs.WaitForElementAsync("[data-testid=assign-teacher]");
+
+        var select = Dialogs.FindComponents<MudSelect<Guid?>>().First(s => s.Instance.UserAttributes.TryGetValue("data-testid", out var v) && (string?)v == "assign-teacher");
+        var offered = select.FindComponents<MudSelectItem<Guid?>>().Select(i => i.Instance.Value).ToList();
+
+        Assert.Contains((Guid?)FakeTeachingApi.Sara, offered);
+        Assert.Contains((Guid?)FakeTeachingApi.Omar, offered);
+        Assert.DoesNotContain((Guid?)FakeTeachingApi.Noor, offered); // Science only
+        Assert.True(_teaching.LastQuery!.IncludeAncestors); // the dialog asks for the ancestor-or-self rule
+        Assert.Equal(FakeUnits.GradeId, _teaching.LastQuery.OrgUnitId);
+        Assert.NotNull(cc);
+    }
+
+    [Fact]
+    public async Task Replace_dialog_also_uses_the_ancestor_rule()
+    {
+        var childClass = Class with { Id = Guid.NewGuid(), Code = "G1Y", OrgUnitId = FakeUnits.GradeId };
+        var cc = _classCourses.Add(childClass, FakeClassCoursesApi.Catalog.First(c => c.Code == "MATH101"), false, 0);
+        var current = _teaching.Seed(cc.Id, FakeTeachingApi.Sara, TeacherRoles.Primary, Today.AddDays(-30));
+        var cut = RenderTab(cls: childClass);
+        _ = cut.WaitForElement($"[data-testid=teacher-replace-{current.Id}]").ClickAsync(new());
+        await Dialogs.WaitForElementAsync("[data-testid=replace-teacher]");
+
+        var select = Dialogs.FindComponents<MudSelect<Guid?>>().First(s => s.Instance.UserAttributes.TryGetValue("data-testid", out var v) && (string?)v == "replace-teacher");
+        Assert.Contains((Guid?)FakeTeachingApi.Omar, select.FindComponents<MudSelectItem<Guid?>>().Select(i => i.Instance.Value));
+        Assert.True(_teaching.LastQuery!.IncludeAncestors);
+    }
+
+    [Fact]
+    public async Task Eligibility_granted_below_the_class_unit_does_not_count_for_it()
+    {
+        // Without the ancestor rule the default is "at the unit and below"; with it, only the unit and above. A grant at the Grade unit
+        // must not make a teacher eligible for a class at the school.
+        await _teaching.GrantEligibilityAsync(new GrantEligibilityRequest(FakeUnits.GradeId, [FakeTeachingApi.Noor], [FakeCourseIds.For("MATH101")]));
+        var atSchool = await _teaching.ListEligibilityAsync(new EligibilityQuery(FakeUnits.SchoolId, null, FakeCourseIds.For("MATH101"), 1, 200, true));
+
+        Assert.DoesNotContain(atSchool.Items, e => e.UserId == FakeTeachingApi.Noor && e.OrgUnitId == FakeUnits.GradeId);
+    }
+
+    [Fact]
     public async Task Assign_sends_teacher_role_and_date()
     {
         var cut = RenderTab();

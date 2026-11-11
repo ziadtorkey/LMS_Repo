@@ -52,9 +52,12 @@ else
         <MudTabPanel Text="@L["ClassPage_Courses"]" data-testid="tab-courses">
             <ClassCoursesTab Class="_class" CanManage="PermState.Has(Permissions.Classes.ManageCourses)" />
         </MudTabPanel>
-        <MudTabPanel Text="@L["ClassPage_Teachers"]" data-testid="tab-teachers">
-            <ClassTeachersTab Class="_class" CanManage="PermState.Has(Permissions.TeacherAssignments.Manage)" />
-        </MudTabPanel>
+        @if (PermState.Has(Permissions.TeacherAssignments.View))
+        {
+            <MudTabPanel Text="@L["ClassPage_Teachers"]" data-testid="tab-teachers">
+                <ClassTeachersTab Class="_class" CanManage="PermState.Has(Permissions.TeacherAssignments.Manage)" />
+            </MudTabPanel>
+        }
     </MudTabs>
 }
 

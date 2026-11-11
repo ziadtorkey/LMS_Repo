@@ -59,7 +59,7 @@
     protected override async Task OnInitializedAsync()
     {
         await ApiCalls.RunAsync(async () =>
-            _eligible = (await Api.ListEligibilityAsync(new EligibilityQuery(OrgUnitId, null, CourseId, 1, 200))).Items
+            _eligible = (await Api.ListEligibilityAsync(new EligibilityQuery(OrgUnitId, null, CourseId, 1, 200, IncludeAncestors: true))).Items
                 .GroupBy(e => e.UserId).Select(g => g.First()).ToList(),
             Navigation, L, message => _error = message);
         _loaded = true;

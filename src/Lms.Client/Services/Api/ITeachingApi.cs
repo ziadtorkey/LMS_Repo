@@ -32,6 +32,7 @@ public sealed class TeachingApi(ApiHttp http) : ITeachingApi
         if (q.OrgUnitId is { } unit) parts.Add($"orgUnitId={unit}");
         if (q.UserId is { } user) parts.Add($"userId={user}");
         if (q.CourseId is { } course) parts.Add($"courseId={course}");
+        if (q.IncludeAncestors) parts.Add("includeAncestors=true");
         return http.GetAsync<PagedResult<TeacherEligibilityDto>>($"{Routes.TeacherEligibility}?{string.Join('&', parts)}", ct);
     }
 
@@ -120,11 +121,28 @@ public sealed class FakeTeachingApi : ITeachingApi
     {
         LastQuery = query;
         var rows = _eligibility
-            .Where(e => query.OrgUnitId is null || e.OrgUnitId == query.OrgUnitId)
+            .Where(e => query.OrgUnitId is null || AppliesAt(e.OrgUnitId, query.OrgUnitId.Value, query.IncludeAncestors))
             .Where(e => query.UserId is null || e.UserId == query.UserId)
             .Where(e => query.CourseId is null || e.CourseId == query.CourseId)
             .ToList();
         return Task.FromResult(new PagedResult<TeacherEligibilityDto>(rows.Skip((query.Page - 1) * query.PageSize).Take(query.PageSize).ToList(), rows.Count, query.Page, query.PageSize));
+    }
+
+    /// <summary>
+    /// The unit filter: by default eligibilities granted at the unit or below; with ancestors, those that apply to a class at the unit
+    /// (granted at the unit or any ancestor), the rule teacher assignment enforces.
+    /// </summary>
+    private static bool AppliesAt(Guid grantedAt, Guid unit, bool includeAncestors)
+    {
+        var (outer, inner) = includeAncestors ? (grantedAt, unit) : (unit, grantedAt);
+        // true when "outer" is "inner" or one of its ancestors
+        var cursor = FakeUnits.All.FirstOrDefault(u => u.Id == inner);
+        while (cursor is not null)
+        {
+            if (cursor.Id == outer) return true;
+            cursor = cursor.ParentId is { } parent ? FakeUnits.All.FirstOrDefault(u => u.Id == parent) : null;
+        }
+        return false;
     }
 
     public Task GrantEligibilityAsync(GrantEligibilityRequest request, CancellationToken ct = default)
