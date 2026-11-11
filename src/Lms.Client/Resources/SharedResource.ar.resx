@@ -701,4 +701,6 @@
   <data name="CourseStatus_Active" xml:space="preserve"><value>نشط</value></data>
   <data name="CourseStatus_Inactive" xml:space="preserve"><value>غير نشط</value></data>
   <data name="CourseImport_Title" xml:space="preserve"><value>استيراد المقررات من Excel</value></data>
+  <data name="Clients_ShortCode" xml:space="preserve"><value>الرمز المختصر</value></data>
+  <data name="Clients_ShortCodeHelp" xml:space="preserve"><value>يُستخدم في أسماء دخول الطلاب (الكود@الرمز): من 2 إلى 20 حرفًا إنجليزيًا صغيرًا أو رقمًا أو شرطة. اتركه فارغًا ليُشتق من رمز الوحدة الجذرية.</value></data>
 </root>
