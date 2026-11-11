@@ -191,4 +191,19 @@ public sealed class SupervisorTests(LmsApiFactory factory) : IDisposable
         Assert.Equal(HttpStatusCode.NotFound, (await SetAsync(manager, rootCourse.Summary.Id, supervisor.UserId)).StatusCode); // inherited, not owned
         Assert.Equal(HttpStatusCode.OK, (await SetAsync(admin, rootCourse.Summary.Id, supervisor.UserId)).StatusCode); // supervisor below the owner
     }
+
+    [Fact]
+    public async Task A_school_supervisor_sees_a_client_wide_course_in_my_courses()
+    {
+        var (tree, _) = await SetUpAsync("SU8");
+        var admin = await AccessTestData.AssignAsync(factory, tree, tree.Root, BuiltInRoles.OrgAdmin, Guid.NewGuid());
+        var rootCourse = await CreateCourseAsync(admin, tree.Root.Id, "ClientWide");
+        var supervisor = await SupervisorAsync(tree, tree.School1); // assigned below the course's owner unit
+        Assert.Equal(HttpStatusCode.OK, (await SetAsync(admin, rootCourse.Summary.Id, supervisor.UserId)).StatusCode);
+
+        var list = await (await _host.SendAsync(HttpMethod.Get, Routes.Courses + "?supervisedByMe=true", supervisor))
+            .Content.ReadFromJsonAsync<PagedResult<CourseSummaryDto>>(Web);
+
+        Assert.Equal([rootCourse.Summary.Id], list!.Items.Select(c => c.Id));
+    }
 }
