@@ -1,4 +1,5 @@
 using Lms.Shared.Access;
+using Lms.Shared.Authorization;
 
 namespace Lms.Infrastructure.Access;
 
@@ -18,13 +19,19 @@ public static class RoleAssignmentRules
             return true;
         }
 
-        if (!rolePermissions.IsSubsetOf(callerPermissions))
+        // Self-service permissions (own profile, own children) count as held by every caller and are left out of the
+        // comparison (M3 contract): no staff role holds them, and they give no power over other people.
+        var self = Permissions.SelfService;
+        var callerCore = callerPermissions.Except(self, StringComparer.Ordinal).ToHashSet(StringComparer.Ordinal);
+        var roleCore = rolePermissions.Except(self, StringComparer.Ordinal).ToHashSet(StringComparer.Ordinal);
+        if (!roleCore.IsSubsetOf(callerCore))
         {
             return false;
         }
 
         var callerHoldsEverything = PermissionGroups.Assignable.SelectMany(g => g.Permissions)
-            .All(callerPermissions.Contains);
-        return callerHoldsEverything || rolePermissions.Count < callerPermissions.Count;
+            .Except(self, StringComparer.Ordinal)
+            .All(callerCore.Contains);
+        return callerHoldsEverything || roleCore.Count < callerCore.Count;
     }
 }

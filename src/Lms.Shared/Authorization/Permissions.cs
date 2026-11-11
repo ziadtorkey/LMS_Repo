@@ -107,6 +107,78 @@ public static class Permissions
         public const string Manage = "IdentityProviders.Manage";
     }
 
+    // M3 Academic Structure (M3 plan Task 1; Students.* deferred from M2 by D23).
+    public static class Students
+    {
+        public const string View = "Students.View";
+        public const string Create = "Students.Create";
+        public const string Update = "Students.Update";
+        public const string Delete = "Students.Delete";
+        public const string Import = "Students.Import";
+        public const string ApproveChanges = "Students.ApproveChanges";
+
+        /// <summary>A student edits their own non-critical data and requests changes to critical data (FR-STU-04).</summary>
+        public const string SelfEdit = "Students.SelfEdit";
+
+        /// <summary>A guardian reads their own children (FR-STU-06).</summary>
+        public const string ViewChildren = "Students.ViewChildren";
+    }
+
+    public static class Courses
+    {
+        public const string View = "Courses.View";
+        public const string Create = "Courses.Create";
+        public const string Update = "Courses.Update";
+        public const string Delete = "Courses.Delete";
+        public const string Import = "Courses.Import";
+        public const string Allocate = "Courses.Allocate";
+        public const string ManageSupervisors = "Courses.ManageSupervisors";
+    }
+
+    public static class Blueprints
+    {
+        public const string View = "Blueprints.View";
+        public const string Edit = "Blueprints.Edit";
+        public const string Publish = "Blueprints.Publish";
+    }
+
+    public static class Classes
+    {
+        public const string View = "Classes.View";
+        public const string Create = "Classes.Create";
+        public const string Update = "Classes.Update";
+        public const string Delete = "Classes.Delete";
+        public const string Close = "Classes.Close";
+        public const string ManageCourses = "Classes.ManageCourses";
+    }
+
+    public static class TeacherAssignments
+    {
+        public const string View = "TeacherAssignments.View";
+        public const string Manage = "TeacherAssignments.Manage";
+    }
+
+    public static class Enrollment
+    {
+        public const string View = "Enrollment.View";
+        public const string Manage = "Enrollment.Manage";
+        public const string Import = "Enrollment.Import";
+        public const string Transfer = "Enrollment.Transfer";
+        public const string RequestException = "Enrollment.RequestException";
+        public const string ApproveException = "Enrollment.ApproveException";
+    }
+
+    public static class Groups
+    {
+        public const string View = "Groups.View";
+        public const string Manage = "Groups.Manage";
+    }
+
+    public static class LessonPlans
+    {
+        public const string View = "LessonPlans.View";
+    }
+
     // Immutable list (not a FrozenSet) so existing consumers typed IReadOnlyList<string> keep compiling;
     // ImmutableArray rejects every mutation through IList<string>/ICollection<string>.
     private static readonly Lazy<IReadOnlyList<string>> AllLazy = new(() =>
@@ -126,4 +198,15 @@ public static class Permissions
     /// </summary>
     public static IReadOnlyList<string> PlatformOnly { get; } =
         ImmutableArray.Create(Clients.View, Clients.Create, Clients.Update);
+
+    /// <summary>
+    /// Permissions that reach only the holder's own data (own student profile, own children). No staff role holds them,
+    /// so the escalation guards (D16) count every caller as holding them: handing them out grants no power over others.
+    /// </summary>
+    public static IReadOnlyList<string> SelfService { get; } =
+        ImmutableArray.Create(Students.SelfEdit, Students.ViewChildren);
+
+    /// <summary>The caller's permissions plus <see cref="SelfService"/>, for the escalation guards.</summary>
+    public static IReadOnlySet<string> WithSelfService(IEnumerable<string> callerPermissions) =>
+        callerPermissions.Concat(SelfService).ToHashSet(StringComparer.Ordinal);
 }

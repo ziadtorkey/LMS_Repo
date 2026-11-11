@@ -1,0 +1,64 @@
+@using Lms.Shared
+@using Lms.Shared.Imports
+
+@* Server-paged preview of the rows of a batch; cells with a validation error are red and carry the message. *@
+<MudSwitch T="bool" Value="_errorsOnly" ValueChanged="ErrorsOnlyChangedAsync" Color="Color.Primary"
+           Label="@L["Import_ErrorsOnly"]" data-testid="import-errors-only" />
+
+<ServerTable T="ImportRowDto" @ref="_table" ServerData="LoadAsync">
+    <HeaderContent>
+        <MudTh>@L["Import_Row"]</MudTh>
+        @foreach (var column in Columns)
+        {
+            <MudTh>@CultureText.Pick(column.HeaderAr, column.HeaderEn)</MudTh>
+        }
+    </HeaderContent>
+    <RowTemplate Context="row">
+        <MudTd DataLabel="@L["Import_Row"]" data-testid="@($"import-row-{row.RowNumber}")">
+            @row.RowNumber
+            @foreach (var error in row.Errors.Where(e => e.Column is null))
+            {
+                <span class="lms-import-error" title="@error.Message" data-testid="@($"import-rowerror-{row.RowNumber}")">&#9888;</span>
+            }
+        </MudTd>
+        @foreach (var column in Columns)
+        {
+            var error = row.Errors.FirstOrDefault(e => e.Column == column.Key);
+            <MudTd DataLabel="@CultureText.Pick(column.HeaderAr, column.HeaderEn)">
+                @if (error is null)
+                {
+                    <span dir="auto">@Value(row, column.Key)</span>
+                }
+                else
+                {
+                    <span class="lms-import-error" dir="auto" title="@error.Message"
+                          data-testid="@($"import-cell-{row.RowNumber}-{column.Key}")" data-error="@error.Code">@Value(row, column.Key)</span>
+                }
+            </MudTd>
+        }
+    </RowTemplate>
+</ServerTable>
+
+@code {
+    private ServerTable<ImportRowDto> _table = default!;
+    private bool _errorsOnly;
+
+    [Parameter, EditorRequired] public IReadOnlyList<ImportColumnDto> Columns { get; set; } = [];
+
+    /// <summary>Loads one page of rows (1-based page, page size, errors only).</summary>
+    [Parameter, EditorRequired] public Func<int, int, bool, CancellationToken, Task<PagedResult<ImportRowDto>>> LoadRows { get; set; } = default!;
+
+    private static string? Value(ImportRowDto row, string key) => row.Values.GetValueOrDefault(key);
+
+    private async Task ErrorsOnlyChangedAsync(bool value)
+    {
+        _errorsOnly = value;
+        await _table.ReloadAsync();
+    }
+
+    private async Task<TableData<ImportRowDto>> LoadAsync(TableState state, CancellationToken ct)
+    {
+        var page = await LoadRows(state.Page + 1, state.PageSize, _errorsOnly, ct);
+        return new TableData<ImportRowDto> { Items = page.Items, TotalItems = page.Total };
+    }
+}
