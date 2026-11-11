@@ -79,8 +79,8 @@ public sealed class TransferTests(LmsApiFactory factory) : IDisposable
             toOpt = new ClassCourse(to, opt, true);
             db.AddRange(fromA, fromB, toA, toC, toOpt, new ClassCourse(other, a, false));
             db.AddRange(
-                new ClassCourseTeacher(fromA, teacherFrom, ClassCourseTeacher.PrimaryRole, Start),
-                new ClassCourseTeacher(toA, teacherTo, ClassCourseTeacher.PrimaryRole, Start));
+                new ClassCourseTeacher(fromA, teacherFrom, ClassCourseTeacher.PrimaryRole, Today),
+                new ClassCourseTeacher(toA, teacherTo, ClassCourseTeacher.PrimaryRole, Today));
             var tracked = await db.Set<StudentProfile>().SingleAsync(s => s.Id == student.Id);
             tracked.Update(tracked.NameAr, tracked.NameEn, null, null, tracked.DateOfBirth, gender, tracked.Religion, tracked.Nationality, null, null, null, null);
             var guardian = new GuardianProfile(tree.Org.Id, "ولي", "Guardian", PeopleTestKit.NewMobile(), null, null);

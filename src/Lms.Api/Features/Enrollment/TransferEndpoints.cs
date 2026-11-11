@@ -1,5 +1,6 @@
 using Lms.Api.Infrastructure;
 using Lms.Domain.Abstractions;
+using Lms.Domain.Access;
 using Lms.Domain.Classes;
 using Lms.Domain.Enrollment;
 using Lms.Domain.People;
@@ -131,7 +132,7 @@ public static class TransferEndpoints
     }
 
     private static async Task<IResult> HistoryAsync(
-        Guid id, HttpContext http, LmsDbContext db, EnrollmentRelationship relationship, EnrollmentQueries queries, CancellationToken ct)
+        Guid id, HttpContext http, LmsDbContext db, IRelationshipScope scope, EnrollmentQueries queries, CancellationToken ct)
     {
         var student = await db.Set<StudentProfile>().FirstOrDefaultAsync(s => s.Id == id, ct);
         if (student is null)
@@ -146,9 +147,10 @@ public static class TransferEndpoints
         }
 
         // Teaching-only for a teacher (D42): only a student they teach in one of their class courses.
-        if (await relationship.RestrictsAsync(Permissions.Enrollment.View, ct))
+        var filter = await scope.ForAsync(Permissions.Enrollment.View, ct);
+        if (!filter.IsUnrestricted)
         {
-            var own = relationship.TeachingClassCourses().Select(c => c.Id);
+            var own = filter.ClassCourseIds.ToList();
             if (!await db.Set<CourseEnrollment>().AnyAsync(e => e.StudentId == id && own.Contains(e.ClassCourseId), ct))
             {
                 return ApiProblems.NotFound();
