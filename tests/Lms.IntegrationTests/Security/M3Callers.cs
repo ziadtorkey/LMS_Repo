@@ -106,7 +106,7 @@ public sealed class M3Callers
         AcademicYear year;
         await using (var yearDb = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
         {
-            year = new AcademicYear(tree.Root, "عام M3", "Year M3", new DateOnly(2061, 9, 1), new DateOnly(2062, 6, 30));
+            year = new AcademicYear(school1, "عام M3", "Year M3", new DateOnly(2061, 9, 1), new DateOnly(2062, 6, 30));
             yearDb.Add(year);
             await yearDb.SaveChangesAsync();
         }
