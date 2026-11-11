@@ -88,6 +88,7 @@ Run as the seeded school client's Org Admin. Each test puts the shared seeded da
 | `Locked_root_setting_is_read_only_at_school_level` | FR-ORG-07: a value locked at the root is read-only and shows "Locked by" below |
 | `Feature_flag_enabled_at_KG_only_is_off_at_Primary` | FR-ORG-08: flag set at KG is inherited by its sections, default at Primary |
 | `Root_admin_creates_Exam_Officer_custom_role_and_renames_Manager_label` | FR-SEC-06, §3.3: custom role with one permission; built-in label renamed and restored |
-| copy branch and templates | FR-ORG-11: waits for #207 and #258 |
+| `Copy_Primary_branch_under_the_school_with_a_code_suffix` | FR-ORG-11: copy a stage with its sections, codes get the suffix, parent kept |
+| save as template and apply with the Year placeholder | FR-ORG-11: waits for #207 |
 
 Assigning a role to a person moved to the M2 staff demo (D31: roles go to existing staff members).

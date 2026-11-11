@@ -128,6 +128,29 @@ public sealed class ConfigurationTests(E2EFixture fixture) : E2ETestBase(fixture
         await AssertDirectionAsync(culture);
     }
 
+    [Theory]
+    [InlineData("ar")]
+    [InlineData("en")]
+    public async Task Copy_Primary_branch_under_the_school_with_a_code_suffix(string culture)
+    {
+        var suffix = "-c" + Guid.NewGuid().ToString("N")[..6].ToUpperInvariant();
+        await StartAsync(culture: culture);
+        await SignInAsOrgAdminAsync();
+        var tree = new OrgTreeAdminPage(Page);
+        await tree.OpenAsync();
+
+        var result = await tree.CopyBranchAsync(
+            "PRI", culture == "ar" ? "مدرسة التجمع" : "School Altagamo3", suffix, "ابتدائي نسخة " + suffix, "Primary copy " + suffix);
+
+        // The branch is the stage plus its three sections; each code is the original plus the suffix.
+        Assert.Contains("4", result);
+        await tree.OpenAsync();
+        Assert.Equal("S", await tree.ParentCodeAsync("PRI" + suffix));
+        Assert.Equal("PRI" + suffix, await tree.ParentCodeAsync("PRI-S1" + suffix));
+        Assert.Equal("PRI" + suffix, await tree.ParentCodeAsync("PRI-S3" + suffix));
+        await AssertDirectionAsync(culture);
+    }
+
     private async Task SignInAsOrgAdminAsync()
     {
         await new LoginPage(Page).SignInAsync(E2ESettings.SeedUser("orgadmin"), Settings.Password);
