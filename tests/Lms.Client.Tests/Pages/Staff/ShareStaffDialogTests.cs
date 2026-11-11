@@ -13,7 +13,7 @@ public sealed class ShareStaffDialogTests : StaffTestContext
 {
     private async Task<Guid> OpenAsync()
     {
-        await GrantAsync(Permissions.Staff.View, Permissions.Assignments.Create);
+        await GrantAsync(Permissions.Staff.View, Permissions.Staff.Update, Permissions.Assignments.Create);
         RenderProviders();
         var sara = Staff.All.First(s => s.Summary.NameEn == "Sara Ahmed").Summary.Id;
         var cut = Render<StaffProfilePage>(p => p.Add(x => x.Id, sara));
