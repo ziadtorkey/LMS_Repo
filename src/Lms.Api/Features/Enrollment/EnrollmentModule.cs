@@ -17,5 +17,6 @@ public sealed class EnrollmentModule : ILmsModule
         ClassStudentEndpoints.Map(app);
         EnrollmentEndpoints.Map(app);
         GroupEndpoints.Map(app);
+        TransferEndpoints.Map(app);
     }
 }
