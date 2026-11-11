@@ -115,7 +115,7 @@ public sealed class OrgTreePageTests : ClientTestContext
         dialogs.WaitForElement("[data-testid=confirm-yes]");
         await dialogs.Find("[data-testid=confirm-yes]").ClickAsync(new());
 
-        page.WaitForAssertion(() => Assert.NotEmpty(page.FindAll("[data-testid=org-error]")), TimeSpan.FromSeconds(3)); // text depends on the ambient culture; the resource itself is covered by the resource tests
+        page.WaitForAssertion(() => Assert.Contains("Remove or move the child units first.", page.Find("[data-testid=org-error]").TextContent), TimeSpan.FromSeconds(3));
     }
 
     [Fact]
@@ -123,11 +123,10 @@ public sealed class OrgTreePageTests : ClientTestContext
     {
         var (page, _) = await RenderPageAsync(All);
 
+        Assert.Contains("Inactive", page.Find($"[data-testid=org-node-{_inactiveId}]").TextContent);
         Assert.Contains("lms-org-inactive", page.Find($"[data-testid=org-node-{_inactiveId}]").OuterHtml);
-        Assert.DoesNotContain("lms-org-inactive", page.Find($"[data-testid=org-node-{_schoolId}]").OuterHtml);
-        // Activate vs Deactivate: different accessible labels (text depends on the ambient culture, so only compare them).
-        Assert.NotEqual(page.Find($"[data-testid=org-toggle-{_schoolId}]").GetAttribute("aria-label"),
-            page.Find($"[data-testid=org-toggle-{_inactiveId}]").GetAttribute("aria-label"));
+        Assert.Equal("Activate", page.Find($"[data-testid=org-toggle-{_inactiveId}]").GetAttribute("aria-label"));
+        Assert.Equal("Deactivate", page.Find($"[data-testid=org-toggle-{_schoolId}]").GetAttribute("aria-label"));
 
         await page.Find($"[data-testid=org-toggle-{_inactiveId}]").ClickAsync(new());
 
@@ -154,7 +153,7 @@ public sealed class OrgTreePageTests : ClientTestContext
 
         _ = page.Find($"[data-testid=org-toggle-{_schoolId}]").ClickAsync(new());
         dialogs.WaitForElement("[data-testid=confirm-no]");
-        Assert.NotEmpty(dialogs.FindAll("[data-testid=confirm-yes]")); // a warning dialog, not an immediate change
+        Assert.Contains("lose access", dialogs.Markup);
         await dialogs.Find("[data-testid=confirm-no]").ClickAsync(new());
 
         Assert.Empty(Org.StatusChanges);
@@ -229,7 +228,7 @@ public sealed class OrgTreePageTests : ClientTestContext
 
         await page.Find($"[data-testid=org-toggle-{_blockedId}]").ClickAsync(new());
 
-        page.WaitForAssertion(() => Assert.NotEmpty(page.FindAll("[data-testid=org-error]")), TimeSpan.FromSeconds(3)); // text depends on the ambient culture, which differs per test thread
+        page.WaitForAssertion(() => Assert.Contains("Something went wrong", page.Find("[data-testid=org-error]").TextContent), TimeSpan.FromSeconds(3));
     }
 
     [Fact]
@@ -240,7 +239,7 @@ public sealed class OrgTreePageTests : ClientTestContext
 
         await page.Find($"[data-testid=org-add-{_schoolId}]").ClickAsync(new());
 
-        page.WaitForAssertion(() => Assert.NotEmpty(page.FindAll("[data-testid=org-error]")), TimeSpan.FromSeconds(3)); // text depends on the ambient culture, which differs per test thread
+        page.WaitForAssertion(() => Assert.Contains("Something went wrong", page.Find("[data-testid=org-error]").TextContent), TimeSpan.FromSeconds(3));
     }
 
     // --- RTL ---
@@ -258,5 +257,6 @@ public sealed class OrgTreePageTests : ClientTestContext
         layout.WaitForElement($"[data-testid=org-node-{_rootId}]");
         Assert.Equal("rtl", layout.Find("[data-testid=app-root]").GetAttribute("dir"));
         Assert.Contains("ع-Root", layout.Find($"[data-testid=org-node-{_rootId}]").TextContent);
+        Assert.Contains("الهيكل التنظيمي", layout.Find("[data-testid=org-title]").TextContent);
     }
 }
