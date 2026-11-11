@@ -77,8 +77,7 @@ else
                 </MudPaper>
             </MudTabPanel>
             <MudTabPanel Text="@L["Student_Guardians"]" data-testid="tab-guardians">
-                @* The guardians list, linking and portal invitation arrive with the guardians task. *@
-                <MudText data-testid="guardians-placeholder">@(_detail.Guardians.Count == 0 ? L["Common_Empty"] : string.Join("، ", _detail.Guardians.Select(g => Culture.Pick(g.NameAr, g.NameEn))))</MudText>
+                <StudentGuardiansTab Student="_detail" CanEdit="PermState.Has(Permissions.Students.Update)" OnChanged="LoadAsync" />
             </MudTabPanel>
             <MudTabPanel Text="@L["Student_Enrollments"]" data-testid="tab-enrollments">
                 @* Hosts StudentEnrollmentsTab (enrollments, optional courses, unenroll and transfer) once that component exists. *@

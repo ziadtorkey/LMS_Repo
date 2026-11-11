@@ -40,7 +40,9 @@ public sealed class FakeStudentsApi : IStudentsApi
         var summary = new StudentSummaryDto(Guid.NewGuid(), code, nameAr, nameEn, dob, gender, FakeUnits.SchoolId, "المدرسة الرئيسية",
             "Main School", status, null, guardianAr, guardianEn, guardianMobile, cls?.Id, cls?.NameAr, cls?.NameEn);
         var detail = new StudentDetailDto(summary, null, null, Religions.Muslim, "EG", null, null, null, false, false, false,
-            new Dictionary<string, bool>(), [], [], 0);
+            new Dictionary<string, bool>(),
+            guardianAr is null ? [] : [new StudentGuardianDto(FakeGuardiansApi.MonaId, guardianAr, guardianEn ?? guardianAr, GuardianRelations.Mother, true,
+                guardianMobile ?? "", "mona@example.com", null, false, 1)], [], 0);
         _students.Add(detail);
         return detail;
     }
@@ -155,6 +157,87 @@ public sealed class FakeGuardiansApi : IGuardiansApi
     public static readonly Guid MonaId = Guid.Parse("00000000-0000-0000-0000-0000000000b1");
 
     public List<(string? NationalId, string? Mobile)> Lookups { get; } = [];
+    public List<(Guid StudentId, GuardianLinkInput Input)> Links { get; } = [];
+    public List<(Guid StudentId, Guid GuardianId, UpdateStudentGuardianRequest Request)> LinkUpdates { get; } = [];
+    public List<(Guid StudentId, Guid GuardianId)> Unlinks { get; } = [];
+    public List<(Guid Id, UpdateGuardianRequest Request)> Updates { get; } = [];
+    public List<Guid> Invitations { get; } = [];
+
+    /// <summary>When set, the next link, unlink or invitation throws it (tests simulate server problems).</summary>
+    public Exception? Failure { get; set; }
+
+    private readonly List<GuardianDetailDto> _guardians =
+    [
+        new(new GuardianSummaryDto(MonaId, "منى", "Mona", "0501111111", "mona@example.com", 2, false), "29001010101",
+            [new GuardianChildDto(Guid.Parse("00000000-0000-0000-0000-0000000000c1"), "S-1001", "أحمد سعيد", "Ahmed Saeed", GuardianRelations.Mother, true, "المدرسة الرئيسية", "Main School"),
+             new GuardianChildDto(Guid.Parse("00000000-0000-0000-0000-0000000000c2"), "S-1002", "ليلى حسن", "Laila Hassan", GuardianRelations.Mother, true, "المدرسة الرئيسية", "Main School")]),
+        new(new GuardianSummaryDto(Guid.Parse("00000000-0000-0000-0000-0000000000b2"), "خالد", "Khaled", "0502222222", null, 1, true), null, []),
+    ];
+
+    private void FailIfSet()
+    {
+        if (Failure is not { } failure) return;
+        Failure = null;
+        throw failure;
+    }
+
+    public Task LinkAsync(Guid studentId, GuardianLinkInput input, CancellationToken ct = default)
+    {
+        FailIfSet();
+        Links.Add((studentId, input));
+        return Task.CompletedTask;
+    }
+
+    public Task UpdateLinkAsync(Guid studentId, Guid guardianId, UpdateStudentGuardianRequest request, CancellationToken ct = default)
+    {
+        FailIfSet();
+        LinkUpdates.Add((studentId, guardianId, request));
+        return Task.CompletedTask;
+    }
+
+    public Task UnlinkAsync(Guid studentId, Guid guardianId, CancellationToken ct = default)
+    {
+        FailIfSet();
+        Unlinks.Add((studentId, guardianId));
+        return Task.CompletedTask;
+    }
+
+    public Task<PagedResult<GuardianSummaryDto>> ListAsync(string? search, int page, int pageSize, CancellationToken ct = default)
+    {
+        LastSearch = search;
+        var rows = _guardians.Select(g => g.Summary)
+            .Where(g => string.IsNullOrWhiteSpace(search) || g.NameEn.Contains(search, StringComparison.OrdinalIgnoreCase)
+                || g.NameAr.Contains(search, StringComparison.OrdinalIgnoreCase) || g.Mobile.Contains(search, StringComparison.Ordinal))
+            .ToList();
+        return Task.FromResult(new PagedResult<GuardianSummaryDto>(rows.Skip((page - 1) * pageSize).Take(pageSize).ToList(), rows.Count, page, pageSize));
+    }
+
+    public string? LastSearch { get; private set; }
+
+    public Task<GuardianDetailDto> GetAsync(Guid id, CancellationToken ct = default) =>
+        _guardians.FirstOrDefault(g => g.Summary.Id == id) is { } found
+            ? Task.FromResult(found)
+            : Task.FromException<GuardianDetailDto>(new ApiProblemException(404, "not_found", null, null));
+
+    public Task UpdateAsync(Guid id, UpdateGuardianRequest request, CancellationToken ct = default)
+    {
+        Updates.Add((id, request));
+        var index = _guardians.FindIndex(g => g.Summary.Id == id);
+        var d = request.Data;
+        _guardians[index] = _guardians[index] with
+        {
+            Summary = _guardians[index].Summary with { NameAr = d.NameAr, NameEn = d.NameEn, Mobile = d.Mobile, Email = d.Email },
+            NationalId = d.NationalId,
+        };
+        return Task.CompletedTask;
+    }
+
+    public Task SendPortalInvitationAsync(Guid id, CancellationToken ct = default)
+    {
+        FailIfSet();
+        Invitations.Add(id);
+        return Task.CompletedTask;
+    }
 
     /// <summary>Matches the guardian with national id 29001010101 or a mobile ending in 111 (the seeded guardian Mona).</summary>
     public Task<GuardianMatchDto?> MatchAsync(string? nationalId, string? mobile, CancellationToken ct = default)
