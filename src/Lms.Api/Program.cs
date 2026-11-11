@@ -3,6 +3,7 @@ using Lms.Api.Features.Settings;
 using Lms.Api.Features.Notifications;
 using Lms.Api.Features.Account;
 using Lms.Api.Features.Auth;
+using Lms.Api.Features.AcademicYears;
 using Lms.Api.Features.Me;
 using Lms.Api.Infrastructure;
 using Lms.Infrastructure;
@@ -74,6 +75,7 @@ foreach (var module in app.Services.GetServices<IEndpointModule>())
 }
 
 app.MapMeEndpoints();
+app.MapAcademicYears();
 app.MapSettingEndpoints();
 app.MapNotificationEndpoints();
 
