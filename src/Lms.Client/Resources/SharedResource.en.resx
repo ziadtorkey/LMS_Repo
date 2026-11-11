@@ -845,4 +845,10 @@
   <data name="Flag_Inherit" xml:space="preserve"><value>Inherit ({0})</value></data>
   <data name="Flag_On" xml:space="preserve"><value>On</value></data>
   <data name="Flag_Off" xml:space="preserve"><value>Off</value></data>
+  <data name="TransferReject_not_placed" xml:space="preserve"><value>The student is not placed in a class, so there is nothing to transfer from.</value></data>
+  <data name="TransferReject_different_year" xml:space="preserve"><value>The new class belongs to a different academic year.</value></data>
+  <data name="TransferReject_same_class" xml:space="preserve"><value>The student is already in this class.</value></data>
+  <data name="TransferReject_date_outside_year" xml:space="preserve"><value>The transfer date is outside the academic year.</value></data>
+  <data name="TransferReject_date_before_placement" xml:space="preserve"><value>The transfer date is before the student joined the current class.</value></data>
+  <data name="TransferReject_different_level_type" xml:space="preserve"><value>A transfer to another unit needs a class of the same level type.</value></data>
 </root>

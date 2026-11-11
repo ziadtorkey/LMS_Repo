@@ -96,9 +96,17 @@
         return cls.OrgUnitId == OrgUnitId ? label : $"{label} · {Culture.Pick(cls.OrgUnitNameAr, cls.OrgUnitNameEn)}";
     }
 
-    /// <summary>The localized message of the problem, followed by the reason the server gave (<c>detail</c>) so the user learns why a move is refused.</summary>
+    /// <summary>
+    /// The message of a problem. A <c>transfer_invalid</c> carries a <c>reason</c> (<c>TransferRejectReasons</c>) that has its own localized text
+    /// (<c>TransferReject_&lt;reason&gt;</c>); without a known reason the generic message is followed by the server's <c>detail</c>.
+    /// </summary>
     private string Explain(ApiProblemException ex)
     {
+        if (ex.Code == "transfer_invalid" && ex.Reason is { Length: > 0 } reason)
+        {
+            var specific = L[$"TransferReject_{reason}"];
+            if (!specific.ResourceNotFound) return specific.Value;
+        }
         var message = ProblemText.For(ex, L);
         return string.IsNullOrWhiteSpace(ex.Detail) || ex.Detail == message ? message : $"{message} {ex.Detail}";
     }
