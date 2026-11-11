@@ -37,11 +37,11 @@ public sealed class DevSeeder(string connectionString, IHostEnvironment environm
         await db.Database.MigrateAsync(cancellationToken);
 
         var school = await SeedTreeAsync(db, DevSeedData.SchoolGroup, cancellationToken);
-        await SeedTreeAsync(db, DevSeedData.University, cancellationToken);
+        var university = await SeedTreeAsync(db, DevSeedData.University, cancellationToken);
 
         if (!string.IsNullOrWhiteSpace(options?.DefaultPassword))
         {
-            await SeedUsersAsync(db, school, options!, cancellationToken);
+            await SeedUsersAsync(db, school, university, options!, cancellationToken);
         }
 
         return true;
@@ -79,7 +79,8 @@ public sealed class DevSeeder(string connectionString, IHostEnvironment environm
         return new SeededClient(organization, units);
     }
 
-    private static async Task SeedUsersAsync(LmsDbContext db, SeededClient school, SeedOptions options, CancellationToken ct)
+    private static async Task SeedUsersAsync(
+        LmsDbContext db, SeededClient school, SeededClient university, SeedOptions options, CancellationToken ct)
     {
         var roles = await db.Roles.Where(r => r.OrganizationId == school.Organization.Id && r.BuiltInKey != null)
             .ToDictionaryAsync(r => r.BuiltInKey!, ct);
@@ -131,6 +132,27 @@ public sealed class DevSeeder(string connectionString, IHostEnvironment environm
 
             await db.SaveChangesAsync(ct);
         }
+
+        // A person who belongs to both clients (school and university), used only by the external-login E2E: a session
+        // started through the school's provider must show the school context and never the university's.
+        var dual = await EnsureUserAsync(
+            db, "dual-e2e@altagamo3.test", "مستخدم بعضوية مزدوجة", "Dual Client Test User", options.DefaultPassword!, false, ct);
+        var universityTeacher = (await db.Roles.SingleAsync(
+            r => r.OrganizationId == university.Organization.Id && r.BuiltInKey == "Teacher", ct)).Id;
+        var universityUnit = university.Units["FCI-1-GEN"];
+        var schoolTeacher = roles["Teacher"].Id;
+        var schoolUnit = school.Units["KG"];
+        if (!await db.RoleAssignments.AnyAsync(a => a.UserId == dual.Id && a.OrgUnitId == schoolUnit.Id && a.RoleId == schoolTeacher, ct))
+        {
+            db.RoleAssignments.Add(new RoleAssignment(schoolUnit, dual.Id, schoolTeacher));
+        }
+
+        if (!await db.RoleAssignments.AnyAsync(a => a.UserId == dual.Id && a.OrgUnitId == universityUnit.Id && a.RoleId == universityTeacher, ct))
+        {
+            db.RoleAssignments.Add(new RoleAssignment(universityUnit, dual.Id, universityTeacher));
+        }
+
+        await db.SaveChangesAsync(ct);
 
         foreach (var b in blocked)
         {
