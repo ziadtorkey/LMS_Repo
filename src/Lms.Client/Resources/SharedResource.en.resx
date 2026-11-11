@@ -711,4 +711,53 @@
   <data name="Religion_Muslim" xml:space="preserve"><value>Muslim</value></data>
   <data name="Religion_Christian" xml:space="preserve"><value>Christian</value></data>
   <data name="Religion_Other" xml:space="preserve"><value>Other</value></data>
+  <data name="Blueprint_Title" xml:space="preserve"><value>Course blueprint</value></data>
+  <data name="Blueprint_EditDraft" xml:space="preserve"><value>Edit draft</value></data>
+  <data name="Blueprint_EditingDraft" xml:space="preserve"><value>Editing the draft</value></data>
+  <data name="Blueprint_ViewingVersion" xml:space="preserve"><value>Viewing version {0}</value></data>
+  <data name="Blueprint_VersionN" xml:space="preserve"><value>Version {0}</value></data>
+  <data name="Blueprint_Versions" xml:space="preserve"><value>Versions</value></data>
+  <data name="Blueprint_Counts" xml:space="preserve"><value>{0} sections, {1} lessons</value></data>
+  <data name="Blueprint_View" xml:space="preserve"><value>View</value></data>
+  <data name="Blueprint_Discard" xml:space="preserve"><value>Discard changes</value></data>
+  <data name="Blueprint_Publish" xml:space="preserve"><value>Publish</value></data>
+  <data name="Blueprint_Copy" xml:space="preserve"><value>Copy from another course</value></data>
+  <data name="Blueprint_NoPublished" xml:space="preserve"><value>No version has been published yet.</value></data>
+  <data name="Blueprint_EmptyTree" xml:space="preserve"><value>Nothing here yet.</value></data>
+  <data name="Blueprint_AddSection" xml:space="preserve"><value>Add section</value></data>
+  <data name="Blueprint_AddLesson" xml:space="preserve"><value>Add lesson</value></data>
+  <data name="Blueprint_UntitledLesson" xml:space="preserve"><value>Untitled lesson</value></data>
+  <data name="Blueprint_MoveUp" xml:space="preserve"><value>Move up</value></data>
+  <data name="Blueprint_MoveDown" xml:space="preserve"><value>Move down</value></data>
+  <data name="Blueprint_Stale" xml:space="preserve"><value>Someone else saved this draft. Reload it to continue; your unsaved changes will be lost.</value></data>
+  <data name="Blueprint_Reload" xml:space="preserve"><value>Reload</value></data>
+  <data name="Blueprint_Unsaved" xml:space="preserve"><value>You have unsaved changes.</value></data>
+  <data name="Blueprint_LeaveConfirm" xml:space="preserve"><value>Leave without saving? Your changes will be lost.</value></data>
+  <data name="Blueprint_LeaveAnyway" xml:space="preserve"><value>Leave</value></data>
+  <data name="Blueprint_TitlesRequired" xml:space="preserve"><value>Every section and lesson needs an Arabic and an English title.</value></data>
+  <data name="Blueprint_EmptyOrIncomplete" xml:space="preserve"><value>Add at least one section, give every section a lesson and every item both titles before publishing.</value></data>
+  <data name="Blueprint_PublishedNew" xml:space="preserve"><value>Version {0} published. It applies to classes created from now on.</value></data>
+  <data name="Blueprint_PublishedQueued" xml:space="preserve"><value>Version {0} published. {1} class plans will be updated in the background.</value></data>
+  <data name="BlueprintStatus_Draft" xml:space="preserve"><value>Draft</value></data>
+  <data name="BlueprintStatus_Published" xml:space="preserve"><value>Published</value></data>
+  <data name="BlueprintStatus_Superseded" xml:space="preserve"><value>Superseded</value></data>
+  <data name="ApplyMode_NewClassesOnly" xml:space="preserve"><value>New classes only</value></data>
+  <data name="ApplyMode_NewClassesOnly_Help" xml:space="preserve"><value>Classes created later, and plans that never received a version, get this version. Existing class plans stay as they are.</value></data>
+  <data name="ApplyMode_PushToExisting" xml:space="preserve"><value>Update existing classes too</value></data>
+  <data name="ApplyMode_PushToExisting_Help" xml:space="preserve"><value>Plans of existing classes in open years are updated in the background: new lessons are added and renamed or moved ones follow this version.</value></data>
+  <data name="Publish_Intro" xml:space="preserve"><value>Choose how this version reaches class lesson plans.</value></data>
+  <data name="Publish_ChooseMode" xml:space="preserve"><value>Choose one of the options to continue.</value></data>
+  <data name="Copy_ReplacesDraft" xml:space="preserve"><value>Copying replaces everything in your draft.</value></data>
+  <data name="Copy_Course" xml:space="preserve"><value>Source course</value></data>
+  <data name="Copy_Version" xml:space="preserve"><value>Version</value></data>
+  <data name="Copy_NoPublished" xml:space="preserve"><value>This course has no published version.</value></data>
+  <data name="Lesson_Edit" xml:space="preserve"><value>Lesson</value></data>
+  <data name="Lesson_ObjectivesAr" xml:space="preserve"><value>Objectives (Arabic)</value></data>
+  <data name="Lesson_ObjectivesEn" xml:space="preserve"><value>Objectives (English)</value></data>
+  <data name="Lesson_PlannedDay" xml:space="preserve"><value>Planned day</value></data>
+  <data name="Lesson_PlannedDayHelp" xml:space="preserve"><value>Days from the start of the academic year (0 to 400).</value></data>
+  <data name="Lesson_DayN" xml:space="preserve"><value>Day {0}</value></data>
+  <data name="SectionLabel_Week" xml:space="preserve"><value>Week</value></data>
+  <data name="SectionLabel_Unit" xml:space="preserve"><value>Unit</value></data>
+  <data name="SectionLabel_Chapter" xml:space="preserve"><value>Chapter</value></data>
 </root>

@@ -43,6 +43,7 @@ public static class ClientServices
             services.AddSingleton<IConfigApi, FakeConfigApi>();
             services.AddSingleton<IStaffApi, FakeStaffApi>();
             services.AddSingleton<ICoursesApi, FakeCoursesApi>();
+            services.AddSingleton<IBlueprintsApi>(new FakeBlueprintsApi { AutoSeed = true });
             services.AddSingleton<IFileUploadApi, FakeFileUploadApi>();
             services.AddScoped<AuthenticationStateProvider, FakeAuthenticationStateProvider>();
             services.AddAuthorizationCore();
@@ -78,6 +79,7 @@ public static class ClientServices
         services.AddScoped<IConfigApi, ConfigApi>();
         services.AddScoped<IStaffApi, StaffApi>();
         services.AddScoped<ICoursesApi, CoursesApi>();
+        services.AddScoped<IBlueprintsApi, BlueprintsApi>();
         services.AddScoped<IFileUploadApi, FileUploadApi>();
     }
 }
