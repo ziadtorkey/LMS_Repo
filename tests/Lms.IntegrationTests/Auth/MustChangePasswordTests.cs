@@ -88,7 +88,7 @@ public sealed class MustChangePasswordTests(LmsApiFactory factory)
     [Fact]
     public async Task Student_without_an_email_signs_in_with_the_user_name()
     {
-        var code = ("s" + Guid.NewGuid().ToString("N")[..10]).ToLowerInvariant();
+        var code = ("s" + Guid.NewGuid().ToString("N")[..10]).ToLowerInvariant() + "@school-x"; // D47: code@short code
         using (var scope = _host.Services.CreateScope())
         {
             var users = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
@@ -96,7 +96,7 @@ public sealed class MustChangePasswordTests(LmsApiFactory factory)
         }
 
         using var browser = _host.NewBrowser();
-        var login = await AuthTestHost.PostLoginAsync(browser, code, AuthTestHost.Password);
+        var login = await AuthTestHost.PostLoginAsync(browser, code.ToUpperInvariant(), AuthTestHost.Password); // case-insensitive
 
         Assert.Equal(HttpStatusCode.Redirect, login.StatusCode);
         Assert.StartsWith("/Account/ChangePassword", login.Headers.Location!.ToString());

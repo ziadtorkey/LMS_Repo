@@ -93,7 +93,7 @@ public sealed class StudentCredentialsTests
 
         var issued = await IssueAsync(student.Id);
 
-        Assert.Equal(student.StudentCode.ToLowerInvariant(), issued.User.UserName);
+        Assert.Equal($"{student.StudentCode.ToLowerInvariant()}@{await ShortCodeOf(student)}", issued.User.UserName);
         Assert.Equal(PasswordGeneratorLength, issued.Password!.Length);
         using var scope = _host.Services.CreateScope();
         var users = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
@@ -106,6 +106,12 @@ public sealed class StudentCredentialsTests
 
     private const int PasswordGeneratorLength = 12;
 
+    private async Task<string> ShortCodeOf(StudentProfile student)
+    {
+        await using var db = _factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        return await db.Organizations.Where(o => o.Id == student.OrganizationId).Select(o => o.ShortCode).SingleAsync();
+    }
+
     [Fact]
     public async Task Requested_password_is_used_and_a_weak_one_is_refused_before_anything_is_created()
     {
@@ -114,7 +120,7 @@ public sealed class StudentCredentialsTests
         await using (var db = _factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
         {
             Assert.Contains("PasswordTooShort", weak.Errors);
-            Assert.False(await db.Users.AnyAsync(u => u.UserName == student.StudentCode.ToLowerInvariant()));
+            Assert.False(await db.Users.AnyAsync(u => u.UserName!.StartsWith(student.StudentCode.ToLowerInvariant() + "@")));
         }
 
         var issued = await IssueAsync(student.Id, "Chosen1Pass");

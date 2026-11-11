@@ -21,7 +21,9 @@ public sealed class StudentCredentials(
     public async Task<IssuedCredentials> IssueAsync(
         StudentProfile student, string? requestedPassword, bool reset, CancellationToken ct)
     {
-        var userName = student.StudentCode.ToLowerInvariant();
+        // D47: the sign-in name is always {code}@{client short code}, so two clients can reuse a student code without sharing an account.
+        var shortCode = await db.Organizations.Where(o => o.Id == student.OrganizationId).Select(o => o.ShortCode).SingleAsync(ct);
+        var userName = $"{student.StudentCode.ToLowerInvariant()}@{shortCode}";
         var password = string.IsNullOrEmpty(requestedPassword) ? PasswordGenerator.Generate() : requestedPassword;
         if (!string.IsNullOrEmpty(requestedPassword))
         {
