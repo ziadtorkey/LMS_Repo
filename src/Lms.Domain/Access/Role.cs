@@ -32,4 +32,11 @@ public sealed class Role : AuditableEntity, ITenantOwned
     public int DefaultsVersion { get; private set; }
 
     public void MarkDefaultsApplied(int version) => DefaultsVersion = version;
+
+    /// <summary>Changes the labels; the base kind and built-in key never change.</summary>
+    public void Rename(string nameAr, string nameEn)
+    {
+        NameAr = nameAr;
+        NameEn = nameEn;
+    }
 }
