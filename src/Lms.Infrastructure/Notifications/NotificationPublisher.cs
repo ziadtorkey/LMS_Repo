@@ -61,7 +61,7 @@ public sealed class NotificationPublisher(
         foreach (var row in rows)
         {
             var dto = new NotificationDto(row.Id, row.EventKey, parameters, row.DeepLink, row.CreatedAt, IsRead: false);
-            await pusher.PushAsync(row.UserId, dto, cancellationToken);
+            await pusher.PushAsync(row.UserId, row.OrganizationId, dto, cancellationToken);
         }
     }
 
