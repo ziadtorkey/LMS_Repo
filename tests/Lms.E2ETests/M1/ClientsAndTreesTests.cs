@@ -98,6 +98,30 @@ public sealed class ClientsAndTreesTests(E2EFixture fixture) : E2ETestBase(fixtu
         Assert.Equal(root, await tree.ParentCodeAsync($"{root}-PRI"));
         Assert.Equal($"{root}-KG", await tree.ParentCodeAsync($"{root}-KG-S2"));
         Assert.Equal($"{root}-PRI", await tree.ParentCodeAsync($"{root}-PRI-S3"));
+        await AssertDirectionAsync(culture);
+    }
+
+    /// <summary>The level-transfer flags endpoint (PUT /api/org-units/{id}/academic-flags) arrives with BE PR #148.</summary>
+    private const string NeedsAcademicFlags = "Needs PUT /api/org-units/{id}/academic-flags (#148, not on main yet)";
+
+    [Theory(Skip = NeedsAcademicFlags)]
+    [InlineData("ar")]
+    [InlineData("en")]
+    public async Task Stages_marked_as_level_transfer_show_the_transfer_path(string culture)
+    {
+        var names = M1Names.New();
+        var school = SchoolGroup(names);
+        await NewClientAdminSignsInAsync(culture, school, names);
+        var levels = new LevelTypesAdminPage(Page, culture);
+        await levels.OpenAsync();
+        await levels.AddAsync("مرحلة", "Stage", canHostClasses: false);
+
+        var root = school.RootCode;
+        string Pick(string ar, string en) => culture == "ar" ? ar : en;
+        var tree = new OrgTreeAdminPage(Page);
+        await tree.OpenAsync();
+        await tree.AddChildAsync(root, "رياض الأطفال", "KG", $"{root}-KG", Pick("مرحلة", "Stage"));
+        await tree.AddChildAsync(root, "المرحلة الابتدائية", "Primary", $"{root}-PRI", Pick("مرحلة", "Stage"));
 
         // Both stages are level-transfer units; KG's next level is Primary.
         var primaryId = await tree.UnitIdAsync($"{root}-PRI");
