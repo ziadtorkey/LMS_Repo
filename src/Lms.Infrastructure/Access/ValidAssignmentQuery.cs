@@ -28,7 +28,7 @@ public static class ValidAssignmentQuery
     /// with role and unit belonging to the assignment's client.
     /// </summary>
     public static IQueryable<ValidAssignment> ValidAssignmentsFor(this LmsDbContext db, Guid userId, DateOnly today) =>
-        // IgnoreQueryFilters: the caller has no (or another) scope when asking "which contexts can I pick?".
+        // ISOLATION-BYPASS: the caller has no (or another) scope when asking "which contexts can I pick?".
         // Every skipped condition (soft delete, client match) is re-applied explicitly in the where clause.
         from a in db.RoleAssignments.IgnoreQueryFilters()
         join r in db.Roles.IgnoreQueryFilters() on a.RoleId equals r.Id
