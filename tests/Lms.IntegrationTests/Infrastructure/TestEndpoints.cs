@@ -31,6 +31,12 @@ public sealed class TestEndpoints : IEndpointModule
         endpoints.MapGet("/test/client-root/level-types", async (HttpContext http, CancellationToken ct) =>
             await http.CheckClientRootAsync(Permissions.LevelTypes.Create, ct) ?? Results.Ok());
 
+        endpoints.MapGet("/test/relationship/class-course/{id:guid}", async (Guid id, HttpContext http, CancellationToken ct) =>
+        {
+            var (cc, problem) = await http.CheckClassCourseAsync(Permissions.Classes.View, id, ct);
+            return problem ?? Results.Ok(new { cc!.Id });
+        });
+
         endpoints.MapGroup("/test/audit").RequirePermission(Permissions.Audit.View).MapGet("/", () => Results.Ok());
     }
 }
