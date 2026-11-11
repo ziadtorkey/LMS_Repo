@@ -140,6 +140,23 @@
   <data name="Roles_Name" xml:space="preserve"><value>Role</value></data>
   <data name="Roles_Permissions" xml:space="preserve"><value>Permissions</value></data>
   <data name="Roles_DeleteConfirm" xml:space="preserve"><value>Delete the role {0}?</value></data>
+  <data name="Nav_Assignments" xml:space="preserve"><value>Role assignments</value></data>
+  <data name="Assignments_Title" xml:space="preserve"><value>Role assignments</value></data>
+  <data name="Assignments_Assign" xml:space="preserve"><value>Assign role</value></data>
+  <data name="Assignments_Email" xml:space="preserve"><value>Email</value></data>
+  <data name="Assignments_NewUserHint" xml:space="preserve"><value>Names are used only if this email has no account yet; the person gets an invitation.</value></data>
+  <data name="Assignments_ValidFrom" xml:space="preserve"><value>Valid from</value></data>
+  <data name="Assignments_ValidTo" xml:space="preserve"><value>Valid to</value></data>
+  <data name="Assignments_IncludeBelow" xml:space="preserve"><value>Include units below</value></data>
+  <data name="AssignmentStatus_Valid" xml:space="preserve"><value>Valid</value></data>
+  <data name="AssignmentStatus_Future" xml:space="preserve"><value>Not yet valid</value></data>
+  <data name="AssignmentStatus_Expired" xml:space="preserve"><value>Expired</value></data>
+  <data name="Assignments_RemoveConfirm" xml:space="preserve"><value>Remove this role from {0}?</value></data>
+  <data name="Assignments_Person" xml:space="preserve"><value>Person</value></data>
+  <data name="Assignments_Role" xml:space="preserve"><value>Role</value></data>
+  <data name="Assignments_Unit" xml:space="preserve"><value>Unit</value></data>
+  <data name="Assignments_EditValidity" xml:space="preserve"><value>Edit validity</value></data>
+  <data name="Assignments_DateOrder" xml:space="preserve"><value>Valid to must not be before valid from.</value></data>
   <data name="Table_RowsPerPage" xml:space="preserve"><value>Rows per page:</value></data>
   <data name="Table_InfoFormat" xml:space="preserve"><value>{first_item}-{last_item} of {all_items}</value></data>
   <data name="MudTablePager_FirstPage" xml:space="preserve"><value>First page</value></data>
@@ -150,6 +167,42 @@
   <data name="Error_OutOfScope" xml:space="preserve"><value>This item is outside your scope.</value></data>
   <data name="Error_invalid_context" xml:space="preserve"><value>Your selected role is no longer valid. Please choose a role again.</value></data>
   <data name="Error_context_required" xml:space="preserve"><value>Please choose a role first.</value></data>
+  <data name="Audit_Title" xml:space="preserve"><value>Audit log</value></data>
+  <data name="Audit_When" xml:space="preserve"><value>When</value></data>
+  <data name="Audit_Who" xml:space="preserve"><value>Who</value></data>
+  <data name="Audit_Role" xml:space="preserve"><value>Role</value></data>
+  <data name="Audit_Unit" xml:space="preserve"><value>Unit</value></data>
+  <data name="Audit_Action" xml:space="preserve"><value>Action</value></data>
+  <data name="Audit_Entity" xml:space="preserve"><value>Entity</value></data>
+  <data name="Audit_From" xml:space="preserve"><value>From</value></data>
+  <data name="Audit_To" xml:space="preserve"><value>To</value></data>
+  <data name="Audit_Before" xml:space="preserve"><value>Before</value></data>
+  <data name="Audit_After" xml:space="preserve"><value>After</value></data>
+  <data name="Audit_ExportCsv" xml:space="preserve"><value>Export CSV</value></data>
+  <data name="Audit_ExportExcel" xml:space="preserve"><value>Export Excel</value></data>
+  <data name="AuditAction_Created" xml:space="preserve"><value>Created</value></data>
+  <data name="AuditAction_Updated" xml:space="preserve"><value>Updated</value></data>
+  <data name="AuditAction_Deleted" xml:space="preserve"><value>Deleted</value></data>
+  <data name="AuditAction_SecurityEvent" xml:space="preserve"><value>Security event</value></data>
+  <data name="AuditEntity_Organization" xml:space="preserve"><value>Client</value></data>
+  <data name="AuditEntity_LevelType" xml:space="preserve"><value>Level type</value></data>
+  <data name="AuditEntity_OrgUnit" xml:space="preserve"><value>Organization unit</value></data>
+  <data name="AuditEntity_Role" xml:space="preserve"><value>Role</value></data>
+  <data name="AuditEntity_RolePermission" xml:space="preserve"><value>Role permission</value></data>
+  <data name="AuditEntity_RoleAssignment" xml:space="preserve"><value>Role assignment</value></data>
+  <data name="AuditEntity_OrgUnitSetting" xml:space="preserve"><value>Unit setting</value></data>
+  <data name="AuditEntity_OrgUnitPolicy" xml:space="preserve"><value>Unit policy</value></data>
+  <data name="AuditEntity_User" xml:space="preserve"><value>User</value></data>
+  <data name="AuditEntity_OrgTemplate" xml:space="preserve"><value>Organization template</value></data>
+  <data name="AuditEntity_AcademicYear" xml:space="preserve"><value>Academic year</value></data>
+  <data name="AuditEntity_Term" xml:space="preserve"><value>Term</value></data>
+  <data name="AuditEntity_CalendarEvent" xml:space="preserve"><value>Calendar event</value></data>
+  <data name="AuditEvent_LoginSucceeded" xml:space="preserve"><value>Successful sign-in</value></data>
+  <data name="AuditEvent_LoginFailed" xml:space="preserve"><value>Failed sign-in</value></data>
+  <data name="AuditEvent_PasswordResetRequested" xml:space="preserve"><value>Password reset requested</value></data>
+  <data name="AuditEvent_PasswordReset" xml:space="preserve"><value>Password reset</value></data>
+  <data name="AuditEvent_InvitationAccepted" xml:space="preserve"><value>Invitation accepted</value></data>
+  <data name="Common_Close" xml:space="preserve"><value>Close</value></data>
   <data name="Clients_Title" xml:space="preserve"><value>Clients</value></data>
   <data name="Clients_New" xml:space="preserve"><value>New client</value></data>
   <data name="Clients_Type" xml:space="preserve"><value>Type</value></data>
@@ -180,4 +233,5 @@
   <data name="LevelTypes_OutOfScope" xml:space="preserve"><value>This can only be changed at the top level of the organization.</value></data>
   <data name="Common_Yes" xml:space="preserve"><value>Yes</value></data>
   <data name="Common_No" xml:space="preserve"><value>No</value></data>
+  <data name="AuditEntity_StoredFile" xml:space="preserve"><value>File</value></data>
 </root>
