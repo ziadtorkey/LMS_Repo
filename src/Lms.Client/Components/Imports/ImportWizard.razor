@@ -1,0 +1,285 @@
+@using System.Globalization
+@using Lms.Client.Components.People
+@using Lms.Client.Services.Api
+@using Lms.Shared.Imports
+@using Lms.Shared.Organizations
+@implements IDisposable
+@inject IImportsApi Api
+@inject IUnitLookupApi UnitLookup
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+@inject IJSRuntime Js
+
+@* Reusable Excel import: 1 template, 2 target unit + file, 3 review (polls while the server works) and commit, 4 result. *@
+<MudPaper Class="pa-4" data-testid="import-wizard">
+    <MudText Typo="Typo.h5" Class="mb-3">@L[TitleKey]</MudText>
+    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap" Class="mb-4" data-testid="import-steps">
+        @for (var i = 0; i < _stepKeys.Length; i++)
+        {
+            var index = i;
+            <MudChip T="string" Size="Size.Small" Color="@(index == _step ? Color.Primary : Color.Default)"
+                     Variant="@(index <= _step ? Variant.Filled : Variant.Outlined)"
+                     data-testid="@($"import-step-{index}")">@((index + 1) + ". " + L[_stepKeys[index]])</MudChip>
+        }
+    </MudStack>
+
+    @if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error" Class="mb-3" data-testid="import-error">@_error</MudAlert>
+    }
+
+    @switch (_step)
+    {
+        case 0:
+            <MudStack Spacing="3" data-testid="import-step-template">
+                <MudRadioGroup T="string" Value="_culture" ValueChanged="c => _culture = c" data-testid="import-template-language">
+                    <MudText Typo="Typo.subtitle2">@L["Import_TemplateLanguage"]</MudText>
+                    <MudRadio T="string" Value="@("ar")" data-testid="import-lang-ar">العربية</MudRadio>
+                    <MudRadio T="string" Value="@("en")" data-testid="import-lang-en">English</MudRadio>
+                </MudRadioGroup>
+                <MudStack Row="true" Spacing="2">
+                    <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Download"
+                               OnClick="DownloadTemplateAsync" data-testid="import-template">@L["Import_DownloadTemplate"]</MudButton>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => _step = 1"
+                               data-testid="import-next">@L["Common_Next"]</MudButton>
+                </MudStack>
+            </MudStack>
+            break;
+
+        case 1:
+            <MudStack Spacing="3" data-testid="import-step-upload">
+                <UnitPicker Value="_unitId" ValueChanged="id => _unitId = id ?? Guid.Empty"
+                            Label="@L["Import_TargetUnit"]" TestId="import-unit" />
+                <InputFile accept=".xlsx" OnChange="FileChosenAsync" data-testid="import-file" aria-label="@L["Import_ChooseFile"]" />
+                @if (_file is not null)
+                {
+                    <MudText Typo="Typo.body2" dir="ltr" data-testid="import-file-name">@_file.Name</MudText>
+                }
+                @if (_fileError is not null)
+                {
+                    <MudAlert Severity="Severity.Warning" data-testid="import-file-error">@_fileError</MudAlert>
+                }
+                <MudStack Row="true" Spacing="2">
+                    <MudButton Variant="Variant.Text" OnClick="() => _step = 0" data-testid="import-back">@L["Common_Back"]</MudButton>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="UploadAsync"
+                               Disabled="@(_file is null || _fileError is not null || _unitId == Guid.Empty || _busy)"
+                               data-testid="import-upload">@L["Import_Upload"]</MudButton>
+                </MudStack>
+            </MudStack>
+            break;
+
+        case 2 when _batch is not null:
+            <MudStack Spacing="3" data-testid="import-step-review">
+                <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+                    <ImportStatusChip Status="@_batch.Status" />
+                    <MudText dir="ltr" Typo="Typo.body2">@_batch.FileName</MudText>
+                </MudStack>
+
+                @if (Working)
+                {
+                    <MudProgressLinear Indeterminate="true" aria-label="@L[WorkingKey]" />
+                    <MudText data-testid="import-working">@L[WorkingKey]</MudText>
+                }
+                else
+                {
+                    <MudText data-testid="import-summary">@string.Format(CultureInfo.CurrentCulture, L["Import_RowsSummary"].Value, _batch.RowCount, _batch.ErrorCount)</MudText>
+                }
+
+                @if (_batch.Status == ImportStatuses.Invalid)
+                {
+                    <MudAlert Severity="Severity.Error" data-testid="import-blocked">@L["Import_BlockedByErrors"]</MudAlert>
+                }
+                @if (_batch.Status == ImportStatuses.Failed)
+                {
+                    <MudAlert Severity="Severity.Error" data-testid="import-failed">@L["Import_Failed"]</MudAlert>
+                }
+
+                @if (_batch.Status is ImportStatuses.Valid or ImportStatuses.Invalid)
+                {
+                    <ImportPreviewTable @key="_batch.Id" Columns="_columns" LoadRows="LoadRowsAsync" />
+                }
+
+                <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                    @if (_batch.HasErrorReport)
+                    {
+                        <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Download"
+                                   OnClick="DownloadErrorsAsync" data-testid="import-error-report">@L["Import_DownloadErrors"]</MudButton>
+                    }
+                    @if (_batch.Status is ImportStatuses.Valid or ImportStatuses.Invalid or ImportStatuses.Failed)
+                    {
+                        <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="DiscardAsync" Disabled="_busy"
+                                   data-testid="import-discard">@L["Import_Discard"]</MudButton>
+                    }
+                    @if (_batch.Status == ImportStatuses.Valid)
+                    {
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CommitAsync" Disabled="_busy"
+                                   data-testid="import-commit">@string.Format(CultureInfo.CurrentCulture, L["Import_Commit"].Value, _batch.RowCount)</MudButton>
+                    }
+                </MudStack>
+            </MudStack>
+            break;
+
+        default:
+            <MudStack Spacing="3" data-testid="import-step-done">
+                <MudAlert Severity="Severity.Success" data-testid="import-done">@string.Format(CultureInfo.CurrentCulture, L["Import_Done"].Value, _batch?.CreatedCount ?? 0)</MudAlert>
+                <MudButton Variant="Variant.Outlined" OnClick="Restart" data-testid="import-again">@L["Import_Another"]</MudButton>
+            </MudStack>
+            break;
+    }
+</MudPaper>
+
+@code {
+    private static readonly string[] _stepKeys =
+        ["Import_Step_Template", "Import_Step_Upload", "Import_Step_Review", "Import_Step_Done"];
+
+    private readonly CancellationTokenSource _lifetime = new();
+    private IReadOnlyList<OrgUnitNodeDto> _units = [];
+    private IReadOnlyList<ImportColumnDto> _columns = [];
+    private ImportBatchDto? _batch;
+    private IBrowserFile? _file;
+    private string? _fileError, _error;
+    private string _culture = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "ar" ? "ar" : "en";
+    private Guid _unitId;
+    private int _step;
+    private bool _busy;
+    private bool _polling;
+
+    [Parameter, EditorRequired] public string Kind { get; set; } = "";
+    [Parameter] public string TitleKey { get; set; } = "Import_Title";
+    [Parameter] public Guid? DefaultOrgUnitId { get; set; }
+    [Parameter] public EventCallback<ImportBatchDto> OnCommitted { get; set; }
+
+    /// <summary>How often the batch is re-read while the server validates or commits it.</summary>
+    [Parameter] public TimeSpan PollInterval { get; set; } = TimeSpan.FromSeconds(2);
+
+    private bool Working => _batch?.Status is ImportStatuses.Uploaded or ImportStatuses.Validating or ImportStatuses.Committing;
+    private string WorkingKey => _batch?.Status == ImportStatuses.Committing ? "Import_Committing" : "Import_Validating";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var (units, failed) = await ApiCalls.RunAsync(() => UnitLookup.GetUnitsAsync(), Navigation);
+        if (failed) { _error = L["Api_Error"]; return; }
+        _units = units ?? [];
+        _unitId = DefaultOrgUnitId ?? UnitTree.Order(_units).FirstOrDefault()?.Id ?? Guid.Empty;
+        var (columns, _) = await ApiCalls.RunAsync(() => Api.GetColumnsAsync(Kind), Navigation);
+        _columns = columns ?? [];
+    }
+
+    private async Task DownloadTemplateAsync() =>
+        await DownloadAsync(() => Api.DownloadTemplateAsync(Kind, _culture, _lifetime.Token));
+
+    private async Task DownloadErrorsAsync() =>
+        await DownloadAsync(() => Api.DownloadErrorReportAsync(Kind, _batch!.Id, _lifetime.Token));
+
+    private async Task DownloadAsync(Func<Task<(Stream Content, string FileName)>> fetch)
+    {
+        _error = null;
+        await ApiCalls.RunAsync(async () =>
+        {
+            var (content, fileName) = await fetch();
+            using var reference = new DotNetStreamReference(content);
+            await Js.InvokeVoidAsync("lmsDownloadFile", fileName, reference);
+        }, Navigation, L, message => _error = message);
+    }
+
+    private void FileChosenAsync(InputFileChangeEventArgs e)
+    {
+        _file = e.File;
+        _fileError = e.File.Size > ImportLimits.MaxFileBytes ? L["Import_FileTooLarge"].Value : null;
+    }
+
+    private async Task UploadAsync()
+    {
+        _busy = true;
+        _error = null;
+        var ok = await ApiCalls.RunAsync(async () => _batch = await Api.UploadAsync(Kind, _unitId, _file!, _lifetime.Token),
+            Navigation, L, message => _error = message);
+        _busy = false;
+        if (!ok) return;
+        _step = 2;
+        _ = PollAsync();
+    }
+
+    /// <summary>Asks for confirmation, then commits (the dialog result is not awaited in the click handler).</summary>
+    private Task CommitAsync() => DialogFlow.ShowAsync(Dialogs, L["Import_Title"],
+        new DialogParameters<ConfirmDialog>
+        {
+            { x => x.Message, string.Format(CultureInfo.CurrentCulture, L["Import_CommitConfirm"].Value, _batch!.RowCount) },
+            { x => x.ConfirmText, string.Format(CultureInfo.CurrentCulture, L["Import_Commit"].Value, _batch.RowCount) },
+        }, RunCommitAsync);
+
+    private async Task RunCommitAsync()
+    {
+        _busy = true;
+        _error = null;
+        StateHasChanged();
+        var ok = await ApiCalls.RunAsync(async () => _batch = await Api.CommitAsync(Kind, _batch!.Id, _lifetime.Token),
+            Navigation, L, message => _error = message);
+        _busy = false;
+        StateHasChanged();
+        if (ok) _ = PollAsync();
+    }
+
+    private async Task DiscardAsync()
+    {
+        _busy = true;
+        var ok = await ApiCalls.RunAsync(() => Api.DiscardAsync(Kind, _batch!.Id, _lifetime.Token),
+            Navigation, L, message => _error = message);
+        _busy = false;
+        if (ok) Restart();
+    }
+
+    private void Restart()
+    {
+        _batch = null;
+        _file = null;
+        _fileError = null;
+        _error = null;
+        _step = 0;
+    }
+
+    /// <summary>Re-reads the batch until the server is done with it (Uploaded/Validating/Committing); stops when the wizard is left.</summary>
+    private async Task PollAsync()
+    {
+        if (_polling) return;
+        _polling = true;
+        try
+        {
+            while (Working && !_lifetime.IsCancellationRequested)
+            {
+                await Task.Delay(PollInterval, _lifetime.Token);
+                var batch = await Api.GetBatchAsync(Kind, _batch!.Id, _lifetime.Token);
+                var wasCommitting = _batch.Status == ImportStatuses.Committing;
+                await InvokeAsync(() => { _batch = batch; StateHasChanged(); });
+                if (wasCommitting && batch.Status == ImportStatuses.Committed)
+                {
+                    await OnCommitted.InvokeAsync(batch);
+                    _step = 3;
+                    await InvokeAsync(StateHasChanged);
+                }
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // the wizard was left
+        }
+        catch (Exception ex) when (ex is HttpRequestException or ApiProblemException)
+        {
+            await InvokeAsync(() => { _error = L["Error_Generic"]; StateHasChanged(); });
+        }
+        finally
+        {
+            _polling = false;
+        }
+    }
+
+    private Task<Lms.Shared.PagedResult<ImportRowDto>> LoadRowsAsync(int page, int pageSize, bool errorsOnly, CancellationToken ct) =>
+        Api.GetRowsAsync(Kind, _batch!.Id, errorsOnly, CultureInfo.CurrentUICulture.TwoLetterISOLanguageName, page, pageSize, ct);
+
+    public void Dispose()
+    {
+        _lifetime.Cancel();
+        _lifetime.Dispose();
+    }
+}
