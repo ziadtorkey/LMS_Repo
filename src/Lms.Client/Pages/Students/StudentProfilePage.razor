@@ -1,0 +1,193 @@
+@page "/students/{Id:guid}"
+@attribute [Authorize]
+@using System.Globalization
+@using Lms.Client.Components
+@using Lms.Client.Components.People
+@using Lms.Client.Services.Api
+@using Lms.Shared.Authorization
+@using Lms.Shared.People
+@implements IDisposable
+@inject IStudentsApi Api
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+<PageTitle>@L["Students_Title"]</PageTitle>
+@if (_error is not null)
+{
+    <MudAlert Severity="Severity.Error" data-testid="profile-error">@_error</MudAlert>
+}
+else if (_detail is null)
+{
+    <MudText>@L["Common_Loading"]</MudText>
+}
+else
+{
+    var s = _detail.Summary;
+    <MudStack Spacing="3">
+        <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+            <StaffAvatar PhotoFileId="s.PhotoFileId" Size="Size.Large" />
+            <div>
+                <MudText Typo="Typo.h4" data-testid="profile-name">@Culture.Pick(s.NameAr, s.NameEn)</MudText>
+                <MudText Typo="Typo.body2"><span dir="ltr" data-testid="profile-code">@s.StudentCode</span></MudText>
+                @if (s.CurrentClassId is { } classId)
+                {
+                    <MudLink Href="@($"classes/{classId}")" data-testid="profile-class">@Culture.Pick(s.CurrentClassNameAr ?? "", s.CurrentClassNameEn ?? "")</MudLink>
+                }
+                else
+                {
+                    <MudChip T="string" Size="Size.Small" data-testid="profile-unplaced">@L["Student_Unplaced"]</MudChip>
+                }
+            </div>
+            <PersonStatusChip Status="@s.Status" />
+        </MudStack>
+
+        <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap" data-testid="profile-actions">
+            @if (PermState.Has(Permissions.Students.Update))
+            {
+                <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Edit" OnClick="EditAsync"
+                           data-testid="action-edit">@L["Student_Edit"]</MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Warning" OnClick="ChangeStatusAsync"
+                           data-testid="action-status">@(s.Status == PersonStatuses.Active ? L["Staff_Deactivate"] : L["Staff_Reactivate"])</MudButton>
+                <MudButton Variant="Variant.Outlined" OnClick="ResetPasswordAsync" data-testid="action-reset">@L["Student_ResetPassword"]</MudButton>
+            }
+            @if (PermState.Has(Permissions.Students.Delete))
+            {
+                <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="DeleteAsync"
+                           data-testid="action-delete">@L["Common_Delete"]</MudButton>
+            }
+        </MudStack>
+
+        <MudTabs Elevation="0" Rounded="true" Class="lms-student-tabs" data-testid="profile-tabs">
+            <MudTabPanel Text="@L["Student_Profile"]" data-testid="tab-profile">
+                <MudPaper Class="pa-3">
+                    <MudStack Spacing="1">
+                        <MudText data-testid="profile-account">@L["Student_Account"]: @AccountState</MudText>
+                        <MudText>@L["Student_DateOfBirth"]: <span dir="ltr">@s.DateOfBirth.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)</span></MudText>
+                        <MudText>@L["Student_Gender"]: @L[$"Gender_{s.Gender}"]</MudText>
+                        <MudText>@L["Student_Religion"]: @L[$"Religion_{_detail.Religion}"]</MudText>
+                        <MudText>@L["Student_Nationality"]: <span dir="ltr">@_detail.Nationality</span></MudText>
+                        <MudText data-testid="profile-national-id">@L["Student_NationalId"]: <span dir="ltr">@_detail.NationalId</span></MudText>
+                        <MudText data-testid="profile-mobile">@L["Student_Mobile"]: <span dir="ltr">@_detail.Mobile</span></MudText>
+                        <MudText data-testid="profile-email">@L["Student_Email"]: <span dir="ltr">@_detail.Email</span></MudText>
+                        <MudText>@L["Staff_HomeUnit"]: @Culture.Pick(s.HomeOrgUnitNameAr, s.HomeOrgUnitNameEn)</MudText>
+                    </MudStack>
+                </MudPaper>
+            </MudTabPanel>
+            <MudTabPanel Text="@L["Student_Guardians"]" data-testid="tab-guardians">
+                @* The guardians list, linking and portal invitation arrive with the guardians task. *@
+                <MudText data-testid="guardians-placeholder">@(_detail.Guardians.Count == 0 ? L["Common_Empty"] : string.Join("، ", _detail.Guardians.Select(g => Culture.Pick(g.NameAr, g.NameEn))))</MudText>
+            </MudTabPanel>
+            <MudTabPanel Text="@L["Student_Enrollments"]" data-testid="tab-enrollments">
+                @* Hosts StudentEnrollmentsTab (enrollments, optional courses, unenroll and transfer) once that component exists. *@
+                <MudText data-testid="enrollments-placeholder">@L["Common_Empty"]</MudText>
+            </MudTabPanel>
+            <MudTabPanel Text="@L["Student_FeatureFlags"]" data-testid="tab-flags">
+                <StudentFeatureFlagsTab Student="_detail" CanEdit="PermState.Has(Permissions.Students.Update)" OnSaved="LoadAsync" />
+            </MudTabPanel>
+            <MudTabPanel Text="@L["Student_History"]" data-testid="tab-history">
+                <MudTable Items="_detail.StatusHistory" Dense="true" data-testid="profile-history">
+                    <HeaderContent>
+                        <MudTh>@L["Common_Status"]</MudTh>
+                        <MudTh>@L["Staff_Reason"]</MudTh>
+                        <MudTh>@L["Audit_When"]</MudTh>
+                    </HeaderContent>
+                    <RowTemplate Context="change">
+                        <MudTd>@L[$"PersonStatus_{change.FromStatus}"] → @L[$"PersonStatus_{change.ToStatus}"]</MudTd>
+                        <MudTd>@change.Reason</MudTd>
+                        <MudTd><span dir="ltr">@change.ChangedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture)</span></MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudTabPanel>
+        </MudTabs>
+    </MudStack>
+}
+
+@code {
+    private StudentDetailDto? _detail;
+    private string? _error;
+
+    [Parameter] public Guid Id { get; set; }
+
+    private string AccountState => _detail switch
+    {
+        null => "",
+        { HasAccount: false } => L["Student_NoAccount"],
+        { MustChangePassword: true } => L["Student_MustChangePassword"],
+        _ => L["Student_AccountActive"],
+    };
+
+    private string DisplayName => _detail is null ? "" : Culture.Pick(_detail.Summary.NameAr, _detail.Summary.NameEn);
+
+    protected override async Task OnParametersSetAsync()
+    {
+        PermState.Changed -= OnPermissionsChanged;
+        PermState.Changed += OnPermissionsChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        await LoadAsync();
+    }
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => PermState.Changed -= OnPermissionsChanged;
+
+    private async Task LoadAsync()
+    {
+        _error = null;
+        await ApiCalls.RunAsync(async () => _detail = await Api.GetAsync(Id), Navigation, L, message => _error = message);
+    }
+
+    /// <summary>Runs a write; on success shows the message and reloads, on failure shows the problem as a snackbar.</summary>
+    private async Task RunAsync(Func<Task> write, string done)
+    {
+        var ok = await ApiCalls.RunAsync(write, Navigation, L, message => Snackbar.Add(message, Severity.Error));
+        if (!ok) return;
+        Snackbar.Add(done, Severity.Success);
+        await LoadAsync();
+    }
+
+    private async Task EditAsync()
+    {
+        var dialog = await Dialogs.ShowAsync<EditStudentDialog>(L["Student_Edit"], new DialogParameters<EditStudentDialog> { { x => x.Student, _detail! } },
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        if (await dialog.Result is { Canceled: false }) { Snackbar.Add(L["Common_Saved"], Severity.Success); await LoadAsync(); }
+    }
+
+    private async Task ChangeStatusAsync()
+    {
+        var reactivate = _detail!.Summary.Status != PersonStatuses.Active;
+        var dialog = await Dialogs.ShowAsync<PersonStatusDialog>(L[reactivate ? "Staff_Reactivate" : "Staff_Deactivate"],
+            new DialogParameters<PersonStatusDialog> { { x => x.Name, DisplayName }, { x => x.Reactivate, reactivate } },
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        if (await dialog.Result is { Canceled: false, Data: string reason })
+            await RunAsync(() => Api.SetStatusAsync(Id, new SetPersonStatusRequest(reactivate ? PersonStatuses.Active : PersonStatuses.Deactivated, reason)),
+                L["Common_Saved"]);
+    }
+
+    /// <summary>Issues a new default password (D24); like create, it is shown once and delivered by the rules of Task 37.</summary>
+    private async Task ResetPasswordAsync()
+    {
+        if (!await ConfirmDialog.AskAsync(Dialogs, L["Student_ResetPassword"], L["Student_ResetPasswordConfirm", DisplayName].Value, L["Student_ResetPassword"])) return;
+        StudentCreatedDto? issued = null;
+        var ok = await ApiCalls.RunAsync(async () => issued = await Api.ResetPasswordAsync(Id, new ResetStudentPasswordRequest(null)),
+            Navigation, L, message => Snackbar.Add(message, Severity.Error));
+        if (!ok || issued is null) return;
+        var dialog = await Dialogs.ShowAsync<CredentialsDialog>(L["Credentials_Title"], new DialogParameters<CredentialsDialog>
+        {
+            { x => x.Code, issued.Student.Summary.StudentCode },
+            { x => x.Password, issued.IssuedPassword },
+            { x => x.SentTo, issued.CredentialsSentTo },
+        }, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, BackdropClick = false });
+        await dialog.Result;
+        await LoadAsync();
+    }
+
+    private async Task DeleteAsync()
+    {
+        if (!await ConfirmDialog.AskAsync(Dialogs, L["Confirm_DeleteTitle"], L["Student_DeleteConfirm"], L["Common_Delete"])) return;
+        var ok = await ApiCalls.RunAsync(() => Api.DeleteAsync(Id), Navigation, L, message => Snackbar.Add(message, Severity.Error));
+        if (ok) Navigation.NavigateTo("students");
+    }
+}
