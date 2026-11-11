@@ -1,4 +1,7 @@
 using System.Text.Json;
+using System.Net;
+using System.Net.Http.Json;
+using Lms.Domain.Access;
 using Lms.Domain.Courses;
 using Lms.Domain.Organizations;
 using Lms.Infrastructure.Branches;
@@ -7,6 +10,10 @@ using Lms.Infrastructure.Organizations;
 using Lms.IntegrationTests.Academic;
 using Lms.IntegrationTests.Access;
 using Lms.IntegrationTests.Infrastructure;
+using Lms.IntegrationTests.OrgUnits;
+using Lms.Shared;
+using Lms.Shared.Authorization;
+using Lms.Shared.Organizations;
 using Lms.Shared.Courses;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,8 +21,12 @@ namespace Lms.IntegrationTests.Branches;
 
 /// <summary>Copying a branch (and applying a template) with its courses and allocations (M3 Task 10, FR-ORG-06).</summary>
 [Collection(ApiCollection.Name)]
-public sealed class CopyBranchCoursesTests(LmsApiFactory factory)
+public sealed class CopyBranchCoursesTests(LmsApiFactory factory) : IDisposable
 {
+    private readonly OrgUnitTestHost _host = new(factory);
+
+    public void Dispose() => _host.Dispose();
+
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
     /// <summary>Root → School1 → X (owns courses) → Y; School2 is the copy target.</summary>
@@ -166,5 +177,56 @@ public sealed class CopyBranchCoursesTests(LmsApiFactory factory)
 
         Assert.Equal(2, result.UnitsCreated);
         Assert.Equal(0, result.CoursesCreated);
+    }
+
+    private async Task<RoleAssignment> AdminAsync(Fixture f) =>
+        await AccessTestData.AssignAsync(factory, f.Tree, f.Tree.Root, BuiltInRoles.OrgAdmin, Guid.NewGuid());
+
+    [Fact]
+    public async Task Endpoint_copies_courses_only_when_asked_and_conflict_is_409()
+    {
+        var f = await SetUpAsync("CB6");
+        var (owned, _) = await AddCoursesAsync(f);
+        var admin = await AdminAsync(f);
+
+        var without = await _host.SendAsync(HttpMethod.Post, Routes.OrgUnitsCopy, admin,
+            new CopyBranchRequest(f.X.Id, f.Tree.School2.Id, "-A", false, false, null, null));
+        var with = await _host.SendAsync(HttpMethod.Post, Routes.OrgUnitsCopy, admin,
+            new CopyBranchRequest(f.X.Id, f.Tree.School2.Id, "-B", false, false, null, null, IncludeCourses: true));
+        var again = await _host.SendAsync(HttpMethod.Post, Routes.OrgUnitsCopy, admin,
+            new CopyBranchRequest(f.X.Id, f.Tree.School2.Id, "-B", false, false, null, null, IncludeCourses: true));
+
+        Assert.Equal(HttpStatusCode.Created, without.StatusCode);
+        Assert.Equal(HttpStatusCode.Created, with.StatusCode);
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        Assert.False(await db.Set<Course>().AnyAsync(c => c.Code == owned.Code + "-A"));
+        Assert.True(await db.Set<Course>().AnyAsync(c => c.Code == owned.Code + "-B"));
+        Assert.Equal(HttpStatusCode.Conflict, again.StatusCode);
+    }
+
+    [Fact]
+    public async Task Template_endpoints_carry_courses_with_placeholders()
+    {
+        var f = await SetUpAsync("CB7");
+        var (owned, _) = await AddCoursesAsync(f);
+        var admin = await AdminAsync(f);
+        var literal = owned.Code[..3];
+        var tail = owned.Code[3..];
+
+        var saved = await _host.SendAsync(HttpMethod.Post, Routes.Templates, admin,
+            new SaveTemplateRequest(
+                f.X.Id, "قالب", "Template", "Shared", false, false, new Dictionary<string, string> { [literal] = "{Prefix}", ["X"] = "{CodeX}", ["Y"] = "{CodeY}" },
+                IncludeCourses: true));
+        Assert.Equal(HttpStatusCode.Created, saved.StatusCode);
+        var id = (await saved.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("summary").GetProperty("id").GetGuid();
+
+        var newPrefix = "TP" + Guid.NewGuid().ToString("N")[..4].ToUpperInvariant();
+        var applied = await _host.SendAsync(HttpMethod.Post, Routes.TemplateApply(id), admin,
+            new ApplyTemplateRequest(f.Tree.School2.Id, new Dictionary<string, string> { ["Prefix"] = newPrefix, ["CodeX"] = newPrefix + "X", ["CodeY"] = newPrefix + "Y" }));
+
+        Assert.Equal(HttpStatusCode.Created, applied.StatusCode);
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        var expected = newPrefix + tail;
+        Assert.True(await db.Set<Course>().AnyAsync(c => c.Code == expected));
     }
 }
