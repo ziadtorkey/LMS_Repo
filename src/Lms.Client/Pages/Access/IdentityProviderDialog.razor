@@ -1,0 +1,174 @@
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Shared.IdentityProviders
+@inject IIdentityProvidersApi Api
+@inject NavigationManager Navigation
+@inject IJSRuntime Js
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form">
+            <MudStack Spacing="3">
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" data-testid="dialog-error">@_error</MudAlert>
+                }
+
+                <MudSelect T="string" @bind-Value="_kind" Label="@L["Idp_Kind"]" data-testid="idp-kind">
+                    @foreach (var kind in IdentityProviderKinds.All)
+                    {
+                        <MudSelectItem T="string" Value="@kind">@L[$"IdpKind_{kind}"]</MudSelectItem>
+                    }
+                </MudSelect>
+                <MudTextField T="string" @bind-Value="_slug" Label="@L["Idp_Slug"]" Required="true" RequiredError="@L["Common_Required"]"
+                              MaxLength="40" dir="ltr" data-testid="idp-slug" />
+                <BilingualNameFields @bind-NameAr="_nameAr" @bind-NameEn="_nameEn" IdPrefix="idp-name" />
+
+                @if (_kind == IdentityProviderKinds.AzureAd)
+                {
+                    <MudTextField T="string" @bind-Value="_tenantId" Label="@L["Idp_TenantId"]" Required="true"
+                                  RequiredError="@L["Common_Required"]" dir="ltr" data-testid="idp-tenant" />
+                }
+                else
+                {
+                    <MudTextField T="string" @bind-Value="_authority" Label="@L["Idp_Authority"]" Required="true"
+                                  RequiredError="@L["Common_Required"]" InputType="InputType.Url" dir="ltr" data-testid="idp-authority" />
+                }
+
+                <MudTextField T="string" @bind-Value="_clientId" Label="@L["Idp_ClientId"]" Required="true"
+                              RequiredError="@L["Common_Required"]" dir="ltr" data-testid="idp-client-id" />
+                <MudTextField T="string" @bind-Value="_secret" Label="@L["Idp_ClientSecret"]" InputType="InputType.Password"
+                              Required="@(Existing is null)" RequiredError="@L["Common_Required"]"
+                              HelperText="@(Existing is null ? null : L["Idp_SecretKeep"].Value)" autocomplete="new-password"
+                              dir="ltr" data-testid="idp-secret" />
+                <MudTextField T="string" @bind-Value="_scopes" Label="@L["Idp_Scopes"]" dir="ltr" data-testid="idp-scopes" />
+
+                <MudSelect T="string" @bind-Value="_matchBy" Label="@L["Idp_MatchBy"]" data-testid="idp-match">
+                    @foreach (var match in ExternalMatchBy.All)
+                    {
+                        <MudSelectItem T="string" Value="@match">@L[$"IdpMatch_{match}"]</MudSelectItem>
+                    }
+                </MudSelect>
+                @if (_matchBy == ExternalMatchBy.NationalId)
+                {
+                    <MudTextField T="string" @bind-Value="_nationalIdClaim" Label="@L["Idp_NationalIdClaim"]" Required="true"
+                                  RequiredError="@L["Common_Required"]" dir="ltr" data-testid="idp-national-claim" />
+                }
+
+                <MudStack Spacing="1">
+                    <MudTextField T="string" @bind-Value="_domainInput" Label="@L["Idp_EmailDomains"]" dir="ltr" data-testid="idp-domain-input"
+                                  Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Add" OnAdornmentClick="AddDomain"
+                                  AdornmentAriaLabel="@L["Common_Add"]" OnKeyDown="OnDomainKey" />
+                    <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap">
+                        @foreach (var domain in _domains)
+                        {
+                            <MudChip T="string" Size="Size.Small" OnClose="() => _domains.Remove(domain)"
+                                     data-testid="@($"idp-domain-{domain}")"><span dir="ltr">@domain</span></MudChip>
+                        }
+                    </MudStack>
+                </MudStack>
+
+                <MudSwitch T="bool" @bind-Value="_enabled" Label="@L["Common_Enabled"]" Color="Color.Primary" data-testid="idp-enabled" />
+
+                @if (Existing is not null)
+                {
+                    <MudTextField T="string" Value="Existing.CallbackUrl" Label="@L["Idp_CallbackUrl"]" ReadOnly="true" dir="ltr"
+                                  Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.ContentCopy"
+                                  OnAdornmentClick="CopyAsync" AdornmentAriaLabel="@L["Idp_Copy"]" data-testid="idp-callback" />
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Wrap="Wrap.Wrap">
+                        <MudButton Variant="Variant.Outlined" OnClick="TestAsync" Disabled="_testing" data-testid="idp-test">@L["Idp_Test"]</MudButton>
+                        @if (_testOk is { } ok)
+                        {
+                            <MudAlert Severity="@(ok ? Severity.Success : Severity.Error)" Dense="true" Class="flex-grow-1" Style="min-width: 0; overflow-wrap: anywhere" data-testid="idp-test-result">@_testMessage</MudAlert>
+                        }
+                    </MudStack>
+                }
+            </MudStack>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="_saving"
+                   data-testid="dialog-save">@L["Common_Save"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public IdentityProviderDto? Existing { get; set; }
+
+    private MudForm _form = default!;
+    private string _kind = IdentityProviderKinds.Oidc, _slug = "", _nameAr = "", _nameEn = "", _authority = "", _tenantId = "",
+        _clientId = "", _secret = "", _scopes = "openid profile email", _matchBy = ExternalMatchBy.Email, _nationalIdClaim = "",
+        _domainInput = "";
+    private readonly List<string> _domains = [];
+    private bool _enabled = true, _saving, _testing;
+    private bool? _testOk;
+    private string? _error, _testMessage;
+
+    protected override void OnInitialized()
+    {
+        if (Existing is not { } p) return;
+        _kind = p.Kind; _slug = p.Slug; _nameAr = p.DisplayNameAr; _nameEn = p.DisplayNameEn; _authority = p.Authority;
+        _tenantId = p.AzureTenantId ?? ""; _clientId = p.ClientId; _scopes = p.Scopes; _matchBy = p.MatchBy;
+        _nationalIdClaim = p.NationalIdClaim ?? ""; _enabled = p.Enabled;
+        _domains.AddRange(p.EmailDomains);
+        // The stored secret is never returned, so the secret field starts empty.
+    }
+
+    private void AddDomain()
+    {
+        var domain = _domainInput.Trim().TrimStart('@').ToLowerInvariant();
+        _domainInput = "";
+        if (domain.Length > 0 && !_domains.Contains(domain)) _domains.Add(domain);
+    }
+
+    private void OnDomainKey(KeyboardEventArgs e)
+    {
+        if (e.Key is "Enter" or ",") AddDomain();
+    }
+
+    private async Task CopyAsync()
+    {
+        try { await Js.InvokeVoidAsync("navigator.clipboard.writeText", Existing!.CallbackUrl); }
+        catch (JSException) { /* clipboard blocked: the URL stays selectable in the field */ }
+    }
+
+    private async Task TestAsync()
+    {
+        _testing = true;
+        _testOk = null;
+        ProviderTestResultDto? result = null;
+        await ApiCalls.RunAsync(async () => result = await Api.TestAsync(Existing!.Id), Navigation, L, m => { _testOk = false; _testMessage = m; });
+        _testing = false;
+        if (result is null) return;
+        _testOk = result.Ok;
+        _testMessage = result.Ok
+            ? string.Format(L["Idp_TestOk"], result.Issuer)
+            : string.Format(L["Idp_TestFailed"], result.Error);
+    }
+
+    private static string? Blank(string value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private async Task SaveAsync()
+    {
+        _error = null;
+        AddDomain();
+        await _form.ValidateAsync();
+        if (!_form.IsValid) return;
+
+        var azure = _kind == IdentityProviderKinds.AzureAd;
+        var request = new SaveIdentityProviderRequest(_kind, _slug.Trim(), _nameAr.Trim(), _nameEn.Trim(),
+            azure ? null : Blank(_authority), azure ? Blank(_tenantId) : null, _clientId.Trim(),
+            Blank(_secret), _scopes.Trim(), _matchBy, _matchBy == ExternalMatchBy.NationalId ? Blank(_nationalIdClaim) : null,
+            _domains.ToList(), _enabled);
+
+        _saving = true;
+        var saved = await ApiCalls.RunAsync(
+            () => Existing is null ? Api.CreateAsync(request) : Api.UpdateAsync(Existing.Id, request),
+            Navigation, L, message => _error = message);
+        _saving = false;
+        if (saved) MudDialog.Close(DialogResult.Ok(true));
+    }
+}

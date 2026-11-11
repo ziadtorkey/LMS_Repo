@@ -1,0 +1,46 @@
+@page "/staff/import"
+@attribute [Authorize]
+@using System.Globalization
+@using Lms.Client.Components.Imports
+@using Lms.Shared.Authorization
+@using Lms.Shared.Imports
+@inject PermissionState PermState
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+@implements IDisposable
+
+<PageTitle>@L["StaffImport_Title"]</PageTitle>
+@if (!PermState.Loaded)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else if (!PermState.Has(Permissions.Staff.Import))
+{
+    <Forbidden />
+}
+else
+{
+    <MudButton Href="staff" Variant="Variant.Text" StartIcon="@Icons.Material.Filled.ArrowBack"
+               Class="mb-2" data-testid="staff-import-back">@L["Staff_Title"]</MudButton>
+    <ImportWizard Kind="@ImportKinds.Staff" TitleKey="StaffImport_Title" OnCommitted="OnCommitted" />
+    <ImportHistory Kind="@ImportKinds.Staff" />
+}
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        PermState.Changed += OnPermissionsChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+    }
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => PermState.Changed -= OnPermissionsChanged;
+
+    /// <summary>After a commit the page returns to the staff list, filtered to the unit that was imported into.</summary>
+    private void OnCommitted(ImportBatchDto batch)
+    {
+        Snackbar.Add(string.Format(CultureInfo.CurrentCulture, L["Import_Done"].Value, batch.CreatedCount ?? 0), Severity.Success);
+        Navigation.NavigateTo($"staff?unit={batch.OrgUnitId}");
+    }
+}

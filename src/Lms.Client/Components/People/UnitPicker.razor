@@ -6,7 +6,7 @@
 @* Picks one org unit the user can see; units are listed as an indented tree. Shared by the people pages. *@
 <MudSelect T="Guid?" Value="Value" ValueChanged="ValueChanged" Label="@Label" Clearable="Clearable"
            Required="Required" RequiredError="@L["Common_Required"]" data-testid="@TestId">
-    @foreach (var unit in _units)
+    @foreach (var unit in _units.Where(u => Filter is null || Filter(u)))
     {
         <MudSelectItem T="Guid?" Value="@((Guid?)unit.Id)">@(new string(' ', unit.Depth * 3) + CultureText.Pick(unit.NameAr, unit.NameEn))</MudSelectItem>
     }
@@ -19,6 +19,8 @@
     [Parameter] public EventCallback<Guid?> ValueChanged { get; set; }
     [Parameter] public string? Label { get; set; }
     [Parameter] public bool Clearable { get; set; }
+    /// <summary>Limits which units are offered (e.g. course owners); null offers every visible unit.</summary>
+    [Parameter] public Func<OrgUnitNodeDto, bool>? Filter { get; set; }
     [Parameter] public bool Required { get; set; }
     [Parameter] public string TestId { get; set; } = "unit-picker";
 

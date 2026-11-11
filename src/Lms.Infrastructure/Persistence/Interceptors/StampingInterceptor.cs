@@ -54,6 +54,7 @@ public sealed class StampingInterceptor(ICurrentContext context, IClock clock) :
                 case EntityState.Deleted when entry.Entity is AuditableEntity deleted:
                     entry.State = EntityState.Modified;
                     deleted.MarkDeleted(now, context.UserId);
+                    (deleted as ILiveKeyed)?.ClearLiveKeys();
                     break;
             }
 
