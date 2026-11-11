@@ -25,4 +25,5 @@
     }
     <button data-testid="login-submit" type="submit">@L["SignIn"]</button>
 </form>
+<div class="links"><a data-testid="external-login-link" href="/Account/ExternalLogin@(string.IsNullOrEmpty(Model.ReturnUrl) ? string.Empty : "?returnUrl=" + Uri.EscapeDataString(Model.ReturnUrl))">@L["ExternalSignIn"]</a></div>
 <div class="links"><a data-testid="forgot-password-link" href="/Account/ForgotPassword@(forgotQuery)">@L["ForgotPassword"]</a></div>

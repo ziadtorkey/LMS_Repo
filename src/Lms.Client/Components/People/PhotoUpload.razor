@@ -1,0 +1,78 @@
+@using Lms.Client.Services.Api
+@inject IFileUploadApi Files
+@inject NavigationManager Navigation
+
+@* Photo picker: uploads a jpg/png through POST /api/files, shows a preview and reports the file id. *@
+<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
+    @if (_preview is not null)
+    {
+        <MudAvatar Size="Size.Large" data-testid="photo-preview"><MudImage Src="@_preview" Alt="@L["Person_Photo"]" /></MudAvatar>
+    }
+    else
+    {
+        <MudAvatar Size="Size.Large"><MudIcon Icon="@Icons.Material.Filled.Person" /></MudAvatar>
+    }
+    <MudStack Spacing="1">
+        <MudText Typo="Typo.caption">@L["Person_Photo"]</MudText>
+        <InputFile OnChange="OnFileAsync" accept=".jpg,.jpeg,.png,image/jpeg,image/png" aria-label="@L["Person_ChangePhoto"]"
+                   data-testid="photo-input" />
+        @if (Value is not null)
+        {
+            <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="RemoveAsync"
+                       data-testid="photo-remove">@L["Person_RemovePhoto"]</MudButton>
+        }
+        @if (_error is not null)
+        {
+            <MudText Color="Color.Error" Typo="Typo.caption" data-testid="photo-error">@_error</MudText>
+        }
+    </MudStack>
+</MudStack>
+
+@code {
+    public const long MaxBytes = 5 * 1024 * 1024;
+    private static readonly string[] Allowed = ["image/jpeg", "image/png"];
+
+    private string? _preview;
+    private string? _error;
+
+    [Parameter] public Guid? Value { get; set; }
+    [Parameter] public EventCallback<Guid?> ValueChanged { get; set; }
+    /// <summary>The unit that owns the stored file (the person's home unit).</summary>
+    [Parameter, EditorRequired] public Guid OrgUnitId { get; set; }
+
+    private async Task OnFileAsync(InputFileChangeEventArgs e)
+    {
+        _error = null;
+        var file = e.File;
+        if (!Allowed.Contains(file.ContentType, StringComparer.OrdinalIgnoreCase))
+        {
+            _error = L["Person_PhotoType"];
+            return;
+        }
+        if (file.Size > MaxBytes)
+        {
+            _error = L["Person_PhotoTooLarge"];
+            return;
+        }
+
+        var buffer = new MemoryStream();
+        await using (var input = file.OpenReadStream(MaxBytes))
+            await input.CopyToAsync(buffer);
+        var bytes = buffer.ToArray();
+
+        buffer.Position = 0;
+        Guid id = default;
+        var ok = await ApiCalls.RunAsync(async () => id = await Files.UploadAsync(file.Name, file.ContentType, buffer, OrgUnitId),
+            Navigation, L, message => _error = message);
+        if (!ok) return;
+
+        _preview = $"data:{file.ContentType};base64,{Convert.ToBase64String(bytes)}";
+        await ValueChanged.InvokeAsync(id);
+    }
+
+    private async Task RemoveAsync()
+    {
+        _preview = null;
+        await ValueChanged.InvokeAsync(null);
+    }
+}

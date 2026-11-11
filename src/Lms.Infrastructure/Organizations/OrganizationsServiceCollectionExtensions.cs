@@ -10,6 +10,7 @@ public static class OrganizationsServiceCollectionExtensions
         services.AddScoped<IOrgTree, OrgTree>();
         services.AddScoped<AssignmentUsageCheck>();
         services.AddScoped<IOrgPolicyReader, OrgPolicyReader>();
+        services.AddScoped<IOrgUnitRepather, OrgUnitRepather>();
         return services;
     }
 }

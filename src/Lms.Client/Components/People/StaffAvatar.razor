@@ -1,0 +1,38 @@
+@using Lms.Client.Services.Api
+@inject IFileUploadApi Files
+
+@* A person's photo (via a short-lived file URL) or the placeholder icon when there is none or it cannot be loaded. *@
+<MudAvatar Size="Size" data-testid="staff-avatar">
+    @if (_url is not null)
+    {
+        <MudImage Src="@_url" Alt="" data-testid="staff-avatar-img" />
+    }
+    else
+    {
+        <MudIcon Icon="@Icons.Material.Filled.Person" />
+    }
+</MudAvatar>
+
+@code {
+    private string? _url;
+    private Guid? _loadedFor;
+
+    [Parameter] public Guid? PhotoFileId { get; set; }
+    [Parameter] public Size Size { get; set; } = Size.Medium;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (PhotoFileId == _loadedFor) return;
+        _loadedFor = PhotoFileId;
+        _url = null;
+        if (PhotoFileId is not { } id) return;
+        try
+        {
+            _url = await Files.GetUrlAsync(id);
+        }
+        catch (Exception ex) when (ex is ApiProblemException or HttpRequestException)
+        {
+            // No access to the file or storage trouble: the placeholder stays.
+        }
+    }
+}

@@ -6,6 +6,7 @@ using Lms.Domain.Files;
 using Lms.Domain.Configuration;
 using Lms.Domain.Organizations;
 using Lms.Domain.Identity;
+using Lms.Domain.People;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -39,9 +40,9 @@ public sealed class LmsDbContext(DbContextOptions<LmsDbContext> options, ICurren
         base.ConfigureConventions(configurationBuilder);
 
         // The MySQL provider's data reader hands back DateTime for `date` columns, so DateOnly values cannot be read
-        // without a converter. The column type stays `date`, so no migration is needed.
-        configurationBuilder.Properties<DateOnly>().HaveConversion<DateOnlyConverter>();
-        configurationBuilder.Properties<DateOnly?>().HaveConversion<NullableDateOnlyConverter>();
+        // without a converter. The column type is pinned to `date` (the converter alone would make it datetime(6)), so no migration is needed.
+        configurationBuilder.Properties<DateOnly>().HaveConversion<DateOnlyConverter>().HaveColumnType("date");
+        configurationBuilder.Properties<DateOnly?>().HaveConversion<NullableDateOnlyConverter>().HaveColumnType("date");
     }
 
     private sealed class DateOnlyConverter() : ValueConverter<DateOnly, DateTime>(

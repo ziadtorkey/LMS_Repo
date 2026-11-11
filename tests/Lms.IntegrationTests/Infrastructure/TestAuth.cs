@@ -15,6 +15,7 @@ public sealed class TestAuthHandler(
     public const string UserHeader = "X-Test-User";
     public const string AdminHeader = "X-Test-Admin";
     public const string NameHeader = "X-Test-Name";
+    public const string ExternalOrgHeader = "X-Test-Ext-Org";
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
@@ -32,6 +33,11 @@ public sealed class TestAuthHandler(
         if (Request.Headers[AdminHeader] == "true")
         {
             claims.Add(new Claim("platform_admin", "true"));
+        }
+
+        if (Request.Headers.TryGetValue(ExternalOrgHeader, out var externalOrg))
+        {
+            claims.Add(new Claim("lms_ext_org", externalOrg.ToString()));
         }
 
         var identity = new ClaimsIdentity(claims, SchemeName, "name", "role");

@@ -162,7 +162,7 @@ else
         var who = CultureText.Pick(a.UserDisplayNameAr, a.UserDisplayNameEn);
         if (!await ConfirmDialog.AskAsync(Dialogs, L["Confirm_DeleteTitle"], string.Format(L["Assignments_RemoveConfirm"], who)))
             return;
-        if (await ActionCalls.TryAsync(() => Api.DeleteAssignmentAsync(a.Id), Navigation, L, m => Snackbar.Add(m, Severity.Error)))
+        if (await ApiCalls.RunAsync(() => Api.DeleteAssignmentAsync(a.Id), Navigation, L, m => Snackbar.Add(m, Severity.Error)))
             await ReloadAsync();
     }
 

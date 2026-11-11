@@ -13,11 +13,19 @@
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.15" />
     <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.15" />
     <PackageVersion Include="Microsoft.Extensions.Identity.Stores" Version="10.0.15" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="10.0.15" />
+    <PackageVersion Include="Microsoft.AspNetCore.DataProtection" Version="10.0.15" />
     <PackageVersion Include="OpenIddict.AspNetCore" Version="7.8.0" />
     <PackageVersion Include="OpenIddict.EntityFrameworkCore" Version="7.8.0" />
     <PackageVersion Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.15" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12" />
     <PackageVersion Include="MySql.EntityFrameworkCore" Version="10.0.12" />
+    <PackageVersion Include="Hangfire.Core" Version="1.8.22" />
+    <PackageVersion Include="Hangfire.AspNetCore" Version="1.8.22" />
+    <PackageVersion Include="Hangfire.MySqlStorage" Version="2.0.3" />
+    <!-- Hangfire.MySqlStorage 2.0.3 and Hangfire.NetCore drag in vulnerable old transitives: referenced directly by Lms.Api at patched versions (ADR 0003). -->
+    <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageVersion Include="System.Data.SqlClient" Version="4.9.0" />
     <PackageVersion Include="ClosedXML" Version="0.105.0" />
     <PackageVersion Include="MailKit" Version="4.18.2" />
     <PackageVersion Include="Minio" Version="7.0.0" />
@@ -28,7 +36,7 @@
     <PackageVersion Include="Microsoft.Playwright" Version="1.64.1" />
     <PackageVersion Include="bunit" Version="2.15.2" />
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.15" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.4" />

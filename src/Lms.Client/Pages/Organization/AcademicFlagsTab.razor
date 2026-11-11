@@ -83,7 +83,8 @@
             names.Add(Culture.Pick(step.NameAr, step.NameEn));
             next = step.NextTransferUnitId;
         }
-        return string.Join(" → ", names);
+        // The arrow follows the reading direction: right-to-left text reads ← from one step to the next.
+        return string.Join(Culture.IsRightToLeft ? " ← " : " → ", names);
     }
 
     private async Task SaveAsync()

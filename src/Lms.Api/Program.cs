@@ -23,7 +23,7 @@ builder.Services.AddScoped<Lms.Domain.Abstractions.ICurrentContext>(sp => sp.Get
 builder.Services.AddMe();
 builder.Services.AddSettings();
 builder.Services.AddNotifications();
-builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddInfrastructure(builder.Configuration, builder.Environment);
 // Feature modules implementing ILmsModule register themselves; new modules don't edit this file.
 builder.Services.AddLmsModules(builder.Configuration);
 builder.Services.AddLmsAuth(builder.Configuration, builder.Environment);
@@ -62,6 +62,7 @@ app.UseStaticFiles();
 
 app.UseRequestLocalization();
 app.UseRateLimiter();
+app.UseMiddleware<ExternalSchemeResolutionMiddleware>();
 app.UseAuthentication();
 app.UseMiddleware<CurrentContextMiddleware>();
 app.UseAuthorization();

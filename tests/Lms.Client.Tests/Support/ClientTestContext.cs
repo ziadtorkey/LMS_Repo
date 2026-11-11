@@ -22,6 +22,9 @@ public abstract class ClientTestContext : BunitContext, IAsyncLifetime
     protected StubLmsApi Api { get; } = new();
     protected StubClientsApi Clients { get; } = new();
     protected StubOrgApi Org { get; } = new();
+    protected StubTemplatesApi Templates { get; } = new();
+    protected StubConfigApi Config { get; } = new();
+    protected FakeStaffApi Staff { get; } = new();
     protected FakeYearsApi YearsApi { get; } = new();
     protected FakeNotificationsApi NotificationsApi { get; } = new();
     protected FakeNotificationConnection NotificationConnection { get; } = new();
@@ -46,6 +49,9 @@ public abstract class ClientTestContext : BunitContext, IAsyncLifetime
         Services.AddScoped<PermissionState>();
         Services.AddSingleton<IClientsApi>(Clients);
         Services.AddSingleton<IOrgApi>(Org);
+        Services.AddSingleton<ITemplatesApi>(Templates);
+        Services.AddSingleton<IConfigApi>(Config);
+        Services.AddSingleton<IStaffApi>(Staff);
         Services.AddSingleton<IYearsApi>(YearsApi);
         Services.AddScoped<IYearStore, YearStore>();
         Services.AddSingleton<INotificationsApi>(NotificationsApi);

@@ -68,7 +68,7 @@
         }
         _saving = true; _error = null;
         var permissions = _selected.OrderBy(p => p, StringComparer.Ordinal).ToArray();
-        var saved = await ActionCalls.TryAsync(
+        var saved = await ApiCalls.RunAsync(
             () => Role is null
                 ? Api.CreateRoleAsync(new CreateRoleRequest(_nameAr, _nameEn, _baseKind, permissions))
                 : Api.UpdateRoleAsync(Role.Id, new UpdateRoleRequest(_nameAr, _nameEn, permissions)),

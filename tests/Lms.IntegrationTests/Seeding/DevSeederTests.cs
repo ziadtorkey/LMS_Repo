@@ -186,6 +186,21 @@ public sealed class DevSeederTests(LmsApiFactory factory)
         Assert.Equal([("lockout-e2e@altagamo3.test", "Teacher", "KG")], mine);
     }
 
+    [Theory]
+    [InlineData("deactivated-e2e@altagamo3.test", UserStatus.Deactivated)]
+    [InlineData("expired-e2e@altagamo3.test", UserStatus.Expired)]
+    [InlineData("withdrawn-e2e@altagamo3.test", UserStatus.Withdrawn)]
+    public async Task Blocked_status_users_exist_only_for_the_blocked_login_e2e(string email, UserStatus status)
+    {
+        var cs = await factory.CreateIsolatedDatabaseAsync();
+        await SeederFor(cs).SeedAsync();
+
+        await using var db = Open(cs);
+        var user = await db.Users.SingleAsync(x => x.Email == email);
+        Assert.Equal(status, user.Status);
+        Assert.Equal([(email, "Teacher", "KG")], (await AssignmentsAsync(db)).Where(a => a.Email == email).ToList());
+    }
+
     [Fact]
     public async Task Seeding_twice_does_not_duplicate_users_or_assignments_and_keeps_passwords_working()
     {
@@ -200,7 +215,7 @@ public sealed class DevSeederTests(LmsApiFactory factory)
         await using var second = Open(cs);
         Assert.Equal(users, await second.Users.CountAsync());
         Assert.Equal(assignments, await second.RoleAssignments.CountAsync());
-        Assert.Equal(10, users); // admin + 7 role users + multi + lockout-e2e
+        Assert.Equal(13, users); // admin + 7 role users + multi + lockout-e2e + 3 blocked-status e2e users
     }
 
     [Fact]

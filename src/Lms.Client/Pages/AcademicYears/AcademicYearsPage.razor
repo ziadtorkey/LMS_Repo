@@ -165,7 +165,7 @@ else
 
     private async Task ActivateAsync(AcademicYearDto year)
     {
-        if (await ActionCalls.TryAsync(() => Api.ActivateYearAsync(year.Id), Navigation, L, m => Snackbar.Add(m, Severity.Error)))
+        if (await ApiCalls.RunAsync(() => Api.ActivateYearAsync(year.Id), Navigation, L, m => Snackbar.Add(m, Severity.Error)))
             await LoadAsync();
     }
 
@@ -173,7 +173,7 @@ else
     {
         var name = CultureText.Pick(year.NameAr, year.NameEn);
         if (!await ConfirmDialog.AskAsync(Dialogs, L["Confirm_DeleteTitle"], string.Format(L["Years_DeleteConfirm"], name))) return;
-        if (await ActionCalls.TryAsync(() => Api.DeleteYearAsync(year.Id), Navigation, L, m => Snackbar.Add(m, Severity.Error)))
+        if (await ApiCalls.RunAsync(() => Api.DeleteYearAsync(year.Id), Navigation, L, m => Snackbar.Add(m, Severity.Error)))
             await LoadAsync();
     }
 

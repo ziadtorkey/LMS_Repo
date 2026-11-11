@@ -289,9 +289,61 @@
   <data name="Confirm_DeactivateTitle" xml:space="preserve"><value>إيقاف الوحدة؟</value></data>
   <data name="OrgTree_DeactivateOwnWarning" xml:space="preserve"><value>أنت تعمل في هذه الوحدة (أو في وحدة تابعة لها). إذا أوقفتها فستفقد الوصول إلى أن يعيد مسؤول أعلى منها تفعيلها. هل تريد المتابعة؟</value></data>
   <data name="AuditEntity_StoredFile" xml:space="preserve"><value>ملف</value></data>
+  <data name="Policy_CreateOrgUnits" xml:space="preserve"><value>منع إنشاء الوحدات</value></data>
+  <data name="Policies_SetBy" xml:space="preserve"><value>مفروضة من {0}</value></data>
+  <data name="Policies_Blocks" xml:space="preserve"><value>تمنع:</value></data>
+  <data name="Settings_Lock" xml:space="preserve"><value>قفل للوحدات الأدنى</value></data>
+  <data name="Settings_LockedBy" xml:space="preserve"><value>مقفل من {0}</value></data>
+  <data name="Settings_InheritedFrom" xml:space="preserve"><value>موروث من {0}</value></data>
+  <data name="Settings_Default" xml:space="preserve"><value>افتراضي</value></data>
+  <data name="Settings_SetHere" xml:space="preserve"><value>محدد هنا</value></data>
+  <data name="Settings_Reset" xml:space="preserve"><value>إعادة إلى الموروث</value></data>
+  <data name="SettingCategory_General" xml:space="preserve"><value>عام</value></data>
+  <data name="SettingCategory_Files" xml:space="preserve"><value>الملفات</value></data>
+  <data name="SettingCategory_Features" xml:space="preserve"><value>الميزات</value></data>
+  <data name="Setting_Ui_DefaultCulture" xml:space="preserve"><value>اللغة الافتراضية</value></data>
+  <data name="Setting_Ui_ShowHijriDates" xml:space="preserve"><value>عرض التاريخ الهجري</value></data>
+  <data name="Setting_Files_MaxUploadMb" xml:space="preserve"><value>الحد الأقصى لحجم الرفع (ميجابايت)</value></data>
+  <data name="Setting_Features_VirtualClasses" xml:space="preserve"><value>الفصول الافتراضية</value></data>
+  <data name="Setting_Features_DigitalLibrary" xml:space="preserve"><value>المكتبة الرقمية</value></data>
+  <data name="Setting_Features_ScormContent" xml:space="preserve"><value>محتوى SCORM</value></data>
+  <data name="Setting_Features_Messaging" xml:space="preserve"><value>المراسلات</value></data>
+  <data name="Setting_Features_GuardianPortal" xml:space="preserve"><value>بوابة ولي الأمر</value></data>
+  <data name="Settings_OutOfRange" xml:space="preserve"><value>أدخل عددًا صحيحًا بين {0} و{1}.</value></data>
+  <data name="SettingValue_Ui_DefaultCulture_ar" xml:space="preserve"><value>العربية</value></data>
+  <data name="SettingValue_Ui_DefaultCulture_en" xml:space="preserve"><value>الإنجليزية</value></data>
   <data name="Year_Selector" xml:space="preserve"><value>العام الدراسي</value></data>
   <data name="Year_None" xml:space="preserve"><value>لا يوجد عام دراسي</value></data>
   <data name="Year_ReadOnly" xml:space="preserve"><value>عام مغلق — للقراءة فقط</value></data>
+  <data name="Nav_Templates" xml:space="preserve"><value>القوالب</value></data>
+  <data name="Copy_Title" xml:space="preserve"><value>نسخ الفرع</value></data>
+  <data name="Copy_Target" xml:space="preserve"><value>النسخ تحت</value></data>
+  <data name="Copy_CodeSuffix" xml:space="preserve"><value>لاحقة الرمز</value></data>
+  <data name="Copy_IncludePolicies" xml:space="preserve"><value>تضمين السياسات</value></data>
+  <data name="Copy_IncludeSettings" xml:space="preserve"><value>تضمين الإعدادات</value></data>
+  <data name="Copy_Done" xml:space="preserve"><value>تم إنشاء {0} وحدة.</value></data>
+  <data name="Copy_SkippedSettings" xml:space="preserve"><value>إعدادات تم تخطيها لأنها مقفلة من الأعلى: {0}</value></data>
+  <data name="Copy_NewRootName" xml:space="preserve"><value>اسم جديد للنسخة (اختياري)</value></data>
+  <data name="Copy_Submit" xml:space="preserve"><value>نسخ</value></data>
+  <data name="Templates_Title" xml:space="preserve"><value>القوالب</value></data>
+  <data name="Templates_SaveAs" xml:space="preserve"><value>حفظ كقالب</value></data>
+  <data name="Templates_Visibility" xml:space="preserve"><value>الظهور</value></data>
+  <data name="Visibility_Private" xml:space="preserve"><value>خاص بهذه الوحدة</value></data>
+  <data name="Visibility_Shared" xml:space="preserve"><value>مشترك على مستوى العميل</value></data>
+  <data name="Templates_Placeholder" xml:space="preserve"><value>استبدال &quot;{0}&quot; بعنصر نائب</value></data>
+  <data name="Templates_Apply" xml:space="preserve"><value>تطبيق القالب</value></data>
+  <data name="Templates_Preview" xml:space="preserve"><value>معاينة</value></data>
+  <data name="Templates_Units" xml:space="preserve"><value>الوحدات</value></data>
+  <data name="Templates_UnitsCount" xml:space="preserve"><value>{0} وحدة</value></data>
+  <data name="Templates_Owner" xml:space="preserve"><value>الوحدة المالكة</value></data>
+  <data name="Templates_Placeholders" xml:space="preserve"><value>العناصر النائبة</value></data>
+  <data name="Templates_Replacements" xml:space="preserve"><value>استبدال نص بعنصر نائب</value></data>
+  <data name="Templates_Literal" xml:space="preserve"><value>النص المراد استبداله</value></data>
+  <data name="Templates_Token" xml:space="preserve"><value>اسم العنصر النائب</value></data>
+  <data name="Templates_TokenFormat" xml:space="preserve"><value>استخدم أحرفًا فقط، مثل Year.</value></data>
+  <data name="Templates_AddReplacement" xml:space="preserve"><value>إضافة استبدال</value></data>
+  <data name="Templates_Target" xml:space="preserve"><value>الإنشاء تحت</value></data>
+  <data name="Templates_DeleteConfirm" xml:space="preserve"><value>حذف هذا القالب؟</value></data>
   <data name="Notif_Title" xml:space="preserve"><value>الإشعارات</value></data>
   <data name="Notif_MarkAllRead" xml:space="preserve"><value>تعيين الكل كمقروء</value></data>
   <data name="Notif_Empty" xml:space="preserve"><value>لا توجد إشعارات.</value></data>
@@ -311,4 +363,86 @@
   <data name="NotifEvent_Access_RoleAssigned" xml:space="preserve"><value>تعيين دور</value></data>
   <data name="NotifEvent_Access_RoleRemoved" xml:space="preserve"><value>إزالة دور</value></data>
   <data name="NotifEvent_Organization_PolicyChanged" xml:space="preserve"><value>تغيير سياسة</value></data>
+  <data name="Error_duplicate_person" xml:space="preserve"><value>يوجد شخص بنفس البريد الإلكتروني أو الجوال أو رقم الهوية في هذه الجهة.</value></data>
+  <data name="Error_person_not_found" xml:space="preserve"><value>لم يتم العثور على الشخص.</value></data>
+  <data name="Error_invalid_role_kind" xml:space="preserve"><value>لا يمكن منح هذا الدور لهذا النوع من الأشخاص.</value></data>
+  <data name="Error_cannot_change_own_status" xml:space="preserve"><value>لا يمكنك تغيير حالتك بنفسك.</value></data>
+  <data name="Error_already_activated" xml:space="preserve"><value>هذا الحساب مفعّل بالفعل.</value></data>
+  <data name="Error_invalid_expiry" xml:space="preserve"><value>تاريخ انتهاء الصلاحية غير صالح.</value></data>
+  <data name="Error_import_file_invalid" xml:space="preserve"><value>الملف ليس ملف Excel (‎.xlsx) صالحًا بحجم لا يتجاوز 10 ميجابايت.</value></data>
+  <data name="Error_import_too_many_rows" xml:space="preserve"><value>يحتوي الملف على أكثر من 5,000 صف بيانات.</value></data>
+  <data name="Error_import_not_valid" xml:space="preserve"><value>لا يمكن اعتماد الاستيراد إلا إذا كان صالحًا.</value></data>
+  <data name="Error_import_in_progress" xml:space="preserve"><value>لا تزال عملية الاستيراد هذه قيد المعالجة.</value></data>
+  <data name="Error_import_already_committed" xml:space="preserve"><value>تم اعتماد هذا الاستيراد مسبقًا.</value></data>
+  <data name="Error_provider_slug_taken" xml:space="preserve"><value>يستخدم مزود دخول آخر هذا الاسم المختصر.</value></data>
+  <data name="Error_provider_unreachable" xml:space="preserve"><value>تعذّر الوصول إلى مزود الدخول.</value></data>
+  <data name="Error_external_account_not_found" xml:space="preserve"><value>لا يوجد حساب في هذه الجهة يطابق حساب الدخول الخاص بجهتك.</value></data>
+  <data name="Error_external_account_ambiguous" xml:space="preserve"><value>يطابق أكثر من حساب حساب الدخول الخاص بجهتك. تواصل مع مسؤول النظام.</value></data>
+  <data name="PermModule_Staff" xml:space="preserve"><value>الموظفون</value></data>
+  <data name="Perm_Staff_View" xml:space="preserve"><value>عرض الموظفين</value></data>
+  <data name="Perm_Staff_Create" xml:space="preserve"><value>إنشاء الموظفين</value></data>
+  <data name="Perm_Staff_Update" xml:space="preserve"><value>تعديل الموظفين</value></data>
+  <data name="Perm_Staff_Delete" xml:space="preserve"><value>حذف الموظفين</value></data>
+  <data name="Perm_Staff_Import" xml:space="preserve"><value>استيراد الموظفين</value></data>
+  <data name="PermModule_IdentityProviders" xml:space="preserve"><value>مزودو الدخول</value></data>
+  <data name="Perm_IdentityProviders_View" xml:space="preserve"><value>عرض مزودي الدخول</value></data>
+  <data name="Perm_IdentityProviders_Manage" xml:space="preserve"><value>إدارة مزودي الدخول</value></data>
+  <data name="Policy_CreateStaff" xml:space="preserve"><value>منع إنشاء الموظفين واستيرادهم</value></data>
+  <data name="Policy_CreateTeachers" xml:space="preserve"><value>منع تعيين دور المعلم</value></data>
+  <data name="Policy_CreateAdmins" xml:space="preserve"><value>منع تعيين الأدوار الإدارية</value></data>
+  <data name="SettingCategory_People" xml:space="preserve"><value>الأشخاص</value></data>
+  <data name="Setting_Staff_ExpiryNoticeDays" xml:space="preserve"><value>التنبيه قبل انتهاء صلاحية الموظف (بالأيام)</value></data>
+  <data name="AuditEntity_StaffProfile" xml:space="preserve"><value>موظف</value></data>
+  <data name="AuditEntity_StudentProfile" xml:space="preserve"><value>طالب</value></data>
+  <data name="AuditEntity_GuardianProfile" xml:space="preserve"><value>ولي أمر</value></data>
+  <data name="AuditEntity_StudentGuardian" xml:space="preserve"><value>ربط الطالب بولي الأمر</value></data>
+  <data name="AuditEntity_ImportBatch" xml:space="preserve"><value>عملية استيراد</value></data>
+  <data name="AuditEntity_IdentityProviderConfig" xml:space="preserve"><value>مزود الدخول</value></data>
+  <data name="AuditEvent_ExternalLoginLinked" xml:space="preserve"><value>ربط حساب الجهة</value></data>
+  <data name="AuditEvent_ExternalLoginSucceeded" xml:space="preserve"><value>دخول ناجح بحساب الجهة</value></data>
+  <data name="AuditEvent_ExternalLoginFailed" xml:space="preserve"><value>دخول فاشل بحساب الجهة</value></data>
+  <data name="Notif_Staff_ExpiringSoon" xml:space="preserve"><value>تنتهي صلاحية وصول {StaffName} في {ExpiresOn}.</value></data>
+  <data name="Notif_Staff_Expired" xml:space="preserve"><value>انتهت صلاحية وصول {StaffName} في {ExpiresOn}.</value></data>
+  <data name="Notif_Imports_Completed" xml:space="preserve"><value>اكتمل استيراد {Kind}: {Status} ({RowCount} صف).</value></data>
+  <data name="NotifEvent_Staff_ExpiringSoon" xml:space="preserve"><value>قرب انتهاء صلاحية موظف</value></data>
+  <data name="NotifEvent_Staff_Expired" xml:space="preserve"><value>انتهاء صلاحية موظف</value></data>
+  <data name="NotifEvent_Imports_Completed" xml:space="preserve"><value>اكتمال الاستيراد</value></data>
+  <data name="Nav_Staff" xml:space="preserve"><value>الموظفون</value></data>
+  <data name="Staff_Title" xml:space="preserve"><value>الموظفون</value></data>
+  <data name="Staff_New" xml:space="preserve"><value>موظف جديد</value></data>
+  <data name="Staff_Email" xml:space="preserve"><value>البريد الإلكتروني</value></data>
+  <data name="Staff_Mobile" xml:space="preserve"><value>رقم الجوال</value></data>
+  <data name="Staff_NationalId" xml:space="preserve"><value>رقم الهوية الوطنية</value></data>
+  <data name="Staff_JobTitleAr" xml:space="preserve"><value>المسمى الوظيفي بالعربية</value></data>
+  <data name="Staff_JobTitleEn" xml:space="preserve"><value>المسمى الوظيفي بالإنجليزية</value></data>
+  <data name="Staff_HomeUnit" xml:space="preserve"><value>الوحدة الأساسية</value></data>
+  <data name="Staff_ExpiresOn" xml:space="preserve"><value>تاريخ انتهاء الحساب</value></data>
+  <data name="Staff_Roles" xml:space="preserve"><value>الأدوار</value></data>
+  <data name="Staff_AddRole" xml:space="preserve"><value>إضافة دور</value></data>
+  <data name="Staff_Role" xml:space="preserve"><value>الدور</value></data>
+  <data name="Staff_RoleUnit" xml:space="preserve"><value>في الوحدة</value></data>
+  <data name="Staff_ValidFrom" xml:space="preserve"><value>من</value></data>
+  <data name="Staff_ValidTo" xml:space="preserve"><value>إلى</value></data>
+  <data name="Staff_RoleRequired" xml:space="preserve"><value>أضف دورًا واحدًا على الأقل.</value></data>
+  <data name="Staff_Created" xml:space="preserve"><value>تم إنشاء الموظف وإرسال بريد التفعيل.</value></data>
+  <data name="Staff_Shared" xml:space="preserve"><value>مُشارَك</value></data>
+  <data name="Staff_NotActivated" xml:space="preserve"><value>لم يُفعَّل بعد</value></data>
+  <data name="Staff_StatusHistory" xml:space="preserve"><value>سجل الحالة</value></data>
+  <data name="Staff_Reason" xml:space="preserve"><value>السبب</value></data>
+  <data name="Staff_LimitedView" xml:space="preserve"><value>ينتمي هذا الشخص إلى وحدة أخرى، لذلك بعض البيانات مخفية.</value></data>
+  <data name="Person_Photo" xml:space="preserve"><value>الصورة</value></data>
+  <data name="Person_ChangePhoto" xml:space="preserve"><value>تغيير الصورة</value></data>
+  <data name="Person_RemovePhoto" xml:space="preserve"><value>إزالة الصورة</value></data>
+  <data name="Person_PhotoType" xml:space="preserve"><value>اختر صورة بصيغة JPG أو PNG.</value></data>
+  <data name="Person_PhotoTooLarge" xml:space="preserve"><value>حجم الصورة أكبر من 5 ميغابايت.</value></data>
+  <data name="PersonStatus_Active" xml:space="preserve"><value>نشط</value></data>
+  <data name="PersonStatus_Deactivated" xml:space="preserve"><value>موقوف</value></data>
+  <data name="PersonStatus_Expired" xml:space="preserve"><value>منتهي الصلاحية</value></data>
+  <data name="Error_duplicate_person_email" xml:space="preserve"><value>هذا البريد الإلكتروني مستخدم لشخص آخر في المؤسسة.</value></data>
+  <data name="Error_duplicate_person_mobile" xml:space="preserve"><value>رقم الجوال مستخدم لشخص آخر في المؤسسة.</value></data>
+  <data name="Error_duplicate_person_nationalId" xml:space="preserve"><value>رقم الهوية الوطنية مسجل لشخص آخر في المؤسسة.</value></data>
+  <data name="Assign_Person" xml:space="preserve"><value>الموظف</value></data>
+  <data name="Assign_PersonSearch" xml:space="preserve"><value>ابحث عن موظف بالاسم أو البريد</value></data>
+  <data name="Assign_CreateStaff" xml:space="preserve"><value>إنشاء موظف جديد</value></data>
+  <data name="Staff_RoleIncomplete" xml:space="preserve"><value>اختر الدور والوحدة معًا.</value></data>
 </root>

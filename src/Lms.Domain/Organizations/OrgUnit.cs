@@ -69,15 +69,23 @@ public sealed class OrgUnit : AuditableEntity, IOrgUnitScoped
         Code = code;
     }
 
+    /// <summary>Re-parents the unit: sets ParentId, Path and Depth. Rows below it are re-pathed by <see cref="IOrgUnitRepather"/>.</summary>
+    public void MoveUnder(OrgUnit newParent)
+    {
+        ParentId = newParent.Id;
+        Depth = newParent.Depth + 1;
+        Path = Organizations.OrgUnitPath.Append(newParent.Path, Id);
+    }
+
     public void Deactivate() => Status = OrgUnitStatus.Inactive;
 
     public void Activate() => Status = OrgUnitStatus.Active;
 
-    public void MarkAsLevelTransfer(Guid? nextTransferUnitId)
+    /// <summary>Sets the academic flags (FR-ORG-05, FR-ORG-09). Validation of the target is the caller's job.</summary>
+    public void SetAcademicFlags(bool isLevelTransfer, Guid? nextTransferUnitId, bool isCourseManagementLevel)
     {
-        IsLevelTransfer = true;
-        NextTransferUnitId = nextTransferUnitId;
+        IsLevelTransfer = isLevelTransfer;
+        NextTransferUnitId = isLevelTransfer ? nextTransferUnitId : null;
+        IsCourseManagementLevel = isCourseManagementLevel;
     }
-
-    public void MarkAsCourseManagementLevel() => IsCourseManagementLevel = true;
 }

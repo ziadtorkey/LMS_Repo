@@ -2,22 +2,22 @@
 
 _Updated by the Team Lead after every merge cycle._
 
-**Milestone:** M0 Foundation — DONE (19 / 19) · M1 Organization & Access — in progress (34 / 49 issues closed)
-**Last update:** 2026-11-11 — Resumed after the usage-limit pause. Merged #97 (audit viewer, closes #53). Next: #146 (fix for bug #140 model drift, QA 3 first), #134, then #138/#139 (FE2), #141 (FE1, #63), #144 (jobs kernel), #145 (probe rows split), #94, #133. Remaining build: #46 (BE2), #48 (BE1), #50 (BE4), #52/#147 (BE3), E2E #71/#72/#73, probes #70.
+**Milestone:** M0 Foundation — DONE (19 / 19) · M1 Organization & Access — in progress (42 / 49 issues closed) · M2 People — in progress (12 / 28)
+**Last update:** 2026-11-11 — Merged #181 people kernel (#157), #189 staff pages (#170), #121 M1 E2E clients/trees, #191 person gate (#158), #197 staff expiry job (#166), #194 key-ring protection (#186), #201 dev job trigger (#199), #192 assign staff roles (#174). Approved, waiting on CI: #182 M2 probes, #190 staff lifecycle UI. Approved but draft (owner must allow `gh pr ready` in FE2/BE1 sessions): #195 import wizard; #204 follows it. In re-review: #187 staff create, #184 role blocking, #148 (M1), #193 external sign-in. M3 plan being drafted.
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |
 |---|---|---|---|---|
-| Team Lead | Opus | `local_95ef9dc7-9378-4012-a8f2-c7d1f944bdec` (lms-lead) | coordinating M0 close-out + M1 | coordinating |
-| Backend 1 | Sonnet | `local_19f31b04-ca2f-43d1-a2cb-8a128722a11f` (lms-backend) | M1 #42 clients; then #44, #46, #48, #50, #52 | working |
-| Backend 2 | Sonnet | `local_d36e7dc2-e9e6-4f73-b7b3-b078b17bbe41` (lms-backend-2) | PRs #83 (#43), #88 (#85), #90 (#45); then #47, #49, #51 | working |
-| Frontend | Sonnet | `local_40667dce-5be7-478b-95cb-4f14ecd203b9` (lms-frontend) | PR #81 (#59) fixes; then #60 org tree | working |
-| Frontend 2 | Sonnet | `local_3d9e8938-4064-4f83-a04d-920704d41a87` (lms-frontend-2) | PRs #87 (#64), #89 (#65); #66 audit viewer | working |
-| QA | Opus | `local_91a7af3c-7b02-4d61-ac11-2c22629cf89f` (lms-qa) | review #74 (M1), #14; fix + un-draft E2E PR #34 (#15) | working |
-| QA 2 | Opus | `local_54d26c64-4403-4a13-b128-5be5e9752d97` (lms-qa-2) | #34 full run; #30; M1 BE2 PRs | reviewing |
-| Backend 3 | Sonnet | `local_2e8038c6-e5ba-4e13-ade0-9440d9beb565` (lms-backend-3) | M1 #53 audit viewer; then #55, #57 | working |
-| Backend 4 | Sonnet | `local_fd5c4410-8364-4c55-a5a8-3b8aa37afc1f` (lms-backend-4) | M1 #54 roles admin; then #56 | working |
-| QA 3 | Opus | `local_6d46b60b-d70a-4cfa-af2f-5bf90cdf7c08` (lms-qa-3) | reviews BE3, BE4, FE2 PRs (#87, #89 now) | reviewing |
+| Team Lead | Opus | `local_95ef9dc7-9378-4012-a8f2-c7d1f944bdec` (lms-lead) | merges; M3 plan draft | coordinating |
+| Backend 1 | Sonnet | `local_19f31b04-ca2f-43d1-a2cb-8a128722a11f` (lms-backend) | #148 (M1), #184 (#160), draft #202 (#159 imports) | working |
+| Backend 2 | Sonnet | `local_d36e7dc2-e9e6-4f73-b7b3-b078b17bbe41` (lms-backend-2) | #187 (#162 staff create/list) | working |
+| Frontend | Sonnet | `local_40667dce-5be7-478b-95cb-4f14ecd203b9` (lms-frontend) | #190 (#171); then review nits follow-up | working |
+| Frontend 2 | Sonnet | `local_3d9e8938-4064-4f83-a04d-920704d41a87` (lms-frontend-2) | #195 (#169), #204 (#172); then #173 | working |
+| QA | Sonnet | `local_91a7af3c-7b02-4d61-ac11-2c22629cf89f` (lms-qa) | re-review #184; draft #206 (#176 staff E2E) | working |
+| QA 2 | Sonnet | `local_54d26c64-4403-4a13-b128-5be5e9752d97` (lms-qa-2) | #182 (#175 probes); FE reviews | working |
+| Backend 3 | Sonnet | `local_2e8038c6-e5ba-4e13-ade0-9440d9beb565` (lms-backend-3) | #193 (#168); drafts #196 (#164), #198 (#163), #205 (#165), #207 (#52) | working |
+| Backend 4 | Sonnet | `local_fd5c4410-8364-4c55-a5a8-3b8aa37afc1f` (lms-backend-4) | draft #208 (#161); #50 after #148 | working |
+| QA 3 | Sonnet | `local_6d46b60b-d70a-4cfa-af2f-5bf90cdf7c08` (lms-qa-3) | re-review #193; #200 (#73 E2E) | reviewing |
 
 ## M0 issue map
 | Task | Issue | Lane | Depends on |
@@ -43,12 +43,21 @@ _Updated by the Team Lead after every merge cycle._
 | RF2 against real PolicyEvaluator | #32 | BE1 | #8, #9 |
 
 ## Blockers
+- `gh pr ready` is denied by the permission classifier in the FE2 and BE1 sessions (#195, #202); the owner has been asked to allow it there.
+- Production prerequisite from #194: the Data Protection certificate (PFX) must be provisioned on every node (`docs/runbook-key-protection.md`).
 None. (Board: [LMS v1](https://github.com/users/ziadtorkey/projects/1) — Todo → In Progress → In Review → Done.)
 
 ## Decisions needed from the product owner
-- M2 plan approval + 13 questions: issue #103 (draft plan on main; Lead asks via popup when M1 is near done — not blocking anything now).
+- 2026-11-11: QA agents run on Sonnet instead of Opus (owner decision); `.claude/agents/qa-engineer.md` and DEV-PLAN updated.
+- 2026-11-11: CI was blocked by GitHub Actions billing on the private repo (#152); owner chose to **make the repo public** — done after a secrets scan; CI running again.
+- 2026-11-11: M2 plan approved; 13 answers recorded as D23–D36 (students, guardians and change requests move to M3). #103 closed.
 
 ## Recently merged
+- #192 assign roles to existing staff (closes #174) · #201 dev-only job trigger + Jobs:TimeZone (closes #199) · #194 key-ring certificate protection (closes #186) · #197 staff expiry job (closes #166) · #191 person status gate (closes #158) · #121 M1 E2E clients and trees · #189 staff pages (closes #170) · #181 people kernel (closes #157)
+- #188 fix(identity): SSRF guard for provider discovery and backchannel (closes #185) · #183 feat(identity): per-client identity provider configuration (closes #167)
+- #179 M2 contracts: staff, imports, identity providers (closes #154, #155, #156)
+- #180 test(security): dedupe #149/#153 isolation tests · #120 test(e2e): blocked-login E2E ar/en (part of #73) · #145 test(security): one probe-row file per module
+- #141 copy branch and template library (closes #63)
 - #97 audit viewer, subtree visibility and export (closes #53)
 - #99 org units (closes #44) · #129 notification center (closes #69) · #136 assignment Lows · #128 year selector (closes #68) · #135 403 handling (closes #132)
 - #114 move unit + unit settings (closes #61) · #92 clients + first Org Admin (closes #42) · #107 role assignments (closes #56) · #116 academic years pages (closes #67)
