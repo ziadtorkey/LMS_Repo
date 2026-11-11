@@ -73,6 +73,10 @@ public sealed class IsolationBypassGuardTests
             "a user's account status derives from their profiles in every client; only that user's statuses are read (M2 Task 6, #158)",
         ["src/Lms.Api/Features/Enrollment/EnrollmentQueries.cs"] =
             "names of the course of a class course, owned by an ancestor unit above the caller's scope; names only, for class courses the caller already sees; client matched, deleted excluded (M3 Task 24, #232)",
+        ["src/Lms.Infrastructure/Access/RelationshipScope.cs"] =
+            "the caller's own supervisor rows sit at the course owner unit, which may be above their assignment; own user and active client only, deleted rows excluded (M3 Task 12, D42; fixed in #219)",
+        ["src/Lms.Infrastructure/Enrollment/ExceptionLookups.cs"] =
+            "the course and its supervisors of an exceptional-enrollment request are owned above the class, out of an approver's scope; client matched, deleted rows excluded, only names and user ids leave (M3 Task 11, #219)",
         ["src/Lms.Infrastructure/Enrollment/PlacementGuard.cs"] =
             "the academic year and the course restrictions of a class sit at ancestor units above the caller's scope; an invisible restriction must never mean no restriction; client matched, deleted rows excluded (M3 Task 24, #232)",
         ["src/Lms.Infrastructure/People/StaffBackfill.cs"] =

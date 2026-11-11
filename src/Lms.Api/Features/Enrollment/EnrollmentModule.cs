@@ -1,3 +1,4 @@
+using Lms.Api.Features.Enrollment.Exceptions;
 using Lms.Api.Infrastructure;
 
 namespace Lms.Api.Features.Enrollment;
@@ -9,11 +10,16 @@ public sealed class EnrollmentModule : ILmsModule
     {
         services.AddScoped<EnrollmentRelationship>();
         services.AddScoped<EnrollmentQueries>();
+        services.AddScoped<ExceptionMapper>();
+        services.AddScoped<ExceptionNotifier>();
+        services.AddScoped<ExceptionRequestHandler>();
+        services.AddScoped<ExceptionDecisionHandler>();
     }
 
     public void MapEndpoints(IEndpointRouteBuilder app)
     {
         ClassStudentEndpoints.Map(app);
         EnrollmentEndpoints.Map(app);
+        ExceptionEndpoints.Map(app);
     }
 }
