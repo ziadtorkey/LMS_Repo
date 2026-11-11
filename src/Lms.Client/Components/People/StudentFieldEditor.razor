@@ -37,7 +37,7 @@
         </MudSelect>
         break;
     case StudentFields.Nationality:
-        <NationalitySelect Value="Value" ValueChanged="ValueChanged" Label="@Label" TestId="@($"field-{Field}")" />
+        <NationalitySelect Value="@Value" ValueChanged="ValueChanged" Label="@Label" TestId="@($"field-{Field}")" />
         break;
     case StudentFields.Photo:
         <PhotoUpload Value="PhotoValue" ValueChanged="id => ValueChanged.InvokeAsync(id?.ToString())" OrgUnitId="HomeUnitId" />

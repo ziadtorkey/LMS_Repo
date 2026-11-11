@@ -70,6 +70,8 @@ public sealed class MyStudentProfilePageTests : StudentsTestContext
         Assert.Equal(student.Summary.DateOfBirth.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
             Lms.Client.Components.People.StudentFieldText.Current(student, StudentFields.DateOfBirth));
         Assert.Contains("Male", Dialogs.Find("[data-testid=field-Gender]").TextContent + Dialogs.Find("[data-testid=field-Gender]").InnerHtml);
+        var expected = Lms.Shared.People.Nationalities.Find(student.Nationality)!.NameEn;
+        Assert.Equal(expected, Dialogs.Find("input[data-testid=field-Nationality]").GetAttribute("value"));
         Assert.DoesNotContain("_values", Dialogs.Markup);
     }
 
