@@ -36,7 +36,7 @@ public sealed class AcademicStructureTests(E2EFixture fixture) : E2ETestBase(fix
         // A second course with the same code is refused (codes are unique in the whole client, D38).
         await courses.FillAndSaveAsync(new CoursesPage.NewCourse(
             code, names.CourseNameAr("آخر"), names.CourseNameEn("Other"), Pick(culture, "مدرسة التجمع", "School Altagamo3")));
-        await Expect(courses.DialogError).ToContainTextAsync(Resx.In(culture, "Error_course_code_taken"));
+        await Expect(courses.CodeError).ToContainTextAsync(Resx.In(culture, "Error_course_code_taken"));
         await AssertDirectionAsync(culture);
     }
 

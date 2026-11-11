@@ -13,6 +13,10 @@ public sealed class CoursesPage(IPage page)
     public ILocator Title => page.GetByTestId("course-title");
     public ILocator DialogError => page.GetByTestId("dialog-error");
 
+    /// <summary>The inline error under the code field (a taken code is shown there, not in the dialog alert).</summary>
+    public ILocator CodeError => page.Locator(".mud-input-control").Filter(new LocatorFilterOptions { Has = page.GetByTestId("course-code") })
+        .Locator(".mud-input-helper-text");
+
     public async Task OpenAsync()
     {
         await page.GotoAsync("/courses");
