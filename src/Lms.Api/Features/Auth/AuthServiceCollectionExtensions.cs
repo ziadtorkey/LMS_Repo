@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using Lms.Domain.Identity;
 using Lms.Infrastructure.Persistence;
@@ -31,6 +32,18 @@ public static class AuthServiceCollectionExtensions
                     : CookieSecurePolicy.Always;
             }));
         services.AddAuthorization();
+
+        // The Identity cookie is rebuilt from the user every 30 minutes, which drops extra claims. The binding of an external
+        // session to its client must survive that, or the next authorize (silent renew included) would issue an unbound token.
+        services.Configure<SecurityStampValidatorOptions>(options => options.OnRefreshingPrincipal = context =>
+        {
+            if (context.CurrentPrincipal?.FindFirst(AuthorizationEndpoints.ExternalOrgClaim) is { } binding)
+            {
+                ((ClaimsIdentity)context.NewPrincipal!.Identity!).AddClaim(new Claim(binding.Type, binding.Value));
+            }
+
+            return Task.CompletedTask;
+        });
         services.AddScoped<IUserClaimsPrincipalFactory<User>, UserClaimsPrincipalFactory<User>>();
         services.AddHttpContextAccessor();
         services.AddScoped<SignInManager<User>>();

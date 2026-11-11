@@ -1,0 +1,31 @@
+@* Asks for the required reason (1-500 characters) before a person is deactivated or reactivated; closes with the reason. *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="2">
+            <MudText data-testid="status-title">@(Reactivate ? L["Staff_ReactivateTitle", Name] : L["Staff_DeactivateTitle", Name])</MudText>
+            <MudTextField T="string" @bind-Value="_reason" Label="@L["Staff_Reason"]" Lines="3" MaxLength="500" Immediate="true"
+                          Error="_showError" ErrorText="@L["Staff_ReasonRequired"]" data-testid="status-reason" />
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="status-cancel">@L["Common_Cancel"]</MudButton>
+        <MudButton Variant="Variant.Filled" Color="@(Reactivate ? Color.Primary : Color.Warning)" OnClick="Submit"
+                   data-testid="status-confirm">@(Reactivate ? L["Staff_Reactivate"] : L["Staff_Deactivate"])</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private string _reason = "";
+    private bool _showError;
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public string Name { get; set; } = "";
+    [Parameter] public bool Reactivate { get; set; }
+
+    private void Submit()
+    {
+        var reason = _reason.Trim();
+        _showError = reason.Length == 0;
+        if (!_showError) MudDialog.Close(DialogResult.Ok(reason));
+    }
+}
