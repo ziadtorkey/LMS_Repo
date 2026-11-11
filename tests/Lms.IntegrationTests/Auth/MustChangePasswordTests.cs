@@ -85,6 +85,23 @@ public sealed class MustChangePasswordTests(LmsApiFactory factory)
         Assert.Equal(HttpStatusCode.Redirect, again.StatusCode);
     }
 
+    [Theory]
+    [InlineData("https://evil.example/steal")]
+    [InlineData("//evil.example/steal")]
+    [InlineData("/\evil.example")]
+    public async Task Change_never_redirects_to_a_foreign_return_url(string returnUrl)
+    {
+        var user = await MustChangeUserAsync();
+        using var browser = _host.NewBrowser();
+        await AuthTestHost.PostLoginAsync(browser, user.Email!, AuthTestHost.Password);
+        var url = "/Account/ChangePassword?ReturnUrl=" + Uri.EscapeDataString(returnUrl);
+
+        var changed = await AuthTestHost.PostFormAsync(browser, url, Fields(AuthTestHost.Password, NewPassword, NewPassword));
+
+        Assert.Equal(HttpStatusCode.Redirect, changed.StatusCode);
+        Assert.Equal("/", changed.Headers.Location!.ToString()); // only a local path is followed; anything else falls back to the root
+    }
+
     [Fact]
     public async Task Student_without_an_email_signs_in_with_the_user_name()
     {

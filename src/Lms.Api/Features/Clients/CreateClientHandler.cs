@@ -29,8 +29,22 @@ public sealed class CreateClientHandler(
     {
         var value = string.IsNullOrWhiteSpace(request.ShortCode)
             ? request.RootUnitCode.Trim().ToLowerInvariant().Replace('_', '-')
-            : request.ShortCode.Trim();
+            : request.ShortCode.Trim().ToLowerInvariant();
         return string.IsNullOrWhiteSpace(request.ShortCode) && value.Length > 20 ? value[..20] : value;
+    }
+
+    private static bool IsShortCodeViolation(DbUpdateException ex)
+    {
+        for (Exception? inner = ex; inner is not null; inner = inner.InnerException)
+        {
+            if (inner.Message.Contains("Duplicate entry", StringComparison.OrdinalIgnoreCase)
+                && inner.Message.Contains("IX_Organizations_ShortCode", StringComparison.Ordinal))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public async Task<ClientDto> HandleAsync(CreateClientRequest request, CancellationToken ct)
@@ -55,7 +69,15 @@ public sealed class CreateClientHandler(
             var root = OrgUnit.CreateRoot(
                 organization.Id, level.Id, request.NameAr.Trim(), request.NameEn.Trim(), request.RootUnitCode.Trim());
             db.AddRange(organization, level, root);
-            await db.SaveChangesAsync(ct);
+            try
+            {
+                await db.SaveChangesAsync(ct);
+            }
+            catch (DbUpdateException ex) when (IsShortCodeViolation(ex))
+            {
+                // two creates raced, or the code belongs to a deleted client (the filter hides it, the unique index still counts it)
+                throw new ShortCodeTakenException();
+            }
 
             await roles.ProvisionAsync(organization.Id, type, ct);
 
