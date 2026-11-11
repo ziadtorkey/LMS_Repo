@@ -44,7 +44,7 @@ public sealed class PolicyManager(LmsDbContext db) : IPolicyManager
         await db.SaveChangesAsync(cancellationToken);
     }
 
-    // IgnoreQueryFilters only to see soft-deleted rows: the unique (OrgUnitId, PolicyKey) index still holds them, so
+    // ISOLATION-BYPASS: only to see soft-deleted rows: the unique (OrgUnitId, PolicyKey) index still holds them, so
     // a re-enable must restore the old row instead of inserting. The unit was already resolved through the scoped
     // set, and the client is re-applied here explicitly.
     private Task<OrgUnitPolicy?> FindIncludingDeletedAsync(Guid organizationId, Guid orgUnitId, string key, CancellationToken ct) =>
