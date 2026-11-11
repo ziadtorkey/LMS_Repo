@@ -35,6 +35,8 @@ public sealed class IsolationBypassGuardTests
             "effective policies set on ancestors above the caller's scope (M1 Task 12, #94)",
         ["src/Lms.Infrastructure/Organizations/OrgPolicyReader.cs"] =
             "policies set on ancestors above the caller's scope, to show blocked permissions in the org tree (M1 Task 9, #99)",
+        ["src/Lms.Api/Features/Staff/StaffQueries.cs"] =
+            "staff shared into the caller's scope have a home unit outside it; rows limited to this client and an in-scope assignment (M2 Task 10)",
         ["src/Lms.Api/Features/OrgUnits/AcademicFlagsHandler.cs"] =
             "read-only check of the client's level-transfer units (chains and references run through units the caller cannot see) (M1 Task 13, #48)",
         ["src/Lms.Api/Features/OrgUnits/TransferTargetUsageCheck.cs"] =
