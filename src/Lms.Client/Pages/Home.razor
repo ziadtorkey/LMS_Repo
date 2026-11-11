@@ -2,6 +2,7 @@
 @attribute [Authorize]
 @inject ILmsApi Api
 @inject NavigationManager Navigation
+@inject PermissionState Perms
 
 <PageTitle>@L["Home_Title"]</PageTitle>
 <MudText Typo="Typo.h4" Class="mb-4">@L["Home_Title"]</MudText>
@@ -19,6 +20,16 @@ else if (_failed)
 else if (_name is not null)
 {
     <MudText>@string.Format(L["Home_Welcome"].Value, _name)</MudText>
+    @if (Perms.Has(Lms.Shared.Authorization.Permissions.Students.ViewChildren))
+    {
+        <MudPaper Class="pa-4 mt-4" data-testid="home-children-card">
+            <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                <MudIcon Icon="@Icons.Material.Filled.FamilyRestroom" Size="Size.Large" />
+                <MudText Typo="Typo.h6">@L["MyChildren_Title"]</MudText>
+                <MudButton Href="me/children" Variant="Variant.Filled" Color="Color.Primary" data-testid="home-children-link">@L["MyChildren_Open"]</MudButton>
+            </MudStack>
+        </MudPaper>
+    }
 }
 
 @code {
