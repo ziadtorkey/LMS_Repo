@@ -138,7 +138,7 @@ public sealed class DevSeeder(string connectionString, IHostEnvironment environm
         // profile (people kernel); the home unit is KG, where the user already holds the Teacher role.
         const string notifyEmail = "notify-e2e@altagamo3.test";
         var notifyUser = await db.Users.SingleAsync(u => u.NormalizedEmail == notifyEmail.ToUpperInvariant(), ct);
-        if (!await db.Set<Lms.Domain.People.StaffProfile>().IgnoreQueryFilters().AnyAsync(p => p.UserId == notifyUser.Id, ct))
+        if (!await db.Set<Lms.Domain.People.StaffProfile>().AnyAsync(p => p.UserId == notifyUser.Id, ct))
         {
             db.Set<Lms.Domain.People.StaffProfile>().Add(new Lms.Domain.People.StaffProfile(
                 school.Units["KG"], notifyUser.Id, notifyUser.DisplayNameAr, notifyUser.DisplayNameEn, notifyEmail,
