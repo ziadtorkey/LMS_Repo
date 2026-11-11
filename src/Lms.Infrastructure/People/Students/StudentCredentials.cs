@@ -70,7 +70,7 @@ public sealed class StudentCredentials(
         }
 
         ThrowIfFailed(await users.AddPasswordAsync(user, password));
-        await users.UpdateSecurityStampAsync(user); // sessions that used the old password end
+        // RemovePassword/AddPassword rotated the security stamp: sessions that used the old password end (pinned by a test).
 
         var (toEmail, delivered) = await ResolveRecipientAsync(student, ct);
         if (toEmail is not null)
