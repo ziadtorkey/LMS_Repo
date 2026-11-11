@@ -1,0 +1,68 @@
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Shared.AcademicYears
+@inject IYearsApi Api
+@inject NavigationManager Navigation
+
+@* Create (in YearId) or edit a term. Rules (inside the year, no overlap) are enforced by the server and shown from problem codes. *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="2">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" data-testid="term-error">@_error</MudAlert>
+            }
+            <BilingualNameFields @bind-NameAr="_nameAr" @bind-NameEn="_nameEn" />
+            <MudDatePicker Date="_start" DateChanged="d => _start = d" Label="@L["Years_Start"]" data-testid="term-start" />
+            <MudDatePicker Date="_end" DateChanged="d => _end = d" Label="@L["Years_End"]" data-testid="term-end" />
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()">@L["Common_Cancel"]</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_saving"
+                   data-testid="term-save">@L["Common_Save"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private string _nameAr = "", _nameEn = "";
+    private DateTime? _start, _end;
+    private string? _error;
+    private bool _saving;
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public Guid YearId { get; set; }
+    [Parameter] public TermDto? Existing { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (Existing is null) return;
+        _nameAr = Existing.NameAr; _nameEn = Existing.NameEn;
+        _start = Existing.StartDate.ToDateTime(TimeOnly.MinValue);
+        _end = Existing.EndDate.ToDateTime(TimeOnly.MinValue);
+    }
+
+    private async Task SaveAsync()
+    {
+        _error = null;
+        if (string.IsNullOrWhiteSpace(_nameAr) || string.IsNullOrWhiteSpace(_nameEn) || _start is null || _end is null)
+        {
+            _error = L["Common_Required"];
+            return;
+        }
+        if (_end < _start)
+        {
+            _error = L["Years_DateOrder"];
+            return;
+        }
+
+        _saving = true;
+        var request = new SaveTermRequest(_nameAr.Trim(), _nameEn.Trim(),
+            DateOnly.FromDateTime(_start.Value), DateOnly.FromDateTime(_end.Value));
+        var saved = await ActionCalls.TryAsync(
+            () => Existing is null ? Api.CreateTermAsync(YearId, request) : Api.UpdateTermAsync(Existing.Id, request),
+            Navigation, L, m => _error = m);
+        _saving = false;
+        if (saved) MudDialog.Close(DialogResult.Ok(true));
+    }
+}
