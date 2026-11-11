@@ -55,7 +55,7 @@ public sealed class NotificationBellTests : ClientTestContext
         var cut = await RenderAsync();
         var unread = NotificationsApi.Items.First(n => !n.IsRead && n.DeepLink is not null);
         cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("[data-testid=notif-badge]")));
-        await cut.Find(".mud-menu-activator").KeyDownAsync(Bunit.Key.Enter);
+        await cut.Find("[data-testid=notif-toggle]").ClickAsync(new());
 
         await _popover.WaitForElement($"[data-testid=notif-item-{unread.Id}]").ClickAsync(new());
 

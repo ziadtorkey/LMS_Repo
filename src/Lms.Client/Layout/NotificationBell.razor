@@ -6,11 +6,12 @@
 @inject ISnackbar Snackbar
 
 @* Bell with the unread count and the latest notifications; new ones arrive live and show a snackbar. *@
-<MudMenu AriaLabel="@L["Notif_Title"]" Color="Color.Inherit" PopoverClass="lms-notif-popover" data-testid="notif-bell">
+<MudMenu @ref="_menu" AriaLabel="@L["Notif_Title"]" Color="Color.Inherit" PopoverClass="lms-notif-popover" data-testid="notif-bell">
     <ActivatorContent>
-        <MudBadge Content="@Feed.UnreadCount" Visible="@(Feed.UnreadCount > 0)" Color="Color.Error" Overlap="true" Class="mx-2"
+        <MudBadge Content="@Feed.UnreadCount" Visible="@(Feed.UnreadCount > 0)" Color="Color.Error" Overlap="true" Class="mx-1"
                   data-testid="notif-badge">
-            <MudIcon Icon="@Icons.Material.Filled.Notifications" Color="Color.Inherit" />
+            <MudIconButton Icon="@Icons.Material.Filled.Notifications" Color="Color.Inherit" aria-label="@L["Notif_Title"]"
+                           OnClick="args => _menu!.ToggleMenuAsync(args)" data-testid="notif-toggle" />
         </MudBadge>
     </ActivatorContent>
     <ChildContent>
@@ -33,6 +34,8 @@
 </MudMenu>
 
 @code {
+    private MudMenu? _menu;
+
     protected override async Task OnInitializedAsync()
     {
         Feed.Changed += OnChanged;
