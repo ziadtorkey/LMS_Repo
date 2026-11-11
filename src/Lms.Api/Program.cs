@@ -1,4 +1,6 @@
 using Lms.Api.Features.Files;
+using Lms.Api.Features.Settings;
+using Lms.Api.Features.Notifications;
 using Lms.Api.Features.Account;
 using Lms.Api.Features.Auth;
 using Lms.Api.Features.Me;
@@ -21,9 +23,12 @@ builder.Services.AddScoped<HttpCurrentContext>();
 builder.Services.AddScoped<Lms.Domain.Abstractions.ICurrentContext>(sp => sp.GetRequiredService<HttpCurrentContext>());
 builder.Services.AddMe();
 builder.Services.AddOrgUnits();
+builder.Services.AddSettings();
+builder.Services.AddNotifications();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddLmsAuth(builder.Configuration, builder.Environment);
 builder.Services.AddAccount(builder.Configuration);
+builder.Services.AddLmsForwardedHeaders(builder.Configuration);
 
 builder.Services.AddHealthChecks()
     .AddCheck<MySqlHealthCheck>("mysql");
@@ -40,6 +45,8 @@ if (app.Environment.IsDevelopment() && app.Configuration.GetValue("Seed:RunOnSta
 // get the new built-in permissions (add-only, once per role). Skipped while migrations are pending.
 await app.Services.GetRequiredService<BuiltInRoleStartupReconciler>().RunAsync();
 
+// First: everything after it (HTTPS redirection, rate limits, audit IPs) sees the real client address and scheme.
+app.UseLmsForwardedHeaders();
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseMiddleware<SecurityHeadersMiddleware>();
 if (!app.Environment.IsDevelopment())
@@ -70,6 +77,8 @@ foreach (var module in app.Services.GetServices<IEndpointModule>())
 
 app.MapMeEndpoints();
 app.MapOrgUnitEndpoints();
+app.MapSettingEndpoints();
+app.MapNotificationEndpoints();
 
 // Unknown API routes must be 404, not the SPA's index.html.
 app.MapFallback("/api/{**path}", () => Results.Problem(statusCode: StatusCodes.Status404NotFound, title: "Not found"));
