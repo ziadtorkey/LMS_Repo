@@ -57,6 +57,5 @@ html, body { margin: 0; font-family: Roboto, "Segoe UI", Tahoma, sans-serif; }
   border-radius: 4px;
   padding: 0 4px;
 }
-/* Tab headers wrap instead of clipping on narrow screens. */
-.lms-tabs .mud-tabs-tabbar-wrapper { flex-wrap: wrap; transform: none !important; }
-.lms-tabs .mud-tab { min-width: 0 !important; flex: 1 1 auto; }
+/* Narrow screens: tab headers keep MudBlazor's scroll arrows; tabs shrink so more fit before scrolling. */
+.lms-tabs .mud-tab { min-width: 0 !important; }
