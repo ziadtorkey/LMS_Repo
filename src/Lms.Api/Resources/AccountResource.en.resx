@@ -51,4 +51,12 @@
   <data name="ResetEmailBody" xml:space="preserve"><value>We received a request to reset your password. Open the link below within 60 minutes. If you did not ask for this, you can ignore this email.</value></data>
   <data name="InviteEmailSubject" xml:space="preserve"><value>Your LMS account is ready</value></data>
   <data name="InviteEmailBody" xml:space="preserve"><value>An account was created for you. Open the link below within 72 hours to choose your password.</value></data>
+  <data name="ExternalSignIn" xml:space="preserve"><value>Sign in with your organization account</value></data>
+  <data name="ExternalEmailPrompt" xml:space="preserve"><value>Enter your work or school email</value></data>
+  <data name="ExternalContinue" xml:space="preserve"><value>Continue</value></data>
+  <data name="ExternalNoProvider" xml:space="preserve"><value>Your organization does not use single sign-on. Sign in with your password.</value></data>
+  <data name="ExternalNotFound" xml:space="preserve"><value>We could not find an account for this identity. Contact your administrator.</value></data>
+  <data name="ExternalAmbiguous" xml:space="preserve"><value>More than one account matches this identity. Contact your administrator.</value></data>
+  <data name="ExternalFailed" xml:space="preserve"><value>Sign-in with your organization failed. Try again.</value></data>
+  <data name="ExternalHeading" xml:space="preserve"><value>Organization sign-in</value></data>
 </root>
