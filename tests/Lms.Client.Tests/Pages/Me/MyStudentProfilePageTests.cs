@@ -43,6 +43,37 @@ public sealed class MyStudentProfilePageTests : StudentsTestContext
     }
 
     [Fact]
+    public async Task Editable_inputs_show_the_students_current_values()
+    {
+        Culture.Current = new CultureInfo("en");
+        var cut = await RenderPageAsync(Permissions.Students.SelfEdit);
+        var current = (await _api.GetAsync()).Student;
+
+        Assert.Equal("Ahmoudy", cut.WaitForElement("input[data-testid=field-NicknameEn]").GetAttribute("value"));
+        Assert.Equal(current.NicknameAr, cut.Find("input[data-testid=field-NicknameAr]").GetAttribute("value"));
+        Assert.Equal(current.Mobile, cut.Find("input[data-testid=field-Mobile]").GetAttribute("value"));
+        Assert.DoesNotContain("_values", cut.Markup); // a literal parameter string must never reach the screen
+    }
+
+    [Fact]
+    public async Task Request_dialog_inputs_show_the_current_values_of_every_requestable_field()
+    {
+        Culture.Current = new CultureInfo("en");
+        var cut = await RenderPageAsync(Permissions.Students.SelfEdit);
+        var student = (await _api.GetAsync()).Student;
+        _ = cut.WaitForElement("[data-testid=request-change]").ClickAsync(new());
+        await Dialogs.WaitForElementAsync("input[data-testid=field-NameEn]");
+
+        Assert.Equal(student.Summary.NameAr, Dialogs.Find("input[data-testid=field-NameAr]").GetAttribute("value"));
+        Assert.Equal(student.Summary.NameEn, Dialogs.Find("input[data-testid=field-NameEn]").GetAttribute("value"));
+        Assert.Equal(student.NationalId, Dialogs.Find("input[data-testid=field-NationalId]").GetAttribute("value"));
+        Assert.Equal(student.Summary.DateOfBirth.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            Lms.Client.Components.People.StudentFieldText.Current(student, StudentFields.DateOfBirth));
+        Assert.Contains("Male", Dialogs.Find("[data-testid=field-Gender]").TextContent + Dialogs.Find("[data-testid=field-Gender]").InnerHtml);
+        Assert.DoesNotContain("_values", Dialogs.Markup);
+    }
+
+    [Fact]
     public async Task Save_sends_only_changed_editable_fields()
     {
         var cut = await RenderPageAsync(Permissions.Students.SelfEdit);
