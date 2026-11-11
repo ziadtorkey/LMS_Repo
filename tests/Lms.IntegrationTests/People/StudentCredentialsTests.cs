@@ -197,52 +197,55 @@ public sealed class StudentCredentialsTests
         Assert.NotNull(tree);
     }
 
-    [Fact]
-    public async Task An_existing_account_with_its_own_password_is_left_alone_unless_reset()
+    [Theory]
+    [InlineData(true)]  // an active owner with a password of their own
+    [InlineData(false)] // a pending invitee without a password
+    public async Task An_email_of_another_account_in_the_same_client_is_refused_on_issue_and_on_reset(bool ownerHasPassword)
     {
-        var shared = Mail("both");
-        var (student, _) = await StudentAsync("SC6", shared);
-        string originalHash;
+        var shared = Mail(ownerHasPassword ? "active" : "invited");
+        var (student, _) = await StudentAsync("SC6" + (ownerHasPassword ? "A" : "B"), shared);
+        Guid ownerId;
+        string? originalHash;
         using (var scope = _host.Services.CreateScope())
         {
             var users = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
-            var staff = new User { UserName = shared, Email = shared, DisplayNameEn = "Staff and parent" };
-            Assert.True((await users.CreateAsync(staff, "TheirOwn1Pass")).Succeeded);
-            originalHash = staff.PasswordHash!;
+            var owner = new User { UserName = shared, Email = shared, DisplayNameEn = "Org admin" };
+            Assert.True((ownerHasPassword ? await users.CreateAsync(owner, "TheirOwn1Pass") : await users.CreateAsync(owner)).Succeeded);
+            (ownerId, originalHash) = (owner.Id, owner.PasswordHash);
             await using var seed = _factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
             var home = await seed.OrgUnits.SingleAsync(u => u.Id == student.OrgUnitId);
-            seed.Set<StaffProfile>().Add(new StaffProfile(home, staff.Id, "موظف", "Staff", shared, null, null, null, null, null, null)); // a profile in this client
+            seed.Set<StaffProfile>().Add(new StaffProfile(home, owner.Id, "مدير", "Admin", shared, null, null, null, null, null, null)); // same client
             await seed.SaveChangesAsync();
         }
 
-        var kept = await IssueAsync(student.Id);
+        var issue = await Assert.ThrowsAsync<DuplicateAccountException>(() => IssueAsync(student.Id));
+        var reset = await Assert.ThrowsAsync<DuplicateAccountException>(() => IssueAsync(student.Id, reset: true));
 
-        Assert.Null(kept.Password);
-        Assert.Equal(CredentialsDelivery.None, kept.DeliveredTo);
-        using (var scope = _host.Services.CreateScope())
-        {
-            var stored = (await scope.ServiceProvider.GetRequiredService<UserManager<User>>().FindByEmailAsync(shared))!;
-            Assert.Equal(originalHash, stored.PasswordHash);
-            Assert.False(stored.MustChangePassword);
-        }
+        Assert.Equal(("Email", "Email"), (issue.Field, reset.Field));
+        using var after = _host.Services.CreateScope();
+        var stored = (await after.ServiceProvider.GetRequiredService<UserManager<User>>().FindByIdAsync(ownerId.ToString()))!;
+        Assert.Equal(originalHash, stored.PasswordHash); // the owner's password was neither set nor overwritten
+        Assert.False(stored.MustChangePassword);
+        await using var db = _factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        Assert.Null((await db.Set<StudentProfile>().IgnoreQueryFilters().SingleAsync(x => x.Id == student.Id)).UserId); // not linked either
+    }
 
+    [Fact]
+    public async Task Reset_rotates_the_security_stamp_so_old_sessions_end()
+    {
+        var (student, _) = await StudentAsync("SC6S");
+        var first = await IssueAsync(student.Id);
         string stampBefore;
         using (var scope = _host.Services.CreateScope())
         {
-            stampBefore = (await scope.ServiceProvider.GetRequiredService<UserManager<User>>().FindByEmailAsync(shared))!.SecurityStamp!;
+            stampBefore = (await scope.ServiceProvider.GetRequiredService<UserManager<User>>().FindByIdAsync(first.User.Id.ToString()))!.SecurityStamp!;
         }
 
-        var reset = await IssueAsync(student.Id, reset: true);
-
-        Assert.NotNull(reset.Password);
-        using (var scope = _host.Services.CreateScope())
-        {
-            var stamp = (await scope.ServiceProvider.GetRequiredService<UserManager<User>>().FindByEmailAsync(shared))!.SecurityStamp;
-            Assert.NotEqual(stampBefore, stamp); // sessions that used the old password end
-        }
+        await IssueAsync(student.Id, reset: true);
 
         using var after = _host.Services.CreateScope();
-        Assert.True((await after.ServiceProvider.GetRequiredService<UserManager<User>>().FindByEmailAsync(shared))!.MustChangePassword);
+        var stamp = (await after.ServiceProvider.GetRequiredService<UserManager<User>>().FindByIdAsync(first.User.Id.ToString()))!.SecurityStamp;
+        Assert.NotEqual(stampBefore, stamp);
     }
 
     [Fact]
@@ -338,5 +341,29 @@ public sealed class StudentCredentialsTests
         }
 
         await Assert.ThrowsAsync<DuplicateAccountException>(() => IssueAsync(student.Id));
+    }
+
+    [Fact]
+    public async Task A_sign_in_name_that_is_already_taken_is_refused_with_StudentCode()
+    {
+        var (student, _) = await StudentAsync("SC11");
+        var name = $"{student.StudentCode.ToLowerInvariant()}@{await ShortCodeOf(student)}";
+        string originalHash;
+        using (var scope = _host.Services.CreateScope())
+        {
+            var users = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+            var squatter = new User { UserName = name, DisplayNameEn = "Someone else" };
+            Assert.True((await users.CreateAsync(squatter, "TheirOwn1Pass")).Succeeded);
+            originalHash = squatter.PasswordHash!;
+        }
+
+        var issue = await Assert.ThrowsAsync<DuplicateAccountException>(() => IssueAsync(student.Id));
+        var reset = await Assert.ThrowsAsync<DuplicateAccountException>(() => IssueAsync(student.Id, reset: true));
+
+        Assert.Equal(("StudentCode", "StudentCode"), (issue.Field, reset.Field));
+        using var after = _host.Services.CreateScope();
+        Assert.Equal(originalHash, (await after.ServiceProvider.GetRequiredService<UserManager<User>>().FindByNameAsync(name))!.PasswordHash);
+        await using var db = _factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        Assert.Null((await db.Set<StudentProfile>().IgnoreQueryFilters().SingleAsync(x => x.Id == student.Id)).UserId);
     }
 }

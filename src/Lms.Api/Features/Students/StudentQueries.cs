@@ -4,6 +4,7 @@ using Lms.Domain.Access;
 using Lms.Domain.Classes;
 using Lms.Domain.Organizations;
 using Lms.Domain.People;
+using Lms.Infrastructure.Access;
 using Lms.Infrastructure.Persistence;
 using Lms.Shared;
 using Lms.Shared.Authorization;
@@ -39,14 +40,9 @@ public sealed class StudentQueries(LmsDbContext db, ICurrentContext context, IRe
         var students = db.Set<StudentProfile>()
             .Where(s => query.IncludeDescendants ? s.OrgUnitPath.StartsWith(unit.Path) : s.OrgUnitId == unit.Id);
 
-        // D32: a teacher sees only students of the classes they teach or lead; the rule is the role's, not a flag of the caller.
+        // D32/D42: a teacher reaches only the students of their own class courses (active enrollments) and homeroom classes.
         var filter = await relationships.ForAsync(Permissions.Students.View, ct);
-        if (!filter.IsUnrestricted)
-        {
-            var allowed = filter.ClassIds;
-            students = students.Where(s => db.Set<ClassStudent>().Any(c =>
-                c.StudentId == s.Id && c.Status == ClassStudent.ActiveStatus && allowed.Contains(c.ClassId)));
-        }
+        students = filter.Students(students, db);
 
         if (query.Status is not null)
         {
@@ -110,14 +106,7 @@ public sealed class StudentQueries(LmsDbContext db, ICurrentContext context, IRe
         }
 
         var filter = await relationships.ForAsync(Permissions.Students.View, ct);
-        if (filter.IsUnrestricted)
-        {
-            return student;
-        }
-
-        var inOwnClass = await db.Set<ClassStudent>().AnyAsync(c =>
-            c.StudentId == id && c.Status == ClassStudent.ActiveStatus && filter.ClassIds.Contains(c.ClassId), ct);
-        return inOwnClass ? student : null;
+        return filter.IsUnrestricted || await filter.Students(db.Set<StudentProfile>().Where(s => s.Id == id), db).AnyAsync(ct) ? student : null;
     }
 
     private async Task<UnitAccessResult> ScopeUnitAsync(Guid? orgUnitId, HttpContext http, CancellationToken ct)

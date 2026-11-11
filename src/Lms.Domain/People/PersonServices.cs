@@ -50,8 +50,8 @@ public interface IRoleAssignmentSync
 }
 
 /// <summary>
-/// The student's email or sign-in name already belongs to an account that has no profile in this client. Reusing it would let one
-/// client set (or reset) the password of someone else's account, so it is refused: <c>duplicate_person</c>, field <c>Field</c>.
+/// The student's email or sign-in name already belongs to another account. Reusing it would let the caller set (or reset) the
+/// password of someone else's account, so it is refused: <c>duplicate_person</c>, field <c>Field</c>.
 /// </summary>
 public sealed class DuplicateAccountException(string field) : Exception("The account belongs to a person outside this client.")
 {

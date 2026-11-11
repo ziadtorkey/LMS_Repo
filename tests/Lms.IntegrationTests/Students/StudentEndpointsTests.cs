@@ -8,6 +8,7 @@ using Lms.Domain.Enrollment;
 using Lms.Domain.Identity;
 using Lms.Domain.Organizations;
 using Lms.Domain.People;
+using Lms.Domain.Teaching;
 using Lms.IntegrationTests.Access;
 using Lms.IntegrationTests.Academic;
 using Lms.IntegrationTests.Enrollment;
@@ -171,6 +172,104 @@ public sealed class StudentEndpointsTests
     }
 
     [Fact]
+    public async Task Code_change_renames_the_account_and_frees_the_old_code()
+    {
+        var (tree, admin) = await _kit.SetUpAsync("ST3C");
+        await SetSettingAsync(tree, tree.School1, SettingKeys.StudentsCodeMode.Name, "\"Manual\"");
+        var oldCode = "OLD-" + Guid.NewGuid().ToString("N")[..6];
+        var newCode = "NEW-" + Guid.NewGuid().ToString("N")[..6];
+        var created = await CreateOkAsync(admin, Create(tree.School1.Id, code: oldCode));
+        var oldName = created.UserName;
+        var shortCode = oldName[(oldName.IndexOf('@') + 1)..];
+        Assert.Equal($"{oldCode.ToLowerInvariant()}@{shortCode}", oldName);
+
+        var edit = await _kit.SendAsync(HttpMethod.Put, Routes.Student(created.Student.Summary.Id), admin,
+            new UpdateStudentRequest(Data(), tree.School1.Id, newCode, true));
+
+        Assert.Equal(HttpStatusCode.OK, edit.StatusCode);
+        using (var scope = _host.Services.CreateScope())
+        {
+            var users = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+            var account = (await users.FindByNameAsync($"{newCode.ToLowerInvariant()}@{shortCode}"))!; // the sign-in name follows the code
+            Assert.NotNull(account);
+            Assert.Null(await users.FindByNameAsync(oldName));
+        }
+
+        // the freed code can be given to another student: its sign-in name is free again
+        var reuse = await CreateOkAsync(admin, Create(tree.School1.Id, code: oldCode));
+        Assert.Equal(oldName, reuse.UserName);
+    }
+
+    [Fact]
+    public async Task Code_change_to_a_taken_sign_in_name_is_409_and_nothing_changes()
+    {
+        var (tree, admin) = await _kit.SetUpAsync("ST3D");
+        await SetSettingAsync(tree, tree.School1, SettingKeys.StudentsCodeMode.Name, "\"Manual\"");
+        var code = "KEEP-" + Guid.NewGuid().ToString("N")[..6];
+        var squatted = "SQ-" + Guid.NewGuid().ToString("N")[..6];
+        var created = await CreateOkAsync(admin, Create(tree.School1.Id, code: code));
+        var shortCode = created.UserName[(created.UserName.IndexOf('@') + 1)..];
+        using (var scope = _host.Services.CreateScope())
+        {
+            var users = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+            Assert.True((await users.CreateAsync(new User { UserName = $"{squatted.ToLowerInvariant()}@{shortCode}", DisplayNameEn = "Squatter" })).Succeeded);
+        }
+
+        var edit = await _kit.SendAsync(HttpMethod.Put, Routes.Student(created.Student.Summary.Id), admin,
+            new UpdateStudentRequest(Data(), tree.School1.Id, squatted, true));
+
+        Assert.Equal(HttpStatusCode.Conflict, edit.StatusCode);
+        var body = await edit.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal((ProblemCodes.duplicate_person, "StudentCode"), (body.GetProperty("code").GetString(), body.GetProperty("field").GetString()));
+        await using var db = _factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        Assert.Equal(code, (await db.Set<StudentProfile>().IgnoreQueryFilters().SingleAsync(x => x.Id == created.Student.Summary.Id)).StudentCode);
+    }
+
+    [Fact]
+    public async Task Moving_the_home_needs_a_target_the_caller_can_reach_and_a_level_that_hosts_classes()
+    {
+        var (tree, admin) = await _kit.SetUpAsync("ST3M");
+        var created = await CreateOkAsync(admin, Create(tree.School1.Id));
+        var schoolAdmin = await AccessTestData.AssignAsync(_factory, tree, tree.School1, BuiltInRoles.OrgAdmin, Guid.NewGuid());
+        OrgUnit noClasses;
+        await using (var db = _factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            var level = new LevelType(tree.Org.Id, "مستوى", "No classes", 9, false);
+            var parent = await db.OrgUnits.SingleAsync(u => u.Id == tree.School1.Id);
+            noClasses = OrgUnit.CreateChild(parent, level.Id, "قسم", "Admin office", "ADM" + Guid.NewGuid().ToString("N")[..4]);
+            db.AddRange(level, noClasses);
+            await db.SaveChangesAsync();
+        }
+
+        Task<HttpResponseMessage> Move(RoleAssignment who, Guid unit) =>
+            _kit.SendAsync(HttpMethod.Put, Routes.Student(created.Student.Summary.Id), who,
+                new UpdateStudentRequest(Data(), unit, created.Student.Summary.StudentCode, true));
+
+        var invalidLevel = await Move(admin, noClasses.Id);
+        Assert.Equal((HttpStatusCode.BadRequest, ProblemCodes.invalid_level_type), (invalidLevel.StatusCode, await CodeAsync(invalidLevel)));
+        // a target outside the caller's scope does not exist for the caller
+        Assert.Equal(HttpStatusCode.NotFound, (await Move(schoolAdmin, tree.School2.Id)).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await Move(admin, tree.School2.Id)).StatusCode);
+    }
+
+    [Fact]
+    public async Task Moving_the_home_needs_Students_Update_at_the_target_not_just_visibility()
+    {
+        var (tree, admin) = await _kit.SetUpAsync("ST3U");
+        var created = await CreateOkAsync(admin, Create(tree.School1.Id));
+        // The caller may update students at School 1 and can see School 2, but a policy blocks Students.Update there.
+        _host.Services.GetRequiredService<TestPolicyEvaluator>().Block(Permissions.Students.Update, tree.School2);
+
+        var response = await _kit.SendAsync(HttpMethod.Put, Routes.Student(created.Student.Summary.Id), admin,
+            new UpdateStudentRequest(Data(), tree.School2.Id, created.Student.Summary.StudentCode, true));
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        var after = (await (await _kit.SendAsync(HttpMethod.Get, Routes.Student(created.Student.Summary.Id), admin))
+            .Content.ReadFromJsonAsync<StudentDetailDto>(Web))!;
+        Assert.Equal(tree.School1.Id, after.Summary.HomeOrgUnitId);
+    }
+
+    [Fact]
     public async Task National_id_duplicate_is_409_and_name_plus_birth_date_needs_confirmation()
     {
         var (tree, admin) = await _kit.SetUpAsync("ST4");
@@ -259,6 +358,35 @@ public sealed class StudentEndpointsTests
         var all = (await (await _kit.SendAsync(HttpMethod.Get, Routes.Students, admin)).Content.ReadFromJsonAsync<PagedResult<StudentSummaryDto>>(Web))!;
         Assert.Contains(all.Items, s => s.Id == own);
         Assert.Contains(all.Items, s => s.Id == other);
+    }
+
+    [Fact]
+    public async Task Teacher_sees_guardians_only_of_students_they_reach()
+    {
+        var w = await EnrollmentWorld.CreateAsync(_factory, "ST7G");
+        var admin = await AccessTestData.AssignAsync(_factory, w.Tree, w.Tree.Root, BuiltInRoles.OrgAdmin, Guid.NewGuid());
+        var teacherUser = await Lms.IntegrationTests.People.PeopleTestKit.AddUserAsync(_factory);
+        var teacher = await AccessTestData.AssignAsync(_factory, w.Tree, w.Tree.School1, BuiltInRoles.Teacher, teacherUser.Id);
+        var reached = await CreateOkAsync(admin, Create(w.Tree.School1.Id, classId: w.Class.Id, guardians: [NewGuardian(primary: true, name: "Parent Reached")]));
+        var other = await CreateOkAsync(admin, Create(w.Tree.School1.Id, guardians: [NewGuardian(primary: true, name: "Parent Other")])); // not enrolled with this teacher
+        await using (var db = _factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            db.Add(new ClassCourseTeacher(w.CcA, teacherUser.Id, ClassCourseTeacher.PrimaryRole, DateOnly.FromDateTime(DateTime.UtcNow).AddDays(-1)));
+            await db.SaveChangesAsync();
+        }
+
+        var reachedGuardian = reached.Student.Guardians.Single().GuardianId;
+        var otherGuardian = other.Student.Guardians.Single().GuardianId;
+
+        var list = (await (await _kit.SendAsync(HttpMethod.Get, Routes.Guardians, teacher)).Content.ReadFromJsonAsync<PagedResult<GuardianSummaryDto>>(Web))!;
+        Assert.Equal([reachedGuardian], list.Items.Select(g => g.Id));
+        Assert.Equal(HttpStatusCode.OK, (await _kit.SendAsync(HttpMethod.Get, Routes.Guardian(reachedGuardian), teacher)).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await _kit.SendAsync(HttpMethod.Get, Routes.Guardian(otherGuardian), teacher)).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await _kit.SendAsync(HttpMethod.Get, Routes.StudentGuardians(reached.Student.Summary.Id), teacher)).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await _kit.SendAsync(HttpMethod.Get, Routes.StudentGuardians(other.Student.Summary.Id), teacher)).StatusCode);
+
+        var all = (await (await _kit.SendAsync(HttpMethod.Get, Routes.Guardians, admin)).Content.ReadFromJsonAsync<PagedResult<GuardianSummaryDto>>(Web))!;
+        Assert.Equal(2, all.Items.Count);
     }
 
     [Fact]

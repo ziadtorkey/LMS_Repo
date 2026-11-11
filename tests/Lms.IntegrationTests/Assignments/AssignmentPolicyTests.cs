@@ -28,10 +28,14 @@ public sealed class AssignmentPolicyTests(LmsApiFactory factory) : IDisposable
         return (tree, admin);
     }
 
-    private Task<HttpResponseMessage> AssignAsync(RoleAssignment caller, Role role, OrgUnit unit, string? language = null) =>
-        _host.SendAsync(HttpMethod.Post, Routes.Assignments, caller,
-            new CreateAssignmentRequest($"p{Guid.NewGuid():N}@example.com", "اسم", "Name", role.Id, unit.Id, null, null),
-            language);
+    private async Task<HttpResponseMessage> AssignAsync(RoleAssignment caller, Role role, OrgUnit unit, string? language = null)
+    {
+        // Roles go to existing staff only (D31): the person is staff at the target unit.
+        var email = $"p{Guid.NewGuid():N}@example.com";
+        await Lms.IntegrationTests.People.PeopleTestKit.AddStaffAsync(factory, unit, email);
+        return await _host.SendAsync(HttpMethod.Post, Routes.Assignments, caller,
+            new CreateAssignmentRequest(email, "اسم", "Name", role.Id, unit.Id, null, null), language);
+    }
 
     private static async Task<JsonElement> JsonAsync(HttpResponseMessage r) =>
         JsonDocument.Parse(await r.Content.ReadAsStringAsync()).RootElement;

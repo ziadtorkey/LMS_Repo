@@ -1,5 +1,7 @@
+using Lms.Shared;
 using Lms.Api.Infrastructure;
 using Lms.Domain.Abstractions;
+using Lms.Domain.Access;
 using Lms.Domain.People;
 using Lms.Infrastructure.People.Guardians;
 using Lms.Infrastructure.Persistence;
@@ -14,15 +16,15 @@ public static class StudentGuardianEndpoints
 {
     public static void Map(IEndpointRouteBuilder app)
     {
-        app.MapGet(GuardianRoutes.StudentGuardiansPattern, ListAsync).RequirePermission(Permissions.Students.View);
-        app.MapPost(GuardianRoutes.StudentGuardiansPattern, LinkAsync).RequirePermission(Permissions.Students.Update);
-        app.MapPut(GuardianRoutes.StudentGuardianPattern, UpdateAsync).RequirePermission(Permissions.Students.Update);
-        app.MapDelete(GuardianRoutes.StudentGuardianPattern, UnlinkAsync).RequirePermission(Permissions.Students.Update);
+        app.MapGet(Routes.StudentGuardiansPattern, ListAsync).RequirePermission(Permissions.Students.View);
+        app.MapPost(Routes.StudentGuardiansPattern, LinkAsync).RequirePermission(Permissions.Students.Update);
+        app.MapPut(Routes.StudentGuardianPattern, UpdateAsync).RequirePermission(Permissions.Students.Update);
+        app.MapDelete(Routes.StudentGuardianPattern, UnlinkAsync).RequirePermission(Permissions.Students.Update);
     }
 
     /// <summary>
     /// The student inside the caller's scope (a student of another unit does not exist for the caller), then the permission at
-    /// the student's home unit. The relationship rule of Students.View (Teacher: own classes only) joins here with M3 Task 12.
+    /// the student's home unit. The relationship rule of Students.View applies to the reads.
     /// </summary>
     private static async Task<(StudentProfile? Student, IResult? Problem)> FindAsync(
         Guid id, string permission, HttpContext http, LmsDbContext db, ICurrentContext context, CancellationToken ct)
@@ -34,7 +36,20 @@ public static class StudentGuardianEndpoints
         }
 
         var access = await http.CheckUnitAsync(permission, student.OrgUnitId, ct);
-        return access.Problem is not null ? (null, access.Problem) : (student, null);
+        if (access.Problem is not null)
+        {
+            return (null, access.Problem);
+        }
+
+        // The relationship rule of Students.View (Teacher: only students reached through own class courses or homeroom, D42).
+        var filter = await http.RequestServices.GetRequiredService<IRelationshipScope>().ForAsync(Permissions.Students.View, ct);
+        if (permission == Permissions.Students.View && !filter.IsUnrestricted
+            && !await GuardianVisibility.ReachableStudentIds(db, filter).AnyAsync(sid => sid == id, ct))
+        {
+            return (null, ApiProblems.NotFound());
+        }
+
+        return (student, null);
     }
 
     private static async Task<IResult> ListAsync(
@@ -62,7 +77,7 @@ public static class StudentGuardianEndpoints
         {
             var created = await linker.LinkAsync(student!, [GuardianValidators.ToDomain(body)], ct);
             var dto = (await GuardianMapper.LinksOfAsync(db, student!, ct)).Single(l => l.GuardianId == created[0].GuardianId);
-            return Results.Created(GuardianRoutes.StudentGuardian(id, dto.GuardianId), dto);
+            return Results.Created(Routes.StudentGuardian(id, dto.GuardianId), dto);
         }
         catch (GuardianLinkException ex)
         {

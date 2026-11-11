@@ -105,7 +105,7 @@ public partial class AuthorizationContractTests
             "class_full", "over_capacity", "year_not_effective", "class_course_exists", "class_course_in_use",
             "enrollment_not_optional", "already_enrolled", "not_in_class", "already_placed", "class_unit_mismatch",
             "teacher_not_eligible", "teacher_not_in_unit", "primary_teacher_exists", "already_in_group", "not_enrolled",
-            "transfer_invalid", "too_many_items", "short_code_taken", "invalid_short_code",
+            "transfer_invalid", "too_many_items", "short_code_taken", "invalid_short_code", "teacher_already_assigned", "assignment_ended",
         ];
 
         Assert.All(fields, f => Assert.Equal(f.Name, (string)f.GetRawConstantValue()!));

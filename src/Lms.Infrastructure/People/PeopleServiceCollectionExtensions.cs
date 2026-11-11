@@ -17,6 +17,7 @@ public static class PeopleServiceCollectionExtensions
         services.AddScoped<Students.IStudentFeatureResolver, Students.StudentFeatureResolver>();
         services.AddScoped<IOrgUnitUsageCheck, PeopleUsageCheck>();
         services.AddScoped<IPersonAccounts, PersonAccounts>();
+        services.AddScoped<IStudentCredentials, Students.StudentCredentials>();
         services.AddScoped<IPersonStatusService, PersonStatusService>();
         services.AddScoped<IRoleAssignmentSync, RoleAssignmentSync>();
         services.AddScoped<IInvitationOutbox, InvitationOutbox>();

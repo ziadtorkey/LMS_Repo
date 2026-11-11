@@ -11,14 +11,16 @@ public sealed class IsolationBypassGuardTests
     /// <summary>Repository-relative files allowed to bypass the global query filters, with the reason.</summary>
     private static readonly IReadOnlyDictionary<string, string> AllowList = new Dictionary<string, string>
     {
-        ["src/Lms.Infrastructure/People/Students/StudentCredentials.cs"] =
-            "decides whether an existing account's owner has a profile anywhere in the student's own client (explicit OrganizationId filter) before the account is reused (#228)",
         ["src/Lms.Api/Features/Guardians/GuardianEndpoints.cs"] =
             "match endpoint: a bare children count of the guardian in the caller's own client, no student or unit leaves the query (M3 Task 19, #227)",
+        ["src/Lms.Api/Features/Staff/StaffAssignments.cs"] =
+            "deleting or deactivating a person reaches their shares in units outside the acting admin's scope; own client, live rows, Staff-kind roles (M2 Task 11, #163)",
         ["src/Lms.Api/Features/Templates/TemplateMapper.cs"] =
             "owner unit name of a Shared template that sits outside the caller's scope, restricted to the client (M1 Task 17, #52)",
         ["src/Lms.Api/Features/Staff/ShareStaffHandler.cs"] =
             "removing a share: the person's home may lie outside the scope of the admin of the shared-to unit; own client, live rows, assignment lookup stays filtered (M2 Task 16, #164)",
+        ["src/Lms.Api/Features/Guardians/GuardianEndpoints.cs"] =
+            "match endpoint: a bare children count of the guardian in the caller's own client, no student or unit leaves the query (M3 Task 19, #227)",
         ["src/Lms.Infrastructure/Organizations/OrgTree.cs"] =
             "client root and ancestors lie above a unit-level caller's scope (M1 Task 5)",
         ["src/Lms.Infrastructure/Access/ValidAssignmentQuery.cs"] =
@@ -43,6 +45,8 @@ public sealed class IsolationBypassGuardTests
             "effective policies set on ancestors above the caller's scope (M1 Task 12, #94)",
         ["src/Lms.Infrastructure/Organizations/OrgPolicyReader.cs"] =
             "policies set on ancestors above the caller's scope, to show blocked permissions in the org tree (M1 Task 9, #99)",
+        ["src/Lms.Api/Features/Classes/ClassLookups.cs"] =
+            "years inherited from ancestors, per-client class code uniqueness and ancestor Teacher assignments for the homeroom check; client-limited, live rows, no rows returned (M3 Task 13)",
         ["src/Lms.Api/Features/Staff/StaffQueries.cs"] =
             "staff shared into the caller's scope have a home unit outside it; rows limited to this client and an in-scope assignment (M2 Task 10)",
         ["src/Lms.Api/Features/OrgUnits/AcademicFlagsHandler.cs"] =
@@ -73,10 +77,14 @@ public sealed class IsolationBypassGuardTests
             "a user's account status derives from their profiles in every client; only that user's statuses are read (M2 Task 6, #158)",
         ["src/Lms.Infrastructure/People/StudentCodeGenerator.cs"] =
             "student codes are unique per client across all schools and for deleted students; client matched, only a yes/no leaves (M3 Task 18, #226)",
+        ["src/Lms.Api/Features/Enrollment/EnrollmentQueries.cs"] =
+            "names of the course of a class course, owned by an ancestor unit above the caller's scope; names only, for class courses the caller already sees; client matched, deleted excluded (M3 Task 24, #232)",
         ["src/Lms.Infrastructure/Enrollment/PlacementGuard.cs"] =
             "the academic year and the course restrictions of a class sit at ancestor units above the caller's scope; an invisible restriction must never mean no restriction; client matched, deleted rows excluded (M3 Task 24, #232)",
         ["src/Lms.Infrastructure/People/Guardians/GuardianAccountSync.cs"] =
             "a guardian's children, their home units and the guardian's own assignments sit outside the caller's scope (siblings in other schools); client matched, deleted rows excluded, only the guardian's own rows are written (M3 Task 25, #233)",
+        ["src/Lms.Infrastructure/People/StaffBackfill.cs"] =
+            "startup backfill of staff profiles for M1 bare users across every client; client matched, deleted rows excluded (M2 Task 9, #161)",
         ["src/Lms.Infrastructure/People/PersonDuplicateFinder.cs"] =
             "client-wide duplicate checks reach sibling subtrees outside the caller's scope; client matched, deleted rows excluded, only the field name leaves (M2 Task 5, #157)",
     };

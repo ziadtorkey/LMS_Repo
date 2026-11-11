@@ -1,4 +1,4 @@
-using Lms.Api.Features.Guardians;
+using Lms.Shared;
 using Lms.Domain.People;
 using Lms.IntegrationTests.Infrastructure;
 using Lms.Shared.People;
@@ -9,49 +9,50 @@ namespace Lms.IntegrationTests.Security;
 
 /// <summary>
 /// Guardians (M3 Task 19, #227): the student sits in School1. Students.Update (linking, editing, matching) is held by the
-/// admins and the counselor, not by a Teacher or Supervisor; Students.View is also held by a Teacher until the relationship
-/// scope of M3 Task 12 narrows it to the teacher's own classes (then the Teacher expectations below become 404).
+/// admins and the counselor, not by a Teacher or Supervisor; Students.View is also held by a Teacher, narrowed by the relationship
+/// rule (D42) to the students of their own class courses or homeroom class: the probe's student is none of those, so the
+/// Teacher gets 404 for the student's guardians and for a guardian of that student (the list is 200 and empty).
 /// </summary>
 public sealed class GuardiansProbeRows : IProbeRowModule
 {
     public IEnumerable<ProbeRow> Rows =>
     [
-        new("student guardians list", HttpMethod.Get, GuardianRoutes.StudentGuardiansPattern,
-            async (w, _) => new ProbeRequest(GuardianRoutes.StudentGuardians((await NewLinkAsync(w)).StudentId)),
-            Expect(Ok, Ok, NotFound, Ok, NotFound, NotFound)),
-        new("student guardians link", HttpMethod.Post, GuardianRoutes.StudentGuardiansPattern,
-            async (w, _) => new ProbeRequest(GuardianRoutes.StudentGuardians((await NewStudentAsync(w)).Id), NewGuardianBody()),
+        new("student guardians list", HttpMethod.Get, Routes.StudentGuardiansPattern,
+            async (w, _) => new ProbeRequest(Routes.StudentGuardians((await NewLinkAsync(w)).StudentId)),
+            Expect(Ok, Ok, NotFound, NotFound, NotFound, NotFound)),
+        new("student guardians link", HttpMethod.Post, Routes.StudentGuardiansPattern,
+            async (w, _) => new ProbeRequest(Routes.StudentGuardians((await NewStudentAsync(w)).Id), NewGuardianBody()),
             Expect(Created, Created, NotFound, Forbidden, NotFound, NotFound)),
-        new("student guardians update", HttpMethod.Put, GuardianRoutes.StudentGuardianPattern,
+        new("student guardians update", HttpMethod.Put, Routes.StudentGuardianPattern,
             async (w, _) =>
             {
                 var link = await NewLinkAsync(w);
-                return new ProbeRequest(GuardianRoutes.StudentGuardian(link.StudentId, link.GuardianId), new UpdateStudentGuardianRequest("Mother", true));
+                return new ProbeRequest(Routes.StudentGuardian(link.StudentId, link.GuardianId), new UpdateStudentGuardianRequest("Mother", true));
             },
             Expect(Ok, Ok, NotFound, Forbidden, NotFound, NotFound)),
-        new("student guardians unlink", HttpMethod.Delete, GuardianRoutes.StudentGuardianPattern,
+        new("student guardians unlink", HttpMethod.Delete, Routes.StudentGuardianPattern,
             async (w, _) =>
             {
                 var link = await NewLinkAsync(w);
-                return new ProbeRequest(GuardianRoutes.StudentGuardian(link.StudentId, link.GuardianId));
+                return new ProbeRequest(Routes.StudentGuardian(link.StudentId, link.GuardianId));
             },
             Expect(NoContent, NoContent, NotFound, Forbidden, NotFound, NotFound)),
-        new("guardians list", HttpMethod.Get, GuardianRoutes.Guardians,
-            (_, _) => Task.FromResult(new ProbeRequest(GuardianRoutes.Guardians)),
+        new("guardians list", HttpMethod.Get, Routes.Guardians,
+            (_, _) => Task.FromResult(new ProbeRequest(Routes.Guardians)),
             Expect(Ok, Ok, Ok, Ok, Ok, Ok)),
-        new("guardians get (child in School1)", HttpMethod.Get, GuardianRoutes.GuardianPattern,
-            async (w, _) => new ProbeRequest(GuardianRoutes.Guardian((await NewLinkAsync(w)).GuardianId)),
-            Expect(Ok, Ok, NotFound, Ok, NotFound, NotFound)),
-        new("guardians edit (child in School1)", HttpMethod.Put, GuardianRoutes.GuardianPattern,
+        new("guardians get (child in School1)", HttpMethod.Get, Routes.GuardianPattern,
+            async (w, _) => new ProbeRequest(Routes.Guardian((await NewLinkAsync(w)).GuardianId)),
+            Expect(Ok, Ok, NotFound, NotFound, NotFound, NotFound)),
+        new("guardians edit (child in School1)", HttpMethod.Put, Routes.GuardianPattern,
             async (w, _) =>
             {
                 var link = await NewLinkAsync(w);
-                return new ProbeRequest(GuardianRoutes.Guardian(link.GuardianId),
+                return new ProbeRequest(Routes.Guardian(link.GuardianId),
                     new UpdateGuardianRequest(new GuardianDataInput("ولي", "Probe edit", link.Mobile, null, null)));
             },
             Expect(Ok, Ok, NotFound, Forbidden, NotFound, NotFound)),
-        new("guardians match", HttpMethod.Get, GuardianRoutes.GuardianMatch,
-            async (w, _) => new ProbeRequest($"{GuardianRoutes.GuardianMatch}?nationalId={(await NewLinkAsync(w)).NationalId}"),
+        new("guardians match", HttpMethod.Get, Routes.GuardiansMatch,
+            async (w, _) => new ProbeRequest($"{Routes.GuardiansMatch}?nationalId={(await NewLinkAsync(w)).NationalId}"),
             Expect(Ok, Ok, Ok, Forbidden, NoContent, NoContent)),
     ];
 
@@ -67,7 +68,7 @@ public sealed class GuardiansProbeRows : IProbeRowModule
     {
         var student = await NewStudentAsync(w);
         var body = NewGuardianBody();
-        var link = await w.Callers.SendOkAsync(RootAdmin, HttpMethod.Post, GuardianRoutes.StudentGuardians(student.Id), body);
+        var link = await w.Callers.SendOkAsync(RootAdmin, HttpMethod.Post, Routes.StudentGuardians(student.Id), body);
         return (student.Id, link.GetProperty("guardianId").GetGuid(), body.NewGuardian!.Mobile, body.NewGuardian.NationalId!);
     }
 

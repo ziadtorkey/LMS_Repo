@@ -1,0 +1,30 @@
+@using Lms.Shared.People
+@inject ICultureService Culture
+
+@* Searchable nationality picker over the fixed ISO list; matches the Arabic and the English name, stores the code. *@
+<MudAutocomplete T="string" Value="Value" ValueChanged="ValueChanged" Label="@Label" SearchFunc="SearchAsync"
+                 ToStringFunc="Display" CoerceText="false" CoerceValue="false" MaxItems="30" ResetValueOnEmptyText="true"
+                 Required="Required" RequiredError="@L["Common_Required"]" data-testid="@TestId" />
+
+@code {
+    [Parameter] public string? Value { get; set; }
+    [Parameter] public EventCallback<string?> ValueChanged { get; set; }
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public bool Required { get; set; }
+    [Parameter] public string TestId { get; set; } = "nationality";
+
+    private Task<IEnumerable<string>> SearchAsync(string? text, CancellationToken ct)
+    {
+        var term = text?.Trim() ?? "";
+        var found = Nationalities.All
+            .Where(n => term.Length == 0
+                || n.NameEn.Contains(term, StringComparison.OrdinalIgnoreCase)
+                || n.NameAr.Contains(term, StringComparison.OrdinalIgnoreCase)
+                || n.Code.Equals(term, StringComparison.OrdinalIgnoreCase))
+            .Select(n => n.Code);
+        return Task.FromResult(found);
+    }
+
+    private string? Display(string? code) =>
+        Nationalities.All.FirstOrDefault(n => n.Code == code) is { } n ? Culture.Pick(n.NameAr, n.NameEn) : null;
+}
