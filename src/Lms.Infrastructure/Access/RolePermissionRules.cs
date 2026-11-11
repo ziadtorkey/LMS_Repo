@@ -9,7 +9,7 @@ public static class RolePermissionRules
     /// <summary>Whether the caller may delete a role holding <paramref name="currentPermissions"/> (same rule as editing it).</summary>
     public static bool CanModify(
         IReadOnlyCollection<string> currentPermissions, IReadOnlySet<string> callerPermissions, bool callerIsPlatformAdmin) =>
-        callerIsPlatformAdmin || currentPermissions.All(callerPermissions.Contains);
+        callerIsPlatformAdmin || currentPermissions.All(Permissions.WithSelfService(callerPermissions).Contains);
 
     /// <summary>The ProblemCodes value of the first broken rule, or null when the permission set is acceptable.</summary>
     public static string? Validate(
@@ -31,6 +31,8 @@ public static class RolePermissionRules
 
         // Both sides of the edit must be within the caller's own permissions: otherwise a lesser role editor could
         // strip a more powerful role (the Org Admin) down to what they hold, and nobody could restore it.
+        // Self-service permissions (own profile, own children) count as held by every caller (M3 contract).
+        callerPermissions = Permissions.WithSelfService(callerPermissions);
         if (!callerIsPlatformAdmin
             && (requested.Any(p => !callerPermissions.Contains(p)) || currentPermissions.Any(p => !callerPermissions.Contains(p))))
         {
