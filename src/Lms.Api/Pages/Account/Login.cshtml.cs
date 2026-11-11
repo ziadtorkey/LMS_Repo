@@ -29,7 +29,24 @@ public sealed class LoginModel(
 
     public string? Error { get; private set; }
 
-    public void OnGet() => ReturnUrl = SafeReturnUrl();
+    /// <summary>Set by the external sign-in callback so its failures show in the same error element as password login.</summary>
+    [BindProperty(SupportsGet = true)]
+    public string? ExternalError { get; set; }
+
+    public void OnGet()
+    {
+        ReturnUrl = SafeReturnUrl();
+        Error = ExternalError switch
+        {
+            "external_account_not_found" => localizer["ExternalNotFound"].Value,
+            "external_account_ambiguous" => localizer["ExternalAmbiguous"].Value,
+            "external_failed" => localizer["ExternalFailed"].Value,
+            "account_expired" => localizer["AccountExpired"].Value,
+            "account_withdrawn" => localizer["AccountWithdrawn"].Value,
+            "account_deactivated" => localizer["AccountDeactivated"].Value,
+            _ => null,
+        };
+    }
 
     public async Task<IActionResult> OnPostAsync(CancellationToken cancellationToken)
     {
