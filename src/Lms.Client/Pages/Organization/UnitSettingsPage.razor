@@ -39,9 +39,12 @@ else
         <MudTabPanel Text="@L["UnitSettings_Academic"]">
             <AcademicFlagsTab Unit="_unit" AllUnits="_all" CanEdit="PermState.Has(Permissions.OrgUnits.Update)" OnSaved="LoadAsync" />
         </MudTabPanel>
-        @* Settings and Policies tab bodies arrive with Task 27. *@
-        <MudTabPanel Text="@L["UnitSettings_Settings"]" data-testid="tab-settings" />
-        <MudTabPanel Text="@L["UnitSettings_Policies"]" data-testid="tab-policies" />
+        <MudTabPanel Text="@L["UnitSettings_Settings"]" Visible="PermState.Has(Permissions.Settings.View)" data-testid="tab-settings">
+            <SettingsTab UnitId="_unit.Id" CanEdit="PermState.Has(Permissions.Settings.Update)" />
+        </MudTabPanel>
+        <MudTabPanel Text="@L["UnitSettings_Policies"]" Visible="PermState.Has(Permissions.Policies.View)" data-testid="tab-policies">
+            <PoliciesTab UnitId="_unit.Id" CanEdit="PermState.Has(Permissions.Policies.Update)" />
+        </MudTabPanel>
     </MudTabs>
 }
 

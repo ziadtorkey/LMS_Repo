@@ -64,7 +64,7 @@
         _saving = true;
         var request = new SaveCalendarEventRequest(YearId, UnitId, _titleAr.Trim(), _titleEn.Trim(), _kind,
             DateOnly.FromDateTime(_start.Value), DateOnly.FromDateTime(_end.Value));
-        var saved = await ActionCalls.TryAsync(
+        var saved = await ApiCalls.RunAsync(
             () => Existing is null ? Api.CreateEventAsync(request) : Api.UpdateEventAsync(Existing.Id, request),
             Navigation, L, m => _error = m);
         _saving = false;

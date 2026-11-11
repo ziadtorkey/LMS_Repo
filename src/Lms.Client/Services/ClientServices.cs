@@ -39,6 +39,7 @@ public static class ClientServices
             services.AddSingleton<IClientsApi, FakeClientsApi>();
             services.AddSingleton<IOrgApi, FakeOrgApi>();
             services.AddSingleton<ITemplatesApi, FakeTemplatesApi>();
+            services.AddSingleton<IConfigApi, FakeConfigApi>();
             services.AddScoped<AuthenticationStateProvider, FakeAuthenticationStateProvider>();
             services.AddAuthorizationCore();
             return;
@@ -69,5 +70,6 @@ public static class ClientServices
         services.AddScoped<IClientsApi, ClientsApi>();
         services.AddScoped<IOrgApi, OrgApi>();
         services.AddScoped<ITemplatesApi, TemplatesApi>();
+        services.AddScoped<IConfigApi, ConfigApi>();
     }
 }

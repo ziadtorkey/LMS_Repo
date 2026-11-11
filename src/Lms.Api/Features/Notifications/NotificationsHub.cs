@@ -94,26 +94,37 @@ public sealed class NotificationsHub(LmsDbContext db, IClock clock) : Hub
 public sealed class SignalRNotificationPusher(IHubContext<NotificationsHub> hub, IServiceScopeFactory scopes, IClock clock)
     : INotificationPusher
 {
-    public async Task PushAsync(Guid userId, Guid? organizationId, NotificationDto notification, CancellationToken cancellationToken)
+    public Task PushAsync(Guid userId, Guid? organizationId, NotificationDto notification, CancellationToken cancellationToken) =>
+        PushManyAsync([new PendingPush(userId, organizationId, notification)], cancellationToken);
+
+    /// <summary>One entitlement query per client for the whole fan-out, not one per recipient.</summary>
+    public async Task PushManyAsync(IReadOnlyList<PendingPush> pushes, CancellationToken cancellationToken)
     {
-        if (organizationId is not { } org)
+        foreach (var push in pushes.Where(p => p.OrganizationId is null))
         {
-            await hub.Clients.Group(NotificationGroups.NoClient(userId))
-                .SendAsync(NotificationHub.ReceiveMethod, notification, cancellationToken);
-            return;
+            await hub.Clients.Group(NotificationGroups.NoClient(push.UserId))
+                .SendAsync(NotificationHub.ReceiveMethod, push.Notification, cancellationToken);
         }
 
-        await using (var scope = scopes.CreateAsyncScope())
+        var today = DateOnly.FromDateTime(clock.UtcNow);
+        foreach (var byClient in pushes.Where(p => p.OrganizationId is not null).GroupBy(p => p.OrganizationId!.Value))
         {
-            var db = scope.ServiceProvider.GetRequiredService<LmsDbContext>();
-            var today = DateOnly.FromDateTime(clock.UtcNow);
-            if (!await db.ValidAssignmentsFor(userId, today).AnyAsync(a => a.OrganizationId == org, cancellationToken))
+            var org = byClient.Key;
+            var userIds = byClient.Select(p => p.UserId).Distinct().ToList();
+            HashSet<Guid> entitled;
+            await using (var scope = scopes.CreateAsyncScope())
             {
-                return;
+                var db = scope.ServiceProvider.GetRequiredService<LmsDbContext>();
+                entitled = (await db.ValidAssignmentsForUsers(userIds, today)
+                    .Where(a => a.OrganizationId == org).Select(a => a.UserId).Distinct()
+                    .ToListAsync(cancellationToken)).ToHashSet();
+            }
+
+            foreach (var push in byClient.Where(p => entitled.Contains(p.UserId)))
+            {
+                await hub.Clients.Group(NotificationGroups.For(push.UserId, org))
+                    .SendAsync(NotificationHub.ReceiveMethod, push.Notification, cancellationToken);
             }
         }
-
-        await hub.Clients.Group(NotificationGroups.For(userId, org))
-            .SendAsync(NotificationHub.ReceiveMethod, notification, cancellationToken);
     }
 }
