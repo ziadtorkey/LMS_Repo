@@ -23,6 +23,8 @@ public sealed class IsolationBypassGuardTests
             "settings on ancestors; restore a soft-deleted setting row (M0 Task 6, #25)",
         ["src/Lms.Infrastructure/Configuration/EffectiveSettingsReader.cs"] =
             "effective settings and locks inherited from ancestors above the caller's scope (M1 Task 14, #100)",
+        ["src/Lms.Api/Features/LevelTypes/LevelTypeEndpoints.cs"] =
+            "level types are client-wide, so the in-use count covers the whole client, not the caller subtree (M1 Task 8, #83)",
         ["src/Lms.Infrastructure/Notifications/NotificationRecipientResolver.cs"] =
             "recipients at or below the event unit, raised by someone above or beside them (M1 Task 10, #90)",
         ["src/Lms.Infrastructure/AcademicYears/AcademicYearResolver.cs"] =

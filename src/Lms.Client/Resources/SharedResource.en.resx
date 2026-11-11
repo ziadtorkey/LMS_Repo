@@ -263,5 +263,17 @@
   <data name="Calendar_DeleteConfirm" xml:space="preserve"><value>Delete {0}?</value></data>
   <data name="Calendar_PrevMonth" xml:space="preserve"><value>Previous month</value></data>
   <data name="Calendar_NextMonth" xml:space="preserve"><value>Next month</value></data>
+  <data name="OrgTree_Title" xml:space="preserve"><value>Organization tree</value></data>
+  <data name="OrgTree_AddChild" xml:space="preserve"><value>Add unit</value></data>
+  <data name="OrgTree_Search" xml:space="preserve"><value>Search units</value></data>
+  <data name="OrgTree_LevelType" xml:space="preserve"><value>Level type</value></data>
+  <data name="OrgTree_Deactivate" xml:space="preserve"><value>Deactivate</value></data>
+  <data name="OrgTree_Activate" xml:space="preserve"><value>Activate</value></data>
+  <data name="OrgTree_Inactive" xml:space="preserve"><value>Inactive</value></data>
+  <data name="OrgTree_Settings" xml:space="preserve"><value>Unit settings</value></data>
+  <data name="OrgTree_DeleteConfirm" xml:space="preserve"><value>Delete this unit? It can be restored by support only.</value></data>
+  <data name="OrgTree_NoMatches" xml:space="preserve"><value>No units match your search.</value></data>
+  <data name="Confirm_DeactivateTitle" xml:space="preserve"><value>Deactivate unit?</value></data>
+  <data name="OrgTree_DeactivateOwnWarning" xml:space="preserve"><value>You are working in this unit (or in one inside it). If you deactivate it you will lose access until an administrator above it reactivates it. Continue?</value></data>
   <data name="AuditEntity_StoredFile" xml:space="preserve"><value>File</value></data>
 </root>
