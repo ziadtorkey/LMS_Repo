@@ -194,4 +194,39 @@ public sealed class EligibilityTests(LmsApiFactory factory) : IDisposable
         Assert.Equal(2, byUnitAdmin.Total);
         Assert.Equal([atSchool.Id], descendants.Items.Select(e => e.CourseId).ToList());
     }
+
+    [Fact]
+    public async Task IncludeAncestors_never_returns_another_clients_or_a_deleted_grant_nor_answers_a_sibling_unit_admin()
+    {
+        var w = await _t.Classes.SeedAsync("EL8", currentYear: true);
+        var course = await AcademicTestKit.AddCourseAsync(factory, w.Tree.Root);
+        var deletedCourse = await AcademicTestKit.AddCourseAsync(factory, w.Tree.Root);
+        await AcademicTestKit.AllocateAsync(factory, course, w.Tree.Root);
+        await AcademicTestKit.AllocateAsync(factory, deletedCourse, w.Tree.Root);
+        var teacher = await _t.TeacherAsync(w);
+        await _t.GrantAsync(w, w.Tree.Root.Id, [teacher.User.Id], [course.Id]);
+        await _t.GrantAsync(w, w.Tree.School1.Id, [teacher.User.Id], [deletedCourse.Id]);
+        var other = await AccessTestData.SeedAsync(factory, "EL8B");
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            var school1Grant = await db.Set<TeacherCourseEligibility>().SingleAsync(e => e.CourseId == deletedCourse.Id);
+            school1Grant.ClearLiveKeys();
+            school1Grant.MarkDeleted(DateTime.UtcNow, null);
+
+            // Another client's grant that sits at a path equal to School1's: only the client filter keeps it out.
+            var foreign = new TeacherCourseEligibility(other.School1, teacher.User.Id, course);
+            db.Add(foreign);
+            db.Entry(foreign).Property(nameof(TeacherCourseEligibility.OrgUnitPath)).CurrentValue = w.Tree.School1.Path;
+            await db.SaveChangesAsync();
+        }
+
+        var applying = await ListAsync(w.Admin, $"?orgUnitId={w.Tree.School1.Id}&includeAncestors=true");
+        var school2Admin = await AccessTestData.AssignAsync(factory, w.Tree, w.Tree.School2, BuiltInRoles.OrgAdmin, (await PeopleTestKit.AddUserAsync(factory)).Id);
+        var sibling = await _t.Classes.SendAsync(school2Admin, HttpMethod.Get,
+            $"{Routes.TeacherEligibility}?orgUnitId={w.Tree.School1.Id}&includeAncestors=true");
+
+        Assert.Equal([course.Id], applying.Items.Select(e => e.CourseId).ToList());
+        Assert.All(applying.Items, e => Assert.Equal(w.Tree.Root.Id, e.OrgUnitId));
+        Assert.Equal(HttpStatusCode.NotFound, sibling.StatusCode);
+    }
 }
