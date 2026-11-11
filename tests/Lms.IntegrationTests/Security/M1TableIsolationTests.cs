@@ -25,8 +25,8 @@ public sealed class M1TableIsolationTests(LmsApiFactory factory)
 {
     private static readonly DateOnly Start = new(2041, 9, 1);
 
-    /// <summary>One row per place: client A School1, client A School2, client B root.</summary>
-    private sealed record Rows(Guid InSchool1, Guid InSchool2, Guid InClientB);
+    /// <summary>One row per place: client A School1, client A School2, client B root, client A root (an ancestor's row).</summary>
+    private sealed record Rows(Guid InSchool1, Guid InSchool2, Guid InClientB, Guid AtRootA);
 
     private LmsDbContext As(TestCurrentContext context) => factory.CreateDbContext(context);
 
@@ -36,7 +36,7 @@ public sealed class M1TableIsolationTests(LmsApiFactory factory)
     private async Task AssertUnitScopedIsolationAsync(
         AccessTree a, AccessTree b, Rows rows, Func<LmsDbContext, IQueryable<Guid>> ids, Func<Guid, Task> softDelete)
     {
-        var all = new[] { rows.InSchool1, rows.InSchool2, rows.InClientB };
+        var all = new[] { rows.InSchool1, rows.InSchool2, rows.InClientB, rows.AtRootA };
 
         async Task<List<Guid>> VisibleTo(TestCurrentContext who)
         {
@@ -47,11 +47,12 @@ public sealed class M1TableIsolationTests(LmsApiFactory factory)
 
         // client B never sees client A's rows (and its own is visible at its root)
         Assert.Equal([rows.InClientB], await VisibleTo(In(b, b.Root)));
-        // a sibling never sees a sibling
+        // a sibling never sees a sibling, and a child never sees its ancestor's row through the table
+        // (an inherited year is reached through the resolver, not the table)
         Assert.Equal([rows.InSchool1], await VisibleTo(In(a, a.School1)));
         Assert.Equal([rows.InSchool2], await VisibleTo(In(a, a.School2)));
-        // a parent sees its descendants, never another client
-        Assert.Equal(new[] { rows.InSchool1, rows.InSchool2 }.Order(), await VisibleTo(In(a, a.Root)));
+        // a parent sees its own row and its descendants', never another client's
+        Assert.Equal(new[] { rows.InSchool1, rows.InSchool2, rows.AtRootA }.Order(), await VisibleTo(In(a, a.Root)));
         // no scope, no client, malformed scope: nothing
         Assert.Empty(await VisibleTo(TestCurrentContext.For(a.Org.Id, null)));
         Assert.Empty(await VisibleTo(new TestCurrentContext { UserId = Guid.NewGuid() }));
@@ -61,9 +62,9 @@ public sealed class M1TableIsolationTests(LmsApiFactory factory)
 
         // soft-deleted rows disappear for everyone, siblings stay
         await softDelete(rows.InSchool1);
-        Assert.Equal([rows.InSchool2], await VisibleTo(In(a, a.Root)));
+        Assert.Equal(new[] { rows.InSchool2, rows.AtRootA }.Order(), await VisibleTo(In(a, a.Root)));
         Assert.Empty(await VisibleTo(In(a, a.School1)));
-        Assert.Equal(new[] { rows.InSchool2, rows.InClientB }.Order(), await VisibleTo(TestCurrentContext.PlatformAdmin()));
+        Assert.Equal(new[] { rows.InSchool2, rows.InClientB, rows.AtRootA }.Order(), await VisibleTo(TestCurrentContext.PlatformAdmin()));
     }
 
     private async Task<(AccessTree A, AccessTree B)> TwoClientsAsync(string tag) =>
@@ -91,7 +92,8 @@ public sealed class M1TableIsolationTests(LmsApiFactory factory)
     public async Task AcademicYear_is_isolated_by_client_subtree_and_soft_delete()
     {
         var (a, b) = await TwoClientsAsync("TI1");
-        var rows = new Rows((await AddYearAsync(a.School1)).Id, (await AddYearAsync(a.School2)).Id, (await AddYearAsync(b.Root)).Id);
+        var rows = new Rows(
+            (await AddYearAsync(a.School1)).Id, (await AddYearAsync(a.School2)).Id, (await AddYearAsync(b.Root)).Id, (await AddYearAsync(a.Root)).Id);
 
         await AssertUnitScopedIsolationAsync(a, b, rows, db => db.Set<AcademicYear>().Select(y => y.Id), SoftDeleteAsync<AcademicYear>);
     }
@@ -110,7 +112,7 @@ public sealed class M1TableIsolationTests(LmsApiFactory factory)
             return term.Id;
         }
 
-        var rows = new Rows(await TermAt(a.School1), await TermAt(a.School2), await TermAt(b.Root));
+        var rows = new Rows(await TermAt(a.School1), await TermAt(a.School2), await TermAt(b.Root), await TermAt(a.Root));
 
         await AssertUnitScopedIsolationAsync(a, b, rows, db => db.Set<Term>().Select(t => t.Id), SoftDeleteAsync<Term>);
     }
@@ -129,7 +131,7 @@ public sealed class M1TableIsolationTests(LmsApiFactory factory)
             return calendarEvent.Id;
         }
 
-        var rows = new Rows(await EventAt(a.School1), await EventAt(a.School2), await EventAt(b.Root));
+        var rows = new Rows(await EventAt(a.School1), await EventAt(a.School2), await EventAt(b.Root), await EventAt(a.Root));
 
         await AssertUnitScopedIsolationAsync(a, b, rows, db => db.Set<CalendarEvent>().Select(e => e.Id), SoftDeleteAsync<CalendarEvent>);
     }
