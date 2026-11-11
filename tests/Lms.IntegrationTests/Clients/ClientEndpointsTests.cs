@@ -372,4 +372,41 @@ public sealed class ClientEndpointsTests(LmsApiFactory factory) : IDisposable
         Assert.True(await db.Users.AnyAsync(u => u.Email == email));
         Assert.True(await db.Organizations.AnyAsync(o => o.Id == dto.Id));
     }
+    [Fact]
+    public async Task Short_code_defaults_from_the_root_unit_code()
+    {
+        var tag = "SC" + Guid.NewGuid().ToString("N")[..6];
+        var dto = await CreateAsync(NewClient(tag));
+
+        Assert.Equal(("root-" + tag).ToLowerInvariant(), dto.ShortCode);
+    }
+
+    [Fact]
+    public async Task Short_code_can_be_given_and_must_be_unique()
+    {
+        var code = "sc-" + Guid.NewGuid().ToString("N")[..8];
+        var dto = await CreateAsync(NewClient("SC1" + Guid.NewGuid().ToString("N")[..4]) with { ShortCode = code });
+        Assert.Equal(code, dto.ShortCode);
+
+        var again = await AsPlatformAdminAsync(HttpMethod.Post, Routes.Clients,
+            NewClient("SC2" + Guid.NewGuid().ToString("N")[..4]) with { ShortCode = code });
+
+        Assert.Equal(HttpStatusCode.Conflict, again.StatusCode);
+        Assert.Contains(ProblemCodes.short_code_taken, await again.Content.ReadAsStringAsync());
+    }
+
+    [Theory]
+    [InlineData("A")]
+    [InlineData("Upper")]
+    [InlineData("has space")]
+    [InlineData("under_score")]
+    [InlineData("a-very-long-short-code-over-twenty")]
+    public async Task Invalid_short_code_is_rejected(string code)
+    {
+        var response = await AsPlatformAdminAsync(HttpMethod.Post, Routes.Clients,
+            NewClient("SC3" + Guid.NewGuid().ToString("N")[..4]) with { ShortCode = code });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Contains(ProblemCodes.invalid_short_code, await response.Content.ReadAsStringAsync());
+    }
 }

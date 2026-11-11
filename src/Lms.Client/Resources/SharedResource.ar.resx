@@ -513,6 +513,8 @@
   <data name="Error_password_change_required" xml:space="preserve"><value>يجب تغيير كلمة المرور قبل المتابعة.</value></data>
   <data name="Error_invalid_owner_unit" xml:space="preserve"><value>لا يمكن أن يملك المقرر إلا جذر العميل أو مستوى إدارة المقررات.</value></data>
   <data name="Error_course_code_taken" xml:space="preserve"><value>يوجد مقرر آخر يستخدم هذا الكود.</value></data>
+  <data name="Error_short_code_taken" xml:space="preserve"><value>يستخدم عميل آخر هذا الرمز المختصر.</value></data>
+  <data name="Error_invalid_short_code" xml:space="preserve"><value>الرمز المختصر غير صالح: من 2 إلى 20 حرفًا لاتينيًا صغيرًا أو رقمًا أو شرطة.</value></data>
   <data name="Error_course_in_use" xml:space="preserve"><value>المقرر مستخدم في فصول ولا يمكن حذفه.</value></data>
   <data name="Error_course_not_available" xml:space="preserve"><value>هذا المقرر غير متاح في هذه الوحدة.</value></data>
   <data name="Error_allocation_exists" xml:space="preserve"><value>المقرر مخصص لهذه الوحدة من قبل.</value></data>

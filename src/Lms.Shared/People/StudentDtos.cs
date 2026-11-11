@@ -100,7 +100,9 @@ public static class CredentialsDelivery
 /// (D24). <c>IssuedPassword</c> is shown once and never returned again. <c>CredentialsSentTo</c> from
 /// <see cref="CredentialsDelivery"/>.
 /// </summary>
-public sealed record StudentCreatedDto(StudentDetailDto Student, string IssuedPassword, string CredentialsSentTo);
+/// <summary>Result of creating a student: the issued sign-in name (D47: <c>studentcode@clientshortcode</c>) and the
+/// default password, shown once (D24, D45).</summary>
+public sealed record StudentCreatedDto(StudentDetailDto Student, string IssuedPassword, string CredentialsSentTo, string UserName = "");
 
 /// <summary>Body of POST /api/students/{id}/reset-password; blank = a strong password is generated.</summary>
 public sealed record ResetStudentPasswordRequest(string? DefaultPassword);
