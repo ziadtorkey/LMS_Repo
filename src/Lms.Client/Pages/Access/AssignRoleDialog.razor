@@ -99,7 +99,7 @@
         _saving = true;
         var from = _validFrom is { } f ? DateOnly.FromDateTime(f) : (DateOnly?)null;
         var to = _validTo is { } t ? DateOnly.FromDateTime(t) : (DateOnly?)null;
-        var saved = await ActionCalls.TryAsync(
+        var saved = await ApiCalls.RunAsync(
             () => Existing is null
                 ? Api.CreateAssignmentAsync(new CreateAssignmentRequest(_email.Trim(),
                     string.IsNullOrWhiteSpace(_nameAr) ? null : _nameAr.Trim(),
