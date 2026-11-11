@@ -37,6 +37,8 @@ public sealed class IsolationBypassGuardTests
             "existence check of a unit that names the deleted unit as its transfer target; it can sit outside the caller's scope (M1 Task 13, #48)",
         ["src/Lms.Api/Features/LevelTypes/LevelTypeEndpoints.cs"] =
             "level types are client-wide, so the in-use count covers the whole client, not the caller subtree (M1 Task 8, #83)",
+        ["src/Lms.Infrastructure/Courses/CourseCatalog.cs"] =
+            "courses and allocations owned by ancestors of the caller scope, restricted to the client (M3 Task 5, #213)",
         ["src/Lms.Infrastructure/Notifications/NotificationRecipientResolver.cs"] =
             "recipients at or below the event unit, raised by someone above or beside them (M1 Task 10, #90)",
         ["src/Lms.Infrastructure/AcademicYears/AcademicYearResolver.cs"] =
