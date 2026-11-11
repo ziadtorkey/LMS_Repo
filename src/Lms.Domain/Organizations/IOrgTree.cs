@@ -11,4 +11,7 @@ public interface IOrgTree
 
     /// <summary>The units on the path from the root to <paramref name="path"/> (inclusive), root first; live units of that client only.</summary>
     Task<IReadOnlyList<OrgUnit>> GetAncestorsAndSelfAsync(string path, Guid organizationId, CancellationToken cancellationToken);
+
+    /// <summary>True when a live unit of the client already uses the code (anywhere in the client, optionally ignoring one unit).</summary>
+    Task<bool> CodeExistsAsync(Guid organizationId, string code, Guid? exceptUnitId, CancellationToken cancellationToken);
 }

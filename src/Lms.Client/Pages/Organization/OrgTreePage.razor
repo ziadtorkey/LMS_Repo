@@ -67,6 +67,11 @@ else
                                                OnClick="() => ToggleAsync(unit)" data-testid="@($"org-toggle-{unit.Id}")" />
                             }
                         }
+                        @if (PermState.Has(Permissions.OrgUnits.Move) && unit.ParentId is not null)
+                        {
+                            <MudIconButton Icon="@Icons.Material.Filled.DriveFileMove" Size="Size.Small" aria-label="@L["Move_Title"]"
+                                           OnClick="() => MoveAsync(unit)" data-testid="@($"org-move-{unit.Id}")" />
+                        }
                         @if (PermState.Has(Permissions.OrgUnits.Delete) && unit.ParentId is not null)
                         {
                             <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error"
@@ -161,15 +166,30 @@ else
         });
     }
 
-    private async Task ShowDialogAsync(string title, DialogParameters<OrgUnitDialog> parameters)
+    private Task ShowDialogAsync(string title, DialogParameters<OrgUnitDialog> parameters) =>
+        ShowDialogAsync<OrgUnitDialog>(title, parameters);
+
+    private async Task ShowDialogAsync<TDialog>(string title, DialogParameters<TDialog> parameters) where TDialog : ComponentBase
     {
-        var dialog = await Dialogs.ShowAsync<OrgUnitDialog>(title, parameters, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        var dialog = await Dialogs.ShowAsync<TDialog>(title, parameters, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
         var result = await dialog.Result;
         if (result is { Canceled: false })
         {
             Snackbar.Add(L["Common_Saved"], Severity.Success);
             await LoadAsync();
         }
+    }
+
+    private async Task MoveAsync(OrgUnitNodeDto unit)
+    {
+        _error = null;
+        // The candidate list needs the whole tree, not just the current search result.
+        IReadOnlyList<OrgUnitNodeDto> all = [];
+        if (!await RunAsync(async () => all = await Api.GetOrgUnitsAsync(null))) return;
+        await ShowDialogAsync<MoveUnitDialog>(L["Move_Title"], new DialogParameters<MoveUnitDialog>
+        {
+            { x => x.Unit, unit }, { x => x.AllUnits, all },
+        });
     }
 
     private async Task ToggleAsync(OrgUnitNodeDto unit)

@@ -392,6 +392,9 @@ namespace Lms.Infrastructure.Persistence.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("varchar(64)");
 
+                    b.Property<string>("OrgUnitPath")
+                        .HasColumnType("varchar(400) CHARACTER SET ascii COLLATE ascii_general_ci");
+
                     b.Property<Guid?>("OrganizationId")
                         .HasColumnType("char(36)");
 
@@ -406,6 +409,8 @@ namespace Lms.Infrastructure.Persistence.Migrations
                     b.HasIndex("EntityType", "EntityId");
 
                     b.HasIndex("OrganizationId", "TimestampUtc");
+
+                    b.HasIndex("OrganizationId", "OrgUnitPath", "TimestampUtc");
 
                     b.ToTable("AuditEntries", (string)null);
                 });
@@ -877,6 +882,13 @@ namespace Lms.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("varchar(200)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasDefaultValue("Active");
 
                     b.Property<int>("Type")
                         .HasColumnType("int");

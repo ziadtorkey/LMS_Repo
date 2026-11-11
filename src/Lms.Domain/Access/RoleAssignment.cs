@@ -32,6 +32,12 @@ public sealed class RoleAssignment : AuditableEntity, IOrgUnitScoped
     public DateOnly? ValidFrom { get; private set; }
     public DateOnly? ValidTo { get; private set; }
 
+    public void ChangeValidity(DateOnly? validFrom, DateOnly? validTo)
+    {
+        ValidFrom = validFrom;
+        ValidTo = validTo;
+    }
+
     public bool IsValidOn(DateOnly day) =>
         (ValidFrom is null || ValidFrom <= day) && (ValidTo is null || ValidTo >= day);
 }
