@@ -11,7 +11,7 @@
 <MudStack Spacing="2" data-testid="@($"calendar-{Year.Id}")">
     <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
         <MudText Typo="Typo.subtitle1">@L["Calendar_Title"]</MudText>
-        @if (CanEdit)
+        @if (CanEdit && UnitId is not null)
         {
             <MudButton Size="Size.Small" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Add" OnClick="() => OpenAsync(null)"
                        data-testid="@($"event-new-{Year.Id}")">@L["Calendar_New"]</MudButton>
@@ -92,8 +92,9 @@
     private Guid _loadedFor;
 
     [Parameter, EditorRequired] public AcademicYearDto Year { get; set; } = default!;
-    [Parameter, EditorRequired] public Guid UnitId { get; set; }
-    /// <summary>False for closed years or without AcademicYears.Update (inherited entries are always read-only).</summary>
+    /// <summary>The unit being viewed; null = the unit of the active context (the user cannot list units).</summary>
+    [Parameter] public Guid? UnitId { get; set; }
+    /// <summary>False for closed years or without AcademicYears.Update. A unit may add entries to an inherited year; inherited entries stay read-only.</summary>
     [Parameter] public bool CanEdit { get; set; }
 
     private bool IsRtl => CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft;
@@ -136,7 +137,7 @@
 
     private Task OpenAsync(CalendarEventDto? entry) =>
         DialogFlow.ShowAsync(Dialogs, entry is null ? L["Calendar_New"] : L["Common_Edit"],
-            new DialogParameters<CalendarEventDialog> { { x => x.YearId, Year.Id }, { x => x.UnitId, UnitId }, { x => x.Existing, entry } },
+            new DialogParameters<CalendarEventDialog> { { x => x.YearId, Year.Id }, { x => x.UnitId, UnitId ?? Guid.Empty }, { x => x.Existing, entry } },
             () => InvokeAsync(async () => { await LoadAsync(); StateHasChanged(); }));
 
     private async Task DeleteAsync(CalendarEventDto entry)
