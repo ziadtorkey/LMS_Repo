@@ -764,4 +764,17 @@
   <data name="Import_Button" xml:space="preserve"><value>استيراد من Excel</value></data>
   <data name="Clients_ShortCode" xml:space="preserve"><value>الرمز المختصر</value></data>
   <data name="Clients_ShortCodeHelp" xml:space="preserve"><value>يُستخدم في أسماء دخول الطلاب (الكود@الرمز): من 2 إلى 20 حرفًا إنجليزيًا صغيرًا أو رقمًا أو شرطة. اتركه فارغًا ليُشتق من رمز الوحدة الجذرية.</value></data>
+  <data name="StudentImport_Title" xml:space="preserve"><value>استيراد الطلاب</value></data>
+  <data name="StudentImport_Help" xml:space="preserve"><value>املأ صفًا لكل طالب: الاسم بالعربية والإنجليزية وتاريخ الميلاد والجنس والديانة والجنسية. يمكن إضافة أولياء الأمور في نفس الصف.</value></data>
+  <data name="StudentImport_HelpClassCode" xml:space="preserve"><value>اختياري. رمز فصل نشط في العام الدراسي الحالي بوحدة الطالب؛ يُوضع الطالب فيه ويُسجَّل في مقرراته.</value></data>
+  <data name="StudentImport_HelpPassword" xml:space="preserve"><value>اختياري. اتركه فارغًا لتُولَّد كلمة مرور قوية. يجب على الطالب تغييرها عند أول تسجيل دخول. لا تظهر كلمات المرور مرة أخرى: نزّل ملف بيانات الدخول مباشرة بعد الاستيراد.</value></data>
+  <data name="StudentImport_CredentialsOnce" xml:space="preserve"><value>يمكن تنزيل ملف بيانات الدخول مرة واحدة فقط، ومن قِبلك وحدك، وخلال 15 دقيقة. لا تُحفظ كلمات المرور ولا يمكن عرضها مرة أخرى.</value></data>
+  <data name="StudentImport_DownloadCredentials" xml:space="preserve"><value>تنزيل ملف بيانات الدخول</value></data>
+  <data name="StudentImport_CredentialsDone" xml:space="preserve"><value>تم تنزيل ملف بيانات الدخول.</value></data>
+  <data name="StudentImport_CredentialsGone" xml:space="preserve"><value>لم يعد ملف بيانات الدخول متاحًا: تم تنزيله من قبل أو انقضت 15 دقيقة.</value></data>
+  <data name="ClassImport_Title" xml:space="preserve"><value>إضافة طلاب إلى فصول</value></data>
+  <data name="ClassImport_Button" xml:space="preserve"><value>إضافة إلى فصول من Excel</value></data>
+  <data name="ClassImport_Year" xml:space="preserve"><value>يُوضع الطلاب في فصول العام الدراسي الحالي: {0}.</value></data>
+  <data name="ClassImport_Help" xml:space="preserve"><value>املأ صفًا لكل طالب برقم الطالب ورمز الفصل. يجب أن يكون الطلاب مسجلين من قبل، وأن يكون الفصل نشطًا في العام الدراسي الحالي.</value></data>
+  <data name="Import_SensitiveInvalid" xml:space="preserve"><value>هذه القيمة غير صالحة.</value></data>
 </root>

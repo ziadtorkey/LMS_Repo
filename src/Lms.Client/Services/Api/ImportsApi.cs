@@ -31,6 +31,9 @@ public sealed class ImportsApi(ApiHttp http) : IImportsApi
             $"{Routes.ImportRows(kind, id)}?errorsOnly={errorsOnly.ToString().ToLowerInvariant()}" +
             $"&culture={Uri.EscapeDataString(culture)}&page={page}&pageSize={pageSize}", ct);
 
+    public Task<(Stream Content, string FileName)> DownloadCredentialsAsync(string kind, Guid id, CancellationToken ct = default) =>
+        http.DownloadAsync($"{Routes.ImportBatch(kind, id)}/credentials", ct);
+
     public Task<(Stream Content, string FileName)> DownloadErrorReportAsync(string kind, Guid id, CancellationToken ct = default) =>
         http.DownloadAsync(Routes.ImportErrorReport(kind, id), ct);
 

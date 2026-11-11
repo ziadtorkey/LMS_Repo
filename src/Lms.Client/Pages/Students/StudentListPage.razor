@@ -13,11 +13,20 @@
 <PageTitle>@L["Students_Title"]</PageTitle>
 <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4" Wrap="Wrap.Wrap">
     <MudText Typo="Typo.h4" data-testid="students-title">@L["Students_Title"]</MudText>
-    @if (PermState.Has(Permissions.Students.Create))
-    {
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Href="students/new"
-                   data-testid="student-new">@L["Students_New"]</MudButton>
-    }
+    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+        @if (PermState.Has(Permissions.Students.Import))
+        {
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.UploadFile" Href="students/import"
+                       data-testid="student-import">@L["Import_Button"]</MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.GroupAdd" Href="classes/import"
+                       data-testid="class-import">@L["ClassImport_Button"]</MudButton>
+        }
+        @if (PermState.Has(Permissions.Students.Create))
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Href="students/new"
+                       data-testid="student-new">@L["Students_New"]</MudButton>
+        }
+    </MudStack>
 </MudStack>
 
 <MudStack Row="true" Spacing="2" Class="mb-3" Wrap="Wrap.Wrap" AlignItems="AlignItems.Center">

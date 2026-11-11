@@ -1,0 +1,56 @@
+@page "/classes/import"
+@attribute [Authorize]
+@using Lms.Client.Components
+@using Lms.Client.Components.Imports
+@using Lms.Client.Services
+@using Lms.Shared.Authorization
+@using Lms.Shared.Imports
+@implements IDisposable
+@inject PermissionState PermState
+@inject IYearStore Years
+@inject ICultureService Culture
+
+<PageTitle>@L["ClassImport_Title"]</PageTitle>
+@if (!PermState.Loaded)
+{
+    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+}
+else if (!PermState.Has(Permissions.Students.Import))
+{
+    <Forbidden />
+}
+else
+{
+    <MudButton Href="students" Variant="Variant.Text" StartIcon="@Icons.Material.Filled.ArrowBack" Class="mb-2"
+               data-testid="class-import-back">@L["Students_Title"]</MudButton>
+    <ImportWizard Kind="@ImportKinds.ClassStudents" TitleKey="ClassImport_Title">
+        <Banner>
+            @* Placement always goes into the classes of the current academic year of the unit. *@
+            @if (Years.Selected is { } year)
+            {
+                <MudAlert Severity="Severity.Info" Class="mb-3" data-testid="class-import-year">@L["ClassImport_Year", Culture.Pick(year.NameAr, year.NameEn)]</MudAlert>
+            }
+        </Banner>
+        <Help>
+            <MudAlert Severity="Severity.Info" data-testid="class-import-help">@L["ClassImport_Help"]</MudAlert>
+        </Help>
+    </ImportWizard>
+    <ImportHistory Kind="@ImportKinds.ClassStudents" />
+}
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        PermState.Changed += OnPermissionsChanged;
+        Years.Changed += OnPermissionsChanged; // the banner follows the year selector
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+    }
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        PermState.Changed -= OnPermissionsChanged;
+        Years.Changed -= OnPermissionsChanged;
+    }
+}
