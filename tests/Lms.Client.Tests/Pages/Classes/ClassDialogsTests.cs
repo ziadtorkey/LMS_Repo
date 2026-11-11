@@ -30,7 +30,13 @@ public sealed class ClassDialogsTests : ClassesTestContext
         return page;
     }
 
-    private void Type(string id, string value) => Dialogs.Find($"input[data-testid={id}]").Change(value);
+    private void Type(string id, string value)
+    {
+        var input = Dialogs.Find($"input[data-testid={id}]");
+        // The bulk fields update as you type (oninput); the others on a committed change.
+        if (id.StartsWith("bulk-")) input.Input(value);
+        else input.Change(value);
+    }
 
     private async Task FillClassAsync(string code = "2A")
     {
@@ -88,13 +94,13 @@ public sealed class ClassDialogsTests : ClassesTestContext
     {
         await OpenAsync("class-new");
         await FillClassAsync("1A");
-        // 1A exists in the seeded classes but for another year id: make the year match.
-        var existing = ClassesApi.All.First(c => c.Code == "1A");
-        await ClassesApi.UpdateAsync(existing.Id, new SaveClassRequest("1A", existing.NameAr, existing.NameEn, existing.OrgUnitId, YearId, existing.Capacity, null));
+        await ClassesApi.CreateAsync(new SaveClassRequest("1A", "ا", "A", FakeUnits.GradeId, YearId, null, null));
+        ClassesApi.ResetLastSave();
 
         await Dialogs.Find("[data-testid=dialog-save]").ClickAsync(new());
 
-        Dialogs.WaitForAssertion(() => Assert.Contains("code", Dialogs.Markup, StringComparison.OrdinalIgnoreCase), Wait);
+        Dialogs.WaitForAssertion(() => Assert.Contains("already uses this code", Dialogs.Markup), Wait);
+        Assert.NotEmpty(Dialogs.FindAll("[data-testid=dialog-save]"));
     }
 
     [Fact]

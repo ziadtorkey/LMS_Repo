@@ -23,6 +23,9 @@ public sealed class FakeClassesApi : IClassesApi
 
     public IReadOnlyList<ClassSummaryDto> All => _classes;
 
+    /// <summary>Forgets the last saved request (tests that seed data through the API call it before the step under test).</summary>
+    public void ResetLastSave() => LastSave = null;
+
     public Task<PagedResult<ClassSummaryDto>> ListAsync(ClassQuery query, CancellationToken ct = default)
     {
         LastQuery = query;
