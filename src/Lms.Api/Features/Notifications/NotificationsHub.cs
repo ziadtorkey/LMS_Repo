@@ -86,11 +86,34 @@ public sealed class NotificationsHub(LmsDbContext db, IClock clock) : Hub
         Guid.TryParse(Context.User?.FindFirst("sub")?.Value, out var id) ? id : null;
 }
 
-public sealed class SignalRNotificationPusher(IHubContext<NotificationsHub> hub) : INotificationPusher
+/// <summary>
+/// Pushes to the group of the notification's client, but only while the user still holds a valid assignment there
+/// (#122): a connection stays in its group after the assignment expires, is deleted or its unit is deactivated, so the
+/// entitlement is re-checked at push time. The notification itself is stored and listed either way.
+/// </summary>
+public sealed class SignalRNotificationPusher(IHubContext<NotificationsHub> hub, IServiceScopeFactory scopes, IClock clock)
+    : INotificationPusher
 {
-    public Task PushAsync(Guid userId, Guid? organizationId, NotificationDto notification, CancellationToken cancellationToken)
+    public async Task PushAsync(Guid userId, Guid? organizationId, NotificationDto notification, CancellationToken cancellationToken)
     {
-        var group = organizationId is { } org ? NotificationGroups.For(userId, org) : NotificationGroups.NoClient(userId);
-        return hub.Clients.Group(group).SendAsync(NotificationHub.ReceiveMethod, notification, cancellationToken);
+        if (organizationId is not { } org)
+        {
+            await hub.Clients.Group(NotificationGroups.NoClient(userId))
+                .SendAsync(NotificationHub.ReceiveMethod, notification, cancellationToken);
+            return;
+        }
+
+        await using (var scope = scopes.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<LmsDbContext>();
+            var today = DateOnly.FromDateTime(clock.UtcNow);
+            if (!await db.ValidAssignmentsFor(userId, today).AnyAsync(a => a.OrganizationId == org, cancellationToken))
+            {
+                return;
+            }
+        }
+
+        await hub.Clients.Group(NotificationGroups.For(userId, org))
+            .SendAsync(NotificationHub.ReceiveMethod, notification, cancellationToken);
     }
 }
