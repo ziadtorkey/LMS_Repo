@@ -30,6 +30,10 @@
                               RequiredError="@L["Common_Required"]" Validation="@(new Func<string, string?>(ValidateCode))"
                               MaxLength="50" dir="ltr" data-testid="root-code" />
 
+                <MudTextField T="string" Value="_shortCode" ValueChanged="v => _shortCode = (v ?? string.Empty).ToLowerInvariant()" Label="@L["Clients_ShortCode"]"
+                              HelperText="@L["Clients_ShortCodeHelp"]" Validation="@(new Func<string, string?>(ValidateShortCode))"
+                              MaxLength="20" dir="ltr" Immediate="true" data-testid="client-short-code" />
+
                 <MudText Typo="Typo.subtitle2">@L["Clients_AdminName"]</MudText>
                 <BilingualNameFields @bind-NameAr="_adminAr" @bind-NameEn="_adminEn" IdPrefix="admin-name" />
 
@@ -51,13 +55,17 @@
 
     private MudForm _form = default!;
     private string _nameAr = "", _nameEn = "", _rootLevelAr = "", _rootLevelEn = "", _rootCode = "";
-    private string _adminAr = "", _adminEn = "", _adminEmail = "";
+    private string _adminAr = "", _adminEn = "", _adminEmail = "", _shortCode = "";
     private string _type = OrganizationTypes.SchoolGroup;
     private string? _error;
     private bool _saving;
 
     private string? ValidateCode(string value) =>
         System.Text.RegularExpressions.Regex.IsMatch(value ?? "", "^[A-Za-z0-9_-]{1,50}$") ? null : L["Common_InvalidCode"].Value;
+
+    /// <summary>Optional: empty lets the server derive it from the root unit code (D47); otherwise 2-20 lower-case letters, digits or hyphens.</summary>
+    private string? ValidateShortCode(string value) =>
+        string.IsNullOrEmpty(value) || System.Text.RegularExpressions.Regex.IsMatch(value, "^[a-z0-9-]{2,20}$") ? null : L["Error_invalid_short_code"].Value;
 
     private string? ValidateEmail(string value) =>
         new EmailAddressAttribute().IsValid(value) ? null : L["Common_InvalidEmail"].Value;
@@ -72,7 +80,8 @@
         {
             await Api.CreateAsync(new CreateClientRequest(
                 _nameAr.Trim(), _nameEn.Trim(), _type, _rootLevelAr.Trim(), _rootLevelEn.Trim(),
-                _rootCode.Trim(), _adminEmail.Trim(), _adminAr.Trim(), _adminEn.Trim()));
+                _rootCode.Trim(), _adminEmail.Trim(), _adminAr.Trim(), _adminEn.Trim(),
+                string.IsNullOrWhiteSpace(_shortCode) ? null : _shortCode.Trim()));
             MudDialog.Close(DialogResult.Ok(true));
         }
         catch (ApiProblemException ex)
