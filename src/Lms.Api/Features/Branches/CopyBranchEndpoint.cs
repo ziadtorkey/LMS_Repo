@@ -55,24 +55,11 @@ public static partial class CopyBranchEndpoint
 
         // Copying must not be a way around the permissions of the thing copied: policies and settings are written at the
         // target only when the caller could also set them there by hand; otherwise they are skipped and reported.
-        var skippedForPermission = new List<string>();
-        var includePolicies = request.IncludePolicies;
-        if (includePolicies && (await http.CheckUnitAsync(Permissions.Policies.Update, request.TargetParentId, ct)).Problem is not null)
-        {
-            includePolicies = false;
-            skippedForPermission.Add(PoliciesSkipped);
-        }
-
-        var includeSettings = request.IncludeSettings;
-        if (includeSettings && (await http.CheckUnitAsync(Permissions.Settings.Update, request.TargetParentId, ct)).Problem is not null)
-        {
-            includeSettings = false;
-            skippedForPermission.Add(SettingsSkipped);
-        }
+        var extras = await BranchExtrasPermission.ResolveAsync(http, request.TargetParentId, request.IncludePolicies, request.IncludeSettings, ct);
 
         try
         {
-            var snapshot = await snapshotter.CaptureAsync(source.Unit, includePolicies, includeSettings, ct);
+            var snapshot = await snapshotter.CaptureAsync(source.Unit, extras.Policies, extras.Settings, ct);
             var root = snapshot.Nodes[0] with
             {
                 NameAr = string.IsNullOrWhiteSpace(request.NewRootNameAr) ? snapshot.Nodes[0].NameAr : request.NewRootNameAr.Trim(),
@@ -89,7 +76,7 @@ public static partial class CopyBranchEndpoint
                 snapshot, target.Unit, name => name, code => code + request.CodeSuffix, ct);
             return Results.Created(Routes.OrgUnit(result.NewRoot.Id),
                 new CopyBranchResultDto(
-                    result.NewRoot.Id, result.UnitsCreated, [.. skippedForPermission, .. result.SkippedLockedSettings]));
+                    result.NewRoot.Id, result.UnitsCreated, [.. extras.Skipped, .. result.SkippedLockedSettings]));
         }
         catch (BranchTooLargeException)
         {
