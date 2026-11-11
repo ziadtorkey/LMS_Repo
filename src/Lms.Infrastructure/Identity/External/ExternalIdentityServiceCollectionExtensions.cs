@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
@@ -15,8 +16,9 @@ public static class ExternalIdentityServiceCollectionExtensions
     /// Data Protection with the key ring in MySQL (shared by all nodes), the secret protector, and the dynamic
     /// OpenID Connect scheme registry (schemes are added at runtime, so the handler's option plumbing is registered here).
     /// </summary>
-    public static IServiceCollection AddExternalIdentity(this IServiceCollection services)
+    public static IServiceCollection AddExternalIdentity(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddSingleton(new OutboundGuard(configuration.GetValue<bool>("ExternalIdentity:AllowPrivateNetwork")));
         services.AddDataProtection().SetApplicationName("Lms");
         services.AddOptions<KeyManagementOptions>()
             .Configure<IServiceScopeFactory>((options, scopes) => options.XmlRepository = new EfXmlRepository(scopes));

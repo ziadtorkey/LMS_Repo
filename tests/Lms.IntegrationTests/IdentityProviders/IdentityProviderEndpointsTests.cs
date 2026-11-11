@@ -260,4 +260,68 @@ public sealed class IdentityProviderEndpointsTests(LmsApiFactory factory)
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
+
+    private static HttpRequestMessage AsAdmin(HttpMethod method, string url, RoleAssignment admin)
+    {
+        var request = new HttpRequestMessage(method, url);
+        request.Headers.Add(TestAuthHandler.UserHeader, admin.UserId.ToString());
+        request.Headers.Add(Lms.Shared.Authorization.ContextHeader.Name, admin.Id.ToString());
+        return request;
+    }
+
+    [Fact]
+    public async Task Test_endpoint_does_not_connect_to_internal_addresses_when_private_network_is_not_allowed()
+    {
+        var admin = await RootAdminAsync("IP15");
+        var listener = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, 0);
+        listener.Start();
+        try
+        {
+            var port = ((System.Net.IPEndPoint)listener.LocalEndpoint).Port;
+            var created = await CreateAsync(admin, Oidc(NewSlug(), $"https://127.0.0.1:{port}"));
+            using var strict = factory.WithWebHostBuilder(b => b.UseSetting("ExternalIdentity:AllowPrivateNetwork", "false"));
+
+            var response = await strict.CreateClient().SendAsync(AsAdmin(HttpMethod.Post, Routes.IdentityProviderTest(created.Id), admin));
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var result = (await response.Content.ReadFromJsonAsync<ProviderTestResultDto>(Web))!;
+            Assert.False(result.Ok);
+            Assert.Equal("authority_not_allowed", result.Error);
+            Assert.False(listener.Pending(), "the server must not open a connection to an internal address");
+        }
+        finally
+        {
+            listener.Stop();
+        }
+    }
+
+    [Fact]
+    public async Task Test_endpoint_does_not_follow_redirects()
+    {
+        var admin = await RootAdminAsync("IP16");
+        var listener = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, 0);
+        listener.Start();
+        try
+        {
+            var port = ((System.Net.IPEndPoint)listener.LocalEndpoint).Port;
+            _ = Task.Run(async () =>
+            {
+                using var client = await listener.AcceptTcpClientAsync();
+                using var stream = client.GetStream();
+                var reply = System.Text.Encoding.ASCII.GetBytes("HTTP/1.1 302 Found\r\nLocation: http://127.0.0.1:1/x\r\nContent-Length: 0\r\n\r\n");
+                await stream.WriteAsync(reply);
+            });
+            var created = await CreateAsync(admin, Oidc(NewSlug(), $"http://127.0.0.1:{port}"));
+
+            var response = await SendAsync(factory, HttpMethod.Post, Routes.IdentityProviderTest(created.Id), admin);
+
+            var result = (await response.Content.ReadFromJsonAsync<ProviderTestResultDto>(Web))!;
+            Assert.False(result.Ok);
+            Assert.Equal("discovery_http_error", result.Error); // the 302 itself, not the redirect target
+        }
+        finally
+        {
+            listener.Stop();
+        }
+    }
 }
