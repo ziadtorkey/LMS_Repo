@@ -104,6 +104,16 @@ public sealed class DevSeeder(string connectionString, IHostEnvironment environm
             ("lockout-e2e@altagamo3.test", "مستخدم القفل", "Lockout Test User", [("Teacher", "KG")]),
         ];
 
+        // Accounts in each blocked status (FR-SEC-07), used only by the blocked-login E2E: the right password must show
+        // the status message instead of signing in.
+        (string Email, string NameAr, string NameEn, UserStatus Status)[] blocked =
+        [
+            ("deactivated-e2e@altagamo3.test", "حساب معطّل", "Deactivated Test User", UserStatus.Deactivated),
+            ("expired-e2e@altagamo3.test", "حساب منتهي", "Expired Test User", UserStatus.Expired),
+            ("withdrawn-e2e@altagamo3.test", "حساب منسحب", "Withdrawn Test User", UserStatus.Withdrawn),
+        ];
+        people = [.. people, .. blocked.Select(b => (b.Email, b.NameAr, b.NameEn, new[] { ("Teacher", "KG") }))];
+
         foreach (var person in people)
         {
             var user = await EnsureUserAsync(db, person.Email, person.NameAr, person.NameEn, options.DefaultPassword!, false, ct);
@@ -120,6 +130,16 @@ public sealed class DevSeeder(string connectionString, IHostEnvironment environm
             }
 
             await db.SaveChangesAsync(ct);
+        }
+
+        foreach (var b in blocked)
+        {
+            var user = await db.Users.SingleAsync(u => u.NormalizedEmail == b.Email.ToUpperInvariant(), ct);
+            if (user.Status != b.Status)
+            {
+                user.Status = b.Status;
+                await db.SaveChangesAsync(ct);
+            }
         }
     }
 
