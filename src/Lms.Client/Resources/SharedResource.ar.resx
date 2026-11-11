@@ -263,6 +263,18 @@
   <data name="Calendar_DeleteConfirm" xml:space="preserve"><value>حذف {0}؟</value></data>
   <data name="Calendar_PrevMonth" xml:space="preserve"><value>الشهر السابق</value></data>
   <data name="Calendar_NextMonth" xml:space="preserve"><value>الشهر التالي</value></data>
+  <data name="OrgTree_Title" xml:space="preserve"><value>الهيكل التنظيمي</value></data>
+  <data name="OrgTree_AddChild" xml:space="preserve"><value>إضافة وحدة</value></data>
+  <data name="OrgTree_Search" xml:space="preserve"><value>البحث في الوحدات</value></data>
+  <data name="OrgTree_LevelType" xml:space="preserve"><value>نوع المستوى</value></data>
+  <data name="OrgTree_Deactivate" xml:space="preserve"><value>إيقاف</value></data>
+  <data name="OrgTree_Activate" xml:space="preserve"><value>تفعيل</value></data>
+  <data name="OrgTree_Inactive" xml:space="preserve"><value>غير نشط</value></data>
+  <data name="OrgTree_Settings" xml:space="preserve"><value>إعدادات الوحدة</value></data>
+  <data name="OrgTree_DeleteConfirm" xml:space="preserve"><value>حذف هذه الوحدة؟ لا يمكن استعادتها إلا عن طريق الدعم الفني.</value></data>
+  <data name="OrgTree_NoMatches" xml:space="preserve"><value>لا توجد وحدات مطابقة للبحث.</value></data>
+  <data name="Confirm_DeactivateTitle" xml:space="preserve"><value>إيقاف الوحدة؟</value></data>
+  <data name="OrgTree_DeactivateOwnWarning" xml:space="preserve"><value>أنت تعمل في هذه الوحدة (أو في وحدة تابعة لها). إذا أوقفتها فستفقد الوصول إلى أن يعيد مسؤول أعلى منها تفعيلها. هل تريد المتابعة؟</value></data>
   <data name="AuditEntity_StoredFile" xml:space="preserve"><value>ملف</value></data>
   <data name="Year_Selector" xml:space="preserve"><value>العام الدراسي</value></data>
   <data name="Year_None" xml:space="preserve"><value>لا يوجد عام دراسي</value></data>

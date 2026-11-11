@@ -31,11 +31,14 @@ public sealed class YearStore : IYearStore, IDisposable
     private readonly IContextStore _context;
     private readonly IJSRuntime _js;
     private readonly NavigationManager _navigation;
+    private readonly PermissionState _permissions;
 
-    public YearStore(IYearsApi api, IContextStore context, IJSRuntime js, NavigationManager navigation)
+    public YearStore(IYearsApi api, IContextStore context, IJSRuntime js, NavigationManager navigation, PermissionState permissions)
     {
-        _api = api; _context = context; _js = js; _navigation = navigation;
-        _context.Changed += OnContextChanged;
+        _api = api; _context = context; _js = js; _navigation = navigation; _permissions = permissions;
+        // Permissions are reloaded after every context change (and cleared on logout), so reacting to them covers both,
+        // and never asks the API with the permissions of the previous context.
+        _permissions.Changed += OnPermissionsChanged;
     }
 
     public IReadOnlyList<AcademicYearDto> Years { get; private set; } = [];
@@ -47,7 +50,8 @@ public sealed class YearStore : IYearStore, IDisposable
     public async Task LoadAsync(Guid? orgUnitId = null)
     {
         var assignment = _context.ActiveAssignmentId;
-        if (assignment is null)
+        // Without AcademicYears.View the API answers 403 and the HTTP pipeline would send the user to /forbidden: do not ask.
+        if (assignment is null || !_permissions.Has(Lms.Shared.Authorization.Permissions.AcademicYears.View))
         {
             Years = []; SelectedYearId = null;
             Changed?.Invoke();
@@ -101,7 +105,7 @@ public sealed class YearStore : IYearStore, IDisposable
         }
     }
 
-    private void OnContextChanged() => _ = LoadAsync();
+    private void OnPermissionsChanged() => _ = LoadAsync();
 
-    public void Dispose() => _context.Changed -= OnContextChanged;
+    public void Dispose() => _permissions.Changed -= OnPermissionsChanged;
 }
