@@ -119,6 +119,9 @@ public sealed record UpdateClassCourseRequest(bool IsOptional);
 /// <summary>Body of POST /api/class-courses/bulk-assign: adds the course to every live class at the unit and below.</summary>
 public sealed record BulkAssignCourseRequest(Guid OrgUnitId, Guid AcademicYearId, Guid CourseId, bool IsOptional);
 
+/// <summary>Result of POST bulk-assign: ClassCourses created, and classes skipped because they already had the course.</summary>
+public sealed record BulkAssignResultDto(int Added, int Skipped);
+
 /// <summary>GET /api/classes/matrix: classes × available courses; a cell exists where the class has the course.</summary>
 public sealed record DistributionMatrixDto(
     IReadOnlyList<ClassSummaryDto> Classes,

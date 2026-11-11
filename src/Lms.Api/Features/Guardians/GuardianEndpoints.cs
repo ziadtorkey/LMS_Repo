@@ -16,11 +16,11 @@ public static class GuardianEndpoints
 {
     public static void Map(IEndpointRouteBuilder app)
     {
-        app.MapGet(GuardianRoutes.Guardians, ListAsync).RequirePermission(Permissions.Students.View);
+        app.MapGet(Routes.Guardians, ListAsync).RequirePermission(Permissions.Students.View);
         // Registered before the {id} route so "match" is never read as an id.
-        app.MapGet(GuardianRoutes.GuardianMatch, MatchAsync).RequirePermission(Permissions.Students.Update);
-        app.MapGet(GuardianRoutes.GuardianPattern, GetAsync).RequirePermission(Permissions.Students.View);
-        app.MapPut(GuardianRoutes.GuardianPattern, UpdateAsync).RequirePermission(Permissions.Students.Update);
+        app.MapGet(Routes.GuardiansMatch, MatchAsync).RequirePermission(Permissions.Students.Update);
+        app.MapGet(Routes.GuardianPattern, GetAsync).RequirePermission(Permissions.Students.View);
+        app.MapPut(Routes.GuardianPattern, UpdateAsync).RequirePermission(Permissions.Students.Update);
     }
 
     private static async Task<IResult> ListAsync(

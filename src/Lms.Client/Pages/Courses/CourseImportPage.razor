@@ -1,0 +1,7 @@
+@page "/courses/import"
+@attribute [Authorize]
+@using Lms.Client.Components.Imports
+@using Lms.Shared.Imports
+
+<PageTitle>@L["CourseImport_Title"]</PageTitle>
+<ImportWizard Kind="@ImportKinds.Courses" TitleKey="CourseImport_Title" />

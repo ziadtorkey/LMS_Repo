@@ -1,0 +1,129 @@
+@page "/courses"
+@attribute [Authorize]
+@using Lms.Client.Components
+@using Lms.Client.Components.People
+@using Lms.Client.Services.Api
+@using Lms.Shared.Authorization
+@using Lms.Shared.Courses
+@inject ICoursesApi Api
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject PermissionState PermState
+@inject ICultureService Culture
+@implements IDisposable
+
+<PageTitle>@L["Course_Title"]</PageTitle>
+<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4" Wrap="Wrap.Wrap">
+    <MudText Typo="Typo.h4" data-testid="course-title">@L["Course_Title"]</MudText>
+    <MudStack Row="true" Spacing="2">
+        @if (PermState.Has(Permissions.Courses.Import))
+        {
+            <MudButton Variant="Variant.Outlined" Href="courses/import" StartIcon="@Icons.Material.Filled.UploadFile"
+                       data-testid="course-import">@L["Course_Import"]</MudButton>
+        }
+        @if (PermState.Has(Permissions.Courses.Create))
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="NewAsync" data-testid="course-new">@L["Course_New"]</MudButton>
+        }
+    </MudStack>
+</MudStack>
+
+<MudStack Row="true" Spacing="2" Class="mb-3" Wrap="Wrap.Wrap" AlignItems="AlignItems.Center">
+    <MudTextField T="string" Value="_searchText" ValueChanged="OnSearchChanged" Label="@L["Common_Search"]" Immediate="true"
+                  DebounceInterval="300" Clearable="true" data-testid="course-search" />
+    <MudItem xs="12" sm="3">
+        <UnitPicker Value="_unitId" ValueChanged="OnUnitChanged" Label="@L["Course_Unit"]" Clearable="true" TestId="course-filter-unit" />
+    </MudItem>
+    <MudSelect T="string" Value="_status" ValueChanged="OnStatusChanged" Label="@L["Common_Status"]" Clearable="true"
+               data-testid="course-filter-status" Style="min-width: 10rem">
+        @foreach (var status in CourseStatuses.All)
+        {
+            <MudSelectItem T="string" Value="@status">@L[$"CourseStatus_{status}"]</MudSelectItem>
+        }
+    </MudSelect>
+    <MudCheckBox T="bool" Value="_supervisedByMe" ValueChanged="OnSupervisedChanged" Label="@L["Course_SupervisedByMe"]"
+                 data-testid="course-filter-supervised" />
+</MudStack>
+
+<ServerTable @ref="_table" T="CourseSummaryDto" ServerData="LoadAsync">
+    <HeaderContent>
+        <MudTh>@L["Course_Code"]</MudTh>
+        <MudTh>@L["Common_Name"]</MudTh>
+        <MudTh>@L["Course_Owner"]</MudTh>
+        <MudTh>@L["Course_WeeklyPeriods"]</MudTh>
+        <MudTh>@L["Common_Status"]</MudTh>
+        <MudTh>@L["Course_Allocations"]</MudTh>
+    </HeaderContent>
+    <RowTemplate Context="course">
+        <MudTd><span dir="ltr">@course.Code</span></MudTd>
+        <MudTd>
+            <MudLink OnClick="() => OpenAsync(course)" data-testid="@($"course-link-{course.Id}")">@Culture.Pick(course.NameAr, course.NameEn)</MudLink>
+            @if (course.IsInherited)
+            {
+                <MudChip T="string" Size="Size.Small" Color="Color.Info" data-testid="@($"inherited-chip-{course.Id}")">@L["Course_Inherited"]</MudChip>
+            }
+        </MudTd>
+        <MudTd>@Culture.Pick(course.OwnerOrgUnitNameAr, course.OwnerOrgUnitNameEn)</MudTd>
+        <MudTd>@course.WeeklyPeriods</MudTd>
+        <MudTd>
+            <MudChip T="string" Size="Size.Small" Color="@(course.Status == CourseStatuses.Active ? Color.Success : Color.Default)">@L[$"CourseStatus_{course.Status}"]</MudChip>
+        </MudTd>
+        <MudTd>@course.AllocationCount</MudTd>
+    </RowTemplate>
+</ServerTable>
+
+@code {
+    private ServerTable<CourseSummaryDto> _table = default!;
+    private string? _searchText, _status;
+    private Guid? _unitId;
+    private bool _supervisedByMe;
+
+    protected override async Task OnInitializedAsync()
+    {
+        PermState.Changed += OnPermissionsChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+    }
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => PermState.Changed -= OnPermissionsChanged;
+
+    private async Task<TableData<CourseSummaryDto>> LoadAsync(TableState state, CancellationToken ct)
+    {
+        var query = new CourseQuery(_unitId, true, _status, string.IsNullOrWhiteSpace(_searchText) ? null : _searchText.Trim(),
+            _supervisedByMe, null, state.Page + 1, state.PageSize);
+        var result = await Api.ListAsync(query, ct);
+        return new TableData<CourseSummaryDto> { Items = result.Items, TotalItems = result.Total };
+    }
+
+    private Task OnSearchChanged(string? text) { _searchText = text; return _table.ReloadAsync(); }
+    private Task OnUnitChanged(Guid? id) { _unitId = id; return _table.ReloadAsync(); }
+    private Task OnStatusChanged(string? status) { _status = status; return _table.ReloadAsync(); }
+    private Task OnSupervisedChanged(bool value) { _supervisedByMe = value; return _table.ReloadAsync(); }
+
+    private static readonly DialogOptions DialogSize = new() { MaxWidth = MaxWidth.Medium, FullWidth = true };
+
+    private async Task NewAsync()
+    {
+        var dialog = await Dialogs.ShowAsync<CourseDialog>(L["Course_New"], DialogSize);
+        if (await dialog.Result is { Canceled: false })
+        {
+            Snackbar.Add(L["Course_Created"], Severity.Success);
+            await _table.ReloadAsync();
+        }
+    }
+
+    /// <summary>Inherited courses (owned at an ancestor) and callers without Courses.Update get a read-only view.</summary>
+    private async Task OpenAsync(CourseSummaryDto course)
+    {
+        var readOnly = course.IsInherited || !PermState.Has(Permissions.Courses.Update);
+        var dialog = await Dialogs.ShowAsync<CourseDialog>(readOnly ? L["Course_View"] : L["Course_Edit"],
+            new DialogParameters<CourseDialog> { { x => x.CourseId, course.Id }, { x => x.ReadOnly, readOnly } }, DialogSize);
+        if (await dialog.Result is { Canceled: false })
+        {
+            Snackbar.Add(L["Common_Saved"], Severity.Success);
+            await _table.ReloadAsync();
+        }
+    }
+}
