@@ -1,4 +1,7 @@
 using Lms.Api.Infrastructure;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Lms.IntegrationTests.Infrastructure;
 
@@ -9,42 +12,35 @@ namespace Lms.IntegrationTests.Infrastructure;
 public class LmsModuleDiscoveryTests
 {
     [Fact]
-    public void Every_module_is_a_concrete_class_with_a_public_parameterless_constructor()
+    public void Discovery_returns_only_public_concrete_non_generic_modules_in_ordinal_name_order()
     {
-        var types = LmsModuleRegistry.ModuleTypes;
+        var found = LmsModuleRegistry.Discover(typeof(LmsModuleDiscoveryTests).Assembly);
 
-        Assert.All(types, t =>
-        {
-            Assert.False(t.IsAbstract);
-            Assert.NotNull(t.GetConstructor(Type.EmptyTypes));
-        });
+        Assert.Equal([typeof(Fixtures.AModule), typeof(Fixtures.BModule)], found);
     }
 
     [Fact]
-    public void Discovery_order_is_deterministic_and_has_no_duplicates()
+    public void Api_assembly_modules_all_have_a_public_parameterless_constructor()
     {
-        var names = LmsModuleRegistry.ModuleTypes.Select(t => t.FullName!).ToList();
-
-        Assert.Equal(names.Order(StringComparer.Ordinal), names);
-        Assert.Equal(names.Count, names.Distinct(StringComparer.Ordinal).Count());
+        Assert.All(LmsModuleRegistry.ModuleTypes, t => Assert.NotNull(t.GetConstructor(Type.EmptyTypes)));
     }
 
     [Fact]
-    public void Add_and_map_run_every_discovered_module_once()
+    public void Add_and_map_run_every_module_once_in_order()
     {
         var calls = new List<string>();
-        var modules = new ILmsModule[] { new RecordingModule("a", calls), new RecordingModule("b", calls) };
+        var modules = new ILmsModule[] { new Recording("a", calls), new Recording("b", calls) };
+        var app = WebApplication.CreateBuilder().Build();
 
-        var services = new Microsoft.Extensions.DependencyInjection.ServiceCollection();
-        LmsModuleRegistry.AddModules(services, new Microsoft.Extensions.Configuration.ConfigurationBuilder().Build(), modules);
+        LmsModuleRegistry.AddModules(new ServiceCollection(), new ConfigurationBuilder().Build(), modules);
+        LmsModuleRegistry.MapModules(app, modules);
 
-        Assert.Equal(["add:a", "add:b"], calls);
+        Assert.Equal(["add:a", "add:b", "map:a", "map:b"], calls);
     }
 
-    private sealed class RecordingModule(string name, List<string> calls) : ILmsModule
+    private sealed class Recording(string name, List<string> calls) : ILmsModule
     {
-        public void AddServices(Microsoft.Extensions.DependencyInjection.IServiceCollection services,
-            Microsoft.Extensions.Configuration.IConfiguration configuration) => calls.Add("add:" + name);
+        public void AddServices(IServiceCollection services, IConfiguration configuration) => calls.Add("add:" + name);
 
         public void MapEndpoints(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder app) => calls.Add("map:" + name);
     }
