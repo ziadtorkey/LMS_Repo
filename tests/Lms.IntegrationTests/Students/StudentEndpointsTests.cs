@@ -91,6 +91,7 @@ public sealed class StudentEndpointsTests
         var created = await CreateOkAsync(admin, Create(w.Tree.School1.Id, classId: w.Class.Id, guardians: [NewGuardian(primary: true)]));
 
         Assert.False(string.IsNullOrEmpty(created.IssuedPassword));
+        Assert.Equal(created.Student.Summary.StudentCode.ToLowerInvariant() + "@", created.UserName[..(created.Student.Summary.StudentCode.Length + 1)]); // D47: code@shortcode
         Assert.Equal(CredentialsDelivery.None, created.CredentialsSentTo); // no student email, the guardian has none
         var detail = created.Student;
         Assert.False(string.IsNullOrEmpty(detail.Summary.StudentCode));
