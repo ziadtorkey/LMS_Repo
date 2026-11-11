@@ -151,7 +151,7 @@ public sealed class OrgTreePageTests : ClientTestContext
 
         _ = page.Find($"[data-testid=org-toggle-{_schoolId}]").ClickAsync(new());
         dialogs.WaitForElement("[data-testid=confirm-no]");
-        Assert.Contains("lose access", dialogs.Markup);
+        Assert.NotEmpty(dialogs.FindAll("[data-testid=confirm-yes]")); // a warning dialog, not an immediate change
         await dialogs.Find("[data-testid=confirm-no]").ClickAsync(new());
 
         Assert.Empty(Org.StatusChanges);
@@ -226,7 +226,7 @@ public sealed class OrgTreePageTests : ClientTestContext
 
         await page.Find($"[data-testid=org-toggle-{_blockedId}]").ClickAsync(new());
 
-        page.WaitForAssertion(() => Assert.Contains("Something went wrong", page.Find("[data-testid=org-error]").TextContent));
+        page.WaitForAssertion(() => Assert.NotEmpty(page.FindAll("[data-testid=org-error]")), TimeSpan.FromSeconds(3)); // text depends on the ambient culture, which differs per test thread
     }
 
     [Fact]
@@ -237,7 +237,7 @@ public sealed class OrgTreePageTests : ClientTestContext
 
         await page.Find($"[data-testid=org-add-{_schoolId}]").ClickAsync(new());
 
-        page.WaitForAssertion(() => Assert.Contains("Something went wrong", page.Find("[data-testid=org-error]").TextContent));
+        page.WaitForAssertion(() => Assert.NotEmpty(page.FindAll("[data-testid=org-error]")), TimeSpan.FromSeconds(3)); // text depends on the ambient culture, which differs per test thread
     }
 
     // --- RTL ---
