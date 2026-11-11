@@ -29,7 +29,11 @@ public sealed class ApiProblemException(int status, string? code, string? detail
         Dictionary<string, string[]>? errors = null;
         try
         {
-            var json = await response.Content.ReadFromJsonAsync<JsonElement>(ct);
+            // Read as a string, not as a JSON stream: ReadFromJsonAsync disposes the content stream, and the redirect
+            // handler and the classifier both read the same body (bug #132). A buffered content can be read as a string repeatedly.
+            var text = await response.Content.ReadAsStringAsync(ct);
+            using var document = JsonDocument.Parse(text);
+            var json = document.RootElement;
             if (json.ValueKind == JsonValueKind.Object)
             {
                 code = Text(json, "code") ?? Text(json, "reason");
@@ -44,6 +48,7 @@ public sealed class ApiProblemException(int status, string? code, string? detail
         }
         catch (JsonException) { }
         catch (NotSupportedException) { }
+        catch (InvalidOperationException) { }
         return new ApiProblemException((int)response.StatusCode, code, detail, errors);
     }
 

@@ -233,6 +233,36 @@
   <data name="LevelTypes_OutOfScope" xml:space="preserve"><value>This can only be changed at the top level of the organization.</value></data>
   <data name="Common_Yes" xml:space="preserve"><value>Yes</value></data>
   <data name="Common_No" xml:space="preserve"><value>No</value></data>
+  <data name="Nav_AcademicYears" xml:space="preserve"><value>Academic years</value></data>
+  <data name="Years_Title" xml:space="preserve"><value>Academic years</value></data>
+  <data name="Years_New" xml:space="preserve"><value>New year</value></data>
+  <data name="Years_Start" xml:space="preserve"><value>Start date</value></data>
+  <data name="Years_End" xml:space="preserve"><value>End date</value></data>
+  <data name="Years_Activate" xml:space="preserve"><value>Set as active</value></data>
+  <data name="YearStatus_Planned" xml:space="preserve"><value>Planned</value></data>
+  <data name="YearStatus_Active" xml:space="preserve"><value>Active</value></data>
+  <data name="YearStatus_Closed" xml:space="preserve"><value>Closed</value></data>
+  <data name="Years_DefinedAt" xml:space="preserve"><value>Defined at {0}</value></data>
+  <data name="Years_DefineOwn" xml:space="preserve"><value>Define own years for this unit</value></data>
+  <data name="Terms_Title" xml:space="preserve"><value>Terms</value></data>
+  <data name="Terms_Current" xml:space="preserve"><value>Current</value></data>
+  <data name="Calendar_Title" xml:space="preserve"><value>Calendar</value></data>
+  <data name="Calendar_Holiday" xml:space="preserve"><value>Holiday</value></data>
+  <data name="Calendar_Event" xml:space="preserve"><value>Event</value></data>
+  <data name="Calendar_InheritedFrom" xml:space="preserve"><value>From {0}</value></data>
+  <data name="Years_DateOrder" xml:space="preserve"><value>End date must not be before start date.</value></data>
+  <data name="Years_Empty" xml:space="preserve"><value>No academic years are defined for this unit yet.</value></data>
+  <data name="Years_ClosedHint" xml:space="preserve"><value>This year is closed and cannot be changed.</value></data>
+  <data name="Years_DeleteConfirm" xml:space="preserve"><value>Delete the academic year {0}?</value></data>
+  <data name="Terms_New" xml:space="preserve"><value>New term</value></data>
+  <data name="Terms_DeleteConfirm" xml:space="preserve"><value>Delete the term {0}?</value></data>
+  <data name="Calendar_New" xml:space="preserve"><value>New entry</value></data>
+  <data name="Calendar_Kind" xml:space="preserve"><value>Type</value></data>
+  <data name="Calendar_TitleAr" xml:space="preserve"><value>Title (Arabic)</value></data>
+  <data name="Calendar_TitleEn" xml:space="preserve"><value>Title (English)</value></data>
+  <data name="Calendar_DeleteConfirm" xml:space="preserve"><value>Delete {0}?</value></data>
+  <data name="Calendar_PrevMonth" xml:space="preserve"><value>Previous month</value></data>
+  <data name="Calendar_NextMonth" xml:space="preserve"><value>Next month</value></data>
   <data name="OrgTree_Title" xml:space="preserve"><value>Organization tree</value></data>
   <data name="OrgTree_AddChild" xml:space="preserve"><value>Add unit</value></data>
   <data name="OrgTree_Search" xml:space="preserve"><value>Search units</value></data>
@@ -282,4 +312,7 @@
   <data name="Settings_OutOfRange" xml:space="preserve"><value>Enter a whole number between {0} and {1}.</value></data>
   <data name="SettingValue_Ui_DefaultCulture_ar" xml:space="preserve"><value>Arabic</value></data>
   <data name="SettingValue_Ui_DefaultCulture_en" xml:space="preserve"><value>English</value></data>
+  <data name="Year_Selector" xml:space="preserve"><value>Academic year</value></data>
+  <data name="Year_None" xml:space="preserve"><value>No academic year</value></data>
+  <data name="Year_ReadOnly" xml:space="preserve"><value>Closed year — read only</value></data>
 </root>

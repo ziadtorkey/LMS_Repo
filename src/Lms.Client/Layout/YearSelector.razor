@@ -1,0 +1,49 @@
+@using Lms.Shared.Authorization
+@implements IDisposable
+@inject IYearStore Years
+@inject PermissionState Perms
+
+@* Global academic year selector in the app bar; hidden without AcademicYears.View. *@
+@if (Perms.Has(Permissions.AcademicYears.View))
+{
+    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1" Class="lms-year-selector" data-testid="year-selector">
+        @if (Years.Years.Count == 0)
+        {
+            <MudText Typo="Typo.body2" data-testid="year-none">@L["Year_None"]</MudText>
+        }
+        else
+        {
+            <MudSelect T="Guid" Value="@(Years.SelectedYearId ?? Guid.Empty)" ValueChanged="Years.SelectAsync"
+                       Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined" Class="lms-year-select"
+                       aria-label="@L["Year_Selector"]" data-testid="year-select">
+                @foreach (var year in Years.Years)
+                {
+                    <MudSelectItem Value="@year.Id">@CultureText.Pick(year.NameAr, year.NameEn)</MudSelectItem>
+                }
+            </MudSelect>
+            @if (Years.IsReadOnly)
+            {
+                <MudTooltip Text="@L["Year_ReadOnly"]">
+                    <MudIcon Icon="@Icons.Material.Filled.Lock" Size="Size.Small" title="@L["Year_ReadOnly"]" data-testid="year-lock" />
+                </MudTooltip>
+            }
+        }
+    </MudStack>
+}
+
+@code {
+    protected override void OnInitialized()
+    {
+        Years.Changed += OnChanged;
+        Perms.Changed += OnChanged;
+        _ = Years.LoadAsync();
+    }
+
+    private void OnChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        Years.Changed -= OnChanged;
+        Perms.Changed -= OnChanged;
+    }
+}
