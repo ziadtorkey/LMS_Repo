@@ -15,6 +15,10 @@ public sealed class IsolationBypassGuardTests
             "client root and ancestors lie above a unit-level caller's scope (M1 Task 5)",
         ["src/Lms.Infrastructure/Access/ValidAssignmentQuery.cs"] =
             "resolving the caller's own role assignments before any scope exists; D15 inactive ancestors (M0 Task 5, #86)",
+        ["src/Lms.Infrastructure/Identity/External/ExternalSchemeRegistry.cs"] =
+            "schemes are process-wide and exist before any caller: reads the enabled, live providers of every client (M2 Task 21, #167)",
+        ["src/Lms.Api/Features/IdentityProviders/IdentityProviderEndpoints.cs"] =
+            "provider slug is unique across clients; existence check only, nothing of the other client's row is returned (M2 Task 21, #167)",
         ["src/Lms.Infrastructure/Configuration/PolicyEvaluator.cs"] =
             "policies set on ancestors outside the caller's scope (M0 Task 6)",
         ["src/Lms.Infrastructure/Configuration/PolicyManager.cs"] =
@@ -27,6 +31,10 @@ public sealed class IsolationBypassGuardTests
             "effective policies set on ancestors above the caller's scope (M1 Task 12, #94)",
         ["src/Lms.Infrastructure/Organizations/OrgPolicyReader.cs"] =
             "policies set on ancestors above the caller's scope, to show blocked permissions in the org tree (M1 Task 9, #99)",
+        ["src/Lms.Api/Features/OrgUnits/AcademicFlagsHandler.cs"] =
+            "read-only check of the client's level-transfer units (chains and references run through units the caller cannot see) (M1 Task 13, #48)",
+        ["src/Lms.Api/Features/OrgUnits/TransferTargetUsageCheck.cs"] =
+            "existence check of a unit that names the deleted unit as its transfer target; it can sit outside the caller's scope (M1 Task 13, #48)",
         ["src/Lms.Api/Features/LevelTypes/LevelTypeEndpoints.cs"] =
             "level types are client-wide, so the in-use count covers the whole client, not the caller subtree (M1 Task 8, #83)",
         ["src/Lms.Infrastructure/Notifications/NotificationRecipientResolver.cs"] =
@@ -43,6 +51,10 @@ public sealed class IsolationBypassGuardTests
             "events and names inherited from ancestor units, restricted to the unit's client (M1 Task 22, #57)",
         ["src/Lms.Infrastructure/AcademicYears/AcademicCalendar.cs"] =
             "holidays of ancestor units apply to descendants, restricted to the client and effective years (M1 Task 22, #57)",
+        ["src/Lms.Infrastructure/People/PersonStatusService.cs"] =
+            "a user's account status derives from their profiles in every client; only that user's statuses are read (M2 Task 6, #158)",
+        ["src/Lms.Infrastructure/People/PersonDuplicateFinder.cs"] =
+            "client-wide duplicate checks reach sibling subtrees outside the caller's scope; client matched, deleted rows excluded, only the field name leaves (M2 Task 5, #157)",
     };
 
     [Fact]

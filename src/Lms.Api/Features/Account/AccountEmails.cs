@@ -18,17 +18,20 @@ public sealed class AccountEmails(
     public async Task SendPasswordResetAsync(User user, string culture, CancellationToken cancellationToken = default)
     {
         var token = await users.GeneratePasswordResetTokenAsync(user);
-        await SendAsync(user, culture, token, invite: false, "ResetEmailSubject", "ResetEmailBody", cancellationToken);
+        await SendAsync(user, user.Email!, culture, token, invite: false, "ResetEmailSubject", "ResetEmailBody", cancellationToken);
     }
 
-    public async Task SendInvitationAsync(User user, string culture, CancellationToken cancellationToken = default)
+    public Task SendInvitationAsync(User user, string culture, CancellationToken cancellationToken = default) =>
+        SendInvitationAsync(user, culture, user.Email!, cancellationToken);
+
+    public async Task SendInvitationAsync(User user, string culture, string toEmail, CancellationToken cancellationToken)
     {
         var token = await users.GenerateUserTokenAsync(user, InvitationTokenProvider.ProviderName, InvitationTokenProvider.Purpose);
-        await SendAsync(user, culture, token, invite: true, "InviteEmailSubject", "InviteEmailBody", cancellationToken);
+        await SendAsync(user, toEmail, culture, token, invite: true, "InviteEmailSubject", "InviteEmailBody", cancellationToken);
     }
 
     private async Task SendAsync(
-        User user, string culture, string token, bool invite, string subjectKey, string bodyKey, CancellationToken cancellationToken)
+        User user, string toEmail, string culture, string token, bool invite, string subjectKey, string bodyKey, CancellationToken cancellationToken)
     {
         // The link opens the page in the language of the email.
         var lang = culture.StartsWith("en", StringComparison.OrdinalIgnoreCase) ? "en" : "ar";
@@ -45,7 +48,7 @@ public sealed class AccountEmails(
             var html = $"<!DOCTYPE html><html lang=\"{lang}\" dir=\"{(lang == "ar" ? "rtl" : "ltr")}\"><body>" +
                        $"<p>{WebUtility.HtmlEncode(body)}</p>" +
                        $"<p><a href=\"{WebUtility.HtmlEncode(link)}\">{WebUtility.HtmlEncode(link)}</a></p></body></html>";
-            await sender.SendAsync(new EmailMessage(user.Email!, subject, html), cancellationToken);
+            await sender.SendAsync(new EmailMessage(toEmail, subject, html), cancellationToken);
         }
         finally
         {

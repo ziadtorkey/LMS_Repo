@@ -1,0 +1,110 @@
+@page "/staff/{Id:guid}"
+@attribute [Authorize]
+@using Lms.Client.Components.People
+@using Lms.Client.Services.Api
+@using Lms.Shared.People
+@inject IStaffApi Api
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+<PageTitle>@L["Staff_Title"]</PageTitle>
+@if (_error is not null)
+{
+    <MudAlert Severity="Severity.Error" data-testid="profile-error">@_error</MudAlert>
+}
+else if (_detail is null)
+{
+    <MudText>@L["Common_Loading"]</MudText>
+}
+else
+{
+    var s = _detail.Summary;
+    <MudStack Spacing="3">
+        <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+            <StaffAvatar PhotoFileId="s.PhotoFileId" Size="Size.Large" />
+            <div>
+                <MudText Typo="Typo.h4" data-testid="profile-name">@Culture.Pick(s.NameAr, s.NameEn)</MudText>
+                <MudText Typo="Typo.body2">@Culture.Pick(s.JobTitleAr ?? "", s.JobTitleEn ?? "")</MudText>
+            </div>
+            <PersonStatusChip Status="@s.Status" />
+            @if (!_detail.IsActivated)
+            {
+                <MudChip T="string" Size="Size.Small" data-testid="profile-not-activated">@L["Staff_NotActivated"]</MudChip>
+            }
+        </MudStack>
+
+        @if (_detail.IsLimitedView)
+        {
+            <MudAlert Severity="Severity.Info" data-testid="profile-limited">@L["Staff_LimitedView"]</MudAlert>
+        }
+
+        <MudPaper Class="pa-3">
+            <MudStack Spacing="1">
+                <MudText data-testid="profile-email">@L["Staff_Email"]: <span dir="ltr">@s.Email</span></MudText>
+                @if (!_detail.IsLimitedView)
+                {
+                    <MudText data-testid="profile-mobile">@L["Staff_Mobile"]: <span dir="ltr">@s.Mobile</span></MudText>
+                    <MudText data-testid="profile-national-id">@L["Staff_NationalId"]: <span dir="ltr">@_detail.NationalId</span></MudText>
+                }
+                <MudText>@L["Staff_HomeUnit"]: @Culture.Pick(s.HomeOrgUnitNameAr, s.HomeOrgUnitNameEn)</MudText>
+                @if (s.ExpiresOn is { } expires)
+                {
+                    <MudText data-testid="profile-expires">@L["Staff_ExpiresOn"]: @expires.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)</MudText>
+                }
+            </MudStack>
+        </MudPaper>
+
+        <MudText Typo="Typo.h6">@L["Staff_Roles"]</MudText>
+        <MudTable Items="s.Roles" Dense="true" Hover="true" Class="lms-staff-roles" data-testid="profile-roles">
+            <HeaderContent>
+                <MudTh>@L["Staff_Role"]</MudTh>
+                <MudTh>@L["Staff_RoleUnit"]</MudTh>
+                <MudTh>@L["Staff_ValidFrom"]</MudTh>
+                <MudTh>@L["Staff_ValidTo"]</MudTh>
+            </HeaderContent>
+            <RowTemplate Context="role">
+                <MudTd>
+                    @Culture.Pick(role.RoleNameAr, role.RoleNameEn)
+                    @if (role.IsShare)
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Info">@L["Staff_Shared"]</MudChip>
+                    }
+                </MudTd>
+                <MudTd>@Culture.Pick(role.OrgUnitNameAr, role.OrgUnitNameEn)</MudTd>
+                <MudTd>@role.ValidFrom?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)</MudTd>
+                <MudTd>@role.ValidTo?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)</MudTd>
+            </RowTemplate>
+        </MudTable>
+
+        @if (!_detail.IsLimitedView)
+        {
+            <MudText Typo="Typo.h6">@L["Staff_StatusHistory"]</MudText>
+            <MudTable Items="_detail.StatusHistory" Dense="true" data-testid="profile-history">
+                <HeaderContent>
+                    <MudTh>@L["Common_Status"]</MudTh>
+                    <MudTh>@L["Staff_Reason"]</MudTh>
+                    <MudTh>@L["Audit_When"]</MudTh>
+                </HeaderContent>
+                <RowTemplate Context="change">
+                    <MudTd>@L[$"PersonStatus_{change.FromStatus}"] → @L[$"PersonStatus_{change.ToStatus}"]</MudTd>
+                    <MudTd>@change.Reason</MudTd>
+                    <MudTd><span dir="ltr">@change.ChangedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm", System.Globalization.CultureInfo.InvariantCulture)</span></MudTd>
+                </RowTemplate>
+            </MudTable>
+        }
+    </MudStack>
+}
+
+@code {
+    private StaffDetailDto? _detail;
+    private string? _error;
+
+    [Parameter] public Guid Id { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _detail = null;
+        _error = null;
+        await ApiCalls.RunAsync(async () => _detail = await Api.GetAsync(Id), Navigation, L, message => _error = message);
+    }
+}
