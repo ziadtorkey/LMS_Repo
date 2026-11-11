@@ -11,6 +11,11 @@ public static class ProblemText
     {
         if (ex.Code == "BlockedByPolicy" && !string.IsNullOrWhiteSpace(ex.Detail))
             return ex.Detail;
+        if (!string.IsNullOrEmpty(ex.Code) && !string.IsNullOrEmpty(ex.Field))
+        {
+            var byField = l[$"Error_{ex.Code}_{ex.Field}"];
+            if (!byField.ResourceNotFound) return byField.Value;
+        }
         if (!string.IsNullOrEmpty(ex.Code))
         {
             var specific = l[$"Error_{ex.Code}"];

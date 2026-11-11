@@ -2,6 +2,7 @@ using Lms.Domain.Identity;
 using Lms.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Lms.Infrastructure.Identity;
 
@@ -12,7 +13,8 @@ public static class IdentityServiceCollectionExtensions
     {
         services.AddIdentityCore<User>(options =>
             {
-                options.User.RequireUniqueEmail = true;
+                // Email is optional (students have none); LmsUserValidator enforces "valid and unique when present".
+                options.User.RequireUniqueEmail = false;
                 // The user name is the email, which is validated separately: apostrophes and non-ASCII letters are legal.
                 options.User.AllowedUserNameCharacters = string.Empty;
                 options.Password.RequiredLength = 8;
@@ -25,6 +27,9 @@ public static class IdentityServiceCollectionExtensions
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
             })
             .AddEntityFrameworkStores<LmsDbContext>();
+
+        services.RemoveAll<IUserValidator<User>>();
+        services.AddScoped<IUserValidator<User>, LmsUserValidator>();
 
         services.AddScoped<IUserProfileReader, UserStoreProfileReader>();
         return services;

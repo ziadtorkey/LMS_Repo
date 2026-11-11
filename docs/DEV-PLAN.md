@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Spec | `docs/PRD.md` (approved 2026-11-10) |
-| Team | Team Lead (Opus), Backend (Sonnet), Frontend (Sonnet), QA (Opus) — Lead may add extra BE/FE/QA agents |
+| Team | Team Lead (Opus), Backend (Sonnet), Frontend (Sonnet), QA (Sonnet) — Lead may add extra BE/FE/QA agents |
 | Tracking | GitHub Issues + Milestones + Project board "LMS v1" on `ziadtorkey/LMS_Repo` |
 | Status | `docs/STATUS.md` (updated by the Lead after every merge cycle) |
 
@@ -127,7 +127,7 @@ Each line becomes one GitHub issue per lane (`[BE]`, `[FE]`, `[QA]`), labelled `
 | Team Lead | Opus | main checkout `D:\AI\LMS` | Milestone plans, issues, API contracts (`Lms.Shared`), assignment of work, merging, `docs/STATUS.md`, ADRs, unblocking |
 | Backend | Sonnet | own git worktree | `Lms.Api`, `Lms.Domain`, `Lms.Infrastructure`, migrations, unit + integration tests |
 | Frontend | Sonnet | own git worktree | `Lms.Client`, resources (ar/en), bUnit tests |
-| QA | Opus | own git worktree | PR reviews, isolation/permission tests, Playwright E2E (`tests/Lms.E2ETests`), bug issues |
+| QA | Sonnet | own git worktree | PR reviews, isolation/permission tests, Playwright E2E (`tests/Lms.E2ETests`), bug issues |
 
 Agent definitions: `.claude/agents/*.md`. Shared rules: `CLAUDE.md`.
 
