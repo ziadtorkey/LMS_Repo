@@ -112,14 +112,19 @@ public sealed class ImportTestHost : IDisposable
 {
     private readonly WebApplicationFactory<Program> _host;
 
-    public ImportTestHost(LmsApiFactory factory)
+    public ImportTestHost(LmsApiFactory factory, bool withTestDefinition = true, Action<IServiceCollection>? configure = null)
     {
         _host = factory.WithWebHostBuilder(builder =>
         {
             builder.UseSetting("Jobs:ServerEnabled", "false");
             builder.ConfigureServices(services =>
             {
-                services.AddImportDefinition<TestImportDefinition>();
+                if (withTestDefinition)
+                {
+                    services.AddImportDefinition<TestImportDefinition>();
+                }
+
+                configure?.Invoke(services);
                 services.RemoveAll<IBackgroundJobs>();
                 services.AddScoped<IBackgroundJobs, RecordingBackgroundJobs>();
             });
@@ -144,13 +149,13 @@ public sealed class ImportTestHost : IDisposable
         return _host.CreateClient().SendAsync(request);
     }
 
-    public Task<HttpResponseMessage> UploadAsync(RoleAssignment caller, Guid orgUnitId, byte[] file, string fileName = "widgets.xlsx", string? language = null)
+    public Task<HttpResponseMessage> UploadAsync(RoleAssignment caller, Guid orgUnitId, byte[] file, string fileName = "widgets.xlsx", string? language = null, string kind = TestImportDefinition.KindName)
     {
         var form = new MultipartFormDataContent { { new StringContent(orgUnitId.ToString()), "orgUnitId" } };
         var part = new ByteArrayContent(file);
         part.Headers.ContentType = new MediaTypeHeaderValue("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         form.Add(part, "file", fileName);
-        return SendAsync(HttpMethod.Post, "/api/imports/" + TestImportDefinition.KindName, caller, form, language);
+        return SendAsync(HttpMethod.Post, "/api/imports/" + kind, caller, form, language);
     }
 
     /// <summary>Runs every queued job as the context that enqueued it (what the Hangfire activator does).</summary>
