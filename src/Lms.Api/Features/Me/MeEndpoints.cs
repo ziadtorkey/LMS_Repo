@@ -1,3 +1,4 @@
+using Lms.Api.Infrastructure;
 using Lms.Domain.Abstractions;
 using Lms.Domain.Access;
 using Lms.Domain.Identity;
@@ -29,12 +30,15 @@ public static class MeEndpoints
     }
 
     private static async Task<IResult> GetMeAsync(
-        ICurrentContext context, LmsDbContext db, IClock clock, IUserProfileReader profiles, CancellationToken ct)
+        ICurrentContext context, LmsDbContext db, IClock clock, IUserProfileReader profiles,
+        System.Security.Claims.ClaimsPrincipal principal, CancellationToken ct)
     {
         var userId = context.UserId!.Value;
         var today = DateOnly.FromDateTime(clock.UtcNow);
 
+        var external = ExternalSession.Organization(principal);
         var assignments = await db.ValidAssignmentsFor(userId, today)
+            .Where(a => external == null || a.OrganizationId == external)
             .OrderBy(a => a.OrganizationNameEn).ThenBy(a => a.OrgUnitPath).ThenBy(a => a.RoleNameEn)
             .ToListAsync(ct);
         var names = await profiles.GetDisplayNamesAsync(userId, ct);

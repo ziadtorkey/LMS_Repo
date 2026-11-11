@@ -11,7 +11,6 @@ namespace Lms.Client.Tests.Support;
 /// <summary>Shared setup of the M2 people tests: fake staff, roles, units and file upload APIs plus the MudBlazor providers.</summary>
 public abstract class StaffTestContext : ClientTestContext
 {
-    protected FakeStaffApi Staff { get; } = new();
     protected FakeAccessAdminApi Access { get; } = new();
     protected FakeFileUploadApi Files { get; } = new();
     protected IRenderedComponent<MudDialogProvider> Dialogs { get; private set; } = default!;
@@ -19,7 +18,6 @@ public abstract class StaffTestContext : ClientTestContext
 
     protected StaffTestContext()
     {
-        Services.AddSingleton<IStaffApi>(Staff);
         Services.AddSingleton<IAccessAdminApi>(Access);
         Services.AddSingleton<IFileUploadApi>(Files);
         Services.AddSingleton<IUnitLookupApi, FakeUnitLookupApi>();

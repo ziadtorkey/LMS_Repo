@@ -342,6 +342,16 @@ All tenant-owned tables: `OrganizationId`; unit-scoped tables: `OrgUnitId`, `Org
 | D34 | Imports | Create-only in v1 (existing people are errors); at most 5,000 rows and 10 MB per file; one role per staff row; two guardians per student row; templates in Arabic or English, either accepted. |
 | D35 | Staff expiry | The expiry date is the last day of access; admins at or above the staff member's unit get a notice N days before (setting, default 14, 0 = off) and on expiry; the job runs daily at 02:00 UTC. |
 | D36 | Calendar under D22 | A unit that defines its own academic-year list does not inherit its parent's holidays and calendar events. |
+| D37 | Course ownership (M3) | Courses are owned by the client root or by units flagged as the course-management level, and allocated at or below the owner; edits and blueprints happen at the owner unit. |
+| D38 | Course codes | A course code is unique in the whole client. |
+| D39 | Course restrictions | Only Religion, Gender and Level in v1 (custom attributes later); several types on one course must all match; any listed value within a type matches; changing restrictions keeps existing enrollments and the screen warns. |
+| D40 | Exceptional enrollment | The course's supervisors approve; if the course has none, Managers or Org Admins at or above the class approve. Counselors, Managers and Org Admins may raise a request. |
+| D41 | Removing a course from a class | Allowed while all enrollments are automatic (they become Dropped); blocked by manual or exceptional enrollments, group members and (later) content or grades. Resolves FR-CLS-05 vs FR-ENR-01. |
+| D42 | Relationship rules | The built-in Teacher sees only own ClassCourses and their homeroom class; the built-in Supervisor acts only on supervised courses; custom roles are unrestricted within their unit. |
+| D43 | Transfers across schools | Allowed when level type and academic year match and the admin can see both units. |
+| D44 | Deferred from M3 | FR-TCH-03 conflict warning to M5 (timetable); FR-LP-05 module authoring to M4; the class timetable tab to M5; FR-ENR-05 grade carry-over to M5 (M3 stores only the link and setting). |
+| D45 | Default student password | If left blank a strong password is generated per student and shown once; for imports a credentials sheet is downloadable once within 15 minutes; students must change it at first sign-in. Class placement is optional on create and import ("Unplaced" filter). |
+| D46 | Blueprint authoring | Org Admins and Managers may create and edit course blueprints at their units (amends the §3.4 view-only cells); course supervisors keep it for their courses. |
 
 ---
 

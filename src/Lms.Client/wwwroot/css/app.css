@@ -49,3 +49,11 @@ html, body { margin: 0; font-family: Roboto, "Segoe UI", Tahoma, sans-serif; }
 /* Notifications */
 .lms-notif-unread { font-weight: 600; }
 .lms-notif-popover { max-width: min(380px, 94vw); }
+
+/* Import preview: a cell that failed validation */
+.lms-import-error {
+  color: var(--mud-palette-error);
+  background: color-mix(in srgb, var(--mud-palette-error) 12%, transparent);
+  border-radius: 4px;
+  padding: 0 4px;
+}

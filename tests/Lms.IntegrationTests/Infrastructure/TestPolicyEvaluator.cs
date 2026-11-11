@@ -1,3 +1,4 @@
+using Lms.Domain.Access;
 using Lms.Domain.Organizations;
 using Lms.Infrastructure.Configuration;
 
@@ -19,4 +20,8 @@ public sealed class TestPolicyEvaluator : IPolicyEvaluator
             .FirstOrDefault();
         return Task.FromResult(hit);
     }
+
+    /// <summary>The fake does not model role-blocking policies; tests that need them use the real evaluator.</summary>
+    public Task<Guid?> FindBlockingUnitForRoleAsync(Role role, string orgUnitPath, CancellationToken cancellationToken = default) =>
+        Task.FromResult<Guid?>(null);
 }

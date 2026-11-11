@@ -12,6 +12,7 @@ public static class AccessServiceCollectionExtensions
         services.AddMemoryCache();
         services.AddScoped<IDefaultRoleProvisioner, DefaultRoleProvisioner>();
         services.AddScoped<IAccessEvaluator, AccessEvaluator>();
+        services.AddScoped<IRoleGrantGuard, RoleGrantGuard>();
         services.AddSingleton<IRolePermissionCache, RolePermissionCache>();
         services.AddScoped<CallerPermissions>();
         services.AddSingleton(sp => new BuiltInRoleStartupReconciler(

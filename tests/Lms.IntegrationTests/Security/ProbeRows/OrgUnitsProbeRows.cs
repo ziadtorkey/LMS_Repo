@@ -44,6 +44,20 @@ public sealed class OrgUnitsProbeRows : IProbeRowModule
                 return new ProbeRequest(Routes.OrgUnitMove(unit.Id), new MoveOrgUnitRequest(target.Id));
             },
             Expect(Ok, Ok, NotFound, Forbidden, NotFound, Ok)),
+        new("org-units academic flags", HttpMethod.Put, Routes.OrgUnitAcademicFlagsPattern,
+            async (w, _) => new ProbeRequest(Routes.OrgUnitAcademicFlags((await w.NewUnitAsync(w.Callers.A.School1)).Id),
+                new OrgUnitAcademicFlagsRequest(false, null, true)),
+            Expect(Ok, Ok, NotFound, Forbidden, NotFound, Ok)),
+        // Copy branch (Task 15, #50): source and target both below School1, checked at each unit.
+        new("org-units copy branch", HttpMethod.Post, Routes.OrgUnitsCopy,
+            async (w, _) =>
+            {
+                var source = await NewDeeperUnitAsync(w);
+                var target = await w.NewUnitAsync(w.Callers.A.School1);
+                return new ProbeRequest(Routes.OrgUnitsCopy,
+                    new CopyBranchRequest(source.Id, target.Id, "-c" + w.Next(), false, false, null, null));
+            },
+            Expect(Created, Created, NotFound, Forbidden, NotFound, Created)),
         new("org-units delete (leaf)", HttpMethod.Delete, Routes.OrgUnitPattern,
             async (w, _) => new ProbeRequest(Routes.OrgUnit((await w.NewUnitAsync(w.Callers.A.School1)).Id)),
             Expect(NoContent, NoContent, NotFound, Forbidden, NotFound, NoContent)),

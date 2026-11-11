@@ -2,8 +2,14 @@
 @attribute [Authorize]
 @using Lms.Client.Components.People
 @using Lms.Client.Services.Api
+@using Lms.Client.Components
+@using Lms.Shared.Authorization
 @using Lms.Shared.People
 @inject IStaffApi Api
+@inject ILmsApi Me
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject PermissionState PermState
 @inject ICultureService Culture
 @inject NavigationManager Navigation
 
@@ -21,7 +27,7 @@ else
     var s = _detail.Summary;
     <MudStack Spacing="3">
         <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
-            <MudAvatar Size="Size.Large"><MudIcon Icon="@Icons.Material.Filled.Person" /></MudAvatar>
+            <StaffAvatar PhotoFileId="s.PhotoFileId" Size="Size.Large" />
             <div>
                 <MudText Typo="Typo.h4" data-testid="profile-name">@Culture.Pick(s.NameAr, s.NameEn)</MudText>
                 <MudText Typo="Typo.body2">@Culture.Pick(s.JobTitleAr ?? "", s.JobTitleEn ?? "")</MudText>
@@ -36,6 +42,35 @@ else
         @if (_detail.IsLimitedView)
         {
             <MudAlert Severity="Severity.Info" data-testid="profile-limited">@L["Staff_LimitedView"]</MudAlert>
+        }
+
+        @if (!_detail.IsLimitedView)
+        {
+            <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap" data-testid="profile-actions">
+                @if (PermState.Has(Permissions.Staff.Update))
+                {
+                    <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Edit" OnClick="EditAsync"
+                               data-testid="action-edit">@L["Staff_Edit"]</MudButton>
+                }
+                @if (PermState.Has(Permissions.Staff.Update) && !_isOwn)
+                {
+                    <MudButton Variant="Variant.Outlined" Color="Color.Warning" OnClick="ChangeStatusAsync"
+                               data-testid="action-status">@(s.Status == PersonStatuses.Active ? L["Staff_Deactivate"] : L["Staff_Reactivate"])</MudButton>
+                }
+                @if (PermState.Has(Permissions.Staff.Update) && !_detail.IsActivated)
+                {
+                    <MudButton Variant="Variant.Outlined" OnClick="ResendAsync" data-testid="action-resend">@L["Staff_ResendInvitation"]</MudButton>
+                }
+                @if (PermState.Has(Permissions.Staff.Update) && PermState.Has(Permissions.Assignments.Create))
+                {
+                    <MudButton Variant="Variant.Outlined" OnClick="ShareAsync" data-testid="action-share">@L["Staff_Share"]</MudButton>
+                }
+                @if (PermState.Has(Permissions.Staff.Delete) && !_isOwn)
+                {
+                    <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="DeleteAsync"
+                               data-testid="action-delete">@L["Common_Delete"]</MudButton>
+                }
+            </MudStack>
         }
 
         <MudPaper Class="pa-3">
@@ -61,6 +96,7 @@ else
                 <MudTh>@L["Staff_RoleUnit"]</MudTh>
                 <MudTh>@L["Staff_ValidFrom"]</MudTh>
                 <MudTh>@L["Staff_ValidTo"]</MudTh>
+                <MudTh></MudTh>
             </HeaderContent>
             <RowTemplate Context="role">
                 <MudTd>
@@ -73,6 +109,13 @@ else
                 <MudTd>@Culture.Pick(role.OrgUnitNameAr, role.OrgUnitNameEn)</MudTd>
                 <MudTd>@role.ValidFrom?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)</MudTd>
                 <MudTd>@role.ValidTo?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)</MudTd>
+                <MudTd>
+                    @if (role.IsShare && PermState.Has(Permissions.Assignments.Delete))
+                    {
+                        <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Error" OnClick="() => RemoveShareAsync(role)"
+                                   data-testid="@($"remove-share-{role.AssignmentId}")">@L["Staff_RemoveShare"]</MudButton>
+                    }
+                </MudTd>
             </RowTemplate>
         </MudTable>
 
@@ -86,7 +129,7 @@ else
                     <MudTh>@L["Audit_When"]</MudTh>
                 </HeaderContent>
                 <RowTemplate Context="change">
-                    <MudTd>@L[$"PersonStatus_{change.FromStatus}"] → @L[$"PersonStatus_{change.ToStatus}"]</MudTd>
+                    <MudTd>@L[$"PersonStatus_{change.FromStatus}"] <MudIcon Icon="@(Culture.IsRightToLeft ? Icons.Material.Filled.ArrowBack : Icons.Material.Filled.ArrowForward)" Size="Size.Small" Class="align-middle" data-testid="history-arrow" /> @L[$"PersonStatus_{change.ToStatus}"]</MudTd>
                     <MudTd>@change.Reason</MudTd>
                     <MudTd><span dir="ltr">@change.ChangedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm", System.Globalization.CultureInfo.InvariantCulture)</span></MudTd>
                 </RowTemplate>
@@ -98,13 +141,72 @@ else
 @code {
     private StaffDetailDto? _detail;
     private string? _error;
+    private bool _isOwn;
 
     [Parameter] public Guid Id { get; set; }
 
     protected override async Task OnParametersSetAsync()
     {
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
         _detail = null;
         _error = null;
-        await ApiCalls.RunAsync(async () => _detail = await Api.GetAsync(Id), Navigation, L, message => _error = message);
+        await ApiCalls.RunAsync(async () =>
+        {
+            _detail = await Api.GetAsync(Id);
+            _isOwn = (await Me.GetMeAsync()).UserId == _detail.Summary.UserId;
+        }, Navigation, L, message => _error = message);
+    }
+
+    /// <summary>Runs a write; on success shows the message and reloads, on failure shows the problem as a snackbar.</summary>
+    private async Task RunAsync(Func<Task> write, string done)
+    {
+        var ok = await ApiCalls.RunAsync(write, Navigation, L, message => Snackbar.Add(message, Severity.Error));
+        if (!ok) return;
+        Snackbar.Add(done, Severity.Success);
+        await LoadAsync();
+    }
+
+    private string DisplayName => _detail is null ? "" : Culture.Pick(_detail.Summary.NameAr, _detail.Summary.NameEn);
+
+    private async Task EditAsync()
+    {
+        var dialog = await Dialogs.ShowAsync<EditStaffDialog>(L["Staff_Edit"], new DialogParameters<EditStaffDialog> { { x => x.Person, _detail! } },
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        if (await dialog.Result is { Canceled: false }) { Snackbar.Add(L["Common_Saved"], Severity.Success); await LoadAsync(); }
+    }
+
+    private async Task ChangeStatusAsync()
+    {
+        var reactivate = _detail!.Summary.Status != PersonStatuses.Active;
+        var dialog = await Dialogs.ShowAsync<PersonStatusDialog>(L[reactivate ? "Staff_Reactivate" : "Staff_Deactivate"],
+            new DialogParameters<PersonStatusDialog> { { x => x.Name, DisplayName }, { x => x.Reactivate, reactivate } },
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        if (await dialog.Result is { Canceled: false, Data: string reason })
+            await RunAsync(() => Api.SetStatusAsync(Id, new SetPersonStatusRequest(reactivate ? PersonStatuses.Active : PersonStatuses.Deactivated, reason)),
+                L["Common_Saved"]);
+    }
+
+    private Task ResendAsync() => RunAsync(() => Api.ResendInvitationAsync(Id), L["Staff_InvitationSent"]);
+
+    private async Task ShareAsync()
+    {
+        var dialog = await Dialogs.ShowAsync<ShareStaffDialog>(L["Staff_Share"], new DialogParameters<ShareStaffDialog> { { x => x.StaffId, Id } },
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        if (await dialog.Result is { Canceled: false }) { Snackbar.Add(L["Common_Saved"], Severity.Success); await LoadAsync(); }
+    }
+
+    private Task RemoveShareAsync(StaffRoleDto role) =>
+        RunAsync(() => Api.RemoveShareAsync(Id, role.AssignmentId), L["Common_Saved"]);
+
+    private async Task DeleteAsync()
+    {
+        if (!await ConfirmDialog.AskAsync(Dialogs, L["Confirm_DeleteTitle"], L["Staff_DeleteConfirm"], L["Common_Delete"])) return;
+        var ok = await ApiCalls.RunAsync(() => Api.DeleteAsync(Id), Navigation, L, message => Snackbar.Add(message, Severity.Error));
+        if (ok) Navigation.NavigateTo("staff");
     }
 }

@@ -81,11 +81,11 @@ public sealed class OrgUnit : AuditableEntity, IOrgUnitScoped
 
     public void Activate() => Status = OrgUnitStatus.Active;
 
-    public void MarkAsLevelTransfer(Guid? nextTransferUnitId)
+    /// <summary>Sets the academic flags (FR-ORG-05, FR-ORG-09). Validation of the target is the caller's job.</summary>
+    public void SetAcademicFlags(bool isLevelTransfer, Guid? nextTransferUnitId, bool isCourseManagementLevel)
     {
-        IsLevelTransfer = true;
-        NextTransferUnitId = nextTransferUnitId;
+        IsLevelTransfer = isLevelTransfer;
+        NextTransferUnitId = isLevelTransfer ? nextTransferUnitId : null;
+        IsCourseManagementLevel = isCourseManagementLevel;
     }
-
-    public void MarkAsCourseManagementLevel() => IsCourseManagementLevel = true;
 }
