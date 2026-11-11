@@ -264,4 +264,7 @@
   <data name="Calendar_PrevMonth" xml:space="preserve"><value>الشهر السابق</value></data>
   <data name="Calendar_NextMonth" xml:space="preserve"><value>الشهر التالي</value></data>
   <data name="AuditEntity_StoredFile" xml:space="preserve"><value>ملف</value></data>
+  <data name="Year_Selector" xml:space="preserve"><value>العام الدراسي</value></data>
+  <data name="Year_None" xml:space="preserve"><value>لا يوجد عام دراسي</value></data>
+  <data name="Year_ReadOnly" xml:space="preserve"><value>عام مغلق — للقراءة فقط</value></data>
 </root>

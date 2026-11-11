@@ -264,4 +264,7 @@
   <data name="Calendar_PrevMonth" xml:space="preserve"><value>Previous month</value></data>
   <data name="Calendar_NextMonth" xml:space="preserve"><value>Next month</value></data>
   <data name="AuditEntity_StoredFile" xml:space="preserve"><value>File</value></data>
+  <data name="Year_Selector" xml:space="preserve"><value>Academic year</value></data>
+  <data name="Year_None" xml:space="preserve"><value>No academic year</value></data>
+  <data name="Year_ReadOnly" xml:space="preserve"><value>Closed year — read only</value></data>
 </root>
