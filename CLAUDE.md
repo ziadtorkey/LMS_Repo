@@ -5,7 +5,7 @@ Multi-tenant LMS for school groups and universities. **Read before any work:**
 - `docs/DEV-PLAN.md` — milestones, team workflow, Definition of Done
 - `docs/superpowers/plans/` — the detailed plan of the current milestone
 - `docs/STATUS.md` — who is doing what right now
-- Your role file in `.claude/agents/` (team-lead, backend-dev, frontend-dev, qa-engineer)
+- Your role file in `.claude/agents/` (team-lead, backend-dev, frontend-dev, qa-engineer, ui-ux-designer)
 
 ## Stack
 .NET 10 · ASP.NET Core minimal APIs · Blazor WebAssembly + MudBlazor · EF Core + MySQL 8.4 · MinIO · ASP.NET Identity + OpenIddict · Hangfire · SignalR · xUnit, Testcontainers, bUnit, Playwright.
@@ -29,11 +29,11 @@ Multi-tenant LMS for school groups and universities. **Read before any work:**
 
 ## Git & GitHub
 - Repo: `ziadtorkey/LMS_Repo`. `gh` is at `C:\Program Files\GitHub CLI\gh.exe` if not on PATH.
-- Branches: `be/<issue#>-slug`, `fe/<issue#>-slug`, `qa/<issue#>-slug`, `lead/<topic>`. Never push to `main` directly (Team Lead docs/contract commits excepted).
+- Branches: `be/<issue#>-slug`, `fe/<issue#>-slug`, `qa/<issue#>-slug`, `ux/<issue#>-slug`, `lead/<topic>`. Never push to `main` directly (Team Lead docs/contract commits excepted).
 - Conventional commits (`feat:`, `fix:`, `test:`, `docs:`, `chore:`, `refactor:`), and end every commit message with:
   `Co-Authored-By: Claude <noreply@anthropic.com>`
 - PRs: use the template, `Closes #<issue>`, list PRD ids, CI must be green. Only the Team Lead merges (squash), and only with label `qa:approved`.
-- Labels: `lane:be|fe|qa|lead`, `area:<module>`, `M0`…`M7`, `bug`, `sev:critical|high|medium|low`, `blocked`, `needs-owner`, `qa:approved`, `qa:changes-requested`.
+- Labels: `lane:be|fe|qa|ux|lead`, `area:<module>`, `M0`…`M7`, `bug`, `sev:critical|high|medium|low`, `blocked`, `needs-owner`, `qa:approved`, `qa:changes-requested`.
 - Talk on GitHub (issue/PR comments) so the product owner can follow; use session messages only for quick pings.
 
 ## Local run
