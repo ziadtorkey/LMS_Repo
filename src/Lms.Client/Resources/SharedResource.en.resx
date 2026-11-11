@@ -515,6 +515,8 @@
   <data name="Error_course_code_taken" xml:space="preserve"><value>Another course already uses this code.</value></data>
   <data name="Error_short_code_taken" xml:space="preserve"><value>Another client already uses this short code.</value></data>
   <data name="Error_invalid_short_code" xml:space="preserve"><value>Invalid short code: 2–20 lower-case letters, digits or hyphens.</value></data>
+  <data name="Error_teacher_already_assigned" xml:space="preserve"><value>This teacher is already assigned to this class course.</value></data>
+  <data name="Error_assignment_ended" xml:space="preserve"><value>This assignment has already ended and cannot be changed.</value></data>
   <data name="Error_course_in_use" xml:space="preserve"><value>The course is used by classes and cannot be removed.</value></data>
   <data name="Error_course_not_available" xml:space="preserve"><value>This course is not available at this unit.</value></data>
   <data name="Error_allocation_exists" xml:space="preserve"><value>The course is already allocated at this unit.</value></data>
