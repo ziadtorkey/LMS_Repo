@@ -24,12 +24,12 @@
                               InputType="InputType.Telephone" data-testid="staff-mobile" />
                 <MudTextField T="string" @bind-Value="_nationalId" Label="@L["Staff_NationalId"]" MaxLength="30" dir="ltr"
                               data-testid="staff-national-id" />
-                <MudTextField T="string" @bind-Value="_jobTitleAr" Label="@L["Staff_JobTitleAr"]" MaxLength="200" dir="rtl" lang="ar"
+                <MudTextField T="string" @bind-Value="_jobTitleAr" Label="@L["Staff_JobTitleAr"]" MaxLength="150" dir="rtl" lang="ar"
                               data-testid="staff-job-ar" />
-                <MudTextField T="string" @bind-Value="_jobTitleEn" Label="@L["Staff_JobTitleEn"]" MaxLength="200" dir="ltr" lang="en"
+                <MudTextField T="string" @bind-Value="_jobTitleEn" Label="@L["Staff_JobTitleEn"]" MaxLength="150" dir="ltr" lang="en"
                               data-testid="staff-job-en" />
 
-                <UnitPicker @bind-Value="_homeUnitId" Label="@L["Staff_HomeUnit"]" Required="true" TestId="staff-home-unit" />
+                <UnitPicker Value="_homeUnitId" ValueChanged="OnHomeUnitChanged" Label="@L["Staff_HomeUnit"]" Required="true" TestId="staff-home-unit" />
                 <MudDatePicker Date="_expiresOn" DateChanged="d => _expiresOn = d" Label="@L["Staff_ExpiresOn"]" Clearable="true"
                                data-testid="staff-expires" />
 
@@ -63,6 +63,13 @@
     private string? ValidateEmail(string value) =>
         new EmailAddressAttribute().IsValid(value) ? null : L["Common_InvalidEmail"].Value;
 
+    /// <summary>A stored photo belongs to the unit it was uploaded for, so changing the home unit clears it.</summary>
+    private void OnHomeUnitChanged(Guid? id)
+    {
+        if (id != _homeUnitId) _photoId = null;
+        _homeUnitId = id;
+    }
+
     private static string? Blank(string value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private async Task SaveAsync()
@@ -70,7 +77,8 @@
         _error = null;
         await _form.ValidateAsync();
         if (!_form.IsValid || _homeUnitId is null) return;
-        var roles = _rows.Where(r => r.IsComplete).Select(r => r.ToInput()).ToList();
+        if (!StaffRoleRow.ValidateAll(_rows)) return;
+        var roles = _rows.Where(r => !r.IsEmpty).Select(r => r.ToInput()).ToList();
         if (roles.Count == 0)
         {
             _error = L["Staff_RoleRequired"];

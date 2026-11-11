@@ -50,6 +50,46 @@ public sealed class CreateStaffDialogTests : StaffTestContext
     }
 
     [Fact]
+    public async Task Partial_role_row_blocks_save_and_flags_the_row()
+    {
+        await OpenDialogAsync();
+        Type("staff-name-ar", "ليلى"); Type("staff-name-en", "Laila"); Type("staff-email", "laila@x.test");
+        await Dialogs.InvokeAsync(() => Dialogs.FindComponent<UnitPicker>().Instance.ValueChanged.InvokeAsync(FakeUnits.SchoolId));
+        // A unit without a role.
+        var roleUnit = Dialogs.FindComponents<UnitPicker>().First(u => u.Instance.TestId == "staff-role-unit-0");
+        await Dialogs.InvokeAsync(() => roleUnit.Instance.ValueChanged.InvokeAsync(FakeUnits.SchoolId));
+
+        await Dialogs.Find("[data-testid=dialog-save]").ClickAsync(new());
+
+        Assert.Null(Staff.LastCreate);
+        Dialogs.WaitForAssertion(() => Assert.NotNull(Dialogs.Find("[data-testid=staff-role-error-0]")));
+    }
+
+    [Fact]
+    public async Task Role_row_with_valid_to_before_valid_from_blocks_save()
+    {
+        await OpenDialogAsync();
+        await FillValidAsync();
+        var pickers = Dialogs.FindComponents<MudDatePicker>();
+        await Dialogs.InvokeAsync(() => pickers[1].Instance.DateChanged.InvokeAsync(new DateTime(2026, 9, 10)));
+        await Dialogs.InvokeAsync(() => pickers[2].Instance.DateChanged.InvokeAsync(new DateTime(2026, 9, 1)));
+
+        await Dialogs.Find("[data-testid=dialog-save]").ClickAsync(new());
+
+        Assert.Null(Staff.LastCreate);
+        Dialogs.WaitForAssertion(() => Assert.NotNull(Dialogs.Find("[data-testid=staff-role-error-0]")));
+    }
+
+    [Fact]
+    public async Task Job_titles_are_limited_to_150_characters()
+    {
+        await OpenDialogAsync();
+
+        Assert.Equal("150", Dialogs.Find("input[data-testid=staff-job-ar]").GetAttribute("maxlength"));
+        Assert.Equal("150", Dialogs.Find("input[data-testid=staff-job-en]").GetAttribute("maxlength"));
+    }
+
+    [Fact]
     public async Task Valid_form_posts_the_request_and_closes()
     {
         await OpenDialogAsync();
