@@ -5,6 +5,7 @@ using Lms.Client.Services.Api;
 using Lms.Client.Tests.Support;
 using Lms.Shared.Authorization;
 using Lms.Shared.Classes;
+using Lms.Shared.Teaching;
 using Microsoft.Extensions.DependencyInjection;
 using MudBlazor;
 
@@ -94,6 +95,27 @@ public sealed class ClassPageTests : ClassesTestContext
         Assert.DoesNotContain("Arabic", cut.Markup);
         Assert.True(cut.Find("input[data-testid=class-course-optional-SCI101]").HasAttribute("checked"));
         Assert.False(cut.Find("input[data-testid=class-course-optional-MATH101]").HasAttribute("checked"));
+    }
+
+    [Theory]
+    [InlineData("en", "Teacher One, Teacher Two")]
+    [InlineData("ar", "معلم واحد، معلم اثنان")]
+    public void Teacher_names_are_joined_with_the_cultures_separator(string culture, string expected)
+    {
+        var math = _classCourses.All.First(c => c.ClassId == Class.Id && c.CourseCode == "MATH101");
+        var teachers = new List<ClassCourseTeacherDto>
+        {
+            new(Guid.NewGuid(), Guid.NewGuid(), "معلم واحد", "Teacher One", "Primary", new DateOnly(2026, 9, 1), null, true),
+            new(Guid.NewGuid(), Guid.NewGuid(), "معلم اثنان", "Teacher Two", "Assistant", new DateOnly(2026, 9, 1), null, true),
+        };
+        _classCourses.ReplaceTeachers(math.Id, teachers);
+        RenderProviders();
+        Culture.Current = new CultureInfo(culture);
+        var cut = Render<ClassCoursesTab>(p => p.Add(t => t.Class, Class).Add(t => t.CanManage, false));
+
+        cut.WaitForElement("[data-testid=class-courses-table]");
+
+        Assert.Contains(expected, cut.Markup);
     }
 
     [Fact]

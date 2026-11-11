@@ -44,7 +44,7 @@
                                Disabled="@(!CanManage || Class.IsReadOnly)" aria-label="@L["ClassCourse_Optional"]" data-testid="@($"class-course-optional-{cc.CourseCode}")" />
                 </MudTd>
                 <MudTd DataLabel="@L["ClassCourse_Enrolled"]">@cc.EnrolledCount</MudTd>
-                <MudTd DataLabel="@L["ClassCourse_Teachers"]">@string.Join("، ", cc.CurrentTeachers.Select(t => Culture.Pick(t.NameAr, t.NameEn)))</MudTd>
+                <MudTd DataLabel="@L["ClassCourse_Teachers"]">@string.Join(L["List_Separator"].Value, cc.CurrentTeachers.Select(t => Culture.Pick(t.NameAr, t.NameEn)))</MudTd>
                 <MudTd DataLabel="@L["ClassCourse_LessonPlan"]">@(cc.LessonPlanVersion is { } v ? $"v{v}" : "—")</MudTd>
                 <MudTd>
                     @if (CanManage && !Class.IsReadOnly)

@@ -885,4 +885,5 @@
   <data name="Teacher_BulkResult" xml:space="preserve"><value>{0} assignments created, {1} skipped (already assigned).</value></data>
   <data name="TeacherRole_Primary" xml:space="preserve"><value>Primary</value></data>
   <data name="TeacherRole_Assistant" xml:space="preserve"><value>Assistant</value></data>
+  <data name="List_Separator" xml:space="preserve"><value>, </value></data>
 </root>
