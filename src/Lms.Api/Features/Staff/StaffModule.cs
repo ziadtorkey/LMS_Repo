@@ -1,4 +1,5 @@
 using Lms.Api.Infrastructure;
+using Lms.Infrastructure.Imports;
 
 namespace Lms.Api.Features.Staff;
 
@@ -8,6 +9,8 @@ public sealed class StaffModule : ILmsModule
     public void AddServices(IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<CreateStaffHandler>();
+        services.AddScoped<StaffCreator>();
+        services.AddImportDefinition<Import.StaffImportDefinition>();
         services.AddScoped<StaffQueries>();
     }
 
