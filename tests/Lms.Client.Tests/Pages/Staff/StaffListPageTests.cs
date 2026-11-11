@@ -70,16 +70,19 @@ public sealed class StaffListPageTests : StaffTestContext
     }
 
     [Theory]
-    [InlineData("ar", "الموظفون")]
-    [InlineData("en", "Staff")]
-    public async Task Page_is_localized_and_renders_rtl_in_arabic(string culture, string title)
+    [InlineData("ar", "الموظفون", "rtl")]
+    [InlineData("en", "Staff", "ltr")]
+    public async Task List_page_renders_in_the_active_direction(string culture, string title, string dir)
     {
         Culture.Current = new CultureInfo(culture);
-        var cut = await RenderPageAsync(Permissions.Staff.View);
+        await GrantAsync(Permissions.Staff.View);
 
-        Assert.Contains(title, cut.Find("[data-testid=staff-title]").TextContent);
-        cut.WaitForAssertion(() => Assert.NotNull(Staff.LastQuery));
-        Assert.Equal(culture == "ar", Culture.IsRightToLeft);
+        var layout = Render<Lms.Client.Layout.MainLayout>(p => p.Add(l => l.Body,
+            (Microsoft.AspNetCore.Components.RenderFragment)(b => { b.OpenComponent<StaffListPage>(0); b.CloseComponent(); })));
+
+        layout.WaitForAssertion(() => Assert.Contains("sara@x.test", layout.Markup));
+        Assert.Equal(dir, layout.Find("[data-testid=app-root]").GetAttribute("dir"));
+        Assert.Contains(title, layout.Find("[data-testid=staff-title]").TextContent);
     }
 
     [Fact]

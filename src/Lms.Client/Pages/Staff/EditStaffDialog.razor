@@ -21,11 +21,11 @@
                               InputType="InputType.Telephone" data-testid="staff-mobile" />
                 <MudTextField T="string" @bind-Value="_nationalId" Label="@L["Staff_NationalId"]" MaxLength="30" dir="ltr"
                               data-testid="staff-national-id" />
-                <MudTextField T="string" @bind-Value="_jobTitleAr" Label="@L["Staff_JobTitleAr"]" MaxLength="200" dir="rtl" lang="ar"
+                <MudTextField T="string" @bind-Value="_jobTitleAr" Label="@L["Staff_JobTitleAr"]" MaxLength="150" dir="rtl" lang="ar"
                               data-testid="staff-job-ar" />
-                <MudTextField T="string" @bind-Value="_jobTitleEn" Label="@L["Staff_JobTitleEn"]" MaxLength="200" dir="ltr" lang="en"
+                <MudTextField T="string" @bind-Value="_jobTitleEn" Label="@L["Staff_JobTitleEn"]" MaxLength="150" dir="ltr" lang="en"
                               data-testid="staff-job-en" />
-                <UnitPicker @bind-Value="_homeUnitId" Label="@L["Staff_HomeUnit"]" Required="true" TestId="staff-home-unit" />
+                <UnitPicker Value="_homeUnitId" ValueChanged="OnHomeUnitChanged" Label="@L["Staff_HomeUnit"]" Required="true" TestId="staff-home-unit" />
                 <MudDatePicker Date="_expiresOn" DateChanged="d => _expiresOn = d" Label="@L["Staff_ExpiresOn"]" Clearable="true"
                                data-testid="staff-expires" />
                 @if (_homeUnitId is { } unit)
@@ -60,6 +60,12 @@
         (_jobTitleAr, _jobTitleEn) = (s.JobTitleAr ?? "", s.JobTitleEn ?? "");
         (_homeUnitId, _photoId) = (s.HomeOrgUnitId, s.PhotoFileId);
         _expiresOn = s.ExpiresOn?.ToDateTime(TimeOnly.MinValue);
+    }
+
+    private void OnHomeUnitChanged(Guid? id)
+    {
+        if (id != _homeUnitId) _photoId = null;
+        _homeUnitId = id;
     }
 
     private static string? Blank(string value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();

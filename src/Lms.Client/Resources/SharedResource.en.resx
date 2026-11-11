@@ -455,4 +455,5 @@
   <data name="Staff_RemoveShare" xml:space="preserve"><value>Remove share</value></data>
   <data name="Staff_ExpiresSoon" xml:space="preserve"><value>Expires in {0} days</value></data>
   <data name="Staff_ExpiredOn" xml:space="preserve"><value>Expired on {0}</value></data>
+  <data name="Staff_RoleIncomplete" xml:space="preserve"><value>Choose both a role and a unit.</value></data>
 </root>

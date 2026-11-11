@@ -33,7 +33,8 @@
     private async Task SaveAsync()
     {
         _error = null;
-        var targets = _rows.Where(r => r.IsComplete).Select(r => r.ToInput()).ToList();
+        if (!StaffRoleRow.ValidateAll(_rows)) return;
+        var targets = _rows.Where(r => !r.IsEmpty).Select(r => r.ToInput()).ToList();
         if (targets.Count == 0)
         {
             _error = L["Staff_RoleRequired"];

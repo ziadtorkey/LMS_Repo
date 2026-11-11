@@ -44,6 +44,37 @@ public sealed class StaffProfilePageTests : StaffTestContext
     }
 
     [Fact]
+    public async Task Profile_page_renders_rtl_in_arabic()
+    {
+        Culture.Current = new CultureInfo("ar");
+        await GrantAsync(Permissions.Staff.View);
+        var id = Staff.All.First(s => s.Summary.NameEn == "Sara Ahmed").Summary.Id;
+
+        var layout = Render<Lms.Client.Layout.MainLayout>(p => p.Add(l => l.Body,
+            (Microsoft.AspNetCore.Components.RenderFragment)(b =>
+            {
+                b.OpenComponent<StaffProfilePage>(0);
+                b.AddAttribute(1, nameof(StaffProfilePage.Id), id);
+                b.CloseComponent();
+            })));
+
+        layout.WaitForElement("[data-testid=profile-name]");
+        Assert.Equal("rtl", layout.Find("[data-testid=app-root]").GetAttribute("dir"));
+        Assert.Contains("سارة أحمد", layout.Find("[data-testid=profile-name]").TextContent);
+        Assert.Equal("ltr", layout.Find("[data-testid=profile-history] span[dir=ltr]").GetAttribute("dir"));
+    }
+
+    [Fact]
+    public async Task Status_history_time_is_shown_in_local_time()
+    {
+        var person = Staff.All.First(s => s.Summary.NameEn == "Sara Ahmed");
+        var cut = await RenderAsync(person.Summary.Id);
+
+        var expected = person.StatusHistory[0].ChangedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
+        Assert.Contains(expected, cut.Find("[data-testid=profile-history]").TextContent);
+    }
+
+    [Fact]
     public async Task Missing_person_shows_the_not_found_message()
     {
         Culture.Current = new CultureInfo("en");

@@ -85,6 +85,8 @@ public sealed class FakeStaffApi : IStaffApi
             manager with { AssignmentId = Guid.NewGuid(), RoleNameAr = "معلم", RoleNameEn = "Teacher" },
             manager with { AssignmentId = Guid.NewGuid(), OrgUnitId = FakeUnits.GroupId, OrgUnitNameAr = "مدارس النور", OrgUnitNameEn = "Al Noor Schools", IsShare = true },
         ]);
+        // A person from another unit, visible only through a share (limited view).
+        Add("نورة حسن", "Noura Hassan", "noura@x.test", PersonStatuses.Active, [manager with { AssignmentId = Guid.NewGuid(), IsShare = true }], limited: true);
     }
 
     /// <summary>Adds a staff member and returns its detail.</summary>
