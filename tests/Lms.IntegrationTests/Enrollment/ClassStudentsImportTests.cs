@@ -228,6 +228,47 @@ public sealed class ClassStudentsImportTests : IDisposable
     }
 
     [Fact]
+    public async Task Root_admin_importing_at_School1_gets_unknown_student_for_a_School2_student()
+    {
+        // The root admin sees both schools, so only the target-subtree filter keeps a School 2 student out of a School 1 import.
+        var w = await SetUpAsync("CI9");
+        var inSchool2 = (await StudentsAsync(w.Tree.School2, 1)).Single();
+        var inSchool1 = (await StudentsAsync(w.Tree.School1, 1)).Single();
+
+        var id = await UploadAsync(w.Admin, w.Tree.School1.Id, EnHeaders, [inSchool1.StudentCode, "K0", null], [inSchool2.StudentCode, "K0", null]);
+
+        Assert.Equal("Invalid", await StatusAsync(id));
+        var errors = await ErrorsAsync(w.Admin, id);
+        Assert.Contains((3, "StudentCode", "unknown_student"), errors);
+        Assert.DoesNotContain(errors, e => e.Row == 2);
+        Assert.Equal((0, 0), await CountsAsync([inSchool1.Id, inSchool2.Id]));
+        await using var db = _factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        Assert.Equal(w.Tree.School2.Id, (await db.Set<StudentProfile>().SingleAsync(s => s.Id == inSchool2.Id)).OrgUnitId); // home untouched
+    }
+
+    [Fact]
+    public async Task Root_admin_importing_at_School1_gets_unknown_class_for_a_School2_class()
+    {
+        var w = await SetUpAsync("CI10");
+        await using (var db = _factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            db.Add(new Class(w.Tree.School2, w.Year.Id, "S2CLASS", "فصل", "School 2 class", 30));
+            await db.SaveChangesAsync();
+        }
+
+        var student = (await StudentsAsync(w.Tree.School1, 1)).Single();
+
+        var atSchool1 = await UploadAsync(w.Admin, w.Tree.School1.Id, EnHeaders, [student.StudentCode, "S2CLASS", null]);
+        Assert.Equal("Invalid", await StatusAsync(atSchool1));
+        Assert.Equal([(2, "ClassCode", "unknown_class")], await ErrorsAsync(w.Admin, atSchool1));
+
+        // Importing at the root (both schools below the target) finds the same class, so it is the target subtree that decides.
+        var atRoot = await UploadAsync(w.Admin, w.Tree.Root.Id, EnHeaders, [student.StudentCode, "S2CLASS", null]);
+        Assert.Equal("Valid", await StatusAsync(atRoot));
+        Assert.Equal((0, 0), await CountsAsync([student.Id]));
+    }
+
+    [Fact]
     public async Task Already_placed_student_blocks_file()
     {
         var w = await SetUpAsync("CI4", classCount: 2);
