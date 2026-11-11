@@ -2,18 +2,25 @@ using Lms.Domain.Identity;
 using Lms.Domain.Organizations;
 using Lms.Domain.People;
 using Lms.IntegrationTests.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 
 namespace Lms.IntegrationTests.People;
 
 /// <summary>Seeds people rows straight through the context (platform scope), for kernel tests below the API.</summary>
 internal static class PeopleTestKit
 {
-    public static async Task<User> AddUserAsync(LmsApiFactory factory, string? email = null)
+    public static async Task<User> AddUserAsync(LmsApiFactory factory, string? email = null, Guid? id = null)
     {
         await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        if (id is { } existingId && await db.Users.FirstOrDefaultAsync(u => u.Id == existingId) is { } existing)
+        {
+            return existing; // one person, several profiles
+        }
+
         var name = email ?? $"u-{Guid.NewGuid():N}@lms.test";
         var user = new User
         {
+            Id = id ?? Guid.CreateVersion7(),
             UserName = name,
             NormalizedUserName = name.ToUpperInvariant(),
             Email = name,
@@ -29,12 +36,12 @@ internal static class PeopleTestKit
 
     public static async Task<StaffProfile> AddStaffAsync(
         LmsApiFactory factory, OrgUnit home, string? email = null, string? mobile = null, string? nationalId = null,
-        string nameEn = "Staff")
+        string nameEn = "Staff", Guid? userId = null, DateOnly? expiresOn = null)
     {
-        var user = await AddUserAsync(factory);
+        var user = userId is null ? await AddUserAsync(factory) : await AddUserAsync(factory, null, userId);
         await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
         var staff = new StaffProfile(
-            home, user.Id, "موظف", nameEn, email ?? user.Email!, mobile, nationalId, null, null, null, null);
+            home, user.Id, "موظف", nameEn, email ?? user.Email!, mobile, nationalId, null, null, null, expiresOn);
         db.Set<StaffProfile>().Add(staff);
         await db.SaveChangesAsync();
         return staff;
@@ -54,10 +61,15 @@ internal static class PeopleTestKit
     }
 
     public static async Task<GuardianProfile> AddGuardianAsync(
-        LmsApiFactory factory, Guid organizationId, string mobile, string? nationalId = null)
+        LmsApiFactory factory, Guid organizationId, string mobile, string? nationalId = null, Guid? userId = null)
     {
         await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
         var guardian = new GuardianProfile(organizationId, "ولي أمر", "Guardian", mobile, null, nationalId);
+        if (userId is { } linked)
+        {
+            guardian.LinkUser(linked);
+        }
+
         db.Set<GuardianProfile>().Add(guardian);
         await db.SaveChangesAsync();
         return guardian;
