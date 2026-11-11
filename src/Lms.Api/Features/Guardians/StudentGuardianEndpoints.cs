@@ -1,3 +1,4 @@
+using Lms.Shared;
 using Lms.Api.Infrastructure;
 using Lms.Domain.Abstractions;
 using Lms.Domain.People;
@@ -14,10 +15,10 @@ public static class StudentGuardianEndpoints
 {
     public static void Map(IEndpointRouteBuilder app)
     {
-        app.MapGet(GuardianRoutes.StudentGuardiansPattern, ListAsync).RequirePermission(Permissions.Students.View);
-        app.MapPost(GuardianRoutes.StudentGuardiansPattern, LinkAsync).RequirePermission(Permissions.Students.Update);
-        app.MapPut(GuardianRoutes.StudentGuardianPattern, UpdateAsync).RequirePermission(Permissions.Students.Update);
-        app.MapDelete(GuardianRoutes.StudentGuardianPattern, UnlinkAsync).RequirePermission(Permissions.Students.Update);
+        app.MapGet(Routes.StudentGuardiansPattern, ListAsync).RequirePermission(Permissions.Students.View);
+        app.MapPost(Routes.StudentGuardiansPattern, LinkAsync).RequirePermission(Permissions.Students.Update);
+        app.MapPut(Routes.StudentGuardianPattern, UpdateAsync).RequirePermission(Permissions.Students.Update);
+        app.MapDelete(Routes.StudentGuardianPattern, UnlinkAsync).RequirePermission(Permissions.Students.Update);
     }
 
     /// <summary>
@@ -62,7 +63,7 @@ public static class StudentGuardianEndpoints
         {
             var created = await linker.LinkAsync(student!, [GuardianValidators.ToDomain(body)], ct);
             var dto = (await GuardianMapper.LinksOfAsync(db, student!, ct)).Single(l => l.GuardianId == created[0].GuardianId);
-            return Results.Created(GuardianRoutes.StudentGuardian(id, dto.GuardianId), dto);
+            return Results.Created(Routes.StudentGuardian(id, dto.GuardianId), dto);
         }
         catch (GuardianLinkException ex)
         {

@@ -42,6 +42,7 @@ public static class ClientServices
             services.AddSingleton<ITemplatesApi, FakeTemplatesApi>();
             services.AddSingleton<IConfigApi, FakeConfigApi>();
             services.AddSingleton<IStaffApi, FakeStaffApi>();
+            services.AddSingleton<ICoursesApi, FakeCoursesApi>();
             services.AddSingleton<IFileUploadApi, FakeFileUploadApi>();
             services.AddScoped<AuthenticationStateProvider, FakeAuthenticationStateProvider>();
             services.AddAuthorizationCore();
@@ -76,6 +77,7 @@ public static class ClientServices
         services.AddScoped<ITemplatesApi, TemplatesApi>();
         services.AddScoped<IConfigApi, ConfigApi>();
         services.AddScoped<IStaffApi, StaffApi>();
+        services.AddScoped<ICoursesApi, CoursesApi>();
         services.AddScoped<IFileUploadApi, FileUploadApi>();
     }
 }

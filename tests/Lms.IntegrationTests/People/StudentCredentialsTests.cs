@@ -342,4 +342,28 @@ public sealed class StudentCredentialsTests
 
         await Assert.ThrowsAsync<DuplicateAccountException>(() => IssueAsync(student.Id));
     }
+
+    [Fact]
+    public async Task A_sign_in_name_that_is_already_taken_is_refused_with_StudentCode()
+    {
+        var (student, _) = await StudentAsync("SC11");
+        var name = $"{student.StudentCode.ToLowerInvariant()}@{await ShortCodeOf(student)}";
+        string originalHash;
+        using (var scope = _host.Services.CreateScope())
+        {
+            var users = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+            var squatter = new User { UserName = name, DisplayNameEn = "Someone else" };
+            Assert.True((await users.CreateAsync(squatter, "TheirOwn1Pass")).Succeeded);
+            originalHash = squatter.PasswordHash!;
+        }
+
+        var issue = await Assert.ThrowsAsync<DuplicateAccountException>(() => IssueAsync(student.Id));
+        var reset = await Assert.ThrowsAsync<DuplicateAccountException>(() => IssueAsync(student.Id, reset: true));
+
+        Assert.Equal(("StudentCode", "StudentCode"), (issue.Field, reset.Field));
+        using var after = _host.Services.CreateScope();
+        Assert.Equal(originalHash, (await after.ServiceProvider.GetRequiredService<UserManager<User>>().FindByNameAsync(name))!.PasswordHash);
+        await using var db = _factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        Assert.Null((await db.Set<StudentProfile>().IgnoreQueryFilters().SingleAsync(x => x.Id == student.Id)).UserId);
+    }
 }
