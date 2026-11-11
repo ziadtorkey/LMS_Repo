@@ -96,6 +96,23 @@ public sealed class CalendarTests(LmsApiFactory factory)
     }
 
     [Fact]
+    public async Task Root_holiday_does_not_apply_to_a_school_with_its_own_years_but_does_to_its_sibling()
+    {
+        var tree = await AccessTestData.SeedAsync(factory, "CL9");
+        var admin = await AccessTestData.AssignAsync(factory, tree, tree.Root, BuiltInRoles.OrgAdmin, Guid.NewGuid());
+        var rootYear = await CreateYearAsync(factory, admin, tree.Root, "Root", Y1, Y1.AddMonths(10));
+        await CreateYearAsync(factory, admin, tree.School1, "Own", Y1, Y1.AddMonths(9));
+        (await SendAsync(factory, HttpMethod.Post, "/api/calendar-events", admin, Event(rootYear.Id, tree.Root.Id, "H", Y1.AddDays(10), Y1.AddDays(10)))).EnsureSuccessStatusCode();
+
+        using var scope = factory.Services.CreateScope();
+        var calendar = scope.ServiceProvider.GetRequiredService<IAcademicCalendar>();
+
+        Assert.False(await calendar.IsNonWorkingDayAsync(tree.School1.Path, Y1.AddDays(10), default));
+        Assert.True(await calendar.IsNonWorkingDayAsync(tree.School2.Path, Y1.AddDays(10), default));
+        Assert.True(await calendar.IsNonWorkingDayAsync(tree.Root.Path, Y1.AddDays(10), default));
+    }
+
+    [Fact]
     public async Task Closed_year_calendar_is_read_only()
     {
         var tree = await AccessTestData.SeedAsync(factory, "CL5");
