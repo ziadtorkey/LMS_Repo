@@ -30,6 +30,10 @@
   <data name="Nav_Audit" xml:space="preserve"><value>Audit log</value></data>
   <data name="Nav_Clients" xml:space="preserve"><value>Clients</value></data>
   <data name="Nav_Menu" xml:space="preserve"><value>Menu</value></data>
+  <data name="Nav_SkipToContent" xml:space="preserve"><value>Skip to main content</value></data>
+  <data name="Theme_Dark" xml:space="preserve"><value>Dark mode</value></data>
+  <data name="Theme_Light" xml:space="preserve"><value>Light mode</value></data>
+  <data name="Common_Filters" xml:space="preserve"><value>Filters</value></data>
   <data name="Choose_Title" xml:space="preserve"><value>Choose context</value></data>
   <data name="Choose_Subtitle" xml:space="preserve"><value>Pick the role and unit you want to work in. You can switch at any time.</value></data>
   <data name="Choose_Empty_Title" xml:space="preserve"><value>No roles assigned to you</value></data>
@@ -467,6 +471,18 @@
   <data name="Staff_StatusHistory" xml:space="preserve"><value>Status history</value></data>
   <data name="Staff_Reason" xml:space="preserve"><value>Reason</value></data>
   <data name="Staff_LimitedView" xml:space="preserve"><value>This person belongs to another unit; some details are hidden.</value></data>
+  <data name="Staff_Subtitle" xml:space="preserve"><value>Teachers and administrators in your organization, their roles and account status.</value></data>
+  <data name="Staff_EmptyTitle" xml:space="preserve"><value>No matching staff</value></data>
+  <data name="Staff_EmptyText" xml:space="preserve"><value>Change the filters or add a new staff member.</value></data>
+  <data name="Staff_BackToList" xml:space="preserve"><value>All staff</value></data>
+  <data name="Staff_Details" xml:space="preserve"><value>Account details</value></data>
+  <data name="Staff_NoRoles" xml:space="preserve"><value>No roles assigned.</value></data>
+  <data name="Staff_NoHistory" xml:space="preserve"><value>The status has not changed yet.</value></data>
+  <data name="Staff_SectionPerson" xml:space="preserve"><value>Name and job title</value></data>
+  <data name="Staff_SectionContact" xml:space="preserve"><value>Contact and identity</value></data>
+  <data name="Staff_SectionAccount" xml:space="preserve"><value>Account</value></data>
+  <data name="Staff_EmailReadOnlyHelp" xml:space="preserve"><value>The email cannot be changed here.</value></data>
+  <data name="Staff_ExpiresOnHelp" xml:space="preserve"><value>Leave empty if the account does not expire.</value></data>
   <data name="Person_Photo" xml:space="preserve"><value>Photo</value></data>
   <data name="Person_ChangePhoto" xml:space="preserve"><value>Change photo</value></data>
   <data name="Person_RemovePhoto" xml:space="preserve"><value>Remove photo</value></data>

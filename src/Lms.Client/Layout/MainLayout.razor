@@ -1,57 +1,78 @@
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using Lms.Client.Theme
 @inherits LayoutComponentBase
 @inject ICultureService Culture
 @inject NavigationManager Navigation
 @inject IContextStore ContextStore
 @inject PermissionState Permissions
+@inject IJSRuntime JS
 
-<div data-testid="app-root" dir="@(Culture.IsRightToLeft ? "rtl" : "ltr")" lang="@Culture.Current.TwoLetterISOLanguageName">
+<div data-testid="app-root" class="lms-app" dir="@(Culture.IsRightToLeft ? "rtl" : "ltr")" lang="@Culture.Current.TwoLetterISOLanguageName">
+    <a class="lms-skip-link" href="#lms-main" data-testid="skip-link">@L["Nav_SkipToContent"]</a>
     <MudRTLProvider RightToLeft="@Culture.IsRightToLeft">
-        <MudThemeProvider />
+        <MudThemeProvider Theme="_theme" IsDarkMode="_isDark" />
         <MudPopoverProvider />
         <MudDialogProvider />
         <MudSnackbarProvider />
         <MudLayout>
-            <MudAppBar Elevation="1">
+            <MudAppBar Elevation="0" Class="lms-appbar">
                 <AuthorizeView>
                     <Authorized>
-                        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start"
+                        <MudIconButton Icon="@Icons.Material.Rounded.Menu" Color="Color.Inherit" Edge="Edge.Start"
                                        aria-label="@L["Nav_Menu"]" OnClick="() => _drawerOpen = !_drawerOpen" data-testid="nav-toggle" />
                     </Authorized>
                 </AuthorizeView>
-                <MudText Typo="Typo.h6" Class="d-none d-sm-flex">@L["App_Title"]</MudText>
+                <MudText Typo="Typo.subtitle1" Class="lms-appbar-title d-none d-sm-flex d-md-none">@L["App_Title"]</MudText>
                 <MudSpacer />
-                <AuthorizeView>
-                    <Authorized>
-                        <ContextSwitcher />
-                        <YearSelector />
-                        <NotificationBell />
-                    </Authorized>
-                </AuthorizeView>
-                <LanguageSwitcher />
-                <AuthorizeView>
-                    <Authorized>
-                        <MudMenu Icon="@Icons.Material.Filled.AccountCircle" Color="Color.Inherit" AriaLabel="@L["Menu_User"]"
-                                 data-testid="user-menu">
-                            <MudText Class="px-4 py-2" Typo="Typo.subtitle2">@context.User.Identity?.Name</MudText>
-                            <MudMenuItem OnClick="Logout">@L["Menu_Logout"]</MudMenuItem>
-                        </MudMenu>
-                    </Authorized>
-                    <NotAuthorized>
-                        <MudButton Color="Color.Inherit" Href="authentication/login">@L["Menu_Login"]</MudButton>
-                    </NotAuthorized>
-                </AuthorizeView>
+                <div class="lms-appbar-tools">
+                    <AuthorizeView>
+                        <Authorized>
+                            <ContextSwitcher />
+                            <YearSelector />
+                            <NotificationBell />
+                        </Authorized>
+                    </AuthorizeView>
+                    @* On phones the app bar is full, so the colour-scheme switch lives in the user menu there. *@
+                    <div class="d-none d-sm-flex">
+                        <MudTooltip Text="@ThemeLabel">
+                            <MudIconButton Icon="@ThemeIcon" Color="Color.Inherit" aria-label="@ThemeLabel" OnClick="ToggleThemeAsync"
+                                           data-testid="theme-toggle" />
+                        </MudTooltip>
+                    </div>
+                    <LanguageSwitcher />
+                    <AuthorizeView>
+                        <Authorized>
+                            <MudMenu Icon="@Icons.Material.Rounded.AccountCircle" Color="Color.Inherit" AriaLabel="@L["Menu_User"]"
+                                     AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight" data-testid="user-menu">
+                                <MudText Class="px-4 py-2" Typo="Typo.subtitle2">@context.User.Identity?.Name</MudText>
+                                <MudDivider />
+                                <MudMenuItem Icon="@ThemeIcon" OnClick="ToggleThemeAsync" Class="d-sm-none" data-testid="theme-toggle-menu">@ThemeLabel</MudMenuItem>
+                                <MudMenuItem Icon="@Icons.Material.Rounded.Logout" OnClick="Logout">@L["Menu_Logout"]</MudMenuItem>
+                            </MudMenu>
+                        </Authorized>
+                        <NotAuthorized>
+                            <MudButton Color="Color.Primary" Variant="Variant.Filled" Href="authentication/login">@L["Menu_Login"]</MudButton>
+                        </NotAuthorized>
+                    </AuthorizeView>
+                </div>
             </MudAppBar>
             <AuthorizeView>
                 <Authorized>
                     <ContextGate />
-                    <MudDrawer @bind-Open="_drawerOpen" Variant="DrawerVariant.Responsive" ClipMode="DrawerClipMode.Always" Elevation="1">
+                    <MudDrawer @bind-Open="_drawerOpen" Variant="DrawerVariant.Responsive" ClipMode="DrawerClipMode.Never" Elevation="0"
+                               Class="lms-drawer">
+                        <MudDrawerHeader Class="lms-brand">
+                            <span class="lms-brand-mark" aria-hidden="true">
+                                <MudIcon Icon="@Icons.Material.Rounded.School" Size="Size.Small" />
+                            </span>
+                            <MudText Typo="Typo.subtitle1" Class="lms-brand-name">@L["App_Title"]</MudText>
+                        </MudDrawerHeader>
                         <NavMenu />
                     </MudDrawer>
                 </Authorized>
             </AuthorizeView>
-            <MudMainContent>
-                <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+            <MudMainContent Class="lms-main">
+                <MudContainer id="lms-main" tabindex="-1" MaxWidth="MaxWidth.ExtraLarge" Class="lms-page">
                     @Body
                 </MudContainer>
             </MudMainContent>
@@ -60,7 +81,28 @@
 </div>
 
 @code {
+    // Colour scheme: wwwroot/js/theme.js (lms.theme in localStorage, otherwise the device setting).
+    private readonly MudTheme _theme = LmsTheme.Create();
     private bool _drawerOpen = true;
+    private bool _isDark;
+
+    private string ThemeLabel => _isDark ? L["Theme_Light"] : L["Theme_Dark"];
+    private string ThemeIcon => _isDark ? Icons.Material.Rounded.LightMode : Icons.Material.Rounded.DarkMode;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        var dark = await JS.InvokeAsync<bool>("lmsTheme.isDark");
+        if (dark == _isDark) return;
+        _isDark = dark;
+        StateHasChanged();
+    }
+
+    private async Task ToggleThemeAsync()
+    {
+        _isDark = !_isDark;
+        await JS.InvokeVoidAsync("lmsTheme.set", _isDark);
+    }
 
     private async Task Logout()
     {

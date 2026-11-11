@@ -30,6 +30,10 @@
   <data name="Nav_Audit" xml:space="preserve"><value>سجل التدقيق</value></data>
   <data name="Nav_Clients" xml:space="preserve"><value>العملاء</value></data>
   <data name="Nav_Menu" xml:space="preserve"><value>القائمة</value></data>
+  <data name="Nav_SkipToContent" xml:space="preserve"><value>انتقل إلى المحتوى الرئيسي</value></data>
+  <data name="Theme_Dark" xml:space="preserve"><value>الوضع الداكن</value></data>
+  <data name="Theme_Light" xml:space="preserve"><value>الوضع الفاتح</value></data>
+  <data name="Common_Filters" xml:space="preserve"><value>عوامل التصفية</value></data>
   <data name="Choose_Title" xml:space="preserve"><value>اختر السياق</value></data>
   <data name="Choose_Subtitle" xml:space="preserve"><value>اختر الدور والجهة التي ستعمل بها الآن. يمكنك التبديل في أي وقت.</value></data>
   <data name="Choose_Empty_Title" xml:space="preserve"><value>لا توجد صلاحيات مسندة إليك</value></data>
@@ -467,6 +471,18 @@
   <data name="Staff_StatusHistory" xml:space="preserve"><value>سجل الحالة</value></data>
   <data name="Staff_Reason" xml:space="preserve"><value>السبب</value></data>
   <data name="Staff_LimitedView" xml:space="preserve"><value>ينتمي هذا الشخص إلى وحدة أخرى، لذلك بعض البيانات مخفية.</value></data>
+  <data name="Staff_Subtitle" xml:space="preserve"><value>المعلمون والإداريون في جهتك، وأدوارهم وحالة حساباتهم.</value></data>
+  <data name="Staff_EmptyTitle" xml:space="preserve"><value>لا يوجد موظفون مطابقون</value></data>
+  <data name="Staff_EmptyText" xml:space="preserve"><value>غيّر عوامل التصفية أو أضف موظفًا جديدًا.</value></data>
+  <data name="Staff_BackToList" xml:space="preserve"><value>كل الموظفين</value></data>
+  <data name="Staff_Details" xml:space="preserve"><value>بيانات الحساب</value></data>
+  <data name="Staff_NoRoles" xml:space="preserve"><value>لا توجد أدوار مسندة.</value></data>
+  <data name="Staff_NoHistory" xml:space="preserve"><value>لم تتغير الحالة بعد.</value></data>
+  <data name="Staff_SectionPerson" xml:space="preserve"><value>الاسم والمسمى الوظيفي</value></data>
+  <data name="Staff_SectionContact" xml:space="preserve"><value>التواصل والهوية</value></data>
+  <data name="Staff_SectionAccount" xml:space="preserve"><value>الحساب</value></data>
+  <data name="Staff_EmailReadOnlyHelp" xml:space="preserve"><value>لا يمكن تغيير البريد الإلكتروني من هنا.</value></data>
+  <data name="Staff_ExpiresOnHelp" xml:space="preserve"><value>اتركه فارغًا إذا لم يكن للحساب تاريخ انتهاء.</value></data>
   <data name="Person_Photo" xml:space="preserve"><value>الصورة</value></data>
   <data name="Person_ChangePhoto" xml:space="preserve"><value>تغيير الصورة</value></data>
   <data name="Person_RemovePhoto" xml:space="preserve"><value>إزالة الصورة</value></data>
