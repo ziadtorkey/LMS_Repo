@@ -51,6 +51,14 @@ public sealed partial class MailpitClient(Uri? baseUrl = null) : IDisposable
         }
     }
 
+    /// <summary>How many emails have reached <paramref name="email"/> so far (no waiting).</summary>
+    public async Task<int> CountAsync(string email)
+    {
+        var query = Uri.EscapeDataString($"to:\"{email}\"");
+        var result = await _http.GetFromJsonAsync<JsonElement>($"/api/v1/search?query={query}");
+        return result.TryGetProperty("messages", out var messages) ? messages.GetArrayLength() : 0;
+    }
+
     private async Task<string?> NewestMessageIdAsync(string email)
     {
         var query = Uri.EscapeDataString($"to:\"{email}\"");
