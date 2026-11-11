@@ -8,6 +8,11 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
+    <PackageReference Include="Hangfire.AspNetCore" />
+    <PackageReference Include="Hangfire.MySqlStorage" />
+    <!-- Patched versions of vulnerable transitives of the Hangfire packages (ADR 0003). -->
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="System.Data.SqlClient" />
     <PackageReference Include="OpenIddict.AspNetCore" />
     <PackageReference Include="Serilog.AspNetCore" />
   </ItemGroup>
