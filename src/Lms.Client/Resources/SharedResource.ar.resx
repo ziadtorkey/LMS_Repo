@@ -829,4 +829,28 @@
   <data name="Flag_Inherit" xml:space="preserve"><value>وراثة ({0})</value></data>
   <data name="Flag_On" xml:space="preserve"><value>تشغيل</value></data>
   <data name="Flag_Off" xml:space="preserve"><value>إيقاف</value></data>
+  <data name="Nav_Exceptions" xml:space="preserve"><value>استثناءات التسجيل</value></data>
+  <data name="Exception_Title" xml:space="preserve"><value>استثناءات التسجيل</value></data>
+  <data name="Exception_Help" xml:space="preserve"><value>الطالب الذي لا يستوفي قيود المقرر لا يُسجَّل فيه إلا بعد الموافقة على استثناء.</value></data>
+  <data name="Exception_Request" xml:space="preserve"><value>طلب استثناء</value></data>
+  <data name="Exception_Reason" xml:space="preserve"><value>لماذا يجب تسجيل هذا الطالب؟</value></data>
+  <data name="Exception_Sent" xml:space="preserve"><value>تم إرسال طلب الاستثناء للموافقة.</value></data>
+  <data name="Exception_Send" xml:space="preserve"><value>إرسال الطلب</value></data>
+  <data name="Exception_ReasonRequired" xml:space="preserve"><value>أدخل سبب الاستثناء.</value></data>
+  <data name="Exception_Student" xml:space="preserve"><value>الطالب</value></data>
+  <data name="Exception_Course" xml:space="preserve"><value>المقرر</value></data>
+  <data name="Exception_Failed" xml:space="preserve"><value>القيود غير المستوفاة</value></data>
+  <data name="Exception_RequestedBy" xml:space="preserve"><value>مقدم الطلب</value></data>
+  <data name="Exception_Review" xml:space="preserve"><value>مراجعة</value></data>
+  <data name="Exception_Approve" xml:space="preserve"><value>موافقة</value></data>
+  <data name="Exception_Reject" xml:space="preserve"><value>رفض</value></data>
+  <data name="Exception_Comment" xml:space="preserve"><value>تعليق</value></data>
+  <data name="Exception_CommentRequired" xml:space="preserve"><value>أدخل سبب الرفض.</value></data>
+  <data name="Exception_Cancel" xml:space="preserve"><value>إلغاء الطلب</value></data>
+  <data name="Exception_Decision" xml:space="preserve"><value>القرار</value></data>
+  <data name="Exception_YourReason" xml:space="preserve"><value>السبب</value></data>
+  <data name="ExceptionStatus_Pending" xml:space="preserve"><value>قيد الانتظار</value></data>
+  <data name="ExceptionStatus_Approved" xml:space="preserve"><value>تمت الموافقة</value></data>
+  <data name="ExceptionStatus_Rejected" xml:space="preserve"><value>مرفوض</value></data>
+  <data name="ExceptionStatus_Cancelled" xml:space="preserve"><value>ملغي</value></data>
 </root>
