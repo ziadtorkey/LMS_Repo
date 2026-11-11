@@ -1,0 +1,73 @@
+@using Lms.Client.Services.Api
+@using Lms.Shared.AcademicYears
+@inject IYearsApi Api
+@inject NavigationManager Navigation
+
+@* Create (in YearId, at UnitId) or edit a holiday or event. *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="2">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" data-testid="event-error">@_error</MudAlert>
+            }
+            <MudTextField T="string" @bind-Value="_titleAr" Label="@L["Calendar_TitleAr"]" dir="rtl" lang="ar" MaxLength="200" data-testid="event-title-ar" />
+            <MudTextField T="string" @bind-Value="_titleEn" Label="@L["Calendar_TitleEn"]" dir="ltr" lang="en" MaxLength="200" data-testid="event-title-en" />
+            <MudSelect T="string" @bind-Value="_kind" Label="@L["Calendar_Kind"]" data-testid="event-kind">
+                <MudSelectItem Value="@CalendarEventKinds.Holiday">@L["Calendar_Holiday"]</MudSelectItem>
+                <MudSelectItem Value="@CalendarEventKinds.Event">@L["Calendar_Event"]</MudSelectItem>
+            </MudSelect>
+            <MudDatePicker Date="_start" DateChanged="d => _start = d" Label="@L["Years_Start"]" data-testid="event-start" />
+            <MudDatePicker Date="_end" DateChanged="d => _end = d" Label="@L["Years_End"]" data-testid="event-end" />
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()">@L["Common_Cancel"]</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_saving"
+                   data-testid="event-save">@L["Common_Save"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private string _titleAr = "", _titleEn = "", _kind = CalendarEventKinds.Event;
+    private DateTime? _start, _end;
+    private string? _error;
+    private bool _saving;
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public Guid YearId { get; set; }
+    [Parameter] public Guid UnitId { get; set; }
+    [Parameter] public CalendarEventDto? Existing { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (Existing is null) return;
+        _titleAr = Existing.TitleAr; _titleEn = Existing.TitleEn; _kind = Existing.Kind;
+        _start = Existing.StartDate.ToDateTime(TimeOnly.MinValue);
+        _end = Existing.EndDate.ToDateTime(TimeOnly.MinValue);
+    }
+
+    private async Task SaveAsync()
+    {
+        _error = null;
+        if (string.IsNullOrWhiteSpace(_titleAr) || string.IsNullOrWhiteSpace(_titleEn) || _start is null || _end is null)
+        {
+            _error = L["Common_Required"];
+            return;
+        }
+        if (_end < _start)
+        {
+            _error = L["Years_DateOrder"];
+            return;
+        }
+
+        _saving = true;
+        var request = new SaveCalendarEventRequest(YearId, UnitId, _titleAr.Trim(), _titleEn.Trim(), _kind,
+            DateOnly.FromDateTime(_start.Value), DateOnly.FromDateTime(_end.Value));
+        var saved = await ActionCalls.TryAsync(
+            () => Existing is null ? Api.CreateEventAsync(request) : Api.UpdateEventAsync(Existing.Id, request),
+            Navigation, L, m => _error = m);
+        _saving = false;
+        if (saved) MudDialog.Close(DialogResult.Ok(true));
+    }
+}
