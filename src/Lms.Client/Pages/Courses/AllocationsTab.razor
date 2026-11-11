@@ -1,0 +1,96 @@
+@using Lms.Client.Components.People
+@using Lms.Client.Services.Api
+@using Lms.Shared.Courses
+@inject ICoursesApi Api
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+@* Where a course is allocated: the owner unit and below. Allocating or removing needs Courses.Allocate (the page decides CanEdit). *@
+<MudStack Spacing="3">
+    @if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error" data-testid="allocation-error">@_error</MudAlert>
+    }
+    @if (_rows.Count == 0)
+    {
+        <MudText data-testid="allocation-empty">@L["Allocation_Empty"]</MudText>
+    }
+    else
+    {
+        <MudTable Items="_rows" Dense="true" Hover="true" data-testid="allocation-table">
+            <HeaderContent>
+                <MudTh>@L["Allocation_Unit"]</MudTh>
+                <MudTh>@L["Allocation_ClassCourses"]</MudTh>
+                <MudTh></MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@CultureText.Pick(context.OrgUnitNameAr, context.OrgUnitNameEn)</MudTd>
+                <MudTd>@context.ClassCourseCount</MudTd>
+                <MudTd>
+                    @if (CanEdit)
+                    {
+                        <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Error" OnClick="() => RemoveAsync(context)"
+                                   data-testid="@($"allocation-remove-{context.Id}")">@L["Common_Delete"]</MudButton>
+                    }
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    }
+    @if (CanEdit)
+    {
+        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.End" Wrap="Wrap.Wrap">
+            <UnitPicker Value="_unitId" ValueChanged="id => _unitId = id" Label="@L["Allocation_AddAt"]" TestId="allocation-unit" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddAsync" Disabled="_unitId is null || _busy"
+                       data-testid="allocation-add">@L["Allocation_Add"]</MudButton>
+        </MudStack>
+    }
+</MudStack>
+
+@code {
+    private IReadOnlyList<CourseAllocationDto> _rows = [];
+    private Guid? _unitId;
+    private string? _error;
+    private bool _busy;
+
+    [Parameter, EditorRequired] public CourseSummaryDto Course { get; set; } = default!;
+    [Parameter] public bool CanEdit { get; set; }
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _error = null;
+        await ApiCalls.RunAsync(async () =>
+        {
+            var units = await Api.GetUnitCoursesAsync(Course.OwnerOrgUnitId);
+            _rows = units.Available.Where(a => a.CourseId == Course.Id && a.OrgUnitId == Course.OwnerOrgUnitId)
+                .Concat(units.AllocatedBelow.Where(a => a.CourseId == Course.Id)).ToList();
+        }, Navigation, L, message => _error = message);
+    }
+
+    private async Task AddAsync()
+    {
+        if (_unitId is not { } unit) return;
+        _busy = true;
+        var ok = await ApiCalls.RunAsync(() => Api.AllocateAsync(new AllocateCoursesRequest(unit, [Course.Id])), Navigation, L, message => _error = message);
+        _busy = false;
+        if (ok) await ChangedAsync();
+    }
+
+    private async Task RemoveAsync(CourseAllocationDto row)
+    {
+        _busy = true;
+        var ok = await ApiCalls.RunAsync(() => Api.RemoveAllocationAsync(row.Id), Navigation, L, message => _error = message);
+        _busy = false;
+        if (ok) await ChangedAsync();
+    }
+
+    private async Task ChangedAsync()
+    {
+        Snackbar.Add(L["Common_Saved"], Severity.Success);
+        _unitId = null;
+        await LoadAsync();
+        await OnChanged.InvokeAsync();
+    }
+}

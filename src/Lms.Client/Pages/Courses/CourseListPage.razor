@@ -59,6 +59,8 @@
         <MudTd><span dir="ltr">@course.Code</span></MudTd>
         <MudTd>
             <MudLink OnClick="() => OpenAsync(course)" data-testid="@($"course-link-{course.Id}")">@Culture.Pick(course.NameAr, course.NameEn)</MudLink>
+            <MudIconButton Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small" Href="@($"courses/{course.Id}")" aria-label="@L["CourseProfile_Open"]"
+                           data-testid="@($"course-profile-{course.Id}")" />
             @if (course.IsInherited)
             {
                 <MudChip T="string" Size="Size.Small" Color="Color.Info" data-testid="@($"inherited-chip-{course.Id}")">@L["Course_Inherited"]</MudChip>

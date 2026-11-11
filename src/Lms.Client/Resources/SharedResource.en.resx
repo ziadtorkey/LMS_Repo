@@ -673,4 +673,37 @@
   <data name="CourseStatus_Active" xml:space="preserve"><value>Active</value></data>
   <data name="CourseStatus_Inactive" xml:space="preserve"><value>Inactive</value></data>
   <data name="CourseImport_Title" xml:space="preserve"><value>Import courses from Excel</value></data>
+  <data name="Nav_MyCourses" xml:space="preserve"><value>My courses</value></data>
+  <data name="CourseProfile_Title" xml:space="preserve"><value>Course</value></data>
+  <data name="CourseProfile_Open" xml:space="preserve"><value>Open course</value></data>
+  <data name="CourseProfile_Details" xml:space="preserve"><value>Details</value></data>
+  <data name="CourseProfile_Allocations" xml:space="preserve"><value>Allocations</value></data>
+  <data name="CourseProfile_Restrictions" xml:space="preserve"><value>Restrictions</value></data>
+  <data name="CourseProfile_Supervisors" xml:space="preserve"><value>Supervisors</value></data>
+  <data name="CourseProfile_Blueprint" xml:space="preserve"><value>Blueprint</value></data>
+  <data name="CourseProfile_OpenBlueprint" xml:space="preserve"><value>Open the blueprint</value></data>
+  <data name="Allocation_Empty" xml:space="preserve"><value>This course is not allocated anywhere yet.</value></data>
+  <data name="Allocation_Unit" xml:space="preserve"><value>Unit</value></data>
+  <data name="Allocation_ClassCourses" xml:space="preserve"><value>Classes using it</value></data>
+  <data name="Allocation_AddAt" xml:space="preserve"><value>Allocate to unit</value></data>
+  <data name="Allocation_Add" xml:space="preserve"><value>Allocate</value></data>
+  <data name="RestrictionType_Religion" xml:space="preserve"><value>Religion</value></data>
+  <data name="RestrictionType_Gender" xml:space="preserve"><value>Gender</value></data>
+  <data name="RestrictionType_LevelType" xml:space="preserve"><value>Level type</value></data>
+  <data name="Restriction_Values" xml:space="preserve"><value>Allowed values</value></data>
+  <data name="Restriction_EmptyMeansAll" xml:space="preserve"><value>Leave empty to allow everyone.</value></data>
+  <data name="Restriction_None" xml:space="preserve"><value>No restriction</value></data>
+  <data name="Restriction_Affected" xml:space="preserve"><value>{0} current enrollments no longer match these restrictions. They stay enrolled; the change applies to new enrollments.</value></data>
+  <data name="Supervisor_None" xml:space="preserve"><value>No supervisors yet.</value></data>
+  <data name="Supervisor_Add" xml:space="preserve"><value>Add a supervisor (search staff with the Supervisor role)</value></data>
+  <data name="UnitSettings_Courses" xml:space="preserve"><value>Courses</value></data>
+  <data name="UnitCourses_Available" xml:space="preserve"><value>Available at this unit</value></data>
+  <data name="UnitCourses_NoneAvailable" xml:space="preserve"><value>No courses are available here yet.</value></data>
+  <data name="UnitCourses_Below" xml:space="preserve"><value>Allocated below</value></data>
+  <data name="UnitCourses_NoneBelow" xml:space="preserve"><value>Nothing is allocated below this unit.</value></data>
+  <data name="MyCourses_Title" xml:space="preserve"><value>My courses</value></data>
+  <data name="MyCourses_Empty" xml:space="preserve"><value>You do not supervise any course.</value></data>
+  <data name="MyCourses_BlueprintPublished" xml:space="preserve"><value>Blueprint published</value></data>
+  <data name="MyCourses_NoBlueprint" xml:space="preserve"><value>No published blueprint</value></data>
+  <data name="MyCourses_Open" xml:space="preserve"><value>Open</value></data>
 </root>

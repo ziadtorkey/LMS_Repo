@@ -22,6 +22,19 @@ public sealed class ApiHttp(HttpClient http, IContextStore context)
         return JsonSerializer.Deserialize<TResponse>(text, JsonSerializerOptions.Web);
     }
 
+    /// <summary>Like <see cref="SendAsync{TResponse}"/> but also returns the value of one response header (null when absent).</summary>
+    public async Task<(TResponse? Value, string? Header)> SendWithHeaderAsync<TResponse>(
+        HttpMethod method, string route, object? body, string headerName, CancellationToken ct = default)
+    {
+        using var response = await SendCoreAsync(method, route, body, ct);
+        var header = response.Headers.TryGetValues(headerName, out var values) ? values.FirstOrDefault() : null;
+        var text = await response.Content.ReadAsStringAsync(ct);
+        var value = response.StatusCode == HttpStatusCode.NoContent || string.IsNullOrWhiteSpace(text)
+            ? default
+            : JsonSerializer.Deserialize<TResponse>(text, JsonSerializerOptions.Web);
+        return (value, header);
+    }
+
     public async Task SendAsync(HttpMethod method, string route, object? body, CancellationToken ct = default)
     {
         using var response = await SendCoreAsync(method, route, body, ct);
