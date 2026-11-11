@@ -95,7 +95,7 @@ public static class EnrollmentEndpoints
         }
 
         if (await relationship.RestrictsAsync(Permissions.Enrollment.View, ct)
-            && !await relationship.OwnClassCourses().AnyAsync(c => c.Id == id, ct))
+            && !await relationship.TeachingClassCourses().AnyAsync(c => c.Id == id, ct))
         {
             return ApiProblems.NotFound(); // a teacher cannot tell another teacher's class course from a missing one
         }
@@ -156,7 +156,7 @@ public static class EnrollmentEndpoints
         if (await relationship.RestrictsAsync(Permissions.Enrollment.View, ct))
         {
             // A teacher sees a student's enrollments only in their own class courses; a student outside them is not found.
-            var own = relationship.OwnClassCourses().Select(c => c.Id);
+            var own = relationship.TeachingClassCourses().Select(c => c.Id);
             enrollments = enrollments.Where(e => own.Contains(e.ClassCourseId));
             if (!await enrollments.AnyAsync(ct))
             {
@@ -184,7 +184,7 @@ public static class EnrollmentEndpoints
 
         if (await relationship.RestrictsAsync(Permissions.Enrollment.View, ct))
         {
-            var own = relationship.OwnClassCourses().Select(c => c.Id);
+            var own = relationship.TeachingClassCourses().Select(c => c.Id);
             enrollments = enrollments.Where(e => own.Contains(e.ClassCourseId));
         }
 

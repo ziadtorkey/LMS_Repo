@@ -26,10 +26,11 @@ internal static class EnrollmentProblems
 }
 
 /// <summary>
-/// The relationship rule (PRD 3.3 step 2, D32) for the enrollment reads: a Teacher sees only the class courses where they
-/// teach (a current teacher assignment) or whose class they are homeroom teacher of. Evaluated after the permission, scope
-/// and policy checks; roles without a rule are unrestricted inside their unit scope. Task 12 may replace this by the
-/// general service; the rule itself comes from <see cref="RelationshipRules"/>.
+/// The relationship rule (PRD 3.3 step 2, D32, D42) for the enrollment reads. Enrollments are teaching-only: a Teacher
+/// sees the enrollments of the class courses where they hold a current teacher assignment, nothing else. A homeroom
+/// teacher additionally sees their class and its students (Classes.View, Students.View) but not the enrollments of its
+/// other courses. Evaluated after the permission, scope and policy checks; roles without a rule are unrestricted inside
+/// their unit scope. The rule itself comes from <see cref="RelationshipRules"/>.
 /// </summary>
 public sealed class EnrollmentRelationship(LmsDbContext db, ICurrentContext context, IClock clock)
 {
@@ -50,14 +51,18 @@ public sealed class EnrollmentRelationship(LmsDbContext db, ICurrentContext cont
         return roleKey is not null && RelationshipRules.For(roleKey, permission) == Relationships.OwnClassCourses;
     }
 
-    /// <summary>The class courses the caller teaches or is homeroom teacher for.</summary>
-    public IQueryable<ClassCourse> OwnClassCourses()
+    /// <summary>The class courses the caller teaches now (a teacher assignment that has started and not ended).</summary>
+    public IQueryable<ClassCourse> TeachingClassCourses()
     {
         var user = context.UserId;
         var today = DateOnly.FromDateTime(clock.UtcNow);
         return db.Set<ClassCourse>().Where(cc =>
             db.Set<Lms.Domain.Teaching.ClassCourseTeacher>().Any(t =>
-                t.ClassCourseId == cc.Id && t.UserId == user && (t.To == null || t.To >= today))
-            || db.Set<Class>().Any(c => c.Id == cc.ClassId && c.HomeroomTeacherUserId == user));
+                t.ClassCourseId == cc.Id && t.UserId == user && t.From <= today && (t.To == null || t.To >= today)));
     }
+
+    /// <summary>True when the caller teaches a course of the class or is its homeroom teacher (class-level reads).</summary>
+    public async Task<bool> IsTeachingOrHomeroomAsync(Guid classId, CancellationToken ct) =>
+        await TeachingClassCourses().AnyAsync(cc => cc.ClassId == classId, ct)
+        || await db.Set<Class>().AnyAsync(c => c.Id == classId && c.HomeroomTeacherUserId == context.UserId, ct);
 }

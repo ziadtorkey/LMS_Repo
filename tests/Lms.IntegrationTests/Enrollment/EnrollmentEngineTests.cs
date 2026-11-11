@@ -499,6 +499,31 @@ public sealed class EnrollmentEngineTests(LmsApiFactory factory)
     }
 
     [Fact]
+    public async Task Manual_enrollment_of_a_deactivated_student_is_refused()
+    {
+        var w = await EnrollmentWorld.CreateAsync(factory, "EN18");
+        var student = await NewStudentAsync(w);
+        using (var scope = new EngineScope(factory.Services))
+        {
+            await scope.Engine.PlaceAsync(await LoadAsync(scope, student.Id), await LoadClassAsync(scope, w.Class.Id), Today, false, default);
+        }
+
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            (await db.Set<StudentProfile>().SingleAsync(s => s.Id == student.Id)).SetStatus(PersonStatus.Deactivated);
+            await db.SaveChangesAsync();
+        }
+
+        using var again = new EngineScope(factory.Services);
+        var optional = await again.Db.Set<ClassCourse>().SingleAsync(c => c.Id == w.CcOptional.Id);
+
+        var refused = await RuleAsync(async () => await again.Engine.EnrollManualAsync(optional, await LoadAsync(again, student.Id), EnrollmentSources.Manual, default));
+
+        Assert.Equal(400, refused.StatusCode);
+        Assert.DoesNotContain(await EnrollmentsAsync(student.Id), e => e.ClassCourseId == optional.Id);
+    }
+
+    [Fact]
     public async Task Enrollment_rows_are_audited()
     {
         var w = await EnrollmentWorld.CreateAsync(factory, "EN16");

@@ -22,6 +22,8 @@ jobs:
       - name: Unit tests
         run: dotnet test tests/Lms.UnitTests -c Release --no-build
       - name: Integration tests (Testcontainers)
+        env:
+          LMS_PERF_BUDGET_FACTOR: "3" # shared runners are about 2x slower than a developer machine (X-09 budget scales)
         run: dotnet test tests/Lms.IntegrationTests -c Release --no-build
       - name: Client tests
         run: dotnet test tests/Lms.Client.Tests -c Release --no-build

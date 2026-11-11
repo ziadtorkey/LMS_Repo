@@ -90,9 +90,9 @@ public static class ClassStudentEndpoints
             return access.Problem;
         }
 
-        // A teacher sees the students of a class only through a class course they teach (or as homeroom teacher).
+        // A teacher sees the students of a class through a class course they teach or as its homeroom teacher (D42).
         if (await relationship.RestrictsAsync(Permissions.Classes.View, ct)
-            && !await relationship.OwnClassCourses().AnyAsync(cc => cc.ClassId == id, ct))
+            && !await relationship.IsTeachingOrHomeroomAsync(id, ct))
         {
             return ApiProblems.NotFound();
         }

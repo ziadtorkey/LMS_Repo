@@ -222,7 +222,7 @@ public sealed class EnrollmentEndpointsTests(LmsApiFactory factory) : IDisposabl
     }
 
     [Fact]
-    public async Task Homeroom_teacher_sees_the_class_students()
+    public async Task Homeroom_teacher_sees_the_class_and_its_students_but_not_the_enrollments_of_other_courses()
     {
         var (w, admin) = await SetUpAsync("EE7");
         var student = await NewStudentIdAsync(w);
@@ -237,7 +237,39 @@ public sealed class EnrollmentEndpointsTests(LmsApiFactory factory) : IDisposabl
             await db.SaveChangesAsync();
         }
 
+        // Homeroom gives Classes.View and Students.View (the class and its students) ...
         Assert.Equal(HttpStatusCode.OK, (await SendAsync(teacher, HttpMethod.Get, Routes.ClassStudents(w.Class.Id))).StatusCode);
+        // ... but Enrollment.View is teaching-only (D42): no class course, no student's enrollments, empty lists.
+        Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(teacher, HttpMethod.Get, Routes.ClassCourseEnrollments(w.CcA.Id))).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(teacher, HttpMethod.Get, Routes.ClassCourseEnrollments(w.CcB.Id))).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(teacher, HttpMethod.Get, Routes.StudentEnrollments(student))).StatusCode);
+        var all = (await (await SendAsync(teacher, HttpMethod.Get, Routes.Enrollments)).Content.ReadFromJsonAsync<PagedResult<EnrollmentDto>>())!;
+        Assert.Empty(all.Items);
+    }
+
+    [Fact]
+    public async Task Teacher_assignment_that_has_not_started_or_has_ended_grants_no_access()
+    {
+        var (w, admin) = await SetUpAsync("EE10");
+        var student = await NewStudentIdAsync(w);
+        await AddOkAsync(admin, w.Class, student);
+        var future = await AccessTestData.AssignAsync(factory, w.Tree, w.Tree.School1, BuiltInRoles.Teacher, (await PeopleTestKit.AddUserAsync(factory)).Id);
+        var past = await AccessTestData.AssignAsync(factory, w.Tree, w.Tree.School1, BuiltInRoles.Teacher, (await PeopleTestKit.AddUserAsync(factory)).Id);
+        var current = await AccessTestData.AssignAsync(factory, w.Tree, w.Tree.School1, BuiltInRoles.Teacher, (await PeopleTestKit.AddUserAsync(factory)).Id);
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            var cc = await db.Set<ClassCourse>().SingleAsync(c => c.Id == w.CcA.Id);
+            db.Add(new ClassCourseTeacher(cc, future.UserId, ClassCourseTeacher.AssistantRole, Today.AddDays(5)));
+            var ended = new ClassCourseTeacher(cc, past.UserId, ClassCourseTeacher.AssistantRole, Today.AddDays(-20));
+            ended.End(Today.AddDays(-1));
+            db.Add(ended);
+            db.Add(new ClassCourseTeacher(cc, current.UserId, ClassCourseTeacher.AssistantRole, Today));
+            await db.SaveChangesAsync();
+        }
+
+        Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(future, HttpMethod.Get, Routes.ClassCourseEnrollments(w.CcA.Id))).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(past, HttpMethod.Get, Routes.ClassCourseEnrollments(w.CcA.Id))).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await SendAsync(current, HttpMethod.Get, Routes.ClassCourseEnrollments(w.CcA.Id))).StatusCode);
     }
 
     [Fact]
