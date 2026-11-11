@@ -110,7 +110,7 @@ public sealed class CreateStudentHandler(
             {
                 return Results.Problem(
                     statusCode: StatusCodes.Status409Conflict, title: "Conflict",
-                    extensions: new Dictionary<string, object?> { ["code"] = ProblemCodes.possible_duplicate, ["count"] = same });
+                    extensions: new Dictionary<string, object?> { ["code"] = ProblemCodes.possible_duplicate });
             }
         }
 
