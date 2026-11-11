@@ -259,4 +259,27 @@
   <data name="Confirm_DeactivateTitle" xml:space="preserve"><value>إيقاف الوحدة؟</value></data>
   <data name="OrgTree_DeactivateOwnWarning" xml:space="preserve"><value>أنت تعمل في هذه الوحدة (أو في وحدة تابعة لها). إذا أوقفتها فستفقد الوصول إلى أن يعيد مسؤول أعلى منها تفعيلها. هل تريد المتابعة؟</value></data>
   <data name="AuditEntity_StoredFile" xml:space="preserve"><value>ملف</value></data>
+  <data name="Policy_CreateOrgUnits" xml:space="preserve"><value>منع إنشاء الوحدات</value></data>
+  <data name="Policies_SetBy" xml:space="preserve"><value>مفروضة من {0}</value></data>
+  <data name="Policies_Blocks" xml:space="preserve"><value>تمنع:</value></data>
+  <data name="Settings_Lock" xml:space="preserve"><value>قفل للوحدات الأدنى</value></data>
+  <data name="Settings_LockedBy" xml:space="preserve"><value>مقفل من {0}</value></data>
+  <data name="Settings_InheritedFrom" xml:space="preserve"><value>موروث من {0}</value></data>
+  <data name="Settings_Default" xml:space="preserve"><value>افتراضي</value></data>
+  <data name="Settings_SetHere" xml:space="preserve"><value>محدد هنا</value></data>
+  <data name="Settings_Reset" xml:space="preserve"><value>إعادة إلى الموروث</value></data>
+  <data name="SettingCategory_General" xml:space="preserve"><value>عام</value></data>
+  <data name="SettingCategory_Files" xml:space="preserve"><value>الملفات</value></data>
+  <data name="SettingCategory_Features" xml:space="preserve"><value>الميزات</value></data>
+  <data name="Setting_Ui_DefaultCulture" xml:space="preserve"><value>اللغة الافتراضية</value></data>
+  <data name="Setting_Ui_ShowHijriDates" xml:space="preserve"><value>عرض التاريخ الهجري</value></data>
+  <data name="Setting_Files_MaxUploadMb" xml:space="preserve"><value>الحد الأقصى لحجم الرفع (ميجابايت)</value></data>
+  <data name="Setting_Features_VirtualClasses" xml:space="preserve"><value>الفصول الافتراضية</value></data>
+  <data name="Setting_Features_DigitalLibrary" xml:space="preserve"><value>المكتبة الرقمية</value></data>
+  <data name="Setting_Features_ScormContent" xml:space="preserve"><value>محتوى SCORM</value></data>
+  <data name="Setting_Features_Messaging" xml:space="preserve"><value>المراسلات</value></data>
+  <data name="Setting_Features_GuardianPortal" xml:space="preserve"><value>بوابة ولي الأمر</value></data>
+  <data name="Settings_OutOfRange" xml:space="preserve"><value>أدخل عددًا صحيحًا بين {0} و{1}.</value></data>
+  <data name="SettingValue_Ui_DefaultCulture_ar" xml:space="preserve"><value>العربية</value></data>
+  <data name="SettingValue_Ui_DefaultCulture_en" xml:space="preserve"><value>الإنجليزية</value></data>
 </root>

@@ -259,4 +259,27 @@
   <data name="Confirm_DeactivateTitle" xml:space="preserve"><value>Deactivate unit?</value></data>
   <data name="OrgTree_DeactivateOwnWarning" xml:space="preserve"><value>You are working in this unit (or in one inside it). If you deactivate it you will lose access until an administrator above it reactivates it. Continue?</value></data>
   <data name="AuditEntity_StoredFile" xml:space="preserve"><value>File</value></data>
+  <data name="Policy_CreateOrgUnits" xml:space="preserve"><value>Block creating units</value></data>
+  <data name="Policies_SetBy" xml:space="preserve"><value>Set by {0}</value></data>
+  <data name="Policies_Blocks" xml:space="preserve"><value>Blocks:</value></data>
+  <data name="Settings_Lock" xml:space="preserve"><value>Lock for units below</value></data>
+  <data name="Settings_LockedBy" xml:space="preserve"><value>Locked by {0}</value></data>
+  <data name="Settings_InheritedFrom" xml:space="preserve"><value>Inherited from {0}</value></data>
+  <data name="Settings_Default" xml:space="preserve"><value>Default</value></data>
+  <data name="Settings_SetHere" xml:space="preserve"><value>Set here</value></data>
+  <data name="Settings_Reset" xml:space="preserve"><value>Reset to inherited</value></data>
+  <data name="SettingCategory_General" xml:space="preserve"><value>General</value></data>
+  <data name="SettingCategory_Files" xml:space="preserve"><value>Files</value></data>
+  <data name="SettingCategory_Features" xml:space="preserve"><value>Features</value></data>
+  <data name="Setting_Ui_DefaultCulture" xml:space="preserve"><value>Default language</value></data>
+  <data name="Setting_Ui_ShowHijriDates" xml:space="preserve"><value>Show Hijri dates</value></data>
+  <data name="Setting_Files_MaxUploadMb" xml:space="preserve"><value>Max upload size (MB)</value></data>
+  <data name="Setting_Features_VirtualClasses" xml:space="preserve"><value>Virtual classes</value></data>
+  <data name="Setting_Features_DigitalLibrary" xml:space="preserve"><value>Digital library</value></data>
+  <data name="Setting_Features_ScormContent" xml:space="preserve"><value>SCORM content</value></data>
+  <data name="Setting_Features_Messaging" xml:space="preserve"><value>Messaging</value></data>
+  <data name="Setting_Features_GuardianPortal" xml:space="preserve"><value>Guardian portal</value></data>
+  <data name="Settings_OutOfRange" xml:space="preserve"><value>Enter a whole number between {0} and {1}.</value></data>
+  <data name="SettingValue_Ui_DefaultCulture_ar" xml:space="preserve"><value>Arabic</value></data>
+  <data name="SettingValue_Ui_DefaultCulture_en" xml:space="preserve"><value>English</value></data>
 </root>
