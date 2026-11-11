@@ -14,6 +14,8 @@ public sealed class LevelTypesAdminPage(IPage page, string culture)
     {
         await page.GotoAsync("/level-types");
         await Title.WaitForAsync();
+        // The list loads after the title renders: wait for a row or the empty state before reading it.
+        await Assertions.Expect(Rows.First.Or(page.GetByTestId("table-empty"))).ToBeVisibleAsync();
     }
 
     /// <summary>Adds a level type through the dialog; returns once the new row is shown.</summary>
@@ -43,6 +45,30 @@ public sealed class LevelTypesAdminPage(IPage page, string culture)
         await page.Mouse.MoveAsync(0, 0);
         await Assertions.Expect(page.Locator(".mud-snackbar"))
             .ToHaveCountAsync(0, new LocatorAssertionsToHaveCountOptions { Timeout = 15_000 });
+    }
+
+    /// <summary>The row whose name column shows <paramref name="name"/> (current UI language).</summary>
+    public ILocator Row(string name) => Rows.Filter(new LocatorFilterOptions
+    {
+        Has = page.Locator("td").Nth(1).Filter(new LocatorFilterOptions { HasTextString = name }),
+    });
+
+    /// <summary>Moves the named level one place up (the server re-sorts the list).</summary>
+    public async Task MoveUpAsync(string name)
+    {
+        var before = await NamesInOrderAsync();
+        await Row(name).Locator("[data-testid^='level-up-']").ClickAsync();
+        await Assertions.Expect(Rows.Nth(before.ToList().IndexOf(name) - 1).Locator("td").Nth(1)).ToHaveTextAsync(name);
+        await DismissSnackbarsAsync();
+    }
+
+    /// <summary>Deletes the named level through the confirmation dialog; returns once its row is gone.</summary>
+    public async Task DeleteAsync(string name)
+    {
+        await Row(name).Locator("[data-testid^='level-delete-']").ClickAsync();
+        await page.GetByTestId("confirm-yes").ClickAsync();
+        await Assertions.Expect(Row(name)).ToHaveCountAsync(0);
+        await DismissSnackbarsAsync();
     }
 
     /// <summary>The level names in display order, in the current UI language.</summary>

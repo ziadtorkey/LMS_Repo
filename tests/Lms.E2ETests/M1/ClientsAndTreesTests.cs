@@ -90,6 +90,38 @@ public sealed class ClientsAndTreesTests(E2EFixture fixture) : E2ETestBase(fixtu
         await AssertDirectionAsync(culture);
     }
 
+    [Theory]
+    [InlineData("ar")]
+    [InlineData("en")]
+    public async Task Seeded_org_admin_adds_reorders_and_deletes_a_level_type(string culture)
+    {
+        // Runs on main today (#81 page + #83 API): the seeded school client's admin, so no new client is needed.
+        // The test removes its own level again, so the seeded School › Stage › Section stays as it was.
+        var names = M1Names.New();
+        var (nameAr, nameEn) = ($"مستوى {names.Suffix}", $"Level {names.Suffix}");
+        var name = culture == "ar" ? nameAr : nameEn;
+        await StartAsync(culture: culture);
+        await new LoginPage(Page).SignInAsync(E2ESettings.SeedUser("orgadmin"), Settings.Password);
+        await new ShellPage(Page).WaitReadyAsync();
+        await AssertDirectionAsync(culture);
+
+        var levels = new LevelTypesAdminPage(Page, culture);
+        await levels.OpenAsync();
+        string[] seeded = culture == "ar" ? ["مدرسة", "مرحلة", "فصل"] : ["School", "Stage", "Section"];
+        Assert.Equal(seeded, (await levels.NamesInOrderAsync()).Take(3));
+
+        await levels.AddAsync(nameAr, nameEn, canHostClasses: false);
+        Assert.Equal(name, (await levels.NamesInOrderAsync())[^1]);
+
+        await levels.MoveUpAsync(name);
+        var reordered = await levels.NamesInOrderAsync();
+        Assert.Equal(name, reordered[^2]);
+
+        await levels.DeleteAsync(name);
+        Assert.DoesNotContain(name, await levels.NamesInOrderAsync());
+        Assert.Equal(seeded, (await levels.NamesInOrderAsync()).Take(3));
+    }
+
     private static ClientsAdminPage.NewClient SchoolGroup(M1Names n) => new(
         n.SchoolGroupAr, n.SchoolGroupEn, "SchoolGroup", "مدرسة", "School", n.RootCode("SCH"),
         "مدير المدرسة", "School Admin", n.AdminEmail("school"));
