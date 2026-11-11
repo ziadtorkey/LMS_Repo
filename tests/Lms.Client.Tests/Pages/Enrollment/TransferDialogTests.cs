@@ -3,7 +3,10 @@ using Bunit;
 using Lms.Client.Pages.Enrollment;
 using Lms.Client.Services.Api;
 using Lms.Client.Tests.Support;
+using Lms.Shared;
+using Lms.Shared.Classes;
 using Lms.Shared.Enrollment;
+using Lms.Shared.Organizations;
 using Microsoft.Extensions.DependencyInjection;
 using MudBlazor;
 
@@ -43,6 +46,64 @@ public sealed class TransferDialogTests : StudentsTestContext
         var items = select.FindComponents<MudSelectItem<Guid?>>().Select(i => i.Instance.Value).ToList();
         Assert.Contains((Guid?)FakeClasses.Grade1B.Id, items);
         Assert.DoesNotContain((Guid?)FakeClasses.Grade1A.Id, items);
+    }
+
+    private static readonly Guid SchoolLevel = Guid.Parse("00000000-0000-0000-0000-0000000000b8");
+    private static readonly Guid NurseryLevel = Guid.Parse("00000000-0000-0000-0000-0000000000b7");
+    private static readonly Guid OtherSchool = Guid.Parse("00000000-0000-0000-0000-0000000000a8");
+    private static readonly Guid UnrelatedUnit = Guid.Parse("00000000-0000-0000-0000-0000000000a7");
+
+    private static ClassSummaryDto ClassIn(Guid unit, string unitEn, string code, string nameEn) =>
+        FakeClasses.Grade1B with { Id = Guid.NewGuid(), Code = code, NameAr = nameEn, NameEn = nameEn, OrgUnitId = unit, OrgUnitNameAr = unitEn, OrgUnitNameEn = unitEn };
+
+    private sealed class ClassesStub(IReadOnlyList<ClassSummaryDto> classes) : IClassesApi
+    {
+        public Task<PagedResult<ClassSummaryDto>> ListAsync(ClassQuery query, CancellationToken ct = default) =>
+            Task.FromResult(new PagedResult<ClassSummaryDto>(classes.Where(c => query.OrgUnitId is null || c.OrgUnitId == query.OrgUnitId).ToList(), classes.Count, 1, 200));
+    }
+
+    private sealed class UnitsStub(params OrgUnitNodeDto[] units) : IUnitLookupApi
+    {
+        public Task<IReadOnlyList<OrgUnitNodeDto>> GetUnitsAsync(CancellationToken ct = default) => Task.FromResult<IReadOnlyList<OrgUnitNodeDto>>(units);
+    }
+
+    private static OrgUnitNodeDto Unit(Guid id, string name, Guid levelType) =>
+        new(id, FakeUnits.GroupId, levelType, name, name, name[..2], 2, "Active", false, null, false, false, []);
+
+    [Fact]
+    public async Task Targets_include_classes_of_other_units_with_the_same_level_type_only()
+    {
+        Culture.Current = new CultureInfo("en");
+        var school = Unit(FakeUnits.SchoolId, "Main School", SchoolLevel);
+        var sibling = ClassIn(OtherSchool, "North School", "2A", "Grade 2 A North");
+        var unrelated = ClassIn(UnrelatedUnit, "Nursery", "3A", "Nursery A");
+        Services.AddSingleton<IUnitLookupApi>(new UnitsStub(school, Unit(OtherSchool, "North School", SchoolLevel), Unit(UnrelatedUnit, "Nursery", NurseryLevel)));
+        Services.AddSingleton<IClassesApi>(new ClassesStub([FakeClasses.Grade1A, FakeClasses.Grade1B, sibling, unrelated]));
+        await OpenAsync();
+
+        var select = Dialogs.FindComponents<MudSelect<Guid?>>().First(x => x.Instance.UserAttributes.TryGetValue("data-testid", out var v) && (string?)v == "transfer-class");
+        var items = select.FindComponents<MudSelectItem<Guid?>>().ToList();
+        var offered = items.Select(i => i.Instance.Value).ToList();
+
+        Assert.Contains((Guid?)FakeClasses.Grade1B.Id, offered);   // same unit
+        Assert.Contains((Guid?)sibling.Id, offered);               // another school of the same level type (D43)
+        Assert.DoesNotContain((Guid?)unrelated.Id, offered);       // a different level type
+        Assert.DoesNotContain((Guid?)FakeClasses.Grade1A.Id, offered); // the current class
+    }
+
+    [Fact]
+    public async Task Transfer_invalid_shows_the_servers_reason_after_the_localized_message()
+    {
+        Culture.Current = new CultureInfo("en");
+        await OpenAsync();
+        await ChooseTargetAsync();
+        _enrollment.Failure = new ApiProblemException(409, "transfer_invalid", "The target class belongs to a different academic year.", null);
+
+        await Dialogs.Find("[data-testid=transfer-preview]").ClickAsync(new());
+
+        var error = (await Dialogs.WaitForElementAsync("[data-testid=dialog-error]", Wait)).TextContent;
+        Assert.Contains("The student cannot be transferred to this class.", error);
+        Assert.Contains("The target class belongs to a different academic year.", error);
     }
 
     [Fact]
