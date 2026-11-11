@@ -9,12 +9,15 @@ namespace Lms.IntegrationTests.Security;
 
 /// <summary>
 /// Guardians (M3 Task 19, #227): the student sits in School1. Students.Update (linking, editing, matching) is held by the
-/// admins and the counselor, not by a Teacher or Supervisor; Students.View is also held by a Teacher until the relationship
-/// scope of M3 Task 12 narrows it to the teacher's own classes (then the Teacher expectations below become 404).
+/// admins and the counselor, not by a Teacher or Supervisor; Students.View is also held by a Teacher, but bug #310 (the guardian routes ignore the D42 relationship scope) lets
+/// a Teacher read guardians of any student in the unit: the Teacher expectations below (Ok) encode that bug and must become
+/// 404 when #326 lands (M3RelationshipProbeTests holds the tripwire).
 /// </summary>
 public sealed class GuardiansProbeRows : IProbeRowModule
 {
-    public IEnumerable<ProbeRow> Rows =>
+    public IEnumerable<ProbeRow> Rows => Build().Select(r => r with { Milestone = 3 });
+
+    private static IEnumerable<ProbeRow> Build() =>
     [
         new("student guardians list", HttpMethod.Get, Routes.StudentGuardiansPattern,
             async (w, _) => new ProbeRequest(Routes.StudentGuardians((await NewLinkAsync(w)).StudentId)),

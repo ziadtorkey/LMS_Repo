@@ -1,5 +1,8 @@
 using System.Net;
 using Lms.IntegrationTests.Infrastructure;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using Xunit.Sdk;
 
 namespace Lms.IntegrationTests.Security;
 
@@ -12,6 +15,50 @@ namespace Lms.IntegrationTests.Security;
 [Collection(ApiCollection.Name)]
 public sealed class M3RelationshipProbeTests(LmsApiFactory factory)
 {
+    /// <summary>Open bugs whose correct-behaviour probes are tripwires (see <see cref="KnownBugAsync"/>).</summary>
+    private static readonly string[] OpenBugs = ["#310"];
+
+    /// <summary>
+    /// Routes whose probes wait for the route (milestone 3): the probe returns early, listing itself, until the route is
+    /// mapped, then runs for real. <see cref="No_probe_waits_for_a_route_at_milestone_end"/> fails once M3 is closed.
+    /// </summary>
+    private static readonly (HttpMethod Method, string Pattern)[] WaitingForRoute = [(HttpMethod.Get, "/api/students"), (HttpMethod.Get, "/api/students/{id:guid}")];
+
+    /// <summary>
+    /// Runs the probe with the CORRECT expectation. While the bug exists the probe fails, and that failure is the expected
+    /// outcome (the test passes); once the bug is fixed the probe passes and the tripwire fails with an instruction to remove
+    /// it, so the D42 gap can neither stay unguarded nor be forgotten. Never a Skip, which cannot turn red.
+    /// </summary>
+    private static async Task KnownBugAsync(string issue, Func<Task> probe)
+    {
+        try
+        {
+            await probe();
+        }
+        catch (XunitException)
+        {
+            return;
+        }
+
+        Assert.Fail($"Bug {issue} is fixed: replace KnownBugAsync(\"{issue}\", ...) by the plain probe and remove {issue} from OpenBugs.");
+    }
+
+    private bool RouteMapped(HttpMethod method, string pattern) =>
+        factory.Services.GetRequiredService<EndpointDataSource>().Endpoints.OfType<RouteEndpoint>()
+            .Any(e => string.Equals(e.RoutePattern.RawText, pattern, StringComparison.OrdinalIgnoreCase)
+                      && (e.Metadata.GetMetadata<HttpMethodMetadata>()?.HttpMethods ?? []).Contains(method.Method, StringComparer.OrdinalIgnoreCase));
+
+    [Fact]
+    public void No_known_bug_tripwire_is_left_at_milestone_end() =>
+        Assert.True(ProbeMilestones.LastClosed < 3 || OpenBugs.Length == 0,
+            "Milestone 3 is closed but these bugs still have tripwire probes: " + string.Join(", ", OpenBugs));
+
+    [Fact]
+    public void No_probe_waits_for_a_route_at_milestone_end() =>
+        Assert.True(ProbeMilestones.LastClosed < 3 || WaitingForRoute.All(r => RouteMapped(r.Method, r.Pattern)),
+            "Milestone 3 is closed but these routes are still unmapped: "
+            + string.Join(", ", WaitingForRoute.Where(r => !RouteMapped(r.Method, r.Pattern)).Select(r => $"{r.Method} {r.Pattern}")));
+
     private async Task<(M3Callers W, HttpResponseMessage R)> SendAsync(M3Caller caller, string url, HttpMethod? method = null)
     {
         var w = await M3Callers.GetAsync(factory);
@@ -26,52 +73,76 @@ public sealed class M3RelationshipProbeTests(LmsApiFactory factory)
         Assert.Equal(HttpStatusCode.OK, r.StatusCode);
     }
 
-    [Fact(Skip = "Bug #310: guardian routes ignore the relationship scope (D42)")]
+    [Fact]
     public async Task Teacher_gets_404_for_the_guardians_of_a_student_in_a_colleagues_class_course()
     {
-        var w = await M3Callers.GetAsync(factory);
-        var r = await w.SendAsync(M3Caller.TeacherA, HttpMethod.Get, $"/api/students/{w.Data.Student2.Id}/guardians");
-        Assert.Equal(HttpStatusCode.NotFound, r.StatusCode);
+        await KnownBugAsync("#310", async () =>
+        {
+            var w = await M3Callers.GetAsync(factory);
+            var r = await w.SendAsync(M3Caller.TeacherA, HttpMethod.Get, $"/api/students/{w.Data.Student2.Id}/guardians");
+            Assert.Equal(HttpStatusCode.NotFound, r.StatusCode);
+        });
     }
 
-    [Fact(Skip = "Bug #310: guardian routes ignore the relationship scope (D42)")]
+    [Fact]
     public async Task Teacher_gets_404_for_a_guardian_who_has_no_student_in_their_class_courses()
     {
-        var w = await M3Callers.GetAsync(factory);
-        var r = await w.SendAsync(M3Caller.TeacherA, HttpMethod.Get, $"/api/guardians/{w.Data.Guardian2.Id}");
-        Assert.Equal(HttpStatusCode.NotFound, r.StatusCode);
+        await KnownBugAsync("#310", async () =>
+        {
+            var w = await M3Callers.GetAsync(factory);
+            var r = await w.SendAsync(M3Caller.TeacherA, HttpMethod.Get, $"/api/guardians/{w.Data.Guardian2.Id}");
+            Assert.Equal(HttpStatusCode.NotFound, r.StatusCode);
+        });
     }
 
-    [Fact(Skip = "Bug #310: guardian routes ignore the relationship scope (D42)")]
+    [Fact]
     public async Task Teacher_guardian_list_excludes_guardians_of_students_outside_their_class_courses()
     {
-        var w = await M3Callers.GetAsync(factory);
-        var r = await w.SendAsync(M3Caller.TeacherA, HttpMethod.Get, "/api/guardians?pageSize=100");
-        Assert.Equal(HttpStatusCode.OK, r.StatusCode);
-        var body = await r.Content.ReadAsStringAsync();
-        Assert.Contains(w.Data.Guardian1.Id.ToString(), body, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain(w.Data.Guardian2.Id.ToString(), body, StringComparison.OrdinalIgnoreCase);
+        await KnownBugAsync("#310", async () =>
+        {
+            var w = await M3Callers.GetAsync(factory);
+            var r = await w.SendAsync(M3Caller.TeacherA, HttpMethod.Get, "/api/guardians?pageSize=100");
+            Assert.Equal(HttpStatusCode.OK, r.StatusCode);
+            var body = await r.Content.ReadAsStringAsync();
+            Assert.Contains(w.Data.Guardian1.Id.ToString(), body, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain(w.Data.Guardian2.Id.ToString(), body, StringComparison.OrdinalIgnoreCase);
+        });
     }
 
-    [Fact(Skip = "Pending: GET /api/students is not mapped yet (M3 Task 12); un-skip when it lands")]
+    [Fact]
     public async Task Supervisor_gets_404_for_a_student_of_a_course_they_do_not_supervise()
     {
+        if (!RouteMapped(HttpMethod.Get, "/api/students") || !RouteMapped(HttpMethod.Get, "/api/students/{id:guid}"))
+        {
+            return; // PENDING: waits for the student routes (No_probe_waits_for_a_route_at_milestone_end)
+        }
+
         var w = await M3Callers.GetAsync(factory);
         var r = await w.SendAsync(M3Caller.SupervisorOfCx, HttpMethod.Get, $"/api/students/{w.Data.Student2.Id}");
         Assert.Equal(HttpStatusCode.NotFound, r.StatusCode);
     }
 
-    [Fact(Skip = "Pending: GET /api/students is not mapped yet (M3 Task 12); un-skip when it lands")]
+    [Fact]
     public async Task Teacher_gets_404_for_a_student_in_a_colleagues_class_course()
     {
+        if (!RouteMapped(HttpMethod.Get, "/api/students") || !RouteMapped(HttpMethod.Get, "/api/students/{id:guid}"))
+        {
+            return; // PENDING: waits for the student routes (No_probe_waits_for_a_route_at_milestone_end)
+        }
+
         var w = await M3Callers.GetAsync(factory);
         var r = await w.SendAsync(M3Caller.TeacherA, HttpMethod.Get, $"/api/students/{w.Data.Student2.Id}");
         Assert.Equal(HttpStatusCode.NotFound, r.StatusCode);
     }
 
-    [Fact(Skip = "Pending: GET /api/students is not mapped yet (M3 Task 12); un-skip when it lands")]
+    [Fact]
     public async Task Teacher_student_list_shows_only_their_own_students()
     {
+        if (!RouteMapped(HttpMethod.Get, "/api/students") || !RouteMapped(HttpMethod.Get, "/api/students/{id:guid}"))
+        {
+            return; // PENDING: waits for the student routes (No_probe_waits_for_a_route_at_milestone_end)
+        }
+
         var w = await M3Callers.GetAsync(factory);
         var r = await w.SendAsync(M3Caller.TeacherA, HttpMethod.Get, "/api/students?pageSize=100");
         Assert.Equal(HttpStatusCode.OK, r.StatusCode);
