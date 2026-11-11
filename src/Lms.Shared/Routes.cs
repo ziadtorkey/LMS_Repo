@@ -4,7 +4,7 @@ namespace Lms.Shared;
 /// API route constants shared by Lms.Api and Lms.Client. <c>...Pattern</c> constants are endpoint templates for
 /// the server; the static methods build concrete URLs for the client.
 /// </summary>
-public static class Routes
+public static partial class Routes
 {
     public const string Me = "/api/me";
     public const string MyPermissions = "/api/me/permissions";

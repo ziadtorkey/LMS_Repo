@@ -62,7 +62,8 @@
     [Parameter, EditorRequired] public Guid UnitId { get; set; }
     [Parameter] public bool CanEdit { get; set; }
 
-    private static readonly string[] Categories = [SettingCategories.General, SettingCategories.Files, SettingCategories.Features];
+    private static readonly string[] Categories =
+        [SettingCategories.General, SettingCategories.Files, SettingCategories.Features, SettingCategories.People, SettingCategories.Academic];
 
     private IReadOnlyList<SettingDefinition> _catalog = [];
     private Dictionary<string, EffectiveSettingDto> _values = [];

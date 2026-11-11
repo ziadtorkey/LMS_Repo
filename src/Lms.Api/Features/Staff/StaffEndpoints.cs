@@ -20,5 +20,13 @@ public static class StaffEndpoints
         app.MapGet(Routes.StaffPattern,
                 (Guid id, StaffQueries queries, CancellationToken ct) => queries.GetAsync(id, ct))
             .RequirePermission(Permissions.Staff.View);
+        app.MapPost(Routes.StaffSharesPattern,
+                (Guid id, ShareStaffRequest? request, HttpContext http, ShareStaffHandler handler, CancellationToken ct) =>
+                    handler.ShareAsync(id, request, http, ct))
+            .RequirePermission(Permissions.Assignments.Create);
+        app.MapDelete(Routes.StaffSharePattern,
+                (Guid id, Guid assignmentId, HttpContext http, ShareStaffHandler handler, CancellationToken ct) =>
+                    handler.UnshareAsync(id, assignmentId, http, ct))
+            .RequirePermission(Permissions.Assignments.Delete);
     }
 }

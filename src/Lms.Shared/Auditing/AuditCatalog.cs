@@ -28,6 +28,10 @@ public static class AuditCatalog
         // M2 people kernel (StudentProfile, GuardianProfile, StudentGuardian are data model only until M3, D23),
         // imports and identity providers.
         "StaffProfile", "StudentProfile", "GuardianProfile", "StudentGuardian", "ImportBatch", "IdentityProviderConfig",
+        // M3 students and academic structure.
+        "StudentChangeRequest", "Course", "CourseAllocation", "CourseRestriction", "CourseSupervisor", "Blueprint",
+        "Class", "ClassStudent", "ClassCourse", "ClassCourseTeacher", "TeacherCourseEligibility", "CourseEnrollment",
+        "EnrollmentException", "StudentGroup", "GroupMember", "StudentTransfer",
     ];
 
     public static IReadOnlyList<string> SecurityEvents { get; } =
