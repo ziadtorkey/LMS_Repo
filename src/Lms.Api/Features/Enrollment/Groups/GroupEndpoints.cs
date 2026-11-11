@@ -1,4 +1,5 @@
 using Lms.Api.Infrastructure;
+using Lms.Domain.Access;
 using Lms.Domain.Classes;
 using Lms.Domain.Enrollment;
 using Lms.Infrastructure.Persistence;
@@ -23,7 +24,7 @@ public static class GroupEndpoints
 
     /// <summary>The permission at the class course's unit, then the relationship rule: a teacher reaches only their own class courses (404).</summary>
     internal static async Task<IResult?> AccessAsync(
-        ClassCourse classCourse, string permission, HttpContext http, EnrollmentRelationship relationship, CancellationToken ct)
+        ClassCourse classCourse, string permission, HttpContext http, IRelationshipScope scope, CancellationToken ct)
     {
         var access = await http.CheckUnitAsync(permission, classCourse.OrgUnitId, ct);
         if (access.Problem is not null)
@@ -31,14 +32,11 @@ public static class GroupEndpoints
             return access.Problem;
         }
 
-        return await relationship.RestrictsAsync(permission, ct)
-               && !await relationship.TeachingClassCourses().AnyAsync(c => c.Id == classCourse.Id, ct)
-            ? ApiProblems.NotFound()
-            : null;
+        return (await scope.ForAsync(permission, ct)).AllowsClassCourse(classCourse.Id) ? null : ApiProblems.NotFound();
     }
 
     private static async Task<IResult> CreateAsync(
-        Guid id, SaveGroupRequest request, HttpContext http, LmsDbContext db, EnrollmentRelationship relationship, CancellationToken ct)
+        Guid id, SaveGroupRequest request, HttpContext http, LmsDbContext db, IRelationshipScope scope, CancellationToken ct)
     {
         var classCourse = await GroupSupport.ClassCourseAsync(db, id, ct);
         if (classCourse is null)
@@ -46,7 +44,7 @@ public static class GroupEndpoints
             return ApiProblems.NotFound();
         }
 
-        if (await AccessAsync(classCourse, Permissions.Groups.Manage, http, relationship, ct) is { } denied)
+        if (await AccessAsync(classCourse, Permissions.Groups.Manage, http, scope, ct) is { } denied)
         {
             return denied;
         }
@@ -63,7 +61,7 @@ public static class GroupEndpoints
     }
 
     private static async Task<IResult> ListAsync(
-        Guid id, HttpContext http, LmsDbContext db, EnrollmentRelationship relationship, CancellationToken ct)
+        Guid id, HttpContext http, LmsDbContext db, IRelationshipScope scope, CancellationToken ct)
     {
         var classCourse = await GroupSupport.ClassCourseAsync(db, id, ct);
         if (classCourse is null)
@@ -71,7 +69,7 @@ public static class GroupEndpoints
             return ApiProblems.NotFound();
         }
 
-        if (await AccessAsync(classCourse, Permissions.Groups.View, http, relationship, ct) is { } denied)
+        if (await AccessAsync(classCourse, Permissions.Groups.View, http, scope, ct) is { } denied)
         {
             return denied;
         }
@@ -82,7 +80,7 @@ public static class GroupEndpoints
     }
 
     private static async Task<IResult> UpdateAsync(
-        Guid id, SaveGroupRequest request, HttpContext http, LmsDbContext db, EnrollmentRelationship relationship, CancellationToken ct)
+        Guid id, SaveGroupRequest request, HttpContext http, LmsDbContext db, IRelationshipScope scope, CancellationToken ct)
     {
         var group = await db.Set<StudentGroup>().FirstOrDefaultAsync(g => g.Id == id, ct);
         var classCourse = group is null ? null : await GroupSupport.ClassCourseAsync(db, group.ClassCourseId, ct);
@@ -91,7 +89,7 @@ public static class GroupEndpoints
             return ApiProblems.NotFound();
         }
 
-        if (await AccessAsync(classCourse, Permissions.Groups.Manage, http, relationship, ct) is { } denied)
+        if (await AccessAsync(classCourse, Permissions.Groups.Manage, http, scope, ct) is { } denied)
         {
             return denied;
         }
@@ -108,7 +106,7 @@ public static class GroupEndpoints
     }
 
     private static async Task<IResult> DeleteAsync(
-        Guid id, HttpContext http, LmsDbContext db, EnrollmentRelationship relationship, CancellationToken ct)
+        Guid id, HttpContext http, LmsDbContext db, IRelationshipScope scope, CancellationToken ct)
     {
         var group = await db.Set<StudentGroup>().FirstOrDefaultAsync(g => g.Id == id, ct);
         var classCourse = group is null ? null : await GroupSupport.ClassCourseAsync(db, group.ClassCourseId, ct);
@@ -117,7 +115,7 @@ public static class GroupEndpoints
             return ApiProblems.NotFound();
         }
 
-        if (await AccessAsync(classCourse, Permissions.Groups.Manage, http, relationship, ct) is { } denied)
+        if (await AccessAsync(classCourse, Permissions.Groups.Manage, http, scope, ct) is { } denied)
         {
             return denied;
         }

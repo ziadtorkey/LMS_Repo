@@ -25,6 +25,11 @@ public sealed partial class GuardianAccessGuardTests
         ["src/Lms.Infrastructure/Identity/External/ExternalLoginLinker.cs"] =
             "external sign-in matches a person by national id or user id among the provider's own client only; returns user ids, "
             + "never guardian data (M2 Task 22, #168 / PR #193)",
+        ["src/Lms.Infrastructure/People/Guardians/GuardianVisibility.cs"] =
+            "the one entry point for reading guardians: only guardians with a live StudentGuardian in the caller's scope (M3 Task 19, #227)",
+        ["src/Lms.Infrastructure/People/Guardians/GuardianLinker.cs"] =
+            "creates, links and edits guardians of the caller's own client (tenant filter); existing ids are client-checked, "
+            + "duplicate answers carry the field name only (M3 Task 19, #227)",
         ["src/Lms.Infrastructure/Persistence/Configurations/People/PeopleConfigurations.cs"] =
             "entity mapping",
     };
