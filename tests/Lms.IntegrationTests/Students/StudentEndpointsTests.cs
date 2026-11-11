@@ -253,6 +253,23 @@ public sealed class StudentEndpointsTests
     }
 
     [Fact]
+    public async Task Moving_the_home_needs_Students_Update_at_the_target_not_just_visibility()
+    {
+        var (tree, admin) = await _kit.SetUpAsync("ST3U");
+        var created = await CreateOkAsync(admin, Create(tree.School1.Id));
+        // The caller may update students at School 1 and can see School 2, but a policy blocks Students.Update there.
+        _host.Services.GetRequiredService<TestPolicyEvaluator>().Block(Permissions.Students.Update, tree.School2);
+
+        var response = await _kit.SendAsync(HttpMethod.Put, Routes.Student(created.Student.Summary.Id), admin,
+            new UpdateStudentRequest(Data(), tree.School2.Id, created.Student.Summary.StudentCode, true));
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        var after = (await (await _kit.SendAsync(HttpMethod.Get, Routes.Student(created.Student.Summary.Id), admin))
+            .Content.ReadFromJsonAsync<StudentDetailDto>(Web))!;
+        Assert.Equal(tree.School1.Id, after.Summary.HomeOrgUnitId);
+    }
+
+    [Fact]
     public async Task National_id_duplicate_is_409_and_name_plus_birth_date_needs_confirmation()
     {
         var (tree, admin) = await _kit.SetUpAsync("ST4");
