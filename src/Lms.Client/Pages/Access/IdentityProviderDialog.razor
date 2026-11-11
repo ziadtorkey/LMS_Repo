@@ -21,7 +21,7 @@
                     }
                 </MudSelect>
                 <MudTextField T="string" @bind-Value="_slug" Label="@L["Idp_Slug"]" Required="true" RequiredError="@L["Common_Required"]"
-                              MaxLength="50" dir="ltr" data-testid="idp-slug" />
+                              MaxLength="40" dir="ltr" data-testid="idp-slug" />
                 <BilingualNameFields @bind-NameAr="_nameAr" @bind-NameEn="_nameEn" IdPrefix="idp-name" />
 
                 @if (_kind == IdentityProviderKinds.AzureAd)
@@ -75,11 +75,11 @@
                     <MudTextField T="string" Value="Existing.CallbackUrl" Label="@L["Idp_CallbackUrl"]" ReadOnly="true" dir="ltr"
                                   Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.ContentCopy"
                                   OnAdornmentClick="CopyAsync" AdornmentAriaLabel="@L["Idp_Copy"]" data-testid="idp-callback" />
-                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Wrap="Wrap.Wrap">
                         <MudButton Variant="Variant.Outlined" OnClick="TestAsync" Disabled="_testing" data-testid="idp-test">@L["Idp_Test"]</MudButton>
                         @if (_testOk is { } ok)
                         {
-                            <MudAlert Severity="@(ok ? Severity.Success : Severity.Error)" Dense="true" data-testid="idp-test-result">@_testMessage</MudAlert>
+                            <MudAlert Severity="@(ok ? Severity.Success : Severity.Error)" Dense="true" Class="flex-grow-1" Style="min-width: 0; overflow-wrap: anywhere" data-testid="idp-test-result">@_testMessage</MudAlert>
                         }
                     </MudStack>
                 }

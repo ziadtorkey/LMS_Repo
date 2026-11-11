@@ -98,6 +98,24 @@ public sealed class IdentityProvidersPageTests : ClientTestContext
     }
 
     [Fact]
+    public async Task Test_connection_failure_shows_the_error()
+    {
+        Culture.Current = new CultureInfo("en");
+        var page = await RenderPageAsync(Permissions.IdentityProviders.View, Permissions.IdentityProviders.Manage);
+        await OpenEditAsync(page);
+        _dialogs.Find("input[data-testid=idp-tenant]").Change("bad-tenant");
+        await _dialogs.Find("[data-testid=dialog-save]").ClickAsync(new());
+        await _dialogs.WaitForAssertionAsync(() => Assert.Single(_providers.Saved));
+
+        await OpenEditAsync(page);
+        await _dialogs.Find("[data-testid=idp-test]").ClickAsync(new());
+
+        var result = await _dialogs.WaitForElementAsync("[data-testid=idp-test-result]");
+        Assert.Contains("Could not reach the provider: discovery document not found", result.TextContent);
+        Assert.Contains("mud-alert-text-error", result.ClassList.Concat(result.QuerySelectorAll("*").SelectMany(e => e.ClassList)));
+    }
+
+    [Fact]
     public async Task Page_hidden_without_IdentityProviders_View()
     {
         Culture.Current = new CultureInfo("en");
