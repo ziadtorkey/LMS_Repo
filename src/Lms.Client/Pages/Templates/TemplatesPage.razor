@@ -1,0 +1,117 @@
+@page "/templates"
+@attribute [Authorize]
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Shared.Authorization
+@using Lms.Shared.Organizations
+@inject ITemplatesApi Api
+@inject IOrgApi OrgApi
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<PageTitle>@L["Templates_Title"]</PageTitle>
+<MudText Typo="Typo.h4" Class="mb-4" data-testid="templates-title">@L["Templates_Title"]</MudText>
+
+@if (_error is not null)
+{
+    <MudAlert Severity="Severity.Error" Class="mb-3" data-testid="templates-error">@_error</MudAlert>
+}
+
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+}
+else if (_items.Count == 0)
+{
+    <MudText data-testid="table-empty">@L["Common_Empty"]</MudText>
+}
+else
+{
+    <MudSimpleTable Dense="true" Hover="true">
+        <thead>
+            <tr>
+                <th>@L["Common_Name"]</th>
+                <th>@L["Templates_Visibility"]</th>
+                <th>@L["Templates_Owner"]</th>
+                <th>@L["Templates_Units"]</th>
+                <th>@L["Templates_Placeholders"]</th>
+                <th>@L["Common_Actions"]</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var t in _items)
+            {
+                var template = t;
+                <tr data-testid="@($"template-row-{template.Id}")">
+                    <td>@Culture.Pick(template.NameAr, template.NameEn)</td>
+                    <td>@(template.Visibility == TemplateVisibilities.Shared ? L["Visibility_Shared"] : L["Visibility_Private"])</td>
+                    <td>@Culture.Pick(template.OwnerNameAr, template.OwnerNameEn)</td>
+                    <td>@string.Format(L["Templates_UnitsCount"].Value, template.UnitCount)</td>
+                    <td dir="ltr">@string.Join(", ", template.Placeholders.Select(p => "{" + p + "}"))</td>
+                    <td>
+                        @if (PermState.Has(Permissions.Templates.Apply))
+                        {
+                            <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="() => ApplyAsync(template)"
+                                       data-testid="@($"template-apply-{template.Id}")">@L["Templates_Apply"]</MudButton>
+                        }
+                        @if (PermState.Has(Permissions.Templates.Delete))
+                        {
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error"
+                                           aria-label="@L["Common_Delete"]" OnClick="() => DeleteAsync(template)"
+                                           data-testid="@($"template-delete-{template.Id}")" />
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </MudSimpleTable>
+}
+
+@code {
+    private IReadOnlyList<OrgTemplateSummaryDto> _items = [];
+    private string? _error;
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        PermState.Changed += OnPermissionsChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        await LoadAsync();
+    }
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    private Task<bool> RunAsync(Func<Task> action) => ApiCalls.RunAsync(action, Navigation, L, message => _error = message);
+
+    private async Task LoadAsync()
+    {
+        await RunAsync(async () => _items = await Api.ListAsync());
+        _loading = false;
+    }
+
+    private async Task ApplyAsync(OrgTemplateSummaryDto template)
+    {
+        _error = null;
+        IReadOnlyList<OrgUnitNodeDto> units = [];
+        if (!await RunAsync(async () => units = await OrgApi.GetOrgUnitsAsync(null))) return;
+        var dialog = await Dialogs.ShowAsync<ApplyTemplateDialog>(L["Templates_Apply"], new DialogParameters<ApplyTemplateDialog>
+        {
+            { x => x.Template, template }, { x => x.AllUnits, units },
+        }, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        await dialog.Result;
+    }
+
+    private async Task DeleteAsync(OrgTemplateSummaryDto template)
+    {
+        if (!await ConfirmDialog.AskAsync(Dialogs, L["Confirm_DeleteTitle"], L["Templates_DeleteConfirm"], L["Common_Delete"])) return;
+        _error = null;
+        await RunAsync(() => Api.DeleteAsync(template.Id));
+        await LoadAsync();
+    }
+
+    public void Dispose() => PermState.Changed -= OnPermissionsChanged;
+}

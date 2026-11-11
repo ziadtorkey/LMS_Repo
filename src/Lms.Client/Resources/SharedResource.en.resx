@@ -315,6 +315,35 @@
   <data name="Year_Selector" xml:space="preserve"><value>Academic year</value></data>
   <data name="Year_None" xml:space="preserve"><value>No academic year</value></data>
   <data name="Year_ReadOnly" xml:space="preserve"><value>Closed year — read only</value></data>
+  <data name="Nav_Templates" xml:space="preserve"><value>Templates</value></data>
+  <data name="Copy_Title" xml:space="preserve"><value>Copy branch</value></data>
+  <data name="Copy_Target" xml:space="preserve"><value>Copy under</value></data>
+  <data name="Copy_CodeSuffix" xml:space="preserve"><value>Code suffix</value></data>
+  <data name="Copy_IncludePolicies" xml:space="preserve"><value>Include policies</value></data>
+  <data name="Copy_IncludeSettings" xml:space="preserve"><value>Include settings</value></data>
+  <data name="Copy_Done" xml:space="preserve"><value>{0} units created.</value></data>
+  <data name="Copy_SkippedSettings" xml:space="preserve"><value>Skipped settings locked above: {0}</value></data>
+  <data name="Copy_NewRootName" xml:space="preserve"><value>New name for the copy (optional)</value></data>
+  <data name="Copy_Submit" xml:space="preserve"><value>Copy</value></data>
+  <data name="Templates_Title" xml:space="preserve"><value>Templates</value></data>
+  <data name="Templates_SaveAs" xml:space="preserve"><value>Save as template</value></data>
+  <data name="Templates_Visibility" xml:space="preserve"><value>Visibility</value></data>
+  <data name="Visibility_Private" xml:space="preserve"><value>Private to this unit</value></data>
+  <data name="Visibility_Shared" xml:space="preserve"><value>Shared across the client</value></data>
+  <data name="Templates_Placeholder" xml:space="preserve"><value>Replace &quot;{0}&quot; with placeholder</value></data>
+  <data name="Templates_Apply" xml:space="preserve"><value>Apply template</value></data>
+  <data name="Templates_Preview" xml:space="preserve"><value>Preview</value></data>
+  <data name="Templates_Units" xml:space="preserve"><value>Units</value></data>
+  <data name="Templates_UnitsCount" xml:space="preserve"><value>{0} units</value></data>
+  <data name="Templates_Owner" xml:space="preserve"><value>Owner unit</value></data>
+  <data name="Templates_Placeholders" xml:space="preserve"><value>Placeholders</value></data>
+  <data name="Templates_Replacements" xml:space="preserve"><value>Replace text with a placeholder</value></data>
+  <data name="Templates_Literal" xml:space="preserve"><value>Text to replace</value></data>
+  <data name="Templates_Token" xml:space="preserve"><value>Placeholder name</value></data>
+  <data name="Templates_TokenFormat" xml:space="preserve"><value>Use letters only, e.g. Year.</value></data>
+  <data name="Templates_AddReplacement" xml:space="preserve"><value>Add replacement</value></data>
+  <data name="Templates_Target" xml:space="preserve"><value>Create under</value></data>
+  <data name="Templates_DeleteConfirm" xml:space="preserve"><value>Delete this template?</value></data>
   <data name="Notif_Title" xml:space="preserve"><value>Notifications</value></data>
   <data name="Notif_MarkAllRead" xml:space="preserve"><value>Mark all as read</value></data>
   <data name="Notif_Empty" xml:space="preserve"><value>No notifications.</value></data>

@@ -1,0 +1,93 @@
+@using Lms.Client.Services.Api
+@using Lms.Shared.Organizations
+@inject ITemplatesApi Api
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+<MudDialog>
+    <DialogContent>
+        @if (_result is not null)
+        {
+            <MudStack Spacing="2">
+                <MudAlert Severity="Severity.Success" data-testid="apply-result">@string.Format(L["Copy_Done"].Value, _result.UnitsCreated)</MudAlert>
+                @if (_result.SkippedLockedSettings.Count > 0)
+                {
+                    <MudAlert Severity="Severity.Warning" data-testid="apply-skipped">
+                        @string.Format(L["Copy_SkippedSettings"].Value, string.Join(", ", _result.SkippedLockedSettings))
+                    </MudAlert>
+                }
+            </MudStack>
+        }
+        else
+        {
+            <MudStack Spacing="3">
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" data-testid="dialog-error">@_error</MudAlert>
+                }
+                <MudSelect T="Guid?" @bind-Value="_targetId" Label="@L["Templates_Target"]" Error="@(_submitted && _targetId is null)"
+                           ErrorText="@L["Common_Required"]" data-testid="apply-target">
+                    @foreach (var unit in AllUnits.OrderBy(u => u.Depth).ThenBy(u => u.NameEn))
+                    {
+                        <MudSelectItem T="Guid?" Value="@((Guid?)unit.Id)"><span style="padding-inline-start:@(unit.Depth * 16)px">@Culture.Pick(unit.NameAr, unit.NameEn)</span></MudSelectItem>
+                    }
+                </MudSelect>
+
+                @foreach (var name in Template.Placeholders)
+                {
+                    var key = name;
+                    <MudTextField T="string" Value="@(_values.GetValueOrDefault(key, ""))" ValueChanged="@(v => SetValue(key, v))" Label="@key"
+                                  Required="true" Immediate="true" Error="@(_submitted && string.IsNullOrWhiteSpace(_values.GetValueOrDefault(key)))"
+                                  ErrorText="@L["Common_Required"]" data-testid="@($"placeholder-{key}")" />
+                }
+
+                <MudText Typo="Typo.subtitle2">@L["Templates_Preview"]</MudText>
+                <TemplatePreview Nodes="_nodes" Values="_values" />
+            </MudStack>
+        }
+    </DialogContent>
+    <DialogActions>
+        @if (_result is not null)
+        {
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="() => MudDialog.Close(DialogResult.Ok(true))" data-testid="dialog-close">@L["Common_Close"]</MudButton>
+        }
+        else
+        {
+            <MudButton OnClick="() => MudDialog.Cancel()">@L["Common_Cancel"]</MudButton>
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="ApplyAsync" Disabled="_saving" data-testid="dialog-save">@L["Templates_Apply"]</MudButton>
+        }
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter, EditorRequired] public OrgTemplateSummaryDto Template { get; set; } = default!;
+    [Parameter, EditorRequired] public IReadOnlyList<OrgUnitNodeDto> AllUnits { get; set; } = [];
+
+    private IReadOnlyList<TemplateNodeDto> _nodes = [];
+    private readonly Dictionary<string, string> _values = [];
+    private Guid? _targetId;
+    private string? _error;
+    private bool _saving, _submitted;
+    private ApplyTemplateResultDto? _result;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ApiCalls.RunAsync(async () => _nodes = (await Api.GetAsync(Template.Id)).Nodes, Navigation, L, message => _error = message);
+    }
+
+    private void SetValue(string key, string value) => _values[key] = value;
+
+    private async Task ApplyAsync()
+    {
+        _submitted = true;
+        if (_targetId is null || Template.Placeholders.Any(p => string.IsNullOrWhiteSpace(_values.GetValueOrDefault(p)))) return;
+
+        _saving = true; _error = null;
+        var request = new ApplyTemplateRequest(_targetId.Value, Template.Placeholders.ToDictionary(p => p, p => _values[p].Trim()));
+        var ok = await ApiCalls.RunAsync(async () => _result = await Api.ApplyAsync(Template.Id, request), Navigation, L, message => _error = message);
+        _saving = false;
+
+        if (!ok && _error is null) MudDialog.Cancel(); // redirected
+    }
+}
