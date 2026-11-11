@@ -17,6 +17,13 @@ public interface IEnrollmentEngine
     Task<PlacementResult> PlaceAsync(
         StudentProfile student, Class cls, DateOnly effectiveOn, bool confirmOverCapacity, CancellationToken cancellationToken);
 
+    /// <summary>
+    /// Places many students in one go (all or nothing): one query per kind of data, one save. The students must all be
+    /// Active, none placed in the class's year yet, and the class capacity (mode Block/Warn) is checked for the whole set.
+    /// </summary>
+    Task<IReadOnlyList<PlacementResult>> PlaceManyAsync(
+        IReadOnlyList<StudentProfile> students, Class cls, DateOnly effectiveOn, bool confirmOverCapacity, CancellationToken cancellationToken);
+
     /// <param name="source">One of <c>EnrollmentSources</c> (Manual or Exceptional).</param>
     Task<CourseEnrollment> EnrollManualAsync(ClassCourse classCourse, StudentProfile student, string source, CancellationToken cancellationToken);
 
