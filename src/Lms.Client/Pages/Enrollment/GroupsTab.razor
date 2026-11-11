@@ -1,0 +1,109 @@
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Shared.Enrollment
+@inject IGroupsApi Api
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+@* The groups of one class course: create, rename, delete and manage members (a student is in one group per class course). *@
+<MudStack Spacing="2" data-testid="groups-tab">
+    @if (CanManage)
+    {
+        <div>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="() => OpenAsync(null)"
+                       data-testid="group-new">@L["Group_New"]</MudButton>
+        </div>
+    }
+    @if (_failed)
+    {
+        <MudAlert Severity="Severity.Error" data-testid="api-error">@L["Api_Error"]</MudAlert>
+    }
+    else if (_groups.Count == 0)
+    {
+        <MudText data-testid="groups-empty">@L["Group_Empty"]</MudText>
+    }
+    else
+    {
+        <MudTable Items="_groups" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" data-testid="groups-table">
+            <HeaderContent>
+                <MudTh>@L["Common_Name"]</MudTh>
+                <MudTh>@L["Group_Match"]</MudTh>
+                <MudTh>@L["Group_MemberCount"]</MudTh>
+                <MudTh></MudTh>
+            </HeaderContent>
+            <RowTemplate Context="g">
+                <MudTd DataLabel="@L["Common_Name"]">@Culture.Pick(g.NameAr, g.NameEn)</MudTd>
+                <MudTd DataLabel="@L["Group_Match"]" data-testid="@($"group-match-{g.Id}")">@MatchText(g)</MudTd>
+                <MudTd DataLabel="@L["Group_MemberCount"]" data-testid="@($"group-count-{g.Id}")">@g.MemberCount</MudTd>
+                <MudTd>
+                    @if (CanManage)
+                    {
+                        <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="() => MembersAsync(g)" data-testid="@($"group-members-{g.Id}")">@L["Group_ManageMembers"]</MudButton>
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" aria-label="@L["Common_Edit"]" OnClick="() => OpenAsync(g)"
+                                       data-testid="@($"group-edit-{g.Id}")" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" aria-label="@L["Common_Delete"]" OnClick="() => DeleteAsync(g)"
+                                       data-testid="@($"group-delete-{g.Id}")" />
+                    }
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    }
+</MudStack>
+
+@code {
+    private IReadOnlyList<StudentGroupDto> _groups = [];
+    private bool _failed;
+
+    [Parameter, EditorRequired] public Guid ClassCourseId { get; set; }
+
+    /// <summary>True with Groups.Manage: create, rename, delete and members.</summary>
+    [Parameter] public bool CanManage { get; set; }
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _failed = false;
+        var (groups, failed) = await ApiCalls.RunAsync(() => Api.ListAsync(ClassCourseId), Navigation);
+        _failed = failed;
+        _groups = groups ?? [];
+    }
+
+    private string MatchText(StudentGroupDto g)
+    {
+        if (g.MatchType is null) return "—";
+        var value = g.MatchType switch
+        {
+            Lms.Shared.Courses.CourseRestrictionTypes.Gender => L[$"Gender_{g.MatchValue}"].Value,
+            Lms.Shared.Courses.CourseRestrictionTypes.Religion => L[$"Religion_{g.MatchValue}"].Value,
+            _ => g.MatchValue ?? "",
+        };
+        return $"{L[$"RestrictionType_{g.MatchType}"].Value}: {value}";
+    }
+
+    private async Task OpenAsync(StudentGroupDto? existing)
+    {
+        var dialog = await Dialogs.ShowAsync<GroupDialog>(existing is null ? L["Group_New"] : Culture.Pick(existing.NameAr, existing.NameEn),
+            new DialogParameters<GroupDialog> { { x => x.ClassCourseId, ClassCourseId }, { x => x.Existing, existing } },
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        if (await dialog.Result is { Canceled: false }) { Snackbar.Add(L["Common_Saved"], Severity.Success); await LoadAsync(); }
+    }
+
+    private async Task MembersAsync(StudentGroupDto group)
+    {
+        var dialog = await Dialogs.ShowAsync<GroupMembersDialog>(Culture.Pick(group.NameAr, group.NameEn),
+            new DialogParameters<GroupMembersDialog> { { x => x.Group, group } },
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        await dialog.Result;
+        await LoadAsync(); // the member counts changed
+    }
+
+    private async Task DeleteAsync(StudentGroupDto group)
+    {
+        if (!await ConfirmDialog.AskAsync(Dialogs, L["Confirm_DeleteTitle"], L["Group_DeleteConfirm", Culture.Pick(group.NameAr, group.NameEn)].Value, L["Common_Delete"])) return;
+        var ok = await ApiCalls.RunAsync(() => Api.DeleteAsync(group.Id), Navigation, L, message => Snackbar.Add(message, Severity.Error));
+        if (ok) await LoadAsync();
+    }
+}

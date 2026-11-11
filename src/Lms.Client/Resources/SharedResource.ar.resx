@@ -811,4 +811,20 @@
   <data name="Transfer_Restricted" xml:space="preserve"><value>لا يُضاف (قيود)</value></data>
   <data name="Transfer_ConfirmOverCapacity" xml:space="preserve"><value>سيتجاوز الفصل الجديد سعته. أكمل النقل على أي حال.</value></data>
   <data name="Transfer_History" xml:space="preserve"><value>عمليات النقل</value></data>
+  <data name="Group_Title" xml:space="preserve"><value>مجموعات الطلاب</value></data>
+  <data name="Group_New" xml:space="preserve"><value>مجموعة جديدة</value></data>
+  <data name="Group_Empty" xml:space="preserve"><value>لا توجد مجموعات في هذا المقرر بعد.</value></data>
+  <data name="Group_Match" xml:space="preserve"><value>المطابقة</value></data>
+  <data name="Group_MatchType" xml:space="preserve"><value>اقتراح الطلاب حسب</value></data>
+  <data name="Group_MatchValue" xml:space="preserve"><value>القيمة</value></data>
+  <data name="Group_MemberCount" xml:space="preserve"><value>الأعضاء</value></data>
+  <data name="Group_ManageMembers" xml:space="preserve"><value>الأعضاء</value></data>
+  <data name="Group_DeleteConfirm" xml:space="preserve"><value>حذف المجموعة {0}؟ يبقى طلابها مسجلين في المقرر.</value></data>
+  <data name="Group_Ungrouped" xml:space="preserve"><value>بدون مجموعة ({0})</value></data>
+  <data name="Group_NoneUngrouped" xml:space="preserve"><value>كل الطلاب المسجلين في مجموعات.</value></data>
+  <data name="Group_Members" xml:space="preserve"><value>في هذه المجموعة ({0})</value></data>
+  <data name="Group_NoMembers" xml:space="preserve"><value>لا يوجد أعضاء بعد.</value></data>
+  <data name="Group_AddSelected" xml:space="preserve"><value>إضافة المحددين</value></data>
+  <data name="Group_AddSuggested" xml:space="preserve"><value>إضافة المقترحين</value></data>
+  <data name="Group_RemoveSelected" xml:space="preserve"><value>إزالة المحددين</value></data>
 </root>
