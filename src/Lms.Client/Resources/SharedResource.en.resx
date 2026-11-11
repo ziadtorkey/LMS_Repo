@@ -760,6 +760,8 @@
   <data name="CourseStatus_Active" xml:space="preserve"><value>Active</value></data>
   <data name="CourseStatus_Inactive" xml:space="preserve"><value>Inactive</value></data>
   <data name="CourseImport_Title" xml:space="preserve"><value>Import courses from Excel</value></data>
+  <data name="StaffImport_Title" xml:space="preserve"><value>Import staff</value></data>
+  <data name="Import_Button" xml:space="preserve"><value>Import from Excel</value></data>
   <data name="Clients_ShortCode" xml:space="preserve"><value>Short code</value></data>
   <data name="Clients_ShortCodeHelp" xml:space="preserve"><value>Used in student sign-in names (code@shortcode): 2-20 lower-case letters, digits or hyphens. Leave empty to derive it from the root unit code.</value></data>
 </root>
