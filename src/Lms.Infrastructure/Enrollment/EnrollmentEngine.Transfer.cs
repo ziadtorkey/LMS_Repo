@@ -87,21 +87,21 @@ public sealed partial class EnrollmentEngine
         var year = await guard.EnsureWritableAsync(to, ct);
         var active = await db.Set<ClassStudent>().Where(p => p.StudentId == student.Id && p.Status == ClassStudent.ActiveStatus).ToListAsync(ct);
         var old = active.FirstOrDefault(p => p.AcademicYearId == to.AcademicYearId)
-            ?? throw Invalid(active.Count > 0 ? "different_year" : "not_placed");
+            ?? throw Invalid(active.Count > 0 ? TransferRejectReasons.DifferentYear : TransferRejectReasons.NotPlaced);
         if (old.ClassId == to.Id)
         {
-            throw Invalid("same_class");
+            throw Invalid(TransferRejectReasons.SameClass);
         }
 
         if (on < year.StartDate || on > year.EndDate)
         {
-            throw Invalid("date_outside_year");
+            throw Invalid(TransferRejectReasons.DateOutsideYear);
         }
 
         // The old placement ends the day before: it must have had at least one day.
         if (on <= old.From)
         {
-            throw Invalid("date_before_placement");
+            throw Invalid(TransferRejectReasons.DateBeforePlacement);
         }
 
         var from = await db.Set<Class>().FirstOrDefaultAsync(c => c.Id == old.ClassId, ct)
@@ -112,7 +112,7 @@ public sealed partial class EnrollmentEngine
             ?? throw new KeyNotFoundException("The target unit is not visible.");
         if (fromUnit.LevelTypeId != toUnit.LevelTypeId)
         {
-            throw Invalid("different_level_type"); // D43: across schools only when the level type matches
+            throw Invalid(TransferRejectReasons.DifferentLevelType); // D43: across schools only when the level type matches
         }
 
         var overCapacity = await CheckCapacityAsync(to, 1, confirmOverCapacity, ct);

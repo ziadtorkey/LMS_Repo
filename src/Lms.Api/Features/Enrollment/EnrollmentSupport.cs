@@ -1,5 +1,6 @@
 using Lms.Domain.Enrollment;
 using Lms.Shared;
+using Lms.Shared.Enrollment;
 
 namespace Lms.Api.Features.Enrollment;
 
@@ -22,7 +23,7 @@ internal static class EnrollmentProblems
 
         if (rule.Reason is not null)
         {
-            extensions["reason"] = rule.Reason;
+            extensions[TransferRejectReasons.ExtensionKey] = rule.Reason;
         }
 
         return extensions;

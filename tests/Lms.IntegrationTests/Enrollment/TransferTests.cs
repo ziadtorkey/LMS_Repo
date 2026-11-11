@@ -110,7 +110,7 @@ public sealed class TransferTests(LmsApiFactory factory) : IDisposable
     private async Task<(string? Code, string? Reason)> ProblemAsync(HttpResponseMessage r)
     {
         var body = await JsonAsync(r);
-        return (body.GetProperty("code").GetString(), body.TryGetProperty("reason", out var reason) ? reason.GetString() : null);
+        return (body.GetProperty("code").GetString(), body.TryGetProperty(TransferRejectReasons.ExtensionKey, out var reason) ? reason.GetString() : null);
     }
 
     private async Task<List<CourseEnrollment>> EnrollmentsAsync(Guid studentId)
@@ -226,14 +226,14 @@ public sealed class TransferTests(LmsApiFactory factory) : IDisposable
             return await ProblemAsync(response);
         }
 
-        Assert.Equal((ProblemCodes.transfer_invalid, "same_class"), await Try(Request(s, s.From)));
-        Assert.Equal((ProblemCodes.transfer_invalid, "different_level_type"), await Try(Request(s, differentLevel)));
-        Assert.Equal((ProblemCodes.transfer_invalid, "date_outside_year"), await Try(Request(s, s.To, new DateOnly(2030, 1, 1))));
-        Assert.Equal((ProblemCodes.transfer_invalid, "not_placed"), await Try(new TransferStudentRequest(unplaced.Id, s.To.Id, On, "x", false)));
+        Assert.Equal((ProblemCodes.transfer_invalid, TransferRejectReasons.SameClass), await Try(Request(s, s.From)));
+        Assert.Equal((ProblemCodes.transfer_invalid, TransferRejectReasons.DifferentLevelType), await Try(Request(s, differentLevel)));
+        Assert.Equal((ProblemCodes.transfer_invalid, TransferRejectReasons.DateOutsideYear), await Try(Request(s, s.To, new DateOnly(2030, 1, 1))));
+        Assert.Equal((ProblemCodes.transfer_invalid, TransferRejectReasons.NotPlaced), await Try(new TransferStudentRequest(unplaced.Id, s.To.Id, On, "x", false)));
         // The old placement started on Start: the transfer must take effect after that day.
-        Assert.Equal((ProblemCodes.transfer_invalid, "date_before_placement"), await Try(Request(s, s.To, Start)));
+        Assert.Equal((ProblemCodes.transfer_invalid, TransferRejectReasons.DateBeforePlacement), await Try(Request(s, s.To, Start)));
         // A class of another academic year: the student is placed, but not in that year.
-        Assert.Equal((ProblemCodes.transfer_invalid, "different_year"), await Try(Request(s, inOtherYear)));
+        Assert.Equal((ProblemCodes.transfer_invalid, TransferRejectReasons.DifferentYear), await Try(Request(s, inOtherYear)));
         Assert.Equal(HttpStatusCode.BadRequest, (await SendAsync(s.Admin, HttpMethod.Post, Routes.Transfers, new TransferStudentRequest(s.Student, s.To.Id, On, " ", false))).StatusCode);
     }
 
