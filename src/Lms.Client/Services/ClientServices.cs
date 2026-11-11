@@ -35,6 +35,7 @@ public static class ClientServices
             services.AddScoped<IUnitLookupApi, FakeUnitLookupApi>();
             services.AddScoped<IYearsApi, FakeYearsApi>();
             services.AddScoped<INotificationsApi, FakeNotificationsApi>();
+            services.AddSingleton<IImportsApi, FakeImportsApi>();
             services.AddScoped<INotificationConnection, FakeNotificationConnection>();
             services.AddSingleton<IClientsApi, FakeClientsApi>();
             services.AddSingleton<IOrgApi, FakeOrgApi>();
@@ -63,6 +64,7 @@ public static class ClientServices
         services.AddScoped<IUnitLookupApi, UnitLookupApi>();
         services.AddScoped<IYearsApi, YearsApi>();
         services.AddScoped<INotificationsApi, NotificationsApi>();
+        services.AddScoped<IImportsApi, ImportsApi>();
         services.AddScoped<INotificationConnection, NotificationConnection>();
         services.AddHttpClient<ILmsApi, LmsApiClient>(c => c.BaseAddress = new Uri(baseAddress))
             .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>()
