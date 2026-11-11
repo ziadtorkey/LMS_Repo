@@ -1,10 +1,9 @@
 using Lms.Api.Features.Files;
+using Lms.Api.Features.Settings;
 using Lms.Api.Features.Notifications;
 using Lms.Api.Features.Account;
 using Lms.Api.Features.Auth;
-using Lms.Api.Features.Assignments;
 using Lms.Api.Features.Me;
-using Lms.Api.Features.Roles;
 using Lms.Api.Infrastructure;
 using Lms.Infrastructure;
 using Lms.Infrastructure.Access;
@@ -22,12 +21,14 @@ builder.Host.UseSerilog((context, services, configuration) => configuration
 builder.Services.AddScoped<HttpCurrentContext>();
 builder.Services.AddScoped<Lms.Domain.Abstractions.ICurrentContext>(sp => sp.GetRequiredService<HttpCurrentContext>());
 builder.Services.AddMe();
+builder.Services.AddSettings();
 builder.Services.AddNotifications();
 builder.Services.AddInfrastructure(builder.Configuration);
+// Feature modules implementing ILmsModule register themselves; new modules don't edit this file.
+builder.Services.AddLmsModules(builder.Configuration);
 builder.Services.AddLmsAuth(builder.Configuration, builder.Environment);
 builder.Services.AddAccount(builder.Configuration);
-builder.Services.AddRoles();
-builder.Services.AddAssignments();
+builder.Services.AddLmsForwardedHeaders(builder.Configuration);
 
 builder.Services.AddHealthChecks()
     .AddCheck<MySqlHealthCheck>("mysql");
@@ -44,6 +45,8 @@ if (app.Environment.IsDevelopment() && app.Configuration.GetValue("Seed:RunOnSta
 // get the new built-in permissions (add-only, once per role). Skipped while migrations are pending.
 await app.Services.GetRequiredService<BuiltInRoleStartupReconciler>().RunAsync();
 
+// First: everything after it (HTTPS redirection, rate limits, audit IPs) sees the real client address and scheme.
+app.UseLmsForwardedHeaders();
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseMiddleware<SecurityHeadersMiddleware>();
 if (!app.Environment.IsDevelopment())
@@ -71,10 +74,10 @@ foreach (var module in app.Services.GetServices<IEndpointModule>())
 {
     module.Map(app);
 }
+app.MapLmsModules();
 
 app.MapMeEndpoints();
-app.MapRoleEndpoints();
-app.MapAssignmentEndpoints();
+app.MapSettingEndpoints();
 app.MapNotificationEndpoints();
 
 // Unknown API routes must be 404, not the SPA's index.html.

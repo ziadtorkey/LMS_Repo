@@ -85,6 +85,78 @@
   <data name="Error_term_outside_year" xml:space="preserve"><value>The term must fall inside the academic year.</value></data>
   <data name="Error_event_outside_year" xml:space="preserve"><value>The event must fall inside the academic year.</value></data>
   <data name="Error_in_app_required" xml:space="preserve"><value>In-app notifications cannot be turned off.</value></data>
+  <data name="PermModule_OrgUnits" xml:space="preserve"><value>Organization</value></data>
+  <data name="Perm_OrgUnits_View" xml:space="preserve"><value>View units</value></data>
+  <data name="Perm_OrgUnits_Create" xml:space="preserve"><value>Create units</value></data>
+  <data name="Perm_OrgUnits_Update" xml:space="preserve"><value>Edit units</value></data>
+  <data name="Perm_OrgUnits_Delete" xml:space="preserve"><value>Delete units</value></data>
+  <data name="Perm_OrgUnits_Move" xml:space="preserve"><value>Move units</value></data>
+  <data name="PermModule_Roles" xml:space="preserve"><value>Roles</value></data>
+  <data name="Perm_Roles_View" xml:space="preserve"><value>View roles</value></data>
+  <data name="Perm_Roles_Create" xml:space="preserve"><value>Create roles</value></data>
+  <data name="Perm_Roles_Update" xml:space="preserve"><value>Edit roles</value></data>
+  <data name="Perm_Roles_Delete" xml:space="preserve"><value>Delete roles</value></data>
+  <data name="PermModule_Assignments" xml:space="preserve"><value>Role assignments</value></data>
+  <data name="Perm_Assignments_View" xml:space="preserve"><value>View role assignments</value></data>
+  <data name="Perm_Assignments_Create" xml:space="preserve"><value>Create role assignments</value></data>
+  <data name="Perm_Assignments_Update" xml:space="preserve"><value>Edit role assignments</value></data>
+  <data name="Perm_Assignments_Delete" xml:space="preserve"><value>Delete role assignments</value></data>
+  <data name="PermModule_Settings" xml:space="preserve"><value>Settings</value></data>
+  <data name="Perm_Settings_View" xml:space="preserve"><value>View settings</value></data>
+  <data name="Perm_Settings_Update" xml:space="preserve"><value>Edit settings</value></data>
+  <data name="PermModule_Policies" xml:space="preserve"><value>Policies</value></data>
+  <data name="Perm_Policies_View" xml:space="preserve"><value>View policies</value></data>
+  <data name="Perm_Policies_Update" xml:space="preserve"><value>Edit policies</value></data>
+  <data name="PermModule_Audit" xml:space="preserve"><value>Audit log</value></data>
+  <data name="Perm_Audit_View" xml:space="preserve"><value>View audit log</value></data>
+  <data name="Perm_Audit_Export" xml:space="preserve"><value>Export audit log</value></data>
+  <data name="PermModule_Files" xml:space="preserve"><value>Files</value></data>
+  <data name="Perm_Files_Upload" xml:space="preserve"><value>Upload files</value></data>
+  <data name="Perm_Files_Download" xml:space="preserve"><value>Download files</value></data>
+  <data name="PermModule_LevelTypes" xml:space="preserve"><value>Level types</value></data>
+  <data name="Perm_LevelTypes_View" xml:space="preserve"><value>View level types</value></data>
+  <data name="Perm_LevelTypes_Create" xml:space="preserve"><value>Create level types</value></data>
+  <data name="Perm_LevelTypes_Update" xml:space="preserve"><value>Edit level types</value></data>
+  <data name="Perm_LevelTypes_Delete" xml:space="preserve"><value>Delete level types</value></data>
+  <data name="PermModule_Templates" xml:space="preserve"><value>Templates</value></data>
+  <data name="Perm_Templates_View" xml:space="preserve"><value>View templates</value></data>
+  <data name="Perm_Templates_Create" xml:space="preserve"><value>Create templates</value></data>
+  <data name="Perm_Templates_Delete" xml:space="preserve"><value>Delete templates</value></data>
+  <data name="Perm_Templates_Apply" xml:space="preserve"><value>Apply templates</value></data>
+  <data name="PermModule_AcademicYears" xml:space="preserve"><value>Academic years</value></data>
+  <data name="Perm_AcademicYears_View" xml:space="preserve"><value>View academic years</value></data>
+  <data name="Perm_AcademicYears_Create" xml:space="preserve"><value>Create academic years</value></data>
+  <data name="Perm_AcademicYears_Update" xml:space="preserve"><value>Edit academic years</value></data>
+  <data name="Perm_AcademicYears_Delete" xml:space="preserve"><value>Delete academic years</value></data>
+  <data name="Roles_Title" xml:space="preserve"><value>Roles and permissions</value></data>
+  <data name="Roles_New" xml:space="preserve"><value>New role</value></data>
+  <data name="Roles_BuiltIn" xml:space="preserve"><value>Built-in</value></data>
+  <data name="Roles_BaseKind" xml:space="preserve"><value>Base kind</value></data>
+  <data name="BaseKind_Staff" xml:space="preserve"><value>Staff</value></data>
+  <data name="BaseKind_Student" xml:space="preserve"><value>Student</value></data>
+  <data name="BaseKind_Guardian" xml:space="preserve"><value>Guardian</value></data>
+  <data name="Roles_Assignments" xml:space="preserve"><value>Assignments</value></data>
+  <data name="Roles_SelectModule" xml:space="preserve"><value>Select all</value></data>
+  <data name="Roles_Name" xml:space="preserve"><value>Role</value></data>
+  <data name="Roles_Permissions" xml:space="preserve"><value>Permissions</value></data>
+  <data name="Roles_DeleteConfirm" xml:space="preserve"><value>Delete the role {0}?</value></data>
+  <data name="Nav_Assignments" xml:space="preserve"><value>Role assignments</value></data>
+  <data name="Assignments_Title" xml:space="preserve"><value>Role assignments</value></data>
+  <data name="Assignments_Assign" xml:space="preserve"><value>Assign role</value></data>
+  <data name="Assignments_Email" xml:space="preserve"><value>Email</value></data>
+  <data name="Assignments_NewUserHint" xml:space="preserve"><value>Names are used only if this email has no account yet; the person gets an invitation.</value></data>
+  <data name="Assignments_ValidFrom" xml:space="preserve"><value>Valid from</value></data>
+  <data name="Assignments_ValidTo" xml:space="preserve"><value>Valid to</value></data>
+  <data name="Assignments_IncludeBelow" xml:space="preserve"><value>Include units below</value></data>
+  <data name="AssignmentStatus_Valid" xml:space="preserve"><value>Valid</value></data>
+  <data name="AssignmentStatus_Future" xml:space="preserve"><value>Not yet valid</value></data>
+  <data name="AssignmentStatus_Expired" xml:space="preserve"><value>Expired</value></data>
+  <data name="Assignments_RemoveConfirm" xml:space="preserve"><value>Remove this role from {0}?</value></data>
+  <data name="Assignments_Person" xml:space="preserve"><value>Person</value></data>
+  <data name="Assignments_Role" xml:space="preserve"><value>Role</value></data>
+  <data name="Assignments_Unit" xml:space="preserve"><value>Unit</value></data>
+  <data name="Assignments_EditValidity" xml:space="preserve"><value>Edit validity</value></data>
+  <data name="Assignments_DateOrder" xml:space="preserve"><value>Valid to must not be before valid from.</value></data>
   <data name="Table_RowsPerPage" xml:space="preserve"><value>Rows per page:</value></data>
   <data name="Table_InfoFormat" xml:space="preserve"><value>{first_item}-{last_item} of {all_items}</value></data>
   <data name="MudTablePager_FirstPage" xml:space="preserve"><value>First page</value></data>
@@ -95,6 +167,42 @@
   <data name="Error_OutOfScope" xml:space="preserve"><value>This item is outside your scope.</value></data>
   <data name="Error_invalid_context" xml:space="preserve"><value>Your selected role is no longer valid. Please choose a role again.</value></data>
   <data name="Error_context_required" xml:space="preserve"><value>Please choose a role first.</value></data>
+  <data name="Audit_Title" xml:space="preserve"><value>Audit log</value></data>
+  <data name="Audit_When" xml:space="preserve"><value>When</value></data>
+  <data name="Audit_Who" xml:space="preserve"><value>Who</value></data>
+  <data name="Audit_Role" xml:space="preserve"><value>Role</value></data>
+  <data name="Audit_Unit" xml:space="preserve"><value>Unit</value></data>
+  <data name="Audit_Action" xml:space="preserve"><value>Action</value></data>
+  <data name="Audit_Entity" xml:space="preserve"><value>Entity</value></data>
+  <data name="Audit_From" xml:space="preserve"><value>From</value></data>
+  <data name="Audit_To" xml:space="preserve"><value>To</value></data>
+  <data name="Audit_Before" xml:space="preserve"><value>Before</value></data>
+  <data name="Audit_After" xml:space="preserve"><value>After</value></data>
+  <data name="Audit_ExportCsv" xml:space="preserve"><value>Export CSV</value></data>
+  <data name="Audit_ExportExcel" xml:space="preserve"><value>Export Excel</value></data>
+  <data name="AuditAction_Created" xml:space="preserve"><value>Created</value></data>
+  <data name="AuditAction_Updated" xml:space="preserve"><value>Updated</value></data>
+  <data name="AuditAction_Deleted" xml:space="preserve"><value>Deleted</value></data>
+  <data name="AuditAction_SecurityEvent" xml:space="preserve"><value>Security event</value></data>
+  <data name="AuditEntity_Organization" xml:space="preserve"><value>Client</value></data>
+  <data name="AuditEntity_LevelType" xml:space="preserve"><value>Level type</value></data>
+  <data name="AuditEntity_OrgUnit" xml:space="preserve"><value>Organization unit</value></data>
+  <data name="AuditEntity_Role" xml:space="preserve"><value>Role</value></data>
+  <data name="AuditEntity_RolePermission" xml:space="preserve"><value>Role permission</value></data>
+  <data name="AuditEntity_RoleAssignment" xml:space="preserve"><value>Role assignment</value></data>
+  <data name="AuditEntity_OrgUnitSetting" xml:space="preserve"><value>Unit setting</value></data>
+  <data name="AuditEntity_OrgUnitPolicy" xml:space="preserve"><value>Unit policy</value></data>
+  <data name="AuditEntity_User" xml:space="preserve"><value>User</value></data>
+  <data name="AuditEntity_OrgTemplate" xml:space="preserve"><value>Organization template</value></data>
+  <data name="AuditEntity_AcademicYear" xml:space="preserve"><value>Academic year</value></data>
+  <data name="AuditEntity_Term" xml:space="preserve"><value>Term</value></data>
+  <data name="AuditEntity_CalendarEvent" xml:space="preserve"><value>Calendar event</value></data>
+  <data name="AuditEvent_LoginSucceeded" xml:space="preserve"><value>Successful sign-in</value></data>
+  <data name="AuditEvent_LoginFailed" xml:space="preserve"><value>Failed sign-in</value></data>
+  <data name="AuditEvent_PasswordResetRequested" xml:space="preserve"><value>Password reset requested</value></data>
+  <data name="AuditEvent_PasswordReset" xml:space="preserve"><value>Password reset</value></data>
+  <data name="AuditEvent_InvitationAccepted" xml:space="preserve"><value>Invitation accepted</value></data>
+  <data name="Common_Close" xml:space="preserve"><value>Close</value></data>
   <data name="Clients_Title" xml:space="preserve"><value>Clients</value></data>
   <data name="Clients_New" xml:space="preserve"><value>New client</value></data>
   <data name="Clients_Type" xml:space="preserve"><value>Type</value></data>
@@ -125,4 +233,17 @@
   <data name="LevelTypes_OutOfScope" xml:space="preserve"><value>This can only be changed at the top level of the organization.</value></data>
   <data name="Common_Yes" xml:space="preserve"><value>Yes</value></data>
   <data name="Common_No" xml:space="preserve"><value>No</value></data>
+  <data name="OrgTree_Title" xml:space="preserve"><value>Organization tree</value></data>
+  <data name="OrgTree_AddChild" xml:space="preserve"><value>Add unit</value></data>
+  <data name="OrgTree_Search" xml:space="preserve"><value>Search units</value></data>
+  <data name="OrgTree_LevelType" xml:space="preserve"><value>Level type</value></data>
+  <data name="OrgTree_Deactivate" xml:space="preserve"><value>Deactivate</value></data>
+  <data name="OrgTree_Activate" xml:space="preserve"><value>Activate</value></data>
+  <data name="OrgTree_Inactive" xml:space="preserve"><value>Inactive</value></data>
+  <data name="OrgTree_Settings" xml:space="preserve"><value>Unit settings</value></data>
+  <data name="OrgTree_DeleteConfirm" xml:space="preserve"><value>Delete this unit? It can be restored by support only.</value></data>
+  <data name="OrgTree_NoMatches" xml:space="preserve"><value>No units match your search.</value></data>
+  <data name="Confirm_DeactivateTitle" xml:space="preserve"><value>Deactivate unit?</value></data>
+  <data name="OrgTree_DeactivateOwnWarning" xml:space="preserve"><value>You are working in this unit (or in one inside it). If you deactivate it you will lose access until an administrator above it reactivates it. Continue?</value></data>
+  <data name="AuditEntity_StoredFile" xml:space="preserve"><value>File</value></data>
 </root>

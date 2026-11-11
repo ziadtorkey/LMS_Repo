@@ -85,6 +85,78 @@
   <data name="Error_term_outside_year" xml:space="preserve"><value>يجب أن يقع الفصل ضمن السنة الدراسية.</value></data>
   <data name="Error_event_outside_year" xml:space="preserve"><value>يجب أن يقع الحدث ضمن السنة الدراسية.</value></data>
   <data name="Error_in_app_required" xml:space="preserve"><value>لا يمكن إيقاف الإشعارات داخل التطبيق.</value></data>
+  <data name="PermModule_OrgUnits" xml:space="preserve"><value>الهيكل التنظيمي</value></data>
+  <data name="Perm_OrgUnits_View" xml:space="preserve"><value>عرض الوحدات</value></data>
+  <data name="Perm_OrgUnits_Create" xml:space="preserve"><value>إنشاء الوحدات</value></data>
+  <data name="Perm_OrgUnits_Update" xml:space="preserve"><value>تعديل الوحدات</value></data>
+  <data name="Perm_OrgUnits_Delete" xml:space="preserve"><value>حذف الوحدات</value></data>
+  <data name="Perm_OrgUnits_Move" xml:space="preserve"><value>نقل الوحدات</value></data>
+  <data name="PermModule_Roles" xml:space="preserve"><value>الأدوار</value></data>
+  <data name="Perm_Roles_View" xml:space="preserve"><value>عرض الأدوار</value></data>
+  <data name="Perm_Roles_Create" xml:space="preserve"><value>إنشاء الأدوار</value></data>
+  <data name="Perm_Roles_Update" xml:space="preserve"><value>تعديل الأدوار</value></data>
+  <data name="Perm_Roles_Delete" xml:space="preserve"><value>حذف الأدوار</value></data>
+  <data name="PermModule_Assignments" xml:space="preserve"><value>تعيين الأدوار</value></data>
+  <data name="Perm_Assignments_View" xml:space="preserve"><value>عرض التعيينات</value></data>
+  <data name="Perm_Assignments_Create" xml:space="preserve"><value>إنشاء التعيينات</value></data>
+  <data name="Perm_Assignments_Update" xml:space="preserve"><value>تعديل التعيينات</value></data>
+  <data name="Perm_Assignments_Delete" xml:space="preserve"><value>حذف التعيينات</value></data>
+  <data name="PermModule_Settings" xml:space="preserve"><value>الإعدادات</value></data>
+  <data name="Perm_Settings_View" xml:space="preserve"><value>عرض الإعدادات</value></data>
+  <data name="Perm_Settings_Update" xml:space="preserve"><value>تعديل الإعدادات</value></data>
+  <data name="PermModule_Policies" xml:space="preserve"><value>السياسات</value></data>
+  <data name="Perm_Policies_View" xml:space="preserve"><value>عرض السياسات</value></data>
+  <data name="Perm_Policies_Update" xml:space="preserve"><value>تعديل السياسات</value></data>
+  <data name="PermModule_Audit" xml:space="preserve"><value>سجل التدقيق</value></data>
+  <data name="Perm_Audit_View" xml:space="preserve"><value>عرض سجل التدقيق</value></data>
+  <data name="Perm_Audit_Export" xml:space="preserve"><value>تصدير سجل التدقيق</value></data>
+  <data name="PermModule_Files" xml:space="preserve"><value>الملفات</value></data>
+  <data name="Perm_Files_Upload" xml:space="preserve"><value>رفع الملفات</value></data>
+  <data name="Perm_Files_Download" xml:space="preserve"><value>تنزيل الملفات</value></data>
+  <data name="PermModule_LevelTypes" xml:space="preserve"><value>أنواع المستويات</value></data>
+  <data name="Perm_LevelTypes_View" xml:space="preserve"><value>عرض أنواع المستويات</value></data>
+  <data name="Perm_LevelTypes_Create" xml:space="preserve"><value>إنشاء أنواع المستويات</value></data>
+  <data name="Perm_LevelTypes_Update" xml:space="preserve"><value>تعديل أنواع المستويات</value></data>
+  <data name="Perm_LevelTypes_Delete" xml:space="preserve"><value>حذف أنواع المستويات</value></data>
+  <data name="PermModule_Templates" xml:space="preserve"><value>القوالب</value></data>
+  <data name="Perm_Templates_View" xml:space="preserve"><value>عرض القوالب</value></data>
+  <data name="Perm_Templates_Create" xml:space="preserve"><value>إنشاء القوالب</value></data>
+  <data name="Perm_Templates_Delete" xml:space="preserve"><value>حذف القوالب</value></data>
+  <data name="Perm_Templates_Apply" xml:space="preserve"><value>تطبيق القوالب</value></data>
+  <data name="PermModule_AcademicYears" xml:space="preserve"><value>الأعوام الدراسية</value></data>
+  <data name="Perm_AcademicYears_View" xml:space="preserve"><value>عرض الأعوام الدراسية</value></data>
+  <data name="Perm_AcademicYears_Create" xml:space="preserve"><value>إنشاء الأعوام الدراسية</value></data>
+  <data name="Perm_AcademicYears_Update" xml:space="preserve"><value>تعديل الأعوام الدراسية</value></data>
+  <data name="Perm_AcademicYears_Delete" xml:space="preserve"><value>حذف الأعوام الدراسية</value></data>
+  <data name="Roles_Title" xml:space="preserve"><value>الأدوار والصلاحيات</value></data>
+  <data name="Roles_New" xml:space="preserve"><value>دور جديد</value></data>
+  <data name="Roles_BuiltIn" xml:space="preserve"><value>أساسي</value></data>
+  <data name="Roles_BaseKind" xml:space="preserve"><value>النوع الأساسي</value></data>
+  <data name="BaseKind_Staff" xml:space="preserve"><value>موظف</value></data>
+  <data name="BaseKind_Student" xml:space="preserve"><value>طالب</value></data>
+  <data name="BaseKind_Guardian" xml:space="preserve"><value>ولي أمر</value></data>
+  <data name="Roles_Assignments" xml:space="preserve"><value>التعيينات</value></data>
+  <data name="Roles_SelectModule" xml:space="preserve"><value>تحديد الكل</value></data>
+  <data name="Roles_Name" xml:space="preserve"><value>الدور</value></data>
+  <data name="Roles_Permissions" xml:space="preserve"><value>الصلاحيات</value></data>
+  <data name="Roles_DeleteConfirm" xml:space="preserve"><value>حذف الدور {0}؟</value></data>
+  <data name="Nav_Assignments" xml:space="preserve"><value>تعيين الأدوار</value></data>
+  <data name="Assignments_Title" xml:space="preserve"><value>تعيين الأدوار</value></data>
+  <data name="Assignments_Assign" xml:space="preserve"><value>تعيين دور</value></data>
+  <data name="Assignments_Email" xml:space="preserve"><value>البريد الإلكتروني</value></data>
+  <data name="Assignments_NewUserHint" xml:space="preserve"><value>تُستخدم الأسماء فقط إذا لم يكن لهذا البريد حساب، وسيتلقى الشخص دعوة.</value></data>
+  <data name="Assignments_ValidFrom" xml:space="preserve"><value>صالح من</value></data>
+  <data name="Assignments_ValidTo" xml:space="preserve"><value>صالح حتى</value></data>
+  <data name="Assignments_IncludeBelow" xml:space="preserve"><value>تضمين الوحدات الأدنى</value></data>
+  <data name="AssignmentStatus_Valid" xml:space="preserve"><value>ساري</value></data>
+  <data name="AssignmentStatus_Future" xml:space="preserve"><value>لم يبدأ بعد</value></data>
+  <data name="AssignmentStatus_Expired" xml:space="preserve"><value>منتهي</value></data>
+  <data name="Assignments_RemoveConfirm" xml:space="preserve"><value>إزالة هذا الدور من {0}؟</value></data>
+  <data name="Assignments_Person" xml:space="preserve"><value>الشخص</value></data>
+  <data name="Assignments_Role" xml:space="preserve"><value>الدور</value></data>
+  <data name="Assignments_Unit" xml:space="preserve"><value>الوحدة</value></data>
+  <data name="Assignments_EditValidity" xml:space="preserve"><value>تعديل الصلاحية</value></data>
+  <data name="Assignments_DateOrder" xml:space="preserve"><value>يجب ألا يسبق تاريخ الانتهاء تاريخ البدء.</value></data>
   <data name="Table_RowsPerPage" xml:space="preserve"><value>عدد الصفوف في الصفحة:</value></data>
   <data name="Table_InfoFormat" xml:space="preserve"><value>الإجمالي: {all_items}</value></data>
   <data name="MudTablePager_FirstPage" xml:space="preserve"><value>الصفحة الأولى</value></data>
@@ -95,6 +167,42 @@
   <data name="Error_OutOfScope" xml:space="preserve"><value>هذا العنصر خارج نطاق صلاحياتك.</value></data>
   <data name="Error_invalid_context" xml:space="preserve"><value>الدور الذي اخترته لم يعد صالحًا. يرجى اختيار دور مرة أخرى.</value></data>
   <data name="Error_context_required" xml:space="preserve"><value>يرجى اختيار دور أولًا.</value></data>
+  <data name="Audit_Title" xml:space="preserve"><value>سجل التدقيق</value></data>
+  <data name="Audit_When" xml:space="preserve"><value>الوقت</value></data>
+  <data name="Audit_Who" xml:space="preserve"><value>المستخدم</value></data>
+  <data name="Audit_Role" xml:space="preserve"><value>الدور</value></data>
+  <data name="Audit_Unit" xml:space="preserve"><value>الوحدة</value></data>
+  <data name="Audit_Action" xml:space="preserve"><value>الإجراء</value></data>
+  <data name="Audit_Entity" xml:space="preserve"><value>الكيان</value></data>
+  <data name="Audit_From" xml:space="preserve"><value>من</value></data>
+  <data name="Audit_To" xml:space="preserve"><value>إلى</value></data>
+  <data name="Audit_Before" xml:space="preserve"><value>قبل</value></data>
+  <data name="Audit_After" xml:space="preserve"><value>بعد</value></data>
+  <data name="Audit_ExportCsv" xml:space="preserve"><value>تصدير CSV</value></data>
+  <data name="Audit_ExportExcel" xml:space="preserve"><value>تصدير Excel</value></data>
+  <data name="AuditAction_Created" xml:space="preserve"><value>إنشاء</value></data>
+  <data name="AuditAction_Updated" xml:space="preserve"><value>تعديل</value></data>
+  <data name="AuditAction_Deleted" xml:space="preserve"><value>حذف</value></data>
+  <data name="AuditAction_SecurityEvent" xml:space="preserve"><value>حدث أمني</value></data>
+  <data name="AuditEntity_Organization" xml:space="preserve"><value>عميل</value></data>
+  <data name="AuditEntity_LevelType" xml:space="preserve"><value>نوع مستوى</value></data>
+  <data name="AuditEntity_OrgUnit" xml:space="preserve"><value>وحدة تنظيمية</value></data>
+  <data name="AuditEntity_Role" xml:space="preserve"><value>دور</value></data>
+  <data name="AuditEntity_RolePermission" xml:space="preserve"><value>صلاحية دور</value></data>
+  <data name="AuditEntity_RoleAssignment" xml:space="preserve"><value>تعيين دور</value></data>
+  <data name="AuditEntity_OrgUnitSetting" xml:space="preserve"><value>إعداد وحدة</value></data>
+  <data name="AuditEntity_OrgUnitPolicy" xml:space="preserve"><value>سياسة وحدة</value></data>
+  <data name="AuditEntity_User" xml:space="preserve"><value>مستخدم</value></data>
+  <data name="AuditEntity_OrgTemplate" xml:space="preserve"><value>قالب هيكل</value></data>
+  <data name="AuditEntity_AcademicYear" xml:space="preserve"><value>عام دراسي</value></data>
+  <data name="AuditEntity_Term" xml:space="preserve"><value>فصل دراسي</value></data>
+  <data name="AuditEntity_CalendarEvent" xml:space="preserve"><value>حدث تقويمي</value></data>
+  <data name="AuditEvent_LoginSucceeded" xml:space="preserve"><value>تسجيل دخول ناجح</value></data>
+  <data name="AuditEvent_LoginFailed" xml:space="preserve"><value>فشل تسجيل الدخول</value></data>
+  <data name="AuditEvent_PasswordResetRequested" xml:space="preserve"><value>طلب إعادة تعيين كلمة المرور</value></data>
+  <data name="AuditEvent_PasswordReset" xml:space="preserve"><value>إعادة تعيين كلمة المرور</value></data>
+  <data name="AuditEvent_InvitationAccepted" xml:space="preserve"><value>قبول الدعوة</value></data>
+  <data name="Common_Close" xml:space="preserve"><value>إغلاق</value></data>
   <data name="Clients_Title" xml:space="preserve"><value>العملاء</value></data>
   <data name="Clients_New" xml:space="preserve"><value>عميل جديد</value></data>
   <data name="Clients_Type" xml:space="preserve"><value>النوع</value></data>
@@ -125,4 +233,17 @@
   <data name="LevelTypes_OutOfScope" xml:space="preserve"><value>يمكن تغيير ذلك فقط من المستوى الأعلى للمؤسسة.</value></data>
   <data name="Common_Yes" xml:space="preserve"><value>نعم</value></data>
   <data name="Common_No" xml:space="preserve"><value>لا</value></data>
+  <data name="OrgTree_Title" xml:space="preserve"><value>الهيكل التنظيمي</value></data>
+  <data name="OrgTree_AddChild" xml:space="preserve"><value>إضافة وحدة</value></data>
+  <data name="OrgTree_Search" xml:space="preserve"><value>البحث في الوحدات</value></data>
+  <data name="OrgTree_LevelType" xml:space="preserve"><value>نوع المستوى</value></data>
+  <data name="OrgTree_Deactivate" xml:space="preserve"><value>إيقاف</value></data>
+  <data name="OrgTree_Activate" xml:space="preserve"><value>تفعيل</value></data>
+  <data name="OrgTree_Inactive" xml:space="preserve"><value>غير نشط</value></data>
+  <data name="OrgTree_Settings" xml:space="preserve"><value>إعدادات الوحدة</value></data>
+  <data name="OrgTree_DeleteConfirm" xml:space="preserve"><value>حذف هذه الوحدة؟ لا يمكن استعادتها إلا عن طريق الدعم الفني.</value></data>
+  <data name="OrgTree_NoMatches" xml:space="preserve"><value>لا توجد وحدات مطابقة للبحث.</value></data>
+  <data name="Confirm_DeactivateTitle" xml:space="preserve"><value>إيقاف الوحدة؟</value></data>
+  <data name="OrgTree_DeactivateOwnWarning" xml:space="preserve"><value>أنت تعمل في هذه الوحدة (أو في وحدة تابعة لها). إذا أوقفتها فستفقد الوصول إلى أن يعيد مسؤول أعلى منها تفعيلها. هل تريد المتابعة؟</value></data>
+  <data name="AuditEntity_StoredFile" xml:space="preserve"><value>ملف</value></data>
 </root>

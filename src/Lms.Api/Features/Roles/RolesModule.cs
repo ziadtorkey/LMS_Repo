@@ -1,13 +1,13 @@
+using Lms.Api.Infrastructure;
+
 namespace Lms.Api.Features.Roles;
 
 /// <summary>Roles admin: built-in permission sets and labels, custom roles (PRD FR-SEC-06).</summary>
-public static class RolesModule
+public sealed class RolesModule : ILmsModule
 {
-    public static IServiceCollection AddRoles(this IServiceCollection services) => services;
-
-    public static IEndpointRouteBuilder MapRoleEndpoints(this IEndpointRouteBuilder app)
+    public void AddServices(IServiceCollection services, IConfiguration configuration)
     {
-        RoleEndpoints.Map(app);
-        return app;
     }
+
+    public void MapEndpoints(IEndpointRouteBuilder app) => RoleEndpoints.Map(app);
 }
