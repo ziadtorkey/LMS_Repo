@@ -1,14 +1,13 @@
-using Lms.Domain.Configuration;
 using Lms.Domain.Organizations;
+using Lms.Infrastructure.Organizations;
 using Lms.Infrastructure.Persistence;
-using Lms.Shared.Authorization;
 using Lms.Shared.Organizations;
 using Microsoft.EntityFrameworkCore;
 
 namespace Lms.Api.Features.OrgUnits;
 
 /// <summary>Reads for the org tree: visible units with children flags and the permissions blocked by policies.</summary>
-public sealed class OrgUnitQueries(LmsDbContext db)
+public sealed class OrgUnitQueries(LmsDbContext db, IOrgPolicyReader policyReader)
 {
     public async Task<IReadOnlyList<OrgUnitNodeDto>> ListAsync(string? search, bool includeInactive, CancellationToken ct)
     {
@@ -40,39 +39,22 @@ public sealed class OrgUnitQueries(LmsDbContext db)
         }
 
         var withChildren = units.Where(u => u.ParentId is not null).Select(u => u.ParentId!.Value).ToHashSet();
-        var policies = await LoadPoliciesAsync(units.Select(u => u.OrganizationId).Distinct().ToList(), ct);
+        var policies = await policyReader.LoadAsync(units.Select(u => u.OrganizationId).Distinct().ToList(), ct);
         return units.Select(u => ToNode(u, withChildren.Contains(u.Id), policies)).ToList();
     }
 
     public async Task<OrgUnitNodeDto> GetNodeAsync(OrgUnit unit, CancellationToken ct)
     {
         var hasChildren = await db.OrgUnits.AnyAsync(u => u.ParentId == unit.Id, ct);
-        var policies = await LoadPoliciesAsync([unit.OrganizationId], ct);
+        var policies = await policyReader.LoadAsync([unit.OrganizationId], ct);
         return ToNode(unit, hasChildren, policies);
     }
 
     private static bool Contains(string value, string term) => value.Contains(term, StringComparison.InvariantCultureIgnoreCase);
 
-    /// <summary>One query per request: every live policy of the clients involved.</summary>
-    private async Task<List<(string Path, IReadOnlyList<string> Blocked)>> LoadPoliciesAsync(
-        IReadOnlyList<Guid> organizationIds, CancellationToken ct)
-    {
-        // ISOLATION-BYPASS: policies sit on ancestors above the caller's scope; the clients are matched explicitly
-        // and deleted rows are excluded by hand.
-        var rows = await db.Set<OrgUnitPolicy>().IgnoreQueryFilters()
-            .Where(p => !p.IsDeleted && organizationIds.Contains(p.OrganizationId))
-            .Select(p => new { p.OrgUnitPath, p.PolicyKey })
-            .ToListAsync(ct);
-
-        return rows
-            .Where(r => PolicyCatalog.BlockedPermissions.ContainsKey(r.PolicyKey))
-            .Select(r => (r.OrgUnitPath, PolicyCatalog.BlockedPermissions[r.PolicyKey]))
-            .ToList();
-    }
-
     private static OrgUnitNodeDto ToNode(
-        OrgUnit u, bool hasChildren, List<(string Path, IReadOnlyList<string> Blocked)> policies) => new(
+        OrgUnit u, bool hasChildren, IReadOnlyList<PolicyBlock> policies) => new(
         u.Id, u.ParentId, u.LevelTypeId, u.NameAr, u.NameEn, u.Code, u.Depth, u.Status.ToString(),
         u.IsLevelTransfer, u.NextTransferUnitId, u.IsCourseManagementLevel, hasChildren,
-        policies.Where(p => OrgUnitPath.IsWithin(u.Path, p.Path)).SelectMany(p => p.Blocked).Distinct().Order().ToList());
+        policies.Where(p => OrgUnitPath.IsWithin(u.Path, p.Path)).SelectMany(p => p.BlockedPermissions).Distinct().Order().ToList());
 }

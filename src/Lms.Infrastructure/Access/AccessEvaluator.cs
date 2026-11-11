@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using Lms.Domain.Abstractions;
 using Lms.Domain.Access;
 using Lms.Domain.Organizations;
@@ -57,34 +58,31 @@ public sealed class AccessEvaluator(
         return AccessDecision.Allow;
     }
 
-    /// <summary>Permissions of the role behind an assignment, cached per assignment for 60 seconds.</summary>
-    private async Task<HashSet<string>> GetRolePermissionsAsync(Guid assignmentId, CancellationToken cancellationToken)
+    /// <summary>
+    /// Permissions of the role behind an assignment. The assignment-to-role lookup (and the role's liveness) is read on
+    /// every call; only the role's permission set is cached, per role, until the role is saved
+    /// (<see cref="IRolePermissionCache.Invalidate"/>) or 60 seconds pass.
+    /// </summary>
+    private async Task<IReadOnlySet<string>> GetRolePermissionsAsync(Guid assignmentId, CancellationToken cancellationToken)
     {
-        var cached = await cache.GetOrCreateAsync($"role-permissions:{assignmentId}", async entry =>
+        // The assignment sits at the caller's own scope unit, so the normal filters see it; a deleted role or
+        // assignment yields an empty set.
+        var roleId = await db.RoleAssignments
+            .Where(a => a.Id == assignmentId && db.Roles.Any(r => r.Id == a.RoleId))
+            .Select(a => (Guid?)a.RoleId)
+            .FirstOrDefaultAsync(cancellationToken);
+        if (roleId is null)
+        {
+            return FrozenSet<string>.Empty;
+        }
+
+        var cached = await cache.GetOrCreateAsync(RolePermissionCache.Key(roleId.Value), async entry =>
         {
             entry.AbsoluteExpirationRelativeToNow = PermissionCacheTtl;
-
-            // The assignment sits at the caller's own scope unit, so the normal filters see it; a deleted role or
-            // assignment yields an empty set. RolePermissions are filtered by the caller's client.
-            var roleId = await db.RoleAssignments
-                .Where(a => a.Id == assignmentId)
-                .Select(a => (Guid?)a.RoleId)
-                .FirstOrDefaultAsync(cancellationToken);
-            if (roleId is null)
-            {
-                return new HashSet<string>();
-            }
-
-            var roleIsLive = await db.Roles.AnyAsync(r => r.Id == roleId, cancellationToken);
-            if (!roleIsLive)
-            {
-                return new HashSet<string>();
-            }
-
             return (await db.RolePermissions
                 .Where(p => p.RoleId == roleId)
                 .Select(p => p.Permission)
-                .ToListAsync(cancellationToken)).ToHashSet();
+                .ToListAsync(cancellationToken)).ToFrozenSet(StringComparer.Ordinal);
         });
 
         return cached!;

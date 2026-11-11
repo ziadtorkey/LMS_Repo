@@ -1,5 +1,6 @@
 using Lms.Domain.Abstractions;
 using Lms.Domain.Auditing;
+using Lms.Infrastructure.Access;
 using Lms.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,9 +17,30 @@ internal sealed class AuditWriter(
         string eventName, Guid? userId, string? details, string? ipAddress = null, CancellationToken cancellationToken = default)
     {
         await using var db = new LmsDbContext(options, context);
-        db.AuditEntries.Add(new AuditEntry(
-            context.OrganizationId, userId ?? context.UserId, context.AssignmentId, AuditAction.SecurityEvent,
-            eventName, Guid.Empty, beforeJson: null, afterJson: details, clock.UtcNow, ipAddress));
+        var actor = userId ?? context.UserId;
+        var now = clock.UtcNow;
+
+        // D20: one entry per client in which the user holds a valid assignment, so each client's root-level viewers see
+        // it. Users without one (platform admins, unknown emails) keep a single entry with the context's client (usually null).
+        var organizations = actor is { } id
+            ? await db.ValidAssignmentsFor(id, DateOnly.FromDateTime(now)).Select(a => a.OrganizationId).Distinct()
+                .ToListAsync(cancellationToken)
+            : [];
+
+        if (organizations.Count == 0)
+        {
+            db.AuditEntries.Add(Entry(context.OrganizationId, context.AssignmentId));
+        }
+        else
+        {
+            db.AuditEntries.AddRange(organizations.Select(o =>
+                Entry(o, context.OrganizationId == o ? context.AssignmentId : null)));
+        }
+
         await db.SaveChangesAsync(cancellationToken);
+
+        AuditEntry Entry(Guid? organizationId, Guid? assignmentId) => new(
+            organizationId, actor, assignmentId, AuditAction.SecurityEvent,
+            eventName, Guid.Empty, beforeJson: null, afterJson: details, now, ipAddress);
     }
 }

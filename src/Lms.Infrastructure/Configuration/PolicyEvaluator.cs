@@ -24,7 +24,7 @@ public sealed class PolicyEvaluator(LmsDbContext db, ICurrentContext context) : 
         var paths = OrgUnitPath.AncestorsAndSelf(orgUnitPath);
         var organizationId = context.OrganizationId;
 
-        // IgnoreQueryFilters: policies sit on ancestors outside the scope of the caller. Soft-delete and client
+        // ISOLATION-BYPASS: policies sit on ancestors outside the scope of the caller. Soft-delete and client
         // filters are re-applied by hand (platform admins have no client; paths are globally unique unit ids).
         return await db.Set<OrgUnitPolicy>().IgnoreQueryFilters()
             .Where(x => !x.IsDeleted && policyKeys.Contains(x.PolicyKey) && paths.Contains(x.OrgUnitPath)

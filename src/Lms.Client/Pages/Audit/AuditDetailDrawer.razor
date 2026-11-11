@@ -1,0 +1,72 @@
+@using Lms.Client.Services.Api
+@using Lms.Shared.Auditing
+@inject IAuditApi Api
+
+@* Before/after diff of one audit entry; changed values are highlighted. Values keep their own direction (dir=auto). *@
+<MudDrawer Open="Open" OpenChanged="OpenChanged" Anchor="Anchor.End" Variant="DrawerVariant.Temporary"
+           Width="min(480px, 100vw)" Elevation="4" data-testid="audit-drawer">
+    <MudDrawerHeader>
+        <MudText Typo="Typo.h6">@(Entry is null ? "" : EntityLabel(Entry))</MudText>
+    </MudDrawerHeader>
+    <MudStack Class="pa-4" Spacing="2">
+        @if (_failed)
+        {
+            <MudAlert Severity="Severity.Error" data-testid="audit-detail-error">@L["Api_Error"]</MudAlert>
+        }
+        else if (_rows is null)
+        {
+            <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+        }
+        else if (_rows.Count == 0)
+        {
+            <MudText data-testid="audit-diff-empty">@L["Common_Empty"]</MudText>
+        }
+        else
+        {
+            <MudSimpleTable Dense="true" Class="lms-audit-diff" data-testid="audit-diff">
+                <thead>
+                    <tr><th></th><th>@L["Audit_Before"]</th><th>@L["Audit_After"]</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in _rows)
+                    {
+                        <tr data-testid="@($"diff-{row.Property}")">
+                            <td dir="ltr">@row.Property</td>
+                            <td dir="auto" class="@(row.Before != row.After ? "lms-diff-before" : null)">@row.Before</td>
+                            <td dir="auto" class="@(row.Before != row.After ? "lms-diff-after" : null)">@row.After</td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        }
+        <MudButton OnClick="() => OpenChanged.InvokeAsync(false)" data-testid="audit-drawer-close">@L["Common_Close"]</MudButton>
+    </MudStack>
+</MudDrawer>
+
+@code {
+    private IReadOnlyList<AuditDiffRow>? _rows;
+    private bool _failed;
+    private Guid? _loaded;
+
+    [Parameter] public AuditEntryDto? Entry { get; set; }
+    [Parameter] public bool Open { get; set; }
+    [Parameter] public EventCallback<bool> OpenChanged { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!Open || Entry is null || _loaded == Entry.Id) return;
+        _loaded = Entry.Id; _rows = null; _failed = false;
+        try
+        {
+            var detail = await Api.GetAsync(Entry.Id);
+            _rows = AuditDiff.Rows(detail.BeforeJson, detail.AfterJson);
+        }
+        catch (HttpRequestException)
+        {
+            _failed = true;
+        }
+    }
+
+    private string EntityLabel(AuditEntryDto e) =>
+        e.Action == AuditActions.SecurityEvent ? L[$"AuditEvent_{e.EntityType}"] : L[$"AuditEntity_{e.EntityType}"];
+}

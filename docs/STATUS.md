@@ -2,8 +2,8 @@
 
 _Updated by the Team Lead after every merge cycle._
 
-**Milestone:** M0 Foundation — all code merged (18 / 19; QA closing checklist #16) · M1 Organization & Access — in progress (9 / 44 issues closed)
-**Last update:** 2026-11-11 — Merged CI fix #95 (MySQL healthcheck + E2E rate limit), contract #98 (StoredFile in audit catalog), FE clients/level-types pages #81 (closes #59). Most open PRs need `main` merged in for the CI fix. Approved and waiting for that: #88, #100, #110. QA 4/5 could not be started over Remote Control; two QA subagents review #92/#99 and #94/#100/#105. M2 plan drafted (#103).
+**Milestone:** M0 Foundation — DONE (19 / 19) · M1 Organization & Access — in progress (25 / 45 issues closed)
+**Last update:** 2026-11-11 — Merged: #119 (M1 probe suite part 1), #112 (org tree page, closes #60), #83 (level types, closes #43), #130 (revoke live pushes, closes #122), #124 (calendar, closes #57), #96 (roles admin, closes #54), #105 (notification prefs, closes #51). Next: #92, #99 (BE1, approved), #107 (BE4), #97 (BE3), #114, #116 (FE), #94 (BE2).
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |
@@ -49,6 +49,18 @@ None. (Board: [LMS v1](https://github.com/users/ziadtorkey/projects/1) — Todo 
 - M2 plan approval + 13 questions: issue #103 (draft plan on main; Lead asks via popup when M1 is near done — not blocking anything now).
 
 ## Recently merged
+- #105 notification preferences (closes #51) · #96 roles admin (closes #54) · #124 academic calendar (closes #57) · #130 revoke live pushes (closes #122) · #83 level types (closes #43) · #112 org tree page (closes #60) · #119 M1 probe suite part 1
+- #118 fix(notifications): scope live pushes to the active client (closes #93)
+- #123 refactor(api): self-registering ILmsModule
+- #126 fix(test): allow-list #102 bypasses
+- #111 test(arch): IsolationBypass guard (closes #109)
+- #102 feat(years): academic years and terms (closes #55)
+- #88 feat(auth): forwarded headers (closes #85)
+- #100 feat(settings): settings catalog API (closes #49)
+- #87/#89/#91 FE roles admin, assignments, audit viewer (closes #64–#66)
+- #90 feat(notifications): notification core, in-app center API and SignalR hub (closes #45)
+- #110 feat(audit): security audit events fanned out per client (closes #101)
+- #104 test(e2e): un-skip stale-context test
 - #81 feat(client): clients and level types pages (closes #59)
 - #98 feat(contracts): StoredFile in the audit catalog
 - #95 fix(ci): MySQL healthcheck over TCP + E2E auth rate limit

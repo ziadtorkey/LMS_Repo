@@ -53,7 +53,7 @@ public static class OrgUnitEndpoints
 
         var parent = access.Unit!;
         var code = request.Code.Trim();
-        var levelProblem = await CheckLevelAsync(db, request.LevelTypeId, parent, null, ct);
+        var levelProblem = await CheckLevelAsync(db, request.LevelTypeId, parent.OrganizationId, parent, null, ct);
         if (levelProblem is not null)
         {
             return levelProblem;
@@ -88,8 +88,12 @@ public static class OrgUnitEndpoints
 
         var unit = access.Unit!;
         var code = request.Code.Trim();
-        var parent = unit.ParentId is { } parentId ? await tree.FindVisibleAsync(parentId, ct) : null;
-        var levelProblem = await CheckLevelAsync(db, request.LevelTypeId, parent, unit, ct);
+        // The parent may lie above the caller's scope (when the unit is the caller's own scope unit), so it is read
+        // through the tree service rather than the scope-filtered query.
+        var parent = unit.ParentId is { } parentId
+            ? (await tree.GetAncestorsAndSelfAsync(unit.Path, unit.OrganizationId, ct)).FirstOrDefault(a => a.Id == parentId)
+            : null;
+        var levelProblem = await CheckLevelAsync(db, request.LevelTypeId, unit.OrganizationId, parent, unit, ct);
         if (levelProblem is not null)
         {
             return levelProblem;
@@ -171,17 +175,17 @@ public static class OrgUnitEndpoints
 
     /// <summary>The level type must belong to the client and be deeper than the parent's (and shallower than the unit's own children).</summary>
     private static async Task<IResult?> CheckLevelAsync(
-        LmsDbContext db, Guid levelTypeId, OrgUnit? parent, OrgUnit? self, CancellationToken ct)
+        LmsDbContext db, Guid levelTypeId, Guid organizationId, OrgUnit? parent, OrgUnit? self, CancellationToken ct)
     {
         var level = await db.LevelTypes.FirstOrDefaultAsync(l => l.Id == levelTypeId, ct);
-        if (level is null)
+        if (level is null || level.OrganizationId != organizationId) // a platform admin sees every client's level types
         {
             return ApiProblems.BadRequest(ProblemCodes.invalid_level_type);
         }
 
         if (parent is not null)
         {
-            var parentLevel = await db.LevelTypes.FirstOrDefaultAsync(l => l.Id == parent.LevelTypeId, ct);
+            var parentLevel = await db.LevelTypes.FirstOrDefaultAsync(l => l.Id == parent.LevelTypeId && l.OrganizationId == organizationId, ct);
             if (parentLevel is not null && level.Order <= parentLevel.Order)
             {
                 return ApiProblems.BadRequest(ProblemCodes.invalid_level_type);
