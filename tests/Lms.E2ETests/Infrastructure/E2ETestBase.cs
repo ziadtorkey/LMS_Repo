@@ -22,10 +22,15 @@ public abstract class E2ETestBase(E2EFixture fixture) : IAsyncLifetime
 
     public Task InitializeAsync() => Task.CompletedTask;
 
-    /// <summary>Opens a new context; call first in every test. Width 360 for the phone layout checks.</summary>
-    protected async Task StartAsync(int width = 1280, int height = 800, [CallerMemberName] string test = "")
+    /// <summary>
+    /// Opens a new context; call first in every test. Width 360 for the phone layout checks. With a
+    /// <paramref name="culture"/> ("ar" or "en") the browser prefers that language (server pages via Accept-Language)
+    /// and the app starts in it (stored <c>lms.culture</c>, set only if absent so a later switch still works).
+    /// </summary>
+    protected async Task StartAsync(
+        int width = 1280, int height = 800, string? culture = null, [CallerMemberName] string test = "")
     {
-        _artifacts = Path.Combine(RepoPaths.Root, "TestResults", "e2e", test);
+        _artifacts = Path.Combine(RepoPaths.Root, "TestResults", "e2e", culture is null ? test : $"{test}-{culture}");
         Directory.CreateDirectory(_artifacts);
 
         _context = await Fixture.Browser.NewContextAsync(new BrowserNewContextOptions
@@ -33,7 +38,14 @@ public abstract class E2ETestBase(E2EFixture fixture) : IAsyncLifetime
             BaseURL = Settings.BaseUrl.ToString(),
             ViewportSize = new ViewportSize { Width = width, Height = height },
             IgnoreHTTPSErrors = true,
+            Locale = culture switch { "en" => "en-US", "ar" => "ar-EG", _ => null },
         });
+        if (culture is not null)
+        {
+            await _context.AddInitScriptAsync(
+                $"if (!localStorage.getItem('lms.culture')) localStorage.setItem('lms.culture', '{culture}');");
+        }
+
         _context.SetDefaultTimeout(DefaultTimeoutMs);
         await _context.Tracing.StartAsync(new TracingStartOptions { Screenshots = true, Snapshots = true, Sources = false });
         Page = await _context.NewPageAsync();

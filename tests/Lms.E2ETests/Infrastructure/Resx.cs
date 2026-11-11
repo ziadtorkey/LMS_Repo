@@ -15,6 +15,9 @@ public static class Resx
 
     public static string En(string key) => Get(English.Value, key, "SharedResource.en");
 
+    /// <summary>The label in the given UI culture ("ar" or "en").</summary>
+    public static string In(string culture, string key) => culture == "ar" ? Ar(key) : En(key);
+
     /// <summary>Server-rendered account pages (login, password reset): <c>src/Lms.Api/Resources/AccountResource.{culture}.resx</c>.</summary>
     public static string Account(string culture, string key) =>
         Get(AccountCache.GetOrAdd(culture, c => LoadFile(Path.Combine(RepoPaths.Root, "src", "Lms.Api", "Resources", $"AccountResource.{c}.resx"))),
