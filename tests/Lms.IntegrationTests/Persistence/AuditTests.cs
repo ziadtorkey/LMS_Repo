@@ -69,7 +69,7 @@ public sealed class AuditTests(LmsApiFactory factory)
     {
         var seed = await SeedAsync("Audit2");
 
-        Assert.Empty(await EntriesForAsync(seed.Level.Id));
+        // (Level types became audited with the M1 level types module; the organization itself stays unaudited.)
         Assert.Empty(await EntriesForAsync(seed.Org.Id));
     }
 
