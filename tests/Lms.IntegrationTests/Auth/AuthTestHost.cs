@@ -26,9 +26,11 @@ internal sealed class AuthTestHost
 
     /// <param name="permitLimit">Requests per minute the auth rate limiter allows (high by default so flows can repeat).</param>
     /// <param name="remoteIp">Address the in-memory server reports; rate limit tests use their own to stay isolated.</param>
+    /// <param name="knownProxies">Addresses configured as trusted reverse proxies (none by default).</param>
     /// <param name="resetLifespan">Overrides the reset/default token lifespan (the real one is 60 minutes).</param>
     public AuthTestHost(
-        LmsApiFactory factory, int permitLimit = 1000, string remoteIp = RemoteIp, TimeSpan? resetLifespan = null)
+        LmsApiFactory factory, int permitLimit = 1000, string remoteIp = RemoteIp, TimeSpan? resetLifespan = null,
+        string[]? knownProxies = null)
     {
         Emails = new FakeEmailSender();
         // A fixed remote address: the in-memory test server has none, but login events must record one.
@@ -36,6 +38,10 @@ internal sealed class AuthTestHost
         {
             builder.UseSetting("RateLimiting:Auth:PermitLimit", permitLimit.ToString());
             builder.UseSetting("App:PublicBaseUrl", "http://localhost");
+            for (var i = 0; i < (knownProxies?.Length ?? 0); i++)
+            {
+                builder.UseSetting($"ForwardedHeaders:KnownProxies:{i}", knownProxies![i]);
+            }
             builder.ConfigureServices(services =>
         {
             services.AddSingleton<Microsoft.AspNetCore.Hosting.IStartupFilter>(new RemoteIpStartupFilter(remoteIp));
