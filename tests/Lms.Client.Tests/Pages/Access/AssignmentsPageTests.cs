@@ -37,6 +37,13 @@ public sealed class AssignmentsPageTests : ClientTestContext
         return Render<AssignmentsPage>();
     }
 
+    /// <summary>Chooses the first staff member in the assignment dialog's autocomplete.</summary>
+    private async Task PickStaffAsync()
+    {
+        var auto = _dialogs.WaitForElement("[data-testid=assign-person]") is null ? null : _dialogs.FindComponent<MudAutocomplete<Lms.Shared.People.StaffSummaryDto>>();
+        await _dialogs.InvokeAsync(() => auto!.Instance.ValueChanged.InvokeAsync(Staff.All[0].Summary));
+    }
+
     private Guid TeacherRole => _access.Roles.First(r => r.BuiltInKey == BuiltInRoles.Teacher).Id;
 
     [Fact]
@@ -92,15 +99,14 @@ public sealed class AssignmentsPageTests : ClientTestContext
         var cut = RenderPage();
 
         await cut.WaitForElement("[data-testid=assign-new]").ClickAsync(new());
-        _dialogs.WaitForElement("[data-testid=assign-email]").Change("new@x.test");
-        _dialogs.Find("[data-testid=assign-name-en]").Change("New Person");
+        await PickStaffAsync();
         await _dialogs.Find("[data-testid=assign-save]").ClickAsync(new());
 
         cut.WaitForAssertion(() => Assert.NotNull(_access.LastAssignment));
-        Assert.Equal("new@x.test", _access.LastAssignment!.Email);
-        Assert.Equal("New Person", _access.LastAssignment.DisplayNameEn);
+        Assert.Equal("sara@x.test", _access.LastAssignment!.Email);
+        Assert.Null(_access.LastAssignment.DisplayNameEn);
         Assert.Equal(FakeUnits.GroupId, _access.LastAssignment.OrgUnitId);
-        cut.WaitForAssertion(() => Assert.Contains("new@x.test", cut.Markup));
+        cut.WaitForAssertion(() => Assert.Contains("sara@x.test", cut.Markup));
     }
 
     [Fact]
@@ -110,7 +116,7 @@ public sealed class AssignmentsPageTests : ClientTestContext
         await GrantAsync(Permissions.Assignments.View, Permissions.Assignments.Create);
         var cut = RenderPage();
         await cut.WaitForElement("[data-testid=assign-new]").ClickAsync(new());
-        _dialogs.WaitForElement("[data-testid=assign-email]").Change("new@x.test");
+        await PickStaffAsync();
 
         var pickers = _dialogs.FindComponents<MudDatePicker>();
         await _dialogs.InvokeAsync(() => pickers[0].Instance.DateChanged.InvokeAsync(new DateTime(2026, 9, 10)));
@@ -130,7 +136,7 @@ public sealed class AssignmentsPageTests : ClientTestContext
         await GrantAsync(Permissions.Assignments.View, Permissions.Assignments.Create);
         var cut = RenderPage();
         await cut.WaitForElement("[data-testid=assign-new]").ClickAsync(new());
-        _dialogs.WaitForElement("[data-testid=assign-email]").Change("new@x.test");
+        await PickStaffAsync();
         _access.NextFailure = new ApiProblemException(code == "own_assignment" ? 409 : 403, code, null, null);
 
         await _dialogs.Find("[data-testid=assign-save]").ClickAsync(new());
@@ -170,7 +176,7 @@ public sealed class AssignmentsPageTests : ClientTestContext
         await GrantAsync(Permissions.Assignments.View, Permissions.Assignments.Create);
         var cut = RenderPage();
         await cut.WaitForElement("[data-testid=assign-new]").ClickAsync(new());
-        _dialogs.WaitForElement("[data-testid=assign-email]").Change("new@x.test");
+        await PickStaffAsync();
         _access.NextFailure = failure;
 
         await _dialogs.Find("[data-testid=assign-save]").ClickAsync(new());
@@ -186,7 +192,7 @@ public sealed class AssignmentsPageTests : ClientTestContext
         await GrantAsync(Permissions.Assignments.View, Permissions.Assignments.Create);
         var cut = RenderPage();
         await cut.WaitForElement("[data-testid=assign-new]").ClickAsync(new());
-        _dialogs.WaitForElement("[data-testid=assign-email]").Change("new@x.test");
+        await PickStaffAsync();
         _access.NextFailure = new HttpRequestException("offline");
 
         await _dialogs.Find("[data-testid=assign-save]").ClickAsync(new());

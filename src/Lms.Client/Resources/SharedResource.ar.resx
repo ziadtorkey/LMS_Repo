@@ -455,5 +455,8 @@
   <data name="Staff_RemoveShare" xml:space="preserve"><value>إلغاء المشاركة</value></data>
   <data name="Staff_ExpiresSoon" xml:space="preserve"><value>ينتهي خلال {0} يوم</value></data>
   <data name="Staff_ExpiredOn" xml:space="preserve"><value>انتهى في {0}</value></data>
+  <data name="Assign_Person" xml:space="preserve"><value>الموظف</value></data>
+  <data name="Assign_PersonSearch" xml:space="preserve"><value>ابحث عن موظف بالاسم أو البريد</value></data>
+  <data name="Assign_CreateStaff" xml:space="preserve"><value>إنشاء موظف جديد</value></data>
   <data name="Staff_RoleIncomplete" xml:space="preserve"><value>اختر الدور والوحدة معًا.</value></data>
 </root>
