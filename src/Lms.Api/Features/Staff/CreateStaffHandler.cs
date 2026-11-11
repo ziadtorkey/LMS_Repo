@@ -23,8 +23,8 @@ namespace Lms.Api.Features.Staff;
 /// first role assignments, in one transaction; the activation email goes out only after the commit (X-09).
 /// </summary>
 public sealed class CreateStaffHandler(
-    LmsDbContext db, IClock clock, CallerPermissions caller, IPersonDuplicateFinder duplicates, IAccountEmails emails,
-    ISettingsResolver settings, IRoleGrantGuard roleGuard, StaffQueries queries, ILogger<CreateStaffHandler> logger)
+    LmsDbContext db, IClock clock, CallerPermissions caller, IPersonDuplicateFinder duplicates,
+    IRoleGrantGuard roleGuard, StaffCreator creator, StaffQueries queries)
 {
     public async Task<IResult> HandleAsync(CreateStaffRequest request, HttpContext http, CancellationToken ct)
     {
@@ -70,31 +70,19 @@ public sealed class CreateStaffHandler(
             return AssignmentQueries.Invalid(nameof(request.PhotoFileId), "file_not_found");
         }
 
-        var existing = await db.Users.FirstOrDefaultAsync(u => u.NormalizedEmail == email.ToUpperInvariant(), ct);
-        var user = existing ?? NewUser(request, email);
-        foreach (var (role, unit, input) in targets)
-        {
-            if (existing is not null
-                && await AssignmentQueries.OverlapsAsync(db, user.Id, role.Id, unit.Id, input.ValidFrom, input.ValidTo, null, ct))
-            {
-                return ApiProblems.Conflict(ProblemCodes.assignment_exists);
-            }
-        }
-
-        if (existing is null)
-        {
-            db.Users.Add(user);
-        }
-
-        var profile = new StaffProfile(
-            home, user.Id, request.NameAr.Trim(), request.NameEn.Trim(), email, identity.Mobile, identity.NationalId,
+        var created = await creator.AddAsync(new StaffDraft(
+            home, request.NameAr.Trim(), request.NameEn.Trim(), email, identity.Mobile, identity.NationalId,
             StaffValidators.Clean(request.JobTitleAr), StaffValidators.Clean(request.JobTitleEn), request.PhotoFileId,
-            request.ExpiresOn);
-        db.Add(profile);
-        db.RoleAssignments.AddRange(targets.Select(t => new RoleAssignment(t.Unit, user.Id, t.Role.Id, t.Input.ValidFrom, t.Input.ValidTo)));
+            request.ExpiresOn, targets.Select(t => new StaffRoleDraft(t.Role, t.Unit, t.Input.ValidFrom, t.Input.ValidTo)).ToList()), ct);
+        if (created.AssignmentExists)
+        {
+            return ApiProblems.Conflict(ProblemCodes.assignment_exists);
+        }
+
         await db.SaveChangesAsync(ct);
 
-        await InviteAsync(user, home, ct);
+        await creator.InviteAsync(created.User!, home, ct);
+        var profile = created.Profile!;
         return await queries.GetAsync(profile.Id, ct, Routes.StaffMember(profile.Id));
     }
 
@@ -138,37 +126,5 @@ public sealed class CreateStaffHandler(
         }
 
         return (targets, null);
-    }
-
-    private static User NewUser(CreateStaffRequest request, string email) => new()
-    {
-        UserName = email,
-        NormalizedUserName = email.ToUpperInvariant(),
-        Email = email,
-        NormalizedEmail = email.ToUpperInvariant(),
-        DisplayNameAr = request.NameAr.Trim(),
-        DisplayNameEn = request.NameEn.Trim(),
-        SecurityStamp = Guid.NewGuid().ToString("N"),
-        ConcurrencyStamp = Guid.NewGuid().ToString("N"),
-        LockoutEnabled = true,
-    };
-
-    /// <summary>Invitation for a person who has no password yet; the profile and roles exist even if the mail fails.</summary>
-    private async Task InviteAsync(User user, OrgUnit home, CancellationToken ct)
-    {
-        if (user.PasswordHash is not null)
-        {
-            return;
-        }
-
-        try
-        {
-            var culture = (await settings.ResolveAsync(SettingKeys.UiDefaultCulture, home.Path, ct)).Value;
-            await emails.SendInvitationAsync(user, culture, ct);
-        }
-        catch (Exception ex)
-        {
-            logger.LogWarning(ex, "Invitation email to user {UserId} could not be sent", user.Id);
-        }
     }
 }

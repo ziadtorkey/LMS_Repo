@@ -72,6 +72,30 @@ public sealed class OrgTreeAdminPage(IPage page)
         await SaveDialogAsync();
     }
 
+    /// <summary>
+    /// Copies the branch under the target unit (picked by its shown name) with a code suffix and new root names; returns
+    /// the dialog's result text (units created) once the copy is done and the dialog is closed.
+    /// </summary>
+    public async Task<string> CopyBranchAsync(string code, string targetName, string suffix, string nameAr, string nameEn)
+    {
+        var id = await RevealAsync(code);
+        await page.GetByTestId($"org-copy-{id}").ClickAsync();
+        await page.GetByTestId("copy-target").ClickAsync();
+        await page.Locator(".mud-popover-open .mud-list-item")
+            .Filter(new LocatorFilterOptions { HasTextRegex = new Regex("^\\s*" + Regex.Escape(targetName) + "\\s*$") })
+            .First.ClickAsync();
+        await Field("copy-suffix").FillAsync(suffix);
+        await Field("copy-name-ar").FillAsync(nameAr);
+        await Field("copy-name-en").FillAsync(nameEn);
+        await page.GetByTestId("dialog-save").ClickAsync();
+        var result = page.GetByTestId("copy-result");
+        await result.WaitForAsync();
+        var text = await result.InnerTextAsync();
+        await page.GetByTestId("dialog-close").ClickAsync();
+        await page.GetByTestId("dialog-close").WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Detached });
+        return text;
+    }
+
     /// <summary>Clicks delete on the unit and confirms; the caller checks the outcome.</summary>
     public async Task DeleteAsync(string code)
     {
