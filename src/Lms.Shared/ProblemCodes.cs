@@ -40,4 +40,25 @@ public static class ProblemCodes
     public const string term_outside_year = nameof(term_outside_year);
     public const string event_outside_year = nameof(event_outside_year);
     public const string in_app_required = nameof(in_app_required);
+
+    // M2 people: staff (D23, D26). 409 duplicate_person carries extension `field` (email | mobile | nationalId) only.
+    public const string duplicate_person = nameof(duplicate_person);
+    public const string person_not_found = nameof(person_not_found);
+    public const string invalid_role_kind = nameof(invalid_role_kind);
+    public const string cannot_change_own_status = nameof(cannot_change_own_status);
+    public const string already_activated = nameof(already_activated);
+    public const string invalid_expiry = nameof(invalid_expiry);
+
+    // M2 imports (X-06, D34)
+    public const string import_file_invalid = nameof(import_file_invalid);
+    public const string import_too_many_rows = nameof(import_too_many_rows);
+    public const string import_not_valid = nameof(import_not_valid);
+    public const string import_in_progress = nameof(import_in_progress);
+    public const string import_already_committed = nameof(import_already_committed);
+
+    // M2 external sign-in (FR-SEC-08, D33)
+    public const string provider_slug_taken = nameof(provider_slug_taken);
+    public const string provider_unreachable = nameof(provider_unreachable);
+    public const string external_account_not_found = nameof(external_account_not_found);
+    public const string external_account_ambiguous = nameof(external_account_ambiguous);
 }

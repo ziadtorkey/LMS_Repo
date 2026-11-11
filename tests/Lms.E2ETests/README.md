@@ -36,7 +36,7 @@ Credentials are never copied into the tests: they come from the dev seed config.
 - **Selectors:** `data-testid` only (`login-*`, `app-root`, `lang-switch`, `user-menu`, `context-switcher`, `context-option-<assignmentId>`, `no-contexts`, `nav-toggle`, `nav-<key>`, `forbidden-page`). Ask FE for a test id rather than selecting by CSS or text structure.
 - **Expected text** comes from `src/Lms.Client/Resources/SharedResource.{ar,en}.resx` (`Resx.Ar/En`), never hard-coded UI strings. Seeded business data (role labels, unit names) may be literal.
 - **Isolation:** every test gets a fresh browser context (empty `localStorage`), so it starts in Arabic with no stored context. Tests share the seeded database and run sequentially (`[Collection("e2e")]`).
-- **Never break shared users:** the lockout test uses the dedicated `lockout-e2e@altagamo3.test`. That account stays locked for 15 minutes after a run, and longer across local re-runs on the same database volume. That is expected: a locked account shows the same message as an unknown one, so the test still passes. Don't "fix" it by unlocking the user in the seed.
+- **Never break shared users:** the blocked-login test uses the dedicated `deactivated-e2e`, `expired-e2e` and `withdrawn-e2e` seed users (one per blocked status). The lockout test uses the dedicated `lockout-e2e@altagamo3.test`. That account stays locked for 15 minutes after a run, and longer across local re-runs on the same database volume. That is expected: a locked account shows the same message as an unknown one, so the test still passes. Don't "fix" it by unlocking the user in the seed.
 - **Form posts that re-render the same URL** (e.g. a failed login): neither the URL, a load state nor the response event distinguishes the old document from the new one. Mark the current document before clicking and wait for a loaded document without the mark (see `LoginPage.SubmitAsync`).
 - **One E2E stack at a time** on a machine (port 5132 is the registered OIDC redirect origin). Take `e2e.lock` in the team's shared notes folder before starting compose and the API, remove it when done, and never stop another session's API (rules: `E2E-RUN-RULES.md` there).
 - **Waiting:** Playwright auto-waiting (`Expect(...)`, `WaitForURLAsync`); no fixed sleeps.
@@ -66,7 +66,14 @@ Each runs in Arabic and English (`[Theory]` with `"ar"`/`"en"`; `StartAsync(cult
 |---|---|---|
 | `Platform_admin_creates_school_group_and_university_with_first_admins` | FR-ORG-01, both sample client types, invitation sent | #92 |
 | `Org_admin_sets_password_from_invitation_email_and_logs_in` | FR-SEC-02 invitation → set password → sign in → client menu | #92 |
-| `School_admin_builds_level_types` | FR-ORG-02, School › Stage › Section in order | #92, #83 |
-| tree, transfer levels, move, delete-with-children | FR-ORG-03/04/05/09 | tree page (FE Task 25/26) + move (Task 11) — not written yet |
+| `School_admin_builds_level_types_and_tree` | FR-ORG-02/03/09: levels, School › Stage › Section tree, transfer path | #92, #83, #99, #114 |
+| `University_admin_builds_faculty_tree_and_moves_a_specialization` | FR-ORG-03/04: faculty tree, move with confirm | #99, #114 |
+| `Delete_unit_with_children_is_refused_with_message` | FR-ORG-05 | #99 |
+| `Seeded_org_admin_adds_reorders_and_deletes_a_level_type` | FR-ORG-02 | #83 |
 
 **Mailpit:** invitation and reset emails are read from Mailpit (`MailpitClient`, `LMS_E2E_MAILPIT`, default `http://localhost:8025`). Start it with the stack (`docker compose up -d --wait mysql minio mailpit`; the CI `e2e` job does). Only the link's **path and query** are used: `App:PublicBaseUrl` in Development points at the https profile, while E2E runs on `:5132`.
+
+## Scenarios (M1, plan Task 38): `M1/AuditAndNotificationsTests.cs`, `M1/YearsTests.cs`
+| Test | Covers |
+|---|---|
+| `Deactivated_user_sees_blocked_message_on_login` (ar, en × deactivated, expired, withdrawn) | FR-SEC-07: exact blocked-login copy, no session |

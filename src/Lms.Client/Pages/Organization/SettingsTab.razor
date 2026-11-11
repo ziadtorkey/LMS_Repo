@@ -1,0 +1,108 @@
+@using Lms.Client.Services.Api
+@using Lms.Shared.Configuration
+@inject IConfigApi Api
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+<MudStack Spacing="4">
+    @if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error" data-testid="settings-error">@_error</MudAlert>
+    }
+
+    @if (_loading)
+    {
+        <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+    }
+    else
+    {
+        @foreach (var category in Categories)
+        {
+            <div data-testid="@($"settings-group-{category}")">
+                <MudText Typo="Typo.h6" Class="mb-2">@L[$"SettingCategory_{category}"]</MudText>
+                <MudStack Spacing="2">
+                    @foreach (var definition in _catalog.Where(d => d.Category == category))
+                    {
+                        var name = definition.Name;
+                        var effective = _values.GetValueOrDefault(name);
+                        if (effective is null) continue;
+                        var readOnly = !CanEdit || effective.LockedByAncestor;
+                        <MudPaper Outlined="true" Class="pa-3" data-testid="@($"setting-row-{name}")">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Spacing="3">
+                                <MudText Class="flex-grow-1">@L["Setting_" + name.Replace('.', '_')]</MudText>
+                                <SettingEditor Definition="definition" Value="@effective.ValueJson" Disabled="readOnly"
+                                               Label="@L["Setting_" + name.Replace('.', '_')]"
+                                               ValueChanged="@(json => SaveAsync(effective, json, effective.DefinedHere && effective.IsLocked))" />
+                            </MudStack>
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Spacing="2">
+                                @if (effective.LockedByAncestor)
+                                {
+                                    <MudIcon Icon="@Icons.Material.Filled.Lock" Size="Size.Small" />
+                                }
+                                <MudText Typo="Typo.caption" data-testid="@($"setting-source-{name}")">@SourceText(effective)</MudText>
+                                <MudSpacer />
+                                <MudCheckBox T="bool" Value="@(effective.DefinedHere && effective.IsLocked)" Dense="true" Disabled="readOnly"
+                                             Label="@L["Settings_Lock"]" data-testid="@($"setting-lock-{name}")"
+                                             ValueChanged="@(locked => SaveAsync(effective, effective.ValueJson, locked))" />
+                                @if (effective.DefinedHere && !readOnly)
+                                {
+                                    <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="() => ResetAsync(name)"
+                                               data-testid="@($"setting-reset-{name}")">@L["Settings_Reset"]</MudButton>
+                                }
+                            </MudStack>
+                        </MudPaper>
+                    }
+                </MudStack>
+            </div>
+        }
+    }
+</MudStack>
+
+@code {
+    [Parameter, EditorRequired] public Guid UnitId { get; set; }
+    [Parameter] public bool CanEdit { get; set; }
+
+    private static readonly string[] Categories = [SettingCategories.General, SettingCategories.Files, SettingCategories.Features];
+
+    private IReadOnlyList<SettingDefinition> _catalog = [];
+    private Dictionary<string, EffectiveSettingDto> _values = [];
+    private string? _error;
+    private bool _loading = true;
+
+    protected override async Task OnParametersSetAsync() => await LoadAsync();
+
+    private Task<bool> RunAsync(Func<Task> action) => ApiCalls.RunAsync(action, Navigation, L, message => _error = message);
+
+    private async Task LoadAsync()
+    {
+        await RunAsync(async () =>
+        {
+            _catalog = await Api.GetSettingCatalogAsync();
+            _values = (await Api.GetSettingsAsync(UnitId)).ToDictionary(s => s.Name);
+        });
+        _loading = false;
+    }
+
+    private string SourceText(EffectiveSettingDto setting)
+    {
+        var name = Culture.Pick(setting.SourceNameAr ?? "", setting.SourceNameEn ?? "");
+        if (setting.LockedByAncestor) return string.Format(L["Settings_LockedBy"].Value, name);
+        if (setting.DefinedHere) return L["Settings_SetHere"];
+        if (setting.SourceOrgUnitId is null) return L["Settings_Default"];
+        return string.Format(L["Settings_InheritedFrom"].Value, name);
+    }
+
+    private async Task SaveAsync(EffectiveSettingDto setting, string valueJson, bool locked)
+    {
+        _error = null;
+        await RunAsync(() => Api.SetSettingAsync(UnitId, setting.Name, new SetSettingRequest(valueJson, locked)));
+        await LoadAsync(); // show the server state (it may also reject or normalise the value)
+    }
+
+    private async Task ResetAsync(string name)
+    {
+        _error = null;
+        await RunAsync(() => Api.RemoveSettingAsync(UnitId, name));
+        await LoadAsync();
+    }
+}

@@ -35,7 +35,14 @@ public sealed class UnitAcademicPage(IPage page, string culture)
         }
 
         await page.GetByTestId("academic-save").ClickAsync();
-        await Assertions.Expect(page.Locator(".mud-snackbar")).ToHaveCountAsync(1);
+        var saved = page.Locator(".mud-snackbar");
+        var error = page.GetByTestId("academic-error");
+        await Assertions.Expect(saved.Or(error).First).ToBeVisibleAsync(new() { Timeout = 15_000 });
+        if (await error.IsVisibleAsync())
+        {
+            throw new InvalidOperationException($"Academic save failed: {await error.InnerTextAsync()}");
+        }
+
         await page.Mouse.MoveAsync(0, 0);
     }
 }

@@ -98,8 +98,24 @@ public sealed class OrgTreeAdminPage(IPage page)
 
     private async Task SaveDialogAsync()
     {
-        await page.GetByTestId("dialog-save").ClickAsync();
-        await page.GetByTestId("dialog-save").WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Detached });
+        var save = page.GetByTestId("dialog-save");
+        await Assertions.Expect(save).ToBeEnabledAsync();
+        await save.ClickAsync();
+        var error = page.GetByTestId("dialog-error");
+        try
+        {
+            await save.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Detached, Timeout = 30_000 });
+        }
+        catch (TimeoutException)
+        {
+            if (await error.IsVisibleAsync())
+            {
+                throw new InvalidOperationException($"Dialog save failed: {await error.InnerTextAsync()}");
+            }
+
+            throw;
+        }
+
         await page.Mouse.MoveAsync(0, 0);
     }
 

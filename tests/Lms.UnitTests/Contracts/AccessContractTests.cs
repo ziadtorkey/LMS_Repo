@@ -19,6 +19,7 @@ public class AccessContractTests
         [
             "Organization", "LevelType", "OrgUnit", "Role", "RolePermission", "RoleAssignment", "OrgUnitSetting",
             "OrgUnitPolicy", "User", "OrgTemplate", "AcademicYear", "Term", "CalendarEvent", "StoredFile",
+            "StaffProfile", "StudentProfile", "GuardianProfile", "StudentGuardian", "ImportBatch", "IdentityProviderConfig",
         ], AuditCatalog.EntityTypes);
     }
 
@@ -28,8 +29,12 @@ public class AccessContractTests
         Assert.Contains("LoginSucceeded", AuditCatalog.SecurityEvents);
         Assert.Contains("LoginFailed", AuditCatalog.SecurityEvents);
         Assert.Equal(
-            ["LoginSucceeded", "LoginFailed", "PasswordResetRequested", "PasswordReset", "InvitationAccepted"],
+            ["LoginSucceeded", "LoginFailed", "PasswordResetRequested", "PasswordReset", "InvitationAccepted",
+             "ExternalLoginLinked", "ExternalLoginSucceeded", "ExternalLoginFailed"],
             AuditCatalog.SecurityEvents);
+        Assert.Equal(
+            ("ExternalLoginLinked", "ExternalLoginSucceeded", "ExternalLoginFailed"),
+            (AuditSecurityEvents.ExternalLoginLinked, AuditSecurityEvents.ExternalLoginSucceeded, AuditSecurityEvents.ExternalLoginFailed));
         Assert.Equal(AuditCatalog.SecurityEvents.Count, AuditCatalog.SecurityEvents.Distinct(StringComparer.Ordinal).Count());
         Assert.Empty(AuditCatalog.SecurityEvents.Intersect(AuditCatalog.EntityTypes, StringComparer.Ordinal));
         Assert.Equal("PasswordResetRequested", AuditSecurityEvents.PasswordResetRequested);

@@ -289,9 +289,61 @@
   <data name="Confirm_DeactivateTitle" xml:space="preserve"><value>Deactivate unit?</value></data>
   <data name="OrgTree_DeactivateOwnWarning" xml:space="preserve"><value>You are working in this unit (or in one inside it). If you deactivate it you will lose access until an administrator above it reactivates it. Continue?</value></data>
   <data name="AuditEntity_StoredFile" xml:space="preserve"><value>File</value></data>
+  <data name="Policy_CreateOrgUnits" xml:space="preserve"><value>Block creating units</value></data>
+  <data name="Policies_SetBy" xml:space="preserve"><value>Set by {0}</value></data>
+  <data name="Policies_Blocks" xml:space="preserve"><value>Blocks:</value></data>
+  <data name="Settings_Lock" xml:space="preserve"><value>Lock for units below</value></data>
+  <data name="Settings_LockedBy" xml:space="preserve"><value>Locked by {0}</value></data>
+  <data name="Settings_InheritedFrom" xml:space="preserve"><value>Inherited from {0}</value></data>
+  <data name="Settings_Default" xml:space="preserve"><value>Default</value></data>
+  <data name="Settings_SetHere" xml:space="preserve"><value>Set here</value></data>
+  <data name="Settings_Reset" xml:space="preserve"><value>Reset to inherited</value></data>
+  <data name="SettingCategory_General" xml:space="preserve"><value>General</value></data>
+  <data name="SettingCategory_Files" xml:space="preserve"><value>Files</value></data>
+  <data name="SettingCategory_Features" xml:space="preserve"><value>Features</value></data>
+  <data name="Setting_Ui_DefaultCulture" xml:space="preserve"><value>Default language</value></data>
+  <data name="Setting_Ui_ShowHijriDates" xml:space="preserve"><value>Show Hijri dates</value></data>
+  <data name="Setting_Files_MaxUploadMb" xml:space="preserve"><value>Max upload size (MB)</value></data>
+  <data name="Setting_Features_VirtualClasses" xml:space="preserve"><value>Virtual classes</value></data>
+  <data name="Setting_Features_DigitalLibrary" xml:space="preserve"><value>Digital library</value></data>
+  <data name="Setting_Features_ScormContent" xml:space="preserve"><value>SCORM content</value></data>
+  <data name="Setting_Features_Messaging" xml:space="preserve"><value>Messaging</value></data>
+  <data name="Setting_Features_GuardianPortal" xml:space="preserve"><value>Guardian portal</value></data>
+  <data name="Settings_OutOfRange" xml:space="preserve"><value>Enter a whole number between {0} and {1}.</value></data>
+  <data name="SettingValue_Ui_DefaultCulture_ar" xml:space="preserve"><value>Arabic</value></data>
+  <data name="SettingValue_Ui_DefaultCulture_en" xml:space="preserve"><value>English</value></data>
   <data name="Year_Selector" xml:space="preserve"><value>Academic year</value></data>
   <data name="Year_None" xml:space="preserve"><value>No academic year</value></data>
   <data name="Year_ReadOnly" xml:space="preserve"><value>Closed year — read only</value></data>
+  <data name="Nav_Templates" xml:space="preserve"><value>Templates</value></data>
+  <data name="Copy_Title" xml:space="preserve"><value>Copy branch</value></data>
+  <data name="Copy_Target" xml:space="preserve"><value>Copy under</value></data>
+  <data name="Copy_CodeSuffix" xml:space="preserve"><value>Code suffix</value></data>
+  <data name="Copy_IncludePolicies" xml:space="preserve"><value>Include policies</value></data>
+  <data name="Copy_IncludeSettings" xml:space="preserve"><value>Include settings</value></data>
+  <data name="Copy_Done" xml:space="preserve"><value>{0} units created.</value></data>
+  <data name="Copy_SkippedSettings" xml:space="preserve"><value>Skipped settings locked above: {0}</value></data>
+  <data name="Copy_NewRootName" xml:space="preserve"><value>New name for the copy (optional)</value></data>
+  <data name="Copy_Submit" xml:space="preserve"><value>Copy</value></data>
+  <data name="Templates_Title" xml:space="preserve"><value>Templates</value></data>
+  <data name="Templates_SaveAs" xml:space="preserve"><value>Save as template</value></data>
+  <data name="Templates_Visibility" xml:space="preserve"><value>Visibility</value></data>
+  <data name="Visibility_Private" xml:space="preserve"><value>Private to this unit</value></data>
+  <data name="Visibility_Shared" xml:space="preserve"><value>Shared across the client</value></data>
+  <data name="Templates_Placeholder" xml:space="preserve"><value>Replace &quot;{0}&quot; with placeholder</value></data>
+  <data name="Templates_Apply" xml:space="preserve"><value>Apply template</value></data>
+  <data name="Templates_Preview" xml:space="preserve"><value>Preview</value></data>
+  <data name="Templates_Units" xml:space="preserve"><value>Units</value></data>
+  <data name="Templates_UnitsCount" xml:space="preserve"><value>{0} units</value></data>
+  <data name="Templates_Owner" xml:space="preserve"><value>Owner unit</value></data>
+  <data name="Templates_Placeholders" xml:space="preserve"><value>Placeholders</value></data>
+  <data name="Templates_Replacements" xml:space="preserve"><value>Replace text with a placeholder</value></data>
+  <data name="Templates_Literal" xml:space="preserve"><value>Text to replace</value></data>
+  <data name="Templates_Token" xml:space="preserve"><value>Placeholder name</value></data>
+  <data name="Templates_TokenFormat" xml:space="preserve"><value>Use letters only, e.g. Year.</value></data>
+  <data name="Templates_AddReplacement" xml:space="preserve"><value>Add replacement</value></data>
+  <data name="Templates_Target" xml:space="preserve"><value>Create under</value></data>
+  <data name="Templates_DeleteConfirm" xml:space="preserve"><value>Delete this template?</value></data>
   <data name="Notif_Title" xml:space="preserve"><value>Notifications</value></data>
   <data name="Notif_MarkAllRead" xml:space="preserve"><value>Mark all as read</value></data>
   <data name="Notif_Empty" xml:space="preserve"><value>No notifications.</value></data>
@@ -311,4 +363,48 @@
   <data name="NotifEvent_Access_RoleAssigned" xml:space="preserve"><value>Role assigned</value></data>
   <data name="NotifEvent_Access_RoleRemoved" xml:space="preserve"><value>Role removed</value></data>
   <data name="NotifEvent_Organization_PolicyChanged" xml:space="preserve"><value>Policy changed</value></data>
+  <data name="Error_duplicate_person" xml:space="preserve"><value>A person with the same email, mobile or national ID already exists in this client.</value></data>
+  <data name="Error_person_not_found" xml:space="preserve"><value>The person was not found.</value></data>
+  <data name="Error_invalid_role_kind" xml:space="preserve"><value>This role cannot be given to this kind of person.</value></data>
+  <data name="Error_cannot_change_own_status" xml:space="preserve"><value>You cannot change your own status.</value></data>
+  <data name="Error_already_activated" xml:space="preserve"><value>This account is already activated.</value></data>
+  <data name="Error_invalid_expiry" xml:space="preserve"><value>The expiry date is not valid.</value></data>
+  <data name="Error_import_file_invalid" xml:space="preserve"><value>The file is not a valid Excel (.xlsx) file of at most 10 MB.</value></data>
+  <data name="Error_import_too_many_rows" xml:space="preserve"><value>The file has more than 5,000 data rows.</value></data>
+  <data name="Error_import_not_valid" xml:space="preserve"><value>Only a valid import can be committed.</value></data>
+  <data name="Error_import_in_progress" xml:space="preserve"><value>This import is still being processed.</value></data>
+  <data name="Error_import_already_committed" xml:space="preserve"><value>This import was already committed.</value></data>
+  <data name="Error_provider_slug_taken" xml:space="preserve"><value>Another sign-in provider already uses this short name.</value></data>
+  <data name="Error_provider_unreachable" xml:space="preserve"><value>The sign-in provider could not be reached.</value></data>
+  <data name="Error_external_account_not_found" xml:space="preserve"><value>No account in this organization matches your organization sign-in.</value></data>
+  <data name="Error_external_account_ambiguous" xml:space="preserve"><value>More than one account matches your organization sign-in. Contact your administrator.</value></data>
+  <data name="PermModule_Staff" xml:space="preserve"><value>Staff</value></data>
+  <data name="Perm_Staff_View" xml:space="preserve"><value>View staff</value></data>
+  <data name="Perm_Staff_Create" xml:space="preserve"><value>Create staff</value></data>
+  <data name="Perm_Staff_Update" xml:space="preserve"><value>Edit staff</value></data>
+  <data name="Perm_Staff_Delete" xml:space="preserve"><value>Delete staff</value></data>
+  <data name="Perm_Staff_Import" xml:space="preserve"><value>Import staff</value></data>
+  <data name="PermModule_IdentityProviders" xml:space="preserve"><value>Sign-in providers</value></data>
+  <data name="Perm_IdentityProviders_View" xml:space="preserve"><value>View sign-in providers</value></data>
+  <data name="Perm_IdentityProviders_Manage" xml:space="preserve"><value>Manage sign-in providers</value></data>
+  <data name="Policy_CreateStaff" xml:space="preserve"><value>Block creating and importing staff</value></data>
+  <data name="Policy_CreateTeachers" xml:space="preserve"><value>Block assigning the teacher role</value></data>
+  <data name="Policy_CreateAdmins" xml:space="preserve"><value>Block assigning admin roles</value></data>
+  <data name="SettingCategory_People" xml:space="preserve"><value>People</value></data>
+  <data name="Setting_Staff_ExpiryNoticeDays" xml:space="preserve"><value>Staff expiry notice (days before)</value></data>
+  <data name="AuditEntity_StaffProfile" xml:space="preserve"><value>Staff member</value></data>
+  <data name="AuditEntity_StudentProfile" xml:space="preserve"><value>Student</value></data>
+  <data name="AuditEntity_GuardianProfile" xml:space="preserve"><value>Guardian</value></data>
+  <data name="AuditEntity_StudentGuardian" xml:space="preserve"><value>Student guardian link</value></data>
+  <data name="AuditEntity_ImportBatch" xml:space="preserve"><value>Import</value></data>
+  <data name="AuditEntity_IdentityProviderConfig" xml:space="preserve"><value>Sign-in provider</value></data>
+  <data name="AuditEvent_ExternalLoginLinked" xml:space="preserve"><value>Organization account linked</value></data>
+  <data name="AuditEvent_ExternalLoginSucceeded" xml:space="preserve"><value>Successful organization sign-in</value></data>
+  <data name="AuditEvent_ExternalLoginFailed" xml:space="preserve"><value>Failed organization sign-in</value></data>
+  <data name="Notif_Staff_ExpiringSoon" xml:space="preserve"><value>The access of {StaffName} expires on {ExpiresOn}.</value></data>
+  <data name="Notif_Staff_Expired" xml:space="preserve"><value>The access of {StaffName} expired on {ExpiresOn}.</value></data>
+  <data name="Notif_Imports_Completed" xml:space="preserve"><value>Your {Kind} import finished: {Status} ({RowCount} rows).</value></data>
+  <data name="NotifEvent_Staff_ExpiringSoon" xml:space="preserve"><value>Staff access expiring soon</value></data>
+  <data name="NotifEvent_Staff_Expired" xml:space="preserve"><value>Staff access expired</value></data>
+  <data name="NotifEvent_Imports_Completed" xml:space="preserve"><value>Import finished</value></data>
 </root>

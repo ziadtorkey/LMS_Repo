@@ -9,10 +9,10 @@ using Microsoft.EntityFrameworkCore;
 namespace Lms.IntegrationTests.Security;
 
 /// <summary>
-/// Table-level and API-level isolation for every table M1 adds (M1 plan Task 35, PRD §4.2): client A never sees client B,
-/// a sibling never sees a sibling, a parent sees its descendants; user-level tables are never visible to another user.
-/// Tables still in open PRs (OrgTemplate, NotificationPreference, AcademicYear, Term, CalendarEvent, AuditEntry path
-/// visibility) are added here as they merge.
+/// API-level isolation for the M1 notification and audit tables (M1 plan Task 35, PRD §4.2): a user never sees another
+/// user's notifications, a person with two clients sees only the active client's, and the audit API shows a viewer only
+/// its own subtree. Table-level isolation of the unit-scoped tables (AcademicYear, Term, CalendarEvent, Organization,
+/// NotificationPreference, AuditEntry query) lives in <see cref="M1TableIsolationTests"/>.
 /// </summary>
 [Collection(ApiCollection.Name)]
 public sealed class M1IsolationTests(LmsApiFactory factory)
@@ -83,6 +83,40 @@ public sealed class M1IsolationTests(LmsApiFactory factory)
         Assert.DoesNotContain(rowA, asB);
     }
 
+    // ---- AuditEntry path visibility (Task 18, D20): enforced by the audit query, so checked through the API.
+
+    [Fact]
+    public async Task Audit_api_subtree_viewer_sees_only_its_subtree_and_unitless_entries_only_at_the_root()
+    {
+        var a = await AccessTestData.SeedAsync(factory, "ISA1A");
+        var b = await AccessTestData.SeedAsync(factory, "ISA1B");
+        var rootAdmin = await AccessTestData.AssignAsync(factory, a, a.Root, BuiltInRoles.OrgAdmin, Guid.NewGuid());
+        var school1Admin = await AccessTestData.AssignAsync(factory, a, a.School1, BuiltInRoles.OrgAdmin, Guid.NewGuid());
+        var clientBAdmin = await AccessTestData.AssignAsync(factory, b, b.Root, BuiltInRoles.OrgAdmin, Guid.NewGuid());
+        var entityType = "QaIsolation" + Guid.NewGuid().ToString("N")[..8];
+        var atSchool1 = await AddAuditAsync(a.Org.Id, a.School1.Path, entityType);
+        var atSchool2 = await AddAuditAsync(a.Org.Id, a.School2.Path, entityType);
+        var unitless = await AddAuditAsync(a.Org.Id, null, entityType);
+        var otherClient = await AddAuditAsync(b.Org.Id, b.Root.Path, entityType);
+        var callers = new CallerClient(factory);
+
+        Assert.Equal(
+            new[] { atSchool1, atSchool2, unitless }.Order(), (await callers.AuditIdsAsync(rootAdmin, entityType)).Order());
+        Assert.Equal([atSchool1], await callers.AuditIdsAsync(school1Admin, entityType));
+        Assert.Equal([otherClient], await callers.AuditIdsAsync(clientBAdmin, entityType));
+    }
+
+    private async Task<Guid> AddAuditAsync(Guid organizationId, string? path, string entityType)
+    {
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        var entry = new Lms.Domain.Auditing.AuditEntry(
+            organizationId, Guid.NewGuid(), null, Lms.Domain.Auditing.AuditAction.Updated, entityType, Guid.NewGuid(),
+            null, null, DateTime.UtcNow, null, path);
+        db.Add(entry);
+        await db.SaveChangesAsync();
+        return entry.Id;
+    }
+
     private async Task<Guid> AddNotificationAsync(Guid organizationId, Guid userId)
     {
         await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
@@ -106,6 +140,14 @@ public sealed class M1IsolationTests(LmsApiFactory factory)
         public async Task<List<Guid>> NotificationIdsAsync(Lms.Domain.Access.RoleAssignment who)
         {
             using var response = await SendAsync(who, HttpMethod.Get, $"{Routes.MyNotifications}?pageSize=200");
+            Assert.Equal(200, (int)response.StatusCode);
+            var page = JsonDocument.Parse(await response.Content.ReadAsStringAsync()).RootElement;
+            return page.GetProperty("items").EnumerateArray().Select(i => i.GetProperty("id").GetGuid()).ToList();
+        }
+
+        public async Task<List<Guid>> AuditIdsAsync(Lms.Domain.Access.RoleAssignment who, string entityType)
+        {
+            using var response = await SendAsync(who, HttpMethod.Get, $"{Routes.Audit}?entityType={entityType}&pageSize=200");
             Assert.Equal(200, (int)response.StatusCode);
             var page = JsonDocument.Parse(await response.Content.ReadAsStringAsync()).RootElement;
             return page.GetProperty("items").EnumerateArray().Select(i => i.GetProperty("id").GetGuid()).ToList();
