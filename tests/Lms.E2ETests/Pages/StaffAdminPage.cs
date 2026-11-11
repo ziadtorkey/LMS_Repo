@@ -39,8 +39,19 @@ public sealed class StaffAdminPage(IPage page)
     public async Task ChangeStatusAsync(string reason)
     {
         await page.GetByTestId("action-status").ClickAsync();
-        await page.Locator("input[data-testid='status-reason'], [data-testid='status-reason'] textarea, [data-testid='status-reason'] input").First.FillAsync(reason);
-        await page.GetByTestId("status-confirm").ClickAsync();
+        // A multi-line MudTextField renders two textareas (one is a hidden auto-size shadow): take the visible one.
+        await page.Locator("textarea[data-testid='status-reason'], [data-testid='status-reason'] textarea, [data-testid='status-reason'] input")
+            .Locator("visible=true").First.FillAsync(reason);
+        // The dialog closes before the request finishes; wait for the server's answer or a following navigation
+        // cancels the request mid-flight and the status is never stored.
+        var response = await page.RunAndWaitForResponseAsync(
+            async () => await page.GetByTestId("status-confirm").ClickAsync(),
+            r => r.Url.Contains("/status", StringComparison.Ordinal) && r.Request.Method == "PUT");
+        if (!response.Ok)
+        {
+            throw new InvalidOperationException($"Changing the status answered {response.Status}.");
+        }
+
         await page.GetByTestId("status-confirm").WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Detached });
     }
 
