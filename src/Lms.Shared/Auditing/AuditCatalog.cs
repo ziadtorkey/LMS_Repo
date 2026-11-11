@@ -13,6 +13,7 @@ public static class AuditSecurityEvents
     public const string ExternalLoginLinked = "ExternalLoginLinked";
     public const string ExternalLoginSucceeded = "ExternalLoginSucceeded";
     public const string ExternalLoginFailed = "ExternalLoginFailed";
+    public const string PasswordChanged = "PasswordChanged";
 }
 
 /// <summary>
@@ -40,6 +41,7 @@ public static class AuditCatalog
         AuditSecurityEvents.PasswordReset, AuditSecurityEvents.InvitationAccepted,
         AuditSecurityEvents.ExternalLoginLinked, AuditSecurityEvents.ExternalLoginSucceeded,
         AuditSecurityEvents.ExternalLoginFailed,
+        AuditSecurityEvents.PasswordChanged,
     ];
 }
 
