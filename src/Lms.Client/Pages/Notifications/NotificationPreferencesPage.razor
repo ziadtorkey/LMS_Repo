@@ -1,0 +1,98 @@
+@page "/notifications/preferences"
+@attribute [Authorize]
+@using Lms.Client.Services.Api
+@using Lms.Shared.Notifications
+@inject INotificationsApi Api
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>@L["Notif_Preferences"]</PageTitle>
+<MudText Typo="Typo.h4" Class="mb-3">@L["Notif_Preferences"]</MudText>
+
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+}
+else if (_failed)
+{
+    <MudAlert Severity="Severity.Error" data-testid="api-error">
+        @L["Api_Error"]
+        <MudButton Variant="Variant.Text" OnClick="LoadAsync">@L["Common_Retry"]</MudButton>
+    </MudAlert>
+}
+else
+{
+    @if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error" Class="mb-3" data-testid="prefs-error">@_error</MudAlert>
+    }
+    <MudSimpleTable Dense="true" Class="mb-3">
+        <thead>
+            <tr>
+                <th></th>
+                @foreach (var channel in NotificationChannels.All)
+                {
+                    <th>@L[$"Channel_{channel}"]</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var ev in _events)
+            {
+                var key = ev;
+                <tr>
+                    <td>@L[NotificationText.EventLabelKey(key)]</td>
+                    @foreach (var channel in NotificationChannels.All)
+                    {
+                        var c = channel;
+                        var pref = Find(key, c);
+                        <td>
+                            <MudSwitch T="bool" Value="pref?.Enabled ?? false" ValueChanged="v => Toggle(key, c, v)" Color="Color.Primary"
+                                       Disabled="@(pref is null || pref.Locked)"
+                                       aria-label="@($"{L[NotificationText.EventLabelKey(key)]} – {L[$"Channel_{c}"]}")"
+                                       data-testid="@($"pref-{key}-{c}")" />
+                        </td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </MudSimpleTable>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_saving" data-testid="prefs-save">@L["Common_Save"]</MudButton>
+}
+
+@code {
+    private List<NotificationPreferenceDto> _prefs = [];
+    private List<string> _events = [];
+    private bool _loading = true, _failed, _saving;
+    private string? _error;
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true; _failed = false;
+        var (prefs, failed) = await ApiCalls.RunAsync(() => Api.GetPreferencesAsync(), Navigation);
+        _failed = failed;
+        _prefs = [.. prefs ?? []];
+        _events = _prefs.Select(p => p.EventKey).Distinct(StringComparer.Ordinal).ToList();
+        _loading = false;
+    }
+
+    private NotificationPreferenceDto? Find(string eventKey, string channel) =>
+        _prefs.FirstOrDefault(p => p.EventKey == eventKey && p.Channel == channel);
+
+    private void Toggle(string eventKey, string channel, bool on)
+    {
+        var i = _prefs.FindIndex(p => p.EventKey == eventKey && p.Channel == channel);
+        if (i >= 0 && !_prefs[i].Locked) _prefs[i] = _prefs[i] with { Enabled = on };
+    }
+
+    private async Task SaveAsync()
+    {
+        _saving = true; _error = null;
+        var saved = await ActionCalls.TryAsync(() => Api.SavePreferencesAsync(new SetNotificationPreferencesRequest(_prefs)),
+            Navigation, L, m => _error = m);
+        _saving = false;
+        if (saved) Snackbar.Add(L["Common_Saved"], Severity.Success);
+    }
+}

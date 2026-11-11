@@ -35,3 +35,7 @@ html, body { margin: 0; font-family: Roboto, "Segoe UI", Tahoma, sans-serif; }
     .lms-year-select .mud-input-slot { padding-inline: 6px 0 !important; }
     .lms-context-label { max-width: 16vw; }
 }
+
+/* Notifications */
+.lms-notif-unread { font-weight: 600; }
+.lms-notif-popover { max-width: min(380px, 94vw); }

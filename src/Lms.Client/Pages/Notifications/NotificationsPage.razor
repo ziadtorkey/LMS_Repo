@@ -1,0 +1,79 @@
+@page "/notifications"
+@attribute [Authorize]
+@using System.Globalization
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Shared.Notifications
+@inject INotificationsApi Api
+@inject INotificationFeed Feed
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>@L["Notif_Title"]</PageTitle>
+
+<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3" Wrap="Wrap.Wrap">
+    <MudText Typo="Typo.h4">@L["Notif_Title"]</MudText>
+    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+        <MudSwitch T="bool" Value="_unreadOnly" ValueChanged="UnreadOnlyChangedAsync" Color="Color.Primary"
+                   Label="@L["Notif_UnreadOnly"]" data-testid="notif-only-unread" />
+        <MudButton Variant="Variant.Outlined" OnClick="MarkAllAsync" data-testid="notif-mark-all">@L["Notif_MarkAllRead"]</MudButton>
+        <MudButton Variant="Variant.Text" Href="notifications/preferences" data-testid="notif-prefs-link">@L["Notif_Preferences"]</MudButton>
+    </MudStack>
+</MudStack>
+
+<ServerTable T="NotificationDto" @ref="_table" ServerData="LoadPageAsync">
+    <HeaderContent>
+        <MudTh>@L["Notif_Message"]</MudTh>
+        <MudTh>@L["Audit_When"]</MudTh>
+        <MudTh>@L["Common_Status"]</MudTh>
+    </HeaderContent>
+    <RowTemplate Context="n">
+        <MudTd DataLabel="@L["Notif_Message"]">
+            <MudLink Typo="Typo.body2" OnClick="() => OpenAsync(n)" data-testid="@($"notif-row-{n.Id}")">
+                @NotificationText.Format(n, L, CultureInfo.CurrentUICulture)
+            </MudLink>
+        </MudTd>
+        <MudTd DataLabel="@L["Audit_When"]"><span dir="ltr">@n.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</span></MudTd>
+        <MudTd DataLabel="@L["Common_Status"]">
+            @if (!n.IsRead)
+            {
+                <MudChip T="string" Size="Size.Small" Color="Color.Primary" data-testid="@($"notif-unread-{n.Id}")">@L["Notif_Unread"]</MudChip>
+            }
+        </MudTd>
+    </RowTemplate>
+</ServerTable>
+
+@code {
+    private ServerTable<NotificationDto>? _table;
+    private bool _unreadOnly;
+
+    private async Task<TableData<NotificationDto>> LoadPageAsync(TableState state, CancellationToken ct)
+    {
+        var page = await Api.GetPageAsync(_unreadOnly, state.Page + 1, state.PageSize, ct);
+        return new TableData<NotificationDto> { Items = page.Items, TotalItems = page.Total };
+    }
+
+    private async Task ReloadAsync()
+    {
+        if (_table is not null) await _table.ReloadAsync();
+        await Feed.RefreshAsync();
+    }
+
+    private async Task UnreadOnlyChangedAsync(bool on) { _unreadOnly = on; await ReloadAsync(); }
+
+    private async Task MarkAllAsync()
+    {
+        if (await ActionCalls.TryAsync(() => Api.MarkAllReadAsync(), Navigation, L, m => Snackbar.Add(m, Severity.Error)))
+            await ReloadAsync();
+    }
+
+    private async Task OpenAsync(NotificationDto n)
+    {
+        if (!n.IsRead)
+        {
+            if (!await ActionCalls.TryAsync(() => Api.MarkReadAsync(n.Id), Navigation, L, m => Snackbar.Add(m, Severity.Error))) return;
+            await ReloadAsync();
+        }
+        if (!string.IsNullOrEmpty(n.DeepLink)) Navigation.NavigateTo(n.DeepLink.TrimStart('/'));
+    }
+}
