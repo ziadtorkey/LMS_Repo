@@ -9,7 +9,6 @@ public static class NotificationsModule
     public static IServiceCollection AddNotifications(this IServiceCollection services)
     {
         services.AddSignalR();
-        services.AddSingleton<IUserIdProvider, SubUserIdProvider>();
         services.AddSingleton<INotificationPusher, SignalRNotificationPusher>();
         services.AddTransient<IStartupFilter, HubAccessTokenStartupFilter>();
         return services;

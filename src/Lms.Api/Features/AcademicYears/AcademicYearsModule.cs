@@ -1,12 +1,18 @@
+using Lms.Api.Infrastructure;
+
 namespace Lms.Api.Features.AcademicYears;
 
-public static class AcademicYearsModule
+/// <summary>Academic years, terms and calendar endpoints (discovered automatically).</summary>
+public sealed class AcademicYearsModule : ILmsModule
 {
-    public static IEndpointRouteBuilder MapAcademicYears(this IEndpointRouteBuilder app)
+    public void AddServices(IServiceCollection services, IConfiguration configuration)
+    {
+    }
+
+    public void MapEndpoints(IEndpointRouteBuilder app)
     {
         app.MapAcademicYearEndpoints();
         app.MapTermEndpoints();
         app.MapCalendarEndpoints();
-        return app;
     }
 }

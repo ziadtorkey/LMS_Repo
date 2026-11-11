@@ -3,7 +3,6 @@ using Lms.Api.Features.Settings;
 using Lms.Api.Features.Notifications;
 using Lms.Api.Features.Account;
 using Lms.Api.Features.Auth;
-using Lms.Api.Features.AcademicYears;
 using Lms.Api.Features.Me;
 using Lms.Api.Infrastructure;
 using Lms.Infrastructure;
@@ -25,6 +24,8 @@ builder.Services.AddMe();
 builder.Services.AddSettings();
 builder.Services.AddNotifications();
 builder.Services.AddInfrastructure(builder.Configuration);
+// Feature modules implementing ILmsModule register themselves; new modules don't edit this file.
+builder.Services.AddLmsModules(builder.Configuration);
 builder.Services.AddLmsAuth(builder.Configuration, builder.Environment);
 builder.Services.AddAccount(builder.Configuration);
 builder.Services.AddLmsForwardedHeaders(builder.Configuration);
@@ -73,9 +74,9 @@ foreach (var module in app.Services.GetServices<IEndpointModule>())
 {
     module.Map(app);
 }
+app.MapLmsModules();
 
 app.MapMeEndpoints();
-app.MapAcademicYears();
 app.MapSettingEndpoints();
 app.MapNotificationEndpoints();
 
