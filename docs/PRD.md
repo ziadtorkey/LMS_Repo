@@ -352,6 +352,7 @@ All tenant-owned tables: `OrganizationId`; unit-scoped tables: `OrgUnitId`, `Org
 | D44 | Deferred from M3 | FR-TCH-03 conflict warning to M5 (timetable); FR-LP-05 module authoring to M4; the class timetable tab to M5; FR-ENR-05 grade carry-over to M5 (M3 stores only the link and setting). |
 | D45 | Default student password | If left blank a strong password is generated per student and shown once; for imports a credentials sheet is downloadable once within 15 minutes; students must change it at first sign-in. Class placement is optional on create and import ("Unplaced" filter). |
 | D46 | Blueprint authoring | Org Admins and Managers may create and edit course blueprints at their units (amends the §3.4 view-only cells); course supervisors keep it for their courses. |
+| D47 | Student sign-in names | A student signs in as `<student code>@<client short code>` (e.g. `000123@alnoor`). Every client has a short code, unique across the platform (2–20 lower-case letters, digits or hyphens; defaults to the root unit code). The full sign-in name is shown on the credentials sheet. |
 
 ---
 
