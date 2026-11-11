@@ -107,7 +107,7 @@ public sealed class TeachingProbeRows : IProbeRowModule
     /// <summary>A class course at School1 and an eligible teacher of it.</summary>
     private static async Task<Setup> ClassCourseAsync(M1ProbeWorld w)
     {
-        var year = await AcademicTestKit.AddYearAsync(w.Callers.Factory, w.Callers.A.Root);
+        var year = await AcademicTestKit.AddYearAsync(w.Callers.Factory, w.Callers.A.School1); // at School1: other rows add School1 years (D22)
         var course = await CourseAsync(w);
         var cls = await w.Callers.SendOkAsync(RootAdmin, HttpMethod.Post, Routes.Classes,
             new SaveClassRequest("TP" + w.Next() + Guid.NewGuid().ToString("N")[..6], "فصل", "Probe", w.Callers.A.School1.Id, year.Id, 20, null));
