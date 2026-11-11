@@ -60,7 +60,7 @@ public sealed class ClassesProbeRows : IProbeRowModule
     ];
 
     private static async Task<Guid> YearAsync(M1ProbeWorld w) =>
-        (await AcademicTestKit.AddYearAsync(w.Callers.Factory, w.Callers.A.Root)).Id;
+        (await AcademicTestKit.AddYearAsync(w.Callers.Factory, w.Callers.A.School1)).Id;
 
     private static async Task<SaveClassRequest> BodyAsync(M1ProbeWorld w, Guid? year = null) =>
         new("PR" + w.Next() + Guid.NewGuid().ToString("N")[..6], "فصل", "Probe class", w.Callers.A.School1.Id,
