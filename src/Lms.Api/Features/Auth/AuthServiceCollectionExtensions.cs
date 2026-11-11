@@ -78,7 +78,9 @@ public static class AuthServiceCollectionExtensions
             .AddValidation(options =>
             {
                 options.UseLocalServer();
-                options.UseAspNetCore();
+                // Tokens in URLs end up in logs and referrers, so the default ?access_token= extraction is off for the
+                // whole API; the notification hub alone gets it back through HubAccessTokenStartupFilter.
+                options.UseAspNetCore().DisableAccessTokenExtractionFromQueryString();
                 options.AddEventHandler(ValidateUserIsActiveHandler.Descriptor);
             });
 
