@@ -1,4 +1,6 @@
+using Lms.Api.Features.Enrollment.Import;
 using Lms.Api.Infrastructure;
+using Lms.Infrastructure.Imports;
 
 namespace Lms.Api.Features.Enrollment;
 
@@ -9,6 +11,7 @@ public sealed class EnrollmentModule : ILmsModule
     {
         services.AddScoped<EnrollmentRelationship>();
         services.AddScoped<EnrollmentQueries>();
+        services.AddImportDefinition<ClassStudentsImportDefinition>();
     }
 
     public void MapEndpoints(IEndpointRouteBuilder app)
