@@ -81,7 +81,7 @@ public static class AssignmentEndpoints
 
         assignment.ChangeValidity(request.ValidFrom, request.ValidTo);
         await db.SaveChangesAsync(ct);
-        return Results.Ok(await AssignmentQueries.GetAsync(db, clock, id, ct));
+        return await AssignmentQueries.GetAsync(db, clock, id, ct) is { } dto ? Results.Ok(dto) : ApiProblems.NotFound();
     }
 
     private static async Task<IResult> DeleteAsync(

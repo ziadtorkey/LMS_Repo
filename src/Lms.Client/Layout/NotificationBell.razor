@@ -1,0 +1,62 @@
+@using System.Globalization
+@using Lms.Shared.Notifications
+@implements IDisposable
+@inject INotificationFeed Feed
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+@* Bell with the unread count and the latest notifications; new ones arrive live and show a snackbar. *@
+<MudMenu @ref="_menu" AriaLabel="@L["Notif_Title"]" Color="Color.Inherit" PopoverClass="lms-notif-popover" data-testid="notif-bell">
+    <ActivatorContent>
+        <MudBadge Content="@Feed.UnreadCount" Visible="@(Feed.UnreadCount > 0)" Color="Color.Error" Overlap="true" Class="mx-1"
+                  data-testid="notif-badge">
+            <MudIconButton Icon="@Icons.Material.Filled.Notifications" Color="Color.Inherit" aria-label="@L["Notif_Title"]"
+                           OnClick="args => _menu!.ToggleMenuAsync(args)" data-testid="notif-toggle" />
+        </MudBadge>
+    </ActivatorContent>
+    <ChildContent>
+        @if (Feed.Recent.Count == 0)
+        {
+            <MudText Class="px-4 py-2" data-testid="notif-empty">@L["Notif_Empty"]</MudText>
+        }
+        @foreach (var n in Feed.Recent)
+        {
+            var item = n;
+            <MudMenuItem OnClick="() => OpenAsync(item)" data-testid="@($"notif-item-{item.Id}")">
+                <span class="@(item.IsRead ? null : "lms-notif-unread")" data-read="@(item.IsRead ? "true" : "false")">
+                    @NotificationText.Format(item, L, CultureInfo.CurrentUICulture)
+                </span>
+            </MudMenuItem>
+        }
+        <MudDivider />
+        <MudMenuItem Href="notifications" data-testid="notif-all">@L["Notif_ViewAll"]</MudMenuItem>
+    </ChildContent>
+</MudMenu>
+
+@code {
+    private MudMenu? _menu;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Feed.Changed += OnChanged;
+        Feed.Arrived += OnArrived;
+        await Feed.StartAsync();
+    }
+
+    private async Task OpenAsync(NotificationDto n)
+    {
+        await Feed.MarkReadAsync(n.Id);
+        if (!string.IsNullOrEmpty(n.DeepLink)) Navigation.NavigateTo(n.DeepLink.TrimStart('/'));
+    }
+
+    private void OnArrived(NotificationDto n) =>
+        _ = InvokeAsync(() => Snackbar.Add(NotificationText.Format(n, L, CultureInfo.CurrentUICulture), Severity.Info));
+
+    private void OnChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        Feed.Changed -= OnChanged;
+        Feed.Arrived -= OnArrived;
+    }
+}

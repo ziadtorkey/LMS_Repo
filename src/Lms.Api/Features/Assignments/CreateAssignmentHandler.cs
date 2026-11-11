@@ -1,9 +1,11 @@
-using System.Globalization;
 using System.Net.Mail;
 using Lms.Api.Infrastructure;
 using Lms.Domain.Abstractions;
 using Lms.Domain.Access;
 using Lms.Domain.Identity;
+using Lms.Domain.Organizations;
+using Lms.Infrastructure.Configuration;
+using Lms.Shared.Configuration;
 using Lms.Infrastructure.Access;
 using Lms.Infrastructure.Persistence;
 using Lms.Shared;
@@ -18,8 +20,8 @@ namespace Lms.Api.Features.Assignments;
 /// invitation; there is no user lookup, so one client cannot browse another client's users.
 /// </summary>
 public sealed class CreateAssignmentHandler(
-    LmsDbContext db, IClock clock, CallerPermissions caller, IAccountEmails emails, AssignmentNotifier notifier,
-    ILogger<CreateAssignmentHandler> logger)
+    LmsDbContext db, IClock clock, CallerPermissions caller, IAccountEmails emails, ISettingsResolver settings,
+    AssignmentNotifier notifier, ILogger<CreateAssignmentHandler> logger)
 {
     private const int MaxEmailLength = 256;
 
@@ -96,19 +98,23 @@ public sealed class CreateAssignmentHandler(
 
         if (isNew)
         {
-            await InviteAsync(user);
+            await InviteAsync(user, unit, ct);
         }
 
         await notifier.RoleAssignedAsync(assignment, role, unit, ct);
 
-        return Results.Created(Routes.Assignment(assignment.Id), await AssignmentQueries.GetAsync(db, clock, assignment.Id, ct));
+        return await AssignmentQueries.GetAsync(db, clock, assignment.Id, ct) is { } dto
+            ? Results.Created(Routes.Assignment(assignment.Id), dto)
+            : ApiProblems.NotFound();
     }
 
-    private async Task InviteAsync(User user)
+    private async Task InviteAsync(User user, OrgUnit unit, CancellationToken ct)
     {
         try
         {
-            await emails.SendInvitationAsync(user, CultureInfo.CurrentUICulture.Name);
+            // The invitee has no language yet: use the default culture of the unit they are invited to, not the admin's.
+            var culture = (await settings.ResolveAsync(SettingKeys.UiDefaultCulture, unit.Path, ct)).Value;
+            await emails.SendInvitationAsync(user, culture, ct);
         }
         catch (Exception ex)
         {
