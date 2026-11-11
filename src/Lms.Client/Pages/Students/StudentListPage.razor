@@ -58,7 +58,7 @@
     <RowTemplate Context="student">
         <MudTd><StaffAvatar PhotoFileId="student.PhotoFileId" Size="Size.Small" /></MudTd>
         <MudTd><span dir="ltr">@student.StudentCode</span></MudTd>
-        <MudTd>@Culture.Pick(student.NameAr, student.NameEn)</MudTd>
+        <MudTd><MudLink Href="@($"students/{student.Id}")" data-testid="@($"student-link-{student.Id}")">@Culture.Pick(student.NameAr, student.NameEn)</MudLink></MudTd>
         <MudTd>@L[$"Gender_{student.Gender}"]</MudTd>
         <MudTd><span dir="ltr">@student.DateOfBirth.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)</span></MudTd>
         <MudTd>@Culture.Pick(student.HomeOrgUnitNameAr, student.HomeOrgUnitNameEn)</MudTd>
