@@ -230,6 +230,8 @@ public sealed class TransferTests(LmsApiFactory factory) : IDisposable
         Assert.Equal((ProblemCodes.transfer_invalid, "different_level_type"), await Try(Request(s, differentLevel)));
         Assert.Equal((ProblemCodes.transfer_invalid, "date_outside_year"), await Try(Request(s, s.To, new DateOnly(2030, 1, 1))));
         Assert.Equal((ProblemCodes.transfer_invalid, "not_placed"), await Try(new TransferStudentRequest(unplaced.Id, s.To.Id, On, "x", false)));
+        // The old placement started on Start: the transfer must take effect after that day.
+        Assert.Equal((ProblemCodes.transfer_invalid, "date_before_placement"), await Try(Request(s, s.To, Start)));
         // A class of another academic year: the student is placed, but not in that year.
         Assert.Equal((ProblemCodes.transfer_invalid, "different_year"), await Try(Request(s, inOtherYear)));
         Assert.Equal(HttpStatusCode.BadRequest, (await SendAsync(s.Admin, HttpMethod.Post, Routes.Transfers, new TransferStudentRequest(s.Student, s.To.Id, On, " ", false))).StatusCode);
@@ -313,6 +315,35 @@ public sealed class TransferTests(LmsApiFactory factory) : IDisposable
         var recipients = await db.Set<Notification>().Where(n => n.EventKey == NotificationEvents.EnrollmentStudentTransferred
             && new[] { s.GuardianUser, s.TeacherFrom, s.TeacherTo }.Contains(n.UserId)).Select(n => n.UserId).ToListAsync();
         Assert.Equal(new[] { s.GuardianUser, s.TeacherFrom, s.TeacherTo }.Order(), recipients.Order());
+    }
+
+    [Fact]
+    public async Task Teachers_are_judged_on_the_effective_date_not_today()
+    {
+        var s = await SetUpAsync("TR12");
+        var endedBefore = (await PeopleTestKit.AddUserAsync(factory)).Id;
+        var startsAfter = (await PeopleTestKit.AddUserAsync(factory)).Id;
+        var startsOnTheDay = (await PeopleTestKit.AddUserAsync(factory)).Id;
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            var ended = new ClassCourseTeacher(s.ToA, endedBefore, ClassCourseTeacher.AssistantRole, Today);
+            ended.End(On.AddDays(-1));
+            db.AddRange(
+                ended,
+                new ClassCourseTeacher(s.ToA, startsAfter, ClassCourseTeacher.AssistantRole, On.AddDays(1)),
+                new ClassCourseTeacher(s.ToA, startsOnTheDay, ClassCourseTeacher.AssistantRole, On));
+            await db.SaveChangesAsync();
+        }
+
+        Assert.Equal(HttpStatusCode.Created, (await SendAsync(s.Admin, HttpMethod.Post, Routes.Transfers, Request(s, s.To))).StatusCode);
+
+        await using var read = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        var notified = (await read.Set<Notification>().Where(n => n.EventKey == NotificationEvents.EnrollmentStudentTransferred
+            && new[] { s.TeacherTo, endedBefore, startsAfter, startsOnTheDay }.Contains(n.UserId)).Select(n => n.UserId).ToListAsync()).ToHashSet();
+        Assert.Contains(s.TeacherTo, notified);
+        Assert.Contains(startsOnTheDay, notified); // teaches from the day of the transfer
+        Assert.DoesNotContain(endedBefore, notified); // ended the day before
+        Assert.DoesNotContain(startsAfter, notified); // starts the day after
     }
 
     [Fact]

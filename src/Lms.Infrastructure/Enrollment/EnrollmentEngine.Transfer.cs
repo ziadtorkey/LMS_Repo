@@ -98,6 +98,12 @@ public sealed partial class EnrollmentEngine
             throw Invalid("date_outside_year");
         }
 
+        // The old placement ends the day before: it must have had at least one day.
+        if (on <= old.From)
+        {
+            throw Invalid("date_before_placement");
+        }
+
         var from = await db.Set<Class>().FirstOrDefaultAsync(c => c.Id == old.ClassId, ct)
             ?? throw new KeyNotFoundException("The class the student comes from is not visible.");
         var fromUnit = await db.Set<OrgUnit>().FirstOrDefaultAsync(u => u.Id == from.OrgUnitId, ct)

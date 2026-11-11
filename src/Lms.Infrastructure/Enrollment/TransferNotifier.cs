@@ -1,5 +1,4 @@
 using System.Globalization;
-using Lms.Domain.Abstractions;
 using Lms.Domain.Classes;
 using Lms.Domain.Notifications;
 using Lms.Domain.People;
@@ -16,13 +15,12 @@ namespace Lms.Infrastructure.Enrollment;
 /// (<c>Enrollment.StudentTransferred</c>). Called after the transfer committed; a failure is logged and never undoes the transfer.
 /// </summary>
 public sealed class TransferNotifier(
-    LmsDbContext db, INotificationPublisher publisher, IClock clock, ILogger<TransferNotifier> logger)
+    LmsDbContext db, INotificationPublisher publisher, ILogger<TransferNotifier> logger)
 {
     public async Task NotifyAsync(StudentProfile student, Class from, Class to, DateOnly effectiveOn, CancellationToken ct)
     {
         try
         {
-            var today = DateOnly.FromDateTime(clock.UtcNow);
             var guardianUsers = await (
                     from link in db.Set<StudentGuardian>()
                     join guardian in db.Set<GuardianProfile>() on link.GuardianId equals guardian.Id
@@ -33,7 +31,7 @@ public sealed class TransferNotifier(
             var teachers = await (
                     from teacher in db.Set<ClassCourseTeacher>()
                     join classCourse in db.Set<ClassCourse>() on teacher.ClassCourseId equals classCourse.Id
-                    where classIds.Contains(classCourse.ClassId) && teacher.From <= today && (teacher.To == null || teacher.To >= today)
+                    where classIds.Contains(classCourse.ClassId) && teacher.From <= effectiveOn && (teacher.To == null || teacher.To >= effectiveOn)
                     select teacher.UserId)
                 .ToListAsync(ct);
 
