@@ -57,6 +57,10 @@ public sealed class ExternalSchemeRegistryTests(LmsApiFactory factory)
         Assert.False(options.MapInboundClaims);
         Assert.Contains("email", options.Scope);
         // Provider calls from the server: short timeout, never a redirect or proxy (SSRF guard, #185).
+        // Query response mode: the cookies must be SameSite=Lax, because browsers reject SameSite=None without Secure (over http)
+        Assert.Equal(Microsoft.AspNetCore.Http.SameSiteMode.Lax, options.CorrelationCookie.SameSite);
+        Assert.Equal(Microsoft.AspNetCore.Http.SameSiteMode.Lax, options.NonceCookie.SameSite);
+        Assert.Equal(Microsoft.IdentityModel.Protocols.OpenIdConnect.OpenIdConnectResponseMode.Query, options.ResponseMode);
         Assert.Equal(TimeSpan.FromSeconds(5), options.BackchannelTimeout);
         var handler = Assert.IsType<SocketsHttpHandler>(options.BackchannelHttpHandler);
         Assert.False(handler.AllowAutoRedirect);

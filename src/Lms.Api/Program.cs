@@ -62,6 +62,7 @@ app.UseStaticFiles();
 
 app.UseRequestLocalization();
 app.UseRateLimiter();
+app.UseMiddleware<ExternalSchemeResolutionMiddleware>();
 app.UseAuthentication();
 app.UseMiddleware<CurrentContextMiddleware>();
 app.UseAuthorization();

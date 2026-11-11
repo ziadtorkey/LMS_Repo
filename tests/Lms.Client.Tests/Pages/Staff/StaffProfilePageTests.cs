@@ -62,6 +62,8 @@ public sealed class StaffProfilePageTests : StaffTestContext
         Assert.Equal("rtl", layout.Find("[data-testid=app-root]").GetAttribute("dir"));
         Assert.Contains("سارة أحمد", layout.Find("[data-testid=profile-name]").TextContent);
         Assert.Equal("ltr", layout.Find("[data-testid=profile-history] span[dir=ltr]").GetAttribute("dir"));
+        // Back arrow (points left in RTL): its path starts "M20 11H7.83".
+        Assert.Contains("M20 11H7.83", layout.Find("[data-testid=history-arrow]").OuterHtml);
     }
 
     [Fact]

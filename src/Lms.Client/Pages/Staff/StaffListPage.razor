@@ -77,7 +77,16 @@
         </MudTd>
         <MudTd>@Culture.Pick(person.HomeOrgUnitNameAr, person.HomeOrgUnitNameEn)</MudTd>
         <MudTd><PersonStatusChip Status="@person.Status" /></MudTd>
-        <MudTd>@(person.ExpiresOn?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture))</MudTd>
+        <MudTd>
+            @(person.ExpiresOn?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture))
+            @if (ExpiresSoon(person) is { } days)
+            {
+                <MudTooltip Text="@L["Staff_ExpiresSoon", days]">
+                    <MudIcon Icon="@Icons.Material.Filled.WarningAmber" Color="Color.Warning" Size="Size.Small"
+                             data-testid="@($"expiry-warning-{person.Id}")" aria-label="@L["Staff_ExpiresSoon", days]" />
+                </MudTooltip>
+            }
+        </MudTd>
     </RowTemplate>
 </ServerTable>
 
@@ -107,6 +116,14 @@
             string.IsNullOrWhiteSpace(_searchText) ? null : _searchText.Trim(), true, null, state.Page + 1, state.PageSize);
         var result = await Api.ListAsync(query, ct);
         return new TableData<StaffSummaryDto> { Items = result.Items, TotalItems = result.Total };
+    }
+
+    /// <summary>Days left when an active person's last usable day is within 14 days (incl. today); otherwise null.</summary>
+    private static int? ExpiresSoon(StaffSummaryDto person)
+    {
+        if (person.Status != PersonStatuses.Active || person.ExpiresOn is not { } on) return null;
+        var days = on.DayNumber - DateOnly.FromDateTime(DateTime.Today).DayNumber;
+        return days is >= 0 and <= 14 ? days : null;
     }
 
     private Task OnSearchChanged(string? text) { _searchText = text; return _table.ReloadAsync(); }
