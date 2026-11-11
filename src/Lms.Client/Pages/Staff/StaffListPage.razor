@@ -58,7 +58,7 @@
         <MudTh>@L["Staff_ExpiresOn"]</MudTh>
     </HeaderContent>
     <RowTemplate Context="person">
-        <MudTd><MudAvatar Size="Size.Small"><MudIcon Icon="@Icons.Material.Filled.Person" /></MudAvatar></MudTd>
+        <MudTd><StaffAvatar PhotoFileId="person.PhotoFileId" Size="Size.Small" /></MudTd>
         <MudTd>
             <MudLink Href="@($"staff/{person.Id}")" data-testid="@($"staff-link-{person.Id}")">@Culture.Pick(person.NameAr, person.NameEn)</MudLink>
         </MudTd>
