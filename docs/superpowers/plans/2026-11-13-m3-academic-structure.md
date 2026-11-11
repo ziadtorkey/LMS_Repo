@@ -1,6 +1,6 @@
 # M3 Academic Structure Implementation Plan
 
-> **Status: DRAFT — awaiting product owner approval.** Open questions are at the end ("Open questions for the product owner"); every one has a recommended default the plan already assumes. Team: Lead, BE1, BE2, BE3, BE4, FE1, FE2, QA1, QA2, QA3.
+> **Status: APPROVED (product owner, 2026-11-11) with decisions D37–D46 (open questions answered with the recommended defaults; blueprint authoring for Org Admins and Managers per D46).** Open questions are at the end ("Open questions for the product owner"); every one has a recommended default the plan already assumes. Team: Lead, BE1, BE2, BE3, BE4, FE1, FE2, QA1, QA2, QA3.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking. In this project each task = one GitHub issue and one PR; the lane (Lead contract / BE1–BE4 / FE1–FE2 / QA1–QA3) is marked on each task.
 
