@@ -150,7 +150,14 @@ public sealed class M2EndpointMatrixTests(LmsApiFactory factory, ITestOutputHelp
             .OfType<RouteEndpoint>()
             .Where(e => e.RoutePattern.RawText is { } raw && raw.StartsWith("/api", StringComparison.OrdinalIgnoreCase))
             .SelectMany(e => (e.Metadata.GetMetadata<HttpMethodMetadata>()?.HttpMethods ?? ["*"])
-                .Select(m => (m, e.RoutePattern.RawText!)));
+                .Select(m => (m, GenericKind(e.RoutePattern.RawText!))));
+
+    /// <summary>
+    /// Import routes are mapped once per kind (<c>/api/imports/staff/...</c>); the matrix describes them by the generic
+    /// <c>/api/imports/{kind}/...</c> pattern, because the rules are the framework's and every kind shares them.
+    /// </summary>
+    private static string GenericKind(string pattern) =>
+        System.Text.RegularExpressions.Regex.Replace(pattern, @"^/api/imports/(?!\{)[A-Za-z0-9-]+", "/api/imports/{kind}");
 
     private static string Key(string method, string pattern) => $"{method.ToUpperInvariant()} {pattern}";
 
