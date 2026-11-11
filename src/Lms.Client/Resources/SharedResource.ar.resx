@@ -829,4 +829,10 @@
   <data name="Flag_Inherit" xml:space="preserve"><value>وراثة ({0})</value></data>
   <data name="Flag_On" xml:space="preserve"><value>تشغيل</value></data>
   <data name="Flag_Off" xml:space="preserve"><value>إيقاف</value></data>
+  <data name="TransferReject_not_placed" xml:space="preserve"><value>الطالب غير موضوع في فصل، فلا يوجد ما يُنقل منه.</value></data>
+  <data name="TransferReject_different_year" xml:space="preserve"><value>الفصل الجديد تابع لعام دراسي مختلف.</value></data>
+  <data name="TransferReject_same_class" xml:space="preserve"><value>الطالب موجود بالفعل في هذا الفصل.</value></data>
+  <data name="TransferReject_date_outside_year" xml:space="preserve"><value>تاريخ النقل خارج العام الدراسي.</value></data>
+  <data name="TransferReject_date_before_placement" xml:space="preserve"><value>تاريخ النقل قبل انضمام الطالب إلى فصله الحالي.</value></data>
+  <data name="TransferReject_different_level_type" xml:space="preserve"><value>النقل إلى وحدة أخرى يتطلب فصلًا من نفس نوع المستوى.</value></data>
 </root>
