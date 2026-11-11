@@ -21,7 +21,7 @@ public partial class AuthorizationContractTests
     }
 
     [Fact]
-    public void Permission_catalog_contains_exactly_the_M0_and_M1_set()
+    public void Permission_catalog_contains_exactly_the_M0_M1_and_M2_set()
     {
         string[] expected =
         [
@@ -34,6 +34,8 @@ public partial class AuthorizationContractTests
             "LevelTypes.View", "LevelTypes.Create", "LevelTypes.Update", "LevelTypes.Delete",
             "Templates.View", "Templates.Create", "Templates.Delete", "Templates.Apply",
             "AcademicYears.View", "AcademicYears.Create", "AcademicYears.Update", "AcademicYears.Delete",
+            "Staff.View", "Staff.Create", "Staff.Update", "Staff.Delete", "Staff.Import",
+            "IdentityProviders.View", "IdentityProviders.Manage",
         ];
         Assert.Equal(expected.Order(StringComparer.Ordinal), Permissions.All.Order(StringComparer.Ordinal));
     }
