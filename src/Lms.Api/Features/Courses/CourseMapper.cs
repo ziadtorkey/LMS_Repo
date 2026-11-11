@@ -35,6 +35,20 @@ internal sealed class CourseMapper(LmsDbContext db, IOrgTree tree, ICurrentConte
         }).ToList();
     }
 
+    public async Task<IReadOnlyList<CourseSupervisorDto>> SupervisorsAsync(Guid courseId, CancellationToken ct)
+    {
+        var supervisorRows = await db.Set<CourseSupervisor>().Where(s => s.CourseId == courseId).Select(s => s.UserId).ToListAsync(ct);
+        var staff = supervisorRows.Count == 0
+            ? []
+            : await db.Set<StaffProfile>().Where(p => supervisorRows.Contains(p.UserId))
+                .Select(p => new { p.UserId, p.NameAr, p.NameEn, p.Email }).ToListAsync(ct);
+        return supervisorRows.Select(userId =>
+        {
+            var profile = staff.FirstOrDefault(p => p.UserId == userId);
+            return new CourseSupervisorDto(userId, profile?.NameAr ?? string.Empty, profile?.NameEn ?? string.Empty, profile?.Email);
+        }).ToList();
+    }
+
     public async Task<CourseDetailDto> DetailAsync(CourseView view, bool canEdit, CancellationToken ct)
     {
         var course = view.Course;
@@ -42,16 +56,7 @@ internal sealed class CourseMapper(LmsDbContext db, IOrgTree tree, ICurrentConte
         var restrictions = (await db.Set<CourseRestriction>().Where(r => r.CourseId == course.Id).OrderBy(r => r.Type).ToListAsync(ct))
             .Select(r => new CourseRestrictionDto(r.Type, r.Values)).ToList();
 
-        var supervisorRows = await db.Set<CourseSupervisor>().Where(s => s.CourseId == course.Id).Select(s => s.UserId).ToListAsync(ct);
-        var staff = supervisorRows.Count == 0
-            ? []
-            : await db.Set<StaffProfile>().Where(p => supervisorRows.Contains(p.UserId))
-                .Select(p => new { p.UserId, p.NameAr, p.NameEn, p.Email }).ToListAsync(ct);
-        var supervisors = supervisorRows.Select(userId =>
-        {
-            var profile = staff.FirstOrDefault(p => p.UserId == userId);
-            return new CourseSupervisorDto(userId, profile?.NameAr ?? string.Empty, profile?.NameEn ?? string.Empty, profile?.Email);
-        }).ToList();
+        var supervisors = await SupervisorsAsync(course.Id, ct);
 
         return new CourseDetailDto(summary, course.DescriptionAr, course.DescriptionEn, restrictions, supervisors, canEdit);
     }
