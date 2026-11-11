@@ -140,6 +140,23 @@
   <data name="Roles_Name" xml:space="preserve"><value>Role</value></data>
   <data name="Roles_Permissions" xml:space="preserve"><value>Permissions</value></data>
   <data name="Roles_DeleteConfirm" xml:space="preserve"><value>Delete the role {0}?</value></data>
+  <data name="Nav_Assignments" xml:space="preserve"><value>Role assignments</value></data>
+  <data name="Assignments_Title" xml:space="preserve"><value>Role assignments</value></data>
+  <data name="Assignments_Assign" xml:space="preserve"><value>Assign role</value></data>
+  <data name="Assignments_Email" xml:space="preserve"><value>Email</value></data>
+  <data name="Assignments_NewUserHint" xml:space="preserve"><value>Names are used only if this email has no account yet; the person gets an invitation.</value></data>
+  <data name="Assignments_ValidFrom" xml:space="preserve"><value>Valid from</value></data>
+  <data name="Assignments_ValidTo" xml:space="preserve"><value>Valid to</value></data>
+  <data name="Assignments_IncludeBelow" xml:space="preserve"><value>Include units below</value></data>
+  <data name="AssignmentStatus_Valid" xml:space="preserve"><value>Valid</value></data>
+  <data name="AssignmentStatus_Future" xml:space="preserve"><value>Not yet valid</value></data>
+  <data name="AssignmentStatus_Expired" xml:space="preserve"><value>Expired</value></data>
+  <data name="Assignments_RemoveConfirm" xml:space="preserve"><value>Remove this role from {0}?</value></data>
+  <data name="Assignments_Person" xml:space="preserve"><value>Person</value></data>
+  <data name="Assignments_Role" xml:space="preserve"><value>Role</value></data>
+  <data name="Assignments_Unit" xml:space="preserve"><value>Unit</value></data>
+  <data name="Assignments_EditValidity" xml:space="preserve"><value>Edit validity</value></data>
+  <data name="Assignments_DateOrder" xml:space="preserve"><value>Valid to must not be before valid from.</value></data>
   <data name="Table_RowsPerPage" xml:space="preserve"><value>Rows per page:</value></data>
   <data name="Table_InfoFormat" xml:space="preserve"><value>{first_item}-{last_item} of {all_items}</value></data>
   <data name="MudTablePager_FirstPage" xml:space="preserve"><value>First page</value></data>
