@@ -22,32 +22,36 @@ public sealed class SettingsResolver(LmsDbContext db, ICurrentContext context) :
             : new ResolvedSetting<T>(JsonSerializer.Deserialize<T>(winner.ValueJson)!, winner.OrgUnitId, winner.IsLocked);
     }
 
-    public async Task SetAsync<T>(
-        SettingKey<T> key, Guid orgUnitId, T value, bool isLocked, CancellationToken cancellationToken = default)
+    public Task SetAsync<T>(
+        SettingKey<T> key, Guid orgUnitId, T value, bool isLocked, CancellationToken cancellationToken = default) =>
+        SetJsonAsync(key.Name, orgUnitId, JsonSerializer.Serialize(value), isLocked, cancellationToken);
+
+    public async Task SetJsonAsync(
+        string name, Guid orgUnitId, string valueJson, bool isLocked, CancellationToken cancellationToken = default)
     {
         // Through the filtered set: the caller can only write inside its own scope.
         var unit = await db.OrgUnits.SingleOrDefaultAsync(x => x.Id == orgUnitId, cancellationToken)
             ?? throw new InvalidOperationException("Org unit not found in the current scope.");
 
         var strictAncestors = OrgUnitPath.AncestorsAndSelf(unit.Path).SkipLast(1).ToList();
-        var rows = await LoadRowsAsync(key.Name, strictAncestors, unit.OrganizationId, cancellationToken);
+        var rows = await LoadRowsAsync(name, strictAncestors, unit.OrganizationId, cancellationToken);
         var locking = rows.FirstOrDefault(r => r.IsLocked);
         if (locking is not null)
         {
             throw new SettingLockedException(locking.OrgUnitId);
         }
 
-        var json = JsonSerializer.Serialize(value);
+        var json = valueJson;
         // ISOLATION-BYPASS: only to see soft-deleted rows: the unique (OrgUnitId, Key) index still holds them, so
         // setting the key again must restore the old row instead of inserting. The unit was already resolved through
         // the scoped set above, and the client is re-applied explicitly.
         var existing = await db.Set<OrgUnitSetting>().IgnoreQueryFilters()
             .SingleOrDefaultAsync(
-                x => x.OrganizationId == unit.OrganizationId && x.OrgUnitId == orgUnitId && x.Key == key.Name,
+                x => x.OrganizationId == unit.OrganizationId && x.OrgUnitId == orgUnitId && x.Key == name,
                 cancellationToken);
         if (existing is null)
         {
-            db.Add(new OrgUnitSetting(unit.OrganizationId, unit.Id, unit.Path, key.Name, json, isLocked));
+            db.Add(new OrgUnitSetting(unit.OrganizationId, unit.Id, unit.Path, name, json, isLocked));
         }
         else
         {
@@ -60,6 +64,22 @@ public sealed class SettingsResolver(LmsDbContext db, ICurrentContext context) :
         }
 
         await db.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<bool> RemoveAsync(string name, Guid orgUnitId, CancellationToken cancellationToken = default)
+    {
+        // Through the filtered sets: only units and rows inside the scope of the caller, and only live rows.
+        _ = await db.OrgUnits.SingleOrDefaultAsync(x => x.Id == orgUnitId, cancellationToken)
+            ?? throw new InvalidOperationException("Org unit not found in the current scope.");
+        var row = await db.Set<OrgUnitSetting>().SingleOrDefaultAsync(x => x.OrgUnitId == orgUnitId && x.Key == name, cancellationToken);
+        if (row is null)
+        {
+            return false;
+        }
+
+        db.Remove(row); // soft delete
+        await db.SaveChangesAsync(cancellationToken);
+        return true;
     }
 
     private async Task<List<OrgUnitSetting>> LoadAncestorRowsAsync(string key, string path, CancellationToken ct)

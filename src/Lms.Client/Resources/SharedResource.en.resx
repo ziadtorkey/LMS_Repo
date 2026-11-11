@@ -85,6 +85,78 @@
   <data name="Error_term_outside_year" xml:space="preserve"><value>The term must fall inside the academic year.</value></data>
   <data name="Error_event_outside_year" xml:space="preserve"><value>The event must fall inside the academic year.</value></data>
   <data name="Error_in_app_required" xml:space="preserve"><value>In-app notifications cannot be turned off.</value></data>
+  <data name="PermModule_OrgUnits" xml:space="preserve"><value>Organization</value></data>
+  <data name="Perm_OrgUnits_View" xml:space="preserve"><value>View units</value></data>
+  <data name="Perm_OrgUnits_Create" xml:space="preserve"><value>Create units</value></data>
+  <data name="Perm_OrgUnits_Update" xml:space="preserve"><value>Edit units</value></data>
+  <data name="Perm_OrgUnits_Delete" xml:space="preserve"><value>Delete units</value></data>
+  <data name="Perm_OrgUnits_Move" xml:space="preserve"><value>Move units</value></data>
+  <data name="PermModule_Roles" xml:space="preserve"><value>Roles</value></data>
+  <data name="Perm_Roles_View" xml:space="preserve"><value>View roles</value></data>
+  <data name="Perm_Roles_Create" xml:space="preserve"><value>Create roles</value></data>
+  <data name="Perm_Roles_Update" xml:space="preserve"><value>Edit roles</value></data>
+  <data name="Perm_Roles_Delete" xml:space="preserve"><value>Delete roles</value></data>
+  <data name="PermModule_Assignments" xml:space="preserve"><value>Role assignments</value></data>
+  <data name="Perm_Assignments_View" xml:space="preserve"><value>View role assignments</value></data>
+  <data name="Perm_Assignments_Create" xml:space="preserve"><value>Create role assignments</value></data>
+  <data name="Perm_Assignments_Update" xml:space="preserve"><value>Edit role assignments</value></data>
+  <data name="Perm_Assignments_Delete" xml:space="preserve"><value>Delete role assignments</value></data>
+  <data name="PermModule_Settings" xml:space="preserve"><value>Settings</value></data>
+  <data name="Perm_Settings_View" xml:space="preserve"><value>View settings</value></data>
+  <data name="Perm_Settings_Update" xml:space="preserve"><value>Edit settings</value></data>
+  <data name="PermModule_Policies" xml:space="preserve"><value>Policies</value></data>
+  <data name="Perm_Policies_View" xml:space="preserve"><value>View policies</value></data>
+  <data name="Perm_Policies_Update" xml:space="preserve"><value>Edit policies</value></data>
+  <data name="PermModule_Audit" xml:space="preserve"><value>Audit log</value></data>
+  <data name="Perm_Audit_View" xml:space="preserve"><value>View audit log</value></data>
+  <data name="Perm_Audit_Export" xml:space="preserve"><value>Export audit log</value></data>
+  <data name="PermModule_Files" xml:space="preserve"><value>Files</value></data>
+  <data name="Perm_Files_Upload" xml:space="preserve"><value>Upload files</value></data>
+  <data name="Perm_Files_Download" xml:space="preserve"><value>Download files</value></data>
+  <data name="PermModule_LevelTypes" xml:space="preserve"><value>Level types</value></data>
+  <data name="Perm_LevelTypes_View" xml:space="preserve"><value>View level types</value></data>
+  <data name="Perm_LevelTypes_Create" xml:space="preserve"><value>Create level types</value></data>
+  <data name="Perm_LevelTypes_Update" xml:space="preserve"><value>Edit level types</value></data>
+  <data name="Perm_LevelTypes_Delete" xml:space="preserve"><value>Delete level types</value></data>
+  <data name="PermModule_Templates" xml:space="preserve"><value>Templates</value></data>
+  <data name="Perm_Templates_View" xml:space="preserve"><value>View templates</value></data>
+  <data name="Perm_Templates_Create" xml:space="preserve"><value>Create templates</value></data>
+  <data name="Perm_Templates_Delete" xml:space="preserve"><value>Delete templates</value></data>
+  <data name="Perm_Templates_Apply" xml:space="preserve"><value>Apply templates</value></data>
+  <data name="PermModule_AcademicYears" xml:space="preserve"><value>Academic years</value></data>
+  <data name="Perm_AcademicYears_View" xml:space="preserve"><value>View academic years</value></data>
+  <data name="Perm_AcademicYears_Create" xml:space="preserve"><value>Create academic years</value></data>
+  <data name="Perm_AcademicYears_Update" xml:space="preserve"><value>Edit academic years</value></data>
+  <data name="Perm_AcademicYears_Delete" xml:space="preserve"><value>Delete academic years</value></data>
+  <data name="Roles_Title" xml:space="preserve"><value>Roles and permissions</value></data>
+  <data name="Roles_New" xml:space="preserve"><value>New role</value></data>
+  <data name="Roles_BuiltIn" xml:space="preserve"><value>Built-in</value></data>
+  <data name="Roles_BaseKind" xml:space="preserve"><value>Base kind</value></data>
+  <data name="BaseKind_Staff" xml:space="preserve"><value>Staff</value></data>
+  <data name="BaseKind_Student" xml:space="preserve"><value>Student</value></data>
+  <data name="BaseKind_Guardian" xml:space="preserve"><value>Guardian</value></data>
+  <data name="Roles_Assignments" xml:space="preserve"><value>Assignments</value></data>
+  <data name="Roles_SelectModule" xml:space="preserve"><value>Select all</value></data>
+  <data name="Roles_Name" xml:space="preserve"><value>Role</value></data>
+  <data name="Roles_Permissions" xml:space="preserve"><value>Permissions</value></data>
+  <data name="Roles_DeleteConfirm" xml:space="preserve"><value>Delete the role {0}?</value></data>
+  <data name="Nav_Assignments" xml:space="preserve"><value>Role assignments</value></data>
+  <data name="Assignments_Title" xml:space="preserve"><value>Role assignments</value></data>
+  <data name="Assignments_Assign" xml:space="preserve"><value>Assign role</value></data>
+  <data name="Assignments_Email" xml:space="preserve"><value>Email</value></data>
+  <data name="Assignments_NewUserHint" xml:space="preserve"><value>Names are used only if this email has no account yet; the person gets an invitation.</value></data>
+  <data name="Assignments_ValidFrom" xml:space="preserve"><value>Valid from</value></data>
+  <data name="Assignments_ValidTo" xml:space="preserve"><value>Valid to</value></data>
+  <data name="Assignments_IncludeBelow" xml:space="preserve"><value>Include units below</value></data>
+  <data name="AssignmentStatus_Valid" xml:space="preserve"><value>Valid</value></data>
+  <data name="AssignmentStatus_Future" xml:space="preserve"><value>Not yet valid</value></data>
+  <data name="AssignmentStatus_Expired" xml:space="preserve"><value>Expired</value></data>
+  <data name="Assignments_RemoveConfirm" xml:space="preserve"><value>Remove this role from {0}?</value></data>
+  <data name="Assignments_Person" xml:space="preserve"><value>Person</value></data>
+  <data name="Assignments_Role" xml:space="preserve"><value>Role</value></data>
+  <data name="Assignments_Unit" xml:space="preserve"><value>Unit</value></data>
+  <data name="Assignments_EditValidity" xml:space="preserve"><value>Edit validity</value></data>
+  <data name="Assignments_DateOrder" xml:space="preserve"><value>Valid to must not be before valid from.</value></data>
   <data name="Table_RowsPerPage" xml:space="preserve"><value>Rows per page:</value></data>
   <data name="Table_InfoFormat" xml:space="preserve"><value>{first_item}-{last_item} of {all_items}</value></data>
   <data name="MudTablePager_FirstPage" xml:space="preserve"><value>First page</value></data>
@@ -95,4 +167,34 @@
   <data name="Error_OutOfScope" xml:space="preserve"><value>This item is outside your scope.</value></data>
   <data name="Error_invalid_context" xml:space="preserve"><value>Your selected role is no longer valid. Please choose a role again.</value></data>
   <data name="Error_context_required" xml:space="preserve"><value>Please choose a role first.</value></data>
+  <data name="Clients_Title" xml:space="preserve"><value>Clients</value></data>
+  <data name="Clients_New" xml:space="preserve"><value>New client</value></data>
+  <data name="Clients_Type" xml:space="preserve"><value>Type</value></data>
+  <data name="ClientType_SchoolGroup" xml:space="preserve"><value>School group</value></data>
+  <data name="ClientType_University" xml:space="preserve"><value>University</value></data>
+  <data name="ClientStatus_Active" xml:space="preserve"><value>Active</value></data>
+  <data name="ClientStatus_Suspended" xml:space="preserve"><value>Suspended</value></data>
+  <data name="Clients_RootLevel" xml:space="preserve"><value>First level name</value></data>
+  <data name="Clients_RootCode" xml:space="preserve"><value>Root unit code</value></data>
+  <data name="Clients_AdminEmail" xml:space="preserve"><value>Admin email</value></data>
+  <data name="Clients_AdminName" xml:space="preserve"><value>Admin name</value></data>
+  <data name="Clients_Created" xml:space="preserve"><value>Client created. An invitation was sent to the admin.</value></data>
+  <data name="Nav_LevelTypes" xml:space="preserve"><value>Level types</value></data>
+  <data name="LevelTypes_Title" xml:space="preserve"><value>Level types</value></data>
+  <data name="LevelTypes_CanHostClasses" xml:space="preserve"><value>Can host classes</value></data>
+  <data name="LevelTypes_MoveUp" xml:space="preserve"><value>Move up</value></data>
+  <data name="LevelTypes_MoveDown" xml:space="preserve"><value>Move down</value></data>
+  <data name="LevelTypes_Units" xml:space="preserve"><value>Units</value></data>
+  <data name="Clients_Name" xml:space="preserve"><value>Client name</value></data>
+  <data name="Clients_Suspend" xml:space="preserve"><value>Suspend</value></data>
+  <data name="Clients_Activate" xml:space="preserve"><value>Activate</value></data>
+  <data name="Clients_CreatedOn" xml:space="preserve"><value>Created</value></data>
+  <data name="LevelTypes_New" xml:space="preserve"><value>New level type</value></data>
+  <data name="LevelTypes_Order" xml:space="preserve"><value>Order</value></data>
+  <data name="Common_InvalidEmail" xml:space="preserve"><value>Enter a valid email address.</value></data>
+  <data name="Common_InvalidCode" xml:space="preserve"><value>Use letters, digits, dash or underscore (max 50).</value></data>
+  <data name="Common_Name" xml:space="preserve"><value>Name</value></data>
+  <data name="LevelTypes_OutOfScope" xml:space="preserve"><value>This can only be changed at the top level of the organization.</value></data>
+  <data name="Common_Yes" xml:space="preserve"><value>Yes</value></data>
+  <data name="Common_No" xml:space="preserve"><value>No</value></data>
 </root>
