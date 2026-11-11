@@ -68,6 +68,8 @@ internal sealed class AuthTestHost
 
     public IServiceProvider Services => _host.Services;
 
+    public Microsoft.AspNetCore.TestHost.TestServer Server => _host.Server;
+
     public HttpClient NewBrowser() => _host.CreateClient(
         new WebApplicationFactoryClientOptions { AllowAutoRedirect = false, HandleCookies = true });
 
