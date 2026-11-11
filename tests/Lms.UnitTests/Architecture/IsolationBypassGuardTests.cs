@@ -25,6 +25,8 @@ public sealed class IsolationBypassGuardTests
             "effective settings and locks inherited from ancestors above the caller's scope (M1 Task 14, #100)",
         ["src/Lms.Infrastructure/Organizations/OrgPolicyReader.cs"] =
             "policies set on ancestors above the caller's scope, to show blocked permissions in the org tree (M1 Task 9, #99)",
+        ["src/Lms.Api/Features/OrgUnits/AcademicFlagsHandler.cs"] =
+            "read-only check of the client's level-transfer units (chains and references run through units the caller cannot see) (M1 Task 13, #48)",
         ["src/Lms.Api/Features/LevelTypes/LevelTypeEndpoints.cs"] =
             "level types are client-wide, so the in-use count covers the whole client, not the caller subtree (M1 Task 8, #83)",
         ["src/Lms.Infrastructure/Notifications/NotificationRecipientResolver.cs"] =
