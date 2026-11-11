@@ -41,7 +41,11 @@
   <data name="ImportError_invalid_mobile" xml:space="preserve"><value>أدخل رقم جوال صحيحًا، مثل ‎+201001234567.</value></data>
   <data name="ImportError_invalid_national_id" xml:space="preserve"><value>يجب أن يتكون رقم الهوية من 5 إلى 20 حرفًا أو رقمًا.</value></data>
   <data name="ImportError_duplicate_person" xml:space="preserve"><value>هذا الشخص موجود بالفعل في هذه الجهة (نفس القيمة: {field}).</value></data>
+  <data name="ImportError_unknown_role" xml:space="preserve"><value>لا يوجد دور باسم "{value}".</value></data>
+  <data name="ImportError_invalid_role_kind" xml:space="preserve"><value>لا يمكن منح هذا الدور للموظفين من هنا.</value></data>
+  <data name="ImportError_permission_escalation" xml:space="preserve"><value>لا يمكنك منح دور بصلاحيات لا تملكها.</value></data>
   <data name="ImportError_blocked_by_policy" xml:space="preserve"><value>محظور بسياسة الوحدة الأعلى</value></data>
+  <data name="ImportError_invalid_expiry" xml:space="preserve"><value>يجب أن يكون تاريخ الانتهاء اليوم أو بعده.</value></data>
   <data name="ImportError_invalid_level_type" xml:space="preserve"><value>يُسجَّل الطلاب في وحدات تستضيف الفصول، وهذه الوحدة ليست كذلك.</value></data>
   <data name="ImportError_possible_duplicate" xml:space="preserve"><value>يوجد طالب بالاسم وتاريخ الميلاد نفسيهما. احذف هذا الصف أو عدّله.</value></data>
   <data name="ImportError_student_code_required" xml:space="preserve"><value>كود الطالب مطلوب (تُدخل الأكواد يدويًا في هذه الوحدة).</value></data>

@@ -41,7 +41,7 @@ public sealed class StudentImportTests : IDisposable
     public StudentImportTests(LmsApiFactory factory)
     {
         _factory = factory;
-        _host = new ImportTestHost(factory, services =>
+        _host = new ImportTestHost(factory, withTestDefinition: false, services =>
         {
             services.RemoveAll<Lms.Infrastructure.Configuration.IPolicyEvaluator>(); // the real evaluator, so the CreateStudents policy applies
             services.AddScoped<Lms.Infrastructure.Configuration.IPolicyEvaluator, Lms.Infrastructure.Configuration.PolicyEvaluator>();

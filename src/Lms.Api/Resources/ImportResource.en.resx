@@ -41,7 +41,11 @@
   <data name="ImportError_invalid_mobile" xml:space="preserve"><value>Enter a valid mobile number, for example +201001234567.</value></data>
   <data name="ImportError_invalid_national_id" xml:space="preserve"><value>The national ID must be 5 to 20 letters and digits.</value></data>
   <data name="ImportError_duplicate_person" xml:space="preserve"><value>This person already exists in this organization (same {field}).</value></data>
+  <data name="ImportError_unknown_role" xml:space="preserve"><value>No role named "{value}".</value></data>
+  <data name="ImportError_invalid_role_kind" xml:space="preserve"><value>This role cannot be given to staff here.</value></data>
+  <data name="ImportError_permission_escalation" xml:space="preserve"><value>You cannot give a role with permissions you do not have.</value></data>
   <data name="ImportError_blocked_by_policy" xml:space="preserve"><value>Blocked by parent organization policy</value></data>
+  <data name="ImportError_invalid_expiry" xml:space="preserve"><value>The expiry date must be today or later.</value></data>
   <data name="ImportError_invalid_level_type" xml:space="preserve"><value>Students are enrolled at units that host classes; this unit does not.</value></data>
   <data name="ImportError_possible_duplicate" xml:space="preserve"><value>A student with the same name and date of birth already exists. Remove or fix this row.</value></data>
   <data name="ImportError_student_code_required" xml:space="preserve"><value>A student code is required (codes are entered manually at this unit).</value></data>
