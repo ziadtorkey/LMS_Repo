@@ -29,8 +29,8 @@ public interface IProbeRowModule
 /// <summary>Status codes and the per-caller expectation helper shared by every module file.</summary>
 public static class ProbeExpect
 {
-    public const int Ok = 200, Created = 201, NoContent = 204, BadRequest = 400, Unauthorized = 401, Forbidden = 403,
-        NotFound = 404;
+    public const int Ok = 200, Created = 201, Accepted = 202, NoContent = 204, BadRequest = 400, Unauthorized = 401,
+        Forbidden = 403, NotFound = 404, Conflict = 409;
 
     /// <summary>Expected status per caller, in the order of <see cref="Caller"/>.</summary>
     public static Dictionary<Caller, int> Expect(int root, int school1, int school2, int teacher, int clientB, int platform,
@@ -38,5 +38,12 @@ public static class ProbeExpect
     {
         [RootAdmin] = root, [School1Admin] = school1, [School2Admin] = school2, [School1Teacher] = teacher,
         [ClientBAdmin] = clientB, [PlatformAdmin] = platform, [Anonymous] = anonymous,
+    };
+
+    /// <summary>Expected status per M2 caller, in the order of <see cref="M2Caller"/>.</summary>
+    public static Dictionary<M2Caller, int> M2(int manager, int counselor, int supervisor, int clientBTeacher) => new()
+    {
+        [M2Caller.School1Manager] = manager, [M2Caller.School1Counselor] = counselor,
+        [M2Caller.School1Supervisor] = supervisor, [M2Caller.ClientBTeacher] = clientBTeacher,
     };
 }

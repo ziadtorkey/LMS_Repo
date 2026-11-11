@@ -1,0 +1,21 @@
+@page "/Account/ExternalLogin/{slug?}"
+@using Lms.Api.Resources
+@using Microsoft.Extensions.Localization
+@model Lms.Api.Pages.Account.ExternalLoginModel
+@inject IStringLocalizer<AccountResource> L
+@{
+    ViewData["Title"] = L["ExternalHeading"].Value;
+}
+<h1>@L["ExternalHeading"]</h1>
+<form method="post">
+    <input type="hidden" name="ReturnUrl" value="@Model.ReturnUrl" />
+    <label>@L["ExternalEmailPrompt"]
+        <input data-testid="external-email" name="Email" type="email" autocomplete="username" value="@Model.Email" required />
+    </label>
+    @if (Model.Error is not null)
+    {
+        <div class="error" role="alert" data-testid="external-error">@Model.Error</div>
+    }
+    <button data-testid="external-continue" type="submit">@L["ExternalContinue"]</button>
+</form>
+<div class="links"><a data-testid="back-to-login" href="/Account/Login">@L["BackToSignIn"]</a></div>
