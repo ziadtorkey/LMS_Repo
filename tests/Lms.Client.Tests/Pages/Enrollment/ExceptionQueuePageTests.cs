@@ -133,6 +133,20 @@ public sealed class ExceptionQueuePageTests : StudentsTestContext
     }
 
     [Fact]
+    public async Task Approvers_do_not_see_cancel_only_the_requester_does()
+    {
+        var approver = await RenderPageAsync(Permissions.Enrollment.ApproveException);
+        Assert.NotEmpty(approver.FindAll($"[data-testid=exception-open-{Pending.Id}]"));
+        Assert.Empty(approver.FindAll("[data-testid^=exception-cancel-]")); // approvers decide, they do not withdraw someone else's request
+
+        // A user who both approves and requests is still an approver here: the queue is the approvers' view.
+        await GrantAsync(Permissions.Enrollment.ApproveException, Permissions.Enrollment.RequestException);
+        var both = Render<ExceptionQueuePage>();
+        both.WaitForElement($"[data-testid=exception-open-{Pending.Id}]");
+        Assert.Empty(both.FindAll("[data-testid^=exception-cancel-]"));
+    }
+
+    [Fact]
     public async Task Page_is_forbidden_without_either_permission()
     {
         Culture.Current = new CultureInfo("en");
