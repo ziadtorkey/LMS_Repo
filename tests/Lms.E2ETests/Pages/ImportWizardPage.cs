@@ -32,7 +32,20 @@ public sealed class ImportWizardPage(IPage page)
     public async Task UploadAsync(string filePath, string targetUnitName)
     {
         await page.GetByTestId("import-step-upload").WaitForAsync();
-        await Pickers.PickAsync(page, "import-unit", targetUnitName);
+        for (var attempt = 1; ; attempt++)
+        {
+            try
+            {
+                await Pickers.PickAsync(page, "import-unit", targetUnitName);
+                break;
+            }
+            catch (TimeoutException) when (attempt < 3)
+            {
+                // The step can still be re-rendering right after Next (the select is "not stable"): try again.
+                await page.Keyboard.PressAsync("Escape");
+            }
+        }
+
         await page.Locator("input[type='file']").SetInputFilesAsync(filePath);
         await page.GetByTestId("import-upload").ClickAsync();
         await Summary.WaitForAsync(new LocatorWaitForOptions { Timeout = 60_000 });
@@ -59,12 +72,21 @@ public sealed class ImportWizardPage(IPage page)
         }
     }
 
-    /// <summary>Commits the reviewed batch through the confirmation dialog; returns once the wizard reports an outcome.</summary>
+    /// <summary>
+    /// Commits the reviewed batch through the confirmation dialog and returns once the server accepted the commit (202).
+    /// The wizard itself does not move on after the commit (#314), so callers check the outcome through the staff list
+    /// or <see cref="Infrastructure.ApiSetup"/> instead of waiting for the Done step.
+    /// </summary>
     public async Task CommitAsync()
     {
         await CommitButton.ClickAsync();
-        await page.GetByTestId("confirm-yes").ClickAsync();
-        await Done.Or(Failed).First.WaitForAsync(new LocatorWaitForOptions { Timeout = 90_000 });
+        var response = await page.RunAndWaitForResponseAsync(
+            async () => await page.GetByTestId("confirm-yes").ClickAsync(),
+            r => r.Url.Contains("/commit", StringComparison.Ordinal) && r.Request.Method == "POST");
+        if (!response.Ok)
+        {
+            throw new InvalidOperationException($"The commit answered {response.Status}.");
+        }
     }
 
     private static async Task<bool> WaitVisibleAsync(ILocator locator)
