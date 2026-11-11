@@ -33,6 +33,7 @@
 <ServerTable @ref="_table" T="ClientDto" ServerData="LoadAsync">
     <HeaderContent>
         <MudTh>@L["Common_Name"]</MudTh>
+        <MudTh>@L["Clients_ShortCode"]</MudTh>
         <MudTh>@L["Clients_Type"]</MudTh>
         <MudTh>@L["Common_Status"]</MudTh>
         <MudTh>@L["Clients_CreatedOn"]</MudTh>
@@ -40,6 +41,7 @@
     </HeaderContent>
     <RowTemplate Context="client">
         <MudTd>@Culture.Pick(client.NameAr, client.NameEn)</MudTd>
+        <MudTd><span dir="ltr" data-testid="@($"client-short-code-{client.Id}")">@client.ShortCode</span></MudTd>
         <MudTd>@L[$"ClientType_{client.Type}"]</MudTd>
         <MudTd>
             <MudChip T="string" Size="Size.Small" Color="@(client.Status == OrganizationStatuses.Active ? Color.Success : Color.Warning)">
