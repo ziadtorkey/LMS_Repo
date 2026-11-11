@@ -30,6 +30,7 @@ internal static class AuditRows
             .Where(a => assignmentIds.Contains(a.Id) && orgIds.Contains(a.OrganizationId))
             .Join(db.Roles.IgnoreQueryFilters().Where(r => orgIds.Contains(r.OrganizationId)), a => a.RoleId, r => r.Id, (a, r) => new { a.Id, r.NameAr, r.NameEn })
             .ToDictionaryAsync(x => x.Id, ct);
+        // ISOLATION-BYPASS: unit names of the entries' units, restricted to the entries' organizations.
         var units = await db.OrgUnits.IgnoreQueryFilters()
             .Where(u => unitIds.Contains(u.Id) && orgIds.Contains(u.OrganizationId))
             .Select(u => new { u.Id, u.NameAr, u.NameEn })
