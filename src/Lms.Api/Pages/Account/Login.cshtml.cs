@@ -60,7 +60,8 @@ public sealed class LoginModel(
         }
 
         var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
-        var user = await users.FindByEmailAsync(Input.Email);
+        // Staff and guardians sign in with their email; a student account may have none, then the user name (the student code) is used.
+        var user = await users.FindByEmailAsync(Input.Email) ?? await users.FindByNameAsync(Input.Email);
         if (user is null)
         {
             // Hash anyway so unknown and known emails take about as long (no timing-based user enumeration).
@@ -97,7 +98,11 @@ public sealed class LoginModel(
 
         await signIn.SignInAsync(user, isPersistent: false);
         await audit.WriteSecurityEventAsync("LoginSucceeded", user.Id, null, ip, cancellationToken);
-        return LocalRedirect(ReturnUrl!);
+
+        // A temporary password (D24): the person chooses their own before anything else, then continues to where they were going.
+        return user.MustChangePassword
+            ? RedirectToPage("/Account/ChangePassword", new { returnUrl = ReturnUrl })
+            : LocalRedirect(ReturnUrl!);
     }
 
     // One message for unknown email, wrong password and lockout: nothing reveals whether the account exists.

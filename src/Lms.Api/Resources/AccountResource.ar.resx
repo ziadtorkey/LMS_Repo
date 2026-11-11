@@ -59,4 +59,14 @@
   <data name="ExternalAmbiguous" xml:space="preserve"><value>يوجد أكثر من حساب مطابق لهذه الهوية. تواصل مع مسؤول النظام.</value></data>
   <data name="ExternalFailed" xml:space="preserve"><value>فشل تسجيل الدخول عبر مؤسستك. حاول مرة أخرى.</value></data>
   <data name="ExternalHeading" xml:space="preserve"><value>تسجيل الدخول عبر المؤسسة</value></data>
+  <data name="ChangePassword_Title" xml:space="preserve"><value>اختر كلمة مرور جديدة</value></data>
+  <data name="ChangePassword_Intro" xml:space="preserve"><value>لقد سجلت الدخول بكلمة مرور مؤقتة. اختر كلمة مرور خاصة بك للمتابعة.</value></data>
+  <data name="ChangePassword_Current" xml:space="preserve"><value>كلمة المرور المؤقتة</value></data>
+  <data name="ChangePassword_New" xml:space="preserve"><value>كلمة المرور الجديدة</value></data>
+  <data name="ChangePassword_Confirm" xml:space="preserve"><value>تأكيد كلمة المرور الجديدة</value></data>
+  <data name="ChangePassword_Submit" xml:space="preserve"><value>حفظ ومتابعة</value></data>
+  <data name="ChangePassword_Mismatch" xml:space="preserve"><value>كلمتا المرور غير متطابقتين.</value></data>
+  <data name="ChangePassword_Failed" xml:space="preserve"><value>لم يتم تغيير كلمة المرور. تحقق من كلمة المرور المؤقتة، واختر كلمة جديدة من 8 أحرف على الأقل تتضمن حرفًا كبيرًا وحرفًا صغيرًا ورقمًا.</value></data>
+  <data name="StudentCredentials_Subject" xml:space="preserve"><value>حسابك المدرسي</value></data>
+  <data name="StudentCredentials_Body" xml:space="preserve"><value>حسابك المدرسي جاهز. اسم المستخدم: {0}. كلمة المرور المؤقتة: {1}. سجّل الدخول من الرابط أدناه. يجب أن تختار كلمة مرور خاصة بك عند أول تسجيل دخول.</value></data>
 </root>
