@@ -1,4 +1,5 @@
 using Lms.Api.Features.Enrollment.Exceptions;
+using Lms.Api.Features.Enrollment.Groups;
 using Lms.Api.Infrastructure;
 
 namespace Lms.Api.Features.Enrollment;
@@ -20,5 +21,6 @@ public sealed class EnrollmentModule : ILmsModule
         ClassStudentEndpoints.Map(app);
         EnrollmentEndpoints.Map(app);
         ExceptionEndpoints.Map(app);
+        GroupEndpoints.Map(app);
     }
 }
