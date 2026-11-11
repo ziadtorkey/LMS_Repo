@@ -63,7 +63,7 @@ public sealed class M1EndpointMatrixTests(LmsApiFactory factory, ITestOutputHelp
     {
         var inMatrix = M1ProbeRows.All.Select(r => Key(r.Method.Method, r.Pattern)).ToHashSet();
         var missing = ApiRoutes()
-            .Where(r => !OutOfScope.Contains(r.Pattern) && !r.Pattern.StartsWith("/api/me", StringComparison.OrdinalIgnoreCase))
+            .Where(r => !OutOfScope.Contains(r.Pattern) && !IsSelfScoped(r.Pattern))
             .Select(r => Key(r.Method, r.Pattern))
             .Where(key => !inMatrix.Contains(key))
             .Distinct()
@@ -101,6 +101,24 @@ public sealed class M1EndpointMatrixTests(LmsApiFactory factory, ITestOutputHelp
             .Where(e => e.RoutePattern.RawText is { } raw && raw.StartsWith("/api", StringComparison.OrdinalIgnoreCase))
             .SelectMany(e => (e.Metadata.GetMetadata<HttpMethodMetadata>()?.HttpMethods ?? ["*"])
                 .Select(m => (m, e.RoutePattern.RawText!)));
+
+    /// <summary>
+    /// The caller's own data: exactly <c>/api/me</c> or anything under <c>/api/me/</c>. A plain prefix match would also
+    /// exempt unrelated routes such as <c>/api/members</c>.
+    /// </summary>
+    internal static bool IsSelfScoped(string pattern) =>
+        string.Equals(pattern, "/api/me", StringComparison.OrdinalIgnoreCase)
+        || pattern.StartsWith("/api/me/", StringComparison.OrdinalIgnoreCase);
+
+    [Theory]
+    [InlineData("/api/me", true)]
+    [InlineData("/api/me/notifications", true)]
+    [InlineData("/api/me/notifications/{id:guid}/read", true)]
+    [InlineData("/api/members", false)]
+    [InlineData("/api/messages", false)]
+    [InlineData("/api/metrics/{id:guid}", false)]
+    public void Only_api_me_and_routes_below_it_are_exempt(string pattern, bool exempt) =>
+        Assert.Equal(exempt, IsSelfScoped(pattern));
 
     private static string Key(string method, string pattern) => $"{method.ToUpperInvariant()} {pattern}";
 
