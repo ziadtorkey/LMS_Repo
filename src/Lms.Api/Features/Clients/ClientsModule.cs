@@ -1,10 +1,12 @@
+using Lms.Api.Infrastructure;
+
 namespace Lms.Api.Features.Clients;
 
-public static class ClientsModule
+/// <summary>Client administration for the Platform Admin: list, create with the first Org Admin, rename, suspend.</summary>
+public sealed class ClientsModule : ILmsModule
 {
-    public static IServiceCollection AddClients(this IServiceCollection services)
-    {
+    public void AddServices(IServiceCollection services, IConfiguration configuration) =>
         services.AddScoped<CreateClientHandler>();
-        return services;
-    }
+
+    public void MapEndpoints(IEndpointRouteBuilder app) => app.MapClientEndpoints();
 }

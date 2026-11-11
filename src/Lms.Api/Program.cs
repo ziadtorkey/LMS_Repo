@@ -3,7 +3,6 @@ using Lms.Api.Features.Settings;
 using Lms.Api.Features.Notifications;
 using Lms.Api.Features.Account;
 using Lms.Api.Features.Auth;
-using Lms.Api.Features.Clients;
 using Lms.Api.Features.AcademicYears;
 using Lms.Api.Features.Me;
 using Lms.Api.Infrastructure;
@@ -23,7 +22,6 @@ builder.Host.UseSerilog((context, services, configuration) => configuration
 builder.Services.AddScoped<HttpCurrentContext>();
 builder.Services.AddScoped<Lms.Domain.Abstractions.ICurrentContext>(sp => sp.GetRequiredService<HttpCurrentContext>());
 builder.Services.AddMe();
-builder.Services.AddClients();
 builder.Services.AddSettings();
 builder.Services.AddNotifications();
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -80,7 +78,6 @@ foreach (var module in app.Services.GetServices<IEndpointModule>())
 app.MapLmsModules();
 
 app.MapMeEndpoints();
-app.MapClientEndpoints();
 app.MapAcademicYears();
 app.MapSettingEndpoints();
 app.MapNotificationEndpoints();
