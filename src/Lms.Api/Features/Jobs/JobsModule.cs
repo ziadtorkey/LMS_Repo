@@ -4,6 +4,8 @@ using Hangfire.Dashboard;
 using Hangfire.MySql;
 using Lms.Api.Infrastructure;
 using Lms.Domain.Abstractions;
+using Lms.Shared;
+using Lms.Shared.Authorization;
 using Lms.Infrastructure.Access;
 using Lms.Infrastructure.Jobs;
 using Lms.Infrastructure.Persistence;
@@ -19,6 +21,38 @@ namespace Lms.Api.Features.Jobs;
 public sealed class JobsModule : ILmsModule
 {
     public const string DashboardPath = "/hangfire";
+
+    /// <summary>Development-only manual trigger: <c>POST /api/dev/jobs/{jobId}/run?asOf=yyyy-MM-dd</c>.</summary>
+    public const string DevRunPattern = "/api/dev/jobs/{jobId}/run";
+
+    private static async Task<IResult> RunDevJobAsync(
+        string jobId, string? asOf, IEnumerable<DevJobDefinition> jobs, IServiceScopeFactory scopes, CancellationToken ct)
+    {
+        var job = jobs.FirstOrDefault(j => string.Equals(j.Id, jobId, StringComparison.Ordinal));
+        if (job is null)
+        {
+            return ApiProblems.NotFound();
+        }
+
+        DateOnly? day = null;
+        if (!string.IsNullOrEmpty(asOf))
+        {
+            if (!DateOnly.TryParseExact(asOf, "yyyy-MM-dd", out var parsed))
+            {
+                return Results.ValidationProblem(
+                    new Dictionary<string, string[]> { [nameof(asOf)] = ["date_invalid"] },
+                    extensions: new Dictionary<string, object?> { ["code"] = ProblemCodes.validation_failed });
+            }
+
+            day = parsed;
+        }
+
+        // A fresh scope with the platform context, exactly like a scheduled system job.
+        using var scope = scopes.CreateScope();
+        scope.ServiceProvider.GetRequiredService<HttpCurrentContext>().SetUser(Guid.Empty, true);
+        await job.Run(scope.ServiceProvider, day, ct);
+        return Results.Ok(new { jobId, asOf = day?.ToString("yyyy-MM-dd") });
+    }
 
     public void AddServices(IServiceCollection services, IConfiguration configuration)
     {
@@ -44,6 +78,7 @@ public sealed class JobsModule : ILmsModule
             services.AddHangfireServer(options => options.WorkerCount = Math.Max(1, configuration.GetValue("Jobs:WorkerCount", 2)));
         }
 
+        services.AddSingleton(JobSettings.Parse(configuration[JobSettings.TimeZoneKey]));
         services.AddScoped<IBackgroundJobs, BackgroundJobs>();
     }
 
@@ -60,6 +95,10 @@ public sealed class JobsModule : ILmsModule
             Authorization = [new PlatformAdminDashboardFilter()],
             IsReadOnlyFunc = _ => false,
         });
+
+        // Development only (the route does not exist elsewhere): run a job now, as the scheduler would, and wait for it.
+        // Platform admins only (Clients.Update is a platform-only permission). Not part of Lms.Shared on purpose.
+        app.MapPost(DevRunPattern, RunDevJobAsync).RequireAuthorization().RequirePermission(Permissions.Clients.Update);
     }
 }
 
