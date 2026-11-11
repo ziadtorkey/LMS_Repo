@@ -1,0 +1,196 @@
+@page "/students/new"
+@attribute [Authorize]
+@using System.Text.Json
+@using Lms.Client.Components.People
+@using Lms.Client.Services.Api
+@using Lms.Shared.Authorization
+@using Lms.Shared.Classes
+@using Lms.Shared.Configuration
+@using Lms.Shared.People
+@inject IStudentsApi Api
+@inject IClassesApi Classes
+@inject IConfigApi Config
+@inject IYearStore Years
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<PageTitle>@L["Students_New"]</PageTitle>
+<MudText Typo="Typo.h4" Class="mb-4" data-testid="student-create-title">@L["Students_New"]</MudText>
+
+@if (PermState.Loaded && !PermState.Has(Permissions.Students.Create))
+{
+    <MudAlert Severity="Severity.Warning" data-testid="student-create-forbidden">@L["Forbidden_Title"]</MudAlert>
+}
+else
+{
+    <MudForm @ref="_form">
+        <MudStack Spacing="3" Style="max-width: 48rem">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" data-testid="student-error">@_error</MudAlert>
+            }
+            <UnitPicker Value="_homeUnitId" ValueChanged="OnHomeUnitChangedAsync" Label="@L["Student_HomeUnit"]" Required="true" TestId="student-home-unit" />
+            @if (_manualCode)
+            {
+                <MudTextField T="string" @bind-Value="_code" Label="@L["Student_Code"]" Required="true" RequiredError="@L["Common_Required"]"
+                              MaxLength="50" dir="ltr" data-testid="student-code" />
+            }
+            else
+            {
+                <MudText Typo="Typo.caption" data-testid="student-code-auto">@L["Student_CodeAuto"]</MudText>
+            }
+            <StudentDataFields Model="_data" HomeUnitId="_homeUnitId" />
+            @if (_homeUnitId is not null)
+            {
+                <MudSelect T="Guid?" @bind-Value="_classId" Label="@L["Student_Class"]" Clearable="true" HelperText="@L["Student_ClassHelp"]"
+                           data-testid="student-class">
+                    @foreach (var cls in _classes)
+                    {
+                        <MudSelectItem T="Guid?" Value="@((Guid?)cls.Id)">@ClassLabel(cls)</MudSelectItem>
+                    }
+                </MudSelect>
+                @if (SelectedClassIsFull)
+                {
+                    <MudAlert Severity="Severity.Warning" data-testid="student-class-full">@L["Student_ClassFull"]</MudAlert>
+                }
+            }
+            <MudTextField T="string" @bind-Value="_password" Label="@L["Student_DefaultPassword"]" InputType="InputType.Password" dir="ltr"
+                          HelperText="@L["Student_DefaultPasswordHelp"]" autocomplete="new-password" data-testid="student-password" />
+            <GuardianInputRows Rows="_guardians" Required="_guardiansRequired" />
+            <MudStack Row="true" Spacing="2">
+                <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="_saving"
+                           data-testid="student-save">@L["Common_Save"]</MudButton>
+                <MudButton Href="students" data-testid="student-cancel">@L["Common_Cancel"]</MudButton>
+            </MudStack>
+        </MudStack>
+    </MudForm>
+}
+
+@code {
+    private MudForm _form = default!;
+    private readonly StudentDataModel _data = new();
+    private readonly List<GuardianRow> _guardians = [new() { IsPrimary = true }];
+    private IReadOnlyList<ClassSummaryDto> _classes = [];
+    private Guid? _homeUnitId, _classId;
+    private string _code = "", _password = "";
+    private bool _manualCode, _guardiansRequired, _saving;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        PermState.Changed += OnPermissionsChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+    }
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => PermState.Changed -= OnPermissionsChanged;
+
+    private bool SelectedClassIsFull =>
+        _classes.FirstOrDefault(c => c.Id == _classId) is { Capacity: { } cap } cls && cls.StudentCount >= cap;
+
+    private string ClassLabel(ClassSummaryDto cls) =>
+        $"{Culture.Pick(cls.NameAr, cls.NameEn)} ({cls.StudentCount}{(cls.Capacity is { } cap ? $"/{cap}" : "")})";
+
+    /// <summary>A photo belongs to the unit it was uploaded for, so a new home unit clears it; settings and classes follow the unit.</summary>
+    private async Task OnHomeUnitChangedAsync(Guid? id)
+    {
+        if (id != _homeUnitId) _data.PhotoFileId = null;
+        _homeUnitId = id;
+        _classId = null;
+        _classes = [];
+        _manualCode = false;
+        _guardiansRequired = false;
+        if (id is not { } unit) return;
+
+        // Settings and classes are conveniences for the form: if they cannot be read, the form falls back to defaults.
+        await ApiCalls.RunAsync(async () =>
+        {
+            var settings = await Config.GetSettingsAsync(unit);
+            _manualCode = SettingJson(settings, SettingKeys.StudentsCodeMode.Name) == StudentCodeModes.Manual;
+            _guardiansRequired = SettingJson(settings, SettingKeys.GuardiansDataRequired.Name) == "true";
+        }, Navigation, L, _ => { });
+        await ApiCalls.RunAsync(
+            async () => _classes = (await Classes.ListAsync(new ClassQuery(unit, false, Years.SelectedYearId, ClassStatuses.Active, null, null, 1, 200))).Items,
+            Navigation, L, _ => { });
+    }
+
+    private static string? SettingJson(IReadOnlyList<EffectiveSettingDto> settings, string name) =>
+        settings.FirstOrDefault(s => s.Name == name) is { } s ? JsonSerializer.Deserialize<JsonElement>(s.ValueJson) switch
+        {
+            { ValueKind: JsonValueKind.String } e => e.GetString(),
+            { ValueKind: JsonValueKind.True } => "true",
+            { ValueKind: JsonValueKind.False } => "false",
+            _ => null,
+        } : null;
+
+    private async Task SaveAsync()
+    {
+        _error = null;
+        await _form.ValidateAsync();
+        var rowsOk = GuardianRow.ValidateAll(_guardians);
+        if (!_form.IsValid || !rowsOk || _homeUnitId is null) return;
+        var guardians = _guardians.Where(g => !g.IsEmpty).ToList();
+        if (_guardiansRequired && guardians.Count == 0)
+        {
+            _error = L["Guardian_Required"];
+            return;
+        }
+        if (guardians.Count > 0 && !guardians.Any(g => g.IsPrimary))
+        {
+            _error = L["Error_primary_guardian_required"];
+            return;
+        }
+
+        var request = new CreateStudentRequest(_data.ToInput(), _homeUnitId.Value, _manualCode ? _code.Trim() : null, false,
+            guardians.Select(g => g.ToInput()).ToList(), _classId, string.IsNullOrWhiteSpace(_password) ? null : _password);
+        await CreateAsync(request);
+    }
+
+    private async Task CreateAsync(CreateStudentRequest request)
+    {
+        _saving = true;
+        StudentCreatedDto? created = null;
+        var confirmDuplicate = false;
+        var saved = await ApiCalls.RunAsync(
+            async () =>
+            {
+                try
+                {
+                    created = await Api.CreateAsync(request);
+                }
+                catch (ApiProblemException ex) when (ex.Code == "possible_duplicate")
+                {
+                    confirmDuplicate = true;
+                    _duplicateCount = ex.Count;
+                }
+            },
+            Navigation, L, message => _error = message);
+        _saving = false;
+
+        if (confirmDuplicate)
+        {
+            var confirmed = await Dialogs.ShowMessageBoxAsync(L["Students_New"], _duplicateCount is { } n ? L["Student_PossibleDuplicate", n].Value : L["Error_possible_duplicate"].Value,
+                yesText: L["Student_CreateAnyway"], cancelText: L["Common_Cancel"]);
+            if (confirmed == true) await CreateAsync(request with { ConfirmPossibleDuplicate = true });
+            return;
+        }
+        if (!saved || created is null) return;
+
+        Snackbar.Add(L["Student_Created"], Severity.Success);
+        var dialog = await Dialogs.ShowAsync<CredentialsDialog>(L["Credentials_Title"], new DialogParameters<CredentialsDialog>
+        {
+            { x => x.Code, created.Student.Summary.StudentCode },
+            { x => x.Password, created.IssuedPassword },
+            { x => x.SentTo, created.CredentialsSentTo },
+        }, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, BackdropClick = false });
+        await dialog.Result;
+        Navigation.NavigateTo("students");
+    }
+
+    private int? _duplicateCount;
+}
