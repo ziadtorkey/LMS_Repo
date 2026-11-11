@@ -2,8 +2,8 @@
 
 _Updated by the Team Lead after every merge cycle._
 
-**Milestone:** M0 — DONE · M1 Organization & Access — closing (48 / 49; last: #73 via #200, approved) · M2 People — closing (26 / 29; left: #175 via #308, #176, #177) · M3 Academic Structure — in progress (10 / 49)
-**Last update:** 2026-11-11 19:40 — Merged since 18:37: #298/#299/#300 (re-lands of #269/#289/#204), #273 guardians, #267 external-login E2E, #270 students UI, #205 staff import, #304, #305 (closes M1 #72). Approved, in CI: #283 student accounts, #277 classes, #279 courses, #200. In review: #284, #286, #290, #292, #293, #297, #302, #306, #287, #308, #315 and BE4's transfers.
+**Milestone:** M0 — DONE · M1 Organization & Access — closing (48 / 49; last: #73 via #200) · M2 People — closing (27 / 29; #175 via #308, #176/#177 via E2E PRs) · M3 Academic Structure — in progress (12 / 49)
+**Last update:** 2026-11-11 20:25 — Merged since 19:28: #277 classes, #284 enrollment engine, #276 student profile. Approved and in CI: #200, #308, #283, #279, #320. Lead contract PRs: #320 (IncludeCourses, ClassLessonPlan audit). M3 work in review: #286, #290, #292, #293, #297, #302, #303, #306, #309, #313, #315, #316, #318, #319, #321, #323.
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |
@@ -53,6 +53,7 @@ None. (Board: [LMS v1](https://github.com/users/ziadtorkey/projects/1) — Todo 
 - 2026-11-11: M2 plan approved; 13 answers recorded as D23–D36 (students, guardians and change requests move to M3). #103 closed.
 
 ## Recently merged
+- #276 student profile (closes #246) · #284 enrollment engine (closes #232) · #277 classes (closes #221)
 - #305 (closes #72) · #304 · #205 staff import (closes #165) · #300 staff import page (closes #172) · #270 students UI (closes #245) · #267 external-login E2E (closes #178) · #273 guardians (closes #227) · #299 short codes (closes #288) · #298 relationship scopes (closes #220)
 - #271 IdP admin UI (closes #173) · #261 M1 config/roles E2E · #296 · #295 · #198 staff lifecycle (closes #163) · #202 import framework (closes #159) · #264 courses UI (closes #237) · #208 (closes #161) · #280 contracts · #281 (closes #70) · #265 academic kernel (closes #213)
 - #206 test(e2e): M2 staff lifecycle, sharing and expiry (closes #176) · #278 fix(ci): Playwright install fallback, inotify limits

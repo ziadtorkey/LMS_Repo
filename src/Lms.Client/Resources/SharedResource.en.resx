@@ -811,4 +811,22 @@
   <data name="Transfer_Restricted" xml:space="preserve"><value>Not added (restrictions)</value></data>
   <data name="Transfer_ConfirmOverCapacity" xml:space="preserve"><value>The new class goes over its capacity. Transfer anyway.</value></data>
   <data name="Transfer_History" xml:space="preserve"><value>Transfers</value></data>
+  <data name="Student_Profile" xml:space="preserve"><value>Profile</value></data>
+  <data name="Student_Edit" xml:space="preserve"><value>Edit student</value></data>
+  <data name="Student_Guardians" xml:space="preserve"><value>Guardians</value></data>
+  <data name="Student_Enrollments" xml:space="preserve"><value>Classes &amp; enrollments</value></data>
+  <data name="Student_FeatureFlags" xml:space="preserve"><value>Features</value></data>
+  <data name="Student_History" xml:space="preserve"><value>History</value></data>
+  <data name="Student_Account" xml:space="preserve"><value>Portal account</value></data>
+  <data name="Student_NoAccount" xml:space="preserve"><value>No portal account yet</value></data>
+  <data name="Student_MustChangePassword" xml:space="preserve"><value>Must change the default password at first sign-in</value></data>
+  <data name="Student_AccountActive" xml:space="preserve"><value>Active</value></data>
+  <data name="Student_ResetPassword" xml:space="preserve"><value>Reset password</value></data>
+  <data name="Student_ResetPasswordConfirm" xml:space="preserve"><value>Issue a new default password for {0}? The old password stops working. The new one is shown once.</value></data>
+  <data name="Student_DeleteConfirm" xml:space="preserve"><value>Delete this student? Their enrollments and portal account will be removed.</value></data>
+  <data name="Student_SaveAnyway" xml:space="preserve"><value>Save anyway</value></data>
+  <data name="Student_FeatureFlagsHelp" xml:space="preserve"><value>Choose Inherit to follow the school's setting, or force a feature on or off for this student only.</value></data>
+  <data name="Flag_Inherit" xml:space="preserve"><value>Inherit ({0})</value></data>
+  <data name="Flag_On" xml:space="preserve"><value>On</value></data>
+  <data name="Flag_Off" xml:space="preserve"><value>Off</value></data>
 </root>
