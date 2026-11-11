@@ -40,7 +40,7 @@ public enum M3Caller
 }
 
 /// <summary>
-/// One school with two classes, two courses and the people around them, built straight in the database so it does not
+/// One school (School1 of the M1 probe world) with two classes, two courses and the people around them, built straight in the database so it does not
 /// depend on any M3 route being merged:
 /// class 1 teaches course CX (class course X, teacher A, supervisor of CX, student 1 enrolled, guardian 1), class 2 teaches
 /// course CY (class course Y, teacher B, supervisor of CY, student 2 enrolled, guardian 2). Both courses are owned and
@@ -52,14 +52,17 @@ public sealed class M3Callers
     private static M3Callers? _shared;
     private readonly Dictionary<M3Caller, RoleAssignment> _assignments;
 
-    private M3Callers(M1Callers callers, Dictionary<M3Caller, RoleAssignment> assignments, M3Data data)
+    private M3Callers(M1ProbeWorld world, Dictionary<M3Caller, RoleAssignment> assignments, M3Data data)
     {
-        Callers = callers;
+        World = world;
+        Callers = world.Callers;
         _assignments = assignments;
         Data = data;
     }
 
-    /// <summary>The M1 callers of this world (a client of its own, so M3 data never shows in the M1 and M2 probes).</summary>
+    /// <summary>The M1 probe world: the M3 people and structure live in client A, so the probe rows' builders target them.</summary>
+    public M1ProbeWorld World { get; }
+
     public M1Callers Callers { get; }
 
     public M3Data Data { get; }
@@ -93,8 +96,8 @@ public sealed class M3Callers
 
     private static async Task<M3Callers> BuildAsync(LmsApiFactory factory)
     {
-        var callers = new M1Callers(factory);
-        await callers.InitializeAsync("M3W");
+        var world = await M1ProbeWorld.GetAsync(factory);
+        var callers = world.Callers;
         var tree = callers.A;
         var school1 = tree.School1;
 
@@ -149,7 +152,7 @@ public sealed class M3Callers
         };
 
         return new M3Callers(
-            callers, assignments,
+            world, assignments,
             new M3Data(year, class1, class2, courseX, courseY, classCourseX, classCourseY, student1, student2, guardian1, guardian2));
     }
 }
