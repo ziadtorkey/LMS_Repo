@@ -33,16 +33,19 @@ public static class KeyProtection
                     + "See docs/runbook-key-protection.md.");
         }
 
+        // A previous certificate only has to decrypt: an expired one is exactly what a rotation moves away from, so expiry
+        // is not checked here. A listed entry that configures nothing is a typo that would silently lose old keys: refuse it.
         var previous = configuration.GetSection(PreviousCertificatesSection).GetChildren()
-            .Select(child => LoadCertificate(configuration, child.Path))
-            .OfType<X509Certificate2>();
+            .Select(child => LoadCertificate(configuration, child.Path, requireUnexpired: false)
+                ?? throw new InvalidOperationException($"{child.Path} sets neither Path nor Base64."))
+            .ToList();
 
         // New keys are protected with the current certificate; keys written under an older one stay readable until re-protected.
         return builder.ProtectKeysWithCertificate(current).UnprotectKeysWithAnyCertificate([current, .. previous]);
     }
 
     /// <summary>The certificate configured under <paramref name="section"/>, or null when none is configured.</summary>
-    public static X509Certificate2? LoadCertificate(IConfiguration configuration, string section)
+    public static X509Certificate2? LoadCertificate(IConfiguration configuration, string section, bool requireUnexpired = true)
     {
         var path = configuration[$"{section}:Path"];
         var base64 = configuration[$"{section}:Base64"];
@@ -72,7 +75,12 @@ public static class KeyProtection
             throw new InvalidOperationException($"The key-protection certificate in {section} has no private key; provide a PFX that includes it.");
         }
 
-        if (certificate.NotAfter.ToUniversalTime() <= DateTime.UtcNow)
+        if (certificate.GetRSAPrivateKey() is not { KeySize: >= 2048 })
+        {
+            throw new InvalidOperationException($"The key-protection certificate in {section} must have an RSA private key of at least 2048 bits.");
+        }
+
+        if (requireUnexpired && certificate.NotAfter.ToUniversalTime() <= DateTime.UtcNow)
         {
             throw new InvalidOperationException($"The key-protection certificate in {section} has expired ({certificate.NotAfter:u}); rotate it (see docs/runbook-key-protection.md).");
         }

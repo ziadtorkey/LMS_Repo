@@ -85,6 +85,55 @@ public sealed class KeyProtectionTests : IDisposable
     }
 
     [Fact]
+    public void Expired_previous_certificate_does_not_block_startup_and_still_reads_old_keys()
+    {
+        // Keys written back when the certificate was still valid (writing is not what is being tested, so bypass Apply).
+        var expiredPath = WritePfx("expired-previous.pfx", DateTimeOffset.UtcNow.AddDays(-1));
+        var repository = new InMemoryXmlRepository();
+        var services = new ServiceCollection();
+        services.AddDataProtection().SetApplicationName("Lms-test")
+            .ProtectKeysWithCertificate(X509CertificateLoader.LoadPkcs12FromFile(expiredPath, Password));
+        services.Configure<KeyManagementOptions>(o => o.XmlRepository = repository);
+        var cipher = services.BuildServiceProvider().GetRequiredService<IDataProtectionProvider>().CreateProtector("p").Protect("still-readable");
+
+        var rotated = Provider(Config([.. Cert(WritePfx("new2.pfx")), .. Cert(expiredPath, "DataProtection:PreviousCertificates:0")]), false, repository);
+
+        Assert.Equal("still-readable", rotated.CreateProtector("p").Unprotect(cipher));
+    }
+
+    [Fact]
+    public void Previous_certificate_entry_without_a_source_is_refused()
+    {
+        var ex = Assert.Throws<InvalidOperationException>(() => KeyProtection.Apply(
+            new ServiceCollection().AddDataProtection(),
+            Config([.. Cert(WritePfx("cur.pfx")), ("DataProtection:PreviousCertificates:0:Password", "x")]), false));
+
+        Assert.Contains("PreviousCertificates:0", ex.Message);
+    }
+
+    [Fact]
+    public void Expired_current_certificate_is_still_refused()
+    {
+        var expired = WritePfx("cur-expired.pfx", DateTimeOffset.UtcNow.AddDays(-1));
+
+        Assert.Throws<InvalidOperationException>(() => KeyProtection.LoadCertificate(Config(Cert(expired)), "DataProtection:Certificate"));
+    }
+
+    [Fact]
+    public void Weak_rsa_key_is_refused()
+    {
+        using var rsa = RSA.Create(1024);
+        var request = new CertificateRequest("CN=weak", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+        using var cert = request.CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddYears(1));
+        var path = Path.Combine(_dir, "weak.pfx");
+        File.WriteAllBytes(path, cert.Export(X509ContentType.Pfx, Password));
+
+        var ex = Assert.Throws<InvalidOperationException>(() => KeyProtection.LoadCertificate(Config(Cert(path)), "DataProtection:Certificate"));
+
+        Assert.Contains("2048", ex.Message);
+    }
+
+    [Fact]
     public void Without_the_previous_certificate_old_keys_cannot_be_read()
     {
         var oldPath = WritePfx("old.pfx");

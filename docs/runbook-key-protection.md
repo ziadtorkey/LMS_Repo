@@ -34,23 +34,45 @@ The key-protection certificate is not a TLS certificate: do not reuse the site c
    ```
 
 2. Store the PFX and its password in the secret store (or mount the PFX as a read-only file) and expose them as the settings above.
-3. Start the API. The first start protects every **newly created** key with the certificate.
-4. **Existing key rows** written before protection was enabled stay readable but unencrypted until Data Protection rolls to a new key
-   (90 days by default). To protect immediately, after the deployment is healthy, retire them: delete the old rows of the
-   `DataProtectionKeys` table only if no secret depends on them, otherwise re-save the identity provider secrets (an admin PUT with a
-   new client secret re-encrypts with the new key). A fresh production database has nothing to migrate.
+3. Start the API on a **fresh database** (or one whose `DataProtectionKeys` table is still empty). The first start creates the
+   first key and protects it with the certificate.
+4. **Enabling protection on a database that already has key rows is not supported.** Turning the setting on does not create a new key:
+   the existing unprotected key stays the default (up to 90 days) and every secret keeps being encrypted with it, so re-saving
+   secrets or deleting rows would not help (and deleting the default key would break the stored secrets). Do it only before the
+   first production data exists. If an environment already has key rows, rebuild it, or ask the platform team for a supervised
+   one-off migration that creates a new default key with `IKeyManager` and then re-saves every identity-provider secret.
 5. Back up the PFX and password separately from database backups. Losing the certificate makes every protected secret unrecoverable
    (identity provider secrets would have to be entered again).
 
-## Rotate (before expiry, or after a suspected leak)
+## Rotate (before expiry, or on a schedule)
+
+Data Protection decrypts a payload with the key that protected it, and that key is wrapped by the certificate that was current
+when the key was created. Stored identity-provider secrets are long-lived payloads: **they stay bound to their original key, and so to
+the original certificate, even after the key ring rolls to a new key.** Therefore an old certificate can only be retired after every
+secret protected under it has been re-saved. Until then it must stay configured.
 
 1. Create the new PFX as above.
 2. Configure the **new** certificate as `DataProtection:Certificate:*` and move the **old** one to
-   `DataProtection:PreviousCertificates:0:*`. Deploy to all nodes.
-3. New keys are protected with the new certificate; old keys stay readable through the previous one.
-4. After the key ring has rolled (at least 90 days, or when no row of `DataProtectionKeys` created before the rotation is still in use), remove
-   the previous certificate setting and destroy that PFX. After a suspected leak, also rotate every identity provider client secret at the provider
-   and save it again in the admin screen.
+   `DataProtection:PreviousCertificates:0:*` (add `:1`, `:2`... for earlier ones). Deploy to all nodes.
+   An expired previous certificate is fine: it is only used to decrypt.
+3. New keys are protected with the new certificate once the key ring rolls (default key lifetime 90 days). Old payloads stay readable
+   through the previous certificate.
+4. **Keep the previous certificate configured.** It is only safe to remove it after (a) the ring has rolled to a key protected by the new
+   certificate and (b) every identity-provider client secret has been saved again, which encrypts it with the new default key
+   (admin screen: edit the provider and enter the client secret again). If you are not sure all were re-saved, do not remove it: the
+   cost of keeping an expired certificate configured is nothing, the cost of removing it too early is that provider sign-in stops.
+5. After the removal, test one provider sign-in in each client before closing the change.
+
+## Suspected leak of the certificate or its password
+
+Rotating alone does not help, because the leaked certificate can still decrypt keys it protected (a copy of the database plus the
+certificate reveals the secrets). Treat the secrets themselves as compromised:
+
+1. Rotate every identity-provider **client secret at the provider** (their admin console).
+2. Provision a new certificate as above (new certificate current, old one previous), enter the new client secrets in the admin screen
+   (this encrypts them with the new default key), and confirm sign-in works.
+3. Only after all secrets were re-entered with the new certificate in place, remove the compromised certificate from
+   `PreviousCertificates` and destroy the PFX.
 
 ## Troubleshooting
 
@@ -58,5 +80,7 @@ The key-protection certificate is not a TLS certificate: do not reuse the site c
 |---|---|
 | Startup fails: "The Data Protection key ring must be protected outside the Development environment" | No certificate configured in a non-Development environment. |
 | "could not be loaded" | Wrong path, wrong password, or the file is not a PFX with a private key. The message never contains the password. |
-| "has expired" | Rotate the certificate (above). |
+| "has expired" (current certificate) | Rotate the certificate (above). An expired certificate under `PreviousCertificates` is accepted. |
+| "sets neither Path nor Base64" | An entry under `PreviousCertificates` is empty or mistyped; fix or remove it. |
+| "at least 2048 bits" | The certificate has a weaker RSA key; issue a new one. |
 | Provider sign-in fails after a deployment, logs show a cryptographic error | A node is using a different certificate, or the previous certificate was removed too early. Restore the setting. |
