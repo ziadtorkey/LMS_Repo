@@ -1,0 +1,149 @@
+@using Lms.Client.Components
+@using Lms.Client.Components.People
+@using Lms.Client.Services.Api
+@using Lms.Shared.Courses
+@using Lms.Shared.Organizations
+@inject ICoursesApi Api
+@inject IUnitLookupApi Units
+@inject NavigationManager Navigation
+
+@* Create, edit or (for inherited courses and callers without Courses.Update) view one course. *@
+<MudDialog>
+    <DialogContent>
+        @if (_loadError is not null)
+        {
+            <MudAlert Severity="Severity.Error" data-testid="course-load-error">@_loadError</MudAlert>
+        }
+        else if (!_loaded)
+        {
+            <MudText>@L["Common_Loading"]</MudText>
+        }
+        else
+        {
+            <MudForm @ref="_form">
+                <MudStack Spacing="3">
+                    @if (_error is not null)
+                    {
+                        <MudAlert Severity="Severity.Error" data-testid="dialog-error">@_error</MudAlert>
+                    }
+                    @if (ReadOnly)
+                    {
+                        <MudAlert Severity="Severity.Info" data-testid="course-readonly">@L["Course_ReadOnly"]</MudAlert>
+                    }
+                    <MudTextField T="string" @bind-Value="_code" Label="@L["Course_Code"]" Required="true" RequiredError="@L["Common_Required"]"
+                                  MaxLength="50" Validation="(Func<string, string?>)ValidateCode" ReadOnly="ReadOnly" dir="ltr"
+                                  Error="_codeError is not null" ErrorText="@_codeError" data-testid="course-code" />
+                    <BilingualNameFields @bind-NameAr="_nameAr" @bind-NameEn="_nameEn" IdPrefix="course-name" />
+                    <MudTextField T="string" @bind-Value="_descriptionAr" Label="@L["Course_DescriptionAr"]" Lines="2" MaxLength="2000"
+                                  ReadOnly="ReadOnly" dir="rtl" lang="ar" data-testid="course-desc-ar" />
+                    <MudTextField T="string" @bind-Value="_descriptionEn" Label="@L["Course_DescriptionEn"]" Lines="2" MaxLength="2000"
+                                  ReadOnly="ReadOnly" dir="ltr" lang="en" data-testid="course-desc-en" />
+                    <MudSelect T="string" @bind-Value="_language" Label="@L["Course_Language"]" ReadOnly="ReadOnly" data-testid="course-language">
+                        @foreach (var lang in Languages)
+                        {
+                            <MudSelectItem T="string" Value="@lang">@L[$"Course_Language_{lang}"]</MudSelectItem>
+                        }
+                    </MudSelect>
+                    <MudNumericField T="int" @bind-Value="_periods" Label="@L["Course_WeeklyPeriods"]" Min="0" Max="40"
+                                     ReadOnly="ReadOnly" data-testid="course-periods" />
+                    <UnitPicker @bind-Value="_ownerId" Label="@L["Course_Owner"]" Required="true" TestId="course-owner"
+                                Filter="IsOwnerCandidate" />
+                    @if (!ReadOnly && CourseId is null)
+                    {
+                        <MudSelect T="Guid" SelectedValues="_allocateTo" SelectedValuesChanged="OnAllocateChanged" MultiSelection="true"
+                                   Label="@L["Course_AllocateTo"]" HelperText="@L["Course_AllocateToHelp"]" data-testid="course-allocate">
+                            @foreach (var unit in _units)
+                            {
+                                <MudSelectItem T="Guid" Value="@unit.Id">@(new string(' ', unit.Depth * 3) + CultureText.Pick(unit.NameAr, unit.NameEn))</MudSelectItem>
+                            }
+                        </MudSelect>
+                    }
+                </MudStack>
+            </MudForm>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@(ReadOnly ? L["Common_Close"] : L["Common_Cancel"])</MudButton>
+        @if (!ReadOnly)
+        {
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="_saving || !_loaded"
+                       data-testid="dialog-save">@L["Common_Save"]</MudButton>
+        }
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private static readonly string[] Languages = ["ar", "en", "fr", "de"];
+    private static readonly System.Text.RegularExpressions.Regex CodePattern = new("^[A-Za-z0-9_-]{1,50}$");
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    /// <summary>The course to edit or view; null creates a new one.</summary>
+    [Parameter] public Guid? CourseId { get; set; }
+
+    /// <summary>Show the course without any way to change it (inherited courses, callers without Courses.Update).</summary>
+    [Parameter] public bool ReadOnly { get; set; }
+
+    private MudForm _form = default!;
+    private IReadOnlyList<OrgUnitNodeDto> _units = [];
+    private string _code = "", _nameAr = "", _nameEn = "", _descriptionAr = "", _descriptionEn = "", _language = "ar";
+    private int _periods;
+    private Guid? _ownerId;
+    private IReadOnlyCollection<Guid> _allocateTo = [];
+    private string? _error, _codeError, _loadError;
+    private bool _loaded, _saving;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _loaded = await ApiCalls.RunAsync(async () =>
+        {
+            _units = UnitTree.Order(await Units.GetUnitsAsync());
+            if (CourseId is { } id)
+            {
+                var course = await Api.GetAsync(id);
+                var s = course.Summary;
+                (_code, _nameAr, _nameEn, _language, _periods, _ownerId) = (s.Code, s.NameAr, s.NameEn, s.Language, s.WeeklyPeriods, s.OwnerOrgUnitId);
+                (_descriptionAr, _descriptionEn) = (course.DescriptionAr ?? "", course.DescriptionEn ?? "");
+                ReadOnly |= s.IsInherited || !course.CanEdit;
+            }
+        }, Navigation, L, message => _loadError = message);
+    }
+
+    /// <summary>Owners are the client root or a course-management level (D37).</summary>
+    private static bool IsOwnerCandidate(OrgUnitNodeDto unit) => unit.ParentId is null || unit.IsCourseManagementLevel;
+
+    private string? ValidateCode(string value) => CodePattern.IsMatch(value ?? "") ? null : L["Course_CodeFormat"].Value;
+
+    private void OnAllocateChanged(IReadOnlyCollection<Guid> values) => _allocateTo = values;
+
+    private async Task SaveAsync()
+    {
+        _error = _codeError = null;
+        await _form.ValidateAsync();
+        if (!_form.IsValid || _ownerId is null) return;
+
+        var request = new SaveCourseRequest(_code.Trim(), _nameAr.Trim(), _nameEn.Trim(), Blank(_descriptionAr), Blank(_descriptionEn),
+            _language, _periods, _ownerId.Value, CourseId is null ? _allocateTo.ToList() : null);
+        _saving = true;
+        var codeTaken = false;
+        var saved = await ApiCalls.RunAsync(
+            async () =>
+            {
+                try
+                {
+                    if (CourseId is { } id) await Api.UpdateAsync(id, request);
+                    else await Api.CreateAsync(request);
+                }
+                catch (ApiProblemException ex) when (ex.Code == "course_code_taken")
+                {
+                    _codeError = ProblemText.For(ex, L);
+                    codeTaken = true;
+                }
+            },
+            Navigation, L, message => _error = message);
+        _saving = false;
+        if (saved && !codeTaken) MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    private static string? Blank(string value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+}

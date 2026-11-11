@@ -77,44 +77,10 @@ public interface IGuardiansApi
 {
     /// <summary>The registered guardian with this national id or mobile, or null. Reveals only the name and a masked mobile.</summary>
     Task<GuardianMatchDto?> MatchAsync(string? nationalId, string? mobile, CancellationToken ct = default);
-
-    /// <summary>Links a new or registered guardian to the student (one primary per student).</summary>
-    Task LinkAsync(Guid studentId, GuardianLinkInput input, CancellationToken ct = default);
-    Task UpdateLinkAsync(Guid studentId, Guid guardianId, UpdateStudentGuardianRequest request, CancellationToken ct = default);
-
-    /// <summary>Fails with guardian_required / primary_guardian_required when the unit needs the guardian or the primary must stay.</summary>
-    Task UnlinkAsync(Guid studentId, Guid guardianId, CancellationToken ct = default);
-
-    Task<PagedResult<GuardianSummaryDto>> ListAsync(string? search, int page, int pageSize, CancellationToken ct = default);
-    Task<GuardianDetailDto> GetAsync(Guid id, CancellationToken ct = default);
-    Task UpdateAsync(Guid id, UpdateGuardianRequest request, CancellationToken ct = default);
-    Task SendPortalInvitationAsync(Guid id, CancellationToken ct = default);
 }
 
 public sealed class GuardiansApi(ApiHttp http) : IGuardiansApi
 {
-    public Task LinkAsync(Guid studentId, GuardianLinkInput input, CancellationToken ct = default) =>
-        http.SendAsync(HttpMethod.Post, Routes.StudentGuardians(studentId), input, ct);
-
-    public Task UpdateLinkAsync(Guid studentId, Guid guardianId, UpdateStudentGuardianRequest request, CancellationToken ct = default) =>
-        http.SendAsync(HttpMethod.Put, Routes.StudentGuardian(studentId, guardianId), request, ct);
-
-    public Task UnlinkAsync(Guid studentId, Guid guardianId, CancellationToken ct = default) =>
-        http.SendAsync(HttpMethod.Delete, Routes.StudentGuardian(studentId, guardianId), null, ct);
-
-    public Task<PagedResult<GuardianSummaryDto>> ListAsync(string? search, int page, int pageSize, CancellationToken ct = default) =>
-        http.GetAsync<PagedResult<GuardianSummaryDto>>(
-            $"{Routes.Guardians}?page={page}&pageSize={pageSize}" + (string.IsNullOrWhiteSpace(search) ? "" : $"&search={Uri.EscapeDataString(search)}"), ct);
-
-    public Task<GuardianDetailDto> GetAsync(Guid id, CancellationToken ct = default) =>
-        http.GetAsync<GuardianDetailDto>(Routes.Guardian(id), ct);
-
-    public Task UpdateAsync(Guid id, UpdateGuardianRequest request, CancellationToken ct = default) =>
-        http.SendAsync(HttpMethod.Put, Routes.Guardian(id), request, ct);
-
-    public Task SendPortalInvitationAsync(Guid id, CancellationToken ct = default) =>
-        http.SendAsync(HttpMethod.Post, Routes.GuardianPortalInvitation(id), null, ct);
-
     public async Task<GuardianMatchDto?> MatchAsync(string? nationalId, string? mobile, CancellationToken ct = default)
     {
         var parts = new List<string>();
