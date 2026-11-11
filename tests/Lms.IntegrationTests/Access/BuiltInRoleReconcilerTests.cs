@@ -94,6 +94,39 @@ public sealed class BuiltInRoleReconcilerTests(LmsApiFactory factory)
     }
 
     [Fact]
+    public async Task Reconcile_adds_only_the_M2_defaults_to_a_version_1_client()
+    {
+        // A client provisioned under M1 (defaults version 1): no M2 permissions, and an admin removed an M1 default.
+        var tree = await AccessTestData.SeedAsync(factory, "RC7");
+        var introducedInM2 = BuiltInRoles.All.SelectMany(r => r.DefaultPermissions)
+            .Where(p => BuiltInRoleDefaults.IntroducedIn(p) == 2).ToHashSet();
+        Assert.NotEmpty(introducedInM2);
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            var admin = tree.Roles[BuiltInRoles.OrgAdmin].Id;
+            db.RolePermissions.RemoveRange(await db.RolePermissions
+                .Where(p => p.OrganizationId == tree.Org.Id
+                    && (introducedInM2.Contains(p.Permission) || (p.RoleId == admin && p.Permission == Permissions.LevelTypes.View)))
+                .ToListAsync());
+            foreach (var role in await db.Roles.Where(r => r.OrganizationId == tree.Org.Id).ToListAsync())
+            {
+                db.Entry(role).Property(nameof(Role.DefaultsVersion)).CurrentValue = 1;
+            }
+
+            await db.SaveChangesAsync();
+        }
+
+        await ReconcileAsync();
+
+        var orgAdmin = await PermissionsOfAsync(tree, BuiltInRoles.OrgAdmin);
+        Assert.Contains(Permissions.Staff.Create, orgAdmin);
+        Assert.Contains(Permissions.IdentityProviders.Manage, orgAdmin);
+        Assert.DoesNotContain(Permissions.LevelTypes.View, orgAdmin);
+        Assert.Contains(Permissions.Staff.View, await PermissionsOfAsync(tree, BuiltInRoles.Counselor));
+        Assert.DoesNotContain(Permissions.Staff.View, await PermissionsOfAsync(tree, BuiltInRoles.Teacher));
+    }
+
+    [Fact]
     public async Task Newly_provisioned_roles_are_already_at_the_current_defaults_version()
     {
         var tree = await AccessTestData.SeedAsync(factory, "RC4");

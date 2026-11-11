@@ -77,6 +77,11 @@ public partial class AuthorizationContractTests
             "assignment_exists", "own_assignment", "branch_too_large", "placeholder_missing", "placeholder_unknown",
             "export_too_large", "year_overlap", "year_closed", "year_active", "active_year_exists", "term_overlap",
             "term_outside_year", "event_outside_year", "in_app_required",
+            // M2 (staff, imports, identity providers)
+            "duplicate_person", "person_not_found", "invalid_role_kind", "cannot_change_own_status", "already_activated",
+            "invalid_expiry", "import_file_invalid", "import_too_many_rows", "import_not_valid", "import_in_progress",
+            "import_already_committed", "provider_slug_taken", "provider_unreachable", "external_account_not_found",
+            "external_account_ambiguous",
         ];
 
         Assert.All(fields, f => Assert.Equal(f.Name, (string)f.GetRawConstantValue()!));

@@ -90,6 +90,23 @@ public static class Permissions
         public const string Delete = "AcademicYears.Delete";
     }
 
+    // M2 People (D23: the Students.* permissions arrive with the M3 contract).
+    public static class Staff
+    {
+        public const string View = "Staff.View";
+        public const string Create = "Staff.Create";
+        public const string Update = "Staff.Update";
+        public const string Delete = "Staff.Delete";
+        public const string Import = "Staff.Import";
+    }
+
+    /// <summary>A client's own OpenID Connect / Azure AD sign-in providers (FR-SEC-08, D33).</summary>
+    public static class IdentityProviders
+    {
+        public const string View = "IdentityProviders.View";
+        public const string Manage = "IdentityProviders.Manage";
+    }
+
     // Immutable list (not a FrozenSet) so existing consumers typed IReadOnlyList<string> keep compiling;
     // ImmutableArray rejects every mutation through IList<string>/ICollection<string>.
     private static readonly Lazy<IReadOnlyList<string>> AllLazy = new(() =>

@@ -27,7 +27,7 @@ public class ConfigurationContractTests
     [Fact]
     public void Declared_keys_are_found()
     {
-        Assert.Equal(8, DeclaredKeys().Count());
+        Assert.Equal(9, DeclaredKeys().Count());
     }
 
     [Theory]
@@ -59,7 +59,7 @@ public class ConfigurationContractTests
         [
             "Ui.DefaultCulture", "Ui.ShowHijriDates", "Files.MaxUploadMb",
             "Features.VirtualClasses", "Features.DigitalLibrary", "Features.ScormContent", "Features.Messaging",
-            "Features.GuardianPortal",
+            "Features.GuardianPortal", "Staff.ExpiryNoticeDays",
         ], SettingCatalog.All.Select(d => d.Name));
 
         var culture = SettingCatalog.Find("Ui.DefaultCulture")!;
@@ -81,6 +81,11 @@ public class ConfigurationContractTests
             Assert.Equal((SettingValueKinds.Bool, SettingCategories.Features, "false"), (d.Kind, d.Category, d.DefaultJson));
         });
         Assert.Equal(5, FeatureFlags.All.Count);
+
+        var expiry = SettingCatalog.Find("Staff.ExpiryNoticeDays")!;
+        Assert.Equal((SettingValueKinds.Int, SettingCategories.People, "14", 0, 90),
+            (expiry.Kind, expiry.Category, expiry.DefaultJson, expiry.Min, expiry.Max));
+        Assert.Equal(("Staff.ExpiryNoticeDays", 14), (SettingKeys.StaffExpiryNoticeDays.Name, SettingKeys.StaffExpiryNoticeDays.Default));
         Assert.Null(SettingCatalog.Find("Nope.Nope"));
     }
 
@@ -107,12 +112,53 @@ public class ConfigurationContractTests
     }
 
     [Fact]
-    public void Every_policy_key_has_at_least_one_blocked_permission()
+    public void Every_policy_key_blocks_a_permission_or_a_role()
     {
         Assert.All(PolicyCatalog.BlockedPermissions, entry =>
         {
-            Assert.NotEmpty(entry.Value);
+            var roles = PolicyCatalog.BlockedRoles.GetValueOrDefault(entry.Key) ?? [];
+            Assert.True(entry.Value.Count + roles.Count > 0, $"{entry.Key} blocks nothing.");
             Assert.All(entry.Value, p => Assert.Contains(p, Permissions.All));
+        });
+        Assert.All(PolicyCatalog.BlockedRoles.Keys, k => Assert.Contains(k, PolicyCatalog.BlockedPermissions.Keys));
+    }
+
+    [Fact]
+    public void Policy_catalog_matches_the_M2_plan()
+    {
+        Assert.Equal(
+            ["CreateAdmins", "CreateOrgUnits", "CreateStaff", "CreateTeachers"],
+            PolicyCatalog.BlockedPermissions.Keys.Order(StringComparer.Ordinal));
+        Assert.Equal(["OrgUnits.Create"], PolicyCatalog.BlockedPermissions[PolicyCatalog.CreateOrgUnits]);
+        Assert.Equal(["Staff.Create", "Staff.Import"], PolicyCatalog.BlockedPermissions[PolicyCatalog.CreateStaff]);
+        Assert.Empty(PolicyCatalog.BlockedPermissions[PolicyCatalog.CreateTeachers]);
+        Assert.Empty(PolicyCatalog.BlockedPermissions[PolicyCatalog.CreateAdmins]);
+
+        Assert.Equal(["CreateAdmins", "CreateTeachers"], PolicyCatalog.BlockedRoles.Keys.Order(StringComparer.Ordinal));
+        Assert.Equal(["Teacher"], PolicyCatalog.BlockedRoles[PolicyCatalog.CreateTeachers]);
+        Assert.Equal(["OrgAdmin", "Manager"], PolicyCatalog.BlockedRoles[PolicyCatalog.CreateAdmins]);
+        Assert.Equal(["Assignments.Create", "Roles.Update"], PolicyCatalog.AdminMarkerPermissions);
+    }
+
+    [Fact]
+    public void Blocked_roles_are_built_in_keys()
+    {
+        var builtIn = BuiltInRoles.All.Select(r => r.Key).ToHashSet(StringComparer.Ordinal);
+
+        Assert.NotEmpty(PolicyCatalog.BlockedRoles);
+        Assert.All(PolicyCatalog.BlockedRoles.Values.SelectMany(v => v), r => Assert.Contains(r, builtIn));
+        Assert.All(PolicyCatalog.AdminMarkerPermissions, p => Assert.Contains(p, Permissions.All));
+    }
+
+    [Fact]
+    public void Role_blocking_catalogs_are_immutable()
+    {
+        Assert.IsAssignableFrom<System.Collections.Frozen.FrozenDictionary<string, IReadOnlyList<string>>>(PolicyCatalog.BlockedRoles);
+        Assert.All(PolicyCatalog.BlockedRoles.Values.Append(PolicyCatalog.AdminMarkerPermissions), v =>
+        {
+            var asList = Assert.IsAssignableFrom<IList<string>>(v);
+            Assert.True(asList.IsReadOnly);
+            Assert.Throws<NotSupportedException>(() => asList.Add("Hacked"));
         });
     }
 
@@ -124,8 +170,8 @@ public class ConfigurationContractTests
         Assert.Equal(["Private", "Shared"], TemplateVisibilities.All);
         Assert.Equal(("Bool", "Int", "String", "Enum"),
             (SettingValueKinds.Bool, SettingValueKinds.Int, SettingValueKinds.String, SettingValueKinds.Enum));
-        Assert.Equal(("General", "Files", "Features"),
-            (SettingCategories.General, SettingCategories.Files, SettingCategories.Features));
+        Assert.Equal(("General", "Files", "Features", "People"),
+            (SettingCategories.General, SettingCategories.Files, SettingCategories.Features, SettingCategories.People));
     }
 
     [Fact]
@@ -196,6 +242,9 @@ public class ConfigurationContractTests
         Assert.Equal(4, RoundTrip(new ApplyTemplateResultDto(Guid.NewGuid(), 4, [])).UnitsCreated);
         Assert.Equal(["OrgUnits.Create"],
             RoundTrip(new PolicyDefinitionDto(PolicyCatalog.CreateOrgUnits, ["OrgUnits.Create"])).BlockedPermissions);
+        Assert.Null(RoundTrip(new PolicyDefinitionDto(PolicyCatalog.CreateOrgUnits, ["OrgUnits.Create"])).BlockedRoles);
+        Assert.Equal(["Teacher"],
+            RoundTrip(new PolicyDefinitionDto(PolicyCatalog.CreateTeachers, [], ["Teacher"])).BlockedRoles!);
     }
 
     [Fact]
