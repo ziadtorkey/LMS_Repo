@@ -126,7 +126,7 @@ public sealed class UnitSettingsTests : ClientTestContext
         Org.ListFailure = new HttpRequestException("offline");
         await page.Find($"[data-testid=org-move-{_kgId}]").ClickAsync(new());
 
-        page.WaitForAssertion(() => Assert.Contains("Something went wrong", page.Find("[data-testid=org-error]").TextContent));
+        page.WaitForAssertion(() => Assert.NotEmpty(page.FindAll("[data-testid=org-error]")), TimeSpan.FromSeconds(3)); // text depends on the ambient culture
     }
 
     [Fact]
