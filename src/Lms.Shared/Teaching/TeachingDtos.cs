@@ -56,6 +56,10 @@ public sealed record EndTeacherRequest(DateOnly LastDay);
 /// <summary>Body of POST /api/teacher-assignments/bulk (at most 200 ClassCourses).</summary>
 public sealed record BulkAssignTeacherRequest(Guid UserId, string Role, IReadOnlyList<Guid> ClassCourseIds);
 
+/// <summary>Result of the bulk teacher assignment: assignments created, and ClassCourses skipped because the teacher already
+/// holds an open assignment there.</summary>
+public sealed record BulkAssignTeacherResultDto(int Assigned, int Skipped);
+
 /// <summary>One row of GET /api/me/class-courses (the signed-in teacher's current ClassCourses).</summary>
 public sealed record MyClassCourseDto(
     Guid ClassCourseId,
