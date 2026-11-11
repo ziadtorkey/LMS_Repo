@@ -28,3 +28,14 @@ html, body { margin: 0; font-family: Roboto, "Segoe UI", Tahoma, sans-serif; }
 /* Audit diff: changed values */
 .lms-diff-before { background: rgba(244, 67, 54, 0.14); }
 .lms-diff-after { background: rgba(76, 175, 80, 0.18); }
+
+/* Year selector in the app bar: white on the primary colour, compact on phones */
+.lms-year-select { width: 130px; }
+.lms-year-select .mud-input-slot, .lms-year-select .mud-select-input, .lms-year-select .mud-icon-root { color: #fff !important; }
+.lms-year-select .mud-input-outlined-border { border-color: rgba(255, 255, 255, 0.7) !important; }
+.lms-year-selector .mud-icon-root { color: #fff; }
+@media (max-width: 599px) {
+    .lms-year-select { width: 124px; font-size: 0.75rem; }
+    .lms-year-select .mud-input-slot { padding-inline: 6px 0 !important; }
+    .lms-context-label { max-width: 16vw; }
+}

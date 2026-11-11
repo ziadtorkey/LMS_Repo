@@ -51,10 +51,32 @@ public sealed class StubOrgApi : IOrgApi
     public List<Guid> UnitsDeleted { get; } = [];
     public Exception? UnitDeleteFailure { get; set; }
     public Exception? StatusFailure { get; set; }
+    public Exception? ListFailure { get; set; }
     public Exception? LevelsFailure { get; set; }
+
+    public List<(Guid Id, MoveOrgUnitRequest Request)> Moves { get; } = [];
+    public List<(Guid Id, OrgUnitAcademicFlagsRequest Request)> FlagChanges { get; } = [];
+    public Exception? MoveFailure { get; set; }
+
+    public Task<OrgUnitNodeDto> GetOrgUnitAsync(Guid id, CancellationToken ct = default) =>
+        Task.FromResult(Units.First(u => u.Id == id));
+
+    public Task MoveOrgUnitAsync(Guid id, MoveOrgUnitRequest request, CancellationToken ct = default)
+    {
+        if (MoveFailure is not null) return Task.FromException(MoveFailure);
+        Moves.Add((id, request));
+        return Task.CompletedTask;
+    }
+
+    public Task SetAcademicFlagsAsync(Guid id, OrgUnitAcademicFlagsRequest request, CancellationToken ct = default)
+    {
+        FlagChanges.Add((id, request));
+        return Task.CompletedTask;
+    }
 
     public Task<IReadOnlyList<OrgUnitNodeDto>> GetOrgUnitsAsync(string? search, CancellationToken ct = default)
     {
+        if (ListFailure is not null) return Task.FromException<IReadOnlyList<OrgUnitNodeDto>>(ListFailure);
         UnitSearches.Add(search);
         if (string.IsNullOrWhiteSpace(search)) return Task.FromResult<IReadOnlyList<OrgUnitNodeDto>>(Units.ToList());
         var keep = new HashSet<Guid>();
