@@ -11,14 +11,14 @@ public static class DevSeedData
         string Code, string Level, string NameAr, string NameEn, bool IsLevelTransfer = false, params UnitSeed[] Children);
 
     public sealed record ClientSeed(
-        Guid OrganizationId, string NameAr, string NameEn, OrganizationType Type,
+        Guid OrganizationId, string NameAr, string NameEn, OrganizationType Type, string ShortCode,
         IReadOnlyList<LevelSeed> Levels, UnitSeed Root);
 
     public static readonly Guid SchoolGroupId = Guid.Parse("018f0000-0000-7000-8000-000000000001");
     public static readonly Guid UniversityId = Guid.Parse("018f0000-0000-7000-8000-000000000002");
 
     public static ClientSeed SchoolGroup { get; } = new(
-        SchoolGroupId, "مجموعة مدارس التجمع", "Altagamo3 Schools", OrganizationType.SchoolGroup,
+        SchoolGroupId, "مجموعة مدارس التجمع", "Altagamo3 Schools", OrganizationType.SchoolGroup, "altagamo3",
         [new("مدرسة", "School"), new("مرحلة", "Stage"), new("فصل", "Section", CanHostClasses: true)],
         new UnitSeed("S", "School", "مدرسة التجمع", "School Altagamo3", false,
             new UnitSeed("KG", "Stage", "رياض الأطفال", "KG", true,
@@ -30,7 +30,7 @@ public static class DevSeedData
                 new UnitSeed("PRI-S3", "Section", "الفصل 3", "Section 3"))));
 
     public static ClientSeed University { get; } = new(
-        UniversityId, "جامعة MNF", "MNF University", OrganizationType.University,
+        UniversityId, "جامعة MNF", "MNF University", OrganizationType.University, "mnf",
         [
             new("جامعة", "University"), new("كلية", "Faculty"), new("سنة", "Year"),
             new("تخصص", "Specialization", CanHostClasses: true),

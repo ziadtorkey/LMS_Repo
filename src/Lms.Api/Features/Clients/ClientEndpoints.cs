@@ -73,7 +73,11 @@ public static class ClientEndpoints
 
         if (!Organization.IsValidShortCode(CreateClientHandler.ResolveShortCode(request)))
         {
-            return ApiProblems.BadRequest(ProblemCodes.invalid_short_code);
+            return ApiProblems.BadRequest(
+                ProblemCodes.invalid_short_code,
+                string.IsNullOrWhiteSpace(request.ShortCode)
+                    ? "No short code was given and the root unit code cannot be turned into one (2-20 lower-case letters, digits or '-'): provide ShortCode."
+                    : "The short code must be 2-20 lower-case letters, digits or '-'.");
         }
 
         try
