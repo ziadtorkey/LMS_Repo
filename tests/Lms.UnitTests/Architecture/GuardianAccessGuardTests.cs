@@ -20,6 +20,9 @@ public sealed partial class GuardianAccessGuardTests
             + "Infrastructure callers only, the M3 match endpoint projects name and masked mobile (M2 Task 5, #157)",
         ["src/Lms.Infrastructure/People/PersonStatusService.cs"] =
             "recompute a user's account status: only whether the user has a live guardian profile (M2 Task 6, #158)",
+        ["src/Lms.Infrastructure/Identity/External/ExternalLoginLinker.cs"] =
+            "external sign-in matches a person by national id or user id among the provider's own client only; returns user ids, "
+            + "never guardian data (M2 Task 22, #168 / PR #193)",
         ["src/Lms.Infrastructure/Persistence/Configurations/People/PeopleConfigurations.cs"] =
             "entity mapping",
     };
