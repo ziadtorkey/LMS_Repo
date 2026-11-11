@@ -226,9 +226,21 @@ public sealed class StudentCredentialsTests
             Assert.False(stored.MustChangePassword);
         }
 
+        string stampBefore;
+        using (var scope = _host.Services.CreateScope())
+        {
+            stampBefore = (await scope.ServiceProvider.GetRequiredService<UserManager<User>>().FindByEmailAsync(shared))!.SecurityStamp!;
+        }
+
         var reset = await IssueAsync(student.Id, reset: true);
 
         Assert.NotNull(reset.Password);
+        using (var scope = _host.Services.CreateScope())
+        {
+            var stamp = (await scope.ServiceProvider.GetRequiredService<UserManager<User>>().FindByEmailAsync(shared))!.SecurityStamp;
+            Assert.NotEqual(stampBefore, stamp); // sessions that used the old password end
+        }
+
         using var after = _host.Services.CreateScope();
         Assert.True((await after.ServiceProvider.GetRequiredService<UserManager<User>>().FindByEmailAsync(shared))!.MustChangePassword);
     }
