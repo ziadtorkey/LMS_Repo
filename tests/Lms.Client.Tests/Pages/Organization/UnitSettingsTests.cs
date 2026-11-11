@@ -164,9 +164,9 @@ public sealed class UnitSettingsTests : ClientTestContext
         Assert.DoesNotContain(_plainId, ids);     // not a transfer unit
     }
 
-    private async Task<IRenderedComponent<AcademicFlagsTab>> RenderTabAsync(Guid unitId, bool canEdit = true)
+    private async Task<IRenderedComponent<AcademicFlagsTab>> RenderTabAsync(Guid unitId, bool canEdit = true, string culture = "en")
     {
-        Culture.Current = new CultureInfo("en");
+        Culture.Current = new CultureInfo(culture);
         CultureInfo.CurrentUICulture = Culture.Current;
         Render<MudPopoverProvider>();
         var units = Units();
@@ -196,6 +196,14 @@ public sealed class UnitSettingsTests : ClientTestContext
         var cut = await RenderTabAsync(_kgId);
 
         Assert.Equal("KG → Primary → Prep", cut.Find("[data-testid=transfer-path]").TextContent.Trim());
+    }
+
+    [Fact]
+    public async Task Transfer_path_arrow_points_with_the_reading_direction_in_arabic()
+    {
+        var cut = await RenderTabAsync(_kgId, culture: "ar");
+
+        Assert.Equal("ع-KG ← ع-Primary ← ع-Prep", cut.Find("[data-testid=transfer-path]").TextContent.Trim());
     }
 
     [Fact]

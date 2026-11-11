@@ -1,0 +1,77 @@
+@using Lms.Client.Services.Api
+@using Lms.Shared.Configuration
+@inject IConfigApi Api
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+<MudStack Spacing="3">
+    @if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error" data-testid="policies-error">@_error</MudAlert>
+    }
+
+    @if (_loading)
+    {
+        <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+    }
+    else
+    {
+        @foreach (var definition in _catalog)
+        {
+            var key = definition.Key;
+            var state = _states.GetValueOrDefault(key);
+            var inherited = state?.State == PolicyStates.Inherited;
+            var on = state is not null && state.State != PolicyStates.Off;
+            <MudPaper Outlined="true" Class="pa-3" data-testid="@($"policy-row-{key}")">
+                <MudSwitch T="bool" Value="on" ValueChanged="@(v => ToggleAsync(key, v))" Color="Color.Primary"
+                           Disabled="@(!CanEdit || inherited)" Label="@L[$"Policy_{key}"]" data-testid="@($"policy-switch-{key}")" />
+                @if (inherited)
+                {
+                    <MudText Typo="Typo.caption" data-testid="@($"policy-source-{key}")">
+                        @string.Format(L["Policies_SetBy"].Value, Culture.Pick(state!.SourceNameAr ?? "", state.SourceNameEn ?? ""))
+                    </MudText>
+                }
+                <MudText Typo="Typo.caption" Class="d-block" data-testid="@($"policy-blocks-{key}")">
+                    @L["Policies_Blocks"] @string.Join(Culture.IsRightToLeft ? "، " : ", ", definition.BlockedPermissions.Select(PermissionLabel))
+                </MudText>
+            </MudPaper>
+        }
+    }
+</MudStack>
+
+@code {
+    [Parameter, EditorRequired] public Guid UnitId { get; set; }
+    [Parameter] public bool CanEdit { get; set; }
+
+    private IReadOnlyList<PolicyDefinitionDto> _catalog = [];
+    private Dictionary<string, EffectivePolicyDto> _states = [];
+    private string? _error;
+    private bool _loading = true;
+
+    protected override async Task OnParametersSetAsync() => await LoadAsync();
+
+    private string PermissionLabel(string permission)
+    {
+        var label = L["Perm_" + permission.Replace('.', '_')];
+        return label.ResourceNotFound ? permission : label.Value;
+    }
+
+    private Task<bool> RunAsync(Func<Task> action) => ApiCalls.RunAsync(action, Navigation, L, message => _error = message);
+
+    private async Task LoadAsync()
+    {
+        await RunAsync(async () =>
+        {
+            _catalog = await Api.GetPolicyCatalogAsync();
+            _states = (await Api.GetPoliciesAsync(UnitId)).ToDictionary(p => p.Key);
+        });
+        _loading = false;
+    }
+
+    private async Task ToggleAsync(string key, bool enable)
+    {
+        _error = null;
+        await RunAsync(() => enable ? Api.EnablePolicyAsync(UnitId, key) : Api.DisablePolicyAsync(UnitId, key));
+        await LoadAsync(); // always show the server state
+    }
+}

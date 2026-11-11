@@ -12,6 +12,7 @@ public sealed class OrgUnitsModule : ILmsModule
         services.AddScoped<DeleteOrgUnitHandler>();
         services.AddScoped<AcademicFlagsHandler>();
         services.AddScoped<IOrgUnitUsageCheck, TransferTargetUsageCheck>();
+        services.AddScoped<MoveOrgUnitHandler>();
     }
 
     public void MapEndpoints(IEndpointRouteBuilder app) => app.MapOrgUnitEndpoints();

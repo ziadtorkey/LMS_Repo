@@ -54,6 +54,15 @@ public sealed class StubOrgApi : IOrgApi
     public Exception? ListFailure { get; set; }
     public Exception? LevelsFailure { get; set; }
 
+    public List<CopyBranchRequest> Copies { get; } = [];
+    public CopyBranchResultDto CopyResult { get; set; } = new(Guid.NewGuid(), 3, []);
+
+    public Task<CopyBranchResultDto> CopyBranchAsync(CopyBranchRequest request, CancellationToken ct = default)
+    {
+        Copies.Add(request);
+        return Task.FromResult(CopyResult);
+    }
+
     public List<(Guid Id, MoveOrgUnitRequest Request)> Moves { get; } = [];
     public List<(Guid Id, OrgUnitAcademicFlagsRequest Request)> FlagChanges { get; } = [];
     public Exception? MoveFailure { get; set; }

@@ -1,0 +1,94 @@
+@using System.Text.RegularExpressions
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Shared.Organizations
+@inject ITemplatesApi Api
+@inject NavigationManager Navigation
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form">
+            <MudStack Spacing="3">
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" data-testid="dialog-error">@_error</MudAlert>
+                }
+                <BilingualNameFields @bind-NameAr="_nameAr" @bind-NameEn="_nameEn" IdPrefix="template-name" />
+
+                <MudRadioGroup T="string" @bind-Value="_visibility" data-testid="template-visibility">
+                    <MudText Typo="Typo.subtitle2">@L["Templates_Visibility"]</MudText>
+                    <MudRadio T="string" Value="@TemplateVisibilities.Private">@L["Visibility_Private"]</MudRadio>
+                    <MudRadio T="string" Value="@TemplateVisibilities.Shared">@L["Visibility_Shared"]</MudRadio>
+                </MudRadioGroup>
+
+                <MudCheckBox T="bool" @bind-Value="_includePolicies" Label="@L["Copy_IncludePolicies"]" />
+                <MudCheckBox T="bool" @bind-Value="_includeSettings" Label="@L["Copy_IncludeSettings"]" />
+
+                <MudText Typo="Typo.subtitle2">@L["Templates_Replacements"]</MudText>
+                @for (var i = 0; i < _replacements.Count; i++)
+                {
+                    var index = i;
+                    var row = _replacements[i];
+                    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+                        <MudTextField T="string" @bind-Value="row.Literal" Label="@L["Templates_Literal"]" Immediate="false" data-testid="@($"replace-literal-{index}")" />
+                        <MudTextField T="string" @bind-Value="row.Token" Label="@L["Templates_Token"]" Immediate="false" dir="ltr"
+                                      Validation="@(new Func<string, string?>(ValidateToken))" data-testid="@($"replace-token-{index}")" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Close" aria-label="@L["Common_Delete"]" OnClick="() => _replacements.RemoveAt(index)" />
+                    </MudStack>
+                }
+                <div>
+                    <MudButton Variant="Variant.Text" StartIcon="@Icons.Material.Filled.Add" OnClick="() => _replacements.Add(new())"
+                               data-testid="template-add-replacement">@L["Templates_AddReplacement"]</MudButton>
+                </div>
+            </MudStack>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()">@L["Common_Cancel"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="_saving" data-testid="dialog-save">@L["Common_Save"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter, EditorRequired] public OrgUnitNodeDto Source { get; set; } = default!;
+
+    private sealed class Replacement
+    {
+        public string Literal { get; set; } = "";
+        public string Token { get; set; } = "";
+    }
+
+    private MudForm _form = default!;
+    private readonly List<Replacement> _replacements = [];
+    private string _nameAr = "", _nameEn = "", _visibility = TemplateVisibilities.Private;
+    private bool _includePolicies = true, _includeSettings = true, _saving;
+    private string? _error;
+
+    private static string Clean(string? token) => (token ?? "").Trim().Trim('{', '}');
+
+    private string? ValidateToken(string value) =>
+        string.IsNullOrWhiteSpace(value) || Regex.IsMatch(Clean(value), "^[A-Za-z]+$") ? null : L["Templates_TokenFormat"].Value;
+
+    private async Task SaveAsync()
+    {
+        await _form.ValidateAsync();
+        if (!_form.IsValid) return;
+
+        var map = new Dictionary<string, string>();
+        foreach (var row in _replacements.Where(r => !string.IsNullOrWhiteSpace(r.Literal) && !string.IsNullOrWhiteSpace(r.Token)))
+        {
+            if (!Regex.IsMatch(Clean(row.Token), "^[A-Za-z]+$")) { _error = L["Templates_TokenFormat"]; return; }
+            map[row.Literal.Trim()] = "{" + Clean(row.Token) + "}";
+        }
+
+        _saving = true; _error = null;
+        var ok = await ApiCalls.RunAsync(
+            () => Api.SaveAsync(new SaveTemplateRequest(Source.Id, _nameAr.Trim(), _nameEn.Trim(), _visibility, _includePolicies, _includeSettings, map)),
+            Navigation, L, message => _error = message);
+        _saving = false;
+
+        if (ok) MudDialog.Close(DialogResult.Ok(true));
+        else if (_error is null) MudDialog.Cancel(); // redirected
+    }
+}

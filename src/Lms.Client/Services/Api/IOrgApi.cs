@@ -18,6 +18,7 @@ public interface IOrgApi
     Task<OrgUnitNodeDto> UpdateOrgUnitAsync(Guid id, UpdateOrgUnitRequest request, CancellationToken ct = default);
     Task SetOrgUnitStatusAsync(Guid id, SetOrgUnitStatusRequest request, CancellationToken ct = default);
     Task DeleteOrgUnitAsync(Guid id, CancellationToken ct = default);
+    Task<CopyBranchResultDto> CopyBranchAsync(CopyBranchRequest request, CancellationToken ct = default);
     Task<OrgUnitNodeDto> GetOrgUnitAsync(Guid id, CancellationToken ct = default);
     Task MoveOrgUnitAsync(Guid id, MoveOrgUnitRequest request, CancellationToken ct = default);
     Task SetAcademicFlagsAsync(Guid id, OrgUnitAcademicFlagsRequest request, CancellationToken ct = default);
@@ -25,6 +26,9 @@ public interface IOrgApi
 
 public sealed class OrgApi(ApiHttp http) : IOrgApi
 {
+    public async Task<CopyBranchResultDto> CopyBranchAsync(CopyBranchRequest request, CancellationToken ct = default) =>
+        (await http.SendAsync<CopyBranchResultDto>(HttpMethod.Post, Routes.OrgUnitsCopy, request, ct))!;
+
     public Task<OrgUnitNodeDto> GetOrgUnitAsync(Guid id, CancellationToken ct = default) =>
         http.GetAsync<OrgUnitNodeDto>(Routes.OrgUnit(id), ct);
 
@@ -188,6 +192,16 @@ public sealed class FakeOrgApi : IOrgApi
             IsCourseManagementLevel = request.IsCourseManagementLevel,
         };
         return Task.CompletedTask;
+    }
+
+    public Task<CopyBranchResultDto> CopyBranchAsync(CopyBranchRequest request, CancellationToken ct = default)
+    {
+        var source = _units.First(u => u.Id == request.SourceOrgUnitId);
+        var parent = _units.First(u => u.Id == request.TargetParentId);
+        var root = new OrgUnitNodeDto(Guid.NewGuid(), parent.Id, source.LevelTypeId, request.NewRootNameAr ?? source.NameAr,
+            request.NewRootNameEn ?? source.NameEn, source.Code + request.CodeSuffix, parent.Depth + 1, "Active", false, null, false, false, []);
+        _units.Add(root);
+        return Task.FromResult(new CopyBranchResultDto(root.Id, 1, request.IncludeSettings ? ["Files.MaxUploadMb"] : []));
     }
 
     public Task DeleteOrgUnitAsync(Guid id, CancellationToken ct = default)

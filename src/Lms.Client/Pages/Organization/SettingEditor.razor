@@ -1,0 +1,77 @@
+@using System.Text.Json
+@using Lms.Shared.Configuration
+
+@* Renders the editor of one setting by its kind; emits the new JSON value (or shows a validation error and emits nothing). *@
+@switch (Definition.Kind)
+{
+    case SettingValueKinds.Bool:
+        <MudSwitch T="bool" Value="@(Value == "true")" ValueChanged="@(v => EmitAsync(v ? "true" : "false"))" Color="Color.Primary"
+                   Disabled="Disabled" data-testid="@($"setting-input-{Definition.Name}")" aria-label="@Label" />
+        break;
+    case SettingValueKinds.Int:
+        <MudNumericField T="int?" Value="@IntValue" ValueChanged="OnIntChangedAsync" Disabled="Disabled" HideSpinButtons="true"
+                         Immediate="false" Variant="Variant.Outlined" Margin="Margin.Dense" dir="ltr"
+                         data-testid="@($"setting-input-{Definition.Name}")" aria-label="@Label" />
+        @if (_error is not null)
+        {
+            <MudText Typo="Typo.caption" Color="Color.Error" data-testid="@($"setting-error-{Definition.Name}")">@_error</MudText>
+        }
+        break;
+    case SettingValueKinds.Enum:
+        <MudSelect T="string" Value="@StringValue" ValueChanged="@(v => EmitAsync(JsonSerializer.Serialize(v)))" Disabled="Disabled"
+                   Variant="Variant.Outlined" Margin="Margin.Dense" data-testid="@($"setting-input-{Definition.Name}")" aria-label="@Label">
+            @foreach (var allowed in Definition.AllowedValues ?? [])
+            {
+                <MudSelectItem T="string" Value="@allowed">@ValueLabel(allowed)</MudSelectItem>
+            }
+        </MudSelect>
+        break;
+    default:
+        <MudTextField T="string" Value="@StringValue" ValueChanged="@(v => EmitAsync(JsonSerializer.Serialize(v)))" Disabled="Disabled"
+                      Variant="Variant.Outlined" Margin="Margin.Dense" data-testid="@($"setting-input-{Definition.Name}")" aria-label="@Label" />
+        break;
+}
+
+@code {
+    [Parameter, EditorRequired] public SettingDefinition Definition { get; set; } = default!;
+
+    /// <summary>Current value in JSON form (e.g. <c>true</c>, <c>200</c>, <c>"ar"</c>).</summary>
+    [Parameter] public string Value { get; set; } = "";
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public string Label { get; set; } = "";
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+
+    private string? _error;
+
+    private int? IntValue => int.TryParse(Value, out var i) ? i : null;
+
+    private string? StringValue
+    {
+        get
+        {
+            try { return JsonSerializer.Deserialize<string>(Value); }
+            catch (JsonException) { return null; }
+        }
+    }
+
+    private string ValueLabel(string allowed)
+    {
+        var label = L[$"SettingValue_{Definition.Name.Replace('.', '_')}_{allowed}"];
+        return label.ResourceNotFound ? allowed : label.Value;
+    }
+
+    private Task EmitAsync(string json) => ValueChanged.InvokeAsync(json);
+
+    private async Task OnIntChangedAsync(int? value)
+    {
+        var min = Definition.Min ?? int.MinValue;
+        var max = Definition.Max ?? int.MaxValue;
+        if (value is null || value < min || value > max)
+        {
+            _error = string.Format(L["Settings_OutOfRange"].Value, Definition.Min, Definition.Max);
+            return;
+        }
+        _error = null;
+        await EmitAsync(value.Value.ToString());
+    }
+}

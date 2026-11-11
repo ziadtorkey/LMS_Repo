@@ -258,6 +258,15 @@ public sealed class HubGroupTests(LmsApiFactory factory)
     }
 
     [Fact]
+    public async Task Suspended_client_stops_live_pushes_on_an_open_connection() =>
+        await AssertSilentAfterAsync("HG12S", async (tree, _) =>
+        {
+            await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+            (await db.Organizations.SingleAsync(o => o.Id == tree.Org.Id)).SetStatus(OrganizationStatus.Suspended);
+            await db.SaveChangesAsync();
+        });
+
+    [Fact]
     public async Task Deleted_assignment_stops_live_pushes_on_an_open_connection() =>
         await AssertSilentAfterAsync("HG10", async (_, assignment) =>
         {
