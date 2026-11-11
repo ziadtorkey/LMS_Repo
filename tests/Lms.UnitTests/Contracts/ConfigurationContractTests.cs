@@ -27,7 +27,7 @@ public class ConfigurationContractTests
     [Fact]
     public void Declared_keys_are_found()
     {
-        Assert.Equal(9, DeclaredKeys().Count());
+        Assert.Equal(16, DeclaredKeys().Count());
     }
 
     [Theory]
@@ -41,6 +41,7 @@ public class ConfigurationContractTests
         Assert.Equal(JsonSerializer.Serialize(defaultValue, valueType), definition.DefaultJson);
         var expectedKinds = valueType == typeof(bool) ? new[] { SettingValueKinds.Bool }
             : valueType == typeof(int) ? [SettingValueKinds.Int]
+            : valueType == typeof(IReadOnlyList<string>) ? [SettingValueKinds.StringSet]
             : [SettingValueKinds.String, SettingValueKinds.Enum];
         Assert.Contains(definition.Kind, expectedKinds);
     }
@@ -60,6 +61,8 @@ public class ConfigurationContractTests
             "Ui.DefaultCulture", "Ui.ShowHijriDates", "Files.MaxUploadMb",
             "Features.VirtualClasses", "Features.DigitalLibrary", "Features.ScormContent", "Features.Messaging",
             "Features.GuardianPortal", "Staff.ExpiryNoticeDays",
+            "Students.CodeMode", "Students.CodePattern", "Students.CriticalFields", "Guardians.DataRequired",
+            "Classes.CapacityMode", "Blueprints.SectionLabel", "Enrollment.TransferCarriesGrades",
         ], SettingCatalog.All.Select(d => d.Name));
 
         var culture = SettingCatalog.Find("Ui.DefaultCulture")!;
@@ -87,6 +90,42 @@ public class ConfigurationContractTests
             (expiry.Kind, expiry.Category, expiry.DefaultJson, expiry.Min, expiry.Max));
         Assert.Equal(("Staff.ExpiryNoticeDays", 14), (SettingKeys.StaffExpiryNoticeDays.Name, SettingKeys.StaffExpiryNoticeDays.Default));
         Assert.Null(SettingCatalog.Find("Nope.Nope"));
+    }
+
+    [Fact]
+    public void M3_settings_match_plan()
+    {
+        Assert.Equal((SettingValueKinds.Enum, SettingCategories.People, "\"Auto\""), Shape("Students.CodeMode"));
+        Assert.Equal(["Auto", "Manual"], SettingCatalog.Find("Students.CodeMode")!.AllowedValues!);
+        Assert.Equal((SettingValueKinds.String, SettingCategories.People, "\"{Seq:6}\""), Shape("Students.CodePattern"));
+        Assert.Equal(SettingValueKinds.StringSet, SettingCatalog.Find("Students.CriticalFields")!.Kind);
+        Assert.Equal(Lms.Shared.People.StudentFields.Requestable, SettingCatalog.Find("Students.CriticalFields")!.AllowedValues!);
+        Assert.Equal((SettingValueKinds.Bool, SettingCategories.People, "false"), Shape("Guardians.DataRequired"));
+        Assert.Equal((SettingValueKinds.Enum, SettingCategories.Academic, "\"Warn\""), Shape("Classes.CapacityMode"));
+        Assert.Equal(["Warn", "Block"], SettingCatalog.Find("Classes.CapacityMode")!.AllowedValues!);
+        Assert.Equal((SettingValueKinds.Enum, SettingCategories.Academic, "\"Week\""), Shape("Blueprints.SectionLabel"));
+        Assert.Equal(["Week", "Unit", "Chapter"], SettingCatalog.Find("Blueprints.SectionLabel")!.AllowedValues!);
+        Assert.Equal((SettingValueKinds.Bool, SettingCategories.Academic, "true"), Shape("Enrollment.TransferCarriesGrades"));
+    }
+
+    [Fact]
+    public void StringSet_defaults_are_subsets_of_allowed_values()
+    {
+        var sets = SettingCatalog.All.Where(d => d.Kind == SettingValueKinds.StringSet).ToList();
+        Assert.NotEmpty(sets);
+        Assert.All(sets, d =>
+        {
+            Assert.NotNull(d.AllowedValues);
+            var values = JsonSerializer.Deserialize<string[]>(d.DefaultJson)!;
+            Assert.Equal(values.Length, values.Distinct(StringComparer.Ordinal).Count());
+            Assert.All(values, v => Assert.Contains(v, d.AllowedValues!));
+        });
+    }
+
+    private static (string, string, string) Shape(string name)
+    {
+        var d = SettingCatalog.Find(name)!;
+        return (d.Kind, d.Category, d.DefaultJson);
     }
 
     [Fact]
@@ -124,15 +163,18 @@ public class ConfigurationContractTests
     }
 
     [Fact]
-    public void Policy_catalog_matches_the_M2_plan()
+    public void Policy_catalog_matches_the_M3_plan()
     {
         Assert.Equal(
-            ["CreateAdmins", "CreateOrgUnits", "CreateStaff", "CreateTeachers"],
+            ["CreateAdmins", "CreateClasses", "CreateCourses", "CreateOrgUnits", "CreateStaff", "CreateStudents", "CreateTeachers"],
             PolicyCatalog.BlockedPermissions.Keys.Order(StringComparer.Ordinal));
         Assert.Equal(["OrgUnits.Create"], PolicyCatalog.BlockedPermissions[PolicyCatalog.CreateOrgUnits]);
         Assert.Equal(["Staff.Create", "Staff.Import"], PolicyCatalog.BlockedPermissions[PolicyCatalog.CreateStaff]);
         Assert.Empty(PolicyCatalog.BlockedPermissions[PolicyCatalog.CreateTeachers]);
         Assert.Empty(PolicyCatalog.BlockedPermissions[PolicyCatalog.CreateAdmins]);
+        Assert.Equal(["Students.Create", "Students.Import"], PolicyCatalog.BlockedPermissions[PolicyCatalog.CreateStudents]);
+        Assert.Equal(["Courses.Create", "Courses.Import"], PolicyCatalog.BlockedPermissions[PolicyCatalog.CreateCourses]);
+        Assert.Equal(["Classes.Create"], PolicyCatalog.BlockedPermissions[PolicyCatalog.CreateClasses]);
 
         Assert.Equal(["CreateAdmins", "CreateTeachers"], PolicyCatalog.BlockedRoles.Keys.Order(StringComparer.Ordinal));
         Assert.Equal(["Teacher"], PolicyCatalog.BlockedRoles[PolicyCatalog.CreateTeachers]);
@@ -168,10 +210,12 @@ public class ConfigurationContractTests
         Assert.Equal(("Off", "SetHere", "Inherited"), (PolicyStates.Off, PolicyStates.SetHere, PolicyStates.Inherited));
         Assert.Equal(("Private", "Shared"), (TemplateVisibilities.Private, TemplateVisibilities.Shared));
         Assert.Equal(["Private", "Shared"], TemplateVisibilities.All);
-        Assert.Equal(("Bool", "Int", "String", "Enum"),
-            (SettingValueKinds.Bool, SettingValueKinds.Int, SettingValueKinds.String, SettingValueKinds.Enum));
-        Assert.Equal(("General", "Files", "Features", "People"),
-            (SettingCategories.General, SettingCategories.Files, SettingCategories.Features, SettingCategories.People));
+        Assert.Equal(("Bool", "Int", "String", "Enum", "StringSet"),
+            (SettingValueKinds.Bool, SettingValueKinds.Int, SettingValueKinds.String, SettingValueKinds.Enum,
+                SettingValueKinds.StringSet));
+        Assert.Equal(("General", "Files", "Features", "People", "Academic"),
+            (SettingCategories.General, SettingCategories.Files, SettingCategories.Features, SettingCategories.People,
+                SettingCategories.Academic));
     }
 
     [Fact]

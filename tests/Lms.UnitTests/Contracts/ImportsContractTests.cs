@@ -17,8 +17,9 @@ public partial class ImportsContractTests
     [Fact]
     public void Import_kinds_are_lower_case_route_segments()
     {
-        Assert.Equal(["staff"], ImportKinds.All);
-        Assert.Equal("staff", ImportKinds.Staff);
+        Assert.Equal(["staff", "students", "courses", "class-students"], ImportKinds.All);
+        Assert.Equal(("staff", "students", "courses", "class-students"),
+            (ImportKinds.Staff, ImportKinds.Students, ImportKinds.Courses, ImportKinds.ClassStudents));
         Assert.All(ImportKinds.All, k => Assert.Matches(RouteSegment(), k));
         Assert.Equal(ImportKinds.All.Count, ImportKinds.All.Distinct(StringComparer.Ordinal).Count());
     }
