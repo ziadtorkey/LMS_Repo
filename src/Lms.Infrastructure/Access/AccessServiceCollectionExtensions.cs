@@ -12,6 +12,8 @@ public static class AccessServiceCollectionExtensions
         services.AddMemoryCache();
         services.AddScoped<IDefaultRoleProvisioner, DefaultRoleProvisioner>();
         services.AddScoped<IAccessEvaluator, AccessEvaluator>();
+        services.AddSingleton<IRolePermissionCache, RolePermissionCache>();
+        services.AddScoped<CallerPermissions>();
         services.AddSingleton(sp => new BuiltInRoleStartupReconciler(
             sp.GetRequiredService<IConfiguration>().GetConnectionString("Lms")
                 ?? throw new InvalidOperationException("ConnectionStrings:Lms is not configured."),
