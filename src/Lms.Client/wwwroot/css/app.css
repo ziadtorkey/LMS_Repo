@@ -13,3 +13,7 @@ html, body { margin: 0; font-family: Roboto, "Segoe UI", Tahoma, sans-serif; }
 
 /* Programmatic focus on the page heading (FocusOnNavigate) should not draw a box. */
 [tabindex="-1"]:focus { outline: none; }
+
+/* Audit diff: changed values */
+.lms-diff-before { background: rgba(244, 67, 54, 0.14); }
+.lms-diff-after { background: rgba(76, 175, 80, 0.18); }

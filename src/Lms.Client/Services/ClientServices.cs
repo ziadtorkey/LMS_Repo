@@ -28,6 +28,7 @@ public static class ClientServices
         if (configuration.GetValue<bool>("Lms:UseFakeApi"))
         {
             services.AddScoped<ILmsApi, FakeLmsApi>();
+            services.AddScoped<IAuditApi, FakeAuditApi>();
             services.AddScoped<IAccessAdminApi, FakeAccessAdminApi>();
             services.AddScoped<IUnitLookupApi, FakeUnitLookupApi>();
             services.AddSingleton<IClientsApi, FakeClientsApi>();
@@ -45,6 +46,7 @@ public static class ClientServices
             options.ProviderOptions.DefaultScopes.Add("lms_api");
         });
         services.AddTransient<ForbiddenRedirectHandler>();
+        services.AddScoped<IAuditApi, AuditApi>();
         services.AddScoped<IAccessAdminApi, AccessAdminApi>();
         services.AddScoped<IUnitLookupApi, UnitLookupApi>();
         services.AddHttpClient<ILmsApi, LmsApiClient>(c => c.BaseAddress = new Uri(baseAddress))

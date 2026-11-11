@@ -167,6 +167,42 @@
   <data name="Error_OutOfScope" xml:space="preserve"><value>هذا العنصر خارج نطاق صلاحياتك.</value></data>
   <data name="Error_invalid_context" xml:space="preserve"><value>الدور الذي اخترته لم يعد صالحًا. يرجى اختيار دور مرة أخرى.</value></data>
   <data name="Error_context_required" xml:space="preserve"><value>يرجى اختيار دور أولًا.</value></data>
+  <data name="Audit_Title" xml:space="preserve"><value>سجل التدقيق</value></data>
+  <data name="Audit_When" xml:space="preserve"><value>الوقت</value></data>
+  <data name="Audit_Who" xml:space="preserve"><value>المستخدم</value></data>
+  <data name="Audit_Role" xml:space="preserve"><value>الدور</value></data>
+  <data name="Audit_Unit" xml:space="preserve"><value>الوحدة</value></data>
+  <data name="Audit_Action" xml:space="preserve"><value>الإجراء</value></data>
+  <data name="Audit_Entity" xml:space="preserve"><value>الكيان</value></data>
+  <data name="Audit_From" xml:space="preserve"><value>من</value></data>
+  <data name="Audit_To" xml:space="preserve"><value>إلى</value></data>
+  <data name="Audit_Before" xml:space="preserve"><value>قبل</value></data>
+  <data name="Audit_After" xml:space="preserve"><value>بعد</value></data>
+  <data name="Audit_ExportCsv" xml:space="preserve"><value>تصدير CSV</value></data>
+  <data name="Audit_ExportExcel" xml:space="preserve"><value>تصدير Excel</value></data>
+  <data name="AuditAction_Created" xml:space="preserve"><value>إنشاء</value></data>
+  <data name="AuditAction_Updated" xml:space="preserve"><value>تعديل</value></data>
+  <data name="AuditAction_Deleted" xml:space="preserve"><value>حذف</value></data>
+  <data name="AuditAction_SecurityEvent" xml:space="preserve"><value>حدث أمني</value></data>
+  <data name="AuditEntity_Organization" xml:space="preserve"><value>عميل</value></data>
+  <data name="AuditEntity_LevelType" xml:space="preserve"><value>نوع مستوى</value></data>
+  <data name="AuditEntity_OrgUnit" xml:space="preserve"><value>وحدة تنظيمية</value></data>
+  <data name="AuditEntity_Role" xml:space="preserve"><value>دور</value></data>
+  <data name="AuditEntity_RolePermission" xml:space="preserve"><value>صلاحية دور</value></data>
+  <data name="AuditEntity_RoleAssignment" xml:space="preserve"><value>تعيين دور</value></data>
+  <data name="AuditEntity_OrgUnitSetting" xml:space="preserve"><value>إعداد وحدة</value></data>
+  <data name="AuditEntity_OrgUnitPolicy" xml:space="preserve"><value>سياسة وحدة</value></data>
+  <data name="AuditEntity_User" xml:space="preserve"><value>مستخدم</value></data>
+  <data name="AuditEntity_OrgTemplate" xml:space="preserve"><value>قالب هيكل</value></data>
+  <data name="AuditEntity_AcademicYear" xml:space="preserve"><value>عام دراسي</value></data>
+  <data name="AuditEntity_Term" xml:space="preserve"><value>فصل دراسي</value></data>
+  <data name="AuditEntity_CalendarEvent" xml:space="preserve"><value>حدث تقويمي</value></data>
+  <data name="AuditEvent_LoginSucceeded" xml:space="preserve"><value>تسجيل دخول ناجح</value></data>
+  <data name="AuditEvent_LoginFailed" xml:space="preserve"><value>فشل تسجيل الدخول</value></data>
+  <data name="AuditEvent_PasswordResetRequested" xml:space="preserve"><value>طلب إعادة تعيين كلمة المرور</value></data>
+  <data name="AuditEvent_PasswordReset" xml:space="preserve"><value>إعادة تعيين كلمة المرور</value></data>
+  <data name="AuditEvent_InvitationAccepted" xml:space="preserve"><value>قبول الدعوة</value></data>
+  <data name="Common_Close" xml:space="preserve"><value>إغلاق</value></data>
   <data name="Clients_Title" xml:space="preserve"><value>العملاء</value></data>
   <data name="Clients_New" xml:space="preserve"><value>عميل جديد</value></data>
   <data name="Clients_Type" xml:space="preserve"><value>النوع</value></data>
@@ -197,4 +233,5 @@
   <data name="LevelTypes_OutOfScope" xml:space="preserve"><value>يمكن تغيير ذلك فقط من المستوى الأعلى للمؤسسة.</value></data>
   <data name="Common_Yes" xml:space="preserve"><value>نعم</value></data>
   <data name="Common_No" xml:space="preserve"><value>لا</value></data>
+  <data name="AuditEntity_StoredFile" xml:space="preserve"><value>ملف</value></data>
 </root>
