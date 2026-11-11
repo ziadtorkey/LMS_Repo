@@ -19,7 +19,8 @@ namespace Lms.Infrastructure;
 public static class DependencyInjection
 {
     /// <summary>Single entry point; each module adds one line here that calls its own Add&lt;Module&gt; extension.</summary>
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddInfrastructure(
+        this IServiceCollection services, IConfiguration configuration, Microsoft.Extensions.Hosting.IHostEnvironment environment)
     {
         services.AddSingleton<IClock, SystemClock>();
         services.AddPersistence(configuration);
@@ -33,7 +34,7 @@ public static class DependencyInjection
         services.AddEmail(configuration);
         services.AddSettingsAndPolicies();
         services.AddAcademicYears();
-        services.AddExternalIdentity(configuration);
+        services.AddExternalIdentity(configuration, environment);
         return services;
     }
 }
