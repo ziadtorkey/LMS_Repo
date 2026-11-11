@@ -49,6 +49,8 @@ public sealed class IsolationBypassGuardTests
             "setting locks sit on ancestors above the caller's scope when a copied branch is materialized (M1 Task 15, #50)",
         ["src/Lms.Api/Features/LevelTypes/LevelTypeEndpoints.cs"] =
             "level types are client-wide, so the in-use count covers the whole client, not the caller subtree (M1 Task 8, #83)",
+        ["src/Lms.Infrastructure/Courses/CourseCatalog.cs"] =
+            "courses and allocations owned by ancestors of the caller scope, restricted to the client (M3 Task 5, #213)",
         ["src/Lms.Infrastructure/Notifications/NotificationRecipientResolver.cs"] =
             "recipients at or below the event unit, raised by someone above or beside them (M1 Task 10, #90)",
         ["src/Lms.Infrastructure/AcademicYears/AcademicYearResolver.cs"] =
