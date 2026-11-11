@@ -1,0 +1,117 @@
+@using Lms.Client.Services.Api
+@using Lms.Shared.Classes
+@using Lms.Shared.Enrollment
+@inject IEnrollmentApi Api
+@inject IClassesApi Classes
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+@* Moves a student to another class of the same year: pick the class, see what happens to the enrollments (kept, dropped, added, blocked by restrictions), then confirm. *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="3">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" data-testid="dialog-error">@_error</MudAlert>
+            }
+            <MudText data-testid="transfer-student">@StudentName</MudText>
+            <MudSelect T="Guid?" Value="_toClassId" ValueChanged="OnClassChanged" Label="@L["Transfer_ToClass"]" Required="true"
+                       data-testid="transfer-class">
+                @foreach (var cls in _classes)
+                {
+                    <MudSelectItem T="Guid?" Value="@((Guid?)cls.Id)">@($"{Culture.Pick(cls.NameAr, cls.NameEn)} ({cls.StudentCount}{(cls.Capacity is { } cap ? $"/{cap}" : "")})")</MudSelectItem>
+                }
+            </MudSelect>
+            <MudDatePicker Date="_date" DateChanged="d => { _date = d; ResetPreview(); }" Label="@L["Enrollment_EffectiveOn"]" data-testid="transfer-date" />
+            <MudTextField T="string" Value="_reason" ValueChanged="v => { _reason = v; ResetPreview(); }" Label="@L["Staff_Reason"]" Lines="2" MaxLength="500"
+                          Immediate="true" data-testid="transfer-reason" />
+            <div>
+                <MudButton Variant="Variant.Outlined" OnClick="PreviewAsync" Disabled="@(_busy || _toClassId is null || string.IsNullOrWhiteSpace(_reason))"
+                           data-testid="transfer-preview">@L["Transfer_Preview"]</MudButton>
+            </div>
+
+            @if (_preview is not null)
+            {
+                <MudPaper Outlined="true" Class="pa-3" data-testid="transfer-preview-result">
+                    <MudStack Spacing="1">
+                        @PreviewLine("kept", "Transfer_Kept", _preview.KeptCourseCodes, Color.Success)
+                        @PreviewLine("dropped", "Transfer_Dropped", _preview.DroppedCourseCodes, Color.Error)
+                        @PreviewLine("added", "Transfer_Added", _preview.AddedCourseCodes, Color.Info)
+                        @PreviewLine("restricted", "Transfer_Restricted", _preview.RestrictedCourseCodes, Color.Warning)
+                    </MudStack>
+                </MudPaper>
+                @if (_preview.OverCapacity)
+                {
+                    <MudCheckBox T="bool" @bind-Value="_confirmOver" Label="@L["Transfer_ConfirmOverCapacity"]" data-testid="transfer-over-capacity" />
+                }
+            }
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="TransferAsync"
+                   Disabled="@(_busy || _preview is null || (_preview.OverCapacity && !_confirmOver))" data-testid="transfer-confirm">@L["Transfer_Confirm"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired] public Guid StudentId { get; set; }
+    [Parameter] public string StudentName { get; set; } = "";
+
+    /// <summary>The student's unit, year and current class: targets are the other active classes of the same unit and year.</summary>
+    [Parameter, EditorRequired] public Guid OrgUnitId { get; set; }
+    [Parameter] public Guid? AcademicYearId { get; set; }
+    [Parameter] public Guid? CurrentClassId { get; set; }
+
+    private IReadOnlyList<ClassSummaryDto> _classes = [];
+    private Guid? _toClassId;
+    private DateTime? _date = DateTime.Today;
+    private string _reason = "";
+    private TransferPreviewDto? _preview;
+    private bool _confirmOver, _busy;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ApiCalls.RunAsync(async () =>
+            _classes = (await Classes.ListAsync(new ClassQuery(OrgUnitId, false, AcademicYearId, ClassStatuses.Active, null, null, 1, 200)))
+                .Items.Where(c => c.Id != CurrentClassId).ToList(),
+            Navigation, L, message => _error = message);
+    }
+
+    private RenderFragment PreviewLine(string key, string label, IReadOnlyList<string> codes, Color color) => builder =>
+    {
+        if (codes.Count == 0) return;
+        builder.OpenElement(0, "div");
+        builder.AddAttribute(1, "data-testid", $"preview-{key}");
+        builder.AddContent(2, $"{L[label].Value}: {string.Join(", ", codes)}");
+        builder.CloseElement();
+    };
+
+    private void ResetPreview() { _preview = null; _confirmOver = false; }
+
+    private void OnClassChanged(Guid? id) { _toClassId = id; ResetPreview(); }
+
+    private TransferStudentRequest Request() =>
+        new(StudentId, _toClassId!.Value, DateOnly.FromDateTime(_date ?? DateTime.Today), _reason.Trim(), _confirmOver);
+
+    private async Task PreviewAsync()
+    {
+        _error = null;
+        _busy = true;
+        // transfer_invalid and the like come back as problems and are shown as the localized message.
+        await ApiCalls.RunAsync(async () => _preview = await Api.PreviewTransferAsync(Request()), Navigation, L, message => _error = message);
+        _busy = false;
+    }
+
+    private async Task TransferAsync()
+    {
+        _error = null;
+        _busy = true;
+        var ok = await ApiCalls.RunAsync(() => Api.TransferAsync(Request()), Navigation, L, message => _error = message);
+        _busy = false;
+        if (ok) MudDialog.Close(DialogResult.Ok(true));
+    }
+}
