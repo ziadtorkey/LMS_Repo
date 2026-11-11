@@ -11,6 +11,9 @@ public static class PeopleServiceCollectionExtensions
         services.AddScoped<IPersonDuplicateFinder, PersonDuplicateFinder>();
         services.AddScoped<IGuardianLinker, Guardians.GuardianLinker>();
         services.AddScoped<IStudentCredentials, Students.StudentCredentials>();
+        services.AddScoped<Guardians.GuardianAccountSync>();
+        services.AddScoped<IGuardianAccountSync>(sp => sp.GetRequiredService<Guardians.GuardianAccountSync>());
+        services.AddScoped<IGuardianLinkObserver>(sp => sp.GetRequiredService<Guardians.GuardianAccountSync>());
         services.AddScoped<Students.IStudentFeatureResolver, Students.StudentFeatureResolver>();
         services.AddScoped<IOrgUnitUsageCheck, PeopleUsageCheck>();
         services.AddScoped<IPersonAccounts, PersonAccounts>();

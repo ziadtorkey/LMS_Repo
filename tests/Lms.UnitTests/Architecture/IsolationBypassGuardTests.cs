@@ -75,6 +75,8 @@ public sealed class IsolationBypassGuardTests
             "student codes are unique per client across all schools and for deleted students; client matched, only a yes/no leaves (M3 Task 18, #226)",
         ["src/Lms.Infrastructure/Enrollment/PlacementGuard.cs"] =
             "the academic year and the course restrictions of a class sit at ancestor units above the caller's scope; an invisible restriction must never mean no restriction; client matched, deleted rows excluded (M3 Task 24, #232)",
+        ["src/Lms.Infrastructure/People/Guardians/GuardianAccountSync.cs"] =
+            "a guardian's children, their home units and the guardian's own assignments sit outside the caller's scope (siblings in other schools); client matched, deleted rows excluded, only the guardian's own rows are written (M3 Task 25, #233)",
         ["src/Lms.Infrastructure/People/PersonDuplicateFinder.cs"] =
             "client-wide duplicate checks reach sibling subtrees outside the caller's scope; client matched, deleted rows excluded, only the field name leaves (M2 Task 5, #157)",
     };

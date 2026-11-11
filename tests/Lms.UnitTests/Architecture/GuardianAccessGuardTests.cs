@@ -20,6 +20,8 @@ public sealed partial class GuardianAccessGuardTests
         ["src/Lms.Infrastructure/People/PersonDuplicateFinder.cs"] =
             "client-wide match by national id or mobile (guardians may already exist through a sibling subtree); returns the entity to "
             + "Infrastructure callers only, the M3 match endpoint projects name and masked mobile (M2 Task 5, #157)",
+        ["src/Lms.Api/Features/Guardians/GuardianPortalEndpoints.cs"] =
+            "my children: the signed-in user's own guardian profile (by their user id, client filter of the table); children come from StudentGuardian in the caller's scope (M3 Task 25, #233)",
         ["src/Lms.Infrastructure/People/PersonStatusService.cs"] =
             "recompute a user's account status: only whether the user has a live guardian profile (M2 Task 6, #158)",
         ["src/Lms.Infrastructure/Identity/External/ExternalLoginLinker.cs"] =
