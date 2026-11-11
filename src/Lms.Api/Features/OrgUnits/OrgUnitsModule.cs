@@ -1,11 +1,15 @@
+using Lms.Api.Infrastructure;
+
 namespace Lms.Api.Features.OrgUnits;
 
-public static class OrgUnitsModule
+/// <summary>The org tree: unit CRUD, search, status, delete rules.</summary>
+public sealed class OrgUnitsModule : ILmsModule
 {
-    public static IServiceCollection AddOrgUnits(this IServiceCollection services)
+    public void AddServices(IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<OrgUnitQueries>();
         services.AddScoped<DeleteOrgUnitHandler>();
-        return services;
     }
+
+    public void MapEndpoints(IEndpointRouteBuilder app) => app.MapOrgUnitEndpoints();
 }
