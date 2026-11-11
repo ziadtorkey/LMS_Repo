@@ -56,8 +56,8 @@
         <MudTh>@L["Course_Allocations"]</MudTh>
     </HeaderContent>
     <RowTemplate Context="course">
-        <MudTd><span dir="ltr">@course.Code</span></MudTd>
-        <MudTd>
+        <MudTd DataLabel="@L["Course_Code"]"><span dir="ltr">@course.Code</span></MudTd>
+        <MudTd DataLabel="@L["Common_Name"]">
             <MudLink OnClick="() => OpenAsync(course)" data-testid="@($"course-link-{course.Id}")">@Culture.Pick(course.NameAr, course.NameEn)</MudLink>
             <MudIconButton Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small" Href="@($"courses/{course.Id}")" aria-label="@L["CourseProfile_Open"]"
                            data-testid="@($"course-profile-{course.Id}")" />
@@ -66,12 +66,12 @@
                 <MudChip T="string" Size="Size.Small" Color="Color.Info" data-testid="@($"inherited-chip-{course.Id}")">@L["Course_Inherited"]</MudChip>
             }
         </MudTd>
-        <MudTd>@Culture.Pick(course.OwnerOrgUnitNameAr, course.OwnerOrgUnitNameEn)</MudTd>
-        <MudTd>@course.WeeklyPeriods</MudTd>
-        <MudTd>
+        <MudTd DataLabel="@L["Course_Owner"]">@Culture.Pick(course.OwnerOrgUnitNameAr, course.OwnerOrgUnitNameEn)</MudTd>
+        <MudTd DataLabel="@L["Course_WeeklyPeriods"]">@course.WeeklyPeriods</MudTd>
+        <MudTd DataLabel="@L["Common_Status"]">
             <MudChip T="string" Size="Size.Small" Color="@(course.Status == CourseStatuses.Active ? Color.Success : Color.Default)">@L[$"CourseStatus_{course.Status}"]</MudChip>
         </MudTd>
-        <MudTd>@course.AllocationCount</MudTd>
+        <MudTd DataLabel="@L["Course_Allocations"]">@course.AllocationCount</MudTd>
     </RowTemplate>
 </ServerTable>
 

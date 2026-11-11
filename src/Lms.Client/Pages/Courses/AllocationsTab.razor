@@ -24,8 +24,8 @@
                 <MudTh></MudTh>
             </HeaderContent>
             <RowTemplate>
-                <MudTd>@CultureText.Pick(context.OrgUnitNameAr, context.OrgUnitNameEn)</MudTd>
-                <MudTd>@context.ClassCourseCount</MudTd>
+                <MudTd DataLabel="@L["Allocation_Unit"]">@CultureText.Pick(context.OrgUnitNameAr, context.OrgUnitNameEn)</MudTd>
+                <MudTd DataLabel="@L["Allocation_ClassCourses"]">@context.ClassCourseCount</MudTd>
                 <MudTd>
                     @if (CanEdit)
                     {
