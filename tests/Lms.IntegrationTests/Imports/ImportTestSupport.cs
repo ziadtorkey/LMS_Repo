@@ -120,6 +120,8 @@ public sealed class ImportTestHost : IDisposable
             builder.ConfigureServices(services =>
             {
                 services.AddImportDefinition<TestImportDefinition>();
+                services.RemoveAll<Lms.Infrastructure.Configuration.IPolicyEvaluator>();
+                services.AddScoped<Lms.Infrastructure.Configuration.IPolicyEvaluator, Lms.Infrastructure.Configuration.PolicyEvaluator>();
                 services.RemoveAll<IBackgroundJobs>();
                 services.AddScoped<IBackgroundJobs, RecordingBackgroundJobs>();
             });
@@ -144,13 +146,13 @@ public sealed class ImportTestHost : IDisposable
         return _host.CreateClient().SendAsync(request);
     }
 
-    public Task<HttpResponseMessage> UploadAsync(RoleAssignment caller, Guid orgUnitId, byte[] file, string fileName = "widgets.xlsx", string? language = null)
+    public Task<HttpResponseMessage> UploadAsync(RoleAssignment caller, Guid orgUnitId, byte[] file, string fileName = "widgets.xlsx", string? language = null, string kind = TestImportDefinition.KindName)
     {
         var form = new MultipartFormDataContent { { new StringContent(orgUnitId.ToString()), "orgUnitId" } };
         var part = new ByteArrayContent(file);
         part.Headers.ContentType = new MediaTypeHeaderValue("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         form.Add(part, "file", fileName);
-        return SendAsync(HttpMethod.Post, "/api/imports/" + TestImportDefinition.KindName, caller, form, language);
+        return SendAsync(HttpMethod.Post, "/api/imports/" + kind, caller, form, language);
     }
 
     /// <summary>Runs every queued job as the context that enqueued it (what the Hangfire activator does).</summary>
