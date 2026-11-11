@@ -217,6 +217,18 @@ public sealed class DevSeederTests(LmsApiFactory factory)
         Assert.Equal(home.OrganizationId, profile.OrganizationId);
     }
 
+    [Fact]
+    public async Task Dual_client_user_is_a_teacher_in_both_the_school_and_the_university_for_the_external_login_e2e()
+    {
+        var cs = await factory.CreateIsolatedDatabaseAsync();
+        await SeederFor(cs).SeedAsync();
+
+        await using var db = Open(cs);
+        var mine = (await AssignmentsAsync(db)).Where(a => a.Email == "dual-e2e@altagamo3.test").OrderBy(a => a.Unit).ToList();
+
+        Assert.Equal([("dual-e2e@altagamo3.test", "Teacher", "FCI-1-GEN"), ("dual-e2e@altagamo3.test", "Teacher", "KG")], mine);
+    }
+
     [Theory]
     [InlineData("deactivated-e2e@altagamo3.test", UserStatus.Deactivated)]
     [InlineData("expired-e2e@altagamo3.test", UserStatus.Expired)]
@@ -246,7 +258,7 @@ public sealed class DevSeederTests(LmsApiFactory factory)
         await using var second = Open(cs);
         Assert.Equal(users, await second.Users.CountAsync());
         Assert.Equal(assignments, await second.RoleAssignments.CountAsync());
-        Assert.Equal(14, users); // admin + 7 role users + multi + lockout-e2e + notify-e2e + 3 blocked-status e2e users
+        Assert.Equal(15, users); // admin + 7 role users + multi + lockout-e2e + notify-e2e + dual-e2e + 3 blocked-status e2e users
     }
 
     [Fact]
