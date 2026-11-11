@@ -1,8 +1,10 @@
 using System.Text.Json;
+using Hangfire;
 using Lms.Domain.Abstractions;
 using Lms.Domain.Files;
 using Lms.Domain.Imports;
 using Lms.Domain.Notifications;
+using Lms.Infrastructure.Jobs;
 using Lms.Infrastructure.Persistence;
 using Lms.Shared.Imports;
 using Lms.Shared.Notifications;
@@ -98,6 +100,7 @@ public sealed class ValidateImportJob(
     INotificationPublisher notifications, ImportValidator validator, ILogger<ValidateImportJob> logger)
     : ImportJobBase(db, files, definitions, messages, notifications, validator, logger)
 {
+    [Queue(JobQueues.Imports)]
     public async Task RunAsync(Guid batchId)
     {
         var loaded = await LoadAsync(batchId, CancellationToken.None);
@@ -145,6 +148,7 @@ public sealed class CommitImportJob(
     INotificationPublisher notifications, ImportValidator validator, IClock clock, ILogger<CommitImportJob> logger)
     : ImportJobBase(db, files, definitions, messages, notifications, validator, logger)
 {
+    [Queue(JobQueues.Imports)]
     public async Task RunAsync(Guid batchId)
     {
         var loaded = await LoadAsync(batchId, CancellationToken.None);
@@ -154,6 +158,13 @@ public sealed class CommitImportJob(
         }
 
         var (batch, definition) = loaded.Value;
+
+        // A replay (Hangfire retry, duplicate delivery) must not touch a batch that is not waiting for its commit.
+        if (batch.Status != ImportStatus.Committing)
+        {
+            Logger.LogWarning("Import batch {BatchId} is {Status}, not Committing; commit job skipped", batchId, batch.Status);
+            return;
+        }
 
         var afterCommit = new List<Func<CancellationToken, Task>>();
         try
@@ -224,9 +235,13 @@ public sealed class ImportCleanupJob(LmsDbContext db, ImportService imports, ICl
 {
     public static readonly TimeSpan MaxAge = TimeSpan.FromDays(7);
 
+    /// <summary>A batch Committing for longer than this lost its worker; the transaction left nothing behind, so it is failed.</summary>
+    public static readonly TimeSpan CommitTimeout = TimeSpan.FromHours(2);
+
     public async Task RunAsync()
     {
         var cutoff = clock.UtcNow - MaxAge;
+        await FailStuckCommitsAsync();
         var stale = await db.Set<ImportBatch>()
             .Where(b => b.Status != ImportStatus.Committed && b.Status != ImportStatus.Committing && b.CreatedAt < cutoff)
             .ToListAsync();
@@ -238,6 +253,24 @@ public sealed class ImportCleanupJob(LmsDbContext db, ImportService imports, ICl
         if (stale.Count > 0)
         {
             logger.LogInformation("Removed {Count} stale import batches", stale.Count);
+        }
+    }
+
+    private async Task FailStuckCommitsAsync()
+    {
+        var stuckBefore = clock.UtcNow - CommitTimeout;
+        var stuck = await db.Set<ImportBatch>()
+            .Where(b => b.Status == ImportStatus.Committing && (b.UpdatedAt ?? b.CreatedAt) < stuckBefore)
+            .ToListAsync();
+        foreach (var batch in stuck)
+        {
+            batch.MarkFailed("interrupted");
+        }
+
+        if (stuck.Count > 0)
+        {
+            await db.SaveChangesAsync();
+            logger.LogWarning("Failed {Count} import batches stuck in Committing", stuck.Count);
         }
     }
 }

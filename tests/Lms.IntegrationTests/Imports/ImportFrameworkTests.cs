@@ -310,4 +310,61 @@ public sealed class ImportFrameworkTests(LmsApiFactory factory) : IDisposable
         Assert.True(await check.Set<ImportBatch>().AnyAsync(b => b.Id == committed)); // never removed once committed
         Assert.False(await check.Set<Lms.Domain.Files.StoredFile>().AnyAsync(f => f.Id == sourceFile));
     }
+
+    private async Task RunAsPlatformAsync<T>(Func<T, Task> run) where T : notnull
+    {
+        using var scope = _host.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<Lms.Api.Infrastructure.HttpCurrentContext>();
+        context.SetUser(Guid.NewGuid(), true);
+        await run(ActivatorUtilities.CreateInstance<T>(scope.ServiceProvider));
+    }
+
+    [Fact]
+    public async Task Replayed_commit_job_does_nothing_once_the_batch_is_committed()
+    {
+        var (tree, admin) = await SetUpAsync("IF14");
+        var code = Code("RP");
+        var id = await UploadValidatedAsync(admin, tree.School1.Id, [code, "One", null, null, null]);
+        await _host.SendAsync(HttpMethod.Post, Routes.ImportCommit(Kind, id), admin);
+        await _host.RunQueuedJobsAsync();
+
+        await RunAsPlatformAsync<CommitImportJob>(j => j.RunAsync(id));
+
+        var state = await _host.BatchAsync(factory, id);
+        Assert.Equal("Committed", state.Status);
+        Assert.Equal(1, state.CreatedCount);
+    }
+
+    [Fact]
+    public async Task Commit_job_does_nothing_for_a_batch_that_is_not_committing()
+    {
+        var (tree, admin) = await SetUpAsync("IF15");
+        var id = await UploadValidatedAsync(admin, tree.School1.Id, [Code("NC"), "One", null, null, null]);
+
+        await RunAsPlatformAsync<CommitImportJob>(j => j.RunAsync(id)); // still Valid: nobody asked for the commit
+
+        Assert.Equal("Valid", (await _host.BatchAsync(factory, id)).Status);
+    }
+
+    [Fact]
+    public async Task Cleanup_fails_batches_stuck_in_Committing_but_not_recent_ones()
+    {
+        var (tree, admin) = await SetUpAsync("IF16");
+        var stuck = await UploadValidatedAsync(admin, tree.School1.Id, [Code("SK"), "n", null, null, null]);
+        var recent = await UploadValidatedAsync(admin, tree.School1.Id, [Code("RC"), "n", null, null, null]);
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            var old = DateTime.UtcNow.AddHours(-3);
+            var now = DateTime.UtcNow;
+            await db.Database.ExecuteSqlInterpolatedAsync(
+                $"UPDATE ImportBatches SET Status = 'Committing', UpdatedAt = {old} WHERE Id = {stuck}");
+            await db.Database.ExecuteSqlInterpolatedAsync(
+                $"UPDATE ImportBatches SET Status = 'Committing', UpdatedAt = {now} WHERE Id = {recent}");
+        }
+
+        await RunAsPlatformAsync<ImportCleanupJob>(j => j.RunAsync());
+
+        Assert.Equal("Failed", (await _host.BatchAsync(factory, stuck)).Status);
+        Assert.Equal("Committing", (await _host.BatchAsync(factory, recent)).Status);
+    }
 }
