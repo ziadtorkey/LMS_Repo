@@ -119,7 +119,7 @@ public sealed class RolesPageTests : ClientTestContext
     [Fact]
     public async Task Escalation_error_is_shown_from_problem_code()
     {
-        CultureInfo.CurrentUICulture = new CultureInfo("ar");
+        Culture.Current = new CultureInfo("ar");
         await GrantAsync(Permissions.Roles.View, Permissions.Roles.Update);
         var cut = RenderPage();
         var role = _roles.Roles.First();
@@ -173,7 +173,7 @@ public sealed class RolesPageTests : ClientTestContext
     [Fact]
     public async Task Save_offline_shows_the_generic_error()
     {
-        CultureInfo.CurrentUICulture = new CultureInfo("en");
+        Culture.Current = new CultureInfo("en");
         await GrantAsync(Permissions.Roles.View, Permissions.Roles.Update);
         var cut = RenderPage();
         _roles.NextFailure = new HttpRequestException("offline");
@@ -187,7 +187,7 @@ public sealed class RolesPageTests : ClientTestContext
     [Fact]
     public async Task Delete_offline_shows_a_snackbar_instead_of_crashing()
     {
-        CultureInfo.CurrentUICulture = new CultureInfo("en");
+        Culture.Current = new CultureInfo("en");
         await GrantAsync(Permissions.Roles.View, Permissions.Roles.Delete);
         var custom = await _roles.CreateRoleAsync(new CreateRoleRequest("دور", "Custom", RoleBaseKinds.Staff, []));
         var cut = RenderPage();
@@ -203,7 +203,7 @@ public sealed class RolesPageTests : ClientTestContext
     [Fact]
     public async Task Page_renders_rtl_in_arabic()
     {
-        CultureInfo.CurrentUICulture = new CultureInfo("ar");
+        Culture.Current = new CultureInfo("ar");
         await GrantAsync(Permissions.Roles.View);
         Render<MudPopoverProvider>();
         var cut = Render<MudRTLProvider>(p => p

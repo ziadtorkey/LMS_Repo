@@ -41,8 +41,9 @@ internal static class AssignmentQueries
             r.A.OrgUnitId, r.UnitNameAr, r.UnitNameEn, r.A.ValidFrom, r.A.ValidTo, r.A.IsValidOn(today))).ToList(), total);
     }
 
-    public static async Task<AssignmentDto> GetAsync(LmsDbContext db, IClock clock, Guid id, CancellationToken ct) =>
-        (await PageAsync(db, clock, db.RoleAssignments.Where(a => a.Id == id), 0, 1, ct)).Items[0];
+    /// <summary>The assignment with its user, role and unit names; null when one of them is gone (the join finds nothing).</summary>
+    public static async Task<AssignmentDto?> GetAsync(LmsDbContext db, IClock clock, Guid id, CancellationToken ct) =>
+        (await PageAsync(db, clock, db.RoleAssignments.Where(a => a.Id == id), 0, 1, ct)).Items.FirstOrDefault();
 
     /// <summary>The permissions of a role (empty when the role is gone).</summary>
     public static async Task<IReadOnlySet<string>> RolePermissionsAsync(LmsDbContext db, Guid roleId, CancellationToken ct) =>
