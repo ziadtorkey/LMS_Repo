@@ -77,7 +77,7 @@ Each runs in Arabic and English (`[Theory]` with `"ar"`/`"en"`; `StartAsync(cult
 ## Scenarios (M1, plan Task 38): `M1/YearsTests.cs`, `M1/AuditAndNotificationsTests.cs` (each in ar and en)
 | Test | Covers |
 |---|---|
-| `Deactivated_user_sees_blocked_message_on_login` (× deactivated, expired, withdrawn) | FR-SEC-07: exact blocked-login copy, no session |
+| `Deactivated_user_sees_blocked_message_on_login` (ar, en × deactivated, expired, withdrawn) | FR-SEC-07: exact blocked-login copy, no session |
 | `Root_admin_defines_2026_year_with_two_terms_and_a_holiday_school_inherits_it` | FR-YEAR-01..03, D22: year, two terms and a holiday on a fresh stage; the section below inherits them read-only |
 | `Year_selector_defaults_to_active_year_and_switches` | X-04: app-bar selector starts on the Active year, switches, and keeps the choice across a reload |
 | `Audit_viewer_shows_unit_move_with_before_after_and_exports_csv_and_xlsx` | FR-AUD-03/04: unit move shown with old/new parent, CSV (UTF-8 BOM) and XLSX downloads |
@@ -88,3 +88,14 @@ Notes for these scenarios:
 - **Dedicated seed user `notify-e2e`** (a Teacher in KG) receives the role assigned in the bell scenario. The test removes that role again in a `finally`, because a second context makes the app open the context chooser, which has no bell.
 - **MudBlazor inputs:** use `MudControls` (selects open a popover list; date pickers are read-only inputs that open a calendar, so a date is picked by stepping months). While a picker is open it copies its `data-testid` onto the popover, so target `input[data-testid=...]`.
 - **Selected text of a MudSelect** is rendered as text, not as an input value: assert with `ToContainTextAsync`.
+
+## Scenarios (M2, plan Task 35: `M2/StaffTests`)
+Run as the seeded school group's Org Admin with unique people per test (`M2Names`), in Arabic and English. `Infrastructure/JobsClient` runs a job through the Development-only trigger (`POST /api/dev/jobs/{id}/run?asOf=`, BE #201) as a platform admin, in a throw-away browser context.
+
+| Test | Covers | Status |
+|---|---|---|
+| `School_admin_creates_teacher_who_activates_from_email_and_sees_the_section_context` | FR-STF-01/02, activation email | runs |
+| `Duplicate_email_in_a_sibling_stage_is_refused_with_the_field_message` | FR-STF-01, D26 client-wide duplicate | runs |
+| `Staff_expiring_soon_notifies_admins_then_expired_staff_is_blocked_after_the_job_run` | FR-STF-06, D35: notice in the bell, then Expired and the login message | runs |
+| `Admin_deactivates_teacher_with_reason_teacher_sees_blocked_message_then_reactivated_can_log_in` | FR-STF-03, FR-SEC-07 | skipped until #198 |
+| `Root_admin_shares_teacher_to_a_sibling_stage_and_the_list_shows_them_as_shared` | FR-STF-05, D29 | runs |

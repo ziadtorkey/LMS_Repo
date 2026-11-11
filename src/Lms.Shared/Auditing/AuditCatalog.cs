@@ -13,6 +13,7 @@ public static class AuditSecurityEvents
     public const string ExternalLoginLinked = "ExternalLoginLinked";
     public const string ExternalLoginSucceeded = "ExternalLoginSucceeded";
     public const string ExternalLoginFailed = "ExternalLoginFailed";
+    public const string PasswordChanged = "PasswordChanged";
 }
 
 /// <summary>
@@ -28,6 +29,10 @@ public static class AuditCatalog
         // M2 people kernel (StudentProfile, GuardianProfile, StudentGuardian are data model only until M3, D23),
         // imports and identity providers.
         "StaffProfile", "StudentProfile", "GuardianProfile", "StudentGuardian", "ImportBatch", "IdentityProviderConfig",
+        // M3 students and academic structure.
+        "StudentChangeRequest", "Course", "CourseAllocation", "CourseRestriction", "CourseSupervisor", "Blueprint",
+        "Class", "ClassStudent", "ClassCourse", "ClassCourseTeacher", "TeacherCourseEligibility", "CourseEnrollment",
+        "EnrollmentException", "StudentGroup", "GroupMember", "StudentTransfer",
     ];
 
     public static IReadOnlyList<string> SecurityEvents { get; } =
@@ -36,6 +41,7 @@ public static class AuditCatalog
         AuditSecurityEvents.PasswordReset, AuditSecurityEvents.InvitationAccepted,
         AuditSecurityEvents.ExternalLoginLinked, AuditSecurityEvents.ExternalLoginSucceeded,
         AuditSecurityEvents.ExternalLoginFailed,
+        AuditSecurityEvents.PasswordChanged,
     ];
 }
 

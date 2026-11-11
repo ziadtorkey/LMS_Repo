@@ -20,7 +20,6 @@ public class PeopleCatalogContractTests
                 Permissions.Staff.Import));
         Assert.Equal(("IdentityProviders.View", "IdentityProviders.Manage"),
             (Permissions.IdentityProviders.View, Permissions.IdentityProviders.Manage));
-        Assert.DoesNotContain(Permissions.All, p => p.StartsWith("Students.", StringComparison.Ordinal));
         Assert.Equal(Permissions.All.Count, Permissions.All.Distinct(StringComparer.Ordinal).Count());
     }
 
