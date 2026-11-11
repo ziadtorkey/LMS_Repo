@@ -1,0 +1,115 @@
+@page "/students"
+@attribute [Authorize]
+@using Lms.Client.Components
+@using Lms.Client.Components.People
+@using Lms.Client.Services.Api
+@using Lms.Shared.Authorization
+@using Lms.Shared.People
+@inject IStudentsApi Api
+@inject PermissionState PermState
+@inject ICultureService Culture
+@implements IDisposable
+
+<PageTitle>@L["Students_Title"]</PageTitle>
+<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4" Wrap="Wrap.Wrap">
+    <MudText Typo="Typo.h4" data-testid="students-title">@L["Students_Title"]</MudText>
+    @if (PermState.Has(Permissions.Students.Create))
+    {
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Href="students/new"
+                   data-testid="student-new">@L["Students_New"]</MudButton>
+    }
+</MudStack>
+
+<MudStack Row="true" Spacing="2" Class="mb-3" Wrap="Wrap.Wrap" AlignItems="AlignItems.Center">
+    <MudTextField T="string" Value="_searchText" ValueChanged="OnSearchChanged" Label="@L["Common_Search"]" Immediate="true"
+                  DebounceInterval="300" Clearable="true" data-testid="student-search" />
+    <MudItem xs="12" sm="3">
+        <UnitPicker Value="_unitId" ValueChanged="OnUnitChanged" Label="@L["Student_HomeUnit"]" Clearable="true" TestId="student-filter-unit" />
+    </MudItem>
+    <MudSelect T="string" Value="_status" ValueChanged="OnStatusChanged" Label="@L["Common_Status"]" Clearable="true"
+               data-testid="student-filter-status" Style="min-width: 10rem">
+        @foreach (var status in PersonStatuses.All)
+        {
+            <MudSelectItem T="string" Value="@status">@L[$"PersonStatus_{status}"]</MudSelectItem>
+        }
+    </MudSelect>
+    <MudSelect T="string" Value="_gender" ValueChanged="OnGenderChanged" Label="@L["Student_Gender"]" Clearable="true"
+               data-testid="student-filter-gender" Style="min-width: 10rem">
+        @foreach (var gender in Genders.All)
+        {
+            <MudSelectItem T="string" Value="@gender">@L[$"Gender_{gender}"]</MudSelectItem>
+        }
+    </MudSelect>
+    <MudCheckBox T="bool" Value="_unplaced" ValueChanged="OnUnplacedChanged" Label="@L["Student_Unplaced"]" data-testid="student-filter-unplaced" />
+</MudStack>
+
+<ServerTable @ref="_table" T="StudentSummaryDto" ServerData="LoadAsync">
+    <HeaderContent>
+        <MudTh>@L["Person_Photo"]</MudTh>
+        <MudTh>@L["Student_Code"]</MudTh>
+        <MudTh>@L["Common_Name"]</MudTh>
+        <MudTh>@L["Student_Gender"]</MudTh>
+        <MudTh>@L["Student_DateOfBirth"]</MudTh>
+        <MudTh>@L["Student_HomeUnit"]</MudTh>
+        <MudTh>@L["Student_Class"]</MudTh>
+        <MudTh>@L["Student_PrimaryGuardian"]</MudTh>
+        <MudTh>@L["Common_Status"]</MudTh>
+    </HeaderContent>
+    <RowTemplate Context="student">
+        <MudTd><StaffAvatar PhotoFileId="student.PhotoFileId" Size="Size.Small" /></MudTd>
+        <MudTd><span dir="ltr">@student.StudentCode</span></MudTd>
+        <MudTd>@Culture.Pick(student.NameAr, student.NameEn)</MudTd>
+        <MudTd>@L[$"Gender_{student.Gender}"]</MudTd>
+        <MudTd><span dir="ltr">@student.DateOfBirth.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)</span></MudTd>
+        <MudTd>@Culture.Pick(student.HomeOrgUnitNameAr, student.HomeOrgUnitNameEn)</MudTd>
+        <MudTd data-testid="@($"student-class-{student.Id}")">
+            @if (student.CurrentClassNameAr is not null)
+            {
+                @Culture.Pick(student.CurrentClassNameAr, student.CurrentClassNameEn ?? student.CurrentClassNameAr)
+            }
+            else
+            {
+                <MudChip T="string" Size="Size.Small" data-testid="@($"unplaced-chip-{student.Id}")">@L["Student_Unplaced"]</MudChip>
+            }
+        </MudTd>
+        <MudTd>
+            @if (student.PrimaryGuardianNameAr is not null)
+            {
+                <div>@Culture.Pick(student.PrimaryGuardianNameAr, student.PrimaryGuardianNameEn ?? student.PrimaryGuardianNameAr)</div>
+                <div dir="ltr" class="mud-typography-caption">@student.PrimaryGuardianMobile</div>
+            }
+        </MudTd>
+        <MudTd><PersonStatusChip Status="@student.Status" /></MudTd>
+    </RowTemplate>
+</ServerTable>
+
+@code {
+    private ServerTable<StudentSummaryDto> _table = default!;
+    private string? _searchText, _status, _gender;
+    private Guid? _unitId;
+    private bool _unplaced;
+
+    protected override async Task OnInitializedAsync()
+    {
+        PermState.Changed += OnPermissionsChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+    }
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => PermState.Changed -= OnPermissionsChanged;
+
+    private async Task<TableData<StudentSummaryDto>> LoadAsync(TableState state, CancellationToken ct)
+    {
+        var query = new StudentQuery(_unitId, true, _status, _gender, string.IsNullOrWhiteSpace(_searchText) ? null : _searchText.Trim(), null,
+            state.Page + 1, state.PageSize, null, _unplaced);
+        var result = await Api.ListAsync(query, ct);
+        return new TableData<StudentSummaryDto> { Items = result.Items, TotalItems = result.Total };
+    }
+
+    private Task OnSearchChanged(string? text) { _searchText = text; return _table.ReloadAsync(); }
+    private Task OnUnitChanged(Guid? id) { _unitId = id; return _table.ReloadAsync(); }
+    private Task OnStatusChanged(string? status) { _status = status; return _table.ReloadAsync(); }
+    private Task OnGenderChanged(string? gender) { _gender = gender; return _table.ReloadAsync(); }
+    private Task OnUnplacedChanged(bool value) { _unplaced = value; return _table.ReloadAsync(); }
+}

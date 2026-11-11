@@ -109,7 +109,7 @@ public sealed class M1EndpointMatrixTests(LmsApiFactory factory, ITestOutputHelp
             .OfType<RouteEndpoint>()
             .Where(e => e.RoutePattern.RawText is { } raw && raw.StartsWith("/api", StringComparison.OrdinalIgnoreCase))
             .SelectMany(e => (e.Metadata.GetMetadata<HttpMethodMetadata>()?.HttpMethods ?? ["*"])
-                .Select(m => (m, e.RoutePattern.RawText!)));
+                .Select(m => (m, GenericKind(e.RoutePattern.RawText!))));
 
     /// <summary>
     /// The caller's own data: exactly <c>/api/me</c> or anything under <c>/api/me/</c>. A plain prefix match would also
@@ -128,6 +128,13 @@ public sealed class M1EndpointMatrixTests(LmsApiFactory factory, ITestOutputHelp
     [InlineData("/api/metrics/{id:guid}", false)]
     public void Only_api_me_and_routes_below_it_are_exempt(string pattern, bool exempt) =>
         Assert.Equal(exempt, IsSelfScoped(pattern));
+
+    /// <summary>
+    /// Import routes are mapped once per kind (<c>/api/imports/staff/...</c>); the matrix describes them by the generic
+    /// <c>/api/imports/{kind}/...</c> pattern, because the rules are the framework's and every kind shares them.
+    /// </summary>
+    private static string GenericKind(string pattern) =>
+        System.Text.RegularExpressions.Regex.Replace(pattern, @"^/api/imports/(?!\{)[A-Za-z0-9-]+", "/api/imports/{kind}");
 
     private static string Key(string method, string pattern) => $"{method.ToUpperInvariant()} {pattern}";
 

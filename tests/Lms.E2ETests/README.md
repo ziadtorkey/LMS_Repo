@@ -78,3 +78,46 @@ Each runs in Arabic and English (`[Theory]` with `"ar"`/`"en"`; `StartAsync(cult
 | Test | Covers |
 |---|---|
 | `Deactivated_user_sees_blocked_message_on_login` (ar, en × deactivated, expired, withdrawn) | FR-SEC-07: exact blocked-login copy, no session |
+
+## Scenarios (M1, plan Task 37: `M1/ConfigurationTests`, `M1/AccessAdminTests`)
+Run as the seeded school client's Org Admin. Each test puts the shared seeded data back in a `finally` block (policy off, value reset).
+
+| Test | Covers |
+|---|---|
+| `Root_admin_sets_CreateOrgUnits_on_KG_and_add_is_hidden_below_it` | FR-ORG-06/10: policy on KG hides add on KG and below, not on Primary; inherited switch is disabled below |
+| `Locked_root_setting_is_read_only_at_school_level` | FR-ORG-07: a value locked at the root is read-only and shows "Locked by" below |
+| `Feature_flag_enabled_at_KG_only_is_off_at_Primary` | FR-ORG-08: flag set at KG is inherited by its sections, default at Primary |
+| `Root_admin_creates_Exam_Officer_custom_role_and_renames_Manager_label` | FR-SEC-06, §3.3: custom role with one permission; built-in label renamed and restored |
+| `Copy_Primary_branch_under_the_school_with_a_code_suffix` | FR-ORG-11: copy a stage with its sections, codes get the suffix, parent kept |
+| save as template and apply with the Year placeholder | FR-ORG-11: waits for #207 |
+
+Assigning a role to a person moved to the M2 staff demo (D31: roles go to existing staff members).
+
+## Scenarios (M2, plan Task 35: `M2/StaffTests`)
+Run as the seeded school group's Org Admin with unique people per test (`M2Names`), in Arabic and English. `Infrastructure/JobsClient` runs a job through the Development-only trigger (`POST /api/dev/jobs/{id}/run?asOf=`, BE #201) as a platform admin, in a throw-away browser context.
+
+| Test | Covers | Status |
+|---|---|---|
+| `School_admin_creates_teacher_who_activates_from_email_and_sees_the_section_context` | FR-STF-01/02, activation email | runs |
+| `Duplicate_email_in_a_sibling_stage_is_refused_with_the_field_message` | FR-STF-01, D26 client-wide duplicate | runs |
+| `Staff_expiring_soon_notifies_admins_then_expired_staff_is_blocked_after_the_job_run` | FR-STF-06, D35: notice in the bell, then Expired and the login message | runs |
+| `Admin_deactivates_teacher_with_reason_teacher_sees_blocked_message_then_reactivated_can_log_in` | FR-STF-03, FR-SEC-07 | skipped until #198 |
+| `Root_admin_shares_teacher_to_a_sibling_stage_and_the_list_shows_them_as_shared` | FR-STF-05, D29 | runs |
+
+## Scenarios (M2, plan Task 38 — `M2/ExternalLoginTests`)
+Each runs in Arabic and English. They need the `mock-oidc` compose service (navikt/mock-oauth2-server, interactive login, `http://localhost:8090/client-a`; `LMS_E2E_MOCK_OIDC` overrides the host): `docker compose up -d --wait mysql minio mailpit mock-oidc`.
+
+| Test | Covers |
+|---|---|
+| `Root_admin_configures_oidc_provider_tests_connection_and_staff_signs_in_with_organization_account` | FR-SEC-08: provider created and tested through the API, staff member found by e-mail domain, first sign-in links the account and lands in their own context |
+| `Unknown_identity_sees_not_found_message` | FR-SEC-08: identity nobody owns → generic message in `login-error`, no account, no session |
+| `Dual_client_user_signed_in_via_client_A_provider_does_not_see_client_B_context` | Review Focus 2: session bound to the provider's client; the other client's context is refused (403 OutOfScope) and absent from `/api/me` |
+
+| `Blocked_account_signing_in_through_the_provider_sees_the_blocked_message` (× deactivated, expired, withdrawn) | FR-SEC-07: the blocked-status message appears in `login-error` on the external path too, and no session starts |
+
+Notes:
+- **Not covered here, on purpose:** a person who belongs *only* to another client (client B) and tries client A's provider is refused with the generic not-found message. That is `ExternalLoginLinkerTests.Email_of_user_without_profile_in_this_client_is_not_found` (no E2E duplicate; the dual-client scenario above covers the session binding).
+- **The provider admin page is a separate task (T32).** Until it lands the provider is created and deleted through the API with the signed-in Org Admin's own token (`E2EApi`: token from sessionStorage, context from `/api/me` when the app has not stored one). The "configures in the UI" step joins the first scenario then.
+- **`MockOidc.SignInAsync`** fills the mock's sign-in form: the user name becomes `sub`, the claims JSON carries `email`. The issuer is `http://localhost:8090/client-a` for the browser *and* the API (the server builds `iss` from the request host), so never use the container name.
+- **Dedicated seed user `dual-e2e`** is a Teacher in the school (KG) and in the university (FCI-1-GEN), used only here.
+- The person signs in from the base browser context; the admin works in a second one, so no password session interferes.
