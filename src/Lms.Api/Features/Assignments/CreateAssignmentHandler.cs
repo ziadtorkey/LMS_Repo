@@ -18,7 +18,8 @@ namespace Lms.Api.Features.Assignments;
 /// invitation; there is no user lookup, so one client cannot browse another client's users.
 /// </summary>
 public sealed class CreateAssignmentHandler(
-    LmsDbContext db, IClock clock, CallerPermissions caller, IAccountEmails emails, ILogger<CreateAssignmentHandler> logger)
+    LmsDbContext db, IClock clock, CallerPermissions caller, IAccountEmails emails, AssignmentNotifier notifier,
+    ILogger<CreateAssignmentHandler> logger)
 {
     private const int MaxEmailLength = 256;
 
@@ -97,6 +98,8 @@ public sealed class CreateAssignmentHandler(
         {
             await InviteAsync(user);
         }
+
+        await notifier.RoleAssignedAsync(assignment, role, unit, ct);
 
         return Results.Created(Routes.Assignment(assignment.Id), await AssignmentQueries.GetAsync(db, clock, assignment.Id, ct));
     }

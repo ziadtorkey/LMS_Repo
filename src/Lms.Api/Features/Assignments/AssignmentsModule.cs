@@ -6,6 +6,7 @@ public static class AssignmentsModule
     public static IServiceCollection AddAssignments(this IServiceCollection services)
     {
         services.AddScoped<CreateAssignmentHandler>();
+        services.AddScoped<AssignmentNotifier>();
         return services;
     }
 
