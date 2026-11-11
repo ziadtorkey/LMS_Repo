@@ -31,6 +31,7 @@ public sealed class YearSelectorTests : ClientTestContext
         var cut = await RenderAsync();
 
         Assert.Empty(cut.FindAll("[data-testid=year-selector]"));
+        Assert.Equal(0, YearsApi.EffectiveCalls); // asking would answer 403 and redirect to /forbidden
     }
 
     [Fact]
