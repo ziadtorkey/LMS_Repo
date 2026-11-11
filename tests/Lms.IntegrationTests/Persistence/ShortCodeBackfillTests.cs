@@ -27,6 +27,9 @@ public sealed class ShortCodeBackfillTests(LmsApiFactory factory)
         var b = Guid.NewGuid();
         var c = Guid.NewGuid();
         var d = Guid.NewGuid();
+        var e = Guid.NewGuid();
+        var f = Guid.NewGuid();
+        var g = Guid.NewGuid();
         await using (var conn = new MySqlConnection(cs))
         {
             await conn.OpenAsync();
@@ -35,6 +38,9 @@ public sealed class ShortCodeBackfillTests(LmsApiFactory factory)
             await Org(conn, b, "2020-01-02", "alpha-school");   // clash with a -> '-2'
             await Org(conn, c, "2020-01-03", "alpha-school");   // clash -> '-3'
             await Org(conn, d, "2020-01-04", "X");              // too short -> fallback from the id
+            await Org(conn, e, "2020-01-05", "SCH");            // sch
+            await Org(conn, f, "2020-01-06", "SCH");            // sch-2 by numbering ...
+            await Org(conn, g, "2020-01-07", "SCH-2");          // ... and its own code is sch-2 too: the clash must still be resolved
         }
 
         await migrator.MigrateAsync();
@@ -44,8 +50,10 @@ public sealed class ShortCodeBackfillTests(LmsApiFactory factory)
         Assert.Equal("alpha-school", codes[a]);
         Assert.Equal("alpha-school-2", codes[b]);
         Assert.Equal("alpha-school-3", codes[c]);
-        Assert.Equal("c" + d.ToString("N")[..12], codes[d]);
-        Assert.Equal(4, codes.Values.Distinct().Count());
+        Assert.Equal("c" + d.ToString("N")[^12..], codes[d]);
+        Assert.Equal("sch", codes[e]);
+        Assert.Equal(7, codes.Values.Distinct().Count()); // the unique index could be created
+        Assert.Contains(codes[f], new[] { "sch-2", "c" + f.ToString("N")[^12..] });
         Assert.All(codes.Values, v => Assert.True(Lms.Domain.Organizations.Organization.IsValidShortCode(v)));
 
         await migrator.MigrateAsync(previous); // Down() works

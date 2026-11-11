@@ -397,7 +397,6 @@ public sealed class ClientEndpointsTests(LmsApiFactory factory) : IDisposable
 
     [Theory]
     [InlineData("A")]
-    [InlineData("Upper")]
     [InlineData("has space")]
     [InlineData("under_score")]
     [InlineData("a-very-long-short-code-over-twenty")]
@@ -408,5 +407,42 @@ public sealed class ClientEndpointsTests(LmsApiFactory factory) : IDisposable
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         Assert.Contains(ProblemCodes.invalid_short_code, await response.Content.ReadAsStringAsync());
+    }
+    [Fact]
+    public async Task Explicit_short_code_is_lower_cased()
+    {
+        var code = "UP" + Guid.NewGuid().ToString("N")[..6];
+        var dto = await CreateAsync(NewClient("SC4" + Guid.NewGuid().ToString("N")[..4]) with { ShortCode = "  " + code + " " });
+
+        Assert.Equal(code.ToLowerInvariant(), dto.ShortCode);
+    }
+
+    [Fact]
+    public async Task Short_code_of_a_deleted_client_is_still_taken()
+    {
+        var code = "del-" + Guid.NewGuid().ToString("N")[..8];
+        var first = await CreateAsync(NewClient("SC5" + Guid.NewGuid().ToString("N")[..4]) with { ShortCode = code });
+        await using (var db = Admin())
+        {
+            db.Organizations.Remove(await db.Organizations.SingleAsync(o => o.Id == first.Id)); // soft delete
+            await db.SaveChangesAsync();
+        }
+
+        var again = await AsPlatformAdminAsync(HttpMethod.Post, Routes.Clients,
+            NewClient("SC6" + Guid.NewGuid().ToString("N")[..4]) with { ShortCode = code });
+
+        Assert.Equal(HttpStatusCode.Conflict, again.StatusCode);
+        Assert.Contains(ProblemCodes.short_code_taken, await again.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task Underivable_short_code_says_to_provide_one()
+    {
+        var response = await AsPlatformAdminAsync(HttpMethod.Post, Routes.Clients, NewClient("SC7") with { RootUnitCode = "X" });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var body = await response.Content.ReadAsStringAsync();
+        Assert.Contains(ProblemCodes.invalid_short_code, body);
+        Assert.Contains("provide ShortCode", body);
     }
 }

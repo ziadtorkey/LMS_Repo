@@ -19,7 +19,7 @@ namespace Lms.Infrastructure.Persistence.Migrations
                 defaultValue: "");
 
             // D47 backfill: the lower-cased root unit code ('_' -> '-', cut to 17 so a '-n' suffix fits), '-2', '-3'... on a clash.
-            // A client without a usable root code (none, or shorter than 2) falls back to 'c' + the first 12 hex digits of its id.
+            // A client without a usable root code (none, or shorter than 2) falls back to 'c' + the last 12 hex digits of its id.
             migrationBuilder.Sql(@"
 UPDATE `Organizations` o
 JOIN (
@@ -30,7 +30,7 @@ JOIN (
            END AS Code
     FROM (
         SELECT o2.Id, o2.CreatedAt,
-               CASE WHEN CHAR_LENGTH(x.Base0) >= 2 THEN x.Base0 ELSE CONCAT('c', LEFT(REPLACE(o2.Id, '-', ''), 12)) END AS Base
+               CASE WHEN CHAR_LENGTH(x.Base0) >= 2 THEN x.Base0 ELSE CONCAT('c', RIGHT(REPLACE(o2.Id, '-', ''), 12)) END AS Base
         FROM `Organizations` o2
         LEFT JOIN (
             SELECT u.OrganizationId, LEFT(REPLACE(LOWER(u.Code), '_', '-'), 17) AS Base0
@@ -39,6 +39,16 @@ JOIN (
     ) b
 ) n ON n.Id = o.Id
 SET o.ShortCode = n.Code;");
+
+            // The numbering above is per base code, so a client whose own code is 'sch-2' can still meet the second 'sch'. Any code
+            // that is still shared keeps its first owner; the others move to the id-based fallback, so the unique index always holds.
+            migrationBuilder.Sql(@"
+UPDATE `Organizations` o
+JOIN (
+    SELECT Id, ROW_NUMBER() OVER (PARTITION BY ShortCode ORDER BY CreatedAt, Id) AS Rn FROM `Organizations`
+) d ON d.Id = o.Id
+SET o.ShortCode = CONCAT('c', RIGHT(REPLACE(o.Id, '-', ''), 12))
+WHERE d.Rn > 1;");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Organizations_ShortCode",

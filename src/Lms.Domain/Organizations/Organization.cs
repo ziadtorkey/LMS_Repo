@@ -15,7 +15,7 @@ public sealed class Organization : AuditableEntity
     public Organization(Guid id, string nameAr, string nameEn, OrganizationType type, string? shortCode = null)
     {
         Id = id;
-        ShortCode = shortCode ?? "c" + id.ToString("N")[..12]; // callers that care (client creation) pass a chosen one
+        ShortCode = shortCode ?? "c" + id.ToString("N")[^12..]; // the random tail of the id (a UUIDv7 prefix is a timestamp); callers that care (client creation) pass a chosen one
         NameAr = nameAr;
         NameEn = nameEn;
         Type = type;
