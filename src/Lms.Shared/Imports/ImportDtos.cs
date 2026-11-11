@@ -1,11 +1,18 @@
 namespace Lms.Shared.Imports;
 
-/// <summary>Import kinds; each value is the <c>{kind}</c> route segment. <c>Students</c> arrives in M3 (D23).</summary>
+/// <summary>Import kinds; each value is the <c>{kind}</c> route segment.</summary>
 public static class ImportKinds
 {
     public const string Staff = "staff";
 
-    public static IReadOnlyList<string> All { get; } = [Staff];
+    // M3
+    public const string Students = "students";
+    public const string Courses = "courses";
+
+    /// <summary>Adds existing students to classes in bulk (class placement import).</summary>
+    public const string ClassStudents = "class-students";
+
+    public static IReadOnlyList<string> All { get; } = [Staff, Students, Courses, ClassStudents];
 }
 
 /// <summary>Lifecycle of an import batch (X-06): upload → validate job → preview → all-or-nothing commit job.</summary>
@@ -30,13 +37,25 @@ public static class ImportLimits
     public const int MaxFileBytes = 10 * 1024 * 1024;
 }
 
-/// <summary>A template column. Headers match the English header, Arabic header or key (case/whitespace-insensitive).</summary>
+/// <summary>
+/// A template column. Headers match the English header, Arabic header or key (case/whitespace-insensitive).
+/// <c>Sensitive</c> (e.g. the student default password, D24): the API never returns the cell value; previews, the rows
+/// API and the error report show <see cref="ImportMasks.Sensitive"/> when the cell is filled and null when empty.
+/// </summary>
 public sealed record ImportColumnDto(
     string Key,
     string HeaderAr,
     string HeaderEn,
     bool Required,
-    IReadOnlyList<string>? AllowedValues);
+    IReadOnlyList<string>? AllowedValues,
+    bool Sensitive = false);
+
+/// <summary>Display values of import cells that are never echoed.</summary>
+public static class ImportMasks
+{
+    /// <summary>The fixed mask of a filled sensitive cell.</summary>
+    public const string Sensitive = "••••••";
+}
 
 /// <summary>An import batch. <c>CreatedCount</c> is set once committed.</summary>
 public sealed record ImportBatchDto(
