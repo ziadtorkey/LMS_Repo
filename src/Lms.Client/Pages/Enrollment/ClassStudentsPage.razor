@@ -16,7 +16,7 @@
 {
     <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
 }
-else if (!PermState.Has(Permissions.Enrollment.View))
+else if (!PermState.Has(Permissions.Classes.View))
 {
     <Forbidden />
 }
@@ -43,7 +43,7 @@ else
     {
         PermState.Changed += OnPermissionsChanged;
         if (!PermState.Loaded) await PermState.RefreshAsync();
-        if (!PermState.Has(Permissions.Enrollment.View)) return;
+        if (!PermState.Has(Permissions.Classes.View)) return;
         await ApiCalls.RunAsync(
             async () => _class = (await Classes.ListAsync(new ClassQuery(null, true, null, null, null, null, 1, 200))).Items.FirstOrDefault(c => c.Id == ClassId),
             Navigation, L, _ => { });
