@@ -11,7 +11,10 @@ using Lms.Shared;
 using Lms.Shared.Authorization;
 using Lms.Shared.Configuration;
 using Lms.Shared.Organizations;
+using Lms.Infrastructure.Configuration;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Lms.IntegrationTests.Branches;
 
@@ -235,6 +238,61 @@ public sealed class CopyBranchTests(LmsApiFactory factory) : IDisposable
         // Not asking for the extras never reports them as skipped.
         var plain = await CopyAsync(neither, f.X, f.Tree.School2, suffix: "-P");
         Assert.Empty((await plain.Content.ReadFromJsonAsync<CopyBranchResultDto>())!.SkippedLockedSettings);
+    }
+
+    /// <summary>
+    /// Where the permission is held matters: the check runs at the TARGET unit. A stand-in policy evaluator blocks the two
+    /// update permissions in one subtree only, so the same caller holds them in the other subtree.
+    /// </summary>
+    private async Task<(HttpResponseMessage Response, (int Policies, int Settings) Copied)> CopyWithUpdateBlockedAtAsync(
+        string name, Func<Fixture, OrgUnit> blockedUnit, string suffix)
+    {
+        var f = await SetUpAsync(name);
+        await _host.AddPolicyAsync(f.Tree, f.X, PolicyCatalog.CreateOrgUnits);
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            db.Add(new OrgUnitSetting(f.Tree.Org.Id, f.Y.Id, f.Y.Path, SettingKeys.FilesMaxUploadMb.Name, "50", false));
+            await db.SaveChangesAsync();
+        }
+
+        var evaluator = new TestPolicyEvaluator();
+        evaluator.Block(Permissions.Policies.Update, blockedUnit(f));
+        evaluator.Block(Permissions.Settings.Update, blockedUnit(f));
+        using var host = new OrgUnitTestHost(factory, services =>
+        {
+            services.RemoveAll<IPolicyEvaluator>();
+            services.AddSingleton<IPolicyEvaluator>(evaluator);
+        });
+
+        var response = await host.SendAsync(HttpMethod.Post, Routes.OrgUnitsCopy, f.Admin,
+            new CopyBranchRequest(f.X.Id, f.Tree.School2.Id, suffix, true, true, null, null));
+        return (response, await CopiedRowsAsync(f.Tree.Org.Id, suffix));
+    }
+
+    [Fact]
+    public async Task Update_permissions_held_only_in_the_source_subtree_do_not_count_at_the_target()
+    {
+        // Blocked below School2 (the target), allowed below School1 (the source): extras are skipped and reported.
+        var (response, copied) = await CopyWithUpdateBlockedAtAsync("CB8", f => f.Tree.School2, "-T");
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var result = (await response.Content.ReadFromJsonAsync<CopyBranchResultDto>())!;
+        Assert.Equal(3, result.UnitsCreated);
+        Assert.Equal(
+            [Lms.Api.Features.Branches.CopyBranchEndpoint.PoliciesSkipped, Lms.Api.Features.Branches.CopyBranchEndpoint.SettingsSkipped],
+            result.SkippedLockedSettings);
+        Assert.Equal((0, 0), copied);
+    }
+
+    [Fact]
+    public async Task Update_permissions_held_only_at_the_target_are_enough()
+    {
+        // Blocked below School1 (the source), allowed below School2 (the target): the extras are copied.
+        var (response, copied) = await CopyWithUpdateBlockedAtAsync("CB9", f => f.Tree.School1, "-U");
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        Assert.Empty((await response.Content.ReadFromJsonAsync<CopyBranchResultDto>())!.SkippedLockedSettings);
+        Assert.Equal((1, 1), copied);
     }
 
     [Fact]
