@@ -1,0 +1,109 @@
+@using System.Text.RegularExpressions
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Shared.Organizations
+@inject IOrgApi Api
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+<MudDialog>
+    <DialogContent>
+        @if (_result is not null)
+        {
+            <MudStack Spacing="2">
+                <MudAlert Severity="Severity.Success" data-testid="copy-result">@string.Format(L["Copy_Done"].Value, _result.UnitsCreated)</MudAlert>
+                @if (_result.SkippedLockedSettings.Count > 0)
+                {
+                    <MudAlert Severity="Severity.Warning" data-testid="copy-skipped">
+                        @string.Format(L["Copy_SkippedSettings"].Value, string.Join(", ", _result.SkippedLockedSettings))
+                    </MudAlert>
+                }
+            </MudStack>
+        }
+        else
+        {
+            <MudForm @ref="_form">
+                <MudStack Spacing="3">
+                    @if (_error is not null)
+                    {
+                        <MudAlert Severity="Severity.Error" data-testid="dialog-error">@_error</MudAlert>
+                    }
+                    <MudText>@Culture.Pick(Source.NameAr, Source.NameEn)</MudText>
+                    <MudSelect T="Guid?" @bind-Value="_targetId" Label="@L["Copy_Target"]" Required="true" RequiredError="@L["Common_Required"]"
+                               Error="@(_targetMissing && _targetId is null)" ErrorText="@L["Common_Required"]" data-testid="copy-target">
+                        @foreach (var target in _targets)
+                        {
+                            <MudSelectItem T="Guid?" Value="@((Guid?)target.Id)"><span style="padding-inline-start:@(target.Depth * 16)px">@Culture.Pick(target.NameAr, target.NameEn)</span></MudSelectItem>
+                        }
+                    </MudSelect>
+                    <MudTextField T="string" @bind-Value="_suffix" Label="@L["Copy_CodeSuffix"]" Required="true" RequiredError="@L["Common_Required"]"
+                                  Validation="@(new Func<string, string?>(ValidateSuffix))" MaxLength="50" dir="ltr" data-testid="copy-suffix" />
+                    <MudCheckBox T="bool" @bind-Value="_includePolicies" Label="@L["Copy_IncludePolicies"]" data-testid="copy-policies" />
+                    <MudCheckBox T="bool" @bind-Value="_includeSettings" Label="@L["Copy_IncludeSettings"]" data-testid="copy-settings" />
+                    <MudText Typo="Typo.subtitle2">@L["Copy_NewRootName"]</MudText>
+                    <BilingualNameFields @bind-NameAr="_nameAr" @bind-NameEn="_nameEn" Required="false" IdPrefix="copy-name" />
+                </MudStack>
+            </MudForm>
+        }
+    </DialogContent>
+    <DialogActions>
+        @if (_result is not null)
+        {
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="() => MudDialog.Close(DialogResult.Ok(true))" data-testid="dialog-close">@L["Common_Close"]</MudButton>
+        }
+        else
+        {
+            <MudButton OnClick="() => MudDialog.Cancel()">@L["Common_Cancel"]</MudButton>
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="_saving" data-testid="dialog-save">@L["Copy_Submit"]</MudButton>
+        }
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter, EditorRequired] public OrgUnitNodeDto Source { get; set; } = default!;
+    [Parameter, EditorRequired] public IReadOnlyList<OrgUnitNodeDto> AllUnits { get; set; } = [];
+
+    private MudForm _form = default!;
+    private IReadOnlyList<OrgUnitNodeDto> _targets = [];
+    private Guid? _targetId;
+    private string _suffix = "", _nameAr = "", _nameEn = "";
+    private bool _includePolicies = true, _includeSettings = true, _saving, _targetMissing;
+    private string? _error;
+    private CopyBranchResultDto? _result;
+
+    /// <summary>Where the copy may go: anywhere outside the source's own branch (its current parent is fine: a sibling copy).</summary>
+    public static IReadOnlyList<OrgUnitNodeDto> Targets(OrgUnitNodeDto source, IReadOnlyList<OrgUnitNodeDto> all)
+    {
+        var branch = new HashSet<Guid> { source.Id };
+        bool grew;
+        do
+        {
+            grew = false;
+            foreach (var u in all)
+                if (u.ParentId is { } p && branch.Contains(p) && branch.Add(u.Id)) grew = true;
+        } while (grew);
+        return all.Where(u => !branch.Contains(u.Id)).OrderBy(u => u.Depth).ThenBy(u => u.NameEn).ToList();
+    }
+
+    protected override void OnParametersSet() => _targets = Targets(Source, AllUnits);
+
+    private string? ValidateSuffix(string value) =>
+        Regex.IsMatch(value ?? "", "^[A-Za-z0-9_-]{1,50}$") ? null : L["Common_InvalidCode"].Value;
+
+    private async Task SaveAsync()
+    {
+        _targetMissing = true;
+        await _form.ValidateAsync();
+        if (!_form.IsValid || _targetId is null) return;
+
+        _saving = true; _error = null;
+        var ok = await ApiCalls.RunAsync(async () =>
+            _result = await Api.CopyBranchAsync(new CopyBranchRequest(Source.Id, _targetId.Value, _suffix.Trim(), _includePolicies, _includeSettings,
+                string.IsNullOrWhiteSpace(_nameAr) ? null : _nameAr.Trim(), string.IsNullOrWhiteSpace(_nameEn) ? null : _nameEn.Trim())),
+            Navigation, L, message => _error = message);
+        _saving = false;
+
+        if (!ok && _error is null) MudDialog.Cancel(); // redirected (stale context / forbidden)
+    }
+}

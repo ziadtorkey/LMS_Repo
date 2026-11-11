@@ -1,0 +1,39 @@
+@using System.Text.RegularExpressions
+@using Lms.Shared.Organizations
+@inject ICultureService Culture
+
+@* Live preview of the unit names a template would create, with the entered placeholder values substituted. *@
+<ul class="lms-template-preview" data-testid="template-preview" style="list-style:none;margin:0;padding:0">
+    @foreach (var node in Ordered())
+    {
+        <li style="padding-inline-start:@(Depth(node) * 20)px">@Resolve(Culture.Pick(node.NameAr, node.NameEn), Values)</li>
+    }
+</ul>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<TemplateNodeDto> Nodes { get; set; } = [];
+
+    /// <summary>Placeholder name (no braces) → entered value; unresolved placeholders stay visible as {Name}.</summary>
+    [Parameter] public IReadOnlyDictionary<string, string> Values { get; set; } = new Dictionary<string, string>();
+
+    private static readonly Regex Token = new(@"\{([A-Za-z]+)\}", RegexOptions.Compiled);
+
+    public static string Resolve(string text, IReadOnlyDictionary<string, string> values) =>
+        Token.Replace(text, m => values.TryGetValue(m.Groups[1].Value, out var v) && !string.IsNullOrWhiteSpace(v) ? v.Trim() : m.Value);
+
+    private int Depth(TemplateNodeDto node)
+    {
+        var depth = 0;
+        for (var parent = node.ParentKey; parent is { } key && depth < 20; depth++)
+            parent = Nodes.FirstOrDefault(n => n.Key == key)?.ParentKey;
+        return depth;
+    }
+
+    // Parents before children, siblings in template order.
+    private IEnumerable<TemplateNodeDto> Ordered()
+    {
+        IEnumerable<TemplateNodeDto> Walk(int? parent) =>
+            Nodes.Where(n => n.ParentKey == parent).SelectMany(n => new[] { n }.Concat(Walk(n.Key)));
+        return Walk(null);
+    }
+}
