@@ -67,7 +67,7 @@ public sealed class M1Callers(LmsApiFactory factory)
         var request = new HttpRequestMessage(method, url);
         if (body is not null)
         {
-            request.Content = JsonContent.Create(body, body.GetType(), options: Json);
+            request.Content = ToContent(body);
         }
 
         switch (caller)
@@ -94,7 +94,7 @@ public sealed class M1Callers(LmsApiFactory factory)
         var request = new HttpRequestMessage(method, url);
         if (body is not null)
         {
-            request.Content = JsonContent.Create(body, body.GetType(), options: Json);
+            request.Content = ToContent(body);
         }
 
         request.Headers.Add(TestAuthHandler.UserHeader, assignment.UserId.ToString());
@@ -110,6 +110,9 @@ public sealed class M1Callers(LmsApiFactory factory)
         Assert.True(response.IsSuccessStatusCode, $"setup call {method} {url} as {caller} failed: {(int)response.StatusCode} {text}");
         return text.Length == 0 ? default : JsonDocument.Parse(text).RootElement.Clone();
     }
+
+    /// <summary>A ready <see cref="HttpContent"/> (e.g. a multipart upload) is sent as is; anything else as JSON.</summary>
+    private static HttpContent ToContent(object body) => body as HttpContent ?? JsonContent.Create(body, body.GetType(), options: Json);
 
     private Task<RoleAssignment> Assign(AccessTree tree, Lms.Domain.Organizations.OrgUnit unit, string role) =>
         AccessTestData.AssignAsync(Factory, tree, unit, role, Guid.NewGuid());
