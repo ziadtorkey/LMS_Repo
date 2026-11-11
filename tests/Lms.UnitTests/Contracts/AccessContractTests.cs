@@ -33,7 +33,7 @@ public class AccessContractTests
         Assert.Contains("LoginFailed", AuditCatalog.SecurityEvents);
         Assert.Equal(
             ["LoginSucceeded", "LoginFailed", "PasswordResetRequested", "PasswordReset", "InvitationAccepted",
-             "ExternalLoginLinked", "ExternalLoginSucceeded", "ExternalLoginFailed"],
+             "ExternalLoginLinked", "ExternalLoginSucceeded", "ExternalLoginFailed", "PasswordChanged"],
             AuditCatalog.SecurityEvents);
         Assert.Equal(
             ("ExternalLoginLinked", "ExternalLoginSucceeded", "ExternalLoginFailed"),

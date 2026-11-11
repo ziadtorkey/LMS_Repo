@@ -237,4 +237,23 @@ public sealed class ShareStaffTests(LmsApiFactory factory) : IDisposable
         Assert.Equal(HttpStatusCode.BadRequest, (await SendAsync(HttpMethod.Post, Routes.StaffShares(teacher.Summary.Id), root,
             new ShareStaffRequest([new StaffRoleInput(tree.Roles[BuiltInRoles.Student].Id, tree.School2.Id, null, null)]))).StatusCode);
     }
+
+    [Fact]
+    public async Task Unshare_with_a_profile_id_of_another_client_is_404_and_the_assignment_is_untouched()
+    {
+        var (_, rootA, _) = await SetUpAsync("SHR11A");
+        var (treeB, rootB, teacherB) = await SetUpAsync("SHR11B");
+        var share = (await (await SendAsync(HttpMethod.Post, Routes.StaffShares(teacherB.Summary.Id), rootB, ShareTo(treeB, treeB.School2)))
+            .Content.ReadFromJsonAsync<List<StaffRoleDto>>(Web))!.Single();
+
+        // a client A admin names client B's profile and client B's assignment
+        var response = await SendAsync(HttpMethod.Delete, Routes.StaffShare(teacherB.Summary.Id, share.AssignmentId), rootA);
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        var assignment = await db.RoleAssignments.IgnoreQueryFilters().SingleAsync(a => a.Id == share.AssignmentId);
+        Assert.False(assignment.IsDeleted);
+        Assert.False(await db.Set<Lms.Domain.Notifications.Notification>().AnyAsync(n =>
+            n.UserId == teacherB.Summary.UserId && n.EventKey == Lms.Shared.Notifications.NotificationEvents.AccessRoleRemoved));
+    }
 }
