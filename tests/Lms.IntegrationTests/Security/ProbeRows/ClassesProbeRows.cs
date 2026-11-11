@@ -13,7 +13,9 @@ namespace Lms.IntegrationTests.Security;
 /// </summary>
 public sealed class ClassesProbeRows : IProbeRowModule
 {
-    public IEnumerable<ProbeRow> Rows =>
+    public IEnumerable<ProbeRow> Rows => Build().Select(r => r with { Milestone = 3 });
+
+    private static IEnumerable<ProbeRow> Build() =>
     [
         new("classes list", HttpMethod.Get, Routes.Classes,
             (_, _) => Task.FromResult(new ProbeRequest(Routes.Classes)),
