@@ -14,7 +14,7 @@ public interface IYearsApi
     Task<TermDto> CreateTermAsync(Guid yearId, SaveTermRequest request, CancellationToken ct = default);
     Task<TermDto> UpdateTermAsync(Guid id, SaveTermRequest request, CancellationToken ct = default);
     Task DeleteTermAsync(Guid id, CancellationToken ct = default);
-    Task<IReadOnlyList<CalendarEventDto>> GetCalendarAsync(Guid yearId, Guid orgUnitId, CancellationToken ct = default);
+    Task<IReadOnlyList<CalendarEventDto>> GetCalendarAsync(Guid yearId, Guid? orgUnitId, CancellationToken ct = default);
     Task<CalendarEventDto> CreateEventAsync(SaveCalendarEventRequest request, CancellationToken ct = default);
     Task<CalendarEventDto> UpdateEventAsync(Guid id, SaveCalendarEventRequest request, CancellationToken ct = default);
     Task DeleteEventAsync(Guid id, CancellationToken ct = default);
@@ -47,8 +47,9 @@ public sealed class YearsApi(ApiHttp http) : IYearsApi
     public Task DeleteTermAsync(Guid id, CancellationToken ct = default) =>
         http.SendAsync(HttpMethod.Delete, Routes.Term(id), null, ct);
 
-    public async Task<IReadOnlyList<CalendarEventDto>> GetCalendarAsync(Guid yearId, Guid orgUnitId, CancellationToken ct = default) =>
-        await http.GetAsync<List<CalendarEventDto>>($"{Routes.AcademicYearCalendar(yearId)}?orgUnitId={orgUnitId}", ct);
+    public async Task<IReadOnlyList<CalendarEventDto>> GetCalendarAsync(Guid yearId, Guid? orgUnitId, CancellationToken ct = default) =>
+        await http.GetAsync<List<CalendarEventDto>>(
+            orgUnitId is { } id ? $"{Routes.AcademicYearCalendar(yearId)}?orgUnitId={id}" : Routes.AcademicYearCalendar(yearId), ct);
 
     public async Task<CalendarEventDto> CreateEventAsync(SaveCalendarEventRequest request, CancellationToken ct = default) =>
         (await http.SendAsync<CalendarEventDto>(HttpMethod.Post, Routes.CalendarEvents, request, ct))!;

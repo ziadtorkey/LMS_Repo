@@ -51,7 +51,7 @@ public sealed class AcademicYearsPageTests : ClientTestContext
     public async Task Inherited_years_are_read_only_and_name_source()
     {
         CultureInfo.CurrentUICulture = new CultureInfo("en");
-        await GrantAsync(Permissions.AcademicYears.View, Permissions.AcademicYears.Create, Permissions.AcademicYears.Update);
+        await GrantAsync(Permissions.OrgUnits.View, Permissions.AcademicYears.View, Permissions.AcademicYears.Create, Permissions.AcademicYears.Update);
         var cut = RenderPage(FakeUnits.SchoolId);
 
         var banner = cut.WaitForElement("[data-testid=years-inherited]");
@@ -62,10 +62,61 @@ public sealed class AcademicYearsPageTests : ClientTestContext
         Assert.Empty(cut.FindAll("[data-testid=year-new]"));
     }
 
+    private sealed class UnitsWithout(params Guid[] hidden) : IUnitLookupApi
+    {
+        public Task<IReadOnlyList<Lms.Shared.Organizations.OrgUnitNodeDto>> GetUnitsAsync(CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<Lms.Shared.Organizations.OrgUnitNodeDto>>(FakeUnits.All.Where(u => !hidden.Contains(u.Id)).ToList());
+    }
+
+    private sealed class ForbiddenUnits : IUnitLookupApi
+    {
+        public Task<IReadOnlyList<Lms.Shared.Organizations.OrgUnitNodeDto>> GetUnitsAsync(CancellationToken ct = default) =>
+            Task.FromException<IReadOnlyList<Lms.Shared.Organizations.OrgUnitNodeDto>>(new ApiForbiddenException());
+    }
+
+    [Fact]
+    public async Task Without_OrgUnits_View_the_picker_is_hidden_and_the_context_unit_is_used()
+    {
+        CultureInfo.CurrentUICulture = new CultureInfo("en");
+        Services.AddSingleton<IUnitLookupApi, ForbiddenUnits>(); // a teacher cannot list units: this must not be called
+        await GrantAsync(Permissions.AcademicYears.View);
+        var cut = RenderPage();
+
+        cut.WaitForElement("[data-testid^=year-status-]");
+        Assert.Empty(cut.FindAll("[data-testid=unit-picker]"));
+        Assert.Empty(cut.FindAll("[data-testid=year-new]"));
+        Assert.Null(_years.LastEffectiveUnit);
+        var navigation = Services.GetRequiredService<NavigationManager>();
+        Assert.DoesNotContain("forbidden", navigation.Uri);
+    }
+
+    [Fact]
+    public async Task Defined_at_uses_the_names_from_the_years_when_the_unit_is_not_listed()
+    {
+        CultureInfo.CurrentUICulture = new CultureInfo("en");
+        Services.AddSingleton<IUnitLookupApi>(new UnitsWithout(FakeUnits.GroupId)); // a school admin cannot see the root
+        await GrantAsync(Permissions.OrgUnits.View, Permissions.AcademicYears.View);
+        var cut = RenderPage(FakeUnits.SchoolId);
+
+        Assert.Contains("Defined at Al Noor Schools", cut.WaitForElement("[data-testid=years-inherited]").TextContent);
+    }
+
+    [Fact]
+    public async Task A_unit_can_add_calendar_entries_to_an_inherited_year()
+    {
+        await GrantAsync(Permissions.OrgUnits.View, Permissions.AcademicYears.View, Permissions.AcademicYears.Update);
+        var year = AroundToday(FakeUnits.GroupId, AcademicYearStatuses.Active);
+        var cut = RenderPage(FakeUnits.SchoolId);
+
+        cut.WaitForElement(Id("year", year.Id));
+        Assert.NotEmpty(cut.FindAll(Id("event-new", year.Id)));
+        Assert.Empty(cut.FindAll(Id("term-new", year.Id))); // terms belong to the defining unit
+    }
+
     [Fact]
     public async Task Closed_year_disables_editing()
     {
-        await GrantAsync(Permissions.AcademicYears.View, Permissions.AcademicYears.Update, Permissions.AcademicYears.Create);
+        await GrantAsync(Permissions.OrgUnits.View, Permissions.AcademicYears.View, Permissions.AcademicYears.Update, Permissions.AcademicYears.Create);
         var closed = AroundToday(FakeUnits.SchoolId, AcademicYearStatuses.Closed);
         var planned = _years.AddYear(FakeUnits.SchoolId, "مخطط", "Planned", Today.AddDays(60), Today.AddDays(120), AcademicYearStatuses.Planned);
         var cut = RenderPage(FakeUnits.SchoolId);
@@ -81,7 +132,7 @@ public sealed class AcademicYearsPageTests : ClientTestContext
     [Fact]
     public async Task Current_term_badge_shown()
     {
-        await GrantAsync(Permissions.AcademicYears.View);
+        await GrantAsync(Permissions.OrgUnits.View, Permissions.AcademicYears.View);
         var year = AroundToday(FakeUnits.GradeId, AcademicYearStatuses.Active);
         var current = _years.AddTerm(year.Id, "الحالي", "Now", Today.AddDays(-5), Today.AddDays(5));
         var later = _years.AddTerm(year.Id, "لاحق", "Later", Today.AddDays(10), Today.AddDays(20));
@@ -95,7 +146,7 @@ public sealed class AcademicYearsPageTests : ClientTestContext
     public async Task Term_dates_outside_year_show_error_from_problem_code()
     {
         CultureInfo.CurrentUICulture = new CultureInfo("ar");
-        await GrantAsync(Permissions.AcademicYears.View, Permissions.AcademicYears.Update);
+        await GrantAsync(Permissions.OrgUnits.View, Permissions.AcademicYears.View, Permissions.AcademicYears.Update);
         var year = AroundToday(FakeUnits.GradeId, AcademicYearStatuses.Planned);
         var cut = RenderPage(FakeUnits.GradeId);
 
@@ -114,7 +165,7 @@ public sealed class AcademicYearsPageTests : ClientTestContext
     public async Task Calendar_marks_holidays_and_inherited_events()
     {
         CultureInfo.CurrentUICulture = new CultureInfo("en");
-        await GrantAsync(Permissions.AcademicYears.View);
+        await GrantAsync(Permissions.OrgUnits.View, Permissions.AcademicYears.View);
         var year = AroundToday(FakeUnits.GroupId, AcademicYearStatuses.Active);
         var holiday = _years.AddEvent(year.Id, FakeUnits.GroupId, "عطلة", "Break", CalendarEventKinds.Holiday, Today, Today);
         var cut = RenderPage(FakeUnits.SchoolId); // the school inherits the group's years and calendar
@@ -130,7 +181,7 @@ public sealed class AcademicYearsPageTests : ClientTestContext
     public async Task Year_save_offline_shows_the_generic_error_and_stale_context_redirects()
     {
         CultureInfo.CurrentUICulture = new CultureInfo("en");
-        await GrantAsync(Permissions.AcademicYears.View, Permissions.AcademicYears.Create);
+        await GrantAsync(Permissions.OrgUnits.View, Permissions.AcademicYears.View, Permissions.AcademicYears.Create);
         var cut = RenderPage(FakeUnits.SchoolId);
         await cut.WaitForElement("[data-testid=years-define-own]").ClickAsync(new());
         _dialogs.WaitForElement("[data-testid=name-ar]").Change("عام");
@@ -153,7 +204,7 @@ public sealed class AcademicYearsPageTests : ClientTestContext
     public async Task Delete_year_offline_shows_a_snackbar_instead_of_crashing()
     {
         CultureInfo.CurrentUICulture = new CultureInfo("en");
-        await GrantAsync(Permissions.AcademicYears.View, Permissions.AcademicYears.Update, Permissions.AcademicYears.Delete);
+        await GrantAsync(Permissions.OrgUnits.View, Permissions.AcademicYears.View, Permissions.AcademicYears.Update, Permissions.AcademicYears.Delete);
         var planned = AroundToday(FakeUnits.SchoolId, AcademicYearStatuses.Planned);
         var cut = RenderPage(FakeUnits.SchoolId);
         _years.NextFailure = new HttpRequestException("offline");
@@ -169,7 +220,7 @@ public sealed class AcademicYearsPageTests : ClientTestContext
     public async Task Page_renders_rtl_in_arabic()
     {
         CultureInfo.CurrentUICulture = new CultureInfo("ar");
-        await GrantAsync(Permissions.AcademicYears.View);
+        await GrantAsync(Permissions.OrgUnits.View, Permissions.AcademicYears.View);
         var year = AroundToday(FakeUnits.GroupId, AcademicYearStatuses.Active);
         Render<MudPopoverProvider>();
         var cut = Render<MudRTLProvider>(p => p.Add(r => r.RightToLeft, true).AddChildContent<AcademicYearsPage>());
