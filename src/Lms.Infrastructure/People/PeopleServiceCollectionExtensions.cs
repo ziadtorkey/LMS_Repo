@@ -16,6 +16,7 @@ public static class PeopleServiceCollectionExtensions
         services.AddScoped<IPersonStatusService, PersonStatusService>();
         services.AddScoped<IRoleAssignmentSync, RoleAssignmentSync>();
         services.AddScoped<IInvitationOutbox, InvitationOutbox>();
+        services.AddScoped<IStudentCodeGenerator, StudentCodeGenerator>();
         return services;
     }
 }
