@@ -209,6 +209,10 @@ public sealed class StudentCredentialsTests
             var staff = new User { UserName = shared, Email = shared, DisplayNameEn = "Staff and parent" };
             Assert.True((await users.CreateAsync(staff, "TheirOwn1Pass")).Succeeded);
             originalHash = staff.PasswordHash!;
+            await using var seed = _factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+            var home = await seed.OrgUnits.SingleAsync(u => u.Id == student.OrgUnitId);
+            seed.Set<StaffProfile>().Add(new StaffProfile(home, staff.Id, "موظف", "Staff", shared, null, null, null, null, null, null)); // a profile in this client
+            await seed.SaveChangesAsync();
         }
 
         var kept = await IssueAsync(student.Id);
@@ -251,5 +255,48 @@ public sealed class StudentCredentialsTests
         Assert.True(stored.MustChangePassword);
         Assert.True(await users2.CheckPasswordAsync(stored, second.Password!));
         Assert.False(await users2.CheckPasswordAsync(stored, first.Password!));
+    }
+
+    [Fact]
+    public async Task An_email_that_belongs_to_an_account_of_another_client_is_refused_not_taken_over()
+    {
+        var shared = Mail("other");
+        var (student, _) = await StudentAsync("SC9", shared);
+        var (_, otherTree) = await StudentAsync("SC9B");
+        string originalHash;
+        using (var scope = _host.Services.CreateScope())
+        {
+            var users = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+            var owner = new User { UserName = shared, Email = shared, DisplayNameEn = "Staff of another client" };
+            Assert.True((await users.CreateAsync(owner, "TheirOwn1Pass")).Succeeded);
+            originalHash = owner.PasswordHash!;
+            await using var seed = _factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+            var home = await seed.OrgUnits.SingleAsync(u => u.Id == otherTree.School1.Id);
+            seed.Set<StaffProfile>().Add(new StaffProfile(home, owner.Id, "موظف", "Staff", shared, null, null, null, null, null, null));
+            await seed.SaveChangesAsync();
+        }
+
+        var ex = await Assert.ThrowsAsync<DuplicateAccountException>(() => IssueAsync(student.Id));
+        Assert.Equal("Email", ex.Field);
+        await Assert.ThrowsAsync<DuplicateAccountException>(() => IssueAsync(student.Id, reset: true));
+
+        using var after = _host.Services.CreateScope();
+        var stored = (await after.ServiceProvider.GetRequiredService<UserManager<User>>().FindByEmailAsync(shared))!;
+        Assert.Equal(originalHash, stored.PasswordHash); // untouched
+        Assert.False(stored.MustChangePassword);
+    }
+
+    [Fact]
+    public async Task An_account_with_no_profile_at_all_is_not_reused_either()
+    {
+        var shared = Mail("orphan");
+        var (student, _) = await StudentAsync("SC10", shared);
+        using (var scope = _host.Services.CreateScope())
+        {
+            var users = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+            Assert.True((await users.CreateAsync(new User { UserName = shared, Email = shared, DisplayNameEn = "Someone" }, "TheirOwn1Pass")).Succeeded);
+        }
+
+        await Assert.ThrowsAsync<DuplicateAccountException>(() => IssueAsync(student.Id));
     }
 }
