@@ -1,0 +1,45 @@
+@using System.ComponentModel.DataAnnotations
+@using Lms.Shared.People
+
+@* The personal data fields of a student form (names, nicknames, birth date, gender, religion, nationality, contact, photo). *@
+<MudStack Spacing="3">
+    <BilingualNameFields @bind-NameAr="Model.NameAr" @bind-NameEn="Model.NameEn" IdPrefix="student-name" />
+    <MudTextField T="string" @bind-Value="Model.NicknameAr" Label="@L["Student_NicknameAr"]" MaxLength="200" dir="rtl" lang="ar" data-testid="student-nick-ar" />
+    <MudTextField T="string" @bind-Value="Model.NicknameEn" Label="@L["Student_NicknameEn"]" MaxLength="200" dir="ltr" lang="en" data-testid="student-nick-en" />
+    <MudDatePicker Date="Model.DateOfBirth" DateChanged="d => Model.DateOfBirth = d" Label="@L["Student_DateOfBirth"]" Required="true"
+                   RequiredError="@L["Common_Required"]" MaxDate="DateTime.Today" OpenTo="OpenTo.Year" data-testid="student-dob" />
+    <MudSelect T="string" @bind-Value="Model.Gender" Label="@L["Student_Gender"]" Required="true" RequiredError="@L["Common_Required"]"
+               data-testid="student-gender">
+        @foreach (var gender in Genders.All)
+        {
+            <MudSelectItem T="string" Value="@gender">@L[$"Gender_{gender}"]</MudSelectItem>
+        }
+    </MudSelect>
+    <MudSelect T="string" @bind-Value="Model.Religion" Label="@L["Student_Religion"]" Required="true" RequiredError="@L["Common_Required"]"
+               data-testid="student-religion">
+        @foreach (var religion in Religions.All)
+        {
+            <MudSelectItem T="string" Value="@religion">@L[$"Religion_{religion}"]</MudSelectItem>
+        }
+    </MudSelect>
+    <NationalitySelect @bind-Value="Model.Nationality" Label="@L["Student_Nationality"]" Required="true" TestId="student-nationality" />
+    <MudTextField T="string" @bind-Value="Model.NationalId" Label="@L["Student_NationalId"]" MaxLength="30" dir="ltr" data-testid="student-national-id" />
+    <MudTextField T="string" @bind-Value="Model.Mobile" Label="@L["Student_Mobile"]" InputType="InputType.Telephone" MaxLength="20" dir="ltr"
+                  data-testid="student-mobile" />
+    <MudTextField T="string" @bind-Value="Model.Email" Label="@L["Student_Email"]" InputType="InputType.Email" MaxLength="256" dir="ltr"
+                  Validation="(Func<string, string?>)ValidateEmail" data-testid="student-email" />
+    @if (HomeUnitId is { } unit)
+    {
+        <PhotoUpload @bind-Value="Model.PhotoFileId" OrgUnitId="unit" />
+    }
+</MudStack>
+
+@code {
+    [Parameter, EditorRequired] public StudentDataModel Model { get; set; } = default!;
+
+    /// <summary>The unit a photo is stored under; the photo picker shows once a unit is chosen.</summary>
+    [Parameter] public Guid? HomeUnitId { get; set; }
+
+    private string? ValidateEmail(string value) =>
+        string.IsNullOrWhiteSpace(value) || new EmailAddressAttribute().IsValid(value) ? null : L["Common_InvalidEmail"].Value;
+}

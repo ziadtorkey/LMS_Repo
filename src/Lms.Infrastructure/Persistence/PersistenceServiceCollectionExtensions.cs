@@ -7,8 +7,14 @@ namespace Lms.Infrastructure.Persistence;
 
 public static class PersistenceServiceCollectionExtensions
 {
+    /// <summary>
+    /// Statements per round trip. Measured on the 500-students-x-12-courses placement (X-09): 4.6 s with the provider
+    /// default, 3.4 s with 100; 300 and above make the provider fail ("CommandText not initialized"), so stay at 100.
+    /// </summary>
+    private const int MaxBatchSize = 100;
+
     public static DbContextOptionsBuilder UseLmsMySql(this DbContextOptionsBuilder builder, string connectionString) =>
-        builder.UseMySQL(connectionString).UseOpenIddict<Guid>();
+        builder.UseMySQL(connectionString, o => o.MaxBatchSize(MaxBatchSize)).UseOpenIddict<Guid>();
 
     public static IServiceCollection AddPersistence(this IServiceCollection services, IConfiguration configuration)
     {

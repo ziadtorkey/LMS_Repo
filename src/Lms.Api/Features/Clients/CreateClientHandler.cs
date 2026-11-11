@@ -24,6 +24,29 @@ public sealed class CreateClientHandler(
 {
     private const string InvitationCulture = "ar";
 
+    /// <summary>The requested short code, or (D47) the lower-cased root unit code with '_' turned into '-', cut to 20.</summary>
+    public static string ResolveShortCode(CreateClientRequest request)
+    {
+        var value = string.IsNullOrWhiteSpace(request.ShortCode)
+            ? request.RootUnitCode.Trim().ToLowerInvariant().Replace('_', '-')
+            : request.ShortCode.Trim().ToLowerInvariant();
+        return string.IsNullOrWhiteSpace(request.ShortCode) && value.Length > 20 ? value[..20] : value;
+    }
+
+    private static bool IsShortCodeViolation(DbUpdateException ex)
+    {
+        for (Exception? inner = ex; inner is not null; inner = inner.InnerException)
+        {
+            if (inner.Message.Contains("Duplicate entry", StringComparison.OrdinalIgnoreCase)
+                && inner.Message.Contains("IX_Organizations_ShortCode", StringComparison.Ordinal))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public async Task<ClientDto> HandleAsync(CreateClientRequest request, CancellationToken ct)
     {
         var type = Enum.Parse<OrganizationType>(request.Type);
@@ -35,12 +58,26 @@ public sealed class CreateClientHandler(
 
         await using (var transaction = await db.Database.BeginTransactionAsync(ct))
         {
-            var organization = new Organization(Guid.CreateVersion7(), request.NameAr.Trim(), request.NameEn.Trim(), type);
+            var shortCode = ResolveShortCode(request);
+            if (await db.Organizations.AnyAsync(o => o.ShortCode == shortCode, ct))
+            {
+                throw new ShortCodeTakenException();
+            }
+
+            var organization = new Organization(Guid.CreateVersion7(), request.NameAr.Trim(), request.NameEn.Trim(), type, shortCode);
             var level = new LevelType(organization.Id, request.RootLevelNameAr.Trim(), request.RootLevelNameEn.Trim(), 1, false);
             var root = OrgUnit.CreateRoot(
                 organization.Id, level.Id, request.NameAr.Trim(), request.NameEn.Trim(), request.RootUnitCode.Trim());
             db.AddRange(organization, level, root);
-            await db.SaveChangesAsync(ct);
+            try
+            {
+                await db.SaveChangesAsync(ct);
+            }
+            catch (DbUpdateException ex) when (IsShortCodeViolation(ex))
+            {
+                // two creates raced, or the code belongs to a deleted client (the filter hides it, the unique index still counts it)
+                throw new ShortCodeTakenException();
+            }
 
             await roles.ProvisionAsync(organization.Id, type, ct);
 
@@ -87,3 +124,6 @@ public sealed class CreateClientHandler(
         return result;
     }
 }
+
+/// <summary>The short code (D47) is already used by another client.</summary>
+public sealed class ShortCodeTakenException : Exception;

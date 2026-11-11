@@ -12,13 +12,13 @@ namespace Lms.E2ETests.M3;
 /// </summary>
 public sealed class AcademicStructureTests(E2EFixture fixture) : E2ETestBase(fixture)
 {
-    /// <summary>Un-skip as the pieces reach main: courses page (#264), course API (#214, #215), supervisors (#217, FE T30).</summary>
-    private const string NeedsCourses = "Needs the courses page (#264) and the course and allocation API (#214, #215) on main";
+    /// <summary>Un-skip when the course allocation API (#215) is on main.</summary>
+    private const string NeedsAllocations = "Needs the course allocation API (#215) on main";
 
-    [Theory(Skip = NeedsCourses)]
+    [Theory]
     [InlineData("ar")]
     [InlineData("en")]
-    public async Task Root_admin_creates_course_and_allocates_it_below_the_school(string culture)
+    public async Task Root_admin_creates_course_and_a_duplicate_code_is_refused(string culture)
     {
         var names = M3Names.New();
         var code = names.CourseCode("MATH");
@@ -29,15 +29,35 @@ public sealed class AcademicStructureTests(E2EFixture fixture) : E2ETestBase(fix
         await courses.OpenAsync();
         await courses.CreateAsync(new CoursesPage.NewCourse(
             code, names.CourseNameAr("رياضيات"), names.CourseNameEn("Math"),
-            OwnerUnitName: Pick(culture, "مدرسة التجمع", "School Altagamo3"), WeeklyPeriods: 4,
-            AllocateTo: [Pick(culture, "رياض الأطفال", "KG")]));
-        await courses.SearchAsync(code);
-        await Expect(courses.Row(code)).ToBeVisibleAsync();
+            OwnerUnitName: Pick(culture, "مدرسة التجمع", "School Altagamo3"), WeeklyPeriods: 4));
+        await courses.SearchAsync(names.Suffix);
+        await Expect(courses.Row(code)).ToBeVisibleAsync(new() { Timeout = 20_000 });
 
         // A second course with the same code is refused (codes are unique in the whole client, D38).
         await courses.FillAndSaveAsync(new CoursesPage.NewCourse(
             code, names.CourseNameAr("آخر"), names.CourseNameEn("Other"), Pick(culture, "مدرسة التجمع", "School Altagamo3")));
         await Expect(courses.DialogError).ToContainTextAsync(Resx.In(culture, "Error_course_code_taken"));
+        await AssertDirectionAsync(culture);
+    }
+
+    [Theory(Skip = NeedsAllocations)]
+    [InlineData("ar")]
+    [InlineData("en")]
+    public async Task Root_admin_allocates_a_new_course_below_the_school(string culture)
+    {
+        var names = M3Names.New();
+        var code = names.CourseCode("SCI");
+        await StartAsync(culture: culture);
+        await SignInAsSeededAdminAsync();
+
+        var courses = new CoursesPage(Page);
+        await courses.OpenAsync();
+        await courses.CreateAsync(new CoursesPage.NewCourse(
+            code, names.CourseNameAr("علوم"), names.CourseNameEn("Science"),
+            OwnerUnitName: Pick(culture, "مدرسة التجمع", "School Altagamo3"), WeeklyPeriods: 3,
+            AllocateTo: [Pick(culture, "رياض الأطفال", "KG")]));
+        await courses.SearchAsync(names.Suffix);
+        await Expect(courses.Row(code)).ToBeVisibleAsync(new() { Timeout = 20_000 });
         await AssertDirectionAsync(culture);
     }
 

@@ -22,7 +22,8 @@ public sealed record StudentDataInput(
 /// Body of POST /api/students. <c>StudentCode</c> must be empty when <c>Students.CodeMode</c> is <c>Auto</c> and is
 /// required when it is <c>Manual</c> (D25). <c>ClassId</c> places the student (optional, D45). <c>DefaultPassword</c>
 /// blank = a strong password is generated (D24, D45). <c>ConfirmPossibleDuplicate</c> answers 409
-/// <c>possible_duplicate</c>.
+/// <c>possible_duplicate</c>. <c>ConfirmOverCapacity</c> answers 409 <c>over_capacity</c> when
+/// <c>ClassId</c> is full and <c>Classes.CapacityMode</c> is <c>Warn</c> (as for <see cref="Lms.Shared.Enrollment.AddStudentsToClassRequest"/>).
 /// </summary>
 public sealed record CreateStudentRequest(
     StudentDataInput Data,
@@ -31,7 +32,8 @@ public sealed record CreateStudentRequest(
     bool ConfirmPossibleDuplicate,
     IReadOnlyList<GuardianLinkInput> Guardians,
     Guid? ClassId = null,
-    string? DefaultPassword = null);
+    string? DefaultPassword = null,
+    bool ConfirmOverCapacity = false);
 
 /// <summary>Body of PUT /api/students/{id}.</summary>
 public sealed record UpdateStudentRequest(
@@ -98,7 +100,9 @@ public static class CredentialsDelivery
 /// (D24). <c>IssuedPassword</c> is shown once and never returned again. <c>CredentialsSentTo</c> from
 /// <see cref="CredentialsDelivery"/>.
 /// </summary>
-public sealed record StudentCreatedDto(StudentDetailDto Student, string IssuedPassword, string CredentialsSentTo);
+/// <summary>Result of creating a student: the issued sign-in name (D47: <c>studentcode@clientshortcode</c>) and the
+/// default password, shown once (D24, D45).</summary>
+public sealed record StudentCreatedDto(StudentDetailDto Student, string IssuedPassword, string CredentialsSentTo, string UserName = "");
 
 /// <summary>Body of POST /api/students/{id}/reset-password; blank = a strong password is generated.</summary>
 public sealed record ResetStudentPasswordRequest(string? DefaultPassword);
