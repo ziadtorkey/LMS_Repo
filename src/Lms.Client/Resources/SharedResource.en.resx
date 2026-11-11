@@ -764,4 +764,6 @@
   <data name="Import_Button" xml:space="preserve"><value>Import from Excel</value></data>
   <data name="Clients_ShortCode" xml:space="preserve"><value>Short code</value></data>
   <data name="Clients_ShortCodeHelp" xml:space="preserve"><value>Used in student sign-in names (code@shortcode): 2-20 lower-case letters, digits or hyphens. Leave empty to derive it from the root unit code.</value></data>
+  <data name="Student_OverCapacityConfirm" xml:space="preserve"><value>This class is full. Place the student in it anyway?</value></data>
+  <data name="Student_PlaceAnyway" xml:space="preserve"><value>Place anyway</value></data>
 </root>
