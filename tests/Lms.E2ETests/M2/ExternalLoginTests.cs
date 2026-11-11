@@ -184,9 +184,37 @@ public sealed class ExternalLoginTests(E2EFixture fixture) : E2ETestBase(fixture
         Assert.Equal((int)HttpStatusCode.Forbidden, refused.Status);
         Assert.Contains("OutOfScope", await refused.TextAsync());
 
-        // The app itself offers nothing but the school: the context chooser lists a single option at most.
-        await Page.GotoAsync("/choose-context");
-        Assert.DoesNotContain("MNF", await Page.Locator("body").InnerTextAsync());
+        // The app itself shows nothing of the university: wait for the shell's context switcher, then read its label.
+        await Expect(shell.ContextSwitcher).ToBeVisibleAsync();
+        await Expect(shell.ContextSwitcher).Not.ToContainTextAsync("MNF");
+        await Expect(shell.ContextSwitcher).Not.ToContainTextAsync("جامعة");
+    }
+
+    /// <summary>
+    /// FR-SEC-07 on the external path: an identity the provider vouches for, but whose account is deactivated, expired or
+    /// withdrawn, gets the same message as with a password (in the same <c>login-error</c> element) and no session.
+    /// Seed users: deactivated-e2e, expired-e2e, withdrawn-e2e (Teachers in KG, so the school's provider matches them).
+    /// </summary>
+    [Theory]
+    [InlineData("ar", "deactivated-e2e", "AccountDeactivated")]
+    [InlineData("en", "deactivated-e2e", "AccountDeactivated")]
+    [InlineData("ar", "expired-e2e", "AccountExpired")]
+    [InlineData("en", "expired-e2e", "AccountExpired")]
+    [InlineData("ar", "withdrawn-e2e", "AccountWithdrawn")]
+    [InlineData("en", "withdrawn-e2e", "AccountWithdrawn")]
+    public async Task Blocked_account_signing_in_through_the_provider_sees_the_blocked_message(string culture, string user, string messageKey)
+    {
+        await StartAsync(culture: culture, test: $"{nameof(Blocked_account_signing_in_through_the_provider_sees_the_blocked_message)}-{user}");
+        await using var admin = await AdminSession.StartAsync(Fixture);
+        var (_, slug) = await admin.CreateProviderAsync();
+
+        await Page.GotoAsync($"/Account/ExternalLogin/{slug}");
+        await MockOidc.SignInAsync(Page, "e2e-blocked-" + RunId(), E2ESettings.SeedUser(user));
+
+        var login = new LoginPage(Page);
+        await Expect(login.Error).ToHaveTextAsync(Resx.Account(culture, messageKey));
+        Assert.Contains("/Account/Login", Page.Url, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain(await Page.Context.CookiesAsync(), c => c.Name.StartsWith(".AspNetCore.Identity", StringComparison.Ordinal));
     }
 
     /// <summary>A password session of <paramref name="email"/> in a throw-away context: its university assignment id.</summary>
