@@ -18,3 +18,6 @@ html, body { margin: 0; font-family: Roboto, "Segoe UI", Tahoma, sans-serif; }
 .lms-org-inactive { opacity: .6; }
 .lms-org-match .mud-typography { background: rgba(255, 193, 7, .45); border-radius: 4px; padding: 0 4px; }
 
+/* Audit diff: changed values */
+.lms-diff-before { background: rgba(244, 67, 54, 0.14); }
+.lms-diff-after { background: rgba(76, 175, 80, 0.18); }
