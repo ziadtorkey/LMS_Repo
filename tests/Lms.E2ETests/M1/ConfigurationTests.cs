@@ -151,6 +151,40 @@ public sealed class ConfigurationTests(E2EFixture fixture) : E2ETestBase(fixture
         await AssertDirectionAsync(culture);
     }
 
+    [Theory]
+    [InlineData("ar")]
+    [InlineData("en")]
+    public async Task Save_branch_as_template_with_a_Year_placeholder_then_apply_for_2027(string culture)
+    {
+        var sfx = Guid.NewGuid().ToString("N")[..6].ToUpperInvariant();
+        string Pick(string ar, string en) => culture == "ar" ? ar : en;
+        var (stageCode, sectionCode) = ($"G2026-{sfx}", $"G2026-{sfx}-A");
+        var templateNameAr = $"قالب الصف {sfx}";
+        var templateNameEn = $"Grade template {sfx}";
+        await StartAsync(culture: culture);
+        await SignInAsOrgAdminAsync();
+        var tree = new OrgTreeAdminPage(Page);
+        await tree.OpenAsync();
+
+        // A stage with one section, both carrying "2026" in their names and codes.
+        await tree.AddChildAsync("S", $"الصف 2026 {sfx}", $"Grade 2026 {sfx}", stageCode, Pick("مرحلة", "Stage"));
+        await tree.AddChildAsync(stageCode, $"فصل 2026 {sfx}", $"Class 2026 {sfx}", sectionCode, Pick("فصل", "Section"));
+        await tree.SaveAsTemplateAsync(stageCode, templateNameAr, templateNameEn, "2026", "Year");
+
+        var templates = new TemplatesPage(Page);
+        await templates.OpenAsync();
+        await Expect(templates.Row(Pick(templateNameAr, templateNameEn))).ToContainTextAsync("{Year}");
+        var result = await templates.ApplyAsync(
+            Pick(templateNameAr, templateNameEn), Pick("مدرسة التجمع", "School Altagamo3"), new Dictionary<string, string> { ["Year"] = "2027" });
+
+        // Both units are created below the school, with 2027 in place of the placeholder.
+        Assert.Contains("2", result);
+        await tree.OpenAsync();
+        Assert.Equal("S", await tree.ParentCodeAsync($"G2027-{sfx}"));
+        Assert.Equal($"G2027-{sfx}", await tree.ParentCodeAsync($"G2027-{sfx}-A"));
+        await AssertDirectionAsync(culture);
+    }
+
     private async Task SignInAsOrgAdminAsync()
     {
         await new LoginPage(Page).SignInAsync(E2ESettings.SeedUser("orgadmin"), Settings.Password);
