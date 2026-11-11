@@ -39,6 +39,7 @@ namespace Lms.Infrastructure.Persistence.Migrations
                     AzureTenantId = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: true),
                     ClientId = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: false),
                     ProtectedClientSecret = table.Column<string>(type: "varchar(2000)", maxLength: 2000, nullable: true),
+                    ClientSecretUpdatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     Scopes = table.Column<string>(type: "varchar(500)", maxLength: 500, nullable: false),
                     MatchBy = table.Column<string>(type: "varchar(20)", maxLength: 20, nullable: false),
                     NationalIdClaim = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: true),

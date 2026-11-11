@@ -41,7 +41,7 @@ public static class IdentityProviderEndpoints
 
     private static async Task<IResult> CreateAsync(
         HttpContext http, LmsDbContext db, ICurrentContext context, IConfiguration configuration, IHostEnvironment env,
-        ProviderSecretProtector protector, ExternalSchemeRegistry registry, SaveIdentityProviderRequest? body, CancellationToken ct)
+        ProviderSecretProtector protector, ExternalSchemeRegistry registry, IClock clock, SaveIdentityProviderRequest? body, CancellationToken ct)
     {
         if (await http.CheckClientRootAsync(Permissions.IdentityProviders.Manage, ct) is { } refused)
         {
@@ -63,7 +63,7 @@ public static class IdentityProviderEndpoints
             context.OrganizationId!.Value, Enum.Parse<IdentityProviderKind>(request.Kind), request.Slug, request.DisplayNameAr,
             request.DisplayNameEn, request.Authority!, request.AzureTenantId, request.ClientId, protector.Protect(request.ClientSecret!),
             request.Scopes, Enum.Parse<DomainMatchBy>(request.MatchBy), request.NationalIdClaim,
-            string.Join(',', request.EmailDomains), request.Enabled);
+            string.Join(',', request.EmailDomains), request.Enabled, clock.UtcNow);
         db.Set<IdentityProviderConfig>().Add(row);
         try
         {
@@ -81,7 +81,7 @@ public static class IdentityProviderEndpoints
 
     private static async Task<IResult> UpdateAsync(
         Guid id, HttpContext http, LmsDbContext db, IConfiguration configuration, IHostEnvironment env,
-        ProviderSecretProtector protector, ExternalSchemeRegistry registry, SaveIdentityProviderRequest? body, CancellationToken ct)
+        ProviderSecretProtector protector, ExternalSchemeRegistry registry, IClock clock, SaveIdentityProviderRequest? body, CancellationToken ct)
     {
         if (await http.CheckClientRootAsync(Permissions.IdentityProviders.Manage, ct) is { } refused)
         {
@@ -114,7 +114,7 @@ public static class IdentityProviderEndpoints
             request.DisplayNameAr, request.DisplayNameEn, request.Authority!, request.AzureTenantId, request.ClientId,
             request.ClientSecret is null ? null : protector.Protect(request.ClientSecret), request.Scopes,
             Enum.Parse<DomainMatchBy>(request.MatchBy), request.NationalIdClaim, string.Join(',', request.EmailDomains),
-            request.Enabled);
+            request.Enabled, clock.UtcNow);
         await db.SaveChangesAsync(ct);
         await registry.SyncAsync(ct);
         return Results.Ok(ToDto(row, configuration));

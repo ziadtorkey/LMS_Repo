@@ -30,7 +30,8 @@ public sealed class IdentityProviderConfig : AuditableEntity, ITenantOwned
     public IdentityProviderConfig(
         Guid organizationId, IdentityProviderKind kind, string slug, string displayNameAr, string displayNameEn,
         string authority, string? azureTenantId, string clientId, string? protectedClientSecret, string scopes,
-        ExternalMatchBy matchBy, string? nationalIdClaim, string emailDomains, bool enabled)
+        ExternalMatchBy matchBy, string? nationalIdClaim, string emailDomains, bool enabled,
+        DateTime? clientSecretUpdatedAt = null)
         : this()
     {
         OrganizationId = organizationId;
@@ -38,6 +39,7 @@ public sealed class IdentityProviderConfig : AuditableEntity, ITenantOwned
         Slug = slug;
         Apply(displayNameAr, displayNameEn, authority, azureTenantId, clientId, scopes, matchBy, nationalIdClaim, emailDomains, enabled);
         ProtectedClientSecret = protectedClientSecret;
+        ClientSecretUpdatedAt = protectedClientSecret is null ? null : clientSecretUpdatedAt;
     }
 
     public Guid OrganizationId { get; private set; }
@@ -56,6 +58,9 @@ public sealed class IdentityProviderConfig : AuditableEntity, ITenantOwned
     [AuditIgnore]
     public string? ProtectedClientSecret { get; private set; }
 
+    /// <summary>When the secret was last set. Audited, so that replacing the (audit-ignored) secret still leaves a trail.</summary>
+    public DateTime? ClientSecretUpdatedAt { get; private set; }
+
     public string Scopes { get; private set; }
     public ExternalMatchBy MatchBy { get; private set; }
     public string? NationalIdClaim { get; private set; }
@@ -68,7 +73,7 @@ public sealed class IdentityProviderConfig : AuditableEntity, ITenantOwned
     public void Update(
         string displayNameAr, string displayNameEn, string authority, string? azureTenantId, string clientId,
         string? newProtectedSecret, string scopes, ExternalMatchBy matchBy, string? nationalIdClaim, string emailDomains,
-        bool enabled)
+        bool enabled, DateTime utcNow)
     {
         Apply(displayNameAr, displayNameEn, authority, azureTenantId, clientId, scopes, matchBy, nationalIdClaim, emailDomains, enabled);
 
@@ -76,6 +81,7 @@ public sealed class IdentityProviderConfig : AuditableEntity, ITenantOwned
         if (newProtectedSecret is not null)
         {
             ProtectedClientSecret = newProtectedSecret;
+            ClientSecretUpdatedAt = utcNow;
         }
     }
 

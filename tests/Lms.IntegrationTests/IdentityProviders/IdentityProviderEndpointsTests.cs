@@ -188,6 +188,42 @@ public sealed class IdentityProviderEndpointsTests(LmsApiFactory factory)
         });
     }
 
+    [Fact]
+    public async Task Changing_only_the_secret_is_audited_without_revealing_it()
+    {
+        var admin = await RootAdminAsync("IP13");
+        var created = await CreateAsync(admin, Azure(NewSlug()));
+
+        var put = await SendAsync(factory, HttpMethod.Put, Routes.IdentityProvider(created.Id), admin,
+            Azure(created.Slug, secret: "a-brand-new-secret"));
+
+        Assert.Equal(HttpStatusCode.OK, put.StatusCode);
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        var updates = await db.AuditEntries.IgnoreQueryFilters()
+            .Where(e => e.EntityType == nameof(IdentityProviderConfig) && e.EntityId == created.Id
+                        && e.Action == Lms.Domain.Auditing.AuditAction.Updated).ToListAsync();
+        var entry = Assert.Single(updates);
+        Assert.Contains("ClientSecretUpdatedAt", entry.AfterJson);
+        Assert.DoesNotContain("a-brand-new-secret", entry.AfterJson);
+        Assert.DoesNotContain("ProtectedClientSecret", entry.AfterJson);
+    }
+
+    [Fact]
+    public async Task Update_without_a_new_secret_does_not_touch_the_secret_timestamp()
+    {
+        var admin = await RootAdminAsync("IP14");
+        var created = await CreateAsync(admin, Azure(NewSlug()));
+        await using var before = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        var stamp = (await before.Set<IdentityProviderConfig>().IgnoreQueryFilters().SingleAsync(p => p.Id == created.Id)).ClientSecretUpdatedAt;
+        Assert.NotNull(stamp);
+
+        await SendAsync(factory, HttpMethod.Put, Routes.IdentityProvider(created.Id), admin,
+            Azure(created.Slug, secret: null) with { DisplayNameEn = "Other" });
+
+        await using var after = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        Assert.Equal(stamp, (await after.Set<IdentityProviderConfig>().IgnoreQueryFilters().SingleAsync(p => p.Id == created.Id)).ClientSecretUpdatedAt);
+    }
+
     [Theory]
     [InlineData("AB")]
     [InlineData("Has_Underscore")]
