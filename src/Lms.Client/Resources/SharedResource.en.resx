@@ -675,6 +675,63 @@
   <data name="NotifEvent_Enrollment_ExceptionDecided" xml:space="preserve"><value>Enrollment exception decided</value></data>
   <data name="Notif_Enrollment_StudentTransferred" xml:space="preserve"><value>{StudentName} moves from {FromClass} to {ToClass} on {EffectiveOn}.</value></data>
   <data name="NotifEvent_Enrollment_StudentTransferred" xml:space="preserve"><value>Student transferred</value></data>
+  <data name="Nav_Students" xml:space="preserve"><value>Students</value></data>
+  <data name="Students_Title" xml:space="preserve"><value>Students</value></data>
+  <data name="Students_New" xml:space="preserve"><value>New student</value></data>
+  <data name="Student_Code" xml:space="preserve"><value>Student code</value></data>
+  <data name="Student_CodeAuto" xml:space="preserve"><value>The student code is generated automatically.</value></data>
+  <data name="Student_NicknameAr" xml:space="preserve"><value>Nickname (Arabic)</value></data>
+  <data name="Student_NicknameEn" xml:space="preserve"><value>Nickname (English)</value></data>
+  <data name="Student_DateOfBirth" xml:space="preserve"><value>Date of birth</value></data>
+  <data name="Student_Gender" xml:space="preserve"><value>Gender</value></data>
+  <data name="Student_Religion" xml:space="preserve"><value>Religion</value></data>
+  <data name="Student_Nationality" xml:space="preserve"><value>Nationality</value></data>
+  <data name="Student_NationalId" xml:space="preserve"><value>National ID</value></data>
+  <data name="Student_Mobile" xml:space="preserve"><value>Mobile</value></data>
+  <data name="Student_Email" xml:space="preserve"><value>Email</value></data>
+  <data name="Student_HomeUnit" xml:space="preserve"><value>Unit</value></data>
+  <data name="Student_Class" xml:space="preserve"><value>Class</value></data>
+  <data name="Student_ClassHelp" xml:space="preserve"><value>Optional: place the student in a class of the current year.</value></data>
+  <data name="Student_ClassFull" xml:space="preserve"><value>This class is full. Placing the student may be refused or need confirmation.</value></data>
+  <data name="Student_Unplaced" xml:space="preserve"><value>Unplaced</value></data>
+  <data name="Student_PrimaryGuardian" xml:space="preserve"><value>Primary guardian</value></data>
+  <data name="Student_DefaultPassword" xml:space="preserve"><value>Default password</value></data>
+  <data name="Student_DefaultPasswordHelp" xml:space="preserve"><value>Leave empty to generate a strong password. The student must change it at first sign-in.</value></data>
+  <data name="Student_Created" xml:space="preserve"><value>Student created.</value></data>
+  <data name="Student_PossibleDuplicate" xml:space="preserve"><value>There are {0} students with the same name and date of birth. Create anyway?</value></data>
+  <data name="Student_CreateAnyway" xml:space="preserve"><value>Create anyway</value></data>
+  <data name="Gender_Male" xml:space="preserve"><value>Male</value></data>
+  <data name="Gender_Female" xml:space="preserve"><value>Female</value></data>
+  <data name="Religion_Muslim" xml:space="preserve"><value>Muslim</value></data>
+  <data name="Religion_Christian" xml:space="preserve"><value>Christian</value></data>
+  <data name="Religion_Other" xml:space="preserve"><value>Other</value></data>
+  <data name="Guardians_Title" xml:space="preserve"><value>Guardians</value></data>
+  <data name="Guardian_Add" xml:space="preserve"><value>Add guardian</value></data>
+  <data name="Guardian_Relation" xml:space="preserve"><value>Relation</value></data>
+  <data name="Guardian_Primary" xml:space="preserve"><value>Primary guardian</value></data>
+  <data name="Guardian_LinkExisting" xml:space="preserve"><value>Link existing guardian {0} ({1})</value></data>
+  <data name="Guardian_Link" xml:space="preserve"><value>Link</value></data>
+  <data name="Guardian_Unlink" xml:space="preserve"><value>Enter a different guardian</value></data>
+  <data name="Guardian_Linked" xml:space="preserve"><value>Linked to registered guardian {0} ({1})</value></data>
+  <data name="Guardian_Required" xml:space="preserve"><value>At least one guardian is required for this unit.</value></data>
+  <data name="Guardian_Incomplete" xml:space="preserve"><value>Enter the Arabic name, English name and mobile of the guardian.</value></data>
+  <data name="Relation_Father" xml:space="preserve"><value>Father</value></data>
+  <data name="Relation_Mother" xml:space="preserve"><value>Mother</value></data>
+  <data name="Relation_Brother" xml:space="preserve"><value>Brother</value></data>
+  <data name="Relation_Sister" xml:space="preserve"><value>Sister</value></data>
+  <data name="Relation_Grandfather" xml:space="preserve"><value>Grandfather</value></data>
+  <data name="Relation_Grandmother" xml:space="preserve"><value>Grandmother</value></data>
+  <data name="Relation_Uncle" xml:space="preserve"><value>Uncle</value></data>
+  <data name="Relation_Aunt" xml:space="preserve"><value>Aunt</value></data>
+  <data name="Relation_Other" xml:space="preserve"><value>Other</value></data>
+  <data name="Credentials_Title" xml:space="preserve"><value>Student sign-in details</value></data>
+  <data name="Credentials_Once" xml:space="preserve"><value>The password is shown only now and cannot be retrieved later. Copy it before closing.</value></data>
+  <data name="Credentials_Password" xml:space="preserve"><value>Default password</value></data>
+  <data name="Credentials_Copy" xml:space="preserve"><value>Copy</value></data>
+  <data name="Credentials_Copied" xml:space="preserve"><value>Copied.</value></data>
+  <data name="CredentialsDelivery_Student" xml:space="preserve"><value>The credentials were emailed to the student.</value></data>
+  <data name="CredentialsDelivery_PrimaryGuardian" xml:space="preserve"><value>The credentials were emailed to the primary guardian.</value></data>
+  <data name="CredentialsDelivery_None" xml:space="preserve"><value>No email was sent. Hand the credentials to the guardian.</value></data>
   <data name="Nav_Courses" xml:space="preserve"><value>Courses</value></data>
   <data name="Course_Title" xml:space="preserve"><value>Courses</value></data>
   <data name="Course_New" xml:space="preserve"><value>New course</value></data>
