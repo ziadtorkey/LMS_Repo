@@ -15,7 +15,7 @@ public sealed class PersonDuplicateFinder(LmsDbContext db) : IPersonDuplicateFin
     {
         // ISOLATION-BYPASS: a duplicate may sit in a sibling subtree outside the caller's scope. The client is matched
         // and deleted rows are excluded explicitly; only the colliding field name leaves this method.
-        var others = db.StaffProfiles.IgnoreQueryFilters()
+        var others = db.Set<StaffProfile>().IgnoreQueryFilters()
             .Where(p => p.OrganizationId == organizationId && !p.IsDeleted && p.Id != excludeProfileId);
 
         if (await others.AnyAsync(p => p.Email == email, ct))
@@ -38,13 +38,13 @@ public sealed class PersonDuplicateFinder(LmsDbContext db) : IPersonDuplicateFin
 
     public Task<bool> StudentNationalIdExistsAsync(Guid organizationId, string nationalId, Guid? excludeId, CancellationToken ct) =>
         // ISOLATION-BYPASS: client-wide check across sibling subtrees; client matched and deleted rows excluded by hand.
-        db.StudentProfiles.IgnoreQueryFilters()
+        db.Set<StudentProfile>().IgnoreQueryFilters()
             .AnyAsync(s => s.OrganizationId == organizationId && !s.IsDeleted && s.Id != excludeId && s.NationalId == nationalId, ct);
 
     public Task<int> CountStudentsByNameAndDobAsync(
         Guid organizationId, string nameArKey, string nameEnKey, DateOnly dob, Guid? excludeId, CancellationToken ct) =>
         // ISOLATION-BYPASS: client-wide check across sibling subtrees; client matched and deleted rows excluded by hand.
-        db.StudentProfiles.IgnoreQueryFilters()
+        db.Set<StudentProfile>().IgnoreQueryFilters()
             .CountAsync(
                 s => s.OrganizationId == organizationId && !s.IsDeleted && s.Id != excludeId && s.DateOfBirth == dob
                      && (s.NameArKey == nameArKey || s.NameEnKey == nameEnKey),
@@ -54,7 +54,7 @@ public sealed class PersonDuplicateFinder(LmsDbContext db) : IPersonDuplicateFin
         Guid organizationId, string? nationalId, string? mobile, CancellationToken ct)
     {
         // ISOLATION-BYPASS: guardians are client-wide; the client is matched and deleted rows excluded by hand.
-        var guardians = db.GuardianProfiles.IgnoreQueryFilters().Where(g => g.OrganizationId == organizationId && !g.IsDeleted);
+        var guardians = db.Set<GuardianProfile>().IgnoreQueryFilters().Where(g => g.OrganizationId == organizationId && !g.IsDeleted);
 
         if (nationalId is not null
             && await guardians.OrderBy(g => g.CreatedAt).FirstOrDefaultAsync(g => g.NationalId == nationalId, ct) is { } byId)

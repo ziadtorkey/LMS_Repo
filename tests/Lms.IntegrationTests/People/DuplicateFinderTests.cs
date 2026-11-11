@@ -76,9 +76,9 @@ public sealed class DuplicateFinderTests(LmsApiFactory factory)
         var guardian = await PeopleTestKit.AddGuardianAsync(factory, a.Org.Id, mobile, nationalId);
         await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
         {
-            db.StaffProfiles.Remove(await db.StaffProfiles.SingleAsync(x => x.Id == staff.Id));
-            db.StudentProfiles.Remove(await db.StudentProfiles.SingleAsync(x => x.Id == student.Id));
-            db.GuardianProfiles.Remove(await db.GuardianProfiles.SingleAsync(x => x.Id == guardian.Id));
+            db.Set<StaffProfile>().Remove(await db.Set<StaffProfile>().SingleAsync(x => x.Id == staff.Id));
+            db.Set<StudentProfile>().Remove(await db.Set<StudentProfile>().SingleAsync(x => x.Id == student.Id));
+            db.Set<GuardianProfile>().Remove(await db.Set<GuardianProfile>().SingleAsync(x => x.Id == guardian.Id));
             await db.SaveChangesAsync();
         }
 

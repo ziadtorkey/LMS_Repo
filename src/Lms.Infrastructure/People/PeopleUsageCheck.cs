@@ -1,4 +1,5 @@
 using Lms.Domain.Organizations;
+using Lms.Domain.People;
 using Lms.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,11 +10,11 @@ public sealed class PeopleUsageCheck(LmsDbContext db) : IOrgUnitUsageCheck
 {
     public async Task<string?> FindUsageAsync(OrgUnit unit, CancellationToken cancellationToken)
     {
-        if (await db.StudentProfiles.AnyAsync(s => s.OrgUnitId == unit.Id, cancellationToken))
+        if (await db.Set<StudentProfile>().AnyAsync(s => s.OrgUnitId == unit.Id, cancellationToken))
         {
             return "students";
         }
 
-        return await db.StaffProfiles.AnyAsync(s => s.OrgUnitId == unit.Id, cancellationToken) ? "staff" : null;
+        return await db.Set<StaffProfile>().AnyAsync(s => s.OrgUnitId == unit.Id, cancellationToken) ? "staff" : null;
     }
 }

@@ -37,10 +37,10 @@ public sealed class PeopleIsolationTests(LmsApiFactory factory)
     private async Task AssertVisibleAsync(TestCurrentContext context, bool expected, Guid staffId, Guid studentId, Guid linkId, Guid changeId)
     {
         await using var db = factory.CreateDbContext(context);
-        Assert.Equal(expected, await db.StaffProfiles.AnyAsync(x => x.Id == staffId));
-        Assert.Equal(expected, await db.StudentProfiles.AnyAsync(x => x.Id == studentId));
-        Assert.Equal(expected, await db.StudentGuardians.AnyAsync(x => x.Id == linkId));
-        Assert.Equal(expected, await db.PersonStatusChanges.AnyAsync(x => x.Id == changeId));
+        Assert.Equal(expected, await db.Set<StaffProfile>().AnyAsync(x => x.Id == staffId));
+        Assert.Equal(expected, await db.Set<StudentProfile>().AnyAsync(x => x.Id == studentId));
+        Assert.Equal(expected, await db.Set<StudentGuardian>().AnyAsync(x => x.Id == linkId));
+        Assert.Equal(expected, await db.Set<PersonStatusChange>().AnyAsync(x => x.Id == changeId));
     }
 
     [Fact]
@@ -53,11 +53,11 @@ public sealed class PeopleIsolationTests(LmsApiFactory factory)
         await using (var db = factory.CreateDbContext(TestCurrentContext.For(a.Org.Id, a.School1.Path)))
         {
             // Client-wide: any unit scope of the client sees the guardian.
-            Assert.True(await db.GuardianProfiles.AnyAsync(g => g.Id == guardian.Id));
+            Assert.True(await db.Set<GuardianProfile>().AnyAsync(g => g.Id == guardian.Id));
         }
 
         await using var other = factory.CreateDbContext(TestCurrentContext.For(b.Org.Id, b.Root.Path));
-        Assert.False(await other.GuardianProfiles.AnyAsync(g => g.Id == guardian.Id));
+        Assert.False(await other.Set<GuardianProfile>().AnyAsync(g => g.Id == guardian.Id));
     }
 
     [Fact]
@@ -72,7 +72,7 @@ public sealed class PeopleIsolationTests(LmsApiFactory factory)
 
         await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
         {
-            db.StudentProfiles.Remove(await db.StudentProfiles.SingleAsync(s => s.Id == first.Id)); // soft delete
+            db.Set<StudentProfile>().Remove(await db.Set<StudentProfile>().SingleAsync(s => s.Id == first.Id)); // soft delete
             await db.SaveChangesAsync();
         }
 

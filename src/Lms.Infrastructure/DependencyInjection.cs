@@ -5,6 +5,7 @@ using Lms.Infrastructure.Auditing;
 using Lms.Infrastructure.Files;
 using Lms.Infrastructure.Email;
 using Lms.Infrastructure.Identity;
+using Lms.Infrastructure.Identity.External;
 using Lms.Infrastructure.Configuration;
 using Lms.Infrastructure.Organizations;
 using Lms.Infrastructure.Notifications;
@@ -34,6 +35,7 @@ public static class DependencyInjection
         services.AddSettingsAndPolicies();
         services.AddAcademicYears();
         services.AddPeople();
+        services.AddExternalIdentity(configuration);
         return services;
     }
 }

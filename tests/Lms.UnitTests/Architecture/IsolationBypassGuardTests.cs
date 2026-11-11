@@ -15,6 +15,10 @@ public sealed class IsolationBypassGuardTests
             "client root and ancestors lie above a unit-level caller's scope (M1 Task 5)",
         ["src/Lms.Infrastructure/Access/ValidAssignmentQuery.cs"] =
             "resolving the caller's own role assignments before any scope exists; D15 inactive ancestors (M0 Task 5, #86)",
+        ["src/Lms.Infrastructure/Identity/External/ExternalSchemeRegistry.cs"] =
+            "schemes are process-wide and exist before any caller: reads the enabled, live providers of every client (M2 Task 21, #167)",
+        ["src/Lms.Api/Features/IdentityProviders/IdentityProviderEndpoints.cs"] =
+            "provider slug is unique across clients; existence check only, nothing of the other client's row is returned (M2 Task 21, #167)",
         ["src/Lms.Infrastructure/Configuration/PolicyEvaluator.cs"] =
             "policies set on ancestors outside the caller's scope (M0 Task 6)",
         ["src/Lms.Infrastructure/Configuration/PolicyManager.cs"] =
