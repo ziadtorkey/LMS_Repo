@@ -13,6 +13,7 @@ public static class NavCatalog
         new("Nav_LevelTypes", "level-types", Icons.Material.Filled.Layers, Permissions.LevelTypes.View),
         new("Nav_Staff", "staff", Icons.Material.Filled.Badge, Permissions.Staff.View),
         new("Nav_Students", "students", Icons.Material.Filled.School, Permissions.Students.View),
+        new("Nav_Courses", "courses", Icons.Material.Filled.MenuBook, Permissions.Courses.View),
         new("Nav_Roles", "roles", Icons.Material.Filled.AdminPanelSettings, Permissions.Roles.View),
         new("Nav_Assignments", "assignments", Icons.Material.Filled.GroupAdd, Permissions.Assignments.View),
         new("Nav_AcademicYears", "academic-years", Icons.Material.Filled.CalendarMonth, Permissions.AcademicYears.View),

@@ -11,6 +11,8 @@ public sealed class IsolationBypassGuardTests
     /// <summary>Repository-relative files allowed to bypass the global query filters, with the reason.</summary>
     private static readonly IReadOnlyDictionary<string, string> AllowList = new Dictionary<string, string>
     {
+        ["src/Lms.Api/Features/Templates/TemplateMapper.cs"] =
+            "owner unit name of a Shared template that sits outside the caller's scope, restricted to the client (M1 Task 17, #52)",
         ["src/Lms.Api/Features/Staff/ShareStaffHandler.cs"] =
             "removing a share: the person's home may lie outside the scope of the admin of the shared-to unit; own client, live rows, assignment lookup stays filtered (M2 Task 16, #164)",
         ["src/Lms.Infrastructure/Organizations/OrgTree.cs"] =
@@ -47,6 +49,8 @@ public sealed class IsolationBypassGuardTests
             "setting locks sit on ancestors above the caller's scope when a copied branch is materialized (M1 Task 15, #50)",
         ["src/Lms.Api/Features/LevelTypes/LevelTypeEndpoints.cs"] =
             "level types are client-wide, so the in-use count covers the whole client, not the caller subtree (M1 Task 8, #83)",
+        ["src/Lms.Infrastructure/Courses/CourseCatalog.cs"] =
+            "courses and allocations owned by ancestors of the caller scope, restricted to the client (M3 Task 5, #213)",
         ["src/Lms.Infrastructure/Notifications/NotificationRecipientResolver.cs"] =
             "recipients at or below the event unit, raised by someone above or beside them (M1 Task 10, #90)",
         ["src/Lms.Infrastructure/AcademicYears/AcademicYearResolver.cs"] =
@@ -63,6 +67,8 @@ public sealed class IsolationBypassGuardTests
             "holidays of ancestor units apply to descendants, restricted to the client and effective years (M1 Task 22, #57)",
         ["src/Lms.Infrastructure/People/PersonStatusService.cs"] =
             "a user's account status derives from their profiles in every client; only that user's statuses are read (M2 Task 6, #158)",
+        ["src/Lms.Infrastructure/People/StaffBackfill.cs"] =
+            "startup backfill of staff profiles for M1 bare users across every client; client matched, deleted rows excluded (M2 Task 9, #161)",
         ["src/Lms.Infrastructure/People/PersonDuplicateFinder.cs"] =
             "client-wide duplicate checks reach sibling subtrees outside the caller's scope; client matched, deleted rows excluded, only the field name leaves (M2 Task 5, #157)",
     };

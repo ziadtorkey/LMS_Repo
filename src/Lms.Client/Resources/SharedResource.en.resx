@@ -401,6 +401,7 @@
   <data name="AuditEvent_ExternalLoginLinked" xml:space="preserve"><value>Organization account linked</value></data>
   <data name="AuditEvent_ExternalLoginSucceeded" xml:space="preserve"><value>Successful organization sign-in</value></data>
   <data name="AuditEvent_ExternalLoginFailed" xml:space="preserve"><value>Failed organization sign-in</value></data>
+  <data name="AuditEvent_PasswordChanged" xml:space="preserve"><value>Password changed</value></data>
   <data name="Notif_Staff_ExpiringSoon" xml:space="preserve"><value>The access of {StaffName} expires on {ExpiresOn}.</value></data>
   <data name="Notif_Staff_Expired" xml:space="preserve"><value>The access of {StaffName} expired on {ExpiresOn}.</value></data>
   <data name="Notif_Imports_Completed" xml:space="preserve"><value>Your {Kind} import finished: {Status} ({RowCount} rows).</value></data>
@@ -512,6 +513,8 @@
   <data name="Error_password_change_required" xml:space="preserve"><value>You must change your password before you continue.</value></data>
   <data name="Error_invalid_owner_unit" xml:space="preserve"><value>A course can be owned only by the client root or a course-management level.</value></data>
   <data name="Error_course_code_taken" xml:space="preserve"><value>Another course already uses this code.</value></data>
+  <data name="Error_short_code_taken" xml:space="preserve"><value>Another client already uses this short code.</value></data>
+  <data name="Error_invalid_short_code" xml:space="preserve"><value>Invalid short code: 2–20 lower-case letters, digits or hyphens.</value></data>
   <data name="Error_course_in_use" xml:space="preserve"><value>The course is used by classes and cannot be removed.</value></data>
   <data name="Error_course_not_available" xml:space="preserve"><value>This course is not available at this unit.</value></data>
   <data name="Error_allocation_exists" xml:space="preserve"><value>The course is already allocated at this unit.</value></data>
@@ -702,4 +705,32 @@
   <data name="CredentialsDelivery_Student" xml:space="preserve"><value>The credentials were emailed to the student.</value></data>
   <data name="CredentialsDelivery_PrimaryGuardian" xml:space="preserve"><value>The credentials were emailed to the primary guardian.</value></data>
   <data name="CredentialsDelivery_None" xml:space="preserve"><value>No email was sent. Hand the credentials to the guardian.</value></data>
+  <data name="Nav_Courses" xml:space="preserve"><value>Courses</value></data>
+  <data name="Course_Title" xml:space="preserve"><value>Courses</value></data>
+  <data name="Course_New" xml:space="preserve"><value>New course</value></data>
+  <data name="Course_Edit" xml:space="preserve"><value>Edit course</value></data>
+  <data name="Course_View" xml:space="preserve"><value>Course</value></data>
+  <data name="Course_Import" xml:space="preserve"><value>Import courses</value></data>
+  <data name="Course_Created" xml:space="preserve"><value>Course created.</value></data>
+  <data name="Course_ReadOnly" xml:space="preserve"><value>This course belongs to a higher unit or you cannot edit it, so it is shown read-only.</value></data>
+  <data name="Course_Code" xml:space="preserve"><value>Code</value></data>
+  <data name="Course_CodeFormat" xml:space="preserve"><value>Letters, digits, - and _ only (up to 50 characters).</value></data>
+  <data name="Course_DescriptionAr" xml:space="preserve"><value>Description (Arabic)</value></data>
+  <data name="Course_DescriptionEn" xml:space="preserve"><value>Description (English)</value></data>
+  <data name="Course_Language" xml:space="preserve"><value>Language of instruction</value></data>
+  <data name="Course_Language_ar" xml:space="preserve"><value>Arabic</value></data>
+  <data name="Course_Language_en" xml:space="preserve"><value>English</value></data>
+  <data name="Course_Language_fr" xml:space="preserve"><value>French</value></data>
+  <data name="Course_Language_de" xml:space="preserve"><value>German</value></data>
+  <data name="Course_WeeklyPeriods" xml:space="preserve"><value>Weekly periods</value></data>
+  <data name="Course_Owner" xml:space="preserve"><value>Owner unit</value></data>
+  <data name="Course_AllocateTo" xml:space="preserve"><value>Also allocate to</value></data>
+  <data name="Course_AllocateToHelp" xml:space="preserve"><value>Optional: units that get this course right away.</value></data>
+  <data name="Course_Unit" xml:space="preserve"><value>Available at unit</value></data>
+  <data name="Course_Inherited" xml:space="preserve"><value>Inherited</value></data>
+  <data name="Course_Allocations" xml:space="preserve"><value>Allocations</value></data>
+  <data name="Course_SupervisedByMe" xml:space="preserve"><value>Supervised by me</value></data>
+  <data name="CourseStatus_Active" xml:space="preserve"><value>Active</value></data>
+  <data name="CourseStatus_Inactive" xml:space="preserve"><value>Inactive</value></data>
+  <data name="CourseImport_Title" xml:space="preserve"><value>Import courses from Excel</value></data>
 </root>
