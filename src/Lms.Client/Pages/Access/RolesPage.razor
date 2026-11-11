@@ -119,7 +119,7 @@ else
         var confirmed = await ConfirmDialog.AskAsync(Dialogs, L["Confirm_DeleteTitle"],
             string.Format(L["Roles_DeleteConfirm"], CultureText.Pick(role.NameAr, role.NameEn)));
         if (!confirmed) return;
-        if (await ActionCalls.TryAsync(() => Api.DeleteRoleAsync(role.Id), Navigation, L, m => Snackbar.Add(m, Severity.Error)))
+        if (await ApiCalls.RunAsync(() => Api.DeleteRoleAsync(role.Id), Navigation, L, m => Snackbar.Add(m, Severity.Error)))
             await LoadAsync();
     }
 
