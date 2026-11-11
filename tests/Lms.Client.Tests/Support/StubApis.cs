@@ -23,7 +23,8 @@ public sealed class StubClientsApi : IClientsApi
     {
         if (CreateFailure is not null) return Task.FromException<ClientDto>(CreateFailure);
         Created.Add(request);
-        var dto = new ClientDto(Guid.NewGuid(), request.NameAr, request.NameEn, request.Type, "Active", Guid.NewGuid(), DateTime.UtcNow);
+        var dto = new ClientDto(Guid.NewGuid(), request.NameAr, request.NameEn, request.Type, "Active", Guid.NewGuid(), DateTime.UtcNow,
+            request.ShortCode ?? request.RootUnitCode.ToLowerInvariant());
         Rows.Add(dto);
         return Task.FromResult(dto);
     }
