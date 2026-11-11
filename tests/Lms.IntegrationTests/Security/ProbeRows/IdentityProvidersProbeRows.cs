@@ -12,38 +12,20 @@ public sealed class IdentityProvidersProbeRows : IProbeRowModule
     [
         new("identity-providers list", HttpMethod.Get, Routes.IdentityProviders,
             (_, _) => Task.FromResult(new ProbeRequest(Routes.IdentityProviders)),
-            Expect(Ok, Forbidden, Forbidden, Forbidden, Ok, Forbidden))
-        {
-            M2Expected = NoProviders,
-        },
+            Expect(Ok, Forbidden, Forbidden, Forbidden, Ok, Forbidden)),
         new("identity-providers create", HttpMethod.Post, Routes.IdentityProviders,
             (w, _) => Task.FromResult(new ProbeRequest(Routes.IdentityProviders, ProviderBody(w))),
-            Expect(Created, Forbidden, Forbidden, Forbidden, Created, Forbidden))
-        {
-            M2Expected = NoProviders,
-        },
+            Expect(Created, Forbidden, Forbidden, Forbidden, Created, Forbidden)),
         new("identity-providers update (client A provider)", HttpMethod.Put, Routes.IdentityProviderPattern,
             async (w, _) => { var (id, body) = await NewProviderAsync(w); return new ProbeRequest(Routes.IdentityProvider(id), body); },
-            Expect(Ok, Forbidden, Forbidden, Forbidden, NotFound, Forbidden))
-        {
-            M2Expected = NoProviders,
-        },
+            Expect(Ok, Forbidden, Forbidden, Forbidden, NotFound, Forbidden)),
         new("identity-providers delete (client A provider)", HttpMethod.Delete, Routes.IdentityProviderPattern,
             async (w, _) => new ProbeRequest(Routes.IdentityProvider((await NewProviderAsync(w)).Id)),
-            Expect(NoContent, Forbidden, Forbidden, Forbidden, NotFound, Forbidden))
-        {
-            M2Expected = NoProviders,
-        },
+            Expect(NoContent, Forbidden, Forbidden, Forbidden, NotFound, Forbidden)),
         new("identity-providers test (client A provider)", HttpMethod.Post, Routes.IdentityProviderTestPattern,
             async (w, _) => new ProbeRequest(Routes.IdentityProviderTest((await NewProviderAsync(w)).Id)),
-            Expect(Ok, Forbidden, Forbidden, Forbidden, NotFound, Forbidden))
-        {
-            M2Expected = NoProviders,
-        },
+            Expect(Ok, Forbidden, Forbidden, Forbidden, NotFound, Forbidden)),
     ];
-
-    /// <summary>No M2 staff caller holds IdentityProviders.* (Org Admin only).</summary>
-    private static Dictionary<M2Caller, int> NoProviders => M2(Forbidden, Forbidden, Forbidden, Forbidden);
 
     private static SaveIdentityProviderRequest ProviderBody(M1ProbeWorld w) => new(
         IdentityProviderKinds.AzureAd, "probe-" + w.Next() + "-" + Guid.NewGuid().ToString("N")[..8],

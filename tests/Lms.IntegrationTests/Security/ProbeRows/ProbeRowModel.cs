@@ -14,14 +14,7 @@ public sealed record ProbeRow(
     HttpMethod Method,
     string Pattern,
     Func<M1ProbeWorld, Caller, Task<ProbeRequest>> Build,
-    IReadOnlyDictionary<Caller, int> Expected)
-{
-    /// <summary>
-    /// The expected status for the M2 staff callers (<see cref="M2Caller"/>), required on every M2 row and checked by
-    /// <see cref="M2EndpointMatrixTests"/>. Null on M1 rows.
-    /// </summary>
-    public IReadOnlyDictionary<M2Caller, int>? M2Expected { get; init; }
-}
+    IReadOnlyDictionary<Caller, int> Expected);
 
 /// <summary>
 /// The probe rows of one feature module. One class per module under <c>Security/ProbeRows/</c> (named

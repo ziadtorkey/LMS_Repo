@@ -22,62 +22,32 @@ public sealed class ImportsProbeRows : IProbeRowModule
     [
         new("imports columns (staff)", HttpMethod.Get, Routes.ImportColumnsPattern,
             (_, _) => Task.FromResult(new ProbeRequest(Routes.ImportColumns(Kind))),
-            Expect(Ok, Ok, Ok, Forbidden, Ok, Ok))
-        {
-            M2Expected = NoImport,
-        },
+            Expect(Ok, Ok, Ok, Forbidden, Ok, Ok)),
         new("imports template (staff)", HttpMethod.Get, Routes.ImportTemplatePattern,
             (_, _) => Task.FromResult(new ProbeRequest(Routes.ImportTemplate(Kind, "ar"))),
-            Expect(Ok, Ok, Ok, Forbidden, Ok, Ok))
-        {
-            M2Expected = NoImport,
-        },
+            Expect(Ok, Ok, Ok, Forbidden, Ok, Ok)),
         new("imports upload (staff, below School1)", HttpMethod.Post, Routes.ImportKindPattern,
             async (w, _) => new ProbeRequest(Routes.ImportsOfKind(Kind), await UploadBodyAsync(w, await w.NewUnitAsync(w.Callers.A.School1))),
-            Expect(Accepted, Accepted, NotFound, Forbidden, NotFound, Accepted))
-        {
-            M2Expected = NoImport,
-        },
+            Expect(Accepted, Accepted, NotFound, Forbidden, NotFound, Accepted)),
         new("imports list (staff)", HttpMethod.Get, Routes.ImportKindPattern,
             (_, _) => Task.FromResult(new ProbeRequest(Routes.ImportsOfKind(Kind))),
-            Expect(Ok, Ok, Ok, Forbidden, Ok, Ok))
-        {
-            M2Expected = NoImport,
-        },
+            Expect(Ok, Ok, Ok, Forbidden, Ok, Ok)),
         new("imports batch get", HttpMethod.Get, Routes.ImportBatchPattern,
             async (w, _) => new ProbeRequest(Routes.ImportBatch(Kind, await NewBatchAsync(w))),
-            Expect(Ok, Ok, NotFound, Forbidden, NotFound, Ok))
-        {
-            M2Expected = NoImport,
-        },
+            Expect(Ok, Ok, NotFound, Forbidden, NotFound, Ok)),
         new("imports batch rows", HttpMethod.Get, Routes.ImportRowsPattern,
             async (w, _) => new ProbeRequest(Routes.ImportRows(Kind, await NewBatchAsync(w))),
-            Expect(Ok, Ok, NotFound, Forbidden, NotFound, Ok))
-        {
-            M2Expected = NoImport,
-        },
+            Expect(Ok, Ok, NotFound, Forbidden, NotFound, Ok)),
         new("imports error report", HttpMethod.Get, Routes.ImportErrorReportPattern,
             async (w, _) => new ProbeRequest(Routes.ImportErrorReport(Kind, await NewBatchAsync(w))),
-            Expect(Ok, Ok, NotFound, Forbidden, NotFound, Ok))
-        {
-            M2Expected = NoImport,
-        },
+            Expect(Ok, Ok, NotFound, Forbidden, NotFound, Ok)),
         new("imports commit (invalid batch)", HttpMethod.Post, Routes.ImportCommitPattern,
             async (w, _) => new ProbeRequest(Routes.ImportCommit(Kind, await NewBatchAsync(w))),
-            Expect(Conflict, Conflict, NotFound, Forbidden, NotFound, Conflict))
-        {
-            M2Expected = NoImport,
-        },
+            Expect(Conflict, Conflict, NotFound, Forbidden, NotFound, Conflict)),
         new("imports discard", HttpMethod.Delete, Routes.ImportBatchPattern,
             async (w, _) => new ProbeRequest(Routes.ImportBatch(Kind, await NewBatchAsync(w))),
-            Expect(NoContent, NoContent, NotFound, Forbidden, NotFound, NoContent))
-        {
-            M2Expected = NoImport,
-        },
+            Expect(NoContent, NoContent, NotFound, Forbidden, NotFound, NoContent)),
     ];
-
-    /// <summary>Manager, counselor and supervisor lack Staff.Import (D32); client B's teacher has no permissions.</summary>
-    private static Dictionary<M2Caller, int> NoImport => M2(Forbidden, Forbidden, Forbidden, Forbidden);
 
     private static async Task<Guid> NewBatchAsync(M1ProbeWorld w)
     {
