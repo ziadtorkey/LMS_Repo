@@ -8,7 +8,7 @@ namespace Lms.Domain.Classes;
 [Audited]
 public sealed class Class : UnitOwnedEntity, ILiveKeyed
 {
-    public const string OpenStatus = "Open";
+    public const string ActiveStatus = "Active";
     public const string ClosedStatus = "Closed";
 
     private Class()
@@ -20,7 +20,7 @@ public sealed class Class : UnitOwnedEntity, ILiveKeyed
     {
         PlaceIn(unit);
         AcademicYearId = academicYearId;
-        Status = OpenStatus;
+        Status = ActiveStatus;
         Code = NameAr = NameEn = string.Empty;
         Update(code, nameAr, nameEn, capacity, null);
     }

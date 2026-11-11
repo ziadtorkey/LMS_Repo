@@ -60,6 +60,65 @@ public sealed class CourseCatalog(LmsDbContext db, ICurrentContext context) : IC
         return rows.Select(r => new AvailableCourse(r.Allocation, r.Course, r.Allocation.OrgUnitId != unit.Id)).ToList();
     }
 
+    public async Task<CoursePage> ListVisibleAsync(CourseListQuery query, CancellationToken cancellationToken = default)
+    {
+        if (!HasContext())
+        {
+            return new CoursePage([], 0);
+        }
+
+        // ISOLATION-BYPASS: lists ancestor-owned courses too; client and soft-delete are re-applied and visibility is
+        // "owner inside the caller scope or an ancestor of it".
+        var courses = db.Set<Course>().IgnoreQueryFilters()
+            .Where(c => !c.IsDeleted && (context.IsPlatformAdmin || c.OrganizationId == context.OrganizationId));
+
+        if (!context.IsPlatformAdmin)
+        {
+            var scope = context.ScopePath!;
+            var scopeAncestors = OrgUnitPath.AncestorsAndSelf(scope);
+            courses = courses.Where(c => c.OrgUnitPath.StartsWith(scope) || scopeAncestors.Contains(c.OrgUnitPath));
+        }
+
+        if (query.OrgUnitPath is { } path)
+        {
+            var ancestors = OrgUnitPath.AncestorsAndSelf(path);
+            courses = query.IncludeInherited
+                ? courses.Where(c => c.OrgUnitPath.StartsWith(path) || ancestors.Contains(c.OrgUnitPath))
+                : courses.Where(c => c.OrgUnitPath.StartsWith(path));
+        }
+        else if (!query.IncludeInherited && context.ScopePath is { } own)
+        {
+            courses = courses.Where(c => c.OrgUnitPath.StartsWith(own));
+        }
+
+        if (query.Status is { Length: > 0 } status)
+        {
+            courses = courses.Where(c => c.Status == status);
+        }
+
+        if (query.Search is { Length: > 0 } search)
+        {
+            courses = courses.Where(c => c.Code.Contains(search) || c.NameAr.Contains(search) || c.NameEn.Contains(search));
+        }
+
+        if (query.OnlyCourseIds is { } only)
+        {
+            courses = courses.Where(c => only.Contains(c.Id));
+        }
+
+        courses = query.Sort switch
+        {
+            "-code" => courses.OrderByDescending(c => c.Code),
+            "name" => courses.OrderBy(c => c.NameEn).ThenBy(c => c.Code),
+            "-name" => courses.OrderByDescending(c => c.NameEn).ThenBy(c => c.Code),
+            _ => courses.OrderBy(c => c.Code),
+        };
+
+        var total = await courses.CountAsync(cancellationToken);
+        var page = await courses.Skip(Math.Max(0, query.Page - 1) * query.PageSize).Take(query.PageSize).ToListAsync(cancellationToken);
+        return new CoursePage(page.Select(c => new CourseView(c, IsInherited(c.OrgUnitPath))).ToList(), total);
+    }
+
     private bool HasContext() => context.IsPlatformAdmin || (context.OrganizationId is not null && context.ScopePath is not null);
 
     private bool IsVisible(string ownerPath) =>

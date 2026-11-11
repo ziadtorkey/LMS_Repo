@@ -9,7 +9,7 @@ public sealed class ClassStudent : UnitOwnedEntity, ILiveKeyed
 {
     public const string ActiveStatus = "Active";
     public const string RemovedStatus = "Removed";
-    public const string TransferredStatus = "Transferred";
+    public const string TransferredOutStatus = "TransferredOut";
 
     private ClassStudent()
     {

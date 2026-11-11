@@ -18,6 +18,20 @@ public interface ICourseCatalog
 
     /// <summary>Courses allocated at the unit or an ancestor, with the allocation that makes each available.</summary>
     Task<IReadOnlyList<AvailableCourse>> AvailableAtAsync(OrgUnit unit, CancellationToken cancellationToken = default);
+
+    /// <summary>Visible courses, filtered and paged (the caller applies the permission and relationship rules).</summary>
+    Task<CoursePage> ListVisibleAsync(CourseListQuery query, CancellationToken cancellationToken = default);
 }
+
+/// <summary>
+/// Filter of <see cref="ICourseCatalog.ListVisibleAsync"/>. <see cref="OrgUnitPath"/> limits to courses owned at or below
+/// that unit, plus those owned by its ancestors when <see cref="IncludeInherited"/>. <see cref="OnlyCourseIds"/> limits to
+/// those ids (e.g. the courses a supervisor supervises).
+/// </summary>
+public sealed record CourseListQuery(
+    string? OrgUnitPath, bool IncludeInherited, string? Status, string? Search, IReadOnlyCollection<Guid>? OnlyCourseIds,
+    string? Sort, int Page, int PageSize);
+
+public sealed record CoursePage(IReadOnlyList<CourseView> Items, int Total);
 
 public sealed record AvailableCourse(CourseAllocation Allocation, Course Course, bool IsInherited);
