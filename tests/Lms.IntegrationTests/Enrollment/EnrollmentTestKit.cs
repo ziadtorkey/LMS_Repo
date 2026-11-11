@@ -25,6 +25,8 @@ internal sealed class EngineScope : IDisposable
         _scope.ServiceProvider.GetRequiredService<HttpCurrentContext>().SetUser(Guid.Empty, true);
     }
 
+    public IServiceProvider Services => _scope.ServiceProvider;
+
     public IEnrollmentEngine Engine => _scope.ServiceProvider.GetRequiredService<IEnrollmentEngine>();
 
     public EnrollmentEngine Concrete => _scope.ServiceProvider.GetRequiredService<EnrollmentEngine>();
