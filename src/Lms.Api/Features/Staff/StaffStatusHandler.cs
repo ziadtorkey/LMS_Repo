@@ -10,7 +10,8 @@ namespace Lms.Api.Features.Staff;
 
 /// <summary>PUT /api/staff/{id}/status: deactivate or reactivate with a reason (FR-STF-07, X-03); the history row is written by the service.</summary>
 public sealed class StaffStatusHandler(
-    LmsDbContext db, ICurrentContext context, IClock clock, IPersonStatusService statuses, StaffQueries queries)
+    LmsDbContext db, ICurrentContext context, IClock clock, IPersonStatusService statuses, StaffQueries queries,
+    Lms.Infrastructure.Access.CallerPermissions caller)
 {
     private const int MaxReason = 500;
 
@@ -40,6 +41,14 @@ public sealed class StaffStatusHandler(
         }
 
         var to = Enum.Parse<PersonStatus>(request.Status);
+
+        // Deactivating takes access away (D16): the caller must be allowed to manage every role the person holds.
+        // Reactivating gives back what was there, so it is not guarded.
+        if (to == PersonStatus.Deactivated && await StaffAssignments.CheckCallerMayRemoveAccessAsync(db, caller, profile, ct) is { } refused)
+        {
+            return refused;
+        }
+
         if (to == PersonStatus.Active && profile.Status == PersonStatus.Expired
             && profile.ExpiresOn is { } expiry && expiry < DateOnly.FromDateTime(clock.UtcNow))
         {

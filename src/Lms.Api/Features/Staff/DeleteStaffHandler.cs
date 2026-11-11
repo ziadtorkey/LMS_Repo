@@ -10,7 +10,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Lms.Api.Features.Staff;
 
 /// <summary>DELETE /api/staff/{id}: soft-deletes the profile and the person's Staff-kind assignments in this client.</summary>
-public sealed class DeleteStaffHandler(LmsDbContext db, ICurrentContext context, IPersonStatusService statuses)
+public sealed class DeleteStaffHandler(
+    LmsDbContext db, ICurrentContext context, IPersonStatusService statuses, Lms.Infrastructure.Access.CallerPermissions caller)
 {
     public async Task<IResult> DeleteAsync(Guid id, HttpContext http, CancellationToken ct)
     {
@@ -25,16 +26,12 @@ public sealed class DeleteStaffHandler(LmsDbContext db, ICurrentContext context,
             return ApiProblems.Conflict(ProblemCodes.cannot_change_own_status);
         }
 
-        var organizationId = profile.OrganizationId;
+        if (await StaffAssignments.CheckCallerMayRemoveAccessAsync(db, caller, profile, ct) is { } refused)
+        {
+            return refused;
+        }
 
-        // ISOLATION-BYPASS: the person's shares point at units outside the scope of the admin who deletes them, and all of
-        // them must go. Limited to this client and live rows, explicit.
-        var live = db.RoleAssignments.IgnoreQueryFilters()
-            .Where(a => a.UserId == profile.UserId && a.OrganizationId == organizationId && !a.IsDeleted);
-        // ISOLATION-BYPASS: same reason; only the Staff-kind roles of this client (student and guardian roles stay).
-        var staffRoles = db.Roles.IgnoreQueryFilters()
-            .Where(r => r.OrganizationId == organizationId && r.BaseKind == RoleBaseKind.Staff).Select(r => r.Id);
-        var assignments = await live.Where(a => staffRoles.Contains(a.RoleId)).ToListAsync(ct);
+        var assignments = await StaffAssignments.LiveAsync(db, profile, ct);
 
         db.RoleAssignments.RemoveRange(assignments); // soft delete
         db.Remove(profile);

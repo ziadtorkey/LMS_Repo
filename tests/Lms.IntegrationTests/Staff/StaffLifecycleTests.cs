@@ -5,6 +5,7 @@ using Lms.Domain.Abstractions;
 using Lms.Domain.Access;
 using Lms.Domain.Auditing;
 using Lms.Domain.Identity;
+using Lms.Domain.Organizations;
 using Lms.Domain.People;
 using Lms.IntegrationTests.Access;
 using Lms.IntegrationTests.Auth;
@@ -320,5 +321,132 @@ public sealed class StaffLifecycleTests
         Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(HttpMethod.Delete, Routes.StaffMember(staff.Summary.Id), school2Admin)).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(HttpMethod.Post, Routes.StaffResendInvitation(staff.Summary.Id), school2Admin)).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await StatusAsync(school2Admin, Guid.NewGuid(), PersonStatuses.Deactivated)).StatusCode);
+    }
+
+    /// <summary>A custom role with the given permissions plus everything a Teacher holds (so Teacher targets are within its reach).</summary>
+    private async Task<RoleAssignment> HrCallerAsync(AccessTree tree, OrgUnit unit, params string[] extra)
+    {
+        await using var db = _factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        var teacherPermissions = await db.Set<RolePermission>().Where(p => p.RoleId == tree.Roles[BuiltInRoles.Teacher].Id).Select(p => p.Permission).ToListAsync();
+        var permissions = teacherPermissions.Concat(extra).Distinct().ToArray();
+        var role = new Role(tree.Org.Id, null, "موارد", "HR " + Guid.NewGuid().ToString("N")[..6], RoleBaseKind.Staff);
+        db.Add(role);
+        db.AddRange(permissions.Select(p => new RolePermission(tree.Org.Id, role.Id, p)));
+        var assignment = new RoleAssignment(unit, Guid.NewGuid(), role.Id);
+        db.Add(assignment);
+        await db.SaveChangesAsync();
+        return assignment;
+    }
+
+    private async Task<StaffDetailDto> CreateWithRoleAsync(AccessTree tree, RoleAssignment creator, string roleKey, OrgUnit home)
+    {
+        var created = await SendAsync(HttpMethod.Post, Routes.Staff, creator, new CreateStaffRequest(
+            "موظف", "Target", $"tg{Guid.NewGuid():N}"[..14] + "@lms.test", null, null, null, null, null, home.Id, null,
+            [new StaffRoleInput(tree.Roles[roleKey].Id, home.Id, null, null)]));
+        Assert.Equal(HttpStatusCode.Created, created.StatusCode);
+        return (await created.Content.ReadFromJsonAsync<StaffDetailDto>(Web))!;
+    }
+
+    [Fact]
+    public async Task Deactivate_and_delete_are_refused_when_the_target_holds_a_broader_role_than_the_caller_may_manage()
+    {
+        var (tree, admin, _) = await SetUpAsync("LC20");
+        var hr = await HrCallerAsync(tree, tree.Root, Permissions.Staff.View, Permissions.Staff.Update, Permissions.Staff.Delete);
+        var secondAdmin = await CreateWithRoleAsync(tree, admin, BuiltInRoles.OrgAdmin, tree.Root);
+        var teacher = await CreateWithRoleAsync(tree, admin, BuiltInRoles.Teacher, tree.School1);
+
+        var deactivate = await StatusAsync(hr, secondAdmin.Summary.Id, PersonStatuses.Deactivated);
+        var delete = await SendAsync(HttpMethod.Delete, Routes.StaffMember(secondAdmin.Summary.Id), hr);
+
+        Assert.Equal(HttpStatusCode.Forbidden, deactivate.StatusCode);
+        Assert.Equal(ProblemCodes.permission_escalation, await CodeAsync(deactivate));
+        Assert.Equal(HttpStatusCode.Forbidden, delete.StatusCode);
+        Assert.Equal(ProblemCodes.permission_escalation, await CodeAsync(delete));
+        Assert.Equal(PersonStatuses.Active, (await GetAsync(admin, secondAdmin.Summary.Id)).Summary.Status); // nothing changed
+        await using (var db = _factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            Assert.Equal(1, await db.RoleAssignments.CountAsync(a => a.UserId == secondAdmin.Summary.UserId && !a.IsDeleted));
+        }
+
+        // a narrower target is fine, and reactivating is never guarded
+        Assert.Equal(HttpStatusCode.OK, (await StatusAsync(hr, teacher.Summary.Id, PersonStatuses.Deactivated)).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await StatusAsync(hr, teacher.Summary.Id, PersonStatuses.Active, "back")).StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, (await SendAsync(HttpMethod.Delete, Routes.StaffMember(teacher.Summary.Id), hr)).StatusCode);
+
+        // an Org Admin may still act on an Org Admin
+        Assert.Equal(HttpStatusCode.OK, (await StatusAsync(admin, secondAdmin.Summary.Id, PersonStatuses.Deactivated)).StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, (await SendAsync(HttpMethod.Delete, Routes.StaffMember(secondAdmin.Summary.Id), admin)).StatusCode);
+    }
+
+    [Fact]
+    public async Task A_share_with_a_broader_role_outside_the_callers_scope_also_counts_for_the_guard()
+    {
+        var (tree, _, teacher) = await SetUpAsync("LC21");
+        var hr = await HrCallerAsync(tree, tree.School1, Permissions.Staff.View, Permissions.Staff.Update, Permissions.Staff.Delete);
+        await AccessTestData.AssignAsync(_factory, tree, tree.School2, BuiltInRoles.OrgAdmin, teacher.Summary.UserId); // an admin role in the other school
+
+        var deactivate = await StatusAsync(hr, teacher.Summary.Id, PersonStatuses.Deactivated);
+
+        Assert.Equal(HttpStatusCode.Forbidden, deactivate.StatusCode);
+        Assert.Equal(ProblemCodes.permission_escalation, await CodeAsync(deactivate));
+    }
+
+    [Fact]
+    public async Task Moving_home_needs_Staff_Update_at_the_new_home()
+    {
+        var (tree, admin, staff) = await SetUpAsync("LC22");
+        _host.Services.GetRequiredService<TestPolicyEvaluator>().Block(Permissions.Staff.Update, tree.School2);
+
+        var response = await SendAsync(HttpMethod.Put, Routes.StaffMember(staff.Summary.Id), admin, Update(staff, home: tree.School2.Id));
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode); // allowed at School1, blocked at School2
+        Assert.Equal(tree.School1.Id, (await GetAsync(admin, staff.Summary.Id)).Summary.HomeOrgUnitId);
+    }
+
+    [Fact]
+    public async Task Delete_keeps_Student_and_Guardian_kind_assignments_of_the_same_person()
+    {
+        var (tree, admin, staff) = await SetUpAsync("LC23");
+        var student = await AccessTestData.AssignAsync(_factory, tree, tree.School1, BuiltInRoles.Student, staff.Summary.UserId);
+        var guardian = await AccessTestData.AssignAsync(_factory, tree, tree.School1, BuiltInRoles.Guardian, staff.Summary.UserId);
+
+        var response = await SendAsync(HttpMethod.Delete, Routes.StaffMember(staff.Summary.Id), admin);
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await using var db = _factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        var rows = await db.RoleAssignments.IgnoreQueryFilters().Where(a => a.UserId == staff.Summary.UserId).ToListAsync();
+        Assert.False(rows.Single(a => a.Id == student.Id).IsDeleted);
+        Assert.False(rows.Single(a => a.Id == guardian.Id).IsDeleted);
+        Assert.Single(rows, a => a.IsDeleted); // only the staff assignment went
+    }
+
+    [Fact]
+    public async Task Delete_recomputes_the_account_status_from_the_remaining_profiles_of_every_client()
+    {
+        var (_, adminA, a) = await SetUpAsync("LC24A");
+        var (treeB, adminB, _) = await SetUpAsync("LC24B");
+        // the same person in client B (the account is reused by e-mail)
+        var inB = await SendAsync(HttpMethod.Post, Routes.Staff, adminB, new CreateStaffRequest(
+            "معلم", "Teacher", a.Summary.Email, null, null, null, null, null, treeB.School1.Id, null,
+            [new StaffRoleInput(treeB.Roles[BuiltInRoles.Teacher].Id, treeB.School1.Id, null, null)]));
+        Assert.Equal(HttpStatusCode.Created, inB.StatusCode);
+        var profileB = (await inB.Content.ReadFromJsonAsync<StaffDetailDto>(Web))!;
+
+        async Task<UserStatus> UserStatusAsync()
+        {
+            await using var db = _factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+            return (await db.Users.SingleAsync(u => u.Id == a.Summary.UserId)).Status;
+        }
+
+        Assert.Equal(HttpStatusCode.OK, (await StatusAsync(adminA, a.Summary.Id, PersonStatuses.Deactivated)).StatusCode);
+        Assert.Equal(UserStatus.Active, await UserStatusAsync()); // client B's profile is still active
+
+        // deleting B's active profile leaves only A's deactivated one: the account follows
+        Assert.Equal(HttpStatusCode.NoContent, (await SendAsync(HttpMethod.Delete, Routes.StaffMember(profileB.Summary.Id), adminB)).StatusCode);
+        Assert.Equal(UserStatus.Deactivated, await UserStatusAsync());
+
+        // deleting the last profile leaves nothing that blocks sign-in
+        Assert.Equal(HttpStatusCode.NoContent, (await SendAsync(HttpMethod.Delete, Routes.StaffMember(a.Summary.Id), adminA)).StatusCode);
+        Assert.Equal(UserStatus.Active, await UserStatusAsync());
     }
 }
