@@ -441,4 +441,18 @@
   <data name="Error_duplicate_person_email" xml:space="preserve"><value>هذا البريد الإلكتروني مستخدم لشخص آخر في المؤسسة.</value></data>
   <data name="Error_duplicate_person_mobile" xml:space="preserve"><value>رقم الجوال مستخدم لشخص آخر في المؤسسة.</value></data>
   <data name="Error_duplicate_person_nationalId" xml:space="preserve"><value>رقم الهوية الوطنية مسجل لشخص آخر في المؤسسة.</value></data>
+  <data name="Staff_Edit" xml:space="preserve"><value>تعديل بيانات الموظف</value></data>
+  <data name="Staff_Deactivate" xml:space="preserve"><value>إيقاف</value></data>
+  <data name="Staff_Reactivate" xml:space="preserve"><value>إعادة التفعيل</value></data>
+  <data name="Staff_DeactivateTitle" xml:space="preserve"><value>إيقاف {0}؟</value></data>
+  <data name="Staff_ReactivateTitle" xml:space="preserve"><value>إعادة تفعيل {0}؟</value></data>
+  <data name="Staff_ReasonRequired" xml:space="preserve"><value>أدخل السبب.</value></data>
+  <data name="Staff_DeleteConfirm" xml:space="preserve"><value>حذف هذا الموظف؟ ستُزال أدواره في هذه المؤسسة.</value></data>
+  <data name="Staff_ResendInvitation" xml:space="preserve"><value>إعادة إرسال بريد التفعيل</value></data>
+  <data name="Staff_InvitationSent" xml:space="preserve"><value>تم إرسال بريد التفعيل.</value></data>
+  <data name="Staff_Share" xml:space="preserve"><value>مشاركة مع وحدات أخرى</value></data>
+  <data name="Staff_ShareTargets" xml:space="preserve"><value>الوحدات والأدوار</value></data>
+  <data name="Staff_RemoveShare" xml:space="preserve"><value>إلغاء المشاركة</value></data>
+  <data name="Staff_ExpiresSoon" xml:space="preserve"><value>ينتهي خلال {0} يوم</value></data>
+  <data name="Staff_ExpiredOn" xml:space="preserve"><value>انتهى في {0}</value></data>
 </root>

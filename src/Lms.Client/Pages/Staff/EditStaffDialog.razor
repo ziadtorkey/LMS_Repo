@@ -1,0 +1,82 @@
+@using Lms.Client.Components
+@using Lms.Client.Components.People
+@using Lms.Client.Services.Api
+@using Lms.Shared.People
+@inject IStaffApi Api
+@inject NavigationManager Navigation
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form">
+            <MudStack Spacing="3">
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" data-testid="dialog-error">@_error</MudAlert>
+                }
+
+                <BilingualNameFields @bind-NameAr="_nameAr" @bind-NameEn="_nameEn" IdPrefix="staff-name" />
+                <MudTextField T="string" Value="Person.Summary.Email" ReadOnly="true" Label="@L["Staff_Email"]" dir="ltr"
+                              data-testid="staff-email" />
+                <MudTextField T="string" @bind-Value="_mobile" Label="@L["Staff_Mobile"]" MaxLength="30" dir="ltr"
+                              InputType="InputType.Telephone" data-testid="staff-mobile" />
+                <MudTextField T="string" @bind-Value="_nationalId" Label="@L["Staff_NationalId"]" MaxLength="30" dir="ltr"
+                              data-testid="staff-national-id" />
+                <MudTextField T="string" @bind-Value="_jobTitleAr" Label="@L["Staff_JobTitleAr"]" MaxLength="200" dir="rtl" lang="ar"
+                              data-testid="staff-job-ar" />
+                <MudTextField T="string" @bind-Value="_jobTitleEn" Label="@L["Staff_JobTitleEn"]" MaxLength="200" dir="ltr" lang="en"
+                              data-testid="staff-job-en" />
+                <UnitPicker @bind-Value="_homeUnitId" Label="@L["Staff_HomeUnit"]" Required="true" TestId="staff-home-unit" />
+                <MudDatePicker Date="_expiresOn" DateChanged="d => _expiresOn = d" Label="@L["Staff_ExpiresOn"]" Clearable="true"
+                               data-testid="staff-expires" />
+                @if (_homeUnitId is { } unit)
+                {
+                    <PhotoUpload @bind-Value="_photoId" OrgUnitId="unit" />
+                }
+            </MudStack>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="_saving"
+                   data-testid="dialog-save">@L["Common_Save"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter, EditorRequired] public StaffDetailDto Person { get; set; } = default!;
+
+    private MudForm _form = default!;
+    private string _nameAr = "", _nameEn = "", _mobile = "", _nationalId = "", _jobTitleAr = "", _jobTitleEn = "";
+    private Guid? _homeUnitId, _photoId;
+    private DateTime? _expiresOn;
+    private string? _error;
+    private bool _saving;
+
+    protected override void OnInitialized()
+    {
+        var s = Person.Summary;
+        (_nameAr, _nameEn, _mobile, _nationalId) = (s.NameAr, s.NameEn, s.Mobile ?? "", Person.NationalId ?? "");
+        (_jobTitleAr, _jobTitleEn) = (s.JobTitleAr ?? "", s.JobTitleEn ?? "");
+        (_homeUnitId, _photoId) = (s.HomeOrgUnitId, s.PhotoFileId);
+        _expiresOn = s.ExpiresOn?.ToDateTime(TimeOnly.MinValue);
+    }
+
+    private static string? Blank(string value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private async Task SaveAsync()
+    {
+        _error = null;
+        await _form.ValidateAsync();
+        if (!_form.IsValid || _homeUnitId is null) return;
+
+        _saving = true;
+        var saved = await ApiCalls.RunAsync(
+            () => Api.UpdateAsync(Person.Summary.Id, new UpdateStaffRequest(_nameAr.Trim(), _nameEn.Trim(), Blank(_mobile),
+                Blank(_nationalId), Blank(_jobTitleAr), Blank(_jobTitleEn), _photoId, _homeUnitId.Value,
+                _expiresOn is { } d ? DateOnly.FromDateTime(d) : null)),
+            Navigation, L, message => _error = message);
+        _saving = false;
+        if (saved) MudDialog.Close(DialogResult.Ok(true));
+    }
+}
