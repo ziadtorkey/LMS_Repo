@@ -111,10 +111,7 @@ public sealed class StaffTests(E2EFixture fixture) : E2ETestBase(fixture)
         Assert.Equal(culture == "ar" ? "rtl" : "ltr", await Page.Locator("html").GetAttributeAsync("dir"));
     }
 
-    /// <summary>Un-skip when the staff status API (#198) is on main.</summary>
-    private const string NeedsStatusApi = "Needs the staff edit/status API (#198) on main";
-
-    [Theory(Skip = NeedsStatusApi)]
+    [Theory]
     [InlineData("ar")]
     [InlineData("en")]
     public async Task Admin_deactivates_teacher_with_reason_teacher_sees_blocked_message_then_reactivated_can_log_in(string culture)
