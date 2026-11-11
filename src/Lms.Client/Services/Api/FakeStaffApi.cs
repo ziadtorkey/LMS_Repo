@@ -33,11 +33,11 @@ public sealed class FakeStaffApi : IStaffApi
 
     /// <summary>Adds a staff member and returns its detail.</summary>
     public StaffDetailDto Add(string nameAr, string nameEn, string email, string status, IReadOnlyList<StaffRoleDto> roles,
-        DateOnly? expiresOn = null, bool limited = false)
+        DateOnly? expiresOn = null, bool limited = false, Guid? photoFileId = null)
     {
         var id = Guid.NewGuid();
         var summary = new StaffSummaryDto(id, Guid.NewGuid(), nameAr, nameEn, email, limited ? null : "0500000000", null, null,
-            FakeUnits.SchoolId, "المدرسة الرئيسية", "Main School", status, expiresOn, null, limited, roles);
+            FakeUnits.SchoolId, "المدرسة الرئيسية", "Main School", status, expiresOn, photoFileId, limited, roles);
         var detail = new StaffDetailDto(summary, limited ? null : "1234567890", true, limited,
             limited ? [] : [new PersonStatusChangeDto(PersonStatuses.Active, status, "Initial", DateTime.UtcNow.AddDays(-1), "المدير", "Admin")]);
         _staff.Add(detail);
@@ -49,6 +49,7 @@ public sealed class FakeStaffApi : IStaffApi
         LastQuery = query;
         var rows = _staff.Select(s => s.Summary)
             .Where(s => query.Status is null || s.Status == query.Status)
+            .Where(s => query.OrgUnitId is null || s.HomeOrgUnitId == query.OrgUnitId || s.Roles.Any(r => r.OrgUnitId == query.OrgUnitId))
             .Where(s => query.RoleId is null || s.Roles.Any(r => r.RoleId == query.RoleId))
             .Where(s => string.IsNullOrWhiteSpace(query.Search)
                 || s.NameEn.Contains(query.Search, StringComparison.OrdinalIgnoreCase)
