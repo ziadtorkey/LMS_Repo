@@ -1,0 +1,169 @@
+@page "/me/profile"
+@attribute [Authorize]
+@using System.Globalization
+@using Lms.Client.Components
+@using Lms.Client.Components.People
+@using Lms.Client.Services.Api
+@using Lms.Shared.Authorization
+@using Lms.Shared.People
+@implements IDisposable
+@inject IMyProfileApi Api
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject PermissionState PermState
+@inject NavigationManager Navigation
+
+<PageTitle>@L["MyProfile_Title"]</PageTitle>
+@if (!PermState.Loaded)
+{
+    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+}
+else if (!PermState.Has(Permissions.Students.SelfEdit))
+{
+    <Forbidden />
+}
+else if (_error is not null)
+{
+    <MudAlert Severity="Severity.Error" data-testid="profile-error">@_error</MudAlert>
+}
+else if (_profile is null)
+{
+    <MudText>@L["Common_Loading"]</MudText>
+}
+else
+{
+    <MudStack Spacing="3">
+        <MudText Typo="Typo.h4" data-testid="my-profile-title">@L["MyProfile_Title"]</MudText>
+        <MudText Typo="Typo.body2"><span dir="ltr" data-testid="my-code">@_profile.Student.Summary.StudentCode</span></MudText>
+
+        <MudPaper Class="pa-3">
+            <MudStack Spacing="2">
+                @foreach (var field in StudentFields.Requestable)
+                {
+                    var name = field;
+                    @if (_profile.EditableFields.Contains(name))
+                    {
+                        <StudentFieldEditor Field="@name" Label="@L[$"StudentField_{name}"]" Value="_values[name]"
+                                            ValueChanged="v => _values[name] = v" HomeUnitId="_profile.Student.Summary.HomeOrgUnitId" />
+                    }
+                    else if (_profile.RequestableFields.Contains(name))
+                    {
+                        <MudText data-testid="@($"readonly-{name}")">
+                            <strong>@L[$"StudentField_{name}"]:</strong>
+                            <span dir="@(name is StudentFields.NameEn or StudentFields.NationalId or StudentFields.DateOfBirth ? "ltr" : null)">@StudentFieldText.Display(name, Original(name), key => L[key].Value)</span>
+                        </MudText>
+                    }
+                }
+                <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_saving"
+                               data-testid="my-save">@L["Common_Save"]</MudButton>
+                </MudStack>
+            </MudStack>
+        </MudPaper>
+
+        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Edit" OnClick="RequestAsync" Disabled="HasPending"
+                       data-testid="request-change">@L["MyProfile_RequestChange"]</MudButton>
+            @if (HasPending)
+            {
+                <MudText Typo="Typo.caption" data-testid="pending-message">@L["MyProfile_PendingBlocks"]</MudText>
+            }
+        </MudStack>
+
+        <MudText Typo="Typo.h6">@L["MyProfile_Requests"]</MudText>
+        @if (_requests.Count == 0)
+        {
+            <MudText data-testid="requests-empty">@L["Common_Empty"]</MudText>
+        }
+        else
+        {
+            <MudTable Items="_requests" Dense="true" Breakpoint="Breakpoint.Sm" data-testid="requests-table">
+                <HeaderContent>
+                    <MudTh>@L["Audit_When"]</MudTh>
+                    <MudTh>@L["MyProfile_Fields"]</MudTh>
+                    <MudTh>@L["Common_Status"]</MudTh>
+                    <MudTh>@L["ChangeRequest_Comment"]</MudTh>
+                    <MudTh></MudTh>
+                </HeaderContent>
+                <RowTemplate Context="request">
+                    <MudTd DataLabel="@L["Audit_When"]"><span dir="ltr">@request.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture)</span></MudTd>
+                    <MudTd DataLabel="@L["MyProfile_Fields"]">@string.Join("، ", request.Changes.Select(c => L[$"StudentField_{c.Field}"].Value))</MudTd>
+                    <MudTd DataLabel="@L["Common_Status"]" data-testid="@($"request-status-{request.Id}")">@L[$"ChangeRequestStatus_{request.Status}"]</MudTd>
+                    <MudTd DataLabel="@L["ChangeRequest_Comment"]">@request.DecisionComment</MudTd>
+                    <MudTd>
+                        @if (request.Status == ChangeRequestStatuses.Pending)
+                        {
+                            <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Error" OnClick="() => CancelAsync(request)"
+                                       data-testid="@($"request-cancel-{request.Id}")">@L["ChangeRequest_Cancel"]</MudButton>
+                        }
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        }
+    </MudStack>
+}
+
+@code {
+    private MyStudentProfileDto? _profile;
+    private IReadOnlyList<StudentChangeRequestDto> _requests = [];
+    private readonly Dictionary<string, string?> _values = [];
+    private string? _error;
+    private bool _saving;
+
+    private bool HasPending => _requests.Any(r => r.Status == ChangeRequestStatuses.Pending);
+
+    protected override async Task OnInitializedAsync()
+    {
+        PermState.Changed += OnPermissionsChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        if (PermState.Has(Permissions.Students.SelfEdit)) await LoadAsync();
+    }
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => PermState.Changed -= OnPermissionsChanged;
+
+    private string? Original(string field) => StudentFieldText.Current(_profile!.Student, field);
+
+    private async Task LoadAsync()
+    {
+        _error = null;
+        await ApiCalls.RunAsync(async () =>
+        {
+            _profile = await Api.GetAsync();
+            _requests = await Api.ListRequestsAsync();
+        }, Navigation, L, message => _error = message);
+        if (_profile is null) return;
+        _values.Clear();
+        foreach (var field in _profile.EditableFields) _values[field] = Original(field);
+    }
+
+    /// <summary>Saves only the editable fields that changed; critical fields are never sent here.</summary>
+    private async Task SaveAsync()
+    {
+        var changes = _profile!.EditableFields.Where(f => !string.Equals(_values[f] ?? "", Original(f) ?? "", StringComparison.Ordinal))
+            .ToDictionary(f => f, f => string.IsNullOrWhiteSpace(_values[f]) ? null : _values[f]?.Trim());
+        if (changes.Count == 0) return;
+        _saving = true;
+        var ok = await ApiCalls.RunAsync(() => Api.UpdateAsync(new UpdateMyStudentProfileRequest(changes)), Navigation, L,
+            message => Snackbar.Add(message, Severity.Error));
+        _saving = false;
+        if (!ok) return;
+        Snackbar.Add(L["MyProfile_Saved"], Severity.Success);
+        await LoadAsync();
+    }
+
+    private async Task RequestAsync()
+    {
+        var dialog = await Dialogs.ShowAsync<RequestChangeDialog>(L["MyProfile_RequestChange"],
+            new DialogParameters<RequestChangeDialog> { { x => x.Profile, _profile! } },
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        if (await dialog.Result is { Canceled: false }) { Snackbar.Add(L["MyProfile_RequestSent"], Severity.Success); await LoadAsync(); }
+    }
+
+    private async Task CancelAsync(StudentChangeRequestDto request)
+    {
+        var ok = await ApiCalls.RunAsync(() => Api.CancelRequestAsync(request.Id), Navigation, L, message => Snackbar.Add(message, Severity.Error));
+        if (ok) await LoadAsync();
+    }
+}
