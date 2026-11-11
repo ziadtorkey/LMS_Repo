@@ -85,6 +85,61 @@
   <data name="Error_term_outside_year" xml:space="preserve"><value>The term must fall inside the academic year.</value></data>
   <data name="Error_event_outside_year" xml:space="preserve"><value>The event must fall inside the academic year.</value></data>
   <data name="Error_in_app_required" xml:space="preserve"><value>In-app notifications cannot be turned off.</value></data>
+  <data name="PermModule_OrgUnits" xml:space="preserve"><value>Organization</value></data>
+  <data name="Perm_OrgUnits_View" xml:space="preserve"><value>View units</value></data>
+  <data name="Perm_OrgUnits_Create" xml:space="preserve"><value>Create units</value></data>
+  <data name="Perm_OrgUnits_Update" xml:space="preserve"><value>Edit units</value></data>
+  <data name="Perm_OrgUnits_Delete" xml:space="preserve"><value>Delete units</value></data>
+  <data name="Perm_OrgUnits_Move" xml:space="preserve"><value>Move units</value></data>
+  <data name="PermModule_Roles" xml:space="preserve"><value>Roles</value></data>
+  <data name="Perm_Roles_View" xml:space="preserve"><value>View roles</value></data>
+  <data name="Perm_Roles_Create" xml:space="preserve"><value>Create roles</value></data>
+  <data name="Perm_Roles_Update" xml:space="preserve"><value>Edit roles</value></data>
+  <data name="Perm_Roles_Delete" xml:space="preserve"><value>Delete roles</value></data>
+  <data name="PermModule_Assignments" xml:space="preserve"><value>Role assignments</value></data>
+  <data name="Perm_Assignments_View" xml:space="preserve"><value>View role assignments</value></data>
+  <data name="Perm_Assignments_Create" xml:space="preserve"><value>Create role assignments</value></data>
+  <data name="Perm_Assignments_Update" xml:space="preserve"><value>Edit role assignments</value></data>
+  <data name="Perm_Assignments_Delete" xml:space="preserve"><value>Delete role assignments</value></data>
+  <data name="PermModule_Settings" xml:space="preserve"><value>Settings</value></data>
+  <data name="Perm_Settings_View" xml:space="preserve"><value>View settings</value></data>
+  <data name="Perm_Settings_Update" xml:space="preserve"><value>Edit settings</value></data>
+  <data name="PermModule_Policies" xml:space="preserve"><value>Policies</value></data>
+  <data name="Perm_Policies_View" xml:space="preserve"><value>View policies</value></data>
+  <data name="Perm_Policies_Update" xml:space="preserve"><value>Edit policies</value></data>
+  <data name="PermModule_Audit" xml:space="preserve"><value>Audit log</value></data>
+  <data name="Perm_Audit_View" xml:space="preserve"><value>View audit log</value></data>
+  <data name="Perm_Audit_Export" xml:space="preserve"><value>Export audit log</value></data>
+  <data name="PermModule_Files" xml:space="preserve"><value>Files</value></data>
+  <data name="Perm_Files_Upload" xml:space="preserve"><value>Upload files</value></data>
+  <data name="Perm_Files_Download" xml:space="preserve"><value>Download files</value></data>
+  <data name="PermModule_LevelTypes" xml:space="preserve"><value>Level types</value></data>
+  <data name="Perm_LevelTypes_View" xml:space="preserve"><value>View level types</value></data>
+  <data name="Perm_LevelTypes_Create" xml:space="preserve"><value>Create level types</value></data>
+  <data name="Perm_LevelTypes_Update" xml:space="preserve"><value>Edit level types</value></data>
+  <data name="Perm_LevelTypes_Delete" xml:space="preserve"><value>Delete level types</value></data>
+  <data name="PermModule_Templates" xml:space="preserve"><value>Templates</value></data>
+  <data name="Perm_Templates_View" xml:space="preserve"><value>View templates</value></data>
+  <data name="Perm_Templates_Create" xml:space="preserve"><value>Create templates</value></data>
+  <data name="Perm_Templates_Delete" xml:space="preserve"><value>Delete templates</value></data>
+  <data name="Perm_Templates_Apply" xml:space="preserve"><value>Apply templates</value></data>
+  <data name="PermModule_AcademicYears" xml:space="preserve"><value>Academic years</value></data>
+  <data name="Perm_AcademicYears_View" xml:space="preserve"><value>View academic years</value></data>
+  <data name="Perm_AcademicYears_Create" xml:space="preserve"><value>Create academic years</value></data>
+  <data name="Perm_AcademicYears_Update" xml:space="preserve"><value>Edit academic years</value></data>
+  <data name="Perm_AcademicYears_Delete" xml:space="preserve"><value>Delete academic years</value></data>
+  <data name="Roles_Title" xml:space="preserve"><value>Roles and permissions</value></data>
+  <data name="Roles_New" xml:space="preserve"><value>New role</value></data>
+  <data name="Roles_BuiltIn" xml:space="preserve"><value>Built-in</value></data>
+  <data name="Roles_BaseKind" xml:space="preserve"><value>Base kind</value></data>
+  <data name="BaseKind_Staff" xml:space="preserve"><value>Staff</value></data>
+  <data name="BaseKind_Student" xml:space="preserve"><value>Student</value></data>
+  <data name="BaseKind_Guardian" xml:space="preserve"><value>Guardian</value></data>
+  <data name="Roles_Assignments" xml:space="preserve"><value>Assignments</value></data>
+  <data name="Roles_SelectModule" xml:space="preserve"><value>Select all</value></data>
+  <data name="Roles_Name" xml:space="preserve"><value>Role</value></data>
+  <data name="Roles_Permissions" xml:space="preserve"><value>Permissions</value></data>
+  <data name="Roles_DeleteConfirm" xml:space="preserve"><value>Delete the role {0}?</value></data>
   <data name="Table_RowsPerPage" xml:space="preserve"><value>Rows per page:</value></data>
   <data name="Table_InfoFormat" xml:space="preserve"><value>{first_item}-{last_item} of {all_items}</value></data>
   <data name="MudTablePager_FirstPage" xml:space="preserve"><value>First page</value></data>

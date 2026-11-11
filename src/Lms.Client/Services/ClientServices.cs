@@ -29,6 +29,7 @@ public static class ClientServices
         {
             services.AddScoped<ILmsApi, FakeLmsApi>();
             services.AddScoped<IAuditApi, FakeAuditApi>();
+            services.AddScoped<IAccessAdminApi, FakeAccessAdminApi>();
             services.AddSingleton<IClientsApi, FakeClientsApi>();
             services.AddSingleton<IOrgApi, FakeOrgApi>();
             services.AddScoped<AuthenticationStateProvider, FakeAuthenticationStateProvider>();
@@ -45,6 +46,7 @@ public static class ClientServices
         });
         services.AddTransient<ForbiddenRedirectHandler>();
         services.AddScoped<IAuditApi, AuditApi>();
+        services.AddScoped<IAccessAdminApi, AccessAdminApi>();
         services.AddHttpClient<ILmsApi, LmsApiClient>(c => c.BaseAddress = new Uri(baseAddress))
             .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>()
             .AddHttpMessageHandler<ForbiddenRedirectHandler>();

@@ -111,10 +111,11 @@ public sealed class ShellTests(E2EFixture fixture) : E2ETestBase(fixture)
         await Expect(shell.ContextSwitcher).ToContainTextAsync(SupervisorLabelAr);
     }
 
-    [Fact(Skip = "Bug #84: a stale stored context shows Forbidden instead of the chooser. Remove the skip when #84 is fixed.")]
+    [Fact]
     public async Task Stale_stored_context_leads_to_chooser_not_forbidden()
     {
-        // QA follow-up from #28: an assignment id the user no longer has must send them to the chooser.
+        // QA follow-up from #28, bug #84 (fixed by #74): an assignment id the user no longer has (expired, deleted,
+        // unit deactivated per D15, or left by another user) must send them to the chooser, never to Forbidden.
         await StartAsync();
         var chooser = new ChooseContextPage(Page);
 
