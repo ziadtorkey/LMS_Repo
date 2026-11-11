@@ -3,6 +3,7 @@ using System.Text.Json;
 using Lms.Domain.Abstractions;
 using Lms.Domain.Auditing;
 using Lms.Domain.Common;
+using Lms.Domain.Organizations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -111,9 +112,18 @@ public sealed class AuditInterceptor(ICurrentContext context, IClock clock) : Sa
             ? (Guid?)entry.Property(nameof(ITenantOwned.OrganizationId)).CurrentValue
             : context.OrganizationId;
 
+        // OrgUnit maps its path to the "Path" column (OrgUnitPath is a computed alias there).
+        var path = entry.Entity switch
+        {
+            OrgUnit unit => unit.Path,
+            IOrgUnitScoped scoped => scoped.OrgUnitPath,
+            _ => context.ScopePath,
+        };
+
         return new AuditEntry(
             organizationId, context.UserId, context.AssignmentId, action,
-            entry.Metadata.ClrType.Name, (Guid)entry.Property(nameof(Entity.Id)).CurrentValue!, before, after, now);
+            entry.Metadata.ClrType.Name, (Guid)entry.Property(nameof(Entity.Id)).CurrentValue!, before, after, now,
+            orgUnitPath: path);
     }
 
     private static string Snapshot(EntityEntry entry, bool current) =>
