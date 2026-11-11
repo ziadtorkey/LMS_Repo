@@ -14,9 +14,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Lms.Api.Features.Classes;
 
-/// <summary>Result of POST /api/class-courses/bulk-assign: classes that got the course and classes that did not.</summary>
-public sealed record BulkAssignResultDto(int Added, int Skipped);
-
 /// <summary>Class courses: add, list, change optional flag, remove and bulk assign.</summary>
 public sealed class ClassCourseHandlers(
     LmsDbContext db, IClock clock, ClassCourseWriter writer, ClassCourseMapper mapper, ClassHandlers classes, ClassLookups lookups,
