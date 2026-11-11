@@ -136,7 +136,7 @@ public sealed class AuditPageTests : ClientTestContext
 
     [Theory]
     [InlineData("export_too_large", "Too many rows to export")]
-    [InlineData(null, "Could not load data")]
+    [InlineData(null, "Something went wrong")]
     public async Task Export_problem_or_offline_shows_a_snackbar(string? code, string expected)
     {
         CultureInfo.CurrentUICulture = new CultureInfo("en");

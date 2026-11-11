@@ -192,7 +192,7 @@ public sealed class AcademicYearsPageTests : ClientTestContext
 
         _years.NextFailure = new HttpRequestException("offline");
         await _dialogs.Find("[data-testid=year-save]").ClickAsync(new());
-        Assert.Contains("Could not load data", _dialogs.WaitForElement("[data-testid=year-error]").TextContent);
+        Assert.Contains("Something went wrong", _dialogs.WaitForElement("[data-testid=year-error]").TextContent);
 
         _years.NextFailure = new ApiContextException("invalid_context");
         await _dialogs.Find("[data-testid=year-save]").ClickAsync(new());
@@ -213,7 +213,7 @@ public sealed class AcademicYearsPageTests : ClientTestContext
         await _dialogs.WaitForElement("[data-testid=confirm-yes]").ClickAsync(new());
         await click;
 
-        cut.WaitForAssertion(() => Assert.Contains("Could not load data", _snackbars.Markup));
+        cut.WaitForAssertion(() => Assert.Contains("Something went wrong", _snackbars.Markup));
     }
 
     [Fact]

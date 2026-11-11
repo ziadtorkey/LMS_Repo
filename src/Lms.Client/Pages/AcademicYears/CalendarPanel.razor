@@ -144,7 +144,7 @@
     {
         var title = CultureText.Pick(entry.TitleAr, entry.TitleEn);
         if (!await ConfirmDialog.AskAsync(Dialogs, L["Confirm_DeleteTitle"], string.Format(L["Calendar_DeleteConfirm"], title))) return;
-        if (await ActionCalls.TryAsync(() => Api.DeleteEventAsync(entry.Id), Navigation, L, m => Snackbar.Add(m, Severity.Error)))
+        if (await ApiCalls.RunAsync(() => Api.DeleteEventAsync(entry.Id), Navigation, L, m => Snackbar.Add(m, Severity.Error)))
             await LoadAsync();
     }
 }

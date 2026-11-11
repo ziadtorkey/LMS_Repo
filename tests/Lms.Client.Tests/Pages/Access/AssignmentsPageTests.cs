@@ -191,7 +191,7 @@ public sealed class AssignmentsPageTests : ClientTestContext
 
         await _dialogs.Find("[data-testid=assign-save]").ClickAsync(new());
 
-        Assert.Contains("Could not load data", _dialogs.WaitForElement("[data-testid=assign-error]").TextContent);
+        Assert.Contains("Something went wrong", _dialogs.WaitForElement("[data-testid=assign-error]").TextContent);
     }
 
     [Fact]
@@ -207,7 +207,7 @@ public sealed class AssignmentsPageTests : ClientTestContext
         await _dialogs.WaitForElement("[data-testid=confirm-yes]").ClickAsync(new());
         await click;
 
-        cut.WaitForAssertion(() => Assert.Contains("Could not load data", _snackbars.Markup));
+        cut.WaitForAssertion(() => Assert.Contains("Something went wrong", _snackbars.Markup));
     }
 
     [Fact]

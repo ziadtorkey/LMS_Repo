@@ -181,7 +181,7 @@ public sealed class RolesPageTests : ClientTestContext
         await cut.WaitForElement($"[data-testid=role-edit-{_roles.Roles.First().Id}]").ClickAsync(new());
         await cut.WaitForElement("[data-testid=role-save]").ClickAsync(new());
 
-        Assert.Contains("Could not load data", cut.WaitForElement("[data-testid=role-error]").TextContent);
+        Assert.Contains("Something went wrong", cut.WaitForElement("[data-testid=role-error]").TextContent);
     }
 
     [Fact]
@@ -197,7 +197,7 @@ public sealed class RolesPageTests : ClientTestContext
         await _dialogs.WaitForElement("[data-testid=confirm-yes]").ClickAsync(new());
         await click;
 
-        cut.WaitForAssertion(() => Assert.Contains("Could not load data", _snackbars.Markup));
+        cut.WaitForAssertion(() => Assert.Contains("Something went wrong", _snackbars.Markup));
     }
 
     [Fact]

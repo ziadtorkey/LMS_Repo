@@ -134,7 +134,7 @@
 
     private async Task ExportAsync(string format)
     {
-        await ActionCalls.TryAsync(async () =>
+        await ApiCalls.RunAsync(async () =>
         {
             var (content, fileName) = await Api.ExportAsync(Query(), format);
             using var reference = new DotNetStreamReference(content);
