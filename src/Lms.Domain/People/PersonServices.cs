@@ -49,6 +49,15 @@ public interface IRoleAssignmentSync
         Guid userId, Guid organizationId, string builtInRoleKey, IReadOnlyCollection<OrgUnit> units, CancellationToken cancellationToken);
 }
 
+/// <summary>
+/// The student's email or sign-in name already belongs to an account that has no profile in this client. Reusing it would let one
+/// client set (or reset) the password of someone else's account, so it is refused: <c>duplicate_person</c>, field <c>Field</c>.
+/// </summary>
+public sealed class DuplicateAccountException(string field) : Exception("The account belongs to a person outside this client.")
+{
+    public string Field { get; } = field;
+}
+
 /// <summary>What a student account was issued with (D24). <c>Password</c> is null when an existing active account was left alone.</summary>
 public sealed record IssuedCredentials(User User, string? Password, string DeliveredTo);
 

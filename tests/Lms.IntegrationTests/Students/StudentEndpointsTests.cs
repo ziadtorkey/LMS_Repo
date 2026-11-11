@@ -144,6 +144,33 @@ public sealed class StudentEndpointsTests
     }
 
     [Fact]
+    public async Task Email_of_an_account_outside_the_client_is_409_duplicate_person_and_the_account_is_untouched()
+    {
+        var (tree, admin) = await _kit.SetUpAsync("ST3X");
+        var email = $"outsider{Guid.NewGuid():N}"[..20] + "@lms.test";
+        string hash;
+        using (var scope = _host.Services.CreateScope())
+        {
+            var users = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+            var outsider = new User { UserName = email, Email = email, DisplayNameEn = "Outsider" };
+            Assert.True((await users.CreateAsync(outsider, "TheirOwn1Pass")).Succeeded);
+            hash = outsider.PasswordHash!;
+        }
+
+        var response = await _kit.SendAsync(HttpMethod.Post, Routes.Students, admin, Create(tree.School1.Id, Data(email: email)));
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal(ProblemCodes.duplicate_person, body.GetProperty("code").GetString());
+        Assert.Equal("Email", body.GetProperty("field").GetString());
+        using var after = _host.Services.CreateScope();
+        var stored = (await after.ServiceProvider.GetRequiredService<UserManager<User>>().FindByEmailAsync(email))!;
+        Assert.Equal(hash, stored.PasswordHash);
+        await using var db = _factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        Assert.False(await db.Set<StudentProfile>().IgnoreQueryFilters().AnyAsync(x => x.Email == email)); // nothing was created
+    }
+
+    [Fact]
     public async Task National_id_duplicate_is_409_and_name_plus_birth_date_needs_confirmation()
     {
         var (tree, admin) = await _kit.SetUpAsync("ST4");

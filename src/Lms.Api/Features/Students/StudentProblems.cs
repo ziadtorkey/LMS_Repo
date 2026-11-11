@@ -18,6 +18,7 @@ internal static class StudentProblems
         StudentCredentialsException e => Results.ValidationProblem(
             new Dictionary<string, string[]> { ["DefaultPassword"] = [.. e.Errors] },
             extensions: new Dictionary<string, object?> { ["code"] = ProblemCodes.validation_failed }),
+        DuplicateAccountException e => Duplicate(e.Field),
         StudentCodeExhaustedException => ApiProblems.Conflict(ProblemCodes.student_code_exhausted),
         StudentCodeInvalidException => ApiProblems.BadRequest(ProblemCodes.invalid_code_pattern),
         _ => null,
