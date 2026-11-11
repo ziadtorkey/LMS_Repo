@@ -35,7 +35,7 @@ public static class DependencyInjection
         services.AddSettingsAndPolicies();
         services.AddAcademicYears();
         services.AddPeople();
-        services.AddExternalIdentity();
+        services.AddExternalIdentity(configuration);
         return services;
     }
 }

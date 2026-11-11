@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 namespace Lms.Infrastructure.Identity.External;
 
 /// <summary>Builds the OpenID Connect options of a provider scheme from its stored configuration.</summary>
-public sealed class ExternalOidcOptionsSetup(ExternalSchemeRegistry registry) : IConfigureNamedOptions<OpenIdConnectOptions>
+public sealed class ExternalOidcOptionsSetup(ExternalSchemeRegistry registry, OutboundGuard guard) : IConfigureNamedOptions<OpenIdConnectOptions>
 {
     public void Configure(string? name, OpenIdConnectOptions options)
     {
@@ -30,6 +30,8 @@ public sealed class ExternalOidcOptionsSetup(ExternalSchemeRegistry registry) : 
         // Secure whenever the request is https; the correlation cookies must also work over plain http in development.
         options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
         options.NonceCookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+        options.BackchannelHttpHandler = guard.CreateHandler();
+        options.BackchannelTimeout = OutboundGuard.Timeout;
         options.RequireHttpsMetadata = provider.Authority.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
         options.Scope.Clear();
         foreach (var scope in provider.Scopes.Split(' ', StringSplitOptions.RemoveEmptyEntries))
