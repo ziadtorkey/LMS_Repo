@@ -119,7 +119,10 @@ public sealed class CourseCatalog(LmsDbContext db, ICurrentContext context) : IC
         return new CoursePage(page.Select(c => new CourseView(c, IsInherited(c.OrgUnitPath))).ToList(), total);
     }
 
-    private bool HasContext() => context.IsPlatformAdmin || (context.OrganizationId is not null && context.ScopePath is not null);
+    // A malformed scope (empty, "/", not slash-delimited) is treated as no scope, like the M1 query filters do.
+    private bool HasContext() =>
+        context.IsPlatformAdmin
+        || (context.OrganizationId is not null && context.ScopePath is { Length: > 1 } scope && scope[0] == '/' && scope[^1] == '/');
 
     private bool IsVisible(string ownerPath) =>
         context.IsPlatformAdmin
