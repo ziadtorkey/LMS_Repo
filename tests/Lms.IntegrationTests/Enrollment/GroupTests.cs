@@ -240,6 +240,54 @@ public sealed class GroupTests(LmsApiFactory factory) : IDisposable
     }
 
     [Fact]
+    public async Task Closed_year_and_closed_class_block_every_group_write_with_409()
+    {
+        var s = await SetUpAsync("GR11");
+        var group = await CreateAsync(s.Admin, s.World.CcA.Id, "Group");
+        await AddAsync(s.Admin, group.Id, s.Muslim);
+
+        async Task AssertAllWritesRefusedAsync(string code)
+        {
+            var responses = new[]
+            {
+                await SendAsync(s.Admin, HttpMethod.Post, Routes.ClassCourseGroups(s.World.CcA.Id), new SaveGroupRequest("م", "New", null, null)),
+                await SendAsync(s.Admin, HttpMethod.Put, Routes.Group(group.Id), new SaveGroupRequest("م", "Renamed", null, null)),
+                await SendAsync(s.Admin, HttpMethod.Delete, Routes.Group(group.Id)),
+                await AddAsync(s.Admin, group.Id, s.Christian),
+                await SendAsync(s.Admin, HttpMethod.Post, Routes.GroupMembersRemove(group.Id), new GroupMembersRequest([s.Muslim])),
+            };
+            foreach (var response in responses)
+            {
+                Assert.Equal((HttpStatusCode.Conflict, code), (response.StatusCode, await CodeAsync(response)));
+            }
+
+            // Reads stay open, and nothing changed.
+            Assert.Equal(HttpStatusCode.OK, (await SendAsync(s.Admin, HttpMethod.Get, Routes.ClassCourseGroups(s.World.CcA.Id))).StatusCode);
+            var members = (await (await SendAsync(s.Admin, HttpMethod.Get, Routes.GroupMembers(group.Id))).Content.ReadFromJsonAsync<List<GroupMemberDto>>())!;
+            Assert.Equal([s.Muslim], members.Select(m => m.StudentId).ToArray());
+        }
+
+        // Closed class (the year is open).
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            (await db.Set<Class>().SingleAsync(c => c.Id == s.World.Class.Id)).SetStatus(Class.ClosedStatus);
+            await db.SaveChangesAsync();
+        }
+
+        await AssertAllWritesRefusedAsync(ProblemCodes.class_closed);
+
+        // Open class, closed year.
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            (await db.Set<Class>().SingleAsync(c => c.Id == s.World.Class.Id)).SetStatus(Class.ActiveStatus);
+            (await db.Set<Lms.Domain.AcademicYears.AcademicYear>().SingleAsync(y => y.Id == s.World.Year.Id)).Close();
+            await db.SaveChangesAsync();
+        }
+
+        await AssertAllWritesRefusedAsync(ProblemCodes.year_closed);
+    }
+
+    [Fact]
     public async Task Group_targets_accept_only_live_groups_of_that_class_course()
     {
         var s = await SetUpAsync("GR10");

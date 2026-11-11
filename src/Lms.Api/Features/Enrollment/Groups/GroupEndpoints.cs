@@ -1,7 +1,7 @@
 using Lms.Api.Infrastructure;
-using Lms.Domain.Access;
 using Lms.Domain.Classes;
 using Lms.Domain.Enrollment;
+using Lms.Infrastructure.Enrollment;
 using Lms.Infrastructure.Persistence;
 using Lms.Shared;
 using Lms.Shared.Authorization;
@@ -22,34 +22,45 @@ public static class GroupEndpoints
         GroupMemberEndpoints.Map(app);
     }
 
-    /// <summary>The permission at the class course's unit, then the relationship rule: a teacher reaches only their own class courses (404).</summary>
-    internal static async Task<IResult?> AccessAsync(
-        ClassCourse classCourse, string permission, HttpContext http, IRelationshipScope scope, CancellationToken ct)
+    /// <summary>
+    /// A write needs a class that is Active in an academic year that is not Closed (409 <c>class_closed</c> / <c>year_closed</c>),
+    /// exactly like placing and enrolling (<see cref="PlacementGuard"/>).
+    /// </summary>
+    internal static async Task<IResult?> WritableAsync(ClassCourse classCourse, LmsDbContext db, PlacementGuard guard, CancellationToken ct)
     {
-        var access = await http.CheckUnitAsync(permission, classCourse.OrgUnitId, ct);
-        if (access.Problem is not null)
-        {
-            return access.Problem;
-        }
-
-        return (await scope.ForAsync(permission, ct)).AllowsClassCourse(classCourse.Id) ? null : ApiProblems.NotFound();
-    }
-
-    private static async Task<IResult> CreateAsync(
-        Guid id, SaveGroupRequest request, HttpContext http, LmsDbContext db, IRelationshipScope scope, CancellationToken ct)
-    {
-        var classCourse = await GroupSupport.ClassCourseAsync(db, id, ct);
-        if (classCourse is null)
+        var cls = await db.Set<Class>().FirstOrDefaultAsync(c => c.Id == classCourse.ClassId, ct);
+        if (cls is null)
         {
             return ApiProblems.NotFound();
         }
 
-        if (await AccessAsync(classCourse, Permissions.Groups.Manage, http, scope, ct) is { } denied)
+        try
         {
-            return denied;
+            await guard.EnsureWritableAsync(cls, ct);
+            return null;
+        }
+        catch (EnrollmentRuleException rule)
+        {
+            return EnrollmentProblems.From(rule);
+        }
+    }
+
+    private static async Task<IResult> CreateAsync(
+        Guid id, SaveGroupRequest request, HttpContext http, LmsDbContext db, PlacementGuard guard, CancellationToken ct)
+    {
+        // The permission at the class course's unit, then the relationship rule (a teacher reaches only their own class courses).
+        var (classCourse, problem) = await http.CheckClassCourseAsync(Permissions.Groups.Manage, id, ct);
+        if (problem is not null)
+        {
+            return problem;
         }
 
-        if (await GroupSupport.ValidateAsync(request, classCourse.OrganizationId, db, ct) is { } invalid)
+        if (await WritableAsync(classCourse!, db, guard, ct) is { } closed)
+        {
+            return closed;
+        }
+
+        if (await GroupSupport.ValidateAsync(request, classCourse!.OrganizationId, db, ct) is { } invalid)
         {
             return invalid;
         }
@@ -60,18 +71,12 @@ public static class GroupEndpoints
         return Results.Created(Routes.Group(group.Id), GroupSupport.ToDto(group, 0));
     }
 
-    private static async Task<IResult> ListAsync(
-        Guid id, HttpContext http, LmsDbContext db, IRelationshipScope scope, CancellationToken ct)
+    private static async Task<IResult> ListAsync(Guid id, HttpContext http, LmsDbContext db, CancellationToken ct)
     {
-        var classCourse = await GroupSupport.ClassCourseAsync(db, id, ct);
-        if (classCourse is null)
+        var (_, problem) = await http.CheckClassCourseAsync(Permissions.Groups.View, id, ct);
+        if (problem is not null)
         {
-            return ApiProblems.NotFound();
-        }
-
-        if (await AccessAsync(classCourse, Permissions.Groups.View, http, scope, ct) is { } denied)
-        {
-            return denied;
+            return problem;
         }
 
         var groups = await db.Set<StudentGroup>().Where(g => g.ClassCourseId == id).OrderBy(g => g.NameEn).ThenBy(g => g.Id).ToListAsync(ct);
@@ -80,49 +85,37 @@ public static class GroupEndpoints
     }
 
     private static async Task<IResult> UpdateAsync(
-        Guid id, SaveGroupRequest request, HttpContext http, LmsDbContext db, IRelationshipScope scope, CancellationToken ct)
+        Guid id, SaveGroupRequest request, HttpContext http, LmsDbContext db, PlacementGuard guard, CancellationToken ct)
     {
-        var group = await db.Set<StudentGroup>().FirstOrDefaultAsync(g => g.Id == id, ct);
-        var classCourse = group is null ? null : await GroupSupport.ClassCourseAsync(db, group.ClassCourseId, ct);
-        if (group is null || classCourse is null)
+        var (group, classCourse, problem) = await GroupSupport.LoadForWriteAsync(id, http, db, guard, ct);
+        if (problem is not null)
         {
-            return ApiProblems.NotFound();
+            return problem;
         }
 
-        if (await AccessAsync(classCourse, Permissions.Groups.Manage, http, scope, ct) is { } denied)
-        {
-            return denied;
-        }
-
-        if (await GroupSupport.ValidateAsync(request, classCourse.OrganizationId, db, ct) is { } invalid)
+        if (await GroupSupport.ValidateAsync(request, classCourse!.OrganizationId, db, ct) is { } invalid)
         {
             return invalid;
         }
 
-        group.Update(request.NameAr, request.NameEn, request.MatchType, request.MatchValue);
+        group!.Update(request.NameAr, request.NameEn, request.MatchType, request.MatchValue);
         await db.SaveChangesAsync(ct);
         var counts = await GroupSupport.MemberCountsAsync(db, [group.Id], ct);
         return Results.Ok(GroupSupport.ToDto(group, counts.GetValueOrDefault(group.Id)));
     }
 
     private static async Task<IResult> DeleteAsync(
-        Guid id, HttpContext http, LmsDbContext db, IRelationshipScope scope, CancellationToken ct)
+        Guid id, HttpContext http, LmsDbContext db, PlacementGuard guard, CancellationToken ct)
     {
-        var group = await db.Set<StudentGroup>().FirstOrDefaultAsync(g => g.Id == id, ct);
-        var classCourse = group is null ? null : await GroupSupport.ClassCourseAsync(db, group.ClassCourseId, ct);
-        if (group is null || classCourse is null)
+        var (group, _, problem) = await GroupSupport.LoadForWriteAsync(id, http, db, guard, ct);
+        if (problem is not null)
         {
-            return ApiProblems.NotFound();
-        }
-
-        if (await AccessAsync(classCourse, Permissions.Groups.Manage, http, scope, ct) is { } denied)
-        {
-            return denied;
+            return problem;
         }
 
         // Soft delete: the members go with the group, which frees their one-group-per-class-course slot.
         db.Set<GroupMember>().RemoveRange(await db.Set<GroupMember>().Where(m => m.GroupId == id).ToListAsync(ct));
-        db.Set<StudentGroup>().Remove(group);
+        db.Set<StudentGroup>().Remove(group!);
         await db.SaveChangesAsync(ct);
         return Results.NoContent();
     }
