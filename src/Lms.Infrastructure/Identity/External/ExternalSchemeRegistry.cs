@@ -30,6 +30,8 @@ public sealed class ExternalSchemeRegistry(
 
     public static string SchemeName(Guid providerId) => "ext-" + providerId.ToString("N");
 
+    public bool HasSlug(string slug) => _snapshots.Values.Any(p => p.Slug == slug);
+
     public ExternalProviderSnapshot? Find(string schemeName) => _snapshots.GetValueOrDefault(schemeName);
 
     public async Task SyncAsync(CancellationToken ct)
