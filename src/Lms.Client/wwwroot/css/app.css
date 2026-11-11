@@ -1,4 +1,5 @@
-html, body { margin: 0; font-family: "IBM Plex Sans Arabic", "IBM Plex Sans", "Segoe UI", Tahoma, Arial, sans-serif; }
+html, body { margin: 0; font-family: "Aptos Display", Aptos, Inter, "Segoe UI", Cairo, Arial, sans-serif; }
+html:lang(ar), html:lang(ar) body { font-family: Cairo, "Segoe UI", Tahoma, Arial, sans-serif; }
 /* Theme tokens, shell and shared components: css/lms-theme.css. */
 
 #blazor-error-ui {

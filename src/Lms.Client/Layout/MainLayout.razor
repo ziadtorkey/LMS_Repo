@@ -82,12 +82,15 @@
 
 @code {
     // Colour scheme: wwwroot/js/theme.js (lms.theme in localStorage, otherwise the device setting).
-    private readonly MudTheme _theme = LmsTheme.Create();
+    private MudTheme _theme = default!;
     private bool _drawerOpen = true;
     private bool _isDark;
 
     private string ThemeLabel => _isDark ? L["Theme_Light"] : L["Theme_Dark"];
     private string ThemeIcon => _isDark ? Icons.Material.Rounded.LightMode : Icons.Material.Rounded.DarkMode;
+
+    // The culture is fixed for the app's lifetime (switching languages reloads the app), so the font stack is chosen once.
+    protected override void OnInitialized() => _theme = LmsTheme.Create(Culture.IsRightToLeft);
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

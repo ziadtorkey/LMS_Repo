@@ -5,7 +5,6 @@
 :root {
     --lms-radius-surface: 12px;
     --lms-radius-control: 8px;
-    --lms-nav-accent: #7FD3C7;
     --lms-tint-primary: color-mix(in srgb, var(--mud-palette-primary) 10%, transparent);
     --lms-focus: 0 0 0 3px color-mix(in srgb, var(--mud-palette-primary) 35%, transparent);
 }
@@ -32,7 +31,7 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 .lms-app button:focus-visible,
 .lms-app .mud-button-root:focus-visible,
 .lms-app .mud-nav-link:focus-visible { outline: 2px solid var(--mud-palette-primary); outline-offset: 2px; }
-.lms-drawer .mud-nav-link:focus-visible { outline-color: var(--lms-nav-accent); outline-offset: -2px; }
+.lms-drawer .mud-nav-link:focus-visible { outline-offset: -2px; }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
@@ -50,17 +49,23 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 .lms-appbar .mud-toolbar { gap: 4px; }
 .lms-appbar-title { font-weight: 600 !important; }
 .lms-appbar-tools { display: flex; align-items: center; gap: 4px; min-width: 0; }
+/* Phones: leave room on the bell's end side so the unread badge does not cover the next button. */
+@media (max-width: 599px) {
+    .lms-appbar .mud-badge-root { margin-inline: 0 10px !important; }
+    .lms-appbar-tools { gap: 2px; }
+}
 
-.lms-drawer.mud-drawer { border-inline-end: 0; }
+/* Light sidebar: surface colour with a hairline edge; the active item is a green-tinted pill with a green bar. */
+.lms-drawer.mud-drawer { border-inline-end: 1px solid var(--mud-palette-lines-default); }
 .lms-brand.mud-drawer-header {
     display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 12px 20px;
-    border-bottom: 1px solid rgba(255, 255, 255, .08);
+    border-bottom: 1px solid var(--mud-palette-lines-default);
 }
 .lms-brand-mark {
     display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; flex-shrink: 0;
-    border-radius: 8px; background: var(--lms-nav-accent); color: #0D3A3B;
+    border-radius: 8px; background: var(--mud-palette-primary); color: var(--mud-palette-primary-text);
 }
-.lms-brand-name.mud-typography { color: #FFFFFF; font-weight: 600; line-height: 1.3; }
+.lms-brand-name.mud-typography { color: var(--mud-palette-text-primary); font-weight: 700; line-height: 1.3; }
 
 .lms-drawer .mud-navmenu { padding: 12px 8px; }
 .lms-drawer .mud-nav-link {
@@ -68,15 +73,17 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
     color: var(--mud-palette-drawer-text); font-weight: 400; position: relative;
 }
 .lms-drawer .mud-nav-link .mud-nav-link-text { margin-inline-start: 12px; }
-.lms-drawer .mud-nav-link:hover:not(.mud-nav-link-disabled) { background: rgba(255, 255, 255, .06); color: #FFFFFF; }
+.lms-drawer .mud-nav-link:hover:not(.mud-nav-link-disabled) {
+    background: color-mix(in srgb, var(--mud-palette-text-primary) 5%, transparent); color: var(--mud-palette-text-primary);
+}
 .lms-drawer .mud-nav-link.active:not(.mud-nav-link-disabled) {
-    background: rgba(255, 255, 255, .1) !important; color: #FFFFFF !important; font-weight: 600;
+    background: var(--lms-tint-primary) !important; color: var(--mud-palette-primary) !important; font-weight: 600;
 }
 .lms-drawer .mud-nav-link.active:not(.mud-nav-link-disabled)::before {
     content: ""; position: absolute; inset-inline-start: 0; top: 8px; bottom: 8px; width: 3px;
-    border-radius: 3px; background: var(--lms-nav-accent);
+    border-radius: 3px; background: var(--mud-palette-primary);
 }
-.lms-drawer .mud-nav-link.active .mud-nav-link-icon { color: var(--lms-nav-accent) !important; }
+.lms-drawer .mud-nav-link.active .mud-nav-link-icon { color: var(--mud-palette-primary) !important; }
 .lms-drawer .mud-nav-link .mud-nav-link-icon { color: var(--mud-palette-drawer-icon); }
 
 .lms-page.mud-container { padding-top: 24px; padding-bottom: 48px; }
