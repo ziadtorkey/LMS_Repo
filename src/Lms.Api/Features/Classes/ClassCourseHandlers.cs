@@ -1,4 +1,7 @@
 using Lms.Api.Infrastructure;
+using Lms.Domain.Abstractions;
+using Lms.Domain.Enrollment;
+using Lms.Shared.Enrollment;
 using Lms.Domain.AcademicYears;
 using Lms.Domain.Access;
 using Lms.Domain.Classes;
@@ -16,14 +19,22 @@ public sealed record BulkAssignResultDto(int Added, int Skipped);
 
 /// <summary>Class courses: add, list, change optional flag, remove and bulk assign.</summary>
 public sealed class ClassCourseHandlers(
-    LmsDbContext db, ClassCourseWriter writer, ClassCourseMapper mapper, ClassHandlers classes, ClassLookups lookups,
+    LmsDbContext db, IClock clock, ClassCourseWriter writer, ClassCourseMapper mapper, ClassHandlers classes, ClassLookups lookups,
     IRelationshipScope relationships)
 {
+    internal const int MaxCoursesPerAdd = 100;
+    internal const int MaxBulkAssignClasses = 200;
+
     public async Task<IResult> AddAsync(Guid classId, AddClassCoursesRequest request, HttpContext http, CancellationToken ct)
     {
-        if (request?.CourseIds is not { Count: > 0 } ids || ids.Count > 100 || ids.Distinct().Count() != ids.Count)
+        if (request?.CourseIds is not { Count: > 0 } ids || ids.Distinct().Count() != ids.Count)
         {
             return ClassValidators.Invalid(nameof(AddClassCoursesRequest.CourseIds), "courses_required");
+        }
+
+        if (ids.Count > MaxCoursesPerAdd)
+        {
+            return ClassValidators.TooMany(nameof(AddClassCoursesRequest.CourseIds), MaxCoursesPerAdd);
         }
 
         var (cls, problem) = await http.CheckClassAsync(Permissions.Classes.ManageCourses, classId, ct);
@@ -56,7 +67,16 @@ public sealed class ClassCourseHandlers(
         }
 
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
-        var added = await writer.AddAsync(cls!, courses, ct);
+        IReadOnlyList<ClassCourse> added;
+        try
+        {
+            added = await writer.AddAsync(cls!, courses, ct);
+        }
+        catch (DbUpdateException ex) when (DbErrors.IsConcurrentKeyConflict(ex))
+        {
+            return ApiProblems.Conflict(ProblemCodes.class_course_exists, "A concurrent request already added this course.");
+        }
+
         await transaction.CommitAsync(ct);
         return Results.Created(Routes.ClassCoursesOfClass(classId), await mapper.ToDtosAsync(added, ct));
     }
@@ -106,7 +126,32 @@ public sealed class ClassCourseHandlers(
             return problem;
         }
 
+        // D41, enforced here whatever handlers are registered: group members and manual or exceptional (any non-Auto)
+        // enrollments block the removal; Auto enrollments follow the class course and become Dropped with it.
+        var hasGroupMembers = await db.Set<GroupMember>().AnyAsync(m => m.ClassCourseId == id, ct);
+        var enrollments = await db.Set<CourseEnrollment>()
+            .Where(e => e.ClassCourseId == id && e.Status == CourseEnrollment.ActiveStatus).ToListAsync(ct);
+        if (hasGroupMembers || enrollments.Any(e => e.Source != EnrollmentSources.Auto))
+        {
+            return ApiProblems.Conflict(
+                ProblemCodes.class_course_in_use,
+                hasGroupMembers ? "The class course has group members." : "The class course has manual or exceptional enrollments.");
+        }
+
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
+        var today = DateOnly.FromDateTime(clock.UtcNow);
+        foreach (var enrollment in enrollments)
+        {
+            enrollment.Drop(today, "ClassCourseRemoved");
+        }
+
+        // Saved and detached: a tracked dependent would make EF try to cascade the soft delete of the class course.
+        await db.SaveChangesAsync(ct);
+        foreach (var enrollment in enrollments)
+        {
+            db.Entry(enrollment).State = EntityState.Detached;
+        }
+
         try
         {
             await writer.RemovingAsync(classCourse!, ct);
@@ -145,7 +190,11 @@ public sealed class ClassCourseHandlers(
         var path = unit.Path;
         var targets = await db.Set<Class>()
             .Where(c => c.OrgUnitPath.StartsWith(path) && c.AcademicYearId == request.AcademicYearId)
-            .OrderBy(c => c.Code).ToListAsync(ct);
+            .OrderBy(c => c.Code).Take(MaxBulkAssignClasses + 1).ToListAsync(ct);
+        if (targets.Count > MaxBulkAssignClasses)
+        {
+            return ClassValidators.TooMany(nameof(request.OrgUnitId), MaxBulkAssignClasses);
+        }
         var known = await lookups.CoursesAsync(unit.OrganizationId, [request.CourseId], ct);
         if (!known.TryGetValue(request.CourseId, out var requested) || requested.Status != Domain.Courses.Course.ActiveStatus)
         {
@@ -173,7 +222,16 @@ public sealed class ClassCourseHandlers(
                 continue;
             }
 
-            await writer.AddAsync(cls, [(course, request.IsOptional)], ct);
+            try
+            {
+                await writer.AddAsync(cls, [(course, request.IsOptional)], ct);
+            }
+            catch (DbUpdateException ex) when (DbErrors.IsConcurrentKeyConflict(ex))
+            {
+                // A concurrent add of the same course won the race: nothing of this request is kept.
+                return ApiProblems.Conflict(ProblemCodes.class_course_exists, "A concurrent request already added this course.");
+            }
+
             added++;
         }
 

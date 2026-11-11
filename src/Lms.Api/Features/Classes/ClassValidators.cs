@@ -22,6 +22,11 @@ internal static partial class ClassValidators
             new Dictionary<string, string[]> { [field] = [key] },
             extensions: new Dictionary<string, object?> { ["code"] = ProblemCodes.validation_failed });
 
+    public static IResult TooMany(string field, int limit) =>
+        Results.Problem(
+            statusCode: StatusCodes.Status400BadRequest, title: "Bad request", detail: $"At most {limit} items are allowed in one request.",
+            extensions: new Dictionary<string, object?> { ["code"] = ProblemCodes.too_many_items, ["field"] = field, ["limit"] = limit });
+
     public static IResult? Validate(SaveClassRequest? request)
     {
         if (request is null)
@@ -61,9 +66,15 @@ internal static partial class ClassValidators
             return Invalid("body", "required");
         }
 
-        if (request.From > request.To || request.To - request.From + 1 > MaxBulk)
+        if (request.From < 0 || request.From > request.To)
         {
             return Invalid("To", "range_invalid");
+        }
+
+        // long: a full-range request must not wrap around in int.
+        if ((long)request.To - request.From + 1 > MaxBulk)
+        {
+            return TooMany("To", MaxBulk);
         }
 
         foreach (var (field, pattern) in new[]

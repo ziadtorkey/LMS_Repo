@@ -110,7 +110,8 @@ public sealed class MatrixTests(LmsApiFactory factory) : IDisposable
             await db.SaveChangesAsync();
         }
 
-        Assert.Equal(HttpStatusCode.BadRequest,
-            (await _h.SendAsync(w.Admin, HttpMethod.Get, Routes.ClassesMatrixFor(w.Tree.School2.Id, w.Year.Id))).StatusCode);
+        var tooMany = await _h.SendAsync(w.Admin, HttpMethod.Get, Routes.ClassesMatrixFor(w.Tree.School2.Id, w.Year.Id));
+        Assert.Equal(HttpStatusCode.BadRequest, tooMany.StatusCode);
+        Assert.Equal(ProblemCodes.too_many_items, (await tooMany.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>()).GetProperty("code").GetString());
     }
 }

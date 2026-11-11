@@ -37,7 +37,7 @@ public sealed class MatrixQuery(
         var classes = await query.OrderBy(c => c.Code).Take(MaxClasses + 1).ToListAsync(ct);
         if (classes.Count > MaxClasses)
         {
-            return ClassValidators.Invalid(nameof(orgUnitId), "too_many_classes");
+            return ClassValidators.TooMany(nameof(orgUnitId), MaxClasses);
         }
 
         var classIds = classes.Select(c => c.Id).ToList();

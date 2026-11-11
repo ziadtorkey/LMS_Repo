@@ -295,4 +295,102 @@ public sealed class ClassCourseTests : IDisposable
         Assert.Equal(1, rows.Count(r => r.IsOptional));
         Assert.Equal(2, RecordingLifecycleHandler.Calls.Count(c => rows.Any(r => c.StartsWith($"added:{r.Id}:True"))));
     }
+
+    private async Task<(ClassCourseDto Cc, Guid EnrollmentId, Guid StudentId)> EnrolAsync(
+        ClassTestHost.World w, ClassSummaryDto cls, ClassCourseDto classCourse, string source, bool inGroup = false)
+    {
+        var student = await PeopleTestKit.AddStudentAsync(_factory, w.Tree.School1, PeopleTestKit.NewCode());
+        await using var db = _factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        var tracked = await db.Set<ClassCourse>().SingleAsync(c => c.Id == classCourse.Id);
+        var placement = new ClassStudent(await db.Set<Class>().SingleAsync(c => c.Id == cls.Id), student.Id, Today.AddDays(-1));
+        db.Add(placement);
+        await db.SaveChangesAsync();
+        var enrollment = new Lms.Domain.Enrollment.CourseEnrollment(tracked, placement, source, Today.AddDays(-1));
+        db.Add(enrollment);
+        await db.SaveChangesAsync();
+        if (inGroup)
+        {
+            var group = new Lms.Domain.Enrollment.StudentGroup(tracked, "مجموعة", "Group", null, null);
+            db.Add(group);
+            await db.SaveChangesAsync();
+            db.Add(new Lms.Domain.Enrollment.GroupMember(group, enrollment));
+            await db.SaveChangesAsync();
+        }
+
+        return (classCourse, enrollment.Id, student.Id);
+    }
+
+    [Fact]
+    public async Task Removal_is_blocked_by_group_members_and_non_auto_enrollments_and_drops_auto_ones_D41()
+    {
+        var (w, cls, course) = await SetUpAsync("CC11");
+        var courses = new List<Course>();
+        for (var i = 0; i < 3; i++)
+        {
+            var extra = await AcademicTestKit.AddCourseAsync(_factory, w.Tree.Root);
+            await AcademicTestKit.AllocateAsync(_factory, extra, w.Tree.Root);
+            courses.Add(extra);
+        }
+
+        var added = (await (await AddAsync(w, cls.Id, false, courses[0].Id, courses[1].Id, courses[2].Id)).Content.ReadFromJsonAsync<List<ClassCourseDto>>())!;
+        var withGroup = await EnrolAsync(w, cls, added[0], "Auto", inGroup: true);
+        var withManual = await EnrolAsync(w, cls, added[1], "Manual");
+        var autoOnly = await EnrolAsync(w, cls, added[2], "Auto");
+
+        var group = await _h.SendAsync(w.Admin, HttpMethod.Delete, Routes.ClassCourse(withGroup.Cc.Id));
+        var manual = await _h.SendAsync(w.Admin, HttpMethod.Delete, Routes.ClassCourse(withManual.Cc.Id));
+        var auto = await _h.SendAsync(w.Admin, HttpMethod.Delete, Routes.ClassCourse(autoOnly.Cc.Id));
+
+        Assert.Equal(HttpStatusCode.Conflict, group.StatusCode);
+        Assert.Equal(ProblemCodes.class_course_in_use, await ClassTestHost.CodeAsync(group));
+        Assert.Equal(HttpStatusCode.Conflict, manual.StatusCode);
+        Assert.Equal(ProblemCodes.class_course_in_use, await ClassTestHost.CodeAsync(manual));
+        Assert.Equal(HttpStatusCode.NoContent, auto.StatusCode);
+        await using var db = _factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        var dropped = await db.Set<Lms.Domain.Enrollment.CourseEnrollment>().SingleAsync(e => e.Id == autoOnly.EnrollmentId);
+        Assert.Equal(Lms.Domain.Enrollment.CourseEnrollment.DroppedStatus, dropped.Status);
+        Assert.NotNull(dropped.To);
+        // The blocked class courses and their enrollments are untouched.
+        Assert.Equal(Lms.Domain.Enrollment.CourseEnrollment.ActiveStatus,
+            (await db.Set<Lms.Domain.Enrollment.CourseEnrollment>().SingleAsync(e => e.Id == withManual.EnrollmentId)).Status);
+        Assert.Equal(2, await db.Set<ClassCourse>().CountAsync(c => c.ClassId == cls.Id));
+    }
+
+    [Fact]
+    public async Task Adding_more_than_100_courses_or_bulk_assigning_to_over_200_classes_is_400_too_many_items()
+    {
+        var (w, cls, course) = await SetUpAsync("CC12");
+
+        var tooManyCourses = await AddAsync(w, cls.Id, false, Enumerable.Range(0, 101).Select(_ => Guid.NewGuid()).ToArray());
+        await using (var db = _factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            db.AddRange(Enumerable.Range(0, 200).Select(i => new Class(w.Tree.School2, w.Year.Id, "BG" + i, "ا", "N", 5)));
+            await db.SaveChangesAsync();
+        }
+
+        var tooManyClasses = await _h.SendAsync(w.Admin, HttpMethod.Post, Routes.ClassCoursesBulkAssign,
+            new BulkAssignCourseRequest(w.Tree.Root.Id, w.Year.Id, course.Id, false)); // 200 + the setup class = 201
+
+        Assert.Equal(HttpStatusCode.BadRequest, tooManyCourses.StatusCode);
+        Assert.Equal(ProblemCodes.too_many_items, await ClassTestHost.CodeAsync(tooManyCourses));
+        Assert.Equal(HttpStatusCode.BadRequest, tooManyClasses.StatusCode);
+        Assert.Equal(ProblemCodes.too_many_items, await ClassTestHost.CodeAsync(tooManyClasses));
+    }
+
+    [Fact]
+    public async Task Parallel_adds_of_the_same_course_end_in_one_201_and_409s_never_500()
+    {
+        var (w, cls, course) = await SetUpAsync("CC13");
+
+        var responses = await Task.WhenAll(Enumerable.Range(0, 8).Select(_ => AddAsync(w, cls.Id, false, course.Id)));
+
+        Assert.Equal(1, responses.Count(r => r.StatusCode == HttpStatusCode.Created));
+        Assert.Equal(7, responses.Count(r => r.StatusCode == HttpStatusCode.Conflict));
+        foreach (var conflict in responses.Where(r => r.StatusCode == HttpStatusCode.Conflict))
+        {
+            Assert.Equal(ProblemCodes.class_course_exists, await ClassTestHost.CodeAsync(conflict));
+        }
+
+        Assert.Single(await ListAsync(w.Admin, cls.Id));
+    }
 }

@@ -54,6 +54,11 @@ public sealed class BulkClassesTests(LmsApiFactory factory) : IDisposable
         var twoTokens = await _h.SendAsync(w.Admin, HttpMethod.Post, Routes.ClassesBulk, Bulk(w, 1, 2, "{N}-{N}"));
 
         Assert.Equal(HttpStatusCode.BadRequest, tooMany.StatusCode);
+        Assert.Equal(ProblemCodes.too_many_items, await ClassTestHost.CodeAsync(tooMany));
+        var wrapped = await _h.SendAsync(w.Admin, HttpMethod.Post, Routes.ClassesBulk, Bulk(w, int.MinValue + 1, int.MaxValue - 1));
+        var negative = await _h.SendAsync(w.Admin, HttpMethod.Post, Routes.ClassesBulk, Bulk(w, -3, 2));
+        Assert.Equal(HttpStatusCode.BadRequest, wrapped.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, negative.StatusCode);
         Assert.Equal(HttpStatusCode.Created, fifty.StatusCode);
         Assert.Equal(HttpStatusCode.BadRequest, reversed.StatusCode);
         Assert.Equal(HttpStatusCode.BadRequest, noToken.StatusCode);
@@ -181,5 +186,66 @@ public sealed class BulkClassesTests(LmsApiFactory factory) : IDisposable
         Assert.Equal(HttpStatusCode.NotFound, (await _h.SendAsync(other.Admin, HttpMethod.Post, Routes.ClassesBulk, Bulk(w, 1, 2))).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await _h.SendAsync(other.Admin, HttpMethod.Post, Routes.ClassesCopy,
             new CopyClassesRequest(w.Year.Id, w.Year.Id, w.Tree.School1.Id, false, null, null))).StatusCode);
+    }
+
+    [Fact]
+    public async Task Copy_skips_units_where_a_CreateClasses_policy_below_the_copy_unit_blocks()
+    {
+        var w = await _h.SeedAsync("BK9");
+        var target = await _h.AddYearAsync(w.Tree.Root);
+        await _h.CreateAsync(w.Admin, ClassTestHost.Save(w.Tree.School1, w.Year, "P1-2026"));
+        await _h.CreateAsync(w.Admin, ClassTestHost.Save(w.Tree.School2, w.Year, "P2-2026"));
+        await _h.Host.AddPolicyAsync(w.Tree, w.Tree.School2, PolicyCatalog.CreateClasses);
+
+        var response = await _h.SendAsync(w.Admin, HttpMethod.Post, Routes.ClassesCopy,
+            new CopyClassesRequest(w.Year.Id, target.Id, w.Tree.Root.Id, false, "2026", "2027"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var result = (await response.Content.ReadFromJsonAsync<CopyClassesResultDto>())!;
+        Assert.Equal(1, result.Created);
+        Assert.Equal(["P2-2027"], result.SkippedCodes);
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        Assert.Equal(0, await db.Set<Class>().CountAsync(c => c.AcademicYearId == target.Id && c.OrgUnitId == w.Tree.School2.Id));
+        Assert.Equal(1, await db.Set<Class>().CountAsync(c => c.AcademicYearId == target.Id && c.OrgUnitId == w.Tree.School1.Id));
+    }
+
+    [Fact]
+    public async Task Copy_over_500_classes_is_400_too_many_items()
+    {
+        var w = await _h.SeedAsync("BK10");
+        var target = await _h.AddYearAsync(w.Tree.Root);
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            db.AddRange(Enumerable.Range(0, 501).Select(i => new Class(w.Tree.School1, w.Year.Id, "BIG" + i, "ا", "N", 5)));
+            await db.SaveChangesAsync();
+        }
+
+        var response = await _h.SendAsync(w.Admin, HttpMethod.Post, Routes.ClassesCopy,
+            new CopyClassesRequest(w.Year.Id, target.Id, w.Tree.Root.Id, false, null, null));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(ProblemCodes.too_many_items, await ClassTestHost.CodeAsync(response));
+    }
+
+    [Fact]
+    public async Task Parallel_creates_of_the_same_code_end_in_one_201_and_409s_never_500()
+    {
+        var w = await _h.SeedAsync("BK11");
+        var body = ClassTestHost.Save(w.Tree.School1, w.Year, "RACE");
+
+        var responses = await Task.WhenAll(Enumerable.Range(0, 8).Select(_ => _h.SendAsync(w.Admin, HttpMethod.Post, Routes.Classes, body)));
+
+        Assert.Equal(1, responses.Count(r => r.StatusCode == HttpStatusCode.Created));
+        Assert.Equal(7, responses.Count(r => r.StatusCode == HttpStatusCode.Conflict));
+        foreach (var conflict in responses.Where(r => r.StatusCode == HttpStatusCode.Conflict))
+        {
+            Assert.Equal(ProblemCodes.class_code_taken, await ClassTestHost.CodeAsync(conflict));
+        }
+
+        var bulk = Bulk(w, 1, 3, "RB{N}");
+        var bulkResponses = await Task.WhenAll(Enumerable.Range(0, 5).Select(_ => _h.SendAsync(w.Admin, HttpMethod.Post, Routes.ClassesBulk, bulk)));
+        Assert.Equal(1, bulkResponses.Count(r => r.StatusCode == HttpStatusCode.Created));
+        Assert.Equal(4, bulkResponses.Count(r => r.StatusCode == HttpStatusCode.Conflict));
+        Assert.DoesNotContain(bulkResponses, r => (int)r.StatusCode >= 500);
     }
 }
