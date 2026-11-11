@@ -162,6 +162,10 @@ public static class AcademicYearEndpoints
         }
 
         db.Set<Term>().RemoveRange(await db.Set<Term>().Where(t => t.AcademicYearId == year.Id).ToListAsync(ct));
+
+        // ISOLATION-BYPASS: events of descendant units of a year the caller may delete; restricted to the year's client.
+        db.Set<CalendarEvent>().RemoveRange(await db.Set<CalendarEvent>().IgnoreQueryFilters()
+            .Where(e => !e.IsDeleted && e.OrganizationId == year.OrganizationId && e.AcademicYearId == year.Id).ToListAsync(ct));
         db.Set<AcademicYear>().Remove(year);
         await db.SaveChangesAsync(ct);
         return Results.NoContent();
