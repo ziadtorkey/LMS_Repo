@@ -1,6 +1,8 @@
+using Lms.Api.Infrastructure;
 using Lms.Domain.Classes;
 using Lms.Domain.Enrollment;
 using Lms.Domain.Organizations;
+using Lms.Infrastructure.Enrollment;
 using Lms.Infrastructure.Persistence;
 using Lms.Shared;
 using Lms.Shared.Courses;
@@ -61,6 +63,34 @@ internal static class GroupSupport
         await db.Set<GroupMember>().Where(m => groupIds.Contains(m.GroupId))
             .GroupBy(m => m.GroupId).Select(g => new { g.Key, Count = g.Count() }).ToDictionaryAsync(g => g.Key, g => g.Count, ct);
 
-    public static async Task<ClassCourse?> ClassCourseAsync(LmsDbContext db, Guid id, CancellationToken ct) =>
-        await db.Set<ClassCourse>().FirstOrDefaultAsync(c => c.Id == id, ct);
+    /// <summary>
+    /// The group and its class course for a read: the permission at the class course unit, then the relationship filter
+    /// (<c>RelationshipAccess.CheckClassCourseAsync</c>); 404 for anything the caller cannot reach.
+    /// </summary>
+    public static async Task<(StudentGroup? Group, ClassCourse? ClassCourse, IResult? Problem)> LoadForReadAsync(
+        Guid id, string permission, HttpContext http, LmsDbContext db, CancellationToken ct)
+    {
+        var group = await db.Set<StudentGroup>().FirstOrDefaultAsync(g => g.Id == id, ct);
+        if (group is null)
+        {
+            return (null, null, ApiProblems.NotFound());
+        }
+
+        var (classCourse, problem) = await http.CheckClassCourseAsync(permission, group.ClassCourseId, ct);
+        return problem is null ? (group, classCourse, null) : (null, null, problem);
+    }
+
+    /// <summary>As <see cref="LoadForReadAsync"/> with <c>Groups.Manage</c>, and the class must be open for writes (409 <c>class_closed</c> / <c>year_closed</c>).</summary>
+    public static async Task<(StudentGroup? Group, ClassCourse? ClassCourse, IResult? Problem)> LoadForWriteAsync(
+        Guid id, HttpContext http, LmsDbContext db, PlacementGuard guard, CancellationToken ct)
+    {
+        var (group, classCourse, problem) = await LoadForReadAsync(id, Lms.Shared.Authorization.Permissions.Groups.Manage, http, db, ct);
+        if (problem is not null)
+        {
+            return (null, null, problem);
+        }
+
+        var closed = await GroupEndpoints.WritableAsync(classCourse!, db, guard, ct);
+        return closed is null ? (group, classCourse, null) : (null, null, closed);
+    }
 }
