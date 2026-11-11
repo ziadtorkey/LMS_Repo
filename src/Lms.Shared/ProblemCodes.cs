@@ -115,4 +115,6 @@ public static class ProblemCodes
     public const string too_many_items = nameof(too_many_items);
     public const string short_code_taken = nameof(short_code_taken);
     public const string invalid_short_code = nameof(invalid_short_code);
+    public const string teacher_already_assigned = nameof(teacher_already_assigned);
+    public const string assignment_ended = nameof(assignment_ended);
 }
