@@ -38,7 +38,7 @@ else
             </MudStack>
         </MudStack>
 
-        <MudTabs Elevation="0" Rounded="false" ApplyEffectsToContainer="true" TabPanelsClass="pa-4" data-testid="course-tabs">
+        <MudTabs Class="lms-tabs" Elevation="0" Rounded="false" ApplyEffectsToContainer="true" MinimumTabWidth="80px" TabPanelsClass="pa-4" data-testid="course-tabs">
             <MudTabPanel Text="@L["CourseProfile_Details"]" data-testid="tab-details">
                 <MudStack Spacing="2">
                     <MudText data-testid="course-profile-owner">@L["Course_Owner"]: @Culture.Pick(s.OwnerOrgUnitNameAr, s.OwnerOrgUnitNameEn)</MudText>

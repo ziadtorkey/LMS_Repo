@@ -22,24 +22,24 @@
         }
         else
         {
-            <MudSimpleTable Dense="true" data-testid="unit-courses-available">
-                <tbody>
-                    @foreach (var row in _courses.Available)
-                    {
-                        <tr>
-                            <td><span dir="ltr">@row.CourseCode</span></td>
-                            <td>
-                                <MudLink Href="@($"courses/{row.CourseId}")">@CultureText.Pick(row.CourseNameAr, row.CourseNameEn)</MudLink>
-                                @if (row.IsInherited)
-                                {
-                                    <MudChip T="string" Size="Size.Small" Color="Color.Info" data-testid="@($"unit-course-inherited-{row.Id}")">@L["Course_Inherited"]</MudChip>
-                                }
-                            </td>
-                            <td>@CultureText.Pick(row.OrgUnitNameAr, row.OrgUnitNameEn)</td>
-                        </tr>
-                    }
-                </tbody>
-            </MudSimpleTable>
+            <MudTable Items="_courses.Available" Dense="true" Hover="true" data-testid="unit-courses-available">
+                <HeaderContent>
+                    <MudTh>@L["Course_Code"]</MudTh>
+                    <MudTh>@L["Common_Name"]</MudTh>
+                    <MudTh>@L["Allocation_Unit"]</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="@L["Course_Code"]"><span dir="ltr">@context.CourseCode</span></MudTd>
+                    <MudTd DataLabel="@L["Common_Name"]">
+                        <MudLink Href="@($"courses/{context.CourseId}")">@CultureText.Pick(context.CourseNameAr, context.CourseNameEn)</MudLink>
+                        @if (context.IsInherited)
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Info" data-testid="@($"unit-course-inherited-{context.Id}")">@L["Course_Inherited"]</MudChip>
+                        }
+                    </MudTd>
+                    <MudTd DataLabel="@L["Allocation_Unit"]">@CultureText.Pick(context.OrgUnitNameAr, context.OrgUnitNameEn)</MudTd>
+                </RowTemplate>
+            </MudTable>
         }
 
         <MudText Typo="Typo.h6">@L["UnitCourses_Below"]</MudText>
@@ -49,18 +49,18 @@
         }
         else
         {
-            <MudSimpleTable Dense="true" data-testid="unit-courses-below">
-                <tbody>
-                    @foreach (var row in _courses.AllocatedBelow)
-                    {
-                        <tr>
-                            <td><span dir="ltr">@row.CourseCode</span></td>
-                            <td><MudLink Href="@($"courses/{row.CourseId}")">@CultureText.Pick(row.CourseNameAr, row.CourseNameEn)</MudLink></td>
-                            <td>@CultureText.Pick(row.OrgUnitNameAr, row.OrgUnitNameEn)</td>
-                        </tr>
-                    }
-                </tbody>
-            </MudSimpleTable>
+            <MudTable Items="_courses.AllocatedBelow" Dense="true" Hover="true" data-testid="unit-courses-below">
+                <HeaderContent>
+                    <MudTh>@L["Course_Code"]</MudTh>
+                    <MudTh>@L["Common_Name"]</MudTh>
+                    <MudTh>@L["Allocation_Unit"]</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="@L["Course_Code"]"><span dir="ltr">@context.CourseCode</span></MudTd>
+                    <MudTd DataLabel="@L["Common_Name"]"><MudLink Href="@($"courses/{context.CourseId}")">@CultureText.Pick(context.CourseNameAr, context.CourseNameEn)</MudLink></MudTd>
+                    <MudTd DataLabel="@L["Allocation_Unit"]">@CultureText.Pick(context.OrgUnitNameAr, context.OrgUnitNameEn)</MudTd>
+                </RowTemplate>
+            </MudTable>
         }
     }
 </MudStack>
