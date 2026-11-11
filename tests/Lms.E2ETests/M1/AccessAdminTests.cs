@@ -5,8 +5,9 @@ using static Microsoft.Playwright.Assertions;
 namespace Lms.E2ETests.M1;
 
 /// <summary>
-/// M1 exit demo 2, access half (plan Task 37, #72): the seeded school client's admin manages roles and assigns a role
-/// to a brand-new person, who accepts the invitation and signs in. Ar and en. Every test uses unique names and cleans
+/// M1 exit demo 2, access half (plan Task 37, #72): the seeded school client's admin manages roles (custom role, renamed
+/// built-in label). Assigning a role to a person is covered by the M2 staff demo (#176), because since D31 roles are
+/// assigned to existing staff members. Ar and en. Every test uses unique names and cleans
 /// up after itself (custom role deleted, renamed built-in role restored), so reruns on the same database stay green.
 /// </summary>
 public sealed class AccessAdminTests(E2EFixture fixture) : E2ETestBase(fixture)
@@ -58,45 +59,6 @@ public sealed class AccessAdminTests(E2EFixture fixture) : E2ETestBase(fixture)
 
         await Expect(roles.Row(Show(ManagerAr, ManagerEn))).ToBeVisibleAsync();
         Assert.Equal(culture == "ar" ? "rtl" : "ltr", await new ShellPage(Page).HtmlDirAsync());
-    }
-
-    [Theory]
-    [InlineData("ar")]
-    [InlineData("en")]
-    public async Task Admin_assigns_teacher_role_to_new_email_teacher_accepts_invitation_and_sees_only_section_context(string culture)
-    {
-        var names = M1Names.New();
-        var email = names.AdminEmail("teacher");
-
-        await StartAsync(culture: culture);
-        await SignInAsOrgAdminAsync();
-        var assignments = new AssignmentsAdminPage(Page);
-        await assignments.OpenAsync();
-        await assignments.AssignAsync(email, "معلم اختبار", $"E2E Teacher {names.Suffix}", "Teacher", "KG-S1");
-
-        await assignments.IncludeUnitsBelowAsync();
-        var row = assignments.Row(email);
-        await Expect(row).ToBeVisibleAsync();
-        await Expect(row).ToContainTextAsync(culture == "ar" ? "المعلم" : "Teacher");
-        await Expect(row).ToContainTextAsync(Resx.In(culture, "AssignmentStatus_Valid"));
-
-        // The new person got an invitation, sets a password, and signs in.
-        await Page.Context.ClearCookiesAsync();
-        await Page.EvaluateAsync("() => { sessionStorage.clear(); localStorage.removeItem('lms.context'); }");
-        using var mail = new MailpitClient();
-        var link = await mail.WaitForAccountLinkAsync(email);
-        await new ResetPasswordPage(Page).SetPasswordAsync(link, names.NewPassword);
-        await new LoginPage(Page).SignInAsync(email, names.NewPassword);
-        var shell = new ShellPage(Page);
-        await shell.WaitReadyAsync();
-
-        // One assignment: no chooser, the section is the context, and admin menus are not offered.
-        Assert.DoesNotContain("/choose-context", Page.Url, StringComparison.Ordinal);
-        await Expect(shell.ContextSwitcher).ToContainTextAsync(culture == "ar" ? "الفصل 1" : "Section 1");
-        await Expect(shell.ContextSwitcher).ToContainTextAsync(culture == "ar" ? "المعلم" : "Teacher");
-        await Expect(shell.Nav("roles")).ToHaveCountAsync(0);
-        await Expect(shell.Nav("audit")).ToHaveCountAsync(0);
-        await Expect(shell.Nav("clients")).ToHaveCountAsync(0);
     }
 
     private async Task SignInAsOrgAdminAsync()

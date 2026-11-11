@@ -78,3 +78,16 @@ Each runs in Arabic and English (`[Theory]` with `"ar"`/`"en"`; `StartAsync(cult
 | Test | Covers |
 |---|---|
 | `Deactivated_user_sees_blocked_message_on_login` (ar, en × deactivated, expired, withdrawn) | FR-SEC-07: exact blocked-login copy, no session |
+
+## Scenarios (M1, plan Task 37: `M1/ConfigurationTests`, `M1/AccessAdminTests`)
+Run as the seeded school client's Org Admin. Each test puts the shared seeded data back in a `finally` block (policy off, value reset).
+
+| Test | Covers |
+|---|---|
+| `Root_admin_sets_CreateOrgUnits_on_KG_and_add_is_hidden_below_it` | FR-ORG-06/10: policy on KG hides add on KG and below, not on Primary; inherited switch is disabled below |
+| `Locked_root_setting_is_read_only_at_school_level` | FR-ORG-07: a value locked at the root is read-only and shows "Locked by" below |
+| `Feature_flag_enabled_at_KG_only_is_off_at_Primary` | FR-ORG-08: flag set at KG is inherited by its sections, default at Primary |
+| `Root_admin_creates_Exam_Officer_custom_role_and_renames_Manager_label` | FR-SEC-06, §3.3: custom role with one permission; built-in label renamed and restored |
+| copy branch and templates | FR-ORG-11: waits for #207 and #258 |
+
+Assigning a role to a person moved to the M2 staff demo (D31: roles go to existing staff members).
