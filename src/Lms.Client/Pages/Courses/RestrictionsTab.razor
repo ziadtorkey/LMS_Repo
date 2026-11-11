@@ -25,7 +25,8 @@
             @if (CanEdit)
             {
                 <MudSelect T="string" SelectedValues="_values[current]" SelectedValuesChanged="v => _values[current] = v.ToList()"
-                           MultiSelection="true" Label="@L["Restriction_Values"]" HelperText="@L["Restriction_EmptyMeansAll"]"
+                           MultiSelection="true" MultiSelectionTextFunc="@(values => string.Join(", ", values.Select(v => LabelOf(current, v))))"
+                           Label="@L["Restriction_Values"]" HelperText="@L["Restriction_EmptyMeansAll"]"
                            data-testid="@($"restriction-{type}")">
                     @foreach (var (key, label) in Options(current))
                     {
@@ -80,6 +81,8 @@
         CourseRestrictionTypes.Gender => Genders.All.Select(g => (g, L[$"Gender_{g}"].Value)),
         _ => _levelTypes.Select(t => (t.Id.ToString(), CultureText.Pick(t.NameAr, t.NameEn))),
     };
+
+    private string LabelOf(string type, string key) => Options(type).FirstOrDefault(o => o.Key == key).Label ?? key;
 
     private async Task SaveAsync()
     {

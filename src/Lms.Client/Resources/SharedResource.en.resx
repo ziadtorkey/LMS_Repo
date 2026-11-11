@@ -706,4 +706,9 @@
   <data name="MyCourses_BlueprintPublished" xml:space="preserve"><value>Blueprint published</value></data>
   <data name="MyCourses_NoBlueprint" xml:space="preserve"><value>No published blueprint</value></data>
   <data name="MyCourses_Open" xml:space="preserve"><value>Open</value></data>
+  <data name="Gender_Male" xml:space="preserve"><value>Male</value></data>
+  <data name="Gender_Female" xml:space="preserve"><value>Female</value></data>
+  <data name="Religion_Muslim" xml:space="preserve"><value>Muslim</value></data>
+  <data name="Religion_Christian" xml:space="preserve"><value>Christian</value></data>
+  <data name="Religion_Other" xml:space="preserve"><value>Other</value></data>
 </root>
