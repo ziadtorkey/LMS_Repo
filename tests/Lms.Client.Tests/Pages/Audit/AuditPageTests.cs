@@ -101,7 +101,7 @@ public sealed class AuditPageTests : ClientTestContext
     [Fact]
     public async Task Detail_drawer_shows_the_diff_of_the_selected_entry()
     {
-        CultureInfo.CurrentUICulture = new CultureInfo("en");
+        Culture.Current = new CultureInfo("en");
         await GrantAsync(Permissions.Audit.View);
         var cut = RenderPage();
         var role = (await _audit.QueryAsync(new AuditQuery(null, null, "Role", null, null, null, null))).Items.Single();
@@ -139,7 +139,7 @@ public sealed class AuditPageTests : ClientTestContext
     [InlineData(null, "Could not load data")]
     public async Task Export_problem_or_offline_shows_a_snackbar(string? code, string expected)
     {
-        CultureInfo.CurrentUICulture = new CultureInfo("en");
+        Culture.Current = new CultureInfo("en");
         await GrantAsync(Permissions.Audit.View, Permissions.Audit.Export);
         Render<MudPopoverProvider>();
         var snackbars = Render<MudSnackbarProvider>();
@@ -164,7 +164,7 @@ public sealed class AuditPageTests : ClientTestContext
     [Fact]
     public async Task Page_renders_rtl_in_arabic_with_arabic_values_intact()
     {
-        CultureInfo.CurrentUICulture = new CultureInfo("ar");
+        Culture.Current = new CultureInfo("ar");
         await GrantAsync(Permissions.Audit.View);
         var detail = _audit.Add(_audit.AdminId, AuditActions.Updated, "Term", """{"NameAr":"الفصل الأول"}""", """{"NameAr":"الفصل الثاني"}""");
         Render<MudPopoverProvider>();
