@@ -54,7 +54,7 @@ public sealed class DevSeeder(string connectionString, IHostEnvironment environm
         var organization = await db.Organizations.FirstOrDefaultAsync(o => o.Id == seed.OrganizationId, ct);
         if (organization is null)
         {
-            organization = new Organization(seed.OrganizationId, seed.NameAr, seed.NameEn, seed.Type);
+            organization = new Organization(seed.OrganizationId, seed.NameAr, seed.NameEn, seed.Type, seed.ShortCode);
             db.Organizations.Add(organization);
             await db.SaveChangesAsync(ct);
         }
