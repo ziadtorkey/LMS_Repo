@@ -106,6 +106,47 @@ public sealed class TransferDialogTests : StudentsTestContext
         Assert.Contains("The target class belongs to a different academic year.", error);
     }
 
+    [Theory]
+    [InlineData("en")]
+    [InlineData("ar")]
+    public async Task Every_transfer_reject_reason_has_its_own_localized_message(string culture)
+    {
+        Culture.Current = new CultureInfo(culture);
+        await OpenAsync();
+        await ChooseTargetAsync();
+        var seen = new HashSet<string>();
+        foreach (var reason in TransferRejectReasons.All)
+        {
+            _enrollment.Failure = new ApiProblemException(400, "transfer_invalid", "server detail", null, reason: reason);
+            await Dialogs.Find("[data-testid=transfer-preview]").ClickAsync(new());
+            var text = (await Dialogs.WaitForElementAsync("[data-testid=dialog-error]", Wait)).TextContent.Trim();
+
+            Assert.True(seen.Add(text), $"{reason} reuses another reason's text");
+            Assert.DoesNotContain("server detail", text); // the specific message replaces the generic one + detail
+            Assert.DoesNotContain("TransferReject_", text); // never a raw resource key
+            ChooseReasonAgain();
+        }
+        Assert.Equal(TransferRejectReasons.All.Count, seen.Count);
+    }
+
+    // Typing again invalidates the preview state so the next click previews again.
+    private void ChooseReasonAgain() => Dialogs.Find("textarea[data-testid=transfer-reason]").Input("Parent request");
+
+    [Fact]
+    public async Task Unknown_reason_falls_back_to_the_generic_message_and_detail()
+    {
+        Culture.Current = new CultureInfo("en");
+        await OpenAsync();
+        await ChooseTargetAsync();
+        _enrollment.Failure = new ApiProblemException(400, "transfer_invalid", "Something new.", null, reason: "brand_new_reason");
+
+        await Dialogs.Find("[data-testid=transfer-preview]").ClickAsync(new());
+
+        var error = (await Dialogs.WaitForElementAsync("[data-testid=dialog-error]", Wait)).TextContent;
+        Assert.Contains("The student cannot be transferred to this class.", error);
+        Assert.Contains("Something new.", error);
+    }
+
     [Fact]
     public async Task Transfer_dialog_previews_before_confirm()
     {

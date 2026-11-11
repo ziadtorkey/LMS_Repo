@@ -853,4 +853,10 @@
   <data name="ExceptionStatus_Approved" xml:space="preserve"><value>تمت الموافقة</value></data>
   <data name="ExceptionStatus_Rejected" xml:space="preserve"><value>مرفوض</value></data>
   <data name="ExceptionStatus_Cancelled" xml:space="preserve"><value>ملغي</value></data>
+  <data name="TransferReject_not_placed" xml:space="preserve"><value>الطالب غير موضوع في فصل، فلا يوجد ما يُنقل منه.</value></data>
+  <data name="TransferReject_different_year" xml:space="preserve"><value>الفصل الجديد تابع لعام دراسي مختلف.</value></data>
+  <data name="TransferReject_same_class" xml:space="preserve"><value>الطالب موجود بالفعل في هذا الفصل.</value></data>
+  <data name="TransferReject_date_outside_year" xml:space="preserve"><value>تاريخ النقل خارج العام الدراسي.</value></data>
+  <data name="TransferReject_date_before_placement" xml:space="preserve"><value>تاريخ النقل قبل انضمام الطالب إلى فصله الحالي.</value></data>
+  <data name="TransferReject_different_level_type" xml:space="preserve"><value>النقل إلى وحدة أخرى يتطلب فصلًا من نفس نوع المستوى.</value></data>
 </root>
