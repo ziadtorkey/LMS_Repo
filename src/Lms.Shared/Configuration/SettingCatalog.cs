@@ -15,6 +15,7 @@ public static class SettingCategories
     public const string General = "General";
     public const string Files = "Files";
     public const string Features = "Features";
+    public const string People = "People";
 }
 
 /// <summary>
@@ -44,6 +45,7 @@ public static class SettingCatalog
         new(FeatureFlags.ScormContent.Name, SettingValueKinds.Bool, SettingCategories.Features, "false"),
         new(FeatureFlags.Messaging.Name, SettingValueKinds.Bool, SettingCategories.Features, "false"),
         new(FeatureFlags.GuardianPortal.Name, SettingValueKinds.Bool, SettingCategories.Features, "false"),
+        new(SettingKeys.StaffExpiryNoticeDays.Name, SettingValueKinds.Int, SettingCategories.People, "14", Min: 0, Max: 90),
     ];
 
     /// <summary>The definition with this exact (case-sensitive) name, or null.</summary>

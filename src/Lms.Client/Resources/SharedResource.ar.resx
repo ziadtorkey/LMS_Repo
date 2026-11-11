@@ -363,4 +363,48 @@
   <data name="NotifEvent_Access_RoleAssigned" xml:space="preserve"><value>تعيين دور</value></data>
   <data name="NotifEvent_Access_RoleRemoved" xml:space="preserve"><value>إزالة دور</value></data>
   <data name="NotifEvent_Organization_PolicyChanged" xml:space="preserve"><value>تغيير سياسة</value></data>
+  <data name="Error_duplicate_person" xml:space="preserve"><value>يوجد شخص بنفس البريد الإلكتروني أو الجوال أو رقم الهوية في هذه الجهة.</value></data>
+  <data name="Error_person_not_found" xml:space="preserve"><value>لم يتم العثور على الشخص.</value></data>
+  <data name="Error_invalid_role_kind" xml:space="preserve"><value>لا يمكن منح هذا الدور لهذا النوع من الأشخاص.</value></data>
+  <data name="Error_cannot_change_own_status" xml:space="preserve"><value>لا يمكنك تغيير حالتك بنفسك.</value></data>
+  <data name="Error_already_activated" xml:space="preserve"><value>هذا الحساب مفعّل بالفعل.</value></data>
+  <data name="Error_invalid_expiry" xml:space="preserve"><value>تاريخ انتهاء الصلاحية غير صالح.</value></data>
+  <data name="Error_import_file_invalid" xml:space="preserve"><value>الملف ليس ملف Excel (‎.xlsx) صالحًا بحجم لا يتجاوز 10 ميجابايت.</value></data>
+  <data name="Error_import_too_many_rows" xml:space="preserve"><value>يحتوي الملف على أكثر من 5,000 صف بيانات.</value></data>
+  <data name="Error_import_not_valid" xml:space="preserve"><value>لا يمكن اعتماد الاستيراد إلا إذا كان صالحًا.</value></data>
+  <data name="Error_import_in_progress" xml:space="preserve"><value>لا تزال عملية الاستيراد هذه قيد المعالجة.</value></data>
+  <data name="Error_import_already_committed" xml:space="preserve"><value>تم اعتماد هذا الاستيراد مسبقًا.</value></data>
+  <data name="Error_provider_slug_taken" xml:space="preserve"><value>يستخدم مزود دخول آخر هذا الاسم المختصر.</value></data>
+  <data name="Error_provider_unreachable" xml:space="preserve"><value>تعذّر الوصول إلى مزود الدخول.</value></data>
+  <data name="Error_external_account_not_found" xml:space="preserve"><value>لا يوجد حساب في هذه الجهة يطابق حساب الدخول الخاص بجهتك.</value></data>
+  <data name="Error_external_account_ambiguous" xml:space="preserve"><value>يطابق أكثر من حساب حساب الدخول الخاص بجهتك. تواصل مع مسؤول النظام.</value></data>
+  <data name="PermModule_Staff" xml:space="preserve"><value>الموظفون</value></data>
+  <data name="Perm_Staff_View" xml:space="preserve"><value>عرض الموظفين</value></data>
+  <data name="Perm_Staff_Create" xml:space="preserve"><value>إنشاء الموظفين</value></data>
+  <data name="Perm_Staff_Update" xml:space="preserve"><value>تعديل الموظفين</value></data>
+  <data name="Perm_Staff_Delete" xml:space="preserve"><value>حذف الموظفين</value></data>
+  <data name="Perm_Staff_Import" xml:space="preserve"><value>استيراد الموظفين</value></data>
+  <data name="PermModule_IdentityProviders" xml:space="preserve"><value>مزودو الدخول</value></data>
+  <data name="Perm_IdentityProviders_View" xml:space="preserve"><value>عرض مزودي الدخول</value></data>
+  <data name="Perm_IdentityProviders_Manage" xml:space="preserve"><value>إدارة مزودي الدخول</value></data>
+  <data name="Policy_CreateStaff" xml:space="preserve"><value>منع إنشاء الموظفين واستيرادهم</value></data>
+  <data name="Policy_CreateTeachers" xml:space="preserve"><value>منع تعيين دور المعلم</value></data>
+  <data name="Policy_CreateAdmins" xml:space="preserve"><value>منع تعيين الأدوار الإدارية</value></data>
+  <data name="SettingCategory_People" xml:space="preserve"><value>الأشخاص</value></data>
+  <data name="Setting_Staff_ExpiryNoticeDays" xml:space="preserve"><value>التنبيه قبل انتهاء صلاحية الموظف (بالأيام)</value></data>
+  <data name="AuditEntity_StaffProfile" xml:space="preserve"><value>موظف</value></data>
+  <data name="AuditEntity_StudentProfile" xml:space="preserve"><value>طالب</value></data>
+  <data name="AuditEntity_GuardianProfile" xml:space="preserve"><value>ولي أمر</value></data>
+  <data name="AuditEntity_StudentGuardian" xml:space="preserve"><value>ربط الطالب بولي الأمر</value></data>
+  <data name="AuditEntity_ImportBatch" xml:space="preserve"><value>عملية استيراد</value></data>
+  <data name="AuditEntity_IdentityProviderConfig" xml:space="preserve"><value>مزود الدخول</value></data>
+  <data name="AuditEvent_ExternalLoginLinked" xml:space="preserve"><value>ربط حساب الجهة</value></data>
+  <data name="AuditEvent_ExternalLoginSucceeded" xml:space="preserve"><value>دخول ناجح بحساب الجهة</value></data>
+  <data name="AuditEvent_ExternalLoginFailed" xml:space="preserve"><value>دخول فاشل بحساب الجهة</value></data>
+  <data name="Notif_Staff_ExpiringSoon" xml:space="preserve"><value>تنتهي صلاحية وصول {StaffName} في {ExpiresOn}.</value></data>
+  <data name="Notif_Staff_Expired" xml:space="preserve"><value>انتهت صلاحية وصول {StaffName} في {ExpiresOn}.</value></data>
+  <data name="Notif_Imports_Completed" xml:space="preserve"><value>اكتمل استيراد {Kind}: {Status} ({RowCount} صف).</value></data>
+  <data name="NotifEvent_Staff_ExpiringSoon" xml:space="preserve"><value>قرب انتهاء صلاحية موظف</value></data>
+  <data name="NotifEvent_Staff_Expired" xml:space="preserve"><value>انتهاء صلاحية موظف</value></data>
+  <data name="NotifEvent_Imports_Completed" xml:space="preserve"><value>اكتمال الاستيراد</value></data>
 </root>
