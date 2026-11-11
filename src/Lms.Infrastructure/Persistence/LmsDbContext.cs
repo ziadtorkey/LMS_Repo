@@ -6,6 +6,7 @@ using Lms.Domain.Files;
 using Lms.Domain.Configuration;
 using Lms.Domain.Organizations;
 using Lms.Domain.Identity;
+using Lms.Domain.People;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -33,6 +34,11 @@ public sealed class LmsDbContext(DbContextOptions<LmsDbContext> options, ICurren
     public DbSet<OrgUnitSetting> OrgUnitSettings => Set<OrgUnitSetting>();
     public DbSet<OrgUnitPolicy> OrgUnitPolicies => Set<OrgUnitPolicy>();
     public DbSet<StoredFile> StoredFiles => Set<StoredFile>();
+    public DbSet<StaffProfile> StaffProfiles => Set<StaffProfile>();
+    public DbSet<StudentProfile> StudentProfiles => Set<StudentProfile>();
+    public DbSet<GuardianProfile> GuardianProfiles => Set<GuardianProfile>();
+    public DbSet<StudentGuardian> StudentGuardians => Set<StudentGuardian>();
+    public DbSet<PersonStatusChange> PersonStatusChanges => Set<PersonStatusChange>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {

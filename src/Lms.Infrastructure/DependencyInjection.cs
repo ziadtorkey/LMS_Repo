@@ -8,6 +8,7 @@ using Lms.Infrastructure.Identity;
 using Lms.Infrastructure.Configuration;
 using Lms.Infrastructure.Organizations;
 using Lms.Infrastructure.Notifications;
+using Lms.Infrastructure.People;
 using Lms.Infrastructure.Persistence;
 using Lms.Infrastructure.Seeding;
 using Microsoft.Extensions.Configuration;
@@ -32,6 +33,7 @@ public static class DependencyInjection
         services.AddEmail(configuration);
         services.AddSettingsAndPolicies();
         services.AddAcademicYears();
+        services.AddPeople();
         return services;
     }
 }
