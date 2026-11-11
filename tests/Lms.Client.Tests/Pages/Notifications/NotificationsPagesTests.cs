@@ -57,7 +57,7 @@ public sealed class NotificationsPagesTests : ClientTestContext
 
         await cut.Find("[data-testid=notif-mark-all]").ClickAsync(new());
 
-        snackbars.WaitForAssertion(() => Assert.Contains("Could not load data", snackbars.Markup));
+        snackbars.WaitForAssertion(() => Assert.Contains("Something went wrong", snackbars.Markup));
     }
 
     [Fact]

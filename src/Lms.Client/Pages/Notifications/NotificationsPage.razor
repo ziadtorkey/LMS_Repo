@@ -63,7 +63,7 @@
 
     private async Task MarkAllAsync()
     {
-        if (await ActionCalls.TryAsync(() => Api.MarkAllReadAsync(), Navigation, L, m => Snackbar.Add(m, Severity.Error)))
+        if (await ApiCalls.RunAsync(() => Api.MarkAllReadAsync(), Navigation, L, m => Snackbar.Add(m, Severity.Error)))
             await ReloadAsync();
     }
 
@@ -71,7 +71,7 @@
     {
         if (!n.IsRead)
         {
-            if (!await ActionCalls.TryAsync(() => Api.MarkReadAsync(n.Id), Navigation, L, m => Snackbar.Add(m, Severity.Error))) return;
+            if (!await ApiCalls.RunAsync(() => Api.MarkReadAsync(n.Id), Navigation, L, m => Snackbar.Add(m, Severity.Error))) return;
             await ReloadAsync();
         }
         if (!string.IsNullOrEmpty(n.DeepLink)) Navigation.NavigateTo(n.DeepLink.TrimStart('/'));

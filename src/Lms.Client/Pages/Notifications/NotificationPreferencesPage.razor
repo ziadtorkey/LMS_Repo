@@ -90,7 +90,7 @@ else
     private async Task SaveAsync()
     {
         _saving = true; _error = null;
-        var saved = await ActionCalls.TryAsync(() => Api.SavePreferencesAsync(new SetNotificationPreferencesRequest(_prefs)),
+        var saved = await ApiCalls.RunAsync(() => Api.SavePreferencesAsync(new SetNotificationPreferencesRequest(_prefs)),
             Navigation, L, m => _error = m);
         _saving = false;
         if (saved) Snackbar.Add(L["Common_Saved"], Severity.Success);
