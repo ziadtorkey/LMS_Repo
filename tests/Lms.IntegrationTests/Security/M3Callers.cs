@@ -101,7 +101,16 @@ public sealed class M3Callers
         var tree = callers.A;
         var school1 = tree.School1;
 
-        var year = await AcademicTestKit.AddYearAsync(factory, tree.Root);
+        // A year of its own in dates no probe row uses (the rows add overlapping 2041 years at the root; two overlapping
+        // years would make the class rows answer year_not_effective).
+        AcademicYear year;
+        await using (var yearDb = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            year = new AcademicYear(tree.Root, "عام M3", "Year M3", new DateOnly(2061, 9, 1), new DateOnly(2062, 6, 30));
+            yearDb.Add(year);
+            await yearDb.SaveChangesAsync();
+        }
+
         var courseX = await AcademicTestKit.AddCourseAsync(factory, school1);
         var courseY = await AcademicTestKit.AddCourseAsync(factory, school1);
         await AcademicTestKit.AllocateAsync(factory, courseX, school1);
