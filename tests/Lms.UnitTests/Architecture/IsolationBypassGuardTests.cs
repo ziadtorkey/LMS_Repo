@@ -23,7 +23,9 @@ public sealed class IsolationBypassGuardTests
             "settings on ancestors; restore a soft-deleted setting row (M0 Task 6, #25)",
         ["src/Lms.Infrastructure/Configuration/EffectiveSettingsReader.cs"] =
             "effective settings and locks inherited from ancestors above the caller's scope (M1 Task 14, #100)",
-        ["src/Lms.Infrastructure/Organizations/OrgPolicyReader.cs"] =`n            "policies set on ancestors above the caller's scope, to show blocked permissions in the org tree (M1 Task 9, #99)",`n        ["src/Lms.Infrastructure/Notifications/NotificationRecipientResolver.cs"] =
+        ["src/Lms.Infrastructure/Organizations/OrgPolicyReader.cs"] =
+            "policies set on ancestors above the caller's scope, to show blocked permissions in the org tree (M1 Task 9, #99)",
+        ["src/Lms.Infrastructure/Notifications/NotificationRecipientResolver.cs"] =
             "recipients at or below the event unit, raised by someone above or beside them (M1 Task 10, #90)",
     };
 
