@@ -18,6 +18,9 @@
         {
             <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.UploadFile" Href="students/import"
                        data-testid="student-import">@L["Import_Button"]</MudButton>
+        }
+        @if (PermState.Has(Permissions.Enrollment.Import))
+        {
             <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.GroupAdd" Href="classes/import"
                        data-testid="class-import">@L["ClassImport_Button"]</MudButton>
         }

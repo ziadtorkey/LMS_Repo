@@ -53,7 +53,7 @@ public sealed class StudentImportPagesTests : StudentsTestContext
     }
 
     [Fact]
-    public async Task Pages_are_forbidden_without_Students_Import()
+    public async Task Pages_are_forbidden_without_their_import_permission()
     {
         Culture.Current = new CultureInfo("en");
         await GrantAsync(Permissions.Students.View);
@@ -66,6 +66,27 @@ public sealed class StudentImportPagesTests : StudentsTestContext
         classes.WaitForAssertion(() => Assert.Contains("You do not have permission", classes.Markup));
         Assert.Empty(students.FindAll("[data-testid=import-wizard]"));
         Assert.Empty(classes.FindAll("[data-testid=import-wizard]"));
+    }
+
+    [Fact]
+    public async Task Each_import_page_follows_its_own_permission()
+    {
+        Culture.Current = new CultureInfo("en");
+        RenderProviders();
+
+        // Students.Import alone: the student import opens, the class placement import does not.
+        await GrantAsync(Permissions.Students.Import);
+        var students = Render<StudentImportPage>();
+        var classes = Render<ClassImportPage>();
+        students.WaitForElement("[data-testid=import-wizard]");
+        classes.WaitForAssertion(() => Assert.Contains("You do not have permission", classes.Markup));
+
+        // Enrollment.Import alone: the other way round.
+        await GrantAsync(Permissions.Enrollment.Import);
+        var students2 = Render<StudentImportPage>();
+        var classes2 = Render<ClassImportPage>();
+        classes2.WaitForElement("[data-testid=import-wizard]");
+        students2.WaitForAssertion(() => Assert.Contains("You do not have permission", students2.Markup));
     }
 
     [Fact]
@@ -106,7 +127,7 @@ public sealed class StudentImportPagesTests : StudentsTestContext
     public async Task Class_import_page_uses_class_students_kind_with_the_current_year_banner()
     {
         Culture.Current = new CultureInfo("en");
-        await GrantAsync(Permissions.Students.Import, Permissions.AcademicYears.View);
+        await GrantAsync(Permissions.Enrollment.Import, Permissions.AcademicYears.View);
         RenderProviders();
         var cut = Render<ClassImportPage>();
         cut.WaitForElement("[data-testid=import-wizard]");
@@ -156,25 +177,31 @@ public sealed class StudentImportPagesTests : StudentsTestContext
     }
 
     [Fact]
-    public async Task Student_list_shows_import_buttons_only_with_Students_Import()
+    public async Task Student_list_import_buttons_follow_their_own_permission()
     {
         await GrantAsync(Permissions.Students.View);
         RenderProviders();
         var plain = Render<StudentListPage>();
         plain.WaitForElement("[data-testid=students-title]");
         Assert.Empty(plain.FindAll("[data-testid=student-import]"));
+        Assert.Empty(plain.FindAll("[data-testid=class-import]"));
 
         await GrantAsync(Permissions.Students.View, Permissions.Students.Import);
-        var admin = Render<StudentListPage>();
-        Assert.EndsWith("students/import", admin.WaitForElement("[data-testid=student-import]").GetAttribute("href"));
-        Assert.EndsWith("classes/import", admin.Find("[data-testid=class-import]").GetAttribute("href"));
+        var studentsOnly = Render<StudentListPage>();
+        Assert.EndsWith("students/import", studentsOnly.WaitForElement("[data-testid=student-import]").GetAttribute("href"));
+        Assert.Empty(studentsOnly.FindAll("[data-testid=class-import]"));
+
+        await GrantAsync(Permissions.Students.View, Permissions.Enrollment.Import);
+        var classesOnly = Render<StudentListPage>();
+        Assert.EndsWith("classes/import", classesOnly.WaitForElement("[data-testid=class-import]").GetAttribute("href"));
+        Assert.Empty(classesOnly.FindAll("[data-testid=student-import]"));
     }
 
     [Fact]
     public async Task Pages_render_rtl_in_arabic()
     {
         Culture.Current = new CultureInfo("ar");
-        await GrantImportAsync();
+        await GrantAsync(Permissions.Students.Import, Permissions.Enrollment.Import);
         RenderProviders();
         var students = Render<MudRTLProvider>(p => p.Add(r => r.RightToLeft, true).AddChildContent<StudentImportPage>());
         Assert.Contains("استيراد الطلاب", students.WaitForElement("[data-testid=import-wizard]").TextContent);
