@@ -41,6 +41,7 @@ internal sealed class AuditWriter(
 
         AuditEntry Entry(Guid? organizationId, Guid? assignmentId) => new(
             organizationId, actor, assignmentId, AuditAction.SecurityEvent,
-            eventName, Guid.Empty, beforeJson: null, afterJson: details, now, ipAddress);
+            eventName, Guid.Empty, beforeJson: null, afterJson: details, now, ipAddress,
+            orgUnitPath: organizationId == context.OrganizationId ? context.ScopePath : null);
     }
 }

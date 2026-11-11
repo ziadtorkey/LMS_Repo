@@ -25,6 +25,7 @@ public static class ClientServices
         services.AddSingleton<IContextStore>(sp => sp.GetRequiredService<ContextStore>());
         services.AddScoped<PermissionState>();
         services.AddScoped<IYearStore, YearStore>();
+        services.AddScoped<INotificationFeed, NotificationFeed>();
 
         if (configuration.GetValue<bool>("Lms:UseFakeApi"))
         {
@@ -33,6 +34,8 @@ public static class ClientServices
             services.AddScoped<IAccessAdminApi, FakeAccessAdminApi>();
             services.AddScoped<IUnitLookupApi, FakeUnitLookupApi>();
             services.AddScoped<IYearsApi, FakeYearsApi>();
+            services.AddScoped<INotificationsApi, FakeNotificationsApi>();
+            services.AddScoped<INotificationConnection, FakeNotificationConnection>();
             services.AddSingleton<IClientsApi, FakeClientsApi>();
             services.AddSingleton<IOrgApi, FakeOrgApi>();
             services.AddSingleton<ITemplatesApi, FakeTemplatesApi>();
@@ -53,6 +56,8 @@ public static class ClientServices
         services.AddScoped<IAccessAdminApi, AccessAdminApi>();
         services.AddScoped<IUnitLookupApi, UnitLookupApi>();
         services.AddScoped<IYearsApi, YearsApi>();
+        services.AddScoped<INotificationsApi, NotificationsApi>();
+        services.AddScoped<INotificationConnection, NotificationConnection>();
         services.AddHttpClient<ILmsApi, LmsApiClient>(c => c.BaseAddress = new Uri(baseAddress))
             .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>()
             .AddHttpMessageHandler<ForbiddenRedirectHandler>();

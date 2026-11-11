@@ -37,7 +37,7 @@ public sealed class YearSelectorTests : ClientTestContext
     [Fact]
     public async Task Selector_shows_the_selected_year_name()
     {
-        CultureInfo.CurrentUICulture = new CultureInfo("en");
+        Culture.Current = new CultureInfo("en");
         var cut = await RenderAsync(Permissions.AcademicYears.View);
 
         cut.WaitForAssertion(() => Assert.Contains("2026/2027", cut.Markup));
@@ -60,7 +60,7 @@ public sealed class YearSelectorTests : ClientTestContext
     public async Task No_years_shows_the_none_label()
     {
         YearsApi.EffectiveFailure = new HttpRequestException("offline");
-        CultureInfo.CurrentUICulture = new CultureInfo("en");
+        Culture.Current = new CultureInfo("en");
         var cut = await RenderAsync(Permissions.AcademicYears.View);
 
         Assert.Contains("No academic year", cut.WaitForElement("[data-testid=year-none]").TextContent);
@@ -69,7 +69,7 @@ public sealed class YearSelectorTests : ClientTestContext
     [Fact]
     public async Task Selector_renders_rtl_in_arabic()
     {
-        CultureInfo.CurrentUICulture = new CultureInfo("ar");
+        Culture.Current = new CultureInfo("ar");
         await GrantAsync(Permissions.AcademicYears.View);
         await Services.GetRequiredService<PermissionState>().RefreshAsync();
         Render<MudPopoverProvider>();

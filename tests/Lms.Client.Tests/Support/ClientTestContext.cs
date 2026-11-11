@@ -24,6 +24,8 @@ public abstract class ClientTestContext : BunitContext, IAsyncLifetime
     protected StubOrgApi Org { get; } = new();
     protected StubTemplatesApi Templates { get; } = new();
     protected FakeYearsApi YearsApi { get; } = new();
+    protected FakeNotificationsApi NotificationsApi { get; } = new();
+    protected FakeNotificationConnection NotificationConnection { get; } = new();
 
     /// <summary>Grants the active context these permissions (and selects a context).</summary>
     protected async Task GrantAsync(params string[] permissions)
@@ -48,6 +50,9 @@ public abstract class ClientTestContext : BunitContext, IAsyncLifetime
         Services.AddSingleton<ITemplatesApi>(Templates);
         Services.AddSingleton<IYearsApi>(YearsApi);
         Services.AddScoped<IYearStore, YearStore>();
+        Services.AddSingleton<INotificationsApi>(NotificationsApi);
+        Services.AddSingleton<INotificationConnection>(NotificationConnection);
+        Services.AddScoped<INotificationFeed, NotificationFeed>();
         AddAuthorization().SetAuthorized("tester");
     }
 }

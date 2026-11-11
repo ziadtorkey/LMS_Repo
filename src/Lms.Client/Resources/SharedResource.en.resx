@@ -321,4 +321,23 @@
   <data name="Templates_AddReplacement" xml:space="preserve"><value>Add replacement</value></data>
   <data name="Templates_Target" xml:space="preserve"><value>Create under</value></data>
   <data name="Templates_DeleteConfirm" xml:space="preserve"><value>Delete this template?</value></data>
+  <data name="Notif_Title" xml:space="preserve"><value>Notifications</value></data>
+  <data name="Notif_MarkAllRead" xml:space="preserve"><value>Mark all as read</value></data>
+  <data name="Notif_Empty" xml:space="preserve"><value>No notifications.</value></data>
+  <data name="Notif_Preferences" xml:space="preserve"><value>Notification preferences</value></data>
+  <data name="Channel_InApp" xml:space="preserve"><value>In-app</value></data>
+  <data name="Channel_Email" xml:space="preserve"><value>Email</value></data>
+  <data name="Channel_Sms" xml:space="preserve"><value>SMS</value></data>
+  <data name="Channel_Push" xml:space="preserve"><value>Push</value></data>
+  <data name="Notif_Access_RoleAssigned" xml:space="preserve"><value>You were given the role {RoleName} at {OrgUnitName}.</value></data>
+  <data name="Notif_Access_RoleRemoved" xml:space="preserve"><value>Your role {RoleName} at {OrgUnitName} was removed.</value></data>
+  <data name="Notif_Organization_PolicyChanged" xml:space="preserve"><value>A policy changed at {OrgUnitName}.</value></data>
+  <data name="Notif_Unknown" xml:space="preserve"><value>New notification</value></data>
+  <data name="Notif_Unread" xml:space="preserve"><value>Unread</value></data>
+  <data name="Notif_UnreadOnly" xml:space="preserve"><value>Unread only</value></data>
+  <data name="Notif_ViewAll" xml:space="preserve"><value>View all</value></data>
+  <data name="Notif_Message" xml:space="preserve"><value>Notification</value></data>
+  <data name="NotifEvent_Access_RoleAssigned" xml:space="preserve"><value>Role assigned</value></data>
+  <data name="NotifEvent_Access_RoleRemoved" xml:space="preserve"><value>Role removed</value></data>
+  <data name="NotifEvent_Organization_PolicyChanged" xml:space="preserve"><value>Policy changed</value></data>
 </root>
