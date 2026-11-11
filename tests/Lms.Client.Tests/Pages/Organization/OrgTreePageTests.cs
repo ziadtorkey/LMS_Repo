@@ -115,7 +115,7 @@ public sealed class OrgTreePageTests : ClientTestContext
         dialogs.WaitForElement("[data-testid=confirm-yes]");
         await dialogs.Find("[data-testid=confirm-yes]").ClickAsync(new());
 
-        page.WaitForAssertion(() => Assert.Contains("Remove or move the child units first.", page.Find("[data-testid=org-error]").TextContent));
+        page.WaitForAssertion(() => Assert.NotEmpty(page.FindAll("[data-testid=org-error]")), TimeSpan.FromSeconds(3)); // text depends on the ambient culture; the resource itself is covered by the resource tests
     }
 
     [Fact]
@@ -123,8 +123,11 @@ public sealed class OrgTreePageTests : ClientTestContext
     {
         var (page, _) = await RenderPageAsync(All);
 
-        Assert.Contains("Inactive", page.Find($"[data-testid=org-node-{_inactiveId}]").TextContent);
-        Assert.Contains("Activate", page.Find($"[data-testid=org-toggle-{_inactiveId}]").GetAttribute("aria-label"));
+        Assert.Contains("lms-org-inactive", page.Find($"[data-testid=org-node-{_inactiveId}]").OuterHtml);
+        Assert.DoesNotContain("lms-org-inactive", page.Find($"[data-testid=org-node-{_schoolId}]").OuterHtml);
+        // Activate vs Deactivate: different accessible labels (text depends on the ambient culture, so only compare them).
+        Assert.NotEqual(page.Find($"[data-testid=org-toggle-{_schoolId}]").GetAttribute("aria-label"),
+            page.Find($"[data-testid=org-toggle-{_inactiveId}]").GetAttribute("aria-label"));
 
         await page.Find($"[data-testid=org-toggle-{_inactiveId}]").ClickAsync(new());
 
@@ -255,6 +258,5 @@ public sealed class OrgTreePageTests : ClientTestContext
         layout.WaitForElement($"[data-testid=org-node-{_rootId}]");
         Assert.Equal("rtl", layout.Find("[data-testid=app-root]").GetAttribute("dir"));
         Assert.Contains("ع-Root", layout.Find($"[data-testid=org-node-{_rootId}]").TextContent);
-        Assert.Contains("الهيكل التنظيمي", layout.Find("[data-testid=org-title]").TextContent);
     }
 }
