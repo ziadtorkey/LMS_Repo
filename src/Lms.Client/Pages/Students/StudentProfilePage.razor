@@ -68,7 +68,7 @@ else
                         <MudText>@L["Student_DateOfBirth"]: <span dir="ltr">@s.DateOfBirth.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)</span></MudText>
                         <MudText>@L["Student_Gender"]: @L[$"Gender_{s.Gender}"]</MudText>
                         <MudText>@L["Student_Religion"]: @L[$"Religion_{_detail.Religion}"]</MudText>
-                        <MudText>@L["Student_Nationality"]: <span dir="ltr">@_detail.Nationality</span></MudText>
+                        <MudText data-testid="profile-nationality">@L["Student_Nationality"]: @NationalityName(_detail.Nationality)</MudText>
                         <MudText data-testid="profile-national-id">@L["Student_NationalId"]: <span dir="ltr">@_detail.NationalId</span></MudText>
                         <MudText data-testid="profile-mobile">@L["Student_Mobile"]: <span dir="ltr">@_detail.Mobile</span></MudText>
                         <MudText data-testid="profile-email">@L["Student_Email"]: <span dir="ltr">@_detail.Email</span></MudText>
@@ -118,6 +118,10 @@ else
         { MustChangePassword: true } => L["Student_MustChangePassword"],
         _ => L["Student_AccountActive"],
     };
+
+    /// <summary>The localized country name; an unknown code is shown as it is.</summary>
+    private string NationalityName(string code) =>
+        Nationalities.Find(code) is { } n ? Culture.Pick(n.NameAr, n.NameEn) : code;
 
     private string DisplayName => _detail is null ? "" : Culture.Pick(_detail.Summary.NameAr, _detail.Summary.NameEn);
 
