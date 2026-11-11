@@ -11,10 +11,14 @@ public sealed class IsolationBypassGuardTests
     /// <summary>Repository-relative files allowed to bypass the global query filters, with the reason.</summary>
     private static readonly IReadOnlyDictionary<string, string> AllowList = new Dictionary<string, string>
     {
+        ["src/Lms.Api/Features/Staff/StaffAssignments.cs"] =
+            "deleting or deactivating a person reaches their shares in units outside the acting admin's scope; own client, live rows, Staff-kind roles (M2 Task 11, #163)",
         ["src/Lms.Api/Features/Templates/TemplateMapper.cs"] =
             "owner unit name of a Shared template that sits outside the caller's scope, restricted to the client (M1 Task 17, #52)",
         ["src/Lms.Api/Features/Staff/ShareStaffHandler.cs"] =
             "removing a share: the person's home may lie outside the scope of the admin of the shared-to unit; own client, live rows, assignment lookup stays filtered (M2 Task 16, #164)",
+        ["src/Lms.Api/Features/Guardians/GuardianEndpoints.cs"] =
+            "match endpoint: a bare children count of the guardian in the caller's own client, no student or unit leaves the query (M3 Task 19, #227)",
         ["src/Lms.Infrastructure/Organizations/OrgTree.cs"] =
             "client root and ancestors lie above a unit-level caller's scope (M1 Task 5)",
         ["src/Lms.Infrastructure/Access/ValidAssignmentQuery.cs"] =
