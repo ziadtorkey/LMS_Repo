@@ -18,7 +18,8 @@ public static class ExternalIdentityServiceCollectionExtensions
     /// </summary>
     public static IServiceCollection AddExternalIdentity(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddSingleton(new OutboundGuard(configuration.GetValue<bool>("ExternalIdentity:AllowPrivateNetwork")));
+        services.AddSingleton(sp => OutboundGuard.Create(
+            sp.GetRequiredService<IHostEnvironment>().IsDevelopment(), configuration.GetValue<bool>(OutboundGuard.ConfigKey)));
         services.AddDataProtection().SetApplicationName("Lms");
         services.AddOptions<KeyManagementOptions>()
             .Configure<IServiceScopeFactory>((options, scopes) => options.XmlRepository = new EfXmlRepository(scopes));
@@ -32,10 +33,12 @@ public static class ExternalIdentityServiceCollectionExtensions
     }
 
     /// <summary>Registers the schemes of the stored providers when the host starts.</summary>
-    private sealed class ExternalSchemeStartup(ExternalSchemeRegistry registry, ILogger<ExternalSchemeStartup> logger) : IHostedService
+    private sealed class ExternalSchemeStartup(ExternalSchemeRegistry registry, OutboundGuard guard, ILogger<ExternalSchemeStartup> logger) : IHostedService
     {
         public async Task StartAsync(CancellationToken cancellationToken)
         {
+            // Resolving the guard here makes a forbidden AllowPrivateNetwork setting stop the host at startup.
+            logger.LogDebug("Outbound guard active (private network allowed: {Allowed})", guard.AllowPrivateNetwork);
             try
             {
                 await registry.SyncAsync(cancellationToken);

@@ -25,6 +25,7 @@ public sealed class ExternalOidcOptionsSetup(ExternalSchemeRegistry registry, Ou
         options.MapInboundClaims = false;
         options.SaveTokens = false;
         options.BackchannelHttpHandler = guard.CreateHandler();
+        options.BackchannelTimeout = OutboundGuard.Timeout;
         options.RequireHttpsMetadata = provider.Authority.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
         options.Scope.Clear();
         foreach (var scope in provider.Scopes.Split(' ', StringSplitOptions.RemoveEmptyEntries))

@@ -36,4 +36,27 @@ public sealed class AddressGuardTests
     [InlineData("::ffff:8.8.8.8")]
     public void Public_addresses_are_allowed(string address) =>
         Assert.False(AddressGuard.IsBlocked(IPAddress.Parse(address)));
+
+    [Fact]
+    public void Private_network_switch_outside_Development_fails_fast() =>
+        Assert.Throws<InvalidOperationException>(() => OutboundGuard.Create(isDevelopment: false, allowPrivateNetworkSetting: true));
+
+    [Fact]
+    public void Private_network_switch_is_honoured_only_in_Development()
+    {
+        Assert.True(OutboundGuard.Create(isDevelopment: true, allowPrivateNetworkSetting: true).AllowPrivateNetwork);
+        Assert.False(OutboundGuard.Create(isDevelopment: true, allowPrivateNetworkSetting: false).AllowPrivateNetwork);
+        Assert.False(OutboundGuard.Create(isDevelopment: false, allowPrivateNetworkSetting: false).AllowPrivateNetwork);
+    }
+
+    [Fact]
+    public void Handler_never_follows_redirects_or_uses_a_proxy_and_has_a_short_connect_timeout()
+    {
+        using var handler = OutboundGuard.Create(false, false).CreateHandler();
+
+        Assert.False(handler.AllowAutoRedirect);
+        Assert.False(handler.UseProxy);
+        Assert.Equal(TimeSpan.FromSeconds(5), handler.ConnectTimeout);
+        Assert.NotNull(handler.ConnectCallback);
+    }
 }

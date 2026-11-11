@@ -44,16 +44,33 @@ public sealed class BlockedAddressException() : IOException("authority_not_allow
 /// the host is resolved here and refused when any of its addresses is internal. The connection then goes to the address that
 /// was checked, so a second DNS answer cannot swap it.
 /// </summary>
-public sealed class OutboundGuard(bool allowPrivateNetwork)
+public sealed class OutboundGuard
 {
-    public bool AllowPrivateNetwork { get; } = allowPrivateNetwork;
+    public const string ConfigKey = "ExternalIdentity:AllowPrivateNetwork";
+
+    public static readonly TimeSpan Timeout = TimeSpan.FromSeconds(5);
+
+    private OutboundGuard(bool allowPrivateNetwork) => AllowPrivateNetwork = allowPrivateNetwork;
+
+    public bool AllowPrivateNetwork { get; }
+
+    /// <summary>
+    /// The private-network switch exists only so a developer can run a provider on localhost. Turned on anywhere else it is
+    /// a misconfiguration that would reopen the SSRF hole, so the host refuses to start instead of silently honouring it.
+    /// </summary>
+    public static OutboundGuard Create(bool isDevelopment, bool allowPrivateNetworkSetting) =>
+        allowPrivateNetworkSetting && !isDevelopment
+            ? throw new InvalidOperationException($"{ConfigKey} may only be enabled in the Development environment.")
+            : new OutboundGuard(allowPrivateNetworkSetting);
 
     public SocketsHttpHandler CreateHandler()
     {
         var handler = new SocketsHttpHandler
         {
             AllowAutoRedirect = false,
-            ConnectTimeout = TimeSpan.FromSeconds(5),
+            ConnectTimeout = Timeout,
+            // A proxy would make the ConnectCallback see only the proxy, leaving the real target unchecked.
+            UseProxy = false,
         };
 
         if (!AllowPrivateNetwork)
