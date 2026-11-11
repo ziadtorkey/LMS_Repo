@@ -1,5 +1,6 @@
 using Lms.Api.Infrastructure;
 using Lms.Domain.Abstractions;
+using Lms.Domain.Access;
 using Lms.Domain.Classes;
 using Lms.Domain.Enrollment;
 using Lms.Domain.People;
@@ -75,7 +76,7 @@ public static class ClassStudentEndpoints
     }
 
     private static async Task<IResult> ListAsync(
-        Guid id, HttpContext http, LmsDbContext db, EnrollmentRelationship relationship, EnrollmentQueries queries,
+        Guid id, HttpContext http, LmsDbContext db, IRelationshipScope scope, EnrollmentQueries queries,
         CancellationToken ct)
     {
         var cls = await db.Set<Class>().FirstOrDefaultAsync(c => c.Id == id, ct);
@@ -91,8 +92,7 @@ public static class ClassStudentEndpoints
         }
 
         // A teacher sees the students of a class through a class course they teach or as its homeroom teacher (D42).
-        if (await relationship.RestrictsAsync(Permissions.Classes.View, ct)
-            && !await relationship.IsTeachingOrHomeroomAsync(id, ct))
+        if (!(await scope.ForAsync(Permissions.Classes.View, ct)).AllowsClass(id))
         {
             return ApiProblems.NotFound();
         }

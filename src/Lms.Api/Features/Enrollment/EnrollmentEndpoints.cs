@@ -1,5 +1,6 @@
 using Lms.Api.Infrastructure;
 using Lms.Domain.Abstractions;
+using Lms.Domain.Access;
 using Lms.Domain.Classes;
 using Lms.Domain.Enrollment;
 using Lms.Domain.People;
@@ -79,7 +80,7 @@ public static class EnrollmentEndpoints
     }
 
     private static async Task<IResult> ListOfClassCourseAsync(
-        Guid id, HttpContext http, LmsDbContext db, EnrollmentRelationship relationship, EnrollmentQueries queries,
+        Guid id, HttpContext http, LmsDbContext db, IRelationshipScope scope, EnrollmentQueries queries,
         CancellationToken ct, string? status = EnrollmentStatuses.Active, int page = 1, int pageSize = Paging.DefaultPageSize)
     {
         var classCourse = await db.Set<ClassCourse>().FirstOrDefaultAsync(c => c.Id == id, ct);
@@ -94,8 +95,7 @@ public static class EnrollmentEndpoints
             return access.Problem;
         }
 
-        if (await relationship.RestrictsAsync(Permissions.Enrollment.View, ct)
-            && !await relationship.TeachingClassCourses().AnyAsync(c => c.Id == id, ct))
+        if (!(await scope.ForAsync(Permissions.Enrollment.View, ct)).AllowsClassCourse(id))
         {
             return ApiProblems.NotFound(); // a teacher cannot tell another teacher's class course from a missing one
         }
@@ -137,7 +137,7 @@ public static class EnrollmentEndpoints
     }
 
     private static async Task<IResult> ListOfStudentAsync(
-        Guid id, HttpContext http, LmsDbContext db, EnrollmentRelationship relationship, EnrollmentQueries queries,
+        Guid id, HttpContext http, LmsDbContext db, IRelationshipScope scope, EnrollmentQueries queries,
         CancellationToken ct, string? status = null, int page = 1, int pageSize = Paging.DefaultPageSize)
     {
         var student = await db.Set<StudentProfile>().FirstOrDefaultAsync(s => s.Id == id, ct);
@@ -153,10 +153,11 @@ public static class EnrollmentEndpoints
         }
 
         var enrollments = db.Set<CourseEnrollment>().Where(e => e.StudentId == id);
-        if (await relationship.RestrictsAsync(Permissions.Enrollment.View, ct))
+        var filter = await scope.ForAsync(Permissions.Enrollment.View, ct);
+        if (!filter.IsUnrestricted)
         {
             // A teacher sees a student's enrollments only in their own class courses; a student outside them is not found.
-            var own = relationship.TeachingClassCourses().Select(c => c.Id);
+            var own = filter.ClassCourseIds.ToList();
             enrollments = enrollments.Where(e => own.Contains(e.ClassCourseId));
             if (!await enrollments.AnyAsync(ct))
             {
@@ -168,7 +169,7 @@ public static class EnrollmentEndpoints
     }
 
     private static async Task<IResult> QueryAsync(
-        [AsParameters] EnrollmentQuery query, LmsDbContext db, EnrollmentRelationship relationship, EnrollmentQueries queries,
+        [AsParameters] EnrollmentQuery query, LmsDbContext db, IRelationshipScope scope, EnrollmentQueries queries,
         CancellationToken ct)
     {
         IQueryable<CourseEnrollment> enrollments = db.Set<CourseEnrollment>();
@@ -182,9 +183,10 @@ public static class EnrollmentEndpoints
             enrollments = enrollments.Where(e => e.ClassCourseId == classCourseId);
         }
 
-        if (await relationship.RestrictsAsync(Permissions.Enrollment.View, ct))
+        var filter = await scope.ForAsync(Permissions.Enrollment.View, ct);
+        if (!filter.IsUnrestricted)
         {
-            var own = relationship.TeachingClassCourses().Select(c => c.Id);
+            var own = filter.ClassCourseIds.ToList();
             enrollments = enrollments.Where(e => own.Contains(e.ClassCourseId));
         }
 
