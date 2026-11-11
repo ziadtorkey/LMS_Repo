@@ -127,6 +127,42 @@ public sealed class BuiltInRoleReconcilerTests(LmsApiFactory factory)
     }
 
     [Fact]
+    public async Task Reconcile_adds_only_the_M3_defaults_to_a_version_2_client()
+    {
+        // A client provisioned under M2 (defaults version 2): no M3 permissions, and an admin removed an M2 default.
+        var tree = await AccessTestData.SeedAsync(factory, "RC8");
+        var introducedInM3 = BuiltInRoles.All.SelectMany(r => r.DefaultPermissions)
+            .Where(p => BuiltInRoleDefaults.IntroducedIn(p) == 3).ToHashSet();
+        Assert.NotEmpty(introducedInM3);
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            var admin = tree.Roles[BuiltInRoles.OrgAdmin].Id;
+            db.RolePermissions.RemoveRange(await db.RolePermissions
+                .Where(p => p.OrganizationId == tree.Org.Id
+                    && (introducedInM3.Contains(p.Permission) || (p.RoleId == admin && p.Permission == Permissions.Staff.Import)))
+                .ToListAsync());
+            foreach (var role in await db.Roles.Where(r => r.OrganizationId == tree.Org.Id).ToListAsync())
+            {
+                db.Entry(role).Property(nameof(Role.DefaultsVersion)).CurrentValue = 2;
+            }
+
+            await db.SaveChangesAsync();
+        }
+
+        await ReconcileAsync();
+
+        var orgAdmin = await PermissionsOfAsync(tree, BuiltInRoles.OrgAdmin);
+        Assert.Contains(Permissions.Courses.Create, orgAdmin);
+        Assert.Contains(Permissions.Blueprints.Publish, orgAdmin);
+        Assert.DoesNotContain(Permissions.Staff.Import, orgAdmin);
+        Assert.Contains(Permissions.Blueprints.Edit, await PermissionsOfAsync(tree, BuiltInRoles.Manager));
+        Assert.Contains(Permissions.Groups.Manage, await PermissionsOfAsync(tree, BuiltInRoles.Teacher));
+        Assert.Contains(Permissions.Students.SelfEdit, await PermissionsOfAsync(tree, BuiltInRoles.Student));
+        Assert.Contains(Permissions.Students.ViewChildren, await PermissionsOfAsync(tree, BuiltInRoles.Guardian));
+        Assert.DoesNotContain(Permissions.Students.Import, await PermissionsOfAsync(tree, BuiltInRoles.Manager));
+    }
+
+    [Fact]
     public async Task Newly_provisioned_roles_are_already_at_the_current_defaults_version()
     {
         var tree = await AccessTestData.SeedAsync(factory, "RC4");
