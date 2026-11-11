@@ -82,13 +82,14 @@ public sealed class TeacherAssignmentTests(LmsApiFactory factory) : IDisposable
         var s = await _t.SetUpAsync("TA3");
         var first = await _t.EligibleTeacherAsync(s);
         var second = await _t.EligibleTeacherAsync(s);
+        var third = await _t.EligibleTeacherAsync(s);
         var firstRow = (await (await _t.AssignAsync(s, first.User.Id, from: Today.AddDays(-10))).Content.ReadFromJsonAsync<ClassCourseTeacherDto>())!;
 
         var conflict = await _t.AssignAsync(s, second.User.Id);
         var assistant = await _t.AssignAsync(s, second.User.Id, TeacherRoles.Assistant);
         var effective = Today.AddDays(1);
         var replace = await _t.Classes.SendAsync(s.W.Admin, HttpMethod.Post,
-            Routes.ClassCourseTeacherReplace(s.ClassCourse.Id, firstRow.Id), new ReplaceTeacherRequest(second.User.Id, effective));
+            Routes.ClassCourseTeacherReplace(s.ClassCourse.Id, firstRow.Id), new ReplaceTeacherRequest(third.User.Id, effective));
 
         Assert.Equal(HttpStatusCode.Conflict, conflict.StatusCode);
         Assert.Equal(ProblemCodes.primary_teacher_exists, await CodeAsync(conflict));
@@ -97,7 +98,7 @@ public sealed class TeacherAssignmentTests(LmsApiFactory factory) : IDisposable
         var history = await _t.TeachersAsync(s, history: true);
         var old = history.Single(h => h.Id == firstRow.Id);
         Assert.Equal(effective.AddDays(-1), old.To);
-        var next = history.Single(h => h.UserId == second.User.Id && h.Role == TeacherRoles.Primary);
+        var next = history.Single(h => h.UserId == third.User.Id && h.Role == TeacherRoles.Primary);
         Assert.Equal(effective, next.From);
         Assert.Null(next.To);
         Assert.Equal(3, history.Count); // old primary, new primary, assistant
@@ -149,6 +150,7 @@ public sealed class TeacherAssignmentTests(LmsApiFactory factory) : IDisposable
         Assert.Equal(HttpStatusCode.OK, ok.StatusCode);
         Assert.Equal(Today.AddDays(-1), (await ok.Content.ReadFromJsonAsync<ClassCourseTeacherDto>())!.To);
         Assert.Equal(HttpStatusCode.Conflict, again.StatusCode);
+        Assert.Equal(ProblemCodes.assignment_ended, await CodeAsync(again));
         Assert.Empty(await _t.TeachersAsync(s));
         Assert.Single(await _t.TeachersAsync(s, history: true));
         // The primary slot is free again.
@@ -235,8 +237,15 @@ public sealed class TeacherAssignmentTests(LmsApiFactory factory) : IDisposable
 
         Assert.Equal(ProblemCodes.teacher_not_eligible, await CodeAsync(failed));
         Assert.Equal(HttpStatusCode.OK, ok.StatusCode);
-        Assert.Equal(2, (await ok.Content.ReadFromJsonAsync<List<ClassCourseTeacherDto>>())!.Count);
+        var result = (await ok.Content.ReadFromJsonAsync<BulkAssignTeacherResultDto>())!;
+        Assert.Equal(2, result.Assigned);
+        Assert.Equal(0, result.Skipped);
         Assert.Single(await _t.TeachersAsync(s, history: true));
+        var again = await _t.Classes.SendAsync(s.W.Admin, HttpMethod.Post, Routes.TeacherAssignmentsBulk,
+            new BulkAssignTeacherRequest(teacher.User.Id, TeacherRoles.Assistant, [s.ClassCourse.Id, second.Id]));
+        var repeat = (await again.Content.ReadFromJsonAsync<BulkAssignTeacherResultDto>())!;
+        Assert.Equal(0, repeat.Assigned); // open assignments already exist
+        Assert.Equal(2, repeat.Skipped);
     }
 
     [Fact]
@@ -292,5 +301,62 @@ public sealed class TeacherAssignmentTests(LmsApiFactory factory) : IDisposable
             new AssignTeacherRequest(teacher.User.Id, TeacherRoles.Primary, null))).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await _t.Classes.SendAsync(other.Admin, HttpMethod.Post, Routes.ClassCourseTeacherEnd(s.ClassCourse.Id, row.Id),
             new EndTeacherRequest(Today))).StatusCode);
+    }
+
+    [Fact]
+    public async Task A_teacher_with_an_open_assignment_cannot_be_assigned_again_even_with_another_role()
+    {
+        var s = await _t.SetUpAsync("TA12");
+        var teacher = await _t.EligibleTeacherAsync(s);
+        var other = await _t.EligibleTeacherAsync(s);
+        var primary = (await (await _t.AssignAsync(s, teacher.User.Id, TeacherRoles.Primary)).Content.ReadFromJsonAsync<ClassCourseTeacherDto>())!;
+
+        var asAssistant = await _t.AssignAsync(s, teacher.User.Id, TeacherRoles.Assistant);
+        var again = await _t.AssignAsync(s, teacher.User.Id, TeacherRoles.Primary);
+        var assistant = await _t.AssignAsync(s, other.User.Id, TeacherRoles.Assistant);
+        var replaceByExisting = await _t.Classes.SendAsync(s.W.Admin, HttpMethod.Post,
+            Routes.ClassCourseTeacherReplace(s.ClassCourse.Id, primary.Id), new ReplaceTeacherRequest(other.User.Id, Today.AddDays(1)));
+
+        Assert.Equal(HttpStatusCode.Conflict, asAssistant.StatusCode);
+        Assert.Equal(ProblemCodes.teacher_already_assigned, await CodeAsync(asAssistant));
+        Assert.Equal(ProblemCodes.teacher_already_assigned, await CodeAsync(again));
+        Assert.Equal(HttpStatusCode.Created, assistant.StatusCode);
+        Assert.Equal(ProblemCodes.teacher_already_assigned, await CodeAsync(replaceByExisting));
+        Assert.Equal(2, (await _t.TeachersAsync(s, history: true)).Count);
+    }
+
+    [Fact]
+    public async Task Parallel_primary_assignments_end_in_one_201_and_409s_never_500()
+    {
+        var s = await _t.SetUpAsync("TA13");
+        var teachers = new List<Guid>();
+        for (var i = 0; i < 6; i++)
+        {
+            teachers.Add((await _t.EligibleTeacherAsync(s)).User.Id);
+        }
+
+        var responses = await Task.WhenAll(teachers.Select(id => _t.AssignAsync(s, id)));
+
+        Assert.Equal(1, responses.Count(r => r.StatusCode == HttpStatusCode.Created));
+        Assert.Equal(5, responses.Count(r => r.StatusCode == HttpStatusCode.Conflict));
+        foreach (var conflict in responses.Where(r => r.StatusCode == HttpStatusCode.Conflict))
+        {
+            Assert.Equal(ProblemCodes.primary_teacher_exists, await CodeAsync(conflict));
+        }
+    }
+
+    [Fact]
+    public async Task Bulk_over_200_class_courses_is_400_too_many_items()
+    {
+        var s = await _t.SetUpAsync("TA14");
+        var teacher = await _t.EligibleTeacherAsync(s);
+
+        var response = await _t.Classes.SendAsync(s.W.Admin, HttpMethod.Post, Routes.TeacherAssignmentsBulk,
+            new BulkAssignTeacherRequest(teacher.User.Id, TeacherRoles.Assistant, Enumerable.Range(0, 201).Select(_ => Guid.NewGuid()).ToList()));
+        var empty = await _t.Classes.SendAsync(s.W.Admin, HttpMethod.Post, Routes.TeacherAssignmentsBulk,
+            new BulkAssignTeacherRequest(teacher.User.Id, TeacherRoles.Assistant, []));
+
+        Assert.Equal(ProblemCodes.too_many_items, await CodeAsync(response));
+        Assert.Equal(ProblemCodes.validation_failed, await CodeAsync(empty));
     }
 }

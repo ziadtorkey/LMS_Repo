@@ -71,7 +71,9 @@ public sealed class EligibilityTests(LmsApiFactory factory) : IDisposable
         Assert.Equal(ProblemCodes.teacher_not_in_unit, await ClassTestHostCode(otherSchool));
         Assert.Equal(ProblemCodes.course_not_available, await ClassTestHostCode(badCourse));
         Assert.Equal(HttpStatusCode.BadRequest, tooMany.StatusCode);
+        Assert.Equal(ProblemCodes.too_many_items, await ClassTestHostCode(tooMany));
         Assert.Equal(HttpStatusCode.BadRequest, empty.StatusCode);
+        Assert.Equal(ProblemCodes.validation_failed, await ClassTestHostCode(empty));
         Assert.Equal(0, (await ListAsync(w.Admin, $"?orgUnitId={w.Tree.Root.Id}")).Total);
     }
 
@@ -108,6 +110,54 @@ public sealed class EligibilityTests(LmsApiFactory factory) : IDisposable
         Assert.Equal(HttpStatusCode.Forbidden, (await _t.Classes.SendAsync(plainTeacher.Assignment, HttpMethod.Post, Routes.TeacherEligibility,
             new GrantEligibilityRequest(s.W.Tree.School1.Id, [teacher.User.Id], [s.Course.Id]))).StatusCode);
         _ = factory;
+    }
+
+    [Fact]
+    public async Task Supervisor_grants_and_deletes_eligibility_only_for_supervised_courses()
+    {
+        var w = await _t.Classes.SeedAsync("EL5", currentYear: true);
+        var supervised = await AcademicTestKit.AddCourseAsync(factory, w.Tree.School1);
+        var other = await AcademicTestKit.AddCourseAsync(factory, w.Tree.School1);
+        await AcademicTestKit.AllocateAsync(factory, supervised, w.Tree.School1);
+        await AcademicTestKit.AllocateAsync(factory, other, w.Tree.School1);
+        var teacher = await _t.TeacherAsync(w);
+        var supervisorUser = await PeopleTestKit.AddUserAsync(factory);
+        var supervisor = await AccessTestData.AssignAsync(factory, w.Tree, w.Tree.School1, BuiltInRoles.Supervisor, supervisorUser.Id);
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            db.Add(new Lms.Domain.Courses.CourseSupervisor(await db.Set<Lms.Domain.Courses.Course>().SingleAsync(c => c.Id == supervised.Id), supervisorUser.Id));
+            await db.SaveChangesAsync();
+        }
+
+        Task<HttpResponseMessage> Grant(params Guid[] courses) => _t.Classes.SendAsync(supervisor, HttpMethod.Post, Routes.TeacherEligibility,
+            new GrantEligibilityRequest(w.Tree.School1.Id, [teacher.User.Id], courses));
+        var mine = await Grant(supervised.Id);
+        var notMine = await Grant(other.Id);
+        var mixed = await Grant(supervised.Id, other.Id); // the answer never says which course failed
+        await _t.GrantAsync(w, w.Tree.School1.Id, [teacher.User.Id], [other.Id]); // the admin grants the other one
+        var rows = (await ListAsync(w.Admin, $"?orgUnitId={w.Tree.School1.Id}")).Items;
+        var otherRow = rows.Single(r => r.CourseId == other.Id);
+        var mineRow = rows.Single(r => r.CourseId == supervised.Id);
+
+        Assert.Equal(HttpStatusCode.Created, mine.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, notMine.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, mixed.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await _t.Classes.SendAsync(supervisor, HttpMethod.Delete, Routes.TeacherEligibilityItem(otherRow.Id))).StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, (await _t.Classes.SendAsync(supervisor, HttpMethod.Delete, Routes.TeacherEligibilityItem(mineRow.Id))).StatusCode);
+    }
+
+    [Fact]
+    public async Task Parallel_grants_of_the_same_pair_never_500()
+    {
+        var w = await _t.Classes.SeedAsync("EL6", currentYear: true);
+        var course = await AcademicTestKit.AddCourseAsync(factory, w.Tree.Root);
+        await AcademicTestKit.AllocateAsync(factory, course, w.Tree.Root);
+        var teacher = await _t.TeacherAsync(w);
+
+        var responses = await Task.WhenAll(Enumerable.Range(0, 6).Select(_ => _t.GrantAsync(w, w.Tree.School1.Id, [teacher.User.Id], [course.Id])));
+
+        Assert.DoesNotContain(responses, r => (int)r.StatusCode >= 500);
+        Assert.Equal(1, (await ListAsync(w.Admin, $"?orgUnitId={w.Tree.School1.Id}")).Total);
     }
 
     private static async Task<string?> ClassTestHostCode(HttpResponseMessage response) =>

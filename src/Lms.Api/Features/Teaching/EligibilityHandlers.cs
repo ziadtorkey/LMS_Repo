@@ -22,10 +22,14 @@ public sealed class EligibilityHandlers(
     public async Task<IResult> GrantAsync(GrantEligibilityRequest request, HttpContext http, CancellationToken ct)
     {
         if (request?.UserIds is not { Count: > 0 } users || request.CourseIds is not { Count: > 0 } courseIds
-            || users.Distinct().Count() != users.Count || courseIds.Distinct().Count() != courseIds.Count
-            || users.Count * courseIds.Count > MaxPairs)
+            || users.Distinct().Count() != users.Count || courseIds.Distinct().Count() != courseIds.Count)
         {
-            return ClassValidators.Invalid(nameof(request.UserIds), "pairs_invalid");
+            return ClassValidators.Invalid(nameof(GrantEligibilityRequest.UserIds), "pairs_invalid");
+        }
+
+        if ((long)users.Count * courseIds.Count > MaxPairs)
+        {
+            return ClassValidators.TooMany(nameof(request.UserIds), MaxPairs);
         }
 
         var access = await http.CheckUnitAsync(Permissions.TeacherAssignments.Manage, request.OrgUnitId, ct);
@@ -35,6 +39,13 @@ public sealed class EligibilityHandlers(
         }
 
         var unit = access.Unit!;
+        // D42: a Supervisor decides who teaches only the courses they supervise; any other course answers 404, whichever it is.
+        var filter = await relationships.ForAsync(Permissions.TeacherAssignments.Manage, ct);
+        if (courseIds.Any(id => !filter.AllowsCourse(id)))
+        {
+            return ApiProblems.NotFound();
+        }
+
         foreach (var userId in users)
         {
             if (!await teaching.IsTeacherNearAsync(unit.OrganizationId, userId, unit.Path, ct))
@@ -63,7 +74,19 @@ public sealed class EligibilityHandlers(
                        where !existing.Contains((userId, course.Id))
                        select new TeacherCourseEligibility(unit, userId, course)).ToList();
         db.AddRange(created);
-        await db.SaveChangesAsync(ct);
+        try
+        {
+            await db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException ex) when (DbErrors.IsConcurrentKeyConflict(ex))
+        {
+            // A concurrent grant of the same pair won the race: the pair is there, which is what the caller asked for.
+            db.ChangeTracker.Clear();
+            var winners = await db.Set<TeacherCourseEligibility>()
+                .Where(e => e.OrgUnitId == unit.Id && users.Contains(e.UserId) && courseIds.Contains(e.CourseId)).ToListAsync(ct);
+            return Results.Created(Routes.TeacherEligibility, await ToDtosAsync(winners, unit.OrganizationId, ct));
+        }
+
         return Results.Created(Routes.TeacherEligibility, await ToDtosAsync(created, unit.OrganizationId, ct));
     }
 
@@ -129,6 +152,11 @@ public sealed class EligibilityHandlers(
         if (access.Problem is not null)
         {
             return access.Problem;
+        }
+
+        if (!(await relationships.ForAsync(Permissions.TeacherAssignments.Manage, ct)).AllowsCourse(row.CourseId))
+        {
+            return ApiProblems.NotFound();
         }
 
         // Teacher assignments already made keep running: eligibility is checked only when assigning.

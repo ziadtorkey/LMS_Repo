@@ -77,7 +77,7 @@ public sealed class TeacherAssignmentHandlers(
 
         if (old.To is not null)
         {
-            return ApiProblems.Conflict(ProblemCodes.validation_failed, "The assignment has already ended.");
+            return ApiProblems.Conflict(ProblemCodes.assignment_ended, "The assignment has already ended.");
         }
 
         if (request.EffectiveOn <= old.From)
@@ -115,7 +115,7 @@ public sealed class TeacherAssignmentHandlers(
 
         if (row.To is not null)
         {
-            return ApiProblems.Conflict(ProblemCodes.validation_failed, "The assignment has already ended.");
+            return ApiProblems.Conflict(ProblemCodes.assignment_ended, "The assignment has already ended.");
         }
 
         if (request.LastDay < row.From)
@@ -130,19 +130,31 @@ public sealed class TeacherAssignmentHandlers(
 
     public async Task<IResult> BulkAsync(BulkAssignTeacherRequest request, HttpContext http, CancellationToken ct)
     {
-        if (request?.ClassCourseIds is not { Count: > 0 } ids || ids.Count > MaxBulk || ids.Distinct().Count() != ids.Count)
+        if (request?.ClassCourseIds is not { Count: > 0 } ids || ids.Distinct().Count() != ids.Count)
         {
-            return ClassValidators.Invalid(nameof(request.ClassCourseIds), "class_courses_invalid");
+            return ClassValidators.Invalid(nameof(BulkAssignTeacherRequest.ClassCourseIds), "class_courses_invalid");
+        }
+
+        if (ids.Count > MaxBulk)
+        {
+            return ClassValidators.TooMany(nameof(request.ClassCourseIds), MaxBulk);
         }
 
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
         var created = new List<(Target Target, ClassCourseTeacher Row)>();
+        var skipped = 0;
         foreach (var id in ids)
         {
             var (target, problem) = await LoadWritableAsync(id, http, ct);
             if (problem is not null)
             {
                 return problem; // nothing is committed: the transaction rolls back on dispose
+            }
+
+            if (await HasOpenAssignmentAsync(id, request.UserId, ct))
+            {
+                skipped++; // the teacher already teaches this class course
+                continue;
             }
 
             var (row, invalid) = await AddAsync(target!, request.UserId, request.Role, DefaultFrom(target!), ct);
@@ -160,7 +172,7 @@ public sealed class TeacherAssignmentHandlers(
             await NotifyAsync(target, row, ct);
         }
 
-        return Results.Ok(await ToDtosAsync(created.Select(c => c.Row).ToList(), ct));
+        return Results.Ok(new BulkAssignTeacherResultDto(created.Count, skipped));
     }
 
     /// <summary>Today, or the first day of the year when it has not started yet.</summary>
@@ -213,6 +225,11 @@ public sealed class TeacherAssignmentHandlers(
             return (null, ClassValidators.Invalid(nameof(AssignTeacherRequest.From), "outside_academic_year"));
         }
 
+        if (await HasOpenAssignmentAsync(cc.Id, userId, ct))
+        {
+            return (null, ApiProblems.Conflict(ProblemCodes.teacher_already_assigned, "The teacher already has an open assignment on this class course."));
+        }
+
         if (role == TeacherRoles.Primary
             && await db.Set<ClassCourseTeacher>().AnyAsync(t => t.ClassCourseId == cc.Id && t.Role == ClassCourseTeacher.PrimaryRole && t.To == null, ct))
         {
@@ -222,9 +239,21 @@ public sealed class TeacherAssignmentHandlers(
         _ = await conflicts.FindAsync(cc.Id, userId, from, null, ct); // FR-TCH-03 warning arrives with the timetable (M5)
         var row = new ClassCourseTeacher(cc, userId, role, from);
         db.Add(row);
-        await db.SaveChangesAsync(ct);
+        try
+        {
+            await db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException ex) when (DbErrors.IsConcurrentKeyConflict(ex))
+        {
+            // A concurrent request took the open primary slot first.
+            return (null, ApiProblems.Conflict(ProblemCodes.primary_teacher_exists, "The class course already has a primary teacher."));
+        }
+
         return (row, null);
     }
+
+    private Task<bool> HasOpenAssignmentAsync(Guid classCourseId, Guid userId, CancellationToken ct) =>
+        db.Set<ClassCourseTeacher>().AnyAsync(t => t.ClassCourseId == classCourseId && t.UserId == userId && t.To == null, ct);
 
     private async Task NotifyAsync(Target target, ClassCourseTeacher row, CancellationToken ct)
     {
