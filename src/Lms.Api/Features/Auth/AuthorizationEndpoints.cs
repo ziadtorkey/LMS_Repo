@@ -139,7 +139,7 @@ public static class AuthorizationEndpoints
             }),
             [OpenIddictServerAspNetCoreDefaults.AuthenticationScheme]);
 
-    private static ClaimsPrincipal BuildPrincipal(User user, IEnumerable<string> scopes, string? externalOrganization = null)
+    internal static ClaimsPrincipal BuildPrincipal(User user, IEnumerable<string> scopes, string? externalOrganization = null)
     {
         var identity = new ClaimsIdentity(
             TokenValidationParameters.DefaultAuthenticationType, Claims.Name, Claims.Role);
