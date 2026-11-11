@@ -19,6 +19,9 @@ public static class AuthorizationEndpoints
 {
     public const string PlatformAdminClaim = "platform_admin";
 
+    /// <summary>Set when the sign-in went through a client's identity provider; limits the session to that client.</summary>
+    public const string ExternalOrgClaim = "lms_ext_org";
+
     public static IEndpointRouteBuilder MapAuthorizationEndpoints(this IEndpointRouteBuilder app)
     {
         string[] both = [HttpMethods.Get, HttpMethods.Post];
@@ -63,7 +66,7 @@ public static class AuthorizationEndpoints
                 [IdentityConstants.ApplicationScheme]);
         }
 
-        var principal = BuildPrincipal(user, request.GetScopes());
+        var principal = BuildPrincipal(user, request.GetScopes(), cookie.Principal!.FindFirst(ExternalOrgClaim)?.Value);
         return Results.SignIn(principal, authenticationScheme: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
     }
 
@@ -88,7 +91,8 @@ public static class AuthorizationEndpoints
             return Forbid(Errors.InvalidGrant, "The account is no longer allowed to sign in.");
         }
 
-        var principal = BuildPrincipal(user, result.Principal!.GetScopes());
+        // The binding to the provider's client survives code exchange and refresh.
+        var principal = BuildPrincipal(user, result.Principal!.GetScopes(), result.Principal.GetClaim(ExternalOrgClaim));
         return Results.SignIn(principal, authenticationScheme: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
     }
 
@@ -135,7 +139,7 @@ public static class AuthorizationEndpoints
             }),
             [OpenIddictServerAspNetCoreDefaults.AuthenticationScheme]);
 
-    private static ClaimsPrincipal BuildPrincipal(User user, IEnumerable<string> scopes)
+    private static ClaimsPrincipal BuildPrincipal(User user, IEnumerable<string> scopes, string? externalOrganization = null)
     {
         var identity = new ClaimsIdentity(
             TokenValidationParameters.DefaultAuthenticationType, Claims.Name, Claims.Role);
@@ -144,6 +148,11 @@ public static class AuthorizationEndpoints
         if (user.IsPlatformAdmin)
         {
             identity.SetClaim(PlatformAdminClaim, "true");
+        }
+
+        if (!string.IsNullOrEmpty(externalOrganization))
+        {
+            identity.SetClaim(ExternalOrgClaim, externalOrganization);
         }
 
         var principal = new ClaimsPrincipal(identity);
