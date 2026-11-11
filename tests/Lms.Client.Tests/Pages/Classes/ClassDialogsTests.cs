@@ -203,12 +203,14 @@ public sealed class ClassDialogsTests : ClassesTestContext
     {
         await OpenAsync("class-bulk");
         await Dialogs.InvokeAsync(() => SelectWithTestId(Dialogs, "bulk-unit").Instance.ValueChanged.InvokeAsync(FakeUnits.GradeId));
-        ClassesApi.WriteFailure = new ApiProblemException(409, "class_code_taken", null, null);
+        ClassesApi.WriteFailure = new ApiProblemException(409, "class_code_taken", null, null, codes: ["BC2", "BC3"]);
         Type("bulk-pattern-ar", "الصف {N}"); Type("bulk-pattern-en", "Class {N}"); Type("bulk-pattern-code", "BC{N}");
 
         await Dialogs.Find("[data-testid=dialog-save]").ClickAsync(new());
 
         Dialogs.WaitForElement("[data-testid=dialog-error]", Wait);
+        Assert.Contains("BC2, BC3", Dialogs.Find("[data-testid=dialog-error]").TextContent);
+        Assert.NotEmpty(Dialogs.FindAll("[data-testid=dialog-save]"));
     }
 
     // ---- copy dialog ----

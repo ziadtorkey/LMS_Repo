@@ -97,7 +97,7 @@ public sealed class FakeClassesApi : IClassesApi
             request.NamePatternEn.Replace("{N}", n.ToString()), request.OrgUnitId, request.AcademicYearId, request.Capacity, null))).ToList();
         var taken = made.Where(c => CodeTaken(c.Code, request.AcademicYearId, null)).Select(c => c.Code).ToList();
         if (taken.Count > 0)
-            return Task.FromException<IReadOnlyList<ClassSummaryDto>>(new ApiProblemException(409, "class_code_taken", string.Join(", ", taken), null));
+            return Task.FromException<IReadOnlyList<ClassSummaryDto>>(new ApiProblemException(409, "class_code_taken", null, null, codes: taken));
         _classes.AddRange(made);
         return Task.FromResult<IReadOnlyList<ClassSummaryDto>>(made);
     }

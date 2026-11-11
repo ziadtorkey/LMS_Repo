@@ -1,5 +1,6 @@
 @using Lms.Client.Components.People
 @using Lms.Client.Services.Api
+@using Lms.Shared
 @using Lms.Shared.Classes
 @using Lms.Shared.Organizations
 @inject IClassesApi Api
@@ -104,9 +105,22 @@
         _error = null;
         if (_problem is not null || _unitId is not { } unit) return;
         _saving = true;
-        var ok = await ApiCalls.RunAsync(() => Api.BulkCreateAsync(new BulkCreateClassesRequest(unit, AcademicYearId, _namePatternAr.Trim(),
-            _namePatternEn.Trim(), _codePattern.Trim(), _from, _to, _capacity)), Navigation, L, message => _error = message);
+        var conflict = false;
+        var ok = await ApiCalls.RunAsync(async () =>
+        {
+            try
+            {
+                await Api.BulkCreateAsync(new BulkCreateClassesRequest(unit, AcademicYearId, _namePatternAr.Trim(),
+                    _namePatternEn.Trim(), _codePattern.Trim(), _from, _to, _capacity));
+            }
+            catch (ApiProblemException ex) when (ex.Code == ProblemCodes.class_code_taken && ex.Codes.Count > 0)
+            {
+                // Nothing was created: name the colliding codes so the patterns can be adjusted.
+                _error = $"{ProblemText.For(ex, L)} {string.Join(", ", ex.Codes)}";
+                conflict = true;
+            }
+        }, Navigation, L, message => _error = message);
         _saving = false;
-        if (ok) MudDialog.Close(DialogResult.Ok(Count));
+        if (ok && !conflict) MudDialog.Close(DialogResult.Ok(Count));
     }
 }
