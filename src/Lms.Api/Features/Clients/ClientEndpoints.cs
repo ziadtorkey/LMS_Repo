@@ -21,7 +21,7 @@ public static class ClientEndpoints
     }
 
     internal static ClientDto ToDto(Organization o, Guid rootOrgUnitId) => new(
-        o.Id, o.NameAr, o.NameEn, o.Type.ToString(), o.Status.ToString(), rootOrgUnitId, o.CreatedAt);
+        o.Id, o.NameAr, o.NameEn, o.Type.ToString(), o.Status.ToString(), rootOrgUnitId, o.CreatedAt, o.ShortCode);
 
     private static async Task<IResult> ListAsync(
         LmsDbContext db, int? page, int? pageSize, string? search, CancellationToken ct)
@@ -71,8 +71,24 @@ public static class ClientEndpoints
             return ClientValidators.ToProblem(errors);
         }
 
-        var dto = await handler.HandleAsync(request, ct);
-        return Results.Created(Routes.Client(dto.Id), dto);
+        if (!Organization.IsValidShortCode(CreateClientHandler.ResolveShortCode(request)))
+        {
+            return ApiProblems.BadRequest(
+                ProblemCodes.invalid_short_code,
+                string.IsNullOrWhiteSpace(request.ShortCode)
+                    ? "No short code was given and the root unit code cannot be turned into one (2-20 lower-case letters, digits or '-'): provide ShortCode."
+                    : "The short code must be 2-20 lower-case letters, digits or '-'.");
+        }
+
+        try
+        {
+            var dto = await handler.HandleAsync(request, ct);
+            return Results.Created(Routes.Client(dto.Id), dto);
+        }
+        catch (ShortCodeTakenException)
+        {
+            return ApiProblems.Conflict(ProblemCodes.short_code_taken);
+        }
     }
 
     private static async Task<IResult> UpdateAsync(Guid id, UpdateClientRequest request, LmsDbContext db, CancellationToken ct)
