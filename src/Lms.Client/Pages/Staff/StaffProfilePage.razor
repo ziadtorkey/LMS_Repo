@@ -21,7 +21,7 @@ else
     var s = _detail.Summary;
     <MudStack Spacing="3">
         <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
-            <MudAvatar Size="Size.Large"><MudIcon Icon="@Icons.Material.Filled.Person" /></MudAvatar>
+            <StaffAvatar PhotoFileId="s.PhotoFileId" Size="Size.Large" />
             <div>
                 <MudText Typo="Typo.h4" data-testid="profile-name">@Culture.Pick(s.NameAr, s.NameEn)</MudText>
                 <MudText Typo="Typo.body2">@Culture.Pick(s.JobTitleAr ?? "", s.JobTitleEn ?? "")</MudText>
