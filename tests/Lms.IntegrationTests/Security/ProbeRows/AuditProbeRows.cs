@@ -18,10 +18,11 @@ public sealed class AuditProbeRows : IProbeRowModule
             async (w, _) => new ProbeRequest(Routes.AuditEntry(await NewAuditEntryAsync(w))),
             Expect(Ok, Ok, NotFound, Forbidden, NotFound, Ok)),
         new("audit export (csv)", HttpMethod.Get, Routes.AuditExport,
-            // A narrow window: the shared test database accumulates audit rows, and an unfiltered platform-wide
-            // export would hit the 50,000-row export limit (400 export_too_large) as the suite grows.
-            (_, _) => Task.FromResult(new ProbeRequest(Routes.AuditExport + "?format=csv&fromUtc="
-                + Uri.EscapeDataString(DateTime.UtcNow.AddMinutes(-5).ToString("O")))),
+            // A fixed window in the past (no rows): the probe checks access, not content. The shared test database
+            // gains tens of thousands of audit rows per run, so any open window can hit the 50,000-row export limit
+            // (400 export_too_large).
+            (_, _) => Task.FromResult(new ProbeRequest(Routes.AuditExport
+                + "?format=csv&fromUtc=2000-01-01T00%3A00%3A00Z&toUtc=2000-01-02T00%3A00%3A00Z")),
             Expect(Ok, Ok, Ok, Forbidden, Ok, Ok)),
     ];
 
