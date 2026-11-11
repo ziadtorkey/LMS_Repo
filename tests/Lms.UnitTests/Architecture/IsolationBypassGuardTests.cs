@@ -23,6 +23,8 @@ public sealed class IsolationBypassGuardTests
             "settings on ancestors; restore a soft-deleted setting row (M0 Task 6, #25)",
         ["src/Lms.Infrastructure/Configuration/EffectiveSettingsReader.cs"] =
             "effective settings and locks inherited from ancestors above the caller's scope (M1 Task 14, #100)",
+        ["src/Lms.Api/Features/LevelTypes/LevelTypeEndpoints.cs"] =
+            "level types are client-wide, so the in-use count covers the whole client, not the caller subtree (M1 Task 8, #83)",
         ["src/Lms.Infrastructure/Notifications/NotificationRecipientResolver.cs"] =
             "recipients at or below the event unit, raised by someone above or beside them (M1 Task 10, #90)",
         ["src/Lms.Infrastructure/AcademicYears/AcademicYearResolver.cs"] =
@@ -31,6 +33,12 @@ public sealed class IsolationBypassGuardTests
             "names of the defining unit of an inherited year, restricted to the caller's organization (M1 Task 20, #102)",
         ["src/Lms.Api/Features/Audit/AuditRows.cs"] =
             "role and unit names of audit rows the caller may already see, restricted to the entries' clients (M1 Task 18, #97)",
+        ["src/Lms.Api/Features/AcademicYears/AcademicYearEndpoints.cs"] =
+            "delete also removes calendar events at descendant units, restricted to the year's client (M1 Task 22, #57)",
+        ["src/Lms.Api/Features/AcademicYears/CalendarEndpoints.cs"] =
+            "events and names inherited from ancestor units, restricted to the unit's client (M1 Task 22, #57)",
+        ["src/Lms.Infrastructure/AcademicYears/AcademicCalendar.cs"] =
+            "holidays of ancestor units apply to descendants, restricted to the client and effective years (M1 Task 22, #57)",
     };
 
     [Fact]
