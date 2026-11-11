@@ -78,3 +78,14 @@ Each runs in Arabic and English (`[Theory]` with `"ar"`/`"en"`; `StartAsync(cult
 | Test | Covers |
 |---|---|
 | `Deactivated_user_sees_blocked_message_on_login` (ar, en × deactivated, expired, withdrawn) | FR-SEC-07: exact blocked-login copy, no session |
+
+## Scenarios (M2, plan Task 35: `M2/StaffTests`)
+Run as the seeded school group's Org Admin with unique people per test (`M2Names`), in Arabic and English. `Infrastructure/JobsClient` runs a job through the Development-only trigger (`POST /api/dev/jobs/{id}/run?asOf=`, BE #201) as a platform admin.
+
+| Test | Covers | Needs on main |
+|---|---|---|
+| `School_admin_creates_teacher_who_activates_from_email_and_sees_the_section_context` | FR-STF-01/02, activation email | staff API (#187) |
+| `Duplicate_email_in_a_sibling_stage_is_refused_with_the_field_message` | FR-STF-01, D26 client-wide duplicate | staff API (#187) |
+| deactivate with reason → blocked message → reactivate | FR-STF-03, FR-SEC-07 | #198, #190 |
+| share a teacher to a second unit | FR-STF-05, D29 | #196, #190 |
+| expiring staff: notice, then expired and blocked after the job | FR-STF-06, D35 | #201, #198 |
