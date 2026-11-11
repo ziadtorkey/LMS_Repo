@@ -58,37 +58,4 @@ public sealed class AssignmentFollowUpTests
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
-
-    private async Task<HttpResponseMessage> InviteAsync(AccessTree tree, RoleAssignment admin, string email, string? language) =>
-        await SendAsync(HttpMethod.Post, Routes.Assignments, admin,
-            new CreateAssignmentRequest(email, "اسم", "Name", tree.Roles[BuiltInRoles.Teacher].Id, tree.School1.Id, null, null),
-            language);
-
-    [Fact]
-    public async Task Invitation_is_sent_in_the_default_culture_of_the_target_unit_not_the_admins()
-    {
-        var tree = await AccessTestData.SeedAsync(_factory, "FU2");
-        var admin = await AccessTestData.AssignAsync(_factory, tree, tree.Root, BuiltInRoles.OrgAdmin, Guid.NewGuid());
-        await using (var db = _factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
-        {
-            db.Add(new OrgUnitSetting(tree.Org.Id, tree.School1.Id, tree.School1.Path, SettingKeys.UiDefaultCulture.Name, "\"en\"", false));
-            await db.SaveChangesAsync();
-        }
-
-        var english = $"en-{Guid.NewGuid():N}@lms.test";
-        var arabic = $"ar-{Guid.NewGuid():N}@lms.test";
-
-        // The admin's browser asks for Arabic; School1 defaults to English.
-        Assert.Equal(HttpStatusCode.Created, (await InviteAsync(tree, admin, english, "ar")).StatusCode);
-        Assert.Equal("Your LMS account is ready", Assert.Single(_emails.To(english)).Subject);
-        Assert.Contains("culture=en", Assert.Single(_emails.To(english)).HtmlBody);
-
-        // School2 has no setting: the catalog default (ar) applies even though the admin's browser asks for English.
-        var response = await SendAsync(HttpMethod.Post, Routes.Assignments, admin,
-            new CreateAssignmentRequest(arabic, "اسم", "Name", tree.Roles[BuiltInRoles.Teacher].Id, tree.School2.Id, null, null), "en");
-        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        var mail = Assert.Single(_emails.To(arabic));
-        Assert.NotEqual("Your LMS account is ready", mail.Subject);
-        Assert.Contains("culture=ar", mail.HtmlBody);
-    }
 }

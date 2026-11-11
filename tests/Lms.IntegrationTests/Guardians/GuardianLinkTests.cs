@@ -1,6 +1,6 @@
+using Lms.Shared;
 using System.Collections.Concurrent;
 using System.Net;
-using Lms.Api.Features.Guardians;
 using Lms.Domain.People;
 using Lms.IntegrationTests.Infrastructure;
 using Lms.Shared.Authorization;
@@ -40,7 +40,7 @@ public sealed class GuardianLinkTests(LmsApiFactory factory)
         var linked = Assert.Single(observer.Calls);
         Assert.Equal((link.GuardianId, 1), linked); // the link was already committed when the observer ran
 
-        var removed = await kit.SendAsync(HttpMethod.Delete, GuardianRoutes.StudentGuardian(student.Id, link.GuardianId), admin);
+        var removed = await kit.SendAsync(HttpMethod.Delete, Routes.StudentGuardian(student.Id, link.GuardianId), admin);
         Assert.Equal(HttpStatusCode.NoContent, removed.StatusCode);
         Assert.Equal(2, observer.Calls.Count);
         Assert.Equal((link.GuardianId, 0), observer.Calls.Last());
@@ -58,10 +58,10 @@ public sealed class GuardianLinkTests(LmsApiFactory factory)
         var second = await kit.LinkOkAsync(admin, student.Id, NewGuardian());
         observer.Calls.Clear();
 
-        await kit.SendAsync(HttpMethod.Put, GuardianRoutes.StudentGuardian(student.Id, second.GuardianId), admin, new UpdateStudentGuardianRequest("Mother", true));
+        await kit.SendAsync(HttpMethod.Put, Routes.StudentGuardian(student.Id, second.GuardianId), admin, new UpdateStudentGuardianRequest("Mother", true));
         var afterPrimary = observer.Calls.Select(c => c.GuardianId).Distinct().ToList();
         observer.Calls.Clear();
-        await kit.SendAsync(HttpMethod.Put, GuardianRoutes.Guardian(first.GuardianId), admin, new UpdateGuardianRequest(new GuardianDataInput("ولي", "New Name", first.Mobile, null, null)));
+        await kit.SendAsync(HttpMethod.Put, Routes.Guardian(first.GuardianId), admin, new UpdateGuardianRequest(new GuardianDataInput("ولي", "New Name", first.Mobile, null, null)));
 
         Assert.Contains(second.GuardianId, afterPrimary);
         Assert.Contains(first.GuardianId, observer.Calls.Select(c => c.GuardianId));
