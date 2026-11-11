@@ -85,6 +85,15 @@ public sealed class M1EndpointMatrixTests(LmsApiFactory factory, ITestOutputHelp
     }
 
     [Fact]
+    public void Every_probe_rows_file_is_a_collected_module()
+    {
+        // A module class that forgets IProbeRowModule would compile but drop its rows silently.
+        var notModules = M1ProbeRows.NamedLikeModules.Where(t => !typeof(IProbeRowModule).IsAssignableFrom(t)).Select(t => t.Name);
+        Assert.Empty(notModules);
+        Assert.NotEmpty(M1ProbeRows.Modules);
+    }
+
+    [Fact]
     public void Pending_rows_are_listed()
     {
         // Informational: which rows are waiting for their feature to merge. Must be empty at milestone end (Task 35 step 4).
