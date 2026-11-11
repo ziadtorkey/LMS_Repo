@@ -289,4 +289,7 @@
   <data name="Confirm_DeactivateTitle" xml:space="preserve"><value>Deactivate unit?</value></data>
   <data name="OrgTree_DeactivateOwnWarning" xml:space="preserve"><value>You are working in this unit (or in one inside it). If you deactivate it you will lose access until an administrator above it reactivates it. Continue?</value></data>
   <data name="AuditEntity_StoredFile" xml:space="preserve"><value>File</value></data>
+  <data name="Year_Selector" xml:space="preserve"><value>Academic year</value></data>
+  <data name="Year_None" xml:space="preserve"><value>No academic year</value></data>
+  <data name="Year_ReadOnly" xml:space="preserve"><value>Closed year — read only</value></data>
 </root>

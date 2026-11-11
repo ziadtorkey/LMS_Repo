@@ -24,6 +24,7 @@ public static class ClientServices
         services.AddSingleton<ContextStore>();
         services.AddSingleton<IContextStore>(sp => sp.GetRequiredService<ContextStore>());
         services.AddScoped<PermissionState>();
+        services.AddScoped<IYearStore, YearStore>();
 
         if (configuration.GetValue<bool>("Lms:UseFakeApi"))
         {
