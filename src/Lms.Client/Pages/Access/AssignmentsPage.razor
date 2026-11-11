@@ -42,7 +42,7 @@ else
                    Style="min-width:220px" data-testid="unit-picker">
             @foreach (var unit in _units)
             {
-                <MudSelectItem Value="@unit.Id">@(new string(' ', unit.Depth * 3) + CultureText.Pick(unit.NameAr, unit.NameEn))</MudSelectItem>
+                <MudSelectItem Value="@unit.Id" data-testid="@($"unit-option-{unit.Code}")">@(new string(' ', unit.Depth * 3) + CultureText.Pick(unit.NameAr, unit.NameEn))</MudSelectItem>
             }
         </MudSelect>
         <MudSwitch T="bool" Value="_includeBelow" ValueChanged="IncludeChangedAsync" Color="Color.Primary"

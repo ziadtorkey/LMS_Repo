@@ -23,13 +23,13 @@
                 <MudSelect T="Guid" @bind-Value="_roleId" Label="@L["Assignments_Role"]" data-testid="assign-role">
                     @foreach (var role in Roles)
                     {
-                        <MudSelectItem Value="@role.Id">@CultureText.Pick(role.NameAr, role.NameEn)</MudSelectItem>
+                        <MudSelectItem Value="@role.Id" data-testid="@($"assign-role-option-{role.BuiltInKey ?? role.Id.ToString()}")">@CultureText.Pick(role.NameAr, role.NameEn)</MudSelectItem>
                     }
                 </MudSelect>
                 <MudSelect T="Guid" @bind-Value="_unitId" Label="@L["Assignments_Unit"]" data-testid="assign-unit">
                     @foreach (var unit in Units)
                     {
-                        <MudSelectItem Value="@unit.Id">@(new string(' ', unit.Depth * 3) + CultureText.Pick(unit.NameAr, unit.NameEn))</MudSelectItem>
+                        <MudSelectItem Value="@unit.Id" data-testid="@($"assign-unit-option-{unit.Code}")">@(new string(' ', unit.Depth * 3) + CultureText.Pick(unit.NameAr, unit.NameEn))</MudSelectItem>
                     }
                 </MudSelect>
             }
