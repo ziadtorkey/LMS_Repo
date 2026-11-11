@@ -6,6 +6,7 @@
 @using Lms.Shared.People
 @inject IAccessAdminApi Api
 @inject IStaffApi StaffApi
+@inject PermissionState PermState
 @inject IDialogService Dialogs
 @inject NavigationManager Navigation
 
@@ -24,8 +25,11 @@
                                  Value="_person" ValueChanged="p => _person = p" SearchFunc="SearchStaffAsync"
                                  ToStringFunc="DisplayStaff" DebounceInterval="300" MaxItems="20" Clearable="true"
                                  data-testid="assign-person" />
-                <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="CreateStaffAsync"
-                           data-testid="assign-create-staff">@L["Assign_CreateStaff"]</MudButton>
+                @if (PermState.Has(Permissions.Staff.Create))
+                {
+                    <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="CreateStaffAsync"
+                               data-testid="assign-create-staff">@L["Assign_CreateStaff"]</MudButton>
+                }
                 <MudSelect T="Guid" @bind-Value="_roleId" Label="@L["Assignments_Role"]" data-testid="assign-role">
                     @foreach (var role in StaffRoles)
                     {

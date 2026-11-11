@@ -73,6 +73,10 @@ internal sealed class AuthTestHost
     public HttpClient NewBrowser() => _host.CreateClient(
         new WebApplicationFactoryClientOptions { AllowAutoRedirect = false, HandleCookies = true });
 
+    /// <summary>A browser-style client (no redirects, no cookie handling) whose requests carry the given scheme and host.</summary>
+    public HttpClient NewClientAt(Uri baseAddress) => _host.CreateClient(
+        new WebApplicationFactoryClientOptions { AllowAutoRedirect = false, HandleCookies = false, BaseAddress = baseAddress });
+
     public async Task<User> CreateUserAsync(
         string? email = null, bool platformAdmin = false, UserStatus status = UserStatus.Active)
     {

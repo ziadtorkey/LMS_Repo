@@ -58,6 +58,13 @@ public sealed class StaffLifecycleTests : StaffTestContext
     }
 
     [Fact]
+    public async Task Share_needs_both_staff_update_and_assignments_create()
+    {
+        var onlyAssign = await RenderAsync(Sara.Summary.Id, Permissions.Staff.View, Permissions.Assignments.Create);
+        Assert.Empty(onlyAssign.FindAll("[data-testid=action-share]"));
+    }
+
+    [Fact]
     public async Task Actions_are_hidden_without_permissions()
     {
         var cut = await RenderAsync(Sara.Summary.Id, Permissions.Staff.View);

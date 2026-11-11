@@ -14,7 +14,7 @@ public sealed class AssignmentDialogPersonTests : StaffTestContext
 {
     private async Task OpenAsync()
     {
-        await GrantAsync(Permissions.Assignments.View, Permissions.Assignments.Create);
+        await GrantAsync(Permissions.Assignments.View, Permissions.Assignments.Create, Permissions.Staff.Create);
         RenderProviders();
         var cut = Render<AssignmentsPage>();
         await cut.WaitForElement("[data-testid=assign-new]").ClickAsync(new());
@@ -74,6 +74,30 @@ public sealed class AssignmentDialogPersonTests : StaffTestContext
 
         _ = Dialogs.Find("[data-testid=assign-create-staff]").ClickAsync(new());
         Dialogs.WaitForElement("input[data-testid=staff-email]");
+
+        Dialogs.Find("input[data-testid=staff-name-ar]").Change("ليلى");
+        Dialogs.Find("input[data-testid=staff-name-en]").Change("Laila");
+        Dialogs.Find("input[data-testid=staff-email]").Change("laila@x.test");
+        var home = Dialogs.FindComponents<Lms.Client.Components.People.UnitPicker>().First(u => u.Instance.TestId == "staff-home-unit");
+        await Dialogs.InvokeAsync(() => home.Instance.ValueChanged.InvokeAsync(FakeUnits.SchoolId));
+        await ChooseAsync(SelectWithTestId(Dialogs, "staff-role-0"), (Guid?)RoleOfKind(RoleBaseKinds.Staff));
+        var roleUnit = Dialogs.FindComponents<Lms.Client.Components.People.UnitPicker>().First(u => u.Instance.TestId == "staff-role-unit-0");
+        await Dialogs.InvokeAsync(() => roleUnit.Instance.ValueChanged.InvokeAsync(FakeUnits.SchoolId));
+        await Dialogs.Find("[data-testid=dialog-save]").ClickAsync(new());
+
+        Dialogs.WaitForAssertion(() => Assert.Contains("laila@x.test", Dialogs.Find("input[data-testid=assign-person]").GetAttribute("value") ?? ""));
+    }
+
+    [Fact]
+    public async Task Create_staff_link_is_hidden_without_staff_create()
+    {
+        await GrantAsync(Permissions.Assignments.View, Permissions.Assignments.Create);
+        RenderProviders();
+        var cut = Render<AssignmentsPage>();
+        await cut.WaitForElement("[data-testid=assign-new]").ClickAsync(new());
+        Dialogs.WaitForElement("[data-testid=assign-person]");
+
+        Assert.Empty(Dialogs.FindAll("[data-testid=assign-create-staff]"));
     }
 
     [Theory]
