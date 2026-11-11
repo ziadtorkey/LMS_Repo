@@ -198,4 +198,15 @@ public static class Permissions
     /// </summary>
     public static IReadOnlyList<string> PlatformOnly { get; } =
         ImmutableArray.Create(Clients.View, Clients.Create, Clients.Update);
+
+    /// <summary>
+    /// Permissions that reach only the holder's own data (own student profile, own children). No staff role holds them,
+    /// so the escalation guards (D16) count every caller as holding them: handing them out grants no power over others.
+    /// </summary>
+    public static IReadOnlyList<string> SelfService { get; } =
+        ImmutableArray.Create(Students.SelfEdit, Students.ViewChildren);
+
+    /// <summary>The caller's permissions plus <see cref="SelfService"/>, for the escalation guards.</summary>
+    public static IReadOnlySet<string> WithSelfService(IEnumerable<string> callerPermissions) =>
+        callerPermissions.Concat(SelfService).ToHashSet(StringComparer.Ordinal);
 }

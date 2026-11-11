@@ -107,6 +107,39 @@ public sealed class SettingsTabTests : ClientTestContext
     }
 
     [Fact]
+    public void StringSet_setting_renders_one_checkbox_per_allowed_value_and_saves_a_json_array()
+    {
+        const string critical = "Students.CriticalFields";
+        var cut = RenderTab();
+
+        var allowed = SettingCatalog.Find(critical)!.AllowedValues!;
+        Assert.Equal(allowed.Count, cut.FindAll($"input[type=checkbox][data-testid^='setting-input-{critical}-']").Count);
+        Assert.Contains("Arabic name", cut.Find($"[data-testid='setting-row-{critical}']").TextContent);
+
+        cut.Find($"input[data-testid='setting-input-{critical}-Mobile']").Change(true);
+
+        cut.WaitForAssertion(() => Assert.Equal(
+            "[\"NameAr\",\"NameEn\",\"DateOfBirth\",\"Gender\",\"Religion\",\"Nationality\",\"NationalId\",\"Mobile\"]",
+            Assert.Single(Config.SettingCalls).Request.ValueJson));
+    }
+
+    [Theory]
+    [InlineData("ar")]
+    [InlineData("en")]
+    public void Every_enum_and_string_set_value_of_an_M3_setting_has_a_label(string culture)
+    {
+        Culture.Current = new CultureInfo(culture);
+        var l = Services.GetRequiredService<IStringLocalizer<SharedResource>>();
+        string[] m3 = ["Students.CodeMode", "Students.CriticalFields", "Classes.CapacityMode", "Blueprints.SectionLabel"];
+
+        var missing = m3.SelectMany(n => SettingCatalog.Find(n)!.AllowedValues!
+                .Select(v => $"SettingValue_{n.Replace('.', '_')}_{v}"))
+            .Where(key => l[key].ResourceNotFound).ToList();
+
+        Assert.Empty(missing);
+    }
+
+    [Fact]
     public void Lock_checkbox_saves_the_lock_with_the_current_value()
     {
         var cut = RenderTab();

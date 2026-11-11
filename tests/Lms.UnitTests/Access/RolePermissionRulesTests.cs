@@ -77,4 +77,15 @@ public sealed class RolePermissionRulesTests
         Assert.False(RolePermissionRules.CanModify([Permissions.Roles.View, Permissions.Audit.Export], caller, false));
         Assert.True(RolePermissionRules.CanModify([Permissions.Audit.Export], caller, true));
     }
+
+    [Fact]
+    public void Org_admin_may_edit_the_student_role_keeping_its_self_service_permission()
+    {
+        var orgAdmin = BuiltInRoles.Get(BuiltInRoles.OrgAdmin).DefaultPermissions.ToHashSet();
+        var student = BuiltInRoles.Get(BuiltInRoles.Student).DefaultPermissions;
+
+        Assert.DoesNotContain(Permissions.Students.SelfEdit, orgAdmin);
+        Assert.Null(RolePermissionRules.Validate(student, student, orgAdmin, false, BuiltInRoles.Student));
+        Assert.True(RolePermissionRules.CanModify(student, orgAdmin, false));
+    }
 }
