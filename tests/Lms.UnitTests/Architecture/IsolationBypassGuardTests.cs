@@ -13,6 +13,8 @@ public sealed class IsolationBypassGuardTests
     {
         ["src/Lms.Api/Features/Staff/DeleteStaffHandler.cs"] =
             "deleting a person removes their shares in units outside the deleting admin's scope; own client, live rows, Staff-kind roles (M2 Task 11, #163)",
+        ["src/Lms.Api/Features/Staff/ShareStaffHandler.cs"] =
+            "removing a share: the person's home may lie outside the scope of the admin of the shared-to unit; own client, live rows, assignment lookup stays filtered (M2 Task 16, #164)",
         ["src/Lms.Infrastructure/Organizations/OrgTree.cs"] =
             "client root and ancestors lie above a unit-level caller's scope (M1 Task 5)",
         ["src/Lms.Infrastructure/Access/ValidAssignmentQuery.cs"] =
