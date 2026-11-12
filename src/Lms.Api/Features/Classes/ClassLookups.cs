@@ -22,6 +22,25 @@ public sealed class ClassLookups(LmsDbContext db, IClock clock)
             .Where(y => !y.IsDeleted && y.OrganizationId == organizationId && ids.Contains(y.Id))
             .ToDictionaryAsync(y => y.Id, ct);
 
+    /// <summary>Courses by id (a course can be owned by an ancestor unit above the caller). Names and codes only leave.</summary>
+    public async Task<Dictionary<Guid, Lms.Domain.Courses.Course>> CoursesAsync(
+        Guid organizationId, IReadOnlyCollection<Guid> ids, CancellationToken ct) =>
+        // ISOLATION-BYPASS: inherited courses are owned above the caller's subtree; limited to the client, live rows and
+        // ids the caller already reaches through a class course or an allocation at their unit.
+        await db.Set<Lms.Domain.Courses.Course>().IgnoreQueryFilters()
+            .Where(c => !c.IsDeleted && c.OrganizationId == organizationId && ids.Contains(c.Id))
+            .ToDictionaryAsync(c => c.Id, ct);
+
+    /// <summary>Unit names by id, for the owner of inherited courses.</summary>
+    public async Task<Dictionary<Guid, (string NameAr, string NameEn)>> UnitNamesAsync(
+        Guid organizationId, IReadOnlyCollection<Guid> ids, CancellationToken ct) =>
+        // ISOLATION-BYPASS: the owner of an inherited course is an ancestor unit; only its name leaves, limited to the
+        // client and live rows.
+        (await db.OrgUnits.IgnoreQueryFilters()
+            .Where(u => !u.IsDeleted && u.OrganizationId == organizationId && ids.Contains(u.Id))
+            .Select(u => new { u.Id, u.NameAr, u.NameEn }).ToListAsync(ct))
+        .ToDictionary(u => u.Id, u => (u.NameAr, u.NameEn));
+
     /// <summary>Which of the upper-cased codes are already taken by a live class of the year (unique per client and year).</summary>
     public async Task<List<string>> TakenCodesAsync(
         Guid organizationId, Guid yearId, IReadOnlyCollection<string> codes, Guid? exceptClassId, CancellationToken ct) =>

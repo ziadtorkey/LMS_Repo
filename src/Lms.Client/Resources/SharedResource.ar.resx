@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
   <resheader name="version"><value>2.0</value></resheader>
@@ -30,6 +30,10 @@
   <data name="Nav_Audit" xml:space="preserve"><value>سجل التدقيق</value></data>
   <data name="Nav_Clients" xml:space="preserve"><value>العملاء</value></data>
   <data name="Nav_Menu" xml:space="preserve"><value>القائمة</value></data>
+  <data name="Nav_SkipToContent" xml:space="preserve"><value>انتقل إلى المحتوى الرئيسي</value></data>
+  <data name="Theme_Dark" xml:space="preserve"><value>الوضع الداكن</value></data>
+  <data name="Theme_Light" xml:space="preserve"><value>الوضع الفاتح</value></data>
+  <data name="Common_Filters" xml:space="preserve"><value>عوامل التصفية</value></data>
   <data name="Choose_Title" xml:space="preserve"><value>اختر السياق</value></data>
   <data name="Choose_Subtitle" xml:space="preserve"><value>اختر الدور والجهة التي ستعمل بها الآن. يمكنك التبديل في أي وقت.</value></data>
   <data name="Choose_Empty_Title" xml:space="preserve"><value>لا توجد صلاحيات مسندة إليك</value></data>
@@ -273,6 +277,14 @@
   <data name="OrgTree_Settings" xml:space="preserve"><value>إعدادات الوحدة</value></data>
   <data name="OrgTree_DeleteConfirm" xml:space="preserve"><value>حذف هذه الوحدة؟ لا يمكن استعادتها إلا عن طريق الدعم الفني.</value></data>
   <data name="OrgTree_NoMatches" xml:space="preserve"><value>لا توجد وحدات مطابقة للبحث.</value></data>
+  <data name="OrgTree_NoMatchesHint" xml:space="preserve"><value>جرّب جزءًا من الاسم أو رمز الوحدة.</value></data>
+  <data name="OrgTree_Subtitle" xml:space="preserve"><value>الفروع والمدارس والصفوف في جهتك. أضف الوحدات وانقلها وانسخها من هنا.</value></data>
+  <data name="LevelTypes_Subtitle" xml:space="preserve"><value>مستويات الهيكل التنظيمي بالترتيب، من الأعلى إلى الأدنى، والمستوى الذي يمكن أن يضم فصولًا.</value></data>
+  <data name="LevelTypes_EmptyTitle" xml:space="preserve"><value>لا توجد أنواع مستويات بعد</value></data>
+  <data name="LevelTypes_EmptyText" xml:space="preserve"><value>أضف المستوى الأعلى أولًا، مثل المجموعة، ثم المستويات التي تحته.</value></data>
+  <data name="Templates_Subtitle" xml:space="preserve"><value>هياكل وحدات محفوظة يمكنك تطبيقها لإنشاء فرع أو مدرسة جديدة بسرعة.</value></data>
+  <data name="Templates_EmptyTitle" xml:space="preserve"><value>لا توجد قوالب بعد</value></data>
+  <data name="Templates_EmptyText" xml:space="preserve"><value>احفظ وحدة كقالب من الهيكل التنظيمي، ثم طبّقها من هنا.</value></data>
   <data name="Move_Title" xml:space="preserve"><value>نقل الوحدة</value></data>
   <data name="Move_NewParent" xml:space="preserve"><value>الوحدة الأم الجديدة</value></data>
   <data name="Move_Confirm" xml:space="preserve"><value>نقل &quot;{0}&quot; من &quot;{1}&quot; إلى &quot;{2}&quot;؟</value></data>
@@ -467,6 +479,18 @@
   <data name="Staff_StatusHistory" xml:space="preserve"><value>سجل الحالة</value></data>
   <data name="Staff_Reason" xml:space="preserve"><value>السبب</value></data>
   <data name="Staff_LimitedView" xml:space="preserve"><value>ينتمي هذا الشخص إلى وحدة أخرى، لذلك بعض البيانات مخفية.</value></data>
+  <data name="Staff_Subtitle" xml:space="preserve"><value>المعلمون والإداريون في جهتك، وأدوارهم وحالة حساباتهم.</value></data>
+  <data name="Staff_EmptyTitle" xml:space="preserve"><value>لا يوجد موظفون مطابقون</value></data>
+  <data name="Staff_EmptyText" xml:space="preserve"><value>غيّر عوامل التصفية أو أضف موظفًا جديدًا.</value></data>
+  <data name="Staff_BackToList" xml:space="preserve"><value>كل الموظفين</value></data>
+  <data name="Staff_Details" xml:space="preserve"><value>بيانات الحساب</value></data>
+  <data name="Staff_NoRoles" xml:space="preserve"><value>لا توجد أدوار مسندة.</value></data>
+  <data name="Staff_NoHistory" xml:space="preserve"><value>لم تتغير الحالة بعد.</value></data>
+  <data name="Staff_SectionPerson" xml:space="preserve"><value>الاسم والمسمى الوظيفي</value></data>
+  <data name="Staff_SectionContact" xml:space="preserve"><value>التواصل والهوية</value></data>
+  <data name="Staff_SectionAccount" xml:space="preserve"><value>الحساب</value></data>
+  <data name="Staff_EmailReadOnlyHelp" xml:space="preserve"><value>لا يمكن تغيير البريد الإلكتروني من هنا.</value></data>
+  <data name="Staff_ExpiresOnHelp" xml:space="preserve"><value>اتركه فارغًا إذا لم يكن للحساب تاريخ انتهاء.</value></data>
   <data name="Person_Photo" xml:space="preserve"><value>الصورة</value></data>
   <data name="Person_ChangePhoto" xml:space="preserve"><value>تغيير الصورة</value></data>
   <data name="Person_RemovePhoto" xml:space="preserve"><value>إزالة الصورة</value></data>
@@ -542,6 +566,11 @@
   <data name="Error_invalid_short_code" xml:space="preserve"><value>الرمز المختصر غير صالح: من 2 إلى 20 حرفًا لاتينيًا صغيرًا أو رقمًا أو شرطة.</value></data>
   <data name="Error_teacher_already_assigned" xml:space="preserve"><value>هذا المعلم مُسنَد بالفعل إلى هذا المقرر في هذا الصف.</value></data>
   <data name="Error_assignment_ended" xml:space="preserve"><value>انتهى هذا الإسناد بالفعل ولا يمكن تعديله.</value></data>
+  <data name="Error_module_visibility_range_invalid" xml:space="preserve"><value>حدد تاريخ بداية أو نهاية للوحدة المجدولة، على أن تسبق البداية النهاية.</value></data>
+  <data name="Error_module_target_invalid" xml:space="preserve"><value>اختر مجموعة من هذا المقرر الدراسي، أو اجعل الوحدة للمقرر كله.</value></data>
+  <data name="Error_asset_type_not_allowed" xml:space="preserve"><value>نوع هذا الملف غير مسموح به هنا.</value></data>
+  <data name="Error_asset_too_large" xml:space="preserve"><value>حجم الملف أكبر من الحد المسموح به.</value></data>
+  <data name="Error_completion_not_manual" xml:space="preserve"><value>تكتمل هذه الوحدة تلقائيًا ولا يمكن تعليمها يدويًا.</value></data>
   <data name="Error_course_in_use" xml:space="preserve"><value>المقرر مستخدم في فصول ولا يمكن حذفه.</value></data>
   <data name="Error_course_not_available" xml:space="preserve"><value>هذا المقرر غير متاح في هذه الوحدة.</value></data>
   <data name="Error_allocation_exists" xml:space="preserve"><value>المقرر مخصص لهذه الوحدة من قبل.</value></data>
@@ -616,6 +645,9 @@
   <data name="Perm_Groups_Manage" xml:space="preserve"><value>إدارة المجموعات</value></data>
   <data name="PermModule_LessonPlans" xml:space="preserve"><value>خطط الدروس</value></data>
   <data name="Perm_LessonPlans_View" xml:space="preserve"><value>عرض خطط الدروس</value></data>
+  <data name="PermModule_Modules" xml:space="preserve"><value>وحدات الدروس</value></data>
+  <data name="Perm_Modules_View" xml:space="preserve"><value>عرض وحدات الدروس</value></data>
+  <data name="Perm_Modules_Manage" xml:space="preserve"><value>إدارة وحدات الدروس</value></data>
   <data name="Policy_CreateStudents" xml:space="preserve"><value>منع إنشاء الطلاب واستيرادهم</value></data>
   <data name="Policy_CreateCourses" xml:space="preserve"><value>منع إنشاء المقررات واستيرادها</value></data>
   <data name="Policy_CreateClasses" xml:space="preserve"><value>منع إنشاء الفصول</value></data>
@@ -651,6 +683,7 @@
   <data name="AuditEntity_CourseRestriction" xml:space="preserve"><value>قيد مقرر</value></data>
   <data name="AuditEntity_CourseSupervisor" xml:space="preserve"><value>مشرف مقرر</value></data>
   <data name="AuditEntity_Blueprint" xml:space="preserve"><value>مخطط دراسي</value></data>
+  <data name="AuditEntity_ClassLessonPlan" xml:space="preserve"><value>خطة الدروس للصف</value></data>
   <data name="AuditEntity_Class" xml:space="preserve"><value>فصل</value></data>
   <data name="AuditEntity_ClassStudent" xml:space="preserve"><value>طالب في فصل</value></data>
   <data name="AuditEntity_ClassCourse" xml:space="preserve"><value>مقرر فصل</value></data>
@@ -661,6 +694,9 @@
   <data name="AuditEntity_StudentGroup" xml:space="preserve"><value>مجموعة طلاب</value></data>
   <data name="AuditEntity_GroupMember" xml:space="preserve"><value>عضو مجموعة</value></data>
   <data name="AuditEntity_StudentTransfer" xml:space="preserve"><value>نقل طالب</value></data>
+  <data name="AuditEntity_LessonModule" xml:space="preserve"><value>وحدة درس</value></data>
+  <data name="AuditEntity_ModuleContent" xml:space="preserve"><value>محتوى وحدة</value></data>
+  <data name="AuditEntity_Asset" xml:space="preserve"><value>ملف وسائط</value></data>
   <data name="Notif_Students_ChangeRequested" xml:space="preserve"><value>أرسل {StudentName} طلب تعديل بيانات.</value></data>
   <data name="NotifEvent_Students_ChangeRequested" xml:space="preserve"><value>طلب تعديل بيانات طالب</value></data>
   <data name="Notif_Students_ChangeRequestDecided" xml:space="preserve"><value>تم البت في طلب تعديل بيانات {StudentName}: {Decision}.</value></data>
@@ -764,6 +800,50 @@
   <data name="Import_Button" xml:space="preserve"><value>استيراد من Excel</value></data>
   <data name="Clients_ShortCode" xml:space="preserve"><value>الرمز المختصر</value></data>
   <data name="Clients_ShortCodeHelp" xml:space="preserve"><value>يُستخدم في أسماء دخول الطلاب (الكود@الرمز): من 2 إلى 20 حرفًا إنجليزيًا صغيرًا أو رقمًا أو شرطة. اتركه فارغًا ليُشتق من رمز الوحدة الجذرية.</value></data>
+  <data name="Nav_Classes" xml:space="preserve"><value>الفصول</value></data>
+  <data name="Classes_Title" xml:space="preserve"><value>الفصول</value></data>
+  <data name="Classes_YearClosed" xml:space="preserve"><value>هذا العام الدراسي مغلق. تُعرض الفصول ولا يمكن تعديلها.</value></data>
+  <data name="Class_New" xml:space="preserve"><value>فصل جديد</value></data>
+  <data name="Class_Edit" xml:space="preserve"><value>تعديل الفصل</value></data>
+  <data name="Class_Created" xml:space="preserve"><value>تم إنشاء الفصل.</value></data>
+  <data name="Class_Code" xml:space="preserve"><value>الرمز</value></data>
+  <data name="Class_Unit" xml:space="preserve"><value>الوحدة</value></data>
+  <data name="Class_Students" xml:space="preserve"><value>الطلاب</value></data>
+  <data name="Class_Capacity" xml:space="preserve"><value>السعة</value></data>
+  <data name="Class_CapacityHelp" xml:space="preserve"><value>اختياري: عدد الطلاب الذي يتسع له الفصل.</value></data>
+  <data name="Class_Homeroom" xml:space="preserve"><value>مدرس الفصل</value></data>
+  <data name="Class_Courses" xml:space="preserve"><value>المقررات</value></data>
+  <data name="Class_Close" xml:space="preserve"><value>إغلاق الفصل</value></data>
+  <data name="Class_CloseConfirm" xml:space="preserve"><value>إغلاق {0}؟ لا يمكن تعديل الفصل المغلق بعد ذلك.</value></data>
+  <data name="ClassStatus_Active" xml:space="preserve"><value>نشط</value></data>
+  <data name="ClassStatus_Closed" xml:space="preserve"><value>مغلق</value></data>
+  <data name="BulkClasses_Title" xml:space="preserve"><value>إنشاء عدة فصول</value></data>
+  <data name="BulkClasses_Create" xml:space="preserve"><value>إنشاء الفصول</value></data>
+  <data name="BulkClasses_NamePatternAr" xml:space="preserve"><value>نمط الاسم (بالعربية)</value></data>
+  <data name="BulkClasses_NamePatternEn" xml:space="preserve"><value>نمط الاسم (بالإنجليزية)</value></data>
+  <data name="BulkClasses_CodePattern" xml:space="preserve"><value>نمط الرمز</value></data>
+  <data name="BulkClasses_PatternHelp" xml:space="preserve"><value>استخدم {N} مرة واحدة؛ يُستبدل بالرقم.</value></data>
+  <data name="BulkClasses_From" xml:space="preserve"><value>من الرقم</value></data>
+  <data name="BulkClasses_To" xml:space="preserve"><value>إلى الرقم</value></data>
+  <data name="BulkClasses_Preview" xml:space="preserve"><value>معاينة</value></data>
+  <data name="BulkClasses_Count" xml:space="preserve"><value>سيتم إنشاء {0} فصلًا.</value></data>
+  <data name="BulkClasses_Created" xml:space="preserve"><value>تم إنشاء {0} فصلًا.</value></data>
+  <data name="BulkClasses_PatternProblem" xml:space="preserve"><value>يجب أن يحتوي كل نمط من الأنماط الثلاثة على {N} مرة واحدة بالضبط.</value></data>
+  <data name="BulkClasses_RangeProblem" xml:space="preserve"><value>يجب ألا يقل الرقم الأخير عن الأول.</value></data>
+  <data name="BulkClasses_TooMany" xml:space="preserve"><value>يمكن إنشاء {0} فصلًا كحد أقصى دفعة واحدة.</value></data>
+  <data name="CopyClasses_Title" xml:space="preserve"><value>نسخ إلى عام آخر</value></data>
+  <data name="CopyClasses_SourceYear" xml:space="preserve"><value>النسخ من عام</value></data>
+  <data name="CopyClasses_TargetYear" xml:space="preserve"><value>النسخ إلى عام</value></data>
+  <data name="CopyClasses_IncludeCourses" xml:space="preserve"><value>نسخ مقررات كل فصل أيضًا</value></data>
+  <data name="CopyClasses_ReplaceFrom" xml:space="preserve"><value>استبدال النص</value></data>
+  <data name="CopyClasses_ReplaceTo" xml:space="preserve"><value>بـ</value></data>
+  <data name="CopyClasses_ReplaceHelp" xml:space="preserve"><value>اختياري، في الأسماء والرموز (مثلًا 2026 بـ 2027).</value></data>
+  <data name="CopyClasses_StudentsNote" xml:space="preserve"><value>لا يتم نسخ الطلاب أبدًا.</value></data>
+  <data name="CopyClasses_Copy" xml:space="preserve"><value>نسخ</value></data>
+  <data name="CopyClasses_Result" xml:space="preserve"><value>تم إنشاء {0} فصلًا في العام المستهدف.</value></data>
+  <data name="CopyClasses_Skipped" xml:space="preserve"><value>{0} فصلًا موجود مسبقًا في العام المستهدف وتم تخطيه:</value></data>
+  <data name="Student_OverCapacityConfirm" xml:space="preserve"><value>هذا الفصل مكتمل. هل تريد وضع الطالب فيه على أي حال؟</value></data>
+  <data name="Student_PlaceAnyway" xml:space="preserve"><value>وضع على أي حال</value></data>
   <data name="Student_Profile" xml:space="preserve"><value>الملف الشخصي</value></data>
   <data name="Student_Edit" xml:space="preserve"><value>تعديل بيانات الطالب</value></data>
   <data name="Student_Guardians" xml:space="preserve"><value>أولياء الأمور</value></data>
@@ -782,4 +862,83 @@
   <data name="Flag_Inherit" xml:space="preserve"><value>وراثة ({0})</value></data>
   <data name="Flag_On" xml:space="preserve"><value>تشغيل</value></data>
   <data name="Flag_Off" xml:space="preserve"><value>إيقاف</value></data>
+  <data name="Nav_Guardians" xml:space="preserve"><value>أولياء الأمور</value></data>
+  <data name="Guardian_Remove" xml:space="preserve"><value>إزالة من الطالب</value></data>
+  <data name="Guardian_SetPrimary" xml:space="preserve"><value>تعيين كولي أمر أساسي</value></data>
+  <data name="Guardian_OtherChildren" xml:space="preserve"><value>ولي أمر لـ {0} طالب آخر أيضًا</value></data>
+  <data name="Guardian_Children" xml:space="preserve"><value>الأبناء</value></data>
+  <data name="Guardian_Edit" xml:space="preserve"><value>تعديل بيانات ولي الأمر</value></data>
+  <data name="Guardian_PortalInvite" xml:space="preserve"><value>إرسال دعوة البوابة</value></data>
+  <data name="Guardian_PortalActive" xml:space="preserve"><value>حساب البوابة مفعل</value></data>
+  <data name="Guardian_PortalNone" xml:space="preserve"><value>لا يوجد حساب في البوابة</value></data>
+  <data name="Guardian_PortalDisabled" xml:space="preserve"><value>بوابة أولياء الأمور غير مفعلة لهذه الوحدة.</value></data>
+  <data name="Guardian_NoEmail" xml:space="preserve"><value>أضف بريدًا إلكترونيًا لدعوة ولي الأمر.</value></data>
+  <data name="Guardian_UnlinkConfirm" xml:space="preserve"><value>إزالة {0} من هذا الطالب؟</value></data>
+  <data name="Guardian_InvitationSent" xml:space="preserve"><value>تم إرسال الدعوة</value></data>
+  <data name="Guardian_LinkTitle" xml:space="preserve"><value>ربط ولي أمر</value></data>
+  <data name="StudentField_NameAr" xml:space="preserve"><value>الاسم بالعربية</value></data>
+  <data name="StudentField_NameEn" xml:space="preserve"><value>الاسم بالإنجليزية</value></data>
+  <data name="StudentField_NicknameAr" xml:space="preserve"><value>اسم الشهرة بالعربية</value></data>
+  <data name="StudentField_NicknameEn" xml:space="preserve"><value>اسم الشهرة بالإنجليزية</value></data>
+  <data name="StudentField_DateOfBirth" xml:space="preserve"><value>تاريخ الميلاد</value></data>
+  <data name="StudentField_Gender" xml:space="preserve"><value>الجنس</value></data>
+  <data name="StudentField_Religion" xml:space="preserve"><value>الديانة</value></data>
+  <data name="StudentField_Nationality" xml:space="preserve"><value>الجنسية</value></data>
+  <data name="StudentField_NationalId" xml:space="preserve"><value>رقم الهوية الوطنية</value></data>
+  <data name="StudentField_StudentCode" xml:space="preserve"><value>رقم الطالب</value></data>
+  <data name="StudentField_Mobile" xml:space="preserve"><value>رقم الجوال</value></data>
+  <data name="StudentField_Email" xml:space="preserve"><value>البريد الإلكتروني</value></data>
+  <data name="StudentField_Photo" xml:space="preserve"><value>الصورة</value></data>
+  <data name="Nav_MyProfile" xml:space="preserve"><value>ملفي الشخصي</value></data>
+  <data name="Nav_ChangeRequests" xml:space="preserve"><value>طلبات التعديل</value></data>
+  <data name="MyProfile_Title" xml:space="preserve"><value>ملفي الشخصي</value></data>
+  <data name="MyProfile_Saved" xml:space="preserve"><value>تم حفظ التعديلات.</value></data>
+  <data name="MyProfile_RequestChange" xml:space="preserve"><value>طلب تعديل</value></data>
+  <data name="MyProfile_RequestSent" xml:space="preserve"><value>تم إرسال طلبك للموافقة.</value></data>
+  <data name="MyProfile_Requests" xml:space="preserve"><value>طلباتي</value></data>
+  <data name="MyProfile_PendingBlocks" xml:space="preserve"><value>لديك طلب بانتظار الموافقة. ألغِه لإرسال طلب جديد.</value></data>
+  <data name="MyProfile_SendRequest" xml:space="preserve"><value>إرسال الطلب</value></data>
+  <data name="MyProfile_NothingChanged" xml:space="preserve"><value>غيّر قيمة واحدة على الأقل لإرسال الطلب.</value></data>
+  <data name="MyProfile_Fields" xml:space="preserve"><value>الحقول</value></data>
+  <data name="ChangeRequest_Note" xml:space="preserve"><value>ملاحظة</value></data>
+  <data name="ChangeRequest_Comment" xml:space="preserve"><value>تعليق</value></data>
+  <data name="ChangeRequest_Before" xml:space="preserve"><value>الحالي</value></data>
+  <data name="ChangeRequest_After" xml:space="preserve"><value>المطلوب</value></data>
+  <data name="ChangeRequest_Approve" xml:space="preserve"><value>موافقة</value></data>
+  <data name="ChangeRequest_Reject" xml:space="preserve"><value>رفض</value></data>
+  <data name="ChangeRequest_Review" xml:space="preserve"><value>مراجعة</value></data>
+  <data name="ChangeRequest_CommentRequired" xml:space="preserve"><value>أدخل سبب الرفض.</value></data>
+  <data name="ChangeRequest_Cancel" xml:space="preserve"><value>إلغاء الطلب</value></data>
+  <data name="ChangeRequestStatus_Pending" xml:space="preserve"><value>قيد الانتظار</value></data>
+  <data name="ChangeRequestStatus_Approved" xml:space="preserve"><value>تمت الموافقة</value></data>
+  <data name="ChangeRequestStatus_Rejected" xml:space="preserve"><value>مرفوض</value></data>
+  <data name="ChangeRequestStatus_Cancelled" xml:space="preserve"><value>ملغي</value></data>
+  <data name="Nav_MyClassCourses" xml:space="preserve"><value>مقررات فصولي</value></data>
+  <data name="MyClassCourses_Title" xml:space="preserve"><value>مقررات فصولي</value></data>
+  <data name="MyClassCourses_Empty" xml:space="preserve"><value>لا توجد لديك مقررات فصول في العام المحدد.</value></data>
+  <data name="MyClassCourses_Students" xml:space="preserve"><value>{0} طالبًا</value></data>
+  <data name="MyClassCourses_Optional" xml:space="preserve"><value>اختياري</value></data>
+  <data name="MyClassCourses_PlanVersion" xml:space="preserve"><value>الإصدار {0} من الخطة</value></data>
+  <data name="MyClassCourses_NoPlan" xml:space="preserve"><value>لا توجد خطة بعد</value></data>
+  <data name="MyClassCourses_OpenPlan" xml:space="preserve"><value>فتح الخطة</value></data>
+  <data name="Home_MyClassCoursesHint" xml:space="preserve"><value>اطلع على مقررات فصولك وخطط دروسها.</value></data>
+  <data name="LessonPlan_Title" xml:space="preserve"><value>خطة الدروس</value></data>
+  <data name="LessonPlan_Version" xml:space="preserve"><value>الإصدار {0}</value></data>
+  <data name="LessonPlan_Synced" xml:space="preserve"><value>آخر مزامنة {0}</value></data>
+  <data name="LessonPlan_Empty" xml:space="preserve"><value>لم يتلق مقرر الفصل هذا خطة بعد. تظهر الخطة عند نشر مخطط المقرر.</value></data>
+  <data name="LessonPlan_Hidden" xml:space="preserve"><value>مخفي</value></data>
+  <data name="LessonPlan_Planned" xml:space="preserve"><value>المخطط</value></data>
+  <data name="LessonPlan_HijriSuffix" xml:space="preserve"><value>هـ</value></data>
+  <data name="LessonPlan_Modules" xml:space="preserve"><value>الوحدات التعليمية</value></data>
+  <data name="LessonPlan_ModulesLater" xml:space="preserve"><value>تصل الوحدات التعليمية في إصدار لاحق.</value></data>
+  <data name="RichText_Bold" xml:space="preserve"><value>غامق</value></data>
+  <data name="RichText_BulletList" xml:space="preserve"><value>قائمة نقطية</value></data>
+  <data name="RichText_Italic" xml:space="preserve"><value>مائل</value></data>
+  <data name="RichText_Link" xml:space="preserve"><value>إدراج رابط</value></data>
+  <data name="RichText_LinkApply" xml:space="preserve"><value>تطبيق</value></data>
+  <data name="RichText_LinkInvalid" xml:space="preserve"><value>أدخل رابطاً صالحاً (https:// أو mailto:).</value></data>
+  <data name="RichText_LinkRemove" xml:space="preserve"><value>إزالة الرابط</value></data>
+  <data name="RichText_LinkUrl" xml:space="preserve"><value>عنوان الرابط</value></data>
+  <data name="RichText_NumberedList" xml:space="preserve"><value>قائمة مرقمة</value></data>
+  <data name="RichText_Toolbar" xml:space="preserve"><value>شريط أدوات التنسيق</value></data>
 </root>
