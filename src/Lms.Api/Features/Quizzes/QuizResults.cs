@@ -70,7 +70,10 @@ public sealed class QuizResults(LmsDbContext db, IClock clock, AttemptService at
             return false; // unlimited attempts: only the close releases them
         }
 
-        return await db.Set<QuizAttempt>().CountAsync(a => a.QuizId == quiz.Id && a.StudentId == studentId, ct) >= max;
+        // An attempt in progress still counts as a chance to use what the student has seen: nothing is released until none is left
+        // to start AND none is in progress (the in-progress one would carry the key into its answers).
+        var mine = db.Set<QuizAttempt>().Where(a => a.QuizId == quiz.Id && a.StudentId == studentId);
+        return await mine.CountAsync(ct) >= max && !await mine.AnyAsync(a => a.Status == QuizAttempt.InProgress, ct);
     }
 
     private async Task<List<AttemptResultQuestionDto>> QuestionsAsync(QuizAttempt attempt, bool showCorrect, CancellationToken ct)
