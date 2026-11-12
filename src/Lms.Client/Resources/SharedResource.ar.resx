@@ -805,6 +805,53 @@
   <data name="ClassImport_Year" xml:space="preserve"><value>يُوضع الطلاب في فصول العام الدراسي الحالي: {0}.</value></data>
   <data name="ClassImport_Help" xml:space="preserve"><value>املأ صفًا لكل طالب برقم الطالب ورمز الفصل. يجب أن يكون الطلاب مسجلين من قبل، وأن يكون الفصل نشطًا في العام الدراسي الحالي.</value></data>
   <data name="Import_SensitiveInvalid" xml:space="preserve"><value>هذه القيمة غير صالحة.</value></data>
+  <data name="ClassStudents_Title" xml:space="preserve"><value>طلاب الفصل</value></data>
+  <data name="ClassStudents_Add" xml:space="preserve"><value>إضافة طلاب</value></data>
+  <data name="ClassStudents_AddAnyway" xml:space="preserve"><value>إضافة على أي حال</value></data>
+  <data name="ClassStudents_UnplacedOnly" xml:space="preserve"><value>الطلاب بدون فصل فقط</value></data>
+  <data name="ClassStudents_Selected" xml:space="preserve"><value>تم اختيار {0}</value></data>
+  <data name="ClassStudents_Empty" xml:space="preserve"><value>لا يوجد طلاب في هذا الفصل بعد.</value></data>
+  <data name="ClassStudents_Remove" xml:space="preserve"><value>إزالة من الفصل</value></data>
+  <data name="ClassStudents_RemoveConfirm" xml:space="preserve"><value>إزالة {0} من هذا الفصل؟ ستُسقَط أيضًا تسجيلاته في مقررات الفصل.</value></data>
+  <data name="ClassStudents_AddSummary" xml:space="preserve"><value>تمت إضافة {0} طالبًا وإنشاء {1} تسجيلًا في المقررات.</value></data>
+  <data name="ClassStudents_OverCapacity" xml:space="preserve"><value>تجاوز الفصل الآن سعته.</value></data>
+  <data name="ClassStudents_SkipsTitle" xml:space="preserve"><value>تم تخطي {0} تسجيلًا في مقررات بسبب قيود المقرر</value></data>
+  <data name="ClassStudents_RequestException" xml:space="preserve"><value>طلب استثناء</value></data>
+  <data name="ClassStudentStatus_Active" xml:space="preserve"><value>في الفصل</value></data>
+  <data name="ClassStudentStatus_TransferredOut" xml:space="preserve"><value>نُقل خارج الفصل</value></data>
+  <data name="ClassStudentStatus_Removed" xml:space="preserve"><value>أُزيل</value></data>
+  <data name="RestrictionType_Religion" xml:space="preserve"><value>الديانة</value></data>
+  <data name="RestrictionType_Gender" xml:space="preserve"><value>الجنس</value></data>
+  <data name="RestrictionType_LevelType" xml:space="preserve"><value>المستوى</value></data>
+  <data name="Enrollment_Title" xml:space="preserve"><value>التسجيل في المقررات</value></data>
+  <data name="Enrollment_Course" xml:space="preserve"><value>المقرر</value></data>
+  <data name="Enrollment_Source" xml:space="preserve"><value>المصدر</value></data>
+  <data name="Enrollment_From" xml:space="preserve"><value>من</value></data>
+  <data name="Enrollment_To" xml:space="preserve"><value>إلى</value></data>
+  <data name="Enrollment_EffectiveOn" xml:space="preserve"><value>تاريخ السريان</value></data>
+  <data name="Enrollment_Drop" xml:space="preserve"><value>إسقاط</value></data>
+  <data name="Enrollment_DropConfirm" xml:space="preserve"><value>إسقاط تسجيل {0}؟</value></data>
+  <data name="Enrollment_Enroll" xml:space="preserve"><value>تسجيل المحددين</value></data>
+  <data name="Enrollment_EnrollOptional" xml:space="preserve"><value>تسجيل طلاب في هذا المقرر الاختياري</value></data>
+  <data name="Enrollment_NoCandidates" xml:space="preserve"><value>جميع طلاب الفصل مسجلون بالفعل.</value></data>
+  <data name="EnrollmentSource_Auto" xml:space="preserve"><value>تلقائي</value></data>
+  <data name="EnrollmentSource_Manual" xml:space="preserve"><value>يدوي</value></data>
+  <data name="EnrollmentSource_Exceptional" xml:space="preserve"><value>استثناء</value></data>
+  <data name="EnrollmentSource_Transfer" xml:space="preserve"><value>نقل</value></data>
+  <data name="EnrollmentStatus_Active" xml:space="preserve"><value>نشط</value></data>
+  <data name="EnrollmentStatus_Dropped" xml:space="preserve"><value>مُسقَط</value></data>
+  <data name="Transfer_Title" xml:space="preserve"><value>نقل إلى فصل آخر</value></data>
+  <data name="Transfer_ToClass" xml:space="preserve"><value>الفصل الجديد</value></data>
+  <data name="Transfer_From" xml:space="preserve"><value>من فصل</value></data>
+  <data name="Transfer_Preview" xml:space="preserve"><value>معاينة الأثر</value></data>
+  <data name="Transfer_Confirm" xml:space="preserve"><value>نقل</value></data>
+  <data name="Transfer_Done" xml:space="preserve"><value>تم نقل الطالب.</value></data>
+  <data name="Transfer_Kept" xml:space="preserve"><value>يبقى</value></data>
+  <data name="Transfer_Dropped" xml:space="preserve"><value>يُسقَط</value></data>
+  <data name="Transfer_Added" xml:space="preserve"><value>يُضاف</value></data>
+  <data name="Transfer_Restricted" xml:space="preserve"><value>لا يُضاف (قيود)</value></data>
+  <data name="Transfer_ConfirmOverCapacity" xml:space="preserve"><value>سيتجاوز الفصل الجديد سعته. أكمل النقل على أي حال.</value></data>
+  <data name="Transfer_History" xml:space="preserve"><value>عمليات النقل</value></data>
   <data name="Student_OverCapacityConfirm" xml:space="preserve"><value>هذا الفصل مكتمل. هل تريد وضع الطالب فيه على أي حال؟</value></data>
   <data name="Student_PlaceAnyway" xml:space="preserve"><value>وضع على أي حال</value></data>
   <data name="Student_Profile" xml:space="preserve"><value>الملف الشخصي</value></data>
@@ -825,6 +872,12 @@
   <data name="Flag_Inherit" xml:space="preserve"><value>وراثة ({0})</value></data>
   <data name="Flag_On" xml:space="preserve"><value>تشغيل</value></data>
   <data name="Flag_Off" xml:space="preserve"><value>إيقاف</value></data>
+  <data name="TransferReject_not_placed" xml:space="preserve"><value>الطالب غير موضوع في فصل، فلا يوجد ما يُنقل منه.</value></data>
+  <data name="TransferReject_different_year" xml:space="preserve"><value>الفصل الجديد تابع لعام دراسي مختلف.</value></data>
+  <data name="TransferReject_same_class" xml:space="preserve"><value>الطالب موجود بالفعل في هذا الفصل.</value></data>
+  <data name="TransferReject_date_outside_year" xml:space="preserve"><value>تاريخ النقل خارج العام الدراسي.</value></data>
+  <data name="TransferReject_date_before_placement" xml:space="preserve"><value>تاريخ النقل قبل انضمام الطالب إلى فصله الحالي.</value></data>
+  <data name="TransferReject_different_level_type" xml:space="preserve"><value>النقل إلى وحدة أخرى يتطلب فصلًا من نفس نوع المستوى.</value></data>
   <data name="Nav_Guardians" xml:space="preserve"><value>أولياء الأمور</value></data>
   <data name="Guardian_Remove" xml:space="preserve"><value>إزالة من الطالب</value></data>
   <data name="Guardian_SetPrimary" xml:space="preserve"><value>تعيين كولي أمر أساسي</value></data>

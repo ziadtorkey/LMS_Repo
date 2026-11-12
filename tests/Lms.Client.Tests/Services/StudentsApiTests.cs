@@ -38,4 +38,18 @@ public sealed class StudentsApiTests
         Assert.Equal("possible_duplicate", problem.Code);
         Assert.Equal(3, problem.Count);
     }
+
+    [Fact]
+    public async Task Problem_response_exposes_the_reason_extension_next_to_the_code()
+    {
+        var response = new HttpResponseMessage(HttpStatusCode.BadRequest)
+        {
+            Content = new StringContent("{\"code\":\"transfer_invalid\",\"reason\":\"different_year\",\"detail\":\"x\"}", Encoding.UTF8, "application/problem+json"),
+        };
+
+        var problem = await ApiProblemException.FromResponseAsync(response);
+
+        Assert.Equal("transfer_invalid", problem.Code); // the reason does not replace the code
+        Assert.Equal("different_year", problem.Reason);
+    }
 }

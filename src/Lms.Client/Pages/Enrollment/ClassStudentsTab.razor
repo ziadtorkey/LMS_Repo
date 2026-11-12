@@ -1,0 +1,153 @@
+@using System.Globalization
+@using Lms.Client.Services.Api
+@using Lms.Shared.Classes
+@using Lms.Shared.Enrollment
+@inject IEnrollmentApi Api
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+@* The students tab of a class: who is in it, add students (with restriction skips and capacity), remove with a reason, move to another class. *@
+<MudStack Spacing="2" data-testid="class-students-tab">
+    @if (_summary is not null)
+    {
+        <MudAlert Severity="Severity.Success" data-testid="add-summary">@L["ClassStudents_AddSummary", _summary.Result.Added, _summary.Result.EnrollmentsCreated]</MudAlert>
+        @if (_summary.Result.OverCapacity)
+        {
+            <MudAlert Severity="Severity.Warning" data-testid="add-over-capacity">@L["ClassStudents_OverCapacity"]</MudAlert>
+        }
+        <RestrictionSkipsPanel Skips="_summary.Result.RestrictionSkips" Names="_summary.Names" CanRequestException="CanRequestException"
+                               OnRequestException="OnRequestException" />
+    }
+    @if (CanManage && !IsReadOnly)
+    {
+        <div>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PersonAdd" OnClick="AddAsync"
+                       data-testid="class-students-add">@L["ClassStudents_Add"]</MudButton>
+        </div>
+    }
+    @if (_failed)
+    {
+        <MudAlert Severity="Severity.Error" data-testid="api-error">@L["Api_Error"]</MudAlert>
+    }
+    else if (_students.Count == 0)
+    {
+        <MudText data-testid="class-students-empty">@L["ClassStudents_Empty"]</MudText>
+    }
+    else
+    {
+        <MudTable Items="_students" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" data-testid="class-students-table">
+            <HeaderContent>
+                <MudTh>@L["Student_Code"]</MudTh>
+                <MudTh>@L["Common_Name"]</MudTh>
+                <MudTh>@L["Student_Gender"]</MudTh>
+                <MudTh>@L["Enrollment_From"]</MudTh>
+                <MudTh>@L["Common_Status"]</MudTh>
+                <MudTh></MudTh>
+            </HeaderContent>
+            <RowTemplate Context="s">
+                <MudTd DataLabel="@L["Student_Code"]"><span dir="ltr">@s.StudentCode</span></MudTd>
+                <MudTd DataLabel="@L["Common_Name"]">
+                    <MudLink Href="@($"students/{s.StudentId}")" data-testid="@($"class-student-link-{s.Id}")">@Culture.Pick(s.NameAr, s.NameEn)</MudLink>
+                </MudTd>
+                <MudTd DataLabel="@L["Student_Gender"]">@L[$"Gender_{s.Gender}"]</MudTd>
+                <MudTd DataLabel="@L["Enrollment_From"]"><span dir="ltr">@s.From.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)</span></MudTd>
+                <MudTd DataLabel="@L["Common_Status"]" data-testid="@($"class-student-status-{s.Id}")">@L[$"ClassStudentStatus_{s.Status}"]</MudTd>
+                <MudTd>
+                    @if (s.Status == ClassStudentStatuses.Active && !IsReadOnly)
+                    {
+                        @if (CanTransfer)
+                        {
+                            <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="() => TransferAsync(s)"
+                                       data-testid="@($"class-student-transfer-{s.Id}")">@L["Transfer_Title"]</MudButton>
+                        }
+                        @if (CanManage)
+                        {
+                            <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Error" OnClick="() => RemoveAsync(s)"
+                                       data-testid="@($"class-student-remove-{s.Id}")">@L["ClassStudents_Remove"]</MudButton>
+                        }
+                    }
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    }
+</MudStack>
+
+@code {
+    private IReadOnlyList<ClassStudentDto> _students = [];
+    private AddStudentsOutcome? _summary;
+    private bool _failed;
+
+    [Parameter, EditorRequired] public ClassSummaryDto Class { get; set; } = default!;
+
+    /// <summary>True with Enrollment.Manage: add and remove students.</summary>
+    [Parameter] public bool CanManage { get; set; }
+
+    /// <summary>True with Enrollment.Transfer.</summary>
+    [Parameter] public bool CanTransfer { get; set; }
+
+    /// <summary>True with Enrollment.RequestException: restriction skips offer an exception request.</summary>
+    [Parameter] public bool CanRequestException { get; set; }
+
+    /// <summary>Raised with a restriction skip when the user asks for an exception (the request dialog is the exceptions page's).</summary>
+    [Parameter] public EventCallback<RestrictionSkipDto> OnRequestException { get; set; }
+
+    private bool IsReadOnly => Class.IsReadOnly;
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _failed = false;
+        var (students, failed) = await ApiCalls.RunAsync(() => Api.ListClassStudentsAsync(Class.Id), Navigation);
+        _failed = failed;
+        _students = students ?? [];
+    }
+
+    private async Task AddAsync()
+    {
+        var dialog = await Dialogs.ShowAsync<AddStudentsDialog>(L["ClassStudents_Add"],
+            new DialogParameters<AddStudentsDialog> { { x => x.ClassId, Class.Id }, { x => x.OrgUnitId, Class.OrgUnitId } },
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        if (await dialog.Result is { Canceled: false, Data: AddStudentsOutcome outcome })
+        {
+            _summary = outcome;
+            await LoadAsync();
+        }
+    }
+
+    private async Task RemoveAsync(ClassStudentDto student)
+    {
+        var dialog = await Dialogs.ShowAsync<ReasonDialog>(L["ClassStudents_Remove"],
+            new DialogParameters<ReasonDialog>
+            {
+                { x => x.Message, L["ClassStudents_RemoveConfirm", Culture.Pick(student.NameAr, student.NameEn)].Value },
+                { x => x.ConfirmText, L["ClassStudents_Remove"] },
+            }, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        if (await dialog.Result is not { Canceled: false, Data: ReasonResult reason }) return;
+        var ok = await ApiCalls.RunAsync(() => Api.RemoveFromClassAsync(Class.Id, student.Id, new RemoveFromClassRequest(reason.EffectiveOn, reason.Reason)),
+            Navigation, L, message => Snackbar.Add(message, Severity.Error));
+        if (!ok) return;
+        Snackbar.Add(L["Common_Saved"], Severity.Success);
+        await LoadAsync();
+    }
+
+    private async Task TransferAsync(ClassStudentDto student)
+    {
+        var dialog = await Dialogs.ShowAsync<TransferDialog>(L["Transfer_Title"],
+            new DialogParameters<TransferDialog>
+            {
+                { x => x.StudentId, student.StudentId },
+                { x => x.StudentName, Culture.Pick(student.NameAr, student.NameEn) },
+                { x => x.OrgUnitId, Class.OrgUnitId },
+                { x => x.AcademicYearId, Class.AcademicYearId },
+                { x => x.CurrentClassId, Class.Id },
+            }, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        if (await dialog.Result is { Canceled: false })
+        {
+            Snackbar.Add(L["Transfer_Done"], Severity.Success);
+            await LoadAsync();
+        }
+    }
+}
