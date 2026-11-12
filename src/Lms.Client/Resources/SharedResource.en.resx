@@ -875,4 +875,36 @@
   <data name="Asset_Download" xml:space="preserve"><value>Download</value></data>
   <data name="Asset_PreviewFailed" xml:space="preserve"><value>The file could not be loaded.</value></data>
   <data name="Asset_Reload" xml:space="preserve"><value>Reload</value></data>
+  <data name="Nav_Library" xml:space="preserve"><value>Library</value></data>
+  <data name="Library_Title" xml:space="preserve"><value>Digital library</value></data>
+  <data name="Library_New" xml:space="preserve"><value>New resource</value></data>
+  <data name="Library_Search" xml:space="preserve"><value>Search the library</value></data>
+  <data name="Library_Type" xml:space="preserve"><value>Type</value></data>
+  <data name="Library_Level" xml:space="preserve"><value>Level</value></data>
+  <data name="Library_Subject" xml:space="preserve"><value>Subject</value></data>
+  <data name="Library_Tag" xml:space="preserve"><value>Tag</value></data>
+  <data name="Library_Empty" xml:space="preserve"><value>No resources match.</value></data>
+  <data name="Library_Open" xml:space="preserve"><value>Open</value></data>
+  <data name="Library_AddToLesson" xml:space="preserve"><value>Add to lesson</value></data>
+  <data name="Library_DeleteConfirm" xml:space="preserve"><value>Delete the resource {0}?</value></data>
+  <data name="Library_Unit" xml:space="preserve"><value>Owning unit</value></data>
+  <data name="Library_DescriptionAr" xml:space="preserve"><value>Description (Arabic)</value></data>
+  <data name="Library_DescriptionEn" xml:space="preserve"><value>Description (English)</value></data>
+  <data name="Library_LevelHint" xml:space="preserve"><value>Leave empty for every level.</value></data>
+  <data name="Library_Tags" xml:space="preserve"><value>Tags</value></data>
+  <data name="Library_TagsHint" xml:space="preserve"><value>Separate tags with commas.</value></data>
+  <data name="Library_File" xml:space="preserve"><value>File</value></data>
+  <data name="Library_Cover" xml:space="preserve"><value>Cover image</value></data>
+  <data name="Library_DownloadAllowed" xml:space="preserve"><value>Allow download (otherwise reader only)</value></data>
+  <data name="Library_FileRequired" xml:space="preserve"><value>Upload the file first.</value></data>
+  <data name="Library_ClassCourse" xml:space="preserve"><value>Class course</value></data>
+  <data name="Library_Lesson" xml:space="preserve"><value>Lesson</value></data>
+  <data name="LibraryType_Book" xml:space="preserve"><value>Book</value></data>
+  <data name="LibraryType_Document" xml:space="preserve"><value>Document</value></data>
+  <data name="LibraryType_Video" xml:space="preserve"><value>Video</value></data>
+  <data name="LibraryType_Audio" xml:space="preserve"><value>Audio</value></data>
+  <data name="LibraryType_Link" xml:space="preserve"><value>Link</value></data>
+  <data name="LibraryType_Other" xml:space="preserve"><value>Other</value></data>
+  <data name="ModuleKind_LibraryResource" xml:space="preserve"><value>Library resource</value></data>
+  <data name="Error_download_not_allowed" xml:space="preserve"><value>This resource can be read here but not downloaded.</value></data>
 </root>
