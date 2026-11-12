@@ -264,6 +264,10 @@
   <data name="Calendar_InheritedFrom" xml:space="preserve"><value>من {0}</value></data>
   <data name="Years_DateOrder" xml:space="preserve"><value>يجب ألا يسبق تاريخ الانتهاء تاريخ البدء.</value></data>
   <data name="Years_Empty" xml:space="preserve"><value>لا توجد أعوام دراسية محددة لهذه الوحدة بعد.</value></data>
+  <data name="Years_EmptyHint" xml:space="preserve"><value>أنشئ عامًا دراسيًا، ثم أضف فصوله وإجازاته.</value></data>
+  <data name="Years_Subtitle" xml:space="preserve"><value>الأعوام الدراسية والفصول والتقويم لكل وحدة. الوحدات التابعة ترث أعوام الوحدة الأعلى.</value></data>
+  <data name="Terms_Empty" xml:space="preserve"><value>لا توجد فصول بعد.</value></data>
+  <data name="Calendar_Empty" xml:space="preserve"><value>لا توجد إجازات أو مناسبات في هذا العام بعد.</value></data>
   <data name="Years_ClosedHint" xml:space="preserve"><value>هذا العام مغلق ولا يمكن تعديله.</value></data>
   <data name="Years_DeleteConfirm" xml:space="preserve"><value>حذف العام الدراسي {0}؟</value></data>
   <data name="Terms_New" xml:space="preserve"><value>فصل جديد</value></data>
