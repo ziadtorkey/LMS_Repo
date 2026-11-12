@@ -7,7 +7,7 @@
 <MudStack Spacing="1" data-testid="asset-uploader">
     @if (_limits is not null)
     {
-        <MudText Typo="Typo.caption" data-testid="asset-limits">@L["Asset_Limits", AllowedList(), MaxMb]</MudText>
+        <MudText Typo="Typo.caption" data-testid="asset-limits">@((MarkupString)LimitsHtml())</MudText>
     }
     <InputFile OnChange="OnFileAsync" accept="@_accept" disabled="@_uploading" aria-label="@L["Asset_Choose"]"
                data-testid="asset-input" />
@@ -49,6 +49,10 @@
 
     private IEnumerable<AssetTypeDto> Offered() =>
         (_limits?.AllowedTypes ?? []).Where(t => AcceptedKinds is null || AcceptedKinds.Contains(t.Kind));
+
+    /// <summary>The limits sentence with the file extensions isolated as left-to-right text, so an Arabic sentence does not scramble them.</summary>
+    private string LimitsHtml() =>
+        L["Asset_Limits", $"<bdi dir=\"ltr\">{System.Net.WebUtility.HtmlEncode(AllowedList())}</bdi>", MaxMb].Value;
 
     private string AllowedList() => string.Join(" ", Offered().Select(t => t.Extension));
 
