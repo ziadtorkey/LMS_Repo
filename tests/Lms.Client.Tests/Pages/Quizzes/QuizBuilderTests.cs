@@ -352,6 +352,23 @@ public sealed class QuizBuilderTests : LessonPlansTestContext
     }
 
     [Fact]
+    public async Task Settings_warn_that_correct_answers_never_show_with_unlimited_attempts_and_no_close_date()
+    {
+        var page = await OpenAsync();
+        Assert.Empty(page.FindAll("[data-testid=quiz-review-never]"));   // 2 attempts: fine
+
+        await page.InvokeAsync(() => page.FindComponents<MudSelect<string>>().First(s => s.Instance.Label == "What students see after submitting")
+            .Instance.ValueChanged.InvokeAsync(ReviewPolicies.AnswersAndCorrect));
+        await page.InvokeAsync(() => page.FindComponents<MudNumericField<int?>>().First(n => n.Instance.Label == "Attempts allowed")
+            .Instance.ValueChanged.InvokeAsync(null));
+
+        Assert.Contains("never see the correct answers", page.Find("[data-testid=quiz-review-never]").TextContent);
+
+        await SetDateAsync(page, "Closes", new DateTime(2099, 1, 1));
+        Assert.Empty(page.FindAll("[data-testid=quiz-review-never]"));   // a close date reveals them
+    }
+
+    [Fact]
     public async Task Pages_render_rtl_in_arabic()
     {
         Culture.Current = new CultureInfo("ar");
