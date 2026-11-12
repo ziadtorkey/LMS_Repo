@@ -1,3 +1,4 @@
+using Lms.Domain.Access;
 using Lms.Domain.People;
 using Lms.Infrastructure.People.Guardians;
 using Lms.Infrastructure.Persistence;
@@ -26,10 +27,14 @@ internal static class GuardianMapper
         }).ToList();
     }
 
-    public static async Task<Dictionary<Guid, int>> ChildrenInScopeAsync(LmsDbContext db, IReadOnlyCollection<Guid> guardianIds, CancellationToken ct) =>
-        await db.Set<StudentGuardian>().Where(l => guardianIds.Contains(l.GuardianId))
+    public static async Task<Dictionary<Guid, int>> ChildrenInScopeAsync(
+        LmsDbContext db, IReadOnlyCollection<Guid> guardianIds, RelationshipFilter filter, CancellationToken ct)
+    {
+        var reachable = GuardianVisibility.ReachableStudentIds(db, filter);
+        return await db.Set<StudentGuardian>().Where(l => guardianIds.Contains(l.GuardianId) && reachable.Contains(l.StudentId))
             .GroupBy(l => l.GuardianId).Select(g => new { g.Key, Count = g.Select(l => l.StudentId).Distinct().Count() })
             .ToDictionaryAsync(g => g.Key, g => g.Count, ct);
+    }
 
     public static GuardianSummaryDto Summary(GuardianProfile g, int children) =>
         new(g.Id, g.NameAr, g.NameEn, g.Mobile, g.Email, children, g.UserId is not null);
