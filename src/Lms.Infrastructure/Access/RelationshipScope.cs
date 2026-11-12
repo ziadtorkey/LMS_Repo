@@ -83,8 +83,11 @@ public sealed class RelationshipScope(LmsDbContext db, ICurrentContext context, 
                     .Select(c => c.Id).ToListAsync(ct));
                 break;
             case Relationships.SupervisedCourses:
-                supervised.UnionWith(await db.Set<CourseSupervisor>()
-                    .Where(s => s.UserId == userId).Select(s => s.CourseId).ToListAsync(ct));
+                // ISOLATION-BYPASS: a course is owned by a unit that may lie above the supervisor's assignment (a school supervisor of a
+                // client-wide course); only the caller's own live rows of their active client are read.
+                supervised.UnionWith(await db.Set<CourseSupervisor>().IgnoreQueryFilters()
+                    .Where(s => s.UserId == userId && s.OrganizationId == context.OrganizationId && !s.IsDeleted)
+                    .Select(s => s.CourseId).ToListAsync(ct));
                 classCourses.UnionWith(await db.Set<ClassCourse>()
                     .Where(cc => supervised.Contains(cc.CourseId)).Select(cc => cc.Id).ToListAsync(ct));
                 break;

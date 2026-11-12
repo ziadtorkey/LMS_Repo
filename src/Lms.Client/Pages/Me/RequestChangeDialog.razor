@@ -1,0 +1,65 @@
+@using Lms.Client.Components.People
+@using Lms.Client.Services.Api
+@using Lms.Shared.People
+@inject IMyProfileApi Api
+@inject NavigationManager Navigation
+
+@* Asks for approval of changes to critical fields: only the fields whose value differs from the stored one are sent. *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="3">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" data-testid="dialog-error">@_error</MudAlert>
+            }
+            @foreach (var field in Profile.RequestableFields)
+            {
+                var name = field;
+                <StudentFieldEditor Field="@name" Label="@L[$"StudentField_{name}"]" Value="@_values[name]"
+                                    ValueChanged="v => _values[name] = v" HomeUnitId="Profile.Student.Summary.HomeOrgUnitId" />
+            }
+            <MudTextField T="string" @bind-Value="_note" Label="@L["ChangeRequest_Note"]" Lines="3" MaxLength="500" data-testid="request-note" />
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SendAsync" Disabled="_saving"
+                   data-testid="dialog-save">@L["MyProfile_SendRequest"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired] public MyStudentProfileDto Profile { get; set; } = default!;
+
+    private readonly Dictionary<string, string?> _values = [];
+    private string _note = "";
+    private string? _error;
+    private bool _saving;
+
+    protected override void OnInitialized()
+    {
+        foreach (var field in Profile.RequestableFields) _values[field] = StudentFieldText.Current(Profile.Student, field);
+    }
+
+    private async Task SendAsync()
+    {
+        _error = null;
+        var changes = Profile.RequestableFields
+            .Where(f => !string.Equals(_values[f] ?? "", StudentFieldText.Current(Profile.Student, f) ?? "", StringComparison.Ordinal))
+            .ToDictionary(f => f, f => _values[f]);
+        if (changes.Count == 0)
+        {
+            _error = L["MyProfile_NothingChanged"];
+            return;
+        }
+
+        _saving = true;
+        var saved = await ApiCalls.RunAsync(
+            () => Api.CreateRequestAsync(new CreateChangeRequestRequest(changes, string.IsNullOrWhiteSpace(_note) ? null : _note.Trim())),
+            Navigation, L, message => _error = message);
+        _saving = false;
+        if (saved) MudDialog.Close(DialogResult.Ok(true));
+    }
+}

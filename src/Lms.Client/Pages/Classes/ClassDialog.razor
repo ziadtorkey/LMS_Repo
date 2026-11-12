@@ -1,0 +1,126 @@
+@using Lms.Client.Components
+@using Lms.Client.Components.People
+@using Lms.Client.Services.Api
+@using Lms.Shared.Access
+@using Lms.Shared.Authorization
+@using Lms.Shared.Classes
+@using Lms.Shared.Organizations
+@using Lms.Shared.People
+@inject IClassesApi Api
+@inject IOrgApi Org
+@inject IStaffApi StaffApi
+@inject IAccessAdminApi Access
+@inject NavigationManager Navigation
+
+@* Create a class in the selected year, or edit one (the unit and year cannot change). The unit must host classes (level type CanHostClasses). *@
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form">
+            <MudStack Spacing="3">
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" data-testid="dialog-error">@_error</MudAlert>
+                }
+                <UnitPicker Value="_unitId" ValueChanged="id => _unitId = id" Label="@L["Class_Unit"]" Required="true" ReadOnly="Existing is not null"
+                            Filter="IsHostingUnit" TestId="class-unit" />
+                <MudTextField T="string" @bind-Value="_code" Label="@L["Class_Code"]" Required="true" RequiredError="@L["Common_Required"]" MaxLength="50"
+                              Validation="(Func<string, string?>)ValidateCode" dir="ltr" Error="_codeError is not null" ErrorText="@_codeError"
+                              data-testid="class-code" />
+                <BilingualNameFields @bind-NameAr="_nameAr" @bind-NameEn="_nameEn" IdPrefix="class-name" />
+                <MudNumericField T="int?" @bind-Value="_capacity" Label="@L["Class_Capacity"]" Min="1" Max="500" Clearable="true"
+                                 HelperText="@L["Class_CapacityHelp"]" data-testid="class-capacity" />
+                <MudAutocomplete T="StaffSummaryDto" Label="@L["Class_Homeroom"]" Value="_teacher" ValueChanged="t => _teacher = t" SearchFunc="SearchTeachersAsync"
+                                 ToStringFunc="DisplayTeacher" DebounceInterval="300" MaxItems="20" Clearable="true" ResetValueOnEmptyText="true"
+                                 data-testid="class-homeroom" />
+            </MudStack>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="_saving" data-testid="dialog-save">@L["Common_Save"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private static readonly System.Text.RegularExpressions.Regex CodePattern = new("^[A-Za-z0-9_-]{1,50}$");
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    /// <summary>The academic year new classes belong to (the selected year).</summary>
+    [Parameter, EditorRequired] public Guid AcademicYearId { get; set; }
+
+    /// <summary>The class to edit; null creates a new one.</summary>
+    [Parameter] public ClassSummaryDto? Existing { get; set; }
+
+    private MudForm _form = default!;
+    private HashSet<Guid> _hostingLevels = [];
+    private Guid? _unitId, _teacherRoleId;
+    private string _code = "", _nameAr = "", _nameEn = "";
+    private int? _capacity;
+    private StaffSummaryDto? _teacher;
+    private Guid? _existingTeacherId;
+    private string? _error, _codeError;
+    private bool _saving;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Existing is { } c)
+        {
+            (_unitId, _code, _nameAr, _nameEn, _capacity, _existingTeacherId) = (c.OrgUnitId, c.Code, c.NameAr, c.NameEn, c.Capacity, c.HomeroomTeacherUserId);
+            if (c.HomeroomTeacherUserId is { } userId)
+                _teacher = new StaffSummaryDto(Guid.Empty, userId, c.HomeroomTeacherNameAr ?? "", c.HomeroomTeacherNameEn ?? "", "", null, null, null,
+                    c.OrgUnitId, "", "", PersonStatuses.Active, null, null, false, []);
+        }
+        // Both lookups are conveniences: without them the unit list is empty or no teacher can be searched.
+        await ApiCalls.RunAsync(async () => _hostingLevels = (await Org.GetLevelTypesAsync()).Where(l => l.CanHostClasses).Select(l => l.Id).ToHashSet(),
+            Navigation, L, _ => { });
+        await ApiCalls.RunAsync(async () =>
+            _teacherRoleId = (await Access.GetRolesAsync()).FirstOrDefault(r => r.BuiltInKey == BuiltInRoles.Teacher)?.Id,
+            Navigation, L, _ => { });
+    }
+
+    private bool IsHostingUnit(OrgUnitNodeDto unit) => _hostingLevels.Contains(unit.LevelTypeId);
+
+    private string? ValidateCode(string value) => CodePattern.IsMatch(value ?? "") ? null : L["Common_InvalidCode"].Value;
+
+    private string DisplayTeacher(StaffSummaryDto? person) =>
+        person is null ? "" : string.IsNullOrEmpty(person.Email) ? CultureText.Pick(person.NameAr, person.NameEn) : $"{CultureText.Pick(person.NameAr, person.NameEn)} ({person.Email})";
+
+    private async Task<IEnumerable<StaffSummaryDto>> SearchTeachersAsync(string? text, CancellationToken ct)
+    {
+        if (_teacherRoleId is not { } role) return [];
+        IEnumerable<StaffSummaryDto> found = [];
+        await ApiCalls.RunAsync(async () =>
+            found = (await StaffApi.ListAsync(new StaffQuery(null, true, role, PersonStatuses.Active,
+                string.IsNullOrWhiteSpace(text) ? null : text.Trim(), true, null, 1, 20), ct)).Items,
+            Navigation, L, message => _error = message);
+        return found;
+    }
+
+    private async Task SaveAsync()
+    {
+        _error = _codeError = null;
+        await _form.ValidateAsync();
+        if (!_form.IsValid || _unitId is null) return;
+
+        var request = new SaveClassRequest(_code.Trim(), _nameAr.Trim(), _nameEn.Trim(), _unitId.Value, Existing?.AcademicYearId ?? AcademicYearId,
+            _capacity, _teacher?.UserId);
+        _saving = true;
+        var codeTaken = false;
+        var saved = await ApiCalls.RunAsync(async () =>
+        {
+            try
+            {
+                if (Existing is { } c) await Api.UpdateAsync(c.Id, request);
+                else await Api.CreateAsync(request);
+            }
+            catch (ApiProblemException ex) when (ex.Code == "class_code_taken")
+            {
+                _codeError = ProblemText.For(ex, L);
+                codeTaken = true;
+            }
+        }, Navigation, L, message => _error = message);
+        _saving = false;
+        if (saved && !codeTaken) MudDialog.Close(DialogResult.Ok(true));
+    }
+}
