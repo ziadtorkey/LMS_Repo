@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
   <resheader name="version"><value>2.0</value></resheader>
@@ -1023,4 +1023,9 @@
   <data name="RichText_LinkUrl" xml:space="preserve"><value>عنوان الرابط</value></data>
   <data name="RichText_NumberedList" xml:space="preserve"><value>قائمة مرقمة</value></data>
   <data name="RichText_Toolbar" xml:space="preserve"><value>شريط أدوات التنسيق</value></data>
+  <data name="Academic_SectionCourses" xml:space="preserve"><value>المقررات</value></data>
+  <data name="Academic_SectionLevel" xml:space="preserve"><value>انتقال المستوى</value></data>
+  <data name="UnitCourses_NoneAvailableText" xml:space="preserve"><value>وزّع مقرراً على هذه الوحدة من صفحة المقرر.</value></data>
+  <data name="UnitCourses_NoneBelowText" xml:space="preserve"><value>لم تُوزَّع مقررات على الوحدات التابعة بعد.</value></data>
+  <data name="UnitSettings_Subtitle" xml:space="preserve"><value>بيانات الوحدة وإعداداتها وسياساتها ومقرراتها.</value></data>
 </root>

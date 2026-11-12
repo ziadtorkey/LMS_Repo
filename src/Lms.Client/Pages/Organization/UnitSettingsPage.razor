@@ -1,5 +1,6 @@
 @page "/org-units/{Id:guid}"
 @attribute [Authorize]
+@using Lms.Client.Components
 @using Lms.Client.Services.Api
 @using Lms.Shared.Authorization
 @using Lms.Shared.Organizations
@@ -10,45 +11,52 @@
 @implements IDisposable
 
 <PageTitle>@L["OrgTree_Settings"]</PageTitle>
-<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
-    <MudIconButton Icon="@(Culture.IsRightToLeft ? Icons.Material.Filled.ArrowForward : Icons.Material.Filled.ArrowBack)" Href="org-units" aria-label="@L["UnitSettings_Back"]" data-testid="unit-back" />
-    <MudText Typo="Typo.h4" data-testid="unit-title">@(_unit is null ? L["OrgTree_Settings"].Value : Culture.Pick(_unit.NameAr, _unit.NameEn))</MudText>
-</MudStack>
+<MudLink Href="org-units" Typo="Typo.body2" Class="lms-back-link" data-testid="unit-back">
+    <MudIcon Icon="@Icons.Material.Rounded.ArrowBack" Size="Size.Small" Class="lms-icon-flip" aria-hidden="true" />
+    @L["UnitSettings_Back"]
+</MudLink>
 
 @if (_error is not null)
 {
-    <MudAlert Severity="Severity.Error" data-testid="unit-error">@_error</MudAlert>
+    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="unit-error">@_error</MudAlert>
 }
 else if (_unit is null)
 {
-    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+    <LoadingState Lines="5" TestId="unit-loading" />
 }
 else
 {
-    <MudTabs Elevation="0" Rounded="false" ApplyEffectsToContainer="true" TabPanelsClass="pa-4" data-testid="unit-tabs">
-        <MudTabPanel Text="@L["UnitSettings_General"]">
-            <MudSimpleTable Dense="true" data-testid="tab-general">
-                <tbody>
-                    <tr><th>@L["Common_NameAr"]</th><td dir="rtl">@_unit.NameAr</td></tr>
-                    <tr><th>@L["Common_NameEn"]</th><td dir="ltr">@_unit.NameEn</td></tr>
-                    <tr><th>@L["Common_Code"]</th><td dir="ltr">@_unit.Code</td></tr>
-                    <tr><th>@L["Common_Status"]</th><td>@(_unit.Status == OrgUnitStatuses.Inactive ? L["OrgTree_Inactive"] : L["ClientStatus_Active"])</td></tr>
-                </tbody>
-            </MudSimpleTable>
-        </MudTabPanel>
-        <MudTabPanel Text="@L["UnitSettings_Academic"]">
-            <AcademicFlagsTab Unit="_unit" AllUnits="_all" CanEdit="PermState.Has(Permissions.OrgUnits.Update)" OnSaved="LoadAsync" />
-        </MudTabPanel>
-        <MudTabPanel Text="@L["UnitSettings_Settings"]" Visible="PermState.Has(Permissions.Settings.View)" data-testid="tab-settings">
-            <SettingsTab UnitId="_unit.Id" CanEdit="PermState.Has(Permissions.Settings.Update)" />
-        </MudTabPanel>
-        <MudTabPanel Text="@L["UnitSettings_Courses"]" Visible="PermState.Has(Permissions.Courses.View)" data-testid="tab-courses">
-            <UnitCoursesTab UnitId="_unit.Id" />
-        </MudTabPanel>
-        <MudTabPanel Text="@L["UnitSettings_Policies"]" Visible="PermState.Has(Permissions.Policies.View)" data-testid="tab-policies">
-            <PoliciesTab UnitId="_unit.Id" CanEdit="PermState.Has(Permissions.Policies.Update)" />
-        </MudTabPanel>
-    </MudTabs>
+    <PageHeader Title="@Culture.Pick(_unit.NameAr, _unit.NameEn)" Subtitle="@L["UnitSettings_Subtitle"]" TitleTestId="unit-title">
+        <Badges>
+            <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Class="lms-status-chip"
+                     Color="@(_unit.Status == OrgUnitStatuses.Inactive ? Color.Default : Color.Success)">@(_unit.Status == OrgUnitStatuses.Inactive ? L["OrgTree_Inactive"] : L["ClientStatus_Active"])</MudChip>
+        </Badges>
+    </PageHeader>
+
+    <SectionCard Flush="true">
+        <MudTabs Class="lms-tabs" Elevation="0" Rounded="false" ApplyEffectsToContainer="true" MinimumTabWidth="80px" TabPanelsClass="pa-4" data-testid="unit-tabs">
+            <MudTabPanel Text="@L["UnitSettings_General"]">
+                <dl class="lms-details" data-testid="tab-general">
+                    <DetailItem Label="@L["Common_NameAr"]" Value="@_unit.NameAr" />
+                    <DetailItem Label="@L["Common_NameEn"]" Value="@_unit.NameEn" Ltr="true" />
+                    <DetailItem Label="@L["Common_Code"]" Value="@_unit.Code" Ltr="true" />
+                    <DetailItem Label="@L["Common_Status"]" Value="@(_unit.Status == OrgUnitStatuses.Inactive ? L["OrgTree_Inactive"].Value : L["ClientStatus_Active"].Value)" />
+                </dl>
+            </MudTabPanel>
+            <MudTabPanel Text="@L["UnitSettings_Academic"]">
+                <AcademicFlagsTab Unit="_unit" AllUnits="_all" CanEdit="PermState.Has(Permissions.OrgUnits.Update)" OnSaved="LoadAsync" />
+            </MudTabPanel>
+            <MudTabPanel Text="@L["UnitSettings_Settings"]" Visible="PermState.Has(Permissions.Settings.View)" data-testid="tab-settings">
+                <SettingsTab UnitId="_unit.Id" CanEdit="PermState.Has(Permissions.Settings.Update)" />
+            </MudTabPanel>
+            <MudTabPanel Text="@L["UnitSettings_Courses"]" Visible="PermState.Has(Permissions.Courses.View)" data-testid="tab-courses">
+                <UnitCoursesTab UnitId="_unit.Id" />
+            </MudTabPanel>
+            <MudTabPanel Text="@L["UnitSettings_Policies"]" Visible="PermState.Has(Permissions.Policies.View)" data-testid="tab-policies">
+                <PoliciesTab UnitId="_unit.Id" CanEdit="PermState.Has(Permissions.Policies.Update)" />
+            </MudTabPanel>
+        </MudTabs>
+    </SectionCard>
 }
 
 @code {
