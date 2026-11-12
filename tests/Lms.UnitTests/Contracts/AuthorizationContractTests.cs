@@ -21,7 +21,7 @@ public partial class AuthorizationContractTests
     }
 
     [Fact]
-    public void Permission_catalog_contains_exactly_the_M0_to_M3_set()
+    public void Permission_catalog_contains_exactly_the_M0_to_M4a_set()
     {
         string[] expected =
         [
@@ -46,6 +46,7 @@ public partial class AuthorizationContractTests
             "Enrollment.View", "Enrollment.Manage", "Enrollment.Import", "Enrollment.Transfer",
             "Enrollment.RequestException", "Enrollment.ApproveException",
             "Groups.View", "Groups.Manage", "LessonPlans.View",
+            "Modules.View", "Modules.Manage",
         ];
         Assert.Equal(expected.Order(StringComparer.Ordinal), Permissions.All.Order(StringComparer.Ordinal));
     }
@@ -106,6 +107,9 @@ public partial class AuthorizationContractTests
             "enrollment_not_optional", "already_enrolled", "not_in_class", "already_placed", "class_unit_mismatch",
             "teacher_not_eligible", "teacher_not_in_unit", "primary_teacher_exists", "already_in_group", "not_enrolled",
             "transfer_invalid", "too_many_items", "short_code_taken", "invalid_short_code", "teacher_already_assigned", "assignment_ended",
+            // M4a wave 1 (lesson modules, assets, completion)
+            "module_visibility_range_invalid", "module_target_invalid", "asset_type_not_allowed", "asset_too_large",
+            "completion_not_manual",
         ];
 
         Assert.All(fields, f => Assert.Equal(f.Name, (string)f.GetRawConstantValue()!));

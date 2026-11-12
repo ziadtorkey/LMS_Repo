@@ -84,6 +84,8 @@ public sealed class StudentProfile : AuditableEntity, IOrgUnitScoped
         OrgUnitPath = unit.Path;
     }
 
+    public void ChangeCode(string code) => StudentCode = code;
+
     public void SetStatus(PersonStatus status) => Status = status;
 
     public void LinkUser(Guid userId) => UserId = userId;
