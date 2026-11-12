@@ -129,4 +129,22 @@ public sealed class QuizReviewPolicyTests(LmsApiFactory factory) : IDisposable
         Assert.Equal(HttpStatusCode.NotFound, (await _t.SendAsync(w.Student, HttpMethod.Get, Routes.QuizSummary(draft.Id))).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await _t.SendAsync(w.Teacher, HttpMethod.Get, Routes.QuizSummary(shown.Id))).StatusCode);
     }
+
+    [Fact]
+    public async Task An_attempt_in_progress_keeps_the_correct_options_of_earlier_attempts_hidden()
+    {
+        // The leak: with two attempts, submitting the first and starting the second counted as "no attempts left".
+        var w = await _t.SetUpAsync("RP5");
+        var quiz = await _t.BuildAsync(w, QuizSettings(maxAttempts: 2, review: ReviewPolicies.AnswersAndCorrect));
+        var first = await _t.TakeAsync(w.Student, quiz);
+        var second = await _t.StartOkAsync(w.Student, quiz.Id); // in progress: both attempts are used, one is still open
+
+        var (whileOpen, _) = await ResultAsync(w, first.AttemptId);
+        await _t.SubmitOkAsync(w.Student, second.Id);
+        var (afterSubmit, _) = await ResultAsync(w, first.AttemptId); // none left and none in progress: released
+
+        Assert.DoesNotContain("isCorrect\":true", whileOpen);
+        Assert.DoesNotContain("isCorrect\":false", whileOpen);
+        Assert.Contains("isCorrect\":true", afterSubmit);
+    }
 }
