@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
   <resheader name="version"><value>2.0</value></resheader>
@@ -906,6 +906,16 @@
   <data name="ModuleKind_Audio" xml:space="preserve"><value>صوت</value></data>
   <data name="ModuleKind_Page" xml:space="preserve"><value>صفحة</value></data>
   <data name="ModuleKind_Link" xml:space="preserve"><value>رابط</value></data>
+  <data name="RichText_Bold" xml:space="preserve"><value>غامق</value></data>
+  <data name="RichText_BulletList" xml:space="preserve"><value>قائمة نقطية</value></data>
+  <data name="RichText_Italic" xml:space="preserve"><value>مائل</value></data>
+  <data name="RichText_Link" xml:space="preserve"><value>إدراج رابط</value></data>
+  <data name="RichText_LinkApply" xml:space="preserve"><value>تطبيق</value></data>
+  <data name="RichText_LinkInvalid" xml:space="preserve"><value>أدخل رابطاً صالحاً (https:// أو mailto:).</value></data>
+  <data name="RichText_LinkRemove" xml:space="preserve"><value>إزالة الرابط</value></data>
+  <data name="RichText_LinkUrl" xml:space="preserve"><value>عنوان الرابط</value></data>
+  <data name="RichText_NumberedList" xml:space="preserve"><value>قائمة مرقمة</value></data>
+  <data name="RichText_Toolbar" xml:space="preserve"><value>شريط أدوات التنسيق</value></data>
   <data name="Learn_Title" xml:space="preserve"><value>مقرري</value></data>
   <data name="Learn_Continue" xml:space="preserve"><value>تابع من حيث توقفت</value></data>
   <data name="Learn_ContinueOpen" xml:space="preserve"><value>متابعة</value></data>
@@ -921,4 +931,12 @@
   <data name="CompletionState_Completed" xml:space="preserve"><value>مكتملة</value></data>
   <data name="ClassCourse_TabForum" xml:space="preserve"><value>المنتدى</value></data>
   <data name="ClassCourse_TabAnnouncements" xml:space="preserve"><value>الإعلانات</value></data>
+  <data name="Module_Title" xml:space="preserve"><value>وحدة</value></data>
+  <data name="Module_Back" xml:space="preserve"><value>العودة إلى المقرر</value></data>
+  <data name="Module_MarkComplete" xml:space="preserve"><value>وضع علامة مكتملة</value></data>
+  <data name="Module_Previous" xml:space="preserve"><value>السابق</value></data>
+  <data name="Module_Next" xml:space="preserve"><value>التالي</value></data>
+  <data name="Module_NoContent" xml:space="preserve"><value>لا يوجد محتوى لهذه الوحدة بعد.</value></data>
+  <data name="Module_Unsupported" xml:space="preserve"><value>يُفتح هذا النوع من الوحدات في صفحته الخاصة.</value></data>
+  <data name="Module_UrlInvalid" xml:space="preserve"><value>أدخل عنوان ويب كاملًا يبدأ بـ http:// أو https://.</value></data>
 </root>
