@@ -74,23 +74,34 @@ public static class AssetUploadForm
 
     /// <summary>The owning ClassCourse id (the caller must reach it; the asset inherits its unit fields).</summary>
     public const string ClassCourseId = "classCourseId";
+
+    /// <summary>
+    /// M4a wave 2: the owning unit of a library asset (cover or file of a library resource), sent instead of
+    /// <see cref="ClassCourseId"/> (exactly one of the two). Needs <c>Library.Manage</c> at that unit.
+    /// </summary>
+    public const string OrgUnitId = "orgUnitId";
 }
 
-/// <summary>An uploaded asset. <c>DurationSeconds</c> is filled for audio and video when the server can read it.</summary>
+/// <summary>
+/// An uploaded asset. <c>DurationSeconds</c> is filled for audio and video when the server can read it. Exactly one
+/// owner is set: <c>ClassCourseId</c> (modules, assignments, submissions, forum posts) or, since wave 2,
+/// <c>OrgUnitId</c> (library assets owned by a unit).
+/// </summary>
 public sealed record AssetDto(
     Guid Id,
-    Guid ClassCourseId,
+    Guid? ClassCourseId,
     string Kind,
     string FileName,
     string ContentType,
     long SizeBytes,
     int? DurationSeconds,
     bool Previewable,
-    DateTime CreatedAtUtc);
+    DateTime CreatedAtUtc,
+    Guid? OrgUnitId = null);
 
 /// <summary>
-/// GET /api/assets/limits?classCourseId=… — what the uploader validates before sending. <c>MaxBytes</c> = the effective
-/// <c>Files.MaxUploadMb</c> at the ClassCourse's unit.
+/// GET /api/assets/limits?classCourseId=… (or ?orgUnitId=… for library assets) — what the uploader validates before
+/// sending. <c>MaxBytes</c> = the effective <c>Files.MaxUploadMb</c> at the ClassCourse's unit (or that unit).
 /// </summary>
 public sealed record AssetLimitsDto(long MaxBytes, IReadOnlyList<AssetTypeDto> AllowedTypes);
 
