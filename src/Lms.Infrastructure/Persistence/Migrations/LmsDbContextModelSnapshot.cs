@@ -415,6 +415,193 @@ namespace Lms.Infrastructure.Persistence.Migrations
                     b.ToTable("AuditEntries", (string)null);
                 });
 
+            modelBuilder.Entity("Lms.Domain.Blueprints.Blueprint", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("ApplyMode")
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)");
+
+                    b.Property<Guid>("CourseId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("DraftKey")
+                        .HasColumnType("char(36)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<Guid>("OrgUnitId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("OrgUnitPath")
+                        .IsRequired()
+                        .HasColumnType("varchar(400) CHARACTER SET ascii COLLATE ascii_general_ci");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime?>("PublishedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("PublishedBy")
+                        .HasColumnType("char(36)");
+
+                    b.Property<int>("Revision")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("char(36)");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("VersionKey")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrgUnitId");
+
+                    b.HasIndex("CourseId", "DraftKey")
+                        .IsUnique();
+
+                    b.HasIndex("CourseId", "VersionKey")
+                        .IsUnique();
+
+                    b.HasIndex("OrganizationId", "OrgUnitPath");
+
+                    b.ToTable("Blueprints", (string)null);
+                });
+
+            modelBuilder.Entity("Lms.Domain.Blueprints.BlueprintLesson", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("BlueprintId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("Key")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("ObjectivesAr")
+                        .HasMaxLength(4000)
+                        .HasColumnType("varchar(4000)");
+
+                    b.Property<string>("ObjectivesEn")
+                        .HasMaxLength(4000)
+                        .HasColumnType("varchar(4000)");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("OrgUnitId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("OrgUnitPath")
+                        .IsRequired()
+                        .HasColumnType("varchar(400) CHARACTER SET ascii COLLATE ascii_general_ci");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<int?>("PlannedOffsetDays")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("SectionId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("TitleAr")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<string>("TitleEn")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrgUnitId");
+
+                    b.HasIndex("SectionId");
+
+                    b.HasIndex("BlueprintId", "Key")
+                        .IsUnique();
+
+                    b.HasIndex("OrganizationId", "OrgUnitPath");
+
+                    b.ToTable("BlueprintLessons", (string)null);
+                });
+
+            modelBuilder.Entity("Lms.Domain.Blueprints.BlueprintSection", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("BlueprintId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("Key")
+                        .HasColumnType("char(36)");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("OrgUnitId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("OrgUnitPath")
+                        .IsRequired()
+                        .HasColumnType("varchar(400) CHARACTER SET ascii COLLATE ascii_general_ci");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("TitleAr")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<string>("TitleEn")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrgUnitId");
+
+                    b.HasIndex("BlueprintId", "Key")
+                        .IsUnique();
+
+                    b.HasIndex("OrganizationId", "OrgUnitPath");
+
+                    b.ToTable("BlueprintSections", (string)null);
+                });
+
             modelBuilder.Entity("Lms.Domain.Classes.Class", b =>
                 {
                     b.Property<Guid>("Id")
@@ -550,6 +737,184 @@ namespace Lms.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("ClassCourses", (string)null);
+                });
+
+            modelBuilder.Entity("Lms.Domain.Classes.ClassLesson", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("char(36)");
+
+                    b.Property<bool>("IsHidden")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<Guid>("Key")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("ObjectivesAr")
+                        .HasMaxLength(4000)
+                        .HasColumnType("varchar(4000)");
+
+                    b.Property<string>("ObjectivesEn")
+                        .HasMaxLength(4000)
+                        .HasColumnType("varchar(4000)");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("OrgUnitId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("OrgUnitPath")
+                        .IsRequired()
+                        .HasColumnType("varchar(400) CHARACTER SET ascii COLLATE ascii_general_ci");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("PlanId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<int?>("PlannedOffsetDays")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("SectionId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("TitleAr")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<string>("TitleEn")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrgUnitId");
+
+                    b.HasIndex("SectionId");
+
+                    b.HasIndex("OrganizationId", "OrgUnitPath");
+
+                    b.HasIndex("PlanId", "Key")
+                        .IsUnique();
+
+                    b.ToTable("ClassLessons", (string)null);
+                });
+
+            modelBuilder.Entity("Lms.Domain.Classes.ClassLessonPlan", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid?>("BlueprintId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<int?>("BlueprintVersion")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("ClassCourseId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid?>("ClassCourseKey")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<Guid>("OrgUnitId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("OrgUnitPath")
+                        .IsRequired()
+                        .HasColumnType("varchar(400) CHARACTER SET ascii COLLATE ascii_general_ci");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime?>("SyncedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BlueprintId");
+
+                    b.HasIndex("ClassCourseId");
+
+                    b.HasIndex("ClassCourseKey")
+                        .IsUnique();
+
+                    b.HasIndex("OrgUnitId");
+
+                    b.HasIndex("OrganizationId", "OrgUnitPath");
+
+                    b.ToTable("ClassLessonPlans", (string)null);
+                });
+
+            modelBuilder.Entity("Lms.Domain.Classes.ClassSection", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("char(36)");
+
+                    b.Property<bool>("IsHidden")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<Guid>("Key")
+                        .HasColumnType("char(36)");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("OrgUnitId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("OrgUnitPath")
+                        .IsRequired()
+                        .HasColumnType("varchar(400) CHARACTER SET ascii COLLATE ascii_general_ci");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("PlanId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("TitleAr")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<string>("TitleEn")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrgUnitId");
+
+                    b.HasIndex("OrganizationId", "OrgUnitPath");
+
+                    b.HasIndex("PlanId", "Key")
+                        .IsUnique();
+
+                    b.ToTable("ClassSections", (string)null);
                 });
 
             modelBuilder.Entity("Lms.Domain.Classes.ClassStudent", b =>
@@ -2838,6 +3203,57 @@ namespace Lms.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Lms.Domain.Blueprints.Blueprint", b =>
+                {
+                    b.HasOne("Lms.Domain.Courses.Course", null)
+                        .WithMany()
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Lms.Domain.Organizations.OrgUnit", null)
+                        .WithMany()
+                        .HasForeignKey("OrgUnitId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Lms.Domain.Blueprints.BlueprintLesson", b =>
+                {
+                    b.HasOne("Lms.Domain.Blueprints.Blueprint", null)
+                        .WithMany()
+                        .HasForeignKey("BlueprintId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Lms.Domain.Organizations.OrgUnit", null)
+                        .WithMany()
+                        .HasForeignKey("OrgUnitId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Lms.Domain.Blueprints.BlueprintSection", null)
+                        .WithMany()
+                        .HasForeignKey("SectionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Lms.Domain.Blueprints.BlueprintSection", b =>
+                {
+                    b.HasOne("Lms.Domain.Blueprints.Blueprint", null)
+                        .WithMany()
+                        .HasForeignKey("BlueprintId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Lms.Domain.Organizations.OrgUnit", null)
+                        .WithMany()
+                        .HasForeignKey("OrgUnitId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Lms.Domain.Classes.Class", b =>
                 {
                     b.HasOne("Lms.Domain.AcademicYears.AcademicYear", null)
@@ -2870,6 +3286,62 @@ namespace Lms.Infrastructure.Persistence.Migrations
                     b.HasOne("Lms.Domain.Organizations.OrgUnit", null)
                         .WithMany()
                         .HasForeignKey("OrgUnitId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Lms.Domain.Classes.ClassLesson", b =>
+                {
+                    b.HasOne("Lms.Domain.Organizations.OrgUnit", null)
+                        .WithMany()
+                        .HasForeignKey("OrgUnitId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Lms.Domain.Classes.ClassLessonPlan", null)
+                        .WithMany()
+                        .HasForeignKey("PlanId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Lms.Domain.Classes.ClassSection", null)
+                        .WithMany()
+                        .HasForeignKey("SectionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Lms.Domain.Classes.ClassLessonPlan", b =>
+                {
+                    b.HasOne("Lms.Domain.Blueprints.Blueprint", null)
+                        .WithMany()
+                        .HasForeignKey("BlueprintId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Lms.Domain.Classes.ClassCourse", null)
+                        .WithMany()
+                        .HasForeignKey("ClassCourseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Lms.Domain.Organizations.OrgUnit", null)
+                        .WithMany()
+                        .HasForeignKey("OrgUnitId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Lms.Domain.Classes.ClassSection", b =>
+                {
+                    b.HasOne("Lms.Domain.Organizations.OrgUnit", null)
+                        .WithMany()
+                        .HasForeignKey("OrgUnitId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Lms.Domain.Classes.ClassLessonPlan", null)
+                        .WithMany()
+                        .HasForeignKey("PlanId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

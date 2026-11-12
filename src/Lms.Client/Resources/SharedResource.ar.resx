@@ -659,6 +659,7 @@
   <data name="AuditEntity_CourseRestriction" xml:space="preserve"><value>قيد مقرر</value></data>
   <data name="AuditEntity_CourseSupervisor" xml:space="preserve"><value>مشرف مقرر</value></data>
   <data name="AuditEntity_Blueprint" xml:space="preserve"><value>مخطط دراسي</value></data>
+  <data name="AuditEntity_ClassLessonPlan" xml:space="preserve"><value>خطة الدروس للصف</value></data>
   <data name="AuditEntity_Class" xml:space="preserve"><value>فصل</value></data>
   <data name="AuditEntity_ClassStudent" xml:space="preserve"><value>طالب في فصل</value></data>
   <data name="AuditEntity_ClassCourse" xml:space="preserve"><value>مقرر فصل</value></data>
