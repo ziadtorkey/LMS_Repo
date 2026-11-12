@@ -1,0 +1,127 @@
+@page "/class-courses/{Id:guid}/forum"
+@attribute [Authorize]
+@using Lms.Client.Services.Api
+@using Lms.Shared.Authorization
+@using Lms.Shared.Forums
+@inject IForumsApi Forum
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<PageTitle>@L["Forum_Title"]</PageTitle>
+<ClassCourseTabs ClassCourseId="Id" Active="forum" />
+@if (!PermState.Loaded)
+{
+    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+}
+else if (!PermState.Has(Permissions.Forums.View))
+{
+    <MudAlert Severity="Severity.Warning" data-testid="forum-forbidden">@L["Forbidden_Title"]</MudAlert>
+}
+else
+{
+    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3">
+        <MudText Typo="Typo.h5">@L["Forum_Title"]</MudText>
+        @if (PermState.Has(Permissions.Forums.Post))
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => _composing = !_composing" data-testid="forum-new">@L["Forum_NewThread"]</MudButton>
+        }
+    </MudStack>
+
+    @if (_composing)
+    {
+        <MudPaper Outlined="true" Class="pa-3 mb-3" data-testid="forum-new-panel">
+            <MudStack Spacing="2">
+                <MudTextField T="string" @bind-Value="_title" Label="@L["Forum_ThreadTitle"]" MaxLength="200" Immediate="true" data-testid="forum-new-title" />
+                <PostComposer ClassCourseId="Id" Label="@L["Forum_Message"]" SendLabel="@L["Forum_Post"]" TestId="forum-new-composer" OnSubmit="CreateAsync" />
+                @if (_formError is not null)
+                {
+                    <MudAlert Severity="Severity.Error" data-testid="forum-form-error">@_formError</MudAlert>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+
+    @if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error" data-testid="forum-error">@_error</MudAlert>
+    }
+    else if (_loading)
+    {
+        <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+    }
+    else if (_threads.Count == 0)
+    {
+        <MudAlert Severity="Severity.Info" data-testid="forum-empty">@L["Forum_Empty"]</MudAlert>
+    }
+    else
+    {
+        <MudStack Spacing="1" data-testid="forum-threads">
+            @foreach (var t in _threads)
+            {
+                <MudPaper Outlined="true" Class="pa-3" data-testid="@($"forum-thread-{t.Id}")">
+                    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                        <MudLink Href="@($"class-courses/{Id}/forum/{t.Id}")" Typo="Typo.subtitle1" data-testid="@($"forum-thread-link-{t.Id}")">@t.Title</MudLink>
+                        @if (t.IsPinned)
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Primary" data-testid="@($"forum-pinned-{t.Id}")">@L["Forum_Pinned"]</MudChip>
+                        }
+                        @if (t.IsLocked)
+                        {
+                            <MudChip T="string" Size="Size.Small" Icon="@Icons.Material.Filled.Lock" data-testid="@($"forum-locked-{t.Id}")">@L["Forum_Locked"]</MudChip>
+                        }
+                        <MudSpacer />
+                        <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                            @Culture.Pick(t.AuthorNameAr, t.AuthorNameEn) · @L["Forum_Replies", t.ReplyCount]
+                        </MudText>
+                    </MudStack>
+                </MudPaper>
+            }
+        </MudStack>
+    }
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private IReadOnlyList<ForumThreadDto> _threads = [];
+    private string? _error, _formError, _title;
+    private bool _loading = true, _composing;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        PermState.Changed -= OnPermissionsChanged;
+        PermState.Changed += OnPermissionsChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true; _error = null;
+        if (PermState.Has(Permissions.Forums.View))
+            await ApiCalls.RunAsync(async () => _threads = Ordered((await Forum.ListThreadsAsync(Id)).Items), Navigation, L, m => _error = m);
+        _loading = false;
+    }
+
+    /// <summary>Pinned threads first, then the most recent activity.</summary>
+    private static IReadOnlyList<ForumThreadDto> Ordered(IEnumerable<ForumThreadDto> items) =>
+        items.OrderByDescending(t => t.IsPinned).ThenByDescending(t => t.LastActivityAtUtc).ToList();
+
+    private async Task<bool> CreateAsync(string html, IReadOnlyList<Guid> attachments)
+    {
+        _formError = null;
+        if (string.IsNullOrWhiteSpace(_title)) { _formError = L["Common_Required"]; return false; }
+        var ok = await ApiCalls.RunAsync(() => Forum.CreateThreadAsync(Id, new CreateForumThreadRequest(_title.Trim(), html, attachments)),
+            Navigation, L, m => _formError = m);
+        if (!ok) return false;
+        _title = null; _composing = false;
+        await LoadAsync();
+        return true;
+    }
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => PermState.Changed -= OnPermissionsChanged;
+}

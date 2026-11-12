@@ -875,4 +875,44 @@
   <data name="Asset_Download" xml:space="preserve"><value>Download</value></data>
   <data name="Asset_PreviewFailed" xml:space="preserve"><value>The file could not be loaded.</value></data>
   <data name="Asset_Reload" xml:space="preserve"><value>Reload</value></data>
+  <data name="RichText_Bold" xml:space="preserve"><value>Bold</value></data>
+  <data name="RichText_BulletList" xml:space="preserve"><value>Bulleted list</value></data>
+  <data name="RichText_Italic" xml:space="preserve"><value>Italic</value></data>
+  <data name="RichText_Link" xml:space="preserve"><value>Insert link</value></data>
+  <data name="RichText_LinkApply" xml:space="preserve"><value>Apply</value></data>
+  <data name="RichText_LinkInvalid" xml:space="preserve"><value>Enter a valid link (https:// or mailto:).</value></data>
+  <data name="RichText_LinkRemove" xml:space="preserve"><value>Remove link</value></data>
+  <data name="RichText_LinkUrl" xml:space="preserve"><value>Link address</value></data>
+  <data name="RichText_NumberedList" xml:space="preserve"><value>Numbered list</value></data>
+  <data name="RichText_Toolbar" xml:space="preserve"><value>Formatting toolbar</value></data>
+  <data name="ClassCourse_Sections" xml:space="preserve"><value>Class course sections</value></data>
+  <data name="ClassCourse_TabPlan" xml:space="preserve"><value>Plan</value></data>
+  <data name="ClassCourse_TabForum" xml:space="preserve"><value>Forum</value></data>
+  <data name="ClassCourse_TabAnnouncements" xml:space="preserve"><value>Announcements</value></data>
+  <data name="Forum_Title" xml:space="preserve"><value>Forum</value></data>
+  <data name="Forum_NewThread" xml:space="preserve"><value>New thread</value></data>
+  <data name="Forum_ThreadTitle" xml:space="preserve"><value>Title</value></data>
+  <data name="Forum_Message" xml:space="preserve"><value>Message</value></data>
+  <data name="Forum_Post" xml:space="preserve"><value>Post</value></data>
+  <data name="Forum_Reply" xml:space="preserve"><value>Reply</value></data>
+  <data name="Forum_Empty" xml:space="preserve"><value>No threads yet.</value></data>
+  <data name="Forum_Pinned" xml:space="preserve"><value>Pinned</value></data>
+  <data name="Forum_Locked" xml:space="preserve"><value>Locked</value></data>
+  <data name="Forum_Replies" xml:space="preserve"><value>{0} replies</value></data>
+  <data name="Forum_Back" xml:space="preserve"><value>Back to the forum</value></data>
+  <data name="Forum_Moderate" xml:space="preserve"><value>Moderate</value></data>
+  <data name="Forum_Pin" xml:space="preserve"><value>Pin</value></data>
+  <data name="Forum_Unpin" xml:space="preserve"><value>Unpin</value></data>
+  <data name="Forum_Lock" xml:space="preserve"><value>Lock</value></data>
+  <data name="Forum_Unlock" xml:space="preserve"><value>Unlock</value></data>
+  <data name="Forum_DeleteThread" xml:space="preserve"><value>Delete thread</value></data>
+  <data name="Forum_DeleteThreadConfirm" xml:space="preserve"><value>Delete this thread and all its replies?</value></data>
+  <data name="Forum_DeletePostConfirm" xml:space="preserve"><value>Delete this reply?</value></data>
+  <data name="Forum_LockedNote" xml:space="preserve"><value>This thread is locked: no new replies.</value></data>
+  <data name="Forum_Edited" xml:space="preserve"><value>(edited)</value></data>
+  <data name="Announcements_Title" xml:space="preserve"><value>Announcements</value></data>
+  <data name="Announcements_Notify" xml:space="preserve"><value>Notify the students</value></data>
+  <data name="Announcements_Publish" xml:space="preserve"><value>Publish</value></data>
+  <data name="Announcements_Empty" xml:space="preserve"><value>No announcements yet.</value></data>
+  <data name="Announcements_DeleteConfirm" xml:space="preserve"><value>Delete the announcement {0}?</value></data>
 </root>
