@@ -1138,4 +1138,8 @@
   <data name="Quiz_Minutes" xml:space="preserve"><value>{0} دقيقة</value></data>
   <data name="Quiz_Seconds" xml:space="preserve"><value>{0} ثانية</value></data>
   <data name="Quiz_SubmitUnsaved" xml:space="preserve"><value>بعض الإجابات لم تُحفظ بعد. أعد محاولة الحفظ ثم سلّم.</value></data>
+  <data name="Duration_DaysHours" xml:space="preserve"><value>{0} يوم {1} ساعة</value></data>
+  <data name="Duration_HoursMinutes" xml:space="preserve"><value>{0} ساعة {1} دقيقة</value></data>
+  <data name="Duration_Minutes" xml:space="preserve"><value>{0} دقيقة</value></data>
+  <data name="AssignmentStudent_RemoveFile" xml:space="preserve"><value>إزالة</value></data>
 </root>
