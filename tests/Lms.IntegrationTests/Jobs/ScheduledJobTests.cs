@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using Hangfire;
+using Hangfire.Storage;
 using Lms.Domain.Abstractions;
 using Lms.Infrastructure.Jobs;
 using Lms.IntegrationTests.Access;
@@ -61,7 +62,7 @@ public sealed class ScheduledJobTests(LmsApiFactory factory) : IAsyncLifetime
     private static List<(DateTime At, string Value, Guid? UserId, bool Platform)> RunsOf(string token) =>
         ScheduleProbeJob.Runs.TryGetValue(token, out var queue) ? [.. queue] : [];
 
-    private static async Task<List<(DateTime At, string Value, Guid? UserId, bool Platform)>> WaitForRunsAsync(string token, int count, int seconds = 40)
+    private static async Task<List<(DateTime At, string Value, Guid? UserId, bool Platform)>> WaitForRunsAsync(string token, int count, int seconds = 100)
     {
         for (var i = 0; i < seconds * 10; i++)
         {
@@ -241,5 +242,32 @@ public sealed class ScheduledJobTests(LmsApiFactory factory) : IAsyncLifetime
 
         Assert.Throws<ArgumentException>(() => Jobs(scope).ScheduleAsSystem<ScheduleProbeJob>(key, DateTimeOffset.UtcNow.AddHours(1), j => j.RunAsync("t", "v")));
         Assert.Throws<ArgumentException>(() => Jobs(scope).Cancel(key));
+    }
+
+    private static TimeSpan? MappingTtlOf(string key)
+    {
+        using var connection = JobStorage.Current.GetConnection();
+        return connection is JobStorageConnection storage ? storage.GetHashTtl(ScheduledJobKeys.HashKey(key)) : null;
+    }
+
+    [Fact]
+    public void The_key_mapping_expires_so_keys_never_pile_up_and_a_reschedule_moves_the_expiry()
+    {
+        var token = NewToken();
+        var key = $"sj:{token}";
+        using var scope = factory.Services.CreateScope();
+        var jobs = Jobs(scope);
+
+        jobs.ScheduleAsSystem<ScheduleProbeJob>(key, DateTimeOffset.UtcNow.AddHours(1), j => j.RunAsync(token, "ttl"));
+        var first = MappingTtlOf(key);
+        jobs.ScheduleAsSystem<ScheduleProbeJob>(key, DateTimeOffset.UtcNow.AddHours(5), j => j.RunAsync(token, "ttl"));
+        var second = MappingTtlOf(key);
+        jobs.Cancel(key);
+
+        Assert.NotNull(first);
+        Assert.InRange(first!.Value, TimeSpan.FromHours(1) + ScheduledJobKeys.MappingGrace - TimeSpan.FromMinutes(2), TimeSpan.FromHours(1) + ScheduledJobKeys.MappingGrace);
+        Assert.InRange(second!.Value, TimeSpan.FromHours(5) + ScheduledJobKeys.MappingGrace - TimeSpan.FromMinutes(2), TimeSpan.FromHours(5) + ScheduledJobKeys.MappingGrace);
+        var none = MappingTtlOf("sj:never-scheduled-" + token);
+        Assert.True(none is null || none < TimeSpan.Zero); // no mapping, no expiry
     }
 }

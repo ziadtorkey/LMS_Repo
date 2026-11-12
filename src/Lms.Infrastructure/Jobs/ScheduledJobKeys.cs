@@ -25,6 +25,12 @@ public static class ScheduledJobKeys
     public const int MaxKeyLength = 200;
     public const string ScheduledState = "Scheduled";
 
+    /// <summary>How long the key mapping outlives the run: after that the row is removed by Hangfire, so keys never pile up.</summary>
+    public static readonly TimeSpan MappingGrace = TimeSpan.FromDays(30);
+
+    /// <summary>The lifetime of a key mapping: the wait until the run (never negative) plus the grace.</summary>
+    public static TimeSpan MappingTtl(TimeSpan untilRun) => (untilRun > TimeSpan.Zero ? untilRun : TimeSpan.Zero) + MappingGrace;
+
     /// <summary>Hangfire hash that remembers which job a key currently points at.</summary>
     public static string HashKey(string key) => "lms:scheduled:" + key;
 

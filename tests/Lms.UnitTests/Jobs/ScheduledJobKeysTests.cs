@@ -57,4 +57,12 @@ public sealed class ScheduledJobKeysTests
     [InlineData("Deleted", true, ScheduleAction.Create)]
     public void Only_a_waiting_job_is_moved_or_replaced(string? state, bool same, ScheduleAction expected) =>
         Assert.Equal(expected, ScheduledJobKeys.Decide(state, same));
+
+    [Fact]
+    public void The_mapping_lives_until_the_run_plus_the_grace_and_a_past_run_gets_only_the_grace()
+    {
+        Assert.Equal(TimeSpan.FromHours(2) + ScheduledJobKeys.MappingGrace, ScheduledJobKeys.MappingTtl(TimeSpan.FromHours(2)));
+        Assert.Equal(ScheduledJobKeys.MappingGrace, ScheduledJobKeys.MappingTtl(TimeSpan.FromHours(-5)));
+        Assert.Equal(ScheduledJobKeys.MappingGrace, ScheduledJobKeys.MappingTtl(TimeSpan.Zero));
+    }
 }

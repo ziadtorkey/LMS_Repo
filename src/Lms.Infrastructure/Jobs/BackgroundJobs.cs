@@ -58,7 +58,6 @@ public sealed class BackgroundJobs(
     IClock clock, IJobKeyLock keyLock) : IBackgroundJobs
 {
     private static readonly TimeSpan LockTimeout = TimeSpan.FromSeconds(15);
-    private static readonly TimeSpan MappingGrace = TimeSpan.FromDays(30);
 
     public string Enqueue<T>(Expression<Func<T, Task>> job) => Enqueue(JobContextSnapshot.From(current), job);
 
@@ -167,6 +166,11 @@ public sealed class BackgroundJobs(
         var hashKey = ScheduledJobKeys.HashKey(key);
         transaction.SetRangeInHash(hashKey, [new("jobId", jobId), new("fingerprint", fingerprint)]);
         // The mapping outlives the run by a grace period, then goes by itself (the job state, not the mapping, decides what is pending).
+        if (transaction is JobStorageTransaction expiring)
+        {
+            expiring.ExpireHash(hashKey, ScheduledJobKeys.MappingTtl(runAt - Now()));
+        }
+
         transaction.Commit();
     }
 }
