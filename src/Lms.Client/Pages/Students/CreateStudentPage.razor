@@ -40,8 +40,7 @@ else
         }
 
         <SectionCard Title="@L["Student_SectionStudent"]">
-            <fieldset class="lms-fieldset">
-                <legend class="lms-fieldset-legend lms-visually-hidden">@L["Student_SectionStudent"]</legend>
+            <MudStack Spacing="3">
                 <UnitPicker Value="_homeUnitId" ValueChanged="OnHomeUnitChangedAsync" Label="@L["Student_HomeUnit"]" Required="true" TestId="student-home-unit" />
                 @if (_manualCode)
                 {
@@ -53,7 +52,7 @@ else
                     <MudText Typo="Typo.caption" Class="lms-muted" data-testid="student-code-auto">@L["Student_CodeAuto"]</MudText>
                 }
                 <StudentDataFields Model="_data" HomeUnitId="_homeUnitId" />
-            </fieldset>
+            </MudStack>
         </SectionCard>
 
         @if (_homeUnitId is not null)
