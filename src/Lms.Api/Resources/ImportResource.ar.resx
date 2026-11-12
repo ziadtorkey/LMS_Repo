@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ImportError_missing_column" xml:space="preserve"><value>العمود المطلوب "{column}" غير موجود.</value></data>
+  <data name="ImportError_unknown_column" xml:space="preserve"><value>العمود "{column}" غير معروف.</value></data>
+  <data name="ImportError_too_many_rows" xml:space="preserve"><value>يحتوي الملف على أكثر من {max} صف.</value></data>
+  <data name="ImportError_empty_file" xml:space="preserve"><value>لا يحتوي الملف على صفوف بيانات.</value></data>
+  <data name="ImportError_unreadable_file" xml:space="preserve"><value>تعذرت قراءة الملف كمصنف Excel.</value></data>
+  <data name="ImportError_required" xml:space="preserve"><value>هذه القيمة مطلوبة.</value></data>
+  <data name="ImportError_not_allowed" xml:space="preserve"><value>القيمة "{value}" غير مسموح بها.</value></data>
+  <data name="ImportError_too_long" xml:space="preserve"><value>القيمة طويلة جدًا.</value></data>
+  <data name="ImportError_duplicate_in_file" xml:space="preserve"><value>القيمة نفسها موجودة في الصف {otherRow}.</value></data>
+  <data name="ImportError_invalid_date" xml:space="preserve"><value>استخدم تاريخًا مثل 2026-09-01.</value></data>
+  <data name="ImportError_unknown_unit" xml:space="preserve"><value>لا توجد وحدة بالرمز "{value}" في هذا الفرع.</value></data>
+  <data name="ImportError_invalid_code" xml:space="preserve"><value>استخدم من 1 إلى 50 حرفًا أو رقمًا أو - أو _.</value></data>
+  <data name="ImportError_invalid_language" xml:space="preserve"><value>استخدم رمز لغة من حرفين مثل ar أو en.</value></data>
+  <data name="ImportError_invalid_weekly_periods" xml:space="preserve"><value>يجب أن تكون الحصص الأسبوعية رقمًا من 0 إلى 40.</value></data>
+  <data name="ImportError_invalid_owner_unit" xml:space="preserve"><value>لا يمكن لهذه الوحدة امتلاك مواد (الجذر أو مستوى إدارة المواد فقط).</value></data>
+  <data name="ImportError_course_code_taken" xml:space="preserve"><value>توجد مادة أخرى بنفس الرمز.</value></data>
+  <data name="ImportError_unexpected" xml:space="preserve"><value>فشل الاستيراد ولم يُحفظ أي شيء.</value></data>
+  <data name="ImportError_unknown_student" xml:space="preserve"><value>لا يوجد طالب بالكود "{value}" في هذا الفرع.</value></data>
+  <data name="ImportError_unknown_class" xml:space="preserve"><value>لا يوجد فصل بالرمز "{value}" في العام الحالي لهذا الفرع.</value></data>
+  <data name="ImportError_already_placed" xml:space="preserve"><value>هذا الطالب مسجل بالفعل في فصل في هذا العام الدراسي.</value></data>
+  <data name="ImportError_class_closed" xml:space="preserve"><value>هذا الفصل مغلق.</value></data>
+  <data name="ImportError_year_closed" xml:space="preserve"><value>هذا العام الدراسي مغلق.</value></data>
+  <data name="ImportError_class_full" xml:space="preserve"><value>هذا الفصل ممتلئ.</value></data>
+  <data name="ImportError_not_active" xml:space="preserve"><value>هذا الطالب غير نشط.</value></data>
+  <data name="ImportError_no_current_year" xml:space="preserve"><value>لا يوجد عام دراسي حالي لهذا الفرع.</value></data>
+  <data name="ImportError_invalid_email" xml:space="preserve"><value>أدخل بريدًا إلكترونيًا صحيحًا.</value></data>
+  <data name="ImportError_invalid_mobile" xml:space="preserve"><value>أدخل رقم جوال صحيحًا، مثل ‎+201001234567.</value></data>
+  <data name="ImportError_invalid_national_id" xml:space="preserve"><value>يجب أن يتكون رقم الهوية من 5 إلى 20 حرفًا أو رقمًا.</value></data>
+  <data name="ImportError_duplicate_person" xml:space="preserve"><value>هذا الشخص موجود بالفعل في هذه الجهة (نفس القيمة: {field}).</value></data>
+  <data name="ImportError_unknown_role" xml:space="preserve"><value>لا يوجد دور باسم "{value}".</value></data>
+  <data name="ImportError_invalid_role_kind" xml:space="preserve"><value>لا يمكن منح هذا الدور للموظفين من هنا.</value></data>
+  <data name="ImportError_permission_escalation" xml:space="preserve"><value>لا يمكنك منح دور بصلاحيات لا تملكها.</value></data>
+  <data name="ImportError_blocked_by_policy" xml:space="preserve"><value>محظور بسياسة الوحدة الأعلى</value></data>
+  <data name="ImportError_invalid_expiry" xml:space="preserve"><value>يجب أن يكون تاريخ الانتهاء اليوم أو بعده.</value></data>
+</root>

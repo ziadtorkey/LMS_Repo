@@ -16,79 +16,107 @@
 @implements IDisposable
 
 <PageTitle>@L["Staff_Title"]</PageTitle>
-<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4" Wrap="Wrap.Wrap">
-    <MudText Typo="Typo.h4" data-testid="staff-title">@L["Staff_Title"]</MudText>
-    @if (PermState.Has(Permissions.Staff.Create))
-    {
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
-                   OnClick="NewStaffAsync" data-testid="staff-new">@L["Staff_New"]</MudButton>
-    }
-</MudStack>
-
-<MudStack Row="true" Spacing="2" Class="mb-3" Wrap="Wrap.Wrap" AlignItems="AlignItems.Center">
-    <MudTextField T="string" Value="_searchText" ValueChanged="OnSearchChanged" Label="@L["Common_Search"]" Immediate="true"
-                  DebounceInterval="300" Clearable="true" data-testid="staff-search" />
-    <MudItem xs="12" sm="3">
-        <UnitPicker Value="_unitId" ValueChanged="OnUnitChanged" Label="@L["Staff_HomeUnit"]" Clearable="true" TestId="staff-filter-unit" />
-    </MudItem>
-    <MudSelect T="Guid?" Value="_roleId" ValueChanged="OnRoleChanged" Label="@L["Staff_Role"]" Clearable="true"
-               data-testid="staff-filter-role" Style="min-width: 10rem">
-        @foreach (var role in _roles)
+<PageHeader Title="@L["Staff_Title"]" Subtitle="@L["Staff_Subtitle"]" TitleTestId="staff-title">
+    <Actions>
+        @if (PermState.Has(Permissions.Staff.Import))
         {
-            <MudSelectItem T="Guid?" Value="@((Guid?)role.Id)">@Culture.Pick(role.NameAr, role.NameEn)</MudSelectItem>
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.UploadFile"
+                       Href="staff/import" data-testid="staff-import">@L["Import_Button"]</MudButton>
         }
-    </MudSelect>
-    <MudSelect T="string" Value="_status" ValueChanged="OnStatusChanged" Label="@L["Common_Status"]" Clearable="true"
-               data-testid="staff-filter-status" Style="min-width: 10rem">
-        @foreach (var status in PersonStatuses.All)
+        @if (PermState.Has(Permissions.Staff.Create))
         {
-            <MudSelectItem T="string" Value="@status">@L[$"PersonStatus_{status}"]</MudSelectItem>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Add"
+                       OnClick="NewStaffAsync" data-testid="staff-new">@L["Staff_New"]</MudButton>
         }
-    </MudSelect>
-</MudStack>
+    </Actions>
+</PageHeader>
 
-<ServerTable @ref="_table" T="StaffSummaryDto" ServerData="LoadAsync">
-    <HeaderContent>
-        <MudTh>@L["Person_Photo"]</MudTh>
-        <MudTh>@L["Common_Name"]</MudTh>
-        <MudTh>@L["Staff_Email"]</MudTh>
-        <MudTh>@L["Staff_Roles"]</MudTh>
-        <MudTh>@L["Staff_HomeUnit"]</MudTh>
-        <MudTh>@L["Common_Status"]</MudTh>
-        <MudTh>@L["Staff_ExpiresOn"]</MudTh>
-    </HeaderContent>
-    <RowTemplate Context="person">
-        <MudTd><StaffAvatar PhotoFileId="person.PhotoFileId" Size="Size.Small" /></MudTd>
-        <MudTd>
-            <MudLink Href="@($"staff/{person.Id}")" data-testid="@($"staff-link-{person.Id}")">@Culture.Pick(person.NameAr, person.NameEn)</MudLink>
-        </MudTd>
-        <MudTd><span dir="ltr">@person.Email</span></MudTd>
-        <MudTd>
-            <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap">
-                @foreach (var role in person.Roles)
+<SectionCard Flush="true">
+    <div class="lms-filters" role="search" aria-label="@L["Common_Filters"]">
+        <div class="lms-filter lms-filter-search">
+            <MudTextField T="string" Value="_searchText" ValueChanged="OnSearchChanged" Label="@L["Common_Search"]" Immediate="true"
+                          DebounceInterval="300" Clearable="true" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Rounded.Search" data-testid="staff-search" />
+        </div>
+        <div class="lms-filter">
+            <UnitPicker Value="_unitId" ValueChanged="OnUnitChanged" Label="@L["Staff_HomeUnit"]" Clearable="true" TestId="staff-filter-unit" />
+        </div>
+        <div class="lms-filter">
+            <MudSelect T="Guid?" Value="_roleId" ValueChanged="OnRoleChanged" Label="@L["Staff_Role"]" Clearable="true"
+                       data-testid="staff-filter-role">
+                @foreach (var role in _roles)
                 {
-                    <MudChip T="string" Size="Size.Small" data-testid="@($"role-chip-{role.AssignmentId}")">@Culture.Pick(role.RoleNameAr, role.RoleNameEn)</MudChip>
+                    <MudSelectItem T="Guid?" Value="@((Guid?)role.Id)">@Culture.Pick(role.NameAr, role.NameEn)</MudSelectItem>
                 }
-                @if (person.IsSharedIn || person.Roles.Any(r => r.IsShare))
+            </MudSelect>
+        </div>
+        <div class="lms-filter">
+            <MudSelect T="string" Value="_status" ValueChanged="OnStatusChanged" Label="@L["Common_Status"]" Clearable="true"
+                       data-testid="staff-filter-status">
+                @foreach (var status in PersonStatuses.All)
                 {
-                    <MudChip T="string" Size="Size.Small" Color="Color.Info" data-testid="@($"shared-chip-{person.Id}")">@L["Staff_Shared"]</MudChip>
+                    <MudSelectItem T="string" Value="@status">@L[$"PersonStatus_{status}"]</MudSelectItem>
                 }
-            </MudStack>
-        </MudTd>
-        <MudTd>@Culture.Pick(person.HomeOrgUnitNameAr, person.HomeOrgUnitNameEn)</MudTd>
-        <MudTd><PersonStatusChip Status="@person.Status" /></MudTd>
-        <MudTd>
-            @(person.ExpiresOn?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture))
-            @if (ExpiresSoon(person) is { } days)
-            {
-                <MudTooltip Text="@L["Staff_ExpiresSoon", days]">
-                    <MudIcon Icon="@Icons.Material.Filled.WarningAmber" Color="Color.Warning" Size="Size.Small"
-                             data-testid="@($"expiry-warning-{person.Id}")" aria-label="@L["Staff_ExpiresSoon", days]" />
-                </MudTooltip>
-            }
-        </MudTd>
-    </RowTemplate>
-</ServerTable>
+            </MudSelect>
+        </div>
+    </div>
+
+    <ServerTable @ref="_table" T="StaffSummaryDto" ServerData="LoadAsync" EmptyTitle="@L["Staff_EmptyTitle"]"
+                 EmptyText="@L["Staff_EmptyText"]" EmptyIcon="@Icons.Material.Rounded.Badge">
+        <HeaderContent>
+            <MudTh>@L["Common_Name"]</MudTh>
+            <MudTh>@L["Staff_Email"]</MudTh>
+            <MudTh>@L["Staff_Roles"]</MudTh>
+            <MudTh>@L["Staff_HomeUnit"]</MudTh>
+            <MudTh>@L["Common_Status"]</MudTh>
+            <MudTh>@L["Staff_ExpiresOn"]</MudTh>
+        </HeaderContent>
+        <RowTemplate Context="person">
+            <MudTd DataLabel="@L["Common_Name"]">
+                <div class="lms-person-cell">
+                    <StaffAvatar PhotoFileId="person.PhotoFileId" Name="@Culture.Pick(person.NameAr, person.NameEn)" Size="Size.Small" />
+                    <MudLink Href="@($"staff/{person.Id}")" Typo="Typo.body2" Class="lms-person-link"
+                             data-testid="@($"staff-link-{person.Id}")">@Culture.Pick(person.NameAr, person.NameEn)</MudLink>
+                </div>
+            </MudTd>
+            <MudTd DataLabel="@L["Staff_Email"]"><span dir="ltr" class="lms-muted">@person.Email</span></MudTd>
+            <MudTd DataLabel="@L["Staff_Roles"]">
+                <div class="lms-chip-row">
+                    @foreach (var role in person.Roles)
+                    {
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Class="lms-role-chip"
+                                 data-testid="@($"role-chip-{role.AssignmentId}")">@Culture.Pick(role.RoleNameAr, role.RoleNameEn)</MudChip>
+                    }
+                    @if (person.IsSharedIn || person.Roles.Any(r => r.IsShare))
+                    {
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Info" Icon="@Icons.Material.Rounded.Share"
+                                 data-testid="@($"shared-chip-{person.Id}")">@L["Staff_Shared"]</MudChip>
+                    }
+                </div>
+            </MudTd>
+            <MudTd DataLabel="@L["Staff_HomeUnit"]">@Culture.Pick(person.HomeOrgUnitNameAr, person.HomeOrgUnitNameEn)</MudTd>
+            <MudTd DataLabel="@L["Common_Status"]"><PersonStatusChip Status="@person.Status" /></MudTd>
+            <MudTd DataLabel="@L["Staff_ExpiresOn"]">
+                <span class="lms-date-cell">
+                    @if (person.ExpiresOn is { } expires)
+                    {
+                        <span dir="ltr">@expires.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)</span>
+                    }
+                    else
+                    {
+                        <span class="lms-muted" aria-hidden="true">—</span>
+                    }
+                    @if (ExpiresSoon(person) is { } days)
+                    {
+                        <MudTooltip Text="@L["Staff_ExpiresSoon", days]">
+                            <MudIcon Icon="@Icons.Material.Rounded.WarningAmber" Color="Color.Warning" Size="Size.Small"
+                                     data-testid="@($"expiry-warning-{person.Id}")" aria-label="@L["Staff_ExpiresSoon", days]" />
+                        </MudTooltip>
+                    }
+                </span>
+            </MudTd>
+        </RowTemplate>
+    </ServerTable>
+</SectionCard>
 
 @code {
     private ServerTable<StaffSummaryDto> _table = default!;
@@ -96,8 +124,12 @@
     private string? _searchText, _status;
     private Guid? _unitId, _roleId;
 
+    /// <summary>Pre-selects the unit filter (the import page returns here with <c>?unit=</c>).</summary>
+    [SupplyParameterFromQuery(Name = "unit")] public Guid? UnitQuery { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
+        _unitId ??= UnitQuery;
         PermState.Changed += OnPermissionsChanged;
         if (!PermState.Loaded) await PermState.RefreshAsync();
         // The role filter is a convenience: without permission to read roles the list still works.

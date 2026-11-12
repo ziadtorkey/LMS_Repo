@@ -13,6 +13,7 @@ public static class AuditSecurityEvents
     public const string ExternalLoginLinked = "ExternalLoginLinked";
     public const string ExternalLoginSucceeded = "ExternalLoginSucceeded";
     public const string ExternalLoginFailed = "ExternalLoginFailed";
+    public const string PasswordChanged = "PasswordChanged";
 }
 
 /// <summary>
@@ -31,7 +32,7 @@ public static class AuditCatalog
         // M3 students and academic structure.
         "StudentChangeRequest", "Course", "CourseAllocation", "CourseRestriction", "CourseSupervisor", "Blueprint",
         "Class", "ClassStudent", "ClassCourse", "ClassCourseTeacher", "TeacherCourseEligibility", "CourseEnrollment",
-        "EnrollmentException", "StudentGroup", "GroupMember", "StudentTransfer",
+        "EnrollmentException", "StudentGroup", "GroupMember", "StudentTransfer", "ClassLessonPlan",
     ];
 
     public static IReadOnlyList<string> SecurityEvents { get; } =
@@ -40,6 +41,7 @@ public static class AuditCatalog
         AuditSecurityEvents.PasswordReset, AuditSecurityEvents.InvitationAccepted,
         AuditSecurityEvents.ExternalLoginLinked, AuditSecurityEvents.ExternalLoginSucceeded,
         AuditSecurityEvents.ExternalLoginFailed,
+        AuditSecurityEvents.PasswordChanged,
     ];
 }
 

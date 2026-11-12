@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ImportError_missing_column" xml:space="preserve"><value>Required column "{column}" is missing.</value></data>
+  <data name="ImportError_unknown_column" xml:space="preserve"><value>Unknown column "{column}".</value></data>
+  <data name="ImportError_too_many_rows" xml:space="preserve"><value>The file has more than {max} rows.</value></data>
+  <data name="ImportError_empty_file" xml:space="preserve"><value>The file has no data rows.</value></data>
+  <data name="ImportError_unreadable_file" xml:space="preserve"><value>The file could not be read as an Excel workbook.</value></data>
+  <data name="ImportError_required" xml:space="preserve"><value>This value is required.</value></data>
+  <data name="ImportError_not_allowed" xml:space="preserve"><value>"{value}" is not an allowed value.</value></data>
+  <data name="ImportError_too_long" xml:space="preserve"><value>The value is too long.</value></data>
+  <data name="ImportError_duplicate_in_file" xml:space="preserve"><value>Same value as row {otherRow}.</value></data>
+  <data name="ImportError_invalid_date" xml:space="preserve"><value>Use a date like 2026-09-01.</value></data>
+  <data name="ImportError_unknown_unit" xml:space="preserve"><value>No unit with code "{value}" in this branch.</value></data>
+  <data name="ImportError_invalid_code" xml:space="preserve"><value>Use 1-50 letters, digits, - or _.</value></data>
+  <data name="ImportError_invalid_language" xml:space="preserve"><value>Use a two-letter language code such as ar or en.</value></data>
+  <data name="ImportError_invalid_weekly_periods" xml:space="preserve"><value>Weekly periods must be a number from 0 to 40.</value></data>
+  <data name="ImportError_invalid_owner_unit" xml:space="preserve"><value>This unit cannot own courses (only the client root or a course-management level).</value></data>
+  <data name="ImportError_course_code_taken" xml:space="preserve"><value>Another course already uses this code.</value></data>
+  <data name="ImportError_unexpected" xml:space="preserve"><value>The import failed; nothing was saved.</value></data>
+  <data name="ImportError_unknown_student" xml:space="preserve"><value>No student with code "{value}" in this branch.</value></data>
+  <data name="ImportError_unknown_class" xml:space="preserve"><value>No class with code "{value}" in the current year of this branch.</value></data>
+  <data name="ImportError_already_placed" xml:space="preserve"><value>This student already has a class in this academic year.</value></data>
+  <data name="ImportError_class_closed" xml:space="preserve"><value>This class is closed.</value></data>
+  <data name="ImportError_year_closed" xml:space="preserve"><value>This academic year is closed.</value></data>
+  <data name="ImportError_class_full" xml:space="preserve"><value>This class is full.</value></data>
+  <data name="ImportError_not_active" xml:space="preserve"><value>This student is not active.</value></data>
+  <data name="ImportError_no_current_year" xml:space="preserve"><value>This branch has no current academic year.</value></data>
+  <data name="ImportError_invalid_email" xml:space="preserve"><value>Enter a valid email address.</value></data>
+  <data name="ImportError_invalid_mobile" xml:space="preserve"><value>Enter a valid mobile number, for example +201001234567.</value></data>
+  <data name="ImportError_invalid_national_id" xml:space="preserve"><value>The national ID must be 5 to 20 letters and digits.</value></data>
+  <data name="ImportError_duplicate_person" xml:space="preserve"><value>This person already exists in this organization (same {field}).</value></data>
+  <data name="ImportError_unknown_role" xml:space="preserve"><value>No role named "{value}".</value></data>
+  <data name="ImportError_invalid_role_kind" xml:space="preserve"><value>This role cannot be given to staff here.</value></data>
+  <data name="ImportError_permission_escalation" xml:space="preserve"><value>You cannot give a role with permissions you do not have.</value></data>
+  <data name="ImportError_blocked_by_policy" xml:space="preserve"><value>Blocked by parent organization policy</value></data>
+  <data name="ImportError_invalid_expiry" xml:space="preserve"><value>The expiry date must be today or later.</value></data>
+</root>

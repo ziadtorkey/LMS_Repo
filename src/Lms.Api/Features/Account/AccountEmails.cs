@@ -30,6 +30,28 @@ public sealed class AccountEmails(
         await SendAsync(user, toEmail, culture, token, invite: true, "InviteEmailSubject", "InviteEmailBody", cancellationToken);
     }
 
+    public async Task SendStudentCredentialsAsync(
+        string userName, string password, string toEmail, string culture, CancellationToken cancellationToken)
+    {
+        var lang = culture.StartsWith("en", StringComparison.OrdinalIgnoreCase) ? "en" : "ar";
+        var link = $"{options.Value.PublicBaseUrl}/Account/Login?culture={lang}&ui-culture={lang}";
+        var previous = CultureInfo.CurrentUICulture;
+        CultureInfo.CurrentUICulture = new CultureInfo(lang);
+        try
+        {
+            var subject = localizer["StudentCredentials_Subject"].Value;
+            var body = string.Format(CultureInfo.InvariantCulture, localizer["StudentCredentials_Body"].Value, userName, password);
+            var html = $"<!DOCTYPE html><html lang=\"{lang}\" dir=\"{(lang == "ar" ? "rtl" : "ltr")}\"><body>" +
+                       $"<p>{WebUtility.HtmlEncode(body)}</p>" +
+                       $"<p><a href=\"{WebUtility.HtmlEncode(link)}\">{WebUtility.HtmlEncode(link)}</a></p></body></html>";
+            await sender.SendAsync(new EmailMessage(toEmail, subject, html), cancellationToken);
+        }
+        finally
+        {
+            CultureInfo.CurrentUICulture = previous;
+        }
+    }
+
     private async Task SendAsync(
         User user, string toEmail, string culture, string token, bool invite, string subjectKey, string bodyKey, CancellationToken cancellationToken)
     {

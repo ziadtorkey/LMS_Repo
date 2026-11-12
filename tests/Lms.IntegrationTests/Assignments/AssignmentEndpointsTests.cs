@@ -5,8 +5,10 @@ using Lms.Domain.Abstractions;
 using Lms.Domain.Access;
 using Lms.Domain.Auditing;
 using Lms.Domain.Identity;
+using Lms.Domain.Organizations;
 using Lms.IntegrationTests.Access;
 using Lms.IntegrationTests.Infrastructure;
+using Lms.IntegrationTests.People;
 using Lms.Shared;
 using Lms.Shared.Access;
 using Lms.Shared.Authorization;
@@ -48,13 +50,14 @@ public sealed class AssignmentEndpointsTests
     private static async Task<string?> CodeAsync(HttpResponseMessage response) =>
         (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("code").GetString();
 
-    private async Task<User> CreateUserAsync(string? email = null)
+    private async Task<User> CreateUserAsync(OrgUnit home, string? email = null)
     {
         email ??= $"user-{Guid.NewGuid():N}@lms.test";
         await using var db = _factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
         var user = new User { UserName = email, Email = email, NormalizedEmail = email.ToUpperInvariant(), DisplayNameAr = "مستخدم", DisplayNameEn = "Some User" };
         db.Users.Add(user);
         await db.SaveChangesAsync();
+        await PeopleTestKit.AddStaffAsync(_factory, home, email, userId: user.Id); // roles go to existing staff only (D31)
         return user;
     }
 
@@ -80,7 +83,7 @@ public sealed class AssignmentEndpointsTests
     public async Task Admin_assigns_existing_user_teacher_role_at_section()
     {
         var (tree, admin) = await AdminAsync("AS1");
-        var user = await CreateUserAsync();
+        var user = await CreateUserAsync(tree.School1);
 
         var dto = await CreateOkAsync(admin, Request(user.Email!, tree.Roles[BuiltInRoles.Teacher].Id, tree.School1.Id));
 
@@ -94,34 +97,42 @@ public sealed class AssignmentEndpointsTests
     }
 
     [Fact]
-    public async Task Unknown_email_creates_user_and_sends_invitation()
+    public async Task Unknown_email_is_400_person_not_found_and_creates_no_user()
     {
         var (tree, admin) = await AdminAsync("AS2");
         var email = $"new-{Guid.NewGuid():N}@lms.test";
 
-        var dto = await CreateOkAsync(admin, Request(email, tree.Roles[BuiltInRoles.Teacher].Id, tree.School1.Id));
-
-        await using var db = _factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
-        var user = await db.Users.SingleAsync(u => u.Email == email);
-        Assert.Equal(user.Id, dto.UserId);
-        Assert.Equal("Name", user.DisplayNameEn);
-        var mail = Assert.Single(_emails.To(email));
-        Assert.Contains("invite=1", mail.HtmlBody);
-    }
-
-    [Fact]
-    public async Task Unknown_email_without_names_is_400_and_creates_nothing()
-    {
-        var (tree, admin) = await AdminAsync("AS3");
-        var email = $"nonames-{Guid.NewGuid():N}@lms.test";
-
         var response = await SendAsync(HttpMethod.Post, Routes.Assignments, admin,
-            new CreateAssignmentRequest(email, null, "", tree.Roles[BuiltInRoles.Teacher].Id, tree.School1.Id, null, null));
+            Request(email, tree.Roles[BuiltInRoles.Teacher].Id, tree.School1.Id));
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(ProblemCodes.person_not_found, await CodeAsync(response));
         await using var db = _factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
         Assert.False(await db.Users.AnyAsync(u => u.Email == email));
         Assert.Empty(_emails.To(email));
+    }
+
+    [Fact]
+    public async Task Email_of_staff_in_sibling_subtree_is_400_not_revealing()
+    {
+        var (tree, _) = await AdminAsync("AS3");
+        var school1Admin = await AccessTestData.AssignAsync(_factory, tree, tree.School1, BuiltInRoles.OrgAdmin, Guid.NewGuid());
+        var sibling = await CreateUserAsync(tree.School2); // staff exists, but at School2: outside the School1 admin's scope
+        var other = await AccessTestData.SeedAsync(_factory, "AS3B");
+        var elsewhere = await CreateUserAsync(other.School1); // staff of another client
+        var unknown = $"nobody-{Guid.NewGuid():N}@lms.test";
+        var role = tree.Roles[BuiltInRoles.Teacher].Id;
+
+        var asSibling = await SendAsync(HttpMethod.Post, Routes.Assignments, school1Admin, Request(sibling.Email!, role, tree.School1.Id));
+        var asOtherClient = await SendAsync(HttpMethod.Post, Routes.Assignments, school1Admin, Request(elsewhere.Email!, role, tree.School1.Id));
+        var asUnknown = await SendAsync(HttpMethod.Post, Routes.Assignments, school1Admin, Request(unknown, role, tree.School1.Id));
+
+        // Identical answers: the caller cannot tell "exists elsewhere" from "does not exist".
+        foreach (var response in new[] { asSibling, asOtherClient, asUnknown })
+        {
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.Equal(ProblemCodes.person_not_found, await CodeAsync(response));
+        }
     }
 
     [Fact]
@@ -140,7 +151,7 @@ public sealed class AssignmentEndpointsTests
     {
         var (tree, _) = await AdminAsync("AS5");
         var manager = await AccessTestData.AssignAsync(_factory, tree, tree.Root, BuiltInRoles.Manager, Guid.NewGuid());
-        var user = await CreateUserAsync();
+        var user = await CreateUserAsync(tree.School1);
 
         var response = await SendAsync(HttpMethod.Post, Routes.Assignments, manager,
             Request(user.Email!, tree.Roles[BuiltInRoles.OrgAdmin].Id, tree.School1.Id));
@@ -154,7 +165,7 @@ public sealed class AssignmentEndpointsTests
     {
         var (tree, _) = await AdminAsync("AS6");
         var manager = await AccessTestData.AssignAsync(_factory, tree, tree.Root, BuiltInRoles.Manager, Guid.NewGuid());
-        var user = await CreateUserAsync();
+        var user = await CreateUserAsync(tree.School1);
 
         var response = await SendAsync(HttpMethod.Post, Routes.Assignments, manager,
             Request(user.Email!, tree.Roles[BuiltInRoles.Manager].Id, tree.School1.Id));
@@ -168,7 +179,7 @@ public sealed class AssignmentEndpointsTests
     {
         var (tree, _) = await AdminAsync("AS7");
         var manager = await AccessTestData.AssignAsync(_factory, tree, tree.Root, BuiltInRoles.Manager, Guid.NewGuid());
-        var user = await CreateUserAsync();
+        var user = await CreateUserAsync(tree.School1);
 
         var response = await SendAsync(HttpMethod.Post, Routes.Assignments, manager,
             Request(user.Email!, tree.Roles[BuiltInRoles.OrgAdmin].Id, tree.Root.Id));
@@ -181,7 +192,7 @@ public sealed class AssignmentEndpointsTests
     {
         var (tree, _) = await AdminAsync("AS8");
         var manager = await AccessTestData.AssignAsync(_factory, tree, tree.Root, BuiltInRoles.Manager, Guid.NewGuid());
-        var user = await CreateUserAsync();
+        var user = await CreateUserAsync(tree.School1);
 
         var response = await SendAsync(HttpMethod.Post, Routes.Assignments, manager,
             Request(user.Email!, tree.Roles[BuiltInRoles.Teacher].Id, tree.School1.Id));
@@ -193,7 +204,7 @@ public sealed class AssignmentEndpointsTests
     public async Task OrgAdmin_can_assign_OrgAdmin()
     {
         var (tree, admin) = await AdminAsync("AS9");
-        var user = await CreateUserAsync();
+        var user = await CreateUserAsync(tree.School1);
 
         await CreateOkAsync(admin, Request(user.Email!, tree.Roles[BuiltInRoles.OrgAdmin].Id, tree.School1.Id));
     }
@@ -203,7 +214,7 @@ public sealed class AssignmentEndpointsTests
     {
         var (tree, admin) = await AdminAsync("AS10");
         var other = await AccessTestData.SeedAsync(_factory, "AS10B");
-        var user = await CreateUserAsync();
+        var user = await CreateUserAsync(tree.School1);
 
         var response = await SendAsync(HttpMethod.Post, Routes.Assignments, admin,
             Request(user.Email!, other.Roles[BuiltInRoles.Teacher].Id, tree.School1.Id));
@@ -216,7 +227,7 @@ public sealed class AssignmentEndpointsTests
     {
         var tree = await AccessTestData.SeedAsync(_factory, "AS11");
         var schoolAdmin = await AccessTestData.AssignAsync(_factory, tree, tree.School1, BuiltInRoles.OrgAdmin, Guid.NewGuid());
-        var user = await CreateUserAsync();
+        var user = await CreateUserAsync(tree.School1);
 
         var create = await SendAsync(HttpMethod.Post, Routes.Assignments, schoolAdmin,
             Request(user.Email!, tree.Roles[BuiltInRoles.Teacher].Id, tree.School2.Id));
@@ -232,7 +243,7 @@ public sealed class AssignmentEndpointsTests
     public async Task Overlapping_duplicate_is_409_but_disjoint_validity_is_fine()
     {
         var (tree, admin) = await AdminAsync("AS12");
-        var user = await CreateUserAsync();
+        var user = await CreateUserAsync(tree.School1);
         var roleId = tree.Roles[BuiltInRoles.Teacher].Id;
         await CreateOkAsync(admin, Request(user.Email!, roleId, tree.School1.Id, Today, Today.AddDays(10)));
 
@@ -253,7 +264,7 @@ public sealed class AssignmentEndpointsTests
     public async Task ValidTo_before_ValidFrom_is_400()
     {
         var (tree, admin) = await AdminAsync("AS13");
-        var user = await CreateUserAsync();
+        var user = await CreateUserAsync(tree.School1);
 
         var response = await SendAsync(HttpMethod.Post, Routes.Assignments, admin,
             Request(user.Email!, tree.Roles[BuiltInRoles.Teacher].Id, tree.School1.Id, Today, Today.AddDays(-1)));
@@ -265,7 +276,7 @@ public sealed class AssignmentEndpointsTests
     public async Task Updated_validity_controls_context_validity()
     {
         var (tree, admin) = await AdminAsync("AS14");
-        var user = await CreateUserAsync();
+        var user = await CreateUserAsync(tree.School1);
         var dto = await CreateOkAsync(admin, Request(user.Email!, tree.Roles[BuiltInRoles.Supervisor].Id, tree.School1.Id));
         RoleAssignment assignee;
         await using (var db = _factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
@@ -306,7 +317,7 @@ public sealed class AssignmentEndpointsTests
     public async Task Delete_removes_the_assignment_and_is_audited_with_create()
     {
         var (tree, admin) = await AdminAsync("AS16");
-        var user = await CreateUserAsync();
+        var user = await CreateUserAsync(tree.School1);
         var dto = await CreateOkAsync(admin, Request(user.Email!, tree.Roles[BuiltInRoles.Teacher].Id, tree.School1.Id));
 
         Assert.Equal(HttpStatusCode.NoContent, (await SendAsync(HttpMethod.Delete, Routes.Assignment(dto.Id), admin)).StatusCode);
@@ -339,7 +350,7 @@ public sealed class AssignmentEndpointsTests
     {
         var tree = await AccessTestData.SeedAsync(_factory, "AS18");
         var teacher = await AccessTestData.AssignAsync(_factory, tree, tree.Root, BuiltInRoles.Teacher, Guid.NewGuid());
-        var user = await CreateUserAsync();
+        var user = await CreateUserAsync(tree.School1);
 
         Assert.Equal(HttpStatusCode.Forbidden, (await SendAsync(HttpMethod.Post, Routes.Assignments, teacher,
             Request(user.Email!, tree.Roles[BuiltInRoles.Teacher].Id, tree.School1.Id))).StatusCode);
@@ -354,10 +365,10 @@ public sealed class AssignmentEndpointsTests
         var roleId = tree.Roles[BuiltInRoles.Teacher].Id;
         for (var i = 0; i < 3; i++)
         {
-            await CreateOkAsync(admin, Request((await CreateUserAsync()).Email!, roleId, tree.School1.Id));
+            await CreateOkAsync(admin, Request((await CreateUserAsync(tree.School1)).Email!, roleId, tree.School1.Id));
         }
 
-        await CreateOkAsync(admin, Request((await CreateUserAsync()).Email!, roleId, tree.School2.Id));
+        await CreateOkAsync(admin, Request((await CreateUserAsync(tree.School1)).Email!, roleId, tree.School2.Id));
 
         async Task<PagedResult<AssignmentDto>> Get(string query) => (await (await SendAsync(
             HttpMethod.Get, Routes.OrgUnitAssignments(tree.Root.Id) + query, admin)).Content

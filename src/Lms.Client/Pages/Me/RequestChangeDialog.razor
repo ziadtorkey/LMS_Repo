@@ -15,7 +15,7 @@
             @foreach (var field in Profile.RequestableFields)
             {
                 var name = field;
-                <StudentFieldEditor Field="@name" Label="@L[$"StudentField_{name}"]" Value="_values[name]"
+                <StudentFieldEditor Field="@name" Label="@L[$"StudentField_{name}"]" Value="@_values[name]"
                                     ValueChanged="v => _values[name] = v" HomeUnitId="Profile.Student.Summary.HomeOrgUnitId" />
             }
             <MudTextField T="string" @bind-Value="_note" Label="@L["ChangeRequest_Note"]" Lines="3" MaxLength="500" data-testid="request-note" />

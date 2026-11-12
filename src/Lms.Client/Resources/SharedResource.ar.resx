@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
   <resheader name="version"><value>2.0</value></resheader>
@@ -30,6 +30,10 @@
   <data name="Nav_Audit" xml:space="preserve"><value>سجل التدقيق</value></data>
   <data name="Nav_Clients" xml:space="preserve"><value>العملاء</value></data>
   <data name="Nav_Menu" xml:space="preserve"><value>القائمة</value></data>
+  <data name="Nav_SkipToContent" xml:space="preserve"><value>انتقل إلى المحتوى الرئيسي</value></data>
+  <data name="Theme_Dark" xml:space="preserve"><value>الوضع الداكن</value></data>
+  <data name="Theme_Light" xml:space="preserve"><value>الوضع الفاتح</value></data>
+  <data name="Common_Filters" xml:space="preserve"><value>عوامل التصفية</value></data>
   <data name="Choose_Title" xml:space="preserve"><value>اختر السياق</value></data>
   <data name="Choose_Subtitle" xml:space="preserve"><value>اختر الدور والجهة التي ستعمل بها الآن. يمكنك التبديل في أي وقت.</value></data>
   <data name="Choose_Empty_Title" xml:space="preserve"><value>لا توجد صلاحيات مسندة إليك</value></data>
@@ -401,6 +405,7 @@
   <data name="AuditEvent_ExternalLoginLinked" xml:space="preserve"><value>ربط حساب الجهة</value></data>
   <data name="AuditEvent_ExternalLoginSucceeded" xml:space="preserve"><value>دخول ناجح بحساب الجهة</value></data>
   <data name="AuditEvent_ExternalLoginFailed" xml:space="preserve"><value>دخول فاشل بحساب الجهة</value></data>
+  <data name="AuditEvent_PasswordChanged" xml:space="preserve"><value>تغيير كلمة المرور</value></data>
   <data name="Notif_Staff_ExpiringSoon" xml:space="preserve"><value>تنتهي صلاحية وصول {StaffName} في {ExpiresOn}.</value></data>
   <data name="Notif_Staff_Expired" xml:space="preserve"><value>انتهت صلاحية وصول {StaffName} في {ExpiresOn}.</value></data>
   <data name="Notif_Imports_Completed" xml:space="preserve"><value>اكتمل استيراد {Kind}: {Status} ({RowCount} صف).</value></data>
@@ -466,6 +471,18 @@
   <data name="Staff_StatusHistory" xml:space="preserve"><value>سجل الحالة</value></data>
   <data name="Staff_Reason" xml:space="preserve"><value>السبب</value></data>
   <data name="Staff_LimitedView" xml:space="preserve"><value>ينتمي هذا الشخص إلى وحدة أخرى، لذلك بعض البيانات مخفية.</value></data>
+  <data name="Staff_Subtitle" xml:space="preserve"><value>المعلمون والإداريون في جهتك، وأدوارهم وحالة حساباتهم.</value></data>
+  <data name="Staff_EmptyTitle" xml:space="preserve"><value>لا يوجد موظفون مطابقون</value></data>
+  <data name="Staff_EmptyText" xml:space="preserve"><value>غيّر عوامل التصفية أو أضف موظفًا جديدًا.</value></data>
+  <data name="Staff_BackToList" xml:space="preserve"><value>كل الموظفين</value></data>
+  <data name="Staff_Details" xml:space="preserve"><value>بيانات الحساب</value></data>
+  <data name="Staff_NoRoles" xml:space="preserve"><value>لا توجد أدوار مسندة.</value></data>
+  <data name="Staff_NoHistory" xml:space="preserve"><value>لم تتغير الحالة بعد.</value></data>
+  <data name="Staff_SectionPerson" xml:space="preserve"><value>الاسم والمسمى الوظيفي</value></data>
+  <data name="Staff_SectionContact" xml:space="preserve"><value>التواصل والهوية</value></data>
+  <data name="Staff_SectionAccount" xml:space="preserve"><value>الحساب</value></data>
+  <data name="Staff_EmailReadOnlyHelp" xml:space="preserve"><value>لا يمكن تغيير البريد الإلكتروني من هنا.</value></data>
+  <data name="Staff_ExpiresOnHelp" xml:space="preserve"><value>اتركه فارغًا إذا لم يكن للحساب تاريخ انتهاء.</value></data>
   <data name="Person_Photo" xml:space="preserve"><value>الصورة</value></data>
   <data name="Person_ChangePhoto" xml:space="preserve"><value>تغيير الصورة</value></data>
   <data name="Person_RemovePhoto" xml:space="preserve"><value>إزالة الصورة</value></data>
@@ -495,6 +512,31 @@
   <data name="Assign_PersonSearch" xml:space="preserve"><value>ابحث عن موظف بالاسم أو البريد</value></data>
   <data name="Assign_CreateStaff" xml:space="preserve"><value>إنشاء موظف جديد</value></data>
   <data name="Staff_RoleIncomplete" xml:space="preserve"><value>اختر الدور والوحدة معًا.</value></data>
+  <data name="Nav_IdentityProviders" xml:space="preserve"><value>تسجيل الدخول الموحد</value></data>
+  <data name="Idp_Title" xml:space="preserve"><value>مزودو تسجيل الدخول الموحد</value></data>
+  <data name="Idp_New" xml:space="preserve"><value>إضافة مزود</value></data>
+  <data name="Idp_Kind" xml:space="preserve"><value>النوع</value></data>
+  <data name="IdpKind_Oidc" xml:space="preserve"><value>OpenID Connect</value></data>
+  <data name="IdpKind_AzureAd" xml:space="preserve"><value>Microsoft Entra ID (Azure AD)</value></data>
+  <data name="Idp_Slug" xml:space="preserve"><value>الاسم المختصر (للرابط)</value></data>
+  <data name="Idp_Authority" xml:space="preserve"><value>رابط مزود الهوية</value></data>
+  <data name="Idp_TenantId" xml:space="preserve"><value>معرّف الدليل (المستأجر)</value></data>
+  <data name="Idp_ClientId" xml:space="preserve"><value>معرّف التطبيق</value></data>
+  <data name="Idp_ClientSecret" xml:space="preserve"><value>السر الخاص بالتطبيق</value></data>
+  <data name="Idp_SecretKeep" xml:space="preserve"><value>اتركه فارغًا للإبقاء على السر الحالي</value></data>
+  <data name="Idp_Scopes" xml:space="preserve"><value>النطاقات</value></data>
+  <data name="Idp_MatchBy" xml:space="preserve"><value>مطابقة المستخدمين حسب</value></data>
+  <data name="IdpMatch_Email" xml:space="preserve"><value>البريد الإلكتروني</value></data>
+  <data name="IdpMatch_NationalId" xml:space="preserve"><value>رقم الهوية الوطنية</value></data>
+  <data name="Idp_NationalIdClaim" xml:space="preserve"><value>اسم المطالبة الخاصة برقم الهوية</value></data>
+  <data name="Idp_EmailDomains" xml:space="preserve"><value>نطاقات البريد الإلكتروني</value></data>
+  <data name="Idp_CallbackUrl" xml:space="preserve"><value>رابط إعادة التوجيه الذي يُسجَّل لدى المزود</value></data>
+  <data name="Idp_Copy" xml:space="preserve"><value>نسخ</value></data>
+  <data name="Idp_Test" xml:space="preserve"><value>اختبار الاتصال</value></data>
+  <data name="Idp_TestOk" xml:space="preserve"><value>تم الاتصال بـ {0}</value></data>
+  <data name="Idp_TestFailed" xml:space="preserve"><value>تعذر الوصول إلى المزود: {0}</value></data>
+  <data name="Idp_DeleteConfirm" xml:space="preserve"><value>هل تريد حذف المزود "{0}"؟ لن يتمكن من يستخدمونه من تسجيل الدخول به.</value></data>
+  <data name="Common_Enabled" xml:space="preserve"><value>مفعّل</value></data>
   <data name="Error_possible_duplicate" xml:space="preserve"><value>يوجد طالب بالاسم وتاريخ الميلاد نفسيهما. أكّد للمتابعة.</value></data>
   <data name="Error_student_code_taken" xml:space="preserve"><value>كود الطالب مستخدم من قبل لدى هذا العميل.</value></data>
   <data name="Error_student_code_required" xml:space="preserve"><value>كود الطالب مطلوب.</value></data>
@@ -512,6 +554,10 @@
   <data name="Error_password_change_required" xml:space="preserve"><value>يجب تغيير كلمة المرور قبل المتابعة.</value></data>
   <data name="Error_invalid_owner_unit" xml:space="preserve"><value>لا يمكن أن يملك المقرر إلا جذر العميل أو مستوى إدارة المقررات.</value></data>
   <data name="Error_course_code_taken" xml:space="preserve"><value>يوجد مقرر آخر يستخدم هذا الكود.</value></data>
+  <data name="Error_short_code_taken" xml:space="preserve"><value>يستخدم عميل آخر هذا الرمز المختصر.</value></data>
+  <data name="Error_invalid_short_code" xml:space="preserve"><value>الرمز المختصر غير صالح: من 2 إلى 20 حرفًا لاتينيًا صغيرًا أو رقمًا أو شرطة.</value></data>
+  <data name="Error_teacher_already_assigned" xml:space="preserve"><value>هذا المعلم مُسنَد بالفعل إلى هذا المقرر في هذا الصف.</value></data>
+  <data name="Error_assignment_ended" xml:space="preserve"><value>انتهى هذا الإسناد بالفعل ولا يمكن تعديله.</value></data>
   <data name="Error_course_in_use" xml:space="preserve"><value>المقرر مستخدم في فصول ولا يمكن حذفه.</value></data>
   <data name="Error_course_not_available" xml:space="preserve"><value>هذا المقرر غير متاح في هذه الوحدة.</value></data>
   <data name="Error_allocation_exists" xml:space="preserve"><value>المقرر مخصص لهذه الوحدة من قبل.</value></data>
@@ -621,6 +667,7 @@
   <data name="AuditEntity_CourseRestriction" xml:space="preserve"><value>قيد مقرر</value></data>
   <data name="AuditEntity_CourseSupervisor" xml:space="preserve"><value>مشرف مقرر</value></data>
   <data name="AuditEntity_Blueprint" xml:space="preserve"><value>مخطط دراسي</value></data>
+  <data name="AuditEntity_ClassLessonPlan" xml:space="preserve"><value>خطة الدروس للصف</value></data>
   <data name="AuditEntity_Class" xml:space="preserve"><value>فصل</value></data>
   <data name="AuditEntity_ClassStudent" xml:space="preserve"><value>طالب في فصل</value></data>
   <data name="AuditEntity_ClassCourse" xml:space="preserve"><value>مقرر فصل</value></data>
@@ -702,6 +749,40 @@
   <data name="CredentialsDelivery_Student" xml:space="preserve"><value>أُرسلت بيانات الدخول بالبريد إلى الطالب.</value></data>
   <data name="CredentialsDelivery_PrimaryGuardian" xml:space="preserve"><value>أُرسلت بيانات الدخول بالبريد إلى ولي الأمر الأساسي.</value></data>
   <data name="CredentialsDelivery_None" xml:space="preserve"><value>لم يُرسل بريد إلكتروني. سلّم بيانات الدخول إلى ولي الأمر.</value></data>
+  <data name="Nav_Courses" xml:space="preserve"><value>المقررات</value></data>
+  <data name="Course_Title" xml:space="preserve"><value>المقررات</value></data>
+  <data name="Course_New" xml:space="preserve"><value>مقرر جديد</value></data>
+  <data name="Course_Edit" xml:space="preserve"><value>تعديل المقرر</value></data>
+  <data name="Course_View" xml:space="preserve"><value>المقرر</value></data>
+  <data name="Course_Import" xml:space="preserve"><value>استيراد المقررات</value></data>
+  <data name="Course_Created" xml:space="preserve"><value>تم إنشاء المقرر.</value></data>
+  <data name="Course_ReadOnly" xml:space="preserve"><value>هذا المقرر تابع لوحدة أعلى أو لا تملك صلاحية تعديله، لذلك يُعرض للقراءة فقط.</value></data>
+  <data name="Course_Code" xml:space="preserve"><value>الرمز</value></data>
+  <data name="Course_CodeFormat" xml:space="preserve"><value>أحرف وأرقام وشرطات فقط (حتى 50 حرفًا).</value></data>
+  <data name="Course_DescriptionAr" xml:space="preserve"><value>الوصف (بالعربية)</value></data>
+  <data name="Course_DescriptionEn" xml:space="preserve"><value>الوصف (بالإنجليزية)</value></data>
+  <data name="Course_Language" xml:space="preserve"><value>لغة التدريس</value></data>
+  <data name="Course_Language_ar" xml:space="preserve"><value>العربية</value></data>
+  <data name="Course_Language_en" xml:space="preserve"><value>الإنجليزية</value></data>
+  <data name="Course_Language_fr" xml:space="preserve"><value>الفرنسية</value></data>
+  <data name="Course_Language_de" xml:space="preserve"><value>الألمانية</value></data>
+  <data name="Course_WeeklyPeriods" xml:space="preserve"><value>الحصص الأسبوعية</value></data>
+  <data name="Course_Owner" xml:space="preserve"><value>الوحدة المالكة</value></data>
+  <data name="Course_AllocateTo" xml:space="preserve"><value>تخصيص أيضًا إلى</value></data>
+  <data name="Course_AllocateToHelp" xml:space="preserve"><value>اختياري: الوحدات التي تحصل على المقرر فورًا.</value></data>
+  <data name="Course_Unit" xml:space="preserve"><value>المتاح في الوحدة</value></data>
+  <data name="Course_Inherited" xml:space="preserve"><value>موروث</value></data>
+  <data name="Course_Allocations" xml:space="preserve"><value>التخصيصات</value></data>
+  <data name="Course_SupervisedByMe" xml:space="preserve"><value>تحت إشرافي</value></data>
+  <data name="CourseStatus_Active" xml:space="preserve"><value>نشط</value></data>
+  <data name="CourseStatus_Inactive" xml:space="preserve"><value>غير نشط</value></data>
+  <data name="CourseImport_Title" xml:space="preserve"><value>استيراد المقررات من Excel</value></data>
+  <data name="StaffImport_Title" xml:space="preserve"><value>استيراد الموظفين</value></data>
+  <data name="Import_Button" xml:space="preserve"><value>استيراد من Excel</value></data>
+  <data name="Clients_ShortCode" xml:space="preserve"><value>الرمز المختصر</value></data>
+  <data name="Clients_ShortCodeHelp" xml:space="preserve"><value>يُستخدم في أسماء دخول الطلاب (الكود@الرمز): من 2 إلى 20 حرفًا إنجليزيًا صغيرًا أو رقمًا أو شرطة. اتركه فارغًا ليُشتق من رمز الوحدة الجذرية.</value></data>
+  <data name="Student_OverCapacityConfirm" xml:space="preserve"><value>هذا الفصل مكتمل. هل تريد وضع الطالب فيه على أي حال؟</value></data>
+  <data name="Student_PlaceAnyway" xml:space="preserve"><value>وضع على أي حال</value></data>
   <data name="Student_Profile" xml:space="preserve"><value>الملف الشخصي</value></data>
   <data name="Student_Edit" xml:space="preserve"><value>تعديل بيانات الطالب</value></data>
   <data name="Student_Guardians" xml:space="preserve"><value>أولياء الأمور</value></data>
@@ -776,4 +857,32 @@
   <data name="MyChildren_Empty" xml:space="preserve"><value>لا يوجد أبناء مرتبطون بحسابك في هذه المدرسة.</value></data>
   <data name="MyChildren_OtherContexts" xml:space="preserve"><value>يظهر الأبناء في مدرسة أخرى عند التبديل إليها من الشريط العلوي.</value></data>
   <data name="MyChildren_Open" xml:space="preserve"><value>عرض أبنائي</value></data>
+  <data name="Nav_MyClassCourses" xml:space="preserve"><value>مقررات فصولي</value></data>
+  <data name="MyClassCourses_Title" xml:space="preserve"><value>مقررات فصولي</value></data>
+  <data name="MyClassCourses_Empty" xml:space="preserve"><value>لا توجد لديك مقررات فصول في العام المحدد.</value></data>
+  <data name="MyClassCourses_Students" xml:space="preserve"><value>{0} طالبًا</value></data>
+  <data name="MyClassCourses_Optional" xml:space="preserve"><value>اختياري</value></data>
+  <data name="MyClassCourses_PlanVersion" xml:space="preserve"><value>الإصدار {0} من الخطة</value></data>
+  <data name="MyClassCourses_NoPlan" xml:space="preserve"><value>لا توجد خطة بعد</value></data>
+  <data name="MyClassCourses_OpenPlan" xml:space="preserve"><value>فتح الخطة</value></data>
+  <data name="Home_MyClassCoursesHint" xml:space="preserve"><value>اطلع على مقررات فصولك وخطط دروسها.</value></data>
+  <data name="LessonPlan_Title" xml:space="preserve"><value>خطة الدروس</value></data>
+  <data name="LessonPlan_Version" xml:space="preserve"><value>الإصدار {0}</value></data>
+  <data name="LessonPlan_Synced" xml:space="preserve"><value>آخر مزامنة {0}</value></data>
+  <data name="LessonPlan_Empty" xml:space="preserve"><value>لم يتلق مقرر الفصل هذا خطة بعد. تظهر الخطة عند نشر مخطط المقرر.</value></data>
+  <data name="LessonPlan_Hidden" xml:space="preserve"><value>مخفي</value></data>
+  <data name="LessonPlan_Planned" xml:space="preserve"><value>المخطط</value></data>
+  <data name="LessonPlan_HijriSuffix" xml:space="preserve"><value>هـ</value></data>
+  <data name="LessonPlan_Modules" xml:space="preserve"><value>الوحدات التعليمية</value></data>
+  <data name="LessonPlan_ModulesLater" xml:space="preserve"><value>تصل الوحدات التعليمية في إصدار لاحق.</value></data>
+  <data name="RichText_Bold" xml:space="preserve"><value>غامق</value></data>
+  <data name="RichText_BulletList" xml:space="preserve"><value>قائمة نقطية</value></data>
+  <data name="RichText_Italic" xml:space="preserve"><value>مائل</value></data>
+  <data name="RichText_Link" xml:space="preserve"><value>إدراج رابط</value></data>
+  <data name="RichText_LinkApply" xml:space="preserve"><value>تطبيق</value></data>
+  <data name="RichText_LinkInvalid" xml:space="preserve"><value>أدخل رابطاً صالحاً (https:// أو mailto:).</value></data>
+  <data name="RichText_LinkRemove" xml:space="preserve"><value>إزالة الرابط</value></data>
+  <data name="RichText_LinkUrl" xml:space="preserve"><value>عنوان الرابط</value></data>
+  <data name="RichText_NumberedList" xml:space="preserve"><value>قائمة مرقمة</value></data>
+  <data name="RichText_Toolbar" xml:space="preserve"><value>شريط أدوات التنسيق</value></data>
 </root>

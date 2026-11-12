@@ -18,11 +18,18 @@ public sealed partial class GuardianAccessGuardTests
         ["src/Lms.Infrastructure/People/PersonDuplicateFinder.cs"] =
             "client-wide match by national id or mobile (guardians may already exist through a sibling subtree); returns the entity to "
             + "Infrastructure callers only, the M3 match endpoint projects name and masked mobile (M2 Task 5, #157)",
+        ["src/Lms.Infrastructure/Enrollment/TransferNotifier.cs"] =
+            "portal user ids of the guardians linked to the transferred student (links in the caller's scope); only user ids leave (M3 Task 28, #236)",
         ["src/Lms.Infrastructure/People/PersonStatusService.cs"] =
             "recompute a user's account status: only whether the user has a live guardian profile (M2 Task 6, #158)",
         ["src/Lms.Infrastructure/Identity/External/ExternalLoginLinker.cs"] =
             "external sign-in matches a person by national id or user id among the provider's own client only; returns user ids, "
             + "never guardian data (M2 Task 22, #168 / PR #193)",
+        ["src/Lms.Infrastructure/People/Guardians/GuardianVisibility.cs"] =
+            "the one entry point for reading guardians: only guardians with a live StudentGuardian in the caller's scope (M3 Task 19, #227)",
+        ["src/Lms.Infrastructure/People/Guardians/GuardianLinker.cs"] =
+            "creates, links and edits guardians of the caller's own client (tenant filter); existing ids are client-checked, "
+            + "duplicate answers carry the field name only (M3 Task 19, #227)",
         ["src/Lms.Infrastructure/Persistence/Configurations/People/PeopleConfigurations.cs"] =
             "entity mapping",
     };

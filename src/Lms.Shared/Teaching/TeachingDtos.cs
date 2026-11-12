@@ -26,12 +26,18 @@ public sealed record TeacherEligibilityDto(
 /// <summary>Body of POST /api/teacher-eligibility: every teacher × every course (at most 200 pairs).</summary>
 public sealed record GrantEligibilityRequest(Guid OrgUnitId, IReadOnlyList<Guid> UserIds, IReadOnlyList<Guid> CourseIds);
 
+/// <summary>
+/// Query of GET /api/teacher-eligibility. By default <c>OrgUnitId</c> returns eligibilities granted at that unit and its descendants.
+/// With <c>IncludeAncestors</c> = true it instead returns the eligibilities that apply to a class at <c>OrgUnitId</c>:
+/// those granted at that unit or any ancestor (the same rule teacher assignment enforces).
+/// </summary>
 public sealed record EligibilityQuery(
     Guid? OrgUnitId,
     Guid? UserId,
     Guid? CourseId,
     int Page = 1,
-    int PageSize = Paging.DefaultPageSize);
+    int PageSize = Paging.DefaultPageSize,
+    bool IncludeAncestors = false);
 
 /// <summary>A dated teacher assignment of a ClassCourse; <c>To</c> null = open. <c>Role</c> from <see cref="TeacherRoles"/>.</summary>
 public sealed record ClassCourseTeacherDto(
@@ -55,6 +61,10 @@ public sealed record EndTeacherRequest(DateOnly LastDay);
 
 /// <summary>Body of POST /api/teacher-assignments/bulk (at most 200 ClassCourses).</summary>
 public sealed record BulkAssignTeacherRequest(Guid UserId, string Role, IReadOnlyList<Guid> ClassCourseIds);
+
+/// <summary>Result of the bulk teacher assignment: assignments created, and ClassCourses skipped because the teacher already
+/// holds an open assignment there.</summary>
+public sealed record BulkAssignTeacherResultDto(int Assigned, int Skipped);
 
 /// <summary>One row of GET /api/me/class-courses (the signed-in teacher's current ClassCourses).</summary>
 public sealed record MyClassCourseDto(

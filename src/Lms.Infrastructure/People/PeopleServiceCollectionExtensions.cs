@@ -9,11 +9,14 @@ public static class PeopleServiceCollectionExtensions
     public static IServiceCollection AddPeople(this IServiceCollection services)
     {
         services.AddScoped<IPersonDuplicateFinder, PersonDuplicateFinder>();
+        services.AddScoped<IGuardianLinker, Guardians.GuardianLinker>();
         services.AddScoped<IOrgUnitUsageCheck, PeopleUsageCheck>();
         services.AddScoped<IPersonAccounts, PersonAccounts>();
+        services.AddScoped<IStudentCredentials, Students.StudentCredentials>();
         services.AddScoped<IPersonStatusService, PersonStatusService>();
         services.AddScoped<IRoleAssignmentSync, RoleAssignmentSync>();
         services.AddScoped<IInvitationOutbox, InvitationOutbox>();
+        services.AddScoped<IStudentCodeGenerator, StudentCodeGenerator>();
         return services;
     }
 }

@@ -1,0 +1,33 @@
+@page "/courses/import"
+@attribute [Authorize]
+@using Lms.Client.Components.Imports
+@using Lms.Shared.Authorization
+@using Lms.Shared.Imports
+@inject PermissionState PermState
+@implements IDisposable
+
+<PageTitle>@L["CourseImport_Title"]</PageTitle>
+@if (!PermState.Loaded)
+{
+    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+}
+else if (!PermState.Has(Permissions.Courses.Import))
+{
+    <MudAlert Severity="Severity.Warning" data-testid="course-import-forbidden">@L["Forbidden_Title"]</MudAlert>
+}
+else
+{
+    <ImportWizard Kind="@ImportKinds.Courses" TitleKey="CourseImport_Title" />
+}
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        PermState.Changed += OnPermissionsChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+    }
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => PermState.Changed -= OnPermissionsChanged;
+}

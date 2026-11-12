@@ -1,0 +1,29 @@
+@* A bordered surface for one block of a page, with an optional heading (h2) and heading actions.
+   Flush removes the body padding (for tables that reach the card edges). *@
+<section class="lms-section @(Flush ? "lms-section-flush" : "") @Class" data-testid="@TestId" aria-labelledby="@(Title is null ? null : _headingId)">
+    @if (Title is not null || Actions is not null)
+    {
+        <div class="lms-section-head">
+            @if (Title is not null)
+            {
+                <MudText Typo="Typo.h6" HtmlTag="h2" id="@_headingId" Class="lms-section-title">@Title</MudText>
+            }
+            @if (Actions is not null)
+            {
+                <div class="lms-section-actions">@Actions</div>
+            }
+        </div>
+    }
+    <div class="lms-section-body">@ChildContent</div>
+</section>
+
+@code {
+    private readonly string _headingId = $"section-{Guid.NewGuid():N}";
+
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public bool Flush { get; set; }
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public string? TestId { get; set; }
+    [Parameter] public RenderFragment? Actions { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}
