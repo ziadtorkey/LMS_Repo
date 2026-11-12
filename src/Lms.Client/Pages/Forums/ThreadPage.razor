@@ -62,6 +62,12 @@ else
         {
             <PostView Post="post" OnDelete="p => DeleteAsync(p, false)" />
         }
+        @if (_replies.Count < _repliesTotal)
+        {
+            <div>
+                <MudButton Variant="Variant.Outlined" OnClick="MoreAsync" Disabled="_loadingMore" data-testid="thread-more">@L["Forum_MoreReplies", _repliesTotal - _replies.Count]</MudButton>
+            </div>
+        }
 
         @if (thread.IsLocked)
         {
@@ -79,7 +85,9 @@ else
     [Parameter] public Guid ThreadId { get; set; }
 
     private ForumThreadDetailDto? _detail;
-    private IReadOnlyList<ForumPostDto> _replies = [];
+    private List<ForumPostDto> _replies = [];
+    private int _repliesTotal, _repliesPage = 1;
+    private bool _loadingMore;
     private string? _error;
     private bool _loading = true;
 
@@ -88,6 +96,7 @@ else
         PermState.Changed -= OnPermissionsChanged;
         PermState.Changed += OnPermissionsChanged;
         if (!PermState.Loaded) await PermState.RefreshAsync();
+        _repliesPage = 1;
         await LoadAsync();
     }
 
@@ -101,11 +110,29 @@ else
             await ApiCalls.RunAsync(async () =>
             {
                 _detail = await Forum.GetThreadAsync(ThreadId);
-                _replies = (await Forum.ListPostsAsync(ThreadId)).Items.OrderBy(p => p.CreatedAtUtc).ToList();
+                // Reload every page loaded so far (an action such as a reply must not collapse the list back to page one).
+                var loaded = new List<ForumPostDto>();
+                var total = 0;
+                for (var page = 1; page <= _repliesPage; page++)
+                {
+                    var result = await Forum.ListPostsAsync(ThreadId, page);
+                    loaded.AddRange(result.Items);
+                    total = result.Total;
+                }
+                _replies = loaded.OrderBy(p => p.CreatedAtUtc).ToList();
+                _repliesTotal = total;
             }, Navigation, L, m => _error = m);
         }
         _loading = false;
         if (silent) StateHasChanged();
+    }
+
+    private async Task MoreAsync()
+    {
+        _loadingMore = true;
+        _repliesPage++;
+        await LoadAsync(silent: true);
+        _loadingMore = false;
     }
 
     private async Task<bool> ReplyAsync(string html, IReadOnlyList<Guid> attachments)

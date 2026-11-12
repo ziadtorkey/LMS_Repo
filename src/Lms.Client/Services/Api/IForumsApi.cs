@@ -6,10 +6,10 @@ namespace Lms.Client.Services.Api;
 /// <summary>The forum and announcements of a ClassCourse (FR-FOR-01).</summary>
 public interface IForumsApi
 {
-    Task<PagedResult<ForumThreadDto>> ListThreadsAsync(Guid classCourseId, CancellationToken ct = default);
+    Task<PagedResult<ForumThreadDto>> ListThreadsAsync(Guid classCourseId, int page = 1, CancellationToken ct = default);
     Task<ForumThreadDetailDto> CreateThreadAsync(Guid classCourseId, CreateForumThreadRequest request, CancellationToken ct = default);
     Task<ForumThreadDetailDto> GetThreadAsync(Guid threadId, CancellationToken ct = default);
-    Task<PagedResult<ForumPostDto>> ListPostsAsync(Guid threadId, CancellationToken ct = default);
+    Task<PagedResult<ForumPostDto>> ListPostsAsync(Guid threadId, int page = 1, CancellationToken ct = default);
     Task<ForumPostDto> CreatePostAsync(Guid threadId, CreateForumPostRequest request, CancellationToken ct = default);
     Task<ForumPostDto> UpdatePostAsync(Guid postId, UpdateForumPostRequest request, CancellationToken ct = default);
 
@@ -27,10 +27,10 @@ public interface IForumsApi
 
 public sealed class ForumsApi(ApiHttp http) : IForumsApi
 {
-    private static string Paged(string route) => $"{route}?pageSize={Paging.MaxPageSize}";
+    private static string Paged(string route, int page = 1) => $"{route}?page={page}&pageSize={Paging.MaxPageSize}";
 
-    public Task<PagedResult<ForumThreadDto>> ListThreadsAsync(Guid classCourseId, CancellationToken ct = default) =>
-        http.GetAsync<PagedResult<ForumThreadDto>>(Paged(Routes.ClassCourseForumThreads(classCourseId)), ct);
+    public Task<PagedResult<ForumThreadDto>> ListThreadsAsync(Guid classCourseId, int page = 1, CancellationToken ct = default) =>
+        http.GetAsync<PagedResult<ForumThreadDto>>(Paged(Routes.ClassCourseForumThreads(classCourseId), page), ct);
 
     public async Task<ForumThreadDetailDto> CreateThreadAsync(Guid classCourseId, CreateForumThreadRequest request, CancellationToken ct = default) =>
         (await http.SendAsync<ForumThreadDetailDto>(HttpMethod.Post, Routes.ClassCourseForumThreads(classCourseId), request, ct))!;
@@ -38,8 +38,8 @@ public sealed class ForumsApi(ApiHttp http) : IForumsApi
     public Task<ForumThreadDetailDto> GetThreadAsync(Guid threadId, CancellationToken ct = default) =>
         http.GetAsync<ForumThreadDetailDto>(Routes.ForumThread(threadId), ct);
 
-    public Task<PagedResult<ForumPostDto>> ListPostsAsync(Guid threadId, CancellationToken ct = default) =>
-        http.GetAsync<PagedResult<ForumPostDto>>(Paged(Routes.ForumThreadPosts(threadId)), ct);
+    public Task<PagedResult<ForumPostDto>> ListPostsAsync(Guid threadId, int page = 1, CancellationToken ct = default) =>
+        http.GetAsync<PagedResult<ForumPostDto>>(Paged(Routes.ForumThreadPosts(threadId), page), ct);
 
     public async Task<ForumPostDto> CreatePostAsync(Guid threadId, CreateForumPostRequest request, CancellationToken ct = default) =>
         (await http.SendAsync<ForumPostDto>(HttpMethod.Post, Routes.ForumThreadPosts(threadId), request, ct))!;
@@ -89,12 +89,17 @@ public sealed class FakeForumsApi : IForumsApi
         return t;
     }
 
-    private static PagedResult<T> Page<T>(IReadOnlyList<T> items) => new(items, items.Count, 1, Paging.MaxPageSize);
+    /// <summary>Page size of the fake lists (tests use a small one to exercise paging).</summary>
+    public int PageSize { get; set; } = Paging.MaxPageSize;
+
+    private PagedResult<T> Page<T>(IReadOnlyList<T> items, int page = 1) =>
+        new(items.Skip((page - 1) * PageSize).Take(PageSize).ToList(), items.Count, page, PageSize);
 
     private Exception? Fail => Failure;
 
-    public Task<PagedResult<ForumThreadDto>> ListThreadsAsync(Guid classCourseId, CancellationToken ct = default) =>
-        Fail is { } f ? Task.FromException<PagedResult<ForumThreadDto>>(f) : Task.FromResult(Page<ForumThreadDto>(Threads.Where(t => t.ClassCourseId == classCourseId).ToList()));
+    public Task<PagedResult<ForumThreadDto>> ListThreadsAsync(Guid classCourseId, int page = 1, CancellationToken ct = default) =>
+        Fail is { } f ? Task.FromException<PagedResult<ForumThreadDto>>(f)
+            : Task.FromResult(Page<ForumThreadDto>(Threads.Where(t => t.ClassCourseId == classCourseId).OrderByDescending(t => t.IsPinned).ThenByDescending(t => t.LastActivityAtUtc).ToList(), page));
 
     public Task<ForumThreadDetailDto> CreateThreadAsync(Guid classCourseId, CreateForumThreadRequest request, CancellationToken ct = default)
     {
@@ -110,8 +115,8 @@ public sealed class FakeForumsApi : IForumsApi
         return Task.FromResult(new ForumThreadDetailDto(t, Posts[threadId][0], CanPost && !t.IsLocked, Moderator));
     }
 
-    public Task<PagedResult<ForumPostDto>> ListPostsAsync(Guid threadId, CancellationToken ct = default) =>
-        Task.FromResult(Page<ForumPostDto>(Posts[threadId].Where(p => !p.IsOpeningPost).ToList()));
+    public Task<PagedResult<ForumPostDto>> ListPostsAsync(Guid threadId, int page = 1, CancellationToken ct = default) =>
+        Task.FromResult(Page<ForumPostDto>(Posts[threadId].Where(p => !p.IsOpeningPost).OrderBy(p => p.CreatedAtUtc).ToList(), page));
 
     public Task<ForumPostDto> CreatePostAsync(Guid threadId, CreateForumPostRequest request, CancellationToken ct = default)
     {
