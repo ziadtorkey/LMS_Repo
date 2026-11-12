@@ -1,0 +1,159 @@
+@using System.Text.Json
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Shared.Configuration
+@using Lms.Shared.People
+@inject IGuardiansApi Api
+@inject IConfigApi Config
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+<MudStack Spacing="2" data-testid="guardians-tab">
+    @if (!_portalOn)
+    {
+        <MudAlert Severity="Severity.Info" data-testid="portal-disabled">@L["Guardian_PortalDisabled"]</MudAlert>
+    }
+    @if (CanEdit)
+    {
+        <div>
+            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.PersonAdd" OnClick="LinkAsync"
+                       data-testid="guardian-link-new">@L["Guardian_LinkTitle"]</MudButton>
+        </div>
+    }
+    @if (Student.Guardians.Count == 0)
+    {
+        <MudText data-testid="guardians-empty">@L["Common_Empty"]</MudText>
+    }
+    else
+    {
+        <MudTable Items="Student.Guardians" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" data-testid="guardians-table">
+            <HeaderContent>
+                <MudTh>@L["Common_Name"]</MudTh>
+                <MudTh>@L["Guardian_Relation"]</MudTh>
+                <MudTh>@L["Student_Mobile"]</MudTh>
+                <MudTh>@L["Student_Email"]</MudTh>
+                <MudTh>@L["Student_Account"]</MudTh>
+                <MudTh>@L["Common_Actions"]</MudTh>
+            </HeaderContent>
+            <RowTemplate Context="g">
+                <MudTd DataLabel="@L["Common_Name"]">
+                    @if (g.IsPrimary)
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.Star" Size="Size.Small" Color="Color.Warning" title="@L["Guardian_Primary"]"
+                                 data-testid="@($"guardian-primary-{g.GuardianId}")" />
+                    }
+                    <MudLink Href="@($"guardians/{g.GuardianId}")" data-testid="@($"guardian-name-{g.GuardianId}")">@Culture.Pick(g.NameAr, g.NameEn)</MudLink>
+                    @if (g.OtherChildrenInScope > 0)
+                    {
+                        <MudText Typo="Typo.caption" data-testid="@($"guardian-others-{g.GuardianId}")">@L["Guardian_OtherChildren", g.OtherChildrenInScope]</MudText>
+                    }
+                </MudTd>
+                <MudTd DataLabel="@L["Guardian_Relation"]">
+                    @if (CanEdit)
+                    {
+                        <MudSelect T="string" Value="g.Relation" ValueChanged="v => ChangeRelationAsync(g, v)" Dense="true" aria-label="@L["Guardian_Relation"]"
+                                   data-testid="@($"guardian-relation-{g.GuardianId}")">
+                            @foreach (var relation in GuardianRelations.All)
+                            {
+                                <MudSelectItem T="string" Value="@relation">@L[$"Relation_{relation}"]</MudSelectItem>
+                            }
+                        </MudSelect>
+                    }
+                    else
+                    {
+                        @L[$"Relation_{g.Relation}"]
+                    }
+                </MudTd>
+                <MudTd DataLabel="@L["Student_Mobile"]"><span dir="ltr">@g.Mobile</span></MudTd>
+                <MudTd DataLabel="@L["Student_Email"]"><span dir="ltr">@g.Email</span></MudTd>
+                <MudTd DataLabel="@L["Student_Account"]" data-testid="@($"guardian-portal-{g.GuardianId}")">
+                    @(g.HasPortalAccount ? L["Guardian_PortalActive"] : L["Guardian_PortalNone"])
+                </MudTd>
+                <MudTd DataLabel="@L["Common_Actions"]">
+                    @if (CanEdit)
+                    {
+                        @if (!g.IsPrimary)
+                        {
+                            <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="() => SetPrimaryAsync(g)"
+                                       data-testid="@($"guardian-make-primary-{g.GuardianId}")">@L["Guardian_SetPrimary"]</MudButton>
+                        }
+                        @if (!g.HasPortalAccount)
+                        {
+                            <MudTooltip Text="@InviteHint(g)">
+                                <MudButton Size="Size.Small" Variant="Variant.Text" Disabled="@(!_portalOn || string.IsNullOrWhiteSpace(g.Email))"
+                                           OnClick="() => InviteAsync(g)" data-testid="@($"guardian-invite-{g.GuardianId}")">@L["Guardian_PortalInvite"]</MudButton>
+                            </MudTooltip>
+                        }
+                        <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Error" OnClick="() => UnlinkAsync(g)"
+                                   data-testid="@($"guardian-unlink-{g.GuardianId}")">@L["Guardian_Remove"]</MudButton>
+                    }
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    }
+</MudStack>
+
+@code {
+    private bool _portalOn;
+
+    [Parameter, EditorRequired] public StudentDetailDto Student { get; set; } = default!;
+
+    /// <summary>True with Students.Update: linking, relation, primary, unlinking and invitations.</summary>
+    [Parameter] public bool CanEdit { get; set; }
+
+    /// <summary>Raised after a change so the page reloads the student.</summary>
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // A per-student override wins; otherwise the unit's effective value. Unreadable settings leave the portal off (the default).
+        if (Student.FeatureFlagOverrides.TryGetValue(FeatureFlags.GuardianPortal.Name, out var forced))
+        {
+            _portalOn = forced;
+            return;
+        }
+        await ApiCalls.RunAsync(async () =>
+        {
+            var settings = await Config.GetSettingsAsync(Student.Summary.HomeOrgUnitId);
+            _portalOn = settings.FirstOrDefault(s => s.Name == FeatureFlags.GuardianPortal.Name) is { } s && JsonSerializer.Deserialize<bool>(s.ValueJson);
+        }, Navigation, L, _ => { });
+    }
+
+    private string InviteHint(StudentGuardianDto g) =>
+        !_portalOn ? L["Guardian_PortalDisabled"] : string.IsNullOrWhiteSpace(g.Email) ? L["Guardian_NoEmail"] : "";
+
+    private async Task RunAsync(Func<Task> write, string done)
+    {
+        var ok = await ApiCalls.RunAsync(write, Navigation, L, message => Snackbar.Add(message, Severity.Error));
+        if (!ok) return;
+        Snackbar.Add(done, Severity.Success);
+        await OnChanged.InvokeAsync();
+    }
+
+    private async Task LinkAsync()
+    {
+        var dialog = await Dialogs.ShowAsync<LinkGuardianDialog>(L["Guardian_LinkTitle"],
+            new DialogParameters<LinkGuardianDialog> { { x => x.StudentId, Student.Summary.Id } },
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        if (await dialog.Result is { Canceled: false }) { Snackbar.Add(L["Common_Saved"], Severity.Success); await OnChanged.InvokeAsync(); }
+    }
+
+    private Task ChangeRelationAsync(StudentGuardianDto g, string relation) =>
+        RunAsync(() => Api.UpdateLinkAsync(Student.Summary.Id, g.GuardianId, new UpdateStudentGuardianRequest(relation, g.IsPrimary)), L["Common_Saved"]);
+
+    private Task SetPrimaryAsync(StudentGuardianDto g) =>
+        RunAsync(() => Api.UpdateLinkAsync(Student.Summary.Id, g.GuardianId, new UpdateStudentGuardianRequest(g.Relation, true)), L["Common_Saved"]);
+
+    private async Task UnlinkAsync(StudentGuardianDto g)
+    {
+        if (!await ConfirmDialog.AskAsync(Dialogs, L["Guardian_Remove"],
+                L["Guardian_UnlinkConfirm", Culture.Pick(g.NameAr, g.NameEn)].Value, L["Guardian_Remove"])) return;
+        // guardian_required / primary_guardian_required come back as problems and are shown as the localized message.
+        await RunAsync(() => Api.UnlinkAsync(Student.Summary.Id, g.GuardianId), L["Common_Saved"]);
+    }
+
+    private Task InviteAsync(StudentGuardianDto g) =>
+        RunAsync(() => Api.SendPortalInvitationAsync(g.GuardianId), L["Guardian_InvitationSent"]);
+}

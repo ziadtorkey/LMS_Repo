@@ -4,16 +4,21 @@
 @inject NavigationManager Navigation
 
 @* Picks one org unit the user can see; units are listed as an indented tree. Shared by the people pages. *@
+@if (!_forbidden)
+{
 <MudSelect T="Guid?" Value="Value" ValueChanged="ValueChanged" Label="@Label" Clearable="Clearable"
-           Required="Required" RequiredError="@L["Common_Required"]" data-testid="@TestId">
+           Required="Required" ReadOnly="ReadOnly" RequiredError="@L["Common_Required"]" data-testid="@TestId">
     @foreach (var unit in _units.Where(u => Filter is null || Filter(u)))
     {
         <MudSelectItem T="Guid?" Value="@((Guid?)unit.Id)">@(new string(' ', unit.Depth * 3) + CultureText.Pick(unit.NameAr, unit.NameEn))</MudSelectItem>
     }
 </MudSelect>
+}
 
 @code {
     private IReadOnlyList<OrgUnitNodeDto> _units = [];
+    // The caller may not list units (no OrgUnits.View, e.g. a counselor): the picker is optional there, so it is hidden.
+    private bool _forbidden;
 
     [Parameter] public Guid? Value { get; set; }
     [Parameter] public EventCallback<Guid?> ValueChanged { get; set; }
@@ -22,6 +27,7 @@
     /// <summary>Limits which units are offered (e.g. course owners); null offers every visible unit.</summary>
     [Parameter] public Func<OrgUnitNodeDto, bool>? Filter { get; set; }
     [Parameter] public bool Required { get; set; }
+    [Parameter] public bool ReadOnly { get; set; }
     [Parameter] public string TestId { get; set; } = "unit-picker";
 
     protected override async Task OnInitializedAsync()
@@ -29,6 +35,10 @@
         try
         {
             _units = UnitTree.Order(await Units.GetUnitsAsync());
+        }
+        catch (ApiForbiddenException)
+        {
+            _forbidden = true;
         }
         catch (Exception ex) when (ApiCalls.TryRedirect(ex, Navigation))
         {
