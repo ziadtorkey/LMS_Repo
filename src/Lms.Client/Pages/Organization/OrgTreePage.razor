@@ -15,86 +15,123 @@
 @implements IDisposable
 
 <PageTitle>@L["OrgTree_Title"]</PageTitle>
-<MudText Typo="Typo.h4" Class="mb-4" data-testid="org-title">@L["OrgTree_Title"]</MudText>
-
-<MudTextField T="string" Value="_searchText" ValueChanged="OnSearchChanged" Label="@L["OrgTree_Search"]"
-              DebounceInterval="300" Clearable="true" Immediate="true" Class="mb-3"
-              Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" data-testid="org-search" />
+<PageHeader Title="@L["OrgTree_Title"]" Subtitle="@L["OrgTree_Subtitle"]" TitleTestId="org-title" />
 
 @if (_error is not null)
 {
-    <MudAlert Severity="Severity.Error" Class="mb-3" data-testid="org-error">@_error</MudAlert>
+    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-4" data-testid="org-error">@_error</MudAlert>
 }
 
-@if (_loading)
-{
-    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
-}
-else if (_items.Count == 0)
-{
-    <MudText data-testid="org-no-matches">@(string.IsNullOrWhiteSpace(_search) ? L["Common_Empty"] : L["OrgTree_NoMatches"])</MudText>
-}
-else
-{
-    <MudTreeView T="OrgUnitNodeDto" Items="_items" Dense="true">
-        <ItemTemplate Context="item">
-            <MudTreeViewItem T="OrgUnitNodeDto" Value="item.Value" Items="item.Children" Expanded="item.Expanded"
-                             ExpandedChanged="@(open => SetExpanded(item.Value!.Id, open))" Icon="@Icons.Material.Filled.AccountTree">
-                <BodyContent>
-                    @{ var unit = item.Value!; var inactive = unit.Status == OrgUnitStatuses.Inactive; var match = item is OrgTreeItem { IsMatch: true }; }
-                    <div class="d-flex align-center flex-wrap gap-1 lms-org-node @(inactive ? "lms-org-inactive" : "") @(match ? "lms-org-match" : "")"
-                         data-testid="@($"org-node-{unit.Id}")">
-                        <MudText Typo="Typo.body1" Class="me-1">@Culture.Pick(unit.NameAr, unit.NameEn)</MudText>
-                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@unit.Code</MudChip>
-                        @if (inactive)
-                        {
-                            <MudChip T="string" Size="Size.Small" Color="Color.Warning">@L["OrgTree_Inactive"]</MudChip>
-                        }
-                        <MudSpacer />
-                        @if (CanAddChild(unit))
-                        {
-                            <MudIconButton Icon="@Icons.Material.Filled.Add" Size="Size.Small" aria-label="@L["OrgTree_AddChild"]"
-                                           OnClick="() => AddChildAsync(unit)" data-testid="@($"org-add-{unit.Id}")" />
-                        }
-                        @if (PermState.Has(Permissions.OrgUnits.Update))
-                        {
-                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" aria-label="@L["Common_Edit"]"
-                                           OnClick="() => EditAsync(unit)" data-testid="@($"org-edit-{unit.Id}")" />
-                            @if (unit.ParentId is not null)
-                            {
-                                <MudIconButton Icon="@(inactive ? Icons.Material.Filled.PlayCircle : Icons.Material.Filled.PauseCircle)" Size="Size.Small"
-                                               aria-label="@(inactive ? L["OrgTree_Activate"] : L["OrgTree_Deactivate"])"
-                                               OnClick="() => ToggleAsync(unit)" data-testid="@($"org-toggle-{unit.Id}")" />
-                            }
-                        }
-                        @if (PermState.Has(Permissions.OrgUnits.Move) && unit.ParentId is not null)
-                        {
-                            <MudIconButton Icon="@Icons.Material.Filled.DriveFileMove" Size="Size.Small" aria-label="@L["Move_Title"]"
-                                           OnClick="() => MoveAsync(unit)" data-testid="@($"org-move-{unit.Id}")" />
-                        }
-                        @if (PermState.Has(Permissions.OrgUnits.Create) && unit.ParentId is not null)
-                        {
-                            <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" Size="Size.Small" aria-label="@L["Copy_Title"]"
-                                           OnClick="() => CopyAsync(unit)" data-testid="@($"org-copy-{unit.Id}")" />
-                        }
-                        @if (PermState.Has(Permissions.Templates.Create))
-                        {
-                            <MudIconButton Icon="@Icons.Material.Filled.Bookmark" Size="Size.Small" aria-label="@L["Templates_SaveAs"]"
-                                           OnClick="() => SaveTemplateAsync(unit)" data-testid="@($"org-template-{unit.Id}")" />
-                        }
-                        @if (PermState.Has(Permissions.OrgUnits.Delete) && unit.ParentId is not null)
-                        {
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error"
-                                           aria-label="@L["Common_Delete"]" OnClick="() => DeleteAsync(unit)" data-testid="@($"org-delete-{unit.Id}")" />
-                        }
-                        <MudIconButton Icon="@Icons.Material.Filled.Settings" Size="Size.Small" aria-label="@L["OrgTree_Settings"]"
-                                       Href="@($"org-units/{unit.Id}")" data-testid="@($"org-settings-{unit.Id}")" />
-                    </div>
-                </BodyContent>
-            </MudTreeViewItem>
-        </ItemTemplate>
-    </MudTreeView>
-}
+<SectionCard Flush="true">
+    <div class="lms-filters" role="search" aria-label="@L["Common_Filters"]">
+        <div class="lms-filter lms-filter-search">
+            <MudTextField T="string" Value="_searchText" ValueChanged="OnSearchChanged" Label="@L["OrgTree_Search"]"
+                          DebounceInterval="300" Clearable="true" Immediate="true"
+                          Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Rounded.Search" data-testid="org-search" />
+        </div>
+    </div>
+
+    @if (_loading)
+    {
+        <LoadingState Lines="4" Class="pa-4" />
+    }
+    else if (_items.Count == 0)
+    {
+        @if (string.IsNullOrWhiteSpace(_search))
+        {
+            <EmptyState Title="@L["Common_Empty"]" Icon="@Icons.Material.Rounded.AccountTree" TestId="org-no-matches" />
+        }
+        else
+        {
+            <EmptyState Title="@L["OrgTree_NoMatches"]" Text="@L["OrgTree_NoMatchesHint"]" Icon="@Icons.Material.Rounded.SearchOff" TestId="org-no-matches" />
+        }
+    }
+    else
+    {
+        <MudTreeView T="OrgUnitNodeDto" Items="_items" Dense="true" Class="lms-org-tree">
+            <ItemTemplate Context="item">
+                <MudTreeViewItem T="OrgUnitNodeDto" Value="item.Value" Items="item.Children" Expanded="item.Expanded"
+                                 ExpandedChanged="@(open => SetExpanded(item.Value!.Id, open))" Icon="@Icons.Material.Rounded.AccountTree">
+                    <BodyContent>
+                        @{ var unit = item.Value!; var inactive = unit.Status == OrgUnitStatuses.Inactive; var match = item is OrgTreeItem { IsMatch: true }; }
+                        <div class="lms-org-node @(inactive ? "lms-org-inactive" : "") @(match ? "lms-org-match" : "")"
+                             data-testid="@($"org-node-{unit.Id}")">
+                            <div class="lms-org-label">
+                                <MudText Typo="Typo.body1" Class="lms-org-name">@Culture.Pick(unit.NameAr, unit.NameEn)</MudText>
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Class="lms-code-chip">@unit.Code</MudChip>
+                                @if (inactive)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Warning">@L["OrgTree_Inactive"]</MudChip>
+                                }
+                            </div>
+                            <div class="lms-row-actions">
+                                @if (CanAddChild(unit))
+                                {
+                                    <MudTooltip Text="@L["OrgTree_AddChild"]">
+                                        <MudIconButton Icon="@Icons.Material.Rounded.Add" Size="Size.Small" aria-label="@L["OrgTree_AddChild"]"
+                                                       OnClick="() => AddChildAsync(unit)" data-testid="@($"org-add-{unit.Id}")" />
+                                    </MudTooltip>
+                                }
+                                @if (PermState.Has(Permissions.OrgUnits.Update))
+                                {
+                                    <MudTooltip Text="@L["Common_Edit"]">
+                                        <MudIconButton Icon="@Icons.Material.Rounded.Edit" Size="Size.Small" aria-label="@L["Common_Edit"]"
+                                                       OnClick="() => EditAsync(unit)" data-testid="@($"org-edit-{unit.Id}")" />
+                                    </MudTooltip>
+                                }
+                                @if (PermState.Has(Permissions.OrgUnits.Move) && unit.ParentId is not null)
+                                {
+                                    <MudTooltip Text="@L["Move_Title"]">
+                                        <MudIconButton Icon="@Icons.Material.Rounded.DriveFileMove" Size="Size.Small" aria-label="@L["Move_Title"]"
+                                                       OnClick="() => MoveAsync(unit)" data-testid="@($"org-move-{unit.Id}")" />
+                                    </MudTooltip>
+                                }
+                                @if (PermState.Has(Permissions.OrgUnits.Create) && unit.ParentId is not null)
+                                {
+                                    <MudTooltip Text="@L["Copy_Title"]">
+                                        <MudIconButton Icon="@Icons.Material.Rounded.ContentCopy" Size="Size.Small" aria-label="@L["Copy_Title"]"
+                                                       OnClick="() => CopyAsync(unit)" data-testid="@($"org-copy-{unit.Id}")" />
+                                    </MudTooltip>
+                                }
+                                @if (PermState.Has(Permissions.Templates.Create))
+                                {
+                                    <MudTooltip Text="@L["Templates_SaveAs"]">
+                                        <MudIconButton Icon="@Icons.Material.Rounded.BookmarkAdd" Size="Size.Small" aria-label="@L["Templates_SaveAs"]"
+                                                       OnClick="() => SaveTemplateAsync(unit)" data-testid="@($"org-template-{unit.Id}")" />
+                                    </MudTooltip>
+                                }
+                                <MudTooltip Text="@L["OrgTree_Settings"]">
+                                    <MudIconButton Icon="@Icons.Material.Rounded.Settings" Size="Size.Small" aria-label="@L["OrgTree_Settings"]"
+                                                   Href="@($"org-units/{unit.Id}")" data-testid="@($"org-settings-{unit.Id}")" />
+                                </MudTooltip>
+                                @if ((PermState.Has(Permissions.OrgUnits.Update) || PermState.Has(Permissions.OrgUnits.Delete)) && unit.ParentId is not null)
+                                {
+                                    <span class="lms-row-actions-sep" aria-hidden="true"></span>
+                                }
+                                @if (PermState.Has(Permissions.OrgUnits.Update) && unit.ParentId is not null)
+                                {
+                                    <MudTooltip Text="@(inactive ? L["OrgTree_Activate"] : L["OrgTree_Deactivate"])">
+                                        <MudIconButton Icon="@(inactive ? Icons.Material.Rounded.PlayCircle : Icons.Material.Rounded.PauseCircle)" Size="Size.Small"
+                                                       Color="@(inactive ? Color.Default : Color.Warning)"
+                                                       aria-label="@(inactive ? L["OrgTree_Activate"] : L["OrgTree_Deactivate"])"
+                                                       OnClick="() => ToggleAsync(unit)" data-testid="@($"org-toggle-{unit.Id}")" />
+                                    </MudTooltip>
+                                }
+                                @if (PermState.Has(Permissions.OrgUnits.Delete) && unit.ParentId is not null)
+                                {
+                                    <MudTooltip Text="@L["Common_Delete"]">
+                                        <MudIconButton Icon="@Icons.Material.Rounded.DeleteOutline" Size="Size.Small" Color="Color.Error"
+                                                       aria-label="@L["Common_Delete"]" OnClick="() => DeleteAsync(unit)" data-testid="@($"org-delete-{unit.Id}")" />
+                                    </MudTooltip>
+                                }
+                            </div>
+                        </div>
+                    </BodyContent>
+                </MudTreeViewItem>
+            </ItemTemplate>
+        </MudTreeView>
+    }
+</SectionCard>
 
 @code {
     private IReadOnlyList<TreeItemData<OrgUnitNodeDto>> _items = [];

@@ -277,6 +277,14 @@
   <data name="OrgTree_Settings" xml:space="preserve"><value>Unit settings</value></data>
   <data name="OrgTree_DeleteConfirm" xml:space="preserve"><value>Delete this unit? It can be restored by support only.</value></data>
   <data name="OrgTree_NoMatches" xml:space="preserve"><value>No units match your search.</value></data>
+  <data name="OrgTree_NoMatchesHint" xml:space="preserve"><value>Try part of the name or the unit code.</value></data>
+  <data name="OrgTree_Subtitle" xml:space="preserve"><value>Branches, schools and grades in your organization. Add, move and copy units here.</value></data>
+  <data name="LevelTypes_Subtitle" xml:space="preserve"><value>The levels of your organization tree in order, from top to bottom, and which level can hold classes.</value></data>
+  <data name="LevelTypes_EmptyTitle" xml:space="preserve"><value>No level types yet</value></data>
+  <data name="LevelTypes_EmptyText" xml:space="preserve"><value>Add the top level first, such as Group, then the levels below it.</value></data>
+  <data name="Templates_Subtitle" xml:space="preserve"><value>Saved unit structures you can apply to set up a new branch or school quickly.</value></data>
+  <data name="Templates_EmptyTitle" xml:space="preserve"><value>No templates yet</value></data>
+  <data name="Templates_EmptyText" xml:space="preserve"><value>Save a unit as a template from the organization tree, then apply it here.</value></data>
   <data name="Move_Title" xml:space="preserve"><value>Move unit</value></data>
   <data name="Move_NewParent" xml:space="preserve"><value>New parent</value></data>
   <data name="Move_Confirm" xml:space="preserve"><value>Move &quot;{0}&quot; from &quot;{1}&quot; to &quot;{2}&quot;?</value></data>
