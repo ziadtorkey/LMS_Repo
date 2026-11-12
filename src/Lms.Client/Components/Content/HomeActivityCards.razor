@@ -18,16 +18,14 @@
 }
 else if (_loaded)
 {
-    <MudGrid Spacing="2" Class="mt-2" data-testid="home-activity-cards">
+    <MudGrid Spacing="2" Class="mb-4" data-testid="home-activity-cards">
         @if (ShowDue)
         {
             <MudItem xs="12" md="4">
-                <MudCard Class="h-100" data-testid="home-due-assignments">
-                    <MudCardContent>
-                        <MudText Typo="Typo.h6">@L["Home_DueAssignments"]</MudText>
+                <SectionCard Class="h-100" Title="@L["Home_DueAssignments"]" TestId="home-due-assignments">
                         @if (_due.Count == 0)
                         {
-                            <MudText Typo="Typo.body2" Class="mud-text-secondary" data-testid="home-due-empty">@L["Home_NothingDue"]</MudText>
+                            <MudText Typo="Typo.body2" Class="lms-muted" data-testid="home-due-empty">@L["Home_NothingDue"]</MudText>
                         }
                         @foreach (var row in _due)
                         {
@@ -35,54 +33,47 @@ else if (_loaded)
                                 <MudLink Href="@ModuleHref(row)" data-testid="@($"home-due-{row.Item.Id}")">@Culture.Pick(row.Item.TitleAr, row.Item.TitleEn)</MudLink>
                                 @if (row.Item.DueAtUtc is { } due)
                                 {
-                                    <MudChip T="string" Size="Size.Small" Color="@(due < Clock.GetUtcNow().UtcDateTime ? Color.Error : Color.Default)">
-                                        <span dir="ltr">@due.ToLocalTime().ToString("g", System.Globalization.CultureInfo.CurrentCulture)</span>
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@(due < Clock.GetUtcNow().UtcDateTime ? Color.Error : Color.Default)">
+                                        <span dir="ltr">@due.ToLocalTime().ToString("yyyy-MM-dd HH:mm", System.Globalization.CultureInfo.InvariantCulture)</span>
                                     </MudChip>
                                 }
                             </MudStack>
                         }
-                    </MudCardContent>
-                </MudCard>
+                </SectionCard>
             </MudItem>
         }
         @if (ShowQuizzes)
         {
             <MudItem xs="12" md="4">
-                <MudCard Class="h-100" data-testid="home-open-quizzes">
-                    <MudCardContent>
-                        <MudText Typo="Typo.h6">@L["Home_OpenQuizzes"]</MudText>
+                <SectionCard Class="h-100" Title="@L["Home_OpenQuizzes"]" TestId="home-open-quizzes">
                         @if (_quizzes.Count == 0)
                         {
-                            <MudText Typo="Typo.body2" Class="mud-text-secondary" data-testid="home-quizzes-empty">@L["Home_NoOpenQuizzes"]</MudText>
+                            <MudText Typo="Typo.body2" Class="lms-muted" data-testid="home-quizzes-empty">@L["Home_NoOpenQuizzes"]</MudText>
                         }
                         @foreach (var row in _quizzes)
                         {
                             <MudLink Href="@ModuleHref(row.CourseId, row.Item.ModuleId)" Class="d-block py-1"
                                      data-testid="@($"home-quiz-{row.Item.Id}")">@Culture.Pick(row.Item.TitleAr, row.Item.TitleEn)</MudLink>
                         }
-                    </MudCardContent>
-                </MudCard>
+                </SectionCard>
             </MudItem>
         }
         @if (ShowGrade)
         {
             <MudItem xs="12" md="4">
-                <MudCard Class="h-100" data-testid="home-to-grade">
-                    <MudCardContent>
-                        <MudText Typo="Typo.h6">@L["Home_ToGrade"]</MudText>
+                <SectionCard Class="h-100" Title="@L["Home_ToGrade"]" TestId="home-to-grade">
                         @if (_toGrade.Count == 0)
                         {
-                            <MudText Typo="Typo.body2" Class="mud-text-secondary" data-testid="home-grade-empty">@L["Home_NothingToGrade"]</MudText>
+                            <MudText Typo="Typo.body2" Class="lms-muted" data-testid="home-grade-empty">@L["Home_NothingToGrade"]</MudText>
                         }
                         @foreach (var row in _toGrade)
                         {
                             <MudStack Row="true" Justify="Justify.SpaceBetween" Class="py-1">
                                 <MudLink Href="@ModuleHref(row)" data-testid="@($"home-grade-{row.Item.Id}")">@Culture.Pick(row.Item.TitleAr, row.Item.TitleEn)</MudLink>
-                                <MudChip T="string" Size="Size.Small" Color="Color.Warning">@L["Home_WaitingCount", Waiting(row.Item)]</MudChip>
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Warning">@L["Home_WaitingCount", Waiting(row.Item)]</MudChip>
                             </MudStack>
                         }
-                    </MudCardContent>
-                </MudCard>
+                </SectionCard>
             </MudItem>
         }
     </MudGrid>
