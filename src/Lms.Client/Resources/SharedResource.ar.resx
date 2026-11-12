@@ -277,6 +277,14 @@
   <data name="OrgTree_Settings" xml:space="preserve"><value>إعدادات الوحدة</value></data>
   <data name="OrgTree_DeleteConfirm" xml:space="preserve"><value>حذف هذه الوحدة؟ لا يمكن استعادتها إلا عن طريق الدعم الفني.</value></data>
   <data name="OrgTree_NoMatches" xml:space="preserve"><value>لا توجد وحدات مطابقة للبحث.</value></data>
+  <data name="OrgTree_NoMatchesHint" xml:space="preserve"><value>جرّب جزءًا من الاسم أو رمز الوحدة.</value></data>
+  <data name="OrgTree_Subtitle" xml:space="preserve"><value>الفروع والمدارس والصفوف في جهتك. أضف الوحدات وانقلها وانسخها من هنا.</value></data>
+  <data name="LevelTypes_Subtitle" xml:space="preserve"><value>مستويات الهيكل التنظيمي بالترتيب، من الأعلى إلى الأدنى، والمستوى الذي يمكن أن يضم فصولًا.</value></data>
+  <data name="LevelTypes_EmptyTitle" xml:space="preserve"><value>لا توجد أنواع مستويات بعد</value></data>
+  <data name="LevelTypes_EmptyText" xml:space="preserve"><value>أضف المستوى الأعلى أولًا، مثل المجموعة، ثم المستويات التي تحته.</value></data>
+  <data name="Templates_Subtitle" xml:space="preserve"><value>هياكل وحدات محفوظة يمكنك تطبيقها لإنشاء فرع أو مدرسة جديدة بسرعة.</value></data>
+  <data name="Templates_EmptyTitle" xml:space="preserve"><value>لا توجد قوالب بعد</value></data>
+  <data name="Templates_EmptyText" xml:space="preserve"><value>احفظ وحدة كقالب من الهيكل التنظيمي، ثم طبّقها من هنا.</value></data>
   <data name="Move_Title" xml:space="preserve"><value>نقل الوحدة</value></data>
   <data name="Move_NewParent" xml:space="preserve"><value>الوحدة الأم الجديدة</value></data>
   <data name="Move_Confirm" xml:space="preserve"><value>نقل &quot;{0}&quot; من &quot;{1}&quot; إلى &quot;{2}&quot;؟</value></data>
