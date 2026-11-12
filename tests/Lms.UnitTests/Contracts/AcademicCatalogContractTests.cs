@@ -31,7 +31,7 @@ public sealed partial class AcademicCatalogContractTests
             Rule(BuiltInRoles.Teacher).Permissions.Order(StringComparer.Ordinal));
         Assert.Equal(
             ["Blueprints.Edit", "Blueprints.Publish", "Courses.Allocate", "Courses.Delete", "Courses.Update",
-             "Enrollment.ApproveException", "TeacherAssignments.Manage"],
+             "Enrollment.ApproveException", "Students.View", "TeacherAssignments.Manage"],
             Rule(BuiltInRoles.Supervisor).Permissions.Order(StringComparer.Ordinal));
         Assert.Equal(["LessonPlans.View", "Modules.View"], Rule(BuiltInRoles.Student).Permissions);
     }
@@ -41,6 +41,7 @@ public sealed partial class AcademicCatalogContractTests
     [InlineData(BuiltInRoles.Teacher, Permissions.Courses.View, null)]
     [InlineData(BuiltInRoles.Teacher, Permissions.Blueprints.View, null)]
     [InlineData(BuiltInRoles.Supervisor, Permissions.Blueprints.Publish, Relationships.SupervisedCourses)]
+    [InlineData(BuiltInRoles.Supervisor, Permissions.Students.View, Relationships.SupervisedCourses)]
     [InlineData(BuiltInRoles.Supervisor, Permissions.Courses.Create, null)]
     [InlineData(BuiltInRoles.Student, Permissions.LessonPlans.View, Relationships.OwnEnrollments)]
     [InlineData(BuiltInRoles.Manager, Permissions.Groups.Manage, null)]
