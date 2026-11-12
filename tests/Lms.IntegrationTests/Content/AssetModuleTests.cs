@@ -116,6 +116,22 @@ public sealed class AssetModuleTests(LmsApiFactory factory) : IDisposable
     }
 
     [Fact]
+    public async Task View_only_staff_is_refused_an_asset_no_module_uses_but_reads_one_a_module_uses()
+    {
+        var w = await _t.SetUpAsync("AM7");
+        var used = await _t.UploadAssetAsync(w.Teacher, w.ClassCourse.Id);
+        var unused = await _t.UploadAssetAsync(w.Teacher, w.ClassCourse.Id, "unused.pdf");
+        await _t.CreateAsync(w.Teacher, w, AssetModule(ModuleKinds.File, used.Id));
+        var supervisor = await Lms.IntegrationTests.Access.AccessTestData.AssignAsync(
+            factory, w.Tree, w.Tree.School1, Lms.Shared.Authorization.BuiltInRoles.Supervisor,
+            (await Lms.IntegrationTests.People.PeopleTestKit.AddUserAsync(factory)).Id);
+
+        Assert.Equal(HttpStatusCode.NotFound, (await _t.SendAsync(supervisor, HttpMethod.Get, Routes.AssetUrl(unused.Id))).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await _t.SendAsync(supervisor, HttpMethod.Get, Routes.Asset(unused.Id))).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await _t.SendAsync(supervisor, HttpMethod.Get, Routes.AssetUrl(used.Id))).StatusCode);
+    }
+
+    [Fact]
     public async Task Group_targeted_asset_is_hidden_from_students_outside_the_group()
     {
         var w = await _t.SetUpAsync("AM6");

@@ -149,7 +149,7 @@ internal sealed class ContentTestHost(LmsApiFactory factory) : IDisposable
     {
         ".png" => [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0],
         ".mp4" or ".m4a" => [0, 0, 0, 0x18, (byte)'f', (byte)'t', (byte)'y', (byte)'p', (byte)'i', (byte)'s', (byte)'o', (byte)'m'],
-        ".mp3" => "ID3      "u8.ToArray(),
+        ".mp3" => [(byte)'I', (byte)'D', (byte)'3', 3, 0, 0, 0, 0, 0, 0],
         _ => "%PDF-1.7 module asset"u8.ToArray(),
     };
 

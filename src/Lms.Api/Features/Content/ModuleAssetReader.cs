@@ -16,14 +16,15 @@ public sealed class ModuleAssetReader(IHttpContextAccessor accessor, LmsDbContex
 {
     public async Task<bool> CanReadAsync(Asset asset, CancellationToken cancellationToken = default)
     {
-        if (accessor.HttpContext is not { } http
-            || (await http.CheckClassCourseAsync(Permissions.Modules.View, asset.ClassCourseId, cancellationToken)).Problem is not null)
+        // A library asset has no class course: no module can reference it.
+        if (asset.ClassCourseId is not { } classCourseId || accessor.HttpContext is not { } http
+            || (await http.CheckClassCourseAsync(Permissions.Modules.View, classCourseId, cancellationToken)).Problem is not null)
         {
             return false;
         }
 
         var referencing = db.Set<ModuleContent>()
-            .Where(c => c.AssetId == asset.Id && c.ClassCourseId == asset.ClassCourseId)
+            .Where(c => c.AssetId == asset.Id && c.ClassCourseId == classCourseId)
             .Select(c => c.ModuleId);
         if (!await access.IsStudentAsync(cancellationToken))
         {
@@ -35,8 +36,8 @@ public sealed class ModuleAssetReader(IHttpContextAccessor accessor, LmsDbContex
             return false;
         }
 
-        var group = await access.GroupOfAsync(asset.ClassCourseId, studentId, cancellationToken);
-        return await access.VisibleTo(asset.ClassCourseId, group, clock.UtcNow)
+        var group = await access.GroupOfAsync(classCourseId, studentId, cancellationToken);
+        return await access.VisibleTo(classCourseId, group, clock.UtcNow)
             .AnyAsync(p => referencing.Contains(p.Module.Id), cancellationToken);
     }
 }
