@@ -35,9 +35,9 @@ public static class AssetEndpoints
     }
 
     /// <summary>
-    /// Reads the multipart body as a stream: the <c>classCourseId</c> part must come first, so the class course is checked
-    /// (404 / closed class) before the file part is read; the file part is then copied to a temp file, stopping at the
-    /// effective size limit, and handed to the asset service.
+    /// Reads the multipart body as a stream: the owner part (<c>classCourseId</c>, or <c>orgUnitId</c> for a library asset) must
+    /// come first, so the owner is checked (404 / permission / closed class) before the file part is read; the file part is then
+    /// copied to a temp file, stopping at the effective size limit, and handed to the asset service.
     /// </summary>
     private static async Task<IResult> UploadAsync(
         HttpContext http, LmsDbContext db, IAssetService assets, PlacementGuard guard, CancellationToken ct)
@@ -59,26 +59,48 @@ public static class AssetEndpoints
         try
         {
             var first = await ReadSectionAsync(reader, ct);
-            if (first is null || first.Name != AssetUploadForm.ClassCourseId || !Guid.TryParse(await ReadTextAsync(first, ct), out var classCourseId))
+            if (first is null || first.Name is not (AssetUploadForm.ClassCourseId or AssetUploadForm.OrgUnitId)
+                || !Guid.TryParse(await ReadTextAsync(first, ct), out var ownerId))
             {
-                return ApiProblems.BadRequest(ProblemCodes.validation_failed, "classCourseId must be the first part of the form.");
+                return ApiProblems.BadRequest(
+                    ProblemCodes.validation_failed, "classCourseId (or orgUnitId for a library asset) must be the first part of the form.");
             }
 
-            var (classCourse, problem) = await http.CheckClassCourseAsync(Permissions.Modules.Manage, classCourseId, ct);
-            if (problem is not null)
+            Func<string, string, long, Stream, Task<Asset>> store;
+            long maxBytes;
+            if (first.Name == AssetUploadForm.ClassCourseId)
             {
-                return problem;
-            }
+                var (classCourse, problem) = await http.CheckClassCourseAsync(Permissions.Modules.Manage, ownerId, ct);
+                if (problem is not null)
+                {
+                    return problem;
+                }
 
-            if (await GroupEndpoints.WritableAsync(classCourse!, db, guard, ct) is { } closed)
+                if (await GroupEndpoints.WritableAsync(classCourse!, db, guard, ct) is { } closed)
+                {
+                    return closed;
+                }
+
+                maxBytes = await assets.GetMaxBytesAsync(classCourse!, ct);
+                store = (name, type, size, stream) => assets.UploadAsync(classCourse!, name, type, size, stream, ct);
+            }
+            else
             {
-                return closed;
+                // A library asset is owned by a unit: Library.Manage at that unit (an invisible unit is 404).
+                var (unit, problem) = await http.CheckUnitAsync(Permissions.Library.Manage, ownerId, ct);
+                if (problem is not null)
+                {
+                    return problem;
+                }
+
+                maxBytes = await assets.GetMaxBytesAsync(unit!, ct);
+                store = (name, type, size, stream) => assets.UploadAsync(unit!, name, type, size, stream, ct);
             }
 
             var second = await ReadSectionAsync(reader, ct);
             if (second is null || second.Name != AssetUploadForm.File || string.IsNullOrEmpty(second.FileName))
             {
-                return ApiProblems.BadRequest(ProblemCodes.validation_failed, "A file part is required after classCourseId.");
+                return ApiProblems.BadRequest(ProblemCodes.validation_failed, "A file part is required after the owner part.");
             }
 
             var fileName = Path.GetFileName(second.FileName);
@@ -92,7 +114,6 @@ public static class AssetEndpoints
                 return ApiProblems.BadRequest(ProblemCodes.asset_type_not_allowed);
             }
 
-            var maxBytes = await assets.GetMaxBytesAsync(classCourse!, ct);
             tempPath = Path.GetTempFileName();
             long length;
             await using (var temp = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None, 81920, useAsync: true))
@@ -111,7 +132,7 @@ public static class AssetEndpoints
             }
 
             await using var stream = new FileStream(tempPath, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, useAsync: true);
-            var asset = await assets.UploadAsync(classCourse!, fileName, second.ContentType, length, stream, ct);
+            var asset = await store(fileName, second.ContentType, length, stream);
             return Results.Created(Routes.Asset(asset.Id), ToDto(asset));
         }
         catch (AssetTypeNotAllowedException)
@@ -182,10 +203,21 @@ public static class AssetEndpoints
         extensions: new Dictionary<string, object?> { ["code"] = ProblemCodes.asset_too_large, ["maxBytes"] = maxBytes });
 
     private static async Task<IResult> LimitsAsync(
-        Guid classCourseId, HttpContext http, IAssetService assets, CancellationToken ct)
+        Guid? classCourseId, Guid? orgUnitId, HttpContext http, IAssetService assets, CancellationToken ct)
     {
-        var (classCourse, problem) = await http.CheckClassCourseAsync(Permissions.Modules.Manage, classCourseId, ct);
-        return problem ?? Results.Ok(new AssetLimitsDto(await assets.GetMaxBytesAsync(classCourse!, ct), AssetTypes.All));
+        if ((classCourseId is null) == (orgUnitId is null))
+        {
+            return ApiProblems.BadRequest(ProblemCodes.validation_failed, "Exactly one of classCourseId and orgUnitId is required.");
+        }
+
+        if (classCourseId is { } courseId)
+        {
+            var (classCourse, problem) = await http.CheckClassCourseAsync(Permissions.Modules.Manage, courseId, ct);
+            return problem ?? Results.Ok(new AssetLimitsDto(await assets.GetMaxBytesAsync(classCourse!, ct), AssetTypes.All));
+        }
+
+        var (unit, unitProblem) = await http.CheckUnitAsync(Permissions.Library.Manage, orgUnitId!.Value, ct);
+        return unitProblem ?? Results.Ok(new AssetLimitsDto(await assets.GetMaxBytesAsync(unit!, ct), AssetTypes.All));
     }
 
     private static async Task<IResult> GetAsync(
@@ -219,7 +251,10 @@ public static class AssetEndpoints
             return null;
         }
 
-        var (_, problem) = await http.CheckClassCourseAsync(Permissions.Modules.Manage, asset.ClassCourseId, ct);
+        // Manager of the owner: Modules.Manage on the class course, or Library.Manage at the owning unit of a library asset.
+        var problem = asset.ClassCourseId is { } courseId
+            ? (await http.CheckClassCourseAsync(Permissions.Modules.Manage, courseId, ct)).Problem
+            : (await http.CheckUnitAsync(Permissions.Library.Manage, asset.OrgUnitId, ct)).Problem;
         if (problem is null)
         {
             return asset;
@@ -238,5 +273,5 @@ public static class AssetEndpoints
 
     internal static AssetDto ToDto(Asset a) => new(
         a.Id, a.ClassCourseId, a.Kind, a.FileName, a.ContentType, a.SizeBytes, a.DurationSeconds,
-        AssetTypes.ForFileName(a.FileName)?.Previewable == true, a.CreatedAt);
+        AssetTypes.ForFileName(a.FileName)?.Previewable == true, a.CreatedAt, a.ClassCourseId is null ? a.OrgUnitId : null);
 }

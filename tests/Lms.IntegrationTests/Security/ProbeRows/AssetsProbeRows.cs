@@ -27,6 +27,12 @@ public sealed class AssetsProbeRows : IProbeRowModule
         new("assets limits", HttpMethod.Get, Routes.AssetsLimits,
             async (w, _) => new ProbeRequest(Routes.AssetsLimitsFor((await NewClassCourseAsync(w)).Id)),
             Expect(Ok, Ok, NotFound, NotFound, NotFound, Ok)),
+        new("assets upload (library, School1)", HttpMethod.Post, Routes.Assets,
+            (w, _) => Task.FromResult(new ProbeRequest(Routes.Assets, LibraryBody(w.Callers.A.School1.Id))),
+            Expect(Created, Created, NotFound, Created, NotFound, Created)),
+        new("assets limits (library, School1)", HttpMethod.Get, Routes.AssetsLimits,
+            (w, _) => Task.FromResult(new ProbeRequest(Routes.AssetsLimitsForUnit(w.Callers.A.School1.Id))),
+            Expect(Ok, Ok, NotFound, Ok, NotFound, Ok)),
         new("assets get", HttpMethod.Get, Routes.AssetPattern,
             async (w, _) => new ProbeRequest(Routes.Asset((await NewAssetAsync(w)).Id)),
             Expect(Ok, Ok, NotFound, NotFound, NotFound, Ok)),
@@ -43,6 +49,17 @@ public sealed class AssetsProbeRows : IProbeRowModule
         {
             { new StringContent(classCourseId.ToString()), AssetUploadForm.ClassCourseId }, // first: checked before the file is read
             { file, AssetUploadForm.File, "probe.pdf" },
+        };
+    }
+
+    private static MultipartFormDataContent LibraryBody(Guid orgUnitId)
+    {
+        var file = new ByteArrayContent([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0]);
+        file.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+        return new MultipartFormDataContent
+        {
+            { new StringContent(orgUnitId.ToString()), AssetUploadForm.OrgUnitId },
+            { file, AssetUploadForm.File, "cover.png" },
         };
     }
 
