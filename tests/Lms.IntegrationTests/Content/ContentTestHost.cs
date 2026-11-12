@@ -130,6 +130,24 @@ internal sealed class ContentTestHost(LmsApiFactory factory) : IDisposable
     public Task<HttpResponseMessage> CreateRawAsync(RoleAssignment caller, ContentWorld w, CreateModuleRequest request, Guid? lesson = null) =>
         SendAsync(caller, HttpMethod.Post, Routes.ClassCourseLessonModules(w.ClassCourse.Id, lesson ?? Lesson1), request);
 
+    /// <summary>Uploads an asset to a class course as the caller (multipart, like the real client).</summary>
+    public async Task<AssetDto> UploadAssetAsync(
+        RoleAssignment caller, Guid classCourseId, string fileName = "notes.pdf", string contentType = "application/pdf")
+    {
+        var form = new MultipartFormDataContent { { new StringContent(classCourseId.ToString()), AssetUploadForm.ClassCourseId } };
+        var file = new ByteArrayContent("%PDF-1.7 module asset"u8.ToArray());
+        file.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
+        form.Add(file, AssetUploadForm.File, fileName);
+        var response = await _host.SendRawAsync(new HttpRequestMessage(HttpMethod.Post, Routes.Assets) { Content = form }, caller);
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        return (await response.Content.ReadFromJsonAsync<AssetDto>())!;
+    }
+
+    public static CreateModuleRequest AssetModule(
+        string kind, Guid? assetId, string visibility = ModuleVisibilities.Published, string rule = CompletionRules.None,
+        string target = ModuleTargets.ClassCourse, Guid? groupId = null) =>
+        new(kind, "ملف", "Asset module", visibility, null, null, target, groupId, rule, null, new ModuleContentInput(AssetId: assetId));
+
     public static async Task<string?> CodeAsync(HttpResponseMessage response)
     {
         var json = await response.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();

@@ -97,7 +97,11 @@ public sealed class ModuleHandlers(
             request.GroupId, request.CompletionRule, null);
         db.Add(module);
         var content = new ModuleContent(module);
-        ApplyContent(content, module.Kind, request.Content);
+        if (await ApplyContentAsync(content, cc!, module.Kind, request.Content, ct) is { } badContent)
+        {
+            return badContent;
+        }
+
         db.Add(content);
         await db.SaveChangesAsync(ct);
         return Results.Created(Routes.Module(module.Id), await DetailAsync(module, content, cc!, http, ct));
@@ -165,17 +169,22 @@ public sealed class ModuleHandlers(
             return closed;
         }
 
-        module.Apply(
-            request.TitleAr.Trim(), request.TitleEn.Trim(), request.Visibility, request.VisibleFromUtc, request.VisibleToUtc, request.Target,
-            request.GroupId, request.CompletionRule, null);
         var content = await db.Set<ModuleContent>().FirstOrDefaultAsync(c => c.ModuleId == id, ct);
-        if (content is null)
+        var isNew = content is null;
+        content ??= new ModuleContent(module);
+        if (await ApplyContentAsync(content, cc!, module.Kind, request.Content, ct) is { } badContent)
         {
-            content = new ModuleContent(module);
+            return badContent;
+        }
+
+        if (isNew)
+        {
             db.Add(content);
         }
 
-        ApplyContent(content, module.Kind, request.Content);
+        module.Apply(
+            request.TitleAr.Trim(), request.TitleEn.Trim(), request.Visibility, request.VisibleFromUtc, request.VisibleToUtc, request.Target,
+            request.GroupId, request.CompletionRule, null);
         await db.SaveChangesAsync(ct);
         return Results.Ok(await DetailAsync(module, content, cc!, http, ct));
     }
@@ -295,17 +304,37 @@ public sealed class ModuleHandlers(
         return exists ? null : ApiProblems.BadRequest(ProblemCodes.module_target_invalid);
     }
 
-    private void ApplyContent(ModuleContent content, string kind, ModuleContentInput? input)
+    /// <summary>Sets the payload of the kind; a File/Video/Audio asset must belong to this class course and be of an accepted kind.</summary>
+    private async Task<IResult?> ApplyContentAsync(
+        ModuleContent content, ClassCourse classCourse, string kind, ModuleContentInput? input, CancellationToken ct)
     {
         input ??= new ModuleContentInput();
         if (kind == ModuleKinds.Page)
         {
             content.Set(null, NullIfEmpty(sanitizer.Sanitize(input.BodyHtmlAr)), NullIfEmpty(sanitizer.Sanitize(input.BodyHtmlEn)), null);
         }
-        else
+        else if (kind == ModuleKinds.Link)
         {
             content.Set(null, null, null, input.Url!.Trim());
         }
+        else
+        {
+            // Through the filtered set: another client, another course or a deleted asset all look like "no such asset".
+            var asset = await db.Set<Asset>().FirstOrDefaultAsync(a => a.Id == input.AssetId && a.ClassCourseId == classCourse.Id, ct);
+            if (asset is null)
+            {
+                return ClassValidators.Invalid("Content", "asset_invalid");
+            }
+
+            if (!AssetKinds.AcceptedBy(kind).Contains(asset.Kind))
+            {
+                return ApiProblems.BadRequest(ProblemCodes.asset_type_not_allowed);
+            }
+
+            content.Set(asset.Id, null, null, null);
+        }
+
+        return null;
     }
 
     private static string? NullIfEmpty(string value) => value.Length == 0 ? null : value;
@@ -322,6 +351,9 @@ public sealed class ModuleHandlers(
         return await db.Set<ModuleCompletion>().Where(c => c.StudentId == studentId && ids.Contains(c.ModuleId))
             .ToDictionaryAsync(c => c.ModuleId, c => c.State, ct);
     }
+
+    private async Task<Asset?> AssetOfAsync(ModuleContent? content, CancellationToken ct) =>
+        content?.AssetId is { } assetId ? await db.Set<Asset>().FirstOrDefaultAsync(a => a.Id == assetId, ct) : null;
 
     private async Task<ModuleDetailDto> DetailAsync(LessonModule module, ModuleContent? content, ClassCourse cc, HttpContext http, CancellationToken ct)
     {
@@ -346,7 +378,7 @@ public sealed class ModuleHandlers(
         var canEdit = (await http.CheckClassCourseAsync(Permissions.Modules.Manage, cc.Id, ct)).Problem is null;
         return new ModuleDetailDto(
             ModuleMapper.Node(module, now, groups, states), cc.Id, module.LessonKey, module.CompletionMinScore,
-            ModuleMapper.Content(module, content),
+            ModuleMapper.Content(module, content, await AssetOfAsync(content, ct)),
             index > 0 ? order[index - 1] : null,
             index >= 0 && index < order.Count - 1 ? order[index + 1] : null,
             canEdit, now);
