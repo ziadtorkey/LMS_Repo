@@ -15,7 +15,7 @@
 ## What M4a builds on (checked on `origin/main` @ `39c1172`, 2026-11-12)
 - **Merged:** academic kernel #265 (`ClassCourse`, `ClassCourseTeacher`, `CourseEnrollment`, `StudentGroup`/`GroupMember` with the D6 one-group rule #306), relationship scopes #298 (`IRelationshipScope`, `RelationshipAccess.CheckClassCourseAsync`), enrollment engine #284, classes #277, files (M0 `IFileStorage`, `/api/files`, setting `Files.MaxUploadMb`), notifications (`INotificationPublisher`), jobs (`IBackgroundJobs.Enqueue` / `EnqueueAsSystem`), `PlacementGuard.EnsureWritableAsync` (409 `class_closed` / `year_closed`).
 - **Still open, needed first:** class lesson plans BE #325 (#225, `ClassLessonPlan` / `ClassSection` / `ClassLesson` with stable lesson keys and `GET /api/class-courses/{id}/lesson-plan`), plan view FE #339 (#243, `LessonPlanTree`), blueprints BE #323, design pilot #334 (`docs/DESIGN.md`, `Components/Ui/*`, `.claude/skills/lms-ui`). Tasks 3 and 15 wait for #325 / #339; FE tasks after Task 15 assume #334 is merged.
-- **Contract wave 1 is drafted:** PR "feat(contracts): M4a contracts, wave 1" on `lead/m4a-contracts` (Task 1).
+- **Contract wave 1 is drafted:** #346 "feat(contracts): M4a contracts, wave 1" on `lead/m4a-contracts` (Task 1).
 
 ## Global Constraints
 - **Every M0–M3 Global Constraint still applies** (by reference: `X-Lms-Context`, Guid v7, utf8mb4, default culture `ar`, explicit permissions per built-in role, `UnitAccess.CheckUnitAsync` with 404 for invisible units, ProblemDetails `code` from `ProblemCodes`, `// ISOLATION-BYPASS: <reason>` + allow-list entry, no new `DbSet` properties, two `Program.cs` lines per module, one migration per PR with a working `Down()`, `AuditableEntity` + `[Audited]` + an isolation test per business entity, names 1–200 chars both languages, paging max 200, probe rows per module in `tests/Lms.IntegrationTests/Security/ProbeRows/` in the same PR as the route, FE API interface + fake per module, ar/en resource parity, RTL screenshots; M3: relationship scopes, Closed year / Closed class read-only, live keys for "among live rows" uniqueness, side effects after commit).
@@ -44,7 +44,7 @@
 
 ### Task 1: Contract — wave 1: Modules permissions, module / asset / completion / progress DTOs, routes, codes — lane: Lead contract
 
-**PRD:** §3.4 "Content & activities", FR-LP-05, FR-CNT-01..04, X-05, D48, D50, D51. **Depends on:** M3 contracts #259. **Status:** draft PR on `lead/m4a-contracts` ("feat(contracts): M4a contracts, wave 1").
+**PRD:** §3.4 "Content & activities", FR-LP-05, FR-CNT-01..04, X-05, D48, D50, D51. **Depends on:** M3 contracts #259. **Status:** draft PR #346 on `lead/m4a-contracts`.
 
 **Files:**
 - Modify: `src/Lms.Shared/Authorization/Permissions.cs`, `BuiltInRoles.cs`, `RelationshipRules.cs`, `src/Lms.Shared/ProblemCodes.cs`, `src/Lms.Shared/Auditing/AuditCatalog.cs`, `src/Lms.Shared/Classes/LessonPlanDtos.cs`, `src/Lms.Infrastructure/Access/BuiltInRoleDefaults.cs` (version 4), `src/Lms.Client/Resources/SharedResource.{ar,en}.resx`
@@ -400,7 +400,7 @@
 
 ## Execution notes for the Team Lead
 - **Issues:** `docs/superpowers/plans/m4a-issues.json` holds one entry per task (33: 2 Lead, 11 BE, 15 FE, 5 QA) as `{title, lane, labels, body}`, generated from this file in the M3 issue format. Before creating them: create the labels `area:content`, `area:grading`, `area:assignments`, `area:quizzes`, `area:library`, `area:forums`; put every issue on milestone "M4 Teaching & Learning" and the "LMS v1" project; then replace "plan Task N" in the Depends-on lines with the issue numbers. Task 1's issue is closed by the wave 1 contract PR.
-- **Contract PRs first:** Task 1 (`lead/m4a-contracts`, draft) merges before any M4a code. Task 2 opens while Task 3 is in review and merges before Tasks 8, 10, 12, 13, 20–27 start. Each wave bumps `BuiltInRoleDefaults` once (4, then 5).
+- **Contract PRs first:** Task 1 (#346, draft) merges before any M4a code. Task 2 opens while Task 3 is in review and merges before Tasks 8, 10, 12, 13, 20–27 start. Each wave bumps `BuiltInRoleDefaults` once (4, then 5).
 - **M3 prerequisites:** #325 (lesson plans BE), #339 (plan view FE), #334 (design pilot) must merge first. BE1 can start Task 7 and the upload half of Task 4 while #325 is in review; FE1 starts Task 14 at once.
 - **Critical path:** Task 1 → Task 3 (BE1) → Task 5 → Task 6 → Task 31; in parallel Task 2 → Tasks 8/10 → 9/11 → Task 32. Review Task 3 first; it fixes the `RefId` pattern every feature kind copies.
 - **BE lanes (split by folder; two agents never edit the same files):**
