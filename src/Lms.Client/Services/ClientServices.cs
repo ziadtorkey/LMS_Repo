@@ -52,6 +52,7 @@ public static class ClientServices
             services.AddSingleton<ILessonPlansApi, FakeLessonPlansApi>();
             services.AddSingleton<ICourseAssignmentsApi, FakeCourseAssignmentsApi>();
             services.AddSingleton<IQuizzesApi, FakeQuizzesApi>();
+            services.AddSingleton<IClassCourseGroupsApi, FakeClassCourseGroupsApi>();
             services.AddSingleton<IFileUploadApi, FakeFileUploadApi>();
             services.AddSingleton<IQuizAttemptsApi, FakeQuizAttemptsApi>();
             services.AddSingleton<IAssetsApi, FakeAssetsApi>();
@@ -97,6 +98,7 @@ public static class ClientServices
         services.AddScoped<ILessonPlansApi, LessonPlansApi>();
         services.AddScoped<ICourseAssignmentsApi, CourseAssignmentsApi>();
         services.AddScoped<IQuizzesApi, QuizzesApi>();
+        services.AddScoped<IClassCourseGroupsApi, ClassCourseGroupsApi>();
         services.AddScoped<IFileUploadApi, FileUploadApi>();
         services.AddScoped<IQuizAttemptsApi, QuizAttemptsApi>();
         services.AddScoped<IAssetsApi, AssetsApi>();
