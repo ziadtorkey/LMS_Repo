@@ -61,4 +61,7 @@ public static class ProbeMilestones
 {
     /// <summary>The last milestone whose pending rows and known-bug tripwires fail the build. Raise to 3 when M3 closes.</summary>
     public const int LastClosed = 2;
+
+    /// <summary>M4a (teaching and learning). Every probe row of an M4a route sets it (<see cref="M4aEndpointMatrixTests"/> checks).</summary>
+    public const int M4a = 4;
 }
