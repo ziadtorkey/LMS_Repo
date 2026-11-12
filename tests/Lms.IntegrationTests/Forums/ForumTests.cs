@@ -102,6 +102,29 @@ public sealed class ForumTests(LmsApiFactory factory)
     }
 
     [Fact]
+    public async Task Pinned_threads_are_ordered_before_paging_so_an_old_pinned_thread_is_on_page_one()
+    {
+        using var w = await ForumTestWorld.CreateAsync(factory, "FR4P");
+        var oldest = await StartAsync(w, w.StudentA, w.ClassCourseA, NewThread("oldest, pinned"));
+        var ids = new List<Guid>();
+        foreach (var title in new[] { "t1", "t2", "t3", "t4" })
+        {
+            ids.Add((await StartAsync(w, w.StudentA, w.ClassCourseA, NewThread(title))).Thread.Id);
+        }
+
+        await w.SendAsync(w.TeacherA, HttpMethod.Put, Routes.ForumThreadModeration(oldest.Thread.Id), new ModerateForumThreadRequest(true, false));
+
+        async Task<List<Guid>> PageAsync(int page) =>
+            (await w.ReadAsync<PagedResult<ForumThreadDto>>(await w.SendAsync(w.StudentA, HttpMethod.Get, Routes.ClassCourseForumThreads(w.ClassCourseA) + $"?page={page}&pageSize=2")))
+            .Items.Select(t => t.Id).ToList();
+
+        // newest first after the pinned one: t4, t3 | t2, t1
+        Assert.Equal([oldest.Thread.Id, ids[3]], await PageAsync(1));
+        Assert.Equal([ids[2], ids[1]], await PageAsync(2));
+        Assert.Equal([ids[0]], await PageAsync(3));
+    }
+
+    [Fact]
     public async Task Student_cannot_moderate_and_cannot_edit_or_delete_others_posts()
     {
         using var w = await ForumTestWorld.CreateAsync(factory, "FR5");
