@@ -12,9 +12,6 @@ namespace Lms.E2ETests.M3;
 /// </summary>
 public sealed class AcademicStructureTests(E2EFixture fixture) : E2ETestBase(fixture)
 {
-    /// <summary>Un-skip when the course allocation API (#215) is on main.</summary>
-    private const string NeedsAllocations = "Needs the course allocation API (#215) on main";
-
 
     [Theory]
     [InlineData("ar")]
@@ -41,7 +38,7 @@ public sealed class AcademicStructureTests(E2EFixture fixture) : E2ETestBase(fix
         await AssertDirectionAsync(culture);
     }
 
-    [Theory(Skip = NeedsAllocations)]
+    [Theory]
     [InlineData("ar")]
     [InlineData("en")]
     public async Task Root_admin_allocates_a_new_course_below_the_school(string culture)
