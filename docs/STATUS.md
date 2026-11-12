@@ -2,22 +2,23 @@
 
 _Updated by the Team Lead after every merge cycle._
 
-**Milestone:** M0 — DONE · M1 Organization & Access — closing (48 / 49; last: #73 via #200, approved) · M2 People — closing (26 / 29; left: #175 via #308, #176, #177) · M3 Academic Structure — in progress (10 / 49)
-**Last update:** 2026-11-11 19:40 — Merged since 18:37: #298/#299/#300 (re-lands of #269/#289/#204), #273 guardians, #267 external-login E2E, #270 students UI, #205 staff import, #304, #305 (closes M1 #72). Approved, in CI: #283 student accounts, #277 classes, #279 courses, #200. In review: #284, #286, #290, #292, #293, #297, #302, #306, #287, #308, #315 and BE4's transfers.
+**Milestone:** M0 — DONE · M1 Organization & Access — DONE (#73 via #200) · M2 People — closing (#177 via #321) · M3 Academic Structure — in progress
+**Last update:** 2026-11-11 23:27 — Merged: #335 (probe year fix; main green again), #306 student groups, #311 M3 probes part 1, #330 (into be/224). Design pilot #334 QA-approved. Lead contract PRs: #336, #340, #342. Approved, in CI: #334, #336, #338-#340, #315-#317, #320, #322, #326, #331, #333. M4 proposals: FE #341, BE in progress.
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |
 |---|---|---|---|---|
-| Team Lead | Opus | `local_95ef9dc7-9378-4012-a8f2-c7d1f944bdec` (lms-lead) | merges; M3 plan draft | coordinating |
-| Backend 1 | Sonnet | `local_19f31b04-ca2f-43d1-a2cb-8a128722a11f` (lms-backend) | #148 (M1), #184 (#160), draft #202 (#159 imports) | working |
-| Backend 2 | Sonnet | `local_d36e7dc2-e9e6-4f73-b7b3-b078b17bbe41` (lms-backend-2) | #187 (#162 staff create/list) | working |
-| Frontend | Sonnet | `local_40667dce-5be7-478b-95cb-4f14ecd203b9` (lms-frontend) | #190 (#171); then review nits follow-up | working |
-| Frontend 2 | Sonnet | `local_3d9e8938-4064-4f83-a04d-920704d41a87` (lms-frontend-2) | #195 (#169), #204 (#172); then #173 | working |
-| QA | Sonnet | `local_91a7af3c-7b02-4d61-ac11-2c22629cf89f` (lms-qa) | re-review #184; draft #206 (#176 staff E2E) | working |
-| QA 2 | Sonnet | `local_54d26c64-4403-4a13-b128-5be5e9752d97` (lms-qa-2) | #182 (#175 probes); FE reviews | working |
-| Backend 3 | Sonnet | `local_2e8038c6-e5ba-4e13-ade0-9440d9beb565` (lms-backend-3) | #193 (#168); drafts #196 (#164), #198 (#163), #205 (#165), #207 (#52) | working |
-| Backend 4 | Sonnet | `local_fd5c4410-8364-4c55-a5a8-3b8aa37afc1f` (lms-backend-4) | draft #208 (#161); #50 after #148 | working |
-| QA 3 | Sonnet | `local_6d46b60b-d70a-4cfa-af2f-5bf90cdf7c08` (lms-qa-3) | re-review #193; #200 (#73 E2E) | reviewing |
+| Team Lead | Opus | `local_95ef9dc7-9378-4012-a8f2-c7d1f944bdec` (lms-lead) | merges; reviews; M3 coordination | coordinating |
+| Backend 1 | Sonnet | `local_19f31b04-ca2f-43d1-a2cb-8a128722a11f` (lms-backend) | #279 (#214), stack #301/#318/#319, #312 (#219) | working |
+| Backend 2 | Sonnet | `local_d36e7dc2-e9e6-4f73-b7b3-b078b17bbe41` (lms-backend-2) | #290/#293 (#222/#223) | working |
+| Backend 3 | Sonnet | `local_2e8038c6-e5ba-4e13-ade0-9440d9beb565` (lms-backend-3) | bug #310; #286 (#229) with stack #292/#294/#297; #307 (#217) | working |
+| Backend 4 | Sonnet | `local_fd5c4410-8364-4c55-a5a8-3b8aa37afc1f` (lms-backend-4) | #306 (#235), #302 (#234), #313 (#236), #323 (#224), #325 (#225) | working |
+| Frontend | Sonnet | `local_40667dce-5be7-478b-95cb-4f14ecd203b9` (lms-frontend) | fixes #315, #287; #317 (#240); #291 (#239) | working |
+| Frontend 2 | Sonnet | `local_3d9e8938-4064-4f83-a04d-920704d41a87` (lms-frontend-2) | #322 (#251), #324 (#252), #316 (#250), #303/#309 | working |
+| QA | Sonnet | `local_91a7af3c-7b02-4d61-ac11-2c22629cf89f` (lms-qa) | #272/#203 cleanup; #285 (#254 M3 E2E) | working |
+| QA 2 | Sonnet | `local_54d26c64-4403-4a13-b128-5be5e9752d97` (lms-qa-2) | #311 (#253 probes); reviews #291, #323 | reviewing |
+| QA 3 | Sonnet | `local_6d46b60b-d70a-4cfa-af2f-5bf90cdf7c08` (lms-qa-3) | reviews #287, #297, #303, #309, #316 | reviewing |
+| UI/UX Designer | Opus | pending start | #327 design pilot: theme, shell, Staff list + Staff profile; stops for owner review | starting |
 
 ## M0 issue map
 | Task | Issue | Lane | Depends on |
@@ -53,6 +54,7 @@ None. (Board: [LMS v1](https://github.com/users/ziadtorkey/projects/1) — Todo 
 - 2026-11-11: M2 plan approved; 13 answers recorded as D23–D36 (students, guardians and change requests move to M3). #103 closed.
 
 ## Recently merged
+- #276 student profile (closes #246) · #284 enrollment engine (closes #232) · #277 classes (closes #221)
 - #305 (closes #72) · #304 · #205 staff import (closes #165) · #300 staff import page (closes #172) · #270 students UI (closes #245) · #267 external-login E2E (closes #178) · #273 guardians (closes #227) · #299 short codes (closes #288) · #298 relationship scopes (closes #220)
 - #271 IdP admin UI (closes #173) · #261 M1 config/roles E2E · #296 · #295 · #198 staff lifecycle (closes #163) · #202 import framework (closes #159) · #264 courses UI (closes #237) · #208 (closes #161) · #280 contracts · #281 (closes #70) · #265 academic kernel (closes #213)
 - #206 test(e2e): M2 staff lifecycle, sharing and expiry (closes #176) · #278 fix(ci): Playwright install fallback, inotify limits
