@@ -2,6 +2,7 @@ using Lms.Domain.Abstractions;
 using Lms.Domain.Classes;
 using Lms.Domain.Content;
 using Lms.Domain.Files;
+using Lms.Domain.Organizations;
 using Lms.Infrastructure.Configuration;
 using Lms.Infrastructure.Persistence;
 using Lms.Shared.Configuration;
@@ -30,13 +31,30 @@ public sealed class AssetService(
         [".ogg"] = ["application/ogg"],
     };
 
-    public async Task<long> GetMaxBytesAsync(ClassCourse classCourse, CancellationToken cancellationToken = default) =>
-        (await settings.ResolveAsync(SettingKeys.FilesMaxUploadMb, classCourse.OrgUnitPath, cancellationToken)).Value
-        * 1024L * 1024L;
+    public Task<long> GetMaxBytesAsync(ClassCourse classCourse, CancellationToken cancellationToken = default) =>
+        MaxBytesAsync(classCourse.OrgUnitPath, cancellationToken);
 
-    public async Task<Asset> UploadAsync(
+    public Task<long> GetMaxBytesAsync(OrgUnit unit, CancellationToken cancellationToken = default) =>
+        MaxBytesAsync(unit.Path, cancellationToken);
+
+    private async Task<long> MaxBytesAsync(string orgUnitPath, CancellationToken cancellationToken) =>
+        (await settings.ResolveAsync(SettingKeys.FilesMaxUploadMb, orgUnitPath, cancellationToken)).Value * 1024L * 1024L;
+
+    public Task<Asset> UploadAsync(
         ClassCourse classCourse, string fileName, string declaredContentType, long sizeBytes, Stream content,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default) =>
+        StoreAsync(classCourse.OrgUnitId, classCourse.OrgUnitPath, (file, type) => new Asset(classCourse, file.Id, type.Kind, fileName, file.ContentType, sizeBytes),
+            fileName, declaredContentType, sizeBytes, content, cancellationToken);
+
+    public Task<Asset> UploadAsync(
+        OrgUnit unit, string fileName, string declaredContentType, long sizeBytes, Stream content,
+        CancellationToken cancellationToken = default) =>
+        StoreAsync(unit.Id, unit.Path, (file, type) => new Asset(unit, file.Id, type.Kind, fileName, file.ContentType, sizeBytes),
+            fileName, declaredContentType, sizeBytes, content, cancellationToken);
+
+    private async Task<Asset> StoreAsync(
+        Guid orgUnitId, string orgUnitPath, Func<StoredFile, AssetTypeDto, Asset> create, string fileName, string declaredContentType,
+        long sizeBytes, Stream content, CancellationToken cancellationToken)
     {
         var type = AssetTypes.ForFileName(fileName);
         if (type is null || !ContentTypeMatches(type, declaredContentType))
@@ -44,7 +62,7 @@ public sealed class AssetService(
             throw new AssetTypeNotAllowedException(fileName);
         }
 
-        var maxBytes = await GetMaxBytesAsync(classCourse, cancellationToken);
+        var maxBytes = await MaxBytesAsync(orgUnitPath, cancellationToken);
         if (sizeBytes > maxBytes)
         {
             throw new AssetTooLargeException(sizeBytes, maxBytes);
@@ -68,7 +86,7 @@ public sealed class AssetService(
         try
         {
             stored = await storage.UploadAsync(
-                new FileUploadRequest(fileName, declaredContentType, sizeBytes, classCourse.OrgUnitId), content, cancellationToken);
+                new FileUploadRequest(fileName, declaredContentType, sizeBytes, orgUnitId), content, cancellationToken);
         }
         catch (FileTooLargeException ex)
         {
@@ -79,7 +97,7 @@ public sealed class AssetService(
             throw new AssetTypeNotAllowedException(fileName);
         }
 
-        var asset = new Asset(classCourse, stored.Id, type.Kind, fileName, stored.ContentType, sizeBytes);
+        var asset = create(stored, type);
         try
         {
             db.Add(asset);
