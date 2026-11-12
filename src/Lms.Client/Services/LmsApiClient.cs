@@ -47,6 +47,12 @@ public sealed class ApiForbiddenException : HttpRequestException
 /// </summary>
 public sealed class ForbiddenRedirectHandler(NavigationManager navigation, IContextStore context) : DelegatingHandler
 {
+    /// <summary>
+    /// Set on a GET whose caller handles a plain 403 itself (an optional lookup such as the unit picker): the handler then
+    /// does not navigate to the Forbidden page; context problems still redirect.
+    /// </summary>
+    public static readonly HttpRequestOptionsKey<bool> HandlesForbidden = new("Lms.HandlesForbidden");
+
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
     {
         var response = await base.SendAsync(request, ct);
@@ -61,7 +67,7 @@ public sealed class ForbiddenRedirectHandler(NavigationManager navigation, ICont
                 await context.ClearAsync();
             navigation.NavigateTo("choose-context");
         }
-        else if (request.Method == HttpMethod.Get)
+        else if (request.Method == HttpMethod.Get && !(request.Options.TryGetValue(HandlesForbidden, out var own) && own))
         {
             navigation.NavigateTo("forbidden");
         }
