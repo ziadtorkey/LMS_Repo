@@ -48,7 +48,7 @@
     {
         await ApiCalls.RunAsync(async () =>
         {
-            foreach (var course in (await Plans.GetMyClassCoursesAsync()).Take(MaxCards))
+            foreach (var course in (await Plans.GetMyClassCoursesIfAllowedAsync()).Take(MaxCards))
                 _cards.Add(new Card(course, await Modules.GetProgressAsync(course.Id)));
         }, Navigation, L, _ => { });
     }

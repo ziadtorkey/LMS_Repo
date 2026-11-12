@@ -66,4 +66,25 @@ public sealed class HomeCardsTests : LessonPlansTestContext
         Assert.Empty(page.FindAll("[data-testid=home-continue-learning]"));
         Assert.Empty(page.FindAll("[data-testid=home-my-class-courses]"));
     }
+
+    private sealed class PlansWithoutView : ILessonPlansApi
+    {
+        public Task<IReadOnlyList<Lms.Shared.Classes.ClassCourseDto>> GetMyClassCoursesAsync(CancellationToken ct = default) =>
+            Task.FromException<IReadOnlyList<Lms.Shared.Classes.ClassCourseDto>>(new Lms.Client.Services.ApiForbiddenException());
+        public Task<Lms.Shared.Classes.ClassLessonPlanDto> GetPlanAsync(Guid classCourseId, CancellationToken ct = default) => throw new NotSupportedException();
+    }
+
+    [Fact]
+    public async Task A_role_with_Modules_View_but_without_LessonPlans_View_is_not_sent_to_the_forbidden_page()
+    {
+        Services.AddSingleton<ILessonPlansApi>(new PlansWithoutView());
+        var navigation = Services.GetRequiredService<Microsoft.AspNetCore.Components.NavigationManager>();
+        var before = navigation.Uri;
+
+        var page = await OpenAsync(Permissions.Modules.View);
+
+        page.WaitForElement("p, .mud-typography-body1", Wait);
+        Assert.Equal(before, navigation.Uri);
+        Assert.Empty(page.FindAll("[data-testid=home-continue-learning]")); // nothing to show, and no redirect
+    }
 }
