@@ -3,7 +3,7 @@
 _Updated by the Team Lead after every merge cycle._
 
 **Milestone:** M0 — DONE · M1 Organization & Access — DONE (#73 via #200) · M2 People — closing (#177 via #321) · M3 Academic Structure — in progress
-**Last update:** 2026-11-12 08:35 — Merged since 23:30: #279 courses, #290 class courses, #302 class import, #315, #320, #326 (#310 security fix), #336, #338 (#106), #339, #340, #342. M4 decided (D48–D52); M4a plan #345 and contracts #346 in review. Conflicts being fixed: #323, #293, #282, #286. New bug #344 (sev:high) with FE2.
+**Last update:** 2026-11-12 09:07 — Merged: #347 (#344 counselor fix), #313 transfers, #274 student codes. M4a plan #345 approved; 33 issues #351–#383 created and assigned (BE1 #357, BE2 #353/#356, BE4 #354/#355, FE1 #364/#365, FE2 #366/#367, QA2 #379). Contracts: #346 M4a wave 1 (approved), #350 Supervisor Students.View scope (D42). Owner demo running on localhost:5132 (Lead holds e2e.lock).
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |

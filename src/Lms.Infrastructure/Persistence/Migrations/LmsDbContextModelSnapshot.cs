@@ -2174,6 +2174,19 @@ namespace Lms.Infrastructure.Persistence.Migrations
                     b.ToTable("StaffProfiles", (string)null);
                 });
 
+            modelBuilder.Entity("Lms.Domain.People.StudentCodeCounter", b =>
+                {
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<long>("NextValue")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("OrganizationId");
+
+                    b.ToTable("StudentCodeCounters", (string)null);
+                });
+
             modelBuilder.Entity("Lms.Domain.People.StudentGuardian", b =>
                 {
                     b.Property<Guid>("Id")
