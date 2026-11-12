@@ -38,4 +38,17 @@ public sealed class StudentsApiTests
         Assert.Equal("possible_duplicate", problem.Code);
         Assert.Equal(3, problem.Count);
     }
+
+    [Fact]
+    public async Task Problem_response_exposes_the_codes_extension()
+    {
+        var response = new HttpResponseMessage(HttpStatusCode.Conflict)
+        {
+            Content = new StringContent("{\"code\":\"class_code_taken\",\"codes\":[\"A1\",\"A2\"]}", Encoding.UTF8, "application/problem+json"),
+        };
+
+        var problem = await ApiProblemException.FromResponseAsync(response);
+
+        Assert.Equal(["A1", "A2"], problem.Codes);
+    }
 }
