@@ -995,4 +995,7 @@
   <data name="MyProfile_Subtitle" xml:space="preserve"><value>حدّث بيانات التواصل الخاصة بك. التغييرات الأخرى تُرسل إلى مدرستك للموافقة.</value></data>
   <data name="MyProfile_Details" xml:space="preserve"><value>بياناتك</value></data>
   <data name="MyProfile_RequestsEmptyText" xml:space="preserve"><value>الطلبات التي ترسلها إلى مدرستك تظهر هنا.</value></data>
+  <data name="ChangeRequests_Subtitle" xml:space="preserve"><value>تغييرات طلب الطلاب إجراءها على بياناتهم. راجع كل طلب ووافق عليه أو ارفضه.</value></data>
+  <data name="ChangeRequests_EmptyTitle" xml:space="preserve"><value>لا توجد طلبات تغيير</value></data>
+  <data name="ChangeRequests_EmptyText" xml:space="preserve"><value>غيّر عوامل التصفية لعرض الطلبات في حالات أخرى.</value></data>
 </root>
