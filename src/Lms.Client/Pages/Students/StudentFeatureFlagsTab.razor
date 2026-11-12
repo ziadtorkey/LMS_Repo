@@ -48,7 +48,7 @@
     {
         foreach (var (name, value) in Student.FeatureFlagOverrides) _choices[name] = value ? On : Off;
         // The inherited value is shown for orientation: if it cannot be read, it shows as Off (the catalog default).
-        await ApiCalls.RunAsync(async () => _unitSettings = await Config.GetSettingsAsync(Student.Summary.HomeOrgUnitId), Navigation, L, _ => { });
+        await ApiCalls.RunAsync(async () => _unitSettings = await Config.GetSettingsIfAllowedAsync(Student.Summary.HomeOrgUnitId), Navigation, L, _ => { });
     }
 
     private bool InheritedOn(string name) =>

@@ -111,7 +111,7 @@ else
         // Settings and classes are conveniences for the form: if they cannot be read, the form falls back to defaults.
         await ApiCalls.RunAsync(async () =>
         {
-            var settings = await Config.GetSettingsAsync(unit);
+            var settings = await Config.GetSettingsIfAllowedAsync(unit);
             _manualCode = SettingJson(settings, SettingKeys.StudentsCodeMode.Name) == StudentCodeModes.Manual;
             _guardiansRequired = SettingJson(settings, SettingKeys.GuardiansDataRequired.Name) == "true";
         }, Navigation, L, _ => { });
