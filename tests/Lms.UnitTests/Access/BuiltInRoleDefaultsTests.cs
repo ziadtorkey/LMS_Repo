@@ -71,4 +71,31 @@ public class BuiltInRoleDefaultsTests
     {
         Assert.All(Permissions.All, p => Assert.InRange(BuiltInRoleDefaults.IntroducedIn(p), 0, BuiltInRoleDefaults.CurrentVersion));
     }
+
+    [Theory]
+    [InlineData(BuiltInRoles.OrgAdmin, Permissions.Assignments.Create, 0)]
+    [InlineData(BuiltInRoles.Manager, Permissions.Assignments.View, 0)]
+    [InlineData(BuiltInRoles.Manager, Permissions.Assignments.Create, 1)] // existed in M0, but only D16 gave it to the Manager
+    [InlineData(BuiltInRoles.Manager, Permissions.Assignments.Delete, 1)]
+    [InlineData(BuiltInRoles.Manager, Permissions.LevelTypes.View, 1)]
+    [InlineData(BuiltInRoles.Manager, Permissions.Staff.Create, 2)]
+    [InlineData(BuiltInRoles.Teacher, Permissions.Files.Upload, 0)]
+    [InlineData(BuiltInRoles.Guardian, Permissions.Files.Upload, 1)]
+    public void Introduced_version_is_judged_against_the_roles_own_M0_list(string role, string permission, int version)
+    {
+        Assert.Equal(version, BuiltInRoleDefaults.IntroducedIn(role, permission));
+    }
+
+    [Fact]
+    public void The_frozen_M0_Manager_list_is_the_one_M0_clients_were_provisioned_with()
+    {
+        Assert.Equal(
+            new[]
+            {
+                Permissions.OrgUnits.View, Permissions.Roles.View, Permissions.Assignments.View, Permissions.Settings.View,
+                Permissions.Policies.View, Permissions.Audit.View, Permissions.Files.Upload, Permissions.Files.Download,
+            }.Order(),
+            BuiltInRoleDefaults.M0RoleDefaults[BuiltInRoles.Manager].Order());
+        Assert.All(BuiltInRoles.All, role => Assert.True(BuiltInRoleDefaults.M0RoleDefaults.ContainsKey(role.Key)));
+    }
 }
