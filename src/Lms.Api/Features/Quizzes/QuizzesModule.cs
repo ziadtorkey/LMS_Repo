@@ -16,6 +16,7 @@ public sealed class QuizzesModule : ILmsModule
         services.AddScoped<QuizResults>();
         services.AddScoped<AttemptHandlers>();
         services.AddScoped<QuizResultHandlers>();
+        services.AddScoped<QuizOpenedNotifier>();
         services.AddScoped<QuizCloseJob>();
         if (configuration.GetValue("Jobs:ServerEnabled", true))
         {

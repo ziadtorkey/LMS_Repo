@@ -49,6 +49,8 @@ public sealed class IsolationBypassGuardTests
             "blueprints of an inherited course sit at an ancestor unit above the caller; client-limited, live rows, courses already found visible (M3 Task 16)",
         ["src/Lms.Api/Features/Classes/ClassLookups.cs"] =
             "years inherited from ancestors, per-client class code uniqueness and ancestor Teacher assignments for the homeroom check; client-limited, live rows, no rows returned (M3 Task 13)",
+        ["src/Lms.Api/Features/Quizzes/QuizOpenedNotifier.cs"] =
+            "the course of a class course is owned above the class unit, so above the author scope; client-limited, live, one course, names only (M4a quizzes)",
         ["src/Lms.Api/Features/Staff/StaffQueries.cs"] =
             "staff shared into the caller's scope have a home unit outside it; rows limited to this client and an in-scope assignment (M2 Task 10)",
         ["src/Lms.Api/Features/OrgUnits/AcademicFlagsHandler.cs"] =

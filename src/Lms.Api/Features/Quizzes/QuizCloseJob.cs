@@ -11,13 +11,19 @@ namespace Lms.Api.Features.Quizzes;
 /// an empty context, and is idempotent (an attempt is submitted once, by a conditional update). A read of a late attempt submits it too,
 /// so the sweep is a safety net, not the only path.
 /// </summary>
-public sealed class QuizCloseJob(LmsDbContext db, AttemptService attempts, IClock clock)
+public sealed class QuizCloseJob(LmsDbContext db, AttemptService attempts, IClock clock, QuizOpenedNotifier opened)
 {
     public const string RecurringJobId = "quiz-close";
     public const string Cron = "* * * * *";
     private const int Batch = 200;
 
-    public Task<int> RunAsync(CancellationToken ct = default) => SweepAsync(null, ignoreGrace: false, ct);
+    /// <summary>The sweep: auto-submits what is due, then sends the opened notifications that came due (the same minute tick).</summary>
+    public async Task<int> RunAsync(CancellationToken ct = default)
+    {
+        var submitted = await SweepAsync(null, ignoreGrace: false, ct);
+        await opened.NotifyDueAsync(null, ct);
+        return submitted;
+    }
 
     /// <summary>One quiz, now, without the grace: the Development trigger and the E2E demo use it.</summary>
     public Task<int> RunForQuizAsync(Guid quizId, CancellationToken ct = default) => SweepAsync(quizId, ignoreGrace: true, ct);
