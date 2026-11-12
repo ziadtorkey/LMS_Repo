@@ -801,6 +801,20 @@
   <data name="Flag_Inherit" xml:space="preserve"><value>Inherit ({0})</value></data>
   <data name="Flag_On" xml:space="preserve"><value>On</value></data>
   <data name="Flag_Off" xml:space="preserve"><value>Off</value></data>
+  <data name="Nav_Guardians" xml:space="preserve"><value>Guardians</value></data>
+  <data name="Guardian_Remove" xml:space="preserve"><value>Remove from student</value></data>
+  <data name="Guardian_SetPrimary" xml:space="preserve"><value>Make primary</value></data>
+  <data name="Guardian_OtherChildren" xml:space="preserve"><value>Also guardian of {0} other students</value></data>
+  <data name="Guardian_Children" xml:space="preserve"><value>Children</value></data>
+  <data name="Guardian_Edit" xml:space="preserve"><value>Edit guardian</value></data>
+  <data name="Guardian_PortalInvite" xml:space="preserve"><value>Send portal invitation</value></data>
+  <data name="Guardian_PortalActive" xml:space="preserve"><value>Portal account active</value></data>
+  <data name="Guardian_PortalNone" xml:space="preserve"><value>No portal account</value></data>
+  <data name="Guardian_PortalDisabled" xml:space="preserve"><value>The guardian portal is turned off for this unit.</value></data>
+  <data name="Guardian_NoEmail" xml:space="preserve"><value>Add an email address to invite this guardian.</value></data>
+  <data name="Guardian_UnlinkConfirm" xml:space="preserve"><value>Remove {0} from this student?</value></data>
+  <data name="Guardian_InvitationSent" xml:space="preserve"><value>Invitation sent</value></data>
+  <data name="Guardian_LinkTitle" xml:space="preserve"><value>Link guardian</value></data>
   <data name="Nav_MyClassCourses" xml:space="preserve"><value>My class courses</value></data>
   <data name="MyClassCourses_Title" xml:space="preserve"><value>My class courses</value></data>
   <data name="MyClassCourses_Empty" xml:space="preserve"><value>You have no class courses in the selected year.</value></data>
