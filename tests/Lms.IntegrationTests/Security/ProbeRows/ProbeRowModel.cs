@@ -14,7 +14,15 @@ public sealed record ProbeRow(
     HttpMethod Method,
     string Pattern,
     Func<M1ProbeWorld, Caller, Task<ProbeRequest>> Build,
-    IReadOnlyDictionary<Caller, int> Expected);
+    IReadOnlyDictionary<Caller, int> Expected)
+{
+    /// <summary>
+    /// The milestone that owns the row. Rows of a closed milestone (1 and 2, the default) must be live: a route that is not
+    /// mapped fails <see cref="M1EndpointMatrixTests"/>. Rows of the milestone in progress (3) are allowed to wait for their
+    /// route and are only listed, until the milestone-end check is switched to strict.
+    /// </summary>
+    public int Milestone { get; init; } = 2;
+}
 
 /// <summary>
 /// The probe rows of one feature module. One class per module under <c>Security/ProbeRows/</c> (named
@@ -46,4 +54,11 @@ public static class ProbeExpect
         [M2Caller.School1Manager] = manager, [M2Caller.School1Counselor] = counselor,
         [M2Caller.School1Supervisor] = supervisor, [M2Caller.ClientBTeacher] = clientBTeacher,
     };
+}
+
+/// <summary>The probe milestones. Rows of a closed milestone must be live (their route mapped); later ones may wait.</summary>
+public static class ProbeMilestones
+{
+    /// <summary>The last milestone whose pending rows and known-bug tripwires fail the build. Raise to 3 when M3 closes.</summary>
+    public const int LastClosed = 2;
 }
