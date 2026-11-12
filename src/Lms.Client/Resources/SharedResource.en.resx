@@ -939,4 +939,6 @@
   <data name="Module_NoContent" xml:space="preserve"><value>This module has no content yet.</value></data>
   <data name="Module_Unsupported" xml:space="preserve"><value>This kind of module opens in its own page.</value></data>
   <data name="Module_UrlInvalid" xml:space="preserve"><value>Enter a full web address starting with http:// or https://.</value></data>
+  <data name="MyClassCourses_OpenCourse" xml:space="preserve"><value>Open course</value></data>
+  <data name="Home_ContinueLearning" xml:space="preserve"><value>Continue learning</value></data>
 </root>

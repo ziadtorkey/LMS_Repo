@@ -939,4 +939,6 @@
   <data name="Module_NoContent" xml:space="preserve"><value>لا يوجد محتوى لهذه الوحدة بعد.</value></data>
   <data name="Module_Unsupported" xml:space="preserve"><value>يُفتح هذا النوع من الوحدات في صفحته الخاصة.</value></data>
   <data name="Module_UrlInvalid" xml:space="preserve"><value>أدخل عنوان ويب كاملًا يبدأ بـ http:// أو https://.</value></data>
+  <data name="MyClassCourses_OpenCourse" xml:space="preserve"><value>فتح المقرر</value></data>
+  <data name="Home_ContinueLearning" xml:space="preserve"><value>تابع التعلّم</value></data>
 </root>
