@@ -1,0 +1,99 @@
+@using Lms.Client.Services.Api
+@using Lms.Shared.Access
+@using Lms.Shared.Authorization
+@using Lms.Shared.Courses
+@using Lms.Shared.People
+@inject ICoursesApi Api
+@inject IStaffApi StaffApi
+@inject IAccessAdminApi Access
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+@* Supervisors of a course. Candidates are staff holding the Supervisor role; saving replaces the whole list. *@
+<MudStack Spacing="3">
+    @if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error" data-testid="supervisor-error">@_error</MudAlert>
+    }
+    @if (_current.Count == 0)
+    {
+        <MudText data-testid="supervisor-empty">@L["Supervisor_None"]</MudText>
+    }
+    <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" data-testid="supervisor-list">
+        @foreach (var supervisor in _current)
+        {
+            var current = supervisor;
+            @if (CanEdit)
+            {
+                <MudChip T="string" OnClose="() => Remove(current)" data-testid="@($"supervisor-{current.UserId}")">@CultureText.Pick(current.NameAr, current.NameEn)</MudChip>
+            }
+            else
+            {
+                <MudChip T="string" data-testid="@($"supervisor-{current.UserId}")">@CultureText.Pick(current.NameAr, current.NameEn)</MudChip>
+            }
+        }
+    </MudStack>
+    @if (CanEdit)
+    {
+        <MudAutocomplete T="StaffSummaryDto" Label="@L["Supervisor_Add"]" Value="null" ValueChanged="Add" SearchFunc="SearchAsync"
+                         ToStringFunc="Display" DebounceInterval="300" MaxItems="20" ResetValueOnEmptyText="true"
+                         data-testid="supervisor-search" />
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_busy"
+                   data-testid="supervisor-save">@L["Common_Save"]</MudButton>
+    }
+</MudStack>
+
+@code {
+    private List<CourseSupervisorDto> _current = [];
+    private Guid? _supervisorRoleId;
+    private string? _error;
+    private bool _busy;
+
+    [Parameter, EditorRequired] public CourseDetailDto Course { get; set; } = default!;
+    [Parameter] public bool CanEdit { get; set; }
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _current = Course.Supervisors.ToList();
+        if (!CanEdit) return;
+        await ApiCalls.RunAsync(async () =>
+            _supervisorRoleId = (await Access.GetRolesAsync()).FirstOrDefault(r => r.BuiltInKey == BuiltInRoles.Supervisor)?.Id,
+            Navigation, L, message => _error = message);
+    }
+
+    private string Display(StaffSummaryDto? person) => person is null ? "" : $"{CultureText.Pick(person.NameAr, person.NameEn)} ({person.Email})";
+
+    private async Task<IEnumerable<StaffSummaryDto>> SearchAsync(string? text, CancellationToken ct)
+    {
+        // Only people with the Supervisor role can supervise; without that role id nobody is offered.
+        if (_supervisorRoleId is not { } role) return [];
+        IEnumerable<StaffSummaryDto> found = [];
+        await ApiCalls.RunAsync(async () =>
+            found = (await StaffApi.ListAsync(new StaffQuery(null, true, role, PersonStatuses.Active,
+                string.IsNullOrWhiteSpace(text) ? null : text.Trim(), true, null, 1, 20), ct)).Items
+                .Where(p => _current.All(c => c.UserId != p.UserId)),
+            Navigation, L, message => _error = message);
+        return found;
+    }
+
+    private void Add(StaffSummaryDto? person)
+    {
+        if (person is null || _current.Any(c => c.UserId == person.UserId)) return;
+        _current.Add(new CourseSupervisorDto(person.UserId, person.NameAr, person.NameEn, person.Email));
+    }
+
+    private void Remove(CourseSupervisorDto supervisor) => _current.Remove(supervisor);
+
+    private async Task SaveAsync()
+    {
+        _error = null;
+        _busy = true;
+        var ok = await ApiCalls.RunAsync(() => Api.SetSupervisorsAsync(Course.Summary.Id, new SetCourseSupervisorsRequest(_current.Select(c => c.UserId).ToList())),
+            Navigation, L, message => _error = message);
+        _busy = false;
+        if (!ok) return;
+        Snackbar.Add(L["Common_Saved"], Severity.Success);
+        await OnChanged.InvokeAsync();
+    }
+}

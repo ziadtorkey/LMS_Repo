@@ -7,6 +7,7 @@ namespace Lms.Client.Services.Api;
 public interface IClassesApi
 {
     Task<PagedResult<ClassSummaryDto>> ListAsync(ClassQuery query, CancellationToken ct = default);
+    Task<ClassSummaryDto> GetAsync(Guid id, CancellationToken ct = default);
     Task<ClassSummaryDto> CreateAsync(SaveClassRequest request, CancellationToken ct = default);
     Task UpdateAsync(Guid id, SaveClassRequest request, CancellationToken ct = default);
 
@@ -20,6 +21,9 @@ public sealed class ClassesApi(ApiHttp http) : IClassesApi
 {
     public Task<PagedResult<ClassSummaryDto>> ListAsync(ClassQuery query, CancellationToken ct = default) =>
         http.GetAsync<PagedResult<ClassSummaryDto>>(Routes.Classes + ToQueryString(query), ct);
+
+    public Task<ClassSummaryDto> GetAsync(Guid id, CancellationToken ct = default) =>
+        http.GetAsync<ClassSummaryDto>(Routes.Class(id), ct);
 
     public async Task<ClassSummaryDto> CreateAsync(SaveClassRequest request, CancellationToken ct = default) =>
         (await http.SendAsync<ClassSummaryDto>(HttpMethod.Post, Routes.Classes, request, ct))!;

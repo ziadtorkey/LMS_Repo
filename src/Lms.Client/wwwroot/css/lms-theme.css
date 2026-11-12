@@ -277,6 +277,25 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
     font-variant-numeric: tabular-nums;
 }
 
+/* ---------- Notifications ---------- */
+.lms-filters-inline { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 16px; padding: 8px 20px; }
+.lms-notif-cell { display: inline-flex; align-items: center; gap: 8px; }
+.lms-notif-cell-unread .mud-link { font-weight: 600; color: var(--mud-palette-text-primary); }
+.lms-unread-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--mud-palette-primary); flex-shrink: 0; }
+.lms-prefs-legend {
+    display: flex; align-items: center; gap: 8px; padding: 10px 20px; font-size: .8125rem;
+    color: var(--mud-palette-text-secondary); border-bottom: 1px solid var(--mud-palette-lines-default);
+}
+.lms-prefs-table.mud-simple-table table th.lms-prefs-channel,
+.lms-prefs-table.mud-simple-table table td.lms-prefs-channel { text-align: center; width: 120px; }
+.lms-prefs-switch { display: inline-flex; align-items: center; gap: 2px; }
+.lms-prefs-footer { display: flex; justify-content: flex-end; margin-top: 16px; }
+@media (max-width: 599px) {
+    .lms-prefs-table.mud-simple-table table td.lms-prefs-channel { width: 100%; text-align: start; }
+    .lms-prefs-table.mud-simple-table table td.lms-prefs-event { font-size: .9375rem; padding-top: 8px !important; }
+    .lms-prefs-footer .mud-button-root { width: 100%; }
+}
+
 /* ---------- Org tree ---------- */
 .lms-org-tree { padding: 8px 12px 12px; }
 .lms-org-node { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; width: 100%; min-width: 0; padding-block: 2px; }
@@ -290,6 +309,72 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
     .lms-org-tree { padding: 4px; }
     .lms-org-node .lms-row-actions { width: 100%; justify-content: flex-start; }
 }
+
+/* ---------- Item lists (short lists inside a card: terms, calendar entries) ---------- */
+.lms-item-list { list-style: none; margin: 0; padding: 0; }
+.lms-item {
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px 12px;
+    padding: 8px 0; border-top: 1px solid var(--mud-palette-table-lines);
+}
+.lms-item:first-child { border-top: 0; }
+.lms-item-main { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; min-width: 0; flex: 1 1 220px; }
+.lms-item-meta { font-size: .8125rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.lms-item-current { box-shadow: inset 3px 0 0 var(--mud-palette-success); padding-inline-start: 10px; }
+[dir="rtl"] .lms-item-current { box-shadow: inset -3px 0 0 var(--mud-palette-success); }
+
+/* ---------- Academic years ---------- */
+.lms-years-toolbar { max-width: 420px; margin-bottom: 16px; }
+.lms-years { display: flex; flex-direction: column; gap: 20px; }
+.lms-year-head {
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 16px;
+    padding: 14px 20px; border-bottom: 1px solid var(--mud-palette-lines-default);
+}
+.lms-year-title { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; min-width: 0; }
+.lms-year-dates { display: inline-flex; align-items: center; gap: 4px; font-size: .875rem; font-variant-numeric: tabular-nums; }
+.lms-year-body { display: grid; grid-template-columns: 1fr; gap: 0; }
+.lms-year-panel { padding: 14px 20px 16px; min-width: 0; }
+.lms-year-panel + .lms-year-panel { border-top: 1px solid var(--mud-palette-lines-default); }
+.lms-year-panel-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+.lms-year-panel-title.mud-typography { font-weight: 600; margin: 0; }
+.lms-year-empty { padding-block: 4px; }
+@media (min-width: 1100px) {
+    .lms-year-body { grid-template-columns: minmax(280px, 1fr) minmax(0, 2fr); }
+    .lms-year-panel + .lms-year-panel { border-top: 0; border-inline-start: 1px solid var(--mud-palette-lines-default); }
+}
+@media (max-width: 599px) {
+    .lms-year-head, .lms-year-panel { padding-inline: 16px; }
+}
+
+/* Calendar month grid (overrides the first version in app.css) */
+.lms-calendar { margin-bottom: 8px; }
+.lms-calendar-nav { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 6px; }
+.lms-calendar-month.mud-typography { min-width: 9rem; text-align: center; font-weight: 600; }
+.lms-month-grid { gap: 4px; }
+.lms-month-head { font-size: .75rem; font-weight: 600; opacity: 1; color: var(--mud-palette-text-secondary); padding-block: 4px; }
+.lms-month-day {
+    min-height: 56px; padding: 4px 6px; border-radius: 8px; border: 1px solid var(--mud-palette-table-lines);
+    background: var(--mud-palette-surface);
+}
+.lms-month-blank { border-color: transparent; background: transparent; }
+.lms-month-holiday { background: color-mix(in srgb, var(--mud-palette-warning) 12%, var(--mud-palette-surface)); border-color: color-mix(in srgb, var(--mud-palette-warning) 35%, transparent); }
+.lms-month-num { font-size: .8125rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.lms-month-entry {
+    font-size: .6875rem; line-height: 1.4; margin-top: 2px; padding: 0 4px; border-radius: 4px;
+    background: color-mix(in srgb, var(--mud-palette-info) 12%, transparent); color: var(--mud-palette-text-primary);
+}
+.lms-month-entry-holiday { background: color-mix(in srgb, var(--mud-palette-warning) 18%, transparent); }
+.lms-calendar-legend { display: flex; align-items: center; gap: 6px 12px; flex-wrap: wrap; margin-top: 8px; font-size: .75rem; color: var(--mud-palette-text-secondary); }
+.lms-legend-swatch { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-inline-end: -6px; }
+.lms-legend-holiday { background: color-mix(in srgb, var(--mud-palette-warning) 45%, transparent); }
+.lms-legend-event { background: color-mix(in srgb, var(--mud-palette-info) 45%, transparent); }
+@media (max-width: 599px) {
+    .lms-month-grid { gap: 2px; }
+    .lms-month-day { min-height: 40px; padding: 2px 3px; border-radius: 6px; }
+    .lms-month-entry { display: none; }
+    .lms-month-holiday .lms-month-num { color: var(--mud-palette-warning); }
+}
+.lms-month-head { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; min-width: 0; }
+@media (max-width: 599px) { .lms-month-head { font-size: .625rem; } }
 
 /* ---------- Audit log ---------- */
 .lms-filter-chips { display: flex; align-items: center; }
