@@ -164,6 +164,6 @@ This list was last updated on 2026-11-12. "Waiting" means an open feature PR tou
 | Staff import: page frame only (back link, loading) | In review | #422 → this PR |
 | Import wizard and history (`Components/Imports`), used by Staff, Students, Courses and Classes imports | Waiting (#316) | — |
 | Home | Waiting (#309, #392, #396) | — |
-| Courses: list, profile, tabs, dialog, import, My courses | Waiting (#287, #291, #317) | — |
+| Courses: list, profile, tabs, My courses, dialog, import, blueprint builder | FE1, in progress (on its own PR stack; designer gives an advisory review) | — |
 | Students, guardians, change requests, Me pages | Waiting (#303, #309, #316) | — |
-| Classes, enrollment, groups, blueprints | Waiting (#291, #317, #322, #324) | — |
+| Classes, enrollment, groups | Waiting (#317, #322, #324) | — |
