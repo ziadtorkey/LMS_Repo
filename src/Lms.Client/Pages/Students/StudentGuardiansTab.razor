@@ -69,25 +69,30 @@
                 <MudTd DataLabel="@L["Student_Mobile"]"><span dir="ltr">@g.Mobile</span></MudTd>
                 <MudTd DataLabel="@L["Student_Email"]"><span dir="ltr">@g.Email</span></MudTd>
                 <MudTd DataLabel="@L["Student_Account"]" data-testid="@($"guardian-portal-{g.GuardianId}")">
-                    @(g.HasPortalAccount ? L["Guardian_PortalActive"] : L["Guardian_PortalNone"])
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@(g.HasPortalAccount ? Color.Success : Color.Default)">@(g.HasPortalAccount ? L["Guardian_PortalActive"] : L["Guardian_PortalNone"])</MudChip>
                 </MudTd>
                 <MudTd DataLabel="@L["Common_Actions"]">
                     @if (CanEdit)
                     {
                         @if (!g.IsPrimary)
                         {
-                            <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="() => SetPrimaryAsync(g)"
-                                       data-testid="@($"guardian-make-primary-{g.GuardianId}")">@L["Guardian_SetPrimary"]</MudButton>
+                            <MudTooltip Text="@L["Guardian_SetPrimary"]">
+                                <MudIconButton Icon="@Icons.Material.Rounded.StarOutline" Size="Size.Small" aria-label="@L["Guardian_SetPrimary"]" OnClick="() => SetPrimaryAsync(g)"
+                                               data-testid="@($"guardian-make-primary-{g.GuardianId}")" />
+                            </MudTooltip>
                         }
                         @if (!g.HasPortalAccount)
                         {
                             <MudTooltip Text="@InviteHint(g)">
-                                <MudButton Size="Size.Small" Variant="Variant.Text" Disabled="@(!_portalOn || string.IsNullOrWhiteSpace(g.Email))"
-                                           OnClick="() => InviteAsync(g)" data-testid="@($"guardian-invite-{g.GuardianId}")">@L["Guardian_PortalInvite"]</MudButton>
+                                <MudIconButton Icon="@Icons.Material.Rounded.Send" Size="Size.Small" aria-label="@L["Guardian_PortalInvite"]"
+                                               Disabled="@(!_portalOn || string.IsNullOrWhiteSpace(g.Email))"
+                                               OnClick="() => InviteAsync(g)" data-testid="@($"guardian-invite-{g.GuardianId}")" />
                             </MudTooltip>
                         }
-                        <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Error" OnClick="() => UnlinkAsync(g)"
-                                   data-testid="@($"guardian-unlink-{g.GuardianId}")">@L["Guardian_Remove"]</MudButton>
+                        <MudTooltip Text="@L["Guardian_Remove"]">
+                            <MudIconButton Icon="@Icons.Material.Rounded.LinkOff" Size="Size.Small" Color="Color.Error" aria-label="@L["Guardian_Remove"]"
+                                           OnClick="() => UnlinkAsync(g)" data-testid="@($"guardian-unlink-{g.GuardianId}")" />
+                        </MudTooltip>
                     }
                 </MudTd>
             </RowTemplate>

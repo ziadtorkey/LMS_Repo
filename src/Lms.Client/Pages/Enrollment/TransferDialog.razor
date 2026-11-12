@@ -33,14 +33,14 @@
 
             @if (_preview is not null)
             {
-                <MudPaper Outlined="true" Class="pa-3" data-testid="transfer-preview-result">
+                <SectionCard Class="flex-grow-1" TestId="transfer-preview-result">
                     <MudStack Spacing="1">
                         @PreviewLine("kept", "Transfer_Kept", _preview.KeptCourseCodes, Color.Success)
                         @PreviewLine("dropped", "Transfer_Dropped", _preview.DroppedCourseCodes, Color.Error)
                         @PreviewLine("added", "Transfer_Added", _preview.AddedCourseCodes, Color.Info)
                         @PreviewLine("restricted", "Transfer_Restricted", _preview.RestrictedCourseCodes, Color.Warning)
                     </MudStack>
-                </MudPaper>
+                </SectionCard>
                 @if (_preview.OverCapacity)
                 {
                     <MudCheckBox T="bool" @bind-Value="_confirmOver" Label="@L["Transfer_ConfirmOverCapacity"]" data-testid="transfer-over-capacity" />

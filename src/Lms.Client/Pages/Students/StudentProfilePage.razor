@@ -110,7 +110,7 @@ else
                                 <MudTh>@L["Audit_When"]</MudTh>
                             </HeaderContent>
                             <RowTemplate Context="change">
-                                <MudTd DataLabel="@L["Common_Status"]">@L[$"PersonStatus_{change.FromStatus}"] → @L[$"PersonStatus_{change.ToStatus}"]</MudTd>
+                                <MudTd DataLabel="@L["Common_Status"]">@L[$"PersonStatus_{change.FromStatus}"] <MudIcon Icon="@(Culture.IsRightToLeft ? Icons.Material.Rounded.ArrowBack : Icons.Material.Rounded.ArrowForward)" Size="Size.Small" Class="align-middle" aria-hidden="true" /> @L[$"PersonStatus_{change.ToStatus}"]</MudTd>
                                 <MudTd DataLabel="@L["Staff_Reason"]">@change.Reason</MudTd>
                                 <MudTd DataLabel="@L["Audit_When"]"><span class="lms-date-cell"><span dir="ltr">@change.ChangedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture)</span></span></MudTd>
                             </RowTemplate>

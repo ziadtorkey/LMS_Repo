@@ -92,7 +92,10 @@ else
                 <RowTemplate Context="request">
                     <MudTd DataLabel="@L["Audit_When"]"><span class="lms-date-cell"><span dir="ltr">@request.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture)</span></span></MudTd>
                     <MudTd DataLabel="@L["MyProfile_Fields"]">@string.Join("، ", request.Changes.Select(c => L[$"StudentField_{c.Field}"].Value))</MudTd>
-                    <MudTd DataLabel="@L["Common_Status"]" data-testid="@($"request-status-{request.Id}")">@L[$"ChangeRequestStatus_{request.Status}"]</MudTd>
+                    <MudTd DataLabel="@L["Common_Status"]" data-testid="@($"request-status-{request.Id}")">
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Text"
+                                 Color="@(request.Status == ChangeRequestStatuses.Pending ? Color.Warning : request.Status == ChangeRequestStatuses.Approved ? Color.Success : request.Status == ChangeRequestStatuses.Rejected ? Color.Error : Color.Default)">@L[$"ChangeRequestStatus_{request.Status}"]</MudChip>
+                    </MudTd>
                     <MudTd DataLabel="@L["ChangeRequest_Comment"]">@request.DecisionComment</MudTd>
                     <MudTd Class="lms-cell-actions">
                         @if (request.Status == ChangeRequestStatuses.Pending)

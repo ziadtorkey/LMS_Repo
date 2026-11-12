@@ -14,7 +14,7 @@
                 <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="dialog-error">@_error</MudAlert>
             }
             <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
-                <MudPaper Outlined="true" Class="pa-2 flex-grow-1" Style="min-width: 14rem" data-testid="ungrouped-list">
+                <SectionCard Class="flex-grow-1" TestId="ungrouped-list">
                     <MudText Typo="Typo.subtitle2">@L["Group_Ungrouped", _ungrouped.Count]</MudText>
                     @if (_ungrouped.Count == 0)
                     {
@@ -35,8 +35,8 @@
                                        data-testid="members-suggested">@L["Group_AddSuggested"]</MudButton>
                         }
                     </MudStack>
-                </MudPaper>
-                <MudPaper Outlined="true" Class="pa-2 flex-grow-1" Style="min-width: 14rem" data-testid="members-list">
+                </SectionCard>
+                <SectionCard Class="flex-grow-1" TestId="members-list">
                     <MudText Typo="Typo.subtitle2">@L["Group_Members", _members.Count]</MudText>
                     @if (_members.Count == 0)
                     {
@@ -50,7 +50,7 @@
                     }
                     <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Error" Class="mt-2" OnClick="RemoveSelectedAsync"
                                Disabled="@(_toRemove.Count == 0 || _busy)" data-testid="members-remove">@L["Group_RemoveSelected"]</MudButton>
-                </MudPaper>
+                </SectionCard>
             </MudStack>
         </MudStack>
     </DialogContent>
