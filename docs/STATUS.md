@@ -3,7 +3,7 @@
 _Updated by the Team Lead after every merge cycle._
 
 **Milestone:** M0 — DONE · M1 Organization & Access — DONE (#73 via #200) · M2 People — closing (#177 via #321) · M3 Academic Structure — in progress
-**Last update:** 2026-11-12 14:44 — Merged: #393 M4a probe-suite base. Approved, waiting on CI: #346 M4a contracts wave 1, #286 students, #325 lesson plans, #404 org redesign (then #409, #412, #414). Approved M4a FE: #388–#390, #392, #394, #396–#398, #400, #403, #405, #406, #408; BE #391, #384. Wave 2 contracts #395 approved.
+**Last update:** 2026-11-12 19:45 — Merged since 18:27: #388 modules API client (M4a #367), #349 M4a foundation and sanitiser. CI queue saturated (16 running, 24 queued). Next merges: #437 wave-2 contracts, #386, #387 (FE2 conflict), #384 (BE4 migration squash), #391 (QA re-review). Replays onto #437: #447 (library), #448 (forums), #399/#415 (BE2).
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |
