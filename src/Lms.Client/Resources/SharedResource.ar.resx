@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
   <resheader name="version"><value>2.0</value></resheader>
@@ -814,4 +814,14 @@
   <data name="LessonPlan_HijriSuffix" xml:space="preserve"><value>هـ</value></data>
   <data name="LessonPlan_Modules" xml:space="preserve"><value>الوحدات التعليمية</value></data>
   <data name="LessonPlan_ModulesLater" xml:space="preserve"><value>تصل الوحدات التعليمية في إصدار لاحق.</value></data>
+  <data name="RichText_Bold" xml:space="preserve"><value>غامق</value></data>
+  <data name="RichText_BulletList" xml:space="preserve"><value>قائمة نقطية</value></data>
+  <data name="RichText_Italic" xml:space="preserve"><value>مائل</value></data>
+  <data name="RichText_Link" xml:space="preserve"><value>إدراج رابط</value></data>
+  <data name="RichText_LinkApply" xml:space="preserve"><value>تطبيق</value></data>
+  <data name="RichText_LinkInvalid" xml:space="preserve"><value>أدخل رابطاً صالحاً (https:// أو mailto:).</value></data>
+  <data name="RichText_LinkRemove" xml:space="preserve"><value>إزالة الرابط</value></data>
+  <data name="RichText_LinkUrl" xml:space="preserve"><value>عنوان الرابط</value></data>
+  <data name="RichText_NumberedList" xml:space="preserve"><value>قائمة مرقمة</value></data>
+  <data name="RichText_Toolbar" xml:space="preserve"><value>شريط أدوات التنسيق</value></data>
 </root>

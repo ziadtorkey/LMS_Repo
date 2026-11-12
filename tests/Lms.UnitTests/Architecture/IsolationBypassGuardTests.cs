@@ -21,6 +21,8 @@ public sealed class IsolationBypassGuardTests
             "removing a share: the person's home may lie outside the scope of the admin of the shared-to unit; own client, live rows, assignment lookup stays filtered (M2 Task 16, #164)",
         ["src/Lms.Api/Features/Guardians/GuardianEndpoints.cs"] =
             "match endpoint: a bare children count of the guardian in the caller's own client, no student or unit leaves the query (M3 Task 19, #227)",
+        ["src/Lms.Api/Features/Courses/CourseHandlers.cs"] =
+            "My courses: the caller's own supervisor rows sit at the course owner unit, which may be above their assignment; own user and active client only, deleted rows excluded (M3 Task 9, #217)",
         ["src/Lms.Infrastructure/Organizations/OrgTree.cs"] =
             "client root and ancestors lie above a unit-level caller's scope (M1 Task 5)",
         ["src/Lms.Infrastructure/Access/ValidAssignmentQuery.cs"] =
@@ -77,6 +79,8 @@ public sealed class IsolationBypassGuardTests
             "holidays of ancestor units apply to descendants, restricted to the client and effective years (M1 Task 22, #57)",
         ["src/Lms.Infrastructure/People/PersonStatusService.cs"] =
             "a user's account status derives from their profiles in every client; only that user's statuses are read (M2 Task 6, #158)",
+        ["src/Lms.Infrastructure/People/StudentCodeGenerator.cs"] =
+            "student codes are unique per client across all schools and for deleted students; client matched, only a yes/no leaves (M3 Task 18, #226)",
         ["src/Lms.Api/Features/Enrollment/EnrollmentQueries.cs"] =
             "names of the course of a class course, owned by an ancestor unit above the caller's scope; names only, for class courses the caller already sees; client matched, deleted excluded (M3 Task 24, #232)",
         ["src/Lms.Infrastructure/Enrollment/PlacementGuard.cs"] =
