@@ -51,6 +51,8 @@ public sealed class IsolationBypassGuardTests
             "blueprints of an inherited course sit at an ancestor unit above the caller; client-limited, live rows, courses already found visible (M3 Task 16)",
         ["src/Lms.Api/Features/Classes/ClassLookups.cs"] =
             "years inherited from ancestors, per-client class code uniqueness and ancestor Teacher assignments for the homeroom check; client-limited, live rows, no rows returned (M3 Task 13)",
+        ["src/Lms.Api/Features/Teaching/TeachingLookups.cs"] =
+            "Teacher assignment and eligibility may sit at an ancestor unit above the caller; client-limited, live rows; yes/no answers, plus the eligibility list of ancestor-or-self grants for one unit (M3 Task 15, #332)",
         ["src/Lms.Api/Features/Staff/StaffQueries.cs"] =
             "staff shared into the caller's scope have a home unit outside it; rows limited to this client and an in-scope assignment (M2 Task 10)",
         ["src/Lms.Api/Features/OrgUnits/AcademicFlagsHandler.cs"] =
