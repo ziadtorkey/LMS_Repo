@@ -103,6 +103,8 @@ The "Active" status chip is green on purpose; the product owner decided to keep 
 
 Other patterns:
 - **Chips:** `Size.Small`. Roles use `Variant.Outlined` (`lms-role-chip`). States use `Variant.Text` with a colour, which gives a soft tint. Status chips carry a text label, not only a colour.
+- **Small, unpaged lists in `MudSimpleTable`:** use `Elevation="0" Class="lms-simple-table lms-stack-table"` inside a `SectionCard Flush`. Give each `td` a `data-label` attribute so phones show labelled cards. Put the actions cell in `<td class="lms-cell-actions">` with the actions title visually hidden.
+- **Row actions:** wrap icon buttons in `<div class="lms-row-actions">`. They render in the quiet action colour. Put risky actions last, in Warning or Error colour, after a `<span class="lms-row-actions-sep">`. Each icon button needs an `aria-label` and, in dense groups, a `MudTooltip` with the same text.
 - **Person cell in a table:** `<div class="lms-person-cell">` holds the avatar plus a `MudLink` with class `lms-person-link`.
 - **Alerts:** `Variant.Outlined` for page-level info and errors. An error tells the user what to do next.
 - **Helpers:** `lms-muted` (secondary text), `lms-cell-strong`, `lms-date-cell`, `lms-visually-hidden`, `lms-chip-row`.
