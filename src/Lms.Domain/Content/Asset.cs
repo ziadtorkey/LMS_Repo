@@ -1,6 +1,7 @@
 using Lms.Domain.Auditing;
 using Lms.Domain.Classes;
 using Lms.Domain.Common;
+using Lms.Domain.Organizations;
 
 namespace Lms.Domain.Content;
 
@@ -28,7 +29,19 @@ public sealed class Asset : UnitOwnedEntity
         SizeBytes = sizeBytes;
     }
 
-    public Guid ClassCourseId { get; private set; }
+    /// <summary>The owning class course (modules, assignments, submissions, forum posts); null for a library asset owned by a unit.</summary>
+    public Guid? ClassCourseId { get; private set; }
+
+    /// <summary>A library asset: owned by a unit (its fields are the unit's), no class course.</summary>
+    public Asset(OrgUnit unit, Guid fileId, string kind, string fileName, string contentType, long sizeBytes)
+    {
+        PlaceIn(unit);
+        FileId = fileId;
+        Kind = kind;
+        FileName = fileName;
+        ContentType = contentType;
+        SizeBytes = sizeBytes;
+    }
 
     /// <summary>The stored object (<c>StoredFile</c>).</summary>
     public Guid FileId { get; private set; }
