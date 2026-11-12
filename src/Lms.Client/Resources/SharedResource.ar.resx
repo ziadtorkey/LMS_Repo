@@ -986,4 +986,9 @@
   <data name="Student_SectionStudent" xml:space="preserve"><value>الطالب</value></data>
   <data name="Student_SectionPlacement" xml:space="preserve"><value>الفصل</value></data>
   <data name="Student_SectionAccount" xml:space="preserve"><value>الحساب</value></data>
+  <data name="Guardians_Subtitle" xml:space="preserve"><value>أولياء أمور طلابك وبيانات التواصل معهم وحالة دخولهم إلى البوابة.</value></data>
+  <data name="Guardians_EmptyTitle" xml:space="preserve"><value>لا يوجد أولياء أمور مطابقون</value></data>
+  <data name="Guardians_EmptyText" xml:space="preserve"><value>غيّر البحث، أو أضف أولياء الأمور عند إنشاء طالب.</value></data>
+  <data name="Guardian_BackToList" xml:space="preserve"><value>العودة إلى أولياء الأمور</value></data>
+  <data name="Guardian_Details" xml:space="preserve"><value>التفاصيل</value></data>
 </root>

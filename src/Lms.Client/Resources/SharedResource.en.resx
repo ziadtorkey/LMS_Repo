@@ -986,4 +986,9 @@
   <data name="Student_SectionStudent" xml:space="preserve"><value>Student</value></data>
   <data name="Student_SectionPlacement" xml:space="preserve"><value>Class</value></data>
   <data name="Student_SectionAccount" xml:space="preserve"><value>Account</value></data>
+  <data name="Guardians_Subtitle" xml:space="preserve"><value>Parents and guardians of your students, their contact details and portal access.</value></data>
+  <data name="Guardians_EmptyTitle" xml:space="preserve"><value>No matching guardians</value></data>
+  <data name="Guardians_EmptyText" xml:space="preserve"><value>Change the search, or add guardians when you create a student.</value></data>
+  <data name="Guardian_BackToList" xml:space="preserve"><value>Back to guardians</value></data>
+  <data name="Guardian_Details" xml:space="preserve"><value>Details</value></data>
 </root>
