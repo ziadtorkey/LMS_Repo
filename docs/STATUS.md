@@ -3,7 +3,7 @@
 _Updated by the Team Lead after every merge cycle._
 
 **Milestone:** M0 — DONE · M1 Organization & Access — DONE (#73 via #200) · M2 People — closing (#177 via #321) · M3 Academic Structure — in progress
-**Last update:** 2026-11-12 15:45 — Merged: #346 M4a contracts wave 1 (10 PRs retargeted to main), #393 probe base. Approved, waiting on CI: #286, #325, #404 (+#409 #412 #414 #417 #420 #423), #395 wave 2, #349, #384, #401, #391, FE M4a stack. CI queue saturated; #429 limits E2E to non-draft PRs. Open bug: #415 quiz answer leak (changes requested). Bug #428 fix in #431 (approved).
+**Last update:** 2026-11-12 18:27 — Merged since 15:45: #404 org redesign, #429 CI (E2E only on non-draft PRs), #423 staff import, #418 dialog a11y, #431 (#428 fix), #286 students, #303 self-profile, #325 lesson plans, #317 classes list, #301 allocations. Open fixes: #415 quiz answer leak (BE2), #421 annotated file (BE4).
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |
