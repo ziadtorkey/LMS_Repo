@@ -978,4 +978,7 @@
   <data name="RichText_LinkUrl" xml:space="preserve"><value>Link address</value></data>
   <data name="RichText_NumberedList" xml:space="preserve"><value>Numbered list</value></data>
   <data name="RichText_Toolbar" xml:space="preserve"><value>Formatting toolbar</value></data>
+  <data name="Students_Subtitle" xml:space="preserve"><value>Students of your organization, their class and guardians.</value></data>
+  <data name="Students_EmptyTitle" xml:space="preserve"><value>No matching students</value></data>
+  <data name="Students_EmptyText" xml:space="preserve"><value>Change the filters or add a new student.</value></data>
 </root>
