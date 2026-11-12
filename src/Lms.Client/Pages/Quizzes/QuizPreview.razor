@@ -1,0 +1,75 @@
+@using Lms.Client.Services.Api
+@using Lms.Shared.Quizzes
+@inject IQuizzesApi Api
+@inject NavigationManager Navigation
+
+@* The quiz as one student attempt would show it (drawn and shuffled like a real start, no correct options, no attempt created). *@
+<MudStack Spacing="2" data-testid="quiz-preview">
+    @if (Dirty)
+    {
+        <MudAlert Severity="Severity.Info" Dense="true" data-testid="quiz-preview-dirty">@L["Quiz_PreviewSaveFirst"]</MudAlert>
+    }
+    @if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error" data-testid="quiz-preview-error">@_error</MudAlert>
+    }
+    else if (_preview is null)
+    {
+        <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+    }
+    else
+    {
+        <MudText Typo="Typo.body2" Class="mud-text-secondary">
+            @(_preview.TimeLimitMinutes is { } m ? L["Quiz_PreviewTimed", m].Value : L["Quiz_NoLimitHint"].Value)
+            · @L["Quiz_PreviewCount", _preview.Questions.Count]
+        </MudText>
+        @foreach (var q in _preview.Questions.OrderBy(x => x.Order))
+        {
+            <MudPaper Outlined="true" Class="pa-3" data-testid="@($"preview-q-{q.QuestionId}")">
+                <MudText Typo="Typo.subtitle1" dir="auto">@q.Order. @q.Text</MudText>
+                <MudText Typo="Typo.caption" Class="mud-text-secondary">@L["Quiz_PreviewPoints", q.Points.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)]</MudText>
+                @if (q.Type == QuestionTypes.Essay)
+                {
+                    <MudTextField T="string" Lines="3" Disabled="true" Placeholder="@L["Quiz_PreviewEssay"]" />
+                }
+                else
+                {
+                    <MudStack Spacing="0">
+                        @foreach (var o in q.Options)
+                        {
+                            @if (q.Type == QuestionTypes.MultipleChoice)
+                            {
+                                <MudCheckBox T="bool" Disabled="true" Label="@o.Text" />
+                            }
+                            else
+                            {
+                                <MudRadio T="string" Disabled="true" Value="@o.Text">@o.Text</MudRadio>
+                            }
+                        }
+                    </MudStack>
+                }
+            </MudPaper>
+        }
+    }
+</MudStack>
+
+@code {
+    private QuizPreviewDto? _preview;
+    private string? _error;
+
+    [Parameter, EditorRequired] public Guid QuizId { get; set; }
+    /// <summary>The builder has unsaved changes: the preview shows the saved quiz.</summary>
+    [Parameter] public bool Dirty { get; set; }
+    /// <summary>Changes to reload (a new draw), e.g. after a save.</summary>
+    [Parameter] public int Version { get; set; }
+
+    private int _loadedVersion = -1;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_loadedVersion == Version && _preview is not null) return;
+        _loadedVersion = Version;
+        _preview = null; _error = null;
+        await ApiCalls.RunAsync(async () => _preview = await Api.PreviewAsync(QuizId), Navigation, L, m => _error = m);
+    }
+}

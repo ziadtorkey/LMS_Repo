@@ -6,6 +6,7 @@
 @using Lms.Shared.Assignments
 @using Lms.Shared.Content
 @inject ICourseAssignmentsApi Api
+@inject IModulesApi Modules
 @inject ICultureService Culture
 @inject NavigationManager Navigation
 
@@ -104,7 +105,7 @@
 
     private AssignmentFormModel _model = new();
     private string? _error, _lessonError, _visibilityError, _targetError, _dueError, _gradeError, _penaltyError, _submitTypeError;
-    private bool _saving;
+    private bool _saving, _minScoreUnknown;
 
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
     [Parameter, EditorRequired] public Guid ClassCourseId { get; set; }
@@ -112,9 +113,23 @@
     [Parameter] public IReadOnlyList<ModuleLessonOption> Lessons { get; set; } = [];
     [Parameter] public IReadOnlyList<ModuleGroupOption> Groups { get; set; } = [];
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        if (Existing is not null) _model = AssignmentFormModel.From(Existing);
+        if (Existing is null) return;
+        _model = AssignmentFormModel.From(Existing);
+        // The assignment carries no minimum score; it lives on the module. Read it so saving does not wipe it.
+        if (Existing.Module.CompletionRule == CompletionRules.Score)
+        {
+            try
+            {
+                _model.CompletionMinScore = (await Modules.GetAsync(Existing.Module.Id)).CompletionMinScore;
+            }
+            catch (Exception ex) when (ex is ApiProblemException or HttpRequestException)
+            {
+                _minScoreUnknown = true;
+                _error = L["Assignment_MinScoreUnknown"];
+            }
+        }
     }
 
     private void OnUploaded(AssetDto asset)
@@ -135,6 +150,7 @@
     private bool Validate()
     {
         ClearErrors();
+        if (_minScoreUnknown) { _error = L["Assignment_MinScoreUnknown"]; return false; }
         var ok = true;
         if (string.IsNullOrWhiteSpace(_model.Module.TitleAr) || string.IsNullOrWhiteSpace(_model.Module.TitleEn)) { _error = L["Common_Required"]; ok = false; }
         if (Existing is null && _model.LessonKey is null) { _lessonError = L["Common_Required"]; ok = false; }
