@@ -1,0 +1,29 @@
+@* Remaining time of an attempt. Display only: the server decides when the attempt ends. A polite live region announces the time at
+   a few thresholds so screen reader users are warned without a per-second chatter. *@
+<div data-testid="attempt-timer">
+    <span role="timer" aria-live="off" class="mud-typography mud-typography-h6" dir="ltr" data-testid="attempt-timer-value">@Text</span>
+    <span class="visually-hidden" role="status" aria-live="polite" data-testid="attempt-timer-announce">@_announcement</span>
+</div>
+
+@code {
+    private static readonly int[] Thresholds = [600, 300, 60, 30, 10];
+    private string _announcement = "";
+    private int? _lastSeconds;
+
+    [Parameter] public int Seconds { get; set; }
+
+    private string Text => TimeSpan.FromSeconds(Math.Max(0, Seconds)) is var t
+        ? (t.TotalHours >= 1 ? $"{(int)t.TotalHours}:{t.Minutes:00}:{t.Seconds:00}" : $"{t.Minutes:00}:{t.Seconds:00}")
+        : "";
+
+    protected override void OnParametersSet()
+    {
+        if (_lastSeconds is { } last)
+        {
+            // Announce each threshold once, when the countdown crosses it.
+            var crossed = Thresholds.FirstOrDefault(t => last > t && Seconds <= t);
+            if (crossed > 0) _announcement = string.Format(L["Quiz_TimeLeft"].Value, crossed >= 60 ? $"{crossed / 60} min" : $"{crossed} s");
+        }
+        _lastSeconds = Seconds;
+    }
+}
