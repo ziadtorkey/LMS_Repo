@@ -1460,4 +1460,78 @@
   <data name="Duration_HoursMinutes" xml:space="preserve"><value>{0} h {1} min</value></data>
   <data name="Duration_Minutes" xml:space="preserve"><value>{0} min</value></data>
   <data name="AssignmentStudent_RemoveFile" xml:space="preserve"><value>Remove</value></data>
+  <data name="GradingMethod_Average" xml:space="preserve"><value>Average</value></data>
+  <data name="GradingMethod_Highest" xml:space="preserve"><value>Highest attempt</value></data>
+  <data name="GradingMethod_Last" xml:space="preserve"><value>Last attempt</value></data>
+  <data name="QuestionType_Essay" xml:space="preserve"><value>Essay</value></data>
+  <data name="QuestionType_MultipleChoice" xml:space="preserve"><value>Multiple choice (several answers)</value></data>
+  <data name="QuestionType_SingleChoice" xml:space="preserve"><value>Multiple choice (one answer)</value></data>
+  <data name="QuestionType_TrueFalse" xml:space="preserve"><value>True / false</value></data>
+  <data name="Quiz_AddOption" xml:space="preserve"><value>Add option</value></data>
+  <data name="Quiz_AddQuestion" xml:space="preserve"><value>Add question</value></data>
+  <data name="Quiz_BuilderTitle" xml:space="preserve"><value>Quiz builder</value></data>
+  <data name="Quiz_Closes" xml:space="preserve"><value>Closes</value></data>
+  <data name="Quiz_Correct" xml:space="preserve"><value>Correct answer</value></data>
+  <data name="Quiz_DescriptionAr" xml:space="preserve"><value>Description (Arabic)</value></data>
+  <data name="Quiz_DescriptionEn" xml:space="preserve"><value>Description (English)</value></data>
+  <data name="Quiz_DrawCount" xml:space="preserve"><value>Questions drawn per attempt</value></data>
+  <data name="Quiz_DrawHint" xml:space="preserve"><value>Leave empty for all questions (the quiz has {0})</value></data>
+  <data name="Quiz_Err_AtLeastOneCorrect" xml:space="preserve"><value>Mark at least one correct answer.</value></data>
+  <data name="Quiz_Err_Attempts" xml:space="preserve"><value>Attempts must be 1 to 20.</value></data>
+  <data name="Quiz_Err_CloseAfterOpen" xml:space="preserve"><value>The quiz must close after it opens.</value></data>
+  <data name="Quiz_Err_Draw" xml:space="preserve"><value>The number of drawn questions cannot exceed the number of questions in the quiz.</value></data>
+  <data name="Quiz_Err_OneCorrect" xml:space="preserve"><value>Mark exactly one correct answer.</value></data>
+  <data name="Quiz_Err_OptionText" xml:space="preserve"><value>Enter the text of every option.</value></data>
+  <data name="Quiz_Err_Options" xml:space="preserve"><value>This question type has no options.</value></data>
+  <data name="Quiz_Err_Points" xml:space="preserve"><value>Points must be between 0.01 and 1000.</value></data>
+  <data name="Quiz_Err_Text" xml:space="preserve"><value>Enter the question text.</value></data>
+  <data name="Quiz_Err_TextLong" xml:space="preserve"><value>The question text is longer than 4000 characters.</value></data>
+  <data name="Quiz_Err_TimeLimit" xml:space="preserve"><value>The time limit must be 1 to 600 minutes.</value></data>
+  <data name="Quiz_Err_TooManyOptions" xml:space="preserve"><value>At most 10 options.</value></data>
+  <data name="Quiz_Err_TwoOptions" xml:space="preserve"><value>Add at least two options.</value></data>
+  <data name="Quiz_False" xml:space="preserve"><value>False</value></data>
+  <data name="Quiz_GradingMethod" xml:space="preserve"><value>Score taken from</value></data>
+  <data name="Quiz_HasAttemptsNote" xml:space="preserve"><value>Students have started {0} attempts. Questions, correct options and points are locked; texts and the other settings can still change.</value></data>
+  <data name="Quiz_Leave" xml:space="preserve"><value>Leave</value></data>
+  <data name="Quiz_MaxAttempts" xml:space="preserve"><value>Attempts allowed</value></data>
+  <data name="Quiz_MoveDown" xml:space="preserve"><value>Move down</value></data>
+  <data name="Quiz_MoveUp" xml:space="preserve"><value>Move up</value></data>
+  <data name="Quiz_NoLimitHint" xml:space="preserve"><value>Leave empty for no limit</value></data>
+  <data name="Quiz_NoQuestions" xml:space="preserve"><value>No questions yet.</value></data>
+  <data name="Quiz_Opens" xml:space="preserve"><value>Opens</value></data>
+  <data name="Quiz_OptionN" xml:space="preserve"><value>Option {0}</value></data>
+  <data name="Quiz_Points" xml:space="preserve"><value>Points</value></data>
+  <data name="Quiz_PreviewCount" xml:space="preserve"><value>{0} questions in this attempt</value></data>
+  <data name="Quiz_PreviewEssay" xml:space="preserve"><value>The student's answer goes here</value></data>
+  <data name="Quiz_PreviewPoints" xml:space="preserve"><value>{0} points</value></data>
+  <data name="Quiz_PreviewSaveFirst" xml:space="preserve"><value>The preview shows the last saved version. Save your changes to see them.</value></data>
+  <data name="Quiz_PreviewTimed" xml:space="preserve"><value>{0} minutes</value></data>
+  <data name="Quiz_QuestionN" xml:space="preserve"><value>Question {0}</value></data>
+  <data name="Quiz_QuestionText" xml:space="preserve"><value>Question text</value></data>
+  <data name="Quiz_RemoveOption" xml:space="preserve"><value>Delete option</value></data>
+  <data name="Quiz_RemoveQuestion" xml:space="preserve"><value>Delete question</value></data>
+  <data name="Quiz_ReviewHint" xml:space="preserve"><value>Correct answers only show once the attempts are used up or the quiz has closed.</value></data>
+  <data name="Quiz_ReviewPolicy" xml:space="preserve"><value>What students see after submitting</value></data>
+  <data name="Quiz_ShuffleOptions" xml:space="preserve"><value>Shuffle the options</value></data>
+  <data name="Quiz_ShuffleQuestions" xml:space="preserve"><value>Shuffle the questions</value></data>
+  <data name="Quiz_TabPreview" xml:space="preserve"><value>Preview as student</value></data>
+  <data name="Quiz_TabQuestions" xml:space="preserve"><value>Questions</value></data>
+  <data name="Quiz_TabSettings" xml:space="preserve"><value>Settings</value></data>
+  <data name="Quiz_TimeLimit" xml:space="preserve"><value>Time limit (minutes)</value></data>
+  <data name="Quiz_Total" xml:space="preserve"><value>{0} questions · {1} points</value></data>
+  <data name="Quiz_True" xml:space="preserve"><value>True</value></data>
+  <data name="Quiz_Type" xml:space="preserve"><value>Question type</value></data>
+  <data name="Quiz_UnlimitedHint" xml:space="preserve"><value>Leave empty for unlimited attempts</value></data>
+  <data name="Quiz_Unsaved" xml:space="preserve"><value>Unsaved changes</value></data>
+  <data name="Quiz_UnsavedMessage" xml:space="preserve"><value>You have changes that are not saved. Leave and lose them?</value></data>
+  <data name="Quiz_UnsavedTitle" xml:space="preserve"><value>Unsaved changes</value></data>
+  <data name="Quizzes_Build" xml:space="preserve"><value>Build</value></data>
+  <data name="Quizzes_Name" xml:space="preserve"><value>Quiz</value></data>
+  <data name="Quizzes_New" xml:space="preserve"><value>New quiz</value></data>
+  <data name="Quizzes_Questions" xml:space="preserve"><value>Questions</value></data>
+  <data name="Quizzes_Title" xml:space="preserve"><value>Quizzes</value></data>
+  <data name="ReviewPolicy_Answers" xml:space="preserve"><value>Score and their answers</value></data>
+  <data name="ReviewPolicy_AnswersAndCorrect" xml:space="preserve"><value>Score, their answers and the correct answers</value></data>
+  <data name="ReviewPolicy_None" xml:space="preserve"><value>Submission only</value></data>
+  <data name="ReviewPolicy_ScoreOnly" xml:space="preserve"><value>Score only</value></data>
 </root>
