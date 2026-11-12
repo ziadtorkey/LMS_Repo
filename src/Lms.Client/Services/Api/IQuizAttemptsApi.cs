@@ -243,7 +243,7 @@ public sealed class FakeQuizAttemptsApi : IQuizAttemptsApi
             var items = _attempts.Select(a => new AttemptSummaryDto(a.Id, Guid.NewGuid(), "طالب", "Student " + a.Number, a.Number, a.Status, a.StartedAt, a.SubmittedAt,
                 a.Status == AttemptStatuses.InProgress ? null : AutoScore(a), Questions.Sum(q => q.Points),
                 a.Status != AttemptStatuses.InProgress && Questions.Any(q => q.Type == QuestionTypes.Essay && !a.EssayGrades.ContainsKey(q.QuestionId)))).ToList();
-            return new PagedResult<AttemptSummaryDto>(items, items.Count, page, pageSize);
+            return new PagedResult<AttemptSummaryDto>(items.Skip((page - 1) * pageSize).Take(pageSize).ToList(), items.Count, page, pageSize);
         });
 
     public Task<AttemptResultDto> GradeAsync(Guid attemptId, GradeAttemptRequest r, CancellationToken ct = default) =>

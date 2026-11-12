@@ -59,6 +59,10 @@ else
             }
         </tbody>
     </MudSimpleTable>
+    @if (_pages > 1)
+    {
+        <MudPagination Count="_pages" Selected="_page" SelectedChanged="GoToAsync" Class="mt-3" data-testid="attempts-paging" />
+    }
 }
 
 @code {
@@ -68,7 +72,10 @@ else
     /// <summary>Staff only: students see their own attempts on the quiz start page, never the whole list.</summary>
     private bool Allowed => PermState.Has(Permissions.Quizzes.View) && (PermState.Has(Permissions.Quizzes.Grade) || PermState.Has(Permissions.Quizzes.Manage));
 
+    private const int PageSize = 25;
+
     private IReadOnlyList<AttemptSummaryDto> _items = [];
+    private int _page = 1, _pages = 1;
     private string? _error;
     private bool _loading = true;
 
@@ -76,9 +83,24 @@ else
     {
         if (!PermState.Loaded) await PermState.RefreshAsync();
         _loading = true;
-        if (Allowed)
-            await ApiCalls.RunAsync(async () => _items = (await Quizzes.ListAttemptsAsync(QuizId, 1, 200)).Items
-                .OrderByDescending(a => a.HasPendingEssays).ThenBy(a => a.StudentNameEn).ThenBy(a => a.Number).ToList(), Navigation, L, m => _error = m);
+        await LoadPageAsync();
         _loading = false;
+    }
+
+    private async Task LoadPageAsync()
+    {
+        if (!Allowed) return;
+        await ApiCalls.RunAsync(async () =>
+        {
+            var result = await Quizzes.ListAttemptsAsync(QuizId, _page, PageSize);
+            _items = result.Items.ToList();
+            _pages = Math.Max(1, (int)Math.Ceiling(result.Total / (double)PageSize));
+        }, Navigation, L, m => _error = m);
+    }
+
+    private async Task GoToAsync(int page)
+    {
+        _page = page;
+        await LoadPageAsync();
     }
 }

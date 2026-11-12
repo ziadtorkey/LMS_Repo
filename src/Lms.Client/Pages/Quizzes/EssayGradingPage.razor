@@ -37,7 +37,7 @@ else
                     <MudText Typo="Typo.subtitle1">@question.Order. @question.Text</MudText>
                     <MudText Typo="Typo.body2" Class="mud-text-secondary" data-testid="@($"essay-answer-{question.QuestionId}")">@(question.EssayText ?? L["Quiz_NoAnswer"].Value)</MudText>
                     <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
-                        <MudNumericField T="decimal?" Value="_points.GetValueOrDefault(question.QuestionId)" ValueChanged="v => SetPoints(question, v)"
+                        <MudNumericField T="decimal?" Value="@PointsOf(question.QuestionId)" ValueChanged="v => SetPoints(question, v)"
                                          Min="0" Max="question.Points" Label="@($"{L["Essay_Points"]} (0–{question.Points})")" Immediate="true"
                                          data-testid="@($"essay-points-{question.QuestionId}")" />
                         <MudTextField T="string" Value="@_feedback.GetValueOrDefault(question.QuestionId)" ValueChanged="v => _feedback[question.QuestionId] = v"
@@ -94,6 +94,9 @@ else
         }
         _loading = false;
     }
+
+    /// <summary>Null (empty field) = not graded yet, so typing 0 is a real change and a real grade.</summary>
+    private decimal? PointsOf(Guid questionId) => _points.TryGetValue(questionId, out var v) ? v : null;
 
     /// <summary>Points never go above what the question is worth (or below zero).</summary>
     private void SetPoints(AttemptResultQuestionDto q, decimal? value)
