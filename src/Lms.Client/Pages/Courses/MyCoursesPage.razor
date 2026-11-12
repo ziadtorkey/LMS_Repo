@@ -1,0 +1,54 @@
+@page "/me/courses"
+@attribute [Authorize]
+@using Lms.Client.Services.Api
+@using Lms.Shared.Courses
+@inject ICoursesApi Api
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+<PageTitle>@L["MyCourses_Title"]</PageTitle>
+<MudText Typo="Typo.h4" Class="mb-4" data-testid="my-courses-title">@L["MyCourses_Title"]</MudText>
+
+@if (_error is not null)
+{
+    <MudAlert Severity="Severity.Error" data-testid="my-courses-error">@_error</MudAlert>
+}
+else if (_courses is null)
+{
+    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+}
+else if (_courses.Count == 0)
+{
+    <MudText data-testid="my-courses-empty">@L["MyCourses_Empty"]</MudText>
+}
+else
+{
+    <MudGrid>
+        @foreach (var course in _courses)
+        {
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard data-testid="@($"my-course-{course.Id}")">
+                    <MudCardContent>
+                        <MudText Typo="Typo.h6">@Culture.Pick(course.NameAr, course.NameEn)</MudText>
+                        <MudText Typo="Typo.body2"><span dir="ltr">@course.Code</span> · @Culture.Pick(course.OwnerOrgUnitNameAr, course.OwnerOrgUnitNameEn)</MudText>
+                        <MudChip T="string" Size="Size.Small" Color="@(course.HasPublishedBlueprint ? Color.Success : Color.Default)"
+                                 data-testid="@($"my-course-blueprint-{course.Id}")">
+                            @(course.HasPublishedBlueprint ? L["MyCourses_BlueprintPublished"] : L["MyCourses_NoBlueprint"])
+                        </MudChip>
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton Href="@($"courses/{course.Id}")" Variant="Variant.Text" data-testid="@($"my-course-open-{course.Id}")">@L["MyCourses_Open"]</MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+        }
+    </MudGrid>
+}
+
+@code {
+    private IReadOnlyList<CourseSummaryDto>? _courses;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync() =>
+        await ApiCalls.RunAsync(async () => _courses = await Api.GetMySupervisedAsync(), Navigation, L, message => _error = message);
+}
