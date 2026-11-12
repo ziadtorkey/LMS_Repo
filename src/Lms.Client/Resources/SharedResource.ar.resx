@@ -948,4 +948,36 @@
   <data name="Home_ToGrade" xml:space="preserve"><value>بانتظار التصحيح</value></data>
   <data name="Home_NothingToGrade" xml:space="preserve"><value>لا شيء بانتظار التصحيح.</value></data>
   <data name="Home_WaitingCount" xml:space="preserve"><value>{0} بالانتظار</value></data>
+  <data name="Nav_Library" xml:space="preserve"><value>المكتبة</value></data>
+  <data name="Library_Title" xml:space="preserve"><value>المكتبة الرقمية</value></data>
+  <data name="Library_New" xml:space="preserve"><value>مورد جديد</value></data>
+  <data name="Library_Search" xml:space="preserve"><value>ابحث في المكتبة</value></data>
+  <data name="Library_Type" xml:space="preserve"><value>النوع</value></data>
+  <data name="Library_Level" xml:space="preserve"><value>المرحلة</value></data>
+  <data name="Library_Subject" xml:space="preserve"><value>المادة</value></data>
+  <data name="Library_Tag" xml:space="preserve"><value>الوسم</value></data>
+  <data name="Library_Empty" xml:space="preserve"><value>لا توجد موارد مطابقة.</value></data>
+  <data name="Library_Open" xml:space="preserve"><value>فتح</value></data>
+  <data name="Library_AddToLesson" xml:space="preserve"><value>إضافة إلى درس</value></data>
+  <data name="Library_DeleteConfirm" xml:space="preserve"><value>حذف المورد {0}؟</value></data>
+  <data name="Library_Unit" xml:space="preserve"><value>الوحدة المالكة</value></data>
+  <data name="Library_DescriptionAr" xml:space="preserve"><value>الوصف (عربي)</value></data>
+  <data name="Library_DescriptionEn" xml:space="preserve"><value>الوصف (إنجليزي)</value></data>
+  <data name="Library_LevelHint" xml:space="preserve"><value>اتركه فارغًا لكل المراحل.</value></data>
+  <data name="Library_Tags" xml:space="preserve"><value>الوسوم</value></data>
+  <data name="Library_TagsHint" xml:space="preserve"><value>افصل الوسوم بفواصل.</value></data>
+  <data name="Library_File" xml:space="preserve"><value>الملف</value></data>
+  <data name="Library_Cover" xml:space="preserve"><value>صورة الغلاف</value></data>
+  <data name="Library_DownloadAllowed" xml:space="preserve"><value>السماح بالتنزيل (وإلا للقراءة فقط)</value></data>
+  <data name="Library_FileRequired" xml:space="preserve"><value>ارفع الملف أولًا.</value></data>
+  <data name="Library_ClassCourse" xml:space="preserve"><value>مقرر الفصل</value></data>
+  <data name="Library_Lesson" xml:space="preserve"><value>الدرس</value></data>
+  <data name="LibraryType_Book" xml:space="preserve"><value>كتاب</value></data>
+  <data name="LibraryType_Document" xml:space="preserve"><value>مستند</value></data>
+  <data name="LibraryType_Video" xml:space="preserve"><value>فيديو</value></data>
+  <data name="LibraryType_Audio" xml:space="preserve"><value>صوت</value></data>
+  <data name="LibraryType_Link" xml:space="preserve"><value>رابط</value></data>
+  <data name="LibraryType_Other" xml:space="preserve"><value>أخرى</value></data>
+  <data name="ModuleKind_LibraryResource" xml:space="preserve"><value>مورد من المكتبة</value></data>
+  <data name="Error_download_not_allowed" xml:space="preserve"><value>يمكن قراءة هذا المورد هنا ولكن لا يمكن تنزيله.</value></data>
 </root>

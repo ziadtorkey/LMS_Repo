@@ -40,7 +40,9 @@
     private double _progress;
     private CancellationTokenSource? _cts;
 
-    [Parameter, EditorRequired] public Guid ClassCourseId { get; set; }
+    /// <summary>The owning ClassCourse; leave empty and set <see cref="OrgUnitId"/> for a unit-owned (library) asset.</summary>
+    [Parameter] public Guid ClassCourseId { get; set; }
+    [Parameter] public Guid? OrgUnitId { get; set; }
     /// <summary>Asset kinds the target module accepts (<see cref="AssetKinds.AcceptedBy"/>); null accepts every allowed type.</summary>
     [Parameter] public IReadOnlyList<string>? AcceptedKinds { get; set; }
     [Parameter] public EventCallback<AssetDto> OnUploaded { get; set; }
@@ -54,7 +56,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var (limits, _) = await ApiCalls.RunAsync(() => AssetApi.GetLimitsAsync(ClassCourseId), Navigation);
+        var (limits, _) = await ApiCalls.RunAsync(() => OrgUnitId is { } u ? AssetApi.GetUnitLimitsAsync(u) : AssetApi.GetLimitsAsync(ClassCourseId), Navigation);
         _limits = limits;
         _accept = string.Join(",", Offered().Select(t => t.Extension));
     }
@@ -99,7 +101,9 @@
         try
         {
             var ok = await ApiCalls.RunAsync(
-                async () => uploaded = await AssetApi.UploadAsync(ClassCourseId, _fileName, _contentType!, new MemoryStream(_bytes), progress, token),
+                async () => uploaded = OrgUnitId is { } unit
+                    ? await AssetApi.UploadToUnitAsync(unit, _fileName, _contentType!, new MemoryStream(_bytes), progress, token)
+                    : await AssetApi.UploadAsync(ClassCourseId, _fileName, _contentType!, new MemoryStream(_bytes), progress, token),
                 Navigation, L, message => _error = message);
             if (ok && uploaded is not null)
             {
