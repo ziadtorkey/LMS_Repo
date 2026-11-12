@@ -12,9 +12,16 @@ public sealed class ApiHttp(HttpClient http, IContextStore context)
     public async Task<T> GetAsync<T>(string route, CancellationToken ct = default) =>
         (await SendAsync<T>(HttpMethod.Get, route, null, ct))!;
 
-    public async Task<TResponse?> SendAsync<TResponse>(HttpMethod method, string route, object? body, CancellationToken ct = default)
+    /// <summary>
+    /// GET for an optional lookup: a plain 403 throws <see cref="ApiForbiddenException"/> without sending the user to the
+    /// Forbidden page, so the caller can degrade (hide the control). Stale-context problems still redirect.
+    /// </summary>
+    public async Task<T> GetOptionalAsync<T>(string route, CancellationToken ct = default) =>
+        (await SendAsync<T>(HttpMethod.Get, route, null, ct, handlesForbidden: true))!;
+
+    public async Task<TResponse?> SendAsync<TResponse>(HttpMethod method, string route, object? body, CancellationToken ct = default, bool handlesForbidden = false)
     {
-        using var response = await SendCoreAsync(method, route, body, ct);
+        using var response = await SendCoreAsync(method, route, body, ct, handlesForbidden);
         // An empty body (204, or chunked with no length) is not JSON.
         var text = await response.Content.ReadAsStringAsync(ct);
         if (response.StatusCode == HttpStatusCode.NoContent || string.IsNullOrWhiteSpace(text))
@@ -59,9 +66,10 @@ public sealed class ApiHttp(HttpClient http, IContextStore context)
         return (buffer, name);
     }
 
-    private async Task<HttpResponseMessage> SendCoreAsync(HttpMethod method, string route, object? body, CancellationToken ct)
+    private async Task<HttpResponseMessage> SendCoreAsync(HttpMethod method, string route, object? body, CancellationToken ct, bool handlesForbidden = false)
     {
         using var request = new HttpRequestMessage(method, route.TrimStart('/'));
+        if (handlesForbidden) request.Options.Set(ForbiddenRedirectHandler.HandlesForbidden, true);
         if (context.ActiveAssignmentId is { } id)
             request.Headers.Add(ContextHeader.Name, id.ToString());
         request.Headers.AcceptLanguage.ParseAdd(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName);

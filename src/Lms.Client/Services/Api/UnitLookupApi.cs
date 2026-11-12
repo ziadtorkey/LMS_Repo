@@ -3,7 +3,7 @@ using Lms.Shared.Organizations;
 
 namespace Lms.Client.Services.Api;
 
-/// <summary>Read-only list of the units the user can see (unit pickers). GET /api/org-units.</summary>
+/// <summary>Read-only list of the units the user can see (unit pickers). GET /api/org-units. Throws <see cref="ApiForbiddenException"/> (without leaving the page) when the caller lacks OrgUnits.View.</summary>
 public interface IUnitLookupApi
 {
     Task<IReadOnlyList<OrgUnitNodeDto>> GetUnitsAsync(CancellationToken ct = default);
@@ -12,7 +12,7 @@ public interface IUnitLookupApi
 public sealed class UnitLookupApi(ApiHttp http) : IUnitLookupApi
 {
     public async Task<IReadOnlyList<OrgUnitNodeDto>> GetUnitsAsync(CancellationToken ct = default) =>
-        await http.GetAsync<List<OrgUnitNodeDto>>(Routes.OrgUnits, ct);
+        await http.GetOptionalAsync<List<OrgUnitNodeDto>>(Routes.OrgUnits, ct);
 }
 
 /// <summary>Orders units for pickers: depth-first (each unit followed by its children), siblings by name in the current culture.</summary>

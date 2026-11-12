@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
   <resheader name="version"><value>2.0</value></resheader>
@@ -30,6 +30,10 @@
   <data name="Nav_Audit" xml:space="preserve"><value>Audit log</value></data>
   <data name="Nav_Clients" xml:space="preserve"><value>Clients</value></data>
   <data name="Nav_Menu" xml:space="preserve"><value>Menu</value></data>
+  <data name="Nav_SkipToContent" xml:space="preserve"><value>Skip to main content</value></data>
+  <data name="Theme_Dark" xml:space="preserve"><value>Dark mode</value></data>
+  <data name="Theme_Light" xml:space="preserve"><value>Light mode</value></data>
+  <data name="Common_Filters" xml:space="preserve"><value>Filters</value></data>
   <data name="Choose_Title" xml:space="preserve"><value>Choose context</value></data>
   <data name="Choose_Subtitle" xml:space="preserve"><value>Pick the role and unit you want to work in. You can switch at any time.</value></data>
   <data name="Choose_Empty_Title" xml:space="preserve"><value>No roles assigned to you</value></data>
@@ -467,6 +471,18 @@
   <data name="Staff_StatusHistory" xml:space="preserve"><value>Status history</value></data>
   <data name="Staff_Reason" xml:space="preserve"><value>Reason</value></data>
   <data name="Staff_LimitedView" xml:space="preserve"><value>This person belongs to another unit; some details are hidden.</value></data>
+  <data name="Staff_Subtitle" xml:space="preserve"><value>Teachers and administrators in your organization, their roles and account status.</value></data>
+  <data name="Staff_EmptyTitle" xml:space="preserve"><value>No matching staff</value></data>
+  <data name="Staff_EmptyText" xml:space="preserve"><value>Change the filters or add a new staff member.</value></data>
+  <data name="Staff_BackToList" xml:space="preserve"><value>All staff</value></data>
+  <data name="Staff_Details" xml:space="preserve"><value>Account details</value></data>
+  <data name="Staff_NoRoles" xml:space="preserve"><value>No roles assigned.</value></data>
+  <data name="Staff_NoHistory" xml:space="preserve"><value>The status has not changed yet.</value></data>
+  <data name="Staff_SectionPerson" xml:space="preserve"><value>Name and job title</value></data>
+  <data name="Staff_SectionContact" xml:space="preserve"><value>Contact and identity</value></data>
+  <data name="Staff_SectionAccount" xml:space="preserve"><value>Account</value></data>
+  <data name="Staff_EmailReadOnlyHelp" xml:space="preserve"><value>The email cannot be changed here.</value></data>
+  <data name="Staff_ExpiresOnHelp" xml:space="preserve"><value>Leave empty if the account does not expire.</value></data>
   <data name="Person_Photo" xml:space="preserve"><value>Photo</value></data>
   <data name="Person_ChangePhoto" xml:space="preserve"><value>Change photo</value></data>
   <data name="Person_RemovePhoto" xml:space="preserve"><value>Remove photo</value></data>
@@ -651,6 +667,7 @@
   <data name="AuditEntity_CourseRestriction" xml:space="preserve"><value>Course restriction</value></data>
   <data name="AuditEntity_CourseSupervisor" xml:space="preserve"><value>Course supervisor</value></data>
   <data name="AuditEntity_Blueprint" xml:space="preserve"><value>Blueprint</value></data>
+  <data name="AuditEntity_ClassLessonPlan" xml:space="preserve"><value>Class lesson plan</value></data>
   <data name="AuditEntity_Class" xml:space="preserve"><value>Class</value></data>
   <data name="AuditEntity_ClassStudent" xml:space="preserve"><value>Class student</value></data>
   <data name="AuditEntity_ClassCourse" xml:space="preserve"><value>Class course</value></data>
@@ -826,4 +843,46 @@
   <data name="Flag_Inherit" xml:space="preserve"><value>Inherit ({0})</value></data>
   <data name="Flag_On" xml:space="preserve"><value>On</value></data>
   <data name="Flag_Off" xml:space="preserve"><value>Off</value></data>
+  <data name="Nav_Guardians" xml:space="preserve"><value>Guardians</value></data>
+  <data name="Guardian_Remove" xml:space="preserve"><value>Remove from student</value></data>
+  <data name="Guardian_SetPrimary" xml:space="preserve"><value>Make primary</value></data>
+  <data name="Guardian_OtherChildren" xml:space="preserve"><value>Also guardian of {0} other students</value></data>
+  <data name="Guardian_Children" xml:space="preserve"><value>Children</value></data>
+  <data name="Guardian_Edit" xml:space="preserve"><value>Edit guardian</value></data>
+  <data name="Guardian_PortalInvite" xml:space="preserve"><value>Send portal invitation</value></data>
+  <data name="Guardian_PortalActive" xml:space="preserve"><value>Portal account active</value></data>
+  <data name="Guardian_PortalNone" xml:space="preserve"><value>No portal account</value></data>
+  <data name="Guardian_PortalDisabled" xml:space="preserve"><value>The guardian portal is turned off for this unit.</value></data>
+  <data name="Guardian_NoEmail" xml:space="preserve"><value>Add an email address to invite this guardian.</value></data>
+  <data name="Guardian_UnlinkConfirm" xml:space="preserve"><value>Remove {0} from this student?</value></data>
+  <data name="Guardian_InvitationSent" xml:space="preserve"><value>Invitation sent</value></data>
+  <data name="Guardian_LinkTitle" xml:space="preserve"><value>Link guardian</value></data>
+  <data name="Nav_MyClassCourses" xml:space="preserve"><value>My class courses</value></data>
+  <data name="MyClassCourses_Title" xml:space="preserve"><value>My class courses</value></data>
+  <data name="MyClassCourses_Empty" xml:space="preserve"><value>You have no class courses in the selected year.</value></data>
+  <data name="MyClassCourses_Students" xml:space="preserve"><value>{0} students</value></data>
+  <data name="MyClassCourses_Optional" xml:space="preserve"><value>Optional</value></data>
+  <data name="MyClassCourses_PlanVersion" xml:space="preserve"><value>Plan version {0}</value></data>
+  <data name="MyClassCourses_NoPlan" xml:space="preserve"><value>No plan yet</value></data>
+  <data name="MyClassCourses_OpenPlan" xml:space="preserve"><value>Open plan</value></data>
+  <data name="Home_MyClassCoursesHint" xml:space="preserve"><value>See your class courses and their lesson plans.</value></data>
+  <data name="LessonPlan_Title" xml:space="preserve"><value>Lesson plan</value></data>
+  <data name="LessonPlan_Version" xml:space="preserve"><value>Version {0}</value></data>
+  <data name="LessonPlan_Synced" xml:space="preserve"><value>Synced {0}</value></data>
+  <data name="LessonPlan_Empty" xml:space="preserve"><value>This class course has not received a plan yet. It appears when the course blueprint is published.</value></data>
+  <data name="LessonPlan_Hidden" xml:space="preserve"><value>Hidden</value></data>
+  <data name="LessonPlan_Planned" xml:space="preserve"><value>Planned</value></data>
+  <data name="LessonPlan_HijriSuffix" xml:space="preserve"><value>AH</value></data>
+  <data name="LessonPlan_Modules" xml:space="preserve"><value>Modules</value></data>
+  <data name="LessonPlan_ModulesLater" xml:space="preserve"><value>Modules arrive in a later release.</value></data>
+  <data name="RichText_Bold" xml:space="preserve"><value>Bold</value></data>
+  <data name="RichText_BulletList" xml:space="preserve"><value>Bulleted list</value></data>
+  <data name="RichText_Italic" xml:space="preserve"><value>Italic</value></data>
+  <data name="RichText_Link" xml:space="preserve"><value>Insert link</value></data>
+  <data name="RichText_LinkApply" xml:space="preserve"><value>Apply</value></data>
+  <data name="RichText_LinkInvalid" xml:space="preserve"><value>Enter a valid link (https:// or mailto:).</value></data>
+  <data name="RichText_LinkRemove" xml:space="preserve"><value>Remove link</value></data>
+  <data name="RichText_LinkUrl" xml:space="preserve"><value>Link address</value></data>
+  <data name="RichText_NumberedList" xml:space="preserve"><value>Numbered list</value></data>
+  <data name="RichText_Toolbar" xml:space="preserve"><value>Formatting toolbar</value></data>
 </root>
