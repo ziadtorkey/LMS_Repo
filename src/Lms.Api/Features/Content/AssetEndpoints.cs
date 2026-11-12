@@ -135,7 +135,7 @@ public static class AssetEndpoints
         return null;
     }
 
-    private static AssetDto ToDto(Asset a) => new(
+    internal static AssetDto ToDto(Asset a) => new(
         a.Id, a.ClassCourseId, a.Kind, a.FileName, a.ContentType, a.SizeBytes, a.DurationSeconds,
         AssetTypes.ForFileName(a.FileName)?.Previewable == true, a.CreatedAt);
 }
