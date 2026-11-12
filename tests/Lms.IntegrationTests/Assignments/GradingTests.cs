@@ -229,10 +229,12 @@ public sealed class GradingTests(LmsApiFactory factory) : IDisposable
     {
         var (w, _, s) = await SubmittedAsync("GR12");
         var annotated = await AssetOfAsync(factory, w, w.Teacher.UserId);
+        var (classmate, _) = await _t.EnrolledStudentAsync(w.Tree, w.Class, w.ClassCourse); // own profile, same class course
         await GradeAsync(w.Teacher, s.Id, 8, null, annotated);
 
         Assert.Equal(HttpStatusCode.NotFound, (await _t.SendAsync(w.Student, HttpMethod.Get, Routes.AssetUrl(annotated))).StatusCode);
         await ReturnAsync(w.Teacher, s.Id);
+        Assert.Equal(HttpStatusCode.NotFound, (await _t.SendAsync(classmate, HttpMethod.Get, Routes.AssetUrl(annotated))).StatusCode);
 
         Assert.Equal(HttpStatusCode.OK, (await _t.SendAsync(w.Student, HttpMethod.Get, Routes.AssetUrl(annotated))).StatusCode);
         Assert.Equal(HttpStatusCode.OK, (await _t.SendAsync(w.Teacher, HttpMethod.Get, Routes.AssetUrl(annotated))).StatusCode);
