@@ -10,6 +10,7 @@ public static class EnrollmentServiceCollectionExtensions
     public static IServiceCollection AddEnrollment(this IServiceCollection services)
     {
         services.AddScoped<PlacementGuard>();
+        services.AddScoped<ExceptionLookups>();
         services.AddScoped<EnrollmentEngine>();
         services.AddScoped<IEnrollmentEngine>(sp => sp.GetRequiredService<EnrollmentEngine>());
         services.AddScoped<IClassCourseLifecycleHandler, EnrollmentClassCourseHandler>();
