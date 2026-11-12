@@ -147,3 +147,25 @@ Other patterns:
 
 - Tokens and shared components change only in `lane:ux` PRs. Frontend developers can propose changes in their PR description.
 - Keep `LmsTheme.cs`, `lms-theme.css` and this file in sync. A new rule or component also goes in the `lms-ui` skill (`.claude/skills/lms-ui/SKILL.md`).
+
+## 8. Phase 2 status (page-by-page passes)
+
+This list was last updated on 2026-11-12. "Waiting" means an open feature PR touches the page; it gets its pass after that PR merges.
+
+| Module / pages | Status | Issue → PR |
+|---|---|---|
+| Theme, shell, Staff list, Staff profile, Edit staff | Done (pilot, merged) | #327 → #334 |
+| Organization: org tree, level types, templates, their dialogs | In review | #402 → #404 |
+| Organization: unit settings page and its tabs | Waiting (#287, #291) | — |
+| Academic years: years, terms, calendar | In review (on top of #404) | #407 → #409 |
+| Access: roles, role editor, SSO providers | In review (on top of #404) | #411 → #412 |
+| Access: role assignments | Waiting (#203) | — |
+| Audit log and detail drawer | In review (on top of #404) | #413 → #414 |
+| Clients (platform admin) | In review (on top of #404) | #416 → #417 |
+| Notifications and preferences | In review (on top of #404) | #419 → #420 |
+| Staff import: page frame only (back link, loading) | In review | #422 → this PR |
+| Import wizard and history (`Components/Imports`), used by Staff, Students, Courses and Classes imports | Waiting (#316) | — |
+| Home | Waiting (#309, #392, #396) | — |
+| Courses: list, profile, tabs, My courses, dialog, import, blueprint builder | FE1, in progress (on its own PR stack; designer gives an advisory review) | — |
+| Students, guardians, change requests, Me pages | Waiting (#303, #309, #316) | — |
+| Classes, enrollment, groups | Waiting (#317, #322, #324) | — |
