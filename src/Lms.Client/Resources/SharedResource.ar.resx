@@ -1030,6 +1030,19 @@
   <data name="Progress_Count" xml:space="preserve"><value>{0} من {1}</value></data>
   <data name="LessonPlan_Modules" xml:space="preserve"><value>الوحدات التعليمية</value></data>
   <data name="LessonPlan_ModulesLater" xml:space="preserve"><value>تصل الوحدات التعليمية في إصدار لاحق.</value></data>
+  <data name="Asset_Limits" xml:space="preserve"><value>الأنواع المسموحة: {0}. الحد الأقصى للحجم: {1} ميجابايت.</value></data>
+  <data name="Asset_Choose" xml:space="preserve"><value>اختر ملفًا لرفعه</value></data>
+  <data name="Asset_TypeNotAllowed" xml:space="preserve"><value>نوع الملف غير مسموح هنا. المسموح: {0}.</value></data>
+  <data name="Asset_TooLarge" xml:space="preserve"><value>حجم الملف أكبر من {0} ميجابايت.</value></data>
+  <data name="Asset_Uploading" xml:space="preserve"><value>جارٍ رفع {0}...</value></data>
+  <data name="Asset_Cancel" xml:space="preserve"><value>إلغاء</value></data>
+  <data name="Asset_Retry" xml:space="preserve"><value>إعادة المحاولة</value></data>
+  <data name="Asset_Uploaded" xml:space="preserve"><value>تم رفع {0}.</value></data>
+  <data name="Asset_Cancelled" xml:space="preserve"><value>تم إلغاء الرفع.</value></data>
+  <data name="Asset_NoPreview" xml:space="preserve"><value>لا يمكن معاينة هذا النوع من الملفات في المتصفح.</value></data>
+  <data name="Asset_Download" xml:space="preserve"><value>تنزيل</value></data>
+  <data name="Asset_PreviewFailed" xml:space="preserve"><value>تعذّر تحميل الملف.</value></data>
+  <data name="Asset_Reload" xml:space="preserve"><value>إعادة التحميل</value></data>
   <data name="RichText_Bold" xml:space="preserve"><value>غامق</value></data>
   <data name="RichText_BulletList" xml:space="preserve"><value>قائمة نقطية</value></data>
   <data name="RichText_Italic" xml:space="preserve"><value>مائل</value></data>
