@@ -142,4 +142,53 @@ public sealed class QuizGradingTests : LessonPlansTestContext
 
         Assert.NotNull(page.Find("[data-testid=grading-forbidden]"));
     }
+
+    [Fact]
+    public async Task Zero_points_is_a_real_grade_and_enables_finalize()
+    {
+        var attempt = _api.SeedSubmittedAttempt();
+        var page = await OpenGradingAsync(attempt, Permissions.Quizzes.View, Permissions.Quizzes.Grade);
+        Assert.Equal("", PointsText(page) ?? ""); // ungraded shows an empty field, not 0
+        Assert.True(page.Find("[data-testid=grading-finalize]").HasAttribute("disabled"));
+
+        await SetPointsAsync(page, 0m);
+
+        page.WaitForAssertion(() => Assert.False(page.Find("[data-testid=grading-finalize]").HasAttribute("disabled")));
+        page.Find("[data-testid=grading-finalize]").Click();
+        page.WaitForAssertion(() => Assert.Equal(0m, Assert.Single(_api.GradeRequests).Grades.Single().Points));
+    }
+
+    [Fact]
+    public async Task Attempts_list_is_paged()
+    {
+        for (var i = 0; i < 30; i++) _api.SeedSubmittedAttempt();
+        await GrantAsync(Permissions.Quizzes.View, Permissions.Quizzes.Grade);
+        RenderProviders();
+
+        var page = Render<QuizAttemptsPage>(p => p.Add(x => x.Id, Cc).Add(x => x.QuizId, Quiz));
+
+        page.WaitForElement("[data-testid=attempts-paging]", Wait);
+        Assert.Equal(25, page.FindAll("[data-testid^=attempt-row-]").Count);
+        await page.InvokeAsync(() => page.FindComponent<MudPagination>().Instance.SelectedChanged.InvokeAsync(2));
+        page.WaitForAssertion(() => Assert.Equal(5, page.FindAll("[data-testid^=attempt-row-]").Count));
+    }
+
+    [Fact]
+    public async Task Attempts_list_and_grading_are_arabic()
+    {
+        Culture.Current = new CultureInfo("ar");
+        var attempt = _api.SeedSubmittedAttempt();
+        await GrantAsync(Permissions.Quizzes.View, Permissions.Quizzes.Grade);
+        RenderProviders();
+
+        var list = Render<QuizAttemptsPage>(p => p.Add(x => x.Id, Cc).Add(x => x.QuizId, Quiz));
+        list.WaitForElement("[data-testid=attempts-table]", Wait);
+        Assert.Contains("محاولات الاختبار", list.Markup);
+        Assert.Contains("مسلَّمة", list.Find($"[data-testid=attempt-row-{attempt}]").TextContent);
+
+        var grading = Render<EssayGradingPage>(p => p.Add(x => x.Id, Cc).Add(x => x.QuizId, Quiz).Add(x => x.AttemptId, attempt));
+        grading.WaitForElement("[data-testid=essay-grading]", Wait);
+        Assert.Contains("تصحيح الإجابات المكتوبة", grading.Markup);
+        Assert.Contains("(0–3)", grading.Markup); // the range stays readable in an RTL label
+    }
 }
