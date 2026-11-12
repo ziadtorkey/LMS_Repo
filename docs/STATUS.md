@@ -3,7 +3,7 @@
 _Updated by the Team Lead after every merge cycle._
 
 **Milestone:** M0 — DONE · M1 Organization & Access — DONE (#73 via #200) · M2 People — closing (#177 via #321) · M3 Academic Structure — in progress
-**Last update:** 2026-11-12 19:20 — Merged since 18:27: #388 modules API client (M4a #367). Next merges: #387 (FE2 resolving conflict), #386 (QA spot-check), #437 wave-2 contracts, #349 (QA re-check), then the stacks. #415 quiz leak fixed and re-approved; #421 in re-check.
+**Last update:** 2026-11-12 19:45 — Merged since 18:27: #388 modules API client (M4a #367), #349 M4a foundation and sanitiser. CI queue saturated (16 running, 24 queued). Next merges: #437 wave-2 contracts, #386, #387 (FE2 conflict), #384 (BE4 migration squash), #391 (QA re-review). Replays onto #437: #447 (library), #448 (forums), #399/#415 (BE2).
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |
