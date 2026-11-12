@@ -267,7 +267,15 @@ else
         if (_submitting || _attempt is null) return;
         _submitting = true;
         _error = null;
-        await _queue.FlushAsync(); // last answers first; a failed flush must not block the submit at the deadline
+        await _queue.FlushAsync(); // last answers first
+        if (!auto && _queue.HasPending)
+        {
+            // Answers that could not be saved would be lost: the student retries (or fixes the connection) before submitting.
+            // At the deadline (auto) the attempt is submitted anyway: the server closes it either way.
+            _error = L["Quiz_SubmitUnsaved"];
+            _submitting = false;
+            return;
+        }
         AttemptResultDto? result = null;
         var ok = await ApiCalls.RunAsync(async () => result = await Quizzes.SubmitAsync(_attempt.Id), Navigation, L, m => _error = m);
         _submitting = false;
