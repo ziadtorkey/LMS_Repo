@@ -35,6 +35,7 @@ public sealed class AcademicStructureTests(E2EFixture fixture) : E2ETestBase(fix
         await courses.FillAndSaveAsync(new CoursesPage.NewCourse(
             code, names.CourseNameAr("آخر"), names.CourseNameEn("Other"), Pick(culture, "مدرسة التجمع", "School Altagamo3")));
         await Expect(courses.CodeError).ToContainTextAsync(Resx.In(culture, "Error_course_code_taken"));
+        await Expect(courses.Row(code)).ToHaveCountAsync(1); // the refused save created nothing: exactly one course carries the code
         await AssertDirectionAsync(culture);
     }
 
@@ -48,14 +49,24 @@ public sealed class AcademicStructureTests(E2EFixture fixture) : E2ETestBase(fix
         await StartAsync(culture: culture);
         await SignInAsSeededAdminAsync();
 
+        var plainCode = names.CourseCode("PLAIN");
         var courses = new CoursesPage(Page);
         await courses.OpenAsync();
         await courses.CreateAsync(new CoursesPage.NewCourse(
             code, names.CourseNameAr("علوم"), names.CourseNameEn("Science"),
             OwnerUnitName: Pick(culture, "مدرسة التجمع", "School Altagamo3"), WeeklyPeriods: 3,
             AllocateTo: [Pick(culture, "رياض الأطفال", "KG")]));
+        await courses.CreateAsync(new CoursesPage.NewCourse(
+            plainCode, names.CourseNameAr("فنون"), names.CourseNameEn("Art"),
+            OwnerUnitName: Pick(culture, "مدرسة التجمع", "School Altagamo3"), WeeklyPeriods: 1));
         await courses.SearchAsync(names.Suffix);
         await Expect(courses.Row(code)).ToBeVisibleAsync(new() { Timeout = 20_000 });
+        await Expect(courses.Row(plainCode)).ToBeVisibleAsync(new() { Timeout = 20_000 });
+
+        // The Allocations column counts the units the course is allocated to: one for the allocated course, none for the other.
+        var header = Resx.In(culture, "Course_Allocations");
+        Assert.Equal(1, await courses.AllocationCountAsync(code, header));
+        Assert.Equal(0, await courses.AllocationCountAsync(plainCode, header));
         await AssertDirectionAsync(culture);
     }
 

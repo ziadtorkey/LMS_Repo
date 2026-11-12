@@ -29,6 +29,19 @@ public sealed class CoursesPage(IPage page)
         Has = page.Locator("td span[dir='ltr']").Filter(new LocatorFilterOptions { HasTextRegex = new Regex("^\\s*" + Regex.Escape(code) + "\\s*$") }),
     });
 
+    /// <summary>
+    /// The number in the Allocations column of the row of <paramref name="code"/> (the column is found by its header text, so it
+    /// does not matter where it sits in the table).
+    /// </summary>
+    public async Task<int> AllocationCountAsync(string code, string headerText)
+    {
+        var headers = await page.Locator("thead th").AllTextContentsAsync();
+        var column = headers.ToList().FindIndex(h => h.Trim() == headerText);
+        Assert.True(column >= 0, $"No '{headerText}' column among: {string.Join(" | ", headers)}");
+        var cell = Row(code).Locator("td").Nth(column);
+        return int.Parse((await cell.InnerTextAsync()).Trim());
+    }
+
     public async Task SearchAsync(string text)
     {
         var search = Field("course-search");
