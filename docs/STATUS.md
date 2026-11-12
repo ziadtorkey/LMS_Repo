@@ -3,7 +3,7 @@
 _Updated by the Team Lead after every merge cycle._
 
 **Milestone:** M0 — DONE · M1 Organization & Access — DONE (#73 via #200) · M2 People — closing (#177 via #321) · M3 Academic Structure — in progress
-**Last update:** 2026-11-12 20:55 — Merged today since 18:27: #388, #349, #436, #412. In E2E: #437 wave-2 contracts, #441, #420, #387, #386, #331. Restyles #409/#414/#417 re-merged with main (designer). QA: #391, #434, #398, #449 approved; #285 needs one more assertion fix. Issues filed from demo 3: #451, #452, #454.
+**Last update:** 2026-11-12 21:35 — Merged today since 18:27: #388, #349, #436, #412, #441. In E2E: #437 wave-2 contracts (E2E job still queued), #420, #387, #386, #331, #316, #287. Building: #449, #409, #414, #417. #285 needs one more assertion fix. Agent messaging paused pending owner message.
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |
