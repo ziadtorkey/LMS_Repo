@@ -1,6 +1,0 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
-  <!-- THROWAWAY spike (M4b S1-S4, S9). Not part of LMS.slnx, never merged to main. -->
-  <PropertyGroup>
-    <IsPackable>false</IsPackable>
-  </PropertyGroup>
-</Project>
