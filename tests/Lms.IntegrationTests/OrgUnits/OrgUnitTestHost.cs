@@ -53,14 +53,6 @@ public sealed class OrgUnitTestHost : IDisposable
         return _host.CreateClient().SendAsync(request);
     }
 
-    /// <summary>Sends a prepared request (for example a multipart upload) as an assignment.</summary>
-    public Task<HttpResponseMessage> SendRawAsync(HttpRequestMessage request, RoleAssignment as_)
-    {
-        request.Headers.Add(TestAuthHandler.UserHeader, as_.UserId.ToString());
-        request.Headers.Add(ContextHeader.Name, as_.Id.ToString());
-        return _host.CreateClient().SendAsync(request);
-    }
-
     public Task<HttpResponseMessage> SendAsPlatformAdminAsync(HttpMethod method, string url, object? body = null)
     {
         var request = new HttpRequestMessage(method, url);
