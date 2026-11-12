@@ -1,0 +1,14 @@
+@* Placeholder while a page or section loads: skeleton lines that keep the layout steady, plus a screen-reader text. *@
+<div class="lms-loading @Class" role="status" aria-live="polite" data-testid="@TestId">
+    <span class="lms-visually-hidden">@L["Common_Loading"]</span>
+    @for (var i = 0; i < Lines; i++)
+    {
+        <MudSkeleton SkeletonType="SkeletonType.Text" Width="@(i == 0 ? "40%" : i % 2 == 0 ? "70%" : "90%")" Height="@(i == 0 ? "2rem" : "1.25rem")" />
+    }
+</div>
+
+@code {
+    [Parameter] public int Lines { get; set; } = 4;
+    [Parameter] public string? TestId { get; set; }
+    [Parameter] public string? Class { get; set; }
+}

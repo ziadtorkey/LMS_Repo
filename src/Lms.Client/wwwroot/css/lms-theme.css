@@ -1,0 +1,238 @@
+/* LMS design layer: what the MudTheme (Theme/LmsTheme.cs) cannot express.
+   Colours come from MudBlazor palette variables so light and dark mode both work.
+   Spacing scale: 4 8 12 16 20 24 32 48 px. Radius: 8 px controls, 12 px surfaces. */
+
+:root {
+    --lms-radius-surface: 12px;
+    --lms-radius-control: 8px;
+    --lms-tint-primary: color-mix(in srgb, var(--mud-palette-primary) 10%, transparent);
+    --lms-focus: 0 0 0 3px color-mix(in srgb, var(--mud-palette-primary) 35%, transparent);
+}
+
+html, body { background: var(--mud-palette-background); color: var(--mud-palette-text-primary); }
+html[data-theme="dark"] { color-scheme: dark; }
+html[data-theme="light"] { color-scheme: light; }
+html[data-theme="dark"], html[data-theme="dark"] body { background: #0F1518; }
+/* Dates, ids and phone numbers line up in columns. */
+.lms-date-cell, .lms-detail dd, .lms-table td span[dir="ltr"] { font-variant-numeric: tabular-nums; }
+
+.lms-skip-link {
+    position: absolute; inset-inline-start: 8px; top: -48px; z-index: 2000; padding: 8px 16px;
+    border-radius: var(--lms-radius-control); background: var(--mud-palette-primary); color: var(--mud-palette-primary-text);
+    font-weight: 600; text-decoration: none;
+}
+.lms-skip-link:focus { top: 8px; }
+#lms-main:focus { outline: none; }
+body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+:lang(ar) .mud-typography { letter-spacing: 0 !important; }
+
+/* ---------- Focus and motion ---------- */
+.lms-app a:focus-visible,
+.lms-app button:focus-visible,
+.lms-app .mud-button-root:focus-visible,
+.lms-app .mud-nav-link:focus-visible { outline: 2px solid var(--mud-palette-primary); outline-offset: 2px; }
+.lms-drawer .mud-nav-link:focus-visible { outline-offset: -2px; }
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+
+.lms-visually-hidden {
+    position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.lms-muted { color: var(--mud-palette-text-secondary); }
+.lms-cell-strong { font-weight: 500; }
+[dir="rtl"] .lms-icon-flip { transform: scaleX(-1); }
+
+/* ---------- App shell ---------- */
+.lms-appbar.mud-appbar { border-bottom: 1px solid var(--mud-palette-lines-default); }
+.lms-appbar .mud-toolbar { gap: 4px; }
+.lms-appbar-title { font-weight: 600 !important; }
+.lms-appbar-tools { display: flex; align-items: center; gap: 4px; min-width: 0; }
+/* Phones: leave room on the bell's end side so the unread badge does not cover the next button. */
+@media (max-width: 599px) {
+    .lms-appbar .mud-badge-root { margin-inline: 0 10px !important; }
+    .lms-appbar-tools { gap: 2px; }
+}
+
+/* Light sidebar: surface colour with a hairline edge; the active item is a green-tinted pill with a green bar. */
+.lms-drawer.mud-drawer { border-inline-end: 1px solid var(--mud-palette-lines-default); }
+.lms-brand.mud-drawer-header {
+    display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 12px 20px;
+    border-bottom: 1px solid var(--mud-palette-lines-default);
+}
+.lms-brand-mark {
+    display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; flex-shrink: 0;
+    border-radius: 8px; background: var(--mud-palette-primary); color: var(--mud-palette-primary-text);
+}
+.lms-brand-name.mud-typography { color: var(--mud-palette-text-primary); font-weight: 700; line-height: 1.3; }
+
+.lms-drawer .mud-navmenu { padding: 12px 8px; }
+.lms-drawer .mud-nav-link {
+    border-radius: var(--lms-radius-control); margin-block: 2px; padding: 9px 12px; min-height: 40px;
+    color: var(--mud-palette-drawer-text); font-weight: 400; position: relative;
+}
+.lms-drawer .mud-nav-link .mud-nav-link-text { margin-inline-start: 12px; }
+.lms-drawer .mud-nav-link:hover:not(.mud-nav-link-disabled) {
+    background: color-mix(in srgb, var(--mud-palette-text-primary) 5%, transparent); color: var(--mud-palette-text-primary);
+}
+.lms-drawer .mud-nav-link.active:not(.mud-nav-link-disabled) {
+    background: var(--lms-tint-primary) !important; color: var(--mud-palette-primary) !important; font-weight: 600;
+}
+.lms-drawer .mud-nav-link.active:not(.mud-nav-link-disabled)::before {
+    content: ""; position: absolute; inset-inline-start: 0; top: 8px; bottom: 8px; width: 3px;
+    border-radius: 3px; background: var(--mud-palette-primary);
+}
+.lms-drawer .mud-nav-link.active .mud-nav-link-icon { color: var(--mud-palette-primary) !important; }
+.lms-drawer .mud-nav-link .mud-nav-link-icon { color: var(--mud-palette-drawer-icon); }
+
+.lms-page.mud-container { padding-top: 24px; padding-bottom: 48px; }
+@media (max-width: 599px) {
+    .lms-page.mud-container { padding-top: 16px; padding-bottom: 32px; padding-inline: 16px; }
+}
+
+/* ---------- Page header ---------- */
+.lms-page-header { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 20px; margin-bottom: 24px; }
+.lms-page-header-text { flex: 1 1 200px; min-width: 0; }
+.lms-page-header-titleline { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.lms-page-title.mud-typography { margin: 0; overflow-wrap: anywhere; }
+.lms-page-subtitle.mud-typography { color: var(--mud-palette-text-secondary); margin-top: 4px; max-width: 70ch; }
+.lms-page-header-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.lms-page-header-actions:empty { display: none; }
+.lms-action-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+@media (max-width: 599px) {
+    .lms-page-header { margin-bottom: 16px; }
+    .lms-page-header-actions { width: 100%; }
+    .lms-page-header-actions .mud-button-filled { flex: 1 1 auto; }
+}
+.lms-back-link.mud-link {
+    display: inline-flex; align-items: center; gap: 4px; margin-bottom: 12px;
+    color: var(--mud-palette-text-secondary); font-weight: 500;
+}
+.lms-back-link.mud-link:hover { color: var(--mud-palette-primary); }
+
+/* ---------- Surfaces ---------- */
+.lms-section {
+    background: var(--mud-palette-surface); border: 1px solid var(--mud-palette-lines-default);
+    border-radius: var(--lms-radius-surface); overflow: hidden;
+}
+.lms-section + .lms-section { margin-top: 20px; }
+.lms-section-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 14px 20px; border-bottom: 1px solid var(--mud-palette-lines-default);
+}
+.lms-section-title.mud-typography { margin: 0; }
+.lms-section-body { padding: 16px 20px 20px; }
+.lms-section-flush > .lms-section-body { padding: 0; }
+@media (max-width: 599px) {
+    .lms-section-head { padding: 12px 16px; }
+    .lms-section-body { padding: 12px 16px 16px; }
+}
+
+/* ---------- Filters ---------- */
+.lms-filters {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 4px 16px;
+    padding: 8px 20px 16px; border-bottom: 1px solid var(--mud-palette-lines-default);
+}
+.lms-filter { min-width: 0; }
+@media (min-width: 960px) { .lms-filter-search { grid-column: span 2; } }
+@media (max-width: 599px) { .lms-filters { grid-template-columns: 1fr; padding: 4px 16px 12px; } }
+
+/* ---------- Tables ---------- */
+.lms-table.mud-table { background: transparent; border-radius: 0; }
+.lms-table .lms-table-head .mud-table-cell {
+    background: var(--mud-palette-background-gray); color: var(--mud-palette-text-secondary);
+    font-size: .8125rem; font-weight: 600; white-space: nowrap; padding-block: 10px;
+}
+.lms-table .mud-table-body .mud-table-cell { padding-block: 10px; }
+.lms-table:not(.mud-xs-table) .mud-table-cell:first-child { padding-inline-start: 20px !important; }
+.lms-table:not(.mud-xs-table) .mud-table-cell:last-child { padding-inline-end: 20px !important; }
+.lms-table .mud-table-pagination { border-top: 1px solid var(--mud-palette-table-lines); }
+.lms-cell-actions { text-align: end; white-space: nowrap; }
+/* Phone layout: each row is a card; DataLabel text is the label. */
+.lms-table.mud-xs-table .mud-table-body .mud-table-row {
+    border-bottom: 1px solid var(--mud-palette-table-lines); padding: 8px 0;
+}
+.lms-table.mud-xs-table .mud-table-body .mud-table-cell {
+    border-bottom: 0; padding: 4px 16px !important; min-height: 32px; text-align: start;
+}
+.lms-table.mud-xs-table .mud-table-cell::before {
+    color: var(--mud-palette-text-secondary); font-size: .75rem; font-weight: 600; padding-inline-end: 12px;
+}
+.lms-table.mud-xs-table .mud-table-cell:empty { display: none; }
+
+.lms-person-cell { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.lms-person-link.mud-link { font-weight: 600; color: var(--mud-palette-text-primary); }
+.lms-person-link.mud-link:hover { color: var(--mud-palette-primary); }
+.lms-chip-row { display: flex; flex-wrap: wrap; gap: 4px; }
+.lms-chip-row .mud-chip { margin: 0; }
+.lms-date-cell { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.lms-status-change { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+/* ---------- Chips and avatars ---------- */
+.mud-chip.mud-chip-size-small { border-radius: 999px; font-weight: 500; }
+.lms-role-chip.mud-chip-outlined { border-color: var(--mud-palette-lines-inputs); color: var(--mud-palette-text-primary); }
+.lms-status-chip::before {
+    content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; margin-inline-end: 6px; flex-shrink: 0;
+}
+.lms-avatar.mud-avatar { background: var(--lms-tint-primary); color: var(--mud-palette-primary); }
+.lms-avatar-initials { font-weight: 600; font-size: .8125rem; line-height: 1; }
+.mud-avatar-large .lms-avatar-initials { font-size: 1.125rem; }
+.lms-profile-header .lms-avatar.mud-avatar { width: 64px; height: 64px; }
+
+/* ---------- States ---------- */
+.lms-empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px; padding: 40px 16px; }
+.lms-empty-icon {
+    display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; margin-bottom: 8px;
+    border-radius: 50%; background: var(--lms-tint-primary); color: var(--mud-palette-primary);
+}
+.lms-empty-title.mud-typography { font-weight: 600; }
+.lms-empty-text.mud-typography { color: var(--mud-palette-text-secondary); max-width: 48ch; }
+.lms-empty-action { margin-top: 12px; }
+.lms-loading { display: flex; flex-direction: column; gap: 8px; }
+
+/* ---------- Detail lists ---------- */
+.lms-details { margin: 0; display: grid; }
+.lms-detail { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 4px 16px; padding-block: 10px; }
+.lms-detail + .lms-detail { border-top: 1px solid var(--mud-palette-table-lines); }
+.lms-detail dt { color: var(--mud-palette-text-secondary); font-size: .8125rem; line-height: 1.6; }
+.lms-detail dd { margin: 0; font-weight: 500; overflow-wrap: anywhere; }
+.lms-detail-empty { color: var(--mud-palette-text-disabled); font-weight: 400; }
+@media (max-width: 599px) { .lms-detail { grid-template-columns: 1fr; gap: 0; } }
+
+/* ---------- Profile layout ---------- */
+.lms-profile-grid { display: grid; grid-template-columns: 1fr; gap: 20px; align-items: start; }
+.lms-profile-main { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.lms-profile-main .lms-section + .lms-section { margin-top: 0; }
+@media (min-width: 1100px) { .lms-profile-grid { grid-template-columns: minmax(300px, 380px) minmax(0, 1fr); } }
+
+/* ---------- Forms and dialogs ---------- */
+.lms-form { min-width: 0; }
+.lms-form input[type="file"] { max-width: 100%; }
+.lms-form .d-flex { min-width: 0; }
+.lms-fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+.lms-fieldset + .lms-fieldset { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--mud-palette-lines-default); }
+.lms-fieldset-legend {
+    float: inline-start; width: 100%; padding: 0; margin-bottom: 8px;
+    font-size: .9375rem; font-weight: 600; color: var(--mud-palette-text-primary);
+}
+.lms-fieldset-legend + * { clear: both; }
+.lms-form-grid { display: grid; grid-template-columns: 1fr; gap: 0 16px; }
+@media (min-width: 600px) { .lms-form-grid { grid-template-columns: 1fr 1fr; } }
+.lms-dialog-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding: 4px 8px 8px; width: 100%; }
+.mud-dialog { border-radius: var(--lms-radius-surface) !important; }
+/* .mud-dialog scrolls (overflow-y: auto), so its rounded corners clip hit-testing: a click in the very corner of the
+   title would land on the overlay behind the dialog. Inset the first block by 6 px (padding reduced by the same
+   amount, so nothing moves) to keep the whole title clickable, which "click the dialog title to close a picker"
+   relies on (E2E MudControls.ClosePickersAsync). */
+.mud-dialog > .mud-dialog-title,
+.mud-dialog > .mud-dialog-content:first-child { margin: 6px 6px 0 !important; }
+.mud-dialog > .mud-dialog-title { font-weight: 600; padding: 10px 18px !important; }
+.mud-dialog > .mud-dialog-content:first-child { padding-inline: 18px !important; padding-top: 2px !important; }
+
+/* ---------- Controls ---------- */
+.mud-button-root.mud-button { border-radius: var(--lms-radius-control); }
+.mud-button-filled { box-shadow: none !important; }
+.mud-button-filled:hover { box-shadow: 0 1px 2px rgba(16, 24, 40, .12) !important; }
+.mud-alert { border-radius: var(--lms-radius-control); }
+.mud-popover .mud-list { padding-block: 4px; }
