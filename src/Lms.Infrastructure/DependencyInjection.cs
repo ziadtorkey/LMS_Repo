@@ -39,6 +39,7 @@ public static class DependencyInjection
         services.AddAcademicYears();
         services.AddPeople();
         services.AddEnrollment();
+        services.AddScoped<Lms.Domain.Grading.IGradeEvents, Lms.Infrastructure.Grading.GradeEventWriter>();
         services.AddAcademic();
         services.AddExternalIdentity(configuration, environment);
         return services;
