@@ -37,7 +37,11 @@ internal static class CourseHandlers
             var userId = context.UserId;
             only = userId is null
                 ? []
-                : await db.Set<CourseSupervisor>().Where(s => s.UserId == userId).Select(s => s.CourseId).ToListAsync(ct);
+                // ISOLATION-BYPASS: the caller's own supervisor rows sit at the course owner unit, which may be above their
+                // assignment (a school supervisor of a client-wide course); own user and active client only, deleted rows excluded.
+                : await db.Set<CourseSupervisor>().IgnoreQueryFilters()
+                    .Where(s => s.UserId == userId && s.OrganizationId == context.OrganizationId && !s.IsDeleted)
+                    .Select(s => s.CourseId).ToListAsync(ct);
         }
 
         var page = Math.Max(1, query.Page);

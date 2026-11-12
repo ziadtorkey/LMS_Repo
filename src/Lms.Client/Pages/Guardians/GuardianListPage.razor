@@ -1,0 +1,67 @@
+@page "/guardians"
+@attribute [Authorize]
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Shared.Authorization
+@using Lms.Shared.People
+@implements IDisposable
+@inject IGuardiansApi Api
+@inject PermissionState PermState
+@inject ICultureService Culture
+
+<PageTitle>@L["Guardians_Title"]</PageTitle>
+@if (!PermState.Loaded)
+{
+    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+}
+else if (!PermState.Has(Permissions.Students.View))
+{
+    <Forbidden />
+}
+else
+{
+    <MudText Typo="Typo.h4" Class="mb-4" data-testid="guardians-title">@L["Guardians_Title"]</MudText>
+    <MudTextField T="string" Value="_search" ValueChanged="OnSearchChanged" Label="@L["Common_Search"]" Immediate="true"
+                  DebounceInterval="300" Clearable="true" Class="mb-3" data-testid="guardian-search" />
+    <ServerTable @ref="_table" T="GuardianSummaryDto" ServerData="LoadAsync">
+        <HeaderContent>
+            <MudTh>@L["Common_Name"]</MudTh>
+            <MudTh>@L["Student_Mobile"]</MudTh>
+            <MudTh>@L["Student_Email"]</MudTh>
+            <MudTh>@L["Guardian_Children"]</MudTh>
+            <MudTh>@L["Student_Account"]</MudTh>
+        </HeaderContent>
+        <RowTemplate Context="g">
+            <MudTd DataLabel="@L["Common_Name"]">
+                <MudLink Href="@($"guardians/{g.Id}")" data-testid="@($"guardian-link-{g.Id}")">@Culture.Pick(g.NameAr, g.NameEn)</MudLink>
+            </MudTd>
+            <MudTd DataLabel="@L["Student_Mobile"]"><span dir="ltr">@g.Mobile</span></MudTd>
+            <MudTd DataLabel="@L["Student_Email"]"><span dir="ltr">@g.Email</span></MudTd>
+            <MudTd DataLabel="@L["Guardian_Children"]">@g.ChildrenInScope</MudTd>
+            <MudTd DataLabel="@L["Student_Account"]">@(g.HasPortalAccount ? L["Guardian_PortalActive"] : L["Guardian_PortalNone"])</MudTd>
+        </RowTemplate>
+    </ServerTable>
+}
+
+@code {
+    private ServerTable<GuardianSummaryDto> _table = default!;
+    private string? _search;
+
+    protected override async Task OnInitializedAsync()
+    {
+        PermState.Changed += OnPermissionsChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+    }
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => PermState.Changed -= OnPermissionsChanged;
+
+    private async Task<TableData<GuardianSummaryDto>> LoadAsync(TableState state, CancellationToken ct)
+    {
+        var page = await Api.ListAsync(string.IsNullOrWhiteSpace(_search) ? null : _search.Trim(), state.Page + 1, state.PageSize, ct);
+        return new TableData<GuardianSummaryDto> { Items = page.Items, TotalItems = page.Total };
+    }
+
+    private Task OnSearchChanged(string? text) { _search = text; return _table.ReloadAsync(); }
+}

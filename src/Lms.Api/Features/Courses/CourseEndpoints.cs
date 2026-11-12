@@ -27,6 +27,6 @@ public static class CourseEndpoints
             .RequirePermission(Permissions.Courses.Allocate);
         app.MapGet(Routes.UnitCoursesPattern, AllocationHandlers.UnitCoursesAsync).RequireAuthorization()
             .RequirePermission(Permissions.Courses.View);
-        return app;
+        return app.MapSupervisorEndpoints();
     }
 }
