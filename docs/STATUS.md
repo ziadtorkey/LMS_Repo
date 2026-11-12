@@ -3,7 +3,7 @@
 _Updated by the Team Lead after every merge cycle._
 
 **Milestone:** M0 — DONE · M1 Organization & Access — DONE (#73 via #200) · M2 People — closing (#177 via #321) · M3 Academic Structure — in progress
-**Last update:** 2026-11-12 22:15 — Merged since 18:27: #388, #349, #436, #412, #441, #386, #420, #437 (M4a wave-2 contracts), #331 (class view). Retargeted to main: #447 library, #448 forums, #450 quizzes (#453 stacked), #332. Still on the old wave-2 branch (need replay): FE2 #396/#397/#398, old #424/#430/#399/#415 superseded. In E2E: #387, #409, #414, #316, #287. #449 conflicts (FE2). Agent messaging paused pending owner message.
+**Last update:** 2026-11-12 23:00 — Merged since 18:27: #388, #349, #436, #412, #441, #386, #420, #437 (M4a wave-2 contracts), #331, #316, #387, #287, #409. Designer re-merging main into #414/#417. #449 conflicts (FE2). #456 fixes #451 (static assets via MapStaticAssets), in QA. QA: #457 demo 2 changes requested; #285 one assertion. New issue #455 (E2E year seed). Agent messaging paused pending owner message.
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |
