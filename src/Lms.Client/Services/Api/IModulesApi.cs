@@ -71,6 +71,21 @@ public sealed class ModulesApi(ApiHttp http) : IModulesApi
 /// </summary>
 public sealed class FakeModulesApi : IModulesApi
 {
+    /// <summary>Dev server data: one finished and two pending Manual-rule modules in the first lesson of the Arabic class course.</summary>
+    public FakeModulesApi WithDemoData()
+    {
+        var cc = FakeLessonPlansApi.ArabicClassCourseId;
+        var lesson = Guid.Parse("00000000-0000-0000-0000-0000000000b1");
+        AsStudent = true;
+        CanEdit = false;
+        foreach (var title in new[] { "Letters video", "Reading worksheet", "Practice page" })
+            Seed(cc, lesson, new CreateModuleRequest(ModuleKinds.Page, title + " ar", title, ModuleVisibilities.Published, null, null,
+                ModuleTargets.ClassCourse, null, CompletionRules.Manual, null, new ModuleContentInput(BodyHtmlEn: "<p>x</p>")));
+        var first = NodesFor(cc, lesson)[0];
+        MarkCompleteAsync(first.Id).GetAwaiter().GetResult();
+        return this;
+    }
+
     private readonly List<ModuleDetailDto> _modules = [];
     private int _created;
 

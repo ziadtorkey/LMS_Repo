@@ -17,7 +17,7 @@ else if (_failed)
 {
     <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="api-error">
         @L["Api_Error"]
-        <MudButton Variant="Variant.Text" OnClick="LoadAsync">@L["Common_Retry"]</MudButton>
+        <MudButton Variant="Variant.Outlined" Size="Size.Small" OnClick="LoadAsync" Class="ms-3">@L["Common_Retry"]</MudButton>
     </MudAlert>
 }
 else if (_name is not null)
