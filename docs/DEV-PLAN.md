@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Spec | `docs/PRD.md` (approved 2026-11-10) |
-| Team | Team Lead (Opus), Backend (Sonnet), Frontend (Sonnet), QA (Sonnet) — Lead may add extra BE/FE/QA agents |
+| Team | Team Lead (Opus), Backend (Sonnet), Frontend (Sonnet), QA (Sonnet), UI/UX Designer (Opus) — Lead may add extra BE/FE/QA agents |
 | Tracking | GitHub Issues + Milestones + Project board "LMS v1" on `ziadtorkey/LMS_Repo` |
 | Status | `docs/STATUS.md` (updated by the Lead after every merge cycle) |
 
@@ -128,6 +128,7 @@ Each line becomes one GitHub issue per lane (`[BE]`, `[FE]`, `[QA]`), labelled `
 | Backend | Sonnet | own git worktree | `Lms.Api`, `Lms.Domain`, `Lms.Infrastructure`, migrations, unit + integration tests |
 | Frontend | Sonnet | own git worktree | `Lms.Client`, resources (ar/en), bUnit tests |
 | QA | Sonnet | own git worktree | PR reviews, isolation/permission tests, Playwright E2E (`tests/Lms.E2ETests`), bug issues |
+| UI/UX Designer | Opus | own git worktree | MudBlazor theme, design system (`docs/DESIGN.md`, `lms-ui` skill), page presentation in `ux/` PRs, advisory design reviews on FE PRs. Starts with a pilot (theme + two pages) and waits for product-owner approval before further page work |
 
 Agent definitions: `.claude/agents/*.md`. Shared rules: `CLAUDE.md`.
 

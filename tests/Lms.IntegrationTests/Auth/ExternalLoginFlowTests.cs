@@ -215,4 +215,49 @@ public sealed class ExternalLoginFlowTests(LmsApiFactory factory)
             Assert.Equal(secure, c.Contains("secure", StringComparison.OrdinalIgnoreCase));
         });
     }
+
+    [Fact]
+    public async Task Sso_login_skips_must_change()
+    {
+        var email = $"sso-{Guid.NewGuid():N}@school.example";
+        await using var provider = await MockOidcServer.StartAsync($"ext-sub-{Guid.NewGuid():N}", new Dictionary<string, string> { ["email"] = email });
+        var a = await AccessTestData.SeedAsync(factory, "FLOW-MC");
+        var user = await _host.CreateUserAsync(email);
+        await AccessTestData.AssignAsync(factory, a, a.School1, BuiltInRoles.Teacher, user.Id);
+        var slug = "flow-" + Guid.NewGuid().ToString("N")[..8];
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            var unit = await db.OrgUnits.SingleAsync(u => u.Id == a.School1.Id);
+            db.Set<StaffProfile>().Add(new StaffProfile(unit, user.Id, "اسم", "Name", email, null, null, null, null, null, null));
+            db.Set<IdentityProviderConfig>().Add(new IdentityProviderConfig(
+                a.Org.Id, IdentityProviderKind.Oidc, slug, "مزود", "Mock", provider.Authority, null, "lms-client",
+                _host.Services.GetRequiredService<ProviderSecretProtector>().Protect("lms-secret"), "openid email",
+                ExternalMatchBy.Email, null, "school.example", enabled: true));
+            await db.SaveChangesAsync();
+        }
+
+        using (var scope = _host.Services.CreateScope())
+        {
+            var users = scope.ServiceProvider.GetRequiredService<Microsoft.AspNetCore.Identity.UserManager<Lms.Domain.Identity.User>>();
+            var stored = (await users.FindByIdAsync(user.Id.ToString()))!;
+            stored.MustChangePassword = true; // a temporary password exists, but this sign-in does not use it
+            await users.UpdateAsync(stored);
+        }
+
+        await _host.Services.GetRequiredService<ExternalSchemeRegistry>().SyncAsync(CancellationToken.None);
+        using var browser = _host.NewBrowser();
+        using var external = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false });
+        var (_, challenge) = AuthTestHost.NewPkcePair();
+        var authorizeUrl = AuthTestHost.AuthorizeUrl(challenge);
+
+        var start = await browser.GetAsync($"/Account/ExternalLogin/{slug}?returnUrl={Uri.EscapeDataString(authorizeUrl)}");
+        var providerReply = await external.GetAsync(start.Headers.Location);
+        var callback = await browser.GetAsync(new Uri(providerReply.Headers.Location!.PathAndQuery, UriKind.Relative));
+        var done = await browser.GetAsync(callback.Headers.Location);
+        var authorized = await browser.GetAsync(done.Headers.Location);
+
+        Assert.Equal(HttpStatusCode.Redirect, authorized.StatusCode);
+        Assert.StartsWith(AuthTestHost.RedirectUri, authorized.Headers.Location!.ToString()); // a code, not the change page
+        Assert.Contains("code=", authorized.Headers.Location!.Query);
+    }
 }
