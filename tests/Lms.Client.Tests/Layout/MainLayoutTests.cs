@@ -47,6 +47,30 @@ public sealed class MainLayoutTests : ClientTestContext
         Assert.NotNull(cut.Find("[data-testid=context-switcher]"));
     }
 
+    [Fact]
+    public async Task Theme_toggle_switches_to_dark_and_remembers_the_choice()
+    {
+        JSInterop.Setup<bool>("lmsTheme.isDark").SetResult(false);
+        var set = JSInterop.SetupVoid("lmsTheme.set", _ => true);
+        set.SetVoidResult();
+        var cut = RenderLayout("en");
+        Assert.Equal("Dark mode", cut.Find("[data-testid=theme-toggle]").GetAttribute("aria-label"));
+
+        await cut.Find("[data-testid=theme-toggle]").ClickAsync(new());
+
+        Assert.Equal(true, set.Invocations.Single().Arguments[0]);
+        cut.WaitForAssertion(() => Assert.Equal("Light mode", cut.Find("[data-testid=theme-toggle]").GetAttribute("aria-label")));
+    }
+
+    [Fact]
+    public void Layout_starts_dark_when_the_stored_or_device_preference_is_dark()
+    {
+        JSInterop.Setup<bool>("lmsTheme.isDark").SetResult(true);
+        var cut = RenderLayout("ar");
+
+        cut.WaitForAssertion(() => Assert.Equal("الوضع الفاتح", cut.Find("[data-testid=theme-toggle]").GetAttribute("aria-label")));
+    }
+
     [Theory]
     [InlineData("ar", "نظام إدارة التعلم")]
     [InlineData("en", "Learning Management System")]
