@@ -107,4 +107,55 @@ public sealed class ModulesApiTests
         var progress = await fake.GetProgressAsync(Cc);
         Assert.Equal(new ProgressDto(1, 1), progress.Course);
     }
+
+    [Fact]
+    public async Task Fake_rejects_a_schedule_whose_from_equals_to()
+    {
+        var fake = new FakeModulesApi();
+        var at = DateTime.UtcNow.AddDays(1);
+
+        var ex = await Assert.ThrowsAsync<ApiProblemException>(() =>
+            fake.CreateAsync(Cc, Lesson, Page(visibility: ModuleVisibilities.Scheduled, from: at, to: at)));
+
+        Assert.Equal(ProblemCodes.module_visibility_range_invalid, ex.Code);
+    }
+
+    [Fact]
+    public async Task Fake_accepts_a_half_open_schedule_but_not_an_empty_one()
+    {
+        var fake = new FakeModulesApi();
+        await fake.CreateAsync(Cc, Lesson, Page(visibility: ModuleVisibilities.Scheduled, from: DateTime.UtcNow.AddDays(1)));
+        await fake.CreateAsync(Cc, Lesson, Page(visibility: ModuleVisibilities.Scheduled, to: DateTime.UtcNow.AddDays(1)));
+
+        var ex = await Assert.ThrowsAsync<ApiProblemException>(() =>
+            fake.CreateAsync(Cc, Lesson, Page(visibility: ModuleVisibilities.Scheduled)));
+        Assert.Equal(ProblemCodes.module_visibility_range_invalid, ex.Code);
+    }
+
+    [Theory]
+    [InlineData(ModuleVisibilities.Published)]
+    [InlineData(ModuleVisibilities.Hidden)]
+    public async Task Fake_rejects_dates_on_a_module_that_is_not_scheduled(string visibility)
+    {
+        var fake = new FakeModulesApi();
+
+        var ex = await Assert.ThrowsAsync<ApiProblemException>(() =>
+            fake.CreateAsync(Cc, Lesson, Page(visibility: visibility, from: DateTime.UtcNow.AddDays(1))));
+
+        Assert.Equal(ProblemCodes.module_visibility_range_invalid, ex.Code);
+    }
+
+    [Theory]
+    [InlineData(CompletionRules.Submit)]
+    [InlineData(CompletionRules.Score)]
+    public async Task Fake_limits_content_modules_to_the_ForContent_rules(string rule)
+    {
+        var fake = new FakeModulesApi();
+
+        var ex = await Assert.ThrowsAsync<ApiProblemException>(() => fake.CreateAsync(Cc, Lesson, Page() with { CompletionRule = rule }));
+
+        Assert.Equal(ProblemCodes.validation_failed, ex.Code);
+        foreach (var allowed in CompletionRules.ForContent)
+            await fake.CreateAsync(Cc, Lesson, Page() with { CompletionRule = allowed });
+    }
 }

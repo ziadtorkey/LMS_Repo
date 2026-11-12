@@ -105,7 +105,7 @@ else
         {
             var me = await Me.GetMeAsync();
             if (me.Contexts.FirstOrDefault(c => c.AssignmentId == Context.ActiveAssignmentId) is not { } active) return;
-            var settings = await Config.GetSettingsAsync(active.OrgUnitId);
+            var settings = await Config.GetSettingsIfAllowedAsync(active.OrgUnitId);   // Teacher has no Settings.View: default calendar then
             _showHijri = settings.FirstOrDefault(s => s.Name == SettingKeys.UiShowHijriDates.Name)?.ValueJson == "true";
         }, Navigation, L, _ => { });
     }
