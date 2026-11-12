@@ -51,9 +51,11 @@ public static class ClientServices
             services.AddSingleton<ICoursesApi, FakeCoursesApi>();
             services.AddSingleton<ILessonPlansApi, FakeLessonPlansApi>();
             services.AddSingleton<ICourseAssignmentsApi, FakeCourseAssignmentsApi>();
+            services.AddSingleton<IQuizzesApi, FakeQuizzesApi>();
             services.AddSingleton<IFileUploadApi, FakeFileUploadApi>();
             services.AddSingleton<ILibraryApi, FakeLibraryApi>();
             services.AddSingleton<IForumsApi, FakeForumsApi>();
+            services.AddSingleton<IQuizAttemptsApi, FakeQuizAttemptsApi>();
             services.AddSingleton<IAssetsApi, FakeAssetsApi>();
             services.AddSingleton<IModulesApi, FakeModulesApi>();
             services.AddSingleton<IActivityOverviewApi, FakeActivityOverviewApi>();
@@ -97,9 +99,11 @@ public static class ClientServices
         services.AddScoped<ICoursesApi, CoursesApi>();
         services.AddScoped<ILessonPlansApi, LessonPlansApi>();
         services.AddScoped<ICourseAssignmentsApi, CourseAssignmentsApi>();
+        services.AddScoped<IQuizzesApi, QuizzesApi>();
         services.AddScoped<IFileUploadApi, FileUploadApi>();
         services.AddScoped<ILibraryApi, LibraryApi>();
         services.AddScoped<IForumsApi, ForumsApi>();
+        services.AddScoped<IQuizAttemptsApi, QuizAttemptsApi>();
         services.AddScoped<IAssetsApi, AssetsApi>();
         services.AddScoped<IModulesApi, ModulesApi>();
         services.AddScoped<IActivityOverviewApi, ActivityOverviewApi>();

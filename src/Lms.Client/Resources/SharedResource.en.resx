@@ -1087,4 +1087,33 @@
   <data name="AssignmentStudent_SaveDraft" xml:space="preserve"><value>Save as draft</value></data>
   <data name="AssignmentStudent_Text" xml:space="preserve"><value>Your answer</value></data>
   <data name="AssignmentStudent_NeedTextOrFile" xml:space="preserve"><value>Write your answer or attach a file first.</value></data>
+  <data name="Quiz_Title" xml:space="preserve"><value>Quiz</value></data>
+  <data name="Quiz_Questions" xml:space="preserve"><value>Questions</value></data>
+  <data name="Quiz_QuestionN" xml:space="preserve"><value>Question {0}</value></data>
+  <data name="Quiz_Answered" xml:space="preserve"><value>answered</value></data>
+  <data name="Quiz_QuestionCount" xml:space="preserve"><value>{0} questions</value></data>
+  <data name="Quiz_TimeLimit" xml:space="preserve"><value>{0} minutes</value></data>
+  <data name="Quiz_AttemptsLeft" xml:space="preserve"><value>{0} attempts left</value></data>
+  <data name="Quiz_AttemptsUnlimited" xml:space="preserve"><value>Unlimited attempts</value></data>
+  <data name="Quiz_Start" xml:space="preserve"><value>Start the quiz</value></data>
+  <data name="Quiz_Resume" xml:space="preserve"><value>Resume your attempt</value></data>
+  <data name="Quiz_NoAttemptsLeft" xml:space="preserve"><value>You have used every attempt.</value></data>
+  <data name="Quiz_Closed" xml:space="preserve"><value>This quiz is not open.</value></data>
+  <data name="Quiz_AttemptN" xml:space="preserve"><value>Attempt {0}</value></data>
+  <data name="Quiz_YourAnswer" xml:space="preserve"><value>Your answer</value></data>
+  <data name="Quiz_Saving" xml:space="preserve"><value>Saving...</value></data>
+  <data name="Quiz_Saved" xml:space="preserve"><value>All answers saved</value></data>
+  <data name="Quiz_SaveFailed" xml:space="preserve"><value>Not saved. Check your connection.</value></data>
+  <data name="Quiz_Submit" xml:space="preserve"><value>Submit</value></data>
+  <data name="Quiz_SubmitConfirm" xml:space="preserve"><value>Submit your answers? You cannot change them afterwards.</value></data>
+  <data name="Quiz_SubmitConfirmUnanswered" xml:space="preserve"><value>{0} questions are unanswered. Submit anyway?</value></data>
+  <data name="Quiz_TimeLeft" xml:space="preserve"><value>{0} left</value></data>
+  <data name="Quiz_Result" xml:space="preserve"><value>Result</value></data>
+  <data name="Quiz_BackToQuiz" xml:space="preserve"><value>Back to the quiz</value></data>
+  <data name="Quiz_ResultPendingEssays" xml:space="preserve"><value>Your score will appear when your teacher has graded the written answers.</value></data>
+  <data name="Quiz_ResultHidden" xml:space="preserve"><value>Your teacher does not show results for this quiz.</value></data>
+  <data name="Quiz_ResultNoReview" xml:space="preserve"><value>Answers are not shown for this quiz.</value></data>
+  <data name="Quiz_NoAnswer" xml:space="preserve"><value>No answer</value></data>
+  <data name="Quiz_CorrectOption" xml:space="preserve"><value>correct</value></data>
+  <data name="Quiz_NotGradedYet" xml:space="preserve"><value>Not graded yet</value></data>
 </root>
