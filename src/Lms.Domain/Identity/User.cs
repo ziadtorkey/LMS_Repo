@@ -20,6 +20,9 @@ public sealed class User : IdentityUser<Guid>
     public bool IsPlatformAdmin { get; set; }
     public UserStatus Status { get; set; } = UserStatus.Active;
 
+    /// <summary>The password is a temporary default (D24): the user must choose their own before any token is issued.</summary>
+    public bool MustChangePassword { get; set; }
+
     [AuditIgnore]
     public override string? PasswordHash { get; set; }
 
