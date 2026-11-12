@@ -225,4 +225,16 @@ public sealed class AssignmentStudentTests : LessonPlansTestContext
         Assert.Contains("تسليم", page.Find("[data-testid=submit-send]").TextContent);
         Assert.Contains("عملك", page.Find("[data-testid=submit-panel]").TextContent);
     }
+
+    [Fact]
+    public async Task Due_date_is_an_unambiguous_left_to_right_value_on_its_own_line_in_arabic()
+    {
+        Culture.Current = new CultureInfo("ar");
+        var page = await OpenAsync();
+
+        var date = page.Find("[data-testid=assignment-due-date]");
+        Assert.Equal("ltr", date.GetAttribute("dir"));
+        Assert.Matches(@"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$", date.TextContent); // no am/pm marks to scramble the order
+        Assert.DoesNotContain(date.TextContent, page.Find("[data-testid=assignment-countdown]").TextContent);
+    }
 }
