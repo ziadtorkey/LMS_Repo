@@ -834,6 +834,43 @@
   <data name="Guardian_UnlinkConfirm" xml:space="preserve"><value>Remove {0} from this student?</value></data>
   <data name="Guardian_InvitationSent" xml:space="preserve"><value>Invitation sent</value></data>
   <data name="Guardian_LinkTitle" xml:space="preserve"><value>Link guardian</value></data>
+  <data name="StudentField_NameAr" xml:space="preserve"><value>Name (Arabic)</value></data>
+  <data name="StudentField_NameEn" xml:space="preserve"><value>Name (English)</value></data>
+  <data name="StudentField_NicknameAr" xml:space="preserve"><value>Nickname (Arabic)</value></data>
+  <data name="StudentField_NicknameEn" xml:space="preserve"><value>Nickname (English)</value></data>
+  <data name="StudentField_DateOfBirth" xml:space="preserve"><value>Date of birth</value></data>
+  <data name="StudentField_Gender" xml:space="preserve"><value>Gender</value></data>
+  <data name="StudentField_Religion" xml:space="preserve"><value>Religion</value></data>
+  <data name="StudentField_Nationality" xml:space="preserve"><value>Nationality</value></data>
+  <data name="StudentField_NationalId" xml:space="preserve"><value>National ID</value></data>
+  <data name="StudentField_StudentCode" xml:space="preserve"><value>Student code</value></data>
+  <data name="StudentField_Mobile" xml:space="preserve"><value>Mobile</value></data>
+  <data name="StudentField_Email" xml:space="preserve"><value>Email</value></data>
+  <data name="StudentField_Photo" xml:space="preserve"><value>Photo</value></data>
+  <data name="Nav_MyProfile" xml:space="preserve"><value>My profile</value></data>
+  <data name="Nav_ChangeRequests" xml:space="preserve"><value>Change requests</value></data>
+  <data name="MyProfile_Title" xml:space="preserve"><value>My profile</value></data>
+  <data name="MyProfile_Saved" xml:space="preserve"><value>Your changes were saved.</value></data>
+  <data name="MyProfile_RequestChange" xml:space="preserve"><value>Request a change</value></data>
+  <data name="MyProfile_RequestSent" xml:space="preserve"><value>Your request was sent for approval.</value></data>
+  <data name="MyProfile_Requests" xml:space="preserve"><value>My requests</value></data>
+  <data name="MyProfile_PendingBlocks" xml:space="preserve"><value>You already have a request waiting for approval. Cancel it to send a new one.</value></data>
+  <data name="MyProfile_SendRequest" xml:space="preserve"><value>Send request</value></data>
+  <data name="MyProfile_NothingChanged" xml:space="preserve"><value>Change at least one value to send a request.</value></data>
+  <data name="MyProfile_Fields" xml:space="preserve"><value>Fields</value></data>
+  <data name="ChangeRequest_Note" xml:space="preserve"><value>Note</value></data>
+  <data name="ChangeRequest_Comment" xml:space="preserve"><value>Comment</value></data>
+  <data name="ChangeRequest_Before" xml:space="preserve"><value>Current</value></data>
+  <data name="ChangeRequest_After" xml:space="preserve"><value>Requested</value></data>
+  <data name="ChangeRequest_Approve" xml:space="preserve"><value>Approve</value></data>
+  <data name="ChangeRequest_Reject" xml:space="preserve"><value>Reject</value></data>
+  <data name="ChangeRequest_Review" xml:space="preserve"><value>Review</value></data>
+  <data name="ChangeRequest_CommentRequired" xml:space="preserve"><value>Enter a reason for rejecting.</value></data>
+  <data name="ChangeRequest_Cancel" xml:space="preserve"><value>Cancel request</value></data>
+  <data name="ChangeRequestStatus_Pending" xml:space="preserve"><value>Pending</value></data>
+  <data name="ChangeRequestStatus_Approved" xml:space="preserve"><value>Approved</value></data>
+  <data name="ChangeRequestStatus_Rejected" xml:space="preserve"><value>Rejected</value></data>
+  <data name="ChangeRequestStatus_Cancelled" xml:space="preserve"><value>Cancelled</value></data>
   <data name="Nav_MyClassCourses" xml:space="preserve"><value>My class courses</value></data>
   <data name="MyClassCourses_Title" xml:space="preserve"><value>My class courses</value></data>
   <data name="MyClassCourses_Empty" xml:space="preserve"><value>You have no class courses in the selected year.</value></data>
