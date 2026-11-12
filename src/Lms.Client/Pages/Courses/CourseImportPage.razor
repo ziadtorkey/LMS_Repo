@@ -22,8 +22,7 @@ else if (!PermState.Has(Permissions.Courses.Import))
 }
 else
 {
-    <PageHeader Title="@L["CourseImport_Title"]" Subtitle="@L["CourseImport_Subtitle"]" TitleTestId="course-import-title" />
-    <ImportWizard Kind="@ImportKinds.Courses" TitleKey="CourseImport_Title" ShowTitle="false" />
+    <ImportWizard Kind="@ImportKinds.Courses" TitleKey="CourseImport_Title" />
 }
 
 @code {

@@ -77,7 +77,7 @@
             <MudTd DataLabel="@L["Course_Owner"]">@Culture.Pick(course.OwnerOrgUnitNameAr, course.OwnerOrgUnitNameEn)</MudTd>
             <MudTd DataLabel="@L["Course_WeeklyPeriods"]">@course.WeeklyPeriods</MudTd>
             <MudTd DataLabel="@L["Common_Status"]">
-                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@(course.Status == CourseStatuses.Active ? Color.Success : Color.Default)">@L[$"CourseStatus_{course.Status}"]</MudChip>
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Class="lms-status-chip" Color="@(course.Status == CourseStatuses.Active ? Color.Success : Color.Default)">@L[$"CourseStatus_{course.Status}"]</MudChip>
             </MudTd>
             <MudTd DataLabel="@L["Course_Allocations"]">@course.AllocationCount</MudTd>
         </RowTemplate>

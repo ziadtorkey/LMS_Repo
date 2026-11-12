@@ -24,7 +24,7 @@ public sealed class CourseImportPageTests : CoursesTestContext
         var page = Render<CourseImportPage>();
 
         Assert.Equal(ImportKinds.Courses, page.FindComponent<ImportWizard>().Instance.Kind);
-        Assert.Contains("Import courses from Excel", page.Find("[data-testid=course-import-title]").TextContent);
+        Assert.Contains("Import courses from Excel", page.Find("[data-testid=import-wizard]").TextContent);
     }
 
     [Fact]
@@ -52,6 +52,6 @@ public sealed class CourseImportPageTests : CoursesTestContext
 
         layout.WaitForElement("[data-testid=import-wizard]", TimeSpan.FromSeconds(5));
         Assert.Equal("rtl", layout.Find("[data-testid=app-root]").GetAttribute("dir"));
-        Assert.Contains("استيراد المقررات من Excel", layout.Find("[data-testid=course-import-title]").TextContent);
+        Assert.Contains("استيراد المقررات من Excel", layout.Find("[data-testid=import-wizard]").TextContent);
     }
 }

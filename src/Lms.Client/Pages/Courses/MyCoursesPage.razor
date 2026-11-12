@@ -41,7 +41,7 @@ else
                         </MudChip>
                     </div>
                     <div>
-                        <MudButton Href="@($"courses/{current.Id}")" Variant="Variant.Outlined" Color="Color.Primary" EndIcon="@(Culture.IsRightToLeft ? Icons.Material.Rounded.ArrowBack : Icons.Material.Rounded.ArrowForward)"
+                        <MudButton Href="@($"courses/{current.Id}")" Variant="Variant.Outlined" Color="Color.Primary" EndIcon="@Icons.Material.Rounded.ArrowForward" IconClass="lms-icon-flip"
                                    data-testid="@($"my-course-open-{current.Id}")">@L["MyCourses_Open"]</MudButton>
                     </div>
                 </MudStack>

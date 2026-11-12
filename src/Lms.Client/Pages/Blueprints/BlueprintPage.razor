@@ -36,7 +36,7 @@ else
 {
     <PageHeader Title="@L["Blueprint_Title"]" Subtitle="@Culture.Pick(_course.Summary.NameAr, _course.Summary.NameEn)" TitleTestId="blueprint-title">
         <Badges>
-            <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@(_editing ? Color.Warning : Color.Default)"
+            <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Class="lms-status-chip" Color="@(_editing ? Color.Warning : Color.Default)"
                      data-testid="blueprint-status">@StatusText</MudChip>
         </Badges>
         <Actions>
@@ -67,8 +67,10 @@ else
         @if (_stale)
         {
             <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" data-testid="blueprint-stale">
-                @L["Blueprint_Stale"]
-                <MudButton Size="Size.Small" Variant="Variant.Outlined" OnClick="ReloadDraftAsync" data-testid="blueprint-reload">@L["Blueprint_Reload"]</MudButton>
+                <div class="d-flex align-center flex-wrap gap-2">
+                    <span>@L["Blueprint_Stale"]</span>
+                    <MudButton Size="Size.Small" Variant="Variant.Outlined" OnClick="ReloadDraftAsync" data-testid="blueprint-reload">@L["Blueprint_Reload"]</MudButton>
+                </div>
             </MudAlert>
         }
         @if (_message is not null)
@@ -111,7 +113,7 @@ else
                     {
                         <tr>
                             <td data-label="@L["Blueprint_Version"]">@(v.Version == 0 ? L["BlueprintStatus_Draft"].Value : L["Blueprint_VersionN", v.Version].Value)</td>
-                            <td data-label="@L["Common_Status"]">@L[$"BlueprintStatus_{v.Status}"]</td>
+                            <td data-label="@L["Common_Status"]"><MudChip T="string" Size="Size.Small" Variant="Variant.Text" Class="lms-status-chip" Color="@(v.Status == BlueprintStatuses.Published ? Color.Success : Color.Default)">@L[$"BlueprintStatus_{v.Status}"]</MudChip></td>
                             <td data-label="@L["Blueprint_PublishedOn"]"><span dir="ltr">@(v.PublishedAt?.ToLocalTime().ToString("yyyy-MM-dd HH:mm", System.Globalization.CultureInfo.InvariantCulture) ?? "—")</span></td>
                             <td data-label="@L["Blueprint_Content"]">@L["Blueprint_Counts", v.SectionCount, v.LessonCount]</td>
                             <td class="lms-cell-actions">

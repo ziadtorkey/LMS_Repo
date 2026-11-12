@@ -16,7 +16,7 @@
             // Copies of the loop variables: the child content below runs after the loop has moved on.
             var s = sectionIndex;
             var section = Model.Sections[s];
-            <SectionCard Title="@(SectionName(s) + " — " + CultureText.Pick(section.TitleAr, section.TitleEn))" TestId="@($"section-{s}")">
+            <SectionCard Title="@SectionTitle(s, section)" TestId="@($"section-{s}")">
                 <MudList T="string" Dense="true">
                     @for (var lessonIndex = 0; lessonIndex < section.Lessons.Count; lessonIndex++)
                     {
@@ -129,6 +129,14 @@ else
     private IEnumerable<LessonRow> Lessons => Model.Sections.SelectMany(s => s.Lessons);
 
     private string ZoneOf(LessonRow lesson) => Model.Sections.FindIndex(s => s.Lessons.Contains(lesson)).ToString();
+
+    /// <summary>"Week 1 — Intro"; just "Week 1" when the title says no more than the generic name.</summary>
+    private string SectionTitle(int index, SectionRow section)
+    {
+        var name = SectionName(index);
+        var title = CultureText.Pick(section.TitleAr, section.TitleEn).Trim();
+        return title.Length == 0 || string.Equals(title, name, StringComparison.OrdinalIgnoreCase) ? name : name + " — " + title;
+    }
 
     private string SectionName(int index) => $"{L[$"SectionLabel_{SectionLabel}"]} {index + 1}";
 

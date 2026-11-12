@@ -12,11 +12,8 @@
 @inject IJSRuntime Js
 
 @* Reusable Excel import: 1 template, 2 target unit + file, 3 review (polls while the server works) and commit, 4 result. *@
-<MudPaper Class="pa-4" Outlined="true" Elevation="0" data-testid="import-wizard">
-    @if (ShowTitle)
-    {
-        <MudText Typo="Typo.h5" Class="mb-3">@L[TitleKey]</MudText>
-    }
+<MudPaper Class="pa-4" data-testid="import-wizard">
+    <MudText Typo="Typo.h5" Class="mb-3">@L[TitleKey]</MudText>
     <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap" Class="mb-4" data-testid="import-steps">
         @for (var i = 0; i < _stepKeys.Length; i++)
         {
@@ -150,8 +147,6 @@
 
     [Parameter, EditorRequired] public string Kind { get; set; } = "";
     [Parameter] public string TitleKey { get; set; } = "Import_Title";
-    /// <summary>False when the host page already shows the title (PageHeader).</summary>
-    [Parameter] public bool ShowTitle { get; set; } = true;
     [Parameter] public Guid? DefaultOrgUnitId { get; set; }
     [Parameter] public EventCallback<ImportBatchDto> OnCommitted { get; set; }
 

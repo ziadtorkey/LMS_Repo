@@ -34,7 +34,7 @@ else
             {
                 <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Info" data-testid="course-profile-inherited">@L["Course_Inherited"]</MudChip>
             }
-            <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@(s.Status == CourseStatuses.Active ? Color.Success : Color.Default)">@L[$"CourseStatus_{s.Status}"]</MudChip>
+            <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Class="lms-status-chip" Color="@(s.Status == CourseStatuses.Active ? Color.Success : Color.Default)">@L[$"CourseStatus_{s.Status}"]</MudChip>
         </Badges>
         <Actions>
             @if (CanUpdate)
