@@ -46,7 +46,10 @@ public static class SettingEndpoints
         {
             return Results.ValidationProblem(
                 new Dictionary<string, string[]> { ["valueJson"] = [error] },
-                extensions: new Dictionary<string, object?> { ["code"] = ProblemCodes.validation_failed });
+                extensions: new Dictionary<string, object?>
+                {
+                    ["code"] = error == "invalid_code_pattern" ? ProblemCodes.invalid_code_pattern : ProblemCodes.validation_failed,
+                });
         }
 
         try

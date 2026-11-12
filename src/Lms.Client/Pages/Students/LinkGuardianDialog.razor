@@ -1,0 +1,47 @@
+@using Lms.Client.Components.People
+@using Lms.Client.Services.Api
+@inject IGuardiansApi Api
+@inject NavigationManager Navigation
+
+@* Links one guardian to a student: a registered guardian found by national id or mobile, or a new one. *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="3">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" data-testid="dialog-error">@_error</MudAlert>
+            }
+            <GuardianInputRows Rows="_rows" />
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="_saving"
+                   data-testid="dialog-save">@L["Common_Save"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired] public Guid StudentId { get; set; }
+
+    private readonly List<GuardianRow> _rows = [new()];
+    private string? _error;
+    private bool _saving;
+
+    private async Task SaveAsync()
+    {
+        _error = null;
+        var rows = _rows.Where(r => !r.IsEmpty).ToList();
+        if (rows.Count == 0 || !GuardianRow.ValidateAll(_rows)) return;
+
+        _saving = true;
+        var saved = await ApiCalls.RunAsync(async () =>
+        {
+            foreach (var row in rows) await Api.LinkAsync(StudentId, row.ToInput());
+        }, Navigation, L, message => _error = message);
+        _saving = false;
+        if (saved) MudDialog.Close(DialogResult.Ok(true));
+    }
+}

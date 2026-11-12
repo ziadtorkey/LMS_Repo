@@ -1,4 +1,6 @@
-html, body { margin: 0; font-family: Roboto, "Segoe UI", Tahoma, sans-serif; }
+html, body { margin: 0; font-family: Inter, "Segoe UI", Cairo, Arial, sans-serif; }
+html:lang(ar), html:lang(ar) body { font-family: Cairo, "Segoe UI", Tahoma, Arial, sans-serif; }
+/* Theme tokens, shell and shared components: css/lms-theme.css. */
 
 #blazor-error-ui {
     background: #ffffe0; bottom: 0; box-shadow: 0 -1px 2px rgba(0,0,0,.2); display: none;
@@ -29,11 +31,11 @@ html, body { margin: 0; font-family: Roboto, "Segoe UI", Tahoma, sans-serif; }
 .lms-diff-before { background: rgba(244, 67, 54, 0.14); }
 .lms-diff-after { background: rgba(76, 175, 80, 0.18); }
 
-/* Year selector in the app bar: white on the primary colour, compact on phones */
+/* Year selector in the app bar: follows the app bar text colour, compact on phones */
 .lms-year-select { width: 130px; }
-.lms-year-select .mud-input-slot, .lms-year-select .mud-select-input, .lms-year-select .mud-icon-root { color: #fff !important; }
-.lms-year-select .mud-input-outlined-border { border-color: rgba(255, 255, 255, 0.7) !important; }
-.lms-year-selector .mud-icon-root { color: #fff; }
+.lms-year-select .mud-input-slot, .lms-year-select .mud-select-input, .lms-year-select .mud-icon-root { color: var(--mud-palette-appbar-text) !important; }
+.lms-year-select .mud-input-outlined-border { border-color: var(--mud-palette-lines-inputs) !important; }
+.lms-year-selector .mud-icon-root { color: var(--mud-palette-appbar-text); }
 .lms-year-selector { flex-shrink: 0; }
 @media (max-width: 599px) {
     .lms-year-select { width: 104px; font-size: 0.7rem; }
@@ -57,3 +59,7 @@ html, body { margin: 0; font-family: Roboto, "Segoe UI", Tahoma, sans-serif; }
   border-radius: 4px;
   padding: 0 4px;
 }
+
+/* Lesson plan: items removed from the blueprint stay visible to staff, greyed out. */
+.lms-plan-hidden { opacity: 0.55; }
+.lms-plan-lesson { padding-block: 4px; }
