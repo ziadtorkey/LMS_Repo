@@ -300,13 +300,15 @@ public sealed class ModuleHandlers(
         input ??= new ModuleContentInput();
         if (kind == ModuleKinds.Page)
         {
-            content.Set(null, sanitizer.Sanitize(input.BodyHtmlAr), sanitizer.Sanitize(input.BodyHtmlEn), null);
+            content.Set(null, NullIfEmpty(sanitizer.Sanitize(input.BodyHtmlAr)), NullIfEmpty(sanitizer.Sanitize(input.BodyHtmlEn)), null);
         }
         else
         {
             content.Set(null, null, null, input.Url!.Trim());
         }
     }
+
+    private static string? NullIfEmpty(string value) => value.Length == 0 ? null : value;
 
     private async Task<bool> CanStudentSeeAsync(LessonModule module, Guid studentId, CancellationToken ct)
     {

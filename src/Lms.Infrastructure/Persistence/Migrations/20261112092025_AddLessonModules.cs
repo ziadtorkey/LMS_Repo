@@ -241,6 +241,7 @@ namespace Lms.Infrastructure.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "LessonModules");
+
         }
     }
 }

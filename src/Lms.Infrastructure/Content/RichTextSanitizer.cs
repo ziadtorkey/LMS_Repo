@@ -5,77 +5,84 @@ using Lms.Domain.Content;
 namespace Lms.Infrastructure.Content;
 
 /// <summary>
-/// The one allow-list of rich text (D48): p, br, strong, em, u, s, h2-h4, ol, ul, li, blockquote, a (http, https, mailto,
-/// forced rel and target), span and p with <c>dir</c> and the Quill alignment / direction classes. No images, frames, styles,
-/// scripts, event attributes, or javascript / data URLs. Applied on write; the client renders only what the server stored.
+/// The one allow-list for rich text (D48): p, br, strong, em, u, s, h2-h4, ol, ul, li, blockquote, span and a; links
+/// http/https/mailto only and always <c>rel="noopener noreferrer" target="_blank"</c>; <c>dir</c> and the Quill
+/// <c>ql-align-*</c> / <c>ql-direction-rtl</c> classes. No images, frames, styles, scripts, event handlers, ids or data
+/// attributes. Stateless and thread safe: one configured instance is shared.
 /// </summary>
 public sealed partial class RichTextSanitizer : IRichTextSanitizer
 {
-    [GeneratedRegex("^(ql-align-(left|right|center|justify)|ql-direction-rtl)$")]
-    private static partial Regex ClassRegex();
+    private static readonly string[] Tags =
+        ["p", "br", "strong", "em", "u", "s", "h2", "h3", "h4", "ol", "ul", "li", "blockquote", "span", "a"];
 
-    private readonly HtmlSanitizer _sanitizer = Build();
+    private static readonly string[] Schemes = ["http", "https", "mailto"];
 
-    public string? Sanitize(string? html)
+    private readonly HtmlSanitizer sanitizer = Build();
+
+    public string Sanitize(string? html)
     {
         if (string.IsNullOrWhiteSpace(html))
         {
-            return null;
+            return string.Empty;
         }
 
-        var clean = _sanitizer.Sanitize(html).Trim();
-        return clean.Length == 0 ? null : clean;
+        if (html.Length > IRichTextSanitizer.MaxLength)
+        {
+            throw new RichTextTooLongException(html.Length);
+        }
+
+        lock (sanitizer)
+        {
+            return sanitizer.Sanitize(html);
+        }
     }
 
     private static HtmlSanitizer Build()
     {
-        var sanitizer = new HtmlSanitizer();
-        sanitizer.AllowedTags.Clear();
-        sanitizer.AllowedTags.UnionWith(["p", "br", "strong", "em", "u", "s", "h2", "h3", "h4", "ol", "ul", "li", "blockquote", "a", "span"]);
-        sanitizer.AllowedAttributes.Clear();
-        sanitizer.AllowedAttributes.UnionWith(["href", "dir", "class", "rel", "target"]);
-        sanitizer.AllowedSchemes.Clear();
-        sanitizer.AllowedSchemes.UnionWith(["http", "https", "mailto"]);
-        sanitizer.AllowedCssProperties.Clear();
+        var options = new HtmlSanitizerOptions
+        {
+            AllowedTags = new HashSet<string>(Tags, StringComparer.OrdinalIgnoreCase),
+            AllowedAttributes = new HashSet<string>(["href", "dir", "class", "rel", "target"], StringComparer.OrdinalIgnoreCase),
+            AllowedSchemes = new HashSet<string>(Schemes, StringComparer.OrdinalIgnoreCase),
+            AllowedCssProperties = new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+            UriAttributes = new HashSet<string>(["href"], StringComparer.OrdinalIgnoreCase),
+        };
+        var sanitizer = new HtmlSanitizer(options)
+        {
+            KeepChildNodes = false,
+        };
+
+        // Classes: only the editor's alignment and direction markers.
         sanitizer.AllowedClasses.Clear();
-        sanitizer.AllowedClasses.UnionWith(["ql-align-left", "ql-align-right", "ql-align-center", "ql-align-justify", "ql-direction-rtl"]);
-        sanitizer.AllowDataAttributes = false;
+        foreach (var name in new[] { "left", "center", "right", "justify" })
+        {
+            sanitizer.AllowedClasses.Add($"ql-align-{name}");
+        }
+
+        sanitizer.AllowedClasses.Add("ql-direction-rtl");
+
         sanitizer.PostProcessNode += (_, e) =>
         {
-            if (e.Node is AngleSharp.Dom.IElement element)
+            if (e.Node is AngleSharp.Dom.IElement { LocalName: "a" } link)
             {
-                var classes = element.GetAttribute("class");
-                if (classes is not null)
-                {
-                    var kept = classes.Split(' ', StringSplitOptions.RemoveEmptyEntries).Where(c => ClassRegex().IsMatch(c)).ToArray();
-                    if (kept.Length == 0)
-                    {
-                        element.RemoveAttribute("class");
-                    }
-                    else
-                    {
-                        element.SetAttribute("class", string.Join(' ', kept));
-                    }
-                }
-
-                var dir = element.GetAttribute("dir");
-                if (dir is not null && dir is not ("rtl" or "ltr" or "auto"))
-                {
-                    element.RemoveAttribute("dir");
-                }
-
-                if (element.LocalName == "a")
-                {
-                    element.SetAttribute("rel", "noopener noreferrer");
-                    element.SetAttribute("target", "_blank");
-                }
-                else
-                {
-                    element.RemoveAttribute("rel");
-                    element.RemoveAttribute("target");
-                }
+                link.SetAttribute("rel", "noopener noreferrer");
+                link.SetAttribute("target", "_blank");
             }
         };
+
+        // dir may only be rtl, ltr or auto.
+        sanitizer.PostProcessNode += (_, e) =>
+        {
+            if (e.Node is AngleSharp.Dom.IElement element && element.GetAttribute("dir") is { } dir
+                && !DirPattern().IsMatch(dir))
+            {
+                element.RemoveAttribute("dir");
+            }
+        };
+
         return sanitizer;
     }
+
+    [GeneratedRegex("^(rtl|ltr|auto)$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex DirPattern();
 }

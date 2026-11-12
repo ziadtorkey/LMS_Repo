@@ -1,6 +1,4 @@
 using Lms.Api.Infrastructure;
-using Lms.Domain.Content;
-using Lms.Infrastructure.Content;
 using Lms.Shared;
 using Lms.Shared.Authorization;
 using Lms.Shared.Content;
@@ -12,7 +10,6 @@ public sealed class ContentModule : ILmsModule
 {
     public void AddServices(IServiceCollection services, IConfiguration configuration)
     {
-        services.AddSingleton<IRichTextSanitizer, RichTextSanitizer>();
         services.AddScoped<ModuleAccess>();
         services.AddScoped<ModuleHandlers>();
         services.AddScoped<CompletionRecorder>();
@@ -22,6 +19,7 @@ public sealed class ContentModule : ILmsModule
 
     public void MapEndpoints(IEndpointRouteBuilder app)
     {
+        AssetEndpoints.Map(app);
         app.MapGet(Routes.ClassCourseLessonModulesPattern,
                 (Guid id, Guid lessonKey, HttpContext http, ModuleHandlers h, CancellationToken ct) => h.ListAsync(id, lessonKey, http, ct))
             .RequireAuthorization().RequirePermission(Permissions.Modules.View);
