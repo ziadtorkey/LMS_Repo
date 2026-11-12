@@ -37,10 +37,18 @@ public sealed class ClassLessonPlanSync(LmsDbContext db, LessonPlanReads reads, 
             return;
         }
 
-        db.Set<ClassLesson>().RemoveRange(await db.Set<ClassLesson>().Where(l => l.PlanId == plan.Id).ToListAsync(cancellationToken));
-        db.Set<ClassSection>().RemoveRange(await db.Set<ClassSection>().Where(s => s.PlanId == plan.Id).ToListAsync(cancellationToken));
+        var lessons = await db.Set<ClassLesson>().Where(l => l.PlanId == plan.Id).ToListAsync(cancellationToken);
+        var sections = await db.Set<ClassSection>().Where(s => s.PlanId == plan.Id).ToListAsync(cancellationToken);
+        db.Set<ClassLesson>().RemoveRange(lessons);
+        db.Set<ClassSection>().RemoveRange(sections);
         db.Set<ClassLessonPlan>().Remove(plan);
         await db.SaveChangesAsync(cancellationToken);
+
+        // Saved and detached: a tracked dependent would make EF try to sever it when the caller removes the class course.
+        foreach (var tracked in lessons.Cast<object>().Concat(sections).Append(plan))
+        {
+            db.Entry(tracked).State = EntityState.Detached;
+        }
     }
 
     public Task OnOptionalChangedAsync(ClassCourse classCourse, CancellationToken cancellationToken) => Task.CompletedTask;
