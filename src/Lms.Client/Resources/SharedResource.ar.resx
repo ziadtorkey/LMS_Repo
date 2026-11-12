@@ -784,4 +784,22 @@
   <data name="Flag_Inherit" xml:space="preserve"><value>وراثة ({0})</value></data>
   <data name="Flag_On" xml:space="preserve"><value>تشغيل</value></data>
   <data name="Flag_Off" xml:space="preserve"><value>إيقاف</value></data>
+  <data name="Nav_MyClassCourses" xml:space="preserve"><value>مقررات فصولي</value></data>
+  <data name="MyClassCourses_Title" xml:space="preserve"><value>مقررات فصولي</value></data>
+  <data name="MyClassCourses_Empty" xml:space="preserve"><value>لا توجد لديك مقررات فصول في العام المحدد.</value></data>
+  <data name="MyClassCourses_Students" xml:space="preserve"><value>{0} طالبًا</value></data>
+  <data name="MyClassCourses_Optional" xml:space="preserve"><value>اختياري</value></data>
+  <data name="MyClassCourses_PlanVersion" xml:space="preserve"><value>الإصدار {0} من الخطة</value></data>
+  <data name="MyClassCourses_NoPlan" xml:space="preserve"><value>لا توجد خطة بعد</value></data>
+  <data name="MyClassCourses_OpenPlan" xml:space="preserve"><value>فتح الخطة</value></data>
+  <data name="Home_MyClassCoursesHint" xml:space="preserve"><value>اطلع على مقررات فصولك وخطط دروسها.</value></data>
+  <data name="LessonPlan_Title" xml:space="preserve"><value>خطة الدروس</value></data>
+  <data name="LessonPlan_Version" xml:space="preserve"><value>الإصدار {0}</value></data>
+  <data name="LessonPlan_Synced" xml:space="preserve"><value>آخر مزامنة {0}</value></data>
+  <data name="LessonPlan_Empty" xml:space="preserve"><value>لم يتلق مقرر الفصل هذا خطة بعد. تظهر الخطة عند نشر مخطط المقرر.</value></data>
+  <data name="LessonPlan_Hidden" xml:space="preserve"><value>مخفي</value></data>
+  <data name="LessonPlan_Planned" xml:space="preserve"><value>المخطط</value></data>
+  <data name="LessonPlan_HijriSuffix" xml:space="preserve"><value>هـ</value></data>
+  <data name="LessonPlan_Modules" xml:space="preserve"><value>الوحدات التعليمية</value></data>
+  <data name="LessonPlan_ModulesLater" xml:space="preserve"><value>تصل الوحدات التعليمية في إصدار لاحق.</value></data>
 </root>
