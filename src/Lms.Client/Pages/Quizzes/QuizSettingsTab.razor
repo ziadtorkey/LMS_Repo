@@ -50,6 +50,10 @@
             <MudSelectItem T="string" Value="@r">@L["ReviewPolicy_" + r]</MudSelectItem>
         }
     </MudSelect>
+    @if (Model.ReviewPolicy == ReviewPolicies.AnswersAndCorrect && Model.MaxAttempts is null && Model.ClosesUtc is null)
+    {
+        <MudAlert Severity="Severity.Warning" Dense="true" data-testid="quiz-review-never">@L["Quiz_ReviewNeverCorrect"]</MudAlert>
+    }
     <MudStack Spacing="0">
         <MudCheckBox T="bool" Value="Model.ShuffleQuestions" ValueChanged="@((bool v) => Set(() => Model.ShuffleQuestions = v))" Label="@L["Quiz_ShuffleQuestions"]" data-testid="quiz-shuffle-questions" />
         <MudCheckBox T="bool" Value="Model.ShuffleOptions" ValueChanged="@((bool v) => Set(() => Model.ShuffleOptions = v))" Label="@L["Quiz_ShuffleOptions"]" data-testid="quiz-shuffle-options" />

@@ -1534,4 +1534,5 @@
   <data name="ReviewPolicy_AnswersAndCorrect" xml:space="preserve"><value>Score, their answers and the correct answers</value></data>
   <data name="ReviewPolicy_None" xml:space="preserve"><value>Submission only</value></data>
   <data name="ReviewPolicy_ScoreOnly" xml:space="preserve"><value>Score only</value></data>
+  <data name="Quiz_ReviewNeverCorrect" xml:space="preserve"><value>With unlimited attempts and no close date, students will never see the correct answers. Set a number of attempts or a close date.</value></data>
 </root>

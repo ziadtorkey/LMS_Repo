@@ -1534,4 +1534,5 @@
   <data name="ReviewPolicy_AnswersAndCorrect" xml:space="preserve"><value>الدرجة وإجاباته والإجابات الصحيحة</value></data>
   <data name="ReviewPolicy_None" xml:space="preserve"><value>التسليم فقط</value></data>
   <data name="ReviewPolicy_ScoreOnly" xml:space="preserve"><value>الدرجة فقط</value></data>
+  <data name="Quiz_ReviewNeverCorrect" xml:space="preserve"><value>مع محاولات غير محدودة وبلا تاريخ إغلاق، لن يرى الطلاب الإجابات الصحيحة أبداً. حدد عدد المحاولات أو تاريخ الإغلاق.</value></data>
 </root>
