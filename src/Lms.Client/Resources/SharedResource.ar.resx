@@ -907,4 +907,6 @@
   <data name="LibraryType_Other" xml:space="preserve"><value>أخرى</value></data>
   <data name="ModuleKind_LibraryResource" xml:space="preserve"><value>مورد من المكتبة</value></data>
   <data name="Error_download_not_allowed" xml:space="preserve"><value>يمكن قراءة هذا المورد هنا ولكن لا يمكن تنزيله.</value></data>
+  <data name="Module_Url" xml:space="preserve"><value>عنوان الرابط (https://...)</value></data>
+  <data name="Module_Completion" xml:space="preserve"><value>الإكمال</value></data>
 </root>

@@ -45,18 +45,24 @@ else
                 <MudSelectItem T="string" Value="@t">@L["LibraryType_" + t]</MudSelectItem>
             }
         </MudSelect>
+        @if (_levels.Count > 0)
+        {
         <MudSelect T="Guid?" Value="_level" ValueChanged="v => ChangeAsync(() => _level = v)" Label="@L["Library_Level"]" Clearable="true" data-testid="library-level">
             @foreach (var l in _levels)
             {
                 <MudSelectItem T="Guid?" Value="@((Guid?)l.Id)">@Culture.Pick(l.NameAr, l.NameEn)</MudSelectItem>
             }
         </MudSelect>
+        }
+        @if (_courses.Count > 0)
+        {
         <MudSelect T="Guid?" Value="_course" ValueChanged="v => ChangeAsync(() => _course = v)" Label="@L["Library_Subject"]" Clearable="true" data-testid="library-course">
             @foreach (var c in _courses)
             {
                 <MudSelectItem T="Guid?" Value="@((Guid?)c.Id)">@Culture.Pick(c.NameAr, c.NameEn)</MudSelectItem>
             }
         </MudSelect>
+        }
         <MudSelect T="string" Value="_tag" ValueChanged="v => ChangeAsync(() => _tag = v)" Label="@L["Library_Tag"]" Clearable="true" data-testid="library-tag">
             @foreach (var t in _tags)
             {
@@ -134,8 +140,12 @@ else
         if (!PermState.Loaded) await PermState.RefreshAsync();
         if (!PermState.Has(Permissions.Library.View)) return;
         // The filter lists are conveniences: a caller who cannot read them still searches by text and type.
-        await ApiCalls.RunAsync(async () => _levels = await Org.GetLevelTypesAsync(), Navigation, L, _ => { });
-        await ApiCalls.RunAsync(async () => _courses = (await Courses.ListAsync(new CourseQuery(null))).Items, Navigation, L, _ => { });
+        // A forbidden GET sends the whole page to /forbidden, so these lookups are only made by callers who may read them
+        // (students and teachers may not): the level and subject filters simply do not appear for the others.
+        if (PermState.Has(Permissions.LevelTypes.View))
+            await ApiCalls.RunAsync(async () => _levels = await Org.GetLevelTypesAsync(), Navigation, L, _ => { });
+        if (PermState.Has(Permissions.Courses.View))
+            await ApiCalls.RunAsync(async () => _courses = (await Courses.ListAsync(new CourseQuery(null))).Items, Navigation, L, _ => { });
         await ApiCalls.RunAsync(async () =>
         {
             var me = await Me.GetMeAsync();
