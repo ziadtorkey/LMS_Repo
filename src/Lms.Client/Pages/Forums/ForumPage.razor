@@ -144,6 +144,7 @@ else
         if (!ok) return false;
         _title = null; _composing = false;
         await LoadAsync();
+        StateHasChanged(); // the submit comes from the child composer, which does not re-render this page on its own
         return true;
     }
 
