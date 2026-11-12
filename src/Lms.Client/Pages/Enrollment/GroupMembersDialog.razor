@@ -1,0 +1,116 @@
+@using Lms.Client.Services.Api
+@using Lms.Shared.Enrollment
+@inject IGroupsApi Api
+@inject IEnrollmentApi Enrollments
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+@* Two lists: the enrolled students who are in no group yet (a student can be in one group only) and the members of this group. *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="2">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" data-testid="dialog-error">@_error</MudAlert>
+            }
+            <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                <MudPaper Outlined="true" Class="pa-2 flex-grow-1" Style="min-width: 14rem" data-testid="ungrouped-list">
+                    <MudText Typo="Typo.subtitle2">@L["Group_Ungrouped", _ungrouped.Count]</MudText>
+                    @if (_ungrouped.Count == 0)
+                    {
+                        <MudText Typo="Typo.caption" data-testid="ungrouped-empty">@L["Group_NoneUngrouped"]</MudText>
+                    }
+                    @foreach (var student in _ungrouped)
+                    {
+                        var id = student.StudentId;
+                        <MudCheckBox T="bool" Value="_toAdd.Contains(id)" ValueChanged="v => Toggle(_toAdd, id, v)" Dense="true"
+                                     Label="@($"{Culture.Pick(student.NameAr, student.NameEn)} ({student.StudentCode})")" data-testid="@($"ungrouped-{id}")" />
+                    }
+                    <MudStack Row="true" Spacing="1" Class="mt-2">
+                        <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Primary" OnClick="AddSelectedAsync" Disabled="@(_toAdd.Count == 0 || _busy)"
+                                   data-testid="members-add">@L["Group_AddSelected"]</MudButton>
+                        @if (Group.MatchType is not null)
+                        {
+                            <MudButton Size="Size.Small" Variant="Variant.Outlined" OnClick="AddSuggestedAsync" Disabled="_busy"
+                                       data-testid="members-suggested">@L["Group_AddSuggested"]</MudButton>
+                        }
+                    </MudStack>
+                </MudPaper>
+                <MudPaper Outlined="true" Class="pa-2 flex-grow-1" Style="min-width: 14rem" data-testid="members-list">
+                    <MudText Typo="Typo.subtitle2">@L["Group_Members", _members.Count]</MudText>
+                    @if (_members.Count == 0)
+                    {
+                        <MudText Typo="Typo.caption" data-testid="members-empty">@L["Group_NoMembers"]</MudText>
+                    }
+                    @foreach (var member in _members)
+                    {
+                        var id = member.StudentId;
+                        <MudCheckBox T="bool" Value="_toRemove.Contains(id)" ValueChanged="v => Toggle(_toRemove, id, v)" Dense="true"
+                                     Label="@($"{Culture.Pick(member.NameAr, member.NameEn)} ({member.StudentCode})")" data-testid="@($"member-{id}")" />
+                    }
+                    <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Error" Class="mt-2" OnClick="RemoveSelectedAsync"
+                               Disabled="@(_toRemove.Count == 0 || _busy)" data-testid="members-remove">@L["Group_RemoveSelected"]</MudButton>
+                </MudPaper>
+            </MudStack>
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Close(DialogResult.Ok(true))" data-testid="members-done">@L["Common_Close"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired] public StudentGroupDto Group { get; set; } = default!;
+
+    private IReadOnlyList<GroupMemberDto> _members = [], _ungrouped = [];
+    private readonly HashSet<Guid> _toAdd = [], _toRemove = [];
+    private string? _error;
+    private bool _busy;
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private static void Toggle(HashSet<Guid> set, Guid id, bool on)
+    {
+        if (on) set.Add(id); else set.Remove(id);
+    }
+
+    /// <summary>Ungrouped = enrolled in the class course and in none of its groups; members = this group's.</summary>
+    private async Task LoadAsync()
+    {
+        _toAdd.Clear();
+        _toRemove.Clear();
+        await ApiCalls.RunAsync(async () =>
+        {
+            _members = await Api.ListMembersAsync(Group.Id);
+            var inAGroup = new HashSet<Guid>(_members.Select(m => m.StudentId));
+            foreach (var other in (await Api.ListAsync(Group.ClassCourseId)).Where(g => g.Id != Group.Id))
+                foreach (var m in await Api.ListMembersAsync(other.Id)) inAGroup.Add(m.StudentId);
+            var enrolled = (await Enrollments.ListEnrollmentsAsync(new EnrollmentQuery(null, Group.ClassCourseId, EnrollmentStatuses.Active, 1, 500))).Items;
+            _ungrouped = enrolled.Where(e => !inAGroup.Contains(e.StudentId))
+                .Select(e => new GroupMemberDto(e.StudentId, e.StudentCode, e.StudentNameAr, e.StudentNameEn)).ToList();
+        }, Navigation, L, message => _error = message);
+    }
+
+    /// <summary>Runs a membership change; already_in_group (someone grouped the student meanwhile) shows its message and the lists reload.</summary>
+    private async Task ChangeAsync(Func<Task> change)
+    {
+        _error = null;
+        _busy = true;
+        await ApiCalls.RunAsync(change, Navigation, L, message => _error = message);
+        _busy = false;
+        await LoadAsync();
+    }
+
+    private Task AddSelectedAsync() => ChangeAsync(() => Api.AddMembersAsync(Group.Id, new GroupMembersRequest(_toAdd.ToList())));
+
+    private Task RemoveSelectedAsync() => ChangeAsync(() => Api.RemoveMembersAsync(Group.Id, new GroupMembersRequest(_toRemove.ToList())));
+
+    /// <summary>Adds every suggested student (those matching the group's match) that is still ungrouped.</summary>
+    private Task AddSuggestedAsync() => ChangeAsync(async () =>
+    {
+        var suggested = (await Api.SuggestionsAsync(Group.Id)).Select(s => s.StudentId).ToList();
+        if (suggested.Count > 0) await Api.AddMembersAsync(Group.Id, new GroupMembersRequest(suggested));
+    });
+}
