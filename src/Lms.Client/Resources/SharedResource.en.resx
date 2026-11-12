@@ -848,4 +848,42 @@
   <data name="RichText_LinkUrl" xml:space="preserve"><value>Link address</value></data>
   <data name="RichText_NumberedList" xml:space="preserve"><value>Numbered list</value></data>
   <data name="RichText_Toolbar" xml:space="preserve"><value>Formatting toolbar</value></data>
+  <data name="Asset_Limits" xml:space="preserve"><value>Allowed types: {0}. Maximum size: {1} MB.</value></data>
+  <data name="Asset_Choose" xml:space="preserve"><value>Choose a file to upload</value></data>
+  <data name="Asset_TypeNotAllowed" xml:space="preserve"><value>This file type is not allowed here. Allowed: {0}.</value></data>
+  <data name="Asset_TooLarge" xml:space="preserve"><value>The file is larger than {0} MB.</value></data>
+  <data name="Asset_Uploading" xml:space="preserve"><value>Uploading {0}...</value></data>
+  <data name="Asset_Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Asset_Retry" xml:space="preserve"><value>Retry</value></data>
+  <data name="Asset_Uploaded" xml:space="preserve"><value>{0} was uploaded.</value></data>
+  <data name="Asset_Cancelled" xml:space="preserve"><value>Upload cancelled.</value></data>
+  <data name="Asset_NoPreview" xml:space="preserve"><value>This file type cannot be previewed in the browser.</value></data>
+  <data name="Asset_Download" xml:space="preserve"><value>Download</value></data>
+  <data name="Asset_PreviewFailed" xml:space="preserve"><value>The file could not be loaded.</value></data>
+  <data name="Asset_Reload" xml:space="preserve"><value>Reload</value></data>
+  <data name="Module_Add" xml:space="preserve"><value>Add module</value></data>
+  <data name="Module_Visibility" xml:space="preserve"><value>Visibility</value></data>
+  <data name="Module_VisibleFrom" xml:space="preserve"><value>Visible from</value></data>
+  <data name="Module_VisibleTo" xml:space="preserve"><value>Visible until</value></data>
+  <data name="Module_Time" xml:space="preserve"><value>Time</value></data>
+  <data name="Module_Target" xml:space="preserve"><value>For</value></data>
+  <data name="Module_Completion" xml:space="preserve"><value>Completion</value></data>
+  <data name="Module_BodyAr" xml:space="preserve"><value>Page content (Arabic)</value></data>
+  <data name="Module_BodyEn" xml:space="preserve"><value>Page content (English)</value></data>
+  <data name="Module_Url" xml:space="preserve"><value>Link address (https://...)</value></data>
+  <data name="Module_MoveUp" xml:space="preserve"><value>Move up</value></data>
+  <data name="Module_MoveDown" xml:space="preserve"><value>Move down</value></data>
+  <data name="Module_Hide" xml:space="preserve"><value>Hide</value></data>
+  <data name="Module_Show" xml:space="preserve"><value>Show</value></data>
+  <data name="Module_Move" xml:space="preserve"><value>Move to another lesson</value></data>
+  <data name="Module_MoveTo" xml:space="preserve"><value>Lesson</value></data>
+  <data name="Module_DeleteConfirm" xml:space="preserve"><value>Delete the module {0}?</value></data>
+  <data name="ModuleVisibility_Published" xml:space="preserve"><value>Published</value></data>
+  <data name="ModuleVisibility_Hidden" xml:space="preserve"><value>Hidden</value></data>
+  <data name="ModuleVisibility_Scheduled" xml:space="preserve"><value>Scheduled</value></data>
+  <data name="ModuleTarget_ClassCourse" xml:space="preserve"><value>The whole class</value></data>
+  <data name="ModuleTarget_Group" xml:space="preserve"><value>One group</value></data>
+  <data name="CompletionRule_None" xml:space="preserve"><value>Not tracked</value></data>
+  <data name="CompletionRule_Manual" xml:space="preserve"><value>Student marks it done</value></data>
+  <data name="CompletionRule_View" xml:space="preserve"><value>When the student opens it</value></data>
 </root>

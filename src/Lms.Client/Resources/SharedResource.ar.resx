@@ -848,4 +848,42 @@
   <data name="RichText_LinkUrl" xml:space="preserve"><value>عنوان الرابط</value></data>
   <data name="RichText_NumberedList" xml:space="preserve"><value>قائمة مرقمة</value></data>
   <data name="RichText_Toolbar" xml:space="preserve"><value>شريط أدوات التنسيق</value></data>
+  <data name="Asset_Limits" xml:space="preserve"><value>الأنواع المسموحة: {0}. الحد الأقصى للحجم: {1} ميجابايت.</value></data>
+  <data name="Asset_Choose" xml:space="preserve"><value>اختر ملفًا لرفعه</value></data>
+  <data name="Asset_TypeNotAllowed" xml:space="preserve"><value>نوع الملف غير مسموح هنا. المسموح: {0}.</value></data>
+  <data name="Asset_TooLarge" xml:space="preserve"><value>حجم الملف أكبر من {0} ميجابايت.</value></data>
+  <data name="Asset_Uploading" xml:space="preserve"><value>جارٍ رفع {0}...</value></data>
+  <data name="Asset_Cancel" xml:space="preserve"><value>إلغاء</value></data>
+  <data name="Asset_Retry" xml:space="preserve"><value>إعادة المحاولة</value></data>
+  <data name="Asset_Uploaded" xml:space="preserve"><value>تم رفع {0}.</value></data>
+  <data name="Asset_Cancelled" xml:space="preserve"><value>تم إلغاء الرفع.</value></data>
+  <data name="Asset_NoPreview" xml:space="preserve"><value>لا يمكن معاينة هذا النوع من الملفات في المتصفح.</value></data>
+  <data name="Asset_Download" xml:space="preserve"><value>تنزيل</value></data>
+  <data name="Asset_PreviewFailed" xml:space="preserve"><value>تعذّر تحميل الملف.</value></data>
+  <data name="Asset_Reload" xml:space="preserve"><value>إعادة التحميل</value></data>
+  <data name="Module_Add" xml:space="preserve"><value>إضافة وحدة</value></data>
+  <data name="Module_Visibility" xml:space="preserve"><value>الظهور</value></data>
+  <data name="Module_VisibleFrom" xml:space="preserve"><value>يظهر من</value></data>
+  <data name="Module_VisibleTo" xml:space="preserve"><value>يظهر حتى</value></data>
+  <data name="Module_Time" xml:space="preserve"><value>الوقت</value></data>
+  <data name="Module_Target" xml:space="preserve"><value>موجّه إلى</value></data>
+  <data name="Module_Completion" xml:space="preserve"><value>الإكمال</value></data>
+  <data name="Module_BodyAr" xml:space="preserve"><value>محتوى الصفحة (عربي)</value></data>
+  <data name="Module_BodyEn" xml:space="preserve"><value>محتوى الصفحة (إنجليزي)</value></data>
+  <data name="Module_Url" xml:space="preserve"><value>عنوان الرابط (https://...)</value></data>
+  <data name="Module_MoveUp" xml:space="preserve"><value>نقل لأعلى</value></data>
+  <data name="Module_MoveDown" xml:space="preserve"><value>نقل لأسفل</value></data>
+  <data name="Module_Hide" xml:space="preserve"><value>إخفاء</value></data>
+  <data name="Module_Show" xml:space="preserve"><value>إظهار</value></data>
+  <data name="Module_Move" xml:space="preserve"><value>نقل إلى درس آخر</value></data>
+  <data name="Module_MoveTo" xml:space="preserve"><value>الدرس</value></data>
+  <data name="Module_DeleteConfirm" xml:space="preserve"><value>حذف الوحدة {0}؟</value></data>
+  <data name="ModuleVisibility_Published" xml:space="preserve"><value>منشورة</value></data>
+  <data name="ModuleVisibility_Hidden" xml:space="preserve"><value>مخفية</value></data>
+  <data name="ModuleVisibility_Scheduled" xml:space="preserve"><value>مجدولة</value></data>
+  <data name="ModuleTarget_ClassCourse" xml:space="preserve"><value>الفصل كاملًا</value></data>
+  <data name="ModuleTarget_Group" xml:space="preserve"><value>مجموعة واحدة</value></data>
+  <data name="CompletionRule_None" xml:space="preserve"><value>غير متتبَّعة</value></data>
+  <data name="CompletionRule_Manual" xml:space="preserve"><value>يحدّدها الطالب كمنجزة</value></data>
+  <data name="CompletionRule_View" xml:space="preserve"><value>عند فتح الطالب لها</value></data>
 </root>
