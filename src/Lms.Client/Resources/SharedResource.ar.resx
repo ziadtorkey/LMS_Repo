@@ -991,4 +991,8 @@
   <data name="Guardians_EmptyText" xml:space="preserve"><value>غيّر البحث، أو أضف أولياء الأمور عند إنشاء طالب.</value></data>
   <data name="Guardian_BackToList" xml:space="preserve"><value>العودة إلى أولياء الأمور</value></data>
   <data name="Guardian_Details" xml:space="preserve"><value>التفاصيل</value></data>
+  <data name="MyChildren_Subtitle" xml:space="preserve"><value>أبناؤك في هذه الجهة وفصولهم.</value></data>
+  <data name="MyProfile_Subtitle" xml:space="preserve"><value>حدّث بيانات التواصل الخاصة بك. التغييرات الأخرى تُرسل إلى مدرستك للموافقة.</value></data>
+  <data name="MyProfile_Details" xml:space="preserve"><value>بياناتك</value></data>
+  <data name="MyProfile_RequestsEmptyText" xml:space="preserve"><value>الطلبات التي ترسلها إلى مدرستك تظهر هنا.</value></data>
 </root>

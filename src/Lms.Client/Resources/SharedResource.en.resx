@@ -991,4 +991,8 @@
   <data name="Guardians_EmptyText" xml:space="preserve"><value>Change the search, or add guardians when you create a student.</value></data>
   <data name="Guardian_BackToList" xml:space="preserve"><value>Back to guardians</value></data>
   <data name="Guardian_Details" xml:space="preserve"><value>Details</value></data>
+  <data name="MyChildren_Subtitle" xml:space="preserve"><value>Your children in this school group and their class.</value></data>
+  <data name="MyProfile_Subtitle" xml:space="preserve"><value>Keep your contact details up to date. Other changes go to your school for approval.</value></data>
+  <data name="MyProfile_Details" xml:space="preserve"><value>Your details</value></data>
+  <data name="MyProfile_RequestsEmptyText" xml:space="preserve"><value>Requests you send to your school appear here.</value></data>
 </root>

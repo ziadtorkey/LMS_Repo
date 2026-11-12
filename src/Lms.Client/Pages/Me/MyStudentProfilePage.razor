@@ -16,7 +16,7 @@
 <PageTitle>@L["MyProfile_Title"]</PageTitle>
 @if (!PermState.Loaded)
 {
-    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+    <LoadingState Lines="4" TestId="profile-loading" />
 }
 else if (!PermState.Has(Permissions.Students.SelfEdit))
 {
@@ -24,20 +24,31 @@ else if (!PermState.Has(Permissions.Students.SelfEdit))
 }
 else if (_error is not null)
 {
-    <MudAlert Severity="Severity.Error" data-testid="profile-error">@_error</MudAlert>
+    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="profile-error">@_error</MudAlert>
 }
 else if (_profile is null)
 {
-    <MudText>@L["Common_Loading"]</MudText>
+    <LoadingState Lines="4" TestId="profile-loading" />
 }
 else
 {
-    <MudStack Spacing="3">
-        <MudText Typo="Typo.h4" data-testid="my-profile-title">@L["MyProfile_Title"]</MudText>
-        <MudText Typo="Typo.body2"><span dir="ltr" data-testid="my-code">@_profile.Student.Summary.StudentCode</span></MudText>
+    <PageHeader Title="@L["MyProfile_Title"]" Subtitle="@L["MyProfile_Subtitle"]" TitleTestId="my-profile-title">
+        <Badges>
+            <span class="lms-muted" dir="ltr" data-testid="my-code">@_profile.Student.Summary.StudentCode</span>
+        </Badges>
+        <Actions>
+            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.EditNote" OnClick="RequestAsync" Disabled="HasPending"
+                       data-testid="request-change">@L["MyProfile_RequestChange"]</MudButton>
+        </Actions>
+    </PageHeader>
+    @if (HasPending)
+    {
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-4" data-testid="pending-message">@L["MyProfile_PendingBlocks"]</MudAlert>
+    }
 
-        <MudPaper Class="pa-3">
-            <MudStack Spacing="2">
+    <SectionCard Title="@L["MyProfile_Details"]">
+        <MudForm Class="lms-form">
+            <div class="lms-form-grid">
                 @foreach (var field in StudentFields.Requestable)
                 {
                     var name = field;
@@ -48,49 +59,42 @@ else
                     }
                     else if (_profile.RequestableFields.Contains(name))
                     {
-                        <MudText data-testid="@($"readonly-{name}")">
-                            <strong>@L[$"StudentField_{name}"]:</strong>
-                            <span dir="@(name is StudentFields.NameEn or StudentFields.NationalId or StudentFields.DateOfBirth ? "ltr" : null)">@StudentFieldText.Display(name, Original(name), key => L[key].Value)</span>
-                        </MudText>
+                        <dl class="lms-details" data-testid="@($"readonly-{name}")">
+                            <DetailItem Label="@L[$"StudentField_{name}"]"
+                                        Value="@StudentFieldText.Display(name, Original(name), key => L[key].Value)"
+                                        Ltr="@(name is StudentFields.NameEn or StudentFields.NationalId or StudentFields.DateOfBirth)" />
+                        </dl>
                     }
                 }
-                <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_saving"
-                               data-testid="my-save">@L["Common_Save"]</MudButton>
-                </MudStack>
-            </MudStack>
-        </MudPaper>
+            </div>
+            <div class="lms-dialog-actions mt-3">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_saving"
+                           StartIcon="@(_saving ? null : Icons.Material.Rounded.Check)" data-testid="my-save">@L["Common_Save"]</MudButton>
+            </div>
+        </MudForm>
+    </SectionCard>
 
-        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
-            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Edit" OnClick="RequestAsync" Disabled="HasPending"
-                       data-testid="request-change">@L["MyProfile_RequestChange"]</MudButton>
-            @if (HasPending)
-            {
-                <MudText Typo="Typo.caption" data-testid="pending-message">@L["MyProfile_PendingBlocks"]</MudText>
-            }
-        </MudStack>
-
-        <MudText Typo="Typo.h6">@L["MyProfile_Requests"]</MudText>
+    <SectionCard Title="@L["MyProfile_Requests"]" Flush="true" Class="mt-4">
         @if (_requests.Count == 0)
         {
-            <MudText data-testid="requests-empty">@L["Common_Empty"]</MudText>
+            <EmptyState Title="@L["Common_Empty"]" Text="@L["MyProfile_RequestsEmptyText"]" Icon="@Icons.Material.Rounded.EditNote" TestId="requests-empty" />
         }
         else
         {
-            <MudTable Items="_requests" Dense="true" Breakpoint="Breakpoint.Sm" data-testid="requests-table">
+            <MudTable Items="_requests" Dense="true" Elevation="0" HeaderClass="lms-table-head" Class="lms-table" Breakpoint="Breakpoint.Sm" data-testid="requests-table">
                 <HeaderContent>
                     <MudTh>@L["Audit_When"]</MudTh>
                     <MudTh>@L["MyProfile_Fields"]</MudTh>
                     <MudTh>@L["Common_Status"]</MudTh>
                     <MudTh>@L["ChangeRequest_Comment"]</MudTh>
-                    <MudTh></MudTh>
+                    <MudTh><span class="lms-visually-hidden">@L["Common_Actions"]</span></MudTh>
                 </HeaderContent>
                 <RowTemplate Context="request">
-                    <MudTd DataLabel="@L["Audit_When"]"><span dir="ltr">@request.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture)</span></MudTd>
+                    <MudTd DataLabel="@L["Audit_When"]"><span class="lms-date-cell"><span dir="ltr">@request.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture)</span></span></MudTd>
                     <MudTd DataLabel="@L["MyProfile_Fields"]">@string.Join("، ", request.Changes.Select(c => L[$"StudentField_{c.Field}"].Value))</MudTd>
                     <MudTd DataLabel="@L["Common_Status"]" data-testid="@($"request-status-{request.Id}")">@L[$"ChangeRequestStatus_{request.Status}"]</MudTd>
                     <MudTd DataLabel="@L["ChangeRequest_Comment"]">@request.DecisionComment</MudTd>
-                    <MudTd>
+                    <MudTd Class="lms-cell-actions">
                         @if (request.Status == ChangeRequestStatuses.Pending)
                         {
                             <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Error" OnClick="() => CancelAsync(request)"
@@ -100,7 +104,7 @@ else
                 </RowTemplate>
             </MudTable>
         }
-    </MudStack>
+    </SectionCard>
 }
 
 @code {
