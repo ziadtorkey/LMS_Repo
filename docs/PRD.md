@@ -353,6 +353,10 @@ All tenant-owned tables: `OrganizationId`; unit-scoped tables: `OrgUnitId`, `Org
 | D45 | Default student password | If left blank a strong password is generated per student and shown once; for imports a credentials sheet is downloadable once within 15 minutes; students must change it at first sign-in. Class placement is optional on create and import ("Unplaced" filter). |
 | D46 | Blueprint authoring | Org Admins and Managers may create and edit course blueprints at their units (amends the §3.4 view-only cells); course supervisors keep it for their courses. |
 | D47 | Student sign-in names | A student signs in as `<student code>@<client short code>` (e.g. `000123@alnoor`). Every client has a short code, unique across the platform (2–20 lower-case letters, digits or hyphens; defaults to the root unit code). The full sign-in name is shown on the credentials sheet. |
+| D48 | Rich text (M4) | Pages, assignment instructions and forum posts use a visual (Word-like) editor in one shared component; the server sanitises HTML on write with an allow-list. |
+| D49 | Zoom account | One platform-level Zoom app for all clients (not per-client credentials); secrets live in server configuration, never in the database or the repo. |
+| D50 | LTI | LTI 1.3 is out of scope for v1. |
+| D51 | M4 split | M4 ships as M4a (content modules, assignments, quizzes, forums) then M4b (Zoom, SCORM, H5P). Lead technical defaults: GradeEvent outbox as the M5 grade seam; video is signed-URL streaming of the uploaded file (no HLS); a quiz pool draws N questions per attempt; group-targeted modules are visible only to that group and its teachers; SCORM/H5P content is served from a sandboxed origin with a strict CSP after a QA security spike. |
 
 ---
 
