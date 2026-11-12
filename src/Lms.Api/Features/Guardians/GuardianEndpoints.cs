@@ -1,6 +1,7 @@
 using Lms.Api.Infrastructure;
 using Lms.Domain.Abstractions;
 using Lms.Domain.Organizations;
+using Lms.Domain.Access;
 using Lms.Domain.People;
 using Lms.Infrastructure.People.Guardians;
 using Lms.Infrastructure.Persistence;
@@ -24,7 +25,7 @@ public static class GuardianEndpoints
     }
 
     private static async Task<IResult> ListAsync(
-        string? search, int? page, int? pageSize, LmsDbContext db, ICurrentContext context, CancellationToken ct)
+        string? search, int? page, int? pageSize, LmsDbContext db, ICurrentContext context, IRelationshipScope relationships, CancellationToken ct)
     {
         var p = page ?? 1;
         var size = pageSize ?? 50;
@@ -36,7 +37,8 @@ public static class GuardianEndpoints
         }
 
         // A platform admin without a client context acts on no client's guardians.
-        var guardians = context.OrganizationId is null ? GuardianVisibility.Visible(db).Where(_ => false) : GuardianVisibility.Visible(db);
+        var filter = await relationships.ForAsync(Permissions.Students.View, ct);
+        var guardians = context.OrganizationId is null ? GuardianVisibility.Visible(db).Where(_ => false) : GuardianVisibility.Visible(db, filter);
         if (!string.IsNullOrWhiteSpace(search))
         {
             var text = search.Trim();
@@ -51,28 +53,30 @@ public static class GuardianEndpoints
         var ordered = guardians.OrderBy(g => g.NameEnKey).ThenBy(g => g.Id);
         var total = await ordered.CountAsync(ct);
         var rows = await ordered.Skip((p - 1) * size).Take(size).ToListAsync(ct);
-        var children = await GuardianMapper.ChildrenInScopeAsync(db, rows.Select(g => g.Id).ToList(), ct);
+        var children = await GuardianMapper.ChildrenInScopeAsync(db, rows.Select(g => g.Id).ToList(), filter, ct);
         return Results.Ok(new PagedResult<GuardianSummaryDto>(
             rows.Select(g => GuardianMapper.Summary(g, children.GetValueOrDefault(g.Id))).ToList(), total, p, size));
     }
 
-    private static async Task<IResult> GetAsync(Guid id, LmsDbContext db, ICurrentContext context, CancellationToken ct)
+    private static async Task<IResult> GetAsync(Guid id, LmsDbContext db, ICurrentContext context, IRelationshipScope relationships, CancellationToken ct)
     {
         if (context.OrganizationId is null)
         {
             return ApiProblems.NotFound();
         }
 
-        var guardian = await GuardianVisibility.Visible(db).FirstOrDefaultAsync(g => g.Id == id, ct);
+        var filter = await relationships.ForAsync(Permissions.Students.View, ct);
+        var guardian = await GuardianVisibility.Visible(db, filter).FirstOrDefaultAsync(g => g.Id == id, ct);
         if (guardian is null)
         {
             return ApiProblems.NotFound();
         }
 
-        // Only the children inside the caller's scope: the links and students are unit-scoped tables.
+        // Only the children inside the caller's scope (and, for a Teacher, the students they reach): unit-scoped tables.
+        var reachable = GuardianVisibility.ReachableStudentIds(db, filter);
         var rows = await (
             from l in db.Set<StudentGuardian>()
-            where l.GuardianId == id
+            where l.GuardianId == id && reachable.Contains(l.StudentId)
             join s in db.Set<StudentProfile>() on l.StudentId equals s.Id
             join u in db.Set<OrgUnit>() on s.OrgUnitId equals u.Id
             orderby s.NameEnKey
@@ -124,7 +128,7 @@ public static class GuardianEndpoints
         try
         {
             var guardian = await linker.UpdateGuardianAsync(id, GuardianValidators.ToDomain(body.Data), ct);
-            var children = await GuardianMapper.ChildrenInScopeAsync(db, [id], ct);
+            var children = await GuardianMapper.ChildrenInScopeAsync(db, [id], RelationshipFilter.Unrestricted, ct);
             return Results.Ok(GuardianMapper.Summary(guardian, children.GetValueOrDefault(id)));
         }
         catch (GuardianLinkException ex)

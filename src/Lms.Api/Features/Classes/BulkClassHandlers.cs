@@ -13,7 +13,7 @@ namespace Lms.Api.Features.Classes;
 /// <summary>POST /api/classes/bulk and /api/classes/copy: many classes in one transaction.</summary>
 public sealed class BulkClassHandlers(
     LmsDbContext db, ClassHandlers single, ClassLookups lookups, ClassMapper mapper, IAcademicYearResolver years,
-    IAccessEvaluator accessEvaluator)
+    ClassCourseWriter courseWriter, IAccessEvaluator accessEvaluator)
 {
     public async Task<IResult> BulkAsync(BulkCreateClassesRequest request, HttpContext http, CancellationToken ct)
     {
@@ -123,6 +123,7 @@ public sealed class BulkClassHandlers(
         var allowedAt = new Dictionary<Guid, bool>();
         var skipped = new List<string>();
         var created = new List<Class>();
+        var copies = new List<(Class Source, Class Copy, Domain.Organizations.OrgUnit Unit)>();
         var seen = new HashSet<string>();
         foreach (var (source, code, nameAr, nameEn) in plans)
         {
@@ -158,23 +159,50 @@ public sealed class BulkClassHandlers(
                 continue;
             }
 
-            var copy = new Class(
-                await db.OrgUnits.FirstAsync(u => u.Id == source.OrgUnitId, ct), request.TargetYearId, code, nameAr, nameEn, source.Capacity);
+            var classUnit = await db.OrgUnits.FirstAsync(u => u.Id == source.OrgUnitId, ct);
+            var copy = new Class(classUnit, request.TargetYearId, code, nameAr, nameEn, source.Capacity);
             copy.Update(code, nameAr, nameEn, source.Capacity, source.HomeroomTeacherUserId);
             created.Add(copy);
+            copies.Add((source, copy, classUnit));
         }
 
+        await using var transaction = await db.Database.BeginTransactionAsync(ct);
         db.AddRange(created);
         try
         {
             await db.SaveChangesAsync(ct);
+            if (request.IncludeCourses)
+            {
+                await CopyCoursesAsync(copies, ct);
+            }
         }
         catch (DbUpdateException ex) when (DbErrors.IsConcurrentKeyConflict(ex))
         {
-            // Another copy (or create) took one of the codes after the check: nothing was written, retry to see the skips.
+            // Another copy (or create) took one of the codes after the check: nothing was written (the transaction
+            // rolls back), retry to see the skips.
             return ApiProblems.Conflict(ProblemCodes.class_code_taken, "A class code was taken by a concurrent request.");
         }
 
+        await transaction.CommitAsync(ct);
         return Results.Ok(new CopyClassesResultDto(created.Count, skipped));
+    }
+
+    /// <summary>Copies each source class's courses (and optional flags) that are still available at the class unit.</summary>
+    private async Task CopyCoursesAsync(List<(Class Source, Class Copy, Domain.Organizations.OrgUnit Unit)> copies, CancellationToken ct)
+    {
+        foreach (var (source, copy, unit) in copies)
+        {
+            var rows = await db.Set<ClassCourse>().Where(c => c.ClassId == source.Id).ToListAsync(ct);
+            var wanted = new List<(Domain.Courses.Course, bool)>();
+            foreach (var row in rows)
+            {
+                if (await courseWriter.FindAvailableAsync(row.CourseId, unit, ct) is { } course)
+                {
+                    wanted.Add((course, row.IsOptional));
+                }
+            }
+
+            await courseWriter.AddAsync(copy, wanted, ct);
+        }
     }
 }

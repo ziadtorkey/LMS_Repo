@@ -2,6 +2,8 @@
 @attribute [Authorize]
 @inject ILmsApi Api
 @inject NavigationManager Navigation
+@inject PermissionState PermState
+@using Lms.Shared.Authorization
 
 <PageTitle>@L["Home_Title"]</PageTitle>
 <MudText Typo="Typo.h4" Class="mb-4">@L["Home_Title"]</MudText>
@@ -19,6 +21,18 @@ else if (_failed)
 else if (_name is not null)
 {
     <MudText>@string.Format(L["Home_Welcome"].Value, _name)</MudText>
+    @if (PermState.Has(Permissions.LessonPlans.View))
+    {
+        <MudCard Class="mt-4" Style="max-width: 420px" data-testid="home-my-class-courses">
+            <MudCardContent>
+                <MudText Typo="Typo.h6">@L["MyClassCourses_Title"]</MudText>
+                <MudText Typo="Typo.body2" Class="mud-text-secondary">@L["Home_MyClassCoursesHint"]</MudText>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Variant="Variant.Text" Color="Color.Primary" Href="me/class-courses" data-testid="home-my-class-courses-link">@L["MyClassCourses_OpenPlan"]</MudButton>
+            </MudCardActions>
+        </MudCard>
+    }
 }
 
 @code {

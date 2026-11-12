@@ -59,3 +59,7 @@ html:lang(ar), html:lang(ar) body { font-family: Cairo, "Segoe UI", Tahoma, Aria
   border-radius: 4px;
   padding: 0 4px;
 }
+
+/* Lesson plan: items removed from the blueprint stay visible to staff, greyed out. */
+.lms-plan-hidden { opacity: 0.55; }
+.lms-plan-lesson { padding-block: 4px; }
