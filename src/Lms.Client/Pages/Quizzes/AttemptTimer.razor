@@ -22,7 +22,7 @@
         {
             // Announce each threshold once, when the countdown crosses it.
             var crossed = Thresholds.FirstOrDefault(t => last > t && Seconds <= t);
-            if (crossed > 0) _announcement = string.Format(L["Quiz_TimeLeft"].Value, crossed >= 60 ? $"{crossed / 60} min" : $"{crossed} s");
+            if (crossed > 0) _announcement = string.Format(L["Quiz_TimeLeft"].Value, crossed >= 60 ? L["Quiz_Minutes", crossed / 60].Value : L["Quiz_Seconds", crossed].Value);
         }
         _lastSeconds = Seconds;
     }

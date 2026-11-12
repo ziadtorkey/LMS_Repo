@@ -1024,4 +1024,7 @@
   <data name="Quiz_NoAnswer" xml:space="preserve"><value>بلا إجابة</value></data>
   <data name="Quiz_CorrectOption" xml:space="preserve"><value>صحيح</value></data>
   <data name="Quiz_NotGradedYet" xml:space="preserve"><value>لم يُصحَّح بعد</value></data>
+  <data name="Quiz_Minutes" xml:space="preserve"><value>{0} دقيقة</value></data>
+  <data name="Quiz_Seconds" xml:space="preserve"><value>{0} ثانية</value></data>
+  <data name="Quiz_SubmitUnsaved" xml:space="preserve"><value>بعض الإجابات لم تُحفظ بعد. أعد محاولة الحفظ ثم سلّم.</value></data>
 </root>

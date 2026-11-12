@@ -146,6 +146,10 @@ public sealed class FakeQuizAttemptsApi : IQuizAttemptsApi
         var maxScore = Questions.Sum(q => q.Points);
         var pending = Questions.Any(q => q.Type == QuestionTypes.Essay && !a.EssayGrades.ContainsKey(q.QuestionId));
         var policy = staff ? ReviewPolicies.AnswersAndCorrect : ReviewPolicy;
+        // A student does not see the correct options while another attempt is possible (it would give the answers away).
+        var attemptsLeft = MaxAttempts is null || _attempts.Count < MaxAttempts;
+        var open = ClosesAtUtc is null || ServerNow() < ClosesAtUtc;
+        if (!staff && policy == ReviewPolicies.AnswersAndCorrect && attemptsLeft && open) policy = ReviewPolicies.Answers;
         decimal? score = policy == ReviewPolicies.None || pending ? null : AutoScore(a);
         IReadOnlyList<AttemptResultQuestionDto>? questions = null;
         if (policy is ReviewPolicies.Answers or ReviewPolicies.AnswersAndCorrect)

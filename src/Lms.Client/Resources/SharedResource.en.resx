@@ -1024,4 +1024,7 @@
   <data name="Quiz_NoAnswer" xml:space="preserve"><value>No answer</value></data>
   <data name="Quiz_CorrectOption" xml:space="preserve"><value>correct</value></data>
   <data name="Quiz_NotGradedYet" xml:space="preserve"><value>Not graded yet</value></data>
+  <data name="Quiz_Minutes" xml:space="preserve"><value>{0} min</value></data>
+  <data name="Quiz_Seconds" xml:space="preserve"><value>{0} s</value></data>
+  <data name="Quiz_SubmitUnsaved" xml:space="preserve"><value>Some answers are not saved yet. Retry saving, then submit.</value></data>
 </root>
