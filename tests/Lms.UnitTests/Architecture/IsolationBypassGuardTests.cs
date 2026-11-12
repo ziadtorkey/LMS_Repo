@@ -21,6 +21,8 @@ public sealed class IsolationBypassGuardTests
             "removing a share: the person's home may lie outside the scope of the admin of the shared-to unit; own client, live rows, assignment lookup stays filtered (M2 Task 16, #164)",
         ["src/Lms.Api/Features/Guardians/GuardianEndpoints.cs"] =
             "match endpoint: a bare children count of the guardian in the caller's own client, no student or unit leaves the query (M3 Task 19, #227)",
+        ["src/Lms.Api/Features/Courses/CourseHandlers.cs"] =
+            "My courses: the caller's own supervisor rows sit at the course owner unit, which may be above their assignment; own user and active client only, deleted rows excluded (M3 Task 9, #217)",
         ["src/Lms.Infrastructure/Organizations/OrgTree.cs"] =
             "client root and ancestors lie above a unit-level caller's scope (M1 Task 5)",
         ["src/Lms.Infrastructure/Access/ValidAssignmentQuery.cs"] =

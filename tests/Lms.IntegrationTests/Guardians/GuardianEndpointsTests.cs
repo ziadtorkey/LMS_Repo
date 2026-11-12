@@ -279,14 +279,14 @@ public sealed class GuardianEndpointsTests
     }
 
     [Fact]
-    public async Task Supervisor_reads_only_supervised_students_guardians_and_cannot_link_403()
+    public async Task Supervisor_outside_supervised_courses_gets_404_on_reads_and_403_on_writes()
     {
         var (tree, admin) = await _kit.SetUpAsync("GD13");
         var student = await _kit.StudentAsync(tree.School1);
         var link = await _kit.LinkOkAsync(admin, student.Id, NewGuardian(primary: true));
         var supervisor = await _kit.CallerWithRoleAsync(tree, tree.Root, BuiltInRoles.Supervisor);
 
-        // D42: a Supervisor reads students (and so their guardians) of the courses they supervise only; this student is in none.
+        // D42: a Supervisor reads students (and their guardians) only through supervised courses; this one supervises none.
         Assert.Equal(HttpStatusCode.NotFound, (await _kit.SendAsync(HttpMethod.Get, Routes.StudentGuardians(student.Id), supervisor)).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await _kit.SendAsync(HttpMethod.Get, Routes.Guardian(link.GuardianId), supervisor)).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await _kit.SendAsync(HttpMethod.Post, Routes.StudentGuardians(student.Id), supervisor, NewGuardian())).StatusCode);
