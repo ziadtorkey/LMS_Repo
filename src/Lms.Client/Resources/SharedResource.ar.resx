@@ -858,6 +858,39 @@
   <data name="CourseStatus_Active" xml:space="preserve"><value>نشط</value></data>
   <data name="CourseStatus_Inactive" xml:space="preserve"><value>غير نشط</value></data>
   <data name="CourseImport_Title" xml:space="preserve"><value>استيراد المقررات من Excel</value></data>
+  <data name="Nav_MyCourses" xml:space="preserve"><value>مقرراتي</value></data>
+  <data name="CourseProfile_Title" xml:space="preserve"><value>المقرر</value></data>
+  <data name="CourseProfile_Open" xml:space="preserve"><value>فتح المقرر</value></data>
+  <data name="CourseProfile_Details" xml:space="preserve"><value>التفاصيل</value></data>
+  <data name="CourseProfile_Allocations" xml:space="preserve"><value>التخصيصات</value></data>
+  <data name="CourseProfile_Restrictions" xml:space="preserve"><value>القيود</value></data>
+  <data name="CourseProfile_Supervisors" xml:space="preserve"><value>المشرفون</value></data>
+  <data name="CourseProfile_Blueprint" xml:space="preserve"><value>المخطط الدراسي</value></data>
+  <data name="CourseProfile_OpenBlueprint" xml:space="preserve"><value>فتح المخطط الدراسي</value></data>
+  <data name="Allocation_Empty" xml:space="preserve"><value>لم يُخصَّص هذا المقرر لأي وحدة بعد.</value></data>
+  <data name="Allocation_Unit" xml:space="preserve"><value>الوحدة</value></data>
+  <data name="Allocation_ClassCourses" xml:space="preserve"><value>الفصول التي تستخدمه</value></data>
+  <data name="Allocation_AddAt" xml:space="preserve"><value>تخصيص للوحدة</value></data>
+  <data name="Allocation_Add" xml:space="preserve"><value>تخصيص</value></data>
+  <data name="RestrictionType_Religion" xml:space="preserve"><value>الديانة</value></data>
+  <data name="RestrictionType_Gender" xml:space="preserve"><value>النوع</value></data>
+  <data name="RestrictionType_LevelType" xml:space="preserve"><value>نوع المستوى</value></data>
+  <data name="Restriction_Values" xml:space="preserve"><value>القيم المسموح بها</value></data>
+  <data name="Restriction_EmptyMeansAll" xml:space="preserve"><value>اتركه فارغًا للسماح للجميع.</value></data>
+  <data name="Restriction_None" xml:space="preserve"><value>بلا قيود</value></data>
+  <data name="Restriction_Affected" xml:space="preserve"><value>{0} تسجيلًا حاليًا لم يعد يطابق هذه القيود. يبقى التسجيل قائمًا؛ ويسري التغيير على التسجيلات الجديدة.</value></data>
+  <data name="Supervisor_None" xml:space="preserve"><value>لا يوجد مشرفون بعد.</value></data>
+  <data name="Supervisor_Add" xml:space="preserve"><value>إضافة مشرف (ابحث بين الموظفين الحاصلين على دور المشرف)</value></data>
+  <data name="UnitSettings_Courses" xml:space="preserve"><value>المقررات</value></data>
+  <data name="UnitCourses_Available" xml:space="preserve"><value>المتاحة في هذه الوحدة</value></data>
+  <data name="UnitCourses_NoneAvailable" xml:space="preserve"><value>لا توجد مقررات متاحة هنا بعد.</value></data>
+  <data name="UnitCourses_Below" xml:space="preserve"><value>المخصصة للوحدات الأدنى</value></data>
+  <data name="UnitCourses_NoneBelow" xml:space="preserve"><value>لا يوجد ما خُصص للوحدات الأدنى.</value></data>
+  <data name="MyCourses_Title" xml:space="preserve"><value>مقرراتي</value></data>
+  <data name="MyCourses_Empty" xml:space="preserve"><value>أنت لا تشرف على أي مقرر.</value></data>
+  <data name="MyCourses_BlueprintPublished" xml:space="preserve"><value>المخطط الدراسي منشور</value></data>
+  <data name="MyCourses_NoBlueprint" xml:space="preserve"><value>لا يوجد مخطط منشور</value></data>
+  <data name="MyCourses_Open" xml:space="preserve"><value>فتح</value></data>
   <data name="StaffImport_Title" xml:space="preserve"><value>استيراد الموظفين</value></data>
   <data name="Import_Button" xml:space="preserve"><value>استيراد من Excel</value></data>
   <data name="Clients_ShortCode" xml:space="preserve"><value>الرمز المختصر</value></data>
