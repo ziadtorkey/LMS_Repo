@@ -7,6 +7,7 @@
 @using Lms.Shared.Authorization
 @using Lms.Shared.Quizzes
 @inject IQuizzesApi Api
+@inject IClassCourseGroupsApi GroupsApi
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
 @inject PermissionState PermState
@@ -77,7 +78,7 @@ else
         </MudTabPanel>
         <MudTabPanel Text="@L["Quiz_TabSettings"]" data-testid="quiz-tab-settings">
             <div class="mt-3">
-                <QuizSettingsTab Model="_settings" QuestionCount="_questions.Count" Locked="_quiz.HasAttempts" Errors="_errors" OnChanged="Touched" />
+                <QuizSettingsTab Model="_settings" QuestionCount="_questions.Count" Locked="_quiz.HasAttempts" Groups="_groups" Errors="_errors" OnChanged="Touched" />
             </div>
         </MudTabPanel>
         <MudTabPanel Text="@L["Quiz_TabPreview"]" data-testid="quiz-tab-preview">
@@ -94,6 +95,7 @@ else
     private QuizDto? _quiz;
     private QuizSettingsModel _settings = new();
     private List<QuestionDraft> _questions = [];
+    private IReadOnlyList<ModuleGroupOption> _groups = [];
     private Dictionary<string, string> _errors = [];
     private Dictionary<Guid, string> _questionErrors = [];
     private string _savedSignature = "";
@@ -118,6 +120,7 @@ else
     private async Task LoadAsync()
     {
         await ApiCalls.RunAsync(async () => Apply(await Api.GetAsync(Id)), Navigation, L, m => _error = m);
+        if (_quiz is not null) _groups = await ModuleGroups.LoadAsync(GroupsApi, _quiz.ClassCourseId);
     }
 
     private void Apply(QuizDto quiz)
@@ -162,6 +165,7 @@ else
         _error = null;
         if (!ValidateAll()) return;
         _saving = true;
+        var saved = false;
         try
         {
             var existing = _quiz.Questions.ToDictionary(q => q.Id);
@@ -173,6 +177,7 @@ else
             if (!_quiz.HasAttempts && _questions.Count > 1) await Api.ReorderQuestionsAsync(Id, _questions.Select(q => q.Id!.Value).ToList());
             await Api.UpdateAsync(Id, new UpdateQuizRequest(_settings.ToModuleSettings(), Blank(_settings.DescriptionAr), Blank(_settings.DescriptionEn), _settings.ToSettings()));
             Apply(await Api.GetAsync(Id));
+            saved = true;
             Snackbar.Add(L["Common_Saved"], Severity.Success);
         }
         catch (Exception ex) when (ApiCalls.TryRedirect(ex, Navigation))
@@ -186,7 +191,6 @@ else
         {
             // someone started an attempt meanwhile: show the lock and keep the teacher's edits
             _error = L["Error_quiz_has_attempts"];
-            await ApiCalls.RunAsync(async () => _quiz = await Api.GetAsync(Id), Navigation, L, _ => { });
         }
         catch (ApiProblemException ex)
         {
@@ -198,7 +202,24 @@ else
         }
         finally
         {
+            // a save that stopped half way: take the server's question ids again, so a retry does not act on stale ones
+            if (!saved) await ResyncAsync();
             _saving = false;
+        }
+    }
+
+    // Keeps the teacher's edits, replaces the known server state. A draft whose question is gone on the server is saved again as new.
+    private async Task ResyncAsync()
+    {
+        try
+        {
+            var fresh = await Api.GetAsync(Id);
+            var ids = fresh.Questions.Select(q => q.Id).ToHashSet();
+            foreach (var q in _questions.Where(q => q.Id is { } id && !ids.Contains(id))) q.Id = null;
+            _quiz = fresh;
+        }
+        catch (Exception ex) when (ex is ApiProblemException or HttpRequestException)
+        {
         }
     }
 
