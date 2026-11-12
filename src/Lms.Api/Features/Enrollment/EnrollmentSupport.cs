@@ -1,5 +1,6 @@
 using Lms.Domain.Enrollment;
 using Lms.Shared;
+using Lms.Shared.Enrollment;
 
 namespace Lms.Api.Features.Enrollment;
 
@@ -10,9 +11,23 @@ internal static class EnrollmentProblems
         Results.Problem(
             statusCode: rule.StatusCode,
             title: rule.StatusCode == StatusCodes.Status400BadRequest ? "Bad request" : "Conflict",
-            extensions: rule.FailedTypes.Count == 0
-                ? new Dictionary<string, object?> { ["code"] = rule.Code }
-                : new Dictionary<string, object?> { ["code"] = rule.Code, ["failedTypes"] = rule.FailedTypes });
+            extensions: Extensions(rule));
+
+    private static Dictionary<string, object?> Extensions(EnrollmentRuleException rule)
+    {
+        var extensions = new Dictionary<string, object?> { ["code"] = rule.Code };
+        if (rule.FailedTypes.Count > 0)
+        {
+            extensions["failedTypes"] = rule.FailedTypes;
+        }
+
+        if (rule.Reason is not null)
+        {
+            extensions[TransferRejectReasons.ExtensionKey] = rule.Reason;
+        }
+
+        return extensions;
+    }
 
     public static IResult Invalid(string field, string key) =>
         Results.ValidationProblem(
