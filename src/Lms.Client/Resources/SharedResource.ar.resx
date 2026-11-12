@@ -365,6 +365,12 @@
   <data name="Templates_Target" xml:space="preserve"><value>الإنشاء تحت</value></data>
   <data name="Templates_DeleteConfirm" xml:space="preserve"><value>حذف هذا القالب؟</value></data>
   <data name="Notif_Title" xml:space="preserve"><value>الإشعارات</value></data>
+  <data name="Notif_Subtitle" xml:space="preserve"><value>تحديثات تخص عملك، الأحدث أولًا. افتح أي إشعار للانتقال إلى الصفحة المرتبطة به.</value></data>
+  <data name="Notif_EmptyTitle" xml:space="preserve"><value>لا توجد إشعارات</value></data>
+  <data name="Notif_EmptyUnreadText" xml:space="preserve"><value>قرأت كل الإشعارات. أوقف خيار "غير المقروءة فقط" لرؤية الإشعارات الأقدم.</value></data>
+  <data name="Notif_PrefsSubtitle" xml:space="preserve"><value>اختر كيف تصلك كل نوع من التحديثات. تظهر إشعارات التطبيق تحت أيقونة الجرس.</value></data>
+  <data name="Notif_LockedHint" xml:space="preserve"><value>الإعدادات التي عليها قفل ثابتة ولا يمكن تغييرها.</value></data>
+  <data name="Notif_Event" xml:space="preserve"><value>التحديث</value></data>
   <data name="Notif_MarkAllRead" xml:space="preserve"><value>تعيين الكل كمقروء</value></data>
   <data name="Notif_Empty" xml:space="preserve"><value>لا توجد إشعارات.</value></data>
   <data name="Notif_Preferences" xml:space="preserve"><value>تفضيلات الإشعارات</value></data>

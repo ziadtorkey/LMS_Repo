@@ -277,6 +277,25 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
     font-variant-numeric: tabular-nums;
 }
 
+/* ---------- Notifications ---------- */
+.lms-filters-inline { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 16px; padding: 8px 20px; }
+.lms-notif-cell { display: inline-flex; align-items: center; gap: 8px; }
+.lms-notif-cell-unread .mud-link { font-weight: 600; color: var(--mud-palette-text-primary); }
+.lms-unread-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--mud-palette-primary); flex-shrink: 0; }
+.lms-prefs-legend {
+    display: flex; align-items: center; gap: 8px; padding: 10px 20px; font-size: .8125rem;
+    color: var(--mud-palette-text-secondary); border-bottom: 1px solid var(--mud-palette-lines-default);
+}
+.lms-prefs-table.mud-simple-table table th.lms-prefs-channel,
+.lms-prefs-table.mud-simple-table table td.lms-prefs-channel { text-align: center; width: 120px; }
+.lms-prefs-switch { display: inline-flex; align-items: center; gap: 2px; }
+.lms-prefs-footer { display: flex; justify-content: flex-end; margin-top: 16px; }
+@media (max-width: 599px) {
+    .lms-prefs-table.mud-simple-table table td.lms-prefs-channel { width: 100%; text-align: start; }
+    .lms-prefs-table.mud-simple-table table td.lms-prefs-event { font-size: .9375rem; padding-top: 8px !important; }
+    .lms-prefs-footer .mud-button-root { width: 100%; }
+}
+
 /* ---------- Org tree ---------- */
 .lms-org-tree { padding: 8px 12px 12px; }
 .lms-org-node { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; width: 100%; min-width: 0; padding-block: 2px; }
