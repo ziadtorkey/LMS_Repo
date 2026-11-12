@@ -91,6 +91,8 @@ public sealed class IsolationBypassGuardTests
             "the caller's own supervisor rows sit at the course owner unit, which may be above their assignment; own user and active client only, deleted rows excluded (M3 Task 12, D42; fixed in #219)",
         ["src/Lms.Infrastructure/Enrollment/ExceptionLookups.cs"] =
             "the course and its supervisors of an exceptional-enrollment request are owned above the class, out of an approver's scope; client matched, deleted rows excluded, only names and user ids leave (M3 Task 11, #219)",
+        ["src/Lms.Api/Features/Library/LibraryQueries.cs"] =
+            "library resources, their tags, levels, owner unit names and unit-owned assets sit at ancestors of the browsed unit, above the caller's scope (D13: visible below the owner, read-only); client matched, deleted rows excluded, ancestor chain of the browsed unit only (M4a Task 12, #362)",
         ["src/Lms.Infrastructure/Enrollment/PlacementGuard.cs"] =
             "the academic year and the course restrictions of a class sit at ancestor units above the caller's scope; an invisible restriction must never mean no restriction; client matched, deleted rows excluded (M3 Task 24, #232)",
         ["src/Lms.Infrastructure/People/StaffBackfill.cs"] =
