@@ -279,15 +279,16 @@ public sealed class GuardianEndpointsTests
     }
 
     [Fact]
-    public async Task Supervisor_can_view_but_not_link_403()
+    public async Task Supervisor_reads_only_supervised_students_guardians_and_cannot_link_403()
     {
         var (tree, admin) = await _kit.SetUpAsync("GD13");
         var student = await _kit.StudentAsync(tree.School1);
         var link = await _kit.LinkOkAsync(admin, student.Id, NewGuardian(primary: true));
         var supervisor = await _kit.CallerWithRoleAsync(tree, tree.Root, BuiltInRoles.Supervisor);
 
-        Assert.Equal(HttpStatusCode.OK, (await _kit.SendAsync(HttpMethod.Get, Routes.StudentGuardians(student.Id), supervisor)).StatusCode);
-        Assert.Equal(HttpStatusCode.OK, (await _kit.SendAsync(HttpMethod.Get, Routes.Guardian(link.GuardianId), supervisor)).StatusCode);
+        // D42: a Supervisor reads students (and so their guardians) of the courses they supervise only; this student is in none.
+        Assert.Equal(HttpStatusCode.NotFound, (await _kit.SendAsync(HttpMethod.Get, Routes.StudentGuardians(student.Id), supervisor)).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await _kit.SendAsync(HttpMethod.Get, Routes.Guardian(link.GuardianId), supervisor)).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await _kit.SendAsync(HttpMethod.Post, Routes.StudentGuardians(student.Id), supervisor, NewGuardian())).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await _kit.SendAsync(HttpMethod.Put, Routes.StudentGuardian(student.Id, link.GuardianId), supervisor, new UpdateStudentGuardianRequest("Father", true))).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await _kit.SendAsync(HttpMethod.Delete, Routes.StudentGuardian(student.Id, link.GuardianId), supervisor)).StatusCode);

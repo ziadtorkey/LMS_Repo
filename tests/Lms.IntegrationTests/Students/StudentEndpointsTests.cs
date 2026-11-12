@@ -4,6 +4,7 @@ using System.Text.Json;
 using Lms.Domain.Access;
 using Lms.Domain.Classes;
 using Lms.Domain.Configuration;
+using Lms.Domain.Courses;
 using Lms.Domain.Enrollment;
 using Lms.Domain.Identity;
 using Lms.Domain.Organizations;
@@ -390,6 +391,28 @@ public sealed class StudentEndpointsTests
     }
 
     [Fact]
+    public async Task Supervisor_sees_only_students_enrolled_in_a_course_they_supervise()
+    {
+        var w = await EnrollmentWorld.CreateAsync(_factory, "ST7S");
+        var admin = await AccessTestData.AssignAsync(_factory, w.Tree, w.Tree.Root, BuiltInRoles.OrgAdmin, Guid.NewGuid());
+        var supervisorUser = await Lms.IntegrationTests.People.PeopleTestKit.AddUserAsync(_factory);
+        var supervisor = await AccessTestData.AssignAsync(_factory, w.Tree, w.Tree.School1, BuiltInRoles.Supervisor, supervisorUser.Id);
+        var enrolled = (await CreateOkAsync(admin, Create(w.Tree.School1.Id, classId: w.Class.Id))).Student;
+        var other = (await CreateOkAsync(admin, Create(w.Tree.School1.Id))).Student; // enrolled in nothing
+        await using (var db = _factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            db.Add(new CourseSupervisor(w.A, supervisorUser.Id));
+            await db.SaveChangesAsync();
+        }
+
+        var list = (await (await _kit.SendAsync(HttpMethod.Get, Routes.Students, supervisor)).Content.ReadFromJsonAsync<PagedResult<StudentSummaryDto>>(Web))!;
+
+        Assert.Equal([enrolled.Summary.Id], list.Items.Select(s => s.Id));
+        Assert.Equal(HttpStatusCode.OK, (await _kit.SendAsync(HttpMethod.Get, Routes.Student(enrolled.Summary.Id), supervisor)).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await _kit.SendAsync(HttpMethod.Get, Routes.Student(other.Summary.Id), supervisor)).StatusCode);
+    }
+
+    [Fact]
     public async Task List_filters_by_class_unplaced_status_search_and_pages()
     {
         var w = await EnrollmentWorld.CreateAsync(_factory, "ST8");
@@ -541,7 +564,7 @@ public sealed class StudentEndpointsTests
         var id = student.Summary.Id;
         var edit = new UpdateStudentRequest(Data(), tree.School1.Id, student.Summary.StudentCode, true);
 
-        Assert.Equal(HttpStatusCode.OK, (await _kit.SendAsync(HttpMethod.Get, Routes.Student(id), supervisor)).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await _kit.SendAsync(HttpMethod.Get, Routes.Student(id), supervisor)).StatusCode); // supervises no course of this student (D42)
         Assert.Equal(HttpStatusCode.Forbidden, (await _kit.SendAsync(HttpMethod.Post, Routes.Students, supervisor, Create(tree.School1.Id))).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await _kit.SendAsync(HttpMethod.Put, Routes.Student(id), supervisor, edit)).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await _kit.SendAsync(HttpMethod.Delete, Routes.Student(id), supervisor)).StatusCode);
