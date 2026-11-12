@@ -915,4 +915,5 @@
   <data name="Announcements_Publish" xml:space="preserve"><value>Publish</value></data>
   <data name="Announcements_Empty" xml:space="preserve"><value>No announcements yet.</value></data>
   <data name="Announcements_DeleteConfirm" xml:space="preserve"><value>Delete the announcement {0}?</value></data>
+  <data name="Announcements_FormTitle" xml:space="preserve"><value>Announcement title</value></data>
 </root>

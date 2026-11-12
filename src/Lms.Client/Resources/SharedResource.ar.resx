@@ -915,4 +915,5 @@
   <data name="Announcements_Publish" xml:space="preserve"><value>نشر</value></data>
   <data name="Announcements_Empty" xml:space="preserve"><value>لا توجد إعلانات بعد.</value></data>
   <data name="Announcements_DeleteConfirm" xml:space="preserve"><value>حذف الإعلان {0}؟</value></data>
+  <data name="Announcements_FormTitle" xml:space="preserve"><value>عنوان الإعلان</value></data>
 </root>
