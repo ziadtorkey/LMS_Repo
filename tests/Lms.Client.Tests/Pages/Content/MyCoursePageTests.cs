@@ -126,6 +126,23 @@ public sealed class MyCoursePageTests : LessonPlansTestContext
     }
 
     [Fact]
+    public async Task A_failed_progress_call_shows_the_error_not_all_done()
+    {
+        var done = Seed("Only one", CompletionRules.Manual);
+        await _modules.MarkCompleteAsync(done.Node.Id);
+        PublishPlan();
+        _modules.Failure = new ApiProblemException(500, "server_error", null, null);
+        Culture.Current = new CultureInfo("en");
+        await GrantAsync(Permissions.Modules.View);
+        RenderProviders();
+
+        var page = Render<MyCoursePage>(p => p.Add(x => x.Id, Cc));
+
+        page.WaitForElement("[data-testid=learn-error]", Wait);
+        Assert.Empty(page.FindAll("[data-testid=continue-done]"));
+    }
+
+    [Fact]
     public async Task Without_Modules_View_the_page_is_forbidden()
     {
         await GrantAsync(Permissions.LessonPlans.View);

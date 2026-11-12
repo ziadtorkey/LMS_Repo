@@ -110,7 +110,7 @@ else
                     _next = progress.NextModuleId is { } next
                         ? _plan.Sections.SelectMany(s => s.Lessons).SelectMany(l => l.Modules ?? []).FirstOrDefault(m => m.Id == next)
                         : null;
-                }, Navigation, L, _ => { });
+                }, Navigation, L, message => _error = message);
             }
         }
         _loading = false;
