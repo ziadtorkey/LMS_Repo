@@ -37,7 +37,11 @@ internal static class CourseHandlers
             var userId = context.UserId;
             only = userId is null
                 ? []
-                : await db.Set<CourseSupervisor>().Where(s => s.UserId == userId).Select(s => s.CourseId).ToListAsync(ct);
+                // ISOLATION-BYPASS: the caller's own supervisor rows sit at the course owner unit, which may be above their
+                // assignment (a school supervisor of a client-wide course); own user and active client only, deleted rows excluded.
+                : await db.Set<CourseSupervisor>().IgnoreQueryFilters()
+                    .Where(s => s.UserId == userId && s.OrganizationId == context.OrganizationId && !s.IsDeleted)
+                    .Select(s => s.CourseId).ToListAsync(ct);
         }
 
         var page = Math.Max(1, query.Page);
@@ -66,16 +70,17 @@ internal static class CourseHandlers
 
     public static async Task<IResult> CreateAsync(
         SaveCourseRequest request, HttpContext http, LmsDbContext db, IOrgTree tree, ICurrentContext context,
-        IRelationshipScope relationships, CancellationToken ct)
+        IRelationshipScope relationships, ICourseCatalog catalog, CancellationToken ct)
     {
         if (CourseValidators.Validate(request) is { } invalid)
         {
             return invalid;
         }
 
-        if (request.AllocateToOrgUnitIds is { Count: > 0 })
+        var allocateTo = request.AllocateToOrgUnitIds?.Distinct().ToList() ?? [];
+        if (allocateTo.Count > AllocationHandlers.MaxCoursesPerRequest)
         {
-            return ApiProblems.BadRequest(ProblemCodes.validation_failed, "Allocation at creation is not available yet.");
+            return ApiProblems.BadRequest(ProblemCodes.too_many_items, "At most 100 units per request.");
         }
 
         var access = await http.CheckUnitAsync(Permissions.Courses.Create, request.OwnerOrgUnitId, ct);
@@ -99,6 +104,23 @@ internal static class CourseHandlers
         if (context.UserId is { } creator && !(await relationships.ForAsync(Permissions.Courses.Update, ct)).IsUnrestricted)
         {
             db.Set<CourseSupervisor>().Add(new CourseSupervisor(course, creator));
+        }
+
+        // Allocate at creation: every unit is checked like POST /api/course-allocations; all or nothing with the course.
+        var just = new Dictionary<Guid, Course> { [course.Id] = course };
+        foreach (var unitId in allocateTo)
+        {
+            var target = await http.CheckUnitAsync(Permissions.Courses.Allocate, unitId, ct);
+            if (target.Problem is not null)
+            {
+                return target.Problem;
+            }
+
+            var staged = await AllocationHandlers.AddAllocationsAsync(db, catalog, relationships, target.Unit!, [course.Id], ct, just);
+            if (staged.Problem is not null)
+            {
+                return staged.Problem;
+            }
         }
 
         if (await TrySaveAsync(db, ct) is { } conflict)

@@ -16,6 +16,13 @@ public interface ICourseCatalog
     /// <summary>True when the course is allocated at the unit or at one of its ancestors.</summary>
     Task<bool> IsAvailableAtAsync(Guid courseId, OrgUnit unit, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Like <see cref="IsAvailableAtAsync"/> for any unit path of the client, ignoring one allocation (used to ask whether a
+    /// course stays available at a class unit when that allocation is removed).
+    /// </summary>
+    Task<bool> IsAvailableAtPathAsync(
+        Guid organizationId, string unitPath, Guid courseId, Guid? exceptAllocationId, CancellationToken cancellationToken = default);
+
     /// <summary>Courses allocated at the unit or an ancestor, with the allocation that makes each available.</summary>
     Task<IReadOnlyList<AvailableCourse>> AvailableAtAsync(OrgUnit unit, CancellationToken cancellationToken = default);
 

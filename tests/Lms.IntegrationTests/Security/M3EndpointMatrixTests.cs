@@ -120,11 +120,14 @@ public sealed class M3EndpointMatrixTests(LmsApiFactory factory, ITestOutputHelp
     [InlineData("/api/me/profile", false)]
     [InlineData("/api/staff", false)]
     [InlineData("/api/studentsx", false)]
+    [InlineData("/api/class-courses/{id:guid}/lessons/{lessonKey:guid}/modules", false)] // M4a: a Student reads modules
+    [InlineData("/api/class-courses/{id:guid}/progress", false)]
     public void Only_m3_routes_are_in_scope(string pattern, bool m3) => Assert.Equal(m3, IsM3(pattern));
 
     private static bool IsM3(string pattern) =>
-        M3Prefixes.Any(p => pattern.Equals(p, StringComparison.OrdinalIgnoreCase)
-                            || pattern.StartsWith(p + "/", StringComparison.OrdinalIgnoreCase));
+        !M4aRoutes.Is(pattern)
+        && M3Prefixes.Any(p => pattern.Equals(p, StringComparison.OrdinalIgnoreCase)
+                               || pattern.StartsWith(p + "/", StringComparison.OrdinalIgnoreCase));
 
     private bool IsMapped(ProbeRow row) =>
         factory.Services.GetRequiredService<EndpointDataSource>().Endpoints
