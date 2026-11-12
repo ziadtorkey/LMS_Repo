@@ -45,6 +45,6 @@ public sealed record UpdateMyStudentProfileRequest(IReadOnlyDictionary<string, s
 /// <summary>Query of GET /api/student-change-requests. <c>Status</c> null = all.</summary>
 public sealed record ChangeRequestQuery(
     Guid? OrgUnitId,
-    string? Status = ChangeRequestStatuses.Pending,
+    string? Status = null,
     int Page = 1,
     int PageSize = Paging.DefaultPageSize);
