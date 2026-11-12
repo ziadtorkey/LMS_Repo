@@ -57,3 +57,7 @@ html, body { margin: 0; font-family: Roboto, "Segoe UI", Tahoma, sans-serif; }
   border-radius: 4px;
   padding: 0 4px;
 }
+
+/* Lesson plan: items removed from the blueprint stay visible to staff, greyed out. */
+.lms-plan-hidden { opacity: 0.55; }
+.lms-plan-lesson { padding-block: 4px; }

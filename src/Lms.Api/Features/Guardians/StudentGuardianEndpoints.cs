@@ -1,6 +1,7 @@
 using Lms.Shared;
 using Lms.Api.Infrastructure;
 using Lms.Domain.Abstractions;
+using Lms.Domain.Access;
 using Lms.Domain.People;
 using Lms.Infrastructure.People.Guardians;
 using Lms.Infrastructure.Persistence;
@@ -23,7 +24,7 @@ public static class StudentGuardianEndpoints
 
     /// <summary>
     /// The student inside the caller's scope (a student of another unit does not exist for the caller), then the permission at
-    /// the student's home unit. The relationship rule of Students.View (Teacher: own classes only) joins here with M3 Task 12.
+    /// the student's home unit. The relationship rule of Students.View applies to the reads.
     /// </summary>
     private static async Task<(StudentProfile? Student, IResult? Problem)> FindAsync(
         Guid id, string permission, HttpContext http, LmsDbContext db, ICurrentContext context, CancellationToken ct)
@@ -35,7 +36,20 @@ public static class StudentGuardianEndpoints
         }
 
         var access = await http.CheckUnitAsync(permission, student.OrgUnitId, ct);
-        return access.Problem is not null ? (null, access.Problem) : (student, null);
+        if (access.Problem is not null)
+        {
+            return (null, access.Problem);
+        }
+
+        // The relationship rule of Students.View (Teacher: only students reached through own class courses or homeroom, D42).
+        var filter = await http.RequestServices.GetRequiredService<IRelationshipScope>().ForAsync(Permissions.Students.View, ct);
+        if (permission == Permissions.Students.View && !filter.IsUnrestricted
+            && !await GuardianVisibility.ReachableStudentIds(db, filter).AnyAsync(sid => sid == id, ct))
+        {
+            return (null, ApiProblems.NotFound());
+        }
+
+        return (student, null);
     }
 
     private static async Task<IResult> ListAsync(

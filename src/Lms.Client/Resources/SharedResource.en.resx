@@ -651,6 +651,7 @@
   <data name="AuditEntity_CourseRestriction" xml:space="preserve"><value>Course restriction</value></data>
   <data name="AuditEntity_CourseSupervisor" xml:space="preserve"><value>Course supervisor</value></data>
   <data name="AuditEntity_Blueprint" xml:space="preserve"><value>Blueprint</value></data>
+  <data name="AuditEntity_ClassLessonPlan" xml:space="preserve"><value>Class lesson plan</value></data>
   <data name="AuditEntity_Class" xml:space="preserve"><value>Class</value></data>
   <data name="AuditEntity_ClassStudent" xml:space="preserve"><value>Class student</value></data>
   <data name="AuditEntity_ClassCourse" xml:space="preserve"><value>Class course</value></data>
@@ -764,6 +765,8 @@
   <data name="Import_Button" xml:space="preserve"><value>Import from Excel</value></data>
   <data name="Clients_ShortCode" xml:space="preserve"><value>Short code</value></data>
   <data name="Clients_ShortCodeHelp" xml:space="preserve"><value>Used in student sign-in names (code@shortcode): 2-20 lower-case letters, digits or hyphens. Leave empty to derive it from the root unit code.</value></data>
+  <data name="Student_OverCapacityConfirm" xml:space="preserve"><value>This class is full. Place the student in it anyway?</value></data>
+  <data name="Student_PlaceAnyway" xml:space="preserve"><value>Place anyway</value></data>
   <data name="Student_Profile" xml:space="preserve"><value>Profile</value></data>
   <data name="Student_Edit" xml:space="preserve"><value>Edit student</value></data>
   <data name="Student_Guardians" xml:space="preserve"><value>Guardians</value></data>
@@ -782,4 +785,22 @@
   <data name="Flag_Inherit" xml:space="preserve"><value>Inherit ({0})</value></data>
   <data name="Flag_On" xml:space="preserve"><value>On</value></data>
   <data name="Flag_Off" xml:space="preserve"><value>Off</value></data>
+  <data name="Nav_MyClassCourses" xml:space="preserve"><value>My class courses</value></data>
+  <data name="MyClassCourses_Title" xml:space="preserve"><value>My class courses</value></data>
+  <data name="MyClassCourses_Empty" xml:space="preserve"><value>You have no class courses in the selected year.</value></data>
+  <data name="MyClassCourses_Students" xml:space="preserve"><value>{0} students</value></data>
+  <data name="MyClassCourses_Optional" xml:space="preserve"><value>Optional</value></data>
+  <data name="MyClassCourses_PlanVersion" xml:space="preserve"><value>Plan version {0}</value></data>
+  <data name="MyClassCourses_NoPlan" xml:space="preserve"><value>No plan yet</value></data>
+  <data name="MyClassCourses_OpenPlan" xml:space="preserve"><value>Open plan</value></data>
+  <data name="Home_MyClassCoursesHint" xml:space="preserve"><value>See your class courses and their lesson plans.</value></data>
+  <data name="LessonPlan_Title" xml:space="preserve"><value>Lesson plan</value></data>
+  <data name="LessonPlan_Version" xml:space="preserve"><value>Version {0}</value></data>
+  <data name="LessonPlan_Synced" xml:space="preserve"><value>Synced {0}</value></data>
+  <data name="LessonPlan_Empty" xml:space="preserve"><value>This class course has not received a plan yet. It appears when the course blueprint is published.</value></data>
+  <data name="LessonPlan_Hidden" xml:space="preserve"><value>Hidden</value></data>
+  <data name="LessonPlan_Planned" xml:space="preserve"><value>Planned</value></data>
+  <data name="LessonPlan_HijriSuffix" xml:space="preserve"><value>AH</value></data>
+  <data name="LessonPlan_Modules" xml:space="preserve"><value>Modules</value></data>
+  <data name="LessonPlan_ModulesLater" xml:space="preserve"><value>Modules arrive in a later release.</value></data>
 </root>
