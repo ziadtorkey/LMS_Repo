@@ -29,7 +29,7 @@ else
     {
         <MudPaper Outlined="true" Class="pa-3 mb-3" data-testid="announcement-form">
             <MudStack Spacing="2">
-                <MudTextField T="string" @bind-Value="_title" Label="@L["Forum_ThreadTitle"]" MaxLength="200" Immediate="true" data-testid="announcement-title" />
+                <MudTextField T="string" @bind-Value="_title" Label="@L["Announcements_FormTitle"]" MaxLength="200" Immediate="true" data-testid="announcement-title" />
                 <RichTextEditor @key="_version" Value="@_html" ValueChanged="v => _html = v" Label="@L["Forum_Message"]" TestId="announcement-editor" />
                 <MudStack Row="true" Spacing="4">
                     <MudSwitch T="bool" @bind-Value="_pinned" Label="@L["Forum_Pin"]" Color="Color.Primary" data-testid="announcement-pin" />
