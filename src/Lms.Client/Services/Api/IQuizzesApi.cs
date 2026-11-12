@@ -64,6 +64,8 @@ public sealed class FakeQuizzesApi : IQuizzesApi
 
     public Dictionary<Guid, QuizDto> Quizzes { get; } = [];
     public List<string> Calls { get; } = [];
+    /// <summary>Makes the next call of that name fail once (a save that stops half way).</summary>
+    public Dictionary<string, Exception> FailOnce { get; } = [];
     public Exception? Failure { get; set; }
 
     public FakeQuizzesApi()
@@ -87,6 +89,7 @@ public sealed class FakeQuizzesApi : IQuizzesApi
     private Task<T> Run<T>(string call, Func<T> action)
     {
         Calls.Add(call);
+        if (FailOnce.Remove(call, out var once)) return Task.FromException<T>(once);
         if (Failure is not null) return Task.FromException<T>(Failure);
         try { return Task.FromResult(action()); }
         catch (ApiProblemException ex) { return Task.FromException<T>(ex); }

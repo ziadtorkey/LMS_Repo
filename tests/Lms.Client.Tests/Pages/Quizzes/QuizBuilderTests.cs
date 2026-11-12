@@ -51,7 +51,11 @@ public sealed class QuizBuilderTests : LessonPlansTestContext
     private readonly FakeQuizzesApi _quizzes = new();
     private IRenderedComponent<MudDialogProvider> _dialogs = default!;
 
-    public QuizBuilderTests() => Services.AddSingleton<IQuizzesApi>(_quizzes);
+    public QuizBuilderTests()
+    {
+        Services.AddSingleton<IQuizzesApi>(_quizzes);
+        Services.AddSingleton<IClassCourseGroupsApi>(new FakeClassCourseGroupsApi());
+    }
 
     private async Task<IRenderedComponent<QuizBuilderPage>> OpenAsync(Guid? id = null, string culture = "en", params string[] permissions)
     {
@@ -281,6 +285,70 @@ public sealed class QuizBuilderTests : LessonPlansTestContext
 
         page.WaitForElement($"[data-testid=quiz-open-{FakeQuizzesApi.QuizId}]", Wait);
         Assert.NotEmpty(page.FindAll("[data-testid=quizzes-new]"));
+    }
+
+    [Fact]
+    public async Task Settings_tab_offers_the_class_groups_as_targets()
+    {
+        var page = await OpenAsync();
+
+        var groups = page.FindComponent<QuizSettingsTab>().Instance.Groups;
+
+        Assert.Equal(["Group A", "Group B"], groups.Select(g => g.NameEn).ToArray());
+    }
+
+    [Fact]
+    public async Task New_quiz_dialog_offers_the_class_groups()
+    {
+        await GrantAsync(Permissions.Quizzes.View, Permissions.Quizzes.Manage);
+        await Services.GetRequiredService<PermissionState>().RefreshAsync();
+        Render<MudPopoverProvider>();
+        _dialogs = Render<MudDialogProvider>();
+        var page = Render<CourseQuizzesPage>(p => p.Add(x => x.Id, FakeLessonPlansApi.ArabicClassCourseId));
+        page.WaitForElement("[data-testid=quizzes-new]", Wait);
+
+        page.Find("[data-testid=quizzes-new]").Click();
+
+        _dialogs.WaitForAssertion(() => Assert.NotNull(_dialogs.Find("[data-testid=newquiz-save]")), Wait);
+        Assert.Equal(2, _dialogs.FindComponent<NewQuizDialog>().Instance.Groups.Count);
+    }
+
+    [Fact]
+    public async Task Retry_after_a_half_finished_save_does_not_add_the_question_twice()
+    {
+        var page = await OpenAsync();
+        page.Find("[data-testid=question-text-0]").Input("Edited");
+        page.Find("[data-testid=quiz-add-question]").Click();
+        await SelectTypeAsync(page, 2, QuestionTypes.Essay);
+        page.Find("[data-testid=question-text-2]").Input("Explain");
+        _quizzes.FailOnce["reorder"] = new ApiProblemException(500, "server_error", null, null);
+
+        page.Find("[data-testid=quiz-save]").Click();
+        page.WaitForAssertion(() => Assert.NotEmpty(page.FindAll("[data-testid=quiz-save-error]")), Wait);
+        page.Find("[data-testid=quiz-save]").Click();
+
+        page.WaitForAssertion(() => Assert.Empty(page.FindAll("[data-testid=quiz-unsaved]")), Wait);
+        Assert.Equal(1, _quizzes.Calls.Count(c => c == "add-question"));
+        Assert.Equal(3, _quizzes.Quizzes[FakeQuizzesApi.QuizId].Questions.Count);
+    }
+
+    [Fact]
+    public async Task Retry_after_a_half_finished_save_does_not_delete_the_question_twice()
+    {
+        var page = await OpenAsync();
+        page.Find("[data-testid=question-remove-1]").Click();
+        page.Find("[data-testid=question-text-0]").Input("Edited");
+        _quizzes.FailOnce["update-question"] = new ApiProblemException(500, "server_error", null, null);
+
+        page.Find("[data-testid=quiz-save]").Click();
+        page.WaitForAssertion(() => Assert.NotEmpty(page.FindAll("[data-testid=quiz-save-error]")), Wait);
+        page.Find("[data-testid=quiz-save]").Click();
+
+        page.WaitForAssertion(() => Assert.Empty(page.FindAll("[data-testid=quiz-unsaved]")), Wait);
+        Assert.Equal(1, _quizzes.Calls.Count(c => c == "delete-question"));
+        var saved = _quizzes.Quizzes[FakeQuizzesApi.QuizId];
+        Assert.Single(saved.Questions);
+        Assert.Equal("Edited", saved.Questions[0].Text);
     }
 
     [Fact]
