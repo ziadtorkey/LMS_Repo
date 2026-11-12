@@ -18,4 +18,13 @@ public interface IGradeEvents
     /// (and adds nothing) when that revision is already recorded for the source and student, so a retry is harmless.
     /// </summary>
     Task<bool> RecordAsync(GradeEventInput input, CancellationToken ct);
+
+    /// <summary>
+    /// The quiz path (no return step): called when an attempt is finalised or graded, with the student's score by the quiz grading
+    /// method. Writes revision = latest + 1 (1 for the first), unless the latest event already carries the same points and max, so
+    /// finalising an attempt that does not change the score writes nothing. Returns whether an event was added.
+    /// </summary>
+    Task<bool> RecordScoreAsync(
+        GradeSourceKind sourceKind, Guid sourceId, Guid classCourseId, Guid studentProfileId, decimal points, decimal maxPoints,
+        DateTime scoredAtUtc, CancellationToken ct);
 }
