@@ -11,7 +11,7 @@
         <MudStack Spacing="2">
             @if (_error is not null)
             {
-                <MudAlert Severity="Severity.Error" data-testid="dialog-error">@_error</MudAlert>
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="dialog-error">@_error</MudAlert>
             }
             <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
                 <MudPaper Outlined="true" Class="pa-2 flex-grow-1" Style="min-width: 14rem" data-testid="ungrouped-list">
@@ -55,7 +55,10 @@
         </MudStack>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="() => MudDialog.Close(DialogResult.Ok(true))" data-testid="members-done">@L["Common_Close"]</MudButton>
+        <div class="lms-dialog-actions">
+            <MudButton OnClick="() => MudDialog.Close(DialogResult.Ok(true))" data-testid="members-done">@L["Common_Close"]</MudButton>
+    
+        </div>
     </DialogActions>
 </MudDialog>
 

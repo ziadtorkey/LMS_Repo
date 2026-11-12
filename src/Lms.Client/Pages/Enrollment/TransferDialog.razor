@@ -13,7 +13,7 @@
         <MudStack Spacing="3">
             @if (_error is not null)
             {
-                <MudAlert Severity="Severity.Error" data-testid="dialog-error">@_error</MudAlert>
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="dialog-error">@_error</MudAlert>
             }
             <MudText data-testid="transfer-student">@StudentName</MudText>
             <MudSelect T="Guid?" Value="_toClassId" ValueChanged="OnClassChanged" Label="@L["Transfer_ToClass"]" Required="true"
@@ -49,9 +49,12 @@
         </MudStack>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
-        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="TransferAsync"
-                   Disabled="@(_busy || _preview is null || (_preview.OverCapacity && !_confirmOver))" data-testid="transfer-confirm">@L["Transfer_Confirm"]</MudButton>
+        <div class="lms-dialog-actions">
+            <MudButton Variant="Variant.Text" OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="TransferAsync"
+                       Disabled="@(_busy || _preview is null || (_preview.OverCapacity && !_confirmOver))" data-testid="transfer-confirm">@L["Transfer_Confirm"]</MudButton>
+    
+        </div>
     </DialogActions>
 </MudDialog>
 

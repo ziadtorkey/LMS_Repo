@@ -13,12 +13,12 @@
 <MudStack Spacing="2" data-testid="guardians-tab">
     @if (!_portalOn)
     {
-        <MudAlert Severity="Severity.Info" data-testid="portal-disabled">@L["Guardian_PortalDisabled"]</MudAlert>
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" data-testid="portal-disabled">@L["Guardian_PortalDisabled"]</MudAlert>
     }
     @if (CanEdit)
     {
         <div>
-            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.PersonAdd" OnClick="LinkAsync"
+            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.PersonAdd" OnClick="LinkAsync"
                        data-testid="guardian-link-new">@L["Guardian_LinkTitle"]</MudButton>
         </div>
     }
@@ -41,7 +41,7 @@
                 <MudTd DataLabel="@L["Common_Name"]">
                     @if (g.IsPrimary)
                     {
-                        <MudIcon Icon="@Icons.Material.Filled.Star" Size="Size.Small" Color="Color.Warning" title="@L["Guardian_Primary"]"
+                        <MudIcon Icon="@Icons.Material.Rounded.Star" Size="Size.Small" Color="Color.Warning" title="@L["Guardian_Primary"]"
                                  data-testid="@($"guardian-primary-{g.GuardianId}")" />
                     }
                     <MudLink Href="@($"guardians/{g.GuardianId}")" data-testid="@($"guardian-name-{g.GuardianId}")">@Culture.Pick(g.NameAr, g.NameEn)</MudLink>
