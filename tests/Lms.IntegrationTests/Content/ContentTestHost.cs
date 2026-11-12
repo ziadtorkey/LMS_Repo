@@ -135,13 +135,22 @@ internal sealed class ContentTestHost(LmsApiFactory factory) : IDisposable
         RoleAssignment caller, Guid classCourseId, string fileName = "notes.pdf", string contentType = "application/pdf")
     {
         var form = new MultipartFormDataContent { { new StringContent(classCourseId.ToString()), AssetUploadForm.ClassCourseId } };
-        var file = new ByteArrayContent("%PDF-1.7 module asset"u8.ToArray());
+        var file = new ByteArrayContent(SampleBytes(fileName));
         file.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
         form.Add(file, AssetUploadForm.File, fileName);
         var response = await _host.SendRawAsync(new HttpRequestMessage(HttpMethod.Post, Routes.Assets) { Content = form }, caller);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         return (await response.Content.ReadFromJsonAsync<AssetDto>())!;
     }
+
+    /// <summary>A few bytes with the signature of the file type (the asset service checks magic bytes).</summary>
+    private static byte[] SampleBytes(string fileName) => Path.GetExtension(fileName).ToLowerInvariant() switch
+    {
+        ".png" => [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0],
+        ".mp4" or ".m4a" => [0, 0, 0, 0x18, (byte)'f', (byte)'t', (byte)'y', (byte)'p', (byte)'i', (byte)'s', (byte)'o', (byte)'m'],
+        ".mp3" => "ID3      "u8.ToArray(),
+        _ => "%PDF-1.7 module asset"u8.ToArray(),
+    };
 
     public static CreateModuleRequest AssetModule(
         string kind, Guid? assetId, string visibility = ModuleVisibilities.Published, string rule = CompletionRules.None,
