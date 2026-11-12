@@ -1,0 +1,55 @@
+@using Lms.Client.Services.Api
+@using Lms.Shared.Classes
+@using Lms.Shared.Content
+@inject ILessonPlansApi Plans
+@inject IModulesApi Modules
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+@* Home cards for a student: one per class course (at most three) with the progress and a continue button. *@
+@if (_cards.Count > 0)
+{
+    <MudStack Spacing="2" Class="mt-4" data-testid="home-continue-learning">
+        <MudText Typo="Typo.h6">@L["Home_ContinueLearning"]</MudText>
+        <MudGrid Spacing="2">
+            @foreach (var card in _cards)
+            {
+                var c = card;
+                <MudItem xs="12" sm="6" md="4">
+                    <MudCard Class="h-100" data-testid="@($"home-learn-{c.Course.Id}")">
+                        <MudCardContent>
+                            <MudText Typo="Typo.subtitle1">@Culture.Pick(c.Course.CourseNameAr, c.Course.CourseNameEn)</MudText>
+                            <MudText Typo="Typo.body2" Class="mud-text-secondary">@L["Learn_Progress", c.Progress.Course.Completed, c.Progress.Course.Total]</MudText>
+                        </MudCardContent>
+                        <MudCardActions>
+                            @if (c.Progress.NextModuleId is { } next)
+                            {
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="@($"class-courses/{c.Course.Id}/modules/{next}")"
+                                           data-testid="@($"home-learn-continue-{c.Course.Id}")">@L["Learn_ContinueOpen"]</MudButton>
+                            }
+                            <MudButton Variant="Variant.Text" Href="@($"class-courses/{c.Course.Id}/learn")"
+                                       data-testid="@($"home-learn-open-{c.Course.Id}")">@L["MyClassCourses_OpenCourse"]</MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+    </MudStack>
+}
+
+@code {
+    private const int MaxCards = 3;
+
+    private sealed record Card(ClassCourseDto Course, CourseProgressDto Progress);
+
+    private readonly List<Card> _cards = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ApiCalls.RunAsync(async () =>
+        {
+            foreach (var course in (await Plans.GetMyClassCoursesAsync()).Take(MaxCards))
+                _cards.Add(new Card(course, await Modules.GetProgressAsync(course.Id)));
+        }, Navigation, L, _ => { });
+    }
+}

@@ -26,6 +26,10 @@ else if (_name is not null)
     {
         <HomeActivityCards />
     }
+    @if (PermState.Has(Permissions.Modules.View) && !PermState.Has(Permissions.Modules.Manage))
+    {
+        <ContinueLearningCards />
+    }
     @if (PermState.Has(Permissions.LessonPlans.View))
     {
         <MudCard Class="mt-4" Style="max-width: 420px" data-testid="home-my-class-courses">
