@@ -23,7 +23,8 @@ namespace Lms.Api.Features.Quizzes;
 /// student has started an attempt the correct options, points, question set and pool are locked (409 <c>quiz_has_attempts</c>).
 /// </summary>
 public sealed class QuizBuilderHandlers(
-    LmsDbContext db, QuizMapper mapper, IModuleWriter modules, ModuleAccess access, IClock clock, PlacementGuard guard, AttemptService attempts)
+    LmsDbContext db, QuizMapper mapper, IModuleWriter modules, ModuleAccess access, IClock clock, PlacementGuard guard, AttemptService attempts,
+    QuizOpenedNotifier opened)
 {
     public async Task<IResult> ListAsync(Guid classCourseId, int page, int pageSize, HttpContext http, CancellationToken ct)
     {
@@ -133,6 +134,7 @@ public sealed class QuizBuilderHandlers(
         db.Add(quiz);
         await db.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
+        await opened.NotifyDueAsync(quiz.Id, ct); // published already open (it needs a question, so usually the first question triggers it)
         return Results.Created(Routes.Quiz(quiz.Id), await mapper.BuilderAsync(quiz, true, clock.UtcNow, ct));
     }
 
@@ -204,6 +206,7 @@ public sealed class QuizBuilderHandlers(
         Apply(quiz, request.DescriptionAr, request.DescriptionEn, request.Settings);
         await db.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
+        await opened.NotifyDueAsync(quiz.Id, ct); // an edit can publish it or open it now
         return Results.Ok(await mapper.BuilderAsync(quiz, true, clock.UtcNow, ct));
     }
 
@@ -230,6 +233,7 @@ public sealed class QuizBuilderHandlers(
         db.Add(question);
         var options = AddOptions(question, input.Options);
         await db.SaveChangesAsync(ct);
+        await opened.NotifyDueAsync(id, ct); // the first question makes an open quiz takeable
         return Results.Created(Routes.QuizQuestion(question.Id), QuizMapper.Question(question, options));
     }
 
