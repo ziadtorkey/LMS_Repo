@@ -1,0 +1,33 @@
+/* RichTextEditor (loaded lazily by js/richtext.js together with lib/quill/quill.core.css). Logical properties only: it must work in RTL and LTR. */
+.lms-rte { display: flex; flex-direction: column; gap: 4px; }
+.lms-rte-label { font-size: .8125rem; color: var(--mud-palette-text-secondary); }
+.lms-rte-toolbar {
+    display: flex; flex-wrap: wrap; gap: 2px; padding: 2px 4px;
+    border: 1px solid var(--mud-palette-lines-inputs); border-block-end: 0;
+    border-start-start-radius: var(--mud-default-borderradius); border-start-end-radius: var(--mud-default-borderradius);
+    background: var(--mud-palette-background-gray);
+}
+.lms-rte-link-bar {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px;
+    border: 1px solid var(--mud-palette-lines-inputs); border-block-end: 0; background: var(--mud-palette-surface);
+}
+.lms-rte-link-url { flex: 1 1 14rem; min-inline-size: 0; }
+.lms-rte-host { display: flex; flex-direction: column; }
+.lms-rte-host.ql-container {
+    border: 1px solid var(--mud-palette-lines-inputs);
+    border-end-start-radius: var(--mud-default-borderradius); border-end-end-radius: var(--mud-default-borderradius);
+    background: var(--mud-palette-surface); color: var(--mud-palette-text-primary);
+    font: inherit; font-size: 1rem;
+}
+.lms-rte-host.ql-container:focus-within { outline: 2px solid var(--mud-palette-primary); outline-offset: -1px; }
+.lms-rte-host .ql-editor { min-block-size: 10rem; max-block-size: 28rem; overflow-y: auto; padding: 12px 14px; line-height: 1.6; }
+.lms-rte-host .ql-editor.ql-blank::before { color: var(--mud-palette-text-disabled); font-style: normal; inset-inline: 14px; }
+.lms-rte-host .ql-editor a { color: var(--mud-palette-primary); text-decoration: underline; }
+.lms-rte-host .ql-editor p + p, .lms-rte-host .ql-editor p + ol, .lms-rte-host .ql-editor ol + p { margin-block-start: .5em; }
+/* Quill's list CSS is physical (left/right); flip it with the text direction. */
+.lms-rte-host .ql-editor li { padding-left: 0; padding-inline-start: 1.5em; }
+.lms-rte-host .ql-editor li > .ql-ui:before { margin-left: 0; margin-right: 0; margin-inline-start: -1.5em; margin-inline-end: .3em; text-align: end; }
+.lms-rte--readonly .lms-rte-host.ql-container { background: var(--mud-palette-background-gray); }
+@media (max-width: 599.98px) {
+    .lms-rte-host .ql-editor { min-block-size: 8rem; }
+}
