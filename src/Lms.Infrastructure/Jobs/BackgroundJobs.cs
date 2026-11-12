@@ -167,12 +167,6 @@ public sealed class BackgroundJobs(
         var hashKey = ScheduledJobKeys.HashKey(key);
         transaction.SetRangeInHash(hashKey, [new("jobId", jobId), new("fingerprint", fingerprint)]);
         // The mapping outlives the run by a grace period, then goes by itself (the job state, not the mapping, decides what is pending).
-        var wait = runAt - Now();
-        if (transaction is JobStorageTransaction expiring)
-        {
-            expiring.ExpireHash(hashKey, (wait > TimeSpan.Zero ? wait : TimeSpan.Zero) + MappingGrace);
-        }
-
         transaction.Commit();
     }
 }

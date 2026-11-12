@@ -23,8 +23,39 @@ public sealed class ScheduleProbeJob(ICurrentContext context)
 
 /// <summary>Delayed and scheduled enqueue with idempotent keys: one key is one pending job, however often it is scheduled.</summary>
 [Collection(ApiCollection.Name)]
-public sealed class ScheduledJobTests(LmsApiFactory factory)
+public sealed class ScheduledJobTests(LmsApiFactory factory) : IAsyncLifetime
 {
+    private static readonly SemaphoreSlim Warm = new(1, 1);
+    private static bool _warmed;
+
+    /// <summary>
+    /// A freshly started Hangfire server picks up its first delayed job late (observed 35 to 60 s after the due time, never lost). The
+    /// tests wait for one throw-away delayed job once, so they measure the scheduling and not the server start.
+    /// </summary>
+    public async Task InitializeAsync()
+    {
+        await Warm.WaitAsync();
+        try
+        {
+            if (_warmed)
+            {
+                return;
+            }
+
+            var token = NewToken();
+            using var scope = factory.Services.CreateScope();
+            Jobs(scope).ScheduleAsSystem<ScheduleProbeJob>($"sj:{token}", DateTimeOffset.UtcNow.AddSeconds(1), j => j.RunAsync(token, "warm"));
+            await WaitForRunsAsync(token, 1, seconds: 150);
+            _warmed = true;
+        }
+        finally
+        {
+            Warm.Release();
+        }
+    }
+
+    public Task DisposeAsync() => Task.CompletedTask;
+
     private static string NewToken() => Guid.NewGuid().ToString("N");
 
     private static List<(DateTime At, string Value, Guid? UserId, bool Platform)> RunsOf(string token) =>
