@@ -76,17 +76,32 @@ public sealed class QuizIsolationTests(LmsApiFactory factory)
     private static Task<List<Guid>> IdsOf<T>(LmsDbContext db) where T : class =>
         db.Set<T>().Select(e => EF.Property<Guid>(e, "Id")).ToListAsync();
 
+    // One named test per entity (the M4a isolation guard looks for <Entity>_is_isolated...).
     [Fact]
-    public async Task Every_quiz_table_is_isolated_by_client_and_subtree()
+    public Task Quiz_is_isolated_per_client_and_subtree() => AssertIsolatedAsync(nameof(Quiz));
+
+    [Fact]
+    public Task QuizQuestion_is_isolated_per_client_and_subtree() => AssertIsolatedAsync(nameof(QuizQuestion));
+
+    [Fact]
+    public Task QuizOption_is_isolated_per_client_and_subtree() => AssertIsolatedAsync(nameof(QuizOption));
+
+    [Fact]
+    public Task QuizAttempt_is_isolated_per_client_and_subtree() => AssertIsolatedAsync(nameof(QuizAttempt));
+
+    [Fact]
+    public Task QuizAnswer_is_isolated_per_client_and_subtree() => AssertIsolatedAsync(nameof(QuizAnswer));
+
+    private async Task AssertIsolatedAsync(string tableName)
     {
-        var a = await AccessTestData.SeedAsync(factory, "CI1A");
-        var b = await AccessTestData.SeedAsync(factory, "CI1B");
+        var a = await AccessTestData.SeedAsync(factory, "QI1A" + tableName[4..]);
+        var b = await AccessTestData.SeedAsync(factory, "QI1B" + tableName[4..]);
         var s1 = await AddAsync(a.School1);
         var s2 = await AddAsync(a.School2);
         var other = await AddAsync(b.Root);
         var atRoot = await AddAsync(a.Root);
 
-        foreach (var table in Tables)
+        foreach (var table in Tables.Where(t => t.Name == tableName))
         {
             Guid[] all = [table.Id(s1), table.Id(s2), table.Id(other), table.Id(atRoot)];
 
