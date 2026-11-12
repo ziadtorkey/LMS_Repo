@@ -74,6 +74,33 @@ public sealed class LmsApiClientTests
     }
 
     [Fact]
+    public async Task Forbidden_lookup_that_handles_403_itself_does_not_redirect()
+    {
+        var nav = new TestNav();
+        var handler = new ForbiddenRedirectHandler(nav, new InMemoryContextStore()) { InnerHandler = new CaptureHandler(HttpStatusCode.Forbidden) };
+        var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/api/org-units");
+        request.Options.Set(ForbiddenRedirectHandler.HandlesForbidden, true);
+
+        var response = await new HttpMessageInvoker(handler).SendAsync(request, default);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.DoesNotContain("/forbidden", nav.Uri);
+    }
+
+    [Fact]
+    public async Task Forbidden_lookup_with_a_stale_context_still_goes_to_the_chooser()
+    {
+        var nav = new TestNav();
+        var handler = new ForbiddenRedirectHandler(nav, new InMemoryContextStore()) { InnerHandler = new CaptureHandler(HttpStatusCode.Forbidden, new { code = "context_required" }) };
+        var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/api/org-units");
+        request.Options.Set(ForbiddenRedirectHandler.HandlesForbidden, true);
+
+        await new HttpMessageInvoker(handler).SendAsync(request, default);
+
+        Assert.EndsWith("/choose-context", nav.Uri);
+    }
+
+    [Fact]
     public async Task Post_403_does_not_redirect_to_forbidden_page()
     {
         var nav = new TestNav();

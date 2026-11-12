@@ -7,38 +7,62 @@
 
 <MudDialog>
     <DialogContent>
-        <MudForm @ref="_form">
-            <MudStack Spacing="3">
-                @if (_error is not null)
-                {
-                    <MudAlert Severity="Severity.Error" data-testid="dialog-error">@_error</MudAlert>
-                }
+        <MudForm @ref="_form" Class="lms-form">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-4" data-testid="dialog-error">@_error</MudAlert>
+            }
 
+            <fieldset class="lms-fieldset">
+                <legend class="lms-fieldset-legend">@L["Staff_SectionPerson"]</legend>
                 <BilingualNameFields @bind-NameAr="_nameAr" @bind-NameEn="_nameEn" IdPrefix="staff-name" />
+                <div class="lms-form-grid">
+                    <MudTextField T="string" @bind-Value="_jobTitleAr" Label="@L["Staff_JobTitleAr"]" MaxLength="150" dir="rtl" lang="ar"
+                                  data-testid="staff-job-ar" />
+                    <MudTextField T="string" @bind-Value="_jobTitleEn" Label="@L["Staff_JobTitleEn"]" MaxLength="150" dir="ltr" lang="en"
+                                  data-testid="staff-job-en" />
+                </div>
+            </fieldset>
+
+            <fieldset class="lms-fieldset">
+                <legend class="lms-fieldset-legend">@L["Staff_SectionContact"]</legend>
                 <MudTextField T="string" Value="Person.Summary.Email" ReadOnly="true" Label="@L["Staff_Email"]" dir="ltr"
+                              HelperText="@L["Staff_EmailReadOnlyHelp"]" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Rounded.Lock"
                               data-testid="staff-email" />
-                <MudTextField T="string" @bind-Value="_mobile" Label="@L["Staff_Mobile"]" MaxLength="30" dir="ltr"
-                              InputType="InputType.Telephone" data-testid="staff-mobile" />
-                <MudTextField T="string" @bind-Value="_nationalId" Label="@L["Staff_NationalId"]" MaxLength="30" dir="ltr"
-                              data-testid="staff-national-id" />
-                <MudTextField T="string" @bind-Value="_jobTitleAr" Label="@L["Staff_JobTitleAr"]" MaxLength="150" dir="rtl" lang="ar"
-                              data-testid="staff-job-ar" />
-                <MudTextField T="string" @bind-Value="_jobTitleEn" Label="@L["Staff_JobTitleEn"]" MaxLength="150" dir="ltr" lang="en"
-                              data-testid="staff-job-en" />
-                <UnitPicker Value="_homeUnitId" ValueChanged="OnHomeUnitChanged" Label="@L["Staff_HomeUnit"]" Required="true" TestId="staff-home-unit" />
-                <MudDatePicker Date="_expiresOn" DateChanged="d => _expiresOn = d" Label="@L["Staff_ExpiresOn"]" Clearable="true"
-                               data-testid="staff-expires" />
+                <div class="lms-form-grid">
+                    <MudTextField T="string" @bind-Value="_mobile" Label="@L["Staff_Mobile"]" MaxLength="30" dir="ltr"
+                                  InputType="InputType.Telephone" spellcheck="false" data-testid="staff-mobile" />
+                    <MudTextField T="string" @bind-Value="_nationalId" Label="@L["Staff_NationalId"]" MaxLength="30" dir="ltr"
+                                  spellcheck="false" autocomplete="off" data-testid="staff-national-id" />
+                </div>
+            </fieldset>
+
+            <fieldset class="lms-fieldset">
+                <legend class="lms-fieldset-legend">@L["Staff_SectionAccount"]</legend>
+                <div class="lms-form-grid">
+                    <UnitPicker Value="_homeUnitId" ValueChanged="OnHomeUnitChanged" Label="@L["Staff_HomeUnit"]" Required="true" TestId="staff-home-unit" />
+                    <MudDatePicker Date="_expiresOn" DateChanged="d => _expiresOn = d" Label="@L["Staff_ExpiresOn"]" Clearable="true"
+                                   HelperText="@L["Staff_ExpiresOnHelp"]" data-testid="staff-expires" />
+                </div>
                 @if (_homeUnitId is { } unit)
                 {
                     <PhotoUpload @bind-Value="_photoId" OrgUnitId="unit" />
                 }
-            </MudStack>
+            </fieldset>
         </MudForm>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
-        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="_saving"
-                   data-testid="dialog-save">@L["Common_Save"]</MudButton>
+        <div class="lms-dialog-actions">
+            <MudButton Variant="Variant.Text" OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="_saving"
+                       StartIcon="@(_saving ? null : Icons.Material.Rounded.Check)" data-testid="dialog-save">
+                @if (_saving)
+                {
+                    <MudProgressCircular Indeterminate="true" Size="Size.Small" Class="me-2" aria-hidden="true" />
+                }
+                @L["Common_Save"]
+            </MudButton>
+        </div>
     </DialogActions>
 </MudDialog>
 

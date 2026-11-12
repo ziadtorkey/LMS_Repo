@@ -1,0 +1,91 @@
+@page "/me/class-courses"
+@attribute [Authorize]
+@using Lms.Client.Services.Api
+@using Lms.Shared.Authorization
+@using Lms.Shared.Classes
+@inject ILessonPlansApi Api
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<PageTitle>@L["MyClassCourses_Title"]</PageTitle>
+<MudText Typo="Typo.h4" Class="mb-4" data-testid="my-class-courses-title">@L["MyClassCourses_Title"]</MudText>
+@if (!PermState.Loaded || _loading)
+{
+    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+}
+else if (!PermState.Has(Permissions.LessonPlans.View))
+{
+    <MudAlert Severity="Severity.Warning" data-testid="my-class-courses-forbidden">@L["Forbidden_Title"]</MudAlert>
+}
+else if (_failed)
+{
+    <MudAlert Severity="Severity.Error" data-testid="api-error">
+        @L["Api_Error"]
+        <MudButton Variant="Variant.Text" OnClick="LoadAsync">@L["Common_Retry"]</MudButton>
+    </MudAlert>
+}
+else if (_items.Count == 0)
+{
+    <MudAlert Severity="Severity.Info" data-testid="my-class-courses-empty">@L["MyClassCourses_Empty"]</MudAlert>
+}
+else
+{
+    <MudGrid>
+        @foreach (var item in _items)
+        {
+            var cc = item;
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard data-testid="@($"my-class-course-{cc.Id}")" Class="h-100">
+                    <MudCardContent>
+                        <MudText Typo="Typo.h6">@Culture.Pick(cc.CourseNameAr, cc.CourseNameEn)</MudText>
+                        <MudText Typo="Typo.body2" Class="mud-text-secondary">
+                            <span dir="ltr">@cc.CourseCode</span> · @Culture.Pick(cc.ClassNameAr, cc.ClassNameEn)
+                        </MudText>
+                        <MudStack Row="true" Spacing="1" Class="mt-2" Wrap="Wrap.Wrap">
+                            <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@L["MyClassCourses_Students", cc.EnrolledCount]</MudChip>
+                            @if (cc.IsOptional)
+                            {
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@L["MyClassCourses_Optional"]</MudChip>
+                            }
+                            <MudChip T="string" Size="Size.Small" Color="@(cc.LessonPlanVersion is null ? Color.Default : Color.Primary)">
+                                @(cc.LessonPlanVersion is { } v ? L["MyClassCourses_PlanVersion", v] : L["MyClassCourses_NoPlan"])
+                            </MudChip>
+                        </MudStack>
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton Variant="Variant.Text" Color="Color.Primary" Href="@($"class-courses/{cc.Id}/plan")"
+                                   data-testid="@($"my-class-course-plan-{cc.Id}")">@L["MyClassCourses_OpenPlan"]</MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+        }
+    </MudGrid>
+}
+
+@code {
+    private IReadOnlyList<ClassCourseDto> _items = [];
+    private bool _loading = true;
+    private bool _failed;
+
+    protected override async Task OnInitializedAsync()
+    {
+        PermState.Changed += OnPermissionsChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true; _failed = false;
+        var (items, failed) = await ApiCalls.RunAsync(() => Api.GetMyClassCoursesAsync(), Navigation);
+        _failed = failed;
+        _items = items ?? [];
+        _loading = false;
+    }
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => PermState.Changed -= OnPermissionsChanged;
+}
