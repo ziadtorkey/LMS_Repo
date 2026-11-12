@@ -141,3 +141,25 @@ Staff Excel import as the seeded school group's Org Admin: the template is downl
 | `Arabic_template_headers_are_accepted` | X-06, D34: a file with Arabic headers validates in either UI language |
 | `Commit_after_a_conflicting_person_appears_imports_nothing` | all-or-nothing (Review Focus 3): a person created between preview and commit makes the commit refuse; nobody is imported, no invitation is sent |
 | `Wizard_shows_the_done_step_after_a_successful_commit` (skipped) | expected Done step, waits for #314 |
+
+## Scenarios (M3, plan Task 46: `M3/AcademicStructureTests`)
+Run as the seeded school group's Org Admin with unique names per test (`M3Names`). Prerequisites a scenario is not testing are created through the API (`Infrastructure/ApiSetup`: authenticated `fetch` from the signed-in page); only the named feature is driven through the UI. The seed has a current academic year since M1; if it is not the effective year on the run date, set-up creates one through the API.
+
+| Test | Covers | Status |
+|---|---|---|
+| `Root_admin_creates_course_and_a_duplicate_code_is_refused` | FR-CRS-01, D38 duplicate code | runs |
+| `Root_admin_allocates_a_new_course_below_the_school` | FR-CRS-02 | runs |
+| supervisor assigned; blueprint builder and publish v1; classes bulk create and matrix; teacher assignment; teacher sees only own class-course; publish v2 with push (polled up to 30 s); copy classes to next year | FR-CRS-04, FR-LP-*, FR-CLS-*, FR-TCH-* | to write as the FE pages (#238, #239, #240 to #243) and BE (#217, #221 to #225) land |
+
+## Scenarios (M4a exit demo 2, plan Task 32: `M4/AssignmentTests`, `M4/QuizTests`)
+A student submits an assignment and takes a quiz; the grader scores both. `M4/AssessmentKit` builds the world through the API (a school, a published blueprint and class lesson plan, a class course, an enrolled student); assignments, quizzes and questions are created through the API and everything the scenario tests is driven through the UI, in Arabic (RTL) and English. All scenarios are **Skip-marked** until the M4a PRs land; they ran green on a local integration of main with those PRs (8 of 10; see below).
+
+| Scenario | ar + en |
+|---|---|
+| Teacher publishes an assignment, the student submits late with the penalty, the grader scores with an annotated file | skipped: also needs the rich-text editor script to be served (the fingerprinted `/js/richtext.<hash>.js` answers 404 under `dotnet run`; `MapStaticAssets` is missing in `Program.cs`) |
+| A blocked late assignment refuses the submission (UI and API 409) | skipped until the M4a PRs land |
+| The student takes a timed quiz, answers autosave across a reload, the score is 5 of 10 with the review the policy allows | skipped until the M4a PRs land |
+| An unfinished attempt is auto-submitted at close (dev trigger `POST /api/dev/jobs/quiz-close/{quizId}`) | skipped until the M4a PRs land |
+| The grader scores an essay and the student sees the result per the review policy | skipped until the M4a PRs land |
+
+Known limits: the grader signs in as the Org Admin (same grading permissions) because the shared E2E academic year starts on 2027-09-01 and a teacher assignment cannot start before its year, so the seeded Teacher is not current yet; switch `OpenTeacherAsync` to the seeded teacher once the year contains today. The checked radio after a quiz reload is not asserted (MudBlazor's state is not exposed reliably); the saved answers are proved by the score.
