@@ -106,9 +106,9 @@ public sealed class LibraryAndForumTests(E2EFixture fixture) : E2ETestBase(fixtu
         await thread.ToggleLockAsync();
         await Expect(thread.LockedChip).ToBeVisibleAsync();
 
-        // The student sees the pin and the lock, cannot reply, and the server refuses a reply sent around the page.
+        // The student sees the pin and the lock, cannot reply (the first sign-in changed the password: M4Kit appends "x1"), and the server refuses a reply sent around the page.
         await M4Kit.SignOutAsync(Page);
-        await M4Kit.SignInAsync(Page, world.Student1.UserName, world.Student1.Password, culture);
+        await M4Kit.SignInAsync(Page, world.Student1.UserName, world.Student1.Password + "x1", culture);
         await forum.OpenAsync(world.ClassCourseId);
         await Expect(forum.Pinned(topic)).ToBeVisibleAsync();
         await Expect(forum.Locked(topic)).ToBeVisibleAsync();
