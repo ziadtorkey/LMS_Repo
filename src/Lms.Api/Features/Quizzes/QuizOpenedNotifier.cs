@@ -78,7 +78,7 @@ public sealed class QuizOpenedNotifier(LmsDbContext db, INotificationPublisher p
                     ["CourseNameAr"] = course.NameAr,
                     ["CourseNameEn"] = course.NameEn,
                 },
-                DeepLink: $"/class-courses/{quiz.ClassCourseId}/plan", OrgUnitPath: quiz.OrgUnitPath), ct);
+                DeepLink: $"/class-courses/{quiz.ClassCourseId}/modules/{module.Id}", OrgUnitPath: quiz.OrgUnitPath), ct);
         }
         catch (Exception ex)
         {

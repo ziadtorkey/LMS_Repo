@@ -52,7 +52,7 @@ public sealed class QuizOpenedNotificationTests(LmsApiFactory factory) : IDispos
         Assert.Single(await OpenedAsync(other.Student.UserId));
         Assert.Empty(await OpenedAsync(w.Teacher.UserId)); // the author is not told
         Assert.Contains("Unit test", mine.ParametersJson);
-        Assert.Equal($"/class-courses/{w.ClassCourse.Id}/plan", mine.DeepLink);
+        Assert.Equal($"/class-courses/{w.ClassCourse.Id}/modules/{quiz.Module.Id}", mine.DeepLink); // the student module viewer
     }
 
     [Fact]
