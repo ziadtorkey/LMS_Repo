@@ -64,3 +64,7 @@ html, body { margin: 0; font-family: Roboto, "Segoe UI", Tahoma, sans-serif; }
 .lms-plan-modules { padding-inline-start: 24px; margin-block: 4px; }
 .lms-module-node { padding-block: 2px; }
 .lms-progress { max-inline-size: 28rem; margin-block: 4px; }
+
+/* Lesson plan: a module with its authoring buttons, and the add-module menu under a lesson. */
+.lms-module-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px 8px; min-width: 0; }
+.lms-plan-add { margin-block-start: 4px; }

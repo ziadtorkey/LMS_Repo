@@ -58,7 +58,7 @@ else
     }
     else
     {
-        <LessonPlanTree Plan="_plan" ShowHijri="_showHijri" Staff="@(_plan.Progress is null)" />
+        <LessonPlanTree Plan="_plan" ShowHijri="_showHijri" Staff="@(_plan.Progress is null)" OnChanged="RefreshPlanAsync" />
     }
 
 
@@ -96,6 +96,13 @@ else
             }
         }
         _loading = false;
+    }
+
+    // After a module was added, edited, moved or deleted: read the plan again without the page-level loading state.
+    private async Task RefreshPlanAsync()
+    {
+        await ApiCalls.RunAsync(async () => _plan = await Api.GetPlanAsync(Id), Navigation, L, message => _error = message);
+        StateHasChanged();
     }
 
     private async Task ReadHijriSettingAsync()
