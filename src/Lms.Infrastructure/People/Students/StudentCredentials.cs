@@ -76,7 +76,7 @@ public sealed class StudentCredentials(
         if (toEmail is not null)
         {
             var culture = (await settings.ResolveAsync(SettingKeys.UiDefaultCulture, student.OrgUnitPath, ct)).Value;
-            _queue.Add((userName, password, toEmail, culture));
+            _queue.Add((user.UserName ?? userName, password, toEmail, culture));
         }
 
         return new IssuedCredentials(user, password, delivered);

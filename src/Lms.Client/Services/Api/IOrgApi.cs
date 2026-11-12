@@ -78,9 +78,9 @@ public sealed class FakeOrgApi : IOrgApi
 {
     private readonly List<LevelTypeDto> _levels =
     [
-        new(Guid.NewGuid(), "المجموعة", "Group", 1, false, 1),
-        new(Guid.NewGuid(), "المدرسة", "School", 2, false, 3),
-        new(Guid.NewGuid(), "الصف", "Grade", 3, true, 12),
+        new(FakeUnits.GroupLevelId, "المجموعة", "Group", 1, false, 1),
+        new(FakeUnits.SchoolLevelId, "المدرسة", "School", 2, false, 3),
+        new(FakeUnits.GradeLevelId, "الصف", "Grade", 3, true, 12),
     ];
 
     private readonly List<OrgUnitNodeDto> _units;
