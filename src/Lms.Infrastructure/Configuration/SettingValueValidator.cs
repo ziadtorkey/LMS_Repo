@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Lms.Domain.People;
 using Lms.Shared.Configuration;
 
 namespace Lms.Infrastructure.Configuration;
@@ -26,7 +27,7 @@ public static class SettingValueValidator
         {
             SettingValueKinds.Bool => value.ValueKind is JsonValueKind.True or JsonValueKind.False ? null : "must_be_boolean",
             SettingValueKinds.Int => ValidateInt(definition, value),
-            SettingValueKinds.String => ValidateString(value),
+            SettingValueKinds.String => ValidateString(value) ?? ValidateKnownString(definition, value),
             SettingValueKinds.Enum => ValidateEnum(definition, value),
             SettingValueKinds.StringSet => ValidateStringSet(definition, value),
             _ => "unsupported_kind",
@@ -49,6 +50,13 @@ public static class SettingValueValidator
         value.ValueKind != JsonValueKind.String ? "must_be_string"
         : value.GetString()!.Length > MaxStringLength ? "too_long"
         : null;
+
+    /// <summary>Strings with their own grammar: the student code pattern must parse (D25).</summary>
+    private static string? ValidateKnownString(SettingDefinition definition, JsonElement value) =>
+        definition.Name == SettingKeys.StudentsCodePattern.Name
+        && !StudentCodePattern.TryParse(value.GetString(), out _, out _)
+            ? "invalid_code_pattern"
+            : null;
 
     private static string? ValidateEnum(SettingDefinition definition, JsonElement value) =>
         value.ValueKind != JsonValueKind.String ? "must_be_string"

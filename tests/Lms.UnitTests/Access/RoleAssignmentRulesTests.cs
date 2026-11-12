@@ -52,15 +52,5 @@ public sealed class RoleAssignmentRulesTests
 
     [Fact]
     public void Self_service_permissions_are_only_the_own_data_ones() =>
-        Assert.Equal(["CourseAssignments.Submit", "Quizzes.Attempt", "Students.SelfEdit", "Students.ViewChildren"],
-            Permissions.SelfService.Order(StringComparer.Ordinal));
-
-    [Theory]
-    [InlineData(BuiltInRoles.Manager, BuiltInRoles.Teacher)]
-    [InlineData(BuiltInRoles.Manager, BuiltInRoles.Student)]
-    [InlineData(BuiltInRoles.Manager, BuiltInRoles.Supervisor)]
-    [InlineData(BuiltInRoles.OrgAdmin, BuiltInRoles.Student)]
-    [InlineData(BuiltInRoles.OrgAdmin, BuiltInRoles.OrgAdmin)]
-    public void M4a_wave_2_defaults_keep_the_escalation_guard_assignable(string caller, string target) =>
-        Assert.True(CanAssign(caller, target));
+        Assert.Equal(["Students.SelfEdit", "Students.ViewChildren"], Permissions.SelfService.Order(StringComparer.Ordinal));
 }

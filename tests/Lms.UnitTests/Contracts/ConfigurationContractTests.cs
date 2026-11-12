@@ -27,7 +27,7 @@ public class ConfigurationContractTests
     [Fact]
     public void Declared_keys_are_found()
     {
-        Assert.Equal(18, DeclaredKeys().Count());
+        Assert.Equal(16, DeclaredKeys().Count());
     }
 
     [Theory]
@@ -63,7 +63,6 @@ public class ConfigurationContractTests
             "Features.GuardianPortal", "Staff.ExpiryNoticeDays",
             "Students.CodeMode", "Students.CodePattern", "Students.CriticalFields", "Guardians.DataRequired",
             "Classes.CapacityMode", "Blueprints.SectionLabel", "Enrollment.TransferCarriesGrades",
-            "Assignments.LatePenaltyDefaultPercent", "Quizzes.AutoSubmitGraceSeconds",
         ], SettingCatalog.All.Select(d => d.Name));
 
         var culture = SettingCatalog.Find("Ui.DefaultCulture")!;
@@ -107,20 +106,6 @@ public class ConfigurationContractTests
         Assert.Equal((SettingValueKinds.Enum, SettingCategories.Academic, "\"Week\""), Shape("Blueprints.SectionLabel"));
         Assert.Equal(["Week", "Unit", "Chapter"], SettingCatalog.Find("Blueprints.SectionLabel")!.AllowedValues!);
         Assert.Equal((SettingValueKinds.Bool, SettingCategories.Academic, "true"), Shape("Enrollment.TransferCarriesGrades"));
-    }
-
-    [Fact]
-    public void M4a_settings_match_plan()
-    {
-        var penalty = SettingCatalog.Find("Assignments.LatePenaltyDefaultPercent")!;
-        Assert.Equal((SettingValueKinds.Int, SettingCategories.Academic, "10", 0, 100),
-            (penalty.Kind, penalty.Category, penalty.DefaultJson, penalty.Min, penalty.Max));
-        Assert.Equal(10, SettingKeys.AssignmentsLatePenaltyDefaultPercent.Default);
-
-        var grace = SettingCatalog.Find("Quizzes.AutoSubmitGraceSeconds")!;
-        Assert.Equal((SettingValueKinds.Int, SettingCategories.Academic, "30", 0, 300),
-            (grace.Kind, grace.Category, grace.DefaultJson, grace.Min, grace.Max));
-        Assert.Equal(30, SettingKeys.QuizzesAutoSubmitGraceSeconds.Default);
     }
 
     [Fact]

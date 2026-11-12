@@ -21,6 +21,6 @@ public static class CourseEndpoints
             .RequirePermission(Permissions.Courses.Update);
         app.MapDelete(Routes.CoursePattern, CourseHandlers.DeleteAsync).RequireAuthorization()
             .RequirePermission(Permissions.Courses.Delete);
-        return app;
+        return app.MapSupervisorEndpoints();
     }
 }

@@ -58,13 +58,7 @@ public static class BuiltInRoles
              Permissions.Enrollment.ApproveException,
              Permissions.Groups.View, Permissions.Groups.Manage, Permissions.LessonPlans.View,
              // M4a: §3.4 says View, but Manage too so the D16 escalation guard lets them assign the Teacher role.
-             Permissions.Modules.View, Permissions.Modules.Manage,
-             // M4a wave 2 (D52): the staff side of assignments, quizzes, library and forums.
-             Permissions.CourseAssignments.View, Permissions.CourseAssignments.Manage,
-             Permissions.CourseAssignments.Grade,
-             Permissions.Quizzes.View, Permissions.Quizzes.Manage, Permissions.Quizzes.Grade,
-             Permissions.Library.View, Permissions.Library.Manage,
-             Permissions.Forums.View, Permissions.Forums.Post, Permissions.Forums.Moderate]),
+             Permissions.Modules.View, Permissions.Modules.Manage]),
         new(Manager, RoleBaseKinds.Staff,
             new("مدير المدرسة", "School Manager"),
             new("العميد", "Dean"),
@@ -89,13 +83,7 @@ public static class BuiltInRoles
              Permissions.Enrollment.RequestException, Permissions.Enrollment.ApproveException,
              Permissions.Groups.View, Permissions.Groups.Manage, Permissions.LessonPlans.View,
              // M4a: §3.4 says View, but Manage too so the D16 escalation guard lets them assign the Teacher role.
-             Permissions.Modules.View, Permissions.Modules.Manage,
-             // M4a wave 2 (D52): the staff side of assignments, quizzes, library and forums.
-             Permissions.CourseAssignments.View, Permissions.CourseAssignments.Manage,
-             Permissions.CourseAssignments.Grade,
-             Permissions.Quizzes.View, Permissions.Quizzes.Manage, Permissions.Quizzes.Grade,
-             Permissions.Library.View, Permissions.Library.Manage,
-             Permissions.Forums.View, Permissions.Forums.Post, Permissions.Forums.Moderate]),
+             Permissions.Modules.View, Permissions.Modules.Manage]),
         new(Supervisor, RoleBaseKinds.Staff,
             new("المشرف الأكاديمي", "Academic Supervisor"),
             new("رئيس القسم", "Head of Department"),
@@ -112,19 +100,14 @@ public static class BuiltInRoles
              Permissions.Enrollment.View, Permissions.Enrollment.ApproveException, Permissions.Groups.View,
              Permissions.LessonPlans.View,
              // M4a (§3.4 "Content & activities": View).
-             Permissions.Modules.View,
-             // M4a wave 2: read activities; manage the library (FR-LIB-01 "managed by Supervisor/Admin/Teacher").
-             Permissions.CourseAssignments.View, Permissions.Quizzes.View, Permissions.Library.View,
-             Permissions.Library.Manage, Permissions.Forums.View]),
+             Permissions.Modules.View]),
         new(Counselor, RoleBaseKinds.Staff,
             new("الأخصائي الاجتماعي", "Social Worker"),
             new("شؤون الطلاب", "Student Affairs"),
             [Permissions.Files.Upload, Permissions.Files.Download, Permissions.AcademicYears.View, Permissions.Staff.View,
              Permissions.Students.View, Permissions.Students.Update, Permissions.Students.ApproveChanges,
              Permissions.Classes.View, Permissions.Enrollment.View, Permissions.Enrollment.RequestException,
-             Permissions.Groups.View,
-             // M4a wave 2: every staff role reads the library.
-             Permissions.Library.View]),
+             Permissions.Groups.View]),
         new(Teacher, RoleBaseKinds.Staff,
             new("المعلم", "Teacher"),
             new("عضو هيئة التدريس", "Instructor"),
@@ -134,24 +117,14 @@ public static class BuiltInRoles
              Permissions.TeacherAssignments.View, Permissions.Enrollment.View, Permissions.Groups.View,
              Permissions.Groups.Manage, Permissions.LessonPlans.View,
              // M4a: CRUD on modules of own ClassCourses (§3.4 "Content & activities", RelationshipRules).
-             Permissions.Modules.View, Permissions.Modules.Manage,
-             // M4a wave 2: activities of own ClassCourses (RelationshipRules); the library is unit-wide.
-             Permissions.CourseAssignments.View, Permissions.CourseAssignments.Manage,
-             Permissions.CourseAssignments.Grade,
-             Permissions.Quizzes.View, Permissions.Quizzes.Manage, Permissions.Quizzes.Grade,
-             Permissions.Library.View, Permissions.Library.Manage,
-             Permissions.Forums.View, Permissions.Forums.Post, Permissions.Forums.Moderate]),
+             Permissions.Modules.View, Permissions.Modules.Manage]),
         new(Student, RoleBaseKinds.Student,
             new("الطالب", "Student"),
             new("الطالب", "Student"),
             [Permissions.Files.Upload, Permissions.Files.Download, Permissions.AcademicYears.View,
              Permissions.Students.SelfEdit, Permissions.LessonPlans.View,
              // M4a: own enrollments only (RelationshipRules).
-             Permissions.Modules.View,
-             // M4a wave 2: own enrollments only (RelationshipRules); Submit and Attempt are SelfService.
-             Permissions.CourseAssignments.View, Permissions.CourseAssignments.Submit,
-             Permissions.Quizzes.View, Permissions.Quizzes.Attempt,
-             Permissions.Library.View, Permissions.Forums.View, Permissions.Forums.Post]),
+             Permissions.Modules.View]),
         new(Guardian, RoleBaseKinds.Guardian,
             new("ولي الأمر", "Parent"),
             new("ولي الأمر", "Parent"),

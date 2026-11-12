@@ -2,7 +2,7 @@ using Lms.Shared.Authorization;
 
 namespace Lms.UnitTests.Contracts;
 
-/// <summary>Pins the M4a built-in role matrix (PRD §3.4, M1 plan Task 1, D16, M2 plan Task 1, D23, D32, M3 plan Task 1, D46, M4a plan Tasks 1 and 2, D52). Every list is written out literally.</summary>
+/// <summary>Pins the M4a built-in role matrix (PRD §3.4, M1 plan Task 1, D16, M2 plan Task 1, D23, D32, M3 plan Task 1, D46, M4a plan Task 1). Every list is written out literally.</summary>
 public class BuiltInRoleMatrixTests
 {
     private static readonly string[] M0OrgAdmin =
@@ -39,10 +39,6 @@ public class BuiltInRoleMatrixTests
                 "Enrollment.RequestException", "Enrollment.ApproveException",
                 "Groups.View", "Groups.Manage", "LessonPlans.View",
                 "Modules.View", "Modules.Manage",
-                "CourseAssignments.View", "CourseAssignments.Manage", "CourseAssignments.Grade",
-                "Quizzes.View", "Quizzes.Manage", "Quizzes.Grade",
-                "Library.View", "Library.Manage",
-                "Forums.View", "Forums.Post", "Forums.Moderate",
             ]
         },
         {
@@ -63,10 +59,6 @@ public class BuiltInRoleMatrixTests
                 "Enrollment.ApproveException",
                 "Groups.View", "Groups.Manage", "LessonPlans.View",
                 "Modules.View", "Modules.Manage",
-                "CourseAssignments.View", "CourseAssignments.Manage", "CourseAssignments.Grade",
-                "Quizzes.View", "Quizzes.Manage", "Quizzes.Grade",
-                "Library.View", "Library.Manage",
-                "Forums.View", "Forums.Post", "Forums.Moderate",
             ]
         },
         {
@@ -80,7 +72,6 @@ public class BuiltInRoleMatrixTests
                 "Classes.View", "TeacherAssignments.View", "TeacherAssignments.Manage",
                 "Enrollment.View", "Enrollment.ApproveException", "Groups.View", "LessonPlans.View",
                 "Modules.View",
-                "CourseAssignments.View", "Quizzes.View", "Library.View", "Library.Manage", "Forums.View",
             ]
         },
         {
@@ -89,7 +80,6 @@ public class BuiltInRoleMatrixTests
                 "Files.Upload", "Files.Download", "AcademicYears.View", "Staff.View",
                 "Students.View", "Students.Update", "Students.ApproveChanges", "Classes.View",
                 "Enrollment.View", "Enrollment.RequestException", "Groups.View",
-                "Library.View",
             ]
         },
         {
@@ -99,15 +89,10 @@ public class BuiltInRoleMatrixTests
                 "Students.View", "Courses.View", "Blueprints.View", "Classes.View", "TeacherAssignments.View",
                 "Enrollment.View", "Groups.View", "Groups.Manage", "LessonPlans.View",
                 "Modules.View", "Modules.Manage",
-                "CourseAssignments.View", "CourseAssignments.Manage", "CourseAssignments.Grade",
-                "Quizzes.View", "Quizzes.Manage", "Quizzes.Grade",
-                "Library.View", "Library.Manage",
-                "Forums.View", "Forums.Post", "Forums.Moderate",
             ]
         },
         { "Student", ["Files.Upload", "Files.Download", "AcademicYears.View", "Students.SelfEdit", "LessonPlans.View",
-            "Modules.View", "CourseAssignments.View", "CourseAssignments.Submit", "Quizzes.View", "Quizzes.Attempt",
-            "Library.View", "Forums.View", "Forums.Post"] },
+            "Modules.View"] },
         { "Guardian", ["Files.Download", "AcademicYears.View", "Students.ViewChildren"] },
     };
 
@@ -144,33 +129,6 @@ public class BuiltInRoleMatrixTests
 
         Assert.All(Permissions.All, p =>
             Assert.True(held.Contains(p) || Permissions.PlatformOnly.Contains(p), $"{p} is held by no role and is not PlatformOnly."));
-    }
-
-    [Fact]
-    public void No_staff_role_holds_a_self_service_permission()
-    {
-        string[] staff = [BuiltInRoles.OrgAdmin, BuiltInRoles.Manager, BuiltInRoles.Supervisor, BuiltInRoles.Counselor,
-            BuiltInRoles.Teacher];
-
-        Assert.All(staff, r =>
-            Assert.Empty(BuiltInRoles.Get(r).DefaultPermissions.Intersect(Permissions.SelfService, StringComparer.Ordinal)));
-    }
-
-    [Fact]
-    public void Org_admin_and_manager_hold_the_staff_side_of_every_activity_D52()
-    {
-        string[] staffSide =
-        [
-            "Modules.View", "Modules.Manage", "CourseAssignments.View", "CourseAssignments.Manage",
-            "CourseAssignments.Grade", "Quizzes.View", "Quizzes.Manage", "Quizzes.Grade", "Library.View",
-            "Library.Manage", "Forums.View", "Forums.Post", "Forums.Moderate",
-        ];
-
-        Assert.All(new[] { BuiltInRoles.OrgAdmin, BuiltInRoles.Manager }, r =>
-            Assert.Empty(staffSide.Except(BuiltInRoles.Get(r).DefaultPermissions, StringComparer.Ordinal)));
-        // ...so the Teacher role stays a subset the Manager can hand out (D16 escalation guard).
-        Assert.Empty(BuiltInRoles.Get(BuiltInRoles.Teacher).DefaultPermissions
-            .Except(BuiltInRoles.Get(BuiltInRoles.Manager).DefaultPermissions, StringComparer.Ordinal));
     }
 
     [Fact]

@@ -26,19 +26,14 @@ public sealed partial class AcademicCatalogContractTests
         Assert.Equal(["OwnClassCourses", "SupervisedCourses", "OwnEnrollments"], Relationships.All);
 
         Assert.Equal(
-            ["Classes.View", "CourseAssignments.Grade", "CourseAssignments.Manage", "CourseAssignments.View",
-             "Enrollment.View", "Forums.Moderate", "Forums.Post", "Forums.View", "Groups.Manage", "Groups.View",
-             "LessonPlans.View", "Modules.Manage", "Modules.View", "Quizzes.Grade", "Quizzes.Manage", "Quizzes.View",
-             "Students.View", "TeacherAssignments.View"],
+            ["Classes.View", "Enrollment.View", "Groups.Manage", "Groups.View", "LessonPlans.View", "Modules.Manage",
+             "Modules.View", "Students.View", "TeacherAssignments.View"],
             Rule(BuiltInRoles.Teacher).Permissions.Order(StringComparer.Ordinal));
         Assert.Equal(
             ["Blueprints.Edit", "Blueprints.Publish", "Courses.Allocate", "Courses.Delete", "Courses.Update",
-             "Enrollment.ApproveException", "TeacherAssignments.Manage"],
+             "Enrollment.ApproveException", "Students.View", "TeacherAssignments.Manage"],
             Rule(BuiltInRoles.Supervisor).Permissions.Order(StringComparer.Ordinal));
-        Assert.Equal(
-            ["CourseAssignments.Submit", "CourseAssignments.View", "Forums.Post", "Forums.View", "LessonPlans.View",
-             "Modules.View", "Quizzes.Attempt", "Quizzes.View"],
-            Rule(BuiltInRoles.Student).Permissions.Order(StringComparer.Ordinal));
+        Assert.Equal(["LessonPlans.View", "Modules.View"], Rule(BuiltInRoles.Student).Permissions);
     }
 
     [Theory]
@@ -46,22 +41,13 @@ public sealed partial class AcademicCatalogContractTests
     [InlineData(BuiltInRoles.Teacher, Permissions.Courses.View, null)]
     [InlineData(BuiltInRoles.Teacher, Permissions.Blueprints.View, null)]
     [InlineData(BuiltInRoles.Supervisor, Permissions.Blueprints.Publish, Relationships.SupervisedCourses)]
+    [InlineData(BuiltInRoles.Supervisor, Permissions.Students.View, Relationships.SupervisedCourses)]
     [InlineData(BuiltInRoles.Supervisor, Permissions.Courses.Create, null)]
     [InlineData(BuiltInRoles.Student, Permissions.LessonPlans.View, Relationships.OwnEnrollments)]
     [InlineData(BuiltInRoles.Manager, Permissions.Groups.Manage, null)]
     [InlineData(BuiltInRoles.Teacher, Permissions.Modules.Manage, Relationships.OwnClassCourses)]
     [InlineData(BuiltInRoles.Student, Permissions.Modules.View, Relationships.OwnEnrollments)]
     [InlineData(BuiltInRoles.Supervisor, Permissions.Modules.View, null)]
-    [InlineData(BuiltInRoles.Teacher, Permissions.CourseAssignments.Grade, Relationships.OwnClassCourses)]
-    [InlineData(BuiltInRoles.Teacher, Permissions.Quizzes.Manage, Relationships.OwnClassCourses)]
-    [InlineData(BuiltInRoles.Teacher, Permissions.Forums.Moderate, Relationships.OwnClassCourses)]
-    [InlineData(BuiltInRoles.Teacher, Permissions.Library.Manage, null)]
-    [InlineData(BuiltInRoles.Student, Permissions.CourseAssignments.Submit, Relationships.OwnEnrollments)]
-    [InlineData(BuiltInRoles.Student, Permissions.Quizzes.Attempt, Relationships.OwnEnrollments)]
-    [InlineData(BuiltInRoles.Student, Permissions.Forums.Post, Relationships.OwnEnrollments)]
-    [InlineData(BuiltInRoles.Student, Permissions.Library.View, null)]
-    [InlineData(BuiltInRoles.Manager, Permissions.CourseAssignments.Grade, null)]
-    [InlineData(BuiltInRoles.Supervisor, Permissions.Quizzes.View, null)]
     [InlineData("custom-role", Permissions.Groups.Manage, null)]
     public void For_returns_the_relationship_or_null(string role, string permission, string? expected) =>
         Assert.Equal(expected, RelationshipRules.For(role, permission));

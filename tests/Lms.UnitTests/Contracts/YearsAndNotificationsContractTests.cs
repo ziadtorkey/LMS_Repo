@@ -23,9 +23,7 @@ public partial class YearsAndNotificationsContractTests
             ["Access.RoleAssigned", "Access.RoleRemoved", "Organization.PolicyChanged",
              "Staff.ExpiringSoon", "Staff.Expired", "Imports.Completed",
              "Students.ChangeRequested", "Students.ChangeRequestDecided", "Teaching.Assigned", "Blueprints.Pushed",
-             "Enrollment.ExceptionRequested", "Enrollment.ExceptionDecided", "Enrollment.StudentTransferred",
-             "Assignments.Published", "Assignments.DueSoon", "Assignments.Graded", "Quizzes.Opened",
-             "Forums.Announcement"], keys);
+             "Enrollment.ExceptionRequested", "Enrollment.ExceptionDecided", "Enrollment.StudentTransferred"], keys);
         Assert.All(keys, k => Assert.Matches(ModuleEventFormat(), k));
         Assert.Equal(keys.Count, keys.Distinct(StringComparer.Ordinal).Count());
         Assert.Equal("Access.RoleAssigned", NotificationEvents.AccessRoleAssigned);
@@ -55,26 +53,6 @@ public partial class YearsAndNotificationsContractTests
         Assert.Equal(["PolicyKey", "OrgUnitNameAr", "OrgUnitNameEn", "State"],
             NotificationEvents.Find(NotificationEvents.OrganizationPolicyChanged)!.Parameters);
         Assert.Null(NotificationEvents.Find("Nope.Nope"));
-    }
-
-    [Fact]
-    public void M4a_events_name_their_recipients_and_carry_bilingual_titles()
-    {
-        string[] activity = ["TitleAr", "TitleEn", "CourseNameAr", "CourseNameEn"];
-
-        Assert.Equal(activity, NotificationEvents.Find(NotificationEvents.AssignmentsPublished)!.Parameters);
-        Assert.Equal([.. activity, "DueAt"], NotificationEvents.Find(NotificationEvents.AssignmentsDueSoon)!.Parameters);
-        Assert.Equal(activity, NotificationEvents.Find(NotificationEvents.AssignmentsGraded)!.Parameters);
-        Assert.Equal(activity, NotificationEvents.Find(NotificationEvents.QuizzesOpened)!.Parameters);
-        Assert.Equal(["Title", "CourseNameAr", "CourseNameEn"],
-            NotificationEvents.Find(NotificationEvents.ForumsAnnouncement)!.Parameters);
-        Assert.All(
-            new[]
-            {
-                NotificationEvents.AssignmentsPublished, NotificationEvents.AssignmentsDueSoon,
-                NotificationEvents.AssignmentsGraded, NotificationEvents.QuizzesOpened, NotificationEvents.ForumsAnnouncement,
-            },
-            k => Assert.Empty(NotificationEvents.Find(k)!.DefaultRecipientRoles));
     }
 
     [Fact]

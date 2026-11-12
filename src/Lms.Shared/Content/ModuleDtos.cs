@@ -103,22 +103,3 @@ public sealed record ReorderModulesRequest(IReadOnlyList<Guid> ModuleIds);
 
 /// <summary>POST /api/modules/{id}/move — to another lesson of the same class lesson plan, appended last.</summary>
 public sealed record MoveModuleRequest(Guid ToLessonKey);
-
-/// <summary>
-/// M4a wave 2: the module settings of an activity (assignment, quiz, library resource added to a lesson), carried by
-/// its own create / update request; the feature creates or updates its module with them (<c>IModuleWriter</c>). Same
-/// rules as <see cref="CreateModuleRequest"/>. "Publish now" = <c>Published</c>; "publish at" = <c>Scheduled</c> with
-/// <c>VisibleFromUtc</c>; a draft = <c>Hidden</c>. Rules: assignments <c>Submit</c> or <c>Score</c>, quizzes
-/// <c>Score</c> (default) or <c>Submit</c>, library resources <c>None</c>, <c>Manual</c> or <c>View</c>
-/// (<see cref="CompletionRules.ForActivity"/>).
-/// </summary>
-public sealed record ModuleSettingsInput(
-    string TitleAr,
-    string TitleEn,
-    string Visibility,
-    DateTime? VisibleFromUtc,
-    DateTime? VisibleToUtc,
-    string Target,
-    Guid? GroupId,
-    string CompletionRule,
-    decimal? CompletionMinScore);

@@ -133,38 +133,4 @@ public static class ProblemCodes
 
     /// <summary>Only a module with the Manual completion rule can be marked complete by the student.</summary>
     public const string completion_not_manual = nameof(completion_not_manual);
-
-    // M4a wave 2 (assignments, quizzes, library, forums; M4a plan Task 2)
-    /// <summary><c>Penalty</c> needs <c>PenaltyPercent</c> 1–100; <c>Allow</c> and <c>Block</c> need none.</summary>
-    public const string late_policy_invalid = nameof(late_policy_invalid);
-
-    /// <summary>The assignment no longer takes submissions (past due under <c>Block</c>, or not visible yet).</summary>
-    public const string submission_closed = nameof(submission_closed);
-
-    /// <summary>The resubmission rule does not allow another submission now.</summary>
-    public const string resubmission_not_allowed = nameof(resubmission_not_allowed);
-
-    /// <summary>The quiz has closed (<c>ClosesAtUtc</c> passed): no new attempt.</summary>
-    public const string quiz_closed = nameof(quiz_closed);
-
-    /// <summary>The quiz has not opened yet (<c>OpensAtUtc</c> in the future) or has no questions.</summary>
-    public const string quiz_not_open = nameof(quiz_not_open);
-
-    /// <summary>The student has used every allowed attempt.</summary>
-    public const string attempt_limit_reached = nameof(attempt_limit_reached);
-
-    /// <summary>The attempt has ended (time limit or close, plus the grace) or was already submitted.</summary>
-    public const string attempt_expired = nameof(attempt_expired);
-
-    /// <summary>Correct options, points or the pool cannot change once a student has started an attempt.</summary>
-    public const string quiz_has_attempts = nameof(quiz_has_attempts);
-
-    /// <summary><c>DrawCount</c> must be between 1 and the number of questions.</summary>
-    public const string pool_draw_invalid = nameof(pool_draw_invalid);
-
-    /// <summary>The thread is locked: no new replies.</summary>
-    public const string thread_locked = nameof(thread_locked);
-
-    /// <summary>Download is disabled for this library resource; use the in-browser reader (D13).</summary>
-    public const string download_disabled = nameof(download_disabled);
 }
