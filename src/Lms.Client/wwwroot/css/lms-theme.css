@@ -290,3 +290,7 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
     .lms-org-tree { padding: 4px; }
     .lms-org-node .lms-row-actions { width: 100%; justify-content: flex-start; }
 }
+
+/* ---------- Switch: the "off" track reaches 3:1 against the surface in both modes (WCAG 1.4.11) ---------- */
+.mud-switch-track.mud-default { opacity: 1; background-color: var(--mud-palette-lines-inputs); }
+.mud-switch-span:has(.mud-switch-input:disabled) .mud-switch-track.mud-default { opacity: .5; }
