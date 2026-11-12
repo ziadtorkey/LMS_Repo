@@ -35,12 +35,15 @@ else
         @if (a.DueAtUtc is { } due)
         {
             <MudAlert Severity="@(Overdue ? Severity.Warning : Severity.Info)" data-testid="assignment-due">
-                <span dir="ltr">@due.ToLocalTime().ToString("g", System.Globalization.CultureInfo.CurrentCulture)</span> ·
-                <span data-testid="assignment-countdown">@CountdownText(due)</span>
-                @if (Overdue)
-                {
-                    <span data-testid="assignment-late-note"> @LateNote(a)</span>
-                }
+                @* Date and countdown on their own lines: mixing an LTR date and Arabic words on one line scrambles the order in RTL. *@
+                <div><span dir="ltr" data-testid="assignment-due-date">@due.ToLocalTime().ToString("yyyy-MM-dd HH:mm", System.Globalization.CultureInfo.InvariantCulture)</span></div>
+                <div>
+                    <span data-testid="assignment-countdown">@CountdownText(due)</span>
+                    @if (Overdue)
+                    {
+                        <span data-testid="assignment-late-note"> @LateNote(a)</span>
+                    }
+                </div>
             </MudAlert>
         }
 
