@@ -812,6 +812,28 @@
   <data name="LessonPlan_Hidden" xml:space="preserve"><value>Hidden</value></data>
   <data name="LessonPlan_Planned" xml:space="preserve"><value>Planned</value></data>
   <data name="LessonPlan_HijriSuffix" xml:space="preserve"><value>AH</value></data>
-  <data name="LessonPlan_Modules" xml:space="preserve"><value>Modules</value></data>
-  <data name="LessonPlan_ModulesLater" xml:space="preserve"><value>Modules arrive in a later release.</value></data>
+  <data name="LessonPlan_CourseProgress" xml:space="preserve"><value>Your progress in this course</value></data>
+  <data name="LessonPlan_LessonProgress" xml:space="preserve"><value>Your progress in this lesson</value></data>
+  <data name="ModuleKind_Assignment" xml:space="preserve"><value>Assignment</value></data>
+  <data name="ModuleKind_Audio" xml:space="preserve"><value>Audio</value></data>
+  <data name="ModuleKind_File" xml:space="preserve"><value>File</value></data>
+  <data name="ModuleKind_H5p" xml:space="preserve"><value>H5P content</value></data>
+  <data name="ModuleKind_LibraryResource" xml:space="preserve"><value>Library resource</value></data>
+  <data name="ModuleKind_Link" xml:space="preserve"><value>Link</value></data>
+  <data name="ModuleKind_LiveSession" xml:space="preserve"><value>Live session</value></data>
+  <data name="ModuleKind_Page" xml:space="preserve"><value>Page</value></data>
+  <data name="ModuleKind_Quiz" xml:space="preserve"><value>Quiz</value></data>
+  <data name="ModuleKind_Scorm" xml:space="preserve"><value>SCORM package</value></data>
+  <data name="ModuleKind_Video" xml:space="preserve"><value>Video</value></data>
+  <data name="Module_Group" xml:space="preserve"><value>Group: {0}</value></data>
+  <data name="Module_NotVisibleNow" xml:space="preserve"><value>Not visible now</value></data>
+  <data name="Module_ScheduledFrom" xml:space="preserve"><value>Visible from {0}</value></data>
+  <data name="Module_ScheduledRange" xml:space="preserve"><value>Visible {0} to {1}</value></data>
+  <data name="Module_ScheduledUntil" xml:space="preserve"><value>Visible until {0}</value></data>
+  <data name="Module_State_Completed" xml:space="preserve"><value>Completed</value></data>
+  <data name="Module_State_InProgress" xml:space="preserve"><value>In progress</value></data>
+  <data name="Module_State_NotStarted" xml:space="preserve"><value>Not started</value></data>
+  <data name="Module_Visibility_Hidden" xml:space="preserve"><value>Hidden</value></data>
+  <data name="Module_Visibility_Scheduled" xml:space="preserve"><value>Scheduled</value></data>
+  <data name="Progress_Count" xml:space="preserve"><value>{0} of {1}</value></data>
 </root>
