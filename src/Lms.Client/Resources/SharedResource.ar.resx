@@ -995,4 +995,5 @@
   <data name="Submissions_Status" xml:space="preserve"><value>الحالة</value></data>
   <data name="Submissions_Student" xml:space="preserve"><value>الطالب</value></data>
   <data name="Submissions_Title" xml:space="preserve"><value>تسليمات الواجب</value></data>
+  <data name="Assignment_MinScoreUnknown" xml:space="preserve"><value>تعذّر قراءة الحد الأدنى للدرجة. أغلق النافذة وحاول مجدداً.</value></data>
 </root>

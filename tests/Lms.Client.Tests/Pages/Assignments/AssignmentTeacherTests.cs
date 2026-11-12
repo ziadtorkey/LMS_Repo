@@ -24,12 +24,15 @@ public sealed class AssignmentTeacherTests : LessonPlansTestContext
 
     private readonly FakeCourseAssignmentsApi _assignments = new();
     private readonly FakeAssetsApi _assets = new();
+    private readonly FakeModulesApi _modules = new();
     private IRenderedComponent<MudDialogProvider> _dialogs = default!;
 
     public AssignmentTeacherTests()
     {
         Services.AddSingleton<ICourseAssignmentsApi>(_assignments);
         Services.AddSingleton<IAssetsApi>(_assets);
+        Services.AddSingleton<IModulesApi>(_modules);
+        Services.AddSingleton<IClassCourseGroupsApi>(new FakeClassCourseGroupsApi());
     }
 
     private async Task StartAsync(string culture = "en", params string[] permissions)
@@ -169,6 +172,7 @@ public sealed class AssignmentTeacherTests : LessonPlansTestContext
         await StartAsync();
         var page = OpenGrade(FakeCourseAssignmentsApi.OnTimeSubmissionId);
         var annotated = new AssetDto(Guid.NewGuid(), Cc, AssetKinds.Document, "marked.pdf", "application/pdf", 1200, null, true, DateTime.UtcNow);
+        _assignments.KnownAssets[annotated.Id] = annotated;
 
         await page.InvokeAsync(() => page.FindComponent<AssetUploader>().Instance.OnUploaded.InvokeAsync(annotated));
         page.Find("[data-testid=grade-input]").Input("17");
@@ -181,6 +185,7 @@ public sealed class AssignmentTeacherTests : LessonPlansTestContext
         Assert.Equal(annotated.Id, request.AnnotatedFileAssetId);
         Assert.Contains("return", _assignments.Calls);
         Assert.Equal(SubmissionStatuses.Returned, _assignments.Submissions[id].Status);
+        Assert.Equal(annotated.Id, _assignments.Submissions[id].Grade!.AnnotatedFile!.Id);   // still on the grade after the save
     }
 
     [Fact]
@@ -245,6 +250,38 @@ public sealed class AssignmentTeacherTests : LessonPlansTestContext
 
         page.WaitForElement("[data-testid=assignments-heading]", Wait);
         Assert.Empty(page.FindAll("[data-testid=assignments-new]"));
+    }
+
+    [Fact]
+    public async Task New_assignment_dialog_offers_the_class_groups()
+    {
+        await StartAsync();
+        Render<MudPopoverProvider>();
+        _dialogs = Render<MudDialogProvider>();
+        var page = Render<CourseAssignmentsPage>(p => p.Add(x => x.Id, Cc));
+        page.WaitForElement("[data-testid=assignments-new]", Wait);
+
+        page.Find("[data-testid=assignments-new]").Click();
+
+        _dialogs.WaitForAssertion(() => Assert.NotNull(_dialogs.Find("[data-testid=assignment-save]")), Wait);
+        var groups = _dialogs.FindComponent<AssignmentDialog>().Instance.Groups;
+        Assert.Equal(["Group A", "Group B"], groups.Select(g => g.NameEn).ToArray());
+    }
+
+    [Fact]
+    public async Task Editing_a_score_assignment_keeps_its_minimum_score()
+    {
+        await StartAsync();
+        var seeded = _modules.Seed(Cc, Guid.NewGuid(), new CreateModuleRequest(ModuleKinds.Page, "a", "a", ModuleVisibilities.Published, null, null,
+            ModuleTargets.ClassCourse, null, CompletionRules.Manual, 60m, new ModuleContentInput(BodyHtmlEn: "<p>x</p>")));
+        var existing = Existing();
+        existing = existing with { Module = existing.Module with { Id = seeded.Node.Id, CompletionRule = CompletionRules.Score } };
+        OpenDialog(existing);
+
+        _dialogs.Find("[data-testid=assignment-save]").Click();
+
+        _dialogs.WaitForAssertion(() => Assert.Single(_assignments.Updates), Wait);
+        Assert.Equal(60m, _assignments.Updates[0].Module.CompletionMinScore);
     }
 
     [Fact]
