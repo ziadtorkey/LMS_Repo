@@ -226,4 +226,23 @@ public sealed class ForumTests : LessonPlansTestContext
         page.WaitForAssertion(() => Assert.Equal(5, page.FindAll("[data-testid^=forum-thread-link-]").Count));
         Assert.Empty(page.FindAll("[data-testid=forum-more]"));
     }
+
+    [Fact]
+    public async Task A_student_composer_has_no_attachment_uploader_and_does_not_ask_for_upload_limits()
+    {
+        var page = await OpenForumAsync(Permissions.Forums.View, Permissions.Forums.Post);
+        page.Find("[data-testid=forum-new]").Click();
+
+        page.WaitForAssertion(() => Assert.NotEmpty(page.FindAll("[data-testid=forum-new-composer]")));
+        Assert.Empty(page.FindAll("[data-testid=asset-uploader]"));
+    }
+
+    [Fact]
+    public async Task A_teacher_composer_offers_attachments()
+    {
+        var page = await OpenForumAsync(Permissions.Forums.View, Permissions.Forums.Post, Permissions.Modules.Manage);
+        page.Find("[data-testid=forum-new]").Click();
+
+        page.WaitForAssertion(() => Assert.NotEmpty(page.FindAll("[data-testid=asset-uploader]")));
+    }
 }

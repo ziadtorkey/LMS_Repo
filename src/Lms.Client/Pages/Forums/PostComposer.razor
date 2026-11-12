@@ -1,6 +1,9 @@
 @using Lms.Client.Components.Assets
 @using Lms.Client.Components.Editors
+@using Lms.Client.Services
+@using Lms.Shared.Authorization
 @using Lms.Shared.Content
+@inject PermissionState PermState
 
 @* A rich text body with attachments and a send button. OnSubmit returns true when the post was accepted (the composer then clears). *@
 <MudStack Spacing="2" data-testid="@TestId">
@@ -9,7 +12,12 @@
     {
         <MudText Typo="Typo.caption"><span dir="ltr">@name</span></MudText>
     }
-    <AssetUploader ClassCourseId="ClassCourseId" OnUploaded="OnUploaded" />
+    @* Uploading into a class course is a teaching right (Modules.Manage on it): a student's composer has no attachments, and must not
+       ask for the upload limits (a 403 there would send the student to the forbidden page). *@
+    @if (PermState.Has(Permissions.Modules.Manage))
+    {
+        <AssetUploader ClassCourseId="ClassCourseId" OnUploaded="OnUploaded" />
+    }
     <div>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SendAsync" Disabled="_sending" data-testid="@($"{TestId}-send")">@SendLabel</MudButton>
     </div>
