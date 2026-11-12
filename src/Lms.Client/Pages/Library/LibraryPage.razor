@@ -1,0 +1,190 @@
+@page "/library"
+@attribute [Authorize]
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Shared.Authorization
+@using Lms.Shared.Courses
+@using Lms.Shared.Library
+@using Lms.Shared.Organizations
+@inject ILibraryApi Library
+@inject IOrgApi Org
+@inject ICoursesApi Courses
+@inject ILmsApi Me
+@inject IContextStore Context
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject IDialogService Dialogs
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<PageTitle>@L["Library_Title"]</PageTitle>
+<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+    <MudText Typo="Typo.h4">@L["Library_Title"]</MudText>
+    @if (PermState.Has(Permissions.Library.Manage))
+    {
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => EditAsync(null)" data-testid="library-new">@L["Library_New"]</MudButton>
+    }
+</MudStack>
+
+@if (!PermState.Loaded)
+{
+    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+}
+else if (!PermState.Has(Permissions.Library.View))
+{
+    <MudAlert Severity="Severity.Warning" data-testid="library-forbidden">@L["Forbidden_Title"]</MudAlert>
+}
+else
+{
+    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap" Class="mb-4" data-testid="library-filters">
+        <MudTextField T="string" Value="_search" ValueChanged="v => ChangeAsync(() => _search = v)" Label="@L["Library_Search"]" Immediate="true"
+                      Clearable="true" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" data-testid="library-search" />
+        <MudSelect T="string" Value="_type" ValueChanged="v => ChangeAsync(() => _type = v)" Label="@L["Library_Type"]" Clearable="true" data-testid="library-type">
+            @foreach (var t in LibraryResourceTypes.All)
+            {
+                <MudSelectItem T="string" Value="@t">@L["LibraryType_" + t]</MudSelectItem>
+            }
+        </MudSelect>
+        <MudSelect T="Guid?" Value="_level" ValueChanged="v => ChangeAsync(() => _level = v)" Label="@L["Library_Level"]" Clearable="true" data-testid="library-level">
+            @foreach (var l in _levels)
+            {
+                <MudSelectItem T="Guid?" Value="@((Guid?)l.Id)">@Culture.Pick(l.NameAr, l.NameEn)</MudSelectItem>
+            }
+        </MudSelect>
+        <MudSelect T="Guid?" Value="_course" ValueChanged="v => ChangeAsync(() => _course = v)" Label="@L["Library_Subject"]" Clearable="true" data-testid="library-course">
+            @foreach (var c in _courses)
+            {
+                <MudSelectItem T="Guid?" Value="@((Guid?)c.Id)">@Culture.Pick(c.NameAr, c.NameEn)</MudSelectItem>
+            }
+        </MudSelect>
+        <MudSelect T="string" Value="_tag" ValueChanged="v => ChangeAsync(() => _tag = v)" Label="@L["Library_Tag"]" Clearable="true" data-testid="library-tag">
+            @foreach (var t in _tags)
+            {
+                <MudSelectItem T="string" Value="@t">@t</MudSelectItem>
+            }
+        </MudSelect>
+    </MudStack>
+
+    @if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error" data-testid="library-error">@_error</MudAlert>
+    }
+    else if (_loading)
+    {
+        <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+    }
+    else if (_items.Count == 0)
+    {
+        <MudAlert Severity="Severity.Info" data-testid="library-empty">@L["Library_Empty"]</MudAlert>
+    }
+    else
+    {
+        <MudGrid data-testid="library-grid">
+            @foreach (var resource in _items)
+            {
+                var r = resource;
+                <MudItem xs="12" sm="6" md="4" lg="3">
+                    <MudCard Class="h-100" data-testid="@($"library-card-{r.Id}")">
+                        <LibraryCover Resource="r" />
+                        <MudCardContent>
+                            <MudText Typo="Typo.subtitle1">@Culture.Pick(r.TitleAr, r.TitleEn)</MudText>
+                            <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-1">
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@L["LibraryType_" + r.Type]</MudChip>
+                                @if (r.IsInherited)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" data-testid="@($"library-inherited-{r.Id}")">@Culture.Pick(r.OrgUnitNameAr, r.OrgUnitNameEn)</MudChip>
+                                }
+                                @foreach (var tag in r.Tags)
+                                {
+                                    <MudChip T="string" Size="Size.Small">@tag</MudChip>
+                                }
+                            </MudStack>
+                        </MudCardContent>
+                        <MudCardActions>
+                            <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="() => OpenAsync(r)" data-testid="@($"library-open-{r.Id}")">@L["Library_Open"]</MudButton>
+                            @if (PermState.Has(Permissions.Modules.Manage))
+                            {
+                                <MudButton Variant="Variant.Text" OnClick="() => AddToLessonAsync(r)" data-testid="@($"library-add-{r.Id}")">@L["Library_AddToLesson"]</MudButton>
+                            }
+                            @if (PermState.Has(Permissions.Library.Manage) && r.CanEdit)
+                            {
+                                <MudButton Variant="Variant.Text" OnClick="() => EditAsync(r)" data-testid="@($"library-edit-{r.Id}")">@L["Common_Edit"]</MudButton>
+                                <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="() => DeleteAsync(r)" data-testid="@($"library-delete-{r.Id}")">@L["Common_Delete"]</MudButton>
+                            }
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+}
+
+@code {
+    private IReadOnlyList<LibraryResourceDto> _items = [];
+    private IReadOnlyList<LevelTypeDto> _levels = [];
+    private IReadOnlyList<CourseSummaryDto> _courses = [];
+    private IReadOnlyList<string> _tags = [];
+    private string? _search, _type, _tag, _error;
+    private Guid? _level, _course;
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        PermState.Changed += OnPermissionsChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        if (!PermState.Has(Permissions.Library.View)) return;
+        // The filter lists are conveniences: a caller who cannot read them still searches by text and type.
+        await ApiCalls.RunAsync(async () => _levels = await Org.GetLevelTypesAsync(), Navigation, L, _ => { });
+        await ApiCalls.RunAsync(async () => _courses = (await Courses.ListAsync(new CourseQuery(null))).Items, Navigation, L, _ => { });
+        await ApiCalls.RunAsync(async () =>
+        {
+            var me = await Me.GetMeAsync();
+            if (me.Contexts.FirstOrDefault(c => c.AssignmentId == Context.ActiveAssignmentId) is { } active)
+                _tags = await Library.TagsAsync(active.OrgUnitId);
+        }, Navigation, L, _ => { });
+        await LoadAsync();
+    }
+
+    private async Task ChangeAsync(Action set)
+    {
+        set();
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true; _error = null;
+        var query = new LibraryQuery(null, string.IsNullOrWhiteSpace(_search) ? null : _search.Trim(), _type, _level, _course, _tag);
+        await ApiCalls.RunAsync(async () => _items = (await Library.SearchAsync(query)).Items, Navigation, L, message => _error = message);
+        _loading = false;
+    }
+
+    private Task OpenAsync(LibraryResourceDto r) =>
+        Dialogs.ShowAsync<LibraryReaderDialog>(Culture.Pick(r.TitleAr, r.TitleEn),
+            new DialogParameters<LibraryReaderDialog> { { x => x.Resource, r } }, new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true, CloseButton = true });
+
+    private async Task AddToLessonAsync(LibraryResourceDto r)
+    {
+        await Dialogs.ShowAsync<AddToLessonDialog>(L["Library_AddToLesson"],
+            new DialogParameters<AddToLessonDialog> { { x => x.Resource, r } }, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+    }
+
+    private async Task EditAsync(LibraryResourceDto? existing)
+    {
+        var dialog = await Dialogs.ShowAsync<LibraryResourceDialog>(existing is null ? L["Library_New"] : L["Common_Edit"],
+            new DialogParameters<LibraryResourceDialog> { { x => x.Existing, existing }, { x => x.LevelTypes, _levels }, { x => x.Courses, _courses } },
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        if (await dialog.Result is { Canceled: false }) await LoadAsync();
+    }
+
+    private async Task DeleteAsync(LibraryResourceDto r)
+    {
+        if (!await ConfirmDialog.AskAsync(Dialogs, L["Confirm_DeleteTitle"], string.Format(L["Library_DeleteConfirm"], Culture.Pick(r.TitleAr, r.TitleEn)))) return;
+        var ok = await ApiCalls.RunAsync(() => Library.DeleteAsync(r.Id), Navigation, L, message => _error = message);
+        if (ok) await LoadAsync();
+    }
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => PermState.Changed -= OnPermissionsChanged;
+}

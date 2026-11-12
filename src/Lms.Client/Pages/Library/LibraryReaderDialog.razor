@@ -1,0 +1,52 @@
+@using Lms.Client.Components.Assets
+@using Lms.Client.Components.Content
+@using Lms.Client.Services.Api
+@using Lms.Shared.Library
+@inject ILibraryApi Library
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+@* The reader: the file opens in the protected viewer. The download button exists only when the resource allows it. *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="2" data-testid="library-reader">
+            @if (Culture.Pick(Resource.DescriptionAr ?? "", Resource.DescriptionEn ?? "") is { Length: > 0 } description)
+            {
+                <MudText Typo="Typo.body2">@description</MudText>
+            }
+            @if (Resource.Type == LibraryResourceTypes.Link)
+            {
+                @if (ModuleLinks.IsAllowed(Resource.Url))
+                {
+                    <MudLink Href="@Resource.Url" Target="_blank" rel="noopener noreferrer" data-testid="library-link"><span dir="ltr">@Resource.Url</span></MudLink>
+                }
+            }
+            else if (Resource.File is { } file)
+            {
+                <AssetPreview Asset="file" AllowDownload="false" />
+            }
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" data-testid="library-reader-error">@_error</MudAlert>
+            }
+            @if (Resource.DownloadAllowed && Resource.File is not null)
+            {
+                <div><MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Download" OnClick="DownloadAsync" data-testid="library-download">@L["Asset_Download"]</MudButton></div>
+            }
+        </MudStack>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    private string? _error;
+
+    [Parameter, EditorRequired] public LibraryResourceDto Resource { get; set; } = default!;
+
+    private async Task DownloadAsync()
+    {
+        _error = null;
+        string? url = null;
+        var ok = await ApiCalls.RunAsync(async () => url = (await Library.DownloadAsync(Resource.Id)).Url, Navigation, L, m => _error = m);
+        if (ok && url is not null) Navigation.NavigateTo(url, forceLoad: true);
+    }
+}
