@@ -30,7 +30,7 @@
                 <MudText Typo="Typo.caption" Class="mud-text-secondary">@L["Quiz_PreviewPoints", q.Points.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)]</MudText>
                 @if (q.Type == QuestionTypes.Essay)
                 {
-                    <MudTextField T="string" Lines="3" Disabled="true" Placeholder="@L["Quiz_PreviewEssay"]" />
+                    <MudTextField T="string" Lines="3" Disabled="true" Label="@L["Quiz_PreviewEssay"]" />
                 }
                 else
                 {
