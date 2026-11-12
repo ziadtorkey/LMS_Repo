@@ -1,0 +1,103 @@
+@page "/class-courses/{Id:guid}/assignments"
+@attribute [Authorize]
+@using Lms.Client.Components
+@using Lms.Client.Components.Content
+@using Lms.Client.Services.Api
+@using Lms.Shared
+@using Lms.Shared.Assignments
+@using Lms.Shared.Authorization
+@inject ICourseAssignmentsApi Api
+@inject ILessonPlansApi Plans
+@inject IDialogService Dialogs
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<PageTitle>@L["Assignments_Title"]</PageTitle>
+@if (!PermState.Loaded)
+{
+    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+}
+else if (!PermState.Has(Permissions.CourseAssignments.View))
+{
+    <MudAlert Severity="Severity.Warning" data-testid="assignments-forbidden">@L["Forbidden_Title"]</MudAlert>
+}
+else
+{
+    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Class="mb-4">
+        <MudText Typo="Typo.h4" data-testid="assignments-heading">@L["Assignments_Title"]</MudText>
+        @if (PermState.Has(Permissions.CourseAssignments.Manage))
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Add" OnClick="NewAsync"
+                       data-testid="assignments-new">@L["Assignments_New"]</MudButton>
+        }
+    </MudStack>
+
+    <ServerTable @ref="_table" T="CourseAssignmentListItemDto" ServerData="LoadAsync">
+        <HeaderContent>
+            <MudTh>@L["Assignments_Name"]</MudTh>
+            <MudTh>@L["Assignment_Due"]</MudTh>
+            <MudTh>@L["Assignment_MaxGrade"]</MudTh>
+            <MudTh>@L["Assignments_Handed"]</MudTh>
+            <MudTh>@L["Common_Actions"]</MudTh>
+        </HeaderContent>
+        <RowTemplate Context="a">
+            <MudTd DataLabel="@L["Assignments_Name"]">
+                @Culture.Pick(a.TitleAr, a.TitleEn)
+                @if (!a.IsVisibleNow)
+                {
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@L["Module_NotVisibleNow"]</MudChip>
+                }
+            </MudTd>
+            <MudTd DataLabel="@L["Assignment_Due"]"><span dir="ltr">@(IsoDates.Format(a.DueAtUtc) ?? "—")</span></MudTd>
+            <MudTd DataLabel="@L["Assignment_MaxGrade"]">@a.MaxGrade.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)</MudTd>
+            <MudTd DataLabel="@L["Assignments_Handed"]">@L["Assignments_Counts", a.SubmittedCount ?? 0, a.GradedCount ?? 0]</MudTd>
+            <MudTd DataLabel="@L["Common_Actions"]">
+                <MudButton Size="Size.Small" Variant="Variant.Text" Href="@($"/course-assignments/{a.Id}/submissions")"
+                           data-testid="@($"assignment-open-{a.Id}")">@L["Assignments_Submissions"]</MudButton>
+            </MudTd>
+        </RowTemplate>
+    </ServerTable>
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private ServerTable<CourseAssignmentListItemDto> _table = default!;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        PermState.Changed -= OnPermissionsChanged;
+        PermState.Changed += OnPermissionsChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+    }
+
+    private async Task<TableData<CourseAssignmentListItemDto>> LoadAsync(TableState state, CancellationToken ct)
+    {
+        var page = await Api.ListAsync(Id, state.Page + 1, state.PageSize, ct);
+        return new TableData<CourseAssignmentListItemDto> { Items = page.Items, TotalItems = page.Total };
+    }
+
+    private async Task NewAsync()
+    {
+        var lessons = new List<ModuleLessonOption>();
+        await ApiCalls.RunAsync(async () =>
+        {
+            var plan = await Plans.GetPlanAsync(Id);
+            foreach (var section in plan.Sections.Where(s => !s.IsHidden).OrderBy(s => s.Order))
+                foreach (var lesson in section.Lessons.Where(l => !l.IsHidden).OrderBy(l => l.Order))
+                    lessons.Add(new ModuleLessonOption(lesson.Key, Culture.Pick(lesson.TitleAr, lesson.TitleEn)));
+        }, Navigation, L, _ => { });
+        var dialog = await Dialogs.ShowAsync<AssignmentDialog>(L["Assignments_New"], new DialogParameters<AssignmentDialog>
+        {
+            { x => x.ClassCourseId, Id },
+            { x => x.Lessons, lessons },
+        }, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        if (!(await dialog.Result)!.Canceled) await _table.ReloadAsync();
+    }
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => PermState.Changed -= OnPermissionsChanged;
+}

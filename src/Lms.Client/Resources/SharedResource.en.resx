@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
   <resheader name="version"><value>2.0</value></resheader>
@@ -1009,4 +1009,82 @@
   <data name="Announcements_Empty" xml:space="preserve"><value>No announcements yet.</value></data>
   <data name="Announcements_DeleteConfirm" xml:space="preserve"><value>Delete the announcement {0}?</value></data>
   <data name="Announcements_FormTitle" xml:space="preserve"><value>Announcement title</value></data>
+  <data name="Assignment_AllowFiles" xml:space="preserve"><value>Allow file uploads</value></data>
+  <data name="Assignment_AllowText" xml:space="preserve"><value>Allow written text</value></data>
+  <data name="Assignment_Attachments" xml:space="preserve"><value>Attachments</value></data>
+  <data name="Assignment_BlockNeedsDue" xml:space="preserve"><value>Set a due date when late hand-ins are not accepted.</value></data>
+  <data name="Assignment_Due" xml:space="preserve"><value>Due</value></data>
+  <data name="Assignment_Edit" xml:space="preserve"><value>Edit assignment</value></data>
+  <data name="Assignment_InstructionsAr" xml:space="preserve"><value>Instructions (Arabic)</value></data>
+  <data name="Assignment_InstructionsEn" xml:space="preserve"><value>Instructions (English)</value></data>
+  <data name="Assignment_LatePolicy" xml:space="preserve"><value>Late hand-ins</value></data>
+  <data name="Assignment_Lesson" xml:space="preserve"><value>Lesson</value></data>
+  <data name="Assignment_MaxGrade" xml:space="preserve"><value>Maximum grade</value></data>
+  <data name="Assignment_MaxGradeInvalid" xml:space="preserve"><value>The maximum grade must be between 0.01 and 1000.</value></data>
+  <data name="Assignment_MinScore" xml:space="preserve"><value>Minimum score (%)</value></data>
+  <data name="Assignment_NeedSubmitType" xml:space="preserve"><value>Allow text, files or both.</value></data>
+  <data name="Assignment_PenaltyPercent" xml:space="preserve"><value>Penalty (%)</value></data>
+  <data name="Assignment_PenaltyRequired" xml:space="preserve"><value>Enter a penalty from 1 to 100.</value></data>
+  <data name="Assignment_RemoveAttachment" xml:space="preserve"><value>Remove attachment</value></data>
+  <data name="Assignment_Resubmission" xml:space="preserve"><value>Resubmission</value></data>
+  <data name="Assignments_Counts" xml:space="preserve"><value>{0} submitted · {1} graded</value></data>
+  <data name="Assignments_Handed" xml:space="preserve"><value>Hand-ins</value></data>
+  <data name="Assignments_Name" xml:space="preserve"><value>Assignment</value></data>
+  <data name="Assignments_New" xml:space="preserve"><value>New assignment</value></data>
+  <data name="Assignments_Submissions" xml:space="preserve"><value>Submissions</value></data>
+  <data name="CompletionRule_Score" xml:space="preserve"><value>When a minimum score is reached</value></data>
+  <data name="CompletionRule_Submit" xml:space="preserve"><value>When submitted</value></data>
+  <data name="Grade_AboveMax" xml:space="preserve"><value>The grade cannot be above {0}.</value></data>
+  <data name="Grade_Annotated" xml:space="preserve"><value>Annotated file</value></data>
+  <data name="Grade_Feedback" xml:space="preserve"><value>Feedback</value></data>
+  <data name="Grade_NoWork" xml:space="preserve"><value>No text or files.</value></data>
+  <data name="Grade_Out" xml:space="preserve"><value>Grade (out of {0})</value></data>
+  <data name="Grade_Penalty" xml:space="preserve"><value>Late penalty {0}%: final grade {1}</value></data>
+  <data name="Grade_RemoveAnnotated" xml:space="preserve"><value>Remove annotated file</value></data>
+  <data name="Grade_Returned" xml:space="preserve"><value>Grade saved and returned to the student.</value></data>
+  <data name="Grade_Save" xml:space="preserve"><value>Save grade</value></data>
+  <data name="Grade_SaveReturn" xml:space="preserve"><value>Save and return to student</value></data>
+  <data name="Grade_Saved" xml:space="preserve"><value>Grade saved.</value></data>
+  <data name="Grade_Title" xml:space="preserve"><value>Grade submission</value></data>
+  <data name="Grade_Work" xml:space="preserve"><value>Student's work</value></data>
+  <data name="LatePolicy_Allow" xml:space="preserve"><value>Accepted, marked late</value></data>
+  <data name="LatePolicy_Block" xml:space="preserve"><value>Not accepted</value></data>
+  <data name="LatePolicy_Penalty" xml:space="preserve"><value>Accepted with a penalty</value></data>
+  <data name="ResubmissionRule_None" xml:space="preserve"><value>Not allowed</value></data>
+  <data name="ResubmissionRule_UntilDue" xml:space="preserve"><value>Until the due date</value></data>
+  <data name="ResubmissionRule_UntilGraded" xml:space="preserve"><value>Until graded</value></data>
+  <data name="SubmissionStatus_Draft" xml:space="preserve"><value>Draft</value></data>
+  <data name="SubmissionStatus_Graded" xml:space="preserve"><value>Graded</value></data>
+  <data name="SubmissionStatus_Late" xml:space="preserve"><value>Late</value></data>
+  <data name="SubmissionStatus_None" xml:space="preserve"><value>Not handed in</value></data>
+  <data name="SubmissionStatus_Returned" xml:space="preserve"><value>Returned</value></data>
+  <data name="SubmissionStatus_Submitted" xml:space="preserve"><value>Submitted</value></data>
+  <data name="Submissions_At" xml:space="preserve"><value>Handed in</value></data>
+  <data name="Submissions_Grade" xml:space="preserve"><value>Grade</value></data>
+  <data name="Submissions_GradeAction" xml:space="preserve"><value>Grade</value></data>
+  <data name="Submissions_Late" xml:space="preserve"><value>Late</value></data>
+  <data name="Submissions_OnlyLate" xml:space="preserve"><value>Late only</value></data>
+  <data name="Submissions_Status" xml:space="preserve"><value>Status</value></data>
+  <data name="Submissions_Student" xml:space="preserve"><value>Student</value></data>
+  <data name="Submissions_Title" xml:space="preserve"><value>Assignment submissions</value></data>
+  <data name="AssignmentStudent_Title" xml:space="preserve"><value>Assignment</value></data>
+  <data name="AssignmentStudent_DueIn" xml:space="preserve"><value>due in {0}</value></data>
+  <data name="AssignmentStudent_OverdueBy" xml:space="preserve"><value>overdue by {0}</value></data>
+  <data name="AssignmentStudent_LateAllowed" xml:space="preserve"><value>You can still hand in late.</value></data>
+  <data name="AssignmentStudent_LatePenalty" xml:space="preserve"><value>Late hand-ins lose {0}% of the grade.</value></data>
+  <data name="AssignmentStudent_LateBlocked" xml:space="preserve"><value>Late hand-ins are no longer accepted.</value></data>
+  <data name="AssignmentStudent_Grade" xml:space="preserve"><value>Your grade</value></data>
+  <data name="AssignmentStudent_PenaltyApplied" xml:space="preserve"><value>Late penalty of {0}% applied to {1}.</value></data>
+  <data name="AssignmentStudent_Feedback" xml:space="preserve"><value>Feedback</value></data>
+  <data name="AssignmentStudent_HandedIn" xml:space="preserve"><value>You handed this in.</value></data>
+  <data name="AssignmentStudent_WasLate" xml:space="preserve"><value>It was late.</value></data>
+  <data name="AssignmentStudent_WaitingReturn" xml:space="preserve"><value>Your teacher has graded it and will return it soon.</value></data>
+  <data name="AssignmentStudent_ReadOnly" xml:space="preserve"><value>You can read this assignment but not hand in work.</value></data>
+  <data name="AssignmentStudent_CannotSubmit" xml:space="preserve"><value>You cannot hand in work now.</value></data>
+  <data name="AssignmentStudent_YourWork" xml:space="preserve"><value>Your work</value></data>
+  <data name="AssignmentStudent_Resubmit" xml:space="preserve"><value>Resubmit</value></data>
+  <data name="AssignmentStudent_Submit" xml:space="preserve"><value>Submit</value></data>
+  <data name="AssignmentStudent_SaveDraft" xml:space="preserve"><value>Save as draft</value></data>
+  <data name="AssignmentStudent_Text" xml:space="preserve"><value>Your answer</value></data>
+  <data name="AssignmentStudent_NeedTextOrFile" xml:space="preserve"><value>Write your answer or attach a file first.</value></data>
 </root>
