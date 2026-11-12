@@ -764,6 +764,8 @@
   <data name="Import_Button" xml:space="preserve"><value>استيراد من Excel</value></data>
   <data name="Clients_ShortCode" xml:space="preserve"><value>الرمز المختصر</value></data>
   <data name="Clients_ShortCodeHelp" xml:space="preserve"><value>يُستخدم في أسماء دخول الطلاب (الكود@الرمز): من 2 إلى 20 حرفًا إنجليزيًا صغيرًا أو رقمًا أو شرطة. اتركه فارغًا ليُشتق من رمز الوحدة الجذرية.</value></data>
+  <data name="Student_OverCapacityConfirm" xml:space="preserve"><value>هذا الفصل مكتمل. هل تريد وضع الطالب فيه على أي حال؟</value></data>
+  <data name="Student_PlaceAnyway" xml:space="preserve"><value>وضع على أي حال</value></data>
   <data name="Student_Profile" xml:space="preserve"><value>الملف الشخصي</value></data>
   <data name="Student_Edit" xml:space="preserve"><value>تعديل بيانات الطالب</value></data>
   <data name="Student_Guardians" xml:space="preserve"><value>أولياء الأمور</value></data>
