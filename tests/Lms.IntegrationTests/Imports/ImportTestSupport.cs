@@ -126,8 +126,6 @@ public sealed class ImportTestHost : IDisposable
                     services.AddImportDefinition<TestImportDefinition>();
                 }
 
-                services.RemoveAll<Lms.Infrastructure.Configuration.IPolicyEvaluator>(); // the real evaluator (policies apply to import rows)
-                services.AddScoped<Lms.Infrastructure.Configuration.IPolicyEvaluator, Lms.Infrastructure.Configuration.PolicyEvaluator>();
                 configure?.Invoke(services);
                 services.RemoveAll<IBackgroundJobs>();
                 services.AddScoped<IBackgroundJobs, RecordingBackgroundJobs>();
