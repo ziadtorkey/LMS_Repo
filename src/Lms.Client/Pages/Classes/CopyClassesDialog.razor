@@ -1,0 +1,98 @@
+@using Lms.Client.Components.People
+@using Lms.Client.Services
+@using Lms.Client.Services.Api
+@using Lms.Shared.Classes
+@using Lms.Shared.AcademicYears
+@inject IClassesApi Api
+@inject IYearStore Years
+@inject NavigationManager Navigation
+
+@* Copies the live classes of a unit (and below) from one academic year to another. Students are never copied. *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="3">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" data-testid="dialog-error">@_error</MudAlert>
+            }
+            @if (_result is { } result)
+            {
+                <MudAlert Severity="Severity.Success" data-testid="copy-result">@L["CopyClasses_Result", result.Created]</MudAlert>
+                @if (result.SkippedCodes.Count > 0)
+                {
+                    <MudAlert Severity="Severity.Warning" data-testid="copy-skipped">
+                        @L["CopyClasses_Skipped", result.SkippedCodes.Count]
+                        <span dir="ltr">@string.Join(", ", result.SkippedCodes)</span>
+                    </MudAlert>
+                }
+            }
+            else
+            {
+                <UnitPicker Value="_unitId" ValueChanged="id => _unitId = id" Label="@L["Class_Unit"]" Required="true" TestId="copy-unit" />
+                <MudSelect T="Guid?" @bind-Value="_sourceYearId" Label="@L["CopyClasses_SourceYear"]" data-testid="copy-source-year">
+                    @foreach (var year in Years.Years)
+                    {
+                        <MudSelectItem T="Guid?" Value="@((Guid?)year.Id)">@CultureText.Pick(year.NameAr, year.NameEn)</MudSelectItem>
+                    }
+                </MudSelect>
+                <MudSelect T="Guid?" @bind-Value="_targetYearId" Label="@L["CopyClasses_TargetYear"]" data-testid="copy-target-year">
+                    @foreach (var year in Years.Years.Where(y => y.Status != AcademicYearStatuses.Closed))
+                    {
+                        <MudSelectItem T="Guid?" Value="@((Guid?)year.Id)">@CultureText.Pick(year.NameAr, year.NameEn)</MudSelectItem>
+                    }
+                </MudSelect>
+                <MudSwitch T="bool" @bind-Value="_includeCourses" Label="@L["CopyClasses_IncludeCourses"]" Color="Color.Primary" data-testid="copy-courses" />
+                <MudStack Row="true" Spacing="2">
+                    <MudTextField T="string" @bind-Value="_replaceFrom" Label="@L["CopyClasses_ReplaceFrom"]" HelperText="@L["CopyClasses_ReplaceHelp"]" dir="ltr"
+                                  data-testid="copy-replace-from" />
+                    <MudTextField T="string" @bind-Value="_replaceTo" Label="@L["CopyClasses_ReplaceTo"]" dir="ltr" data-testid="copy-replace-to" />
+                </MudStack>
+                <MudText Typo="Typo.caption">@L["CopyClasses_StudentsNote"]</MudText>
+            }
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        @if (_result is null)
+        {
+            <MudButton OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="CopyAsync" Disabled="_saving || !CanCopy" data-testid="dialog-save">@L["CopyClasses_Copy"]</MudButton>
+        }
+        else
+        {
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="() => MudDialog.Close(DialogResult.Ok(true))" data-testid="copy-done">@L["Common_Close"]</MudButton>
+        }
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public Guid? UnitId { get; set; }
+
+    private Guid? _unitId, _sourceYearId, _targetYearId;
+    private bool _includeCourses = true, _saving;
+    private string _replaceFrom = "", _replaceTo = "";
+    private string? _error;
+    private CopyClassesResultDto? _result;
+
+    protected override void OnInitialized()
+    {
+        _unitId = UnitId;
+        _sourceYearId = Years.SelectedYearId;
+    }
+
+    private bool CanCopy => _unitId is not null && _sourceYearId is not null && _targetYearId is not null && _sourceYearId != _targetYearId;
+
+    private async Task CopyAsync()
+    {
+        if (!CanCopy) return;
+        _error = null;
+        _saving = true;
+        var replace = !string.IsNullOrEmpty(_replaceFrom);
+        CopyClassesResultDto? result = null;
+        var ok = await ApiCalls.RunAsync(async () => result = await Api.CopyAsync(new CopyClassesRequest(_sourceYearId!.Value, _targetYearId!.Value, _unitId!.Value,
+            _includeCourses, replace ? _replaceFrom : null, replace ? _replaceTo : null)), Navigation, L, message => _error = message);
+        _saving = false;
+        if (ok) _result = result;
+    }
+}
