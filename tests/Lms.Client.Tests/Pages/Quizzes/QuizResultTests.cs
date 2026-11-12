@@ -64,12 +64,35 @@ public sealed class QuizResultTests : LessonPlansTestContext
     }
 
     [Fact]
-    public async Task AnswersAndCorrect_policy_marks_the_correct_option()
+    public async Task AnswersAndCorrect_policy_marks_the_correct_option_once_no_attempt_is_left()
     {
+        _api.MaxAttempts = 1;
         var page = await OpenAsync(ReviewPolicies.AnswersAndCorrect);
 
         Assert.Contains("correct", page.Find($"[data-testid=review-option-{FakeQuizAttemptsApi.CorrectOptionId}]").TextContent);
         Assert.DoesNotContain("correct", page.Find($"[data-testid=review-option-{FakeQuizAttemptsApi.WrongOptionId}]").TextContent);
+    }
+
+    [Fact]
+    public async Task Correct_options_stay_hidden_while_another_attempt_is_possible()
+    {
+        _api.MaxAttempts = 2; // one used, one left
+        var page = await OpenAsync(ReviewPolicies.AnswersAndCorrect);
+
+        Assert.NotNull(page.Find("[data-testid=result-review]"));
+        Assert.DoesNotContain("correct", page.Find($"[data-testid=review-option-{FakeQuizAttemptsApi.CorrectOptionId}]").TextContent);
+    }
+
+    [Fact]
+    public async Task Result_page_is_arabic_and_right_to_left_friendly()
+    {
+        Culture.Current = new CultureInfo("ar");
+        _api.MaxAttempts = 1;
+        var page = await OpenAsync(ReviewPolicies.AnswersAndCorrect);
+
+        Assert.Contains("النتيجة", page.Markup);
+        Assert.Equal("ltr", page.Find("[data-testid=result-score] span").GetAttribute("dir")); // numbers stay left to right
+        Assert.Contains("صحيح", page.Find($"[data-testid=review-option-{FakeQuizAttemptsApi.CorrectOptionId}]").TextContent);
     }
 
     [Fact]

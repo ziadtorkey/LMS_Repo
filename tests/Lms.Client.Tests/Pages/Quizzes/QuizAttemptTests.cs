@@ -196,4 +196,52 @@ public sealed class QuizAttemptTests : LessonPlansTestContext
         Assert.Empty(page.FindAll("[data-testid=quiz-start-button]"));
         Assert.NotNull(page.Find("[data-testid=quiz-unavailable]"));
     }
+
+    [Fact]
+    public async Task Submit_is_blocked_while_answers_are_unsaved_and_works_after_a_retry()
+    {
+        _api.SaveFailuresLeft = 99; // the connection is down
+        var page = await StartAsync();
+        await ChooseAsync(page, FakeQuizAttemptsApi.CorrectOptionId);
+        _time.Advance(TimeSpan.FromSeconds(1));
+        page.WaitForElement("[data-testid=save-failed]", Wait);
+
+        page.Find("[data-testid=quiz-submit]").Click();
+        Dialogs.WaitForAssertion(() => Assert.NotNull(Dialogs.Find("[data-testid=confirm-yes]")));
+        Dialogs.Find("[data-testid=confirm-yes]").Click();
+
+        page.WaitForAssertion(() => Assert.Contains("not saved yet", page.Find("[data-testid=quiz-action-error]").TextContent));
+        Assert.DoesNotContain("submit", _api.Calls); // nothing was submitted, no answer was dropped
+
+        _api.SaveFailuresLeft = 0;
+        page.Find("[data-testid=save-retry]").Click();
+        page.WaitForAssertion(() => Assert.Contains("saved", page.Find("[data-testid=save-state]").TextContent));
+        page.Find("[data-testid=quiz-submit]").Click();
+        Dialogs.Find("[data-testid=confirm-yes]").Click();
+        page.WaitForAssertion(() => Assert.Contains("submit", _api.Calls));
+        Assert.Contains(_api.Saves, s => s.SelectedOptionIds.Contains(FakeQuizAttemptsApi.CorrectOptionId));
+    }
+
+    [Fact]
+    public async Task Timer_announcements_use_localized_units()
+    {
+        _api.TimeLimitMinutes = 6;
+        Culture.Current = new CultureInfo("ar");
+        var page = await StartAsync();
+
+        _time.Advance(TimeSpan.FromMinutes(1.5)); // crosses the 5-minute mark
+
+        page.WaitForAssertion(() => Assert.Contains("5 دقيقة", page.Find("[data-testid=attempt-timer-announce]").TextContent));
+        Assert.DoesNotContain("min", page.Find("[data-testid=attempt-timer-announce]").TextContent);
+    }
+
+    [Fact]
+    public async Task Attempt_page_is_arabic_with_left_to_right_numbers()
+    {
+        Culture.Current = new CultureInfo("ar");
+        var page = await StartAsync();
+
+        Assert.Equal("ltr", page.Find("[data-testid=attempt-timer-value]").GetAttribute("dir"));
+        Assert.Contains("السؤال 1", page.Find("[data-testid=nav-q-1]").GetAttribute("aria-label"));
+    }
 }
