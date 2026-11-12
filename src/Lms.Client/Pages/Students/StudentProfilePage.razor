@@ -15,93 +15,111 @@
 @inject NavigationManager Navigation
 
 <PageTitle>@L["Students_Title"]</PageTitle>
+<MudLink Href="students" Typo="Typo.body2" Class="lms-back-link" data-testid="profile-back">
+    <MudIcon Icon="@Icons.Material.Rounded.ArrowBack" Size="Size.Small" Class="lms-icon-flip" aria-hidden="true" />
+    @L["Student_BackToList"]
+</MudLink>
 @if (_error is not null)
 {
-    <MudAlert Severity="Severity.Error" data-testid="profile-error">@_error</MudAlert>
+    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="profile-error">@_error</MudAlert>
 }
 else if (_detail is null)
 {
-    <MudText>@L["Common_Loading"]</MudText>
+    <LoadingState Lines="5" TestId="profile-loading" />
 }
 else
 {
     var s = _detail.Summary;
-    <MudStack Spacing="3">
-        <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
-            <StaffAvatar PhotoFileId="s.PhotoFileId" Size="Size.Large" />
-            <div>
-                <MudText Typo="Typo.h4" data-testid="profile-name">@Culture.Pick(s.NameAr, s.NameEn)</MudText>
-                <MudText Typo="Typo.body2"><span dir="ltr" data-testid="profile-code">@s.StudentCode</span></MudText>
-                @if (s.CurrentClassId is { } classId)
+    var name = Culture.Pick(s.NameAr, s.NameEn);
+    <PageHeader Title="@name" TitleTestId="profile-name" Class="lms-profile-header">
+        <Leading>
+            <StaffAvatar PhotoFileId="s.PhotoFileId" Name="@name" Size="Size.Large" />
+        </Leading>
+        <Badges>
+            <PersonStatusChip Status="@s.Status" />
+            <span class="lms-muted" dir="ltr" data-testid="profile-code">@s.StudentCode</span>
+            @if (s.CurrentClassId is null)
+            {
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Warning" data-testid="profile-unplaced">@L["Student_Unplaced"]</MudChip>
+            }
+        </Badges>
+        <Actions>
+            <div class="lms-action-bar" data-testid="profile-actions">
+                @if (PermState.Has(Permissions.Students.Update))
                 {
-                    <MudLink Href="@($"classes/{classId}")" data-testid="profile-class">@Culture.Pick(s.CurrentClassNameAr ?? "", s.CurrentClassNameEn ?? "")</MudLink>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Edit" OnClick="EditAsync"
+                               data-testid="action-edit">@L["Student_Edit"]</MudButton>
+                    <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.LockReset" OnClick="ResetPasswordAsync"
+                               data-testid="action-reset">@L["Student_ResetPassword"]</MudButton>
+                    <MudButton Variant="Variant.Text" Color="Color.Warning" OnClick="ChangeStatusAsync"
+                               StartIcon="@(s.Status == PersonStatuses.Active ? Icons.Material.Rounded.PersonOff : Icons.Material.Rounded.HowToReg)"
+                               data-testid="action-status">@(s.Status == PersonStatuses.Active ? L["Staff_Deactivate"] : L["Staff_Reactivate"])</MudButton>
                 }
-                else
+                @if (PermState.Has(Permissions.Students.Delete))
                 {
-                    <MudChip T="string" Size="Size.Small" data-testid="profile-unplaced">@L["Student_Unplaced"]</MudChip>
+                    <MudButton Variant="Variant.Text" Color="Color.Error" StartIcon="@Icons.Material.Rounded.DeleteOutline" OnClick="DeleteAsync"
+                               data-testid="action-delete">@L["Common_Delete"]</MudButton>
                 }
             </div>
-            <PersonStatusChip Status="@s.Status" />
-        </MudStack>
+        </Actions>
+    </PageHeader>
 
-        <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap" data-testid="profile-actions">
-            @if (PermState.Has(Permissions.Students.Update))
-            {
-                <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Edit" OnClick="EditAsync"
-                           data-testid="action-edit">@L["Student_Edit"]</MudButton>
-                <MudButton Variant="Variant.Outlined" Color="Color.Warning" OnClick="ChangeStatusAsync"
-                           data-testid="action-status">@(s.Status == PersonStatuses.Active ? L["Staff_Deactivate"] : L["Staff_Reactivate"])</MudButton>
-                <MudButton Variant="Variant.Outlined" OnClick="ResetPasswordAsync" data-testid="action-reset">@L["Student_ResetPassword"]</MudButton>
-            }
-            @if (PermState.Has(Permissions.Students.Delete))
-            {
-                <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="DeleteAsync"
-                           data-testid="action-delete">@L["Common_Delete"]</MudButton>
-            }
-        </MudStack>
+    <div class="lms-profile-grid">
+        <SectionCard Title="@L["Student_Profile"]" Class="lms-profile-details" TestId="tab-profile">
+            <dl class="lms-details">
+                <DetailItem Label="@L["Student_Account"]" TestId="profile-account">@AccountState</DetailItem>
+                <DetailItem Label="@L["Student_Class"]">
+                    @if (s.CurrentClassId is { } classId)
+                    {
+                        <MudLink Href="@($"classes/{classId}")" data-testid="profile-class">@Culture.Pick(s.CurrentClassNameAr ?? "", s.CurrentClassNameEn ?? "")</MudLink>
+                    }
+                    else
+                    {
+                        <span class="lms-detail-empty">—</span>
+                    }
+                </DetailItem>
+                <DetailItem Label="@L["Staff_HomeUnit"]" Value="@Culture.Pick(s.HomeOrgUnitNameAr, s.HomeOrgUnitNameEn)" />
+                <DetailItem Label="@L["Student_DateOfBirth"]" Value="@s.DateOfBirth.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)" Ltr="true" />
+                <DetailItem Label="@L["Student_Gender"]" Value="@L[$"Gender_{s.Gender}"]" />
+                <DetailItem Label="@L["Student_Religion"]" Value="@L[$"Religion_{_detail.Religion}"]" />
+                <DetailItem Label="@L["Student_Nationality"]" Value="@NationalityName(_detail.Nationality)" TestId="profile-nationality" />
+                <DetailItem Label="@L["Student_NationalId"]" Value="@_detail.NationalId" Ltr="true" TestId="profile-national-id" />
+                <DetailItem Label="@L["Student_Mobile"]" Value="@_detail.Mobile" Ltr="true" TestId="profile-mobile" />
+                <DetailItem Label="@L["Student_Email"]" Value="@_detail.Email" Ltr="true" TestId="profile-email" />
+            </dl>
+        </SectionCard>
 
-        <MudTabs Elevation="0" Rounded="true" Class="lms-student-tabs" data-testid="profile-tabs">
-            <MudTabPanel Text="@L["Student_Profile"]" data-testid="tab-profile">
-                <MudPaper Class="pa-3">
-                    <MudStack Spacing="1">
-                        <MudText data-testid="profile-account">@L["Student_Account"]: @AccountState</MudText>
-                        <MudText>@L["Student_DateOfBirth"]: <span dir="ltr">@s.DateOfBirth.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)</span></MudText>
-                        <MudText>@L["Student_Gender"]: @L[$"Gender_{s.Gender}"]</MudText>
-                        <MudText>@L["Student_Religion"]: @L[$"Religion_{_detail.Religion}"]</MudText>
-                        <MudText data-testid="profile-nationality">@L["Student_Nationality"]: @NationalityName(_detail.Nationality)</MudText>
-                        <MudText data-testid="profile-national-id">@L["Student_NationalId"]: <span dir="ltr">@_detail.NationalId</span></MudText>
-                        <MudText data-testid="profile-mobile">@L["Student_Mobile"]: <span dir="ltr">@_detail.Mobile</span></MudText>
-                        <MudText data-testid="profile-email">@L["Student_Email"]: <span dir="ltr">@_detail.Email</span></MudText>
-                        <MudText>@L["Staff_HomeUnit"]: @Culture.Pick(s.HomeOrgUnitNameAr, s.HomeOrgUnitNameEn)</MudText>
-                    </MudStack>
-                </MudPaper>
-            </MudTabPanel>
-            <MudTabPanel Text="@L["Student_Guardians"]" data-testid="tab-guardians">
-                <StudentGuardiansTab Student="_detail" CanEdit="PermState.Has(Permissions.Students.Update)" OnChanged="LoadAsync" />
-            </MudTabPanel>
-            <MudTabPanel Text="@L["Student_Enrollments"]" data-testid="tab-enrollments">
-                @* Hosts StudentEnrollmentsTab (enrollments, optional courses, unenroll and transfer) once that component exists. *@
-                <MudText data-testid="enrollments-placeholder">@L["Common_Empty"]</MudText>
-            </MudTabPanel>
-            <MudTabPanel Text="@L["Student_FeatureFlags"]" data-testid="tab-flags">
-                <StudentFeatureFlagsTab Student="_detail" CanEdit="PermState.Has(Permissions.Students.Update)" OnSaved="LoadAsync" />
-            </MudTabPanel>
-            <MudTabPanel Text="@L["Student_History"]" data-testid="tab-history">
-                <MudTable Items="_detail.StatusHistory" Dense="true" data-testid="profile-history">
-                    <HeaderContent>
-                        <MudTh>@L["Common_Status"]</MudTh>
-                        <MudTh>@L["Staff_Reason"]</MudTh>
-                        <MudTh>@L["Audit_When"]</MudTh>
-                    </HeaderContent>
-                    <RowTemplate Context="change">
-                        <MudTd>@L[$"PersonStatus_{change.FromStatus}"] → @L[$"PersonStatus_{change.ToStatus}"]</MudTd>
-                        <MudTd>@change.Reason</MudTd>
-                        <MudTd><span dir="ltr">@change.ChangedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture)</span></MudTd>
-                    </RowTemplate>
-                </MudTable>
-            </MudTabPanel>
-        </MudTabs>
-    </MudStack>
+        <div class="lms-profile-main">
+            <SectionCard>
+                <MudTabs Elevation="0" Rounded="true" Class="lms-student-tabs" data-testid="profile-tabs">
+                    <MudTabPanel Text="@L["Student_Guardians"]" data-testid="tab-guardians">
+                        <StudentGuardiansTab Student="_detail" CanEdit="PermState.Has(Permissions.Students.Update)" OnChanged="LoadAsync" />
+                    </MudTabPanel>
+                    <MudTabPanel Text="@L["Student_Enrollments"]" data-testid="tab-enrollments">
+                        @* Hosts StudentEnrollmentsTab (enrollments, optional courses, unenroll and transfer) once that component exists. *@
+                        <EmptyState Title="@L["Common_Empty"]" Icon="@Icons.Material.Rounded.School" TestId="enrollments-placeholder" />
+                    </MudTabPanel>
+                    <MudTabPanel Text="@L["Student_FeatureFlags"]" data-testid="tab-flags">
+                        <StudentFeatureFlagsTab Student="_detail" CanEdit="PermState.Has(Permissions.Students.Update)" OnSaved="LoadAsync" />
+                    </MudTabPanel>
+                    <MudTabPanel Text="@L["Student_History"]" data-testid="tab-history">
+                        <MudTable Items="_detail.StatusHistory" Dense="true" Elevation="0" HeaderClass="lms-table-head" Class="lms-table" data-testid="profile-history">
+                            <HeaderContent>
+                                <MudTh>@L["Common_Status"]</MudTh>
+                                <MudTh>@L["Staff_Reason"]</MudTh>
+                                <MudTh>@L["Audit_When"]</MudTh>
+                            </HeaderContent>
+                            <RowTemplate Context="change">
+                                <MudTd DataLabel="@L["Common_Status"]">@L[$"PersonStatus_{change.FromStatus}"] → @L[$"PersonStatus_{change.ToStatus}"]</MudTd>
+                                <MudTd DataLabel="@L["Staff_Reason"]">@change.Reason</MudTd>
+                                <MudTd DataLabel="@L["Audit_When"]"><span class="lms-date-cell"><span dir="ltr">@change.ChangedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture)</span></span></MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    </MudTabPanel>
+                </MudTabs>
+            </SectionCard>
+        </div>
+    </div>
 }
 
 @code {
