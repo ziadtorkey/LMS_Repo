@@ -1,0 +1,64 @@
+@using System.Globalization
+@using Lms.Shared.People
+
+@* The input of one student field by its name; the value travels as the string form used by change requests (yyyy-MM-dd dates, catalog keys, file ids). *@
+@switch (Field)
+{
+    case StudentFields.NameAr or StudentFields.NicknameAr:
+        <MudTextField T="string" Value="Value" ValueChanged="ValueChanged" Label="@Label" ReadOnly="ReadOnly" MaxLength="200" dir="rtl" lang="ar"
+                      data-testid="@($"field-{Field}")" />
+        break;
+    case StudentFields.NameEn or StudentFields.NicknameEn:
+        <MudTextField T="string" Value="Value" ValueChanged="ValueChanged" Label="@Label" ReadOnly="ReadOnly" MaxLength="200" dir="ltr" lang="en"
+                      data-testid="@($"field-{Field}")" />
+        break;
+    case StudentFields.NationalId or StudentFields.Mobile:
+        <MudTextField T="string" Value="Value" ValueChanged="ValueChanged" Label="@Label" ReadOnly="ReadOnly" MaxLength="30" dir="ltr"
+                      InputType="@(Field == StudentFields.Mobile ? InputType.Telephone : InputType.Text)" data-testid="@($"field-{Field}")" />
+        break;
+    case StudentFields.DateOfBirth:
+        <MudDatePicker Date="DateValue" DateChanged="OnDateChanged"
+                       Label="@Label" ReadOnly="ReadOnly" MaxDate="DateTime.Today" OpenTo="OpenTo.Year" data-testid="@($"field-{Field}")" />
+        break;
+    case StudentFields.Gender:
+        <MudSelect T="string" Value="Value" ValueChanged="ValueChanged" Label="@Label" ReadOnly="ReadOnly" data-testid="@($"field-{Field}")">
+            @foreach (var gender in Genders.All)
+            {
+                <MudSelectItem T="string" Value="@gender">@L[$"Gender_{gender}"]</MudSelectItem>
+            }
+        </MudSelect>
+        break;
+    case StudentFields.Religion:
+        <MudSelect T="string" Value="Value" ValueChanged="ValueChanged" Label="@Label" ReadOnly="ReadOnly" data-testid="@($"field-{Field}")">
+            @foreach (var religion in Religions.All)
+            {
+                <MudSelectItem T="string" Value="@religion">@L[$"Religion_{religion}"]</MudSelectItem>
+            }
+        </MudSelect>
+        break;
+    case StudentFields.Nationality:
+        <NationalitySelect Value="@Value" ValueChanged="ValueChanged" Label="@Label" TestId="@($"field-{Field}")" />
+        break;
+    case StudentFields.Photo:
+        <PhotoUpload Value="PhotoValue" ValueChanged="id => ValueChanged.InvokeAsync(id?.ToString())" OrgUnitId="HomeUnitId" />
+        break;
+}
+
+@code {
+    [Parameter, EditorRequired] public string Field { get; set; } = "";
+    [Parameter] public string? Value { get; set; }
+    [Parameter] public EventCallback<string?> ValueChanged { get; set; }
+    [Parameter] public bool ReadOnly { get; set; }
+    [Parameter] public string? Label { get; set; }
+
+    /// <summary>The unit a photo is stored under (the student's home unit).</summary>
+    [Parameter] public Guid HomeUnitId { get; set; }
+
+    private DateTime? DateValue =>
+        DateTime.TryParseExact(Value, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var d) ? d : null;
+
+    private Task OnDateChanged(DateTime? date) =>
+        ValueChanged.InvokeAsync(date?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+    private Guid? PhotoValue => Guid.TryParse(Value, out var id) ? id : null;
+}

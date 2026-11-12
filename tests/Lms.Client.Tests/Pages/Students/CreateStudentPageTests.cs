@@ -337,6 +337,28 @@ public sealed class CreateStudentPageTests : StudentsTestContext
     }
 
     [Fact]
+    public async Task Credentials_dialog_ignores_escape_and_backdrop_so_the_one_time_password_is_not_lost()
+    {
+        var page = await RenderPageAsync();
+        await FillAsync(page);
+        Type(page, "guardian-name-ar-0", "ماجد");
+        Type(page, "guardian-name-en-0", "Majed");
+        Type(page, "guardian-mobile-0", "0509999999");
+
+        SaveWithDialog(page);
+
+        Dialogs.WaitForElement("[data-testid=credentials-password]", Wait);
+        // The provider keeps the open dialogs; the options each was opened with are on its reference.
+        var open = (System.Collections.IEnumerable)typeof(MudBlazor.MudDialogProvider)
+            .GetField("_dialogs", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.GetValue(Dialogs.Instance)!;
+        var reference = open.Cast<object>().Single();
+        var options = (MudBlazor.DialogOptions)reference.GetType().GetProperty("Options")!.GetValue(reference)!;
+        Assert.False(options.CloseOnEscapeKey);
+        Assert.False(options.BackdropClick);
+        await CloseCredentialsAsync();
+    }
+
+    [Fact]
     public async Task Credentials_dialog_tells_the_school_to_hand_them_over_when_no_email_was_sent()
     {
         var page = await RenderPageAsync();

@@ -200,7 +200,7 @@ else
             { x => x.Code, created.Student.Summary.StudentCode },
             { x => x.Password, created.IssuedPassword },
             { x => x.SentTo, created.CredentialsSentTo },
-        }, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, BackdropClick = false });
+        }, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, BackdropClick = false, CloseOnEscapeKey = false });
         await dialog.Result;
         Navigation.NavigateTo("students");
     }
