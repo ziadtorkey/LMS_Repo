@@ -128,7 +128,9 @@ public sealed class AssetTests(LmsApiFactory factory) : IDisposable
         var s = await SetUpAsync("AS4");
         await SetLimitMbAsync(s.World.Tree.Root.Id, 1);
 
-        var response = await s.Host.SendRawAsync(Upload(s.World.CcA.Id, bytes: new byte[2 * 1024 * 1024]), s.Teacher);
+        var big = new byte[2 * 1024 * 1024];
+        "%PDF-1.7"u8.CopyTo(big);
+        var response = await s.Host.SendRawAsync(Upload(s.World.CcA.Id, bytes: big), s.Teacher);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         Assert.Equal(ProblemCodes.asset_too_large, await CodeAsync(response));
@@ -203,6 +205,7 @@ public sealed class AssetTests(LmsApiFactory factory) : IDisposable
     {
         var s = await SetUpAsync("AS9");
         var bytes = Enumerable.Range(0, 5000).Select(i => (byte)(i % 251)).ToArray();
+        "\0\0\0\u0018ftypisom"u8.CopyTo(bytes);
         var asset = await UploadOkAsync(s, s.World.CcA.Id, "lesson.mp4", "video/mp4", bytes);
         Assert.Equal(AssetKinds.Video, asset.Kind);
 
@@ -231,6 +234,93 @@ public sealed class AssetTests(LmsApiFactory factory) : IDisposable
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
         Assert.Equal(ProblemCodes.class_closed, await CodeAsync(response));
+    }
+
+    [Fact]
+    public async Task Rejects_html_disguised_as_png_and_script_as_pdf()
+    {
+        var s = await SetUpAsync("AS11");
+
+        var png = await s.Host.SendRawAsync(Upload(s.World.CcA.Id, "photo.png", "image/png", "<html><script>alert(1)</script></html>"u8.ToArray()), s.Teacher);
+        var pdf = await s.Host.SendRawAsync(Upload(s.World.CcA.Id, "doc.pdf", "application/pdf", "<script>alert(1)</script>"u8.ToArray()), s.Teacher);
+
+        foreach (var response in new[] { png, pdf })
+        {
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.Equal(ProblemCodes.asset_type_not_allowed, await CodeAsync(response));
+        }
+    }
+
+    [Fact]
+    public async Task Upload_above_30mb_within_unit_limit_succeeds()
+    {
+        var s = await SetUpAsync("AS12");
+        var bytes = new byte[31 * 1024 * 1024];
+        "%PDF-1.7"u8.CopyTo(bytes);
+
+        var asset = await UploadOkAsync(s, s.World.CcA.Id, bytes: bytes);
+
+        Assert.Equal(bytes.Length, asset.SizeBytes);
+    }
+
+    [Fact]
+    public async Task Signed_url_stops_working_after_it_expires()
+    {
+        var s = await SetUpAsync("AS13");
+        var asset = await UploadOkAsync(s, s.World.CcA.Id);
+        Guid fileId;
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            fileId = (await db.Set<Asset>().SingleAsync(a => a.Id == asset.Id)).FileId;
+        }
+
+        var ctx = TestCurrentContext.PlatformAdmin();
+        await using var scopeDb = factory.CreateDbContext(ctx);
+        var options = factory.Services.GetRequiredService<Microsoft.Extensions.Options.IOptions<Lms.Infrastructure.Files.StorageOptions>>();
+        var storage = new Lms.Infrastructure.Files.MinioFileStorage(
+            scopeDb, new SettingsResolver(scopeDb, ctx), new Lms.Infrastructure.Files.MinioClients(options), options, new Lms.Infrastructure.SystemClock());
+        var url = await storage.GetViewUrlAsync(fileId, TimeSpan.FromSeconds(2));
+
+        using var http = new HttpClient();
+        Assert.Equal(HttpStatusCode.OK, (await http.GetAsync(url)).StatusCode);
+        await Task.Delay(TimeSpan.FromSeconds(4));
+        Assert.Equal(HttpStatusCode.Forbidden, (await http.GetAsync(url)).StatusCode);
+    }
+
+    [Fact]
+    public async Task Caller_without_files_download_is_refused_on_get_and_url()
+    {
+        var s = await SetUpAsync("AS14");
+        var asset = await UploadOkAsync(s, s.World.CcA.Id);
+        Role custom;
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            custom = new Role(s.World.Tree.Org.Id, null, "مخصص", "Custom", RoleBaseKind.Staff);
+            db.Add(custom);
+            await db.SaveChangesAsync();
+        }
+
+        RoleAssignment holder;
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            holder = new RoleAssignment(s.World.Tree.Root, Guid.NewGuid(), custom.Id);
+            db.Add(holder);
+            await db.SaveChangesAsync();
+        }
+
+        Assert.Equal(HttpStatusCode.Forbidden, (await s.Host.SendAsync(HttpMethod.Get, Routes.Asset(asset.Id), holder)).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await s.Host.SendAsync(HttpMethod.Get, Routes.AssetUrl(asset.Id), holder)).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await s.Host.SendRawAsync(Upload(s.World.CcA.Id), holder)).StatusCode);
+    }
+
+    [Fact]
+    public async Task Upload_is_refused_before_the_file_is_read_when_the_class_course_is_out_of_reach()
+    {
+        var s = await SetUpAsync("AS15");
+        // The file part would be 40 MB; the answer is 404 from the first part alone (nothing is stored).
+        var response = await s.Host.SendRawAsync(Upload(s.World.CcB.Id, bytes: new byte[40 * 1024 * 1024]), s.Teacher);
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     private async Task SetLimitMbAsync(Guid unitId, int mb)
