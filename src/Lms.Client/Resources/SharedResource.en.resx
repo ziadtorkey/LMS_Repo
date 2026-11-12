@@ -906,4 +906,19 @@
   <data name="ModuleKind_Audio" xml:space="preserve"><value>Audio</value></data>
   <data name="ModuleKind_Page" xml:space="preserve"><value>Page</value></data>
   <data name="ModuleKind_Link" xml:space="preserve"><value>Link</value></data>
+  <data name="Learn_Title" xml:space="preserve"><value>My course</value></data>
+  <data name="Learn_Continue" xml:space="preserve"><value>Continue where you left off</value></data>
+  <data name="Learn_ContinueOpen" xml:space="preserve"><value>Continue</value></data>
+  <data name="Learn_AllDone" xml:space="preserve"><value>You have completed everything so far.</value></data>
+  <data name="Learn_NothingYet" xml:space="preserve"><value>Nothing has been published yet.</value></data>
+  <data name="Learn_Progress" xml:space="preserve"><value>{0} of {1} done</value></data>
+  <data name="Learn_LessonProgress" xml:space="preserve"><value>{0}/{1}</value></data>
+  <data name="Learn_NotTracked" xml:space="preserve"><value>Not tracked</value></data>
+  <data name="Learn_WaitingSubmit" xml:space="preserve"><value>Waiting for your submission</value></data>
+  <data name="Learn_WaitingScore" xml:space="preserve"><value>Waiting for a score</value></data>
+  <data name="CompletionState_NotStarted" xml:space="preserve"><value>Not started</value></data>
+  <data name="CompletionState_InProgress" xml:space="preserve"><value>In progress</value></data>
+  <data name="CompletionState_Completed" xml:space="preserve"><value>Done</value></data>
+  <data name="ClassCourse_TabForum" xml:space="preserve"><value>Forum</value></data>
+  <data name="ClassCourse_TabAnnouncements" xml:space="preserve"><value>Announcements</value></data>
 </root>

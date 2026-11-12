@@ -906,4 +906,19 @@
   <data name="ModuleKind_Audio" xml:space="preserve"><value>صوت</value></data>
   <data name="ModuleKind_Page" xml:space="preserve"><value>صفحة</value></data>
   <data name="ModuleKind_Link" xml:space="preserve"><value>رابط</value></data>
+  <data name="Learn_Title" xml:space="preserve"><value>مقرري</value></data>
+  <data name="Learn_Continue" xml:space="preserve"><value>تابع من حيث توقفت</value></data>
+  <data name="Learn_ContinueOpen" xml:space="preserve"><value>متابعة</value></data>
+  <data name="Learn_AllDone" xml:space="preserve"><value>أنجزت كل ما نُشر حتى الآن.</value></data>
+  <data name="Learn_NothingYet" xml:space="preserve"><value>لم يُنشر شيء بعد.</value></data>
+  <data name="Learn_Progress" xml:space="preserve"><value>تم إنجاز {0} من {1}</value></data>
+  <data name="Learn_LessonProgress" xml:space="preserve"><value>{0}/{1}</value></data>
+  <data name="Learn_NotTracked" xml:space="preserve"><value>غير متتبَّع</value></data>
+  <data name="Learn_WaitingSubmit" xml:space="preserve"><value>بانتظار تسليمك</value></data>
+  <data name="Learn_WaitingScore" xml:space="preserve"><value>بانتظار الدرجة</value></data>
+  <data name="CompletionState_NotStarted" xml:space="preserve"><value>لم تبدأ</value></data>
+  <data name="CompletionState_InProgress" xml:space="preserve"><value>قيد التنفيذ</value></data>
+  <data name="CompletionState_Completed" xml:space="preserve"><value>مكتملة</value></data>
+  <data name="ClassCourse_TabForum" xml:space="preserve"><value>المنتدى</value></data>
+  <data name="ClassCourse_TabAnnouncements" xml:space="preserve"><value>الإعلانات</value></data>
 </root>

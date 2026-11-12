@@ -79,6 +79,8 @@ public sealed class FakeModulesApi : IModulesApi
     /// <summary>Group ids that exist in a class course (a Group target must be one of them).</summary>
     public Dictionary<Guid, HashSet<Guid>> GroupsByClassCourse { get; } = [];
     public bool CanEdit { get; set; } = true;
+    /// <summary>Acts as a student: opening a module (GET) completes a View-rule module, as the server does.</summary>
+    public bool AsStudent { get; set; }
     public Exception? Failure { get; set; }
     public List<string> Calls { get; } = [];
 
@@ -136,7 +138,14 @@ public sealed class FakeModulesApi : IModulesApi
     public Task<ModuleDetailDto> GetAsync(Guid id, CancellationToken ct = default)
     {
         Calls.Add($"get {id}");
-        return Failure is not null ? Task.FromException<ModuleDetailDto>(Failure) : Task.FromResult(Find(id));
+        if (Failure is not null) return Task.FromException<ModuleDetailDto>(Failure);
+        var m = Find(id);
+        if (AsStudent && m.Node.CompletionRule == CompletionRules.View && m.Node.CompletionState != CompletionStates.Completed)
+        {
+            m = m with { Node = m.Node with { CompletionState = CompletionStates.Completed } };
+            Replace(m);
+        }
+        return Task.FromResult(m);
     }
 
     public Task<ModuleDetailDto> CreateAsync(Guid classCourseId, Guid lessonKey, CreateModuleRequest request, CancellationToken ct = default)
@@ -228,6 +237,7 @@ public sealed class FakeModulesApi : IModulesApi
 
     public Task<CourseProgressDto> GetProgressAsync(Guid classCourseId, Guid? studentId = null, CancellationToken ct = default)
     {
+        if (Failure is not null) return Task.FromException<CourseProgressDto>(Failure);
         var counted = _modules.Where(m => m.ClassCourseId == classCourseId && m.Node.IsVisibleNow && m.Node.CompletionRule != CompletionRules.None).ToList();
         var done = counted.Count(m => m.Node.CompletionState == CompletionStates.Completed);
         var lessons = counted.GroupBy(m => m.LessonKey)
