@@ -651,6 +651,7 @@
   <data name="AuditEntity_CourseRestriction" xml:space="preserve"><value>Course restriction</value></data>
   <data name="AuditEntity_CourseSupervisor" xml:space="preserve"><value>Course supervisor</value></data>
   <data name="AuditEntity_Blueprint" xml:space="preserve"><value>Blueprint</value></data>
+  <data name="AuditEntity_ClassLessonPlan" xml:space="preserve"><value>Class lesson plan</value></data>
   <data name="AuditEntity_Class" xml:space="preserve"><value>Class</value></data>
   <data name="AuditEntity_ClassStudent" xml:space="preserve"><value>Class student</value></data>
   <data name="AuditEntity_ClassCourse" xml:space="preserve"><value>Class course</value></data>
