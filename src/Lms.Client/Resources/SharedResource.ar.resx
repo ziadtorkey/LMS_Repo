@@ -571,6 +571,17 @@
   <data name="Error_asset_type_not_allowed" xml:space="preserve"><value>نوع هذا الملف غير مسموح به هنا.</value></data>
   <data name="Error_asset_too_large" xml:space="preserve"><value>حجم الملف أكبر من الحد المسموح به.</value></data>
   <data name="Error_completion_not_manual" xml:space="preserve"><value>تكتمل هذه الوحدة تلقائيًا ولا يمكن تعليمها يدويًا.</value></data>
+  <data name="Error_late_policy_invalid" xml:space="preserve"><value>مع سياسة الخصم حدد نسبة خصم من 1 إلى 100، ولا نسبة مع السياسات الأخرى.</value></data>
+  <data name="Error_submission_closed" xml:space="preserve"><value>لم يعد هذا الواجب يقبل التسليم.</value></data>
+  <data name="Error_resubmission_not_allowed" xml:space="preserve"><value>لا يُسمح بإعادة التسليم الآن.</value></data>
+  <data name="Error_quiz_closed" xml:space="preserve"><value>أُغلق هذا الاختبار.</value></data>
+  <data name="Error_quiz_not_open" xml:space="preserve"><value>لم يُفتح هذا الاختبار بعد.</value></data>
+  <data name="Error_attempt_limit_reached" xml:space="preserve"><value>استنفدت جميع المحاولات المسموح بها.</value></data>
+  <data name="Error_attempt_expired" xml:space="preserve"><value>انتهى وقت هذه المحاولة.</value></data>
+  <data name="Error_quiz_has_attempts" xml:space="preserve"><value>بدأ الطلاب هذا الاختبار، فلا يمكن تغيير الإجابات الصحيحة أو الدرجات أو الأسئلة.</value></data>
+  <data name="Error_pool_draw_invalid" xml:space="preserve"><value>عدد الأسئلة المسحوبة يجب أن يكون بين 1 وعدد أسئلة الاختبار.</value></data>
+  <data name="Error_thread_locked" xml:space="preserve"><value>هذا الموضوع مقفل ولا يقبل ردودًا.</value></data>
+  <data name="Error_download_disabled" xml:space="preserve"><value>التنزيل غير متاح لهذا المصدر؛ افتحه في القارئ.</value></data>
   <data name="Error_course_in_use" xml:space="preserve"><value>المقرر مستخدم في فصول ولا يمكن حذفه.</value></data>
   <data name="Error_course_not_available" xml:space="preserve"><value>هذا المقرر غير متاح في هذه الوحدة.</value></data>
   <data name="Error_allocation_exists" xml:space="preserve"><value>المقرر مخصص لهذه الوحدة من قبل.</value></data>
@@ -648,6 +659,23 @@
   <data name="PermModule_Modules" xml:space="preserve"><value>وحدات الدروس</value></data>
   <data name="Perm_Modules_View" xml:space="preserve"><value>عرض وحدات الدروس</value></data>
   <data name="Perm_Modules_Manage" xml:space="preserve"><value>إدارة وحدات الدروس</value></data>
+  <data name="PermModule_CourseAssignments" xml:space="preserve"><value>الواجبات</value></data>
+  <data name="Perm_CourseAssignments_View" xml:space="preserve"><value>عرض الواجبات</value></data>
+  <data name="Perm_CourseAssignments_Manage" xml:space="preserve"><value>إدارة الواجبات</value></data>
+  <data name="Perm_CourseAssignments_Submit" xml:space="preserve"><value>تسليم الواجبات</value></data>
+  <data name="Perm_CourseAssignments_Grade" xml:space="preserve"><value>تصحيح الواجبات</value></data>
+  <data name="PermModule_Quizzes" xml:space="preserve"><value>الاختبارات</value></data>
+  <data name="Perm_Quizzes_View" xml:space="preserve"><value>عرض الاختبارات</value></data>
+  <data name="Perm_Quizzes_Manage" xml:space="preserve"><value>إدارة الاختبارات</value></data>
+  <data name="Perm_Quizzes_Attempt" xml:space="preserve"><value>أداء الاختبارات</value></data>
+  <data name="Perm_Quizzes_Grade" xml:space="preserve"><value>تصحيح الاختبارات</value></data>
+  <data name="PermModule_Library" xml:space="preserve"><value>المكتبة الرقمية</value></data>
+  <data name="Perm_Library_View" xml:space="preserve"><value>عرض المكتبة</value></data>
+  <data name="Perm_Library_Manage" xml:space="preserve"><value>إدارة المكتبة</value></data>
+  <data name="PermModule_Forums" xml:space="preserve"><value>المنتديات</value></data>
+  <data name="Perm_Forums_View" xml:space="preserve"><value>عرض المنتديات</value></data>
+  <data name="Perm_Forums_Post" xml:space="preserve"><value>النشر في المنتديات</value></data>
+  <data name="Perm_Forums_Moderate" xml:space="preserve"><value>الإشراف على المنتديات والإعلانات</value></data>
   <data name="Policy_CreateStudents" xml:space="preserve"><value>منع إنشاء الطلاب واستيرادهم</value></data>
   <data name="Policy_CreateCourses" xml:space="preserve"><value>منع إنشاء المقررات واستيرادها</value></data>
   <data name="Policy_CreateClasses" xml:space="preserve"><value>منع إنشاء الفصول</value></data>
@@ -666,6 +694,8 @@
   <data name="SettingValue_Blueprints_SectionLabel_Unit" xml:space="preserve"><value>وحدة</value></data>
   <data name="SettingValue_Blueprints_SectionLabel_Chapter" xml:space="preserve"><value>فصل</value></data>
   <data name="Setting_Enrollment_TransferCarriesGrades" xml:space="preserve"><value>تنتقل الدرجات مع الطالب المنقول</value></data>
+  <data name="Setting_Assignments_LatePenaltyDefaultPercent" xml:space="preserve"><value>نسبة خصم التأخير الافتراضية (%)</value></data>
+  <data name="Setting_Quizzes_AutoSubmitGraceSeconds" xml:space="preserve"><value>مهلة التسليم التلقائي للاختبار (ثوانٍ)</value></data>
   <data name="SettingValue_Students_CriticalFields_NameAr" xml:space="preserve"><value>الاسم بالعربية</value></data>
   <data name="SettingValue_Students_CriticalFields_NameEn" xml:space="preserve"><value>الاسم بالإنجليزية</value></data>
   <data name="SettingValue_Students_CriticalFields_NicknameAr" xml:space="preserve"><value>اسم الشهرة بالعربية</value></data>
@@ -697,6 +727,14 @@
   <data name="AuditEntity_LessonModule" xml:space="preserve"><value>وحدة درس</value></data>
   <data name="AuditEntity_ModuleContent" xml:space="preserve"><value>محتوى وحدة</value></data>
   <data name="AuditEntity_Asset" xml:space="preserve"><value>ملف وسائط</value></data>
+  <data name="AuditEntity_Assignment" xml:space="preserve"><value>واجب</value></data>
+  <data name="AuditEntity_SubmissionFeedback" xml:space="preserve"><value>تصحيح تسليم</value></data>
+  <data name="AuditEntity_Quiz" xml:space="preserve"><value>اختبار</value></data>
+  <data name="AuditEntity_QuizQuestion" xml:space="preserve"><value>سؤال اختبار</value></data>
+  <data name="AuditEntity_LibraryResource" xml:space="preserve"><value>مصدر مكتبة</value></data>
+  <data name="AuditEntity_ForumThread" xml:space="preserve"><value>موضوع منتدى</value></data>
+  <data name="AuditEntity_CourseAnnouncement" xml:space="preserve"><value>إعلان مقرر</value></data>
+  <data name="AuditEntity_GradeEvent" xml:space="preserve"><value>حدث درجة</value></data>
   <data name="Notif_Students_ChangeRequested" xml:space="preserve"><value>أرسل {StudentName} طلب تعديل بيانات.</value></data>
   <data name="NotifEvent_Students_ChangeRequested" xml:space="preserve"><value>طلب تعديل بيانات طالب</value></data>
   <data name="Notif_Students_ChangeRequestDecided" xml:space="preserve"><value>تم البت في طلب تعديل بيانات {StudentName}: {Decision}.</value></data>
@@ -711,6 +749,16 @@
   <data name="NotifEvent_Enrollment_ExceptionDecided" xml:space="preserve"><value>البت في استثناء تسجيل</value></data>
   <data name="Notif_Enrollment_StudentTransferred" xml:space="preserve"><value>يُنقل {StudentName} من {FromClass} إلى {ToClass} في {EffectiveOn}.</value></data>
   <data name="NotifEvent_Enrollment_StudentTransferred" xml:space="preserve"><value>نقل طالب</value></data>
+  <data name="Notif_Assignments_Published" xml:space="preserve"><value>واجب جديد في {CourseName}: {Title}.</value></data>
+  <data name="NotifEvent_Assignments_Published" xml:space="preserve"><value>واجب جديد</value></data>
+  <data name="Notif_Assignments_DueSoon" xml:space="preserve"><value>موعد تسليم {Title} في {CourseName} هو {DueAt}.</value></data>
+  <data name="NotifEvent_Assignments_DueSoon" xml:space="preserve"><value>اقتراب موعد التسليم</value></data>
+  <data name="Notif_Assignments_Graded" xml:space="preserve"><value>صُحّح واجبك {Title} في {CourseName}.</value></data>
+  <data name="NotifEvent_Assignments_Graded" xml:space="preserve"><value>تصحيح واجب</value></data>
+  <data name="Notif_Quizzes_Opened" xml:space="preserve"><value>فُتح الاختبار {Title} في {CourseName}.</value></data>
+  <data name="NotifEvent_Quizzes_Opened" xml:space="preserve"><value>فتح اختبار</value></data>
+  <data name="Notif_Forums_Announcement" xml:space="preserve"><value>إعلان في {CourseName}: {Title}</value></data>
+  <data name="NotifEvent_Forums_Announcement" xml:space="preserve"><value>إعلان مقرر</value></data>
   <data name="Nav_Students" xml:space="preserve"><value>الطلاب</value></data>
   <data name="Students_Title" xml:space="preserve"><value>الطلاب</value></data>
   <data name="Students_New" xml:space="preserve"><value>طالب جديد</value></data>
