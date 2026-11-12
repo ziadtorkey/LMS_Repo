@@ -6,6 +6,7 @@
 @using Lms.Shared.Assignments
 @using Lms.Shared.Authorization
 @inject ICourseAssignmentsApi Api
+@inject IClassCourseGroupsApi GroupsApi
 @inject IDialogService Dialogs
 @inject PermissionState PermState
 @inject ICultureService Culture
@@ -141,10 +142,12 @@ else
     private async Task EditAsync()
     {
         if (_assignment is null) return;
+        var groups = await ModuleGroups.LoadAsync(GroupsApi, _assignment.ClassCourseId);
         var dialog = await Dialogs.ShowAsync<AssignmentDialog>(L["Assignment_Edit"], new DialogParameters<AssignmentDialog>
         {
             { x => x.ClassCourseId, _assignment.ClassCourseId },
             { x => x.Existing, _assignment },
+            { x => x.Groups, groups },
         }, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
         var result = await dialog.Result;
         if (result is { Canceled: false, Data: CourseAssignmentDto saved }) _assignment = saved;

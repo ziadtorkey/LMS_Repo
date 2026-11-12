@@ -1019,4 +1019,5 @@
   <data name="Duration_HoursMinutes" xml:space="preserve"><value>{0} ساعة {1} دقيقة</value></data>
   <data name="Duration_Minutes" xml:space="preserve"><value>{0} دقيقة</value></data>
   <data name="AssignmentStudent_RemoveFile" xml:space="preserve"><value>إزالة</value></data>
+  <data name="Assignment_MinScoreUnknown" xml:space="preserve"><value>تعذّر قراءة الحد الأدنى للدرجة. أغلق النافذة وحاول مجدداً.</value></data>
 </root>

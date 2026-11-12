@@ -1019,4 +1019,5 @@
   <data name="Duration_HoursMinutes" xml:space="preserve"><value>{0} h {1} min</value></data>
   <data name="Duration_Minutes" xml:space="preserve"><value>{0} min</value></data>
   <data name="AssignmentStudent_RemoveFile" xml:space="preserve"><value>Remove</value></data>
+  <data name="Assignment_MinScoreUnknown" xml:space="preserve"><value>The minimum score could not be read. Close the dialog and try again.</value></data>
 </root>

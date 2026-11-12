@@ -90,7 +90,10 @@ public sealed class FakeCourseAssignmentsApi : ICourseAssignmentsApi
     /// <summary>Roster rows (students without a hand-in have a null SubmissionId).</summary>
     public List<(Guid AssignmentId, SubmissionListItemDto Row)> Rows { get; } = [];
     public List<string> Calls { get; } = [];
+    public List<UpdateCourseAssignmentRequest> Updates { get; } = [];
     public List<(Guid SubmissionId, GradeSubmissionRequest Request)> GradeRequests { get; } = [];
+    /// <summary>Assets a test uploaded, so a grade can return the annotated file's real name.</summary>
+    public Dictionary<Guid, AssetDto> KnownAssets { get; } = [];
     public Exception? Failure { get; set; }
 
     public FakeCourseAssignmentsApi()
@@ -163,6 +166,7 @@ public sealed class FakeCourseAssignmentsApi : ICourseAssignmentsApi
     public Task<CourseAssignmentDto> UpdateAsync(Guid id, UpdateCourseAssignmentRequest r, CancellationToken ct = default) =>
         Run("update", () =>
         {
+            Updates.Add(r);
             if (!Assignments.TryGetValue(id, out var a)) throw NotFound();
             Validate(r.MaxGrade, r.LatePolicy, r.PenaltyPercent, r.DueAtUtc, r.AllowText, r.AllowFiles);
             return Assignments[id] = a with
@@ -199,7 +203,11 @@ public sealed class FakeCourseAssignmentsApi : ICourseAssignmentsApi
             if (r.Grade < 0 || r.Grade > a.MaxGrade) throw Problem(ProblemCodes.validation_failed);
             int? penalty = s.IsLate && a.LatePolicy == LatePolicies.Penalty ? a.PenaltyPercent : null;
             var final = penalty is { } p ? Math.Round(r.Grade * (100 - p) / 100m, 2) : r.Grade;
-            var grade = new SubmissionGradeDto(r.Grade, penalty, final, r.FeedbackHtml, null, DateTime.UtcNow, s.Grade?.ReturnedAtUtc);
+            // the annotated file stays on the grade (the real server returns its asset)
+            var annotated = r.AnnotatedFileAssetId is { } fileId
+                ? KnownAssets.GetValueOrDefault(fileId) ?? new AssetDto(fileId, a.ClassCourseId, AssetKinds.Document, "annotated.pdf", "application/pdf", 0, null, false, DateTime.UtcNow)
+                : null;
+            var grade = new SubmissionGradeDto(r.Grade, penalty, final, r.FeedbackHtml, annotated, DateTime.UtcNow, s.Grade?.ReturnedAtUtc);
             return Submissions[submissionId] = s with { Status = s.Status == SubmissionStatuses.Returned ? s.Status : SubmissionStatuses.Graded, Grade = grade };
         });
 

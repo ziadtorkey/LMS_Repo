@@ -8,6 +8,7 @@
 @using Lms.Shared.Authorization
 @inject ICourseAssignmentsApi Api
 @inject ILessonPlansApi Plans
+@inject IClassCourseGroupsApi GroupsApi
 @inject IDialogService Dialogs
 @inject PermissionState PermState
 @inject ICultureService Culture
@@ -89,10 +90,12 @@ else
                 foreach (var lesson in section.Lessons.Where(l => !l.IsHidden).OrderBy(l => l.Order))
                     lessons.Add(new ModuleLessonOption(lesson.Key, Culture.Pick(lesson.TitleAr, lesson.TitleEn)));
         }, Navigation, L, _ => { });
+        var groups = await ModuleGroups.LoadAsync(GroupsApi, Id);
         var dialog = await Dialogs.ShowAsync<AssignmentDialog>(L["Assignments_New"], new DialogParameters<AssignmentDialog>
         {
             { x => x.ClassCourseId, Id },
             { x => x.Lessons, lessons },
+            { x => x.Groups, groups },
         }, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
         if (!(await dialog.Result)!.Canceled) await _table.ReloadAsync();
     }
