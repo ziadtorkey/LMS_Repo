@@ -20,7 +20,9 @@ public sealed class EnrollmentProbeRows : IProbeRowModule
 {
     private static readonly DateOnly Today = DateOnly.FromDateTime(DateTime.UtcNow);
 
-    public IEnumerable<ProbeRow> Rows =>
+    public IEnumerable<ProbeRow> Rows => Build().Select(r => r with { Milestone = 3 });
+
+    private static IEnumerable<ProbeRow> Build() =>
     [
         new("class students add", HttpMethod.Post, Routes.ClassStudentsPattern,
             async (w, _) =>
