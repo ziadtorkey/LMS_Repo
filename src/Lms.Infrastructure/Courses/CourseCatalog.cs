@@ -33,15 +33,19 @@ public sealed class CourseCatalog(LmsDbContext db, ICurrentContext context) : IC
         return new CourseView(course, IsInherited(course.OrgUnitPath));
     }
 
-    public async Task<bool> IsAvailableAtAsync(Guid courseId, OrgUnit unit, CancellationToken cancellationToken = default)
+    public Task<bool> IsAvailableAtAsync(Guid courseId, OrgUnit unit, CancellationToken cancellationToken = default) =>
+        IsAvailableAtPathAsync(unit.OrganizationId, unit.Path, courseId, null, cancellationToken);
+
+    public async Task<bool> IsAvailableAtPathAsync(
+        Guid organizationId, string unitPath, Guid courseId, Guid? exceptAllocationId, CancellationToken cancellationToken = default)
     {
-        var paths = OrgUnitPath.AncestorsAndSelf(unit.Path);
+        var paths = OrgUnitPath.AncestorsAndSelf(unitPath);
 
         // ISOLATION-BYPASS: allocations sit on ancestors of the unit, outside the caller subtree. Client and
-        // soft-delete are re-applied; only the unit own client is read.
+        // soft-delete are re-applied; only the given client is read.
         return await db.Set<CourseAllocation>().IgnoreQueryFilters()
-            .AnyAsync(a => a.CourseId == courseId && !a.IsDeleted && a.OrganizationId == unit.OrganizationId
-                && paths.Contains(a.OrgUnitPath), cancellationToken);
+            .AnyAsync(a => a.CourseId == courseId && !a.IsDeleted && a.OrganizationId == organizationId
+                && a.Id != exceptAllocationId && paths.Contains(a.OrgUnitPath), cancellationToken);
     }
 
     public async Task<IReadOnlyList<AvailableCourse>> AvailableAtAsync(OrgUnit unit, CancellationToken cancellationToken = default)
