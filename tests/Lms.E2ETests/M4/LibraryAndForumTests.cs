@@ -117,7 +117,7 @@ public sealed class LibraryAndForumTests(E2EFixture fixture) : E2ETestBase(fixtu
         await Expect(thread.LockedNote).ToBeVisibleAsync();
         await Expect(thread.ReplyComposer).ToHaveCountAsync(0);
         var reply = await new E2EApi(Page, Settings.BaseUrl).SendAsync(
-            "POST", $"/api/forum-threads/{threadId}/posts", new { bodyHtml = "<p>one more</p>", assetIds = Array.Empty<Guid>() });
+            "POST", $"/api/forum-threads/{threadId}/posts", new { bodyHtml = "<p>one more</p>", attachmentAssetIds = Array.Empty<Guid>() });
         Assert.Equal(409, reply.Status);
         Assert.Equal(culture == "ar" ? "rtl" : "ltr", await new ShellPage(Page).HtmlDirAsync());
     }
