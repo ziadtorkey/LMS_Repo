@@ -14,128 +14,160 @@
 @inject NavigationManager Navigation
 
 <PageTitle>@L["Staff_Title"]</PageTitle>
+<MudLink Href="staff" Typo="Typo.body2" Class="lms-back-link" data-testid="profile-back">
+    <MudIcon Icon="@Icons.Material.Rounded.ArrowBack" Size="Size.Small" Class="lms-icon-flip" aria-hidden="true" />
+    @L["Staff_BackToList"]
+</MudLink>
 @if (_error is not null)
 {
-    <MudAlert Severity="Severity.Error" data-testid="profile-error">@_error</MudAlert>
+    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="profile-error">@_error</MudAlert>
 }
 else if (_detail is null)
 {
-    <MudText>@L["Common_Loading"]</MudText>
+    <LoadingState Lines="5" TestId="profile-loading" />
 }
 else
 {
     var s = _detail.Summary;
-    <MudStack Spacing="3">
-        <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
-            <StaffAvatar PhotoFileId="s.PhotoFileId" Size="Size.Large" />
-            <div>
-                <MudText Typo="Typo.h4" data-testid="profile-name">@Culture.Pick(s.NameAr, s.NameEn)</MudText>
-                <MudText Typo="Typo.body2">@Culture.Pick(s.JobTitleAr ?? "", s.JobTitleEn ?? "")</MudText>
-            </div>
+    var name = Culture.Pick(s.NameAr, s.NameEn);
+    <PageHeader Title="@name" Subtitle="@Culture.Pick(s.JobTitleAr ?? "", s.JobTitleEn ?? "")" TitleTestId="profile-name"
+                Class="lms-profile-header">
+        <Leading>
+            <StaffAvatar PhotoFileId="s.PhotoFileId" Name="@name" Size="Size.Large" />
+        </Leading>
+        <Badges>
             <PersonStatusChip Status="@s.Status" />
             @if (!_detail.IsActivated)
             {
-                <MudChip T="string" Size="Size.Small" data-testid="profile-not-activated">@L["Staff_NotActivated"]</MudChip>
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Warning" Icon="@Icons.Material.Rounded.MarkEmailUnread"
+                         data-testid="profile-not-activated">@L["Staff_NotActivated"]</MudChip>
             }
-        </MudStack>
+        </Badges>
+        <Actions>
+            @if (!_detail.IsLimitedView)
+            {
+                <div class="lms-action-bar" data-testid="profile-actions">
+                    @if (PermState.Has(Permissions.Staff.Update))
+                    {
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Edit" OnClick="EditAsync"
+                                   data-testid="action-edit">@L["Staff_Edit"]</MudButton>
+                    }
+                    @if (PermState.Has(Permissions.Staff.Update) && PermState.Has(Permissions.Assignments.Create))
+                    {
+                        <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.Share" OnClick="ShareAsync"
+                                   data-testid="action-share">@L["Staff_Share"]</MudButton>
+                    }
+                    @if (PermState.Has(Permissions.Staff.Update) && !_detail.IsActivated)
+                    {
+                        <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.Send" OnClick="ResendAsync"
+                                   data-testid="action-resend">@L["Staff_ResendInvitation"]</MudButton>
+                    }
+                    @if (PermState.Has(Permissions.Staff.Update) && !_isOwn)
+                    {
+                        <MudButton Variant="Variant.Text" Color="Color.Warning" OnClick="ChangeStatusAsync"
+                                   StartIcon="@(s.Status == PersonStatuses.Active ? Icons.Material.Rounded.PersonOff : Icons.Material.Rounded.HowToReg)"
+                                   data-testid="action-status">@(s.Status == PersonStatuses.Active ? L["Staff_Deactivate"] : L["Staff_Reactivate"])</MudButton>
+                    }
+                    @if (PermState.Has(Permissions.Staff.Delete) && !_isOwn)
+                    {
+                        <MudButton Variant="Variant.Text" Color="Color.Error" StartIcon="@Icons.Material.Rounded.DeleteOutline" OnClick="DeleteAsync"
+                                   data-testid="action-delete">@L["Common_Delete"]</MudButton>
+                    }
+                </div>
+            }
+        </Actions>
+    </PageHeader>
 
-        @if (_detail.IsLimitedView)
-        {
-            <MudAlert Severity="Severity.Info" data-testid="profile-limited">@L["Staff_LimitedView"]</MudAlert>
-        }
+    @if (_detail.IsLimitedView)
+    {
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-4" data-testid="profile-limited">@L["Staff_LimitedView"]</MudAlert>
+    }
 
-        @if (!_detail.IsLimitedView)
-        {
-            <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap" data-testid="profile-actions">
-                @if (PermState.Has(Permissions.Staff.Update))
-                {
-                    <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Edit" OnClick="EditAsync"
-                               data-testid="action-edit">@L["Staff_Edit"]</MudButton>
-                }
-                @if (PermState.Has(Permissions.Staff.Update) && !_isOwn)
-                {
-                    <MudButton Variant="Variant.Outlined" Color="Color.Warning" OnClick="ChangeStatusAsync"
-                               data-testid="action-status">@(s.Status == PersonStatuses.Active ? L["Staff_Deactivate"] : L["Staff_Reactivate"])</MudButton>
-                }
-                @if (PermState.Has(Permissions.Staff.Update) && !_detail.IsActivated)
-                {
-                    <MudButton Variant="Variant.Outlined" OnClick="ResendAsync" data-testid="action-resend">@L["Staff_ResendInvitation"]</MudButton>
-                }
-                @if (PermState.Has(Permissions.Staff.Update) && PermState.Has(Permissions.Assignments.Create))
-                {
-                    <MudButton Variant="Variant.Outlined" OnClick="ShareAsync" data-testid="action-share">@L["Staff_Share"]</MudButton>
-                }
-                @if (PermState.Has(Permissions.Staff.Delete) && !_isOwn)
-                {
-                    <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="DeleteAsync"
-                               data-testid="action-delete">@L["Common_Delete"]</MudButton>
-                }
-            </MudStack>
-        }
-
-        <MudPaper Class="pa-3">
-            <MudStack Spacing="1">
-                <MudText data-testid="profile-email">@L["Staff_Email"]: <span dir="ltr">@s.Email</span></MudText>
+    <div class="lms-profile-grid">
+        <SectionCard Title="@L["Staff_Details"]" Class="lms-profile-details">
+            <dl class="lms-details">
+                <DetailItem Label="@L["Staff_Email"]" Value="@s.Email" Ltr="true" TestId="profile-email" />
                 @if (!_detail.IsLimitedView)
                 {
-                    <MudText data-testid="profile-mobile">@L["Staff_Mobile"]: <span dir="ltr">@s.Mobile</span></MudText>
-                    <MudText data-testid="profile-national-id">@L["Staff_NationalId"]: <span dir="ltr">@_detail.NationalId</span></MudText>
+                    <DetailItem Label="@L["Staff_Mobile"]" Value="@s.Mobile" Ltr="true" TestId="profile-mobile" />
+                    <DetailItem Label="@L["Staff_NationalId"]" Value="@_detail.NationalId" Ltr="true" TestId="profile-national-id" />
                 }
-                <MudText>@L["Staff_HomeUnit"]: @Culture.Pick(s.HomeOrgUnitNameAr, s.HomeOrgUnitNameEn)</MudText>
+                <DetailItem Label="@L["Staff_HomeUnit"]" Value="@Culture.Pick(s.HomeOrgUnitNameAr, s.HomeOrgUnitNameEn)" />
                 @if (s.ExpiresOn is { } expires)
                 {
-                    <MudText data-testid="profile-expires">@L["Staff_ExpiresOn"]: @expires.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)</MudText>
+                    <DetailItem Label="@L["Staff_ExpiresOn"]" Value="@expires.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)"
+                                Ltr="true" TestId="profile-expires" />
                 }
-            </MudStack>
-        </MudPaper>
+            </dl>
+        </SectionCard>
 
-        <MudText Typo="Typo.h6">@L["Staff_Roles"]</MudText>
-        <MudTable Items="s.Roles" Dense="true" Hover="true" Class="lms-staff-roles" data-testid="profile-roles">
-            <HeaderContent>
-                <MudTh>@L["Staff_Role"]</MudTh>
-                <MudTh>@L["Staff_RoleUnit"]</MudTh>
-                <MudTh>@L["Staff_ValidFrom"]</MudTh>
-                <MudTh>@L["Staff_ValidTo"]</MudTh>
-                <MudTh></MudTh>
-            </HeaderContent>
-            <RowTemplate Context="role">
-                <MudTd>
-                    @Culture.Pick(role.RoleNameAr, role.RoleNameEn)
-                    @if (role.IsShare)
-                    {
-                        <MudChip T="string" Size="Size.Small" Color="Color.Info">@L["Staff_Shared"]</MudChip>
-                    }
-                </MudTd>
-                <MudTd>@Culture.Pick(role.OrgUnitNameAr, role.OrgUnitNameEn)</MudTd>
-                <MudTd>@role.ValidFrom?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)</MudTd>
-                <MudTd>@role.ValidTo?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)</MudTd>
-                <MudTd>
-                    @if (role.IsShare && PermState.Has(Permissions.Assignments.Delete))
-                    {
-                        <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Error" OnClick="() => RemoveShareAsync(role)"
-                                   data-testid="@($"remove-share-{role.AssignmentId}")">@L["Staff_RemoveShare"]</MudButton>
-                    }
-                </MudTd>
-            </RowTemplate>
-        </MudTable>
+        <div class="lms-profile-main">
+            <SectionCard Title="@L["Staff_Roles"]" Flush="true">
+                <MudTable Items="s.Roles" Dense="true" Hover="true" Elevation="0" HeaderClass="lms-table-head"
+                          Class="lms-staff-roles lms-table" data-testid="profile-roles">
+                    <HeaderContent>
+                        <MudTh>@L["Staff_Role"]</MudTh>
+                        <MudTh>@L["Staff_RoleUnit"]</MudTh>
+                        <MudTh>@L["Staff_ValidFrom"]</MudTh>
+                        <MudTh>@L["Staff_ValidTo"]</MudTh>
+                        <MudTh><span class="lms-visually-hidden">@L["Common_Actions"]</span></MudTh>
+                    </HeaderContent>
+                    <RowTemplate Context="role">
+                        <MudTd DataLabel="@L["Staff_Role"]">
+                            <span class="lms-cell-strong">@Culture.Pick(role.RoleNameAr, role.RoleNameEn)</span>
+                            @if (role.IsShare)
+                            {
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Info"
+                                         Icon="@Icons.Material.Rounded.Share">@L["Staff_Shared"]</MudChip>
+                            }
+                        </MudTd>
+                        <MudTd DataLabel="@L["Staff_RoleUnit"]">@Culture.Pick(role.OrgUnitNameAr, role.OrgUnitNameEn)</MudTd>
+                        <MudTd DataLabel="@L["Staff_ValidFrom"]"><span dir="ltr">@(role.ValidFrom?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture) ?? "—")</span></MudTd>
+                        <MudTd DataLabel="@L["Staff_ValidTo"]"><span dir="ltr">@(role.ValidTo?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture) ?? "—")</span></MudTd>
+                        <MudTd Class="lms-cell-actions">
+                            @if (role.IsShare && PermState.Has(Permissions.Assignments.Delete))
+                            {
+                                <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Error" OnClick="() => RemoveShareAsync(role)"
+                                           data-testid="@($"remove-share-{role.AssignmentId}")">@L["Staff_RemoveShare"]</MudButton>
+                            }
+                        </MudTd>
+                    </RowTemplate>
+                    <NoRecordsContent>
+                        <EmptyState Title="@L["Staff_NoRoles"]" Icon="@Icons.Material.Rounded.WorkOutline" />
+                    </NoRecordsContent>
+                </MudTable>
+            </SectionCard>
 
-        @if (!_detail.IsLimitedView)
-        {
-            <MudText Typo="Typo.h6">@L["Staff_StatusHistory"]</MudText>
-            <MudTable Items="_detail.StatusHistory" Dense="true" data-testid="profile-history">
-                <HeaderContent>
-                    <MudTh>@L["Common_Status"]</MudTh>
-                    <MudTh>@L["Staff_Reason"]</MudTh>
-                    <MudTh>@L["Audit_When"]</MudTh>
-                </HeaderContent>
-                <RowTemplate Context="change">
-                    <MudTd>@L[$"PersonStatus_{change.FromStatus}"] <MudIcon Icon="@(Culture.IsRightToLeft ? Icons.Material.Filled.ArrowBack : Icons.Material.Filled.ArrowForward)" Size="Size.Small" Class="align-middle" data-testid="history-arrow" /> @L[$"PersonStatus_{change.ToStatus}"]</MudTd>
-                    <MudTd>@change.Reason</MudTd>
-                    <MudTd><span dir="ltr">@change.ChangedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm", System.Globalization.CultureInfo.InvariantCulture)</span></MudTd>
-                </RowTemplate>
-            </MudTable>
-        }
-    </MudStack>
+            @if (!_detail.IsLimitedView)
+            {
+                <SectionCard Title="@L["Staff_StatusHistory"]" Flush="true">
+                    <MudTable Items="_detail.StatusHistory" Dense="true" Elevation="0" HeaderClass="lms-table-head" Class="lms-table"
+                              data-testid="profile-history">
+                        <HeaderContent>
+                            <MudTh>@L["Common_Status"]</MudTh>
+                            <MudTh>@L["Staff_Reason"]</MudTh>
+                            <MudTh>@L["Audit_When"]</MudTh>
+                        </HeaderContent>
+                        <RowTemplate Context="change">
+                            <MudTd DataLabel="@L["Common_Status"]">
+                                <span class="lms-status-change">
+                                    @L[$"PersonStatus_{change.FromStatus}"]
+                                    <MudIcon Icon="@(Culture.IsRightToLeft ? Icons.Material.Filled.ArrowBack : Icons.Material.Filled.ArrowForward)" Size="Size.Small"
+                                             Class="lms-muted" data-testid="history-arrow" />
+                                    <span class="lms-cell-strong">@L[$"PersonStatus_{change.ToStatus}"]</span>
+                                </span>
+                            </MudTd>
+                            <MudTd DataLabel="@L["Staff_Reason"]">@change.Reason</MudTd>
+                            <MudTd DataLabel="@L["Audit_When"]"><span dir="ltr" class="lms-muted">@change.ChangedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm", System.Globalization.CultureInfo.InvariantCulture)</span></MudTd>
+                        </RowTemplate>
+                        <NoRecordsContent>
+                            <EmptyState Title="@L["Staff_NoHistory"]" Icon="@Icons.Material.Rounded.History" />
+                        </NoRecordsContent>
+                    </MudTable>
+                </SectionCard>
+            }
+        </div>
+    </div>
 }
 
 @code {
