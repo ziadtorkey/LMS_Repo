@@ -1,7 +1,7 @@
 @using Lms.Shared.People
 
-@* A person's status as a coloured chip (PersonStatus_* resources). *@
-<MudChip T="string" Size="Size.Small" Color="@ColorFor(Status)" data-testid="person-status" data-status="@Status">
+@* A person's status as a soft, tinted chip with a status dot (PersonStatus_* resources); the text carries the meaning, not only the colour. *@
+<MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@ColorFor(Status)" Class="lms-status-chip" data-testid="person-status" data-status="@Status">
     @L[$"PersonStatus_{Status}"]
 </MudChip>
 

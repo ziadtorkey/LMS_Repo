@@ -1,0 +1,176 @@
+@* Shared rich-text editor (D48/D52): Quill 2 (BSD-3, self-hosted under wwwroot/lib/quill) behind a MudBlazor toolbar.
+   HTML in, HTML out. Bold, italic, bulleted and numbered lists, links. No images. The server sanitises the HTML on save;
+   this component only limits what the editor can produce. Quill owns the contents of the host element, so Blazor
+   never renders children into it. *@
+@implements IAsyncDisposable
+@inject IJSRuntime Js
+@inject ICultureService Culture
+
+<div class="lms-rte @(ReadOnly ? "lms-rte--readonly" : "")" data-testid="@TestId">
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <label id="@_labelId" class="lms-rte-label">@Label@if (Required){<span aria-hidden="true"> *</span>}</label>
+    }
+    <div class="lms-rte-toolbar" role="toolbar" aria-label="@L["RichText_Toolbar"]">
+        @ToolButton("bold", Icons.Material.Rounded.FormatBold, "RichText_Bold", _formats.Bold, () => FormatAsync("bold", !_formats.Bold))
+        @ToolButton("italic", Icons.Material.Rounded.FormatItalic, "RichText_Italic", _formats.Italic, () => FormatAsync("italic", !_formats.Italic))
+        @ToolButton("bullet", Icons.Material.Rounded.FormatListBulleted, "RichText_BulletList", _formats.List == "bullet", () => ListAsync("bullet"))
+        @ToolButton("ordered", Icons.Material.Rounded.FormatListNumbered, "RichText_NumberedList", _formats.List == "ordered", () => ListAsync("ordered"))
+        @ToolButton("link", Icons.Material.Rounded.InsertLink, "RichText_Link", _formats.Link is not null || _linkOpen, OpenLinkAsync)
+    </div>
+    @if (_linkOpen)
+    {
+        <div class="lms-rte-link-bar" data-testid="rte-link-bar" role="group" aria-label="@L["RichText_Link"]">
+            <MudTextField T="string" @bind-Value="_linkUrl" Label="@L["RichText_LinkUrl"]" Variant="Variant.Outlined" Margin="Margin.Dense"
+                          Immediate="true" dir="ltr" Class="lms-rte-link-url" Error="@(_linkError is not null)" ErrorText="@_linkError"
+                          OnKeyDown="LinkKeyDownAsync" data-testid="rte-link-url" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" OnClick="ApplyLinkAsync" data-testid="rte-link-apply">@L["RichText_LinkApply"]</MudButton>
+            @if (_linkExists)
+            {
+                <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="RemoveLinkAsync" data-testid="rte-link-remove">@L["RichText_LinkRemove"]</MudButton>
+            }
+            <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="CloseLink" data-testid="rte-link-cancel">@L["Common_Cancel"]</MudButton>
+        </div>
+    }
+    <div @ref="_host" class="lms-rte-host" data-testid="rte-host" data-default-dir="@DefaultDir"></div>
+</div>
+
+@code {
+    private RenderFragment ToolButton(string id, string icon, string labelKey, bool active, Func<Task> onClick) => @<MudIconButton Icon="@icon" Size="Size.Small"
+        Color="@(active ? Color.Primary : Color.Default)" Disabled="ReadOnly" OnClick="@(() => onClick())"
+        aria-label="@L[labelKey]" title="@L[labelKey]" aria-pressed="@(active ? "true" : "false")" data-testid="@($"rte-{id}")" />;
+
+    private ElementReference _host;
+    private IJSObjectReference? _module;
+    private DotNetObjectReference<RichTextEditor>? _self;
+    private readonly string _labelId = $"rte-label-{Guid.NewGuid():N}";
+    private string _lastValue = "";
+    private bool _initialized;
+    private bool _linkOpen;
+    private bool _linkExists;
+    private string? _linkUrl;
+    private string? _linkError;
+    private RichTextFormats _formats = RichTextFormats.None;
+
+    /// <summary>The HTML content.</summary>
+    [Parameter] public string? Value { get; set; }
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public bool Required { get; set; }
+    [Parameter] public bool ReadOnly { get; set; }
+    /// <summary>Text direction of the content: auto (decided by the text, UI direction when empty), rtl or ltr.</summary>
+    [Parameter] public string ContentDir { get; set; } = "auto";
+    [Parameter] public string TestId { get; set; } = "rich-text-editor";
+
+    private string DefaultDir => Culture.IsRightToLeft ? "rtl" : "ltr";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        _self = DotNetObjectReference.Create(this);
+        _module = await Js.InvokeAsync<IJSObjectReference>("import", "./js/richtext.js");
+        _lastValue = Value ?? "";
+        await _module.InvokeVoidAsync("init", _host, _self, new
+        {
+            html = _lastValue,
+            readOnly = ReadOnly,
+            placeholder = Placeholder,
+            labelledBy = string.IsNullOrEmpty(Label) ? null : _labelId,
+            dir = ContentDir,
+            defaultDir = DefaultDir,
+        });
+        _initialized = true;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!_initialized || _module is null) return;
+        await _module.InvokeVoidAsync("setReadOnly", _host, ReadOnly);
+        var incoming = Value ?? "";
+        if (incoming != _lastValue)
+        {
+            _lastValue = incoming;
+            await _module.InvokeVoidAsync("setHtml", _host, incoming);
+        }
+    }
+
+    /// <summary>Called by the editor (debounced while typing, immediately on blur) with the current HTML; empty content is "".</summary>
+    [JSInvokable]
+    public async Task OnHtmlChanged(string html)
+    {
+        _lastValue = html;
+        await ValueChanged.InvokeAsync(html);
+    }
+
+    /// <summary>Called by the editor when the selection or content changes, to highlight the active toolbar buttons.</summary>
+    [JSInvokable]
+    public void OnFormats(RichTextFormats formats)
+    {
+        _formats = formats;
+        StateHasChanged();
+    }
+
+    /// <summary>Sends any pending (debounced) edit now; call before reading the value in a save handler.</summary>
+    public async Task FlushAsync()
+    {
+        if (_module is not null) await _module.InvokeVoidAsync("flush", _host);
+    }
+
+    private async Task FormatAsync(string name, object value)
+    {
+        if (_module is not null) await _module.InvokeVoidAsync("format", _host, name, value);
+    }
+
+    private Task ListAsync(string kind) => FormatAsync("list", _formats.List == kind ? false : kind);
+
+    private async Task OpenLinkAsync()
+    {
+        if (_module is null) return;
+        var state = await _module.InvokeAsync<RichTextLinkState>("beginLink", _host);
+        _linkUrl = state.Href;
+        _linkExists = state.Href is not null;
+        _linkError = null;
+        _linkOpen = true;
+    }
+
+    private async Task ApplyLinkAsync()
+    {
+        var url = RichTextLink.Normalize(_linkUrl);
+        if (url is null)
+        {
+            _linkError = L["RichText_LinkInvalid"];
+            return;
+        }
+        if (_module is not null) await _module.InvokeVoidAsync("applyLink", _host, url);
+        _linkOpen = false;
+    }
+
+    private async Task RemoveLinkAsync()
+    {
+        if (_module is not null) await _module.InvokeVoidAsync("applyLink", _host, (string?)null);
+        _linkOpen = false;
+    }
+
+    private void CloseLink() => _linkOpen = false;
+
+    private async Task LinkKeyDownAsync(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await ApplyLinkAsync();
+        else if (e.Key == "Escape") CloseLink();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_module is not null)
+        {
+            try
+            {
+                await _module.InvokeVoidAsync("destroy", _host);
+                await _module.DisposeAsync();
+            }
+            catch (JSDisconnectedException) { }
+        }
+        _self?.Dispose();
+    }
+}
