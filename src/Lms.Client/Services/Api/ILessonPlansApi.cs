@@ -9,6 +9,16 @@ public interface ILessonPlansApi
     /// <summary>Class courses of the caller: taught (teacher) or enrolled in (student).</summary>
     Task<IReadOnlyList<ClassCourseDto>> GetMyClassCoursesAsync(CancellationToken ct = default);
 
+    /// <summary>
+    /// The same read for a page that only decorates itself with it (Home cards): a caller without LessonPlans.View gets an empty
+    /// list, not the Forbidden page.
+    /// </summary>
+    async Task<IReadOnlyList<ClassCourseDto>> GetMyClassCoursesIfAllowedAsync(CancellationToken ct = default)
+    {
+        try { return await GetMyClassCoursesAsync(ct); }
+        catch (ApiForbiddenException) { return []; }
+    }
+
     Task<ClassLessonPlanDto> GetPlanAsync(Guid classCourseId, CancellationToken ct = default);
 }
 
@@ -16,6 +26,13 @@ public sealed class LessonPlansApi(ApiHttp http) : ILessonPlansApi
 {
     public Task<IReadOnlyList<ClassCourseDto>> GetMyClassCoursesAsync(CancellationToken ct = default) =>
         http.GetAsync<IReadOnlyList<ClassCourseDto>>(Routes.MyClassCourses, ct);
+
+    // Optional read: a plain 403 (no LessonPlans.View) must not send the user to the Forbidden page.
+    public async Task<IReadOnlyList<ClassCourseDto>> GetMyClassCoursesIfAllowedAsync(CancellationToken ct = default)
+    {
+        try { return await http.GetOptionalAsync<List<ClassCourseDto>>(Routes.MyClassCourses, ct); }
+        catch (ApiForbiddenException) { return []; }
+    }
 
     public Task<ClassLessonPlanDto> GetPlanAsync(Guid classCourseId, CancellationToken ct = default) =>
         http.GetAsync<ClassLessonPlanDto>(Routes.ClassCourseLessonPlan(classCourseId), ct);
