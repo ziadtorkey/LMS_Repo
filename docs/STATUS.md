@@ -3,7 +3,7 @@
 _Updated by the Team Lead after every merge cycle._
 
 **Milestone:** M0 — DONE · M1 Organization & Access — DONE (#73 via #200) · M2 People — closing (#177 via #321) · M3 Academic Structure — in progress
-**Last update:** 2026-11-12 19:45 — Merged since 18:27: #388 modules API client (M4a #367), #349 M4a foundation and sanitiser. CI queue saturated (16 running, 24 queued). Next merges: #437 wave-2 contracts, #386, #387 (FE2 conflict), #384 (BE4 migration squash), #391 (QA re-review). Replays onto #437: #447 (library), #448 (forums), #399/#415 (BE2).
+**Last update:** 2026-11-12 20:15 — Merged since 18:27: #388 modules API client, #349 M4a foundation + sanitiser, #436 student settings fix. In E2E now: #437 wave-2 contracts, restyles #409/#412/#414/#417/#420, #441. QA approved: #391 (needs main merge for sanitiser conflict), #449 (class-course id fix), #443, #445, #446. New bugs from demo 3: #451 (fingerprinted JS 404 in dev), #452 (LibraryResource viewer). Replays: #447, #448, #450, #453.
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |
