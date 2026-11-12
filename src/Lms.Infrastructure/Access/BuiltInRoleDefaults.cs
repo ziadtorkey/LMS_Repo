@@ -8,10 +8,10 @@ public static class BuiltInRoleDefaults
     /// <summary>
     /// Version 1 = the M1 defaults; version 2 = the M2 defaults (Staff.*, IdentityProviders.*); version 3 = the M3
     /// defaults (Students.*, Courses.*, Blueprints.*, Classes.*, TeacherAssignments.*, Enrollment.*, Groups.*,
-    /// LessonPlans.*). Bump (and add the new permissions to an <see cref="IntroducedInVersion3"/>-style set) when a
-    /// later milestone adds defaults.
+    /// LessonPlans.*); version 4 = the M4a wave 1 defaults (Modules.*). Bump (and add the new permissions to an
+    /// <see cref="IntroducedInVersion4"/>-style set) when a later milestone adds defaults.
     /// </summary>
-    public const int CurrentVersion = 3;
+    public const int CurrentVersion = 4;
 
     /// <summary>The 19 permissions that existed when clients were provisioned under M0 (defaults version 0).</summary>
     public static readonly IReadOnlySet<string> M0Baseline = new HashSet<string>
@@ -47,13 +47,21 @@ public static class BuiltInRoleDefaults
         Permissions.Groups.View, Permissions.Groups.Manage, Permissions.LessonPlans.View,
     };
 
+    /// <summary>Permissions introduced by defaults version 4 (M4a Teaching & Learning, wave 1).</summary>
+    public static readonly IReadOnlySet<string> IntroducedInVersion4 = new HashSet<string>
+    {
+        Permissions.Modules.View, Permissions.Modules.Manage,
+    };
+
     /// <summary>
     /// The defaults version that introduced <paramref name="permission"/>: 0 for the M0 baseline, 2 for the M2 set,
-    /// 3 for the M3 set, otherwise 1. The reconciler adds to a role only the defaults introduced after the role's version.
+    /// 3 for the M3 set, 4 for the M4a wave 1 set, otherwise 1. The reconciler adds to a role only the defaults
+    /// introduced after the role's version.
     /// </summary>
     public static int IntroducedIn(string permission) =>
         M0Baseline.Contains(permission) ? 0
         : IntroducedAfterVersion1.Contains(permission) ? 2
         : IntroducedInVersion3.Contains(permission) ? 3
+        : IntroducedInVersion4.Contains(permission) ? 4
         : 1;
 }

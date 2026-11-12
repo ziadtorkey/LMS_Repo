@@ -2,7 +2,7 @@ using Lms.Shared.Authorization;
 
 namespace Lms.UnitTests.Contracts;
 
-/// <summary>Pins the M3 built-in role matrix (PRD §3.4, M1 plan Task 1, D16, M2 plan Task 1, D23, D32, M3 plan Task 1, D46). Every list is written out literally.</summary>
+/// <summary>Pins the M4a built-in role matrix (PRD §3.4, M1 plan Task 1, D16, M2 plan Task 1, D23, D32, M3 plan Task 1, D46, M4a plan Task 1). Every list is written out literally.</summary>
 public class BuiltInRoleMatrixTests
 {
     private static readonly string[] M0OrgAdmin =
@@ -38,6 +38,7 @@ public class BuiltInRoleMatrixTests
                 "Enrollment.View", "Enrollment.Manage", "Enrollment.Import", "Enrollment.Transfer",
                 "Enrollment.RequestException", "Enrollment.ApproveException",
                 "Groups.View", "Groups.Manage", "LessonPlans.View",
+                "Modules.View", "Modules.Manage",
             ]
         },
         {
@@ -57,6 +58,7 @@ public class BuiltInRoleMatrixTests
                 "Enrollment.View", "Enrollment.Manage", "Enrollment.Transfer", "Enrollment.RequestException",
                 "Enrollment.ApproveException",
                 "Groups.View", "Groups.Manage", "LessonPlans.View",
+                "Modules.View", "Modules.Manage",
             ]
         },
         {
@@ -69,6 +71,7 @@ public class BuiltInRoleMatrixTests
                 "Blueprints.View", "Blueprints.Edit", "Blueprints.Publish",
                 "Classes.View", "TeacherAssignments.View", "TeacherAssignments.Manage",
                 "Enrollment.View", "Enrollment.ApproveException", "Groups.View", "LessonPlans.View",
+                "Modules.View",
             ]
         },
         {
@@ -85,15 +88,17 @@ public class BuiltInRoleMatrixTests
                 "Files.Upload", "Files.Download", "AcademicYears.View",
                 "Students.View", "Courses.View", "Blueprints.View", "Classes.View", "TeacherAssignments.View",
                 "Enrollment.View", "Groups.View", "Groups.Manage", "LessonPlans.View",
+                "Modules.View", "Modules.Manage",
             ]
         },
-        { "Student", ["Files.Upload", "Files.Download", "AcademicYears.View", "Students.SelfEdit", "LessonPlans.View"] },
+        { "Student", ["Files.Upload", "Files.Download", "AcademicYears.View", "Students.SelfEdit", "LessonPlans.View",
+            "Modules.View"] },
         { "Guardian", ["Files.Download", "AcademicYears.View", "Students.ViewChildren"] },
     };
 
     [Theory]
     [MemberData(nameof(Matrix))]
-    public void Built_in_roles_match_the_M3_matrix_exactly(string roleKey, string[] expected)
+    public void Built_in_roles_match_the_M4a_matrix_exactly(string roleKey, string[] expected)
     {
         var actual = BuiltInRoles.Get(roleKey).DefaultPermissions;
 

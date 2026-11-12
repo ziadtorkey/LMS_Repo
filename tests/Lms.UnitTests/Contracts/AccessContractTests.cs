@@ -23,6 +23,7 @@ public class AccessContractTests
             "StudentChangeRequest", "Course", "CourseAllocation", "CourseRestriction", "CourseSupervisor", "Blueprint",
             "Class", "ClassStudent", "ClassCourse", "ClassCourseTeacher", "TeacherCourseEligibility", "CourseEnrollment",
             "EnrollmentException", "StudentGroup", "GroupMember", "StudentTransfer",
+            "LessonModule", "ModuleContent", "Asset",
         ], AuditCatalog.EntityTypes);
     }
 

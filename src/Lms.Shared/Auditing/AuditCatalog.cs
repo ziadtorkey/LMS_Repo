@@ -33,6 +33,8 @@ public static class AuditCatalog
         "StudentChangeRequest", "Course", "CourseAllocation", "CourseRestriction", "CourseSupervisor", "Blueprint",
         "Class", "ClassStudent", "ClassCourse", "ClassCourseTeacher", "TeacherCourseEligibility", "CourseEnrollment",
         "EnrollmentException", "StudentGroup", "GroupMember", "StudentTransfer",
+        // M4a wave 1: lesson modules, their simple content and assets (ModuleCompletion is not audited: volume).
+        "LessonModule", "ModuleContent", "Asset",
     ];
 
     public static IReadOnlyList<string> SecurityEvents { get; } =

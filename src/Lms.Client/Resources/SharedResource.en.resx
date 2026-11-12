@@ -542,6 +542,11 @@
   <data name="Error_invalid_short_code" xml:space="preserve"><value>Invalid short code: 2–20 lower-case letters, digits or hyphens.</value></data>
   <data name="Error_teacher_already_assigned" xml:space="preserve"><value>This teacher is already assigned to this class course.</value></data>
   <data name="Error_assignment_ended" xml:space="preserve"><value>This assignment has already ended and cannot be changed.</value></data>
+  <data name="Error_module_visibility_range_invalid" xml:space="preserve"><value>Set a start and/or end date for a scheduled module, with the start before the end.</value></data>
+  <data name="Error_module_target_invalid" xml:space="preserve"><value>Choose a group of this class course, or target the whole class course.</value></data>
+  <data name="Error_asset_type_not_allowed" xml:space="preserve"><value>This file type is not allowed here.</value></data>
+  <data name="Error_asset_too_large" xml:space="preserve"><value>The file is larger than the allowed size.</value></data>
+  <data name="Error_completion_not_manual" xml:space="preserve"><value>This module is completed automatically and cannot be marked by hand.</value></data>
   <data name="Error_course_in_use" xml:space="preserve"><value>The course is used by classes and cannot be removed.</value></data>
   <data name="Error_course_not_available" xml:space="preserve"><value>This course is not available at this unit.</value></data>
   <data name="Error_allocation_exists" xml:space="preserve"><value>The course is already allocated at this unit.</value></data>
@@ -616,6 +621,9 @@
   <data name="Perm_Groups_Manage" xml:space="preserve"><value>Manage groups</value></data>
   <data name="PermModule_LessonPlans" xml:space="preserve"><value>Lesson plans</value></data>
   <data name="Perm_LessonPlans_View" xml:space="preserve"><value>View lesson plans</value></data>
+  <data name="PermModule_Modules" xml:space="preserve"><value>Lesson modules</value></data>
+  <data name="Perm_Modules_View" xml:space="preserve"><value>View lesson modules</value></data>
+  <data name="Perm_Modules_Manage" xml:space="preserve"><value>Manage lesson modules</value></data>
   <data name="Policy_CreateStudents" xml:space="preserve"><value>Block creating and importing students</value></data>
   <data name="Policy_CreateCourses" xml:space="preserve"><value>Block creating and importing courses</value></data>
   <data name="Policy_CreateClasses" xml:space="preserve"><value>Block creating classes</value></data>
@@ -661,6 +669,9 @@
   <data name="AuditEntity_StudentGroup" xml:space="preserve"><value>Student group</value></data>
   <data name="AuditEntity_GroupMember" xml:space="preserve"><value>Group member</value></data>
   <data name="AuditEntity_StudentTransfer" xml:space="preserve"><value>Student transfer</value></data>
+  <data name="AuditEntity_LessonModule" xml:space="preserve"><value>Lesson module</value></data>
+  <data name="AuditEntity_ModuleContent" xml:space="preserve"><value>Module content</value></data>
+  <data name="AuditEntity_Asset" xml:space="preserve"><value>Asset</value></data>
   <data name="Notif_Students_ChangeRequested" xml:space="preserve"><value>{StudentName} sent a change request.</value></data>
   <data name="NotifEvent_Students_ChangeRequested" xml:space="preserve"><value>Student change request</value></data>
   <data name="Notif_Students_ChangeRequestDecided" xml:space="preserve"><value>The change request for {StudentName} was {Decision}.</value></data>

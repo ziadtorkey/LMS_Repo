@@ -26,14 +26,14 @@ public sealed partial class AcademicCatalogContractTests
         Assert.Equal(["OwnClassCourses", "SupervisedCourses", "OwnEnrollments"], Relationships.All);
 
         Assert.Equal(
-            ["Classes.View", "Enrollment.View", "Groups.Manage", "Groups.View", "LessonPlans.View", "Students.View",
-             "TeacherAssignments.View"],
+            ["Classes.View", "Enrollment.View", "Groups.Manage", "Groups.View", "LessonPlans.View", "Modules.Manage",
+             "Modules.View", "Students.View", "TeacherAssignments.View"],
             Rule(BuiltInRoles.Teacher).Permissions.Order(StringComparer.Ordinal));
         Assert.Equal(
             ["Blueprints.Edit", "Blueprints.Publish", "Courses.Allocate", "Courses.Delete", "Courses.Update",
              "Enrollment.ApproveException", "TeacherAssignments.Manage"],
             Rule(BuiltInRoles.Supervisor).Permissions.Order(StringComparer.Ordinal));
-        Assert.Equal(["LessonPlans.View"], Rule(BuiltInRoles.Student).Permissions);
+        Assert.Equal(["LessonPlans.View", "Modules.View"], Rule(BuiltInRoles.Student).Permissions);
     }
 
     [Theory]
@@ -44,6 +44,9 @@ public sealed partial class AcademicCatalogContractTests
     [InlineData(BuiltInRoles.Supervisor, Permissions.Courses.Create, null)]
     [InlineData(BuiltInRoles.Student, Permissions.LessonPlans.View, Relationships.OwnEnrollments)]
     [InlineData(BuiltInRoles.Manager, Permissions.Groups.Manage, null)]
+    [InlineData(BuiltInRoles.Teacher, Permissions.Modules.Manage, Relationships.OwnClassCourses)]
+    [InlineData(BuiltInRoles.Student, Permissions.Modules.View, Relationships.OwnEnrollments)]
+    [InlineData(BuiltInRoles.Supervisor, Permissions.Modules.View, null)]
     [InlineData("custom-role", Permissions.Groups.Manage, null)]
     public void For_returns_the_relationship_or_null(string role, string permission, string? expected) =>
         Assert.Equal(expected, RelationshipRules.For(role, permission));

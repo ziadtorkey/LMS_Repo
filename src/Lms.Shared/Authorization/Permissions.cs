@@ -179,6 +179,18 @@ public static class Permissions
         public const string View = "LessonPlans.View";
     }
 
+    // M4a Teaching & Learning, wave 1 (M4a plan Task 1). Assets reuse Files.Upload / Files.Download; the asset URL is
+    // additionally checked against the owning module (Modules.View) or class course.
+    /// <summary>Lesson modules under the lessons of a class lesson plan (FR-LP-05, FR-CNT-01..04).</summary>
+    public static class Modules
+    {
+        /// <summary>Open modules and their content; students also mark completion and read their own progress.</summary>
+        public const string View = "Modules.View";
+
+        /// <summary>Add, edit, order, hide, schedule, target and delete modules.</summary>
+        public const string Manage = "Modules.Manage";
+    }
+
     // Immutable list (not a FrozenSet) so existing consumers typed IReadOnlyList<string> keep compiling;
     // ImmutableArray rejects every mutation through IList<string>/ICollection<string>.
     private static readonly Lazy<IReadOnlyList<string>> AllLazy = new(() =>

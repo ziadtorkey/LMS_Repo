@@ -32,12 +32,13 @@ public static class RelationshipRules
         new(BuiltInRoles.Teacher, Relationships.OwnClassCourses, ImmutableArray.Create(
             Permissions.Students.View, Permissions.Classes.View, Permissions.TeacherAssignments.View,
             Permissions.Enrollment.View, Permissions.Groups.View, Permissions.Groups.Manage,
-            Permissions.LessonPlans.View)),
+            Permissions.LessonPlans.View, Permissions.Modules.View, Permissions.Modules.Manage)),
         new(BuiltInRoles.Supervisor, Relationships.SupervisedCourses, ImmutableArray.Create(
             Permissions.Courses.Update, Permissions.Courses.Delete, Permissions.Courses.Allocate,
             Permissions.Blueprints.Edit, Permissions.Blueprints.Publish, Permissions.TeacherAssignments.Manage,
             Permissions.Enrollment.ApproveException)),
-        new(BuiltInRoles.Student, Relationships.OwnEnrollments, ImmutableArray.Create(Permissions.LessonPlans.View)),
+        new(BuiltInRoles.Student, Relationships.OwnEnrollments, ImmutableArray.Create(
+            Permissions.LessonPlans.View, Permissions.Modules.View)),
     ];
 
     /// <summary>The relationship that restricts <paramref name="permission"/> for the built-in role, or null (unrestricted).</summary>
