@@ -256,6 +256,10 @@
   <data name="Calendar_InheritedFrom" xml:space="preserve"><value>From {0}</value></data>
   <data name="Years_DateOrder" xml:space="preserve"><value>End date must not be before start date.</value></data>
   <data name="Years_Empty" xml:space="preserve"><value>No academic years are defined for this unit yet.</value></data>
+  <data name="Years_EmptyHint" xml:space="preserve"><value>Create a year, then add its terms and holidays.</value></data>
+  <data name="Years_Subtitle" xml:space="preserve"><value>Academic years, terms and the calendar for each unit. Units below inherit the years of the unit above.</value></data>
+  <data name="Terms_Empty" xml:space="preserve"><value>No terms yet.</value></data>
+  <data name="Calendar_Empty" xml:space="preserve"><value>No holidays or events in this year yet.</value></data>
   <data name="Years_ClosedHint" xml:space="preserve"><value>This year is closed and cannot be changed.</value></data>
   <data name="Years_DeleteConfirm" xml:space="preserve"><value>Delete the academic year {0}?</value></data>
   <data name="Terms_New" xml:space="preserve"><value>New term</value></data>
