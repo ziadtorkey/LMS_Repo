@@ -32,13 +32,20 @@ public static class RelationshipRules
         new(BuiltInRoles.Teacher, Relationships.OwnClassCourses, ImmutableArray.Create(
             Permissions.Students.View, Permissions.Classes.View, Permissions.TeacherAssignments.View,
             Permissions.Enrollment.View, Permissions.Groups.View, Permissions.Groups.Manage,
-            Permissions.LessonPlans.View, Permissions.Modules.View, Permissions.Modules.Manage)),
+            Permissions.LessonPlans.View, Permissions.Modules.View, Permissions.Modules.Manage,
+            // M4a wave 2: every class-course activity permission (Library.* stays unit-wide).
+            Permissions.CourseAssignments.View, Permissions.CourseAssignments.Manage, Permissions.CourseAssignments.Grade,
+            Permissions.Quizzes.View, Permissions.Quizzes.Manage, Permissions.Quizzes.Grade,
+            Permissions.Forums.View, Permissions.Forums.Post, Permissions.Forums.Moderate)),
         new(BuiltInRoles.Supervisor, Relationships.SupervisedCourses, ImmutableArray.Create(
             Permissions.Courses.Update, Permissions.Courses.Delete, Permissions.Courses.Allocate,
             Permissions.Blueprints.Edit, Permissions.Blueprints.Publish, Permissions.TeacherAssignments.Manage,
             Permissions.Enrollment.ApproveException)),
         new(BuiltInRoles.Student, Relationships.OwnEnrollments, ImmutableArray.Create(
-            Permissions.LessonPlans.View, Permissions.Modules.View)),
+            Permissions.LessonPlans.View, Permissions.Modules.View,
+            Permissions.CourseAssignments.View, Permissions.CourseAssignments.Submit,
+            Permissions.Quizzes.View, Permissions.Quizzes.Attempt,
+            Permissions.Forums.View, Permissions.Forums.Post)),
     ];
 
     /// <summary>The relationship that restricts <paramref name="permission"/> for the built-in role, or null (unrestricted).</summary>
