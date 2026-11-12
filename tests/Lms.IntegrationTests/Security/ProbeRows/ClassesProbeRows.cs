@@ -13,7 +13,9 @@ namespace Lms.IntegrationTests.Security;
 /// </summary>
 public sealed class ClassesProbeRows : IProbeRowModule
 {
-    public IEnumerable<ProbeRow> Rows =>
+    public IEnumerable<ProbeRow> Rows => Build().Select(r => r with { Milestone = 3 });
+
+    private static IEnumerable<ProbeRow> Build() =>
     [
         new("classes list", HttpMethod.Get, Routes.Classes,
             (_, _) => Task.FromResult(new ProbeRequest(Routes.Classes)),
@@ -59,6 +61,7 @@ public sealed class ClassesProbeRows : IProbeRowModule
             Expect(Ok, Ok, NotFound, Forbidden, NotFound, Ok)),
     ];
 
+    // At School1 (not the root): a year defined at School1 by another module's rows would otherwise hide the root one.
     private static async Task<Guid> YearAsync(M1ProbeWorld w) =>
         (await AcademicTestKit.AddYearAsync(w.Callers.Factory, w.Callers.A.School1)).Id;
 
