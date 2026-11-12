@@ -17,7 +17,9 @@ namespace Lms.IntegrationTests.Security;
 /// </summary>
 public sealed class AssetsProbeRows : IProbeRowModule
 {
-    public IEnumerable<ProbeRow> Rows =>
+    public IEnumerable<ProbeRow> Rows => Build().Select(r => r with { Milestone = ProbeMilestones.M4a });
+
+    private static IEnumerable<ProbeRow> Build() =>
     [
         new("assets upload", HttpMethod.Post, Routes.Assets,
             async (w, _) => new ProbeRequest(Routes.Assets, Body((await NewClassCourseAsync(w)).Id)),

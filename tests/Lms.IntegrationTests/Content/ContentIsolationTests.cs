@@ -13,7 +13,7 @@ namespace Lms.IntegrationTests.Content;
 public sealed class ContentIsolationTests(LmsApiFactory factory)
 {
     [Fact]
-    public async Task Assets_are_isolated_by_client_and_subtree()
+    public async Task Asset_is_isolated_per_client_and_subtree()
     {
         var a = await AccessTestData.SeedAsync(factory, "CI1A");
         var b = await AccessTestData.SeedAsync(factory, "CI1B");
