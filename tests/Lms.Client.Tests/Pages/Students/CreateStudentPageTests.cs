@@ -272,6 +272,38 @@ public sealed class CreateStudentPageTests : StudentsTestContext
     }
 
     [Fact]
+    public async Task Over_capacity_confirm_resends_with_the_flag()
+    {
+        var page = await RenderPageAsync();
+        await FillAsync(page);
+        await page.InvokeAsync(() => SelectWithTestId(page, "student-class").Instance.ValueChanged.InvokeAsync(FakeClasses.Grade1B.Id));
+
+        SaveWithDialog(page);
+        var yes = Dialogs.WaitForElement("button.mud-message-box__yes-button", Wait);
+        Assert.Contains("class is full", Dialogs.Markup);
+        await yes.ClickAsync(new());
+
+        page.WaitForAssertion(() => Assert.Equal(2, Students.Creates.Count), Wait);
+        Assert.False(Students.Creates[0].ConfirmOverCapacity);
+        Assert.True(Students.Creates[1].ConfirmOverCapacity);
+        await CloseCredentialsAsync();
+    }
+
+    [Fact]
+    public async Task Over_capacity_cancel_does_not_create()
+    {
+        var page = await RenderPageAsync();
+        await FillAsync(page);
+        await page.InvokeAsync(() => SelectWithTestId(page, "student-class").Instance.ValueChanged.InvokeAsync(FakeClasses.Grade1B.Id));
+
+        SaveWithDialog(page);
+        var cancel = Dialogs.WaitForElement("button.mud-message-box__cancel-button", Wait);
+        await cancel.ClickAsync(new());
+
+        Assert.Single(Students.Creates);
+    }
+
+    [Fact]
     public async Task Nationality_select_searches_arabic_and_english_names()
     {
         var page = await RenderPageAsync();
