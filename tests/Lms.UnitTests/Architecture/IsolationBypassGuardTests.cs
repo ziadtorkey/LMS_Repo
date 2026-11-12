@@ -77,6 +77,8 @@ public sealed class IsolationBypassGuardTests
             "holidays of ancestor units apply to descendants, restricted to the client and effective years (M1 Task 22, #57)",
         ["src/Lms.Infrastructure/People/PersonStatusService.cs"] =
             "a user's account status derives from their profiles in every client; only that user's statuses are read (M2 Task 6, #158)",
+        ["src/Lms.Infrastructure/People/StudentCodeGenerator.cs"] =
+            "student codes are unique per client across all schools and for deleted students; client matched, only a yes/no leaves (M3 Task 18, #226)",
         ["src/Lms.Api/Features/Enrollment/EnrollmentQueries.cs"] =
             "names of the course of a class course, owned by an ancestor unit above the caller's scope; names only, for class courses the caller already sees; client matched, deleted excluded (M3 Task 24, #232)",
         ["src/Lms.Infrastructure/Enrollment/PlacementGuard.cs"] =

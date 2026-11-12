@@ -862,4 +862,17 @@
   <data name="LessonPlan_HijriSuffix" xml:space="preserve"><value>AH</value></data>
   <data name="LessonPlan_Modules" xml:space="preserve"><value>Modules</value></data>
   <data name="LessonPlan_ModulesLater" xml:space="preserve"><value>Modules arrive in a later release.</value></data>
+  <data name="Asset_Limits" xml:space="preserve"><value>Allowed types: {0}. Maximum size: {1} MB.</value></data>
+  <data name="Asset_Choose" xml:space="preserve"><value>Choose a file to upload</value></data>
+  <data name="Asset_TypeNotAllowed" xml:space="preserve"><value>This file type is not allowed here. Allowed: {0}.</value></data>
+  <data name="Asset_TooLarge" xml:space="preserve"><value>The file is larger than {0} MB.</value></data>
+  <data name="Asset_Uploading" xml:space="preserve"><value>Uploading {0}...</value></data>
+  <data name="Asset_Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Asset_Retry" xml:space="preserve"><value>Retry</value></data>
+  <data name="Asset_Uploaded" xml:space="preserve"><value>{0} was uploaded.</value></data>
+  <data name="Asset_Cancelled" xml:space="preserve"><value>Upload cancelled.</value></data>
+  <data name="Asset_NoPreview" xml:space="preserve"><value>This file type cannot be previewed in the browser.</value></data>
+  <data name="Asset_Download" xml:space="preserve"><value>Download</value></data>
+  <data name="Asset_PreviewFailed" xml:space="preserve"><value>The file could not be loaded.</value></data>
+  <data name="Asset_Reload" xml:space="preserve"><value>Reload</value></data>
 </root>
