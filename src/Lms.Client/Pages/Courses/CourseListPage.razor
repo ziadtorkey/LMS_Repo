@@ -13,67 +13,76 @@
 @implements IDisposable
 
 <PageTitle>@L["Course_Title"]</PageTitle>
-<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4" Wrap="Wrap.Wrap">
-    <MudText Typo="Typo.h4" data-testid="course-title">@L["Course_Title"]</MudText>
-    <MudStack Row="true" Spacing="2">
+<PageHeader Title="@L["Course_Title"]" Subtitle="@L["Course_Subtitle"]" TitleTestId="course-title">
+    <Actions>
         @if (PermState.Has(Permissions.Courses.Import))
         {
-            <MudButton Variant="Variant.Outlined" Href="courses/import" StartIcon="@Icons.Material.Filled.UploadFile"
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Href="courses/import" StartIcon="@Icons.Material.Rounded.UploadFile"
                        data-testid="course-import">@L["Course_Import"]</MudButton>
         }
         @if (PermState.Has(Permissions.Courses.Create))
         {
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Add"
                        OnClick="NewAsync" data-testid="course-new">@L["Course_New"]</MudButton>
         }
-    </MudStack>
-</MudStack>
+    </Actions>
+</PageHeader>
 
-<MudStack Row="true" Spacing="2" Class="mb-3" Wrap="Wrap.Wrap" AlignItems="AlignItems.Center">
-    <MudTextField T="string" Value="_searchText" ValueChanged="OnSearchChanged" Label="@L["Common_Search"]" Immediate="true"
-                  DebounceInterval="300" Clearable="true" data-testid="course-search" />
-    <MudItem xs="12" sm="3">
-        <UnitPicker Value="_unitId" ValueChanged="OnUnitChanged" Label="@L["Course_Unit"]" Clearable="true" TestId="course-filter-unit" />
-    </MudItem>
-    <MudSelect T="string" Value="_status" ValueChanged="OnStatusChanged" Label="@L["Common_Status"]" Clearable="true"
-               data-testid="course-filter-status" Style="min-width: 10rem">
-        @foreach (var status in CourseStatuses.All)
-        {
-            <MudSelectItem T="string" Value="@status">@L[$"CourseStatus_{status}"]</MudSelectItem>
-        }
-    </MudSelect>
-    <MudCheckBox T="bool" Value="_supervisedByMe" ValueChanged="OnSupervisedChanged" Label="@L["Course_SupervisedByMe"]"
-                 data-testid="course-filter-supervised" />
-</MudStack>
+<SectionCard Flush="true">
+    <div class="lms-filters" role="search" aria-label="@L["Common_Filters"]">
+        <div class="lms-filter lms-filter-search">
+            <MudTextField T="string" Value="_searchText" ValueChanged="OnSearchChanged" Label="@L["Common_Search"]" Immediate="true"
+                          DebounceInterval="300" Clearable="true" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Rounded.Search"
+                          data-testid="course-search" />
+        </div>
+        <div class="lms-filter">
+            <UnitPicker Value="_unitId" ValueChanged="OnUnitChanged" Label="@L["Course_Unit"]" Clearable="true" TestId="course-filter-unit" />
+        </div>
+        <div class="lms-filter">
+            <MudSelect T="string" Value="_status" ValueChanged="OnStatusChanged" Label="@L["Common_Status"]" Clearable="true"
+                       data-testid="course-filter-status">
+                @foreach (var status in CourseStatuses.All)
+                {
+                    <MudSelectItem T="string" Value="@status">@L[$"CourseStatus_{status}"]</MudSelectItem>
+                }
+            </MudSelect>
+        </div>
+        <div class="lms-filter lms-filter-check">
+            <MudCheckBox T="bool" Value="_supervisedByMe" ValueChanged="OnSupervisedChanged" Label="@L["Course_SupervisedByMe"]"
+                         data-testid="course-filter-supervised" />
+        </div>
+    </div>
 
-<ServerTable @ref="_table" T="CourseSummaryDto" ServerData="LoadAsync">
-    <HeaderContent>
-        <MudTh>@L["Course_Code"]</MudTh>
-        <MudTh>@L["Common_Name"]</MudTh>
-        <MudTh>@L["Course_Owner"]</MudTh>
-        <MudTh>@L["Course_WeeklyPeriods"]</MudTh>
-        <MudTh>@L["Common_Status"]</MudTh>
-        <MudTh>@L["Course_Allocations"]</MudTh>
-    </HeaderContent>
-    <RowTemplate Context="course">
-        <MudTd DataLabel="@L["Course_Code"]"><span dir="ltr">@course.Code</span></MudTd>
-        <MudTd DataLabel="@L["Common_Name"]">
-            <MudLink OnClick="() => OpenAsync(course)" data-testid="@($"course-link-{course.Id}")">@Culture.Pick(course.NameAr, course.NameEn)</MudLink>
-            <MudIconButton Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small" Href="@($"courses/{course.Id}")" aria-label="@L["CourseProfile_Open"]"
-                           data-testid="@($"course-profile-{course.Id}")" />
-            @if (course.IsInherited)
-            {
-                <MudChip T="string" Size="Size.Small" Color="Color.Info" data-testid="@($"inherited-chip-{course.Id}")">@L["Course_Inherited"]</MudChip>
-            }
-        </MudTd>
-        <MudTd DataLabel="@L["Course_Owner"]">@Culture.Pick(course.OwnerOrgUnitNameAr, course.OwnerOrgUnitNameEn)</MudTd>
-        <MudTd DataLabel="@L["Course_WeeklyPeriods"]">@course.WeeklyPeriods</MudTd>
-        <MudTd DataLabel="@L["Common_Status"]">
-            <MudChip T="string" Size="Size.Small" Color="@(course.Status == CourseStatuses.Active ? Color.Success : Color.Default)">@L[$"CourseStatus_{course.Status}"]</MudChip>
-        </MudTd>
-        <MudTd DataLabel="@L["Course_Allocations"]">@course.AllocationCount</MudTd>
-    </RowTemplate>
-</ServerTable>
+    <ServerTable @ref="_table" T="CourseSummaryDto" ServerData="LoadAsync" EmptyTitle="@L["Course_EmptyTitle"]"
+                 EmptyText="@L["Course_EmptyText"]" EmptyIcon="@Icons.Material.Rounded.MenuBook">
+        <HeaderContent>
+            <MudTh>@L["Course_Code"]</MudTh>
+            <MudTh>@L["Common_Name"]</MudTh>
+            <MudTh>@L["Course_Owner"]</MudTh>
+            <MudTh>@L["Course_WeeklyPeriods"]</MudTh>
+            <MudTh>@L["Common_Status"]</MudTh>
+            <MudTh>@L["Course_Allocations"]</MudTh>
+        </HeaderContent>
+        <RowTemplate Context="course">
+            <MudTd DataLabel="@L["Course_Code"]"><span dir="ltr">@course.Code</span></MudTd>
+            <MudTd DataLabel="@L["Common_Name"]">
+                <MudLink Class="lms-person-link" OnClick="() => OpenAsync(course)" data-testid="@($"course-link-{course.Id}")">@Culture.Pick(course.NameAr, course.NameEn)</MudLink>
+                <MudIconButton Icon="@Icons.Material.Rounded.OpenInNew" Size="Size.Small" Href="@($"courses/{course.Id}")" aria-label="@L["CourseProfile_Open"]"
+                               data-testid="@($"course-profile-{course.Id}")" />
+                @if (course.IsInherited)
+                {
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Info" data-testid="@($"inherited-chip-{course.Id}")">@L["Course_Inherited"]</MudChip>
+                }
+            </MudTd>
+            <MudTd DataLabel="@L["Course_Owner"]">@Culture.Pick(course.OwnerOrgUnitNameAr, course.OwnerOrgUnitNameEn)</MudTd>
+            <MudTd DataLabel="@L["Course_WeeklyPeriods"]">@course.WeeklyPeriods</MudTd>
+            <MudTd DataLabel="@L["Common_Status"]">
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@(course.Status == CourseStatuses.Active ? Color.Success : Color.Default)">@L[$"CourseStatus_{course.Status}"]</MudChip>
+            </MudTd>
+            <MudTd DataLabel="@L["Course_Allocations"]">@course.AllocationCount</MudTd>
+        </RowTemplate>
+    </ServerTable>
+</SectionCard>
 
 @code {
     private ServerTable<CourseSummaryDto> _table = default!;

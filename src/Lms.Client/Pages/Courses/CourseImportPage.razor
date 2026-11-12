@@ -1,5 +1,6 @@
 @page "/courses/import"
 @attribute [Authorize]
+@using Lms.Client.Components
 @using Lms.Client.Components.Imports
 @using Lms.Shared.Authorization
 @using Lms.Shared.Imports
@@ -7,17 +8,22 @@
 @implements IDisposable
 
 <PageTitle>@L["CourseImport_Title"]</PageTitle>
+<MudLink Href="courses" Typo="Typo.body2" Class="lms-back-link" data-testid="course-import-back">
+    <MudIcon Icon="@Icons.Material.Rounded.ArrowBack" Size="Size.Small" Class="lms-icon-flip" aria-hidden="true" />
+    @L["Course_BackToList"]
+</MudLink>
 @if (!PermState.Loaded)
 {
-    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+    <LoadingState Lines="3" TestId="course-import-loading" />
 }
 else if (!PermState.Has(Permissions.Courses.Import))
 {
-    <MudAlert Severity="Severity.Warning" data-testid="course-import-forbidden">@L["Forbidden_Title"]</MudAlert>
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" data-testid="course-import-forbidden">@L["Forbidden_Title"]</MudAlert>
 }
 else
 {
-    <ImportWizard Kind="@ImportKinds.Courses" TitleKey="CourseImport_Title" />
+    <PageHeader Title="@L["CourseImport_Title"]" Subtitle="@L["CourseImport_Subtitle"]" TitleTestId="course-import-title" />
+    <ImportWizard Kind="@ImportKinds.Courses" TitleKey="CourseImport_Title" ShowTitle="false" />
 }
 
 @code {

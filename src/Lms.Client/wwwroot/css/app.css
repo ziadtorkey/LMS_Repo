@@ -65,3 +65,10 @@ html:lang(ar), html:lang(ar) body { font-family: Cairo, "Segoe UI", Tahoma, Aria
 /* Lesson plan: items removed from the blueprint stay visible to staff, greyed out. */
 .lms-plan-hidden { opacity: 0.55; }
 .lms-plan-lesson { padding-block: 4px; }
+
+/* Blueprint builder: a lesson row in the drop zone (flat, logical spacing). */
+.lms-lesson-row {
+    display: flex; align-items: center; gap: 8px; min-width: 0; padding: 6px 8px; margin-block-end: 4px;
+    border: 1px solid var(--mud-palette-lines-default); border-radius: 8px; background: var(--mud-palette-surface);
+}
+.lms-lesson-row .lms-lesson-title { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }

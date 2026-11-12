@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
   <resheader name="version"><value>2.0</value></resheader>
@@ -933,4 +933,27 @@
   <data name="RichText_LinkUrl" xml:space="preserve"><value>Link address</value></data>
   <data name="RichText_NumberedList" xml:space="preserve"><value>Numbered list</value></data>
   <data name="RichText_Toolbar" xml:space="preserve"><value>Formatting toolbar</value></data>
+  <data name="Allocation_EmptyText" xml:space="preserve"><value>Allocate the course to a unit so its classes can use it.</value></data>
+  <data name="Blueprint_BackToCourse" xml:space="preserve"><value>Course</value></data>
+  <data name="Blueprint_Content" xml:space="preserve"><value>Content</value></data>
+  <data name="Blueprint_EmptyTreeText" xml:space="preserve"><value>Add a section, then its lessons.</value></data>
+  <data name="Blueprint_NoPublishedText" xml:space="preserve"><value>Edit the draft, then publish it so classes receive it.</value></data>
+  <data name="Blueprint_PublishedOn" xml:space="preserve"><value>Published</value></data>
+  <data name="Blueprint_Version" xml:space="preserve"><value>Version</value></data>
+  <data name="CourseImport_Subtitle" xml:space="preserve"><value>Upload an Excel file to add many courses at once.</value></data>
+  <data name="CourseProfile_BackToList" xml:space="preserve"><value>Courses</value></data>
+  <data name="Course_BackToList" xml:space="preserve"><value>Courses</value></data>
+  <data name="Course_CodeHelp" xml:space="preserve"><value>Letters, digits, dashes and underscores only, up to 50 characters.</value></data>
+  <data name="Course_Description" xml:space="preserve"><value>Description</value></data>
+  <data name="Course_EmptyText" xml:space="preserve"><value>Change the filters or add a course.</value></data>
+  <data name="Course_EmptyTitle" xml:space="preserve"><value>No courses</value></data>
+  <data name="Course_SectionBasics" xml:space="preserve"><value>Basics</value></data>
+  <data name="Course_SectionDetails" xml:space="preserve"><value>Details</value></data>
+  <data name="Course_SectionOwner" xml:space="preserve"><value>Ownership and allocation</value></data>
+  <data name="Course_Subtitle" xml:space="preserve"><value>The course catalogue: who owns each course and where it is offered.</value></data>
+  <data name="Lesson_SectionPlan" xml:space="preserve"><value>Objectives and timing</value></data>
+  <data name="Lesson_SectionTitle" xml:space="preserve"><value>Title</value></data>
+  <data name="MyCourses_EmptyText" xml:space="preserve"><value>Courses appear here once you are made their supervisor.</value></data>
+  <data name="MyCourses_Subtitle" xml:space="preserve"><value>The courses you supervise.</value></data>
+  <data name="Supervisor_NoneText" xml:space="preserve"><value>Add a supervisor from the staff who hold the Supervisor role.</value></data>
 </root>

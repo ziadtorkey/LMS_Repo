@@ -4,7 +4,9 @@
 @* Sections and lessons of a blueprint. Read-only shows the tree; editing adds drag and drop (mirrored by the move buttons, X-10). *@
 @if (Model.Sections.Count == 0)
 {
-    <MudText data-testid="blueprint-empty">@L["Blueprint_EmptyTree"]</MudText>
+    <SectionCard>
+        <EmptyState Title="@L["Blueprint_EmptyTree"]" Text="@L["Blueprint_EmptyTreeText"]" Icon="@Icons.Material.Rounded.AccountTree" TestId="blueprint-empty" />
+    </SectionCard>
 }
 @if (ReadOnly)
 {
@@ -14,8 +16,7 @@
             // Copies of the loop variables: the child content below runs after the loop has moved on.
             var s = sectionIndex;
             var section = Model.Sections[s];
-            <MudPaper Outlined="true" Class="pa-3" data-testid="@($"section-{s}")">
-                <MudText Typo="Typo.subtitle1">@SectionName(s) — @CultureText.Pick(section.TitleAr, section.TitleEn)</MudText>
+            <SectionCard Title="@(SectionName(s) + " — " + CultureText.Pick(section.TitleAr, section.TitleEn))" TestId="@($"section-{s}")">
                 <MudList T="string" Dense="true">
                     @for (var lessonIndex = 0; lessonIndex < section.Lessons.Count; lessonIndex++)
                     {
@@ -25,12 +26,12 @@
                             @(l + 1). @CultureText.Pick(lesson.TitleAr, lesson.TitleEn)
                             @if (lesson.PlannedOffsetDays is { } day)
                             {
-                                <MudChip T="string" Size="Size.Small">@L["Lesson_DayN", day]</MudChip>
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@L["Lesson_DayN", day]</MudChip>
                             }
                         </MudListItem>
                     }
                 </MudList>
-            </MudPaper>
+            </SectionCard>
         }
     </MudStack>
 }
@@ -44,28 +45,38 @@ else
                 {
                     var index = sectionIndex;
                     var section = Model.Sections[index];
-                    <MudPaper Outlined="true" Class="pa-3" data-testid="@($"section-{index}")">
+                    <SectionCard Title="@SectionName(index)" TestId="@($"section-{index}")">
+                        <Actions>
+                            <div class="lms-row-actions">
+                                <MudIconButton Icon="@Icons.Material.Rounded.KeyboardArrowUp" Size="Size.Small" Disabled="index == 0" aria-label="@L["Blueprint_MoveUp"]"
+                                               OnClick="() => StepSection(section, -1)" data-testid="@($"section-up-{index}")" />
+                                <MudIconButton Icon="@Icons.Material.Rounded.KeyboardArrowDown" Size="Size.Small" Disabled="index == Model.Sections.Count - 1" aria-label="@L["Blueprint_MoveDown"]"
+                                               OnClick="() => StepSection(section, 1)" data-testid="@($"section-down-{index}")" />
+                                <span class="lms-row-actions-sep" aria-hidden="true"></span>
+                                <MudIconButton Icon="@Icons.Material.Rounded.DeleteOutline" Size="Size.Small" Color="Color.Error" aria-label="@L["Common_Delete"]"
+                                               OnClick="() => RemoveSection(section)" data-testid="@($"section-remove-{index}")" />
+                            </div>
+                        </Actions>
+                        <ChildContent>
                         <MudStack Spacing="2">
-                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1" Wrap="Wrap.Wrap">
-                                <MudText Typo="Typo.subtitle1">@SectionName(index)</MudText>
+                            <div class="lms-form-grid">
                                 <MudTextField T="string" Value="section.TitleAr" ValueChanged="v => Edit(() => section.TitleAr = v)" Label="@L["Common_NameAr"]"
                                               dir="rtl" lang="ar" MaxLength="200" Immediate="true" data-testid="@($"section-title-ar-{index}")" />
                                 <MudTextField T="string" Value="section.TitleEn" ValueChanged="v => Edit(() => section.TitleEn = v)" Label="@L["Common_NameEn"]"
                                               dir="ltr" lang="en" MaxLength="200" Immediate="true" data-testid="@($"section-title-en-{index}")" />
-                                <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowUp" Size="Size.Small" Disabled="index == 0" aria-label="@L["Blueprint_MoveUp"]"
-                                               OnClick="() => StepSection(section, -1)" data-testid="@($"section-up-{index}")" />
-                                <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowDown" Size="Size.Small" Disabled="index == Model.Sections.Count - 1" aria-label="@L["Blueprint_MoveDown"]"
-                                               OnClick="() => StepSection(section, 1)" data-testid="@($"section-down-{index}")" />
-                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" aria-label="@L["Common_Delete"]"
-                                               OnClick="() => RemoveSection(section)" data-testid="@($"section-remove-{index}")" />
-                            </MudStack>
+                            </div>
                             <MudDropZone T="LessonRow" Identifier="@index.ToString()" Class="lms-drop-zone pa-1" data-testid="@($"zone-{index}")" />
-                            <MudButton Size="Size.Small" Variant="Variant.Text" StartIcon="@Icons.Material.Filled.Add" OnClick="() => AddLessonAsync(section)"
-                                       data-testid="@($"lesson-add-{index}")">@L["Blueprint_AddLesson"]</MudButton>
+                            <div>
+                                <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Add" OnClick="() => AddLessonAsync(section)"
+                                           data-testid="@($"lesson-add-{index}")">@L["Blueprint_AddLesson"]</MudButton>
+                            </div>
                         </MudStack>
-                    </MudPaper>
+                        </ChildContent>
+                    </SectionCard>
                 }
-                <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Add" OnClick="AddSection" data-testid="section-add">@L["Blueprint_AddSection"]</MudButton>
+                <div>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Add" OnClick="AddSection" data-testid="section-add">@L["Blueprint_AddSection"]</MudButton>
+                </div>
             </MudStack>
         </ChildContent>
         <ItemRenderer>
@@ -74,18 +85,21 @@ else
                 var s = Model.Sections.IndexOf(section);
                 var l = section.Lessons.IndexOf(context);
             }
-            <MudPaper Outlined="true" Class="pa-2 mb-1 d-flex align-center" data-testid="@($"lesson-{s}-{l}")">
-                <MudIcon Icon="@Icons.Material.Filled.DragIndicator" Class="lms-drag-handle me-2" data-testid="@($"drag-handle-{s}-{l}")" />
-                <MudText Class="flex-grow-1">@(string.IsNullOrWhiteSpace(CultureText.Pick(context.TitleAr, context.TitleEn)) ? L["Blueprint_UntitledLesson"].Value : CultureText.Pick(context.TitleAr, context.TitleEn))</MudText>
-                <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowUp" Size="Size.Small" aria-label="@L["Blueprint_MoveUp"]"
-                               OnClick="() => StepLesson(section, context, -1)" data-testid="@($"lesson-up-{s}-{l}")" />
-                <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowDown" Size="Size.Small" aria-label="@L["Blueprint_MoveDown"]"
-                               OnClick="() => StepLesson(section, context, 1)" data-testid="@($"lesson-down-{s}-{l}")" />
-                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" aria-label="@L["Common_Edit"]"
-                               OnClick="() => EditLessonAsync(context)" data-testid="@($"lesson-edit-{s}-{l}")" />
-                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" aria-label="@L["Common_Delete"]"
-                               OnClick="() => RemoveLesson(section, context)" data-testid="@($"lesson-remove-{s}-{l}")" />
-            </MudPaper>
+            <div class="lms-lesson-row" data-testid="@($"lesson-{s}-{l}")">
+                <MudIcon Icon="@Icons.Material.Rounded.DragIndicator" Class="lms-drag-handle" aria-hidden="true" data-testid="@($"drag-handle-{s}-{l}")" />
+                <span class="lms-lesson-title">@(string.IsNullOrWhiteSpace(CultureText.Pick(context.TitleAr, context.TitleEn)) ? L["Blueprint_UntitledLesson"].Value : CultureText.Pick(context.TitleAr, context.TitleEn))</span>
+                <div class="lms-row-actions">
+                    <MudIconButton Icon="@Icons.Material.Rounded.KeyboardArrowUp" Size="Size.Small" aria-label="@L["Blueprint_MoveUp"]"
+                                   OnClick="() => StepLesson(section, context, -1)" data-testid="@($"lesson-up-{s}-{l}")" />
+                    <MudIconButton Icon="@Icons.Material.Rounded.KeyboardArrowDown" Size="Size.Small" aria-label="@L["Blueprint_MoveDown"]"
+                                   OnClick="() => StepLesson(section, context, 1)" data-testid="@($"lesson-down-{s}-{l}")" />
+                    <MudIconButton Icon="@Icons.Material.Rounded.Edit" Size="Size.Small" aria-label="@L["Common_Edit"]"
+                                   OnClick="() => EditLessonAsync(context)" data-testid="@($"lesson-edit-{s}-{l}")" />
+                    <span class="lms-row-actions-sep" aria-hidden="true"></span>
+                    <MudIconButton Icon="@Icons.Material.Rounded.DeleteOutline" Size="Size.Small" Color="Color.Error" aria-label="@L["Common_Delete"]"
+                                   OnClick="() => RemoveLesson(section, context)" data-testid="@($"lesson-remove-{s}-{l}")" />
+                </div>
+            </div>
         </ItemRenderer>
     </MudDropContainer>
 }
