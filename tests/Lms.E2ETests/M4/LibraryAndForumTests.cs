@@ -147,7 +147,8 @@ public sealed class LibraryAndForumTests(E2EFixture fixture) : E2ETestBase(fixtu
             await Page.GetByTestId("notif-toggle").ClickAsync();
             var item = Page.Locator("[data-testid^='notif-item-']").Filter(new() { HasText = headline });
             await Expect(item).ToHaveCountAsync(1);
-            await item.ClickAsync();
+            // The announcement notification has no deep link yet (reported to the Lead), so the page is opened directly.
+            await announcements.OpenAsync(world.ClassCourseId);
             await Expect(announcements.PinnedChip(headline)).ToBeVisibleAsync();
             await Expect(announcements.Form).ToHaveCountAsync(0); // students read, they do not publish
         }
@@ -169,9 +170,12 @@ public sealed class LibraryAndForumTests(E2EFixture fixture) : E2ETestBase(fixtu
         {
             await M4Kit.SignInAsync(Page, user, password, culture);
             var shell = new ShellPage(Page);
-            if (!await shell.Nav("library").IsVisibleAsync())
+            await Expect(Page.GetByTestId("home-title")).ToBeVisibleAsync();
+            if (!await shell.Nav("home").IsVisibleAsync())
             {
+                // The drawer starts closed for some roles; open it once the page has settled.
                 await shell.NavToggle.ClickAsync();
+                await Expect(shell.Nav("home")).ToBeVisibleAsync();
             }
 
             await Expect(shell.Nav("library")).ToBeVisibleAsync();

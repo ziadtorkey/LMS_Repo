@@ -58,7 +58,20 @@ public sealed class ForumPage(IPage page)
         await NewThread.ClickAsync();
         await NewTitle.FillAsync(title);
         await Editors.TypeAsync(page, "forum-new-composer-editor", body);
-        await page.GetByTestId("forum-new-composer-send").ClickAsync();
+        // The editor reports its HTML after a short debounce: a Post click that beats it is ignored, so click again until the thread is listed.
+        for (var attempt = 0; attempt < 4; attempt++)
+        {
+            await page.GetByTestId("forum-new-composer-send").ClickAsync();
+            try
+            {
+                await ThreadLink(title).WaitForAsync(new LocatorWaitForOptions { Timeout = 5_000 });
+                return;
+            }
+            catch (TimeoutException)
+            {
+            }
+        }
+
         await ThreadLink(title).WaitForAsync();
     }
 }
