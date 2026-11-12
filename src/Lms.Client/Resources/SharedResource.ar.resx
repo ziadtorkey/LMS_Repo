@@ -1024,4 +1024,23 @@
   <data name="Quiz_NoAnswer" xml:space="preserve"><value>بلا إجابة</value></data>
   <data name="Quiz_CorrectOption" xml:space="preserve"><value>صحيح</value></data>
   <data name="Quiz_NotGradedYet" xml:space="preserve"><value>لم يُصحَّح بعد</value></data>
+  <data name="QuizAttempts_Title" xml:space="preserve"><value>محاولات الاختبار</value></data>
+  <data name="QuizAttempts_Empty" xml:space="preserve"><value>لا توجد محاولات بعد.</value></data>
+  <data name="QuizAttempts_Status" xml:space="preserve"><value>الحالة</value></data>
+  <data name="QuizAttempts_Score" xml:space="preserve"><value>الدرجة</value></data>
+  <data name="QuizAttempts_Pending" xml:space="preserve"><value>مقالات بانتظار التصحيح</value></data>
+  <data name="QuizAttempts_Grade" xml:space="preserve"><value>تصحيح</value></data>
+  <data name="QuizAttempts_Student" xml:space="preserve"><value>الطالب</value></data>
+  <data name="QuizAttempts_Attempt" xml:space="preserve"><value>المحاولة</value></data>
+  <data name="AttemptStatus_InProgress" xml:space="preserve"><value>قيد التنفيذ</value></data>
+  <data name="AttemptStatus_Submitted" xml:space="preserve"><value>مسلَّمة</value></data>
+  <data name="AttemptStatus_AutoSubmitted" xml:space="preserve"><value>سُلِّمت تلقائيًا</value></data>
+  <data name="AttemptStatus_Graded" xml:space="preserve"><value>مصحَّحة</value></data>
+  <data name="Essay_Title" xml:space="preserve"><value>تصحيح الإجابات المكتوبة</value></data>
+  <data name="Essay_Points" xml:space="preserve"><value>النقاط</value></data>
+  <data name="Essay_Comment" xml:space="preserve"><value>تعليق</value></data>
+  <data name="Essay_None" xml:space="preserve"><value>لا توجد إجابات مكتوبة للتصحيح في هذه المحاولة.</value></data>
+  <data name="Essay_Save" xml:space="preserve"><value>حفظ الدرجات</value></data>
+  <data name="Essay_Finalize" xml:space="preserve"><value>اعتماد</value></data>
+  <data name="Essay_FinalizeHint" xml:space="preserve"><value>امنح نقاطًا لكل إجابة مكتوبة لاعتماد المحاولة.</value></data>
 </root>

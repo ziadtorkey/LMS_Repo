@@ -1,0 +1,84 @@
+@page "/class-courses/{Id:guid}/quizzes/{QuizId:guid}/attempts"
+@attribute [Authorize]
+@using Lms.Client.Services.Api
+@using Lms.Shared.Authorization
+@using Lms.Shared.Quizzes
+@inject IQuizAttemptsApi Quizzes
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+<PageTitle>@L["QuizAttempts_Title"]</PageTitle>
+<MudText Typo="Typo.h4" Class="mb-3">@L["QuizAttempts_Title"]</MudText>
+@if (!PermState.Loaded || _loading)
+{
+    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+}
+else if (!Allowed)
+{
+    <MudAlert Severity="Severity.Warning" data-testid="attempts-forbidden">@L["Forbidden_Title"]</MudAlert>
+}
+else if (_error is not null)
+{
+    <MudAlert Severity="Severity.Error" data-testid="attempts-error">@_error</MudAlert>
+}
+else if (_items.Count == 0)
+{
+    <MudAlert Severity="Severity.Info" data-testid="attempts-empty">@L["QuizAttempts_Empty"]</MudAlert>
+}
+else
+{
+    <MudSimpleTable Dense="true" data-testid="attempts-table">
+        <thead>
+            <tr>
+                <th>@L["QuizAttempts_Student"]</th><th>@L["QuizAttempts_Attempt"]</th><th>@L["QuizAttempts_Status"]</th><th>@L["QuizAttempts_Score"]</th><th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var a in _items)
+            {
+                <tr data-testid="@($"attempt-row-{a.Id}")">
+                    <td>@Culture.Pick(a.StudentNameAr, a.StudentNameEn)</td>
+                    <td>@a.Number</td>
+                    <td>
+                        @L["AttemptStatus_" + a.Status]
+                        @if (a.HasPendingEssays)
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Warning" data-testid="@($"attempt-pending-{a.Id}")">@L["QuizAttempts_Pending"]</MudChip>
+                        }
+                    </td>
+                    <td><span dir="ltr">@(a.Score is { } s ? $"{s} / {a.MaxScore}" : "–")</span></td>
+                    <td>
+                        @if (PermState.Has(Permissions.Quizzes.Grade) && a.Status != AttemptStatuses.InProgress)
+                        {
+                            <MudButton Size="Size.Small" Variant="Variant.Text" Href="@($"class-courses/{Id}/quizzes/{QuizId}/attempts/{a.Id}/grade")"
+                                       data-testid="@($"attempt-grade-{a.Id}")">@L["QuizAttempts_Grade"]</MudButton>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </MudSimpleTable>
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+    [Parameter] public Guid QuizId { get; set; }
+
+    /// <summary>Staff only: students see their own attempts on the quiz start page, never the whole list.</summary>
+    private bool Allowed => PermState.Has(Permissions.Quizzes.View) && (PermState.Has(Permissions.Quizzes.Grade) || PermState.Has(Permissions.Quizzes.Manage));
+
+    private IReadOnlyList<AttemptSummaryDto> _items = [];
+    private string? _error;
+    private bool _loading = true;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        _loading = true;
+        if (Allowed)
+            await ApiCalls.RunAsync(async () => _items = (await Quizzes.ListAttemptsAsync(QuizId, 1, 200)).Items
+                .OrderByDescending(a => a.HasPendingEssays).ThenBy(a => a.StudentNameEn).ThenBy(a => a.Number).ToList(), Navigation, L, m => _error = m);
+        _loading = false;
+    }
+}
