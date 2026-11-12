@@ -95,4 +95,47 @@ public sealed class RichTextSanitizerTests
 
         Assert.Equal(once, sut.Sanitize(once));
     }
+
+    [Fact]
+    public void Quill_bullet_and_checklist_items_round_trip()
+    {
+        var html = "<ol><li data-list=\"bullet\">a</li><li data-list=\"ordered\">b</li><li data-list=\"checked\">c</li><li data-list=\"unchecked\">d</li></ol>";
+
+        Assert.Equal(html, sut.Sanitize(html));
+    }
+
+    [Fact]
+    public void Sanitizer_drops_unknown_data_list_values_and_other_data_attributes()
+    {
+        var result = sut.Sanitize("<ol><li data-list=\"evil\" data-x=\"1\">a</li></ol><p data-list=\"bullet\" data-y=\"2\">b</p>");
+
+        Assert.DoesNotContain("data-", result);
+        Assert.Equal("<ol><li>a</li></ol><p>b</p>", result);
+    }
+
+    [Theory]
+    [InlineData("//evil.com/x")]
+    [InlineData("/relative/path")]
+    [InlineData("page.html")]
+    [InlineData("ftp://example.com/file")]
+    [InlineData("javascript:alert(1)")]
+    public void Links_other_than_http_https_and_mailto_lose_their_href(string href)
+    {
+        var result = sut.Sanitize($"<a href=\"{href}\">x</a>");
+
+        Assert.DoesNotContain("href", result);
+        Assert.Contains("rel=\"noopener noreferrer\"", result);
+    }
+
+    [Fact]
+    public void Sanitizer_drops_h1_tables_and_invalid_dir_values()
+    {
+        var result = sut.Sanitize("<h1>t</h1><table><tr><td>c</td></tr></table><p dir=\"sideways\">x</p><p dir=\"ltr\">y</p>");
+
+        Assert.DoesNotContain("<h1", result);
+        Assert.DoesNotContain("<table", result);
+        Assert.DoesNotContain("<td", result);
+        Assert.DoesNotContain("sideways", result);
+        Assert.Contains("dir=\"ltr\"", result);
+    }
 }

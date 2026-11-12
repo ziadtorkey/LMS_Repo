@@ -42,7 +42,7 @@ public sealed partial class RichTextSanitizer : IRichTextSanitizer
         var options = new HtmlSanitizerOptions
         {
             AllowedTags = new HashSet<string>(Tags, StringComparer.OrdinalIgnoreCase),
-            AllowedAttributes = new HashSet<string>(["href", "dir", "class", "rel", "target"], StringComparer.OrdinalIgnoreCase),
+            AllowedAttributes = new HashSet<string>(["href", "dir", "class", "rel", "target", "data-list"], StringComparer.OrdinalIgnoreCase),
             AllowedSchemes = new HashSet<string>(Schemes, StringComparer.OrdinalIgnoreCase),
             AllowedCssProperties = new HashSet<string>(StringComparer.OrdinalIgnoreCase),
             UriAttributes = new HashSet<string>(["href"], StringComparer.OrdinalIgnoreCase),
@@ -65,8 +65,24 @@ public sealed partial class RichTextSanitizer : IRichTextSanitizer
         {
             if (e.Node is AngleSharp.Dom.IElement { LocalName: "a" } link)
             {
+                // Absolute http, https or mailto only: protocol-relative ("//host") and relative links are dropped.
+                if (link.GetAttribute("href") is { } href && !IsAllowedLink(href))
+                {
+                    link.RemoveAttribute("href");
+                }
+
                 link.SetAttribute("rel", "noopener noreferrer");
                 link.SetAttribute("target", "_blank");
+            }
+        };
+
+        // data-list (Quill bullets and checklists) only on li and only with the four editor values.
+        sanitizer.PostProcessNode += (_, e) =>
+        {
+            if (e.Node is AngleSharp.Dom.IElement element && element.GetAttribute("data-list") is { } list
+                && (element.LocalName != "li" || !ListKinds.Contains(list)))
+            {
+                element.RemoveAttribute("data-list");
             }
         };
 
@@ -82,6 +98,12 @@ public sealed partial class RichTextSanitizer : IRichTextSanitizer
 
         return sanitizer;
     }
+
+    private static readonly HashSet<string> ListKinds = new(["bullet", "ordered", "checked", "unchecked"], StringComparer.Ordinal);
+
+    private static bool IsAllowedLink(string href) =>
+        Uri.TryCreate(href.Trim(), UriKind.Absolute, out var uri) && Schemes.Contains(uri.Scheme, StringComparer.OrdinalIgnoreCase)
+        && (uri.Scheme == Uri.UriSchemeMailto || !href.TrimStart().StartsWith("//", StringComparison.Ordinal));
 
     [GeneratedRegex("^(rtl|ltr|auto)$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex DirPattern();
