@@ -1069,4 +1069,5 @@
   <data name="ReviewPolicy_AnswersAndCorrect" xml:space="preserve"><value>Score, their answers and the correct answers</value></data>
   <data name="ReviewPolicy_None" xml:space="preserve"><value>Submission only</value></data>
   <data name="ReviewPolicy_ScoreOnly" xml:space="preserve"><value>Score only</value></data>
+  <data name="Assignment_MinScoreUnknown" xml:space="preserve"><value>The minimum score could not be read. Close the dialog and try again.</value></data>
 </root>
