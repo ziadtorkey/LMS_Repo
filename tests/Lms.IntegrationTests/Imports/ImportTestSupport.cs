@@ -119,6 +119,8 @@ public sealed class ImportTestHost : IDisposable
             builder.UseSetting("Jobs:ServerEnabled", "false");
             builder.ConfigureServices(services =>
             {
+                services.RemoveAll<Lms.Infrastructure.Configuration.IPolicyEvaluator>();
+                services.AddScoped<Lms.Infrastructure.Configuration.IPolicyEvaluator, Lms.Infrastructure.Configuration.PolicyEvaluator>();
                 if (withTestDefinition)
                 {
                     services.AddImportDefinition<TestImportDefinition>();

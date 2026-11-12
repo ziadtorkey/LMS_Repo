@@ -68,6 +68,28 @@ public sealed class EnrollmentQueries(LmsDbContext db)
             .ToDictionaryAsync(c => c.Id, ct);
     }
 
+    public async Task<IReadOnlyList<StudentTransferDto>> TransferDtosAsync(IReadOnlyList<StudentTransfer> transfers, CancellationToken ct)
+    {
+        if (transfers.Count == 0)
+        {
+            return [];
+        }
+
+        var classIds = transfers.SelectMany(t => new[] { t.FromClassId, t.ToClassId }).Distinct().ToList();
+        var classes = await db.Set<Class>().Where(c => classIds.Contains(c.Id)).ToDictionaryAsync(c => c.Id, ct);
+        var userIds = transfers.Where(t => t.CreatedBy != null).Select(t => t.CreatedBy!.Value).Distinct().ToList();
+        var users = await db.Users.Where(u => userIds.Contains(u.Id)).ToDictionaryAsync(u => u.Id, ct);
+        return transfers.Select(t =>
+        {
+            classes.TryGetValue(t.FromClassId, out var from);
+            classes.TryGetValue(t.ToClassId, out var to);
+            var by = t.CreatedBy is { } id && users.TryGetValue(id, out var user) ? user : null;
+            return new StudentTransferDto(
+                t.Id, t.StudentId, from?.NameAr ?? string.Empty, from?.NameEn ?? string.Empty, to?.NameAr ?? string.Empty,
+                to?.NameEn ?? string.Empty, t.EffectiveOn, t.Reason, by?.DisplayNameAr, by?.DisplayNameEn, t.CreatedAt);
+        }).ToList();
+    }
+
     public async Task<IReadOnlyList<ClassStudentDto>> ClassStudentsAsync(Guid classId, CancellationToken ct)
     {
         var rows = await (

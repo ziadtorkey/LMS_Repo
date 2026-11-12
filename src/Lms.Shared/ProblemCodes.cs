@@ -117,4 +117,20 @@ public static class ProblemCodes
     public const string invalid_short_code = nameof(invalid_short_code);
     public const string teacher_already_assigned = nameof(teacher_already_assigned);
     public const string assignment_ended = nameof(assignment_ended);
+
+    // M4a wave 1 (lesson modules, assets, completion; M4a plan Task 1)
+    /// <summary>Scheduled visibility needs a from and/or to date, and from must be before to.</summary>
+    public const string module_visibility_range_invalid = nameof(module_visibility_range_invalid);
+
+    /// <summary>A group target must name a live group of the module's ClassCourse; a ClassCourse target names none.</summary>
+    public const string module_target_invalid = nameof(module_target_invalid);
+
+    /// <summary>The file's extension / content type is not in <c>AssetTypes.All</c>, or does not match the module kind.</summary>
+    public const string asset_type_not_allowed = nameof(asset_type_not_allowed);
+
+    /// <summary>The file is larger than the effective <c>Files.MaxUploadMb</c>.</summary>
+    public const string asset_too_large = nameof(asset_too_large);
+
+    /// <summary>Only a module with the Manual completion rule can be marked complete by the student.</summary>
+    public const string completion_not_manual = nameof(completion_not_manual);
 }

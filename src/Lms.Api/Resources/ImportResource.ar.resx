@@ -36,7 +36,20 @@
   <data name="ImportError_duplicate_in_file" xml:space="preserve"><value>القيمة نفسها موجودة في الصف {otherRow}.</value></data>
   <data name="ImportError_invalid_date" xml:space="preserve"><value>استخدم تاريخًا مثل 2026-09-01.</value></data>
   <data name="ImportError_unknown_unit" xml:space="preserve"><value>لا توجد وحدة بالرمز "{value}" في هذا الفرع.</value></data>
+  <data name="ImportError_invalid_code" xml:space="preserve"><value>استخدم من 1 إلى 50 حرفًا أو رقمًا أو - أو _.</value></data>
+  <data name="ImportError_invalid_language" xml:space="preserve"><value>استخدم رمز لغة من حرفين مثل ar أو en.</value></data>
+  <data name="ImportError_invalid_weekly_periods" xml:space="preserve"><value>يجب أن تكون الحصص الأسبوعية رقمًا من 0 إلى 40.</value></data>
+  <data name="ImportError_invalid_owner_unit" xml:space="preserve"><value>لا يمكن لهذه الوحدة امتلاك مواد (الجذر أو مستوى إدارة المواد فقط).</value></data>
+  <data name="ImportError_course_code_taken" xml:space="preserve"><value>توجد مادة أخرى بنفس الرمز.</value></data>
   <data name="ImportError_unexpected" xml:space="preserve"><value>فشل الاستيراد ولم يُحفظ أي شيء.</value></data>
+  <data name="ImportError_unknown_student" xml:space="preserve"><value>لا يوجد طالب بالكود "{value}" في هذا الفرع.</value></data>
+  <data name="ImportError_unknown_class" xml:space="preserve"><value>لا يوجد فصل بالرمز "{value}" في العام الحالي لهذا الفرع.</value></data>
+  <data name="ImportError_already_placed" xml:space="preserve"><value>هذا الطالب مسجل بالفعل في فصل في هذا العام الدراسي.</value></data>
+  <data name="ImportError_class_closed" xml:space="preserve"><value>هذا الفصل مغلق.</value></data>
+  <data name="ImportError_year_closed" xml:space="preserve"><value>هذا العام الدراسي مغلق.</value></data>
+  <data name="ImportError_class_full" xml:space="preserve"><value>هذا الفصل ممتلئ.</value></data>
+  <data name="ImportError_not_active" xml:space="preserve"><value>هذا الطالب غير نشط.</value></data>
+  <data name="ImportError_no_current_year" xml:space="preserve"><value>لا يوجد عام دراسي حالي لهذا الفرع.</value></data>
   <data name="ImportError_invalid_email" xml:space="preserve"><value>أدخل بريدًا إلكترونيًا صحيحًا.</value></data>
   <data name="ImportError_invalid_mobile" xml:space="preserve"><value>أدخل رقم جوال صحيحًا، مثل ‎+201001234567.</value></data>
   <data name="ImportError_invalid_national_id" xml:space="preserve"><value>يجب أن يتكون رقم الهوية من 5 إلى 20 حرفًا أو رقمًا.</value></data>

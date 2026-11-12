@@ -272,6 +272,38 @@ public sealed class CreateStudentPageTests : StudentsTestContext
     }
 
     [Fact]
+    public async Task Over_capacity_confirm_resends_with_the_flag()
+    {
+        var page = await RenderPageAsync();
+        await FillAsync(page);
+        await page.InvokeAsync(() => SelectWithTestId(page, "student-class").Instance.ValueChanged.InvokeAsync(FakeClasses.Grade1B.Id));
+
+        SaveWithDialog(page);
+        var yes = Dialogs.WaitForElement("button.mud-message-box__yes-button", Wait);
+        Assert.Contains("class is full", Dialogs.Markup);
+        await yes.ClickAsync(new());
+
+        page.WaitForAssertion(() => Assert.Equal(2, Students.Creates.Count), Wait);
+        Assert.False(Students.Creates[0].ConfirmOverCapacity);
+        Assert.True(Students.Creates[1].ConfirmOverCapacity);
+        await CloseCredentialsAsync();
+    }
+
+    [Fact]
+    public async Task Over_capacity_cancel_does_not_create()
+    {
+        var page = await RenderPageAsync();
+        await FillAsync(page);
+        await page.InvokeAsync(() => SelectWithTestId(page, "student-class").Instance.ValueChanged.InvokeAsync(FakeClasses.Grade1B.Id));
+
+        SaveWithDialog(page);
+        var cancel = Dialogs.WaitForElement("button.mud-message-box__cancel-button", Wait);
+        await cancel.ClickAsync(new());
+
+        Assert.Single(Students.Creates);
+    }
+
+    [Fact]
     public async Task Nationality_select_searches_arabic_and_english_names()
     {
         var page = await RenderPageAsync();
@@ -301,6 +333,28 @@ public sealed class CreateStudentPageTests : StudentsTestContext
         Assert.StartsWith("S-", Dialogs.Find("input[data-testid=credentials-code]").GetAttribute("value"));
         Assert.Contains("primary guardian", Dialogs.Find("[data-testid=credentials-delivery]").TextContent);
         Assert.NotNull(Dialogs.Find("[data-testid=credentials-once]"));
+        await CloseCredentialsAsync();
+    }
+
+    [Fact]
+    public async Task Credentials_dialog_ignores_escape_and_backdrop_so_the_one_time_password_is_not_lost()
+    {
+        var page = await RenderPageAsync();
+        await FillAsync(page);
+        Type(page, "guardian-name-ar-0", "ماجد");
+        Type(page, "guardian-name-en-0", "Majed");
+        Type(page, "guardian-mobile-0", "0509999999");
+
+        SaveWithDialog(page);
+
+        Dialogs.WaitForElement("[data-testid=credentials-password]", Wait);
+        // The provider keeps the open dialogs; the options each was opened with are on its reference.
+        var open = (System.Collections.IEnumerable)typeof(MudBlazor.MudDialogProvider)
+            .GetField("_dialogs", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.GetValue(Dialogs.Instance)!;
+        var reference = open.Cast<object>().Single();
+        var options = (MudBlazor.DialogOptions)reference.GetType().GetProperty("Options")!.GetValue(reference)!;
+        Assert.False(options.CloseOnEscapeKey);
+        Assert.False(options.BackdropClick);
         await CloseCredentialsAsync();
     }
 

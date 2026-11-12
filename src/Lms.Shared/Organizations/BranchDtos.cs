@@ -11,7 +11,8 @@ public sealed record CopyBranchRequest(
     bool IncludePolicies,
     bool IncludeSettings,
     string? NewRootNameAr,
-    string? NewRootNameEn);
+    string? NewRootNameEn,
+    bool IncludeCourses = false);
 
 /// <summary>Result of a branch copy; <c>SkippedLockedSettings</c> = setting names not copied because an ancestor locks them.</summary>
 public sealed record CopyBranchResultDto(Guid NewRootId, int UnitsCreated, IReadOnlyList<string> SkippedLockedSettings);

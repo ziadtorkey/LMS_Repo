@@ -46,7 +46,7 @@
                     </MudSelect>
                     <MudNumericField T="int" @bind-Value="_periods" Label="@L["Course_WeeklyPeriods"]" Min="0" Max="40"
                                      ReadOnly="ReadOnly" data-testid="course-periods" />
-                    <UnitPicker @bind-Value="_ownerId" Label="@L["Course_Owner"]" Required="true" TestId="course-owner"
+                    <UnitPicker @bind-Value="_ownerId" Label="@L["Course_Owner"]" Required="true" ReadOnly="ReadOnly" TestId="course-owner"
                                 Filter="IsOwnerCandidate" />
                     @if (!ReadOnly && CourseId is null)
                     {
