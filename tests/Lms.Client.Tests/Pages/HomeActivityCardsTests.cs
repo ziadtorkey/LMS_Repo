@@ -87,4 +87,47 @@ public sealed class HomeActivityCardsTests : LessonPlansTestContext
         page.WaitForElement("[data-testid=home-due-empty]", Wait);
         Assert.NotNull(page.Find("[data-testid=home-quizzes-empty]"));
     }
+
+    private sealed class PlansWithoutView : ILessonPlansApi
+    {
+        public Task<IReadOnlyList<Lms.Shared.Classes.ClassCourseDto>> GetMyClassCoursesAsync(CancellationToken ct = default) =>
+            Task.FromException<IReadOnlyList<Lms.Shared.Classes.ClassCourseDto>>(new Lms.Client.Services.ApiForbiddenException());
+        public Task<Lms.Shared.Classes.ClassLessonPlanDto> GetPlanAsync(Guid classCourseId, CancellationToken ct = default) => throw new NotSupportedException();
+    }
+
+    [Fact]
+    public async Task A_draft_submission_still_counts_as_work_to_hand_in()
+    {
+        _activities.Assignments[Cc] = [Assignment("Unfinished", "Draft", DateTime.UtcNow.AddDays(1)), Assignment("Done", "Submitted", DateTime.UtcNow.AddDays(1))];
+
+        var page = await OpenAsync(Permissions.CourseAssignments.View, Permissions.LessonPlans.View);
+
+        page.WaitForElement("[data-testid=home-due-assignments]", Wait);
+        Assert.Contains("Unfinished", page.Find("[data-testid=home-due-assignments]").TextContent);
+        Assert.DoesNotContain("Done", page.Find("[data-testid=home-due-assignments]").TextContent);
+    }
+
+    [Fact]
+    public async Task A_failed_load_shows_an_error_not_nothing_to_hand_in()
+    {
+        _activities.Failure = new ApiProblemException(500, "server_error", null, null);
+
+        var page = await OpenAsync(Permissions.CourseAssignments.View, Permissions.LessonPlans.View);
+
+        page.WaitForElement("[data-testid=home-activity-error]", Wait);
+        Assert.Empty(page.FindAll("[data-testid=home-due-empty]"));
+    }
+
+    [Fact]
+    public async Task A_role_without_LessonPlans_View_is_not_sent_to_the_forbidden_page()
+    {
+        Services.AddSingleton<ILessonPlansApi>(new PlansWithoutView());
+        var navigation = Services.GetRequiredService<Microsoft.AspNetCore.Components.NavigationManager>();
+        var before = navigation.Uri;
+
+        var page = await OpenAsync(Permissions.CourseAssignments.View);
+
+        page.WaitForElement("[data-testid=home-due-empty]", Wait); // no class courses to read: an honest empty list, no redirect
+        Assert.Equal(before, navigation.Uri);
+    }
 }
