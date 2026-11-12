@@ -13,6 +13,8 @@ public static class EnrollmentServiceCollectionExtensions
         services.AddScoped<EnrollmentEngine>();
         services.AddScoped<IEnrollmentEngine>(sp => sp.GetRequiredService<EnrollmentEngine>());
         services.AddScoped<IClassCourseLifecycleHandler, EnrollmentClassCourseHandler>();
+        services.AddScoped<IGroupTargets, GroupTargets>();
+        services.AddScoped<TransferNotifier>();
         return services;
     }
 }

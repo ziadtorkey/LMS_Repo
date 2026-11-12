@@ -2,8 +2,8 @@
 
 _Updated by the Team Lead after every merge cycle._
 
-**Milestone:** M0 — DONE · M1 Organization & Access — closing (48 / 49; last: #73 via #200) · M2 People — closing (27 / 29; #175 via #308, #176/#177 via E2E PRs) · M3 Academic Structure — in progress (12 / 49)
-**Last update:** 2026-11-11 20:55 — UI/UX designer joined (#328 merged; pilot #327 on Staff list + Staff profile). Approved, waiting on CI: #200, #279, #282, #283, #320. Re-approved: #306, #302 (need main merged in). Many M3 PRs need main merged in after recent merges.
+**Milestone:** M0 — DONE · M1 Organization & Access — DONE (#73 via #200) · M2 People — closing (#177 via #321) · M3 Academic Structure — in progress
+**Last update:** 2026-11-12 09:07 — Merged: #347 (#344 counselor fix), #313 transfers, #274 student codes. M4a plan #345 approved; 33 issues #351–#383 created and assigned (BE1 #357, BE2 #353/#356, BE4 #354/#355, FE1 #364/#365, FE2 #366/#367, QA2 #379). Contracts: #346 M4a wave 1 (approved), #350 Supervisor Students.View scope (D42). Owner demo running on localhost:5132 (Lead holds e2e.lock).
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |

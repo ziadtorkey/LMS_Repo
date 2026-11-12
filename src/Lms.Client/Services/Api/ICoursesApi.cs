@@ -14,19 +14,17 @@ public interface ICoursesApi
 
 public sealed class CoursesApi(ApiHttp http) : ICoursesApi
 {
-    private const string Route = "/api/courses";
-
     public Task<PagedResult<CourseSummaryDto>> ListAsync(CourseQuery query, CancellationToken ct = default) =>
-        http.GetAsync<PagedResult<CourseSummaryDto>>(Route + ToQueryString(query), ct);
+        http.GetAsync<PagedResult<CourseSummaryDto>>(Routes.Courses + ToQueryString(query), ct);
 
     public Task<CourseDetailDto> GetAsync(Guid id, CancellationToken ct = default) =>
-        http.GetAsync<CourseDetailDto>($"{Route}/{id}", ct);
+        http.GetAsync<CourseDetailDto>(Routes.Course(id), ct);
 
     public async Task<CourseDetailDto> CreateAsync(SaveCourseRequest request, CancellationToken ct = default) =>
-        (await http.SendAsync<CourseDetailDto>(HttpMethod.Post, Route, request, ct))!;
+        (await http.SendAsync<CourseDetailDto>(HttpMethod.Post, Routes.Courses, request, ct))!;
 
     public Task UpdateAsync(Guid id, SaveCourseRequest request, CancellationToken ct = default) =>
-        http.SendAsync(HttpMethod.Put, $"{Route}/{id}", request, ct);
+        http.SendAsync(HttpMethod.Put, Routes.Course(id), request, ct);
 
     /// <summary>Query string of a course list request; unset filters are left out.</summary>
     public static string ToQueryString(CourseQuery q)

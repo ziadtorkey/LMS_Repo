@@ -59,6 +59,8 @@ public sealed class IsolationBypassGuardTests
             "setting locks sit on ancestors above the caller's scope when a copied branch is materialized (M1 Task 15, #50)",
         ["src/Lms.Api/Features/LevelTypes/LevelTypeEndpoints.cs"] =
             "level types are client-wide, so the in-use count covers the whole client, not the caller subtree (M1 Task 8, #83)",
+        ["src/Lms.Api/Features/Courses/Import/CourseImportDefinition.cs"] =
+            "live course codes of the client outside the caller subtree, only the code keys (course code is unique per client, M3 Task 6, #214)",
         ["src/Lms.Infrastructure/Courses/CourseCatalog.cs"] =
             "courses and allocations owned by ancestors of the caller scope, restricted to the client (M3 Task 5, #213)",
         ["src/Lms.Infrastructure/Notifications/NotificationRecipientResolver.cs"] =
@@ -77,6 +79,8 @@ public sealed class IsolationBypassGuardTests
             "holidays of ancestor units apply to descendants, restricted to the client and effective years (M1 Task 22, #57)",
         ["src/Lms.Infrastructure/People/PersonStatusService.cs"] =
             "a user's account status derives from their profiles in every client; only that user's statuses are read (M2 Task 6, #158)",
+        ["src/Lms.Infrastructure/People/StudentCodeGenerator.cs"] =
+            "student codes are unique per client across all schools and for deleted students; client matched, only a yes/no leaves (M3 Task 18, #226)",
         ["src/Lms.Api/Features/Enrollment/EnrollmentQueries.cs"] =
             "names of the course of a class course, owned by an ancestor unit above the caller's scope; names only, for class courses the caller already sees; client matched, deleted excluded (M3 Task 24, #232)",
         ["src/Lms.Infrastructure/Enrollment/PlacementGuard.cs"] =
