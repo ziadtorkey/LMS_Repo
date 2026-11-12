@@ -1015,4 +1015,8 @@
   <data name="AssignmentStudent_SaveDraft" xml:space="preserve"><value>حفظ كمسودة</value></data>
   <data name="AssignmentStudent_Text" xml:space="preserve"><value>إجابتك</value></data>
   <data name="AssignmentStudent_NeedTextOrFile" xml:space="preserve"><value>اكتب إجابتك أو أرفق ملفًا أولًا.</value></data>
+  <data name="Duration_DaysHours" xml:space="preserve"><value>{0} يوم {1} ساعة</value></data>
+  <data name="Duration_HoursMinutes" xml:space="preserve"><value>{0} ساعة {1} دقيقة</value></data>
+  <data name="Duration_Minutes" xml:space="preserve"><value>{0} دقيقة</value></data>
+  <data name="AssignmentStudent_RemoveFile" xml:space="preserve"><value>إزالة</value></data>
 </root>

@@ -139,8 +139,10 @@ else
         return span >= TimeSpan.Zero ? L["AssignmentStudent_DueIn", text] : L["AssignmentStudent_OverdueBy", text];
     }
 
-    private static string Format(TimeSpan s) =>
-        s.TotalDays >= 1 ? $"{(int)s.TotalDays} d {s.Hours} h" : s.TotalHours >= 1 ? $"{(int)s.TotalHours} h {s.Minutes} min" : $"{Math.Max(1, (int)s.TotalMinutes)} min";
+    private string Format(TimeSpan s) =>
+        s.TotalDays >= 1 ? L["Duration_DaysHours", (int)s.TotalDays, s.Hours].Value
+        : s.TotalHours >= 1 ? L["Duration_HoursMinutes", (int)s.TotalHours, s.Minutes].Value
+        : L["Duration_Minutes", Math.Max(1, (int)s.TotalMinutes)].Value;
 
     private string LateNote(CourseAssignmentDto a) => a.LatePolicy switch
     {

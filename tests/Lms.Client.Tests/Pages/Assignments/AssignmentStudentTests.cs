@@ -1,5 +1,6 @@
 using System.Globalization;
 using Bunit;
+using Lms.Client.Components.Assets;
 using Lms.Client.Components.Editors;
 using Lms.Client.Pages.Assignments;
 using Lms.Client.Services.Api;
@@ -182,5 +183,46 @@ public sealed class AssignmentStudentTests : LessonPlansTestContext
         RenderProviders();
         var page = Render<AssignmentPage>(p => p.Add(x => x.Id, Cc).Add(x => x.AssignmentId, _id));
         page.WaitForElement("[data-testid=submit-no-permission]", Wait);
+    }
+
+    [Fact]
+    public async Task An_uploaded_file_can_be_removed_before_submitting()
+    {
+        var page = await OpenAsync();
+        var keep = new AssetDto(Guid.NewGuid(), Cc, AssetKinds.Document, "keep.pdf", "application/pdf", 1, null, true, DateTime.UtcNow);
+        var drop = new AssetDto(Guid.NewGuid(), Cc, AssetKinds.Document, "drop.pdf", "application/pdf", 1, null, true, DateTime.UtcNow);
+        await page.InvokeAsync(() => page.FindComponent<AssetUploader>().Instance.OnUploaded.InvokeAsync(keep));
+        await page.InvokeAsync(() => page.FindComponent<AssetUploader>().Instance.OnUploaded.InvokeAsync(drop));
+
+        page.Find($"[data-testid=submit-file-remove-{drop.Id}]").Click();
+        page.Find("[data-testid=submit-send]").Click();
+
+        page.WaitForAssertion(() => Assert.Single(_api.SubmitRequests));
+        Assert.Equal([keep.Id], _api.SubmitRequests.Single().FileAssetIds);
+    }
+
+    [Fact]
+    public async Task Countdown_units_are_localized()
+    {
+        Culture.Current = new CultureInfo("ar");
+        _time.Now = new DateTimeOffset(Due.AddHours(-30));
+        _api.ServerNow = () => Due.AddHours(-30);
+
+        var page = await OpenAsync();
+
+        var text = page.Find("[data-testid=assignment-countdown]").TextContent;
+        Assert.Contains("1 يوم 6 ساعة", text);
+        Assert.DoesNotContain(" d ", text);
+    }
+
+    [Fact]
+    public async Task Assignment_page_is_arabic_with_left_to_right_dates()
+    {
+        Culture.Current = new CultureInfo("ar");
+        var page = await OpenAsync();
+
+        Assert.Equal("ltr", page.Find("[data-testid=assignment-due] span").GetAttribute("dir"));
+        Assert.Contains("تسليم", page.Find("[data-testid=submit-send]").TextContent);
+        Assert.Contains("عملك", page.Find("[data-testid=submit-panel]").TextContent);
     }
 }

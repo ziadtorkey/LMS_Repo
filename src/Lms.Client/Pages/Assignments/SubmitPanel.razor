@@ -35,9 +35,13 @@ else
             }
             @if (Assignment.AllowFiles)
             {
-                @foreach (var name in _files.Select(f => f.Name))
+                @foreach (var file in _files.ToList())
                 {
-                    <MudText Typo="Typo.caption"><span dir="ltr">@name</span></MudText>
+                    <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center" data-testid="@($"submit-file-{file.Id}")">
+                        <MudText Typo="Typo.caption"><span dir="ltr">@file.Name</span></MudText>
+                        <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" aria-label="@(L["AssignmentStudent_RemoveFile"].Value + " " + file.Name)"
+                                       OnClick="() => _files.Remove(file)" data-testid="@($"submit-file-remove-{file.Id}")" />
+                    </MudStack>
                 }
                 <AssetUploader ClassCourseId="Assignment.ClassCourseId" OnUploaded="OnUploaded" />
             }

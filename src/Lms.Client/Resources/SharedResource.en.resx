@@ -1015,4 +1015,8 @@
   <data name="AssignmentStudent_SaveDraft" xml:space="preserve"><value>Save as draft</value></data>
   <data name="AssignmentStudent_Text" xml:space="preserve"><value>Your answer</value></data>
   <data name="AssignmentStudent_NeedTextOrFile" xml:space="preserve"><value>Write your answer or attach a file first.</value></data>
+  <data name="Duration_DaysHours" xml:space="preserve"><value>{0} d {1} h</value></data>
+  <data name="Duration_HoursMinutes" xml:space="preserve"><value>{0} h {1} min</value></data>
+  <data name="Duration_Minutes" xml:space="preserve"><value>{0} min</value></data>
+  <data name="AssignmentStudent_RemoveFile" xml:space="preserve"><value>Remove</value></data>
 </root>
