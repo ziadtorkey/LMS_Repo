@@ -20,21 +20,10 @@ public static class FileContentTypes
         [".mp4"] = "video/mp4",
         [".mp3"] = "audio/mpeg",
         [".zip"] = "application/zip",
-        [".txt"] = "text/plain",
-        [".gif"] = "image/gif",
-        [".webp"] = "image/webp",
-        [".m4a"] = "audio/mp4",
-        [".ogg"] = "audio/ogg",
-        [".wav"] = "audio/wav",
-        [".webm"] = "video/webm",
     };
 
     public static string ForExtension(string extension) =>
         ByExtension.TryGetValue(extension, out var type) ? type : Fallback;
-
-    /// <summary>Content-Disposition value for in-browser viewing under the original file name (RFC 6266 / 5987).</summary>
-    public static string InlineDisposition(string fileName, string extension) =>
-        $"inline; filename=\"view{extension.ToLowerInvariant()}\"; filename*=UTF-8''{Uri.EscapeDataString(fileName)}";
 
     /// <summary>Content-Disposition value that forces a download under the original file name (RFC 6266 / 5987).</summary>
     public static string AttachmentDisposition(string fileName, string extension) =>
