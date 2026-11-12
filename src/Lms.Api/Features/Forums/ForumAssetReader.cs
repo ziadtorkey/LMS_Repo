@@ -20,7 +20,12 @@ internal sealed class ForumAssetReader(LmsDbContext db, IHttpContextAccessor acc
             return false;
         }
 
-        var attached = await db.Set<ForumPostAttachment>().AnyAsync(a => a.AssetId == asset.Id && a.ClassCourseId == asset.ClassCourseId, cancellationToken);
-        return attached && await ForumSupport.HoldsAsync(http, Permissions.Forums.View, asset.ClassCourseId, cancellationToken);
+        if (asset.ClassCourseId is not { } classCourseId)
+        {
+            return false; // a unit-owned (library) asset is never a forum attachment
+        }
+
+        var attached = await db.Set<ForumPostAttachment>().AnyAsync(a => a.AssetId == asset.Id && a.ClassCourseId == classCourseId, cancellationToken);
+        return attached && await ForumSupport.HoldsAsync(http, Permissions.Forums.View, classCourseId, cancellationToken);
     }
 }
