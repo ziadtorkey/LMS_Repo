@@ -937,6 +937,30 @@
   <data name="LessonPlan_Hidden" xml:space="preserve"><value>مخفي</value></data>
   <data name="LessonPlan_Planned" xml:space="preserve"><value>المخطط</value></data>
   <data name="LessonPlan_HijriSuffix" xml:space="preserve"><value>هـ</value></data>
+  <data name="LessonPlan_CourseProgress" xml:space="preserve"><value>تقدمك في المقرر</value></data>
+  <data name="LessonPlan_LessonProgress" xml:space="preserve"><value>تقدمك في الدرس</value></data>
+  <data name="ModuleKind_Assignment" xml:space="preserve"><value>واجب</value></data>
+  <data name="ModuleKind_Audio" xml:space="preserve"><value>صوت</value></data>
+  <data name="ModuleKind_File" xml:space="preserve"><value>ملف</value></data>
+  <data name="ModuleKind_H5p" xml:space="preserve"><value>محتوى H5P</value></data>
+  <data name="ModuleKind_LibraryResource" xml:space="preserve"><value>مورد من المكتبة</value></data>
+  <data name="ModuleKind_Link" xml:space="preserve"><value>رابط</value></data>
+  <data name="ModuleKind_LiveSession" xml:space="preserve"><value>حصة مباشرة</value></data>
+  <data name="ModuleKind_Page" xml:space="preserve"><value>صفحة</value></data>
+  <data name="ModuleKind_Quiz" xml:space="preserve"><value>اختبار</value></data>
+  <data name="ModuleKind_Scorm" xml:space="preserve"><value>حزمة SCORM</value></data>
+  <data name="ModuleKind_Video" xml:space="preserve"><value>فيديو</value></data>
+  <data name="Module_Group" xml:space="preserve"><value>المجموعة: {0}</value></data>
+  <data name="Module_NotVisibleNow" xml:space="preserve"><value>غير ظاهر الآن</value></data>
+  <data name="Module_ScheduledFrom" xml:space="preserve"><value>ظاهر من {0}</value></data>
+  <data name="Module_ScheduledRange" xml:space="preserve"><value>ظاهر من {0} إلى {1}</value></data>
+  <data name="Module_ScheduledUntil" xml:space="preserve"><value>ظاهر حتى {0}</value></data>
+  <data name="Module_State_Completed" xml:space="preserve"><value>مكتمل</value></data>
+  <data name="Module_State_InProgress" xml:space="preserve"><value>قيد التنفيذ</value></data>
+  <data name="Module_State_NotStarted" xml:space="preserve"><value>لم يبدأ</value></data>
+  <data name="Module_Visibility_Hidden" xml:space="preserve"><value>مخفي</value></data>
+  <data name="Module_Visibility_Scheduled" xml:space="preserve"><value>مجدول</value></data>
+  <data name="Progress_Count" xml:space="preserve"><value>{0} من {1}</value></data>
   <data name="LessonPlan_Modules" xml:space="preserve"><value>الوحدات التعليمية</value></data>
   <data name="LessonPlan_ModulesLater" xml:space="preserve"><value>تصل الوحدات التعليمية في إصدار لاحق.</value></data>
   <data name="RichText_Bold" xml:space="preserve"><value>غامق</value></data>

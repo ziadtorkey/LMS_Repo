@@ -63,3 +63,6 @@ html:lang(ar), html:lang(ar) body { font-family: Cairo, "Segoe UI", Tahoma, Aria
 /* Lesson plan: items removed from the blueprint stay visible to staff, greyed out. */
 .lms-plan-hidden { opacity: 0.55; }
 .lms-plan-lesson { padding-block: 4px; }
+.lms-plan-modules { padding-inline-start: 24px; margin-block: 4px; }
+.lms-module-node { padding-block: 2px; }
+.lms-progress { max-inline-size: 28rem; margin-block: 4px; }
