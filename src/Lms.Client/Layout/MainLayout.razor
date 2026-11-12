@@ -12,7 +12,7 @@
     <MudRTLProvider RightToLeft="@Culture.IsRightToLeft">
         <MudThemeProvider Theme="_theme" IsDarkMode="_isDark" />
         <MudPopoverProvider />
-        <MudDialogProvider />
+        <MudDialogProvider CloseOnEscapeKey="true" />
         <MudSnackbarProvider />
         <MudLayout>
             <MudAppBar Elevation="0" Class="lms-appbar">
