@@ -80,7 +80,7 @@ public sealed class StudentsTests(E2EFixture fixture) : E2ETestBase(fixture)
         await Expect(Page.GetByTestId("profile-code")).ToHaveTextAsync(code);
         await Expect(Page.GetByTestId("profile-class")).ToContainTextAsync(className);
         await Page.GetByRole(Microsoft.Playwright.AriaRole.Tab, new() { Name = Resx.In(culture, "Student_Guardians") }).ClickAsync();
-        await Expect(Page.GetByTestId("guardians-placeholder")).ToContainTextAsync(culture == "ar" ? guardian.NameAr : guardian.NameEn);
+        await Expect(Page.GetByTestId("guardians-table")).ToContainTextAsync(culture == "ar" ? guardian.NameAr : guardian.NameEn);
 
         // The sibling: typing the same national id offers the registered guardian; linking it creates no second one.
         await form.OpenAsync();

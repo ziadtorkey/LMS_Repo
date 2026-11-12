@@ -57,13 +57,13 @@ internal static class M3Kit
         return new Placement(created.GetProperty("id").GetGuid(), nameAr, nameEn);
     }
 
-    public sealed record StudentAccount(Guid Id, string NameAr, string NameEn, string UserName, string Password);
+    public sealed record StudentAccount(Guid Id, string NameAr, string NameEn, string UserName, string Password, string GuardianEmail);
 
     /// <summary>
     /// Creates a student at KG Section 1 through the API with a new primary guardian (so the credentials go to the guardian)
     /// and returns the student with the sign-in name and the one-time default password.
     /// </summary>
-    public static async Task<StudentAccount> CreateStudentAsync(E2EApi api, KgSection kg, M2Names names, string label, int slot)
+    public static async Task<StudentAccount> CreateStudentAsync(E2EApi api, KgSection kg, M2Names names, string label, int slot, Guid? classId = null)
     {
         var nameAr = names.NameAr($"{label}-ar");
         var nameEn = names.NameEn(label);
@@ -88,12 +88,13 @@ internal static class M3Kit
                     isPrimary = true,
                 },
             },
-            classId = (Guid?)null,
+            classId,
             defaultPassword = (string?)null,
             confirmOverCapacity = false,
         }));
         return new StudentAccount(
             created.GetProperty("student").GetProperty("summary").GetProperty("id").GetGuid(), nameAr, nameEn,
-            created.GetProperty("userName").GetString()!, created.GetProperty("issuedPassword").GetString()!);
+            created.GetProperty("userName").GetString()!, created.GetProperty("issuedPassword").GetString()!, names.Email($"g{slot}"));
     }
 }
+
