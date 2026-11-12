@@ -16,7 +16,7 @@ namespace Lms.Infrastructure.Persistence.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "char(36)", nullable: false),
-                    ClassCourseId = table.Column<Guid>(type: "char(36)", nullable: false),
+                    ClassCourseId = table.Column<Guid>(type: "char(36)", nullable: true),
                     FileId = table.Column<Guid>(type: "char(36)", nullable: false),
                     Kind = table.Column<string>(type: "varchar(20)", maxLength: 20, nullable: false),
                     FileName = table.Column<string>(type: "varchar(255)", maxLength: 255, nullable: false),
