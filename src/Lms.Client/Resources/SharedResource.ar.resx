@@ -862,4 +862,11 @@
   <data name="LessonPlan_HijriSuffix" xml:space="preserve"><value>هـ</value></data>
   <data name="LessonPlan_Modules" xml:space="preserve"><value>الوحدات التعليمية</value></data>
   <data name="LessonPlan_ModulesLater" xml:space="preserve"><value>تصل الوحدات التعليمية في إصدار لاحق.</value></data>
+  <data name="Home_DueAssignments" xml:space="preserve"><value>واجبات تنتظر التسليم</value></data>
+  <data name="Home_NothingDue" xml:space="preserve"><value>لا شيء للتسليم.</value></data>
+  <data name="Home_OpenQuizzes" xml:space="preserve"><value>اختبارات مفتوحة</value></data>
+  <data name="Home_NoOpenQuizzes" xml:space="preserve"><value>لا يوجد اختبار مفتوح الآن.</value></data>
+  <data name="Home_ToGrade" xml:space="preserve"><value>بانتظار التصحيح</value></data>
+  <data name="Home_NothingToGrade" xml:space="preserve"><value>لا شيء بانتظار التصحيح.</value></data>
+  <data name="Home_WaitingCount" xml:space="preserve"><value>{0} بالانتظار</value></data>
 </root>

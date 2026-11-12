@@ -862,4 +862,11 @@
   <data name="LessonPlan_HijriSuffix" xml:space="preserve"><value>AH</value></data>
   <data name="LessonPlan_Modules" xml:space="preserve"><value>Modules</value></data>
   <data name="LessonPlan_ModulesLater" xml:space="preserve"><value>Modules arrive in a later release.</value></data>
+  <data name="Home_DueAssignments" xml:space="preserve"><value>Assignments to hand in</value></data>
+  <data name="Home_NothingDue" xml:space="preserve"><value>Nothing to hand in.</value></data>
+  <data name="Home_OpenQuizzes" xml:space="preserve"><value>Open quizzes</value></data>
+  <data name="Home_NoOpenQuizzes" xml:space="preserve"><value>No quiz is open right now.</value></data>
+  <data name="Home_ToGrade" xml:space="preserve"><value>To grade</value></data>
+  <data name="Home_NothingToGrade" xml:space="preserve"><value>Nothing waits for grading.</value></data>
+  <data name="Home_WaitingCount" xml:space="preserve"><value>{0} waiting</value></data>
 </root>
