@@ -81,7 +81,8 @@ public sealed class LibraryPageTests : LessonPlansTestContext
         _library.Add("Algebra book", LibraryResourceTypes.Book, [grade1], tags: ["algebra"]);
         _library.Add("Geometry video", LibraryResourceTypes.Video, [grade1], tags: ["geometry"]);
         _library.Add("Other level video", LibraryResourceTypes.Video, [Guid.NewGuid()], tags: ["algebra"]);
-        var page = await OpenAsync(Permissions.Library.View);
+        Org.Levels.Add(new Lms.Shared.Organizations.LevelTypeDto(grade1, "الصف الأول", "Grade 1", 1, true, 1));
+        var page = await OpenAsync(Permissions.Library.View, Permissions.LevelTypes.View);
         page.WaitForElement("[data-testid=library-grid]", Wait);
 
         await page.InvokeAsync(() => page.FindComponent<MudSelect<string>>().Instance.ValueChanged.InvokeAsync(LibraryResourceTypes.Video));
@@ -188,5 +189,22 @@ public sealed class LibraryPageTests : LessonPlansTestContext
         var saved = _library.Resources.Single();
         Assert.Equal(("Site", LibraryResourceTypes.Link, "https://example.test"), (saved.TitleEn, saved.Type, saved.Url));
         Assert.Equal(["math", "algebra"], saved.Tags);
+    }
+
+    [Fact]
+    public async Task Callers_without_lookup_permissions_still_open_the_library()
+    {
+        // Students and teachers cannot read level types or courses: a 403 there would send the whole page to /forbidden.
+        Org.LevelsFailure = new Lms.Client.Services.ApiForbiddenException();
+        _library.Add("Book");
+        var navigation = Services.GetRequiredService<Microsoft.AspNetCore.Components.NavigationManager>();
+        var before = navigation.Uri;
+
+        var page = await OpenAsync(Permissions.Library.View);
+
+        page.WaitForElement("[data-testid=library-grid]", Wait);
+        Assert.Equal(before, navigation.Uri);
+        Assert.Empty(page.FindAll("[data-testid=library-level]"));
+        Assert.Empty(page.FindAll("[data-testid=library-course]"));
     }
 }
