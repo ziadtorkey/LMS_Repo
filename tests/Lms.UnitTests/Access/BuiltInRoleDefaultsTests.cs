@@ -7,9 +7,9 @@ namespace Lms.UnitTests.Access;
 public class BuiltInRoleDefaultsTests
 {
     [Fact]
-    public void Current_version_is_3_for_the_M3_defaults()
+    public void Current_version_is_4_for_the_M4a_defaults()
     {
-        Assert.Equal(3, BuiltInRoleDefaults.CurrentVersion);
+        Assert.Equal(4, BuiltInRoleDefaults.CurrentVersion);
     }
 
     [Theory]
@@ -24,6 +24,8 @@ public class BuiltInRoleDefaultsTests
     [InlineData(Permissions.Courses.ManageSupervisors, 3)]
     [InlineData(Permissions.Blueprints.Publish, 3)]
     [InlineData(Permissions.LessonPlans.View, 3)]
+    [InlineData(Permissions.Modules.View, 4)]
+    [InlineData(Permissions.Modules.Manage, 4)]
     public void Each_permission_has_the_version_that_introduced_it(string permission, int version)
     {
         Assert.Equal(version, BuiltInRoleDefaults.IntroducedIn(permission));
@@ -43,7 +45,7 @@ public class BuiltInRoleDefaultsTests
     }
 
     [Fact]
-    public void A_version_2_role_only_receives_the_M3_defaults()
+    public void A_version_2_role_receives_the_M3_and_M4a_defaults()
     {
         var added = BuiltInRoles.Get(BuiltInRoles.Guardian).DefaultPermissions
             .Where(p => BuiltInRoleDefaults.IntroducedIn(p) > 2)
@@ -53,9 +55,32 @@ public class BuiltInRoleDefaultsTests
             .ToList();
 
         Assert.Equal(["Students.ViewChildren"], added);
-        Assert.Equal(33, orgAdmin.Count);
+        Assert.Equal(35, orgAdmin.Count);
+        Assert.Equal(33, orgAdmin.Count(p => BuiltInRoleDefaults.IntroducedIn(p) == 3));
         Assert.DoesNotContain(orgAdmin, p => p.StartsWith("Staff.", StringComparison.Ordinal));
     }
+
+    [Fact]
+    public void A_version_3_role_only_receives_the_M4a_defaults()
+    {
+        string[] Added(string role) => BuiltInRoles.Get(role).DefaultPermissions
+            .Where(p => BuiltInRoleDefaults.IntroducedIn(p) > 3)
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.Equal(["Modules.Manage", "Modules.View"], Added(BuiltInRoles.OrgAdmin));
+        Assert.Equal(["Modules.Manage", "Modules.View"], Added(BuiltInRoles.Manager));
+        Assert.Equal(["Modules.View"], Added(BuiltInRoles.Supervisor));
+        Assert.Equal(["Modules.Manage", "Modules.View"], Added(BuiltInRoles.Teacher));
+        Assert.Equal(["Modules.View"], Added(BuiltInRoles.Student));
+        Assert.Empty(Added(BuiltInRoles.Counselor));
+        Assert.Empty(Added(BuiltInRoles.Guardian));
+    }
+
+    [Fact]
+    public void Every_M4a_permission_is_introduced_in_version_4() =>
+        Assert.All(Permissions.All.Where(p => p.StartsWith("Modules.", StringComparison.Ordinal)),
+            p => Assert.Equal(4, BuiltInRoleDefaults.IntroducedIn(p)));
 
     [Fact]
     public void Every_M3_permission_is_introduced_in_version_3()

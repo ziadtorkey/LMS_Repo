@@ -1,5 +1,6 @@
 using Bunit;
 using Lms.Client.Layout;
+using MudBlazor;
 using Lms.Client.Tests.Support;
 using System.Globalization;
 
@@ -76,4 +77,16 @@ public sealed class MainLayoutTests : ClientTestContext
     [InlineData("en", "Learning Management System")]
     public void Header_text_is_localized(string culture, string expected) =>
         Assert.Contains(expected, RenderLayout(culture).Markup);
+
+    [Fact]
+    public void The_dialog_provider_closes_dialogs_on_escape_by_default()
+    {
+        // MudBlazor closes on Escape through a JS key listener that bUnit cannot press; what we own is the provider default,
+        // so every dialog opened without explicit options is dismissible with the keyboard (verified in a browser, see the PR).
+        var provider = RenderLayout("en").FindComponent<MudDialogProvider>().Instance;
+
+        var closeOnEscape = typeof(MudDialogProvider).GetProperty(nameof(MudDialogProvider.CloseOnEscapeKey))!.GetValue(provider);
+
+        Assert.Equal(true, closeOnEscape);
+    }
 }
