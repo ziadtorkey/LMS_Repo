@@ -1,0 +1,80 @@
+@using Lms.Client.Components.Content
+@using Lms.Client.Services.Api
+@using Lms.Shared
+@using Lms.Shared.Content
+@using Lms.Shared.Quizzes
+@inject IQuizzesApi Api
+@inject NavigationManager Navigation
+
+@* Creates the quiz and its lesson module (no questions yet); the builder opens afterwards. *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="2">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" data-testid="newquiz-error">@_error</MudAlert>
+            }
+            <MudSelect T="Guid?" @bind-Value="_lesson" Label="@L["Assignment_Lesson"]" Required="true" RequiredError="@L["Common_Required"]"
+                       Error="@(_lessonError is not null)" ErrorText="@_lessonError" data-testid="newquiz-lesson">
+                @foreach (var l in Lessons)
+                {
+                    <MudSelectItem T="Guid?" Value="@((Guid?)l.Key)">@l.Title</MudSelectItem>
+                }
+            </MudSelect>
+            <ModuleMetadataForm Model="_model.Module" Groups="Groups" Rules="_rules" VisibilityError='@Err("visibility")' TargetError='@Err("target")' />
+            @if (Err("title") is { } t)
+            {
+                <MudText Color="Color.Error" Typo="Typo.caption" role="alert">@t</MudText>
+            }
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()">@L["Common_Cancel"]</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CreateAsync" Disabled="_saving" data-testid="newquiz-save">@L["Common_Save"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private static readonly IReadOnlyList<string> _rules = CompletionRules.ForActivity(ModuleKinds.Quiz);
+    private readonly QuizSettingsModel _model = new();
+    private Guid? _lesson;
+    private string? _error, _lessonError;
+    private Dictionary<string, string> _errors = [];
+    private bool _saving;
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter, EditorRequired] public Guid ClassCourseId { get; set; }
+    [Parameter] public IReadOnlyList<ModuleLessonOption> Lessons { get; set; } = [];
+    [Parameter] public IReadOnlyList<ModuleGroupOption> Groups { get; set; } = [];
+
+    private string? Err(string field) => _errors.TryGetValue(field, out var key) ? L[key].Value : null;
+
+    private async Task CreateAsync()
+    {
+        _error = _lessonError = null;
+        _errors = _model.Validate(0);
+        if (_lesson is null) _lessonError = L["Common_Required"];
+        if (_errors.Count > 0 || _lessonError is not null) return;
+        _saving = true;
+        try
+        {
+            var created = await Api.CreateAsync(ClassCourseId, new CreateQuizRequest(_lesson!.Value, _model.ToModuleSettings(), null, null, _model.ToSettings()));
+            MudDialog.Close(DialogResult.Ok(created));
+        }
+        catch (Exception ex) when (ApiCalls.TryRedirect(ex, Navigation))
+        {
+        }
+        catch (ApiProblemException ex)
+        {
+            _error = ProblemText.For(ex, L);
+        }
+        catch (HttpRequestException)
+        {
+            _error = L["Error_Generic"];
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+}

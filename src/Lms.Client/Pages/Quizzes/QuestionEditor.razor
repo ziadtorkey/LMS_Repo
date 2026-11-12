@@ -1,0 +1,117 @@
+@using System.Globalization
+@using Lms.Shared.Quizzes
+
+@* One question of the builder: type, text, points, options with correct flags. After the first attempt (Locked) the type, points,
+   correct flags and option set cannot change on the server, so only the texts stay editable here. *@
+<MudPaper Outlined="true" Class="pa-3" data-testid="@($"question-{Index}")">
+    <MudStack Spacing="2">
+        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+            <MudText Typo="Typo.subtitle1">@L["Quiz_QuestionN", Index + 1]</MudText>
+            <MudStack Row="true" Spacing="0">
+                <MudIconButton Icon="@Icons.Material.Rounded.ArrowUpward" Size="Size.Small" Disabled="@(Locked || Index == 0)" aria-label="@L["Quiz_MoveUp"]"
+                               OnClick="() => OnMove.InvokeAsync(-1)" data-testid="@($"question-up-{Index}")" />
+                <MudIconButton Icon="@Icons.Material.Rounded.ArrowDownward" Size="Size.Small" Disabled="@(Locked || Index == Count - 1)" aria-label="@L["Quiz_MoveDown"]"
+                               OnClick="() => OnMove.InvokeAsync(1)" data-testid="@($"question-down-{Index}")" />
+                <MudIconButton Icon="@Icons.Material.Rounded.Delete" Size="Size.Small" Disabled="Locked" aria-label="@L["Quiz_RemoveQuestion"]"
+                               OnClick="() => OnRemove.InvokeAsync()" data-testid="@($"question-remove-{Index}")" />
+            </MudStack>
+        </MudStack>
+
+        <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+            <MudSelect T="string" Value="Question.Type" ValueChanged="OnTypeChangedAsync" Label="@L["Quiz_Type"]" Disabled="Locked"
+                       Style="min-width:12rem" data-testid="@($"question-type-{Index}")">
+                @foreach (var t in QuestionTypes.All)
+                {
+                    <MudSelectItem T="string" Value="@t">@L["QuestionType_" + t]</MudSelectItem>
+                }
+            </MudSelect>
+            <MudNumericField T="decimal" Value="Question.Points" ValueChanged="SetPointsAsync" Label="@L["Quiz_Points"]"
+                             Min="0.01m" Max="1000m" Disabled="Locked" Style="max-width:9rem" data-testid="@($"question-points-{Index}")" />
+        </MudStack>
+
+        <MudTextField T="string" Value="Question.Text" ValueChanged="SetTextAsync" Label="@L["Quiz_QuestionText"]"
+                      Lines="3" Sizing="InputSizing.Auto" MaxLength="4000" dir="auto" Immediate="true" data-testid="@($"question-text-{Index}")" />
+
+        @if (Question.Type != QuestionTypes.Essay)
+        {
+            <MudStack Spacing="1" data-testid="@($"question-options-{Index}")">
+                @for (var i = 0; i < Question.Options.Count; i++)
+                {
+                    var option = Question.Options[i];
+                    var n = i;
+                    <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                        <MudCheckBox T="bool" Value="option.IsCorrect" ValueChanged="v => MarkCorrectAsync(option, v)" Disabled="Locked"
+                                     aria-label="@L["Quiz_Correct"]" data-testid="@($"option-correct-{Index}-{n}")" />
+                        @if (Question.Type == QuestionTypes.TrueFalse)
+                        {
+                            <MudText Class="flex-grow-1" dir="auto">@option.Text</MudText>
+                        }
+                        else
+                        {
+                            <MudTextField T="string" Value="option.Text" ValueChanged="t => SetOptionTextAsync(option, t)" Label="@L["Quiz_OptionN", n + 1]"
+                                          Margin="Margin.Dense" Variant="Variant.Outlined" Immediate="true" MaxLength="1000" Class="flex-grow-1" dir="auto"
+                                          data-testid="@($"option-text-{Index}-{n}")" />
+                            <MudIconButton Icon="@Icons.Material.Rounded.Close" Size="Size.Small" Disabled="Locked" aria-label="@L["Quiz_RemoveOption"]"
+                                           OnClick="() => RemoveOptionAsync(option)" data-testid="@($"option-remove-{Index}-{n}")" />
+                        }
+                    </MudStack>
+                }
+                @if (Question.Type != QuestionTypes.TrueFalse && Question.Options.Count < QuestionRules.MaxOptions && !Locked)
+                {
+                    <MudButton Size="Size.Small" Variant="Variant.Text" StartIcon="@Icons.Material.Rounded.Add" OnClick="AddOptionAsync"
+                               data-testid="@($"option-add-{Index}")">@L["Quiz_AddOption"]</MudButton>
+                }
+            </MudStack>
+        }
+        @if (Error is not null)
+        {
+            <MudText Color="Color.Error" Typo="Typo.caption" role="alert" data-testid="@($"question-error-{Index}")">@Error</MudText>
+        }
+    </MudStack>
+</MudPaper>
+
+@code {
+    [Parameter, EditorRequired] public QuestionDraft Question { get; set; } = default!;
+    [Parameter] public int Index { get; set; }
+    [Parameter] public int Count { get; set; }
+    [Parameter] public bool Locked { get; set; }
+    [Parameter] public string? Error { get; set; }
+    /// <summary>Move by -1 (up) or +1 (down).</summary>
+    [Parameter] public EventCallback<int> OnMove { get; set; }
+    [Parameter] public EventCallback OnRemove { get; set; }
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private Task Changed() => OnChanged.InvokeAsync();
+
+    private Task SetTextAsync(string? text) { Question.Text = text ?? ""; return Changed(); }
+    private Task SetOptionTextAsync(OptionDraft option, string? text) { option.Text = text ?? ""; return Changed(); }
+    private Task SetPointsAsync(decimal points) { Question.Points = points; return Changed(); }
+
+    private async Task OnTypeChangedAsync(string type)
+    {
+        Question.Type = type;
+        Question.ResetOptions(L["Quiz_True"], L["Quiz_False"]);
+        await Changed();
+    }
+
+    private async Task MarkCorrectAsync(OptionDraft option, bool value)
+    {
+        // one correct answer for single choice and true/false: marking one clears the others
+        if (value && Question.Type is QuestionTypes.SingleChoice or QuestionTypes.TrueFalse)
+            foreach (var o in Question.Options) o.IsCorrect = false;
+        option.IsCorrect = value;
+        await Changed();
+    }
+
+    private async Task AddOptionAsync()
+    {
+        Question.Options.Add(new OptionDraft());
+        await Changed();
+    }
+
+    private async Task RemoveOptionAsync(OptionDraft option)
+    {
+        Question.Options.Remove(option);
+        await Changed();
+    }
+}

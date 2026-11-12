@@ -1,0 +1,99 @@
+@page "/class-courses/{Id:guid}/quizzes"
+@attribute [Authorize]
+@using Lms.Client.Components
+@using Lms.Client.Components.Content
+@using Lms.Client.Services.Api
+@using Lms.Shared
+@using Lms.Shared.Authorization
+@using Lms.Shared.Quizzes
+@inject IQuizzesApi Api
+@inject ILessonPlansApi Plans
+@inject IDialogService Dialogs
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<PageTitle>@L["Quizzes_Title"]</PageTitle>
+@if (!PermState.Loaded)
+{
+    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+}
+else if (!PermState.Has(Permissions.Quizzes.View))
+{
+    <MudAlert Severity="Severity.Warning" data-testid="quizzes-forbidden">@L["Forbidden_Title"]</MudAlert>
+}
+else
+{
+    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Class="mb-4">
+        <MudText Typo="Typo.h4" data-testid="quizzes-heading">@L["Quizzes_Title"]</MudText>
+        @if (PermState.Has(Permissions.Quizzes.Manage))
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Add" OnClick="NewAsync" data-testid="quizzes-new">@L["Quizzes_New"]</MudButton>
+        }
+    </MudStack>
+
+    <ServerTable @ref="_table" T="QuizListItemDto" ServerData="LoadAsync">
+        <HeaderContent>
+            <MudTh>@L["Quizzes_Name"]</MudTh>
+            <MudTh>@L["Quiz_Opens"]</MudTh>
+            <MudTh>@L["Quiz_Closes"]</MudTh>
+            <MudTh>@L["Quizzes_Questions"]</MudTh>
+            <MudTh>@L["Common_Actions"]</MudTh>
+        </HeaderContent>
+        <RowTemplate Context="q">
+            <MudTd DataLabel="@L["Quizzes_Name"]">@Culture.Pick(q.TitleAr, q.TitleEn)</MudTd>
+            <MudTd DataLabel="@L["Quiz_Opens"]"><span dir="ltr">@(IsoDates.Format(q.OpensAtUtc) ?? "—")</span></MudTd>
+            <MudTd DataLabel="@L["Quiz_Closes"]"><span dir="ltr">@(IsoDates.Format(q.ClosesAtUtc) ?? "—")</span></MudTd>
+            <MudTd DataLabel="@L["Quizzes_Questions"]">@q.QuestionCount</MudTd>
+            <MudTd DataLabel="@L["Common_Actions"]">
+                @if (PermState.Has(Permissions.Quizzes.Manage))
+                {
+                    <MudButton Size="Size.Small" Variant="Variant.Text" Href="@($"/quizzes/{q.Id}/builder")" data-testid="@($"quiz-open-{q.Id}")">@L["Quizzes_Build"]</MudButton>
+                }
+            </MudTd>
+        </RowTemplate>
+    </ServerTable>
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private ServerTable<QuizListItemDto> _table = default!;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        PermState.Changed -= OnPermissionsChanged;
+        PermState.Changed += OnPermissionsChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+    }
+
+    private async Task<TableData<QuizListItemDto>> LoadAsync(TableState state, CancellationToken ct)
+    {
+        var page = await Api.ListAsync(Id, state.Page + 1, state.PageSize, ct);
+        return new TableData<QuizListItemDto> { Items = page.Items, TotalItems = page.Total };
+    }
+
+    private async Task NewAsync()
+    {
+        var lessons = new List<ModuleLessonOption>();
+        await ApiCalls.RunAsync(async () =>
+        {
+            var plan = await Plans.GetPlanAsync(Id);
+            foreach (var section in plan.Sections.Where(s => !s.IsHidden).OrderBy(s => s.Order))
+                foreach (var lesson in section.Lessons.Where(l => !l.IsHidden).OrderBy(l => l.Order))
+                    lessons.Add(new ModuleLessonOption(lesson.Key, Culture.Pick(lesson.TitleAr, lesson.TitleEn)));
+        }, Navigation, L, _ => { });
+        var dialog = await Dialogs.ShowAsync<NewQuizDialog>(L["Quizzes_New"], new DialogParameters<NewQuizDialog>
+        {
+            { x => x.ClassCourseId, Id },
+            { x => x.Lessons, lessons },
+        }, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: QuizDto created }) Navigation.NavigateTo($"/quizzes/{created.Id}/builder");
+    }
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => PermState.Changed -= OnPermissionsChanged;
+}

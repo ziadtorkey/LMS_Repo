@@ -995,4 +995,78 @@
   <data name="Submissions_Status" xml:space="preserve"><value>الحالة</value></data>
   <data name="Submissions_Student" xml:space="preserve"><value>الطالب</value></data>
   <data name="Submissions_Title" xml:space="preserve"><value>تسليمات الواجب</value></data>
+  <data name="GradingMethod_Average" xml:space="preserve"><value>المتوسط</value></data>
+  <data name="GradingMethod_Highest" xml:space="preserve"><value>أعلى محاولة</value></data>
+  <data name="GradingMethod_Last" xml:space="preserve"><value>آخر محاولة</value></data>
+  <data name="QuestionType_Essay" xml:space="preserve"><value>مقالي</value></data>
+  <data name="QuestionType_MultipleChoice" xml:space="preserve"><value>اختيار من متعدد (عدة إجابات)</value></data>
+  <data name="QuestionType_SingleChoice" xml:space="preserve"><value>اختيار من متعدد (إجابة واحدة)</value></data>
+  <data name="QuestionType_TrueFalse" xml:space="preserve"><value>صح / خطأ</value></data>
+  <data name="Quiz_AddOption" xml:space="preserve"><value>إضافة خيار</value></data>
+  <data name="Quiz_AddQuestion" xml:space="preserve"><value>إضافة سؤال</value></data>
+  <data name="Quiz_BuilderTitle" xml:space="preserve"><value>بناء الاختبار</value></data>
+  <data name="Quiz_Closes" xml:space="preserve"><value>يغلق</value></data>
+  <data name="Quiz_Correct" xml:space="preserve"><value>إجابة صحيحة</value></data>
+  <data name="Quiz_DescriptionAr" xml:space="preserve"><value>الوصف (بالعربية)</value></data>
+  <data name="Quiz_DescriptionEn" xml:space="preserve"><value>الوصف (بالإنجليزية)</value></data>
+  <data name="Quiz_DrawCount" xml:space="preserve"><value>عدد الأسئلة المسحوبة لكل محاولة</value></data>
+  <data name="Quiz_DrawHint" xml:space="preserve"><value>اتركه فارغاً لكل الأسئلة (لدى الاختبار {0})</value></data>
+  <data name="Quiz_Err_AtLeastOneCorrect" xml:space="preserve"><value>حدد إجابة صحيحة واحدة على الأقل.</value></data>
+  <data name="Quiz_Err_Attempts" xml:space="preserve"><value>عدد المحاولات بين 1 و20.</value></data>
+  <data name="Quiz_Err_CloseAfterOpen" xml:space="preserve"><value>يجب أن يكون الإغلاق بعد الفتح.</value></data>
+  <data name="Quiz_Err_Draw" xml:space="preserve"><value>عدد الأسئلة المسحوبة يجب ألا يتجاوز عدد أسئلة الاختبار.</value></data>
+  <data name="Quiz_Err_OneCorrect" xml:space="preserve"><value>حدد إجابة صحيحة واحدة بالضبط.</value></data>
+  <data name="Quiz_Err_OptionText" xml:space="preserve"><value>اكتب نص كل خيار.</value></data>
+  <data name="Quiz_Err_Options" xml:space="preserve"><value>هذا النوع لا يحتوي على خيارات.</value></data>
+  <data name="Quiz_Err_Points" xml:space="preserve"><value>الدرجة بين 0.01 و1000.</value></data>
+  <data name="Quiz_Err_Text" xml:space="preserve"><value>اكتب نص السؤال.</value></data>
+  <data name="Quiz_Err_TextLong" xml:space="preserve"><value>نص السؤال أطول من 4000 حرف.</value></data>
+  <data name="Quiz_Err_TimeLimit" xml:space="preserve"><value>المدة بين 1 و600 دقيقة.</value></data>
+  <data name="Quiz_Err_TooManyOptions" xml:space="preserve"><value>الحد الأقصى 10 خيارات.</value></data>
+  <data name="Quiz_Err_TwoOptions" xml:space="preserve"><value>أضف خيارين على الأقل.</value></data>
+  <data name="Quiz_False" xml:space="preserve"><value>خطأ</value></data>
+  <data name="Quiz_GradingMethod" xml:space="preserve"><value>احتساب الدرجة</value></data>
+  <data name="Quiz_HasAttemptsNote" xml:space="preserve"><value>بدأ الطلاب {0} محاولة. الأسئلة والخيارات الصحيحة والدرجات مقفلة، ويمكن تعديل النصوص والإعدادات الأخرى.</value></data>
+  <data name="Quiz_Leave" xml:space="preserve"><value>مغادرة</value></data>
+  <data name="Quiz_MaxAttempts" xml:space="preserve"><value>عدد المحاولات</value></data>
+  <data name="Quiz_MoveDown" xml:space="preserve"><value>نقل لأسفل</value></data>
+  <data name="Quiz_MoveUp" xml:space="preserve"><value>نقل لأعلى</value></data>
+  <data name="Quiz_NoLimitHint" xml:space="preserve"><value>اتركه فارغاً لعدم وجود حد</value></data>
+  <data name="Quiz_NoQuestions" xml:space="preserve"><value>لا توجد أسئلة بعد.</value></data>
+  <data name="Quiz_Opens" xml:space="preserve"><value>يفتح</value></data>
+  <data name="Quiz_OptionN" xml:space="preserve"><value>الخيار {0}</value></data>
+  <data name="Quiz_Points" xml:space="preserve"><value>الدرجة</value></data>
+  <data name="Quiz_PreviewCount" xml:space="preserve"><value>{0} سؤال في هذه المحاولة</value></data>
+  <data name="Quiz_PreviewEssay" xml:space="preserve"><value>إجابة الطالب تُكتب هنا</value></data>
+  <data name="Quiz_PreviewPoints" xml:space="preserve"><value>{0} درجة</value></data>
+  <data name="Quiz_PreviewSaveFirst" xml:space="preserve"><value>المعاينة تعرض آخر نسخة محفوظة. احفظ التغييرات لتظهر.</value></data>
+  <data name="Quiz_PreviewTimed" xml:space="preserve"><value>المدة {0} دقيقة</value></data>
+  <data name="Quiz_QuestionN" xml:space="preserve"><value>السؤال {0}</value></data>
+  <data name="Quiz_QuestionText" xml:space="preserve"><value>نص السؤال</value></data>
+  <data name="Quiz_RemoveOption" xml:space="preserve"><value>حذف الخيار</value></data>
+  <data name="Quiz_RemoveQuestion" xml:space="preserve"><value>حذف السؤال</value></data>
+  <data name="Quiz_ReviewHint" xml:space="preserve"><value>الإجابات الصحيحة لا تظهر إلا بعد انتهاء المحاولات أو إغلاق الاختبار.</value></data>
+  <data name="Quiz_ReviewPolicy" xml:space="preserve"><value>ما يراه الطالب بعد التسليم</value></data>
+  <data name="Quiz_ShuffleOptions" xml:space="preserve"><value>ترتيب الخيارات عشوائياً</value></data>
+  <data name="Quiz_ShuffleQuestions" xml:space="preserve"><value>ترتيب الأسئلة عشوائياً</value></data>
+  <data name="Quiz_TabPreview" xml:space="preserve"><value>معاينة كطالب</value></data>
+  <data name="Quiz_TabQuestions" xml:space="preserve"><value>الأسئلة</value></data>
+  <data name="Quiz_TabSettings" xml:space="preserve"><value>الإعدادات</value></data>
+  <data name="Quiz_TimeLimit" xml:space="preserve"><value>المدة (دقائق)</value></data>
+  <data name="Quiz_Total" xml:space="preserve"><value>{0} سؤال · {1} درجة</value></data>
+  <data name="Quiz_True" xml:space="preserve"><value>صح</value></data>
+  <data name="Quiz_Type" xml:space="preserve"><value>نوع السؤال</value></data>
+  <data name="Quiz_UnlimitedHint" xml:space="preserve"><value>اتركه فارغاً لمحاولات غير محدودة</value></data>
+  <data name="Quiz_Unsaved" xml:space="preserve"><value>تغييرات غير محفوظة</value></data>
+  <data name="Quiz_UnsavedMessage" xml:space="preserve"><value>لديك تغييرات لم تُحفظ. هل تريد المغادرة وفقدانها؟</value></data>
+  <data name="Quiz_UnsavedTitle" xml:space="preserve"><value>تغييرات غير محفوظة</value></data>
+  <data name="Quizzes_Build" xml:space="preserve"><value>بناء</value></data>
+  <data name="Quizzes_Name" xml:space="preserve"><value>الاختبار</value></data>
+  <data name="Quizzes_New" xml:space="preserve"><value>اختبار جديد</value></data>
+  <data name="Quizzes_Questions" xml:space="preserve"><value>الأسئلة</value></data>
+  <data name="Quizzes_Title" xml:space="preserve"><value>الاختبارات</value></data>
+  <data name="ReviewPolicy_Answers" xml:space="preserve"><value>الدرجة وإجاباته</value></data>
+  <data name="ReviewPolicy_AnswersAndCorrect" xml:space="preserve"><value>الدرجة وإجاباته والإجابات الصحيحة</value></data>
+  <data name="ReviewPolicy_None" xml:space="preserve"><value>التسليم فقط</value></data>
+  <data name="ReviewPolicy_ScoreOnly" xml:space="preserve"><value>الدرجة فقط</value></data>
 </root>

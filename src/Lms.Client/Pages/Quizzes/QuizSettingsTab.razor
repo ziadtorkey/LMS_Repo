@@ -1,0 +1,87 @@
+@using Lms.Client.Components.Content
+@using Lms.Shared.Content
+@using Lms.Shared.Quizzes
+
+@* Quiz settings (FR-QZ-02) and the module fields (title, visibility, target, completion). Errors are resource keys by field. *@
+<MudStack Spacing="3" data-testid="quiz-settings" @onclick="Notify" @onfocusout="Notify">
+    <ModuleMetadataForm Model="Model.Module" Groups="Groups" Rules="_rules" VisibilityError='@Err("visibility")' TargetError='@Err("target")' />
+    @if (Model.Module.CompletionRule == CompletionRules.Score)
+    {
+        <MudNumericField T="decimal?" Value="Model.CompletionMinScore" ValueChanged="@((decimal? v) => Set(() => Model.CompletionMinScore = v))" Label="@L["Assignment_MinScore"]" Min="0m" Max="100m" data-testid="quiz-minscore" />
+    }
+    @if (Err("title") is { } titleError)
+    {
+        <MudText Color="Color.Error" Typo="Typo.caption" role="alert" data-testid="quiz-title-error">@titleError</MudText>
+    }
+
+    <MudTextField T="string" Value="Model.DescriptionAr" ValueChanged="@((string? v) => Set(() => Model.DescriptionAr = v))" Label="@L["Quiz_DescriptionAr"]" Lines="2" MaxLength="2000" dir="rtl" lang="ar" data-testid="quiz-description-ar" />
+    <MudTextField T="string" Value="Model.DescriptionEn" ValueChanged="@((string? v) => Set(() => Model.DescriptionEn = v))" Label="@L["Quiz_DescriptionEn"]" Lines="2" MaxLength="2000" dir="ltr" lang="en" data-testid="quiz-description-en" />
+
+    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+        <MudNumericField T="int?" Value="Model.TimeLimitMinutes" ValueChanged="@((int? v) => Set(() => Model.TimeLimitMinutes = v))" Label="@L["Quiz_TimeLimit"]" HelperText="@L["Quiz_NoLimitHint"]" Min="1" Max="600"
+                         Clearable="true" Error="@(Err("time") is not null)" ErrorText="@Err("time")" data-testid="quiz-time-limit" />
+        <MudNumericField T="int?" Value="Model.MaxAttempts" ValueChanged="@((int? v) => Set(() => Model.MaxAttempts = v))" Label="@L["Quiz_MaxAttempts"]" HelperText="@L["Quiz_UnlimitedHint"]" Min="1" Max="20"
+                         Clearable="true" Error="@(Err("attempts") is not null)" ErrorText="@Err("attempts")" data-testid="quiz-max-attempts" />
+    </MudStack>
+
+    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+        <MudDatePicker Date="Model.OpenDate" DateChanged="@((DateTime? d) => Set(() => Model.OpenDate = d))" Label="@L["Quiz_Opens"]" Clearable="true" data-testid="quiz-open-date" />
+        <MudTimePicker Time="Model.OpenTime" TimeChanged="@((TimeSpan? t) => Set(() => Model.OpenTime = t))" Label="@L["Module_Time"]" data-testid="quiz-open-time" />
+    </MudStack>
+    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+        <MudDatePicker Date="Model.CloseDate" DateChanged="@((DateTime? d) => Set(() => Model.CloseDate = d))" Label="@L["Quiz_Closes"]" Clearable="true"
+                       Error="@(Err("close") is not null)" ErrorText="@Err("close")" data-testid="quiz-close-date" />
+        <MudTimePicker Time="Model.CloseTime" TimeChanged="@((TimeSpan? t) => Set(() => Model.CloseTime = t))" Label="@L["Module_Time"]" data-testid="quiz-close-time" />
+    </MudStack>
+    @if (Err("close") is { } closeError)
+    {
+        <MudText Color="Color.Error" Typo="Typo.caption" role="alert" data-testid="quiz-close-error">@closeError</MudText>
+    }
+
+    <MudSelect T="string" Value="Model.GradingMethod" ValueChanged="@((string v) => Set(() => Model.GradingMethod = v))" Label="@L["Quiz_GradingMethod"]" data-testid="quiz-grading-method">
+        @foreach (var g in GradingMethods.All)
+        {
+            <MudSelectItem T="string" Value="@g">@L["GradingMethod_" + g]</MudSelectItem>
+        }
+    </MudSelect>
+    <MudSelect T="string" Value="Model.ReviewPolicy" ValueChanged="@((string v) => Set(() => Model.ReviewPolicy = v))" Label="@L["Quiz_ReviewPolicy"]" HelperText="@L["Quiz_ReviewHint"]" data-testid="quiz-review-policy">
+        @foreach (var r in ReviewPolicies.All)
+        {
+            <MudSelectItem T="string" Value="@r">@L["ReviewPolicy_" + r]</MudSelectItem>
+        }
+    </MudSelect>
+    <MudStack Spacing="0">
+        <MudCheckBox T="bool" Value="Model.ShuffleQuestions" ValueChanged="@((bool v) => Set(() => Model.ShuffleQuestions = v))" Label="@L["Quiz_ShuffleQuestions"]" data-testid="quiz-shuffle-questions" />
+        <MudCheckBox T="bool" Value="Model.ShuffleOptions" ValueChanged="@((bool v) => Set(() => Model.ShuffleOptions = v))" Label="@L["Quiz_ShuffleOptions"]" data-testid="quiz-shuffle-options" />
+    </MudStack>
+
+    <MudNumericField T="int?" Value="Model.DrawCount" ValueChanged="@((int? v) => Set(() => Model.DrawCount = v))" Label="@L["Quiz_DrawCount"]" Clearable="true" Min="1"
+                     HelperText="@L["Quiz_DrawHint", QuestionCount]" Error="@(Err("draw") is not null)" ErrorText="@Err("draw")" data-testid="quiz-draw-count" />
+    @if (Locked)
+    {
+        <MudAlert Severity="Severity.Info" Dense="true" data-testid="quiz-locked-note">@L["Error_quiz_has_attempts"]</MudAlert>
+    }
+</MudStack>
+
+@code {
+    private static readonly IReadOnlyList<string> _rules = CompletionRules.ForActivity(ModuleKinds.Quiz);
+
+    [Parameter, EditorRequired] public QuizSettingsModel Model { get; set; } = default!;
+    [Parameter] public int QuestionCount { get; set; }
+    [Parameter] public bool Locked { get; set; }
+    [Parameter] public IReadOnlyList<ModuleGroupOption> Groups { get; set; } = [];
+    [Parameter] public IReadOnlyDictionary<string, string> Errors { get; set; } = new Dictionary<string, string>();
+
+    /// <summary>Raised after any field changed, so the builder can refresh its unsaved state.</summary>
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private Task Notify() => OnChanged.InvokeAsync();
+
+    private Task Set(Action change)
+    {
+        change();
+        return OnChanged.InvokeAsync();
+    }
+
+    private string? Err(string field) => Errors.TryGetValue(field, out var key) ? L[key].Value : null;
+}
