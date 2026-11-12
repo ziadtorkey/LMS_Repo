@@ -1535,4 +1535,31 @@
   <data name="ReviewPolicy_None" xml:space="preserve"><value>التسليم فقط</value></data>
   <data name="ReviewPolicy_ScoreOnly" xml:space="preserve"><value>الدرجة فقط</value></data>
   <data name="Quiz_ReviewNeverCorrect" xml:space="preserve"><value>مع محاولات غير محدودة وبلا تاريخ إغلاق، لن يرى الطلاب الإجابات الصحيحة أبداً. حدد عدد المحاولات أو تاريخ الإغلاق.</value></data>
+  <data name="Quiz_Title" xml:space="preserve"><value>اختبار</value></data>
+  <data name="Quiz_Questions" xml:space="preserve"><value>الأسئلة</value></data>
+  <data name="Quiz_Answered" xml:space="preserve"><value>تمت الإجابة</value></data>
+  <data name="Quiz_QuestionCount" xml:space="preserve"><value>{0} أسئلة</value></data>
+  <data name="Quiz_AttemptsLeft" xml:space="preserve"><value>تبقّت {0} محاولات</value></data>
+  <data name="Quiz_AttemptsUnlimited" xml:space="preserve"><value>محاولات غير محدودة</value></data>
+  <data name="Quiz_Start" xml:space="preserve"><value>ابدأ الاختبار</value></data>
+  <data name="Quiz_Resume" xml:space="preserve"><value>متابعة محاولتك</value></data>
+  <data name="Quiz_NoAttemptsLeft" xml:space="preserve"><value>استخدمت كل المحاولات.</value></data>
+  <data name="Quiz_Closed" xml:space="preserve"><value>هذا الاختبار غير متاح.</value></data>
+  <data name="Quiz_AttemptN" xml:space="preserve"><value>المحاولة {0}</value></data>
+  <data name="Quiz_YourAnswer" xml:space="preserve"><value>إجابتك</value></data>
+  <data name="Quiz_Saving" xml:space="preserve"><value>جارٍ الحفظ...</value></data>
+  <data name="Quiz_Saved" xml:space="preserve"><value>تم حفظ كل الإجابات</value></data>
+  <data name="Quiz_SaveFailed" xml:space="preserve"><value>لم يتم الحفظ. تحقق من اتصالك.</value></data>
+  <data name="Quiz_Submit" xml:space="preserve"><value>تسليم</value></data>
+  <data name="Quiz_SubmitConfirm" xml:space="preserve"><value>تسليم إجاباتك؟ لا يمكنك تغييرها بعد ذلك.</value></data>
+  <data name="Quiz_SubmitConfirmUnanswered" xml:space="preserve"><value>{0} أسئلة بلا إجابة. التسليم رغم ذلك؟</value></data>
+  <data name="Quiz_TimeLeft" xml:space="preserve"><value>تبقّى {0}</value></data>
+  <data name="Quiz_Result" xml:space="preserve"><value>النتيجة</value></data>
+  <data name="Quiz_BackToQuiz" xml:space="preserve"><value>العودة إلى الاختبار</value></data>
+  <data name="Quiz_ResultPendingEssays" xml:space="preserve"><value>ستظهر درجتك عندما يصحح معلمك الإجابات المكتوبة.</value></data>
+  <data name="Quiz_ResultHidden" xml:space="preserve"><value>لا يعرض معلمك النتائج لهذا الاختبار.</value></data>
+  <data name="Quiz_ResultNoReview" xml:space="preserve"><value>لا تُعرض الإجابات لهذا الاختبار.</value></data>
+  <data name="Quiz_NoAnswer" xml:space="preserve"><value>بلا إجابة</value></data>
+  <data name="Quiz_CorrectOption" xml:space="preserve"><value>صحيح</value></data>
+  <data name="Quiz_NotGradedYet" xml:space="preserve"><value>لم يُصحَّح بعد</value></data>
 </root>

@@ -1,0 +1,291 @@
+@page "/class-courses/{Id:guid}/quizzes/{QuizId:guid}"
+@attribute [Authorize]
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Shared.Authorization
+@using Lms.Shared.Quizzes
+@inject IQuizAttemptsApi Quizzes
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject IDialogService Dialogs
+@inject NavigationManager Navigation
+@inject TimeProvider Clock
+@implements IAsyncDisposable
+
+<PageTitle>@(_summary is { } s ? Culture.Pick(s.TitleAr, s.TitleEn) : L["Quiz_Title"].Value)</PageTitle>
+@if (!PermState.Loaded || _loading)
+{
+    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+}
+else if (!PermState.Has(Permissions.Quizzes.View))
+{
+    <MudAlert Severity="Severity.Warning" data-testid="quiz-forbidden">@L["Forbidden_Title"]</MudAlert>
+}
+else if (_summary is null)
+{
+    <MudAlert Severity="Severity.Error" data-testid="quiz-error">@(_error ?? L["Api_Error"].Value)</MudAlert>
+}
+else if (_attempt is null)
+{
+    <MudStack Spacing="3" data-testid="quiz-start">
+        <MudLink Href="@($"class-courses/{Id}/learn")" data-testid="quiz-back">@L["Module_Back"]</MudLink>
+        <MudText Typo="Typo.h4" data-testid="quiz-title">@Culture.Pick(_summary.TitleAr, _summary.TitleEn)</MudText>
+        @if (Culture.Pick(_summary.DescriptionAr ?? "", _summary.DescriptionEn ?? "") is { Length: > 0 } description)
+        {
+            <MudText>@description</MudText>
+        }
+        <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+            <MudChip T="string" Size="Size.Small">@L["Quiz_QuestionCount", _summary.QuestionCount]</MudChip>
+            @if (_summary.TimeLimitMinutes is { } minutes)
+            {
+                <MudChip T="string" Size="Size.Small" data-testid="quiz-time-limit">@L["Quiz_TimeLimit", minutes]</MudChip>
+            }
+            <MudChip T="string" Size="Size.Small" data-testid="quiz-attempts-left">
+                @(_summary.AttemptsLeft is { } left ? L["Quiz_AttemptsLeft", left].Value : L["Quiz_AttemptsUnlimited"].Value)
+            </MudChip>
+        </MudStack>
+        @if (_error is not null)
+        {
+            <MudAlert Severity="Severity.Error" data-testid="quiz-start-error">@_error</MudAlert>
+        }
+        @if (_summary.InProgressAttemptId is not null)
+        {
+            <div><MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ResumeAsync" data-testid="quiz-resume">@L["Quiz_Resume"]</MudButton></div>
+        }
+        else if (PermState.Has(Permissions.Quizzes.Attempt) && _summary.IsOpenNow && _summary.AttemptsLeft is null or > 0)
+        {
+            <div><MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="StartAsync" data-testid="quiz-start-button">@L["Quiz_Start"]</MudButton></div>
+        }
+        else
+        {
+            <MudAlert Severity="Severity.Info" data-testid="quiz-unavailable">@L[_summary.IsOpenNow ? "Quiz_NoAttemptsLeft" : "Quiz_Closed"]</MudAlert>
+        }
+        @foreach (var a in _summary.MyAttempts.Where(a => a.Status != AttemptStatuses.InProgress))
+        {
+            <MudLink Href="@ResultHref(a.Id)" data-testid="@($"quiz-attempt-{a.Id}")">
+                @L["Quiz_AttemptN", a.Number]@(a.Score is { } score ? $" · {score} / {a.MaxScore}" : "")
+            </MudLink>
+        }
+    </MudStack>
+}
+else
+{
+    var question = _attempt.Questions[_index];
+    <MudStack Spacing="3" data-testid="quiz-attempt">
+        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+            <MudText Typo="Typo.h5">@Culture.Pick(_summary.TitleAr, _summary.TitleEn)</MudText>
+            @if (_attempt.EndsAtUtc is not null)
+            {
+                <AttemptTimer Seconds="_remaining" />
+            }
+        </MudStack>
+
+        <QuestionNavigator Questions="_attempt.Questions" Current="_index" Answered="_answered" OnSelect="i => _index = i" />
+
+        <MudPaper Outlined="true" Class="pa-3" data-testid="@($"question-{question.QuestionId}")">
+            <MudStack Spacing="2">
+                <MudText Typo="Typo.subtitle1" id="question-text">@L["Quiz_QuestionN", _index + 1] · @question.Text <span class="mud-text-secondary">(@question.Points)</span></MudText>
+                @switch (question.Type)
+                {
+                    case QuestionTypes.MultipleChoice:
+                        @foreach (var option in question.Options)
+                        {
+                            var o = option;
+                            <MudCheckBox T="bool" Value="@Selected(question.QuestionId).Contains(o.Id)" ValueChanged="v => ToggleAsync(question, o.Id, v)"
+                                         Label="@o.Text" data-testid="@($"option-{o.Id}")" />
+                        }
+                        break;
+                    case QuestionTypes.Essay:
+                        <MudTextField T="string" Value="@(_texts.GetValueOrDefault(question.QuestionId))" ValueChanged="v => TextChangedAsync(question, v)"
+                                      Lines="8" Immediate="true" MaxLength="20000" Label="@L["Quiz_YourAnswer"]" data-testid="essay-text" />
+                        break;
+                    default:
+                        <MudRadioGroup T="Guid?" Value="@SingleSelected(question.QuestionId)" ValueChanged="v => ChooseAsync(question, v)"
+                                       aria-labelledby="question-text" data-testid="single-choice">
+                            @foreach (var option in question.Options)
+                            {
+                                <MudRadio T="Guid?" Value="@((Guid?)option.Id)" data-testid="@($"option-{option.Id}")">@option.Text</MudRadio>
+                            }
+                        </MudRadioGroup>
+                        break;
+                }
+            </MudStack>
+        </MudPaper>
+
+        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+            <MudStack Row="true" Spacing="1">
+                <MudButton Variant="Variant.Outlined" Disabled="@(_index == 0)" OnClick="() => _index--" data-testid="quiz-prev">@L["Module_Previous"]</MudButton>
+                <MudButton Variant="Variant.Outlined" Disabled="@(_index >= _attempt.Questions.Count - 1)" OnClick="() => _index++" data-testid="quiz-next">@L["Module_Next"]</MudButton>
+            </MudStack>
+            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+                <span role="status" data-testid="save-state">
+                    @switch (_queue.State)
+                    {
+                        case SaveState.Saving: @L["Quiz_Saving"] break;
+                        case SaveState.Saved: @L["Quiz_Saved"] break;
+                        case SaveState.Failed: <span class="mud-error-text" data-testid="save-failed">@L["Quiz_SaveFailed"]</span> break;
+                    }
+                </span>
+                @if (_queue.State == SaveState.Failed)
+                {
+                    <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Error" OnClick="RetryAsync" data-testid="save-retry">@L["Asset_Retry"]</MudButton>
+                }
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ConfirmSubmitAsync" Disabled="_submitting" data-testid="quiz-submit">@L["Quiz_Submit"]</MudButton>
+            </MudStack>
+        </MudStack>
+        @if (_error is not null)
+        {
+            <MudAlert Severity="Severity.Error" data-testid="quiz-action-error">@_error</MudAlert>
+        }
+    </MudStack>
+}
+
+@code {
+    internal static readonly TimeSpan Debounce = TimeSpan.FromMilliseconds(800);
+
+    [Parameter] public Guid Id { get; set; }
+    [Parameter] public Guid QuizId { get; set; }
+
+    private QuizSummaryDto? _summary;
+    private AttemptDto? _attempt;
+    private AutosaveQueue _queue = default!;
+    private readonly Dictionary<Guid, List<Guid>> _selected = [];
+    private readonly Dictionary<Guid, string> _texts = [];
+    private HashSet<Guid> _answered = [];
+    private ITimer? _ticker;
+    private DateTimeOffset _deadline;
+    private int _remaining, _index;
+    private string? _error;
+    private bool _loading = true, _submitting;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        PermState.Changed -= OnPermissionsChanged;
+        PermState.Changed += OnPermissionsChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        _queue = new AutosaveQueue((r, ct) => Quizzes.SaveAnswerAsync(_attempt!.Id, r, ct), Clock, Debounce);
+        _queue.Changed += () => _ = InvokeAsync(StateHasChanged);
+        _queue.Saved += OnSaved;
+        _queue.Expired += () => _ = InvokeAsync(() => SubmitAsync(auto: true));
+        _loading = true;
+        if (PermState.Has(Permissions.Quizzes.View))
+            await ApiCalls.RunAsync(async () => _summary = await Quizzes.GetSummaryAsync(QuizId), Navigation, L, m => _error = m);
+        _loading = false;
+    }
+
+    private Task StartAsync() => EnterAsync(() => Quizzes.StartAsync(QuizId));
+
+    private Task ResumeAsync() => EnterAsync(() => Quizzes.GetAsync(_summary!.InProgressAttemptId!.Value));
+
+    private async Task EnterAsync(Func<Task<AttemptDto>> load)
+    {
+        _error = null;
+        AttemptDto? attempt = null;
+        if (!await ApiCalls.RunAsync(async () => attempt = await load(), Navigation, L, m => _error = m) || attempt is null) return;
+        _attempt = attempt;
+        _selected.Clear(); _texts.Clear(); _index = 0;
+        foreach (var a in attempt.Answers)
+        {
+            _selected[a.QuestionId] = a.SelectedOptionIds.ToList();
+            if (a.Text is not null) _texts[a.QuestionId] = a.Text;
+        }
+        _queue.StartAfter(attempt.Answers.Count == 0 ? 0 : attempt.Answers.Max(a => a.Sequence));
+        RefreshAnswered();
+        SyncTimer(attempt.RemainingSeconds);
+        _ticker?.Dispose();
+        _ticker = Clock.CreateTimer(_ => _ = InvokeAsync(TickAsync), null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+    }
+
+    /// <summary>The server's remaining time is the truth; the local clock only counts down from it until the next sync.</summary>
+    private void SyncTimer(int? serverRemaining)
+    {
+        if (serverRemaining is not { } seconds) return;
+        _deadline = Clock.GetUtcNow().AddSeconds(seconds);
+        _remaining = seconds;
+    }
+
+    private async Task TickAsync()
+    {
+        if (_attempt?.EndsAtUtc is null || _submitting) return;
+        _remaining = Math.Max(0, (int)Math.Ceiling((_deadline - Clock.GetUtcNow()).TotalSeconds));
+        StateHasChanged();
+        if (_remaining <= 0) await SubmitAsync(auto: true);
+    }
+
+    private void OnSaved(SaveAnswerResultDto result) => _ = InvokeAsync(() =>
+    {
+        SyncTimer(result.RemainingSeconds);
+        StateHasChanged();
+    });
+
+    private Guid? SingleSelected(Guid questionId) => Selected(questionId) is { Count: > 0 } l ? l[0] : null;
+
+    private IReadOnlyList<Guid> Selected(Guid questionId) => _selected.TryGetValue(questionId, out var l) ? l : [];
+
+    private void RefreshAnswered() =>
+        _answered = _attempt!.Questions.Where(q => Selected(q.QuestionId).Count > 0 || !string.IsNullOrWhiteSpace(_texts.GetValueOrDefault(q.QuestionId)))
+            .Select(q => q.QuestionId).ToHashSet();
+
+    private Task ChooseAsync(AttemptQuestionDto q, Guid? option)
+    {
+        _selected[q.QuestionId] = option is { } id ? [id] : [];
+        return AnswerChangedAsync(q);
+    }
+
+    private Task ToggleAsync(AttemptQuestionDto q, Guid option, bool on)
+    {
+        var list = Selected(q.QuestionId).ToList();
+        if (on) { if (!list.Contains(option)) list.Add(option); } else list.Remove(option);
+        _selected[q.QuestionId] = list;
+        return AnswerChangedAsync(q);
+    }
+
+    private Task TextChangedAsync(AttemptQuestionDto q, string? text)
+    {
+        _texts[q.QuestionId] = text ?? "";
+        return AnswerChangedAsync(q);
+    }
+
+    private Task AnswerChangedAsync(AttemptQuestionDto q)
+    {
+        RefreshAnswered();
+        _queue.Enqueue(q.QuestionId, Selected(q.QuestionId), _texts.GetValueOrDefault(q.QuestionId));
+        return Task.CompletedTask;
+    }
+
+    private Task RetryAsync() => _queue.RetryAsync();
+
+    private async Task ConfirmSubmitAsync()
+    {
+        var unanswered = _attempt!.Questions.Count - _answered.Count;
+        var message = unanswered > 0 ? L["Quiz_SubmitConfirmUnanswered", unanswered].Value : L["Quiz_SubmitConfirm"].Value;
+        if (await ConfirmDialog.AskAsync(Dialogs, L["Quiz_Submit"], message, L["Quiz_Submit"])) await SubmitAsync(auto: false);
+    }
+
+    private async Task SubmitAsync(bool auto)
+    {
+        if (_submitting || _attempt is null) return;
+        _submitting = true;
+        _error = null;
+        await _queue.FlushAsync(); // last answers first; a failed flush must not block the submit at the deadline
+        AttemptResultDto? result = null;
+        var ok = await ApiCalls.RunAsync(async () => result = await Quizzes.SubmitAsync(_attempt.Id), Navigation, L, m => _error = m);
+        _submitting = false;
+        if (ok && result is not null)
+        {
+            _ticker?.Dispose();
+            Navigation.NavigateTo(ResultHref(_attempt.Id));
+        }
+    }
+
+    private string ResultHref(Guid attemptId) => $"class-courses/{Id}/quizzes/{QuizId}/attempts/{attemptId}/result";
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public ValueTask DisposeAsync()
+    {
+        PermState.Changed -= OnPermissionsChanged;
+        _ticker?.Dispose();
+        return ValueTask.CompletedTask;
+    }
+}
