@@ -23,6 +23,32 @@ public static class BuiltInRoleDefaults
         Permissions.Audit.View, Permissions.Audit.Export, Permissions.Files.Upload, Permissions.Files.Download,
     };
 
+    /// <summary>
+    /// The permission set each built-in role was provisioned with under M0 (contracts #22), frozen: a permission that
+    /// existed in M0 but was given to a role only later (the Manager's D16 Assignments.Create/Delete) is "new" for that
+    /// role, so <see cref="IntroducedIn(string, string)"/> consults this list, not the global <see cref="M0Baseline"/>.
+    /// Never edit it: it records what M0 clients really have.
+    /// </summary>
+    public static readonly IReadOnlyDictionary<string, IReadOnlySet<string>> M0RoleDefaults =
+        new Dictionary<string, IReadOnlySet<string>>
+        {
+            [BuiltInRoles.OrgAdmin] = M0Baseline,
+            [BuiltInRoles.Manager] = new HashSet<string>
+            {
+                Permissions.OrgUnits.View, Permissions.Roles.View, Permissions.Assignments.View, Permissions.Settings.View,
+                Permissions.Policies.View, Permissions.Audit.View, Permissions.Files.Upload, Permissions.Files.Download,
+            },
+            [BuiltInRoles.Supervisor] = new HashSet<string>
+            {
+                Permissions.OrgUnits.View, Permissions.Settings.View, Permissions.Policies.View, Permissions.Files.Upload,
+                Permissions.Files.Download,
+            },
+            [BuiltInRoles.Counselor] = new HashSet<string> { Permissions.Files.Upload, Permissions.Files.Download },
+            [BuiltInRoles.Teacher] = new HashSet<string> { Permissions.Files.Upload, Permissions.Files.Download },
+            [BuiltInRoles.Student] = new HashSet<string> { Permissions.Files.Upload, Permissions.Files.Download },
+            [BuiltInRoles.Guardian] = new HashSet<string> { Permissions.Files.Download },
+        };
+
     /// <summary>Permissions introduced by defaults version 2 (M2 People).</summary>
     public static readonly IReadOnlySet<string> IntroducedAfterVersion1 = new HashSet<string>
     {
@@ -56,4 +82,13 @@ public static class BuiltInRoleDefaults
         : IntroducedAfterVersion1.Contains(permission) ? 2
         : IntroducedInVersion3.Contains(permission) ? 3
         : 1;
+
+    /// <summary>
+    /// The defaults version that gave <paramref name="permission"/> to the built-in role <paramref name="roleKey"/>: 0 when
+    /// the role's own M0 list had it, otherwise the version that introduced the permission (at least 1: it reached this
+    /// role after M0 even if another role had it in M0).
+    /// </summary>
+    public static int IntroducedIn(string roleKey, string permission) =>
+        M0RoleDefaults.TryGetValue(roleKey, out var m0) && m0.Contains(permission) ? 0
+        : Math.Max(1, IntroducedIn(permission));
 }

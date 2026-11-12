@@ -1,15 +1,20 @@
 @using Lms.Client.Services.Api
 @inject IFileUploadApi Files
 
-@* A person's photo (via a short-lived file URL) or the placeholder icon when there is none or it cannot be loaded. *@
-<MudAvatar Size="Size" data-testid="staff-avatar">
+@* A person's photo (via a short-lived file URL); without one (or when it cannot be loaded) the person's initials,
+   or the placeholder icon when no name is given. The avatar is decorative: the name is always shown next to it. *@
+<MudAvatar Size="Size" Class="lms-avatar" aria-hidden="true" data-testid="staff-avatar">
     @if (_url is not null)
     {
         <MudImage Src="@_url" Alt="" data-testid="staff-avatar-img" />
     }
+    else if (Initials(Name) is { Length: > 0 } initials)
+    {
+        <span class="lms-avatar-initials">@initials</span>
+    }
     else
     {
-        <MudIcon Icon="@Icons.Material.Filled.Person" />
+        <MudIcon Icon="@Icons.Material.Rounded.Person" />
     }
 </MudAvatar>
 
@@ -19,6 +24,8 @@
 
     [Parameter] public Guid? PhotoFileId { get; set; }
     [Parameter] public Size Size { get; set; } = Size.Medium;
+    /// <summary>Display name used for the initials fallback.</summary>
+    [Parameter] public string? Name { get; set; }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -32,7 +39,18 @@
         }
         catch (Exception ex) when (ex is ApiProblemException or HttpRequestException)
         {
-            // No access to the file or storage trouble: the placeholder stays.
+            // No access to the file or storage trouble: the fallback stays.
         }
+    }
+
+    /// <summary>
+    /// First letter of the first two words ("Sara Ahmed" → "SA"), separated by an invisible zero-width non-joiner
+    /// so Arabic letters stay separate initials instead of joining into one word.
+    /// </summary>
+    private static string Initials(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "";
+        var words = name.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        return string.Join('‌', words.Take(2).Select(w => char.ToUpperInvariant(w[0])));
     }
 }

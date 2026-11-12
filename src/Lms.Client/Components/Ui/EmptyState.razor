@@ -1,0 +1,22 @@
+@* Shown when a list or section has nothing to show: an icon, a short title, an optional hint and action. *@
+<div class="lms-empty @Class" role="status" data-testid="@TestId">
+    <span class="lms-empty-icon" aria-hidden="true"><MudIcon Icon="@Icon" /></span>
+    <MudText Typo="Typo.subtitle1" Class="lms-empty-title">@Title</MudText>
+    @if (!string.IsNullOrEmpty(Text))
+    {
+        <MudText Typo="Typo.body2" Class="lms-empty-text">@Text</MudText>
+    }
+    @if (ChildContent is not null)
+    {
+        <div class="lms-empty-action">@ChildContent</div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+    [Parameter] public string? Text { get; set; }
+    [Parameter] public string Icon { get; set; } = Icons.Material.Rounded.Inbox;
+    [Parameter] public string? TestId { get; set; }
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}
