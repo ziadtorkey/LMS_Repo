@@ -55,3 +55,10 @@ public static class ProbeExpect
         [M2Caller.School1Supervisor] = supervisor, [M2Caller.ClientBTeacher] = clientBTeacher,
     };
 }
+
+/// <summary>The probe milestones. Rows of a closed milestone must be live (their route mapped); later ones may wait.</summary>
+public static class ProbeMilestones
+{
+    /// <summary>The last milestone whose pending rows and known-bug tripwires fail the build. Raise to 3 when M3 closes.</summary>
+    public const int LastClosed = 2;
+}

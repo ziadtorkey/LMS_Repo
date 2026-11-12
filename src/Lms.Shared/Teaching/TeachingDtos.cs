@@ -26,12 +26,18 @@ public sealed record TeacherEligibilityDto(
 /// <summary>Body of POST /api/teacher-eligibility: every teacher × every course (at most 200 pairs).</summary>
 public sealed record GrantEligibilityRequest(Guid OrgUnitId, IReadOnlyList<Guid> UserIds, IReadOnlyList<Guid> CourseIds);
 
+/// <summary>
+/// Query of GET /api/teacher-eligibility. By default <c>OrgUnitId</c> returns eligibilities granted at that unit and its descendants.
+/// With <c>IncludeAncestors</c> = true it instead returns the eligibilities that apply to a class at <c>OrgUnitId</c>:
+/// those granted at that unit or any ancestor (the same rule teacher assignment enforces).
+/// </summary>
 public sealed record EligibilityQuery(
     Guid? OrgUnitId,
     Guid? UserId,
     Guid? CourseId,
     int Page = 1,
-    int PageSize = Paging.DefaultPageSize);
+    int PageSize = Paging.DefaultPageSize,
+    bool IncludeAncestors = false);
 
 /// <summary>A dated teacher assignment of a ClassCourse; <c>To</c> null = open. <c>Role</c> from <see cref="TeacherRoles"/>.</summary>
 public sealed record ClassCourseTeacherDto(
