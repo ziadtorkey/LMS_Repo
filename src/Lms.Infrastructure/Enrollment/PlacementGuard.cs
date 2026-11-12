@@ -16,7 +16,7 @@ namespace Lms.Infrastructure.Enrollment;
 public sealed class PlacementGuard(LmsDbContext db)
 {
     /// <summary>The class can take writes: it is Active and its academic year is not Closed.</summary>
-    public async Task EnsureWritableAsync(Class cls, CancellationToken ct)
+    public async Task<AcademicYear> EnsureWritableAsync(Class cls, CancellationToken ct)
     {
         if (cls.Status != Class.ActiveStatus)
         {
@@ -25,14 +25,30 @@ public sealed class PlacementGuard(LmsDbContext db)
 
         // ISOLATION-BYPASS: the year of a class can be defined at an ancestor unit above the caller's scope; the client
         // is matched explicitly and a deleted year is treated like a closed one.
-        var status = await db.Set<AcademicYear>().IgnoreQueryFilters()
-            .Where(y => y.Id == cls.AcademicYearId && y.OrganizationId == cls.OrganizationId && !y.IsDeleted)
-            .Select(y => (AcademicYearStatus?)y.Status)
-            .FirstOrDefaultAsync(ct);
-        if (status is null or AcademicYearStatus.Closed)
+        var year = await db.Set<AcademicYear>().IgnoreQueryFilters()
+            .FirstOrDefaultAsync(y => y.Id == cls.AcademicYearId && y.OrganizationId == cls.OrganizationId && !y.IsDeleted, ct);
+        if (year is null || year.Status == AcademicYearStatus.Closed)
         {
             throw new EnrollmentRuleException(ProblemCodes.year_closed);
         }
+
+        return year;
+    }
+
+    /// <summary>Course codes by course id, for the transfer preview. The course sits at an ancestor unit above the caller's scope.</summary>
+    public async Task<IReadOnlyDictionary<Guid, string>> CourseCodesAsync(
+        Guid organizationId, IReadOnlyCollection<Guid> courseIds, CancellationToken ct)
+    {
+        if (courseIds.Count == 0)
+        {
+            return new Dictionary<Guid, string>();
+        }
+
+        // ISOLATION-BYPASS: only the codes of courses the caller already reaches through their class courses; client
+        // matched, deleted courses excluded by hand.
+        return await db.Set<Course>().IgnoreQueryFilters()
+            .Where(c => c.OrganizationId == organizationId && !c.IsDeleted && courseIds.Contains(c.Id))
+            .ToDictionaryAsync(c => c.Id, c => c.Code, ct);
     }
 
     /// <summary>The restrictions of the courses, by course id (a course without rows has none).</summary>
