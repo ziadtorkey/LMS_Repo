@@ -827,4 +827,6 @@
   <data name="CompletionState_NotStarted" xml:space="preserve"><value>لم تبدأ</value></data>
   <data name="CompletionState_InProgress" xml:space="preserve"><value>قيد التنفيذ</value></data>
   <data name="CompletionState_Completed" xml:space="preserve"><value>مكتملة</value></data>
+  <data name="MyClassCourses_OpenCourse" xml:space="preserve"><value>فتح المقرر</value></data>
+  <data name="Home_ContinueLearning" xml:space="preserve"><value>تابع التعلّم</value></data>
 </root>
