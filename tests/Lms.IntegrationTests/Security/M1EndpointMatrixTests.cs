@@ -99,10 +99,10 @@ public sealed class M1EndpointMatrixTests(LmsApiFactory factory, ITestOutputHelp
         // M1 and M2 are closed: every row must be live (its route mapped), or the feature it probes is missing or renamed.
         // Rows of the milestone in progress (ProbeRow.Milestone = 3) may wait for their route and are only listed.
         var pending = M1ProbeRows.All.Where(r => !IsMapped(r)).ToList();
-        var waiting = pending.Where(r => r.Milestone >= 3).Select(r => $"{r.Method} {r.Pattern} ({r.Name})").ToList();
+        var waiting = pending.Where(r => r.Milestone > ProbeMilestones.LastClosed).Select(r => $"{r.Method} {r.Pattern} ({r.Name})").ToList();
         output.WriteLine(waiting.Count == 0 ? "No rows of the milestone in progress are waiting." : "Waiting rows (milestone in progress):\n" + string.Join('\n', waiting));
 
-        var stale = pending.Where(r => r.Milestone <= 2).Select(r => $"{r.Method} {r.Pattern} ({r.Name})").ToList();
+        var stale = pending.Where(r => r.Milestone <= ProbeMilestones.LastClosed).Select(r => $"{r.Method} {r.Pattern} ({r.Name})").ToList();
         Assert.True(stale.Count == 0, "Probe rows of a closed milestone whose route is not mapped:\n" + string.Join('\n', stale));
     }
 
