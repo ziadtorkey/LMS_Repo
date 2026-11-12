@@ -152,13 +152,13 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 /* Card layout: MudBlazor always sets mud-xs-table / mud-sm-table and stacks rows only below its breakpoint
    (600 / 960 px), so these rules must sit in the same media queries. DataLabel text is the label. */
 @media (max-width: 599.98px) {
-    .lms-table.mud-xs-table .mud-table-body .mud-table-row { border-bottom: 1px solid var(--mud-palette-table-lines); padding: 8px 0; }
+    .lms-table.mud-xs-table .mud-table-body .mud-table-row { display: block; border-bottom: 1px solid var(--mud-palette-table-lines); padding: 8px 0; }
     .lms-table.mud-xs-table .mud-table-body .mud-table-cell { border-bottom: 0; padding: 4px 16px !important; min-height: 32px; text-align: start; }
     .lms-table.mud-xs-table .mud-table-cell::before { color: var(--mud-palette-text-secondary); font-size: .75rem; font-weight: 600; padding-inline-end: 12px; }
     .lms-table.mud-xs-table .mud-table-cell:empty { display: none; }
 }
 @media (max-width: 959.98px) {
-    .lms-table.mud-sm-table .mud-table-body .mud-table-row { border-bottom: 1px solid var(--mud-palette-table-lines); padding: 8px 0; }
+    .lms-table.mud-sm-table .mud-table-body .mud-table-row { display: block; border-bottom: 1px solid var(--mud-palette-table-lines); padding: 8px 0; }
     .lms-table.mud-sm-table .mud-table-body .mud-table-cell { border-bottom: 0; padding: 4px 16px !important; min-height: 32px; text-align: start; }
     .lms-table.mud-sm-table .mud-table-cell::before { color: var(--mud-palette-text-secondary); font-size: .75rem; font-weight: 600; padding-inline-end: 12px; }
     .lms-table.mud-sm-table .mud-table-cell:empty { display: none; }
