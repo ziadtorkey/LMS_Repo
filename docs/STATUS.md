@@ -3,7 +3,7 @@
 _Updated by the Team Lead after every merge cycle._
 
 **Milestone:** M0 — DONE · M1 Organization & Access — DONE (#73 via #200) · M2 People — closing (#177 via #321) · M3 Academic Structure — in progress
-**Last update:** 2026-11-12 14:15 — Work resumed after the owner pause. Merged: #334 design pilot (new theme on main), #345 M4a plan, #348 rich-text editor, #350 Supervisor scope, #282 guardians, #293 teacher assignment, #307 supervisors, #312 enrollment exceptions, #323 blueprints. M4a contracts: #346 wave 1 (approved, in CI), #395 wave 2 (approved).
+**Last update:** 2026-11-12 15:45 — Merged: #346 M4a contracts wave 1 (10 PRs retargeted to main), #393 probe base. Approved, waiting on CI: #286, #325, #404 (+#409 #412 #414 #417 #420 #423), #395 wave 2, #349, #384, #401, #391, FE M4a stack. CI queue saturated; #429 limits E2E to non-draft PRs. Open bug: #415 quiz answer leak (changes requested). Bug #428 fix in #431 (approved).
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |

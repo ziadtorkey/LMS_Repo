@@ -277,6 +277,14 @@
   <data name="OrgTree_Settings" xml:space="preserve"><value>إعدادات الوحدة</value></data>
   <data name="OrgTree_DeleteConfirm" xml:space="preserve"><value>حذف هذه الوحدة؟ لا يمكن استعادتها إلا عن طريق الدعم الفني.</value></data>
   <data name="OrgTree_NoMatches" xml:space="preserve"><value>لا توجد وحدات مطابقة للبحث.</value></data>
+  <data name="OrgTree_NoMatchesHint" xml:space="preserve"><value>جرّب جزءًا من الاسم أو رمز الوحدة.</value></data>
+  <data name="OrgTree_Subtitle" xml:space="preserve"><value>الفروع والمدارس والصفوف في جهتك. أضف الوحدات وانقلها وانسخها من هنا.</value></data>
+  <data name="LevelTypes_Subtitle" xml:space="preserve"><value>مستويات الهيكل التنظيمي بالترتيب، من الأعلى إلى الأدنى، والمستوى الذي يمكن أن يضم فصولًا.</value></data>
+  <data name="LevelTypes_EmptyTitle" xml:space="preserve"><value>لا توجد أنواع مستويات بعد</value></data>
+  <data name="LevelTypes_EmptyText" xml:space="preserve"><value>أضف المستوى الأعلى أولًا، مثل المجموعة، ثم المستويات التي تحته.</value></data>
+  <data name="Templates_Subtitle" xml:space="preserve"><value>هياكل وحدات محفوظة يمكنك تطبيقها لإنشاء فرع أو مدرسة جديدة بسرعة.</value></data>
+  <data name="Templates_EmptyTitle" xml:space="preserve"><value>لا توجد قوالب بعد</value></data>
+  <data name="Templates_EmptyText" xml:space="preserve"><value>احفظ وحدة كقالب من الهيكل التنظيمي، ثم طبّقها من هنا.</value></data>
   <data name="Move_Title" xml:space="preserve"><value>نقل الوحدة</value></data>
   <data name="Move_NewParent" xml:space="preserve"><value>الوحدة الأم الجديدة</value></data>
   <data name="Move_Confirm" xml:space="preserve"><value>نقل &quot;{0}&quot; من &quot;{1}&quot; إلى &quot;{2}&quot;؟</value></data>
@@ -558,6 +566,11 @@
   <data name="Error_invalid_short_code" xml:space="preserve"><value>الرمز المختصر غير صالح: من 2 إلى 20 حرفًا لاتينيًا صغيرًا أو رقمًا أو شرطة.</value></data>
   <data name="Error_teacher_already_assigned" xml:space="preserve"><value>هذا المعلم مُسنَد بالفعل إلى هذا المقرر في هذا الصف.</value></data>
   <data name="Error_assignment_ended" xml:space="preserve"><value>انتهى هذا الإسناد بالفعل ولا يمكن تعديله.</value></data>
+  <data name="Error_module_visibility_range_invalid" xml:space="preserve"><value>حدد تاريخ بداية أو نهاية للوحدة المجدولة، على أن تسبق البداية النهاية.</value></data>
+  <data name="Error_module_target_invalid" xml:space="preserve"><value>اختر مجموعة من هذا المقرر الدراسي، أو اجعل الوحدة للمقرر كله.</value></data>
+  <data name="Error_asset_type_not_allowed" xml:space="preserve"><value>نوع هذا الملف غير مسموح به هنا.</value></data>
+  <data name="Error_asset_too_large" xml:space="preserve"><value>حجم الملف أكبر من الحد المسموح به.</value></data>
+  <data name="Error_completion_not_manual" xml:space="preserve"><value>تكتمل هذه الوحدة تلقائيًا ولا يمكن تعليمها يدويًا.</value></data>
   <data name="Error_course_in_use" xml:space="preserve"><value>المقرر مستخدم في فصول ولا يمكن حذفه.</value></data>
   <data name="Error_course_not_available" xml:space="preserve"><value>هذا المقرر غير متاح في هذه الوحدة.</value></data>
   <data name="Error_allocation_exists" xml:space="preserve"><value>المقرر مخصص لهذه الوحدة من قبل.</value></data>
@@ -632,6 +645,9 @@
   <data name="Perm_Groups_Manage" xml:space="preserve"><value>إدارة المجموعات</value></data>
   <data name="PermModule_LessonPlans" xml:space="preserve"><value>خطط الدروس</value></data>
   <data name="Perm_LessonPlans_View" xml:space="preserve"><value>عرض خطط الدروس</value></data>
+  <data name="PermModule_Modules" xml:space="preserve"><value>وحدات الدروس</value></data>
+  <data name="Perm_Modules_View" xml:space="preserve"><value>عرض وحدات الدروس</value></data>
+  <data name="Perm_Modules_Manage" xml:space="preserve"><value>إدارة وحدات الدروس</value></data>
   <data name="Policy_CreateStudents" xml:space="preserve"><value>منع إنشاء الطلاب واستيرادهم</value></data>
   <data name="Policy_CreateCourses" xml:space="preserve"><value>منع إنشاء المقررات واستيرادها</value></data>
   <data name="Policy_CreateClasses" xml:space="preserve"><value>منع إنشاء الفصول</value></data>
@@ -678,6 +694,9 @@
   <data name="AuditEntity_StudentGroup" xml:space="preserve"><value>مجموعة طلاب</value></data>
   <data name="AuditEntity_GroupMember" xml:space="preserve"><value>عضو مجموعة</value></data>
   <data name="AuditEntity_StudentTransfer" xml:space="preserve"><value>نقل طالب</value></data>
+  <data name="AuditEntity_LessonModule" xml:space="preserve"><value>وحدة درس</value></data>
+  <data name="AuditEntity_ModuleContent" xml:space="preserve"><value>محتوى وحدة</value></data>
+  <data name="AuditEntity_Asset" xml:space="preserve"><value>ملف وسائط</value></data>
   <data name="Notif_Students_ChangeRequested" xml:space="preserve"><value>أرسل {StudentName} طلب تعديل بيانات.</value></data>
   <data name="NotifEvent_Students_ChangeRequested" xml:space="preserve"><value>طلب تعديل بيانات طالب</value></data>
   <data name="Notif_Students_ChangeRequestDecided" xml:space="preserve"><value>تم البت في طلب تعديل بيانات {StudentName}: {Decision}.</value></data>
