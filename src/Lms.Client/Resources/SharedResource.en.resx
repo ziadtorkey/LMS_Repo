@@ -982,4 +982,8 @@
   <data name="Students_EmptyTitle" xml:space="preserve"><value>No matching students</value></data>
   <data name="Students_EmptyText" xml:space="preserve"><value>Change the filters or add a new student.</value></data>
   <data name="Student_BackToList" xml:space="preserve"><value>Back to students</value></data>
+  <data name="Student_CreateSubtitle" xml:space="preserve"><value>Add a student, place them in a class and link their guardians.</value></data>
+  <data name="Student_SectionStudent" xml:space="preserve"><value>Student</value></data>
+  <data name="Student_SectionPlacement" xml:space="preserve"><value>Class</value></data>
+  <data name="Student_SectionAccount" xml:space="preserve"><value>Account</value></data>
 </root>

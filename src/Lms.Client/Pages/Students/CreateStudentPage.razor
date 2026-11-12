@@ -1,6 +1,7 @@
 @page "/students/new"
 @attribute [Authorize]
 @using System.Text.Json
+@using Lms.Client.Components
 @using Lms.Client.Components.People
 @using Lms.Client.Services.Api
 @using Lms.Shared.Authorization
@@ -20,33 +21,44 @@
 @implements IDisposable
 
 <PageTitle>@L["Students_New"]</PageTitle>
-<MudText Typo="Typo.h4" Class="mb-4" data-testid="student-create-title">@L["Students_New"]</MudText>
+<MudLink Href="students" Typo="Typo.body2" Class="lms-back-link" data-testid="student-create-back">
+    <MudIcon Icon="@Icons.Material.Rounded.ArrowBack" Size="Size.Small" Class="lms-icon-flip" aria-hidden="true" />
+    @L["Student_BackToList"]
+</MudLink>
+<PageHeader Title="@L["Students_New"]" Subtitle="@L["Student_CreateSubtitle"]" TitleTestId="student-create-title" />
 
 @if (PermState.Loaded && !PermState.Has(Permissions.Students.Create))
 {
-    <MudAlert Severity="Severity.Warning" data-testid="student-create-forbidden">@L["Forbidden_Title"]</MudAlert>
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" data-testid="student-create-forbidden">@L["Forbidden_Title"]</MudAlert>
 }
 else
 {
-    <MudForm @ref="_form">
-        <MudStack Spacing="3" Style="max-width: 48rem">
-            @if (_error is not null)
-            {
-                <MudAlert Severity="Severity.Error" data-testid="student-error">@_error</MudAlert>
-            }
-            <UnitPicker Value="_homeUnitId" ValueChanged="OnHomeUnitChangedAsync" Label="@L["Student_HomeUnit"]" Required="true" TestId="student-home-unit" />
-            @if (_manualCode)
-            {
-                <MudTextField T="string" @bind-Value="_code" Label="@L["Student_Code"]" Required="true" RequiredError="@L["Common_Required"]"
-                              MaxLength="50" dir="ltr" data-testid="student-code" />
-            }
-            else
-            {
-                <MudText Typo="Typo.caption" data-testid="student-code-auto">@L["Student_CodeAuto"]</MudText>
-            }
-            <StudentDataFields Model="_data" HomeUnitId="_homeUnitId" />
-            @if (_homeUnitId is not null)
-            {
+    <MudForm @ref="_form" Class="lms-form lms-form-page">
+        @if (_error is not null)
+        {
+            <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-4" data-testid="student-error">@_error</MudAlert>
+        }
+
+        <SectionCard Title="@L["Student_SectionStudent"]">
+            <fieldset class="lms-fieldset">
+                <legend class="lms-fieldset-legend lms-visually-hidden">@L["Student_SectionStudent"]</legend>
+                <UnitPicker Value="_homeUnitId" ValueChanged="OnHomeUnitChangedAsync" Label="@L["Student_HomeUnit"]" Required="true" TestId="student-home-unit" />
+                @if (_manualCode)
+                {
+                    <MudTextField T="string" @bind-Value="_code" Label="@L["Student_Code"]" Required="true" RequiredError="@L["Common_Required"]"
+                                  MaxLength="50" dir="ltr" data-testid="student-code" />
+                }
+                else
+                {
+                    <MudText Typo="Typo.caption" Class="lms-muted" data-testid="student-code-auto">@L["Student_CodeAuto"]</MudText>
+                }
+                <StudentDataFields Model="_data" HomeUnitId="_homeUnitId" />
+            </fieldset>
+        </SectionCard>
+
+        @if (_homeUnitId is not null)
+        {
+            <SectionCard Title="@L["Student_SectionPlacement"]" Class="mt-4">
                 <MudSelect T="Guid?" @bind-Value="_classId" Label="@L["Student_Class"]" Clearable="true" HelperText="@L["Student_ClassHelp"]"
                            data-testid="student-class">
                     @foreach (var cls in _classes)
@@ -56,18 +68,31 @@ else
                 </MudSelect>
                 @if (SelectedClassIsFull)
                 {
-                    <MudAlert Severity="Severity.Warning" data-testid="student-class-full">@L["Student_ClassFull"]</MudAlert>
+                    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mt-3" data-testid="student-class-full">@L["Student_ClassFull"]</MudAlert>
                 }
-            }
+            </SectionCard>
+        }
+
+        <SectionCard Title="@L["Student_SectionAccount"]" Class="mt-4">
             <MudTextField T="string" @bind-Value="_password" Label="@L["Student_DefaultPassword"]" InputType="InputType.Password" dir="ltr"
                           HelperText="@L["Student_DefaultPasswordHelp"]" autocomplete="new-password" data-testid="student-password" />
+        </SectionCard>
+
+        <SectionCard Title="@L["Student_Guardians"]" Class="mt-4">
             <GuardianInputRows Rows="_guardians" Required="_guardiansRequired" />
-            <MudStack Row="true" Spacing="2">
-                <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="_saving"
-                           data-testid="student-save">@L["Common_Save"]</MudButton>
-                <MudButton Href="students" data-testid="student-cancel">@L["Common_Cancel"]</MudButton>
-            </MudStack>
-        </MudStack>
+        </SectionCard>
+
+        <div class="lms-dialog-actions mt-4">
+            <MudButton Href="students" Variant="Variant.Text" data-testid="student-cancel">@L["Common_Cancel"]</MudButton>
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="_saving"
+                       StartIcon="@(_saving ? null : Icons.Material.Rounded.Check)" data-testid="student-save">
+                @if (_saving)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="me-2" aria-hidden="true" />
+                }
+                @L["Common_Save"]
+            </MudButton>
+        </div>
     </MudForm>
 }
 

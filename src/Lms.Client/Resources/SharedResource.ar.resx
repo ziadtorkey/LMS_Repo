@@ -982,4 +982,8 @@
   <data name="Students_EmptyTitle" xml:space="preserve"><value>لا يوجد طلاب مطابقون</value></data>
   <data name="Students_EmptyText" xml:space="preserve"><value>غيّر عوامل التصفية أو أضف طالبًا جديدًا.</value></data>
   <data name="Student_BackToList" xml:space="preserve"><value>العودة إلى الطلاب</value></data>
+  <data name="Student_CreateSubtitle" xml:space="preserve"><value>أضف طالبًا واربطه بفصل وبأولياء أمره.</value></data>
+  <data name="Student_SectionStudent" xml:space="preserve"><value>الطالب</value></data>
+  <data name="Student_SectionPlacement" xml:space="preserve"><value>الفصل</value></data>
+  <data name="Student_SectionAccount" xml:space="preserve"><value>الحساب</value></data>
 </root>
