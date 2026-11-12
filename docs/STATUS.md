@@ -3,7 +3,7 @@
 _Updated by the Team Lead after every merge cycle._
 
 **Milestone:** M0 — DONE · M1 Organization & Access — DONE (#73 via #200) · M2 People — closing (#177 via #321) · M3 Academic Structure — in progress
-**Last update:** 2026-11-11 23:27 — Merged: #335 (probe year fix; main green again), #306 student groups, #311 M3 probes part 1, #330 (into be/224). Design pilot #334 QA-approved. Lead contract PRs: #336, #340, #342. Approved, in CI: #334, #336, #338-#340, #315-#317, #320, #322, #326, #331, #333. M4 proposals: FE #341, BE in progress.
+**Last update:** 2026-11-12 08:35 — Merged since 23:30: #279 courses, #290 class courses, #302 class import, #315, #320, #326 (#310 security fix), #336, #338 (#106), #339, #340, #342. M4 decided (D48–D52); M4a plan #345 and contracts #346 in review. Conflicts being fixed: #323, #293, #282, #286. New bug #344 (sev:high) with FE2.
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |
