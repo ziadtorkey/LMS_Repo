@@ -11,7 +11,15 @@ public sealed class ClassesModule : ILmsModule
         services.AddScoped<BulkClassHandlers>();
         services.AddScoped<ClassMapper>();
         services.AddScoped<ClassLookups>();
+        services.AddScoped<ClassCourseWriter>();
+        services.AddScoped<ClassCourseMapper>();
+        services.AddScoped<ClassCourseHandlers>();
+        services.AddScoped<MatrixQuery>();
     }
 
-    public void MapEndpoints(IEndpointRouteBuilder app) => ClassEndpoints.Map(app);
+    public void MapEndpoints(IEndpointRouteBuilder app)
+    {
+        ClassEndpoints.Map(app);
+        ClassCourseEndpoints.Map(app);
+    }
 }

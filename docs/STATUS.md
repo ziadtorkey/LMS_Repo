@@ -2,22 +2,23 @@
 
 _Updated by the Team Lead after every merge cycle._
 
-**Milestone:** M0 — DONE · M1 Organization & Access — closing (48 / 49; last: #73 via #200) · M2 People — closing (27 / 29; #175 via #308, #176/#177 via E2E PRs) · M3 Academic Structure — in progress (12 / 49)
-**Last update:** 2026-11-11 20:25 — Merged since 19:28: #277 classes, #284 enrollment engine, #276 student profile. Approved and in CI: #200, #308, #283, #279, #320. Lead contract PRs: #320 (IncludeCourses, ClassLessonPlan audit). M3 work in review: #286, #290, #292, #293, #297, #302, #303, #306, #309, #313, #315, #316, #318, #319, #321, #323.
+**Milestone:** M0 — DONE · M1 Organization & Access — DONE (#73 via #200) · M2 People — closing (#177 via #321) · M3 Academic Structure — in progress
+**Last update:** 2026-11-12 18:27 — Merged since 15:45: #404 org redesign, #429 CI (E2E only on non-draft PRs), #423 staff import, #418 dialog a11y, #431 (#428 fix), #286 students, #303 self-profile, #325 lesson plans, #317 classes list, #301 allocations. Open fixes: #415 quiz answer leak (BE2), #421 annotated file (BE4).
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |
 |---|---|---|---|---|
-| Team Lead | Opus | `local_95ef9dc7-9378-4012-a8f2-c7d1f944bdec` (lms-lead) | merges; M3 plan draft | coordinating |
-| Backend 1 | Sonnet | `local_19f31b04-ca2f-43d1-a2cb-8a128722a11f` (lms-backend) | #148 (M1), #184 (#160), draft #202 (#159 imports) | working |
-| Backend 2 | Sonnet | `local_d36e7dc2-e9e6-4f73-b7b3-b078b17bbe41` (lms-backend-2) | #187 (#162 staff create/list) | working |
-| Frontend | Sonnet | `local_40667dce-5be7-478b-95cb-4f14ecd203b9` (lms-frontend) | #190 (#171); then review nits follow-up | working |
-| Frontend 2 | Sonnet | `local_3d9e8938-4064-4f83-a04d-920704d41a87` (lms-frontend-2) | #195 (#169), #204 (#172); then #173 | working |
-| QA | Sonnet | `local_91a7af3c-7b02-4d61-ac11-2c22629cf89f` (lms-qa) | re-review #184; draft #206 (#176 staff E2E) | working |
-| QA 2 | Sonnet | `local_54d26c64-4403-4a13-b128-5be5e9752d97` (lms-qa-2) | #182 (#175 probes); FE reviews | working |
-| Backend 3 | Sonnet | `local_2e8038c6-e5ba-4e13-ade0-9440d9beb565` (lms-backend-3) | #193 (#168); drafts #196 (#164), #198 (#163), #205 (#165), #207 (#52) | working |
-| Backend 4 | Sonnet | `local_fd5c4410-8364-4c55-a5a8-3b8aa37afc1f` (lms-backend-4) | draft #208 (#161); #50 after #148 | working |
-| QA 3 | Sonnet | `local_6d46b60b-d70a-4cfa-af2f-5bf90cdf7c08` (lms-qa-3) | re-review #193; #200 (#73 E2E) | reviewing |
+| Team Lead | Opus | `local_95ef9dc7-9378-4012-a8f2-c7d1f944bdec` (lms-lead) | merges; M4a contracts #346 (wave 1), #395 (wave 2) | coordinating |
+| Backend 1 | Sonnet | `local_19f31b04-ca2f-43d1-a2cb-8a128722a11f` (lms-backend) | M4a #357 (PR #385), #358, #359; M3 stack #301/#318/#319 | working |
+| Backend 2 | Sonnet | `local_d36e7dc2-e9e6-4f73-b7b3-b078b17bbe41` (lms-backend-2) | M4a #353 + #356 (PR #391), quizzes #360, #361 | working |
+| Backend 3 | Sonnet | `local_2e8038c6-e5ba-4e13-ade0-9440d9beb565` (lms-backend-3) | M3 #286 → #292/#297; M4a forums #363, library #362 | working |
+| Backend 4 | Sonnet | `local_fd5c4410-8364-4c55-a5a8-3b8aa37afc1f` (lms-backend-4) | M4a sanitiser #349, assets #354 (PR #384), #355; M3 #325 | working |
+| Frontend | Sonnet | `local_40667dce-5be7-478b-95cb-4f14ecd203b9` (lms-frontend) | M4a #365 (PR #386), #370, #372 | working |
+| Frontend 2 | Sonnet | `local_3d9e8938-4064-4f83-a04d-920704d41a87` (lms-frontend-2) | M4a #366–#369, #375, #376, #377 (PRs #387–#397); M3 #303/#309 | working |
+| QA | Sonnet | `local_91a7af3c-7b02-4d61-ac11-2c22629cf89f` (lms-qa) | reviews #385–#387; M3 E2E #285 | reviewing |
+| QA 2 | Sonnet | `local_54d26c64-4403-4a13-b128-5be5e9752d97` (lms-qa-2) | #325, #301; M4a probe suite #379 | reviewing |
+| QA 3 | Sonnet | `local_6d46b60b-d70a-4cfa-af2f-5bf90cdf7c08` (lms-qa-3) | M3 T47 student E2E | working |
+| UI/UX Designer | Opus | Lead-run agent | design pilot #334 merged; Phase 2 page passes next | waiting |
 
 ## M0 issue map
 | Task | Issue | Lane | Depends on |
