@@ -36,7 +36,7 @@ public static class RelationshipRules
         new(BuiltInRoles.Supervisor, Relationships.SupervisedCourses, ImmutableArray.Create(
             Permissions.Courses.Update, Permissions.Courses.Delete, Permissions.Courses.Allocate,
             Permissions.Blueprints.Edit, Permissions.Blueprints.Publish, Permissions.TeacherAssignments.Manage,
-            Permissions.Enrollment.ApproveException)),
+            Permissions.Enrollment.ApproveException, Permissions.Students.View)),
         new(BuiltInRoles.Student, Relationships.OwnEnrollments, ImmutableArray.Create(
             Permissions.LessonPlans.View, Permissions.Modules.View)),
     ];

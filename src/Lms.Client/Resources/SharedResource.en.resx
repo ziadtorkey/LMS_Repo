@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
   <resheader name="version"><value>2.0</value></resheader>
@@ -836,4 +836,16 @@
   <data name="Module_Visibility_Hidden" xml:space="preserve"><value>Hidden</value></data>
   <data name="Module_Visibility_Scheduled" xml:space="preserve"><value>Scheduled</value></data>
   <data name="Progress_Count" xml:space="preserve"><value>{0} of {1}</value></data>
+  <data name="LessonPlan_Modules" xml:space="preserve"><value>Modules</value></data>
+  <data name="LessonPlan_ModulesLater" xml:space="preserve"><value>Modules arrive in a later release.</value></data>
+  <data name="RichText_Bold" xml:space="preserve"><value>Bold</value></data>
+  <data name="RichText_BulletList" xml:space="preserve"><value>Bulleted list</value></data>
+  <data name="RichText_Italic" xml:space="preserve"><value>Italic</value></data>
+  <data name="RichText_Link" xml:space="preserve"><value>Insert link</value></data>
+  <data name="RichText_LinkApply" xml:space="preserve"><value>Apply</value></data>
+  <data name="RichText_LinkInvalid" xml:space="preserve"><value>Enter a valid link (https:// or mailto:).</value></data>
+  <data name="RichText_LinkRemove" xml:space="preserve"><value>Remove link</value></data>
+  <data name="RichText_LinkUrl" xml:space="preserve"><value>Link address</value></data>
+  <data name="RichText_NumberedList" xml:space="preserve"><value>Numbered list</value></data>
+  <data name="RichText_Toolbar" xml:space="preserve"><value>Formatting toolbar</value></data>
 </root>
