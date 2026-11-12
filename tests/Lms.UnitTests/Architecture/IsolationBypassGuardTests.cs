@@ -47,8 +47,12 @@ public sealed class IsolationBypassGuardTests
             "effective policies set on ancestors above the caller's scope (M1 Task 12, #94)",
         ["src/Lms.Infrastructure/Organizations/OrgPolicyReader.cs"] =
             "policies set on ancestors above the caller's scope, to show blocked permissions in the org tree (M1 Task 9, #99)",
+        ["src/Lms.Api/Features/Blueprints/BlueprintReader.cs"] =
+            "blueprints of an inherited course sit at an ancestor unit above the caller; client-limited, live rows, courses already found visible (M3 Task 16)",
         ["src/Lms.Api/Features/Classes/ClassLookups.cs"] =
             "years inherited from ancestors, per-client class code uniqueness and ancestor Teacher assignments for the homeroom check; client-limited, live rows, no rows returned (M3 Task 13)",
+        ["src/Lms.Api/Features/Teaching/TeachingLookups.cs"] =
+            "Teacher assignment and eligibility may sit at an ancestor unit above the caller; client-limited, live rows; yes/no answers, plus the eligibility list of ancestor-or-self grants for one unit (M3 Task 15, #332)",
         ["src/Lms.Api/Features/Staff/StaffQueries.cs"] =
             "staff shared into the caller's scope have a home unit outside it; rows limited to this client and an in-scope assignment (M2 Task 10)",
         ["src/Lms.Api/Features/OrgUnits/AcademicFlagsHandler.cs"] =
@@ -85,6 +89,8 @@ public sealed class IsolationBypassGuardTests
             "names of the course of a class course, owned by an ancestor unit above the caller's scope; names only, for class courses the caller already sees; client matched, deleted excluded (M3 Task 24, #232)",
         ["src/Lms.Infrastructure/Access/RelationshipScope.cs"] =
             "the caller's own supervisor rows sit at the course owner unit, which may be above their assignment; own user and active client only, deleted rows excluded (M3 Task 12, D42; fixed in #219)",
+        ["src/Lms.Infrastructure/Enrollment/ExceptionLookups.cs"] =
+            "the course and its supervisors of an exceptional-enrollment request are owned above the class, out of an approver's scope; client matched, deleted rows excluded, only names and user ids leave (M3 Task 11, #219)",
         ["src/Lms.Infrastructure/Enrollment/PlacementGuard.cs"] =
             "the academic year and the course restrictions of a class sit at ancestor units above the caller's scope; an invisible restriction must never mean no restriction; client matched, deleted rows excluded (M3 Task 24, #232)",
         ["src/Lms.Infrastructure/People/StaffBackfill.cs"] =
