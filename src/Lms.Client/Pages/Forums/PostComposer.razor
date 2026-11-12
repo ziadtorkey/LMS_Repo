@@ -1,0 +1,46 @@
+@using Lms.Client.Components.Assets
+@using Lms.Client.Components.Editors
+@using Lms.Shared.Content
+
+@* A rich text body with attachments and a send button. OnSubmit returns true when the post was accepted (the composer then clears). *@
+<MudStack Spacing="2" data-testid="@TestId">
+    <RichTextEditor @key="_version" Value="@_html" ValueChanged="v => _html = v" Label="@Label" TestId="@($"{TestId}-editor")" />
+    @foreach (var name in _attachmentNames)
+    {
+        <MudText Typo="Typo.caption"><span dir="ltr">@name</span></MudText>
+    }
+    <AssetUploader ClassCourseId="ClassCourseId" OnUploaded="OnUploaded" />
+    <div>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SendAsync" Disabled="_sending" data-testid="@($"{TestId}-send")">@SendLabel</MudButton>
+    </div>
+</MudStack>
+
+@code {
+    private string? _html;
+    private readonly List<Guid> _attachments = [];
+    private readonly List<string> _attachmentNames = [];
+    private bool _sending;
+    private int _version;
+
+    [Parameter, EditorRequired] public Guid ClassCourseId { get; set; }
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public string SendLabel { get; set; } = "";
+    [Parameter] public string TestId { get; set; } = "post-composer";
+    [Parameter, EditorRequired] public Func<string, IReadOnlyList<Guid>, Task<bool>> OnSubmit { get; set; } = default!;
+
+    private void OnUploaded(AssetDto asset)
+    {
+        _attachments.Add(asset.Id);
+        _attachmentNames.Add(asset.FileName);
+    }
+
+    private async Task SendAsync()
+    {
+        if (RichTextHtml.IsEmpty(_html)) return;
+        _sending = true;
+        var ok = await OnSubmit(_html!, _attachments.ToList());
+        _sending = false;
+        if (!ok) return;
+        _html = null; _attachments.Clear(); _attachmentNames.Clear(); _version++;
+    }
+}
