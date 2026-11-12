@@ -200,7 +200,7 @@ else
             { x => x.Code, issued.Student.Summary.StudentCode },
             { x => x.Password, issued.IssuedPassword },
             { x => x.SentTo, issued.CredentialsSentTo },
-        }, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, BackdropClick = false });
+        }, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, BackdropClick = false, CloseOnEscapeKey = false });
         await dialog.Result;
         await LoadAsync();
     }
