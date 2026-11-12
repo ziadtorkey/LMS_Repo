@@ -961,6 +961,11 @@
   <data name="ChangeRequestStatus_Approved" xml:space="preserve"><value>تمت الموافقة</value></data>
   <data name="ChangeRequestStatus_Rejected" xml:space="preserve"><value>مرفوض</value></data>
   <data name="ChangeRequestStatus_Cancelled" xml:space="preserve"><value>ملغي</value></data>
+  <data name="Nav_MyChildren" xml:space="preserve"><value>أبنائي</value></data>
+  <data name="MyChildren_Title" xml:space="preserve"><value>أبنائي</value></data>
+  <data name="MyChildren_Empty" xml:space="preserve"><value>لا يوجد أبناء مرتبطون بحسابك في هذه المدرسة.</value></data>
+  <data name="MyChildren_OtherContexts" xml:space="preserve"><value>يظهر الأبناء في مدرسة أخرى عند التبديل إليها من الشريط العلوي.</value></data>
+  <data name="MyChildren_Open" xml:space="preserve"><value>عرض أبنائي</value></data>
   <data name="Nav_MyClassCourses" xml:space="preserve"><value>مقررات فصولي</value></data>
   <data name="MyClassCourses_Title" xml:space="preserve"><value>مقررات فصولي</value></data>
   <data name="MyClassCourses_Empty" xml:space="preserve"><value>لا توجد لديك مقررات فصول في العام المحدد.</value></data>
