@@ -53,7 +53,8 @@ public sealed record SaveTemplateRequest(
     string Visibility,
     bool IncludePolicies,
     bool IncludeSettings,
-    IReadOnlyDictionary<string, string> Parameterize);
+    IReadOnlyDictionary<string, string> Parameterize,
+    bool IncludeCourses = false);
 
 /// <summary>Body of POST /api/templates/{id}/apply: placeholder name (no braces) to value.</summary>
 public sealed record ApplyTemplateRequest(Guid TargetParentId, IReadOnlyDictionary<string, string> Placeholders);
