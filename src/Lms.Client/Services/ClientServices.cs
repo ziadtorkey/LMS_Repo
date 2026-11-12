@@ -52,6 +52,7 @@ public static class ClientServices
             services.AddSingleton<ICoursesApi, FakeCoursesApi>();
             services.AddSingleton<ILessonPlansApi, FakeLessonPlansApi>();
             services.AddSingleton<IFileUploadApi, FakeFileUploadApi>();
+            services.AddSingleton<IModulesApi, FakeModulesApi>();
             services.AddScoped<AuthenticationStateProvider, FakeAuthenticationStateProvider>();
             services.AddAuthorizationCore();
             return;
@@ -95,5 +96,6 @@ public static class ClientServices
         services.AddScoped<ICoursesApi, CoursesApi>();
         services.AddScoped<ILessonPlansApi, LessonPlansApi>();
         services.AddScoped<IFileUploadApi, FileUploadApi>();
+        services.AddScoped<IModulesApi, ModulesApi>();
     }
 }
