@@ -61,7 +61,8 @@ public sealed class ModuleAuthoringTests : ClientTestContext
 
         _dialogs.Find("[data-testid=module-title-ar]").Change("مقدمة");
         _dialogs.Find("[data-testid=module-title-en]").Change("Intro");
-        _dialogs.Find("[data-testid=module-body-en]").Change("<p>Hello</p>");
+        await _dialogs.InvokeAsync(() => _dialogs.FindComponents<Lms.Client.Components.Editors.RichTextEditor>()
+            .First(e => e.Instance.TestId == "module-body-en").Instance.ValueChanged.InvokeAsync("<p>Hello</p>"));
         _dialogs.Find("[data-testid=module-save]").Click();
 
         _dialogs.WaitForAssertion(() => Assert.Single(_modules.NodesFor(Cc, Lesson)));

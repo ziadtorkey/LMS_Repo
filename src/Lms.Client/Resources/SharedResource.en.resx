@@ -881,4 +881,12 @@
   <data name="CompletionState_NotStarted" xml:space="preserve"><value>Not started</value></data>
   <data name="CompletionState_InProgress" xml:space="preserve"><value>In progress</value></data>
   <data name="CompletionState_Completed" xml:space="preserve"><value>Done</value></data>
+  <data name="Module_Title" xml:space="preserve"><value>Module</value></data>
+  <data name="Module_Back" xml:space="preserve"><value>Back to the course</value></data>
+  <data name="Module_MarkComplete" xml:space="preserve"><value>Mark as complete</value></data>
+  <data name="Module_Previous" xml:space="preserve"><value>Previous</value></data>
+  <data name="Module_Next" xml:space="preserve"><value>Next</value></data>
+  <data name="Module_NoContent" xml:space="preserve"><value>This module has no content yet.</value></data>
+  <data name="Module_Unsupported" xml:space="preserve"><value>This kind of module opens in its own page.</value></data>
+  <data name="Module_UrlInvalid" xml:space="preserve"><value>Enter a full web address starting with http:// or https://.</value></data>
 </root>

@@ -814,7 +814,6 @@
   <data name="LessonPlan_HijriSuffix" xml:space="preserve"><value>هـ</value></data>
   <data name="LessonPlan_Modules" xml:space="preserve"><value>الوحدات التعليمية</value></data>
   <data name="LessonPlan_ModulesLater" xml:space="preserve"><value>تصل الوحدات التعليمية في إصدار لاحق.</value></data>
-<<<<<<< HEAD
   <data name="Asset_Limits" xml:space="preserve"><value>الأنواع المسموحة: {0}. الحد الأقصى للحجم: {1} ميجابايت.</value></data>
   <data name="Asset_Choose" xml:space="preserve"><value>اختر ملفًا لرفعه</value></data>
   <data name="Asset_TypeNotAllowed" xml:space="preserve"><value>نوع الملف غير مسموح هنا. المسموح: {0}.</value></data>
@@ -869,7 +868,6 @@
   <data name="RichText_LinkUrl" xml:space="preserve"><value>عنوان الرابط</value></data>
   <data name="RichText_NumberedList" xml:space="preserve"><value>قائمة مرقمة</value></data>
   <data name="RichText_Toolbar" xml:space="preserve"><value>شريط أدوات التنسيق</value></data>
-=======
   <data name="Learn_Title" xml:space="preserve"><value>مقرري</value></data>
   <data name="Learn_Continue" xml:space="preserve"><value>تابع من حيث توقفت</value></data>
   <data name="Learn_ContinueOpen" xml:space="preserve"><value>متابعة</value></data>
@@ -883,5 +881,12 @@
   <data name="CompletionState_NotStarted" xml:space="preserve"><value>لم تبدأ</value></data>
   <data name="CompletionState_InProgress" xml:space="preserve"><value>قيد التنفيذ</value></data>
   <data name="CompletionState_Completed" xml:space="preserve"><value>مكتملة</value></data>
->>>>>>> origin/fe/369-student-course-home
+  <data name="Module_Title" xml:space="preserve"><value>وحدة</value></data>
+  <data name="Module_Back" xml:space="preserve"><value>العودة إلى المقرر</value></data>
+  <data name="Module_MarkComplete" xml:space="preserve"><value>وضع علامة مكتملة</value></data>
+  <data name="Module_Previous" xml:space="preserve"><value>السابق</value></data>
+  <data name="Module_Next" xml:space="preserve"><value>التالي</value></data>
+  <data name="Module_NoContent" xml:space="preserve"><value>لا يوجد محتوى لهذه الوحدة بعد.</value></data>
+  <data name="Module_Unsupported" xml:space="preserve"><value>يُفتح هذا النوع من الوحدات في صفحته الخاصة.</value></data>
+  <data name="Module_UrlInvalid" xml:space="preserve"><value>أدخل عنوان ويب كاملًا يبدأ بـ http:// أو https://.</value></data>
 </root>
