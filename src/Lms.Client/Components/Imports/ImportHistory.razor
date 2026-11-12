@@ -2,8 +2,9 @@
 @using Lms.Shared.Imports
 @inject IImportsApi Api
 
-<MudText Typo="Typo.h6" Class="mt-4 mb-2">@L["Import_History"]</MudText>
-<ServerTable T="ImportBatchDto" @ref="_table" ServerData="LoadAsync">
+<SectionCard Title="@L["Import_History"]" Flush="true" Class="mt-4" TestId="import-history">
+<ServerTable T="ImportBatchDto" @ref="_table" ServerData="LoadAsync" EmptyTitle="@L["Import_HistoryEmptyTitle"]"
+             EmptyText="@L["Import_HistoryEmptyText"]" EmptyIcon="@Icons.Material.Rounded.History">
     <HeaderContent>
         <MudTh>@L["Import_File"]</MudTh>
         <MudTh>@L["Assignments_Unit"]</MudTh>
@@ -16,9 +17,10 @@
         <MudTd DataLabel="@L["Assignments_Unit"]">@CultureText.Pick(batch.OrgUnitNameAr, batch.OrgUnitNameEn)</MudTd>
         <MudTd DataLabel="@L["Common_Status"]"><ImportStatusChip Status="@batch.Status" /></MudTd>
         <MudTd DataLabel="@L["Import_Rows"]">@(batch.CreatedCount ?? batch.RowCount)</MudTd>
-        <MudTd DataLabel="@L["Audit_When"]"><span dir="ltr">@batch.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</span></MudTd>
+        <MudTd DataLabel="@L["Audit_When"]"><span class="lms-date-cell"><span dir="ltr">@batch.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm", System.Globalization.CultureInfo.InvariantCulture)</span></span></MudTd>
     </RowTemplate>
 </ServerTable>
+</SectionCard>
 
 @code {
     private ServerTable<ImportBatchDto> _table = default!;

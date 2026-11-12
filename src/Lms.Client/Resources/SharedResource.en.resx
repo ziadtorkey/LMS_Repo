@@ -998,4 +998,9 @@
   <data name="ChangeRequests_Subtitle" xml:space="preserve"><value>Changes students asked to make to their own details. Review each one and approve or reject it.</value></data>
   <data name="ChangeRequests_EmptyTitle" xml:space="preserve"><value>No change requests</value></data>
   <data name="ChangeRequests_EmptyText" xml:space="preserve"><value>Change the filters to see requests in other states.</value></data>
+  <data name="Import_HistoryEmptyTitle" xml:space="preserve"><value>No imports yet</value></data>
+  <data name="Import_HistoryEmptyText" xml:space="preserve"><value>Imports you run appear here with their result.</value></data>
+  <data name="StudentImport_Subtitle" xml:space="preserve"><value>Add many students at once from an Excel file.</value></data>
+  <data name="ClassImport_Subtitle" xml:space="preserve"><value>Place students in classes from an Excel file.</value></data>
+  <data name="Group_Subtitle" xml:space="preserve"><value>Split the students of this class course into groups.</value></data>
 </root>

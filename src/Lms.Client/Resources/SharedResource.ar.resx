@@ -998,4 +998,9 @@
   <data name="ChangeRequests_Subtitle" xml:space="preserve"><value>تغييرات طلب الطلاب إجراءها على بياناتهم. راجع كل طلب ووافق عليه أو ارفضه.</value></data>
   <data name="ChangeRequests_EmptyTitle" xml:space="preserve"><value>لا توجد طلبات تغيير</value></data>
   <data name="ChangeRequests_EmptyText" xml:space="preserve"><value>غيّر عوامل التصفية لعرض الطلبات في حالات أخرى.</value></data>
+  <data name="Import_HistoryEmptyTitle" xml:space="preserve"><value>لا توجد عمليات استيراد بعد</value></data>
+  <data name="Import_HistoryEmptyText" xml:space="preserve"><value>عمليات الاستيراد التي تجريها تظهر هنا مع نتيجتها.</value></data>
+  <data name="StudentImport_Subtitle" xml:space="preserve"><value>أضف عددًا كبيرًا من الطلاب دفعة واحدة من ملف إكسل.</value></data>
+  <data name="ClassImport_Subtitle" xml:space="preserve"><value>وزّع الطلاب على الفصول من ملف إكسل.</value></data>
+  <data name="Group_Subtitle" xml:space="preserve"><value>قسّم طلاب مقرر الفصل هذا إلى مجموعات.</value></data>
 </root>

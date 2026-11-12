@@ -8,7 +8,7 @@
 <PageTitle>@L["Group_Title"]</PageTitle>
 @if (!PermState.Loaded)
 {
-    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+    <LoadingState Lines="3" />
 }
 else if (!PermState.Has(Permissions.Groups.View))
 {
@@ -17,7 +17,7 @@ else if (!PermState.Has(Permissions.Groups.View))
 else
 {
     @* A thin host for the groups tab (the class course view that will embed it belongs to the classes pages). *@
-    <MudText Typo="Typo.h4" Class="mb-3" data-testid="groups-title">@L["Group_Title"]</MudText>
+    <PageHeader Title="@L["Group_Title"]" Subtitle="@L["Group_Subtitle"]" TitleTestId="groups-title" />
     <GroupsTab ClassCourseId="ClassCourseId" CanManage="PermState.Has(Permissions.Groups.Manage)" />
 }
 
