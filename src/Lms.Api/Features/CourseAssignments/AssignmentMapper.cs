@@ -38,7 +38,8 @@ internal sealed class AssignmentMapper(LmsDbContext db)
             a.ResubmissionRule, a.AllowText, a.AllowFiles, submitted, graded, canEdit, nowUtc);
     }
 
-    public async Task<SubmissionDto> SubmissionAsync(Submission s, CancellationToken ct)
+    /// <summary>A student sees the grade and feedback only once the submission is returned; staff always see them.</summary>
+    public async Task<SubmissionDto> SubmissionAsync(Submission s, bool forStudent, CancellationToken ct)
     {
         var names = await db.Set<Lms.Domain.People.StudentProfile>().Where(p => p.Id == s.StudentId)
             .Select(p => new { p.NameAr, p.NameEn }).FirstAsync(ct);
@@ -49,8 +50,24 @@ internal sealed class AssignmentMapper(LmsDbContext db)
                 orderby f.CreatedAt
                 select a)
             .ToListAsync(ct);
+        SubmissionGradeDto? grade = null;
+        if (!forStudent || s.Status == Submission.ReturnedStatus)
+        {
+            var feedback = await db.Set<SubmissionFeedback>().FirstOrDefaultAsync(f => f.SubmissionId == s.Id, ct);
+            if (feedback is not null)
+            {
+                var annotated = feedback.AnnotatedFileAssetId is { } assetId
+                    ? await db.Set<Asset>().FirstOrDefaultAsync(a => a.Id == assetId, ct)
+                    : null;
+                grade = new SubmissionGradeDto(
+                    feedback.Points, feedback.PenaltyPercentApplied, feedback.FinalGrade, feedback.FeedbackHtml,
+                    annotated is null ? null : AssetEndpoints.ToDto(annotated), ModuleMapper.Utc(feedback.GradedAtUtc)!.Value,
+                    ModuleMapper.Utc(feedback.ReturnedAtUtc));
+            }
+        }
+
         return new SubmissionDto(
             s.Id, s.AssignmentId, s.StudentId, names.NameAr, names.NameEn, s.Status, s.TextHtml, files.Select(AssetEndpoints.ToDto).ToList(),
-            ModuleMapper.Utc(s.SubmittedAtUtc), s.IsLate, s.Number, null);
+            ModuleMapper.Utc(s.SubmittedAtUtc), s.IsLate, s.Number, grade);
     }
 }

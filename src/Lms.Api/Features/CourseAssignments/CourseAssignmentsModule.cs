@@ -1,5 +1,7 @@
 using Lms.Api.Infrastructure;
 using Lms.Domain.Content;
+using Lms.Infrastructure.Assignments;
+using Lms.Infrastructure.Jobs;
 using Lms.Shared;
 using Lms.Shared.Assignments;
 using Lms.Shared.Authorization;
@@ -13,6 +15,15 @@ public sealed class CourseAssignmentsModule : ILmsModule
     {
         services.AddScoped<AssignmentHandlers>();
         services.AddScoped<SubmissionHandlers>();
+        services.AddScoped<GradingHandlers>();
+        services.AddScoped<AssignmentDueSoonJob>();
+        services.AddSingleton(new DevJobDefinition(
+            AssignmentDueSoonJob.RecurringJobId, (sp, asOf, ct) => sp.GetRequiredService<AssignmentDueSoonJob>().RunAsync(asOf, ct)));
+        if (configuration.GetValue("Jobs:ServerEnabled", true))
+        {
+            services.AddHostedService<DueSoonRegistration>();
+        }
+
         services.AddScoped<CourseAssignmentNotifier>();
         services.AddScoped<IAssetReferenceReader, AssignmentAssetReader>();
     }
@@ -46,7 +57,35 @@ public sealed class CourseAssignmentsModule : ILmsModule
                 (Guid id, SubmitAssignmentRequest? r, HttpContext http, SubmissionHandlers h, CancellationToken ct) =>
                     h.SubmitAsync(id, r, http, ct))
             .RequireAuthorization().RequirePermission(Permissions.CourseAssignments.Submit);
+        app.MapPut(Routes.SubmissionGradePattern,
+                (Guid id, GradeSubmissionRequest? r, HttpContext http, GradingHandlers h, CancellationToken ct) => h.GradeAsync(id, r, http, ct))
+            .RequireAuthorization().RequirePermission(Permissions.CourseAssignments.Grade);
+        app.MapPost(Routes.SubmissionReturnPattern,
+                (Guid id, HttpContext http, GradingHandlers h, CancellationToken ct) => h.ReturnAsync(id, http, ct))
+            .RequireAuthorization().RequirePermission(Permissions.CourseAssignments.Grade);
         app.MapGet(Routes.SubmissionPattern, (Guid id, HttpContext http, SubmissionHandlers h, CancellationToken ct) => h.GetAsync(id, http, ct))
             .RequireAuthorization().RequirePermission(Permissions.CourseAssignments.View);
     }
+}
+
+internal sealed class DueSoonRegistration(IServiceScopeFactory scopes, ILogger<DueSoonRegistration> logger) : IHostedService
+{
+    public Task StartAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            using var scope = scopes.CreateScope();
+            scope.ServiceProvider.GetRequiredService<IBackgroundJobs>().AddOrUpdateRecurring<AssignmentDueSoonJob>(
+                AssignmentDueSoonJob.RecurringJobId, job => job.RunAsync(null, CancellationToken.None), AssignmentDueSoonJob.Cron);
+        }
+        catch (Exception ex)
+        {
+            // Storage down at startup must not stop the API; the job is registered again on the next start.
+            logger.LogError(ex, "The assignment-due-soon recurring job could not be registered");
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 }
