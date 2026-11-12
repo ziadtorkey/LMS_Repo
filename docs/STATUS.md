@@ -3,22 +3,22 @@
 _Updated by the Team Lead after every merge cycle._
 
 **Milestone:** M0 — DONE · M1 Organization & Access — DONE (#73 via #200) · M2 People — closing (#177 via #321) · M3 Academic Structure — in progress
-**Last update:** 2026-11-11 21:55 — Merged: #283 student accounts, #200 M1 E2E (closes M1), #321 staff import E2E, #328 UI/UX designer. Design pilot #334: owner feedback (green #00663D, light sidebar, Cairo + Aptos Display, dense, dark mode) being applied. #310 fix in #326 under review. Waiting on CI: #320, #279 (QA spot-check), #306, #302.
+**Last update:** 2026-11-12 19:20 — Merged since 18:27: #388 modules API client (M4a #367). Next merges: #387 (FE2 resolving conflict), #386 (QA spot-check), #437 wave-2 contracts, #349 (QA re-check), then the stacks. #415 quiz leak fixed and re-approved; #421 in re-check.
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |
 |---|---|---|---|---|
-| Team Lead | Opus | `local_95ef9dc7-9378-4012-a8f2-c7d1f944bdec` (lms-lead) | merges; reviews; M3 coordination | coordinating |
-| Backend 1 | Sonnet | `local_19f31b04-ca2f-43d1-a2cb-8a128722a11f` (lms-backend) | #279 (#214), stack #301/#318/#319, #312 (#219) | working |
-| Backend 2 | Sonnet | `local_d36e7dc2-e9e6-4f73-b7b3-b078b17bbe41` (lms-backend-2) | #290/#293 (#222/#223) | working |
-| Backend 3 | Sonnet | `local_2e8038c6-e5ba-4e13-ade0-9440d9beb565` (lms-backend-3) | bug #310; #286 (#229) with stack #292/#294/#297; #307 (#217) | working |
-| Backend 4 | Sonnet | `local_fd5c4410-8364-4c55-a5a8-3b8aa37afc1f` (lms-backend-4) | #306 (#235), #302 (#234), #313 (#236), #323 (#224), #325 (#225) | working |
-| Frontend | Sonnet | `local_40667dce-5be7-478b-95cb-4f14ecd203b9` (lms-frontend) | fixes #315, #287; #317 (#240); #291 (#239) | working |
-| Frontend 2 | Sonnet | `local_3d9e8938-4064-4f83-a04d-920704d41a87` (lms-frontend-2) | #322 (#251), #324 (#252), #316 (#250), #303/#309 | working |
-| QA | Sonnet | `local_91a7af3c-7b02-4d61-ac11-2c22629cf89f` (lms-qa) | #272/#203 cleanup; #285 (#254 M3 E2E) | working |
-| QA 2 | Sonnet | `local_54d26c64-4403-4a13-b128-5be5e9752d97` (lms-qa-2) | #311 (#253 probes); reviews #291, #323 | reviewing |
-| QA 3 | Sonnet | `local_6d46b60b-d70a-4cfa-af2f-5bf90cdf7c08` (lms-qa-3) | reviews #287, #297, #303, #309, #316 | reviewing |
-| UI/UX Designer | Opus | pending start | #327 design pilot: theme, shell, Staff list + Staff profile; stops for owner review | starting |
+| Team Lead | Opus | `local_95ef9dc7-9378-4012-a8f2-c7d1f944bdec` (lms-lead) | merges; M4a contracts #346 (wave 1), #395 (wave 2) | coordinating |
+| Backend 1 | Sonnet | `local_19f31b04-ca2f-43d1-a2cb-8a128722a11f` (lms-backend) | M4a #357 (PR #385), #358, #359; M3 stack #301/#318/#319 | working |
+| Backend 2 | Sonnet | `local_d36e7dc2-e9e6-4f73-b7b3-b078b17bbe41` (lms-backend-2) | M4a #353 + #356 (PR #391), quizzes #360, #361 | working |
+| Backend 3 | Sonnet | `local_2e8038c6-e5ba-4e13-ade0-9440d9beb565` (lms-backend-3) | M3 #286 → #292/#297; M4a forums #363, library #362 | working |
+| Backend 4 | Sonnet | `local_fd5c4410-8364-4c55-a5a8-3b8aa37afc1f` (lms-backend-4) | M4a sanitiser #349, assets #354 (PR #384), #355; M3 #325 | working |
+| Frontend | Sonnet | `local_40667dce-5be7-478b-95cb-4f14ecd203b9` (lms-frontend) | M4a #365 (PR #386), #370, #372 | working |
+| Frontend 2 | Sonnet | `local_3d9e8938-4064-4f83-a04d-920704d41a87` (lms-frontend-2) | M4a #366–#369, #375, #376, #377 (PRs #387–#397); M3 #303/#309 | working |
+| QA | Sonnet | `local_91a7af3c-7b02-4d61-ac11-2c22629cf89f` (lms-qa) | reviews #385–#387; M3 E2E #285 | reviewing |
+| QA 2 | Sonnet | `local_54d26c64-4403-4a13-b128-5be5e9752d97` (lms-qa-2) | #325, #301; M4a probe suite #379 | reviewing |
+| QA 3 | Sonnet | `local_6d46b60b-d70a-4cfa-af2f-5bf90cdf7c08` (lms-qa-3) | M3 T47 student E2E | working |
+| UI/UX Designer | Opus | Lead-run agent | design pilot #334 merged; Phase 2 page passes next | waiting |
 
 ## M0 issue map
 | Task | Issue | Lane | Depends on |
