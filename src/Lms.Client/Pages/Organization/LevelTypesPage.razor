@@ -13,74 +13,88 @@
 @implements IDisposable
 
 <PageTitle>@L["LevelTypes_Title"]</PageTitle>
-<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4" Wrap="Wrap.Wrap">
-    <MudText Typo="Typo.h4" data-testid="level-types-title">@L["LevelTypes_Title"]</MudText>
-    @if (PermState.Has(Permissions.LevelTypes.Create))
-    {
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
-                   OnClick="() => EditAsync(null)" data-testid="level-new">@L["LevelTypes_New"]</MudButton>
-    }
-</MudStack>
+<PageHeader Title="@L["LevelTypes_Title"]" Subtitle="@L["LevelTypes_Subtitle"]" TitleTestId="level-types-title">
+    <Actions>
+        @if (PermState.Has(Permissions.LevelTypes.Create))
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Add"
+                       OnClick="() => EditAsync(null)" data-testid="level-new">@L["LevelTypes_New"]</MudButton>
+        }
+    </Actions>
+</PageHeader>
 
 @if (_error is not null)
 {
-    <MudAlert Severity="Severity.Error" Class="mb-3" data-testid="level-error">@_error</MudAlert>
+    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-4" data-testid="level-error">@_error</MudAlert>
 }
 
-@if (_loading)
-{
-    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
-}
-else if (_levels.Count == 0)
-{
-    <MudText data-testid="table-empty">@L["Common_Empty"]</MudText>
-}
-else
-{
-    <MudSimpleTable Dense="true" Hover="true">
-        <thead>
-            <tr>
-                <th>@L["LevelTypes_Order"]</th>
-                <th>@L["Common_Name"]</th>
-                <th>@L["LevelTypes_CanHostClasses"]</th>
-                <th>@L["LevelTypes_Units"]</th>
-                <th>@L["Common_Actions"]</th>
-            </tr>
-        </thead>
-        <tbody>
-            @for (var i = 0; i < _levels.Count; i++)
-            {
-                var index = i;
-                var level = _levels[i];
-                <tr data-testid="@($"level-row-{level.Id}")">
-                    <td>@(index + 1)</td>
-                    <td>@Culture.Pick(level.NameAr, level.NameEn)</td>
-                    <td>@(level.CanHostClasses ? L["Common_Yes"] : L["Common_No"])</td>
-                    <td>@level.UnitCount</td>
-                    <td>
-                        @if (PermState.Has(Permissions.LevelTypes.Update))
-                        {
-                            <MudIconButton Icon="@Icons.Material.Filled.ArrowUpward" Size="Size.Small" Disabled="@(index == 0)"
-                                           aria-label="@L["LevelTypes_MoveUp"]" OnClick="() => MoveAsync(index, -1)"
-                                           data-testid="@($"level-up-{level.Id}")" />
-                            <MudIconButton Icon="@Icons.Material.Filled.ArrowDownward" Size="Size.Small" Disabled="@(index == _levels.Count - 1)"
-                                           aria-label="@L["LevelTypes_MoveDown"]" OnClick="() => MoveAsync(index, 1)"
-                                           data-testid="@($"level-down-{level.Id}")" />
-                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" aria-label="@L["Common_Edit"]"
-                                           OnClick="() => EditAsync(level)" data-testid="@($"level-edit-{level.Id}")" />
-                        }
-                        @if (PermState.Has(Permissions.LevelTypes.Delete))
-                        {
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error"
-                                           aria-label="@L["Common_Delete"]" OnClick="() => DeleteAsync(level)"
-                                           data-testid="@($"level-delete-{level.Id}")" />
-                        }
-                    </td>
+<SectionCard Flush="true">
+    @if (_loading)
+    {
+        <LoadingState Lines="4" Class="pa-4" />
+    }
+    else if (_levels.Count == 0)
+    {
+        <EmptyState Title="@L["LevelTypes_EmptyTitle"]" Text="@L["LevelTypes_EmptyText"]" Icon="@Icons.Material.Rounded.Layers" TestId="table-empty" />
+    }
+    else
+    {
+        <MudSimpleTable Dense="true" Hover="true" Elevation="0" Class="lms-simple-table lms-stack-table">
+            <thead>
+                <tr>
+                    <th>@L["LevelTypes_Order"]</th>
+                    <th>@L["Common_Name"]</th>
+                    <th>@L["LevelTypes_CanHostClasses"]</th>
+                    <th>@L["LevelTypes_Units"]</th>
+                    <th><span class="lms-visually-hidden">@L["Common_Actions"]</span></th>
                 </tr>
-            }
-        </tbody>
-    </MudSimpleTable>
-}
+            </thead>
+            <tbody>
+                @for (var i = 0; i < _levels.Count; i++)
+                {
+                    var index = i;
+                    var level = _levels[i];
+                    <tr data-testid="@($"level-row-{level.Id}")">
+                        <td data-label="@L["LevelTypes_Order"]"><span class="lms-order-badge">@(index + 1)</span></td>
+                        <td data-label="@L["Common_Name"]" class="lms-cell-strong">@Culture.Pick(level.NameAr, level.NameEn)</td>
+                        <td data-label="@L["LevelTypes_CanHostClasses"]">
+                            @if (level.CanHostClasses)
+                            {
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Success" Icon="@Icons.Material.Rounded.Check">@L["Common_Yes"]</MudChip>
+                            }
+                            else
+                            {
+                                <span class="lms-muted">@L["Common_No"]</span>
+                            }
+                        </td>
+                        <td data-label="@L["LevelTypes_Units"]">@level.UnitCount</td>
+                        <td class="lms-cell-actions">
+                            <div class="lms-row-actions">
+                                @if (PermState.Has(Permissions.LevelTypes.Update))
+                                {
+                                    <MudIconButton Icon="@Icons.Material.Rounded.ArrowUpward" Size="Size.Small" Disabled="@(index == 0)"
+                                                   aria-label="@L["LevelTypes_MoveUp"]" OnClick="() => MoveAsync(index, -1)"
+                                                   data-testid="@($"level-up-{level.Id}")" />
+                                    <MudIconButton Icon="@Icons.Material.Rounded.ArrowDownward" Size="Size.Small" Disabled="@(index == _levels.Count - 1)"
+                                                   aria-label="@L["LevelTypes_MoveDown"]" OnClick="() => MoveAsync(index, 1)"
+                                                   data-testid="@($"level-down-{level.Id}")" />
+                                    <MudIconButton Icon="@Icons.Material.Rounded.Edit" Size="Size.Small" aria-label="@L["Common_Edit"]"
+                                                   OnClick="() => EditAsync(level)" data-testid="@($"level-edit-{level.Id}")" />
+                                }
+                                @if (PermState.Has(Permissions.LevelTypes.Delete))
+                                {
+                                    <MudIconButton Icon="@Icons.Material.Rounded.DeleteOutline" Size="Size.Small" Color="Color.Error"
+                                                   aria-label="@L["Common_Delete"]" OnClick="() => DeleteAsync(level)"
+                                                   data-testid="@($"level-delete-{level.Id}")" />
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </MudSimpleTable>
+    }
+</SectionCard>
 
 @code {
     private List<LevelTypeDto> _levels = [];
