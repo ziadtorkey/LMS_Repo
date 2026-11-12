@@ -1,0 +1,96 @@
+@using Lms.Client.Components.Assets
+@using Lms.Client.Components.Editors
+@using Lms.Client.Services.Api
+@using Lms.Shared.Assignments
+@using Lms.Shared.Authorization
+@using Lms.Shared.Content
+@inject ICourseAssignmentsApi Assignments
+@inject PermissionState PermState
+@inject NavigationManager Navigation
+
+@* The student's hand-in: text and/or files as the assignment allows. When the server says no (closed, no resubmission), the reason is
+   shown in plain words and nothing can be edited. *@
+@if (!PermState.Has(Permissions.CourseAssignments.Submit))
+{
+    <MudAlert Severity="Severity.Info" data-testid="submit-no-permission">@L["AssignmentStudent_ReadOnly"]</MudAlert>
+}
+else if (!My.CanSubmit)
+{
+    <MudAlert Severity="Severity.Warning" data-testid="submit-blocked">
+        @(My.CannotSubmitCode is { } code && !L["Error_" + code].ResourceNotFound ? L["Error_" + code].Value : L["AssignmentStudent_CannotSubmit"].Value)
+    </MudAlert>
+}
+else
+{
+    <MudPaper Outlined="true" Class="pa-3" data-testid="submit-panel">
+        <MudStack Spacing="2">
+            <MudText Typo="Typo.h6">@L[Resubmitting ? "AssignmentStudent_Resubmit" : "AssignmentStudent_YourWork"]</MudText>
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" data-testid="submit-error">@_error</MudAlert>
+            }
+            @if (Assignment.AllowText)
+            {
+                <RichTextEditor Value="@_html" ValueChanged="v => _html = v" Label="@L["AssignmentStudent_Text"]" TestId="submit-text" />
+            }
+            @if (Assignment.AllowFiles)
+            {
+                @foreach (var name in _files.Select(f => f.Name))
+                {
+                    <MudText Typo="Typo.caption"><span dir="ltr">@name</span></MudText>
+                }
+                <AssetUploader ClassCourseId="Assignment.ClassCourseId" OnUploaded="OnUploaded" />
+            }
+            <MudStack Row="true" Spacing="2">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => SubmitAsync(false)" Disabled="_busy"
+                           data-testid="submit-send">@L[Resubmitting ? "AssignmentStudent_Resubmit" : "AssignmentStudent_Submit"]</MudButton>
+                @if (!Resubmitting)
+                {
+                    <MudButton Variant="Variant.Outlined" OnClick="() => SubmitAsync(true)" Disabled="_busy" data-testid="submit-draft">@L["AssignmentStudent_SaveDraft"]</MudButton>
+                }
+            </MudStack>
+        </MudStack>
+    </MudPaper>
+}
+
+@code {
+    private string? _html, _error;
+    private readonly List<(Guid Id, string Name)> _files = [];
+    private bool _busy, _initialized;
+
+    [Parameter, EditorRequired] public CourseAssignmentDto Assignment { get; set; } = default!;
+    [Parameter, EditorRequired] public MySubmissionDto My { get; set; } = default!;
+    [Parameter] public EventCallback OnSubmitted { get; set; }
+
+    private bool Resubmitting => My.Submission is { } s && SubmissionStatuses.HandedIn.Contains(s.Status);
+
+    protected override void OnParametersSet()
+    {
+        if (_initialized) return;
+        _initialized = true;
+        // Start from what the student saved (a draft, or the live hand-in when resubmitting).
+        if (My.Submission is { } s)
+        {
+            _html = s.TextHtml;
+            _files.AddRange(s.Files.Select(f => (f.Id, f.FileName)));
+        }
+    }
+
+    private void OnUploaded(AssetDto asset) => _files.Add((asset.Id, asset.FileName));
+
+    private async Task SubmitAsync(bool draft)
+    {
+        _error = null;
+        var hasText = Assignment.AllowText && !RichTextHtml.IsEmpty(_html);
+        if (!draft && !hasText && _files.Count == 0)
+        {
+            _error = L["AssignmentStudent_NeedTextOrFile"];
+            return;
+        }
+        _busy = true;
+        var ok = await ApiCalls.RunAsync(() => Assignments.SubmitAsync(Assignment.Id,
+            new SubmitAssignmentRequest(hasText ? _html : null, _files.Select(f => f.Id).ToList(), draft)), Navigation, L, m => _error = m);
+        _busy = false;
+        if (ok) await OnSubmitted.InvokeAsync();
+    }
+}

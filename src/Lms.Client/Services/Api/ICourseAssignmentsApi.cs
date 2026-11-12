@@ -20,6 +20,14 @@ public interface ICourseAssignmentsApi
 
     /// <summary>Releases grade and feedback to the student (status Returned).</summary>
     Task<SubmissionDto> ReturnAsync(Guid submissionId, CancellationToken ct = default);
+
+    // ---- student side (M4a T21, FE2) ----
+
+    /// <summary>GET /api/course-assignments/{id}/my-submission — the assignment, the caller's live submission and whether they may submit now.</summary>
+    Task<MySubmissionDto> GetMySubmissionAsync(Guid assignmentId, CancellationToken ct = default);
+
+    /// <summary>POST /api/course-assignments/{id}/submit — a hand-in, a resubmission, or a draft.</summary>
+    Task<SubmissionDto> SubmitAsync(Guid assignmentId, SubmitAssignmentRequest request, CancellationToken ct = default);
 }
 
 public sealed class CourseAssignmentsApi(ApiHttp http) : ICourseAssignmentsApi
@@ -56,6 +64,14 @@ public sealed class CourseAssignmentsApi(ApiHttp http) : ICourseAssignmentsApi
 
     public async Task<SubmissionDto> ReturnAsync(Guid submissionId, CancellationToken ct = default) =>
         (await http.SendAsync<SubmissionDto>(HttpMethod.Post, Routes.SubmissionReturn(submissionId), null, ct))!;
+
+    // ---- student side (M4a T21, FE2) ----
+
+    public Task<MySubmissionDto> GetMySubmissionAsync(Guid assignmentId, CancellationToken ct = default) =>
+        http.GetAsync<MySubmissionDto>(Routes.CourseAssignmentMySubmission(assignmentId), ct);
+
+    public async Task<SubmissionDto> SubmitAsync(Guid assignmentId, SubmitAssignmentRequest request, CancellationToken ct = default) =>
+        (await http.SendAsync<SubmissionDto>(HttpMethod.Post, Routes.CourseAssignmentSubmit(assignmentId), request, ct))!;
 }
 
 /// <summary>
@@ -200,5 +216,63 @@ public sealed class FakeCourseAssignmentsApi : ICourseAssignmentsApi
         {
             if (!Submissions.TryGetValue(submissionId, out var s) || s.Grade is null) throw NotFound();
             return Submissions[submissionId] = s with { Status = SubmissionStatuses.Returned, Grade = s.Grade with { ReturnedAtUtc = DateTime.UtcNow } };
+        });
+
+    // ---- student side (M4a T21, FE2) ----
+
+    /// <summary>The fake server clock (deadlines are judged by it, never by the browser).</summary>
+    public Func<DateTime> ServerNow { get; set; } = () => DateTime.UtcNow;
+    /// <summary>The calling student's live submission per assignment.</summary>
+    public Dictionary<Guid, SubmissionDto> Mine { get; } = [];
+    public List<SubmitAssignmentRequest> SubmitRequests { get; } = [];
+
+    /// <summary>The problem code a submit would get right now, or null when it is allowed (mirrors the server rules).</summary>
+    private string? CannotSubmit(CourseAssignmentDto a, SubmissionDto? mine)
+    {
+        var now = ServerNow();
+        if (!a.Module.IsVisibleNow) return ProblemCodes.submission_closed;
+        if (a.DueAtUtc is { } due && now > due && a.LatePolicy == LatePolicies.Block) return ProblemCodes.submission_closed;
+        if (mine is { Status: var st } && SubmissionStatuses.HandedIn.Contains(st))
+        {
+            var allowed = a.ResubmissionRule switch
+            {
+                ResubmissionRules.UntilDue => a.DueAtUtc is null || now <= a.DueAtUtc,
+                ResubmissionRules.UntilGraded => st is SubmissionStatuses.Submitted or SubmissionStatuses.Late,
+                _ => false,
+            };
+            if (!allowed) return ProblemCodes.resubmission_not_allowed;
+        }
+        return null;
+    }
+
+    public Task<MySubmissionDto> GetMySubmissionAsync(Guid assignmentId, CancellationToken ct = default) =>
+        Run("my-submission", () =>
+        {
+            if (!Assignments.TryGetValue(assignmentId, out var a)) throw NotFound();
+            Mine.TryGetValue(assignmentId, out var mine);
+            // A graded submission stays private until the teacher returns it.
+            if (mine is { Status: SubmissionStatuses.Graded }) mine = mine with { Grade = null };
+            var code = CannotSubmit(a, Mine.GetValueOrDefault(assignmentId));
+            return new MySubmissionDto(a with { SubmittedCount = null, GradedCount = null, CanEdit = false, ServerNowUtc = ServerNow() },
+                mine, code is null, code, ServerNow());
+        });
+
+    public Task<SubmissionDto> SubmitAsync(Guid assignmentId, SubmitAssignmentRequest r, CancellationToken ct = default) =>
+        Run("submit", () =>
+        {
+            SubmitRequests.Add(r);
+            if (!Assignments.TryGetValue(assignmentId, out var a)) throw NotFound();
+            Mine.TryGetValue(assignmentId, out var mine);
+            if (CannotSubmit(a, mine) is { } code) throw new ApiProblemException(409, code, null, null);
+            var hasText = !string.IsNullOrWhiteSpace(r.TextHtml);
+            if ((!hasText && r.FileAssetIds.Count == 0) || (hasText && !a.AllowText) || (r.FileAssetIds.Count > 0 && !a.AllowFiles) || r.FileAssetIds.Count > 10)
+                throw Problem(ProblemCodes.validation_failed);
+            var now = ServerNow();
+            var late = a.DueAtUtc is { } d && now > d;
+            var status = r.SaveAsDraft ? SubmissionStatuses.Draft : late ? SubmissionStatuses.Late : SubmissionStatuses.Submitted;
+            var files = r.FileAssetIds.Select(id => new AssetDto(id, a.ClassCourseId, AssetKinds.Document, "file-" + id.ToString("N")[..6] + ".pdf",
+                "application/pdf", 1, null, true, now)).ToList();
+            return Mine[assignmentId] = new SubmissionDto(mine?.Id ?? Guid.NewGuid(), assignmentId, Guid.NewGuid(), "أنا", "Me", status,
+                r.TextHtml, files, r.SaveAsDraft ? null : now, !r.SaveAsDraft && late, (mine?.Number ?? 0) + 1, null);
         });
 }
