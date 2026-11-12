@@ -1,0 +1,65 @@
+@using System.ComponentModel.DataAnnotations
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Shared.People
+@inject IGuardiansApi Api
+@inject NavigationManager Navigation
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form">
+            <MudStack Spacing="3">
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" data-testid="dialog-error">@_error</MudAlert>
+                }
+                <BilingualNameFields @bind-NameAr="_nameAr" @bind-NameEn="_nameEn" IdPrefix="guardian-name" />
+                <MudTextField T="string" @bind-Value="_mobile" Label="@L["Student_Mobile"]" Required="true" RequiredError="@L["Common_Required"]"
+                              InputType="InputType.Telephone" MaxLength="20" dir="ltr" data-testid="guardian-mobile" />
+                <MudTextField T="string" @bind-Value="_email" Label="@L["Student_Email"]" InputType="InputType.Email" MaxLength="256" dir="ltr"
+                              Validation="(Func<string, string?>)ValidateEmail" data-testid="guardian-email" />
+                <MudTextField T="string" @bind-Value="_nationalId" Label="@L["Student_NationalId"]" MaxLength="30" dir="ltr" data-testid="guardian-national-id" />
+            </MudStack>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="_saving"
+                   data-testid="dialog-save">@L["Common_Save"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired] public GuardianDetailDto Guardian { get; set; } = default!;
+
+    private MudForm _form = default!;
+    private string _nameAr = "", _nameEn = "", _mobile = "", _email = "", _nationalId = "";
+    private string? _error;
+    private bool _saving;
+
+    protected override void OnInitialized()
+    {
+        var s = Guardian.Summary;
+        (_nameAr, _nameEn, _mobile, _email, _nationalId) = (s.NameAr, s.NameEn, s.Mobile, s.Email ?? "", Guardian.NationalId ?? "");
+    }
+
+    private string? ValidateEmail(string value) =>
+        string.IsNullOrWhiteSpace(value) || new EmailAddressAttribute().IsValid(value) ? null : L["Common_InvalidEmail"].Value;
+
+    private static string? Blank(string value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private async Task SaveAsync()
+    {
+        _error = null;
+        await _form.ValidateAsync();
+        if (!_form.IsValid) return;
+        var request = new UpdateGuardianRequest(new GuardianDataInput(_nameAr.Trim(), _nameEn.Trim(), _mobile.Trim(), Blank(_email), Blank(_nationalId)));
+
+        _saving = true;
+        var saved = await ApiCalls.RunAsync(() => Api.UpdateAsync(Guardian.Summary.Id, request), Navigation, L, message => _error = message);
+        _saving = false;
+        if (saved) MudDialog.Close(DialogResult.Ok(true));
+    }
+}

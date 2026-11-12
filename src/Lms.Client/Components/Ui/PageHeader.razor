@@ -1,0 +1,32 @@
+@* Page title row: optional leading visual, the title (the page's h1), optional subtitle, status badges (chips),
+   and the page actions. Put at most one filled (primary) button in Actions. *@
+<header class="lms-page-header @Class" data-testid="page-header">
+    @if (Leading is not null)
+    {
+        <div class="lms-page-header-leading">@Leading</div>
+    }
+    <div class="lms-page-header-text">
+        <div class="lms-page-header-titleline">
+            <MudText Typo="Typo.h4" HtmlTag="h1" Class="lms-page-title" data-testid="@TitleTestId">@Title</MudText>
+            @Badges
+        </div>
+        @if (!string.IsNullOrEmpty(Subtitle))
+        {
+            <MudText Typo="Typo.body2" Class="lms-page-subtitle">@Subtitle</MudText>
+        }
+    </div>
+    @if (Actions is not null)
+    {
+        <div class="lms-page-header-actions">@Actions</div>
+    }
+</header>
+
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+    [Parameter] public string? Subtitle { get; set; }
+    [Parameter] public string? TitleTestId { get; set; }
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public RenderFragment? Leading { get; set; }
+    [Parameter] public RenderFragment? Badges { get; set; }
+    [Parameter] public RenderFragment? Actions { get; set; }
+}
