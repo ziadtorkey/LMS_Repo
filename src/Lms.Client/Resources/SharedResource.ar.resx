@@ -1027,4 +1027,30 @@
   <data name="RichText_LinkUrl" xml:space="preserve"><value>عنوان الرابط</value></data>
   <data name="RichText_NumberedList" xml:space="preserve"><value>قائمة مرقمة</value></data>
   <data name="RichText_Toolbar" xml:space="preserve"><value>شريط أدوات التنسيق</value></data>
+  <data name="ClassPage_Students" xml:space="preserve"><value>الطلاب</value></data>
+  <data name="ClassPage_Courses" xml:space="preserve"><value>المقررات</value></data>
+  <data name="ClassPage_Teachers" xml:space="preserve"><value>المعلمون</value></data>
+  <data name="ClassPage_OpenStudents" xml:space="preserve"><value>فتح طلاب هذا الفصل</value></data>
+  <data name="ClassPage_TeachersSoon" xml:space="preserve"><value>تُدار هنا مستقبلًا معلمو مقررات هذا الفصل عند توفر شاشة المعلمين.</value></data>
+  <data name="ClassPage_NotFound" xml:space="preserve"><value>لم يتم العثور على هذا الفصل.</value></data>
+  <data name="ClassCourse_Add" xml:space="preserve"><value>إضافة مقررات</value></data>
+  <data name="ClassCourse_Optional" xml:space="preserve"><value>اختياري</value></data>
+  <data name="ClassCourse_Enrolled" xml:space="preserve"><value>المسجلون</value></data>
+  <data name="ClassCourse_Teachers" xml:space="preserve"><value>المعلمون</value></data>
+  <data name="ClassCourse_LessonPlan" xml:space="preserve"><value>خطة الدروس</value></data>
+  <data name="ClassCourse_Empty" xml:space="preserve"><value>لا توجد مقررات في هذا الفصل بعد.</value></data>
+  <data name="ClassCourse_Remove" xml:space="preserve"><value>إزالة</value></data>
+  <data name="ClassCourse_RemoveConfirm" xml:space="preserve"><value>إزالة {0} من هذا الفصل؟</value></data>
+  <data name="ClassCourse_NoneAvailable" xml:space="preserve"><value>جميع المقررات المتاحة في هذه الوحدة موجودة بالفعل في الفصل.</value></data>
+  <data name="ClassCourse_AddOptional" xml:space="preserve"><value>إضافة كمقررات اختيارية</value></data>
+  <data name="ClassCourse_Available" xml:space="preserve"><value>المقررات المتاحة</value></data>
+  <data name="Matrix_Title" xml:space="preserve"><value>مصفوفة التوزيع</value></data>
+  <data name="Matrix_Help" xml:space="preserve"><value>حدّد الخلية لإعطاء الفصل المقرر، وألغِ التحديد لإزالته. الخلية المعلّمة اختياري هي مقرر اختياري.</value></data>
+  <data name="Matrix_AssignAll" xml:space="preserve"><value>كل الفصول</value></data>
+  <data name="Matrix_AssignAllTitle" xml:space="preserve"><value>تعيين {0} لكل فصول هذه الوحدة</value></data>
+  <data name="Matrix_AssignResult" xml:space="preserve"><value>حصل {0} فصل على المقرر، وكان لدى {1} فصل المقرر بالفعل.</value></data>
+  <data name="Matrix_OptionalMark" xml:space="preserve"><value>اخت.</value></data>
+  <data name="Matrix_ChooseUnit" xml:space="preserve"><value>اختر وحدة لعرض فصولها.</value></data>
+  <data name="Matrix_NoClasses" xml:space="preserve"><value>لا توجد فصول لهذه الوحدة في العام المحدد.</value></data>
+  <data name="List_Separator" xml:space="preserve"><value>، </value></data>
 </root>
