@@ -16,7 +16,7 @@ namespace Lms.IntegrationTests.Security;
 public sealed class M3RelationshipProbeTests(LmsApiFactory factory)
 {
     /// <summary>Open bugs whose correct-behaviour probes are tripwires (see <see cref="KnownBugAsync"/>).</summary>
-    private static readonly string[] OpenBugs = ["#310"];
+    private static readonly string[] OpenBugs = [];
 
     /// <summary>
     /// Routes whose probes wait for the route (milestone 3): the probe returns early, listing itself, until the route is
@@ -76,37 +76,28 @@ public sealed class M3RelationshipProbeTests(LmsApiFactory factory)
     [Fact]
     public async Task Teacher_gets_404_for_the_guardians_of_a_student_in_a_colleagues_class_course()
     {
-        await KnownBugAsync("#310", async () =>
-        {
-            var w = await M3Callers.GetAsync(factory);
-            var r = await w.SendAsync(M3Caller.TeacherA, HttpMethod.Get, $"/api/students/{w.Data.Student2.Id}/guardians");
-            Assert.Equal(HttpStatusCode.NotFound, r.StatusCode);
-        });
+        var w = await M3Callers.GetAsync(factory);
+        var r = await w.SendAsync(M3Caller.TeacherA, HttpMethod.Get, $"/api/students/{w.Data.Student2.Id}/guardians");
+        Assert.Equal(HttpStatusCode.NotFound, r.StatusCode);
     }
 
     [Fact]
     public async Task Teacher_gets_404_for_a_guardian_who_has_no_student_in_their_class_courses()
     {
-        await KnownBugAsync("#310", async () =>
-        {
-            var w = await M3Callers.GetAsync(factory);
-            var r = await w.SendAsync(M3Caller.TeacherA, HttpMethod.Get, $"/api/guardians/{w.Data.Guardian2.Id}");
-            Assert.Equal(HttpStatusCode.NotFound, r.StatusCode);
-        });
+        var w = await M3Callers.GetAsync(factory);
+        var r = await w.SendAsync(M3Caller.TeacherA, HttpMethod.Get, $"/api/guardians/{w.Data.Guardian2.Id}");
+        Assert.Equal(HttpStatusCode.NotFound, r.StatusCode);
     }
 
     [Fact]
     public async Task Teacher_guardian_list_excludes_guardians_of_students_outside_their_class_courses()
     {
-        await KnownBugAsync("#310", async () =>
-        {
-            var w = await M3Callers.GetAsync(factory);
-            var r = await w.SendAsync(M3Caller.TeacherA, HttpMethod.Get, "/api/guardians?pageSize=100");
-            Assert.Equal(HttpStatusCode.OK, r.StatusCode);
-            var body = await r.Content.ReadAsStringAsync();
-            Assert.Contains(w.Data.Guardian1.Id.ToString(), body, StringComparison.OrdinalIgnoreCase);
-            Assert.DoesNotContain(w.Data.Guardian2.Id.ToString(), body, StringComparison.OrdinalIgnoreCase);
-        });
+        var w = await M3Callers.GetAsync(factory);
+        var r = await w.SendAsync(M3Caller.TeacherA, HttpMethod.Get, "/api/guardians?pageSize=100");
+        Assert.Equal(HttpStatusCode.OK, r.StatusCode);
+        var body = await r.Content.ReadAsStringAsync();
+        Assert.Contains(w.Data.Guardian1.Id.ToString(), body, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain(w.Data.Guardian2.Id.ToString(), body, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
