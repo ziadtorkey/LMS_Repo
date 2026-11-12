@@ -36,6 +36,11 @@
   <data name="ImportError_duplicate_in_file" xml:space="preserve"><value>Same value as row {otherRow}.</value></data>
   <data name="ImportError_invalid_date" xml:space="preserve"><value>Use a date like 2026-09-01.</value></data>
   <data name="ImportError_unknown_unit" xml:space="preserve"><value>No unit with code "{value}" in this branch.</value></data>
+  <data name="ImportError_invalid_code" xml:space="preserve"><value>Use 1-50 letters, digits, - or _.</value></data>
+  <data name="ImportError_invalid_language" xml:space="preserve"><value>Use a two-letter language code such as ar or en.</value></data>
+  <data name="ImportError_invalid_weekly_periods" xml:space="preserve"><value>Weekly periods must be a number from 0 to 40.</value></data>
+  <data name="ImportError_invalid_owner_unit" xml:space="preserve"><value>This unit cannot own courses (only the client root or a course-management level).</value></data>
+  <data name="ImportError_course_code_taken" xml:space="preserve"><value>Another course already uses this code.</value></data>
   <data name="ImportError_unexpected" xml:space="preserve"><value>The import failed; nothing was saved.</value></data>
   <data name="ImportError_invalid_email" xml:space="preserve"><value>Enter a valid email address.</value></data>
   <data name="ImportError_invalid_mobile" xml:space="preserve"><value>Enter a valid mobile number, for example +201001234567.</value></data>
