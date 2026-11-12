@@ -221,7 +221,14 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 @media (min-width: 600px) { .lms-form-grid { grid-template-columns: 1fr 1fr; } }
 .lms-dialog-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding: 4px 8px 8px; width: 100%; }
 .mud-dialog { border-radius: var(--lms-radius-surface) !important; }
-.mud-dialog .mud-dialog-title { font-weight: 600; }
+/* .mud-dialog scrolls (overflow-y: auto), so its rounded corners clip hit-testing: a click in the very corner of the
+   title would land on the overlay behind the dialog. Inset the first block by 6 px (padding reduced by the same
+   amount, so nothing moves) to keep the whole title clickable, which "click the dialog title to close a picker"
+   relies on (E2E MudControls.ClosePickersAsync). */
+.mud-dialog > .mud-dialog-title,
+.mud-dialog > .mud-dialog-content:first-child { margin: 6px 6px 0 !important; }
+.mud-dialog > .mud-dialog-title { font-weight: 600; padding: 10px 18px !important; }
+.mud-dialog > .mud-dialog-content:first-child { padding-inline: 18px !important; padding-top: 2px !important; }
 
 /* ---------- Controls ---------- */
 .mud-button-root.mud-button { border-radius: var(--lms-radius-control); }
