@@ -59,7 +59,47 @@ public sealed class ClassesProbeRows : IProbeRowModule
                     source, await YearAsync(w), w.Callers.A.School1.Id, false, null, null));
             },
             Expect(Ok, Ok, NotFound, Forbidden, NotFound, Ok)),
+        new("class courses list (School1)", HttpMethod.Get, Routes.ClassCoursesOfClassPattern,
+            async (w, _) => new ProbeRequest(Routes.ClassCoursesOfClass(await NewClassAsync(w))),
+            Expect(Ok, Ok, NotFound, NotFound, NotFound, Ok)),
+        new("class courses add (School1)", HttpMethod.Post, Routes.ClassCoursesOfClassPattern,
+            async (w, _) => new ProbeRequest(Routes.ClassCoursesOfClass(await NewClassAsync(w)),
+                new AddClassCoursesRequest([await NewCourseAsync(w)], false)),
+            Expect(Created, Created, NotFound, Forbidden, NotFound, Created)),
+        new("class course update (School1)", HttpMethod.Put, Routes.ClassCoursePattern,
+            async (w, _) => new ProbeRequest(Routes.ClassCourse(await NewClassCourseAsync(w)), new UpdateClassCourseRequest(true)),
+            Expect(Ok, Ok, NotFound, Forbidden, NotFound, Ok)),
+        new("class course delete (School1)", HttpMethod.Delete, Routes.ClassCoursePattern,
+            async (w, _) => new ProbeRequest(Routes.ClassCourse(await NewClassCourseAsync(w))),
+            Expect(NoContent, NoContent, NotFound, Forbidden, NotFound, NoContent)),
+        new("class courses bulk assign (School1)", HttpMethod.Post, Routes.ClassCoursesBulkAssign,
+            async (w, _) =>
+            {
+                var year = await YearAsync(w);
+                await w.Callers.SendOkAsync(RootAdmin, HttpMethod.Post, Routes.Classes, await BodyAsync(w, year));
+                return new ProbeRequest(Routes.ClassCoursesBulkAssign,
+                    new BulkAssignCourseRequest(w.Callers.A.School1.Id, year, await NewCourseAsync(w), false));
+            },
+            Expect(Ok, Ok, NotFound, Forbidden, NotFound, Ok)),
+        new("classes matrix (School1)", HttpMethod.Get, Routes.ClassesMatrix,
+            async (w, _) => new ProbeRequest(Routes.ClassesMatrixFor(w.Callers.A.School1.Id, await YearAsync(w))),
+            Expect(Ok, Ok, NotFound, Ok, NotFound, Ok)),
     ];
+
+    private static async Task<Guid> NewCourseAsync(M1ProbeWorld w)
+    {
+        var course = await AcademicTestKit.AddCourseAsync(w.Callers.Factory, w.Callers.A.Root);
+        await AcademicTestKit.AllocateAsync(w.Callers.Factory, course, w.Callers.A.Root);
+        return course.Id;
+    }
+
+    private static async Task<Guid> NewClassCourseAsync(M1ProbeWorld w)
+    {
+        var classId = await NewClassAsync(w);
+        var added = await w.Callers.SendOkAsync(RootAdmin, HttpMethod.Post, Routes.ClassCoursesOfClass(classId),
+            new AddClassCoursesRequest([await NewCourseAsync(w)], false));
+        return added[0].GetProperty("id").GetGuid();
+    }
 
     // Defined at School1, where the classes live: other probe rows add years at School1 to the shared world, and a unit
     // that defines its own year list no longer inherits the root's (D22), so root-defined years would stop applying.

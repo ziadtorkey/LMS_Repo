@@ -357,6 +357,7 @@ All tenant-owned tables: `OrganizationId`; unit-scoped tables: `OrgUnitId`, `Org
 | D49 | Zoom account | One platform-level Zoom app for all clients (not per-client credentials); secrets live in server configuration, never in the database or the repo. |
 | D50 | LTI | LTI 1.3 is out of scope for v1. |
 | D51 | M4 split | M4 ships as M4a (content modules, assignments, quizzes, forums) then M4b (Zoom, SCORM, H5P). Lead technical defaults: GradeEvent outbox as the M5 grade seam; video is signed-URL streaming of the uploaded file (no HLS); a quiz pool draws N questions per attempt; group-targeted modules are visible only to that group and its teachers; SCORM/H5P content is served from a sandboxed origin with a strict CSP after a QA security spike. |
+| D52 | M4a content rules | Org Admins and Managers hold Modules.Manage and the staff-side activity permissions (amends the section 3.4 "Content & activities" row, so they can assign the Teacher role under D16). One upload size limit for all files (Files.MaxUploadMb). No inline images in the rich-text editor in M4a (images are File modules). The resource library stays in M4a. |
 
 ---
 

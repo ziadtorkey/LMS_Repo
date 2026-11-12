@@ -10,17 +10,50 @@ namespace Lms.IntegrationTests.Access;
 [Collection(ApiCollection.Name)]
 public sealed class BuiltInRoleReconcilerTests(LmsApiFactory factory)
 {
-    /// <summary>Simulates a client provisioned under M0: defaults version 0 and only the M0 permission set.</summary>
+    /// <summary>
+    /// The built-in role permission sets as the M0 provisioner created them (contracts #22, frozen here on purpose: a real
+    /// M0 Manager had no Assignments.Create/Delete, which only D16 gave it in M1).
+    /// </summary>
+    internal static readonly IReadOnlyDictionary<string, string[]> M0RoleLists = new Dictionary<string, string[]>
+    {
+        [BuiltInRoles.OrgAdmin] =
+        [
+            Permissions.OrgUnits.View, Permissions.OrgUnits.Create, Permissions.OrgUnits.Update, Permissions.OrgUnits.Delete,
+            Permissions.Roles.View, Permissions.Roles.Create, Permissions.Roles.Update, Permissions.Roles.Delete,
+            Permissions.Assignments.View, Permissions.Assignments.Create, Permissions.Assignments.Delete,
+            Permissions.Settings.View, Permissions.Settings.Update, Permissions.Policies.View, Permissions.Policies.Update,
+            Permissions.Audit.View, Permissions.Audit.Export, Permissions.Files.Upload, Permissions.Files.Download,
+        ],
+        [BuiltInRoles.Manager] =
+        [
+            Permissions.OrgUnits.View, Permissions.Roles.View, Permissions.Assignments.View, Permissions.Settings.View,
+            Permissions.Policies.View, Permissions.Audit.View, Permissions.Files.Upload, Permissions.Files.Download,
+        ],
+        [BuiltInRoles.Supervisor] =
+        [
+            Permissions.OrgUnits.View, Permissions.Settings.View, Permissions.Policies.View, Permissions.Files.Upload,
+            Permissions.Files.Download,
+        ],
+        [BuiltInRoles.Counselor] = [Permissions.Files.Upload, Permissions.Files.Download],
+        [BuiltInRoles.Teacher] = [Permissions.Files.Upload, Permissions.Files.Download],
+        [BuiltInRoles.Student] = [Permissions.Files.Upload, Permissions.Files.Download],
+        [BuiltInRoles.Guardian] = [Permissions.Files.Download],
+    };
+
+    /// <summary>Simulates a client provisioned under M0: defaults version 0 and exactly each role's M0 permission list.</summary>
     private async Task<AccessTree> SeedM0ClientAsync(string name)
     {
         var tree = await AccessTestData.SeedAsync(factory, name);
         await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
-        var m0 = BuiltInRoleDefaults.M0Baseline;
-        db.RolePermissions.RemoveRange(await db.RolePermissions
-            .Where(p => p.OrganizationId == tree.Org.Id && !m0.Contains(p.Permission)).ToListAsync());
-        foreach (var role in await db.Roles.Where(r => r.OrganizationId == tree.Org.Id).ToListAsync())
+        var roles = await db.Roles.Where(r => r.OrganizationId == tree.Org.Id).ToListAsync();
+        db.RolePermissions.RemoveRange(await db.RolePermissions.Where(p => p.OrganizationId == tree.Org.Id).ToListAsync());
+        foreach (var role in roles)
         {
             db.Entry(role).Property(nameof(Role.DefaultsVersion)).CurrentValue = 0;
+            if (role.BuiltInKey is { } key && M0RoleLists.TryGetValue(key, out var m0))
+            {
+                db.RolePermissions.AddRange(m0.Select(p => new RolePermission(tree.Org.Id, role.Id, p)));
+            }
         }
 
         await db.SaveChangesAsync();
@@ -54,6 +87,22 @@ public sealed class BuiltInRoleReconcilerTests(LmsApiFactory factory)
                 BuiltInRoles.Get(key).DefaultPermissions.Order(),
                 (await PermissionsOfAsync(tree, key)).Order());
         }
+    }
+
+    [Fact]
+    public async Task Reconcile_gives_an_M0_Manager_the_D16_assignment_permissions_it_never_had()
+    {
+        var tree = await SeedM0ClientAsync("RC8");
+        var before = await PermissionsOfAsync(tree, BuiltInRoles.Manager);
+        Assert.DoesNotContain(Permissions.Assignments.Create, before); // a real M0 Manager had neither
+        Assert.DoesNotContain(Permissions.Assignments.Delete, before);
+
+        await ReconcileAsync();
+
+        var manager = await PermissionsOfAsync(tree, BuiltInRoles.Manager);
+        Assert.Contains(Permissions.Assignments.Create, manager);
+        Assert.Contains(Permissions.Assignments.Delete, manager);
+        Assert.Equal(BuiltInRoles.Get(BuiltInRoles.Manager).DefaultPermissions.Order(), manager.Order());
     }
 
     [Fact]
