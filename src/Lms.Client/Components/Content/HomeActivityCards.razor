@@ -1,0 +1,137 @@
+@using Lms.Client.Services.Api
+@using Lms.Shared.Authorization
+@using Lms.Shared.Assignments
+@using Lms.Shared.Classes
+@using Lms.Shared.Quizzes
+@inject ILessonPlansApi Plans
+@inject IActivityOverviewApi Activities
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+@inject TimeProvider Clock
+
+@* Home cards of the wave 2 activities. Students: assignments still to hand in, quizzes open now. Graders: submissions waiting.
+   Each row links to the activity's module. The lists are per class course, so the cards read the caller's class courses. *@
+@if (_loaded)
+{
+    <MudGrid Class="mt-2" data-testid="home-activity-cards">
+        @if (ShowDue)
+        {
+            <MudItem xs="12" md="4">
+                <MudCard Class="h-100" data-testid="home-due-assignments">
+                    <MudCardContent>
+                        <MudText Typo="Typo.h6">@L["Home_DueAssignments"]</MudText>
+                        @if (_due.Count == 0)
+                        {
+                            <MudText Typo="Typo.body2" Class="mud-text-secondary" data-testid="home-due-empty">@L["Home_NothingDue"]</MudText>
+                        }
+                        @foreach (var row in _due)
+                        {
+                            <MudStack Row="true" Justify="Justify.SpaceBetween" Class="py-1">
+                                <MudLink Href="@ModuleHref(row)" data-testid="@($"home-due-{row.Item.Id}")">@Culture.Pick(row.Item.TitleAr, row.Item.TitleEn)</MudLink>
+                                @if (row.Item.DueAtUtc is { } due)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="@(due < Clock.GetUtcNow().UtcDateTime ? Color.Error : Color.Default)">
+                                        <span dir="ltr">@due.ToLocalTime().ToString("g", System.Globalization.CultureInfo.CurrentCulture)</span>
+                                    </MudChip>
+                                }
+                            </MudStack>
+                        }
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        }
+        @if (ShowQuizzes)
+        {
+            <MudItem xs="12" md="4">
+                <MudCard Class="h-100" data-testid="home-open-quizzes">
+                    <MudCardContent>
+                        <MudText Typo="Typo.h6">@L["Home_OpenQuizzes"]</MudText>
+                        @if (_quizzes.Count == 0)
+                        {
+                            <MudText Typo="Typo.body2" Class="mud-text-secondary" data-testid="home-quizzes-empty">@L["Home_NoOpenQuizzes"]</MudText>
+                        }
+                        @foreach (var row in _quizzes)
+                        {
+                            <MudLink Href="@ModuleHref(row.CourseId, row.Item.ModuleId)" Class="d-block py-1"
+                                     data-testid="@($"home-quiz-{row.Item.Id}")">@Culture.Pick(row.Item.TitleAr, row.Item.TitleEn)</MudLink>
+                        }
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        }
+        @if (ShowGrade)
+        {
+            <MudItem xs="12" md="4">
+                <MudCard Class="h-100" data-testid="home-to-grade">
+                    <MudCardContent>
+                        <MudText Typo="Typo.h6">@L["Home_ToGrade"]</MudText>
+                        @if (_toGrade.Count == 0)
+                        {
+                            <MudText Typo="Typo.body2" Class="mud-text-secondary" data-testid="home-grade-empty">@L["Home_NothingToGrade"]</MudText>
+                        }
+                        @foreach (var row in _toGrade)
+                        {
+                            <MudStack Row="true" Justify="Justify.SpaceBetween" Class="py-1">
+                                <MudLink Href="@ModuleHref(row)" data-testid="@($"home-grade-{row.Item.Id}")">@Culture.Pick(row.Item.TitleAr, row.Item.TitleEn)</MudLink>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Warning">@L["Home_WaitingCount", Waiting(row.Item)]</MudChip>
+                            </MudStack>
+                        }
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        }
+    </MudGrid>
+}
+
+@code {
+    private const int MaxRows = 5;
+
+    private sealed record Row<T>(Guid CourseId, T Item);
+
+    private readonly List<Row<CourseAssignmentListItemDto>> _due = [], _toGrade = [];
+    private readonly List<Row<QuizListItemDto>> _quizzes = [];
+    private bool _loaded;
+
+    private bool Student => !PermState.Has(Permissions.CourseAssignments.Manage) && !PermState.Has(Permissions.Quizzes.Manage);
+    private bool ShowDue => Student && PermState.Has(Permissions.CourseAssignments.View);
+    private bool ShowQuizzes => Student && PermState.Has(Permissions.Quizzes.View) && PermState.Has(Permissions.Quizzes.Attempt);
+    private bool ShowGrade => PermState.Has(Permissions.CourseAssignments.Grade);
+
+    private static int Waiting(CourseAssignmentListItemDto a) => Math.Max(0, (a.SubmittedCount ?? 0) - (a.GradedCount ?? 0));
+
+    private static string ModuleHref(Row<CourseAssignmentListItemDto> row) => ModuleHref(row.CourseId, row.Item.ModuleId);
+    private static string ModuleHref(Guid courseId, Guid moduleId) => $"class-courses/{courseId}/modules/{moduleId}";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!ShowDue && !ShowQuizzes && !ShowGrade) return;
+        var now = Clock.GetUtcNow().UtcDateTime;
+        await ApiCalls.RunAsync(async () =>
+        {
+            foreach (var course in await Plans.GetMyClassCoursesAsync())
+            {
+                if (ShowDue || ShowGrade)
+                {
+                    foreach (var a in (await Activities.ListAssignmentsAsync(course.Id)).Items.Where(a => a.IsVisibleNow))
+                    {
+                        // A student still owes work without a submission (or with a draft); a grader owes the submitted-not-graded.
+                        if (ShowDue && a.MyStatus is null or "Draft") _due.Add(new(course.Id, a));
+                        if (ShowGrade && Waiting(a) > 0) _toGrade.Add(new(course.Id, a));
+                    }
+                }
+                if (ShowQuizzes)
+                {
+                    foreach (var q in (await Activities.ListQuizzesAsync(course.Id)).Items)
+                        if (q.IsVisibleNow && (q.OpensAtUtc is null || q.OpensAtUtc <= now) && (q.ClosesAtUtc is null || now < q.ClosesAtUtc))
+                            _quizzes.Add(new(course.Id, q));
+                }
+            }
+        }, Navigation, L, _ => { });
+        _due.Sort((x, y) => (x.Item.DueAtUtc ?? DateTime.MaxValue).CompareTo(y.Item.DueAtUtc ?? DateTime.MaxValue));
+        _due.RemoveRange(Math.Min(MaxRows, _due.Count), Math.Max(0, _due.Count - MaxRows));
+        _toGrade.RemoveRange(Math.Min(MaxRows, _toGrade.Count), Math.Max(0, _toGrade.Count - MaxRows));
+        _quizzes.RemoveRange(Math.Min(MaxRows, _quizzes.Count), Math.Max(0, _quizzes.Count - MaxRows));
+        _loaded = true;
+    }
+}
