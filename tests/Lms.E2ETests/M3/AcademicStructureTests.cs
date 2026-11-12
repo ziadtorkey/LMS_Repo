@@ -15,10 +15,8 @@ public sealed class AcademicStructureTests(E2EFixture fixture) : E2ETestBase(fix
     /// <summary>Un-skip when the course allocation API (#215) is on main.</summary>
     private const string NeedsAllocations = "Needs the course allocation API (#215) on main";
 
-    /// <summary>Un-skip when the course catalog API (#279, PR #214) is on main.</summary>
-    private const string NeedsCourseApi = "Needs the course catalog API (#279) on main";
 
-    [Theory(Skip = NeedsCourseApi)]
+    [Theory]
     [InlineData("ar")]
     [InlineData("en")]
     public async Task Root_admin_creates_course_and_a_duplicate_code_is_refused(string culture)

@@ -147,6 +147,6 @@ Run as the seeded school group's Org Admin with unique names per test (`M3Names`
 
 | Test | Covers | Status |
 |---|---|---|
-| `Root_admin_creates_course_and_a_duplicate_code_is_refused` | FR-CRS-01, D38 duplicate code | skipped until #279 (course API) |
+| `Root_admin_creates_course_and_a_duplicate_code_is_refused` | FR-CRS-01, D38 duplicate code | runs |
 | `Root_admin_allocates_a_new_course_below_the_school` | FR-CRS-02 | skipped until #215 |
 | supervisor assigned; blueprint builder and publish v1; classes bulk create and matrix; teacher assignment; teacher sees only own class-course; publish v2 with push (polled up to 30 s); copy classes to next year | FR-CRS-04, FR-LP-*, FR-CLS-*, FR-TCH-* | to write as the FE pages (#238, #239, #240 to #243) and BE (#217, #221 to #225) land |
