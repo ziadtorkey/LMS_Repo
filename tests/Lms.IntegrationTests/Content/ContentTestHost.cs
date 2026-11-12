@@ -24,7 +24,7 @@ namespace Lms.IntegrationTests.Content;
 /// <summary>A class course with a two-lesson plan, its teacher, an enrolled student and the callers around them.</summary>
 internal sealed record ContentWorld(
     AccessTree Tree, Class Class, Course Course, ClassCourse ClassCourse, RoleAssignment Admin, RoleAssignment Teacher,
-    RoleAssignment OtherTeacher, RoleAssignment Student, Guid StudentProfileId, RoleAssignment Stranger);
+    RoleAssignment OtherTeacher, RoleAssignment Student, Guid StudentProfileId, RoleAssignment Stranger, ClassCourse OtherClassCourse);
 
 internal sealed class ContentTestHost(LmsApiFactory factory) : IDisposable
 {
@@ -45,10 +45,11 @@ internal sealed class ContentTestHost(LmsApiFactory factory) : IDisposable
         var classCourse = await AddClassCourseWithPlanAsync(factory, cls, course);
         var admin = await AccessTestData.AssignAsync(factory, tree, tree.Root, BuiltInRoles.OrgAdmin, (await PeopleTestKit.AddUserAsync(factory)).Id);
         var teacher = await TeacherOfAsync(tree, classCourse);
-        var otherTeacher = await TeacherOfAsync(tree, await OtherClassCourseAsync(cls, course));
+        var otherClassCourse = await OtherClassCourseAsync(cls, course);
+        var otherTeacher = await TeacherOfAsync(tree, otherClassCourse);
         var (student, profile) = await EnrolledStudentAsync(tree, cls, classCourse);
         var stranger = await AccessTestData.AssignAsync(factory, tree, tree.School1, BuiltInRoles.Student, (await PeopleTestKit.AddUserAsync(factory)).Id);
-        return new ContentWorld(tree, cls, course, classCourse, admin, teacher, otherTeacher, student, profile, stranger);
+        return new ContentWorld(tree, cls, course, classCourse, admin, teacher, otherTeacher, student, profile, stranger, otherClassCourse);
     }
 
     private async Task<ClassCourse> OtherClassCourseAsync(Class cls, Course course)
@@ -148,7 +149,7 @@ internal sealed class ContentTestHost(LmsApiFactory factory) : IDisposable
     {
         ".png" => [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0],
         ".mp4" or ".m4a" => [0, 0, 0, 0x18, (byte)'f', (byte)'t', (byte)'y', (byte)'p', (byte)'i', (byte)'s', (byte)'o', (byte)'m'],
-        ".mp3" => "ID3      "u8.ToArray(),
+        ".mp3" => "ID3      "u8.ToArray(),
         _ => "%PDF-1.7 module asset"u8.ToArray(),
     };
 
