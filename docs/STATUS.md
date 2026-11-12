@@ -3,7 +3,7 @@
 _Updated by the Team Lead after every merge cycle._
 
 **Milestone:** M0 — DONE · M1 Organization & Access — DONE (#73 via #200) · M2 People — closing (#177 via #321) · M3 Academic Structure — in progress
-**Last update:** 2026-11-11 21:55 — Merged: #283 student accounts, #200 M1 E2E (closes M1), #321 staff import E2E, #328 UI/UX designer. Design pilot #334: owner feedback (green #00663D, light sidebar, Cairo + Aptos Display, dense, dark mode) being applied. #310 fix in #326 under review. Waiting on CI: #320, #279 (QA spot-check), #306, #302.
+**Last update:** 2026-11-12 08:35 — Merged since 23:30: #279 courses, #290 class courses, #302 class import, #315, #320, #326 (#310 security fix), #336, #338 (#106), #339, #340, #342. M4 decided (D48–D52); M4a plan #345 and contracts #346 in review. Conflicts being fixed: #323, #293, #282, #286. New bug #344 (sev:high) with FE2.
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |
