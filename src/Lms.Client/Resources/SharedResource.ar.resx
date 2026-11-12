@@ -1152,4 +1152,6 @@
   <data name="Announcements_Empty" xml:space="preserve"><value>لا توجد إعلانات بعد.</value></data>
   <data name="Announcements_DeleteConfirm" xml:space="preserve"><value>حذف الإعلان {0}؟</value></data>
   <data name="Announcements_FormTitle" xml:space="preserve"><value>عنوان الإعلان</value></data>
+  <data name="Forum_MoreReplies" xml:space="preserve"><value>عرض مزيد من الردود ({0} أخرى)</value></data>
+  <data name="Forum_MoreThreads" xml:space="preserve"><value>عرض مزيد من المواضيع ({0} أخرى)</value></data>
 </root>

@@ -173,4 +173,57 @@ public sealed class ForumTests : LessonPlansTestContext
         Assert.Empty(page.FindAll("[data-testid=announcement-form]"));
         Assert.Empty(page.FindAll("[data-testid^=announcement-delete-]"));
     }
+
+    [Fact]
+    public async Task Long_threads_page_beyond_the_first_page_of_replies()
+    {
+        _forum.PageSize = 2;
+        var t = _forum.AddThread(Cc, "Long thread");
+        for (var i = 1; i <= 5; i++)
+            await _forum.CreatePostAsync(t.Id, new Lms.Shared.Forums.CreateForumPostRequest($"<p>reply {i}</p>", []));
+        var page = await OpenThreadAsync(t.Id, Permissions.Forums.View, Permissions.Forums.Post);
+
+        Assert.Equal(2, page.FindAll("[data-testid^=post-body-]").Count - 1); // the opening post + 2 replies
+        page.Find("[data-testid=thread-more]").Click();
+        page.WaitForAssertion(() => Assert.Equal(4, page.FindAll("[data-testid^=post-body-]").Count - 1));
+        page.Find("[data-testid=thread-more]").Click();
+
+        page.WaitForAssertion(() => Assert.Equal(5, page.FindAll("[data-testid^=post-body-]").Count - 1));
+        Assert.Empty(page.FindAll("[data-testid=thread-more]"));
+        Assert.Contains("reply 5", page.Markup);
+    }
+
+    [Fact]
+    public async Task A_new_reply_keeps_the_pages_already_loaded()
+    {
+        _forum.PageSize = 2;
+        var t = _forum.AddThread(Cc, "Thread");
+        for (var i = 1; i <= 3; i++)
+            await _forum.CreatePostAsync(t.Id, new Lms.Shared.Forums.CreateForumPostRequest($"<p>old {i}</p>", []));
+        var page = await OpenThreadAsync(t.Id, Permissions.Forums.View, Permissions.Forums.Post);
+        page.Find("[data-testid=thread-more]").Click();
+        page.WaitForAssertion(() => Assert.Contains("old 3", page.Markup));
+
+        await SetEditorAsync(page, "<p>fresh</p>");
+        page.Find("[data-testid=thread-reply-send]").Click();
+
+        page.WaitForAssertion(() => Assert.Contains("fresh", page.Markup));
+        Assert.Contains("old 3", page.Markup);
+    }
+
+    [Fact]
+    public async Task Long_thread_lists_page_beyond_the_first_page()
+    {
+        _forum.PageSize = 2;
+        for (var i = 1; i <= 5; i++) _forum.AddThread(Cc, $"Topic {i}", activity: DateTime.UtcNow.AddMinutes(-i));
+        var page = await OpenForumAsync(Permissions.Forums.View);
+
+        Assert.Equal(2, page.FindAll("[data-testid^=forum-thread-link-]").Count);
+        page.Find("[data-testid=forum-more]").Click();
+        page.WaitForAssertion(() => Assert.Equal(4, page.FindAll("[data-testid^=forum-thread-link-]").Count));
+        page.Find("[data-testid=forum-more]").Click();
+
+        page.WaitForAssertion(() => Assert.Equal(5, page.FindAll("[data-testid^=forum-thread-link-]").Count));
+        Assert.Empty(page.FindAll("[data-testid=forum-more]"));
+    }
 }

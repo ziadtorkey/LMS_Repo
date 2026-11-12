@@ -79,6 +79,12 @@ else
                 </MudPaper>
             }
         </MudStack>
+        @if (_threads.Count < _total)
+        {
+            <div class="mt-3">
+                <MudButton Variant="Variant.Outlined" OnClick="MoreAsync" Disabled="_loadingMore" data-testid="forum-more">@L["Forum_MoreThreads", _total - _threads.Count]</MudButton>
+            </div>
+        }
     }
 }
 
@@ -86,6 +92,8 @@ else
     [Parameter] public Guid Id { get; set; }
 
     private IReadOnlyList<ForumThreadDto> _threads = [];
+    private int _total, _page = 1;
+    private bool _loadingMore;
     private string? _error, _formError, _title;
     private bool _loading = true, _composing;
 
@@ -101,13 +109,31 @@ else
     {
         _loading = true; _error = null;
         if (PermState.Has(Permissions.Forums.View))
-            await ApiCalls.RunAsync(async () => _threads = Ordered((await Forum.ListThreadsAsync(Id)).Items), Navigation, L, m => _error = m);
+            await ApiCalls.RunAsync(async () =>
+            {
+                var loaded = new List<ForumThreadDto>();
+                for (var page = 1; page <= _page; page++)
+                {
+                    var result = await Forum.ListThreadsAsync(Id, page);
+                    loaded.AddRange(result.Items);
+                    _total = result.Total;
+                }
+                _threads = Ordered(loaded);
+            }, Navigation, L, m => _error = m);
         _loading = false;
     }
 
     /// <summary>Pinned threads first, then the most recent activity.</summary>
     private static IReadOnlyList<ForumThreadDto> Ordered(IEnumerable<ForumThreadDto> items) =>
         items.OrderByDescending(t => t.IsPinned).ThenByDescending(t => t.LastActivityAtUtc).ToList();
+
+    private async Task MoreAsync()
+    {
+        _loadingMore = true;
+        _page++;
+        await LoadAsync();
+        _loadingMore = false;
+    }
 
     private async Task<bool> CreateAsync(string html, IReadOnlyList<Guid> attachments)
     {
