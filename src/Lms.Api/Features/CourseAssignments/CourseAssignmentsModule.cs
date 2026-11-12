@@ -26,6 +26,7 @@ public sealed class CourseAssignmentsModule : ILmsModule
 
         services.AddScoped<CourseAssignmentNotifier>();
         services.AddScoped<IAssetReferenceReader, AssignmentAssetReader>();
+        services.AddScoped<IAssetReferenceReader, FeedbackAssetReader>();
     }
 
     public void MapEndpoints(IEndpointRouteBuilder app)

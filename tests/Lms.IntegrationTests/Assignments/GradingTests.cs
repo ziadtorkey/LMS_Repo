@@ -224,5 +224,23 @@ public sealed class GradingTests(LmsApiFactory factory) : IDisposable
         Assert.Single(notices); // returning twice releases once
     }
 
+    [Fact]
+    public async Task Annotated_file_url_opens_for_the_owner_only_after_return()
+    {
+        var (w, _, s) = await SubmittedAsync("GR12");
+        var annotated = await AssetOfAsync(factory, w, w.Teacher.UserId);
+        await GradeAsync(w.Teacher, s.Id, 8, null, annotated);
+
+        Assert.Equal(HttpStatusCode.NotFound, (await _t.SendAsync(w.Student, HttpMethod.Get, Routes.AssetUrl(annotated))).StatusCode);
+        await ReturnAsync(w.Teacher, s.Id);
+
+        Assert.Equal(HttpStatusCode.OK, (await _t.SendAsync(w.Student, HttpMethod.Get, Routes.AssetUrl(annotated))).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await _t.SendAsync(w.Teacher, HttpMethod.Get, Routes.AssetUrl(annotated))).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await _t.SendAsync(w.Stranger, HttpMethod.Get, Routes.AssetUrl(annotated))).StatusCode);
+
+        await GradeAsync(w.Teacher, s.Id, 3, null, annotated); // saved again, not returned: closed again
+        Assert.Equal(HttpStatusCode.NotFound, (await _t.SendAsync(w.Student, HttpMethod.Get, Routes.AssetUrl(annotated))).StatusCode);
+    }
+
     private static async Task<string?> CodeAsync(HttpResponseMessage response) => await ContentTestHost.CodeAsync(response);
 }
