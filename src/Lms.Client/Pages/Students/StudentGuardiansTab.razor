@@ -24,18 +24,18 @@
     }
     @if (Student.Guardians.Count == 0)
     {
-        <MudText data-testid="guardians-empty">@L["Common_Empty"]</MudText>
+        <EmptyState Title="@L["Common_Empty"]" Icon="@Icons.Material.Rounded.FamilyRestroom" TestId="guardians-empty" />
     }
     else
     {
-        <MudTable Items="Student.Guardians" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" data-testid="guardians-table">
+        <MudTable Items="Student.Guardians" Dense="true" Hover="true" Elevation="0" HeaderClass="lms-table-head" Class="lms-table" Breakpoint="Breakpoint.Sm" data-testid="guardians-table">
             <HeaderContent>
                 <MudTh>@L["Common_Name"]</MudTh>
                 <MudTh>@L["Guardian_Relation"]</MudTh>
                 <MudTh>@L["Student_Mobile"]</MudTh>
                 <MudTh>@L["Student_Email"]</MudTh>
                 <MudTh>@L["Student_Account"]</MudTh>
-                <MudTh>@L["Common_Actions"]</MudTh>
+                <MudTh><span class="lms-visually-hidden">@L["Common_Actions"]</span></MudTh>
             </HeaderContent>
             <RowTemplate Context="g">
                 <MudTd DataLabel="@L["Common_Name"]">
@@ -44,7 +44,7 @@
                         <MudIcon Icon="@Icons.Material.Rounded.Star" Size="Size.Small" Color="Color.Warning" title="@L["Guardian_Primary"]"
                                  data-testid="@($"guardian-primary-{g.GuardianId}")" />
                     }
-                    <MudLink Href="@($"guardians/{g.GuardianId}")" data-testid="@($"guardian-name-{g.GuardianId}")">@Culture.Pick(g.NameAr, g.NameEn)</MudLink>
+                    <MudLink Href="@($"guardians/{g.GuardianId}")" Typo="Typo.body2" Class="lms-person-link" data-testid="@($"guardian-name-{g.GuardianId}")">@Culture.Pick(g.NameAr, g.NameEn)</MudLink>
                     @if (g.OtherChildrenInScope > 0)
                     {
                         <MudText Typo="Typo.caption" data-testid="@($"guardian-others-{g.GuardianId}")">@L["Guardian_OtherChildren", g.OtherChildrenInScope]</MudText>

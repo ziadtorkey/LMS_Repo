@@ -9,7 +9,7 @@
 
 @* One row per feature flag with a three-state choice: inherit the unit's value, force on, or force off (section 4.4). *@
 <MudStack Spacing="2" data-testid="flags-tab">
-    <MudText Typo="Typo.body2">@L["Student_FeatureFlagsHelp"]</MudText>
+    <MudText Typo="Typo.body2" Class="lms-muted">@L["Student_FeatureFlagsHelp"]</MudText>
     @foreach (var flag in FeatureFlags.All)
     {
         var name = flag.Name;
@@ -22,9 +22,9 @@
     }
     @if (CanEdit)
     {
-        <div>
+        <div class="lms-dialog-actions">
             <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_saving"
-                       data-testid="flags-save">@L["Common_Save"]</MudButton>
+                       StartIcon="@(_saving ? null : Icons.Material.Rounded.Check)" data-testid="flags-save">@L["Common_Save"]</MudButton>
         </div>
     }
 </MudStack>
