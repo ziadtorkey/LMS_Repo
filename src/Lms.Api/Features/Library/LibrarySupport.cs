@@ -87,7 +87,7 @@ internal static class LibrarySupport
 
         if (request.FileAssetId is { } fileId)
         {
-            var file = await db.Set<Asset>().FirstOrDefaultAsync(a => a.Id == fileId && a.OrgUnitId == unit.Id, ct);
+            var file = await db.Set<Asset>().FirstOrDefaultAsync(a => a.Id == fileId && a.OrgUnitId == unit.Id && a.ClassCourseId == null, ct);
             if (file is null || !FileKindFits(request.Type, file.Kind))
             {
                 return Invalid("fileAssetId", "not_found");
@@ -95,7 +95,7 @@ internal static class LibrarySupport
         }
 
         if (request.CoverAssetId is { } coverId
-            && !await db.Set<Asset>().AnyAsync(a => a.Id == coverId && a.OrgUnitId == unit.Id && a.Kind == AssetKinds.Image, ct))
+            && !await db.Set<Asset>().AnyAsync(a => a.Id == coverId && a.OrgUnitId == unit.Id && a.ClassCourseId == null && a.Kind == AssetKinds.Image, ct))
         {
             return Invalid("coverAssetId", "not_found");
         }

@@ -249,6 +249,21 @@ public sealed class LibraryTests(LmsApiFactory factory)
     }
 
     [Fact]
+    public async Task Library_file_asset_is_readable_through_the_asset_route_only_while_downloads_are_allowed()
+    {
+        using var w = await LibraryTestWorld.CreateAsync(factory, "LB14");
+        var open = await w.UploadAssetAsync(w.Tree.School1, "open.pdf");
+        var closed = await w.UploadAssetAsync(w.Tree.School1, "closed.pdf");
+        await w.CreateAsync(w.School1Admin, Link(w.Tree.School1, "Open", type: LibraryResourceTypes.Book, fileAssetId: open, downloadAllowed: true));
+        await w.CreateAsync(w.School1Admin, Link(w.Tree.School1, "Closed", type: LibraryResourceTypes.Book, fileAssetId: closed, downloadAllowed: false));
+
+        Assert.Equal(HttpStatusCode.OK, (await w.SendAsync(w.Student, HttpMethod.Get, Routes.Asset(open))).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await w.SendAsync(w.Student, HttpMethod.Get, Routes.Asset(closed))).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await w.SendAsync(w.School1Admin, HttpMethod.Get, Routes.Asset(closed))).StatusCode); // Library.Manage at the owning unit
+        Assert.Equal(HttpStatusCode.NotFound, (await w.SendAsync(w.School2Admin, HttpMethod.Get, Routes.Asset(open))).StatusCode);
+    }
+
+    [Fact]
     public Task LibraryResource_is_isolated_per_client_and_subtree() => AssertIsolatedAsync(0, db => db.Set<LibraryResource>().Select(x => x.Id));
 
     [Fact]

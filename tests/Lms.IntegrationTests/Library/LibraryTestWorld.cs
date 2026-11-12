@@ -99,12 +99,8 @@ internal sealed class LibraryTestWorld : IDisposable
         var storage = new MinioFileStorage(db, new SettingsResolver(db, ctx), new MinioClients(options), options, new SystemClock());
         var stored = await storage.UploadAsync(new FileUploadRequest(fileName, "application/pdf", Pdf.Length, unit.Id), new MemoryStream(Pdf));
 
-        var year = await AcademicTestKit.AddYearAsync(factory, root);
-        var cls = await AcademicTestKit.AddClassAsync(factory, unit, year);
-        var course = await AcademicTestKit.AddCourseAsync(factory, unit);
-        var classCourse = await AcademicTestKit.AddClassCourseAsync(factory, cls, course);
         await using var write = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
-        var asset = new Asset(classCourse, stored.Id, AssetKinds.Document, fileName, "application/pdf", Pdf.Length);
+        var asset = new Asset(unit, stored.Id, AssetKinds.Document, fileName, "application/pdf", Pdf.Length);
         write.Add(asset);
         await write.SaveChangesAsync();
         return asset.Id;
