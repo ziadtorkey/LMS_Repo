@@ -20,8 +20,8 @@ namespace Lms.Infrastructure.Enrollment;
 /// the course restrictions. Placement works on whole sets of students (one query per kind of data, not per student and
 /// course), saves once, and takes a row lock on the class so concurrent placements cannot both pass the capacity check.
 /// </summary>
-public sealed class EnrollmentEngine(
-    LmsDbContext db, PlacementGuard guard, ISettingsResolver settings, IClock clock) : IEnrollmentEngine
+public sealed partial class EnrollmentEngine(
+    LmsDbContext db, PlacementGuard guard, ISettingsResolver settings, IClock clock, ICurrentContext current) : IEnrollmentEngine
 {
     public async Task<PlacementResult> PlaceAsync(
         StudentProfile student, Class cls, DateOnly effectiveOn, bool confirmOverCapacity, CancellationToken cancellationToken) =>
@@ -152,11 +152,6 @@ public sealed class EnrollmentEngine(
             await db.SaveChangesAsync(cancellationToken);
             return 0;
         }, cancellationToken);
-
-    /// <summary>Reserved for M3 Task 28 (transfer between classes).</summary>
-    public Task<StudentTransfer> TransferAsync(
-        StudentProfile student, Class to, DateOnly on, string reason, bool confirmOverCapacity, CancellationToken cancellationToken) =>
-        throw new NotSupportedException("Transfers are implemented in M3 Task 28.");
 
     /// <summary>Drops the enrollments (history stays) and removes their group memberships.</summary>
     internal async Task DropAllAsync(IReadOnlyCollection<CourseEnrollment> enrollments, string reason, DateOnly on, CancellationToken ct)

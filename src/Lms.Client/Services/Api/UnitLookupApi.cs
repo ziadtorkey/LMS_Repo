@@ -3,7 +3,7 @@ using Lms.Shared.Organizations;
 
 namespace Lms.Client.Services.Api;
 
-/// <summary>Read-only list of the units the user can see (unit pickers). GET /api/org-units.</summary>
+/// <summary>Read-only list of the units the user can see (unit pickers). GET /api/org-units. Throws <see cref="ApiForbiddenException"/> (without leaving the page) when the caller lacks OrgUnits.View.</summary>
 public interface IUnitLookupApi
 {
     Task<IReadOnlyList<OrgUnitNodeDto>> GetUnitsAsync(CancellationToken ct = default);
@@ -12,7 +12,7 @@ public interface IUnitLookupApi
 public sealed class UnitLookupApi(ApiHttp http) : IUnitLookupApi
 {
     public async Task<IReadOnlyList<OrgUnitNodeDto>> GetUnitsAsync(CancellationToken ct = default) =>
-        await http.GetAsync<List<OrgUnitNodeDto>>(Routes.OrgUnits, ct);
+        await http.GetOptionalAsync<List<OrgUnitNodeDto>>(Routes.OrgUnits, ct);
 }
 
 /// <summary>Orders units for pickers: depth-first (each unit followed by its children), siblings by name in the current culture.</summary>
@@ -46,15 +46,20 @@ public static class FakeUnits
     public static readonly Guid SchoolId = Guid.Parse("00000000-0000-0000-0000-0000000000a2");
     public static readonly Guid GradeId = Guid.Parse("00000000-0000-0000-0000-0000000000a3");
 
+    // Level types of the sample units (the org fake offers the same ids; only the grade level hosts classes).
+    public static readonly Guid GroupLevelId = Guid.Parse("00000000-0000-0000-0000-0000000000f1");
+    public static readonly Guid SchoolLevelId = Guid.Parse("00000000-0000-0000-0000-0000000000f2");
+    public static readonly Guid GradeLevelId = Guid.Parse("00000000-0000-0000-0000-0000000000f3");
+
     public static IReadOnlyList<OrgUnitNodeDto> All { get; } =
     [
-        Node(GroupId, null, "مدارس النور", "Al Noor Schools", "AN", 0),
-        Node(SchoolId, GroupId, "المدرسة الرئيسية", "Main School", "MS", 1, courseManagement: true),
-        Node(GradeId, SchoolId, "الصف الأول", "Grade 1", "G1", 2),
+        Node(GroupId, null, GroupLevelId, "مدارس النور", "Al Noor Schools", "AN", 0),
+        Node(SchoolId, GroupId, SchoolLevelId, "المدرسة الرئيسية", "Main School", "MS", 1, courseManagement: true),
+        Node(GradeId, SchoolId, GradeLevelId, "الصف الأول", "Grade 1", "G1", 2),
     ];
 
-    private static OrgUnitNodeDto Node(Guid id, Guid? parent, string ar, string en, string code, int depth, bool courseManagement = false) =>
-        new(id, parent, Guid.NewGuid(), ar, en, code, depth, "Active", false, null, courseManagement, depth < 2, []);
+    private static OrgUnitNodeDto Node(Guid id, Guid? parent, Guid levelId, string ar, string en, string code, int depth, bool courseManagement = false) =>
+        new(id, parent, levelId, ar, en, code, depth, "Active", false, null, courseManagement, depth < 2, []);
 }
 
 public sealed class FakeUnitLookupApi : IUnitLookupApi
