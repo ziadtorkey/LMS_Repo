@@ -9,19 +9,17 @@ namespace Lms.IntegrationTests.Security;
 
 /// <summary>
 /// Guardians (M3 Task 19, #227): the student sits in School1. Students.Update (linking, editing, matching) is held by the
-/// admins and the counselor, not by a Teacher or Supervisor; Students.View is also held by a Teacher, but bug #310 (the guardian routes ignore the D42 relationship scope) lets
-/// a Teacher read guardians of any student in the unit: the Teacher expectations below (Ok) encode that bug and must become
-/// 404 when #326 lands (M3RelationshipProbeTests holds the tripwire).
+/// admins and the counselor, not by a Teacher or Supervisor; Students.View is also held by a Teacher, narrowed by the relationship
+/// rule (D42) to the students of their own class courses or homeroom class: the probe's student is none of those, so the
+/// Teacher gets 404 for the student's guardians and for a guardian of that student (the list is 200 and empty).
 /// </summary>
 public sealed class GuardiansProbeRows : IProbeRowModule
 {
-    public IEnumerable<ProbeRow> Rows => Build().Select(r => r with { Milestone = 3 });
-
-    private static IEnumerable<ProbeRow> Build() =>
+    public IEnumerable<ProbeRow> Rows =>
     [
         new("student guardians list", HttpMethod.Get, Routes.StudentGuardiansPattern,
             async (w, _) => new ProbeRequest(Routes.StudentGuardians((await NewLinkAsync(w)).StudentId)),
-            Expect(Ok, Ok, NotFound, Ok, NotFound, NotFound)),
+            Expect(Ok, Ok, NotFound, NotFound, NotFound, NotFound)),
         new("student guardians link", HttpMethod.Post, Routes.StudentGuardiansPattern,
             async (w, _) => new ProbeRequest(Routes.StudentGuardians((await NewStudentAsync(w)).Id), NewGuardianBody()),
             Expect(Created, Created, NotFound, Forbidden, NotFound, NotFound)),
@@ -44,7 +42,7 @@ public sealed class GuardiansProbeRows : IProbeRowModule
             Expect(Ok, Ok, Ok, Ok, Ok, Ok)),
         new("guardians get (child in School1)", HttpMethod.Get, Routes.GuardianPattern,
             async (w, _) => new ProbeRequest(Routes.Guardian((await NewLinkAsync(w)).GuardianId)),
-            Expect(Ok, Ok, NotFound, Ok, NotFound, NotFound)),
+            Expect(Ok, Ok, NotFound, NotFound, NotFound, NotFound)),
         new("guardians edit (child in School1)", HttpMethod.Put, Routes.GuardianPattern,
             async (w, _) =>
             {

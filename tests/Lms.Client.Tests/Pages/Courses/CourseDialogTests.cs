@@ -134,6 +134,20 @@ public sealed class CourseDialogTests : CoursesTestContext
     }
 
     [Fact]
+    public async Task Owner_picker_is_read_only_for_an_inherited_course()
+    {
+        Culture.Current = new CultureInfo("en");
+        await GrantAsync(Permissions.Courses.View, Permissions.Courses.Update);
+        RenderProviders();
+        var page = Render<CourseListPage>();
+        var arabic = Courses.All.First(c => c.Summary.Code == "ARB101").Summary.Id;
+        _ = page.WaitForElement($"[data-testid=course-link-{arabic}]").ClickAsync(new());
+        Dialogs.WaitForElement("[data-testid=course-readonly]");
+
+        Assert.True(SelectWithTestId(Dialogs, "course-owner").Instance.ReadOnly);
+    }
+
+    [Fact]
     public async Task Code_field_is_left_to_right_in_arabic()
     {
         Culture.Current = new CultureInfo("ar");

@@ -83,6 +83,9 @@ public sealed class FakeStudentsApi : IStudentsApi
         var dups = _students.Count(s => s.Summary.NameEn.Equals(d.NameEn, StringComparison.OrdinalIgnoreCase) && s.Summary.DateOfBirth == d.DateOfBirth);
         if (DetectDuplicates && dups > 0 && !request.ConfirmPossibleDuplicate)
             return Task.FromException<StudentCreatedDto>(new ApiProblemException(409, "possible_duplicate", null, null, count: dups));
+        if (request.ClassId is { } classId && FakeClasses.All.FirstOrDefault(c => c.Id == classId) is { Capacity: { } cap } full
+            && full.StudentCount >= cap && !request.ConfirmOverCapacity)
+            return Task.FromException<StudentCreatedDto>(new ApiProblemException(409, "over_capacity", null, null));
         var code = string.IsNullOrWhiteSpace(request.StudentCode) ? $"S-{++_nextCode}" : request.StudentCode;
         var cls = request.ClassId is { } id ? FakeClasses.All.FirstOrDefault(c => c.Id == id) : null;
         var created = Add(d.NameAr, d.NameEn, d.Gender, d.DateOfBirth, code, null, null, null, cls);

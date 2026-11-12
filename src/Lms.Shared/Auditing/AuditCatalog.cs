@@ -32,7 +32,7 @@ public static class AuditCatalog
         // M3 students and academic structure.
         "StudentChangeRequest", "Course", "CourseAllocation", "CourseRestriction", "CourseSupervisor", "Blueprint",
         "Class", "ClassStudent", "ClassCourse", "ClassCourseTeacher", "TeacherCourseEligibility", "CourseEnrollment",
-        "EnrollmentException", "StudentGroup", "GroupMember", "StudentTransfer",
+        "EnrollmentException", "StudentGroup", "GroupMember", "StudentTransfer", "ClassLessonPlan",
     ];
 
     public static IReadOnlyList<string> SecurityEvents { get; } =
