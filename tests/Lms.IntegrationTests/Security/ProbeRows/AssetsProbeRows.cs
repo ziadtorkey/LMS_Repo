@@ -39,8 +39,8 @@ public sealed class AssetsProbeRows : IProbeRowModule
         file.Headers.ContentType = new MediaTypeHeaderValue("application/pdf");
         return new MultipartFormDataContent
         {
+            { new StringContent(classCourseId.ToString()), AssetUploadForm.ClassCourseId }, // first: checked before the file is read
             { file, AssetUploadForm.File, "probe.pdf" },
-            { new StringContent(classCourseId.ToString()), AssetUploadForm.ClassCourseId },
         };
     }
 

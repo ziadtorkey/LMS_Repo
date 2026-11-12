@@ -1,4 +1,6 @@
+using System.Text;
 using Lms.Api.Features.Enrollment.Groups;
+using Lms.Api.Features.Files;
 using Lms.Api.Infrastructure;
 using Lms.Domain.Abstractions;
 using Lms.Domain.Classes;
@@ -9,7 +11,10 @@ using Lms.Infrastructure.Persistence;
 using Lms.Shared;
 using Lms.Shared.Authorization;
 using Lms.Shared.Content;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Net.Http.Headers;
 
 namespace Lms.Api.Features.Content;
 
@@ -29,42 +34,84 @@ public static class AssetEndpoints
         app.MapGet(Routes.AssetUrlPattern, UrlAsync).RequireAuthorization().RequirePermission(Permissions.Files.Download);
     }
 
+    /// <summary>
+    /// Reads the multipart body as a stream: the <c>classCourseId</c> part must come first, so the class course is checked
+    /// (404 / closed class) before the file part is read; the file part is then copied to a temp file, stopping at the
+    /// effective size limit, and handed to the asset service.
+    /// </summary>
     private static async Task<IResult> UploadAsync(
         HttpContext http, LmsDbContext db, IAssetService assets, PlacementGuard guard, CancellationToken ct)
     {
-        var form = await UploadForm.ReadAsync(http, ct);
-        if (form.Problem is not null)
+        if (!MediaTypeHeaderValue.TryParse(http.Request.ContentType, out var mediaType)
+            || !string.Equals(mediaType.MediaType.Value, "multipart/form-data", StringComparison.OrdinalIgnoreCase)
+            || HeaderUtilities.RemoveQuotes(mediaType.Boundary).Value is not { Length: > 0 } boundary)
         {
-            return form.Problem;
+            return ApiProblems.BadRequest(ProblemCodes.validation_failed, "A multipart form with a file is required.");
         }
 
-        var file = form.Form!.Files.GetFile(AssetUploadForm.File);
-        if (!Guid.TryParse(form.Form["classCourseId"], out var classCourseId) || file is null || file.Length == 0)
+        if (http.Features.Get<IHttpMaxRequestBodySizeFeature>() is { IsReadOnly: false } bodyLimit)
         {
-            return ApiProblems.BadRequest(ProblemCodes.validation_failed, "A non-empty file and a valid classCourseId are required.");
+            bodyLimit.MaxRequestBodySize = FileEndpoints.TransportLimitBytes;
         }
 
-        var (classCourse, problem) = await http.CheckClassCourseAsync(Permissions.Modules.Manage, classCourseId, ct);
-        if (problem is not null)
-        {
-            return problem;
-        }
-
-        if (await GroupEndpoints.WritableAsync(classCourse!, db, guard, ct) is { } closed)
-        {
-            return closed;
-        }
-
-        var fileName = Path.GetFileName(file.FileName);
-        if (fileName.Length > 255)
-        {
-            fileName = fileName[^255..];
-        }
-
+        var reader = new MultipartReader(boundary, http.Request.Body) { BodyLengthLimit = FileEndpoints.TransportLimitBytes };
+        string? tempPath = null;
         try
         {
-            await using var stream = file.OpenReadStream();
-            var asset = await assets.UploadAsync(classCourse!, fileName, file.ContentType, file.Length, stream, ct);
+            var first = await ReadSectionAsync(reader, ct);
+            if (first is null || first.Name != AssetUploadForm.ClassCourseId || !Guid.TryParse(await ReadTextAsync(first, ct), out var classCourseId))
+            {
+                return ApiProblems.BadRequest(ProblemCodes.validation_failed, "classCourseId must be the first part of the form.");
+            }
+
+            var (classCourse, problem) = await http.CheckClassCourseAsync(Permissions.Modules.Manage, classCourseId, ct);
+            if (problem is not null)
+            {
+                return problem;
+            }
+
+            if (await GroupEndpoints.WritableAsync(classCourse!, db, guard, ct) is { } closed)
+            {
+                return closed;
+            }
+
+            var second = await ReadSectionAsync(reader, ct);
+            if (second is null || second.Name != AssetUploadForm.File || string.IsNullOrEmpty(second.FileName))
+            {
+                return ApiProblems.BadRequest(ProblemCodes.validation_failed, "A file part is required after classCourseId.");
+            }
+
+            var fileName = Path.GetFileName(second.FileName);
+            if (fileName.Length > 255)
+            {
+                fileName = fileName[^255..];
+            }
+
+            if (AssetTypes.ForFileName(fileName) is null)
+            {
+                return ApiProblems.BadRequest(ProblemCodes.asset_type_not_allowed);
+            }
+
+            var maxBytes = await assets.GetMaxBytesAsync(classCourse!, ct);
+            tempPath = Path.GetTempFileName();
+            long length;
+            await using (var temp = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None, 81920, useAsync: true))
+            {
+                length = await CopyLimitedAsync(second.Section.Body, temp, maxBytes, ct);
+            }
+
+            if (length > maxBytes)
+            {
+                return TooLarge(maxBytes);
+            }
+
+            if (length == 0)
+            {
+                return ApiProblems.BadRequest(ProblemCodes.validation_failed, "The file is empty.");
+            }
+
+            await using var stream = new FileStream(tempPath, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, useAsync: true);
+            var asset = await assets.UploadAsync(classCourse!, fileName, second.ContentType, length, stream, ct);
             return Results.Created(Routes.Asset(asset.Id), ToDto(asset));
         }
         catch (AssetTypeNotAllowedException)
@@ -73,12 +120,66 @@ public static class AssetEndpoints
         }
         catch (AssetTooLargeException ex)
         {
-            return Results.Problem(
-                statusCode: StatusCodes.Status400BadRequest,
-                title: "Bad request",
-                extensions: new Dictionary<string, object?> { ["code"] = ProblemCodes.asset_too_large, ["maxBytes"] = ex.MaxBytes });
+            return TooLarge(ex.MaxBytes);
+        }
+        catch (Exception ex) when (ex is InvalidDataException or BadHttpRequestException or IOException)
+        {
+            return ApiProblems.BadRequest(ProblemCodes.validation_failed, "The multipart form is malformed or too large.");
+        }
+        finally
+        {
+            if (tempPath is not null)
+            {
+                File.Delete(tempPath);
+            }
         }
     }
+
+    private sealed record Part(MultipartSection Section, string Name, string? FileName, string ContentType);
+
+    private static async Task<Part?> ReadSectionAsync(MultipartReader reader, CancellationToken ct)
+    {
+        var section = await reader.ReadNextSectionAsync(ct);
+        if (section is null || !ContentDispositionHeaderValue.TryParse(section.ContentDisposition, out var disposition))
+        {
+            return null;
+        }
+
+        return new Part(
+            section, HeaderUtilities.RemoveQuotes(disposition.Name).Value ?? string.Empty,
+            HeaderUtilities.RemoveQuotes(disposition.FileName).Value, section.ContentType ?? string.Empty);
+    }
+
+    private static async Task<string> ReadTextAsync(Part part, CancellationToken ct)
+    {
+        using var text = new StreamReader(part.Section.Body, Encoding.UTF8, leaveOpen: true);
+        return (await text.ReadToEndAsync(ct)).Trim();
+    }
+
+    /// <summary>Copies up to <paramref name="max"/> bytes; returns max + 1 as soon as the source has more.</summary>
+    private static async Task<long> CopyLimitedAsync(Stream source, Stream target, long max, CancellationToken ct)
+    {
+        var buffer = new byte[81920];
+        long total = 0;
+        int read;
+        while ((read = await source.ReadAsync(buffer, ct)) > 0)
+        {
+            total += read;
+            if (total > max)
+            {
+                return max + 1;
+            }
+
+            await target.WriteAsync(buffer.AsMemory(0, read), ct);
+        }
+
+        return total;
+    }
+
+    private static IResult TooLarge(long maxBytes) => Results.Problem(
+        statusCode: StatusCodes.Status400BadRequest,
+        title: "Bad request",
+        extensions: new Dictionary<string, object?> { ["code"] = ProblemCodes.asset_too_large, ["maxBytes"] = maxBytes });
 
     private static async Task<IResult> LimitsAsync(
         Guid classCourseId, HttpContext http, IAssetService assets, CancellationToken ct)

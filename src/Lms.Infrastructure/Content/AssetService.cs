@@ -50,6 +50,20 @@ public sealed class AssetService(
             throw new AssetTooLargeException(sizeBytes, maxBytes);
         }
 
+        // The bytes must look like the type the name claims (a .png holding HTML is refused). Needs a seekable stream.
+        if (!content.CanSeek)
+        {
+            throw new ArgumentException("The upload stream must be seekable.", nameof(content));
+        }
+
+        var header = new byte[AssetSignatures.HeaderLength];
+        var read = await content.ReadAtLeastAsync(header, header.Length, throwOnEndOfStream: false, cancellationToken);
+        content.Position = 0;
+        if (!AssetSignatures.Matches(type.Extension, header.AsSpan(0, read)))
+        {
+            throw new AssetTypeNotAllowedException(fileName);
+        }
+
         StoredFile stored;
         try
         {
