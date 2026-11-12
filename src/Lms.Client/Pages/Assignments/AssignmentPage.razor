@@ -1,0 +1,155 @@
+@page "/class-courses/{Id:guid}/assignments/{AssignmentId:guid}"
+@attribute [Authorize]
+@using Lms.Client.Components.Assets
+@using Lms.Client.Components.Editors
+@using Lms.Client.Services.Api
+@using Lms.Shared.Assignments
+@using Lms.Shared.Authorization
+@inject ICourseAssignmentsApi Assignments
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+@inject TimeProvider Clock
+@implements IDisposable
+
+<PageTitle>@(_my is { } t ? Culture.Pick(t.Assignment.Module.TitleAr, t.Assignment.Module.TitleEn) : L["AssignmentStudent_Title"].Value)</PageTitle>
+@if (!PermState.Loaded || _loading)
+{
+    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+}
+else if (!PermState.Has(Permissions.CourseAssignments.View))
+{
+    <MudAlert Severity="Severity.Warning" data-testid="assignment-forbidden">@L["Forbidden_Title"]</MudAlert>
+}
+else if (_my is null)
+{
+    <MudAlert Severity="Severity.Error" data-testid="assignment-error">@(_error ?? L["Api_Error"].Value)</MudAlert>
+}
+else
+{
+    var a = _my.Assignment;
+    <MudStack Spacing="3">
+        <MudLink Href="@($"class-courses/{Id}/learn")" data-testid="assignment-back">@L["Module_Back"]</MudLink>
+        <MudText Typo="Typo.h4" data-testid="assignment-title">@Culture.Pick(a.Module.TitleAr, a.Module.TitleEn)</MudText>
+
+        @if (a.DueAtUtc is { } due)
+        {
+            <MudAlert Severity="@(Overdue ? Severity.Warning : Severity.Info)" data-testid="assignment-due">
+                <span dir="ltr">@due.ToLocalTime().ToString("g", System.Globalization.CultureInfo.CurrentCulture)</span> ·
+                <span data-testid="assignment-countdown">@CountdownText(due)</span>
+                @if (Overdue)
+                {
+                    <span data-testid="assignment-late-note"> @LateNote(a)</span>
+                }
+            </MudAlert>
+        }
+
+        @if (InstructionsHtml(a) is { Length: > 0 } instructions)
+        {
+            <SanitizedHtml Html="@instructions" TestId="assignment-instructions" />
+        }
+        @foreach (var file in a.Attachments)
+        {
+            <AssetPreview Asset="file" />
+        }
+
+        @if (_my.Submission is { Status: SubmissionStatuses.Returned, Grade: { } grade } returned)
+        {
+            <MudPaper Outlined="true" Class="pa-3" data-testid="assignment-grade">
+                <MudStack Spacing="1">
+                    <MudText Typo="Typo.h6">@L["AssignmentStudent_Grade"]</MudText>
+                    <MudText data-testid="assignment-final-grade"><span dir="ltr">@grade.FinalGrade / @a.MaxGrade</span></MudText>
+                    @if (grade.PenaltyPercentApplied is { } penalty)
+                    {
+                        <MudText Typo="Typo.caption" data-testid="assignment-penalty">@L["AssignmentStudent_PenaltyApplied", penalty, grade.Grade]</MudText>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(grade.FeedbackHtml))
+                    {
+                        <MudText Typo="Typo.subtitle2">@L["AssignmentStudent_Feedback"]</MudText>
+                        <SanitizedHtml Html="@grade.FeedbackHtml" TestId="assignment-feedback" />
+                    }
+                    @if (grade.AnnotatedFile is { } annotated)
+                    {
+                        <AssetPreview Asset="annotated" />
+                    }
+                </MudStack>
+            </MudPaper>
+        }
+        else if (_my.Submission is { } mine && mine.Status != SubmissionStatuses.Draft)
+        {
+            <MudAlert Severity="Severity.Success" data-testid="assignment-handed-in">
+                @L["AssignmentStudent_HandedIn"] @(mine.IsLate ? L["AssignmentStudent_WasLate"].Value : "")
+                @if (mine.Status == SubmissionStatuses.Graded)
+                {
+                    <span data-testid="assignment-waiting-return"> @L["AssignmentStudent_WaitingReturn"]</span>
+                }
+            </MudAlert>
+        }
+
+        <SubmitPanel Assignment="a" My="_my" OnSubmitted="LoadAsync" />
+    </MudStack>
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+    [Parameter] public Guid AssignmentId { get; set; }
+
+    private MySubmissionDto? _my;
+    private string? _error;
+    private bool _loading = true;
+    private TimeSpan _serverOffset;
+
+    // The server clock decides whether it is late: the browser only measures the time since the page was loaded.
+    private DateTime ServerNow => Clock.GetUtcNow().UtcDateTime + _serverOffset;
+    private bool Overdue => _my?.Assignment.DueAtUtc is { } due && ServerNow > due;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        PermState.Changed -= OnPermissionsChanged;
+        PermState.Changed += OnPermissionsChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        _loading = true;
+        await LoadAsync();
+        _loading = false;
+    }
+
+    private async Task LoadAsync()
+    {
+        _error = null;
+        if (!PermState.Has(Permissions.CourseAssignments.View)) return;
+        await ApiCalls.RunAsync(async () =>
+        {
+            _my = await Assignments.GetMySubmissionAsync(AssignmentId);
+            _serverOffset = _my.ServerNowUtc - Clock.GetUtcNow().UtcDateTime;
+        }, Navigation, L, m => _error = m);
+        StateHasChanged();
+    }
+
+    private string InstructionsHtml(CourseAssignmentDto a)
+    {
+        var (ar, en) = (a.InstructionsHtmlAr, a.InstructionsHtmlEn);
+        var preferred = Culture.IsRightToLeft ? ar : en;
+        return string.IsNullOrWhiteSpace(preferred) ? (Culture.IsRightToLeft ? en : ar) ?? "" : preferred;
+    }
+
+    private string CountdownText(DateTime due)
+    {
+        var span = due - ServerNow;
+        var text = Format(span.Duration());
+        return span >= TimeSpan.Zero ? L["AssignmentStudent_DueIn", text] : L["AssignmentStudent_OverdueBy", text];
+    }
+
+    private static string Format(TimeSpan s) =>
+        s.TotalDays >= 1 ? $"{(int)s.TotalDays} d {s.Hours} h" : s.TotalHours >= 1 ? $"{(int)s.TotalHours} h {s.Minutes} min" : $"{Math.Max(1, (int)s.TotalMinutes)} min";
+
+    private string LateNote(CourseAssignmentDto a) => a.LatePolicy switch
+    {
+        LatePolicies.Block => L["AssignmentStudent_LateBlocked"],
+        LatePolicies.Penalty => L["AssignmentStudent_LatePenalty", a.PenaltyPercent ?? 0],
+        _ => L["AssignmentStudent_LateAllowed"],
+    };
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => PermState.Changed -= OnPermissionsChanged;
+}

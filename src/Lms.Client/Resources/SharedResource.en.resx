@@ -995,4 +995,24 @@
   <data name="Submissions_Status" xml:space="preserve"><value>Status</value></data>
   <data name="Submissions_Student" xml:space="preserve"><value>Student</value></data>
   <data name="Submissions_Title" xml:space="preserve"><value>Assignment submissions</value></data>
+  <data name="AssignmentStudent_Title" xml:space="preserve"><value>Assignment</value></data>
+  <data name="AssignmentStudent_DueIn" xml:space="preserve"><value>due in {0}</value></data>
+  <data name="AssignmentStudent_OverdueBy" xml:space="preserve"><value>overdue by {0}</value></data>
+  <data name="AssignmentStudent_LateAllowed" xml:space="preserve"><value>You can still hand in late.</value></data>
+  <data name="AssignmentStudent_LatePenalty" xml:space="preserve"><value>Late hand-ins lose {0}% of the grade.</value></data>
+  <data name="AssignmentStudent_LateBlocked" xml:space="preserve"><value>Late hand-ins are no longer accepted.</value></data>
+  <data name="AssignmentStudent_Grade" xml:space="preserve"><value>Your grade</value></data>
+  <data name="AssignmentStudent_PenaltyApplied" xml:space="preserve"><value>Late penalty of {0}% applied to {1}.</value></data>
+  <data name="AssignmentStudent_Feedback" xml:space="preserve"><value>Feedback</value></data>
+  <data name="AssignmentStudent_HandedIn" xml:space="preserve"><value>You handed this in.</value></data>
+  <data name="AssignmentStudent_WasLate" xml:space="preserve"><value>It was late.</value></data>
+  <data name="AssignmentStudent_WaitingReturn" xml:space="preserve"><value>Your teacher has graded it and will return it soon.</value></data>
+  <data name="AssignmentStudent_ReadOnly" xml:space="preserve"><value>You can read this assignment but not hand in work.</value></data>
+  <data name="AssignmentStudent_CannotSubmit" xml:space="preserve"><value>You cannot hand in work now.</value></data>
+  <data name="AssignmentStudent_YourWork" xml:space="preserve"><value>Your work</value></data>
+  <data name="AssignmentStudent_Resubmit" xml:space="preserve"><value>Resubmit</value></data>
+  <data name="AssignmentStudent_Submit" xml:space="preserve"><value>Submit</value></data>
+  <data name="AssignmentStudent_SaveDraft" xml:space="preserve"><value>Save as draft</value></data>
+  <data name="AssignmentStudent_Text" xml:space="preserve"><value>Your answer</value></data>
+  <data name="AssignmentStudent_NeedTextOrFile" xml:space="preserve"><value>Write your answer or attach a file first.</value></data>
 </root>

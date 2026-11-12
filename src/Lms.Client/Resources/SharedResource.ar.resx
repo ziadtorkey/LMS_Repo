@@ -995,4 +995,24 @@
   <data name="Submissions_Status" xml:space="preserve"><value>الحالة</value></data>
   <data name="Submissions_Student" xml:space="preserve"><value>الطالب</value></data>
   <data name="Submissions_Title" xml:space="preserve"><value>تسليمات الواجب</value></data>
+  <data name="AssignmentStudent_Title" xml:space="preserve"><value>الواجب</value></data>
+  <data name="AssignmentStudent_DueIn" xml:space="preserve"><value>يتبقى {0}</value></data>
+  <data name="AssignmentStudent_OverdueBy" xml:space="preserve"><value>تأخر {0}</value></data>
+  <data name="AssignmentStudent_LateAllowed" xml:space="preserve"><value>ما زال بإمكانك التسليم متأخرًا.</value></data>
+  <data name="AssignmentStudent_LatePenalty" xml:space="preserve"><value>يُخصم {0}% من الدرجة على التسليم المتأخر.</value></data>
+  <data name="AssignmentStudent_LateBlocked" xml:space="preserve"><value>لم يعد التسليم المتأخر مقبولًا.</value></data>
+  <data name="AssignmentStudent_Grade" xml:space="preserve"><value>درجتك</value></data>
+  <data name="AssignmentStudent_PenaltyApplied" xml:space="preserve"><value>خصم تأخير {0}% من {1}.</value></data>
+  <data name="AssignmentStudent_Feedback" xml:space="preserve"><value>الملاحظات</value></data>
+  <data name="AssignmentStudent_HandedIn" xml:space="preserve"><value>لقد سلّمت هذا الواجب.</value></data>
+  <data name="AssignmentStudent_WasLate" xml:space="preserve"><value>وكان متأخرًا.</value></data>
+  <data name="AssignmentStudent_WaitingReturn" xml:space="preserve"><value>صحّحه معلمك وسيعيده إليك قريبًا.</value></data>
+  <data name="AssignmentStudent_ReadOnly" xml:space="preserve"><value>يمكنك قراءة الواجب دون تسليم عمل.</value></data>
+  <data name="AssignmentStudent_CannotSubmit" xml:space="preserve"><value>لا يمكنك التسليم الآن.</value></data>
+  <data name="AssignmentStudent_YourWork" xml:space="preserve"><value>عملك</value></data>
+  <data name="AssignmentStudent_Resubmit" xml:space="preserve"><value>إعادة التسليم</value></data>
+  <data name="AssignmentStudent_Submit" xml:space="preserve"><value>تسليم</value></data>
+  <data name="AssignmentStudent_SaveDraft" xml:space="preserve"><value>حفظ كمسودة</value></data>
+  <data name="AssignmentStudent_Text" xml:space="preserve"><value>إجابتك</value></data>
+  <data name="AssignmentStudent_NeedTextOrFile" xml:space="preserve"><value>اكتب إجابتك أو أرفق ملفًا أولًا.</value></data>
 </root>
