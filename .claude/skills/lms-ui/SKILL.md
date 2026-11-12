@@ -11,12 +11,13 @@ The source of truth is `docs/DESIGN.md`; read it once. The reference pages are `
 
 1. **Header.** Start the page with `PageHeader`: a title and a one-line subtitle from resx, and at most **one** filled primary button.
 2. **Content.** Put the content in `SectionCard`s. A table goes in `SectionCard Flush="true"`.
-3. **Lists.** Use `ServerTable`, with filters in `lms-filters` inside the same card. Give every `MudTd` a `DataLabel`. Pass `EmptyTitle` and `EmptyText` (the next step).
-4. **Detail pages.** Use a back link, then `PageHeader` with `Leading` (avatar) and `Badges` (status chips), then `lms-profile-grid` with a `lms-details` card of `DetailItem`s and an `lms-profile-main` column.
-5. **Dialogs and forms.** Group fields with `lms-fieldset` and a legend, and put pairs in `lms-form-grid`. End with `lms-dialog-actions`: Cancel is a text button; Save is filled primary with a spinner while saving. Add helper text for rules.
-6. **States.** Use `LoadingState` while loading, `EmptyState` for nothing to show, and an outlined `MudAlert` that says what to do on error.
-7. **Text.** Add every new string to both `SharedResource.ar.resx` and `.en.resx`, in sentence case. Emails, phones, ids and dates go in `<span dir="ltr">`.
-8. **Check.** Look at the page in ar and en, at 1440 and 360 px, in light and dark mode (the theme switch is in the app bar, or the user menu on phones). At 360 px nothing may scroll sideways.
+3. **Small unpaged lists.** Use `MudSimpleTable Elevation="0" Class="lms-simple-table lms-stack-table"` with `data-label` on each `td`. Wrap icon buttons in `lms-row-actions`, risky ones last.
+4. **Paged lists.** Use `ServerTable`, with filters in `lms-filters` inside the same card. Give every `MudTd` a `DataLabel`. Pass `EmptyTitle` and `EmptyText` (the next step).
+5. **Detail pages.** Use a back link, then `PageHeader` with `Leading` (avatar) and `Badges` (status chips), then `lms-profile-grid` with a `lms-details` card of `DetailItem`s and an `lms-profile-main` column.
+6. **Dialogs and forms.** Group fields with `lms-fieldset` and a legend, and put pairs in `lms-form-grid`. End with `lms-dialog-actions`: Cancel is a text button; Save is filled primary with a spinner while saving. Add helper text for rules.
+7. **States.** Use `LoadingState` while loading, `EmptyState` for nothing to show, and an outlined `MudAlert` that says what to do on error.
+8. **Text.** Add every new string to both `SharedResource.ar.resx` and `.en.resx`, in sentence case. Emails, phones, ids and dates go in `<span dir="ltr">`.
+9. **Check.** Look at the page in ar and en, at 1440 and 360 px, in light and dark mode (the theme switch is in the app bar, or the user menu on phones). At 360 px nothing may scroll sideways.
 
 ## Rules
 

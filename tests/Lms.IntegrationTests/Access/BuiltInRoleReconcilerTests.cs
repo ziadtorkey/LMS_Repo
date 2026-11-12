@@ -212,6 +212,38 @@ public sealed class BuiltInRoleReconcilerTests(LmsApiFactory factory)
     }
 
     [Fact]
+    public async Task Reconcile_adds_only_the_M4a_defaults_to_a_version_3_client()
+    {
+        // A client provisioned under M3 (defaults version 3): no Modules.* yet, and an admin removed an M3 default.
+        var tree = await AccessTestData.SeedAsync(factory, "RC9");
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            var teacher = tree.Roles[BuiltInRoles.Teacher].Id;
+            db.RolePermissions.RemoveRange(await db.RolePermissions
+                .Where(p => p.OrganizationId == tree.Org.Id
+                    && (p.Permission.StartsWith("Modules.") || (p.RoleId == teacher && p.Permission == Permissions.Groups.Manage)))
+                .ToListAsync());
+            foreach (var role in await db.Roles.Where(r => r.OrganizationId == tree.Org.Id).ToListAsync())
+            {
+                db.Entry(role).Property(nameof(Role.DefaultsVersion)).CurrentValue = 3;
+            }
+
+            await db.SaveChangesAsync();
+        }
+
+        await ReconcileAsync();
+
+        var teacherPermissions = await PermissionsOfAsync(tree, BuiltInRoles.Teacher);
+        Assert.Contains(Permissions.Modules.Manage, teacherPermissions);
+        Assert.Contains(Permissions.Modules.View, teacherPermissions);
+        Assert.DoesNotContain(Permissions.Groups.Manage, teacherPermissions);
+        Assert.Contains(Permissions.Modules.Manage, await PermissionsOfAsync(tree, BuiltInRoles.OrgAdmin));
+        Assert.Contains(Permissions.Modules.View, await PermissionsOfAsync(tree, BuiltInRoles.Student));
+        Assert.DoesNotContain(Permissions.Modules.Manage, await PermissionsOfAsync(tree, BuiltInRoles.Supervisor));
+        Assert.DoesNotContain(Permissions.Modules.View, await PermissionsOfAsync(tree, BuiltInRoles.Guardian));
+    }
+
+    [Fact]
     public async Task Newly_provisioned_roles_are_already_at_the_current_defaults_version()
     {
         var tree = await AccessTestData.SeedAsync(factory, "RC4");

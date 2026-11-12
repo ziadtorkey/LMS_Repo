@@ -42,6 +42,9 @@ public sealed class ClassLesson : Entity, IOrgUnitScoped
     public int? PlannedOffsetDays { get; private set; }
     public bool IsHidden { get; private set; }
 
+    /// <summary>Follows the blueprint lesson to another section of the same plan.</summary>
+    public void MoveTo(ClassSection section) => SectionId = section.Id;
+
     public void Update(int order, string titleAr, string titleEn, string? objectivesAr, string? objectivesEn, int? plannedOffsetDays, bool isHidden)
     {
         Order = order;
