@@ -264,6 +264,67 @@ public sealed class LibraryTests(LmsApiFactory factory)
     }
 
     [Fact]
+    public async Task A_row_of_another_client_with_an_ancestor_path_is_never_visible()
+    {
+        // Pins the OrganizationId condition of the ancestor read: unit paths are unique, so only a corrupt row (another client's
+        // resource carrying an ancestor path of client A) can tell the client check from the path check.
+        using var w = await LibraryTestWorld.CreateAsync(factory, "LB15");
+        var other = await AccessTestData.SeedAsync(factory, "LB15B");
+        Guid foreign, foreignTag;
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            var resource = new LibraryResource(other.Root, "غريب", "Foreign", null, null, LibraryResourceTypes.Link, null, null, null, "https://example.org", true);
+            db.Add(resource);
+            await db.SaveChangesAsync();
+            var tag = new LibraryTag(resource, "foreign-tag");
+            db.Add(tag);
+            await db.SaveChangesAsync();
+            foreign = resource.Id;
+            foreignTag = tag.Id;
+            await db.Database.ExecuteSqlInterpolatedAsync($"UPDATE LibraryResources SET OrgUnitPath = {w.Tree.Root.Path} WHERE Id = {foreign}");
+            await db.Database.ExecuteSqlInterpolatedAsync($"UPDATE LibraryTags SET OrgUnitPath = {w.Tree.Root.Path} WHERE Id = {foreignTag}");
+        }
+
+        var mine = await w.CreateAsync(w.Admin, Link(w.Tree.Root, "Mine", tags: ["mine", "corrupt"]));
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            // a tag row of the visible resource that belongs to another client
+            await db.Database.ExecuteSqlInterpolatedAsync($"UPDATE LibraryTags SET OrganizationId = {other.Org.Id} WHERE ResourceId = {mine.Id} AND Tag = 'corrupt'");
+        }
+
+        var list = await w.ListAsync(w.School1Admin);
+        var tags = await w.ReadAsync<List<string>>(await w.SendAsync(w.School1Admin, HttpMethod.Get, Routes.LibraryTagsOf(w.Tree.School1.Id)));
+
+        Assert.Equal([mine.Id], list.Items.Select(r => r.Id));
+        Assert.Equal(["mine"], list.Items.Single().Tags);
+        Assert.Equal(["mine"], tags);
+        Assert.Empty((await w.ListAsync(w.School1Admin, "?tag=corrupt")).Items);
+        Assert.Equal(HttpStatusCode.NotFound, (await w.SendAsync(w.School1Admin, HttpMethod.Get, Routes.LibraryResource(foreign))).StatusCode);
+        Assert.Empty((await w.ListAsync(w.School1Admin, "?tag=foreign-tag")).Items);
+    }
+
+    [Fact]
+    public async Task Edit_and_delete_of_an_inherited_resource_change_nothing()
+    {
+        // The write path loads through the caller's scope, never through the ancestor read: after refused edits and deletes the
+        // inherited row is byte for byte the same and still live, whoever tried.
+        using var w = await LibraryTestWorld.CreateAsync(factory, "LB16");
+        var atRoot = await w.CreateAsync(w.Admin, Link(w.Tree.Root, "Group wide", tags: ["keep"]));
+
+        foreach (var who in new[] { w.School1Admin, w.Teacher })
+        {
+            Assert.Equal(HttpStatusCode.NotFound, (await w.SendAsync(who, HttpMethod.Put, Routes.LibraryResource(atRoot.Id), Link(w.Tree.Root, "Changed", tags: ["gone"]))).StatusCode);
+            Assert.Equal(HttpStatusCode.NotFound, (await w.SendAsync(who, HttpMethod.Delete, Routes.LibraryResource(atRoot.Id))).StatusCode);
+        }
+
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        var row = await db.Set<LibraryResource>().IgnoreQueryFilters().SingleAsync(r => r.Id == atRoot.Id);
+        Assert.False(row.IsDeleted);
+        Assert.Equal("Group wide", row.TitleEn);
+        Assert.Equal(["keep"], await db.Set<LibraryTag>().IgnoreQueryFilters().Where(t => t.ResourceId == atRoot.Id && !t.IsDeleted).Select(t => t.Tag).ToListAsync());
+    }
+
+    [Fact]
     public Task LibraryResource_is_isolated_per_client_and_subtree() => AssertIsolatedAsync(0, db => db.Set<LibraryResource>().Select(x => x.Id));
 
     [Fact]
