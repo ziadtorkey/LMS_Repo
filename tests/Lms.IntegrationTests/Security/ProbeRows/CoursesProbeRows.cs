@@ -31,6 +31,22 @@ public sealed class CoursesProbeRows : IProbeRowModule
         new("courses delete (root-owned)", HttpMethod.Delete, Routes.CoursePattern,
             async (w, _) => new ProbeRequest(Routes.Course(await NewCourseAsync(w))),
             Expect(NoContent, NotFound, NotFound, Forbidden, NotFound, NoContent)),
+        // Allocations (Task 7): a root-owned course allocated at School1.
+        new("course allocations create (School1)", HttpMethod.Post, Routes.CourseAllocations,
+            async (w, _) => new ProbeRequest(Routes.CourseAllocations,
+                new AllocateCoursesRequest(w.Callers.A.School1.Id, [await NewCourseAsync(w)])),
+            Expect(Created, Created, NotFound, Forbidden, NotFound, Created)),
+        new("course allocations delete (School1)", HttpMethod.Delete, Routes.CourseAllocationPattern,
+            async (w, _) =>
+            {
+                var created = await w.Callers.SendOkAsync(RootAdmin, HttpMethod.Post, Routes.CourseAllocations,
+                    new AllocateCoursesRequest(w.Callers.A.School1.Id, [await NewCourseAsync(w)]));
+                return new ProbeRequest(Routes.CourseAllocation(created[0].GetProperty("id").GetGuid()));
+            },
+            Expect(NoContent, NoContent, NotFound, Forbidden, NotFound, NoContent)),
+        new("unit courses (School1)", HttpMethod.Get, Routes.UnitCoursesPattern,
+            (w, _) => Task.FromResult(new ProbeRequest(Routes.UnitCourses(w.Callers.A.School1.Id))),
+            Expect(Ok, Ok, NotFound, Ok, NotFound, Ok)),
     ];
 
     private static SaveCourseRequest Body(M1ProbeWorld w)

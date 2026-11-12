@@ -133,6 +133,14 @@
   <data name="Perm_AcademicYears_Update" xml:space="preserve"><value>تعديل الأعوام الدراسية</value></data>
   <data name="Perm_AcademicYears_Delete" xml:space="preserve"><value>حذف الأعوام الدراسية</value></data>
   <data name="Roles_Title" xml:space="preserve"><value>الأدوار والصلاحيات</value></data>
+  <data name="Roles_Subtitle" xml:space="preserve"><value>الدور مجموعة صلاحيات لها اسم. أسند الأدوار للأشخاص في وحدة معينة من صفحة تعيين الأدوار.</value></data>
+  <data name="Roles_EmptyTitle" xml:space="preserve"><value>لا توجد أدوار بعد</value></data>
+  <data name="Roles_EmptyText" xml:space="preserve"><value>أنشئ دورًا واختر ما يمكن لأصحابه فعله.</value></data>
+  <data name="Roles_EditTitle" xml:space="preserve"><value>تعديل الدور</value></data>
+  <data name="Roles_BaseKindHelp" xml:space="preserve"><value>لمن هذا الدور. لا يمكن تغييره لاحقًا.</value></data>
+  <data name="Idp_Subtitle" xml:space="preserve"><value>اسمح للأشخاص بتسجيل الدخول بحساب مدرستهم أو جامعتهم (مايكروسوفت أو جوجل أو مزود آخر).</value></data>
+  <data name="Idp_EmptyTitle" xml:space="preserve"><value>لا يوجد مزودو تسجيل دخول بعد</value></data>
+  <data name="Idp_EmptyText" xml:space="preserve"><value>أضف مزودًا ليتمكن الأشخاص من تسجيل الدخول بحساب جهتهم.</value></data>
   <data name="Roles_New" xml:space="preserve"><value>دور جديد</value></data>
   <data name="Roles_BuiltIn" xml:space="preserve"><value>أساسي</value></data>
   <data name="Roles_BaseKind" xml:space="preserve"><value>النوع الأساسي</value></data>
@@ -805,6 +813,48 @@
   <data name="Import_Button" xml:space="preserve"><value>استيراد من Excel</value></data>
   <data name="Clients_ShortCode" xml:space="preserve"><value>الرمز المختصر</value></data>
   <data name="Clients_ShortCodeHelp" xml:space="preserve"><value>يُستخدم في أسماء دخول الطلاب (الكود@الرمز): من 2 إلى 20 حرفًا إنجليزيًا صغيرًا أو رقمًا أو شرطة. اتركه فارغًا ليُشتق من رمز الوحدة الجذرية.</value></data>
+  <data name="Nav_Classes" xml:space="preserve"><value>الفصول</value></data>
+  <data name="Classes_Title" xml:space="preserve"><value>الفصول</value></data>
+  <data name="Classes_YearClosed" xml:space="preserve"><value>هذا العام الدراسي مغلق. تُعرض الفصول ولا يمكن تعديلها.</value></data>
+  <data name="Class_New" xml:space="preserve"><value>فصل جديد</value></data>
+  <data name="Class_Edit" xml:space="preserve"><value>تعديل الفصل</value></data>
+  <data name="Class_Created" xml:space="preserve"><value>تم إنشاء الفصل.</value></data>
+  <data name="Class_Code" xml:space="preserve"><value>الرمز</value></data>
+  <data name="Class_Unit" xml:space="preserve"><value>الوحدة</value></data>
+  <data name="Class_Students" xml:space="preserve"><value>الطلاب</value></data>
+  <data name="Class_Capacity" xml:space="preserve"><value>السعة</value></data>
+  <data name="Class_CapacityHelp" xml:space="preserve"><value>اختياري: عدد الطلاب الذي يتسع له الفصل.</value></data>
+  <data name="Class_Homeroom" xml:space="preserve"><value>مدرس الفصل</value></data>
+  <data name="Class_Courses" xml:space="preserve"><value>المقررات</value></data>
+  <data name="Class_Close" xml:space="preserve"><value>إغلاق الفصل</value></data>
+  <data name="Class_CloseConfirm" xml:space="preserve"><value>إغلاق {0}؟ لا يمكن تعديل الفصل المغلق بعد ذلك.</value></data>
+  <data name="ClassStatus_Active" xml:space="preserve"><value>نشط</value></data>
+  <data name="ClassStatus_Closed" xml:space="preserve"><value>مغلق</value></data>
+  <data name="BulkClasses_Title" xml:space="preserve"><value>إنشاء عدة فصول</value></data>
+  <data name="BulkClasses_Create" xml:space="preserve"><value>إنشاء الفصول</value></data>
+  <data name="BulkClasses_NamePatternAr" xml:space="preserve"><value>نمط الاسم (بالعربية)</value></data>
+  <data name="BulkClasses_NamePatternEn" xml:space="preserve"><value>نمط الاسم (بالإنجليزية)</value></data>
+  <data name="BulkClasses_CodePattern" xml:space="preserve"><value>نمط الرمز</value></data>
+  <data name="BulkClasses_PatternHelp" xml:space="preserve"><value>استخدم {N} مرة واحدة؛ يُستبدل بالرقم.</value></data>
+  <data name="BulkClasses_From" xml:space="preserve"><value>من الرقم</value></data>
+  <data name="BulkClasses_To" xml:space="preserve"><value>إلى الرقم</value></data>
+  <data name="BulkClasses_Preview" xml:space="preserve"><value>معاينة</value></data>
+  <data name="BulkClasses_Count" xml:space="preserve"><value>سيتم إنشاء {0} فصلًا.</value></data>
+  <data name="BulkClasses_Created" xml:space="preserve"><value>تم إنشاء {0} فصلًا.</value></data>
+  <data name="BulkClasses_PatternProblem" xml:space="preserve"><value>يجب أن يحتوي كل نمط من الأنماط الثلاثة على {N} مرة واحدة بالضبط.</value></data>
+  <data name="BulkClasses_RangeProblem" xml:space="preserve"><value>يجب ألا يقل الرقم الأخير عن الأول.</value></data>
+  <data name="BulkClasses_TooMany" xml:space="preserve"><value>يمكن إنشاء {0} فصلًا كحد أقصى دفعة واحدة.</value></data>
+  <data name="CopyClasses_Title" xml:space="preserve"><value>نسخ إلى عام آخر</value></data>
+  <data name="CopyClasses_SourceYear" xml:space="preserve"><value>النسخ من عام</value></data>
+  <data name="CopyClasses_TargetYear" xml:space="preserve"><value>النسخ إلى عام</value></data>
+  <data name="CopyClasses_IncludeCourses" xml:space="preserve"><value>نسخ مقررات كل فصل أيضًا</value></data>
+  <data name="CopyClasses_ReplaceFrom" xml:space="preserve"><value>استبدال النص</value></data>
+  <data name="CopyClasses_ReplaceTo" xml:space="preserve"><value>بـ</value></data>
+  <data name="CopyClasses_ReplaceHelp" xml:space="preserve"><value>اختياري، في الأسماء والرموز (مثلًا 2026 بـ 2027).</value></data>
+  <data name="CopyClasses_StudentsNote" xml:space="preserve"><value>لا يتم نسخ الطلاب أبدًا.</value></data>
+  <data name="CopyClasses_Copy" xml:space="preserve"><value>نسخ</value></data>
+  <data name="CopyClasses_Result" xml:space="preserve"><value>تم إنشاء {0} فصلًا في العام المستهدف.</value></data>
+  <data name="CopyClasses_Skipped" xml:space="preserve"><value>{0} فصلًا موجود مسبقًا في العام المستهدف وتم تخطيه:</value></data>
   <data name="Student_OverCapacityConfirm" xml:space="preserve"><value>هذا الفصل مكتمل. هل تريد وضع الطالب فيه على أي حال؟</value></data>
   <data name="Student_PlaceAnyway" xml:space="preserve"><value>وضع على أي حال</value></data>
   <data name="Student_Profile" xml:space="preserve"><value>الملف الشخصي</value></data>

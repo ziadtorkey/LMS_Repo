@@ -419,4 +419,18 @@ public sealed class CreateStudentPageTests : StudentsTestContext
         Assert.Equal("rtl", layout.Find("input[data-testid=student-name-ar]").GetAttribute("dir"));
         Assert.Equal("ltr", layout.Find("input[data-testid=student-name-en]").GetAttribute("dir"));
     }
+
+    [Fact]
+    public async Task A_role_without_Settings_View_can_still_create_a_student_with_default_settings()
+    {
+        Settings.Failure = new Lms.Client.Services.ApiForbiddenException();
+        var navigation = Services.GetRequiredService<Microsoft.AspNetCore.Components.NavigationManager>();
+        var before = navigation.Uri;
+        var page = await RenderPageAsync();
+
+        await ChooseUnitAsync(page);
+
+        page.WaitForElement("[data-testid=student-code-auto]", Wait); // the default: codes are generated
+        Assert.Equal(before, navigation.Uri); // not sent to /forbidden
+    }
 }

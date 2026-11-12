@@ -34,8 +34,11 @@ public sealed class StubSettingsApi : IConfigApi
 {
     public Dictionary<string, string> Values { get; } = [];
 
+    /// <summary>Set to make the strict settings read fail like a role without Settings.View (a forbidden GET).</summary>
+    public Exception? Failure { get; set; }
+
     public Task<IReadOnlyList<EffectiveSettingDto>> GetSettingsAsync(Guid unitId, CancellationToken ct = default) =>
-        Task.FromResult<IReadOnlyList<EffectiveSettingDto>>(SettingCatalog.All
+        Failure is not null ? Task.FromException<IReadOnlyList<EffectiveSettingDto>>(Failure) : Task.FromResult<IReadOnlyList<EffectiveSettingDto>>(SettingCatalog.All
             .Select(d => new EffectiveSettingDto(d.Name, Values.GetValueOrDefault(d.Name, d.DefaultJson), false, false, false, null, null, null)).ToList());
 
     public Task<IReadOnlyList<PolicyDefinitionDto>> GetPolicyCatalogAsync(CancellationToken ct = default) => throw new NotSupportedException();
