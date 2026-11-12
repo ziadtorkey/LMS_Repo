@@ -12,7 +12,11 @@
 
 @* Home cards of the wave 2 activities. Students: assignments still to hand in, quizzes open now. Graders: submissions waiting.
    Each row links to the activity's module. The lists are per class course, so the cards read the caller's class courses. *@
-@if (_loaded)
+@if (_loaded && _failed)
+{
+    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-4" data-testid="home-activity-error">@L["Home_ActivityError"]</MudAlert>
+}
+else if (_loaded)
 {
     <MudGrid Spacing="2" Class="mt-2" data-testid="home-activity-cards">
         @if (ShowDue)
@@ -91,7 +95,7 @@
 
     private readonly List<Row<CourseAssignmentListItemDto>> _due = [], _toGrade = [];
     private readonly List<Row<QuizListItemDto>> _quizzes = [];
-    private bool _loaded;
+    private bool _loaded, _failed;
 
     private bool Student => !PermState.Has(Permissions.CourseAssignments.Manage) && !PermState.Has(Permissions.Quizzes.Manage);
     private bool ShowDue => Student && PermState.Has(Permissions.CourseAssignments.View);
@@ -109,7 +113,8 @@
         var now = Clock.GetUtcNow().UtcDateTime;
         await ApiCalls.RunAsync(async () =>
         {
-            foreach (var course in await Plans.GetMyClassCoursesAsync())
+            // Optional read: a custom role may have activity permissions without LessonPlans.View (the list is then simply empty).
+            foreach (var course in await Plans.GetMyClassCoursesIfAllowedAsync())
             {
                 if (ShowDue || ShowGrade)
                 {
@@ -127,7 +132,7 @@
                             _quizzes.Add(new(course.Id, q));
                 }
             }
-        }, Navigation, L, _ => { });
+        }, Navigation, L, _ => _failed = true);
         _due.Sort((x, y) => (x.Item.DueAtUtc ?? DateTime.MaxValue).CompareTo(y.Item.DueAtUtc ?? DateTime.MaxValue));
         _due.RemoveRange(Math.Min(MaxRows, _due.Count), Math.Max(0, _due.Count - MaxRows));
         _toGrade.RemoveRange(Math.Min(MaxRows, _toGrade.Count), Math.Max(0, _toGrade.Count - MaxRows));

@@ -1128,4 +1128,5 @@
   <data name="Home_ToGrade" xml:space="preserve"><value>بانتظار التصحيح</value></data>
   <data name="Home_NothingToGrade" xml:space="preserve"><value>لا شيء بانتظار التصحيح.</value></data>
   <data name="Home_WaitingCount" xml:space="preserve"><value>{0} بالانتظار</value></data>
+  <data name="Home_ActivityError" xml:space="preserve"><value>تعذّر تحميل واجباتك واختباراتك. أعد تحميل الصفحة للمحاولة مرة أخرى.</value></data>
 </root>
