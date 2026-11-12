@@ -143,6 +143,28 @@ public sealed class MyCoursePageTests : LessonPlansTestContext
     }
 
     [Fact]
+    public async Task Forum_and_announcement_links_need_Forums_View()
+    {
+        PublishPlan();
+        await GrantAsync(Permissions.Modules.View, "Forums.View");
+        RenderProviders();
+        var page = Render<MyCoursePage>(p => p.Add(x => x.Id, Cc));
+        page.WaitForElement("[data-testid=learn-header]", Wait);
+
+        Assert.EndsWith($"class-courses/{Cc}/forum", page.Find("[data-testid=learn-forum]").GetAttribute("href"));
+        Assert.EndsWith($"class-courses/{Cc}/announcements", page.Find("[data-testid=learn-announcements]").GetAttribute("href"));
+    }
+
+    [Fact]
+    public async Task No_forum_links_without_Forums_View()
+    {
+        PublishPlan();
+        var page = await OpenAsync();
+
+        Assert.Empty(page.FindAll("[data-testid=learn-course-links]"));
+    }
+
+    [Fact]
     public async Task Without_Modules_View_the_page_is_forbidden()
     {
         await GrantAsync(Permissions.LessonPlans.View);

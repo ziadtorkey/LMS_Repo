@@ -827,4 +827,6 @@
   <data name="CompletionState_NotStarted" xml:space="preserve"><value>Not started</value></data>
   <data name="CompletionState_InProgress" xml:space="preserve"><value>In progress</value></data>
   <data name="CompletionState_Completed" xml:space="preserve"><value>Done</value></data>
+  <data name="ClassCourse_TabForum" xml:space="preserve"><value>Forum</value></data>
+  <data name="ClassCourse_TabAnnouncements" xml:space="preserve"><value>Announcements</value></data>
 </root>
