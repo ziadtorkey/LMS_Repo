@@ -6,6 +6,7 @@
 @using Lms.Shared.Authorization
 @using Lms.Shared.Classes
 @using Lms.Shared.Configuration
+@using Lms.Shared
 @using Lms.Shared.People
 @inject IStudentsApi Api
 @inject IClassesApi Classes
@@ -156,6 +157,7 @@ else
         _saving = true;
         StudentCreatedDto? created = null;
         var confirmDuplicate = false;
+        var confirmCapacity = false;
         var saved = await ApiCalls.RunAsync(
             async () =>
             {
@@ -163,10 +165,14 @@ else
                 {
                     created = await Api.CreateAsync(request);
                 }
-                catch (ApiProblemException ex) when (ex.Code == "possible_duplicate")
+                catch (ApiProblemException ex) when (ex.Code == ProblemCodes.possible_duplicate)
                 {
                     confirmDuplicate = true;
                     _duplicateCount = ex.Count;
+                }
+                catch (ApiProblemException ex) when (ex.Code == ProblemCodes.over_capacity)
+                {
+                    confirmCapacity = true;
                 }
             },
             Navigation, L, message => _error = message);
@@ -177,6 +183,13 @@ else
             var confirmed = await Dialogs.ShowMessageBoxAsync(L["Students_New"], _duplicateCount is { } n ? L["Student_PossibleDuplicate", n].Value : L["Error_possible_duplicate"].Value,
                 yesText: L["Student_CreateAnyway"], cancelText: L["Common_Cancel"]);
             if (confirmed == true) await CreateAsync(request with { ConfirmPossibleDuplicate = true });
+            return;
+        }
+        if (confirmCapacity)
+        {
+            var confirmed = await Dialogs.ShowMessageBoxAsync(L["Students_New"], L["Student_OverCapacityConfirm"].Value,
+                yesText: L["Student_PlaceAnyway"], cancelText: L["Common_Cancel"]);
+            if (confirmed == true) await CreateAsync(request with { ConfirmOverCapacity = true });
             return;
         }
         if (!saved || created is null) return;
