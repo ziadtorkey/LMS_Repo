@@ -8,7 +8,7 @@ public sealed class LibraryPage(IPage page)
     public ILocator Grid => page.GetByTestId("library-grid");
     public ILocator Empty => page.GetByTestId("library-empty");
     public ILocator New => page.GetByTestId("library-new");
-    public ILocator Search => page.GetByTestId("library-search").Locator("input");
+    public ILocator Search => page.GetByTestId("library-search");
 
     /// <summary>The card of the resource with this (English or Arabic) title.</summary>
     public ILocator Card(string title) => page.Locator("[data-testid^='library-card-']").Filter(new LocatorFilterOptions { HasText = title });
@@ -56,9 +56,12 @@ public sealed class LibraryResourceDialogPage(IPage page)
 {
     public ILocator Save => page.GetByTestId("library-save");
     public ILocator Error => page.GetByTestId("library-form-error");
-    public ILocator TitleAr => page.GetByTestId("library-title-ar").Locator("input");
-    public ILocator TitleEn => page.GetByTestId("library-title-en").Locator("input");
+    public ILocator TitleAr => page.GetByTestId("library-title-ar");
+    public ILocator TitleEn => page.GetByTestId("library-title-en");
     public ILocator Download => page.GetByTestId("library-form-download");
+
+    /// <summary>Turns the "allow download" switch off (it is on by default).</summary>
+    public Task TurnDownloadOffAsync() => Switches.SetAsync(Download, false);
     public ILocator FileInput => page.Locator("[data-testid='asset-input']").First;
 
     /// <summary>The unit picker lists the visible units as an indented tree; the first entry is the root (the school).</summary>

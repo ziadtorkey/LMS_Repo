@@ -3,6 +3,20 @@ using Microsoft.Playwright;
 namespace Lms.E2ETests.Pages;
 
 /// <summary>Types into a rich text editor (Quill) the way a user does; <paramref name="testId"/> is the editor's root test id.</summary>
+/// <summary>MudSwitch helpers: the test id may sit on the root or on the checkbox input, so the state is read from the input and the click goes to its label.</summary>
+internal static class Switches
+{
+    public static async Task SetAsync(ILocator toggle, bool on)
+    {
+        var input = toggle.Locator("xpath=descendant-or-self::input[@type='checkbox']");
+        if (await input.IsCheckedAsync() != on)
+        {
+            await toggle.Locator("xpath=ancestor-or-self::label").ClickAsync();
+            await Microsoft.Playwright.Assertions.Expect(input).ToBeCheckedAsync(new() { Checked = on });
+        }
+    }
+}
+
 internal static class Editors
 {
     public static async Task TypeAsync(IPage page, string testId, string text)
@@ -19,7 +33,7 @@ public sealed class ForumPage(IPage page)
     public ILocator Threads => page.GetByTestId("forum-threads");
     public ILocator Empty => page.GetByTestId("forum-empty");
     public ILocator NewThread => page.GetByTestId("forum-new");
-    public ILocator NewTitle => page.GetByTestId("forum-new-title").Locator("input");
+    public ILocator NewTitle => page.GetByTestId("forum-new-title");
     public ILocator NewError => page.GetByTestId("forum-form-error");
 
     /// <summary>The row of the thread with this title.</summary>
@@ -84,7 +98,7 @@ public sealed class ThreadPage(IPage page)
 public sealed class AnnouncementsPage(IPage page)
 {
     public ILocator Form => page.GetByTestId("announcement-form");
-    public ILocator Title => page.GetByTestId("announcement-title").Locator("input");
+    public ILocator Title => page.GetByTestId("announcement-title");
     public ILocator Pin => page.GetByTestId("announcement-pin");
     public ILocator Notify => page.GetByTestId("announcement-notify");
     public ILocator Send => page.GetByTestId("announcement-send");
@@ -107,18 +121,9 @@ public sealed class AnnouncementsPage(IPage page)
     {
         await Title.FillAsync(title);
         await Editors.TypeAsync(page, "announcement-editor", body);
-        await SetSwitchAsync(Pin, pin);
-        await SetSwitchAsync(Notify, notify);
+        await Switches.SetAsync(Pin, pin);
+        await Switches.SetAsync(Notify, notify);
         await Send.ClickAsync();
         await Item(title).WaitForAsync();
-    }
-
-    private static async Task SetSwitchAsync(ILocator toggle, bool on)
-    {
-        var input = toggle.Locator("input[type=checkbox]");
-        if (await input.IsCheckedAsync() != on)
-        {
-            await toggle.ClickAsync();
-        }
     }
 }

@@ -46,7 +46,7 @@ public sealed class LibraryAndForumTests(E2EFixture fixture) : E2ETestBase(fixtu
         await form.PickRootUnitAsync();
         await form.SetTitlesAsync(titleAr, title);
         await form.UploadFileAsync("book.pdf", "application/pdf", Pdf);
-        await form.Download.ClickAsync(); // on by default; this turns it off
+        await form.TurnDownloadOffAsync();
         await form.SaveAsync();
         await Expect(library.Card(shownTitle)).ToBeVisibleAsync();
         var resourceId = await ResourceIdAsync(library, shownTitle);
