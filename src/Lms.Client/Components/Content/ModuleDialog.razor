@@ -1,0 +1,135 @@
+@using Lms.Client.Components.Content.Kinds
+@using Lms.Client.Services.Api
+@using Lms.Shared
+@using Lms.Shared.Content
+@inject IModulesApi Modules
+@inject NavigationManager Navigation
+
+@* Adds a content module to a lesson, or edits one (the kind never changes). Common metadata above, the kind's body below. *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="2">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" data-testid="module-error">@_error</MudAlert>
+            }
+            <ModuleMetadataForm Model="_model" Groups="Groups" VisibilityError="_visibilityError" TargetError="_targetError" />
+
+            @switch (Kind)
+            {
+                case ModuleKinds.Page:
+                    @if (PageBody is not null)
+                    {
+                        @PageBody(_model)
+                    }
+                    else
+                    {
+                        <PageEditor Model="_model" />
+                    }
+                    break;
+                case ModuleKinds.Link:
+                    <LinkEditor Model="_model" />
+                    break;
+                case ModuleKinds.File or ModuleKinds.Video or ModuleKinds.Audio:
+                    <AssetEditor Model="_model" ClassCourseId="ClassCourseId" Kind="@Kind" />
+                    break;
+            }
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()">@L["Common_Cancel"]</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_saving"
+                   data-testid="module-save">@L["Common_Save"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private ModuleFormModel _model = new();
+    private string? _error, _visibilityError, _targetError;
+    private bool _saving;
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter, EditorRequired] public Guid ClassCourseId { get; set; }
+    [Parameter, EditorRequired] public Guid LessonKey { get; set; }
+    [Parameter, EditorRequired] public string Kind { get; set; } = ModuleKinds.Page;
+    [Parameter] public ModuleDetailDto? Existing { get; set; }
+    [Parameter] public IReadOnlyList<ModuleGroupOption> Groups { get; set; } = [];
+    /// <summary>Replaces the plain HTML fields of a Page module (the rich text editor plugs in here).</summary>
+    [Parameter] public RenderFragment<ModuleFormModel>? PageBody { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (Existing is not null) _model = ModuleFormModel.From(Existing);
+    }
+
+    private bool Validate()
+    {
+        _error = _visibilityError = _targetError = null;
+        if (string.IsNullOrWhiteSpace(_model.TitleAr) || string.IsNullOrWhiteSpace(_model.TitleEn))
+        {
+            _error = L["Common_Required"];
+            return false;
+        }
+        if (_model.Visibility == ModuleVisibilities.Scheduled)
+        {
+            var (from, to) = (_model.FromUtc, _model.ToUtcValue);
+            if ((from is null && to is null) || (from is { } f && to is { } t && f >= t))
+            {
+                _visibilityError = L["Error_module_visibility_range_invalid"];
+                return false;
+            }
+        }
+        if (Kind == ModuleKinds.Link && !ModuleLinks.IsAllowed(_model.Url))
+        {
+            _error = L["Module_UrlInvalid"];
+            return false;
+        }
+        if (_model.Target == ModuleTargets.Group && _model.GroupId is null)
+        {
+            _targetError = L["Error_module_target_invalid"];
+            return false;
+        }
+        return true;
+    }
+
+    private async Task SaveAsync()
+    {
+        if (!Validate()) return;
+        _saving = true;
+        try
+        {
+            var from = _model.Visibility == ModuleVisibilities.Scheduled ? _model.FromUtc : null;
+            var to = _model.Visibility == ModuleVisibilities.Scheduled ? _model.ToUtcValue : null;
+            var title = (_model.TitleAr.Trim(), _model.TitleEn.Trim());
+            ModuleDetailDto saved = Existing is null
+                ? await Modules.CreateAsync(ClassCourseId, LessonKey, new CreateModuleRequest(Kind, title.Item1, title.Item2, _model.Visibility,
+                    from, to, _model.Target, _model.GroupId, _model.CompletionRule, null, _model.ToContent()))
+                : await Modules.UpdateAsync(Existing.Node.Id, new UpdateModuleRequest(title.Item1, title.Item2, _model.Visibility,
+                    from, to, _model.Target, _model.GroupId, _model.CompletionRule, Existing.CompletionMinScore, _model.ToContent()));
+            MudDialog.Close(DialogResult.Ok(saved));
+        }
+        catch (Exception ex) when (ApiCalls.TryRedirect(ex, Navigation))
+        {
+        }
+        catch (ApiProblemException ex) when (ex.Code == ProblemCodes.module_visibility_range_invalid)
+        {
+            _visibilityError = L["Error_module_visibility_range_invalid"];
+        }
+        catch (ApiProblemException ex) when (ex.Code == ProblemCodes.module_target_invalid)
+        {
+            _targetError = L["Error_module_target_invalid"];
+        }
+        catch (ApiProblemException ex)
+        {
+            _error = ProblemText.For(ex, L);
+        }
+        catch (HttpRequestException)
+        {
+            _error = L["Error_Generic"];
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+}
