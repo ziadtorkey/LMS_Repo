@@ -91,8 +91,11 @@ public sealed class FakeMeetingProvider : IMeetingProvider
         return Task.CompletedTask;
     }
 
-    public Task<IReadOnlyList<MeetingParticipant>> GetParticipantsAsync(string externalMeetingId, CancellationToken ct = default) =>
-        Task.FromResult<IReadOnlyList<MeetingParticipant>>(ParticipantsOf.TryGetValue(externalMeetingId, out var list) ? [.. list] : []);
+    public Task<IReadOnlyList<MeetingParticipant>> GetParticipantsAsync(string externalMeetingId, CancellationToken ct = default)
+    {
+        ThrowIfFailing();
+        return Task.FromResult<IReadOnlyList<MeetingParticipant>>(ParticipantsOf.TryGetValue(externalMeetingId, out var list) ? [.. list] : []);
+    }
 
     public Task<IReadOnlyList<MeetingRecording>> GetRecordingsAsync(string externalMeetingId, CancellationToken ct = default) =>
         Task.FromResult<IReadOnlyList<MeetingRecording>>([]);

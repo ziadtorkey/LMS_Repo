@@ -39,6 +39,7 @@ internal sealed class LiveSessionConfiguration : IEntityTypeConfiguration<LiveSe
         builder.Property(x => x.RecordingSource).HasMaxLength(20);
         builder.Property(x => x.StartsAtUtc).HasPrecision(6);
         builder.Property(x => x.ReminderSentAtUtc).HasPrecision(6);
+        builder.Property(x => x.ParticipantsImportedAtUtc).HasPrecision(6);
         builder.Ignore(x => x.EndsAtUtc);
         builder.HasIndex(x => new { x.ClassCourseId, x.StartsAtUtc });
         builder.HasIndex(x => x.ExternalMeetingId);

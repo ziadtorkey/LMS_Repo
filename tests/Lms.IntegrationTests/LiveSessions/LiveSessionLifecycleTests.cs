@@ -30,12 +30,14 @@ public sealed class LiveSessionLifecycleTests : IDisposable
     {
         public ConcurrentQueue<(Guid SessionId, IReadOnlyList<AttendanceParticipant> Participants)> Calls { get; } = new();
 
+        public bool Throw { get; set; }
+
         public Task SessionEndedAsync(
             Guid sessionId, Guid classCourseId, DateTime startsAtUtc, DateTime endsAtUtc, IReadOnlyList<AttendanceParticipant> participants,
             CancellationToken ct = default)
         {
             Calls.Enqueue((sessionId, participants));
-            return Task.CompletedTask;
+            return Throw ? throw new InvalidOperationException("attendance is down") : Task.CompletedTask;
         }
     }
 
@@ -308,6 +310,44 @@ public sealed class LiveSessionLifecycleTests : IDisposable
         Assert.Equal(w.StudentProfileId, participant.StudentId);
         var read = await (await _t.SendAsync(w.Teacher, HttpMethod.Get, Routes.LiveSession(session.Id))).Content.ReadFromJsonAsync<LiveSessionDto>();
         Assert.Equal(LiveSessionStatuses.Ended, read!.Status);
+    }
+
+    [Fact]
+    public async Task The_participant_import_is_marked_when_it_worked_and_left_unmarked_when_the_provider_failed()
+    {
+        var w = await SetUpAsync("LL12");
+        var ok = Assert.Single(await CreateAsync(_t, w.Teacher, w, Single("Ok", DateTime.UtcNow.AddMinutes(-20))));
+        var failed = Assert.Single(await CreateAsync(_t, w.Teacher, w, Single("Failed", DateTime.UtcNow.AddMinutes(-20))));
+
+        Assert.True(await EndAsync(ok.Id)); // nobody attended: an empty list is still a successful import
+        Provider(_t).FailNext(1);
+        Assert.True(await EndAsync(failed.Id));
+
+        await using var db = _factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        var okRow = await db.Set<LiveSession>().SingleAsync(s => s.Id == ok.Id);
+        var failedRow = await db.Set<LiveSession>().SingleAsync(s => s.Id == failed.Id);
+        Assert.NotNull(okRow.ParticipantsImportedAtUtc);
+        Assert.Equal(LiveSessionStatuses.Ended, okRow.Status);
+        Assert.Null(failedRow.ParticipantsImportedAtUtc); // attendance must not read this as "everyone was absent"
+        Assert.Equal(LiveSessionStatuses.Ended, failedRow.Status);
+        Assert.Equal(2, _sink.Calls.Count); // the seam is told either way; the marker says whether the data is complete
+    }
+
+    [Fact]
+    public async Task A_failing_attendance_sink_never_breaks_the_lifecycle()
+    {
+        var w = await SetUpAsync("LL13");
+        var session = Assert.Single(await CreateAsync(_t, w.Teacher, w, Single("Sink", DateTime.UtcNow.AddMinutes(-20))));
+        _sink.Throw = true;
+
+        var ended = await EndAsync(session.Id); // no exception reaches the caller (the webhook)
+
+        Assert.True(ended);
+        Assert.Single(_sink.Calls); // it was called once
+        var read = await (await _t.SendAsync(w.Teacher, HttpMethod.Get, Routes.LiveSession(session.Id))).Content.ReadFromJsonAsync<LiveSessionDto>();
+        Assert.Equal(LiveSessionStatuses.Ended, read!.Status);
+        Assert.False(await EndAsync(session.Id)); // already ended: the sink is not called again
+        Assert.Single(_sink.Calls);
     }
 
     [Fact]
