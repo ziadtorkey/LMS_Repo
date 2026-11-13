@@ -1,0 +1,16 @@
+@using Lms.Client.Components.Content
+@* Body of a Link module: an absolute http/https address; anything else (javascript:, data:, relative) is refused on the spot. *@
+<MudTextField T="string" Value="@Model.Url" ValueChanged="OnChanged" Label="@L["Module_Url"]" MaxLength="2000" InputType="InputType.Url"
+              Immediate="true" Error="@(_error is not null)" ErrorText="@_error" dir="ltr" data-testid="module-url" />
+
+@code {
+    private string? _error;
+
+    [Parameter, EditorRequired] public ModuleFormModel Model { get; set; } = default!;
+
+    private void OnChanged(string value)
+    {
+        Model.Url = value;
+        _error = string.IsNullOrWhiteSpace(value) || ModuleLinks.IsAllowed(value) ? null : L["Module_UrlInvalid"].Value;
+    }
+}

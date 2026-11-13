@@ -1,3 +1,4 @@
+using Lms.Api.Features.Students.SelfService;
 using Lms.Api.Infrastructure;
 
 namespace Lms.Api.Features.Students;
@@ -11,7 +12,17 @@ public sealed class StudentsModule : ILmsModule
         services.AddScoped<StudentQueries>();
         services.AddScoped<CreateStudentHandler>();
         services.AddScoped<StudentLifecycleHandler>();
+        services.AddScoped<StudentChangeApplier>();
+        services.AddScoped<ChangeRequestMapper>();
+        services.AddScoped<ChangeRequestNotifier>();
+        services.AddScoped<MyStudentProfileHandler>();
+        services.AddScoped<MyChangeRequestsHandler>();
+        services.AddScoped<ChangeRequestDecisionHandler>();
     }
 
-    public void MapEndpoints(IEndpointRouteBuilder app) => StudentEndpoints.Map(app);
+    public void MapEndpoints(IEndpointRouteBuilder app)
+    {
+        StudentEndpoints.Map(app);
+        SelfServiceEndpoints.Map(app);
+    }
 }

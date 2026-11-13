@@ -1,0 +1,20 @@
+@using Lms.Shared.Authorization
+@inject PermissionState PermState
+
+@* Plan · Forum · Announcements of one class course. The plan is always there; the other two need Forums.View. *@
+<MudStack Row="true" Spacing="1" Class="mb-3" role="navigation" aria-label="@L["ClassCourse_Sections"]" data-testid="class-course-tabs">
+    <MudButton Href="@($"class-courses/{ClassCourseId}/plan")" Variant="@VariantOf("plan")" data-testid="tab-plan">@L["ClassCourse_TabPlan"]</MudButton>
+    @if (PermState.Has(Permissions.Forums.View))
+    {
+        <MudButton Href="@($"class-courses/{ClassCourseId}/forum")" Variant="@VariantOf("forum")" data-testid="tab-forum">@L["ClassCourse_TabForum"]</MudButton>
+        <MudButton Href="@($"class-courses/{ClassCourseId}/announcements")" Variant="@VariantOf("announcements")" data-testid="tab-announcements">@L["ClassCourse_TabAnnouncements"]</MudButton>
+    }
+</MudStack>
+
+@code {
+    [Parameter, EditorRequired] public Guid ClassCourseId { get; set; }
+    /// <summary>"plan", "forum" or "announcements".</summary>
+    [Parameter, EditorRequired] public string Active { get; set; } = "plan";
+
+    private Variant VariantOf(string tab) => tab == Active ? Variant.Filled : Variant.Text;
+}

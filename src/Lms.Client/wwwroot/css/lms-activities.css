@@ -1,0 +1,125 @@
+/* LMS presentation classes for live sessions and packages (M4b).
+   Spec: docs/design/m4b-live-and-packages.md §6, mockups: docs/design/mockups/m4b.html.
+   Owned by the UI/UX designer (lane:ux). Logical properties and palette variables only (ActivitiesStylesheetTests). */
+
+/* ---------- Live session status: the pulsing dot of "Live now" ---------- */
+.lms-live-dot { display: inline-block; inline-size: 8px; block-size: 8px; border-radius: 50%; background: currentColor; animation: lms-live-pulse 2s ease-in-out infinite; }
+@keyframes lms-live-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) { .lms-live-dot { animation: none; } }
+.lms-live-status { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 2px; min-inline-size: 0; }
+.lms-live-status .lms-live-dot { margin-inline-end: 6px; }
+.lms-live-status-hint { max-inline-size: 34ch; }
+
+/* ---------- Two-line date/time cell (date strong, time range muted), always left to right ---------- */
+.lms-when { display: flex; flex-direction: column; direction: ltr; text-align: start; white-space: nowrap; }
+[dir="rtl"] .lms-when { text-align: end; }
+.lms-when .lms-when-date { font-weight: 500; }
+.lms-when .lms-when-time { color: var(--mud-palette-text-secondary); font-size: .8125rem; }
+
+/* ---------- Host hint: where an external link goes (zoom.us, drive.google.com) ---------- */
+.lms-host-hint {
+    display: inline-flex; align-items: center; gap: 4px; direction: ltr; padding: 1px 6px; border-radius: 4px;
+    background: var(--mud-palette-background-gray); color: var(--mud-palette-text-secondary); font-size: .75rem; font-weight: 500;
+}
+
+/* ---------- Schedule dialog: recurrence preview and day toggles ---------- */
+.lms-recurrence-preview { margin-block-start: 12px; padding: 12px 16px; border-radius: var(--lms-radius-control); background: var(--mud-palette-background-gray); }
+.lms-recurrence-preview-count { font-weight: 600; }
+.lms-recurrence-preview-count.lms-invalid { color: var(--mud-palette-error); }
+.lms-recurrence-preview ul { list-style: none; margin: 8px 0 0; padding: 0; display: grid; grid-template-columns: 1fr; gap: 4px 24px; font-size: .875rem; direction: ltr; }
+[dir="rtl"] .lms-recurrence-preview ul { text-align: end; }
+@media (min-width: 600px) { .lms-recurrence-preview ul { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.lms-day-toggles { display: flex; flex-wrap: wrap; gap: 6px; }
+.lms-day-toggles .mud-button-root {
+    min-inline-size: 44px; block-size: 32px; padding-inline: 8px; border-radius: 16px;
+    border: 1px solid var(--mud-palette-lines-inputs); color: var(--mud-palette-text-primary); font-size: .8125rem;
+}
+.lms-day-toggles .mud-button-root[aria-pressed="true"] {
+    background: var(--mud-palette-primary); border-color: var(--mud-palette-primary); color: var(--mud-palette-primary-text);
+}
+
+/* ---------- A clickable radio row with a label and a caption (series scope) ---------- */
+.lms-choice { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border: 1px solid var(--mud-palette-lines-default); border-radius: var(--lms-radius-control); cursor: pointer; }
+.lms-choice + .lms-choice { margin-block-start: 8px; }
+.lms-choice.lms-choice-on { border-color: var(--mud-palette-primary); background: var(--lms-tint-primary); }
+.lms-choice:focus-within { box-shadow: var(--lms-focus); }
+
+/* ---------- Kind tile (live session, package) and date block (Home rows) ---------- */
+.lms-kind-tile { flex: none; inline-size: 40px; block-size: 40px; border-radius: 10px; display: grid; place-items: center; color: var(--mud-palette-primary); background: var(--lms-tint-primary); }
+.lms-date-block {
+    flex: none; inline-size: 44px; block-size: 44px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    line-height: 1.05; color: var(--mud-palette-primary); background: var(--lms-tint-primary);
+}
+.lms-date-block-day { font-size: 1.0625rem; font-weight: 700; }
+.lms-date-block-month { font-size: .6875rem; font-weight: 600; }
+
+/* ---------- Join panel: the state of a live session and its one action ---------- */
+.lms-join-panel {
+    margin-block-start: 16px; padding: 16px; border-radius: var(--lms-radius-control); background: var(--mud-palette-background-gray);
+    display: flex; flex-direction: column; align-items: flex-start; gap: 10px;
+}
+.lms-join-panel > .mud-alert { inline-size: 100%; }
+
+/* ---------- Package upload: numbered steps, drop zone, file row ---------- */
+.lms-steps { list-style: none; margin: 0 0 18px; padding: 0; display: flex; align-items: center; gap: 8px; }
+.lms-steps li { display: flex; align-items: center; gap: 8px; font-size: .84375rem; color: var(--mud-palette-text-secondary); }
+.lms-steps li + li::before { content: ""; inline-size: 28px; block-size: 1px; background: var(--mud-palette-lines-inputs); }
+.lms-step-number {
+    inline-size: 24px; block-size: 24px; border-radius: 50%; display: grid; place-items: center; font-size: .75rem; font-weight: 600;
+    border: 1px solid var(--mud-palette-lines-inputs);
+}
+.lms-steps .lms-step-done .lms-step-number { background: var(--mud-palette-primary); border-color: var(--mud-palette-primary); color: var(--mud-palette-primary-text); }
+.lms-steps [aria-current="step"] { color: var(--mud-palette-text-primary); font-weight: 600; }
+.lms-steps [aria-current="step"] .lms-step-number { border: 2px solid var(--mud-palette-primary); color: var(--mud-palette-primary); }
+.lms-steps .lms-step-failed { color: var(--mud-palette-error); font-weight: 600; }
+.lms-steps .lms-step-failed .lms-step-number { background: var(--mud-palette-error); border-color: var(--mud-palette-error); color: var(--mud-palette-error-text); }
+.lms-step-of { display: none; }
+@media (max-width: 599.98px) {
+    .lms-steps li + li::before { inline-size: 12px; }
+    .lms-step-label { display: none; }
+    .lms-steps [aria-current="step"] .lms-step-label, .lms-steps .lms-step-failed .lms-step-label { display: inline; white-space: nowrap; }
+    .lms-step-of { display: inline; }
+}
+
+.lms-dropzone {
+    border: 1px dashed var(--mud-palette-lines-inputs); border-radius: var(--lms-radius-surface); padding: 24px;
+    display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center;
+}
+.lms-dropzone.lms-dropzone-active { border-color: var(--mud-palette-primary); background: var(--lms-tint-primary); }
+.lms-dropzone .mud-icon-root { color: var(--mud-palette-text-secondary); }
+
+.lms-file-row { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--mud-palette-lines-default); border-radius: var(--lms-radius-control); }
+.lms-file-row-main { flex: 1; min-inline-size: 0; }
+.lms-file-row-name { direction: ltr; text-align: start; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; font-size: .875rem; }
+[dir="rtl"] .lms-file-row-name { text-align: end; }
+
+/* ---------- Package player: container, toolbar outside the frame, frame, overlay, preview strip, save state ---------- */
+.lms-player { position: relative; border: 1px solid var(--mud-palette-lines-default); border-radius: var(--lms-radius-surface); overflow: hidden; background: var(--mud-palette-surface); }
+.lms-player:fullscreen { border-radius: 0; display: flex; flex-direction: column; }
+.lms-player:fullscreen .lms-player-stage { flex: 1; display: flex; }
+.lms-player:fullscreen .lms-player-frame { flex: 1; }
+.lms-preview-strip {
+    display: flex; align-items: center; gap: 8px; padding: 8px 16px; font-size: .84375rem; font-weight: 500;
+    color: var(--mud-palette-info); background: color-mix(in srgb, var(--mud-palette-info) 12%, transparent);
+}
+.lms-player-bar { min-block-size: 48px; display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; padding-block: 4px; padding-inline: 16px 8px; border-block-end: 1px solid var(--mud-palette-lines-default); }
+.lms-player-title { flex: 1; min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; font-size: .875rem; }
+/* The stage holds the frame and its overlay, so the overlay never covers the toolbar or the preview strip. */
+.lms-player-stage { position: relative; }
+/* The frame is white in both themes: packages are authored for a light page. */
+.lms-player-frame { display: block; inline-size: 100%; min-block-size: 70vh; border: 0; background: #FFFFFF; }
+.lms-player-overlay {
+    position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center;
+    background: color-mix(in srgb, var(--mud-palette-surface) 94%, transparent);
+}
+.lms-player-overlay > * { max-inline-size: 44ch; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+
+.lms-save-state { display: inline-flex; align-items: center; gap: 6px; font-size: .8125rem; color: var(--mud-palette-text-secondary); white-space: nowrap; }
+.lms-save-state.lms-save-failed { color: var(--mud-palette-error); }
+
+@media (max-width: 599.98px) {
+    .lms-player-title { display: none; }
+    .lms-player-bar { justify-content: flex-end; }
+    .lms-player-bar .lms-save-state { margin-inline-end: auto; white-space: normal; min-inline-size: 0; font-size: .75rem; }
+}

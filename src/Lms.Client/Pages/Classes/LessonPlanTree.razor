@@ -1,3 +1,4 @@
+@using Lms.Client.Components.Content
 @using Lms.Client.Services
 @using Lms.Shared.Classes
 @inject ICultureService Culture
@@ -44,6 +45,32 @@
                         {
                             <MudText Typo="Typo.body2" Class="mud-text-secondary">@objectives</MudText>
                         }
+                        <ProgressBar Progress="les.Progress" Label="@L["LessonPlan_LessonProgress"]" TestId="@($"lesson-progress-{les.Key}")" />
+                        @if (les.Modules is { Count: > 0 } modules)
+                        {
+                            var ordered = modules.OrderBy(m => m.Order).ToList();
+                            <MudStack Spacing="1" Class="lms-plan-modules" data-testid="@($"plan-modules-{les.Key}")">
+                                @foreach (var module in ordered)
+                                {
+                                    <div class="lms-module-row" @key="module.Id">
+                                        <ModuleNode Node="module" Staff="Staff" />
+                                        @if (Staff)
+                                        {
+                                            <ModuleOrderControls ClassCourseId="Plan.ClassCourseId" LessonKey="les.Key" Module="module" Siblings="ordered"
+                                                                 OtherLessons="OtherLessons(les.Key)" Groups="Groups" ReadOnly="@(les.IsHidden || sec.IsHidden)"
+                                                                 OnChanged="OnChanged" />
+                                        }
+                                    </div>
+                                }
+                            </MudStack>
+                        }
+                        @if (Staff)
+                        {
+                            <div class="lms-plan-add">
+                                <AddModuleMenu ClassCourseId="Plan.ClassCourseId" LessonKey="les.Key" Groups="Groups" ReadOnly="@(les.IsHidden || sec.IsHidden)"
+                                               OnAdded="_ => OnChanged.InvokeAsync()" />
+                            </div>
+                        }
                     </div>
                 }
             </MudStack>
@@ -54,6 +81,21 @@
 @code {
     [Parameter, EditorRequired] public ClassLessonPlanDto Plan { get; set; } = default!;
     [Parameter] public bool ShowHijri { get; set; }
+
+    /// <summary>Staff view (no student progress): modules show visibility and target chips instead of a completion state.</summary>
+    [Parameter] public bool Staff { get; set; }
+
+    /// <summary>Groups of the class course a module can be targeted at (the host supplies them).</summary>
+    [Parameter] public IReadOnlyList<ModuleGroupOption> Groups { get; set; } = [];
+
+    /// <summary>Something changed on the server (module added, edited, moved, deleted): the host reloads the plan.</summary>
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    /// <summary>The other lessons of the plan a module can move to (hidden ones are history only).</summary>
+    private IReadOnlyList<ModuleLessonOption> OtherLessons(Guid lessonKey) =>
+        Plan.Sections.Where(s => !s.IsHidden).OrderBy(s => s.Order)
+            .SelectMany(s => s.Lessons.Where(l => !l.IsHidden && l.Key != lessonKey).OrderBy(l => l.Order))
+            .Select(l => new ModuleLessonOption(l.Key, Culture.Pick(l.TitleAr, l.TitleEn))).ToList();
 
     /// <summary>Short date in the UI culture; the bidi marks Arabic patterns carry are dropped because the span is laid out left to right.</summary>
     private static string FormatDate(DateOnly date) =>

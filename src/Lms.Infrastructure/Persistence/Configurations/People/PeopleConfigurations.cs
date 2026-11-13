@@ -117,3 +117,22 @@ internal sealed class PersonStatusChangeConfiguration : IEntityTypeConfiguration
         builder.HasOne<OrgUnit>().WithMany().HasForeignKey(x => x.OrgUnitId).OnDelete(DeleteBehavior.Restrict);
     }
 }
+
+internal sealed class StudentChangeRequestConfiguration : IEntityTypeConfiguration<StudentChangeRequest>
+{
+    public void Configure(EntityTypeBuilder<StudentChangeRequest> builder)
+    {
+        builder.ToTable("StudentChangeRequests");
+        builder.Property(x => x.OrgUnitPath).HasColumnType(PeopleColumns.AsciiPath).IsRequired();
+        builder.Property(x => x.ChangesJson).HasColumnType("json").IsRequired();
+        builder.Property(x => x.Note).HasMaxLength(1000);
+        builder.Property(x => x.Status).HasConversion<string>().HasMaxLength(20);
+        builder.Property(x => x.DecisionComment).HasMaxLength(1000);
+        builder.HasIndex(x => new { x.OrganizationId, x.OrgUnitPath, x.Status });
+        builder.HasIndex(x => x.StudentId);
+        // One pending request per student, also under concurrency (PendingStudentId is null once decided).
+        builder.HasIndex(x => x.PendingStudentId).IsUnique();
+        builder.HasOne<StudentProfile>().WithMany().HasForeignKey(x => x.StudentId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<OrgUnit>().WithMany().HasForeignKey(x => x.OrgUnitId).OnDelete(DeleteBehavior.Restrict);
+    }
+}
