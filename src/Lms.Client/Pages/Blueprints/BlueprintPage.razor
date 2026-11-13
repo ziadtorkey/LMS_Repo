@@ -1,0 +1,308 @@
+@page "/courses/{Id:guid}/blueprint"
+@attribute [Authorize]
+@using System.Text.Json
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Shared.Authorization
+@using Lms.Shared.Blueprints
+@using Lms.Shared.Configuration
+@using Lms.Shared.Courses
+@inject IBlueprintsApi Api
+@inject ICoursesApi Courses
+@inject IConfigApi Config
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<PageTitle>@L["Blueprint_Title"]</PageTitle>
+<NavigationLock OnBeforeInternalNavigation="OnLeavingAsync" ConfirmExternalNavigation="@(_editing && _model.IsDirty)" />
+
+@if (_error is not null)
+{
+    <MudAlert Severity="Severity.Error" data-testid="blueprint-error">@_error</MudAlert>
+}
+else if (_course is null)
+{
+    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+}
+else
+{
+    <MudStack Spacing="3">
+        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+            <div>
+                <MudText Typo="Typo.h4" data-testid="blueprint-title">@L["Blueprint_Title"]</MudText>
+                <MudText Typo="Typo.body2">
+                    <MudLink Href="@($"courses/{Id}")">@Culture.Pick(_course.Summary.NameAr, _course.Summary.NameEn)</MudLink>
+                    · <span data-testid="blueprint-status">@StatusText</span>
+                </MudText>
+            </div>
+            <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap">
+                @if (_editing)
+                {
+                    <MudButton Variant="Variant.Outlined" OnClick="CopyAsync" data-testid="blueprint-copy">@L["Blueprint_Copy"]</MudButton>
+                    <MudButton Variant="Variant.Outlined" OnClick="DiscardAsync" data-testid="blueprint-discard">@L["Blueprint_Discard"]</MudButton>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_busy || !_model.IsDirty"
+                               data-testid="blueprint-save">@L["Common_Save"]</MudButton>
+                    @if (PermState.Has(Permissions.Blueprints.Publish))
+                    {
+                        <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="PublishAsync" Disabled="_busy || _model.IsDirty || _model.Sections.Count == 0"
+                                   data-testid="blueprint-publish">@L["Blueprint_Publish"]</MudButton>
+                    }
+                }
+                else if (CanEdit)
+                {
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="EditDraftAsync" Disabled="_busy"
+                               data-testid="blueprint-edit">@L["Blueprint_EditDraft"]</MudButton>
+                }
+            </MudStack>
+        </MudStack>
+
+        @if (_stale)
+        {
+            <MudAlert Severity="Severity.Warning" data-testid="blueprint-stale">
+                @L["Blueprint_Stale"]
+                <MudButton Size="Size.Small" Variant="Variant.Filled" OnClick="ReloadDraftAsync" data-testid="blueprint-reload">@L["Blueprint_Reload"]</MudButton>
+            </MudAlert>
+        }
+        @if (_message is not null)
+        {
+            <MudAlert Severity="Severity.Info" data-testid="blueprint-message">@_message</MudAlert>
+        }
+        @if (_editing && _model.IsDirty)
+        {
+            <MudAlert Severity="Severity.Normal" data-testid="blueprint-unsaved">@L["Blueprint_Unsaved"]</MudAlert>
+        }
+        @if (_validation is not null)
+        {
+            <MudAlert Severity="Severity.Warning" data-testid="blueprint-validation">@_validation</MudAlert>
+        }
+
+        @if (!_editing && _shown is null)
+        {
+            <MudText data-testid="blueprint-none">@L["Blueprint_NoPublished"]</MudText>
+        }
+        else
+        {
+            <BlueprintTree Model="_model" ReadOnly="!_editing" SectionLabel="@_sectionLabel" OnChanged="() => InvokeAsync(StateHasChanged)" />
+        }
+
+        <MudText Typo="Typo.h6">@L["Blueprint_Versions"]</MudText>
+        <MudSimpleTable Dense="true" data-testid="blueprint-versions">
+            <tbody>
+                @foreach (var v in _versions)
+                {
+                    <tr>
+                        <td>@(v.Version == 0 ? L["BlueprintStatus_Draft"].Value : L["Blueprint_VersionN", v.Version].Value)</td>
+                        <td>@L[$"BlueprintStatus_{v.Status}"]</td>
+                        <td>@(v.PublishedAt?.ToLocalTime().ToString("yyyy-MM-dd HH:mm", System.Globalization.CultureInfo.InvariantCulture))</td>
+                        <td>@L["Blueprint_Counts", v.SectionCount, v.LessonCount]</td>
+                        <td>
+                            @if (v.Version > 0)
+                            {
+                                <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="() => ViewVersionAsync(v.Version)"
+                                           data-testid="@($"version-view-{v.Version}")">@L["Blueprint_View"]</MudButton>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </MudSimpleTable>
+    </MudStack>
+}
+
+@code {
+    private CourseDetailDto? _course;
+    private BlueprintModel _model = new();
+    private BlueprintSummaryDto? _shown;
+    private IReadOnlyList<BlueprintSummaryDto> _versions = [];
+    private string _sectionLabel = "Week";
+    private string? _error, _message, _validation;
+    private bool _editing, _busy, _stale;
+
+    [Parameter] public Guid Id { get; set; }
+
+    private bool CanEdit => _course is { CanEdit: true } && PermState.Has(Permissions.Blueprints.Edit);
+
+    private string StatusText => _editing ? L["Blueprint_EditingDraft"].Value
+        : _shown is null ? L["Blueprint_NoPublished"].Value : L["Blueprint_ViewingVersion", _shown.Version].Value;
+
+    protected override async Task OnInitializedAsync()
+    {
+        PermState.Changed += OnPermissionsChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+    }
+
+    protected override Task OnParametersSetAsync() => LoadAsync();
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => PermState.Changed -= OnPermissionsChanged;
+
+    private async Task LoadAsync()
+    {
+        _error = _message = _validation = null;
+        _stale = _editing = false;
+        await ApiCalls.RunAsync(async () =>
+        {
+            _course = await Courses.GetAsync(Id);
+            await LoadSectionLabelAsync();
+            await LoadVersionsAsync();
+            var latest = _versions.Where(v => v.Status == BlueprintStatuses.Published).OrderByDescending(v => v.Version).FirstOrDefault();
+            if (latest is null)
+            {
+                _shown = null;
+                _model = new BlueprintModel();
+            }
+            else await ShowVersionAsync(latest.Version);
+        }, Navigation, L, message => _error = message);
+    }
+
+    // The label is a convenience: without permission to read settings the default (Week) is used.
+    private async Task LoadSectionLabelAsync() =>
+        await ApiCalls.RunAsync(async () =>
+        {
+            var settings = await Config.GetSettingsAsync(_course!.Summary.OwnerOrgUnitId);
+            if (settings.FirstOrDefault(s => s.Name == SettingKeys.BlueprintsSectionLabel.Name) is { } s
+                && JsonSerializer.Deserialize<string>(s.ValueJson) is { Length: > 0 } label)
+                _sectionLabel = label;
+        }, Navigation, L, _ => { });
+
+    private async Task LoadVersionsAsync() => _versions = await Api.ListVersionsAsync(Id);
+
+    private async Task ShowVersionAsync(int version)
+    {
+        var dto = await Api.GetVersionAsync(Id, version);
+        _shown = dto.Summary;
+        _model = BlueprintModel.From(dto);
+    }
+
+    private async Task ViewVersionAsync(int version)
+    {
+        if (_editing && _model.IsDirty && !await ConfirmLeaveAsync()) return;
+        _editing = false;
+        _validation = null;
+        await ApiCalls.RunAsync(() => ShowVersionAsync(version), Navigation, L, message => _error = message);
+    }
+
+    private async Task EditDraftAsync()
+    {
+        _busy = true;
+        _validation = null;
+        await ApiCalls.RunAsync(async () =>
+        {
+            var draft = await Api.GetDraftAsync(Id) ?? await Api.CreateDraftAsync(Id);
+            _model = BlueprintModel.From(draft);
+            _editing = true;
+            await LoadVersionsAsync();
+        }, Navigation, L, message => _error = message);
+        _busy = false;
+    }
+
+    private async Task ReloadDraftAsync()
+    {
+        _stale = false;
+        await EditDraftAsync();
+    }
+
+    private async Task DiscardAsync()
+    {
+        if (_model.IsDirty && !await ConfirmLeaveAsync()) return;
+        await LoadAsync();
+    }
+
+    private async Task SaveAsync()
+    {
+        _validation = null;
+        if (!_model.IsComplete)
+        {
+            _validation = L["Blueprint_TitlesRequired"];
+            return;
+        }
+        await SaveCoreAsync();
+    }
+
+    /// <summary>Saves the draft; false when it failed (stale revision, validation, server error).</summary>
+    private async Task<bool> SaveCoreAsync()
+    {
+        _busy = true;
+        _message = null;
+        var staleRevision = false;
+        BlueprintDto? saved = null;
+        var ok = await ApiCalls.RunAsync(async () =>
+        {
+            try
+            {
+                saved = await Api.SaveDraftAsync(Id, _model.ToRequest());
+            }
+            catch (ApiProblemException ex) when (ex.Code == ProblemCodesStale)
+            {
+                staleRevision = true;
+            }
+        }, Navigation, L, message => _error = message);
+        _busy = false;
+        if (staleRevision)
+        {
+            _stale = true;
+            return false;
+        }
+        if (!ok || saved is null) return false;
+        _model.MarkSaved(saved);
+        await LoadVersionsAsync();
+        Snackbar.Add(L["Common_Saved"], Severity.Success);
+        return true;
+    }
+
+    private const string ProblemCodesStale = "blueprint_stale";
+
+    private async Task PublishAsync()
+    {
+        _validation = null;
+        if (!_model.IsComplete || _model.Sections.Count == 0 || _model.Sections.Any(s => s.Lessons.Count == 0))
+        {
+            _validation = L["Blueprint_EmptyOrIncomplete"];
+            return;
+        }
+        var dialog = await Dialogs.ShowAsync<PublishBlueprintDialog>(L["Blueprint_Publish"], new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        if (await dialog.Result is not { Canceled: false, Data: string mode }) return;
+
+        _busy = true;
+        PublishBlueprintResultDto? result = null;
+        var ok = await ApiCalls.RunAsync(async () => result = await Api.PublishAsync(Id, new PublishBlueprintRequest(mode)),
+            Navigation, L, message => _error = message);
+        _busy = false;
+        if (!ok || result is null) return;
+
+        await LoadAsync();
+        _message = mode == BlueprintApplyModes.PushToExisting
+            ? L["Blueprint_PublishedQueued", result.Blueprint.Version, result.ClassesQueued].Value
+            : L["Blueprint_PublishedNew", result.Blueprint.Version].Value;
+    }
+
+    private async Task CopyAsync()
+    {
+        var dialog = await Dialogs.ShowAsync<CopyBlueprintDialog>(L["Blueprint_Copy"], new DialogParameters<CopyBlueprintDialog> { { x => x.CourseId, Id } },
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        if (await dialog.Result is not { Canceled: false, Data: CopyBlueprintRequest request }) return;
+
+        _busy = true;
+        // Copy writes over the saved draft, so unsaved local edits would be lost: they are saved first only if the user confirms the dialog above.
+        await ApiCalls.RunAsync(async () =>
+        {
+            var copied = await Api.CopyFromAsync(Id, request);
+            _model = BlueprintModel.From(copied);
+            await LoadVersionsAsync();
+        }, Navigation, L, message => _error = message);
+        _busy = false;
+    }
+
+    private async Task<bool> ConfirmLeaveAsync() =>
+        await ConfirmDialog.AskAsync(Dialogs, L["Blueprint_Unsaved"], L["Blueprint_LeaveConfirm"], L["Blueprint_LeaveAnyway"]);
+
+    private async Task OnLeavingAsync(LocationChangingContext context)
+    {
+        if (_editing && _model.IsDirty && !await ConfirmLeaveAsync()) context.PreventNavigation();
+    }
+}

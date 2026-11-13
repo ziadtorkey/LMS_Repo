@@ -52,6 +52,7 @@ public static class ClientServices
             services.AddSingleton<IClassCoursesApi, FakeClassCoursesApi>();
             services.AddSingleton<IIdentityProvidersApi, FakeIdentityProvidersApi>();
             services.AddSingleton<ICoursesApi, FakeCoursesApi>();
+            services.AddSingleton<IBlueprintsApi>(new FakeBlueprintsApi { AutoSeed = true });
             services.AddSingleton<ILessonPlansApi, FakeLessonPlansApi>();
             services.AddSingleton<IFileUploadApi, FakeFileUploadApi>();
             services.AddSingleton<IForumsApi, FakeForumsApi>();
@@ -98,6 +99,7 @@ public static class ClientServices
         services.AddScoped<IClassCoursesApi, ClassCoursesApi>();
         services.AddScoped<IIdentityProvidersApi, IdentityProvidersApi>();
         services.AddScoped<ICoursesApi, CoursesApi>();
+        services.AddScoped<IBlueprintsApi, BlueprintsApi>();
         services.AddScoped<ILessonPlansApi, LessonPlansApi>();
         services.AddScoped<IFileUploadApi, FileUploadApi>();
         services.AddScoped<IForumsApi, ForumsApi>();
