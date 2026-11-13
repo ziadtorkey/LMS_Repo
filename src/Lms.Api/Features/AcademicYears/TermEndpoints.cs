@@ -1,6 +1,7 @@
 using Lms.Api.Infrastructure;
 using Lms.Domain.AcademicYears;
 using Lms.Domain.Abstractions;
+using Lms.Infrastructure.AcademicYears;
 using Lms.Infrastructure.Persistence;
 using Lms.Shared;
 using Lms.Shared.AcademicYears;
@@ -19,7 +20,42 @@ public static class TermEndpoints
             .RequirePermission(Permissions.AcademicYears.Update);
         app.MapDelete(Routes.TermPattern, DeleteAsync).RequireAuthorization()
             .RequirePermission(Permissions.AcademicYears.Update);
+        app.MapGet(Routes.AcademicYearTermStructurePattern, GetStructureAsync).RequireAuthorization()
+            .RequirePermission(Permissions.AcademicYears.View);
+        app.MapPut(Routes.AcademicYearTermStructurePattern, ApplyStructureAsync).RequireAuthorization()
+            .RequirePermission(Permissions.AcademicYears.Update);
         return app;
+    }
+
+    private static async Task<IResult> GetStructureAsync(
+        Guid id, HttpContext http, LmsDbContext db, TermStructureService structure, CancellationToken ct)
+    {
+        var (year, problem) = await AcademicYearEndpoints.LoadForAsync(Permissions.AcademicYears.View, id, http, db, ct);
+        return year is null ? problem! : Results.Ok(await structure.GetAsync(year, ct));
+    }
+
+    private static async Task<IResult> ApplyStructureAsync(
+        Guid id, TermStructureDto? request, HttpContext http, LmsDbContext db, TermStructureService structure, CancellationToken ct)
+    {
+        var (year, problem) = await AcademicYearEndpoints.LoadForAsync(Permissions.AcademicYears.Update, id, http, db, ct);
+        if (year is null)
+        {
+            return problem!;
+        }
+
+        if (request is null || !TermTemplate.IsValid(request.TermsPerYear))
+        {
+            return ApiProblems.BadRequest(ProblemCodes.validation_failed, "TermsPerYear must be 2 or 3.");
+        }
+
+        return await structure.ApplyAsync(year, request.TermsPerYear, ct) switch
+        {
+            TermStructureOutcome.Closed => ApiProblems.Conflict(ProblemCodes.year_closed, "A closed academic year is read-only."),
+            TermStructureOutcome.NotPlanned => ApiProblems.Conflict(ProblemCodes.year_active, "Only a planned year can change its term structure."),
+            TermStructureOutcome.HasDependants => ApiProblems.Conflict(ProblemCodes.terms_have_dependants, "A term already has a gradebook, timetable slot or attendance session."),
+            TermStructureOutcome.NoRoom => ApiProblems.Conflict(ProblemCodes.term_outside_year, "The year has no room left for the missing terms."),
+            _ => Results.Ok(new TermStructureDto(request.TermsPerYear, TermTemplate.NamesFor(request.TermsPerYear))),
+        };
     }
 
     private static async Task<IResult> CreateAsync(
