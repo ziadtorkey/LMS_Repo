@@ -53,7 +53,7 @@
     }
 
     <MudSelect T="string" @bind-Value="Model.CompletionRule" Label="@L["Module_Completion"]" data-testid="module-completion">
-        @foreach (var r in CompletionRules.ForContent)
+        @foreach (var r in Rules ?? CompletionRules.ForContent)
         {
             <MudSelectItem T="string" Value="@r">@L["CompletionRule_" + r]</MudSelectItem>
         }
@@ -66,6 +66,8 @@
     [Parameter] public IReadOnlyList<ModuleGroupOption> Groups { get; set; } = [];
     [Parameter] public string? VisibilityError { get; set; }
     [Parameter] public string? TargetError { get; set; }
+    /// <summary>The completion rules the module kind allows; null = the content rules (<c>CompletionRules.ForContent</c>).</summary>
+    [Parameter] public IReadOnlyList<string>? Rules { get; set; }
 
     private void OnVisibilityChanged(string value)
     {

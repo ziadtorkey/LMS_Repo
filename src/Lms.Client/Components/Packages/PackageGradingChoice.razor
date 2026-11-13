@@ -1,0 +1,31 @@
+@using Lms.Shared.Packages
+
+@* D57 (design spec M4b §4.1): which attempt counts for the grade of a package module, as three rows with a caption each. Used by the
+   attach form and by the module edit dialog. *@
+<fieldset class="lms-fieldset" data-testid="package-grading">
+    <legend class="lms-fieldset-legend">@L["Package_Grading"]</legend>
+    <div role="radiogroup" aria-label="@L["Package_Grading"]">
+        @foreach (var method in PackageGradingMethods.All)
+        {
+            var m = method;
+            <label class="@("lms-choice" + (Value == m ? " lms-choice-on" : ""))" data-testid="@($"package-grading-{m}")">
+                <input type="radio" name="package-grading" checked="@(Value == m)" @onchange="() => ChooseAsync(m)" />
+                <span>
+                    <span class="lms-cell-strong">@L[$"Package_Grading_{m}"]</span><br />
+                    <span class="lms-muted">@L[$"Package_Grading_{m}_Help"]</span>
+                </span>
+            </label>
+        }
+    </div>
+</fieldset>
+
+@code {
+    [Parameter, EditorRequired] public string Value { get; set; } = PackageGradingMethods.Highest;
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+
+    private async Task ChooseAsync(string method)
+    {
+        Value = method;
+        await ValueChanged.InvokeAsync(method);
+    }
+}

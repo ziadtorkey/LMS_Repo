@@ -31,22 +31,7 @@
        request sends the default. *@
     @if (_rule == CompletionRules.Score)
     {
-        <fieldset class="lms-fieldset" data-testid="package-grading">
-            <legend class="lms-fieldset-legend">@L["Package_Grading"]</legend>
-            <div role="radiogroup" aria-label="@L["Package_Grading"]">
-                @foreach (var method in PackageGradingMethods.All)
-                {
-                    var m = method;
-                    <label class="@("lms-choice" + (_grading == m ? " lms-choice-on" : ""))" data-testid="@($"package-grading-{m}")">
-                        <input type="radio" name="package-grading" checked="@(_grading == m)" @onchange="() => _grading = m" />
-                        <span>
-                            <span class="lms-cell-strong">@L[$"Package_Grading_{m}"]</span><br />
-                            <span class="lms-muted">@L[$"Package_Grading_{m}_Help"]</span>
-                        </span>
-                    </label>
-                }
-            </div>
-        </fieldset>
+        <PackageGradingChoice @bind-Value="_grading" />
     }
     @if (_error is not null)
     {

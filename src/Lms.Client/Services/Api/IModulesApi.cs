@@ -116,7 +116,7 @@ public sealed class FakeModulesApi : IModulesApi
 
     private static ApiProblemException Problem(string code) => new(400, code, null, null);
 
-    private void Validate(Guid classCourseId, string visibility, DateTime? from, DateTime? to, string target, Guid? groupId, string rule)
+    private void Validate(Guid classCourseId, string visibility, DateTime? from, DateTime? to, string target, Guid? groupId, string rule, string? kind = null)
     {
         if (visibility == ModuleVisibilities.Scheduled)
         {
@@ -127,7 +127,8 @@ public sealed class FakeModulesApi : IModulesApi
         var groups = GroupsByClassCourse.GetValueOrDefault(classCourseId) ?? [];
         if (target == ModuleTargets.Group ? groupId is not { } g || !groups.Contains(g) : groupId is not null)
             throw Problem(ProblemCodes.module_target_invalid);
-        if (!CompletionRules.ForContent.Contains(rule)) throw Problem(ProblemCodes.validation_failed);
+        var allowed = kind is null || ModuleKinds.Content.Contains(kind) ? CompletionRules.ForContent : CompletionRules.ForActivity(kind);
+        if (!allowed.Contains(rule)) throw Problem(ProblemCodes.validation_failed);
     }
 
     private ModuleDetailDto Find(Guid id) =>
@@ -174,7 +175,7 @@ public sealed class FakeModulesApi : IModulesApi
         Calls.Add($"update {id}");
         if (Failure is not null) return Task.FromException<ModuleDetailDto>(Failure);
         var old = Find(id);
-        Validate(old.ClassCourseId, request.Visibility, request.VisibleFromUtc, request.VisibleToUtc, request.Target, request.GroupId, request.CompletionRule);
+        Validate(old.ClassCourseId, request.Visibility, request.VisibleFromUtc, request.VisibleToUtc, request.Target, request.GroupId, request.CompletionRule, old.Node.Kind);
         var node = old.Node with
         {
             TitleAr = request.TitleAr, TitleEn = request.TitleEn, Visibility = request.Visibility,
