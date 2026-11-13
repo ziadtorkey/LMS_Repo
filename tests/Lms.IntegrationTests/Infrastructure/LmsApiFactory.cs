@@ -134,6 +134,7 @@ public sealed class LmsApiFactory : WebApplicationFactory<Program>, IAsyncLifeti
         builder.UseSetting("Storage:AccessKey", MinioBuilder.DefaultUsername);
         builder.UseSetting("Storage:SecretKey", MinioBuilder.DefaultPassword);
         builder.UseSetting("Auth:WasmOrigins:0", "http://localhost");
+        builder.UseSetting("PackageHost:Origin", "http://127.0.0.1:5999"); // a content origin on another site than the test server (http://localhost)
         builder.ConfigureServices(services =>
         {
             services.AddAuthentication(TestAuthHandler.SchemeName)
