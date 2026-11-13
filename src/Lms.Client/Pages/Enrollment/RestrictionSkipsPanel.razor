@@ -3,7 +3,7 @@
 @* Students that were placed in the class but not auto-enrolled in some course because of its restrictions (FR-CRS-03), each with a way to ask for an exception. *@
 @if (Skips.Count > 0)
 {
-    <MudAlert Severity="Severity.Warning" data-testid="skips-panel">
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" data-testid="skips-panel">
         <MudText Typo="Typo.subtitle2">@L["ClassStudents_SkipsTitle", Skips.Count]</MudText>
         <MudStack Spacing="1" Class="mt-2">
             @foreach (var skip in Skips)
