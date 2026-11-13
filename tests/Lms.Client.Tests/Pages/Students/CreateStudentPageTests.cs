@@ -25,11 +25,17 @@ public sealed class CreateStudentPageTests : StudentsTestContext
         return Render<CreateStudentPage>();
     }
 
-    private static void Type(IRenderedComponent<CreateStudentPage> page, string id, string value)
+    private void Type(IRenderedComponent<CreateStudentPage> page, string id, string value)
     {
         var input = page.Find($"input[data-testid={id}]");
-        // Lookup fields are debounced and react to typing (oninput); the others to a committed change.
-        if (id.StartsWith("guardian-mobile") || id.StartsWith("guardian-national")) input.Input(value);
+        // Lookup fields are debounced (500 ms) and react to typing (oninput); the others to a committed change.
+        if (id.StartsWith("guardian-mobile") || id.StartsWith("guardian-national"))
+        {
+            input.Input(value);
+            // The debounce timer commits the value and runs the guardian lookup. Saving before it fires races it: under load the commit
+            // can land in the middle of the save's validation and the click is silently dropped. Wait until the lookup has run.
+            page.WaitForAssertion(() => Assert.Contains(GuardiansApi.Lookups, l => l.NationalId == value || l.Mobile == value), TimeSpan.FromSeconds(10));
+        }
         else input.Change(value);
     }
 
