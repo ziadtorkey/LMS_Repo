@@ -1,0 +1,136 @@
+@page "/class-courses/{Id:guid}/announcements"
+@attribute [Authorize]
+@using Lms.Client.Components
+@using Lms.Client.Components.Editors
+@using Lms.Client.Services.Api
+@using Lms.Shared.Authorization
+@using Lms.Shared.Forums
+@inject IForumsApi Forum
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject IDialogService Dialogs
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<PageTitle>@L["Announcements_Title"]</PageTitle>
+<ClassCourseTabs ClassCourseId="Id" Active="announcements" />
+@if (!PermState.Loaded)
+{
+    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+}
+else if (!PermState.Has(Permissions.Forums.View))
+{
+    <MudAlert Severity="Severity.Warning" data-testid="announcements-forbidden">@L["Forbidden_Title"]</MudAlert>
+}
+else
+{
+    <MudText Typo="Typo.h5" Class="mb-3">@L["Announcements_Title"]</MudText>
+    @if (PermState.Has(Permissions.Forums.Moderate))
+    {
+        <MudPaper Outlined="true" Class="pa-3 mb-3" data-testid="announcement-form">
+            <MudStack Spacing="2">
+                <MudTextField T="string" @bind-Value="_title" Label="@L["Announcements_FormTitle"]" MaxLength="200" Immediate="true" data-testid="announcement-title" />
+                <RichTextEditor @key="_version" Value="@_html" ValueChanged="v => _html = v" Label="@L["Forum_Message"]" TestId="announcement-editor" />
+                <MudStack Row="true" Spacing="4">
+                    <MudSwitch T="bool" @bind-Value="_pinned" Label="@L["Forum_Pin"]" Color="Color.Primary" data-testid="announcement-pin" />
+                    <MudSwitch T="bool" @bind-Value="_notify" Label="@L["Announcements_Notify"]" Color="Color.Primary" data-testid="announcement-notify" />
+                </MudStack>
+                @if (_formError is not null)
+                {
+                    <MudAlert Severity="Severity.Error" data-testid="announcement-form-error">@_formError</MudAlert>
+                }
+                <div><MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CreateAsync" data-testid="announcement-send">@L["Announcements_Publish"]</MudButton></div>
+            </MudStack>
+        </MudPaper>
+    }
+
+    @if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error" data-testid="announcements-error">@_error</MudAlert>
+    }
+    else if (_loading)
+    {
+        <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+    }
+    else if (_items.Count == 0)
+    {
+        <MudAlert Severity="Severity.Info" data-testid="announcements-empty">@L["Announcements_Empty"]</MudAlert>
+    }
+    else
+    {
+        <MudStack Spacing="2" data-testid="announcements-list">
+            @foreach (var a in _items)
+            {
+                <MudPaper Outlined="true" Class="pa-3" data-testid="@($"announcement-{a.Id}")">
+                    <MudStack Spacing="1">
+                        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                            <MudText Typo="Typo.subtitle1">@a.Title</MudText>
+                            @if (a.IsPinned)
+                            {
+                                <MudChip T="string" Size="Size.Small" Color="Color.Primary" data-testid="@($"announcement-pinned-{a.Id}")">@L["Forum_Pinned"]</MudChip>
+                            }
+                            <MudSpacer />
+                            <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                                @Culture.Pick(a.AuthorNameAr, a.AuthorNameEn) · <span dir="ltr">@a.CreatedAtUtc.ToLocalTime().ToString("d", System.Globalization.CultureInfo.CurrentCulture)</span>
+                            </MudText>
+                            @if (PermState.Has(Permissions.Forums.Moderate))
+                            {
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" aria-label="@L["Common_Delete"]"
+                                               OnClick="() => DeleteAsync(a)" data-testid="@($"announcement-delete-{a.Id}")" />
+                            }
+                        </MudStack>
+                        <SanitizedHtml Html="@a.BodyHtml" TestId="@($"announcement-body-{a.Id}")" />
+                    </MudStack>
+                </MudPaper>
+            }
+        </MudStack>
+    }
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private IReadOnlyList<CourseAnnouncementDto> _items = [];
+    private string? _error, _formError, _title, _html;
+    private bool _loading = true, _pinned, _notify;
+    private int _version;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        PermState.Changed -= OnPermissionsChanged;
+        PermState.Changed += OnPermissionsChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true; _error = null;
+        if (PermState.Has(Permissions.Forums.View))
+            await ApiCalls.RunAsync(async () => _items = (await Forum.ListAnnouncementsAsync(Id)).Items
+                .OrderByDescending(a => a.IsPinned).ThenByDescending(a => a.CreatedAtUtc).ToList(), Navigation, L, m => _error = m);
+        _loading = false;
+    }
+
+    private async Task CreateAsync()
+    {
+        _formError = null;
+        if (string.IsNullOrWhiteSpace(_title) || RichTextHtml.IsEmpty(_html)) { _formError = L["Common_Required"]; return; }
+        var ok = await ApiCalls.RunAsync(() => Forum.CreateAnnouncementAsync(Id, new CreateCourseAnnouncementRequest(_title.Trim(), _html!, _pinned, _notify)),
+            Navigation, L, m => _formError = m);
+        if (!ok) return;
+        _title = null; _html = null; _pinned = _notify = false; _version++;
+        await LoadAsync();
+    }
+
+    private async Task DeleteAsync(CourseAnnouncementDto a)
+    {
+        if (!await ConfirmDialog.AskAsync(Dialogs, L["Confirm_DeleteTitle"], string.Format(L["Announcements_DeleteConfirm"], a.Title))) return;
+        var ok = await ApiCalls.RunAsync(() => Forum.DeleteAnnouncementAsync(a.Id), Navigation, L, m => _error = m);
+        if (ok) await LoadAsync();
+    }
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => PermState.Changed -= OnPermissionsChanged;
+}
