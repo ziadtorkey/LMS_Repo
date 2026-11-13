@@ -43,19 +43,7 @@
 
     private string KindLabel => L["ModuleKind_" + Node.Kind].Value;
 
-    private string KindIcon => Node.Kind switch
-    {
-        ModuleKinds.File => Icons.Material.Rounded.Description,
-        ModuleKinds.Video => Icons.Material.Rounded.Videocam,
-        ModuleKinds.Audio => Icons.Material.Rounded.Headphones,
-        ModuleKinds.Page => Icons.Material.Rounded.Article,
-        ModuleKinds.Link => Icons.Material.Rounded.Link,
-        ModuleKinds.Assignment => Icons.Material.Rounded.Assignment,
-        ModuleKinds.Quiz => Icons.Material.Rounded.Quiz,
-        ModuleKinds.LibraryResource => Icons.Material.Rounded.LocalLibrary,
-        ModuleKinds.LiveSession => Icons.Material.Rounded.VideoCall,
-        _ => Icons.Material.Rounded.Extension,
-    };
+    private string KindIcon => ModuleKindIcons.For(Node.Kind);
 
     private string StateLabel => L["Module_State_" + (Node.CompletionState ?? CompletionStates.NotStarted)].Value;
 
