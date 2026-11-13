@@ -67,7 +67,7 @@ public static class ImportEndpoints
 
     private static IResult ColumnsAsync(ImportDefinitions all, string kind) =>
         Results.Ok(all.Find(kind)!.Columns
-            .Select(c => new ImportColumnDto(c.Key, c.HeaderAr, c.HeaderEn, c.Required, c.AllowedValues)).ToList());
+            .Select(c => new ImportColumnDto(c.Key, c.HeaderAr, c.HeaderEn, c.Required, c.AllowedValues, c.Sensitive)).ToList());
 
     private static IResult Template(ImportDefinitions all, string kind, string? culture)
     {

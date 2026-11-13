@@ -18,10 +18,9 @@ namespace Lms.Api.Features.Students;
 /// Student role at the home unit and, optionally, the class placement, in one transaction; the credentials email goes out only
 /// after the commit (D24, D25, D45).
 /// </summary>
-public sealed class CreateStudentHandler(
+internal sealed class CreateStudentHandler(
     LmsDbContext db, ICurrentContext context, IClock clock, ISettingsResolver settings, IStudentCodeGenerator codes,
-    IPersonDuplicateFinder duplicates, IGuardianLinker guardians, IStudentCredentials credentials, IRoleAssignmentSync roles,
-    IEnrollmentEngine enrollment, StudentMapper mapper)
+    IPersonDuplicateFinder duplicates, IStudentCredentials credentials, StudentCreator creator, StudentMapper mapper)
 {
     public async Task<IResult> HandleAsync(CreateStudentRequest? request, HttpContext http, CancellationToken ct)
     {
@@ -117,35 +116,18 @@ public sealed class CreateStudentHandler(
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
         try
         {
-            var code = requestedCode ?? await codes.GenerateAsync(home, ct);
-            var student = new StudentProfile(home, code, data.NameAr, data.NameEn, data.DateOfBirth, data.Gender, data.Religion, data.Nationality);
-            student.Update(
-                data.NameAr, data.NameEn, data.NicknameAr, data.NicknameEn, data.DateOfBirth, data.Gender, data.Religion, data.Nationality,
-                data.NationalId, data.Mobile, data.Email, data.PhotoFileId);
-            db.Set<StudentProfile>().Add(student);
-            await db.SaveChangesAsync(ct);
-
-            if (guardianInputs.Count > 0)
-            {
-                await guardians.LinkAsync(student, guardianInputs.Select(Lms.Api.Features.Guardians.GuardianValidators.ToDomain).ToList(), ct);
-            }
-
-            await guardians.EnsureRequirementAsync(student, guardianInputs.Count, ct);
-
-            var issued = await credentials.IssueAsync(student, request.DefaultPassword, reset: false, ct);
-            await db.SaveChangesAsync(ct);
-            await roles.SyncBuiltInAsync(issued.User.Id, home.OrganizationId, BuiltInRoles.Student, [home], ct);
-
-            if (cls is not null)
-            {
-                await enrollment.PlaceAsync(student, cls, today, request.ConfirmOverCapacity, ct);
-            }
-
+            var created = await creator.CreateAsync(
+                new StudentDraft(
+                    home, data, requestedCode, guardianInputs.Select(Lms.Api.Features.Guardians.GuardianValidators.ToDomain).ToList(),
+                    request.DefaultPassword, cls, request.ConfirmOverCapacity, today),
+                ct);
             await transaction.CommitAsync(ct);
             await credentials.FlushDeliveriesAsync(ct);
 
-            var detail = await mapper.DetailAsync(student, ct);
-            return Results.Created(Routes.Student(student.Id), new StudentCreatedDto(detail, issued.Password ?? string.Empty, issued.DeliveredTo, issued.User.UserName ?? string.Empty));
+            var detail = await mapper.DetailAsync(created.Student, ct);
+            return Results.Created(
+                Routes.Student(created.Student.Id),
+                new StudentCreatedDto(detail, created.Issued.Password ?? string.Empty, created.Issued.DeliveredTo, created.Issued.User.UserName ?? string.Empty));
         }
         catch (Exception ex) when (StudentProblems.From(ex) is { } problem)
         {
