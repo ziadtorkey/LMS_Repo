@@ -1,0 +1,103 @@
+@using Lms.Client.Services.Api
+@using Lms.Shared.Courses
+@using Lms.Shared.Organizations
+@using Lms.Shared.People
+@inject ICoursesApi Api
+@inject IOrgApi Org
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+@* Who may enrol in a course (religion, gender, level type). Empty = unrestricted. Saving replaces all restrictions. *@
+<MudStack Spacing="3">
+    @if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="restriction-error">@_error</MudAlert>
+    }
+    @if (_affected > 0)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" data-testid="restriction-affected">@L["Restriction_Affected", _affected]</MudAlert>
+    }
+    @foreach (var type in CourseRestrictionTypes.All)
+    {
+        var current = type;
+        <fieldset class="lms-fieldset">
+            <legend class="lms-fieldset-legend">@L[$"RestrictionType_{type}"]</legend>
+            @if (CanEdit)
+            {
+                <MudSelect T="string" SelectedValues="_values[current]" SelectedValuesChanged="v => _values[current] = v.ToList()"
+                           MultiSelection="true" MultiSelectionTextFunc="@(values => string.Join(", ", values.Select(v => LabelOf(current, v))))"
+                           Label="@L["Restriction_Values"]" HelperText="@L["Restriction_EmptyMeansAll"]"
+                           data-testid="@($"restriction-{type}")">
+                    @foreach (var (key, label) in Options(current))
+                    {
+                        <MudSelectItem T="string" Value="@key">@label</MudSelectItem>
+                    }
+                </MudSelect>
+            }
+            else
+            {
+                <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" data-testid="@($"restriction-view-{type}")">
+                    @if (_values[current].Count == 0)
+                    {
+                        <MudText Typo="Typo.body2" Class="lms-muted">@L["Restriction_None"]</MudText>
+                    }
+                    @foreach (var (key, label) in Options(current).Where(o => _values[current].Contains(o.Key)))
+                    {
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@label</MudChip>
+                    }
+                </MudStack>
+            }
+        </fieldset>
+    }
+    @if (CanEdit)
+    {
+        <div class="lms-dialog-actions">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_busy"
+                       data-testid="restriction-save">@L["Common_Save"]</MudButton>
+        </div>
+    }
+</MudStack>
+
+@code {
+    private readonly Dictionary<string, List<string>> _values = CourseRestrictionTypes.All.ToDictionary(t => t, _ => new List<string>());
+    private IReadOnlyList<LevelTypeDto> _levelTypes = [];
+    private string? _error;
+    private int _affected;
+    private bool _busy;
+
+    [Parameter, EditorRequired] public CourseDetailDto Course { get; set; } = default!;
+    [Parameter] public bool CanEdit { get; set; }
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        foreach (var restriction in Course.Restrictions)
+            _values[restriction.Type] = restriction.Values.ToList();
+        // Level types feed one of the pickers; without permission to read them that picker is simply empty.
+        await ApiCalls.RunAsync(async () => _levelTypes = await Org.GetLevelTypesAsync(), Navigation, L, _ => { });
+    }
+
+    private IEnumerable<(string Key, string Label)> Options(string type) => type switch
+    {
+        CourseRestrictionTypes.Religion => Religions.All.Select(r => (r, L[$"Religion_{r}"].Value)),
+        CourseRestrictionTypes.Gender => Genders.All.Select(g => (g, L[$"Gender_{g}"].Value)),
+        _ => _levelTypes.Select(t => (t.Id.ToString(), CultureText.Pick(t.NameAr, t.NameEn))),
+    };
+
+    private string LabelOf(string type, string key) => Options(type).FirstOrDefault(o => o.Key == key).Label ?? key;
+
+    private async Task SaveAsync()
+    {
+        _error = null;
+        _busy = true;
+        var request = new SetCourseRestrictionsRequest(_values.Where(v => v.Value.Count > 0)
+            .Select(v => new CourseRestrictionInput(v.Key, v.Value)).ToList());
+        RestrictionsSavedResult? result = null;
+        var ok = await ApiCalls.RunAsync(async () => result = await Api.SetRestrictionsAsync(Course.Summary.Id, request), Navigation, L, message => _error = message);
+        _busy = false;
+        if (!ok || result is null) return;
+        _affected = result.AffectedEnrollments;
+        Snackbar.Add(L["Common_Saved"], Severity.Success);
+        await OnChanged.InvokeAsync();
+    }
+}

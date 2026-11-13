@@ -27,6 +27,7 @@
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageVersion Include="System.Data.SqlClient" Version="4.9.0" />
     <PackageVersion Include="ClosedXML" Version="0.105.0" />
+    <PackageVersion Include="HtmlSanitizer" Version="9.1.982" />
     <PackageVersion Include="MailKit" Version="4.18.2" />
     <PackageVersion Include="Minio" Version="7.0.0" />
     <PackageVersion Include="MySqlConnector" Version="2.6.2" />
