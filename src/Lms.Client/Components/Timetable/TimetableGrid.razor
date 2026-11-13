@@ -1,0 +1,234 @@
+@using System.Globalization
+@using Lms.Client.Services.Timetable
+@implements IAsyncDisposable
+@inject IJSRuntime Js
+@inject ICultureService Culture
+
+@* Weekly timetable grid (spike S3, M5 Task 31). Rows are periods, columns the working days in reading order, so the week runs right to left
+   in Arabic (the table takes dir from the culture) while the times stay left to right. A lesson moves in three equivalent ways:
+   keyboard (M or Enter picks it up, arrows choose the place, Enter drops, Escape cancels), the "Move to" menu, and a pointer drag. *@
+<div class="lms-tt-wrap" data-testid="tt-wrap">
+    <div class="lms-visually-hidden" role="status" aria-live="polite" data-testid="tt-live">@_announcement</div>
+
+    <table @ref="_grid" class="lms-tt" role="grid" dir="@(Culture.IsRightToLeft ? "rtl" : "ltr")" aria-label="@L["Tt_Grid_Label"]" data-testid="tt-grid">
+        <thead>
+            <tr>
+                <th scope="col" class="lms-tt-corner"><span class="lms-visually-hidden">@L["Tt_Period_Header"]</span></th>
+                @foreach (var day in Timetable.Days)
+                {
+                    <th scope="col" data-testid="@($"tt-day-{(int)day}")">@DayName(day)</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @for (var period = 1; period <= Timetable.Periods; period++)
+            {
+                var p = period;
+                <tr>
+                    <th scope="row" class="lms-tt-period">
+                        <span class="lms-tt-period-name">@string.Format(L["Tt_Period_N"], p)</span>
+                        <span class="lms-tt-time" dir="ltr">@SpikeTimetable.StartOf(p)–@SpikeTimetable.EndOf(p)</span>
+                    </th>
+                    @foreach (var day in Timetable.Days)
+                    {
+                        var d = (int)day;
+                        var slot = Timetable.At(d, p);
+                        <td role="gridcell" class="@CellClass(d, p, slot)" tabindex="@(IsFocus(d, p) ? 0 : -1)"
+                            data-cell data-day="@d" data-period="@p" data-testid="@($"tt-cell-{d}-{p}")"
+                            aria-label="@CellLabel(day, p, slot)">
+                            @if (slot is not null)
+                            {
+                                <div class="@SlotClass(slot)" data-slot="@slot.Id" data-testid="@($"tt-slot-{slot.Id}")">
+                                    <span class="lms-tt-course">@slot.Course</span>
+                                    <span class="lms-tt-meta">@slot.Teacher</span>
+                                    @if (!string.IsNullOrWhiteSpace(slot.Room))
+                                    {
+                                        <span class="lms-tt-meta" data-testid="@($"tt-room-{slot.Id}")">@slot.Room</span>
+                                    }
+                                    @if (_warnings.Contains(slot.Id))
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Warning" Class="lms-status-chip"
+                                                 data-testid="@($"tt-warn-{slot.Id}")">@L["Tt_Warn_Chip"]</MudChip>
+                                    }
+                                    <button type="button" class="lms-tt-menu-btn" data-menu @onclick="() => OpenMenu(slot)"
+                                            aria-label="@string.Format(L["Tt_Slot_Move"], slot.Course)" data-testid="@($"tt-menu-{slot.Id}")">
+                                        <MudIcon Icon="@Icons.Material.Rounded.OpenWith" Size="Size.Small" />
+                                    </button>
+                                </div>
+                            }
+                        </td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @if (_conflictText is not null)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mt-3" data-testid="tt-conflict">@_conflictText</MudAlert>
+    }
+
+    <p class="lms-muted mt-3" data-testid="tt-hint">@L["Tt_Hint"]</p>
+
+    @if (_menuFor is not null)
+    {
+        <MoveToMenu Slot="_menuFor" Days="Timetable.Days" Periods="Timetable.Periods" OnMove="MoveToAsync" OnClose="CloseMenu" />
+    }
+</div>
+
+@code {
+    private ElementReference _grid;
+    private IJSObjectReference? _module;
+    private IJSObjectReference? _handle;
+    private DotNetObjectReference<TimetableGrid>? _self;
+    private (int Day, int Period) _focus;
+    private SpikeSlot? _held, _menuFor;
+    private string _announcement = "";
+    private string? _conflictText;
+    private IReadOnlySet<Guid> _warnings = new HashSet<Guid>();
+    private HashSet<Guid> _clashing = [];
+    private bool _needFocus;
+
+    [Parameter, EditorRequired] public SpikeTimetable Timetable { get; set; } = default!;
+
+    protected override void OnInitialized() => _focus = ((int)Timetable.Days[0], 1);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _self = DotNetObjectReference.Create(this);
+            try
+            {
+                _module = await Js.InvokeAsync<IJSObjectReference>("import", "./js/timetable-drag.js");
+                _handle = await _module.InvokeAsync<IJSObjectReference>("attach", _grid, _self);
+            }
+            catch (JSDisconnectedException) { }
+        }
+
+        if (_needFocus && _module is not null)
+        {
+            _needFocus = false;
+            try { await _module.InvokeVoidAsync("focusCell", _grid, _focus.Day, _focus.Period); }
+            catch (JSDisconnectedException) { }
+        }
+    }
+
+    private bool IsFocus(int day, int period) => _focus.Day == day && _focus.Period == period;
+
+    private string DayName(DayOfWeek day) => Culture.Current.DateTimeFormat.GetDayName(day);
+
+    private string CellLabel(DayOfWeek day, int period, SpikeSlot? slot) => slot is null
+        ? string.Format(L["Tt_Empty_Cell"], DayName(day), period)
+        : string.Format(L["Tt_Slot_Cell"], slot.Course, slot.Teacher, DayName(day), period);
+
+    private string CellClass(int day, int period, SpikeSlot? slot) =>
+        "lms-tt-cell" + (IsFocus(day, period) && _held is not null ? " lms-tt-target" : "") + (slot is not null && _clashing.Contains(slot.Id) ? " lms-tt-clash" : "");
+
+    private string SlotClass(SpikeSlot slot) => "lms-tt-slot" + (_held?.Id == slot.Id ? " lms-tt-held" : "");
+
+    private int DayIndex(int day) => Timetable.Days.ToList().IndexOf((DayOfWeek)day);
+
+    private void Step(int dx, int dy)
+    {
+        var days = Timetable.Days;
+        var di = Math.Clamp(DayIndex(_focus.Day) + dx, 0, days.Count - 1);
+        _focus = ((int)days[di], Math.Clamp(_focus.Period + dy, 1, Timetable.Periods));
+    }
+
+    /// <summary>A key pressed on the grid, forwarded by the JS module (it prevents the default for these keys only).</summary>
+    [JSInvokable]
+    public async Task OnKey(string key, int day, int period)
+    {
+        if (_held is null) _focus = (day, period); // while carrying a lesson the focus is the target and only the arrows move it
+        switch (key)
+        {
+            case "ArrowRight" or "ArrowLeft":
+                Step(((key == "ArrowRight") != Culture.IsRightToLeft) ? 1 : -1, 0); // arrows follow what the user sees
+                break;
+            case "ArrowDown": Step(0, 1); break;
+            case "ArrowUp": Step(0, -1); break;
+            case "Home": _focus = ((int)Timetable.Days[0], _focus.Period); break;
+            case "End": _focus = ((int)Timetable.Days[^1], _focus.Period); break;
+            case "m" or "M" or "Enter" or " ":
+                if (_held is not null)
+                {
+                    if (key is "Enter" or " ") await MoveToAsync(_held.Id, _focus.Day, _focus.Period);
+                }
+                else if (Timetable.At(_focus.Day, _focus.Period) is { } slot)
+                {
+                    _held = slot;
+                    _announcement = string.Format(L["Tt_Held"], slot.Course);
+                }
+
+                break;
+            case "F2":
+                if (Timetable.At(_focus.Day, _focus.Period) is { } menuSlot) _menuFor = menuSlot;
+                break;
+            case "Escape":
+                if (_held is not null) { _held = null; _announcement = L["Tt_Cancelled"]; }
+                break;
+        }
+
+        _needFocus = true;
+        StateHasChanged();
+    }
+
+    /// <summary>A pointer drop, forwarded by the JS module.</summary>
+    [JSInvokable]
+    public Task OnDrop(string slotId, int day, int period) => MoveToAsync(Guid.Parse(slotId), day, period);
+
+    /// <summary>The one move path: keyboard drop, the menu and a drag all end here, and show the answer of the (mock) server.</summary>
+    public async Task MoveToAsync(Guid slotId, int day, int period)
+    {
+        var slot = Timetable.Find(slotId);
+        if (slot is null) return;
+        var result = Timetable.Move(slotId, day, period);
+        _held = null;
+        _menuFor = null;
+        _clashing = [];
+        _conflictText = null;
+        _warnings = Timetable.Warnings();
+        if (result.Saved)
+        {
+            _focus = (day, period);
+            _announcement = string.Format(L["Tt_Moved"], slot.Course, DayName((DayOfWeek)day), period);
+        }
+        else
+        {
+            _focus = (slot.Day, slot.Period);
+            _announcement = L["Tt_Refused"];
+        }
+
+        if (result.Conflicts.Count > 0)
+        {
+            _clashing = result.Conflicts.Select(c => c.Other.Id).ToHashSet();
+            _conflictText = string.Join(" ", result.Conflicts.Select(c => c.Kind == SpikeConflict.ClassDoubleBooked
+                ? string.Format(L["Tt_Clash_Class"], c.Other.Course)
+                : string.Format(L["Tt_Clash_Teacher"], c.Other.Teacher, DayName((DayOfWeek)day))));
+        }
+
+        _needFocus = true;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void OpenMenu(SpikeSlot slot) => _menuFor = slot;
+
+    private void CloseMenu()
+    {
+        _menuFor = null;
+        _needFocus = true;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_handle is not null) { await _handle.InvokeVoidAsync("dispose"); await _handle.DisposeAsync(); }
+            if (_module is not null) await _module.DisposeAsync();
+        }
+        catch (JSDisconnectedException) { }
+
+        _self?.Dispose();
+    }
+}

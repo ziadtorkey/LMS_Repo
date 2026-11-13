@@ -1,0 +1,43 @@
+@using System.Globalization
+@using Lms.Client.Services.Timetable
+@inject ICultureService Culture
+
+@* "Move to" panel of the timetable grid: the same move as the keyboard and the drag, for assistive technology and for phones, where a drag is awkward. *@
+<MudPaper Outlined="true" Class="pa-4 mt-3" role="group" aria-labelledby="tt-move-title" data-testid="tt-move-menu">
+    <MudText Typo="Typo.subtitle1" HtmlTag="h3" id="tt-move-title">@string.Format(L["Tt_Slot_Move"], Slot.Course)</MudText>
+    <div class="lms-tt-move-fields">
+        <MudSelect T="int" @bind-Value="_day" Label="@L["Tt_Day"]" Variant="Variant.Outlined" data-testid="tt-move-day">
+            @foreach (var day in Days)
+            {
+                <MudSelectItem T="int" Value="@((int)day)">@Culture.Current.DateTimeFormat.GetDayName(day)</MudSelectItem>
+            }
+        </MudSelect>
+        <MudSelect T="int" @bind-Value="_period" Label="@L["Tt_Period_Label"]" Variant="Variant.Outlined" data-testid="tt-move-period">
+            @for (var p = 1; p <= Periods; p++)
+            {
+                <MudSelectItem T="int" Value="@p">@string.Format(L["Tt_Period_N"], p)</MudSelectItem>
+            }
+        </MudSelect>
+    </div>
+    <div class="d-flex gap-2 mt-3">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="MoveAsync" data-testid="tt-move-confirm">@L["Tt_Move_Confirm"]</MudButton>
+        <MudButton Variant="Variant.Text" OnClick="OnClose" data-testid="tt-move-cancel">@L["Common_Cancel"]</MudButton>
+    </div>
+</MudPaper>
+
+@code {
+    private int _day, _period;
+
+    [Parameter, EditorRequired] public SpikeSlot Slot { get; set; } = default!;
+    [Parameter, EditorRequired] public IReadOnlyList<DayOfWeek> Days { get; set; } = [];
+    [Parameter, EditorRequired] public int Periods { get; set; }
+    [Parameter] public Func<Guid, int, int, Task>? OnMove { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (_day == 0 && _period == 0) { _day = Slot.Day; _period = Slot.Period; }
+    }
+
+    private Task MoveAsync() => OnMove is null ? Task.CompletedTask : OnMove(Slot.Id, _day, _period);
+}
