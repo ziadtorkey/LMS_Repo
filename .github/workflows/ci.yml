@@ -5,6 +5,11 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
   push:
     branches: [main]
+    # Docs-only pushes to main (STATUS, PRD, plans, screenshots) don't touch code; skipping them keeps the
+    # shared runner pool for PR builds. PR runs are unchanged, so required checks still report on every PR.
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
 
 concurrency:
   group: ci-${{ github.ref }}
