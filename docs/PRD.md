@@ -362,6 +362,7 @@ All tenant-owned tables: `OrganizationId`; unit-scoped tables: `OrgUnitId`, `Org
 | D54 | M4b Zoom events | The deployment exposes a public HTTPS webhook endpoint for Zoom (recordings, participants), with polling as fallback and manual recording links always allowed (Z3). |
 | D55 | M4b recordings | Cloud recording is off by default; a unit admin may enable it for their unit. Teachers can always attach a recording link manually (Z4/Z6). |
 | D56 | M4b package host | SCORM/H5P content is served from a separate registrable domain with a strict sandbox CSP and signed path tokens; no app-origin fallback (D51, spike #444). |
+| D57 | M4b package re-attempts | When a student opens a completed SCORM/H5P package again, the teacher chooses per module which completed attempt is graded: Highest (default), Last, or First (later attempts are practice). Owner decision 2026-11-13. |
 
 ---
 

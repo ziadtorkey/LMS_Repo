@@ -124,7 +124,7 @@ public partial class AuthorizationContractTests
             "provider_unavailable", "provider_not_configured", "live_session_not_open", "feature_disabled",
             "recurrence_invalid",
             // M4b wave 3b (SCORM and H5P packages)
-            "package_invalid", "package_too_large", "package_not_ready", "package_commit_rejected",
+            "package_invalid", "package_too_large", "package_not_ready", "package_not_attached", "package_commit_rejected",
             "package_host_not_configured",
         ];
 
