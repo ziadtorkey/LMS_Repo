@@ -145,21 +145,24 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
     font-size: .8125rem; font-weight: 600; white-space: nowrap; padding-block: 10px;
 }
 .lms-table .mud-table-body .mud-table-cell { padding-block: 10px; }
-.lms-table:not(.mud-xs-table) .mud-table-cell:first-child { padding-inline-start: 20px !important; }
-.lms-table:not(.mud-xs-table) .mud-table-cell:last-child { padding-inline-end: 20px !important; }
+.lms-table .mud-table-cell:first-child { padding-inline-start: 20px; }
+.lms-table .mud-table-cell:last-child { padding-inline-end: 20px; }
 .lms-table .mud-table-pagination { border-top: 1px solid var(--mud-palette-table-lines); }
 .lms-cell-actions { text-align: end; white-space: nowrap; }
-/* Phone layout: each row is a card; DataLabel text is the label. */
-.lms-table.mud-xs-table .mud-table-body .mud-table-row {
-    border-bottom: 1px solid var(--mud-palette-table-lines); padding: 8px 0;
+/* Card layout: MudBlazor always sets mud-xs-table / mud-sm-table and stacks rows only below its breakpoint
+   (600 / 960 px), so these rules must sit in the same media queries. DataLabel text is the label. */
+@media (max-width: 599.98px) {
+    .lms-table.mud-xs-table .mud-table-body .mud-table-row { display: block; border-bottom: 1px solid var(--mud-palette-table-lines); padding: 8px 0; }
+    .lms-table.mud-xs-table .mud-table-body .mud-table-cell { border-bottom: 0; padding: 4px 16px !important; min-height: 32px; text-align: start; }
+    .lms-table.mud-xs-table .mud-table-cell::before { color: var(--mud-palette-text-secondary); font-size: .75rem; font-weight: 600; padding-inline-end: 12px; }
+    .lms-table.mud-xs-table .mud-table-cell:empty { display: none; }
 }
-.lms-table.mud-xs-table .mud-table-body .mud-table-cell {
-    border-bottom: 0; padding: 4px 16px !important; min-height: 32px; text-align: start;
+@media (max-width: 959.98px) {
+    .lms-table.mud-sm-table .mud-table-body .mud-table-row { display: block; border-bottom: 1px solid var(--mud-palette-table-lines); padding: 8px 0; }
+    .lms-table.mud-sm-table .mud-table-body .mud-table-cell { border-bottom: 0; padding: 4px 16px !important; min-height: 32px; text-align: start; }
+    .lms-table.mud-sm-table .mud-table-cell::before { color: var(--mud-palette-text-secondary); font-size: .75rem; font-weight: 600; padding-inline-end: 12px; }
+    .lms-table.mud-sm-table .mud-table-cell:empty { display: none; }
 }
-.lms-table.mud-xs-table .mud-table-cell::before {
-    color: var(--mud-palette-text-secondary); font-size: .75rem; font-weight: 600; padding-inline-end: 12px;
-}
-.lms-table.mud-xs-table .mud-table-cell:empty { display: none; }
 
 .lms-person-cell { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .lms-person-link.mud-link { font-weight: 600; color: var(--mud-palette-text-primary); }
@@ -236,3 +239,165 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 .mud-button-filled:hover { box-shadow: 0 1px 2px rgba(16, 24, 40, .12) !important; }
 .mud-alert { border-radius: var(--lms-radius-control); }
 .mud-popover .mud-list { padding-block: 4px; }
+.mud-dialog .mud-dialog-actions { padding: 8px 16px 16px; gap: 8px; }
+
+/* ---------- Simple tables (MudSimpleTable) ---------- */
+.lms-simple-table.mud-simple-table { background: transparent; border-radius: 0; }
+.lms-simple-table.mud-simple-table table thead th {
+    background: var(--mud-palette-background-gray); color: var(--mud-palette-text-secondary);
+    font-size: .8125rem; font-weight: 600; white-space: nowrap;
+}
+.lms-simple-table.mud-simple-table table * tr > :first-child { padding-inline-start: 20px; }
+.lms-simple-table.mud-simple-table table * tr > :last-child { padding-inline-end: 20px; }
+/* Phones: .lms-stack-table rows become cards; each td shows its data-label. */
+@media (max-width: 599px) {
+    .lms-stack-table.mud-simple-table table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    .lms-stack-table.mud-simple-table table,
+    .lms-stack-table.mud-simple-table table tbody,
+    .lms-stack-table.mud-simple-table table tr,
+    .lms-stack-table.mud-simple-table table td { display: block; width: 100%; }
+    .lms-stack-table.mud-simple-table table tbody tr { padding: 8px 0; border-bottom: 1px solid var(--mud-palette-table-lines); }
+    .lms-stack-table.mud-simple-table table tbody td {
+        display: flex; align-items: center; justify-content: space-between; gap: 12px;
+        border-bottom: 0; padding: 4px 16px !important; min-height: 32px; text-align: start;
+    }
+    .lms-stack-table.mud-simple-table table tbody td[data-label]::before {
+        content: attr(data-label); color: var(--mud-palette-text-secondary); font-size: .75rem; font-weight: 600;
+    }
+    .lms-stack-table.mud-simple-table table tbody td.lms-cell-actions { justify-content: flex-end; }
+}
+
+/* ---------- Row actions (icon groups in rows and tree nodes) ---------- */
+.lms-row-actions { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 2px; justify-content: flex-end; }
+.lms-row-actions .mud-icon-button:not(.mud-error-text):not(.mud-warning-text):not(:disabled) { color: var(--mud-palette-action-default); }
+.lms-row-actions-sep { width: 1px; height: 20px; margin-inline: 4px; background: var(--mud-palette-lines-default); }
+.lms-order-badge {
+    display: inline-flex; align-items: center; justify-content: center; min-width: 24px; height: 24px; padding: 0 6px;
+    border-radius: 999px; background: var(--mud-palette-background-gray); font-weight: 600; font-size: .8125rem;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Notifications ---------- */
+.lms-filters-inline { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 16px; padding: 8px 20px; }
+.lms-notif-cell { display: inline-flex; align-items: center; gap: 8px; }
+.lms-notif-cell-unread .mud-link { font-weight: 600; color: var(--mud-palette-text-primary); }
+.lms-unread-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--mud-palette-primary); flex-shrink: 0; }
+.lms-prefs-legend {
+    display: flex; align-items: center; gap: 8px; padding: 10px 20px; font-size: .8125rem;
+    color: var(--mud-palette-text-secondary); border-bottom: 1px solid var(--mud-palette-lines-default);
+}
+.lms-prefs-table.mud-simple-table table th.lms-prefs-channel,
+.lms-prefs-table.mud-simple-table table td.lms-prefs-channel { text-align: center; width: 120px; }
+.lms-prefs-switch { display: inline-flex; align-items: center; gap: 2px; }
+.lms-prefs-footer { display: flex; justify-content: flex-end; margin-top: 16px; }
+@media (max-width: 599px) {
+    .lms-prefs-table.mud-simple-table table td.lms-prefs-channel { width: 100%; text-align: start; }
+    .lms-prefs-table.mud-simple-table table td.lms-prefs-event { font-size: .9375rem; padding-top: 8px !important; }
+    .lms-prefs-footer .mud-button-root { width: 100%; }
+}
+
+/* ---------- Org tree ---------- */
+.lms-org-tree { padding: 8px 12px 12px; }
+.lms-org-node { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; width: 100%; min-width: 0; padding-block: 2px; }
+.lms-org-label { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; flex: 1 1 220px; min-width: 0; }
+.lms-org-name.mud-typography { font-weight: 600; overflow-wrap: anywhere; }
+.lms-code-chip.mud-chip { font-variant-numeric: tabular-nums; letter-spacing: .02em; }
+.lms-org-node .lms-row-actions { opacity: .72; transition: opacity .15s ease; }
+.lms-org-node:hover .lms-row-actions, .lms-org-node:focus-within .lms-row-actions { opacity: 1; }
+@media (hover: none) { .lms-org-node .lms-row-actions { opacity: 1; } }
+@media (max-width: 599px) {
+    .lms-org-tree { padding: 4px; }
+    .lms-org-node .lms-row-actions { width: 100%; justify-content: flex-start; }
+}
+
+/* ---------- Item lists (short lists inside a card: terms, calendar entries) ---------- */
+.lms-item-list { list-style: none; margin: 0; padding: 0; }
+.lms-item {
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px 12px;
+    padding: 8px 0; border-top: 1px solid var(--mud-palette-table-lines);
+}
+.lms-item:first-child { border-top: 0; }
+.lms-item-main { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; min-width: 0; flex: 1 1 220px; }
+.lms-item-meta { font-size: .8125rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.lms-item-current { box-shadow: inset 3px 0 0 var(--mud-palette-success); padding-inline-start: 10px; }
+[dir="rtl"] .lms-item-current { box-shadow: inset -3px 0 0 var(--mud-palette-success); }
+
+/* ---------- Academic years ---------- */
+.lms-years-toolbar { max-width: 420px; margin-bottom: 16px; }
+.lms-years { display: flex; flex-direction: column; gap: 20px; }
+.lms-year-head {
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 16px;
+    padding: 14px 20px; border-bottom: 1px solid var(--mud-palette-lines-default);
+}
+.lms-year-title { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; min-width: 0; }
+.lms-year-dates { display: inline-flex; align-items: center; gap: 4px; font-size: .875rem; font-variant-numeric: tabular-nums; }
+.lms-year-body { display: grid; grid-template-columns: 1fr; gap: 0; }
+.lms-year-panel { padding: 14px 20px 16px; min-width: 0; }
+.lms-year-panel + .lms-year-panel { border-top: 1px solid var(--mud-palette-lines-default); }
+.lms-year-panel-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+.lms-year-panel-title.mud-typography { font-weight: 600; margin: 0; }
+.lms-year-empty { padding-block: 4px; }
+@media (min-width: 1100px) {
+    .lms-year-body { grid-template-columns: minmax(280px, 1fr) minmax(0, 2fr); }
+    .lms-year-panel + .lms-year-panel { border-top: 0; border-inline-start: 1px solid var(--mud-palette-lines-default); }
+}
+@media (max-width: 599px) {
+    .lms-year-head, .lms-year-panel { padding-inline: 16px; }
+}
+
+/* Calendar month grid (overrides the first version in app.css) */
+.lms-calendar { margin-bottom: 8px; }
+.lms-calendar-nav { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 6px; }
+.lms-calendar-month.mud-typography { min-width: 9rem; text-align: center; font-weight: 600; }
+.lms-month-grid { gap: 4px; }
+.lms-month-head { font-size: .75rem; font-weight: 600; opacity: 1; color: var(--mud-palette-text-secondary); padding-block: 4px; }
+.lms-month-day {
+    min-height: 56px; padding: 4px 6px; border-radius: 8px; border: 1px solid var(--mud-palette-table-lines);
+    background: var(--mud-palette-surface);
+}
+.lms-month-blank { border-color: transparent; background: transparent; }
+.lms-month-holiday { background: color-mix(in srgb, var(--mud-palette-warning) 12%, var(--mud-palette-surface)); border-color: color-mix(in srgb, var(--mud-palette-warning) 35%, transparent); }
+.lms-month-num { font-size: .8125rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.lms-month-entry {
+    font-size: .6875rem; line-height: 1.4; margin-top: 2px; padding: 0 4px; border-radius: 4px;
+    background: color-mix(in srgb, var(--mud-palette-info) 12%, transparent); color: var(--mud-palette-text-primary);
+}
+.lms-month-entry-holiday { background: color-mix(in srgb, var(--mud-palette-warning) 18%, transparent); }
+.lms-calendar-legend { display: flex; align-items: center; gap: 6px 12px; flex-wrap: wrap; margin-top: 8px; font-size: .75rem; color: var(--mud-palette-text-secondary); }
+.lms-legend-swatch { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-inline-end: -6px; }
+.lms-legend-holiday { background: color-mix(in srgb, var(--mud-palette-warning) 45%, transparent); }
+.lms-legend-event { background: color-mix(in srgb, var(--mud-palette-info) 45%, transparent); }
+@media (max-width: 599px) {
+    .lms-month-grid { gap: 2px; }
+    .lms-month-day { min-height: 40px; padding: 2px 3px; border-radius: 6px; }
+    .lms-month-entry { display: none; }
+    .lms-month-holiday .lms-month-num { color: var(--mud-palette-warning); }
+}
+.lms-month-head { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; min-width: 0; }
+@media (max-width: 599px) { .lms-month-head { font-size: .625rem; } }
+
+/* Search field with an explicit Search button (search on Enter or click) */
+.lms-search-row { display: flex; align-items: flex-start; gap: 12px; }
+.lms-search-row > .mud-input-control { flex: 1 1 auto; min-width: 0; }
+.lms-search-row > .mud-button-root { margin-top: 16px; flex-shrink: 0; }
+
+/* ---------- Role editor and permission matrix ---------- */
+.lms-role-editor { display: flex; flex-direction: column; gap: 20px; }
+.lms-role-editor .lms-section + .lms-section { margin-top: 0; }
+.lms-form-footer {
+    display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; padding: 12px 16px;
+    position: sticky; bottom: 0; z-index: 2; background: var(--mud-palette-surface);
+    border: 1px solid var(--mud-palette-lines-default); border-radius: var(--lms-radius-surface);
+}
+.lms-perm-matrix { display: grid; grid-template-columns: 1fr; gap: 12px; }
+@media (min-width: 1100px) { .lms-perm-matrix { grid-template-columns: 1fr 1fr; } }
+.lms-perm-module { border: 1px solid var(--mud-palette-lines-default); border-radius: var(--lms-radius-control); overflow: hidden; }
+.lms-perm-module-on { border-color: color-mix(in srgb, var(--mud-palette-primary) 45%, var(--mud-palette-lines-default)); }
+.lms-perm-module-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 2px 12px 2px 4px;
+    background: var(--mud-palette-background-gray); border-bottom: 1px solid var(--mud-palette-lines-default);
+}
+.lms-perm-module-head .mud-checkbox .mud-typography { font-weight: 600; }
+.lms-perm-count { font-size: .75rem; font-weight: 600; color: var(--mud-palette-text-secondary); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.lms-perm-module-on .lms-perm-count { color: var(--mud-palette-primary); }
+.lms-perm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 0 8px; padding: 4px 4px 8px; }
