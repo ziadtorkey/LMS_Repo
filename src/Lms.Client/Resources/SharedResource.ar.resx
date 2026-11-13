@@ -1444,7 +1444,7 @@
   <data name="Live_StartsIn" xml:space="preserve"><value>تبدأ بعد {0}</value></data>
   <data name="Live_StartedAgo" xml:space="preserve"><value>بدأت قبل {0} · تنتهي الساعة {1}</value></data>
   <data name="Live_SettingUp" xml:space="preserve"><value>ما زال الاجتماع قيد الإعداد. عُد بعد قليل.</value></data>
-  <data name="Live_JoinFrom" xml:space="preserve"><value>يمكنك الانضمام قبل البدء بـ {0} دقيقة.</value></data>
+  <data name="Live_JoinFrom" xml:space="preserve"><value>يمكنك الانضمام قبل البدء بمدة {0}.</value></data>
   <data name="Live_OpensZoom" xml:space="preserve"><value>يُفتح Zoom في تبويب جديد.</value></data>
   <data name="Live_FeatureOff" xml:space="preserve"><value>الجلسات المباشرة متوقفة في هذه المدرسة.</value></data>
   <data name="Live_NowCanJoin" xml:space="preserve"><value>يمكنك الانضمام الآن.</value></data>

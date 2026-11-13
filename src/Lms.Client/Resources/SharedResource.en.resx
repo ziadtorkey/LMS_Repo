@@ -1444,7 +1444,7 @@
   <data name="Live_StartsIn" xml:space="preserve"><value>Starts in {0}</value></data>
   <data name="Live_StartedAgo" xml:space="preserve"><value>Started {0} ago · ends at {1}</value></data>
   <data name="Live_SettingUp" xml:space="preserve"><value>The meeting is still being set up. Check back shortly.</value></data>
-  <data name="Live_JoinFrom" xml:space="preserve"><value>You can join from {0} minutes before the start.</value></data>
+  <data name="Live_JoinFrom" xml:space="preserve"><value>You can join from {0} before the start.</value></data>
   <data name="Live_OpensZoom" xml:space="preserve"><value>Opens Zoom in a new tab.</value></data>
   <data name="Live_FeatureOff" xml:space="preserve"><value>Live sessions are turned off for this school.</value></data>
   <data name="Live_NowCanJoin" xml:space="preserve"><value>You can join now.</value></data>

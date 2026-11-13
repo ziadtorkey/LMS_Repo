@@ -1,4 +1,5 @@
 @using System.Globalization
+@using Lms.Client.Components.Content
 @using Lms.Client.Services.Api
 @using Lms.Client.Services.LiveSessions
 @using Lms.Shared.Authorization
@@ -53,12 +54,12 @@ else if (_session is { } s)
                         break;
                     case LivePhase.Ended:
                         <MudText Typo="Typo.body1" data-testid="live-ended">@L["Live_EndedOn", Local(s.EndsAtUtc, "yyyy-MM-dd"), Local(s.EndsAtUtc, "HH:mm")]</MudText>
-                        @if (!string.IsNullOrEmpty(s.RecordingUrl))
+                        @if (ModuleLinks.IsAllowed(s.RecordingUrl)) @* http/https only: a stored javascript: link is never rendered *@
                         {
                             <div>
                                 <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.PlayCircle" Href="@s.RecordingUrl" Target="_blank"
                                            rel="noopener noreferrer nofollow" data-testid="live-recording">@L["Live_WatchRecording"]</MudButton>
-                                <span class="lms-host-hint" dir="ltr" data-testid="live-recording-host">@Host(s.RecordingUrl)</span>
+                                <span class="lms-host-hint" dir="ltr" data-testid="live-recording-host">@Host(s.RecordingUrl!)</span>
                                 <MudText Typo="Typo.caption" Class="lms-muted">@L["Live_OpensNewTab"]</MudText>
                             </div>
                         }
@@ -199,7 +200,7 @@ else if (_session is { } s)
     private string Caption(LivePhase phase, LiveSessionDto s)
     {
         if (s.Status == LiveSessionStatuses.SyncFailed) return L["Live_SettingUp"].Value;
-        if (phase == LivePhase.Before) return L["Live_JoinFrom", (int)(s.StartsAtUtc - s.JoinOpensAtUtc).TotalMinutes].Value;
+        if (phase == LivePhase.Before) return L["Live_JoinFrom", L.Count("Live_Unit_Minute", (int)(s.StartsAtUtc - s.JoinOpensAtUtc).TotalMinutes, Culture.IsRightToLeft)].Value;
         return L["Live_OpensZoom"].Value;
     }
 

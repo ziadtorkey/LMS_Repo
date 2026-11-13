@@ -34,7 +34,14 @@ public sealed class LiveSessionPanelTests : StaffTestContext
 
         public Task<PagedResult<LiveSessionListItemDto>> ListAsync(Guid id, LiveSessionQuery q, CancellationToken ct = default) => inner.ListAsync(id, q, ct);
         public Task<IReadOnlyList<LiveSessionDto>> CreateAsync(Guid id, CreateLiveSessionRequest r, CancellationToken ct = default) => inner.CreateAsync(id, r, ct);
-        public Task<LiveSessionDto> GetAsync(Guid id, CancellationToken ct = default) => inner.GetAsync(id, ct);
+        /// <summary>Changes what GET returns (the fake validates what it stores, so a bad link or a different window is set here).</summary>
+        public Func<LiveSessionDto, LiveSessionDto>? Edit { get; set; }
+
+        public async Task<LiveSessionDto> GetAsync(Guid id, CancellationToken ct = default)
+        {
+            var session = await inner.GetAsync(id, ct);
+            return Edit is null ? session : Edit(session);
+        }
         public Task<LiveSessionDto> UpdateAsync(Guid id, UpdateLiveSessionRequest r, CancellationToken ct = default) => inner.UpdateAsync(id, r, ct);
         public Task DeleteAsync(Guid id, string scope = SeriesEditScopes.This, CancellationToken ct = default) => inner.DeleteAsync(id, scope, ct);
 
@@ -273,6 +280,34 @@ public sealed class LiveSessionPanelTests : StaffTestContext
     }
 
     [Fact]
+    public async Task A_recording_link_that_is_not_http_or_https_is_not_rendered_as_a_link()
+    {
+        var bad = Seed(_serverNow.AddHours(-3), LiveSessionStatuses.Ended);
+        _api.Edit = x => x with { RecordingUrl = "javascript:alert(1)" };
+        var cut = await OpenAsync(bad.Id);
+
+        Assert.Empty(cut.FindAll("[data-testid=live-recording]"));
+        Assert.DoesNotContain("javascript:", cut.Markup);
+        Assert.NotNull(cut.Find("[data-testid=live-no-recording]"));
+    }
+
+    [Theory]
+    [InlineData(10, "en", "10 min")]
+    [InlineData(5, "ar", "5 دقائق")]
+    [InlineData(15, "ar", "15 دقيقة")]
+    [InlineData(2, "ar", "دقيقتين")]
+    public async Task Join_window_hint_uses_the_plural_family_of_the_language(int minutes, string culture, string expected)
+    {
+        Culture.Current = new CultureInfo(culture);
+        var start = _serverNow.AddHours(3);
+        var session = Seed(start);
+        _api.Edit = x => x with { JoinOpensAtUtc = x.StartsAtUtc.AddMinutes(-minutes) };
+        var cut = await OpenAsync(session.Id);
+
+        Assert.Contains(expected, cut.Find("[data-testid=live-caption]").TextContent);
+    }
+
+    [Fact]
     public async Task Ended_without_recording_says_so()
     {
         var session = Seed(_serverNow.AddHours(-3), LiveSessionStatuses.Ended);
@@ -328,7 +363,7 @@ public sealed class LiveSessionPanelTests : StaffTestContext
 
         Assert.Equal("تبدأ بعد ساعتين و10 دقائق", cut.Find("[data-testid=live-countdown]").TextContent.Trim());
         Assert.Contains("الانضمام", cut.Find("[data-testid=live-join-zone]").GetAttribute("aria-label"));
-        Assert.Contains("دقيقة", cut.Find("[data-testid=live-caption]").TextContent);
+        Assert.Contains("10 دقائق", cut.Find("[data-testid=live-caption]").TextContent);
     }
 
     [Fact]
