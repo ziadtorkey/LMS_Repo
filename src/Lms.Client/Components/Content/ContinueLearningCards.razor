@@ -12,18 +12,19 @@
     <section class="mb-4" aria-labelledby="home-learn-heading" data-testid="home-continue-learning">
         <MudText Typo="Typo.h6" HtmlTag="h2" id="home-learn-heading" Class="mb-3">@L["Home_ContinueLearning"]</MudText>
         <MudGrid Spacing="2">
-            @foreach (var card in _cards)
+            @foreach (var (card, index) in _cards.Select((card, index) => (card, index)))
             {
                 var c = card;
                 <MudItem xs="12" sm="6" md="4">
                     <SectionCard Class="h-100" TestId="@($"home-learn-{c.Course.Id}")">
                         <MudText Typo="Typo.subtitle1">@Culture.Pick(c.Course.CourseNameAr, c.Course.CourseNameEn)</MudText>
-                        <MudText Typo="Typo.body2" Class="lms-muted mb-2">@L["Learn_Progress", c.Progress.Course.Completed, c.Progress.Course.Total]</MudText>
+                        <MudText Typo="Typo.body2" Class="lms-muted mb-2">@(c.Progress.Course.Total == 0 ? L["Learn_NotStarted"].Value : L["Learn_Progress", c.Progress.Course.Completed, c.Progress.Course.Total].Value)</MudText>
                         <MudProgressLinear Value="@Percent(c.Progress.Course)" Color="Color.Primary" Class="mb-3" aria-hidden="true" />
                         <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
                             @if (c.Progress.NextModuleId is { } next)
                             {
-                                <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" Href="@($"class-courses/{c.Course.Id}/modules/{next}")"
+                                @* Home keeps one filled action: the first course's Continue; the others are outlined. *@
+                                <MudButton Variant="@(index == 0 ? Variant.Filled : Variant.Outlined)" Color="Color.Primary" Size="Size.Small" Href="@($"class-courses/{c.Course.Id}/modules/{next}")"
                                            data-testid="@($"home-learn-continue-{c.Course.Id}")">@L["Learn_ContinueOpen"]</MudButton>
                             }
                             <MudButton Variant="Variant.Text" Size="Size.Small" Href="@($"class-courses/{c.Course.Id}/learn")"

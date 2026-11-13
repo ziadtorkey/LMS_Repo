@@ -48,6 +48,30 @@ public sealed class HomeCardsTests : LessonPlansTestContext
     }
 
     [Fact]
+    public async Task Home_has_one_h1_title_with_the_welcome_as_its_subtitle()
+    {
+        var page = await OpenAsync(Permissions.LessonPlans.View);
+
+        page.WaitForElement("[data-testid=home-title]", Wait);
+        Assert.Single(page.FindAll("h1"));
+        Assert.Contains("Welcome", page.Markup);
+    }
+
+    [Fact]
+    public async Task Home_keeps_one_filled_continue_button_and_the_others_are_secondary()
+    {
+        SeedManual();
+        var page = await OpenAsync(Permissions.Modules.View, Permissions.LessonPlans.View);
+        page.WaitForElement("[data-testid=home-continue-learning]", Wait);
+
+        var continues = page.FindAll("[data-testid^=home-learn-continue-]");
+
+        Assert.NotEmpty(continues);
+        Assert.Single(continues.Where(b => b.ClassList.Contains("mud-button-filled")).ToList());
+        Assert.All(continues.Skip(1), b => Assert.Contains("mud-button-outlined", b.ClassList));
+    }
+
+    [Fact]
     public async Task Home_cards_depend_on_permissions_teacher_gets_no_student_cards()
     {
         SeedManual();

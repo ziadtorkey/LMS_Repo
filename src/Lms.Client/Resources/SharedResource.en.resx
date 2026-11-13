@@ -1418,4 +1418,6 @@
   <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>The security scan did not accept this package.</value></data>
   <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>The file is not a valid zip archive.</value></data>
   <data name="Error_package_reason_bad_name" xml:space="preserve"><value>A file name in the package is not usable (too long, too deep, or reserved).</value></data>
+  <data name="Learn_NotStarted" xml:space="preserve"><value>Not started yet</value></data>
+  <data name="Home_Overdue" xml:space="preserve"><value>Overdue</value></data>
 </root>

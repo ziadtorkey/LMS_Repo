@@ -33,7 +33,12 @@ else if (_loaded)
                                 <MudLink Href="@ModuleHref(row)" data-testid="@($"home-due-{row.Item.Id}")">@Culture.Pick(row.Item.TitleAr, row.Item.TitleEn)</MudLink>
                                 @if (row.Item.DueAtUtc is { } due)
                                 {
-                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@(due < Clock.GetUtcNow().UtcDateTime ? Color.Error : Color.Default)">
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@(due < Clock.GetUtcNow().UtcDateTime ? Color.Error : Color.Default)"
+                                             Icon="@(due < Clock.GetUtcNow().UtcDateTime ? Icons.Material.Rounded.ErrorOutline : null)">
+                                        @if (due < Clock.GetUtcNow().UtcDateTime)
+                                        {
+                                            <span>@L["Home_Overdue"] · </span>
+                                        }
                                         <span dir="ltr">@due.ToLocalTime().ToString("yyyy-MM-dd HH:mm", System.Globalization.CultureInfo.InvariantCulture)</span>
                                     </MudChip>
                                 }
