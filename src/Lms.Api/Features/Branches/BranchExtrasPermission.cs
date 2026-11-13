@@ -16,6 +16,13 @@ public static class BranchExtrasPermission
     /// <summary>Reported in the skipped list when the caller may not create and allocate courses at the target.</summary>
     public const string CoursesSkipped = "permission:" + Permissions.Courses.Create;
 
+    /// <summary>Reported when the caller may not read the courses of the source branch (capturing them would leak them).</summary>
+    public const string CoursesViewSkipped = "permission:" + Permissions.Courses.View;
+
+    /// <summary>Capturing the courses of a branch reads them, so the caller needs <c>Courses.View</c> at the source.</summary>
+    public static async Task<bool> MayReadCoursesAsync(HttpContext http, Guid sourceUnitId, CancellationToken ct) =>
+        (await http.CheckUnitAsync(Permissions.Courses.View, sourceUnitId, ct)).Problem is null;
+
     /// <summary>
     /// Copying courses writes new courses and allocations at the target, so the caller needs <c>Courses.Create</c> and
     /// <c>Courses.Allocate</c> there; otherwise the courses are left out and reported.

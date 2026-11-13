@@ -20,6 +20,7 @@ public sealed class BranchMaterializer(LmsDbContext db, IOrgTree tree, ICourseCa
         }
 
         await CheckLevelsAsync(nodes, parent, cancellationToken);
+        await CheckRestrictionLevelTypesAsync(nodes, cancellationToken);
 
         var codes = nodes.Select(n => transformCode(n.Code)).ToList();
         var taken = new List<string>();
@@ -155,6 +156,24 @@ public sealed class BranchMaterializer(LmsDbContext db, IOrgTree tree, ICourseCa
         }
 
         return (newCourses.Count, skipped.ToList());
+    }
+
+    /// <summary>A LevelType course restriction may only name level types of the client (a template can outlive a deleted level type).</summary>
+    private async Task CheckRestrictionLevelTypesAsync(IReadOnlyList<BranchNode> nodes, CancellationToken ct)
+    {
+        var values = nodes.SelectMany(n => n.OwnedCourses ?? []).SelectMany(c => c.Restrictions)
+            .Where(r => r.Type == CourseRestrictionTypes.LevelType).SelectMany(r => r.Values).Distinct().ToList();
+        if (values.Count == 0)
+        {
+            return;
+        }
+
+        var ids = values.Select(v => Guid.TryParse(v, out var id) ? id : Guid.Empty).Distinct().ToList();
+        var known = await db.LevelTypes.Where(l => ids.Contains(l.Id)).Select(l => l.Id).ToListAsync(ct);
+        if (values.Any(v => !Guid.TryParse(v, out var id) || !known.Contains(id)))
+        {
+            throw new BranchInvalidException("A course restriction names an unknown level type.");
+        }
     }
 
     /// <summary>Every level type must belong to the client, and the root's must be deeper than the parent's.</summary>

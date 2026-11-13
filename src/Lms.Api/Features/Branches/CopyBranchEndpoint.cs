@@ -61,6 +61,12 @@ public static partial class CopyBranchEndpoint
         var extras = await BranchExtrasPermission.ResolveAsync(http, request.TargetParentId, request.IncludePolicies, request.IncludeSettings, ct);
         var skippedExtras = extras.Skipped.ToList();
         var courses = request.IncludeCourses;
+        if (courses && !await BranchExtrasPermission.MayReadCoursesAsync(http, request.SourceOrgUnitId, ct))
+        {
+            courses = false;
+            skippedExtras.Add(BranchExtrasPermission.CoursesViewSkipped);
+        }
+
         if (courses && !await BranchExtrasPermission.MayCopyCoursesAsync(http, request.TargetParentId, ct))
         {
             courses = false;

@@ -9,6 +9,7 @@ namespace Lms.Infrastructure.Branches;
 public sealed class BranchSnapshotter(LmsDbContext db) : IBranchSnapshotter
 {
     public const int MaxNodes = 500;
+    public const int MaxCourses = 2000;
 
     public async Task<BranchSnapshot> CaptureAsync(
         OrgUnit root, bool includePolicies, bool includeSettings, CancellationToken cancellationToken, bool includeCourses = false)
@@ -53,7 +54,12 @@ public sealed class BranchSnapshotter(LmsDbContext db) : IBranchSnapshotter
     /// <summary>Courses owned inside the branch (with restrictions) and the allocations at its units; filtered sets only.</summary>
     private async Task<CourseCapture> CaptureCoursesAsync(OrgUnit root, CancellationToken ct)
     {
-        var owned = await db.Set<Course>().Where(c => c.OrgUnitPath.StartsWith(root.Path)).OrderBy(c => c.Code).ToListAsync(ct);
+        var owned = await db.Set<Course>().Where(c => c.OrgUnitPath.StartsWith(root.Path)).OrderBy(c => c.Code).Take(MaxCourses + 1).ToListAsync(ct);
+        if (owned.Count > MaxCourses)
+        {
+            throw new BranchTooLargeException(MaxCourses, "courses");
+        }
+
         var ids = owned.Select(c => c.Id).ToList();
         var restrictions = (await db.Set<CourseRestriction>().Where(r => ids.Contains(r.CourseId)).ToListAsync(ct))
             .ToLookup(r => r.CourseId, r => new BranchRestriction(r.Type, r.Values));

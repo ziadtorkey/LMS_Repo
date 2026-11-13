@@ -21,7 +21,7 @@ namespace Lms.IntegrationTests.Branches;
 
 /// <summary>Copying a branch (and applying a template) with its courses and allocations (M3 Task 10, FR-ORG-06).</summary>
 [Collection(ApiCollection.Name)]
-public sealed class CopyBranchCoursesTests(LmsApiFactory factory) : IDisposable
+public sealed partial class CopyBranchCoursesTests(LmsApiFactory factory) : IDisposable
 {
     private readonly OrgUnitTestHost _host = new(factory);
 

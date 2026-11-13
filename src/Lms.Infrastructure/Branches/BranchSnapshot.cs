@@ -49,7 +49,7 @@ public sealed class BranchCourseCodeConflictException(IReadOnlyList<string> code
 }
 
 /// <summary>The branch has more units than a snapshot may hold.</summary>
-public sealed class BranchTooLargeException(int limit) : Exception($"A branch may hold at most {limit} units.");
+public sealed class BranchTooLargeException(int limit, string what = "units") : Exception($"A branch may hold at most {limit} {what}.");
 
 /// <summary>Some codes of the copy are already taken in the client; nothing was created.</summary>
 public sealed class BranchCodeConflictException(IReadOnlyList<string> codes)

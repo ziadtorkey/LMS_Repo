@@ -57,6 +57,16 @@ public static partial class TemplateEndpoints
             return access.Problem;
         }
 
+        if (request.IncludeCourses)
+        {
+            // Capturing courses reads them: the caller needs Courses.View where the template is taken from.
+            var read = await http.CheckUnitAsync(Permissions.Courses.View, request.SourceOrgUnitId, ct);
+            if (read.Problem is not null)
+            {
+                return read.Problem;
+            }
+        }
+
         BranchSnapshot snapshot;
         try
         {
