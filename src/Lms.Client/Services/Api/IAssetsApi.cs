@@ -91,6 +91,8 @@ public sealed class FakeAssetsApi : IAssetsApi
     public int FailuresLeft { get; set; }
     /// <summary>When set, uploads wait for it (cancel tests).</summary>
     public TaskCompletionSource? Gate { get; set; }
+    /// <summary>Completed when an upload has reported its progress and reached <see cref="Gate"/> (the signal tests wait on instead of time).</summary>
+    public TaskCompletionSource GateReached { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
     public TimeSpan UrlLifetime { get; set; } = TimeSpan.FromMinutes(5);
     /// <summary>The fake "server clock".</summary>
     public Func<DateTime> ServerNow { get; set; } = () => DateTime.UtcNow;
@@ -103,7 +105,11 @@ public sealed class FakeAssetsApi : IAssetsApi
         using var buffer = new MemoryStream();
         await content.CopyToAsync(buffer, ct);
         progress?.Report(0.5);
-        if (Gate is not null) await Gate.Task.WaitAsync(ct);
+        if (Gate is not null)
+        {
+            GateReached.TrySetResult();
+            await Gate.Task.WaitAsync(ct);
+        }
         if (FailuresLeft > 0) { FailuresLeft--; throw Failure ?? new HttpRequestException("boom"); }
         if (Failure is not null) throw Failure;
         progress?.Report(1);
