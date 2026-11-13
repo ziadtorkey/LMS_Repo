@@ -22,7 +22,12 @@ public class AccessContractTests
             "StaffProfile", "StudentProfile", "GuardianProfile", "StudentGuardian", "ImportBatch", "IdentityProviderConfig",
             "StudentChangeRequest", "Course", "CourseAllocation", "CourseRestriction", "CourseSupervisor", "Blueprint",
             "Class", "ClassStudent", "ClassCourse", "ClassCourseTeacher", "TeacherCourseEligibility", "CourseEnrollment",
-            "EnrollmentException", "StudentGroup", "GroupMember", "StudentTransfer",
+            "EnrollmentException", "StudentGroup", "GroupMember", "StudentTransfer", "ClassLessonPlan",
+            "LessonModule", "ModuleContent", "Asset",
+            "Assignment", "SubmissionFeedback", "Quiz", "QuizQuestion", "LibraryResource", "ForumThread",
+            "CourseAnnouncement", "GradeEvent",
+            "PackageUpload", "ScormPackage", "H5pContent",
+            "LiveSessionSeries", "LiveSession",
         ], AuditCatalog.EntityTypes);
     }
 

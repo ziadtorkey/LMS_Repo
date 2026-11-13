@@ -32,7 +32,17 @@ public static class AuditCatalog
         // M3 students and academic structure.
         "StudentChangeRequest", "Course", "CourseAllocation", "CourseRestriction", "CourseSupervisor", "Blueprint",
         "Class", "ClassStudent", "ClassCourse", "ClassCourseTeacher", "TeacherCourseEligibility", "CourseEnrollment",
-        "EnrollmentException", "StudentGroup", "GroupMember", "StudentTransfer",
+        "EnrollmentException", "StudentGroup", "GroupMember", "StudentTransfer", "ClassLessonPlan",
+        // M4a wave 1: lesson modules, their simple content and assets (ModuleCompletion is not audited: volume).
+        "LessonModule", "ModuleContent", "Asset",
+        // M4a wave 2: activities and the M5 grade seam (submissions, answers and posts are not audited row by row:
+        // volume; grading and moderation are).
+        "Assignment", "SubmissionFeedback", "Quiz", "QuizQuestion", "LibraryResource", "ForumThread",
+        "CourseAnnouncement", "GradeEvent",
+        // M4b wave 3b: package uploads and their parsed SCORM / H5P content (attempts are not audited row by row: volume).
+        "PackageUpload", "ScormPackage", "H5pContent",
+        // M4b wave 3a: live sessions (participants and webhook receipts are not audited row by row: volume).
+        "LiveSessionSeries", "LiveSession",
     ];
 
     public static IReadOnlyList<string> SecurityEvents { get; } =

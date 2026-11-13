@@ -1,0 +1,1 @@
+﻿Quill 2.0.3 (BSD-3-Clause, Copyright Slab / Jason Chen / salesforce.com), vendored unmodified from the npm package `quill@2.0.3` (dist/quill.js, dist/quill.core.css). Self-hosted, no CDN (D52). Loaded lazily by wwwroot/js/richtext.js. To upgrade: `npm pack quill@<version>` and replace these two files.

@@ -179,6 +179,97 @@ public static class Permissions
         public const string View = "LessonPlans.View";
     }
 
+    // M4a Teaching & Learning, wave 1 (M4a plan Task 1). Assets reuse Files.Upload / Files.Download; the asset URL is
+    // additionally checked against the owning module (Modules.View) or class course.
+    /// <summary>Lesson modules under the lessons of a class lesson plan (FR-LP-05, FR-CNT-01..04).</summary>
+    public static class Modules
+    {
+        /// <summary>Open modules and their content; students also mark completion and read their own progress.</summary>
+        public const string View = "Modules.View";
+
+        /// <summary>Add, edit, order, hide, schedule, target and delete modules.</summary>
+        public const string Manage = "Modules.Manage";
+    }
+
+    // M4a Teaching & Learning, wave 2 (M4a plan Task 2). "CourseAssignments", not "Assignments": Assignments.* are the
+    // M1 role assignments. Submit and Attempt act only on the caller's own submission / attempt (SelfService below).
+    /// <summary>Assignments of a ClassCourse (FR-ASG-01, FR-ASG-02).</summary>
+    public static class CourseAssignments
+    {
+        /// <summary>Open assignments; staff also list submissions, students read their own submission and feedback.</summary>
+        public const string View = "CourseAssignments.View";
+
+        /// <summary>Create, edit, publish, schedule and delete assignments.</summary>
+        public const string Manage = "CourseAssignments.Manage";
+
+        /// <summary>Submit and resubmit one's own work (students).</summary>
+        public const string Submit = "CourseAssignments.Submit";
+
+        /// <summary>Grade submissions, write feedback, upload the annotated file and return the work.</summary>
+        public const string Grade = "CourseAssignments.Grade";
+    }
+
+    /// <summary>Quizzes of a ClassCourse (FR-QZ-01..03).</summary>
+    public static class Quizzes
+    {
+        /// <summary>Open quizzes; staff also list attempts, students read their own attempts and results.</summary>
+        public const string View = "Quizzes.View";
+
+        /// <summary>Build quizzes: settings, questions, options, pool; preview as a student.</summary>
+        public const string Manage = "Quizzes.Manage";
+
+        /// <summary>Start, autosave and submit one's own attempts (students).</summary>
+        public const string Attempt = "Quizzes.Attempt";
+
+        /// <summary>Grade essay answers by hand.</summary>
+        public const string Grade = "Quizzes.Grade";
+    }
+
+    /// <summary>The digital library of a unit (FR-LIB-01, D13). Unit-scoped, not restricted by a relationship.</summary>
+    public static class Library
+    {
+        /// <summary>Search and read resources of the unit and the units above it (students: matching levels only).</summary>
+        public const string View = "Library.View";
+
+        /// <summary>Create, edit and delete resources owned by the unit.</summary>
+        public const string Manage = "Library.Manage";
+    }
+
+    /// <summary>The forum and announcements of a ClassCourse (FR-FOR-01).</summary>
+    public static class Forums
+    {
+        /// <summary>Read threads, posts and announcements.</summary>
+        public const string View = "Forums.View";
+
+        /// <summary>Start threads, reply, and edit or delete one's own posts.</summary>
+        public const string Post = "Forums.Post";
+
+        /// <summary>Delete any post or thread, lock and pin threads, write course announcements.</summary>
+        public const string Moderate = "Forums.Moderate";
+    }
+
+    /// <summary>SCORM and H5P packages of a ClassCourse (FR-STD-01, FR-STD-02, D51, D56).</summary>
+    public static class Packages
+    {
+        /// <summary>Upload, validate, attach to a lesson, read the status of and delete packages; the staff side.</summary>
+        public const string Upload = "Packages.Upload";
+
+        /// <summary>Students launch packages of their own ClassCourses and send tracking; staff preview them (no attempt is recorded).</summary>
+        public const string View = "Packages.View";
+    }
+
+    // M4b Live sessions, wave 3a (M4b plan Task 1). Teacher: own ClassCourses; Student: own enrollments, and only the
+    // sessions whose module the student can see (IModuleAccess). The Zoom webhook is anonymous and needs none.
+    /// <summary>Live (Zoom) sessions of a ClassCourse (FR-VC-01).</summary>
+    public static class LiveSessions
+    {
+        /// <summary>See sessions, the upcoming list and join inside the join window (staff with Manage get the start link).</summary>
+        public const string View = "LiveSessions.View";
+
+        /// <summary>Schedule, edit, cancel and delete sessions, attach a recording link, read participants and provider status.</summary>
+        public const string Manage = "LiveSessions.Manage";
+    }
+
     // Immutable list (not a FrozenSet) so existing consumers typed IReadOnlyList<string> keep compiling;
     // ImmutableArray rejects every mutation through IList<string>/ICollection<string>.
     private static readonly Lazy<IReadOnlyList<string>> AllLazy = new(() =>
@@ -200,11 +291,12 @@ public static class Permissions
         ImmutableArray.Create(Clients.View, Clients.Create, Clients.Update);
 
     /// <summary>
-    /// Permissions that reach only the holder's own data (own student profile, own children). No staff role holds them,
-    /// so the escalation guards (D16) count every caller as holding them: handing them out grants no power over others.
+    /// Permissions that reach only the holder's own data (own student profile, own children, own submission, own quiz
+    /// attempt). No staff role holds them, so the escalation guards (D16) count every caller as holding them: handing
+    /// them out grants no power over others.
     /// </summary>
     public static IReadOnlyList<string> SelfService { get; } =
-        ImmutableArray.Create(Students.SelfEdit, Students.ViewChildren);
+        ImmutableArray.Create(Students.SelfEdit, Students.ViewChildren, CourseAssignments.Submit, Quizzes.Attempt);
 
     /// <summary>The caller's permissions plus <see cref="SelfService"/>, for the escalation guards.</summary>
     public static IReadOnlySet<string> WithSelfService(IEnumerable<string> callerPermissions) =>

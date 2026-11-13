@@ -1,0 +1,86 @@
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Shared.Courses
+@inject ICoursesApi Api
+@inject NavigationManager Navigation
+
+@* Courses of one org unit: available here (allocated here or inherited from above) and allocated below. *@
+<div class="lms-unit-courses">
+    @if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="unit-courses-error">@_error</MudAlert>
+    }
+    else if (_courses is null)
+    {
+        <LoadingState Lines="3" TestId="unit-courses-loading" />
+    }
+    else
+    {
+        <MudText Typo="Typo.subtitle1" HtmlTag="h3" Class="mb-2">@L["UnitCourses_Available"]</MudText>
+        @if (_courses.Available.Count == 0)
+        {
+            <EmptyState Title="@L["UnitCourses_NoneAvailable"]" Text="@L["UnitCourses_NoneAvailableText"]" Icon="@Icons.Material.Rounded.MenuBook" TestId="unit-courses-available-empty" />
+        }
+        else
+        {
+            <MudSimpleTable Dense="true" Elevation="0" Class="lms-simple-table lms-stack-table" data-testid="unit-courses-available">
+                <thead>
+                    <tr><th>@L["Course_Code"]</th><th>@L["Common_Name"]</th><th>@L["Allocation_Unit"]</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in _courses.Available)
+                    {
+                        <tr>
+                            <td data-label="@L["Course_Code"]"><span dir="ltr">@row.CourseCode</span></td>
+                            <td data-label="@L["Common_Name"]">
+                                <MudLink Href="@($"courses/{row.CourseId}")" Class="lms-person-link">@CultureText.Pick(row.CourseNameAr, row.CourseNameEn)</MudLink>
+                                @if (row.IsInherited)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Info" data-testid="@($"unit-course-inherited-{row.Id}")">@L["Course_Inherited"]</MudChip>
+                                }
+                            </td>
+                            <td data-label="@L["Allocation_Unit"]">@CultureText.Pick(row.OrgUnitNameAr, row.OrgUnitNameEn)</td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        }
+
+        <MudText Typo="Typo.subtitle1" HtmlTag="h3" Class="mt-6 mb-2">@L["UnitCourses_Below"]</MudText>
+        @if (_courses.AllocatedBelow.Count == 0)
+        {
+            <EmptyState Title="@L["UnitCourses_NoneBelow"]" Text="@L["UnitCourses_NoneBelowText"]" Icon="@Icons.Material.Rounded.AccountTree" TestId="unit-courses-below-empty" />
+        }
+        else
+        {
+            <MudSimpleTable Dense="true" Elevation="0" Class="lms-simple-table lms-stack-table" data-testid="unit-courses-below">
+                <thead>
+                    <tr><th>@L["Course_Code"]</th><th>@L["Common_Name"]</th><th>@L["Allocation_Unit"]</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in _courses.AllocatedBelow)
+                    {
+                        <tr>
+                            <td data-label="@L["Course_Code"]"><span dir="ltr">@row.CourseCode</span></td>
+                            <td data-label="@L["Common_Name"]"><MudLink Href="@($"courses/{row.CourseId}")" Class="lms-person-link">@CultureText.Pick(row.CourseNameAr, row.CourseNameEn)</MudLink></td>
+                            <td data-label="@L["Allocation_Unit"]">@CultureText.Pick(row.OrgUnitNameAr, row.OrgUnitNameEn)</td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        }
+    }
+</div>
+
+@code {
+    private UnitCoursesDto? _courses;
+    private string? _error;
+
+    [Parameter, EditorRequired] public Guid UnitId { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _error = null;
+        await ApiCalls.RunAsync(async () => _courses = await Api.GetUnitCoursesAsync(UnitId), Navigation, L, message => _error = message);
+    }
+}

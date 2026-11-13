@@ -1,0 +1,14 @@
+@using Lms.Client.Components.Content
+@using Lms.Client.Components.Editors
+
+@* Body of a Page module: one rich text editor per language (the server sanitises both on write). *@
+<MudStack Spacing="2">
+    <RichTextEditor Value="@Model.BodyHtmlAr" ValueChanged="v => Model.BodyHtmlAr = v" Label="@L["Module_BodyAr"]"
+                    ContentDir="rtl" TestId="module-body-ar" />
+    <RichTextEditor Value="@Model.BodyHtmlEn" ValueChanged="v => Model.BodyHtmlEn = v" Label="@L["Module_BodyEn"]"
+                    ContentDir="ltr" TestId="module-body-en" />
+</MudStack>
+
+@code {
+    [Parameter, EditorRequired] public ModuleFormModel Model { get; set; } = default!;
+}

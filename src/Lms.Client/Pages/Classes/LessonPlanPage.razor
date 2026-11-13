@@ -1,0 +1,117 @@
+@page "/class-courses/{Id:guid}/plan"
+@attribute [Authorize]
+@using System.Globalization
+@using Lms.Client.Components.Content
+@using Lms.Client.Services
+@using Lms.Client.Services.Api
+@using Lms.Shared.Authorization
+@using Lms.Shared.Classes
+@using Lms.Shared.Configuration
+@inject ILessonPlansApi Api
+@inject IConfigApi Config
+@inject ILmsApi Me
+@inject IContextStore Context
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<PageTitle>@L["LessonPlan_Title"]</PageTitle>
+<Lms.Client.Pages.Forums.ClassCourseTabs ClassCourseId="Id" Active="plan" />
+@if (!PermState.Loaded || _loading)
+{
+    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+}
+else if (!PermState.Has(Permissions.LessonPlans.View))
+{
+    <MudAlert Severity="Severity.Warning" data-testid="plan-forbidden">@L["Forbidden_Title"]</MudAlert>
+}
+else if (_error is not null || _plan is null)
+{
+    <MudAlert Severity="Severity.Error" data-testid="plan-error">@(_error ?? L["Api_Error"].Value)</MudAlert>
+}
+else
+{
+    <MudStack Spacing="1" Class="mb-4" data-testid="plan-header">
+        <MudText Typo="Typo.h4">@L["LessonPlan_Title"]</MudText>
+        @if (_header is { } cc)
+        {
+            <MudText Typo="Typo.h6">
+                @Culture.Pick(cc.CourseNameAr, cc.CourseNameEn) · @Culture.Pick(cc.ClassNameAr, cc.ClassNameEn)
+            </MudText>
+        }
+        <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap" AlignItems="AlignItems.Center">
+            @if (_plan.BlueprintVersion is { } version)
+            {
+                <MudChip T="string" Color="Color.Primary" Size="Size.Small">@L["LessonPlan_Version", version]</MudChip>
+            }
+            @if (_plan.SyncedAt is { } synced)
+            {
+                <MudText Typo="Typo.caption" Class="mud-text-secondary">@L["LessonPlan_Synced", synced.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)]</MudText>
+            }
+        </MudStack>
+        <ProgressBar Progress="_plan.Progress" Label="@L["LessonPlan_CourseProgress"]" TestId="course-progress" />
+    </MudStack>
+
+    @if (_plan.BlueprintVersion is null && _plan.Sections.Count == 0)
+    {
+        <MudAlert Severity="Severity.Info" data-testid="plan-empty">@L["LessonPlan_Empty"]</MudAlert>
+    }
+    else
+    {
+        <LessonPlanTree Plan="_plan" ShowHijri="_showHijri" Staff="@(_plan.Progress is null)" />
+    }
+
+
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private ClassLessonPlanDto? _plan;
+    private ClassCourseDto? _header;
+    private string? _error;
+    private bool _loading = true;
+    private bool _showHijri;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        PermState.Changed -= OnPermissionsChanged;
+        PermState.Changed += OnPermissionsChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true; _error = null;
+        _plan = null; _header = null;
+        if (PermState.Has(Permissions.LessonPlans.View))
+        {
+            await ApiCalls.RunAsync(async () => _plan = await Api.GetPlanAsync(Id), Navigation, L, message => _error = message);
+            if (_plan is not null)
+            {
+                // The names are a convenience: the caller's own class courses carry them; a plan opened by other staff has no header names.
+                await ApiCalls.RunAsync(async () => _header = (await Api.GetMyClassCoursesAsync()).FirstOrDefault(c => c.Id == Id), Navigation, L, _ => { });
+                await ReadHijriSettingAsync();
+            }
+        }
+        _loading = false;
+    }
+
+    private async Task ReadHijriSettingAsync()
+    {
+        _showHijri = false;
+        await ApiCalls.RunAsync(async () =>
+        {
+            var me = await Me.GetMeAsync();
+            if (me.Contexts.FirstOrDefault(c => c.AssignmentId == Context.ActiveAssignmentId) is not { } active) return;
+            var settings = await Config.GetSettingsIfAllowedAsync(active.OrgUnitId);   // Teacher has no Settings.View: default calendar then
+            _showHijri = settings.FirstOrDefault(s => s.Name == SettingKeys.UiShowHijriDates.Name)?.ValueJson == "true";
+        }, Navigation, L, _ => { });
+    }
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => PermState.Changed -= OnPermissionsChanged;
+}

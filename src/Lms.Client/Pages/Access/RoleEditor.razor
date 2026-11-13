@@ -6,39 +6,51 @@
 @inject NavigationManager Navigation
 
 @* Create or edit one role. The base kind of an existing role (built-in or custom) is never editable. *@
-<MudPaper Class="pa-4" data-testid="role-editor">
-    <MudStack Spacing="3">
-        @if (_error is not null)
-        {
-            <MudAlert Severity="Severity.Error" data-testid="role-error">@_error</MudAlert>
-        }
+<div class="lms-role-editor" data-testid="role-editor">
+    @if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-4" data-testid="role-error">@_error</MudAlert>
+    }
 
+    <SectionCard Title="@(Role is null ? L["Roles_New"] : L["Roles_EditTitle"])">
         <BilingualNameFields @bind-NameAr="_nameAr" @bind-NameEn="_nameEn" />
+        <div class="mt-2">
+            @if (Role is null)
+            {
+                <MudSelect T="string" @bind-Value="_baseKind" Label="@L["Roles_BaseKind"]" HelperText="@L["Roles_BaseKindHelp"]" data-testid="role-basekind">
+                    @foreach (var kind in new[] { RoleBaseKinds.Staff, RoleBaseKinds.Student, RoleBaseKinds.Guardian })
+                    {
+                        <MudSelectItem Value="@kind">@L[$"BaseKind_{kind}"]</MudSelectItem>
+                    }
+                </MudSelect>
+            }
+            else
+            {
+                <dl class="lms-details">
+                    <DetailItem Label="@L["Roles_BaseKind"]" TestId="role-basekind-fixed">
+                        @L[$"BaseKind_{Role.BaseKind}"]
+                    </DetailItem>
+                </dl>
+            }
+        </div>
+    </SectionCard>
 
-        @if (Role is null)
-        {
-            <MudSelect T="string" @bind-Value="_baseKind" Label="@L["Roles_BaseKind"]" data-testid="role-basekind">
-                @foreach (var kind in new[] { RoleBaseKinds.Staff, RoleBaseKinds.Student, RoleBaseKinds.Guardian })
-                {
-                    <MudSelectItem Value="@kind">@L[$"BaseKind_{kind}"]</MudSelectItem>
-                }
-            </MudSelect>
-        }
-        else
-        {
-            <MudText data-testid="role-basekind-fixed">@L["Roles_BaseKind"]: @L[$"BaseKind_{Role.BaseKind}"]</MudText>
-        }
-
-        <MudText Typo="Typo.h6">@L["Roles_Permissions"]</MudText>
+    <SectionCard Title="@L["Roles_Permissions"]">
         <PermissionMatrix Groups="Groups" Selected="_selected" />
+    </SectionCard>
 
-        <MudStack Row="true" Justify="Justify.FlexEnd" Spacing="2">
-            <MudButton OnClick="OnCancel" data-testid="role-cancel">@L["Common_Cancel"]</MudButton>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_saving"
-                       data-testid="role-save">@L["Common_Save"]</MudButton>
-        </MudStack>
-    </MudStack>
-</MudPaper>
+    <div class="lms-form-footer">
+        <MudButton Variant="Variant.Text" OnClick="OnCancel" data-testid="role-cancel">@L["Common_Cancel"]</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_saving"
+                   StartIcon="@(_saving ? null : Icons.Material.Rounded.Check)" data-testid="role-save">
+            @if (_saving)
+            {
+                <MudProgressCircular Indeterminate="true" Size="Size.Small" Class="me-2" aria-hidden="true" />
+            }
+            @L["Common_Save"]
+        </MudButton>
+    </div>
+</div>
 
 @code {
     private string _nameAr = "", _nameEn = "", _baseKind = RoleBaseKinds.Staff;

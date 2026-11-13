@@ -1,0 +1,83 @@
+@using Lms.Client.Components.Content
+@using Lms.Client.Services
+@using Lms.Shared.Classes
+@inject ICultureService Culture
+
+@* Sections and lessons of a class lesson plan. Hidden items (removed from the blueprint) are greyed; the server omits them for students. *@
+<MudStack Spacing="3">
+    @foreach (var section in Plan.Sections.OrderBy(s => s.Order))
+    {
+        var sec = section;
+        <MudPaper Outlined="true" Class="@("pa-3" + (sec.IsHidden ? " lms-plan-hidden" : ""))" data-testid="@($"plan-section-{sec.Key}")">
+            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Class="mb-2">
+                <MudText Typo="Typo.h6">@SectionLabel() @sec.Order · @Culture.Pick(sec.TitleAr, sec.TitleEn)</MudText>
+                @if (sec.IsHidden)
+                {
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@L["LessonPlan_Hidden"]</MudChip>
+                }
+            </MudStack>
+            <MudStack Spacing="1">
+                @foreach (var lesson in sec.Lessons.OrderBy(l => l.Order))
+                {
+                    var les = lesson;
+                    <div class="@("lms-plan-lesson" + (les.IsHidden ? " lms-plan-hidden" : ""))" data-testid="@($"plan-lesson-{les.Key}")">
+                        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                            <MudText Typo="Typo.subtitle1">@les.Order. @Culture.Pick(les.TitleAr, les.TitleEn)</MudText>
+                            @if (les.IsHidden)
+                            {
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@L["LessonPlan_Hidden"]</MudChip>
+                            }
+                            @if (les.PlannedDate is { } date)
+                            {
+                                <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                                    @L["LessonPlan_Planned"] <span dir="ltr">@FormatDate(date)</span>
+                                    @if (ShowHijri && HijriDates.Format(date) is { Length: > 0 } hijri)
+                                    {
+                                        <span dir="ltr" data-testid="plan-hijri"> (@hijri @L["LessonPlan_HijriSuffix"])</span>
+                                    }
+                                </MudText>
+                            }
+                        </MudStack>
+                        @{
+                            var objectives = Culture.Pick(les.ObjectivesAr ?? les.ObjectivesEn ?? "", les.ObjectivesEn ?? les.ObjectivesAr ?? "");
+                        }
+                        @if (objectives.Length > 0)
+                        {
+                            <MudText Typo="Typo.body2" Class="mud-text-secondary">@objectives</MudText>
+                        }
+                        <ProgressBar Progress="les.Progress" Label="@L["LessonPlan_LessonProgress"]" TestId="@($"lesson-progress-{les.Key}")" />
+                        @if (les.Modules is { Count: > 0 } modules)
+                        {
+                            <MudStack Spacing="1" Class="lms-plan-modules" data-testid="@($"plan-modules-{les.Key}")">
+                                @foreach (var module in modules.OrderBy(m => m.Order))
+                                {
+                                    <ModuleNode Node="module" Staff="Staff" @key="module.Id" />
+                                }
+                            </MudStack>
+                        }
+                    </div>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudStack>
+
+@code {
+    [Parameter, EditorRequired] public ClassLessonPlanDto Plan { get; set; } = default!;
+    [Parameter] public bool ShowHijri { get; set; }
+
+    /// <summary>Staff view (no student progress): modules show visibility and target chips instead of a completion state.</summary>
+    [Parameter] public bool Staff { get; set; }
+
+    /// <summary>Short date in the UI culture; the bidi marks Arabic patterns carry are dropped because the span is laid out left to right.</summary>
+    private static string FormatDate(DateOnly date) =>
+        date.ToString("d", System.Globalization.CultureInfo.CurrentCulture).Replace("‎", "").Replace("‏", "").Replace("؜", "");
+
+    /// <summary>Week, Unit or Chapter, as configured by Blueprints.SectionLabel; an unknown value is shown as is.</summary>
+    private string SectionLabel()
+    {
+        var key = "SettingValue_Blueprints_SectionLabel_" + Plan.SectionLabel;
+        var text = L[key];
+        return text.ResourceNotFound ? Plan.SectionLabel : text.Value;
+    }
+}

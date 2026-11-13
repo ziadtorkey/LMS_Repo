@@ -10,17 +10,50 @@ namespace Lms.IntegrationTests.Access;
 [Collection(ApiCollection.Name)]
 public sealed class BuiltInRoleReconcilerTests(LmsApiFactory factory)
 {
-    /// <summary>Simulates a client provisioned under M0: defaults version 0 and only the M0 permission set.</summary>
+    /// <summary>
+    /// The built-in role permission sets as the M0 provisioner created them (contracts #22, frozen here on purpose: a real
+    /// M0 Manager had no Assignments.Create/Delete, which only D16 gave it in M1).
+    /// </summary>
+    internal static readonly IReadOnlyDictionary<string, string[]> M0RoleLists = new Dictionary<string, string[]>
+    {
+        [BuiltInRoles.OrgAdmin] =
+        [
+            Permissions.OrgUnits.View, Permissions.OrgUnits.Create, Permissions.OrgUnits.Update, Permissions.OrgUnits.Delete,
+            Permissions.Roles.View, Permissions.Roles.Create, Permissions.Roles.Update, Permissions.Roles.Delete,
+            Permissions.Assignments.View, Permissions.Assignments.Create, Permissions.Assignments.Delete,
+            Permissions.Settings.View, Permissions.Settings.Update, Permissions.Policies.View, Permissions.Policies.Update,
+            Permissions.Audit.View, Permissions.Audit.Export, Permissions.Files.Upload, Permissions.Files.Download,
+        ],
+        [BuiltInRoles.Manager] =
+        [
+            Permissions.OrgUnits.View, Permissions.Roles.View, Permissions.Assignments.View, Permissions.Settings.View,
+            Permissions.Policies.View, Permissions.Audit.View, Permissions.Files.Upload, Permissions.Files.Download,
+        ],
+        [BuiltInRoles.Supervisor] =
+        [
+            Permissions.OrgUnits.View, Permissions.Settings.View, Permissions.Policies.View, Permissions.Files.Upload,
+            Permissions.Files.Download,
+        ],
+        [BuiltInRoles.Counselor] = [Permissions.Files.Upload, Permissions.Files.Download],
+        [BuiltInRoles.Teacher] = [Permissions.Files.Upload, Permissions.Files.Download],
+        [BuiltInRoles.Student] = [Permissions.Files.Upload, Permissions.Files.Download],
+        [BuiltInRoles.Guardian] = [Permissions.Files.Download],
+    };
+
+    /// <summary>Simulates a client provisioned under M0: defaults version 0 and exactly each role's M0 permission list.</summary>
     private async Task<AccessTree> SeedM0ClientAsync(string name)
     {
         var tree = await AccessTestData.SeedAsync(factory, name);
         await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
-        var m0 = BuiltInRoleDefaults.M0Baseline;
-        db.RolePermissions.RemoveRange(await db.RolePermissions
-            .Where(p => p.OrganizationId == tree.Org.Id && !m0.Contains(p.Permission)).ToListAsync());
-        foreach (var role in await db.Roles.Where(r => r.OrganizationId == tree.Org.Id).ToListAsync())
+        var roles = await db.Roles.Where(r => r.OrganizationId == tree.Org.Id).ToListAsync();
+        db.RolePermissions.RemoveRange(await db.RolePermissions.Where(p => p.OrganizationId == tree.Org.Id).ToListAsync());
+        foreach (var role in roles)
         {
             db.Entry(role).Property(nameof(Role.DefaultsVersion)).CurrentValue = 0;
+            if (role.BuiltInKey is { } key && M0RoleLists.TryGetValue(key, out var m0))
+            {
+                db.RolePermissions.AddRange(m0.Select(p => new RolePermission(tree.Org.Id, role.Id, p)));
+            }
         }
 
         await db.SaveChangesAsync();
@@ -54,6 +87,22 @@ public sealed class BuiltInRoleReconcilerTests(LmsApiFactory factory)
                 BuiltInRoles.Get(key).DefaultPermissions.Order(),
                 (await PermissionsOfAsync(tree, key)).Order());
         }
+    }
+
+    [Fact]
+    public async Task Reconcile_gives_an_M0_Manager_the_D16_assignment_permissions_it_never_had()
+    {
+        var tree = await SeedM0ClientAsync("RC8");
+        var before = await PermissionsOfAsync(tree, BuiltInRoles.Manager);
+        Assert.DoesNotContain(Permissions.Assignments.Create, before); // a real M0 Manager had neither
+        Assert.DoesNotContain(Permissions.Assignments.Delete, before);
+
+        await ReconcileAsync();
+
+        var manager = await PermissionsOfAsync(tree, BuiltInRoles.Manager);
+        Assert.Contains(Permissions.Assignments.Create, manager);
+        Assert.Contains(Permissions.Assignments.Delete, manager);
+        Assert.Equal(BuiltInRoles.Get(BuiltInRoles.Manager).DefaultPermissions.Order(), manager.Order());
     }
 
     [Fact]
@@ -160,6 +209,166 @@ public sealed class BuiltInRoleReconcilerTests(LmsApiFactory factory)
         Assert.Contains(Permissions.Students.SelfEdit, await PermissionsOfAsync(tree, BuiltInRoles.Student));
         Assert.Contains(Permissions.Students.ViewChildren, await PermissionsOfAsync(tree, BuiltInRoles.Guardian));
         Assert.DoesNotContain(Permissions.Students.Import, await PermissionsOfAsync(tree, BuiltInRoles.Manager));
+    }
+
+    [Fact]
+    public async Task Reconcile_adds_only_the_M4a_defaults_to_a_version_3_client()
+    {
+        // A client provisioned under M3 (defaults version 3): no Modules.* yet, and an admin removed an M3 default.
+        var tree = await AccessTestData.SeedAsync(factory, "RC9");
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            var teacher = tree.Roles[BuiltInRoles.Teacher].Id;
+            db.RolePermissions.RemoveRange(await db.RolePermissions
+                .Where(p => p.OrganizationId == tree.Org.Id
+                    && (p.Permission.StartsWith("Modules.") || (p.RoleId == teacher && p.Permission == Permissions.Groups.Manage)))
+                .ToListAsync());
+            foreach (var role in await db.Roles.Where(r => r.OrganizationId == tree.Org.Id).ToListAsync())
+            {
+                db.Entry(role).Property(nameof(Role.DefaultsVersion)).CurrentValue = 3;
+            }
+
+            await db.SaveChangesAsync();
+        }
+
+        await ReconcileAsync();
+
+        var teacherPermissions = await PermissionsOfAsync(tree, BuiltInRoles.Teacher);
+        Assert.Contains(Permissions.Modules.Manage, teacherPermissions);
+        Assert.Contains(Permissions.Modules.View, teacherPermissions);
+        Assert.DoesNotContain(Permissions.Groups.Manage, teacherPermissions);
+        Assert.Contains(Permissions.Modules.Manage, await PermissionsOfAsync(tree, BuiltInRoles.OrgAdmin));
+        Assert.Contains(Permissions.Modules.View, await PermissionsOfAsync(tree, BuiltInRoles.Student));
+        Assert.DoesNotContain(Permissions.Modules.Manage, await PermissionsOfAsync(tree, BuiltInRoles.Supervisor));
+        Assert.DoesNotContain(Permissions.Modules.View, await PermissionsOfAsync(tree, BuiltInRoles.Guardian));
+    }
+
+    [Fact]
+    public async Task Reconcile_adds_only_the_M4a_wave_2_defaults_to_a_version_4_client()
+    {
+        // A client on M4a wave 1 (defaults version 4): no activity permissions yet, and an admin removed Modules.Manage
+        // from the Teacher role (a version 4 default, which must stay removed).
+        string[] wave2 = ["CourseAssignments.", "Quizzes.", "Library.", "Forums."];
+        var tree = await AccessTestData.SeedAsync(factory, "RCA");
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            var teacher = tree.Roles[BuiltInRoles.Teacher].Id;
+            var rows = await db.RolePermissions.Where(p => p.OrganizationId == tree.Org.Id).ToListAsync();
+            db.RolePermissions.RemoveRange(rows.Where(p => wave2.Any(w => p.Permission.StartsWith(w, StringComparison.Ordinal))
+                || (p.RoleId == teacher && p.Permission == Permissions.Modules.Manage)));
+            foreach (var role in await db.Roles.Where(r => r.OrganizationId == tree.Org.Id).ToListAsync())
+            {
+                db.Entry(role).Property(nameof(Role.DefaultsVersion)).CurrentValue = 4;
+            }
+
+            await db.SaveChangesAsync();
+        }
+
+        await ReconcileAsync();
+
+        var teacherPermissions = await PermissionsOfAsync(tree, BuiltInRoles.Teacher);
+        Assert.Contains(Permissions.CourseAssignments.Grade, teacherPermissions);
+        Assert.Contains(Permissions.Quizzes.Manage, teacherPermissions);
+        Assert.Contains(Permissions.Forums.Moderate, teacherPermissions);
+        Assert.Contains(Permissions.Library.Manage, teacherPermissions);
+        Assert.DoesNotContain(Permissions.Modules.Manage, teacherPermissions);
+        Assert.DoesNotContain(Permissions.CourseAssignments.Submit, teacherPermissions);
+
+        var studentPermissions = await PermissionsOfAsync(tree, BuiltInRoles.Student);
+        Assert.Contains(Permissions.CourseAssignments.Submit, studentPermissions);
+        Assert.Contains(Permissions.Quizzes.Attempt, studentPermissions);
+        Assert.Contains(Permissions.Forums.Post, studentPermissions);
+        Assert.DoesNotContain(Permissions.Forums.Moderate, studentPermissions);
+
+        Assert.Contains(Permissions.CourseAssignments.Grade, await PermissionsOfAsync(tree, BuiltInRoles.Manager));
+        Assert.Contains(Permissions.Forums.Moderate, await PermissionsOfAsync(tree, BuiltInRoles.OrgAdmin));
+        Assert.Contains(Permissions.Library.Manage, await PermissionsOfAsync(tree, BuiltInRoles.Supervisor));
+        Assert.DoesNotContain(Permissions.Quizzes.Manage, await PermissionsOfAsync(tree, BuiltInRoles.Supervisor));
+        Assert.Contains(Permissions.Library.View, await PermissionsOfAsync(tree, BuiltInRoles.Counselor));
+        Assert.DoesNotContain(await PermissionsOfAsync(tree, BuiltInRoles.Guardian),
+            p => wave2.Any(w => p.StartsWith(w, StringComparison.Ordinal)));
+    }
+
+    [Fact]
+    public async Task Reconcile_adds_only_the_M4b_wave_3a_defaults_to_a_version_5_client()
+    {
+        // A client on M4a wave 2 (defaults version 5): no live-session permissions yet, and an admin removed Forums.Post
+        // from the Student role (a version 5 default, which must stay removed).
+        var tree = await AccessTestData.SeedAsync(factory, "RCB");
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            var student = tree.Roles[BuiltInRoles.Student].Id;
+            var rows = await db.RolePermissions.Where(p => p.OrganizationId == tree.Org.Id).ToListAsync();
+            db.RolePermissions.RemoveRange(rows.Where(p => p.Permission.StartsWith("LiveSessions.", StringComparison.Ordinal)
+                || (p.RoleId == student && p.Permission == Permissions.Forums.Post)));
+            foreach (var role in await db.Roles.Where(r => r.OrganizationId == tree.Org.Id).ToListAsync())
+            {
+                db.Entry(role).Property(nameof(Role.DefaultsVersion)).CurrentValue = 5;
+            }
+
+            await db.SaveChangesAsync();
+        }
+
+        await ReconcileAsync();
+
+        var teacherPermissions = await PermissionsOfAsync(tree, BuiltInRoles.Teacher);
+        Assert.Contains(Permissions.LiveSessions.View, teacherPermissions);
+        Assert.Contains(Permissions.LiveSessions.Manage, teacherPermissions);
+
+        var studentPermissions = await PermissionsOfAsync(tree, BuiltInRoles.Student);
+        Assert.Contains(Permissions.LiveSessions.View, studentPermissions);
+        Assert.DoesNotContain(Permissions.LiveSessions.Manage, studentPermissions);
+        Assert.DoesNotContain(Permissions.Forums.Post, studentPermissions);
+
+        Assert.Contains(Permissions.LiveSessions.Manage, await PermissionsOfAsync(tree, BuiltInRoles.OrgAdmin));
+        Assert.Contains(Permissions.LiveSessions.Manage, await PermissionsOfAsync(tree, BuiltInRoles.Manager));
+        var supervisorPermissions = await PermissionsOfAsync(tree, BuiltInRoles.Supervisor);
+        Assert.Contains(Permissions.LiveSessions.View, supervisorPermissions);
+        Assert.DoesNotContain(Permissions.LiveSessions.Manage, supervisorPermissions);
+        Assert.DoesNotContain(await PermissionsOfAsync(tree, BuiltInRoles.Counselor),
+            p => p.StartsWith("LiveSessions.", StringComparison.Ordinal));
+        Assert.DoesNotContain(await PermissionsOfAsync(tree, BuiltInRoles.Guardian),
+            p => p.StartsWith("LiveSessions.", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task Reconcile_adds_only_the_M4b_wave_3b_package_defaults_to_a_version_6_client()
+    {
+        // A client on defaults version 6: no package permissions yet, and an admin removed Library.Manage from the
+        // Teacher role (an older default, which must stay removed).
+        var tree = await AccessTestData.SeedAsync(factory, "RCP");
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            var teacher = tree.Roles[BuiltInRoles.Teacher].Id;
+            var rows = await db.RolePermissions.Where(p => p.OrganizationId == tree.Org.Id).ToListAsync();
+            db.RolePermissions.RemoveRange(rows.Where(p => p.Permission.StartsWith("Packages.", StringComparison.Ordinal)
+                || (p.RoleId == teacher && p.Permission == Permissions.Library.Manage)));
+            foreach (var role in await db.Roles.Where(r => r.OrganizationId == tree.Org.Id).ToListAsync())
+            {
+                db.Entry(role).Property(nameof(Role.DefaultsVersion)).CurrentValue = 6;
+            }
+
+            await db.SaveChangesAsync();
+        }
+
+        await ReconcileAsync();
+
+        var teacherPermissions = await PermissionsOfAsync(tree, BuiltInRoles.Teacher);
+        Assert.Contains(Permissions.Packages.Upload, teacherPermissions);
+        Assert.Contains(Permissions.Packages.View, teacherPermissions);
+        Assert.DoesNotContain(Permissions.Library.Manage, teacherPermissions);
+        Assert.Contains(Permissions.Packages.Upload, await PermissionsOfAsync(tree, BuiltInRoles.OrgAdmin));
+        Assert.Contains(Permissions.Packages.Upload, await PermissionsOfAsync(tree, BuiltInRoles.Manager));
+
+        var studentPermissions = await PermissionsOfAsync(tree, BuiltInRoles.Student);
+        Assert.Contains(Permissions.Packages.View, studentPermissions);
+        Assert.DoesNotContain(Permissions.Packages.Upload, studentPermissions);
+
+        var supervisorPermissions = await PermissionsOfAsync(tree, BuiltInRoles.Supervisor);
+        Assert.Contains(Permissions.Packages.View, supervisorPermissions);
+        Assert.DoesNotContain(Permissions.Packages.Upload, supervisorPermissions);
+        Assert.DoesNotContain(await PermissionsOfAsync(tree, BuiltInRoles.Counselor), p => p.StartsWith("Packages.", StringComparison.Ordinal));
+        Assert.DoesNotContain(await PermissionsOfAsync(tree, BuiltInRoles.Guardian), p => p.StartsWith("Packages.", StringComparison.Ordinal));
     }
 
     [Fact]

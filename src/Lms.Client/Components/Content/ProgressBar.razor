@@ -1,0 +1,21 @@
+@using Lms.Shared.Content
+
+@* Completed over total as a labelled bar. Nothing is shown when no module counts (Total 0) or the server sent no progress (staff). *@
+@if (Progress is { Total: > 0 } p)
+{
+    var percent = (int)Math.Round(100.0 * Math.Min(p.Completed, p.Total) / p.Total);
+    <div class="lms-progress" data-testid="@TestId">
+        <MudStack Row="true" Justify="Justify.SpaceBetween" Spacing="2">
+            <MudText Typo="Typo.caption" Class="mud-text-secondary">@Label</MudText>
+            <MudText Typo="Typo.caption" Class="mud-text-secondary" data-testid="@($"{TestId}-count")">@L["Progress_Count", p.Completed, p.Total]</MudText>
+        </MudStack>
+        <MudProgressLinear Value="percent" Min="0" Max="100" Color="Color.Success" Rounded="true" Size="Size.Small"
+                           aria-label="@Label" aria-valuenow="@percent" aria-valuemin="0" aria-valuemax="100" />
+    </div>
+}
+
+@code {
+    [Parameter] public ProgressDto? Progress { get; set; }
+    [Parameter] public string Label { get; set; } = "";
+    [Parameter] public string TestId { get; set; } = "progress";
+}
