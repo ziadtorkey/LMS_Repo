@@ -12,9 +12,9 @@ public sealed class LiveSessionsModule : ILmsModule
 {
     public void AddServices(IServiceCollection services, IConfiguration configuration)
     {
-        // The fake provider until the Zoom provider (Task 5) is registered when Zoom is configured.
-        services.AddSingleton<FakeMeetingProvider>();
-        services.AddSingleton<IMeetingProvider>(sp => sp.GetRequiredService<FakeMeetingProvider>());
+        // No provider until the Zoom provider (Task 5) is registered when Zoom is configured: a create answers 409
+        // provider_not_configured. The integration test host registers the fake provider instead.
+        services.AddSingleton<IMeetingProvider, NotConfiguredMeetingProvider>();
         services.AddSingleton<ILiveSessionAttendanceSink, NoOpAttendanceSink>();
         services.AddScoped<LiveSessionService>();
         services.AddScoped<LiveSessionHandlers>();
