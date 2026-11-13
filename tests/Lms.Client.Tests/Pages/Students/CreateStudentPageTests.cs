@@ -66,6 +66,32 @@ public sealed class CreateStudentPageTests : StudentsTestContext
         _ = page.Find("[data-testid=student-save]").ClickAsync(new());
 
     [Fact]
+    public async Task Leaving_a_debounced_guardian_field_commits_it_at_once()
+    {
+        var page = await RenderPageAsync();
+        await ChooseUnitAsync(page);
+        var input = page.Find("input[data-testid=guardian-mobile-0]");
+
+        input.Input("0508888888");
+        Assert.Empty(GuardiansApi.Lookups); // still inside the 500 ms debounce
+        await input.BlurAsync(new());
+
+        // The browser blurs the focused field before a click or Tab reaches Save, which is why Save normally sees the typed value.
+        page.WaitForAssertion(() => Assert.Contains(GuardiansApi.Lookups, l => l.Mobile == "0508888888"), TimeSpan.FromMilliseconds(250));
+    }
+
+    [Fact]
+    public async Task Save_commits_pending_fields_first()
+    {
+        var page = await RenderPageAsync();
+        await ChooseUnitAsync(page);
+
+        await SaveAsync(page);
+
+        Assert.Single(JSInterop.Invocations["lmsFormFlush"]);
+    }
+
+    [Fact]
     public async Task Code_field_hidden_in_auto_mode()
     {
         var page = await RenderPageAsync();
