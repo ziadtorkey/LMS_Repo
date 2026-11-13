@@ -35,7 +35,7 @@ public sealed class MyCoursePageTests : LessonPlansTestContext
         var plan = Plans.Plans[Cc];
         var sections = plan.Sections.Select(s => s with
         {
-            Lessons = s.Lessons.Select(l => l.Key == Lesson ? l with { Modules = nodes, Progress = new ProgressDto(done, counted.Count) } : l).ToList(),
+            Lessons = s.Lessons.Select(l => l.Key == Lesson ? l with { Modules = nodes, Progress = new ProgressDto(done, counted.Count) } : l with { Modules = [], Progress = new ProgressDto(0, 0) }).ToList(),
         }).ToList();
         Plans.Plans[Cc] = plan with { Sections = sections, Progress = new ProgressDto(done, counted.Count) };
         Plans.HideHiddenItems = true;

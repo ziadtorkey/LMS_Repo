@@ -14,7 +14,7 @@
 <PageTitle>@L["Idp_Title"]</PageTitle>
 @if (!Perms.Loaded)
 {
-    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+    <LoadingState Lines="4" />
 }
 else if (!Perms.Has(Permissions.IdentityProviders.View))
 {
@@ -22,69 +22,82 @@ else if (!Perms.Has(Permissions.IdentityProviders.View))
 }
 else
 {
-    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3" Wrap="Wrap.Wrap">
-        <MudText Typo="Typo.h4" data-testid="idp-title">@L["Idp_Title"]</MudText>
-        @if (Perms.Has(Permissions.IdentityProviders.Manage))
-        {
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
-                       OnClick="() => OpenAsync(null)" data-testid="idp-new">@L["Idp_New"]</MudButton>
-        }
-    </MudStack>
+    <PageHeader Title="@L["Idp_Title"]" Subtitle="@L["Idp_Subtitle"]" TitleTestId="idp-title">
+        <Actions>
+            @if (Perms.Has(Permissions.IdentityProviders.Manage))
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Add"
+                           OnClick="() => OpenAsync(null)" data-testid="idp-new">@L["Idp_New"]</MudButton>
+            }
+        </Actions>
+    </PageHeader>
 
     @if (_loading)
     {
-        <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+        <LoadingState Lines="4" />
     }
     else if (_failed)
     {
-        <MudAlert Severity="Severity.Error" data-testid="api-error">
-            @L["Api_Error"]
-            <MudButton Variant="Variant.Text" OnClick="LoadAsync">@L["Common_Retry"]</MudButton>
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="api-error">
+            <div class="d-flex align-center flex-wrap gap-2">
+                <span>@L["Api_Error"]</span>
+                <MudButton Variant="Variant.Outlined" Size="Size.Small" Color="Color.Error" StartIcon="@Icons.Material.Rounded.Refresh"
+                           OnClick="LoadAsync">@L["Common_Retry"]</MudButton>
+            </div>
         </MudAlert>
     }
     else if (_items.Count == 0)
     {
-        <MudText data-testid="table-empty">@L["Common_Empty"]</MudText>
+        <SectionCard>
+            <EmptyState Title="@L["Idp_EmptyTitle"]" Text="@L["Idp_EmptyText"]" Icon="@Icons.Material.Rounded.Login" TestId="table-empty" />
+        </SectionCard>
     }
     else
     {
-        <MudTable T="IdentityProviderDto" Items="_items" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm">
-            <HeaderContent>
-                <MudTh>@L["Common_Name"]</MudTh>
-                <MudTh>@L["Idp_Kind"]</MudTh>
-                <MudTh>@L["Idp_Slug"]</MudTh>
-                <MudTh>@L["Idp_EmailDomains"]</MudTh>
-                <MudTh>@L["Common_Enabled"]</MudTh>
-                <MudTh>@L["Common_Actions"]</MudTh>
-            </HeaderContent>
-            <RowTemplate>
-                <MudTd DataLabel="@L["Common_Name"]">@CultureText.Pick(context.DisplayNameAr, context.DisplayNameEn)</MudTd>
-                <MudTd DataLabel="@L["Idp_Kind"]">@L[$"IdpKind_{context.Kind}"]</MudTd>
-                <MudTd DataLabel="@L["Idp_Slug"]"><span dir="ltr">@context.Slug</span></MudTd>
-                <MudTd DataLabel="@L["Idp_EmailDomains"]">
-                    <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap">
-                        @foreach (var domain in context.EmailDomains)
+        <SectionCard Flush="true">
+            <MudTable T="IdentityProviderDto" Items="_items" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="0"
+                      HeaderClass="lms-table-head" Class="lms-table">
+                <HeaderContent>
+                    <MudTh>@L["Common_Name"]</MudTh>
+                    <MudTh>@L["Idp_Kind"]</MudTh>
+                    <MudTh>@L["Idp_Slug"]</MudTh>
+                    <MudTh>@L["Idp_EmailDomains"]</MudTh>
+                    <MudTh>@L["Common_Enabled"]</MudTh>
+                    <MudTh><span class="lms-visually-hidden">@L["Common_Actions"]</span></MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="@L["Common_Name"]"><span class="lms-cell-strong">@CultureText.Pick(context.DisplayNameAr, context.DisplayNameEn)</span></MudTd>
+                    <MudTd DataLabel="@L["Idp_Kind"]">
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Class="lms-role-chip">@L[$"IdpKind_{context.Kind}"]</MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="@L["Idp_Slug"]"><span dir="ltr" class="lms-muted">@context.Slug</span></MudTd>
+                    <MudTd DataLabel="@L["Idp_EmailDomains"]">
+                        <div class="lms-chip-row">
+                            @foreach (var domain in context.EmailDomains)
+                            {
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text"><span dir="ltr">@domain</span></MudChip>
+                            }
+                        </div>
+                    </MudTd>
+                    <MudTd DataLabel="@L["Common_Enabled"]">
+                        <MudSwitch T="bool" Value="context.Enabled" ValueChanged="v => ToggleAsync(context, v)" Color="Color.Primary"
+                                   Disabled="@(!Perms.Has(Permissions.IdentityProviders.Manage))" aria-label="@L["Common_Enabled"]"
+                                   data-testid="@($"idp-enabled-{context.Id}")" />
+                    </MudTd>
+                    <MudTd Class="lms-cell-actions">
+                        @if (Perms.Has(Permissions.IdentityProviders.Manage))
                         {
-                            <MudChip T="string" Size="Size.Small"><span dir="ltr">@domain</span></MudChip>
+                            <div class="lms-row-actions">
+                                <MudIconButton Icon="@Icons.Material.Rounded.Edit" Size="Size.Small" aria-label="@L["Common_Edit"]"
+                                               OnClick="() => OpenAsync(context)" data-testid="@($"idp-edit-{context.Id}")" />
+                                <MudIconButton Icon="@Icons.Material.Rounded.DeleteOutline" Size="Size.Small" Color="Color.Error" aria-label="@L["Common_Delete"]"
+                                               OnClick="() => DeleteAsync(context)" data-testid="@($"idp-delete-{context.Id}")" />
+                            </div>
                         }
-                    </MudStack>
-                </MudTd>
-                <MudTd DataLabel="@L["Common_Enabled"]">
-                    <MudSwitch T="bool" Value="context.Enabled" ValueChanged="v => ToggleAsync(context, v)" Color="Color.Primary"
-                               Disabled="@(!Perms.Has(Permissions.IdentityProviders.Manage))" aria-label="@L["Common_Enabled"]"
-                               data-testid="@($"idp-enabled-{context.Id}")" />
-                </MudTd>
-                <MudTd DataLabel="@L["Common_Actions"]">
-                    @if (Perms.Has(Permissions.IdentityProviders.Manage))
-                    {
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit" aria-label="@L["Common_Edit"]"
-                                       OnClick="() => OpenAsync(context)" data-testid="@($"idp-edit-{context.Id}")" />
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="@L["Common_Delete"]"
-                                       OnClick="() => DeleteAsync(context)" data-testid="@($"idp-delete-{context.Id}")" />
-                    }
-                </MudTd>
-            </RowTemplate>
-        </MudTable>
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        </SectionCard>
     }
 }
 
