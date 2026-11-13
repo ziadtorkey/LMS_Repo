@@ -389,6 +389,30 @@ public sealed class LiveSessionPanelTests : StaffTestContext
         Assert.Contains(expected, cut.Find("[data-testid=live-meta]").TextContent);
     }
 
+    [Fact]
+    public async Task The_announcement_text_is_visually_hidden_with_the_apps_own_class()
+    {
+        var session = Seed(_serverNow.AddMinutes(30));
+        var cut = await OpenAsync(session.Id);
+
+        var announce = cut.Find("[data-testid=live-announce]");
+
+        Assert.Contains("lms-visually-hidden", announce.ClassList);
+        Assert.DoesNotContain("visually-hidden", announce.ClassList); // the bare class is not defined anywhere: the text would show on screen
+    }
+
+    [Fact]
+    public void No_component_uses_the_undefined_visually_hidden_class()
+    {
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir is not null && !Directory.Exists(Path.Combine(dir.FullName, "src", "Lms.Client"))) dir = dir.Parent;
+        var offenders = Directory.EnumerateFiles(Path.Combine(dir!.FullName, "src", "Lms.Client"), "*.razor", SearchOption.AllDirectories)
+            .Where(f => System.Text.RegularExpressions.Regex.IsMatch(File.ReadAllText(f), @"class=""[^""]*(?<![\w-])visually-hidden"))
+            .ToList();
+
+        Assert.Empty(offenders);
+    }
+
     private static string LiveJoinScript()
     {
         var dir = new DirectoryInfo(AppContext.BaseDirectory);

@@ -79,7 +79,7 @@ else if (_session is { } s)
                 {
                     <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" data-testid="live-feature-off">@L["Live_FeatureOff"]</MudAlert>
                 }
-                <span class="visually-hidden" role="status" aria-live="polite" data-testid="live-announce">@_announcement</span>
+                <span class="lms-visually-hidden" role="status" aria-live="polite" data-testid="live-announce">@_announcement</span>
             </div>
 
             @if (IsStaff && phase is LivePhase.Live or LivePhase.Ended)
