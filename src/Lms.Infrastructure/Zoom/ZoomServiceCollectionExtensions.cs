@@ -1,8 +1,12 @@
 using Lms.Domain.Abstractions;
+using Lms.Domain.LiveSessions;
+using Lms.Infrastructure.LiveSessions;
 using Lms.Infrastructure.Jobs;
 using Lms.Shared.LiveSessions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
 namespace Lms.Infrastructure.Zoom;
@@ -33,6 +37,18 @@ public static class ZoomServiceCollectionExtensions
         services.AddScoped(sp => new ZoomHostAllocator(
             sp.GetRequiredService<IOptions<ZoomOptions>>(), sp.GetRequiredService<IJobKeyLock>(), sp.GetRequiredService<IHostSlotStore>(),
             () => HostSharePercent(configuration)));
+
+        // The provider live sessions talk to: Zoom, except that a Development host without Zoom credentials gets the in-memory fake so
+        // authoring works offline. Any other host without credentials gets the Zoom provider, which answers provider_not_configured.
+        services.AddSingleton<FakeMeetingProvider>();
+        services.AddScoped<ZoomMeetingProvider>();
+        // Replaces the "no provider" default the live-session module registers.
+        services.Replace(ServiceDescriptor.Scoped<IMeetingProvider>(sp =>
+            !sp.GetRequiredService<IOptions<ZoomOptions>>().Value.IsConfigured && sp.GetService<IHostEnvironment>()?.IsDevelopment() == true
+                ? sp.GetRequiredService<FakeMeetingProvider>()
+                : sp.GetRequiredService<ZoomMeetingProvider>()));
+        services.AddScoped<IHostSlotStore, EfHostSlotStore>();
+        services.AddScoped<ZoomSyncSweepJob>();
         return services;
     }
 

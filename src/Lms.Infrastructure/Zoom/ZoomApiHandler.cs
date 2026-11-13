@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Headers;
+using Microsoft.Extensions.Options;
 
 namespace Lms.Infrastructure.Zoom;
 
@@ -8,7 +9,7 @@ namespace Lms.Infrastructure.Zoom;
 /// a short <c>429 Retry-After</c> (a longer one is reported as <see cref="ZoomFailure.RateLimited"/> without waiting) and one retry
 /// with a fresh token after a 401. Every other status goes back to the caller untouched.
 /// </summary>
-public sealed class ZoomApiHandler(ZoomTokenCache tokens, ZoomOutboundLimiter limiter) : DelegatingHandler
+public sealed class ZoomApiHandler(ZoomTokenCache tokens, ZoomOutboundLimiter limiter, IOptions<ZoomOptions> options) : DelegatingHandler
 {
     /// <summary>Longest <c>Retry-After</c> a request thread waits out; beyond it the call fails and the sweep retries later.</summary>
     public static readonly TimeSpan MaxInlineWait = TimeSpan.FromSeconds(30);
@@ -29,14 +30,21 @@ public sealed class ZoomApiHandler(ZoomTokenCache tokens, ZoomOutboundLimiter li
             var token = await tokens.GetTokenAsync(cancellationToken);
             using var attempt = Clone(request, body, contentType, token);
 
+            // One call may take at most Zoom:Timeout; a hung call is Zoom being unavailable, not a cancelled request.
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            timeout.CancelAfter(options.Value.Timeout);
             HttpResponseMessage response;
             try
             {
-                response = await base.SendAsync(attempt, cancellationToken);
+                response = await base.SendAsync(attempt, timeout.Token);
             }
             catch (HttpRequestException)
             {
                 throw new ZoomProviderException(ZoomFailure.Unavailable, "Zoom API unreachable.");
+            }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+            {
+                throw new ZoomProviderException(ZoomFailure.Unavailable, "Zoom API timed out.");
             }
 
             if (response.StatusCode == HttpStatusCode.Unauthorized && !refreshed)

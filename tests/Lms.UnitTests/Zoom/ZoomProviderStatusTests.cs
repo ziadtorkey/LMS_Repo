@@ -46,6 +46,21 @@ public sealed class ZoomProviderStatusTests
     }
 
     [Fact]
+    public async Task A_zoom_that_never_answers_is_unhealthy_and_that_answer_is_cached()
+    {
+        var clock = new ManualClock(new DateTime(2027, 1, 10, 9, 0, 0, DateTimeKind.Utc));
+        var options = Configured();
+        options.Timeout = TimeSpan.FromMilliseconds(150);
+        var wrapped = Microsoft.Extensions.Options.Options.Create(options);
+        var hanging = new HangingZoomHandler();
+        var status = new ZoomProviderStatus(new ZoomTokenCache(new HttpClient(hanging), wrapped, clock), wrapped, clock);
+
+        Assert.Equal(new ProviderStatusDto(true, false), await status.GetAsync());
+        Assert.Equal(new ProviderStatusDto(true, false), await status.GetAsync()); // served from the cache: no second 150 ms wait
+        Assert.Equal(1, hanging.Calls);
+    }
+
+    [Fact]
     public async Task The_answer_is_cached_briefly_so_the_status_screen_cannot_hammer_zoom()
     {
         var (status, auth, clock) = Build(Configured(), n => n == 1 ? FakeZoomHandler.Json(HttpStatusCode.ServiceUnavailable, "{}") : FakeZoomHandler.Token("t"));

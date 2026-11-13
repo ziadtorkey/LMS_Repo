@@ -85,6 +85,20 @@ public sealed class ZoomApiClientTests
         Assert.Equal(0, api.Calls);
     }
 
+    [Theory]
+    [InlineData("agenda", "x")]            // not a platform field
+    [InlineData("client", "<script>")]     // not a plain id
+    [InlineData("classCourse", "")]
+    [InlineData("client", "0123456789012345678901234567890123456789")] // longer than a guid
+    public async Task Tracking_fields_are_limited_to_the_platform_fields_with_plain_ids(string field, string value)
+    {
+        var (client, api) = Build((_, _) => Task.FromResult(FakeZoomHandler.Json(HttpStatusCode.Created, Created)));
+
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            client.CreateMeetingAsync(Request() with { Tracking = new Dictionary<string, string> { [field] = value } }));
+        Assert.Equal(0, api.Calls);
+    }
+
     [Fact]
     public async Task Update_patches_the_meeting_and_delete_tolerates_a_meeting_that_is_already_gone()
     {

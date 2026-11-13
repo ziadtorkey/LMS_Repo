@@ -21,8 +21,9 @@ public sealed class ZoomTokenCacheTests
         Assert.Equal("t1", token);
         var request = Assert.Single(handler.Requests);
         Assert.Equal(HttpMethod.Post, request.Method);
-        Assert.Contains("grant_type=account_credentials", request.Url);
-        Assert.Contains("account_id=acct", request.Url);
+        Assert.DoesNotContain("acct", request.Url); // the account id is in the body, not in a URL that gets logged
+        Assert.Contains("grant_type=account_credentials", request.Body);
+        Assert.Contains("account_id=acct", request.Body);
         Assert.Equal("Basic " + Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("cid:" + Secret)), request.Authorization);
     }
 
@@ -77,6 +78,29 @@ public sealed class ZoomTokenCacheTests
         Assert.Equal(ZoomFailure.Unauthorized, ex.Failure);
         Assert.DoesNotContain(Secret, ex.ToString());
         Assert.DoesNotContain(Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("cid:" + Secret)), ex.ToString());
+    }
+
+    [Fact]
+    public async Task A_token_call_that_never_answers_times_out_as_a_provider_failure()
+    {
+        var hanging = new HangingZoomHandler();
+        var options = new ZoomOptions { AccountId = "acct", ClientId = "cid", ClientSecret = Secret, Timeout = TimeSpan.FromMilliseconds(150) };
+        var cache = new ZoomTokenCache(new HttpClient(hanging), Microsoft.Extensions.Options.Options.Create(options), new ManualClock(DateTime.UtcNow));
+
+        var ex = await Assert.ThrowsAsync<ZoomProviderException>(() => cache.GetTokenAsync());
+
+        Assert.Equal(ZoomFailure.Unavailable, ex.Failure);
+        Assert.Equal(1, hanging.Calls);
+    }
+
+    [Fact]
+    public async Task A_caller_that_cancels_gets_its_own_cancellation_not_a_provider_failure()
+    {
+        var options = new ZoomOptions { AccountId = "acct", ClientId = "cid", ClientSecret = Secret, Timeout = TimeSpan.FromSeconds(30) };
+        var cache = new ZoomTokenCache(new HttpClient(new HangingZoomHandler()), Microsoft.Extensions.Options.Options.Create(options), new ManualClock(DateTime.UtcNow));
+        using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(100));
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => cache.GetTokenAsync(cts.Token));
     }
 
     [Fact]

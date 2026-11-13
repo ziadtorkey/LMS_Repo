@@ -29,7 +29,10 @@ public sealed class M3EndpointMatrixTests(LmsApiFactory factory, ITestOutputHelp
     /// <summary>GET routes under an M3 prefix that the Student role may read through a relationship (own enrollment).</summary>
     private static readonly HashSet<string> StudentReadable =
     [
-        Routes.ClassCourseLessonPlanPattern, Routes.ClassCourseLessonModulesPattern, Routes.ClassCourseProgressPattern,
+        Routes.ClassCourseLessonPlanPattern, Routes.ClassCourseLessonModulesPattern, Routes.ClassCourseProgressPattern, Routes.ClassCourseLiveSessionsPattern,
+        Routes.LiveSessionPattern,
+        Routes.ClassCourseAssignmentsPattern,
+        Routes.ClassCourseQuizzesPattern,
     ];
 
     private static IEnumerable<ProbeRow> M3Rows => M1ProbeRows.All.Where(r => IsM3(r.Pattern));
