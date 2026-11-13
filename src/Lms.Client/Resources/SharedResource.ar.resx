@@ -1426,4 +1426,5 @@
   <data name="Library_EmptyText" xml:space="preserve"><value>غيّر عوامل التصفية، أو أضف موردًا إن كنت تدير المكتبة.</value></data>
   <data name="MyClassCourses_Subtitle" xml:space="preserve"><value>مقررات الفصول التي تدرّسها هذا العام وخطط دروسها.</value></data>
   <data name="Announcements_New" xml:space="preserve"><value>إعلان جديد</value></data>
+  <data name="ClassCourse_TabMyCourse" xml:space="preserve"><value>مقرري</value></data>
 </root>

@@ -1,9 +1,21 @@
+@using Lms.Client.Services.Api
 @using Lms.Shared.Authorization
 @inject PermissionState PermState
+@inject ILessonPlansApi Plans
 
-@* Plan · Forum · Announcements of one class course. The plan is always there; the other two need Forums.View. *@
+@* One strip for a class course: [Plan] [My course] · Forum · Announcements. Plan is for staff: Modules.Manage in the active context, or a
+   teacher of this class course today. My course is for a student enrolled in it. Someone who is both sees both, Plan first. A caller
+   with neither relationship but LessonPlans.View (a supervisor, say) still gets Plan, so the strip is never empty of its first tab.
+   Forum and Announcements need Forums.View. *@
 <MudStack Row="true" Spacing="1" Class="mb-3" role="navigation" aria-label="@L["ClassCourse_Sections"]" data-testid="class-course-tabs">
-    <MudButton Href="@($"class-courses/{ClassCourseId}/plan")" Variant="@VariantOf("plan")" aria-current="@CurrentOf("plan")" data-testid="tab-plan">@L["ClassCourse_TabPlan"]</MudButton>
+    @if (ShowPlan)
+    {
+        <MudButton Href="@($"class-courses/{ClassCourseId}/plan")" Variant="@VariantOf("plan")" aria-current="@CurrentOf("plan")" data-testid="tab-plan">@L["ClassCourse_TabPlan"]</MudButton>
+    }
+    @if (_relation.Enrolled)
+    {
+        <MudButton Href="@($"class-courses/{ClassCourseId}/learn")" Variant="@VariantOf("learn")" aria-current="@CurrentOf("learn")" data-testid="tab-learn">@L["ClassCourse_TabMyCourse"]</MudButton>
+    }
     @if (PermState.Has(Permissions.Forums.View))
     {
         <MudButton Href="@($"class-courses/{ClassCourseId}/forum")" Variant="@VariantOf("forum")" aria-current="@CurrentOf("forum")" data-testid="tab-forum">@L["ClassCourse_TabForum"]</MudButton>
@@ -12,9 +24,16 @@
 </MudStack>
 
 @code {
+    private ClassCourseRelation _relation = ClassCourseRelation.None;
+
     [Parameter, EditorRequired] public Guid ClassCourseId { get; set; }
-    /// <summary>"plan", "forum" or "announcements".</summary>
+    /// <summary>"plan", "learn", "forum" or "announcements".</summary>
     [Parameter, EditorRequired] public string Active { get; set; } = "plan";
+
+    private bool ShowPlan => PermState.Has(Permissions.Modules.Manage) || _relation.Teaches || (!_relation.Enrolled && PermState.Has(Permissions.LessonPlans.View));
+
+    protected override async Task OnParametersSetAsync() =>
+        _relation = await Plans.GetRelationAsync(ClassCourseId);
 
     private Variant VariantOf(string tab) => tab == Active ? Variant.Filled : Variant.Text;
 

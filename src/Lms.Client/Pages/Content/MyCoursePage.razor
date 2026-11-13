@@ -27,6 +27,7 @@ else if (_error is not null || _plan is null)
 }
 else
 {
+    <Lms.Client.Pages.Forums.ClassCourseTabs ClassCourseId="Id" Active="learn" />
     <MudStack Spacing="3">
         <div data-testid="learn-header">
             <PageHeader Title="@(_header is { } cc ? Culture.Pick(cc.CourseNameAr, cc.CourseNameEn) : L["Learn_Title"].Value)" Class="mb-2" />
