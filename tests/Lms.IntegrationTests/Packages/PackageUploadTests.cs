@@ -382,6 +382,7 @@ public sealed class PackageUploadTests(LmsApiFactory factory) : IDisposable
         var row = await db.Set<PackageUpload>().IgnoreQueryFilters().SingleAsync(p => p.Id == upload.Id);
         Assert.True(row.IsDeleted);
         Assert.False(await db.Set<Lms.Domain.Files.StoredFile>().AnyAsync(f => f.Id == row.ArchiveFileId));
+        Assert.True(await db.Set<PackageRevocation>().AnyAsync(r => r.PackageId == upload.Id && r.StudentProfileId == null)); // the content host refuses tokens issued before the delete
     }
 
     [Fact]
