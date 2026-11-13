@@ -18,7 +18,7 @@ public sealed class ContentTests(E2EFixture fixture) : E2ETestBase(fixture)
     /// <summary>Un-skip when the module authoring shell (FE T17) is mounted on the plan page (nothing renders AddModuleMenu yet) and bug #428 is fixed.</summary>
     private const string NeedsAuthoringShell = "Needs the module authoring wiring on the lesson plan page (#432) on main";
 
-    [Theory(Skip = NeedsAuthoringShell)]
+    [Theory]
     [InlineData("ar")]
     [InlineData("en")]
     public async Task Teacher_adds_file_video_audio_page_and_link_modules_and_reorders_them(string culture)
@@ -70,6 +70,8 @@ public sealed class ContentTests(E2EFixture fixture) : E2ETestBase(fixture)
         for (var i = 0; i < 4; i++)
         {
             await plan.Up(audioId).ClickAsync();
+            // each move re-renders the list: wait for the module to reach its new place before pressing again
+            await Expect(plan.ModuleTitles(lesson).Nth(3 - i)).ToContainTextAsync(culture == "ar" ? "صوت" : "An audio");
         }
 
         await Expect(plan.ModuleTitles(lesson).First).ToContainTextAsync(culture == "ar" ? "صوت" : "An audio");

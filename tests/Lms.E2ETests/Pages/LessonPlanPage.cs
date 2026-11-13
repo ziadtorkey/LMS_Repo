@@ -25,8 +25,15 @@ public sealed class LessonPlanPage(IPage page)
     /// <summary>Opens the "add module" menu of a lesson and picks a kind; returns the dialog that opens.</summary>
     public async Task<ModuleDialog> AddAsync(Guid lessonKey, string kind)
     {
-        await AddMenu(lessonKey).ClickAsync();
-        await page.GetByTestId($"module-add-{kind}").ClickAsync();
+        var item = page.GetByTestId($"module-add-{kind}");
+        // The popover of the previous add may still be closing and swallow the first click: open again until the item shows.
+        for (var attempt = 0; attempt < 3 && !await item.IsVisibleAsync(); attempt++)
+        {
+            await AddMenu(lessonKey).ClickAsync();
+            try { await item.WaitForAsync(new LocatorWaitForOptions { Timeout = 4000 }); } catch (TimeoutException) { }
+        }
+
+        await item.ClickAsync();
         var dialog = new ModuleDialog(page);
         await dialog.Save.WaitForAsync();
         return dialog;
@@ -43,12 +50,12 @@ public sealed class ModuleDialog(IPage page)
 {
     public ILocator Save => page.GetByTestId("module-save");
     public ILocator Error => page.GetByTestId("module-error");
-    public ILocator TitleAr => page.GetByTestId("module-title-ar").Locator("input");
-    public ILocator TitleEn => page.GetByTestId("module-title-en").Locator("input");
+    public ILocator TitleAr => page.GetByTestId("module-title-ar");
+    public ILocator TitleEn => page.GetByTestId("module-title-en");
     public ILocator Visibility => page.GetByTestId("module-visibility");
     public ILocator Target => page.GetByTestId("module-target");
     public ILocator Group => page.GetByTestId("module-group");
-    public ILocator Url => page.GetByTestId("module-url").Locator("input");
+    public ILocator Url => page.GetByTestId("module-url");
     public ILocator AssetInput => page.GetByTestId("asset-input").Locator("input[type=file]").Or(page.Locator("input[type=file]")).First;
     public ILocator AssetName => page.GetByTestId("module-asset-name");
     public ILocator AssetStatus => page.GetByTestId("asset-status");
@@ -66,6 +73,7 @@ public sealed class ModuleDialog(IPage page)
         var editor = page.GetByTestId(testId).Locator(".ql-editor");
         await editor.ClickAsync();
         await editor.PressSequentiallyAsync(text);
+        await page.WaitForTimeoutAsync(400); // the editor reports its text after a 250 ms debounce; save only after the model has it
     }
 
     public Task UploadAsync(string fileName, string contentType, byte[] bytes) =>
@@ -76,5 +84,7 @@ public sealed class ModuleDialog(IPage page)
     {
         await Save.ClickAsync();
         await Save.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Detached });
+        await page.WaitForLoadStateAsync(LoadState.NetworkIdle); // the plan reloads after a save: let it settle before the next menu click
+        await page.WaitForTimeoutAsync(300);
     }
 }
