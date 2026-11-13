@@ -180,6 +180,12 @@
   <data name="Error_invalid_context" xml:space="preserve"><value>Your selected role is no longer valid. Please choose a role again.</value></data>
   <data name="Error_context_required" xml:space="preserve"><value>Please choose a role first.</value></data>
   <data name="Audit_Title" xml:space="preserve"><value>Audit log</value></data>
+  <data name="Audit_Subtitle" xml:space="preserve"><value>Who changed what and when, plus sign-in and security events. Open an entry to see the changed values.</value></data>
+  <data name="Audit_EmptyTitle" xml:space="preserve"><value>No entries match</value></data>
+  <data name="Audit_EmptyText" xml:space="preserve"><value>Change the filters or widen the date range.</value></data>
+  <data name="Audit_FilterByUser" xml:space="preserve"><value>Show only this person's entries</value></data>
+  <data name="Audit_NoChanges" xml:space="preserve"><value>No field values were recorded for this entry.</value></data>
+  <data name="Audit_Field" xml:space="preserve"><value>Field</value></data>
   <data name="Audit_When" xml:space="preserve"><value>When</value></data>
   <data name="Audit_Who" xml:space="preserve"><value>Who</value></data>
   <data name="Audit_Role" xml:space="preserve"><value>Role</value></data>
@@ -1109,6 +1115,7 @@
   <data name="ModuleKind_Scorm" xml:space="preserve"><value>SCORM package</value></data>
   <data name="ModuleKind_Video" xml:space="preserve"><value>Video</value></data>
   <data name="Module_Group" xml:space="preserve"><value>Group: {0}</value></data>
+  <data name="Module_GroupField" xml:space="preserve"><value>Group</value></data>
   <data name="Module_NotVisibleNow" xml:space="preserve"><value>Not visible now</value></data>
   <data name="Module_ScheduledFrom" xml:space="preserve"><value>Visible from {0}</value></data>
   <data name="Module_ScheduledRange" xml:space="preserve"><value>Visible {0} to {1}</value></data>
@@ -1121,6 +1128,21 @@
   <data name="Progress_Count" xml:space="preserve"><value>{0} of {1}</value></data>
   <data name="LessonPlan_Modules" xml:space="preserve"><value>Modules</value></data>
   <data name="LessonPlan_ModulesLater" xml:space="preserve"><value>Modules arrive in a later release.</value></data>
+  <data name="Learn_Title" xml:space="preserve"><value>My course</value></data>
+  <data name="Learn_Continue" xml:space="preserve"><value>Continue where you left off</value></data>
+  <data name="Learn_ContinueOpen" xml:space="preserve"><value>Continue</value></data>
+  <data name="Learn_AllDone" xml:space="preserve"><value>You have completed everything so far.</value></data>
+  <data name="Learn_NothingYet" xml:space="preserve"><value>Nothing has been published yet.</value></data>
+  <data name="Learn_Progress" xml:space="preserve"><value>{0} of {1} done</value></data>
+  <data name="Learn_LessonProgress" xml:space="preserve"><value>{0}/{1}</value></data>
+  <data name="Learn_NotTracked" xml:space="preserve"><value>Not tracked</value></data>
+  <data name="Learn_WaitingSubmit" xml:space="preserve"><value>Waiting for your submission</value></data>
+  <data name="Learn_WaitingScore" xml:space="preserve"><value>Waiting for a score</value></data>
+  <data name="CompletionState_NotStarted" xml:space="preserve"><value>Not started</value></data>
+  <data name="CompletionState_InProgress" xml:space="preserve"><value>In progress</value></data>
+  <data name="CompletionState_Completed" xml:space="preserve"><value>Done</value></data>
+  <data name="MyClassCourses_OpenCourse" xml:space="preserve"><value>Open course</value></data>
+  <data name="Home_ContinueLearning" xml:space="preserve"><value>Continue learning</value></data>
   <data name="Asset_Limits" xml:space="preserve"><value>Allowed types: {0}. Maximum size: {1} MB.</value></data>
   <data name="Asset_Choose" xml:space="preserve"><value>Choose a file to upload</value></data>
   <data name="Asset_TypeNotAllowed" xml:space="preserve"><value>This file type is not allowed here. Allowed: {0}.</value></data>
@@ -1134,6 +1156,31 @@
   <data name="Asset_Download" xml:space="preserve"><value>Download</value></data>
   <data name="Asset_PreviewFailed" xml:space="preserve"><value>The file could not be loaded.</value></data>
   <data name="Asset_Reload" xml:space="preserve"><value>Reload</value></data>
+  <data name="Module_Add" xml:space="preserve"><value>Add module</value></data>
+  <data name="Module_Visibility" xml:space="preserve"><value>Visibility</value></data>
+  <data name="Module_VisibleFrom" xml:space="preserve"><value>Visible from</value></data>
+  <data name="Module_VisibleTo" xml:space="preserve"><value>Visible until</value></data>
+  <data name="Module_Time" xml:space="preserve"><value>Time</value></data>
+  <data name="Module_Target" xml:space="preserve"><value>For</value></data>
+  <data name="Module_Completion" xml:space="preserve"><value>Completion</value></data>
+  <data name="Module_BodyAr" xml:space="preserve"><value>Page content (Arabic)</value></data>
+  <data name="Module_BodyEn" xml:space="preserve"><value>Page content (English)</value></data>
+  <data name="Module_Url" xml:space="preserve"><value>Link address (https://...)</value></data>
+  <data name="Module_MoveUp" xml:space="preserve"><value>Move up</value></data>
+  <data name="Module_MoveDown" xml:space="preserve"><value>Move down</value></data>
+  <data name="Module_Hide" xml:space="preserve"><value>Hide</value></data>
+  <data name="Module_Show" xml:space="preserve"><value>Show</value></data>
+  <data name="Module_Move" xml:space="preserve"><value>Move to another lesson</value></data>
+  <data name="Module_MoveTo" xml:space="preserve"><value>Lesson</value></data>
+  <data name="Module_DeleteConfirm" xml:space="preserve"><value>Delete the module {0}?</value></data>
+  <data name="ModuleVisibility_Published" xml:space="preserve"><value>Published</value></data>
+  <data name="ModuleVisibility_Hidden" xml:space="preserve"><value>Hidden</value></data>
+  <data name="ModuleVisibility_Scheduled" xml:space="preserve"><value>Scheduled</value></data>
+  <data name="ModuleTarget_ClassCourse" xml:space="preserve"><value>The whole class</value></data>
+  <data name="ModuleTarget_Group" xml:space="preserve"><value>One group</value></data>
+  <data name="CompletionRule_None" xml:space="preserve"><value>Not tracked</value></data>
+  <data name="CompletionRule_Manual" xml:space="preserve"><value>Student marks it done</value></data>
+  <data name="CompletionRule_View" xml:space="preserve"><value>When the student opens it</value></data>
   <data name="RichText_Bold" xml:space="preserve"><value>Bold</value></data>
   <data name="RichText_BulletList" xml:space="preserve"><value>Bulleted list</value></data>
   <data name="RichText_Italic" xml:space="preserve"><value>Italic</value></data>
@@ -1193,4 +1240,37 @@
   <data name="Matrix_ChooseUnit" xml:space="preserve"><value>Choose a unit to see its classes.</value></data>
   <data name="Matrix_NoClasses" xml:space="preserve"><value>This unit has no classes in the selected year.</value></data>
   <data name="List_Separator" xml:space="preserve"><value>, </value></data>
+  <data name="ClassCourse_Sections" xml:space="preserve"><value>Class course sections</value></data>
+  <data name="ClassCourse_TabPlan" xml:space="preserve"><value>Plan</value></data>
+  <data name="ClassCourse_TabForum" xml:space="preserve"><value>Forum</value></data>
+  <data name="ClassCourse_TabAnnouncements" xml:space="preserve"><value>Announcements</value></data>
+  <data name="Forum_Title" xml:space="preserve"><value>Forum</value></data>
+  <data name="Forum_NewThread" xml:space="preserve"><value>New thread</value></data>
+  <data name="Forum_ThreadTitle" xml:space="preserve"><value>Title</value></data>
+  <data name="Forum_Message" xml:space="preserve"><value>Message</value></data>
+  <data name="Forum_Post" xml:space="preserve"><value>Post</value></data>
+  <data name="Forum_Reply" xml:space="preserve"><value>Reply</value></data>
+  <data name="Forum_Empty" xml:space="preserve"><value>No threads yet.</value></data>
+  <data name="Forum_Pinned" xml:space="preserve"><value>Pinned</value></data>
+  <data name="Forum_Locked" xml:space="preserve"><value>Locked</value></data>
+  <data name="Forum_Replies" xml:space="preserve"><value>{0} replies</value></data>
+  <data name="Forum_Back" xml:space="preserve"><value>Back to the forum</value></data>
+  <data name="Forum_Moderate" xml:space="preserve"><value>Moderate</value></data>
+  <data name="Forum_Pin" xml:space="preserve"><value>Pin</value></data>
+  <data name="Forum_Unpin" xml:space="preserve"><value>Unpin</value></data>
+  <data name="Forum_Lock" xml:space="preserve"><value>Lock</value></data>
+  <data name="Forum_Unlock" xml:space="preserve"><value>Unlock</value></data>
+  <data name="Forum_DeleteThread" xml:space="preserve"><value>Delete thread</value></data>
+  <data name="Forum_DeleteThreadConfirm" xml:space="preserve"><value>Delete this thread and all its replies?</value></data>
+  <data name="Forum_DeletePostConfirm" xml:space="preserve"><value>Delete this reply?</value></data>
+  <data name="Forum_LockedNote" xml:space="preserve"><value>This thread is locked: no new replies.</value></data>
+  <data name="Forum_Edited" xml:space="preserve"><value>(edited)</value></data>
+  <data name="Announcements_Title" xml:space="preserve"><value>Announcements</value></data>
+  <data name="Announcements_Notify" xml:space="preserve"><value>Notify the students</value></data>
+  <data name="Announcements_Publish" xml:space="preserve"><value>Publish</value></data>
+  <data name="Announcements_Empty" xml:space="preserve"><value>No announcements yet.</value></data>
+  <data name="Announcements_DeleteConfirm" xml:space="preserve"><value>Delete the announcement {0}?</value></data>
+  <data name="Announcements_FormTitle" xml:space="preserve"><value>Announcement title</value></data>
+  <data name="Forum_MoreReplies" xml:space="preserve"><value>Show more replies ({0} more)</value></data>
+  <data name="Forum_MoreThreads" xml:space="preserve"><value>Show more threads ({0} more)</value></data>
 </root>

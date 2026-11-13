@@ -13,83 +13,95 @@
 
 <PageTitle>@L["Audit_Title"]</PageTitle>
 
-<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3" Wrap="Wrap.Wrap">
-    <MudText Typo="Typo.h4">@L["Audit_Title"]</MudText>
-    @if (Perms.Has(Permissions.Audit.Export))
-    {
-        <MudStack Row="true" Spacing="2">
-            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Download"
+<PageHeader Title="@L["Audit_Title"]" Subtitle="@L["Audit_Subtitle"]">
+    <Actions>
+        @if (Perms.Has(Permissions.Audit.Export))
+        {
+            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.Download"
                        OnClick="() => ExportAsync(AuditExportFormats.Csv)" data-testid="audit-export-csv">@L["Audit_ExportCsv"]</MudButton>
-            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.TableView"
+            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.TableView"
                        OnClick="() => ExportAsync(AuditExportFormats.Xlsx)" data-testid="audit-export-xlsx">@L["Audit_ExportExcel"]</MudButton>
-        </MudStack>
-    }
-</MudStack>
+        }
+    </Actions>
+</PageHeader>
 
-<MudGrid Spacing="2" Class="mb-3">
-    <MudItem xs="12" sm="6" md="3">
-        <MudSelect T="string" Value="_entityType" ValueChanged="v => FilterAsync(() => _entityType = v)" Clearable="true"
-                   Label="@L["Audit_Entity"]" data-testid="filter-entity">
-            @foreach (var type in AuditCatalog.EntityTypes)
-            {
-                <MudSelectItem Value="@type">@L[$"AuditEntity_{type}"]</MudSelectItem>
-            }
-            @foreach (var ev in AuditCatalog.SecurityEvents)
-            {
-                <MudSelectItem Value="@ev">@L[$"AuditEvent_{ev}"]</MudSelectItem>
-            }
-        </MudSelect>
-    </MudItem>
-    <MudItem xs="12" sm="6" md="3">
-        <MudSelect T="string" Value="_action" ValueChanged="v => FilterAsync(() => _action = v)" Clearable="true"
-                   Label="@L["Audit_Action"]" data-testid="filter-action">
-            @foreach (var action in AuditActions.All)
-            {
-                <MudSelectItem Value="@action">@L[$"AuditAction_{action}"]</MudSelectItem>
-            }
-        </MudSelect>
-    </MudItem>
-    <MudItem xs="6" md="3">
-        <MudDatePicker Date="_from" DateChanged="d => FilterAsync(() => _from = d)" Label="@L["Audit_From"]" Clearable="true" data-testid="filter-from" />
-    </MudItem>
-    <MudItem xs="6" md="3">
-        <MudDatePicker Date="_to" DateChanged="d => FilterAsync(() => _to = d)" Label="@L["Audit_To"]" Clearable="true" data-testid="filter-to" />
-    </MudItem>
-    @if (_userId is not null)
-    {
-        <MudItem xs="12">
-            <MudChip T="string" OnClose="() => FilterAsync(() => _userId = null)" data-testid="filter-user">@_userLabel</MudChip>
-        </MudItem>
-    }
-</MudGrid>
+<SectionCard Flush="true">
+    <div class="lms-filters" role="search" aria-label="@L["Common_Filters"]">
+        <div class="lms-filter">
+            <MudSelect T="string" Value="_entityType" ValueChanged="v => FilterAsync(() => _entityType = v)" Clearable="true"
+                       Label="@L["Audit_Entity"]" data-testid="filter-entity">
+                @foreach (var type in AuditCatalog.EntityTypes)
+                {
+                    <MudSelectItem Value="@type">@L[$"AuditEntity_{type}"]</MudSelectItem>
+                }
+                @foreach (var ev in AuditCatalog.SecurityEvents)
+                {
+                    <MudSelectItem Value="@ev">@L[$"AuditEvent_{ev}"]</MudSelectItem>
+                }
+            </MudSelect>
+        </div>
+        <div class="lms-filter">
+            <MudSelect T="string" Value="_action" ValueChanged="v => FilterAsync(() => _action = v)" Clearable="true"
+                       Label="@L["Audit_Action"]" data-testid="filter-action">
+                @foreach (var action in AuditActions.All)
+                {
+                    <MudSelectItem Value="@action">@L[$"AuditAction_{action}"]</MudSelectItem>
+                }
+            </MudSelect>
+        </div>
+        <div class="lms-filter">
+            <MudDatePicker Date="_from" DateChanged="d => FilterAsync(() => _from = d)" Label="@L["Audit_From"]" Clearable="true" data-testid="filter-from" />
+        </div>
+        <div class="lms-filter">
+            <MudDatePicker Date="_to" DateChanged="d => FilterAsync(() => _to = d)" Label="@L["Audit_To"]" Clearable="true" data-testid="filter-to" />
+        </div>
+        @if (_userId is not null)
+        {
+            <div class="lms-filter lms-filter-chips">
+                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary" Icon="@Icons.Material.Rounded.Person"
+                         OnClose="() => FilterAsync(() => _userId = null)" data-testid="filter-user">@_userLabel</MudChip>
+            </div>
+        }
+    </div>
 
-<ServerTable T="AuditEntryDto" @ref="_table" ServerData="LoadPageAsync">
-    <HeaderContent>
-        <MudTh>@L["Audit_When"]</MudTh>
-        <MudTh>@L["Audit_Who"]</MudTh>
-        <MudTh>@L["Audit_Role"]</MudTh>
-        <MudTh>@L["Audit_Unit"]</MudTh>
-        <MudTh>@L["Audit_Action"]</MudTh>
-        <MudTh>@L["Audit_Entity"]</MudTh>
-    </HeaderContent>
-    <RowTemplate Context="e">
-        <MudTd DataLabel="@L["Audit_When"]"><span dir="ltr">@e.TimestampUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</span></MudTd>
-        <MudTd DataLabel="@L["Audit_Who"]">
-            @if (e.UserId is { } uid)
-            {
-                <MudLink Typo="Typo.body2" OnClick="() => FilterByUser(e)" data-testid="@($"audit-user-{e.Id}")">@UserName(e)</MudLink>
-            }
-        </MudTd>
-        <MudTd DataLabel="@L["Audit_Role"]">@(e.RoleNameAr is null ? "" : CultureText.Pick(e.RoleNameAr, e.RoleNameEn ?? e.RoleNameAr))</MudTd>
-        <MudTd DataLabel="@L["Audit_Unit"]">@(e.OrgUnitNameAr is null ? "" : CultureText.Pick(e.OrgUnitNameAr, e.OrgUnitNameEn ?? e.OrgUnitNameAr))</MudTd>
-        <MudTd DataLabel="@L["Audit_Action"]">@L[$"AuditAction_{e.Action}"]</MudTd>
-        <MudTd DataLabel="@L["Audit_Entity"]">
-            <MudLink Typo="Typo.body2" OnClick="() => Show(e)" data-testid="@($"audit-open-{e.Id}")">
-                @(e.Action == AuditActions.SecurityEvent ? L[$"AuditEvent_{e.EntityType}"] : L[$"AuditEntity_{e.EntityType}"])
-            </MudLink>
-        </MudTd>
-    </RowTemplate>
-</ServerTable>
+    <ServerTable T="AuditEntryDto" @ref="_table" ServerData="LoadPageAsync" EmptyTitle="@L["Audit_EmptyTitle"]"
+                 EmptyText="@L["Audit_EmptyText"]" EmptyIcon="@Icons.Material.Rounded.History">
+        <HeaderContent>
+            <MudTh>@L["Audit_When"]</MudTh>
+            <MudTh>@L["Audit_Who"]</MudTh>
+            <MudTh>@L["Audit_Role"]</MudTh>
+            <MudTh>@L["Audit_Unit"]</MudTh>
+            <MudTh>@L["Audit_Action"]</MudTh>
+            <MudTh>@L["Audit_Entity"]</MudTh>
+        </HeaderContent>
+        <RowTemplate Context="e">
+            <MudTd DataLabel="@L["Audit_When"]"><span dir="ltr" class="lms-muted">@e.TimestampUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</span></MudTd>
+            <MudTd DataLabel="@L["Audit_Who"]">
+                @if (e.UserId is { } uid)
+                {
+                    <MudTooltip Text="@L["Audit_FilterByUser"]">
+                        <MudLink Typo="Typo.body2" OnClick="() => FilterByUser(e)" Class="lms-person-link" data-testid="@($"audit-user-{e.Id}")">@UserName(e)</MudLink>
+                    </MudTooltip>
+                }
+                else
+                {
+                    <span class="lms-muted" aria-hidden="true">—</span>
+                }
+            </MudTd>
+            <MudTd DataLabel="@L["Audit_Role"]">@(e.RoleNameAr is null ? "" : CultureText.Pick(e.RoleNameAr, e.RoleNameEn ?? e.RoleNameAr))</MudTd>
+            <MudTd DataLabel="@L["Audit_Unit"]">@(e.OrgUnitNameAr is null ? "" : CultureText.Pick(e.OrgUnitNameAr, e.OrgUnitNameEn ?? e.OrgUnitNameAr))</MudTd>
+            <MudTd DataLabel="@L["Audit_Action"]">
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@ActionColor(e.Action)" Class="lms-status-chip">@L[$"AuditAction_{e.Action}"]</MudChip>
+            </MudTd>
+            <MudTd DataLabel="@L["Audit_Entity"]">
+                <MudLink Typo="Typo.body2" OnClick="() => Show(e)" Class="lms-audit-open" data-testid="@($"audit-open-{e.Id}")">
+                    @(e.Action == AuditActions.SecurityEvent ? L[$"AuditEvent_{e.EntityType}"] : L[$"AuditEntity_{e.EntityType}"])
+                    <MudIcon Icon="@Icons.Material.Rounded.ChevronRight" Size="Size.Small" Class="lms-icon-flip" aria-hidden="true" />
+                </MudLink>
+            </MudTd>
+        </RowTemplate>
+    </ServerTable>
+</SectionCard>
 
 <AuditDetailDrawer Entry="_selected" @bind-Open="_drawerOpen" />
 
@@ -128,6 +140,16 @@
     }
 
     private void Show(AuditEntryDto e) { _selected = e; _drawerOpen = true; }
+
+    /// <summary>Chip colour of an action (presentation only).</summary>
+    private static Color ActionColor(string action) => action switch
+    {
+        AuditActions.Created => Color.Success,
+        AuditActions.Updated => Color.Info,
+        AuditActions.Deleted => Color.Error,
+        AuditActions.SecurityEvent => Color.Warning,
+        _ => Color.Default,
+    };
 
     private static string UserName(AuditEntryDto e) =>
         CultureText.Pick(e.UserDisplayNameAr ?? e.UserEmail ?? "", e.UserDisplayNameEn ?? e.UserEmail ?? "");

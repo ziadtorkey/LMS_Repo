@@ -4,34 +4,46 @@
 
 @* Before/after diff of one audit entry; changed values are highlighted. Values keep their own direction (dir=auto). *@
 <MudDrawer Open="Open" OpenChanged="OpenChanged" Anchor="Anchor.End" Variant="DrawerVariant.Temporary"
-           Width="min(480px, 100vw)" Elevation="4" data-testid="audit-drawer">
-    <MudDrawerHeader>
-        <MudText Typo="Typo.h6">@(Entry is null ? "" : EntityLabel(Entry))</MudText>
+           Width="min(520px, 100vw)" Elevation="4" Class="lms-audit-drawer" data-testid="audit-drawer">
+    <MudDrawerHeader Class="lms-audit-drawer-head">
+        <div class="lms-audit-drawer-title">
+            <MudText Typo="Typo.h6">@(Entry is null ? "" : EntityLabel(Entry))</MudText>
+            @if (Entry is not null)
+            {
+                <span class="lms-muted lms-item-meta" dir="ltr">@Entry.TimestampUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</span>
+            }
+        </div>
+        <MudIconButton Icon="@Icons.Material.Rounded.Close" Size="Size.Small" aria-label="@L["Common_Close"]"
+                       OnClick="() => OpenChanged.InvokeAsync(false)" />
     </MudDrawerHeader>
-    <MudStack Class="pa-4" Spacing="2">
+    <div class="lms-audit-drawer-body">
         @if (_failed)
         {
-            <MudAlert Severity="Severity.Error" data-testid="audit-detail-error">@L["Api_Error"]</MudAlert>
+            <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="audit-detail-error">@L["Api_Error"]</MudAlert>
         }
         else if (_rows is null)
         {
-            <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+            <LoadingState Lines="4" />
         }
         else if (_rows.Count == 0)
         {
-            <MudText data-testid="audit-diff-empty">@L["Common_Empty"]</MudText>
+            <EmptyState Title="@L["Audit_NoChanges"]" Icon="@Icons.Material.Rounded.CompareArrows" TestId="audit-diff-empty" />
         }
         else
         {
-            <MudSimpleTable Dense="true" Class="lms-audit-diff" data-testid="audit-diff">
+            <div class="lms-audit-legend" aria-hidden="true">
+                <span class="lms-legend-swatch lms-diff-before"></span>@L["Audit_Before"]
+                <span class="lms-legend-swatch lms-diff-after"></span>@L["Audit_After"]
+            </div>
+            <MudSimpleTable Dense="true" Elevation="0" Class="lms-audit-diff lms-simple-table" data-testid="audit-diff">
                 <thead>
-                    <tr><th></th><th>@L["Audit_Before"]</th><th>@L["Audit_After"]</th></tr>
+                    <tr><th><span class="lms-visually-hidden">@L["Audit_Field"]</span></th><th>@L["Audit_Before"]</th><th>@L["Audit_After"]</th></tr>
                 </thead>
                 <tbody>
                     @foreach (var row in _rows)
                     {
                         <tr data-testid="@($"diff-{row.Property}")">
-                            <td dir="ltr">@row.Property</td>
+                            <td dir="ltr" class="lms-diff-prop">@row.Property</td>
                             <td dir="auto" class="@(row.Before != row.After ? "lms-diff-before" : null)">@row.Before</td>
                             <td dir="auto" class="@(row.Before != row.After ? "lms-diff-after" : null)">@row.After</td>
                         </tr>
@@ -39,8 +51,10 @@
                 </tbody>
             </MudSimpleTable>
         }
-        <MudButton OnClick="() => OpenChanged.InvokeAsync(false)" data-testid="audit-drawer-close">@L["Common_Close"]</MudButton>
-    </MudStack>
+    </div>
+    <div class="lms-audit-drawer-foot">
+        <MudButton Variant="Variant.Outlined" OnClick="() => OpenChanged.InvokeAsync(false)" data-testid="audit-drawer-close">@L["Common_Close"]</MudButton>
+    </div>
 </MudDrawer>
 
 @code {
