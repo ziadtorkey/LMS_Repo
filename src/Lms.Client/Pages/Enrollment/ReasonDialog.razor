@@ -1,0 +1,34 @@
+@using Lms.Client.Components
+
+@* Asks for a required reason (1-500 characters) and an effective date; closes with a ReasonResult. Used to remove a student from a class and to drop an enrollment. *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="2">
+            <MudText data-testid="reason-message">@Message</MudText>
+            <MudTextField T="string" @bind-Value="_reason" Label="@L["Staff_Reason"]" Lines="3" MaxLength="500" Immediate="true"
+                          Error="_showError" ErrorText="@L["Staff_ReasonRequired"]" data-testid="reason-text" />
+            <MudDatePicker Date="_date" DateChanged="d => _date = d" Label="@L["Enrollment_EffectiveOn"]" data-testid="reason-date" />
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="reason-cancel">@L["Common_Cancel"]</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Warning" OnClick="Submit" data-testid="reason-confirm">@ConfirmText</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private string _reason = "";
+    private DateTime? _date = DateTime.Today;
+    private bool _showError;
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public string Message { get; set; } = "";
+    [Parameter] public string ConfirmText { get; set; } = "";
+
+    private void Submit()
+    {
+        var reason = _reason.Trim();
+        _showError = reason.Length == 0;
+        if (!_showError) MudDialog.Close(DialogResult.Ok(new ReasonResult(reason, DateOnly.FromDateTime(_date ?? DateTime.Today))));
+    }
+}

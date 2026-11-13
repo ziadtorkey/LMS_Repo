@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Lms.Client.Services.Api;
+using Lms.Client.Services.LiveSessions;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.Extensions.Configuration;
@@ -47,11 +48,13 @@ public static class ClientServices
             services.AddSingleton<IConfigApi, FakeConfigApi>();
             services.AddSingleton<IStaffApi, FakeStaffApi>();
             services.AddSingleton<IStudentsApi, FakeStudentsApi>();
+            services.AddSingleton<IEnrollmentApi, FakeEnrollmentApi>();
             services.AddSingleton<IMyProfileApi, FakeMyProfileApi>();
             services.AddSingleton<IChangeRequestsApi, FakeChangeRequestsApi>();
             services.AddSingleton<IGuardiansApi, FakeGuardiansApi>();
             services.AddSingleton<IClassesApi, FakeClassesApi>();
             services.AddSingleton<IClassCoursesApi, FakeClassCoursesApi>();
+            services.AddSingleton<ITeachingApi>(_ => FakeTeachingApi.WithDemoData());
             services.AddSingleton<IIdentityProvidersApi, FakeIdentityProvidersApi>();
             services.AddSingleton<ICoursesApi, FakeCoursesApi>();
             services.AddSingleton<IBlueprintsApi>(new FakeBlueprintsApi { AutoSeed = true });
@@ -63,6 +66,7 @@ public static class ClientServices
             services.AddSingleton<Lms.Client.Services.Packages.IPackagesApi, Lms.Client.Services.Packages.FakePackagesApi>();
             services.AddSingleton<Lms.Client.Services.Packages.IPackagePlayerApi, Lms.Client.Services.Packages.FakePackagePlayerApi>();
             services.AddSingleton<IModulesApi, FakeModulesApi>();
+            services.AddSingleton<ILiveSessionsApi, FakeLiveSessionsApi>();
             services.AddSingleton<IActivityOverviewApi, FakeActivityOverviewApi>();
             services.AddScoped<AuthenticationStateProvider, FakeAuthenticationStateProvider>();
             services.AddAuthorizationCore();
@@ -98,11 +102,13 @@ public static class ClientServices
         services.AddScoped<IConfigApi, ConfigApi>();
         services.AddScoped<IStaffApi, StaffApi>();
         services.AddScoped<IStudentsApi, StudentsApi>();
+        services.AddScoped<IEnrollmentApi, EnrollmentApi>();
         services.AddScoped<IMyProfileApi, MyProfileApi>();
         services.AddScoped<IChangeRequestsApi, ChangeRequestsApi>();
         services.AddScoped<IGuardiansApi, GuardiansApi>();
         services.AddScoped<IClassesApi, ClassesApi>();
         services.AddScoped<IClassCoursesApi, ClassCoursesApi>();
+        services.AddScoped<ITeachingApi, TeachingApi>();
         services.AddScoped<IIdentityProvidersApi, IdentityProvidersApi>();
         services.AddScoped<ICoursesApi, CoursesApi>();
         services.AddScoped<IBlueprintsApi, BlueprintsApi>();
@@ -114,6 +120,7 @@ public static class ClientServices
         services.AddScoped<Lms.Client.Services.Packages.IPackagesApi, Lms.Client.Services.Packages.PackagesApi>();
         services.AddScoped<Lms.Client.Services.Packages.IPackagePlayerApi, Lms.Client.Services.Packages.PackagePlayerApi>();
         services.AddScoped<IModulesApi, ModulesApi>();
+        services.AddScoped<ILiveSessionsApi, LiveSessionsApi>();
         services.AddScoped<IActivityOverviewApi, ActivityOverviewApi>();
     }
 }
