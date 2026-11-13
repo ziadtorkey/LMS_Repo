@@ -203,6 +203,33 @@ public sealed class PackageTests(E2EFixture fixture) : E2ETestBase(fixture)
         Assert.Equal(culture == "ar" ? "rtl" : "ltr", await new ShellPage(Page).HtmlDirAsync());
     }
 
+    /// <summary>
+    /// When the token runs out the frame is inert (Tab never lands inside it, a click does nothing) and the alert has focus; Reload puts
+    /// focus back on the player (T19, #598). Real browser: bUnit only sees the attribute. Needs a short <c>Packages.TokenMinutes</c> in the E2E stack.
+    /// </summary>
+    [Theory(Skip = NeedsScorm)]
+    [InlineData("ar")]
+    [InlineData("en")]
+    public async Task Expired_token_makes_the_frame_inert_and_focuses_the_alert(string culture)
+    {
+        await StartAsync(culture: culture);
+        Page.SetDefaultTimeout(45_000);
+        var (world, moduleId) = await SetUpPackageAsync("scorm12_valid.zip", "Scorm");
+
+        await M4Kit.SignInAsync(Page, world.Student1.UserName, world.Student1.Password, culture);
+        var player = new PackagePlayerPage(Page);
+        await player.OpenAsync(world.ClassCourseId, moduleId);
+        await player.StartAsync();
+        await Expect(player.Expired).ToBeVisibleAsync(new() { Timeout = 120_000 }); // the stack's token lifetime is short and re-launch is blocked
+        await Expect(player.Expired).ToBeFocusedAsync();
+        await Expect(player.FrameElement).ToHaveAttributeAsync("inert", "");
+        await Page.Keyboard.PressAsync("Tab");
+        Assert.False(await Page.EvaluateAsync<bool>("() => document.activeElement?.tagName === 'IFRAME'")); // focus cannot get into the frame
+        await player.Reload.ClickAsync();
+        await Expect(player.Player).ToBeFocusedAsync();
+        await Expect(player.FrameElement).Not.ToHaveAttributeAsync("inert", "");
+    }
+
     // ---------------------------------------------------------------------------------------------------- set-up through the API
 
     private async Task<M4World> WorldAsync()
