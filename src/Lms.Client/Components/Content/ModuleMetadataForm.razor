@@ -1,0 +1,85 @@
+@using Lms.Shared.Content
+@inject ICultureService Culture
+
+@* Fields common to every module: titles, visibility (with a schedule), target and completion rule. *@
+<MudStack Spacing="2">
+    <BilingualNameFields NameAr="@Model.TitleAr" NameArChanged="v => Model.TitleAr = v"
+                         NameEn="@Model.TitleEn" NameEnChanged="v => Model.TitleEn = v" IdPrefix="module-title" />
+
+    <MudSelect T="string" Value="@Model.Visibility" ValueChanged="OnVisibilityChanged" Label="@L["Module_Visibility"]"
+               data-testid="module-visibility">
+        @foreach (var v in ModuleVisibilities.All)
+        {
+            <MudSelectItem T="string" Value="@v">@L["ModuleVisibility_" + v]</MudSelectItem>
+        }
+    </MudSelect>
+    @if (Model.Visibility == ModuleVisibilities.Scheduled)
+    {
+        <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+            <MudDatePicker Date="Model.FromDate" DateChanged="d => Model.FromDate = d" Label="@L["Module_VisibleFrom"]"
+                           Error="@(VisibilityError is not null)" data-testid="module-from-date" />
+            <MudTimePicker Time="Model.FromTime" TimeChanged="t => Model.FromTime = t" Label="@L["Module_Time"]" data-testid="module-from-time" />
+        </MudStack>
+        <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+            <MudDatePicker Date="Model.ToDate" DateChanged="d => Model.ToDate = d" Label="@L["Module_VisibleTo"]"
+                           Error="@(VisibilityError is not null)" data-testid="module-to-date" />
+            <MudTimePicker Time="Model.ToTime" TimeChanged="t => Model.ToTime = t" Label="@L["Module_Time"]" data-testid="module-to-time" />
+        </MudStack>
+        @if (VisibilityError is not null)
+        {
+            <MudText Color="Color.Error" Typo="Typo.caption" role="alert" data-testid="module-visibility-error">@VisibilityError</MudText>
+        }
+    }
+
+    <MudSelect T="string" Value="@Model.Target" ValueChanged="OnTargetChanged" Label="@L["Module_Target"]" data-testid="module-target">
+        @foreach (var t in ModuleTargets.All)
+        {
+            <MudSelectItem T="string" Value="@t">@L["ModuleTarget_" + t]</MudSelectItem>
+        }
+    </MudSelect>
+    @if (Model.Target == ModuleTargets.Group)
+    {
+        <MudSelect T="Guid?" @bind-Value="Model.GroupId" Label="@L["Module_GroupField"]" Required="true" RequiredError="@L["Common_Required"]"
+                   Error="@(TargetError is not null)" ErrorText="@TargetError" data-testid="module-group">
+            @foreach (var g in Groups)
+            {
+                <MudSelectItem T="Guid?" Value="@((Guid?)g.Id)">@Culture.Pick(g.NameAr, g.NameEn)</MudSelectItem>
+            }
+        </MudSelect>
+    }
+    else if (TargetError is not null)
+    {
+        <MudText Color="Color.Error" Typo="Typo.caption" role="alert" data-testid="module-target-error">@TargetError</MudText>
+    }
+
+    <MudSelect T="string" @bind-Value="Model.CompletionRule" Label="@L["Module_Completion"]" data-testid="module-completion">
+        @foreach (var r in CompletionRules.ForContent)
+        {
+            <MudSelectItem T="string" Value="@r">@L["CompletionRule_" + r]</MudSelectItem>
+        }
+    </MudSelect>
+</MudStack>
+
+@code {
+    [Parameter, EditorRequired] public ModuleFormModel Model { get; set; } = default!;
+    /// <summary>Only the groups of this ClassCourse: the server rejects any other group (module_target_invalid).</summary>
+    [Parameter] public IReadOnlyList<ModuleGroupOption> Groups { get; set; } = [];
+    [Parameter] public string? VisibilityError { get; set; }
+    [Parameter] public string? TargetError { get; set; }
+
+    private void OnVisibilityChanged(string value)
+    {
+        Model.Visibility = value;
+        if (value != ModuleVisibilities.Scheduled)
+        {
+            Model.FromDate = Model.ToDate = null;
+            Model.FromTime = Model.ToTime = null;
+        }
+    }
+
+    private void OnTargetChanged(string value)
+    {
+        Model.Target = value;
+        if (value != ModuleTargets.Group) Model.GroupId = null;
+    }
+}

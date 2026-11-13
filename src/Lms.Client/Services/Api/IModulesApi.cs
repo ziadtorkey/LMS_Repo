@@ -79,6 +79,8 @@ public sealed class FakeModulesApi : IModulesApi
     /// <summary>Group ids that exist in a class course (a Group target must be one of them).</summary>
     public Dictionary<Guid, HashSet<Guid>> GroupsByClassCourse { get; } = [];
     public bool CanEdit { get; set; } = true;
+    /// <summary>Acts as a student: opening a module (GET) completes a View-rule module, as the server does.</summary>
+    public bool AsStudent { get; set; }
     public Exception? Failure { get; set; }
     public List<string> Calls { get; } = [];
 
@@ -87,14 +89,14 @@ public sealed class FakeModulesApi : IModulesApi
         _modules.Where(m => m.ClassCourseId == classCourseId && m.LessonKey == lessonKey)
             .OrderBy(m => m.Node.Order).Select(m => m.Node).ToList();
 
-    public ModuleDetailDto Seed(Guid classCourseId, Guid lessonKey, CreateModuleRequest request)
+    public ModuleDetailDto Seed(Guid classCourseId, Guid lessonKey, CreateModuleRequest request, AssetDto? asset = null)
     {
         var order = _modules.Count(m => m.ClassCourseId == classCourseId && m.LessonKey == lessonKey) + 1;
         var node = new ModuleNodeDto(Guid.NewGuid(), request.Kind, order, request.TitleAr, request.TitleEn, request.Visibility,
             request.VisibleFromUtc, request.VisibleToUtc, request.Target, request.GroupId, null, null, request.CompletionRule,
             IsVisibleNow(request.Visibility, request.VisibleFromUtc, request.VisibleToUtc), null);
         var detail = new ModuleDetailDto(node, classCourseId, lessonKey, request.CompletionMinScore,
-            new ModuleContentDto(null, request.Content.BodyHtmlAr, request.Content.BodyHtmlEn, request.Content.Url, null),
+            new ModuleContentDto(asset, request.Content.BodyHtmlAr, request.Content.BodyHtmlEn, request.Content.Url, null),
             null, null, CanEdit, ServerNow());
         _modules.Add(detail);
         _created++;
@@ -136,7 +138,26 @@ public sealed class FakeModulesApi : IModulesApi
     public Task<ModuleDetailDto> GetAsync(Guid id, CancellationToken ct = default)
     {
         Calls.Add($"get {id}");
-        return Failure is not null ? Task.FromException<ModuleDetailDto>(Failure) : Task.FromResult(Find(id));
+        if (Failure is not null) return Task.FromException<ModuleDetailDto>(Failure);
+        var m = Find(id);
+        if (AsStudent && m.Node.CompletionRule == CompletionRules.View && m.Node.CompletionState != CompletionStates.Completed)
+        {
+            m = m with { Node = m.Node with { CompletionState = CompletionStates.Completed } };
+            Replace(m);
+        }
+        return Task.FromResult(WithNeighbours(m));
+    }
+
+    /// <summary>Previous/next module ids within the lesson (a student only sees the visible ones).</summary>
+    private ModuleDetailDto WithNeighbours(ModuleDetailDto m)
+    {
+        var siblings = NodesFor(m.ClassCourseId, m.LessonKey).Where(n => !AsStudent || n.IsVisibleNow).ToList();
+        var i = siblings.FindIndex(n => n.Id == m.Node.Id);
+        return m with
+        {
+            PreviousModuleId = i > 0 ? siblings[i - 1].Id : null,
+            NextModuleId = i >= 0 && i < siblings.Count - 1 ? siblings[i + 1].Id : null,
+        };
     }
 
     public Task<ModuleDetailDto> CreateAsync(Guid classCourseId, Guid lessonKey, CreateModuleRequest request, CancellationToken ct = default)
