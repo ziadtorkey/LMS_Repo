@@ -3,6 +3,7 @@ using Bunit;
 using Lms.Client.Pages.Library;
 using Lms.Client.Services.Api;
 using Lms.Client.Tests.Support;
+using Lms.Shared;
 using Lms.Shared.Authorization;
 using Lms.Shared.Content;
 using Lms.Shared.Library;
@@ -35,6 +36,17 @@ public sealed class LibraryPageTests : LessonPlansTestContext
 
     private static AssetDto File(string name = "book.pdf") =>
         new(Guid.NewGuid(), null, AssetKinds.Document, name, "application/pdf", 10, null, true, DateTime.UtcNow, FakeLibraryApi.UnitId);
+
+    [Fact]
+    public async Task Fake_download_of_a_reader_only_resource_is_refused_with_the_servers_code()
+    {
+        var readerOnly = _library.Add("Reader only", downloadAllowed: false);
+
+        var ex = await Assert.ThrowsAsync<ApiProblemException>(() => _library.DownloadAsync(readerOnly.Id));
+
+        Assert.Equal(403, ex.Status);
+        Assert.Equal(ProblemCodes.download_disabled, ex.Code);
+    }
 
     [Fact]
     public async Task Without_Library_View_the_page_is_forbidden()

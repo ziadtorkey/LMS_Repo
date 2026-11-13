@@ -1151,7 +1151,6 @@
   <data name="LibraryType_Audio" xml:space="preserve"><value>صوت</value></data>
   <data name="LibraryType_Link" xml:space="preserve"><value>رابط</value></data>
   <data name="LibraryType_Other" xml:space="preserve"><value>أخرى</value></data>
-  <data name="Error_download_not_allowed" xml:space="preserve"><value>يمكن قراءة هذا المورد هنا ولكن لا يمكن تنزيله.</value></data>
   <data name="Module_Url" xml:space="preserve"><value>عنوان الرابط (https://...)</value></data>
   <data name="Module_Completion" xml:space="preserve"><value>الإكمال</value></data>
 </root>

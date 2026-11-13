@@ -14,7 +14,7 @@ public interface ILibraryApi
     Task<LibraryResourceDto> UpdateAsync(Guid id, SaveLibraryResourceRequest request, CancellationToken ct = default);
     Task DeleteAsync(Guid id, CancellationToken ct = default);
 
-    /// <summary>GET /api/library/{id}/download — a signed URL; 403 <c>download_not_allowed</c> when the resource is reader-only.</summary>
+    /// <summary>GET /api/library/{id}/download — a signed URL; 403 <c>download_disabled</c> when the resource is reader-only.</summary>
     Task<AssetUrlDto> DownloadAsync(Guid id, CancellationToken ct = default);
 
     /// <summary>POST /api/library/{id}/add-to-lesson — the new <c>LibraryResource</c> module.</summary>
@@ -125,7 +125,7 @@ public sealed class FakeLibraryApi : ILibraryApi
     public Task<AssetUrlDto> DownloadAsync(Guid id, CancellationToken ct = default)
     {
         var r = Resources.FirstOrDefault(x => x.Id == id) ?? throw new ApiProblemException(404, ProblemCodes.not_found, null, null);
-        if (!r.DownloadAllowed) throw new ApiProblemException(403, "download_not_allowed", null, null);
+        if (!r.DownloadAllowed) throw new ApiProblemException(403, ProblemCodes.download_disabled, null, null);
         var now = DateTime.UtcNow;
         return Task.FromResult(new AssetUrlDto($"https://files.test/library/{id}", now.AddMinutes(10), now));
     }
