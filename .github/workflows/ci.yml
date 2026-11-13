@@ -36,7 +36,7 @@ jobs:
         run: dotnet test tests/Lms.Client.Tests -c Release --no-build
 
   # The integration suite is one xUnit collection on one pair of containers, so it is serial; it is split by test class over shards, each
-  # on its own runner and containers (see .github/scripts/shard_tests.py; weights in tests/Lms.IntegrationTests/shard-weights.json).
+  # on its own runner and containers (see .github/scripts/shard_tests.py; weighted by test count until timings exist: run .github/scripts/trx_weights.py on the integration-trx artifacts).
   integration:
     runs-on: ubuntu-latest
     strategy:
@@ -66,8 +66,8 @@ jobs:
       - name: Choose this shard's test classes
         id: shard
         run: |
-          python3 .github/scripts/shard_tests.py tests/Lms.IntegrationTests 0 "$SHARD_COUNT" tests/Lms.IntegrationTests/shard-weights.json -- -c Release --no-build
-          FILTER=$(python3 .github/scripts/shard_tests.py tests/Lms.IntegrationTests ${{ matrix.shard }} "$SHARD_COUNT" tests/Lms.IntegrationTests/shard-weights.json -- -c Release --no-build)
+          python3 .github/scripts/shard_tests.py tests/Lms.IntegrationTests 0 "$SHARD_COUNT" -- -c Release --no-build
+          FILTER=$(python3 .github/scripts/shard_tests.py tests/Lms.IntegrationTests ${{ matrix.shard }} "$SHARD_COUNT" -- -c Release --no-build)
           echo "filter=$FILTER" >> "$GITHUB_OUTPUT"
       - name: Integration tests (Testcontainers), shard ${{ matrix.shard }}
         env:

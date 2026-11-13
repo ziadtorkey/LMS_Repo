@@ -18,12 +18,12 @@ import subprocess
 import sys
 
 
-def list_classes(project_dir: str, extra: list[str]) -> list[str]:
+def list_classes(project_dir: str, extra: list[str]) -> dict[str, int]:
     out = subprocess.run(
         ["dotnet", "test", project_dir, "--list-tests", *extra],
         check=True, capture_output=True, text=True,
     ).stdout
-    classes: set[str] = set()
+    classes: dict[str, int] = {}
     in_list = False
     for raw in out.splitlines():
         line = raw.rstrip()
@@ -35,20 +35,29 @@ def list_classes(project_dir: str, extra: list[str]) -> list[str]:
         name = line.strip().split("(", 1)[0]  # drop theory arguments
         if "." not in name:
             continue
-        classes.add(name.rsplit(".", 1)[0])  # Namespace.Class
-    return sorted(classes)
+        klass = name.rsplit(".", 1)[0]  # Namespace.Class
+        classes[klass] = classes.get(klass, 0) + 1
+    return classes
 
 
-def plan(classes: list[str], weights: dict[str, float], count: int) -> list[list[str]]:
-    known = [weights[c] for c in classes if c in weights]
-    default = sum(known) / len(known) if known else 1.0
-    ordered = sorted(classes, key=lambda c: (-weights.get(c, default), c))
+def plan(classes: dict[str, int], weights: dict[str, float], count: int) -> list[list[str]]:
+    # Measured seconds where known; otherwise the number of tests of the class (one unit per test) scaled to the measured mean, so a new
+    # class is weighed by its size and a missing weights file still balances by test count.
+    known = [weights[c] / classes[c] for c in classes if c in weights and classes[c]]
+    per_test = sum(known) / len(known) if known else 1.0
+
+    def weight(c: str) -> float:
+        # The endpoint matrices are thousands of cheap theory rows (about half the cost of an average test), so they are discounted until
+        # real timings exist (trx_weights.py on the first CI run's artifacts).
+        return weights.get(c, classes[c] * per_test * (0.4 if "Matrix" in c else 1.0))
+
+    ordered = sorted(classes, key=lambda c: (-weight(c), c))
     shards: list[list[str]] = [[] for _ in range(count)]
     load = [0.0] * count
     for c in ordered:
         i = min(range(count), key=lambda k: (load[k], k))
         shards[i].append(c)
-        load[i] += weights.get(c, default)
+        load[i] += weight(c)
     return shards
 
 
@@ -68,8 +77,8 @@ def main() -> int:
     shards = plan(classes, weights, count)
     if index == 0:
         for n, shard in enumerate(shards, 1):
-            seconds = sum(weights.get(c, 0) for c in shard)
-            print(f"shard {n}: {len(shard)} classes, about {seconds / 60:.1f} min")
+            tests = sum(classes[c] for c in shard)
+            print(f"shard {n}: {len(shard)} classes, {tests} tests")
         return 0
     mine = shards[index - 1]
     # "Namespace.Class." with the trailing dot: a class never matches another whose name only starts the same.
