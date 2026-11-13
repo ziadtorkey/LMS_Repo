@@ -151,6 +151,7 @@ public static class PackagesServiceCollectionExtensions
         services.AddScoped<PackageService>();
         services.AddScoped<Attempts.PackageAttemptService>();
         services.AddSingleton<IPackageTracker, Attempts.PlaceholderPackageTracker>();
+        services.AddSingleton<IPackageTracker, Scorm.ScormTracker>(); // the last registration of a kind wins
         return services;
     }
 }

@@ -141,7 +141,7 @@ public sealed class PackageValidationJob(
             return;
         }
 
-        upload.MarkReady(result.Title ?? upload.FileName, result.Version, result.MainLibrary, prefix, area.WrittenBytes);
+        upload.MarkReady(result.Title ?? upload.FileName, result.Version, result.MainLibrary, prefix, area.WrittenBytes, result.LaunchPath);
         await db.SaveChangesAsync(CancellationToken.None);
     }
 

@@ -238,6 +238,7 @@ public sealed class PackageValidationJobTests(LmsApiFactory factory) : IDisposab
 
         var ready = await ReloadAsync(ok.Id);
         Assert.Equal((PackageUploadStatuses.Ready, "SCO", ScormVersions.Scorm12), (ready.Status, ready.Title, ready.Version));
+        Assert.Equal("index.html", ready.LaunchPath);
         Assert.Equal("multi_sco", (await ReloadAsync(multi.Id)).RejectReason);
         Assert.Equal("needs_nested_frames", (await ReloadAsync(frames.Id)).RejectReason);
         Assert.Empty(await StoredAsync(s, await ReloadAsync(multi.Id)));

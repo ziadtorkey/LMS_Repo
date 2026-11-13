@@ -3424,6 +3424,10 @@ namespace Lms.Infrastructure.Persistence.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("varchar(20)");
 
+                    b.Property<string>("LaunchPath")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
                     b.Property<Guid>("LessonKey")
                         .HasColumnType("char(36)");
 
