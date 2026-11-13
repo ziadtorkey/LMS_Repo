@@ -1418,4 +1418,9 @@
   <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>لم يقبل الفحص الأمني هذه الحزمة.</value></data>
   <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>الملف ليس أرشيف zip صالحًا.</value></data>
   <data name="Error_package_reason_bad_name" xml:space="preserve"><value>اسم ملف في الحزمة غير صالح (طويل جدًا أو عميق جدًا أو محجوز).</value></data>
+  <data name="NavSection_Structure" xml:space="preserve"><value>الهيكل</value></data>
+  <data name="NavSection_People" xml:space="preserve"><value>الأشخاص</value></data>
+  <data name="NavSection_Academic" xml:space="preserve"><value>الأكاديمي</value></data>
+  <data name="NavSection_Security" xml:space="preserve"><value>الأمان والإعدادات</value></data>
+  <data name="App_Subtitle" xml:space="preserve"><value>المنصة الأكاديمية</value></data>
 </root>
