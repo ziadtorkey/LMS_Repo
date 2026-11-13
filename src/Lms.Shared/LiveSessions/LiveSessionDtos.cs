@@ -7,6 +7,16 @@ namespace Lms.Shared.LiveSessions;
 /// <c>IntervalWeeks</c> weeks at the wall-clock time of <c>StartsAtUtc</c> in <c>TimeZoneId</c> (IANA, DST-aware; the
 /// browser's zone) and are stored in UTC. Exactly one of <c>UntilUtc</c> / <c>Count</c>; at most
 /// <see cref="LiveSessionLimits.MaxOccurrences"/> occurrences. Otherwise 400 <c>recurrence_invalid</c>.
+/// <para>
+/// DST: every occurrence is computed in <c>TimeZoneId</c>, keeping the local wall time of the first occurrence. A wall
+/// time that falls inside a spring-forward gap does not exist and is shifted forward by the gap (normally +1 h, e.g.
+/// 02:30 becomes 03:30). An ambiguous wall time in a fall-back overlap uses its first instance (the daylight-time one,
+/// the earlier UTC instant).
+/// </para>
+/// <para>
+/// The local weekday of <c>StartsAtUtc</c> in <c>TimeZoneId</c> must be one of <c>DaysOfWeek</c> (the first occurrence
+/// is the start itself); otherwise the request is 400 <c>recurrence_invalid</c>.
+/// </para>
 /// </summary>
 public sealed record LiveRecurrenceInput(
     int IntervalWeeks,
@@ -23,6 +33,11 @@ public sealed record LiveRecurrenceInput(
 /// (<see cref="LiveSessionLimits"/>) and is the only text sent to Zoom as the topic (Decision 5). Completion rule from
 /// <c>CompletionRules.ForActivity(LiveSession)</c>. Duration 15–480 minutes. The daily create cap counts every
 /// occurrence and refuses the whole series (409 <c>provider_unavailable</c>).
+/// <para>
+/// Response: 201 with <c>LiveSessionDto[]</c>, one element per created occurrence in start order (a single session is a
+/// one-element array). <c>provider_unavailable</c> (409 or 503) always carries <c>Retry-After</c> in seconds, exposed
+/// to the browser through CORS <c>Access-Control-Expose-Headers</c>.
+/// </para>
 /// </summary>
 public sealed record CreateLiveSessionRequest(
     Guid LessonKey,
@@ -36,6 +51,12 @@ public sealed record CreateLiveSessionRequest(
 /// session accepts only <c>This</c>. <c>Recurrence</c> is accepted only with <c>ThisAndFollowing</c> on a series and
 /// re-creates the following occurrences from this one; earlier occurrences never change. The lesson never changes here
 /// (move the module).
+/// <para>
+/// Response: a single <c>LiveSessionDto</c>, the edited occurrence (with <c>ThisAndFollowing</c> as well: the occurrence
+/// named by the route id; read the list for the following ones). DELETE on the same route answers 204 No Content.
+/// <c>provider_unavailable</c> (409 or 503) always carries <c>Retry-After</c> in seconds, readable by the client
+/// (CORS <c>Access-Control-Expose-Headers</c>).
+/// </para>
 /// </summary>
 public sealed record UpdateLiveSessionRequest(
     ModuleSettingsInput Module,
@@ -110,7 +131,10 @@ public sealed record LiveSessionQuery(
 /// </summary>
 public sealed record LiveSessionJoinDto(string Url, DateTime ExpiresAtUtc, DateTime ServerNowUtc);
 
-/// <summary>PUT /api/live-sessions/{id}/recording (LiveSessions.Manage). http/https only, max 2048 characters; source <c>Manual</c>.</summary>
+/// <summary>
+/// PUT /api/live-sessions/{id}/recording (LiveSessions.Manage). http/https only, max 2048 characters; source
+/// <c>Manual</c>. Response: the updated <c>LiveSessionDto</c>.
+/// </summary>
 public sealed record RecordingLinkRequest(string Url);
 
 /// <summary>
