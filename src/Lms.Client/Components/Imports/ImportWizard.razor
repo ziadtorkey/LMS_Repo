@@ -14,7 +14,10 @@
 
 @* Reusable Excel import: 1 template, 2 target unit + file, 3 review (polls while the server works) and commit, 4 result. *@
 <div class="lms-import" data-testid="import-wizard">
-    <MudText Typo="Typo.h4" HtmlTag="h1" Class="mb-3">@L[TitleKey]</MudText>
+    @if (ShowTitle)
+    {
+        <MudText Typo="Typo.h4" HtmlTag="h1" Class="mb-3">@L[TitleKey]</MudText>
+    }
     @Banner
     <SectionCard Class="mb-4">
         <ol class="lms-steps lms-import-steps" aria-label="@L["Import_Steps"]" data-testid="import-steps">
@@ -129,11 +132,11 @@
 
                 @if (_batch.Status == ImportStatuses.Invalid)
                 {
-                    <MudAlert Severity="Severity.Error" data-testid="import-blocked">@L["Import_BlockedByErrors"]</MudAlert>
+                    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="import-blocked">@L["Import_BlockedByErrors"]</MudAlert>
                 }
                 @if (_batch.Status == ImportStatuses.Failed)
                 {
-                    <MudAlert Severity="Severity.Error" data-testid="import-failed">@L["Import_Failed"]</MudAlert>
+                    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="import-failed">@L["Import_Failed"]</MudAlert>
                 }
 
                 @if (_batch.Status is ImportStatuses.Valid or ImportStatuses.Invalid)
@@ -144,7 +147,7 @@
                 <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
                     @if (_batch.HasErrorReport)
                     {
-                        <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Download"
+                        <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.Download"
                                    OnClick="DownloadErrorsAsync" data-testid="import-error-report">@L["Import_DownloadErrors"]</MudButton>
                     }
                     @if (_batch.Status is ImportStatuses.Valid or ImportStatuses.Invalid or ImportStatuses.Failed)
@@ -163,7 +166,7 @@
 
         default:
             <MudStack Spacing="3" data-testid="import-step-done">
-                <MudAlert Severity="Severity.Success" data-testid="import-done">@string.Format(CultureInfo.CurrentCulture, L["Import_Done"].Value, _batch?.CreatedCount ?? 0)</MudAlert>
+                <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" data-testid="import-done">@string.Format(CultureInfo.CurrentCulture, L["Import_Done"].Value, _batch?.CreatedCount ?? 0)</MudAlert>
                 @if (_batch is not null) { @DoneContent?.Invoke(_batch) }
                 <MudButton Variant="Variant.Outlined" OnClick="Restart" data-testid="import-again">@L["Import_Another"]</MudButton>
             </MudStack>
@@ -172,6 +175,9 @@
 </div>
 
 @code {
+    /// <summary>False when the hosting page already shows the title (its page header).</summary>
+    [Parameter] public bool ShowTitle { get; set; } = true;
+
     private static readonly string[] _stepKeys =
         ["Import_Step_Template", "Import_Step_Upload", "Import_Step_Review", "Import_Step_Done"];
 
