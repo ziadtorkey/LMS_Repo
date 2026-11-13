@@ -14,7 +14,7 @@
 <PageTitle>@L["MyChildren_Title"]</PageTitle>
 @if (!PermState.Loaded)
 {
-    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+    <LoadingState Lines="3" TestId="children-loading" />
 }
 else if (!PermState.Has(Permissions.Students.ViewChildren))
 {
@@ -22,45 +22,45 @@ else if (!PermState.Has(Permissions.Students.ViewChildren))
 }
 else
 {
-    <MudText Typo="Typo.h4" Class="mb-4" data-testid="children-title">@L["MyChildren_Title"]</MudText>
+    <PageHeader Title="@L["MyChildren_Title"]" Subtitle="@L["MyChildren_Subtitle"]" TitleTestId="children-title" />
     @if (_loading)
     {
-        <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+        <LoadingState Lines="3" TestId="children-loading" />
     }
     else if (_error is not null)
     {
-        <MudAlert Severity="Severity.Error" data-testid="api-error">@_error</MudAlert>
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="api-error">@_error</MudAlert>
     }
     else
     {
         @if (_children.Count == 0)
         {
-            <MudText data-testid="children-empty">@L["MyChildren_Empty"]</MudText>
+            <SectionCard>
+                <EmptyState Title="@L["MyChildren_Empty"]" Icon="@Icons.Material.Rounded.FamilyRestroom" TestId="children-empty" />
+            </SectionCard>
         }
         else
         {
-            <MudGrid data-testid="children-grid">
+            <MudGrid Spacing="2" data-testid="children-grid">
                 @foreach (var child in _children)
                 {
                     <MudItem xs="12" sm="6" md="4">
-                        <MudCard data-testid="@($"child-card-{child.StudentId}")">
-                            <MudCardContent>
-                                <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center">
-                                    <StaffAvatar PhotoFileId="child.PhotoFileId" Size="Size.Large" />
-                                    <div>
-                                        <MudText Typo="Typo.h6" data-testid="@($"child-name-{child.StudentId}")">@Culture.Pick(child.NameAr, child.NameEn)</MudText>
-                                        <MudText Typo="Typo.body2"><span dir="ltr">@child.StudentCode</span></MudText>
-                                        <MudText Typo="Typo.body2">@Culture.Pick(child.HomeOrgUnitNameAr, child.HomeOrgUnitNameEn)</MudText>
-                                        <MudChip T="string" Size="Size.Small">@L[$"Relation_{child.Relation}"]</MudChip>
-                                    </div>
-                                </MudStack>
-                            </MudCardContent>
-                        </MudCard>
+                        <SectionCard Class="h-100" TestId="@($"child-card-{child.StudentId}")">
+                            <div class="lms-person-cell">
+                                <StaffAvatar PhotoFileId="child.PhotoFileId" Name="@Culture.Pick(child.NameAr, child.NameEn)" Size="Size.Large" />
+                                <div>
+                                    <MudText Typo="Typo.subtitle1" data-testid="@($"child-name-{child.StudentId}")">@Culture.Pick(child.NameAr, child.NameEn)</MudText>
+                                    <MudText Typo="Typo.body2" Class="lms-muted"><span dir="ltr">@child.StudentCode</span></MudText>
+                                    <MudText Typo="Typo.body2">@Culture.Pick(child.HomeOrgUnitNameAr, child.HomeOrgUnitNameEn)</MudText>
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Class="lms-role-chip mt-1">@L[$"Relation_{child.Relation}"]</MudChip>
+                                </div>
+                            </div>
+                        </SectionCard>
                     </MudItem>
                 }
             </MudGrid>
         }
-        <MudText Typo="Typo.caption" Class="mt-4" data-testid="children-hint">@L["MyChildren_OtherContexts"]</MudText>
+        <MudText Typo="Typo.caption" Class="lms-muted mt-4 d-block" data-testid="children-hint">@L["MyChildren_OtherContexts"]</MudText>
     }
 }
 

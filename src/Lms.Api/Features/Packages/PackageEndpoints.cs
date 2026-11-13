@@ -117,7 +117,8 @@ internal static class PackageEndpoints
     }
 
     private static async Task<IResult> DeleteAsync(
-        Guid id, HttpContext http, LmsDbContext db, PlacementGuard guard, PackageService packages, IModuleWriter writer, CancellationToken ct)
+        Guid id, HttpContext http, LmsDbContext db, PlacementGuard guard, PackageService packages, IModuleWriter writer,
+        IPackageRevocations revocations, CancellationToken ct)
     {
         var found = await FindAsync(id, Permissions.Packages.Upload, http, db, ct);
         if (found.Problem is not null)
@@ -137,6 +138,8 @@ internal static class PackageEndpoints
         }
 
         await packages.DeleteAsync(upload, ct);
+        await revocations.RevokeAsync(upload, null, ct); // tokens issued before the delete stop working within the host's cache bound
+        await db.SaveChangesAsync(ct);
         return Results.NoContent();
     }
 

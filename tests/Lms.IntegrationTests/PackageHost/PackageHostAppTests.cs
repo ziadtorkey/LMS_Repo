@@ -34,6 +34,19 @@ public sealed class PackageHostAppTests(LmsApiFactory factory)
     }
 
     [Fact]
+    public async Task App_frame_src_lists_exactly_the_configured_content_origin()
+    {
+        using var kit = new PackageHostKit(factory);
+
+        foreach (var path in AppPaths)
+        {
+            var directives = Csp(await kit.App().GetAsync(path)).Split(';', StringSplitOptions.TrimEntries);
+            var frameSrc = directives.Single(d => d.StartsWith("frame-src", StringComparison.Ordinal));
+            Assert.Equal($"frame-src {PackageHostKit.ContentOrigin}", frameSrc); // only the content origin: no 'self', no app origin, no wildcard
+        }
+    }
+
+    [Fact]
     public async Task App_csp_adds_nothing_but_frame_src()
     {
         using var configured = new PackageHostKit(factory);
