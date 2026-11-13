@@ -1,11 +1,14 @@
 using System.Text;
 using Lms.Api.PackageHost;
+using Lms.Domain.Classes;
+using Lms.Domain.Content;
 using Lms.Domain.Files;
 using Lms.Domain.Organizations;
 using Lms.Domain.Packages;
 using Lms.IntegrationTests.Academic;
 using Lms.IntegrationTests.Access;
 using Lms.IntegrationTests.Infrastructure;
+using Lms.Shared.Content;
 using Lms.Shared.Packages;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -110,6 +113,8 @@ internal sealed class PackageHostKit : IDisposable
         db.AddRange(file, upload);
         await db.SaveChangesAsync();
 
+        await AttachModuleAsync(upload);
+
         await using var scope = Host.Services.CreateAsyncScope();
         var store = scope.ServiceProvider.GetRequiredService<IPackageStore>();
         foreach (var (path, text) in files)
@@ -119,6 +124,31 @@ internal sealed class PackageHostKit : IDisposable
         }
 
         return upload;
+    }
+
+    /// <summary>Puts a visible SCORM module for the package into a lesson of its class course (the plan, section and lesson are created when missing); returns the module id.</summary>
+    public async Task<Guid> AttachModuleAsync(PackageUpload package)
+    {
+        await using var db = _factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        var classCourse = await db.Set<ClassCourse>().SingleAsync(c => c.Id == package.ClassCourseId);
+        var lesson = await (from p in db.Set<ClassLessonPlan>() join l in db.Set<ClassLesson>() on p.Id equals l.PlanId
+                            where p.ClassCourseId == classCourse.Id select l).FirstOrDefaultAsync();
+        if (lesson is null)
+        {
+            var plan = await db.Set<ClassLessonPlan>().FirstOrDefaultAsync(p => p.ClassCourseId == classCourse.Id) ?? new ClassLessonPlan(classCourse, null, null, null);
+            var section = new ClassSection(plan, Guid.NewGuid(), 0, "قسم", "Section");
+            lesson = new ClassLesson(section, Guid.NewGuid(), 0, "درس", "Lesson", null, null, null);
+            db.AddRange(plan, section, lesson);
+        }
+
+        var module = new LessonModule(classCourse, lesson, ModuleKinds.Scorm, 1);
+        module.SetRef(package.Id);
+        db.Add(module);
+        await db.SaveChangesAsync();
+        var tracked = await db.Set<PackageUpload>().SingleAsync(p => p.Id == package.Id);
+        tracked.AttachTo(module.Id);
+        await db.SaveChangesAsync();
+        return module.Id;
     }
 
     public void Dispose() => Host.Dispose();

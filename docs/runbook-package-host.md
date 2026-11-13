@@ -32,6 +32,8 @@ Every response (errors included) carries `Content-Security-Policy: sandbox allow
 ## Revocation
 Markers (`PackageRevocations`) refuse tokens issued before them. They are written when a package is deleted, when a SCORM/H5P module is hidden (visibility update through the module handlers or `IModuleWriter`), and when a student's course enrollment ends (the enrollment engine's drop). A node picks a marker up within `RevocationCacheSeconds` (30 s, per instance, no shared cache). Whether the package is still `Ready` and not deleted is read per file request (one small query), which makes a package delete effective at once; if this becomes a cost, cache readiness in the revocation cache.
 
+Besides markers, the same 30 s cache loads whether the package's module still exists, is inside its visibility window and sits in a lesson and section that are not hidden; a student token is refused otherwise (window expiry, a module delete on its own, a lesson or section hide), a preview token is not tied to the module. Any method other than GET, HEAD and OPTIONS answers the same 404 as every failure.
+
 ## Tokens
 Tokens are authenticated encrypted payloads from ASP.NET Data Protection (purpose `Lms.PackageHost.Token.v1`), not a hand-rolled HMAC: equivalent integrity, the key ring is shared by all nodes and protected by the deployment's key protection outside Development. ADR 0005 section 5 says "HMAC"; read it as this.
 
