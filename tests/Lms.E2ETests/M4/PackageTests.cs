@@ -75,6 +75,7 @@ public sealed class PackageTests(E2EFixture fixture) : E2ETestBase(fixture)
         await Expect(player.ThirdPartyNote).ToBeVisibleAsync();
         await player.StartAsync();
         await Expect(player.FrameElement).ToHaveAttributeAsync("sandbox", "allow-scripts");
+        await Expect(player.Player).ToBeFocusedAsync(); // focus moves to the player container on Start (T19), so the next Tab enters the frame
 
         // The package finishes itself (the corpus SCO sets status passed and a score, then LMSFinish): content is observed through the frame.
         await Player_FinishesAsync(player);

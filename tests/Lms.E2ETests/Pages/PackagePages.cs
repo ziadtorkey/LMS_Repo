@@ -70,7 +70,13 @@ public sealed class PackagePlayerPage(IPage page)
     /// <summary>Staff only: opens the preview (records nothing).</summary>
     public ILocator Preview => page.GetByTestId("package-preview");
 
-    // Running player.
+    /// <summary>The focusable wrapper of the start card; focus returns here after Exit (T19, #598).</summary>
+    public ILocator StartHost => page.GetByTestId("package-start-host");
+
+    /// <summary>Visually hidden polite status region: opened / preview / save failed / expired / exit / finish (T19, #598).</summary>
+    public ILocator Announce => page.GetByTestId("package-announce");
+
+    // Running player. After Start / Resume / Reload focus is on Player (tabindex -1); when expired the frame is inert and Expired has focus.
     public ILocator Player => page.GetByTestId("package-player");
     public ILocator FrameElement => page.GetByTestId("package-frame");
     public ILocator PreviewBanner => page.GetByTestId("package-preview-banner");
