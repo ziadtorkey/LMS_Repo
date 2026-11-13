@@ -1,7 +1,11 @@
 @using Lms.Client.Components.Assets
 @using Lms.Client.Services.Api
+@using Lms.Shared.Content
 @using Lms.Shared.Library
+@using Microsoft.JSInterop
+@implements IAsyncDisposable
 @inject ILibraryApi Library
+@inject IJSRuntime Js
 @inject ICultureService Culture
 @inject NavigationManager Navigation
 
@@ -46,7 +50,29 @@ else
         }
         else if (_resource.File is { } file)
         {
-            <AssetPreview Asset="file" AllowDownload="false" />
+            @if (_resource.DownloadAllowed)
+            {
+                <AssetPreview Asset="file" AllowDownload="false" />
+            }
+            else if (_readerUrl is not null)
+            {
+                @* Reader-only (D13): the file is read through the protected reader, never through a signed URL. *@
+                @switch (file.Kind)
+                {
+                    case AssetKinds.Image:
+                        <img src="@_readerUrl" alt="@file.FileName" style="max-width:100%" data-testid="library-reader-image" />
+                        break;
+                    case AssetKinds.Audio:
+                        <audio src="@_readerUrl" controls preload="metadata" data-testid="library-reader-audio"></audio>
+                        break;
+                    case AssetKinds.Video:
+                        <video src="@_readerUrl" controls controlsList="nodownload" preload="metadata" style="max-width:100%" data-testid="library-reader-video"></video>
+                        break;
+                    default:
+                        <iframe src="@_readerUrl" title="@file.FileName" style="width:100%;height:70vh;border:0" data-testid="library-reader-pdf"></iframe>
+                        break;
+                }
+            }
         }
         else
         {
@@ -71,6 +97,7 @@ else
     private string? _error;
     private bool _loading = true;
     private Guid? _loadedFor;
+    private string? _readerUrl;
 
     /// <summary>The library resource the module points to (<c>Content.RefId</c>); null when the module has none.</summary>
     [Parameter] public Guid? ResourceId { get; set; }
@@ -79,6 +106,7 @@ else
     {
         if (ResourceId == _loadedFor && !_loading) return;
         _loadedFor = ResourceId;
+        await RevokeAsync();
         _resource = null;
         _error = null;
         if (ResourceId is not { } id)
@@ -88,8 +116,26 @@ else
         }
         _loading = true;
         await ApiCalls.RunAsync(async () => _resource = await Library.GetAsync(id), Navigation, L, message => _error = message);
+        if (_resource is { DownloadAllowed: false, File: { } file })
+            await ApiCalls.RunAsync(async () =>
+            {
+                var (content, _) = await Library.ReadAsync(_resource.Id);
+                using var reference = new DotNetStreamReference(content);
+                _readerUrl = await Js.InvokeAsync<string>("lmsBlobUrl", reference, file.ContentType);
+            }, Navigation, L, message => _error = message);
         _loading = false;
     }
+
+    private async Task RevokeAsync()
+    {
+        if (_readerUrl is null) return;
+        var url = _readerUrl;
+        _readerUrl = null;
+        try { await Js.InvokeVoidAsync("lmsRevokeBlobUrl", url); }
+        catch (JSDisconnectedException) { }
+    }
+
+    public async ValueTask DisposeAsync() => await RevokeAsync();
 
     private async Task DownloadAsync()
     {

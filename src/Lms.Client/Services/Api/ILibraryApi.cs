@@ -14,8 +14,14 @@ public interface ILibraryApi
     Task<LibraryResourceDto> UpdateAsync(Guid id, SaveLibraryResourceRequest request, CancellationToken ct = default);
     Task DeleteAsync(Guid id, CancellationToken ct = default);
 
-    /// <summary>GET /api/library/{id}/download — a signed URL; 403 <c>download_not_allowed</c> when the resource is reader-only.</summary>
+    /// <summary>GET /api/library/{id}/download — a signed URL; 403 <c>download_disabled</c> when the resource is reader-only.</summary>
     Task<AssetUrlDto> DownloadAsync(Guid id, CancellationToken ct = default);
+
+    /// <summary>
+    /// GET /api/library/{id}/reader — the protected reader: the file streamed inline through the API (no signed URL), the only way to
+    /// read a resource whose downloads are off. A plain element <c>src</c> cannot carry the bearer token, so the client reads the bytes.
+    /// </summary>
+    Task<(Stream Content, string FileName)> ReadAsync(Guid id, CancellationToken ct = default);
 
     /// <summary>POST /api/library/{id}/add-to-lesson — the new <c>LibraryResource</c> module.</summary>
     Task<ModuleNodeDto> AddToLessonAsync(Guid id, AddLibraryResourceToLessonRequest request, CancellationToken ct = default);
@@ -50,6 +56,9 @@ public sealed class LibraryApi(ApiHttp http) : ILibraryApi
     public Task<AssetUrlDto> DownloadAsync(Guid id, CancellationToken ct = default) =>
         http.GetAsync<AssetUrlDto>(Routes.LibraryResourceDownload(id), ct);
 
+    public Task<(Stream Content, string FileName)> ReadAsync(Guid id, CancellationToken ct = default) =>
+        http.DownloadAsync(Routes.LibraryResourceReader(id), ct);
+
     public async Task<ModuleNodeDto> AddToLessonAsync(Guid id, AddLibraryResourceToLessonRequest request, CancellationToken ct = default) =>
         (await http.SendAsync<ModuleNodeDto>(HttpMethod.Post, Routes.LibraryResourceAddToLesson(id), request, ct))!;
 }
@@ -62,6 +71,8 @@ public sealed class FakeLibraryApi : ILibraryApi
     public List<LibraryResourceDto> Resources { get; } = [];
     public List<(Guid ResourceId, AddLibraryResourceToLessonRequest Request)> Added { get; } = [];
     public List<LibraryQuery> Queries { get; } = [];
+    /// <summary>Resources read through the protected reader.</summary>
+    public List<Guid> Reads { get; } = [];
     public Exception? Failure { get; set; }
 
     public LibraryResourceDto Add(string title, string type = LibraryResourceTypes.Document, IReadOnlyList<Guid>? levels = null, Guid? courseId = null,
@@ -125,9 +136,17 @@ public sealed class FakeLibraryApi : ILibraryApi
     public Task<AssetUrlDto> DownloadAsync(Guid id, CancellationToken ct = default)
     {
         var r = Resources.FirstOrDefault(x => x.Id == id) ?? throw new ApiProblemException(404, ProblemCodes.not_found, null, null);
-        if (!r.DownloadAllowed) throw new ApiProblemException(403, "download_not_allowed", null, null);
+        if (!r.DownloadAllowed) throw new ApiProblemException(403, ProblemCodes.download_disabled, null, null);
         var now = DateTime.UtcNow;
         return Task.FromResult(new AssetUrlDto($"https://files.test/library/{id}", now.AddMinutes(10), now));
+    }
+
+    public Task<(Stream Content, string FileName)> ReadAsync(Guid id, CancellationToken ct = default)
+    {
+        if (Failure is not null) return Task.FromException<(Stream, string)>(Failure);
+        var r = Resources.FirstOrDefault(x => x.Id == id) ?? throw new ApiProblemException(404, ProblemCodes.not_found, null, null);
+        Reads.Add(id);
+        return Task.FromResult<(Stream, string)>((new MemoryStream([1, 2, 3]), r.File?.FileName ?? "file"));
     }
 
     public Task<ModuleNodeDto> AddToLessonAsync(Guid id, AddLibraryResourceToLessonRequest request, CancellationToken ct = default)

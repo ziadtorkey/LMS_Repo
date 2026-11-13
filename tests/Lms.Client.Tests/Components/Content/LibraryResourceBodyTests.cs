@@ -17,11 +17,13 @@ public sealed class LibraryResourceBodyTests : ClientTestContext
     private static readonly TimeSpan Wait = TimeSpan.FromSeconds(5);
 
     private readonly FakeLibraryApi _library = new();
+    private readonly FakeAssetsApi _assets = new();
 
     public LibraryResourceBodyTests()
     {
         Services.AddSingleton<ILibraryApi>(_library);
-        Services.AddSingleton<IAssetsApi>(new FakeAssetsApi());
+        Services.AddSingleton<IAssetsApi>(_assets);
+        JSInterop.Setup<string>("lmsBlobUrl", _ => true).SetResult("blob:reader-test");
         Culture.Current = new CultureInfo("en");
     }
 
@@ -50,15 +52,45 @@ public sealed class LibraryResourceBodyTests : ClientTestContext
     }
 
     [Fact]
-    public void The_download_button_is_absent_when_the_resource_is_reader_only()
+    public void A_reader_only_resource_is_read_through_the_reader_route_not_the_asset_url()
     {
-        var r = _library.Add("Reader only", file: Pdf(), downloadAllowed: false);
+        var file = Pdf();
+        var r = _library.Add("Reader only", file: file, downloadAllowed: false);
+        _assets.Refuse(file.Id);   // the server's /api/assets/{id}/url answers 4xx for a file of a reader-only resource
+
+        var cut = Open(r.Id);
+        cut.WaitForElement("[data-testid=library-reader-pdf]", Wait);
+
+        Assert.Equal("blob:reader-test", cut.Find("[data-testid=library-reader-pdf]").GetAttribute("src"));
+        Assert.Equal([r.Id], _library.Reads);
+        Assert.Empty(_assets.UrlRequests);
+        Assert.Empty(cut.FindAll("[data-testid=asset-preview-failed]"));
+        Assert.Empty(cut.FindAll("[data-testid=library-download]"));
+        Assert.Empty(cut.FindAll("[data-testid=asset-download]"));
+    }
+
+    [Fact]
+    public void A_downloadable_resource_still_previews_through_the_asset_url()
+    {
+        var file = Pdf();
+        var r = _library.Add("Open", file: file, downloadAllowed: true);
 
         var cut = Open(r.Id);
 
-        Assert.NotEmpty(cut.FindAll("[data-testid=asset-preview]"));   // it can still be read
-        Assert.Empty(cut.FindAll("[data-testid=library-download]"));
-        Assert.Empty(cut.FindAll("[data-testid=asset-download]"));     // and the preview does not offer one either
+        Assert.NotEmpty(cut.FindAll("[data-testid=asset-preview]"));
+        cut.WaitForAssertion(() => Assert.Equal([file.Id], _assets.UrlRequests));
+        Assert.Empty(_library.Reads);
+    }
+
+    [Fact]
+    public void A_reader_that_fails_shows_the_error()
+    {
+        var r = _library.Add("Reader only", file: Pdf(), downloadAllowed: false);
+        _library.Failure = new ApiProblemException(404, "not_found", null, null);
+
+        var cut = Open(r.Id);
+
+        cut.WaitForElement("[data-testid=library-body-error]", Wait);
     }
 
     [Fact]
@@ -82,7 +114,8 @@ public sealed class LibraryResourceBodyTests : ClientTestContext
 
         cut.Find("[data-testid=library-download]").Click();
 
-        cut.WaitForElement("[data-testid=library-body-error]", Wait);
+        var error = cut.WaitForElement("[data-testid=library-body-error]", Wait);
+        Assert.Contains("Download is disabled", error.TextContent);   // the server's code download_disabled, with its own message
         Assert.DoesNotContain("files.test", Services.GetRequiredService<NavigationManager>().Uri);
     }
 
