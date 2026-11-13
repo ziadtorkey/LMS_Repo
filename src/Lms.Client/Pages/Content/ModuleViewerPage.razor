@@ -28,7 +28,7 @@ else
     <MudStack Spacing="3">
         <MudStack Spacing="1">
             <MudLink Href="@BackHref" data-testid="module-back">@L["Module_Back"]</MudLink>
-            <MudText Typo="Typo.h4" data-testid="module-title">@Culture.Pick(_detail.Node.TitleAr, _detail.Node.TitleEn)</MudText>
+            <MudText Typo="Typo.h4" HtmlTag="h1" data-testid="module-title">@Culture.Pick(_detail.Node.TitleAr, _detail.Node.TitleEn)</MudText>
         </MudStack>
 
         <ModuleBody Detail="_detail" />

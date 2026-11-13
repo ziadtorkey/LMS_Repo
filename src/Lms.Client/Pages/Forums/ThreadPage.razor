@@ -32,7 +32,7 @@ else
     <MudStack Spacing="3">
         <MudLink Href="@($"class-courses/{Id}/forum")" data-testid="thread-back">@L["Forum_Back"]</MudLink>
         <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
-            <MudText Typo="Typo.h5" data-testid="thread-title">@thread.Title</MudText>
+            <MudText Typo="Typo.h5" HtmlTag="h1" data-testid="thread-title">@thread.Title</MudText>
             @if (thread.IsPinned)
             {
                 <MudChip T="string" Size="Size.Small" Color="Color.Primary" data-testid="thread-pinned">@L["Forum_Pinned"]</MudChip>

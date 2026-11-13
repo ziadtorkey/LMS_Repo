@@ -22,7 +22,7 @@ else if (!PermState.Has(Permissions.Forums.View))
 else
 {
     <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3">
-        <MudText Typo="Typo.h5">@L["Forum_Title"]</MudText>
+        <MudText Typo="Typo.h5" HtmlTag="h1">@L["Forum_Title"]</MudText>
         @if (PermState.Has(Permissions.Forums.Post))
         {
             <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => _composing = !_composing" data-testid="forum-new">@L["Forum_NewThread"]</MudButton>

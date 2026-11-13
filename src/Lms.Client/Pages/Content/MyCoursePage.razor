@@ -29,7 +29,7 @@ else
 {
     <MudStack Spacing="3">
         <MudStack Spacing="1" data-testid="learn-header">
-            <MudText Typo="Typo.h4">@(_header is { } cc ? Culture.Pick(cc.CourseNameAr, cc.CourseNameEn) : L["Learn_Title"].Value)</MudText>
+            <MudText Typo="Typo.h4" HtmlTag="h1">@(_header is { } cc ? Culture.Pick(cc.CourseNameAr, cc.CourseNameEn) : L["Learn_Title"].Value)</MudText>
             @if (_plan.Progress is { } progress)
             {
                 <MudText Typo="Typo.body2" data-testid="learn-progress-text">@L["Learn_Progress", progress.Completed, progress.Total]</MudText>
@@ -52,14 +52,14 @@ else
         {
             var sec = section;
             <MudPaper Outlined="true" Class="pa-3" data-testid="@($"learn-section-{sec.Key}")">
-                <MudText Typo="Typo.h6" Class="mb-2">@SectionLabel() @sec.Order · @Culture.Pick(sec.TitleAr, sec.TitleEn)</MudText>
+                <MudText Typo="Typo.h6" HtmlTag="h2" Class="mb-2">@SectionLabel() <span dir="ltr">@sec.Order</span> · @Culture.Pick(sec.TitleAr, sec.TitleEn)</MudText>
                 <MudStack Spacing="2">
                     @foreach (var lesson in sec.Lessons.OrderBy(l => l.Order))
                     {
                         var les = lesson;
                         <div data-testid="@($"learn-lesson-{les.Key}")">
                             <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
-                                <MudText Typo="Typo.subtitle1">@les.Order. @Culture.Pick(les.TitleAr, les.TitleEn)</MudText>
+                                <MudText Typo="Typo.subtitle1"><span dir="ltr">@(les.Order).</span> @Culture.Pick(les.TitleAr, les.TitleEn)</MudText>
                                 @if (les.Progress is { Total: > 0 } lp)
                                 {
                                     <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined"

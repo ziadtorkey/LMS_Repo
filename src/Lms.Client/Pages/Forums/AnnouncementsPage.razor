@@ -24,7 +24,7 @@ else if (!PermState.Has(Permissions.Forums.View))
 }
 else
 {
-    <MudText Typo="Typo.h5" Class="mb-3">@L["Announcements_Title"]</MudText>
+    <MudText Typo="Typo.h5" HtmlTag="h1" Class="mb-3">@L["Announcements_Title"]</MudText>
     @if (PermState.Has(Permissions.Forums.Moderate))
     {
         <MudPaper Outlined="true" Class="pa-3 mb-3" data-testid="announcement-form">
