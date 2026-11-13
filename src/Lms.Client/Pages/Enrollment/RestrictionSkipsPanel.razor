@@ -1,0 +1,39 @@
+@using Lms.Shared.Enrollment
+
+@* Students that were placed in the class but not auto-enrolled in some course because of its restrictions (FR-CRS-03), each with a way to ask for an exception. *@
+@if (Skips.Count > 0)
+{
+    <MudAlert Severity="Severity.Warning" data-testid="skips-panel">
+        <MudText Typo="Typo.subtitle2">@L["ClassStudents_SkipsTitle", Skips.Count]</MudText>
+        <MudStack Spacing="1" Class="mt-2">
+            @foreach (var skip in Skips)
+            {
+                <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" data-testid="@($"skip-{skip.StudentId}-{skip.ClassCourseId}")">
+                    <MudText Typo="Typo.body2">@(Names.GetValueOrDefault(skip.StudentId, skip.StudentId.ToString()[..8]))</MudText>
+                    @foreach (var type in skip.FailedTypes)
+                    {
+                        <MudChip T="string" Size="Size.Small">@L[$"RestrictionType_{type}"]</MudChip>
+                    }
+                    @if (CanRequestException)
+                    {
+                        <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="() => OnRequestException.InvokeAsync(skip)"
+                                   data-testid="@($"skip-request-{skip.StudentId}-{skip.ClassCourseId}")">@L["ClassStudents_RequestException"]</MudButton>
+                    }
+                </MudStack>
+            }
+        </MudStack>
+    </MudAlert>
+}
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<RestrictionSkipDto> Skips { get; set; } = [];
+
+    /// <summary>Student names by id (the skips only carry ids).</summary>
+    [Parameter] public IReadOnlyDictionary<Guid, string> Names { get; set; } = new Dictionary<Guid, string>();
+
+    /// <summary>True with Enrollment.RequestException.</summary>
+    [Parameter] public bool CanRequestException { get; set; }
+
+    /// <summary>Raised with the skip to open the exception request (the dialog belongs to the exceptions page).</summary>
+    [Parameter] public EventCallback<RestrictionSkipDto> OnRequestException { get; set; }
+}

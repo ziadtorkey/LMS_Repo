@@ -96,3 +96,6 @@ html:lang(ar), html:lang(ar) body { font-family: Cairo, "Segoe UI", Tahoma, Aria
     flex: none; display: inline-grid; place-items: center; min-inline-size: 36px; block-size: 24px; padding-inline: 6px; margin-inline-end: 8px; border-radius: 6px;
     background: var(--mud-palette-surface); border: 1px solid var(--mud-palette-lines-default); font-size: .75rem; font-weight: 600; font-variant-numeric: tabular-nums;
 }
+/* Lesson plan: a module with its authoring buttons, and the add-module menu under a lesson. */
+.lms-module-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px 8px; min-width: 0; }
+.lms-plan-add { margin-block-start: 4px; }

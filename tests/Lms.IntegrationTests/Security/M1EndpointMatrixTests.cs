@@ -20,6 +20,7 @@ public sealed class M1EndpointMatrixTests(LmsApiFactory factory, ITestOutputHelp
         "/api/auth/whoami",             // M0 identity
         "/api/files",                   // M0 files (own probes in FileEndpointTests)
         "/api/files/{id:guid}/url",
+        "/api/dev/jobs/quiz-close/{quizId:guid}", // Development-only quiz trigger (M4a Task 11); tested in AutoSubmitTests
     ];
 
     public static TheoryData<string, Caller> Cases()
