@@ -116,6 +116,20 @@ public static class PackageAttemptStatuses
     public static IReadOnlyList<string> All { get; } = [InProgress, Completed];
 }
 
+/// <summary>
+/// Which completed attempt's score goes to the gradebook when a student opens a completed package again (D57; chosen per
+/// module by the teacher). <c>Highest</c> (default) keeps the best score, so another attempt never lowers it; <c>Last</c>
+/// takes the newest completed attempt; <c>First</c> keeps the first completed attempt and later attempts are practice only.
+/// </summary>
+public static class PackageGradingMethods
+{
+    public const string Highest = "Highest";
+    public const string Last = "Last";
+    public const string First = "First";
+
+    public static IReadOnlyList<string> All { get; } = [Highest, Last, First];
+}
+
 /// <summary>Formats of a tracking commit: SCORM data-model keys, or the flattened xAPI result of an H5P content.</summary>
 public static class PackageCommitFormats
 {

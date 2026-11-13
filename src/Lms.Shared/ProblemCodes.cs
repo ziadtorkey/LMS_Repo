@@ -179,6 +179,9 @@ public static class ProblemCodes
     /// <summary>The package is not <c>Ready</c> (still validating, or rejected): it cannot be attached, launched or previewed.</summary>
     public const string package_not_ready = nameof(package_not_ready);
 
+    /// <summary>The package has no module yet, so its grading method cannot be changed (D57).</summary>
+    public const string package_not_attached = nameof(package_not_attached);
+
     /// <summary>A tracking commit or finish was refused (closed attempt, preview token, oversize, unknown key, rate).</summary>
     public const string package_commit_rejected = nameof(package_commit_rejected);
 
