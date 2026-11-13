@@ -3,7 +3,7 @@
 _Updated by the Team Lead after every merge cycle._
 
 **Milestone:** M0 — DONE · M1 Organization & Access — DONE (#73 via #200) · M2 People — closing (#177 via #321) · M3 Academic Structure — in progress
-**Last update:** 2026-11-13 14:40 — machine restart recovered (MySQL80 stopped, compose stack up). Merged today after restart: #444 (M4b spike), #501 (package upload, T16), #447 (digital library). #439 closed in favour of #506; #508 filed (ar U+061C minus sign). In CI, approved: #448, #410, #432, #400, #322, #332, #309, #507. QA re-verifying: #450, #453, #421, #502. Merge helper loop denied by auto mode; Lead merges by hand.
+**Last update:** 2026-11-13 14:50 — machine restart recovered (MySQL80 stopped, compose stack up). Merged today after restart: #444 (M4b spike), #501 (package upload, T16), #447 (digital library), #450 (quiz model), #294 (guardian portal). #439 closed in favour of #506; #508 filed (ar U+061C minus sign). In CI, approved: #410, #509, #432, #400, #322, #332, #309, #507. QA re-verifying: #453, #421, #502, #499. #448 needs a main merge (BE3). Merge helper loop denied by auto mode; Lead merges by hand.
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |
