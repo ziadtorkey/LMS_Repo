@@ -3,7 +3,7 @@ using Lms.Client.Services;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
-CultureSetup.ApplyGregorian();
+CultureSetup.Apply();
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");

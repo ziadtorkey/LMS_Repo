@@ -1,0 +1,45 @@
+@using Lms.Shared.LiveSessions
+
+@* The status of a live session (design spec docs/design/m4b-live-and-packages.md §2.2): a soft, tinted chip whose text carries
+   the meaning, not only the colour. "Live now" has a pulsing dot (static under reduced motion, lms-activities.css). With
+   ShowHint, a session that is waiting for Zoom explains itself under the chip, so the reason is visible on touch screens too. *@
+<span class="lms-live-status">
+    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@ColorFor(Status)" Icon="@IconFor(Status)"
+             data-testid="live-status" data-status="@Status">
+        @if (Status == LiveSessionStatuses.Live)
+        {
+            <span class="lms-live-dot" aria-hidden="true"></span>
+        }
+        @Label
+    </MudChip>
+    @if (ShowHint && Status == LiveSessionStatuses.SyncFailed)
+    {
+        <MudText Typo="Typo.caption" Class="lms-muted lms-live-status-hint" data-testid="live-status-hint">@L["LiveSession_SyncFailedHint"]</MudText>
+    }
+</span>
+
+@code {
+    /// <summary>One of <see cref="LiveSessionStatuses"/>.</summary>
+    [Parameter, EditorRequired] public string Status { get; set; } = LiveSessionStatuses.Scheduled;
+
+    /// <summary>Shows the "waiting for Zoom" explanation under the chip (lists and the join panel; not in compact Home rows).</summary>
+    [Parameter] public bool ShowHint { get; set; }
+
+    private string Label => L[$"LiveSession_Status_{Status}"] is { ResourceNotFound: false } text ? text.Value : Status;
+
+    private static Color ColorFor(string status) => status switch
+    {
+        LiveSessionStatuses.Scheduled => Color.Info,
+        LiveSessionStatuses.Live => Color.Success,
+        LiveSessionStatuses.SyncFailed => Color.Warning,
+        _ => Color.Default,
+    };
+
+    private static string? IconFor(string status) => status switch
+    {
+        LiveSessionStatuses.Scheduled => Icons.Material.Rounded.Schedule,
+        LiveSessionStatuses.Cancelled => Icons.Material.Rounded.EventBusy,
+        LiveSessionStatuses.SyncFailed => Icons.Material.Rounded.SyncProblem,
+        _ => null,
+    };
+}
