@@ -3,7 +3,7 @@
 _Updated by the Team Lead after every merge cycle._
 
 **Milestone:** M0 — DONE · M1 Organization & Access — DONE (#73 via #200) · M2 People — closing (#177 via #321) · M3 Academic Structure — in progress
-**Last update:** 2026-11-13 03:05 — Merged since 18:27: #388, #349, #436, #412, #441, #386, #420, #437, #331, #316, #387, #287, #409, #456, #417, #414, #449, #391 (M4a module kernel), #459 (forum UI). M4b: plan #467 approved; issues #468-#492; contract 3a draft #497 (QA reviewing); design spec #494, CSS #498 (approved); FE2 T16 draft #501; BE3 corpus #493. CI blocker #466 (BE4). Agent messaging paused pending owner message.
+**Last update:** 2026-11-13 03:55 — Merged since 18:27: #388, #349, #436, #412, #441, #386, #420, #437, #331, #316, #387, #287, #409, #456, #417, #414, #449, #391 (M4a module kernel), #459 (forum UI), #464 (static asset tests). M4b: plan #467 approved; issues #468-#492; contract 3a draft #497 (QA reviewing); design spec #494, CSS #498 (approved); FE2 T16 draft #501; BE3 corpus #493. CI blocker #466 (BE4). Probable #466 root cause: daily jobs at 02:00/03:00 UTC firing in every test host. Local Docker hung (owner asked to restart). Agent messaging paused.
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |
