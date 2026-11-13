@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={"darkMode":"class","theme":{"extend":{"colors":{"on-error-container":"#93000a","surface-container-high":"#dce9ff","warning-bright":"#FBBF24","on-primary-fixed":"#002110","primary-container":"#00663d","on-tertiary-fixed":"#002113","surface-container-highest":"#d3e4fe","surface-tint":"#0e6c42","on-primary":"#ffffff","on-error":"#ffffff","secondary":"#515f72","primary-fixed":"#a0f5bf","surface-bright":"#f8f9ff","on-surface":"#0b1c30","on-tertiary":"#ffffff","surface-light":"#FFFFFF","surface-dark":"#121A20","tertiary-fixed-dim":"#4edea3","success-bright":"#34D399","error-bright":"#F87171","tertiary-fixed":"#6ffbbe","surface-container":"#e5eeff","background-dark":"#090D10","secondary-fixed-dim":"#b9c8dd","tertiary-container":"#006645","on-secondary-container":"#566477","on-tertiary-fixed-variant":"#005236","tertiary":"#004c32","surface-variant":"#d3e4fe","on-primary-container":"#8de1ad","on-background":"#0b1c30","error":"#B42318","outline":"#6f7a71","info":"#1E40AF","background-light":"#F8FAFC","surface-container-lowest":"#ffffff","outline-variant":"#bec9bf","secondary-container":"#d2e1f7","on-primary-fixed-variant":"#005230","surface-dim":"#cbdbf5","primary-fixed-dim":"#84d8a5","inverse-surface":"#213145","inverse-primary":"#84d8a5","on-tertiary-container":"#5ae8ac","on-secondary-fixed-variant":"#3a485a","surface":"#f8f9ff","success":"#1D7344","inverse-on-surface":"#eaf1ff","secondary-fixed":"#d5e4fa","border-subtle-light":"#E2E8F0","error-container":"#ffdad6","on-secondary":"#ffffff","background":"#f8f9ff","info-bright":"#60A5FA","surface-container-low":"#eff4ff","border-subtle-dark":"#1E293B","on-secondary-fixed":"#0e1c2c","on-surface-variant":"#3f4941","warning":"#B45309","primary":"#004c2c"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"margin-desktop":"2rem","space-lg":"1.25rem","margin":"1rem","space-xs":"0.25rem","space-xl":"2rem","gutter":"1.25rem","space-md":"0.75rem","space-sm":"0.5rem","gutter-desktop":"1.5rem"},"fontFamily":{"caption":["Inter"],"body-table":["Inter"],"body-default":["Inter"],"headline-xl":["Cairo"],"body-table-medium":["Inter"],"subtitle-lg":["Inter"],"headline-lg":["Cairo"],"headline-md":["Cairo"],"headline-xl-mobile":["Cairo"],"label-default":["Inter"]},"fontSize":{"caption":["12px",{"lineHeight":"16px","fontWeight":"400"}],"body-table":["14px",{"lineHeight":"20px","fontWeight":"400"}],"body-default":["15px",{"lineHeight":"22px","fontWeight":"400"}],"headline-xl":["32px",{"lineHeight":"40px","letterSpacing":"-0.02em","fontWeight":"700"}],"body-table-medium":["14px",{"lineHeight":"20px","fontWeight":"500"}],"subtitle-lg":["16px",{"lineHeight":"24px","fontWeight":"500"}],"headline-lg":["24px",{"lineHeight":"32px","letterSpacing":"-0.01em","fontWeight":"600"}],"headline-md":["18px",{"lineHeight":"26px","fontWeight":"600"}],"headline-xl-mobile":["26px",{"lineHeight":"34px","letterSpacing":"-0.01em","fontWeight":"700"}],"label-default":["13px",{"lineHeight":"18px","letterSpacing":"0.01em","fontWeight":"500"}]}}}}</script></head><body class="bg-surface font-body-default text-on-surface"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-low z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col h-full"><div class="h-16 px-space-lg flex items-center gap-space-sm bg-surface-container-low"><div class="w-9 h-9 rounded-lg bg-primary-container flex items-center justify-center text-on-primary shadow-sm"><span class="material-symbols-outlined text-[20px]">school</span></div><div class="flex flex-col"><span class="font-headline-md text-headline-md leading-none text-on-surface tracking-tight">Serene LMS</span><span class="font-caption text-caption text-secondary mt-0.5">Academic Platform</span></div></div><div class="flex-1 overflow-y-auto px-space-sm py-space-md"><nav class="flex flex-col gap-0.5" data-active-classes="bg-primary-container text-on-primary font-medium shadow-sm"><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="home" href="#"><span class="material-symbols-outlined text-[20px]">dashboard</span><span class="font-body-table-medium text-body-table-medium">Home</span></a><div class="pt-space-md pb-space-xs px-space-md"><span class="font-caption text-caption uppercase tracking-wider text-secondary font-semibold">Structure</span></div><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="organization-tree" href="#"><span class="material-symbols-outlined text-[20px]">account_tree</span><span class="font-body-table text-body-table">Organization Tree</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="unit-settings" href="#"><span class="material-symbols-outlined text-[20px]">tune</span><span class="font-body-table text-body-table">Unit Settings</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="level-types" href="#"><span class="material-symbols-outlined text-[20px]">layers</span><span class="font-body-table text-body-table">Level Types</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="templates" href="#"><span class="material-symbols-outlined text-[20px]">view_quilt</span><span class="font-body-table text-body-table">Templates</span></a><div class="pt-space-md pb-space-xs px-space-md"><span class="font-caption text-caption uppercase tracking-wider text-secondary font-semibold">Community</span></div><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="guardians" href="#"><span class="material-symbols-outlined text-[20px]">supervisor_account</span><span class="font-body-table text-body-table">Guardians</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="staff" href="#"><span class="material-symbols-outlined text-[20px]">badge</span><span class="font-body-table text-body-table">Staff</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="students" href="#"><span class="material-symbols-outlined text-[20px]">group</span><span class="font-body-table text-body-table">Students</span></a><div class="pt-space-md pb-space-xs px-space-md"><span class="font-caption text-caption uppercase tracking-wider text-secondary font-semibold">Academic</span></div><a aria-current="page" class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg transition-colors bg-primary-container text-on-primary font-medium shadow-sm" data-path="academic-years" href="#"><span class="material-symbols-outlined text-[20px]">calendar_month</span><span class="font-body-table-medium text-body-table-medium">Academic Years</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="courses" href="#"><span class="material-symbols-outlined text-[20px]">menu_book</span><span class="font-body-table text-body-table">Courses</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="my-courses" href="#"><span class="material-symbols-outlined text-[20px]">auto_stories</span><span class="font-body-table text-body-table">My courses</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="classes" href="#"><span class="material-symbols-outlined text-[20px]">meeting_room</span><span class="font-body-table text-body-table">Classes</span></a><div class="pt-space-md pb-space-xs px-space-md"><span class="font-caption text-caption uppercase tracking-wider text-secondary font-semibold">Security &amp; Governance</span></div><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="roles" href="#"><span class="material-symbols-outlined text-[20px]">admin_panel_settings</span><span class="font-body-table text-body-table">Roles</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="role-assignments" href="#"><span class="material-symbols-outlined text-[20px]">assignment_ind</span><span class="font-body-table text-body-table">Role assignments</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="single-sign-on" href="#"><span class="material-symbols-outlined text-[20px]">vpn_key</span><span class="font-body-table text-body-table">Single sign-on</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="settings" href="#"><span class="material-symbols-outlined text-[20px]">settings</span><span class="font-body-table text-body-table">Settings</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="audit-log" href="#"><span class="material-symbols-outlined text-[20px]">history_edu</span><span class="font-body-table text-body-table">Audit log</span></a></nav></div></div></aside><div class="pl-72 min-h-screen flex flex-col"><header class="fixed top-0 left-72 right-0 h-16 bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40"><div class="h-16 w-full px-space-xl flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-sm"><div class="relative flex items-center gap-space-xs bg-surface-container-lowest px-space-md py-space-xs rounded-lg shadow-sm cursor-pointer hover:bg-surface-container-low transition-colors"><span class="material-symbols-outlined text-primary text-[18px]">apartment</span><span class="font-label-default text-label-default text-on-surface font-medium">Al Noor Schools — Main School (Org Admin)</span><span class="material-symbols-outlined text-secondary text-[16px]">expand_more</span></div></div><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs bg-surface-container-lowest px-space-sm py-space-xs rounded-lg shadow-sm cursor-pointer hover:bg-surface-container-low transition-colors"><span class="material-symbols-outlined text-secondary text-[18px]">date_range</span><span class="font-label-default text-label-default text-on-surface">2026/2027</span><span class="material-symbols-outlined text-secondary text-[16px]">arrow_drop_down</span></div><div class="flex items-center bg-surface-container-low p-0.5 rounded-full"><button class="px-space-sm py-0.5 rounded-full bg-surface-container-lowest text-on-surface font-caption text-caption shadow-xs">EN</button><button class="px-space-sm py-0.5 rounded-full text-secondary hover:text-on-surface font-caption text-caption transition-colors">العربية</button></div><button class="relative p-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1 right-1 w-4 h-4 bg-error text-on-error rounded-full text-[10px] font-caption flex items-center justify-center font-bold">2</span></button><div class="flex items-center gap-space-sm pl-space-xs"><div class="flex flex-col text-right"><span class="font-label-default text-label-default text-on-surface font-semibold">Admin User</span><span class="font-caption text-caption text-secondary">Super Administrator</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></div></header><main class="w-full pt-16 bg-surface flex-1"><div class="flex flex-col w-full">
+<div class="p-space-lg lg:p-space-xl space-y-space-lg">
+<!-- Page Header (No duplicate H1, specialized institutional header) -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+<div class="space-y-1">
+<div class="flex items-center gap-space-xs text-secondary font-caption text-caption">
+<span>Academic Management</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-on-surface font-medium">Academic Years &amp; Terms</span>
+</div>
+<div class="flex items-center gap-space-sm">
+<h2 class="font-headline-lg text-headline-lg text-on-surface font-semibold tracking-tight">Academic Years &amp; Terms</h2>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-[12px] font-medium border-0 shadow-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            Active Session
+          </span>
+</div>
+<p class="font-body-default text-body-default text-secondary">
+          Configure institutional academic calendars, term cycles, instructional pacing, and statutory holidays.
+        </p>
+</div>
+<!-- Header Action Controls -->
+<div class="flex items-center gap-space-sm flex-wrap">
+<button class="inline-flex items-center gap-2 px-space-md py-2 rounded-lg bg-surface-container-lowest text-secondary hover:text-on-surface hover:bg-surface-container-high transition-all shadow-xs text-label-default font-label-default font-medium" type="button">
+<span class="material-symbols-outlined text-[18px]">file_download</span>
+          Export Calendar (ICS / PDF)
+        </button>
+<button class="inline-flex items-center gap-2 px-space-md py-2 rounded-lg bg-primary-container text-on-primary hover:opacity-95 shadow-sm transition-all text-label-default font-label-default font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]" type="button">
+<span class="material-symbols-outlined text-[18px]">add_circle</span>
+          + New Academic Year
+        </button>
+</div>
+</div>
+<!-- Executive Telemetry / KPI Summary Bar (4-Card Grid) -->
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-space-md">
+<!-- KPI 1 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-xs flex flex-col justify-between relative overflow-hidden group hover:shadow-sm transition-all">
+<div class="flex items-start justify-between">
+<div class="space-y-1">
+<span class="font-caption text-caption text-secondary uppercase font-semibold tracking-wider">Current Active Year</span>
+<div class="flex items-baseline gap-2 pt-0.5">
+<span class="font-headline-md text-headline-md font-bold text-on-surface">2026/2027</span>
+<span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800">Current</span>
+</div>
+</div>
+<div class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-[22px]">calendar_today</span>
+</div>
+</div>
+<div class="mt-space-md pt-space-xs flex items-center justify-between text-caption font-caption text-secondary">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">event</span> 2026-09-01 – 2027-06-30</span>
+<span class="text-primary font-medium">303 Days</span>
+</div>
+</div>
+<!-- KPI 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-xs flex flex-col justify-between relative overflow-hidden group hover:shadow-sm transition-all">
+<div class="flex items-start justify-between">
+<div class="space-y-1">
+<span class="font-caption text-caption text-secondary uppercase font-semibold tracking-wider">Instructional Days</span>
+<div class="flex items-baseline gap-2 pt-0.5">
+<span class="font-headline-md text-headline-md font-bold text-on-surface">184 Days</span>
+<span class="px-1.5 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700">Target 180+ Met</span>
+</div>
+</div>
+<div class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-[22px]">school</span>
+</div>
+</div>
+<div class="mt-space-md pt-space-xs flex items-center justify-between text-caption font-caption text-secondary">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">auto_stories</span> 36 Scheduled Teaching Weeks</span>
+<span class="text-emerald-700 font-semibold">+4 Buffer</span>
+</div>
+</div>
+<!-- KPI 3 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-xs flex flex-col justify-between relative overflow-hidden group hover:shadow-sm transition-all">
+<div class="flex items-start justify-between">
+<div class="space-y-1">
+<span class="font-caption text-caption text-secondary uppercase font-semibold tracking-wider">Term 1 Progression</span>
+<div class="flex items-baseline gap-2 pt-0.5">
+<span class="font-headline-md text-headline-md font-bold text-on-surface">Week 11</span>
+<span class="font-caption text-caption text-secondary">of 18 Total</span>
+</div>
+</div>
+<div class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-[22px]">timelapse</span>
+</div>
+</div>
+<div class="mt-space-sm space-y-1.5">
+<div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full transition-all duration-500" style="width: 61%"></div>
+</div>
+<div class="flex justify-between items-center text-[11px] font-caption text-secondary">
+<span>61% Semester Elapsed</span>
+<span class="font-medium text-on-surface">7 Weeks to Finals</span>
+</div>
+</div>
+</div>
+<!-- KPI 4 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-xs flex flex-col justify-between relative overflow-hidden group hover:shadow-sm transition-all">
+<div class="flex items-start justify-between">
+<div class="space-y-1">
+<span class="font-caption text-caption text-secondary uppercase font-semibold tracking-wider">Scheduled Breaks</span>
+<div class="flex items-baseline gap-2 pt-0.5">
+<span class="font-headline-md text-headline-md font-bold text-on-surface">14 Events</span>
+<span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 text-amber-800">MoE Compliant</span>
+</div>
+</div>
+<div class="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center text-amber-700">
+<span class="material-symbols-outlined text-[22px]">celebration</span>
+</div>
+</div>
+<div class="mt-space-md pt-space-xs flex items-center justify-between text-caption font-caption text-secondary">
+<span class="flex items-center gap-1 font-medium text-amber-900 truncate"><span class="material-symbols-outlined text-[14px] text-amber-600">notifications_active</span> Next: Saudi National Day (Nov 23)</span>
+</div>
+</div>
+</div>
+<!-- Institutional Context Filter & Selector Bar -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+<div class="flex flex-wrap items-center gap-space-md">
+<!-- Campus/Unit Filter -->
+<div class="flex items-center gap-space-xs bg-surface-container-low px-space-md py-1.5 rounded-lg">
+<span class="material-symbols-outlined text-secondary text-[18px]">account_balance</span>
+<div class="flex flex-col">
+<span class="text-[10px] font-caption uppercase text-secondary font-semibold leading-tight">Campus Scope</span>
+<select class="bg-transparent text-body-table-medium font-body-table-medium text-on-surface outline-none cursor-pointer pr-4 font-semibold">
+<option>Al Noor Schools — Main Campus (All Divisions)</option>
+<option>Al Noor Boys Academy — Secondary</option>
+<option>Al Noor Girls Campus — Middle &amp; High</option>
+<option>Al Noor Early Childhood Center</option>
+</select>
+</div>
+</div>
+<!-- Academic Year Dropdown Switcher -->
+<div class="flex items-center gap-space-xs bg-surface-container-low px-space-md py-1.5 rounded-lg">
+<span class="material-symbols-outlined text-secondary text-[18px]">history</span>
+<div class="flex flex-col">
+<span class="text-[10px] font-caption uppercase text-secondary font-semibold leading-tight">Academic Year</span>
+<select class="bg-transparent text-body-table-medium font-body-table-medium text-on-surface outline-none cursor-pointer pr-4 font-semibold">
+<option selected="">2026/2027 (Active Operational)</option>
+<option>2027/2028 (Next Year Draft)</option>
+<option>2025/2026 (Archived Records)</option>
+<option>2024/2025 (Historical)</option>
+</select>
+</div>
+</div>
+<div class="hidden xl:flex items-center gap-2 pl-space-xs text-caption font-caption text-secondary">
+<span class="material-symbols-outlined text-[16px] text-emerald-600">verified</span>
+<span>Policy inheritance locked to Central Education Authority</span>
+</div>
+</div>
+<!-- Action Group -->
+<div class="flex items-center gap-space-sm self-end lg:self-center">
+<button class="inline-flex items-center gap-1.5 px-space-md py-2 rounded-lg bg-surface-container-high text-on-surface hover:bg-surface-container-highest text-label-default font-label-default font-medium transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px]">edit</span>
+          Edit Year Details
+        </button>
+<button class="inline-flex items-center gap-1.5 px-space-md py-2 rounded-lg bg-surface-container-high text-on-surface hover:bg-surface-container-highest text-label-default font-label-default font-medium transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px]">lock_clock</span>
+          Lock Schedule
+        </button>
+</div>
+</div>
+<!-- Main Content Layout (Split Asymmetric 8-col / 4-col Bento) -->
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-space-lg">
+<!-- LEFT COLUMN: Terms Table & Interactive Calendar (8 Cols) -->
+<div class="xl:col-span-8 space-y-space-lg">
+<!-- SECTION 1: Terms & Semesters Breakdown -->
+<div class="bg-surface-container-lowest rounded-xl shadow-xs overflow-hidden">
+<div class="p-space-lg flex items-center justify-between flex-wrap gap-2">
+<div>
+<div class="flex items-center gap-2">
+<h3 class="font-headline-md text-headline-md font-semibold text-on-surface">Terms &amp; Semesters</h3>
+<span class="text-caption font-caption bg-surface-container text-secondary px-2 py-0.5 rounded-full font-medium">3 Blocks Defined</span>
+</div>
+<p class="font-caption text-caption text-secondary mt-0.5">Instructional semesters, teaching quotas, examination lockouts and grade windows.</p>
+</div>
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-low text-primary hover:bg-surface-container-high text-label-default font-label-default font-semibold transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px]">add</span>
+              Add Term
+            </button>
+</div>
+<!-- Structured Table -->
+<div class="w-full overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low text-secondary font-caption text-caption uppercase tracking-wider font-semibold">
+<th class="py-3 px-space-md">Term / Cycle</th>
+<th class="py-3 px-space-md">Instructional Range</th>
+<th class="py-3 px-space-md">Workload</th>
+<th class="py-3 px-space-md">Exam &amp; Grades</th>
+<th class="py-3 px-space-md">Status</th>
+<th class="py-3 px-space-md text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y-0 text-on-surface font-body-table text-body-table">
+<!-- Row 1: Term 1 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors group">
+<td class="py-space-md px-space-md align-top">
+<div class="flex items-start gap-2.5">
+<div class="w-7 h-7 rounded bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-caption mt-0.5">
+                        T1
+                      </div>
+<div>
+<div class="font-body-table-medium text-body-table-medium font-semibold text-on-surface">Term 1 (Fall Semester)</div>
+<div class="text-[11px] text-secondary font-caption">Compulsory General Education</div>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<div class="font-medium text-on-surface">2026-09-01 – 2027-01-20</div>
+<div class="text-caption font-caption text-secondary">Start of academic session</div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<div class="font-medium text-on-surface">18 Weeks</div>
+<div class="text-caption font-caption text-secondary">88 Instructional Days</div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<div class="text-caption font-caption text-on-surface">
+<span class="font-medium">Finals:</span> 2027-01-10 – 01-19
+                    </div>
+<div class="text-[11px] font-caption text-secondary">
+<span class="font-medium text-amber-700">Grades due:</span> 2027-01-24
+                    </div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-caption font-caption font-semibold bg-emerald-50 text-emerald-800">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                      Current Active
+                    </span>
+</td>
+<td class="py-space-md px-space-md align-top text-right">
+<div class="flex items-center justify-end gap-1 text-secondary opacity-70 group-hover:opacity-100 transition-opacity">
+<button class="p-1 rounded hover:bg-surface-container-high hover:text-on-surface" title="Edit Term"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="p-1 rounded hover:bg-surface-container-high hover:text-on-surface" title="Lock Grades"><span class="material-symbols-outlined text-[18px]">lock</span></button>
+<button class="p-1 rounded hover:bg-surface-container-high hover:text-on-surface" title="More Options"><span class="material-symbols-outlined text-[18px]">more_vert</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 2: Mid-Year Break -->
+<tr class="bg-surface-container/30 hover:bg-surface-container/60 transition-colors group">
+<td class="py-space-md px-space-md align-top">
+<div class="flex items-start gap-2.5">
+<div class="w-7 h-7 rounded bg-surface-container-high text-secondary flex items-center justify-center font-bold text-caption mt-0.5">
+<span class="material-symbols-outlined text-[14px]">beach_access</span>
+</div>
+<div>
+<div class="font-body-table-medium text-body-table-medium font-semibold text-secondary">Mid-Year Vacation</div>
+<div class="text-[11px] text-secondary font-caption">Inter-term faculty reset</div>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<div class="font-medium text-secondary">2027-01-21 – 2027-01-31</div>
+<div class="text-caption font-caption text-secondary">All Campuses closed</div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<div class="font-medium text-secondary">11 Days Break</div>
+<div class="text-caption font-caption text-secondary">0 Instructional Days</div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<span class="text-caption font-caption text-secondary italic">No assessments</span>
+</td>
+<td class="py-space-md px-space-md align-top">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-caption font-medium bg-surface-container-high text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                      Scheduled Recess
+                    </span>
+</td>
+<td class="py-space-md px-space-md align-top text-right">
+<div class="flex items-center justify-end gap-1 text-secondary opacity-70 group-hover:opacity-100 transition-opacity">
+<button class="p-1 rounded hover:bg-surface-container-high hover:text-on-surface" title="Edit Vacation"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 3: Term 2 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors group">
+<td class="py-space-md px-space-md align-top">
+<div class="flex items-start gap-2.5">
+<div class="w-7 h-7 rounded bg-blue-100 text-blue-800 flex items-center justify-center font-bold text-caption mt-0.5">
+                        T2
+                      </div>
+<div>
+<div class="font-body-table-medium text-body-table-medium font-semibold text-on-surface">Term 2 (Spring Semester)</div>
+<div class="text-[11px] text-secondary font-caption">Graduation &amp; Summative Assessments</div>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<div class="font-medium text-on-surface">2027-02-01 – 2027-06-30</div>
+<div class="text-caption font-caption text-secondary">Spring commencement</div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<div class="font-medium text-on-surface">18 Weeks</div>
+<div class="text-caption font-caption text-secondary">96 Instructional Days</div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<div class="text-caption font-caption text-on-surface">
+<span class="font-medium">Finals:</span> 2027-06-15 – 06-26
+                    </div>
+<div class="text-[11px] font-caption text-secondary">
+<span class="font-medium text-amber-700">Grades due:</span> 2027-06-30
+                    </div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-caption font-caption font-semibold bg-blue-50 text-blue-800">
+<span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+                      Upcoming
+                    </span>
+</td>
+<td class="py-space-md px-space-md align-top text-right">
+<div class="flex items-center justify-end gap-1 text-secondary opacity-70 group-hover:opacity-100 transition-opacity">
+<button class="p-1 rounded hover:bg-surface-container-high hover:text-on-surface" title="Edit Term"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="p-1 rounded hover:bg-surface-container-high hover:text-on-surface" title="More Options"><span class="material-symbols-outlined text-[18px]">more_vert</span></button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- SECTION 2: Modern Interactive Academic Calendar (November 2026) -->
+<div class="bg-surface-container-lowest rounded-xl shadow-xs p-space-lg space-y-space-md">
+<!-- Calendar Header & Navigation Controls -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-lg bg-surface-container-low flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">calendar_month</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md font-semibold text-on-surface">Institutional Calendar</h3>
+<p class="font-caption text-caption text-secondary">Official institutional pacing, holiday observances, and exam schedules.</p>
+</div>
+</div>
+<!-- Month Controls & View Toggles -->
+<div class="flex items-center gap-2 flex-wrap">
+<!-- Month Navigator -->
+<div class="flex items-center bg-surface-container-low rounded-lg p-0.5 shadow-xs">
+<button class="p-1.5 rounded hover:bg-surface-container-highest text-secondary hover:text-on-surface transition-colors" title="Previous Month">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</button>
+<span class="px-space-md text-label-default font-label-default font-bold text-on-surface tracking-tight">November 2026</span>
+<button class="p-1.5 rounded hover:bg-surface-container-highest text-secondary hover:text-on-surface transition-colors" title="Next Month">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</div>
+<!-- View Switcher -->
+<div class="flex items-center bg-surface-container-low p-1 rounded-lg">
+<button class="px-2.5 py-1 rounded bg-surface-container-lowest text-on-surface font-caption text-caption font-semibold shadow-xs">Month</button>
+<button class="px-2.5 py-1 rounded text-secondary hover:text-on-surface font-caption text-caption transition-colors">Timeline</button>
+<button class="px-2.5 py-1 rounded text-secondary hover:text-on-surface font-caption text-caption transition-colors">List</button>
+</div>
+<button class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary-container text-on-primary text-caption font-caption font-semibold hover:opacity-95 shadow-xs" type="button">
+<span class="material-symbols-outlined text-[16px]">event_note</span>
+                + Add Entry
+              </button>
+</div>
+</div>
+<!-- Calendar 7-Column Grid -->
+<div class="rounded-xl overflow-hidden bg-surface-container-low/40">
+<!-- Day of Week Names -->
+<div class="grid grid-cols-7 bg-surface-container-low text-center py-2.5 text-caption font-caption font-semibold text-secondary">
+<div>Mon</div>
+<div>Tue</div>
+<div>Wed</div>
+<div>Thu</div>
+<div>Fri</div>
+<div class="text-on-surface-variant">Sat (Weekend)</div>
+<div class="text-on-surface-variant">Sun (Weekend)</div>
+</div>
+<!-- Month Days Matrix (Nov 2026: Nov 1 is Sunday => Mon Oct 26 - Sun Nov 1 is 1st row if starting Mon) -->
+<!-- We'll treat Sunday as day 1 of Nov 2026 in standard calendar or Mon-start. In Saudi/GCC LMS, Mon-Sun or Sun-Thu is common. The legacy screen shows: Mon, Tue, Wed, Thu, Fri, Sat, Sun, with Sun Nov 1 in column 7. Let's replicate this accurately. -->
+<div class="grid grid-cols-7 gap-1 bg-surface-container p-1">
+<!-- ROW 1 -->
+<!-- Prev Month filler 5 days: Oct 26 - 30 -->
+<div class="min-h-[82px] p-1.5 bg-surface-container-lowest/50 opacity-40 rounded flex flex-col justify-between">
+<span class="text-[12px] font-caption font-semibold text-secondary">26</span>
+</div>
+<div class="min-h-[82px] p-1.5 bg-surface-container-lowest/50 opacity-40 rounded flex flex-col justify-between">
+<span class="text-[12px] font-caption font-semibold text-secondary">27</span>
+</div>
+<div class="min-h-[82px] p-1.5 bg-surface-container-lowest/50 opacity-40 rounded flex flex-col justify-between">
+<span class="text-[12px] font-caption font-semibold text-secondary">28</span>
+</div>
+<div class="min-h-[82px] p-1.5 bg-surface-container-lowest/50 opacity-40 rounded flex flex-col justify-between">
+<span class="text-[12px] font-caption font-semibold text-secondary">29</span>
+</div>
+<div class="min-h-[82px] p-1.5 bg-surface-container-lowest/50 opacity-40 rounded flex flex-col justify-between">
+<span class="text-[12px] font-caption font-semibold text-secondary">30</span>
+</div>
+<div class="min-h-[82px] p-1.5 bg-surface-container-lowest/50 opacity-40 rounded flex flex-col justify-between">
+<span class="text-[12px] font-caption font-semibold text-secondary">31</span>
+</div>
+<!-- Day 1 (Sunday) -->
+<div class="min-h-[82px] p-1.5 bg-surface-container-lowest rounded flex flex-col justify-between hover:bg-surface-bright transition-colors">
+<div class="flex justify-between items-center">
+<span class="text-[13px] font-caption font-semibold text-on-surface">1</span>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Teaching Day"></span>
+</div>
+<div class="text-[10px] text-secondary font-caption">Instructional</div>
+</div>
+<!-- ROW 2: Days 2 - 8 -->
+<div class="min-h-[82px] p-1.5 bg-surface-container-lowest rounded flex flex-col justify-between hover:bg-surface-bright transition-colors">
+<div class="flex justify-between items-center"><span class="text-[13px] font-caption font-semibold text-on-surface">2</span></div>
+<div class="text-[10px] text-secondary font-caption">Week 10 begin</div>
+</div>
+<div class="min-h-[82px] p-1.5 bg-surface-container-lowest rounded flex flex-col justify-between hover:bg-surface-bright transition-colors">
+<div class="flex justify-between items-center"><span class="text-[13px] font-caption font-semibold text-on-surface">3</span></div>
+</div>
+<div class="min-h-[82px] p-1.5 bg-surface-container-lowest rounded flex flex-col justify-between hover:bg-surface-bright transition-colors">
+<div class="flex justify-between items-center"><span class="text-[13px] font-caption font-semibold text-on-surface">4</span></div>
+</div>
+<div class="min-h-[82px] p-1.5 bg-surface-container-lowest rounded flex flex-col justify-between hover:bg-surface-bright transition-colors">
+<div class="flex justify-between items-center"><span class="text-[13px] font-caption font-semibold text-on-surface">5</span></div>
+</div>
+<div class="min-h-[82px] p-1.5 bg-surface-container-lowest rounded flex flex-col justify-between hover:bg-surface-bright transition-colors">
+<div class="flex justify-between items-center"><span class="text-[13px] font-caption font-semibold text-on-surface">6</span></div>
+</div>
+<div class="min-h-[82px] p-1.5 bg-surface-container-low/70 rounded flex flex-col justify-between">
+<div class="flex justify-between items-center"><span class="text-[13px] font-caption font-medium text-secondary">7</span></div>
+<div class="text-[10px] text-secondary font-caption italic">Weekend</div>
+</div>
+<div class="min-h-[82px] p-1.5 bg-surface-container-low/70 rounded flex flex-col justify-between">
+<div class="flex justify-between items-center"><span class="text-[13px] font-caption font-medium text-secondary">8</span></div>
+<div class="text-[10px] text-secondary font-caption italic">Weekend</div>
+</div>
+<!-- ROW 3: Days 9 - 15 -->
+<div class="min-h-[82px] p-1.5 bg-surface-container-lowest rounded flex flex-col justify-between hover:bg-surface-bright transition-colors">
+<div class="flex justify-between items-center"><span class="text-[13px] font-caption font-semibold text-on-surface">9</span></div>
+<div class="text-[10px] text-secondary font-caption">Week 11 begin</div>
+</div>
+<div class="min-h-[82px] p-1.5 bg-surface-container-lowest rounded flex flex-col justify-between hover:bg-surface-bright transition-colors">
+<div class="flex justify-between items-center"><span class="text-[13px] font-caption font-semibold text-on-surface">10</span></div>
+</div>
+<div class="min-h-[82px] p-1.5 bg-surface-container-lowest rounded flex flex-col justify-between hover:bg-surface-bright transition-colors">
+<div class="flex justify-between items-center"><span class="text-[13px] font-caption font-semibold text-on-surface">11</span></div>
+</div>
+<!-- Day 12 with Assessment Milestone -->
+<div class="min-h-[82px] p-1.5 bg-blue-50/80 rounded flex flex-col justify-between relative shadow-xs">
+<div class="flex justify-between items-center">
+<span class="text-[13px] font-caption font-bold text-blue-900">12</span>
+<span class="material-symbols-outlined text-[14px] text-blue-600">assignment</span>
+</div>
+<div class="px-1 py-0.5 rounded bg-blue-100 text-blue-900 font-caption text-[9px] font-semibold truncate leading-tight">
+                  Mid-term Tests
+                </div>
+</div>
+<div class="min-h-[82px] p-1.5 bg-surface-container-lowest rounded flex flex-col justify-between hover:bg-surface-bright transition-colors">
+<div class="flex justify-between items-center"><span class="text-[13px] font-caption font-semibold text-on-surface">13</span></div>
+</div>
+<div class="min-h-[82px] p-1.5 bg-surface-container-low/70 rounded flex flex-col justify-between">
+<div class="flex justify-between items-center"><span class="text-[13px] font-caption font-medium text-secondary">14</span></div>
+</div>
+<div class="min-h-[82px] p-1.5 bg-surface-container-low/70 rounded flex flex-col justify-between">
+<div class="flex justify-between items-center"><span class="text-[13px] font-caption font-medium text-secondary">15</span></div>
+</div>
+<!-- ROW 4: Days 16 - 22 -->
+<div class="min-h-[82px] p-1.5 bg-surface-container-lowest rounded flex flex-col justify-between hover:bg-surface-bright transition-colors">
+<div class="flex justify-between items-center"><span class="text-[13px] font-caption font-semibold text-on-surface">16</span></div>
+<div class="text-[10px] text-secondary font-caption">Week 12 begin</div>
+</div>
+<div class="min-h-[82px] p-1.5 bg-surface-container-lowest rounded flex flex-col justify-between hover:bg-surface-bright transition-colors">
+<div class="flex justify-between items-center"><span class="text-[13px] font-caption font-semibold text-on-surface">17</span></div>
+</div>
+<div class="min-h-[82px] p-1.5 bg-surface-container-lowest rounded flex flex-col justify-between hover:bg-surface-bright transition-colors">
+<div class="flex justify-between items-center"><span class="text-[13px] font-caption font-semibold text-on-surface">18</span></div>
+</div>
+<div class="min-h-[82px] p-1.5 bg-surface-container-lowest rounded flex flex-col justify-between hover:bg-surface-bright transition-colors">
+<div class="flex justify-between items-center"><span class="text-[13px] font-caption font-semibold text-on-surface">19</span></div>
+</div>
+<div class="min-h-[82px] p-1.5 bg-surface-container-lowest rounded flex flex-col justify-between hover:bg-surface-bright transition-colors">
+<div class="flex justify-between items-center"><span class="text-[13px] font-caption font-semibold text-on-surface">20</span></div>
+</div>
+<div class="min-h-[82px] p-1.5 bg-surface-container-low/70 rounded flex flex-col justify-between">
+<div class="flex justify-between items-center"><span class="text-[13px] font-caption font-medium text-secondary">21</span></div>
+</div>
+<div class="min-h-[82px] p-1.5 bg-surface-container-low/70 rounded flex flex-col justify-between">
+<div class="flex justify-between items-center"><span class="text-[13px] font-caption font-medium text-secondary">22</span></div>
+</div>
+<!-- ROW 5: Days 23 - 29 (Day 23 is highlighted as Official Holiday from Legacy Screen) -->
+<div class="min-h-[82px] p-1.5 bg-amber-50 rounded flex flex-col justify-between relative shadow-sm">
+<div class="flex justify-between items-center">
+<span class="text-[13px] font-caption font-bold text-amber-900">23</span>
+<span class="material-symbols-outlined text-[15px] text-amber-600">stars</span>
+</div>
+<div class="px-1 py-1 rounded bg-amber-200/80 text-amber-950 font-caption text-[9px] font-bold leading-tight">
+                  🇸🇦 National Day
+                </div>
+</div>
+<div class="min-h-[82px] p-1.5 bg-surface-container-lowest rounded flex flex-col justify-between hover:bg-surface-bright transition-colors">
+<div class="flex justify-between items-center"><span class="text-[13px] font-caption font-semibold text-on-surface">24</span></div>
+</div>
+<div class="min-h-[82px] p-1.5 bg-surface-container-lowest rounded flex flex-col justify-between hover:bg-surface-bright transition-colors">
+<div class="flex justify-between items-center"><span class="text-[13px] font-caption font-semibold text-on-surface">25</span></div>
+</div>
+<div class="min-h-[82px] p-1.5 bg-surface-container-lowest rounded flex flex-col justify-between hover:bg-surface-bright transition-colors">
+<div class="flex justify-between items-center"><span class="text-[13px] font-caption font-semibold text-on-surface">26</span></div>
+</div>
+<!-- Day 27: Parent-Teacher Conference -->
+<div class="min-h-[82px] p-1.5 bg-purple-50 rounded flex flex-col justify-between relative">
+<div class="flex justify-between items-center">
+<span class="text-[13px] font-caption font-bold text-purple-900">27</span>
+<span class="material-symbols-outlined text-[14px] text-purple-600">groups</span>
+</div>
+<div class="px-1 py-0.5 rounded bg-purple-100 text-purple-900 font-caption text-[9px] font-medium truncate leading-tight">
+                  PTC (Virtual)
+                </div>
+</div>
+<div class="min-h-[82px] p-1.5 bg-surface-container-low/70 rounded flex flex-col justify-between">
+<div class="flex justify-between items-center"><span class="text-[13px] font-caption font-medium text-secondary">28</span></div>
+</div>
+<div class="min-h-[82px] p-1.5 bg-surface-container-low/70 rounded flex flex-col justify-between">
+<div class="flex justify-between items-center"><span class="text-[13px] font-caption font-medium text-secondary">29</span></div>
+</div>
+<!-- ROW 6: Day 30 + Next Month Days -->
+<div class="min-h-[82px] p-1.5 bg-surface-container-lowest rounded flex flex-col justify-between hover:bg-surface-bright transition-colors">
+<div class="flex justify-between items-center"><span class="text-[13px] font-caption font-semibold text-on-surface">30</span></div>
+<div class="text-[10px] text-secondary font-caption">Week 14 begin</div>
+</div>
+<div class="min-h-[82px] p-1.5 bg-surface-container-lowest/50 opacity-40 rounded flex flex-col justify-between">
+<span class="text-[12px] font-caption font-semibold text-secondary">1 Dec</span>
+</div>
+<div class="min-h-[82px] p-1.5 bg-surface-container-lowest/50 opacity-40 rounded flex flex-col justify-between">
+<span class="text-[12px] font-caption font-semibold text-secondary">2 Dec</span>
+</div>
+<div class="min-h-[82px] p-1.5 bg-surface-container-lowest/50 opacity-40 rounded flex flex-col justify-between">
+<span class="text-[12px] font-caption font-semibold text-secondary">3 Dec</span>
+</div>
+<div class="min-h-[82px] p-1.5 bg-surface-container-lowest/50 opacity-40 rounded flex flex-col justify-between">
+<span class="text-[12px] font-caption font-semibold text-secondary">4 Dec</span>
+</div>
+<div class="min-h-[82px] p-1.5 bg-surface-container-lowest/50 opacity-40 rounded flex flex-col justify-between">
+<span class="text-[12px] font-caption font-semibold text-secondary">5 Dec</span>
+</div>
+<div class="min-h-[82px] p-1.5 bg-surface-container-lowest/50 opacity-40 rounded flex flex-col justify-between">
+<span class="text-[12px] font-caption font-semibold text-secondary">6 Dec</span>
+</div>
+</div>
+</div>
+<!-- Bottom Legend & Visual Indicator Strip -->
+<div class="flex flex-wrap items-center justify-between gap-space-sm pt-2 text-caption font-caption text-secondary">
+<div class="flex items-center gap-space-md flex-wrap">
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+<span>Instructional Day</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+<span>Public / Statutory Holiday</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+<span>Examination Window</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
+<span>Parent / Staff Workday</span>
+</div>
+</div>
+<div class="flex items-center gap-1 text-[11px] text-secondary">
+<span class="material-symbols-outlined text-[14px]">sync</span>
+<span>Syncs automatically with Google Classroom &amp; MS Outlook</span>
+</div>
+</div>
+</div>
+</div>
+<!-- RIGHT COLUMN: Key Events & Compliance Feed (4 Cols) -->
+<div class="xl:col-span-4 space-y-space-lg">
+<!-- Scheduled Official Events / Holidays List (Rich Cards from Legacy Screen) -->
+<div class="bg-surface-container-lowest rounded-xl shadow-xs p-space-lg space-y-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">event_available</span>
+</div>
+<h3 class="font-headline-md text-headline-md font-semibold text-on-surface">Institutional Milestones</h3>
+</div>
+<span class="text-[11px] font-caption text-secondary font-medium">Q1 / Q2 2026/27</span>
+</div>
+<div class="space-y-space-sm">
+<!-- Event 1: National Day Break -->
+<div class="p-space-md rounded-lg bg-surface-container-low hover:bg-surface-container transition-all group flex items-start justify-between gap-space-sm">
+<div class="space-y-1">
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-100 text-amber-900">Holiday</span>
+<span class="font-body-table-medium text-body-table-medium font-bold text-on-surface">National Day Break</span>
+</div>
+<div class="text-caption font-caption text-secondary flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px]">calendar_today</span>
+<span>2026-09-23 – 2026-09-23</span>
+</div>
+<div class="text-[11px] font-caption text-secondary">
+                  1 statutory day · All Campuses &amp; Online
+                </div>
+</div>
+<div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1 rounded text-secondary hover:text-on-surface" title="Edit Event"><span class="material-symbols-outlined text-[16px]">edit</span></button>
+<button class="p-1 rounded text-error hover:bg-error-container" title="Delete Event"><span class="material-symbols-outlined text-[16px]">delete</span></button>
+</div>
+</div>
+<!-- Event 2: Mid-Term Assessments -->
+<div class="p-space-md rounded-lg bg-surface-container-low hover:bg-surface-container transition-all group flex items-start justify-between gap-space-sm">
+<div class="space-y-1">
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-100 text-blue-900">Assessment</span>
+<span class="font-body-table-medium text-body-table-medium font-bold text-on-surface">Mid-Term Assessments</span>
+</div>
+<div class="text-caption font-caption text-secondary flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px]">schedule</span>
+<span>2026-11-12 – 2026-11-16</span>
+</div>
+<div class="text-[11px] font-caption text-secondary">
+                  5 working days · Secondary &amp; High School
+                </div>
+</div>
+<div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1 rounded text-secondary hover:text-on-surface"><span class="material-symbols-outlined text-[16px]">edit</span></button>
+<button class="p-1 rounded text-error hover:bg-error-container"><span class="material-symbols-outlined text-[16px]">delete</span></button>
+</div>
+</div>
+<!-- Event 3: End of Term 1 Final Exams -->
+<div class="p-space-md rounded-lg bg-surface-container-low hover:bg-surface-container transition-all group flex items-start justify-between gap-space-sm">
+<div class="space-y-1">
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-100 text-emerald-900">Final Exams</span>
+<span class="font-body-table-medium text-body-table-medium font-bold text-on-surface">End of Term 1 Exams</span>
+</div>
+<div class="text-caption font-caption text-secondary flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px]">event</span>
+<span>2027-01-10 – 2027-01-19</span>
+</div>
+<div class="text-[11px] font-caption text-secondary">
+                  10 academic days · Mandatory On-Campus
+                </div>
+</div>
+<div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1 rounded text-secondary hover:text-on-surface"><span class="material-symbols-outlined text-[16px]">edit</span></button>
+<button class="p-1 rounded text-error hover:bg-error-container"><span class="material-symbols-outlined text-[16px]">delete</span></button>
+</div>
+</div>
+<!-- Event 4: Winter Vacation -->
+<div class="p-space-md rounded-lg bg-surface-container-low hover:bg-surface-container transition-all group flex items-start justify-between gap-space-sm">
+<div class="space-y-1">
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-surface-container-highest text-secondary">Recess</span>
+<span class="font-body-table-medium text-body-table-medium font-bold text-on-surface">Winter Vacation</span>
+</div>
+<div class="text-caption font-caption text-secondary flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px]">beach_access</span>
+<span>2027-01-21 – 2027-01-31</span>
+</div>
+<div class="text-[11px] font-caption text-secondary">
+                  11 total days · Campus Maintenance Window
+                </div>
+</div>
+<div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1 rounded text-secondary hover:text-on-surface"><span class="material-symbols-outlined text-[16px]">edit</span></button>
+<button class="p-1 rounded text-error hover:bg-error-container"><span class="material-symbols-outlined text-[16px]">delete</span></button>
+</div>
+</div>
+</div>
+<button class="w-full py-2.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary font-label-default text-label-default font-semibold transition-colors flex items-center justify-center gap-1.5" type="button">
+<span class="material-symbols-outlined text-[16px]">add_circle</span>
+            Add Institutional Holiday or Event
+          </button>
+</div>
+<!-- Statutory Compliance & Ministry Alignment Card -->
+<div class="bg-surface-container-lowest rounded-xl shadow-xs p-space-lg space-y-space-md relative overflow-hidden">
+<div class="flex items-start gap-space-sm">
+<div class="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-800 flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[20px]">verified_user</span>
+</div>
+<div class="space-y-1">
+<h4 class="font-body-table-medium text-body-table-medium font-bold text-on-surface">Ministry Regulatory Compliance</h4>
+<p class="font-caption text-caption text-secondary leading-relaxed">
+                Aligned with the Ministry of Education 2-Semester / 3-Term academic accreditation framework for 2026/2027.
+              </p>
+</div>
+</div>
+<!-- Compliance Progress Metrics -->
+<div class="space-y-space-sm pt-space-xs">
+<div class="space-y-1">
+<div class="flex justify-between text-caption font-caption">
+<span class="text-secondary">Instructional Days Minimum (180 Required)</span>
+<span class="font-bold text-emerald-800">184 Days (102%)</span>
+</div>
+<div class="w-full bg-surface-container h-2 rounded-full overflow-hidden">
+<div class="bg-emerald-600 h-full rounded-full" style="width: 100%"></div>
+</div>
+</div>
+<div class="space-y-1">
+<div class="flex justify-between text-caption font-caption">
+<span class="text-secondary">Examination Days Allowance (Max 24)</span>
+<span class="font-bold text-on-surface">19 Days Used</span>
+</div>
+<div class="w-full bg-surface-container h-2 rounded-full overflow-hidden">
+<div class="bg-blue-600 h-full rounded-full" style="width: 79%"></div>
+</div>
+</div>
+</div>
+<div class="p-space-sm rounded-lg bg-emerald-50/70 flex items-center gap-2 text-[12px] font-caption text-emerald-900 font-medium">
+<span class="material-symbols-outlined text-[16px] text-emerald-700">fact_check</span>
+<span>Accreditation seal valid through July 2027</span>
+</div>
+</div>
+<!-- Campus Distribution Card -->
+<div class="bg-surface-container-lowest rounded-xl shadow-xs p-space-lg space-y-space-md">
+<div class="flex items-center justify-between">
+<h4 class="font-body-table-medium text-body-table-medium font-bold text-on-surface">Campus Overrides &amp; Synchronizations</h4>
+<span class="text-[11px] font-caption text-emerald-700 font-semibold">4/4 Synced</span>
+</div>
+<div class="divide-y-0 space-y-2">
+<div class="flex items-center justify-between text-caption font-caption py-1">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+<span class="font-medium text-on-surface">Main Campus (All Grades)</span>
+</div>
+<span class="text-secondary">Master Calendar</span>
+</div>
+<div class="flex items-center justify-between text-caption font-caption py-1">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+<span class="font-medium text-on-surface">Boys Secondary Division</span>
+</div>
+<span class="text-secondary font-mono text-[11px]">Synced · 0 Delta</span>
+</div>
+<div class="flex items-center justify-between text-caption font-caption py-1">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+<span class="font-medium text-on-surface">Girls High School</span>
+</div>
+<span class="text-secondary font-mono text-[11px]">Synced · 0 Delta</span>
+</div>
+<div class="flex items-center justify-between text-caption font-caption py-1">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-amber-500"></span>
+<span class="font-medium text-on-surface">Early Childhood Center</span>
+</div>
+<span class="text-amber-800 font-medium text-[11px]">+3 Days Orientation</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div></main></div></body></html>

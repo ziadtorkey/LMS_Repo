@@ -9,82 +9,87 @@
 @inject NavigationManager Navigation
 
 @* The student's side of enrollment: course enrollments with their source and status, and the history of transfers between classes. *@
-<MudStack Spacing="3" data-testid="student-enrollments-tab">
-    @if (CanTransfer && Student.Summary.CurrentClassId is not null)
-    {
-        <div>
-            <MudButton Variant="Variant.Outlined" OnClick="TransferAsync" data-testid="student-transfer">@L["Transfer_Title"]</MudButton>
-        </div>
-    }
+<div data-testid="student-enrollments-tab">
     @if (_failed)
     {
-        <MudAlert Severity="Severity.Error" data-testid="api-error">@L["Api_Error"]</MudAlert>
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-3" data-testid="api-error">@L["Api_Error"]</MudAlert>
     }
 
-    <MudText Typo="Typo.h6">@L["Enrollment_Title"]</MudText>
-    @if (_enrollments.Count == 0)
-    {
-        <MudText data-testid="enrollments-empty">@L["Common_Empty"]</MudText>
-    }
-    else
-    {
-        <MudTable Items="_enrollments" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" data-testid="enrollments-table">
-            <HeaderContent>
-                <MudTh>@L["Enrollment_Course"]</MudTh>
-                <MudTh>@L["Student_Class"]</MudTh>
-                <MudTh>@L["Enrollment_Source"]</MudTh>
-                <MudTh>@L["Common_Status"]</MudTh>
-                <MudTh>@L["Enrollment_From"]</MudTh>
-                <MudTh>@L["Enrollment_To"]</MudTh>
-                <MudTh></MudTh>
-            </HeaderContent>
-            <RowTemplate Context="e">
-                <MudTd DataLabel="@L["Enrollment_Course"]">@Culture.Pick(e.CourseNameAr, e.CourseNameEn) (<span dir="ltr">@e.CourseCode</span>)</MudTd>
-                <MudTd DataLabel="@L["Student_Class"]">@Culture.Pick(e.ClassNameAr, e.ClassNameEn)</MudTd>
-                <MudTd DataLabel="@L["Enrollment_Source"]" data-testid="@($"enrollment-source-{e.CourseCode}")">@L[$"EnrollmentSource_{e.Source}"]</MudTd>
-                <MudTd DataLabel="@L["Common_Status"]" data-testid="@($"enrollment-status-{e.CourseCode}")">
-                    @L[$"EnrollmentStatus_{e.Status}"]
-                    @if (!string.IsNullOrWhiteSpace(e.DropReason))
-                    {
-                        <MudText Typo="Typo.caption">@e.DropReason</MudText>
-                    }
-                </MudTd>
-                <MudTd DataLabel="@L["Enrollment_From"]"><span dir="ltr">@e.From.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)</span></MudTd>
-                <MudTd DataLabel="@L["Enrollment_To"]"><span dir="ltr">@e.To?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)</span></MudTd>
-                <MudTd>
-                    @if (CanManage && e.Status == EnrollmentStatuses.Active)
-                    {
-                        <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Error" OnClick="() => DropAsync(e)"
-                                   data-testid="@($"enrollment-drop-{e.CourseCode}")">@L["Enrollment_Drop"]</MudButton>
-                    }
-                </MudTd>
-            </RowTemplate>
-        </MudTable>
-    }
+    <SectionCard Title="@L["Enrollment_Title"]" Flush="true">
+        <Actions>
+            @if (CanTransfer && Student.Summary.CurrentClassId is not null)
+            {
+                <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.SwapHoriz" OnClick="TransferAsync" data-testid="student-transfer">@L["Transfer_Title"]</MudButton>
+            }
+        </Actions>
+        <ChildContent>
+            @if (_enrollments.Count == 0)
+            {
+                <EmptyState Title="@L["Common_Empty"]" Icon="@Icons.Material.Rounded.School" TestId="enrollments-empty" />
+            }
+            else
+            {
+                <MudTable Items="_enrollments" Dense="true" Hover="true" Elevation="0" HeaderClass="lms-table-head" Class="lms-table"
+                          Breakpoint="Breakpoint.Sm" data-testid="enrollments-table">
+                    <HeaderContent>
+                        <MudTh>@L["Enrollment_Course"]</MudTh>
+                        <MudTh>@L["Student_Class"]</MudTh>
+                        <MudTh>@L["Enrollment_Source"]</MudTh>
+                        <MudTh>@L["Common_Status"]</MudTh>
+                        <MudTh>@L["Enrollment_From"]</MudTh>
+                        <MudTh>@L["Enrollment_To"]</MudTh>
+                        <MudTh><span class="lms-visually-hidden">@L["Common_Actions"]</span></MudTh>
+                    </HeaderContent>
+                    <RowTemplate Context="e">
+                        <MudTd DataLabel="@L["Enrollment_Course"]"><span class="lms-cell-strong">@Culture.Pick(e.CourseNameAr, e.CourseNameEn)</span> <span dir="ltr" class="lms-muted">(@e.CourseCode)</span></MudTd>
+                        <MudTd DataLabel="@L["Student_Class"]">@Culture.Pick(e.ClassNameAr, e.ClassNameEn)</MudTd>
+                        <MudTd DataLabel="@L["Enrollment_Source"]" data-testid="@($"enrollment-source-{e.CourseCode}")">@L[$"EnrollmentSource_{e.Source}"]</MudTd>
+                        <MudTd DataLabel="@L["Common_Status"]" data-testid="@($"enrollment-status-{e.CourseCode}")">
+                            @L[$"EnrollmentStatus_{e.Status}"]
+                            @if (!string.IsNullOrWhiteSpace(e.DropReason))
+                            {
+                                <MudText Typo="Typo.caption" Class="lms-muted">@e.DropReason</MudText>
+                            }
+                        </MudTd>
+                        <MudTd DataLabel="@L["Enrollment_From"]"><span class="lms-date-cell"><span dir="ltr">@e.From.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)</span></span></MudTd>
+                        <MudTd DataLabel="@L["Enrollment_To"]"><span class="lms-date-cell"><span dir="ltr">@e.To?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)</span></span></MudTd>
+                        <MudTd Class="lms-cell-actions">
+                            @if (CanManage && e.Status == EnrollmentStatuses.Active)
+                            {
+                                <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Error" OnClick="() => DropAsync(e)"
+                                           data-testid="@($"enrollment-drop-{e.CourseCode}")">@L["Enrollment_Drop"]</MudButton>
+                            }
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+        </ChildContent>
+    </SectionCard>
 
-    <MudText Typo="Typo.h6">@L["Transfer_History"]</MudText>
-    @if (_transfers.Count == 0)
-    {
-        <MudText data-testid="transfers-empty">@L["Common_Empty"]</MudText>
-    }
-    else
-    {
-        <MudTable Items="_transfers" Dense="true" Breakpoint="Breakpoint.Sm" data-testid="transfers-table">
-            <HeaderContent>
-                <MudTh>@L["Enrollment_EffectiveOn"]</MudTh>
-                <MudTh>@L["Transfer_From"]</MudTh>
-                <MudTh>@L["Transfer_ToClass"]</MudTh>
-                <MudTh>@L["Staff_Reason"]</MudTh>
-            </HeaderContent>
-            <RowTemplate Context="t">
-                <MudTd DataLabel="@L["Enrollment_EffectiveOn"]"><span dir="ltr">@t.EffectiveOn.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)</span></MudTd>
-                <MudTd DataLabel="@L["Transfer_From"]">@Culture.Pick(t.FromClassNameAr, t.FromClassNameEn)</MudTd>
-                <MudTd DataLabel="@L["Transfer_ToClass"]">@Culture.Pick(t.ToClassNameAr, t.ToClassNameEn)</MudTd>
-                <MudTd DataLabel="@L["Staff_Reason"]">@t.Reason</MudTd>
-            </RowTemplate>
-        </MudTable>
-    }
-</MudStack>
+    <SectionCard Title="@L["Transfer_History"]" Flush="true" Class="mt-4">
+        @if (_transfers.Count == 0)
+        {
+            <EmptyState Title="@L["Common_Empty"]" Icon="@Icons.Material.Rounded.SwapHoriz" TestId="transfers-empty" />
+        }
+        else
+        {
+            <MudTable Items="_transfers" Dense="true" Elevation="0" HeaderClass="lms-table-head" Class="lms-table" Breakpoint="Breakpoint.Sm" data-testid="transfers-table">
+                <HeaderContent>
+                    <MudTh>@L["Enrollment_EffectiveOn"]</MudTh>
+                    <MudTh>@L["Transfer_From"]</MudTh>
+                    <MudTh>@L["Transfer_ToClass"]</MudTh>
+                    <MudTh>@L["Staff_Reason"]</MudTh>
+                </HeaderContent>
+                <RowTemplate Context="t">
+                    <MudTd DataLabel="@L["Enrollment_EffectiveOn"]"><span class="lms-date-cell"><span dir="ltr">@t.EffectiveOn.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)</span></span></MudTd>
+                    <MudTd DataLabel="@L["Transfer_From"]">@Culture.Pick(t.FromClassNameAr, t.FromClassNameEn)</MudTd>
+                    <MudTd DataLabel="@L["Transfer_ToClass"]">@Culture.Pick(t.ToClassNameAr, t.ToClassNameEn)</MudTd>
+                    <MudTd DataLabel="@L["Staff_Reason"]">@t.Reason</MudTd>
+                </RowTemplate>
+            </MudTable>
+        }
+    </SectionCard>
+</div>
 
 @code {
     private IReadOnlyList<EnrollmentDto> _enrollments = [];
