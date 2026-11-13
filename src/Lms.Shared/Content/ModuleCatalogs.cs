@@ -68,14 +68,15 @@ public static class CompletionRules
     public static IReadOnlyList<string> ForContent { get; } = [None, Manual, View];
 
     /// <summary>
-    /// M4a wave 2: the rules an activity module kind may use (empty for content kinds and the M4b kinds, which are
-    /// decided by their own contract).
+    /// M4a wave 2: the rules an activity module kind may use (empty for content kinds and for the package kinds, which
+    /// M4b wave 3b decides). M4b wave 3a: a live session completes on <c>View</c> when the student joins.
     /// </summary>
     public static IReadOnlyList<string> ForActivity(string moduleKind) => moduleKind switch
     {
         ModuleKinds.Assignment => [Submit, Score],
         ModuleKinds.Quiz => [Score, Submit],
         ModuleKinds.LibraryResource => [None, Manual, View],
+        ModuleKinds.LiveSession => [None, Manual, View],
         _ => [],
     };
 }

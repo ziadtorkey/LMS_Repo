@@ -51,8 +51,10 @@
     private Guid _loadedFor;
 
     [Parameter, EditorRequired] public AssetDto Asset { get; set; } = default!;
+    /// <summary>Overrides the Files.Download rule (the library decides per resource); null keeps the permission rule.</summary>
+    [Parameter] public bool? AllowDownload { get; set; }
 
-    private bool CanDownload => PermState.Has(Permissions.Files.Download);
+    private bool CanDownload => AllowDownload ?? PermState.Has(Permissions.Files.Download);
 
     protected override async Task OnParametersSetAsync()
     {

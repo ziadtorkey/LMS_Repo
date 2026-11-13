@@ -52,10 +52,14 @@ public static class ClientServices
             services.AddSingleton<IClassCoursesApi, FakeClassCoursesApi>();
             services.AddSingleton<IIdentityProvidersApi, FakeIdentityProvidersApi>();
             services.AddSingleton<ICoursesApi, FakeCoursesApi>();
+            services.AddSingleton<IBlueprintsApi>(new FakeBlueprintsApi { AutoSeed = true });
             services.AddSingleton<ILessonPlansApi, FakeLessonPlansApi>();
             services.AddSingleton<IFileUploadApi, FakeFileUploadApi>();
+            services.AddSingleton<ILibraryApi, FakeLibraryApi>();
+            services.AddSingleton<IForumsApi, FakeForumsApi>();
             services.AddSingleton<IAssetsApi, FakeAssetsApi>();
             services.AddSingleton<IModulesApi, FakeModulesApi>();
+            services.AddSingleton<IActivityOverviewApi, FakeActivityOverviewApi>();
             services.AddScoped<AuthenticationStateProvider, FakeAuthenticationStateProvider>();
             services.AddAuthorizationCore();
             return;
@@ -97,9 +101,13 @@ public static class ClientServices
         services.AddScoped<IClassCoursesApi, ClassCoursesApi>();
         services.AddScoped<IIdentityProvidersApi, IdentityProvidersApi>();
         services.AddScoped<ICoursesApi, CoursesApi>();
+        services.AddScoped<IBlueprintsApi, BlueprintsApi>();
         services.AddScoped<ILessonPlansApi, LessonPlansApi>();
         services.AddScoped<IFileUploadApi, FileUploadApi>();
+        services.AddScoped<ILibraryApi, LibraryApi>();
+        services.AddScoped<IForumsApi, ForumsApi>();
         services.AddScoped<IAssetsApi, AssetsApi>();
         services.AddScoped<IModulesApi, ModulesApi>();
+        services.AddScoped<IActivityOverviewApi, ActivityOverviewApi>();
     }
 }

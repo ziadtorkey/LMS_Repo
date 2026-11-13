@@ -1,0 +1,42 @@
+@using Lms.Client.Services
+@using Lms.Shared.Authorization
+@using Lms.Shared.Content
+@inject IDialogService Dialogs
+@inject PermissionState PermState
+
+@* "Add module": lists the module kinds the caller can create now. Assignment, quiz and library entries join when their features land. *@
+@if (!ReadOnly && PermState.Has(Permissions.Modules.Manage))
+{
+    <MudMenu Label="@L["Module_Add"]" Variant="Variant.Outlined" Size="Size.Small" StartIcon="@Icons.Material.Filled.Add"
+             data-testid="module-add-menu">
+        @foreach (var kind in ModuleKinds.Content)
+        {
+            var k = kind;
+            <MudMenuItem OnClick="() => AddAsync(k)" data-testid="@($"module-add-{k}")">@L["ModuleKind_" + k]</MudMenuItem>
+        }
+    </MudMenu>
+}
+
+@code {
+    [Parameter, EditorRequired] public Guid ClassCourseId { get; set; }
+    [Parameter, EditorRequired] public Guid LessonKey { get; set; }
+    [Parameter] public IReadOnlyList<ModuleGroupOption> Groups { get; set; } = [];
+    /// <summary>A lesson removed from the blueprint is kept for history only: no editing there.</summary>
+    [Parameter] public bool ReadOnly { get; set; }
+    [Parameter] public RenderFragment<ModuleFormModel>? PageBody { get; set; }
+    [Parameter] public EventCallback<ModuleDetailDto> OnAdded { get; set; }
+
+    private async Task AddAsync(string kind)
+    {
+        var dialog = await Dialogs.ShowAsync<ModuleDialog>(L["ModuleKind_" + kind], new DialogParameters<ModuleDialog>
+        {
+            { x => x.ClassCourseId, ClassCourseId },
+            { x => x.LessonKey, LessonKey },
+            { x => x.Kind, kind },
+            { x => x.Groups, Groups },
+            { x => x.PageBody, PageBody },
+        }, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: ModuleDetailDto added }) await OnAdded.InvokeAsync(added);
+    }
+}

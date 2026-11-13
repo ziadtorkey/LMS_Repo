@@ -1,0 +1,60 @@
+@using Lms.Client.Components.Assets
+@using Lms.Client.Components.Content
+@using Lms.Client.Components.Editors
+@using Lms.Shared.Content
+@inject ICultureService Culture
+
+@* The viewer of one module's content, by kind. File, Video and Audio use the signed-URL preview; a Page renders the server's
+   sanitised HTML for the UI language (the other language when that one is empty); a Link opens in a new tab, http/https only. *@
+@switch (Detail.Node.Kind)
+{
+    case ModuleKinds.File or ModuleKinds.Video or ModuleKinds.Audio:
+        @if (Detail.Content.Asset is { } asset)
+        {
+            <AssetPreview Asset="asset" />
+        }
+        else
+        {
+            <MudText Typo="Typo.body2" data-testid="module-no-content">@L["Module_NoContent"]</MudText>
+        }
+        break;
+    case ModuleKinds.Page:
+        @if (PageHtml() is { Length: > 0 } html)
+        {
+            <SanitizedHtml Html="@html" Dir="@(Culture.IsRightToLeft ? "rtl" : "ltr")" TestId="module-page-html" />
+        }
+        else
+        {
+            <MudText Typo="Typo.body2" data-testid="module-no-content">@L["Module_NoContent"]</MudText>
+        }
+        break;
+    case ModuleKinds.Link:
+        @if (ModuleLinks.IsAllowed(Detail.Content.Url))
+        {
+            <MudLink Href="@Detail.Content.Url" Target="_blank" rel="noopener noreferrer" data-testid="module-link">
+                <span dir="ltr">@Detail.Content.Url</span>
+            </MudLink>
+        }
+        else
+        {
+            <MudText Color="Color.Error" Typo="Typo.body2" data-testid="module-link-blocked">@L["Module_UrlInvalid"]</MudText>
+        }
+        break;
+    case ModuleKinds.LibraryResource:
+        <LibraryResourceBody ResourceId="Detail.Content.RefId" />
+        break;
+    default:
+        <MudText Typo="Typo.body2" data-testid="module-unsupported">@L["Module_Unsupported"]</MudText>
+        break;
+}
+
+@code {
+    [Parameter, EditorRequired] public ModuleDetailDto Detail { get; set; } = default!;
+
+    private string? PageHtml()
+    {
+        var (ar, en) = (Detail.Content.BodyHtmlAr, Detail.Content.BodyHtmlEn);
+        var preferred = Culture.IsRightToLeft ? ar : en;
+        return string.IsNullOrWhiteSpace(preferred) ? (Culture.IsRightToLeft ? en : ar) : preferred;
+    }
+}
