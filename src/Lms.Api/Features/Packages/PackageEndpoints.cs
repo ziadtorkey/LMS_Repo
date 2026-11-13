@@ -6,6 +6,7 @@ using Lms.Domain.Abstractions;
 using Lms.Domain.Content;
 using Lms.Domain.Enrollment;
 using Lms.Domain.Packages;
+using Lms.Infrastructure.Configuration;
 using Lms.Infrastructure.Enrollment;
 using Lms.Infrastructure.Packages;
 using Lms.Infrastructure.Persistence;
@@ -35,13 +36,13 @@ internal static class PackageEndpoints
     }
 
     /// <summary>
-    /// Changes which completed attempt is graded (D57), at any time. Order: the package and the relationship (404), the closed class guard
+    /// Changes which completed attempt is graded (D57), at any time. Order: the package and the relationship (404), the ScormContent flag (403 <c>feature_disabled</c>), the closed class guard
     /// (409), the value (400), then the attach state (409 <c>package_not_attached</c>). The graded score is recomputed through
     /// <see cref="IPackageGradeRecompute"/> (a no-op until the attempts exist, T9b).
     /// </summary>
     private static async Task<IResult> UpdateGradingMethodAsync(
         Guid id, UpdatePackageGradingMethodRequest? request, HttpContext http, LmsDbContext db, PlacementGuard guard,
-        IPackageGradeRecompute recompute, CancellationToken ct)
+        IPackageGradeRecompute recompute, ISettingsResolver settings, CancellationToken ct)
     {
         var found = await FindAsync(id, Permissions.Modules.Manage, http, db, ct);
         if (found.Problem is not null)
@@ -50,6 +51,11 @@ internal static class PackageEndpoints
         }
 
         var upload = found.Upload!;
+        if (await PackageSupport.FlagAsync(found.Course!, settings, ct) is { } disabled)
+        {
+            return disabled; // 403 feature_disabled, like upload
+        }
+
         if (await GroupEndpoints.WritableAsync(found.Course!, db, guard, ct) is { } closed)
         {
             return closed;
