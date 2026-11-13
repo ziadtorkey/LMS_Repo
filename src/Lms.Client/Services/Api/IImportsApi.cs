@@ -17,6 +17,9 @@ public interface IImportsApi
         string kind, Guid id, bool errorsOnly, string culture, int page, int pageSize, CancellationToken ct = default);
 
     Task<(Stream Content, string FileName)> DownloadErrorReportAsync(string kind, Guid id, CancellationToken ct = default);
+    /// <summary>The one-time credentials sheet of a committed student import (D24); available once, to the requester, for 15 minutes.</summary>
+    Task<(Stream Content, string FileName)> DownloadCredentialsAsync(string kind, Guid id, CancellationToken ct = default);
+
     Task<ImportBatchDto> CommitAsync(string kind, Guid id, CancellationToken ct = default);
     Task DiscardAsync(string kind, Guid id, CancellationToken ct = default);
     Task<PagedResult<ImportBatchDto>> ListAsync(string kind, int page, int pageSize, CancellationToken ct = default);

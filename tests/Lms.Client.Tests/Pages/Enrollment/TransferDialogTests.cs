@@ -60,6 +60,7 @@ public sealed class TransferDialogTests : StudentsTestContext
     {
         public Task<PagedResult<ClassSummaryDto>> ListAsync(ClassQuery query, CancellationToken ct = default) =>
             Task.FromResult(new PagedResult<ClassSummaryDto>(classes.Where(c => query.OrgUnitId is null || c.OrgUnitId == query.OrgUnitId).ToList(), classes.Count, 1, 200));
+        public Task<ClassSummaryDto> GetAsync(Guid id, CancellationToken ct = default) => Task.FromResult(classes.First(c => c.Id == id));
         public Task<ClassSummaryDto> CreateAsync(SaveClassRequest request, CancellationToken ct = default) => throw new NotSupportedException();
         public Task UpdateAsync(Guid id, SaveClassRequest request, CancellationToken ct = default) => throw new NotSupportedException();
         public Task CloseAsync(Guid id, CancellationToken ct = default) => throw new NotSupportedException();

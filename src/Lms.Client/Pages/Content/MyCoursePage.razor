@@ -1,0 +1,169 @@
+@page "/class-courses/{Id:guid}/learn"
+@attribute [Authorize]
+@using Lms.Client.Components.Content
+@using Lms.Client.Services.Api
+@using Lms.Shared.Authorization
+@using Lms.Shared.Classes
+@using Lms.Shared.Content
+@inject ILessonPlansApi Plans
+@inject IModulesApi Modules
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<PageTitle>@L["Learn_Title"]</PageTitle>
+@if (!PermState.Loaded || _loading)
+{
+    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+}
+else if (!PermState.Has(Permissions.Modules.View))
+{
+    <MudAlert Severity="Severity.Warning" data-testid="learn-forbidden">@L["Forbidden_Title"]</MudAlert>
+}
+else if (_error is not null || _plan is null)
+{
+    <MudAlert Severity="Severity.Error" data-testid="learn-error">@(_error ?? L["Api_Error"].Value)</MudAlert>
+}
+else
+{
+    <MudStack Spacing="3">
+        <MudStack Spacing="1" data-testid="learn-header">
+            <MudText Typo="Typo.h4">@(_header is { } cc ? Culture.Pick(cc.CourseNameAr, cc.CourseNameEn) : L["Learn_Title"].Value)</MudText>
+            @if (_plan.Progress is { } progress)
+            {
+                <MudText Typo="Typo.body2" data-testid="learn-progress-text">@L["Learn_Progress", progress.Completed, progress.Total]</MudText>
+                <MudProgressLinear Value="@Percent(progress)" Color="Color.Primary" aria-label="@L["Learn_Progress", progress.Completed, progress.Total]"
+                                   data-testid="learn-progress-bar" />
+            }
+        </MudStack>
+
+        @if (PermState.Has(ForumsView))
+        {
+            <MudStack Row="true" Spacing="1" data-testid="learn-course-links">
+                <MudButton Variant="Variant.Outlined" Size="Size.Small" Href="@($"class-courses/{Id}/forum")" data-testid="learn-forum">@L["ClassCourse_TabForum"]</MudButton>
+                <MudButton Variant="Variant.Outlined" Size="Size.Small" Href="@($"class-courses/{Id}/announcements")" data-testid="learn-announcements">@L["ClassCourse_TabAnnouncements"]</MudButton>
+            </MudStack>
+        }
+
+        <ContinueCard Next="_next" Progress="@(_plan.Progress ?? new ProgressDto(0, 0))" Href="@(_next is null ? null : ModuleHref(_next.Id))" />
+
+        @foreach (var section in _plan.Sections.OrderBy(s => s.Order))
+        {
+            var sec = section;
+            <MudPaper Outlined="true" Class="pa-3" data-testid="@($"learn-section-{sec.Key}")">
+                <MudText Typo="Typo.h6" Class="mb-2">@SectionLabel() @sec.Order · @Culture.Pick(sec.TitleAr, sec.TitleEn)</MudText>
+                <MudStack Spacing="2">
+                    @foreach (var lesson in sec.Lessons.OrderBy(l => l.Order))
+                    {
+                        var les = lesson;
+                        <div data-testid="@($"learn-lesson-{les.Key}")">
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.subtitle1">@les.Order. @Culture.Pick(les.TitleAr, les.TitleEn)</MudText>
+                                @if (les.Progress is { Total: > 0 } lp)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined"
+                                             data-testid="@($"learn-lesson-progress-{les.Key}")">@L["Learn_LessonProgress", lp.Completed, lp.Total]</MudChip>
+                                }
+                            </MudStack>
+                            @foreach (var module in les.Modules ?? [])
+                            {
+                                var m = module;
+                                <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Class="ms-4 py-1" data-testid="@($"learn-module-{m.Id}")">
+                                    <MudIcon Icon="@KindIcon(m.Kind)" Size="Size.Small" />
+                                    <MudLink Href="@ModuleHref(m.Id)" data-testid="@($"learn-module-link-{m.Id}")">@Culture.Pick(m.TitleAr, m.TitleEn)</MudLink>
+                                    <MudChip T="string" Size="Size.Small" Color="@StateColor(m)"
+                                             data-testid="@($"learn-module-state-{m.Id}")">@StateText(m)</MudChip>
+                                </MudStack>
+                            }
+                        </div>
+                    }
+                </MudStack>
+            </MudPaper>
+        }
+    </MudStack>
+}
+
+@code {
+    // Permissions.Forums.View arrives with the wave 2 contract (#395); same value.
+    private const string ForumsView = "Forums.View";
+
+    [Parameter] public Guid Id { get; set; }
+
+    private ClassLessonPlanDto? _plan;
+    private ClassCourseDto? _header;
+    private ModuleNodeDto? _next;
+    private string? _error;
+    private bool _loading = true;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        PermState.Changed -= OnPermissionsChanged;
+        PermState.Changed += OnPermissionsChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true; _error = null;
+        _plan = null; _header = null; _next = null;
+        if (PermState.Has(Permissions.Modules.View))
+        {
+            await ApiCalls.RunAsync(async () => _plan = await Plans.GetPlanAsync(Id), Navigation, L, message => _error = message);
+            if (_plan is not null)
+            {
+                await ApiCalls.RunAsync(async () => _header = (await Plans.GetMyClassCoursesAsync()).FirstOrDefault(c => c.Id == Id), Navigation, L, _ => { });
+                // "Continue" comes from the server (first visible, counted, not completed module in plan order).
+                await ApiCalls.RunAsync(async () =>
+                {
+                    var progress = await Modules.GetProgressAsync(Id);
+                    _next = progress.NextModuleId is { } next
+                        ? _plan.Sections.SelectMany(s => s.Lessons).SelectMany(l => l.Modules ?? []).FirstOrDefault(m => m.Id == next)
+                        : null;
+                }, Navigation, L, message => _error = message);
+            }
+        }
+        _loading = false;
+    }
+
+    private string ModuleHref(Guid moduleId) => $"class-courses/{Id}/modules/{moduleId}";
+
+    private static double Percent(ProgressDto p) => p.Total == 0 ? 0 : 100d * p.Completed / p.Total;
+
+    private string SectionLabel()
+    {
+        var text = L["SettingValue_Blueprints_SectionLabel_" + _plan!.SectionLabel];
+        return text.ResourceNotFound ? _plan.SectionLabel : text.Value;
+    }
+
+    private static string KindIcon(string kind) => kind switch
+    {
+        ModuleKinds.Video => Icons.Material.Filled.PlayCircle,
+        ModuleKinds.Audio => Icons.Material.Filled.Headphones,
+        ModuleKinds.Page => Icons.Material.Filled.Article,
+        ModuleKinds.Link => Icons.Material.Filled.Link,
+        ModuleKinds.Assignment => Icons.Material.Filled.Assignment,
+        ModuleKinds.Quiz => Icons.Material.Filled.Quiz,
+        _ => Icons.Material.Filled.InsertDriveFile,
+    };
+
+    /// <summary>A rule the student cannot satisfy by opening or ticking (a submission or a score) shows a waiting state until it is met.</summary>
+    private static bool IsWaiting(ModuleNodeDto m) =>
+        m.CompletionRule is CompletionRules.Submit or CompletionRules.Score && m.CompletionState != CompletionStates.Completed;
+
+    private string StateText(ModuleNodeDto m)
+    {
+        if (m.CompletionRule == CompletionRules.None) return L["Learn_NotTracked"];
+        if (IsWaiting(m)) return L[m.CompletionRule == CompletionRules.Submit ? "Learn_WaitingSubmit" : "Learn_WaitingScore"];
+        return L["CompletionState_" + (m.CompletionState ?? CompletionStates.NotStarted)];
+    }
+
+    private static Color StateColor(ModuleNodeDto m) =>
+        m.CompletionState == CompletionStates.Completed ? Color.Success
+        : m.CompletionState == CompletionStates.InProgress || IsWaiting(m) ? Color.Warning : Color.Default;
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => PermState.Changed -= OnPermissionsChanged;
+}

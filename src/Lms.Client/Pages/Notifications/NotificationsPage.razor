@@ -11,37 +11,51 @@
 
 <PageTitle>@L["Notif_Title"]</PageTitle>
 
-<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3" Wrap="Wrap.Wrap">
-    <MudText Typo="Typo.h4">@L["Notif_Title"]</MudText>
-    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+<PageHeader Title="@L["Notif_Title"]" Subtitle="@L["Notif_Subtitle"]">
+    <Actions>
+        <MudButton Variant="Variant.Text" StartIcon="@Icons.Material.Rounded.Tune" Href="notifications/preferences"
+                   data-testid="notif-prefs-link">@L["Notif_Preferences"]</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.DoneAll" OnClick="MarkAllAsync"
+                   data-testid="notif-mark-all">@L["Notif_MarkAllRead"]</MudButton>
+    </Actions>
+</PageHeader>
+
+<SectionCard Flush="true">
+    <div class="lms-filters lms-filters-inline">
         <MudSwitch T="bool" Value="_unreadOnly" ValueChanged="UnreadOnlyChangedAsync" Color="Color.Primary"
                    Label="@L["Notif_UnreadOnly"]" data-testid="notif-only-unread" />
-        <MudButton Variant="Variant.Outlined" OnClick="MarkAllAsync" data-testid="notif-mark-all">@L["Notif_MarkAllRead"]</MudButton>
-        <MudButton Variant="Variant.Text" Href="notifications/preferences" data-testid="notif-prefs-link">@L["Notif_Preferences"]</MudButton>
-    </MudStack>
-</MudStack>
+    </div>
 
-<ServerTable T="NotificationDto" @ref="_table" ServerData="LoadPageAsync">
-    <HeaderContent>
-        <MudTh>@L["Notif_Message"]</MudTh>
-        <MudTh>@L["Audit_When"]</MudTh>
-        <MudTh>@L["Common_Status"]</MudTh>
-    </HeaderContent>
-    <RowTemplate Context="n">
-        <MudTd DataLabel="@L["Notif_Message"]">
-            <MudLink Typo="Typo.body2" OnClick="() => OpenAsync(n)" data-testid="@($"notif-row-{n.Id}")">
-                @NotificationText.Format(n, L, CultureInfo.CurrentUICulture)
-            </MudLink>
-        </MudTd>
-        <MudTd DataLabel="@L["Audit_When"]"><span dir="ltr">@n.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</span></MudTd>
-        <MudTd DataLabel="@L["Common_Status"]">
-            @if (!n.IsRead)
-            {
-                <MudChip T="string" Size="Size.Small" Color="Color.Primary" data-testid="@($"notif-unread-{n.Id}")">@L["Notif_Unread"]</MudChip>
-            }
-        </MudTd>
-    </RowTemplate>
-</ServerTable>
+    <ServerTable T="NotificationDto" @ref="_table" ServerData="LoadPageAsync" EmptyTitle="@L["Notif_EmptyTitle"]"
+                 EmptyText="@(_unreadOnly ? L["Notif_EmptyUnreadText"].Value : null)" EmptyIcon="@Icons.Material.Rounded.NotificationsNone">
+        <HeaderContent>
+            <MudTh>@L["Notif_Message"]</MudTh>
+            <MudTh>@L["Audit_When"]</MudTh>
+            <MudTh>@L["Common_Status"]</MudTh>
+        </HeaderContent>
+        <RowTemplate Context="n">
+            <MudTd DataLabel="@L["Notif_Message"]">
+                <span class="lms-notif-cell @(n.IsRead ? null : "lms-notif-cell-unread")">
+                    @if (!n.IsRead)
+                    {
+                        <span class="lms-unread-dot" aria-hidden="true"></span>
+                    }
+                    <MudLink Typo="Typo.body2" OnClick="() => OpenAsync(n)" data-testid="@($"notif-row-{n.Id}")">
+                        @NotificationText.Format(n, L, CultureInfo.CurrentUICulture)
+                    </MudLink>
+                </span>
+            </MudTd>
+            <MudTd DataLabel="@L["Audit_When"]"><span dir="ltr" class="lms-muted lms-date-cell">@n.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</span></MudTd>
+            <MudTd DataLabel="@L["Common_Status"]">
+                @if (!n.IsRead)
+                {
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Primary" Class="lms-status-chip"
+                             data-testid="@($"notif-unread-{n.Id}")">@L["Notif_Unread"]</MudChip>
+                }
+            </MudTd>
+        </RowTemplate>
+    </ServerTable>
+</SectionCard>
 
 @code {
     private ServerTable<NotificationDto>? _table;

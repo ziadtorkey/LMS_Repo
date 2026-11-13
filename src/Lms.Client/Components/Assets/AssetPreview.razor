@@ -1,0 +1,101 @@
+@using Lms.Client.Services.Api
+@using Lms.Shared.Authorization
+@using Lms.Shared.Content
+@inject IAssetsApi AssetApi
+@inject PermissionState PermState
+@inject NavigationManager Navigation
+@inject TimeProvider Clock
+
+@* Shows an asset through a short-lived signed URL. When a media element fails after the lifetime the server gave
+   (judged by ServerNowUtc), the URL is refreshed once; a second failure shows a reload button. *@
+<div data-testid="asset-preview">
+    @if (_failed)
+    {
+        <MudText Color="Color.Error" role="alert" data-testid="asset-preview-failed">@L["Asset_PreviewFailed"]</MudText>
+        <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="ReloadAsync" data-testid="asset-reload">@L["Asset_Reload"]</MudButton>
+    }
+    else if (_url is not null && Asset.Previewable)
+    {
+        switch (Asset.Kind)
+        {
+            case AssetKinds.Image:
+                <img src="@_url" alt="@Asset.FileName" style="max-width:100%" @onerror="OnErrorAsync" data-testid="asset-image" />
+                break;
+            case AssetKinds.Audio:
+                <audio src="@_url" controls preload="metadata" @onerror="OnErrorAsync" data-testid="asset-audio"></audio>
+                break;
+            case AssetKinds.Video:
+                <video src="@_url" controls preload="metadata" style="max-width:100%" @onerror="OnErrorAsync" data-testid="asset-video"></video>
+                break;
+            default:
+                <iframe src="@_url" title="@Asset.FileName" style="width:100%;height:70vh;border:0" data-testid="asset-pdf"></iframe>
+                break;
+        }
+    }
+    else if (!Asset.Previewable)
+    {
+        <MudText Typo="Typo.body2" data-testid="asset-no-preview">@L["Asset_NoPreview"]</MudText>
+    }
+    @if (CanDownload && _url is not null)
+    {
+        <MudButton Href="@_url" download="@Asset.FileName" Size="Size.Small" Variant="Variant.Text"
+                   StartIcon="@Icons.Material.Filled.Download" data-testid="asset-download">@L["Asset_Download"]</MudButton>
+    }
+</div>
+
+@code {
+    private string? _url;
+    private TimeSpan _lifetime;
+    private DateTimeOffset _loadedAt;
+    private bool _refreshed, _failed;
+    private Guid _loadedFor;
+
+    [Parameter, EditorRequired] public AssetDto Asset { get; set; } = default!;
+    /// <summary>Overrides the Files.Download rule (the library decides per resource); null keeps the permission rule.</summary>
+    [Parameter] public bool? AllowDownload { get; set; }
+
+    private bool CanDownload => AllowDownload ?? PermState.Has(Permissions.Files.Download);
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Asset.Id == _loadedFor) return;
+        _loadedFor = Asset.Id;
+        _refreshed = _failed = false;
+        _url = null;
+        // The URL is only needed to show the file or to offer the download.
+        if (Asset.Previewable || CanDownload) await LoadUrlAsync();
+    }
+
+    private async Task LoadUrlAsync()
+    {
+        var (dto, _) = await ApiCalls.RunAsync(() => AssetApi.GetUrlAsync(Asset.Id), Navigation);
+        if (dto is null)
+        {
+            _failed = true;
+            return;
+        }
+        _url = dto.Url;
+        _lifetime = dto.ExpiresAtUtc - dto.ServerNowUtc; // the server's clock decides; the client only measures elapsed time
+        _loadedAt = Clock.GetUtcNow();
+        _failed = false;
+    }
+
+    private bool Expired => Clock.GetUtcNow() - _loadedAt >= _lifetime;
+
+    private async Task OnErrorAsync()
+    {
+        if (!_refreshed && Expired)
+        {
+            _refreshed = true;
+            await LoadUrlAsync();
+            return;
+        }
+        _failed = true;
+    }
+
+    private async Task ReloadAsync()
+    {
+        _refreshed = true;
+        await LoadUrlAsync();
+    }
+}

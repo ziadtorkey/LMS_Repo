@@ -1,0 +1,47 @@
+@using Lms.Client.Services.Api
+@inject IModulesApi Modules
+@inject NavigationManager Navigation
+
+@* Moves a module to another lesson of the same class lesson plan (appended last). *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="2">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" data-testid="move-error">@_error</MudAlert>
+            }
+            <MudSelect T="Guid?" @bind-Value="_target" Label="@L["Module_MoveTo"]" Required="true" RequiredError="@L["Common_Required"]"
+                       data-testid="move-target">
+                @foreach (var lesson in Lessons)
+                {
+                    <MudSelectItem T="Guid?" Value="@((Guid?)lesson.Key)">@lesson.Title</MudSelectItem>
+                }
+            </MudSelect>
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()">@L["Common_Cancel"]</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="MoveAsync" Disabled="@(_saving || _target is null)"
+                   data-testid="move-save">@L["Module_Move"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private Guid? _target;
+    private string? _error;
+    private bool _saving;
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter, EditorRequired] public Guid ModuleId { get; set; }
+    /// <summary>The other lessons of the plan (the current one is left out by the host).</summary>
+    [Parameter] public IReadOnlyList<ModuleLessonOption> Lessons { get; set; } = [];
+
+    private async Task MoveAsync()
+    {
+        if (_target is not { } to) return;
+        _saving = true;
+        var ok = await ApiCalls.RunAsync(() => Modules.MoveAsync(ModuleId, to), Navigation, L, m => _error = m);
+        _saving = false;
+        if (ok) MudDialog.Close(DialogResult.Ok(to));
+    }
+}
