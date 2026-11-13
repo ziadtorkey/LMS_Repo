@@ -40,6 +40,9 @@
             <MudText Color="Color.Error" Typo="Typo.body2" data-testid="module-link-blocked">@L["Module_UrlInvalid"]</MudText>
         }
         break;
+    case ModuleKinds.LibraryResource:
+        <LibraryResourceBody ResourceId="Detail.Content.RefId" />
+        break;
     default:
         <MudText Typo="Typo.body2" data-testid="module-unsupported">@L["Module_Unsupported"]</MudText>
         break;
