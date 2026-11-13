@@ -1,4 +1,5 @@
 @using System.Globalization
+@using Lms.Client.Components.Content
 @using Lms.Client.Components.LiveSessions
 @using Lms.Client.Services
 @using Lms.Shared.LiveSessions
@@ -50,7 +51,17 @@
                 <td data-label="@L["Live_Col_Recording"]">
                     @if (s.HasRecording)
                     {
-                        <MudIcon Icon="@Icons.Material.Rounded.PlayCircle" Size="Size.Small" aria-hidden="true" /> @L["Live_Recording"]
+                        @if (RecordingUrls.TryGetValue(s.Id, out var url) && ModuleLinks.IsAllowed(url))
+                        {
+                            <a href="@url" target="_blank" rel="noopener noreferrer nofollow" data-testid="live-recording-open">
+                                <MudIcon Icon="@Icons.Material.Rounded.PlayCircle" Size="Size.Small" aria-hidden="true" /> @L["Live_Recording"]
+                            </a>
+                            <div><span class="lms-host-hint" dir="ltr">@(new Uri(url).Host)</span></div>
+                        }
+                        else
+                        {
+                            <MudIcon Icon="@Icons.Material.Rounded.PlayCircle" Size="Size.Small" aria-hidden="true" /> @L["Live_Recording"]
+                        }
                     }
                     else
                     {
@@ -63,16 +74,22 @@
                         <div class="lms-row-actions">
                         @if (!finished)
                         {
-                            <MudIconButton Icon="@Icons.Material.Rounded.Edit" Size="Size.Small" aria-label="@L["Live_Edit"]" title="@L["Live_Edit"]"
-                                           OnClick="() => OnEdit.InvokeAsync(s)" data-testid="@($"live-edit-{s.Id}")" />
+                            <MudTooltip Text="@L["Live_Edit"]">
+                                <MudIconButton Icon="@Icons.Material.Rounded.Edit" Size="Size.Small" aria-label="@L["Live_Edit"]"
+                                               OnClick="() => OnEdit.InvokeAsync(s)" data-testid="@($"live-edit-{s.Id}")" />
+                            </MudTooltip>
                         }
-                        <MudIconButton Icon="@Icons.Material.Rounded.Link" Size="Size.Small" aria-label="@L["Live_RecordingLink"]" title="@L["Live_RecordingLink"]"
-                                       OnClick="() => OnRecording.InvokeAsync(s)" data-testid="@($"live-recording-{s.Id}")" />
+                        <MudTooltip Text="@L["Live_RecordingLink"]">
+                            <MudIconButton Icon="@Icons.Material.Rounded.Link" Size="Size.Small" aria-label="@L["Live_RecordingLink"]"
+                                           OnClick="() => OnRecording.InvokeAsync(s)" data-testid="@($"live-recording-{s.Id}")" />
+                        </MudTooltip>
                         @if (!finished)
                         {
                             <span class="lms-row-actions-sep" aria-hidden="true"></span>
-                            <MudIconButton Icon="@Icons.Material.Rounded.EventBusy" Size="Size.Small" Color="Color.Error" aria-label="@L["Live_CancelSession"]"
-                                           title="@L["Live_CancelSession"]" OnClick="() => OnCancel.InvokeAsync(s)" data-testid="@($"live-cancel-{s.Id}")" />
+                            <MudTooltip Text="@L["Live_CancelSession"]">
+                                <MudIconButton Icon="@Icons.Material.Rounded.EventBusy" Size="Size.Small" Color="Color.Error" aria-label="@L["Live_CancelSession"]"
+                                               OnClick="() => OnCancel.InvokeAsync(s)" data-testid="@($"live-cancel-{s.Id}")" />
+                            </MudTooltip>
                         }
                         </div>
                     </td>
@@ -90,6 +107,8 @@
     [Parameter] public IReadOnlyDictionary<Guid, string> LessonOfModule { get; set; } = new Dictionary<Guid, string>();
     /// <summary>The number of occurrences of each series, by series id (for "3 of 12").</summary>
     [Parameter] public IReadOnlyDictionary<Guid, int> SeriesSizes { get; set; } = new Dictionary<Guid, int>();
+    /// <summary>The recording link by session id (read by the page for rows that have one).</summary>
+    [Parameter] public IReadOnlyDictionary<Guid, string> RecordingUrls { get; set; } = new Dictionary<Guid, string>();
     [Parameter] public EventCallback<LiveSessionListItemDto> OnEdit { get; set; }
     [Parameter] public EventCallback<LiveSessionListItemDto> OnRecording { get; set; }
     [Parameter] public EventCallback<LiveSessionListItemDto> OnCancel { get; set; }

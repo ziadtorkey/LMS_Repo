@@ -227,6 +227,62 @@ public sealed class LiveSessionsPageTests : LessonPlansTestContext
     }
 
     [Fact]
+    public async Task The_dialog_never_shows_a_field_name_as_error_text()
+    {
+        var page = await OpenAsync();
+        await OpenDialogAsync(page);
+
+        // Nothing is wrong yet: no red text at all, and certainly no C# member name (a parameter passed without @).
+        Assert.DoesNotContain("_visibilityError", Dialogs.Markup);
+        Assert.DoesNotContain("_targetError", Dialogs.Markup);
+        Assert.Empty(Dialogs.FindAll(".mud-input-error, .mud-input-helper-text.mud-input-error"));
+    }
+
+    [Fact]
+    public async Task A_scheduled_visibility_without_dates_shows_the_real_message_on_its_field()
+    {
+        var page = await OpenAsync();
+        await OpenDialogAsync(page);
+        await FillBasicsAsync();
+        var visibility = Dialogs.FindComponents<MudSelect<string>>().First(s => s.Instance.UserAttributes.TryGetValue("data-testid", out var v) && (string?)v == "module-visibility");
+        await Dialogs.InvokeAsync(() => visibility.Instance.ValueChanged.InvokeAsync(ModuleVisibilities.Scheduled));
+
+        SaveButton.Click();
+
+        var error = Dialogs.WaitForElement("[data-testid=module-visibility-error]", Wait);
+        Assert.DoesNotContain("_visibilityError", error.TextContent);
+        Assert.NotEqual("", error.TextContent.Trim());
+    }
+
+    [Fact]
+    public async Task A_recording_is_a_link_in_the_list_with_its_host()
+    {
+        var session = Seed();
+        await _live.SetRecordingAsync(session.Id, new RecordingLinkRequest("https://drive.google.com/file/d/abc/view"));
+        var page = await OpenAsync();
+
+        var link = page.WaitForElement($"[data-testid=live-row-{session.Id}] a[data-testid=live-recording-open]", Wait);
+
+        Assert.Equal("https://drive.google.com/file/d/abc/view", link.GetAttribute("href"));
+        Assert.Equal("_blank", link.GetAttribute("target"));
+        Assert.Contains("noopener", link.GetAttribute("rel"));
+        Assert.Contains("nofollow", link.GetAttribute("rel"));
+        Assert.Contains("drive.google.com", page.Find($"[data-testid=live-row-{session.Id}]").TextContent);
+    }
+
+    [Fact]
+    public async Task Row_actions_use_tooltips_not_title_attributes()
+    {
+        var session = Seed();
+        var page = await OpenAsync();
+
+        var row = page.Find($"[data-testid=live-row-{session.Id}]");
+
+        Assert.Empty(row.QuerySelectorAll("[title]"));
+        Assert.NotEmpty(row.QuerySelectorAll("button[aria-label]"));
+    }
+
+    [Fact]
     public async Task SyncFailed_session_shows_the_explanation()
     {
         var failed = Seed(LiveSessionStatuses.SyncFailed, "Exam preparation");
