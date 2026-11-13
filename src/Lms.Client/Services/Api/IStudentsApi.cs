@@ -86,6 +86,9 @@ public interface IGuardiansApi
     Task<GuardianDetailDto> GetAsync(Guid id, CancellationToken ct = default);
     Task UpdateAsync(Guid id, UpdateGuardianRequest request, CancellationToken ct = default);
     Task SendPortalInvitationAsync(Guid id, CancellationToken ct = default);
+
+    /// <summary>The signed-in guardian's children in the active context (one school or group).</summary>
+    Task<IReadOnlyList<MyChildDto>> GetMyChildrenAsync(CancellationToken ct = default);
 }
 
 public sealed class GuardiansApi(ApiHttp http) : IGuardiansApi
@@ -111,6 +114,9 @@ public sealed class GuardiansApi(ApiHttp http) : IGuardiansApi
 
     public Task SendPortalInvitationAsync(Guid id, CancellationToken ct = default) =>
         http.SendAsync(HttpMethod.Post, Routes.GuardianPortalInvitation(id), null, ct);
+
+    public async Task<IReadOnlyList<MyChildDto>> GetMyChildrenAsync(CancellationToken ct = default) =>
+        await http.GetAsync<List<MyChildDto>>(Routes.MyChildren, ct);
 
     public async Task<GuardianMatchDto?> MatchAsync(string? nationalId, string? mobile, CancellationToken ct = default)
     {
