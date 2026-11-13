@@ -59,7 +59,8 @@
                 </td>
                 @if (Staff)
                 {
-                    <td class="lms-row-actions">
+                    <td data-label="@L["Live_Col_Actions"]">
+                        <div class="lms-row-actions">
                         @if (!finished)
                         {
                             <MudIconButton Icon="@Icons.Material.Rounded.Edit" Size="Size.Small" aria-label="@L["Live_Edit"]" title="@L["Live_Edit"]"
@@ -69,10 +70,11 @@
                                        OnClick="() => OnRecording.InvokeAsync(s)" data-testid="@($"live-recording-{s.Id}")" />
                         @if (!finished)
                         {
-                            <MudDivider Vertical="true" FlexItem="true" Class="mx-1" />
+                            <span class="lms-row-actions-sep" aria-hidden="true"></span>
                             <MudIconButton Icon="@Icons.Material.Rounded.EventBusy" Size="Size.Small" Color="Color.Error" aria-label="@L["Live_CancelSession"]"
                                            title="@L["Live_CancelSession"]" OnClick="() => OnCancel.InvokeAsync(s)" data-testid="@($"live-cancel-{s.Id}")" />
                         }
+                        </div>
                     </td>
                 }
             </tr>
