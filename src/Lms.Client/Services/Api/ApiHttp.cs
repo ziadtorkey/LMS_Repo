@@ -56,9 +56,12 @@ public sealed class ApiHttp(HttpClient http, IContextStore context)
         request.Headers.AcceptLanguage.ParseAdd(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName);
         var file = new StreamContent(content);
         file.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
-        var form = new MultipartFormDataContent { { file, "file", fileName } };
+        // The fields (classCourseId, orgUnitId...) go BEFORE the file part: the server streams the multipart body and needs them
+        // first (a body with the file first is refused with 400).
+        var form = new MultipartFormDataContent();
         foreach (var (name, value) in fields ?? new Dictionary<string, string>())
             form.Add(new StringContent(value), name);
+        form.Add(file, "file", fileName);
         request.Content = form;
 
         using var response = await http.SendAsync(request, ct);

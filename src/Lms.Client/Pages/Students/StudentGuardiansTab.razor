@@ -116,7 +116,7 @@
         }
         await ApiCalls.RunAsync(async () =>
         {
-            var settings = await Config.GetSettingsAsync(Student.Summary.HomeOrgUnitId);
+            var settings = await Config.GetSettingsIfAllowedAsync(Student.Summary.HomeOrgUnitId);
             _portalOn = settings.FirstOrDefault(s => s.Name == FeatureFlags.GuardianPortal.Name) is { } s && JsonSerializer.Deserialize<bool>(s.ValueJson);
         }, Navigation, L, _ => { });
     }

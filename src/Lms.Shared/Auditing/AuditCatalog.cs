@@ -35,6 +35,10 @@ public static class AuditCatalog
         "EnrollmentException", "StudentGroup", "GroupMember", "StudentTransfer", "ClassLessonPlan",
         // M4a wave 1: lesson modules, their simple content and assets (ModuleCompletion is not audited: volume).
         "LessonModule", "ModuleContent", "Asset",
+        // M4a wave 2: activities and the M5 grade seam (submissions, answers and posts are not audited row by row:
+        // volume; grading and moderation are).
+        "Assignment", "SubmissionFeedback", "Quiz", "QuizQuestion", "LibraryResource", "ForumThread",
+        "CourseAnnouncement", "GradeEvent",
     ];
 
     public static IReadOnlyList<string> SecurityEvents { get; } =
