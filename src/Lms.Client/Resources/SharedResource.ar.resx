@@ -1273,8 +1273,6 @@
   <data name="LibraryType_Audio" xml:space="preserve"><value>صوت</value></data>
   <data name="LibraryType_Link" xml:space="preserve"><value>رابط</value></data>
   <data name="LibraryType_Other" xml:space="preserve"><value>أخرى</value></data>
-  <data name="Module_Url" xml:space="preserve"><value>عنوان الرابط (https://...)</value></data>
-  <data name="Module_Completion" xml:space="preserve"><value>الإكمال</value></data>
   <data name="ClassCourse_Sections" xml:space="preserve"><value>أقسام مقرر الفصل</value></data>
   <data name="ClassCourse_TabPlan" xml:space="preserve"><value>الخطة</value></data>
   <data name="Forum_Title" xml:space="preserve"><value>المنتدى</value></data>
