@@ -251,6 +251,16 @@ Retry and Choose another file are buttons in the dialog actions (`lms-dialog-act
 - The attach form below, in `lms-fieldset`s:
   - **Module:** lesson picker, and titles ar/en prefilled from the manifest title. The manifest title goes into both the ar and en fields, and the teacher edits them.
   - **Settings:** `ModuleMetadataForm` with the completion rule `None` / `Submit` / `Score`. The helper for Score: "Complete when the package reports a score."
+  - **Grading** (D57, contract #549 `AttachPackageModuleRequest.GradingMethod`). It's a `MudRadioGroup` stacked as three `lms-choice` rows, under the legend "When a student opens it again" / "عند فتح الطالب له مرة أخرى". Each row has a label and a one-line caption:
+
+    | Value | Label (en / ar) | Caption (en / ar) |
+    |---|---|---|
+    | `Highest` (default, pre-selected) | Keep the highest score / احتساب أعلى درجة | Students can try again; their score never goes down. / يمكن للطلاب المحاولة مجددًا ولا تنخفض درجتهم. |
+    | `Last` | Use the latest score / احتساب آخر درجة | Each new attempt replaces the score, even if it's lower. / كل محاولة جديدة تحلّ محل الدرجة حتى لو كانت أقل. |
+    | `First` | Keep the first score / احتساب الدرجة الأولى | Later attempts are practice and aren't graded. / المحاولات اللاحقة للتدريب ولا تُحتسب. |
+
+    - The group shows only when the completion rule is **Score**. With None or Submit there's no score to keep, so the request sends the default.
+    - Keys: `Package_Grading`, `Package_Grading_{Highest|Last|First}` and `Package_Grading_{…}_Help`.
 - Actions (`lms-dialog-actions`):
   - Inline-start: **Delete package** (text, Error; opens the standard confirm).
   - Inline-end: Cancel (text) and **Attach to lesson** (filled primary, with a spinner).
@@ -317,7 +327,17 @@ The start card is a `SectionCard`. Nothing loads in a frame until the learner pr
   - **Start** (filled primary, Rounded.PlayArrow), or **Resume** when an attempt is in progress.
   - In both cases the action is `POST …/launch`, which continues the open attempt (`Resumed = true`) or opens a new one. Only the label differs.
   - **No "Start again" in v1.** The contract has no call that abandons an open attempt, so the button is not shown. If a later contract adds one, it comes with a confirm: "Start again? Your saved progress in this activity will be replaced." / "البدء من جديد؟ سيُستبدل تقدّمك المحفوظ في هذا النشاط." The confirm button is in Warning colour.
-  - On a **Completed** module the action is **Open again** (outlined). It launches, which opens a new attempt. How a new attempt affects the score shown is open question Q3 (§7).
+  - On a **Completed** module the re-open action depends on the module's grading method (D57). It always launches, which opens a new attempt.
+
+    | Grading method | Button (outlined) | Caption under it (`lms-muted`) | Confirm before launching |
+    |---|---|---|---|
+    | `Highest` | Try again / حاول مرة أخرى (Rounded.Replay) | Your score won't go down. / لن تنخفض درجتك. | none |
+    | `Last` | Try again / حاول مرة أخرى (Rounded.Replay) | Your new score replaces this one. / ستحلّ درجتك الجديدة محلّ هذه الدرجة. | yes: "Try again? Your new score will replace your current score of 85 / 100, even if it's lower." / "المحاولة مجددًا؟ ستحلّ درجتك الجديدة محلّ درجتك الحالية 85 / 100 حتى لو كانت أقل." Buttons: Cancel (text) and **Try again** (filled, Warning) |
+    | `First` | Review (not graded) / مراجعة (غير محتسبة) (Rounded.Visibility) | Your first score stays; this attempt is practice. / تبقى درجتك الأولى، وهذه المحاولة للتدريب. | none |
+
+    - The completed result (chip and score) stays above the button in every case. A module with no score (rule None or Submit) uses the `Highest` wording.
+    - **While a practice attempt (`First`) is open**, the toolbar shows an Info chip "Practice" / "تدريب" next to the title, so the learner knows it doesn't count. The result card at the end says "Practice finished. Your graded score is still 85 / 100."
+    - **Data needed:** the student viewer has to know the module's grading method (the module or launch read must carry `GradingMethod`). #549 only adds it to the attach request; see §7 Q3.
 - **Actions, staff:** **Preview** only (outlined, Rounded.Visibility). Launch answers 404 for staff (contract and ADR 0005 §6), so staff never see Start, Resume or Open again. Students never see Preview.
 
 ### 5.2 Running: `lms-player`
@@ -398,7 +418,7 @@ The frame is on the content host (another site), so the app can't see what the c
 | State | Presentation | Text (en / ar) | Action |
 |---|---|---|---|
 | Launching | `LoadingState Lines="3"` inside the container | — | — |
-| Finished | the frame is replaced by a result card in the container | Completed / مكتمل, Success chip, "Score 85 / 100" | **Open again** outlined (opens a new attempt, see Q3) |
+| Finished | the frame is replaced by a result card in the container | Completed / مكتمل, Success chip, "Score 85 / 100" | the re-open button for the module's grading method (§5.1, D57) |
 | Attempt already closed (`409 package_commit_rejected`, and a fresh read says the attempt is no longer in progress, for example it was finished in another tab) | the frame is replaced by the result card, with an outlined Info alert on top | This attempt has already ended, maybe in another tab. Your result is below. / انتهت هذه المحاولة، ربما في تبويب آخر. نتيجتك أدناه. | as Finished |
 | Commit refused, attempt still open (`409 package_commit_rejected` for size or rate) | the frame keeps running; save state "Not saved" and the Refused strip (§5.2) | §5.2 | — |
 | Module hidden during the attempt (404 on commit or re-launch) | the module not-available state (§3.1) replaces the player | §3.1 | Back to the course |
@@ -461,7 +481,8 @@ The reference CSS for each is in the mockup (`docs/design/mockups/m4b.html`, the
 - **Purge of unattached packages (request to the Lead for BE3, Task 8b).** A package that is `Ready` but never attached, or `Uploaded` / `Rejected` and abandoned, should be purged after N days (proposal: a setting `Packages.UnattachedRetentionDays`, default 7) by the existing `PackagePurgeJob`, so abandoned uploads don't fill the client's quota. The pending row above shows a caption on such rows: "Removed automatically after 7 days if not attached." / "تُحذف تلقائياً بعد 7 أيام إن لم تُرفق." (`Package_PendingRetention`, the number and noun from `Live_Unit_Day_*`, §8).
 - **Q2. Arabic plurals (decided).** FE1 adds a small Arabic plural helper as a shared client utility (not only for live sessions), with unit tests for 0, 1, 2, 3–10 and 11+. Countdowns (§3.1) and any later counted text use it.
 
-- **Q3. Opening a completed package again (open).** `…/launch` opens a new attempt once the last one is closed. Should a new attempt replace the shown score, keep the best one, or keep the first one? The answer decides the **Open again** wording: "Opening it again starts a new attempt; your best score is kept." or a confirm. Until it's decided, Open again shows no extra text. It needs a Lead/BE decision on the grade event.
+- **Q3. Opening a completed package again (decided, D57, owner).** The teacher picks the grading method per module: **Highest** (default), **Last** or **First** (later attempts are practice). The attach form choice is in §4.1, and the re-open wording and the `Last` confirm are in §5.1. Contract: #549 adds `PackageGradingMethods` and `AttachPackageModuleRequest.GradingMethod`.
+  - **Still needed from the contract:** the student viewer must read the method, through the module read or `PackageLaunchDto`, to pick the button wording. The staff module edit must also be able to change it, or say that it can't once attempts exist.
 
 ## 8. Counted text: plural keys
 
