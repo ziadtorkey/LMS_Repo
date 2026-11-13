@@ -140,6 +140,7 @@ public static class PackagesServiceCollectionExtensions
         services.AddSingleton<PackageValidationGate>();
         services.AddScoped<IPackageScanner, NoOpPackageScanner>();
         services.AddScoped<IPackageValidator, Scorm.ScormManifestValidator>();
+        services.AddScoped<IPackageValidator, H5p.H5pValidator>();
         services.AddSingleton<Scorm.ScormPreludeAsset>();
         services.AddSingleton<IPackageHostAsset>(sp => sp.GetRequiredService<Scorm.ScormPreludeAsset>());
         services.AddScoped<IPackagePageTransformer, Scorm.ScormPageTransformer>();
