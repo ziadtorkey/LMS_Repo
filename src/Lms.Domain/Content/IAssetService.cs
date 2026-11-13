@@ -1,4 +1,5 @@
 using Lms.Domain.Classes;
+using Lms.Domain.Organizations;
 
 namespace Lms.Domain.Content;
 
@@ -8,11 +9,19 @@ public interface IAssetService
     /// <summary>The effective <c>Files.MaxUploadMb</c> at the ClassCourse's unit, in bytes.</summary>
     Task<long> GetMaxBytesAsync(ClassCourse classCourse, CancellationToken cancellationToken = default);
 
+    /// <summary>The effective <c>Files.MaxUploadMb</c> at the unit (library assets), in bytes.</summary>
+    Task<long> GetMaxBytesAsync(OrgUnit unit, CancellationToken cancellationToken = default);
+
     /// <summary>Stores the file and creates the asset.</summary>
     /// <exception cref="AssetTypeNotAllowedException">The extension or the declared content type is not on the allow-list.</exception>
     /// <exception cref="AssetTooLargeException">The file is over the effective limit.</exception>
     Task<Asset> UploadAsync(
         ClassCourse classCourse, string fileName, string declaredContentType, long sizeBytes, Stream content,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>Stores the file as a library asset owned by the unit (same rules as <see cref="UploadAsync(ClassCourse,string,string,long,Stream,CancellationToken)"/>).</summary>
+    Task<Asset> UploadAsync(
+        OrgUnit unit, string fileName, string declaredContentType, long sizeBytes, Stream content,
         CancellationToken cancellationToken = default);
 
     /// <summary>A short-lived signed URL (inline for previewable types, a download otherwise).</summary>

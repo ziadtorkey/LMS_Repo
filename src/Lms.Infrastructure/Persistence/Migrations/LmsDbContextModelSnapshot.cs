@@ -1101,7 +1101,7 @@ namespace Lms.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("char(36)");
 
-                    b.Property<Guid>("ClassCourseId")
+                    b.Property<Guid?>("ClassCourseId")
                         .HasColumnType("char(36)");
 
                     b.Property<string>("ContentType")
@@ -3874,8 +3874,7 @@ namespace Lms.Infrastructure.Persistence.Migrations
                     b.HasOne("Lms.Domain.Classes.ClassCourse", null)
                         .WithMany()
                         .HasForeignKey("ClassCourseId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Lms.Domain.Files.StoredFile", null)
                         .WithMany()
