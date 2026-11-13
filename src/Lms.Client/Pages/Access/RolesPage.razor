@@ -13,24 +13,28 @@
 
 <PageTitle>@L["Roles_Title"]</PageTitle>
 
-<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3" Wrap="Wrap.Wrap">
-    <MudText Typo="Typo.h4">@L["Roles_Title"]</MudText>
-    @if (_mode == Mode.List && Perms.Has(Permissions.Roles.Create))
-    {
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
-                   OnClick="StartCreate" data-testid="role-new">@L["Roles_New"]</MudButton>
-    }
-</MudStack>
+<PageHeader Title="@L["Roles_Title"]" Subtitle="@L["Roles_Subtitle"]">
+    <Actions>
+        @if (_mode == Mode.List && Perms.Has(Permissions.Roles.Create))
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Add"
+                       OnClick="StartCreate" data-testid="role-new">@L["Roles_New"]</MudButton>
+        }
+    </Actions>
+</PageHeader>
 
 @if (_loading)
 {
-    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+    <LoadingState Lines="5" />
 }
 else if (_failed)
 {
-    <MudAlert Severity="Severity.Error" data-testid="api-error">
-        @L["Api_Error"]
-        <MudButton Variant="Variant.Text" OnClick="LoadAsync">@L["Common_Retry"]</MudButton>
+    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="api-error">
+        <div class="d-flex align-center flex-wrap gap-2">
+            <span>@L["Api_Error"]</span>
+            <MudButton Variant="Variant.Outlined" Size="Size.Small" Color="Color.Error" StartIcon="@Icons.Material.Rounded.Refresh"
+                       OnClick="LoadAsync">@L["Common_Retry"]</MudButton>
+        </div>
     </MudAlert>
 }
 else if (_mode != Mode.List)
@@ -39,42 +43,52 @@ else if (_mode != Mode.List)
 }
 else if (_roles.Count == 0)
 {
-    <MudText data-testid="table-empty">@L["Common_Empty"]</MudText>
+    <SectionCard>
+        <EmptyState Title="@L["Roles_EmptyTitle"]" Text="@L["Roles_EmptyText"]" Icon="@Icons.Material.Rounded.AdminPanelSettings" TestId="table-empty" />
+    </SectionCard>
 }
 else
 {
-    <MudTable T="RoleDto" Items="_roles" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm">
-        <HeaderContent>
-            <MudTh>@L["Roles_Name"]</MudTh>
-            <MudTh>@L["Roles_BaseKind"]</MudTh>
-            <MudTh>@L["Roles_Assignments"]</MudTh>
-            <MudTh>@L["Common_Actions"]</MudTh>
-        </HeaderContent>
-        <RowTemplate>
-            <MudTd DataLabel="@L["Roles_Name"]">
-                @CultureText.Pick(context.NameAr, context.NameEn)
-                @if (context.IsBuiltIn)
-                {
-                    <MudChip T="string" Size="Size.Small" Class="ms-2" data-testid="@($"role-builtin-{context.Id}")">@L["Roles_BuiltIn"]</MudChip>
-                }
-            </MudTd>
-            <MudTd DataLabel="@L["Roles_BaseKind"]">@L[$"BaseKind_{context.BaseKind}"]</MudTd>
-            <MudTd DataLabel="@L["Roles_Assignments"]">@context.AssignmentCount</MudTd>
-            <MudTd DataLabel="@L["Common_Actions"]">
-                @if (Perms.Has(Permissions.Roles.Update))
-                {
-                    <MudIconButton Icon="@Icons.Material.Filled.Edit" aria-label="@L["Common_Edit"]"
-                                   OnClick="() => StartEdit(context)" data-testid="@($"role-edit-{context.Id}")" />
-                }
-                @if (Perms.Has(Permissions.Roles.Delete))
-                {
-                    <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="@L["Common_Delete"]"
-                                   Disabled="@(context.IsBuiltIn)" OnClick="() => DeleteAsync(context)"
-                                   data-testid="@($"role-delete-{context.Id}")" />
-                }
-            </MudTd>
-        </RowTemplate>
-    </MudTable>
+    <SectionCard Flush="true">
+        <MudTable T="RoleDto" Items="_roles" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="0"
+                  HeaderClass="lms-table-head" Class="lms-table">
+            <HeaderContent>
+                <MudTh>@L["Roles_Name"]</MudTh>
+                <MudTh>@L["Roles_BaseKind"]</MudTh>
+                <MudTh>@L["Roles_Assignments"]</MudTh>
+                <MudTh><span class="lms-visually-hidden">@L["Common_Actions"]</span></MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="@L["Roles_Name"]">
+                    <span class="lms-cell-strong">@CultureText.Pick(context.NameAr, context.NameEn)</span>
+                    @if (context.IsBuiltIn)
+                    {
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Icon="@Icons.Material.Rounded.Lock" Class="ms-2"
+                                 data-testid="@($"role-builtin-{context.Id}")">@L["Roles_BuiltIn"]</MudChip>
+                    }
+                </MudTd>
+                <MudTd DataLabel="@L["Roles_BaseKind"]">
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Class="lms-role-chip">@L[$"BaseKind_{context.BaseKind}"]</MudChip>
+                </MudTd>
+                <MudTd DataLabel="@L["Roles_Assignments"]"><span class="lms-date-cell">@context.AssignmentCount</span></MudTd>
+                <MudTd Class="lms-cell-actions">
+                    <div class="lms-row-actions">
+                        @if (Perms.Has(Permissions.Roles.Update))
+                        {
+                            <MudIconButton Icon="@Icons.Material.Rounded.Edit" Size="Size.Small" aria-label="@L["Common_Edit"]"
+                                           OnClick="() => StartEdit(context)" data-testid="@($"role-edit-{context.Id}")" />
+                        }
+                        @if (Perms.Has(Permissions.Roles.Delete))
+                        {
+                            <MudIconButton Icon="@Icons.Material.Rounded.DeleteOutline" Size="Size.Small" Color="Color.Error" aria-label="@L["Common_Delete"]"
+                                           Disabled="@(context.IsBuiltIn)" OnClick="() => DeleteAsync(context)"
+                                           data-testid="@($"role-delete-{context.Id}")" />
+                        }
+                    </div>
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </SectionCard>
 }
 
 @code {

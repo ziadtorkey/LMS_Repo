@@ -62,7 +62,7 @@
         _manualCode = false;
         await ApiCalls.RunAsync(async () =>
         {
-            var settings = await Config.GetSettingsAsync(unit);
+            var settings = await Config.GetSettingsIfAllowedAsync(unit);
             var mode = settings.FirstOrDefault(s => s.Name == SettingKeys.StudentsCodeMode.Name)?.ValueJson;
             _manualCode = mode is not null && JsonSerializer.Deserialize<string>(mode) == StudentCodeModes.Manual;
         }, Navigation, L, _ => { });

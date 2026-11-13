@@ -17,6 +17,7 @@ public static class NavCatalog
         new("Nav_ChangeRequests", "student-change-requests", Icons.Material.Filled.RuleFolder, Permissions.Students.ApproveChanges),
         new("Nav_Students", "students", Icons.Material.Filled.School, Permissions.Students.View),
         new("Nav_Courses", "courses", Icons.Material.Filled.MenuBook, Permissions.Courses.View),
+        new("Nav_MyCourses", "me/courses", Icons.Material.Filled.FactCheck, Permissions.Courses.View),
         new("Nav_Classes", "classes", Icons.Material.Filled.Groups, Permissions.Classes.View),
         new("Nav_MyClassCourses", "me/class-courses", Icons.Material.Filled.AutoStories, Permissions.LessonPlans.View),
         new("Nav_Roles", "roles", Icons.Material.Filled.AdminPanelSettings, Permissions.Roles.View),
