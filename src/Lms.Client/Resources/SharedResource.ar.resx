@@ -1395,6 +1395,7 @@
   <data name="Error_package_invalid" xml:space="preserve"><value>لا يمكن استخدام هذه الحزمة. راجع السبب المعروض معها.</value></data>
   <data name="Error_package_too_large" xml:space="preserve"><value>الحزمة كبيرة جدًا للرفع أو ستتجاوز مساحة التخزين المتاحة.</value></data>
   <data name="Error_package_not_ready" xml:space="preserve"><value>الحزمة ليست جاهزة بعد. انتظر حتى ينتهي الفحص.</value></data>
+  <data name="Error_package_not_attached" xml:space="preserve"><value>الحزمة غير مضافة إلى درس بعد، لذا لا يمكن تغيير طريقة احتساب الدرجة.</value></data>
   <data name="Error_package_commit_rejected" xml:space="preserve"><value>تعذّر حفظ تقدّمك لأن المحاولة مغلقة أو لم تُقبل البيانات.</value></data>
   <data name="Error_package_host_not_configured" xml:space="preserve"><value>الحزم غير متاحة بعد: لم يُجهَّز موقع المحتوى المنفصل. اطلب من مسؤول المنصة.</value></data>
   <data name="Error_package_reason_unsafe_path" xml:space="preserve"><value>يوجد ملف في الحزمة مساره يخرج من مجلد الحزمة.</value></data>
