@@ -21,10 +21,17 @@ public sealed class ZoomOptions
     /// <summary>Applied before the start and after the scheduled end of every session when allocating a host.</summary>
     public int HostBufferMinutes { get; set; } = 10;
 
+    /// <summary>Longest a single Zoom call (the token request or one API call) may take before it counts as Zoom being unavailable.</summary>
+    public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(15);
+
+    /// <summary>The pool without blanks and duplicates (case-insensitive, trimmed), in configured order: one host is never two slots.</summary>
+    public IReadOnlyList<string> EffectiveHostPool =>
+        [.. HostPool.Select(h => h?.Trim() ?? "").Where(h => h.Length > 0).Distinct(StringComparer.OrdinalIgnoreCase)];
+
     public string ApiBaseUrl { get; set; } = "https://api.zoom.us/v2/";
     public string TokenUrl { get; set; } = "https://zoom.us/oauth/token";
 
     /// <summary>True when the app credentials and at least one pool host are present.</summary>
     public bool IsConfigured =>
-        !string.IsNullOrWhiteSpace(AccountId) && !string.IsNullOrWhiteSpace(ClientId) && !string.IsNullOrWhiteSpace(ClientSecret) && HostPool.Length > 0;
+        !string.IsNullOrWhiteSpace(AccountId) && !string.IsNullOrWhiteSpace(ClientId) && !string.IsNullOrWhiteSpace(ClientSecret) && EffectiveHostPool.Count > 0;
 }

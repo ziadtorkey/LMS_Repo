@@ -20,6 +20,9 @@ public sealed record ZoomMeetingInfo(string MeetingId, string JoinUrl, string St
 /// </summary>
 public sealed class ZoomApiClient(HttpClient http)
 {
+    /// <summary>The only tracking field names sent to Zoom: the client and the class course, as ids.</summary>
+    public static readonly IReadOnlySet<string> TrackingFields = new HashSet<string> { "client", "classCourse" };
+
     public async Task<ZoomMeetingInfo> CreateMeetingAsync(ZoomMeetingRequest meeting, CancellationToken ct = default)
     {
         using var response = await SendAsync(
@@ -84,6 +87,15 @@ public sealed class ZoomApiClient(HttpClient http)
         if (topic.Length is < LiveSessionLimits.TitleMinLength or > LiveSessionLimits.TitleMaxLength || topic.IndexOfAny(['<', '>']) >= 0)
         {
             throw new ArgumentException("The meeting topic must be the plain session title.", nameof(meeting));
+        }
+
+        // Tracking fields are for support only and fixed by the platform: unknown names or odd values are a programming error, never data to forward.
+        foreach (var (key, value) in meeting.Tracking)
+        {
+            if (!TrackingFields.Contains(key) || value.Length is < 1 or > 36 || !value.All(c => char.IsAsciiLetterOrDigit(c) || c == '-'))
+            {
+                throw new ArgumentException("Only the platform tracking fields with plain ids are allowed.", nameof(meeting));
+            }
         }
 
         return JsonContent.Create(new

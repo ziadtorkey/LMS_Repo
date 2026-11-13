@@ -44,9 +44,9 @@ public sealed class ZoomHostAllocatorTests
         }
     }
 
-    private static ZoomHostAllocator Build(MemorySlots slots, int hosts, int share = 100) =>
+    private static ZoomHostAllocator Build(MemorySlots slots, int hosts, int share = 100, IJobKeyLock? keyLock = null, TimeSpan? lockTimeout = null) =>
         new(Options.Create(new ZoomOptions { HostPool = [.. Enumerable.Range(1, hosts).Select(i => "h" + i)], HostBufferMinutes = 10 }),
-            new InProcessJobKeyLock(), slots, () => share);
+            keyLock ?? new InProcessJobKeyLock(), slots, () => share, lockTimeout);
 
     [Fact]
     public async Task The_chosen_host_is_reserved_before_the_lock_is_released()
@@ -138,6 +138,45 @@ public sealed class ZoomHostAllocatorTests
         await Build(slots, 1).AllocateAsync(Guid.NewGuid(), T0, T0.AddMinutes(60), _ => Task.CompletedTask);
 
         Assert.Equal(1, slots.Reads);
+    }
+
+    [Fact]
+    public async Task A_caller_that_cannot_get_the_lock_in_time_gets_provider_unavailable_with_a_retry_hint()
+    {
+        var slots = new MemorySlots();
+        var keyLock = new InProcessJobKeyLock();
+        using var held = keyLock.Acquire("zoom:host-pool", TimeSpan.FromSeconds(1)); // someone else is allocating
+        var allocator = Build(slots, 1, keyLock: keyLock, lockTimeout: TimeSpan.FromMilliseconds(100));
+
+        var ex = await Assert.ThrowsAsync<ZoomProviderException>(() =>
+            allocator.AllocateAsync(Guid.NewGuid(), T0, T0.AddMinutes(60), _ => Task.CompletedTask));
+
+        Assert.Equal(ZoomFailure.Unavailable, ex.Failure);
+        Assert.NotNull(ex.RetryAfter);
+        Assert.Equal(0, slots.Reads); // it never read or reserved anything
+    }
+
+    [Fact]
+    public async Task Duplicate_or_blank_hosts_in_the_pool_count_once()
+    {
+        var slots = new MemorySlots();
+        var options = Options.Create(new ZoomOptions { HostPool = ["h1", "H1 ", "", "  ", "h2"], HostBufferMinutes = 10 });
+        var allocator = new ZoomHostAllocator(options, new InProcessJobKeyLock(), slots, () => 100);
+        var org = Guid.NewGuid();
+
+        Task Reserve(string host)
+        {
+            slots.Add(new HostSlot(host, org, T0, T0.AddMinutes(60)));
+            return Task.CompletedTask;
+        }
+
+        var first = await allocator.AllocateAsync(org, T0, T0.AddMinutes(60), Reserve);
+        var second = await allocator.AllocateAsync(org, T0, T0.AddMinutes(60), Reserve);
+        var third = await allocator.AllocateAsync(org, T0, T0.AddMinutes(60), Reserve);
+
+        Assert.Equal("h1", first.HostId);
+        Assert.Equal("h2", second.HostId);
+        Assert.Equal(ZoomHostFailure.PoolExhausted, third.Failure); // two real hosts, not four
     }
 
     [Fact]

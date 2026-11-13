@@ -12,6 +12,19 @@ internal sealed class ManualClock(DateTime start) : IClock
     public void Advance(TimeSpan by) => UtcNow += by;
 }
 
+/// <summary>A Zoom that accepts the connection and never answers; it only ends when the caller cancels.</summary>
+internal sealed class HangingZoomHandler : HttpMessageHandler
+{
+    public int Calls;
+
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        Interlocked.Increment(ref Calls);
+        await Task.Delay(Timeout.Infinite, cancellationToken);
+        throw new InvalidOperationException("unreachable");
+    }
+}
+
 /// <summary>A stand-in for the Zoom HTTP API: answers from a function and records every request.</summary>
 internal sealed class FakeZoomHandler(Func<HttpRequestMessage, int, Task<HttpResponseMessage>> respond) : HttpMessageHandler
 {

@@ -60,19 +60,32 @@ public sealed class ZoomTokenCache(HttpClient http, IOptions<ZoomOptions> option
     private async Task<string> RequestAsync(CancellationToken ct)
     {
         var zoom = options.Value;
-        var url = $"{zoom.TokenUrl}?grant_type=account_credentials&account_id={Uri.EscapeDataString(zoom.AccountId)}";
-        using var request = new HttpRequestMessage(HttpMethod.Post, url);
+        // The account id travels in the form body, not the URL, so it never lands in request logs.
+        using var request = new HttpRequestMessage(HttpMethod.Post, zoom.TokenUrl)
+        {
+            Content = new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                ["grant_type"] = "account_credentials",
+                ["account_id"] = zoom.AccountId,
+            }),
+        };
         request.Headers.Authorization = new AuthenticationHeaderValue(
             "Basic", Convert.ToBase64String(Encoding.UTF8.GetBytes(zoom.ClientId + ":" + zoom.ClientSecret)));
 
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeout.CancelAfter(zoom.Timeout);
         HttpResponseMessage response;
         try
         {
-            response = await http.SendAsync(request, ct);
+            response = await http.SendAsync(request, timeout.Token);
         }
         catch (HttpRequestException)
         {
             throw new ZoomProviderException(ZoomFailure.Unavailable, "Zoom token endpoint unreachable.");
+        }
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+        {
+            throw new ZoomProviderException(ZoomFailure.Unavailable, "Zoom token endpoint timed out.");
         }
 
         using (response)
@@ -88,7 +101,7 @@ public sealed class ZoomTokenCache(HttpClient http, IOptions<ZoomOptions> option
             int expiresIn;
             try
             {
-                using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
+                using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync(timeout.Token));
                 token = json.RootElement.GetProperty("access_token").GetString() ?? throw new JsonException();
                 expiresIn = json.RootElement.GetProperty("expires_in").GetInt32();
             }

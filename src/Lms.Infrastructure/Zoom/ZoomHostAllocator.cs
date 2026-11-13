@@ -18,10 +18,16 @@ public interface IHostSlotStore
 /// the session row) happen under one named lock, so two callers cannot both see the same host as free (D53). The lock is a database
 /// named lock, which holds across API nodes.
 /// </summary>
-public sealed class ZoomHostAllocator(IOptions<ZoomOptions> options, IJobKeyLock keyLock, IHostSlotStore slots, Func<int> sharePercent)
+public sealed class ZoomHostAllocator(
+    IOptions<ZoomOptions> options, IJobKeyLock keyLock, IHostSlotStore slots, Func<int> sharePercent, TimeSpan? lockTimeout = null)
 {
     private const string LockResource = "zoom:host-pool";
-    private static readonly TimeSpan LockTimeout = TimeSpan.FromSeconds(20);
+
+    /// <summary>
+    /// How long a caller waits for the pool lock. While it waits it holds one database connection (a named lock lives on its own
+    /// connection), so the wait is short: ten callers queueing for ten seconds use ten pooled connections, not a hundred.
+    /// </summary>
+    public static readonly TimeSpan DefaultLockTimeout = TimeSpan.FromSeconds(10);
 
     /// <summary>
     /// Chooses a host for <paramref name="startUtc"/>..<paramref name="endUtc"/> and calls <paramref name="reserve"/> with it while
@@ -33,10 +39,21 @@ public sealed class ZoomHostAllocator(IOptions<ZoomOptions> options, IJobKeyLock
     {
         var zoom = options.Value;
         var buffer = TimeSpan.FromMinutes(Math.Max(0, zoom.HostBufferMinutes));
-        using var gate = await Task.Run(() => keyLock.Acquire(LockResource, LockTimeout), ct);
+        IDisposable gate;
+        try
+        {
+            gate = await Task.Run(() => keyLock.Acquire(LockResource, lockTimeout ?? DefaultLockTimeout), ct);
+        }
+        catch (TimeoutException)
+        {
+            // Another caller kept the pool busy for the whole wait: the same answer as an unavailable provider (409 provider_unavailable).
+            throw new ZoomProviderException(ZoomFailure.Unavailable, "The Zoom host pool is busy.", TimeSpan.FromSeconds(5));
+        }
+
+        using var held = gate;
 
         var around = await slots.SlotsAroundAsync(startUtc - buffer, endUtc + buffer, ct);
-        var choice = ZoomHostPlanner.Pick(zoom.HostPool, around, organizationId, startUtc, endUtc, buffer, sharePercent());
+        var choice = ZoomHostPlanner.Pick(zoom.EffectiveHostPool, around, organizationId, startUtc, endUtc, buffer, sharePercent());
         if (choice.HostId is { } host)
         {
             await reserve(host);

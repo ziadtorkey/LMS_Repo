@@ -28,7 +28,7 @@ public sealed class ZoomApiHandlerTests
             return Task.CompletedTask;
         });
         var fake = new FakeZoomHandler(api);
-        var handler = new ZoomApiHandler(tokens, limiter) { InnerHandler = fake };
+        var handler = new ZoomApiHandler(tokens, limiter, Microsoft.Extensions.Options.Options.Create(Options)) { InnerHandler = fake };
         return new Rig { Waits = waits, Api = fake, Client = new HttpClient(handler) { BaseAddress = new Uri("https://api.zoom.test/v2/") } };
     }
 
@@ -37,6 +37,22 @@ public sealed class ZoomApiHandlerTests
         var response = FakeZoomHandler.Json((HttpStatusCode)429, "{}");
         response.Headers.RetryAfter = new RetryConditionHeaderValue(TimeSpan.FromSeconds(seconds));
         return response;
+    }
+
+    [Fact]
+    public async Task A_call_that_never_answers_times_out_as_a_provider_failure()
+    {
+        var options = new ZoomOptions { AccountId = "acct", ClientId = "cid", ClientSecret = "test-secret-value", Timeout = TimeSpan.FromMilliseconds(150) };
+        var clock = new ManualClock(DateTime.UtcNow);
+        var auth = new FakeZoomHandler((_, n) => Task.FromResult(FakeZoomHandler.Token("tok" + n)));
+        var tokens = new ZoomTokenCache(new HttpClient(auth), Microsoft.Extensions.Options.Options.Create(options), clock);
+        var hanging = new HangingZoomHandler();
+        var handler = new ZoomApiHandler(tokens, new ZoomOutboundLimiter(clock), Microsoft.Extensions.Options.Options.Create(options)) { InnerHandler = hanging };
+        var client = new HttpClient(handler) { BaseAddress = new Uri("https://api.zoom.test/v2/") };
+
+        var ex = await Assert.ThrowsAsync<ZoomProviderException>(() => client.GetAsync("users/h1/meetings"));
+
+        Assert.Equal(ZoomFailure.Unavailable, ex.Failure);
     }
 
     [Fact]
