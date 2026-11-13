@@ -1,5 +1,6 @@
 using Lms.Api.Infrastructure;
 using Lms.Domain.Abstractions;
+using Lms.Domain.Configuration;
 using Microsoft.Extensions.Options;
 using Lms.Infrastructure.Jobs;
 using Lms.Infrastructure.Zoom;
@@ -21,11 +22,18 @@ public sealed class ZoomProviderModule : ILmsModule
             sp.GetRequiredService<IOptions<ZoomOptions>>().Value.WebhookSecretToken, sp.GetRequiredService<IClock>()));
         services.AddSingleton(sp => new ZoomWebhookRateLimiter(sp.GetRequiredService<IClock>()));
         services.AddScoped<ZoomEventProcessor>();
+        services.AddScoped<ZoomPollingJob>();
+        services.AddScoped<ZoomReceiptRetentionJob>();
+        services.AddScoped<ISettingChangeGuard, VirtualClassesEnableGuard>();
+        services.AddSingleton(new DevJobDefinition(
+            ZoomPollingJob.RecurringJobId, (sp, _, ct) => sp.GetRequiredService<ZoomPollingJob>().RunAsync(ct)));
+        services.AddSingleton(new DevJobDefinition(
+            ZoomReceiptRetentionJob.RecurringJobId, (sp, _, ct) => sp.GetRequiredService<ZoomReceiptRetentionJob>().RunAsync(ct)));
         services.AddSingleton(new DevJobDefinition(
             ZoomSyncSweepJob.RecurringJobId, (sp, _, ct) => sp.GetRequiredService<ZoomSyncSweepJob>().RunAsync(ct)));
         if (configuration.GetValue("Jobs:ServerEnabled", true))
         {
-            services.AddHostedService<ZoomSyncSweepRegistration>();
+            services.AddHostedService<ZoomSyncSweepRegistration>(); // registers all three recurring Zoom jobs
         }
     }
 
@@ -49,6 +57,10 @@ internal sealed class ZoomSyncSweepRegistration(IServiceScopeFactory scopes, ILo
             using var scope = scopes.CreateScope();
             scope.ServiceProvider.GetRequiredService<IBackgroundJobs>().AddOrUpdateRecurring<ZoomSyncSweepJob>(
                 ZoomSyncSweepJob.RecurringJobId, job => job.RunAsync(CancellationToken.None), ZoomSyncSweepJob.Cron);
+            var jobs = scope.ServiceProvider.GetRequiredService<IBackgroundJobs>();
+            jobs.AddOrUpdateRecurring<ZoomPollingJob>(ZoomPollingJob.RecurringJobId, job => job.RunAsync(CancellationToken.None), ZoomPollingJob.Cron);
+            jobs.AddOrUpdateRecurring<ZoomReceiptRetentionJob>(
+                ZoomReceiptRetentionJob.RecurringJobId, job => job.RunAsync(CancellationToken.None), ZoomReceiptRetentionJob.Cron);
         }
         catch (Exception ex)
         {
