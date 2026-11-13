@@ -1,6 +1,7 @@
 @using Lms.Client.Services.Api
 @using Lms.Client.Services.Packages
 @using Lms.Shared.Authorization
+@using Lms.Shared.Content
 @using Lms.Shared.Packages
 @using Microsoft.JSInterop
 @implements IAsyncDisposable
@@ -37,11 +38,12 @@
         <LoadingState Lines="3" TestId="package-launching" />
         break;
     case Phase.Finished:
-        <PackageResultCard Completed="_attempt?.Completed ?? false" Score="@ScoreText(_attempt)" OnOpenAgain="StartAsync" />
+        <PackageResultCard Completed="_attempt?.Completed ?? false" Practice="_practice" GradedScore="@(GradedText ?? ScoreText(_attempt))" LatestScore="@LatestText"
+                           Method="@Method" OnReopen="StartAsync" />
         break;
     case Phase.Start:
-        <PackageStartCard Title="@Title" State="@State" Score="@ScoreText(_attempt)" CanStart="@(!IsStaff)" CanPreview="@(IsStaff && PermState.Has(Permissions.Packages.View))"
-                          OnStart="StartAsync" OnPreview="PreviewAsync" />
+        <PackageStartCard Title="@Title" State="@State" Score="@GradedText" LatestScore="@LatestText" Reopen="@CanReopen" Method="@Method" CanStart="@(!IsStaff)"
+                          CanPreview="@(IsStaff && PermState.Has(Permissions.Packages.View))" OnStart="StartAsync" OnPreview="PreviewAsync" />
         @if (_error is not null)
         {
             <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" role="alert" Class="mt-2" data-testid="package-error">@_error</MudAlert>
@@ -53,7 +55,7 @@
             {
                 <div class="lms-preview-strip" data-testid="package-preview-banner"><MudIcon Icon="@Icons.Material.Rounded.Visibility" Size="Size.Small" aria-hidden="true" /> @L["Package_PreviewBanner"]</div>
             }
-            <PackagePlayerToolbar Title="@Title" Preview="_preview" Status="_saveStatus" Fullscreen="_fullscreen" OnFullscreen="ToggleFullscreenAsync"
+            <PackagePlayerToolbar Title="@Title" Preview="_preview" Practice="_practice" Status="_saveStatus" Fullscreen="_fullscreen" OnFullscreen="ToggleFullscreenAsync"
                                   OnExit="ExitAsync" OnRetry="RetrySaveAsync" />
             <div class="lms-player-stage">
                 @* The sandbox is allow-scripts only: with no allow-same-origin the package gets an opaque origin, with no allow-forms,
@@ -83,7 +85,8 @@
     private ITimer? _timer;
     private string? _url, _error;
     private Guid _attemptId;
-    private bool _preview, _fullscreen, _needsBridge, _relaunching;
+    private bool _preview, _fullscreen, _needsBridge, _relaunching, _practice;
+    private PackageStudentStateDto? _myState;
     private int _frameKey;
     private PackageAttemptDto? _attempt;
     private PackageSaveStatus _saveStatus = PackageSaveStatus.Idle;
@@ -105,10 +108,34 @@
     private static string? ScoreText(PackageAttemptDto? attempt) =>
         attempt is { ScoreRaw: { } raw, ScoreMax: { } max } ? $"{raw:0.##} / {max:0.##}" : null;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        if (PackageId is null) _phase = Phase.NotAvailable;
+        if (PackageId is null) { _phase = Phase.NotAvailable; return; }
+        if (!IsStaff) await LoadMyStateAsync();
     }
+
+    /// <summary>
+    /// The caller's own state for the button choice (D57). It is a convenience: if it cannot be read the card falls back to Start / Resume
+    /// (a 404 for a hidden module shows up at launch instead).
+    /// </summary>
+    private async Task LoadMyStateAsync()
+    {
+        try { _myState = await Api.GetMyStateAsync(PackageId!.Value); }
+        catch (Exception ex) when (ex is ApiProblemException or HttpRequestException) { _myState = null; }
+    }
+
+    private string Method => _myState?.GradingMethod ?? PackageGradingMethods.Highest;
+
+    /// <summary>A completed attempt exists and none is in progress: Start gives way to the re-open action.</summary>
+    private bool CanReopen => !IsStaff && _myState is { HasCompletedAttempt: true } && State != CompletionStates.InProgress;
+
+    private static string? Fraction(decimal? value, decimal? max) => value is { } v ? $"{v:0.##} / {(max ?? 100):0.##}" : null;
+
+    /// <summary>The score that counts (the gradebook's), as "85 / 100".</summary>
+    private string? GradedText => Fraction(_myState?.GradedScore, _myState?.LatestAttempt?.ScoreMax);
+
+    /// <summary>The latest attempt's score, shown only when it differs from the graded one.</summary>
+    private string? LatestText => _myState?.LatestAttempt is { ScoreRaw: { } raw } latest && raw != _myState.GradedScore ? Fraction(raw, latest.ScoreMax) : null;
 
     // ---- launch -------------------------------------------------------------------------------------------------------------
 
@@ -122,6 +149,8 @@
         _error = null;
         _phase = Phase.Launching;
         _preview = preview;
+        // Grading method First: once an attempt is completed, a new one is practice (it does not count). A resumed attempt keeps its kind.
+        _practice = !preview && CanReopen && Method == PackageGradingMethods.First;
         try
         {
             if (preview)
@@ -259,6 +288,7 @@
             await _bridge.FlushAsync();
             _attempt = await Api.FinishAsync(_attemptId, new PackageFinishRequest(_bridge.LastSeq));
             await CloseFrameAsync();
+            await LoadMyStateAsync(); // the graded score may have changed (or not, for practice)
             _phase = Phase.Finished;
             await OnFinished.InvokeAsync();
         }

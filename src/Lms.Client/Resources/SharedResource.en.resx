@@ -1442,4 +1442,14 @@
   <data name="Package_FrameTitle" xml:space="preserve"><value>{0} (interactive activity)</value></data>
   <data name="Module_NotAvailableTitle" xml:space="preserve"><value>This activity isn't available</value></data>
   <data name="Module_NotAvailableText" xml:space="preserve"><value>It may have been hidden or removed. Go back to the course to see what's open to you.</value></data>
+  <data name="Package_TryAgain" xml:space="preserve"><value>Try again</value></data>
+  <data name="Package_ReviewNotGraded" xml:space="preserve"><value>Review (not graded)</value></data>
+  <data name="Package_Caption_Highest" xml:space="preserve"><value>Your score won't go down.</value></data>
+  <data name="Package_Caption_Last" xml:space="preserve"><value>Your new score replaces this one.</value></data>
+  <data name="Package_Caption_First" xml:space="preserve"><value>Your first score stays; this attempt is practice.</value></data>
+  <data name="Package_ConfirmLast" xml:space="preserve"><value>Try again? Your new score will replace your current score of {0}, even if it's lower.</value></data>
+  <data name="Package_Practice" xml:space="preserve"><value>Practice</value></data>
+  <data name="Package_PracticeFinished" xml:space="preserve"><value>Practice finished. Your graded score is still {0}.</value></data>
+  <data name="Package_Score" xml:space="preserve"><value>Score {0}</value></data>
+  <data name="Package_LatestAttempt" xml:space="preserve"><value>Latest attempt: {0}</value></data>
 </root>

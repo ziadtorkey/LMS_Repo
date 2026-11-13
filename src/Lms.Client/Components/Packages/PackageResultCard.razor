@@ -1,17 +1,33 @@
-@* After the content finished: the result as the server judged it, never computed in the browser (design spec §5.3). *@
+@using Lms.Shared.Packages
+
+@* After the content finished: the result as the server judged it, never computed in the browser (design spec §5.3). The score shown is the
+   one that counts (GradedScore); a different latest attempt gets its own muted line; a practice attempt (First) says it did not count. *@
 <SectionCard TestId="package-result-card">
     <MudStack Spacing="2" AlignItems="AlignItems.Start">
         <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@(Completed ? Color.Success : Color.Default)" data-testid="package-result-chip">@L[Completed ? "Package_State_Completed" : "Package_State_InProgress"]</MudChip>
-        @if (Score is not null)
+        @if (Practice)
         {
-            <MudText Typo="Typo.h6" data-testid="package-result-score">@Score</MudText>
+            <MudText Typo="Typo.body1" data-testid="package-practice-finished">@L["Package_PracticeFinished", GradedScore ?? "—"]</MudText>
         }
-        <MudButton Variant="Variant.Outlined" OnClick="OnOpenAgain" data-testid="package-open-again">@L["Package_OpenAgain"]</MudButton>
+        else if (GradedScore is not null)
+        {
+            <MudText Typo="Typo.h6" data-testid="package-result-score">@L["Package_Score", GradedScore]</MudText>
+        }
+        @if (LatestScore is not null)
+        {
+            <MudText Typo="Typo.caption" Class="lms-muted" data-testid="package-latest-score">@L["Package_LatestAttempt", LatestScore]</MudText>
+        }
+        <PackageReopenAction Method="@Method" GradedScore="@GradedScore" OnReopen="OnReopen" />
     </MudStack>
 </SectionCard>
 
 @code {
     [Parameter] public bool Completed { get; set; }
-    [Parameter] public string? Score { get; set; }
-    [Parameter] public EventCallback OnOpenAgain { get; set; }
+    /// <summary>The attempt that just ended did not count (grading method First).</summary>
+    [Parameter] public bool Practice { get; set; }
+    /// <summary>The score that counts ("85 / 100").</summary>
+    [Parameter] public string? GradedScore { get; set; }
+    [Parameter] public string? LatestScore { get; set; }
+    [Parameter] public string Method { get; set; } = PackageGradingMethods.Highest;
+    [Parameter] public EventCallback OnReopen { get; set; }
 }

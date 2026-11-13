@@ -4,6 +4,10 @@
    container goes full screen). Nothing here comes from the package. *@
 <div class="lms-player-bar" data-testid="package-toolbar">
     <span class="lms-player-title" data-testid="package-toolbar-title">@Title</span>
+    @if (Practice)
+    {
+        <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Info" data-testid="package-practice-chip">@L["Package_Practice"]</MudChip>
+    }
     @if (!Preview)
     {
         <PackageSaveState Status="Status" OnRetry="OnRetry" />
@@ -18,6 +22,8 @@
 @code {
     [Parameter] public string Title { get; set; } = "";
     [Parameter] public bool Preview { get; set; }
+    /// <summary>A practice attempt (grading method First after a completed one): it does not count.</summary>
+    [Parameter] public bool Practice { get; set; }
     [Parameter] public PackageSaveStatus Status { get; set; }
     [Parameter] public bool Fullscreen { get; set; }
     [Parameter] public EventCallback OnFullscreen { get; set; }
