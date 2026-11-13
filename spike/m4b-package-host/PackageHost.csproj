@@ -3,4 +3,5 @@
   <PropertyGroup>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
+  <ItemGroup><Compile Remove="probe/**" /><Content Remove="probe/**" /><None Remove="probe/**" /></ItemGroup>
 </Project>
