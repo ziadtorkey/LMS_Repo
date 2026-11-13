@@ -1,0 +1,72 @@
+@using Lms.Client.Components.Content
+@using Lms.Client.Services.LiveSessions
+@using Lms.Shared.LiveSessions
+@inject ILiveSessionsApi Live
+@inject NavigationManager Navigation
+@inject ICultureService Culture
+
+@* The recording link of a session (design spec M4b §2.5): http/https only, the host name shown so the teacher sees where it goes. *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="2">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" role="alert" data-testid="recording-error">@_error</MudAlert>
+            }
+            @if (Session.RecordingUrl is not null)
+            {
+                <MudText Typo="Typo.caption" Class="lms-muted" data-testid="recording-source">
+                    @L[Session.RecordingSource == RecordingSources.Provider ? "Live_RecordingBy_Provider" : "Live_RecordingBy_Manual"]
+                </MudText>
+            }
+            <MudTextField T="string" @bind-Value="_url" Label="@L["Live_RecordingUrl"]" Immediate="true" MaxLength="@LiveSessionLimits.RecordingUrlMaxLength"
+                          Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Rounded.Link" dir="ltr"
+                          Error="@(_invalid)" ErrorText="@L["Live_RecordingInvalid"]" HelperText="@L["Live_RecordingHelp"]"
+                          data-testid="recording-url" />
+            @if (Host is { } host)
+            {
+                <MudText Typo="Typo.caption" data-testid="recording-host">@L["Live_RecordingOpensOn"] <span class="lms-host-hint" dir="ltr">@host</span></MudText>
+            }
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <div class="lms-dialog-actions">
+            <MudButton OnClick="() => MudDialog.Cancel()">@L["Common_Cancel"]</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="@(_saving || !ModuleLinks.IsAllowed(_url))"
+                       data-testid="recording-save">
+                @if (_saving)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="me-2" />
+                }
+                @L["Common_Save"]
+            </MudButton>
+        </div>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private string? _url, _error;
+    private bool _saving;
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter, EditorRequired] public LiveSessionDto Session { get; set; } = default!;
+
+    protected override void OnInitialized() => _url = Session.RecordingUrl;
+
+    /// <summary>Shown only for a valid http/https link; an invalid scheme is an error on the field.</summary>
+    private bool _invalid => !string.IsNullOrWhiteSpace(_url) && !ModuleLinks.IsAllowed(_url);
+
+    private string? Host => ModuleLinks.IsAllowed(_url) ? new Uri(_url!).Host : null;
+
+    private async Task SaveAsync()
+    {
+        if (!ModuleLinks.IsAllowed(_url)) return;
+        _saving = true;
+        _error = null;
+        LiveSessionDto? saved = null;
+        var ok = await ApiCalls.RunAsync(async () => saved = await Live.SetRecordingAsync(Session.Id, new RecordingLinkRequest(_url!.Trim())),
+            Navigation, L, message => _error = message);
+        _saving = false;
+        if (ok && saved is not null) MudDialog.Close(DialogResult.Ok(saved));
+    }
+}

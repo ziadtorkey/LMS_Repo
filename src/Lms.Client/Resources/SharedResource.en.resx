@@ -1434,4 +1434,93 @@
   <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>The package didn't pass the security check.</value></data>
   <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>The file isn't a valid .zip archive. Export the package again.</value></data>
   <data name="Error_package_reason_bad_name" xml:space="preserve"><value>Some file names in the package are too long, nested too deep or reserved. Rename them and export again.</value></data>
+  <data name="ClassCourse_TabLive" xml:space="preserve"><value>Live sessions</value></data>
+  <data name="Live_Title" xml:space="preserve"><value>Live sessions</value></data>
+  <data name="Live_Subtitle" xml:space="preserve"><value>Online classes for this course. Students join from the lesson.</value></data>
+  <data name="Live_Schedule" xml:space="preserve"><value>Schedule a session</value></data>
+  <data name="Live_ScheduleAction" xml:space="preserve"><value>Schedule</value></data>
+  <data name="Live_Filter" xml:space="preserve"><value>Which sessions</value></data>
+  <data name="Live_Upcoming" xml:space="preserve"><value>Upcoming</value></data>
+  <data name="Live_Past" xml:space="preserve"><value>Past</value></data>
+  <data name="Live_Col_When" xml:space="preserve"><value>When</value></data>
+  <data name="Live_Col_Session" xml:space="preserve"><value>Session</value></data>
+  <data name="Live_Col_Lesson" xml:space="preserve"><value>Lesson</value></data>
+  <data name="Live_Col_Status" xml:space="preserve"><value>Status</value></data>
+  <data name="Live_Col_Recording" xml:space="preserve"><value>Recording</value></data>
+  <data name="Live_Col_Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="Live_Edit" xml:space="preserve"><value>Edit session</value></data>
+  <data name="Live_RecordingLink" xml:space="preserve"><value>Recording link</value></data>
+  <data name="Live_CancelSession" xml:space="preserve"><value>Cancel session</value></data>
+  <data name="Live_CancelConfirm" xml:space="preserve"><value>Cancel this session? Students will no longer see it.</value></data>
+  <data name="Live_Recording" xml:space="preserve"><value>Recording</value></data>
+  <data name="Live_Empty_Upcoming_Title" xml:space="preserve"><value>No upcoming sessions</value></data>
+  <data name="Live_Empty_Upcoming_Staff" xml:space="preserve"><value>Schedule a session so students can join from the lesson.</value></data>
+  <data name="Live_Empty_Upcoming_Student" xml:space="preserve"><value>Your teacher hasn't scheduled any yet.</value></data>
+  <data name="Live_Empty_Past_Title" xml:space="preserve"><value>No past sessions</value></data>
+  <data name="Live_Empty_Past_Text" xml:space="preserve"><value>Sessions appear here after they end.</value></data>
+  <data name="Live_SeriesCaption" xml:space="preserve"><value>Weekly · {0} of {1}</value></data>
+  <data name="Live_SeriesCaptionShort" xml:space="preserve"><value>Weekly</value></data>
+  <data name="Live_ProviderNotConfigured" xml:space="preserve"><value>Live sessions aren't set up yet. Ask your platform administrator.</value></data>
+  <data name="Live_ProviderUnhealthy" xml:space="preserve"><value>Zoom isn't responding right now. New sessions may fail; existing ones keep working.</value></data>
+  <data name="Live_FeatureOff" xml:space="preserve"><value>Live sessions are turned off for this school.</value></data>
+  <data name="Live_Error_Busy" xml:space="preserve"><value>Zoom is busy. Try again in about {0}.</value></data>
+  <data name="Live_Error_BusyShort" xml:space="preserve"><value>Zoom is busy. Try again in a minute.</value></data>
+  <data name="Live_DialogTitleNew" xml:space="preserve"><value>Schedule a live session</value></data>
+  <data name="Live_DialogTitleEdit" xml:space="preserve"><value>Edit live session</value></data>
+  <data name="Live_SectionSession" xml:space="preserve"><value>Session</value></data>
+  <data name="Live_SectionTime" xml:space="preserve"><value>Time</value></data>
+  <data name="Live_SectionRepeat" xml:space="preserve"><value>Repeat</value></data>
+  <data name="Live_SectionModule" xml:space="preserve"><value>In the lesson</value></data>
+  <data name="Live_TitleHelp" xml:space="preserve"><value>Participants see this title in Zoom.</value></data>
+  <data name="Live_Lesson" xml:space="preserve"><value>Lesson</value></data>
+  <data name="Live_Date" xml:space="preserve"><value>Date</value></data>
+  <data name="Live_StartTime" xml:space="preserve"><value>Start time</value></data>
+  <data name="Live_Duration" xml:space="preserve"><value>Duration</value></data>
+  <data name="Live_TimeZone" xml:space="preserve"><value>Times are in your time zone:</value></data>
+  <data name="Live_Repeat_Once" xml:space="preserve"><value>Once</value></data>
+  <data name="Live_Repeat_Weekly" xml:space="preserve"><value>Weekly</value></data>
+  <data name="Live_Every" xml:space="preserve"><value>Repeats</value></data>
+  <data name="Live_Days" xml:space="preserve"><value>On these days</value></data>
+  <data name="Live_Ends" xml:space="preserve"><value>Ends</value></data>
+  <data name="Live_EndsOn" xml:space="preserve"><value>On date</value></data>
+  <data name="Live_EndsAfter" xml:space="preserve"><value>After</value></data>
+  <data name="Live_EndsAfterSuffix" xml:space="preserve"><value>sessions</value></data>
+  <data name="Live_EndsRequired" xml:space="preserve"><value>Choose an end date or a number of sessions.</value></data>
+  <data name="Live_TooMany" xml:space="preserve"><value>A series can have at most {0} sessions. Choose an earlier end date or fewer sessions.</value></data>
+  <data name="Live_EditSeriesTitle" xml:space="preserve"><value>Edit a repeating session</value></data>
+  <data name="Live_CancelSeriesTitle" xml:space="preserve"><value>Cancel a repeating session</value></data>
+  <data name="Live_ScopeLabel" xml:space="preserve"><value>Which sessions</value></data>
+  <data name="Live_Continue" xml:space="preserve"><value>Continue</value></data>
+  <data name="Live_CancelSessions" xml:space="preserve"><value>Cancel sessions</value></data>
+  <data name="Live_RecordingTitle" xml:space="preserve"><value>Recording link</value></data>
+  <data name="Live_RecordingUrl" xml:space="preserve"><value>Link</value></data>
+  <data name="Live_RecordingHelp" xml:space="preserve"><value>Paste a link that starts with https://.</value></data>
+  <data name="Live_RecordingOpensOn" xml:space="preserve"><value>Opens on</value></data>
+  <data name="Live_RecordingInvalid" xml:space="preserve"><value>Use a link that starts with https:// or http://.</value></data>
+  <data name="Live_RecordingBy_Provider" xml:space="preserve"><value>Added by Zoom</value></data>
+  <data name="Live_RecordingBy_Manual" xml:space="preserve"><value>Added by a teacher</value></data>
+  <data name="Live_Unit_Minute_One" xml:space="preserve"><value>1 min</value></data>
+  <data name="Live_Unit_Minute_Two" xml:space="preserve"><value>2 min</value></data>
+  <data name="Live_Unit_Minute_Few" xml:space="preserve"><value>{0} min</value></data>
+  <data name="Live_Unit_Minute_Many" xml:space="preserve"><value>{0} min</value></data>
+  <data name="Live_Duration_Minute_One" xml:space="preserve"><value>1 min</value></data>
+  <data name="Live_Duration_Minute_Two" xml:space="preserve"><value>2 min</value></data>
+  <data name="Live_Duration_Minute_Few" xml:space="preserve"><value>{0} min</value></data>
+  <data name="Live_Duration_Minute_Many" xml:space="preserve"><value>{0} min</value></data>
+  <data name="Live_Unit_Session_One" xml:space="preserve"><value>1 session</value></data>
+  <data name="Live_Unit_Session_Two" xml:space="preserve"><value>2 sessions</value></data>
+  <data name="Live_Unit_Session_Few" xml:space="preserve"><value>{0} sessions</value></data>
+  <data name="Live_Unit_Session_Many" xml:space="preserve"><value>{0} sessions</value></data>
+  <data name="Live_MoreSessions_One" xml:space="preserve"><value>and 1 more</value></data>
+  <data name="Live_MoreSessions_Two" xml:space="preserve"><value>and 2 more</value></data>
+  <data name="Live_MoreSessions_Few" xml:space="preserve"><value>and {0} more</value></data>
+  <data name="Live_MoreSessions_Many" xml:space="preserve"><value>and {0} more</value></data>
+  <data name="Live_LaterSessions_One" xml:space="preserve"><value>and 1 later session</value></data>
+  <data name="Live_LaterSessions_Two" xml:space="preserve"><value>and 2 later sessions</value></data>
+  <data name="Live_LaterSessions_Few" xml:space="preserve"><value>and {0} later sessions</value></data>
+  <data name="Live_LaterSessions_Many" xml:space="preserve"><value>and {0} later sessions</value></data>
+  <data name="Live_EveryWeeks_One" xml:space="preserve"><value>Every week</value></data>
+  <data name="Live_EveryWeeks_Two" xml:space="preserve"><value>Every 2 weeks</value></data>
+  <data name="Live_EveryWeeks_Few" xml:space="preserve"><value>Every {0} weeks</value></data>
+  <data name="Live_EveryWeeks_Many" xml:space="preserve"><value>Every {0} weeks</value></data>
 </root>

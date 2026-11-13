@@ -1,0 +1,181 @@
+@using System.Globalization
+@using Lms.Client.Components
+@using Lms.Client.Components.Content
+@using Lms.Client.Services
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.LiveSessions
+@using Lms.Shared
+@using Lms.Shared.Content
+@using Lms.Shared.LiveSessions
+@inject ILiveSessionsApi Live
+@inject NavigationManager Navigation
+@inject ICultureService Culture
+@inject TimeProvider Clock
+
+@* Schedule or edit a live session (design spec M4b §2.3): title, lesson, time, repeat with its preview, and the module settings. *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="3">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" role="alert" data-testid="live-dialog-error">@_error</MudAlert>
+            }
+
+            <fieldset class="lms-fieldset">
+                <legend class="lms-fieldset-legend">@L["Live_SectionSession"]</legend>
+                <BilingualNameFields NameAr="@_model.Module.TitleAr" NameArChanged="v => _model.Module.TitleAr = v"
+                                     NameEn="@_model.Module.TitleEn" NameEnChanged="v => _model.Module.TitleEn = v" IdPrefix="live-title" />
+                <MudText Typo="Typo.caption" Class="lms-muted">@L["Live_TitleHelp"]</MudText>
+                <MudSelect T="Guid?" @bind-Value="_model.LessonKey" Label="@L["Live_Lesson"]" Required="true" RequiredError="@L["Common_Required"]"
+                           Disabled="@(Existing is not null)" data-testid="live-lesson">
+                    @foreach (var l in Lessons)
+                    {
+                        <MudSelectItem T="Guid?" Value="@((Guid?)l.Key)">@l.Title</MudSelectItem>
+                    }
+                </MudSelect>
+            </fieldset>
+
+            <fieldset class="lms-fieldset">
+                <legend class="lms-fieldset-legend">@L["Live_SectionTime"]</legend>
+                <div class="lms-form-grid">
+                    <MudDatePicker Date="_model.Date" DateChanged="d => _model.Date = d" Label="@L["Live_Date"]" DateFormat="yyyy-MM-dd" data-testid="live-date" />
+                    <MudTimePicker Time="_model.Time" TimeChanged="t => _model.Time = t" Label="@L["Live_StartTime"]" AmPm="false" data-testid="live-time" />
+                    <MudSelect T="int" @bind-Value="_model.DurationMinutes" Label="@L["Live_Duration"]" data-testid="live-duration">
+                        @foreach (var m in Durations)
+                        {
+                            <MudSelectItem T="int" Value="m">@L.Count("Live_Duration_Minute", m, Culture.IsRightToLeft)</MudSelectItem>
+                        }
+                    </MudSelect>
+                </div>
+                <MudText Typo="Typo.caption" Class="lms-muted" data-testid="live-zone">@L["Live_TimeZone"] <span dir="ltr">@Zone.Id</span></MudText>
+            </fieldset>
+
+            @if (Existing is null)
+            {
+                <fieldset class="lms-fieldset">
+                    <legend class="lms-fieldset-legend">@L["Live_SectionRepeat"]</legend>
+                    <RecurrenceEditor Model="_model" Zone="Zone" EndsError="@EndsMessage" Changed="@(() => { StateHasChanged(); return Task.CompletedTask; })" />
+                </fieldset>
+            }
+
+            <fieldset class="lms-fieldset">
+                <legend class="lms-fieldset-legend">@L["Live_SectionModule"]</legend>
+                <ModuleMetadataForm Model="_model.Module" Groups="Groups" Rules="@CompletionRules.ForActivity(ModuleKinds.LiveSession)"
+                                    VisibilityError="_visibilityError" TargetError="_targetError" />
+            </fieldset>
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <div class="lms-dialog-actions">
+            <MudButton OnClick="() => MudDialog.Cancel()">@L["Common_Cancel"]</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="@(_saving || !CanSave)" data-testid="live-save">
+                @if (_saving)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="me-2" />
+                }
+                @L[Existing is null ? "Live_ScheduleAction" : "Common_Save"]
+            </MudButton>
+        </div>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private static readonly int[] Durations = [15, 30, 45, 60, 90, 120, 180, 240, 360, 480];
+
+    private LiveSessionFormModel _model = new();
+    private string? _error, _endsError, _visibilityError, _targetError;
+    private bool _saving;
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter, EditorRequired] public Guid ClassCourseId { get; set; }
+    /// <summary>The session being edited; null = schedule a new one.</summary>
+    [Parameter] public LiveSessionDto? Existing { get; set; }
+    /// <summary>For an edit of a series occurrence: which occurrences the change touches.</summary>
+    [Parameter] public string Scope { get; set; } = SeriesEditScopes.This;
+    [Parameter] public IReadOnlyList<LiveLessonOption> Lessons { get; set; } = [];
+    [Parameter] public IReadOnlyList<ModuleGroupOption> Groups { get; set; } = [];
+
+    private TimeZoneInfo Zone => Clock.LocalTimeZone;
+
+    protected override void OnInitialized()
+    {
+        if (Existing is not null) _model = LiveSessionFormModel.From(Existing, Zone);
+        else _model.Date = TimeZoneInfo.ConvertTimeFromUtc(Clock.GetUtcNow().UtcDateTime, Zone).Date.AddDays(1);
+    }
+
+    private bool EndMissing => _model.Weekly && (_model.EndsOnDate ? _model.UntilDate is null : _model.Count is null or < 1);
+
+    private string? EndsMessage => _endsError ?? (EndMissing ? L["Live_EndsRequired"].Value : null);
+
+    private bool RuleOk
+    {
+        get
+        {
+            if (!_model.Weekly) return true;
+            if (EndMissing || _model.Days.Count == 0 || _model.StartsUtc(Zone) is not { } start || _model.Recurrence(Zone) is not { } rule) return false;
+            return RecurrenceExpander.Preview(start, rule) is { Count: <= LiveSessionLimits.MaxOccurrences };
+        }
+    }
+
+    private bool CanSave =>
+        !string.IsNullOrWhiteSpace(_model.Module.TitleAr) && !string.IsNullOrWhiteSpace(_model.Module.TitleEn)
+        && _model.LessonKey is not null && _model.StartsUtc(Zone) is not null && RuleOk;
+
+    private async Task SaveAsync()
+    {
+        _error = _endsError = _visibilityError = _targetError = null;
+        if (_model.Module.Visibility == ModuleVisibilities.Scheduled)
+        {
+            var (from, to) = (_model.Module.FromUtc, _model.Module.ToUtcValue);
+            if ((from is null && to is null) || (from is { } f && to is { } t && f >= t))
+            {
+                _visibilityError = L["Error_module_visibility_range_invalid"];
+                return;
+            }
+        }
+        if (_model.Module.Target == ModuleTargets.Group && _model.Module.GroupId is null)
+        {
+            _targetError = L["Error_module_target_invalid"];
+            return;
+        }
+        _saving = true;
+        try
+        {
+            var start = _model.StartsUtc(Zone)!.Value;
+            object saved;
+            if (Existing is null)
+                saved = await Live.CreateAsync(ClassCourseId, new CreateLiveSessionRequest(_model.LessonKey!.Value, _model.ToSettings(), start,
+                    _model.DurationMinutes, _model.Recurrence(Zone)));
+            else
+                saved = await Live.UpdateAsync(Existing.Id, new UpdateLiveSessionRequest(_model.ToSettings(), start, _model.DurationMinutes, Scope));
+            MudDialog.Close(DialogResult.Ok(saved));
+        }
+        catch (Exception ex) when (ApiCalls.TryRedirect(ex, Navigation))
+        {
+        }
+        catch (ApiProblemException ex) when (ex.Code == ProblemCodes.recurrence_invalid)
+        {
+            _endsError = L["Error_recurrence_invalid"];
+        }
+        catch (ApiProblemException ex) when (ex.Code == ProblemCodes.module_visibility_range_invalid)
+        {
+            _visibilityError = L["Error_module_visibility_range_invalid"];
+        }
+        catch (ApiProblemException ex) when (ex.Code == ProblemCodes.module_target_invalid)
+        {
+            _targetError = L["Error_module_target_invalid"];
+        }
+        catch (ApiProblemException ex)
+        {
+            _error = LiveErrorText.For(ex, L, Culture.IsRightToLeft);
+        }
+        catch (HttpRequestException)
+        {
+            _error = L["Error_Generic"];
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+}
