@@ -1350,6 +1350,47 @@
   <data name="Live_Match_Guest" xml:space="preserve"><value>ضيف</value></data>
   <data name="Live_Scope_This" xml:space="preserve"><value>هذه الحصة فقط</value></data>
   <data name="Live_Scope_ThisAndFollowing" xml:space="preserve"><value>هذه الحصة وما بعدها</value></data>
+  <data name="Package_AddScorm" xml:space="preserve"><value>إضافة حزمة SCORM</value></data>
+  <data name="Package_AddH5p" xml:space="preserve"><value>إضافة حزمة H5P</value></data>
+  <data name="Package_Steps" xml:space="preserve"><value>الخطوات</value></data>
+  <data name="Package_Step_Upload" xml:space="preserve"><value>رفع</value></data>
+  <data name="Package_Step_Check" xml:space="preserve"><value>فحص</value></data>
+  <data name="Package_Step_Attach" xml:space="preserve"><value>ربط</value></data>
+  <data name="Package_DropHint" xml:space="preserve"><value>أفلت ملفاً هنا أو اخترْ ملفاً.</value></data>
+  <data name="Package_Choose" xml:space="preserve"><value>اختر ملفاً</value></data>
+  <data name="Package_LimitsScorm" xml:space="preserve"><value>SCORM 1.2 أو 2004، وحدة تعلّم واحدة، حتى {0} ميغابايت.</value></data>
+  <data name="Package_LimitsH5p" xml:space="preserve"><value>ملف بصيغة h5p. حتى {0} ميغابايت.</value></data>
+  <data name="Package_WrongType" xml:space="preserve"><value>اختر ملفاً بصيغة {0}.</value></data>
+  <data name="Package_TooLarge" xml:space="preserve"><value>حجم الملف أكبر من {0} ميغابايت.</value></data>
+  <data name="Package_Uploading" xml:space="preserve"><value>جارٍ رفع {0}</value></data>
+  <data name="Package_CancelUpload" xml:space="preserve"><value>إلغاء الرفع</value></data>
+  <data name="Package_Checking" xml:space="preserve"><value>جارٍ فحص الحزمة. يستغرق ذلك عادةً أقل من دقيقة.</value></data>
+  <data name="Package_StillChecking" xml:space="preserve"><value>ما زال الفحص جارياً. قد يستغرق بضع دقائق للحزم الكبيرة.</value></data>
+  <data name="Package_KeepOpen" xml:space="preserve"><value>أبقِ هذه النافذة مفتوحة حتى ينتهي الفحص.</value></data>
+  <data name="Package_CheckAgain" xml:space="preserve"><value>افحص مرة أخرى</value></data>
+  <data name="Package_RejectedTitle" xml:space="preserve"><value>لا يمكن استخدام هذه الحزمة</value></data>
+  <data name="Package_ChooseAnother" xml:space="preserve"><value>اختر ملفاً آخر</value></data>
+  <data name="Package_Lesson" xml:space="preserve"><value>الدرس</value></data>
+  <data name="Package_TitleAr" xml:space="preserve"><value>العنوان (بالعربية)</value></data>
+  <data name="Package_TitleEn" xml:space="preserve"><value>العنوان (بالإنجليزية)</value></data>
+  <data name="Package_Rule" xml:space="preserve"><value>الإكمال</value></data>
+  <data name="Package_Rule_Submit" xml:space="preserve"><value>عندما يُنهيها المتعلّم</value></data>
+  <data name="Package_Rule_Score" xml:space="preserve"><value>عندما تُبلِّغ عن درجة</value></data>
+  <data name="Package_Rule_None" xml:space="preserve"><value>بلا تتبّع للإكمال</value></data>
+  <data name="Package_Rule_Manual" xml:space="preserve"><value>يضع المتعلّم علامة الإنجاز</value></data>
+  <data name="Package_Rule_View" xml:space="preserve"><value>عند فتحها</value></data>
+  <data name="Package_RuleScoreHelp" xml:space="preserve"><value>تكتمل عندما تُبلِّغ الحزمة عن درجة.</value></data>
+  <data name="Package_TypeScorm" xml:space="preserve"><value>SCORM {0}</value></data>
+  <data name="Package_TypeH5p" xml:space="preserve"><value>H5P · {0}</value></data>
+  <data name="Package_Attach" xml:space="preserve"><value>ربط بالدرس</value></data>
+  <data name="Package_Delete" xml:space="preserve"><value>حذف الحزمة</value></data>
+  <data name="Package_DeleteConfirm" xml:space="preserve"><value>حذف هذه الحزمة؟ لا يمكن التراجع.</value></data>
+  <data name="Package_FeatureOff" xml:space="preserve"><value>الحزم متوقفة في هذه المدرسة.</value></data>
+  <data name="Package_HostNotConfigured" xml:space="preserve"><value>لم تُفعَّل الحزم على هذه المنصة بعد. تواصل مع مسؤول المنصة.</value></data>
+  <data name="Package_Status_Uploaded" xml:space="preserve"><value>تم الرفع</value></data>
+  <data name="Package_Status_Validating" xml:space="preserve"><value>جارٍ الفحص</value></data>
+  <data name="Package_Status_Ready" xml:space="preserve"><value>جاهزة</value></data>
+  <data name="Package_Status_Rejected" xml:space="preserve"><value>غير صالحة</value></data>
   <data name="PermModule_Packages" xml:space="preserve"><value>حزم SCORM وH5P</value></data>
   <data name="Perm_Packages_Upload" xml:space="preserve"><value>رفع الحزم وإدارتها</value></data>
   <data name="Perm_Packages_View" xml:space="preserve"><value>فتح الحزم ومعاينتها</value></data>

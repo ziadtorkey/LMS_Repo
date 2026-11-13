@@ -1350,6 +1350,47 @@
   <data name="Live_Match_Guest" xml:space="preserve"><value>Guest</value></data>
   <data name="Live_Scope_This" xml:space="preserve"><value>This session only</value></data>
   <data name="Live_Scope_ThisAndFollowing" xml:space="preserve"><value>This and following sessions</value></data>
+  <data name="Package_AddScorm" xml:space="preserve"><value>Add a SCORM package</value></data>
+  <data name="Package_AddH5p" xml:space="preserve"><value>Add an H5P package</value></data>
+  <data name="Package_Steps" xml:space="preserve"><value>Steps</value></data>
+  <data name="Package_Step_Upload" xml:space="preserve"><value>Upload</value></data>
+  <data name="Package_Step_Check" xml:space="preserve"><value>Check</value></data>
+  <data name="Package_Step_Attach" xml:space="preserve"><value>Attach</value></data>
+  <data name="Package_DropHint" xml:space="preserve"><value>Drop a file here or choose one.</value></data>
+  <data name="Package_Choose" xml:space="preserve"><value>Choose a file</value></data>
+  <data name="Package_LimitsScorm" xml:space="preserve"><value>SCORM 1.2 or 2004, one learning object, up to {0} MB.</value></data>
+  <data name="Package_LimitsH5p" xml:space="preserve"><value>An .h5p file, up to {0} MB.</value></data>
+  <data name="Package_WrongType" xml:space="preserve"><value>Choose a {0} file.</value></data>
+  <data name="Package_TooLarge" xml:space="preserve"><value>This file is larger than {0} MB.</value></data>
+  <data name="Package_Uploading" xml:space="preserve"><value>Uploading {0}</value></data>
+  <data name="Package_CancelUpload" xml:space="preserve"><value>Cancel upload</value></data>
+  <data name="Package_Checking" xml:space="preserve"><value>Checking the package. This usually takes under a minute.</value></data>
+  <data name="Package_StillChecking" xml:space="preserve"><value>Still checking. This can take a few minutes for large packages.</value></data>
+  <data name="Package_KeepOpen" xml:space="preserve"><value>Keep this window open until the check finishes.</value></data>
+  <data name="Package_CheckAgain" xml:space="preserve"><value>Check again</value></data>
+  <data name="Package_RejectedTitle" xml:space="preserve"><value>This package can't be used</value></data>
+  <data name="Package_ChooseAnother" xml:space="preserve"><value>Choose another file</value></data>
+  <data name="Package_Lesson" xml:space="preserve"><value>Lesson</value></data>
+  <data name="Package_TitleAr" xml:space="preserve"><value>Title (Arabic)</value></data>
+  <data name="Package_TitleEn" xml:space="preserve"><value>Title (English)</value></data>
+  <data name="Package_Rule" xml:space="preserve"><value>Completion</value></data>
+  <data name="Package_Rule_Submit" xml:space="preserve"><value>When the learner finishes it</value></data>
+  <data name="Package_Rule_Score" xml:space="preserve"><value>When it reports a score</value></data>
+  <data name="Package_Rule_None" xml:space="preserve"><value>No completion tracking</value></data>
+  <data name="Package_Rule_Manual" xml:space="preserve"><value>The learner marks it done</value></data>
+  <data name="Package_Rule_View" xml:space="preserve"><value>When it is opened</value></data>
+  <data name="Package_RuleScoreHelp" xml:space="preserve"><value>Complete when the package reports a score.</value></data>
+  <data name="Package_TypeScorm" xml:space="preserve"><value>SCORM {0}</value></data>
+  <data name="Package_TypeH5p" xml:space="preserve"><value>H5P · {0}</value></data>
+  <data name="Package_Attach" xml:space="preserve"><value>Attach to lesson</value></data>
+  <data name="Package_Delete" xml:space="preserve"><value>Delete package</value></data>
+  <data name="Package_DeleteConfirm" xml:space="preserve"><value>Delete this package? It cannot be undone.</value></data>
+  <data name="Package_FeatureOff" xml:space="preserve"><value>Packages are turned off for this school.</value></data>
+  <data name="Package_HostNotConfigured" xml:space="preserve"><value>Packages aren't set up on this platform yet. Ask your platform administrator.</value></data>
+  <data name="Package_Status_Uploaded" xml:space="preserve"><value>Uploaded</value></data>
+  <data name="Package_Status_Validating" xml:space="preserve"><value>Checking</value></data>
+  <data name="Package_Status_Ready" xml:space="preserve"><value>Ready</value></data>
+  <data name="Package_Status_Rejected" xml:space="preserve"><value>Can't be used</value></data>
   <data name="PermModule_Packages" xml:space="preserve"><value>SCORM and H5P packages</value></data>
   <data name="Perm_Packages_Upload" xml:space="preserve"><value>Upload and manage packages</value></data>
   <data name="Perm_Packages_View" xml:space="preserve"><value>Open and preview packages</value></data>
