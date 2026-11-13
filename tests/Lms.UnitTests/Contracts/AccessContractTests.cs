@@ -26,6 +26,7 @@ public class AccessContractTests
             "LessonModule", "ModuleContent", "Asset",
             "Assignment", "SubmissionFeedback", "Quiz", "QuizQuestion", "LibraryResource", "ForumThread",
             "CourseAnnouncement", "GradeEvent",
+            "LiveSessionSeries", "LiveSession",
         ], AuditCatalog.EntityTypes);
     }
 
