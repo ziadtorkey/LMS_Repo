@@ -19,7 +19,7 @@ namespace Lms.E2ETests.M4;
 public sealed class LibraryAndForumTests(E2EFixture fixture) : E2ETestBase(fixture)
 {
     /// <summary>Un-skip when the M4a library (#430, #443, #397), forums (#424, #398) and module pages (#391, #390, #394) are on main.</summary>
-    private const string NeedsM4a = "Needs the M4a library and forum APIs and pages, and the module API and student course home, on main";
+    private const string NeedsM4a = "The M4a library, forum, module and course home pages are on main; passed 8/8 on a local integration, unskip after one run on the shared stack";
 
     private static readonly byte[] Pdf = "%PDF-1.7\n%probe\n"u8.ToArray();
 
