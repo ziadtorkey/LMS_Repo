@@ -41,4 +41,15 @@ public sealed class UploadFormOrderTests
         Assert.True(owner >= 0 && file >= 0);
         Assert.True(owner < file, "classCourseId must precede the file part");
     }
+
+    [Fact]
+    public async Task Org_unit_id_comes_before_the_file_part_for_library_uploads()
+    {
+        var body = await UploadAsync(a => a.UploadToUnitAsync(Guid.NewGuid(), "a.pdf", "application/pdf", new MemoryStream([1, 2, 3])));
+
+        var owner = body.IndexOf("name=orgUnitId", StringComparison.Ordinal);
+        var file = body.IndexOf("name=file", StringComparison.Ordinal);
+        Assert.True(owner >= 0 && file >= 0);
+        Assert.True(owner < file, "orgUnitId must precede the file part");
+    }
 }

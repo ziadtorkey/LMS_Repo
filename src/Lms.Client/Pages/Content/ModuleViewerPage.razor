@@ -1,0 +1,122 @@
+@page "/class-courses/{Id:guid}/modules/{ModuleId:guid}"
+@attribute [Authorize]
+@using Lms.Client.Components.Content.Kinds
+@using Lms.Client.Services.Api
+@using Lms.Shared.Authorization
+@using Lms.Shared.Content
+@inject IModulesApi Modules
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<PageTitle>@(_detail is { } t ? Culture.Pick(t.Node.TitleAr, t.Node.TitleEn) : L["Module_Title"].Value)</PageTitle>
+@if (!PermState.Loaded || _loading)
+{
+    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+}
+else if (!PermState.Has(Permissions.Modules.View))
+{
+    <MudAlert Severity="Severity.Warning" data-testid="module-forbidden">@L["Forbidden_Title"]</MudAlert>
+}
+else if (_error is not null || _detail is null)
+{
+    <MudAlert Severity="Severity.Error" data-testid="module-load-error">@(_error ?? L["Api_Error"].Value)</MudAlert>
+}
+else
+{
+    <MudStack Spacing="3">
+        <MudStack Spacing="1">
+            <MudLink Href="@BackHref" data-testid="module-back">@L["Module_Back"]</MudLink>
+            <MudText Typo="Typo.h4" data-testid="module-title">@Culture.Pick(_detail.Node.TitleAr, _detail.Node.TitleEn)</MudText>
+        </MudStack>
+
+        <ModuleBody Detail="_detail" />
+
+        @if (_error is not null)
+        {
+            <MudAlert Severity="Severity.Error" data-testid="module-action-error">@_error</MudAlert>
+        }
+        @if (ShowMarkComplete)
+        {
+            <div>
+                <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="MarkCompleteAsync" Disabled="_marking"
+                           data-testid="module-mark-complete">@L["Module_MarkComplete"]</MudButton>
+            </div>
+        }
+        else if (_completion?.State == CompletionStates.Completed)
+        {
+            <MudChip T="string" Color="Color.Success" data-testid="module-done">@L["CompletionState_Completed"]</MudChip>
+        }
+
+        <MudStack Row="true" Justify="Justify.SpaceBetween" data-testid="module-nav">
+            @if (_detail.PreviousModuleId is { } prev)
+            {
+                <MudButton Variant="Variant.Outlined" Href="@ModuleHref(prev)" StartIcon="@PrevIcon" data-testid="module-prev">@L["Module_Previous"]</MudButton>
+            }
+            else
+            {
+                <span></span>
+            }
+            @if (_detail.NextModuleId is { } next)
+            {
+                <MudButton Variant="Variant.Outlined" Href="@ModuleHref(next)" EndIcon="@NextIcon" data-testid="module-next">@L["Module_Next"]</MudButton>
+            }
+        </MudStack>
+    </MudStack>
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+    [Parameter] public Guid ModuleId { get; set; }
+
+    private ModuleDetailDto? _detail;
+    private ModuleCompletionDto? _completion;
+    private string? _error;
+    private bool _loading = true, _marking;
+
+    private string PrevIcon => Culture.IsRightToLeft ? Icons.Material.Filled.ArrowForward : Icons.Material.Filled.ArrowBack;
+    private string NextIcon => Culture.IsRightToLeft ? Icons.Material.Filled.ArrowBack : Icons.Material.Filled.ArrowForward;
+
+    /// <summary>Students go back to their course home, staff to the lesson plan.</summary>
+    private string BackHref => _detail?.CanEdit == true ? $"class-courses/{Id}/plan" : $"class-courses/{Id}/learn";
+
+    private bool ShowMarkComplete =>
+        _detail is { CanEdit: false } d && d.Node.CompletionRule == CompletionRules.Manual && _completion?.State != CompletionStates.Completed;
+
+    private string ModuleHref(Guid moduleId) => $"class-courses/{Id}/modules/{moduleId}";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        PermState.Changed -= OnPermissionsChanged;
+        PermState.Changed += OnPermissionsChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true; _error = null;
+        _detail = null; _completion = null;
+        if (PermState.Has(Permissions.Modules.View))
+        {
+            // For a student this GET is the "view": it completes a View-rule module on the server.
+            await ApiCalls.RunAsync(async () => _detail = await Modules.GetAsync(ModuleId), Navigation, L, message => _error = message);
+            if (_detail is { CanEdit: false })
+                await ApiCalls.RunAsync(async () => _completion = await Modules.GetCompletionAsync(ModuleId), Navigation, L, _ => { });
+        }
+        _loading = false;
+    }
+
+    private async Task MarkCompleteAsync()
+    {
+        _error = null;
+        _marking = true;
+        await ApiCalls.RunAsync(async () => _completion = await Modules.MarkCompleteAsync(ModuleId), Navigation, L, message => _error = message);
+        _marking = false;
+    }
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => PermState.Changed -= OnPermissionsChanged;
+}

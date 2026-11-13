@@ -1,0 +1,43 @@
+@using Lms.Client.Components
+@* Edits one blueprint lesson: bilingual title, bilingual objectives and the planned day from the start of the year. Works on a copy; Save writes it back. *@
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form">
+            <MudStack Spacing="3">
+                <BilingualNameFields @bind-NameAr="_titleAr" @bind-NameEn="_titleEn" IdPrefix="lesson-title" />
+                <MudTextField T="string" @bind-Value="_objectivesAr" Label="@L["Lesson_ObjectivesAr"]" Lines="3" MaxLength="4000"
+                              dir="rtl" lang="ar" data-testid="lesson-objectives-ar" />
+                <MudTextField T="string" @bind-Value="_objectivesEn" Label="@L["Lesson_ObjectivesEn"]" Lines="3" MaxLength="4000"
+                              dir="ltr" lang="en" data-testid="lesson-objectives-en" />
+                <MudNumericField T="int?" @bind-Value="_offset" Label="@L["Lesson_PlannedDay"]" HelperText="@L["Lesson_PlannedDayHelp"]"
+                                 Min="0" Max="400" Clearable="true" data-testid="lesson-offset" />
+            </MudStack>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" data-testid="dialog-save">@L["Common_Save"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired] public LessonRow Lesson { get; set; } = default!;
+
+    private MudForm _form = default!;
+    private string _titleAr = "", _titleEn = "", _objectivesAr = "", _objectivesEn = "";
+    private int? _offset;
+
+    protected override void OnInitialized() =>
+        (_titleAr, _titleEn, _objectivesAr, _objectivesEn, _offset) = (Lesson.TitleAr, Lesson.TitleEn, Lesson.ObjectivesAr, Lesson.ObjectivesEn, Lesson.PlannedOffsetDays);
+
+    private async Task SaveAsync()
+    {
+        await _form.ValidateAsync();
+        if (!_form.IsValid) return;
+        (Lesson.TitleAr, Lesson.TitleEn, Lesson.ObjectivesAr, Lesson.ObjectivesEn, Lesson.PlannedOffsetDays) =
+            (_titleAr.Trim(), _titleEn.Trim(), _objectivesAr ?? "", _objectivesEn ?? "", _offset);
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+}

@@ -106,6 +106,20 @@ public sealed class LiveSessionContractTests
     }
 
     [Fact]
+    public void Start_weekday_outside_days_of_week_is_refused_with_recurrence_invalid()
+    {
+        // Contract rule (LiveRecurrenceInput docs): the local weekday of StartsAtUtc in TimeZoneId must be in DaysOfWeek,
+        // else 400 recurrence_invalid. 2026-11-22 06:00Z is a Sunday in Asia/Riyadh; the recurrence names only Tuesday.
+        var start = new DateTime(2026, 11, 22, 6, 0, 0, DateTimeKind.Utc);
+        var local = TimeZoneInfo.ConvertTimeFromUtc(start, TimeZoneInfo.FindSystemTimeZoneById("Asia/Riyadh"));
+        var recurrence = new LiveRecurrenceInput(1, ["Tuesday"], null, 4, "Asia/Riyadh");
+
+        Assert.DoesNotContain(local.DayOfWeek.ToString(), recurrence.DaysOfWeek);
+        Assert.Equal("recurrence_invalid", ProblemCodes.recurrence_invalid);
+        Assert.Contains(local.DayOfWeek.ToString(), RecurrenceDays.All);
+    }
+
+    [Fact]
     public void Live_reminder_names_its_recipients_and_carries_bilingual_titles()
     {
         var reminder = NotificationEvents.Find(NotificationEvents.LiveReminder)!;
