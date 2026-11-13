@@ -1,0 +1,124 @@
+@using System.Globalization
+@using Lms.Client.Services.Api
+@using Lms.Shared.Classes
+@using Lms.Shared.Teaching
+@inject IClassCoursesApi ClassCourses
+@inject ITeachingApi Api
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+@* Who teaches each course of a class: the primary teacher and the assistants, replace with an effective date, end an assignment, and the history. *@
+<MudStack Spacing="3" data-testid="class-teachers-tab">
+    <MudSwitch T="bool" Value="_history" ValueChanged="OnHistoryChanged" Color="Color.Primary" Label="@L["Teacher_ShowHistory"]" data-testid="teachers-history" />
+    @if (_failed)
+    {
+        <MudAlert Severity="Severity.Error" data-testid="api-error">@L["Api_Error"]</MudAlert>
+    }
+    else if (_sections.Count == 0)
+    {
+        <MudText data-testid="teachers-empty">@L["ClassCourse_Empty"]</MudText>
+    }
+    @foreach (var section in _sections)
+    {
+        var cc = section.ClassCourse;
+        <MudPaper Outlined="true" Class="pa-3" data-testid="@($"teachers-section-{cc.CourseCode}")">
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                <MudText Typo="Typo.subtitle1">@Culture.Pick(cc.CourseNameAr, cc.CourseNameEn) (<span dir="ltr">@cc.CourseCode</span>)</MudText>
+                @if (CanManage && !Class.IsReadOnly)
+                {
+                    <MudButton Size="Size.Small" Variant="Variant.Outlined" OnClick="() => AssignAsync(cc)" data-testid="@($"teacher-assign-{cc.CourseCode}")">@L["Teacher_Assign"]</MudButton>
+                }
+            </MudStack>
+            @if (section.Teachers.Count == 0)
+            {
+                <MudText Typo="Typo.caption" data-testid="@($"teachers-none-{cc.CourseCode}")">@L["Teacher_None"]</MudText>
+            }
+            else
+            {
+                <MudTable Items="section.Teachers" Dense="true" Breakpoint="Breakpoint.Sm" Class="mt-2">
+                    <HeaderContent>
+                        <MudTh>@L["Teacher_Teacher"]</MudTh>
+                        <MudTh>@L["Teacher_Role"]</MudTh>
+                        <MudTh>@L["Teacher_From"]</MudTh>
+                        <MudTh>@L["Teacher_To"]</MudTh>
+                        <MudTh></MudTh>
+                    </HeaderContent>
+                    <RowTemplate Context="t">
+                        <MudTd DataLabel="@L["Teacher_Teacher"]" data-testid="@($"teacher-row-{cc.CourseCode}-{t.Id}")">@Culture.Pick(t.NameAr, t.NameEn)</MudTd>
+                        <MudTd DataLabel="@L["Teacher_Role"]">@L[$"TeacherRole_{t.Role}"]</MudTd>
+                        <MudTd DataLabel="@L["Teacher_From"]"><span dir="ltr">@t.From.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)</span></MudTd>
+                        <MudTd DataLabel="@L["Teacher_To"]"><span dir="ltr">@t.To?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)</span></MudTd>
+                        <MudTd>
+                            @if (CanManage && !Class.IsReadOnly && t.IsCurrent)
+                            {
+                                <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="() => ReplaceAsync(cc, t)" data-testid="@($"teacher-replace-{t.Id}")">@L["Teacher_Replace"]</MudButton>
+                                <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Error" OnClick="() => EndAsync(cc, t)" data-testid="@($"teacher-end-{t.Id}")">@L["Teacher_End"]</MudButton>
+                            }
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+        </MudPaper>
+    }
+</MudStack>
+
+@code {
+    private sealed record Section(ClassCourseDto ClassCourse, IReadOnlyList<ClassCourseTeacherDto> Teachers);
+
+    private IReadOnlyList<Section> _sections = [];
+    private bool _history, _failed;
+
+    [Parameter, EditorRequired] public ClassSummaryDto Class { get; set; } = default!;
+
+    /// <summary>True with TeacherAssignments.Manage.</summary>
+    [Parameter] public bool CanManage { get; set; }
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private Task OnHistoryChanged(bool value) { _history = value; return LoadAsync(); }
+
+    private async Task LoadAsync()
+    {
+        _failed = false;
+        var failed = !await ApiCalls.RunAsync(async () =>
+        {
+            var courses = await ClassCourses.ListForClassAsync(Class.Id);
+            var sections = new List<Section>();
+            foreach (var cc in courses) sections.Add(new Section(cc, await Api.ListTeachersAsync(cc.Id, _history)));
+            _sections = sections;
+        }, Navigation, L, _ => { });
+        _failed = failed;
+    }
+
+    private static readonly DialogOptions DialogSize = new() { MaxWidth = MaxWidth.Small, FullWidth = true };
+
+    private async Task AssignAsync(ClassCourseDto cc)
+    {
+        var dialog = await Dialogs.ShowAsync<AssignTeacherDialog>(L["Teacher_Assign"],
+            new DialogParameters<AssignTeacherDialog> { { x => x.ClassCourseId, cc.Id }, { x => x.CourseId, cc.CourseId }, { x => x.OrgUnitId, Class.OrgUnitId } }, DialogSize);
+        if (await dialog.Result is { Canceled: false }) { Snackbar.Add(L["Common_Saved"], Severity.Success); await LoadAsync(); }
+    }
+
+    private async Task ReplaceAsync(ClassCourseDto cc, ClassCourseTeacherDto teacher)
+    {
+        var dialog = await Dialogs.ShowAsync<ReplaceTeacherDialog>(L["Teacher_Replace"],
+            new DialogParameters<ReplaceTeacherDialog>
+            {
+                { x => x.ClassCourseId, cc.Id }, { x => x.CourseId, cc.CourseId }, { x => x.OrgUnitId, Class.OrgUnitId }, { x => x.Current, teacher },
+            }, DialogSize);
+        if (await dialog.Result is { Canceled: false }) { Snackbar.Add(L["Common_Saved"], Severity.Success); await LoadAsync(); }
+    }
+
+    private async Task EndAsync(ClassCourseDto cc, ClassCourseTeacherDto teacher)
+    {
+        var dialog = await Dialogs.ShowAsync<EndTeacherDialog>(L["Teacher_End"],
+            new DialogParameters<EndTeacherDialog> { { x => x.Message, L["Teacher_EndConfirm", Culture.Pick(teacher.NameAr, teacher.NameEn)].Value } }, DialogSize);
+        if (await dialog.Result is not { Canceled: false, Data: DateOnly lastDay }) return;
+        var ok = await ApiCalls.RunAsync(() => Api.EndAsync(cc.Id, teacher.Id, new EndTeacherRequest(lastDay)), Navigation, L, message => Snackbar.Add(message, Severity.Error));
+        if (!ok) return;
+        Snackbar.Add(L["Common_Saved"], Severity.Success);
+        await LoadAsync();
+    }
+}
