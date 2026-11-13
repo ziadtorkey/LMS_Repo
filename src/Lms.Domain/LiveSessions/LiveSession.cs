@@ -57,9 +57,14 @@ public sealed class LiveSession : UnitOwnedEntity
     public string? RecordingSource { get; private set; }
     public DateTime? ReminderSentAtUtc { get; private set; }
 
+    /// <summary>When the provider's participants were imported (even an empty list): null until then, so attendance never reads a missing import as "everyone was absent".</summary>
+    public DateTime? ParticipantsImportedAtUtc { get; private set; }
+
     public DateTime EndsAtUtc => StartsAtUtc.AddMinutes(DurationMinutes);
 
     public void AttachModule(Guid moduleId) => ModuleId = moduleId;
+
+    public void MarkParticipantsImported(DateTime nowUtc) => ParticipantsImportedAtUtc = new DateTime(nowUtc.Ticks - (nowUtc.Ticks % 10), DateTimeKind.Utc);
 
     /// <summary>The pool host chosen for this session (booked before the meeting is created).</summary>
     public void SetHost(string hostUserKey) => HostUserKey = hostUserKey;

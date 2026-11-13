@@ -1,3 +1,4 @@
+using Lms.Domain.Abstractions;
 using Lms.Domain.Classes;
 using Lms.Domain.Enrollment;
 using Lms.Domain.LiveSessions;
@@ -14,7 +15,7 @@ namespace Lms.Infrastructure.LiveSessions;
 /// system context; the caller names the session by id only.
 /// </summary>
 public sealed class LiveSessionLifecycle(
-    LmsDbContext db, IMeetingProvider provider, ILiveSessionAttendanceSink sink, ILogger<LiveSessionLifecycle> logger)
+    LmsDbContext db, IMeetingProvider provider, ILiveSessionAttendanceSink sink, IClock clock, ILogger<LiveSessionLifecycle> logger)
 {
     /// <summary><c>Scheduled</c> → <c>Live</c>; false when the session is gone or already left <c>Scheduled</c>.</summary>
     public async Task<bool> StartedAsync(Guid sessionId, CancellationToken ct) =>
@@ -37,9 +38,7 @@ public sealed class LiveSessionLifecycle(
 
         var session = await db.Set<LiveSession>().FirstAsync(s => s.Id == sessionId, ct);
         var participants = await ImportParticipantsAsync(session, ct);
-        await sink.SessionEndedAsync(
-            session.Id, session.ClassCourseId, session.StartsAtUtc, session.EndsAtUtc,
-            participants.Select(p => new AttendanceParticipant(p.StudentId, p.MatchState, p.JoinedAtUtc, p.LeftAtUtc, p.DurationSeconds)).ToList(), ct);
+        await NotifySinkAsync(session, participants, ct);
         return true;
     }
 
@@ -57,6 +56,7 @@ public sealed class LiveSessionLifecycle(
         }
         catch (MeetingProviderException ex)
         {
+            // The import stays unmarked (ParticipantsImportedAtUtc is null): attendance must not read it as "nobody came".
             logger.LogWarning(ex, "Participants of live session {SessionId} could not be read", session.Id);
             return await db.Set<LiveSessionParticipant>().Where(p => p.SessionId == session.Id).ToListAsync(ct);
         }
@@ -72,8 +72,27 @@ public sealed class LiveSessionLifecycle(
                 student is null ? LiveSessionRules.Guest : LiveSessionRules.Matched, student, p.JoinedAtUtc, p.LeftAtUtc, p.DurationSeconds);
         }).ToList();
         db.AddRange(rows);
+        session.MarkParticipantsImported(clock.UtcNow);
         await db.SaveChangesAsync(ct);
         return rows;
+    }
+
+    /// <summary>
+    /// Tells the attendance seam once. It never throws: an attendance failure must not break the lifecycle (the session is already
+    /// <c>Ended</c>, so a failed webhook would never call the sink again). M5 reconciles ended sessions without an attendance session.
+    /// </summary>
+    private async Task NotifySinkAsync(LiveSession session, IReadOnlyList<LiveSessionParticipant> participants, CancellationToken ct)
+    {
+        try
+        {
+            await sink.SessionEndedAsync(
+                session.Id, session.ClassCourseId, session.StartsAtUtc, session.EndsAtUtc,
+                participants.Select(p => new AttendanceParticipant(p.StudentId, p.MatchState, p.JoinedAtUtc, p.LeftAtUtc, p.DurationSeconds)).ToList(), ct);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            logger.LogError(ex, "The attendance sink failed for live session {SessionId}", session.Id);
+        }
     }
 
     /// <summary>Account email (normalised) → student, for the active enrollments of the class course; an email two students share matches nobody.</summary>
