@@ -282,6 +282,37 @@ public static class Permissions
         public const string ViewOwn = "Grades.ViewOwn";
     }
 
+    // M5 wave 3 (M5 plan Task 3). Teacher: own ClassCourses with an assignment active today, or the substitute of one session (L15); Supervisor: supervised courses;
+    // Counselor and Manager: unit subtree; Student and Guardian: only their own data (ViewOwn and Submit are SelfService permissions).
+    /// <summary>Attendance: taking, editing and reading attendance sessions and records (FR-ATT-01, FR-TT-06, D58).</summary>
+    public static class Attendance
+    {
+        /// <summary>Take attendance for own ClassCourse sessions (or the session one substitutes on) and confirm a live proposal.</summary>
+        public const string Take = "Attendance.Take";
+
+        /// <summary>Edit a taken session after the edit window, with a required reason (L14): Manager and Counselor by default.</summary>
+        public const string Edit = "Attendance.Edit";
+
+        /// <summary>Read attendance, the edit history, reports and absence alerts of a unit subtree or of supervised courses.</summary>
+        public const string View = "Attendance.View";
+
+        /// <summary>A student's own attendance, a guardian's children's attendance.</summary>
+        public const string ViewOwn = "Attendance.ViewOwn";
+    }
+
+    /// <summary>Absence excuses: submit, review and escalate (FR-EXC-01..04, D61).</summary>
+    public static class Excuses
+    {
+        /// <summary>Submit and track an excuse for a linked child; a student's own is effective only when <c>Excuses.Submitters</c> allows students (D61).</summary>
+        public const string Submit = "Excuses.Submit";
+
+        /// <summary>The counselor queue: read, approve and reject excuses of the unit subtree.</summary>
+        public const string Review = "Excuses.Review";
+
+        /// <summary>Escalate an excuse to another reviewer (Manager by default).</summary>
+        public const string Escalate = "Excuses.Escalate";
+    }
+
     // M4b Live sessions, wave 3a (M4b plan Task 1). Teacher: own ClassCourses; Student: own enrollments, and only the
     // sessions whose module the student can see (IModuleAccess). The Zoom webhook is anonymous and needs none.
     /// <summary>Live (Zoom) sessions of a ClassCourse (FR-VC-01).</summary>
@@ -320,7 +351,7 @@ public static class Permissions
     /// them out grants no power over others.
     /// </summary>
     public static IReadOnlyList<string> SelfService { get; } =
-        ImmutableArray.Create(Students.SelfEdit, Students.ViewChildren, CourseAssignments.Submit, Quizzes.Attempt, Grades.ViewOwn);
+        ImmutableArray.Create(Students.SelfEdit, Students.ViewChildren, CourseAssignments.Submit, Quizzes.Attempt, Grades.ViewOwn, Attendance.ViewOwn, Excuses.Submit);
 
     /// <summary>The caller's permissions plus <see cref="SelfService"/>, for the escalation guards.</summary>
     public static IReadOnlySet<string> WithSelfService(IEnumerable<string> callerPermissions) =>

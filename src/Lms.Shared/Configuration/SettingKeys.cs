@@ -95,4 +95,44 @@ public static class SettingKeys
 
     /// <summary>Terms per academic year, 2 or 3 (client level, D62).</summary>
     public static readonly SettingKey<int> AcademicYearsTermsPerYear = new("AcademicYears.TermsPerYear", 2);
+
+    // M5 wave 3 (M5 plan Task 3: D58, D61, L11, L13, L14).
+    /// <summary>Days of timetable sessions created ahead by the generator (1-30).</summary>
+    public static readonly SettingKey<int> AttendanceGenerateDaysAhead = new("Attendance.GenerateDaysAhead", 7);
+
+    /// <summary>Hours after a session is taken during which the teacher may still edit it (L14).</summary>
+    public static readonly SettingKey<int> AttendanceEditWindowHours = new("Attendance.EditWindowHours", 48);
+
+    /// <summary>A live participant counts as present at this percent of the scheduled length (L11).</summary>
+    public static readonly SettingKey<int> AttendanceLiveMinPercent = new("Attendance.LiveMinPercent", 50);
+
+    /// <summary>A live participant joining this many minutes after the start is proposed Late.</summary>
+    public static readonly SettingKey<int> AttendanceLateAfterMinutes = new("Attendance.LateAfterMinutes", 10);
+
+    /// <summary>Absence alert: the score at which the counselor is alerted (D61: 5 in 30 days).</summary>
+    public static readonly SettingKey<int> AttendanceAbsentThreshold = new("Attendance.AbsentThreshold", 5);
+
+    /// <summary>Absence alert: the window in days.</summary>
+    public static readonly SettingKey<int> AttendanceThresholdWindowDays = new("Attendance.ThresholdWindowDays", 30);
+
+    /// <summary>Absence alert: a Late counts as this percent of an absence (D61: half).</summary>
+    public static readonly SettingKey<int> AttendanceLateWeightPercent = new("Attendance.LateWeightPercent", 50);
+
+    /// <summary>Who may submit an excuse: <c>GuardiansOnly</c> or <c>GuardiansAndStudents</c> (D61).</summary>
+    public static readonly SettingKey<string> ExcusesSubmitters = new("Excuses.Submitters", "GuardiansOnly");
+
+    /// <summary>School days after an absence within which an excuse may be submitted (L13).</summary>
+    public static readonly SettingKey<int> ExcusesMaxDaysAfterAbsence = new("Excuses.MaxDaysAfterAbsence", 5);
+
+    /// <summary>The reasons a submitter may choose (a subset of <c>ExcuseReasons</c>, default all).</summary>
+    public static readonly SettingKey<IReadOnlyList<string>> ExcusesAllowedReasons = new("Excuses.AllowedReasons", Excuses.ExcuseReasons.All);
+
+    /// <summary>The reasons that need an attachment (default none).</summary>
+    public static readonly SettingKey<IReadOnlyList<string>> ExcusesAttachmentRequiredReasons = new("Excuses.AttachmentRequiredReasons", Array.Empty<string>());
+
+    /// <summary>Largest excuse attachment in MB (L10).</summary>
+    public static readonly SettingKey<int> ExcusesMaxAttachmentMb = new("Excuses.MaxAttachmentMb", 5);
+
+    /// <summary>Days after which the attachments of rejected or withdrawn excuses are purged (L10).</summary>
+    public static readonly SettingKey<int> ExcusesAttachmentRetentionDays = new("Excuses.AttachmentRetentionDays", 365);
 }

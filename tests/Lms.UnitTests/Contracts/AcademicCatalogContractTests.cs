@@ -26,13 +26,13 @@ public sealed partial class AcademicCatalogContractTests
         Assert.Equal(["OwnClassCourses", "SupervisedCourses", "OwnEnrollments"], Relationships.All);
 
         Assert.Equal(
-            ["Classes.View", "CourseAssignments.Grade", "CourseAssignments.Manage", "CourseAssignments.View",
+            ["Attendance.Take", "Classes.View", "CourseAssignments.Grade", "CourseAssignments.Manage", "CourseAssignments.View",
              "Enrollment.View", "Forums.Moderate", "Forums.Post", "Forums.View", "Grades.Manage", "Grades.Publish", "Grades.View",
              "Groups.Manage", "Groups.View", "LessonPlans.View", "LiveSessions.Manage", "LiveSessions.View", "Modules.Manage", "Modules.View", "Packages.Upload", "Packages.View",
              "Quizzes.Grade", "Quizzes.Manage", "Quizzes.View", "Students.View", "TeacherAssignments.View"],
             Rule(BuiltInRoles.Teacher).Permissions.Order(StringComparer.Ordinal));
         Assert.Equal(
-            ["Blueprints.Edit", "Blueprints.Publish", "Courses.Allocate", "Courses.Delete", "Courses.Update",
+            ["Attendance.View", "Blueprints.Edit", "Blueprints.Publish", "Courses.Allocate", "Courses.Delete", "Courses.Update",
              "Enrollment.ApproveException", "Grades.View", "Grades.ViewReports", "Students.View", "TeacherAssignments.Manage"],
             Rule(BuiltInRoles.Supervisor).Permissions.Order(StringComparer.Ordinal));
         Assert.Equal(

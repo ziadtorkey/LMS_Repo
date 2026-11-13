@@ -89,6 +89,23 @@ public static class SettingCatalog
             AllowedValues: ["PointsWeighted", "PercentAverage"]),
         new(SettingKeys.GradesDecimalPlaces.Name, SettingValueKinds.Int, SettingCategories.Academic, "2", Min: 0, Max: 4),
         new(SettingKeys.AcademicYearsTermsPerYear.Name, SettingValueKinds.Int, SettingCategories.Academic, "2", Min: 2, Max: 3, ClientLevelOnly: true),
+        // M5 wave 3: attendance and excuses.
+        new(SettingKeys.AttendanceGenerateDaysAhead.Name, SettingValueKinds.Int, SettingCategories.Academic, "7", Min: 1, Max: 30),
+        new(SettingKeys.AttendanceEditWindowHours.Name, SettingValueKinds.Int, SettingCategories.Academic, "48", Min: 1, Max: 720),
+        new(SettingKeys.AttendanceLiveMinPercent.Name, SettingValueKinds.Int, SettingCategories.Academic, "50", Min: 1, Max: 100),
+        new(SettingKeys.AttendanceLateAfterMinutes.Name, SettingValueKinds.Int, SettingCategories.Academic, "10", Min: 0, Max: 120),
+        new(SettingKeys.AttendanceAbsentThreshold.Name, SettingValueKinds.Int, SettingCategories.Academic, "5", Min: 1, Max: 100),
+        new(SettingKeys.AttendanceThresholdWindowDays.Name, SettingValueKinds.Int, SettingCategories.Academic, "30", Min: 7, Max: 365),
+        new(SettingKeys.AttendanceLateWeightPercent.Name, SettingValueKinds.Int, SettingCategories.Academic, "50", Min: 0, Max: 100),
+        new(SettingKeys.ExcusesSubmitters.Name, SettingValueKinds.Enum, SettingCategories.Academic, "\"GuardiansOnly\"",
+            AllowedValues: ["GuardiansOnly", "GuardiansAndStudents"]),
+        new(SettingKeys.ExcusesMaxDaysAfterAbsence.Name, SettingValueKinds.Int, SettingCategories.Academic, "5", Min: 1, Max: 60),
+        new(SettingKeys.ExcusesAllowedReasons.Name, SettingValueKinds.StringSet, SettingCategories.Academic,
+            "[\"Illness\",\"Family\",\"Official\",\"Other\"]", AllowedValues: Excuses.ExcuseReasons.All),
+        new(SettingKeys.ExcusesAttachmentRequiredReasons.Name, SettingValueKinds.StringSet, SettingCategories.Academic, "[]",
+            AllowedValues: Excuses.ExcuseReasons.All),
+        new(SettingKeys.ExcusesMaxAttachmentMb.Name, SettingValueKinds.Int, SettingCategories.Files, "5", Min: 1, Max: 25),
+        new(SettingKeys.ExcusesAttachmentRetentionDays.Name, SettingValueKinds.Int, SettingCategories.Files, "365", Min: 30, Max: 3650),
     ];
 
     /// <summary>The definition with this exact (case-sensitive) name, or null.</summary>
