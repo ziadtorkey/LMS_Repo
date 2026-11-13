@@ -1418,4 +1418,12 @@
   <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>لم يقبل الفحص الأمني هذه الحزمة.</value></data>
   <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>الملف ليس أرشيف zip صالحًا.</value></data>
   <data name="Error_package_reason_bad_name" xml:space="preserve"><value>اسم ملف في الحزمة غير صالح (طويل جدًا أو عميق جدًا أو محجوز).</value></data>
+  <data name="Import_Steps" xml:space="preserve"><value>خطوات الاستيراد</value></data>
+  <data name="Import_TemplateFile" xml:space="preserve"><value>قالب Excel</value></data>
+  <data name="Import_TemplateFileHint" xml:space="preserve"><value>الأعمدة التي يتوقعها هذا الاستيراد، باللغة التي اخترتها.</value></data>
+  <data name="Import_DropHint" xml:space="preserve"><value>اسحب جدولك المكتمل وأفلته هنا، أو تصفّح جهازك.</value></data>
+  <data name="Import_DropLimits" xml:space="preserve"><value>ملف بصيغة .xlsx بحجم حتى {0} م.ب.</value></data>
+  <data name="Import_StatRows" xml:space="preserve"><value>الصفوف</value></data>
+  <data name="Import_StatValid" xml:space="preserve"><value>صفوف سليمة</value></data>
+  <data name="Import_StatErrors" xml:space="preserve"><value>صفوف بها أخطاء</value></data>
 </root>

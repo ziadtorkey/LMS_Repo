@@ -1418,4 +1418,12 @@
   <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>The security scan did not accept this package.</value></data>
   <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>The file is not a valid zip archive.</value></data>
   <data name="Error_package_reason_bad_name" xml:space="preserve"><value>A file name in the package is not usable (too long, too deep, or reserved).</value></data>
+  <data name="Import_Steps" xml:space="preserve"><value>Import steps</value></data>
+  <data name="Import_TemplateFile" xml:space="preserve"><value>Excel template</value></data>
+  <data name="Import_TemplateFileHint" xml:space="preserve"><value>The columns this import expects, in the language you chose.</value></data>
+  <data name="Import_DropHint" xml:space="preserve"><value>Drag and drop your completed spreadsheet here, or browse your device.</value></data>
+  <data name="Import_DropLimits" xml:space="preserve"><value>An .xlsx file, up to {0} MB.</value></data>
+  <data name="Import_StatRows" xml:space="preserve"><value>Rows</value></data>
+  <data name="Import_StatValid" xml:space="preserve"><value>Valid rows</value></data>
+  <data name="Import_StatErrors" xml:space="preserve"><value>Rows with errors</value></data>
 </root>
