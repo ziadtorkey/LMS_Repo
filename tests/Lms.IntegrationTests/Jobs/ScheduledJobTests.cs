@@ -6,6 +6,7 @@ using Lms.Infrastructure.Jobs;
 using Lms.IntegrationTests.Access;
 using Lms.IntegrationTests.Infrastructure;
 using Lms.Shared.Authorization;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Lms.IntegrationTests.Jobs;
@@ -92,6 +93,44 @@ public sealed class ScheduledJobTests(LmsApiFactory factory) : IAsyncLifetime
         return data is null ? null : data.Name + ":" + string.Join(";", data.Data.Select(kv => kv.Key + "=" + kv.Value));
     }
 
+    [Fact]
+    public async Task The_schedule_index_keeps_a_timestamp_exactly_not_rounded_to_minutes()
+    {
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        await using var connection = new MySqlConnector.MySqlConnection(db.Database.GetConnectionString()!);
+        await connection.OpenAsync();
+        await using var command = new MySqlConnector.MySqlCommand(
+            "SELECT DATA_TYPE FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'HangfireSet' AND COLUMN_NAME = 'Score'", connection);
+
+        Assert.Equal("double", (string?)await command.ExecuteScalarAsync());
+    }
+
+    /// <summary>The score of a job in Hangfire's schedule index, in Unix seconds.</summary>
+    private async Task<double> ScheduleScoreAsync(string jobId)
+    {
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        await using var connection = new MySqlConnector.MySqlConnection(db.Database.GetConnectionString()!);
+        await connection.OpenAsync();
+        await using var command = new MySqlConnector.MySqlCommand("SELECT CAST(Score AS DECIMAL(20,3)) FROM HangfireSet WHERE `Key` = 'schedule' AND Value = @id", connection);
+        command.Parameters.AddWithValue("@id", jobId);
+        return Convert.ToDouble(await command.ExecuteScalarAsync(), System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    private static async Task WaitForStateAsync(string jobId, string state, int seconds = 60)
+    {
+        for (var i = 0; i < seconds * 10; i++)
+        {
+            if (StateOf(jobId) == state)
+            {
+                return;
+            }
+
+            await Task.Delay(100);
+        }
+
+        throw new TimeoutException($"Job {jobId} is {StateOf(jobId)}, expected {state}.");
+    }
+
     private static string? StateOf(string jobId)
     {
         using var connection = JobStorage.Current.GetConnection();
@@ -118,14 +157,22 @@ public sealed class ScheduledJobTests(LmsApiFactory factory) : IAsyncLifetime
         using (var connection = JobStorage.Current.GetConnection())
         {
             var enqueueAt = Hangfire.Common.JobHelper.DeserializeDateTime(connection.GetStateData(jobId)!.Data["EnqueueAt"]);
-            Assert.InRange((enqueueAt - due.UtcDateTime).TotalSeconds, -1, 1);
+            // Our contract: the stored time is the due time (EnqueueAt keeps milliseconds; the tolerance is only for the clock reads).
+            Assert.InRange((enqueueAt - due.UtcDateTime).TotalMilliseconds, -50, 50);
         }
+
+        // And what the server actually polls: the schedule index. Hangfire truncates the due time to whole seconds there; with the old FLOAT
+        // column the score was rounded to a multiple of 128 s (#581), so a job fired up to a minute early or late.
+        var score = await ScheduleScoreAsync(jobId);
+        Assert.InRange(score - due.ToUnixTimeSeconds(), -1.0, 0.001);
 
         Assert.Empty(RunsOf(token)); // scheduled, not run now
         var runs = await WaitForRunsAsync(token, 1);
-        await Task.Delay(3000); // and not twice
+        await WaitForStateAsync(jobId, "Succeeded"); // finished, and then it is still the only run (no fixed sleep)
         Assert.Single(RunsOf(token));
-        Assert.True(runs[0].At >= due.UtcDateTime.AddSeconds(-1.5), $"ran before its time: due {due.UtcDateTime:O}, ran {runs[0].At:O}, job {jobId}");
+
+        // The documented truncation to whole seconds lets a job start up to 1 s early; 250 ms more is for the clock reads.
+        Assert.True(runs[0].At >= due.UtcDateTime.AddSeconds(-1.25), $"ran before its time: due {due.UtcDateTime:O}, ran {runs[0].At:O}, job {jobId}");
         Assert.Equal((user, false, "v1"), (runs[0].UserId, runs[0].Platform, runs[0].Value));
     }
 

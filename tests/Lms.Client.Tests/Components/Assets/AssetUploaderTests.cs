@@ -103,12 +103,15 @@ public sealed class AssetUploaderTests : ClientTestContext
     }
 
     [Fact]
-    public void Cancel_stops_the_upload()
+    public async Task Cancel_stops_the_upload()
     {
         _api.Gate = new TaskCompletionSource();
         var cut = RenderUploader();
         UploadWithoutWaiting(cut, "plan.pdf", "application/pdf");
-        cut.WaitForAssertion(() => Assert.NotNull(cut.Find("[data-testid=asset-cancel]")));
+        // The upload is in flight when it has reached the gate. Its 50 % progress report re-renders the component, and a button found
+        // before that render has a stale event handler id (UnknownEventHandlerIdException), so wait until the render has caught up too.
+        await _api.GateReached.Task.WaitAsync(TimeSpan.FromSeconds(10));   // throws TimeoutException if the upload never reached the gate
+        cut.WaitForAssertion(() => Assert.Equal("50", cut.Find("[data-testid=asset-progress]").GetAttribute("aria-valuenow")));
 
         cut.Find("[data-testid=asset-cancel]").Click();
 

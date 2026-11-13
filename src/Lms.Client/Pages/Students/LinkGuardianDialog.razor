@@ -10,15 +10,18 @@
         <MudStack Spacing="3">
             @if (_error is not null)
             {
-                <MudAlert Severity="Severity.Error" data-testid="dialog-error">@_error</MudAlert>
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="dialog-error">@_error</MudAlert>
             }
             <GuardianInputRows Rows="_rows" />
         </MudStack>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
-        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="_saving"
-                   data-testid="dialog-save">@L["Common_Save"]</MudButton>
+        <div class="lms-dialog-actions">
+            <MudButton Variant="Variant.Text" OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="_saving"
+                       data-testid="dialog-save">@L["Common_Save"]</MudButton>
+    
+        </div>
     </DialogActions>
 </MudDialog>
 
