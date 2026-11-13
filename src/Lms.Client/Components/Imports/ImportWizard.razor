@@ -14,6 +14,7 @@
 @* Reusable Excel import: 1 template, 2 target unit + file, 3 review (polls while the server works) and commit, 4 result. *@
 <MudPaper Class="pa-4" data-testid="import-wizard">
     <MudText Typo="Typo.h5" Class="mb-3">@L[TitleKey]</MudText>
+    @Banner
     <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap" Class="mb-4" data-testid="import-steps">
         @for (var i = 0; i < _stepKeys.Length; i++)
         {
@@ -33,6 +34,7 @@
     {
         case 0:
             <MudStack Spacing="3" data-testid="import-step-template">
+                @Help
                 <MudRadioGroup T="string" Value="_culture" ValueChanged="c => _culture = c" data-testid="import-template-language">
                     <MudText Typo="Typo.subtitle2">@L["Import_TemplateLanguage"]</MudText>
                     <MudRadio T="string" Value="@("ar")" data-testid="import-lang-ar">العربية</MudRadio>
@@ -123,6 +125,7 @@
         default:
             <MudStack Spacing="3" data-testid="import-step-done">
                 <MudAlert Severity="Severity.Success" data-testid="import-done">@string.Format(CultureInfo.CurrentCulture, L["Import_Done"].Value, _batch?.CreatedCount ?? 0)</MudAlert>
+                @if (_batch is not null) { @DoneContent?.Invoke(_batch) }
                 <MudButton Variant="Variant.Outlined" OnClick="Restart" data-testid="import-again">@L["Import_Another"]</MudButton>
             </MudStack>
             break;
@@ -149,6 +152,15 @@
     [Parameter] public string TitleKey { get; set; } = "Import_Title";
     [Parameter] public Guid? DefaultOrgUnitId { get; set; }
     [Parameter] public EventCallback<ImportBatchDto> OnCommitted { get; set; }
+
+    /// <summary>Shown above the steps (e.g. which academic year the import applies to).</summary>
+    [Parameter] public RenderFragment? Banner { get; set; }
+
+    /// <summary>Shown on the template step (what the columns mean).</summary>
+    [Parameter] public RenderFragment? Help { get; set; }
+
+    /// <summary>Shown on the result step of a committed batch (e.g. the one-time credentials sheet).</summary>
+    [Parameter] public RenderFragment<ImportBatchDto>? DoneContent { get; set; }
 
     /// <summary>How often the batch is re-read while the server validates or commits it.</summary>
     [Parameter] public TimeSpan PollInterval { get; set; } = TimeSpan.FromSeconds(2);
