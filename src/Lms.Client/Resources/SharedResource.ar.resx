@@ -1217,4 +1217,14 @@
   <data name="Announcements_FormTitle" xml:space="preserve"><value>عنوان الإعلان</value></data>
   <data name="Forum_MoreReplies" xml:space="preserve"><value>عرض مزيد من الردود ({0} أخرى)</value></data>
   <data name="Forum_MoreThreads" xml:space="preserve"><value>عرض مزيد من المواضيع ({0} أخرى)</value></data>
+  <data name="Module_Placeholder" xml:space="preserve"><value>عرض {0} قادم قريبًا.</value></data>
+  <data name="Live_Status_Scheduled" xml:space="preserve"><value>مجدولة</value></data>
+  <data name="Live_Status_Live" xml:space="preserve"><value>مباشرة الآن</value></data>
+  <data name="Live_Status_Ended" xml:space="preserve"><value>انتهت</value></data>
+  <data name="Live_Status_Cancelled" xml:space="preserve"><value>ملغاة</value></data>
+  <data name="Live_Status_SyncFailed" xml:space="preserve"><value>لم تتم المزامنة</value></data>
+  <data name="Live_Match_Matched" xml:space="preserve"><value>طالب مسجّل</value></data>
+  <data name="Live_Match_Guest" xml:space="preserve"><value>ضيف</value></data>
+  <data name="Live_Scope_This" xml:space="preserve"><value>هذه الحصة فقط</value></data>
+  <data name="Live_Scope_ThisAndFollowing" xml:space="preserve"><value>هذه الحصة وما بعدها</value></data>
 </root>
