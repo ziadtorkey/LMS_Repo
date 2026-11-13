@@ -180,6 +180,12 @@
   <data name="Error_invalid_context" xml:space="preserve"><value>الدور الذي اخترته لم يعد صالحًا. يرجى اختيار دور مرة أخرى.</value></data>
   <data name="Error_context_required" xml:space="preserve"><value>يرجى اختيار دور أولًا.</value></data>
   <data name="Audit_Title" xml:space="preserve"><value>سجل التدقيق</value></data>
+  <data name="Audit_Subtitle" xml:space="preserve"><value>من غيّر ماذا ومتى، إضافة إلى أحداث تسجيل الدخول والأمان. افتح أي إدخال لرؤية القيم التي تغيرت.</value></data>
+  <data name="Audit_EmptyTitle" xml:space="preserve"><value>لا توجد إدخالات مطابقة</value></data>
+  <data name="Audit_EmptyText" xml:space="preserve"><value>غيّر عوامل التصفية أو وسّع نطاق التاريخ.</value></data>
+  <data name="Audit_FilterByUser" xml:space="preserve"><value>اعرض إدخالات هذا الشخص فقط</value></data>
+  <data name="Audit_NoChanges" xml:space="preserve"><value>لم تُسجل قيم حقول لهذا الإدخال.</value></data>
+  <data name="Audit_Field" xml:space="preserve"><value>الحقل</value></data>
   <data name="Audit_When" xml:space="preserve"><value>الوقت</value></data>
   <data name="Audit_Who" xml:space="preserve"><value>المستخدم</value></data>
   <data name="Audit_Role" xml:space="preserve"><value>الدور</value></data>

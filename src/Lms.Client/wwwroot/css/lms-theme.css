@@ -381,6 +381,26 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 .lms-search-row > .mud-input-control { flex: 1 1 auto; min-width: 0; }
 .lms-search-row > .mud-button-root { margin-top: 16px; flex-shrink: 0; }
 
+/* ---------- Audit log ---------- */
+.lms-filter-chips { display: flex; align-items: center; }
+.lms-audit-open.mud-link { display: inline-flex; align-items: center; gap: 2px; font-weight: 600; }
+.lms-audit-drawer .mud-drawer-content { display: flex; flex-direction: column; height: 100%; }
+.lms-audit-drawer-head.mud-drawer-header {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 16px 20px;
+    border-bottom: 1px solid var(--mud-palette-lines-default);
+}
+.lms-audit-drawer-title { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.lms-audit-drawer-body { flex: 1 1 auto; overflow: auto; padding: 16px 20px; }
+.lms-audit-drawer-foot { display: flex; justify-content: flex-end; padding: 12px 20px; border-top: 1px solid var(--mud-palette-lines-default); }
+.lms-audit-legend { display: flex; align-items: center; gap: 6px 12px; margin-bottom: 8px; font-size: .75rem; color: var(--mud-palette-text-secondary); }
+.lms-audit-legend .lms-legend-swatch { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-inline-end: -6px; }
+.lms-audit-diff.mud-simple-table table td { vertical-align: top; overflow-wrap: anywhere; }
+.lms-audit-diff .lms-diff-prop { color: var(--mud-palette-text-secondary); font-size: .8125rem; font-weight: 600; white-space: nowrap; }
+.lms-audit-diff.mud-simple-table table * tr > :first-child { padding-inline-start: 8px; }
+.lms-audit-diff.mud-simple-table table * tr > :last-child { padding-inline-end: 8px; }
+.lms-diff-before { background: color-mix(in srgb, var(--mud-palette-error) 12%, transparent); }
+.lms-diff-after { background: color-mix(in srgb, var(--mud-palette-success) 14%, transparent); }
+
 /* ---------- Role editor and permission matrix ---------- */
 .lms-role-editor { display: flex; flex-direction: column; gap: 20px; }
 .lms-role-editor .lms-section + .lms-section { margin-top: 0; }
