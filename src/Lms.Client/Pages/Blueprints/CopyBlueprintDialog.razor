@@ -1,0 +1,83 @@
+@using Lms.Client.Services.Api
+@using Lms.Shared.Blueprints
+@using Lms.Shared.Courses
+@inject ICoursesApi Courses
+@inject IBlueprintsApi Blueprints
+@inject NavigationManager Navigation
+
+@* Copies another course's blueprint (any published version) over this draft; the copied lessons get new keys. *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="3">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="copy-error">@_error</MudAlert>
+            }
+            <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">@L["Copy_ReplacesDraft"]</MudAlert>
+            <MudAutocomplete T="CourseSummaryDto" Label="@L["Copy_Course"]" Value="_course" ValueChanged="OnCourseAsync" SearchFunc="SearchAsync"
+                             ToStringFunc="Display" DebounceInterval="300" MaxItems="20" ResetValueOnEmptyText="true" data-testid="copy-course" />
+            @if (_course is not null)
+            {
+                <MudSelect T="int?" @bind-Value="_version" Label="@L["Copy_Version"]" data-testid="copy-version">
+                    @foreach (var v in _versions)
+                    {
+                        <MudSelectItem T="int?" Value="@((int?)v.Version)">@L["Blueprint_VersionN", v.Version]</MudSelectItem>
+                    }
+                </MudSelect>
+                @if (_versions.Count == 0)
+                {
+                    <MudText Typo="Typo.caption" data-testid="copy-none">@L["Copy_NoPublished"]</MudText>
+                }
+            }
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <div class="lms-dialog-actions">
+            <MudButton Variant="Variant.Text" OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" StartIcon="@Icons.Material.Rounded.ContentCopy" Disabled="_course is null || _versions.Count == 0" OnClick="Copy"
+                       data-testid="copy-confirm">@L["Blueprint_Copy"]</MudButton>
+        </div>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    /// <summary>The course being edited; it is not offered as a source.</summary>
+    [Parameter, EditorRequired] public Guid CourseId { get; set; }
+
+    private CourseSummaryDto? _course;
+    private IReadOnlyList<BlueprintSummaryDto> _versions = [];
+    private int? _version;
+    private string? _error;
+
+    private string Display(CourseSummaryDto? course) => course is null ? "" : $"{course.Code} {CultureText.Pick(course.NameAr, course.NameEn)}";
+
+    private async Task<IEnumerable<CourseSummaryDto>> SearchAsync(string? text, CancellationToken ct)
+    {
+        IEnumerable<CourseSummaryDto> found = [];
+        await ApiCalls.RunAsync(async () =>
+            found = (await Courses.ListAsync(new CourseQuery(null, true, null, string.IsNullOrWhiteSpace(text) ? null : text.Trim(), false, null, 1, 20), ct)).Items
+                .Where(c => c.Id != CourseId),
+            Navigation, L, message => _error = message);
+        return found;
+    }
+
+    private async Task OnCourseAsync(CourseSummaryDto? course)
+    {
+        _course = course;
+        _versions = [];
+        _version = null;
+        if (course is null) return;
+        await ApiCalls.RunAsync(async () =>
+            _versions = (await Blueprints.ListVersionsAsync(course.Id)).Where(v => v.Status != BlueprintStatuses.Draft).ToList(),
+            Navigation, L, message => _error = message);
+        _version = _versions.Select(v => (int?)v.Version).Max();
+    }
+
+    private void Copy()
+    {
+        if (_course is null || _version is null) return;
+        MudDialog.Close(DialogResult.Ok(new CopyBlueprintRequest(_course.Id, _version)));
+    }
+}

@@ -44,6 +44,7 @@ public class BuiltInRoleMatrixTests
                 "Library.View", "Library.Manage",
                 "Forums.View", "Forums.Post", "Forums.Moderate",
                 "LiveSessions.View", "LiveSessions.Manage",
+                "Packages.Upload", "Packages.View",
             ]
         },
         {
@@ -69,6 +70,7 @@ public class BuiltInRoleMatrixTests
                 "Library.View", "Library.Manage",
                 "Forums.View", "Forums.Post", "Forums.Moderate",
                 "LiveSessions.View", "LiveSessions.Manage",
+                "Packages.Upload", "Packages.View",
             ]
         },
         {
@@ -83,7 +85,7 @@ public class BuiltInRoleMatrixTests
                 "Enrollment.View", "Enrollment.ApproveException", "Groups.View", "LessonPlans.View",
                 "Modules.View",
                 "CourseAssignments.View", "Quizzes.View", "Library.View", "Library.Manage", "Forums.View",
-                "LiveSessions.View",
+                "LiveSessions.View", "Packages.View",
             ]
         },
         {
@@ -107,11 +109,12 @@ public class BuiltInRoleMatrixTests
                 "Library.View", "Library.Manage",
                 "Forums.View", "Forums.Post", "Forums.Moderate",
                 "LiveSessions.View", "LiveSessions.Manage",
+                "Packages.Upload", "Packages.View",
             ]
         },
         { "Student", ["Files.Upload", "Files.Download", "AcademicYears.View", "Students.SelfEdit", "LessonPlans.View",
             "Modules.View", "CourseAssignments.View", "CourseAssignments.Submit", "Quizzes.View", "Quizzes.Attempt",
-            "Library.View", "Forums.View", "Forums.Post", "LiveSessions.View"] },
+            "Library.View", "Forums.View", "Forums.Post", "LiveSessions.View", "Packages.View"] },
         { "Guardian", ["Files.Download", "AcademicYears.View", "Students.ViewChildren"] },
     };
 
@@ -168,7 +171,7 @@ public class BuiltInRoleMatrixTests
             "Modules.View", "Modules.Manage", "CourseAssignments.View", "CourseAssignments.Manage",
             "CourseAssignments.Grade", "Quizzes.View", "Quizzes.Manage", "Quizzes.Grade", "Library.View",
             "Library.Manage", "Forums.View", "Forums.Post", "Forums.Moderate", "LiveSessions.View",
-            "LiveSessions.Manage",
+            "LiveSessions.Manage", "Packages.Upload", "Packages.View",
         ];
 
         Assert.All(new[] { BuiltInRoles.OrgAdmin, BuiltInRoles.Manager }, r =>

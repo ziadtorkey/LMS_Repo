@@ -52,7 +52,19 @@ public sealed class CourseProfilePageTests : CoursesTestContext
         Assert.Contains("Mathematics", page.Find("[data-testid=course-profile-name]").TextContent);
         Assert.Contains("Main School", page.Find("[data-testid=course-profile-owner]").TextContent);
         Assert.NotNull(page.Find("[data-testid=course-edit]"));
-        Assert.Equal(["Details", "Allocations", "Restrictions", "Supervisors", "Blueprint"], VisibleTabs(page));
+        Assert.Equal(["Allocations", "Restrictions", "Supervisors", "Blueprint"], VisibleTabs(page));
+    }
+
+    [Fact]
+    public async Task Profile_has_a_back_link_and_a_details_card_in_the_design_layout()
+    {
+        var page = await RenderPageAsync(Math.Summary.Id, All);
+
+        Assert.Equal("courses", page.Find("[data-testid=course-profile-back]").GetAttribute("href"));
+        var details = page.Find("[data-testid=course-profile-details] dl.lms-details");
+        Assert.Contains("MATH101", details.QuerySelector("[data-testid=course-profile-code]")!.TextContent);
+        Assert.Equal("ltr", details.QuerySelector("[data-testid=course-profile-code] span")!.GetAttribute("dir"));
+        Assert.Single(page.FindAll("h1"));
     }
 
     [Fact]
@@ -60,7 +72,7 @@ public sealed class CourseProfilePageTests : CoursesTestContext
     {
         var page = await RenderPageAsync(Math.Summary.Id, Permissions.Courses.View);
 
-        Assert.Equal(["Details", "Restrictions", "Supervisors"], VisibleTabs(page));
+        Assert.Equal(["Restrictions", "Supervisors"], VisibleTabs(page));
         Assert.Empty(page.FindAll("[data-testid=course-edit]"));
     }
 
@@ -265,6 +277,6 @@ public sealed class CourseProfilePageTests : CoursesTestContext
         layout.WaitForElement("[data-testid=course-profile-name]", Wait);
         Assert.Equal("rtl", layout.Find("[data-testid=app-root]").GetAttribute("dir"));
         Assert.Contains("الرياضيات", layout.Find("[data-testid=course-profile-name]").TextContent);
-        Assert.Contains("MATH101", layout.Find("[data-testid=course-profile-name]").ParentElement!.TextContent);
+        Assert.Contains("MATH101", layout.Find("[data-testid=course-profile-code]").TextContent);
     }
 }

@@ -1,0 +1,86 @@
+@using Lms.Shared.Content
+@using Lms.Shared.Packages
+@inject ICultureService Culture
+
+@* Step 3: what was found in the package and the module it becomes. Attach stays disabled until the check says Ready. Interim form:
+   it is replaced by the shared ModuleMetadataForm (visibility, target, schedule) once module authoring is on main. The lesson is the
+   one of the upload (PackageUploadDto.LessonKey): the attach request carries no lesson, so it is shown, not chosen. *@
+<MudStack Spacing="2" data-testid="package-attach-form">
+    <MudPaper Outlined="true" Class="pa-3" data-testid="package-summary">
+        <MudText Typo="Typo.subtitle2" data-testid="package-found-title">@(Package.Title ?? Package.FileName)</MudText>
+        <MudText Typo="Typo.body2" Class="lms-muted" data-testid="package-found-type">@TypeText()</MudText>
+        <MudText Typo="Typo.caption" Class="lms-muted"><bdi dir="ltr">@Package.FileName</bdi></MudText>
+    </MudPaper>
+
+    @if (LessonName() is { } lessonName)
+    {
+        <MudText Typo="Typo.body2" data-testid="package-lesson"><span class="lms-muted">@L["Package_Lesson"]:</span> @lessonName</MudText>
+    }
+    <MudTextField T="string" @bind-Value="_titleAr" Label="@L["Package_TitleAr"]" Variant="Variant.Outlined" Margin="Margin.Dense" MaxLength="200"
+                  Immediate="true" dir="rtl" data-testid="package-title-ar" />
+    <MudTextField T="string" @bind-Value="_titleEn" Label="@L["Package_TitleEn"]" Variant="Variant.Outlined" Margin="Margin.Dense" MaxLength="200"
+                  Immediate="true" dir="ltr" data-testid="package-title-en" />
+    <MudSelect T="string" @bind-Value="_rule" Label="@L["Package_Rule"]" Variant="Variant.Outlined" Margin="Margin.Dense"
+               HelperText="@(_rule == CompletionRules.Score ? L["Package_RuleScoreHelp"].Value : null)" data-testid="package-rule">
+        @foreach (var rule in Rules)
+        {
+            <MudSelectItem T="string" Value="rule">@L[$"Package_Rule_{rule}"]</MudSelectItem>
+        }
+    </MudSelect>
+    @if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" role="alert" data-testid="package-attach-error">@_error</MudAlert>
+    }
+    <div>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SubmitAsync" Disabled="@(!CanAttach)" data-testid="package-attach">@L["Package_Attach"]</MudButton>
+    </div>
+</MudStack>
+
+@code {
+    private string _titleAr = "", _titleEn = "", _rule = CompletionRules.Submit;
+    private string? _error;
+    private bool _busy;
+
+    [Parameter, EditorRequired] public PackageUploadDto Package { get; set; } = default!;
+    /// <summary>Only used to show the name of the lesson the package was uploaded for.</summary>
+    [Parameter] public IReadOnlyList<PackageLessonOption> Lessons { get; set; } = [];
+    /// <summary>Runs the attach; returns an error text, or null on success.</summary>
+    [Parameter, EditorRequired] public Func<AttachPackageModuleRequest, Task<string?>> OnAttach { get; set; } = default!;
+
+    /// <summary>The rules the contract allows for the kind; until the contract lists them for packages, Submit and Score.</summary>
+    private IReadOnlyList<string> Rules => RulesFor(Package.Kind);
+
+    internal static IReadOnlyList<string> RulesFor(string packageKind)
+    {
+        var kind = packageKind == PackageKinds.Scorm ? ModuleKinds.Scorm : ModuleKinds.H5p;
+        var fromContract = CompletionRules.ForActivity(kind);
+        return fromContract.Count > 0 ? fromContract : [CompletionRules.Submit, CompletionRules.Score];
+    }
+
+    private bool CanAttach => Package.Status == PackageUploadStatuses.Ready && !_busy
+        && !string.IsNullOrWhiteSpace(_titleAr) && !string.IsNullOrWhiteSpace(_titleEn);
+
+    protected override void OnInitialized()
+    {
+        _titleAr = _titleEn = Package.Title ?? "";
+        _rule = Rules.Contains(CompletionRules.Submit) ? CompletionRules.Submit : Rules[0];
+    }
+
+    private string? LessonName() => Lessons.FirstOrDefault(l => l.Key == Package.LessonKey) is { } lesson
+        ? Culture.Pick(lesson.NameAr, lesson.NameEn)
+        : null;
+
+    private string TypeText() => Package.Kind == PackageKinds.H5p
+        ? L["Package_TypeH5p", Package.MainLibrary ?? ""].Value
+        : L["Package_TypeScorm", Package.Version ?? ""].Value;
+
+    private async Task SubmitAsync()
+    {
+        _busy = true;
+        _error = null;
+        var settings = new ModuleSettingsInput(_titleAr.Trim(), _titleEn.Trim(), ModuleVisibilities.Published, null, null,
+            ModuleTargets.ClassCourse, null, _rule, null);
+        _error = await OnAttach(new AttachPackageModuleRequest(settings));
+        _busy = false;
+    }
+}

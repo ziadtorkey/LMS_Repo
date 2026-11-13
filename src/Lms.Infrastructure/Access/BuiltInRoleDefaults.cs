@@ -9,11 +9,11 @@ public static class BuiltInRoleDefaults
     /// Version 1 = the M1 defaults; version 2 = the M2 defaults (Staff.*, IdentityProviders.*); version 3 = the M3
     /// defaults (Students.*, Courses.*, Blueprints.*, Classes.*, TeacherAssignments.*, Enrollment.*, Groups.*,
     /// LessonPlans.*); version 4 = the M4a wave 1 defaults (Modules.*); version 5 = the M4a wave 2 defaults
-    /// (CourseAssignments.*, Quizzes.*, Library.*, Forums.*); version 6 = the M4b wave 3a defaults (LiveSessions.*).
-    /// Bump (and add the new permissions to an <see cref="IntroducedInVersion6"/>-style set) when a later milestone adds
-    /// defaults.
+    /// (CourseAssignments.*, Quizzes.*, Library.*, Forums.*); version 6 = the M4b wave 3a defaults (LiveSessions.*);
+    /// version 7 = the M4b wave 3b defaults (Packages.*). Bump (and add the new permissions to an
+    /// <see cref="IntroducedInVersion7"/>-style set) when a later milestone adds defaults.
     /// </summary>
-    public const int CurrentVersion = 6;
+    public const int CurrentVersion = 7;
 
     /// <summary>The 19 permissions that existed when clients were provisioned under M0 (defaults version 0).</summary>
     public static readonly IReadOnlySet<string> M0Baseline = new HashSet<string>
@@ -97,10 +97,16 @@ public static class BuiltInRoleDefaults
         Permissions.LiveSessions.View, Permissions.LiveSessions.Manage,
     };
 
+    /// <summary>Permissions introduced by defaults version 7 (M4b wave 3b: SCORM and H5P packages).</summary>
+    public static readonly IReadOnlySet<string> IntroducedInVersion7 = new HashSet<string>
+    {
+        Permissions.Packages.Upload, Permissions.Packages.View,
+    };
+
     /// <summary>
     /// The defaults version that introduced <paramref name="permission"/>: 0 for the M0 baseline, 2 for the M2 set,
-    /// 3 for the M3 set, 4 for the M4a wave 1 set, 5 for the M4a wave 2 set, 6 for the M4b wave 3a set, otherwise 1. The
-    /// reconciler adds to a role only the defaults introduced after the role's version.
+    /// 3 for the M3 set, 4 for the M4a wave 1 set, 5 for the M4a wave 2 set, 6 for the M4b wave 3a set, 7 for the M4b
+    /// wave 3b set, otherwise 1. The reconciler adds to a role only the defaults introduced after the role's version.
     /// </summary>
     public static int IntroducedIn(string permission) =>
         M0Baseline.Contains(permission) ? 0
@@ -109,6 +115,7 @@ public static class BuiltInRoleDefaults
         : IntroducedInVersion4.Contains(permission) ? 4
         : IntroducedInVersion5.Contains(permission) ? 5
         : IntroducedInVersion6.Contains(permission) ? 6
+        : IntroducedInVersion7.Contains(permission) ? 7
         : 1;
 
     /// <summary>

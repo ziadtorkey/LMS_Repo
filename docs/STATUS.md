@@ -3,7 +3,7 @@
 _Updated by the Team Lead after every merge cycle._
 
 **Milestone:** M0 — DONE · M1 Organization & Access — DONE (#73 via #200) · M2 People — closing (#177 via #321) · M3 Academic Structure — in progress
-**Last update:** 2026-11-13 02:40 — Merged since 18:27: #388, #349, #436, #412, #441, #386, #420, #437, #331, #316, #387, #287, #409, #456, #417, #414. 21 approved PRs in CI; blocker #466 (CI MySQL pool exhaustion, BE4; #434 worst, BE2). M4b: owner decisions D53-D56; plan #467 revising after QA changes requested. New: #462 (#455 E2E year), #463 PageRoutes, #464, #465 library viewer.
+Last update: 2026-11-13 14:30 — machine restart recovered (MySQL80 stopped, compose stack up); merged #444, #501; all agents re-dispatched.
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |

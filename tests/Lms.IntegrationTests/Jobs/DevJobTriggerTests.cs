@@ -97,7 +97,7 @@ public sealed class DevJobTriggerTests(LmsApiFactory factory)
     [Fact]
     public void Jobs_TimeZone_is_applied_to_the_recurring_schedules()
     {
-        using var riyadh = factory.WithWebHostBuilder(b => b.UseSetting("Jobs:TimeZone", "Asia/Riyadh"));
+        using var riyadh = factory.WithWebHostBuilder(b => b.UseSetting("Jobs:ServerEnabled", "true").UseSetting("Jobs:TimeZone", "Asia/Riyadh")); // the server flag registers the recurring jobs
         using var scope = riyadh.Services.CreateScope(); // starting the host registers the recurring jobs
         using var connection = scope.ServiceProvider.GetRequiredService<JobStorage>().GetConnection();
 
@@ -107,7 +107,7 @@ public sealed class DevJobTriggerTests(LmsApiFactory factory)
         Assert.Equal("0 2 * * *", job.Cron);
 
         // Put the shared storage back to the default zone for the other tests.
-        using var utc = factory.WithWebHostBuilder(_ => { });
+        using var utc = factory.WithWebHostBuilder(b => b.UseSetting("Jobs:ServerEnabled", "true"));
         using var utcScope = utc.Services.CreateScope();
         using var again = utcScope.ServiceProvider.GetRequiredService<JobStorage>().GetConnection();
         Assert.Equal("UTC", Assert.Single(again.GetRecurringJobs(), r => r.Id == StaffExpiryJob.RecurringJobId).TimeZoneId);

@@ -37,6 +37,8 @@ public static class RelationshipRules
             Permissions.CourseAssignments.View, Permissions.CourseAssignments.Manage, Permissions.CourseAssignments.Grade,
             Permissions.Quizzes.View, Permissions.Quizzes.Manage, Permissions.Quizzes.Grade,
             Permissions.Forums.View, Permissions.Forums.Post, Permissions.Forums.Moderate,
+            // M4b wave 3b: packages of own class courses.
+            Permissions.Packages.Upload, Permissions.Packages.View,
             // M4b wave 3a: live sessions of own ClassCourses.
             Permissions.LiveSessions.View, Permissions.LiveSessions.Manage)),
         new(BuiltInRoles.Supervisor, Relationships.SupervisedCourses, ImmutableArray.Create(
@@ -48,6 +50,7 @@ public static class RelationshipRules
             Permissions.CourseAssignments.View, Permissions.CourseAssignments.Submit,
             Permissions.Quizzes.View, Permissions.Quizzes.Attempt,
             Permissions.Forums.View, Permissions.Forums.Post,
+            Permissions.Packages.View,
             // M4b wave 3a: sessions of own enrollments (plus module visibility through IModuleAccess).
             Permissions.LiveSessions.View)),
     ];
