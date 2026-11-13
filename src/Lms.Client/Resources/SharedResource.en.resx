@@ -1424,4 +1424,6 @@
   <data name="NavSection_Security" xml:space="preserve"><value>Security and settings</value></data>
   <data name="App_Subtitle" xml:space="preserve"><value>Academic platform</value></data>
   <data name="Nav_Main" xml:space="preserve"><value>Main navigation</value></data>
+  <data name="Nav_CollapseSidebar" xml:space="preserve"><value>Collapse sidebar</value></data>
+  <data name="Nav_ExpandSidebar" xml:space="preserve"><value>Expand sidebar</value></data>
 </root>

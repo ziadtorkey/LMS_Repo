@@ -7,7 +7,7 @@
 @inject PermissionState Permissions
 @inject IJSRuntime JS
 
-<div data-testid="app-root" class="lms-app" dir="@(Culture.IsRightToLeft ? "rtl" : "ltr")" lang="@Culture.Current.TwoLetterISOLanguageName">
+<div data-testid="app-root" class="lms-app @(_railCollapsed ? "lms-rail" : null)" dir="@(Culture.IsRightToLeft ? "rtl" : "ltr")" lang="@Culture.Current.TwoLetterISOLanguageName">
     <a class="lms-skip-link" href="#lms-main" data-testid="skip-link">@L["Nav_SkipToContent"]</a>
     <MudRTLProvider RightToLeft="@Culture.IsRightToLeft">
         <MudThemeProvider Theme="_theme" IsDarkMode="_isDark" />
@@ -60,7 +60,7 @@
                 <Authorized>
                     <ContextGate />
                     <MudDrawer @bind-Open="_drawerOpen" Variant="DrawerVariant.Responsive" ClipMode="DrawerClipMode.Never" Elevation="0"
-                               Class="lms-drawer">
+                               Class="lms-drawer" id="lms-sidebar">
                         <MudDrawerHeader Class="lms-brand">
                             <span class="lms-brand-mark" aria-hidden="true">
                                 <MudIcon Icon="@Icons.Material.Rounded.School" Size="Size.Small" />
@@ -70,7 +70,15 @@
                                 <MudText Typo="Typo.caption" Class="lms-brand-sub">@L["App_Subtitle"]</MudText>
                             </span>
                         </MudDrawerHeader>
-                        <NavMenu />
+                        <NavMenu Collapsed="_railCollapsed" />
+                        @* Desktop only: below 960 px the drawer is the temporary one, opened from the app bar. *@
+                        <div class="lms-rail-toggle d-none d-md-flex">
+                            <MudTooltip Text="@RailLabel" Placement="Placement.End">
+                                <MudIconButton Icon="@Icons.Material.Rounded.KeyboardDoubleArrowLeft" Class="lms-icon-flip" aria-label="@RailLabel"
+                                               aria-expanded="@((!_railCollapsed).ToString().ToLowerInvariant())" aria-controls="lms-sidebar"
+                                               OnClick="ToggleRailAsync" data-testid="rail-toggle" />
+                            </MudTooltip>
+                        </div>
                     </MudDrawer>
                 </Authorized>
             </AuthorizeView>
@@ -88,7 +96,9 @@
     private MudTheme _theme = default!;
     private bool _drawerOpen = true;
     private bool _isDark;
+    private bool _railCollapsed;
 
+    private string RailLabel => _railCollapsed ? L["Nav_ExpandSidebar"] : L["Nav_CollapseSidebar"];
     private string ThemeLabel => _isDark ? L["Theme_Light"] : L["Theme_Dark"];
     private string ThemeIcon => _isDark ? Icons.Material.Rounded.LightMode : Icons.Material.Rounded.DarkMode;
 
@@ -99,8 +109,10 @@
     {
         if (!firstRender) return;
         var dark = await JS.InvokeAsync<bool>("lmsTheme.isDark");
-        if (dark == _isDark) return;
+        var rail = await JS.InvokeAsync<bool>("lmsNav.isRailCollapsed");
+        if (dark == _isDark && rail == _railCollapsed) return;
         _isDark = dark;
+        _railCollapsed = rail;
         StateHasChanged();
     }
 
@@ -108,6 +120,13 @@
     {
         _isDark = !_isDark;
         await JS.InvokeVoidAsync("lmsTheme.set", _isDark);
+    }
+
+    // The rail choice is per user and device: wwwroot/js/nav.js (lms.nav.rail in localStorage).
+    private async Task ToggleRailAsync()
+    {
+        _railCollapsed = !_railCollapsed;
+        await JS.InvokeVoidAsync("lmsNav.setRailCollapsed", _railCollapsed);
     }
 
     private async Task Logout()

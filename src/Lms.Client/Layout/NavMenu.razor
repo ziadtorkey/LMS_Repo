@@ -3,7 +3,8 @@
 @implements IDisposable
 
 @* Home first, then the Stitch sidebar groups (Structure, People, Academic, Security) in catalog order; a group with no visible entry
-   is not rendered. Each group is a role="group" labelled by its heading, which is text, not an h2 (it sits before the page h1). *@
+   is not rendered. Each group is a role="group" labelled by its heading, which is text, not an h2 (it sits before the page h1).
+   Collapsed (the 72 px desktop rail): the link text stays in the DOM as each link's name, hidden visually by CSS, and a tooltip shows it. *@
 <MudNavMenu aria-label="@L["Nav_Main"]" data-testid="nav-main">
     @foreach (var item in Visible.Where(i => i.Section is null))
     {
@@ -25,6 +26,8 @@
 </MudNavMenu>
 
 @code {
+    [Parameter] public bool Collapsed { get; set; }
+
     private IEnumerable<NavItem> Visible => NavCatalog.Items.Where(i =>
         (!i.PlatformAdminOnly || Permissions.IsPlatformAdmin) &&
         (i.RequiredPermission is null || Permissions.Has(i.RequiredPermission)));
@@ -38,8 +41,10 @@
     private static string SectionKey(string section) => section["NavSection_".Length..].ToLowerInvariant();
 
     private RenderFragment Link(NavItem item) =>
-        @<MudNavLink Href="@item.Href" Match="@(item.Href == "" ? NavLinkMatch.All : NavLinkMatch.Prefix)"
-                     Icon="@item.Icon" data-testid="@($"nav-{item.Key}")">@L[item.ResourceKey]</MudNavLink>;
+        @<MudTooltip Text="@L[item.ResourceKey]" Placement="Placement.End" Disabled="@(!Collapsed)" RootClass="lms-nav-tip">
+            <MudNavLink Href="@item.Href" Match="@(item.Href == "" ? NavLinkMatch.All : NavLinkMatch.Prefix)"
+                        Icon="@item.Icon" data-testid="@($"nav-{item.Key}")">@L[item.ResourceKey]</MudNavLink>
+        </MudTooltip>;
 
     private void OnChanged() => _ = InvokeAsync(StateHasChanged);
 
