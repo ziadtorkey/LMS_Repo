@@ -21,7 +21,20 @@ public interface ILessonPlansApi
         catch (ApiForbiddenException) { return []; }
     }
 
+    /// <summary>
+    /// How the caller relates to one class course, from GET /api/me/class-courses: a <c>TeacherRole</c> on its row means the caller teaches it
+    /// today; a row without one means the caller is enrolled. A caller who cannot read the list (no LessonPlans.View) has neither.
+    /// </summary>
+    Task<ClassCourseRelation> GetRelationAsync(Guid classCourseId, CancellationToken ct = default) =>
+        Task.FromResult(ClassCourseRelation.None);
+
     Task<ClassLessonPlanDto> GetPlanAsync(Guid classCourseId, CancellationToken ct = default);
+}
+
+/// <summary>The caller's own relationship to a class course: teaching it (now) and/or enrolled in it.</summary>
+public sealed record ClassCourseRelation(bool Teaches, bool Enrolled)
+{
+    public static ClassCourseRelation None { get; } = new(false, false);
 }
 
 public sealed class LessonPlansApi(ApiHttp http) : ILessonPlansApi
@@ -43,6 +56,16 @@ public sealed class LessonPlansApi(ApiHttp http) : ILessonPlansApi
     {
         try { return FromMine(await http.GetOptionalAsync<List<MyClassCourseDto>>(Routes.MyClassCourses, ct)); }
         catch (ApiForbiddenException) { return []; }
+    }
+
+    public async Task<ClassCourseRelation> GetRelationAsync(Guid classCourseId, CancellationToken ct = default)
+    {
+        try
+        {
+            var row = (await http.GetOptionalAsync<List<MyClassCourseDto>>(Routes.MyClassCourses, ct)).FirstOrDefault(m => m.ClassCourseId == classCourseId);
+            return row is null ? ClassCourseRelation.None : new ClassCourseRelation(!string.IsNullOrEmpty(row.TeacherRole), string.IsNullOrEmpty(row.TeacherRole));
+        }
+        catch (ApiForbiddenException) { return ClassCourseRelation.None; }
     }
 
     public Task<ClassLessonPlanDto> GetPlanAsync(Guid classCourseId, CancellationToken ct = default) =>
@@ -130,6 +153,17 @@ public sealed class FakeLessonPlansApi : ILessonPlansApi
 
     public Task<IReadOnlyList<ClassCourseDto>> GetMyClassCoursesAsync(CancellationToken ct = default) =>
         Task.FromResult<IReadOnlyList<ClassCourseDto>>(Mine.ToList());
+
+    /// <summary>Class courses the fake caller teaches / is enrolled in; null = every class course in <see cref="Mine"/> (dev server shows both).</summary>
+    public HashSet<Guid>? TeachesIds { get; set; }
+    public HashSet<Guid>? EnrolledIds { get; set; }
+
+    public Task<ClassCourseRelation> GetRelationAsync(Guid classCourseId, CancellationToken ct = default)
+    {
+        var known = Mine.Any(c => c.Id == classCourseId);
+        return Task.FromResult(new ClassCourseRelation(
+            TeachesIds?.Contains(classCourseId) ?? known, EnrolledIds?.Contains(classCourseId) ?? known));
+    }
 
     public Task<ClassLessonPlanDto> GetPlanAsync(Guid classCourseId, CancellationToken ct = default)
     {
