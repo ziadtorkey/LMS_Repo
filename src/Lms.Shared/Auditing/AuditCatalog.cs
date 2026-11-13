@@ -39,6 +39,8 @@ public static class AuditCatalog
         // volume; grading and moderation are).
         "Assignment", "SubmissionFeedback", "Quiz", "QuizQuestion", "LibraryResource", "ForumThread",
         "CourseAnnouncement", "GradeEvent",
+        // M4b wave 3b: package uploads and their parsed SCORM / H5P content (attempts are not audited row by row: volume).
+        "PackageUpload", "ScormPackage", "H5pContent",
     ];
 
     public static IReadOnlyList<string> SecurityEvents { get; } =

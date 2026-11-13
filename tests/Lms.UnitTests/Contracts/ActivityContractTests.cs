@@ -53,7 +53,9 @@ public sealed class ActivityContractTests
     [InlineData(ModuleKinds.Quiz, new[] { "Score", "Submit" })]
     [InlineData(ModuleKinds.LibraryResource, new[] { "None", "Manual", "View" })]
     [InlineData(ModuleKinds.Page, new string[0])]
-    [InlineData(ModuleKinds.Scorm, new string[0])]
+    [InlineData(ModuleKinds.LiveSession, new string[0])]
+    [InlineData(ModuleKinds.Scorm, new[] { "None", "Submit", "Score" })]
+    [InlineData(ModuleKinds.H5p, new[] { "None", "Submit", "Score" })]
     public void Activity_kinds_use_the_planned_completion_rules(string kind, string[] expected)
     {
         Assert.Equal(expected, CompletionRules.ForActivity(kind));

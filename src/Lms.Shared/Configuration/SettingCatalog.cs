@@ -68,6 +68,11 @@ public static class SettingCatalog
             Min: 0, Max: 100),
         new(SettingKeys.QuizzesAutoSubmitGraceSeconds.Name, SettingValueKinds.Int, SettingCategories.Academic, "30",
             Min: 0, Max: 300),
+        new(SettingKeys.PackagesMaxEntries.Name, SettingValueKinds.Int, SettingCategories.Files, "10000", Min: 100, Max: 100000),
+        new(SettingKeys.PackagesMaxUncompressedMb.Name, SettingValueKinds.Int, SettingCategories.Files, "1024", Min: 1, Max: 10240),
+        new(SettingKeys.PackagesMaxClientStorageMb.Name, SettingValueKinds.Int, SettingCategories.Files, "10240", Min: 1, Max: 1048576),
+        new(SettingKeys.PackagesTokenMinutes.Name, SettingValueKinds.Int, SettingCategories.Files, "120", Min: 5, Max: 480),
+        new(SettingKeys.PackagesCommitMinIntervalSeconds.Name, SettingValueKinds.Int, SettingCategories.Files, "2", Min: 0, Max: 60),
     ];
 
     /// <summary>The definition with this exact (case-sensitive) name, or null.</summary>

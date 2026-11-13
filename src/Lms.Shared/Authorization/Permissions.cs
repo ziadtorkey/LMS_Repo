@@ -248,6 +248,16 @@ public static class Permissions
         public const string Moderate = "Forums.Moderate";
     }
 
+    /// <summary>SCORM and H5P packages of a ClassCourse (FR-STD-01, FR-STD-02, D51, D56).</summary>
+    public static class Packages
+    {
+        /// <summary>Upload, validate, attach to a lesson, read the status of and delete packages; the staff side.</summary>
+        public const string Upload = "Packages.Upload";
+
+        /// <summary>Students launch packages of their own ClassCourses and send tracking; staff preview them (no attempt is recorded).</summary>
+        public const string View = "Packages.View";
+    }
+
     // Immutable list (not a FrozenSet) so existing consumers typed IReadOnlyList<string> keep compiling;
     // ImmutableArray rejects every mutation through IList<string>/ICollection<string>.
     private static readonly Lazy<IReadOnlyList<string>> AllLazy = new(() =>

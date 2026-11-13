@@ -76,6 +76,7 @@ public static class CompletionRules
         ModuleKinds.Assignment => [Submit, Score],
         ModuleKinds.Quiz => [Score, Submit],
         ModuleKinds.LibraryResource => [None, Manual, View],
+        ModuleKinds.Scorm or ModuleKinds.H5p => [None, Submit, Score],
         _ => [],
     };
 }

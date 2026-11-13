@@ -290,6 +290,46 @@ public sealed class BuiltInRoleReconcilerTests(LmsApiFactory factory)
     }
 
     [Fact]
+    public async Task Reconcile_adds_only_the_M4b_wave_3b_package_defaults_to_a_version_6_client()
+    {
+        // A client on defaults version 6: no package permissions yet, and an admin removed Library.Manage from the
+        // Teacher role (an older default, which must stay removed).
+        var tree = await AccessTestData.SeedAsync(factory, "RCP");
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            var teacher = tree.Roles[BuiltInRoles.Teacher].Id;
+            var rows = await db.RolePermissions.Where(p => p.OrganizationId == tree.Org.Id).ToListAsync();
+            db.RolePermissions.RemoveRange(rows.Where(p => p.Permission.StartsWith("Packages.", StringComparison.Ordinal)
+                || (p.RoleId == teacher && p.Permission == Permissions.Library.Manage)));
+            foreach (var role in await db.Roles.Where(r => r.OrganizationId == tree.Org.Id).ToListAsync())
+            {
+                db.Entry(role).Property(nameof(Role.DefaultsVersion)).CurrentValue = 6;
+            }
+
+            await db.SaveChangesAsync();
+        }
+
+        await ReconcileAsync();
+
+        var teacherPermissions = await PermissionsOfAsync(tree, BuiltInRoles.Teacher);
+        Assert.Contains(Permissions.Packages.Upload, teacherPermissions);
+        Assert.Contains(Permissions.Packages.View, teacherPermissions);
+        Assert.DoesNotContain(Permissions.Library.Manage, teacherPermissions);
+        Assert.Contains(Permissions.Packages.Upload, await PermissionsOfAsync(tree, BuiltInRoles.OrgAdmin));
+        Assert.Contains(Permissions.Packages.Upload, await PermissionsOfAsync(tree, BuiltInRoles.Manager));
+
+        var studentPermissions = await PermissionsOfAsync(tree, BuiltInRoles.Student);
+        Assert.Contains(Permissions.Packages.View, studentPermissions);
+        Assert.DoesNotContain(Permissions.Packages.Upload, studentPermissions);
+
+        var supervisorPermissions = await PermissionsOfAsync(tree, BuiltInRoles.Supervisor);
+        Assert.Contains(Permissions.Packages.View, supervisorPermissions);
+        Assert.DoesNotContain(Permissions.Packages.Upload, supervisorPermissions);
+        Assert.DoesNotContain(await PermissionsOfAsync(tree, BuiltInRoles.Counselor), p => p.StartsWith("Packages.", StringComparison.Ordinal));
+        Assert.DoesNotContain(await PermissionsOfAsync(tree, BuiltInRoles.Guardian), p => p.StartsWith("Packages.", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public async Task Newly_provisioned_roles_are_already_at_the_current_defaults_version()
     {
         var tree = await AccessTestData.SeedAsync(factory, "RC4");

@@ -1127,4 +1127,41 @@
   <data name="Matrix_ChooseUnit" xml:space="preserve"><value>Choose a unit to see its classes.</value></data>
   <data name="Matrix_NoClasses" xml:space="preserve"><value>This unit has no classes in the selected year.</value></data>
   <data name="List_Separator" xml:space="preserve"><value>, </value></data>
+  <data name="PermModule_Packages" xml:space="preserve"><value>SCORM and H5P packages</value></data>
+  <data name="Perm_Packages_Upload" xml:space="preserve"><value>Upload and manage packages</value></data>
+  <data name="Perm_Packages_View" xml:space="preserve"><value>Open and preview packages</value></data>
+  <data name="Setting_Packages_MaxEntries" xml:space="preserve"><value>Max files in a package</value></data>
+  <data name="Setting_Packages_MaxUncompressedMb" xml:space="preserve"><value>Max unpacked package size (MB)</value></data>
+  <data name="Setting_Packages_MaxClientStorageMb" xml:space="preserve"><value>Package storage per client (MB)</value></data>
+  <data name="Setting_Packages_TokenMinutes" xml:space="preserve"><value>Package session length (minutes)</value></data>
+  <data name="Setting_Packages_CommitMinIntervalSeconds" xml:space="preserve"><value>Minimum seconds between progress saves</value></data>
+  <data name="AuditEntity_PackageUpload" xml:space="preserve"><value>Package upload</value></data>
+  <data name="AuditEntity_ScormPackage" xml:space="preserve"><value>SCORM package</value></data>
+  <data name="AuditEntity_H5pContent" xml:space="preserve"><value>H5P content</value></data>
+  <data name="Error_package_invalid" xml:space="preserve"><value>This package cannot be used. See the reason shown with it.</value></data>
+  <data name="Error_package_too_large" xml:space="preserve"><value>The package is too large to upload or would exceed your storage.</value></data>
+  <data name="Error_package_not_ready" xml:space="preserve"><value>The package is not ready yet. Wait for the check to finish.</value></data>
+  <data name="Error_package_commit_rejected" xml:space="preserve"><value>Your progress could not be saved because the attempt is closed or the data was not accepted.</value></data>
+  <data name="Error_package_host_not_configured" xml:space="preserve"><value>Packages are not available yet: the separate content site has not been set up. Ask your platform administrator.</value></data>
+  <data name="Error_package_reason_unsafe_path" xml:space="preserve"><value>A file in the package has a path that leaves the package folder.</value></data>
+  <data name="Error_package_reason_too_many_entries" xml:space="preserve"><value>The package has too many files.</value></data>
+  <data name="Error_package_reason_too_large" xml:space="preserve"><value>The package is too large once unpacked.</value></data>
+  <data name="Error_package_reason_compression_ratio" xml:space="preserve"><value>The package is compressed far more than normal content, so it was refused as unsafe.</value></data>
+  <data name="Error_package_reason_symlink" xml:space="preserve"><value>The package contains a shortcut (symbolic link), which is not allowed.</value></data>
+  <data name="Error_package_reason_duplicate_name" xml:space="preserve"><value>Two files in the package have the same name.</value></data>
+  <data name="Error_package_reason_bad_name_encoding" xml:space="preserve"><value>A file name in the package contains hidden or invalid characters.</value></data>
+  <data name="Error_package_reason_executable" xml:space="preserve"><value>The package contains a program or script file that is not allowed.</value></data>
+  <data name="Error_package_reason_encrypted" xml:space="preserve"><value>The package contains a password-protected file.</value></data>
+  <data name="Error_package_reason_nested_archive" xml:space="preserve"><value>The package contains another compressed archive, which is not allowed.</value></data>
+  <data name="Error_package_reason_manifest_invalid" xml:space="preserve"><value>The package description file is missing or wrong, or the start page is missing.</value></data>
+  <data name="Error_package_reason_xml_unsafe" xml:space="preserve"><value>The package description uses features that are not allowed.</value></data>
+  <data name="Error_package_reason_multi_sco" xml:space="preserve"><value>Packages with several lessons or sequencing rules are not supported yet.</value></data>
+  <data name="Error_package_reason_needs_nested_frames" xml:space="preserve"><value>The start page uses frames, which this platform does not support.</value></data>
+  <data name="Error_package_reason_needs_relaxed_policy" xml:space="preserve"><value>The content needs permissions that the platform does not allow.</value></data>
+  <data name="Error_package_reason_h5p_invalid" xml:space="preserve"><value>The H5P file is incomplete or has invalid content.</value></data>
+  <data name="Error_package_reason_validation_timeout" xml:space="preserve"><value>Checking the package took too long. Try a smaller package.</value></data>
+  <data name="Error_package_reason_quota_exceeded" xml:space="preserve"><value>Your package storage is full. Delete unused packages first.</value></data>
+  <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>The security scan did not accept this package.</value></data>
+  <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>The file is not a valid zip archive.</value></data>
+  <data name="Error_package_reason_bad_name" xml:space="preserve"><value>A file name in the package is not usable (too long, too deep, or reserved).</value></data>
 </root>
