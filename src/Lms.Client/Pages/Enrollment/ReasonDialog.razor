@@ -11,8 +11,11 @@
         </MudStack>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="reason-cancel">@L["Common_Cancel"]</MudButton>
-        <MudButton Variant="Variant.Filled" Color="Color.Warning" OnClick="Submit" data-testid="reason-confirm">@ConfirmText</MudButton>
+        <div class="lms-dialog-actions">
+            <MudButton Variant="Variant.Text" OnClick="() => MudDialog.Cancel()" data-testid="reason-cancel">@L["Common_Cancel"]</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Warning" OnClick="Submit" data-testid="reason-confirm">@ConfirmText</MudButton>
+    
+        </div>
     </DialogActions>
 </MudDialog>
 
