@@ -21,7 +21,7 @@ public partial class AuthorizationContractTests
     }
 
     [Fact]
-    public void Permission_catalog_contains_exactly_the_M0_to_M4a_set()
+    public void Permission_catalog_contains_exactly_the_M0_to_M4b_wave_3a_set()
     {
         string[] expected =
         [
@@ -47,6 +47,12 @@ public partial class AuthorizationContractTests
             "Enrollment.RequestException", "Enrollment.ApproveException",
             "Groups.View", "Groups.Manage", "LessonPlans.View",
             "Modules.View", "Modules.Manage",
+            "CourseAssignments.View", "CourseAssignments.Manage", "CourseAssignments.Submit", "CourseAssignments.Grade",
+            "Quizzes.View", "Quizzes.Manage", "Quizzes.Attempt", "Quizzes.Grade",
+            "Library.View", "Library.Manage",
+            "Forums.View", "Forums.Post", "Forums.Moderate",
+            "LiveSessions.View", "LiveSessions.Manage",
+            "Packages.Upload", "Packages.View",
         ];
         Assert.Equal(expected.Order(StringComparer.Ordinal), Permissions.All.Order(StringComparer.Ordinal));
     }
@@ -110,6 +116,16 @@ public partial class AuthorizationContractTests
             // M4a wave 1 (lesson modules, assets, completion)
             "module_visibility_range_invalid", "module_target_invalid", "asset_type_not_allowed", "asset_too_large",
             "completion_not_manual",
+            // M4a wave 2 (assignments, quizzes, library, forums)
+            "late_policy_invalid", "submission_closed", "resubmission_not_allowed", "quiz_closed", "quiz_not_open",
+            "attempt_limit_reached", "attempt_expired", "quiz_has_attempts", "pool_draw_invalid", "thread_locked",
+            "download_disabled",
+            // M4b wave 3a (live sessions)
+            "provider_unavailable", "provider_not_configured", "live_session_not_open", "feature_disabled",
+            "recurrence_invalid",
+            // M4b wave 3b (SCORM and H5P packages)
+            "package_invalid", "package_too_large", "package_not_ready", "package_commit_rejected",
+            "package_host_not_configured",
         ];
 
         Assert.All(fields, f => Assert.Equal(f.Name, (string)f.GetRawConstantValue()!));

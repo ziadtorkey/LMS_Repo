@@ -1,11 +1,13 @@
 using Lms.Domain.Configuration;
+using Lms.Domain.Courses;
 using Lms.Domain.Organizations;
 using Lms.Infrastructure.Persistence;
+using Lms.Shared.Courses;
 using Microsoft.EntityFrameworkCore;
 
 namespace Lms.Infrastructure.Branches;
 
-public sealed class BranchMaterializer(LmsDbContext db, IOrgTree tree) : IBranchMaterializer
+public sealed class BranchMaterializer(LmsDbContext db, IOrgTree tree, ICourseCatalog catalog) : IBranchMaterializer
 {
     public async Task<MaterializeResult> MaterializeAsync(
         BranchSnapshot snapshot, OrgUnit parent, Func<string, string> transformName, Func<string, string> transformCode,
@@ -18,6 +20,7 @@ public sealed class BranchMaterializer(LmsDbContext db, IOrgTree tree) : IBranch
         }
 
         await CheckLevelsAsync(nodes, parent, cancellationToken);
+        await CheckRestrictionLevelTypesAsync(nodes, cancellationToken);
 
         var codes = nodes.Select(n => transformCode(n.Code)).ToList();
         var taken = new List<string>();
@@ -33,6 +36,8 @@ public sealed class BranchMaterializer(LmsDbContext db, IOrgTree tree) : IBranch
         {
             throw new BranchCodeConflictException(taken);
         }
+
+        await CheckCourseCodesAsync(nodes, parent.OrganizationId, transformCode, cancellationToken);
 
         var skippedNames = await LockedAboveAsync(parent, cancellationToken);
         var skipped = new SortedSet<string>(StringComparer.Ordinal);
@@ -69,9 +74,106 @@ public sealed class BranchMaterializer(LmsDbContext db, IOrgTree tree) : IBranch
             }
         }
 
+        var courses = await CopyCoursesAsync(nodes, created, transformName, transformCode, cancellationToken);
+
         // One SaveChanges is one transaction: the whole branch exists or none of it.
         await db.SaveChangesAsync(cancellationToken);
-        return new MaterializeResult(created[0], created.Count, skipped.ToList());
+        return new MaterializeResult(created[0], created.Count, skipped.ToList(), courses.Created, courses.SkippedAllocations);
+    }
+
+    /// <summary>Course codes are unique per client: a copy whose codes collide with live courses creates nothing.</summary>
+    private async Task CheckCourseCodesAsync(
+        IReadOnlyList<BranchNode> nodes, Guid organizationId, Func<string, string> transformCode, CancellationToken ct)
+    {
+        var codes = nodes.SelectMany(n => n.OwnedCourses ?? []).Select(c => transformCode(c.Code).Trim().ToUpperInvariant()).ToList();
+        if (codes.Count == 0)
+        {
+            return;
+        }
+
+        var duplicated = codes.GroupBy(c => c).Where(g => g.Count() > 1).Select(g => g.Key);
+        // ISOLATION-BYPASS: course codes are unique per client, so a code used outside the caller subtree must be found.
+        // Only live courses of the target client are read, and only their code keys.
+        var taken = await db.Set<Course>().IgnoreQueryFilters()
+            .Where(c => !c.IsDeleted && c.OrganizationId == organizationId && codes.Contains(c.CodeKey!))
+            .Select(c => c.CodeKey!).ToListAsync(ct);
+        var conflicts = taken.Concat(duplicated).Distinct().Order(StringComparer.Ordinal).ToList();
+        if (conflicts.Count > 0)
+        {
+            throw new BranchCourseCodeConflictException(conflicts);
+        }
+    }
+
+    /// <summary>
+    /// New courses for the ones owned inside the branch (with restrictions) and allocations: of those, and of outside
+    /// courses that are still available at the new unit (others are skipped and reported).
+    /// </summary>
+    private async Task<(int Created, IReadOnlyList<string> SkippedAllocations)> CopyCoursesAsync(
+        IReadOnlyList<BranchNode> nodes, Dictionary<int, OrgUnit> units, Func<string, string> transformName,
+        Func<string, string> transformCode, CancellationToken ct)
+    {
+        var newCourses = new Dictionary<int, Course>();
+        foreach (var node in nodes)
+        {
+            foreach (var source in node.OwnedCourses ?? [])
+            {
+                var course = new Course(
+                    units[node.Key], transformCode(source.Code).Trim().ToUpperInvariant(), transformName(source.NameAr),
+                    transformName(source.NameEn), source.DescriptionAr, source.DescriptionEn, source.Language, source.WeeklyPeriods);
+                newCourses[source.Key] = course;
+                db.Set<Course>().Add(course);
+                foreach (var restriction in source.Restrictions)
+                {
+                    db.Set<CourseRestriction>().Add(new CourseRestriction(course, restriction.Type, restriction.Values));
+                }
+            }
+        }
+
+        var skipped = new SortedSet<string>(StringComparer.Ordinal);
+        foreach (var node in nodes)
+        {
+            var unit = units[node.Key];
+            foreach (var key in node.AllocatedOwnedKeys ?? [])
+            {
+                if (newCourses.TryGetValue(key, out var inside))
+                {
+                    db.Set<CourseAllocation>().Add(new CourseAllocation(inside, unit));
+                }
+            }
+
+            foreach (var id in node.AllocatedCourseIds ?? [])
+            {
+                var outside = (await catalog.FindAsync(id, ct))?.Course;
+                if (outside is { Status: CourseStatuses.Active } && OrgUnitPath.AncestorsAndSelf(unit.Path).Contains(outside.OrgUnitPath))
+                {
+                    db.Set<CourseAllocation>().Add(new CourseAllocation(outside, unit));
+                }
+                else
+                {
+                    skipped.Add(outside?.Code ?? id.ToString());
+                }
+            }
+        }
+
+        return (newCourses.Count, skipped.ToList());
+    }
+
+    /// <summary>A LevelType course restriction may only name level types of the client (a template can outlive a deleted level type).</summary>
+    private async Task CheckRestrictionLevelTypesAsync(IReadOnlyList<BranchNode> nodes, CancellationToken ct)
+    {
+        var values = nodes.SelectMany(n => n.OwnedCourses ?? []).SelectMany(c => c.Restrictions)
+            .Where(r => r.Type == CourseRestrictionTypes.LevelType).SelectMany(r => r.Values).Distinct().ToList();
+        if (values.Count == 0)
+        {
+            return;
+        }
+
+        var ids = values.Select(v => Guid.TryParse(v, out var id) ? id : Guid.Empty).Distinct().ToList();
+        var known = await db.LevelTypes.Where(l => ids.Contains(l.Id)).Select(l => l.Id).ToListAsync(ct);
+        if (values.Any(v => !Guid.TryParse(v, out var id) || !known.Contains(id)))
+        {
+            throw new BranchInvalidException("A course restriction names an unknown level type.");
+        }
     }
 
     /// <summary>Every level type must belong to the client, and the root's must be deeper than the parent's.</summary>

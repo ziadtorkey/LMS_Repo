@@ -27,6 +27,7 @@
     @if (!Years.IsReadOnly)
     {
         <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap">
+            <MudButton Variant="Variant.Text" Href="classes/matrix" data-testid="class-matrix">@L["Matrix_Title"]</MudButton>
             @if (PermState.Has(Permissions.Classes.Create))
             {
                 <MudButton Variant="Variant.Outlined" OnClick="CopyAsync" data-testid="class-copy">@L["CopyClasses_Title"]</MudButton>
@@ -71,7 +72,7 @@
     </HeaderContent>
     <RowTemplate Context="cls">
         <MudTd DataLabel="@L["Class_Code"]"><span dir="ltr">@cls.Code</span></MudTd>
-        <MudTd DataLabel="@L["Common_Name"]">@Culture.Pick(cls.NameAr, cls.NameEn)</MudTd>
+        <MudTd DataLabel="@L["Common_Name"]"><MudLink Href="@($"classes/{cls.Id}")" data-testid="@($"class-link-{cls.Id}")">@Culture.Pick(cls.NameAr, cls.NameEn)</MudLink></MudTd>
         <MudTd DataLabel="@L["Class_Unit"]">@Culture.Pick(cls.OrgUnitNameAr, cls.OrgUnitNameEn)</MudTd>
         <MudTd DataLabel="@L["Class_Students"]">
             <MudText Color="@(IsFull(cls) ? Color.Warning : Color.Default)" data-testid="@($"class-students-{cls.Id}")">

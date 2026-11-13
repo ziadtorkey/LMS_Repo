@@ -57,6 +57,11 @@ else
                     <MudCardActions>
                         <MudButton Variant="Variant.Text" Color="Color.Primary" Href="@($"class-courses/{cc.Id}/plan")"
                                    data-testid="@($"my-class-course-plan-{cc.Id}")">@L["MyClassCourses_OpenPlan"]</MudButton>
+                        @if (PermState.Has(Permissions.Modules.View) && !PermState.Has(Permissions.Modules.Manage))
+                        {
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="@($"class-courses/{cc.Id}/learn")"
+                                       data-testid="@($"my-class-course-learn-{cc.Id}")">@L["MyClassCourses_OpenCourse"]</MudButton>
+                        }
                     </MudCardActions>
                 </MudCard>
             </MudItem>

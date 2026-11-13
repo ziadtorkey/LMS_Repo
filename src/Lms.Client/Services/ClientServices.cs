@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Lms.Client.Services.Api;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
@@ -23,9 +24,11 @@ public static class ClientServices
         // handler must see (and clear) the same stored context as the UI.
         services.AddSingleton<ContextStore>();
         services.AddSingleton<IContextStore>(sp => sp.GetRequiredService<ContextStore>());
+        services.TryAddSingleton(TimeProvider.System);
         services.AddScoped<PermissionState>();
         services.AddScoped<IYearStore, YearStore>();
         services.AddScoped<INotificationFeed, NotificationFeed>();
+        services.AddSingleton<Lms.Client.Services.Packages.PackagePollOptions>();
 
         if (configuration.GetValue<bool>("Lms:UseFakeApi"))
         {
@@ -48,11 +51,18 @@ public static class ClientServices
             services.AddSingleton<IChangeRequestsApi, FakeChangeRequestsApi>();
             services.AddSingleton<IGuardiansApi, FakeGuardiansApi>();
             services.AddSingleton<IClassesApi, FakeClassesApi>();
+            services.AddSingleton<IClassCoursesApi, FakeClassCoursesApi>();
             services.AddSingleton<IIdentityProvidersApi, FakeIdentityProvidersApi>();
             services.AddSingleton<ICoursesApi, FakeCoursesApi>();
+            services.AddSingleton<IBlueprintsApi>(new FakeBlueprintsApi { AutoSeed = true });
             services.AddSingleton<ILessonPlansApi, FakeLessonPlansApi>();
             services.AddSingleton<IFileUploadApi, FakeFileUploadApi>();
+            services.AddSingleton<ILibraryApi, FakeLibraryApi>();
+            services.AddSingleton<IForumsApi, FakeForumsApi>();
+            services.AddSingleton<IAssetsApi, FakeAssetsApi>();
+            services.AddSingleton<Lms.Client.Services.Packages.IPackagesApi, Lms.Client.Services.Packages.FakePackagesApi>();
             services.AddSingleton<IModulesApi, FakeModulesApi>();
+            services.AddSingleton<IActivityOverviewApi, FakeActivityOverviewApi>();
             services.AddScoped<AuthenticationStateProvider, FakeAuthenticationStateProvider>();
             services.AddAuthorizationCore();
             return;
@@ -92,10 +102,17 @@ public static class ClientServices
         services.AddScoped<IChangeRequestsApi, ChangeRequestsApi>();
         services.AddScoped<IGuardiansApi, GuardiansApi>();
         services.AddScoped<IClassesApi, ClassesApi>();
+        services.AddScoped<IClassCoursesApi, ClassCoursesApi>();
         services.AddScoped<IIdentityProvidersApi, IdentityProvidersApi>();
         services.AddScoped<ICoursesApi, CoursesApi>();
+        services.AddScoped<IBlueprintsApi, BlueprintsApi>();
         services.AddScoped<ILessonPlansApi, LessonPlansApi>();
         services.AddScoped<IFileUploadApi, FileUploadApi>();
+        services.AddScoped<ILibraryApi, LibraryApi>();
+        services.AddScoped<IForumsApi, ForumsApi>();
+        services.AddScoped<IAssetsApi, AssetsApi>();
+        services.AddScoped<Lms.Client.Services.Packages.IPackagesApi, Lms.Client.Services.Packages.PackagesApi>();
         services.AddScoped<IModulesApi, ModulesApi>();
+        services.AddScoped<IActivityOverviewApi, ActivityOverviewApi>();
     }
 }

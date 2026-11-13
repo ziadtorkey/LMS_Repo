@@ -29,6 +29,16 @@ The source of truth is `docs/DESIGN.md`; read it once. The reference pages are `
 - **Spacing:** use the MudBlazor classes (`mb-4`, `gap-2`) and logical CSS (`ms-`/`me-`, `inset-inline-*`).
 - **Owned files:** don't edit `Theme/`, `lms-theme.css` or `Components/Ui/` outside a `lane:ux` PR. Propose the change instead.
 
+## M4b surfaces (live sessions, packages)
+
+Follow `docs/design/m4b-live-and-packages.md`:
+- Use `LiveSessionStatusChip` for session states, and `lms-join-panel` for Join. Join is disabled with a reason, never hidden.
+- Show external links as a host hint (`lms-host-hint`), never as the full URL.
+- Package upload uses `lms-steps` and `lms-dropzone`, with plain-words reject reasons.
+- The package player uses `lms-player` with its toolbar outside the frame.
+
+The mockups in `docs/design/mockups/m4b.html` are the reference.
+
 ## Skeleton
 
 ```razor

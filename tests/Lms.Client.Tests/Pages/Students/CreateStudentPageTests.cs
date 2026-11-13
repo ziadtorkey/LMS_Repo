@@ -25,11 +25,17 @@ public sealed class CreateStudentPageTests : StudentsTestContext
         return Render<CreateStudentPage>();
     }
 
-    private static void Type(IRenderedComponent<CreateStudentPage> page, string id, string value)
+    private void Type(IRenderedComponent<CreateStudentPage> page, string id, string value)
     {
         var input = page.Find($"input[data-testid={id}]");
-        // Lookup fields are debounced and react to typing (oninput); the others to a committed change.
-        if (id.StartsWith("guardian-mobile") || id.StartsWith("guardian-national")) input.Input(value);
+        // Lookup fields are debounced (500 ms) and react to typing (oninput); the others to a committed change.
+        if (id.StartsWith("guardian-mobile") || id.StartsWith("guardian-national"))
+        {
+            input.Input(value);
+            // The debounce timer commits the value and runs the guardian lookup. Saving before it fires races it: under load the commit
+            // can land in the middle of the save's validation and the click is silently dropped. Wait until the lookup has run.
+            page.WaitForAssertion(() => Assert.Contains(GuardiansApi.Lookups, l => l.NationalId == value || l.Mobile == value), TimeSpan.FromSeconds(10));
+        }
         else input.Change(value);
     }
 
@@ -418,5 +424,19 @@ public sealed class CreateStudentPageTests : StudentsTestContext
         Assert.Contains("طالب جديد", layout.Find("[data-testid=student-create-title]").TextContent);
         Assert.Equal("rtl", layout.Find("input[data-testid=student-name-ar]").GetAttribute("dir"));
         Assert.Equal("ltr", layout.Find("input[data-testid=student-name-en]").GetAttribute("dir"));
+    }
+
+    [Fact]
+    public async Task A_role_without_Settings_View_can_still_create_a_student_with_default_settings()
+    {
+        Settings.Failure = new Lms.Client.Services.ApiForbiddenException();
+        var navigation = Services.GetRequiredService<Microsoft.AspNetCore.Components.NavigationManager>();
+        var before = navigation.Uri;
+        var page = await RenderPageAsync();
+
+        await ChooseUnitAsync(page);
+
+        page.WaitForElement("[data-testid=student-code-auto]", Wait); // the default: codes are generated
+        Assert.Equal(before, navigation.Uri); // not sent to /forbidden
     }
 }

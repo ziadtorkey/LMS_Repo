@@ -14,52 +14,68 @@
 @implements IDisposable
 
 <PageTitle>@L["Clients_Title"]</PageTitle>
-<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4" Wrap="Wrap.Wrap">
-    <MudText Typo="Typo.h4" data-testid="clients-title">@L["Clients_Title"]</MudText>
-    @if (CanCreate)
-    {
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
-                   OnClick="NewClientAsync" data-testid="clients-new">@L["Clients_New"]</MudButton>
-    }
-</MudStack>
+<PageHeader Title="@L["Clients_Title"]" Subtitle="@L["Clients_Subtitle"]" TitleTestId="clients-title">
+    <Actions>
+        @if (CanCreate)
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Add"
+                       OnClick="NewClientAsync" data-testid="clients-new">@L["Clients_New"]</MudButton>
+        }
+    </Actions>
+</PageHeader>
 
-<MudStack Row="true" Spacing="2" Class="mb-3" AlignItems="AlignItems.Center">
-    <MudTextField T="string" @bind-Value="_searchText" Label="@L["Common_Search"]" Immediate="true" Clearable="true"
-                  OnKeyDown="OnSearchKey" data-testid="clients-search" />
-    <MudIconButton Icon="@Icons.Material.Filled.Search" aria-label="@L["Common_Search"]" OnClick="SearchAsync"
-                   data-testid="clients-search-button" />
-</MudStack>
+<SectionCard Flush="true">
+    <div class="lms-filters" role="search" aria-label="@L["Common_Filters"]">
+        <div class="lms-filter lms-filter-search lms-search-row">
+            <MudTextField T="string" @bind-Value="_searchText" Label="@L["Common_Search"]" Immediate="true" Clearable="true"
+                          HelperText="@L["Clients_SearchHelp"]" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Rounded.Search"
+                          OnKeyDown="OnSearchKey" data-testid="clients-search" />
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="SearchAsync" aria-label="@L["Common_Search"]"
+                       data-testid="clients-search-button">@L["Common_Search"]</MudButton>
+        </div>
+    </div>
 
-<ServerTable @ref="_table" T="ClientDto" ServerData="LoadAsync">
-    <HeaderContent>
-        <MudTh>@L["Common_Name"]</MudTh>
-        <MudTh>@L["Clients_ShortCode"]</MudTh>
-        <MudTh>@L["Clients_Type"]</MudTh>
-        <MudTh>@L["Common_Status"]</MudTh>
-        <MudTh>@L["Clients_CreatedOn"]</MudTh>
-        <MudTh>@L["Common_Actions"]</MudTh>
-    </HeaderContent>
-    <RowTemplate Context="client">
-        <MudTd>@Culture.Pick(client.NameAr, client.NameEn)</MudTd>
-        <MudTd><span dir="ltr" data-testid="@($"client-short-code-{client.Id}")">@client.ShortCode</span></MudTd>
-        <MudTd>@L[$"ClientType_{client.Type}"]</MudTd>
-        <MudTd>
-            <MudChip T="string" Size="Size.Small" Color="@(client.Status == OrganizationStatuses.Active ? Color.Success : Color.Warning)">
-                @L[$"ClientStatus_{client.Status}"]
-            </MudChip>
-        </MudTd>
-        <MudTd>@client.CreatedAt.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)</MudTd>
-        <MudTd>
-            @if (CanUpdate)
-            {
-                <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="() => ToggleAsync(client)"
-                           data-testid="@($"client-toggle-{client.Id}")">
-                    @(client.Status == OrganizationStatuses.Active ? L["Clients_Suspend"] : L["Clients_Activate"])
-                </MudButton>
-            }
-        </MudTd>
-    </RowTemplate>
-</ServerTable>
+    <ServerTable @ref="_table" T="ClientDto" ServerData="LoadAsync" EmptyTitle="@L["Clients_EmptyTitle"]"
+                 EmptyText="@L["Clients_EmptyText"]" EmptyIcon="@Icons.Material.Rounded.Business">
+        <HeaderContent>
+            <MudTh>@L["Common_Name"]</MudTh>
+            <MudTh>@L["Clients_ShortCode"]</MudTh>
+            <MudTh>@L["Clients_Type"]</MudTh>
+            <MudTh>@L["Common_Status"]</MudTh>
+            <MudTh>@L["Clients_CreatedOn"]</MudTh>
+            <MudTh><span class="lms-visually-hidden">@L["Common_Actions"]</span></MudTh>
+        </HeaderContent>
+        <RowTemplate Context="client">
+            <MudTd DataLabel="@L["Common_Name"]"><span class="lms-cell-strong">@Culture.Pick(client.NameAr, client.NameEn)</span></MudTd>
+            <MudTd DataLabel="@L["Clients_ShortCode"]">
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Class="lms-code-chip">
+                    <span dir="ltr" data-testid="@($"client-short-code-{client.Id}")">@client.ShortCode</span>
+                </MudChip>
+            </MudTd>
+            <MudTd DataLabel="@L["Clients_Type"]">@L[$"ClientType_{client.Type}"]</MudTd>
+            <MudTd DataLabel="@L["Common_Status"]">
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Class="lms-status-chip"
+                         Color="@(client.Status == OrganizationStatuses.Active ? Color.Success : Color.Warning)">
+                    @L[$"ClientStatus_{client.Status}"]
+                </MudChip>
+            </MudTd>
+            <MudTd DataLabel="@L["Clients_CreatedOn"]">
+                <span dir="ltr" class="lms-muted lms-date-cell">@client.CreatedAt.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)</span>
+            </MudTd>
+            <MudTd Class="lms-cell-actions">
+                @if (CanUpdate)
+                {
+                    var active = client.Status == OrganizationStatuses.Active;
+                    <MudButton Size="Size.Small" Variant="Variant.Text" Color="@(active ? Color.Warning : Color.Primary)"
+                               StartIcon="@(active ? Icons.Material.Rounded.PauseCircle : Icons.Material.Rounded.PlayCircle)"
+                               OnClick="() => ToggleAsync(client)" data-testid="@($"client-toggle-{client.Id}")">
+                        @(active ? L["Clients_Suspend"] : L["Clients_Activate"])
+                    </MudButton>
+                }
+            </MudTd>
+        </RowTemplate>
+    </ServerTable>
+</SectionCard>
 
 @code {
     private ServerTable<ClientDto> _table = default!;

@@ -178,7 +178,7 @@ public sealed class ExceptionQueuePageTests : StudentsTestContext
         Assert.Contains("استثناءات التسجيل", rtl.WaitForElement("[data-testid=exceptions-title]").TextContent);
         var table = rtl.WaitForElement(".mud-table-body");
         rtl.WaitForAssertion(() => Assert.Contains("عمر خالد", rtl.Find(".mud-table-body").TextContent), Wait);
-        Assert.Contains("الجنس", table.TextContent);
+        Assert.Contains("النوع", table.TextContent);
         Assert.Contains("قيد الانتظار", rtl.Find(".mud-table-body").TextContent);
     }
 }
