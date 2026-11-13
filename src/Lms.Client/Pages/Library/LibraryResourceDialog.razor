@@ -1,0 +1,116 @@
+@using Lms.Client.Components
+@using Lms.Client.Components.Assets
+@using Lms.Client.Components.Content
+@using Lms.Client.Components.People
+@using Lms.Client.Services.Api
+@using Lms.Shared
+@using Lms.Shared.Content
+@using Lms.Shared.Courses
+@using Lms.Shared.Library
+@using Lms.Shared.Organizations
+@inject ILibraryApi Library
+@inject NavigationManager Navigation
+@inject ICultureService Culture
+
+@* Create or edit a library resource of a unit: titles, type, levels, subject, tags, cover and file (or a link), download rule. *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="2">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" data-testid="library-form-error">@_error</MudAlert>
+            }
+            @if (Existing is null)
+            {
+                <UnitPicker Value="_unit" ValueChanged="v => _unit = v" Label="@L["Library_Unit"]" Required="true" TestId="library-unit" />
+            }
+            <BilingualNameFields NameAr="@_titleAr" NameArChanged="v => _titleAr = v" NameEn="@_titleEn" NameEnChanged="v => _titleEn = v" IdPrefix="library-title" />
+            <MudTextField T="string" @bind-Value="_descriptionAr" Label="@L["Library_DescriptionAr"]" Lines="2" MaxLength="2000" dir="rtl" lang="ar" data-testid="library-description-ar" />
+            <MudTextField T="string" @bind-Value="_descriptionEn" Label="@L["Library_DescriptionEn"]" Lines="2" MaxLength="2000" dir="ltr" lang="en" data-testid="library-description-en" />
+            <MudSelect T="string" Value="_type" ValueChanged="v => _type = v" Label="@L["Library_Type"]" data-testid="library-form-type">
+                @foreach (var t in LibraryResourceTypes.All)
+                {
+                    <MudSelectItem T="string" Value="@t">@L["LibraryType_" + t]</MudSelectItem>
+                }
+            </MudSelect>
+            <MudSelect T="Guid" MultiSelection="true" SelectedValues="_levels" SelectedValuesChanged="v => _levels = v.ToHashSet()"
+                       Label="@L["Library_Level"]" HelperText="@L["Library_LevelHint"]" data-testid="library-form-levels">
+                @foreach (var l in LevelTypes)
+                {
+                    <MudSelectItem T="Guid" Value="@l.Id">@Culture.Pick(l.NameAr, l.NameEn)</MudSelectItem>
+                }
+            </MudSelect>
+            <MudSelect T="Guid?" @bind-Value="_course" Label="@L["Library_Subject"]" Clearable="true" data-testid="library-form-course">
+                @foreach (var c in Courses)
+                {
+                    <MudSelectItem T="Guid?" Value="@((Guid?)c.Id)">@Culture.Pick(c.NameAr, c.NameEn)</MudSelectItem>
+                }
+            </MudSelect>
+            <MudTextField T="string" @bind-Value="_tags" Label="@L["Library_Tags"]" HelperText="@L["Library_TagsHint"]" dir="auto" data-testid="library-form-tags" />
+
+            @if (_type == LibraryResourceTypes.Link)
+            {
+                <MudTextField T="string" @bind-Value="_url" Label="@L["Module_Url"]" MaxLength="2000" InputType="InputType.Url" dir="ltr" data-testid="library-form-url" />
+            }
+            else if (_unit is { } unit)
+            {
+                <MudText Typo="Typo.caption">@L["Library_File"]@(_fileName is null ? "" : " — " + _fileName)</MudText>
+                <AssetUploader OrgUnitId="unit" OnUploaded="a => { _fileId = a.Id; _fileName = a.FileName; }" />
+            }
+            @if (_unit is { } coverUnit)
+            {
+                <MudText Typo="Typo.caption">@L["Library_Cover"]@(_coverName is null ? "" : " — " + _coverName)</MudText>
+                <AssetUploader OrgUnitId="coverUnit" AcceptedKinds="@(new[] { AssetKinds.Image })" OnUploaded="a => { _coverId = a.Id; _coverName = a.FileName; }" />
+            }
+            <MudSwitch T="bool" @bind-Value="_downloadAllowed" Label="@L["Library_DownloadAllowed"]" Color="Color.Primary" data-testid="library-form-download" />
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()">@L["Common_Cancel"]</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_saving" data-testid="library-save">@L["Common_Save"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private string _titleAr = "", _titleEn = "", _type = LibraryResourceTypes.Document, _tags = "";
+    private string? _descriptionAr, _descriptionEn, _url, _error, _fileName, _coverName;
+    private Guid? _unit, _course, _fileId, _coverId;
+    private HashSet<Guid> _levels = [];
+    private bool _downloadAllowed = true, _saving;
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public LibraryResourceDto? Existing { get; set; }
+    [Parameter] public IReadOnlyList<LevelTypeDto> LevelTypes { get; set; } = [];
+    [Parameter] public IReadOnlyList<CourseSummaryDto> Courses { get; set; } = [];
+
+    protected override void OnInitialized()
+    {
+        if (Existing is not { } e) return;
+        _unit = e.OrgUnitId; _titleAr = e.TitleAr; _titleEn = e.TitleEn; _descriptionAr = e.DescriptionAr; _descriptionEn = e.DescriptionEn;
+        _type = e.Type; _levels = e.LevelTypeIds.ToHashSet(); _course = e.CourseId; _tags = string.Join(", ", e.Tags);
+        _url = e.Url; _fileId = e.File?.Id; _fileName = e.File?.FileName; _coverId = e.Cover?.Id; _coverName = e.Cover?.FileName;
+        _downloadAllowed = e.DownloadAllowed;
+    }
+
+    private IReadOnlyList<string> ParsedTags() =>
+        _tags.Split([',', '،'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+
+    private async Task SaveAsync()
+    {
+        _error = null;
+        if (_unit is null || string.IsNullOrWhiteSpace(_titleAr) || string.IsNullOrWhiteSpace(_titleEn)) { _error = L["Common_Required"]; return; }
+        if (_type == LibraryResourceTypes.Link ? !ModuleLinks.IsAllowed(_url) : _fileId is null)
+        {
+            _error = L[_type == LibraryResourceTypes.Link ? "Module_UrlInvalid" : "Library_FileRequired"];
+            return;
+        }
+        var request = new SaveLibraryResourceRequest(_unit.Value, _titleAr.Trim(), _titleEn.Trim(), _descriptionAr, _descriptionEn, _type,
+            _levels.ToList(), _course, ParsedTags(), _coverId, _type == LibraryResourceTypes.Link ? null : _fileId,
+            _type == LibraryResourceTypes.Link ? _url : null, _downloadAllowed);
+        _saving = true;
+        var saved = await ApiCalls.RunAsync(() => Existing is null ? Library.CreateAsync(request) : Library.UpdateAsync(Existing.Id, request),
+            Navigation, L, m => _error = m);
+        _saving = false;
+        if (saved) MudDialog.Close(DialogResult.Ok(true));
+    }
+}

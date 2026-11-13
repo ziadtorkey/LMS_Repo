@@ -80,10 +80,16 @@ public sealed class YearsTests(E2EFixture fixture) : E2ETestBase(fixture)
         await Expect(Page.GetByTestId("year-lock")).ToHaveCountAsync(0); // only Closed years are read-only
     }
 
-    /// <summary>Makes sure the school root has an Active 2027/28 and a Planned 2028/29 year; returns their names in <paramref name="culture"/>.</summary>
+    /// <summary>
+    /// Makes sure the school root has an Active year that contains today (so the seeded Teacher's assignments are current, #455)
+    /// and a Planned year after it; returns their names in <paramref name="culture"/>. Years run 1 September to 30 June.
+    /// </summary>
     private async Task<(string Active, string Planned)> EnsureSchoolYearsAsync(string culture)
     {
-        string activeAr = "العام E2E 2027/2028", activeEn = "E2E Year 2027/2028", plannedAr = "العام E2E 2028/2029", plannedEn = "E2E Year 2028/2029";
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var startYear = today.Month >= 9 ? today.Year : today.Year - 1;
+        string activeLabel = $"{startYear}/{startYear + 1}", plannedLabel = $"{startYear + 1}/{startYear + 2}";
+        string activeAr = $"العام E2E {activeLabel}", activeEn = $"E2E Year {activeLabel}", plannedAr = $"العام E2E {plannedLabel}", plannedEn = $"E2E Year {plannedLabel}";
         var tree = new OrgTreePage(Page);
         await tree.GotoAsync();
         var schoolId = await tree.IdOfAsync(SchoolName(culture));
@@ -94,13 +100,13 @@ public sealed class YearsTests(E2EFixture fixture) : E2ETestBase(fixture)
         var planned = Pick(culture, plannedAr, plannedEn);
         if (await years.Year(active).CountAsync() == 0)
         {
-            var id = await years.DefineYearAsync(activeAr, activeEn, new DateOnly(2027, 9, 1), new DateOnly(2028, 6, 30), active);
+            var id = await years.DefineYearAsync(activeAr, activeEn, new DateOnly(startYear, 9, 1), new DateOnly(startYear + 1, 6, 30), active);
             await years.ActivateAsync(id);
         }
 
         if (await years.Year(planned).CountAsync() == 0)
         {
-            await years.DefineYearAsync(plannedAr, plannedEn, new DateOnly(2028, 9, 1), new DateOnly(2029, 6, 30), planned);
+            await years.DefineYearAsync(plannedAr, plannedEn, new DateOnly(startYear + 1, 9, 1), new DateOnly(startYear + 2, 6, 30), planned);
         }
 
         // The selector loads its list once per context; reload so it sees years created just now.
