@@ -9,7 +9,8 @@ namespace Lms.Shared.Packages;
 /// in the lesson plan from the upload on, so the module list can show a "Checking…" row before the module exists; <c>ModuleId</c> is
 /// set once it is attached. <c>Status</c> moves <c>Uploaded → Validating → Ready</c> or <c>Rejected</c> (<c>RejectReason</c> is a
 /// <see cref="PackageRejectReasons"/> value, null otherwise). <c>Title</c>, <c>Version</c> (SCORM only) and <c>MainLibrary</c>
-/// (H5P only) are read from the package once validated.
+/// (H5P only) are read from the package once validated. <c>GradingMethod</c> (a <see cref="PackageGradingMethods"/> value) is set
+/// once attached (D57); null before.
 /// </summary>
 public sealed record PackageUploadDto(
     Guid Id,
@@ -23,7 +24,8 @@ public sealed record PackageUploadDto(
     string? Version,
     string? MainLibrary,
     Guid? ModuleId,
-    DateTime CreatedAtUtc);
+    DateTime CreatedAtUtc,
+    string? GradingMethod = null);
 
 /// <summary>Multipart field names of POST /api/class-courses/{id}/packages.</summary>
 public static class PackageUploadForm
@@ -51,9 +53,10 @@ public sealed record PackageListQuery(Guid? LessonKey = null, string? Status = n
 /// POST /api/packages/{id}/module — attaches a <c>Ready</c> package to the lesson it was uploaded for (<c>LessonKey</c> of the upload) as a <c>Scorm</c> or
 /// <c>H5p</c> module (<c>Packages.Upload</c> and <c>Modules.Manage</c> on the ClassCourse). Completion rule from
 /// <see cref="CompletionRules.ForActivity"/> (<c>None</c>, <c>Submit</c>, <c>Score</c>). 409 <c>package_not_ready</c> unless
-/// <c>Ready</c>. Returns the new module node.
+/// <c>Ready</c>. <c>GradingMethod</c> is a <see cref="PackageGradingMethods"/> value (default <c>Highest</c>, D57); any other value is 400
+/// <c>validation_failed</c>. Returns the new module node.
 /// </summary>
-public sealed record AttachPackageModuleRequest(ModuleSettingsInput Module);
+public sealed record AttachPackageModuleRequest(ModuleSettingsInput Module, string GradingMethod = PackageGradingMethods.Highest);
 
 /// <summary>
 /// POST /api/packages/{id}/launch (<c>Packages.View</c>, the caller is a student enrolled in the ClassCourse and the module is
@@ -102,3 +105,23 @@ public sealed record PackageAttemptDto(
     decimal? ScoreMax,
     long LastSeq,
     DateTime? CompletedAtUtc);
+
+/// <summary>
+/// GET /api/packages/{id}/my-state (<c>Packages.View</c>, a student enrolled in the ClassCourse, module visible; staff 404) — what the
+/// module viewer needs before launch to pick its button (D57): the module's <c>GradingMethod</c>, the student's latest attempt (null if
+/// none), <c>HasCompletedAttempt</c>, and <c>GradedScore</c> = the score the gradebook holds under the method (null until a completed
+/// attempt is graded).
+/// </summary>
+public sealed record PackageStudentStateDto(
+    string GradingMethod,
+    PackageAttemptDto? LatestAttempt,
+    bool HasCompletedAttempt,
+    decimal? GradedScore);
+
+/// <summary>
+/// PUT /api/packages/{id}/grading-method (<c>Modules.Manage</c> on the ClassCourse; PlacementGuard: closed class or year 409) — changes
+/// which completed attempt is graded (D57). Allowed at any time: the server recomputes the graded score from the completed attempts
+/// and writes a grade event only if it changes. 409 <c>package_not_attached</c> before the package is attached; an unknown value is
+/// 400 <c>validation_failed</c>.
+/// </summary>
+public sealed record UpdatePackageGradingMethodRequest(string GradingMethod);

@@ -95,6 +95,8 @@ public sealed class IsolationBypassGuardTests
             "the caller's own supervisor rows sit at the course owner unit, which may be above their assignment; own user and active client only, deleted rows excluded (M3 Task 12, D42; fixed in #219)",
         ["src/Lms.Infrastructure/Enrollment/ExceptionLookups.cs"] =
             "the course and its supervisors of an exceptional-enrollment request are owned above the class, out of an approver's scope; client matched, deleted rows excluded, only names and user ids leave (M3 Task 11, #219)",
+        ["src/Lms.Api/Features/Forums/AnnouncementNotifier.cs"] =
+            "the course of a class course is owned above the caller's scope; only its names go into the notification; client matched, deleted rows excluded (M4a Task 13, #363)",
         ["src/Lms.Api/Features/Library/LibraryQueries.cs"] =
             "library resources, their tags, levels, owner unit names and unit-owned assets sit at ancestors of the browsed unit, above the caller's scope (D13: visible below the owner, read-only); client matched, deleted rows excluded, ancestor chain of the browsed unit only (M4a Task 12, #362)",
         ["src/Lms.Infrastructure/Enrollment/PlacementGuard.cs"] =
@@ -107,6 +109,8 @@ public sealed class IsolationBypassGuardTests
             "the blueprint of a course (owned by an ancestor unit) and the academic year of a class are read for classes anywhere in the client; client matched, deleted rows excluded (M3 Task 17, #225)",
         ["src/Lms.Infrastructure/Classes/LessonPlans/ClassLessonPlanSync.cs"] =
             "counting the plans of a published course across the whole client (classes outside the publisher's scope); client matched, deleted rows excluded (M3 Task 17, #225)",
+        ["src/Lms.Api/Features/CourseAssignments/CourseAssignmentNotifier.cs"] =
+            "course names of a class course for the assignment notices; the course is owned by an ancestor unit above the caller's scope; names only, client matched, deleted excluded (M4a Task 9, #359)",
         ["src/Lms.Infrastructure/People/PersonDuplicateFinder.cs"] =
             "client-wide duplicate checks reach sibling subtrees outside the caller's scope; client matched, deleted rows excluded, only the field name leaves (M2 Task 5, #157)",
     };
