@@ -1,0 +1,101 @@
+@using Lms.Client.Components.People
+@using Lms.Client.Services.Api
+@using Lms.Shared.Courses
+@using Lms.Shared.People
+@using Lms.Shared.Teaching
+@inject ITeachingApi Api
+@inject IStaffApi Staff
+@inject ICoursesApi Courses
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+@* Grants eligibility to teach: every chosen teacher x every chosen course at one unit (and below). *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="2">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" data-testid="dialog-error">@_error</MudAlert>
+            }
+            <UnitPicker Value="_unitId" ValueChanged="OnUnitChangedAsync" Label="@L["Eligibility_Unit"]" Required="true" TestId="grant-unit" />
+
+            <MudText Typo="Typo.subtitle2">@L["Eligibility_Teachers"]</MudText>
+            <MudStack Spacing="0" Style="max-height: 12rem; overflow-y: auto" data-testid="grant-teachers">
+                @foreach (var teacher in _staff)
+                {
+                    var id = teacher.UserId;
+                    <MudCheckBox T="bool" Value="_teachers.Contains(id)" ValueChanged="v => Toggle(_teachers, id, v)" Dense="true"
+                                 Label="@Culture.Pick(teacher.NameAr, teacher.NameEn)" data-testid="@($"grant-teacher-{id}")" />
+                }
+            </MudStack>
+
+            <MudText Typo="Typo.subtitle2">@L["Eligibility_Courses"]</MudText>
+            <MudStack Spacing="0" Style="max-height: 12rem; overflow-y: auto" data-testid="grant-courses">
+                @foreach (var course in _courses)
+                {
+                    var id = course.Id;
+                    <MudCheckBox T="bool" Value="_courseIds.Contains(id)" ValueChanged="v => Toggle(_courseIds, id, v)" Dense="true"
+                                 Label="@($"{Culture.Pick(course.NameAr, course.NameEn)} ({course.Code})")" data-testid="@($"grant-course-{course.Code}")" />
+                }
+            </MudStack>
+
+            <MudText Typo="Typo.caption" Color="@(Pairs > MaxPairs ? Color.Error : Color.Default)" data-testid="grant-pairs">@L["Eligibility_Pairs", Pairs, MaxPairs]</MudText>
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="@(_saving || Pairs == 0 || Pairs > MaxPairs || _unitId is null)"
+                   data-testid="dialog-save">@L["Eligibility_Grant"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private const int MaxPairs = 200;
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    /// <summary>The unit to start with (the page's unit filter).</summary>
+    [Parameter] public Guid? InitialUnitId { get; set; }
+
+    private IReadOnlyList<StaffSummaryDto> _staff = [];
+    private IReadOnlyList<CourseSummaryDto> _courses = [];
+    private readonly HashSet<Guid> _teachers = [], _courseIds = [];
+    private Guid? _unitId;
+    private bool _saving;
+    private string? _error;
+
+    private int Pairs => _teachers.Count * _courseIds.Count;
+
+    protected override Task OnInitializedAsync() => InitialUnitId is { } unit ? OnUnitChangedAsync(unit) : Task.CompletedTask;
+
+    private static void Toggle(HashSet<Guid> set, Guid id, bool on)
+    {
+        if (on) set.Add(id); else set.Remove(id);
+    }
+
+    private async Task OnUnitChangedAsync(Guid? unit)
+    {
+        _unitId = unit;
+        _teachers.Clear();
+        _courseIds.Clear();
+        _staff = [];
+        _courses = [];
+        if (unit is not { } id) return;
+        await ApiCalls.RunAsync(async () =>
+        {
+            _staff = (await Staff.ListAsync(new StaffQuery(id, true, null, PersonStatuses.Active, null, true, null, 1, 200))).Items;
+            _courses = (await Courses.ListAsync(new CourseQuery(id, true, CourseStatuses.Active, null, false, null, 1, 200))).Items;
+        }, Navigation, L, message => _error = message);
+    }
+
+    private async Task SaveAsync()
+    {
+        _error = null;
+        _saving = true;
+        // teacher_not_in_unit (a chosen person has no teacher role there) comes back as the localized message.
+        var saved = await ApiCalls.RunAsync(() => Api.GrantEligibilityAsync(new GrantEligibilityRequest(_unitId!.Value, _teachers.ToList(), _courseIds.ToList())),
+            Navigation, L, message => _error = message);
+        _saving = false;
+        if (saved) MudDialog.Close(DialogResult.Ok(true));
+    }
+}
