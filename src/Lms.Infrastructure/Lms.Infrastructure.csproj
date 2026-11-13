@@ -15,6 +15,7 @@
     <PackageReference Include="MySql.EntityFrameworkCore" />
     <PackageReference Include="Hangfire.Core" />
     <PackageReference Include="ClosedXML" />
+    <PackageReference Include="HtmlSanitizer" />
     <PackageReference Include="MailKit" />
     <PackageReference Include="Minio" />
     <PackageReference Include="MySqlConnector" />

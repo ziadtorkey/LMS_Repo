@@ -133,4 +133,76 @@ public static class ProblemCodes
 
     /// <summary>Only a module with the Manual completion rule can be marked complete by the student.</summary>
     public const string completion_not_manual = nameof(completion_not_manual);
+
+    // M4a wave 2 (assignments, quizzes, library, forums; M4a plan Task 2)
+    /// <summary><c>Penalty</c> needs <c>PenaltyPercent</c> 1–100; <c>Allow</c> and <c>Block</c> need none.</summary>
+    public const string late_policy_invalid = nameof(late_policy_invalid);
+
+    /// <summary>The assignment no longer takes submissions (past due under <c>Block</c>, or not visible yet).</summary>
+    public const string submission_closed = nameof(submission_closed);
+
+    /// <summary>The resubmission rule does not allow another submission now.</summary>
+    public const string resubmission_not_allowed = nameof(resubmission_not_allowed);
+
+    /// <summary>The quiz has closed (<c>ClosesAtUtc</c> passed): no new attempt.</summary>
+    public const string quiz_closed = nameof(quiz_closed);
+
+    /// <summary>The quiz has not opened yet (<c>OpensAtUtc</c> in the future) or has no questions.</summary>
+    public const string quiz_not_open = nameof(quiz_not_open);
+
+    /// <summary>The student has used every allowed attempt.</summary>
+    public const string attempt_limit_reached = nameof(attempt_limit_reached);
+
+    /// <summary>The attempt has ended (time limit or close, plus the grace) or was already submitted.</summary>
+    public const string attempt_expired = nameof(attempt_expired);
+
+    /// <summary>Correct options, points or the pool cannot change once a student has started an attempt.</summary>
+    public const string quiz_has_attempts = nameof(quiz_has_attempts);
+
+    /// <summary><c>DrawCount</c> must be between 1 and the number of questions.</summary>
+    public const string pool_draw_invalid = nameof(pool_draw_invalid);
+
+    /// <summary>The thread is locked: no new replies.</summary>
+    public const string thread_locked = nameof(thread_locked);
+
+    /// <summary>Download is disabled for this library resource; use the in-browser reader (D13).</summary>
+    public const string download_disabled = nameof(download_disabled);
+
+    // M4b wave 3b: SCORM and H5P packages (the reject reason of package_invalid is a PackageRejectReasons value in ProblemDetails.reason).
+
+    /// <summary>The archive or its content failed validation; <c>reason</c> is a <c>PackageRejectReasons</c> value.</summary>
+    public const string package_invalid = nameof(package_invalid);
+
+    /// <summary>The archive is larger than <c>Files.MaxUploadMb</c> or would exceed the client's package storage.</summary>
+    public const string package_too_large = nameof(package_too_large);
+
+    /// <summary>The package is not <c>Ready</c> (still validating, or rejected): it cannot be attached, launched or previewed.</summary>
+    public const string package_not_ready = nameof(package_not_ready);
+
+    /// <summary>A tracking commit or finish was refused (closed attempt, preview token, oversize, unknown key, rate).</summary>
+    public const string package_commit_rejected = nameof(package_commit_rejected);
+
+    /// <summary>No separate content origin is configured (D56 fail-closed): upload, attach, launch and preview answer this (409).</summary>
+    public const string package_host_not_configured = nameof(package_host_not_configured);
+    // M4b wave 3a (live sessions; M4b plan Task 1)
+    /// <summary>
+    /// The meeting provider cannot take the request now: the host pool or the client's host share is exhausted, the
+    /// daily create cap is reached, or Zoom is rate limiting / down (409 or 503, with <c>Retry-After</c>).
+    /// </summary>
+    public const string provider_unavailable = nameof(provider_unavailable);
+
+    /// <summary>The platform meeting provider (Zoom) is not configured or not healthy, so the feature cannot be enabled.</summary>
+    public const string provider_not_configured = nameof(provider_not_configured);
+
+    /// <summary>The session is outside its join window (by server time): too early, ended or cancelled.</summary>
+    public const string live_session_not_open = nameof(live_session_not_open);
+
+    /// <summary>The feature flag for this action (e.g. <c>Features.VirtualClasses</c>) is off for the unit (403).</summary>
+    public const string feature_disabled = nameof(feature_disabled);
+
+    /// <summary>
+    /// The recurrence is invalid: no end date and no count, both given, more than 52 occurrences, no weekday, an
+    /// unknown time zone, or an end before the start.
+    /// </summary>
+    public const string recurrence_invalid = nameof(recurrence_invalid);
 }
