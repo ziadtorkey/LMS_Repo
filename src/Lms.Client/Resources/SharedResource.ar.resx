@@ -1557,4 +1557,6 @@
   <data name="Live_EveryWeeks_Two" xml:space="preserve"><value>كل أسبوعين</value></data>
   <data name="Live_EveryWeeks_Few" xml:space="preserve"><value>كل {0} أسابيع</value></data>
   <data name="Live_EveryWeeks_Many" xml:space="preserve"><value>كل {0} أسبوعاً</value></data>
+  <data name="Live_ParticipantsIntro" xml:space="preserve"><value>من انضم إلى هذه الجلسة بحسب تقرير Zoom. الضيف هو من تعذّرت مطابقته مع طالب مسجّل.</value></data>
+  <data name="Live_NoParticipantsYet" xml:space="preserve"><value>يظهر المشاركون هنا بعد انتهاء الجلسة.</value></data>
 </root>

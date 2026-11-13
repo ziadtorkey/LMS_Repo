@@ -84,10 +84,12 @@ else if (_session is { } s)
 
             @if (IsStaff && phase is LivePhase.Live or LivePhase.Ended)
             {
-                <div>
+                <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
                     <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.Groups" OnClick="ShowParticipantsAsync"
                                data-testid="live-participants">@L["Live_Participants"]</MudButton>
-                </div>
+                    <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.Link" OnClick="EditRecordingAsync"
+                               data-testid="live-recording-edit">@L["Live_RecordingLink"]</MudButton>
+                </MudStack>
             }
         </MudStack>
     </SectionCard>
@@ -221,7 +223,17 @@ else if (_session is { } s)
     private async Task ShowParticipantsAsync()
     {
         if (_session is null) return;
-        await LiveParticipantsDialog.ShowAsync(Dialogs, L["Live_Participants"], _session.Id);
+        await LiveParticipantsDialog.ShowAsync(Dialogs, L["Live_Participants"], _session.Id, Phase() == LivePhase.Ended);
+    }
+
+    /// <summary>Staff attach or change the recording link (the dialog of the schedule page); the panel then reloads.</summary>
+    private async Task EditRecordingAsync()
+    {
+        if (_session is null) return;
+        var dialog = await Dialogs.ShowAsync<Lms.Client.Pages.LiveSessions.RecordingLinkDialog>(L["Live_RecordingTitle"],
+            new DialogParameters<Lms.Client.Pages.LiveSessions.RecordingLinkDialog> { { x => x.Session, _session } },
+            new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true });
+        if (await dialog.Result is { Canceled: false }) await ReloadAsync();
     }
 
     public void Dispose() => _timer?.Dispose();

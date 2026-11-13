@@ -349,9 +349,32 @@ public sealed class LiveSessionPanelTests : StaffTestContext
         Assert.Contains(chips, c => c.GetAttribute("data-match") == ParticipantMatchStates.Matched);
         Assert.Contains(chips, c => c.GetAttribute("data-match") == ParticipantMatchStates.Guest && c.TextContent.Contains("Guest"));
         Assert.Contains("iPhone (guest)", Dialogs.Markup);
+        Assert.NotNull(Dialogs.Find("[data-testid=participants-intro]"));
+        Assert.Contains(Dialogs.FindAll("[data-testid=participants-table] td bdi"), b => b.TextContent == "iPhone (guest)");
+        Assert.Contains("lms-simple-table", Dialogs.Find("[data-testid=participants-table]").ClassList);
+        Assert.NotNull(cut.Find("[data-testid=live-recording-edit]")); // staff can attach or change the recording link
         // Safe at 360 px: the table turns into labelled cards (lms-stack-table, every cell has its data-label).
         Assert.Contains("lms-stack-table", Dialogs.Find("[data-testid=participants-table]").ClassList);
         Assert.All(Dialogs.FindAll("[data-testid=participants-table] tbody td"), td => Assert.False(string.IsNullOrEmpty(td.GetAttribute("data-label"))));
+    }
+
+    [Theory]
+    [InlineData(LiveSessionStatuses.Ended, "No participants yet")]
+    [InlineData(LiveSessionStatuses.Live, "appear here after the session ends")]
+    public async Task The_empty_participants_list_says_whether_the_report_is_still_to_come(string status, string expected)
+    {
+        var empty = new FakeLiveSessionsApi(seedDemo: false);
+        var start = status == LiveSessionStatuses.Ended ? _serverNow.AddHours(-3) : _serverNow.AddMinutes(-5);
+        var session = empty.Seed(CourseId, LessonKey, start, 60, status, "x");
+        Services.AddSingleton<ILiveSessionsApi>(empty);
+        await GrantAsync(Permissions.LiveSessions.View, Permissions.LiveSessions.Manage, Permissions.Modules.View);
+        RenderProviders();
+        var cut = Render<LiveSessionPanel>(p => p.Add(x => x.SessionId, session.Id).Add(x => x.ClassCourseId, CourseId));
+        cut.WaitForAssertion(() => Assert.NotNull(cut.Find("[data-testid=live-participants]")), Wait);
+
+        cut.Find("[data-testid=live-participants]").Click();
+
+        Dialogs.WaitForAssertion(() => Assert.Contains(expected, Dialogs.Find("[data-testid=participants-empty]").TextContent), Wait);
     }
 
     [Fact]

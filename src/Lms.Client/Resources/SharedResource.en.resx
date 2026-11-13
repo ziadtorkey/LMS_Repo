@@ -1557,4 +1557,6 @@
   <data name="Live_EveryWeeks_Two" xml:space="preserve"><value>Every 2 weeks</value></data>
   <data name="Live_EveryWeeks_Few" xml:space="preserve"><value>Every {0} weeks</value></data>
   <data name="Live_EveryWeeks_Many" xml:space="preserve"><value>Every {0} weeks</value></data>
+  <data name="Live_ParticipantsIntro" xml:space="preserve"><value>Who joined this session, from Zoom's report. A guest is someone Zoom could not match to an enrolled student.</value></data>
+  <data name="Live_NoParticipantsYet" xml:space="preserve"><value>Participants appear here after the session ends.</value></data>
 </root>

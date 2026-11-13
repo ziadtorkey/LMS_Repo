@@ -11,6 +11,7 @@
 <MudDialog>
     <DialogContent>
         <MudStack Spacing="2" data-testid="participants-dialog">
+            <MudText Typo="Typo.body2" Class="lms-muted" data-testid="participants-intro">@L["Live_ParticipantsIntro"]</MudText>
             @if (_loading)
             {
                 <LoadingState Lines="3" TestId="participants-loading" />
@@ -21,11 +22,11 @@
             }
             else if (_rows.Count == 0)
             {
-                <MudText Typo="Typo.body2" Class="lms-muted" data-testid="participants-empty">@L["Live_NoParticipants"]</MudText>
+                <MudText Typo="Typo.body2" Class="lms-muted" data-testid="participants-empty">@L[Ended ? "Live_NoParticipants" : "Live_NoParticipantsYet"]</MudText>
             }
             else
             {
-                <MudSimpleTable Dense="true" Outlined="true" Class="lms-stack-table" data-testid="participants-table">
+                <MudSimpleTable Dense="true" Outlined="true" Class="lms-simple-table lms-stack-table" data-testid="participants-table">
                     <thead>
                         <tr>
                             <th>@L["Live_Participant"]</th>
@@ -39,7 +40,7 @@
                         @foreach (var p in _rows)
                         {
                             <tr data-testid="@($"participant-{p.Id}")">
-                                <td data-label="@L["Live_Participant"]">@Name(p)</td>
+                                <td data-label="@L["Live_Participant"]"><bdi>@Name(p)</bdi></td>
                                 <td data-label="@L["Live_Joined"]"><span dir="ltr">@Time(p.JoinedAtUtc)</span></td>
                                 <td data-label="@L["Live_Left"]"><span dir="ltr">@(p.LeftAtUtc is { } left ? Time(left) : "–")</span></td>
                                 <td data-label="@L["Live_Duration"]">@L.Count("Live_Duration_Minute", p.DurationMinutes, Culture.IsRightToLeft)</td>
@@ -71,10 +72,12 @@
 
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
     [Parameter, EditorRequired] public Guid SessionId { get; set; }
+    /// <summary>The session has ended: an empty list then means nobody joined, not that the report is still to come.</summary>
+    [Parameter] public bool Ended { get; set; }
 
-    public static async Task ShowAsync(IDialogService dialogs, string title, Guid sessionId)
+    public static async Task ShowAsync(IDialogService dialogs, string title, Guid sessionId, bool ended = true)
     {
-        var reference = await dialogs.ShowAsync<LiveParticipantsDialog>(title, new DialogParameters<LiveParticipantsDialog> { { x => x.SessionId, sessionId } },
+        var reference = await dialogs.ShowAsync<LiveParticipantsDialog>(title, new DialogParameters<LiveParticipantsDialog> { { x => x.SessionId, sessionId }, { x => x.Ended, ended } },
             new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true });
         await reference.Result;
     }
