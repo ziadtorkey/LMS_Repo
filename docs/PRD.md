@@ -367,6 +367,10 @@ All tenant-owned tables: `OrganizationId`; unit-scoped tables: `OrgUnitId`, `Org
 | D59 | Saudi standards | Grading scales, GPA and academic-year structure must follow Saudi school standards: ship Saudi presets (Ministry of Education school grade bands and descriptors in Arabic and English; university 5-point and 4-point GPA scales) and support the Saudi term structure as configured per client (two or three terms per year). Presets are data, editable per client. Owner decision 2026-11-14. |
 | D60 | Timetable rooms | Rooms are a free-text label on a timetable slot in v1; no room list or clash detection. Owner decision 2026-11-14. |
 | D61 | Excuses and alerts | Who may submit absence excuses is a per-client setting (default: guardians only). Absence alert default: 5 absences in 30 days, a late counts as half, both configurable per client. Owner decision 2026-11-14. |
+| D62 | Saudi term default | The Saudi preset defaults to two terms per year for 2026-27; each client may switch to three. Owner decision 2026-11-14. |
+| D63 | University GPA default | The pilot university uses the 5.00-point GPA scale by default; the 4.00-point scale ships as an alternative preset. Owner decision 2026-11-14. |
+| D64 | Time zone | Clients default to Asia/Riyadh, with a per-client time-zone setting (`Org.TimeZone`) for clients outside Saudi Arabia. Owner decision 2026-11-14. |
+| D65 | Antivirus | v1 keeps the upload scanner hook (packages, attachments) off, with strict validation and sandboxing; a real scanner (for example ClamAV) is wired before production go-live. Owner decision 2026-11-14. |
 
 ---
 
