@@ -1094,6 +1094,30 @@
   <data name="Flag_Inherit" xml:space="preserve"><value>وراثة ({0})</value></data>
   <data name="Flag_On" xml:space="preserve"><value>تشغيل</value></data>
   <data name="Flag_Off" xml:space="preserve"><value>إيقاف</value></data>
+  <data name="Nav_Exceptions" xml:space="preserve"><value>استثناءات التسجيل</value></data>
+  <data name="Exception_Title" xml:space="preserve"><value>استثناءات التسجيل</value></data>
+  <data name="Exception_Help" xml:space="preserve"><value>الطالب الذي لا يستوفي قيود المقرر لا يُسجَّل فيه إلا بعد الموافقة على استثناء.</value></data>
+  <data name="Exception_Request" xml:space="preserve"><value>طلب استثناء</value></data>
+  <data name="Exception_Reason" xml:space="preserve"><value>لماذا يجب تسجيل هذا الطالب؟</value></data>
+  <data name="Exception_Sent" xml:space="preserve"><value>تم إرسال طلب الاستثناء للموافقة.</value></data>
+  <data name="Exception_Send" xml:space="preserve"><value>إرسال الطلب</value></data>
+  <data name="Exception_ReasonRequired" xml:space="preserve"><value>أدخل سبب الاستثناء.</value></data>
+  <data name="Exception_Student" xml:space="preserve"><value>الطالب</value></data>
+  <data name="Exception_Course" xml:space="preserve"><value>المقرر</value></data>
+  <data name="Exception_Failed" xml:space="preserve"><value>القيود غير المستوفاة</value></data>
+  <data name="Exception_RequestedBy" xml:space="preserve"><value>مقدم الطلب</value></data>
+  <data name="Exception_Review" xml:space="preserve"><value>مراجعة</value></data>
+  <data name="Exception_Approve" xml:space="preserve"><value>موافقة</value></data>
+  <data name="Exception_Reject" xml:space="preserve"><value>رفض</value></data>
+  <data name="Exception_Comment" xml:space="preserve"><value>تعليق</value></data>
+  <data name="Exception_CommentRequired" xml:space="preserve"><value>أدخل سبب الرفض.</value></data>
+  <data name="Exception_Cancel" xml:space="preserve"><value>إلغاء الطلب</value></data>
+  <data name="Exception_Decision" xml:space="preserve"><value>القرار</value></data>
+  <data name="Exception_YourReason" xml:space="preserve"><value>السبب</value></data>
+  <data name="ExceptionStatus_Pending" xml:space="preserve"><value>قيد الانتظار</value></data>
+  <data name="ExceptionStatus_Approved" xml:space="preserve"><value>تمت الموافقة</value></data>
+  <data name="ExceptionStatus_Rejected" xml:space="preserve"><value>مرفوض</value></data>
+  <data name="ExceptionStatus_Cancelled" xml:space="preserve"><value>ملغي</value></data>
   <data name="TransferReject_not_placed" xml:space="preserve"><value>الطالب غير موضوع في فصل، فلا يوجد ما يُنقل منه.</value></data>
   <data name="TransferReject_different_year" xml:space="preserve"><value>الفصل الجديد تابع لعام دراسي مختلف.</value></data>
   <data name="TransferReject_same_class" xml:space="preserve"><value>الطالب موجود بالفعل في هذا الفصل.</value></data>
@@ -1523,4 +1547,29 @@
   <data name="Teacher_BulkResult" xml:space="preserve"><value>تم إنشاء {0} تعيينًا، وتخطي {1} (معيَّن بالفعل).</value></data>
   <data name="TeacherRole_Primary" xml:space="preserve"><value>أساسي</value></data>
   <data name="TeacherRole_Assistant" xml:space="preserve"><value>مساعد</value></data>
+  <data name="Students_Subtitle" xml:space="preserve"><value>طلاب جهتك وفصولهم وأولياء أمورهم.</value></data>
+  <data name="Students_EmptyTitle" xml:space="preserve"><value>لا يوجد طلاب مطابقون</value></data>
+  <data name="Students_EmptyText" xml:space="preserve"><value>غيّر عوامل التصفية أو أضف طالبًا جديدًا.</value></data>
+  <data name="Student_BackToList" xml:space="preserve"><value>العودة إلى الطلاب</value></data>
+  <data name="Student_CreateSubtitle" xml:space="preserve"><value>أضف طالبًا واربطه بفصل وبأولياء أمره.</value></data>
+  <data name="Student_SectionStudent" xml:space="preserve"><value>الطالب</value></data>
+  <data name="Student_SectionPlacement" xml:space="preserve"><value>الفصل</value></data>
+  <data name="Student_SectionAccount" xml:space="preserve"><value>الحساب</value></data>
+  <data name="Guardians_Subtitle" xml:space="preserve"><value>أولياء أمور طلابك وبيانات التواصل معهم وحالة دخولهم إلى البوابة.</value></data>
+  <data name="Guardians_EmptyTitle" xml:space="preserve"><value>لا يوجد أولياء أمور مطابقون</value></data>
+  <data name="Guardians_EmptyText" xml:space="preserve"><value>غيّر البحث، أو أضف أولياء الأمور عند إنشاء طالب.</value></data>
+  <data name="Guardian_BackToList" xml:space="preserve"><value>العودة إلى أولياء الأمور</value></data>
+  <data name="Guardian_Details" xml:space="preserve"><value>التفاصيل</value></data>
+  <data name="MyChildren_Subtitle" xml:space="preserve"><value>أبناؤك في هذه الجهة وفصولهم.</value></data>
+  <data name="MyProfile_Subtitle" xml:space="preserve"><value>حدّث بيانات التواصل الخاصة بك. التغييرات الأخرى تُرسل إلى مدرستك للموافقة.</value></data>
+  <data name="MyProfile_Details" xml:space="preserve"><value>بياناتك</value></data>
+  <data name="MyProfile_RequestsEmptyText" xml:space="preserve"><value>الطلبات التي ترسلها إلى مدرستك تظهر هنا.</value></data>
+  <data name="ChangeRequests_Subtitle" xml:space="preserve"><value>تغييرات طلب الطلاب إجراءها على بياناتهم. راجع كل طلب ووافق عليه أو ارفضه.</value></data>
+  <data name="ChangeRequests_EmptyTitle" xml:space="preserve"><value>لا توجد طلبات تغيير</value></data>
+  <data name="ChangeRequests_EmptyText" xml:space="preserve"><value>غيّر عوامل التصفية لعرض الطلبات في حالات أخرى.</value></data>
+  <data name="Import_HistoryEmptyTitle" xml:space="preserve"><value>لا توجد عمليات استيراد بعد</value></data>
+  <data name="Import_HistoryEmptyText" xml:space="preserve"><value>عمليات الاستيراد التي تجريها تظهر هنا مع نتيجتها.</value></data>
+  <data name="StudentImport_Subtitle" xml:space="preserve"><value>أضف عددًا كبيرًا من الطلاب دفعة واحدة من ملف إكسل.</value></data>
+  <data name="ClassImport_Subtitle" xml:space="preserve"><value>وزّع الطلاب على الفصول من ملف إكسل.</value></data>
+  <data name="Group_Subtitle" xml:space="preserve"><value>قسّم طلاب مقرر الفصل هذا إلى مجموعات.</value></data>
 </root>
