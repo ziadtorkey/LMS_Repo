@@ -57,10 +57,20 @@ public static partial class TemplateEndpoints
             return access.Problem;
         }
 
+        if (request.IncludeCourses)
+        {
+            // Capturing courses reads them: the caller needs Courses.View where the template is taken from.
+            var read = await http.CheckUnitAsync(Permissions.Courses.View, request.SourceOrgUnitId, ct);
+            if (read.Problem is not null)
+            {
+                return read.Problem;
+            }
+        }
+
         BranchSnapshot snapshot;
         try
         {
-            snapshot = await snapshotter.CaptureAsync(access.Unit!, request.IncludePolicies, request.IncludeSettings, ct);
+            snapshot = await snapshotter.CaptureAsync(access.Unit!, request.IncludePolicies, request.IncludeSettings, ct, request.IncludeCourses);
         }
         catch (BranchTooLargeException)
         {
@@ -72,8 +82,15 @@ public static partial class TemplateEndpoints
             NameAr = TemplatePlaceholders.Parameterize(n.NameAr, request.Parameterize),
             NameEn = TemplatePlaceholders.Parameterize(n.NameEn, request.Parameterize),
             Code = TemplatePlaceholders.Parameterize(n.Code, request.Parameterize),
+            OwnedCourses = n.OwnedCourses?.Select(c => c with
+            {
+                Code = TemplatePlaceholders.Parameterize(c.Code, request.Parameterize),
+                NameAr = TemplatePlaceholders.Parameterize(c.NameAr, request.Parameterize),
+                NameEn = TemplatePlaceholders.Parameterize(c.NameEn, request.Parameterize),
+            }).ToList(),
         }).ToList();
-        var placeholders = nodes.SelectMany(n => new[] { n.NameAr, n.NameEn, n.Code })
+        var placeholders = nodes.SelectMany(n => new[] { n.NameAr, n.NameEn, n.Code }
+                .Concat((n.OwnedCourses ?? []).SelectMany(c => new[] { c.Code, c.NameAr, c.NameEn })))
             .SelectMany(TemplatePlaceholders.Find).ToHashSet(StringComparer.Ordinal);
 
         var template = new OrgTemplate(
@@ -145,8 +162,15 @@ public static partial class TemplateEndpoints
             NameAr = TemplatePlaceholders.Apply(n.NameAr, trimmed),
             NameEn = TemplatePlaceholders.Apply(n.NameEn, trimmed),
             Code = TemplatePlaceholders.Apply(n.Code, trimmed),
+            OwnedCourses = n.OwnedCourses?.Select(c => c with
+            {
+                Code = TemplatePlaceholders.Apply(c.Code, trimmed),
+                NameAr = TemplatePlaceholders.Apply(c.NameAr, trimmed),
+                NameEn = TemplatePlaceholders.Apply(c.NameEn, trimmed),
+            }).ToList(),
         }).ToList();
-        if (nodes.Any(n => !CodePattern().IsMatch(n.Code) || n.NameAr.Length > 200 || n.NameEn.Length > 200))
+        if (nodes.Any(n => !CodePattern().IsMatch(n.Code) || n.NameAr.Length > 200 || n.NameEn.Length > 200
+            || (n.OwnedCourses ?? []).Any(c => !CodePattern().IsMatch(c.Code) || c.NameAr.Length > 200 || c.NameEn.Length > 200)))
         {
             return ApiProblems.BadRequest(ProblemCodes.validation_failed, "A unit code or name produced by the placeholders is invalid.");
         }
@@ -164,12 +188,28 @@ public static partial class TemplateEndpoints
             }).ToList();
         }
 
+        // Courses and allocations follow the same rule: written only when the caller may create and allocate courses there.
+        var skippedExtras = extras.Skipped.ToList();
+        if (nodes.Any(n => n.OwnedCourses?.Count > 0 || n.AllocatedCourseIds?.Count > 0 || n.AllocatedOwnedKeys?.Count > 0)
+            && !await BranchExtrasPermission.MayCopyCoursesAsync(http, request.TargetParentId, ct))
+        {
+            skippedExtras.Add(BranchExtrasPermission.CoursesSkipped);
+            nodes = nodes.Select(n => n with { OwnedCourses = null, AllocatedCourseIds = null, AllocatedOwnedKeys = null }).ToList();
+        }
+
         try
         {
             var result = await materializer.MaterializeAsync(
                 new BranchSnapshot(nodes), apply.Unit!, name => name, code => code, ct);
             return Results.Created(Routes.OrgUnit(result.NewRoot.Id),
-                new ApplyTemplateResultDto(result.NewRoot.Id, result.UnitsCreated, [.. extras.Skipped, .. result.SkippedLockedSettings]));
+                new ApplyTemplateResultDto(
+                    result.NewRoot.Id, result.UnitsCreated,
+                    [.. skippedExtras, .. result.SkippedLockedSettings,
+                        .. (result.SkippedAllocations ?? []).Select(c => CopyBranchEndpoint.AllocationSkipped + c)]));
+        }
+        catch (BranchCourseCodeConflictException conflict)
+        {
+            return ApiProblems.Conflict(ProblemCodes.course_code_taken, extra: conflict.Codes);
         }
         catch (BranchCodeConflictException conflict)
         {

@@ -10,6 +10,13 @@ public interface IFileStorage
     /// <exception cref="StoredFileNotFoundException"/>
     Task<Uri> GetDownloadUrlAsync(Guid fileId, TimeSpan? ttl = null, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// A presigned GET url that displays the file in the browser (inline) instead of downloading it. Storage answers HTTP
+    /// range requests, so audio and video can seek. Only for types that are safe to render (the caller decides).
+    /// </summary>
+    /// <exception cref="StoredFileNotFoundException"/>
+    Task<Uri> GetViewUrlAsync(Guid fileId, TimeSpan? ttl = null, CancellationToken cancellationToken = default);
+
     /// <summary>The stored bytes (the caller disposes the stream). Used by background jobs that process uploads.</summary>
     /// <exception cref="StoredFileNotFoundException"/>
     Task<Stream> OpenReadAsync(Guid fileId, CancellationToken cancellationToken = default);

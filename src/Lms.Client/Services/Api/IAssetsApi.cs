@@ -14,6 +14,12 @@ public interface IAssetsApi
 
     /// <summary>GET /api/assets/{id}/url — a short-lived signed URL.</summary>
     Task<AssetUrlDto> GetUrlAsync(Guid assetId, CancellationToken ct = default);
+
+    /// <summary>Unit-owned assets (library covers and files, wave 2): limits of the unit.</summary>
+    Task<AssetLimitsDto> GetUnitLimitsAsync(Guid orgUnitId, CancellationToken ct = default);
+
+    /// <summary>Unit-owned assets: upload with <c>orgUnitId</c> instead of <c>classCourseId</c> (needs Library.Manage at the unit).</summary>
+    Task<AssetDto> UploadToUnitAsync(Guid orgUnitId, string fileName, string contentType, Stream content, IProgress<double>? progress = null, CancellationToken ct = default);
 }
 
 public sealed class AssetsApi(ApiHttp http) : IAssetsApi
@@ -27,6 +33,13 @@ public sealed class AssetsApi(ApiHttp http) : IAssetsApi
 
     public Task<AssetUrlDto> GetUrlAsync(Guid assetId, CancellationToken ct = default) =>
         http.GetAsync<AssetUrlDto>(Routes.AssetUrl(assetId), ct);
+
+    public Task<AssetLimitsDto> GetUnitLimitsAsync(Guid orgUnitId, CancellationToken ct = default) =>
+        http.GetAsync<AssetLimitsDto>(Routes.AssetsLimitsForUnit(orgUnitId), ct);
+
+    public Task<AssetDto> UploadToUnitAsync(Guid orgUnitId, string fileName, string contentType, Stream content, IProgress<double>? progress = null, CancellationToken ct = default) =>
+        http.UploadAsync<AssetDto>(Routes.Assets, fileName, contentType, new ProgressStream(content, progress),
+            new Dictionary<string, string> { [AssetUploadForm.OrgUnitId] = orgUnitId.ToString() }, ct);
 }
 
 /// <summary>Read-only wrapper that reports how much of the stream the transport has consumed.</summary>
@@ -69,6 +82,9 @@ public sealed class FakeAssetsApi : IAssetsApi
     public long MaxBytes { get; set; } = 5 * 1024 * 1024;
     public List<(Guid ClassCourseId, string FileName, string ContentType, long Length)> Uploads { get; } = [];
     public List<Guid> UrlRequests { get; } = [];
+    private readonly HashSet<Guid> _refused = [];
+    /// <summary>The server refuses the signed URL of this asset (a library file of a reader-only resource, D13).</summary>
+    public void Refuse(Guid assetId) => _refused.Add(assetId);
     public Exception? Failure { get; set; }
     /// <summary>Failures to throw once each before an upload succeeds (retry tests).</summary>
     public int FailuresLeft { get; set; }
@@ -95,9 +111,19 @@ public sealed class FakeAssetsApi : IAssetsApi
         return new AssetDto(Guid.NewGuid(), classCourseId, type.Kind, fileName, contentType, buffer.Length, null, type.Previewable, ServerNow());
     }
 
+    public Task<AssetLimitsDto> GetUnitLimitsAsync(Guid orgUnitId, CancellationToken ct = default) =>
+        Task.FromResult(new AssetLimitsDto(MaxBytes, AssetTypes.All));
+
+    public async Task<AssetDto> UploadToUnitAsync(Guid orgUnitId, string fileName, string contentType, Stream content, IProgress<double>? progress = null, CancellationToken ct = default)
+    {
+        var asset = await UploadAsync(Guid.Empty, fileName, contentType, content, progress, ct);
+        return asset with { ClassCourseId = null, OrgUnitId = orgUnitId };
+    }
+
     public Task<AssetUrlDto> GetUrlAsync(Guid assetId, CancellationToken ct = default)
     {
         UrlRequests.Add(assetId);
+        if (_refused.Contains(assetId)) return Task.FromException<AssetUrlDto>(new ApiProblemException(404, ProblemCodes.not_found, null, null));
         var now = ServerNow();
         return Task.FromResult(new AssetUrlDto($"https://files.test/{assetId}?sig={++_urlCounter}", now + UrlLifetime, now));
     }

@@ -1,0 +1,80 @@
+@using Lms.Client.Services.Api
+@using Lms.Shared.Classes
+@using Lms.Shared.Courses
+@inject ICoursesApi Courses
+@inject IClassCoursesApi Api
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+@* Adds courses to a class: only the courses available at the class's unit that the class does not have yet are offered. *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="2">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" data-testid="dialog-error">@_error</MudAlert>
+            }
+            <MudText Typo="Typo.subtitle2">@L["ClassCourse_Available"]</MudText>
+            @if (_loaded && _available.Count == 0)
+            {
+                <MudText data-testid="add-none">@L["ClassCourse_NoneAvailable"]</MudText>
+            }
+            <MudStack Spacing="0" data-testid="add-courses-list">
+                @foreach (var course in _available)
+                {
+                    var id = course.Id;
+                    <MudCheckBox T="bool" Value="_picked.Contains(id)" ValueChanged="v => Toggle(id, v)" Dense="true"
+                                 Label="@($"{Culture.Pick(course.NameAr, course.NameEn)} ({course.Code})")" data-testid="@($"add-course-{course.Code}")" />
+                }
+            </MudStack>
+            <MudCheckBox T="bool" @bind-Value="_optional" Label="@L["ClassCourse_AddOptional"]" data-testid="add-optional" />
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="@(_saving || _picked.Count == 0)"
+                   data-testid="dialog-save">@L["ClassCourse_Add"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired] public Guid ClassId { get; set; }
+
+    /// <summary>The class's unit: the courses available there (allocated here or at an ancestor).</summary>
+    [Parameter, EditorRequired] public Guid OrgUnitId { get; set; }
+
+    /// <summary>Courses the class already has (by course id): they are not offered again.</summary>
+    [Parameter] public IReadOnlySet<Guid> HavingCourseIds { get; set; } = new HashSet<Guid>();
+
+    private IReadOnlyList<CourseSummaryDto> _available = [];
+    private readonly HashSet<Guid> _picked = [];
+    private bool _optional, _saving, _loaded;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ApiCalls.RunAsync(async () =>
+            _available = (await Courses.ListAsync(new CourseQuery(OrgUnitId, true, CourseStatuses.Active, null, false, null, 1, 200)))
+                .Items.Where(c => !HavingCourseIds.Contains(c.Id)).ToList(),
+            Navigation, L, message => _error = message);
+        _loaded = true;
+    }
+
+    private void Toggle(Guid id, bool on)
+    {
+        if (on) _picked.Add(id); else _picked.Remove(id);
+    }
+
+    private async Task SaveAsync()
+    {
+        _error = null;
+        _saving = true;
+        // course_not_available (the allocation changed meanwhile) and class_closed come back as the localized message.
+        var saved = await ApiCalls.RunAsync(() => Api.AddAsync(ClassId, new AddClassCoursesRequest(_picked.ToList(), _optional)),
+            Navigation, L, message => _error = message);
+        _saving = false;
+        if (saved) MudDialog.Close(DialogResult.Ok(true));
+    }
+}

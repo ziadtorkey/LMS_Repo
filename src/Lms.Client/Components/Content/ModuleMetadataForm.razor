@@ -39,7 +39,7 @@
     </MudSelect>
     @if (Model.Target == ModuleTargets.Group)
     {
-        <MudSelect T="Guid?" @bind-Value="Model.GroupId" Label="@L["Module_Group"]" Required="true" RequiredError="@L["Common_Required"]"
+        <MudSelect T="Guid?" @bind-Value="Model.GroupId" Label="@L["Module_GroupField"]" Required="true" RequiredError="@L["Common_Required"]"
                    Error="@(TargetError is not null)" ErrorText="@TargetError" data-testid="module-group">
             @foreach (var g in Groups)
             {
