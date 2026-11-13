@@ -17,7 +17,7 @@ namespace Lms.IntegrationTests.Security;
 /// </summary>
 public sealed class AssetsProbeRows : IProbeRowModule
 {
-    public IEnumerable<ProbeRow> Rows => Build().Select(r => r with { Milestone = ProbeMilestones.M4a });
+    public IEnumerable<ProbeRow> Rows => Build().Select(r => r with { Milestone = 4 }); // M4a
 
     private static IEnumerable<ProbeRow> Build() =>
     [
