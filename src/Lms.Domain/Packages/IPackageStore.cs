@@ -26,10 +26,12 @@ public interface IPackageStore
 public sealed record PackageFile(Stream Content, string ContentType, long Length);
 
 /// <summary>
-/// Hands a freshly uploaded package to the validation job. M4b Task 8b registers the real scheduler; until then the upload stays
-/// <c>Uploaded</c> (a no-op registration).
+/// Hands package work to the background: the validation of a fresh upload and the purge of a deleted one. Both run as system jobs for one
+/// client (the organization id travels in the payload and every read is filtered by it).
 /// </summary>
-public interface IPackageValidationScheduler
+public interface IPackageJobs
 {
-    Task ScheduleAsync(Guid organizationId, Guid packageId, CancellationToken ct = default);
+    void ScheduleValidation(Guid organizationId, Guid packageId);
+
+    void SchedulePurge(Guid organizationId, Guid packageId);
 }
