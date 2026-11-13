@@ -28,8 +28,12 @@ else if (_detail is null)
 else
 {
     var s = _detail.Summary;
-    <PageHeader Title="@Culture.Pick(s.NameAr, s.NameEn)" TitleTestId="course-profile-name" Class="lms-profile-header">
+    <PageHeader Title="@Culture.Pick(s.NameAr, s.NameEn)" Subtitle="@Culture.Pick(s.OwnerOrgUnitNameAr, s.OwnerOrgUnitNameEn)" TitleTestId="course-profile-name" Class="lms-profile-header">
+        <Leading>
+            <span class="lms-kind-tile" aria-hidden="true"><MudIcon Icon="@Icons.Material.Rounded.MenuBook" /></span>
+        </Leading>
         <Badges>
+            <span class="lms-code-chip" dir="ltr" data-testid="course-profile-code-chip">@s.Code</span>
             @if (s.IsInherited)
             {
                 <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Info" data-testid="course-profile-inherited">@L["Course_Inherited"]</MudChip>
@@ -47,6 +51,8 @@ else
 
     <div class="lms-profile-grid">
         <SectionCard Title="@L["CourseProfile_Details"]" Class="lms-profile-details" TestId="course-profile-details">
+            <Actions><span class="lms-section-icon" aria-hidden="true"><MudIcon Icon="@Icons.Material.Rounded.Info" Size="Size.Small" /></span></Actions>
+            <ChildContent>
             <dl class="lms-details">
                 <DetailItem Label="@L["Course_Code"]" Value="@s.Code" Ltr="true" TestId="course-profile-code" />
                 <DetailItem Label="@L["Course_Owner"]" Value="@Culture.Pick(s.OwnerOrgUnitNameAr, s.OwnerOrgUnitNameEn)" TestId="course-profile-owner" />
@@ -54,6 +60,7 @@ else
                 <DetailItem Label="@L["Course_WeeklyPeriods"]" Value="@s.WeeklyPeriods.ToString()" />
                 <DetailItem Label="@L["Course_Description"]" Value="@Culture.Pick(_detail.DescriptionAr ?? "", _detail.DescriptionEn ?? "")" />
             </dl>
+            </ChildContent>
         </SectionCard>
 
         <div class="lms-profile-main">
@@ -62,10 +69,10 @@ else
                     <MudTabPanel Text="@L["CourseProfile_Allocations"]" Visible="PermState.Has(Permissions.Courses.Allocate)" data-testid="tab-allocations">
                         <AllocationsTab Course="s" CanEdit="CanAllocate" OnChanged="ReloadAsync" />
                     </MudTabPanel>
-                    <MudTabPanel Text="@L["CourseProfile_Restrictions"]" data-testid="tab-restrictions">
+                    <MudTabPanel Text="@L["CourseProfile_Restrictions"]" BadgeData="@Count(_detail.Restrictions.Count)" BadgeColor="Color.Default" data-testid="tab-restrictions">
                         <RestrictionsTab Course="_detail" CanEdit="CanUpdate" OnChanged="ReloadAsync" />
                     </MudTabPanel>
-                    <MudTabPanel Text="@L["CourseProfile_Supervisors"]" data-testid="tab-supervisors">
+                    <MudTabPanel Text="@L["CourseProfile_Supervisors"]" BadgeData="@Count(_detail.Supervisors.Count)" BadgeColor="Color.Default" data-testid="tab-supervisors">
                         <SupervisorsTab Course="_detail" CanEdit="CanManageSupervisors" OnChanged="ReloadAsync" />
                     </MudTabPanel>
                     <MudTabPanel Text="@L["CourseProfile_Blueprint"]" Visible="PermState.Has(Permissions.Blueprints.View)" data-testid="tab-blueprint">
@@ -85,6 +92,9 @@ else
 }
 
 @code {
+    /// <summary>A tab count badge only when there is something to count (an empty tab shows no zero).</summary>
+    private static int? Count(int n) => n > 0 ? n : null;
+
     private CourseDetailDto? _detail;
     private string? _error;
 

@@ -42,7 +42,20 @@ public sealed class CourseProfilePageTests : CoursesTestContext
 
     /// <summary>Headers of the tabs the user can see (MudBlazor keeps hidden tabs in the markup with a hidden class).</summary>
     private static List<string> VisibleTabs(IRenderedComponent<CourseProfilePage> page) =>
-        page.FindAll("[data-testid=course-tabs] .mud-tab:not(.mud-tab-panel-hidden)").Select(t => t.TextContent.Trim()).ToList();
+        page.FindAll("[data-testid=course-tabs] .mud-tab:not(.mud-tab-panel-hidden)").Select(t => System.Text.RegularExpressions.Regex.Replace(t.TextContent.Trim(), @"\d+$", "")).ToList(); // the count badge is not part of the name
+
+    [Fact]
+    public async Task The_header_has_an_icon_tile_the_code_chip_and_tab_counts()
+    {
+        var page = await RenderPageAsync(Math.Summary.Id, All);
+
+        Assert.NotNull(page.Find(".lms-page-header-leading .lms-kind-tile"));
+        Assert.Equal(Math.Summary.Code, page.Find("[data-testid=course-profile-code-chip]").TextContent.Trim());
+        var tabs = page.FindAll("[data-testid=course-tabs] .mud-tab").Select(t => t.TextContent.Trim()).ToList();
+        if (Math.Supervisors.Count > 0) Assert.Contains($"Supervisors{Math.Supervisors.Count}", tabs); // a count badge on a tab that has rows
+        if (Math.Restrictions.Count > 0) Assert.Contains($"Restrictions{Math.Restrictions.Count}", tabs);
+        Assert.Single(page.FindAll("h1"));
+    }
 
     [Fact]
     public async Task Profile_shows_details_and_all_tabs_for_a_full_editor()
