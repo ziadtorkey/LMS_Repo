@@ -35,4 +35,21 @@ public sealed class LessonPlansApiTests
         Assert.Equal("Class", course.ClassNameEn);
         Assert.Equal(7, course.EnrolledCount);
     }
+
+    [Fact]
+    public async Task The_optional_read_keeps_the_class_course_id_of_the_server_shape_too()
+    {
+        var id = Guid.NewGuid();
+        var body = $$"""
+            [{"classCourseId":"{{id}}","classId":"{{Guid.NewGuid()}}","classNameAr":"فصل","classNameEn":"Class","courseNameAr":"مادة","courseNameEn":"Course",
+              "orgUnitNameAr":"وحدة","orgUnitNameEn":"Unit","teacherRole":null,"studentCount":3}]
+            """;
+        var api = new LessonPlansApi(new ApiHttp(new HttpClient(new Json(body)) { BaseAddress = new Uri("http://localhost/") }, new InMemoryContextStore()));
+
+        var course = Assert.Single(await api.GetMyClassCoursesIfAllowedAsync());
+
+        Assert.Equal(id, course.Id);
+        Assert.Equal("Course", course.CourseNameEn);
+        Assert.Equal(3, course.EnrolledCount);
+    }
 }

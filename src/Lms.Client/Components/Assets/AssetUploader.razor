@@ -1,0 +1,129 @@
+@using Lms.Client.Services.Api
+@using Lms.Shared.Content
+@inject IAssetsApi AssetApi
+@inject NavigationManager Navigation
+
+@* Uploads one asset into a ClassCourse. Limits come from the API and are checked before any byte is sent. *@
+<MudStack Spacing="1" data-testid="asset-uploader">
+    @if (_limits is not null)
+    {
+        <MudText Typo="Typo.caption" data-testid="asset-limits">@((MarkupString)LimitsHtml())</MudText>
+    }
+    <InputFile OnChange="OnFileAsync" accept="@_accept" disabled="@_uploading" aria-label="@L["Asset_Choose"]"
+               data-testid="asset-input" />
+    @if (_uploading)
+    {
+        <MudText Typo="Typo.caption">@L["Asset_Uploading", _fileName ?? ""]</MudText>
+        <MudProgressLinear Value="@(_progress * 100)" Color="Color.Primary" data-testid="asset-progress" />
+        <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="Cancel" data-testid="asset-cancel">@L["Asset_Cancel"]</MudButton>
+    }
+    @if (_error is not null)
+    {
+        <MudText Color="Color.Error" Typo="Typo.caption" role="alert" data-testid="asset-error">@_error</MudText>
+        @if (_bytes is not null && !_uploading)
+        {
+            <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="UploadAsync" data-testid="asset-retry">@L["Asset_Retry"]</MudButton>
+        }
+    }
+    @if (_status is not null)
+    {
+        <MudText Typo="Typo.caption" role="status" data-testid="asset-status">@_status</MudText>
+    }
+</MudStack>
+
+@code {
+    private AssetLimitsDto? _limits;
+    private string _accept = "";
+    private string? _error, _status, _fileName, _contentType;
+    private byte[]? _bytes;
+    private bool _uploading;
+    private double _progress;
+    private CancellationTokenSource? _cts;
+
+    [Parameter, EditorRequired] public Guid ClassCourseId { get; set; }
+    /// <summary>Asset kinds the target module accepts (<see cref="AssetKinds.AcceptedBy"/>); null accepts every allowed type.</summary>
+    [Parameter] public IReadOnlyList<string>? AcceptedKinds { get; set; }
+    [Parameter] public EventCallback<AssetDto> OnUploaded { get; set; }
+
+    private long MaxMb => (_limits?.MaxBytes ?? 0) / (1024 * 1024);
+
+    private IEnumerable<AssetTypeDto> Offered() =>
+        (_limits?.AllowedTypes ?? []).Where(t => AcceptedKinds is null || AcceptedKinds.Contains(t.Kind));
+
+    /// <summary>The limits sentence with the file extensions isolated as left-to-right text, so an Arabic sentence does not scramble them.</summary>
+    private string LimitsHtml() =>
+        L["Asset_Limits", $"<bdi dir=\"ltr\">{System.Net.WebUtility.HtmlEncode(AllowedList())}</bdi>", MaxMb].Value;
+
+    private string AllowedList() => string.Join(" ", Offered().Select(t => t.Extension));
+
+    protected override async Task OnInitializedAsync()
+    {
+        var (limits, _) = await ApiCalls.RunAsync(() => AssetApi.GetLimitsAsync(ClassCourseId), Navigation);
+        _limits = limits;
+        _accept = string.Join(",", Offered().Select(t => t.Extension));
+    }
+
+    private async Task OnFileAsync(InputFileChangeEventArgs e)
+    {
+        _error = _status = null;
+        _bytes = null;
+        if (_limits is null) return;
+        var file = e.File;
+        var type = AssetTypes.ForFileName(file.Name);
+        if (type is null || !Offered().Any(t => t.Extension == type.Extension))
+        {
+            _error = L["Asset_TypeNotAllowed", AllowedList()];
+            return;
+        }
+        if (file.Size > _limits.MaxBytes)
+        {
+            _error = L["Asset_TooLarge", MaxMb];
+            return;
+        }
+
+        var buffer = new MemoryStream();
+        await using (var input = file.OpenReadStream(_limits.MaxBytes))
+            await input.CopyToAsync(buffer);
+        _bytes = buffer.ToArray();
+        _fileName = file.Name;
+        _contentType = type.ContentType;
+        await UploadAsync();
+    }
+
+    private async Task UploadAsync()
+    {
+        if (_bytes is null || _fileName is null) return;
+        _error = _status = null;
+        _uploading = true;
+        _progress = 0;
+        _cts = new CancellationTokenSource();
+        var token = _cts.Token;
+        var progress = new Progress<double>(v => { _progress = v; _ = InvokeAsync(StateHasChanged); });
+        AssetDto? uploaded = null;
+        try
+        {
+            var ok = await ApiCalls.RunAsync(
+                async () => uploaded = await AssetApi.UploadAsync(ClassCourseId, _fileName, _contentType!, new MemoryStream(_bytes), progress, token),
+                Navigation, L, message => _error = message);
+            if (ok && uploaded is not null)
+            {
+                _bytes = null;
+                _status = L["Asset_Uploaded", _fileName];
+                await OnUploaded.InvokeAsync(uploaded);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            _bytes = null;
+            _status = L["Asset_Cancelled"];
+        }
+        finally
+        {
+            _uploading = false;
+            _cts?.Dispose();
+            _cts = null;
+        }
+    }
+
+    private void Cancel() => _cts?.Cancel();
+}

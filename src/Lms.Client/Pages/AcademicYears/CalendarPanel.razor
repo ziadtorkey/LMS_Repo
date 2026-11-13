@@ -8,82 +8,97 @@
 @inject NavigationManager Navigation
 
 @* Calendar of one year as seen from UnitId: a month grid (holidays marked) and the list of entries. *@
-<MudStack Spacing="2" data-testid="@($"calendar-{Year.Id}")">
-    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-        <MudText Typo="Typo.subtitle1">@L["Calendar_Title"]</MudText>
+<div class="lms-year-panel" data-testid="@($"calendar-{Year.Id}")">
+    <div class="lms-year-panel-head">
+        <MudText Typo="Typo.subtitle1" HtmlTag="h3" Class="lms-year-panel-title">@L["Calendar_Title"]</MudText>
         @if (CanEdit && UnitId is not null)
         {
-            <MudButton Size="Size.Small" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Add" OnClick="() => OpenAsync(null)"
+            <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Add" OnClick="() => OpenAsync(null)"
                        data-testid="@($"event-new-{Year.Id}")">@L["Calendar_New"]</MudButton>
         }
-    </MudStack>
+    </div>
 
     @if (_failed)
     {
-        <MudAlert Severity="Severity.Error" data-testid="calendar-error">@L["Api_Error"]</MudAlert>
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="calendar-error">@L["Api_Error"]</MudAlert>
     }
     else
     {
-        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.Center">
-            <MudIconButton Icon="@(IsRtl ? Icons.Material.Filled.ChevronRight : Icons.Material.Filled.ChevronLeft)" Size="Size.Small"
-                           aria-label="@L["Calendar_PrevMonth"]" OnClick="() => Move(-1)" />
-            <MudText Typo="Typo.subtitle2" data-testid="calendar-month">@_month.ToString("MMMM yyyy", CultureInfo.CurrentUICulture)</MudText>
-            <MudIconButton Icon="@(IsRtl ? Icons.Material.Filled.ChevronLeft : Icons.Material.Filled.ChevronRight)" Size="Size.Small"
-                           aria-label="@L["Calendar_NextMonth"]" OnClick="() => Move(1)" />
-        </MudStack>
-        <div class="lms-month-grid" role="grid">
-            @foreach (var name in DayHeaders())
-            {
-                <div class="lms-month-head" role="columnheader">@name</div>
-            }
-            @foreach (var day in Days())
-            {
-                var entries = day is null ? [] : EntriesOn(day.Value);
-                var holiday = entries.Any(e => e.Kind == CalendarEventKinds.Holiday);
-                <div class="lms-month-day @(holiday ? "lms-month-holiday" : null)" role="gridcell"
-                     data-holiday="@(holiday ? "true" : null)" data-date="@(day?.ToString("yyyy-MM-dd"))">
-                    @if (day is not null)
-                    {
-                        <span class="lms-month-num">@day.Value.Day</span>
-                        @foreach (var e in entries)
+        <div class="lms-calendar">
+            <div class="lms-calendar-nav">
+                <MudIconButton Icon="@(IsRtl ? Icons.Material.Rounded.ChevronRight : Icons.Material.Rounded.ChevronLeft)" Size="Size.Small"
+                               aria-label="@L["Calendar_PrevMonth"]" OnClick="() => Move(-1)" />
+                <MudText Typo="Typo.subtitle2" Class="lms-calendar-month" data-testid="calendar-month">@_month.ToString("MMMM yyyy", CultureInfo.CurrentUICulture)</MudText>
+                <MudIconButton Icon="@(IsRtl ? Icons.Material.Rounded.ChevronLeft : Icons.Material.Rounded.ChevronRight)" Size="Size.Small"
+                               aria-label="@L["Calendar_NextMonth"]" OnClick="() => Move(1)" />
+            </div>
+            <div class="lms-month-grid" role="grid">
+                @foreach (var name in DayHeaders())
+                {
+                    <div class="lms-month-head" role="columnheader">@name</div>
+                }
+                @foreach (var day in Days())
+                {
+                    var entries = day is null ? [] : EntriesOn(day.Value);
+                    var holiday = entries.Any(e => e.Kind == CalendarEventKinds.Holiday);
+                    <div class="lms-month-day @(holiday ? "lms-month-holiday" : null) @(day is null ? "lms-month-blank" : null)" role="gridcell"
+                         data-holiday="@(holiday ? "true" : null)" data-date="@(day?.ToString("yyyy-MM-dd"))">
+                        @if (day is not null)
                         {
-                            <span class="lms-month-entry" title="@CultureText.Pick(e.TitleAr, e.TitleEn)">@CultureText.Pick(e.TitleAr, e.TitleEn)</span>
+                            <span class="lms-month-num">@day.Value.Day</span>
+                            @foreach (var e in entries)
+                            {
+                                <span class="lms-month-entry @(e.Kind == CalendarEventKinds.Holiday ? "lms-month-entry-holiday" : null)"
+                                      title="@CultureText.Pick(e.TitleAr, e.TitleEn)">@CultureText.Pick(e.TitleAr, e.TitleEn)</span>
+                            }
                         }
-                    }
-                </div>
-            }
+                    </div>
+                }
+            </div>
+            <div class="lms-calendar-legend" aria-hidden="true">
+                <span class="lms-legend-swatch lms-legend-holiday"></span>@L["Calendar_Holiday"]
+                <span class="lms-legend-swatch lms-legend-event"></span>@L["Calendar_Event"]
+            </div>
         </div>
 
         @if (_events.Count == 0)
         {
-            <MudText Typo="Typo.body2">@L["Common_Empty"]</MudText>
+            <MudText Typo="Typo.body2" Class="lms-muted lms-year-empty">@L["Calendar_Empty"]</MudText>
         }
-        @foreach (var e in _events)
-        {
-            var ev = e;
-            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Wrap="Wrap.Wrap" data-testid="@($"event-{ev.Id}")">
-                <MudChip T="string" Size="Size.Small" Color="@(ev.Kind == CalendarEventKinds.Holiday ? Color.Warning : Color.Info)">
-                    @L[ev.Kind == CalendarEventKinds.Holiday ? "Calendar_Holiday" : "Calendar_Event"]
-                </MudChip>
-                <MudText>@CultureText.Pick(ev.TitleAr, ev.TitleEn)</MudText>
-                <MudText Typo="Typo.body2" dir="ltr">@ev.StartDate.ToString("yyyy-MM-dd") – @ev.EndDate.ToString("yyyy-MM-dd")</MudText>
-                @if (ev.IsInherited)
-                {
-                    <MudText Typo="Typo.caption" data-testid="@($"event-inherited-{ev.Id}")">
-                        @string.Format(L["Calendar_InheritedFrom"], CultureText.Pick(ev.OrgUnitNameAr, ev.OrgUnitNameEn))
-                    </MudText>
-                }
-                else if (CanEdit)
-                {
-                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" aria-label="@L["Common_Edit"]"
-                                   OnClick="() => OpenAsync(ev)" data-testid="@($"event-edit-{ev.Id}")" />
-                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" aria-label="@L["Common_Delete"]"
-                                   OnClick="() => DeleteAsync(ev)" data-testid="@($"event-delete-{ev.Id}")" />
-                }
-            </MudStack>
-        }
+        <ul class="lms-item-list">
+            @foreach (var e in _events)
+            {
+                var ev = e;
+                var isHoliday = ev.Kind == CalendarEventKinds.Holiday;
+                <li class="lms-item" data-testid="@($"event-{ev.Id}")">
+                    <div class="lms-item-main">
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@(isHoliday ? Color.Warning : Color.Info)"
+                                 Icon="@(isHoliday ? Icons.Material.Rounded.BeachAccess : Icons.Material.Rounded.Event)">
+                            @L[isHoliday ? "Calendar_Holiday" : "Calendar_Event"]
+                        </MudChip>
+                        <span class="lms-cell-strong">@CultureText.Pick(ev.TitleAr, ev.TitleEn)</span>
+                        <span class="lms-item-meta lms-muted" dir="ltr">@ev.StartDate.ToString("yyyy-MM-dd") – @ev.EndDate.ToString("yyyy-MM-dd")</span>
+                        @if (ev.IsInherited)
+                        {
+                            <MudText Typo="Typo.caption" Class="lms-muted" data-testid="@($"event-inherited-{ev.Id}")">
+                                @string.Format(L["Calendar_InheritedFrom"], CultureText.Pick(ev.OrgUnitNameAr, ev.OrgUnitNameEn))
+                            </MudText>
+                        }
+                    </div>
+                    @if (!ev.IsInherited && CanEdit)
+                    {
+                        <div class="lms-row-actions">
+                            <MudIconButton Icon="@Icons.Material.Rounded.Edit" Size="Size.Small" aria-label="@L["Common_Edit"]"
+                                           OnClick="() => OpenAsync(ev)" data-testid="@($"event-edit-{ev.Id}")" />
+                            <MudIconButton Icon="@Icons.Material.Rounded.DeleteOutline" Size="Size.Small" Color="Color.Error" aria-label="@L["Common_Delete"]"
+                                           OnClick="() => DeleteAsync(ev)" data-testid="@($"event-delete-{ev.Id}")" />
+                        </div>
+                    }
+                </li>
+            }
+        </ul>
     }
-</MudStack>
+</div>
 
 @code {
     private IReadOnlyList<CalendarEventDto> _events = [];

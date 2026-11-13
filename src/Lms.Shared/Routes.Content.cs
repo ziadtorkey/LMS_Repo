@@ -29,4 +29,7 @@ public static partial class Routes
     public static string Asset(Guid id) => $"{Assets}/{id}";
     public static string AssetUrl(Guid id) => $"{Asset(id)}/url";
     public static string AssetsLimitsFor(Guid classCourseId) => $"{AssetsLimits}?classCourseId={classCourseId}";
+
+    /// <summary>M4a wave 2: the limits for a library asset owned by <paramref name="orgUnitId"/>.</summary>
+    public static string AssetsLimitsForUnit(Guid orgUnitId) => $"{AssetsLimits}?orgUnitId={orgUnitId}";
 }
