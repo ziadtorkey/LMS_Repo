@@ -71,6 +71,14 @@ public sealed partial class ActivitiesStylesheetTests
         Assert.Matches(new Regex(@"\.lms-player-overlay\s*\{[^}]*inset:\s*0;"), Css());
 
     [Fact]
+    public void Course_tabs_scroll_in_their_own_row_instead_of_wrapping_or_clipping()
+    {
+        var css = Css();
+        Assert.Matches(new Regex(@"\.lms-course-tabs\s*\{[^}]*flex-wrap:\s*nowrap;[^}]*overflow-x:\s*auto;"), css);
+        Assert.Matches(new Regex(@"\.lms-course-tabs \.mud-button-root\s*\{[^}]*flex:\s*none;[^}]*white-space:\s*nowrap;"), css);
+    }
+
+    [Fact]
     public void Live_dot_does_not_pulse_under_reduced_motion() =>
         Assert.Matches(new Regex(@"prefers-reduced-motion:\s*reduce\)\s*\{[^}]*\.lms-live-dot\s*\{\s*animation:\s*none"), Css());
 

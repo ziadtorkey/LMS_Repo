@@ -126,3 +126,7 @@
 .lms-item-head { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 4px 12px; margin-block-end: 6px; }
 .lms-wrap { overflow-wrap: anywhere; min-inline-size: 0; }
 .lms-card-actions { justify-content: space-between; flex-wrap: wrap; gap: 4px; }
+
+/* ---------- Class course tabs: one row that scrolls inside itself at 360 px (never wraps, never clips, no page scroll) ---------- */
+.lms-course-tabs { display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 4px; min-inline-size: 0; max-inline-size: 100%; padding-block-end: 2px; scrollbar-width: thin; overscroll-behavior-inline: contain; }
+.lms-course-tabs .mud-button-root { flex: none; white-space: nowrap; }

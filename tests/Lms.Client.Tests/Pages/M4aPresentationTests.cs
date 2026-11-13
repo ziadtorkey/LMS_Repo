@@ -101,6 +101,9 @@ public sealed partial class M4aPresentationTests : LessonPlansTestContext
         var page = Render<ForumPage>(p => p.Add(x => x.Id, Cc));
         page.WaitForElement("[data-testid=forum-empty]", Wait);
 
+        var tabs = page.Find("[data-testid=class-course-tabs]");
+        Assert.Equal("NAV", tabs.TagName);
+        Assert.Contains("lms-course-tabs", tabs.ClassName);
         Assert.Equal("page", page.Find("[data-testid=tab-forum]").GetAttribute("aria-current"));
         Assert.Null(page.Find("[data-testid=tab-plan]").GetAttribute("aria-current"));
         Assert.Null(page.Find("[data-testid=tab-announcements]").GetAttribute("aria-current"));

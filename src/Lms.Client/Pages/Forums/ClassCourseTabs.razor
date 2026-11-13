@@ -1,15 +1,16 @@
 @using Lms.Shared.Authorization
 @inject PermissionState PermState
 
-@* Plan · Forum · Announcements of one class course. The plan is always there; the other two need Forums.View. *@
-<MudStack Row="true" Spacing="1" Class="mb-3" role="navigation" aria-label="@L["ClassCourse_Sections"]" data-testid="class-course-tabs">
+@* Plan · Forum · Announcements of one class course. The plan is always there; the other two need Forums.View.
+   One row that scrolls sideways inside itself on narrow screens (lms-course-tabs): tabs never wrap or get clipped. *@
+<nav class="lms-course-tabs mb-3" aria-label="@L["ClassCourse_Sections"]" data-testid="class-course-tabs">
     <MudButton Href="@($"class-courses/{ClassCourseId}/plan")" Variant="@VariantOf("plan")" aria-current="@CurrentOf("plan")" data-testid="tab-plan">@L["ClassCourse_TabPlan"]</MudButton>
     @if (PermState.Has(Permissions.Forums.View))
     {
         <MudButton Href="@($"class-courses/{ClassCourseId}/forum")" Variant="@VariantOf("forum")" aria-current="@CurrentOf("forum")" data-testid="tab-forum">@L["ClassCourse_TabForum"]</MudButton>
         <MudButton Href="@($"class-courses/{ClassCourseId}/announcements")" Variant="@VariantOf("announcements")" aria-current="@CurrentOf("announcements")" data-testid="tab-announcements">@L["ClassCourse_TabAnnouncements"]</MudButton>
     }
-</MudStack>
+</nav>
 
 @code {
     [Parameter, EditorRequired] public Guid ClassCourseId { get; set; }
