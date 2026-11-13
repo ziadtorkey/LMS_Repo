@@ -975,6 +975,50 @@
   <data name="Import_Button" xml:space="preserve"><value>استيراد من Excel</value></data>
   <data name="Clients_ShortCode" xml:space="preserve"><value>الرمز المختصر</value></data>
   <data name="Clients_ShortCodeHelp" xml:space="preserve"><value>يُستخدم في أسماء دخول الطلاب (الكود@الرمز): من 2 إلى 20 حرفًا إنجليزيًا صغيرًا أو رقمًا أو شرطة. اتركه فارغًا ليُشتق من رمز الوحدة الجذرية.</value></data>
+  <data name="ClassStudents_Title" xml:space="preserve"><value>طلاب الفصل</value></data>
+  <data name="ClassStudents_Add" xml:space="preserve"><value>إضافة طلاب</value></data>
+  <data name="ClassStudents_AddAnyway" xml:space="preserve"><value>إضافة على أي حال</value></data>
+  <data name="ClassStudents_UnplacedOnly" xml:space="preserve"><value>الطلاب بدون فصل فقط</value></data>
+  <data name="ClassStudents_Selected" xml:space="preserve"><value>تم اختيار {0}</value></data>
+  <data name="ClassStudents_Empty" xml:space="preserve"><value>لا يوجد طلاب في هذا الفصل بعد.</value></data>
+  <data name="ClassStudents_Remove" xml:space="preserve"><value>إزالة من الفصل</value></data>
+  <data name="ClassStudents_RemoveConfirm" xml:space="preserve"><value>إزالة {0} من هذا الفصل؟ ستُسقَط أيضًا تسجيلاته في مقررات الفصل.</value></data>
+  <data name="ClassStudents_AddSummary" xml:space="preserve"><value>تمت إضافة {0} طالبًا وإنشاء {1} تسجيلًا في المقررات.</value></data>
+  <data name="ClassStudents_OverCapacity" xml:space="preserve"><value>تجاوز الفصل الآن سعته.</value></data>
+  <data name="ClassStudents_SkipsTitle" xml:space="preserve"><value>تم تخطي {0} تسجيلًا في مقررات بسبب قيود المقرر</value></data>
+  <data name="ClassStudents_RequestException" xml:space="preserve"><value>طلب استثناء</value></data>
+  <data name="ClassStudentStatus_Active" xml:space="preserve"><value>في الفصل</value></data>
+  <data name="ClassStudentStatus_TransferredOut" xml:space="preserve"><value>نُقل خارج الفصل</value></data>
+  <data name="ClassStudentStatus_Removed" xml:space="preserve"><value>أُزيل</value></data>
+  <data name="Enrollment_Title" xml:space="preserve"><value>التسجيل في المقررات</value></data>
+  <data name="Enrollment_Course" xml:space="preserve"><value>المقرر</value></data>
+  <data name="Enrollment_Source" xml:space="preserve"><value>المصدر</value></data>
+  <data name="Enrollment_From" xml:space="preserve"><value>من</value></data>
+  <data name="Enrollment_To" xml:space="preserve"><value>إلى</value></data>
+  <data name="Enrollment_EffectiveOn" xml:space="preserve"><value>تاريخ السريان</value></data>
+  <data name="Enrollment_Drop" xml:space="preserve"><value>إسقاط</value></data>
+  <data name="Enrollment_DropConfirm" xml:space="preserve"><value>إسقاط تسجيل {0}؟</value></data>
+  <data name="Enrollment_Enroll" xml:space="preserve"><value>تسجيل المحددين</value></data>
+  <data name="Enrollment_EnrollOptional" xml:space="preserve"><value>تسجيل طلاب في هذا المقرر الاختياري</value></data>
+  <data name="Enrollment_NoCandidates" xml:space="preserve"><value>جميع طلاب الفصل مسجلون بالفعل.</value></data>
+  <data name="EnrollmentSource_Auto" xml:space="preserve"><value>تلقائي</value></data>
+  <data name="EnrollmentSource_Manual" xml:space="preserve"><value>يدوي</value></data>
+  <data name="EnrollmentSource_Exceptional" xml:space="preserve"><value>استثناء</value></data>
+  <data name="EnrollmentSource_Transfer" xml:space="preserve"><value>نقل</value></data>
+  <data name="EnrollmentStatus_Active" xml:space="preserve"><value>نشط</value></data>
+  <data name="EnrollmentStatus_Dropped" xml:space="preserve"><value>مُسقَط</value></data>
+  <data name="Transfer_Title" xml:space="preserve"><value>نقل إلى فصل آخر</value></data>
+  <data name="Transfer_ToClass" xml:space="preserve"><value>الفصل الجديد</value></data>
+  <data name="Transfer_From" xml:space="preserve"><value>من فصل</value></data>
+  <data name="Transfer_Preview" xml:space="preserve"><value>معاينة الأثر</value></data>
+  <data name="Transfer_Confirm" xml:space="preserve"><value>نقل</value></data>
+  <data name="Transfer_Done" xml:space="preserve"><value>تم نقل الطالب.</value></data>
+  <data name="Transfer_Kept" xml:space="preserve"><value>يبقى</value></data>
+  <data name="Transfer_Dropped" xml:space="preserve"><value>يُسقَط</value></data>
+  <data name="Transfer_Added" xml:space="preserve"><value>يُضاف</value></data>
+  <data name="Transfer_Restricted" xml:space="preserve"><value>لا يُضاف (قيود)</value></data>
+  <data name="Transfer_ConfirmOverCapacity" xml:space="preserve"><value>سيتجاوز الفصل الجديد سعته. أكمل النقل على أي حال.</value></data>
+  <data name="Transfer_History" xml:space="preserve"><value>عمليات النقل</value></data>
   <data name="StudentImport_Title" xml:space="preserve"><value>استيراد الطلاب</value></data>
   <data name="StudentImport_Help" xml:space="preserve"><value>املأ صفًا لكل طالب: الاسم بالعربية والإنجليزية وتاريخ الميلاد والجنس والديانة والجنسية. يمكن إضافة أولياء الأمور في نفس الصف.</value></data>
   <data name="StudentImport_HelpClassCode" xml:space="preserve"><value>اختياري. رمز فصل نشط في العام الدراسي الحالي بوحدة الطالب؛ يُوضع الطالب فيه ويُسجَّل في مقرراته.</value></data>
@@ -1050,6 +1094,12 @@
   <data name="Flag_Inherit" xml:space="preserve"><value>وراثة ({0})</value></data>
   <data name="Flag_On" xml:space="preserve"><value>تشغيل</value></data>
   <data name="Flag_Off" xml:space="preserve"><value>إيقاف</value></data>
+  <data name="TransferReject_not_placed" xml:space="preserve"><value>الطالب غير موضوع في فصل، فلا يوجد ما يُنقل منه.</value></data>
+  <data name="TransferReject_different_year" xml:space="preserve"><value>الفصل الجديد تابع لعام دراسي مختلف.</value></data>
+  <data name="TransferReject_same_class" xml:space="preserve"><value>الطالب موجود بالفعل في هذا الفصل.</value></data>
+  <data name="TransferReject_date_outside_year" xml:space="preserve"><value>تاريخ النقل خارج العام الدراسي.</value></data>
+  <data name="TransferReject_date_before_placement" xml:space="preserve"><value>تاريخ النقل قبل انضمام الطالب إلى فصله الحالي.</value></data>
+  <data name="TransferReject_different_level_type" xml:space="preserve"><value>النقل إلى وحدة أخرى يتطلب فصلًا من نفس نوع المستوى.</value></data>
   <data name="Nav_Guardians" xml:space="preserve"><value>أولياء الأمور</value></data>
   <data name="Guardian_Remove" xml:space="preserve"><value>إزالة من الطالب</value></data>
   <data name="Guardian_SetPrimary" xml:space="preserve"><value>تعيين كولي أمر أساسي</value></data>
@@ -1101,6 +1151,11 @@
   <data name="ChangeRequestStatus_Approved" xml:space="preserve"><value>تمت الموافقة</value></data>
   <data name="ChangeRequestStatus_Rejected" xml:space="preserve"><value>مرفوض</value></data>
   <data name="ChangeRequestStatus_Cancelled" xml:space="preserve"><value>ملغي</value></data>
+  <data name="Nav_MyChildren" xml:space="preserve"><value>أبنائي</value></data>
+  <data name="MyChildren_Title" xml:space="preserve"><value>أبنائي</value></data>
+  <data name="MyChildren_Empty" xml:space="preserve"><value>لا يوجد أبناء مرتبطون بحسابك في هذه المدرسة.</value></data>
+  <data name="MyChildren_OtherContexts" xml:space="preserve"><value>يظهر الأبناء في مدرسة أخرى عند التبديل إليها من الشريط العلوي.</value></data>
+  <data name="MyChildren_Open" xml:space="preserve"><value>عرض أبنائي</value></data>
   <data name="Nav_MyClassCourses" xml:space="preserve"><value>مقررات فصولي</value></data>
   <data name="MyClassCourses_Title" xml:space="preserve"><value>مقررات فصولي</value></data>
   <data name="MyClassCourses_Empty" xml:space="preserve"><value>لا توجد لديك مقررات فصول في العام المحدد.</value></data>
@@ -1126,6 +1181,12 @@
   <data name="ModuleKind_LibraryResource" xml:space="preserve"><value>مورد من المكتبة</value></data>
   <data name="ModuleKind_Link" xml:space="preserve"><value>رابط</value></data>
   <data name="ModuleKind_LiveSession" xml:space="preserve"><value>حصة مباشرة</value></data>
+  <data name="LiveSession_Status_Scheduled" xml:space="preserve"><value>مجدولة</value></data>
+  <data name="LiveSession_Status_Live" xml:space="preserve"><value>مباشرة الآن</value></data>
+  <data name="LiveSession_Status_Ended" xml:space="preserve"><value>انتهت</value></data>
+  <data name="LiveSession_Status_Cancelled" xml:space="preserve"><value>ملغاة</value></data>
+  <data name="LiveSession_Status_SyncFailed" xml:space="preserve"><value>بانتظار Zoom</value></data>
+  <data name="LiveSession_SyncFailedHint" xml:space="preserve"><value>تعذّر الاتصال بـ Zoom. سيعيد النظام المحاولة تلقائيًا ولا يلزمك فعل شيء.</value></data>
   <data name="ModuleKind_Page" xml:space="preserve"><value>صفحة</value></data>
   <data name="ModuleKind_Quiz" xml:space="preserve"><value>اختبار</value></data>
   <data name="ModuleKind_Scorm" xml:space="preserve"><value>حزمة SCORM</value></data>
@@ -1340,14 +1401,19 @@
   <data name="Announcements_FormTitle" xml:space="preserve"><value>عنوان الإعلان</value></data>
   <data name="Forum_MoreReplies" xml:space="preserve"><value>عرض مزيد من الردود ({0} أخرى)</value></data>
   <data name="Forum_MoreThreads" xml:space="preserve"><value>عرض مزيد من المواضيع ({0} أخرى)</value></data>
+  <data name="Module_Placeholder" xml:space="preserve"><value>قريبًا: {0}.</value></data>
+  <data name="Live_Match_Matched" xml:space="preserve"><value>طالب مسجّل</value></data>
+  <data name="Live_Match_Guest" xml:space="preserve"><value>ضيف</value></data>
+  <data name="Live_Scope_This" xml:space="preserve"><value>هذه الجلسة فقط</value></data>
+  <data name="Live_Scope_ThisAndFollowing" xml:space="preserve"><value>هذه الجلسة والجلسات التالية</value></data>
   <data name="Package_AddScorm" xml:space="preserve"><value>إضافة حزمة SCORM</value></data>
   <data name="Package_AddH5p" xml:space="preserve"><value>إضافة حزمة H5P</value></data>
   <data name="Package_Steps" xml:space="preserve"><value>الخطوات</value></data>
-  <data name="Package_Step_Upload" xml:space="preserve"><value>رفع</value></data>
-  <data name="Package_Step_Check" xml:space="preserve"><value>فحص</value></data>
-  <data name="Package_Step_Attach" xml:space="preserve"><value>ربط</value></data>
-  <data name="Package_DropHint" xml:space="preserve"><value>أفلت ملفاً هنا أو اخترْ ملفاً.</value></data>
-  <data name="Package_Choose" xml:space="preserve"><value>اختر ملفاً</value></data>
+  <data name="Package_Step_Upload" xml:space="preserve"><value>الرفع</value></data>
+  <data name="Package_Step_Check" xml:space="preserve"><value>الفحص</value></data>
+  <data name="Package_Step_Attach" xml:space="preserve"><value>الإرفاق</value></data>
+  <data name="Package_DropHint" xml:space="preserve"><value>أفلت الملف هنا، أو اختره من جهازك.</value></data>
+  <data name="Package_Choose" xml:space="preserve"><value>اختيار ملف</value></data>
   <data name="Package_LimitsScorm" xml:space="preserve"><value>SCORM 1.2 أو 2004، وحدة تعلّم واحدة، حتى {0} ميغابايت.</value></data>
   <data name="Package_LimitsH5p" xml:space="preserve"><value>ملف بصيغة h5p. حتى {0} ميغابايت.</value></data>
   <data name="Package_WrongType" xml:space="preserve"><value>اختر ملفاً بصيغة {0}.</value></data>
@@ -1357,12 +1423,12 @@
   <data name="Package_Checking" xml:space="preserve"><value>جارٍ فحص الحزمة. يستغرق ذلك عادةً أقل من دقيقة.</value></data>
   <data name="Package_StillChecking" xml:space="preserve"><value>ما زال الفحص جارياً. قد يستغرق بضع دقائق للحزم الكبيرة.</value></data>
   <data name="Package_KeepOpen" xml:space="preserve"><value>أبقِ هذه النافذة مفتوحة حتى ينتهي الفحص.</value></data>
-  <data name="Package_CheckAgain" xml:space="preserve"><value>افحص مرة أخرى</value></data>
+  <data name="Package_CheckAgain" xml:space="preserve"><value>تحقّق مرة أخرى</value></data>
   <data name="Package_RejectedTitle" xml:space="preserve"><value>لا يمكن استخدام هذه الحزمة</value></data>
-  <data name="Package_ChooseAnother" xml:space="preserve"><value>اختر ملفاً آخر</value></data>
+  <data name="Package_ChooseAnother" xml:space="preserve"><value>اختيار ملف آخر</value></data>
   <data name="Package_Lesson" xml:space="preserve"><value>الدرس</value></data>
-  <data name="Package_TitleAr" xml:space="preserve"><value>العنوان (بالعربية)</value></data>
-  <data name="Package_TitleEn" xml:space="preserve"><value>العنوان (بالإنجليزية)</value></data>
+  <data name="Package_TitleAr" xml:space="preserve"><value>العنوان بالعربية</value></data>
+  <data name="Package_TitleEn" xml:space="preserve"><value>العنوان بالإنجليزية</value></data>
   <data name="Package_Rule" xml:space="preserve"><value>الإكمال</value></data>
   <data name="Package_Rule_Submit" xml:space="preserve"><value>عندما يُنهيها المتعلّم</value></data>
   <data name="Package_Rule_Score" xml:space="preserve"><value>عندما تُبلِّغ عن درجة</value></data>
@@ -1372,10 +1438,10 @@
   <data name="Package_RuleScoreHelp" xml:space="preserve"><value>تكتمل عندما تُبلِّغ الحزمة عن درجة.</value></data>
   <data name="Package_TypeScorm" xml:space="preserve"><value>SCORM {0}</value></data>
   <data name="Package_TypeH5p" xml:space="preserve"><value>H5P · {0}</value></data>
-  <data name="Package_Attach" xml:space="preserve"><value>ربط بالدرس</value></data>
+  <data name="Package_Attach" xml:space="preserve"><value>إرفاق بالدرس</value></data>
   <data name="Package_Delete" xml:space="preserve"><value>حذف الحزمة</value></data>
-  <data name="Package_DeleteConfirm" xml:space="preserve"><value>حذف هذه الحزمة؟ لا يمكن التراجع.</value></data>
-  <data name="Package_FeatureOff" xml:space="preserve"><value>الحزم متوقفة في هذه المدرسة.</value></data>
+  <data name="Package_DeleteConfirm" xml:space="preserve"><value>حذف هذه الحزمة؟ لا يمكن التراجع عن ذلك.</value></data>
+  <data name="Package_FeatureOff" xml:space="preserve"><value>الحزم غير مفعّلة في هذه المدرسة.</value></data>
   <data name="Package_HostNotConfigured" xml:space="preserve"><value>لم تُفعَّل الحزم على هذه المنصة بعد. تواصل مع مسؤول المنصة.</value></data>
   <data name="Package_Status_Uploaded" xml:space="preserve"><value>تم الرفع</value></data>
   <data name="Package_Status_Validating" xml:space="preserve"><value>جارٍ الفحص</value></data>
@@ -1392,31 +1458,31 @@
   <data name="AuditEntity_PackageUpload" xml:space="preserve"><value>رفع حزمة</value></data>
   <data name="AuditEntity_ScormPackage" xml:space="preserve"><value>حزمة SCORM</value></data>
   <data name="AuditEntity_H5pContent" xml:space="preserve"><value>محتوى H5P</value></data>
-  <data name="Error_package_invalid" xml:space="preserve"><value>لا يمكن استخدام هذه الحزمة. راجع السبب المعروض معها.</value></data>
+  <data name="Error_package_invalid" xml:space="preserve"><value>لا يمكن استخدام هذه الحزمة. تأكّد أنها مُصدَّرة بصيغة SCORM أو H5P.</value></data>
   <data name="Error_package_too_large" xml:space="preserve"><value>الحزمة كبيرة جدًا للرفع أو ستتجاوز مساحة التخزين المتاحة.</value></data>
   <data name="Error_package_not_ready" xml:space="preserve"><value>الحزمة ليست جاهزة بعد. انتظر حتى ينتهي الفحص.</value></data>
   <data name="Error_package_not_attached" xml:space="preserve"><value>الحزمة غير مضافة إلى درس بعد، لذا لا يمكن تغيير طريقة احتساب الدرجة.</value></data>
   <data name="Error_package_commit_rejected" xml:space="preserve"><value>تعذّر حفظ تقدّمك لأن المحاولة مغلقة أو لم تُقبل البيانات.</value></data>
-  <data name="Error_package_host_not_configured" xml:space="preserve"><value>الحزم غير متاحة بعد: لم يُجهَّز موقع المحتوى المنفصل. اطلب من مسؤول المنصة.</value></data>
-  <data name="Error_package_reason_unsafe_path" xml:space="preserve"><value>يوجد ملف في الحزمة مساره يخرج من مجلد الحزمة.</value></data>
-  <data name="Error_package_reason_too_many_entries" xml:space="preserve"><value>عدد ملفات الحزمة أكبر من المسموح.</value></data>
-  <data name="Error_package_reason_too_large" xml:space="preserve"><value>حجم الحزمة بعد فك الضغط أكبر من المسموح.</value></data>
-  <data name="Error_package_reason_compression_ratio" xml:space="preserve"><value>الحزمة مضغوطة بنسبة تفوق المعتاد، فتم رفضها لدواعي الأمان.</value></data>
-  <data name="Error_package_reason_symlink" xml:space="preserve"><value>تحتوي الحزمة على اختصار (رابط رمزي) وهو غير مسموح.</value></data>
-  <data name="Error_package_reason_duplicate_name" xml:space="preserve"><value>يوجد ملفان في الحزمة بالاسم نفسه.</value></data>
-  <data name="Error_package_reason_bad_name_encoding" xml:space="preserve"><value>اسم ملف في الحزمة يحتوي على رموز مخفية أو غير صالحة.</value></data>
-  <data name="Error_package_reason_executable" xml:space="preserve"><value>تحتوي الحزمة على ملف برنامج أو سكربت غير مسموح.</value></data>
-  <data name="Error_package_reason_encrypted" xml:space="preserve"><value>تحتوي الحزمة على ملف محمي بكلمة مرور.</value></data>
-  <data name="Error_package_reason_nested_archive" xml:space="preserve"><value>تحتوي الحزمة على أرشيف مضغوط آخر وهو غير مسموح.</value></data>
-  <data name="Error_package_reason_manifest_invalid" xml:space="preserve"><value>ملف وصف الحزمة مفقود أو غير صحيح، أو صفحة البداية مفقودة.</value></data>
-  <data name="Error_package_reason_xml_unsafe" xml:space="preserve"><value>ملف وصف الحزمة يستخدم ميزات غير مسموحة.</value></data>
-  <data name="Error_package_reason_multi_sco" xml:space="preserve"><value>الحزم متعددة الدروس أو ذات قواعد التسلسل غير مدعومة بعد.</value></data>
-  <data name="Error_package_reason_needs_nested_frames" xml:space="preserve"><value>صفحة البداية تستخدم إطارات، والمنصة لا تدعم ذلك.</value></data>
-  <data name="Error_package_reason_needs_relaxed_policy" xml:space="preserve"><value>يحتاج المحتوى إلى صلاحيات لا تسمح بها المنصة.</value></data>
-  <data name="Error_package_reason_h5p_invalid" xml:space="preserve"><value>ملف H5P غير مكتمل أو محتواه غير صالح.</value></data>
-  <data name="Error_package_reason_validation_timeout" xml:space="preserve"><value>استغرق فحص الحزمة وقتًا طويلًا. جرّب حزمة أصغر.</value></data>
-  <data name="Error_package_reason_quota_exceeded" xml:space="preserve"><value>مساحة تخزين الحزم ممتلئة. احذف الحزم غير المستخدمة أولًا.</value></data>
-  <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>لم يقبل الفحص الأمني هذه الحزمة.</value></data>
-  <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>الملف ليس أرشيف zip صالحًا.</value></data>
-  <data name="Error_package_reason_bad_name" xml:space="preserve"><value>اسم ملف في الحزمة غير صالح (طويل جدًا أو عميق جدًا أو محجوز).</value></data>
+  <data name="Error_package_host_not_configured" xml:space="preserve"><value>لم تُفعَّل الحزم على هذه المنصة بعد. تواصل مع مسؤول المنصة.</value></data>
+  <data name="Error_package_reason_unsafe_path" xml:space="preserve"><value>بعض الملفات في الحزمة تشير إلى خارجها. صدّر الحزمة من جديد.</value></data>
+  <data name="Error_package_reason_too_many_entries" xml:space="preserve"><value>تحتوي الحزمة على عدد كبير جدًا من الملفات.</value></data>
+  <data name="Error_package_reason_too_large" xml:space="preserve"><value>حجم الحزمة بعد فكّ الضغط أكبر من المسموح.</value></data>
+  <data name="Error_package_reason_compression_ratio" xml:space="preserve"><value>طريقة ضغط الحزمة غير آمنة. صدّرها من جديد.</value></data>
+  <data name="Error_package_reason_symlink" xml:space="preserve"><value>تحتوي الحزمة على روابط لملفات أخرى، وهذا غير مسموح.</value></data>
+  <data name="Error_package_reason_duplicate_name" xml:space="preserve"><value>يوجد ملفان بالاسم نفسه في الحزمة.</value></data>
+  <data name="Error_package_reason_bad_name_encoding" xml:space="preserve"><value>تعذّرت قراءة بعض أسماء الملفات. أعد تسميتها بحروف وأرقام بسيطة.</value></data>
+  <data name="Error_package_reason_executable" xml:space="preserve"><value>تحتوي الحزمة على برامج أو ملفات إضافات قديمة (مثل Flash)، وهذا غير مسموح.</value></data>
+  <data name="Error_package_reason_encrypted" xml:space="preserve"><value>الحزمة محمية بكلمة مرور. ارفعها دون كلمة مرور.</value></data>
+  <data name="Error_package_reason_nested_archive" xml:space="preserve"><value>تحتوي الحزمة على ملف مضغوط آخر بداخلها. ارفع الحزمة الداخلية بدلًا منها.</value></data>
+  <data name="Error_package_reason_manifest_invalid" xml:space="preserve"><value>هذه ليست حزمة SCORM أو H5P صالحة: ملف الوصف أو صفحة البداية مفقود أو تالف.</value></data>
+  <data name="Error_package_reason_xml_unsafe" xml:space="preserve"><value>يستخدم ملف وصف الحزمة خصائص غير مسموحة. صدّرها من جديد.</value></data>
+  <data name="Error_package_reason_multi_sco" xml:space="preserve"><value>تحتوي الحزمة على أكثر من وحدة تعلّم. صدّر كل وحدة في حزمة مستقلة.</value></data>
+  <data name="Error_package_reason_needs_nested_frames" xml:space="preserve"><value>تعرض الحزمة محتواها داخل إطارات، ولا يمكن تشغيلها بأمان هنا. صدّرها بمشغّل من صفحة واحدة إن كانت أداتك توفّر ذلك.</value></data>
+  <data name="Error_package_reason_needs_relaxed_policy" xml:space="preserve"><value>تحتاج الحزمة إلى خصائص في المتصفح غير مسموحة لأسباب أمنية.</value></data>
+  <data name="Error_package_reason_h5p_invalid" xml:space="preserve"><value>ملف H5P غير مكتمل أو يستخدم نوع محتوى غير مدعوم.</value></data>
+  <data name="Error_package_reason_validation_timeout" xml:space="preserve"><value>استغرق فحص الحزمة وقتًا طويلًا. حاول مرة أخرى أو ارفع حزمة أصغر.</value></data>
+  <data name="Error_package_reason_quota_exceeded" xml:space="preserve"><value>استُهلكت مساحة التخزين المخصصة للحزم في مدرستك. احذف حزمًا لم تعد تحتاجها أو تواصل مع المسؤول.</value></data>
+  <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>لم تجتز الحزمة الفحص الأمني.</value></data>
+  <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>الملف ليس أرشيف zip صالحًا. صدّر الحزمة من جديد.</value></data>
+  <data name="Error_package_reason_bad_name" xml:space="preserve"><value>بعض أسماء الملفات في الحزمة طويلة جدًا أو متداخلة بعمق أو محجوزة. أعد تسميتها وصدّر الحزمة من جديد.</value></data>
 </root>
