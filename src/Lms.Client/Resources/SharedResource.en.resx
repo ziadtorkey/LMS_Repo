@@ -611,6 +611,11 @@
   <data name="Error_pool_draw_invalid" xml:space="preserve"><value>The number of drawn questions must be between 1 and the number of questions.</value></data>
   <data name="Error_thread_locked" xml:space="preserve"><value>This thread is locked and takes no replies.</value></data>
   <data name="Error_download_disabled" xml:space="preserve"><value>Download is disabled for this resource; open it in the reader.</value></data>
+  <data name="Error_provider_unavailable" xml:space="preserve"><value>The live session service is busy right now. Try again later.</value></data>
+  <data name="Error_provider_not_configured" xml:space="preserve"><value>Live sessions are not set up. Ask your platform administrator.</value></data>
+  <data name="Error_live_session_not_open" xml:space="preserve"><value>You cannot join now: the join time has not started yet or the session has ended.</value></data>
+  <data name="Error_feature_disabled" xml:space="preserve"><value>This feature is not turned on for your school.</value></data>
+  <data name="Error_recurrence_invalid" xml:space="preserve"><value>The repeat is not valid: pick at least one day and an end date or a number of times (up to 52).</value></data>
   <data name="Error_course_in_use" xml:space="preserve"><value>The course is used by classes and cannot be removed.</value></data>
   <data name="Error_course_not_available" xml:space="preserve"><value>This course is not available at this unit.</value></data>
   <data name="Error_allocation_exists" xml:space="preserve"><value>The course is already allocated at this unit.</value></data>
@@ -705,6 +710,9 @@
   <data name="Perm_Forums_View" xml:space="preserve"><value>View forums</value></data>
   <data name="Perm_Forums_Post" xml:space="preserve"><value>Post in forums</value></data>
   <data name="Perm_Forums_Moderate" xml:space="preserve"><value>Moderate forums and announcements</value></data>
+  <data name="PermModule_LiveSessions" xml:space="preserve"><value>Live sessions</value></data>
+  <data name="Perm_LiveSessions_View" xml:space="preserve"><value>View and join live sessions</value></data>
+  <data name="Perm_LiveSessions_Manage" xml:space="preserve"><value>Manage live sessions</value></data>
   <data name="Policy_CreateStudents" xml:space="preserve"><value>Block creating and importing students</value></data>
   <data name="Policy_CreateCourses" xml:space="preserve"><value>Block creating and importing courses</value></data>
   <data name="Policy_CreateClasses" xml:space="preserve"><value>Block creating classes</value></data>
@@ -725,6 +733,10 @@
   <data name="Setting_Enrollment_TransferCarriesGrades" xml:space="preserve"><value>Grades follow a transferred student</value></data>
   <data name="Setting_Assignments_LatePenaltyDefaultPercent" xml:space="preserve"><value>Default late penalty (%)</value></data>
   <data name="Setting_Quizzes_AutoSubmitGraceSeconds" xml:space="preserve"><value>Quiz auto-submit grace (seconds)</value></data>
+  <data name="Setting_Live_JoinWindowMinutes" xml:space="preserve"><value>Join opens before a live session (minutes)</value></data>
+  <data name="Setting_Live_ReminderMinutes" xml:space="preserve"><value>Reminder before a live session (minutes)</value></data>
+  <data name="Setting_Live_MaxCreatesPerDay" xml:space="preserve"><value>Live sessions that can be created per day</value></data>
+  <data name="Setting_Live_CloudRecordingEnabled" xml:space="preserve"><value>Cloud recording of live sessions</value></data>
   <data name="SettingValue_Students_CriticalFields_NameAr" xml:space="preserve"><value>Arabic name</value></data>
   <data name="SettingValue_Students_CriticalFields_NameEn" xml:space="preserve"><value>English name</value></data>
   <data name="SettingValue_Students_CriticalFields_NicknameAr" xml:space="preserve"><value>Arabic nickname</value></data>
@@ -764,6 +776,8 @@
   <data name="AuditEntity_ForumThread" xml:space="preserve"><value>Forum thread</value></data>
   <data name="AuditEntity_CourseAnnouncement" xml:space="preserve"><value>Course announcement</value></data>
   <data name="AuditEntity_GradeEvent" xml:space="preserve"><value>Grade event</value></data>
+  <data name="AuditEntity_LiveSessionSeries" xml:space="preserve"><value>Live session series</value></data>
+  <data name="AuditEntity_LiveSession" xml:space="preserve"><value>Live session</value></data>
   <data name="Notif_Students_ChangeRequested" xml:space="preserve"><value>{StudentName} sent a change request.</value></data>
   <data name="NotifEvent_Students_ChangeRequested" xml:space="preserve"><value>Student change request</value></data>
   <data name="Notif_Students_ChangeRequestDecided" xml:space="preserve"><value>The change request for {StudentName} was {Decision}.</value></data>
@@ -788,6 +802,8 @@
   <data name="NotifEvent_Quizzes_Opened" xml:space="preserve"><value>Quiz opened</value></data>
   <data name="Notif_Forums_Announcement" xml:space="preserve"><value>Announcement in {CourseName}: {Title}</value></data>
   <data name="NotifEvent_Forums_Announcement" xml:space="preserve"><value>Course announcement</value></data>
+  <data name="Notif_Live_Reminder" xml:space="preserve"><value>The live session {Title} in {CourseName} starts at {StartsAtUtc}.</value></data>
+  <data name="NotifEvent_Live_Reminder" xml:space="preserve"><value>Live session reminder</value></data>
   <data name="Nav_Students" xml:space="preserve"><value>Students</value></data>
   <data name="Students_Title" xml:space="preserve"><value>Students</value></data>
   <data name="Students_New" xml:space="preserve"><value>New student</value></data>

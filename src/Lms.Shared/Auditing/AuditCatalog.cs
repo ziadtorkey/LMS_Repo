@@ -41,6 +41,8 @@ public static class AuditCatalog
         "CourseAnnouncement", "GradeEvent",
         // M4b wave 3b: package uploads and their parsed SCORM / H5P content (attempts are not audited row by row: volume).
         "PackageUpload", "ScormPackage", "H5pContent",
+        // M4b wave 3a: live sessions (participants and webhook receipts are not audited row by row: volume).
+        "LiveSessionSeries", "LiveSession",
     ];
 
     public static IReadOnlyList<string> SecurityEvents { get; } =

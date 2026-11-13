@@ -27,7 +27,7 @@ public class ConfigurationContractTests
     [Fact]
     public void Declared_keys_are_found()
     {
-        Assert.Equal(23, DeclaredKeys().Count());
+        Assert.Equal(27, DeclaredKeys().Count());
     }
 
     [Theory]
@@ -66,6 +66,7 @@ public class ConfigurationContractTests
             "Assignments.LatePenaltyDefaultPercent", "Quizzes.AutoSubmitGraceSeconds",
             "Packages.MaxEntries", "Packages.MaxUncompressedMb", "Packages.MaxClientStorageMb", "Packages.TokenMinutes",
             "Packages.CommitMinIntervalSeconds",
+            "Live.JoinWindowMinutes", "Live.ReminderMinutes", "Live.MaxCreatesPerDay", "Live.CloudRecordingEnabled",
         ], SettingCatalog.All.Select(d => d.Name));
 
         var culture = SettingCatalog.Find("Ui.DefaultCulture")!;
@@ -109,6 +110,27 @@ public class ConfigurationContractTests
         Assert.Equal((SettingValueKinds.Enum, SettingCategories.Academic, "\"Week\""), Shape("Blueprints.SectionLabel"));
         Assert.Equal(["Week", "Unit", "Chapter"], SettingCatalog.Find("Blueprints.SectionLabel")!.AllowedValues!);
         Assert.Equal((SettingValueKinds.Bool, SettingCategories.Academic, "true"), Shape("Enrollment.TransferCarriesGrades"));
+    }
+
+    [Fact]
+    public void M4b_live_settings_match_plan()
+    {
+        Assert.Equal((SettingValueKinds.Int, SettingCategories.Academic, "15", 0, 60), Range("Live.JoinWindowMinutes"));
+        Assert.Equal((SettingValueKinds.Int, SettingCategories.Academic, "30", 5, 1440), Range("Live.ReminderMinutes"));
+        Assert.Equal((SettingValueKinds.Int, SettingCategories.Academic, "500", 1, 10_000), Range("Live.MaxCreatesPerDay"));
+        Assert.Equal((SettingValueKinds.Bool, SettingCategories.Academic, "false"), Shape("Live.CloudRecordingEnabled"));
+        Assert.Equal((15, 30, 500, false),
+            (SettingKeys.LiveJoinWindowMinutes.Default, SettingKeys.LiveReminderMinutes.Default,
+             SettingKeys.LiveMaxCreatesPerDay.Default, SettingKeys.LiveCloudRecordingEnabled.Default));
+
+        // Platform-level (Decision 2): server configuration only, never a unit setting a client admin could change.
+        Assert.Null(SettingCatalog.Find("Live.MaxHostSharePercent"));
+    }
+
+    private static (string Kind, string Category, string DefaultJson, int? Min, int? Max) Range(string name)
+    {
+        var d = SettingCatalog.Find(name)!;
+        return (d.Kind, d.Category, d.DefaultJson, d.Min, d.Max);
     }
 
     [Fact]

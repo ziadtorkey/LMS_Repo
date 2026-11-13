@@ -25,7 +25,9 @@ public class AccessContractTests
             "EnrollmentException", "StudentGroup", "GroupMember", "StudentTransfer", "ClassLessonPlan",
             "LessonModule", "ModuleContent", "Asset",
             "Assignment", "SubmissionFeedback", "Quiz", "QuizQuestion", "LibraryResource", "ForumThread",
-            "CourseAnnouncement", "GradeEvent", "PackageUpload", "ScormPackage", "H5pContent",
+            "CourseAnnouncement", "GradeEvent",
+            "PackageUpload", "ScormPackage", "H5pContent",
+            "LiveSessionSeries", "LiveSession",
         ], AuditCatalog.EntityTypes);
     }
 

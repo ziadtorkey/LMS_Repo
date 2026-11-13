@@ -611,6 +611,11 @@
   <data name="Error_pool_draw_invalid" xml:space="preserve"><value>عدد الأسئلة المسحوبة يجب أن يكون بين 1 وعدد أسئلة الاختبار.</value></data>
   <data name="Error_thread_locked" xml:space="preserve"><value>هذا الموضوع مقفل ولا يقبل ردودًا.</value></data>
   <data name="Error_download_disabled" xml:space="preserve"><value>التنزيل غير متاح لهذا المصدر؛ افتحه في القارئ.</value></data>
+  <data name="Error_provider_unavailable" xml:space="preserve"><value>تعذّر إنشاء الجلسة المباشرة الآن. حاول مرة أخرى لاحقاً.</value></data>
+  <data name="Error_provider_not_configured" xml:space="preserve"><value>خدمة الجلسات المباشرة غير مهيأة. اطلب من مسؤول المنصة إعدادها.</value></data>
+  <data name="Error_live_session_not_open" xml:space="preserve"><value>الانضمام غير متاح الآن: لم يبدأ وقت الانضمام بعد أو انتهت الجلسة.</value></data>
+  <data name="Error_feature_disabled" xml:space="preserve"><value>هذه الميزة غير مفعّلة لمدرستك.</value></data>
+  <data name="Error_recurrence_invalid" xml:space="preserve"><value>التكرار غير صحيح: اختر يوماً واحداً على الأقل، وتاريخ انتهاء أو عدد مرات (حتى 52 مرة).</value></data>
   <data name="Error_course_in_use" xml:space="preserve"><value>المقرر مستخدم في فصول ولا يمكن حذفه.</value></data>
   <data name="Error_course_not_available" xml:space="preserve"><value>هذا المقرر غير متاح في هذه الوحدة.</value></data>
   <data name="Error_allocation_exists" xml:space="preserve"><value>المقرر مخصص لهذه الوحدة من قبل.</value></data>
@@ -705,6 +710,9 @@
   <data name="Perm_Forums_View" xml:space="preserve"><value>عرض المنتديات</value></data>
   <data name="Perm_Forums_Post" xml:space="preserve"><value>النشر في المنتديات</value></data>
   <data name="Perm_Forums_Moderate" xml:space="preserve"><value>الإشراف على المنتديات والإعلانات</value></data>
+  <data name="PermModule_LiveSessions" xml:space="preserve"><value>الجلسات المباشرة</value></data>
+  <data name="Perm_LiveSessions_View" xml:space="preserve"><value>عرض الجلسات المباشرة والانضمام إليها</value></data>
+  <data name="Perm_LiveSessions_Manage" xml:space="preserve"><value>إدارة الجلسات المباشرة</value></data>
   <data name="Policy_CreateStudents" xml:space="preserve"><value>منع إنشاء الطلاب واستيرادهم</value></data>
   <data name="Policy_CreateCourses" xml:space="preserve"><value>منع إنشاء المقررات واستيرادها</value></data>
   <data name="Policy_CreateClasses" xml:space="preserve"><value>منع إنشاء الفصول</value></data>
@@ -725,6 +733,10 @@
   <data name="Setting_Enrollment_TransferCarriesGrades" xml:space="preserve"><value>تنتقل الدرجات مع الطالب المنقول</value></data>
   <data name="Setting_Assignments_LatePenaltyDefaultPercent" xml:space="preserve"><value>نسبة خصم التأخير الافتراضية (%)</value></data>
   <data name="Setting_Quizzes_AutoSubmitGraceSeconds" xml:space="preserve"><value>مهلة التسليم التلقائي للاختبار (ثوانٍ)</value></data>
+  <data name="Setting_Live_JoinWindowMinutes" xml:space="preserve"><value>فتح الانضمام قبل الجلسة المباشرة (دقائق)</value></data>
+  <data name="Setting_Live_ReminderMinutes" xml:space="preserve"><value>التذكير قبل الجلسة المباشرة (دقائق)</value></data>
+  <data name="Setting_Live_MaxCreatesPerDay" xml:space="preserve"><value>الحد اليومي لإنشاء الجلسات المباشرة</value></data>
+  <data name="Setting_Live_CloudRecordingEnabled" xml:space="preserve"><value>التسجيل السحابي للجلسات المباشرة</value></data>
   <data name="SettingValue_Students_CriticalFields_NameAr" xml:space="preserve"><value>الاسم بالعربية</value></data>
   <data name="SettingValue_Students_CriticalFields_NameEn" xml:space="preserve"><value>الاسم بالإنجليزية</value></data>
   <data name="SettingValue_Students_CriticalFields_NicknameAr" xml:space="preserve"><value>اسم الشهرة بالعربية</value></data>
@@ -764,6 +776,8 @@
   <data name="AuditEntity_ForumThread" xml:space="preserve"><value>موضوع منتدى</value></data>
   <data name="AuditEntity_CourseAnnouncement" xml:space="preserve"><value>إعلان مقرر</value></data>
   <data name="AuditEntity_GradeEvent" xml:space="preserve"><value>حدث درجة</value></data>
+  <data name="AuditEntity_LiveSessionSeries" xml:space="preserve"><value>سلسلة جلسات مباشرة</value></data>
+  <data name="AuditEntity_LiveSession" xml:space="preserve"><value>جلسة مباشرة</value></data>
   <data name="Notif_Students_ChangeRequested" xml:space="preserve"><value>أرسل {StudentName} طلب تعديل بيانات.</value></data>
   <data name="NotifEvent_Students_ChangeRequested" xml:space="preserve"><value>طلب تعديل بيانات طالب</value></data>
   <data name="Notif_Students_ChangeRequestDecided" xml:space="preserve"><value>تم البت في طلب تعديل بيانات {StudentName}: {Decision}.</value></data>
@@ -788,6 +802,8 @@
   <data name="NotifEvent_Quizzes_Opened" xml:space="preserve"><value>فتح اختبار</value></data>
   <data name="Notif_Forums_Announcement" xml:space="preserve"><value>إعلان في {CourseName}: {Title}</value></data>
   <data name="NotifEvent_Forums_Announcement" xml:space="preserve"><value>إعلان مقرر</value></data>
+  <data name="Notif_Live_Reminder" xml:space="preserve"><value>تبدأ الجلسة المباشرة {Title} في {CourseName} عند {StartsAtUtc}.</value></data>
+  <data name="NotifEvent_Live_Reminder" xml:space="preserve"><value>تذكير بجلسة مباشرة</value></data>
   <data name="Nav_Students" xml:space="preserve"><value>الطلاب</value></data>
   <data name="Students_Title" xml:space="preserve"><value>الطلاب</value></data>
   <data name="Students_New" xml:space="preserve"><value>طالب جديد</value></data>
