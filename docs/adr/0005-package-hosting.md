@@ -27,13 +27,13 @@ The app page transfers one `MessageChannel` port after the iframe loads; window 
 - per-attempt rate (`Packages.CommitMinIntervalSeconds`);
 - highest `seq` wins per attempt (commits arrive unordered; spike F4);
 - `finish` carries the last `seq` and is the flush barrier;
-- preview tokens are refused by `commit`.
+- preview tokens are refused by `commit` (there is no commit route for a preview).
 
 ### 5. Tokens
 A path token `/p/{token}/...`: payload `{package, student, attempt (when it exists), aud = content host, iat, exp, preview}`, HMAC-signed with a key derived from a purpose string unique to the content host (a token of another purpose is rejected everywhere else), constant-time verified, one identical 404 for forged, expired, malformed, foreign-audience and revoked tokens. Lifetime `Packages.TokenMinutes` (proposal 120, hard cap 8 h); the app page re-launches at 80 % through `POST /api/packages/{id}/launch`, which re-checks access. **Revocation marker** per `(package, student)`, written when the module is hidden, the student is unenrolled or the package is deleted; cached 30 s per node, no per-request DB read; the bound stays 30 s per node. Tokens never appear in logs (`/p/*` is redacted; a test asserts it) and `Referrer-Policy: no-referrer` stays on.
 
 ### 6. Preview
-`POST /api/packages/{id}/preview`: staff only (`Packages.View` plus the class-course relationship), 404 on a miss, 409 `package_not_ready` when validation has not finished. Returns `{ launchUrl, serverNowUtc }` with a preview-flagged token. A preview records no attempt, completion or grade event; its commits are answered 204 and discarded. A student can never obtain a preview token.
+`POST /api/packages/{id}/preview`: staff only (`Packages.View` plus the class-course relationship), 404 on a miss, 409 `package_not_ready` when validation has not finished. Returns `{ launchUrl, serverNowUtc }` with a preview-flagged token. A preview has no attempt, so it records no attempt, completion or grade event, and there is no preview commit route: the commit endpoint refuses preview tokens, and the player never commits in preview (a test proves it). A student can never obtain a preview token.
 
 ### 7. Storage (X-05)
 Extracted packages live in a per-client bucket or prefix that includes the OrgUnit; the object key is built from the token's package id only, and every requested path is validated against the package's file index. The content host streams the object after the token check; there are no pre-signed URLs.
