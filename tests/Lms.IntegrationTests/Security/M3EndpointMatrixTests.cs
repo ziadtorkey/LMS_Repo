@@ -26,6 +26,9 @@ public sealed class M3EndpointMatrixTests(LmsApiFactory factory, ITestOutputHelp
         Routes.TeacherEligibility, Routes.Transfers,
     ];
 
+    /// <summary>GET routes under an M3 prefix that the Student role may read through a relationship (own enrollment).</summary>
+    private static readonly HashSet<string> StudentReadable = [Routes.ClassCourseLessonPlanPattern];
+
     private static IEnumerable<ProbeRow> M3Rows => M1ProbeRows.All.Where(r => IsM3(r.Pattern));
 
     public static TheoryData<string, M3Caller> Cases()
@@ -66,8 +69,13 @@ public sealed class M3EndpointMatrixTests(LmsApiFactory factory, ITestOutputHelp
         var request = await row.Build(w.World, Caller.RootAdmin);
         using var response = await w.SendAsync(caller, row.Method, request.Url, request.Body);
         var body = await response.Content.ReadAsStringAsync();
-        Assert.True(response.StatusCode == System.Net.HttpStatusCode.Forbidden,
-            $"{row.Name}: {row.Method} {request.Url} as {caller} → expected 403, got {(int)response.StatusCode}. Body: {Truncate(body)}");
+        // A route a student may read (the plan tree) holds the permission for the
+        // Student role; the unenrolled student of this world reaches no class course, so it is 404, never data.
+        var expected = caller == M3Caller.Student1 && row.Method == HttpMethod.Get && StudentReadable.Contains(row.Pattern)
+            ? System.Net.HttpStatusCode.NotFound
+            : System.Net.HttpStatusCode.Forbidden;
+        Assert.True(response.StatusCode == expected,
+            $"{row.Name}: {row.Method} {request.Url} as {caller} → expected {(int)expected}, got {(int)response.StatusCode}. Body: {Truncate(body)}");
     }
 
     [Theory]

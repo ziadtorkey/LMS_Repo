@@ -4,7 +4,12 @@ using Lms.Client.Layout;
 using Lms.Client.Services.Api;
 using Lms.Client.Pages.Classes;
 using Lms.Client.Tests.Support;
+using Lms.Client.Services;
 using Lms.Shared.Authorization;
+using Lms.Shared.Configuration;
+using Lms.Shared.Organizations;
+using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Lms.Client.Tests.Pages.Classes;
 
@@ -71,14 +76,6 @@ public sealed class LessonPlanPageTests : LessonPlansTestContext
     }
 
     [Fact]
-    public async Task Modules_slot_is_reserved_for_a_later_release()
-    {
-        var page = await OpenAsync();
-
-        Assert.Contains("later release", page.Find("[data-testid=plan-modules-slot]").TextContent);
-    }
-
-    [Fact]
     public async Task Planned_dates_render_in_culture()
     {
         var page = await OpenAsync();
@@ -142,6 +139,38 @@ public sealed class LessonPlanPageTests : LessonPlansTestContext
         var page = Render<LessonPlanPage>(p => p.Add(x => x.Id, FakeLessonPlansApi.ArabicClassCourseId));
 
         page.WaitForElement("[data-testid=plan-forbidden]", Wait);
+    }
+
+    [Fact]
+    public async Task Teacher_without_Settings_View_still_sees_the_plan_with_the_default_calendar()
+    {
+        // A Teacher holds LessonPlans.View but not Settings.View: the effective-settings read answers 403.
+        Services.AddSingleton<IConfigApi>(new ForbiddenSettingsApi());
+        Culture.Current = new CultureInfo("en");
+        await GrantAsync(Permissions.LessonPlans.View);   // no Settings.View
+        PlaceContextAtUnit();                              // so the page does read the unit's settings
+        RenderProviders();
+        var page = Render<LessonPlanPage>(p => p.Add(x => x.Id, FakeLessonPlansApi.ArabicClassCourseId));
+        page.WaitForElement("[data-testid=plan-header]", Wait);
+
+        Assert.NotEmpty(page.FindAll("[data-testid=plan-header]"));
+        Assert.Empty(page.FindAll("[data-testid=plan-forbidden]"));
+        Assert.DoesNotContain("forbidden", Services.GetRequiredService<NavigationManager>().Uri);   // no redirect to the Forbidden page
+        Assert.Empty(page.FindAll("[data-testid=plan-hijri]"));   // no setting readable: the default (Gregorian only)
+        Assert.NotEmpty(page.FindAll("[data-testid^=plan-lesson-]"));
+    }
+
+    private sealed class ForbiddenSettingsApi : IConfigApi
+    {
+        public Task<IReadOnlyList<EffectiveSettingDto>> GetSettingsAsync(Guid unitId, CancellationToken ct = default) =>
+            Task.FromException<IReadOnlyList<EffectiveSettingDto>>(new ApiForbiddenException());
+        public Task<IReadOnlyList<PolicyDefinitionDto>> GetPolicyCatalogAsync(CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<IReadOnlyList<EffectivePolicyDto>> GetPoliciesAsync(Guid unitId, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task EnablePolicyAsync(Guid unitId, string key, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task DisablePolicyAsync(Guid unitId, string key, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<IReadOnlyList<SettingDefinition>> GetSettingCatalogAsync(CancellationToken ct = default) => throw new NotSupportedException();
+        public Task SetSettingAsync(Guid unitId, string name, SetSettingRequest request, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task RemoveSettingAsync(Guid unitId, string name, CancellationToken ct = default) => throw new NotSupportedException();
     }
 
     [Fact]

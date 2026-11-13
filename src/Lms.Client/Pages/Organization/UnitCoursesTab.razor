@@ -1,0 +1,79 @@
+@using Lms.Client.Services.Api
+@using Lms.Shared.Courses
+@inject ICoursesApi Api
+@inject NavigationManager Navigation
+
+@* Courses of one org unit: available here (allocated here or inherited from above) and allocated below. *@
+<MudStack Spacing="3">
+    @if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error" data-testid="unit-courses-error">@_error</MudAlert>
+    }
+    else if (_courses is null)
+    {
+        <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+    }
+    else
+    {
+        <MudText Typo="Typo.h6">@L["UnitCourses_Available"]</MudText>
+        @if (_courses.Available.Count == 0)
+        {
+            <MudText data-testid="unit-courses-available-empty">@L["UnitCourses_NoneAvailable"]</MudText>
+        }
+        else
+        {
+            <MudTable Items="_courses.Available" Dense="true" Hover="true" data-testid="unit-courses-available">
+                <HeaderContent>
+                    <MudTh>@L["Course_Code"]</MudTh>
+                    <MudTh>@L["Common_Name"]</MudTh>
+                    <MudTh>@L["Allocation_Unit"]</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="@L["Course_Code"]"><span dir="ltr">@context.CourseCode</span></MudTd>
+                    <MudTd DataLabel="@L["Common_Name"]">
+                        <MudLink Href="@($"courses/{context.CourseId}")">@CultureText.Pick(context.CourseNameAr, context.CourseNameEn)</MudLink>
+                        @if (context.IsInherited)
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Info" data-testid="@($"unit-course-inherited-{context.Id}")">@L["Course_Inherited"]</MudChip>
+                        }
+                    </MudTd>
+                    <MudTd DataLabel="@L["Allocation_Unit"]">@CultureText.Pick(context.OrgUnitNameAr, context.OrgUnitNameEn)</MudTd>
+                </RowTemplate>
+            </MudTable>
+        }
+
+        <MudText Typo="Typo.h6">@L["UnitCourses_Below"]</MudText>
+        @if (_courses.AllocatedBelow.Count == 0)
+        {
+            <MudText data-testid="unit-courses-below-empty">@L["UnitCourses_NoneBelow"]</MudText>
+        }
+        else
+        {
+            <MudTable Items="_courses.AllocatedBelow" Dense="true" Hover="true" data-testid="unit-courses-below">
+                <HeaderContent>
+                    <MudTh>@L["Course_Code"]</MudTh>
+                    <MudTh>@L["Common_Name"]</MudTh>
+                    <MudTh>@L["Allocation_Unit"]</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="@L["Course_Code"]"><span dir="ltr">@context.CourseCode</span></MudTd>
+                    <MudTd DataLabel="@L["Common_Name"]"><MudLink Href="@($"courses/{context.CourseId}")">@CultureText.Pick(context.CourseNameAr, context.CourseNameEn)</MudLink></MudTd>
+                    <MudTd DataLabel="@L["Allocation_Unit"]">@CultureText.Pick(context.OrgUnitNameAr, context.OrgUnitNameEn)</MudTd>
+                </RowTemplate>
+            </MudTable>
+        }
+    }
+</MudStack>
+
+@code {
+    private UnitCoursesDto? _courses;
+    private string? _error;
+
+    [Parameter, EditorRequired] public Guid UnitId { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _error = null;
+        await ApiCalls.RunAsync(async () => _courses = await Api.GetUnitCoursesAsync(UnitId), Navigation, L, message => _error = message);
+    }
+}

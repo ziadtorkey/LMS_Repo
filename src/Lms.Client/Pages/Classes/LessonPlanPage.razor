@@ -1,6 +1,7 @@
 @page "/class-courses/{Id:guid}/plan"
 @attribute [Authorize]
 @using System.Globalization
+@using Lms.Client.Components.Content
 @using Lms.Client.Services
 @using Lms.Client.Services.Api
 @using Lms.Shared.Authorization
@@ -48,6 +49,7 @@ else
                 <MudText Typo="Typo.caption" Class="mud-text-secondary">@L["LessonPlan_Synced", synced.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)]</MudText>
             }
         </MudStack>
+        <ProgressBar Progress="_plan.Progress" Label="@L["LessonPlan_CourseProgress"]" TestId="course-progress" />
     </MudStack>
 
     @if (_plan.BlueprintVersion is null && _plan.Sections.Count == 0)
@@ -56,13 +58,10 @@ else
     }
     else
     {
-        <LessonPlanTree Plan="_plan" ShowHijri="_showHijri" />
+        <LessonPlanTree Plan="_plan" ShowHijri="_showHijri" Staff="@(_plan.Progress is null)" />
     }
 
-    <MudPaper Outlined="true" Class="pa-4 mt-4" data-testid="plan-modules-slot">
-        <MudText Typo="Typo.subtitle1">@L["LessonPlan_Modules"]</MudText>
-        <MudText Typo="Typo.body2" Class="mud-text-secondary">@L["LessonPlan_ModulesLater"]</MudText>
-    </MudPaper>
+
 }
 
 @code {
@@ -106,7 +105,7 @@ else
         {
             var me = await Me.GetMeAsync();
             if (me.Contexts.FirstOrDefault(c => c.AssignmentId == Context.ActiveAssignmentId) is not { } active) return;
-            var settings = await Config.GetSettingsAsync(active.OrgUnitId);
+            var settings = await Config.GetSettingsIfAllowedAsync(active.OrgUnitId);   // Teacher has no Settings.View: default calendar then
             _showHijri = settings.FirstOrDefault(s => s.Name == SettingKeys.UiShowHijriDates.Name)?.ValueJson == "true";
         }, Navigation, L, _ => { });
     }

@@ -31,6 +31,7 @@ public sealed partial class CourseImportDefinition(LmsDbContext db, IAccessEvalu
         new("language", "اللغة", "Language", true, ExampleValue: "en"),
         new("weeklyPeriods", "الحصص الأسبوعية", "Weekly periods", true, ExampleValue: "4"),
         new("ownerUnitCode", "رمز وحدة الملكية", "Owner unit code", true, AsText: true, ExampleValue: "SCH-1"),
+        new("allocateToUnitCodes", "تخصيص لرموز الوحدات", "Allocate to unit codes", false, AsText: true, ExampleValue: "SCH-1;SCH-2"),
     ];
 
     public async Task<IReadOnlyList<RowError>> ValidateAsync(
@@ -59,6 +60,8 @@ public sealed partial class CourseImportDefinition(LmsDbContext db, IAccessEvalu
             {
                 errors.Add(ownerError);
             }
+
+            errors.AddRange(await AllocationErrorsAsync(row, context, cancellationToken));
         }
 
         errors.AddRange(await TakenCodesAsync(context, rows, cancellationToken));
@@ -71,14 +74,48 @@ public sealed partial class CourseImportDefinition(LmsDbContext db, IAccessEvalu
         foreach (var row in rows)
         {
             var owner = context.UnitsByCode[row.Get("ownerUnitCode")!.ToUpperInvariant()];
-            db.Set<Course>().Add(new Course(
+            var course = new Course(
                 owner, CourseValidators.NormalizeCode(row.Get("code")!), row.Get("nameAr")!, row.Get("nameEn")!,
-                row.Get("descriptionAr"), row.Get("descriptionEn"), row.Get("language")!, int.Parse(row.Get("weeklyPeriods")!)));
+                row.Get("descriptionAr"), row.Get("descriptionEn"), row.Get("language")!, int.Parse(row.Get("weeklyPeriods")!));
+            db.Set<Course>().Add(course);
+            foreach (var unit in AllocationUnits(row, context.UnitsByCode))
+            {
+                db.Set<CourseAllocation>().Add(new CourseAllocation(course, unit));
+            }
         }
 
         // A code taken meanwhile violates the live-key unique index: the exception rolls the whole import back.
         await db.SaveChangesAsync(cancellationToken);
         return rows.Count;
+    }
+
+    private static IEnumerable<string> SplitCodes(ImportRowValues row) =>
+        (row.Get("allocateToUnitCodes") ?? string.Empty).Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(c => c.ToUpperInvariant()).Distinct();
+
+    private static IEnumerable<Lms.Domain.Organizations.OrgUnit> AllocationUnits(
+        ImportRowValues row, IReadOnlyDictionary<string, Lms.Domain.Organizations.OrgUnit> units) =>
+        SplitCodes(row).Select(c => units[c]);
+
+    /// <summary>Each unit must exist below the target, allow the allocation and be at or below the course owner.</summary>
+    private async Task<IEnumerable<RowError>> AllocationErrorsAsync(ImportRowValues row, ImportValidationContext context, CancellationToken ct)
+    {
+        var errors = new List<RowError>();
+        context.UnitsByCode.TryGetValue((row.Get("ownerUnitCode") ?? string.Empty).ToUpperInvariant(), out var owner);
+        foreach (var code in SplitCodes(row))
+        {
+            if (!context.UnitsByCode.TryGetValue(code, out var unit)
+                || !(await access.EvaluateAsync(Permissions.Courses.Allocate, unit.Path, ct)).Allowed)
+            {
+                errors.Add(new RowError(row.RowNumber, "allocateToUnitCodes", "unknown_unit", new Dictionary<string, string> { ["value"] = code }));
+            }
+            else if (owner is not null && !Lms.Domain.Organizations.OrgUnitPath.AncestorsAndSelf(unit.Path).Contains(owner.Path))
+            {
+                errors.Add(new RowError(row.RowNumber, "allocateToUnitCodes", "course_not_available"));
+            }
+        }
+
+        return errors;
     }
 
     private async Task<RowError?> OwnerErrorAsync(ImportRowValues row, ImportValidationContext context, CancellationToken ct)

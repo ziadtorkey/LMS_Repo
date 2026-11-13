@@ -1,0 +1,86 @@
+@using System.Globalization
+@using Lms.Client.Services
+@using Lms.Shared.Content
+@inject ICultureService Culture
+
+@* One module under a lesson of the plan tree. Staff see visibility / target chips; students see their completion state.
+   The server already decides which modules a student gets, so nothing is filtered here. *@
+<div class="@("lms-module-node" + (Node.IsVisibleNow ? "" : " lms-plan-hidden"))" data-testid="@($"module-{Node.Id}")">
+    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+        <MudIcon Icon="@KindIcon" Size="Size.Small" Class="mud-text-secondary" title="@KindLabel" aria-label="@KindLabel" role="img" data-testid="module-kind" />
+        <MudLink Href="@($"/modules/{Node.Id}")" Typo="Typo.body1" data-testid="module-title">@Culture.Pick(Node.TitleAr, Node.TitleEn)</MudLink>
+        @if (!Staff)
+        {
+            <MudIcon Icon="@StateIcon" Size="Size.Small" Color="@StateColor" title="@StateLabel" aria-label="@StateLabel" role="img" data-testid="module-state" data-state="@Node.CompletionState" />
+        }
+        @if (Staff)
+        {
+            @if (Node.Visibility == ModuleVisibilities.Hidden)
+            {
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" data-testid="module-chip-hidden">@L["Module_Visibility_Hidden"]</MudChip>
+            }
+            @if (Node.Visibility == ModuleVisibilities.Scheduled)
+            {
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Info" data-testid="module-chip-scheduled">@ScheduleText()</MudChip>
+            }
+            @if (Node.Target == ModuleTargets.Group)
+            {
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" data-testid="module-chip-group">@L["Module_Group", Culture.Pick(Node.GroupNameAr ?? "", Node.GroupNameEn ?? "")]</MudChip>
+            }
+            @if (!Node.IsVisibleNow && Node.Visibility != ModuleVisibilities.Hidden)
+            {
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Warning" data-testid="module-chip-notvisible">@L["Module_NotVisibleNow"]</MudChip>
+            }
+        }
+    </MudStack>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public ModuleNodeDto Node { get; set; } = default!;
+
+    /// <summary>Staff view: chips instead of the completion state.</summary>
+    [Parameter] public bool Staff { get; set; }
+
+    private string KindLabel => L["ModuleKind_" + Node.Kind].Value;
+
+    private string KindIcon => Node.Kind switch
+    {
+        ModuleKinds.File => Icons.Material.Rounded.Description,
+        ModuleKinds.Video => Icons.Material.Rounded.Videocam,
+        ModuleKinds.Audio => Icons.Material.Rounded.Headphones,
+        ModuleKinds.Page => Icons.Material.Rounded.Article,
+        ModuleKinds.Link => Icons.Material.Rounded.Link,
+        ModuleKinds.Assignment => Icons.Material.Rounded.Assignment,
+        ModuleKinds.Quiz => Icons.Material.Rounded.Quiz,
+        ModuleKinds.LibraryResource => Icons.Material.Rounded.LocalLibrary,
+        ModuleKinds.LiveSession => Icons.Material.Rounded.VideoCall,
+        _ => Icons.Material.Rounded.Extension,
+    };
+
+    private string StateLabel => L["Module_State_" + (Node.CompletionState ?? CompletionStates.NotStarted)].Value;
+
+    private string StateIcon => Node.CompletionState switch
+    {
+        CompletionStates.Completed => Icons.Material.Rounded.CheckCircle,
+        CompletionStates.InProgress => Icons.Material.Rounded.Timelapse,
+        _ => Icons.Material.Rounded.RadioButtonUnchecked,
+    };
+
+    private Color StateColor => Node.CompletionState switch
+    {
+        CompletionStates.Completed => Color.Success,
+        CompletionStates.InProgress => Color.Info,
+        _ => Color.Default,
+    };
+
+    // ISO date, isolated left-to-right so the digits keep their order inside Arabic text.
+    private static string Iso(DateTime utc) => "⁦" + utc.ToLocalTime().ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture) + "⁩";
+
+    private string ScheduleText() => (Node.VisibleFromUtc, Node.VisibleToUtc) switch
+    {
+        ({ } from, { } to) => L["Module_ScheduledRange", Iso(from), Iso(to)].Value,
+        ({ } from, null) => L["Module_ScheduledFrom", Iso(from)].Value,
+        (null, { } to) => L["Module_ScheduledUntil", Iso(to)].Value,
+        _ => L["Module_Visibility_Scheduled"].Value,
+    };
+}

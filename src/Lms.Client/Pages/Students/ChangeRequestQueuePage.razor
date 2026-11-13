@@ -1,0 +1,96 @@
+@page "/student-change-requests"
+@attribute [Authorize]
+@using System.Globalization
+@using Lms.Client.Components
+@using Lms.Client.Components.People
+@using Lms.Client.Services.Api
+@using Lms.Shared.Authorization
+@using Lms.Shared.People
+@implements IDisposable
+@inject IChangeRequestsApi Api
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject PermissionState PermState
+@inject ICultureService Culture
+
+<PageTitle>@L["Nav_ChangeRequests"]</PageTitle>
+@if (!PermState.Loaded)
+{
+    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+}
+else if (!PermState.Has(Permissions.Students.ApproveChanges))
+{
+    <Forbidden />
+}
+else
+{
+    <MudText Typo="Typo.h4" Class="mb-4" data-testid="queue-title">@L["Nav_ChangeRequests"]</MudText>
+    <MudStack Row="true" Spacing="2" Class="mb-3" Wrap="Wrap.Wrap" AlignItems="AlignItems.Center">
+        <MudItem xs="12" sm="4">
+            <UnitPicker Value="_unitId" ValueChanged="OnUnitChanged" Label="@L["Staff_HomeUnit"]" Clearable="true" TestId="queue-filter-unit" />
+        </MudItem>
+        <MudSelect T="string" Value="_status" ValueChanged="OnStatusChanged" Label="@L["Common_Status"]" Clearable="true"
+                   Style="min-width: 10rem" data-testid="queue-filter-status">
+            @foreach (var status in ChangeRequestStatuses.All)
+            {
+                <MudSelectItem T="string" Value="@status">@L[$"ChangeRequestStatus_{status}"]</MudSelectItem>
+            }
+        </MudSelect>
+    </MudStack>
+    <ServerTable @ref="_table" T="StudentChangeRequestDto" ServerData="LoadAsync">
+        <HeaderContent>
+            <MudTh>@L["Student_Code"]</MudTh>
+            <MudTh>@L["Common_Name"]</MudTh>
+            <MudTh>@L["Staff_HomeUnit"]</MudTh>
+            <MudTh>@L["MyProfile_Fields"]</MudTh>
+            <MudTh>@L["Common_Status"]</MudTh>
+            <MudTh>@L["Audit_When"]</MudTh>
+            <MudTh></MudTh>
+        </HeaderContent>
+        <RowTemplate Context="request">
+            <MudTd><span dir="ltr">@request.StudentCode</span></MudTd>
+            <MudTd>@Culture.Pick(request.StudentNameAr, request.StudentNameEn)</MudTd>
+            <MudTd>@Culture.Pick(request.HomeOrgUnitNameAr, request.HomeOrgUnitNameEn)</MudTd>
+            <MudTd>@string.Join("، ", request.Changes.Select(c => L[$"StudentField_{c.Field}"].Value))</MudTd>
+            <MudTd data-testid="@($"queue-status-{request.Id}")">@L[$"ChangeRequestStatus_{request.Status}"]</MudTd>
+            <MudTd><span dir="ltr">@request.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture)</span></MudTd>
+            <MudTd>
+                <MudButton Size="Size.Small" Variant="Variant.Outlined" OnClick="() => OpenAsync(request)"
+                           data-testid="@($"queue-open-{request.Id}")">@L["ChangeRequest_Review"]</MudButton>
+            </MudTd>
+        </RowTemplate>
+    </ServerTable>
+}
+
+@code {
+    private ServerTable<StudentChangeRequestDto> _table = default!;
+    private Guid? _unitId;
+    private string? _status = ChangeRequestStatuses.Pending;
+
+    protected override async Task OnInitializedAsync()
+    {
+        PermState.Changed += OnPermissionsChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+    }
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => PermState.Changed -= OnPermissionsChanged;
+
+    private async Task<TableData<StudentChangeRequestDto>> LoadAsync(TableState state, CancellationToken ct)
+    {
+        var result = await Api.ListAsync(new ChangeRequestQuery(_unitId, _status, state.Page + 1, state.PageSize), ct);
+        return new TableData<StudentChangeRequestDto> { Items = result.Items, TotalItems = result.Total };
+    }
+
+    private Task OnUnitChanged(Guid? id) { _unitId = id; return _table.ReloadAsync(); }
+    private Task OnStatusChanged(string? status) { _status = status; return _table.ReloadAsync(); }
+
+    private async Task OpenAsync(StudentChangeRequestDto request)
+    {
+        var dialog = await Dialogs.ShowAsync<ChangeRequestDetailDialog>(L["ChangeRequest_Review"],
+            new DialogParameters<ChangeRequestDetailDialog> { { x => x.Request, request } },
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        if (await dialog.Result is { Canceled: false }) { Snackbar.Add(L["Common_Saved"], Severity.Success); await _table.ReloadAsync(); }
+    }
+}
