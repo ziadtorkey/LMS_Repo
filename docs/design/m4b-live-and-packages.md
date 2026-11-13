@@ -310,12 +310,15 @@ The start card is a `SectionCard`. Nothing loads in a frame until the learner pr
 - **Summary row:** a `lms-kind-tile` with Rounded.Inventory2, the module title (`subtitle1`) and a status chip.
   - Statuses: Not started (Default) / In progress (Info) / Completed (Success).
   - With a score, it adds "Score 85 / 100" (or "85 %", as the server reports it).
-- **Third-party note** (Q-G8), `lms-muted` caption with Rounded.Info (aria-hidden): "This activity comes from another provider. Some parts may not work with a keyboard or screen reader."
+- **Third-party note** (Q-G8), `lms-muted` caption with Rounded.Info (aria-hidden): "This activity comes from another provider. Some parts may not work with a keyboard or screen reader, and buttons that print, download or open a new window don't work here." / "هذا النشاط من مزوّد خارجي. قد لا تعمل بعض أجزائه بلوحة المفاتيح أو قارئ الشاشة، ولا تعمل هنا الأزرار التي تطبع أو تنزّل ملفًا أو تفتح نافذة جديدة."
+  - **Why the second half:** the frame's sandbox is exactly `allow-scripts` (ADR 0005 §2–3). So inside a package, pop-ups, new windows, form posts, downloads, `alert()`/`confirm()` and `print()` are all silently blocked, and the learner should know it isn't their fault.
 - **Phone hint** (below 600 px only): "Works best on a larger screen."
-- **Actions:**
-  - **Start** (filled primary, Rounded.PlayArrow), or **Resume** when the server reports an attempt in progress.
-  - **Start again** (text), only where the contract allows a new attempt.
-  - **Preview** (outlined, Rounded.Visibility), staff with `Packages.View` only. Students never see it.
+- **Actions, students:**
+  - **Start** (filled primary, Rounded.PlayArrow), or **Resume** when an attempt is in progress.
+  - In both cases the action is `POST …/launch`, which continues the open attempt (`Resumed = true`) or opens a new one. Only the label differs.
+  - **No "Start again" in v1.** The contract has no call that abandons an open attempt, so the button is not shown. If a later contract adds one, it comes with a confirm: "Start again? Your saved progress in this activity will be replaced." / "البدء من جديد؟ سيُستبدل تقدّمك المحفوظ في هذا النشاط." The confirm button is in Warning colour.
+  - On a **Completed** module the action is **Open again** (outlined). It launches, which opens a new attempt. How a new attempt affects the score shown is open question Q3 (§7).
+- **Actions, staff:** **Preview** only (outlined, Rounded.Visibility). Launch answers 404 for staff (contract and ADR 0005 §6), so staff never see Start, Resume or Open again. Students never see Preview.
 
 ### 5.2 Running: `lms-player`
 
@@ -336,6 +339,9 @@ The start card is a `SectionCard`. Nothing loads in a frame until the learner pr
   - **Full screen** icon button (Rounded.Fullscreen / FullscreenExit). The aria-label is "Full screen" / "ملء الشاشة", or "Exit full screen" / "إنهاء ملء الشاشة".
   - **Exit**, a text button with Rounded.Close. It ends the player view (flush first) and returns to the start card.
   - Both stay reachable in full screen, because the container (toolbar included) is what goes full screen.
+  - **Full screen is offered only when it works.** Show the button only when `document.fullscreenEnabled` is true. iPhone Safari, for example, can't make a container full screen, and a button that does nothing is worse than none.
+  - **Leaving full screen:** Esc and the button both leave full screen. The button's label and icon follow the `fullscreenchange` event, not a local flag, so they stay right when the browser exits full screen by itself. Focus goes back to the Full screen button.
+  - **Exit while in full screen** leaves full screen first, then flushes and returns to the start card.
 
 **Frame attributes** (Task 17, Decisions 12 and 14; the mockup draws a placeholder and doesn't relax any of them):
 
@@ -392,7 +398,7 @@ The frame is on the content host (another site), so the app can't see what the c
 | State | Presentation | Text (en / ar) | Action |
 |---|---|---|---|
 | Launching | `LoadingState Lines="3"` inside the container | — | — |
-| Finished | the frame is replaced by a result card in the container | Completed / مكتمل, Success chip, "Score 85 / 100" | **Open again** outlined; **Start again** text where allowed |
+| Finished | the frame is replaced by a result card in the container | Completed / مكتمل, Success chip, "Score 85 / 100" | **Open again** outlined (opens a new attempt, see Q3) |
 | Attempt already closed (`409 package_commit_rejected`, and a fresh read says the attempt is no longer in progress, for example it was finished in another tab) | the frame is replaced by the result card, with an outlined Info alert on top | This attempt has already ended, maybe in another tab. Your result is below. / انتهت هذه المحاولة، ربما في تبويب آخر. نتيجتك أدناه. | as Finished |
 | Commit refused, attempt still open (`409 package_commit_rejected` for size or rate) | the frame keeps running; save state "Not saved" and the Refused strip (§5.2) | §5.2 | — |
 | Module hidden during the attempt (404 on commit or re-launch) | the module not-available state (§3.1) replaces the player | §3.1 | Back to the course |
@@ -400,6 +406,7 @@ The frame is on the content host (another site), so the app can't see what the c
 | Host not configured | outlined Info alert | Packages aren't set up on this platform yet. / لم تُفعَّل الحزم على هذه المنصة بعد. | — |
 | Feature off (`feature_disabled`) | outlined Info alert | Packages are turned off for this school. / الحزم معطّلة في هذه المدرسة. | — |
 | Hidden module at launch (404) | the module not-available state (§3.1) | §3.1 | Back to the course |
+| Launch failed: network error or 5xx | outlined Error alert in the start card; the card stays | Couldn't open the activity. Check your connection and try again. / تعذّر فتح النشاط. تحقّق من اتصالك وحاول مرة أخرى. | **Try again** text button; the Start / Resume button stays |
 
 `package_commit_rejected` is one code for two causes (closed attempt, or size / rate), so the player tells them apart by re-reading the attempt (`PackageAttemptDto` status), not by the code. Test to add: `Commit_rejected_on_a_closed_attempt_shows_the_result`.
 
@@ -407,6 +414,20 @@ The frame is on the content host (another site), so the app can't see what the c
 - On Start, focus moves to the frame container (`tabindex="-1"`), so the next Tab goes into the frame. Exit and Full screen sit before the frame in the tab order, so keyboard users can always reach them by Shift+Tab from the frame's first control. The third-party note documents that we can't guarantee more.
 - When the frame is replaced by the **Finished** card (or the "already ended" card), the frame is removed and focus moves to the card's heading (the module title, `tabindex="-1"`); the status and score are read next. Focus doesn't go to **Open again**, so a stray Enter doesn't start the activity again.
 - When any other state replaces the player (not available, alerts), focus moves to that state's heading or alert.
+
+### 5.5 Staff preview (ADR 0005 §6)
+
+- **Entry:** **Preview** on the staff start card calls `POST …/preview`. It shares the 409 `package_not_ready` and host-not-configured states (§5.4) with launch.
+- **Running:**
+  - The player is the same as §5.2, with the **Preview strip** above the toolbar ("Preview: nothing is recorded.").
+  - **No save state**, because the server answers preview commits 204 and discards them.
+  - The token clock, silent re-launch and expired overlay (§5.3) work the same way. Re-launch calls `…/preview` again, not `…/launch`.
+- **When the content finishes:** the frame is replaced by a preview card instead of the result card. It has an Info chip "Preview", the text "Preview ended. Nothing was recorded." / "انتهت المعاينة. لم يُسجَّل أي شيء.", and the actions **Preview again** (outlined) and **Close preview** (text). No score is shown: a preview has no attempt to judge.
+- **Exit** returns to the staff start card. Focus follows the §5.4 rules.
+- **Tests to add in Task 17:**
+  - `Staff_see_preview_and_never_start_or_resume`
+  - `Preview_finish_shows_the_preview_card_without_a_score`
+  - `Preview_relaunch_calls_preview_not_launch`
 
 ---
 
@@ -439,6 +460,8 @@ The reference CSS for each is in the mockup (`docs/design/mockups/m4b.html`, the
   - **Contract need for the pending row:** `POST /api/class-courses/{id}/packages` should accept an optional `LessonKey`, and a read such as `GET /api/class-courses/{id}/packages?status=pending` should return the uploads that aren't attached yet with that key. The Lead decides whether this joins the Task 2 contract.
 - **Purge of unattached packages (request to the Lead for BE3, Task 8b).** A package that is `Ready` but never attached, or `Uploaded` / `Rejected` and abandoned, should be purged after N days (proposal: a setting `Packages.UnattachedRetentionDays`, default 7) by the existing `PackagePurgeJob`, so abandoned uploads don't fill the client's quota. The pending row above shows a caption on such rows: "Removed automatically after 7 days if not attached." / "تُحذف تلقائياً بعد 7 أيام إن لم تُرفق." (`Package_PendingRetention`, the number and noun from `Live_Unit_Day_*`, §8).
 - **Q2. Arabic plurals (decided).** FE1 adds a small Arabic plural helper as a shared client utility (not only for live sessions), with unit tests for 0, 1, 2, 3–10 and 11+. Countdowns (§3.1) and any later counted text use it.
+
+- **Q3. Opening a completed package again (open).** `…/launch` opens a new attempt once the last one is closed. Should a new attempt replace the shown score, keep the best one, or keep the first one? The answer decides the **Open again** wording: "Opening it again starts a new attempt; your best score is kept." or a confirm. Until it's decided, Open again shows no extra text. It needs a Lead/BE decision on the grade event.
 
 ## 8. Counted text: plural keys
 
