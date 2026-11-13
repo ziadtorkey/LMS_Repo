@@ -137,6 +137,44 @@ public sealed class H5pValidatorTests : IDisposable
         Assert.True(result.Valid);
     }
 
+    [Theory]
+    [InlineData("a/b")]
+    public async Task A_path_like_dependency_name_is_rejected_even_when_its_folder_exists(string name)
+    {
+        var manifest = $"{{\"title\":\"t\",\"mainLibrary\":\"H5P.Foo\",\"preloadedDependencies\":[{{\"machineName\":\"H5P.Foo\",\"majorVersion\":1,\"minorVersion\":0}},{{\"machineName\":\"{name}\",\"majorVersion\":1,\"minorVersion\":0}}]}}";
+        var library = $"{{\"machineName\":\"{name}\",\"majorVersion\":1,\"minorVersion\":0}}";
+
+        var result = await ValidateBytesAsync(Zip(ManifestFile(manifest), ContentFile, LibraryFile, ($"{name}-1.0/library.json", library)));
+
+        Assert.Equal("h5p_invalid", result.RejectReason);
+    }
+
+    [Fact]
+    public async Task A_library_listing_the_same_dependency_thousands_of_times_is_cheap()
+    {
+        var entry = "{\"machineName\":\"H5P.Bar\",\"majorVersion\":1,\"minorVersion\":0}";
+        var foo = Library.Replace("\"title\":\"Foo\"", "\"title\":\"Foo\",\"preloadedDependencies\":[" + string.Join(',', Enumerable.Repeat(entry, 3_000)) + "]");
+        var bar = "{\"machineName\":\"H5P.Bar\",\"majorVersion\":1,\"minorVersion\":0}";
+        var started = System.Diagnostics.Stopwatch.StartNew();
+
+        var result = await ValidateBytesAsync(Zip(ManifestFile(Main), ContentFile, ("H5P.Foo-1.0/library.json", foo), ("H5P.Bar-1.0/library.json", bar)));
+
+        Assert.True(result.Valid);
+        Assert.True(started.Elapsed < TimeSpan.FromSeconds(5), $"took {started.Elapsed}");
+    }
+
+    [Fact]
+    public async Task A_very_long_title_is_cut_to_the_column_and_hidden_characters_are_removed()
+    {
+        var manifest = Main.Replace("\"title\":\"Corpus\"", "\"title\":\"Co\\u202Erpus " + new string('x', 10_000) + "\"");
+
+        var result = await ValidateBytesAsync(Zip(ManifestFile(manifest), ContentFile, LibraryFile));
+
+        Assert.True(result.Valid);
+        Assert.Equal(PackageTitles.MaxLength, result.Title!.Length);
+        Assert.StartsWith("Corpus x", result.Title);
+    }
+
     [Fact]
     public void The_validator_is_for_the_h5p_kind() => Assert.Equal("H5p", new H5pValidator().Kind);
 }

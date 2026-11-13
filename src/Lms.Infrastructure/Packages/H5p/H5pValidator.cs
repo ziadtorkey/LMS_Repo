@@ -11,7 +11,9 @@ namespace Lms.Infrastructure.Packages.H5p;
 /// library that is one of its preloaded dependencies, machine names are plain identifiers (never a path), and every library that is
 /// needed, directly or through another library, must be present as a <c>{machineName}-{major}.{minor}</c> folder whose
 /// <c>library.json</c> says the same. Anything else is <c>h5p_invalid</c>. The entry rules (no scripts, no nested archives, no unsafe
-/// paths) were already applied by the archive reader.
+/// paths) were already applied by the archive reader. Only <c>preloadedDependencies</c> are followed: libraries that are only listed as
+/// <c>dynamicDependencies</c> or <c>editorDependencies</c> are neither validated nor required (content may fail at run time, it cannot leave
+/// the sandbox); whether to require the dynamic ones is a Task 11 decision.
 /// </summary>
 public sealed partial class H5pValidator : IPackageValidator
 {
@@ -52,7 +54,7 @@ public sealed partial class H5pValidator : IPackageValidator
             using (body)
             {
                 return body.RootElement.ValueKind is JsonValueKind.Object or JsonValueKind.Array && LibrariesPresent(content, dependencies)
-                    ? new PackageValidationResult(null, title.Trim(), null, main)
+                    ? new PackageValidationResult(null, PackageTitles.Clean(title) ?? main, null, main)
                     : Invalid();
             }
         }
@@ -61,17 +63,18 @@ public sealed partial class H5pValidator : IPackageValidator
     /// <summary>Follows the preloaded dependencies of the content and of every library found, each needing its folder and a matching library.json.</summary>
     private static bool LibrariesPresent(IPackageContent content, List<Dependency> first)
     {
-        var seen = new HashSet<string>(StringComparer.Ordinal);
-        var queue = new Queue<Dependency>(first);
+        // Deduplicated on enqueue: the queue never holds more than MaxLibraries + 1 entries, however many times a library lists the same dependency.
+        var queued = new HashSet<string>(StringComparer.Ordinal);
+        var queue = new Queue<Dependency>();
+        foreach (var dependency in first.Where(d => queued.Add(d.Folder)))
+        {
+            queue.Enqueue(dependency);
+        }
+
         while (queue.Count > 0)
         {
             var dependency = queue.Dequeue();
-            if (!seen.Add(dependency.Folder))
-            {
-                continue;
-            }
-
-            if (seen.Count > MaxLibraries || Read(content, dependency.Folder + "/library.json") is not { } library)
+            if (queued.Count > MaxLibraries || Read(content, dependency.Folder + "/library.json") is not { } library)
             {
                 return false;
             }
@@ -90,7 +93,10 @@ public sealed partial class H5pValidator : IPackageValidator
                     return false;
                 }
 
-                next.ForEach(queue.Enqueue);
+                foreach (var follow in next.Where(d => queued.Add(d.Folder)))
+                {
+                    queue.Enqueue(follow);
+                }
             }
         }
 
