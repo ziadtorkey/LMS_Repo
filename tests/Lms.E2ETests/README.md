@@ -156,10 +156,10 @@ A student submits an assignment and takes a quiz; the grader scores both. `M4/As
 
 | Scenario | ar + en |
 |---|---|
-| Teacher publishes an assignment, the student submits late with the penalty, the grader scores with an annotated file | skipped: also needs the rich-text editor script to be served (the fingerprinted `/js/richtext.<hash>.js` answers 404 under `dotnet run`; `MapStaticAssets` is missing in `Program.cs`) |
+| Teacher publishes an assignment, the student submits late with the penalty, the grader scores with an annotated file | skipped until the M4a PRs land (the editor assets, #451, are fixed by #456) |
 | A blocked late assignment refuses the submission (UI and API 409) | skipped until the M4a PRs land |
 | The student takes a timed quiz, answers autosave across a reload, the score is 5 of 10 with the review the policy allows | skipped until the M4a PRs land |
 | An unfinished attempt is auto-submitted at close (dev trigger `POST /api/dev/jobs/quiz-close/{quizId}`) | skipped until the M4a PRs land |
 | The grader scores an essay and the student sees the result per the review policy | skipped until the M4a PRs land |
 
-Known limits: the grader signs in as the Org Admin (same grading permissions) because the shared E2E academic year starts on 2027-09-01 and a teacher assignment cannot start before its year, so the seeded Teacher is not current yet; switch `OpenTeacherAsync` to the seeded teacher once the year contains today. The checked radio after a quiz reload is not asserted (MudBlazor's state is not exposed reliably); the saved answers are proved by the score.
+Known limits: the grader signs in as the Org Admin (same grading permissions) because the shared E2E academic year starts on 2027-09-01 and a teacher assignment cannot start before its year, so the seeded Teacher is not current yet; switch `OpenTeacherAsync` to the seeded teacher once the year contains today (#455). The checked radio after a quiz reload is not asserted (MudBlazor's state is not exposed reliably); the saved answers are proved by the score. Students' API payloads (attempt, result) are checked for answer-key leaks: no non-null `*correct*` property, and `score` / `questions` withheld while an essay is pending or under ScoreOnly.

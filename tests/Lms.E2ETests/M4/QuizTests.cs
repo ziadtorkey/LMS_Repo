@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Lms.E2ETests.Infrastructure;
 using Microsoft.Playwright;
 using static Microsoft.Playwright.Assertions;
@@ -11,7 +12,7 @@ namespace Lms.E2ETests.M4;
 /// </summary>
 public sealed class QuizTests(E2EFixture fixture) : M4TestBase(fixture)
 {
-    private const string NeedsM4a = "Needs the M4a assignment, grading and quiz APIs and pages (#391, #410, #421, #399, #415 and the FE pages #400/#403/#405/#406/#408) on main";
+    private const string NeedsM4a = "Needs the M4a assignment, grading and quiz APIs and pages (#391, #410, #421, #399, #415 and the FE pages #400/#403/#405/#406/#408) on main; the rich-text editor assets (#451) are fixed by #456, and the grader still signs in as the Org Admin until #455 seeds a current year";
 
     private static object QuizSettings(int? timeLimit, DateTime? closesAtUtc, string reviewPolicy) => new
     {
@@ -53,7 +54,6 @@ public sealed class QuizTests(E2EFixture fixture) : M4TestBase(fixture)
         return quizId;
     }
 
-    /// <summary>The choice with this text (the radio and its label sit in the question's choice group).</summary>
     /// <summary>The visible input or textarea of a MudBlazor field, whether the test id sits on the field or on its input.</summary>
     private static ILocator Field(IPage page, string testIdPrefix) => page.Locator($"[data-testid^='{testIdPrefix}']")
         .Locator("xpath=descendant-or-self::*[self::input or self::textarea]").Locator("visible=true").First;
@@ -61,6 +61,37 @@ public sealed class QuizTests(E2EFixture fixture) : M4TestBase(fixture)
     /// <summary>Waits until the autosave reports everything saved (the answers are sent after a short debounce).</summary>
     private static Task AssertSavedAsync(IPage page, string culture) =>
         Expect(page.GetByTestId("save-state")).ToHaveTextAsync(Resx.In(culture, "Quiz_Saved"));
+
+    /// <summary>Clicks start and returns the id of the attempt the API created (read from its response).</summary>
+    private static async Task<Guid> StartAttemptAsync(IPage page)
+    {
+        var response = await page.RunAndWaitForResponseAsync(
+            () => page.GetByTestId("quiz-start-button").ClickAsync(),
+            r => r.Request.Method == "POST" && r.Url.EndsWith("/attempts", StringComparison.Ordinal));
+        return (await response.JsonAsync())!.Value.GetProperty("id").GetGuid();
+    }
+
+    /// <summary>True when the payload carries a non-null property whose name mentions "correct" anywhere (isCorrect, correctOptionIds...).</summary>
+    private static bool LeaksAnswerKey(JsonElement e) => e.ValueKind switch
+    {
+        JsonValueKind.Object => e.EnumerateObject().Any(p =>
+            (p.Name.Contains("correct", StringComparison.OrdinalIgnoreCase) && p.Value.ValueKind != JsonValueKind.Null) || LeaksAnswerKey(p.Value)),
+        JsonValueKind.Array => e.EnumerateArray().Any(LeaksAnswerKey),
+        _ => false,
+    };
+
+    /// <summary>
+    /// The student's own API view must hold no answer key: the UI hides it, but a student can call the API. Returns the payload so the
+    /// caller can also check the fields the review policy withholds (<c>score</c>, <c>questions</c>).
+    /// </summary>
+    private static async Task<JsonElement> GetWithoutAnswerKeyAsync(E2EApi api, string path)
+    {
+        var response = await api.SendAsync("GET", path);
+        Assert.True(response.Ok, $"GET {path} answered {response.Status}");
+        var json = await api.JsonAsync(response);
+        Assert.False(LeaksAnswerKey(json), $"GET {path} leaked correct-answer data: {json}");
+        return json;
+    }
 
     private static ILocator Option(IPage page, string text) => page.GetByTestId("quiz-attempt").GetByText(text, new() { Exact = true });
 
@@ -76,12 +107,15 @@ public sealed class QuizTests(E2EFixture fixture) : M4TestBase(fixture)
         // Start: the time limit is announced and the timer runs.
         await student.Page.GotoAsync($"/class-courses/{world.ClassCourseId}/quizzes/{quizId}");
         await Expect(student.Page.GetByTestId("quiz-time-limit")).ToBeVisibleAsync(new() { Timeout = 30_000 });
-        await student.Page.GetByTestId("quiz-start-button").ClickAsync();
+        var attemptId = await StartAttemptAsync(student.Page);
         await Expect(student.Page.GetByTestId("attempt-timer")).ToBeVisibleAsync();
         await Option(student.Page, "Cairo").ClickAsync();
         await student.Page.GetByTestId("quiz-next").ClickAsync();
         await Option(student.Page, "Amazon").ClickAsync(); // a wrong answer on purpose
         await AssertSavedAsync(student.Page, culture);
+
+        // While the attempt runs the API gives the questions and the saved answers, never which option is right.
+        await GetWithoutAnswerKeyAsync(student.Api(Settings.BaseUrl), $"/api/quiz-attempts/{attemptId}");
 
         // The answers were saved as they were given: after a reload the attempt resumes, and the score below counts what was saved
         // (the student does not answer again). The checked radio is not asserted: MudBlazor's radio state is not exposed reliably.
@@ -108,7 +142,7 @@ public sealed class QuizTests(E2EFixture fixture) : M4TestBase(fixture)
         var quizId = await BuildChoiceQuizAsync(admin, world, timeLimit: null, closesAtUtc: closes, reviewPolicy: "ScoreOnly");
         await using var student = await OpenStudentAsync(world, names, culture);
         await student.Page.GotoAsync($"/class-courses/{world.ClassCourseId}/quizzes/{quizId}");
-        await student.Page.GetByTestId("quiz-start-button").ClickAsync();
+        var attemptId = await StartAttemptAsync(student.Page);
         await Option(student.Page, "Cairo").ClickAsync(); // one right answer; the student leaves the attempt unfinished
         await AssertSavedAsync(student.Page, culture);
 
@@ -123,6 +157,11 @@ public sealed class QuizTests(E2EFixture fixture) : M4TestBase(fixture)
         await student.Page.Locator("[data-testid^='quiz-attempt-']").First.ClickAsync();
         await Expect(student.Page.GetByTestId("result-score")).ToContainTextAsync("5");
         await Expect(student.Page.GetByTestId("result-score")).ToContainTextAsync("10");
+
+        // ScoreOnly: the score is shown and nothing else, in the UI and in the API payload (no questions, no answer key).
+        await Expect(student.Page.GetByTestId("result-review")).ToHaveCountAsync(0);
+        var result = await GetWithoutAnswerKeyAsync(student.Api(Settings.BaseUrl), $"/api/quiz-attempts/{attemptId}/result");
+        Assert.Equal(JsonValueKind.Null, result.GetProperty("questions").ValueKind);
         await AssertDirectionAsync(student.Page, culture);
     }
 
@@ -140,7 +179,7 @@ public sealed class QuizTests(E2EFixture fixture) : M4TestBase(fixture)
 
         // The student answers both questions and submits; the result waits for the essay.
         await student.Page.GotoAsync($"/class-courses/{world.ClassCourseId}/quizzes/{quizId}");
-        await student.Page.GetByTestId("quiz-start-button").ClickAsync();
+        var attemptId = await StartAttemptAsync(student.Page);
         await Option(student.Page, "Cairo").ClickAsync();
         await student.Page.GetByTestId("quiz-next").ClickAsync();
         await Field(student.Page, "essay-text").FillAsync("The Nile flows north through Egypt.");
@@ -148,6 +187,13 @@ public sealed class QuizTests(E2EFixture fixture) : M4TestBase(fixture)
         await student.Page.GetByTestId("quiz-submit").ClickAsync();
         await student.Page.GetByTestId("confirm-yes").ClickAsync();
         await Expect(student.Page.GetByTestId("result-pending")).ToBeVisibleAsync();
+
+        // While the essay waits, nothing is released: no score and no review in the UI, none in the API payload either.
+        await Expect(student.Page.GetByTestId("result-score")).ToHaveCountAsync(0);
+        await Expect(student.Page.GetByTestId("result-review")).ToHaveCountAsync(0);
+        var pending = await GetWithoutAnswerKeyAsync(student.Api(Settings.BaseUrl), $"/api/quiz-attempts/{attemptId}/result");
+        Assert.Equal(JsonValueKind.Null, pending.GetProperty("score").ValueKind);
+        Assert.Equal(JsonValueKind.Null, pending.GetProperty("questions").ValueKind);
 
         // The teacher opens the attempt in the list, scores the essay 5 of 6 and finalises.
         await teacher.Page.GotoAsync($"/class-courses/{world.ClassCourseId}/quizzes/{quizId}/attempts");
@@ -164,6 +210,9 @@ public sealed class QuizTests(E2EFixture fixture) : M4TestBase(fixture)
         await Expect(student.Page.GetByTestId("result-score")).ToContainTextAsync("9");
         await Expect(student.Page.GetByTestId("result-score")).ToContainTextAsync("10");
         await Expect(student.Page.GetByTestId("result-review")).ToHaveCountAsync(0);
+        var released = await GetWithoutAnswerKeyAsync(student.Api(Settings.BaseUrl), $"/api/quiz-attempts/{attemptId}/result");
+        Assert.Equal(9m, released.GetProperty("score").GetDecimal());
+        Assert.Equal(JsonValueKind.Null, released.GetProperty("questions").ValueKind);
         await AssertDirectionAsync(student.Page, culture);
     }
 

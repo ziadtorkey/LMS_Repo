@@ -1,4 +1,5 @@
 using Lms.E2ETests.Infrastructure;
+using Microsoft.Playwright;
 using static Microsoft.Playwright.Assertions;
 
 namespace Lms.E2ETests.M4;
@@ -10,8 +11,7 @@ namespace Lms.E2ETests.M4;
 /// </summary>
 public sealed class AssignmentTests(E2EFixture fixture) : M4TestBase(fixture)
 {
-    private const string NeedsM4a = "Needs the M4a assignment, grading and quiz APIs and pages (#391, #410, #421, #399, #415 and the FE pages #400/#403/#405/#406/#408) on main";
-    private const string NeedsEditor = "Needs the M4a assignment APIs and pages on main, and the rich-text editor script to be served (MapStaticAssets in Program.cs; the fingerprinted /js/richtext.<hash>.js answers 404 under dotnet run)";
+    private const string NeedsM4a = "Needs the M4a assignment, grading and quiz APIs and pages (#391, #410, #421, #399, #415 and the FE pages #400/#403/#405/#406/#408) on main; the rich-text editor assets (#451) are fixed by #456, and the grader still signs in as the Org Admin until #455 seeds a current year";
 
     private const decimal MaxGrade = 100;
 
@@ -35,7 +35,7 @@ public sealed class AssignmentTests(E2EFixture fixture) : M4TestBase(fixture)
         return created.GetProperty("id").GetGuid();
     }
 
-    [Theory(Skip = NeedsEditor)]
+    [Theory(Skip = NeedsM4a)]
     [InlineData("ar")]
     [InlineData("en")]
     public async Task Teacher_publishes_assignment_student_submits_late_with_penalty_teacher_grades_with_annotated_file(string culture)
@@ -51,8 +51,7 @@ public sealed class AssignmentTests(E2EFixture fixture) : M4TestBase(fixture)
         await student.Page.GetByTestId("assignment-title").WaitForAsync();
         await Expect(student.Page.GetByTestId("assignment-late-note")).ToBeVisibleAsync();
         await student.Page.Locator("[data-testid='submit-text'] .ql-editor").FillAsync("My summary of the chapter");
-        await student.Page.GetByTestId("submit-send").ClickAsync();
-        await Expect(student.Page.GetByTestId("assignment-handed-in")).ToBeVisibleAsync();
+        await SubmitWhenEditorHasSyncedAsync(student.Page);
         await Expect(student.Page.GetByTestId("assignment-handed-in")).ToContainTextAsync(Resx.In(culture, "AssignmentStudent_WasLate"));
 
         // The teacher finds the hand-in marked late, grades 80 with an annotated file and returns it.
@@ -61,7 +60,7 @@ public sealed class AssignmentTests(E2EFixture fixture) : M4TestBase(fixture)
         await Expect(teacher.Page.Locator("[data-testid^='late-']")).ToHaveCountAsync(1);
         await teacher.Page.Locator("[data-testid^='grade-']").First.ClickAsync();
         await Expect(teacher.Page.GetByTestId("grade-late")).ToBeVisibleAsync();
-        await teacher.Page.GetByTestId("grade-input").Locator("input").FillAsync("80");
+        await teacher.Page.GetByTestId("grade-input").Locator("xpath=descendant-or-self::input") /* MudBlazor puts the test id on the input itself */.FillAsync("80");
         await Expect(teacher.Page.GetByTestId("grade-penalty")).ToBeVisibleAsync(); // the 20 % penalty is shown before saving
         var annotated = Path.Combine(Directory.CreateTempSubdirectory("lms-e2e-annot-").FullName, "annotated.txt");
         await File.WriteAllTextAsync(annotated, "Well structured; add a conclusion.");
@@ -97,5 +96,29 @@ public sealed class AssignmentTests(E2EFixture fixture) : M4TestBase(fixture)
         var response = await api.SendAsync("POST", $"/api/course-assignments/{assignmentId}/submit", new { textHtml = "<p>Too late</p>", fileAssetIds = Array.Empty<Guid>(), saveAsDraft = false });
         Assert.Equal(409, response.Status);
         await AssertDirectionAsync(student.Page, culture);
+    }
+
+    /// <summary>
+    /// The rich-text editor sends its text to the page after a short debounce (and on blur), so a Submit clicked the instant the text
+    /// was typed can run before the page has it and answers "write your answer first". Click Submit again until the hand-in is accepted.
+    /// </summary>
+    private static async Task SubmitWhenEditorHasSyncedAsync(IPage page)
+    {
+        var handedIn = page.GetByTestId("assignment-handed-in");
+        for (var attempt = 0; attempt < 5; attempt++)
+        {
+            await page.GetByTestId("submit-send").ClickAsync();
+            try
+            {
+                await handedIn.WaitForAsync(new() { Timeout = 3_000 });
+                return;
+            }
+            catch (TimeoutException)
+            {
+                // The page did not have the text yet; try again.
+            }
+        }
+
+        await Expect(handedIn).ToBeVisibleAsync();
     }
 }

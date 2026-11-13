@@ -69,7 +69,7 @@ public abstract class M4TestBase : E2ETestBase
     /// The grader of the scenarios. The seeded Teacher is assigned to the class course, but the shared E2E academic year starts on
     /// 2027-09-01 and a teacher assignment cannot start before its year, so the teacher relationship is not current yet and the
     /// teacher sees the class course as 404. The Org Admin holds the same grading permissions, so signs in instead; switch to
-    /// <c>E2ESettings.SeedUser("teacher")</c> once the E2E year contains today.
+    /// <c>E2ESettings.SeedUser("teacher")</c> once the E2E year contains today (issue #455 tracks the seed; remove this workaround then).
     /// </summary>
     protected async Task<Session> OpenTeacherAsync(string culture)
     {
