@@ -71,7 +71,14 @@ public sealed class MinioFileStorage(
         return file;
     }
 
-    public async Task<Uri> GetDownloadUrlAsync(Guid fileId, TimeSpan? ttl = null, CancellationToken cancellationToken = default)
+    public Task<Uri> GetDownloadUrlAsync(Guid fileId, TimeSpan? ttl = null, CancellationToken cancellationToken = default) =>
+        PresignAsync(fileId, ttl, FileContentTypes.AttachmentDisposition, cancellationToken);
+
+    public Task<Uri> GetViewUrlAsync(Guid fileId, TimeSpan? ttl = null, CancellationToken cancellationToken = default) =>
+        PresignAsync(fileId, ttl, FileContentTypes.InlineDisposition, cancellationToken);
+
+    private async Task<Uri> PresignAsync(
+        Guid fileId, TimeSpan? ttl, Func<string, string, string> disposition, CancellationToken cancellationToken)
     {
         // Filtered set: other clients, sibling units and deleted files all look like "not found".
         var file = await db.Set<StoredFile>().SingleOrDefaultAsync(x => x.Id == fileId, cancellationToken)
@@ -84,11 +91,10 @@ public sealed class MinioFileStorage(
                 .WithObject(file.ObjectKey)
                 .WithExpiry(seconds)
                 // Signed into the url (storage rejects Content-Disposition as an upload header): the response is
-                // always a download under the original name, typed by extension.
+                // typed by the allow-listed extension, never by what the client claimed.
                 .WithHeaders(new Dictionary<string, string>
                 {
-                    ["response-content-disposition"] =
-                        FileContentTypes.AttachmentDisposition(file.FileName, Path.GetExtension(file.FileName)),
+                    ["response-content-disposition"] = disposition(file.FileName, Path.GetExtension(file.FileName)),
                     ["response-content-type"] = file.ContentType,
                 }));
         return new Uri(url);

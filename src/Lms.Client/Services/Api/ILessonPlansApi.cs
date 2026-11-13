@@ -1,6 +1,7 @@
 using Lms.Shared;
 using Lms.Shared.Classes;
 using Lms.Shared.Content;
+using Lms.Shared.Teaching;
 
 namespace Lms.Client.Services.Api;
 
@@ -25,13 +26,22 @@ public interface ILessonPlansApi
 
 public sealed class LessonPlansApi(ApiHttp http) : ILessonPlansApi
 {
-    public Task<IReadOnlyList<ClassCourseDto>> GetMyClassCoursesAsync(CancellationToken ct = default) =>
-        http.GetAsync<IReadOnlyList<ClassCourseDto>>(Routes.MyClassCourses, ct);
+    public async Task<IReadOnlyList<ClassCourseDto>> GetMyClassCoursesAsync(CancellationToken ct = default) =>
+        FromMine(await http.GetAsync<List<MyClassCourseDto>>(Routes.MyClassCourses, ct));
+
+    /// <summary>
+    /// The server answers GET /api/me/class-courses with <see cref="MyClassCourseDto"/> (id in <c>ClassCourseId</c>), not with the
+    /// <see cref="ClassCourseDto"/> of a class: reading it as one left every id empty. The fields the pages use are carried over.
+    /// </summary>
+    internal static IReadOnlyList<ClassCourseDto> FromMine(IEnumerable<MyClassCourseDto> items) =>
+        items.Select(m => new ClassCourseDto(
+            m.ClassCourseId, m.ClassId, m.ClassNameAr, m.ClassNameEn, Guid.Empty, string.Empty, m.CourseNameAr, m.CourseNameEn,
+            false, m.StudentCount, [], null)).ToList();
 
     // Optional read: a plain 403 (no LessonPlans.View) must not send the user to the Forbidden page.
     public async Task<IReadOnlyList<ClassCourseDto>> GetMyClassCoursesIfAllowedAsync(CancellationToken ct = default)
     {
-        try { return await http.GetOptionalAsync<List<ClassCourseDto>>(Routes.MyClassCourses, ct); }
+        try { return FromMine(await http.GetOptionalAsync<List<MyClassCourseDto>>(Routes.MyClassCourses, ct)); }
         catch (ApiForbiddenException) { return []; }
     }
 
