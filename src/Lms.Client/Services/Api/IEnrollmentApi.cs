@@ -106,9 +106,6 @@ public sealed class FakeEnrollmentApi : IEnrollmentApi
             Enrollment("SCI1", "العلوم", "Science", EnrollmentSources.Auto, ClassCourseId2),
             Enrollment("MUS1", "الموسيقى", "Music", EnrollmentSources.Manual, Guid.NewGuid()),
             Enrollment("ART1", "الفنون", "Art", EnrollmentSources.Exceptional, Guid.NewGuid(), EnrollmentStatuses.Dropped, "Schedule clash"),
-            OtherStudent("00000000-0000-0000-0000-0000000000c2", "S-1002", "ليلى حسن", "Laila Hassan"),
-            OtherStudent("00000000-0000-0000-0000-0000000000c3", "S-1003", "عمر خالد", "Omar Khaled"),
-            OtherStudent("00000000-0000-0000-0000-0000000000c4", "S-1004", "سارة علي", "Sara Ali"),
         ]);
     }
 
@@ -117,11 +114,6 @@ public sealed class FakeEnrollmentApi : IEnrollmentApi
         new(Guid.NewGuid(), classCourseId, Guid.Parse("00000000-0000-0000-0000-0000000000c1"), "S-1001", "أحمد سعيد", "Ahmed Saeed", code, ar, en,
             "الصف الأول أ", "Grade 1 A", source, status, new DateOnly(2026, 9, 1), status == EnrollmentStatuses.Dropped ? new DateOnly(2026, 10, 1) : null,
             dropReason, null, null, null);
-
-    /// <summary>A classmate enrolled in the second class course (the groups demo and tests).</summary>
-    private static EnrollmentDto OtherStudent(string id, string code, string nameAr, string nameEn) =>
-        new(Guid.NewGuid(), ClassCourseId2, Guid.Parse(id), code, nameAr, nameEn, "SCI1", "العلوم", "Science", "الصف الأول أ", "Grade 1 A",
-            EnrollmentSources.Auto, EnrollmentStatuses.Active, new DateOnly(2026, 9, 1), null, null, null, null, null);
 
     public IReadOnlyList<EnrollmentDto> Enrollments => _enrollments;
     public IReadOnlyList<ClassStudentDto> ClassStudents => _classStudents;

@@ -154,4 +154,19 @@ public sealed class StudentProfilePageTests : StudentsTestContext
         // Codes and contact values stay LTR whatever the page direction.
         Assert.Equal("ltr", rtl.Find("[data-testid=profile-code]").GetAttribute("dir"));
     }
+
+    [Fact]
+    public async Task A_role_without_Settings_View_can_still_open_the_edit_dialog()
+    {
+        Culture.Current = new CultureInfo("en");
+        Settings.Failure = new Lms.Client.Services.ApiForbiddenException();
+        var navigation = Services.GetRequiredService<Microsoft.AspNetCore.Components.NavigationManager>();
+        var before = navigation.Uri;
+        var cut = await RenderPageAsync(Permissions.Students.View, Permissions.Students.Update);
+
+        _ = cut.WaitForElement("[data-testid=action-edit]").ClickAsync(new());
+
+        await Dialogs.WaitForElementAsync("[data-testid=dialog-save]");
+        Assert.Equal(before, navigation.Uri); // not sent to /forbidden
+    }
 }

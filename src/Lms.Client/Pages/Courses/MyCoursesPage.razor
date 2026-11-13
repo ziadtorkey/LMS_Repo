@@ -1,0 +1,60 @@
+@page "/me/courses"
+@attribute [Authorize]
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Shared.Courses
+@inject ICoursesApi Api
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+<PageTitle>@L["MyCourses_Title"]</PageTitle>
+<PageHeader Title="@L["MyCourses_Title"]" Subtitle="@L["MyCourses_Subtitle"]" TitleTestId="my-courses-title" />
+
+@if (_error is not null)
+{
+    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="my-courses-error">@_error</MudAlert>
+}
+else if (_courses is null)
+{
+    <LoadingState Lines="4" TestId="my-courses-loading" />
+}
+else if (_courses.Count == 0)
+{
+    <SectionCard>
+        <EmptyState Title="@L["MyCourses_Empty"]" Text="@L["MyCourses_EmptyText"]" Icon="@Icons.Material.Rounded.MenuBook" TestId="my-courses-empty" />
+    </SectionCard>
+}
+else
+{
+    <MudGrid>
+        @foreach (var course in _courses)
+        {
+            var current = course;
+            <MudItem xs="12" sm="6" md="4">
+            <SectionCard Title="@Culture.Pick(current.NameAr, current.NameEn)" TestId="@($"my-course-{current.Id}")">
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="lms-muted"><span dir="ltr">@current.Code</span> · @Culture.Pick(current.OwnerOrgUnitNameAr, current.OwnerOrgUnitNameEn)</MudText>
+                    <div class="lms-chip-row">
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@(current.HasPublishedBlueprint ? Color.Success : Color.Default)"
+                                 data-testid="@($"my-course-blueprint-{current.Id}")">
+                            @(current.HasPublishedBlueprint ? L["MyCourses_BlueprintPublished"] : L["MyCourses_NoBlueprint"])
+                        </MudChip>
+                    </div>
+                    <div>
+                        <MudButton Href="@($"courses/{current.Id}")" Variant="Variant.Outlined" Color="Color.Primary" EndIcon="@Icons.Material.Rounded.ArrowForward" IconClass="lms-icon-flip"
+                                   data-testid="@($"my-course-open-{current.Id}")">@L["MyCourses_Open"]</MudButton>
+                    </div>
+                </MudStack>
+            </SectionCard>
+            </MudItem>
+        }
+    </MudGrid>
+}
+
+@code {
+    private IReadOnlyList<CourseSummaryDto>? _courses;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync() =>
+        await ApiCalls.RunAsync(async () => _courses = await Api.GetMySupervisedAsync(), Navigation, L, message => _error = message);
+}

@@ -1,0 +1,31 @@
+@using Lms.Shared.Content
+@inject ICultureService Culture
+
+@* "Continue where you left off": the next visible, counted, not completed module of the course, or the all-done / nothing-yet state. *@
+<MudPaper Outlined="true" Class="pa-4" data-testid="continue-card">
+    <MudStack Spacing="1">
+        <MudText Typo="Typo.subtitle1">@L["Learn_Continue"]</MudText>
+        @if (Next is { } next)
+        {
+            <MudText Typo="Typo.body1" data-testid="continue-title">@Culture.Pick(next.TitleAr, next.TitleEn)</MudText>
+            <div>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="@Href" data-testid="continue-open">@L["Learn_ContinueOpen"]</MudButton>
+            </div>
+        }
+        else if (Progress.Total > 0)
+        {
+            <MudText Typo="Typo.body2" data-testid="continue-done">@L["Learn_AllDone"]</MudText>
+        }
+        else
+        {
+            <MudText Typo="Typo.body2" data-testid="continue-none">@L["Learn_NothingYet"]</MudText>
+        }
+    </MudStack>
+</MudPaper>
+
+@code {
+    /// <summary>The module to continue with; null when everything counted is done or nothing is published yet.</summary>
+    [Parameter] public ModuleNodeDto? Next { get; set; }
+    [Parameter] public ProgressDto Progress { get; set; } = new(0, 0);
+    [Parameter] public string? Href { get; set; }
+}
