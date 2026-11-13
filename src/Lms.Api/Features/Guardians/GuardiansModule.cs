@@ -13,5 +13,6 @@ public sealed class GuardiansModule : ILmsModule
     {
         StudentGuardianEndpoints.Map(app);
         GuardianEndpoints.Map(app);
+        GuardianPortalEndpoints.Map(app);
     }
 }
