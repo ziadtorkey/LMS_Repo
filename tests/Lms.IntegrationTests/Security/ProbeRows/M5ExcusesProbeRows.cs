@@ -16,8 +16,8 @@ public sealed class M5ExcusesProbeRows : IProbeRowModule
 
     public IEnumerable<ProbeRow> Rows =>
     [
-        Pending("m5 excuse policy of a student", HttpMethod.Get, "/api/students/{sid:guid}/excuse-policy", $"{Wave3} + Task 19", OwnerOnly()),
-        Pending("m5 excusable sessions of a student", HttpMethod.Get, "/api/students/{sid:guid}/excusable-sessions", $"{Wave3} + Task 19", OwnerOnly()),
+        Pending("m5 excuse policy of a student", HttpMethod.Get, "/api/students/{id:guid}/excuse-policy", $"{Wave3} + Task 19", OwnerOnly()),
+        Pending("m5 excusable sessions of a student", HttpMethod.Get, "/api/students/{id:guid}/excusable-sessions", $"{Wave3} + Task 19", OwnerOnly()),
         Pending("m5 excuse submit", HttpMethod.Post, "/api/excuses", $"{Wave3} + Task 19 (D61 submitters)", OwnerOnly()),
         Pending("m5 my excuses", HttpMethod.Get, "/api/me/excuses", $"{Wave3} + Task 19", StudentOnly()),
         Pending("m5 excuse withdraw", HttpMethod.Post, Excuse + "/withdraw", $"{Wave3} + Task 19", OwnerOnly()),

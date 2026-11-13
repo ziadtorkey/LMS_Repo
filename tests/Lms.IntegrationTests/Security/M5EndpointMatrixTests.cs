@@ -173,6 +173,34 @@ public sealed class M5EndpointMatrixTests(LmsApiFactory factory, ITestOutputHelp
         output.WriteLine(pending.Count == 0 ? "No pending M5 rows." : $"Pending M5 rows ({pending.Count}):\n" +string.Join('\n', pending));
     }
 
+    /// <summary>The permission table (<see cref="M5PermissionTable"/>) and the probe rows describe the same routes: none missing, none stale.</summary>
+    [Fact]
+    public void The_planned_permission_table_and_the_probe_rows_list_the_same_routes()
+    {
+        var rows = M5Rows.Select(r => $"{r.Method.Method} {r.Pattern}").ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var table = M5PermissionTable.Planned.Keys.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var noPermission = rows.Except(table).OrderBy(x => x).ToList();
+        var noRow = table.Except(rows).OrderBy(x => x).ToList();
+        Assert.True(noPermission.Count == 0 && noRow.Count == 0,
+            "Rows without a planned permission:\n" + string.Join('\n', noPermission) + "\nPlanned permissions without a row:\n" + string.Join('\n', noRow));
+    }
+
+    /// <summary>
+    /// A mapped M5 route declares one of the permissions its plan row allows (the contract's "Grades.Manage or Grades.View" lists both). A route
+    /// guarded by the wrong permission is the commonest authorization defect: a Counselor reaching a gradebook through a View permission, a
+    /// student through a Manage one. Pending rows are skipped; the route-less case is the "requires a permission" test above.
+    /// </summary>
+    [Fact]
+    public void Mapped_M5_routes_require_the_planned_permission()
+    {
+        var wrong = MappedM5Routes()
+            .Where(r => r.Permission is not null && M5PermissionTable.Planned.TryGetValue($"{r.Method} {r.Pattern}", out var allowed)
+                        && !allowed.Contains(r.Permission, StringComparer.Ordinal))
+            .Select(r => $"{r.Method} {r.Pattern}: declares {r.Permission}, the plan allows {string.Join(" or ", M5PermissionTable.Planned[$"{r.Method} {r.Pattern}"])}")
+            .Distinct().ToList();
+        Assert.True(wrong.Count == 0, "M5 routes guarded by a permission other than the planned one:\n" + string.Join('\n', wrong));
+    }
+
     [Fact]
     public void Every_pending_M5_row_names_its_wave_contract_and_task()
     {
@@ -196,11 +224,11 @@ public sealed class M5EndpointMatrixTests(LmsApiFactory factory, ITestOutputHelp
     private static readonly string[] PlannedFamilies =
     [
         "/api/org-units/{id:guid}/grading-scales", "/api/org-units/{id:guid}/weight-templates", "/api/class-courses/{id:guid}/gradebook",
-        "/api/me/grades", "/api/students/{sid:guid}/grades", "/api/grade-reports", "/api/academic-years/{id:guid}/term-structure",
+        "/api/me/grades", "/api/students/{id:guid}/grades", "/api/grade-reports", "/api/academic-years/{id:guid}/term-structure",
         "/api/org-units/{id:guid}/periods", "/api/classes/{id:guid}/timetable", "/api/timetable-slots", "/api/me/timetable",
-        "/api/students/{sid:guid}/timetable", "/api/attendance/sessions", "/api/class-courses/{id:guid}/attendance-sessions",
-        "/api/attendance-sessions", "/api/attendance-reports", "/api/me/attendance", "/api/students/{sid:guid}/attendance",
-        "/api/students/{sid:guid}/excuse-policy", "/api/excuses", "/api/me/excuses", "/api/attendance/alerts",
+        "/api/students/{id:guid}/timetable", "/api/attendance/sessions", "/api/class-courses/{id:guid}/attendance-sessions",
+        "/api/attendance-sessions", "/api/attendance-reports", "/api/me/attendance", "/api/students/{id:guid}/attendance",
+        "/api/students/{id:guid}/excuse-policy", "/api/excuses", "/api/me/excuses", "/api/attendance/alerts",
     ];
 
     [Fact]

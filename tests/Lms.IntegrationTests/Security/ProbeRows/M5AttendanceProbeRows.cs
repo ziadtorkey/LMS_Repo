@@ -29,6 +29,6 @@ public sealed class M5AttendanceProbeRows : IProbeRowModule
         Pending("m5 attendance alerts", HttpMethod.Get, "/api/attendance/alerts", $"{Wave3} + Task 20", ScopedList(Forbidden)),
 
         Pending("m5 my attendance", HttpMethod.Get, "/api/me/attendance", $"{Wave3} + Task 17", StudentOnly()),
-        Pending("m5 student attendance (guardian link)", HttpMethod.Get, "/api/students/{sid:guid}/attendance", $"{Wave3} + Task 17", OwnerOnly()),
+        Pending("m5 student attendance (guardian link)", HttpMethod.Get, "/api/students/{id:guid}/attendance", $"{Wave3} + Task 17", OwnerOnly()),
     ];
 }

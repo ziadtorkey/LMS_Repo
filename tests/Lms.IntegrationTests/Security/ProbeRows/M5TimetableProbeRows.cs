@@ -35,6 +35,6 @@ public sealed class M5TimetableProbeRows : IProbeRowModule
 
         // Own views: a user without slots gets an empty week, never another person's.
         Pending("m5 my timetable", HttpMethod.Get, "/api/me/timetable", $"{Wave2} + Task 14 (bypass site 3)", Expect(Ok, Ok, Ok, Ok, Ok, Ok)),
-        Pending("m5 student timetable (guardian link)", HttpMethod.Get, "/api/students/{sid:guid}/timetable", $"{Wave2} + Task 14", OwnerOnly(NotFound)),
+        Pending("m5 student timetable (guardian link)", HttpMethod.Get, "/api/students/{id:guid}/timetable", $"{Wave2} + Task 14", OwnerOnly(NotFound)),
     ];
 }

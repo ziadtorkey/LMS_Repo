@@ -22,8 +22,8 @@ public sealed class M5GradingProbeRows : IProbeRowModule
         Pending("m5 grading scales update", HttpMethod.Put, Scales + "/{sid:guid}", $"{Wave1} + Task 4", UnitWrite(Ok)),
         Pending("m5 grading scales delete", HttpMethod.Delete, Scales + "/{sid:guid}", $"{Wave1} + Task 4", UnitWrite(NoContent)),
         Pending("m5 grading scales confirm", HttpMethod.Post, Scales + "/{sid:guid}/confirm", $"{Wave1} + Task 4 (L7)", UnitWrite(Ok)),
-        Pending("m5 grading scales set default", HttpMethod.Put, Scales + "/{sid:guid}/default", $"{Wave1} + Task 4", UnitWrite(Ok)),
-        Pending("m5 grading scales presets", HttpMethod.Get, Scales + "/presets", $"{Wave1} + Task 4 (D59)", UnitRead()),
+        Pending("m5 grading scales set default", HttpMethod.Post, Scales + "/{sid:guid}/default", $"{Wave1} + Task 4", UnitWrite(Ok)),
+        Pending("m5 grading scales copy preset", HttpMethod.Post, Scales + "/presets", $"{Wave1} + Task 4 (D59)", UnitWrite(Created)),
         Pending("m5 weight templates list", HttpMethod.Get, Templates, $"{Wave1} + Task 4", UnitRead()),
         Pending("m5 weight templates create", HttpMethod.Post, Templates, $"{Wave1} + Task 4", UnitWrite(Created)),
         Pending("m5 weight templates update", HttpMethod.Put, Templates + "/{tid:guid}", $"{Wave1} + Task 4", UnitWrite(Ok)),
@@ -41,12 +41,13 @@ public sealed class M5GradingProbeRows : IProbeRowModule
         Pending("m5 gradebook publish", HttpMethod.Post, Book + "/items/publish", $"{Wave1} + Task 11 (L7 provisional scale)", ClassCourse(Ok)),
         Pending("m5 gradebook student view preview", HttpMethod.Get, Book + "/students/{sid:guid}/student-view", $"{Wave1} + Task 9 (L6)", ClassCourse(Ok)),
         Pending("m5 gradebook item export", HttpMethod.Get, Book + "/items/{iid:guid}/export", $"{Wave1} + Task 10 (L9)", ClassCourse(Ok)),
-        Pending("m5 gradebook import preview", HttpMethod.Post, Book + "/import/preview", $"{Wave1} + Task 10 (L9)", ClassCourse(Ok)),
-        Pending("m5 gradebook import apply", HttpMethod.Post, Book + "/import/apply", $"{Wave1} + Task 10 (L9)", ClassCourse(Ok)),
+        Pending("m5 gradebook import preview", HttpMethod.Post, Book + "/items/{iid:guid}/import/preview", $"{Wave1} + Task 10 (L9)", ClassCourse(Ok)),
+        Pending("m5 gradebook import apply", HttpMethod.Post, Book + "/items/{iid:guid}/import/apply", $"{Wave1} + Task 10 (L9)", ClassCourse(Ok)),
 
         // The student and guardian reads: published only (L6). Staff and unlinked guardians never reach them.
         Pending("m5 my grades", HttpMethod.Get, "/api/me/grades", $"{Wave1} + Task 9", StudentOnly()),
-        Pending("m5 student grades (guardian link)", HttpMethod.Get, "/api/students/{sid:guid}/grades", $"{Wave1} + Task 9", OwnerOnly()),
+        // No M1 caller holds Grades.ViewOwn (it is Student and Guardian only), so every staff caller is 403 here; the guardian-link rows (404 for an unlinked guardian) are in M5RelationshipProbeTests.
+        Pending("m5 student grades (guardian link)", HttpMethod.Get, "/api/students/{id:guid}/grades", $"{Wave1} + Task 9", StudentOnly()),
         Pending("m5 grade report", HttpMethod.Get, "/api/grade-reports/{kind}", $"{Wave1} + Task 9", StaffOnly()),
         Pending("m5 grade report export", HttpMethod.Get, "/api/grade-reports/{kind}/export", $"{Wave1} + Task 10", StaffOnly()),
     ];
