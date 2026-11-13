@@ -33,7 +33,16 @@ jobs:
       - name: Integration tests (Testcontainers)
         env:
           LMS_PERF_BUDGET_FACTOR: "3" # shared runners are about 2x slower than a developer machine (X-09 budget scales)
+          LMS_CONN_LOG: ${{ runner.temp }}/mysql-connections.log # #466: MySQL connections by user/query every 15 s
         run: dotnet test tests/Lms.IntegrationTests -c Release --no-build
+      - name: Upload MySQL connection samples
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mysql-connections
+          path: ${{ runner.temp }}/mysql-connections.log
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Client tests
         run: dotnet test tests/Lms.Client.Tests -c Release --no-build
 
