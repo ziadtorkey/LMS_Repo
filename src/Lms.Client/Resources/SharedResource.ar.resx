@@ -1191,6 +1191,14 @@
   <data name="RichText_LinkUrl" xml:space="preserve"><value>عنوان الرابط</value></data>
   <data name="RichText_NumberedList" xml:space="preserve"><value>قائمة مرقمة</value></data>
   <data name="RichText_Toolbar" xml:space="preserve"><value>شريط أدوات التنسيق</value></data>
+  <data name="Module_Title" xml:space="preserve"><value>وحدة</value></data>
+  <data name="Module_Back" xml:space="preserve"><value>العودة إلى المقرر</value></data>
+  <data name="Module_MarkComplete" xml:space="preserve"><value>وضع علامة مكتملة</value></data>
+  <data name="Module_Previous" xml:space="preserve"><value>السابق</value></data>
+  <data name="Module_Next" xml:space="preserve"><value>التالي</value></data>
+  <data name="Module_NoContent" xml:space="preserve"><value>لا يوجد محتوى لهذه الوحدة بعد.</value></data>
+  <data name="Module_Unsupported" xml:space="preserve"><value>يُفتح هذا النوع من الوحدات في صفحته الخاصة.</value></data>
+  <data name="Module_UrlInvalid" xml:space="preserve"><value>أدخل عنوان ويب كاملًا يبدأ بـ http:// أو https://.</value></data>
   <data name="Allocation_EmptyText" xml:space="preserve"><value>وزّع المقرر على وحدة لتظهر فيها الفصول.</value></data>
   <data name="Blueprint_BackToCourse" xml:space="preserve"><value>المقرر</value></data>
   <data name="Blueprint_Content" xml:space="preserve"><value>المحتوى</value></data>
@@ -1240,6 +1248,36 @@
   <data name="Matrix_ChooseUnit" xml:space="preserve"><value>اختر وحدة لعرض فصولها.</value></data>
   <data name="Matrix_NoClasses" xml:space="preserve"><value>لا توجد فصول لهذه الوحدة في العام المحدد.</value></data>
   <data name="List_Separator" xml:space="preserve"><value>، </value></data>
+  <data name="Nav_Library" xml:space="preserve"><value>المكتبة</value></data>
+  <data name="Library_Title" xml:space="preserve"><value>المكتبة الرقمية</value></data>
+  <data name="Library_New" xml:space="preserve"><value>مورد جديد</value></data>
+  <data name="Library_Search" xml:space="preserve"><value>ابحث في المكتبة</value></data>
+  <data name="Library_Type" xml:space="preserve"><value>النوع</value></data>
+  <data name="Library_Level" xml:space="preserve"><value>المرحلة</value></data>
+  <data name="Library_Subject" xml:space="preserve"><value>المادة</value></data>
+  <data name="Library_Tag" xml:space="preserve"><value>الوسم</value></data>
+  <data name="Library_Empty" xml:space="preserve"><value>لا توجد موارد مطابقة.</value></data>
+  <data name="Library_Open" xml:space="preserve"><value>فتح</value></data>
+  <data name="Library_AddToLesson" xml:space="preserve"><value>إضافة إلى درس</value></data>
+  <data name="Library_DeleteConfirm" xml:space="preserve"><value>حذف المورد {0}؟</value></data>
+  <data name="Library_Unit" xml:space="preserve"><value>الوحدة المالكة</value></data>
+  <data name="Library_DescriptionAr" xml:space="preserve"><value>الوصف (عربي)</value></data>
+  <data name="Library_DescriptionEn" xml:space="preserve"><value>الوصف (إنجليزي)</value></data>
+  <data name="Library_LevelHint" xml:space="preserve"><value>اتركه فارغًا لكل المراحل.</value></data>
+  <data name="Library_Tags" xml:space="preserve"><value>الوسوم</value></data>
+  <data name="Library_TagsHint" xml:space="preserve"><value>افصل الوسوم بفواصل.</value></data>
+  <data name="Library_File" xml:space="preserve"><value>الملف</value></data>
+  <data name="Library_Cover" xml:space="preserve"><value>صورة الغلاف</value></data>
+  <data name="Library_DownloadAllowed" xml:space="preserve"><value>السماح بالتنزيل (وإلا للقراءة فقط)</value></data>
+  <data name="Library_FileRequired" xml:space="preserve"><value>ارفع الملف أولًا.</value></data>
+  <data name="Library_ClassCourse" xml:space="preserve"><value>مقرر الفصل</value></data>
+  <data name="Library_Lesson" xml:space="preserve"><value>الدرس</value></data>
+  <data name="LibraryType_Book" xml:space="preserve"><value>كتاب</value></data>
+  <data name="LibraryType_Document" xml:space="preserve"><value>مستند</value></data>
+  <data name="LibraryType_Video" xml:space="preserve"><value>فيديو</value></data>
+  <data name="LibraryType_Audio" xml:space="preserve"><value>صوت</value></data>
+  <data name="LibraryType_Link" xml:space="preserve"><value>رابط</value></data>
+  <data name="LibraryType_Other" xml:space="preserve"><value>أخرى</value></data>
   <data name="ClassCourse_Sections" xml:space="preserve"><value>أقسام مقرر الفصل</value></data>
   <data name="ClassCourse_TabPlan" xml:space="preserve"><value>الخطة</value></data>
   <data name="ClassCourse_TabForum" xml:space="preserve"><value>المنتدى</value></data>

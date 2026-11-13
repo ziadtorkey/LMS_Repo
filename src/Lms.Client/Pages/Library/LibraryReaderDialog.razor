@@ -1,0 +1,99 @@
+@using Lms.Client.Components.Assets
+@using Lms.Client.Components.Content
+@using Lms.Client.Services.Api
+@using Lms.Shared.Library
+@using Microsoft.JSInterop
+@using Lms.Shared.Content
+@implements IAsyncDisposable
+@inject ILibraryApi Library
+@inject IJSRuntime Js
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+@* The reader: the file opens in the protected viewer. The download button exists only when the resource allows it. *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="2" data-testid="library-reader">
+            @if (Culture.Pick(Resource.DescriptionAr ?? "", Resource.DescriptionEn ?? "") is { Length: > 0 } description)
+            {
+                <MudText Typo="Typo.body2">@description</MudText>
+            }
+            @if (Resource.Type == LibraryResourceTypes.Link)
+            {
+                @if (ModuleLinks.IsAllowed(Resource.Url))
+                {
+                    <MudLink Href="@Resource.Url" Target="_blank" rel="noopener noreferrer" data-testid="library-link"><span dir="ltr">@Resource.Url</span></MudLink>
+                }
+            }
+            else if (Resource.File is { } file)
+            {
+                @if (Resource.DownloadAllowed)
+                {
+                    <AssetPreview Asset="file" AllowDownload="false" />
+                }
+                else if (_readerUrl is not null)
+                {
+                    @* Reader-only (D13): the file is read through the protected reader, never through a signed URL. *@
+                    @switch (file.Kind)
+                    {
+                        case AssetKinds.Image:
+                            <img src="@_readerUrl" alt="@file.FileName" style="max-width:100%" data-testid="library-reader-image" />
+                            break;
+                        case AssetKinds.Audio:
+                            <audio src="@_readerUrl" controls preload="metadata" data-testid="library-reader-audio"></audio>
+                            break;
+                        case AssetKinds.Video:
+                            <video src="@_readerUrl" controls controlsList="nodownload" preload="metadata" style="max-width:100%" data-testid="library-reader-video"></video>
+                            break;
+                        default:
+                            <iframe src="@_readerUrl" title="@file.FileName" style="width:100%;height:70vh;border:0" data-testid="library-reader-pdf"></iframe>
+                            break;
+                    }
+                }
+            }
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" data-testid="library-reader-error">@_error</MudAlert>
+            }
+            @if (Resource.DownloadAllowed && Resource.File is not null)
+            {
+                <div><MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Download" OnClick="DownloadAsync" data-testid="library-download">@L["Asset_Download"]</MudButton></div>
+            }
+        </MudStack>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    private string? _error;
+    private string? _readerUrl;
+
+    [Parameter, EditorRequired] public LibraryResourceDto Resource { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Resource is { DownloadAllowed: false, File: { } file })
+            await ApiCalls.RunAsync(async () =>
+            {
+                var (content, _) = await Library.ReadAsync(Resource.Id);
+                using var reference = new DotNetStreamReference(content);
+                _readerUrl = await Js.InvokeAsync<string>("lmsBlobUrl", reference, file.ContentType);
+            }, Navigation, L, m => _error = m);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_readerUrl is null) return;
+        var url = _readerUrl;
+        _readerUrl = null;
+        try { await Js.InvokeVoidAsync("lmsRevokeBlobUrl", url); }
+        catch (JSDisconnectedException) { }
+    }
+
+    private async Task DownloadAsync()
+    {
+        _error = null;
+        string? url = null;
+        var ok = await ApiCalls.RunAsync(async () => url = (await Library.DownloadAsync(Resource.Id)).Url, Navigation, L, m => _error = m);
+        if (ok && url is not null) Navigation.NavigateTo(url, forceLoad: true);
+    }
+}
