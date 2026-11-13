@@ -1401,6 +1401,11 @@
   <data name="Announcements_FormTitle" xml:space="preserve"><value>Announcement title</value></data>
   <data name="Forum_MoreReplies" xml:space="preserve"><value>Show more replies ({0} more)</value></data>
   <data name="Forum_MoreThreads" xml:space="preserve"><value>Show more threads ({0} more)</value></data>
+  <data name="Module_Placeholder" xml:space="preserve"><value>Coming soon: {0}.</value></data>
+  <data name="Live_Match_Matched" xml:space="preserve"><value>Enrolled student</value></data>
+  <data name="Live_Match_Guest" xml:space="preserve"><value>Guest</value></data>
+  <data name="Live_Scope_This" xml:space="preserve"><value>This session only</value></data>
+  <data name="Live_Scope_ThisAndFollowing" xml:space="preserve"><value>This and following sessions</value></data>
   <data name="Package_AddScorm" xml:space="preserve"><value>Add a SCORM package</value></data>
   <data name="Package_AddH5p" xml:space="preserve"><value>Add an H5P package</value></data>
   <data name="Package_Steps" xml:space="preserve"><value>Steps</value></data>

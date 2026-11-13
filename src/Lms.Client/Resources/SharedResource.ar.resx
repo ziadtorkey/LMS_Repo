@@ -1401,6 +1401,11 @@
   <data name="Announcements_FormTitle" xml:space="preserve"><value>عنوان الإعلان</value></data>
   <data name="Forum_MoreReplies" xml:space="preserve"><value>عرض مزيد من الردود ({0} أخرى)</value></data>
   <data name="Forum_MoreThreads" xml:space="preserve"><value>عرض مزيد من المواضيع ({0} أخرى)</value></data>
+  <data name="Module_Placeholder" xml:space="preserve"><value>قريبًا: {0}.</value></data>
+  <data name="Live_Match_Matched" xml:space="preserve"><value>طالب مسجّل</value></data>
+  <data name="Live_Match_Guest" xml:space="preserve"><value>ضيف</value></data>
+  <data name="Live_Scope_This" xml:space="preserve"><value>هذه الجلسة فقط</value></data>
+  <data name="Live_Scope_ThisAndFollowing" xml:space="preserve"><value>هذه الجلسة والجلسات التالية</value></data>
   <data name="Package_AddScorm" xml:space="preserve"><value>إضافة حزمة SCORM</value></data>
   <data name="Package_AddH5p" xml:space="preserve"><value>إضافة حزمة H5P</value></data>
   <data name="Package_Steps" xml:space="preserve"><value>الخطوات</value></data>

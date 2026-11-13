@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Lms.Client.Services.Api;
+using Lms.Client.Services.LiveSessions;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.Extensions.Configuration;
@@ -62,6 +63,7 @@ public static class ClientServices
             services.AddSingleton<IAssetsApi, FakeAssetsApi>();
             services.AddSingleton<Lms.Client.Services.Packages.IPackagesApi, Lms.Client.Services.Packages.FakePackagesApi>();
             services.AddSingleton<IModulesApi, FakeModulesApi>();
+            services.AddSingleton<ILiveSessionsApi, FakeLiveSessionsApi>();
             services.AddSingleton<IActivityOverviewApi, FakeActivityOverviewApi>();
             services.AddScoped<AuthenticationStateProvider, FakeAuthenticationStateProvider>();
             services.AddAuthorizationCore();
@@ -113,6 +115,7 @@ public static class ClientServices
         services.AddScoped<IAssetsApi, AssetsApi>();
         services.AddScoped<Lms.Client.Services.Packages.IPackagesApi, Lms.Client.Services.Packages.PackagesApi>();
         services.AddScoped<IModulesApi, ModulesApi>();
+        services.AddScoped<ILiveSessionsApi, LiveSessionsApi>();
         services.AddScoped<IActivityOverviewApi, ActivityOverviewApi>();
     }
 }
