@@ -1094,6 +1094,30 @@
   <data name="Flag_Inherit" xml:space="preserve"><value>Inherit ({0})</value></data>
   <data name="Flag_On" xml:space="preserve"><value>On</value></data>
   <data name="Flag_Off" xml:space="preserve"><value>Off</value></data>
+  <data name="Nav_Exceptions" xml:space="preserve"><value>Enrollment exceptions</value></data>
+  <data name="Exception_Title" xml:space="preserve"><value>Enrollment exceptions</value></data>
+  <data name="Exception_Help" xml:space="preserve"><value>A student who does not meet a course's restrictions can be enrolled only if an exception is approved.</value></data>
+  <data name="Exception_Request" xml:space="preserve"><value>Request an exception</value></data>
+  <data name="Exception_Reason" xml:space="preserve"><value>Why should this student be enrolled?</value></data>
+  <data name="Exception_Sent" xml:space="preserve"><value>The exception request was sent for approval.</value></data>
+  <data name="Exception_Send" xml:space="preserve"><value>Send request</value></data>
+  <data name="Exception_ReasonRequired" xml:space="preserve"><value>Enter the reason for the exception.</value></data>
+  <data name="Exception_Student" xml:space="preserve"><value>Student</value></data>
+  <data name="Exception_Course" xml:space="preserve"><value>Course</value></data>
+  <data name="Exception_Failed" xml:space="preserve"><value>Restrictions not met</value></data>
+  <data name="Exception_RequestedBy" xml:space="preserve"><value>Requested by</value></data>
+  <data name="Exception_Review" xml:space="preserve"><value>Review</value></data>
+  <data name="Exception_Approve" xml:space="preserve"><value>Approve</value></data>
+  <data name="Exception_Reject" xml:space="preserve"><value>Reject</value></data>
+  <data name="Exception_Comment" xml:space="preserve"><value>Comment</value></data>
+  <data name="Exception_CommentRequired" xml:space="preserve"><value>Enter a reason for rejecting.</value></data>
+  <data name="Exception_Cancel" xml:space="preserve"><value>Cancel request</value></data>
+  <data name="Exception_Decision" xml:space="preserve"><value>Decision</value></data>
+  <data name="Exception_YourReason" xml:space="preserve"><value>Reason</value></data>
+  <data name="ExceptionStatus_Pending" xml:space="preserve"><value>Pending</value></data>
+  <data name="ExceptionStatus_Approved" xml:space="preserve"><value>Approved</value></data>
+  <data name="ExceptionStatus_Rejected" xml:space="preserve"><value>Rejected</value></data>
+  <data name="ExceptionStatus_Cancelled" xml:space="preserve"><value>Cancelled</value></data>
   <data name="TransferReject_not_placed" xml:space="preserve"><value>The student is not placed in a class, so there is nothing to transfer from.</value></data>
   <data name="TransferReject_different_year" xml:space="preserve"><value>The new class belongs to a different academic year.</value></data>
   <data name="TransferReject_same_class" xml:space="preserve"><value>The student is already in this class.</value></data>
@@ -1519,6 +1543,31 @@
   <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>The package didn't pass the security check.</value></data>
   <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>The file isn't a valid .zip archive. Export the package again.</value></data>
   <data name="Error_package_reason_bad_name" xml:space="preserve"><value>Some file names in the package are too long, nested too deep or reserved. Rename them and export again.</value></data>
+  <data name="Students_Subtitle" xml:space="preserve"><value>Students of your organization, their class and guardians.</value></data>
+  <data name="Students_EmptyTitle" xml:space="preserve"><value>No matching students</value></data>
+  <data name="Students_EmptyText" xml:space="preserve"><value>Change the filters or add a new student.</value></data>
+  <data name="Student_BackToList" xml:space="preserve"><value>Back to students</value></data>
+  <data name="Student_CreateSubtitle" xml:space="preserve"><value>Add a student, place them in a class and link their guardians.</value></data>
+  <data name="Student_SectionStudent" xml:space="preserve"><value>Student</value></data>
+  <data name="Student_SectionPlacement" xml:space="preserve"><value>Class</value></data>
+  <data name="Student_SectionAccount" xml:space="preserve"><value>Account</value></data>
+  <data name="Guardians_Subtitle" xml:space="preserve"><value>Parents and guardians of your students, their contact details and portal access.</value></data>
+  <data name="Guardians_EmptyTitle" xml:space="preserve"><value>No matching guardians</value></data>
+  <data name="Guardians_EmptyText" xml:space="preserve"><value>Change the search, or add guardians when you create a student.</value></data>
+  <data name="Guardian_BackToList" xml:space="preserve"><value>Back to guardians</value></data>
+  <data name="Guardian_Details" xml:space="preserve"><value>Details</value></data>
+  <data name="MyChildren_Subtitle" xml:space="preserve"><value>Your children in this school group and their class.</value></data>
+  <data name="MyProfile_Subtitle" xml:space="preserve"><value>Keep your contact details up to date. Other changes go to your school for approval.</value></data>
+  <data name="MyProfile_Details" xml:space="preserve"><value>Your details</value></data>
+  <data name="MyProfile_RequestsEmptyText" xml:space="preserve"><value>Requests you send to your school appear here.</value></data>
+  <data name="ChangeRequests_Subtitle" xml:space="preserve"><value>Changes students asked to make to their own details. Review each one and approve or reject it.</value></data>
+  <data name="ChangeRequests_EmptyTitle" xml:space="preserve"><value>No change requests</value></data>
+  <data name="ChangeRequests_EmptyText" xml:space="preserve"><value>Change the filters to see requests in other states.</value></data>
+  <data name="Import_HistoryEmptyTitle" xml:space="preserve"><value>No imports yet</value></data>
+  <data name="Import_HistoryEmptyText" xml:space="preserve"><value>Imports you run appear here with their result.</value></data>
+  <data name="StudentImport_Subtitle" xml:space="preserve"><value>Add many students at once from an Excel file.</value></data>
+  <data name="ClassImport_Subtitle" xml:space="preserve"><value>Place students in classes from an Excel file.</value></data>
+  <data name="Group_Subtitle" xml:space="preserve"><value>Split the students of this class course into groups.</value></data>
   <data name="Roles_Summary" xml:space="preserve"><value>Role summary</value></data>
   <data name="Roles_StatGranted" xml:space="preserve"><value>Permissions granted</value></data>
   <data name="Roles_StatModules" xml:space="preserve"><value>Modules fully granted</value></data>
