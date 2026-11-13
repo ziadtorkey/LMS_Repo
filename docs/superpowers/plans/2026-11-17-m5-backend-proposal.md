@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | **Draft for review** (Team Lead, QA, FE). Not a plan yet: the task breakdown in section 9 becomes the M5 plan after the owner answers section 10. |
+| Status | **Revised after the owner round (PRD D58-D61)**: all defaults proposed for Q1-Q20 are accepted (D58); D59 adds Saudi grading presets (new section 4.6); D60 rooms are free text; D61 sets the excuse and alert defaults. The task breakdown in section 9 is the basis of the M5 plan. |
 | Author | Backend developer 4, 2026-11-17 |
 | Scope | DEV-PLAN M5 items 1-9; PRD FR-GRD-01..05, FR-TT-01..06, FR-ATT-01, FR-EXC-01..04. **FR-GRD-06** (grade lock at year close) belongs to M7 per DEV-PLAN, but its data hooks are cheap now: section 4.5. |
 | Modelled on | `2026-11-15-m4b-backend-proposal.md` (#427) |
@@ -58,8 +58,7 @@
 |---|---|---|
 | `Period` | owner unit, name (ar/en), `StartTime`, `EndTime`, order | Per unit (school); inherits like settings (Q4). |
 | working days | setting `Timetable.WorkingDays` (bitmask or list), per unit | Not a table (A10). |
-| `Room` | owner unit, name | **Optional**: a free-text `RoomName` on the slot is the fallback if the owner does not want room conflicts (Q5). |
-| `TimetableSlot` | ClassCourse, Term, `TeacherUserId`, `DayOfWeek`, `PeriodId`, `RoomId?`, `State` (Draft, Published) | Unique active key per `(ClassCourse, Term, Day, Period)`; conflict checks (teacher, class, room) are queries, not constraints, because "warn" mode must save. |
+| `TimetableSlot` | ClassCourse, Term, `TeacherUserId`, `DayOfWeek`, `PeriodId`, `RoomName?` (free text, D60), `State` (Draft, Published) | Unique active key per `(ClassCourse, Term, Day, Period)`; conflict checks (teacher and class; the room is free text and is **not** checked, D60) are queries, not constraints, because "warn" mode must save. |
 | `TimetableException` | slot, `Date`, `Kind` (Substitute, Cancelled, Moved), `SubstituteUserId?`, `NewPeriodId?`, `Note` | One per `(slot, date)`. |
 
 ### 3.3 Attendance (FR-ATT-01)
@@ -104,10 +103,31 @@ Student/guardian endpoints return **published items only** (A4) and the totals c
 ### 4.5 Publishing and notifications (FR-GRD-05)
 `PublishState` transitions are audited. `Scheduled` items are published by a recurring job (every minute, idempotent, per client in system context) that flips due items and enqueues `Grades.Published` notifications grouped per student and course (one notification per student per publish batch, not per item). Publishing writes a `GradeSnapshot(Kind = Publish)` for history. Locking at year close (M7) writes `Kind = Lock` snapshots and sets `Gradebook.State = Locked`; after that `IGradebookWriter` refuses direct edits and routes them to `GradeChangeRequest` (Manager approval, audited).
 
+### 4.6 Saudi presets and term structure (D59)
+
+D59 requires grading, GPA and academic years to follow Saudi school standards, shipped as **editable data**, not code. The presets below are seed rows of `GradingScale` / `GradingScaleBand` (flagged `IsTemplate`, ar/en names and descriptors) created for every client at provisioning (the built-in role reconciler pattern: add-only, never overwriting a client's edits); every band can be edited or the scale copied. Terms need no new code: `Term` rows per `AcademicYear` already allow any number of terms, so "two or three terms per client" is a **provisioning option** of the academic-year setup (setting `AcademicYears.TermsPerYear` = 2 or 3, default for new years, editable per year while Planned) plus a term template that lays out the term names (ar/en) for each structure.
+
+**What was verified (research done 2026-11-14) and what was not.**
+
+| Item | Finding | Confidence |
+|---|---|---|
+| Term structure | The Ministry of Education's own announcement ([moe.gov.sa, 22 Jun 2024](https://www.moe.gov.sa/ar/mediacenter/MOEnews/Pages/news1-22062024.aspx)): the **three-term system continues** in general education for 2024-25; the ministry will decide **between two and three terms** later; the school year must have **at least 180 school days**; the 2024-25 terms started 18 Aug 2024, 17 Nov 2024 and 2 Mar 2025 and ended 26 Jun 2025. | **Official source, but dated 2024.** News reports found afterwards disagree on whether the two-term system returns (one outlet reports a cabinet decision to return to two terms from the 1447 school year; most others show three terms in 2025-26). **The current (2026-27) structure was not confirmed: ask the owner, and keep the per-client 2 or 3 option.** |
+| School grade bands | **No official Ministry of Education regulation text was reachable** (the student assessment regulation, "لائحة تقويم الطالب", is published by the ministry and the evaluation commission but was not found by search). Secondary sites list a five-band descriptive scale for schools: ممتاز / Excellent 90-100, جيد جدا / Very Good 80-89, جيد / Good 70-79, مقبول / Acceptable 60-69, راسب / Fail below 60. | **Unverified.** Provisional seed only. Not confirmed: whether primary grades 1-3 use skills-based descriptors (mastery levels) instead of percentages; whether bands differ between stages; the pass mark per subject. |
+| University scales | Saudi public universities publish their own regulations; the sources found agree that most use a **5-point** GPA (older public universities) and others a **4-point** one, with letters A+ to F and A+ starting at 95. No single national table was found, and the KFUPM regulation PDF could not be read by the tool. | **Unverified**; the point values below are the common pattern, not a citation. |
+
+**Provisional seed data (every row marked `NeedsVerification` in the seed notes until the owner or the ministry document confirms it):**
+
+- **School, percentage bands:** ممتاز / Excellent 90-100; جيد جدا / Very Good 80 to under 90; جيد / Good 70 to under 80; مقبول / Acceptable 60 to under 70; راسب / Fail 0 to under 60.
+- **University, 5-point GPA:** A+ 95-100 = 5.00; A 90 to under 95 = 4.75; B+ 85 to under 90 = 4.50; B 80 to under 85 = 4.00; C+ 75 to under 80 = 3.50; C 70 to under 75 = 3.00; D+ 65 to under 70 = 2.50; D 60 to under 65 = 2.00; F under 60 = 1.00.
+- **University, 4-point GPA:** the same ranges with A+ = 4.00; A = 3.75; B+ = 3.50; B = 3.00; C+ = 2.50; C = 2.00; D+ = 1.50; D = 1.00; F = 0.00.
+- A school-group client defaults to the school scale, a university client to the 5-point scale; both can switch and edit (FR-GRD-02: one default per client).
+
+**Open points the owner or the ministry must settle before the seed ships (new questions Q21-Q24, section 10).** Until they are answered the seed is a clearly labelled provisional template; nothing in the engine depends on the specific numbers.
+
 ## 5. Timetable and attendance design
 
 ### 5.1 Builder and conflicts (FR-TT-02/03)
-Conflict validation is a query over `TimetableSlot` (+ exceptions for a date) for the same term: teacher double-booked, class double-booked (same class, same day and period, any ClassCourse), room double-booked. Setting `Timetable.ConflictMode` = `Block` or `Warn` (per unit): `Block` answers 409 `timetable_conflict` with the clashing slot ids; `Warn` saves and returns the warnings in the response. Moving a slot in the grid is a single `PUT` (drag-and-drop is FE). A teacher's availability or hours-per-week limits are **out of scope** (Q9).
+Conflict validation is a query over `TimetableSlot` (+ exceptions for a date) for the same term: teacher double-booked and class double-booked (same class, same day and period, any ClassCourse). Rooms are free text (D60), so there is no room conflict check. Setting `Timetable.ConflictMode` = `Block` or `Warn` (per unit): `Block` answers 409 `timetable_conflict` with the clashing slot ids; `Warn` saves and returns the warnings in the response. Moving a slot in the grid is a single `PUT` (drag-and-drop is FE). A teacher's availability or hours-per-week limits are **out of scope** (Q9).
 
 ### 5.2 Views, export, copy (FR-TT-04)
 Views are filtered reads of published slots (drafts only for staff with `Timetable.Manage`): class, teacher (own data), student (own class), guardian (own children). Export to Excel renders the same grid. **Copy from previous term** copies slots of a source term to a target term as `Draft`, skipping rows whose ClassCourse, teacher or period no longer exists and returning a skipped list.
@@ -132,10 +152,11 @@ Absent record -> (notify guardians, EXC-01) -> Submitted -> Approved (records ->
                                                      |-> Escalated -> Approved | Rejected  (by the Manager/other staff)
 ```
 - **Submit** (guardian for own children, or the student): reason code from the allowed list, dates or specific sessions, optional/mandatory attachment per policy, within `Excuses.MaxDaysAfterAbsence`. Out-of-policy submissions are rejected with 409 `excuse_out_of_policy` and a reason code. An excuse covers only sessions where the student is `Absent` or `Late` at submission; later absences need a new excuse.
+- **Who may submit (D61):** per-client setting `Excuses.Submitters` (`GuardiansOnly` default, `GuardiansAndStudents`).
 - **Review queue** for the Counselor (subtree of their unit): list with filters, approve, reject (comment required), escalate (to a Manager or named staff). The reviewer cannot be the submitter.
 - **Approval** is one transaction: excuse -> `Approved`, each covered record -> `Excused` with an `AttendanceRecordChange`, decision notification to the submitter.
 - **Tracking** for guardian/student: status, comment, history (own excuses only).
-- **EXC-01** absence/late notification: published when attendance is taken (per student record with Absent/Late, grouped per guardian per session batch). **EXC-04** threshold alert: recurring job counts `Absent` (excluding `Excused`) per student over `Attendance.ThresholdWindowDays`; at `Attendance.AbsentThreshold` it notifies the Counselors of the student's unit once per crossing (a marker row `AttendanceAlert` prevents repeats until the count drops below and crosses again).
+- **EXC-01** absence/late notification: published when attendance is taken (per student record with Absent/Late, grouped per guardian per session batch). **EXC-04** threshold alert: recurring job counts `Absent` (excluding `Excused`) per student over `Attendance.ThresholdWindowDays`; at `Attendance.AbsentThreshold` (default **5 absent sessions in 30 days**, a `Late` counting as **half** an absence, D61) it notifies the Counselors of the student's unit once per crossing (a marker row `AttendanceAlert` prevents repeats until the count drops below and crosses again).
 - Counselor reads of absence data are a **relationship** rule: a counselor sees students of their unit subtree; it does not need class-course relationships.
 
 ## 7. Endpoints (route families; exact table is the Lead's wave contract)
@@ -174,7 +195,7 @@ Every route gets probe rows in the PR that adds it; staff routes use `RequirePer
 | 3 | **Gradebook model and calculation engine** (`Gradebook`, categories, items, entries; `GradebookCalculator` with property tests; `EnsureForEventAsync`; migration `AddGradebook`; `IGradebookWriter`) | BE | L | 2 |
 | 4 | **Grid, import/export, student and guardian views, reports** | BE | L | 3 |
 | 5 | **Publishing, scheduled publish job, snapshots, notifications** | BE | M | 4 |
-| 6 | **Periods, working days, rooms** (migration `AddPeriods`) | BE | S | 1 |
+| 6 | **Periods and working days** (migration `AddPeriods`; rooms are free text, D60) | BE | S | 1 |
 | 7 | **Timetable slots, builder endpoints, conflicts, views, export, copy-term** (migration `AddTimetable`) | BE | L | 6 |
 | 8 | **Exceptions and substitutes** (+ `IsSubstituteOn` relationship rule; migration `AddTimetableExceptions`) | BE | M | 7 |
 | 9 | **Attendance sessions: generator job, ad hoc, taking, edit window, summaries, own/guardian reads** (migration `AddAttendance`) | BE | L | 7, 8 |
@@ -189,7 +210,7 @@ Every route gets probe rows in the PR that adds it; staff routes use `RequirePer
 
 **Critical path:** 1 -> 2 -> 3 -> 4 -> 5 (about 12-14 BE days) in parallel with 1 -> 6 -> 7 -> 8 -> 9 -> 11 (about 14-16 BE days); QA tasks overlap.
 
-## 10. Open questions for the owner (numbered)
+## 10. Owner questions (answered in the D58 round: all proposed defaults accepted; Q5 became D60, Q13 and Q17 became D61; Q21-Q24 are new from D59)
 
 1. **Q1 Lock scope.** Is FR-GRD-06 (lock at year close, Manager-approved changes) really M7, or must M5 ship a manual "lock this term's gradebook" button? (Proposal: M7; M5 only keeps the write seam.)
 2. **Q2 GPA.** Is GPA a display of the scale band's points only, or a cumulative GPA across courses and terms (needs credit hours)? (Proposal: band points only in M5.)
@@ -211,6 +232,10 @@ Every route gets probe rows in the PR that adds it; staff routes use `RequirePer
 18. **Q18 Guardian visibility of drafts.** Confirm guardians see published grades only, never item titles of hidden items.
 19. **Q19 Export formats.** Excel only (PRD), or PDF report cards in v1? (Proposal: Excel only; PDF is M7.)
 20. **Q20 LTI items.** FR-GRD-01 mentions LTI grade items: out of v1 with FR-STD-03, confirmed?
+21. **Q21 School bands (new, D59).** The official Ministry of Education grade bands and descriptors, and whether early primary grades use descriptors instead of percentages (section 4.6).
+22. **Q22 Term structure (new, D59).** The official 2026-27 structure (two or three terms) and whether it may change inside a year.
+23. **Q23 University scale (new, D59).** Which 5-point or 4-point table applies to the pilot university client, with its exact letter and point table.
+24. **Q24 Transcript legend (new).** Must a printed grade report carry the scale legend?
 
 ## 11. Risks
 
@@ -223,6 +248,7 @@ Every route gets probe rows in the PR that adds it; staff routes use `RequirePer
 | **Cross-class timetable reads** break isolation (teacher teaching in two schools of one client) | Teacher views are bypass site 3 with a cross-client test; the rows are filtered by the caller's own user id and client. |
 | **Substitute permission** widens attendance access | Substitution is per session and date, expires, and is covered by a probe row and a test that a substitute cannot edit other sessions. |
 | **Excuse approval changes history** after reports were read | `AttendanceRecordChange` keeps both values; reports state the "as of" time. |
+| **Saudi preset accuracy (D59)**: the official bands were not found; wrong bands would mis-grade students | Seeds are editable, flagged provisional, and the engine takes bands as data; Q21-Q23 must be answered before the seed ships. |
 | **Scope**: M5 is the largest milestone so far (about 14 BE tasks) | Three waves, two BE tracks in parallel (gradebook, timetable-attendance), FE starts each area after its wave. |
 | **Notification volume** (per-session absence notices to guardians) | Group per guardian per session batch; quiet hours and channel preferences come with M6, so M5 sends in-app events only. |
 | **Live attendance matching** errors (shared accounts, nicknames) | Propose-then-confirm (Q12), unmatched list, manual mapping persisted per live session. |
