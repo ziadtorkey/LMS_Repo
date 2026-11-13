@@ -33,5 +33,14 @@ public static class LiveTimeFormat
         return parts.Count == 1 ? parts[0] : string.Format(CultureInfo.InvariantCulture, l["Live_Join_Pair"].Value, parts[0], parts[1]);
     }
 
+    /// <summary>The largest unit only ("2 days", "3 h", "8 min"), for compact rows.</summary>
+    public static string Short(TimeSpan span, IStringLocalizer<SharedResource> l, bool arabic)
+    {
+        if (span < TimeSpan.FromMinutes(1)) return l["Live_LessThanMinute"].Value;
+        if ((int)span.TotalDays > 0) return Unit("Day", (int)span.TotalDays, l, arabic);
+        if ((int)span.TotalHours > 0) return Unit("Hour", (int)span.TotalHours, l, arabic);
+        return Unit("Minute", (int)span.TotalMinutes, l, arabic);
+    }
+
     private static string Unit(string unit, int n, IStringLocalizer<SharedResource> l, bool arabic) => l.Count($"Live_Unit_{unit}", n, arabic);
 }

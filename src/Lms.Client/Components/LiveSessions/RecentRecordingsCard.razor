@@ -1,0 +1,48 @@
+@using System.Globalization
+@using Lms.Client.Components.Ui
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.LiveSessions
+@using Lms.Shared.LiveSessions
+@inject ILiveSessionsApi Api
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+@inject TimeProvider Clock
+
+@* Course home: the last ended sessions that have a recording, each a link to the module (the recording opens there, with its host
+   name). Hidden when there is none or the read fails. *@
+@if (_rows.Count > 0)
+{
+    <SectionCard Title="@L["Home_Recordings"]" TestId="course-recordings" Class="mt-4">
+        <ul class="lms-item-list">
+            @foreach (var s in _rows)
+            {
+                <li class="lms-item">
+                    <div class="lms-item-main">
+                        <MudIcon Icon="@Icons.Material.Rounded.PlayCircle" Size="Size.Small" aria-hidden="true" />
+                        <a href="@($"class-courses/{ClassCourseId}/modules/{s.ModuleId}")">@Culture.Pick(s.TitleAr, s.TitleEn)</a>
+                    </div>
+                    <span class="lms-item-meta lms-muted" dir="ltr">@Local(s.StartsAtUtc).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)</span>
+                </li>
+            }
+        </ul>
+    </SectionCard>
+}
+
+@code {
+    private const int MaxRows = 3;
+
+    private List<LiveSessionListItemDto> _rows = [];
+
+    [Parameter, EditorRequired] public Guid ClassCourseId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ApiCalls.RunAsync(async () =>
+        {
+            var page = await Api.ListAsync(ClassCourseId, new LiveSessionQuery(ToUtc: Clock.GetUtcNow().UtcDateTime, Status: LiveSessionStatuses.Ended, PageSize: 50));
+            _rows = page.Items.Where(s => s.HasRecording).OrderByDescending(s => s.StartsAtUtc).Take(MaxRows).ToList();
+        }, Navigation, L, _ => { });
+    }
+
+    private DateTime Local(DateTime utc) => TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(utc, DateTimeKind.Utc), Clock.LocalTimeZone);
+}

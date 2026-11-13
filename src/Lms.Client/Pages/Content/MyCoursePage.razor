@@ -48,6 +48,12 @@ else
 
         <ContinueCard Next="_next" Progress="@(_plan.Progress ?? new ProgressDto(0, 0))" Href="@(_next is null ? null : ModuleHref(_next.Id))" />
 
+        @if (PermState.Has(Permissions.LiveSessions.View))
+        {
+            <Lms.Client.Components.LiveSessions.UpcomingLiveSessionsCard ClassCourseId="Id" />
+            <Lms.Client.Components.LiveSessions.RecentRecordingsCard ClassCourseId="Id" />
+        }
+
         @foreach (var section in _plan.Sections.OrderBy(s => s.Order))
         {
             var sec = section;
