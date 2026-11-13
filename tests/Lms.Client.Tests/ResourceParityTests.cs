@@ -38,8 +38,9 @@ public sealed class ResourceParityTests
         var placeholder = new System.Text.RegularExpressions.Regex(@"\{(\w+)\}");
         string[] Names(string text) => placeholder.Matches(text).Select(m => m.Groups[1].Value).Distinct().Order().ToArray();
 
-        // Deliberate differences: the Arabic pager text shows only the total.
-        string[] allowed = ["Table_InfoFormat"];
+        // Deliberate differences: the Arabic pager text shows only the total, and the Arabic singular and dual forms of a counted
+        // unit ("ساعة", "ساعتين") carry no number.
+        string[] allowed = ["Table_InfoFormat", .. new[] { "Day", "Hour", "Minute" }.SelectMany(u => new[] { "One", "Two" }.Select(f => $"Live_Unit_{u}_{f}"))];
 
         var mismatches = en.Keys.Where(ar.ContainsKey).Where(k => !allowed.Contains(k))
             .Where(k => !Names(en[k]).SequenceEqual(Names(ar[k])))

@@ -1428,4 +1428,49 @@
   <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>The security scan did not accept this package.</value></data>
   <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>The file is not a valid zip archive.</value></data>
   <data name="Error_package_reason_bad_name" xml:space="preserve"><value>A file name in the package is not usable (too long, too deep, or reserved).</value></data>
+  <data name="Live_Join" xml:space="preserve"><value>Join the session</value></data>
+  <data name="Live_Start" xml:space="preserve"><value>Start the meeting</value></data>
+  <data name="Live_Opening" xml:space="preserve"><value>Opening Zoom…</value></data>
+  <data name="Live_TabBlocked" xml:space="preserve"><value>Your browser blocked the new tab.</value></data>
+  <data name="Live_OpenMeeting" xml:space="preserve"><value>Open the meeting</value></data>
+  <data name="Live_TryAgain" xml:space="preserve"><value>Try again</value></data>
+  <data name="Live_JoinRegion" xml:space="preserve"><value>Join</value></data>
+  <data name="Live_CancelledNote" xml:space="preserve"><value>This session was cancelled.</value></data>
+  <data name="Live_EndedOn" xml:space="preserve"><value>Ended on {0} at {1}.</value></data>
+  <data name="Live_WatchRecording" xml:space="preserve"><value>Watch the recording</value></data>
+  <data name="Live_OpensNewTab" xml:space="preserve"><value>Opens in a new tab.</value></data>
+  <data name="Live_NoRecording" xml:space="preserve"><value>No recording yet. Your teacher may add one later.</value></data>
+  <data name="Live_StartsIn" xml:space="preserve"><value>Starts in {0}</value></data>
+  <data name="Live_StartedAgo" xml:space="preserve"><value>Started {0} ago · ends at {1}</value></data>
+  <data name="Live_SettingUp" xml:space="preserve"><value>The meeting is still being set up. Check back shortly.</value></data>
+  <data name="Live_JoinFrom" xml:space="preserve"><value>You can join from {0} minutes before the start.</value></data>
+  <data name="Live_OpensZoom" xml:space="preserve"><value>Opens Zoom in a new tab.</value></data>
+  <data name="Live_FeatureOff" xml:space="preserve"><value>Live sessions are turned off for this school.</value></data>
+  <data name="Live_NowCanJoin" xml:space="preserve"><value>You can join now.</value></data>
+  <data name="Live_NowStarted" xml:space="preserve"><value>The session has started.</value></data>
+  <data name="Live_NowEnded" xml:space="preserve"><value>The session has ended.</value></data>
+  <data name="Live_Participants" xml:space="preserve"><value>Participants</value></data>
+  <data name="Live_NoParticipants" xml:space="preserve"><value>No participants yet.</value></data>
+  <data name="Live_Participant" xml:space="preserve"><value>Participant</value></data>
+  <data name="Live_Joined" xml:space="preserve"><value>Joined</value></data>
+  <data name="Live_Left" xml:space="preserve"><value>Left</value></data>
+  <data name="Live_Duration" xml:space="preserve"><value>Time in session</value></data>
+  <data name="Live_MatchState" xml:space="preserve"><value>Match</value></data>
+  <data name="Live_ShowMore" xml:space="preserve"><value>Show more</value></data>
+  <data name="Live_LessThanMinute" xml:space="preserve"><value>less than a minute</value></data>
+  <data name="Live_Join_Pair" xml:space="preserve"><value>{0} {1}</value></data>
+  <data name="Module_NotAvailableTitle" xml:space="preserve"><value>This activity isn't available</value></data>
+  <data name="Module_NotAvailableText" xml:space="preserve"><value>It may have been hidden or removed. Go back to the course to see what's open to you.</value></data>
+  <data name="Live_Unit_Day_One" xml:space="preserve"><value>{0} d</value></data>
+  <data name="Live_Unit_Day_Two" xml:space="preserve"><value>{0} d</value></data>
+  <data name="Live_Unit_Day_Few" xml:space="preserve"><value>{0} d</value></data>
+  <data name="Live_Unit_Day_Many" xml:space="preserve"><value>{0} d</value></data>
+  <data name="Live_Unit_Hour_One" xml:space="preserve"><value>{0} h</value></data>
+  <data name="Live_Unit_Hour_Two" xml:space="preserve"><value>{0} h</value></data>
+  <data name="Live_Unit_Hour_Few" xml:space="preserve"><value>{0} h</value></data>
+  <data name="Live_Unit_Hour_Many" xml:space="preserve"><value>{0} h</value></data>
+  <data name="Live_Unit_Minute_One" xml:space="preserve"><value>{0} min</value></data>
+  <data name="Live_Unit_Minute_Two" xml:space="preserve"><value>{0} min</value></data>
+  <data name="Live_Unit_Minute_Few" xml:space="preserve"><value>{0} min</value></data>
+  <data name="Live_Unit_Minute_Many" xml:space="preserve"><value>{0} min</value></data>
 </root>
