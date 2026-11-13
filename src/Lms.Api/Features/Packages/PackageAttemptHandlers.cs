@@ -1,12 +1,10 @@
 using Lms.Api.Features.Content;
-using Lms.Api.Features.Enrollment.Groups;
 using Lms.Api.Infrastructure;
 using Lms.Api.PackageHost;
 using Lms.Domain.Abstractions;
 using Lms.Domain.Content;
 using Lms.Domain.Packages;
 using Lms.Infrastructure.Configuration;
-using Lms.Infrastructure.Enrollment;
 using Lms.Infrastructure.Packages;
 using Lms.Infrastructure.Packages.Attempts;
 using Lms.Infrastructure.Persistence;
@@ -27,7 +25,7 @@ namespace Lms.Api.Features.Packages;
 /// </summary>
 public sealed class PackageAttemptHandlers(
     LmsDbContext db, ModuleAccess access, PackageAttemptService service, PackageTokenService tokens, ISettingsResolver settings,
-    IOptions<PackageHostOptions> host, IClock clock, CompletionRecorder completion, PlacementGuard guard)
+    IOptions<PackageHostOptions> host, IClock clock, CompletionRecorder completion)
 {
     private const int MinTokenMinutes = 5;
     private const int MaxTokenMinutes = 480;
@@ -111,7 +109,7 @@ public sealed class PackageAttemptHandlers(
         var latest = await attempts.OrderByDescending(a => a.StartedAtUtc).ThenByDescending(a => a.Id).FirstOrDefaultAsync(ct);
         var graded = await service.GradedAsync(upload, ctx.StudentId, ct);
         return Results.Ok(new PackageStudentStateDto(
-            upload.GradingMethod ?? PackageGradingMethods.Highest, latest is null ? null : ToDto(latest),
+            upload.GradingMethod, latest is null ? null : ToDto(latest),
             await attempts.AnyAsync(a => a.Status == PackageAttempt.CompletedStatus, ct), graded?.ScoreRaw));
     }
 
@@ -171,41 +169,6 @@ public sealed class PackageAttemptHandlers(
         }
 
         return Results.Ok(ToDto(attempt));
-    }
-
-    public async Task<IResult> SetGradingMethodAsync(Guid id, UpdatePackageGradingMethodRequest? request, HttpContext http, CancellationToken ct)
-    {
-        var upload = await db.Set<PackageUpload>().FirstOrDefaultAsync(p => p.Id == id, ct);
-        if (upload is null)
-        {
-            return ApiProblems.NotFound();
-        }
-
-        var (cc, problem) = await http.CheckClassCourseAsync(Permissions.Modules.Manage, upload.ClassCourseId, ct);
-        if (problem is not null)
-        {
-            return problem;
-        }
-
-        if (request is null || !PackageGradingMethods.All.Contains(request.GradingMethod))
-        {
-            return PackageSupport.Invalid("gradingMethod", "invalid_value");
-        }
-
-        if (upload.ModuleId is null)
-        {
-            return ApiProblems.Conflict(ProblemCodes.package_not_attached);
-        }
-
-        if (await GroupEndpoints.WritableAsync(cc!, db, guard, ct) is { } closed)
-        {
-            return closed;
-        }
-
-        upload.SetGradingMethod(request.GradingMethod);
-        await db.SaveChangesAsync(ct);
-        await service.RegradeAllAsync(upload, ct);
-        return Results.Ok(PackageSupport.ToDto(upload));
     }
 
     private sealed record StudentContext(

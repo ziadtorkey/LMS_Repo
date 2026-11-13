@@ -170,7 +170,7 @@ public sealed class PackageAttemptService(
 
     /// <summary>The attempt the gradebook holds for the student under the package's grading method (null when none is graded).</summary>
     public async Task<GradedAttempt?> GradedAsync(PackageUpload package, Guid studentId, CancellationToken ct) =>
-        PackageGrading.Pick(package.GradingMethod ?? PackageUpload.HighestMethod, await CompletedAsync(package.Id, studentId, ct));
+        PackageGrading.Pick(package.GradingMethod, await CompletedAsync(package.Id, studentId, ct));
 
     /// <summary>
     /// Brings the grade event in line with the method (D57): the score the method picks goes to the gradebook seam, which writes a new

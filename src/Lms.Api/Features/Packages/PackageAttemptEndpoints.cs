@@ -16,10 +16,6 @@ internal static class PackageAttemptEndpoints
             .RequireAuthorization().RequirePermission(Permissions.Packages.View);
         app.MapGet(Routes.PackageMyStatePattern, (Guid id, HttpContext http, PackageAttemptHandlers h, CancellationToken ct) => h.MyStateAsync(id, http, ct))
             .RequireAuthorization().RequirePermission(Permissions.Packages.View);
-        app.MapPut(Routes.PackageGradingMethodPattern,
-                (Guid id, UpdatePackageGradingMethodRequest? r, HttpContext http, PackageAttemptHandlers h, CancellationToken ct) =>
-                    h.SetGradingMethodAsync(id, r, http, ct))
-            .RequireAuthorization().RequirePermission(Permissions.Modules.Manage);
         app.MapPost(Routes.PackageAttemptCommitPattern,
                 (Guid id, PackageCommitRequest? r, HttpContext http, PackageAttemptHandlers h, CancellationToken ct) => h.CommitAsync(id, r, http, ct))
             .RequireAuthorization().RequirePermission(Permissions.Packages.View);

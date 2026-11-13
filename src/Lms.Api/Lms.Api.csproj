@@ -1,6 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <ItemGroup>
+    <EmbeddedResource Include="PackageHost\package-port-shim.js" LogicalName="Lms.Api.PackageHost.package-port-shim.js" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Lms.Infrastructure\Lms.Infrastructure.csproj" />
     <ProjectReference Include="..\Lms.Shared\Lms.Shared.csproj" />
     <ProjectReference Include="..\Lms.Client\Lms.Client.csproj" />

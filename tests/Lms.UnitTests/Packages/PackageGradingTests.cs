@@ -63,8 +63,6 @@ public sealed class PackageGradingTests
     [Fact]
     public void Domain_method_values_equal_the_contract_values()
     {
-        Assert.Equal(PackageGradingMethods.Highest, PackageUpload.HighestMethod);
-        Assert.Equal(PackageGradingMethods.Last, PackageUpload.LastMethod);
-        Assert.Equal(PackageGradingMethods.First, PackageUpload.FirstMethod);
+        Assert.Equal(PackageGradingMethods.Highest, PackageUpload.DefaultGradingMethod);
     }
 }

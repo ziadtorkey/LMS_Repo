@@ -41,7 +41,11 @@ public static class PackageHostPipeline
         {
             branch.UseMiddleware<PackageHostHeadersMiddleware>();
             branch.UseRouting();
-            branch.UseEndpoints(endpoints => endpoints.MapMethods(PackageFileEndpoint.Pattern, ["GET", "HEAD"], PackageFileEndpoint.HandleAsync));
+            branch.UseEndpoints(endpoints =>
+            {
+                endpoints.MapMethods(PackageShimEndpoint.Pattern, ["GET", "HEAD"], PackageShimEndpoint.Handle);
+                endpoints.MapMethods(PackageFileEndpoint.Pattern, ["GET", "HEAD"], PackageFileEndpoint.HandleAsync);
+            });
             branch.Run(context =>
             {
                 context.Response.StatusCode = StatusCodes.Status404NotFound;

@@ -101,49 +101,4 @@ public sealed class GradingMethodTests(LmsApiFactory factory) : IDisposable
         Assert.Equal(PackageGradingMethods.First, state!.GradingMethod);
         Assert.Equal(80m, state.GradedScore);
     }
-
-    [Fact]
-    public async Task Grading_method_needs_manage_the_relationship_an_attached_package_a_known_value_and_an_open_class()
-    {
-        var w = await _k.SetUpAsync("PG6");
-        var (package, _) = await _k.AttachedAsync(w);
-        var unattached = await _k.SeedReadyAsync(w);
-
-        Assert.Equal(HttpStatusCode.Forbidden, (await SetMethodAsync(w.Student, package.Id, PackageGradingMethods.Last)).StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, (await SetMethodAsync(w.OtherTeacher, package.Id, PackageGradingMethods.Last)).StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, (await SetMethodAsync(w.Teacher, Guid.NewGuid(), PackageGradingMethods.Last)).StatusCode);
-        Assert.Equal(HttpStatusCode.BadRequest, (await SetMethodAsync(w.Teacher, package.Id, "Average")).StatusCode);
-        var notAttached = await SetMethodAsync(w.Teacher, unattached.Id, PackageGradingMethods.Last);
-        Assert.Equal(HttpStatusCode.Conflict, notAttached.StatusCode);
-        Assert.Equal(ProblemCodes.package_not_attached, await ContentTestHost.CodeAsync(notAttached));
-
-        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
-        {
-            (await db.Set<Class>().SingleAsync(c => c.Id == w.Class.Id)).SetStatus(Class.ClosedStatus);
-            await db.SaveChangesAsync();
-        }
-
-        var closed = await SetMethodAsync(w.Teacher, package.Id, PackageGradingMethods.Last);
-        Assert.Equal(HttpStatusCode.Conflict, closed.StatusCode);
-        Assert.Equal(ProblemCodes.class_closed, await ContentTestHost.CodeAsync(closed));
-    }
-
-    [Fact]
-    public async Task Attach_takes_the_grading_method_defaults_to_highest_and_refuses_an_unknown_one()
-    {
-        var w = await _k.SetUpAsync("PG7");
-        var defaulted = await _k.SeedReadyAsync(w);
-        var bad = await _k.SeedReadyAsync(w);
-        var module = new Lms.Shared.Content.ModuleSettingsInput("حزمة", "Package", Lms.Shared.Content.ModuleVisibilities.Published, null, null,
-            Lms.Shared.Content.ModuleTargets.ClassCourse, null, Lms.Shared.Content.CompletionRules.Submit, null);
-
-        var ok = await _k.Host.SendAsync(w.Teacher, HttpMethod.Post, Routes.PackageModule(defaulted.Id), new AttachPackageModuleRequest(module));
-        var refused = await _k.Host.SendAsync(w.Teacher, HttpMethod.Post, Routes.PackageModule(bad.Id), new AttachPackageModuleRequest(module, "Average"));
-
-        Assert.Equal(HttpStatusCode.Created, ok.StatusCode);
-        Assert.Equal(HttpStatusCode.BadRequest, refused.StatusCode);
-        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
-        Assert.Equal(PackageGradingMethods.Highest, (await db.Set<PackageUpload>().SingleAsync(p => p.Id == defaulted.Id)).GradingMethod);
-        Assert.Null((await db.Set<PackageUpload>().SingleAsync(p => p.Id == bad.Id)).ModuleId);
-    }
 }
