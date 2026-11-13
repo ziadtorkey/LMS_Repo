@@ -3,7 +3,7 @@
 _Updated by the Team Lead after every merge cycle._
 
 **Milestone:** M0 — DONE · M1 Organization & Access — DONE (#73 via #200) · M2 People — closing (#177 via #321) · M3 Academic Structure — in progress
-**Last update:** 2026-11-12 23:35 — Merged since 18:27: #388, #349, #436, #412, #441, #386, #420, #437 (M4a wave-2 contracts), #331, #316, #387, #287, #409. In CI: #456 (fixes #451 editor assets, QA approved), #414, #417. #449 conflicts (FE2). Waiting on agents (messaging paused): FE2 replay of #396/#397/#398 onto main, #285 and #457 QA fixes, #452, #454, #455.
+**Last update:** 2026-11-12 23:35 (rechecked 00:15) — Merged since 18:27: #388, #349, #436, #412, #441, #386, #420, #437 (M4a wave-2 contracts), #331, #316, #387, #287, #409. In CI: #456 (fixes #451 editor assets, QA approved), #414, #417. #449 conflicts (FE2). Waiting on agents (messaging paused): FE2 replay of #396/#397/#398 onto main, #285 and #457 QA fixes, #452, #454, #455.
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |
