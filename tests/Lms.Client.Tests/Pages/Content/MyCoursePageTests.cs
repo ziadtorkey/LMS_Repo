@@ -71,6 +71,32 @@ public sealed class MyCoursePageTests : LessonPlansTestContext
     }
 
     [Fact]
+    public async Task A_module_whose_activity_was_removed_is_muted_without_a_link()
+    {
+        var removed = Seed("Old quiz", CompletionRules.Manual, ModuleKinds.Quiz);
+        var kept = Seed("Reading", CompletionRules.Manual);
+        PublishPlan();
+        var plan = Plans.Plans[Cc];
+        Plans.Plans[Cc] = plan with
+        {
+            Sections = plan.Sections.Select(s => s with
+            {
+                Lessons = s.Lessons.Select(l => l with { Modules = l.Modules?.Select(m => m.Id == removed.Node.Id ? m with { RefRemoved = true } : m).ToList() }).ToList(),
+            }).ToList(),
+        };
+
+        var page = await OpenAsync();
+
+        var row = page.Find($"[data-testid=learn-module-{removed.Node.Id}]");
+        Assert.Empty(page.FindAll($"[data-testid=learn-module-link-{removed.Node.Id}]"));
+        Assert.Empty(row.QuerySelectorAll("a"));
+        Assert.Equal("Removed", row.QuerySelector($"[data-testid=learn-module-removed-{removed.Node.Id}]")!.TextContent.Trim());
+        Assert.Contains("no longer be opened", row.QuerySelector($"[data-testid=learn-module-removed-sr-{removed.Node.Id}]")!.TextContent);
+        Assert.Empty(page.FindAll($"[data-testid=learn-module-state-{removed.Node.Id}]"));
+        Assert.NotEmpty(page.FindAll($"[data-testid=learn-module-link-{kept.Node.Id}]"));   // the others still open
+    }
+
+    [Fact]
     public async Task View_rule_module_shows_done_after_open()
     {
         var viewed = Seed("Watch this", CompletionRules.View, ModuleKinds.Video);

@@ -5,11 +5,21 @@
 
 @* One module under a lesson of the plan tree. Staff see visibility / target chips; students see their completion state.
    The server already decides which modules a student gets, so nothing is filtered here. *@
-<div class="@("lms-module-node" + (Node.IsVisibleNow ? "" : " lms-plan-hidden"))" data-testid="@($"module-{Node.Id}")">
+<div class="@("lms-module-node" + (Node.IsVisibleNow ? "" : " lms-plan-hidden") + (Node.RefRemoved ? " lms-module-removed" : ""))" data-testid="@($"module-{Node.Id}")">
     <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
         <MudIcon Icon="@KindIcon" Size="Size.Small" Class="mud-text-secondary" title="@KindLabel" aria-label="@KindLabel" role="img" data-testid="module-kind" />
-        <MudLink Href="@($"/modules/{Node.Id}")" Typo="Typo.body1" data-testid="module-title">@Culture.Pick(Node.TitleAr, Node.TitleEn)</MudLink>
-        @if (!Staff)
+        @if (Node.RefRemoved)
+        {
+            @* The activity was deleted and the module kept as history (#526): not a link, a muted caption, and the reason for screen readers. *@
+            <span class="lms-muted" data-testid="module-title-removed">@Culture.Pick(Node.TitleAr, Node.TitleEn)</span>
+            <span class="lms-muted lms-module-removed-caption" data-testid="module-removed">@L["Module_Removed"]</span>
+            <span class="lms-visually-hidden" data-testid="module-removed-sr">@L["Module_RemovedSr"]</span>
+        }
+        else
+        {
+            <MudLink Href="@($"/modules/{Node.Id}")" Typo="Typo.body1" data-testid="module-title">@Culture.Pick(Node.TitleAr, Node.TitleEn)</MudLink>
+        }
+        @if (!Staff && !Node.RefRemoved)
         {
             <MudIcon Icon="@StateIcon" Size="Size.Small" Color="@StateColor" title="@StateLabel" aria-label="@StateLabel" role="img" data-testid="module-state" data-state="@Node.CompletionState" />
         }

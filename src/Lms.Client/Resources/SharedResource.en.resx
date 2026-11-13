@@ -1479,4 +1479,6 @@
   <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>The package didn't pass the security check.</value></data>
   <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>The file isn't a valid .zip archive. Export the package again.</value></data>
   <data name="Error_package_reason_bad_name" xml:space="preserve"><value>Some file names in the package are too long, nested too deep or reserved. Rename them and export again.</value></data>
+  <data name="Module_Removed" xml:space="preserve"><value>Removed</value></data>
+  <data name="Module_RemovedSr" xml:space="preserve"><value>The activity this module pointed to was deleted; it can no longer be opened.</value></data>
 </root>
