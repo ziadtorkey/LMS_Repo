@@ -28,8 +28,8 @@ public sealed partial class AcademicCatalogContractTests
         Assert.Equal(
             ["Classes.View", "CourseAssignments.Grade", "CourseAssignments.Manage", "CourseAssignments.View",
              "Enrollment.View", "Forums.Moderate", "Forums.Post", "Forums.View", "Groups.Manage", "Groups.View",
-             "LessonPlans.View", "Modules.Manage", "Modules.View", "Quizzes.Grade", "Quizzes.Manage", "Quizzes.View",
-             "Students.View", "TeacherAssignments.View"],
+             "LessonPlans.View", "LiveSessions.Manage", "LiveSessions.View", "Modules.Manage", "Modules.View",
+             "Quizzes.Grade", "Quizzes.Manage", "Quizzes.View", "Students.View", "TeacherAssignments.View"],
             Rule(BuiltInRoles.Teacher).Permissions.Order(StringComparer.Ordinal));
         Assert.Equal(
             ["Blueprints.Edit", "Blueprints.Publish", "Courses.Allocate", "Courses.Delete", "Courses.Update",
@@ -37,7 +37,7 @@ public sealed partial class AcademicCatalogContractTests
             Rule(BuiltInRoles.Supervisor).Permissions.Order(StringComparer.Ordinal));
         Assert.Equal(
             ["CourseAssignments.Submit", "CourseAssignments.View", "Forums.Post", "Forums.View", "LessonPlans.View",
-             "Modules.View", "Quizzes.Attempt", "Quizzes.View"],
+             "LiveSessions.View", "Modules.View", "Quizzes.Attempt", "Quizzes.View"],
             Rule(BuiltInRoles.Student).Permissions.Order(StringComparer.Ordinal));
     }
 
@@ -63,6 +63,11 @@ public sealed partial class AcademicCatalogContractTests
     [InlineData(BuiltInRoles.Student, Permissions.Library.View, null)]
     [InlineData(BuiltInRoles.Manager, Permissions.CourseAssignments.Grade, null)]
     [InlineData(BuiltInRoles.Supervisor, Permissions.Quizzes.View, null)]
+    [InlineData(BuiltInRoles.Teacher, Permissions.LiveSessions.Manage, Relationships.OwnClassCourses)]
+    [InlineData(BuiltInRoles.Teacher, Permissions.LiveSessions.View, Relationships.OwnClassCourses)]
+    [InlineData(BuiltInRoles.Student, Permissions.LiveSessions.View, Relationships.OwnEnrollments)]
+    [InlineData(BuiltInRoles.Supervisor, Permissions.LiveSessions.View, null)]
+    [InlineData(BuiltInRoles.Manager, Permissions.LiveSessions.Manage, null)]
     [InlineData("custom-role", Permissions.Groups.Manage, null)]
     public void For_returns_the_relationship_or_null(string role, string permission, string? expected) =>
         Assert.Equal(expected, RelationshipRules.For(role, permission));
