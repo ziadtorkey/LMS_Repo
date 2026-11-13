@@ -12,7 +12,7 @@ namespace Lms.E2ETests.M4;
 /// </summary>
 public sealed class QuizTests(E2EFixture fixture) : M4TestBase(fixture)
 {
-    private const string NeedsM4a = "Needs the M4a assignment, grading and quiz APIs and pages (#391, #410, #421, #399, #415 and the FE pages #400/#403/#405/#406/#408) on main; the rich-text editor assets (#451) are fixed by #456, and the grader still signs in as the Org Admin until #455 seeds a current year";
+    private const string NeedsM4a = "Needs the quiz attempts API (#453) and the FE quiz pages (#514, #519, #520, #521) on main; all 6 scenarios pass on a local integration of them";
 
     private static object QuizSettings(int? timeLimit, DateTime? closesAtUtc, string reviewPolicy) => new
     {

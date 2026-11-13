@@ -78,10 +78,23 @@ public sealed class LmsApiFactory : WebApplicationFactory<Program>, IAsyncLifeti
         return cs;
     }
 
+    /// <summary>
+    /// Derived hosts (<c>WithWebHostBuilder</c>) run without a Hangfire server unless a test opts in with <c>Jobs:ServerEnabled=true</c>.
+    /// Each server holds several long-lived MySQL connections from one shared 100-connection pool, and about thirty derived hosts live until
+    /// the end of the run: together they exhausted the pool (#466). The shared root host keeps its server for the job tests.
+    /// </summary>
+    public new WebApplicationFactory<Program> WithWebHostBuilder(Action<IWebHostBuilder> configuration) =>
+        base.WithWebHostBuilder(builder =>
+        {
+            builder.UseSetting("Jobs:ServerEnabled", "false");
+            configuration(builder);
+        });
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         // The host runs as Development (auth config expects it); keep the dev seeder out of the shared test database.
         builder.UseSetting("Seed:RunOnStartup", "false");
+        builder.UseSetting("Jobs:SchedulePollIntervalSeconds", "1"); // scheduled jobs are picked up within a second in tests
         builder.UseSetting("ConnectionStrings:Lms", _mysql.GetConnectionString());
         builder.UseSetting("Storage:Endpoint", _minio.GetConnectionString());
         builder.UseSetting("Storage:AccessKey", MinioBuilder.DefaultUsername);

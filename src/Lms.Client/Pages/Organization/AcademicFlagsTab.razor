@@ -5,41 +5,53 @@
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
 
-<MudStack Spacing="3">
+<div class="lms-form">
     @if (_error is not null)
     {
-        <MudAlert Severity="Severity.Error" data-testid="academic-error">@_error</MudAlert>
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-4" data-testid="academic-error">@_error</MudAlert>
     }
 
-    <MudSwitch T="bool" Value="_isTransfer" ValueChanged="OnTransferChanged" Disabled="!CanEdit" Color="Color.Primary"
-               Label="@L["Academic_LevelTransfer"]" data-testid="flag-transfer" />
+    <fieldset class="lms-fieldset">
+        <legend class="lms-fieldset-legend">@L["Academic_SectionLevel"]</legend>
+        <MudSwitch T="bool" Value="_isTransfer" ValueChanged="OnTransferChanged" Disabled="!CanEdit" Color="Color.Primary"
+                   Label="@L["Academic_LevelTransfer"]" data-testid="flag-transfer" />
 
-    @if (_isTransfer)
-    {
-        <MudSelect T="Guid?" @bind-Value="_nextId" Label="@L["Academic_NextLevel"]" Disabled="!CanEdit" Clearable="true"
-                   data-testid="next-level">
-            @foreach (var candidate in NextLevelCandidates(Unit, AllUnits))
-            {
-                <MudSelectItem T="Guid?" Value="@((Guid?)candidate.Id)">@Culture.Pick(candidate.NameAr, candidate.NameEn)</MudSelectItem>
-            }
-        </MudSelect>
-        <div>
-            <MudText Typo="Typo.caption">@L["Academic_TransferPath"]</MudText>
-            <MudText data-testid="transfer-path">@TransferPath()</MudText>
-        </div>
-    }
+        @if (_isTransfer)
+        {
+            <MudSelect T="Guid?" @bind-Value="_nextId" Label="@L["Academic_NextLevel"]" Disabled="!CanEdit" Clearable="true"
+                       data-testid="next-level">
+                @foreach (var candidate in NextLevelCandidates(Unit, AllUnits))
+                {
+                    <MudSelectItem T="Guid?" Value="@((Guid?)candidate.Id)">@Culture.Pick(candidate.NameAr, candidate.NameEn)</MudSelectItem>
+                }
+            </MudSelect>
+            <div>
+                <MudText Typo="Typo.caption" Class="lms-muted">@L["Academic_TransferPath"]</MudText>
+                <MudText data-testid="transfer-path">@TransferPath()</MudText>
+            </div>
+        }
+    </fieldset>
 
-    <MudSwitch T="bool" @bind-Value="_isCourse" Disabled="!CanEdit" Color="Color.Primary"
-               Label="@L["Academic_CourseManagement"]" data-testid="flag-course" />
+    <fieldset class="lms-fieldset">
+        <legend class="lms-fieldset-legend">@L["Academic_SectionCourses"]</legend>
+        <MudSwitch T="bool" @bind-Value="_isCourse" Disabled="!CanEdit" Color="Color.Primary"
+                   Label="@L["Academic_CourseManagement"]" data-testid="flag-course" />
+    </fieldset>
 
     @if (CanEdit)
     {
-        <div>
+        <div class="lms-dialog-actions">
             <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_saving"
-                       data-testid="academic-save">@L["Common_Save"]</MudButton>
+                       StartIcon="@(_saving ? null : Icons.Material.Rounded.Check)" data-testid="academic-save">
+                @if (_saving)
+                {
+                    <MudProgressCircular Indeterminate="true" Size="Size.Small" Class="me-2" aria-hidden="true" />
+                }
+                @L["Common_Save"]
+            </MudButton>
         </div>
     }
-</MudStack>
+</div>
 
 @code {
     [Parameter, EditorRequired] public OrgUnitNodeDto Unit { get; set; } = default!;

@@ -19,8 +19,16 @@ public static class CourseEndpoints
             .RequirePermission(Permissions.Courses.Update);
         app.MapPut(Routes.CourseStatusPattern, CourseHandlers.SetStatusAsync).RequireAuthorization()
             .RequirePermission(Permissions.Courses.Update);
+        app.MapPut(Routes.CourseRestrictionsPattern, RestrictionHandlers.SetAsync).RequireAuthorization()
+            .RequirePermission(Permissions.Courses.Update);
         app.MapDelete(Routes.CoursePattern, CourseHandlers.DeleteAsync).RequireAuthorization()
             .RequirePermission(Permissions.Courses.Delete);
+        app.MapPost(Routes.CourseAllocations, AllocationHandlers.AllocateAsync).RequireAuthorization()
+            .RequirePermission(Permissions.Courses.Allocate);
+        app.MapDelete(Routes.CourseAllocationPattern, AllocationHandlers.RemoveAsync).RequireAuthorization()
+            .RequirePermission(Permissions.Courses.Allocate);
+        app.MapGet(Routes.UnitCoursesPattern, AllocationHandlers.UnitCoursesAsync).RequireAuthorization()
+            .RequirePermission(Permissions.Courses.View);
         return app.MapSupervisorEndpoints();
     }
 }

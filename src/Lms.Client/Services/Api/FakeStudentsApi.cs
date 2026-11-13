@@ -217,6 +217,16 @@ public sealed class FakeGuardiansApi : IGuardiansApi
 
     public string? LastSearch { get; private set; }
 
+    /// <summary>The children returned for the signed-in guardian; tests and the dev server replace it (empty = none linked).</summary>
+    public List<MyChildDto> MyChildren { get; } =
+    [
+        new(Guid.Parse("00000000-0000-0000-0000-0000000000c1"), "S-1001", "أحمد سعيد", "Ahmed Saeed", "المدرسة الرئيسية", "Main School", null, GuardianRelations.Mother),
+        new(Guid.Parse("00000000-0000-0000-0000-0000000000c2"), "S-1002", "ليلى حسن", "Laila Hassan", "المدرسة الرئيسية", "Main School", null, GuardianRelations.Mother),
+    ];
+
+    public Task<IReadOnlyList<MyChildDto>> GetMyChildrenAsync(CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyList<MyChildDto>>(MyChildren.ToList());
+
     public Task<GuardianDetailDto> GetAsync(Guid id, CancellationToken ct = default) =>
         _guardians.FirstOrDefault(g => g.Summary.Id == id) is { } found
             ? Task.FromResult(found)
@@ -261,16 +271,4 @@ public static class FakeClasses
     private static ClassSummaryDto Make(string id, string code, string ar, string en, int capacity, int students) =>
         new(Guid.Parse(id), code, ar, en, FakeUnits.SchoolId, "المدرسة الرئيسية", "Main School", Guid.Empty, "", "", capacity, students, 0,
             null, null, null, ClassStatuses.Active, false);
-}
-
-public sealed class FakeClassesApi : IClassesApi
-{
-    public ClassQuery? LastQuery { get; private set; }
-
-    public Task<PagedResult<ClassSummaryDto>> ListAsync(ClassQuery query, CancellationToken ct = default)
-    {
-        LastQuery = query;
-        var rows = FakeClasses.All.Where(c => query.OrgUnitId is null || c.OrgUnitId == query.OrgUnitId).ToList();
-        return Task.FromResult(new PagedResult<ClassSummaryDto>(rows, rows.Count, query.Page, query.PageSize));
-    }
 }

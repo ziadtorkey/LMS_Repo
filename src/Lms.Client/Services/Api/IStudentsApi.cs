@@ -1,5 +1,4 @@
 using Lms.Shared;
-using Lms.Shared.Classes;
 using Lms.Shared.People;
 
 namespace Lms.Client.Services.Api;
@@ -87,6 +86,9 @@ public interface IGuardiansApi
     Task<GuardianDetailDto> GetAsync(Guid id, CancellationToken ct = default);
     Task UpdateAsync(Guid id, UpdateGuardianRequest request, CancellationToken ct = default);
     Task SendPortalInvitationAsync(Guid id, CancellationToken ct = default);
+
+    /// <summary>The signed-in guardian's children in the active context (one school or group).</summary>
+    Task<IReadOnlyList<MyChildDto>> GetMyChildrenAsync(CancellationToken ct = default);
 }
 
 public sealed class GuardiansApi(ApiHttp http) : IGuardiansApi
@@ -113,6 +115,9 @@ public sealed class GuardiansApi(ApiHttp http) : IGuardiansApi
     public Task SendPortalInvitationAsync(Guid id, CancellationToken ct = default) =>
         http.SendAsync(HttpMethod.Post, Routes.GuardianPortalInvitation(id), null, ct);
 
+    public async Task<IReadOnlyList<MyChildDto>> GetMyChildrenAsync(CancellationToken ct = default) =>
+        await http.GetAsync<List<MyChildDto>>(Routes.MyChildren, ct);
+
     public async Task<GuardianMatchDto?> MatchAsync(string? nationalId, string? mobile, CancellationToken ct = default)
     {
         var parts = new List<string>();
@@ -127,24 +132,5 @@ public sealed class GuardiansApi(ApiHttp http) : IGuardiansApi
         {
             return null;
         }
-    }
-}
-
-/// <summary>Classes as far as the student pages need them: the classes of a unit and year (the class tasks add the rest).</summary>
-public interface IClassesApi
-{
-    Task<PagedResult<ClassSummaryDto>> ListAsync(ClassQuery query, CancellationToken ct = default);
-}
-
-public sealed class ClassesApi(ApiHttp http) : IClassesApi
-{
-    public Task<PagedResult<ClassSummaryDto>> ListAsync(ClassQuery query, CancellationToken ct = default)
-    {
-        var parts = new List<string> { $"page={query.Page}", $"pageSize={query.PageSize}", $"includeDescendants={query.IncludeDescendants.ToString().ToLowerInvariant()}" };
-        if (query.OrgUnitId is { } unit) parts.Add($"orgUnitId={unit}");
-        if (query.AcademicYearId is { } year) parts.Add($"academicYearId={year}");
-        if (!string.IsNullOrWhiteSpace(query.Status)) parts.Add($"status={Uri.EscapeDataString(query.Status)}");
-        if (!string.IsNullOrWhiteSpace(query.Search)) parts.Add($"search={Uri.EscapeDataString(query.Search)}");
-        return http.GetAsync<PagedResult<ClassSummaryDto>>(Routes.Classes + "?" + string.Join('&', parts), ct);
     }
 }

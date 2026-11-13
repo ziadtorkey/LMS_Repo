@@ -25,11 +25,17 @@ public sealed class CreateStudentPageTests : StudentsTestContext
         return Render<CreateStudentPage>();
     }
 
-    private static void Type(IRenderedComponent<CreateStudentPage> page, string id, string value)
+    private void Type(IRenderedComponent<CreateStudentPage> page, string id, string value)
     {
         var input = page.Find($"input[data-testid={id}]");
-        // Lookup fields are debounced and react to typing (oninput); the others to a committed change.
-        if (id.StartsWith("guardian-mobile") || id.StartsWith("guardian-national")) input.Input(value);
+        // Lookup fields are debounced (500 ms) and react to typing (oninput); the others to a committed change.
+        if (id.StartsWith("guardian-mobile") || id.StartsWith("guardian-national"))
+        {
+            input.Input(value);
+            // The debounce timer commits the value and runs the guardian lookup. Saving before it fires races it: under load the commit
+            // can land in the middle of the save's validation and the click is silently dropped. Wait until the lookup has run.
+            page.WaitForAssertion(() => Assert.Contains(GuardiansApi.Lookups, l => l.NationalId == value || l.Mobile == value), TimeSpan.FromSeconds(10));
+        }
         else input.Change(value);
     }
 
@@ -64,6 +70,63 @@ public sealed class CreateStudentPageTests : StudentsTestContext
     /// <summary>For saves that end in a dialog: the click handler awaits the dialog result, so it must not be awaited.</summary>
     private static void SaveWithDialog(IRenderedComponent<CreateStudentPage> page) =>
         _ = page.Find("[data-testid=student-save]").ClickAsync(new());
+
+    [Fact]
+    public async Task Leaving_a_debounced_guardian_field_commits_it_at_once()
+    {
+        var page = await RenderPageAsync();
+        await ChooseUnitAsync(page);
+        var input = page.Find("input[data-testid=guardian-mobile-0]");
+
+        input.Input("0508888888");
+        Assert.Empty(GuardiansApi.Lookups); // still inside the 500 ms debounce
+        await input.BlurAsync(new());
+
+        // The browser blurs the focused field before a click or Tab reaches Save, which is why Save normally sees the typed value.
+        page.WaitForAssertion(() => Assert.Contains(GuardiansApi.Lookups, l => l.Mobile == "0508888888"), TimeSpan.FromMilliseconds(250));
+    }
+
+    /// <summary>
+    /// The real form-flush.js blurs the focused input, which commits a debounced field at once. Here the script's promise stays pending
+    /// until the test has blurred the input itself, so what the save validates and sends depends on the flush having been awaited.
+    /// </summary>
+    private static async Task FlushLikeTheScriptDoesAsync(BunitJSInterop js, AngleSharp.Dom.IElement focused, Bunit.JSRuntimeInvocationHandler flush, Action waitForCall)
+    {
+        waitForCall();
+        await focused.BlurAsync(new());
+        flush.SetVoidResult();
+    }
+
+    [Fact]
+    public async Task Saving_right_after_typing_a_guardian_mobile_sends_that_mobile()
+    {
+        var flush = JSInterop.SetupVoid("lmsFormFlush");
+        var page = await RenderPageAsync();
+        await FillAsync(page);
+        Type(page, "guardian-name-ar-0", "ماجد");
+        Type(page, "guardian-name-en-0", "Majed");
+        var mobile = page.Find("input[data-testid=guardian-mobile-0]");
+        mobile.Input("0509999999"); // inside the 500 ms debounce: the model has not seen it yet
+
+        SaveWithDialog(page);
+        await FlushLikeTheScriptDoesAsync(JSInterop, mobile, flush,
+            () => page.WaitForAssertion(() => Assert.Contains(JSInterop.Invocations, i => i.Identifier == "lmsFormFlush"), Wait));
+
+        page.WaitForAssertion(() => Assert.NotNull(Students.LastCreate), Wait);
+        Assert.Equal("0509999999", Assert.Single(Students.LastCreate!.Guardians).NewGuardian!.Mobile);
+        await CloseCredentialsAsync();
+    }
+
+    [Fact]
+    public async Task Save_commits_pending_fields_first()
+    {
+        var page = await RenderPageAsync();
+        await ChooseUnitAsync(page);
+
+        await SaveAsync(page);
+
+        Assert.Single(JSInterop.Invocations["lmsFormFlush"]);
+    }
 
     [Fact]
     public async Task Code_field_hidden_in_auto_mode()
@@ -418,5 +481,19 @@ public sealed class CreateStudentPageTests : StudentsTestContext
         Assert.Contains("طالب جديد", layout.Find("[data-testid=student-create-title]").TextContent);
         Assert.Equal("rtl", layout.Find("input[data-testid=student-name-ar]").GetAttribute("dir"));
         Assert.Equal("ltr", layout.Find("input[data-testid=student-name-en]").GetAttribute("dir"));
+    }
+
+    [Fact]
+    public async Task A_role_without_Settings_View_can_still_create_a_student_with_default_settings()
+    {
+        Settings.Failure = new Lms.Client.Services.ApiForbiddenException();
+        var navigation = Services.GetRequiredService<Microsoft.AspNetCore.Components.NavigationManager>();
+        var before = navigation.Uri;
+        var page = await RenderPageAsync();
+
+        await ChooseUnitAsync(page);
+
+        page.WaitForElement("[data-testid=student-code-auto]", Wait); // the default: codes are generated
+        Assert.Equal(before, navigation.Uri); // not sent to /forbidden
     }
 }

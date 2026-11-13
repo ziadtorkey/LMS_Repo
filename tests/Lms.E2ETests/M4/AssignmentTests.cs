@@ -11,7 +11,7 @@ namespace Lms.E2ETests.M4;
 /// </summary>
 public sealed class AssignmentTests(E2EFixture fixture) : M4TestBase(fixture)
 {
-    private const string NeedsM4a = "Needs the M4a assignment, grading and quiz APIs and pages (#391, #410, #421, #399, #415 and the FE pages #400/#403/#405/#406/#408) on main; the rich-text editor assets (#451) are fixed by #456, and the grader still signs in as the Org Admin until #455 seeds a current year";
+    private const string NeedsM4a = "Needs the FE assignment pages (#400, #512) and the quiz BE/FE (#453, #514, #519, #520, #521) on main; passes on a local integration of them. The blocked-late scenario already runs on main (#410)";
 
     private const decimal MaxGrade = 100;
 
@@ -78,7 +78,7 @@ public sealed class AssignmentTests(E2EFixture fixture) : M4TestBase(fixture)
         await AssertDirectionAsync(teacher.Page, culture);
     }
 
-    [Theory(Skip = NeedsM4a)]
+    [Theory]
     [InlineData("ar")]
     [InlineData("en")]
     public async Task Blocked_late_assignment_refuses_submission(string culture)

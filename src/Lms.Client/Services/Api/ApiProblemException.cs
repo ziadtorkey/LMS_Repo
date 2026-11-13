@@ -8,7 +8,7 @@ namespace Lms.Client.Services.Api;
 /// An RFC 7807 error answered by the API. <see cref="Code"/> is the ProblemCodes value
 /// (or the access-denial reason, e.g. BlockedByPolicy); <see cref="Detail"/> is server-localized text.
 /// </summary>
-public sealed class ApiProblemException(int status, string? code, string? detail, IReadOnlyDictionary<string, string[]>? errors, string? field = null, int? count = null)
+public sealed class ApiProblemException(int status, string? code, string? detail, IReadOnlyDictionary<string, string[]>? errors, string? field = null, int? count = null, string? reason = null, IReadOnlyList<string>? codes = null)
     : HttpRequestException($"API error {status} {code}", null, (HttpStatusCode)status)
 {
     public const string InvalidContext = "invalid_context";
@@ -25,14 +25,20 @@ public sealed class ApiProblemException(int status, string? code, string? detail
     /// <summary>The problem's <c>count</c> extension (e.g. how many possible duplicates were found), when present.</summary>
     public int? Count { get; } = count;
 
+    /// <summary>The problem's <c>reason</c> extension (e.g. why a transfer is invalid, <c>TransferRejectReasons</c>), when present.</summary>
+    public string? Reason { get; } = reason;
+    /// <summary>The problem's <c>codes</c> extension (e.g. which class codes collide in a bulk create), when present.</summary>
+    public IReadOnlyList<string> Codes { get; } = codes ?? [];
+
     /// <summary>True when the API says the active context is missing, expired, deleted or deactivated (bug #84, D15).</summary>
     public bool IsContextProblem => Status == 403 && Code is InvalidContext or ContextRequired;
 
     /// <summary>Reads the ProblemDetails body of a failed response (the content may be empty or not JSON).</summary>
     public static async Task<ApiProblemException> FromResponseAsync(HttpResponseMessage response, CancellationToken ct = default)
     {
-        string? code = null, detail = null, field = null;
+        string? code = null, detail = null, field = null, reason = null;
         int? count = null;
+        List<string>? codes = null;
         Dictionary<string, string[]>? errors = null;
         try
         {
@@ -46,6 +52,9 @@ public sealed class ApiProblemException(int status, string? code, string? detail
                 code = Text(json, "code") ?? Text(json, "reason");
                 detail = Text(json, "detail");
                 field = Text(json, "field");
+                reason = Text(json, "reason");
+                if (json.TryGetProperty("codes", out var cs) && cs.ValueKind == JsonValueKind.Array)
+                    codes = cs.EnumerateArray().Where(x => x.ValueKind == JsonValueKind.String).Select(x => x.GetString()!).ToList();
                 if (json.TryGetProperty("count", out var c) && c.ValueKind == JsonValueKind.Number && c.TryGetInt32(out var n)) count = n;
                 if (json.TryGetProperty("errors", out var e) && e.ValueKind == JsonValueKind.Object)
                     errors = e.EnumerateObject().ToDictionary(
@@ -58,7 +67,7 @@ public sealed class ApiProblemException(int status, string? code, string? detail
         catch (JsonException) { }
         catch (NotSupportedException) { }
         catch (InvalidOperationException) { }
-        return new ApiProblemException((int)response.StatusCode, code, detail, errors, field, count);
+        return new ApiProblemException((int)response.StatusCode, code, detail, errors, field, count, reason, codes);
     }
 
     /// <summary>

@@ -1,0 +1,16 @@
+@using System.Text.RegularExpressions
+
+@* The ONLY place the client renders HTML as markup, and only HTML the server sanitised on write (D48). Never pass
+   client-produced HTML here. Links get rel="noopener noreferrer" as a second line of defence. *@
+<div class="lms-rich" dir="@Dir" data-testid="@TestId">@((MarkupString)Prepared)</div>
+
+@code {
+    private static readonly Regex Anchor = new(@"<a\s(?![^>]*\srel=)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+    /// <summary>The server-sanitised HTML.</summary>
+    [Parameter] public string? Html { get; set; }
+    [Parameter] public string Dir { get; set; } = "auto";
+    [Parameter] public string TestId { get; set; } = "sanitized-html";
+
+    private string Prepared => Anchor.Replace(Html ?? "", "<a rel=\"noopener noreferrer\" ");
+}

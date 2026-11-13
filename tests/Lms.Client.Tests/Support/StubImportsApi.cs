@@ -23,6 +23,7 @@ public sealed class StubImportsApi : IImportsApi
     public List<Guid> Discarded { get; } = [];
     public string? LastKind { get; private set; }
     public Guid UnitId { get; } = Guid.NewGuid();
+    public int CredentialDownloads { get; private set; }
     public int ErrorReports { get; private set; }
     public int BatchReads => _reads;
 
@@ -62,6 +63,12 @@ public sealed class StubImportsApi : IImportsApi
         RowRequests.Add((errorsOnly, page));
         var rows = errorsOnly ? Rows.Where(r => r.Errors.Count > 0).ToList() : Rows.ToList();
         return Task.FromResult(new PagedResult<ImportRowDto>(rows, rows.Count, page, pageSize));
+    }
+
+    public Task<(Stream Content, string FileName)> DownloadCredentialsAsync(string kind, Guid id, CancellationToken ct = default)
+    {
+        if (CredentialDownloads++ > 0) return Task.FromException<(Stream, string)>(new ApiProblemException(410, "credentials_gone", null, null));
+        return Task.FromResult<(Stream, string)>((new MemoryStream([1]), "credentials.xlsx"));
     }
 
     public Task<(Stream Content, string FileName)> DownloadErrorReportAsync(string kind, Guid id, CancellationToken ct = default)
