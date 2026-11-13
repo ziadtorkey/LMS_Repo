@@ -57,7 +57,6 @@ public static class ClientServices
             services.AddSingleton<IActivityOverviewApi>(_ => new FakeActivityOverviewApi().WithDemoData());
             services.AddSingleton<IModulesApi>(_ => new FakeModulesApi().WithDemoData());
             services.AddSingleton<IAssetsApi, FakeAssetsApi>();
-            services.AddSingleton<IModulesApi, FakeModulesApi>();
             services.AddScoped<AuthenticationStateProvider, FakeAuthenticationStateProvider>();
             services.AddAuthorizationCore();
             return;
