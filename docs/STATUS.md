@@ -3,7 +3,7 @@
 _Updated by the Team Lead after every merge cycle._
 
 **Milestone:** M0 — DONE · M1 Organization & Access — DONE (#73 via #200) · M2 People — closing (#177 via #321) · M3 Academic Structure — in progress
-**Last update:** 2026-11-13 17:10 — Merged since restart: #444, #501, #447, #450, #294, #292, #401, #509 (ar number format), #507 (live status chip), #432 (plan authoring), #322 (class students), #309 (guardian My children). Owner decisions: D57 package grading method per module (#549); Stitch redesign replaces the approved design (#553, designer foundation PR in progress). M4b: ADR #528 approved (gates T9a/9b/10/11/17); T3 corpus #493, T4 #513, T8a #523, T8b #534, live FE #504/#515/#510 approved, waiting on CI. CI runner pool saturated: owner OK to cancel draft runs; #541 skips CI for docs-only pushes. Lead merges by hand.
+**Last update:** 2026-11-13 18:45 — Merged since restart: #531, #410, #524, #444, #501, #447, #450, #294, #292, #401, #509 (ar number format), #507 (live status chip), #432 (plan authoring), #322 (class students), #309 (guardian My children). Owner decisions: third-party downloads approved (h5p-standalone + 5 real packages; agents await the owner in their own chats); D57 package grading method per module (#549); Stitch redesign replaces the approved design (#553, designer foundation PR in progress). M4b: ADR #528 approved (gates T9a/9b/10/11/17); T3 corpus #493, T4 #513, T8a #523, T8b #534, live FE #504/#515/#510 approved, waiting on CI. CI runner pool saturated: owner OK to cancel draft runs; #541 skips CI for docs-only pushes. Lead merges by hand.
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |
