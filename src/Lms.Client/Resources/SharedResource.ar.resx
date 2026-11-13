@@ -906,6 +906,55 @@
   <data name="MyCourses_BlueprintPublished" xml:space="preserve"><value>المخطط الدراسي منشور</value></data>
   <data name="MyCourses_NoBlueprint" xml:space="preserve"><value>لا يوجد مخطط منشور</value></data>
   <data name="MyCourses_Open" xml:space="preserve"><value>فتح</value></data>
+  <data name="Blueprint_Title" xml:space="preserve"><value>المخطط الدراسي للمقرر</value></data>
+  <data name="Blueprint_EditDraft" xml:space="preserve"><value>تعديل المسودة</value></data>
+  <data name="Blueprint_EditingDraft" xml:space="preserve"><value>تعديل المسودة</value></data>
+  <data name="Blueprint_ViewingVersion" xml:space="preserve"><value>عرض الإصدار {0}</value></data>
+  <data name="Blueprint_VersionN" xml:space="preserve"><value>الإصدار {0}</value></data>
+  <data name="Blueprint_Versions" xml:space="preserve"><value>الإصدارات</value></data>
+  <data name="Blueprint_Counts" xml:space="preserve"><value>{0} أقسام، {1} دروس</value></data>
+  <data name="Blueprint_View" xml:space="preserve"><value>عرض</value></data>
+  <data name="Blueprint_Discard" xml:space="preserve"><value>تجاهل التغييرات</value></data>
+  <data name="Blueprint_Publish" xml:space="preserve"><value>نشر</value></data>
+  <data name="Blueprint_Copy" xml:space="preserve"><value>نسخ من مقرر آخر</value></data>
+  <data name="Blueprint_NoPublished" xml:space="preserve"><value>لم يُنشر أي إصدار بعد.</value></data>
+  <data name="Blueprint_EmptyTree" xml:space="preserve"><value>لا يوجد محتوى بعد.</value></data>
+  <data name="Blueprint_AddSection" xml:space="preserve"><value>إضافة قسم</value></data>
+  <data name="Blueprint_AddLesson" xml:space="preserve"><value>إضافة درس</value></data>
+  <data name="Blueprint_UntitledLesson" xml:space="preserve"><value>درس بلا عنوان</value></data>
+  <data name="Blueprint_MoveUp" xml:space="preserve"><value>نقل لأعلى</value></data>
+  <data name="Blueprint_MoveDown" xml:space="preserve"><value>نقل لأسفل</value></data>
+  <data name="Blueprint_Stale" xml:space="preserve"><value>حفظ شخص آخر هذه المسودة. أعد تحميلها للمتابعة؛ ستفقد تغييراتك غير المحفوظة.</value></data>
+  <data name="Blueprint_Reload" xml:space="preserve"><value>إعادة التحميل</value></data>
+  <data name="Blueprint_Unsaved" xml:space="preserve"><value>لديك تغييرات غير محفوظة.</value></data>
+  <data name="Blueprint_LeaveConfirm" xml:space="preserve"><value>المغادرة دون حفظ؟ ستفقد تغييراتك.</value></data>
+  <data name="Blueprint_LeaveAnyway" xml:space="preserve"><value>مغادرة</value></data>
+  <data name="Blueprint_TitlesRequired" xml:space="preserve"><value>يلزم عنوان بالعربية والإنجليزية لكل قسم ودرس.</value></data>
+  <data name="Blueprint_EmptyOrIncomplete" xml:space="preserve"><value>أضف قسمًا واحدًا على الأقل، وأضف درسًا لكل قسم، وعنوانين لكل عنصر قبل النشر.</value></data>
+  <data name="Blueprint_PublishedNew" xml:space="preserve"><value>تم نشر الإصدار {0}. يسري على الفصول التي تُنشأ من الآن.</value></data>
+  <data name="Blueprint_PublishedQueued" xml:space="preserve"><value>تم نشر الإصدار {0}. سيتم تحديث خطط {1} فصلًا في الخلفية.</value></data>
+  <data name="BlueprintStatus_Draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="BlueprintStatus_Published" xml:space="preserve"><value>منشور</value></data>
+  <data name="BlueprintStatus_Superseded" xml:space="preserve"><value>تم استبداله</value></data>
+  <data name="ApplyMode_NewClassesOnly" xml:space="preserve"><value>الفصول الجديدة فقط</value></data>
+  <data name="ApplyMode_NewClassesOnly_Help" xml:space="preserve"><value>تحصل عليه الفصول التي تُنشأ لاحقًا وخطط الفصول التي لم تتلقَّ إصدارًا بعد. تبقى خطط الفصول الحالية كما هي.</value></data>
+  <data name="ApplyMode_PushToExisting" xml:space="preserve"><value>تحديث الفصول الحالية أيضًا</value></data>
+  <data name="ApplyMode_PushToExisting_Help" xml:space="preserve"><value>تُحدَّث خطط الفصول الحالية في الأعوام المفتوحة في الخلفية: تُضاف الدروس الجديدة وتتبع الدروس المعاد تسميتها أو نقلها هذا الإصدار.</value></data>
+  <data name="Publish_Intro" xml:space="preserve"><value>اختر كيف يصل هذا الإصدار إلى خطط دروس الفصول.</value></data>
+  <data name="Publish_ChooseMode" xml:space="preserve"><value>اختر أحد الخيارات للمتابعة.</value></data>
+  <data name="Copy_ReplacesDraft" xml:space="preserve"><value>النسخ يستبدل كل ما في مسودتك.</value></data>
+  <data name="Copy_Course" xml:space="preserve"><value>المقرر المصدر</value></data>
+  <data name="Copy_Version" xml:space="preserve"><value>الإصدار</value></data>
+  <data name="Copy_NoPublished" xml:space="preserve"><value>لا يوجد لهذا المقرر إصدار منشور.</value></data>
+  <data name="Lesson_Edit" xml:space="preserve"><value>الدرس</value></data>
+  <data name="Lesson_ObjectivesAr" xml:space="preserve"><value>الأهداف (بالعربية)</value></data>
+  <data name="Lesson_ObjectivesEn" xml:space="preserve"><value>الأهداف (بالإنجليزية)</value></data>
+  <data name="Lesson_PlannedDay" xml:space="preserve"><value>اليوم المخطط</value></data>
+  <data name="Lesson_PlannedDayHelp" xml:space="preserve"><value>عدد الأيام من بداية العام الدراسي (من 0 إلى 400).</value></data>
+  <data name="Lesson_DayN" xml:space="preserve"><value>اليوم {0}</value></data>
+  <data name="SectionLabel_Week" xml:space="preserve"><value>الأسبوع</value></data>
+  <data name="SectionLabel_Unit" xml:space="preserve"><value>الوحدة</value></data>
+  <data name="SectionLabel_Chapter" xml:space="preserve"><value>الفصل</value></data>
   <data name="StaffImport_Title" xml:space="preserve"><value>استيراد الموظفين</value></data>
   <data name="Import_Button" xml:space="preserve"><value>استيراد من Excel</value></data>
   <data name="Clients_ShortCode" xml:space="preserve"><value>الرمز المختصر</value></data>
@@ -1176,6 +1225,36 @@
   <data name="Home_NothingToGrade" xml:space="preserve"><value>لا شيء بانتظار التصحيح.</value></data>
   <data name="Home_WaitingCount" xml:space="preserve"><value>{0} بالانتظار</value></data>
   <data name="Home_ActivityError" xml:space="preserve"><value>تعذّر تحميل واجباتك واختباراتك. أعد تحميل الصفحة للمحاولة مرة أخرى.</value></data>
+  <data name="Nav_Library" xml:space="preserve"><value>المكتبة</value></data>
+  <data name="Library_Title" xml:space="preserve"><value>المكتبة الرقمية</value></data>
+  <data name="Library_New" xml:space="preserve"><value>مورد جديد</value></data>
+  <data name="Library_Search" xml:space="preserve"><value>ابحث في المكتبة</value></data>
+  <data name="Library_Type" xml:space="preserve"><value>النوع</value></data>
+  <data name="Library_Level" xml:space="preserve"><value>المرحلة</value></data>
+  <data name="Library_Subject" xml:space="preserve"><value>المادة</value></data>
+  <data name="Library_Tag" xml:space="preserve"><value>الوسم</value></data>
+  <data name="Library_Empty" xml:space="preserve"><value>لا توجد موارد مطابقة.</value></data>
+  <data name="Library_Open" xml:space="preserve"><value>فتح</value></data>
+  <data name="Library_AddToLesson" xml:space="preserve"><value>إضافة إلى درس</value></data>
+  <data name="Library_DeleteConfirm" xml:space="preserve"><value>حذف المورد {0}؟</value></data>
+  <data name="Library_Unit" xml:space="preserve"><value>الوحدة المالكة</value></data>
+  <data name="Library_DescriptionAr" xml:space="preserve"><value>الوصف (عربي)</value></data>
+  <data name="Library_DescriptionEn" xml:space="preserve"><value>الوصف (إنجليزي)</value></data>
+  <data name="Library_LevelHint" xml:space="preserve"><value>اتركه فارغًا لكل المراحل.</value></data>
+  <data name="Library_Tags" xml:space="preserve"><value>الوسوم</value></data>
+  <data name="Library_TagsHint" xml:space="preserve"><value>افصل الوسوم بفواصل.</value></data>
+  <data name="Library_File" xml:space="preserve"><value>الملف</value></data>
+  <data name="Library_Cover" xml:space="preserve"><value>صورة الغلاف</value></data>
+  <data name="Library_DownloadAllowed" xml:space="preserve"><value>السماح بالتنزيل (وإلا للقراءة فقط)</value></data>
+  <data name="Library_FileRequired" xml:space="preserve"><value>ارفع الملف أولًا.</value></data>
+  <data name="Library_ClassCourse" xml:space="preserve"><value>مقرر الفصل</value></data>
+  <data name="Library_Lesson" xml:space="preserve"><value>الدرس</value></data>
+  <data name="LibraryType_Book" xml:space="preserve"><value>كتاب</value></data>
+  <data name="LibraryType_Document" xml:space="preserve"><value>مستند</value></data>
+  <data name="LibraryType_Video" xml:space="preserve"><value>فيديو</value></data>
+  <data name="LibraryType_Audio" xml:space="preserve"><value>صوت</value></data>
+  <data name="LibraryType_Link" xml:space="preserve"><value>رابط</value></data>
+  <data name="LibraryType_Other" xml:space="preserve"><value>أخرى</value></data>
   <data name="ClassCourse_Sections" xml:space="preserve"><value>أقسام مقرر الفصل</value></data>
   <data name="ClassCourse_TabPlan" xml:space="preserve"><value>الخطة</value></data>
   <data name="ClassCourse_TabForum" xml:space="preserve"><value>المنتدى</value></data>
