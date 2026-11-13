@@ -10,10 +10,10 @@ public static class BuiltInRoleDefaults
     /// defaults (Students.*, Courses.*, Blueprints.*, Classes.*, TeacherAssignments.*, Enrollment.*, Groups.*,
     /// LessonPlans.*); version 4 = the M4a wave 1 defaults (Modules.*); version 5 = the M4a wave 2 defaults
     /// (CourseAssignments.*, Quizzes.*, Library.*, Forums.*); version 6 = the M4b wave 3a defaults (LiveSessions.*);
-    /// version 7 = the M4b wave 3b defaults (Packages.*); version 8 = the M5 wave 1 defaults (Grades.*). Bump (and add the new permissions to an
-    /// <see cref="IntroducedInVersion8"/>-style set) when a later milestone adds defaults.
+    /// version 7 = the M4b wave 3b defaults (Packages.*); version 8 = the M5 wave 1 defaults (Grades.*); version 9 = the M5 wave 2 defaults (Timetable.*). Bump (and add the new permissions to an
+    /// <see cref="IntroducedInVersion9"/>-style set) when a later milestone adds defaults.
     /// </summary>
-    public const int CurrentVersion = 8;
+    public const int CurrentVersion = 9;
 
     /// <summary>The 19 permissions that existed when clients were provisioned under M0 (defaults version 0).</summary>
     public static readonly IReadOnlySet<string> M0Baseline = new HashSet<string>
@@ -97,6 +97,12 @@ public static class BuiltInRoleDefaults
         Permissions.LiveSessions.View, Permissions.LiveSessions.Manage,
     };
 
+    /// <summary>Permissions introduced by defaults version 9 (M5 wave 2: timetable).</summary>
+    public static readonly IReadOnlySet<string> IntroducedInVersion9 = new HashSet<string>
+    {
+        Permissions.Timetable.View, Permissions.Timetable.Manage, Permissions.Timetable.Configure, Permissions.Timetable.ViewOwn,
+    };
+
     /// <summary>Permissions introduced by defaults version 8 (M5 wave 1: grading).</summary>
     public static readonly IReadOnlySet<string> IntroducedInVersion8 = new HashSet<string>
     {
@@ -113,7 +119,7 @@ public static class BuiltInRoleDefaults
     /// <summary>
     /// The defaults version that introduced <paramref name="permission"/>: 0 for the M0 baseline, 2 for the M2 set,
     /// 3 for the M3 set, 4 for the M4a wave 1 set, 5 for the M4a wave 2 set, 6 for the M4b wave 3a set, 7 for the M4b
-    /// wave 3b set, 8 for the M5 wave 1 set, otherwise 1. The reconciler adds to a role only the defaults introduced after the role's version.
+    /// wave 3b set, 8 for the M5 wave 1 set, 9 for the M5 wave 2 set, otherwise 1. The reconciler adds to a role only the defaults introduced after the role's version.
     /// </summary>
     public static int IntroducedIn(string permission) =>
         M0Baseline.Contains(permission) ? 0
@@ -123,6 +129,7 @@ public static class BuiltInRoleDefaults
         : IntroducedInVersion5.Contains(permission) ? 5
         : IntroducedInVersion6.Contains(permission) ? 6
         : IntroducedInVersion7.Contains(permission) ? 7
+        : IntroducedInVersion9.Contains(permission) ? 9
         : IntroducedInVersion8.Contains(permission) ? 8
         : 1;
 

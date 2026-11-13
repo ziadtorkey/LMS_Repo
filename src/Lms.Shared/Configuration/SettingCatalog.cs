@@ -89,6 +89,11 @@ public static class SettingCatalog
             AllowedValues: ["PointsWeighted", "PercentAverage"]),
         new(SettingKeys.GradesDecimalPlaces.Name, SettingValueKinds.Int, SettingCategories.Academic, "2", Min: 0, Max: 4),
         new(SettingKeys.AcademicYearsTermsPerYear.Name, SettingValueKinds.Int, SettingCategories.Academic, "2", Min: 2, Max: 3, ClientLevelOnly: true),
+        // M5 wave 2: the school week and the conflict mode of the timetable builder.
+        new(SettingKeys.TimetableWorkingDays.Name, SettingValueKinds.StringSet, SettingCategories.Academic,
+            "[\"Sun\",\"Mon\",\"Tue\",\"Wed\",\"Thu\"]", AllowedValues: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]),
+        new(SettingKeys.TimetableConflictMode.Name, SettingValueKinds.Enum, SettingCategories.Academic, "\"Block\"",
+            AllowedValues: ["Block", "Warn"]),
     ];
 
     /// <summary>The definition with this exact (case-sensitive) name, or null.</summary>

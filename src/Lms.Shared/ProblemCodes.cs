@@ -209,6 +209,22 @@ public static class ProblemCodes
     /// </summary>
     public const string recurrence_invalid = nameof(recurrence_invalid);
 
+    // M5 wave 2: timetable (M5 plan Task 2).
+    /// <summary>A slot clashes with another one of the term in <c>Block</c> mode (409); the answer lists the clashing slots.</summary>
+    public const string timetable_conflict = nameof(timetable_conflict);
+
+    /// <summary>A period overlaps another period of the same unit, or its start is not before its end (400).</summary>
+    public const string period_overlap = nameof(period_overlap);
+
+    /// <summary>A slot is used by a period that cannot be deleted (409).</summary>
+    public const string period_in_use = nameof(period_in_use);
+
+    /// <summary>The action needs a published slot: an exception on a draft slot (409).</summary>
+    public const string timetable_not_published = nameof(timetable_not_published);
+
+    /// <summary>An exception date is off the slot's weekday, outside the term, or two exceptions share a date (400).</summary>
+    public const string exception_date_invalid = nameof(exception_date_invalid);
+
     // M5 wave 1: grading (M5 plan Task 1).
     /// <summary>The gradebook is locked: writes are refused and reads serve the lock snapshot (409, L5).</summary>
     public const string gradebook_locked = nameof(gradebook_locked);

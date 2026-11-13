@@ -45,6 +45,8 @@ public static class AuditCatalog
         "LiveSessionSeries", "LiveSession",
         // M5 wave 1: grading (overrides, publish changes and scale acknowledgements are the audited changes).
         "GradingScale", "WeightTemplate", "Gradebook", "GradeCategory", "GradeItem", "GradeEntry", "GradeSnapshot",
+        // M5 wave 2: periods, timetable slots and their exceptions (publish, move, substitute are the audited changes).
+        "Period", "TimetableSlot", "TimetableException",
     ];
 
     public static IReadOnlyList<string> SecurityEvents { get; } =

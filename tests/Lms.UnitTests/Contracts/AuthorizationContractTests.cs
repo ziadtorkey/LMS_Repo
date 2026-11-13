@@ -54,6 +54,8 @@ public partial class AuthorizationContractTests
             "LiveSessions.View", "LiveSessions.Manage",
             "Packages.Upload", "Packages.View",
             "Grades.View", "Grades.Manage", "Grades.Publish", "Grades.ConfigureScales", "Grades.ViewReports", "Grades.ViewOwn",
+            // M5 wave 2 (timetable)
+            "Timetable.View", "Timetable.Manage", "Timetable.Configure", "Timetable.ViewOwn",
         ];
         Assert.Equal(expected.Order(StringComparer.Ordinal), Permissions.All.Order(StringComparer.Ordinal));
     }
@@ -131,6 +133,8 @@ public partial class AuthorizationContractTests
             "gradebook_locked", "scale_provisional", "scale_bands_invalid", "scale_in_use", "weights_invalid", "grade_out_of_range",
             "grade_override_reason_required", "grade_import_invalid", "grade_import_expired", "terms_have_dependants",
             "concurrency_conflict",
+            // M5 wave 2 (timetable)
+            "timetable_conflict", "period_overlap", "period_in_use", "timetable_not_published", "exception_date_invalid",
         ];
 
         Assert.All(fields, f => Assert.Equal(f.Name, (string)f.GetRawConstantValue()!));

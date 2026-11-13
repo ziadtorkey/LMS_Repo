@@ -71,7 +71,9 @@ public static class BuiltInRoles
              Permissions.LiveSessions.View, Permissions.LiveSessions.Manage,
              // M5 wave 1 (D58): every grading permission except ViewOwn (they have no grades of their own).
              Permissions.Grades.View, Permissions.Grades.Manage, Permissions.Grades.Publish,
-             Permissions.Grades.ConfigureScales, Permissions.Grades.ViewReports]),
+             Permissions.Grades.ConfigureScales, Permissions.Grades.ViewReports,
+             // M5 wave 2 (D58): every timetable permission except ViewOwn (they have no timetable of their own).
+             Permissions.Timetable.View, Permissions.Timetable.Manage, Permissions.Timetable.Configure]),
         new(Manager, RoleBaseKinds.Staff,
             new("مدير المدرسة", "School Manager"),
             new("العميد", "Dean"),
@@ -109,7 +111,9 @@ public static class BuiltInRoles
              Permissions.LiveSessions.View, Permissions.LiveSessions.Manage,
              // M5 wave 1 (D58): every grading permission except ViewOwn (they have no grades of their own).
              Permissions.Grades.View, Permissions.Grades.Manage, Permissions.Grades.Publish,
-             Permissions.Grades.ConfigureScales, Permissions.Grades.ViewReports]),
+             Permissions.Grades.ConfigureScales, Permissions.Grades.ViewReports,
+             // M5 wave 2 (D58): every timetable permission except ViewOwn (they have no timetable of their own).
+             Permissions.Timetable.View, Permissions.Timetable.Manage, Permissions.Timetable.Configure]),
         new(Supervisor, RoleBaseKinds.Staff,
             new("المشرف الأكاديمي", "Academic Supervisor"),
             new("رئيس القسم", "Head of Department"),
@@ -135,7 +139,9 @@ public static class BuiltInRoles
              // M4b wave 3a: see sessions of the unit (join link only, never the start link).
              Permissions.LiveSessions.View,
              // M5 wave 1: read grades and reports of supervised courses (RelationshipRules).
-             Permissions.Grades.View, Permissions.Grades.ViewReports]),
+             Permissions.Grades.View, Permissions.Grades.ViewReports,
+             // M5 wave 2: the timetable of supervised courses (RelationshipRules).
+             Permissions.Timetable.View]),
         new(Counselor, RoleBaseKinds.Staff,
             new("الأخصائي الاجتماعي", "Social Worker"),
             new("شؤون الطلاب", "Student Affairs"),
@@ -144,7 +150,9 @@ public static class BuiltInRoles
              Permissions.Classes.View, Permissions.Enrollment.View, Permissions.Enrollment.RequestException,
              Permissions.Groups.View,
              // M4a wave 2: every staff role reads the library.
-             Permissions.Library.View]),
+             Permissions.Library.View,
+             // M5 wave 2: the timetable of the unit (the counselor does not build it).
+             Permissions.Timetable.View]),
         new(Teacher, RoleBaseKinds.Staff,
             new("المعلم", "Teacher"),
             new("عضو هيئة التدريس", "Instructor"),
@@ -166,7 +174,9 @@ public static class BuiltInRoles
              // M4b wave 3a: live sessions of own ClassCourses (RelationshipRules).
              Permissions.LiveSessions.View, Permissions.LiveSessions.Manage,
              // M5 wave 1: grades of own ClassCourses (RelationshipRules); scales and reports are not the Teacher's.
-             Permissions.Grades.View, Permissions.Grades.Manage, Permissions.Grades.Publish]),
+             Permissions.Grades.View, Permissions.Grades.Manage, Permissions.Grades.Publish,
+             // M5 wave 2: read the timetable of the unit and own slots; building it is the Manager's.
+             Permissions.Timetable.View, Permissions.Timetable.ViewOwn]),
         new(Student, RoleBaseKinds.Student,
             new("الطالب", "Student"),
             new("الطالب", "Student"),
@@ -182,14 +192,14 @@ public static class BuiltInRoles
              Permissions.Packages.View,
              // M4b wave 3a: sessions of own enrollments (RelationshipRules + IModuleAccess).
              Permissions.LiveSessions.View,
-             // M5 wave 1: the student's own published grades (SelfService).
-             Permissions.Grades.ViewOwn]),
+             // M5 wave 1: the student's own published grades (SelfService); wave 2: the own class timetable (SelfService).
+             Permissions.Grades.ViewOwn, Permissions.Timetable.ViewOwn]),
         new(Guardian, RoleBaseKinds.Guardian,
             new("ولي الأمر", "Parent"),
             new("ولي الأمر", "Parent"),
             [Permissions.Files.Download, Permissions.AcademicYears.View, Permissions.Students.ViewChildren,
-             // M5 wave 1: the children's published grades (an active guardian link).
-             Permissions.Grades.ViewOwn]),
+             // M5 wave 1: the children's published grades (an active guardian link); wave 2: the children's timetable.
+             Permissions.Grades.ViewOwn, Permissions.Timetable.ViewOwn]),
     ];
 
     public static BuiltInRoleDefinition Get(string key) =>
