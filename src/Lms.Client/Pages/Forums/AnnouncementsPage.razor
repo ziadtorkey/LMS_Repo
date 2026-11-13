@@ -10,6 +10,7 @@
 @inject ICultureService Culture
 @inject IDialogService Dialogs
 @inject NavigationManager Navigation
+@inject Announcer Announcer
 @implements IDisposable
 
 <PageTitle>@L["Announcements_Title"]</PageTitle>
@@ -119,6 +120,7 @@ else
         var ok = await ApiCalls.RunAsync(() => Forum.CreateAnnouncementAsync(Id, new CreateCourseAnnouncementRequest(_title.Trim(), _html!, _pinned, _notify)),
             Navigation, L, m => _formError = m);
         if (!ok) return;
+        Announcer.Announce(L["Announce_AnnouncementPublished"]);
         _title = null; _html = null; _pinned = _notify = false; _version++;
         await LoadAsync();
     }

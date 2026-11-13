@@ -27,6 +27,7 @@ public static class ClientServices
         services.AddSingleton<IContextStore>(sp => sp.GetRequiredService<ContextStore>());
         services.TryAddSingleton(TimeProvider.System);
         services.AddScoped<PermissionState>();
+        services.AddScoped<Announcer>();
         services.AddScoped<IYearStore, YearStore>();
         services.AddScoped<INotificationFeed, NotificationFeed>();
         services.AddSingleton<Lms.Client.Services.Packages.PackagePollOptions>();

@@ -57,6 +57,7 @@ public abstract class ClientTestContext : BunitContext, IAsyncLifetime
         Services.AddSingleton<INotificationsApi>(NotificationsApi);
         Services.AddSingleton<INotificationConnection>(NotificationConnection);
         Services.AddScoped<INotificationFeed, NotificationFeed>();
+        Services.AddScoped<Announcer>();
         AddAuthorization().SetAuthorized("tester");
     }
 }

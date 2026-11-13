@@ -60,6 +60,31 @@ public sealed class ModuleViewerPageTests : ClientTestContext
     }
 
     [Fact]
+    public async Task Marking_a_module_complete_is_announced_and_moves_focus_to_the_done_state()
+    {
+        var module = Seed("Read me", rule: CompletionRules.Manual, content: new ModuleContentInput(BodyHtmlEn: "<p>x</p>"));
+        var page = await OpenAsync(module);
+
+        page.Find("[data-testid=module-mark-complete]").Click();
+
+        page.WaitForElement("[data-testid=module-done]", Wait);
+        Assert.Equal("Module completed", Services.GetRequiredService<Announcer>().Message);
+        page.WaitForAssertion(() => Assert.Contains(JSInterop.Invocations, i => i.Identifier == "lmsFocusById" && Equals(i.Arguments[0], "module-done")), Wait);
+    }
+
+    [Fact]
+    public async Task Opening_a_module_moves_focus_to_its_heading()
+    {
+        var module = Seed("Intro", content: new ModuleContentInput(BodyHtmlEn: "<p>x</p>"));
+
+        var page = await OpenAsync(module);
+
+        page.WaitForAssertion(() => Assert.Contains(JSInterop.Invocations, i => i.Identifier == "lmsFocusById" && Equals(i.Arguments[0], "module-heading")), Wait);
+        var h1 = page.Find("h1#module-heading");
+        Assert.Equal("-1", h1.GetAttribute("tabindex"));
+    }
+
+    [Fact]
     public async Task Page_renders_server_html_via_SanitizedHtml_only()
     {
         var page = await OpenAsync(Seed("Intro", content: new ModuleContentInput(BodyHtmlEn: "<p>Hello <strong>world</strong></p>", BodyHtmlAr: "<p>مرحبا</p>")));

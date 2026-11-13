@@ -1462,6 +1462,10 @@
   <data name="Error_package_too_large" xml:space="preserve"><value>الحزمة كبيرة جدًا للرفع أو ستتجاوز مساحة التخزين المتاحة.</value></data>
   <data name="Error_package_not_ready" xml:space="preserve"><value>الحزمة ليست جاهزة بعد. انتظر حتى ينتهي الفحص.</value></data>
   <data name="Error_package_commit_rejected" xml:space="preserve"><value>تعذّر حفظ تقدّمك لأن المحاولة مغلقة أو لم تُقبل البيانات.</value></data>
+  <data name="Module_CompletedAnnounce" xml:space="preserve"><value>اكتملت الوحدة</value></data>
+  <data name="Announce_ReplyPosted" xml:space="preserve"><value>تم نشر الرد</value></data>
+  <data name="Announce_AnnouncementPublished" xml:space="preserve"><value>تم نشر الإعلان</value></data>
+  <data name="Announce_ThreadCreated" xml:space="preserve"><value>تم نشر الموضوع</value></data>
   <data name="Nav_Eligibility" xml:space="preserve"><value>أهلية المعلمين</value></data>
   <data name="Eligibility_Title" xml:space="preserve"><value>أهلية المعلمين</value></data>
   <data name="Eligibility_Help" xml:space="preserve"><value>حدّد أي المعلمين يجوز لهم تدريس أي المقررات في وحدة. لا يمكن تعيين إلا المعلمين المؤهلين على مقرر فصل.</value></data>

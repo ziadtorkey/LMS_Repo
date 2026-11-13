@@ -23,6 +23,9 @@ html[data-theme="dark"], html[data-theme="dark"] body { background: #0F1518; }
 }
 .lms-skip-link:focus { top: 8px; }
 #lms-main:focus { outline: none; }
+/* A heading that takes focus after a page or module change is not a control: no ring on it. The done state that takes focus after an action keeps one. */
+.lms-app h1[tabindex="-1"]:focus { outline: none; }
+.lms-app .mud-chip[tabindex="-1"]:focus-visible { outline: 2px solid var(--mud-palette-primary); outline-offset: 2px; }
 body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
 :lang(ar) .mud-typography { letter-spacing: 0 !important; }
 

@@ -10,6 +10,7 @@
 @inject ICultureService Culture
 @inject IDialogService Dialogs
 @inject NavigationManager Navigation
+@inject Announcer Announcer
 @implements IDisposable
 
 <PageTitle>@(_detail?.Thread.Title ?? L["Forum_Title"].Value)</PageTitle>
@@ -139,7 +140,7 @@ else
     {
         _error = null;
         var ok = await ApiCalls.RunAsync(() => Forum.CreatePostAsync(ThreadId, new CreateForumPostRequest(html, attachments)), Navigation, L, m => _error = m);
-        if (ok) await LoadAsync(silent: true);
+        if (ok) { Announcer.Announce(L["Announce_ReplyPosted"]); await LoadAsync(silent: true); }
         return ok;
     }
 

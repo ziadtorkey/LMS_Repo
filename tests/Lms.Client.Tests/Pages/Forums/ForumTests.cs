@@ -245,4 +245,31 @@ public sealed class ForumTests : LessonPlansTestContext
 
         page.WaitForAssertion(() => Assert.NotEmpty(page.FindAll("[data-testid=asset-uploader]")));
     }
+
+    [Fact]
+    public async Task Saving_a_reply_is_announced_to_screen_readers()
+    {
+        var t = _forum.AddThread(Cc, "Open");
+        var page = await OpenThreadAsync(t.Id, Permissions.Forums.View, Permissions.Forums.Post);
+
+        await SetEditorAsync(page, "<p>My reply</p>");
+        page.Find("[data-testid=thread-reply-send]").Click();
+
+        page.WaitForAssertion(() => Assert.Equal("Reply posted", Services.GetRequiredService<Lms.Client.Services.Announcer>().Message), Wait);
+    }
+
+    [Fact]
+    public async Task Publishing_an_announcement_is_announced_to_screen_readers()
+    {
+        await GrantAsync(Permissions.Forums.View, Permissions.Forums.Moderate);
+        RenderProviders();
+        var page = Render<AnnouncementsPage>(p => p.Add(x => x.Id, Cc));
+        page.WaitForElement("[data-testid=announcement-form]", Wait);
+
+        page.Find("[data-testid=announcement-title]").Input("Exam moved");
+        await page.InvokeAsync(() => page.FindComponent<RichTextEditor>().Instance.ValueChanged.InvokeAsync("<p>Friday</p>"));
+        page.Find("[data-testid=announcement-send]").Click();
+
+        page.WaitForAssertion(() => Assert.Equal("Announcement published", Services.GetRequiredService<Lms.Client.Services.Announcer>().Message), Wait);
+    }
 }
