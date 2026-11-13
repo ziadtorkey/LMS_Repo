@@ -1,0 +1,22 @@
+@* Asks for the last day of a teacher assignment; closes with the date. *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="2">
+            <MudText data-testid="end-message">@Message</MudText>
+            <MudDatePicker Date="_day" DateChanged="d => _day = d" Label="@L["Teacher_LastDay"]" Required="true" data-testid="end-date" />
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
+        <MudButton Color="Color.Warning" Variant="Variant.Filled" OnClick="Submit" Disabled="_day is null" data-testid="end-confirm">@L["Teacher_End"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private DateTime? _day = DateTime.Today;
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public string Message { get; set; } = "";
+
+    private void Submit() => MudDialog.Close(DialogResult.Ok(DateOnly.FromDateTime(_day!.Value)));
+}

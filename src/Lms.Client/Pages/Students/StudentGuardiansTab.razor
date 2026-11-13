@@ -13,38 +13,38 @@
 <MudStack Spacing="2" data-testid="guardians-tab">
     @if (!_portalOn)
     {
-        <MudAlert Severity="Severity.Info" data-testid="portal-disabled">@L["Guardian_PortalDisabled"]</MudAlert>
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" data-testid="portal-disabled">@L["Guardian_PortalDisabled"]</MudAlert>
     }
     @if (CanEdit)
     {
         <div>
-            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.PersonAdd" OnClick="LinkAsync"
+            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.PersonAdd" OnClick="LinkAsync"
                        data-testid="guardian-link-new">@L["Guardian_LinkTitle"]</MudButton>
         </div>
     }
     @if (Student.Guardians.Count == 0)
     {
-        <MudText data-testid="guardians-empty">@L["Common_Empty"]</MudText>
+        <EmptyState Title="@L["Common_Empty"]" Icon="@Icons.Material.Rounded.FamilyRestroom" TestId="guardians-empty" />
     }
     else
     {
-        <MudTable Items="Student.Guardians" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" data-testid="guardians-table">
+        <MudTable Items="Student.Guardians" Dense="true" Hover="true" Elevation="0" HeaderClass="lms-table-head" Class="lms-table" Breakpoint="Breakpoint.Sm" data-testid="guardians-table">
             <HeaderContent>
                 <MudTh>@L["Common_Name"]</MudTh>
                 <MudTh>@L["Guardian_Relation"]</MudTh>
                 <MudTh>@L["Student_Mobile"]</MudTh>
                 <MudTh>@L["Student_Email"]</MudTh>
                 <MudTh>@L["Student_Account"]</MudTh>
-                <MudTh>@L["Common_Actions"]</MudTh>
+                <MudTh><span class="lms-visually-hidden">@L["Common_Actions"]</span></MudTh>
             </HeaderContent>
             <RowTemplate Context="g">
                 <MudTd DataLabel="@L["Common_Name"]">
                     @if (g.IsPrimary)
                     {
-                        <MudIcon Icon="@Icons.Material.Filled.Star" Size="Size.Small" Color="Color.Warning" title="@L["Guardian_Primary"]"
+                        <MudIcon Icon="@Icons.Material.Rounded.Star" Size="Size.Small" Color="Color.Warning" title="@L["Guardian_Primary"]"
                                  data-testid="@($"guardian-primary-{g.GuardianId}")" />
                     }
-                    <MudLink Href="@($"guardians/{g.GuardianId}")" data-testid="@($"guardian-name-{g.GuardianId}")">@Culture.Pick(g.NameAr, g.NameEn)</MudLink>
+                    <MudLink Href="@($"guardians/{g.GuardianId}")" Typo="Typo.body2" Class="lms-person-link" data-testid="@($"guardian-name-{g.GuardianId}")">@Culture.Pick(g.NameAr, g.NameEn)</MudLink>
                     @if (g.OtherChildrenInScope > 0)
                     {
                         <MudText Typo="Typo.caption" data-testid="@($"guardian-others-{g.GuardianId}")">@L["Guardian_OtherChildren", g.OtherChildrenInScope]</MudText>
@@ -69,25 +69,30 @@
                 <MudTd DataLabel="@L["Student_Mobile"]"><span dir="ltr">@g.Mobile</span></MudTd>
                 <MudTd DataLabel="@L["Student_Email"]"><span dir="ltr">@g.Email</span></MudTd>
                 <MudTd DataLabel="@L["Student_Account"]" data-testid="@($"guardian-portal-{g.GuardianId}")">
-                    @(g.HasPortalAccount ? L["Guardian_PortalActive"] : L["Guardian_PortalNone"])
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@(g.HasPortalAccount ? Color.Success : Color.Default)">@(g.HasPortalAccount ? L["Guardian_PortalActive"] : L["Guardian_PortalNone"])</MudChip>
                 </MudTd>
                 <MudTd DataLabel="@L["Common_Actions"]">
                     @if (CanEdit)
                     {
                         @if (!g.IsPrimary)
                         {
-                            <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="() => SetPrimaryAsync(g)"
-                                       data-testid="@($"guardian-make-primary-{g.GuardianId}")">@L["Guardian_SetPrimary"]</MudButton>
+                            <MudTooltip Text="@L["Guardian_SetPrimary"]">
+                                <MudIconButton Icon="@Icons.Material.Rounded.StarOutline" Size="Size.Small" aria-label="@L["Guardian_SetPrimary"]" OnClick="() => SetPrimaryAsync(g)"
+                                               data-testid="@($"guardian-make-primary-{g.GuardianId}")" />
+                            </MudTooltip>
                         }
                         @if (!g.HasPortalAccount)
                         {
                             <MudTooltip Text="@InviteHint(g)">
-                                <MudButton Size="Size.Small" Variant="Variant.Text" Disabled="@(!_portalOn || string.IsNullOrWhiteSpace(g.Email))"
-                                           OnClick="() => InviteAsync(g)" data-testid="@($"guardian-invite-{g.GuardianId}")">@L["Guardian_PortalInvite"]</MudButton>
+                                <MudIconButton Icon="@Icons.Material.Rounded.Send" Size="Size.Small" aria-label="@L["Guardian_PortalInvite"]"
+                                               Disabled="@(!_portalOn || string.IsNullOrWhiteSpace(g.Email))"
+                                               OnClick="() => InviteAsync(g)" data-testid="@($"guardian-invite-{g.GuardianId}")" />
                             </MudTooltip>
                         }
-                        <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Error" OnClick="() => UnlinkAsync(g)"
-                                   data-testid="@($"guardian-unlink-{g.GuardianId}")">@L["Guardian_Remove"]</MudButton>
+                        <MudTooltip Text="@L["Guardian_Remove"]">
+                            <MudIconButton Icon="@Icons.Material.Rounded.LinkOff" Size="Size.Small" Color="Color.Error" aria-label="@L["Guardian_Remove"]"
+                                           OnClick="() => UnlinkAsync(g)" data-testid="@($"guardian-unlink-{g.GuardianId}")" />
+                        </MudTooltip>
                     }
                 </MudTd>
             </RowTemplate>

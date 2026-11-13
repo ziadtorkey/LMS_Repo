@@ -94,17 +94,5 @@ public sealed class PackageUpload : UnitOwnedEntity
         StorePrefix = storePrefix;
     }
 
-    /// <summary>The default grading method (D57); the values are <c>PackageGradingMethods</c> and are validated by the routes.</summary>
-    public const string DefaultGradingMethod = "Highest";
-
-    /// <summary>Which completed attempt's score goes to the gradebook (D57), chosen per module by the teacher; meaningful once attached.</summary>
-    public string GradingMethod { get; private set; } = DefaultGradingMethod;
-
-    public void AttachTo(Guid moduleId, string gradingMethod = DefaultGradingMethod)
-    {
-        ModuleId = moduleId;
-        GradingMethod = gradingMethod;
-    }
-
-    public void SetGradingMethod(string gradingMethod) => GradingMethod = gradingMethod;
+    public void AttachTo(Guid moduleId) => ModuleId = moduleId;
 }

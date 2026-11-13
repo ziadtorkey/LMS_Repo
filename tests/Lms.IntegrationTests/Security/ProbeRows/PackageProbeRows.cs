@@ -47,10 +47,6 @@ public sealed class PackageProbeRows : IProbeRowModule
                 Routes.PackageModule(await NewUploadAsync(w)),
                 new AttachPackageModuleRequest(new ModuleSettingsInput("حزمة", "Package", ModuleVisibilities.Published, null, null, ModuleTargets.ClassCourse, null, CompletionRules.None, null))),
             Expect(Conflict, Conflict, NotFound, NotFound, NotFound, Conflict)),
-        // The grading method (D57): Modules.Manage on the class course; an upload that is not attached answers 409 package_not_attached.
-        new("package grading method", HttpMethod.Put, Routes.PackageGradingMethodPattern,
-            async (w, _) => new ProbeRequest(Routes.PackageGradingMethod(await NewUploadAsync(w)), new UpdatePackageGradingMethodRequest(PackageGradingMethods.Last)),
-            Expect(Conflict, Conflict, NotFound, NotFound, NotFound, Conflict)),
     ];
 
     /// <summary>A class course with a two-lesson plan at School1; the ScormContent flag is on for the whole client.</summary>

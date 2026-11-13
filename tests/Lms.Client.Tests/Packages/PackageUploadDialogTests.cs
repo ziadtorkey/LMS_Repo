@@ -214,7 +214,7 @@ public sealed class PackageUploadDialogTests : ClientTestContext
     [Theory]
     [InlineData(403, "feature_disabled", "turned off")]
     [InlineData(409, "package_host_not_configured", "platform administrator")]
-    [InlineData(409, "package_too_large", "storage is full")]
+    [InlineData(409, "package_too_large", "used all its storage")]
     public void Blocking_states_replace_the_drop_zone_as_soon_as_the_dialog_opens(int status, string code, string text)
     {
         _packages.ListFailure = new ApiProblemException(status, code, null, null);
@@ -271,7 +271,7 @@ public sealed class PackageUploadDialogTests : ClientTestContext
         Open(resume: uploaded.Id);
 
         _dialogs.WaitForAssertion(() => Assert.NotNull(_dialogs.Find("[data-testid=package-reject-reason]")), Wait);
-        Assert.Contains("lms-step--failed", _dialogs.Find("[data-testid=package-step-2]").ClassName);
+        Assert.Contains("lms-step-failed", _dialogs.Find("[data-testid=package-step-2]").ClassName);
         Assert.NotNull(_dialogs.Find("[data-testid=package-choose-another]"));
         Assert.Empty(_dialogs.FindAll("[data-testid=package-attach-form]"));
     }
