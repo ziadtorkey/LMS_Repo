@@ -20,96 +20,116 @@
 <PageTitle>@L["Blueprint_Title"]</PageTitle>
 <NavigationLock OnBeforeInternalNavigation="OnLeavingAsync" ConfirmExternalNavigation="@(_editing && _model.IsDirty)" />
 
+<MudLink Href="@($"courses/{Id}")" Typo="Typo.body2" Class="lms-back-link" data-testid="blueprint-back">
+    <MudIcon Icon="@Icons.Material.Rounded.ArrowBack" Size="Size.Small" Class="lms-icon-flip" aria-hidden="true" />
+    @L["Blueprint_BackToCourse"]
+</MudLink>
 @if (_error is not null)
 {
-    <MudAlert Severity="Severity.Error" data-testid="blueprint-error">@_error</MudAlert>
+    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="blueprint-error">@_error</MudAlert>
 }
 else if (_course is null)
 {
-    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+    <LoadingState Lines="5" TestId="blueprint-loading" />
 }
 else
 {
-    <MudStack Spacing="3">
-        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
-            <div>
-                <MudText Typo="Typo.h4" data-testid="blueprint-title">@L["Blueprint_Title"]</MudText>
-                <MudText Typo="Typo.body2">
-                    <MudLink Href="@($"courses/{Id}")">@Culture.Pick(_course.Summary.NameAr, _course.Summary.NameEn)</MudLink>
-                    · <span data-testid="blueprint-status">@StatusText</span>
-                </MudText>
-            </div>
-            <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap">
-                @if (_editing)
-                {
-                    <MudButton Variant="Variant.Outlined" OnClick="CopyAsync" data-testid="blueprint-copy">@L["Blueprint_Copy"]</MudButton>
-                    <MudButton Variant="Variant.Outlined" OnClick="DiscardAsync" data-testid="blueprint-discard">@L["Blueprint_Discard"]</MudButton>
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_busy || !_model.IsDirty"
+    <PageHeader Title="@L["Blueprint_Title"]" Subtitle="@Culture.Pick(_course.Summary.NameAr, _course.Summary.NameEn)" TitleTestId="blueprint-title">
+        <Badges>
+            <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Class="lms-status-chip" Color="@(_editing ? Color.Warning : Color.Default)"
+                     data-testid="blueprint-status">@StatusText</MudChip>
+        </Badges>
+        <Actions>
+            @if (_editing)
+            {
+                <div class="lms-action-bar">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Save" OnClick="SaveAsync" Disabled="_busy || !_model.IsDirty"
                                data-testid="blueprint-save">@L["Common_Save"]</MudButton>
                     @if (PermState.Has(Permissions.Blueprints.Publish))
                     {
-                        <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="PublishAsync" Disabled="_busy || _model.IsDirty || _model.Sections.Count == 0"
-                                   data-testid="blueprint-publish">@L["Blueprint_Publish"]</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Publish" OnClick="PublishAsync"
+                                   Disabled="_busy || _model.IsDirty || _model.Sections.Count == 0" data-testid="blueprint-publish">@L["Blueprint_Publish"]</MudButton>
                     }
-                }
-                else if (CanEdit)
-                {
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="EditDraftAsync" Disabled="_busy"
-                               data-testid="blueprint-edit">@L["Blueprint_EditDraft"]</MudButton>
-                }
-            </MudStack>
-        </MudStack>
+                    <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.ContentCopy" OnClick="CopyAsync" data-testid="blueprint-copy">@L["Blueprint_Copy"]</MudButton>
+                    <MudButton Variant="Variant.Text" Color="Color.Warning" StartIcon="@Icons.Material.Rounded.Undo" OnClick="DiscardAsync"
+                               data-testid="blueprint-discard">@L["Blueprint_Discard"]</MudButton>
+                </div>
+            }
+            else if (CanEdit)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Edit" OnClick="EditDraftAsync" Disabled="_busy"
+                           data-testid="blueprint-edit">@L["Blueprint_EditDraft"]</MudButton>
+            }
+        </Actions>
+    </PageHeader>
 
+    <MudStack Spacing="3">
         @if (_stale)
         {
-            <MudAlert Severity="Severity.Warning" data-testid="blueprint-stale">
-                @L["Blueprint_Stale"]
-                <MudButton Size="Size.Small" Variant="Variant.Filled" OnClick="ReloadDraftAsync" data-testid="blueprint-reload">@L["Blueprint_Reload"]</MudButton>
+            <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" data-testid="blueprint-stale">
+                <div class="d-flex align-center flex-wrap gap-2">
+                    <span>@L["Blueprint_Stale"]</span>
+                    <MudButton Size="Size.Small" Variant="Variant.Outlined" OnClick="ReloadDraftAsync" data-testid="blueprint-reload">@L["Blueprint_Reload"]</MudButton>
+                </div>
             </MudAlert>
         }
         @if (_message is not null)
         {
-            <MudAlert Severity="Severity.Info" data-testid="blueprint-message">@_message</MudAlert>
+            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" data-testid="blueprint-message">@_message</MudAlert>
         }
         @if (_editing && _model.IsDirty)
         {
-            <MudAlert Severity="Severity.Normal" data-testid="blueprint-unsaved">@L["Blueprint_Unsaved"]</MudAlert>
+            <MudAlert Severity="Severity.Normal" Variant="Variant.Outlined" data-testid="blueprint-unsaved">@L["Blueprint_Unsaved"]</MudAlert>
         }
         @if (_validation is not null)
         {
-            <MudAlert Severity="Severity.Warning" data-testid="blueprint-validation">@_validation</MudAlert>
+            <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" data-testid="blueprint-validation">@_validation</MudAlert>
         }
 
         @if (!_editing && _shown is null)
         {
-            <MudText data-testid="blueprint-none">@L["Blueprint_NoPublished"]</MudText>
+            <SectionCard>
+                <EmptyState Title="@L["Blueprint_NoPublished"]" Text="@L["Blueprint_NoPublishedText"]" Icon="@Icons.Material.Rounded.AccountTree" TestId="blueprint-none" />
+            </SectionCard>
         }
         else
         {
             <BlueprintTree Model="_model" ReadOnly="!_editing" SectionLabel="@_sectionLabel" OnChanged="() => InvokeAsync(StateHasChanged)" />
         }
 
-        <MudText Typo="Typo.h6">@L["Blueprint_Versions"]</MudText>
-        <MudSimpleTable Dense="true" data-testid="blueprint-versions">
-            <tbody>
-                @foreach (var v in _versions)
-                {
+        <SectionCard Title="@L["Blueprint_Versions"]" Flush="true">
+            <MudSimpleTable Dense="true" Elevation="0" Class="lms-simple-table lms-stack-table" data-testid="blueprint-versions">
+                <thead>
                     <tr>
-                        <td>@(v.Version == 0 ? L["BlueprintStatus_Draft"].Value : L["Blueprint_VersionN", v.Version].Value)</td>
-                        <td>@L[$"BlueprintStatus_{v.Status}"]</td>
-                        <td>@(v.PublishedAt?.ToLocalTime().ToString("yyyy-MM-dd HH:mm", System.Globalization.CultureInfo.InvariantCulture))</td>
-                        <td>@L["Blueprint_Counts", v.SectionCount, v.LessonCount]</td>
-                        <td>
-                            @if (v.Version > 0)
-                            {
-                                <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="() => ViewVersionAsync(v.Version)"
-                                           data-testid="@($"version-view-{v.Version}")">@L["Blueprint_View"]</MudButton>
-                            }
-                        </td>
+                        <th>@L["Blueprint_Version"]</th>
+                        <th>@L["Common_Status"]</th>
+                        <th>@L["Blueprint_PublishedOn"]</th>
+                        <th>@L["Blueprint_Content"]</th>
+                        <th><span class="lms-visually-hidden">@L["Common_Actions"]</span></th>
                     </tr>
-                }
-            </tbody>
-        </MudSimpleTable>
+                </thead>
+                <tbody>
+                    @foreach (var v in _versions)
+                    {
+                        <tr>
+                            <td data-label="@L["Blueprint_Version"]">@(v.Version == 0 ? L["BlueprintStatus_Draft"].Value : L["Blueprint_VersionN", v.Version].Value)</td>
+                            <td data-label="@L["Common_Status"]"><MudChip T="string" Size="Size.Small" Variant="Variant.Text" Class="lms-status-chip" Color="@(v.Status == BlueprintStatuses.Published ? Color.Success : Color.Default)">@L[$"BlueprintStatus_{v.Status}"]</MudChip></td>
+                            <td data-label="@L["Blueprint_PublishedOn"]"><span dir="ltr">@(v.PublishedAt?.ToLocalTime().ToString("yyyy-MM-dd HH:mm", System.Globalization.CultureInfo.InvariantCulture) ?? "—")</span></td>
+                            <td data-label="@L["Blueprint_Content"]">@L["Blueprint_Counts", v.SectionCount, v.LessonCount]</td>
+                            <td class="lms-cell-actions">
+                                @if (v.Version > 0)
+                                {
+                                    <div class="lms-row-actions">
+                                        <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Primary" OnClick="() => ViewVersionAsync(v.Version)"
+                                                   data-testid="@($"version-view-{v.Version}")">@L["Blueprint_View"]</MudButton>
+                                    </div>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        </SectionCard>
     </MudStack>
 }
 

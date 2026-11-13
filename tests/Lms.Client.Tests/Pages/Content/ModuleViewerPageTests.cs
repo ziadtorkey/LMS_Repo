@@ -45,6 +45,21 @@ public sealed class ModuleViewerPageTests : ClientTestContext
     }
 
     [Fact]
+    public async Task A_library_resource_module_shows_the_resource_not_the_unsupported_message()
+    {
+        var library = new FakeLibraryApi();
+        Services.AddSingleton<ILibraryApi>(library);
+        var resource = library.Add("Reading list", Lms.Shared.Library.LibraryResourceTypes.Link, url: "https://example.test/list");
+        var module = _modules.Seed(Cc, Lesson, new CreateModuleRequest(ModuleKinds.LibraryResource, "قراءات", "Reading list", ModuleVisibilities.Published,
+            null, null, ModuleTargets.ClassCourse, null, CompletionRules.View, null, new ModuleContentInput()), refId: resource.Id);
+
+        var page = await OpenAsync(module);
+
+        page.WaitForElement("[data-testid=library-link]", Wait);
+        Assert.Empty(page.FindAll("[data-testid=module-unsupported]"));
+    }
+
+    [Fact]
     public async Task Page_renders_server_html_via_SanitizedHtml_only()
     {
         var page = await OpenAsync(Seed("Intro", content: new ModuleContentInput(BodyHtmlEn: "<p>Hello <strong>world</strong></p>", BodyHtmlAr: "<p>مرحبا</p>")));

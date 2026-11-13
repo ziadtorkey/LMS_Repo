@@ -21,7 +21,7 @@ public partial class AuthorizationContractTests
     }
 
     [Fact]
-    public void Permission_catalog_contains_exactly_the_M0_to_M4a_set()
+    public void Permission_catalog_contains_exactly_the_M0_to_M4b_wave_3a_set()
     {
         string[] expected =
         [
@@ -51,6 +51,7 @@ public partial class AuthorizationContractTests
             "Quizzes.View", "Quizzes.Manage", "Quizzes.Attempt", "Quizzes.Grade",
             "Library.View", "Library.Manage",
             "Forums.View", "Forums.Post", "Forums.Moderate",
+            "LiveSessions.View", "LiveSessions.Manage",
         ];
         Assert.Equal(expected.Order(StringComparer.Ordinal), Permissions.All.Order(StringComparer.Ordinal));
     }
@@ -118,6 +119,9 @@ public partial class AuthorizationContractTests
             "late_policy_invalid", "submission_closed", "resubmission_not_allowed", "quiz_closed", "quiz_not_open",
             "attempt_limit_reached", "attempt_expired", "quiz_has_attempts", "pool_draw_invalid", "thread_locked",
             "download_disabled",
+            // M4b wave 3a (live sessions)
+            "provider_unavailable", "provider_not_configured", "live_session_not_open", "feature_disabled",
+            "recurrence_invalid",
         ];
 
         Assert.All(fields, f => Assert.Equal(f.Name, (string)f.GetRawConstantValue()!));

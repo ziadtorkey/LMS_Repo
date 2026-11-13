@@ -167,4 +167,26 @@ public static class ProblemCodes
 
     /// <summary>Download is disabled for this library resource; use the in-browser reader (D13).</summary>
     public const string download_disabled = nameof(download_disabled);
+
+    // M4b wave 3a (live sessions; M4b plan Task 1)
+    /// <summary>
+    /// The meeting provider cannot take the request now: the host pool or the client's host share is exhausted, the
+    /// daily create cap is reached, or Zoom is rate limiting / down (409 or 503, with <c>Retry-After</c>).
+    /// </summary>
+    public const string provider_unavailable = nameof(provider_unavailable);
+
+    /// <summary>The platform meeting provider (Zoom) is not configured or not healthy, so the feature cannot be enabled.</summary>
+    public const string provider_not_configured = nameof(provider_not_configured);
+
+    /// <summary>The session is outside its join window (by server time): too early, ended or cancelled.</summary>
+    public const string live_session_not_open = nameof(live_session_not_open);
+
+    /// <summary>The feature flag for this action (e.g. <c>Features.VirtualClasses</c>) is off for the unit (403).</summary>
+    public const string feature_disabled = nameof(feature_disabled);
+
+    /// <summary>
+    /// The recurrence is invalid: no end date and no count, both given, more than 52 occurrences, no weekday, an
+    /// unknown time zone, or an end before the start.
+    /// </summary>
+    public const string recurrence_invalid = nameof(recurrence_invalid);
 }

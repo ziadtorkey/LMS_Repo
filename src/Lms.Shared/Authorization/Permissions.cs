@@ -248,6 +248,18 @@ public static class Permissions
         public const string Moderate = "Forums.Moderate";
     }
 
+    // M4b Live sessions, wave 3a (M4b plan Task 1). Teacher: own ClassCourses; Student: own enrollments, and only the
+    // sessions whose module the student can see (IModuleAccess). The Zoom webhook is anonymous and needs none.
+    /// <summary>Live (Zoom) sessions of a ClassCourse (FR-VC-01).</summary>
+    public static class LiveSessions
+    {
+        /// <summary>See sessions, the upcoming list and join inside the join window (staff with Manage get the start link).</summary>
+        public const string View = "LiveSessions.View";
+
+        /// <summary>Schedule, edit, cancel and delete sessions, attach a recording link, read participants and provider status.</summary>
+        public const string Manage = "LiveSessions.Manage";
+    }
+
     // Immutable list (not a FrozenSet) so existing consumers typed IReadOnlyList<string> keep compiling;
     // ImmutableArray rejects every mutation through IList<string>/ICollection<string>.
     private static readonly Lazy<IReadOnlyList<string>> AllLazy = new(() =>
