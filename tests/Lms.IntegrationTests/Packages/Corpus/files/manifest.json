@@ -1,0 +1,1232 @@
+[
+  {
+    "name": "zip_slip_dotdot",
+    "file": "zip_slip_dotdot.zip",
+    "kind": "reject",
+    "expect": "unsafe_path",
+    "intent": "Zip-slip: an entry that climbs out of the extraction root.",
+    "notes": null,
+    "bytes": 1294,
+    "sha256": "9b1de0e1ffc5eea8fda6dd34cf3c45fdecf8399aae1fcab6a1810318dad19bc1"
+  },
+  {
+    "name": "zip_slip_nested_dotdot",
+    "file": "zip_slip_nested_dotdot.zip",
+    "kind": "reject",
+    "expect": "unsafe_path",
+    "intent": "Zip-slip that only escapes after normalising the middle segments.",
+    "notes": null,
+    "bytes": 1314,
+    "sha256": "e294f9c175aed84d6a4383683238d62f1aca7560f1806cba40b2a16a1313b267"
+  },
+  {
+    "name": "zip_slip_backslash",
+    "file": "zip_slip_backslash.zip",
+    "kind": "reject",
+    "expect": "unsafe_path",
+    "intent": "Zip-slip with a Windows separator: a reader that converts \\ to / extracts outside the root.",
+    "notes": null,
+    "bytes": 1294,
+    "sha256": "ce19a12f834c2bb7e6362a03020b1dd32ef05f7193ca666b398ea9de2c09891e"
+  },
+  {
+    "name": "backslash_inside_name",
+    "file": "backslash_inside_name.zip",
+    "kind": "reject",
+    "expect": "unsafe_path",
+    "intent": "A backslash anywhere in a name is refused, not converted (the rules of #427 7.1).",
+    "notes": null,
+    "bytes": 1300,
+    "sha256": "3d47862559c3c99ca8635c7fcd5375bc85351dc7b099d5c11aa36076caa5173a"
+  },
+  {
+    "name": "absolute_unix",
+    "file": "absolute_unix.zip",
+    "kind": "reject",
+    "expect": "unsafe_path",
+    "intent": "Absolute path.",
+    "notes": null,
+    "bytes": 1306,
+    "sha256": "afc90afebe4c13f57ea9d2954b414fe629f736bb05701f4d2a17ca9aec525fe4"
+  },
+  {
+    "name": "absolute_drive_letter",
+    "file": "absolute_drive_letter.zip",
+    "kind": "reject",
+    "expect": "unsafe_path",
+    "intent": "Drive-letter absolute path.",
+    "notes": null,
+    "bytes": 1310,
+    "sha256": "286e2545afacfc6ea82836cca14b5196dea8366ef7324550f13169476cd55393"
+  },
+  {
+    "name": "drive_relative",
+    "file": "drive_relative.zip",
+    "kind": "reject",
+    "expect": "unsafe_path",
+    "intent": "Drive-relative path (no slash after the colon).",
+    "notes": null,
+    "bytes": 1292,
+    "sha256": "f740bfc62a7cdd920e1bd1271b3a88b1f6a25d563108111fae4d85d1eb21c4a0"
+  },
+  {
+    "name": "unc_path",
+    "file": "unc_path.zip",
+    "kind": "reject",
+    "expect": "unsafe_path",
+    "intent": "UNC path.",
+    "notes": null,
+    "bytes": 1318,
+    "sha256": "7a21c9176d56f1275cbd2c4486cae1f17222e2f3b9340efd7627ea8b58f3911c"
+  },
+  {
+    "name": "trailing_dot_name",
+    "file": "trailing_dot_name.zip",
+    "kind": "reject",
+    "expect": "bad_name",
+    "intent": "Windows strips a trailing dot, so this name becomes index.html and can shadow it.",
+    "notes": null,
+    "bytes": 1296,
+    "sha256": "845cfb6e1e8f89c7a33595cef93c84cf29e99998355c5f0c8c3579b78edbcb92"
+  },
+  {
+    "name": "trailing_space_name",
+    "file": "trailing_space_name.zip",
+    "kind": "reject",
+    "expect": "bad_name",
+    "intent": "Windows strips a trailing space, same shadowing as the trailing dot.",
+    "notes": null,
+    "bytes": 1296,
+    "sha256": "803c8b730b3878c7700d3f5586d150134d80bc7daf670e1be8ba35a3ec0f62e4"
+  },
+  {
+    "name": "name_too_long",
+    "file": "name_too_long.zip",
+    "kind": "reject",
+    "expect": "bad_name",
+    "intent": "A 304-character name (cap 255).",
+    "notes": null,
+    "bytes": 1880,
+    "sha256": "bb54c5175c13bf0dbd658a1d908b0bb76a3bea4f27c0f8915b0e5c63628c3fdc"
+  },
+  {
+    "name": "path_too_deep",
+    "file": "path_too_deep.zip",
+    "kind": "reject",
+    "expect": "bad_name",
+    "intent": "25 nested directories (cap 20).",
+    "notes": null,
+    "bytes": 1462,
+    "sha256": "a0884477785bfb1a50f896217acd71a5398ea35ecae87476a1710a1d034ef959"
+  },
+  {
+    "name": "device_name_con",
+    "file": "device_name_con.zip",
+    "kind": "reject",
+    "expect": "bad_name",
+    "intent": "Windows device name: opening it hangs or writes to a device.",
+    "notes": null,
+    "bytes": 1280,
+    "sha256": "ad849f2bd5ddb8e8080dd9c69cc7518425cc276dbe100143ad88601dc050ea92"
+  },
+  {
+    "name": "device_name_nul_txt",
+    "file": "device_name_nul_txt.zip",
+    "kind": "reject",
+    "expect": "bad_name",
+    "intent": "Windows device name: opening it hangs or writes to a device.",
+    "notes": null,
+    "bytes": 1288,
+    "sha256": "5ac5281d29d0c8927680ea10b8a0b441248c6224e0d307213c99b7071e1bb502"
+  },
+  {
+    "name": "device_name_aux_html",
+    "file": "device_name_aux_html.zip",
+    "kind": "reject",
+    "expect": "bad_name",
+    "intent": "Windows device name: opening it hangs or writes to a device.",
+    "notes": null,
+    "bytes": 1290,
+    "sha256": "2e16aa6038ddafcda7ef8958c93f858765a0f0247267080d9698971f80d2af74"
+  },
+  {
+    "name": "device_name_com1_js",
+    "file": "device_name_com1_js.zip",
+    "kind": "reject",
+    "expect": "bad_name",
+    "intent": "Windows device name: opening it hangs or writes to a device.",
+    "notes": null,
+    "bytes": 1288,
+    "sha256": "c559afcfba04d146e7f9ffcc19e7a48d099827f25ec627f18190ffda405cf5ef"
+  },
+  {
+    "name": "device_name_lpt9",
+    "file": "device_name_lpt9.zip",
+    "kind": "reject",
+    "expect": "bad_name",
+    "intent": "Windows device name: opening it hangs or writes to a device.",
+    "notes": null,
+    "bytes": 1282,
+    "sha256": "64095755c25b57552983041834b6e73feabd5f858e4d42568396041e24966e03"
+  },
+  {
+    "name": "local_name_differs_from_central",
+    "file": "local_name_differs_from_central.zip",
+    "kind": "reject",
+    "expect": "bad_name",
+    "intent": "The central directory says index2.html, the local header says ../evil.js: a reader that streams local headers extracts outside the root, one that reads the directory sees a safe name.",
+    "notes": "The reader must compare both names (or only trust one consistently) and refuse a mismatch.",
+    "bytes": 1295,
+    "sha256": "2e12320dae0df15d8bd22ae9d1d887fcaee558a2a2593d8193853dd1e507c45f"
+  },
+  {
+    "name": "percent_encoded_dotdot_is_a_literal_name",
+    "file": "percent_encoded_dotdot_is_a_literal_name.zip",
+    "kind": "accept",
+    "expect": "accepted",
+    "intent": "A name that contains %2e%2e%2f is an ordinary file name: it must be stored literally and never URL-decoded into ../.",
+    "notes": "Also guards the package host: the stored key must stay literal when the request path is decoded once.",
+    "bytes": 1322,
+    "sha256": "88bd85078b45493ba01467c2b2c9b2b2c603e0f3db03de1648bc1516c8c5a4c6"
+  },
+  {
+    "name": "bomb_ratio_one_entry",
+    "file": "bomb_ratio_one_entry.zip",
+    "kind": "reject",
+    "expect": "compression_ratio",
+    "intent": "One entry of 64 MB zeros deflates to about 64 KB (ratio ~1000:1; cap 100:1 per entry).",
+    "notes": "Needs a test cap of at most 100:1 per entry and the 64 MB entry under the total cap, so only the ratio rule can fire.",
+    "bytes": 66519,
+    "sha256": "8aeaf5cfc09889eac00123b1220a1ab983982e1d3b7cff2a720f1f0a9b4db071"
+  },
+  {
+    "name": "bomb_total_many_entries",
+    "file": "bomb_total_many_entries.zip",
+    "kind": "reject",
+    "expect": "too_large",
+    "intent": "Twenty entries of 8 MB zeros: each is under the ratio-limited cap on its own, the total (160 MB) exceeds a total cap of 100 MB.",
+    "notes": "Needs a test total cap of at most 100 MB; the ratio is also over, so the reader must report too_large first (total before ratio) or the test must set the ratio cap above 1000:1.",
+    "bytes": 166237,
+    "sha256": "0d48bf4e8230e790c5ce9bd39c591411082a8e236bc5732a2fe33484ab4c5bd3"
+  },
+  {
+    "name": "bomb_lying_header",
+    "file": "bomb_lying_header.zip",
+    "kind": "reject",
+    "expect": "too_large",
+    "intent": "The headers say 100 bytes, the deflate stream is 50 MB: counting header sizes passes it, counting real bytes does not.",
+    "notes": "Needs a test total cap of at most 40 MB. 'Never trust headers': real bytes decide.",
+    "bytes": 52257,
+    "sha256": "bad07370acc1d6620d9a37103b0cb9c18bf11bca270c16becc6092bdaf3aa1e2"
+  },
+  {
+    "name": "too_many_entries",
+    "file": "too_many_entries.zip",
+    "kind": "reject",
+    "expect": "too_many_entries",
+    "intent": "12 000 empty files (cap 10 000).",
+    "notes": null,
+    "bytes": 1154977,
+    "sha256": "2df33c90c7cafee14bb2a52bda811fa61db7dc3450cc8f398d045c8869a06951"
+  },
+  {
+    "name": "zip64_declared_huge",
+    "file": "zip64_declared_huge.zip",
+    "kind": "reject",
+    "expect": "too_large",
+    "intent": "A Zip64 entry whose extra field claims 6 GB while the real data is 5 bytes: 64-bit counters must be read, and a size over the cap refused.",
+    "notes": "A reader that rejects header/real mismatches may report too_large as well; the intended reason is the cap check on the 64-bit value.",
+    "bytes": 1342,
+    "sha256": "af2f51848b9d85331da012bfb04a08744d83f3368a4cc17e6a21e3a0228f7b0a"
+  },
+  {
+    "name": "zip64_valid_small",
+    "file": "zip64_valid_small.zip",
+    "kind": "accept",
+    "expect": "accepted",
+    "intent": "A valid package written with Zip64 extra fields and a Zip64 end record: the reader must use 64-bit counters and still accept it.",
+    "notes": null,
+    "bytes": 1369,
+    "sha256": "521abbe083ad36e968741d3e59609b6487c797515233ed1a58c9eeb8977f3488"
+  },
+  {
+    "name": "data_descriptor_streamed",
+    "file": "data_descriptor_streamed.zip",
+    "kind": "accept",
+    "expect": "accepted",
+    "intent": "A valid package whose entries use a data descriptor (sizes 0 in the local header): the reader must not trust local-header sizes.",
+    "notes": null,
+    "bytes": 1229,
+    "sha256": "45813f5501ab4d5ea48e80857fea4a409d3860d3debbd20744a0c4757c1c0031"
+  },
+  {
+    "name": "symlink_entry",
+    "file": "symlink_entry.zip",
+    "kind": "reject",
+    "expect": "symlink",
+    "intent": "A Unix symlink (mode 0120777) whose content is the target path.",
+    "notes": "ZIP has no hardlink entry type; hardlinks only exist in tar, which is rejected as a nested archive.",
+    "bytes": 1310,
+    "sha256": "b12d4713a6f368b388a1f5d874d10eb7109a9dd82786e938c420b86d06f5bbcc"
+  },
+  {
+    "name": "encrypted_entry",
+    "file": "encrypted_entry.zip",
+    "kind": "reject",
+    "expect": "encrypted",
+    "intent": "General-purpose flag bit 0 (traditional PKWARE encryption) on an entry.",
+    "notes": null,
+    "bytes": 1313,
+    "sha256": "b5c33657edc5fbe1ac98a7d49fd914ae11e40ee4b9e176a6dfa9431afc3ef6f4"
+  },
+  {
+    "name": "executable_exe",
+    "file": "executable_exe.zip",
+    "kind": "reject",
+    "expect": "executable",
+    "intent": "A .exe file (executable or server-side script).",
+    "notes": null,
+    "bytes": 1300,
+    "sha256": "1e7f4d063b93108feda3ab89da9b951beb89833f4e1eb55455be7724e72f970d"
+  },
+  {
+    "name": "executable_dll",
+    "file": "executable_dll.zip",
+    "kind": "reject",
+    "expect": "executable",
+    "intent": "A .dll file (executable or server-side script).",
+    "notes": null,
+    "bytes": 1300,
+    "sha256": "7e3e5e61015d81c0d198115b01dd54f54da044023258c0090c4940b0c78c2671"
+  },
+  {
+    "name": "executable_so",
+    "file": "executable_so.zip",
+    "kind": "reject",
+    "expect": "executable",
+    "intent": "A .so file (executable or server-side script).",
+    "notes": null,
+    "bytes": 1298,
+    "sha256": "82dd95e7bd25b77101475b519cad334f8e5adebd057e729eb88263717c2c7a41"
+  },
+  {
+    "name": "executable_php",
+    "file": "executable_php.zip",
+    "kind": "reject",
+    "expect": "executable",
+    "intent": "A .php file (executable or server-side script).",
+    "notes": null,
+    "bytes": 1300,
+    "sha256": "d20b147a28e260cf0ce935e08e5efe283ca6b41bec0e04d2e265ce383d49df84"
+  },
+  {
+    "name": "executable_jsp",
+    "file": "executable_jsp.zip",
+    "kind": "reject",
+    "expect": "executable",
+    "intent": "A .jsp file (executable or server-side script).",
+    "notes": null,
+    "bytes": 1300,
+    "sha256": "ac03d007ddbb0606f86795af7a8d0e8900af155d269056f23b758257dc73ab78"
+  },
+  {
+    "name": "executable_asp",
+    "file": "executable_asp.zip",
+    "kind": "reject",
+    "expect": "executable",
+    "intent": "A .asp file (executable or server-side script).",
+    "notes": null,
+    "bytes": 1300,
+    "sha256": "060638597ac3224fcd1908e4fb0e208aa6d25ce4c24dbd756b29e9a323a3d117"
+  },
+  {
+    "name": "executable_aspx",
+    "file": "executable_aspx.zip",
+    "kind": "reject",
+    "expect": "executable",
+    "intent": "A .aspx file (executable or server-side script).",
+    "notes": null,
+    "bytes": 1302,
+    "sha256": "e92eeb35bbabbe25d768a2f559edbdfe1ba85f014603767a816f17bd58a17aac"
+  },
+  {
+    "name": "executable_cgi",
+    "file": "executable_cgi.zip",
+    "kind": "reject",
+    "expect": "executable",
+    "intent": "A .cgi file (executable or server-side script).",
+    "notes": null,
+    "bytes": 1300,
+    "sha256": "8ff3ac685470acbdef22da3dfe900c1991bc0f6690dc86db46eb1525c003b5a2"
+  },
+  {
+    "name": "executable_sh",
+    "file": "executable_sh.zip",
+    "kind": "reject",
+    "expect": "executable",
+    "intent": "A .sh file (executable or server-side script).",
+    "notes": null,
+    "bytes": 1298,
+    "sha256": "bb5eab87d2ba6c44c50bdc8f35ee1d17176b1ee41e2826cded7d5d7fa7e66b8c"
+  },
+  {
+    "name": "executable_bat",
+    "file": "executable_bat.zip",
+    "kind": "reject",
+    "expect": "executable",
+    "intent": "A .bat file (executable or server-side script).",
+    "notes": null,
+    "bytes": 1300,
+    "sha256": "ef2bbf08b216e27968e874bf086c8f2592ef25320eeec293a6f7ee9ad39d4997"
+  },
+  {
+    "name": "executable_cmd",
+    "file": "executable_cmd.zip",
+    "kind": "reject",
+    "expect": "executable",
+    "intent": "A .cmd file (executable or server-side script).",
+    "notes": null,
+    "bytes": 1300,
+    "sha256": "f357802216d4c893c3706e9f7a5e0d70e812a30683aab65f3cbaf08e6579f343"
+  },
+  {
+    "name": "executable_ps1",
+    "file": "executable_ps1.zip",
+    "kind": "reject",
+    "expect": "executable",
+    "intent": "A .ps1 file (executable or server-side script).",
+    "notes": null,
+    "bytes": 1300,
+    "sha256": "bf4e8411b206fa25fc3eb13806ae8f5817355a7a70230bcfc80ec02a81a4a4b9"
+  },
+  {
+    "name": "executable_upper_case_extension",
+    "file": "executable_upper_case_extension.zip",
+    "kind": "reject",
+    "expect": "executable",
+    "intent": "RUN.ExE: the extension check is case-insensitive.",
+    "notes": null,
+    "bytes": 1288,
+    "sha256": "00fcf7fccf7e4277f4c7f7cc5d71ad0856bd0c1bf900c0baba2c85f0e6e74552"
+  },
+  {
+    "name": "nested_archive_zip",
+    "file": "nested_archive_zip.zip",
+    "kind": "reject",
+    "expect": "nested_archive",
+    "intent": "A nested .zip archive (never extracted; v1 rejects it).",
+    "notes": null,
+    "bytes": 1424,
+    "sha256": "00409a1ba1fcc1576123f05b2d167027c3eb9d1b9751900dd44f14ac5075137e"
+  },
+  {
+    "name": "nested_archive_jar",
+    "file": "nested_archive_jar.zip",
+    "kind": "reject",
+    "expect": "nested_archive",
+    "intent": "A nested .jar archive (never extracted; v1 rejects it).",
+    "notes": null,
+    "bytes": 1322,
+    "sha256": "dc8fe1e52cbc23337f46c8e49a31c03b578a906fdc40ed4183c0abd45b4b991a"
+  },
+  {
+    "name": "nested_archive_war",
+    "file": "nested_archive_war.zip",
+    "kind": "reject",
+    "expect": "nested_archive",
+    "intent": "A nested .war archive (never extracted; v1 rejects it).",
+    "notes": null,
+    "bytes": 1322,
+    "sha256": "4a642288ee033d58e572d01c1ee7d2bef41c5a5db0dc9f83e10afe01650ef7fb"
+  },
+  {
+    "name": "nested_archive_7z",
+    "file": "nested_archive_7z.zip",
+    "kind": "reject",
+    "expect": "nested_archive",
+    "intent": "A nested .7z archive (never extracted; v1 rejects it).",
+    "notes": null,
+    "bytes": 1319,
+    "sha256": "49d1295cf9da7378a759b4fd4e5ada2982ac8e3e335ec11768c2559f6ff7765f"
+  },
+  {
+    "name": "nested_archive_rar",
+    "file": "nested_archive_rar.zip",
+    "kind": "reject",
+    "expect": "nested_archive",
+    "intent": "A nested .rar archive (never extracted; v1 rejects it).",
+    "notes": null,
+    "bytes": 1322,
+    "sha256": "366efe0df5b7d473211ea353b919fd42f4a07b04e58d67ae30ec12ddfcb81c8f"
+  },
+  {
+    "name": "nested_archive_tar",
+    "file": "nested_archive_tar.zip",
+    "kind": "reject",
+    "expect": "nested_archive",
+    "intent": "A nested .tar archive (never extracted; v1 rejects it).",
+    "notes": null,
+    "bytes": 1322,
+    "sha256": "003f8df6cb0811e02cdfdb6a9ff24eb68d004012ac245441fa060162d84dd636"
+  },
+  {
+    "name": "nested_archive_gz",
+    "file": "nested_archive_gz.zip",
+    "kind": "reject",
+    "expect": "nested_archive",
+    "intent": "A nested .gz archive (never extracted; v1 rejects it).",
+    "notes": null,
+    "bytes": 1319,
+    "sha256": "c0d83c0cbd2c981b6f97de14c02f869b825f39c636c94d3fd3ee67a6bef182a1"
+  },
+  {
+    "name": "nested_archive_tgz",
+    "file": "nested_archive_tgz.zip",
+    "kind": "reject",
+    "expect": "nested_archive",
+    "intent": "A nested .tgz archive (never extracted; v1 rejects it).",
+    "notes": null,
+    "bytes": 1322,
+    "sha256": "b991f2dce2127f766e23a7b929f9bdc70d28c1bf151eafb6b30ae3fade966a07"
+  },
+  {
+    "name": "duplicate_exact",
+    "file": "duplicate_exact.zip",
+    "kind": "reject",
+    "expect": "duplicate_name",
+    "intent": "The same name twice: which one wins depends on the reader (a later one can overwrite the validated one).",
+    "notes": null,
+    "bytes": 1299,
+    "sha256": "c32fad7ab98560f7922a14eab096c81a6939d8bb9ea6677d6238ef14f828b49a"
+  },
+  {
+    "name": "duplicate_case_fold",
+    "file": "duplicate_case_fold.zip",
+    "kind": "reject",
+    "expect": "duplicate_name",
+    "intent": "index.html and INDEX.HTML collide on a case-insensitive store.",
+    "notes": null,
+    "bytes": 1299,
+    "sha256": "b67f31006d77d1bd6b2ae6c9e7604a3aeb44655fcbf323a3615428b0ccda45ab"
+  },
+  {
+    "name": "duplicate_nfc_nfd",
+    "file": "duplicate_nfc_nfd.zip",
+    "kind": "reject",
+    "expect": "duplicate_name",
+    "intent": "café.html written once in NFC (é = U+00E9) and once in NFD (e + U+0301): different bytes, same name after normalisation.",
+    "notes": null,
+    "bytes": 1393,
+    "sha256": "4faf161310eb5b9974b4b97cb2fe32cb02ceba1e511abfe813892e74d2457b62"
+  },
+  {
+    "name": "duplicate_in_directory_case",
+    "file": "duplicate_in_directory_case.zip",
+    "kind": "reject",
+    "expect": "duplicate_name",
+    "intent": "dir/A.js and DIR/a.js: the collision is in a directory segment, not the file name.",
+    "notes": null,
+    "bytes": 1383,
+    "sha256": "1a48b99a84668a875cb7d8be0f2fff38b594bb79c92504c2c2f9067260469f38"
+  },
+  {
+    "name": "name_bidi_override",
+    "file": "name_bidi_override.zip",
+    "kind": "reject",
+    "expect": "bad_name_encoding",
+    "intent": "U+202E (right-to-left override) in a name: exe.js displays as sj.exe.",
+    "notes": null,
+    "bytes": 1294,
+    "sha256": "07b064f3e2bf580c78fcddf8395ffe0e012adbb4f2782e0be299be8cb5d667d6"
+  },
+  {
+    "name": "name_control_character",
+    "file": "name_control_character.zip",
+    "kind": "reject",
+    "expect": "bad_name_encoding",
+    "intent": "U+0001 in a name.",
+    "notes": null,
+    "bytes": 1286,
+    "sha256": "34e491f1ebd908add2eaae21dbfe4c0ce765d075c210aa1302247dc575330b08"
+  },
+  {
+    "name": "name_bom",
+    "file": "name_bom.zip",
+    "kind": "reject",
+    "expect": "bad_name_encoding",
+    "intent": "U+FEFF (byte order mark) at the start of a name.",
+    "notes": null,
+    "bytes": 1298,
+    "sha256": "20f47bd4d75eed302ca2cc0a1dde73a4bbcad24d99ee63cc6cfb25c3969f9704"
+  },
+  {
+    "name": "name_nul_byte",
+    "file": "name_nul_byte.zip",
+    "kind": "reject",
+    "expect": "bad_name_encoding",
+    "intent": "A NUL byte inside a name: C-string readers see a shorter name than the validator.",
+    "notes": null,
+    "bytes": 1284,
+    "sha256": "8601910cf7da01d83bbc1e060fe32e3ef1d8fd08f5594798774df260446b567c"
+  },
+  {
+    "name": "name_invalid_utf8_with_flag",
+    "file": "name_invalid_utf8_with_flag.zip",
+    "kind": "reject",
+    "expect": "bad_name_encoding",
+    "intent": "Bit 11 says UTF-8 but the bytes 0xFF 0xFE are not valid UTF-8.",
+    "notes": null,
+    "bytes": 1284,
+    "sha256": "28407cbefcca9bcaff4a95170fbab2527c714c8410b8955db73baa5948ba984d"
+  },
+  {
+    "name": "name_cp437_accented",
+    "file": "name_cp437_accented.zip",
+    "kind": "accept",
+    "expect": "accepted",
+    "intent": "A name in CP437 without the UTF-8 flag (byte 0x82 is é): decoded as CP437, not rejected and not read as invalid UTF-8.",
+    "notes": "The stored key is the decoded name café.html.",
+    "bytes": 1292,
+    "sha256": "28d3a32cd86d862eb9f3f79f2d3b80fa478268479f254d33b2fe50ac321d9f2e"
+  },
+  {
+    "name": "name_utf8_accented",
+    "file": "name_utf8_accented.zip",
+    "kind": "accept",
+    "expect": "accepted",
+    "intent": "A name with the UTF-8 flag (é as two bytes).",
+    "notes": null,
+    "bytes": 1294,
+    "sha256": "95297693b2baf54adaea333d1735492c56473bcbd263ec720d2c0cfa07874eec"
+  },
+  {
+    "name": "not_a_zip_random_bytes",
+    "file": "not_a_zip_random_bytes.zip",
+    "kind": "reject",
+    "expect": "invalid_archive",
+    "intent": "Random bytes with a .zip name.",
+    "notes": "Raw file, not a zip.",
+    "bytes": 4096,
+    "sha256": "5ab775379b00e0ca28b6ee8c0b71b2e54307875de77c156356740d946a181be6"
+  },
+  {
+    "name": "empty_file",
+    "file": "empty_file.zip",
+    "kind": "reject",
+    "expect": "invalid_archive",
+    "intent": "Zero bytes.",
+    "notes": "Raw file, not a zip.",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "empty_archive",
+    "file": "empty_archive.zip",
+    "kind": "reject",
+    "expect": "invalid_archive",
+    "intent": "A valid zip with no entries.",
+    "notes": null,
+    "bytes": 22,
+    "sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85"
+  },
+  {
+    "name": "truncated_archive",
+    "file": "truncated_archive.zip",
+    "kind": "reject",
+    "expect": "invalid_archive",
+    "intent": "A valid package cut in the middle of the central directory.",
+    "notes": "Raw file, not a readable zip.",
+    "bytes": 1167,
+    "sha256": "be7d9498079a0d60a2446688fcc4c3c9952949448f7f2b581ceb5a41d385f5f2"
+  },
+  {
+    "name": "no_manifest",
+    "file": "no_manifest.zip",
+    "kind": "reject",
+    "expect": "manifest_invalid",
+    "intent": "A zip without imsmanifest.xml or h5p.json.",
+    "notes": null,
+    "bytes": 501,
+    "sha256": "56042a3aa76bdf5a5e8a0f86966a11749a14dfa35a72019dde4217d61c1521fb"
+  },
+  {
+    "name": "polyglot_html_and_zip",
+    "file": "polyglot_html_and_zip.zip",
+    "kind": "accept",
+    "expect": "accepted",
+    "intent": "An HTML document in front of the zip data (an HTML+ZIP polyglot): the zip is read from the end and the archive is accepted; the prefix is never served.",
+    "notes": "A reader that scans from the start for local headers must reach the same entries.",
+    "bytes": 1244,
+    "sha256": "4cb905104306836af9109aedb507a6cfa97574b56ddb9f735ee4105eaf9391fa"
+  },
+  {
+    "name": "polyglot_entry_content_types",
+    "file": "polyglot_entry_content_types.zip",
+    "kind": "accept",
+    "expect": "accepted",
+    "intent": "index.html that starts with GIF89a, and logo.gif that contains HTML: the stored type comes from the extension allow-list, never from the bytes or the zip.",
+    "notes": "Served as text/html and image/gif respectively, with nosniff.",
+    "bytes": 1482,
+    "sha256": "45861bc019036bcfaffc0d765ee661509607c4a0d20b24ed5f24fd47466cc6fe"
+  },
+  {
+    "name": "svg_with_script",
+    "file": "svg_with_script.zip",
+    "kind": "accept",
+    "expect": "accepted",
+    "intent": "An SVG that contains a script: active content, served with the sandbox CSP and as an attachment on top-level navigation.",
+    "notes": null,
+    "bytes": 1368,
+    "sha256": "97f6d44e7dfe64363ddd4ae6a3149a3d252c4525001e3645972285284a655f0a"
+  },
+  {
+    "name": "scorm12_valid",
+    "file": "scorm12_valid.zip",
+    "kind": "accept",
+    "expect": "accepted",
+    "intent": "A valid single-SCO SCORM 1.2 package.",
+    "notes": null,
+    "bytes": 1197,
+    "sha256": "feb58b0b34831f9eb1e774a8722456228e28ec3017b9f001fac29b9c2b20af48"
+  },
+  {
+    "name": "scorm2004_valid",
+    "file": "scorm2004_valid.zip",
+    "kind": "accept",
+    "expect": "accepted",
+    "intent": "A valid single-SCO SCORM 2004 4th edition package.",
+    "notes": null,
+    "bytes": 1329,
+    "sha256": "b15370f8307d6d4d6fd66e114c21f313d3d44cbbe214f0739090881f54c852b5"
+  },
+  {
+    "name": "xxe_file_entity",
+    "file": "xxe_file_entity.zip",
+    "kind": "reject",
+    "expect": "xml_unsafe",
+    "intent": "A DOCTYPE with an external file entity used in the title (DTD processing is prohibited).",
+    "notes": null,
+    "bytes": 1229,
+    "sha256": "bec3bf3749f27d5c29aa07d337a702d4bdecb4942462d2fa82903bf75ed11c7d"
+  },
+  {
+    "name": "xxe_http_entity",
+    "file": "xxe_http_entity.zip",
+    "kind": "reject",
+    "expect": "xml_unsafe",
+    "intent": "A DOCTYPE with an external http entity: the validator must never open a connection.",
+    "notes": "The integration test runs a loopback listener on port 9 and asserts it never gets a request.",
+    "bytes": 1233,
+    "sha256": "aee97025bdedb402675404c7726977eacafcedaecdf4296934234aac2c22ef8b"
+  },
+  {
+    "name": "xml_billion_laughs",
+    "file": "xml_billion_laughs.zip",
+    "kind": "reject",
+    "expect": "xml_unsafe",
+    "intent": "Exponential entity expansion (a billion laughs): ~1 GB of text from a 1 KB file.",
+    "notes": null,
+    "bytes": 1707,
+    "sha256": "87903e5724a65beb9a49190bb96e4ee549226de03cea1b90a2ae684f7ef4c594"
+  },
+  {
+    "name": "doctype_without_entities",
+    "file": "doctype_without_entities.zip",
+    "kind": "reject",
+    "expect": "xml_unsafe",
+    "intent": "A bare DOCTYPE: DTD processing is prohibited outright, not only entity expansion.",
+    "notes": null,
+    "bytes": 1197,
+    "sha256": "3f55541aa4a9efb4bc9a6309cec5096dc0c4541544aeeb91a66715d7896d509e"
+  },
+  {
+    "name": "manifest_not_xml",
+    "file": "manifest_not_xml.zip",
+    "kind": "reject",
+    "expect": "manifest_invalid",
+    "intent": "A manifest that is not XML.",
+    "notes": null,
+    "bytes": 624,
+    "sha256": "cd8bc24a736b9c8cd7b1e6c6bde6fc09d8805d90b7b1e0af8928f1087595c741"
+  },
+  {
+    "name": "manifest_huge",
+    "file": "manifest_huge.zip",
+    "kind": "reject",
+    "expect": "xml_unsafe",
+    "intent": "A 3 MB manifest (document size cap).",
+    "notes": null,
+    "bytes": 3146932,
+    "sha256": "c037c4e1218f5c34263b3c0d176b054817899c7f8f4705b4ec0fd520169eefd8"
+  },
+  {
+    "name": "manifest_launch_file_missing",
+    "file": "manifest_launch_file_missing.zip",
+    "kind": "reject",
+    "expect": "manifest_invalid",
+    "intent": "The launch href names a file that is not in the package.",
+    "notes": null,
+    "bytes": 1201,
+    "sha256": "d0a0f8d793dd04d730a3ec5a8404be9a611b00017b85867e1b70b99e06d967cb"
+  },
+  {
+    "name": "manifest_href_parent_escape",
+    "file": "manifest_href_parent_escape.zip",
+    "kind": "reject",
+    "expect": "manifest_invalid",
+    "intent": "A launch href that climbs out of the package (and could select another package's file).",
+    "notes": null,
+    "bytes": 1207,
+    "sha256": "04acb6b302892dfe92d59a8973eb012fdcd71416c766f362f6cd3b7e24adff52"
+  },
+  {
+    "name": "manifest_href_absolute_url",
+    "file": "manifest_href_absolute_url.zip",
+    "kind": "reject",
+    "expect": "manifest_invalid",
+    "intent": "A launch href that is an absolute http URL.",
+    "notes": null,
+    "bytes": 1239,
+    "sha256": "37710b87cff13592c54e9947c157a221e8a7b620954fd387c658f9f2a9625f61"
+  },
+  {
+    "name": "manifest_href_file_scheme",
+    "file": "manifest_href_file_scheme.zip",
+    "kind": "reject",
+    "expect": "manifest_invalid",
+    "intent": "A launch href with the file: scheme.",
+    "notes": null,
+    "bytes": 1213,
+    "sha256": "19033539107c923fb7d8c7e8e206f8728ae61fb49960935b2838c45595913f82"
+  },
+  {
+    "name": "manifest_href_javascript_scheme",
+    "file": "manifest_href_javascript_scheme.zip",
+    "kind": "reject",
+    "expect": "manifest_invalid",
+    "intent": "A launch href with the javascript: scheme.",
+    "notes": null,
+    "bytes": 1215,
+    "sha256": "18c2e5cd7358572316dc9dbbf18b2154635479f118268e7c7cf9644a6be83c71"
+  },
+  {
+    "name": "manifest_href_backslash",
+    "file": "manifest_href_backslash.zip",
+    "kind": "reject",
+    "expect": "manifest_invalid",
+    "intent": "A launch href with a backslash.",
+    "notes": null,
+    "bytes": 1205,
+    "sha256": "8559be591992f24c3f58a02bb18f7627590bb09715c74c4f52e80185fcfab206"
+  },
+  {
+    "name": "manifest_href_protocol_relative",
+    "file": "manifest_href_protocol_relative.zip",
+    "kind": "reject",
+    "expect": "manifest_invalid",
+    "intent": "A protocol-relative launch href.",
+    "notes": null,
+    "bytes": 1229,
+    "sha256": "3a3870fe2bd0046c5bd1869ebb8f02ca15df0741969e6b60cdd177157e74ffa8"
+  },
+  {
+    "name": "multi_sco",
+    "file": "multi_sco.zip",
+    "kind": "reject",
+    "expect": "multi_sco",
+    "intent": "A manifest with two SCOs and two items (multi-SCO courses are out of v1).",
+    "notes": null,
+    "bytes": 1854,
+    "sha256": "66ab10af6fa15119b7a40d0088aca186f6611d5ef5216f2a01e310ff268920d1"
+  },
+  {
+    "name": "scorm2004_sequencing",
+    "file": "scorm2004_sequencing.zip",
+    "kind": "reject",
+    "expect": "multi_sco",
+    "intent": "SCORM 2004 simple sequencing rules (imsss:sequencing) that the v1 runtime does not implement.",
+    "notes": null,
+    "bytes": 1416,
+    "sha256": "fc380850d0bf529ed8d2fcaabb691a438d8e37b7ba86ff7357f7d73a6634ed4f"
+  },
+  {
+    "name": "manifest_schema_location_and_xml_base_never_fetched",
+    "file": "manifest_schema_location_and_xml_base_never_fetched.zip",
+    "kind": "accept",
+    "expect": "accepted",
+    "intent": "xsi:schemaLocation and xml:base pointing at a loopback URL: the validator must not fetch anything and must resolve the href against the package root.",
+    "notes": "The integration test runs a loopback listener on port 9 and asserts it never gets a request.",
+    "bytes": 1330,
+    "sha256": "0674c657cba9505870f83791c4c8e7939613a4f710bf5a43a3c0b554093e2c12"
+  },
+  {
+    "name": "xml_base_hides_missing_launch_file",
+    "file": "xml_base_hides_missing_launch_file.zip",
+    "kind": "reject",
+    "expect": "manifest_invalid",
+    "intent": "The launch file exists only if xml:base is honoured (it is not in the package): the href is resolved against the package root, so the file is missing.",
+    "notes": null,
+    "bytes": 1237,
+    "sha256": "32a905160378c58c74a13409d822cbb6cf6708a2dd86814807163f27df8219f7"
+  },
+  {
+    "name": "manifest_utf8_bom",
+    "file": "manifest_utf8_bom.zip",
+    "kind": "accept",
+    "expect": "accepted",
+    "intent": "A manifest that starts with a UTF-8 byte order mark.",
+    "notes": null,
+    "bytes": 1200,
+    "sha256": "63348852723e954c39ed4de4a407734c4bbf5390854ec9e27f78db420cd45ad0"
+  },
+  {
+    "name": "launch_frameset",
+    "file": "launch_frameset.zip",
+    "kind": "reject",
+    "expect": "needs_nested_frames",
+    "intent": "A launch page that is a frameset (the SCO sits in a child frame that looks in parent for the API).",
+    "notes": null,
+    "bytes": 1495,
+    "sha256": "2428c780a32b523eb87e823ac43951337e6265da008aef10ad34ea7d23cc8e15"
+  },
+  {
+    "name": "launch_iframe_to_local_page",
+    "file": "launch_iframe_to_local_page.zip",
+    "kind": "reject",
+    "expect": "needs_nested_frames",
+    "intent": "A launch page whose only content is an iframe of another page of the package.",
+    "notes": null,
+    "bytes": 1385,
+    "sha256": "e38a61b2cf8d99a04a3278f2e4c41e36ef8f2ad4ca38aab3dbbeeea5e4f44919"
+  },
+  {
+    "name": "html_utf8_bom",
+    "file": "html_utf8_bom.zip",
+    "kind": "runtime",
+    "expect": "accepted",
+    "intent": "A launch page with a UTF-8 BOM: the injector must insert after the BOM, not before it.",
+    "notes": null,
+    "bytes": 932,
+    "sha256": "47f5aa2d0e028ae959c474fa4ccffc95ff8aa75c7606c1b4db9ef23125f24f11"
+  },
+  {
+    "name": "html_meta_charset_latin1",
+    "file": "html_meta_charset_latin1.zip",
+    "kind": "runtime",
+    "expect": "accepted",
+    "intent": "A page declared as windows-1252 with a non-ASCII byte (0xE9): re-encoding through UTF-8 would corrupt it.",
+    "notes": null,
+    "bytes": 1006,
+    "sha256": "8acfb7bdae355cbcb5e9ac1dd6f79bb6beb90b8c864241ceb4bebe688aa519e3"
+  },
+  {
+    "name": "html_utf16le_bom",
+    "file": "html_utf16le_bom.zip",
+    "kind": "runtime",
+    "expect": "accepted",
+    "intent": "A UTF-16 LE page with a BOM: decode, inject, re-encode as declared.",
+    "notes": null,
+    "bytes": 1046,
+    "sha256": "d1f7efa615f4ecca6236d2f24579018b6e4c5fdc57d923a2ab96ade7e1fc29b6"
+  },
+  {
+    "name": "html_utf16be_bom",
+    "file": "html_utf16be_bom.zip",
+    "kind": "runtime",
+    "expect": "accepted",
+    "intent": "A UTF-16 BE page with a BOM.",
+    "notes": null,
+    "bytes": 1046,
+    "sha256": "02737d4f13d1f1b14cc15c2f32ddbb6b01afb5a804cdc928b9d9200dd3a3c1b9"
+  },
+  {
+    "name": "html_no_head",
+    "file": "html_no_head.zip",
+    "kind": "runtime",
+    "expect": "accepted",
+    "intent": "A page with <html> and <body> but no <head>.",
+    "notes": null,
+    "bytes": 900,
+    "sha256": "e804be573ef1222d26d4314d2c0c8e52a968967f267b8c9189affe8605ca095f"
+  },
+  {
+    "name": "html_no_html_no_head",
+    "file": "html_no_html_no_head.zip",
+    "kind": "runtime",
+    "expect": "accepted",
+    "intent": "A page that is a bare fragment (no <html>, no <head>).",
+    "notes": null,
+    "bytes": 863,
+    "sha256": "8bc7559de4d0df29b3e76a0d1fa82ae1bf8630f0d3b4f89152e14ef869c0af1c"
+  },
+  {
+    "name": "html_doctype_and_comments_first",
+    "file": "html_doctype_and_comments_first.zip",
+    "kind": "runtime",
+    "expect": "accepted",
+    "intent": "A doctype and comments (one containing the text <head>) before <html>.",
+    "notes": null,
+    "bytes": 969,
+    "sha256": "52846d63aa61bd68b94e3ac24e2a83431e9b28b7c9ca34b4c4e6a3ec72c94b7c"
+  },
+  {
+    "name": "html_uppercase_and_attributes",
+    "file": "html_uppercase_and_attributes.zip",
+    "kind": "runtime",
+    "expect": "accepted",
+    "intent": "<HEAD profile=\"x\"> in upper case with an attribute.",
+    "notes": null,
+    "bytes": 941,
+    "sha256": "4f5d6e182861a39b343542083d88861726fbaa73e9bcb3de8bdb47ec904bed46"
+  },
+  {
+    "name": "html_head_text_in_script",
+    "file": "html_head_text_in_script.zip",
+    "kind": "runtime",
+    "expect": "accepted",
+    "intent": "The string \"<head>\" inside a script before the real <head> closes.",
+    "notes": null,
+    "bytes": 961,
+    "sha256": "d0455c3fb2526a7e9ebb7d6420a3c540edafdfbdfa3644e8d8bbb9d80fb24bfd"
+  },
+  {
+    "name": "html_conditional_comment",
+    "file": "html_conditional_comment.zip",
+    "kind": "runtime",
+    "expect": "accepted",
+    "intent": "An IE conditional comment before <head>.",
+    "notes": null,
+    "bytes": 970,
+    "sha256": "dd5a8be0f97318ac18505fba0eb02e776fff1a4f34975b2be3577282e6c48f6c"
+  },
+  {
+    "name": "scorm_multipage_sco",
+    "file": "scorm_multipage_sco.zip",
+    "kind": "runtime",
+    "expect": "accepted",
+    "intent": "A SCO of three pages linked to each other (page1 → page2 → page3): the API must be available on every page, with the state kept across navigations.",
+    "notes": "Every HTML response of the package gets the prelude, not only the launch page.",
+    "bytes": 2187,
+    "sha256": "4b43640121d7de057a9bd21e0efd663d7158cae07d2be35b45a6047397ee9217"
+  },
+  {
+    "name": "sco_defines_its_own_window_api",
+    "file": "sco_defines_its_own_window_api.zip",
+    "kind": "runtime",
+    "expect": "accepted",
+    "intent": "The SCO defines window.API itself (an offline-mode stub) before looking for one.",
+    "notes": null,
+    "bytes": 1124,
+    "sha256": "95f6349a2f727e2539111175402d8a7e250d698b169803fff7b73d2a6cc1aa92"
+  },
+  {
+    "name": "sco_catches_the_parent_walk_error",
+    "file": "sco_catches_the_parent_walk_error.zip",
+    "kind": "runtime",
+    "expect": "accepted",
+    "intent": "The SCO walks window.parent for the API and catches the SecurityError (opaque origin) instead of crashing.",
+    "notes": null,
+    "bytes": 1026,
+    "sha256": "c098abab52c1352e7e7fc1ef942a28729bf08b7daec59400258c31023f0d199c"
+  },
+  {
+    "name": "sco_reads_initial_state_synchronously",
+    "file": "sco_reads_initial_state_synchronously.zip",
+    "kind": "runtime",
+    "expect": "accepted",
+    "intent": "The SCO reads cmi.core.lesson_status right after LMSInitialize with no port handshake yet.",
+    "notes": null,
+    "bytes": 1016,
+    "sha256": "a142ee30cff11d715fba42c97efe7ceaed4434c751e15cb26cf1b6e0ba22c041"
+  },
+  {
+    "name": "sco_touches_storage",
+    "file": "sco_touches_storage.zip",
+    "kind": "runtime",
+    "expect": "accepted",
+    "intent": "localStorage, sessionStorage, document.cookie and indexedDB inside the sandbox (S2 b): each must throw or be a stand-in, never reach the app's data.",
+    "notes": null,
+    "bytes": 1151,
+    "sha256": "abb23586f1d224074e3b914061db395b96ecfdde4665ad175a196a40a47514dc"
+  },
+  {
+    "name": "sco_xhr_own_host",
+    "file": "sco_xhr_own_host.zip",
+    "kind": "runtime",
+    "expect": "accepted",
+    "intent": "An XHR to a file of its own package (S2 c): needs connect-src 'self' and CORS from an opaque origin.",
+    "notes": null,
+    "bytes": 1137,
+    "sha256": "efc8c1899297660f4950375bae19db2b108cecf1a1362fc2f7488d4a87ce353b"
+  },
+  {
+    "name": "sco_fetch_outside",
+    "file": "sco_fetch_outside.zip",
+    "kind": "runtime",
+    "expect": "accepted",
+    "intent": "fetch() to an outside URL and to the app origin with credentials (must fail: connect-src 'self', no cookies).",
+    "notes": null,
+    "bytes": 1123,
+    "sha256": "98beae23885ffe2e3a8fa5a09b5f4a410f5de2620605d132ba3b2f3af11741ae"
+  },
+  {
+    "name": "sco_navigates_top",
+    "file": "sco_navigates_top.zip",
+    "kind": "runtime",
+    "expect": "accepted",
+    "intent": "top.location = an outside URL (sandbox without allow-top-navigation).",
+    "notes": null,
+    "bytes": 1028,
+    "sha256": "e649e103319dc72984ea81f2693a92fc635e1d9582e33cb04060a99ed90adca7"
+  },
+  {
+    "name": "sco_navigates_itself_outside",
+    "file": "sco_navigates_itself_outside.zip",
+    "kind": "runtime",
+    "expect": "accepted",
+    "intent": "location.href = an outside URL: the frame's own navigation, blocked by the app's frame-src.",
+    "notes": null,
+    "bytes": 967,
+    "sha256": "10a08365859e3706db3e09c24718e6620d75f52a5246f704ad048bc897ea7a8a"
+  },
+  {
+    "name": "sco_meta_refresh_outside",
+    "file": "sco_meta_refresh_outside.zip",
+    "kind": "runtime",
+    "expect": "accepted",
+    "intent": "<meta http-equiv=refresh> to an outside URL: a navigation with no script, also blocked by frame-src.",
+    "notes": null,
+    "bytes": 958,
+    "sha256": "7bfa748cd461bddbde1bdee329ce18c7a27641ae57180db06d5f5772d2d9c2c9"
+  },
+  {
+    "name": "sco_opens_popup",
+    "file": "sco_opens_popup.zip",
+    "kind": "runtime",
+    "expect": "accepted",
+    "intent": "window.open() (sandbox without allow-popups).",
+    "notes": null,
+    "bytes": 1026,
+    "sha256": "5b69cd4a5bac5982a51dcc7b25bbce151d4df34657d47dd3fe53de26f8a54fe2"
+  },
+  {
+    "name": "sco_submits_form",
+    "file": "sco_submits_form.zip",
+    "kind": "runtime",
+    "expect": "accepted",
+    "intent": "A form that auto-submits to an outside URL (form-action 'none'; allow-forms is dropped).",
+    "notes": null,
+    "bytes": 1002,
+    "sha256": "aefa7d29f95f0e6c0e71eb7442f785e201f581683447cf597bfe864048c652a2"
+  },
+  {
+    "name": "sco_forges_postmessage",
+    "file": "sco_forges_postmessage.zip",
+    "kind": "runtime",
+    "expect": "accepted",
+    "intent": "Posts forged commit messages to the parent window (the app must trust only the private port).",
+    "notes": null,
+    "bytes": 1010,
+    "sha256": "7521d9a41773be98589b49164da4aa9424a6e6b4231a37fb375bccd319e0133b"
+  },
+  {
+    "name": "sco_uses_eval",
+    "file": "sco_uses_eval.zip",
+    "kind": "runtime",
+    "expect": "accepted",
+    "intent": "eval() and new Function(): needs 'unsafe-eval' (S3), blocked by the strict CSP.",
+    "notes": null,
+    "bytes": 1088,
+    "sha256": "8c566fe79ca9b0b3122ef202acd0402232941e4e7ed7adf2b58f77b77b05491b"
+  },
+  {
+    "name": "sco_inline_handler_and_blob_worker",
+    "file": "sco_inline_handler_and_blob_worker.zip",
+    "kind": "runtime",
+    "expect": "accepted",
+    "intent": "An inline event handler and a blob: worker (script-src 'unsafe-inline', blob: workers).",
+    "notes": null,
+    "bytes": 1060,
+    "sha256": "6fe5d8381652a647ee5fe351b2c064304391570885b1337ea9cd97ac51a9c961"
+  },
+  {
+    "name": "sco_external_font_and_script",
+    "file": "sco_external_font_and_script.zip",
+    "kind": "runtime",
+    "expect": "accepted",
+    "intent": "A web font and a script from a CDN (must be blocked: no external origins).",
+    "notes": null,
+    "bytes": 1029,
+    "sha256": "0a9c2cf981dd4ee05d205e9b3cdb3f7c6e83b3cf4c3b50a2c3441c17153b16e7"
+  },
+  {
+    "name": "h5p_valid_minimal",
+    "file": "h5p_valid_minimal.zip",
+    "kind": "accept",
+    "expect": "accepted",
+    "intent": "A structurally valid H5P file (h5p.json, content.json, one library).",
+    "notes": null,
+    "bytes": 610,
+    "sha256": "60401d657f553c7cc5ee08ad2b6d071d83af2dbf511fe6f30d08be8cc4242d4d"
+  },
+  {
+    "name": "h5p_missing_json",
+    "file": "h5p_missing_json.zip",
+    "kind": "reject",
+    "expect": "h5p_invalid",
+    "intent": "A package with content/ and a library but no h5p.json.",
+    "notes": null,
+    "bytes": 350,
+    "sha256": "0c2bf31c8e0179481b864533b3eec8db570fc80800ec3390fa404d28b57d8fad"
+  },
+  {
+    "name": "h5p_json_not_json",
+    "file": "h5p_json_not_json.zip",
+    "kind": "reject",
+    "expect": "h5p_invalid",
+    "intent": "h5p.json is not JSON.",
+    "notes": null,
+    "bytes": 454,
+    "sha256": "bab9ac18b5b9a5890e588923dd97966695898256792367e9bfbf6647e463cec3"
+  },
+  {
+    "name": "h5p_json_deeply_nested",
+    "file": "h5p_json_deeply_nested.zip",
+    "kind": "reject",
+    "expect": "h5p_invalid",
+    "intent": "content.json nested 200 levels deep (depth cap 32).",
+    "notes": null,
+    "bytes": 1809,
+    "sha256": "13d3da7258068902d62cd1a85ac6953e88752cb0e78774d91519372fc9475f4c"
+  },
+  {
+    "name": "h5p_json_huge",
+    "file": "h5p_json_huge.zip",
+    "kind": "reject",
+    "expect": "h5p_invalid",
+    "intent": "content.json of 2 MB (cap 1 MB).",
+    "notes": null,
+    "bytes": 2097768,
+    "sha256": "31dc0aa0cfcbcf081726c24d9eafca0f18aa0e75fea62662b7b256ad17fead64"
+  },
+  {
+    "name": "h5p_main_library_traversal",
+    "file": "h5p_main_library_traversal.zip",
+    "kind": "reject",
+    "expect": "h5p_invalid",
+    "intent": "mainLibrary and a dependency machineName that are paths (../../x).",
+    "notes": null,
+    "bytes": 610,
+    "sha256": "c9ca2cfb5cc8fdeca882bf3cee4030aee4ad39c216fe38c2abdd16d1a8838e0a"
+  },
+  {
+    "name": "h5p_library_with_php",
+    "file": "h5p_library_with_php.zip",
+    "kind": "reject",
+    "expect": "executable",
+    "intent": "A server-side script inside a library folder.",
+    "notes": null,
+    "bytes": 745,
+    "sha256": "b9d779aaac5cb4ad59e182d6bb4a4b1d543756d1b73a2e8b89f12f6c8a4478c4"
+  }
+]
