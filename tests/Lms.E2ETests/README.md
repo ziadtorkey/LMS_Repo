@@ -150,3 +150,18 @@ Run as the seeded school group's Org Admin with unique names per test (`M3Names`
 | `Root_admin_creates_course_and_a_duplicate_code_is_refused` | FR-CRS-01, D38 duplicate code | runs |
 | `Root_admin_allocates_a_new_course_below_the_school` | FR-CRS-02 | runs |
 | supervisor assigned; blueprint builder and publish v1; classes bulk create and matrix; teacher assignment; teacher sees only own class-course; publish v2 with push (polled up to 30 s); copy classes to next year | FR-CRS-04, FR-LP-*, FR-CLS-*, FR-TCH-* | to write as the FE pages (#238, #239, #240 to #243) and BE (#217, #221 to #225) land |
+
+## Scenarios (M5, plan #621 Task 42: `M5/GradebookTests`) - scaffold, skipped
+Exit demo 1 of M5 (FR-GRD-01..05), ar (RTL) and en. Every scenario is `Skip`-marked (`M5TestBase.NeedsGradebook`) until the gradebook contract (#625), engine, publishing and FE pages land; each body lists the steps to implement. Page objects `GradebookPage`, `PublishItemsDialog`, `MyGradesPage`, `ChildGradesPage` hold the expected test ids; align them with the FE pages when those merge.
+
+| Scenario | Checks |
+|---|---|
+| `Teacher_sets_weights_enters_a_manual_score_and_publishes` | weights chip 100, manual score, publish now |
+| `Student_sees_the_published_item_and_total` | published item, category/final/band over published items only, no rank or statistics |
+| `Guardian_sees_the_same_published_grade` | same data as the student; a foreign child id answers like an unknown id |
+| `Unpublished_item_is_invisible_to_student_and_guardian` | marker title and score absent in UI and API; total unchanged |
+| `Quiz_score_appears_as_a_hidden_auto_item` | auto item starts Hidden (L3), visible after publish |
+| `Scheduled_item_appears_after_the_time` | invisible before, visible once after the scheduled job, no fixed sleep |
+| `Grid_is_operable_by_keyboard_only` | arrows, Enter/F2, Tab, Esc, Shift+F10, focus never obscured, accessible names and states (L24) |
+
+The leak checks follow `docs/security/m5-review.md` section 1.
