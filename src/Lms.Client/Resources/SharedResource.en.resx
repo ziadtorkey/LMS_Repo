@@ -180,6 +180,12 @@
   <data name="Error_invalid_context" xml:space="preserve"><value>Your selected role is no longer valid. Please choose a role again.</value></data>
   <data name="Error_context_required" xml:space="preserve"><value>Please choose a role first.</value></data>
   <data name="Audit_Title" xml:space="preserve"><value>Audit log</value></data>
+  <data name="Audit_Subtitle" xml:space="preserve"><value>Who changed what and when, plus sign-in and security events. Open an entry to see the changed values.</value></data>
+  <data name="Audit_EmptyTitle" xml:space="preserve"><value>No entries match</value></data>
+  <data name="Audit_EmptyText" xml:space="preserve"><value>Change the filters or widen the date range.</value></data>
+  <data name="Audit_FilterByUser" xml:space="preserve"><value>Show only this person's entries</value></data>
+  <data name="Audit_NoChanges" xml:space="preserve"><value>No field values were recorded for this entry.</value></data>
+  <data name="Audit_Field" xml:space="preserve"><value>Field</value></data>
   <data name="Audit_When" xml:space="preserve"><value>When</value></data>
   <data name="Audit_Who" xml:space="preserve"><value>Who</value></data>
   <data name="Audit_Role" xml:space="preserve"><value>Role</value></data>
@@ -1153,4 +1159,37 @@
   <data name="LibraryType_Other" xml:space="preserve"><value>Other</value></data>
   <data name="Module_Url" xml:space="preserve"><value>Link address (https://...)</value></data>
   <data name="Module_Completion" xml:space="preserve"><value>Completion</value></data>
+  <data name="ClassCourse_Sections" xml:space="preserve"><value>Class course sections</value></data>
+  <data name="ClassCourse_TabPlan" xml:space="preserve"><value>Plan</value></data>
+  <data name="ClassCourse_TabForum" xml:space="preserve"><value>Forum</value></data>
+  <data name="ClassCourse_TabAnnouncements" xml:space="preserve"><value>Announcements</value></data>
+  <data name="Forum_Title" xml:space="preserve"><value>Forum</value></data>
+  <data name="Forum_NewThread" xml:space="preserve"><value>New thread</value></data>
+  <data name="Forum_ThreadTitle" xml:space="preserve"><value>Title</value></data>
+  <data name="Forum_Message" xml:space="preserve"><value>Message</value></data>
+  <data name="Forum_Post" xml:space="preserve"><value>Post</value></data>
+  <data name="Forum_Reply" xml:space="preserve"><value>Reply</value></data>
+  <data name="Forum_Empty" xml:space="preserve"><value>No threads yet.</value></data>
+  <data name="Forum_Pinned" xml:space="preserve"><value>Pinned</value></data>
+  <data name="Forum_Locked" xml:space="preserve"><value>Locked</value></data>
+  <data name="Forum_Replies" xml:space="preserve"><value>{0} replies</value></data>
+  <data name="Forum_Back" xml:space="preserve"><value>Back to the forum</value></data>
+  <data name="Forum_Moderate" xml:space="preserve"><value>Moderate</value></data>
+  <data name="Forum_Pin" xml:space="preserve"><value>Pin</value></data>
+  <data name="Forum_Unpin" xml:space="preserve"><value>Unpin</value></data>
+  <data name="Forum_Lock" xml:space="preserve"><value>Lock</value></data>
+  <data name="Forum_Unlock" xml:space="preserve"><value>Unlock</value></data>
+  <data name="Forum_DeleteThread" xml:space="preserve"><value>Delete thread</value></data>
+  <data name="Forum_DeleteThreadConfirm" xml:space="preserve"><value>Delete this thread and all its replies?</value></data>
+  <data name="Forum_DeletePostConfirm" xml:space="preserve"><value>Delete this reply?</value></data>
+  <data name="Forum_LockedNote" xml:space="preserve"><value>This thread is locked: no new replies.</value></data>
+  <data name="Forum_Edited" xml:space="preserve"><value>(edited)</value></data>
+  <data name="Announcements_Title" xml:space="preserve"><value>Announcements</value></data>
+  <data name="Announcements_Notify" xml:space="preserve"><value>Notify the students</value></data>
+  <data name="Announcements_Publish" xml:space="preserve"><value>Publish</value></data>
+  <data name="Announcements_Empty" xml:space="preserve"><value>No announcements yet.</value></data>
+  <data name="Announcements_DeleteConfirm" xml:space="preserve"><value>Delete the announcement {0}?</value></data>
+  <data name="Announcements_FormTitle" xml:space="preserve"><value>Announcement title</value></data>
+  <data name="Forum_MoreReplies" xml:space="preserve"><value>Show more replies ({0} more)</value></data>
+  <data name="Forum_MoreThreads" xml:space="preserve"><value>Show more threads ({0} more)</value></data>
 </root>

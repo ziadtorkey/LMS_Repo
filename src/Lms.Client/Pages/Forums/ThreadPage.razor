@@ -1,0 +1,167 @@
+@page "/class-courses/{Id:guid}/forum/{ThreadId:guid}"
+@attribute [Authorize]
+@using Lms.Client.Components
+@using Lms.Client.Components.Editors
+@using Lms.Client.Services.Api
+@using Lms.Shared.Authorization
+@using Lms.Shared.Forums
+@inject IForumsApi Forum
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject IDialogService Dialogs
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<PageTitle>@(_detail?.Thread.Title ?? L["Forum_Title"].Value)</PageTitle>
+<ClassCourseTabs ClassCourseId="Id" Active="forum" />
+@if (!PermState.Loaded || _loading)
+{
+    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+}
+else if (!PermState.Has(Permissions.Forums.View))
+{
+    <MudAlert Severity="Severity.Warning" data-testid="thread-forbidden">@L["Forbidden_Title"]</MudAlert>
+}
+else if (_detail is null)
+{
+    <MudAlert Severity="Severity.Error" data-testid="thread-error">@(_error ?? L["Api_Error"].Value)</MudAlert>
+}
+else
+{
+    var thread = _detail.Thread;
+    <MudStack Spacing="3">
+        <MudLink Href="@($"class-courses/{Id}/forum")" data-testid="thread-back">@L["Forum_Back"]</MudLink>
+        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+            <MudText Typo="Typo.h5" data-testid="thread-title">@thread.Title</MudText>
+            @if (thread.IsPinned)
+            {
+                <MudChip T="string" Size="Size.Small" Color="Color.Primary" data-testid="thread-pinned">@L["Forum_Pinned"]</MudChip>
+            }
+            @if (thread.IsLocked)
+            {
+                <MudChip T="string" Size="Size.Small" Icon="@Icons.Material.Filled.Lock" data-testid="thread-locked">@L["Forum_Locked"]</MudChip>
+            }
+            <MudSpacer />
+            @if (_detail.CanModerate)
+            {
+                <MudMenu Label="@L["Forum_Moderate"]" Variant="Variant.Outlined" Size="Size.Small" data-testid="thread-moderate">
+                    <MudMenuItem OnClick="() => ModerateAsync(!thread.IsPinned, thread.IsLocked)" data-testid="thread-pin">@L[thread.IsPinned ? "Forum_Unpin" : "Forum_Pin"]</MudMenuItem>
+                    <MudMenuItem OnClick="() => ModerateAsync(thread.IsPinned, !thread.IsLocked)" data-testid="thread-lock">@L[thread.IsLocked ? "Forum_Unlock" : "Forum_Lock"]</MudMenuItem>
+                    <MudMenuItem OnClick="() => DeleteAsync(_detail.OpeningPost, true)" data-testid="thread-delete">@L["Forum_DeleteThread"]</MudMenuItem>
+                </MudMenu>
+            }
+        </MudStack>
+
+        @if (_error is not null)
+        {
+            <MudAlert Severity="Severity.Error" data-testid="thread-action-error">@_error</MudAlert>
+        }
+
+        <PostView Post="_detail.OpeningPost" />
+        @foreach (var post in _replies)
+        {
+            <PostView Post="post" OnDelete="p => DeleteAsync(p, false)" />
+        }
+        @if (_replies.Count < _repliesTotal)
+        {
+            <div>
+                <MudButton Variant="Variant.Outlined" OnClick="MoreAsync" Disabled="_loadingMore" data-testid="thread-more">@L["Forum_MoreReplies", _repliesTotal - _replies.Count]</MudButton>
+            </div>
+        }
+
+        @if (thread.IsLocked)
+        {
+            <MudAlert Severity="Severity.Info" data-testid="thread-locked-note">@L["Forum_LockedNote"]</MudAlert>
+        }
+        else if (_detail.CanReply)
+        {
+            <PostComposer ClassCourseId="Id" Label="@L["Forum_Reply"]" SendLabel="@L["Forum_Reply"]" TestId="thread-reply" OnSubmit="ReplyAsync" />
+        }
+    </MudStack>
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+    [Parameter] public Guid ThreadId { get; set; }
+
+    private ForumThreadDetailDto? _detail;
+    private List<ForumPostDto> _replies = [];
+    private int _repliesTotal, _repliesPage = 1;
+    private bool _loadingMore;
+    private string? _error;
+    private bool _loading = true;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        PermState.Changed -= OnPermissionsChanged;
+        PermState.Changed += OnPermissionsChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        _repliesPage = 1;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync(bool silent = false)
+    {
+        // After an action the page refreshes in place: no spinner, so the composer keeps its place.
+        if (!silent) { _loading = true; _detail = null; }
+        _error = null;
+        if (PermState.Has(Permissions.Forums.View))
+        {
+            await ApiCalls.RunAsync(async () =>
+            {
+                _detail = await Forum.GetThreadAsync(ThreadId);
+                // Reload every page loaded so far (an action such as a reply must not collapse the list back to page one).
+                var loaded = new List<ForumPostDto>();
+                var total = 0;
+                for (var page = 1; page <= _repliesPage; page++)
+                {
+                    var result = await Forum.ListPostsAsync(ThreadId, page);
+                    loaded.AddRange(result.Items);
+                    total = result.Total;
+                }
+                _replies = loaded.OrderBy(p => p.CreatedAtUtc).ToList();
+                _repliesTotal = total;
+            }, Navigation, L, m => _error = m);
+        }
+        _loading = false;
+        if (silent) StateHasChanged();
+    }
+
+    private async Task MoreAsync()
+    {
+        _loadingMore = true;
+        _repliesPage++;
+        await LoadAsync(silent: true);
+        _loadingMore = false;
+    }
+
+    private async Task<bool> ReplyAsync(string html, IReadOnlyList<Guid> attachments)
+    {
+        _error = null;
+        var ok = await ApiCalls.RunAsync(() => Forum.CreatePostAsync(ThreadId, new CreateForumPostRequest(html, attachments)), Navigation, L, m => _error = m);
+        if (ok) await LoadAsync(silent: true);
+        return ok;
+    }
+
+    private async Task ModerateAsync(bool pinned, bool locked)
+    {
+        _error = null;
+        var ok = await ApiCalls.RunAsync(() => Forum.ModerateAsync(ThreadId, new ModerateForumThreadRequest(pinned, locked)), Navigation, L, m => _error = m);
+        if (ok) await LoadAsync(silent: true);
+    }
+
+    private async Task DeleteAsync(ForumPostDto post, bool wholeThread)
+    {
+        var message = L[wholeThread ? "Forum_DeleteThreadConfirm" : "Forum_DeletePostConfirm"].Value;
+        if (!await ConfirmDialog.AskAsync(Dialogs, L["Confirm_DeleteTitle"], message)) return;
+        _error = null;
+        var ok = await ApiCalls.RunAsync(() => Forum.DeletePostAsync(post.Id), Navigation, L, m => _error = m);
+        if (!ok) return;
+        if (wholeThread) Navigation.NavigateTo($"class-courses/{Id}/forum");
+        else await LoadAsync(silent: true);
+    }
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => PermState.Changed -= OnPermissionsChanged;
+}
