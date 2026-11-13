@@ -36,16 +36,24 @@ jobs:
       - name: Unit tests
         run: dotnet test tests/Lms.UnitTests -c Release --no-build
       - name: Integration tests (Testcontainers)
+        # A hang used to eat the whole 6 h job limit with no output. The blame options name the test that did not finish within 15 minutes
+        # and write a dump of it; the step limit makes the job fail fast instead of occupying a runner for hours.
+        timeout-minutes: 60
         env:
           LMS_PERF_BUDGET_FACTOR: "3" # shared runners are about 2x slower than a developer machine (X-09 budget scales)
           LMS_CONN_LOG: ${{ runner.temp }}/mysql-connections.log # #466: MySQL connections by user/query every 15 s
-        run: dotnet test tests/Lms.IntegrationTests -c Release --no-build
-      - name: Upload MySQL connection samples
-        if: failure()
+        run: >
+          dotnet test tests/Lms.IntegrationTests -c Release --no-build
+          --blame-hang-timeout 15m --blame-hang-dump-type mini
+          --results-directory TestResults
+      - name: Upload MySQL connection samples and hang diagnostics
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: mysql-connections
-          path: ${{ runner.temp }}/mysql-connections.log
+          name: integration-diagnostics
+          path: |
+            ${{ runner.temp }}/mysql-connections.log
+            TestResults/**
           if-no-files-found: ignore
           retention-days: 7
       - name: Client tests
