@@ -7,9 +7,9 @@ namespace Lms.UnitTests.Access;
 public class BuiltInRoleDefaultsTests
 {
     [Fact]
-    public void Current_version_is_3_for_the_M3_defaults()
+    public void Current_version_is_5_for_the_M4a_wave_2_defaults()
     {
-        Assert.Equal(3, BuiltInRoleDefaults.CurrentVersion);
+        Assert.Equal(5, BuiltInRoleDefaults.CurrentVersion);
     }
 
     [Theory]
@@ -24,26 +24,33 @@ public class BuiltInRoleDefaultsTests
     [InlineData(Permissions.Courses.ManageSupervisors, 3)]
     [InlineData(Permissions.Blueprints.Publish, 3)]
     [InlineData(Permissions.LessonPlans.View, 3)]
+    [InlineData(Permissions.Modules.View, 4)]
+    [InlineData(Permissions.Modules.Manage, 4)]
+    [InlineData(Permissions.CourseAssignments.Submit, 5)]
+    [InlineData(Permissions.CourseAssignments.Grade, 5)]
+    [InlineData(Permissions.Quizzes.Attempt, 5)]
+    [InlineData(Permissions.Library.Manage, 5)]
+    [InlineData(Permissions.Forums.Moderate, 5)]
     public void Each_permission_has_the_version_that_introduced_it(string permission, int version)
     {
         Assert.Equal(version, BuiltInRoleDefaults.IntroducedIn(permission));
     }
 
     [Fact]
-    public void A_version_1_role_only_receives_the_M2_and_M3_defaults()
+    public void A_version_1_role_only_receives_the_M2_M3_and_M4a_defaults()
     {
         var added = BuiltInRoles.Get(BuiltInRoles.Counselor).DefaultPermissions
             .Where(p => BuiltInRoleDefaults.IntroducedIn(p) > 1)
             .Order(StringComparer.Ordinal);
 
         Assert.Equal(
-            ["Classes.View", "Enrollment.RequestException", "Enrollment.View", "Groups.View", "Staff.View",
-             "Students.ApproveChanges", "Students.Update", "Students.View"],
+            ["Classes.View", "Enrollment.RequestException", "Enrollment.View", "Groups.View", "Library.View",
+             "Staff.View", "Students.ApproveChanges", "Students.Update", "Students.View"],
             added);
     }
 
     [Fact]
-    public void A_version_2_role_only_receives_the_M3_defaults()
+    public void A_version_2_role_receives_the_M3_and_M4a_defaults()
     {
         var added = BuiltInRoles.Get(BuiltInRoles.Guardian).DefaultPermissions
             .Where(p => BuiltInRoleDefaults.IntroducedIn(p) > 2)
@@ -53,8 +60,72 @@ public class BuiltInRoleDefaultsTests
             .ToList();
 
         Assert.Equal(["Students.ViewChildren"], added);
-        Assert.Equal(33, orgAdmin.Count);
+        Assert.Equal(46, orgAdmin.Count);
+        Assert.Equal(33, orgAdmin.Count(p => BuiltInRoleDefaults.IntroducedIn(p) == 3));
+        Assert.Equal(11, orgAdmin.Count(p => BuiltInRoleDefaults.IntroducedIn(p) == 5));
         Assert.DoesNotContain(orgAdmin, p => p.StartsWith("Staff.", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void A_version_3_role_receives_both_M4a_waves()
+    {
+        string[] Added(string role) => BuiltInRoles.Get(role).DefaultPermissions
+            .Where(p => BuiltInRoleDefaults.IntroducedIn(p) > 3)
+            .Where(p => p.StartsWith("Modules.", StringComparison.Ordinal))
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.Equal(["Modules.Manage", "Modules.View"], Added(BuiltInRoles.OrgAdmin));
+        Assert.Equal(["Modules.Manage", "Modules.View"], Added(BuiltInRoles.Manager));
+        Assert.Equal(["Modules.View"], Added(BuiltInRoles.Supervisor));
+        Assert.Equal(["Modules.Manage", "Modules.View"], Added(BuiltInRoles.Teacher));
+        Assert.Equal(["Modules.View"], Added(BuiltInRoles.Student));
+        Assert.Empty(Added(BuiltInRoles.Counselor));
+        Assert.Empty(Added(BuiltInRoles.Guardian));
+        Assert.Equal(13, BuiltInRoles.Get(BuiltInRoles.Teacher).DefaultPermissions.Count(p => BuiltInRoleDefaults.IntroducedIn(p) > 3));
+    }
+
+    [Fact]
+    public void A_version_4_role_only_receives_the_M4a_wave_2_defaults()
+    {
+        string[] Added(string role) => BuiltInRoles.Get(role).DefaultPermissions
+            .Where(p => BuiltInRoleDefaults.IntroducedIn(p) > 4)
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        string[] staffSide =
+        [
+            "CourseAssignments.Grade", "CourseAssignments.Manage", "CourseAssignments.View", "Forums.Moderate",
+            "Forums.Post", "Forums.View", "Library.Manage", "Library.View", "Quizzes.Grade", "Quizzes.Manage",
+            "Quizzes.View",
+        ];
+        Assert.Equal(staffSide, Added(BuiltInRoles.OrgAdmin));
+        Assert.Equal(staffSide, Added(BuiltInRoles.Manager));
+        Assert.Equal(staffSide, Added(BuiltInRoles.Teacher));
+        Assert.Equal(
+            ["CourseAssignments.View", "Forums.View", "Library.Manage", "Library.View", "Quizzes.View"],
+            Added(BuiltInRoles.Supervisor));
+        Assert.Equal(["Library.View"], Added(BuiltInRoles.Counselor));
+        Assert.Equal(
+            ["CourseAssignments.Submit", "CourseAssignments.View", "Forums.Post", "Forums.View", "Library.View",
+             "Quizzes.Attempt", "Quizzes.View"],
+            Added(BuiltInRoles.Student));
+        Assert.Empty(Added(BuiltInRoles.Guardian));
+    }
+
+    [Fact]
+    public void Every_M4a_wave_1_permission_is_introduced_in_version_4() =>
+        Assert.All(Permissions.All.Where(p => p.StartsWith("Modules.", StringComparison.Ordinal)),
+            p => Assert.Equal(4, BuiltInRoleDefaults.IntroducedIn(p)));
+
+    [Fact]
+    public void Every_M4a_wave_2_permission_is_introduced_in_version_5()
+    {
+        string[] wave2 = ["CourseAssignments", "Quizzes", "Library", "Forums"];
+        var permissions = Permissions.All.Where(p => wave2.Contains(p[..p.IndexOf('.')])).ToList();
+
+        Assert.Equal(13, permissions.Count);
+        Assert.All(permissions, p => Assert.Equal(5, BuiltInRoleDefaults.IntroducedIn(p)));
     }
 
     [Fact]

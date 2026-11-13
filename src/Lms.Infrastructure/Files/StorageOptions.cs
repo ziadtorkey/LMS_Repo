@@ -3,7 +3,7 @@ namespace Lms.Infrastructure.Files;
 /// <summary>Bound from the Storage configuration section.</summary>
 public sealed class StorageOptions
 {
-    public const string DefaultAllowedExtensions = ".pdf,.docx,.pptx,.xlsx,.jpg,.jpeg,.png,.mp4,.mp3,.zip";
+    public const string DefaultAllowedExtensions = ".pdf,.docx,.pptx,.xlsx,.jpg,.jpeg,.png,.mp4,.mp3,.zip,.txt,.gif,.webp,.m4a,.ogg,.wav,.webm";
 
     /// <summary>S3-compatible endpoint the API talks to, for example http://localhost:9000.</summary>
     public string Endpoint { get; set; } = string.Empty;

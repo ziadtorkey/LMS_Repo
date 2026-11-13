@@ -29,6 +29,19 @@ public sealed class ApiHttp(HttpClient http, IContextStore context)
         return JsonSerializer.Deserialize<TResponse>(text, JsonSerializerOptions.Web);
     }
 
+    /// <summary>Like <see cref="SendAsync{TResponse}"/> but also returns the value of one response header (null when absent).</summary>
+    public async Task<(TResponse? Value, string? Header)> SendWithHeaderAsync<TResponse>(
+        HttpMethod method, string route, object? body, string headerName, CancellationToken ct = default)
+    {
+        using var response = await SendCoreAsync(method, route, body, ct);
+        var header = response.Headers.TryGetValues(headerName, out var values) ? values.FirstOrDefault() : null;
+        var text = await response.Content.ReadAsStringAsync(ct);
+        var value = response.StatusCode == HttpStatusCode.NoContent || string.IsNullOrWhiteSpace(text)
+            ? default
+            : JsonSerializer.Deserialize<TResponse>(text, JsonSerializerOptions.Web);
+        return (value, header);
+    }
+
     public async Task SendAsync(HttpMethod method, string route, object? body, CancellationToken ct = default)
     {
         using var response = await SendCoreAsync(method, route, body, ct);
@@ -43,9 +56,12 @@ public sealed class ApiHttp(HttpClient http, IContextStore context)
         request.Headers.AcceptLanguage.ParseAdd(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName);
         var file = new StreamContent(content);
         file.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
-        var form = new MultipartFormDataContent { { file, "file", fileName } };
+        // The fields (classCourseId, orgUnitId...) go BEFORE the file part: the server streams the multipart body and needs them
+        // first (a body with the file first is refused with 400).
+        var form = new MultipartFormDataContent();
         foreach (var (name, value) in fields ?? new Dictionary<string, string>())
             form.Add(new StringContent(value), name);
+        form.Add(file, "file", fileName);
         request.Content = form;
 
         using var response = await http.SendAsync(request, ct);

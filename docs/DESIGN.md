@@ -13,6 +13,7 @@ Where things live:
 | Light/dark preference | `src/Lms.Client/wwwroot/js/theme.js` (`lms.theme` in localStorage; otherwise the device setting) |
 | Shared presentational components | `src/Lms.Client/Components/Ui/` |
 | Page-specific old rules (calendar, org tree, import) | `src/Lms.Client/wwwroot/css/app.css` |
+| Live session and package surfaces (M4b) | `src/Lms.Client/wwwroot/css/lms-activities.css` (spec: `docs/design/m4b-live-and-packages.md`) |
 
 The UI/UX designer (`lane:ux`) owns these files. Frontend developers use them and do not fork them. If you need a new token or component, ask in your PR or open a `lane:ux` issue.
 
@@ -103,11 +104,30 @@ The "Active" status chip is green on purpose; the product owner decided to keep 
 
 Other patterns:
 - **Chips:** `Size.Small`. Roles use `Variant.Outlined` (`lms-role-chip`). States use `Variant.Text` with a colour, which gives a soft tint. Status chips carry a text label, not only a colour.
+- **Small, unpaged lists in `MudSimpleTable`:** use `Elevation="0" Class="lms-simple-table lms-stack-table"` inside a `SectionCard Flush`. Give each `td` a `data-label` attribute so phones show labelled cards. Put the actions cell in `<td class="lms-cell-actions">` with the actions title visually hidden.
+- **Row actions:** wrap icon buttons in `<div class="lms-row-actions">`. They render in the quiet action colour. Put risky actions last, in Warning or Error colour, after a `<span class="lms-row-actions-sep">`. Each icon button needs an `aria-label` and, in dense groups, a `MudTooltip` with the same text.
 - **Person cell in a table:** `<div class="lms-person-cell">` holds the avatar plus a `MudLink` with class `lms-person-link`.
 - **Alerts:** `Variant.Outlined` for page-level info and errors. An error tells the user what to do next.
 - **Helpers:** `lms-muted` (secondary text), `lms-cell-strong`, `lms-date-cell`, `lms-visually-hidden`, `lms-chip-row`.
 
 ---
+
+### M4b classes (`lms-activities.css`)
+
+| Class | Markup |
+|---|---|
+| `lms-live-dot` | `<span class="lms-live-dot"></span>` inside the "Live now" chip |
+| `lms-when` | `<span class="lms-when"><span class="lms-when-date">2026-11-20</span><span class="lms-when-time">10:00–11:00</span></span>` |
+| `lms-host-hint` | `<span class="lms-host-hint">zoom.us</span>` next to an external link |
+| `lms-recurrence-preview` | a `div` holding `<div class="lms-recurrence-preview-count" role="status">` (add `lms-invalid` above 52) and a `<ul>` of dates |
+| `lms-day-toggles` | a `div role="group"` of `MudButton`s with `aria-pressed` |
+| `lms-choice` | a `label` row around a radio, title and caption; add `lms-choice-on` to the selected row |
+| `lms-kind-tile`, `lms-date-block` | a 40 px icon tile; a 44 px block with `lms-date-block-day` and `lms-date-block-month` |
+| `lms-join-panel` | the soft panel under a live session summary |
+| `lms-steps` | an `<ol>`; each `li` holds `lms-step-number` and `lms-step-label`; mark it `lms-step-done`, `aria-current="step"` or `lms-step-failed`; put `<span class="lms-step-of">Step 2 of 3 ·</span>` inside the current label (shown on phones only) |
+| `lms-dropzone`, `lms-file-row` | the dashed upload area (add `lms-dropzone-active` while dragging); a file row with `lms-file-row-main` and `lms-file-row-name` |
+| `lms-player` | the container, holding an optional `lms-preview-strip`, then `lms-player-bar` (`lms-player-title`, `lms-save-state`, Full screen, Exit), then `lms-player-stage` holding the `iframe.lms-player-frame` and an optional `lms-player-overlay` |
+| `lms-save-state` | the save status text; add `lms-save-failed` on failure |
 
 ## 4. Bilingual and RTL
 
@@ -145,3 +165,25 @@ Other patterns:
 
 - Tokens and shared components change only in `lane:ux` PRs. Frontend developers can propose changes in their PR description.
 - Keep `LmsTheme.cs`, `lms-theme.css` and this file in sync. A new rule or component also goes in the `lms-ui` skill (`.claude/skills/lms-ui/SKILL.md`).
+
+## 8. Phase 2 status (page-by-page passes)
+
+This list was last updated on 2026-11-12. "Waiting" means an open feature PR touches the page; it gets its pass after that PR merges.
+
+| Module / pages | Status | Issue → PR |
+|---|---|---|
+| Theme, shell, Staff list, Staff profile, Edit staff | Done (pilot, merged) | #327 → #334 |
+| Organization: org tree, level types, templates, their dialogs | In review | #402 → #404 |
+| Organization: unit settings page and its tabs | Waiting (#287, #291) | — |
+| Academic years: years, terms, calendar | In review (on top of #404) | #407 → #409 |
+| Access: roles, role editor, SSO providers | In review (on top of #404) | #411 → #412 |
+| Access: role assignments | Waiting (#203) | — |
+| Audit log and detail drawer | In review (on top of #404) | #413 → #414 |
+| Clients (platform admin) | In review (on top of #404) | #416 → #417 |
+| Notifications and preferences | In review (on top of #404) | #419 → #420 |
+| Staff import: page frame only (back link, loading) | In review | #422 → this PR |
+| Import wizard and history (`Components/Imports`), used by Staff, Students, Courses and Classes imports | Waiting (#316) | — |
+| Home | Waiting (#309, #392, #396) | — |
+| Courses: list, profile, tabs, My courses, dialog, import, blueprint builder | FE1, in progress (on its own PR stack; designer gives an advisory review) | — |
+| Students, guardians, change requests, Me pages | Waiting (#303, #309, #316) | — |
+| Classes, enrollment, groups | Waiting (#317, #322, #324) | — |

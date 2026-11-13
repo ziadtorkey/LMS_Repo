@@ -148,4 +148,42 @@ public sealed class CourseImportTests(LmsApiFactory factory) : IDisposable
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
+
+    [Fact]
+    public async Task Import_can_allocate_courses_to_listed_units_and_rejects_units_outside_the_owner_subtree()
+    {
+        var (tree, admin) = await SetUpAsync("CI6");
+        string[] headers = [.. Headers, "Allocate to unit codes"];
+        var ok = "AO" + Guid.NewGuid().ToString("N")[..6];
+        var bad = "AB" + Guid.NewGuid().ToString("N")[..6];
+
+        async Task<Guid> UploadWithAllocationAsync(params string?[][] rows)
+        {
+            var response = await _host.UploadAsync(
+                admin, tree.Root.Id, XlsxBuilder.Create(headers, rows), "courses.xlsx", "en", ImportKinds.Courses);
+            var id = JsonDocument.Parse(await response.Content.ReadAsStringAsync()).RootElement.GetProperty("id").GetGuid();
+            await _host.RunQueuedJobsAsync();
+            return id;
+        }
+
+        // owned at the root, allocated at School 1 and School 2
+        var good = await UploadWithAllocationAsync([.. Row(ok, tree.Root.Code), tree.School1.Code + ";" + tree.School2.Code]);
+        Assert.Equal("Valid", (await _host.BatchAsync(factory, good)).Status);
+        await _host.SendAsync(HttpMethod.Post, Routes.ImportCommit(ImportKinds.Courses, good), admin);
+        await _host.RunQueuedJobsAsync();
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            var course = await db.Set<Course>().SingleAsync(c => c.Code == ok);
+            Assert.Equal(
+                new[] { tree.School1.Id, tree.School2.Id }.Order(),
+                (await db.Set<CourseAllocation>().Where(a => a.CourseId == course.Id).Select(a => a.OrgUnitId).ToListAsync()).Order());
+        }
+
+        // owned at School 1 it cannot be allocated at School 2; an unknown code is an error too
+        var invalid = await UploadWithAllocationAsync(
+            [.. Row(bad, tree.School1.Code), tree.School2.Code],
+            [.. Row(bad + "2", tree.School1.Code), "NOPE"]);
+        Assert.Equal("Invalid", (await _host.BatchAsync(factory, invalid)).Status);
+        Assert.Equal(0, await CountAsync(bad));
+    }
 }
