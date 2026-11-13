@@ -15,6 +15,7 @@ public sealed class MinioPackageStore(MinioClients clients) : IPackageStore
 
     public async Task PutAsync(string prefix, string relativePath, string contentType, Stream content, long length, CancellationToken ct = default)
     {
+        EnsureSafe(prefix, relativePath);
         await clients.EnsureBucketAsync(Bucket, ct);
         await clients.Client.PutObjectAsync(
             new PutObjectArgs().WithBucket(Bucket).WithObject(prefix + relativePath).WithStreamData(content).WithObjectSize(length)
@@ -24,6 +25,7 @@ public sealed class MinioPackageStore(MinioClients clients) : IPackageStore
 
     public async Task<PackageFile?> OpenAsync(string prefix, string relativePath, CancellationToken ct = default)
     {
+        EnsureSafe(prefix, relativePath);
         await clients.EnsureBucketAsync(Bucket, ct);
         var key = prefix + relativePath;
         try
@@ -69,5 +71,19 @@ public sealed class MinioPackageStore(MinioClients clients) : IPackageStore
             new RemoveObjectsArgs().WithBucket(Bucket).WithObjects(relative.Select(r => prefix + r).ToList()), ct);
         _ = results;
         return relative.Count;
+    }
+
+    /// <summary>
+    /// Defence in depth: the hardening reader never lets a bad path through, but the store does not trust its caller either. A relative path may
+    /// not climb (<c>..</c>), be rooted, use a backslash or contain a control character, and the prefix must be a <c>{org}/{package}/</c> pair.
+    /// </summary>
+    private static void EnsureSafe(string prefix, string relativePath)
+    {
+        var bad = relativePath.Length == 0 || relativePath.StartsWith('/') || relativePath.Contains('\\') || relativePath.Any(char.IsControl)
+                  || relativePath.Split('/').Any(segment => segment is ".." or "." or "") || prefix.Split('/', StringSplitOptions.RemoveEmptyEntries).Length != 2;
+        if (bad)
+        {
+            throw new ArgumentException("An unsafe package store path.", nameof(relativePath));
+        }
     }
 }

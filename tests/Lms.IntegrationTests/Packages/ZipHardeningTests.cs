@@ -127,6 +127,57 @@ public sealed class ZipHardeningTests
         Assert.Equal(' ', decoded[127]);
     }
 
+    private static Task<ZipInspection> InspectAsync(params string[] names) =>
+        InspectBytesAsync(Lms.IntegrationTests.Packages.Corpus.RawZipWriter.Write(names.Select(n => Lms.IntegrationTests.Packages.Corpus.RawZipWriter.File(n, "x"))));
+
+    private static async Task<ZipInspection> InspectBytesAsync(byte[] bytes) => await ZipHardening.InspectAsync(new MemoryStream(bytes), new ZipHardeningLimits());
+
+    [Theory]
+    [InlineData("a\u061Cb.js", "bad_name_encoding")]
+    [InlineData("a\u2028b.js", "bad_name_encoding")]
+    [InlineData("a\u00ADb.js", "bad_name_encoding")]
+    [InlineData("a\u180Eb.js", "bad_name_encoding")]
+    [InlineData("page.php.txt", "executable")]
+    [InlineData("tool.PHAR", "executable")]
+    [InlineData("run.php5", "executable")]
+    [InlineData("a.vbs", "executable")]
+    [InlineData("a.hta", "executable")]
+    [InlineData("a.py", "executable")]
+    [InlineData("file.txt:stream", "unsafe_path")]
+    public async Task Extra_name_and_extension_rules_refuse_the_name(string name, string reason)
+    {
+        var result = await InspectAsync("imsmanifest.xml", name);
+
+        Assert.Equal(reason, result.RejectReason);
+    }
+
+    [Fact]
+    public async Task A_whole_path_over_the_store_key_budget_is_refused()
+    {
+        var path = string.Join('/', Enumerable.Range(0, 10).Select(_ => new string('a', 120))) + "/f.js";
+
+        Assert.Equal("bad_name", (await InspectAsync("imsmanifest.xml", path)).RejectReason);
+    }
+
+    [Theory]
+    [InlineData("a", "a/b.txt")]
+    [InlineData("a/b.txt", "a")]
+    [InlineData("A", "a/B.txt")]
+    public async Task A_file_and_a_folder_of_the_same_name_collide(string first, string second)
+    {
+        var result = await InspectAsync(first, second);
+
+        Assert.Equal("duplicate_name", result.RejectReason);
+    }
+
+    [Fact]
+    public async Task Sibling_files_and_folders_with_similar_names_do_not_collide()
+    {
+        var result = await InspectAsync("a/b.txt", "a/c.txt", "ab.txt", "a2/b.txt");
+
+        Assert.True(result.Accepted, result.Detail);
+    }
+
     [Fact]
     public async Task Extraction_yields_exactly_the_inspected_bytes_of_each_entry()
     {

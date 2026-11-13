@@ -12,7 +12,8 @@ public static partial class ZipNameRules
 {
     private static readonly HashSet<string> Executables = new(StringComparer.OrdinalIgnoreCase)
     {
-        "exe", "dll", "so", "dylib", "com", "msi", "scr", "php", "phtml", "jsp", "jspx", "asp", "aspx", "cgi", "sh", "bash", "bat", "cmd", "ps1", "pl",
+        "exe", "dll", "so", "dylib", "com", "msi", "scr", "php", "phtml", "phar", "php3", "php4", "php5", "php7", "jsp", "jspx", "asp", "aspx", "cgi", "sh",
+        "bash", "bat", "cmd", "ps1", "pl", "py", "vbs", "hta",
     };
 
     private static readonly HashSet<string> Archives = new(StringComparer.OrdinalIgnoreCase)
@@ -66,7 +67,7 @@ public static partial class ZipNameRules
 
         var isDirectory = name.EndsWith('/');
         var path = isDirectory ? name[..^1] : name;
-        if (path.Length == 0 || name.Contains('\\') || path.StartsWith('/') || DriveLetter().IsMatch(path))
+        if (path.Length == 0 || name.Contains('\\') || name.Contains(':') || path.StartsWith('/') || DriveLetter().IsMatch(path))
         {
             return PackageRejectReasons.unsafe_path;
         }
@@ -78,7 +79,7 @@ public static partial class ZipNameRules
         }
 
         var depth = isDirectory ? segments.Length : segments.Length - 1;
-        if (depth > limits.MaxDepth || segments.Any(s => s.Length > limits.MaxSegmentLength || s.EndsWith('.') || s.EndsWith(' ')
+        if (depth > limits.MaxDepth || Encoding.UTF8.GetByteCount(path) > limits.MaxPathBytes || segments.Any(s => s.Length > limits.MaxSegmentLength || s.EndsWith('.') || s.EndsWith(' ')
                 || Devices.Contains(BaseName(s))))
         {
             return PackageRejectReasons.bad_name;
@@ -90,13 +91,14 @@ public static partial class ZipNameRules
     /// <summary>The reject reason of a file name by its extension (executables and nested archives), or null.</summary>
     public static string? CheckExtension(string name)
     {
-        var extension = Path.GetExtension(name).TrimStart('.');
-        if (Executables.Contains(extension))
+        // Every dot-separated extension counts, not only the last: a.php.txt is run as PHP by some servers.
+        var parts = Path.GetFileName(name).Split('.').Skip(1).ToList();
+        if (parts.Any(Executables.Contains))
         {
             return PackageRejectReasons.executable;
         }
 
-        return Archives.Contains(extension) ? PackageRejectReasons.nested_archive : null;
+        return parts.Count > 0 && Archives.Contains(parts[^1]) ? PackageRejectReasons.nested_archive : null;
     }
 
     /// <summary>The key two names collide on: Unicode composed form, case folded, without a trailing slash.</summary>
@@ -108,9 +110,10 @@ public static partial class ZipNameRules
         return dot < 0 ? segment : segment[..dot];
     }
 
-    private static bool IsHidden(char c) =>
-        char.IsControl(c) || c == '﻿' || c is >= '​' and <= '‏' || c is >= '‪' and <= '‮' || c == '⁠'
-        || c is >= '⁦' and <= '⁩';
+    /// <summary>Control, byte-order-mark, zero-width and bidirectional characters (incl. the Arabic letter mark), line separators, soft hyphen.</summary>
+    public static bool IsHidden(char c) =>
+        char.IsControl(c) || c is '\uFEFF' or '\u061C' or '\u00AD' or '\u180E' or '\u2028' or '\u2029' or '\u2060'
+        || c is >= '\u200B' and <= '\u200F' || c is >= '\u202A' and <= '\u202E' || c is >= '\u2066' and <= '\u2069';
 
     [GeneratedRegex("^[A-Za-z]:")]
     private static partial Regex DriveLetter();

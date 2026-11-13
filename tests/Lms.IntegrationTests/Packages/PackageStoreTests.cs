@@ -62,6 +62,23 @@ public sealed class PackageStoreTests(LmsApiFactory factory)
         Assert.Empty(await store.ListAsync(other));
     }
 
+    [Theory]
+    [InlineData("../escape.txt")]
+    [InlineData("a/../b.txt")]
+    [InlineData("/rooted.txt")]
+    [InlineData("a\\b.txt")]
+    [InlineData("")]
+    [InlineData("a//b.txt")]
+    public async Task The_store_refuses_an_unsafe_relative_path(string path)
+    {
+        var store = Store(out var scope);
+        using var disposable = scope;
+        var prefix = IPackageStore.PrefixOf(Guid.NewGuid(), Guid.NewGuid());
+
+        await Assert.ThrowsAsync<ArgumentException>(() => PutAsync(store, prefix, path, "x"));
+        await Assert.ThrowsAsync<ArgumentException>(() => store.OpenAsync(prefix, path));
+    }
+
     [Fact]
     public async Task Deleting_a_prefix_removes_only_that_package()
     {

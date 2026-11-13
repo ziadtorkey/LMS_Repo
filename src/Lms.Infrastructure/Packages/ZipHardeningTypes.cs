@@ -20,6 +20,9 @@ public sealed record ZipHardeningLimits
     public int MaxSegmentLength { get; init; } = 255;
 
     public int MaxDepth { get; init; } = 20;
+
+    /// <summary>Longest whole path in bytes (the store key limit is 1024).</summary>
+    public int MaxPathBytes { get; init; } = 900;
 }
 
 /// <summary>One safe entry of an inspected archive. <see cref="Length"/> is the real uncompressed size counted while reading.</summary>

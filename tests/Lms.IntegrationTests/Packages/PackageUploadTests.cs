@@ -156,6 +156,56 @@ public sealed class PackageUploadTests(LmsApiFactory factory) : IDisposable
     }
 
     [Fact]
+    public async Task An_oversized_text_part_is_refused_without_reading_it_all()
+    {
+        var s = await SetUpAsync("PK4B");
+        var form = new MultipartFormDataContent
+        {
+            { new StringContent(new string('9', 5 * 1024 * 1024)), PackageUploadForm.LessonKey },
+            { new StringContent(PackageKinds.Scorm), PackageUploadForm.Kind },
+        };
+        form.Add(new ByteArrayContent(Zip), PackageUploadForm.File, "course.zip");
+        var request = new HttpRequestMessage(HttpMethod.Post, Routes.ClassCoursePackages(s.World.ClassCourse.Id)) { Content = form };
+
+        var response = await s.Api.SendRawAsync(request, s.World.Teacher);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal("validation_failed", await CodeAsync(response));
+        // The bound is what refused it, not a later "not a guid" check on a fully buffered string.
+        Assert.Contains("form_part_too_large", await response.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task A_form_with_too_many_text_parts_is_refused()
+    {
+        var s = await SetUpAsync("PK4C");
+        var form = new MultipartFormDataContent();
+        for (var i = 0; i < 6; i++)
+        {
+            form.Add(new StringContent("x"), "extra" + i);
+        }
+
+        form.Add(new StringContent(ContentTestHost.Lesson1.ToString()), PackageUploadForm.LessonKey);
+        form.Add(new StringContent(PackageKinds.Scorm), PackageUploadForm.Kind);
+        form.Add(new ByteArrayContent(Zip), PackageUploadForm.File, "course.zip");
+        var request = new HttpRequestMessage(HttpMethod.Post, Routes.ClassCoursePackages(s.World.ClassCourse.Id)) { Content = form };
+
+        var response = await s.Api.SendRawAsync(request, s.World.Teacher);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Hidden_characters_are_stripped_from_the_display_name()
+    {
+        var s = await SetUpAsync("PK4D");
+
+        var upload = await UploadOkAsync(s, PackageKinds.Scorm, "co\u202Eurse\u061C.zip");
+
+        Assert.Equal("course.zip", upload.FileName);
+    }
+
+    [Fact]
     public async Task An_empty_file_is_refused()
     {
         var s = await SetUpAsync("PK4");
