@@ -16,10 +16,12 @@ namespace Lms.IntegrationTests.Guardians;
 
 /// <summary>M3 Task 19 (#227, FR-STU-06, D30): guardian linking, siblings, primary, mandatory setting, matching and visibility.</summary>
 [Collection(ApiCollection.Name)]
-public sealed class GuardianEndpointsTests
+public sealed class GuardianEndpointsTests : IDisposable
 {
     private readonly LmsApiFactory _factory;
     private readonly GuardianTestKit _kit;
+
+    public void Dispose() => _kit.Dispose();
 
     public GuardianEndpointsTests(LmsApiFactory factory)
     {
