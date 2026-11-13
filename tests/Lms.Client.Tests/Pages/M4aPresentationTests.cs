@@ -110,6 +110,18 @@ public sealed partial class M4aPresentationTests : LessonPlansTestContext
     }
 
     [Fact]
+    public async Task Course_tabs_scroll_the_current_tab_into_view_once_on_first_render()
+    {
+        await OpenAsync("ar", Permissions.Forums.View);
+        var page = Render<ForumPage>(p => p.Add(x => x.Id, Cc));
+        page.WaitForElement("[data-testid=forum-empty]", Wait);
+        page.Render();
+
+        var calls = JSInterop.Invocations.Where(i => i.Identifier == "lmsTabs.revealCurrent").ToList();
+        Assert.Single(calls);
+    }
+
+    [Fact]
     public async Task Library_has_one_h1_and_an_empty_state_with_a_next_step()
     {
         await OpenAsync("en", Permissions.Library.View);

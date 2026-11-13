@@ -1,9 +1,10 @@
 @using Lms.Shared.Authorization
 @inject PermissionState PermState
+@inject IJSRuntime Js
 
 @* Plan · Forum · Announcements of one class course. The plan is always there; the other two need Forums.View.
    One row that scrolls sideways inside itself on narrow screens (lms-course-tabs): tabs never wrap or get clipped. *@
-<nav class="lms-course-tabs mb-3" aria-label="@L["ClassCourse_Sections"]" data-testid="class-course-tabs">
+<nav @ref="_nav" class="lms-course-tabs mb-3" aria-label="@L["ClassCourse_Sections"]" data-testid="class-course-tabs">
     <MudButton Href="@($"class-courses/{ClassCourseId}/plan")" Variant="@VariantOf("plan")" aria-current="@CurrentOf("plan")" data-testid="tab-plan">@L["ClassCourse_TabPlan"]</MudButton>
     @if (PermState.Has(Permissions.Forums.View))
     {
@@ -13,6 +14,17 @@
 </nav>
 
 @code {
+    private ElementReference _nav;
+
+    /// <summary>At 360 px the current tab may start outside the scrolled row; show it once, after the first render.</summary>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        try { await Js.InvokeVoidAsync("lmsTabs.revealCurrent", _nav); }
+        catch (JSDisconnectedException) { }
+        catch (InvalidOperationException) { } // prerendering or no JS runtime: nothing to scroll
+    }
+
     [Parameter, EditorRequired] public Guid ClassCourseId { get; set; }
     /// <summary>"plan", "forum" or "announcements".</summary>
     [Parameter, EditorRequired] public string Active { get; set; } = "plan";
