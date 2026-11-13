@@ -44,6 +44,9 @@ public sealed class Quiz : UnitOwnedEntity, ILiveKeyed
     public string ReviewPolicy { get; private set; }
     public int? DrawCount { get; private set; }
 
+    /// <summary>When the opened notification went out (once per quiz); null until it has.</summary>
+    public DateTime? OpenedNotifiedAtUtc { get; private set; }
+
     public void Apply(
         string? descriptionAr, string? descriptionEn, int? timeLimitMinutes, int? maxAttempts, string gradingMethod, bool shuffleQuestions,
         bool shuffleOptions, DateTime? opensAtUtc, DateTime? closesAtUtc, string reviewPolicy, int? drawCount)
