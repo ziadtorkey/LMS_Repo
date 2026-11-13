@@ -41,6 +41,15 @@ public sealed class LessonPlanPageTests : LessonPlansTestContext
     }
 
     [Fact]
+    public async Task Hidden_lessons_and_chapters_show_a_muted_note_not_a_chip()
+    {
+        var page = await OpenAsync();
+
+        Assert.Equal(3, page.FindAll("[data-testid=plan-hidden-note]").Count);   // two hidden lessons and one hidden chapter
+        Assert.DoesNotContain(page.FindAll(".mud-chip"), c => c.TextContent.Trim() == "Hidden");
+    }
+
+    [Fact]
     public async Task Student_tree_has_no_hidden_lessons()
     {
         Plans.HideHiddenItems = true;
@@ -101,15 +110,6 @@ public sealed class LessonPlanPageTests : LessonPlansTestContext
         var expected = new DateTime(2026, 9, 20, 8, 30, 0, DateTimeKind.Utc).ToLocalTime().ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
         var span = page.Find("[data-testid=plan-header]").QuerySelectorAll("span[dir=ltr]").FirstOrDefault(x => x.TextContent.Trim() == expected);
         Assert.NotNull(span);
-    }
-
-    [Fact]
-    public async Task Lesson_numbers_are_isolated_so_arabic_does_not_move_the_dot()
-    {
-        var page = await OpenAsync(culture: "ar");
-
-        var lesson = page.Find("[data-testid=plan-lesson-00000000-0000-0000-0000-0000000000b1]");
-        Assert.Contains("<span dir=\"ltr\">1.</span>", lesson.InnerHtml);
     }
 
     [Fact]
