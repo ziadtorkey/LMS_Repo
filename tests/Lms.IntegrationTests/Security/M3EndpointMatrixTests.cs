@@ -126,11 +126,15 @@ public sealed class M3EndpointMatrixTests(LmsApiFactory factory, ITestOutputHelp
     [InlineData("/api/class-courses/{id:guid}/progress", false)]
     [InlineData("/api/class-courses/{id:guid}/live-sessions", false)] // M4b: a Student reads sessions
     [InlineData("/api/class-courses/{id:guid}/packages", false)]
+    [InlineData("/api/class-courses/{id:guid}/gradebook", false)] // M5: owned by M5EndpointMatrixTests
+    [InlineData("/api/students/{id:guid}/grades", false)]
+    [InlineData("/api/classes/{id:guid}/timetable", false)]
     public void Only_m3_routes_are_in_scope(string pattern, bool m3) => Assert.Equal(m3, IsM3(pattern));
 
     private static bool IsM3(string pattern) =>
         !M4aRoutes.Is(pattern)
         && !M4bRoutes.Is(pattern)
+        && !M5Routes.Is(pattern)
         && M3Prefixes.Any(p => pattern.Equals(p, StringComparison.OrdinalIgnoreCase)
                                || pattern.StartsWith(p + "/", StringComparison.OrdinalIgnoreCase));
 
