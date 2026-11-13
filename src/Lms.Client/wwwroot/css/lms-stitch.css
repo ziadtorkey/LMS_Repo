@@ -148,7 +148,7 @@ html[data-theme="dark"] .mud-button-outlined { border-color: #334155; }
 
 /* ---------- Card headers with icon and subtitle; unit settings (issue 563) ---------- */
 .lms-section-head { justify-content: flex-start; }
-.lms-section-heading { flex: 1 1 auto; min-inline-size: 0; }
+.lms-section-head-text { flex: 1 1 auto; min-inline-size: 0; }
 .lms-section-subtitle.mud-typography { color: var(--mud-palette-text-secondary); margin-block-start: 2px; }
 .lms-section-actions { margin-inline-start: auto; }
 .lms-tabs.lms-tabs-standalone .mud-tabs-tabbar { margin: 0 0 20px; }
