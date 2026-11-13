@@ -105,15 +105,25 @@ public sealed class MinioFileStorage(
         var file = await db.Set<StoredFile>().SingleOrDefaultAsync(x => x.Id == fileId, cancellationToken)
             ?? throw new StoredFileNotFoundException(fileId);
 
-        var buffer = new MemoryStream();
-        await clients.Client.GetObjectAsync(
-            new GetObjectArgs()
-                .WithBucket(BucketFor(file.OrganizationId))
-                .WithObject(file.ObjectKey)
-                .WithCallbackStream(stream => stream.CopyTo(buffer)),
-            cancellationToken);
-        buffer.Position = 0;
-        return buffer;
+        // Spooled to a temp file that disappears with the stream, never held in memory: a 200 MB archive costs disk, not heap. Still seekable.
+        var spool = new FileStream(
+            Path.GetTempFileName(), FileMode.Create, FileAccess.ReadWrite, FileShare.None, 81920, FileOptions.DeleteOnClose | FileOptions.Asynchronous);
+        try
+        {
+            await clients.Client.GetObjectAsync(
+                new GetObjectArgs()
+                    .WithBucket(BucketFor(file.OrganizationId))
+                    .WithObject(file.ObjectKey)
+                    .WithCallbackStream(stream => stream.CopyTo(spool)),
+                cancellationToken);
+            spool.Position = 0;
+            return spool;
+        }
+        catch
+        {
+            await spool.DisposeAsync();
+            throw;
+        }
     }
 
     public async Task DeleteAsync(Guid fileId, CancellationToken cancellationToken = default)

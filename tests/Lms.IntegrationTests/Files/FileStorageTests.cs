@@ -29,6 +29,31 @@ public sealed class FileStorageTests(LmsApiFactory factory)
         new(name, "application/pdf", size ?? Pdf.Length, unitId);
 
     [Fact]
+    public async Task OpenRead_spools_to_a_seekable_temp_file_not_memory_and_removes_it_on_dispose()
+    {
+        var tree = await ConfigurationTestTree.SeedAsync(factory, "File1R");
+        var (storage, db, _) = Open(tree.AtRoot());
+        await using var _db = db;
+        var stored = await storage.UploadAsync(Request(tree.School1.Id), new MemoryStream(Pdf));
+
+        string path;
+        await using (var stream = await storage.OpenReadAsync(stored.Id))
+        {
+            var file = Assert.IsType<FileStream>(stream);
+            path = file.Name;
+            Assert.True(stream.CanSeek);
+            Assert.Equal(0, stream.Position);
+            using var copy = new MemoryStream();
+            await stream.CopyToAsync(copy);
+            Assert.Equal(Pdf, copy.ToArray());
+            stream.Position = 5;
+            Assert.Equal((byte)Pdf[5], (byte)stream.ReadByte());
+        }
+
+        Assert.False(File.Exists(path));
+    }
+
+    [Fact]
     public async Task Upload_then_presigned_url_downloads_same_bytes()
     {
         var tree = await ConfigurationTestTree.SeedAsync(factory, "File1");
