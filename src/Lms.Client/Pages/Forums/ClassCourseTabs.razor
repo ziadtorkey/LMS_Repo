@@ -1,7 +1,7 @@
 @using Lms.Shared.Authorization
 @inject PermissionState PermState
 
-@* Plan · Forum · Announcements of one class course. The plan is always there; the other two need Forums.View. *@
+@* Plan · Forum · Announcements · Gradebook of one class course. The plan is always there; forum and announcements need Forums.View, the gradebook Grades.View. *@
 <MudStack Row="true" Spacing="1" Class="mb-3" role="navigation" aria-label="@L["ClassCourse_Sections"]" data-testid="class-course-tabs">
     <MudButton Href="@($"class-courses/{ClassCourseId}/plan")" Variant="@VariantOf("plan")" data-testid="tab-plan">@L["ClassCourse_TabPlan"]</MudButton>
     @if (PermState.Has(Permissions.Forums.View))
@@ -9,11 +9,16 @@
         <MudButton Href="@($"class-courses/{ClassCourseId}/forum")" Variant="@VariantOf("forum")" data-testid="tab-forum">@L["ClassCourse_TabForum"]</MudButton>
         <MudButton Href="@($"class-courses/{ClassCourseId}/announcements")" Variant="@VariantOf("announcements")" data-testid="tab-announcements">@L["ClassCourse_TabAnnouncements"]</MudButton>
     }
+    @* M5: the gradebook of the class course (staff with Grades.View). The Attendance tab joins it with the wave 3 permission. *@
+    @if (PermState.Has(Permissions.Grades.View))
+    {
+        <MudButton Href="@($"class-courses/{ClassCourseId}/gradebook")" Variant="@VariantOf("gradebook")" data-testid="tab-gradebook">@L["ClassCourse_TabGradebook"]</MudButton>
+    }
 </MudStack>
 
 @code {
     [Parameter, EditorRequired] public Guid ClassCourseId { get; set; }
-    /// <summary>"plan", "forum" or "announcements".</summary>
+    /// <summary>"plan", "forum", "announcements" or "gradebook".</summary>
     [Parameter, EditorRequired] public string Active { get; set; } = "plan";
 
     private Variant VariantOf(string tab) => tab == Active ? Variant.Filled : Variant.Text;
