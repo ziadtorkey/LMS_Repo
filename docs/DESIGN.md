@@ -13,6 +13,7 @@ Where things live:
 | Light/dark preference | `src/Lms.Client/wwwroot/js/theme.js` (`lms.theme` in localStorage; otherwise the device setting) |
 | Shared presentational components | `src/Lms.Client/Components/Ui/` |
 | Page-specific old rules (calendar, org tree, import) | `src/Lms.Client/wwwroot/css/app.css` |
+| Live session and package surfaces (M4b) | `src/Lms.Client/wwwroot/css/lms-activities.css` (spec: `docs/design/m4b-live-and-packages.md`) |
 
 The UI/UX designer (`lane:ux`) owns these files. Frontend developers use them and do not fork them. If you need a new token or component, ask in your PR or open a `lane:ux` issue.
 
@@ -110,6 +111,23 @@ Other patterns:
 - **Helpers:** `lms-muted` (secondary text), `lms-cell-strong`, `lms-date-cell`, `lms-visually-hidden`, `lms-chip-row`.
 
 ---
+
+### M4b classes (`lms-activities.css`)
+
+| Class | Markup |
+|---|---|
+| `lms-live-dot` | `<span class="lms-live-dot"></span>` inside the "Live now" chip |
+| `lms-when` | `<span class="lms-when"><span class="lms-when-date">2026-11-20</span><span class="lms-when-time">10:00–11:00</span></span>` |
+| `lms-host-hint` | `<span class="lms-host-hint">zoom.us</span>` next to an external link |
+| `lms-recurrence-preview` | a `div` holding `<div class="lms-recurrence-preview-count" role="status">` (add `lms-invalid` above 52) and a `<ul>` of dates |
+| `lms-day-toggles` | a `div role="group"` of `MudButton`s with `aria-pressed` |
+| `lms-choice` | a `label` row around a radio, title and caption; add `lms-choice-on` to the selected row |
+| `lms-kind-tile`, `lms-date-block` | a 40 px icon tile; a 44 px block with `lms-date-block-day` and `lms-date-block-month` |
+| `lms-join-panel` | the soft panel under a live session summary |
+| `lms-steps` | an `<ol>`; each `li` holds `lms-step-number` and `lms-step-label`; mark it `lms-step-done`, `aria-current="step"` or `lms-step-failed`; put `<span class="lms-step-of">Step 2 of 3 ·</span>` inside the current label (shown on phones only) |
+| `lms-dropzone`, `lms-file-row` | the dashed upload area (add `lms-dropzone-active` while dragging); a file row with `lms-file-row-main` and `lms-file-row-name` |
+| `lms-player` | the container, holding an optional `lms-preview-strip`, then `lms-player-bar` (`lms-player-title`, `lms-save-state`, Full screen, Exit), then `lms-player-stage` holding the `iframe.lms-player-frame` and an optional `lms-player-overlay` |
+| `lms-save-state` | the save status text; add `lms-save-failed` on failure |
 
 ## 4. Bilingual and RTL
 

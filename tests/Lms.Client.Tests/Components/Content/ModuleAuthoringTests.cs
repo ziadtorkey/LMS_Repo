@@ -161,6 +161,21 @@ public sealed class ModuleAuthoringTests : ClientTestContext
     }
 
     [Fact]
+    public async Task A_scheduled_module_has_no_hide_toggle_so_its_schedule_is_never_lost()
+    {
+        await StartAsync(Permissions.Modules.Manage);
+        var from = DateTime.UtcNow.AddDays(1);
+        var to = from.AddDays(7);
+        var scheduled = _modules.Seed(Cc, Lesson, Page("Later", ModuleVisibilities.Scheduled, from, to));
+
+        var cut = Controls(scheduled.Node);
+
+        Assert.Empty(cut.FindAll($"[data-testid=module-toggle-{scheduled.Node.Id}]"));
+        var node = _modules.NodesFor(Cc, Lesson).Single();
+        Assert.Equal((ModuleVisibilities.Scheduled, from, to), (node.Visibility, node.VisibleFromUtc, node.VisibleToUtc));
+    }
+
+    [Fact]
     public async Task Delete_asks_for_confirmation()
     {
         await StartAsync(Permissions.Modules.Manage);

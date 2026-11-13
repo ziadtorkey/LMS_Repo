@@ -6,6 +6,7 @@ using Lms.Domain.People;
 using Lms.Infrastructure.Configuration;
 using Lms.Infrastructure.Jobs;
 using Lms.Infrastructure.Persistence;
+using Lms.Shared;
 using Lms.Shared.Configuration;
 using Lms.Shared.Notifications;
 using Microsoft.EntityFrameworkCore;
@@ -102,7 +103,7 @@ public sealed class StaffExpiryJob(
                     ["StaffNameEn"] = profile.NameEn,
                     ["ExpiresOn"] = profile.ExpiresOn!.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
                 },
-                DeepLink: $"/staff/{profile.Id}",
+                DeepLink: PageRoutes.Staff(profile.Id),
                 OrgUnitPath: profile.OrgUnitPath),
             ct);
 }
