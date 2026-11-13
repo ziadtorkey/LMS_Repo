@@ -18,11 +18,14 @@ else if (!PermState.Has(Permissions.Students.Import))
 }
 else
 {
-    <MudButton Href="students" Variant="Variant.Text" StartIcon="@Icons.Material.Filled.ArrowBack" Class="mb-2"
-               data-testid="student-import-back">@L["Students_Title"]</MudButton>
-    <ImportWizard Kind="@ImportKinds.Students" TitleKey="StudentImport_Title">
+    <MudLink Href="students" Typo="Typo.body2" Class="lms-back-link" data-testid="student-import-back">
+        <MudIcon Icon="@Icons.Material.Rounded.ArrowBack" Size="Size.Small" Class="lms-icon-flip" aria-hidden="true" />
+        @L["Student_BackToList"]
+    </MudLink>
+    <PageHeader Title="@L["StudentImport_Title"]" Subtitle="@L["StudentImport_Subtitle"]" TitleTestId="student-import-title" />
+    <ImportWizard Kind="@ImportKinds.Students" TitleKey="StudentImport_Title" ShowTitle="false">
         <Help>
-            <MudAlert Severity="Severity.Info" data-testid="student-import-help">
+            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" data-testid="student-import-help">
                 <MudText Typo="Typo.body2">@L["StudentImport_Help"]</MudText>
                 <MudText Typo="Typo.body2" Class="mt-2"><strong>ClassCode:</strong> @L["StudentImport_HelpClassCode"]</MudText>
                 <MudText Typo="Typo.body2" Class="mt-2"><strong>DefaultPassword:</strong> @L["StudentImport_HelpPassword"]</MudText>
