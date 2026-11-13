@@ -1,9 +1,9 @@
 # M6 design spec (draft): communication
 
-**Status:** draft, revision 2 (QA2's review on #615, aligned with FE1's #612 and BE1's #613). It isn't a plan task yet; the plan decides scope and order. Names that must match the backend (`ModerationActions`, `AnnouncementTargetKinds`, statuses) follow #613; §11 lists what this spec asks #612 and #613 to change.
+**Status:** draft, revision 3: QA2's re-review, aligned with the owner decisions **D66–D69** and **#613 revision 3**. It isn't a plan task yet; the plan decides scope and order. Names that must match the backend (`ModerationActions`, `AnnouncementTargetKinds`, statuses) follow #613; §11 lists what this spec asks #612 and #613 to change.
 **PRD:** FR-NOT-01, FR-NOT-02, FR-NOT-03, FR-MSG-01, FR-MSG-02, FR-MSG-03, FR-MSG-04; X-01 (bilingual), X-07 (notifications), X-10 (accessibility, 360 px).
-**Mockups:** `docs/design/mockups/m6.html`. It's static HTML in the Stitch tokens from `LmsTheme.cs` and `lms-stitch.css`. Open it with `?screen=inbox|thread|composer-states|compose|announcements|announce-compose|notifications|prefs|moderation|rules&lang=ar|en&theme=light|dark` (and `screen=prefs&push=denied`).
-**Screenshots:** `docs/screenshots/ux-m6/<screen>-<lang>-<theme>-<width>.png`. Each screen is shot at 1440 px (en light, ar dark) and at 360 px (ar light, en dark): 44 shots, none scrolls sideways.
+**Mockups:** `docs/design/mockups/m6.html`. It's static HTML in the Stitch tokens from `LmsTheme.cs` and `lms-stitch.css`. Open it with `?screen=inbox|thread|composer-states|compose|compose-admin|announcements|announce-compose|notifications|prefs|moderation|rules&lang=ar|en&theme=light|dark` (and `screen=prefs&push=denied`).
+**Screenshots:** `docs/screenshots/ux-m6/<screen>-<lang>-<theme>-<width>.png`. Each screen is shot at 1440 px (en light, ar dark) and at 360 px (ar light, en dark): 48 shots, none scrolls sideways.
 
 Everything in `docs/DESIGN.md` (the Stitch section and its deviations table) applies. This file only adds what M6 needs. The new classes in §8 go into `lms-stitch.css` in a small `lane:ux` PR before the M6 pages start.
 
@@ -15,6 +15,7 @@ Everything in `docs/DESIGN.md` (the Stitch section and its deviations table) app
   - The recipient picker lists a near-miss as a **disabled option with its reason** (for example, a class the teacher doesn't teach). It never lists people the user can't know about.
   - In a read-only conversation, the composer becomes an info alert with the rule in plain words.
   - **A blocked person is never told they are blocked** (PRD, #612, #613). They see the generic "You can't send messages in this conversation." Only the person who blocked sees "You blocked Ahmad Yousef…" with **Unblock**. Both states are in `screen=composer-states`, with the moderator restriction, messaging turned off, and the rate limit.
+- **Safeguarding first (D69).** Students message only their own teachers and counselor, never other students. Guardians message only their children's teachers and counselor. **Managers and org admins reach students only through groups or announcements**, with no private one-to-one. The UI never offers what these rules forbid, and the rules page shows them as a locked floor (§7a).
 - **Two different tools, two different words.** A **block** is one person's choice about another (`UserBlock`, `PUT /api/me/blocks/{id}`); only the blocker can lift it. A **restriction** is a moderator's decision that a person can't send for a time (`MessagingRestriction`, with an end date). The UI never mixes the words: "Block" and "Unblock" belong to the person; "Restrict from messaging" and "Lift restriction" belong to moderators. A moderator never sees or lifts a person's own blocks, so a moderator can't expose someone who blocked a harasser.
 - **Dates and times** follow DESIGN.md: `yyyy-MM-dd` and `HH:mm`, invariant, inside `<span dir="ltr">`. In lists, recent items use relative words: today shows the time, then "Yesterday" and the weekday name for this week, then the date.
 - **Names and mixed scripts.** Every person or group name sits in its own `<bdi>` (`dir="auto"`), so an English name in an Arabic sentence ("Huda Al-Harbi sent you a message") keeps its order. Message text is shown with `dir="auto"` for each message.
@@ -58,15 +59,18 @@ Mockups: `screen=inbox` (a one-to-one conversation) and `screen=thread` (a group
    - **Unread:** the name and preview are bold, with a count badge in primary at the end. This is the only place a count badge is primary instead of error, because unread messages are normal, not alarming.
    - **Current row:** `aria-current="true"`, a primary tint and a 3 px bar on the inline-start edge.
    - **Accessibility:** each row is one link. Its accessible name is "name, n unread, time, preview".
-5. **Thread header.** Avatar, name, and a caption: a person's role and context ("Guardian of Omar Saleh · 10-A"), or the group size ("Group · 24 people"). The participants are always discoverable: a group's caption opens **Members**, so a student can see exactly who can read the conversation. Nobody outside the participant list can read it (#613 privacy rules): guardians have no access to their child's conversations with staff unless the owner decides otherwise (Q2), and the UI shows no "Shared with guardians" state until then. The header ends with a More actions menu: Mute conversation, Members (for groups), and Leave group (for groups the user didn't create).
+5. **Thread header.** Avatar, name, and a caption: a person's role and context ("Guardian of Omar Saleh · 10-A"), or the group size ("Group · 24 people"). The participants are always discoverable: a group's caption opens **Members**, so a student can see exactly who can read the conversation. Nobody outside the participant list can read it (#613 privacy rules): guardians have no access to their child's conversations with staff (D69), and the UI has no "Shared with guardians" state. The header ends with a More actions menu: Mute conversation, Members (for groups), and Leave group (for groups the user didn't create).
 6. **Messages.**
    - **Bubbles:** the user's own messages sit at the inline end, tinted with 12 % primary. Other people's sit at the inline start, on the surface colour with a 1 px border. Bubbles are at most 560 px wide (88 % at 360 px). The corner nearest the sender is 4 px.
    - **Sender names:** in a group, the sender's name is shown above their first bubble in a run.
    - **Day separators:** a centred `lms-day` chip.
-   - **Meta line:** the time, then, for the user's own messages, the state: "Sent" or "Seen" (with the DoneAll icon). Read receipts are optional (FR-MSG-01) and follow the client setting; when they're off, "Seen" never shows.
+   - **Meta line:** the time, then, for the user's own messages, the state: "Sent", or "Seen" (with the DoneAll icon). **Read receipts are off by default (D66)**, so "Seen" shows only for a client that turns them on.
    - **Attachments:** a recessed row inside the bubble with the file-type icon, the name and the size. Images show a thumbnail at most 240 px wide, and open in a new tab.
-   - **Hidden messages:** `lms-msg-removed` shows a dashed outline and the italic text "This message was hidden by a moderator." (`HideMessage`, state `HiddenByModerator` in #613). The original text isn't shown to anyone in the conversation.
-7. **Message menu.** On hover or focus of a message, a More icon button appears (it stays visible on touch screens). Its menu has Copy text and **Delete for me** (#612; whether senders may delete for everyone in a window, as #613 proposes, is #612 Q5), then a divider, then **Report message** and **Block [name]** in the error colour, last. Report opens a small dialog: a reason (radio: Harassment, Spam, Safety concern, Other) and an optional note. Block confirms with what it does: "You won't get messages from Ahmad. They aren't told."
+   - **Removed messages:** `lms-msg-removed` shows a dashed outline and italic text. There are two texts for two actions: a moderator's **Remove** shows "This message was removed by a moderator." and the sender's own delete shows "Message deleted". Only moderators keep the original text (#613 rev 3).
+7. **Message menu.** On hover or focus of a message, a More icon button appears (it stays visible on touch screens).
+   - **Other people's messages:** Copy text, then a divider, then **Report message** and **Block [name]** in the error colour, last.
+   - **The user's own messages:** Copy text, and **Delete for everyone**, which appears only within **15 minutes** of sending (D66). There's no countdown; the item is simply gone after the window. There's no Edit (D66).
+   - **Deleted messages:** a sender's deletion leaves a dashed bubble that says "Message deleted" to everyone else and "You deleted this message." to the sender (`screen=thread`). This is a different text from the moderator's removal (§2.6). Report opens a small dialog: a reason (radio: Harassment, Spam, Safety concern, Other) and an optional note. Block confirms with what it does: "You won't get messages from Ahmad. They aren't told."
 8. **Composer** (`lms-composer`, sticky at the bottom of the thread):
    - an Attach icon button, a multi-line recessed text field ("Write a message"), and a filled Send button with its label (the icon mirrors in RTL);
    - **Enter adds a new line and Ctrl+Enter (Cmd+Enter) sends.** #612 proposes Enter to send; this spec keeps Ctrl+Enter, because Arabic input methods confirm candidates with Enter and touch keyboards have no Shift, so Enter-to-send sends half-written messages. A hint under the field says "Ctrl+Enter to send". #612 should follow (its Q13);
@@ -83,6 +87,7 @@ Mockup: `screen=compose`.
 2. **To.** A recessed multi-select autocomplete (`MudAutocomplete` with chips). The results come from a server endpoint that applies the messaging rules, after 2 typed characters, debounced at 300 ms. They're grouped:
    - **Classes and courses:** "Physics 1 · 10-A — guardians" and "— students", each with its size at the end. They're only offered where the user teaches or manages, and the rules allow it.
    - **People:** an avatar, the name, and a caption with the role and context. Picked people get a check mark.
+   - **D69 for managers and org admins:** students are never offered as people. When their search would have matched students, the People group shows one disabled row instead: "No students here. Managers and org admins reach students through a class or group conversation, or an announcement, not a private message." The groups that include students are listed below it (`screen=compose-admin`).
    - A **disabled option with its reason** for a near-miss the user would expect: "Physics 1 · 10-B — guardians · Not allowed: you don't teach 10-B". It's shown **only for a class inside the sender's own unit scope**, at most one row, **never a person, and never a size**. Nothing outside the sender's scope is named. The server returns it with the rules summary (#612's recipients read); if it can't do that cheaply, drop the row and keep the hint line.
 3. **Subject** (optional) becomes the group name when there are several recipients. Its help text says so.
 4. **Message:** a recessed multi-line field, 5 lines high.
@@ -100,20 +105,21 @@ Mockups: `screen=announcements` (the list) and `screen=announce-compose` (new or
    - **Header:** a section icon (PushPin when pinned, Schedule when scheduled, Campaign otherwise), then the title (h2) and status chips: **Pinned** (success, with a dot) and **Scheduled** (info, with a dot).
    - **Meta line:** the author or office, the date, and the "Until yyyy-MM-dd" expiry.
    - **Body:** the text, clamped to 4 lines, with "Read more".
-   - **Audience chips:** one per target, using #613's `AnnouncementTargetKinds` only: Domain (Organization), AccountTree (Unit), Groups (Class), MenuBook (Course = ClassCourse), Diversity3 (Group), Badge (Role). When `IncludeGuardians` is on, one more chip says "Guardians included". There's no Level target.
+   - **Audience chips:** one per target, using #613 revision 3's `AnnouncementTargetKinds`: Domain (Organization), AccountTree (Unit), Stairs (Level), Groups (Class), MenuBook (Course = ClassCourse) and Diversity3 (Group). They're followed by the `RoleFilter` chips: Badge (Staff), School (Students) and FamilyRestroom (Guardians).
    - **Read count:** "Read by 412 of 590", shown only to the author and to managers.
    - **Order:** pinned cards first (with a 35 % primary border), then newest first.
    - **More actions menu:** Edit (Draft and Scheduled; once Published only pin and expiry change, #613), then **Withdraw** (error colour, last, with a confirmation; #613's word and status).
 4. **New announcement** dialog:
-   - **Titles:** in Arabic and in English, side by side, each field in its own direction; the text field is below them. Both titles are required, as for every bilingual business name (`NameAr`/`NameEn`); the error is shown at the empty field: "Enter the title in English too. Each reader sees the title in their language." (#613 has one title and #612 has two: see §11.)
+   - **Titles:** in Arabic and in English, side by side, each field in its own direction; the body is below them. Both titles are required (`TitleAr`/`TitleEn` in #613 rev 3, D66), and the error is shown at the empty field: "Enter the title in English too. Each reader sees the title in their language." At least one body (ar or en) is required.
    - **Audience** (a fieldset with the legend "Who should see it"):
-     - a segmented scope control with #613's kinds: Organization, Unit, Class, Course (ClassCourse), Group, Role. Only the kinds the author may use are shown (a teacher sees Course and Group only);
-     - the targets of that kind as a multi-select with chips (for Role: the role and the unit it applies at);
-     - an **Include guardians** toggle row (`IncludeGuardians`, default as #613 Q20 decides);
+     - a segmented scope control with #613 revision 3's kinds: Organization, Unit, **Level**, Class, Course (ClassCourse) and Group. Only the kinds the author may use are shown (a teacher sees Course and Group only);
+     - the targets of that kind as a multi-select with chips;
+     - for Unit targets, an **Include the units below** toggle row (`IncludeSubtree`);
+     - **Who in these targets:** three filter chips, Staff, Students and Guardians (`RoleFilter`), which replace a separate guardians toggle;
      - a reach estimate in an info alert (`role="status"`, debounced 500 ms) from `…/audience-preview`: counted **only inside the author's scope**, and rounded above 100 ("About 600 people"), so it can't be used to measure a part of the school the author can't see.
    - **Publishing:** a segmented Now / Schedule control. Schedule reveals the date and time fields and the time-zone caption, worded as in the M4b spec.
    - **Toggle rows** (`lms-toggle-row`): Pin to the top, and Notify the audience. Each has a one-line help text.
-   - **Attachments:** up to 5 files, as in messages (#612). #613 has no announcement attachments yet: see §11.
+   - **Attachments:** up to 5 files (`AnnouncementAttachment`, #613 rev 3), with the same type and size rules as message attachments.
    - **Expires on:** an optional date, with help text.
    - **Buttons:** Cancel, **Save as draft** (outlined), and Publish or Schedule (filled). The label follows the publishing mode.
 
@@ -152,7 +158,7 @@ Mockup: `screen=prefs`. This extends the existing `/notifications/preferences` p
 
 Mockup: `screen=moderation`.
 
-1. **Route:** `/moderation/messages` (#612), behind `Messaging.Moderate` (Org Admin per the PRD matrix; see Q4). The queue is scoped by `ModerationUnitPath` (#613).
+1. **Route:** `/moderation/messages` (#612), behind `Messaging.Moderate` (Org Admin per the PRD matrix, D66). A report is visible to a moderator at or above **any** of its `MessageReportUnit`s: the conversation's context unit, or every active unit of the sender (#613 rev 3). The stat tiles count over the same scope (`GET /api/moderation/stats`); outside the scope they show zeros, not an error.
 2. **Stat tiles:** Open reports, New today, **Restricted from messaging**, Median time to decide. Below 600 px they're two per row, with the icon above the value (the #580 rule).
 3. **Queue.** A table card with a segmented control (Open reports, Closed) and an error chip with the target time: "Safety concern: review within 24 h".
    - **Columns:** Reported message (a one-line excerpt), Reason, Reported by, When, Status. Status is a soft chip: New (info), In review (warning), Removed or Kept (neutral).
@@ -165,19 +171,21 @@ Mockup: `screen=moderation`.
    - the sender line: name, role, class, and the number of earlier reports and removals;
    - the **decision**, a radio group of soft rows (`lms-toggle-row` with a radio), mapped one-to-one to #613's `ModerationActions`:
 
-     | UI option | Action | What happens |
+     | UI option | Action (#613 rev 3) | What happens |
      |---|---|---|
-     | Dismiss the report | `Dismiss` | The message stays; the reporter is told it was reviewed. |
-     | Hide the message | `HideMessage` | Everyone in the conversation sees "hidden by a moderator". |
-     | Hide it and restrict the sender, **for [7 days ▾]** | `HideMessage` + `Restrict` (`UntilUtc`) | The sender can read but can't send until the end date, shown as "Until yyyy-MM-dd". Durations: 1, 7, 30 days. |
+     | Keep the message | `Dismiss` | The message stays; the reporter is told it was reviewed. |
+     | Remove the message | `Remove` | Everyone in the conversation sees "removed by a moderator"; moderators keep the original text. |
+     | Warn the sender | `Warn` | The sender gets a `Messaging.Warning` notice; the message stays. |
+     | Restrict the sender, **for [7 days ▾]** | `Restrict` | The sender can read but can't send until the end date ("Until yyyy-MM-dd"). Durations: 1, 7, 30 days. |
+     | Remove and restrict the sender, **for [7 days ▾]** | `RemoveAndRestrict` | Both of the above. |
      | Lock the conversation | `LockConversation` | Nobody can send in it any more (for a group gone wrong). |
 
-     The last two have their labels in the error colour, last. #613's `DeleteMessage` has no UI in v1: hiding is enough for participants, and hard deletion is a retention question (Q6). #612's `WarnSender` becomes the optional note to the sender. Each option has one line explaining what happens.
+     The options that act on the sender or the conversation (the last three) have their labels in the error colour, and they come last. #613 rev 3 calls `RemoveAndRestrict` "Remove and block sender" in a UI note; this spec keeps **restrict**, because **block** is the person's own tool (§1). Each option has one line explaining what happens. The mockup shows four of the six for space.
    - an optional note to the people involved, and **Save decision** (filled).
 5. **After a decision.**
    - **Who is told:** the reporter and the sender are notified (`evMod`), but the reporter never learns which action was taken against the sender. The reporter sees "reviewed".
    - **Audit:** every decision is recorded (X-02).
-   - **The message:** hiding it replaces the text for everyone with the hidden state from §2.6.
+   - **The message:** removing it replaces the text for everyone with the removed state from §2.6.
 6. **Lifting a restriction.** The **Restricted from messaging** tile filters to a list of `MessagingRestriction`s (person, until, by, reason) with a **Lift restriction** action in each row. It never lists or touches people's own blocks (§1).
 
 ## 7a. Messaging rules (FR-MSG-02)
@@ -186,7 +194,9 @@ Mockup: `screen=rules`. This answers #613 Must 7 (a page for what `Comms.Manage`
 
 1. **Route:** `/settings/messaging-rules`, behind `Comms.Manage` at the client root unit, in the **Security and settings** group.
 2. **The matrix:** the rows are the sender's role ("From") and the columns the recipient's role ("To"), using the built-in roles. Each cell is a small select showing #613's `MessagingRule.Via`: **Anyone** (`Anywhere`, meaning anyone in the sender's unit scope), **Same unit** (`SameUnit`), **Own classes** (`Relationship`), or **Not allowed**. The chips are tinted by permissiveness: success for Anyone, info for the narrower two, neutral for Not allowed.
-3. An info alert above it says student to student is off by default, that changes apply to new conversations and new messages, and that nothing already sent is hidden.
+   - **The D69 floor is locked:** student → anyone but own teachers and counselor, guardian → anyone but their children's teachers and counselor, and manager or org admin → student ("**Groups only**").
+   - **Locked cells** are plain chips with a Lock icon, no dropdown, and the accessible text "Set by the platform (safeguarding): can't be loosened". The page can make any other cell stricter, never looser than D69 ("the Org Admin may tighten per client").
+3. An info alert above it says student to student is off by default, that changes apply to new conversations and new messages, and that nothing already sent is hidden. A second line explains the lock icon.
 4. **Save rules** (filled) at the top, and the save bar while there are changes. Saving is audited (`[Audited]`).
 5. **At 360 px:** each "From" role becomes a block with one labelled row per recipient role.
 6. Caps, quiet hours and provider status (also `Comms.Manage`) go on a sibling **Communication settings** page, which is not drawn here; it's simple settings rows (`lms-toggle-row` and recessed inputs).
@@ -216,18 +226,26 @@ These are to be added in one `lane:ux` PR before the M6 pages start. The referen
 - [ ] Sending never depends on a key shortcut alone: there's always a visible Send button.
 - [ ] The reach estimate and the "N new messages" counts are `role="status"`, and they aren't re-announced on every keystroke (debounce of 500 ms).
 - [ ] The moderation decision is a fieldset with a legend, and the destructive option has more than its colour (its help text says what happens).
-- [ ] Nothing scrolls sideways at 360 px, and every table cell has a `DataLabel`. All 44 mockup shots were checked with `scrollWidth`.
+- [ ] Nothing scrolls sideways at 360 px, and every table cell has a `DataLabel`. All 48 mockup shots were checked with `scrollWidth`.
 - [ ] The rate-limit countdown is a `role="status"` that announces the start and the end only, not every second.
 - [ ] The Messages badge's accessible name counts conversations ("3 conversations with new messages").
 
-## 10. Questions for the Team Lead (owner decisions)
+## 10. Owner decisions applied (D66–D69)
 
-- **Q1 Read receipts:** on or off by default for each client? Should students see "Seen" on staff messages? (The mockup shows "Seen" with receipts on.)
-- **Q2 Guardian visibility:** may guardians read their child's conversations with staff? The PRD doesn't say. **Default (safeguarding): no.** If the owner says yes, a "Shared with guardians" caption goes in the thread header; until then nothing is shown and nothing is shared.
-- **Q3 Report reasons:** is the list fixed (Harassment, Spam, Safety concern, Other), or set for each client? The proposal is fixed, with "Safety concern" reviewed within 24 h and its moderator notification exempt from quiet hours.
-- **Q4 Moderators:** only Org Admin (as in the PRD matrix), or can it be delegated to Managers or Counselors for each unit?
-- **Q5 SMS cost:** should SMS be limited to certain events or roles, for each client? The preferences page would then show those cells as locked off, with "Not offered by your school".
-- **Q6 Removed messages:** how long is a removed message's original text kept for audit, and who can see it?
+The six questions from revision 1 are answered:
+- **Read receipts:** off by default (D66).
+- **Guardian visibility:** no access to a child's conversations, under safeguarding-first rules (D69).
+- **Report reasons:** the fixed list (D66).
+- **Moderators:** Org Admin per the PRD matrix (D66).
+- **SMS:** behind `ISmsProvider` with daily caps (D66, D68), and never carrying message text (D66).
+- **Retention:** as listed, pending legal advice (D66).
+
+What changed in the UI:
+- **Delete:** "Delete for everyone" within 15 minutes, with no edit.
+- **Groups:** up to 50 people. The picker stops at 50 with "Groups can have up to 50 people."
+- **Announcements:** one store with Arabic and English titles.
+- **Quiet hours:** off by default. When a client turns them on (21:00–07:00), SMS and push only; there's no user-level control in v1.
+- **Mandatory events:** they stay locked in preferences.
 
 ## 11. Alignment with #612 and #613
 
@@ -237,13 +255,14 @@ What this spec chose where the three drafts differed (QA2's table on #613), and 
 |---|---|---|
 | Send key | Enter = new line, Ctrl+Enter sends | #612 follows (its Q13) |
 | Block vs restriction | Block is the person's; restriction is the moderator's; the blocked side is never told | Already in #612/#613; #612 names the UI strings as in §1 |
-| Moderation actions | Dismiss, Hide, Hide + Restrict (with end date), Lock | #612 drops `DeleteMessage`/`WarnSender` from the decision (Warn = the note); #613 keeps `DeleteMessage` API-only |
+| Moderation actions | #613 rev 3's set: Keep (`Dismiss`), Remove, Warn, Restrict, Remove and restrict, Lock | #613's UI note says "block" for `RemoveAndRestrict`; the UI says **restrict** |
 | Moderation route | `/moderation/messages` | none (this spec now follows #612) |
-| Announcement targets | #613's kinds + `IncludeGuardians`; no Level, no role chips | #612 drops `includeSubtree` from the UI or #613 adds it |
+| Announcement targets | #613 rev 3: Organization, Unit (+ `IncludeSubtree`), Level, Class, ClassCourse, Group + `RoleFilter` chips | none: settled |
 | Announcement statuses | Draft, Scheduled, Published, Expired, Withdrawn; "Withdraw" | none |
-| Announcement titles | Arabic and English titles, both required | #613 adds the second title (its Q19), as for every bilingual name |
-| Announcement attachments | Up to 5 files (as #612) | #613 adds them, or #612 and this spec drop them for v1 |
-| Message edit/delete | "Delete for me" only | #612 Q5 / #613 decide on delete-for-everyone |
+| Announcement titles | `TitleAr` + `TitleEn` required; body ar and/or en | none: settled (D66) |
+| Announcement attachments | Up to 5 (`AnnouncementAttachment`) | none: settled |
+| Message edit/delete | Delete for everyone within 15 min, "Message deleted"; no edit (D66) | #612 drops "delete for me" |
 | Messages badge | Conversations with unread messages | #612's `MessagingState` uses the same count |
-| Rules matrix page | `/settings/messaging-rules` (§7a) | #612 adds the page task (QA2's #613 Must 7) |
+| Rules matrix page | `/settings/messaging-rules` (§7a) with the D69 floor locked | #612 adds the page task (QA2's #613 Must 7) |
 | Nav | Communication group + Moderation and rules under Security and settings + the app-bar shortcut | #612 agrees |
+| Safeguarding (D69) | Managers and admins: no student in the picker; the rules page locks the floor | #612's picker and rules page follow |

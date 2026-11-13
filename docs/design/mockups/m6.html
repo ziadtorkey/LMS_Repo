@@ -294,6 +294,13 @@ const S = {
     rlNote:'“Anyone” means anyone inside the sender’s own unit scope. Student to student is off by default (FR-MSG-02). Changes apply to new conversations and new messages; nothing already sent is hidden.',
     roAdmin:'Org admin', roMgr:'Manager', roSup:'Supervisor', roCou:'Counselor', roTch:'Teacher', roStu:'Student', roGua:'Guardian',
     vAny:'Anyone', vRel:'Own classes', vUnit:'Same unit', vNo:'Not allowed', navRules:'Messaging rules', secSec:'Security and settings'
+    , gm4:'This message was removed by a moderator.', delEveryone:'Delete for everyone', msgDeleted:'Message deleted', youDeleted:'You deleted this message.',
+    scLevel:'Level', inclSub:'Include the units below', inclSubH:'North Branch and every unit under it.', roleF:'Who in these targets', audLevel:'Grade 10',
+    dKeep:'Keep the message', dKeepH:'Close the report. The message stays; the reporter is told it was reviewed.', dRemove:'Remove the message', dRemoveH:'Everyone in the conversation sees “removed by a moderator”. Moderators keep the original text.',
+    dWarn:'Warn the sender', dWarnH:'Yousef gets a warning notice. The message stays.', dRestrictOnly:'Restrict the sender', dRemRes:'Remove and restrict the sender', dRemResH:'Removes the message, and Yousef can read but not send until the end date.',
+    d69t:'No students here', d69:'Managers and org admins reach students through a class or group conversation, or an announcement, not a private message. Your school’s safeguarding rules set this.',
+    adminSearch:'Omar', grpStudents:'Groups that include students', o6:'Grade 10 — students and guardians (group)', o6c:'52 people',
+    vGroups:'Groups only', locked:'Set by the platform (safeguarding): can’t be loosened', rlNote2:'Locked cells are the safeguarding floor (D69). Your school can make other cells stricter, never looser.'
   },
   ar: {
     app:'نظام إدارة التعلم', ctx:'مدارس النور — فرع الشمال (معلم)', year:'2026/2027', other:'English',
@@ -362,6 +369,13 @@ const S = {
     rlNote:'«أي شخص» تعني أي شخص داخل نطاق وحدات المُرسِل. مراسلة الطالب للطالب متوقفة افتراضيًا (FR-MSG-02). تنطبق التغييرات على المحادثات والرسائل الجديدة، ولا يُخفى شيء أُرسل سابقًا.',
     roAdmin:'مسؤول المؤسسة', roMgr:'المدير', roSup:'المشرف', roCou:'المرشد', roTch:'المعلم', roStu:'الطالب', roGua:'ولي الأمر',
     vAny:'أي شخص', vRel:'فصوله فقط', vUnit:'نفس الوحدة', vNo:'غير مسموح', navRules:'قواعد المراسلة', secSec:'الأمان والإعدادات'
+    , gm4:'أزال المشرف هذه الرسالة.', delEveryone:'حذف لدى الجميع', msgDeleted:'رسالة محذوفة', youDeleted:'حذفت هذه الرسالة.',
+    scLevel:'المستوى', inclSub:'تضمين الوحدات التابعة', inclSubH:'فرع الشمال وكل الوحدات التابعة له.', roleF:'من يراه داخل هذه الأهداف', audLevel:'الصف العاشر',
+    dKeep:'إبقاء الرسالة', dKeepH:'إغلاق البلاغ وتبقى الرسالة، ويُبلَّغ المُبلِغ بأنه رُوجع.', dRemove:'إزالة الرسالة', dRemoveH:'يرى كل من في المحادثة «أزالها المشرف». يحتفظ المشرفون بالنص الأصلي.',
+    dWarn:'تحذير المُرسِل', dWarnH:'يصل إلى يوسف إشعار تحذير، وتبقى الرسالة.', dRestrictOnly:'منع المُرسِل من المراسلة', dRemRes:'الإزالة ومنع المُرسِل', dRemResH:'تُزال الرسالة، ويستطيع يوسف القراءة دون الإرسال حتى تاريخ الانتهاء.',
+    d69t:'لا يظهر الطلاب هنا', d69:'يتواصل المديرون ومسؤولو المؤسسة مع الطلاب عبر محادثة فصل أو مجموعة، أو عبر إعلان، لا برسالة خاصة. تحدد ذلك قواعد الحماية في مدرستك.',
+    adminSearch:'عمر', grpStudents:'مجموعات تضم طلابًا', o6:'الصف العاشر — الطلاب وأولياء الأمور (مجموعة)', o6c:'52 شخصًا',
+    vGroups:'عبر المجموعات فقط', locked:'تحدده المنصة (الحماية): لا يمكن تخفيفه', rlNote2:'الخانات المقفلة هي الحد الأدنى للحماية (D69). يمكن لمدرستك تشديد الخانات الأخرى، لا تخفيفها.'
   }
 }[lang];
 
@@ -400,7 +414,9 @@ function inbox() {
     <div class="lms-thread-body" role="log" aria-live="polite"><span class="lms-day">${S.yesterday}</span>
       ${msg('them', S.m1, `<span class="ltr">16:05</span>`)}
       ${msg('me', S.m2, `<span class="ltr">16:20</span> · ${I('done_all','ms-sm')} ${S.seen}`, '', `<div class="lms-attach">${I('picture_as_pdf')}<span>${S.attach}</span></div>`)}
-      <span class="lms-day">${S.today}</span>${msg('them', S.m3, `<span class="ltr">10:42</span>`)}</div>${composer()}</section>`;
+      <span class="lms-day">${S.today}</span>${msg('them', S.m3, `<span class="ltr">10:42</span>`)}
+      <div style="position:relative;align-self:flex-end">${msg('me', (lang==='ar'?'ممتاز، شكرًا لكِ.':'Great, thank you.'), `<span class="ltr">10:44</span> · ${S.sent}`)}
+        <div class="lms-menu" role="menu" style="position:absolute;inset-block-end:100%;inset-inline-end:0;margin-block-end:6px"><div>${I('content_copy')}${S.menuCopy}</div><hr><div class="err">${I('delete')}${S.delEveryone}</div></div></div></div>${composer()}</section>`;
   return shell('inbox', header(S.inboxTitle, S.inboxSub, `<button class="btn btn-filled">${I('edit_square')}${S.newMsg}</button>`) + `<div class="card lms-inbox">${list('c1')}${thread}</div>`);
 }
 function thread() {
@@ -410,9 +426,10 @@ function thread() {
       ${msg('me', S.gm1, `<span class="ltr">09:15</span> · ${S.sent}`)}
       <div style="position:relative">${msg('them', S.gm2, `<span class="ltr">09:31</span>`, S.fromHuda)}
         <button class="icon-btn sm focus" aria-label="${S.moreActions}" aria-expanded="true" style="position:absolute;inset-block-start:22px;inset-inline-start:min(420px,72%)">${I('more_horiz')}</button>
-        <div class="lms-menu" role="menu" style="inset-block-start:58px;inset-inline-start:min(300px,30%)"><div>${I('notifications_off')}${S.menuMute}</div><div>${I('content_copy')}${S.menuCopy}</div><div>${I('delete')}${S.delMe}</div><hr><div class="err">${I('flag')}${S.menuReport}</div><div class="err">${I('block')}${S.menuBlock}</div></div></div>
+        <div class="lms-menu" role="menu" style="inset-block-start:58px;inset-inline-start:min(300px,30%)"><div>${I('notifications_off')}${S.menuMute}</div><div>${I('content_copy')}${S.menuCopy}</div><hr><div class="err">${I('flag')}${S.menuReport}</div><div class="err">${I('block')}${S.menuBlock}</div></div></div>
       <div class="lms-msg lms-msg-them lms-msg-removed"><span class="lms-msg-from">${S.fromAhmad}</span><div class="lms-bubble">${I('do_not_disturb_on','ms-sm')} ${S.gm4}</div></div>
-      ${msg('me', S.gm3, `<span class="ltr">09:40</span> · ${I('done_all','ms-sm')} ${S.seen}`)}</div>
+      ${msg('me', S.gm3, `<span class="ltr">09:40</span> · ${S.sent}`)}
+      <div class="lms-msg lms-msg-me lms-msg-removed"><div class="lms-bubble">${I('delete','ms-sm')} ${S.youDeleted}</div><span class="lms-msg-meta"><span class="ltr">09:41</span></span></div></div>
     <div class="lms-composer-off"><div class="alert alert-info">${I('info')}<span class="t">${S.off}</span></div></div></section>`;
   return shell('inbox', header(S.inboxTitle, S.inboxSub, `<button class="btn btn-filled">${I('edit_square')}${S.newMsg}</button>`) + `<div class="card lms-inbox show-thread">${list('c2')}${t}</div>`);
 }
@@ -443,8 +460,8 @@ function announcements() {
     `<div class="seg" role="tablist" style="margin-block-end:20px"><span aria-selected="true">${S.fNow}</span><span>${S.fScheduled}</span><span>${S.fDrafts}</span><span>${S.fExpired}</span><span>${S.fWithdrawn}</span></div>
     <div class="lms-ann-list">
     ${ann({pin:1, icon:'push_pin', t:S.a1, chips:`<span class="chip chip-success chip-dot">${S.pinned}</span>`, m:`<span>${S.a1m}</span><span>${S.a1x}</span>`, x:S.a1t, aud:aud('domain',S.audOrg)+aud('family_restroom',S.audRoleG), read:S.readBy})}
-    ${ann({icon:'campaign', t:S.a2, m:`<span>${S.a2m}</span>`, x:S.a2t, aud:aud('menu_book',S.audCourse+' · '+S.audClass)+aud('family_restroom',S.audInclG)})}
-    ${ann({icon:'schedule', t:S.a3, chips:`<span class="chip chip-info chip-dot">${S.scheduled}</span>`, m:`<span>${S.a3m}</span>`, x:S.a3t, aud:aud('account_tree',S.audUnit)+aud('school',S.audRoleS)+aud('family_restroom',S.audInclG)})}
+    ${ann({icon:'campaign', t:S.a2, m:`<span>${S.a2m}</span>`, x:S.a2t, aud:aud('menu_book',S.audCourse+' · '+S.audClass)+aud('school',S.audRoleS)+aud('family_restroom',S.audRoleG)})}
+    ${ann({icon:'schedule', t:S.a3, chips:`<span class="chip chip-info chip-dot">${S.scheduled}</span>`, m:`<span>${S.a3m}</span>`, x:S.a3t, aud:aud('account_tree',S.audUnit)+aud('stairs',S.audLevel)+aud('school',S.audRoleS)+aud('family_restroom',S.audRoleG)})}
     </div>`);
 }
 function announceCompose() {
@@ -453,9 +470,10 @@ function announceCompose() {
     <div class="grid2"><div class="field"><span class="label">${S.acTitleAr}</span><div class="input" dir="rtl">لقاءات أولياء الأمور والمعلمين</div></div><div class="field"><span class="label" style="color:var(--mud-palette-error)">${S.acTitleEn}</span><div class="input" dir="ltr" aria-invalid="true" style="border:2px solid var(--mud-palette-error)"><span class="ph-text"></span></div><span class="help" style="color:var(--mud-palette-error)">${I('error','ms-sm')} ${S.errTitleEn}</span></div></div>
     <div class="field"><span class="label">${S.acBody}</span><div class="input" style="min-height:80px;align-items:flex-start">${S.a1t}</div></div>
     <fieldset style="border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:12px"><legend class="label" style="margin-block-end:8px">${S.audScope}</legend>
-      <div class="seg" style="flex-wrap:wrap"><span>${S.scOrg}</span><span aria-selected="true">${S.scUnit}</span><span>${S.scClass}</span><span>${S.scCourse}</span><span>${S.scGroup}</span><span>${S.scRole}</span></div>
+      <div class="seg" style="flex-wrap:wrap"><span>${S.scOrg}</span><span aria-selected="true">${S.scUnit}</span><span>${S.scLevel}</span><span>${S.scClass}</span><span>${S.scCourse}</span><span>${S.scGroup}</span></div>
       <div class="field"><span class="label">${S.audPick}</span><div class="input"><span class="chip chip-input">${S.audUnit}<span class="ms ms-sm">close</span></span><span class="ph-text"></span>${I('arrow_drop_down')}</div></div>
-      <div class="toggle-row"><div class="t"><b>${S.inclG}</b><span class="help">${S.inclGH}</span></div><span class="switch on"></span></div>
+      <div class="toggle-row"><div class="t"><b>${S.inclSub}</b><span class="help">${S.inclSubH}</span></div><span class="switch on"></span></div>
+      <div class="field"><span class="label">${S.roleF}</span><div style="display:flex;flex-wrap:wrap;gap:8px"><span class="chip chip-success">${I('check')}${S.rStaff}</span><span class="chip">${S.rStudents}</span><span class="chip chip-success">${I('check')}${S.rGuardians}</span></div></div>
       <div class="alert alert-info">${I('groups')}<span class="t" role="status">${S.reach}</span></div></fieldset>
     <div class="field"><span class="label">${S.when}</span><div class="seg"><span>${S.pNow}</span><span aria-selected="true">${S.pLater}</span></div></div>
     <div class="grid2"><div class="field"><span class="label">${S.pDate}</span><div class="input"><span class="ltr">2026-11-15</span><span class="ph-text"></span>${I('event')}</div></div><div class="field"><span class="label">${S.pTime}</span><div class="input"><span class="ltr">07:00</span><span class="ph-text"></span>${I('schedule')}</div></div></div>
@@ -496,7 +514,7 @@ function moderation() {
         ${msg('them', S.dm1, '<span class="ltr">10:31</span>', S.from1)}<div class="lms-flagged">${msg('them', S.dm2, `<span class="ltr">10:38</span> · <span class="chip chip-warning" style="height:22px">${I('flag')}${S.flagged}</span>`, S.from2)}</div>${msg('them', S.dm3, '<span class="ltr">10:40</span>', S.from3)}</div>
       <div><div class="label">${S.reasonL}</div><p>${S.r1r} · ${S.reasonT}</p></div>
       <div><div class="label">${S.sender}</div><p class="muted">${S.senderV}</p></div>
-      <fieldset style="border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:8px"><legend class="label" style="margin-block-end:6px">${S.decide}</legend>${opt(0,S.dDismiss,S.dDismissH)}${opt(0,S.dHide,S.dHideH)}${opt(1,S.dRestrict,S.dRestrictH,1)}
+      <fieldset style="border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:8px"><legend class="label" style="margin-block-end:6px">${S.decide}</legend>${opt(0,S.dKeep,S.dKeepH)}${opt(0,S.dRemove,S.dRemoveH)}${opt(0,S.dWarn,S.dWarnH)}${opt(1,S.dRemRes,S.dRemResH,1)}
         <div class="grid2" style="padding-inline-start:44px"><div class="field"><span class="label">${S.forL}</span><div class="input"><span>${S.days7}</span><span class="ph-text"></span>${I('arrow_drop_down')}</div><span class="help ltr">${S.untilL}</span></div></div>
         ${opt(0,S.dLock,S.dLockH,1)}</fieldset>
       <div class="field"><span class="label">${S.note}</span><div class="input" style="min-height:64px"></div></div>
@@ -508,6 +526,19 @@ function moderation() {
       ${r(1,`<span class="chip chip-warning chip-dot">${S.sReview}</span>`,1)}${r(2,`<span class="chip chip-info chip-dot">${S.sNew}</span>`)}${r(3,`<span class="chip chip-error chip-dot">${S.sNew}</span>`)}${r(4,`<span class="chip chip-info chip-dot">${S.sNew}</span>`)}</tbody></table></div>${detail}</div>`);
 }
 
+
+function composeAdmin() {
+  return `<div class="dialog-wrap"><div class="dialog" role="dialog"><div class="dialog-head"><span class="sec-icon">${I('edit_square')}</span><h2 class="h6" style="flex:1">${S.composeTitle}</h2><button class="icon-btn">${I('close')}</button></div>
+  <div class="dialog-body"><div class="field"><span class="label">${S.to}</span>
+    <div class="input focused"><span>${S.adminSearch}</span><span class="ph-text"></span></div>
+    <div class="lms-picker-pop" role="listbox"><div class="lms-picker-group">${S.grpPeople}</div>
+      <div class="lms-picker-opt" aria-disabled="true" style="align-items:flex-start">${I('shield_person')}<span class="grow"><b style="font-weight:600;color:var(--mud-palette-text-primary)">${S.d69t}</b><div class="caption">${S.d69}</div></span></div>
+      <div class="lms-picker-group">${S.grpStudents}</div>
+      <div class="lms-picker-opt">${I('groups')}<span class="grow">${S.o6}</span><span class="caption muted">${S.o6c}</span></div>
+      <div class="lms-picker-opt">${I('groups')}<span class="grow">${S.o1}</span><span class="caption muted">${S.o1c}</span></div></div>
+    <span class="help">${S.toHelp}</span></div></div>
+  <div class="dialog-actions"><button class="btn">${S.cancel}</button><button class="btn btn-filled" disabled>${I('send','flip')}${S.sendBtn}</button></div></div></div>`;
+}
 function composerStates() {
   const st = (label, html, action='') => `<div class="card" style="overflow:hidden"><div class="caption muted" style="padding:10px 16px;font-weight:600">${label}</div><div class="lms-composer-off" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">${html}${action}</div></div>`;
   const al = (t, icon='info', cls='alert-info') => `<div class="alert ${cls}" style="flex:1;min-inline-size:220px">${I(icon)}<span class="t">${t}</span></div>`;
@@ -522,15 +553,17 @@ function composerStates() {
 }
 function rules() {
   const roles = ['roAdmin','roMgr','roSup','roCou','roTch','roStu','roGua'];
-  const v = { roAdmin:'AAAAAAA', roMgr:'AAAAAAA', roSup:'UUUUUUU', roCou:'UUUUUUU', roTch:'UUUURRR', roStu:'NNNURNN', roGua:'NNNURNN' };
-  const cell = (c, to) => { const t = {A:S.vAny, U:S.vUnit, R:S.vRel, N:S.vNo}[c]; const cls = c==='N' ? '' : c==='A' ? 'chip-success' : 'chip-info';
+  const v = { roAdmin:'AAAAAGA', roMgr:'AAAAAGA', roSup:'UUUUURU', roCou:'UUUUUUU', roTch:'UUUUURR', roStu:'XXXRRXX', roGua:'XXXRRXX' };
+  const cell = (c, to) => {
+    if (c === 'X' || c === 'G') return `<td data-label="${S[to]}"><span class="chip" title="${S.locked}">${I('lock','ms-sm')}${c==='G'?S.vGroups:S.vNo}<span class="vh">${S.locked}</span></span></td>`;
+    const t = {A:S.vAny, U:S.vUnit, R:S.vRel, N:S.vNo}[c]; const cls = c==='N' ? '' : c==='A' ? 'chip-success' : 'chip-info';
     return `<td data-label="${S[to]}"><span class="chip ${cls}">${t}${I('arrow_drop_down')}</span></td>`; };
   return shell('rules', header(S.rlTitle, S.rlSub, `<button class="btn btn-filled">${S.rlSave}</button>`) +
-    `<div class="alert alert-info" style="margin-block-end:16px">${I('info')}<span class="t">${S.rlNote}</span></div>
+    `<div class="alert alert-info" style="margin-block-end:16px">${I('info')}<span class="t">${S.rlNote}<br>${I('lock','ms-sm')} ${S.rlNote2}</span></div>
     <div class="card" style="overflow-x:auto"><table class="stack"><thead><tr><th>${S.rlFrom} → ${S.to}</th>${roles.map(r => `<th>${S[r]}</th>`).join('')}</tr></thead><tbody>
-    ${roles.map(r => `<tr><td data-label="${S.rlFrom}" style="font-weight:600">${S[r]}</td>${[...v[r]].map((c,i) => cell(c, roles[i])).join('')}</tr>`).join('')}</tbody></table></div>`);
+    ${roles.map(r => `<tr><td data-label="${S.rlFrom}" style="font-weight:600;white-space:nowrap;overflow-wrap:normal">${S[r]}</td>${[...v[r]].map((c,i) => cell(c, roles[i])).join('')}</tr>`).join('')}</tbody></table></div>`);
 }
-document.getElementById('app').innerHTML = ({inbox, thread, compose, announcements, 'announce-compose':announceCompose, notifications, prefs, moderation, 'composer-states':composerStates, rules}[screen] || inbox)();
+document.getElementById('app').innerHTML = ({inbox, thread, compose, announcements, 'announce-compose':announceCompose, notifications, prefs, moderation, 'composer-states':composerStates, rules, 'compose-admin':composeAdmin}[screen] || inbox)();
 </script>
 </body>
 </html>
