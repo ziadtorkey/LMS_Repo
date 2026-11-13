@@ -93,6 +93,25 @@ public sealed class PackageBridgeTests : BunitContext
     }
 
     [Fact]
+    public async Task A_large_arabic_message_is_measured_in_utf8_bytes_like_the_script_does()
+    {
+        var bridge = NewBridge();
+        var arabic = new string('\u0639', 1500); // 3000 UTF-8 bytes (9000 if the \uXXXX escapes were counted)
+
+        await bridge.OnPortMessage("commit", 1, "Scorm", Data(("cmi.suspend_data", arabic)));
+        await bridge.OnPortMessage("finish", 2, "Scorm", Data(("cmi.suspend_data", arabic)));
+        await bridge.FlushAsync();
+
+        var sent = Assert.Single(_api.Commits).Request;
+        Assert.Equal(2, sent.Seq); // the finish was not dropped
+        Assert.Equal(arabic, sent.Data["cmi.suspend_data"]);
+        string[] Keys(int n) => Enumerable.Range(0, n).Select(i => $"k{i}").ToArray();
+        Dictionary<string, string> Many(int n) => Keys(n).ToDictionary(k => k, _ => new string('ع', 1300)); // 2600 UTF-8 bytes each, under the 4 KB value limit
+        Assert.True(PackageBridge.IsAcceptable("finish", 3, Many(3)));  // about 7.8 KB: inside the 8 KB message limit
+        Assert.False(PackageBridge.IsAcceptable("finish", 3, Many(4))); // about 10.4 KB: over it
+    }
+
+    [Fact]
     public async Task Window_messages_never_trigger_a_commit_even_from_the_player_frame()
     {
         var bridge = NewBridge();

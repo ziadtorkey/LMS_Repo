@@ -54,11 +54,11 @@
             // Window messages are never acted on: counted and dropped. (origin is "null" and means nothing.)
             bridge.onWindowMessage = function (event) {
                 bridge.dropped++;
-                dotNetRef.invokeMethodAsync('OnWindowMessageDropped');
+                dotNetRef.invokeMethodAsync('OnWindowMessageDropped').catch(function () {});
             };
             window.addEventListener('message', bridge.onWindowMessage);
 
-            bridge.onPageHide = function () { dotNetRef.invokeMethodAsync('OnPageHide'); };
+            bridge.onPageHide = function () { dotNetRef.invokeMethodAsync('OnPageHide').catch(function () {}); };
             window.addEventListener('pagehide', bridge.onPageHide);
 
             const transfer = function () {
@@ -68,7 +68,7 @@
                 channel.port1.onmessage = function (event) {
                     const message = validate(event.data);
                     if (message === null) return; // malformed or oversize: dropped, nothing reaches .NET
-                    dotNetRef.invokeMethodAsync('OnPortMessage', message.type, message.seq, message.format, message.data);
+                    dotNetRef.invokeMethodAsync('OnPortMessage', message.type, message.seq, message.format, message.data).catch(function () {});
                 };
                 iframe.contentWindow.postMessage({ lms: 'package-port', v: 1 }, '*', [channel.port2]);
             };

@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using Lms.Client.Services.Api;
 using Lms.Shared.Packages;
@@ -80,7 +81,7 @@ public sealed class PackageBridge : IAsyncDisposable
     [JSInvokable]
     public async Task OnPortMessage(string type, long seq, string? format, Dictionary<string, string>? data)
     {
-        if (_disposed || !IsAcceptable(type, seq, data)) return;
+        if (_disposed || !IsAcceptable(type, seq, data, format == PackageCommitFormats.Xapi ? PackageCommitFormats.Xapi : PackageCommitFormats.Scorm)) return;
         _format = format == PackageCommitFormats.Xapi ? PackageCommitFormats.Xapi : PackageCommitFormats.Scorm;
         _highestSeq = Math.Max(_highestSeq, seq);
         if (!Preview)
@@ -98,14 +99,16 @@ public sealed class PackageBridge : IAsyncDisposable
     public async Task OnPageHide() => await FlushAsync();
 
     /// <summary>The checks that apply to every port message (see also the JS side).</summary>
-    public static bool IsAcceptable(string type, long seq, Dictionary<string, string>? data)
+    private static readonly JsonSerializerOptions SizeOptions = new() { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
+
+    public static bool IsAcceptable(string type, long seq, Dictionary<string, string>? data, string format = PackageCommitFormats.Scorm)
     {
         if (type is not ("commit" or "finish") || seq < 0) return false;
         if (data is null) return true;
         if (data.Count > 256) return false;
         foreach (var value in data.Values)
             if (Encoding.UTF8.GetByteCount(value) > PackageTrackingLimits.MaxValueBytes) return false;
-        return JsonSerializer.SerializeToUtf8Bytes(new { type, seq, data }).Length <= PackageTrackingLimits.MaxMessageBytes;
+        return JsonSerializer.SerializeToUtf8Bytes(new { type, seq, format, data }, SizeOptions).Length <= PackageTrackingLimits.MaxMessageBytes; // the same UTF-8 bytes the script counts (JSON.stringify does not escape non-ASCII);
     }
 
     private void Schedule()
@@ -192,12 +195,17 @@ public sealed class PackageBridge : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         if (_disposed) return;
+        // Leaving the page inside the app (not pagehide) must not drop what still waits for the throttle: a best-effort flush first.
+        if (!Preview && _pending.Count > 0)
+        {
+            try { await FlushAsync(); }
+            catch (Exception ex) when (ex is ApiProblemException or HttpRequestException or ObjectDisposedException) { }
+        }
         _disposed = true;
         _timer?.Dispose();
         _timer = null;
         try { await _js.InvokeVoidAsync("lmsPackageBridge.dispose", _jsId); }
         catch (JSDisconnectedException) { }
         _self?.Dispose();
-        _sendLock.Dispose();
     }
 }
