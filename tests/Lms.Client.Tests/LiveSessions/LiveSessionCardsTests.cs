@@ -109,6 +109,21 @@ public sealed class LiveSessionCardsTests : LessonPlansTestContext
     }
 
     [Fact]
+    public async Task The_full_date_is_available_to_screen_readers_although_the_date_block_is_hidden()
+    {
+        var s = Seed("Office hours", 3);
+        var home = await OpenHomeAsync(Permissions.LiveSessions.View);
+
+        var row = home.WaitForElement($"[data-testid=home-live-row-{s.Id}]", Wait);
+
+        Assert.Equal("true", row.QuerySelector(".lms-date-block")!.GetAttribute("aria-hidden"));
+        var date = row.QuerySelector("[data-testid=home-live-date]")!;
+        Assert.Contains("lms-visually-hidden", date.ClassName);
+        Assert.Equal(s.StartsAtUtc.ToString("yyyy-MM-dd"), date.TextContent.Trim());
+        Assert.Contains(s.StartsAtUtc.ToString("HH:mm"), row.QuerySelector(".lms-item-caption")!.TextContent);
+    }
+
+    [Fact]
     public async Task A_session_in_its_join_window_shows_the_live_chip_and_a_join_link()
     {
         var s = Seed("Workshop", -0.25, LiveSessionStatuses.Live);
