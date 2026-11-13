@@ -89,3 +89,6 @@ html:lang(ar), html:lang(ar) body { font-family: Cairo, "Segoe UI", Tahoma, Aria
     .lms-prefs-table.mud-simple-table table tbody td { width: auto; min-inline-size: 0; }
     .lms-prefs-table.mud-simple-table table tbody td.lms-prefs-event { grid-column: 1 / -1; }
 }
+/* Lesson plan: a module with its authoring buttons, and the add-module menu under a lesson. */
+.lms-module-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px 8px; min-width: 0; }
+.lms-plan-add { margin-block-start: 4px; }
