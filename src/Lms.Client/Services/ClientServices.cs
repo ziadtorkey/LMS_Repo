@@ -28,6 +28,7 @@ public static class ClientServices
         services.AddScoped<PermissionState>();
         services.AddScoped<IYearStore, YearStore>();
         services.AddScoped<INotificationFeed, NotificationFeed>();
+        services.AddSingleton<Lms.Client.Services.Packages.PackagePollOptions>();
 
         if (configuration.GetValue<bool>("Lms:UseFakeApi"))
         {
@@ -58,6 +59,7 @@ public static class ClientServices
             services.AddSingleton<ILibraryApi, FakeLibraryApi>();
             services.AddSingleton<IForumsApi, FakeForumsApi>();
             services.AddSingleton<IAssetsApi, FakeAssetsApi>();
+            services.AddSingleton<Lms.Client.Services.Packages.IPackagesApi, Lms.Client.Services.Packages.FakePackagesApi>();
             services.AddSingleton<IModulesApi, FakeModulesApi>();
             services.AddSingleton<IActivityOverviewApi, FakeActivityOverviewApi>();
             services.AddScoped<AuthenticationStateProvider, FakeAuthenticationStateProvider>();
@@ -107,6 +109,7 @@ public static class ClientServices
         services.AddScoped<ILibraryApi, LibraryApi>();
         services.AddScoped<IForumsApi, ForumsApi>();
         services.AddScoped<IAssetsApi, AssetsApi>();
+        services.AddScoped<Lms.Client.Services.Packages.IPackagesApi, Lms.Client.Services.Packages.PackagesApi>();
         services.AddScoped<IModulesApi, ModulesApi>();
         services.AddScoped<IActivityOverviewApi, ActivityOverviewApi>();
     }
