@@ -83,6 +83,9 @@ public sealed class FakeAssetsApi : IAssetsApi
     public long MaxBytes { get; set; } = 5 * 1024 * 1024;
     public List<(Guid ClassCourseId, string FileName, string ContentType, long Length)> Uploads { get; } = [];
     public List<Guid> UrlRequests { get; } = [];
+    private readonly HashSet<Guid> _refused = [];
+    /// <summary>The server refuses the signed URL of this asset (a library file of a reader-only resource, D13).</summary>
+    public void Refuse(Guid assetId) => _refused.Add(assetId);
     public Exception? Failure { get; set; }
     /// <summary>Failures to throw once each before an upload succeeds (retry tests).</summary>
     public int FailuresLeft { get; set; }
@@ -121,6 +124,7 @@ public sealed class FakeAssetsApi : IAssetsApi
     public Task<AssetUrlDto> GetUrlAsync(Guid assetId, CancellationToken ct = default)
     {
         UrlRequests.Add(assetId);
+        if (_refused.Contains(assetId)) return Task.FromException<AssetUrlDto>(new ApiProblemException(404, ProblemCodes.not_found, null, null));
         var now = ServerNow();
         return Task.FromResult(new AssetUrlDto($"https://files.test/{assetId}?sig={++_urlCounter}", now + UrlLifetime, now));
     }

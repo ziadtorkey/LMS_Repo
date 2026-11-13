@@ -61,6 +61,7 @@ public static class ClientServices
             services.AddSingleton<IAssetsApi, FakeAssetsApi>();
             services.AddSingleton<Lms.Client.Services.Packages.IPackagesApi, Lms.Client.Services.Packages.FakePackagesApi>();
             services.AddSingleton<IModulesApi, FakeModulesApi>();
+            services.AddSingleton<IActivityOverviewApi, FakeActivityOverviewApi>();
             services.AddScoped<AuthenticationStateProvider, FakeAuthenticationStateProvider>();
             services.AddAuthorizationCore();
             return;
@@ -110,5 +111,6 @@ public static class ClientServices
         services.AddScoped<IAssetsApi, AssetsApi>();
         services.AddScoped<Lms.Client.Services.Packages.IPackagesApi, Lms.Client.Services.Packages.PackagesApi>();
         services.AddScoped<IModulesApi, ModulesApi>();
+        services.AddScoped<IActivityOverviewApi, ActivityOverviewApi>();
     }
 }

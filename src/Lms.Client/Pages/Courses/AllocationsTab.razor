@@ -9,38 +9,48 @@
 <MudStack Spacing="3">
     @if (_error is not null)
     {
-        <MudAlert Severity="Severity.Error" data-testid="allocation-error">@_error</MudAlert>
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="allocation-error">@_error</MudAlert>
     }
     @if (_rows.Count == 0)
     {
-        <MudText data-testid="allocation-empty">@L["Allocation_Empty"]</MudText>
+        <EmptyState Title="@L["Allocation_Empty"]" Text="@L["Allocation_EmptyText"]" Icon="@Icons.Material.Rounded.AccountTree" TestId="allocation-empty" />
     }
     else
     {
-        <MudTable Items="_rows" Dense="true" Hover="true" data-testid="allocation-table">
-            <HeaderContent>
-                <MudTh>@L["Allocation_Unit"]</MudTh>
-                <MudTh>@L["Allocation_ClassCourses"]</MudTh>
-                <MudTh></MudTh>
-            </HeaderContent>
-            <RowTemplate>
-                <MudTd DataLabel="@L["Allocation_Unit"]">@CultureText.Pick(context.OrgUnitNameAr, context.OrgUnitNameEn)</MudTd>
-                <MudTd DataLabel="@L["Allocation_ClassCourses"]">@context.ClassCourseCount</MudTd>
-                <MudTd>
-                    @if (CanEdit)
-                    {
-                        <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Error" OnClick="() => RemoveAsync(context)"
-                                   data-testid="@($"allocation-remove-{context.Id}")">@L["Common_Delete"]</MudButton>
-                    }
-                </MudTd>
-            </RowTemplate>
-        </MudTable>
+        <MudSimpleTable Dense="true" Hover="true" Elevation="0" Class="lms-simple-table lms-stack-table" data-testid="allocation-table">
+            <thead>
+                <tr>
+                    <th>@L["Allocation_Unit"]</th>
+                    <th>@L["Allocation_ClassCourses"]</th>
+                    <th><span class="lms-visually-hidden">@L["Common_Actions"]</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in _rows)
+                {
+                    var current = row;
+                    <tr>
+                        <td data-label="@L["Allocation_Unit"]">@CultureText.Pick(current.OrgUnitNameAr, current.OrgUnitNameEn)</td>
+                        <td data-label="@L["Allocation_ClassCourses"]">@current.ClassCourseCount</td>
+                        <td class="lms-cell-actions">
+                            @if (CanEdit)
+                            {
+                                <div class="lms-row-actions">
+                                    <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Error" StartIcon="@Icons.Material.Rounded.DeleteOutline"
+                                               OnClick="() => RemoveAsync(current)" data-testid="@($"allocation-remove-{current.Id}")">@L["Common_Delete"]</MudButton>
+                                </div>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </MudSimpleTable>
     }
     @if (CanEdit)
     {
         <MudStack Row="true" Spacing="2" AlignItems="AlignItems.End" Wrap="Wrap.Wrap">
             <UnitPicker Value="_unitId" ValueChanged="id => _unitId = id" Label="@L["Allocation_AddAt"]" TestId="allocation-unit" />
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddAsync" Disabled="_unitId is null || _busy"
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Add" OnClick="AddAsync" Disabled="_unitId is null || _busy"
                        data-testid="allocation-add">@L["Allocation_Add"]</MudButton>
         </MudStack>
     }
