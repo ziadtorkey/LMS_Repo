@@ -1418,4 +1418,8 @@
   <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>The security scan did not accept this package.</value></data>
   <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>The file is not a valid zip archive.</value></data>
   <data name="Error_package_reason_bad_name" xml:space="preserve"><value>A file name in the package is not usable (too long, too deep, or reserved).</value></data>
+  <data name="Module_CompletedAnnounce" xml:space="preserve"><value>Module completed</value></data>
+  <data name="Announce_ReplyPosted" xml:space="preserve"><value>Reply posted</value></data>
+  <data name="Announce_AnnouncementPublished" xml:space="preserve"><value>Announcement published</value></data>
+  <data name="Announce_ThreadCreated" xml:space="preserve"><value>Thread posted</value></data>
 </root>

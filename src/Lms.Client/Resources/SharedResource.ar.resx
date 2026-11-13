@@ -1418,4 +1418,8 @@
   <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>لم يقبل الفحص الأمني هذه الحزمة.</value></data>
   <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>الملف ليس أرشيف zip صالحًا.</value></data>
   <data name="Error_package_reason_bad_name" xml:space="preserve"><value>اسم ملف في الحزمة غير صالح (طويل جدًا أو عميق جدًا أو محجوز).</value></data>
+  <data name="Module_CompletedAnnounce" xml:space="preserve"><value>اكتملت الوحدة</value></data>
+  <data name="Announce_ReplyPosted" xml:space="preserve"><value>تم نشر الرد</value></data>
+  <data name="Announce_AnnouncementPublished" xml:space="preserve"><value>تم نشر الإعلان</value></data>
+  <data name="Announce_ThreadCreated" xml:space="preserve"><value>تم نشر الموضوع</value></data>
 </root>

@@ -7,7 +7,7 @@
 @using Lms.Shared.Authorization
 
 <PageTitle>@L["Home_Title"]</PageTitle>
-<MudText Typo="Typo.h4" HtmlTag="h1" Class="mb-4">@L["Home_Title"]</MudText>
+<MudText Typo="Typo.h4" Class="mb-4">@L["Home_Title"]</MudText>
 @if (_loading)
 {
     <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
@@ -34,7 +34,7 @@ else if (_name is not null)
     {
         <MudCard Class="mt-4" Style="max-width: 420px" data-testid="home-my-class-courses">
             <MudCardContent>
-                <MudText Typo="Typo.h6" HtmlTag="h2">@L["MyClassCourses_Title"]</MudText>
+                <MudText Typo="Typo.h6">@L["MyClassCourses_Title"]</MudText>
                 <MudText Typo="Typo.body2" Class="mud-text-secondary">@L["Home_MyClassCoursesHint"]</MudText>
             </MudCardContent>
             <MudCardActions>

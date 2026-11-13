@@ -10,6 +10,7 @@
 @inject ICultureService Culture
 @inject IDialogService Dialogs
 @inject NavigationManager Navigation
+@inject Announcer Announcer
 @implements IDisposable
 
 <PageTitle>@L["Announcements_Title"]</PageTitle>
@@ -24,7 +25,7 @@ else if (!PermState.Has(Permissions.Forums.View))
 }
 else
 {
-    <MudText Typo="Typo.h5" HtmlTag="h1" Class="mb-3">@L["Announcements_Title"]</MudText>
+    <MudText Typo="Typo.h5" Class="mb-3">@L["Announcements_Title"]</MudText>
     @if (PermState.Has(Permissions.Forums.Moderate))
     {
         <MudPaper Outlined="true" Class="pa-3 mb-3" data-testid="announcement-form">
@@ -119,6 +120,7 @@ else
         var ok = await ApiCalls.RunAsync(() => Forum.CreateAnnouncementAsync(Id, new CreateCourseAnnouncementRequest(_title.Trim(), _html!, _pinned, _notify)),
             Navigation, L, m => _formError = m);
         if (!ok) return;
+        Announcer.Announce(L["Announce_AnnouncementPublished"]);
         _title = null; _html = null; _pinned = _notify = false; _version++;
         await LoadAsync();
     }

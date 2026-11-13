@@ -1,3 +1,4 @@
+@using Lms.Client.Components
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 @using Lms.Client.Theme
 @inherits LayoutComponentBase
@@ -9,6 +10,7 @@
 
 <div data-testid="app-root" class="lms-app" dir="@(Culture.IsRightToLeft ? "rtl" : "ltr")" lang="@Culture.Current.TwoLetterISOLanguageName">
     <a class="lms-skip-link" href="#lms-main" data-testid="skip-link">@L["Nav_SkipToContent"]</a>
+    <AnnouncerRegion />
     <MudRTLProvider RightToLeft="@Culture.IsRightToLeft">
         <MudThemeProvider Theme="_theme" IsDarkMode="_isDark" />
         <MudPopoverProvider />

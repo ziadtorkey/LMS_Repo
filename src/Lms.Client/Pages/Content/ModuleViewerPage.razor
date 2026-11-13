@@ -8,6 +8,8 @@
 @inject PermissionState PermState
 @inject ICultureService Culture
 @inject NavigationManager Navigation
+@inject Announcer Announcer
+@inject IJSRuntime Js
 @implements IDisposable
 
 <PageTitle>@(_detail is { } t ? Culture.Pick(t.Node.TitleAr, t.Node.TitleEn) : L["Module_Title"].Value)</PageTitle>
@@ -28,7 +30,7 @@ else
     <MudStack Spacing="3">
         <MudStack Spacing="1">
             <MudLink Href="@BackHref" data-testid="module-back">@L["Module_Back"]</MudLink>
-            <MudText Typo="Typo.h4" HtmlTag="h1" data-testid="module-title">@Culture.Pick(_detail.Node.TitleAr, _detail.Node.TitleEn)</MudText>
+            <MudText Typo="Typo.h4" HtmlTag="h1" id="module-heading" tabindex="-1" data-testid="module-title">@Culture.Pick(_detail.Node.TitleAr, _detail.Node.TitleEn)</MudText>
         </MudStack>
 
         <ModuleBody Detail="_detail" />
@@ -46,7 +48,7 @@ else
         }
         else if (_completion?.State == CompletionStates.Completed)
         {
-            <MudChip T="string" Color="Color.Success" data-testid="module-done">@L["CompletionState_Completed"]</MudChip>
+            <MudChip T="string" Color="Color.Success" id="module-done" tabindex="-1" data-testid="module-done">@L["CompletionState_Completed"]</MudChip>
         }
 
         <MudStack Row="true" Justify="Justify.SpaceBetween" data-testid="module-nav">
@@ -106,14 +108,28 @@ else
                 await ApiCalls.RunAsync(async () => _completion = await Modules.GetCompletionAsync(ModuleId), Navigation, L, _ => { });
         }
         _loading = false;
+        if (_detail is not null) _focusId = "module-heading";   // a new module: keyboard users start at its heading
+    }
+
+    private string? _focusId;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusId is not { } id) return;
+        _focusId = null;
+        await Js.InvokeVoidAsync("lmsFocusById", id);
     }
 
     private async Task MarkCompleteAsync()
     {
         _error = null;
         _marking = true;
-        await ApiCalls.RunAsync(async () => _completion = await Modules.MarkCompleteAsync(ModuleId), Navigation, L, message => _error = message);
+        var ok = await ApiCalls.RunAsync(async () => _completion = await Modules.MarkCompleteAsync(ModuleId), Navigation, L, message => _error = message);
         _marking = false;
+        if (!ok) return;
+        // The button that had focus is replaced by the done state: say so, and put focus there so keyboard users are not dropped on the page.
+        Announcer.Announce(L["Module_CompletedAnnounce"]);
+        _focusId = "module-done";
     }
 
     private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);

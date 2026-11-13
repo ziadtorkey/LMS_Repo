@@ -4,6 +4,7 @@
 @using Lms.Shared.Authorization
 @using Lms.Shared.Forums
 @inject IForumsApi Forum
+@inject Announcer Announcer
 @inject PermissionState PermState
 @inject ICultureService Culture
 @inject NavigationManager Navigation
@@ -22,7 +23,7 @@ else if (!PermState.Has(Permissions.Forums.View))
 else
 {
     <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3">
-        <MudText Typo="Typo.h5" HtmlTag="h1">@L["Forum_Title"]</MudText>
+        <MudText Typo="Typo.h5">@L["Forum_Title"]</MudText>
         @if (PermState.Has(Permissions.Forums.Post))
         {
             <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => _composing = !_composing" data-testid="forum-new">@L["Forum_NewThread"]</MudButton>
@@ -142,6 +143,7 @@ else
         var ok = await ApiCalls.RunAsync(() => Forum.CreateThreadAsync(Id, new CreateForumThreadRequest(_title.Trim(), html, attachments)),
             Navigation, L, m => _formError = m);
         if (!ok) return false;
+        Announcer.Announce(L["Announce_ThreadCreated"]);
         _title = null; _composing = false;
         await LoadAsync();
         StateHasChanged(); // the submit comes from the child composer, which does not re-render this page on its own

@@ -10,6 +10,7 @@
 @inject ICultureService Culture
 @inject IDialogService Dialogs
 @inject NavigationManager Navigation
+@inject Announcer Announcer
 @implements IDisposable
 
 <PageTitle>@(_detail?.Thread.Title ?? L["Forum_Title"].Value)</PageTitle>
@@ -32,7 +33,7 @@ else
     <MudStack Spacing="3">
         <MudLink Href="@($"class-courses/{Id}/forum")" data-testid="thread-back">@L["Forum_Back"]</MudLink>
         <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
-            <MudText Typo="Typo.h5" HtmlTag="h1" data-testid="thread-title">@thread.Title</MudText>
+            <MudText Typo="Typo.h5" data-testid="thread-title">@thread.Title</MudText>
             @if (thread.IsPinned)
             {
                 <MudChip T="string" Size="Size.Small" Color="Color.Primary" data-testid="thread-pinned">@L["Forum_Pinned"]</MudChip>
@@ -139,7 +140,7 @@ else
     {
         _error = null;
         var ok = await ApiCalls.RunAsync(() => Forum.CreatePostAsync(ThreadId, new CreateForumPostRequest(html, attachments)), Navigation, L, m => _error = m);
-        if (ok) await LoadAsync(silent: true);
+        if (ok) { Announcer.Announce(L["Announce_ReplyPosted"]); await LoadAsync(silent: true); }
         return ok;
     }
 
