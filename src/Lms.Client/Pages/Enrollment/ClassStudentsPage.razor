@@ -10,6 +10,8 @@
 @inject PermissionState PermState
 @inject ICultureService Culture
 @inject NavigationManager Navigation
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
 
 <PageTitle>@L["ClassStudents_Title"]</PageTitle>
 @if (!PermState.Loaded)
@@ -54,7 +56,11 @@ else
 
     public void Dispose() => PermState.Changed -= OnPermissionsChanged;
 
-    /// <summary>The exception request lives with the class course (restriction exceptions page).</summary>
-    private void RequestException(RestrictionSkipDto skip) =>
-        Navigation.NavigateTo($"class-courses/{skip.ClassCourseId}/exceptions?student={skip.StudentId}");
+    /// <summary>Opens the exception request for the skipped student and course.</summary>
+    private async Task RequestException(RestrictionSkipDto skip)
+    {
+        var dialog = await Dialogs.ShowAsync<RequestExceptionDialog>(L["Exception_Request"],
+            new DialogParameters<RequestExceptionDialog> { { x => x.Skip, skip } }, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        if (await dialog.Result is { Canceled: false }) Snackbar.Add(L["Exception_Sent"], Severity.Success);
+    }
 }

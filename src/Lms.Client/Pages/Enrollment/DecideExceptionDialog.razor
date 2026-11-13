@@ -1,0 +1,75 @@
+@using Lms.Client.Services.Api
+@using Lms.Shared.Enrollment
+@inject IEnrollmentApi Api
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+@* An exception request with what failed and why it was asked; a pending one can be approved (optional comment) or rejected (comment required). *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="2">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" data-testid="dialog-error">@_error</MudAlert>
+            }
+            <MudText data-testid="decide-student">@Culture.Pick(Request.StudentNameAr, Request.StudentNameEn) (<span dir="ltr">@Request.StudentCode</span>)</MudText>
+            <MudText Typo="Typo.body2" data-testid="decide-course">@Culture.Pick(Request.CourseNameAr, Request.CourseNameEn) · @Culture.Pick(Request.ClassNameAr, Request.ClassNameEn)</MudText>
+            <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" data-testid="decide-failed">
+                @foreach (var type in Request.FailedTypes)
+                {
+                    <MudChip T="string" Size="Size.Small">@L[$"RestrictionType_{type}"]</MudChip>
+                }
+            </MudStack>
+            <MudText data-testid="decide-reason"><strong>@L["Exception_YourReason"]:</strong> @Request.Reason</MudText>
+            @if (Request.Status == ExceptionStatuses.Pending && CanDecide)
+            {
+                <MudTextField T="string" @bind-Value="_comment" Label="@L["Exception_Comment"]" Lines="3" MaxLength="500"
+                              Error="_commentError" ErrorText="@L["Exception_CommentRequired"]" data-testid="decision-comment" />
+            }
+            else if (Request.Status != ExceptionStatuses.Pending)
+            {
+                <MudText data-testid="decide-decided">@L[$"ExceptionStatus_{Request.Status}"]@(string.IsNullOrWhiteSpace(Request.DecisionComment) ? "" : ": " + Request.DecisionComment)</MudText>
+            }
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Close"]</MudButton>
+        @if (Request.Status == ExceptionStatuses.Pending && CanDecide)
+        {
+            <MudButton Color="Color.Error" OnClick="RejectAsync" Disabled="_saving" data-testid="decision-reject">@L["Exception_Reject"]</MudButton>
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="ApproveAsync" Disabled="_saving" data-testid="decision-approve">@L["Exception_Approve"]</MudButton>
+        }
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired] public EnrollmentExceptionDto Request { get; set; } = default!;
+
+    /// <summary>True with Enrollment.ApproveException; without it the request is shown read-only.</summary>
+    [Parameter] public bool CanDecide { get; set; } = true;
+
+    private string _comment = "";
+    private bool _commentError, _saving;
+    private string? _error;
+
+    private static string? Blank(string value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private Task ApproveAsync() => DecideAsync(() => Api.ApproveExceptionAsync(Request.Id, new DecideExceptionRequest(Blank(_comment))));
+
+    private Task RejectAsync()
+    {
+        _commentError = string.IsNullOrWhiteSpace(_comment);
+        return _commentError ? Task.CompletedTask : DecideAsync(() => Api.RejectExceptionAsync(Request.Id, new DecideExceptionRequest(Blank(_comment))));
+    }
+
+    private async Task DecideAsync(Func<Task> decide)
+    {
+        _error = null;
+        _saving = true;
+        var ok = await ApiCalls.RunAsync(decide, Navigation, L, message => _error = message);
+        _saving = false;
+        if (ok) MudDialog.Close(DialogResult.Ok(true));
+    }
+}

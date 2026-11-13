@@ -27,7 +27,7 @@ public static class SettingEndpoints
 
     private static async Task<IResult> SetAsync(
         Guid id, string name, HttpContext http, ISettingsResolver settings, IEffectiveSettingsReader reader,
-        SetSettingRequest? body, CancellationToken ct)
+        IEnumerable<ISettingChangeGuard> guards, SetSettingRequest? body, CancellationToken ct)
     {
         var access = await http.CheckUnitAsync(Permissions.Settings.Update, id, ct);
         if (access.Problem is not null)
@@ -50,6 +50,15 @@ public static class SettingEndpoints
                 {
                     ["code"] = error == "invalid_code_pattern" ? ProblemCodes.invalid_code_pattern : ProblemCodes.validation_failed,
                 });
+        }
+
+        // The enable hook: a feature may refuse to be switched on until what it needs is in place (409 with the guard's code).
+        foreach (var guard in guards.Where(g => string.Equals(g.SettingName, name, StringComparison.Ordinal)))
+        {
+            if (await guard.RefuseAsync(access.Unit!, body!.ValueJson, ct) is { } refusal)
+            {
+                return ApiProblems.Conflict(refusal);
+            }
         }
 
         try
