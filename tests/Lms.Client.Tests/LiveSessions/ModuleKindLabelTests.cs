@@ -45,7 +45,7 @@ public sealed class ModuleKindLabelTests : ClientTestContext
     {
         foreach (var culture in new[] { "ar", "en" })
         {
-            foreach (var status in LiveSessionStatuses.All) Assert.NotEmpty(Label(culture, "Live_Status_" + status));
+            foreach (var status in LiveSessionStatuses.All) Assert.NotEmpty(Label(culture, "LiveSession_Status_" + status));
             foreach (var state in ParticipantMatchStates.All) Assert.NotEmpty(Label(culture, "Live_Match_" + state));
             foreach (var scope in SeriesEditScopes.All) Assert.NotEmpty(Label(culture, "Live_Scope_" + scope));
         }
