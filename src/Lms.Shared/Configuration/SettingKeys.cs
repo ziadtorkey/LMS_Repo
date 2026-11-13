@@ -44,4 +44,24 @@ public static class SettingKeys
 
     /// <summary>Seconds after an attempt's <c>EndsAtUtc</c> during which a last autosave or submit is still taken (0–300).</summary>
     public static readonly SettingKey<int> QuizzesAutoSubmitGraceSeconds = new("Quizzes.AutoSubmitGraceSeconds", 30);
+
+    // M4b live sessions (FR-VC-01, D53, D55; M4b plan Decisions 4 and 9). Live.MaxHostSharePercent is platform-level and
+    // lives in server configuration (LiveSessionLimits), not here: no client admin may change it.
+    /// <summary>Minutes before the start during which students may join (0–60); the window closes at the scheduled end.</summary>
+    public static readonly SettingKey<int> LiveJoinWindowMinutes = new("Live.JoinWindowMinutes", 15);
+
+    /// <summary>Minutes before the start at which the in-app reminder is sent (5–1440).</summary>
+    public static readonly SettingKey<int> LiveReminderMinutes = new("Live.ReminderMinutes", 30);
+
+    /// <summary>
+    /// Zoom meetings a client may create per UTC day (1–10 000), read at the client's root unit: a weekly series counts
+    /// one per occurrence, updates and deletes do not count; a series that would cross the cap is refused whole.
+    /// </summary>
+    public static readonly SettingKey<int> LiveMaxCreatesPerDay = new("Live.MaxCreatesPerDay", 500);
+
+    /// <summary>
+    /// Whether Zoom meetings of ClassCourses under the unit are created with cloud recording (D55, default off). Read at
+    /// the ClassCourse's unit; changed only with <c>Settings.Update</c>.
+    /// </summary>
+    public static readonly SettingKey<bool> LiveCloudRecordingEnabled = new("Live.CloudRecordingEnabled", false);
 }

@@ -1,0 +1,43 @@
+@using Lms.Shared.Blueprints
+
+@* Publish asks how the new version reaches class plans (D7); there is no default, the user must choose. *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="3">
+            <MudText>@L["Publish_Intro"]</MudText>
+            <MudRadioGroup T="string" Value="_mode" ValueChanged="m => { _mode = m; _missing = false; }" data-testid="publish-mode">
+                <MudRadio T="string" Value="@BlueprintApplyModes.NewClassesOnly" data-testid="publish-new-only">@L["ApplyMode_NewClassesOnly"]</MudRadio>
+                <MudText Typo="Typo.caption" Class="ms-8 mb-2">@L["ApplyMode_NewClassesOnly_Help"]</MudText>
+                <MudRadio T="string" Value="@BlueprintApplyModes.PushToExisting" data-testid="publish-push">@L["ApplyMode_PushToExisting"]</MudRadio>
+                <MudText Typo="Typo.caption" Class="ms-8">@L["ApplyMode_PushToExisting_Help"]</MudText>
+            </MudRadioGroup>
+            @if (_missing)
+            {
+                <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" data-testid="publish-mode-required">@L["Publish_ChooseMode"]</MudAlert>
+            }
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <div class="lms-dialog-actions">
+            <MudButton Variant="Variant.Text" OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" StartIcon="@Icons.Material.Rounded.Publish" OnClick="Publish" data-testid="publish-confirm">@L["Blueprint_Publish"]</MudButton>
+        </div>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    private string? _mode;
+    private bool _missing;
+
+    private void Publish()
+    {
+        if (_mode is null)
+        {
+            _missing = true;
+            return;
+        }
+        MudDialog.Close(DialogResult.Ok(_mode));
+    }
+}

@@ -1,6 +1,7 @@
 using Lms.Domain.Access;
 using Lms.Domain.Notifications;
 using Lms.Domain.Organizations;
+using Lms.Shared;
 using Lms.Shared.Notifications;
 
 namespace Lms.Api.Features.Assignments;
@@ -9,7 +10,7 @@ namespace Lms.Api.Features.Assignments;
 public sealed class AssignmentNotifier(INotificationPublisher publisher, ILogger<AssignmentNotifier> logger)
 {
     public Task RoleAssignedAsync(RoleAssignment assignment, Role role, OrgUnit unit, CancellationToken ct) =>
-        SendAsync(NotificationEvents.AccessRoleAssigned, assignment, role, unit, "/choose-context", ct);
+        SendAsync(NotificationEvents.AccessRoleAssigned, assignment, role, unit, PageRoutes.ChooseContext, ct);
 
     public Task RoleRemovedAsync(RoleAssignment assignment, Role role, OrgUnit unit, CancellationToken ct) =>
         SendAsync(NotificationEvents.AccessRoleRemoved, assignment, role, unit, null, ct); // nothing left to open

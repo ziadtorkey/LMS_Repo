@@ -64,6 +64,9 @@ public static class NotificationEvents
     public const string QuizzesOpened = "Quizzes.Opened";
     public const string ForumsAnnouncement = "Forums.Announcement";
 
+    // M4b live sessions (M4b plan Task 1). Named recipients: the students the session module targets.
+    public const string LiveReminder = "Live.Reminder";
+
     public static IReadOnlyList<NotificationEventDefinition> All { get; } =
     [
         new(AccessRoleAssigned, [], ["RoleNameAr", "RoleNameEn", "OrgUnitNameAr", "OrgUnitNameEn"]),
@@ -103,6 +106,8 @@ public static class NotificationEvents
         new(QuizzesOpened, [], ["TitleAr", "TitleEn", "CourseNameAr", "CourseNameEn"]),
         // Named recipients: students enrolled in the ClassCourse, when the author asks to notify.
         new(ForumsAnnouncement, [], ["Title", "CourseNameAr", "CourseNameEn"]),
+        // Named recipients: targeted students who can see the session module, once, Live.ReminderMinutes before start.
+        new(LiveReminder, [], ["TitleAr", "TitleEn", "CourseNameAr", "CourseNameEn", "StartsAtUtc"]),
     ];
 
     /// <summary>The definition with this exact (case-sensitive) key, or null.</summary>

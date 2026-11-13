@@ -39,6 +39,8 @@ public static class AuditCatalog
         // volume; grading and moderation are).
         "Assignment", "SubmissionFeedback", "Quiz", "QuizQuestion", "LibraryResource", "ForumThread",
         "CourseAnnouncement", "GradeEvent",
+        // M4b wave 3a: live sessions (participants and webhook receipts are not audited row by row: volume).
+        "LiveSessionSeries", "LiveSession",
     ];
 
     public static IReadOnlyList<string> SecurityEvents { get; } =

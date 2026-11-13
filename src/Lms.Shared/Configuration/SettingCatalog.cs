@@ -68,6 +68,12 @@ public static class SettingCatalog
             Min: 0, Max: 100),
         new(SettingKeys.QuizzesAutoSubmitGraceSeconds.Name, SettingValueKinds.Int, SettingCategories.Academic, "30",
             Min: 0, Max: 300),
+        // M4b live sessions: Academic, like the other teaching settings (the settings page shows a fixed category list).
+        new(SettingKeys.LiveJoinWindowMinutes.Name, SettingValueKinds.Int, SettingCategories.Academic, "15", Min: 0, Max: 60),
+        new(SettingKeys.LiveReminderMinutes.Name, SettingValueKinds.Int, SettingCategories.Academic, "30", Min: 5, Max: 1440),
+        new(SettingKeys.LiveMaxCreatesPerDay.Name, SettingValueKinds.Int, SettingCategories.Academic, "500",
+            Min: 1, Max: 10_000),
+        new(SettingKeys.LiveCloudRecordingEnabled.Name, SettingValueKinds.Bool, SettingCategories.Academic, "false"),
     ];
 
     /// <summary>The definition with this exact (case-sensitive) name, or null.</summary>
