@@ -88,6 +88,8 @@ public sealed class PackageContractTests
         Assert.Equal("/api/packages/{id:guid}/module", Routes.PackageModulePattern);
         Assert.Equal("/api/packages/{id:guid}/launch", Routes.PackageLaunchPattern);
         Assert.Equal("/api/packages/{id:guid}/preview", Routes.PackagePreviewPattern);
+        Assert.Equal("/api/packages/{id:guid}/my-state", Routes.PackageMyStatePattern);
+        Assert.Equal("/api/packages/{id:guid}/grading-method", Routes.PackageGradingMethodPattern);
         Assert.Equal("/api/package-attempts/{id:guid}/commit", Routes.PackageAttemptCommitPattern);
         Assert.Equal("/api/package-attempts/{id:guid}/finish", Routes.PackageAttemptFinishPattern);
         Assert.Equal($"/api/class-courses/{Id}/packages", Routes.ClassCoursePackages(Id));
@@ -96,6 +98,8 @@ public sealed class PackageContractTests
         Assert.Equal($"/api/packages/{Id}/module", Routes.PackageModule(Id));
         Assert.Equal($"/api/packages/{Id}/launch", Routes.PackageLaunch(Id));
         Assert.Equal($"/api/packages/{Id}/preview", Routes.PackagePreview(Id));
+        Assert.Equal($"/api/packages/{Id}/my-state", Routes.PackageMyState(Id));
+        Assert.Equal($"/api/packages/{Id}/grading-method", Routes.PackageGradingMethod(Id));
         Assert.Equal($"/api/package-attempts/{Id}/commit", Routes.PackageAttemptCommit(Id));
         Assert.Equal($"/api/package-attempts/{Id}/finish", Routes.PackageAttemptFinish(Id));
     }
@@ -151,6 +155,9 @@ public sealed class PackageContractTests
         RoundTrip(new PackageCommitRequest(7, PackageCommitFormats.Scorm, new Dictionary<string, string> { ["cmi.core.lesson_status"] = "completed" }));
         RoundTrip(new PackageFinishRequest(7));
         RoundTrip(new PackageAttemptDto(Id, PackageAttemptStatuses.Completed, true, 80m, 0m, 100m, 7, now));
+        RoundTrip(new PackageStudentStateDto(PackageGradingMethods.Last, new PackageAttemptDto(Id, PackageAttemptStatuses.Completed, true, 80m, 0m, 100m, 7, now), true, 80m));
+        RoundTrip(new PackageStudentStateDto(PackageGradingMethods.Highest, null, false, null));
+        RoundTrip(new UpdatePackageGradingMethodRequest(PackageGradingMethods.First));
     }
 
     private static void RoundTrip<T>(T value)

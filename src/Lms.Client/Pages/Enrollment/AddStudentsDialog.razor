@@ -1,0 +1,104 @@
+@using Lms.Client.Services.Api
+@using Lms.Shared.Enrollment
+@using Lms.Shared.People
+@inject IStudentsApi Students
+@inject IEnrollmentApi Api
+@inject IDialogService Dialogs
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+@* Adds students of the class's unit to the class: search, tick the students (an unplaced filter helps), choose the date, confirm going over capacity. *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="2">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" data-testid="dialog-error">@_error</MudAlert>
+            }
+            <MudTextField T="string" Value="_search" ValueChanged="OnSearchChanged" Label="@L["Common_Search"]" Immediate="true" DebounceInterval="300"
+                          Clearable="true" data-testid="add-search" />
+            <MudSwitch T="bool" Value="_unplacedOnly" ValueChanged="OnUnplacedChanged" Color="Color.Primary" Label="@L["ClassStudents_UnplacedOnly"]"
+                       data-testid="add-unplaced" />
+            @if (_found.Count == 0)
+            {
+                <MudText data-testid="add-empty">@L["Common_Empty"]</MudText>
+            }
+            else
+            {
+                <MudStack Spacing="0" Style="max-height: 18rem; overflow-y: auto" data-testid="add-list">
+                    @foreach (var student in _found)
+                    {
+                        var id = student.Id;
+                        <MudCheckBox T="bool" Value="_selected.ContainsKey(id)" ValueChanged="v => Toggle(student, v)" Dense="true"
+                                     Label="@($"{Culture.Pick(student.NameAr, student.NameEn)} ({student.StudentCode})")" data-testid="@($"add-student-{id}")" />
+                    }
+                </MudStack>
+            }
+            <MudText Typo="Typo.caption" data-testid="add-selected-count">@L["ClassStudents_Selected", _selected.Count]</MudText>
+            <MudDatePicker Date="_date" DateChanged="d => _date = d" Label="@L["Enrollment_EffectiveOn"]" data-testid="add-date" />
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="() => SaveAsync(false)" Disabled="@(_saving || _selected.Count == 0)"
+                   data-testid="dialog-save">@L["ClassStudents_Add"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired] public Guid ClassId { get; set; }
+
+    /// <summary>The class's unit: students are searched there (and below).</summary>
+    [Parameter, EditorRequired] public Guid OrgUnitId { get; set; }
+
+    private readonly Dictionary<Guid, StudentSummaryDto> _selected = [];
+    private IReadOnlyList<StudentSummaryDto> _found = [];
+    private string? _search, _error;
+    private bool _unplacedOnly = true, _saving;
+    private DateTime? _date = DateTime.Today;
+
+    protected override Task OnInitializedAsync() => SearchAsync();
+
+    private Task OnSearchChanged(string? text) { _search = text; return SearchAsync(); }
+    private Task OnUnplacedChanged(bool value) { _unplacedOnly = value; return SearchAsync(); }
+
+    private async Task SearchAsync()
+    {
+        var query = new StudentQuery(OrgUnitId, true, PersonStatuses.Active, null, string.IsNullOrWhiteSpace(_search) ? null : _search.Trim(), null, 1, 50, null, _unplacedOnly);
+        await ApiCalls.RunAsync(async () => _found = (await Students.ListAsync(query)).Items, Navigation, L, message => _error = message);
+    }
+
+    private void Toggle(StudentSummaryDto student, bool selected)
+    {
+        if (selected) _selected[student.Id] = student; else _selected.Remove(student.Id);
+    }
+
+    private async Task SaveAsync(bool confirmOverCapacity)
+    {
+        _error = null;
+        var request = new AddStudentsToClassRequest(_selected.Keys.ToList(), _date is { } d ? DateOnly.FromDateTime(d) : null, confirmOverCapacity);
+        _saving = true;
+        AddStudentsResultDto? result = null;
+        var overCapacity = false;
+        var saved = await ApiCalls.RunAsync(async () =>
+        {
+            try { result = await Api.AddStudentsAsync(ClassId, request); }
+            catch (ApiProblemException ex) when (ex.Code == "over_capacity" && !confirmOverCapacity) { overCapacity = true; }
+        }, Navigation, L, message => _error = message);
+        _saving = false;
+
+        if (overCapacity)
+        {
+            // Warn mode: the class would go over capacity; the user decides.
+            var confirmed = await Dialogs.ShowMessageBoxAsync(L["ClassStudents_Add"], L["Error_over_capacity"],
+                yesText: L["ClassStudents_AddAnyway"], cancelText: L["Common_Cancel"]);
+            if (confirmed == true) await SaveAsync(true);
+            return;
+        }
+        if (!saved || result is null) return;
+        MudDialog.Close(DialogResult.Ok(new AddStudentsOutcome(result,
+            _selected.ToDictionary(s => s.Key, s => Culture.Pick(s.Value.NameAr, s.Value.NameEn)))));
+    }
+}
