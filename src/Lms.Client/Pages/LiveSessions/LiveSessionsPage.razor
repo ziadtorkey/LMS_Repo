@@ -54,7 +54,7 @@ else
     }
 
     <SectionCard Flush="true" TestId="live-card">
-        <div class="lms-filters">
+        <div class="lms-filters-inline">
             <MudToggleGroup T="bool" Value="_upcoming" ValueChanged="OnTabChangedAsync" Color="Color.Primary" Size="Size.Small" aria-label="@L["Live_Filter"]" data-testid="live-filter">
                 <MudToggleItem T="bool" Value="true" data-testid="live-filter-upcoming">@L["Live_Upcoming"]</MudToggleItem>
                 <MudToggleItem T="bool" Value="false" data-testid="live-filter-past">@L["Live_Past"]</MudToggleItem>
@@ -72,7 +72,7 @@ else
         }
         else
         {
-            <LiveSessionsList Items="_items" Staff="Staff" LessonOfModule="_lessonOfModule" SeriesSizes="_seriesSizes"
+            <LiveSessionsList Items="_items" Staff="Staff" LessonOfModule="_lessonOfModule" SeriesSizes="_seriesSizes" RecordingUrls="_recordingUrls"
                               OnEdit="EditAsync" OnRecording="RecordingAsync" OnParticipants="ParticipantsAsync" OnCancel="CancelAsync" />
         }
     </SectionCard>
@@ -83,6 +83,7 @@ else
     private IReadOnlyList<LiveLessonOption> _lessons = [];
     private IReadOnlyDictionary<Guid, string> _lessonOfModule = new Dictionary<Guid, string>();
     private Dictionary<Guid, int> _seriesSizes = [];
+    private Dictionary<Guid, string> _recordingUrls = [];
     private ProviderStatusDto? _provider;
     private string? _error;
     private bool _loading = true, _upcoming = true;
@@ -143,9 +144,24 @@ else
             var rows = page.Items.Where(s => (s.EndsAtUtc > s.ServerNowUtc) == _upcoming).ToList();
             _items = _upcoming ? rows.OrderBy(s => s.StartsAtUtc).ToList() : rows.OrderByDescending(s => s.StartsAtUtc).ToList();
             await LoadSeriesSizesAsync();
+            await LoadRecordingUrlsAsync();
         }, Navigation, L, Culture.IsRightToLeft, message => _error = message);
         if (!ok) _items = [];
         _loading = false;
+    }
+
+    /// <summary>The list rows only say that a recording exists; the link itself is read per row (few sessions have one).</summary>
+    private async Task LoadRecordingUrlsAsync()
+    {
+        _recordingUrls = [];
+        foreach (var row in _items.Where(s => s.HasRecording))
+        {
+            try
+            {
+                if ((await Live.GetAsync(row.Id)).RecordingUrl is { Length: > 0 } url) _recordingUrls[row.Id] = url;
+            }
+            catch (ApiProblemException) { }
+        }
     }
 
     /// <summary>"3 of 12": the list rows carry only the position, so one read per series gives its size.</summary>
