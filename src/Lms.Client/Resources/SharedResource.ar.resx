@@ -1418,4 +1418,11 @@
   <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>لم يقبل الفحص الأمني هذه الحزمة.</value></data>
   <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>الملف ليس أرشيف zip صالحًا.</value></data>
   <data name="Error_package_reason_bad_name" xml:space="preserve"><value>اسم ملف في الحزمة غير صالح (طويل جدًا أو عميق جدًا أو محجوز).</value></data>
+  <data name="Blueprint_VersionsSubtitle" xml:space="preserve"><value>سجل كامل لمراجعات المخطط ونسخه المنشورة.</value></data>
+  <data name="Blueprint_Overview" xml:space="preserve"><value>نظرة عامة على المخطط</value></data>
+  <data name="Blueprint_StatSections" xml:space="preserve"><value>الأقسام</value></data>
+  <data name="Blueprint_StatLessons" xml:space="preserve"><value>الدروس</value></data>
+  <data name="Blueprint_StatPeriods" xml:space="preserve"><value>الحصص أسبوعيًا</value></data>
+  <data name="Blueprint_StatVersion" xml:space="preserve"><value>النسخة</value></data>
+  <data name="Blueprint_LessonsCount" xml:space="preserve"><value>الدروس: {0}</value></data>
 </root>

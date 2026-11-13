@@ -1418,4 +1418,11 @@
   <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>The security scan did not accept this package.</value></data>
   <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>The file is not a valid zip archive.</value></data>
   <data name="Error_package_reason_bad_name" xml:space="preserve"><value>A file name in the package is not usable (too long, too deep, or reserved).</value></data>
+  <data name="Blueprint_VersionsSubtitle" xml:space="preserve"><value>Complete audit trail of revisions and published versions.</value></data>
+  <data name="Blueprint_Overview" xml:space="preserve"><value>Blueprint overview</value></data>
+  <data name="Blueprint_StatSections" xml:space="preserve"><value>Sections</value></data>
+  <data name="Blueprint_StatLessons" xml:space="preserve"><value>Lessons</value></data>
+  <data name="Blueprint_StatPeriods" xml:space="preserve"><value>Periods per week</value></data>
+  <data name="Blueprint_StatVersion" xml:space="preserve"><value>Version</value></data>
+  <data name="Blueprint_LessonsCount" xml:space="preserve"><value>Lessons: {0}</value></data>
 </root>
