@@ -3,22 +3,22 @@
 _Updated by the Team Lead after every merge cycle._
 
 **Milestone:** M0 — DONE · M1 Organization & Access — DONE (#73 via #200) · M2 People — closing (#177 via #321) · M3 Academic Structure — in progress
-**Last update:** 2026-11-13 10:25 — Merged since 18:27: #388, #349, #436, #412, #441, #386, #420, #437, #331, #316, #387, #287, #409, #456, #417, #414, #449, #391 (M4a module kernel), #459 (forum UI), #464 (static asset tests), #285 (M3 academic E2E), #392 (nav/home), #462 (E2E year), #389 (module authoring), #427 (M4b backend proposal), #318 (course restrictions), #446 (dark-mode contrast), #467 (M4b plan), #440 (M4b FE proposal), #291 (course blueprint), #458 (library pages), #498 (M4b CSS), #385 (grade events), #394 (module viewer), #390 (student course home), #463 (PageRoutes), #503 (fix #466 CI pool exhaustion), #384 (asset service), #494 (M4b design spec), #497 (M4b contract 3a, live sessions), #460 (home cards), #505 (resx hotfix), #426 (courses restyle), #465 (library viewer), #500 (M4b contract 3b, packages), #434 (scheduled jobs), #442 (unit settings restyle). #466 reopened (pool exhaustion persists; Health 503 after #503). In CI: #500 contract 3b, #505 hotfix, #465, #442, #426, #447. Hotfix #505 (duplicate resx keys on main, 8 client tests failing) approved, in CI. M4b: plan #467 approved; issues #468-#492; contract 3a draft #497 (QA reviewing); design spec #494, CSS #498 (approved); FE2 T16 draft #501; BE3 corpus #493. CI blocker #466: fix #503 approved, in CI. Probable #466 root cause: daily jobs at 02:00/03:00 UTC firing in every test host. Local Docker hung (owner asked to restart). Agent messaging paused.
+**Last update:** 2026-11-13 14:50 — machine restart recovered (MySQL80 stopped, compose stack up). Merged today after restart: #444 (M4b spike), #501 (package upload, T16), #447 (digital library), #450 (quiz model), #294 (guardian portal). #439 closed in favour of #506; #508 filed (ar U+061C minus sign). In CI, approved: #410, #509, #432, #400, #322, #332, #309, #507. QA re-verifying: #453, #421, #502, #499. #448 needs a main merge (BE3). Merge helper loop denied by auto mode; Lead merges by hand.
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |
 |---|---|---|---|---|
-| Team Lead | Opus | `local_95ef9dc7-9378-4012-a8f2-c7d1f944bdec` (lms-lead) | merges; contract review #463 (PageRoutes); runs QA/dev subagents | coordinating |
-| Backend 1 | Sonnet | `local_19f31b04-ca2f-43d1-a2cb-8a128722a11f` (lms-backend) | M3 stack #318/#319 (main merge, CI, QA2 verdicts) | working |
-| Backend 2 | Sonnet | `local_d36e7dc2-e9e6-4f73-b7b3-b078b17bbe41` (lms-backend-2) | #455 E2E seed year; #434 CI; quizzes #450/#453 after #391/#385 | working |
-| Backend 3 | Sonnet | `local_2e8038c6-e5ba-4e13-ade0-9440d9beb565` (lms-backend-3) | #463 PageRoutes (#461); #447/#448 ready; #443 after #391 | waiting on merges |
-| Backend 4 | Sonnet | `local_fd5c4410-8364-4c55-a5a8-3b8aa37afc1f` (lms-backend-4) | #464 static-asset tests; #444 spike re-review; #401 after #391 | waiting on merges |
-| Frontend | Sonnet | `local_40667dce-5be7-478b-95cb-4f14ecd203b9` (lms-frontend) | #465 library viewer (#452); main merges into #389/#394/#390 | working |
-| Frontend 2 | Sonnet | `local_3d9e8938-4064-4f83-a04d-920704d41a87` (lms-frontend-2) | M4b FE plan #440 revision; #432 after #389; demos #435/#445 | working |
-| QA | Sonnet | `local_91a7af3c-7b02-4d61-ac11-2c22629cf89f` (lms-qa) | own fixes #285, #457 (M4a demo 2) | working |
-| QA 2 | Sonnet | `local_54d26c64-4403-4a13-b128-5be5e9752d97` (lms-qa-2) | M4b plan re-reviews #427/#440; #318/#319 verdicts | reviewing |
-| QA 3 | Sonnet | `local_6d46b60b-d70a-4cfa-af2f-5bf90cdf7c08` (lms-qa-3) | replay reviews #450/#453/#447; #444 re-review | reviewing |
-| UI/UX Designer | Opus | Lead-run agent | restyles #409/#412/#417/#420 merged; #414 in CI | on call |
+| Team Lead | Opus | `local_95ef9dc7-9378-4012-a8f2-c7d1f944bdec` (lms-lead) | merges by hand (merge helper denied); QA subagents for #507/#509; dashboard | coordinating |
+| Backend 1 | Sonnet | `local_19f31b04-ca2f-43d1-a2cb-8a128722a11f` (lms-backend) | M4b T4 live session kernel #471; #502 main merge after #447 | working |
+| Backend 2 | Sonnet | `local_d36e7dc2-e9e6-4f73-b7b3-b078b17bbe41` (lms-backend-2) | #499 Zoom provider part 2, then T7 webhooks | working |
+| Backend 3 | Sonnet | `local_2e8038c6-e5ba-4e13-ade0-9440d9beb565` (lms-backend-3) | M4b T8a package kernel #475 | working |
+| Backend 4 | Sonnet | `local_fd5c4410-8364-4c55-a5a8-3b8aa37afc1f` (lms-backend-4) | #466 CI pool exhaustion follow-up (sampler run), then T3 ADR #470 | running tests |
+| Frontend | Sonnet | `local_40667dce-5be7-478b-95cb-4f14ecd203b9` (lms-frontend) | #504 main merge + chip keys; then M4b T14 #483 | working |
+| Frontend 2 | Sonnet | `local_3d9e8938-4064-4f83-a04d-920704d41a87` (lms-frontend-2) | #506 design musts; then M4b T15 #484 (stacked on #504); demos #435/#445 | working |
+| QA | Sonnet | `local_91a7af3c-7b02-4d61-ac11-2c22629cf89f` (lms-qa) | own #457 fixes (M4a demo 2); #450/#453 re-verify | working |
+| QA 2 | Sonnet | `local_54d26c64-4403-4a13-b128-5be5e9752d97` (lms-qa-2) | #447 approved (merged); #506, #502 re-verify, #504 re-approve | reviewing |
+| QA 3 | Sonnet | `local_6d46b60b-d70a-4cfa-af2f-5bf90cdf7c08` (lms-qa-3) | #448/#410/#421 re-verify on Testcontainers; #450/#453 new heads | reviewing |
+| UI/UX Designer | Opus | `local_bf63c8eb-13da-4d42-bcc1-11596186a520` (lms-ux) | #507 chip + package copy, #509 (#508) approved; M4a RTL/dark sweep | working |
 
 ## M0 issue map
 | Task | Issue | Lane | Depends on |
