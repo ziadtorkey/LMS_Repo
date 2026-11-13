@@ -120,9 +120,8 @@ public sealed class LiveSessionTests(E2EFixture fixture) : E2ETestBase(fixture)
         var (world, _, soon) = await SetUpSessionsAsync(
             laterStartsIn: TimeSpan.FromHours(3), soonStartsIn: TimeSpan.FromMinutes(5));
 
-        await M4Kit.SignInAsync(Page, world.TeacherEmail, Settings.Password, culture);
-        var api = new E2EApi(Page, Settings.BaseUrl);
-        await SendZoomEventsAsync(api, soon.SessionId, world); // ended + recording.completed + two participants, one of them a student
+        await SendZoomEventsAsync(soon.SessionId, world);
+        await M4Kit.SignInAsync(Page, world.TeacherEmail, Settings.Password, culture); // started, two participants (one a student), ended, recording
 
         var panel = new LiveSessionPanel(Page);
         await panel.OpenAsync(world.ClassCourseId, soon.ModuleId);
@@ -244,22 +243,32 @@ public sealed class LiveSessionTests(E2EFixture fixture) : E2ETestBase(fixture)
     }
 
     /// <summary>
-    /// Sends the provider's events for a session through the dev-only signed trigger (Task 7): meeting ended, a recording, and two
-    /// participants (student 1 signed in with the school account, and a guest). The body shape is the trigger's, to be confirmed with Task 7.
+    /// Sends the provider's events for a session through the Development-only signed trigger <c>POST /api/dev/zoom/events</c> (T22 support,
+    /// #608): platform admins only, one event per call, the shape <c>{ event, sessionId, name?, email?, recordingUrl? }</c> with the kinds
+    /// <c>started</c>, <c>participant_joined</c>, <c>ended</c>, <c>recording_ready</c>. The trigger signs the event and posts it to the real
+    /// webhook, so the processor runs for real. The two participants: student 1 (signed in with the school account) and a guest. Signs in as
+    /// the platform admin for the calls and out again. Assumes the platform admin's password is the shared E2E password.
     /// </summary>
-    private static async Task SendZoomEventsAsync(E2EApi api, Guid sessionId, M4World world)
+    private async Task SendZoomEventsAsync(Guid sessionId, M4World world)
     {
-        var response = await api.SendAsync("POST", "/api/dev/zoom/events", new
+        await M4Kit.SignOutAsync(Page);
+        await new LoginPage(Page).SignInAsync(Settings.PlatformAdminEmail, Settings.Password);
+        await new ShellPage(Page).WaitReadyAsync();
+        var api = new E2EApi(Page, Settings.BaseUrl);
+        var events = new object[]
         {
-            sessionId,
-            events = new object[]
-            {
-                new { type = "meeting.ended" },
-                new { type = "recording.completed", shareUrl = "https://zoom.example.org/rec/abc" },
-                new { type = "participant.joined", displayName = "Student One", email = world.Student1.UserName },
-                new { type = "participant.joined", displayName = "A guest", email = (string?)null },
-            },
-        });
-        Assert.True(response.Ok, $"dev zoom events: {response.Status} {await response.TextAsync()}");
+            new { @event = "started", sessionId },
+            new { @event = "participant_joined", sessionId, name = "Student One", email = world.Student1.UserName },
+            new { @event = "participant_joined", sessionId, name = "A guest", email = (string?)null },
+            new { @event = "ended", sessionId },
+            new { @event = "recording_ready", sessionId, recordingUrl = "https://zoom.example.org/rec/abc" },
+        };
+        foreach (var body in events)
+        {
+            var response = await api.SendAsync("POST", "/api/dev/zoom/events", body);
+            Assert.Equal(202, response.Status); // the answer carries the status the webhook gave the signed event (204)
+        }
+
+        await M4Kit.SignOutAsync(Page);
     }
 }
