@@ -168,6 +168,22 @@ public static class ProblemCodes
     /// <summary>Download is disabled for this library resource; use the in-browser reader (D13).</summary>
     public const string download_disabled = nameof(download_disabled);
 
+    // M4b wave 3b: SCORM and H5P packages (the reject reason of package_invalid is a PackageRejectReasons value in ProblemDetails.reason).
+
+    /// <summary>The archive or its content failed validation; <c>reason</c> is a <c>PackageRejectReasons</c> value.</summary>
+    public const string package_invalid = nameof(package_invalid);
+
+    /// <summary>The archive is larger than <c>Files.MaxUploadMb</c> or would exceed the client's package storage.</summary>
+    public const string package_too_large = nameof(package_too_large);
+
+    /// <summary>The package is not <c>Ready</c> (still validating, or rejected): it cannot be attached, launched or previewed.</summary>
+    public const string package_not_ready = nameof(package_not_ready);
+
+    /// <summary>A tracking commit or finish was refused (closed attempt, preview token, oversize, unknown key, rate).</summary>
+    public const string package_commit_rejected = nameof(package_commit_rejected);
+
+    /// <summary>No separate content origin is configured (D56 fail-closed): upload, attach, launch and preview answer this (409).</summary>
+    public const string package_host_not_configured = nameof(package_host_not_configured);
     // M4b wave 3a (live sessions; M4b plan Task 1)
     /// <summary>
     /// The meeting provider cannot take the request now: the host pool or the client's host share is exhausted, the

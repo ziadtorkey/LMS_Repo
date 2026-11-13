@@ -28,7 +28,7 @@ public sealed partial class AcademicCatalogContractTests
         Assert.Equal(
             ["Classes.View", "CourseAssignments.Grade", "CourseAssignments.Manage", "CourseAssignments.View",
              "Enrollment.View", "Forums.Moderate", "Forums.Post", "Forums.View", "Groups.Manage", "Groups.View",
-             "LessonPlans.View", "LiveSessions.Manage", "LiveSessions.View", "Modules.Manage", "Modules.View",
+             "LessonPlans.View", "LiveSessions.Manage", "LiveSessions.View", "Modules.Manage", "Modules.View", "Packages.Upload", "Packages.View",
              "Quizzes.Grade", "Quizzes.Manage", "Quizzes.View", "Students.View", "TeacherAssignments.View"],
             Rule(BuiltInRoles.Teacher).Permissions.Order(StringComparer.Ordinal));
         Assert.Equal(
@@ -37,7 +37,7 @@ public sealed partial class AcademicCatalogContractTests
             Rule(BuiltInRoles.Supervisor).Permissions.Order(StringComparer.Ordinal));
         Assert.Equal(
             ["CourseAssignments.Submit", "CourseAssignments.View", "Forums.Post", "Forums.View", "LessonPlans.View",
-             "LiveSessions.View", "Modules.View", "Quizzes.Attempt", "Quizzes.View"],
+             "LiveSessions.View", "Modules.View", "Packages.View", "Quizzes.Attempt", "Quizzes.View"],
             Rule(BuiltInRoles.Student).Permissions.Order(StringComparer.Ordinal));
     }
 
