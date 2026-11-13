@@ -11,6 +11,14 @@ namespace Lms.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AlterColumn<Guid>(
+                name: "ClassCourseId",
+                table: "Assets",
+                type: "char(36)",
+                nullable: true,
+                oldClrType: typeof(Guid),
+                oldType: "char(36)");
+
             migrationBuilder.CreateTable(
                 name: "LibraryResources",
                 columns: table => new
@@ -209,6 +217,16 @@ namespace Lms.Infrastructure.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "LibraryResources");
+
+            migrationBuilder.AlterColumn<Guid>(
+                name: "ClassCourseId",
+                table: "Assets",
+                type: "char(36)",
+                nullable: false,
+                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"),
+                oldClrType: typeof(Guid),
+                oldType: "char(36)",
+                oldNullable: true);
         }
     }
 }
