@@ -3787,6 +3787,9 @@ namespace Lms.Infrastructure.Persistence.Migrations
                     b.Property<Guid?>("ModuleKey")
                         .HasColumnType("char(36)");
 
+                    b.Property<DateTime?>("OpenedNotifiedAtUtc")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<DateTime?>("OpensAtUtc")
                         .HasColumnType("datetime(6)");
 
