@@ -50,9 +50,12 @@ else
     </PageHeader>
 
     <div class="lms-profile-grid">
-        <SectionCard Title="@L["CourseProfile_Details"]" Class="lms-profile-details" TestId="course-profile-details">
-            <Actions><span class="lms-section-icon" aria-hidden="true"><MudIcon Icon="@Icons.Material.Rounded.Info" Size="Size.Small" /></span></Actions>
-            <ChildContent>
+        <SectionCard Class="lms-profile-details" TestId="course-profile-details">
+            @* The icon tile sits at the start, before the title (Stitch cards). *@
+            <div class="lms-card-title-row">
+                <span class="lms-section-icon" aria-hidden="true"><MudIcon Icon="@Icons.Material.Rounded.Info" Size="Size.Small" /></span>
+                <MudText Typo="Typo.h6" HtmlTag="h2" Class="lms-section-title">@L["CourseProfile_Details"]</MudText>
+            </div>
             <dl class="lms-details">
                 <DetailItem Label="@L["Course_Code"]" Value="@s.Code" Ltr="true" TestId="course-profile-code" />
                 <DetailItem Label="@L["Course_Owner"]" Value="@Culture.Pick(s.OwnerOrgUnitNameAr, s.OwnerOrgUnitNameEn)" TestId="course-profile-owner" />
@@ -60,7 +63,6 @@ else
                 <DetailItem Label="@L["Course_WeeklyPeriods"]" Value="@s.WeeklyPeriods.ToString()" />
                 <DetailItem Label="@L["Course_Description"]" Value="@Culture.Pick(_detail.DescriptionAr ?? "", _detail.DescriptionEn ?? "")" />
             </dl>
-            </ChildContent>
         </SectionCard>
 
         <div class="lms-profile-main">
