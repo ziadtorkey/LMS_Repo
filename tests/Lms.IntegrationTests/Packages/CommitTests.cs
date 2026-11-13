@@ -128,6 +128,61 @@ public sealed class CommitTests(LmsApiFactory factory) : IDisposable
 
         Assert.Equal(HttpStatusCode.NotFound, (await _k.CommitAsync(w.Student, launch.AttemptId, 0, ("cmi.suspend_data", "x"))).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await _k.FinishAsync(w.Student, launch.AttemptId, 0)).StatusCode);
+        Assert.Empty(await _k.GradeEventsAsync(package.Id));
+    }
+
+    [Fact]
+    public async Task Commit_and_finish_after_the_enrollment_is_dropped_are_404_and_record_nothing()
+    {
+        var w = await _k.SetUpAsync("PC11");
+        var (package, module) = await _k.AttachedAsync(w);
+        var launch = await _k.LaunchAsync(w.Student, package.Id);
+        Assert.Equal(HttpStatusCode.NoContent, (await _k.CommitAsync(w.Student, launch.AttemptId, 0, ("cmi.core.lesson_status", "incomplete"))).StatusCode);
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            var enrollment = await db.Set<Lms.Domain.Enrollment.CourseEnrollment>()
+                .SingleAsync(e => e.ClassCourseId == w.ClassCourse.Id && e.StudentId == w.StudentProfileId);
+            enrollment.Drop(DateOnly.FromDateTime(DateTime.UtcNow), "dropped");
+            await db.SaveChangesAsync();
+        }
+
+        // Launch and my-state are 404 after the drop, and so are the routes of the attempt (#605).
+        Assert.Equal(HttpStatusCode.NotFound, (await _k.Host.SendAsync(w.Student, HttpMethod.Post, Routes.PackageLaunch(package.Id))).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await _k.Host.SendAsync(w.Student, HttpMethod.Get, Routes.PackageMyState(package.Id))).StatusCode);
+        var commit = await _k.CommitAsync(w.Student, launch.AttemptId, 1, ("cmi.core.lesson_status", "completed"), ("cmi.core.score.raw", "95"));
+        var finish = await _k.FinishAsync(w.Student, launch.AttemptId, 1);
+
+        Assert.Equal(HttpStatusCode.NotFound, commit.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, finish.StatusCode);
+        var attempt = await AttemptAsync(launch.AttemptId);
+        Assert.Equal(0, attempt.LastSeq);
+        Assert.True(attempt.IsOpen);
+        Assert.Empty(await _k.GradeEventsAsync(package.Id));
+        await using var verify = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        Assert.False(await verify.Set<ModuleCompletion>().AnyAsync(c => c.ModuleId == module.Id && c.State == ModuleCompletion.CompletedState));
+    }
+
+    [Fact]
+    public async Task Commit_and_finish_with_the_feature_flag_off_are_403_and_record_nothing()
+    {
+        var w = await _k.SetUpAsync("PC12");
+        var (package, _) = await _k.AttachedAsync(w);
+        var launch = await _k.LaunchAsync(w.Student, package.Id);
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            db.Remove(await db.Set<Lms.Domain.Configuration.OrgUnitSetting>()
+                .SingleAsync(s => s.OrganizationId == w.Tree.Org.Id && s.Key == FeatureFlags.ScormContent.Name));
+            await db.SaveChangesAsync();
+        }
+
+        var commit = await _k.CommitAsync(w.Student, launch.AttemptId, 0, ("cmi.core.lesson_status", "completed"), ("cmi.core.score.raw", "90"));
+        var finish = await _k.FinishAsync(w.Student, launch.AttemptId, 0);
+
+        Assert.Equal(HttpStatusCode.Forbidden, commit.StatusCode);
+        Assert.Equal(ProblemCodes.feature_disabled, await CodeAsync(commit));
+        Assert.Equal(HttpStatusCode.Forbidden, finish.StatusCode);
+        Assert.Equal(-1, (await AttemptAsync(launch.AttemptId)).LastSeq);
+        Assert.Empty(await _k.GradeEventsAsync(package.Id));
     }
 
     [Fact]

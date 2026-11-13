@@ -71,7 +71,7 @@ internal static class PackageFileEndpoint
             : null;
         if (transformer is null)
         {
-            return Results.Stream(file.Content, type.Type);
+            return Results.Stream(file.Content, type.Type, enableRangeProcessing: true);
         }
 
         await using (file.Content)
