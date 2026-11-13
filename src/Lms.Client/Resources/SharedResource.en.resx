@@ -611,6 +611,11 @@
   <data name="Error_pool_draw_invalid" xml:space="preserve"><value>The number of drawn questions must be between 1 and the number of questions.</value></data>
   <data name="Error_thread_locked" xml:space="preserve"><value>This thread is locked and takes no replies.</value></data>
   <data name="Error_download_disabled" xml:space="preserve"><value>Download is disabled for this resource; open it in the reader.</value></data>
+  <data name="Error_provider_unavailable" xml:space="preserve"><value>The live session service is busy right now. Try again later.</value></data>
+  <data name="Error_provider_not_configured" xml:space="preserve"><value>Live sessions are not set up. Ask your platform administrator.</value></data>
+  <data name="Error_live_session_not_open" xml:space="preserve"><value>You cannot join now: the join time has not started yet or the session has ended.</value></data>
+  <data name="Error_feature_disabled" xml:space="preserve"><value>This feature is not turned on for your school.</value></data>
+  <data name="Error_recurrence_invalid" xml:space="preserve"><value>The repeat is not valid: pick at least one day and an end date or a number of times (up to 52).</value></data>
   <data name="Error_course_in_use" xml:space="preserve"><value>The course is used by classes and cannot be removed.</value></data>
   <data name="Error_course_not_available" xml:space="preserve"><value>This course is not available at this unit.</value></data>
   <data name="Error_allocation_exists" xml:space="preserve"><value>The course is already allocated at this unit.</value></data>
@@ -705,6 +710,9 @@
   <data name="Perm_Forums_View" xml:space="preserve"><value>View forums</value></data>
   <data name="Perm_Forums_Post" xml:space="preserve"><value>Post in forums</value></data>
   <data name="Perm_Forums_Moderate" xml:space="preserve"><value>Moderate forums and announcements</value></data>
+  <data name="PermModule_LiveSessions" xml:space="preserve"><value>Live sessions</value></data>
+  <data name="Perm_LiveSessions_View" xml:space="preserve"><value>View and join live sessions</value></data>
+  <data name="Perm_LiveSessions_Manage" xml:space="preserve"><value>Manage live sessions</value></data>
   <data name="Policy_CreateStudents" xml:space="preserve"><value>Block creating and importing students</value></data>
   <data name="Policy_CreateCourses" xml:space="preserve"><value>Block creating and importing courses</value></data>
   <data name="Policy_CreateClasses" xml:space="preserve"><value>Block creating classes</value></data>
@@ -725,6 +733,10 @@
   <data name="Setting_Enrollment_TransferCarriesGrades" xml:space="preserve"><value>Grades follow a transferred student</value></data>
   <data name="Setting_Assignments_LatePenaltyDefaultPercent" xml:space="preserve"><value>Default late penalty (%)</value></data>
   <data name="Setting_Quizzes_AutoSubmitGraceSeconds" xml:space="preserve"><value>Quiz auto-submit grace (seconds)</value></data>
+  <data name="Setting_Live_JoinWindowMinutes" xml:space="preserve"><value>Join opens before a live session (minutes)</value></data>
+  <data name="Setting_Live_ReminderMinutes" xml:space="preserve"><value>Reminder before a live session (minutes)</value></data>
+  <data name="Setting_Live_MaxCreatesPerDay" xml:space="preserve"><value>Live sessions that can be created per day</value></data>
+  <data name="Setting_Live_CloudRecordingEnabled" xml:space="preserve"><value>Cloud recording of live sessions</value></data>
   <data name="SettingValue_Students_CriticalFields_NameAr" xml:space="preserve"><value>Arabic name</value></data>
   <data name="SettingValue_Students_CriticalFields_NameEn" xml:space="preserve"><value>English name</value></data>
   <data name="SettingValue_Students_CriticalFields_NicknameAr" xml:space="preserve"><value>Arabic nickname</value></data>
@@ -764,6 +776,8 @@
   <data name="AuditEntity_ForumThread" xml:space="preserve"><value>Forum thread</value></data>
   <data name="AuditEntity_CourseAnnouncement" xml:space="preserve"><value>Course announcement</value></data>
   <data name="AuditEntity_GradeEvent" xml:space="preserve"><value>Grade event</value></data>
+  <data name="AuditEntity_LiveSessionSeries" xml:space="preserve"><value>Live session series</value></data>
+  <data name="AuditEntity_LiveSession" xml:space="preserve"><value>Live session</value></data>
   <data name="Notif_Students_ChangeRequested" xml:space="preserve"><value>{StudentName} sent a change request.</value></data>
   <data name="NotifEvent_Students_ChangeRequested" xml:space="preserve"><value>Student change request</value></data>
   <data name="Notif_Students_ChangeRequestDecided" xml:space="preserve"><value>The change request for {StudentName} was {Decision}.</value></data>
@@ -788,6 +802,8 @@
   <data name="NotifEvent_Quizzes_Opened" xml:space="preserve"><value>Quiz opened</value></data>
   <data name="Notif_Forums_Announcement" xml:space="preserve"><value>Announcement in {CourseName}: {Title}</value></data>
   <data name="NotifEvent_Forums_Announcement" xml:space="preserve"><value>Course announcement</value></data>
+  <data name="Notif_Live_Reminder" xml:space="preserve"><value>The live session {Title} in {CourseName} starts at {StartsAtUtc}.</value></data>
+  <data name="NotifEvent_Live_Reminder" xml:space="preserve"><value>Live session reminder</value></data>
   <data name="Nav_Students" xml:space="preserve"><value>Students</value></data>
   <data name="Students_Title" xml:space="preserve"><value>Students</value></data>
   <data name="Students_New" xml:space="preserve"><value>New student</value></data>
@@ -1141,6 +1157,8 @@
   <data name="CompletionState_NotStarted" xml:space="preserve"><value>Not started</value></data>
   <data name="CompletionState_InProgress" xml:space="preserve"><value>In progress</value></data>
   <data name="CompletionState_Completed" xml:space="preserve"><value>Done</value></data>
+  <data name="ClassCourse_TabForum" xml:space="preserve"><value>Forum</value></data>
+  <data name="ClassCourse_TabAnnouncements" xml:space="preserve"><value>Announcements</value></data>
   <data name="MyClassCourses_OpenCourse" xml:space="preserve"><value>Open course</value></data>
   <data name="Home_ContinueLearning" xml:space="preserve"><value>Continue learning</value></data>
   <data name="Asset_Limits" xml:space="preserve"><value>Allowed types: {0}. Maximum size: {1} MB.</value></data>
@@ -1199,6 +1217,29 @@
   <data name="Module_NoContent" xml:space="preserve"><value>This module has no content yet.</value></data>
   <data name="Module_Unsupported" xml:space="preserve"><value>This kind of module opens in its own page.</value></data>
   <data name="Module_UrlInvalid" xml:space="preserve"><value>Enter a full web address starting with http:// or https://.</value></data>
+  <data name="Allocation_EmptyText" xml:space="preserve"><value>Allocate the course to a unit so its classes can use it.</value></data>
+  <data name="Blueprint_BackToCourse" xml:space="preserve"><value>Course</value></data>
+  <data name="Blueprint_Content" xml:space="preserve"><value>Content</value></data>
+  <data name="Blueprint_EmptyTreeText" xml:space="preserve"><value>Add a section, then its lessons.</value></data>
+  <data name="Blueprint_NoPublishedText" xml:space="preserve"><value>Edit the draft, then publish it so classes receive it.</value></data>
+  <data name="Blueprint_PublishedOn" xml:space="preserve"><value>Published</value></data>
+  <data name="Blueprint_Version" xml:space="preserve"><value>Version</value></data>
+  <data name="CourseImport_Subtitle" xml:space="preserve"><value>Upload an Excel file to add many courses at once.</value></data>
+  <data name="CourseProfile_BackToList" xml:space="preserve"><value>Courses</value></data>
+  <data name="Course_BackToList" xml:space="preserve"><value>Courses</value></data>
+  <data name="Course_CodeHelp" xml:space="preserve"><value>Letters, digits, dashes and underscores only, up to 50 characters.</value></data>
+  <data name="Course_Description" xml:space="preserve"><value>Description</value></data>
+  <data name="Course_EmptyText" xml:space="preserve"><value>Change the filters or add a course.</value></data>
+  <data name="Course_EmptyTitle" xml:space="preserve"><value>No courses</value></data>
+  <data name="Course_SectionBasics" xml:space="preserve"><value>Basics</value></data>
+  <data name="Course_SectionDetails" xml:space="preserve"><value>Details</value></data>
+  <data name="Course_SectionOwner" xml:space="preserve"><value>Ownership and allocation</value></data>
+  <data name="Course_Subtitle" xml:space="preserve"><value>The course catalogue: who owns each course and where it is offered.</value></data>
+  <data name="Lesson_SectionPlan" xml:space="preserve"><value>Objectives and timing</value></data>
+  <data name="Lesson_SectionTitle" xml:space="preserve"><value>Title</value></data>
+  <data name="MyCourses_EmptyText" xml:space="preserve"><value>Courses appear here once you are made their supervisor.</value></data>
+  <data name="MyCourses_Subtitle" xml:space="preserve"><value>The courses you supervise.</value></data>
+  <data name="Supervisor_NoneText" xml:space="preserve"><value>Add a supervisor from the staff who hold the Supervisor role.</value></data>
   <data name="Academic_SectionCourses" xml:space="preserve"><value>Courses</value></data>
   <data name="Academic_SectionLevel" xml:space="preserve"><value>Level transfer</value></data>
   <data name="UnitCourses_NoneAvailableText" xml:space="preserve"><value>Allocate a course to this unit from the course page.</value></data>
@@ -1230,6 +1271,14 @@
   <data name="Matrix_ChooseUnit" xml:space="preserve"><value>Choose a unit to see its classes.</value></data>
   <data name="Matrix_NoClasses" xml:space="preserve"><value>This unit has no classes in the selected year.</value></data>
   <data name="List_Separator" xml:space="preserve"><value>, </value></data>
+  <data name="Home_DueAssignments" xml:space="preserve"><value>Assignments to hand in</value></data>
+  <data name="Home_NothingDue" xml:space="preserve"><value>Nothing to hand in.</value></data>
+  <data name="Home_OpenQuizzes" xml:space="preserve"><value>Open quizzes</value></data>
+  <data name="Home_NoOpenQuizzes" xml:space="preserve"><value>No quiz is open right now.</value></data>
+  <data name="Home_ToGrade" xml:space="preserve"><value>To grade</value></data>
+  <data name="Home_NothingToGrade" xml:space="preserve"><value>Nothing waits for grading.</value></data>
+  <data name="Home_WaitingCount" xml:space="preserve"><value>{0} waiting</value></data>
+  <data name="Home_ActivityError" xml:space="preserve"><value>Your assignments and quizzes could not be loaded. Reload the page to try again.</value></data>
   <data name="Nav_Library" xml:space="preserve"><value>Library</value></data>
   <data name="Library_Title" xml:space="preserve"><value>Digital library</value></data>
   <data name="Library_New" xml:space="preserve"><value>New resource</value></data>
@@ -1262,8 +1311,6 @@
   <data name="LibraryType_Other" xml:space="preserve"><value>Other</value></data>
   <data name="ClassCourse_Sections" xml:space="preserve"><value>Class course sections</value></data>
   <data name="ClassCourse_TabPlan" xml:space="preserve"><value>Plan</value></data>
-  <data name="ClassCourse_TabForum" xml:space="preserve"><value>Forum</value></data>
-  <data name="ClassCourse_TabAnnouncements" xml:space="preserve"><value>Announcements</value></data>
   <data name="Forum_Title" xml:space="preserve"><value>Forum</value></data>
   <data name="Forum_NewThread" xml:space="preserve"><value>New thread</value></data>
   <data name="Forum_ThreadTitle" xml:space="preserve"><value>Title</value></data>

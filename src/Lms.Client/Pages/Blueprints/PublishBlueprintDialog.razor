@@ -13,13 +13,15 @@
             </MudRadioGroup>
             @if (_missing)
             {
-                <MudAlert Severity="Severity.Warning" data-testid="publish-mode-required">@L["Publish_ChooseMode"]</MudAlert>
+                <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" data-testid="publish-mode-required">@L["Publish_ChooseMode"]</MudAlert>
             }
         </MudStack>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
-        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Publish" data-testid="publish-confirm">@L["Blueprint_Publish"]</MudButton>
+        <div class="lms-dialog-actions">
+            <MudButton Variant="Variant.Text" OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" StartIcon="@Icons.Material.Rounded.Publish" OnClick="Publish" data-testid="publish-confirm">@L["Blueprint_Publish"]</MudButton>
+        </div>
     </DialogActions>
 </MudDialog>
 

@@ -69,6 +69,13 @@ html:lang(ar), html:lang(ar) body { font-family: Cairo, "Segoe UI", Tahoma, Aria
 .lms-module-node { padding-block: 2px; }
 .lms-progress { max-inline-size: 28rem; margin-block: 4px; }
 
+/* Blueprint builder: a lesson row in the drop zone (flat, logical spacing). */
+.lms-lesson-row {
+    display: flex; align-items: center; gap: 8px; min-width: 0; padding: 6px 8px; margin-block-end: 4px;
+    border: 1px solid var(--mud-palette-lines-default); border-radius: var(--lms-radius-control); background: var(--mud-palette-surface);
+}
+.lms-lesson-row .lms-lesson-title { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+
 /* Unit settings: one setting or policy per flat row (control on the first line, source and lock on the second). */
 .lms-setting-row { padding: 12px 0; border-block-end: 1px solid var(--mud-palette-lines-default); min-width: 0; }
 .lms-setting-row:last-child { border-block-end: 0; }
