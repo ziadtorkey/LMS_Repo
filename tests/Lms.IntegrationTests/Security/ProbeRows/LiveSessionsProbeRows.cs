@@ -41,6 +41,18 @@ public sealed class LiveSessionsProbeRows : IProbeRowModule
         new("live session delete", HttpMethod.Delete, Routes.LiveSessionPattern,
             async (w, _) => new ProbeRequest(Routes.LiveSession(await NewSessionAsync(w))),
             Expect(NoContent, NoContent, NotFound, NotFound, NotFound, NoContent)),
+        new("live session join", HttpMethod.Post, Routes.LiveSessionJoinPattern,
+            async (w, _) => new ProbeRequest(Routes.LiveSessionJoin(await NewSessionAsync(w))),
+            Expect(Ok, Ok, NotFound, NotFound, NotFound, Ok)),
+        new("live session recording", HttpMethod.Put, Routes.LiveSessionRecordingPattern,
+            async (w, _) => new ProbeRequest(Routes.LiveSessionRecording(await NewSessionAsync(w)), new RecordingLinkRequest("https://r.example.com/a")),
+            Expect(Ok, Ok, NotFound, NotFound, NotFound, Ok)),
+        new("live session participants", HttpMethod.Get, Routes.LiveSessionParticipantsPattern,
+            async (w, _) => new ProbeRequest(Routes.LiveSessionParticipants(await NewSessionAsync(w))),
+            Expect(Ok, Ok, NotFound, NotFound, NotFound, Ok)),
+        new("live sessions upcoming", HttpMethod.Get, Routes.LiveSessionsUpcoming,
+            (_, _) => Task.FromResult(new ProbeRequest(Routes.LiveSessionsUpcoming)),
+            Expect(Ok, Ok, Ok, Ok, Ok, Ok)),
     ];
 
     private static ModuleSettingsInput Module() =>

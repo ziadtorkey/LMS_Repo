@@ -17,6 +17,7 @@ using Lms.Shared.Authorization;
 using Lms.Shared.Blueprints;
 using Lms.Shared.Content;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using static Lms.IntegrationTests.Classes.LessonPlanTestKit;
 
 namespace Lms.IntegrationTests.Content;
@@ -26,11 +27,11 @@ internal sealed record ContentWorld(
     AccessTree Tree, Class Class, Course Course, ClassCourse ClassCourse, RoleAssignment Admin, RoleAssignment Teacher,
     RoleAssignment OtherTeacher, RoleAssignment Student, Guid StudentProfileId, RoleAssignment Stranger, ClassCourse OtherClassCourse);
 
-internal sealed class ContentTestHost(LmsApiFactory factory) : IDisposable
+internal sealed class ContentTestHost(LmsApiFactory factory, Action<IServiceCollection>? configure = null) : IDisposable
 {
     public static readonly Guid Section = Guid.NewGuid(), Lesson1 = Guid.NewGuid(), Lesson2 = Guid.NewGuid();
 
-    private readonly OrgUnitTestHost _host = new(factory);
+    private readonly OrgUnitTestHost _host = new(factory, configure);
 
     public IServiceProvider Services => _host.Services;
 

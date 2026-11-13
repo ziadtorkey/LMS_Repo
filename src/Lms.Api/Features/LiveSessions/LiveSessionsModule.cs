@@ -18,6 +18,10 @@ public sealed class LiveSessionsModule : ILmsModule
         services.AddSingleton<ILiveSessionAttendanceSink, NoOpAttendanceSink>();
         services.AddScoped<LiveSessionService>();
         services.AddScoped<LiveSessionHandlers>();
+        services.AddScoped<LiveSessionJoinHandlers>();
+        services.AddScoped<LiveSessionReadHandlers>();
+        services.AddScoped<LiveSessionLifecycle>();
+        services.AddScoped<LiveReminderJob>();
     }
 
     public void MapEndpoints(IEndpointRouteBuilder app)
@@ -39,5 +43,16 @@ public sealed class LiveSessionsModule : ILmsModule
         app.MapDelete(Routes.LiveSessionPattern,
                 (Guid id, string? scope, HttpContext http, LiveSessionHandlers h, CancellationToken ct) => h.DeleteAsync(id, scope, http, ct))
             .RequireAuthorization().RequirePermission(Permissions.LiveSessions.Manage);
+        app.MapPost(Routes.LiveSessionJoinPattern, (Guid id, HttpContext http, LiveSessionJoinHandlers h, CancellationToken ct) => h.JoinAsync(id, http, ct))
+            .RequireAuthorization().RequirePermission(Permissions.LiveSessions.View);
+        app.MapPut(Routes.LiveSessionRecordingPattern,
+                (Guid id, RecordingLinkRequest? r, HttpContext http, LiveSessionJoinHandlers h, CancellationToken ct) => h.SetRecordingAsync(id, r, http, ct))
+            .RequireAuthorization().RequirePermission(Permissions.LiveSessions.Manage);
+        app.MapGet(Routes.LiveSessionParticipantsPattern,
+                (Guid id, [AsParameters] LiveParticipantQuery query, HttpContext http, LiveSessionReadHandlers h, CancellationToken ct) =>
+                    h.ParticipantsAsync(id, query, http, ct))
+            .RequireAuthorization().RequirePermission(Permissions.LiveSessions.Manage);
+        app.MapGet(Routes.LiveSessionsUpcoming, (LiveSessionReadHandlers h, CancellationToken ct) => h.UpcomingAsync(ct))
+            .RequireAuthorization().RequirePermission(Permissions.LiveSessions.View);
     }
 }
