@@ -41,7 +41,7 @@ What the frontend deliberately does **not** do:
 | Unit settings | the Stitch settings pages (`unit_settings_*`, `lms-save-bar`) | New settings groups: grades (category method, missing policy), timetable (working days, conflict mode), attendance (edit window, live thresholds), excuses (submitters, policy, alert). |
 | Teaching and parents | `Teaching/MyClassCoursesPage`, `Me/MyChildrenPage`, `Guardians/*`, `Me/MyStudentProfilePage` | Entry points: "My grades", "My timetable", "My attendance" for students; per-child tabs for guardians. |
 | Notifications | `NotificationText`, `NotificationLabelParityTests` | New labels in ar and en (the parity test fails until they exist). |
-| Live sessions (M4b) | `LiveSessionPanel`, `LiveParticipantsDialog`, `LiveSessionsList` | The attendance proposal is shown from the live session and from the attendance session list (H10). |
+| Live sessions (M4b) | `LiveSessionPanel`, `LiveParticipantsDialog`, `LiveSessionsList` | The attendance proposal is shown from the live session and from the attendance session list (H13). |
 | Forms | `FormFlush` + `form-flush.js` (#536), `CloseOnEscapeKey` + `dialog-focus.js` | The grid's inline cell edit flushes before navigating or publishing; dialogs get Esc and focus return. |
 | Uploads | `AssetUploader`, `ApiHttp.UploadAsync` | Excuse attachment; grade column import file. |
 | Excel | server side only | The client downloads a file the server renders (`download.js`). |
