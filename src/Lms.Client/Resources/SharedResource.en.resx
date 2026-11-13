@@ -1494,6 +1494,13 @@
   <data name="Error_package_reason_compression_ratio" xml:space="preserve"><value>The package is compressed in an unsafe way. Export it again.</value></data>
   <data name="Error_package_reason_symlink" xml:space="preserve"><value>The package contains links to other files, which aren't allowed.</value></data>
   <data name="Error_package_reason_duplicate_name" xml:space="preserve"><value>Two files in the package have the same name.</value></data>
+  <data name="Package_Grading" xml:space="preserve"><value>When a student opens it again</value></data>
+  <data name="Package_Grading_Highest" xml:space="preserve"><value>Keep the highest score</value></data>
+  <data name="Package_Grading_Last" xml:space="preserve"><value>Use the latest score</value></data>
+  <data name="Package_Grading_First" xml:space="preserve"><value>Keep the first score</value></data>
+  <data name="Package_Grading_Highest_Help" xml:space="preserve"><value>Students can try again; their score never goes down.</value></data>
+  <data name="Package_Grading_Last_Help" xml:space="preserve"><value>Each new attempt replaces the score, even if it's lower.</value></data>
+  <data name="Package_Grading_First_Help" xml:space="preserve"><value>Later attempts are practice and aren't graded.</value></data>
   <data name="Nav_Eligibility" xml:space="preserve"><value>Teacher eligibility</value></data>
   <data name="Eligibility_Title" xml:space="preserve"><value>Teacher eligibility</value></data>
   <data name="Eligibility_Help" xml:space="preserve"><value>Say which teachers may teach which courses at a unit. Only eligible teachers can be assigned to a class course.</value></data>

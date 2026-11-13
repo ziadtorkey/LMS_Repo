@@ -1487,6 +1487,13 @@
   <data name="Error_package_not_ready" xml:space="preserve"><value>الحزمة ليست جاهزة بعد. انتظر حتى ينتهي الفحص.</value></data>
   <data name="Error_package_not_attached" xml:space="preserve"><value>الحزمة غير مضافة إلى درس بعد، لذا لا يمكن تغيير طريقة احتساب الدرجة.</value></data>
   <data name="Error_package_commit_rejected" xml:space="preserve"><value>تعذّر حفظ تقدّمك لأن المحاولة مغلقة أو لم تُقبل البيانات.</value></data>
+  <data name="Package_Grading" xml:space="preserve"><value>عند فتح الطالب له مرة أخرى</value></data>
+  <data name="Package_Grading_Highest" xml:space="preserve"><value>احتساب أعلى درجة</value></data>
+  <data name="Package_Grading_Last" xml:space="preserve"><value>احتساب آخر درجة</value></data>
+  <data name="Package_Grading_First" xml:space="preserve"><value>احتساب الدرجة الأولى</value></data>
+  <data name="Package_Grading_Highest_Help" xml:space="preserve"><value>يمكن للطلاب المحاولة مجددًا ولا تنخفض درجتهم.</value></data>
+  <data name="Package_Grading_Last_Help" xml:space="preserve"><value>كل محاولة جديدة تحلّ محل الدرجة حتى لو كانت أقل.</value></data>
+  <data name="Package_Grading_First_Help" xml:space="preserve"><value>المحاولات اللاحقة للتدريب ولا تُحتسب.</value></data>
   <data name="Nav_Eligibility" xml:space="preserve"><value>أهلية المعلمين</value></data>
   <data name="Eligibility_Title" xml:space="preserve"><value>أهلية المعلمين</value></data>
   <data name="Eligibility_Help" xml:space="preserve"><value>حدّد أي المعلمين يجوز لهم تدريس أي المقررات في وحدة. لا يمكن تعيين إلا المعلمين المؤهلين على مقرر فصل.</value></data>
