@@ -261,6 +261,7 @@ Retry and Choose another file are buttons in the dialog actions (`lms-dialog-act
 
     - The group shows only when the completion rule is **Score**. With None or Submit there's no score to keep, so the request sends the default.
     - Keys: `Package_Grading`, `Package_Grading_{Highest|Last|First}` and `Package_Grading_{…}_Help`.
+    - **Changing it later (staff):** the package module's edit dialog shows the same group, pre-selected from `PackageUploadDto.GradingMethod`. Saving calls `PUT /api/packages/{id}/grading-method`; changing is allowed at any time. When the value changes, an outlined Info alert above the actions says "Students' graded scores will be recalculated with the new rule." / "ستُعاد حساب درجات الطلاب وفق القاعدة الجديدة." There's no confirm, because the server recomputes and nothing is lost.
 - Actions (`lms-dialog-actions`):
   - Inline-start: **Delete package** (text, Error; opens the standard confirm).
   - Inline-end: Cancel (text) and **Attach to lesson** (filled primary, with a spinner).
@@ -337,7 +338,10 @@ The start card is a `SectionCard`. Nothing loads in a frame until the learner pr
 
     - The completed result (chip and score) stays above the button in every case. A module with no score (rule None or Submit) uses the `Highest` wording.
     - **While a practice attempt (`First`) is open**, the toolbar shows an Info chip "Practice" / "تدريب" next to the title, so the learner knows it doesn't count. The result card at the end says "Practice finished. Your graded score is still 85 / 100."
-    - **Data needed:** the student viewer has to know the module's grading method (the module or launch read must carry `GradingMethod`). #549 only adds it to the attach request; see §7 Q3.
+    - **Data:** the viewer reads `GET /api/packages/{id}/my-state` (`PackageStudentStateDto`: `GradingMethod`, `LatestAttempt`, `HasCompletedAttempt`, `GradedScore`; #549).
+      - The re-open button appears when `HasCompletedAttempt` is true and no attempt is in progress. Its wording comes from `GradingMethod`.
+      - The result card shows **`GradedScore`**, the score that counts, as "Score 85 / 100". When the latest attempt differs (Highest or First after a lower or practice attempt), a second `lms-muted` line adds "Latest attempt: 70 / 100" / "آخر محاولة: 70 / 100".
+      - The `Last` confirm quotes `GradedScore`.
 - **Actions, staff:** **Preview** only (outlined, Rounded.Visibility). Launch answers 404 for staff (contract and ADR 0005 §6), so staff never see Start, Resume or Open again. Students never see Preview.
 
 ### 5.2 Running: `lms-player`
@@ -482,7 +486,10 @@ The reference CSS for each is in the mockup (`docs/design/mockups/m4b.html`, the
 - **Q2. Arabic plurals (decided).** FE1 adds a small Arabic plural helper as a shared client utility (not only for live sessions), with unit tests for 0, 1, 2, 3–10 and 11+. Countdowns (§3.1) and any later counted text use it.
 
 - **Q3. Opening a completed package again (decided, D57, owner).** The teacher picks the grading method per module: **Highest** (default), **Last** or **First** (later attempts are practice). The attach form choice is in §4.1, and the re-open wording and the `Last` confirm are in §5.1. Contract: #549 adds `PackageGradingMethods` and `AttachPackageModuleRequest.GradingMethod`.
-  - **Still needed from the contract:** the student viewer must read the method, through the module read or `PackageLaunchDto`, to pick the button wording. The staff module edit must also be able to change it, or say that it can't once attempts exist.
+  - **Contract (#549 at `add777ce`):**
+    - The viewer reads `GET /api/packages/{id}/my-state` (`PackageStudentStateDto`: `GradingMethod`, `LatestAttempt`, `HasCompletedAttempt`, `GradedScore`).
+    - Staff change the method with `PUT /api/packages/{id}/grading-method` at any time, and the server recomputes the graded score. The UI therefore needs no "locked" state; the edit dialog only shows the recalculation note (§4.1).
+    - `PackageUploadDto.GradingMethod` pre-fills the edit form.
 
 ## 8. Counted text: plural keys
 
