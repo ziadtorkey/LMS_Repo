@@ -110,7 +110,7 @@ public sealed class PackageAccessibilityTests : ClientTestContext
         Assert.Equal("alert", player.Find("[data-testid=package-expired]").GetAttribute("role"));
         Assert.Equal("-1", player.Find("[data-testid=package-expired]").GetAttribute("tabindex"));
         Assert.True(player.Find("[data-testid=package-frame]").HasAttribute("inert")); // keyboard and pointer cannot reach the dead frame
-        Assert.Contains("timed out", Announced(player));
+        Assert.DoesNotContain("timed out", Announced(player)); // the focused alert is the one announcement
 
         _api.LaunchFailure = null;
         var before = Focuses();
@@ -147,12 +147,51 @@ public sealed class PackageAccessibilityTests : ClientTestContext
         _api.CommitFailure = new HttpRequestException("offline");
         await player.InvokeAsync(() => Bridge().OnPortMessage("commit", 1, "Scorm", new() { ["cmi.suspend_data"] = "s" }));
         await player.InvokeAsync(() => Bridge().FlushAsync());
-        player.WaitForAssertion(() => Assert.Contains("Couldn't save", Announced(player)), Wait);
+        player.WaitForAssertion(() => Assert.Equal("Failed", player.Find("[data-testid=package-save-state]").GetAttribute("data-status")), Wait);
+        Assert.DoesNotContain("Couldn't save", Announced(player)); // the save state announces it
 
         _api.CommitFailure = null;
         await player.InvokeAsync(() => Bridge().OnPortMessage("finish", 2, "Scorm", new()));
         player.WaitForElement("[data-testid=package-result-card]", Wait);
         player.WaitForAssertion(() => Assert.Contains("finished", Announced(player)), Wait);
+    }
+
+    /// <summary>How many live regions (status, alert, aria-live) carry this text right now.</summary>
+    private static int LiveCopies(IRenderedComponent<PackagePlayer> player, string text) =>
+        player.FindAll("[role=status], [role=alert], [aria-live]").Count(e => e.TextContent.Contains(text, StringComparison.Ordinal));
+
+    [Fact]
+    public async Task A_failed_save_and_an_expired_token_are_each_announced_exactly_once()
+    {
+        var player = await StartedAsync();
+        _api.CommitFailure = new HttpRequestException("offline");
+        await player.InvokeAsync(() => Bridge().OnPortMessage("commit", 1, "Scorm", new() { ["cmi.suspend_data"] = "s" }));
+        await player.InvokeAsync(() => Bridge().FlushAsync());
+        player.WaitForAssertion(() => Assert.Equal("Failed", player.Find("[data-testid=package-save-state]").GetAttribute("data-status")), Wait);
+
+        Assert.Equal(1, LiveCopies(player, "Couldn't save"));
+
+        _api.CommitFailure = null;
+        _api.LaunchFailure = new HttpRequestException("offline");
+        _clock.Advance(TimeSpan.FromMinutes(121));
+        player.WaitForElement("[data-testid=package-expired]", Wait);
+
+        Assert.Equal(1, LiveCopies(player, "timed out"));
+    }
+
+    [Fact]
+    public async Task Reload_says_the_activity_opened_again()
+    {
+        var player = await StartedAsync();
+        _api.LaunchFailure = new HttpRequestException("offline");
+        _clock.Advance(TimeSpan.FromMinutes(121));
+        player.WaitForElement("[data-testid=package-expired]", Wait);
+        _api.LaunchFailure = null;
+
+        player.Find("[data-testid=package-reload]").Click();
+
+        player.WaitForAssertion(() => Assert.Empty(player.FindAll("[data-testid=package-expired]")), Wait);
+        Assert.Contains("opened", Announced(player));
     }
 
     [Fact]

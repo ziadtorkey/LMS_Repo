@@ -205,11 +205,18 @@
         _needsBridge = true;
     }
 
+    /// <summary>Sets the polite message. It is cleared first, so the same message twice in a row is still read by screen readers.</summary>
+    private void Announce(string key)
+    {
+        _announcement = null;
+        _announcement = L[key].Value;
+    }
+
     private async Task EnterRunningAsync()
     {
         _phase = Phase.Running;
         _focusFrame = true; // keyboard users land on the player: the next Tab goes into the frame, Shift+Tab to Exit / Full screen
-        _announcement = L[_preview ? "Package_PreviewBanner" : "Package_Announce_Opened"].Value;
+        Announce(_preview ? "Package_PreviewBanner" : "Package_Announce_Opened");
         _saveStatus = PackageSaveStatus.Idle;
         _timer ??= Clock.CreateTimer(_ => _ = InvokeAsync(TickAsync), null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
         await Task.CompletedTask;
@@ -242,7 +249,7 @@
     private void OnSaveStatusChanged()
     {
         _saveStatus = _bridge?.Status ?? PackageSaveStatus.Idle;
-        if (_saveStatus == PackageSaveStatus.Failed) _announcement = L["Package_SaveFailed"].Value;
+        // A failed save is announced by the save state itself (a polite status): no second announcement here.
         _ = InvokeAsync(StateHasChanged);
     }
 
@@ -255,7 +262,8 @@
     {
         if (_phase != Phase.Running || _relaunching) return;
         var now = ServerNow;
-        if (now >= _tokenExpires) { _phase = Phase.Expired; _focusOverlay = true; _announcement = L["Package_Expired"].Value; StateHasChanged(); return; }
+        // Expiry has no polite message of its own: the focused alert overlay is the one announcement.
+        if (now >= _tokenExpires) { _phase = Phase.Expired; _focusOverlay = true; StateHasChanged(); return; }
         // Re-launch at 80 % of the token's life (the same attempt), swapping the frame only after a flush. A preview just runs out.
         if (!_preview && now >= _tokenServerNow + (_tokenExpires - _tokenServerNow) * 0.8 && Clock.GetUtcNow() >= _nextRelaunchAt) await RelaunchAsync(visible: false);
     }
@@ -289,7 +297,11 @@
                 SetToken(l.LaunchUrl, l.ServerNowUtc, l.TokenExpiresAtUtc);
             }
             _phase = Phase.Running;
-            if (visible) _focusFrame = true; // Reload puts focus back on the player
+            if (visible)
+            {
+                _focusFrame = true; // Reload puts focus back on the player
+                Announce("Package_Announce_Opened"); // and says so (the region still held an older message)
+            }
         }
         catch (Exception ex) when (ex is ApiProblemException or HttpRequestException)
         {
@@ -316,7 +328,7 @@
             await CloseFrameAsync();
             await LoadMyStateAsync(); // the graded score may have changed (or not, for practice)
             _phase = Phase.Finished;
-            _announcement = L["Package_Announce_Finished"].Value;
+            Announce("Package_Announce_Finished");
             await OnFinished.InvokeAsync();
         }
         catch (Exception ex) when (ex is ApiProblemException or HttpRequestException)
@@ -334,7 +346,7 @@
         await CloseFrameAsync();
         _phase = Phase.Start;
         _focusStart = true; // back on the start card, where the person left it
-        _announcement = L["Package_Announce_Exit"].Value;
+        Announce("Package_Announce_Exit");
     }
 
     private async Task CloseFrameAsync()
