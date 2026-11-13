@@ -125,6 +125,21 @@ public sealed class LibraryPageTests : LessonPlansTestContext
     }
 
     [Fact]
+    public async Task Reader_only_resource_is_read_through_the_protected_reader_as_a_blob_url()
+    {
+        JSInterop.Setup<string>("lmsBlobUrl", _ => true).SetResult("blob:reader-test");
+        JSInterop.SetupVoid("lmsRevokeBlobUrl", _ => true);
+        var locked = _library.Add("Reader only", downloadAllowed: false, file: File());
+        var page = await OpenAsync(Permissions.Library.View);
+        page.WaitForElement($"[data-testid=library-open-{locked.Id}]", Wait);
+
+        page.Find($"[data-testid=library-open-{locked.Id}]").Click();
+
+        Dialogs.WaitForAssertion(() => Assert.Equal("blob:reader-test", Dialogs.Find("[data-testid=library-reader-pdf]").GetAttribute("src")));
+        Assert.Equal([locked.Id], _library.Reads);
+    }
+
+    [Fact]
     public async Task Download_button_hidden_when_disabled()
     {
         var locked = _library.Add("Reader only", downloadAllowed: false, file: File());
