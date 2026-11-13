@@ -1,0 +1,163 @@
+@using Lms.Client.Services.Api
+@using Lms.Shared.Classes
+@using Lms.Shared.Enrollment
+@inject IEnrollmentApi Api
+@inject IClassesApi Classes
+@inject IUnitLookupApi UnitLookup
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+@* Moves a student to another class of the same year: pick the class, see what happens to the enrollments (kept, dropped, added, blocked by restrictions), then confirm. *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="3">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" data-testid="dialog-error">@_error</MudAlert>
+            }
+            <MudText data-testid="transfer-student">@StudentName</MudText>
+            <MudSelect T="Guid?" Value="_toClassId" ValueChanged="OnClassChanged" Label="@L["Transfer_ToClass"]" Required="true"
+                       data-testid="transfer-class">
+                @foreach (var cls in _classes)
+                {
+                    <MudSelectItem T="Guid?" Value="@((Guid?)cls.Id)">@ClassLabel(cls)</MudSelectItem>
+                }
+            </MudSelect>
+            <MudDatePicker Date="_date" DateChanged="d => { _date = d; ResetPreview(); }" Label="@L["Enrollment_EffectiveOn"]" data-testid="transfer-date" />
+            <MudTextField T="string" Value="_reason" ValueChanged="v => { _reason = v; ResetPreview(); }" Label="@L["Staff_Reason"]" Lines="2" MaxLength="500"
+                          Immediate="true" data-testid="transfer-reason" />
+            <div>
+                <MudButton Variant="Variant.Outlined" OnClick="PreviewAsync" Disabled="@(_busy || _toClassId is null || string.IsNullOrWhiteSpace(_reason))"
+                           data-testid="transfer-preview">@L["Transfer_Preview"]</MudButton>
+            </div>
+
+            @if (_preview is not null)
+            {
+                <MudPaper Outlined="true" Class="pa-3" data-testid="transfer-preview-result">
+                    <MudStack Spacing="1">
+                        @PreviewLine("kept", "Transfer_Kept", _preview.KeptCourseCodes, Color.Success)
+                        @PreviewLine("dropped", "Transfer_Dropped", _preview.DroppedCourseCodes, Color.Error)
+                        @PreviewLine("added", "Transfer_Added", _preview.AddedCourseCodes, Color.Info)
+                        @PreviewLine("restricted", "Transfer_Restricted", _preview.RestrictedCourseCodes, Color.Warning)
+                    </MudStack>
+                </MudPaper>
+                @if (_preview.OverCapacity)
+                {
+                    <MudCheckBox T="bool" @bind-Value="_confirmOver" Label="@L["Transfer_ConfirmOverCapacity"]" data-testid="transfer-over-capacity" />
+                }
+            }
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="TransferAsync"
+                   Disabled="@(_busy || _preview is null || (_preview.OverCapacity && !_confirmOver))" data-testid="transfer-confirm">@L["Transfer_Confirm"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired] public Guid StudentId { get; set; }
+    [Parameter] public string StudentName { get; set; } = "";
+
+    /// <summary>The student's unit, year and current class: targets are the other active classes of the same unit and year.</summary>
+    [Parameter, EditorRequired] public Guid OrgUnitId { get; set; }
+    [Parameter] public Guid? AcademicYearId { get; set; }
+    [Parameter] public Guid? CurrentClassId { get; set; }
+
+    private IReadOnlyList<ClassSummaryDto> _classes = [];
+    private Guid? _toClassId;
+    private DateTime? _date = DateTime.Today;
+    private string _reason = "";
+    private TransferPreviewDto? _preview;
+    private bool _confirmOver, _busy;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ApiCalls.RunAsync(async () =>
+        {
+            // D43: a student may move to a class of any unit the admin can see that has the same level type, in the same year.
+            // The units the user cannot see are not in the lookup, and the server enforces the rules either way.
+            var units = await UnitLookup.GetUnitsAsync();
+            var current = units.FirstOrDefault(u => u.Id == OrgUnitId);
+            var sameLevel = current is null ? [OrgUnitId] : units.Where(u => u.LevelTypeId == current.LevelTypeId).Select(u => u.Id).ToHashSet();
+            var all = (await Classes.ListAsync(new ClassQuery(null, true, AcademicYearId, ClassStatuses.Active, null, null, 1, 200))).Items;
+            _classes = all.Where(c => c.Id != CurrentClassId && sameLevel.Contains(c.OrgUnitId))
+                .OrderBy(c => c.OrgUnitId == OrgUnitId ? 0 : 1).ThenBy(c => c.OrgUnitNameEn).ThenBy(c => c.Code).ToList();
+        }, Navigation, L, message => _error = message);
+    }
+
+    /// <summary>The class with its fill; a class of another unit also names its unit so cross-unit targets are clear.</summary>
+    private string ClassLabel(ClassSummaryDto cls)
+    {
+        var label = $"{Culture.Pick(cls.NameAr, cls.NameEn)} ({cls.StudentCount}{(cls.Capacity is { } cap ? $"/{cap}" : "")})";
+        return cls.OrgUnitId == OrgUnitId ? label : $"{label} · {Culture.Pick(cls.OrgUnitNameAr, cls.OrgUnitNameEn)}";
+    }
+
+    /// <summary>
+    /// The message of a problem. A <c>transfer_invalid</c> carries a <c>reason</c> (<c>TransferRejectReasons</c>) that has its own localized text
+    /// (<c>TransferReject_&lt;reason&gt;</c>); without a known reason the generic message is followed by the server's <c>detail</c>.
+    /// </summary>
+    private string Explain(ApiProblemException ex)
+    {
+        if (ex.Code == "transfer_invalid" && ex.Reason is { Length: > 0 } reason)
+        {
+            var specific = L[$"TransferReject_{reason}"];
+            if (!specific.ResourceNotFound) return specific.Value;
+        }
+        var message = ProblemText.For(ex, L);
+        return string.IsNullOrWhiteSpace(ex.Detail) || ex.Detail == message ? message : $"{message} {ex.Detail}";
+    }
+
+    /// <summary>Runs a call; a problem shows its message and detail in the dialog, a redirect or other failure is handled as everywhere else.</summary>
+    private async Task<bool> RunAsync(Func<Task> call)
+    {
+        var failed = false;
+        var ok = await ApiCalls.RunAsync(async () =>
+        {
+            try { await call(); }
+            catch (ApiProblemException ex) when (!ex.IsContextProblem && ex.Status != 401 && ex.Status != 403)
+            {
+                _error = Explain(ex);
+                failed = true;
+            }
+        }, Navigation, L, message => _error = message);
+        return ok && !failed;
+    }
+
+    private RenderFragment PreviewLine(string key, string label, IReadOnlyList<string> codes, Color color) => builder =>
+    {
+        if (codes.Count == 0) return;
+        builder.OpenElement(0, "div");
+        builder.AddAttribute(1, "data-testid", $"preview-{key}");
+        builder.AddContent(2, $"{L[label].Value}: {string.Join(", ", codes)}");
+        builder.CloseElement();
+    };
+
+    private void ResetPreview() { _preview = null; _confirmOver = false; }
+
+    private void OnClassChanged(Guid? id) { _toClassId = id; ResetPreview(); }
+
+    private TransferStudentRequest Request() =>
+        new(StudentId, _toClassId!.Value, DateOnly.FromDateTime(_date ?? DateTime.Today), _reason.Trim(), _confirmOver);
+
+    private async Task PreviewAsync()
+    {
+        _error = null;
+        _busy = true;
+        // transfer_invalid and the like come back as problems: the localized message plus the server's reason.
+        await RunAsync(async () => _preview = await Api.PreviewTransferAsync(Request()));
+        _busy = false;
+    }
+
+    private async Task TransferAsync()
+    {
+        _error = null;
+        _busy = true;
+        var ok = await RunAsync(() => Api.TransferAsync(Request()));
+        _busy = false;
+        if (ok) MudDialog.Close(DialogResult.Ok(true));
+    }
+}

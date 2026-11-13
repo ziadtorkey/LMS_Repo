@@ -28,6 +28,7 @@ public static class LibraryEndpoints
         app.MapPut(Routes.LibraryResourcePattern, UpdateAsync).RequireAuthorization().RequirePermission(Permissions.Library.Manage);
         app.MapDelete(Routes.LibraryResourcePattern, DeleteAsync).RequireAuthorization().RequirePermission(Permissions.Library.Manage);
         LibraryReaderEndpoints.Map(app);
+        LibraryLessonEndpoints.Map(app);
     }
 
     private static async Task<IResult> ListAsync(
@@ -140,7 +141,8 @@ public static class LibraryEndpoints
         return Results.Ok((await mapper.ToDtosAsync([resource], unit!, true, ct))[0]);
     }
 
-    private static async Task<IResult> DeleteAsync(Guid id, HttpContext http, LmsDbContext db, CancellationToken ct)
+    private static async Task<IResult> DeleteAsync(
+        Guid id, HttpContext http, LmsDbContext db, Lms.Domain.Content.IModuleWriter modules, CancellationToken ct)
     {
         var (resource, _, problem) = await LoadOwnedAsync(id, http, db, ct);
         if (problem is not null)
@@ -151,6 +153,7 @@ public static class LibraryEndpoints
         db.Set<LibraryTag>().RemoveRange(await db.Set<LibraryTag>().Where(t => t.ResourceId == id).ToListAsync(ct));
         db.Set<LibraryResourceLevel>().RemoveRange(await db.Set<LibraryResourceLevel>().Where(l => l.ResourceId == id).ToListAsync(ct));
         db.Set<LibraryResource>().Remove(resource!);
+        await modules.DeleteForRefAsync(Lms.Shared.Content.ModuleKinds.LibraryResource, id, ct); // its lesson modules go with it (saves)
         await db.SaveChangesAsync(ct);
         return Results.NoContent();
     }
