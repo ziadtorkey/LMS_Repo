@@ -44,7 +44,8 @@ internal sealed class PackageHostKit : IDisposable
 
     private readonly LmsApiFactory _factory;
 
-    public PackageHostKit(LmsApiFactory factory, string? origin = ContentOrigin, string? appOrigin = AppOrigin, int cacheSeconds = 1)
+    public PackageHostKit(
+        LmsApiFactory factory, string? origin = ContentOrigin, string? appOrigin = AppOrigin, int cacheSeconds = 1, IPackagePageTransformer? transformer = null)
     {
         _factory = factory;
         Host = factory.WithWebHostBuilder(builder =>
@@ -56,6 +57,11 @@ internal sealed class PackageHostKit : IDisposable
             builder.UseSetting("PackageHost:RevocationCacheSeconds", cacheSeconds.ToString());
             builder.ConfigureServices(services =>
             {
+                if (transformer is not null)
+                {
+                    services.AddSingleton(transformer);
+                }
+
                 services.RemoveAll<IPackageStore>();
                 services.AddScoped<IPackageStore>(sp =>
                     new SpyPackageStore(ActivatorUtilities.CreateInstance<Lms.Infrastructure.Packages.MinioPackageStore>(sp), Opened));
