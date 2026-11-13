@@ -86,6 +86,7 @@ public sealed class PackageValidationJobTests(LmsApiFactory factory) : IDisposab
                 o.TempRoot = tempRoot;
                 o.Timeout = timeout ?? TimeSpan.FromMinutes(2);
             });
+            services.RemoveAll<IPackageValidator>();
             if (withValidator)
             {
                 services.AddScoped<IPackageValidator>(_ => new FakeValidator());
@@ -179,6 +180,29 @@ public sealed class PackageValidationJobTests(LmsApiFactory factory) : IDisposab
         Assert.Equal((PackageUploadStatuses.Rejected, reason), (row.Status, row.RejectReason));
         Assert.Empty(await StoredAsync(s, row));
         Assert.Equal(0, TempAreas(s));
+    }
+
+    [Fact]
+    public async Task The_registered_scorm_validator_decides_with_the_real_manifest()
+    {
+        var s = await SetUpAsync("PV3B", configure: services =>
+        {
+            services.RemoveAll<IPackageValidator>();
+            services.AddScoped<IPackageValidator, Lms.Infrastructure.Packages.Scorm.ScormManifestValidator>();
+        });
+        var ok = await UploadCorpusAsync(s, "scorm12_valid");
+        var multi = await UploadCorpusAsync(s, "multi_sco");
+        var frames = await UploadCorpusAsync(s, "launch_frameset");
+
+        await RunAsync(s, ok.OrganizationId, ok.Id);
+        await RunAsync(s, multi.OrganizationId, multi.Id);
+        await RunAsync(s, frames.OrganizationId, frames.Id);
+
+        var ready = await ReloadAsync(ok.Id);
+        Assert.Equal((PackageUploadStatuses.Ready, "SCO", ScormVersions.Scorm12), (ready.Status, ready.Title, ready.Version));
+        Assert.Equal("multi_sco", (await ReloadAsync(multi.Id)).RejectReason);
+        Assert.Equal("needs_nested_frames", (await ReloadAsync(frames.Id)).RejectReason);
+        Assert.Empty(await StoredAsync(s, await ReloadAsync(multi.Id)));
     }
 
     [Fact]
