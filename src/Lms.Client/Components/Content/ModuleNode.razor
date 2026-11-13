@@ -13,26 +13,18 @@
         {
             <MudIcon Icon="@StateIcon" Size="Size.Small" Color="@StateColor" title="@StateLabel" aria-label="@StateLabel" role="img" data-testid="module-state" data-state="@Node.CompletionState" />
         }
-        @if (Staff)
-        {
-            @if (Node.Visibility == ModuleVisibilities.Hidden)
-            {
-                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" data-testid="module-chip-hidden">@L["Module_Visibility_Hidden"]</MudChip>
-            }
-            @if (Node.Visibility == ModuleVisibilities.Scheduled)
-            {
-                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Info" data-testid="module-chip-scheduled">@ScheduleText()</MudChip>
-            }
-            @if (Node.Target == ModuleTargets.Group)
-            {
-                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" data-testid="module-chip-group">@L["Module_Group", Culture.Pick(Node.GroupNameAr ?? "", Node.GroupNameEn ?? "")]</MudChip>
-            }
-            @if (!Node.IsVisibleNow && Node.Visibility != ModuleVisibilities.Hidden)
-            {
-                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Warning" data-testid="module-chip-notvisible">@L["Module_NotVisibleNow"]</MudChip>
-            }
-        }
     </MudStack>
+    @if (Staff && Notes().ToList() is { Count: > 0 } notes)
+    {
+        @* Visibility and target as one caption line (not a chip per line at 360 px). *@
+        <MudText Typo="Typo.caption" Class="lms-muted lms-module-notes" data-testid="module-notes">
+            @for (var n = 0; n < notes.Count; n++)
+            {
+                @if (n > 0) { <span aria-hidden="true"> · </span> }
+                <span class="@notes[n].Class" data-testid="@notes[n].TestId">@notes[n].Text</span>
+            }
+        </MudText>
+    }
 </div>
 
 @code {
@@ -40,6 +32,16 @@
 
     /// <summary>Staff view: chips instead of the completion state.</summary>
     [Parameter] public bool Staff { get; set; }
+
+    private IEnumerable<(string TestId, string Text, string? Class)> Notes()
+    {
+        if (Node.Visibility == ModuleVisibilities.Hidden) yield return ("module-chip-hidden", L["Module_Visibility_Hidden"].Value, null);
+        if (Node.Visibility == ModuleVisibilities.Scheduled) yield return ("module-chip-scheduled", ScheduleText(), null);
+        if (Node.Target == ModuleTargets.Group)
+            yield return ("module-chip-group", L["Module_Group", Culture.Pick(Node.GroupNameAr ?? "", Node.GroupNameEn ?? "")].Value, null);
+        if (!Node.IsVisibleNow && Node.Visibility != ModuleVisibilities.Hidden)
+            yield return ("module-chip-notvisible", L["Module_NotVisibleNow"].Value, "mud-warning-text");
+    }
 
     private string KindLabel => L["ModuleKind_" + Node.Kind].Value;
 
