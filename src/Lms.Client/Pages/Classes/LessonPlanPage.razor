@@ -2,6 +2,7 @@
 @attribute [Authorize]
 @using System.Globalization
 @using Lms.Client.Components.Content
+@using Lms.Client.Components.Ui
 @using Lms.Client.Services
 @using Lms.Client.Services.Api
 @using Lms.Shared.Authorization
@@ -32,26 +33,23 @@ else if (_error is not null || _plan is null)
 }
 else
 {
-    <MudStack Spacing="1" Class="mb-4" data-testid="plan-header">
-        <MudText Typo="Typo.h4">@L["LessonPlan_Title"]</MudText>
-        @if (_header is { } cc)
+    <div class="mb-4" data-testid="plan-header">
+        <PageHeader Title="@L["LessonPlan_Title"]" Subtitle="@Subtitle" TitleTestId="plan-title">
+            <Badges>
+                @if (_plan.BlueprintVersion is { } version)
+                {
+                    <MudChip T="string" Color="Color.Primary" Variant="Variant.Text" Size="Size.Small" data-testid="plan-version">@L["LessonPlan_Version", version]</MudChip>
+                }
+            </Badges>
+        </PageHeader>
+        @if (_plan.SyncedAt is { } synced)
         {
-            <MudText Typo="Typo.h6">
-                @Culture.Pick(cc.CourseNameAr, cc.CourseNameEn) · @Culture.Pick(cc.ClassNameAr, cc.ClassNameEn)
+            <MudText Typo="Typo.caption" Class="lms-muted" data-testid="plan-synced">
+                @L["LessonPlan_Synced", ""].Value.TrimEnd() <span dir="ltr">@synced.ToLocalTime().ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture)</span>
             </MudText>
         }
-        <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap" AlignItems="AlignItems.Center">
-            @if (_plan.BlueprintVersion is { } version)
-            {
-                <MudChip T="string" Color="Color.Primary" Size="Size.Small">@L["LessonPlan_Version", version]</MudChip>
-            }
-            @if (_plan.SyncedAt is { } synced)
-            {
-                <MudText Typo="Typo.caption" Class="mud-text-secondary">@L["LessonPlan_Synced", synced.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)]</MudText>
-            }
-        </MudStack>
         <ProgressBar Progress="_plan.Progress" Label="@L["LessonPlan_CourseProgress"]" TestId="course-progress" />
-    </MudStack>
+    </div>
 
     @if (_plan.BlueprintVersion is null && _plan.Sections.Count == 0)
     {
@@ -67,6 +65,8 @@ else
 
 @code {
     [Parameter] public Guid Id { get; set; }
+
+    private string? Subtitle => _header is { } cc ? Culture.Pick(cc.CourseNameAr, cc.CourseNameEn) + " · " + Culture.Pick(cc.ClassNameAr, cc.ClassNameEn) : null;
 
     private ClassLessonPlanDto? _plan;
     private ClassCourseDto? _header;

@@ -10,7 +10,7 @@
         var sec = section;
         <MudPaper Outlined="true" Class="@("pa-3" + (sec.IsHidden ? " lms-plan-hidden" : ""))" data-testid="@($"plan-section-{sec.Key}")">
             <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Class="mb-2">
-                <MudText Typo="Typo.h6">@SectionLabel() @sec.Order · @Culture.Pick(sec.TitleAr, sec.TitleEn)</MudText>
+                <MudText Typo="Typo.h6">@SectionLabel() <span dir="ltr">@sec.Order</span> · @Culture.Pick(sec.TitleAr, sec.TitleEn)</MudText>
                 @if (sec.IsHidden)
                 {
                     <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@L["LessonPlan_Hidden"]</MudChip>
@@ -22,7 +22,7 @@
                     var les = lesson;
                     <div class="@("lms-plan-lesson" + (les.IsHidden ? " lms-plan-hidden" : ""))" data-testid="@($"plan-lesson-{les.Key}")">
                         <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
-                            <MudText Typo="Typo.subtitle1">@les.Order. @Culture.Pick(les.TitleAr, les.TitleEn)</MudText>
+                            <MudText Typo="Typo.subtitle1"><span dir="ltr">@(les.Order).</span> @Culture.Pick(les.TitleAr, les.TitleEn)</MudText>
                             @if (les.IsHidden)
                             {
                                 <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@L["LessonPlan_Hidden"]</MudChip>
@@ -69,9 +69,8 @@
     /// <summary>Staff view (no student progress): modules show visibility and target chips instead of a completion state.</summary>
     [Parameter] public bool Staff { get; set; }
 
-    /// <summary>Short date in the UI culture; the bidi marks Arabic patterns carry are dropped because the span is laid out left to right.</summary>
-    private static string FormatDate(DateOnly date) =>
-        date.ToString("d", System.Globalization.CultureInfo.CurrentCulture).Replace("‎", "").Replace("‏", "").Replace("؜", "");
+    /// <summary>yyyy-MM-dd in both languages (DESIGN.md §4), shown left to right.</summary>
+    private static string FormatDate(DateOnly date) => date.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
 
     /// <summary>Week, Unit or Chapter, as configured by Blueprints.SectionLabel; an unknown value is shown as is.</summary>
     private string SectionLabel()

@@ -75,15 +75,64 @@ public sealed class LessonPlanPageTests : LessonPlansTestContext
         Assert.Contains("not received a plan", page.Find("[data-testid=plan-empty]").TextContent);
     }
 
+    [Theory]
+    [InlineData("en")]
+    [InlineData("ar")]
+    public async Task Planned_dates_are_iso_and_left_to_right_in_both_languages(string culture)
+    {
+        var page = await OpenAsync(culture: culture);
+
+        var lesson = page.Find("[data-testid=plan-lesson-00000000-0000-0000-0000-0000000000b1]");
+        var date = lesson.QuerySelector("span[dir=ltr]:not([data-testid])");
+        Assert.Contains("2026-09-06", lesson.TextContent);
+        Assert.NotNull(lesson.QuerySelectorAll("span[dir=ltr]").FirstOrDefault(x => x.TextContent.Trim() == "2026-09-06"));
+        var undated = page.Find("[data-testid=plan-lesson-00000000-0000-0000-0000-0000000000b2]").TextContent;
+        Assert.DoesNotContain("2026", undated);
+        Assert.NotNull(date);
+    }
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("ar")]
+    public async Task Synced_time_is_iso_and_left_to_right(string culture)
+    {
+        var page = await OpenAsync(culture: culture);
+
+        var expected = new DateTime(2026, 9, 20, 8, 30, 0, DateTimeKind.Utc).ToLocalTime().ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
+        var span = page.Find("[data-testid=plan-header]").QuerySelectorAll("span[dir=ltr]").FirstOrDefault(x => x.TextContent.Trim() == expected);
+        Assert.NotNull(span);
+    }
+
     [Fact]
-    public async Task Planned_dates_render_in_culture()
+    public async Task Lesson_numbers_are_isolated_so_arabic_does_not_move_the_dot()
+    {
+        var page = await OpenAsync(culture: "ar");
+
+        var lesson = page.Find("[data-testid=plan-lesson-00000000-0000-0000-0000-0000000000b1]");
+        Assert.Contains("<span dir=\"ltr\">1.</span>", lesson.InnerHtml);
+    }
+
+    [Fact]
+    public async Task The_page_has_one_h1_with_the_course_and_class_as_subtitle()
     {
         var page = await OpenAsync();
 
-        var lesson = page.Find("[data-testid=plan-lesson-00000000-0000-0000-0000-0000000000b1]").TextContent;
-        Assert.Contains(new DateOnly(2026, 9, 6).ToString("d", new CultureInfo("en")), lesson);
-        var undated = page.Find("[data-testid=plan-lesson-00000000-0000-0000-0000-0000000000b2]").TextContent;
-        Assert.DoesNotContain("2026", undated);
+        var h1 = page.FindAll("h1");
+        Assert.Single(h1);
+        Assert.Contains("Lesson plan", h1[0].TextContent);
+        var header = page.Find("[data-testid=page-header]");
+        Assert.Contains("Arabic", header.TextContent);
+        Assert.Contains("Grade 1 A", header.TextContent);
+    }
+
+    [Fact]
+    public async Task The_version_chip_is_text_variant_not_filled()
+    {
+        var page = await OpenAsync();
+
+        var chip = page.FindAll(".mud-chip").First(x => x.TextContent.Contains("Version 3"));
+        Assert.Contains("mud-chip-text", chip.ClassName);
+        Assert.DoesNotContain("mud-chip-filled", chip.ClassName);
     }
 
     [Fact]
