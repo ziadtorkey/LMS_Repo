@@ -1,18 +1,19 @@
+@using Lms.Client.Components
 @using Lms.Client.Services.Api
 @using Lms.Shared.Configuration
 @inject IConfigApi Api
 @inject ICultureService Culture
 @inject NavigationManager Navigation
 
-<MudStack Spacing="3">
+<div>
     @if (_error is not null)
     {
-        <MudAlert Severity="Severity.Error" data-testid="policies-error">@_error</MudAlert>
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-4" data-testid="policies-error">@_error</MudAlert>
     }
 
     @if (_loading)
     {
-        <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+        <LoadingState Lines="3" TestId="policies-loading" />
     }
     else
     {
@@ -22,22 +23,22 @@
             var state = _states.GetValueOrDefault(key);
             var inherited = state?.State == PolicyStates.Inherited;
             var on = state is not null && state.State != PolicyStates.Off;
-            <MudPaper Outlined="true" Class="pa-3" data-testid="@($"policy-row-{key}")">
+            <div class="lms-setting-row" data-testid="@($"policy-row-{key}")">
                 <MudSwitch T="bool" Value="on" ValueChanged="@(v => ToggleAsync(key, v))" Color="Color.Primary"
                            Disabled="@(!CanEdit || inherited)" Label="@L[$"Policy_{key}"]" data-testid="@($"policy-switch-{key}")" />
                 @if (inherited)
                 {
-                    <MudText Typo="Typo.caption" data-testid="@($"policy-source-{key}")">
+                    <MudText Typo="Typo.caption" Class="lms-muted" data-testid="@($"policy-source-{key}")">
                         @string.Format(L["Policies_SetBy"].Value, Culture.Pick(state!.SourceNameAr ?? "", state.SourceNameEn ?? ""))
                     </MudText>
                 }
-                <MudText Typo="Typo.caption" Class="d-block" data-testid="@($"policy-blocks-{key}")">
+                <MudText Typo="Typo.caption" Class="d-block lms-muted" data-testid="@($"policy-blocks-{key}")">
                     @L["Policies_Blocks"] @string.Join(Culture.IsRightToLeft ? "، " : ", ", definition.BlockedPermissions.Select(PermissionLabel))
                 </MudText>
-            </MudPaper>
+            </div>
         }
     }
-</MudStack>
+</div>
 
 @code {
     [Parameter, EditorRequired] public Guid UnitId { get; set; }
