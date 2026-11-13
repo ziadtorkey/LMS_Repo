@@ -1,0 +1,24 @@
+@using Lms.Client.Components.Content
+@using Lms.Client.Components.Assets
+@using Lms.Shared.Content
+
+@* Body of a File, Video or Audio module: the current asset's name and an uploader limited to the kinds the module accepts. *@
+<MudStack Spacing="1">
+    @if (Model.AssetName is not null)
+    {
+        <MudText Typo="Typo.body2" data-testid="module-asset-name"><span dir="ltr">@Model.AssetName</span></MudText>
+    }
+    <AssetUploader ClassCourseId="ClassCourseId" AcceptedKinds="AssetKinds.AcceptedBy(Kind)" OnUploaded="OnUploaded" />
+</MudStack>
+
+@code {
+    [Parameter, EditorRequired] public ModuleFormModel Model { get; set; } = default!;
+    [Parameter, EditorRequired] public Guid ClassCourseId { get; set; }
+    [Parameter, EditorRequired] public string Kind { get; set; } = ModuleKinds.File;
+
+    private void OnUploaded(AssetDto asset)
+    {
+        Model.AssetId = asset.Id;
+        Model.AssetName = asset.FileName;
+    }
+}

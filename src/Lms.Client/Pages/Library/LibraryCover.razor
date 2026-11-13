@@ -1,0 +1,28 @@
+@using Lms.Client.Services.Api
+@using Lms.Shared.Library
+@inject IAssetsApi AssetApi
+
+@* The cover of a library card (an image asset of the unit, shown through a signed URL), or a placeholder icon. *@
+@if (_url is not null)
+{
+    <MudCardMedia Image="@_url" Height="140" data-testid="@($"library-cover-{Resource.Id}")" />
+}
+else
+{
+    <div class="d-flex align-center justify-center mud-background-gray" style="height:140px" aria-hidden="true">
+        <MudIcon Icon="@Icons.Material.Filled.MenuBook" Size="Size.Large" />
+    </div>
+}
+
+@code {
+    private string? _url;
+
+    [Parameter, EditorRequired] public LibraryResourceDto Resource { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Resource.Cover is not { } cover) return;
+        try { _url = (await AssetApi.GetUrlAsync(cover.Id)).Url; }
+        catch (HttpRequestException) { _url = null; }
+    }
+}

@@ -57,6 +57,16 @@ public static class NotificationEvents
     public const string EnrollmentExceptionDecided = "Enrollment.ExceptionDecided";
     public const string EnrollmentStudentTransferred = "Enrollment.StudentTransferred";
 
+    // M4a teaching and learning (M4a plan Task 2). Named recipients: the students the activity targets.
+    public const string AssignmentsPublished = "Assignments.Published";
+    public const string AssignmentsDueSoon = "Assignments.DueSoon";
+    public const string AssignmentsGraded = "Assignments.Graded";
+    public const string QuizzesOpened = "Quizzes.Opened";
+    public const string ForumsAnnouncement = "Forums.Announcement";
+
+    // M4b live sessions (M4b plan Task 1). Named recipients: the students the session module targets.
+    public const string LiveReminder = "Live.Reminder";
+
     public static IReadOnlyList<NotificationEventDefinition> All { get; } =
     [
         new(AccessRoleAssigned, [], ["RoleNameAr", "RoleNameEn", "OrgUnitNameAr", "OrgUnitNameEn"]),
@@ -86,6 +96,18 @@ public static class NotificationEvents
         // Named recipients: guardians of the student and teachers of both classes.
         new(EnrollmentStudentTransferred, [],
             ["StudentNameAr", "StudentNameEn", "FromClassAr", "FromClassEn", "ToClassAr", "ToClassEn", "EffectiveOn"]),
+        // Named recipients: students of the ClassCourse (or of the target group) who can see the assignment.
+        new(AssignmentsPublished, [], ["TitleAr", "TitleEn", "CourseNameAr", "CourseNameEn"]),
+        // Named recipients: targeted students without a submission, once, 24 h before the due time.
+        new(AssignmentsDueSoon, [], ["TitleAr", "TitleEn", "CourseNameAr", "CourseNameEn", "DueAt"]),
+        // Named recipient: the student whose work was returned with a grade.
+        new(AssignmentsGraded, [], ["TitleAr", "TitleEn", "CourseNameAr", "CourseNameEn"]),
+        // Named recipients: targeted students when the quiz opens (or is published already open).
+        new(QuizzesOpened, [], ["TitleAr", "TitleEn", "CourseNameAr", "CourseNameEn"]),
+        // Named recipients: students enrolled in the ClassCourse, when the author asks to notify.
+        new(ForumsAnnouncement, [], ["Title", "CourseNameAr", "CourseNameEn"]),
+        // Named recipients: targeted students who can see the session module, once, Live.ReminderMinutes before start.
+        new(LiveReminder, [], ["TitleAr", "TitleEn", "CourseNameAr", "CourseNameEn", "StartsAtUtc"]),
     ];
 
     /// <summary>The definition with this exact (case-sensitive) key, or null.</summary>

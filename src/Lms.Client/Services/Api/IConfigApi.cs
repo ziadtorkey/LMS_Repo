@@ -15,6 +15,17 @@ public interface IConfigApi
 
     Task<IReadOnlyList<SettingDefinition>> GetSettingCatalogAsync(CancellationToken ct = default);
     Task<IReadOnlyList<EffectiveSettingDto>> GetSettingsAsync(Guid unitId, CancellationToken ct = default);
+
+    /// <summary>
+    /// The same read for a page that only wants a display preference (Hijri dates): a caller without Settings.View gets an empty
+    /// list, not the Forbidden page, and the page falls back to the defaults.
+    /// </summary>
+    async Task<IReadOnlyList<EffectiveSettingDto>> GetSettingsIfAllowedAsync(Guid unitId, CancellationToken ct = default)
+    {
+        try { return await GetSettingsAsync(unitId, ct); }
+        catch (ApiForbiddenException) { return []; }
+    }
+
     Task SetSettingAsync(Guid unitId, string name, SetSettingRequest request, CancellationToken ct = default);
     Task RemoveSettingAsync(Guid unitId, string name, CancellationToken ct = default);
 }
@@ -38,6 +49,13 @@ public sealed class ConfigApi(ApiHttp http) : IConfigApi
 
     public async Task<IReadOnlyList<EffectiveSettingDto>> GetSettingsAsync(Guid unitId, CancellationToken ct = default) =>
         await http.GetAsync<List<EffectiveSettingDto>>(Routes.OrgUnitSettings(unitId), ct);
+
+    // Optional read: a plain 403 (no Settings.View) must not send the user to the Forbidden page.
+    public async Task<IReadOnlyList<EffectiveSettingDto>> GetSettingsIfAllowedAsync(Guid unitId, CancellationToken ct = default)
+    {
+        try { return await http.GetOptionalAsync<List<EffectiveSettingDto>>(Routes.OrgUnitSettings(unitId), ct); }
+        catch (ApiForbiddenException) { return []; }
+    }
 
     public Task SetSettingAsync(Guid unitId, string name, SetSettingRequest request, CancellationToken ct = default) =>
         http.SendAsync(HttpMethod.Put, Routes.OrgUnitSetting(unitId, name), request, ct);

@@ -12,7 +12,7 @@ namespace Lms.E2ETests.M4;
 public sealed class ContentStudentTests(E2EFixture fixture) : E2ETestBase(fixture)
 {
     /// <summary>Un-skip when the M4a modules (#391, #384, #401) and the student pages (#390, #394) are on main.</summary>
-    private const string NeedsM4a = "Needs the M4a module API and the student course home and viewer on main";
+    private const string NeedsM4a = "The M4a APIs and pages are on main; run once on the shared stack, then unskip";
 
     private static readonly byte[] Pdf = "%PDF-1.7\n%probe\n"u8.ToArray();
 

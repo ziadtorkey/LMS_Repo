@@ -16,7 +16,7 @@ public sealed class ContentTests(E2EFixture fixture) : E2ETestBase(fixture)
     private static readonly byte[] Mp3 = [(byte)'I', (byte)'D', (byte)'3', 3, 0, 0, 0, 0, 0, 0x21, 0xFF, 0xFB, 0x90, 0, 0, 0, 0, 0, 0, 0];
 
     /// <summary>Un-skip when the module authoring shell (FE T17) is mounted on the plan page (nothing renders AddModuleMenu yet) and bug #428 is fixed.</summary>
-    private const string NeedsAuthoringShell = "Needs the module authoring shell on the lesson plan page (FE T17) and the Teacher plan fix (#428)";
+    private const string NeedsAuthoringShell = "Needs the module authoring wiring on the lesson plan page (#432) on main";
 
     [Theory(Skip = NeedsAuthoringShell)]
     [InlineData("ar")]
