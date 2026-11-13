@@ -5,6 +5,7 @@ using Lms.Domain.Forums;
 using Lms.Domain.Notifications;
 using Lms.Domain.People;
 using Lms.Infrastructure.Persistence;
+using Lms.Shared;
 using Lms.Shared.Notifications;
 using Microsoft.EntityFrameworkCore;
 
@@ -39,11 +40,15 @@ internal sealed class AnnouncementNotifier(LmsDbContext db, INotificationPublish
                 {
                     ["Title"] = announcement.Title, ["CourseNameAr"] = course?.NameAr ?? string.Empty, ["CourseNameEn"] = course?.NameEn ?? string.Empty,
                 },
-                OrgUnitPath: announcement.OrgUnitPath), ct);
+                OrgUnitPath: announcement.OrgUnitPath,
+                DeepLink: AnnouncementsPage(classCourse.Id)), ct);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             logger.LogWarning(ex, "Notification {Event} could not be published", NotificationEvents.ForumsAnnouncement);
         }
     }
+
+    /// <summary>The client page /class-courses/{id}/announcements: the API route without its "/api" prefix, so the two cannot drift.</summary>
+    internal static string AnnouncementsPage(Guid classCourseId) => Routes.ClassCourseAnnouncements(classCourseId)["/api".Length..];
 }

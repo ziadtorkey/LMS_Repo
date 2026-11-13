@@ -77,6 +77,19 @@ public sealed class AnnouncementTests(LmsApiFactory factory)
     }
 
     [Fact]
+    public async Task Announcement_notification_deep_links_to_the_course_announcements_page()
+    {
+        using var w = await ForumTestWorld.CreateAsync(factory, "AN7");
+        await CreateAsync(w, w.TeacherA, w.ClassCourseA, NewAnnouncement("link me", notify: true));
+
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        var notification = await db.Set<Notification>().SingleAsync(n => n.UserId == w.StudentA.UserId && n.EventKey == NotificationEvents.ForumsAnnouncement);
+
+        // The client page /class-courses/{id}/announcements mirrors the API route without its /api prefix.
+        Assert.Equal($"/class-courses/{w.ClassCourseA}/announcements", notification.DeepLink);
+    }
+
+    [Fact]
     public async Task Announcement_html_is_sanitised_on_write()
     {
         using var w = await ForumTestWorld.CreateAsync(factory, "AN4");
