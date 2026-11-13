@@ -11,6 +11,16 @@ public sealed record ZoomMeetingRequest(
     string HostId, string Topic, DateTime StartUtc, int DurationMinutes, string TimeZoneId, bool CloudRecording,
     IReadOnlyDictionary<string, string> Tracking);
 
+/// <summary>
+/// One row of Zoom's participant report. <c>ZoomUserId</c> is set only for a participant signed in to a Zoom account; a guest has none,
+/// whatever email they typed. Only the fields the platform stores are read.
+/// </summary>
+public sealed record ZoomParticipant(
+    string Name, string? Email, string? ZoomUserId, DateTime JoinedAtUtc, DateTime? LeftAtUtc, int DurationSeconds);
+
+/// <summary>A recording file of a finished meeting that Zoom has finished processing.</summary>
+public sealed record ZoomRecordingFile(string PlayUrl, string Kind);
+
 /// <summary>What Zoom returned for a meeting. The start URL grants host rights: it never leaves the server except to staff.</summary>
 public sealed record ZoomMeetingInfo(string MeetingId, string JoinUrl, string StartUrl);
 
@@ -80,6 +90,88 @@ public sealed class ZoomApiClient(HttpClient http)
             throw new ZoomProviderException(ZoomFailure.Unavailable, "Zoom user response was not understood.");
         }
     }
+
+    /// <summary>The participant report of a finished meeting, all pages (at most 20). A meeting Zoom has no report for yet is an empty list.</summary>
+    public async Task<IReadOnlyList<ZoomParticipant>> GetParticipantsAsync(string meetingId, CancellationToken ct = default)
+    {
+        var all = new List<ZoomParticipant>();
+        string? page = null;
+        for (var i = 0; i < 20; i++)
+        {
+            var path = $"report/meetings/{Uri.EscapeDataString(meetingId)}/participants?page_size=300"
+                       + (page is null ? "" : "&next_page_token=" + Uri.EscapeDataString(page));
+            using var response = await SendAsync(HttpMethod.Get, path, null, ct);
+            if (response.StatusCode == HttpStatusCode.NotFound)
+            {
+                return all;
+            }
+
+            await EnsureSuccessAsync(response);
+            try
+            {
+                using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
+                var root = json.RootElement;
+                foreach (var row in root.GetProperty("participants").EnumerateArray())
+                {
+                    var id = Text(row, "id");
+                    var email = Text(row, "user_email");
+                    var left = Text(row, "leave_time");
+                    all.Add(new ZoomParticipant(
+                        Text(row, "name") ?? "", email, id,
+                        DateTime.Parse(row.GetProperty("join_time").GetString()!, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal),
+                        left is null ? null : DateTime.Parse(left, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal),
+                        row.TryGetProperty("duration", out var d) && d.TryGetInt32(out var seconds) ? seconds : 0));
+                }
+
+                page = Text(root, "next_page_token");
+            }
+            catch (Exception ex) when (ex is JsonException or KeyNotFoundException or InvalidOperationException or FormatException)
+            {
+                throw new ZoomProviderException(ZoomFailure.Unavailable, "Zoom participant report was not understood.");
+            }
+
+            if (page is null)
+            {
+                break;
+            }
+        }
+
+        return all;
+    }
+
+    /// <summary>The finished recording files of a meeting (cloud recording only). A meeting with none is an empty list.</summary>
+    public async Task<IReadOnlyList<ZoomRecordingFile>> GetRecordingsAsync(string meetingId, CancellationToken ct = default)
+    {
+        using var response = await SendAsync(HttpMethod.Get, $"meetings/{Uri.EscapeDataString(meetingId)}/recordings", null, ct);
+        if (response.StatusCode == HttpStatusCode.NotFound)
+        {
+            return [];
+        }
+
+        await EnsureSuccessAsync(response);
+        try
+        {
+            using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
+            if (!json.RootElement.TryGetProperty("recording_files", out var files))
+            {
+                return [];
+            }
+
+            return [.. files.EnumerateArray()
+                .Where(f => Text(f, "status") == "completed" && Text(f, "play_url") is not null)
+                .Select(f => new ZoomRecordingFile(Text(f, "play_url")!, Text(f, "recording_type") ?? "recording"))];
+        }
+        catch (Exception ex) when (ex is JsonException or KeyNotFoundException or InvalidOperationException)
+        {
+            throw new ZoomProviderException(ZoomFailure.Unavailable, "Zoom recordings response was not understood.");
+        }
+    }
+
+    /// <summary>A string property, or null when it is missing, not a string or blank.</summary>
+    private static string? Text(JsonElement element, string name) =>
+        element.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(value.GetString())
+            ? value.GetString()
+            : null;
 
     private static JsonContent Body(ZoomMeetingRequest meeting)
     {
