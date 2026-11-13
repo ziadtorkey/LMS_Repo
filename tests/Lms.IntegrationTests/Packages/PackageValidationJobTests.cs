@@ -385,6 +385,58 @@ public sealed class PackageValidationJobTests(LmsApiFactory factory) : IDisposab
     }
 
     [Fact]
+    public async Task A_rescheduled_run_is_jittered_and_a_package_that_waits_too_long_is_rejected_as_validation_timeout()
+    {
+        var gate = new PackageValidationGate(Microsoft.Extensions.Options.Options.Create(new PackageValidationOptions { MaxConcurrent = 2 }));
+        var jobs = new RecordingJobs();
+        var retry = TimeSpan.FromSeconds(20);
+        var s = await SetUpAsync("PV15", services =>
+        {
+            services.RemoveAll<PackageValidationGate>();
+            services.AddSingleton(gate);
+            services.RemoveAll<IPackageJobs>();
+            services.AddSingleton<IPackageJobs>(jobs);
+            services.Configure<PackageValidationOptions>(o =>
+            {
+                o.RetryDelay = retry;
+                o.MaxWaitAge = TimeSpan.FromHours(1);
+            });
+        });
+        var upload = await UploadCorpusAsync(s, "scorm12_valid");
+        await using var busy = gate.TryEnter(upload.OrganizationId);
+
+        for (var i = 0; i < 12; i++)
+        {
+            await RunAsync(s, upload.OrganizationId, upload.Id);
+        }
+
+        Assert.Equal(12, jobs.Later.Count);
+        Assert.All(jobs.Later, l => Assert.InRange(l.Delay, retry, retry * 1.5));
+        Assert.True(jobs.Later.Select(l => l.Delay).Distinct().Count() > 1, "the delays are not jittered");
+        Assert.Equal(PackageUploadStatuses.Uploaded, (await ReloadAsync(upload.Id)).Status);
+
+        // Past the maximum age the next attempt gives up instead of waiting again.
+        var expired = await SetUpAsync("PV16", services =>
+        {
+            services.RemoveAll<PackageValidationGate>();
+            services.AddSingleton(gate);
+            services.RemoveAll<IPackageJobs>();
+            services.AddSingleton<IPackageJobs>(jobs);
+            services.Configure<PackageValidationOptions>(o => o.MaxWaitAge = TimeSpan.Zero);
+        });
+        var old = await UploadCorpusAsync(expired, "scorm12_valid");
+        await using var busy2 = gate.TryEnter(old.OrganizationId);
+        var before = jobs.Later.Count;
+        await Task.Delay(50);
+
+        await RunAsync(expired, old.OrganizationId, old.Id);
+
+        var row = await ReloadAsync(old.Id);
+        Assert.Equal(("Rejected", "validation_timeout"), (row.Status, row.RejectReason));
+        Assert.Equal(before, jobs.Later.Count);
+    }
+
+    [Fact]
     public async Task A_package_deleted_during_validation_leaves_nothing_in_the_store()
     {
         PackageUpload? target = null;
