@@ -43,7 +43,7 @@ public sealed class CourseAssignmentNotifier(
                 return;
             }
 
-            var course = await db.Set<Course>().FirstAsync(c => c.Id == classCourse.CourseId, ct);
+            var course = await CourseAsync(classCourse, ct);
             await publisher.PublishAsync(new NotificationRequest(
                 NotificationEvents.AssignmentsPublished, assignment.OrganizationId, users,
                 new Dictionary<string, string>
@@ -57,4 +57,37 @@ public sealed class CourseAssignmentNotifier(
             logger.LogWarning(ex, "Notification {Event} could not be published", NotificationEvents.AssignmentsPublished);
         }
     }
+
+    /// <summary>Assignments.Graded to the student whose work was returned (after the commit; a failure never undoes the return).</summary>
+    public async Task GradedAsync(Assignment assignment, LessonModule module, ClassCourse classCourse, Guid studentId, CancellationToken ct)
+    {
+        try
+        {
+            var userId = await db.Set<StudentProfile>().Where(s => s.Id == studentId).Select(s => s.UserId).FirstOrDefaultAsync(ct);
+            if (userId is not { } user)
+            {
+                return;
+            }
+
+            var course = await CourseAsync(classCourse, ct);
+            await publisher.PublishAsync(new NotificationRequest(
+                NotificationEvents.AssignmentsGraded, assignment.OrganizationId, [user],
+                new Dictionary<string, string>
+                {
+                    ["TitleAr"] = module.TitleAr, ["TitleEn"] = module.TitleEn, ["CourseNameAr"] = course.NameAr, ["CourseNameEn"] = course.NameEn,
+                },
+                DeepLink: $"/class-courses/{classCourse.Id}/assignments/{assignment.Id}", OrgUnitPath: assignment.OrgUnitPath), ct);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            logger.LogWarning(ex, "Notification {Event} could not be published", NotificationEvents.AssignmentsGraded);
+        }
+    }
+
+    /// <summary>The course of a class course: owned by a unit that can sit above the caller's scope, so the normal filter would hide it.</summary>
+    private Task<Course> CourseAsync(ClassCourse classCourse, CancellationToken ct) =>
+        // ISOLATION-BYPASS: the course of a class course is owned by an ancestor unit above the caller's scope; only its names go
+        // into the notice, for a class course the caller already reached. Client matched, deleted courses excluded by hand.
+        db.Set<Course>().IgnoreQueryFilters()
+            .FirstAsync(c => c.Id == classCourse.CourseId && c.OrganizationId == classCourse.OrganizationId && !c.IsDeleted, ct);
 }

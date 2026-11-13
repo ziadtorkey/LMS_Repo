@@ -21,18 +21,21 @@ else if (!PermState.Has(Permissions.Enrollment.Import))
 }
 else
 {
-    <MudButton Href="students" Variant="Variant.Text" StartIcon="@Icons.Material.Filled.ArrowBack" Class="mb-2"
-               data-testid="class-import-back">@L["Students_Title"]</MudButton>
-    <ImportWizard Kind="@ImportKinds.ClassStudents" TitleKey="ClassImport_Title">
+    <MudLink Href="students" Typo="Typo.body2" Class="lms-back-link" data-testid="class-import-back">
+        <MudIcon Icon="@Icons.Material.Rounded.ArrowBack" Size="Size.Small" Class="lms-icon-flip" aria-hidden="true" />
+        @L["Student_BackToList"]
+    </MudLink>
+    <PageHeader Title="@L["ClassImport_Title"]" Subtitle="@L["ClassImport_Subtitle"]" TitleTestId="class-import-title" />
+    <ImportWizard Kind="@ImportKinds.ClassStudents" TitleKey="ClassImport_Title" ShowTitle="false">
         <Banner>
             @* Placement always goes into the classes of the current academic year of the unit. *@
             @if (Years.Selected is { } year)
             {
-                <MudAlert Severity="Severity.Info" Class="mb-3" data-testid="class-import-year">@L["ClassImport_Year", Culture.Pick(year.NameAr, year.NameEn)]</MudAlert>
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-3" data-testid="class-import-year">@L["ClassImport_Year", Culture.Pick(year.NameAr, year.NameEn)]</MudAlert>
             }
         </Banner>
         <Help>
-            <MudAlert Severity="Severity.Info" data-testid="class-import-help">@L["ClassImport_Help"]</MudAlert>
+            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" data-testid="class-import-help">@L["ClassImport_Help"]</MudAlert>
         </Help>
     </ImportWizard>
     <ImportHistory Kind="@ImportKinds.ClassStudents" />

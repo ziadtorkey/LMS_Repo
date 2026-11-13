@@ -1,0 +1,66 @@
+@using Lms.Client.Services.Api
+@using Lms.Shared.Enrollment
+@inject IEnrollmentApi Api
+@inject IStudentsApi Students
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+@* Asks for an exception so a student who fails a course's restrictions can still be enrolled; opened from a restriction skip. *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="2">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" data-testid="dialog-error">@_error</MudAlert>
+            }
+            <MudText data-testid="exception-student">@_name</MudText>
+            <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap">
+                @foreach (var type in Skip.FailedTypes)
+                {
+                    <MudChip T="string" Size="Size.Small">@L[$"RestrictionType_{type}"]</MudChip>
+                }
+            </MudStack>
+            <MudTextField T="string" @bind-Value="_reason" Label="@L["Exception_Reason"]" Lines="3" MaxLength="500" Immediate="true"
+                          Error="_showError" ErrorText="@L["Exception_ReasonRequired"]" data-testid="exception-reason" />
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SendAsync" Disabled="_saving" data-testid="exception-send">@L["Exception_Send"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    /// <summary>The skipped student and class course (and which restrictions failed).</summary>
+    [Parameter, EditorRequired] public RestrictionSkipDto Skip { get; set; } = default!;
+
+    private string _reason = "", _name = "";
+    private string? _error;
+    private bool _showError, _saving;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // The skip only carries ids; the name is a convenience for the person asking.
+        await ApiCalls.RunAsync(async () =>
+        {
+            var student = (await Students.GetAsync(Skip.StudentId)).Summary;
+            _name = $"{Culture.Pick(student.NameAr, student.NameEn)} ({student.StudentCode})";
+        }, Navigation, L, _ => { });
+    }
+
+    private async Task SendAsync()
+    {
+        _error = null;
+        var reason = _reason.Trim();
+        _showError = reason.Length == 0;
+        if (_showError) return;
+
+        _saving = true;
+        var saved = await ApiCalls.RunAsync(() => Api.RequestExceptionAsync(Skip.ClassCourseId, new RequestExceptionRequest(Skip.StudentId, reason)),
+            Navigation, L, message => _error = message);
+        _saving = false;
+        if (saved) MudDialog.Close(DialogResult.Ok(true));
+    }
+}
