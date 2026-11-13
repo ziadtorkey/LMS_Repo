@@ -7,9 +7,9 @@ namespace Lms.UnitTests.Access;
 public class BuiltInRoleDefaultsTests
 {
     [Fact]
-    public void Current_version_is_5_for_the_M4a_wave_2_defaults()
+    public void Current_version_is_6_for_the_M4b_wave_3a_defaults()
     {
-        Assert.Equal(5, BuiltInRoleDefaults.CurrentVersion);
+        Assert.Equal(6, BuiltInRoleDefaults.CurrentVersion);
     }
 
     [Theory]
@@ -31,6 +31,8 @@ public class BuiltInRoleDefaultsTests
     [InlineData(Permissions.Quizzes.Attempt, 5)]
     [InlineData(Permissions.Library.Manage, 5)]
     [InlineData(Permissions.Forums.Moderate, 5)]
+    [InlineData(Permissions.LiveSessions.View, 6)]
+    [InlineData(Permissions.LiveSessions.Manage, 6)]
     public void Each_permission_has_the_version_that_introduced_it(string permission, int version)
     {
         Assert.Equal(version, BuiltInRoleDefaults.IntroducedIn(permission));
@@ -50,7 +52,7 @@ public class BuiltInRoleDefaultsTests
     }
 
     [Fact]
-    public void A_version_2_role_receives_the_M3_and_M4a_defaults()
+    public void A_version_2_role_receives_the_M3_M4a_and_M4b_defaults()
     {
         var added = BuiltInRoles.Get(BuiltInRoles.Guardian).DefaultPermissions
             .Where(p => BuiltInRoleDefaults.IntroducedIn(p) > 2)
@@ -60,9 +62,10 @@ public class BuiltInRoleDefaultsTests
             .ToList();
 
         Assert.Equal(["Students.ViewChildren"], added);
-        Assert.Equal(46, orgAdmin.Count);
+        Assert.Equal(48, orgAdmin.Count);
         Assert.Equal(33, orgAdmin.Count(p => BuiltInRoleDefaults.IntroducedIn(p) == 3));
         Assert.Equal(11, orgAdmin.Count(p => BuiltInRoleDefaults.IntroducedIn(p) == 5));
+        Assert.Equal(2, orgAdmin.Count(p => BuiltInRoleDefaults.IntroducedIn(p) == 6));
         Assert.DoesNotContain(orgAdmin, p => p.StartsWith("Staff.", StringComparison.Ordinal));
     }
 
@@ -82,14 +85,14 @@ public class BuiltInRoleDefaultsTests
         Assert.Equal(["Modules.View"], Added(BuiltInRoles.Student));
         Assert.Empty(Added(BuiltInRoles.Counselor));
         Assert.Empty(Added(BuiltInRoles.Guardian));
-        Assert.Equal(13, BuiltInRoles.Get(BuiltInRoles.Teacher).DefaultPermissions.Count(p => BuiltInRoleDefaults.IntroducedIn(p) > 3));
+        Assert.Equal(15, BuiltInRoles.Get(BuiltInRoles.Teacher).DefaultPermissions.Count(p => BuiltInRoleDefaults.IntroducedIn(p) > 3));
     }
 
     [Fact]
     public void A_version_4_role_only_receives_the_M4a_wave_2_defaults()
     {
         string[] Added(string role) => BuiltInRoles.Get(role).DefaultPermissions
-            .Where(p => BuiltInRoleDefaults.IntroducedIn(p) > 4)
+            .Where(p => BuiltInRoleDefaults.IntroducedIn(p) is > 4 and <= 5)
             .Order(StringComparer.Ordinal)
             .ToArray();
 
@@ -112,6 +115,29 @@ public class BuiltInRoleDefaultsTests
             Added(BuiltInRoles.Student));
         Assert.Empty(Added(BuiltInRoles.Guardian));
     }
+
+    [Fact]
+    public void A_version_5_role_only_receives_the_M4b_wave_3a_defaults()
+    {
+        string[] Added(string role) => BuiltInRoles.Get(role).DefaultPermissions
+            .Where(p => BuiltInRoleDefaults.IntroducedIn(p) > 5)
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        string[] viewManage = ["LiveSessions.Manage", "LiveSessions.View"];
+        Assert.Equal(viewManage, Added(BuiltInRoles.OrgAdmin));
+        Assert.Equal(viewManage, Added(BuiltInRoles.Manager));
+        Assert.Equal(viewManage, Added(BuiltInRoles.Teacher));
+        Assert.Equal(["LiveSessions.View"], Added(BuiltInRoles.Supervisor));
+        Assert.Equal(["LiveSessions.View"], Added(BuiltInRoles.Student));
+        Assert.Empty(Added(BuiltInRoles.Counselor));
+        Assert.Empty(Added(BuiltInRoles.Guardian));
+    }
+
+    [Fact]
+    public void Every_M4b_wave_3a_permission_is_introduced_in_version_6() =>
+        Assert.All(Permissions.All.Where(p => p.StartsWith("LiveSessions.", StringComparison.Ordinal)),
+            p => Assert.Equal(6, BuiltInRoleDefaults.IntroducedIn(p)));
 
     [Fact]
     public void Every_M4a_wave_1_permission_is_introduced_in_version_4() =>
