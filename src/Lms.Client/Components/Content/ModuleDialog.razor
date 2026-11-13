@@ -1,10 +1,14 @@
 @using Lms.Client.Components.Content.Kinds
 @using Lms.Client.Components.Assets
+@using Lms.Client.Components.Packages
+@using Lms.Client.Services.Packages
+@using Lms.Shared.Packages
 @using Lms.Client.Services.Api
 @using Lms.Shared
 @using Lms.Shared.Content
 @inject IModulesApi Modules
 @inject NavigationManager Navigation
+@inject IServiceProvider Services
 
 @* Adds a content module to a lesson, or edits one (the kind never changes). Common metadata above, the kind's body below. *@
 <MudDialog>
@@ -14,7 +18,14 @@
             {
                 <MudAlert Severity="Severity.Error" data-testid="module-error">@_error</MudAlert>
             }
-            <ModuleMetadataForm Model="_model" Groups="Groups" VisibilityError="_visibilityError" TargetError="_targetError" />
+            <ModuleMetadataForm Model="_model" Groups="Groups" VisibilityError="_visibilityError" TargetError="_targetError"
+                                Rules="@(IsPackage ? CompletionRules.ForActivity(Kind) : null)" />
+
+            @* D57: an attached package module with a score rule: which attempt counts. Changed through the package, not the module. *@
+            @if (ShowGrading)
+            {
+                <PackageGradingChoice @bind-Value="_grading" />
+            }
 
             @switch (Kind)
             {
@@ -47,6 +58,7 @@
 @code {
     private ModuleFormModel _model = new();
     private string? _error, _visibilityError, _targetError;
+    private string _grading = PackageGradingMethods.Highest, _gradingBefore = PackageGradingMethods.Highest;
     private bool _saving;
 
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
@@ -58,9 +70,24 @@
     /// <summary>Replaces the plain HTML fields of a Page module (the rich text editor plugs in here).</summary>
     [Parameter] public RenderFragment<ModuleFormModel>? PageBody { get; set; }
 
-    protected override void OnInitialized()
+    private bool IsPackage => Kind is ModuleKinds.Scorm or ModuleKinds.H5p;
+
+    private Guid? PackageId => IsPackage ? Existing?.Content.RefId : null;
+
+    private bool ShowGrading => PackageId is not null && _model.CompletionRule == CompletionRules.Score;
+
+    // The package is read on its own (the module read carries only its id): the current method is its GradingMethod.
+    protected override async Task OnInitializedAsync()
     {
         if (Existing is not null) _model = ModuleFormModel.From(Existing);
+        if (PackageId is { } id && Services.GetService(typeof(IPackagesApi)) is IPackagesApi packages)
+        {
+            await ApiCalls.RunAsync(async () =>
+            {
+                var package = await packages.GetAsync(id);
+                _grading = _gradingBefore = package.GradingMethod ?? PackageGradingMethods.Highest;
+            }, Navigation, L, message => _error = message);
+        }
     }
 
     private bool Validate()
@@ -107,6 +134,11 @@
                     from, to, _model.Target, _model.GroupId, _model.CompletionRule, null, _model.ToContent()))
                 : await Modules.UpdateAsync(Existing.Node.Id, new UpdateModuleRequest(title.Item1, title.Item2, _model.Visibility,
                     from, to, _model.Target, _model.GroupId, _model.CompletionRule, Existing.CompletionMinScore, _model.ToContent()));
+            if (ShowGrading && _grading != _gradingBefore && Services.GetService(typeof(IPackagesApi)) is IPackagesApi packages)
+            {
+                await packages.UpdateGradingMethodAsync(PackageId!.Value, new UpdatePackageGradingMethodRequest(_grading));
+                _gradingBefore = _grading;
+            }
             MudDialog.Close(DialogResult.Ok(saved));
         }
         catch (Exception ex) when (ApiCalls.TryRedirect(ex, Navigation))

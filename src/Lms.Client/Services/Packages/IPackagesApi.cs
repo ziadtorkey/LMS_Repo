@@ -28,6 +28,9 @@ public interface IPackagesApi
     /// <summary>POST /api/packages/{id}/module — the new Scorm / H5p module.</summary>
     Task<ModuleNodeDto> AttachAsync(Guid id, AttachPackageModuleRequest request, CancellationToken ct = default);
 
+    /// <summary>PUT /api/packages/{id}/grading-method — staff change which attempt counts (D57); 409 <c>package_not_attached</c> before it is attached.</summary>
+    Task UpdateGradingMethodAsync(Guid id, UpdatePackageGradingMethodRequest request, CancellationToken ct = default);
+
     Task DeleteAsync(Guid id, CancellationToken ct = default);
 }
 
@@ -63,6 +66,9 @@ public sealed class PackagesApi(ApiHttp http) : IPackagesApi
 
     public Task DeleteAsync(Guid id, CancellationToken ct = default) =>
         http.SendAsync(HttpMethod.Delete, Routes.Package(id), null, ct);
+
+    public Task UpdateGradingMethodAsync(Guid id, UpdatePackageGradingMethodRequest request, CancellationToken ct = default) =>
+        http.SendAsync(HttpMethod.Put, Routes.PackageGradingMethod(id), request, ct);
 }
 
 /// <summary>
@@ -87,6 +93,18 @@ public sealed class FakePackagesApi : IPackagesApi
     public Exception? ListFailure { get; set; }
     public int ListReads { get; private set; }
     public int StatusReads { get; private set; }
+    private readonly Dictionary<Guid, PackageUploadDto> _attached = [];
+    /// <summary>Raised by the grading-method change only.</summary>
+    public Exception? GradingFailure { get; set; }
+    public List<(Guid PackageId, string Method)> GradingUpdates { get; } = [];
+
+    /// <summary>Adds a package that is already attached to a module (read by id, grading method set).</summary>
+    public PackageUploadDto SeedAttached(Guid id, Guid classCourseId, Guid lessonKey, string kind, string gradingMethod)
+    {
+        var dto = new PackageUploadDto(id, classCourseId, lessonKey, "attached.zip", kind, PackageUploadStatuses.Ready, null, "Attached", null, null, null, DateTime.UtcNow, gradingMethod);
+        _attached[id] = dto;
+        return dto;
+    }
 
     public async Task<PackageUploadDto> UploadAsync(Guid classCourseId, string kind, Guid lessonKey, string fileName, Stream content,
         IProgress<double>? progress = null, CancellationToken ct = default, long? contentLength = null)
@@ -105,6 +123,7 @@ public sealed class FakePackagesApi : IPackagesApi
     {
         if (Failure is not null) return Task.FromException<PackageUploadDto>(Failure);
         StatusReads++;
+        if (_attached.TryGetValue(id, out var attached)) return Task.FromResult(attached);
         if (!_items.TryGetValue(id, out var item))
             return Task.FromException<PackageUploadDto>(new ApiProblemException(404, ProblemCodes.not_found, null, null));
         var reads = item.Reads + 1;
@@ -150,6 +169,18 @@ public sealed class FakePackagesApi : IPackagesApi
         var s = request.Module;
         return Task.FromResult(new ModuleNodeDto(Guid.NewGuid(), item.Dto.Kind == PackageKinds.Scorm ? ModuleKinds.Scorm : ModuleKinds.H5p, 1,
             s.TitleAr, s.TitleEn, s.Visibility, s.VisibleFromUtc, s.VisibleToUtc, s.Target, s.GroupId, null, null, s.CompletionRule, true, null));
+    }
+
+    public Task UpdateGradingMethodAsync(Guid id, UpdatePackageGradingMethodRequest request, CancellationToken ct = default)
+    {
+        if (GradingFailure is not null) return Task.FromException(GradingFailure);
+        if (!PackageGradingMethods.All.Contains(request.GradingMethod))
+            return Task.FromException(new ApiProblemException(400, ProblemCodes.validation_failed, null, null));
+        if (!_attached.TryGetValue(id, out var dto))
+            return Task.FromException(new ApiProblemException(409, ProblemCodes.package_not_attached, null, null));
+        _attached[id] = dto with { GradingMethod = request.GradingMethod };
+        GradingUpdates.Add((id, request.GradingMethod));
+        return Task.CompletedTask;
     }
 
     public Task DeleteAsync(Guid id, CancellationToken ct = default)
