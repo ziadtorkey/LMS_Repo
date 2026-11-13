@@ -1151,6 +1151,11 @@
   <data name="ChangeRequestStatus_Approved" xml:space="preserve"><value>Approved</value></data>
   <data name="ChangeRequestStatus_Rejected" xml:space="preserve"><value>Rejected</value></data>
   <data name="ChangeRequestStatus_Cancelled" xml:space="preserve"><value>Cancelled</value></data>
+  <data name="Nav_MyChildren" xml:space="preserve"><value>My children</value></data>
+  <data name="MyChildren_Title" xml:space="preserve"><value>My children</value></data>
+  <data name="MyChildren_Empty" xml:space="preserve"><value>No children are linked to your account in this school.</value></data>
+  <data name="MyChildren_OtherContexts" xml:space="preserve"><value>Children in another school appear when you switch to that school from the top bar.</value></data>
+  <data name="MyChildren_Open" xml:space="preserve"><value>View my children</value></data>
   <data name="Nav_MyClassCourses" xml:space="preserve"><value>My class courses</value></data>
   <data name="MyClassCourses_Title" xml:space="preserve"><value>My class courses</value></data>
   <data name="MyClassCourses_Empty" xml:space="preserve"><value>You have no class courses in the selected year.</value></data>
