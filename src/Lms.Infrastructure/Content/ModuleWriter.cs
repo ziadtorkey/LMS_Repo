@@ -53,8 +53,42 @@ public sealed class ModuleWriter(LmsDbContext db, PlacementGuard guard) : IModul
     public async Task DeleteForRefAsync(string kind, Guid refId, CancellationToken ct = default)
     {
         var modules = await db.Set<LessonModule>().Where(m => m.Kind == kind && m.RefId == refId).ToListAsync(ct);
-        db.RemoveRange(modules);
+        var open = new Dictionary<Guid, bool>();
+        foreach (var module in modules)
+        {
+            if (!open.TryGetValue(module.ClassCourseId, out var writable))
+            {
+                writable = await IsOpenAsync(module.ClassCourseId, ct);
+                open[module.ClassCourseId] = writable;
+            }
+
+            // Closed classes and years are historical records (#526): the module stays and points at a deleted activity.
+            if (writable)
+            {
+                db.Remove(module);
+            }
+        }
+
         await db.SaveChangesAsync(ct);
+    }
+
+    private async Task<bool> IsOpenAsync(Guid classCourseId, CancellationToken ct)
+    {
+        var classCourse = await db.Set<ClassCourse>().FirstOrDefaultAsync(c => c.Id == classCourseId, ct);
+        if (classCourse is null)
+        {
+            return false;
+        }
+
+        try
+        {
+            await EnsureWritableAsync(classCourse, ct);
+            return true;
+        }
+        catch (EnrollmentRuleException)
+        {
+            return false;
+        }
     }
 
     private const string ProblemCodeValidationFailed = "validation_failed";
