@@ -19,6 +19,9 @@ public static partial class CopyBranchEndpoint
     /// <summary>Reported in <c>SkippedLockedSettings</c> when the caller may not manage settings at the target.</summary>
     public const string SettingsSkipped = "permission:" + Permissions.Settings.Update;
 
+    /// <summary>Prefix in <c>SkippedLockedSettings</c> of a course allocation not copied because the course is not available at the target.</summary>
+    public const string AllocationSkipped = "allocation:";
+
     [GeneratedRegex("^[A-Za-z0-9_-]{1,50}$")]
     private static partial Regex CodePattern();
 
@@ -56,10 +59,23 @@ public static partial class CopyBranchEndpoint
         // Copying must not be a way around the permissions of the thing copied: policies and settings are written at the
         // target only when the caller could also set them there by hand; otherwise they are skipped and reported.
         var extras = await BranchExtrasPermission.ResolveAsync(http, request.TargetParentId, request.IncludePolicies, request.IncludeSettings, ct);
+        var skippedExtras = extras.Skipped.ToList();
+        var courses = request.IncludeCourses;
+        if (courses && !await BranchExtrasPermission.MayReadCoursesAsync(http, request.SourceOrgUnitId, ct))
+        {
+            courses = false;
+            skippedExtras.Add(BranchExtrasPermission.CoursesViewSkipped);
+        }
+
+        if (courses && !await BranchExtrasPermission.MayCopyCoursesAsync(http, request.TargetParentId, ct))
+        {
+            courses = false;
+            skippedExtras.Add(BranchExtrasPermission.CoursesSkipped);
+        }
 
         try
         {
-            var snapshot = await snapshotter.CaptureAsync(source.Unit, extras.Policies, extras.Settings, ct);
+            var snapshot = await snapshotter.CaptureAsync(source.Unit, extras.Policies, extras.Settings, ct, courses);
             var root = snapshot.Nodes[0] with
             {
                 NameAr = string.IsNullOrWhiteSpace(request.NewRootNameAr) ? snapshot.Nodes[0].NameAr : request.NewRootNameAr.Trim(),
@@ -67,16 +83,18 @@ public static partial class CopyBranchEndpoint
             };
             snapshot = new BranchSnapshot([root, .. snapshot.Nodes.Skip(1)]);
 
-            if (snapshot.Nodes.Any(n => !CodePattern().IsMatch(n.Code + request.CodeSuffix)))
+            if (snapshot.Nodes.Any(n => !CodePattern().IsMatch(n.Code + request.CodeSuffix)
+                || (n.OwnedCourses ?? []).Any(c => !CodePattern().IsMatch(c.Code + request.CodeSuffix))))
             {
-                return ApiProblems.BadRequest(ProblemCodes.validation_failed, "A copied code would exceed 50 characters.");
+                return ApiProblems.BadRequest(ProblemCodes.validation_failed, "A copied unit or course code would exceed 50 characters.");
             }
 
             var result = await materializer.MaterializeAsync(
                 snapshot, target.Unit, name => name, code => code + request.CodeSuffix, ct);
             return Results.Created(Routes.OrgUnit(result.NewRoot.Id),
                 new CopyBranchResultDto(
-                    result.NewRoot.Id, result.UnitsCreated, [.. extras.Skipped, .. result.SkippedLockedSettings]));
+                    result.NewRoot.Id, result.UnitsCreated,
+                    [.. skippedExtras, .. result.SkippedLockedSettings, .. (result.SkippedAllocations ?? []).Select(c => AllocationSkipped + c)]));
         }
         catch (BranchTooLargeException)
         {
@@ -85,6 +103,10 @@ public static partial class CopyBranchEndpoint
         catch (BranchCodeConflictException conflict)
         {
             return ApiProblems.Conflict(ProblemCodes.code_taken, extra: conflict.Codes);
+        }
+        catch (BranchCourseCodeConflictException conflict)
+        {
+            return ApiProblems.Conflict(ProblemCodes.course_code_taken, extra: conflict.Codes);
         }
         catch (BranchInvalidException)
         {

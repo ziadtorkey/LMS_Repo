@@ -358,6 +358,10 @@ All tenant-owned tables: `OrganizationId`; unit-scoped tables: `OrgUnitId`, `Org
 | D50 | LTI | LTI 1.3 is out of scope for v1. |
 | D51 | M4 split | M4 ships as M4a (content modules, assignments, quizzes, forums) then M4b (Zoom, SCORM, H5P). Lead technical defaults: GradeEvent outbox as the M5 grade seam; video is signed-URL streaming of the uploaded file (no HLS); a quiz pool draws N questions per attempt; group-targeted modules are visible only to that group and its teachers; SCORM/H5P content is served from a sandboxed origin with a strict CSP after a QA security spike. |
 | D52 | M4a content rules | Org Admins and Managers hold Modules.Manage and the staff-side activity permissions (amends the section 3.4 "Content & activities" row, so they can assign the Teacher role under D16). One upload size limit for all files (Files.MaxUploadMb). No inline images in the rich-text editor in M4a (images are File modules). The resource library stays in M4a. |
+| D53 | M4b Zoom host model | One platform Zoom account with a configured pool of licensed host users; an allocator picks a free host per session and refuses overlapping use (Z1/Z2). The licence count is configuration. |
+| D54 | M4b Zoom events | The deployment exposes a public HTTPS webhook endpoint for Zoom (recordings, participants), with polling as fallback and manual recording links always allowed (Z3). |
+| D55 | M4b recordings | Cloud recording is off by default; a unit admin may enable it for their unit. Teachers can always attach a recording link manually (Z4/Z6). |
+| D56 | M4b package host | SCORM/H5P content is served from a separate registrable domain with a strict sandbox CSP and signed path tokens; no app-origin fallback (D51, spike #444). |
 
 ---
 

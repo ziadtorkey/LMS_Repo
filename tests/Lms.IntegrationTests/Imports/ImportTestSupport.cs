@@ -105,6 +105,16 @@ public sealed class RecordingBackgroundJobs(ICurrentContext current) : IBackgrou
     public void AddOrUpdateRecurring<T>(string recurringJobId, Expression<Func<T, Task>> job, string cronExpression)
     {
     }
+
+    public string Schedule<T>(string key, DateTimeOffset runAt, Expression<Func<T, Task>> job) => Schedule(key, runAt, JobContextSnapshot.From(current), job);
+
+    public string Schedule<T>(string key, TimeSpan delay, Expression<Func<T, Task>> job) => Schedule(key, DateTimeOffset.UtcNow + delay, job);
+
+    public string Schedule<T>(string key, DateTimeOffset runAt, JobContextSnapshot context, Expression<Func<T, Task>> job) => Enqueue(context, job);
+
+    public string ScheduleAsSystem<T>(string key, DateTimeOffset runAt, Expression<Func<T, Task>> job) => Schedule(key, runAt, JobContextSnapshot.System, job);
+
+    public bool Cancel(string key) => false;
 }
 
 /// <summary>An API host with the test import kind, no Hangfire server and recorded jobs.</summary>

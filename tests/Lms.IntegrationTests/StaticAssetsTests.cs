@@ -29,7 +29,32 @@ public sealed class StaticAssetsTests(LmsApiFactory factory)
 
         var target = Assert.Single(targets, t => t.StartsWith(prefix, StringComparison.Ordinal));
         Assert.Matches(@"\.[a-z0-9]{10}\.js$", target);
-        var r = await client.GetAsync(target); Assert.True(r.StatusCode == HttpStatusCode.OK, $"{target} {(int)r.StatusCode} {await r.Content.ReadAsStringAsync()}");
+        var response = await client.GetAsync(target);
+        var body = await response.Content.ReadAsStringAsync();
+        Assert.True(response.StatusCode == HttpStatusCode.OK, $"{target} answered {(int)response.StatusCode}: {body}");
+    }
+
+    [Theory]
+    [InlineData("/courses/123")]
+    [InlineData("/org/units/7/members")]
+    public async Task Deep_client_route_is_answered_with_the_index_page_by_the_spa_fallback(string route)
+    {
+        var response = await factory.CreateClient().GetAsync(route);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("text/html", response.Content.Headers.ContentType?.MediaType);
+        Assert.Contains("<script type=\"importmap\">", await response.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task Static_asset_responses_carry_the_security_headers()
+    {
+        var response = await factory.CreateClient().GetAsync("/js/richtext.js");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("nosniff", Assert.Single(response.Headers.GetValues("X-Content-Type-Options")));
+        Assert.Equal("DENY", Assert.Single(response.Headers.GetValues("X-Frame-Options")));
+        Assert.Equal("strict-origin-when-cross-origin", Assert.Single(response.Headers.GetValues("Referrer-Policy")));
     }
 
     [Fact]
