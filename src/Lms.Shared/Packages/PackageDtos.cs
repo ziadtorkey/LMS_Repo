@@ -51,9 +51,10 @@ public sealed record PackageListQuery(Guid? LessonKey = null, string? Status = n
 /// POST /api/packages/{id}/module — attaches a <c>Ready</c> package to the lesson it was uploaded for (<c>LessonKey</c> of the upload) as a <c>Scorm</c> or
 /// <c>H5p</c> module (<c>Packages.Upload</c> and <c>Modules.Manage</c> on the ClassCourse). Completion rule from
 /// <see cref="CompletionRules.ForActivity"/> (<c>None</c>, <c>Submit</c>, <c>Score</c>). 409 <c>package_not_ready</c> unless
-/// <c>Ready</c>. Returns the new module node.
+/// <c>Ready</c>. <c>GradingMethod</c> is a <see cref="PackageGradingMethods"/> value (default <c>Highest</c>, D57); any other value is 400
+/// <c>validation_failed</c>. Returns the new module node.
 /// </summary>
-public sealed record AttachPackageModuleRequest(ModuleSettingsInput Module);
+public sealed record AttachPackageModuleRequest(ModuleSettingsInput Module, string GradingMethod = PackageGradingMethods.Highest);
 
 /// <summary>
 /// POST /api/packages/{id}/launch (<c>Packages.View</c>, the caller is a student enrolled in the ClassCourse and the module is
