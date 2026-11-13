@@ -1,0 +1,362 @@
+{
+ "home-ar-light-desktop": {
+  "url": "/",
+  "overflow": false,
+  "h1": 0
+ },
+ "home-en-light-desktop": {
+  "url": "/",
+  "overflow": false,
+  "h1": 0
+ },
+ "home-ar-dark-desktop": {
+  "url": "/",
+  "overflow": false,
+  "h1": 0
+ },
+ "home-en-dark-desktop": {
+  "url": "/",
+  "overflow": false,
+  "h1": 0
+ },
+ "home-ar-light-mobile": {
+  "url": "/",
+  "overflow": false,
+  "h1": 0
+ },
+ "home-en-dark-mobile": {
+  "url": "/",
+  "overflow": false,
+  "h1": 0
+ },
+ "staff-ar-light-desktop": {
+  "url": "/staff",
+  "overflow": false,
+  "h1": 1
+ },
+ "staff-en-light-desktop": {
+  "url": "/staff",
+  "overflow": false,
+  "h1": 1
+ },
+ "staff-ar-dark-desktop": {
+  "url": "/staff",
+  "overflow": false,
+  "h1": 1
+ },
+ "staff-en-dark-desktop": {
+  "url": "/staff",
+  "overflow": false,
+  "h1": 1
+ },
+ "staff-ar-light-mobile": {
+  "url": "/staff",
+  "overflow": false,
+  "h1": 1
+ },
+ "staff-en-dark-mobile": {
+  "url": "/staff",
+  "overflow": false,
+  "h1": 1
+ },
+ "org-tree-ar-light-desktop": {
+  "url": "/org-units",
+  "overflow": false,
+  "h1": 1
+ },
+ "org-tree-en-light-desktop": {
+  "url": "/org-units",
+  "overflow": false,
+  "h1": 1
+ },
+ "org-tree-ar-dark-desktop": {
+  "url": "/org-units",
+  "overflow": false,
+  "h1": 1
+ },
+ "org-tree-en-dark-desktop": {
+  "url": "/org-units",
+  "overflow": false,
+  "h1": 1
+ },
+ "org-tree-ar-light-mobile": {
+  "url": "/org-units",
+  "overflow": false,
+  "h1": 1
+ },
+ "org-tree-en-dark-mobile": {
+  "url": "/org-units",
+  "overflow": false,
+  "h1": 1
+ },
+ "unit-settings-ar-light-desktop": {
+  "url": "/org-units/4c702f62-821a-433e-90fb-6eab3c8e6bbf",
+  "overflow": false,
+  "h1": 1
+ },
+ "unit-settings-en-light-desktop": {
+  "url": "/org-units/c4618ea3-4c73-488e-b653-2c1163e1f317",
+  "overflow": false,
+  "h1": 1
+ },
+ "unit-settings-ar-dark-desktop": {
+  "url": "/org-units/9c0e8d20-630d-4d7f-8c9c-a72813414007",
+  "overflow": false,
+  "h1": 1
+ },
+ "unit-settings-en-dark-desktop": {
+  "url": "/org-units/f495a4dd-0038-4642-b908-33d885fdc385",
+  "overflow": false,
+  "h1": 1
+ },
+ "unit-settings-ar-light-mobile": {
+  "url": "/org-units/cd3942ef-0573-409b-8cff-998bbaa20e5b",
+  "overflow": false,
+  "h1": 1
+ },
+ "unit-settings-en-dark-mobile": {
+  "url": "/org-units/3cd627b1-dd44-4994-a24b-891411499314",
+  "overflow": false,
+  "h1": 1
+ },
+ "roles-ar-light-desktop": {
+  "url": "/roles",
+  "overflow": false,
+  "h1": 1
+ },
+ "roles-en-light-desktop": {
+  "url": "/roles",
+  "overflow": false,
+  "h1": 1
+ },
+ "roles-ar-dark-desktop": {
+  "url": "/roles",
+  "overflow": false,
+  "h1": 1
+ },
+ "roles-en-dark-desktop": {
+  "url": "/roles",
+  "overflow": false,
+  "h1": 1
+ },
+ "roles-ar-light-mobile": {
+  "url": "/roles",
+  "overflow": false,
+  "h1": 1
+ },
+ "roles-en-dark-mobile": {
+  "url": "/roles",
+  "overflow": false,
+  "h1": 1
+ },
+ "academic-years-ar-light-desktop": {
+  "url": "/academic-years",
+  "overflow": false,
+  "h1": 1
+ },
+ "academic-years-en-light-desktop": {
+  "url": "/academic-years",
+  "overflow": false,
+  "h1": 1
+ },
+ "academic-years-ar-dark-desktop": {
+  "url": "/academic-years",
+  "overflow": false,
+  "h1": 1
+ },
+ "academic-years-en-dark-desktop": {
+  "url": "/academic-years",
+  "overflow": false,
+  "h1": 1
+ },
+ "academic-years-ar-light-mobile": {
+  "url": "/academic-years",
+  "overflow": false,
+  "h1": 1
+ },
+ "academic-years-en-dark-mobile": {
+  "url": "/academic-years",
+  "overflow": false,
+  "h1": 1
+ },
+ "courses-ar-light-desktop": {
+  "url": "/courses",
+  "overflow": false,
+  "h1": 1
+ },
+ "courses-en-light-desktop": {
+  "url": "/courses",
+  "overflow": false,
+  "h1": 1
+ },
+ "courses-ar-dark-desktop": {
+  "url": "/courses",
+  "overflow": false,
+  "h1": 1
+ },
+ "courses-en-dark-desktop": {
+  "url": "/courses",
+  "overflow": false,
+  "h1": 1
+ },
+ "courses-ar-light-mobile": {
+  "url": "/courses",
+  "overflow": false,
+  "h1": 1
+ },
+ "courses-en-dark-mobile": {
+  "url": "/courses",
+  "overflow": false,
+  "h1": 1
+ },
+ "course-profile-ar-light-desktop": {
+  "url": "/courses/4854414d-3031-0031-0000-000000000000",
+  "overflow": false,
+  "h1": 1
+ },
+ "course-profile-en-light-desktop": {
+  "url": "/courses/4854414d-3031-0031-0000-000000000000",
+  "overflow": false,
+  "h1": 1
+ },
+ "course-profile-ar-dark-desktop": {
+  "url": "/courses/4854414d-3031-0031-0000-000000000000",
+  "overflow": false,
+  "h1": 1
+ },
+ "course-profile-en-dark-desktop": {
+  "url": "/courses/4854414d-3031-0031-0000-000000000000",
+  "overflow": false,
+  "h1": 1
+ },
+ "course-profile-ar-light-mobile": {
+  "url": "/courses/4854414d-3031-0031-0000-000000000000",
+  "overflow": false,
+  "h1": 1
+ },
+ "course-profile-en-dark-mobile": {
+  "url": "/courses/4854414d-3031-0031-0000-000000000000",
+  "overflow": false,
+  "h1": 1
+ },
+ "blueprint-ar-light-desktop": {
+  "url": "/courses/4854414d-3031-0031-0000-000000000000/blueprint",
+  "overflow": false,
+  "h1": 1
+ },
+ "blueprint-en-light-desktop": {
+  "url": "/courses/4854414d-3031-0031-0000-000000000000/blueprint",
+  "overflow": false,
+  "h1": 1
+ },
+ "blueprint-ar-dark-desktop": {
+  "url": "/courses/4854414d-3031-0031-0000-000000000000/blueprint",
+  "overflow": false,
+  "h1": 1
+ },
+ "blueprint-en-dark-desktop": {
+  "url": "/courses/4854414d-3031-0031-0000-000000000000/blueprint",
+  "overflow": false,
+  "h1": 1
+ },
+ "blueprint-ar-light-mobile": {
+  "url": "/courses/4854414d-3031-0031-0000-000000000000/blueprint",
+  "overflow": false,
+  "h1": 1
+ },
+ "blueprint-en-dark-mobile": {
+  "url": "/courses/4854414d-3031-0031-0000-000000000000/blueprint",
+  "overflow": false,
+  "h1": 1
+ },
+ "course-import-ar-light-desktop": {
+  "url": "/courses/import",
+  "overflow": false,
+  "h1": 0
+ },
+ "course-import-en-light-desktop": {
+  "url": "/courses/import",
+  "overflow": false,
+  "h1": 0
+ },
+ "course-import-ar-dark-desktop": {
+  "url": "/courses/import",
+  "overflow": false,
+  "h1": 0
+ },
+ "course-import-en-dark-desktop": {
+  "url": "/courses/import",
+  "overflow": false,
+  "h1": 0
+ },
+ "course-import-ar-light-mobile": {
+  "url": "/courses/import",
+  "overflow": false,
+  "h1": 0
+ },
+ "course-import-en-dark-mobile": {
+  "url": "/courses/import",
+  "overflow": false,
+  "h1": 0
+ },
+ "my-courses-ar-light-desktop": {
+  "url": "/me/courses",
+  "overflow": false,
+  "h1": 1
+ },
+ "my-courses-en-light-desktop": {
+  "url": "/me/courses",
+  "overflow": false,
+  "h1": 1
+ },
+ "my-courses-ar-dark-desktop": {
+  "url": "/me/courses",
+  "overflow": false,
+  "h1": 1
+ },
+ "my-courses-en-dark-desktop": {
+  "url": "/me/courses",
+  "overflow": false,
+  "h1": 1
+ },
+ "my-courses-ar-light-mobile": {
+  "url": "/me/courses",
+  "overflow": true,
+  "h1": 1
+ },
+ "my-courses-en-dark-mobile": {
+  "url": "/me/courses",
+  "overflow": false,
+  "h1": 1
+ },
+ "my-class-courses-ar-light-desktop": {
+  "url": "/me/class-courses",
+  "overflow": false,
+  "h1": 0
+ },
+ "my-class-courses-en-light-desktop": {
+  "url": "/me/class-courses",
+  "overflow": false,
+  "h1": 0
+ },
+ "my-class-courses-ar-dark-desktop": {
+  "url": "/me/class-courses",
+  "overflow": false,
+  "h1": 0
+ },
+ "my-class-courses-en-dark-desktop": {
+  "url": "/me/class-courses",
+  "overflow": false,
+  "h1": 0
+ },
+ "my-class-courses-ar-light-mobile": {
+  "url": "/me/class-courses",
+  "overflow": true,
+  "h1": 0
+ },
+ "my-class-courses-en-dark-mobile": {
+  "url": "/me/class-courses",
+  "overflow": false,
+  "h1": 0
+ }
+}
