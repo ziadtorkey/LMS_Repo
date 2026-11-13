@@ -100,6 +100,22 @@ public sealed class LiveSessionsPageTests : LessonPlansTestContext
     }
 
     [Fact]
+    public async Task Staff_get_a_participants_action_on_live_and_ended_sessions_that_opens_the_dialog()
+    {
+        var live = Seed(LiveSessionStatuses.Live, "Live one", daysFromNow: 0);
+        var ended = Seed(LiveSessionStatuses.Ended, "Ended one", daysFromNow: 0); // still inside the upcoming list (it started less than 8 hours ago)
+        var scheduled = Seed(LiveSessionStatuses.Scheduled, "Later one", daysFromNow: 3);
+        var page = await OpenAsync();
+        page.WaitForElement($"[data-testid=live-row-{scheduled.Id}]", Wait);
+
+        Assert.Empty(page.FindAll($"[data-testid=live-participants-{scheduled.Id}]"));
+        Assert.NotNull(page.Find($"[data-testid=live-participants-{live.Id}]"));
+        page.Find($"[data-testid=live-participants-{ended.Id}]").Click();
+
+        Dialogs.WaitForAssertion(() => Assert.NotNull(Dialogs.Find("[data-testid=participants-dialog]")), Wait);
+    }
+
+    [Fact]
     public async Task Recurring_requires_end_date_or_count_and_previews_dates()
     {
         var page = await OpenAsync();

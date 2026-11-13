@@ -1,5 +1,6 @@
 @page "/class-courses/{Id:guid}/live-sessions"
 @attribute [Authorize]
+@using Lms.Client.Components.LiveSessions
 @using Lms.Client.Components
 @using Lms.Client.Components.Content
 @using Lms.Client.Components.Ui
@@ -72,7 +73,7 @@ else
         else
         {
             <LiveSessionsList Items="_items" Staff="Staff" LessonOfModule="_lessonOfModule" SeriesSizes="_seriesSizes"
-                              OnEdit="EditAsync" OnRecording="RecordingAsync" OnCancel="CancelAsync" />
+                              OnEdit="EditAsync" OnRecording="RecordingAsync" OnParticipants="ParticipantsAsync" OnCancel="CancelAsync" />
         }
     </SectionCard>
 }
@@ -233,6 +234,9 @@ else
         var result = await dialog.Result;
         return result is { Canceled: false, Data: string scope } ? scope : null;
     }
+
+    private Task ParticipantsAsync(LiveSessionListItemDto row) =>
+        LiveParticipantsDialog.ShowAsync(Dialogs, L["Live_Participants"], row.Id, row.Status == LiveSessionStatuses.Ended);
 
     private async Task RecordingAsync(LiveSessionListItemDto row)
     {
