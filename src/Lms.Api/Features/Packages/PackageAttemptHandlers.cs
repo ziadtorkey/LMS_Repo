@@ -115,7 +115,7 @@ public sealed class PackageAttemptHandlers(
 
     public async Task<IResult> CommitAsync(Guid attemptId, PackageCommitRequest? request, HttpContext http, CancellationToken ct)
     {
-        var ctx = await AttemptContextAsync(attemptId, ct);
+        var ctx = await AttemptContextAsync(attemptId, http, ct);
         if (ctx.Problem is not null)
         {
             return ctx.Problem;
@@ -141,7 +141,7 @@ public sealed class PackageAttemptHandlers(
 
     public async Task<IResult> FinishAsync(Guid attemptId, PackageFinishRequest? request, HttpContext http, CancellationToken ct)
     {
-        var ctx = await AttemptContextAsync(attemptId, ct);
+        var ctx = await AttemptContextAsync(attemptId, http, ct);
         if (ctx.Problem is not null)
         {
             return ctx.Problem;
@@ -208,8 +208,11 @@ public sealed class PackageAttemptHandlers(
 
     private sealed record AttemptContext(PackageAttempt? Attempt, PackageUpload? Upload, LessonModule? Module, IResult? Problem);
 
-    /// <summary>The attempt for commit and finish: only its own student, and only while the module is still visible to them (a miss is 404).</summary>
-    private async Task<AttemptContext> AttemptContextAsync(Guid attemptId, CancellationToken ct)
+    /// <summary>
+    /// The attempt for commit and finish: only its own student, and every access check of launch is made again (#605): the relationship to
+    /// the class course (a dropped enrollment is 404), the module still visible to them (404) and the <c>ScormContent</c> flag (403).
+    /// </summary>
+    private async Task<AttemptContext> AttemptContextAsync(Guid attemptId, HttpContext http, CancellationToken ct)
     {
         var attempt = await db.Set<PackageAttempt>().FirstOrDefaultAsync(a => a.Id == attemptId, ct);
         if (attempt is null || !await access.IsStudentAsync(ct) || await access.StudentIdAsync(ct) != attempt.StudentId)
@@ -217,11 +220,22 @@ public sealed class PackageAttemptHandlers(
             return new AttemptContext(null, null, null, ApiProblems.NotFound());
         }
 
+        var (cc, problem) = await http.CheckClassCourseAsync(Permissions.Packages.View, attempt.ClassCourseId, ct);
+        if (problem is not null)
+        {
+            return new AttemptContext(null, null, null, problem);
+        }
+
         var upload = await db.Set<PackageUpload>().FirstOrDefaultAsync(p => p.Id == attempt.PackageId, ct);
         var module = await db.Set<LessonModule>().FirstOrDefaultAsync(m => m.Id == attempt.ModuleId, ct);
         if (upload is null || module is null || !await StudentSeesAsync(module, attempt.StudentId, ct))
         {
             return new AttemptContext(null, null, null, ApiProblems.NotFound());
+        }
+
+        if (await PackageSupport.FlagAsync(cc!, settings, ct) is { } disabled)
+        {
+            return new AttemptContext(null, null, null, disabled);
         }
 
         return new AttemptContext(attempt, upload, module, null);
