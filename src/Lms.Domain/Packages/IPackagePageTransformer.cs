@@ -1,7 +1,22 @@
 namespace Lms.Domain.Packages;
 
-/// <summary>What a page transformer knows about the request: the ids of the verified token (never the token itself).</summary>
-public sealed record PackagePageContext(Guid OrganizationId, Guid PackageId, Guid? StudentId, Guid? AttemptId, bool Preview);
+/// <summary>
+/// What a page transformer knows about the request: the ids of the verified token and <see cref="PathPrefix"/> (<c>/p/{token}/</c>), the
+/// absolute prefix of every file of this launch, for URLs the transformer injects. Never log the prefix: it carries the token.
+/// </summary>
+public sealed record PackagePageContext(Guid OrganizationId, Guid PackageId, Guid? StudentId, Guid? AttemptId, bool Preview, string PathPrefix);
+
+/// <summary>
+/// A file that comes from the application, not from the package store, served under the reserved path <c>_lms/{Name}</c> of the content
+/// host with the same sandbox headers (for example the SCORM prelude script). <see cref="Name"/> includes the content hash.
+/// </summary>
+public interface IPackageHostAsset
+{
+    string Name { get; }
+    byte[] Content { get; }
+    string ContentType { get; }
+    string Hash { get; }
+}
 
 /// <summary>
 /// A seam of the package content host: HTML files of a package of <see cref="Kind"/> pass through it before they are sent (for example the

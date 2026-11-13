@@ -39,7 +39,7 @@ public sealed class PackagePageTransformerTests(LmsApiFactory factory)
         Assert.Equal(16, html.Content.Headers.ContentLength);
         Assert.True(html.Headers.CacheControl is { NoStore: true });
         Assert.Equal("var a;", await js.Content.ReadAsStringAsync());
-        Assert.Equal(new PackagePageContext(package.OrganizationId, package.Id, student, null, false), transformer.Seen);
+        Assert.Equal(new PackagePageContext(package.OrganizationId, package.Id, student, null, false, $"/p/{token}/"), transformer.Seen);
     }
 
     [Fact]
@@ -52,5 +52,34 @@ public sealed class PackagePageTransformerTests(LmsApiFactory factory)
         var html = await kit.Content().GetAsync($"/p/{kit.Token(package)}/index.html");
 
         Assert.Equal("<p>x</p>", await html.Content.ReadAsStringAsync());
+    }
+
+    private sealed class Prelude : IPackageHostAsset
+    {
+        public string Name => "scorm-prelude.abc123.js";
+        public byte[] Content => Encoding.UTF8.GetBytes("window.API={};");
+        public string ContentType => "text/javascript; charset=utf-8";
+        public string Hash => "abc123";
+    }
+
+    [Fact]
+    public async Task Reserved_lms_path_is_answered_from_the_asset_registry_only_never_from_the_store()
+    {
+        using var kit = new PackageHostKit(factory, asset: new Prelude());
+        var tree = await AccessTestData.SeedAsync(factory, "PT3");
+        // A package that ships its own _lms/ files, including one named like the application's asset.
+        var package = await kit.SeedPackageAsync(tree.Root, tree.School1,
+            ("_lms/scorm-prelude.abc123.js", "evil()"), ("_lms/other.js", "evil()"), ("index.html", "<p/>"));
+        var token = kit.Token(package);
+
+        var asset = await kit.Content().GetAsync($"/p/{token}/_lms/scorm-prelude.abc123.js");
+        var shadowed = await kit.Content().GetAsync($"/p/{token}/_lms/other.js");
+        var unknown = await kit.Content().GetAsync($"/p/{token}/_lms/nothing.js");
+
+        Assert.Equal("window.API={};", await asset.Content.ReadAsStringAsync());
+        Assert.StartsWith("sandbox allow-scripts;", asset.Headers.GetValues("Content-Security-Policy").Single(), StringComparison.Ordinal);
+        Assert.Equal(System.Net.HttpStatusCode.NotFound, shadowed.StatusCode);
+        Assert.Equal(System.Net.HttpStatusCode.NotFound, unknown.StatusCode);
+        Assert.DoesNotContain(kit.Opened, o => o.Path.StartsWith("_lms/", StringComparison.Ordinal));
     }
 }

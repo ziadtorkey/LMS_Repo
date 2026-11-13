@@ -14,10 +14,11 @@ namespace Lms.Api.PackageHost;
 internal static class PackageFileEndpoint
 {
     public const string Pattern = "/p/{token}/{**path}";
+    public const string ReservedPrefix = "_lms/";
 
     public static async Task<IResult> HandleAsync(
         string token, string? path, HttpContext http, PackageTokenService tokens, PackageSystemContexts contexts,
-        PackageRevocationCache revocations, IPackageStore store, IEnumerable<IPackagePageTransformer> transformers, IClock clock,
+        PackageRevocationCache revocations, IPackageStore store, IEnumerable<IPackagePageTransformer> transformers, IEnumerable<IPackageHostAsset> assets, IClock clock,
         CancellationToken ct)
     {
         var claims = tokens.Verify(token, clock.UtcNow);
@@ -41,6 +42,13 @@ internal static class PackageFileEndpoint
         if (await revocations.IsRevokedAsync(claims, ct))
         {
             return NotFound;
+        }
+
+        // The reserved prefix is answered from the application's asset registry only, never from (or written into) the package store.
+        if (relative.StartsWith(ReservedPrefix, StringComparison.Ordinal))
+        {
+            var asset = assets.FirstOrDefault(a => ReservedPrefix + a.Name == relative);
+            return asset is null ? NotFound : Results.Bytes(asset.Content, asset.ContentType);
         }
 
         var file = await store.OpenAsync(IPackageStore.PrefixOf(claims.Org, claims.Package), relative, ct);
@@ -70,7 +78,7 @@ internal static class PackageFileEndpoint
         {
             using var buffer = new MemoryStream();
             await file.Content.CopyToAsync(buffer, ct);
-            var context = new PackagePageContext(claims.Org, claims.Package, claims.Student, claims.Attempt, claims.Preview);
+            var context = new PackagePageContext(claims.Org, claims.Package, claims.Student, claims.Attempt, claims.Preview, $"/p/{token}/");
             return Results.Bytes(await transformer.TransformAsync(context, relative, buffer.ToArray(), ct), type.Type);
         }
     }
