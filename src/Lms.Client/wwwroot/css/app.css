@@ -98,3 +98,6 @@ html:lang(ar), html:lang(ar) body { font-family: Cairo, "Segoe UI", Tahoma, Aria
 .lms-import-dropzone:focus-within { border-color: var(--mud-palette-primary); box-shadow: var(--lms-focus); }
 .lms-import-dropzone:hover { border-color: var(--mud-palette-primary); }
 .lms-import-stats { margin-block-end: 0; }
+/* Lesson plan: a module with its authoring buttons, and the add-module menu under a lesson. */
+.lms-module-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px 8px; min-width: 0; }
+.lms-plan-add { margin-block-start: 4px; }
