@@ -51,6 +51,15 @@ public sealed partial class StitchStylesheetTests
     public void Vivid_emerald_is_never_a_text_colour() =>
         Assert.DoesNotMatch(new Regex(@"(?<![-\w])color:\s*var\(--lms-accent\)"), Css());
 
+    [Fact]
+    public void Half_width_stat_tiles_on_phones_put_the_icon_above_the_value()
+    {
+        // Two tiles per row at 360 px leave ~150 px each; a long value such as 2026/2027 ran into the icon.
+        var phone = Regex.Match(Css(), @"@media \(max-width: 599\.98px\) \{\s*\.lms-stats \{ grid-template-columns: repeat\(2[^@]*?\r?\n\}").Value;
+        Assert.Contains("flex-direction: column-reverse", phone);
+        Assert.Contains("overflow-wrap: anywhere", phone);
+    }
+
     [GeneratedRegex(@"(?<![\w-])(margin|padding|border)-(left|right)\b|(?<![\w-])(left|right)\s*:|text-align:\s*(left|right)|float:\s*(left|right)")]
     private static partial Regex PhysicalProperty();
 

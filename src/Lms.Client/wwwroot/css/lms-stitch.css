@@ -155,9 +155,10 @@ html[data-theme="dark"] .mud-button-outlined { border-color: #334155; }
 .lms-code-chip.mud-chip { font-family: Inter, "Segoe UI", sans-serif; font-variant-numeric: tabular-nums; }
 @media (max-width: 599.98px) {
     .lms-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-    .lms-stat { padding: 12px 14px; }
-    .lms-stat-icon { inline-size: 36px; block-size: 36px; }
-    .lms-stat-value { font-size: 1.5rem; }
+    /* Half-width tiles: the icon sits above the text so long values (2026/2027, 12 / 30) get the full width. */
+    .lms-stat { flex-direction: column-reverse; justify-content: flex-end; gap: 8px; padding: 12px 14px; }
+    .lms-stat-icon { inline-size: 32px; block-size: 32px; }
+    .lms-stat-value { font-size: 1.375rem; overflow-wrap: anywhere; }
 }
 /* Inactive units: a muted name instead of fading the whole row, so chips and actions keep AA contrast. */
 .lms-org-node.lms-org-inactive { opacity: 1; }
