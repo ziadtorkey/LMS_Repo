@@ -1255,8 +1255,6 @@
   <data name="LibraryType_Audio" xml:space="preserve"><value>Audio</value></data>
   <data name="LibraryType_Link" xml:space="preserve"><value>Link</value></data>
   <data name="LibraryType_Other" xml:space="preserve"><value>Other</value></data>
-  <data name="Module_Url" xml:space="preserve"><value>Link address (https://...)</value></data>
-  <data name="Module_Completion" xml:space="preserve"><value>Completion</value></data>
   <data name="ClassCourse_Sections" xml:space="preserve"><value>Class course sections</value></data>
   <data name="ClassCourse_TabPlan" xml:space="preserve"><value>Plan</value></data>
   <data name="ClassCourse_TabForum" xml:space="preserve"><value>Forum</value></data>
