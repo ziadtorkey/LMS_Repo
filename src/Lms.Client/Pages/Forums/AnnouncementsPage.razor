@@ -16,7 +16,7 @@
 <ClassCourseTabs ClassCourseId="Id" Active="announcements" />
 @if (!PermState.Loaded)
 {
-    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+    <LoadingState Lines="4" />
 }
 else if (!PermState.Has(Permissions.Forums.View))
 {
@@ -27,7 +27,7 @@ else
     <PageHeader Title="@L["Announcements_Title"]" Subtitle="@L["Announcements_Subtitle"]" />
     @if (PermState.Has(Permissions.Forums.Moderate))
     {
-        <MudPaper Outlined="true" Class="pa-3 mb-3" data-testid="announcement-form">
+        <SectionCard Title="@L["Announcements_New"]" Class="mb-4" TestId="announcement-form">
             <MudStack Spacing="2">
                 <MudTextField T="string" @bind-Value="_title" Label="@L["Announcements_FormTitle"]" MaxLength="200" Immediate="true" data-testid="announcement-title" />
                 <RichTextEditor @key="_version" Value="@_html" ValueChanged="v => _html = v" Label="@L["Forum_Message"]" TestId="announcement-editor" />
@@ -37,20 +37,20 @@ else
                 </MudStack>
                 @if (_formError is not null)
                 {
-                    <MudAlert Severity="Severity.Error" data-testid="announcement-form-error">@_formError</MudAlert>
+                    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="announcement-form-error">@_formError</MudAlert>
                 }
-                <div><MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CreateAsync" data-testid="announcement-send">@L["Announcements_Publish"]</MudButton></div>
+                <div><MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Campaign" OnClick="CreateAsync" data-testid="announcement-send">@L["Announcements_Publish"]</MudButton></div>
             </MudStack>
-        </MudPaper>
+        </SectionCard>
     }
 
     @if (_error is not null)
     {
-        <MudAlert Severity="Severity.Error" data-testid="announcements-error">@_error</MudAlert>
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="announcements-error">@_error</MudAlert>
     }
     else if (_loading)
     {
-        <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+        <SectionCard><LoadingState Lines="4" TestId="announcements-loading" /></SectionCard>
     }
     else if (_items.Count == 0)
     {
@@ -60,32 +60,39 @@ else
     }
     else
     {
-        <MudStack Spacing="2" data-testid="announcements-list">
-            @foreach (var a in _items)
-            {
-                <MudPaper Outlined="true" Class="pa-3" data-testid="@($"announcement-{a.Id}")">
-                    <MudStack Spacing="1">
-                        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
-                            <MudText Typo="Typo.subtitle1">@a.Title</MudText>
-                            @if (a.IsPinned)
-                            {
-                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Primary" Icon="@Icons.Material.Rounded.PushPin" data-testid="@($"announcement-pinned-{a.Id}")">@L["Forum_Pinned"]</MudChip>
-                            }
-                            <MudSpacer />
-                            <MudText Typo="Typo.caption" Class="lms-muted">
-                                @Culture.Pick(a.AuthorNameAr, a.AuthorNameEn) · <span dir="ltr" data-testid="@($"announcement-date-{a.Id}")">@a.CreatedAtUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm", System.Globalization.CultureInfo.InvariantCulture)</span>
-                            </MudText>
-                            @if (PermState.Has(Permissions.Forums.Moderate))
-                            {
-                                <MudIconButton Icon="@Icons.Material.Rounded.Delete" Size="Size.Small" Color="Color.Error" aria-label="@L["Common_Delete"]"
-                                               OnClick="() => DeleteAsync(a)" data-testid="@($"announcement-delete-{a.Id}")" />
-                            }
-                        </MudStack>
-                        <SanitizedHtml Html="@a.BodyHtml" TestId="@($"announcement-body-{a.Id}")" />
-                    </MudStack>
-                </MudPaper>
-            }
-        </MudStack>
+        <SectionCard TestId="announcements-card">
+            <ul class="lms-item-list" data-testid="announcements-list">
+                @foreach (var a in _items)
+                {
+                    <li class="lms-item lms-item-stacked" data-testid="@($"announcement-{a.Id}")">
+                        <article aria-labelledby="@($"announcement-title-{a.Id}")">
+                            <div class="lms-item-head">
+                                <div class="lms-item-main">
+                                    <MudText Typo="Typo.subtitle1" HtmlTag="h2" Class="lms-wrap" id="@($"announcement-title-{a.Id}")">@a.Title</MudText>
+                                    @if (a.IsPinned)
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Primary" Icon="@Icons.Material.Rounded.PushPin" data-testid="@($"announcement-pinned-{a.Id}")">@L["Forum_Pinned"]</MudChip>
+                                    }
+                                </div>
+                                <div class="lms-row-actions">
+                                    <MudText Typo="Typo.caption" Class="lms-muted">
+                                        <bdi>@Culture.Pick(a.AuthorNameAr, a.AuthorNameEn)</bdi> · <span dir="ltr" data-testid="@($"announcement-date-{a.Id}")">@a.CreatedAtUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm", System.Globalization.CultureInfo.InvariantCulture)</span>
+                                    </MudText>
+                                    @if (PermState.Has(Permissions.Forums.Moderate))
+                                    {
+                                        <MudTooltip Text="@L["Common_Delete"]">
+                                            <MudIconButton Icon="@Icons.Material.Rounded.Delete" Size="Size.Small" Color="Color.Error" aria-label="@L["Common_Delete"]"
+                                                           OnClick="() => DeleteAsync(a)" data-testid="@($"announcement-delete-{a.Id}")" />
+                                        </MudTooltip>
+                                    }
+                                </div>
+                            </div>
+                            <SanitizedHtml Html="@a.BodyHtml" TestId="@($"announcement-body-{a.Id}")" />
+                        </article>
+                    </li>
+                }
+            </ul>
+        </SectionCard>
     }
 }
 

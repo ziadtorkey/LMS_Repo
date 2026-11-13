@@ -16,7 +16,7 @@
 <ClassCourseTabs ClassCourseId="Id" Active="forum" />
 @if (!PermState.Loaded || _loading)
 {
-    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+    <LoadingState Lines="4" />
 }
 else if (!PermState.Has(Permissions.Forums.View))
 {
