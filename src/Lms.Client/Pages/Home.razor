@@ -35,6 +35,16 @@ else if (_name is not null)
         @if (PermState.Has(Permissions.LiveSessions.Manage)) { <Lms.Client.Components.LiveSessions.TodaySessionsCard /> }
         else { <Lms.Client.Components.LiveSessions.UpcomingLiveSessionsCard /> }
     }
+    @if (PermState.Has(Lms.Shared.Authorization.Permissions.Students.ViewChildren))
+    {
+        <MudPaper Class="pa-4 mt-4" data-testid="home-children-card">
+            <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                <MudIcon Icon="@Icons.Material.Filled.FamilyRestroom" Size="Size.Large" />
+                <MudText Typo="Typo.h6">@L["MyChildren_Title"]</MudText>
+                <MudButton Href="me/children" Variant="Variant.Filled" Color="Color.Primary" data-testid="home-children-link">@L["MyChildren_Open"]</MudButton>
+            </MudStack>
+        </MudPaper>
+    }
     @if (PermState.Has(Permissions.LessonPlans.View))
     {
         <MudCard Class="mt-4" Style="max-width: 420px" data-testid="home-my-class-courses">

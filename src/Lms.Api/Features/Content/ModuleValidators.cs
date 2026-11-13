@@ -118,8 +118,17 @@ internal static class ModuleValidators
                 }
 
                 return IsHttpUrl(content.Url) ? null : ClassValidators.Invalid("Content", "url_invalid");
+            case ModuleKinds.File:
+            case ModuleKinds.Video:
+            case ModuleKinds.Audio:
+                // The asset itself (same class course, accepted kind) is checked by the handler, which can read it.
+                if (content.BodyHtmlAr is not null || content.BodyHtmlEn is not null || content.Url is not null)
+                {
+                    return ClassValidators.Invalid("Content", "content_invalid");
+                }
+
+                return content.AssetId is null ? ClassValidators.Invalid("Content", "asset_required") : null;
             default:
-                // File, Video and Audio arrive with the asset service (M4a Task 5).
                 return ClassValidators.Invalid("Kind", "kind_invalid");
         }
     }
