@@ -1,4 +1,6 @@
 using Lms.Api.Infrastructure;
+using Lms.Domain.Abstractions;
+using Microsoft.Extensions.Options;
 using Lms.Infrastructure.Jobs;
 using Lms.Infrastructure.Zoom;
 using Lms.Shared;
@@ -15,6 +17,10 @@ public sealed class ZoomProviderModule : ILmsModule
     public void AddServices(IServiceCollection services, IConfiguration configuration)
     {
         services.AddZoom(configuration);
+        services.AddScoped(sp => new ZoomWebhookVerifier(
+            sp.GetRequiredService<IOptions<ZoomOptions>>().Value.WebhookSecretToken, sp.GetRequiredService<IClock>()));
+        services.AddSingleton(sp => new ZoomWebhookRateLimiter(sp.GetRequiredService<IClock>()));
+        services.AddScoped<ZoomEventProcessor>();
         services.AddSingleton(new DevJobDefinition(
             ZoomSyncSweepJob.RecurringJobId, (sp, _, ct) => sp.GetRequiredService<ZoomSyncSweepJob>().RunAsync(ct)));
         if (configuration.GetValue("Jobs:ServerEnabled", true))
@@ -23,11 +29,14 @@ public sealed class ZoomProviderModule : ILmsModule
         }
     }
 
-    public void MapEndpoints(IEndpointRouteBuilder app) =>
+    public void MapEndpoints(IEndpointRouteBuilder app)
+    {
+        ZoomWebhookEndpoint.Map(app);
         app.MapGet(Routes.LiveSessionsProviderStatus, async (ZoomProviderStatus status, CancellationToken ct) =>
                 Results.Ok(await status.GetAsync(ct)))
             .RequireAuthorization()
             .RequirePermission(Permissions.LiveSessions.Manage);
+    }
 }
 
 /// <summary>Registers the recurring <c>zoom-sync-sweep</c> job at startup; one id is one schedule.</summary>

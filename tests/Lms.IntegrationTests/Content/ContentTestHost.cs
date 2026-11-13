@@ -40,6 +40,8 @@ internal sealed class ContentTestHost(LmsApiFactory factory, Action<IServiceColl
     public Task<HttpResponseMessage> SendAsync(RoleAssignment caller, HttpMethod method, string url, object? body = null) =>
         _host.SendAsync(method, url, caller, body);
 
+    public Task<HttpResponseMessage> SendAnonymousAsync(HttpRequestMessage request) => _host.SendAnonymousAsync(request);
+
     public async Task<ContentWorld> SetUpAsync(string name)
     {
         var (tree, _, cls, course) = await WorldAsync(factory, name);
