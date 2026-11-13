@@ -1543,6 +1543,31 @@
   <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>لم تجتز الحزمة الفحص الأمني.</value></data>
   <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>الملف ليس أرشيف zip صالحًا. صدّر الحزمة من جديد.</value></data>
   <data name="Error_package_reason_bad_name" xml:space="preserve"><value>بعض أسماء الملفات في الحزمة طويلة جدًا أو متداخلة بعمق أو محجوزة. أعد تسميتها وصدّر الحزمة من جديد.</value></data>
+  <data name="Students_Subtitle" xml:space="preserve"><value>طلاب جهتك وفصولهم وأولياء أمورهم.</value></data>
+  <data name="Students_EmptyTitle" xml:space="preserve"><value>لا يوجد طلاب مطابقون</value></data>
+  <data name="Students_EmptyText" xml:space="preserve"><value>غيّر عوامل التصفية أو أضف طالبًا جديدًا.</value></data>
+  <data name="Student_BackToList" xml:space="preserve"><value>العودة إلى الطلاب</value></data>
+  <data name="Student_CreateSubtitle" xml:space="preserve"><value>أضف طالبًا واربطه بفصل وبأولياء أمره.</value></data>
+  <data name="Student_SectionStudent" xml:space="preserve"><value>الطالب</value></data>
+  <data name="Student_SectionPlacement" xml:space="preserve"><value>الفصل</value></data>
+  <data name="Student_SectionAccount" xml:space="preserve"><value>الحساب</value></data>
+  <data name="Guardians_Subtitle" xml:space="preserve"><value>أولياء أمور طلابك وبيانات التواصل معهم وحالة دخولهم إلى البوابة.</value></data>
+  <data name="Guardians_EmptyTitle" xml:space="preserve"><value>لا يوجد أولياء أمور مطابقون</value></data>
+  <data name="Guardians_EmptyText" xml:space="preserve"><value>غيّر البحث، أو أضف أولياء الأمور عند إنشاء طالب.</value></data>
+  <data name="Guardian_BackToList" xml:space="preserve"><value>العودة إلى أولياء الأمور</value></data>
+  <data name="Guardian_Details" xml:space="preserve"><value>التفاصيل</value></data>
+  <data name="MyChildren_Subtitle" xml:space="preserve"><value>أبناؤك في هذه الجهة وفصولهم.</value></data>
+  <data name="MyProfile_Subtitle" xml:space="preserve"><value>حدّث بيانات التواصل الخاصة بك. التغييرات الأخرى تُرسل إلى مدرستك للموافقة.</value></data>
+  <data name="MyProfile_Details" xml:space="preserve"><value>بياناتك</value></data>
+  <data name="MyProfile_RequestsEmptyText" xml:space="preserve"><value>الطلبات التي ترسلها إلى مدرستك تظهر هنا.</value></data>
+  <data name="ChangeRequests_Subtitle" xml:space="preserve"><value>تغييرات طلب الطلاب إجراءها على بياناتهم. راجع كل طلب ووافق عليه أو ارفضه.</value></data>
+  <data name="ChangeRequests_EmptyTitle" xml:space="preserve"><value>لا توجد طلبات تغيير</value></data>
+  <data name="ChangeRequests_EmptyText" xml:space="preserve"><value>غيّر عوامل التصفية لعرض الطلبات في حالات أخرى.</value></data>
+  <data name="Import_HistoryEmptyTitle" xml:space="preserve"><value>لا توجد عمليات استيراد بعد</value></data>
+  <data name="Import_HistoryEmptyText" xml:space="preserve"><value>عمليات الاستيراد التي تجريها تظهر هنا مع نتيجتها.</value></data>
+  <data name="StudentImport_Subtitle" xml:space="preserve"><value>أضف عددًا كبيرًا من الطلاب دفعة واحدة من ملف إكسل.</value></data>
+  <data name="ClassImport_Subtitle" xml:space="preserve"><value>وزّع الطلاب على الفصول من ملف إكسل.</value></data>
+  <data name="Group_Subtitle" xml:space="preserve"><value>قسّم طلاب مقرر الفصل هذا إلى مجموعات.</value></data>
   <data name="NavSection_Structure" xml:space="preserve"><value>الهيكل</value></data>
   <data name="NavSection_People" xml:space="preserve"><value>الأشخاص</value></data>
   <data name="NavSection_Academic" xml:space="preserve"><value>الأكاديمي</value></data>
