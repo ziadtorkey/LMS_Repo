@@ -131,7 +131,7 @@ public sealed class FakeCoursesApi : ICoursesApi
 
     private static IEnumerable<Guid> AncestorsOrSelf(Guid unitId)
     {
-        for (Guid? id = unitId; id is { } u; id = FakeUnits.All.First(x => x.Id == u).ParentId) yield return u;
+        for (Guid? id = unitId; id is { } u; id = FakeUnits.All.FirstOrDefault(x => x.Id == u)?.ParentId) yield return u;   // a unit the fake does not know has no ancestors
     }
 
     public Task<UnitCoursesDto> GetUnitCoursesAsync(Guid orgUnitId, CancellationToken ct = default)

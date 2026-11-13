@@ -2,21 +2,27 @@
 @* Edits one blueprint lesson: bilingual title, bilingual objectives and the planned day from the start of the year. Works on a copy; Save writes it back. *@
 <MudDialog>
     <DialogContent>
-        <MudForm @ref="_form">
-            <MudStack Spacing="3">
+        <MudForm @ref="_form" Class="lms-form">
+            <fieldset class="lms-fieldset">
+                <legend class="lms-fieldset-legend">@L["Lesson_SectionTitle"]</legend>
                 <BilingualNameFields @bind-NameAr="_titleAr" @bind-NameEn="_titleEn" IdPrefix="lesson-title" />
+            </fieldset>
+            <fieldset class="lms-fieldset">
+                <legend class="lms-fieldset-legend">@L["Lesson_SectionPlan"]</legend>
                 <MudTextField T="string" @bind-Value="_objectivesAr" Label="@L["Lesson_ObjectivesAr"]" Lines="3" MaxLength="4000"
                               dir="rtl" lang="ar" data-testid="lesson-objectives-ar" />
                 <MudTextField T="string" @bind-Value="_objectivesEn" Label="@L["Lesson_ObjectivesEn"]" Lines="3" MaxLength="4000"
                               dir="ltr" lang="en" data-testid="lesson-objectives-en" />
                 <MudNumericField T="int?" @bind-Value="_offset" Label="@L["Lesson_PlannedDay"]" HelperText="@L["Lesson_PlannedDayHelp"]"
                                  Min="0" Max="400" Clearable="true" data-testid="lesson-offset" />
-            </MudStack>
+            </fieldset>
         </MudForm>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
-        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" data-testid="dialog-save">@L["Common_Save"]</MudButton>
+        <div class="lms-dialog-actions">
+            <MudButton Variant="Variant.Text" OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" StartIcon="@Icons.Material.Rounded.Check" OnClick="SaveAsync" data-testid="dialog-save">@L["Common_Save"]</MudButton>
+        </div>
     </DialogActions>
 </MudDialog>
 
