@@ -90,7 +90,7 @@ public sealed class GradeEventTests(LmsApiFactory factory)
     }
 
     [Fact]
-    public async Task Event_carries_unit_fields_and_is_isolated()
+    public async Task GradeEvent_is_isolated_per_client_and_subtree()
     {
         var a = await AccessTestData.SeedAsync(factory, "GE5A");
         var b = await AccessTestData.SeedAsync(factory, "GE5B");
@@ -114,6 +114,10 @@ public sealed class GradeEventTests(LmsApiFactory factory)
         Assert.Equal(0, await SeenAsync(TestCurrentContext.For(a.Org.Id, a.School2.Path)));
         Assert.Equal(0, await SeenAsync(TestCurrentContext.For(b.Org.Id, b.Root.Path)));
         Assert.Equal(0, await SeenAsync(TestCurrentContext.For(a.Org.Id, null)));
+        // A scope below the event's unit (an ancestor-only row is invisible to it) and another client's scope on a path in our tree.
+        Assert.Equal(0, await SeenAsync(TestCurrentContext.For(a.Org.Id, a.School1.Path + Guid.NewGuid() + "/")));
+        Assert.Equal(0, await SeenAsync(TestCurrentContext.For(b.Org.Id, a.School1.Path)));
+        Assert.Equal(0, await SeenAsync(TestCurrentContext.For(b.Org.Id, a.Root.Path)));
         Assert.Equal(0, await SeenAsync(new TestCurrentContext { UserId = Guid.NewGuid() }));
 
         await using var audit = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
