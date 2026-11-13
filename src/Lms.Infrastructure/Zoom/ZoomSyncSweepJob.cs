@@ -3,6 +3,7 @@ using Lms.Domain.Classes;
 using Lms.Domain.Content;
 using Lms.Domain.LiveSessions;
 using Lms.Domain.Organizations;
+using Lms.Infrastructure.Jobs;
 using Lms.Infrastructure.LiveSessions;
 using Lms.Infrastructure.Persistence;
 using Lms.Shared.LiveSessions;
@@ -14,11 +15,12 @@ namespace Lms.Infrastructure.Zoom;
 /// <summary>
 /// Retries live sessions whose provider call failed (<c>SyncFailed</c>), as a recurring system job (platform context) that works through
 /// the clients one at a time: only the rows of that client are read and each is synced through <see cref="LiveSessionService"/>, which
-/// keeps a failing row in <c>SyncFailed</c> for the next run. A row that already holds a pool host keeps it (no second allocation). One
+/// keeps a failing row in <c>SyncFailed</c> for the next run. A named lock per client keeps overlapping runs (Hangfire overlap, the dev
+/// trigger, two nodes) from syncing the same session twice. A row that already holds a pool host keeps it (no second allocation). One
 /// client failing never stops the others; sessions that have already started are left alone.
 /// </summary>
 public sealed class ZoomSyncSweepJob(
-    LmsDbContext db, LiveSessionService service, IMeetingProvider provider, IClock clock, ILogger<ZoomSyncSweepJob> logger)
+    LmsDbContext db, LiveSessionService service, IMeetingProvider provider, IClock clock, IJobKeyLock keyLock, ILogger<ZoomSyncSweepJob> logger)
 {
     public const string RecurringJobId = "zoom-sync-sweep";
 
@@ -35,6 +37,18 @@ public sealed class ZoomSyncSweepJob(
         var recovered = 0;
         foreach (var organizationId in organizationIds)
         {
+            // One sweep per client at a time, across Hangfire overlap, the dev trigger and other nodes: two runs would each create a
+            // Zoom meeting for the same session. A run that finds the client busy skips it (the other run is doing the work).
+            IDisposable gate;
+            try
+            {
+                gate = await Task.Run(() => keyLock.Acquire($"zoom-sync-sweep:{organizationId:N}", TimeSpan.Zero), ct);
+            }
+            catch (TimeoutException)
+            {
+                continue;
+            }
+
             try
             {
                 recovered += await SweepClientAsync(organizationId, ct);
@@ -43,6 +57,10 @@ public sealed class ZoomSyncSweepJob(
             {
                 db.ChangeTracker.Clear();
                 logger.LogError(ex, "The live session sync sweep failed for client {OrganizationId}", organizationId);
+            }
+            finally
+            {
+                gate.Dispose();
             }
         }
 

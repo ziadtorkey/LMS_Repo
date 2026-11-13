@@ -167,6 +167,53 @@ public sealed class ZoomSessionRowTests(LmsApiFactory factory) : IDisposable
         Assert.Contains(Provider(host).Meetings.Values, m => m.OrganizationId == b.Tree.Org.Id && m.ClassCourseId == b.ClassCourse.Id);
     }
 
+    /// <summary>The fake provider, but each create takes a moment, so two sweeps that are not excluded really do overlap.</summary>
+    private sealed class SlowProvider(FakeMeetingProvider inner) : IMeetingProvider
+    {
+        public string Name => inner.Name;
+
+        public async Task<MeetingResult> CreateMeetingAsync(MeetingRequest request, CancellationToken ct = default)
+        {
+            await Task.Delay(400, ct);
+            return await inner.CreateMeetingAsync(request, ct);
+        }
+
+        public Task UpdateMeetingAsync(string id, MeetingRequest request, CancellationToken ct = default) => inner.UpdateMeetingAsync(id, request, ct);
+
+        public Task DeleteMeetingAsync(string id, CancellationToken ct = default) => inner.DeleteMeetingAsync(id, ct);
+
+        public Task<IReadOnlyList<MeetingParticipant>> GetParticipantsAsync(string id, CancellationToken ct = default) => inner.GetParticipantsAsync(id, ct);
+
+        public Task<IReadOnlyList<MeetingRecording>> GetRecordingsAsync(string id, CancellationToken ct = default) => inner.GetRecordingsAsync(id, ct);
+
+        public Task<ProviderHealth> GetHealthAsync(CancellationToken ct = default) => inner.GetHealthAsync(ct);
+    }
+
+    [Fact]
+    public async Task Two_sweeps_at_once_create_one_meeting_per_session()
+    {
+        var host = new ContentTestHost(factory, services =>
+            services.AddSingleton<IMeetingProvider>(sp => new SlowProvider(sp.GetRequiredService<FakeMeetingProvider>())));
+        _hosts.Add(host);
+        var w = await host.SetUpAsync("ZS9");
+        await EnableAsync(factory, w);
+        Provider(host).FailNext(2);
+        var sessions = await CreateAsync(host, w.Teacher, w, Weekly(2));
+        Assert.All(sessions, s => Assert.Equal(LiveSessionStatuses.SyncFailed, s.Status));
+        Assert.Empty(Provider(host).Meetings);
+
+        var results = await Task.WhenAll(Task.Run(() => SweepAsync(host)), Task.Run(() => SweepAsync(host)));
+
+        Assert.Equal(2, Provider(host).Meetings.Count); // one meeting per session, not four
+        Assert.Equal(2, results.Sum());                 // and exactly one of the runs did the work
+        Assert.Contains(0, results);
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        var rows = await db.Set<LiveSession>().Where(s => s.ClassCourseId == w.ClassCourse.Id).ToListAsync();
+        Assert.All(rows, r => Assert.Equal(LiveSessionStatuses.Scheduled, r.Status));
+        Assert.Equal(2, rows.Select(r => r.ExternalMeetingId).Distinct().Count());
+        Assert.Equal(2, Provider(host).Meetings.Keys.Intersect(rows.Select(r => r.ExternalMeetingId!)).Count()); // no orphaned meeting
+    }
+
     [Fact]
     public async Task The_sweep_leaves_started_and_cancelled_sessions_alone()
     {
