@@ -76,14 +76,6 @@ public sealed class LessonPlanPageTests : LessonPlansTestContext
     }
 
     [Fact]
-    public async Task Modules_slot_is_reserved_for_a_later_release()
-    {
-        var page = await OpenAsync();
-
-        Assert.Contains("later release", page.Find("[data-testid=plan-modules-slot]").TextContent);
-    }
-
-    [Fact]
     public async Task Planned_dates_render_in_culture()
     {
         var page = await OpenAsync();

@@ -66,6 +66,18 @@ public static class CompletionRules
 
     /// <summary>The rules a content kind (<see cref="ModuleKinds.Content"/>) may use.</summary>
     public static IReadOnlyList<string> ForContent { get; } = [None, Manual, View];
+
+    /// <summary>
+    /// M4a wave 2: the rules an activity module kind may use (empty for content kinds and the M4b kinds, which are
+    /// decided by their own contract).
+    /// </summary>
+    public static IReadOnlyList<string> ForActivity(string moduleKind) => moduleKind switch
+    {
+        ModuleKinds.Assignment => [Submit, Score],
+        ModuleKinds.Quiz => [Score, Submit],
+        ModuleKinds.LibraryResource => [None, Manual, View],
+        _ => [],
+    };
 }
 
 /// <summary>A student's completion state of one module.</summary>
