@@ -922,6 +922,55 @@
   <data name="MyCourses_BlueprintPublished" xml:space="preserve"><value>Blueprint published</value></data>
   <data name="MyCourses_NoBlueprint" xml:space="preserve"><value>No published blueprint</value></data>
   <data name="MyCourses_Open" xml:space="preserve"><value>Open</value></data>
+  <data name="Blueprint_Title" xml:space="preserve"><value>Course blueprint</value></data>
+  <data name="Blueprint_EditDraft" xml:space="preserve"><value>Edit draft</value></data>
+  <data name="Blueprint_EditingDraft" xml:space="preserve"><value>Editing the draft</value></data>
+  <data name="Blueprint_ViewingVersion" xml:space="preserve"><value>Viewing version {0}</value></data>
+  <data name="Blueprint_VersionN" xml:space="preserve"><value>Version {0}</value></data>
+  <data name="Blueprint_Versions" xml:space="preserve"><value>Versions</value></data>
+  <data name="Blueprint_Counts" xml:space="preserve"><value>{0} sections, {1} lessons</value></data>
+  <data name="Blueprint_View" xml:space="preserve"><value>View</value></data>
+  <data name="Blueprint_Discard" xml:space="preserve"><value>Discard changes</value></data>
+  <data name="Blueprint_Publish" xml:space="preserve"><value>Publish</value></data>
+  <data name="Blueprint_Copy" xml:space="preserve"><value>Copy from another course</value></data>
+  <data name="Blueprint_NoPublished" xml:space="preserve"><value>No version has been published yet.</value></data>
+  <data name="Blueprint_EmptyTree" xml:space="preserve"><value>Nothing here yet.</value></data>
+  <data name="Blueprint_AddSection" xml:space="preserve"><value>Add section</value></data>
+  <data name="Blueprint_AddLesson" xml:space="preserve"><value>Add lesson</value></data>
+  <data name="Blueprint_UntitledLesson" xml:space="preserve"><value>Untitled lesson</value></data>
+  <data name="Blueprint_MoveUp" xml:space="preserve"><value>Move up</value></data>
+  <data name="Blueprint_MoveDown" xml:space="preserve"><value>Move down</value></data>
+  <data name="Blueprint_Stale" xml:space="preserve"><value>Someone else saved this draft. Reload it to continue; your unsaved changes will be lost.</value></data>
+  <data name="Blueprint_Reload" xml:space="preserve"><value>Reload</value></data>
+  <data name="Blueprint_Unsaved" xml:space="preserve"><value>You have unsaved changes.</value></data>
+  <data name="Blueprint_LeaveConfirm" xml:space="preserve"><value>Leave without saving? Your changes will be lost.</value></data>
+  <data name="Blueprint_LeaveAnyway" xml:space="preserve"><value>Leave</value></data>
+  <data name="Blueprint_TitlesRequired" xml:space="preserve"><value>Every section and lesson needs an Arabic and an English title.</value></data>
+  <data name="Blueprint_EmptyOrIncomplete" xml:space="preserve"><value>Add at least one section, give every section a lesson and every item both titles before publishing.</value></data>
+  <data name="Blueprint_PublishedNew" xml:space="preserve"><value>Version {0} published. It applies to classes created from now on.</value></data>
+  <data name="Blueprint_PublishedQueued" xml:space="preserve"><value>Version {0} published. {1} class plans will be updated in the background.</value></data>
+  <data name="BlueprintStatus_Draft" xml:space="preserve"><value>Draft</value></data>
+  <data name="BlueprintStatus_Published" xml:space="preserve"><value>Published</value></data>
+  <data name="BlueprintStatus_Superseded" xml:space="preserve"><value>Superseded</value></data>
+  <data name="ApplyMode_NewClassesOnly" xml:space="preserve"><value>New classes only</value></data>
+  <data name="ApplyMode_NewClassesOnly_Help" xml:space="preserve"><value>Classes created later, and plans that never received a version, get this version. Existing class plans stay as they are.</value></data>
+  <data name="ApplyMode_PushToExisting" xml:space="preserve"><value>Update existing classes too</value></data>
+  <data name="ApplyMode_PushToExisting_Help" xml:space="preserve"><value>Plans of existing classes in open years are updated in the background: new lessons are added and renamed or moved ones follow this version.</value></data>
+  <data name="Publish_Intro" xml:space="preserve"><value>Choose how this version reaches class lesson plans.</value></data>
+  <data name="Publish_ChooseMode" xml:space="preserve"><value>Choose one of the options to continue.</value></data>
+  <data name="Copy_ReplacesDraft" xml:space="preserve"><value>Copying replaces everything in your draft.</value></data>
+  <data name="Copy_Course" xml:space="preserve"><value>Source course</value></data>
+  <data name="Copy_Version" xml:space="preserve"><value>Version</value></data>
+  <data name="Copy_NoPublished" xml:space="preserve"><value>This course has no published version.</value></data>
+  <data name="Lesson_Edit" xml:space="preserve"><value>Lesson</value></data>
+  <data name="Lesson_ObjectivesAr" xml:space="preserve"><value>Objectives (Arabic)</value></data>
+  <data name="Lesson_ObjectivesEn" xml:space="preserve"><value>Objectives (English)</value></data>
+  <data name="Lesson_PlannedDay" xml:space="preserve"><value>Planned day</value></data>
+  <data name="Lesson_PlannedDayHelp" xml:space="preserve"><value>Days from the start of the academic year (0 to 400).</value></data>
+  <data name="Lesson_DayN" xml:space="preserve"><value>Day {0}</value></data>
+  <data name="SectionLabel_Week" xml:space="preserve"><value>Week</value></data>
+  <data name="SectionLabel_Unit" xml:space="preserve"><value>Unit</value></data>
+  <data name="SectionLabel_Chapter" xml:space="preserve"><value>Chapter</value></data>
   <data name="StaffImport_Title" xml:space="preserve"><value>Import staff</value></data>
   <data name="Import_Button" xml:space="preserve"><value>Import from Excel</value></data>
   <data name="Clients_ShortCode" xml:space="preserve"><value>Short code</value></data>
@@ -1082,6 +1131,7 @@
   <data name="ModuleKind_Scorm" xml:space="preserve"><value>SCORM package</value></data>
   <data name="ModuleKind_Video" xml:space="preserve"><value>Video</value></data>
   <data name="Module_Group" xml:space="preserve"><value>Group: {0}</value></data>
+  <data name="Module_GroupField" xml:space="preserve"><value>Group</value></data>
   <data name="Module_NotVisibleNow" xml:space="preserve"><value>Not visible now</value></data>
   <data name="Module_ScheduledFrom" xml:space="preserve"><value>Visible from {0}</value></data>
   <data name="Module_ScheduledRange" xml:space="preserve"><value>Visible {0} to {1}</value></data>
@@ -1094,6 +1144,23 @@
   <data name="Progress_Count" xml:space="preserve"><value>{0} of {1}</value></data>
   <data name="LessonPlan_Modules" xml:space="preserve"><value>Modules</value></data>
   <data name="LessonPlan_ModulesLater" xml:space="preserve"><value>Modules arrive in a later release.</value></data>
+  <data name="Learn_Title" xml:space="preserve"><value>My course</value></data>
+  <data name="Learn_Continue" xml:space="preserve"><value>Continue where you left off</value></data>
+  <data name="Learn_ContinueOpen" xml:space="preserve"><value>Continue</value></data>
+  <data name="Learn_AllDone" xml:space="preserve"><value>You have completed everything so far.</value></data>
+  <data name="Learn_NothingYet" xml:space="preserve"><value>Nothing has been published yet.</value></data>
+  <data name="Learn_Progress" xml:space="preserve"><value>{0} of {1} done</value></data>
+  <data name="Learn_LessonProgress" xml:space="preserve"><value>{0}/{1}</value></data>
+  <data name="Learn_NotTracked" xml:space="preserve"><value>Not tracked</value></data>
+  <data name="Learn_WaitingSubmit" xml:space="preserve"><value>Waiting for your submission</value></data>
+  <data name="Learn_WaitingScore" xml:space="preserve"><value>Waiting for a score</value></data>
+  <data name="CompletionState_NotStarted" xml:space="preserve"><value>Not started</value></data>
+  <data name="CompletionState_InProgress" xml:space="preserve"><value>In progress</value></data>
+  <data name="CompletionState_Completed" xml:space="preserve"><value>Done</value></data>
+  <data name="ClassCourse_TabForum" xml:space="preserve"><value>Forum</value></data>
+  <data name="ClassCourse_TabAnnouncements" xml:space="preserve"><value>Announcements</value></data>
+  <data name="MyClassCourses_OpenCourse" xml:space="preserve"><value>Open course</value></data>
+  <data name="Home_ContinueLearning" xml:space="preserve"><value>Continue learning</value></data>
   <data name="Asset_Limits" xml:space="preserve"><value>Allowed types: {0}. Maximum size: {1} MB.</value></data>
   <data name="Asset_Choose" xml:space="preserve"><value>Choose a file to upload</value></data>
   <data name="Asset_TypeNotAllowed" xml:space="preserve"><value>This file type is not allowed here. Allowed: {0}.</value></data>
@@ -1107,6 +1174,31 @@
   <data name="Asset_Download" xml:space="preserve"><value>Download</value></data>
   <data name="Asset_PreviewFailed" xml:space="preserve"><value>The file could not be loaded.</value></data>
   <data name="Asset_Reload" xml:space="preserve"><value>Reload</value></data>
+  <data name="Module_Add" xml:space="preserve"><value>Add module</value></data>
+  <data name="Module_Visibility" xml:space="preserve"><value>Visibility</value></data>
+  <data name="Module_VisibleFrom" xml:space="preserve"><value>Visible from</value></data>
+  <data name="Module_VisibleTo" xml:space="preserve"><value>Visible until</value></data>
+  <data name="Module_Time" xml:space="preserve"><value>Time</value></data>
+  <data name="Module_Target" xml:space="preserve"><value>For</value></data>
+  <data name="Module_Completion" xml:space="preserve"><value>Completion</value></data>
+  <data name="Module_BodyAr" xml:space="preserve"><value>Page content (Arabic)</value></data>
+  <data name="Module_BodyEn" xml:space="preserve"><value>Page content (English)</value></data>
+  <data name="Module_Url" xml:space="preserve"><value>Link address (https://...)</value></data>
+  <data name="Module_MoveUp" xml:space="preserve"><value>Move up</value></data>
+  <data name="Module_MoveDown" xml:space="preserve"><value>Move down</value></data>
+  <data name="Module_Hide" xml:space="preserve"><value>Hide</value></data>
+  <data name="Module_Show" xml:space="preserve"><value>Show</value></data>
+  <data name="Module_Move" xml:space="preserve"><value>Move to another lesson</value></data>
+  <data name="Module_MoveTo" xml:space="preserve"><value>Lesson</value></data>
+  <data name="Module_DeleteConfirm" xml:space="preserve"><value>Delete the module {0}?</value></data>
+  <data name="ModuleVisibility_Published" xml:space="preserve"><value>Published</value></data>
+  <data name="ModuleVisibility_Hidden" xml:space="preserve"><value>Hidden</value></data>
+  <data name="ModuleVisibility_Scheduled" xml:space="preserve"><value>Scheduled</value></data>
+  <data name="ModuleTarget_ClassCourse" xml:space="preserve"><value>The whole class</value></data>
+  <data name="ModuleTarget_Group" xml:space="preserve"><value>One group</value></data>
+  <data name="CompletionRule_None" xml:space="preserve"><value>Not tracked</value></data>
+  <data name="CompletionRule_Manual" xml:space="preserve"><value>Student marks it done</value></data>
+  <data name="CompletionRule_View" xml:space="preserve"><value>When the student opens it</value></data>
   <data name="RichText_Bold" xml:space="preserve"><value>Bold</value></data>
   <data name="RichText_BulletList" xml:space="preserve"><value>Bulleted list</value></data>
   <data name="RichText_Italic" xml:space="preserve"><value>Italic</value></data>
@@ -1117,6 +1209,14 @@
   <data name="RichText_LinkUrl" xml:space="preserve"><value>Link address</value></data>
   <data name="RichText_NumberedList" xml:space="preserve"><value>Numbered list</value></data>
   <data name="RichText_Toolbar" xml:space="preserve"><value>Formatting toolbar</value></data>
+  <data name="Module_Title" xml:space="preserve"><value>Module</value></data>
+  <data name="Module_Back" xml:space="preserve"><value>Back to the course</value></data>
+  <data name="Module_MarkComplete" xml:space="preserve"><value>Mark as complete</value></data>
+  <data name="Module_Previous" xml:space="preserve"><value>Previous</value></data>
+  <data name="Module_Next" xml:space="preserve"><value>Next</value></data>
+  <data name="Module_NoContent" xml:space="preserve"><value>This module has no content yet.</value></data>
+  <data name="Module_Unsupported" xml:space="preserve"><value>This kind of module opens in its own page.</value></data>
+  <data name="Module_UrlInvalid" xml:space="preserve"><value>Enter a full web address starting with http:// or https://.</value></data>
   <data name="ClassPage_Students" xml:space="preserve"><value>Students</value></data>
   <data name="ClassPage_Courses" xml:space="preserve"><value>Courses</value></data>
   <data name="ClassPage_Teachers" xml:space="preserve"><value>Teachers</value></data>
@@ -1143,4 +1243,65 @@
   <data name="Matrix_ChooseUnit" xml:space="preserve"><value>Choose a unit to see its classes.</value></data>
   <data name="Matrix_NoClasses" xml:space="preserve"><value>This unit has no classes in the selected year.</value></data>
   <data name="List_Separator" xml:space="preserve"><value>, </value></data>
+  <data name="Nav_Library" xml:space="preserve"><value>Library</value></data>
+  <data name="Library_Title" xml:space="preserve"><value>Digital library</value></data>
+  <data name="Library_New" xml:space="preserve"><value>New resource</value></data>
+  <data name="Library_Search" xml:space="preserve"><value>Search the library</value></data>
+  <data name="Library_Type" xml:space="preserve"><value>Type</value></data>
+  <data name="Library_Level" xml:space="preserve"><value>Level</value></data>
+  <data name="Library_Subject" xml:space="preserve"><value>Subject</value></data>
+  <data name="Library_Tag" xml:space="preserve"><value>Tag</value></data>
+  <data name="Library_Empty" xml:space="preserve"><value>No resources match.</value></data>
+  <data name="Library_Open" xml:space="preserve"><value>Open</value></data>
+  <data name="Library_AddToLesson" xml:space="preserve"><value>Add to lesson</value></data>
+  <data name="Library_DeleteConfirm" xml:space="preserve"><value>Delete the resource {0}?</value></data>
+  <data name="Library_Unit" xml:space="preserve"><value>Owning unit</value></data>
+  <data name="Library_DescriptionAr" xml:space="preserve"><value>Description (Arabic)</value></data>
+  <data name="Library_DescriptionEn" xml:space="preserve"><value>Description (English)</value></data>
+  <data name="Library_LevelHint" xml:space="preserve"><value>Leave empty for every level.</value></data>
+  <data name="Library_Tags" xml:space="preserve"><value>Tags</value></data>
+  <data name="Library_TagsHint" xml:space="preserve"><value>Separate tags with commas.</value></data>
+  <data name="Library_File" xml:space="preserve"><value>File</value></data>
+  <data name="Library_Cover" xml:space="preserve"><value>Cover image</value></data>
+  <data name="Library_DownloadAllowed" xml:space="preserve"><value>Allow download (otherwise reader only)</value></data>
+  <data name="Library_FileRequired" xml:space="preserve"><value>Upload the file first.</value></data>
+  <data name="Library_ClassCourse" xml:space="preserve"><value>Class course</value></data>
+  <data name="Library_Lesson" xml:space="preserve"><value>Lesson</value></data>
+  <data name="LibraryType_Book" xml:space="preserve"><value>Book</value></data>
+  <data name="LibraryType_Document" xml:space="preserve"><value>Document</value></data>
+  <data name="LibraryType_Video" xml:space="preserve"><value>Video</value></data>
+  <data name="LibraryType_Audio" xml:space="preserve"><value>Audio</value></data>
+  <data name="LibraryType_Link" xml:space="preserve"><value>Link</value></data>
+  <data name="LibraryType_Other" xml:space="preserve"><value>Other</value></data>
+  <data name="ClassCourse_Sections" xml:space="preserve"><value>Class course sections</value></data>
+  <data name="ClassCourse_TabPlan" xml:space="preserve"><value>Plan</value></data>
+  <data name="Forum_Title" xml:space="preserve"><value>Forum</value></data>
+  <data name="Forum_NewThread" xml:space="preserve"><value>New thread</value></data>
+  <data name="Forum_ThreadTitle" xml:space="preserve"><value>Title</value></data>
+  <data name="Forum_Message" xml:space="preserve"><value>Message</value></data>
+  <data name="Forum_Post" xml:space="preserve"><value>Post</value></data>
+  <data name="Forum_Reply" xml:space="preserve"><value>Reply</value></data>
+  <data name="Forum_Empty" xml:space="preserve"><value>No threads yet.</value></data>
+  <data name="Forum_Pinned" xml:space="preserve"><value>Pinned</value></data>
+  <data name="Forum_Locked" xml:space="preserve"><value>Locked</value></data>
+  <data name="Forum_Replies" xml:space="preserve"><value>{0} replies</value></data>
+  <data name="Forum_Back" xml:space="preserve"><value>Back to the forum</value></data>
+  <data name="Forum_Moderate" xml:space="preserve"><value>Moderate</value></data>
+  <data name="Forum_Pin" xml:space="preserve"><value>Pin</value></data>
+  <data name="Forum_Unpin" xml:space="preserve"><value>Unpin</value></data>
+  <data name="Forum_Lock" xml:space="preserve"><value>Lock</value></data>
+  <data name="Forum_Unlock" xml:space="preserve"><value>Unlock</value></data>
+  <data name="Forum_DeleteThread" xml:space="preserve"><value>Delete thread</value></data>
+  <data name="Forum_DeleteThreadConfirm" xml:space="preserve"><value>Delete this thread and all its replies?</value></data>
+  <data name="Forum_DeletePostConfirm" xml:space="preserve"><value>Delete this reply?</value></data>
+  <data name="Forum_LockedNote" xml:space="preserve"><value>This thread is locked: no new replies.</value></data>
+  <data name="Forum_Edited" xml:space="preserve"><value>(edited)</value></data>
+  <data name="Announcements_Title" xml:space="preserve"><value>Announcements</value></data>
+  <data name="Announcements_Notify" xml:space="preserve"><value>Notify the students</value></data>
+  <data name="Announcements_Publish" xml:space="preserve"><value>Publish</value></data>
+  <data name="Announcements_Empty" xml:space="preserve"><value>No announcements yet.</value></data>
+  <data name="Announcements_DeleteConfirm" xml:space="preserve"><value>Delete the announcement {0}?</value></data>
+  <data name="Announcements_FormTitle" xml:space="preserve"><value>Announcement title</value></data>
+  <data name="Forum_MoreReplies" xml:space="preserve"><value>Show more replies ({0} more)</value></data>
+  <data name="Forum_MoreThreads" xml:space="preserve"><value>Show more threads ({0} more)</value></data>
 </root>

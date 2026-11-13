@@ -109,4 +109,18 @@ public sealed class HomeClassCoursesCardTests : LessonPlansTestContext
         page.WaitForAssertion(() => Assert.Contains("مستخدم", page.Markup));
         Assert.Empty(page.FindAll("[data-testid=home-my-class-courses]"));
     }
+
+    [Fact]
+    public async Task Students_get_an_open_course_link_and_teachers_do_not()
+    {
+        Culture.Current = new CultureInfo("en");
+        await GrantAsync(Permissions.LessonPlans.View, Permissions.Modules.View);
+        RenderProviders();
+
+        var page = Render<MyClassCoursesPage>();
+
+        var id = FakeLessonPlansApi.ArabicClassCourseId;
+        page.WaitForElement($"[data-testid=my-class-course-learn-{id}]", TimeSpan.FromSeconds(5));
+        Assert.Contains($"class-courses/{id}/learn", page.Find($"[data-testid=my-class-course-learn-{id}]").GetAttribute("href"));
+    }
 }

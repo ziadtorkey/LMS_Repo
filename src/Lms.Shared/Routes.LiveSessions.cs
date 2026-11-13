@@ -4,23 +4,32 @@ namespace Lms.Shared;
 // and relationship table" (Task 20 tests every row). "Rel" = Teacher only own ClassCourses, Student only own active
 // enrollments + IModuleAccess visibility, other staff their unit scope; a relationship or visibility miss is 404, a
 // missing permission 403.
+//
+// Retry-After: every provider_unavailable answer (409 or 503) carries a Retry-After header in seconds (delta-seconds,
+// never an HTTP date), and the API lists Retry-After in the CORS Access-Control-Expose-Headers so the WASM client can
+// read it.
 public static partial class Routes
 {
     /// <summary>
     /// GET (paged, <c>LiveSessionQuery</c>) — <c>LiveSessions.View</c>; Rel, students get only visible session modules;
     /// other teacher / other class student 404, guardian 403.
-    /// POST (<c>CreateLiveSessionRequest</c>) — <c>LiveSessions.Manage</c> + <c>Modules.Manage</c>; Rel,
-    /// <c>Features.VirtualClasses</c>, PlacementGuard, daily create cap, host share; student 403, other teacher 404,
-    /// flag off 403 <c>feature_disabled</c>.
+    /// POST (<c>CreateLiveSessionRequest</c>) → <c>LiveSessionDto[]</c> (one per occurrence, in start order; one element
+    /// for a single session) — <c>LiveSessions.Manage</c> + <c>Modules.Manage</c>; Rel, <c>Features.VirtualClasses</c>,
+    /// PlacementGuard, daily create cap, host share; student 403, other teacher 404, flag off 403
+    /// <c>feature_disabled</c>; invalid recurrence 400 <c>recurrence_invalid</c>; 409/503 <c>provider_unavailable</c>
+    /// with <c>Retry-After</c> (seconds).
     /// </summary>
     public const string ClassCourseLiveSessionsPattern = ClassCoursePattern + "/live-sessions";
 
     public const string LiveSessions = "/api/live-sessions";
 
     /// <summary>
-    /// GET — <c>LiveSessions.View</c>; Rel + IModuleAccess; invisible module 404.
-    /// PUT (<c>UpdateLiveSessionRequest</c>) / DELETE (<c>?scope=</c> from <c>SeriesEditScopes</c>) —
-    /// <c>LiveSessions.Manage</c>; Rel, PlacementGuard; student 403, other teacher 404.
+    /// GET → <c>LiveSessionDto</c> — <c>LiveSessions.View</c>; Rel + IModuleAccess; invisible module 404.
+    /// PUT (<c>UpdateLiveSessionRequest</c>) → a single <c>LiveSessionDto</c>: the edited occurrence (for
+    /// <c>ThisAndFollowing</c> too, the occurrence named by <c>{id}</c>, not the following ones).
+    /// DELETE (<c>?scope=</c> from <c>SeriesEditScopes</c>) → 204 No Content.
+    /// Both <c>LiveSessions.Manage</c>; Rel, PlacementGuard; student 403, other teacher 404; 409/503
+    /// <c>provider_unavailable</c> with <c>Retry-After</c> (seconds).
     /// </summary>
     public const string LiveSessionPattern = LiveSessions + "/{id:guid}";
 
@@ -31,7 +40,10 @@ public static partial class Routes
     /// </summary>
     public const string LiveSessionJoinPattern = LiveSessionPattern + "/join";
 
-    /// <summary>PUT (<c>RecordingLinkRequest</c>) — <c>LiveSessions.Manage</c>; Rel; student 403, other teacher 404.</summary>
+    /// <summary>
+    /// PUT (<c>RecordingLinkRequest</c>) → <c>LiveSessionDto</c> (with the new <c>RecordingUrl</c>, source
+    /// <c>Manual</c>) — <c>LiveSessions.Manage</c>; Rel; student 403, other teacher 404.
+    /// </summary>
     public const string LiveSessionRecordingPattern = LiveSessionPattern + "/recording";
 
     /// <summary>
