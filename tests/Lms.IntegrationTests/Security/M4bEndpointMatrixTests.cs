@@ -127,6 +127,35 @@ public sealed class M4bEndpointMatrixTests(LmsApiFactory factory, ITestOutputHel
         Assert.True(wrong.Count == 0, "Rows of M4b routes must set Milestone = ProbeMilestones.M4b:\n" + string.Join('\n', wrong));
     }
 
+    /// <summary>
+    /// Cross-org / cross-unit isolation as a guard, not a convention (QA3 review of #522): a row on a route bound to a unit-owned object
+    /// (an <c>{id}</c> in the pattern) must expect 404 or 403 for the admin of School 2 (another unit of the same client) and for the
+    /// admin of client B (another client), and 401 for an anonymous caller, never a 2xx. A feature PR that declares success for them fails
+    /// here before the row is even sent. Platform-level rows (<c>upcoming</c>, <c>provider-status</c>) and the webhook have no <c>{id}</c>.
+    /// </summary>
+    [Fact]
+    public void Unit_bound_rows_expect_no_success_for_other_units_clients_and_anonymous()
+    {
+        var wrong = new List<string>();
+        foreach (var row in M4bRows.Where(r => r.Pattern.Contains("{id", StringComparison.OrdinalIgnoreCase)))
+        {
+            foreach (var caller in new[] { Caller.School2Admin, Caller.ClientBAdmin })
+            {
+                if (!row.Expected.TryGetValue(caller, out var status) || status is not (404 or 403))
+                {
+                    wrong.Add($"{row.Method} {row.Pattern} ({row.Name}): {caller} expects {(row.Expected.TryGetValue(caller, out var s) ? s.ToString() : "nothing")}, must be 404 or 403");
+                }
+            }
+
+            if (!row.Expected.TryGetValue(Caller.Anonymous, out var anonymous) || anonymous != 401)
+            {
+                wrong.Add($"{row.Method} {row.Pattern} ({row.Name}): Anonymous must expect 401");
+            }
+        }
+
+        Assert.True(wrong.Count == 0, "M4b rows on unit-owned routes must refuse other units and clients:\n" + string.Join("\n", wrong));
+    }
+
     [Fact]
     public void Every_M4b_row_name_is_unique()
     {
