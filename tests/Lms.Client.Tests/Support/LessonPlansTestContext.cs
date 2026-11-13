@@ -16,6 +16,7 @@ public abstract class LessonPlansTestContext : StaffTestContext
     protected LessonPlansTestContext()
     {
         Services.AddSingleton<ILessonPlansApi>(Plans);
+        Services.AddSingleton<Lms.Client.Services.Packages.IPackagePlayerApi, Lms.Client.Services.Packages.FakePackagePlayerApi>(); // the package card on Home and the course home
         Services.AddSingleton<Lms.Client.Services.Api.IConfigApi>(Settings);
     }
 

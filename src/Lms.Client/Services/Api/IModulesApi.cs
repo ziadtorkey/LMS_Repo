@@ -145,8 +145,12 @@ public sealed class FakeModulesApi : IModulesApi
             m = m with { Node = m.Node with { CompletionState = CompletionStates.Completed } };
             Replace(m);
         }
-        return Task.FromResult(WithNeighbours(m));
+        var detail = WithNeighbours(m);
+        return Task.FromResult(RefIds.TryGetValue(id, out var refId) ? detail with { Content = detail.Content with { RefId = refId } } : detail);
     }
+
+    /// <summary>The package (or other referenced item) a module points to: the server fills <c>Content.RefId</c>, the fake takes it from here.</summary>
+    public Dictionary<Guid, Guid> RefIds { get; } = [];
 
     /// <summary>Previous/next module ids within the lesson (a student only sees the visible ones).</summary>
     private ModuleDetailDto WithNeighbours(ModuleDetailDto m)

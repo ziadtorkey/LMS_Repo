@@ -1,6 +1,7 @@
 @page "/class-courses/{Id:guid}/learn"
 @attribute [Authorize]
 @using Lms.Client.Components.Content
+@using Lms.Client.Components.Packages
 @using Lms.Client.Services.Api
 @using Lms.Shared.Authorization
 @using Lms.Shared.Classes
@@ -45,6 +46,8 @@ else
                 <MudButton Variant="Variant.Outlined" Size="Size.Small" Href="@($"class-courses/{Id}/announcements")" data-testid="learn-announcements">@L["ClassCourse_TabAnnouncements"]</MudButton>
             </MudStack>
         }
+
+        <PackageStatesCard ClassCourseId="Id" />
 
         <ContinueCard Next="_next" Progress="@(_plan.Progress ?? new ProgressDto(0, 0))" Href="@(_next is null ? null : ModuleHref(_next.Id))" />
 

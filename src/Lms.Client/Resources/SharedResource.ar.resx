@@ -1455,4 +1455,5 @@
   <data name="Package_Announce_Opened" xml:space="preserve"><value>فُتح النشاط.</value></data>
   <data name="Package_Announce_Exit" xml:space="preserve"><value>عدتَ إلى بداية النشاط.</value></data>
   <data name="Package_Announce_Finished" xml:space="preserve"><value>انتهى النشاط.</value></data>
+  <data name="Home_PackageStates" xml:space="preserve"><value>الأنشطة التفاعلية</value></data>
 </root>
