@@ -1,0 +1,15 @@
+@* The reason a package was rejected, in plain words (never the raw server text). An unknown code falls back to the general message. *@
+<MudAlert Severity="Severity.Error" Variant="Variant.Outlined" role="alert" data-testid="package-reject">
+    <MudText Typo="Typo.subtitle2" data-testid="package-reject-title">@L["Package_RejectedTitle"]</MudText>
+    <MudText Typo="Typo.body2" data-testid="package-reject-reason">@Text()</MudText>
+</MudAlert>
+
+@code {
+    [Parameter, EditorRequired] public string? Reason { get; set; }
+
+    private string Text()
+    {
+        var specific = Reason is null ? null : L[$"Error_package_reason_{Reason}"];
+        return specific is { ResourceNotFound: false } ? specific.Value : L["Error_package_invalid"].Value;
+    }
+}
