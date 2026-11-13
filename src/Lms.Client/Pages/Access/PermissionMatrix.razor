@@ -1,29 +1,30 @@
 @using Lms.Shared.Access
 
 @* Permissions grouped by module with a "select all" per module. Labels come from Perm_{Module}_{Action}. *@
-<MudStack Spacing="3">
+<div class="lms-perm-matrix">
     @foreach (var group in Groups)
     {
         var g = group;
-        <MudPaper Outlined="true" Class="pa-3" data-testid="@($"module-{g.Module}")">
-            <MudCheckBox T="bool" Value="AllSelected(g)" ValueChanged="v => ToggleModuleAsync(g, v)"
-                         Label="@L[$"PermModule_{g.Module}"]" Disabled="ReadOnly"
-                         Color="Color.Primary" aria-label="@($"{L["Roles_SelectModule"]}: {L[$"PermModule_{g.Module}"]}")" data-testid="@($"select-module-{g.Module}")" />
-            <MudDivider Class="mb-2" />
-            <MudGrid Spacing="1">
+        var count = g.Permissions.Count(Selected.Contains);
+        <div class="lms-perm-module @(count > 0 ? "lms-perm-module-on" : null)" data-testid="@($"module-{g.Module}")">
+            <div class="lms-perm-module-head">
+                <MudCheckBox T="bool" Value="AllSelected(g)" ValueChanged="v => ToggleModuleAsync(g, v)"
+                             Label="@L[$"PermModule_{g.Module}"]" Disabled="ReadOnly" Class="lms-perm-module-check"
+                             Color="Color.Primary" aria-label="@($"{L["Roles_SelectModule"]}: {L[$"PermModule_{g.Module}"]}")" data-testid="@($"select-module-{g.Module}")" />
+                <span class="lms-perm-count" aria-hidden="true">@count / @g.Permissions.Count</span>
+            </div>
+            <div class="lms-perm-grid">
                 @foreach (var permission in g.Permissions)
                 {
                     var p = permission;
-                    <MudItem xs="12" sm="6" md="4">
-                        <MudCheckBox T="bool" Value="Selected.Contains(p)" ValueChanged="v => ToggleAsync(p, v)"
-                                     Label="@L[PermissionLabelKey(p)]" Disabled="ReadOnly"
-                                     Dense="true" data-testid="@($"perm-{p}")" />
-                    </MudItem>
+                    <MudCheckBox T="bool" Value="Selected.Contains(p)" ValueChanged="v => ToggleAsync(p, v)"
+                                 Label="@L[PermissionLabelKey(p)]" Disabled="ReadOnly" Color="Color.Primary"
+                                 Dense="true" data-testid="@($"perm-{p}")" />
                 }
-            </MudGrid>
-        </MudPaper>
+            </div>
+        </div>
     }
-</MudStack>
+</div>
 
 @code {
     [Parameter, EditorRequired] public IReadOnlyList<PermissionGroupDto> Groups { get; set; } = [];

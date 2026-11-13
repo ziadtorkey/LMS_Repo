@@ -27,12 +27,12 @@
             <MudTd DataLabel="@CultureText.Pick(column.HeaderAr, column.HeaderEn)">
                 @if (error is null)
                 {
-                    <span dir="auto">@Value(row, column.Key)</span>
+                    <span dir="auto">@Shown(row, column)</span>
                 }
                 else
                 {
-                    <span class="lms-import-error" dir="auto" title="@error.Message"
-                          data-testid="@($"import-cell-{row.RowNumber}-{column.Key}")" data-error="@error.Code">@Value(row, column.Key)</span>
+                    <span class="lms-import-error" dir="auto" title="@ErrorText(column, error)"
+                          data-testid="@($"import-cell-{row.RowNumber}-{column.Key}")" data-error="@error.Code">@Shown(row, column)</span>
                 }
             </MudTd>
         }
@@ -48,7 +48,24 @@
     /// <summary>Loads one page of rows (1-based page, page size, errors only).</summary>
     [Parameter, EditorRequired] public Func<int, int, bool, CancellationToken, Task<PagedResult<ImportRowDto>>> LoadRows { get; set; } = default!;
 
-    private static string? Value(ImportRowDto row, string key) => row.Values.GetValueOrDefault(key);
+    /// <summary>
+    /// What a cell shows. A sensitive column (the student default password, D24) never shows the raw value, whatever the server
+    /// sent: a filled cell is the fixed mask and an empty one stays empty.
+    /// </summary>
+    private static string? Shown(ImportRowDto row, ImportColumnDto column)
+    {
+        var value = row.Values.GetValueOrDefault(column.Key);
+        if (!column.Sensitive) return value;
+        return string.IsNullOrEmpty(value) ? null : ImportMasks.Sensitive;
+    }
+
+    /// <summary>Tooltip of an errored cell; in a sensitive column the server text could echo the value, so a localized text by code is used.</summary>
+    private string ErrorText(ImportColumnDto column, ImportRowErrorDto error)
+    {
+        if (!column.Sensitive) return error.Message;
+        var byCode = L[$"Error_{error.Code}"];
+        return byCode.ResourceNotFound ? L["Import_SensitiveInvalid"].Value : byCode.Value;
+    }
 
     private async Task ErrorsOnlyChangedAsync(bool value)
     {
