@@ -1,0 +1,133 @@
+@page "/teaching/eligibility"
+@attribute [Authorize]
+@using Lms.Client.Components
+@using Lms.Client.Components.People
+@using Lms.Client.Services.Api
+@using Lms.Shared.Authorization
+@using Lms.Shared.Teaching
+@implements IDisposable
+@inject ITeachingApi Api
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+<PageTitle>@L["Eligibility_Title"]</PageTitle>
+@if (!PermState.Loaded)
+{
+    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+}
+else if (!PermState.Has(Permissions.TeacherAssignments.View))
+{
+    <Forbidden />
+}
+else
+{
+    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3" Wrap="Wrap.Wrap">
+        <MudText Typo="Typo.h4" data-testid="eligibility-title">@L["Eligibility_Title"]</MudText>
+        @if (PermState.Has(Permissions.TeacherAssignments.Manage))
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="GrantAsync"
+                       data-testid="eligibility-grant">@L["Eligibility_Grant"]</MudButton>
+        }
+    </MudStack>
+    <MudText Typo="Typo.body2" Class="mb-3">@L["Eligibility_Help"]</MudText>
+    <MudStack Row="true" Spacing="2" Class="mb-3" Wrap="Wrap.Wrap" AlignItems="AlignItems.Center">
+        <MudItem xs="12" sm="4">
+            <UnitPicker Value="_unitId" ValueChanged="OnUnitChanged" Label="@L["Eligibility_Unit"]" Clearable="true" TestId="eligibility-filter-unit" />
+        </MudItem>
+        <MudSelect T="Guid?" Value="_userId" ValueChanged="OnTeacherChanged" Label="@L["Eligibility_Teacher"]" Clearable="true" Style="min-width: 12rem"
+                   data-testid="eligibility-filter-teacher">
+            @foreach (var teacher in FilterTeachers)
+            {
+                <MudSelectItem T="Guid?" Value="@((Guid?)teacher.UserId)">@Culture.Pick(teacher.NameAr, teacher.NameEn)</MudSelectItem>
+            }
+        </MudSelect>
+        <MudSelect T="Guid?" Value="_courseId" ValueChanged="OnCourseChanged" Label="@L["Eligibility_Course"]" Clearable="true" Style="min-width: 12rem"
+                   data-testid="eligibility-filter-course">
+            @foreach (var course in FilterCourses)
+            {
+                <MudSelectItem T="Guid?" Value="@((Guid?)course.CourseId)">@Culture.Pick(course.CourseNameAr, course.CourseNameEn)</MudSelectItem>
+            }
+        </MudSelect>
+    </MudStack>
+    <ServerTable @ref="_table" T="TeacherEligibilityDto" ServerData="LoadAsync">
+        <HeaderContent>
+            <MudTh>@L["Eligibility_Teacher"]</MudTh>
+            <MudTh>@L["Eligibility_Course"]</MudTh>
+            <MudTh>@L["Eligibility_Unit"]</MudTh>
+            <MudTh></MudTh>
+        </HeaderContent>
+        <RowTemplate Context="e">
+            <MudTd DataLabel="@L["Eligibility_Teacher"]">@Culture.Pick(e.TeacherNameAr, e.TeacherNameEn)</MudTd>
+            <MudTd DataLabel="@L["Eligibility_Course"]">@Culture.Pick(e.CourseNameAr, e.CourseNameEn) (<span dir="ltr">@e.CourseCode</span>)</MudTd>
+            <MudTd DataLabel="@L["Eligibility_Unit"]">@Culture.Pick(e.OrgUnitNameAr, e.OrgUnitNameEn)</MudTd>
+            <MudTd>
+                @if (PermState.Has(Permissions.TeacherAssignments.Manage))
+                {
+                    <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="() => BulkAsync(e)"
+                               data-testid="@($"eligibility-bulk-{e.Id}")">@L["Teacher_BulkAssign"]</MudButton>
+                    <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Error" OnClick="() => RevokeAsync(e)"
+                               data-testid="@($"eligibility-revoke-{e.Id}")">@L["Eligibility_Revoke"]</MudButton>
+                }
+            </MudTd>
+        </RowTemplate>
+    </ServerTable>
+}
+
+@code {
+    private ServerTable<TeacherEligibilityDto> _table = default!;
+    private Guid? _unitId, _userId, _courseId;
+    private IReadOnlyList<TeacherEligibilityDto> _known = [];
+
+    /// <summary>The filter lists are built from what the table has shown so far (distinct teachers and courses of the eligibilities).</summary>
+    private IEnumerable<(Guid UserId, string NameAr, string NameEn)> FilterTeachers =>
+        _known.GroupBy(e => e.UserId).Select(g => (g.Key, g.First().TeacherNameAr, g.First().TeacherNameEn));
+
+    private IEnumerable<TeacherEligibilityDto> FilterCourses => _known.GroupBy(e => e.CourseId).Select(g => g.First());
+
+    protected override async Task OnInitializedAsync()
+    {
+        PermState.Changed += OnPermissionsChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+    }
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => PermState.Changed -= OnPermissionsChanged;
+
+    private async Task<TableData<TeacherEligibilityDto>> LoadAsync(TableState state, CancellationToken ct)
+    {
+        var result = await Api.ListEligibilityAsync(new EligibilityQuery(_unitId, _userId, _courseId, state.Page + 1, state.PageSize), ct);
+        if (_userId is null && _courseId is null) _known = result.Items; // the unfiltered page feeds the filter lists
+        return new TableData<TeacherEligibilityDto> { Items = result.Items, TotalItems = result.Total };
+    }
+
+    private Task OnUnitChanged(Guid? id) { _unitId = id; return _table.ReloadAsync(); }
+    private Task OnTeacherChanged(Guid? id) { _userId = id; return _table.ReloadAsync(); }
+    private Task OnCourseChanged(Guid? id) { _courseId = id; return _table.ReloadAsync(); }
+
+    private async Task GrantAsync()
+    {
+        var dialog = await Dialogs.ShowAsync<GrantEligibilityDialog>(L["Eligibility_Grant"],
+            new DialogParameters<GrantEligibilityDialog> { { x => x.InitialUnitId, _unitId } },
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        if (await dialog.Result is { Canceled: false }) { Snackbar.Add(L["Common_Saved"], Severity.Success); await _table.ReloadAsync(); }
+    }
+
+    private async Task BulkAsync(TeacherEligibilityDto e)
+    {
+        var dialog = await Dialogs.ShowAsync<BulkAssignTeacherDialog>(L["Teacher_BulkAssign"],
+            new DialogParameters<BulkAssignTeacherDialog> { { x => x.Teacher, e } }, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        await dialog.Result;
+    }
+
+    private async Task RevokeAsync(TeacherEligibilityDto e)
+    {
+        if (!await ConfirmDialog.AskAsync(Dialogs, L["Eligibility_Revoke"],
+                L["Eligibility_RevokeConfirm", Culture.Pick(e.TeacherNameAr, e.TeacherNameEn), Culture.Pick(e.CourseNameAr, e.CourseNameEn)].Value, L["Eligibility_Revoke"])) return;
+        var ok = await ApiCalls.RunAsync(() => Api.RevokeEligibilityAsync(e.Id), Navigation, L, message => Snackbar.Add(message, Severity.Error));
+        if (ok) await _table.ReloadAsync();
+    }
+}
