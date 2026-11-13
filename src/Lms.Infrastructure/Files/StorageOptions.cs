@@ -22,7 +22,7 @@ public sealed class StorageOptions
     /// </summary>
     public long InMemoryReadLimitBytes { get; set; } = 4L * 1024 * 1024;
 
-    /// <summary>Directory for those temporary files; null uses the system temp directory.</summary>
+    /// <summary>Directory for those temporary files; null uses the system temp directory. Size and place it as described in docs/runbook-storage.md.</summary>
     public string? SpoolDirectory { get; set; }
 
     /// <summary>Comma separated, with the leading dot.</summary>
