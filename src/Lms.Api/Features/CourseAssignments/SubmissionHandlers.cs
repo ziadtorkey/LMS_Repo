@@ -44,7 +44,7 @@ public sealed class SubmissionHandlers(
         var code = await CannotSubmitAsync(assignment, submission, cc, now, ct);
         return Results.Ok(new MySubmissionDto(
             await Mapper.AssignmentAsync(assignment, module, false, false, now, ct),
-            submission is null ? null : await Mapper.SubmissionAsync(submission, ct), code is null, code, now));
+            submission is null ? null : await Mapper.SubmissionAsync(submission, true, ct), code is null, code, now));
     }
 
     public async Task<IResult> SubmitAsync(Guid assignmentId, SubmitAssignmentRequest? request, HttpContext http, CancellationToken ct)
@@ -148,7 +148,7 @@ public sealed class SubmissionHandlers(
                 await recorder.RecordAsync(module, studentId, CompletionSignal.Submitted, null, ct);
             }
 
-            return Results.Ok(await Mapper.SubmissionAsync(submission, ct));
+            return Results.Ok(await Mapper.SubmissionAsync(submission, true, ct));
         }
     }
 
@@ -206,9 +206,12 @@ public sealed class SubmissionHandlers(
         var size = Math.Clamp(query.PageSize, 1, Paging.MaxPageSize);
         var page = Math.Max(query.Page, 1);
         var pageRows = await rows.OrderBy(r => r.Student.NameEn).ThenBy(r => r.Student.Id).Skip((page - 1) * size).Take(size).ToListAsync(ct);
+        var subIds = pageRows.Where(r => r.Sub is not null).Select(r => r.Sub!.Id).ToList();
+        var finals = await db.Set<SubmissionFeedback>().Where(f => subIds.Contains(f.SubmissionId))
+            .ToDictionaryAsync(f => f.SubmissionId, f => f.FinalGrade, ct);
         var items = pageRows.Select(r => new SubmissionListItemDto(
             r.Student.Id, r.Student.NameAr, r.Student.NameEn, r.Sub?.Id, r.Sub?.Status, ModuleMapper.Utc(r.Sub?.SubmittedAtUtc),
-            r.Sub?.IsLate ?? false, null)).ToList();
+            r.Sub?.IsLate ?? false, r.Sub is not null && finals.TryGetValue(r.Sub.Id, out var final) ? final : null)).ToList();
         return Results.Ok(new PagedResult<SubmissionListItemDto>(items, total, page, size));
     }
 
@@ -225,13 +228,13 @@ public sealed class SubmissionHandlers(
             var (_, problem) = await http.CheckClassCourseAsync(Permissions.CourseAssignments.View, submission.ClassCourseId, ct);
             return problem is not null || await access.StudentIdAsync(ct) != submission.StudentId
                 ? problem ?? ApiProblems.NotFound()
-                : Results.Ok(await Mapper.SubmissionAsync(submission, ct));
+                : Results.Ok(await Mapper.SubmissionAsync(submission, true, ct));
         }
 
         var (_, staffProblem) = await http.CheckClassCourseAsync(Permissions.CourseAssignments.Grade, submission.ClassCourseId, ct);
         return staffProblem is not null || submission.Status == Submission.DraftStatus
             ? staffProblem ?? ApiProblems.NotFound()
-            : Results.Ok(await Mapper.SubmissionAsync(submission, ct));
+            : Results.Ok(await Mapper.SubmissionAsync(submission, false, ct));
     }
 
     private sealed record StudentContext(Assignment? Assignment, LessonModule? Module, ClassCourse? Cc, Guid StudentId, IResult? Problem);
