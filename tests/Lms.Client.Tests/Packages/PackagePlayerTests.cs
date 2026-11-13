@@ -286,6 +286,24 @@ public sealed class PackagePlayerTests : ClientTestContext
     }
 
     [Fact]
+    public async Task A_preview_never_sends_a_commit_or_a_finish_not_even_on_finish_exit_pagehide_or_dispose()
+    {
+        await RenderPlayerAsync();
+        await DisposeComponentsAsync();
+        var staff = await RenderPlayerAsync(staff: true);
+        staff.Find("[data-testid=package-preview]").Click();
+        staff.WaitForElement("[data-testid=package-frame]", Wait);
+
+        await staff.InvokeAsync(() => Bridge().OnPortMessage("commit", 1, "Scorm", new() { ["cmi.suspend_data"] = "s" }));
+        await staff.InvokeAsync(() => Bridge().OnPortMessage("finish", 2, "Scorm", new()));
+        await DisposeComponentsAsync();
+
+        Assert.Empty(_api.Commits);
+        Assert.Empty(_api.Finishes);
+        Assert.Single(_api.Previews);
+    }
+
+    [Fact]
     public async Task Hidden_module_launch_is_not_found()
     {
         _api.LaunchFailure = new ApiProblemException(404, "not_found", null, null);

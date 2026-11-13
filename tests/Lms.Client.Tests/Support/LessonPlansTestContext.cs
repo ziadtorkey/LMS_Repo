@@ -12,11 +12,13 @@ public abstract class LessonPlansTestContext : StaffTestContext
 
     protected FakeLessonPlansApi Plans { get; } = new();
     protected StubSettingsApi Settings { get; } = new();
+    protected FakeModulesApi ModulesApi { get; } = new();
 
     protected LessonPlansTestContext()
     {
         Services.AddSingleton<ILessonPlansApi>(Plans);
         Services.AddSingleton<Lms.Client.Services.Packages.IPackagePlayerApi, Lms.Client.Services.Packages.FakePackagePlayerApi>(); // the package card on Home and the course home
+        Services.AddSingleton<IModulesApi>(ModulesApi);
         Services.AddSingleton<Lms.Client.Services.Api.IConfigApi>(Settings);
     }
 
