@@ -35,7 +35,11 @@ public sealed class AcademicStructureTests(E2EFixture fixture) : E2ETestBase(fix
         await courses.FillAndSaveAsync(new CoursesPage.NewCourse(
             code, names.CourseNameAr("آخر"), names.CourseNameEn("Other"), Pick(culture, "مدرسة التجمع", "School Altagamo3")));
         await Expect(courses.CodeError).ToContainTextAsync(Resx.In(culture, "Error_course_code_taken"));
-        await Expect(courses.Row(code)).ToHaveCountAsync(1); // the refused save created nothing: exactly one course carries the code
+        // The refused save created nothing: reopen the list (the dialog is still open over it), search again, and exactly one row carries the code.
+        await courses.OpenAsync();
+        await courses.SearchAsync(names.Suffix);
+        await Expect(courses.Row(code)).ToBeVisibleAsync(new() { Timeout = 20_000 });
+        await Expect(courses.Row(code)).ToHaveCountAsync(1);
         await AssertDirectionAsync(culture);
     }
 
