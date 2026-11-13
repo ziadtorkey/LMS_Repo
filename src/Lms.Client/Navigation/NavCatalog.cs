@@ -26,6 +26,7 @@ public static class NavCatalog
         new("Nav_Guardians", "guardians", Icons.Material.Rounded.FamilyRestroom, Permissions.Students.View, Section: People),
         new("Nav_MyChildren", "me/children", Icons.Material.Rounded.FamilyRestroom, Permissions.Students.ViewChildren, Section: People),
         new("Nav_ChangeRequests", "student-change-requests", Icons.Material.Rounded.RuleFolder, Permissions.Students.ApproveChanges, Section: People),
+        new("Nav_Exceptions", "enrollment-exceptions", Icons.Material.Rounded.Gavel, Permissions.Enrollment.ApproveException, Section: People),
         new("Nav_MyProfile", "me/profile", Icons.Material.Rounded.Person, Permissions.Students.SelfEdit, Section: People),
         new("Nav_Courses", "courses", Icons.Material.Rounded.MenuBook, Permissions.Courses.View, Section: Academic),
         new("Nav_MyCourses", "me/courses", Icons.Material.Rounded.FactCheck, Permissions.Courses.View, Section: Academic),
