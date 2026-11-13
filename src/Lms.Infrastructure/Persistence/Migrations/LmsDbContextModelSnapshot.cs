@@ -2980,6 +2980,13 @@ namespace Lms.Infrastructure.Persistence.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("varchar(255)");
 
+                    b.Property<string>("GradingMethod")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(10)
+                        .HasColumnType("varchar(10)")
+                        .HasDefaultValue("Highest");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("tinyint(1)");
 

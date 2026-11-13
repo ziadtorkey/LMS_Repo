@@ -31,6 +31,48 @@ internal static class PackageEndpoints
         app.MapGet(Routes.PackagePattern, GetAsync).RequireAuthorization().RequirePermission(Permissions.Packages.Upload);
         app.MapDelete(Routes.PackagePattern, DeleteAsync).RequireAuthorization().RequirePermission(Permissions.Packages.Upload);
         app.MapPost(Routes.PackageModulePattern, AttachAsync).RequireAuthorization().RequirePermission(Permissions.Packages.Upload);
+        app.MapPut(Routes.PackageGradingMethodPattern, UpdateGradingMethodAsync).RequireAuthorization().RequirePermission(Permissions.Modules.Manage);
+    }
+
+    /// <summary>
+    /// Changes which completed attempt is graded (D57), at any time. Order: the package and the relationship (404), the closed class guard
+    /// (409), the value (400), then the attach state (409 <c>package_not_attached</c>). The graded score is recomputed through
+    /// <see cref="IPackageGradeRecompute"/> (a no-op until the attempts exist, T9b).
+    /// </summary>
+    private static async Task<IResult> UpdateGradingMethodAsync(
+        Guid id, UpdatePackageGradingMethodRequest? request, HttpContext http, LmsDbContext db, PlacementGuard guard,
+        IPackageGradeRecompute recompute, CancellationToken ct)
+    {
+        var found = await FindAsync(id, Permissions.Modules.Manage, http, db, ct);
+        if (found.Problem is not null)
+        {
+            return found.Problem;
+        }
+
+        var upload = found.Upload!;
+        if (await GroupEndpoints.WritableAsync(found.Course!, db, guard, ct) is { } closed)
+        {
+            return closed;
+        }
+
+        if (request?.GradingMethod is null || !PackageGradingMethods.All.Contains(request.GradingMethod))
+        {
+            return PackageSupport.Invalid("gradingMethod", "invalid_value");
+        }
+
+        if (upload.ModuleId is null)
+        {
+            return ApiProblems.Conflict(ProblemCodes.package_not_attached);
+        }
+
+        if (upload.GradingMethod != request.GradingMethod)
+        {
+            upload.SetGradingMethod(request.GradingMethod);
+            await db.SaveChangesAsync(ct);
+            await recompute.RecomputeAsync(upload.Id, ct);
+        }
+
+        return Results.Ok(PackageSupport.ToDto(upload));
     }
 
     private static async Task<IResult> ListAsync(
@@ -117,6 +159,11 @@ internal static class PackageEndpoints
             return modules;
         }
 
+        if (!PackageGradingMethods.All.Contains(request.GradingMethod ?? ""))
+        {
+            return PackageSupport.Invalid("gradingMethod", "invalid_value");
+        }
+
         if (upload.Status != PackageUploadStatuses.Ready)
         {
             return ApiProblems.Conflict(ProblemCodes.package_not_ready);
@@ -157,7 +204,7 @@ internal static class PackageEndpoints
             return EnrollmentProblems.From(rule);
         }
 
-        upload.AttachTo(moduleId);
+        upload.AttachTo(moduleId, request.GradingMethod!); // validated above
         await db.SaveChangesAsync(ct);
         var module = await db.Set<LessonModule>().FirstAsync(m => m.Id == moduleId, ct);
         var groups = await ModuleMapper.GroupsAsync(db, [module], ct);
