@@ -22,6 +22,12 @@ public sealed record ProbeRow(
     /// route and are only listed, until the milestone-end check is switched to strict.
     /// </summary>
     public int Milestone { get; init; } = 2;
+
+    /// <summary>
+    /// For a row whose route is not mapped yet: what it waits for, naming the wave, the contract task and the BE task that add the route (for
+    /// example "wave 1 contract (Task 1) + Task 8"). Empty for a live row. The M5 matrix fails a pending M5 row that does not say.
+    /// </summary>
+    public string? Blocker { get; init; }
 }
 
 /// <summary>
@@ -67,4 +73,7 @@ public static class ProbeMilestones
 
     /// <summary>M4b (live sessions, SCORM and H5P packages). Rows of M4b routes set it; like M4a it is not a closed milestone yet.</summary>
     public const int M4b = 5;
+
+    /// <summary>M5 (assessment, timetable, attendance and excuses). Rows of M5 routes set it; checked by <see cref="M5EndpointMatrixTests"/>.</summary>
+    public const int M5 = 6;
 }
