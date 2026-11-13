@@ -16,7 +16,7 @@ public sealed class ContentStudentTests(E2EFixture fixture) : E2ETestBase(fixtur
 
     private static readonly byte[] Pdf = "%PDF-1.7\n%probe\n"u8.ToArray();
 
-    [Theory(Skip = NeedsM4a)]
+    [Theory]
     [InlineData("ar")]
     [InlineData("en")]
     public async Task Scheduled_and_group_modules_are_hidden_from_other_students(string culture)
@@ -63,7 +63,7 @@ public sealed class ContentStudentTests(E2EFixture fixture) : E2ETestBase(fixtur
         Assert.Equal(culture == "ar" ? "rtl" : "ltr", await new ShellPage(Page).HtmlDirAsync());
     }
 
-    [Theory(Skip = NeedsM4a)]
+    [Theory]
     [InlineData("ar")]
     [InlineData("en")]
     public async Task Student_opens_page_marks_file_complete_and_progress_updates(string culture)
@@ -105,7 +105,7 @@ public sealed class ContentStudentTests(E2EFixture fixture) : E2ETestBase(fixtur
         Assert.Equal(culture == "ar" ? "rtl" : "ltr", await new ShellPage(Page).HtmlDirAsync());
     }
 
-    [Theory(Skip = NeedsM4a)]
+    [Theory]
     [InlineData("ar")]
     [InlineData("en")]
     public async Task Continue_opens_next_incomplete_module(string culture)

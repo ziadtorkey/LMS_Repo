@@ -30,6 +30,7 @@ public sealed class M3EndpointMatrixTests(LmsApiFactory factory, ITestOutputHelp
     private static readonly HashSet<string> StudentReadable =
     [
         Routes.ClassCourseLessonPlanPattern, Routes.ClassCourseLessonModulesPattern, Routes.ClassCourseProgressPattern,
+        Routes.ClassCourseAssignmentsPattern,
         Routes.ClassCourseQuizzesPattern,
     ];
 
@@ -123,10 +124,13 @@ public sealed class M3EndpointMatrixTests(LmsApiFactory factory, ITestOutputHelp
     [InlineData("/api/studentsx", false)]
     [InlineData("/api/class-courses/{id:guid}/lessons/{lessonKey:guid}/modules", false)] // M4a: a Student reads modules
     [InlineData("/api/class-courses/{id:guid}/progress", false)]
+    [InlineData("/api/class-courses/{id:guid}/live-sessions", false)] // M4b: a Student reads sessions
+    [InlineData("/api/class-courses/{id:guid}/packages", false)]
     public void Only_m3_routes_are_in_scope(string pattern, bool m3) => Assert.Equal(m3, IsM3(pattern));
 
     private static bool IsM3(string pattern) =>
         !M4aRoutes.Is(pattern)
+        && !M4bRoutes.Is(pattern)
         && M3Prefixes.Any(p => pattern.Equals(p, StringComparison.OrdinalIgnoreCase)
                                || pattern.StartsWith(p + "/", StringComparison.OrdinalIgnoreCase));
 
