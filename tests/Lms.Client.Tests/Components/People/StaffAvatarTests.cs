@@ -24,6 +24,21 @@ public sealed class StaffAvatarTests : StaffTestContext
         Assert.Empty(cut.FindAll("[data-testid=staff-avatar-img]"));
     }
 
+    [Theory]
+    [InlineData("Sara Ahmed", "S‌A")]
+    [InlineData("khaled", "K")]
+    [InlineData("سارة أحمد", "س‌أ")]
+    public void Shows_the_initials_without_a_photo(string name, string expected)
+    {
+        var cut = Render<StaffAvatar>(p => p.Add(x => x.Name, name));
+
+        Assert.Equal(expected, cut.Find(".lms-avatar-initials").TextContent);
+    }
+
+    [Fact]
+    public void Avatar_is_hidden_from_screen_readers_because_the_name_is_shown_next_to_it() =>
+        Assert.Equal("true", Render<StaffAvatar>().Find("[data-testid=staff-avatar]").GetAttribute("aria-hidden"));
+
     [Fact]
     public void Keeps_the_placeholder_when_the_url_cannot_be_loaded()
     {

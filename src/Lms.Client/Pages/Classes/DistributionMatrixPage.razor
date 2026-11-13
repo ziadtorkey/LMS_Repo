@@ -1,0 +1,169 @@
+@page "/classes/matrix"
+@attribute [Authorize]
+@using Lms.Client.Components
+@using Lms.Client.Components.People
+@using Lms.Client.Services
+@using Lms.Client.Services.Api
+@using Lms.Shared.Authorization
+@using Lms.Shared.Classes
+@using Lms.Shared.Courses
+@implements IDisposable
+@inject IClassCoursesApi Api
+@inject IYearStore Years
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+<PageTitle>@L["Matrix_Title"]</PageTitle>
+@if (!PermState.Loaded)
+{
+    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+}
+else if (!PermState.Has(Permissions.Classes.View))
+{
+    <Forbidden />
+}
+else
+{
+    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Wrap="Wrap.Wrap" Class="mb-2">
+        <MudText Typo="Typo.h4" data-testid="matrix-title">@L["Matrix_Title"]</MudText>
+        @if (Years.Selected is { } year)
+        {
+            <MudChip T="string" Color="Color.Primary" data-testid="matrix-year">@Culture.Pick(year.NameAr, year.NameEn)</MudChip>
+        }
+    </MudStack>
+    <MudText Typo="Typo.body2" Class="mb-3">@L["Matrix_Help"]</MudText>
+    <MudItem xs="12" sm="4" Class="pa-0 mb-3">
+        <UnitPicker Value="_unitId" ValueChanged="OnUnitChangedAsync" Label="@L["Class_Unit"]" TestId="matrix-unit" />
+    </MudItem>
+
+    @if (_unitId is null)
+    {
+        <MudText data-testid="matrix-choose">@L["Matrix_ChooseUnit"]</MudText>
+    }
+    else if (_failed)
+    {
+        <MudAlert Severity="Severity.Error" data-testid="api-error">@L["Api_Error"]</MudAlert>
+    }
+    else if (_matrix is { Classes.Count: 0 })
+    {
+        <MudText data-testid="matrix-empty">@L["Matrix_NoClasses"]</MudText>
+    }
+    else if (_matrix is not null)
+    {
+        @* The grid scrolls inside its own box so the page itself never scrolls sideways (360 px); headers stay put. *@
+        <div class="lms-matrix" style="overflow: auto; max-height: 70vh; max-width: 100%" data-testid="matrix-grid">
+            <table class="mud-table-root" style="border-collapse: separate; border-spacing: 0">
+                <thead>
+                    <tr>
+                        <th style="position: sticky; top: 0; inset-inline-start: 0; z-index: 3; background: var(--mud-palette-surface)">@L["Class_Code"]</th>
+                        @foreach (var course in _matrix.Courses)
+                        {
+                            <th style="position: sticky; top: 0; z-index: 2; background: var(--mud-palette-surface); min-width: 7rem">
+                                <div>@Culture.Pick(course.NameAr, course.NameEn)</div>
+                                <div class="mud-typography-caption"><span dir="ltr">@course.Code</span></div>
+                                @if (CanManage)
+                                {
+                                    <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="() => AssignAllAsync(course)"
+                                               data-testid="@($"assign-all-{course.Code}")">@L["Matrix_AssignAll"]</MudButton>
+                                }
+                            </th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var cls in _matrix.Classes)
+                    {
+                        <tr>
+                            <th scope="row" style="position: sticky; inset-inline-start: 0; z-index: 1; background: var(--mud-palette-surface)">
+                                <span dir="ltr">@cls.Code</span>
+                                <div class="mud-typography-caption">@Culture.Pick(cls.NameAr, cls.NameEn)</div>
+                            </th>
+                            @foreach (var course in _matrix.Courses)
+                            {
+                                var cell = CellOf(cls.Id, course.Id);
+                                <td style="text-align: center">
+                                    <MudCheckBox @key="@($"{cls.Id}-{course.Id}-{_version}")" T="bool" Value="cell is not null" ValueChanged="v => ToggleAsync(cls, course, cell, v)" Dense="true"
+                                                 Disabled="@(!CanManage || cls.IsReadOnly)" aria-label="@($"{cls.Code} {course.Code}")"
+                                                 data-testid="@($"cell-{cls.Code}-{course.Code}")" />
+                                    @if (cell is { IsOptional: true })
+                                    {
+                                        <span class="mud-typography-caption" data-testid="@($"optional-{cls.Code}-{course.Code}")">@L["Matrix_OptionalMark"]</span>
+                                    }
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+}
+
+@code {
+    private DistributionMatrixDto? _matrix;
+    private Guid? _unitId;
+    private bool _failed;
+    private int _version; // bumped on every load so a refused change re-creates the checkboxes instead of leaving them out of sync
+
+    private bool CanManage => PermState.Has(Permissions.Classes.ManageCourses) && !Years.IsReadOnly;
+
+    protected override async Task OnInitializedAsync()
+    {
+        PermState.Changed += OnPermissionsChanged;
+        Years.Changed += OnYearChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        if (Years.SelectedYearId is null) await Years.LoadAsync();
+    }
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    private void OnYearChanged() => _ = InvokeAsync(async () => { await LoadAsync(); StateHasChanged(); });
+
+    public void Dispose()
+    {
+        PermState.Changed -= OnPermissionsChanged;
+        Years.Changed -= OnYearChanged;
+    }
+
+    private MatrixCellDto? CellOf(Guid classId, Guid courseId) => _matrix?.Cells.FirstOrDefault(c => c.ClassId == classId && c.CourseId == courseId);
+
+    private Task OnUnitChangedAsync(Guid? id) { _unitId = id; return LoadAsync(); }
+
+    private async Task LoadAsync()
+    {
+        _failed = false;
+        _version++;
+        if (_unitId is not { } unit || Years.SelectedYearId is not { } year) return;
+        var (matrix, failed) = await ApiCalls.RunAsync(() => Api.GetMatrixAsync(unit, year), Navigation);
+        _failed = failed;
+        _matrix = matrix;
+    }
+
+    /// <summary>A tick adds the course to the class, an untick removes it (class_course_in_use blocks the removal with a message).</summary>
+    private async Task ToggleAsync(ClassSummaryDto cls, CourseSummaryDto course, MatrixCellDto? cell, bool on)
+    {
+        var ok = await ApiCalls.RunAsync(
+            async () =>
+            {
+                if (on) await Api.AddAsync(cls.Id, new AddClassCoursesRequest([course.Id], false));
+                else if (cell is not null) await Api.RemoveAsync(cell.ClassCourseId);
+            },
+            Navigation, L, message => Snackbar.Add(message, Severity.Error));
+        await LoadAsync(); // also restores the checkbox when the change was refused
+        if (ok) StateHasChanged();
+    }
+
+    private async Task AssignAllAsync(CourseSummaryDto course)
+    {
+        if (_unitId is not { } unit || Years.SelectedYearId is not { } year) return;
+        if (!await ConfirmDialog.AskAsync(Dialogs, L["Matrix_AssignAll"], L["Matrix_AssignAllTitle", Culture.Pick(course.NameAr, course.NameEn)].Value, L["Matrix_AssignAll"])) return;
+        BulkAssignResultDto? result = null;
+        var ok = await ApiCalls.RunAsync(async () => result = await Api.BulkAssignAsync(new BulkAssignCourseRequest(unit, year, course.Id, false)),
+            Navigation, L, message => Snackbar.Add(message, Severity.Error));
+        if (ok && result is not null) Snackbar.Add(L["Matrix_AssignResult", result.Added, result.Skipped], Severity.Success);
+        await LoadAsync();
+    }
+}

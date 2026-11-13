@@ -1,0 +1,208 @@
+@using Lms.Client.Components
+@inject IDialogService Dialogs
+
+@* Sections and lessons of a blueprint. Read-only shows the tree; editing adds drag and drop (mirrored by the move buttons, X-10). *@
+@if (Model.Sections.Count == 0)
+{
+    <SectionCard>
+        <EmptyState Title="@L["Blueprint_EmptyTree"]" Text="@L["Blueprint_EmptyTreeText"]" Icon="@Icons.Material.Rounded.AccountTree" TestId="blueprint-empty" />
+    </SectionCard>
+}
+@if (ReadOnly)
+{
+    <MudStack Spacing="2" data-testid="blueprint-readonly">
+        @for (var sectionIndex = 0; sectionIndex < Model.Sections.Count; sectionIndex++)
+        {
+            // Copies of the loop variables: the child content below runs after the loop has moved on.
+            var s = sectionIndex;
+            var section = Model.Sections[s];
+            <SectionCard Title="@SectionTitle(s, section)" TestId="@($"section-{s}")">
+                <MudList T="string" Dense="true">
+                    @for (var lessonIndex = 0; lessonIndex < section.Lessons.Count; lessonIndex++)
+                    {
+                        var l = lessonIndex;
+                        var lesson = section.Lessons[l];
+                        <MudListItem T="string" data-testid="@($"lesson-{s}-{l}")">
+                            @(l + 1). @CultureText.Pick(lesson.TitleAr, lesson.TitleEn)
+                            @if (lesson.PlannedOffsetDays is { } day)
+                            {
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@L["Lesson_DayN", day]</MudChip>
+                            }
+                        </MudListItem>
+                    }
+                </MudList>
+            </SectionCard>
+        }
+    </MudStack>
+}
+else
+{
+    <MudDropContainer @ref="_container" T="LessonRow" Items="Lessons" ItemsSelector="@((item, zone) => ZoneOf(item) == zone)"
+                      ItemDropped="OnDroppedAsync" data-testid="blueprint-editor">
+        <ChildContent>
+            <MudStack Spacing="3">
+                @for (var sectionIndex = 0; sectionIndex < Model.Sections.Count; sectionIndex++)
+                {
+                    var index = sectionIndex;
+                    var section = Model.Sections[index];
+                    <SectionCard Title="@SectionName(index)" TestId="@($"section-{index}")">
+                        <Actions>
+                            <div class="lms-row-actions">
+                                <MudIconButton Icon="@Icons.Material.Rounded.KeyboardArrowUp" Size="Size.Small" Disabled="index == 0" aria-label="@L["Blueprint_MoveUp"]"
+                                               OnClick="() => StepSection(section, -1)" data-testid="@($"section-up-{index}")" />
+                                <MudIconButton Icon="@Icons.Material.Rounded.KeyboardArrowDown" Size="Size.Small" Disabled="index == Model.Sections.Count - 1" aria-label="@L["Blueprint_MoveDown"]"
+                                               OnClick="() => StepSection(section, 1)" data-testid="@($"section-down-{index}")" />
+                                <span class="lms-row-actions-sep" aria-hidden="true"></span>
+                                <MudIconButton Icon="@Icons.Material.Rounded.DeleteOutline" Size="Size.Small" Color="Color.Error" aria-label="@L["Common_Delete"]"
+                                               OnClick="() => RemoveSection(section)" data-testid="@($"section-remove-{index}")" />
+                            </div>
+                        </Actions>
+                        <ChildContent>
+                        <MudStack Spacing="2">
+                            <div class="lms-form-grid">
+                                <MudTextField T="string" Value="section.TitleAr" ValueChanged="v => Edit(() => section.TitleAr = v)" Label="@L["Common_NameAr"]"
+                                              dir="rtl" lang="ar" MaxLength="200" Immediate="true" data-testid="@($"section-title-ar-{index}")" />
+                                <MudTextField T="string" Value="section.TitleEn" ValueChanged="v => Edit(() => section.TitleEn = v)" Label="@L["Common_NameEn"]"
+                                              dir="ltr" lang="en" MaxLength="200" Immediate="true" data-testid="@($"section-title-en-{index}")" />
+                            </div>
+                            <MudDropZone T="LessonRow" Identifier="@index.ToString()" Class="lms-drop-zone pa-1" data-testid="@($"zone-{index}")" />
+                            <div>
+                                <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Add" OnClick="() => AddLessonAsync(section)"
+                                           data-testid="@($"lesson-add-{index}")">@L["Blueprint_AddLesson"]</MudButton>
+                            </div>
+                        </MudStack>
+                        </ChildContent>
+                    </SectionCard>
+                }
+                <div>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Add" OnClick="AddSection" data-testid="section-add">@L["Blueprint_AddSection"]</MudButton>
+                </div>
+            </MudStack>
+        </ChildContent>
+        <ItemRenderer>
+            @{
+                var section = Model.Sections.First(x => x.Lessons.Contains(context));
+                var s = Model.Sections.IndexOf(section);
+                var l = section.Lessons.IndexOf(context);
+            }
+            <div class="lms-lesson-row" data-testid="@($"lesson-{s}-{l}")">
+                <MudIcon Icon="@Icons.Material.Rounded.DragIndicator" Class="lms-drag-handle" aria-hidden="true" data-testid="@($"drag-handle-{s}-{l}")" />
+                <span class="lms-lesson-title">@(string.IsNullOrWhiteSpace(CultureText.Pick(context.TitleAr, context.TitleEn)) ? L["Blueprint_UntitledLesson"].Value : CultureText.Pick(context.TitleAr, context.TitleEn))</span>
+                <div class="lms-row-actions">
+                    <MudIconButton Icon="@Icons.Material.Rounded.KeyboardArrowUp" Size="Size.Small" aria-label="@L["Blueprint_MoveUp"]"
+                                   OnClick="() => StepLesson(section, context, -1)" data-testid="@($"lesson-up-{s}-{l}")" />
+                    <MudIconButton Icon="@Icons.Material.Rounded.KeyboardArrowDown" Size="Size.Small" aria-label="@L["Blueprint_MoveDown"]"
+                                   OnClick="() => StepLesson(section, context, 1)" data-testid="@($"lesson-down-{s}-{l}")" />
+                    <MudIconButton Icon="@Icons.Material.Rounded.Edit" Size="Size.Small" aria-label="@L["Common_Edit"]"
+                                   OnClick="() => EditLessonAsync(context)" data-testid="@($"lesson-edit-{s}-{l}")" />
+                    <span class="lms-row-actions-sep" aria-hidden="true"></span>
+                    <MudIconButton Icon="@Icons.Material.Rounded.DeleteOutline" Size="Size.Small" Color="Color.Error" aria-label="@L["Common_Delete"]"
+                                   OnClick="() => RemoveLesson(section, context)" data-testid="@($"lesson-remove-{s}-{l}")" />
+                </div>
+            </div>
+        </ItemRenderer>
+    </MudDropContainer>
+}
+
+@code {
+    private MudDropContainer<LessonRow>? _container;
+
+    [Parameter, EditorRequired] public BlueprintModel Model { get; set; } = default!;
+    [Parameter] public bool ReadOnly { get; set; }
+
+    /// <summary>Resource key suffix of the section name: Week, Unit or Chapter (setting Blueprints.SectionLabel).</summary>
+    [Parameter] public string SectionLabel { get; set; } = "Week";
+
+    /// <summary>Raised after every change to the tree so the page can refresh its buttons.</summary>
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private BlueprintModel? _shownModel;
+
+    // The drop container keeps its own copy of the items; a different model (reload, copy, publish) needs an explicit refresh.
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (ReferenceEquals(_shownModel, Model)) return;
+        _shownModel = Model;
+        _container?.Refresh();
+    }
+
+    private IEnumerable<LessonRow> Lessons => Model.Sections.SelectMany(s => s.Lessons);
+
+    private string ZoneOf(LessonRow lesson) => Model.Sections.FindIndex(s => s.Lessons.Contains(lesson)).ToString();
+
+    /// <summary>"Week 1 — Intro"; just "Week 1" when the title says no more than the generic name.</summary>
+    private string SectionTitle(int index, SectionRow section)
+    {
+        var name = SectionName(index);
+        var title = CultureText.Pick(section.TitleAr, section.TitleEn).Trim();
+        return title.Length == 0 || string.Equals(title, name, StringComparison.OrdinalIgnoreCase) ? name : name + " — " + title;
+    }
+
+    private string SectionName(int index) => $"{L[$"SectionLabel_{SectionLabel}"]} {index + 1}";
+
+    private async Task ChangedAsync()
+    {
+        _container?.Refresh();
+        await OnChanged.InvokeAsync();
+    }
+
+    private async Task Edit(Action change)
+    {
+        change();
+        Model.Touch();
+        await OnChanged.InvokeAsync();
+    }
+
+    /// <summary>A lesson was dropped in a zone (a section) at a position.</summary>
+    public async Task OnDroppedAsync(MudItemDropInfo<LessonRow> info)
+    {
+        if (info.Item is null || !int.TryParse(info.DropzoneIdentifier, out var sectionIndex) || sectionIndex >= Model.Sections.Count) return;
+        if (Model.MoveLesson(info.Item, Model.Sections[sectionIndex], info.IndexInZone)) await ChangedAsync();
+    }
+
+    private async Task StepLesson(SectionRow section, LessonRow lesson, int delta)
+    {
+        if (Model.StepLesson(section, lesson, delta)) await ChangedAsync();
+    }
+
+    private async Task StepSection(SectionRow section, int delta)
+    {
+        if (Model.StepSection(section, delta)) await ChangedAsync();
+    }
+
+    private async Task AddSection()
+    {
+        Model.AddSection();
+        await ChangedAsync();
+    }
+
+    private async Task RemoveSection(SectionRow section)
+    {
+        Model.RemoveSection(section);
+        await ChangedAsync();
+    }
+
+    private async Task RemoveLesson(SectionRow section, LessonRow lesson)
+    {
+        Model.RemoveLesson(section, lesson);
+        await ChangedAsync();
+    }
+
+    private async Task AddLessonAsync(SectionRow section)
+    {
+        var lesson = Model.AddLesson(section);
+        await ChangedAsync();
+        await EditLessonAsync(lesson);
+    }
+
+    private async Task EditLessonAsync(LessonRow lesson)
+    {
+        var dialog = await Dialogs.ShowAsync<LessonDialog>(L["Lesson_Edit"], new DialogParameters<LessonDialog> { { x => x.Lesson, lesson } },
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        if (await dialog.Result is { Canceled: false })
+        {
+            Model.Touch();
+            await ChangedAsync();
+        }
+    }
+}

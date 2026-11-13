@@ -111,7 +111,7 @@ else
         // Settings and classes are conveniences for the form: if they cannot be read, the form falls back to defaults.
         await ApiCalls.RunAsync(async () =>
         {
-            var settings = await Config.GetSettingsAsync(unit);
+            var settings = await Config.GetSettingsIfAllowedAsync(unit);
             _manualCode = SettingJson(settings, SettingKeys.StudentsCodeMode.Name) == StudentCodeModes.Manual;
             _guardiansRequired = SettingJson(settings, SettingKeys.GuardiansDataRequired.Name) == "true";
         }, Navigation, L, _ => { });
@@ -200,7 +200,7 @@ else
             { x => x.Code, created.Student.Summary.StudentCode },
             { x => x.Password, created.IssuedPassword },
             { x => x.SentTo, created.CredentialsSentTo },
-        }, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, BackdropClick = false });
+        }, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, BackdropClick = false, CloseOnEscapeKey = false });
         await dialog.Result;
         Navigation.NavigateTo("students");
     }

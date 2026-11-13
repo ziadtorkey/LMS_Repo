@@ -23,10 +23,11 @@ internal sealed class ClassTestHost(LmsApiFactory factory, Action<Microsoft.Exte
 
     public sealed record World(AccessTree Tree, AcademicYear Year, RoleAssignment Admin);
 
-    public async Task<World> SeedAsync(string name)
+    /// <param name="currentYear">The active year spans today (teacher assignments default to today and are dated).</param>
+    public async Task<World> SeedAsync(string name, bool currentYear = false)
     {
         var tree = await AccessTestData.SeedAsync(factory, name);
-        var year = await AcademicTestKit.AddYearAsync(factory, tree.Root);
+        var year = currentYear ? await AddCurrentYearAsync(tree.Root) : await AcademicTestKit.AddYearAsync(factory, tree.Root);
         await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
         {
             var tracked = await db.Set<AcademicYear>().SingleAsync(y => y.Id == year.Id);
@@ -36,6 +37,16 @@ internal sealed class ClassTestHost(LmsApiFactory factory, Action<Microsoft.Exte
 
         var admin = await AccessTestData.AssignAsync(factory, tree, tree.Root, BuiltInRoles.OrgAdmin, Guid.NewGuid());
         return new World(tree, year, admin);
+    }
+
+    public async Task<AcademicYear> AddCurrentYearAsync(OrgUnit unit)
+    {
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        var year = new AcademicYear(unit, "عام", "Current " + unit.Code, today.AddDays(-30), today.AddDays(300));
+        db.Add(year);
+        await db.SaveChangesAsync();
+        return year;
     }
 
     public async Task<AcademicYear> AddYearAsync(OrgUnit unit, bool closed = false)

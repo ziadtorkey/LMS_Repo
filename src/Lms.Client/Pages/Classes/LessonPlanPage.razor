@@ -17,6 +17,7 @@
 @implements IDisposable
 
 <PageTitle>@L["LessonPlan_Title"]</PageTitle>
+<Lms.Client.Pages.Forums.ClassCourseTabs ClassCourseId="Id" Active="plan" />
 @if (!PermState.Loaded || _loading)
 {
     <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
@@ -112,7 +113,7 @@ else
         {
             var me = await Me.GetMeAsync();
             if (me.Contexts.FirstOrDefault(c => c.AssignmentId == Context.ActiveAssignmentId) is not { } active) return;
-            var settings = await Config.GetSettingsAsync(active.OrgUnitId);
+            var settings = await Config.GetSettingsIfAllowedAsync(active.OrgUnitId);   // Teacher has no Settings.View: default calendar then
             _showHijri = settings.FirstOrDefault(s => s.Name == SettingKeys.UiShowHijriDates.Name)?.ValueJson == "true";
         }, Navigation, L, _ => { });
     }

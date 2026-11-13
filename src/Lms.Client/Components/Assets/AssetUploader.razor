@@ -7,7 +7,7 @@
 <MudStack Spacing="1" data-testid="asset-uploader">
     @if (_limits is not null)
     {
-        <MudText Typo="Typo.caption" data-testid="asset-limits">@L["Asset_Limits", AllowedList(), MaxMb]</MudText>
+        <MudText Typo="Typo.caption" data-testid="asset-limits">@((MarkupString)LimitsHtml())</MudText>
     }
     <InputFile OnChange="OnFileAsync" accept="@_accept" disabled="@_uploading" aria-label="@L["Asset_Choose"]"
                data-testid="asset-input" />
@@ -40,7 +40,9 @@
     private double _progress;
     private CancellationTokenSource? _cts;
 
-    [Parameter, EditorRequired] public Guid ClassCourseId { get; set; }
+    /// <summary>The owning ClassCourse; leave empty and set <see cref="OrgUnitId"/> for a unit-owned (library) asset.</summary>
+    [Parameter] public Guid ClassCourseId { get; set; }
+    [Parameter] public Guid? OrgUnitId { get; set; }
     /// <summary>Asset kinds the target module accepts (<see cref="AssetKinds.AcceptedBy"/>); null accepts every allowed type.</summary>
     [Parameter] public IReadOnlyList<string>? AcceptedKinds { get; set; }
     [Parameter] public EventCallback<AssetDto> OnUploaded { get; set; }
@@ -50,11 +52,15 @@
     private IEnumerable<AssetTypeDto> Offered() =>
         (_limits?.AllowedTypes ?? []).Where(t => AcceptedKinds is null || AcceptedKinds.Contains(t.Kind));
 
+    /// <summary>The limits sentence with the file extensions isolated as left-to-right text, so an Arabic sentence does not scramble them.</summary>
+    private string LimitsHtml() =>
+        L["Asset_Limits", $"<bdi dir=\"ltr\">{System.Net.WebUtility.HtmlEncode(AllowedList())}</bdi>", MaxMb].Value;
+
     private string AllowedList() => string.Join(" ", Offered().Select(t => t.Extension));
 
     protected override async Task OnInitializedAsync()
     {
-        var (limits, _) = await ApiCalls.RunAsync(() => AssetApi.GetLimitsAsync(ClassCourseId), Navigation);
+        var (limits, _) = await ApiCalls.RunAsync(() => OrgUnitId is { } u ? AssetApi.GetUnitLimitsAsync(u) : AssetApi.GetLimitsAsync(ClassCourseId), Navigation);
         _limits = limits;
         _accept = string.Join(",", Offered().Select(t => t.Extension));
     }
@@ -99,7 +105,9 @@
         try
         {
             var ok = await ApiCalls.RunAsync(
-                async () => uploaded = await AssetApi.UploadAsync(ClassCourseId, _fileName, _contentType!, new MemoryStream(_bytes), progress, token),
+                async () => uploaded = OrgUnitId is { } unit
+                    ? await AssetApi.UploadToUnitAsync(unit, _fileName, _contentType!, new MemoryStream(_bytes), progress, token)
+                    : await AssetApi.UploadAsync(ClassCourseId, _fileName, _contentType!, new MemoryStream(_bytes), progress, token),
                 Navigation, L, message => _error = message);
             if (ok && uploaded is not null)
             {

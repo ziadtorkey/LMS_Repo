@@ -1,6 +1,7 @@
 using Lms.Shared;
 using Lms.Shared.Classes;
 using Lms.Shared.Content;
+using Lms.Shared.Teaching;
 
 namespace Lms.Client.Services.Api;
 
@@ -10,13 +11,39 @@ public interface ILessonPlansApi
     /// <summary>Class courses of the caller: taught (teacher) or enrolled in (student).</summary>
     Task<IReadOnlyList<ClassCourseDto>> GetMyClassCoursesAsync(CancellationToken ct = default);
 
+    /// <summary>
+    /// The same read for a page that only decorates itself with it (Home cards): a caller without LessonPlans.View gets an empty
+    /// list, not the Forbidden page.
+    /// </summary>
+    async Task<IReadOnlyList<ClassCourseDto>> GetMyClassCoursesIfAllowedAsync(CancellationToken ct = default)
+    {
+        try { return await GetMyClassCoursesAsync(ct); }
+        catch (ApiForbiddenException) { return []; }
+    }
+
     Task<ClassLessonPlanDto> GetPlanAsync(Guid classCourseId, CancellationToken ct = default);
 }
 
 public sealed class LessonPlansApi(ApiHttp http) : ILessonPlansApi
 {
-    public Task<IReadOnlyList<ClassCourseDto>> GetMyClassCoursesAsync(CancellationToken ct = default) =>
-        http.GetAsync<IReadOnlyList<ClassCourseDto>>(Routes.MyClassCourses, ct);
+    public async Task<IReadOnlyList<ClassCourseDto>> GetMyClassCoursesAsync(CancellationToken ct = default) =>
+        FromMine(await http.GetAsync<List<MyClassCourseDto>>(Routes.MyClassCourses, ct));
+
+    /// <summary>
+    /// The server answers GET /api/me/class-courses with <see cref="MyClassCourseDto"/> (id in <c>ClassCourseId</c>), not with the
+    /// <see cref="ClassCourseDto"/> of a class: reading it as one left every id empty. The fields the pages use are carried over.
+    /// </summary>
+    internal static IReadOnlyList<ClassCourseDto> FromMine(IEnumerable<MyClassCourseDto> items) =>
+        items.Select(m => new ClassCourseDto(
+            m.ClassCourseId, m.ClassId, m.ClassNameAr, m.ClassNameEn, Guid.Empty, string.Empty, m.CourseNameAr, m.CourseNameEn,
+            false, m.StudentCount, [], null)).ToList();
+
+    // Optional read: a plain 403 (no LessonPlans.View) must not send the user to the Forbidden page.
+    public async Task<IReadOnlyList<ClassCourseDto>> GetMyClassCoursesIfAllowedAsync(CancellationToken ct = default)
+    {
+        try { return FromMine(await http.GetOptionalAsync<List<MyClassCourseDto>>(Routes.MyClassCourses, ct)); }
+        catch (ApiForbiddenException) { return []; }
+    }
 
     public Task<ClassLessonPlanDto> GetPlanAsync(Guid classCourseId, CancellationToken ct = default) =>
         http.GetAsync<ClassLessonPlanDto>(Routes.ClassCourseLessonPlan(classCourseId), ct);
