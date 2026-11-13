@@ -36,6 +36,10 @@ internal static class PackageSupport
          where p.ClassCourseId == classCourseId && l.Key == lessonKey
          select l.Id).AnyAsync(ct);
 
+    /// <summary>The name shown to users: hidden, control and bidirectional-override characters removed (the extension rules are checked on what is left).</summary>
+    public static string DisplayName(string fileName) =>
+        new(fileName.Where(c => !ZipNameRules.IsHidden(c)).ToArray());
+
     public static IResult Invalid(string field, string detail) =>
         Api.Infrastructure.ApiProblems.BadRequest(ProblemCodes.validation_failed, $"{field}: {detail}");
 }

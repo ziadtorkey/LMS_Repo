@@ -49,10 +49,12 @@ public static class ZipHardening
 
         var names = new List<(CentralRecord Record, string Name)>(directory.Records.Count);
         var seen = new HashSet<string>(StringComparer.Ordinal);
+        var files = new HashSet<string>(StringComparer.Ordinal);
+        var folders = new HashSet<string>(StringComparer.Ordinal);
         foreach (var record in directory.Records)
         {
             var (name, reason) = CheckRecord(record, limits);
-            if (reason is null && !seen.Add(ZipNameRules.CollisionKey(name!)))
+            if (reason is null && (!seen.Add(ZipNameRules.CollisionKey(name!)) || Collides(name!, files, folders)))
             {
                 reason = PackageRejectReasons.duplicate_name;
             }
@@ -134,6 +136,33 @@ public static class ZipHardening
                 await guard.EnsureCompleteAsync(ct);
             }
         }
+    }
+
+    /// <summary>A file whose name is also a folder of another entry (a and a/b) cannot both exist on a file system: refused as a duplicate. Records what it sees.</summary>
+    private static bool Collides(string name, HashSet<string> files, HashSet<string> folders)
+    {
+        var key = ZipNameRules.CollisionKey(name);
+        var parts = key.Split('/');
+        var collides = false;
+        for (var i = 1; i < parts.Length; i++)
+        {
+            var folder = string.Join('/', parts[..i]);
+            collides |= files.Contains(folder);
+            folders.Add(folder);
+        }
+
+        if (name.EndsWith('/'))
+        {
+            collides |= files.Contains(key);
+            folders.Add(key);
+        }
+        else
+        {
+            collides |= folders.Contains(key);
+            files.Add(key);
+        }
+
+        return collides;
     }
 
     private static (string? Name, string? Reason) CheckRecord(CentralRecord record, ZipHardeningLimits limits)

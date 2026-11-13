@@ -74,6 +74,7 @@ internal static class PackageUploadEndpoint
             string? lessonText = null, kind = null;
             MultipartSection? file = null;
             string? fileName = null;
+            var textParts = 0;
             while (await reader.ReadNextSectionAsync(ct) is { } section)
             {
                 if (!ContentDispositionHeaderValue.TryParse(section.ContentDisposition, out var disposition))
@@ -89,8 +90,12 @@ internal static class PackageUploadEndpoint
                     break;
                 }
 
-                using var text = new StreamReader(section.Body, Encoding.UTF8, leaveOpen: true);
-                var value = (await text.ReadToEndAsync(ct)).Trim();
+                // The small text parts are read through a bound, never to the end: a part is at most MaxTextPartBytes and a form has few of them.
+                if (++textParts > MaxTextParts || await ReadBoundedTextAsync(section.Body, ct) is not { } value)
+                {
+                    return PackageSupport.Invalid("body", "form_part_too_large");
+                }
+
                 if (name == PackageUploadForm.LessonKey)
                 {
                     lessonText = value;
@@ -116,7 +121,7 @@ internal static class PackageUploadEndpoint
                 return PackageSupport.Invalid(PackageUploadForm.File, "required");
             }
 
-            fileName = Path.GetFileName(fileName);
+            fileName = PackageSupport.DisplayName(Path.GetFileName(fileName));
             if (fileName.Length > 255)
             {
                 fileName = fileName[^255..];
@@ -157,6 +162,10 @@ internal static class PackageUploadEndpoint
         {
             return TooLarge(ex.MaxBytes);
         }
+        catch (BadHttpRequestException ex) when (ex.StatusCode == StatusCodes.Status413PayloadTooLarge)
+        {
+            return TooLarge(maxBytes);
+        }
         catch (Exception ex) when (ex is InvalidDataException or BadHttpRequestException or IOException)
         {
             return PackageSupport.Invalid("body", "malformed_or_too_large");
@@ -168,6 +177,18 @@ internal static class PackageUploadEndpoint
                 File.Delete(tempPath);
             }
         }
+    }
+
+    private const int MaxTextPartBytes = 256;
+
+    private const int MaxTextParts = 4;
+
+    /// <summary>Reads a text part of at most <see cref="MaxTextPartBytes"/> bytes; null when it is longer (nothing beyond the bound is read).</summary>
+    private static async Task<string?> ReadBoundedTextAsync(Stream body, CancellationToken ct)
+    {
+        var buffer = new byte[MaxTextPartBytes + 1];
+        var read = await body.ReadAtLeastAsync(buffer, buffer.Length, throwOnEndOfStream: false, ct);
+        return read > MaxTextPartBytes ? null : Encoding.UTF8.GetString(buffer, 0, read).Trim();
     }
 
     /// <summary>Copies up to <paramref name="max"/> bytes; returns max + 1 as soon as the source has more.</summary>
