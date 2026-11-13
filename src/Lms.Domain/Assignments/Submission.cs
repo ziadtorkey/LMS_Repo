@@ -13,6 +13,8 @@ public sealed class Submission : UnitOwnedEntity, ILiveKeyed
     public const string DraftStatus = "Draft";
     public const string SubmittedStatus = "Submitted";
     public const string LateStatus = "Late";
+    public const string GradedStatus = "Graded";
+    public const string ReturnedStatus = "Returned";
 
     private Submission()
     {
@@ -58,6 +60,12 @@ public sealed class Submission : UnitOwnedEntity, ILiveKeyed
         Status = isLate ? LateStatus : SubmittedStatus;
         Number++;
     }
+
+    /// <summary>The teacher saved a grade; the student does not see it until it is returned.</summary>
+    public void MarkGraded() => Status = GradedStatus;
+
+    /// <summary>The grade and feedback are released to the student.</summary>
+    public void MarkReturned() => Status = ReturnedStatus;
 
     public void ClearLiveKeys() => StudentKey = null;
 }

@@ -1,0 +1,147 @@
+/* LMS foundation layer from the Stitch design system "Serene Academic Emerald" (docs/design/stitch, issue 553).
+   Loaded after lms-theme.css: it re-skins the shared building blocks (shell, cards, tables, inputs, tabs, chips, buttons).
+   Logical properties and palette variables only (StitchStylesheetTests). Where Stitch is silent (dark mode, RTL, 360 px),
+   its patterns are extended in the same spirit; see docs/DESIGN.md §1. */
+
+:root {
+    --lms-accent: #10B981;                 /* vivid emerald: dots, live beacons, active indicators only (2.5:1, never text) */
+    --lms-recessed: #EFF4FF;               /* recessed fields and segmented-tab tracks */
+    --lms-shadow-1: 0 1px 3px 0 rgba(0, 0, 0, .04), 0 1px 2px -1px rgba(0, 0, 0, .02);
+    --lms-shadow-2: 0 10px 25px -5px rgba(0, 0, 0, .08), 0 8px 10px -6px rgba(0, 0, 0, .04);
+    --lms-hover-border: rgba(16, 185, 129, .25);
+    --lms-focus-ring: 0 0 0 2px var(--mud-palette-surface), 0 0 0 4px var(--mud-palette-primary);
+}
+html[data-theme="dark"] {
+    --lms-recessed: #16202A;
+    --lms-shadow-1: 0 1px 3px 0 rgba(0, 0, 0, .35), 0 1px 2px -1px rgba(0, 0, 0, .25);
+    --lms-shadow-2: 0 10px 25px -5px rgba(0, 0, 0, .55), 0 8px 10px -6px rgba(0, 0, 0, .35);
+}
+html[data-theme="dark"], html[data-theme="dark"] body { background: #090D10; }
+
+/* ---------- Typography ---------- */
+@media (max-width: 599.98px) {
+    .lms-app .mud-typography-h4 { font-size: 1.625rem; line-height: 1.3; letter-spacing: -.01em; } /* headline-xl-mobile */
+}
+
+/* ---------- Shell ---------- */
+.lms-appbar.mud-appbar { border-bottom: 0; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+.lms-drawer.mud-drawer { box-shadow: var(--lms-shadow-1); }
+.lms-drawer .mud-nav-link.active:not(.mud-nav-link-disabled) {
+    background: var(--mud-palette-primary) !important; color: var(--mud-palette-primary-text) !important; font-weight: 600;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .15);
+}
+.lms-drawer .mud-nav-link.active:not(.mud-nav-link-disabled)::before { content: none; }
+.lms-drawer .mud-nav-link.active .mud-nav-link-icon { color: var(--mud-palette-primary-text) !important; }
+.lms-drawer .mud-nav-group > .mud-nav-link { font-weight: 600; }
+/* Group headings in the sidebar ("Structure", "Academic"): small, quiet, sentence case (Stitch shows capitals; DESIGN.md forbids them). */
+.lms-nav-section { padding: 16px 12px 4px; font-size: .75rem; font-weight: 600; letter-spacing: .02em; color: var(--mud-palette-text-secondary); }
+
+.lms-page.mud-container { padding-top: 24px; padding-bottom: 48px; }
+@media (min-width: 1025px) { .lms-page.mud-container { padding-inline: 32px; } }
+
+/* ---------- Cards (level 1) ---------- */
+.lms-section { box-shadow: var(--lms-shadow-1); }
+.lms-section-head { padding: 16px 20px; border-bottom-color: var(--mud-palette-table-lines); }
+.lms-section-body { padding: 20px; }
+.lms-section + .lms-section { margin-top: 24px; }
+/* Clickable cards lift a little on hover (Stitch interactive hover); static cards do not move. */
+.lms-card-link { transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease; }
+.lms-card-link:hover { transform: translateY(-1px); border-color: var(--lms-hover-border); box-shadow: var(--lms-shadow-2); }
+.mud-card.mud-paper-outlined, .mud-paper.mud-paper-outlined { border-color: var(--mud-palette-lines-default); }
+
+/* ---------- Floating layers (level 2) ---------- */
+.mud-popover.mud-popover-open, .mud-dialog { box-shadow: var(--lms-shadow-2) !important; }
+.mud-overlay-dialog .mud-overlay-scrim { backdrop-filter: blur(2px); }
+.mud-dialog { border: 1px solid var(--mud-palette-lines-default); }
+
+/* ---------- Tables (one continuous card, tinted header, relaxed 52 px rows) ---------- */
+.lms-table .lms-table-head .mud-table-cell,
+.lms-simple-table.mud-simple-table table thead th {
+    background: var(--mud-palette-background-gray); color: var(--mud-palette-text-secondary);
+    font-size: .8125rem; font-weight: 600; padding-block: 12px; text-transform: none;
+}
+.lms-table .mud-table-body .mud-table-cell,
+.lms-simple-table.mud-simple-table table tbody td { padding-block: 14px; border-bottom-color: var(--mud-palette-table-lines); }
+.lms-table .mud-table-cell:first-child,
+.lms-simple-table.mud-simple-table table * tr > :first-child { padding-inline-start: 16px; }
+.lms-table .mud-table-cell:last-child,
+.lms-simple-table.mud-simple-table table * tr > :last-child { padding-inline-end: 16px; }
+.lms-table .mud-table-body .mud-table-row:hover .mud-table-cell { background: var(--mud-palette-table-hover); }
+
+/* ---------- Inputs (40 px, recessed fill, 8 px radius, crisp 1 px border, visible focus) ---------- */
+.lms-app .mud-input.mud-input-text,
+.mud-dialog .mud-input.mud-input-text {
+    background: var(--lms-recessed); border: 1px solid var(--mud-palette-lines-inputs); border-radius: var(--lms-radius-control);
+    min-block-size: 40px; padding-inline: 12px;
+}
+.lms-app .mud-input.mud-input-text.mud-input-underline::before,
+.lms-app .mud-input.mud-input-text.mud-input-underline::after,
+.mud-dialog .mud-input.mud-input-text.mud-input-underline::before,
+.mud-dialog .mud-input.mud-input-text.mud-input-underline::after { content: none; }
+.lms-app .mud-input.mud-input-text:focus-within,
+.mud-dialog .mud-input.mud-input-text:focus-within { border-color: var(--mud-palette-primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--mud-palette-primary) 25%, transparent); }
+.lms-app .mud-input.mud-input-text.mud-input-error,
+.mud-dialog .mud-input.mud-input-text.mud-input-error { border-color: var(--mud-palette-error); }
+.lms-app .mud-input-control:not(.mud-input-control-margin-dense) > .mud-input-control-input-container > .mud-input-label-text,
+.mud-dialog .mud-input-control > .mud-input-control-input-container > .mud-input-label-text { inset-inline-start: 13px; }
+.lms-app .mud-input-label-text.mud-input-label-animated.mud-input-label-text,
+.mud-dialog .mud-input-label-text { z-index: 1; }
+.lms-app .mud-input-control > .mud-input-control-input-container > .mud-input-label-text.mud-shrink,
+.mud-dialog .mud-input-control > .mud-input-control-input-container > .mud-input-label-text.mud-shrink { inset-inline-start: 0; }
+.lms-app .mud-input-control-helper-container,
+.mud-dialog .mud-input-control-helper-container { padding-inline: 2px; }
+
+/* ---------- Buttons ---------- */
+.mud-button-filled.mud-button-filled-primary { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .15) !important; }
+.mud-button-outlined { border-color: var(--mud-palette-lines-default); }
+html[data-theme="dark"] .mud-button-outlined { border-color: #334155; }
+.mud-button-outlined:hover { background: color-mix(in srgb, var(--mud-palette-text-primary) 4%, transparent); }
+
+/* ---------- Focus: a visible two-tone ring (Stitch's 15 % glow alone is below 3:1; WCAG 2.4.7 / 1.4.11) ---------- */
+.lms-app :is(a, button, [role="tab"], .mud-button-root, .mud-nav-link, .mud-chip):focus-visible { outline: none; box-shadow: var(--lms-focus-ring); }
+
+/* ---------- Segmented tabs (pill track with a raised active tab) ---------- */
+.lms-tabs .mud-tabs-tabbar {
+    background: var(--lms-recessed); border-radius: var(--lms-radius-surface); padding: 4px; margin: 12px 12px 0;
+}
+.lms-tabs .mud-tabs-tabbar .mud-tab { border-radius: var(--lms-radius-control); min-height: 36px; text-transform: none; font-weight: 500; color: var(--mud-palette-text-secondary); }
+.lms-tabs .mud-tabs-tabbar .mud-tab.mud-tab-active { background: var(--mud-palette-surface); color: var(--mud-palette-text-primary); box-shadow: var(--lms-shadow-1); }
+.lms-tabs .mud-tab-slider { display: none; }
+.lms-course-tabs { background: var(--lms-recessed); border-radius: var(--lms-radius-surface); padding: 4px; inline-size: fit-content; max-inline-size: 100%; }
+.lms-course-tabs .mud-button-root { min-height: 36px; color: var(--mud-palette-text-secondary); }
+.lms-course-tabs .mud-button-root[aria-current="page"] { background: var(--mud-palette-surface) !important; color: var(--mud-palette-text-primary) !important; box-shadow: var(--lms-shadow-1); }
+.mud-toggle-group { background: var(--lms-recessed); border-radius: var(--lms-radius-control); padding: 3px; gap: 2px; border: 0 !important; }
+.mud-toggle-group .mud-toggle-item { border: 0 !important; border-radius: 6px !important; color: var(--mud-palette-text-secondary); }
+.mud-toggle-group .mud-toggle-item-selected { background: var(--mud-palette-surface) !important; color: var(--mud-palette-text-primary) !important; box-shadow: var(--lms-shadow-1); }
+
+/* ---------- Status chips (pill, 24 px, 12 px padding, 6 px dot, soft tint) ---------- */
+.mud-chip.mud-chip-size-small { block-size: 24px; padding-inline: 12px; border-radius: 9999px; font-size: .75rem; font-weight: 600; }
+.lms-status-chip::before { inline-size: 6px; block-size: 6px; }
+
+/* ---------- Stat tiles (Stitch dashboards: label, big number, icon tile) ---------- */
+.lms-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-block-end: 24px; }
+.lms-stat {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 16px 20px; min-inline-size: 0;
+    background: var(--mud-palette-surface); border: 1px solid var(--mud-palette-lines-default); border-radius: var(--lms-radius-surface); box-shadow: var(--lms-shadow-1);
+}
+.lms-stat-label { font-size: .8125rem; font-weight: 500; color: var(--mud-palette-text-secondary); }
+.lms-stat-value { font-size: 1.75rem; font-weight: 700; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.lms-stat-icon {
+    flex: none; inline-size: 44px; block-size: 44px; border-radius: 10px; display: grid; place-items: center;
+    color: var(--mud-palette-primary); background: color-mix(in srgb, var(--mud-palette-primary) 10%, transparent);
+}
+
+/* ---------- Sticky save bar (unsaved changes) ---------- */
+.lms-save-bar {
+    position: sticky; inset-block-end: 16px; z-index: 5; display: flex; align-items: center; flex-wrap: wrap; gap: 8px 16px;
+    margin-block-start: 24px; padding: 12px 16px; background: var(--mud-palette-surface);
+    border: 1px solid var(--mud-palette-lines-default); border-radius: var(--lms-radius-surface); box-shadow: var(--lms-shadow-2);
+}
+.lms-save-bar-text { flex: 1 1 220px; min-inline-size: 0; display: inline-flex; align-items: center; gap: 8px; font-size: .875rem; }
+.lms-save-bar-text::before { content: ""; inline-size: 8px; block-size: 8px; border-radius: 50%; background: var(--mud-palette-warning); flex: none; }
+
+/* ---------- Card header with an icon tile (Stitch settings cards) ---------- */
+.lms-section-icon {
+    flex: none; inline-size: 36px; block-size: 36px; border-radius: 10px; display: grid; place-items: center;
+    color: var(--mud-palette-primary); background: color-mix(in srgb, var(--mud-palette-primary) 10%, transparent);
+}
