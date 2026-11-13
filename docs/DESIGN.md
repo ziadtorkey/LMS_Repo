@@ -100,6 +100,7 @@ The "Active" status chip is green on purpose; the product owner decided to keep 
 | `LoadingState` | Page or section loading (skeleton plus a screen-reader text) | `Lines`, `TestId` |
 | `DetailItem` | One label and value in `<dl class="lms-details">` | `Label`, `Value` (an empty value shows a dash), `Ltr` (emails, phones, ids), `TestId` |
 | `PersonStatusChip` | A person's status | `Status` |
+| `LiveSessionStatusChip` (`Components/LiveSessions/`) | A live session's status (spec §2.2): Scheduled, Live now (pulsing dot), Ended, Cancelled, Waiting for Zoom | `Status`, `ShowHint` (shows the "waiting for Zoom" explanation under the chip; use it in lists and the join panel) |
 | `StaffAvatar` | A person's photo, or initials when there is none | `PhotoFileId`, `Name`, `Size` |
 
 Other patterns:
