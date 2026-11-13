@@ -19,8 +19,6 @@ public sealed class IsolationBypassGuardTests
             "owner unit name of a Shared template that sits outside the caller's scope, restricted to the client (M1 Task 17, #52)",
         ["src/Lms.Api/Features/Staff/ShareStaffHandler.cs"] =
             "removing a share: the person's home may lie outside the scope of the admin of the shared-to unit; own client, live rows, assignment lookup stays filtered (M2 Task 16, #164)",
-        ["src/Lms.Api/Features/Guardians/GuardianEndpoints.cs"] =
-            "match endpoint: a bare children count of the guardian in the caller's own client, no student or unit leaves the query (M3 Task 19, #227)",
         ["src/Lms.Api/Features/Courses/CourseHandlers.cs"] =
             "My courses: the caller's own supervisor rows sit at the course owner unit, which may be above their assignment; own user and active client only, deleted rows excluded (M3 Task 9, #217)",
         ["src/Lms.Infrastructure/Organizations/OrgTree.cs"] =
@@ -95,6 +93,8 @@ public sealed class IsolationBypassGuardTests
             "library resources, their tags, levels, owner unit names and unit-owned assets sit at ancestors of the browsed unit, above the caller's scope (D13: visible below the owner, read-only); client matched, deleted rows excluded, ancestor chain of the browsed unit only (M4a Task 12, #362)",
         ["src/Lms.Infrastructure/Enrollment/PlacementGuard.cs"] =
             "the academic year and the course restrictions of a class sit at ancestor units above the caller's scope; an invisible restriction must never mean no restriction; client matched, deleted rows excluded (M3 Task 24, #232)",
+        ["src/Lms.Infrastructure/People/Guardians/GuardianAccountSync.cs"] =
+            "a guardian's children, their home units and the guardian's own assignments sit outside the caller's scope (siblings in other schools); client matched, deleted rows excluded, only the guardian's own rows are written (M3 Task 25, #233)",
         ["src/Lms.Infrastructure/People/StaffBackfill.cs"] =
             "startup backfill of staff profiles for M1 bare users across every client; client matched, deleted rows excluded (M2 Task 9, #161)",
         ["src/Lms.Infrastructure/Classes/LessonPlans/LessonPlanReads.cs"] =
