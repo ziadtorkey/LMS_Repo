@@ -31,6 +31,16 @@ else if (_name is not null)
     {
         <ContinueLearningCards />
     }
+    @if (PermState.Has(Lms.Shared.Authorization.Permissions.Students.ViewChildren))
+    {
+        <MudPaper Class="pa-4 mt-4" data-testid="home-children-card">
+            <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                <MudIcon Icon="@Icons.Material.Filled.FamilyRestroom" Size="Size.Large" />
+                <MudText Typo="Typo.h6">@L["MyChildren_Title"]</MudText>
+                <MudButton Href="me/children" Variant="Variant.Filled" Color="Color.Primary" data-testid="home-children-link">@L["MyChildren_Open"]</MudButton>
+            </MudStack>
+        </MudPaper>
+    }
     @if (PermState.Has(Permissions.LessonPlans.View))
     {
         <SectionCard Title="@L["MyClassCourses_Title"]" Class="mt-4" TestId="home-my-class-courses">
