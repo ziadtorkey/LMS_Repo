@@ -121,5 +121,9 @@ public sealed class LibraryLessonTests(LmsApiFactory factory) : IDisposable
         Assert.Equal(resource, kept.RefId);
         Assert.False(await check.Set<LibraryResource>().AnyAsync(r => r.Id == resource)); // the resource itself is gone (soft-deleted)
         Assert.Equal(HttpStatusCode.NotFound, (await _t.SendAsync(w.Admin, HttpMethod.Get, Routes.LibraryResource(resource))).StatusCode);
+
+        // The kept module of the closed class reads as "resource removed"; a module whose resource still exists does not.
+        var list = await _t.SendAsync(w.Admin, HttpMethod.Get, Routes.ClassCourseLessonModules(w.OtherClassCourse.Id, Lesson1));
+        Assert.True((await list.Content.ReadFromJsonAsync<List<ModuleNodeDto>>())!.Single(n => n.Id == inClosed.Id).RefRemoved);
     }
 }
