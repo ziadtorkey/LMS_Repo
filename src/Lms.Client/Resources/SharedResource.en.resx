@@ -1566,4 +1566,12 @@
   <data name="Home_Recordings" xml:space="preserve"><value>Recent recordings</value></data>
   <data name="Live_InShort" xml:space="preserve"><value>in {0}</value></data>
   <data name="Live_JoinNow" xml:space="preserve"><value>Join now</value></data>
+  <data name="Live_Announce_Scheduled" xml:space="preserve"><value>Live session scheduled</value></data>
+  <data name="Live_Announce_Saved" xml:space="preserve"><value>Live session saved</value></data>
+  <data name="Live_Announce_Cancelled" xml:space="preserve"><value>Live session cancelled</value></data>
+  <data name="Live_Announce_RecordingSaved" xml:space="preserve"><value>Recording link saved</value></data>
+  <data name="Live_Announce_SeriesScheduled_One" xml:space="preserve"><value>1 session scheduled</value></data>
+  <data name="Live_Announce_SeriesScheduled_Two" xml:space="preserve"><value>2 sessions scheduled</value></data>
+  <data name="Live_Announce_SeriesScheduled_Few" xml:space="preserve"><value>{0} sessions scheduled</value></data>
+  <data name="Live_Announce_SeriesScheduled_Many" xml:space="preserve"><value>{0} sessions scheduled</value></data>
 </root>

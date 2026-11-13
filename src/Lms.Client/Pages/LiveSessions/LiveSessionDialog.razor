@@ -24,7 +24,7 @@
             <fieldset class="lms-fieldset">
                 <legend class="lms-fieldset-legend">@L["Live_SectionSession"]</legend>
                 <BilingualNameFields NameAr="@_model.Module.TitleAr" NameArChanged="v => _model.Module.TitleAr = v"
-                                     NameEn="@_model.Module.TitleEn" NameEnChanged="v => _model.Module.TitleEn = v" IdPrefix="live-title" />
+                                     NameEn="@_model.Module.TitleEn" NameEnChanged="v => _model.Module.TitleEn = v" IdPrefix="module-title" />
                 <MudText Typo="Typo.caption" Class="lms-muted">@L["Live_TitleHelp"]</MudText>
                 <MudSelect T="Guid?" @bind-Value="_model.LessonKey" Label="@L["Live_Lesson"]" Required="true" RequiredError="@L["Common_Required"]"
                            Disabled="@(Existing is not null)" data-testid="live-lesson">
@@ -38,8 +38,8 @@
             <fieldset class="lms-fieldset">
                 <legend class="lms-fieldset-legend">@L["Live_SectionTime"]</legend>
                 <div class="lms-form-grid">
-                    <MudDatePicker Date="_model.Date" DateChanged="d => _model.Date = d" Label="@L["Live_Date"]" DateFormat="yyyy-MM-dd" data-testid="live-date" />
-                    <MudTimePicker Time="_model.Time" TimeChanged="t => _model.Time = t" Label="@L["Live_StartTime"]" AmPm="false" data-testid="live-time" />
+                    <MudDatePicker Date="_model.Date" DateChanged="d => _model.Date = d" Label="@L["Live_Date"]" DateFormat="yyyy-MM-dd" Editable="true" data-testid="live-date" />
+                    <MudTimePicker Time="_model.Time" TimeChanged="t => _model.Time = t" Label="@L["Live_StartTime"]" AmPm="false" Editable="true" data-testid="live-time" />
                     <MudSelect T="int" @bind-Value="_model.DurationMinutes" Label="@L["Live_Duration"]" data-testid="live-duration">
                         @foreach (var m in Durations)
                         {
