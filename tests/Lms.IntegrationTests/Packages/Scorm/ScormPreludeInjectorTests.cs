@@ -92,6 +92,50 @@ public sealed class ScormPreludeInjectorTests
         Assert.Contains(Injected, Encoding.BigEndianUnicode.GetString(beResult, 2, beResult.Length - 2));
     }
 
+    private static byte[] Strip(byte[] injected)
+    {
+        var markup = Encoding.ASCII.GetBytes(Injected);
+        var at = injected.AsSpan().IndexOf(markup);
+        Assert.True(at >= 0, "the markup is not in the output");
+        var withHead = at >= 6 && injected.AsSpan(at - 6, 6).SequenceEqual("<head>"u8) && injected.AsSpan(at + markup.Length).StartsWith("</head>"u8);
+        var from = withHead ? at - 6 : at;
+        var to = at + markup.Length + (withHead ? 7 : 0);
+        return [.. injected.AsSpan(0, from), .. injected.AsSpan(to)];
+    }
+
+    [Fact]
+    public void Pages_in_legacy_charsets_and_with_invalid_bytes_keep_every_original_byte()
+    {
+        static byte[] Page(string charset, byte[] body) =>
+            [.. Encoding.ASCII.GetBytes($"<!doctype html><html><head><meta charset=\"{charset}\"><title>t</title></head><body>"), .. body, .. "</body></html>"u8.ToArray()];
+
+        var pages = new Dictionary<string, byte[]>
+        {
+            ["shift_jis"] = Page("shift_jis", [0x82, 0xA0, 0x82, 0xA2, 0x83, 0x41]),
+            ["windows-1256 arabic"] = Page("windows-1256", [0xC7, 0xE1, 0xDA, 0xD1, 0xC8, 0xED, 0xC9]),
+            ["gb2312"] = Page("gb2312", [0xC4, 0xE3, 0xBA, 0xC3]),
+            ["invalid utf-8"] = Page("utf-8", [0xE9, 0x20, 0xFF, 0xFE]),
+            ["no known charset, high bytes"] = Page("x-unknown", [0x80, 0x9F, 0xA0, 0xFF]),
+        };
+
+        foreach (var (name, original) in pages)
+        {
+            var result = ScormPreludeInjector.Inject(original, Src, Data);
+
+            Assert.True(Strip(result).SequenceEqual(original), $"{name}: bytes outside the injected markup changed");
+            Assert.True(result.Length > original.Length);
+        }
+    }
+
+    [Fact]
+    public void The_injected_markup_is_ascii_even_when_the_data_is_not()
+    {
+        var markup = ScormPreludeInjector.Markup(Src, "{\"model\":{\"cmi.suspend_data\":\"العربية café\"}}");
+
+        Assert.All(markup, c => Assert.True(c < 0x80));
+        Assert.Contains("\\u0627", markup);
+    }
+
     [Fact]
     public void Injection_creates_head_when_missing()
     {

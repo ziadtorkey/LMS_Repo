@@ -25,22 +25,32 @@ public static class ScormPreludeInjector
 
     public static byte[] Inject(byte[] html, string preludeSrc, string dataJson)
     {
-        var text = Decode(html, out var encoding, out var preamble);
-        var at = InsertionPoint(text, out var needsHead);
         var markup = Markup(preludeSrc, dataJson);
-        var injected = text[..at] + (needsHead ? "<head>" + markup + "</head>" : markup) + text[at..];
-        return [.. preamble, .. encoding.GetBytes(injected)];
-    }
-
-    /// <summary>Decodes a page (byte order mark, else <c>meta charset</c> in the first kilobyte, else UTF-8); also returns the encoding and the preamble to put back.</summary>
-    public static string Decode(byte[] bytes, out Encoding encoding, out byte[] preamble)
-    {
-        if (bytes.Length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF)
+        if (IsUtf16(html))
         {
-            (encoding, preamble) = (ScormLaunchResolver.Utf8NoBom, [0xEF, 0xBB, 0xBF]);
-            return encoding.GetString(bytes, 3, bytes.Length - 3);
+            // UTF-16 decodes cleanly in both directions, so it is the one case that goes through text.
+            var text = Decode(html, out var encoding, out var preamble);
+            var textAt = InsertionPoint(text, out var textNeedsHead);
+            var injected = text[..textAt] + (textNeedsHead ? "<head>" + markup + "</head>" : markup) + text[textAt..];
+            return [.. preamble, .. encoding.GetBytes(injected)];
         }
 
+        // Every other page is spliced as bytes: Latin1 maps each byte to one character, which is only used to find the insertion offset (the tags
+        // are ASCII in every ASCII-compatible charset), and the ASCII markup is inserted into the original array. The page is never decoded
+        // or re-encoded, so Shift_JIS, windows-1256, invalid UTF-8 or anything else keeps every byte it had.
+        var at = InsertionPoint(Encoding.Latin1.GetString(html), out var needsHead);
+        var piece = Encoding.ASCII.GetBytes(needsHead ? "<head>" + markup + "</head>" : markup);
+        return [.. html.AsSpan(0, at), .. piece, .. html.AsSpan(at)];
+    }
+
+    private static bool IsUtf16(byte[] bytes) => bytes.Length >= 2 && (bytes[0] == 0xFF && bytes[1] == 0xFE || bytes[0] == 0xFE && bytes[1] == 0xFF);
+
+    /// <summary>
+    /// A text view of a page for searching: UTF-16 (byte order mark) is decoded, anything else is seen byte for byte (Latin1), which is enough for
+    /// the ASCII markup the callers look for. Also returns the encoding and the preamble of the UTF-16 case.
+    /// </summary>
+    public static string Decode(byte[] bytes, out Encoding encoding, out byte[] preamble)
+    {
         if (bytes.Length >= 2 && bytes[0] == 0xFF && bytes[1] == 0xFE)
         {
             (encoding, preamble) = (new UnicodeEncoding(false, false), [0xFF, 0xFE]);
@@ -53,26 +63,8 @@ public static class ScormPreludeInjector
             return encoding.GetString(bytes, 2, bytes.Length - 2);
         }
 
-        preamble = [];
-        encoding = DeclaredCharset(bytes);
-        return encoding.GetString(bytes);
-    }
-
-    private static Encoding DeclaredCharset(byte[] bytes)
-    {
-        var head = Encoding.Latin1.GetString(bytes, 0, Math.Min(bytes.Length, 1024));
-        var at = head.IndexOf("charset=", StringComparison.OrdinalIgnoreCase);
-        if (at < 0)
-        {
-            return ScormLaunchResolver.Utf8NoBom;
-        }
-
-        var name = new string(head[(at + 8)..].TrimStart('"', '\'').TakeWhile(c => char.IsLetterOrDigit(c) || c is '-' or '_').ToArray()).ToLowerInvariant();
-        return name switch
-        {
-            "iso-8859-1" or "latin1" or "windows-1252" or "cp1252" or "us-ascii" or "ascii" => Encoding.Latin1,
-            _ => ScormLaunchResolver.Utf8NoBom,
-        };
+        (encoding, preamble) = (Encoding.Latin1, []);
+        return Encoding.Latin1.GetString(bytes);
     }
 
     /// <summary>
@@ -165,9 +157,25 @@ public static class ScormPreludeInjector
         return text.Length;
     }
 
-    /// <summary>JSON inside a script element: nothing may close the element or open a comment, and the line separators of old parsers are escaped.</summary>
-    private static string ScriptSafe(string json) =>
-        json.Replace("<", "\\u003c", StringComparison.Ordinal).Replace(">", "\\u003e", StringComparison.Ordinal)
-            .Replace("&", "\\u0026", StringComparison.Ordinal).Replace(""+(char)0x2028, "\\u2028", StringComparison.Ordinal)
-            .Replace(""+(char)0x2029, "\\u2029", StringComparison.Ordinal);
+    /// <summary>
+    /// JSON inside a script element, as ASCII only: nothing may close the element or open a comment, and every non-ASCII character is written as a
+    /// \u escape, so the markup is the same bytes in any ASCII-compatible charset the page uses.
+    /// </summary>
+    private static string ScriptSafe(string json)
+    {
+        var sb = new StringBuilder(json.Length);
+        foreach (var c in json)
+        {
+            if (c is '<' or '>' or '&' || c > 0x7E)
+            {
+                sb.Append("\\u").Append(((int)c).ToString("x4", System.Globalization.CultureInfo.InvariantCulture));
+            }
+            else
+            {
+                sb.Append(c);
+            }
+        }
+
+        return sb.ToString();
+    }
 }
