@@ -21,10 +21,37 @@ public sealed class FakeImportsApi : IImportsApi
         new("jobTitle", "المسمى الوظيفي", "Job title", false, null),
     ];
 
+    private static readonly IReadOnlyList<ImportColumnDto> StudentColumns =
+    [
+        new("nameAr", "الاسم بالعربية", "Name (Arabic)", true, null),
+        new("nameEn", "الاسم بالإنجليزية", "Name (English)", true, null),
+        new("dateOfBirth", "تاريخ الميلاد", "Date of birth", true, null),
+        new("classCode", "رمز الفصل", "Class code", false, null),
+        new("defaultPassword", "كلمة المرور الافتراضية", "Default password", false, null, true),
+    ];
+
+    private static readonly IReadOnlyList<ImportColumnDto> ClassStudentColumns =
+    [
+        new("studentCode", "رقم الطالب", "Student code", true, null),
+        new("classCode", "رمز الفصل", "Class code", true, null),
+    ];
+
     private readonly List<ImportBatchDto> _batches = [];
+    private readonly HashSet<Guid> _credentialsTaken = [];
 
     public Task<IReadOnlyList<ImportColumnDto>> GetColumnsAsync(string kind, CancellationToken ct = default) =>
-        Task.FromResult(StaffColumns);
+        Task.FromResult(kind switch
+        {
+            ImportKinds.Students => StudentColumns,
+            ImportKinds.ClassStudents => ClassStudentColumns,
+            _ => StaffColumns,
+        });
+
+    /// <summary>Available once per batch (like the real endpoint); a second call is a 410.</summary>
+    public Task<(Stream Content, string FileName)> DownloadCredentialsAsync(string kind, Guid id, CancellationToken ct = default) =>
+        _credentialsTaken.Add(id)
+            ? Task.FromResult<(Stream, string)>((new MemoryStream(Encoding.UTF8.GetBytes("credentials")), "credentials.xlsx"))
+            : Task.FromException<(Stream, string)>(new ApiProblemException(410, "credentials_gone", null, null));
 
     public Task<(Stream Content, string FileName)> DownloadTemplateAsync(string kind, string culture, CancellationToken ct = default) =>
         Task.FromResult<(Stream, string)>((new MemoryStream(Encoding.UTF8.GetBytes("template")), $"{kind}-template-{culture}.xlsx"));
@@ -61,7 +88,7 @@ public sealed class FakeImportsApi : IImportsApi
         string kind, Guid id, bool errorsOnly, string culture, int page, int pageSize, CancellationToken ct = default)
     {
         var batch = _batches.First(b => b.Id == id);
-        var rows = Enumerable.Range(2, batch.RowCount).Select(n => Row(n, batch.ErrorCount > 0 && n <= 4)).ToList();
+        var rows = Enumerable.Range(2, batch.RowCount).Select(n => Row(kind, n, batch.ErrorCount > 0 && n <= 4)).ToList();
         var source = errorsOnly ? rows.Where(r => r.Errors.Count > 0).ToList() : rows;
         var items = source.Skip((page - 1) * pageSize).Take(pageSize).ToList();
         return Task.FromResult(new PagedResult<ImportRowDto>(items, source.Count, page, pageSize));
@@ -89,7 +116,22 @@ public sealed class FakeImportsApi : IImportsApi
         return Task.FromResult(new PagedResult<ImportBatchDto>(all.Skip((page - 1) * pageSize).Take(pageSize).ToList(), all.Count, page, pageSize));
     }
 
-    private static ImportRowDto Row(int number, bool failing) => new(number,
+    private static ImportRowDto Row(string kind, int number, bool failing) => kind switch
+    {
+        ImportKinds.Students => new(number,
+            new Dictionary<string, string?>
+            {
+                ["nameAr"] = $"طالب {number}", ["nameEn"] = $"Student {number}", ["dateOfBirth"] = "2014-05-01",
+                ["classCode"] = failing ? "9Z" : "1A", ["defaultPassword"] = number % 2 == 0 ? ImportMasks.Sensitive : null,
+            },
+            failing ? [new ImportRowErrorDto("classCode", "unknown_class", "Unknown class code")] : []),
+        ImportKinds.ClassStudents => new(number,
+            new Dictionary<string, string?> { ["studentCode"] = $"S-{1000 + number}", ["classCode"] = failing ? "9Z" : "1A" },
+            failing ? [new ImportRowErrorDto("classCode", "unknown_class", "Unknown class code")] : []),
+        _ => StaffRow(number, failing),
+    };
+
+    private static ImportRowDto StaffRow(int number, bool failing) => new(number,
         new Dictionary<string, string?>
         {
             ["email"] = failing ? "not-an-email" : $"staff{number}@example.com",

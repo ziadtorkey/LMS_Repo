@@ -1,5 +1,6 @@
 using System.Globalization;
 using Bunit;
+using Microsoft.Extensions.DependencyInjection;
 using Lms.Client.Pages.Students;
 using Lms.Client.Tests.Support;
 using Lms.Shared.Configuration;
@@ -69,5 +70,18 @@ public sealed class StudentFeatureFlagsTabTests : StudentsTestContext
         Assert.Contains("On", StringSelect(cut, $"flag-{Library}").Markup);
         Assert.Empty(cut.FindAll("[data-testid=flags-save]"));
         await Task.CompletedTask;
+    }
+
+    [Fact]
+    public async Task A_role_without_Settings_View_still_gets_the_tab_with_default_inherited_values()
+    {
+        Culture.Current = new CultureInfo("en");
+        Settings.Failure = new Lms.Client.Services.ApiForbiddenException();
+        var navigation = Services.GetRequiredService<Microsoft.AspNetCore.Components.NavigationManager>();
+        var before = navigation.Uri;
+        var cut = RenderTab();
+
+        await cut.WaitForAssertionAsync(() => Assert.Contains("Inherit (Off)", StringSelect(cut, $"flag-{Virtual}").Markup));
+        Assert.Equal(before, navigation.Uri); // not sent to /forbidden
     }
 }

@@ -3,22 +3,22 @@
 _Updated by the Team Lead after every merge cycle._
 
 **Milestone:** M0 — DONE · M1 Organization & Access — DONE (#73 via #200) · M2 People — closing (#177 via #321) · M3 Academic Structure — in progress
-**Last update:** 2026-11-12 19:20 — Merged since 18:27: #388 modules API client (M4a #367). Next merges: #387 (FE2 resolving conflict), #386 (QA spot-check), #437 wave-2 contracts, #349 (QA re-check), then the stacks. #415 quiz leak fixed and re-approved; #421 in re-check.
+**Last update:** 2026-11-13 04:15 — Merged since 18:27: #388, #349, #436, #412, #441, #386, #420, #437, #331, #316, #387, #287, #409, #456, #417, #414, #449, #391 (M4a module kernel), #459 (forum UI), #464 (static asset tests), #285 (M3 academic E2E), #392 (nav/home), #462 (E2E year), #389 (module authoring). M4b: plan #467 approved; issues #468-#492; contract 3a draft #497 (QA reviewing); design spec #494, CSS #498 (approved); FE2 T16 draft #501; BE3 corpus #493. CI blocker #466 (BE4). Probable #466 root cause: daily jobs at 02:00/03:00 UTC firing in every test host. Local Docker hung (owner asked to restart). Agent messaging paused.
 
 ## Agents
 | Agent | Model | Session id | Current issue / PR | State |
 |---|---|---|---|---|
-| Team Lead | Opus | `local_95ef9dc7-9378-4012-a8f2-c7d1f944bdec` (lms-lead) | merges; M4a contracts #346 (wave 1), #395 (wave 2) | coordinating |
-| Backend 1 | Sonnet | `local_19f31b04-ca2f-43d1-a2cb-8a128722a11f` (lms-backend) | M4a #357 (PR #385), #358, #359; M3 stack #301/#318/#319 | working |
-| Backend 2 | Sonnet | `local_d36e7dc2-e9e6-4f73-b7b3-b078b17bbe41` (lms-backend-2) | M4a #353 + #356 (PR #391), quizzes #360, #361 | working |
-| Backend 3 | Sonnet | `local_2e8038c6-e5ba-4e13-ade0-9440d9beb565` (lms-backend-3) | M3 #286 → #292/#297; M4a forums #363, library #362 | working |
-| Backend 4 | Sonnet | `local_fd5c4410-8364-4c55-a5a8-3b8aa37afc1f` (lms-backend-4) | M4a sanitiser #349, assets #354 (PR #384), #355; M3 #325 | working |
-| Frontend | Sonnet | `local_40667dce-5be7-478b-95cb-4f14ecd203b9` (lms-frontend) | M4a #365 (PR #386), #370, #372 | working |
-| Frontend 2 | Sonnet | `local_3d9e8938-4064-4f83-a04d-920704d41a87` (lms-frontend-2) | M4a #366–#369, #375, #376, #377 (PRs #387–#397); M3 #303/#309 | working |
-| QA | Sonnet | `local_91a7af3c-7b02-4d61-ac11-2c22629cf89f` (lms-qa) | reviews #385–#387; M3 E2E #285 | reviewing |
-| QA 2 | Sonnet | `local_54d26c64-4403-4a13-b128-5be5e9752d97` (lms-qa-2) | #325, #301; M4a probe suite #379 | reviewing |
-| QA 3 | Sonnet | `local_6d46b60b-d70a-4cfa-af2f-5bf90cdf7c08` (lms-qa-3) | M3 T47 student E2E | working |
-| UI/UX Designer | Opus | Lead-run agent | design pilot #334 merged; Phase 2 page passes next | waiting |
+| Team Lead | Opus | `local_95ef9dc7-9378-4012-a8f2-c7d1f944bdec` (lms-lead) | merges; contract review #463 (PageRoutes); runs QA/dev subagents | coordinating |
+| Backend 1 | Sonnet | `local_19f31b04-ca2f-43d1-a2cb-8a128722a11f` (lms-backend) | M3 stack #318/#319 (main merge, CI, QA2 verdicts) | working |
+| Backend 2 | Sonnet | `local_d36e7dc2-e9e6-4f73-b7b3-b078b17bbe41` (lms-backend-2) | #455 E2E seed year; #434 CI; quizzes #450/#453 after #391/#385 | working |
+| Backend 3 | Sonnet | `local_2e8038c6-e5ba-4e13-ade0-9440d9beb565` (lms-backend-3) | #463 PageRoutes (#461); #447/#448 ready; #443 after #391 | waiting on merges |
+| Backend 4 | Sonnet | `local_fd5c4410-8364-4c55-a5a8-3b8aa37afc1f` (lms-backend-4) | #464 static-asset tests; #444 spike re-review; #401 after #391 | waiting on merges |
+| Frontend | Sonnet | `local_40667dce-5be7-478b-95cb-4f14ecd203b9` (lms-frontend) | #465 library viewer (#452); main merges into #389/#394/#390 | working |
+| Frontend 2 | Sonnet | `local_3d9e8938-4064-4f83-a04d-920704d41a87` (lms-frontend-2) | M4b FE plan #440 revision; #432 after #389; demos #435/#445 | working |
+| QA | Sonnet | `local_91a7af3c-7b02-4d61-ac11-2c22629cf89f` (lms-qa) | own fixes #285, #457 (M4a demo 2) | working |
+| QA 2 | Sonnet | `local_54d26c64-4403-4a13-b128-5be5e9752d97` (lms-qa-2) | M4b plan re-reviews #427/#440; #318/#319 verdicts | reviewing |
+| QA 3 | Sonnet | `local_6d46b60b-d70a-4cfa-af2f-5bf90cdf7c08` (lms-qa-3) | replay reviews #450/#453/#447; #444 re-review | reviewing |
+| UI/UX Designer | Opus | Lead-run agent | restyles #409/#412/#417/#420 merged; #414 in CI | on call |
 
 ## M0 issue map
 | Task | Issue | Lane | Depends on |

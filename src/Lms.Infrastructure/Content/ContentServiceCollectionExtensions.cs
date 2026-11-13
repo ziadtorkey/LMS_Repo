@@ -10,6 +10,7 @@ public static class ContentServiceCollectionExtensions
     {
         services.AddSingleton<IRichTextSanitizer, RichTextSanitizer>();
         services.AddScoped<IAssetService, AssetService>();
+        services.AddScoped<IModuleWriter, ModuleWriter>();
         return services;
     }
 }
