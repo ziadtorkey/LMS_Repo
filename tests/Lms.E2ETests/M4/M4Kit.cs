@@ -100,7 +100,7 @@ public static class M4Kit
 
         var created = await api.PostAsync("/api/academic-years", new
         {
-            orgUnitId = school, nameAr = "عام " + today.Year, nameEn = "Year " + today.Year, startDate = today.AddDays(-60), endDate = today.AddDays(300),
+            orgUnitId = school, nameAr = "عام " + today.Year, nameEn = "Year " + today.Year, startDate = today.AddDays(-60), endDate = today.AddDays(240), // ends before the shared E2E year that starts on 09-01 (year_overlap)
         });
         return created.GetProperty("id").GetGuid();
     }
