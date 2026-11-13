@@ -1568,4 +1568,25 @@
   <data name="StudentImport_Subtitle" xml:space="preserve"><value>Add many students at once from an Excel file.</value></data>
   <data name="ClassImport_Subtitle" xml:space="preserve"><value>Place students in classes from an Excel file.</value></data>
   <data name="Group_Subtitle" xml:space="preserve"><value>Split the students of this class course into groups.</value></data>
+  <data name="Tt_Page_Title" xml:space="preserve"><value>Timetable builder (prototype)</value></data>
+  <data name="Tt_Page_Subtitle" xml:space="preserve"><value>Spike S3: move lessons with the keyboard, the menu or a drag. Sample data only.</value></data>
+  <data name="Tt_Mode_Block" xml:space="preserve"><value>Block clashes</value></data>
+  <data name="Tt_Mode_Warn" xml:space="preserve"><value>Warn about clashes</value></data>
+  <data name="Tt_Grid_Label" xml:space="preserve"><value>Weekly timetable</value></data>
+  <data name="Tt_Period_Header" xml:space="preserve"><value>Period</value></data>
+  <data name="Tt_Period_N" xml:space="preserve"><value>Period {0}</value></data>
+  <data name="Tt_Period_Label" xml:space="preserve"><value>Period</value></data>
+  <data name="Tt_Day" xml:space="preserve"><value>Day</value></data>
+  <data name="Tt_Slot_Move" xml:space="preserve"><value>Move {0} to…</value></data>
+  <data name="Tt_Move_Confirm" xml:space="preserve"><value>Move</value></data>
+  <data name="Tt_Warn_Chip" xml:space="preserve"><value>Clash</value></data>
+  <data name="Tt_Empty_Cell" xml:space="preserve"><value>Empty, {0}, period {1}</value></data>
+  <data name="Tt_Slot_Cell" xml:space="preserve"><value>{0}, {1}, {2}, period {3}</value></data>
+  <data name="Tt_Held" xml:space="preserve"><value>{0} picked up. Use the arrow keys to choose a place, Enter to drop it, Escape to cancel.</value></data>
+  <data name="Tt_Moved" xml:space="preserve"><value>{0} moved to {1}, period {2}.</value></data>
+  <data name="Tt_Cancelled" xml:space="preserve"><value>Move cancelled.</value></data>
+  <data name="Tt_Refused" xml:space="preserve"><value>The move was not saved.</value></data>
+  <data name="Tt_Clash_Class" xml:space="preserve"><value>That place is taken by {0}.</value></data>
+  <data name="Tt_Clash_Teacher" xml:space="preserve"><value>{0} already teaches another class on {1} at that time.</value></data>
+  <data name="Tt_Hint" xml:space="preserve"><value>Keyboard: M or Enter picks up a lesson, the arrow keys choose a place, Enter drops it, Escape cancels. F2 opens the move menu. You can also drag a lesson (touch: press and hold).</value></data>
 </root>
