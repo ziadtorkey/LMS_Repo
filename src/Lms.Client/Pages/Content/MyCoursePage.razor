@@ -39,14 +39,6 @@ else
             }
         </div>
 
-        @if (PermState.Has(ForumsView))
-        {
-            <MudStack Row="true" Spacing="1" data-testid="learn-course-links">
-                <MudButton Variant="Variant.Outlined" Size="Size.Small" Href="@($"class-courses/{Id}/forum")" data-testid="learn-forum">@L["ClassCourse_TabForum"]</MudButton>
-                <MudButton Variant="Variant.Outlined" Size="Size.Small" Href="@($"class-courses/{Id}/announcements")" data-testid="learn-announcements">@L["ClassCourse_TabAnnouncements"]</MudButton>
-            </MudStack>
-        }
-
         <ContinueCard Next="_next" Progress="@(_plan.Progress ?? new ProgressDto(0, 0))" Href="@(_next is null ? null : ModuleHref(_next.Id))" />
 
         @foreach (var section in _plan.Sections.OrderBy(s => s.Order))
@@ -86,7 +78,6 @@ else
 
 @code {
     // Permissions.Forums.View arrives with the wave 2 contract (#395); same value.
-    private const string ForumsView = "Forums.View";
 
     [Parameter] public Guid Id { get; set; }
 

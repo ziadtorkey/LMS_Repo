@@ -143,25 +143,47 @@ public sealed class MyCoursePageTests : LessonPlansTestContext
     }
 
     [Fact]
-    public async Task Forum_and_announcement_links_need_Forums_View()
+    public async Task The_shared_tab_strip_sits_above_the_one_h1_and_carries_the_forum_and_announcements_tabs()
     {
         PublishPlan();
+        Plans.TeachesIds = []; Plans.EnrolledIds = [Cc];
         await GrantAsync(Permissions.Modules.View, "Forums.View");
         RenderProviders();
         var page = Render<MyCoursePage>(p => p.Add(x => x.Id, Cc));
         page.WaitForElement("[data-testid=learn-header]", Wait);
 
-        Assert.EndsWith($"class-courses/{Cc}/forum", page.Find("[data-testid=learn-forum]").GetAttribute("href"));
-        Assert.EndsWith($"class-courses/{Cc}/announcements", page.Find("[data-testid=learn-announcements]").GetAttribute("href"));
+        Assert.Single(page.FindAll("h1"));
+        Assert.True(page.Markup.IndexOf("class-course-tabs", StringComparison.Ordinal) < page.Markup.IndexOf("<h1", StringComparison.Ordinal));
+        Assert.Equal("page", page.Find("[data-testid=tab-learn]").GetAttribute("aria-current"));
+        Assert.EndsWith($"class-courses/{Cc}/forum", page.Find("[data-testid=tab-forum]").GetAttribute("href"));
+        Assert.EndsWith($"class-courses/{Cc}/announcements", page.Find("[data-testid=tab-announcements]").GetAttribute("href"));
+        Assert.Empty(page.FindAll("[data-testid=tab-plan]")); // a student has no Plan tab
+        Assert.Empty(page.FindAll("[data-testid=learn-course-links]")); // the old outlined buttons are gone
     }
 
     [Fact]
-    public async Task No_forum_links_without_Forums_View()
+    public async Task Without_Forums_View_the_strip_has_only_My_course()
     {
         PublishPlan();
+        Plans.TeachesIds = []; Plans.EnrolledIds = [Cc];
         var page = await OpenAsync();
 
-        Assert.Empty(page.FindAll("[data-testid=learn-course-links]"));
+        Assert.Equal(["tab-learn"], page.FindAll("[data-testid^=tab-]").Select(t => t.GetAttribute("data-testid")!).ToArray());
+    }
+
+    [Fact]
+    public async Task A_reader_with_no_relationship_to_the_class_course_gets_no_first_tab()
+    {
+        PublishPlan();
+        Plans.TeachesIds = []; Plans.EnrolledIds = [];
+        await GrantAsync(Permissions.Modules.View, Permissions.Modules.Manage, Permissions.LessonPlans.View, "Forums.View");
+        RenderProviders();
+        var page = Render<MyCoursePage>(p => p.Add(x => x.Id, Cc));
+        page.WaitForElement("[data-testid=learn-header]", Wait);
+
+        Assert.Empty(page.FindAll("[data-testid=tab-plan]"));
+        Assert.Empty(page.FindAll("[data-testid=tab-learn]"));
+        Assert.NotNull(page.Find("[data-testid=tab-forum]"));
     }
 
     [Fact]
@@ -172,5 +194,7 @@ public sealed class MyCoursePageTests : LessonPlansTestContext
         var page = Render<MyCoursePage>(p => p.Add(x => x.Id, Cc));
 
         page.WaitForElement("[data-testid=learn-forbidden]", Wait);
+        Assert.Empty(page.FindAll("[data-testid=class-course-tabs]")); // no strip, no relation read, on the forbidden page
+        Assert.Equal(0, Plans.RelationReads);
     }
 }

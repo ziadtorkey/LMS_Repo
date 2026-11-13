@@ -3,10 +3,10 @@
 @inject PermissionState PermState
 @inject ILessonPlansApi Plans
 
-@* One strip for a class course: [Plan] [My course] · Forum · Announcements. Plan is for staff: Modules.Manage in the active context, or a
-   teacher of this class course today. My course is for a student enrolled in it. Someone who is both sees both, Plan first. A caller
-   with neither relationship but LessonPlans.View (a supervisor, say) still gets Plan, so the strip is never empty of its first tab.
-   Forum and Announcements need Forums.View. *@
+@* One strip for a class course: [Plan] [My course] · Forum · Announcements. Plan needs Modules.Manage AND teaching this class course today (the
+   rule of the plan endpoint: a scoped user without the relationship would get a Plan tab that answers 404). My course is for a student
+   enrolled in it. Someone who is both sees both, Plan first. A caller with neither has no first tab. Forum and Announcements need
+   Forums.View. The relation is read once per class course, not on every render. *@
 <MudStack Row="true" Spacing="1" Class="mb-3" role="navigation" aria-label="@L["ClassCourse_Sections"]" data-testid="class-course-tabs">
     @if (ShowPlan)
     {
@@ -30,10 +30,16 @@
     /// <summary>"plan", "learn", "forum" or "announcements".</summary>
     [Parameter, EditorRequired] public string Active { get; set; } = "plan";
 
-    private bool ShowPlan => PermState.Has(Permissions.Modules.Manage) || _relation.Teaches || (!_relation.Enrolled && PermState.Has(Permissions.LessonPlans.View));
+    private bool ShowPlan => PermState.Has(Permissions.Modules.Manage) && _relation.Teaches;
 
-    protected override async Task OnParametersSetAsync() =>
+    private Guid? _loadedFor;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_loadedFor == ClassCourseId) return;
+        _loadedFor = ClassCourseId;
         _relation = await Plans.GetRelationAsync(ClassCourseId);
+    }
 
     private Variant VariantOf(string tab) => tab == Active ? Variant.Filled : Variant.Text;
 

@@ -158,8 +158,11 @@ public sealed class FakeLessonPlansApi : ILessonPlansApi
     public HashSet<Guid>? TeachesIds { get; set; }
     public HashSet<Guid>? EnrolledIds { get; set; }
 
+    public int RelationReads { get; private set; }
+
     public Task<ClassCourseRelation> GetRelationAsync(Guid classCourseId, CancellationToken ct = default)
     {
+        RelationReads++;
         var known = Mine.Any(c => c.Id == classCourseId);
         return Task.FromResult(new ClassCourseRelation(
             TeachesIds?.Contains(classCourseId) ?? known, EnrolledIds?.Contains(classCourseId) ?? known));

@@ -30,7 +30,7 @@ public sealed class ClassCourseTabsTests : LessonPlansTestContext
     [Fact]
     public async Task A_teacher_sees_Plan_and_not_My_course()
     {
-        var tabs = await RenderTabsAsync(teaches: true, enrolled: false, Permissions.Forums.View, Permissions.LessonPlans.View);
+        var tabs = await RenderTabsAsync(teaches: true, enrolled: false, Permissions.Forums.View, Permissions.Modules.Manage);
 
         Assert.Equal(["tab-plan", "tab-forum", "tab-announcements"], Order(tabs));
     }
@@ -47,25 +47,47 @@ public sealed class ClassCourseTabsTests : LessonPlansTestContext
     [Fact]
     public async Task Someone_who_teaches_and_is_enrolled_sees_both_with_Plan_first()
     {
-        var tabs = await RenderTabsAsync(teaches: true, enrolled: true, Permissions.Forums.View);
+        var tabs = await RenderTabsAsync(teaches: true, enrolled: true, Permissions.Forums.View, Permissions.Modules.Manage);
 
         Assert.Equal(["tab-plan", "tab-learn", "tab-forum", "tab-announcements"], Order(tabs));
     }
 
     [Fact]
-    public async Task Modules_Manage_shows_Plan_without_a_teacher_relationship()
+    public async Task Modules_Manage_without_teaching_the_class_course_gets_no_Plan_tab()
     {
+        // A scoped user: the permission alone is not enough, the plan endpoint would answer 404.
         var tabs = await RenderTabsAsync(teaches: false, enrolled: false, Permissions.Modules.Manage, Permissions.Forums.View);
 
-        Assert.Equal(["tab-plan", "tab-forum", "tab-announcements"], Order(tabs));
+        Assert.Equal(["tab-forum", "tab-announcements"], Order(tabs));
     }
 
     [Fact]
-    public async Task A_reader_of_plans_without_a_relationship_still_gets_Plan()
+    public async Task Teaching_the_class_course_without_Modules_Manage_gets_no_Plan_tab()
+    {
+        var tabs = await RenderTabsAsync(teaches: true, enrolled: false, Permissions.Forums.View);
+
+        Assert.Equal(["tab-forum", "tab-announcements"], Order(tabs));
+    }
+
+    [Fact]
+    public async Task A_reader_of_plans_without_a_relationship_gets_no_first_tab()
     {
         var tabs = await RenderTabsAsync(teaches: false, enrolled: false, Permissions.LessonPlans.View);
 
-        Assert.Equal(["tab-plan"], Order(tabs));
+        Assert.Empty(Order(tabs));
+    }
+
+    [Fact]
+    public async Task The_relation_is_read_once_per_class_course_not_on_every_render()
+    {
+        var tabs = await RenderTabsAsync(teaches: false, enrolled: true, Permissions.Forums.View);
+        var reads = Plans.RelationReads;
+
+        tabs.Render();
+        tabs.Render();
+        tabs.Render(p => p.Add(x => x.Active, "learn"));
+
+        Assert.Equal(reads, Plans.RelationReads);
     }
 
     [Fact]

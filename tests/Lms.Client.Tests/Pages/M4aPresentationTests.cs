@@ -97,7 +97,7 @@ public sealed partial class M4aPresentationTests : LessonPlansTestContext
     [Fact]
     public async Task Course_tabs_mark_the_current_page()
     {
-        await OpenAsync("en", Permissions.Forums.View);
+        await OpenAsync("en", Permissions.Forums.View, Permissions.Modules.Manage); // Plan needs Manage and teaching (the fake caller teaches Cc)
         var page = Render<ForumPage>(p => p.Add(x => x.Id, Cc));
         page.WaitForElement("[data-testid=forum-empty]", Wait);
 
