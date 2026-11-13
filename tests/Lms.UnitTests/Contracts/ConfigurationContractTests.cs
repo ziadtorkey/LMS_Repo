@@ -27,7 +27,7 @@ public class ConfigurationContractTests
     [Fact]
     public void Declared_keys_are_found()
     {
-        Assert.Equal(22, DeclaredKeys().Count());
+        Assert.Equal(27, DeclaredKeys().Count());
     }
 
     [Theory]
@@ -64,6 +64,8 @@ public class ConfigurationContractTests
             "Students.CodeMode", "Students.CodePattern", "Students.CriticalFields", "Guardians.DataRequired",
             "Classes.CapacityMode", "Blueprints.SectionLabel", "Enrollment.TransferCarriesGrades",
             "Assignments.LatePenaltyDefaultPercent", "Quizzes.AutoSubmitGraceSeconds",
+            "Packages.MaxEntries", "Packages.MaxUncompressedMb", "Packages.MaxClientStorageMb", "Packages.TokenMinutes",
+            "Packages.CommitMinIntervalSeconds",
             "Live.JoinWindowMinutes", "Live.ReminderMinutes", "Live.MaxCreatesPerDay", "Live.CloudRecordingEnabled",
         ], SettingCatalog.All.Select(d => d.Name));
 

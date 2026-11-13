@@ -45,6 +45,21 @@ public static class SettingKeys
     /// <summary>Seconds after an attempt's <c>EndsAtUtc</c> during which a last autosave or submit is still taken (0–300).</summary>
     public static readonly SettingKey<int> QuizzesAutoSubmitGraceSeconds = new("Quizzes.AutoSubmitGraceSeconds", 30);
 
+    // M4b wave 3b: package limits (per client; the fixed limits are in code, see the M4b plan Decision 9).
+    /// <summary>Most entries an archive may hold.</summary>
+    public static readonly SettingKey<int> PackagesMaxEntries = new("Packages.MaxEntries", 10_000);
+
+    /// <summary>Most uncompressed megabytes an archive may expand to.</summary>
+    public static readonly SettingKey<int> PackagesMaxUncompressedMb = new("Packages.MaxUncompressedMb", 1024);
+
+    /// <summary>Extracted package storage a client may hold, in megabytes.</summary>
+    public static readonly SettingKey<int> PackagesMaxClientStorageMb = new("Packages.MaxClientStorageMb", 10_240);
+
+    /// <summary>Lifetime of a package launch token in minutes (the session; hard cap 480).</summary>
+    public static readonly SettingKey<int> PackagesTokenMinutes = new("Packages.TokenMinutes", 120);
+
+    /// <summary>Smallest interval between two tracking commits of one attempt, in seconds.</summary>
+    public static readonly SettingKey<int> PackagesCommitMinIntervalSeconds = new("Packages.CommitMinIntervalSeconds", 2);
     // M4b live sessions (FR-VC-01, D53, D55; M4b plan Decisions 4 and 9). Live.MaxHostSharePercent is platform-level and
     // lives in server configuration (LiveSessionLimits), not here: no client admin may change it.
     /// <summary>Minutes before the start during which students may join (0–60); the window closes at the scheduled end.</summary>

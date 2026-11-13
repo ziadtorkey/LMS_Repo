@@ -22,6 +22,10 @@ else if (_failed)
 else if (_name is not null)
 {
     <MudText>@string.Format(L["Home_Welcome"].Value, _name)</MudText>
+    @if (PermState.Has(Permissions.CourseAssignments.View) || PermState.Has(Permissions.Quizzes.View) || PermState.Has(Permissions.CourseAssignments.Grade))
+    {
+        <HomeActivityCards />
+    }
     @if (PermState.Has(Permissions.Modules.View) && !PermState.Has(Permissions.Modules.Manage))
     {
         <ContinueLearningCards />

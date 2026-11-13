@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
   <resheader name="version"><value>2.0</value></resheader>
@@ -1217,6 +1217,34 @@
   <data name="Module_NoContent" xml:space="preserve"><value>لا يوجد محتوى لهذه الوحدة بعد.</value></data>
   <data name="Module_Unsupported" xml:space="preserve"><value>يُفتح هذا النوع من الوحدات في صفحته الخاصة.</value></data>
   <data name="Module_UrlInvalid" xml:space="preserve"><value>أدخل عنوان ويب كاملًا يبدأ بـ http:// أو https://.</value></data>
+  <data name="Allocation_EmptyText" xml:space="preserve"><value>وزّع المقرر على وحدة لتظهر فيها الفصول.</value></data>
+  <data name="Blueprint_BackToCourse" xml:space="preserve"><value>المقرر</value></data>
+  <data name="Blueprint_Content" xml:space="preserve"><value>المحتوى</value></data>
+  <data name="Blueprint_EmptyTreeText" xml:space="preserve"><value>أضف قسماً ثم الدروس داخله.</value></data>
+  <data name="Blueprint_NoPublishedText" xml:space="preserve"><value>ابدأ بتعديل المسودة ثم انشرها لتُطبَّق على الفصول.</value></data>
+  <data name="Blueprint_PublishedOn" xml:space="preserve"><value>تاريخ النشر</value></data>
+  <data name="Blueprint_Version" xml:space="preserve"><value>الإصدار</value></data>
+  <data name="CourseImport_Subtitle" xml:space="preserve"><value>ارفع ملف Excel لإضافة مقررات دفعة واحدة.</value></data>
+  <data name="CourseProfile_BackToList" xml:space="preserve"><value>المقررات</value></data>
+  <data name="Course_BackToList" xml:space="preserve"><value>المقررات</value></data>
+  <data name="Course_CodeHelp" xml:space="preserve"><value>حروف وأرقام وشرطات فقط، حتى 50 حرفاً.</value></data>
+  <data name="Course_Description" xml:space="preserve"><value>الوصف</value></data>
+  <data name="Course_EmptyText" xml:space="preserve"><value>غيّر عوامل التصفية أو أضف مقرراً جديداً.</value></data>
+  <data name="Course_EmptyTitle" xml:space="preserve"><value>لا توجد مقررات</value></data>
+  <data name="Course_SectionBasics" xml:space="preserve"><value>الأساسيات</value></data>
+  <data name="Course_SectionDetails" xml:space="preserve"><value>التفاصيل</value></data>
+  <data name="Course_SectionOwner" xml:space="preserve"><value>الملكية والتوزيع</value></data>
+  <data name="Course_Subtitle" xml:space="preserve"><value>كتالوج المقررات وملكيتها وتوزيعها على الوحدات.</value></data>
+  <data name="Lesson_SectionPlan" xml:space="preserve"><value>الأهداف والتوقيت</value></data>
+  <data name="Lesson_SectionTitle" xml:space="preserve"><value>العنوان</value></data>
+  <data name="MyCourses_EmptyText" xml:space="preserve"><value>ستظهر هنا المقررات عندما تُعيَّن مشرفاً عليها.</value></data>
+  <data name="MyCourses_Subtitle" xml:space="preserve"><value>المقررات التي تشرف عليها.</value></data>
+  <data name="Supervisor_NoneText" xml:space="preserve"><value>أضف مشرفاً من الموظفين الذين لديهم دور المشرف.</value></data>
+  <data name="Academic_SectionCourses" xml:space="preserve"><value>المقررات</value></data>
+  <data name="Academic_SectionLevel" xml:space="preserve"><value>انتقال المستوى</value></data>
+  <data name="UnitCourses_NoneAvailableText" xml:space="preserve"><value>وزّع مقرراً على هذه الوحدة من صفحة المقرر.</value></data>
+  <data name="UnitCourses_NoneBelowText" xml:space="preserve"><value>لم تُوزَّع مقررات على الوحدات التابعة بعد.</value></data>
+  <data name="UnitSettings_Subtitle" xml:space="preserve"><value>بيانات الوحدة وإعداداتها وسياساتها ومقرراتها.</value></data>
   <data name="ClassPage_Students" xml:space="preserve"><value>الطلاب</value></data>
   <data name="ClassPage_Courses" xml:space="preserve"><value>المقررات</value></data>
   <data name="ClassPage_Teachers" xml:space="preserve"><value>المعلمون</value></data>
@@ -1243,6 +1271,14 @@
   <data name="Matrix_ChooseUnit" xml:space="preserve"><value>اختر وحدة لعرض فصولها.</value></data>
   <data name="Matrix_NoClasses" xml:space="preserve"><value>لا توجد فصول لهذه الوحدة في العام المحدد.</value></data>
   <data name="List_Separator" xml:space="preserve"><value>، </value></data>
+  <data name="Home_DueAssignments" xml:space="preserve"><value>واجبات تنتظر التسليم</value></data>
+  <data name="Home_NothingDue" xml:space="preserve"><value>لا شيء للتسليم.</value></data>
+  <data name="Home_OpenQuizzes" xml:space="preserve"><value>اختبارات مفتوحة</value></data>
+  <data name="Home_NoOpenQuizzes" xml:space="preserve"><value>لا يوجد اختبار مفتوح الآن.</value></data>
+  <data name="Home_ToGrade" xml:space="preserve"><value>بانتظار التصحيح</value></data>
+  <data name="Home_NothingToGrade" xml:space="preserve"><value>لا شيء بانتظار التصحيح.</value></data>
+  <data name="Home_WaitingCount" xml:space="preserve"><value>{0} بالانتظار</value></data>
+  <data name="Home_ActivityError" xml:space="preserve"><value>تعذّر تحميل واجباتك واختباراتك. أعد تحميل الصفحة للمحاولة مرة أخرى.</value></data>
   <data name="Nav_Library" xml:space="preserve"><value>المكتبة</value></data>
   <data name="Library_Title" xml:space="preserve"><value>المكتبة الرقمية</value></data>
   <data name="Library_New" xml:space="preserve"><value>مورد جديد</value></data>
@@ -1314,4 +1350,41 @@
   <data name="Live_Match_Guest" xml:space="preserve"><value>ضيف</value></data>
   <data name="Live_Scope_This" xml:space="preserve"><value>هذه الحصة فقط</value></data>
   <data name="Live_Scope_ThisAndFollowing" xml:space="preserve"><value>هذه الحصة وما بعدها</value></data>
+  <data name="PermModule_Packages" xml:space="preserve"><value>حزم SCORM وH5P</value></data>
+  <data name="Perm_Packages_Upload" xml:space="preserve"><value>رفع الحزم وإدارتها</value></data>
+  <data name="Perm_Packages_View" xml:space="preserve"><value>فتح الحزم ومعاينتها</value></data>
+  <data name="Setting_Packages_MaxEntries" xml:space="preserve"><value>أقصى عدد ملفات في الحزمة</value></data>
+  <data name="Setting_Packages_MaxUncompressedMb" xml:space="preserve"><value>أقصى حجم للحزمة بعد فك الضغط (ميجابايت)</value></data>
+  <data name="Setting_Packages_MaxClientStorageMb" xml:space="preserve"><value>مساحة تخزين الحزم لكل عميل (ميجابايت)</value></data>
+  <data name="Setting_Packages_TokenMinutes" xml:space="preserve"><value>مدة جلسة الحزمة (بالدقائق)</value></data>
+  <data name="Setting_Packages_CommitMinIntervalSeconds" xml:space="preserve"><value>أقل فاصل بين حفظ التقدم (بالثواني)</value></data>
+  <data name="AuditEntity_PackageUpload" xml:space="preserve"><value>رفع حزمة</value></data>
+  <data name="AuditEntity_ScormPackage" xml:space="preserve"><value>حزمة SCORM</value></data>
+  <data name="AuditEntity_H5pContent" xml:space="preserve"><value>محتوى H5P</value></data>
+  <data name="Error_package_invalid" xml:space="preserve"><value>لا يمكن استخدام هذه الحزمة. راجع السبب المعروض معها.</value></data>
+  <data name="Error_package_too_large" xml:space="preserve"><value>الحزمة كبيرة جدًا للرفع أو ستتجاوز مساحة التخزين المتاحة.</value></data>
+  <data name="Error_package_not_ready" xml:space="preserve"><value>الحزمة ليست جاهزة بعد. انتظر حتى ينتهي الفحص.</value></data>
+  <data name="Error_package_commit_rejected" xml:space="preserve"><value>تعذّر حفظ تقدّمك لأن المحاولة مغلقة أو لم تُقبل البيانات.</value></data>
+  <data name="Error_package_host_not_configured" xml:space="preserve"><value>الحزم غير متاحة بعد: لم يُجهَّز موقع المحتوى المنفصل. اطلب من مسؤول المنصة.</value></data>
+  <data name="Error_package_reason_unsafe_path" xml:space="preserve"><value>يوجد ملف في الحزمة مساره يخرج من مجلد الحزمة.</value></data>
+  <data name="Error_package_reason_too_many_entries" xml:space="preserve"><value>عدد ملفات الحزمة أكبر من المسموح.</value></data>
+  <data name="Error_package_reason_too_large" xml:space="preserve"><value>حجم الحزمة بعد فك الضغط أكبر من المسموح.</value></data>
+  <data name="Error_package_reason_compression_ratio" xml:space="preserve"><value>الحزمة مضغوطة بنسبة تفوق المعتاد، فتم رفضها لدواعي الأمان.</value></data>
+  <data name="Error_package_reason_symlink" xml:space="preserve"><value>تحتوي الحزمة على اختصار (رابط رمزي) وهو غير مسموح.</value></data>
+  <data name="Error_package_reason_duplicate_name" xml:space="preserve"><value>يوجد ملفان في الحزمة بالاسم نفسه.</value></data>
+  <data name="Error_package_reason_bad_name_encoding" xml:space="preserve"><value>اسم ملف في الحزمة يحتوي على رموز مخفية أو غير صالحة.</value></data>
+  <data name="Error_package_reason_executable" xml:space="preserve"><value>تحتوي الحزمة على ملف برنامج أو سكربت غير مسموح.</value></data>
+  <data name="Error_package_reason_encrypted" xml:space="preserve"><value>تحتوي الحزمة على ملف محمي بكلمة مرور.</value></data>
+  <data name="Error_package_reason_nested_archive" xml:space="preserve"><value>تحتوي الحزمة على أرشيف مضغوط آخر وهو غير مسموح.</value></data>
+  <data name="Error_package_reason_manifest_invalid" xml:space="preserve"><value>ملف وصف الحزمة مفقود أو غير صحيح، أو صفحة البداية مفقودة.</value></data>
+  <data name="Error_package_reason_xml_unsafe" xml:space="preserve"><value>ملف وصف الحزمة يستخدم ميزات غير مسموحة.</value></data>
+  <data name="Error_package_reason_multi_sco" xml:space="preserve"><value>الحزم متعددة الدروس أو ذات قواعد التسلسل غير مدعومة بعد.</value></data>
+  <data name="Error_package_reason_needs_nested_frames" xml:space="preserve"><value>صفحة البداية تستخدم إطارات، والمنصة لا تدعم ذلك.</value></data>
+  <data name="Error_package_reason_needs_relaxed_policy" xml:space="preserve"><value>يحتاج المحتوى إلى صلاحيات لا تسمح بها المنصة.</value></data>
+  <data name="Error_package_reason_h5p_invalid" xml:space="preserve"><value>ملف H5P غير مكتمل أو محتواه غير صالح.</value></data>
+  <data name="Error_package_reason_validation_timeout" xml:space="preserve"><value>استغرق فحص الحزمة وقتًا طويلًا. جرّب حزمة أصغر.</value></data>
+  <data name="Error_package_reason_quota_exceeded" xml:space="preserve"><value>مساحة تخزين الحزم ممتلئة. احذف الحزم غير المستخدمة أولًا.</value></data>
+  <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>لم يقبل الفحص الأمني هذه الحزمة.</value></data>
+  <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>الملف ليس أرشيف zip صالحًا.</value></data>
+  <data name="Error_package_reason_bad_name" xml:space="preserve"><value>اسم ملف في الحزمة غير صالح (طويل جدًا أو عميق جدًا أو محجوز).</value></data>
 </root>

@@ -89,14 +89,14 @@ public sealed class FakeModulesApi : IModulesApi
         _modules.Where(m => m.ClassCourseId == classCourseId && m.LessonKey == lessonKey)
             .OrderBy(m => m.Node.Order).Select(m => m.Node).ToList();
 
-    public ModuleDetailDto Seed(Guid classCourseId, Guid lessonKey, CreateModuleRequest request, AssetDto? asset = null)
+    public ModuleDetailDto Seed(Guid classCourseId, Guid lessonKey, CreateModuleRequest request, AssetDto? asset = null, Guid? refId = null)
     {
         var order = _modules.Count(m => m.ClassCourseId == classCourseId && m.LessonKey == lessonKey) + 1;
         var node = new ModuleNodeDto(Guid.NewGuid(), request.Kind, order, request.TitleAr, request.TitleEn, request.Visibility,
             request.VisibleFromUtc, request.VisibleToUtc, request.Target, request.GroupId, null, null, request.CompletionRule,
             IsVisibleNow(request.Visibility, request.VisibleFromUtc, request.VisibleToUtc), null);
         var detail = new ModuleDetailDto(node, classCourseId, lessonKey, request.CompletionMinScore,
-            new ModuleContentDto(asset, request.Content.BodyHtmlAr, request.Content.BodyHtmlEn, request.Content.Url, null),
+            new ModuleContentDto(asset, request.Content.BodyHtmlAr, request.Content.BodyHtmlEn, request.Content.Url, refId),
             null, null, CanEdit, ServerNow());
         _modules.Add(detail);
         _created++;

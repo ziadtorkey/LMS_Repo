@@ -1,69 +1,76 @@
+@using Lms.Client.Components
 @using Lms.Client.Services.Api
 @using Lms.Shared.Courses
 @inject ICoursesApi Api
 @inject NavigationManager Navigation
 
 @* Courses of one org unit: available here (allocated here or inherited from above) and allocated below. *@
-<MudStack Spacing="3">
+<div class="lms-unit-courses">
     @if (_error is not null)
     {
-        <MudAlert Severity="Severity.Error" data-testid="unit-courses-error">@_error</MudAlert>
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="unit-courses-error">@_error</MudAlert>
     }
     else if (_courses is null)
     {
-        <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+        <LoadingState Lines="3" TestId="unit-courses-loading" />
     }
     else
     {
-        <MudText Typo="Typo.h6">@L["UnitCourses_Available"]</MudText>
+        <MudText Typo="Typo.subtitle1" HtmlTag="h3" Class="mb-2">@L["UnitCourses_Available"]</MudText>
         @if (_courses.Available.Count == 0)
         {
-            <MudText data-testid="unit-courses-available-empty">@L["UnitCourses_NoneAvailable"]</MudText>
+            <EmptyState Title="@L["UnitCourses_NoneAvailable"]" Text="@L["UnitCourses_NoneAvailableText"]" Icon="@Icons.Material.Rounded.MenuBook" TestId="unit-courses-available-empty" />
         }
         else
         {
-            <MudTable Items="_courses.Available" Dense="true" Hover="true" data-testid="unit-courses-available">
-                <HeaderContent>
-                    <MudTh>@L["Course_Code"]</MudTh>
-                    <MudTh>@L["Common_Name"]</MudTh>
-                    <MudTh>@L["Allocation_Unit"]</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd DataLabel="@L["Course_Code"]"><span dir="ltr">@context.CourseCode</span></MudTd>
-                    <MudTd DataLabel="@L["Common_Name"]">
-                        <MudLink Href="@($"courses/{context.CourseId}")">@CultureText.Pick(context.CourseNameAr, context.CourseNameEn)</MudLink>
-                        @if (context.IsInherited)
-                        {
-                            <MudChip T="string" Size="Size.Small" Color="Color.Info" data-testid="@($"unit-course-inherited-{context.Id}")">@L["Course_Inherited"]</MudChip>
-                        }
-                    </MudTd>
-                    <MudTd DataLabel="@L["Allocation_Unit"]">@CultureText.Pick(context.OrgUnitNameAr, context.OrgUnitNameEn)</MudTd>
-                </RowTemplate>
-            </MudTable>
+            <MudSimpleTable Dense="true" Elevation="0" Class="lms-simple-table lms-stack-table" data-testid="unit-courses-available">
+                <thead>
+                    <tr><th>@L["Course_Code"]</th><th>@L["Common_Name"]</th><th>@L["Allocation_Unit"]</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in _courses.Available)
+                    {
+                        <tr>
+                            <td data-label="@L["Course_Code"]"><span dir="ltr">@row.CourseCode</span></td>
+                            <td data-label="@L["Common_Name"]">
+                                <MudLink Href="@($"courses/{row.CourseId}")" Class="lms-person-link">@CultureText.Pick(row.CourseNameAr, row.CourseNameEn)</MudLink>
+                                @if (row.IsInherited)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Info" data-testid="@($"unit-course-inherited-{row.Id}")">@L["Course_Inherited"]</MudChip>
+                                }
+                            </td>
+                            <td data-label="@L["Allocation_Unit"]">@CultureText.Pick(row.OrgUnitNameAr, row.OrgUnitNameEn)</td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
         }
 
-        <MudText Typo="Typo.h6">@L["UnitCourses_Below"]</MudText>
+        <MudText Typo="Typo.subtitle1" HtmlTag="h3" Class="mt-6 mb-2">@L["UnitCourses_Below"]</MudText>
         @if (_courses.AllocatedBelow.Count == 0)
         {
-            <MudText data-testid="unit-courses-below-empty">@L["UnitCourses_NoneBelow"]</MudText>
+            <EmptyState Title="@L["UnitCourses_NoneBelow"]" Text="@L["UnitCourses_NoneBelowText"]" Icon="@Icons.Material.Rounded.AccountTree" TestId="unit-courses-below-empty" />
         }
         else
         {
-            <MudTable Items="_courses.AllocatedBelow" Dense="true" Hover="true" data-testid="unit-courses-below">
-                <HeaderContent>
-                    <MudTh>@L["Course_Code"]</MudTh>
-                    <MudTh>@L["Common_Name"]</MudTh>
-                    <MudTh>@L["Allocation_Unit"]</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd DataLabel="@L["Course_Code"]"><span dir="ltr">@context.CourseCode</span></MudTd>
-                    <MudTd DataLabel="@L["Common_Name"]"><MudLink Href="@($"courses/{context.CourseId}")">@CultureText.Pick(context.CourseNameAr, context.CourseNameEn)</MudLink></MudTd>
-                    <MudTd DataLabel="@L["Allocation_Unit"]">@CultureText.Pick(context.OrgUnitNameAr, context.OrgUnitNameEn)</MudTd>
-                </RowTemplate>
-            </MudTable>
+            <MudSimpleTable Dense="true" Elevation="0" Class="lms-simple-table lms-stack-table" data-testid="unit-courses-below">
+                <thead>
+                    <tr><th>@L["Course_Code"]</th><th>@L["Common_Name"]</th><th>@L["Allocation_Unit"]</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in _courses.AllocatedBelow)
+                    {
+                        <tr>
+                            <td data-label="@L["Course_Code"]"><span dir="ltr">@row.CourseCode</span></td>
+                            <td data-label="@L["Common_Name"]"><MudLink Href="@($"courses/{row.CourseId}")" Class="lms-person-link">@CultureText.Pick(row.CourseNameAr, row.CourseNameEn)</MudLink></td>
+                            <td data-label="@L["Allocation_Unit"]">@CultureText.Pick(row.OrgUnitNameAr, row.OrgUnitNameEn)</td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
         }
     }
-</MudStack>
+</div>
 
 @code {
     private UnitCoursesDto? _courses;
