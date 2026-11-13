@@ -25,6 +25,10 @@
             @if (ShowGrading)
             {
                 <PackageGradingChoice @bind-Value="_grading" />
+                @if (_grading != _gradingBefore)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" data-testid="package-grading-note">@L["Package_GradingRecalculated"]</MudAlert>
+                }
             }
 
             @switch (Kind)

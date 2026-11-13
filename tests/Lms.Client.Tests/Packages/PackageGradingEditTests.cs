@@ -83,6 +83,39 @@ public sealed class PackageGradingEditTests : ClientTestContext
     }
 
     [Fact]
+    public async Task Changing_the_method_shows_the_recalculation_note_and_going_back_hides_it()
+    {
+        var (module, _) = PackageModule(CompletionRules.Score, PackageGradingMethods.Highest);
+        await StartAsync();
+        OpenDialog(ModuleKinds.Scorm, module);
+        _dialogs.WaitForElement("[data-testid=package-grading]", Wait);
+        Assert.Empty(_dialogs.FindAll("[data-testid=package-grading-note]"));   // nothing changed yet
+
+        _dialogs.Find($"[data-testid=package-grading-{PackageGradingMethods.Last}] input").Change(true);
+
+        var note = _dialogs.WaitForElement("[data-testid=package-grading-note]", Wait);
+        Assert.Contains("Students' graded scores will be recalculated with the new rule.", note.TextContent);
+        Assert.Contains("mud-alert-outlined-info", note.ClassName);
+
+        _dialogs.Find($"[data-testid=package-grading-{PackageGradingMethods.Highest}] input").Change(true);
+        _dialogs.WaitForAssertion(() => Assert.Empty(_dialogs.FindAll("[data-testid=package-grading-note]")), Wait);
+    }
+
+    [Fact]
+    public async Task The_recalculation_note_is_in_arabic_too()
+    {
+        Culture.Current = new CultureInfo("ar");
+        var (module, _) = PackageModule(CompletionRules.Score, PackageGradingMethods.Highest);
+        await StartAsync();
+        OpenDialog(ModuleKinds.Scorm, module);
+        _dialogs.WaitForElement("[data-testid=package-grading]", Wait);
+
+        _dialogs.Find($"[data-testid=package-grading-{PackageGradingMethods.First}] input").Change(true);
+
+        Assert.Contains("ستُعاد حساب درجات الطلاب وفق القاعدة الجديدة.", _dialogs.WaitForElement("[data-testid=package-grading-note]", Wait).TextContent);
+    }
+
+    [Fact]
     public async Task Saving_without_a_change_does_not_call_the_put()
     {
         var (module, _) = PackageModule(CompletionRules.Score, PackageGradingMethods.Last);

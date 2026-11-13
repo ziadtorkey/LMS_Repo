@@ -1426,4 +1426,5 @@
   <data name="Package_Grading_Highest_Help" xml:space="preserve"><value>Students can try again; their score never goes down.</value></data>
   <data name="Package_Grading_Last_Help" xml:space="preserve"><value>Each new attempt replaces the score, even if it's lower.</value></data>
   <data name="Package_Grading_First_Help" xml:space="preserve"><value>Later attempts are practice and aren't graded.</value></data>
+  <data name="Package_GradingRecalculated" xml:space="preserve"><value>Students&apos; graded scores will be recalculated with the new rule.</value></data>
 </root>

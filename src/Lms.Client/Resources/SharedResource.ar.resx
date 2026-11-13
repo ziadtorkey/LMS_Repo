@@ -1426,4 +1426,5 @@
   <data name="Package_Grading_Highest_Help" xml:space="preserve"><value>يمكن للطلاب المحاولة مجددًا ولا تنخفض درجتهم.</value></data>
   <data name="Package_Grading_Last_Help" xml:space="preserve"><value>كل محاولة جديدة تحلّ محل الدرجة حتى لو كانت أقل.</value></data>
   <data name="Package_Grading_First_Help" xml:space="preserve"><value>المحاولات اللاحقة للتدريب ولا تُحتسب.</value></data>
+  <data name="Package_GradingRecalculated" xml:space="preserve"><value>ستُعاد حساب درجات الطلاب وفق القاعدة الجديدة.</value></data>
 </root>
