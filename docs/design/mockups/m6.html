@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LMS M6 mockups</title>
+<!-- Design reference only (docs/design/m6-communication.md). Not served by the app.
+     Open with ?screen=inbox|thread|compose|announcements|announce-compose|notifications|prefs|moderation&lang=ar|en&theme=light|dark -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<style>
+/* ---------- Stitch tokens as LmsTheme.cs and lms-stitch.css set them (main after #560) ---------- */
+:root {
+  --mud-palette-primary:#00663D; --mud-palette-primary-text:#FFFFFF; --mud-palette-info:#1E40AF; --mud-palette-success:#1D7344;
+  --mud-palette-warning:#B45309; --mud-palette-error:#B42318; --mud-palette-background:#F8FAFC; --mud-palette-background-gray:#F1F5F9;
+  --mud-palette-surface:#FFFFFF; --mud-palette-text-primary:#0B1C30; --mud-palette-text-secondary:#475569;
+  --mud-palette-action-default:#475569; --mud-palette-action-disabled:rgba(11,28,48,.32); --mud-palette-action-disabled-background:rgba(11,28,48,.08);
+  --mud-palette-lines-default:#E2E8F0; --mud-palette-lines-inputs:#7A8793; --mud-palette-table-lines:#F1F5F9; --mud-palette-overlay-dark:rgba(11,28,48,.45);
+  --lms-accent:#10B981; --lms-recessed:#EFF4FF; --lms-radius-control:8px; --lms-radius-surface:12px;
+  --lms-shadow-1:0 1px 3px 0 rgba(0,0,0,.04), 0 1px 2px -1px rgba(0,0,0,.02); --lms-shadow-2:0 10px 25px -5px rgba(0,0,0,.08), 0 8px 10px -6px rgba(0,0,0,.04);
+  --lms-focus-ring:0 0 0 2px var(--mud-palette-surface), 0 0 0 4px var(--mud-palette-primary);
+}
+:root[data-theme=dark] {
+  --mud-palette-primary:#4CC38A; --mud-palette-primary-text:#032013; --mud-palette-info:#60A5FA; --mud-palette-success:#34D399;
+  --mud-palette-warning:#FBBF24; --mud-palette-error:#F87171; --mud-palette-background:#090D10; --mud-palette-background-gray:#16202A;
+  --mud-palette-surface:#121A20; --mud-palette-text-primary:#E2E8F0; --mud-palette-text-secondary:#94A3B8;
+  --mud-palette-action-default:#94A3B8; --mud-palette-action-disabled:rgba(226,232,240,.3); --mud-palette-action-disabled-background:rgba(226,232,240,.1);
+  --mud-palette-lines-default:#1E293B; --mud-palette-lines-inputs:#6A7B85; --mud-palette-table-lines:#1E293B; --mud-palette-overlay-dark:rgba(0,0,0,.6);
+  --lms-recessed:#16202A; --lms-shadow-1:0 1px 3px 0 rgba(0,0,0,.35), 0 1px 2px -1px rgba(0,0,0,.25); --lms-shadow-2:0 10px 25px -5px rgba(0,0,0,.55), 0 8px 10px -6px rgba(0,0,0,.35);
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--mud-palette-background); color:var(--mud-palette-text-primary); font-family:Inter, Cairo, system-ui, sans-serif; font-size:15px; line-height:1.55; -webkit-font-smoothing:antialiased; }
+:root[lang=ar] body { font-family:Cairo, Inter, system-ui, sans-serif; }
+.ms { font-family:'Material Symbols Rounded'; font-weight:normal; font-style:normal; font-size:20px; line-height:1; display:inline-block; vertical-align:middle; user-select:none; }
+.ms-sm { font-size:18px; }
+[dir=rtl] .flip { transform:scaleX(-1); }
+h1,h2,h3,p { margin:0; }
+.ltr { direction:ltr; unicode-bidi:isolate; }
+.muted { color:var(--mud-palette-text-secondary); }
+.caption { font-size:12.5px; }
+.vh { position:absolute; inline-size:1px; block-size:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+
+/* ---------- shell: sidebar (Stitch groups), glass app bar ---------- */
+.shell { display:grid; grid-template-columns:260px minmax(0,1fr); min-height:100vh; }
+.side { background:var(--mud-palette-surface); border-inline-end:1px solid var(--mud-palette-lines-default); padding:20px 12px; }
+.brand { display:flex; align-items:center; gap:10px; padding:0 8px 16px; font-weight:700; }
+.brand-mark { inline-size:36px; block-size:36px; border-radius:10px; background:var(--mud-palette-primary); color:var(--mud-palette-primary-text); display:grid; place-items:center; }
+.nav-sec { font-size:12px; font-weight:600; color:var(--mud-palette-text-secondary); padding:14px 12px 4px; }
+.nav { display:flex; align-items:center; gap:12px; padding:9px 12px; border-radius:var(--lms-radius-control); font-size:14px; }
+.nav[aria-current] { background:var(--mud-palette-primary); color:var(--mud-palette-primary-text); font-weight:600; }
+.nav .badge { margin-inline-start:auto; }
+.appbar { height:64px; display:flex; align-items:center; gap:12px; padding-inline:24px; }
+.appbar .spacer { flex:1; }
+.pill { display:inline-flex; align-items:center; gap:6px; height:36px; padding-inline:12px; border-radius:999px; background:var(--lms-recessed); font-size:13.5px; font-weight:500; }
+.page { padding:8px 32px 32px; }
+.icon-btn { inline-size:40px; block-size:40px; border-radius:50%; display:inline-grid; place-items:center; color:var(--mud-palette-action-default); position:relative; border:0; background:none; }
+.icon-btn.sm { inline-size:32px; block-size:32px; }
+.badge { min-inline-size:18px; height:18px; padding-inline:5px; border-radius:9px; background:var(--mud-palette-error); color:#fff; font-size:11px; font-weight:700; display:inline-grid; place-items:center; }
+:root[data-theme=dark] .badge { color:#2A0603; }
+.icon-btn .badge { position:absolute; inset-block-start:2px; inset-inline-end:0; }
+.menu-btn { display:none; }
+
+/* ---------- Stitch building blocks (lms-stitch.css) ---------- */
+.ph { display:flex; flex-wrap:wrap; align-items:flex-end; gap:12px 20px; margin-block:8px 24px; }
+.ph-text { flex:1 1 260px; min-inline-size:0; }
+.h4 { font-family:Cairo, Inter, sans-serif; font-size:32px; font-weight:700; line-height:1.25; letter-spacing:-.01em; }
+.h6 { font-family:Cairo, Inter, sans-serif; font-size:18px; font-weight:600; line-height:1.4; }
+.sub { color:var(--mud-palette-text-secondary); font-size:14.5px; margin-block-start:4px; }
+.card { background:var(--mud-palette-surface); border:1px solid var(--mud-palette-lines-default); border-radius:var(--lms-radius-surface); box-shadow:var(--lms-shadow-1); }
+.card-head { display:flex; align-items:center; gap:12px; padding:16px 20px; border-block-end:1px solid var(--mud-palette-lines-default); }
+.card-body { padding:16px 20px 20px; }
+.sec-icon { inline-size:40px; block-size:40px; border-radius:10px; display:grid; place-items:center; flex:none; color:var(--mud-palette-primary); background:color-mix(in srgb, var(--mud-palette-primary) 10%, transparent); }
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:6px; height:40px; padding-inline:16px; border-radius:var(--lms-radius-control); font:inherit; font-size:14px; font-weight:600; border:1px solid transparent; background:none; color:var(--mud-palette-primary); white-space:nowrap; }
+.btn-filled { background:var(--mud-palette-primary); color:var(--mud-palette-primary-text); }
+.btn-outlined { border-color:var(--mud-palette-lines-default); background:var(--mud-palette-surface); color:var(--mud-palette-text-primary); }
+.btn-error { color:var(--mud-palette-error); }
+.btn-sm { height:32px; padding-inline:12px; font-size:13px; }
+.btn[disabled] { background:var(--mud-palette-action-disabled-background); color:var(--mud-palette-action-disabled); border-color:transparent; }
+.focus { box-shadow:var(--lms-focus-ring); }
+.field { display:flex; flex-direction:column; gap:6px; min-inline-size:0; }
+.label { font-size:13px; font-weight:500; }
+.input { min-height:40px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:6px 12px; border-radius:var(--lms-radius-control); background:var(--lms-recessed); border:1px solid var(--mud-palette-lines-inputs); font-size:14px; color:var(--mud-palette-text-primary); }
+.input.focused { border-color:var(--mud-palette-primary); box-shadow:0 0 0 3px color-mix(in srgb, var(--mud-palette-primary) 25%, transparent); }
+.input .ph-text { color:var(--mud-palette-text-secondary); flex:1; }
+.help { font-size:12.5px; color:var(--mud-palette-text-secondary); }
+.chip { display:inline-flex; align-items:center; gap:5px; height:26px; padding-inline:10px; border-radius:999px; font-size:12.5px; font-weight:500; white-space:nowrap; background:var(--mud-palette-background-gray); color:var(--mud-palette-text-primary); }
+.chip .ms { font-size:16px; }
+.chip-dot::before { content:''; inline-size:6px; block-size:6px; border-radius:50%; background:currentColor; }
+.chip-success { color:var(--mud-palette-success); background:color-mix(in srgb, var(--mud-palette-success) 12%, transparent); }
+.chip-info { color:var(--mud-palette-info); background:color-mix(in srgb, var(--mud-palette-info) 12%, transparent); }
+.chip-warning { color:var(--mud-palette-warning); background:color-mix(in srgb, var(--mud-palette-warning) 14%, transparent); }
+.chip-error { color:var(--mud-palette-error); background:color-mix(in srgb, var(--mud-palette-error) 12%, transparent); }
+.chip-input { background:var(--mud-palette-surface); border:1px solid var(--mud-palette-lines-default); }
+.seg { display:flex; inline-size:fit-content; max-inline-size:100%; overflow-x:auto; gap:4px; padding:4px; border-radius:10px; background:var(--lms-recessed); }
+.seg span { white-space:nowrap; padding:6px 14px; border-radius:var(--lms-radius-control); font-size:13.5px; font-weight:500; color:var(--mud-palette-text-secondary); }
+.seg span[aria-selected] { background:var(--mud-palette-surface); color:var(--mud-palette-text-primary); box-shadow:var(--lms-shadow-1); }
+.toggle-row { display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:var(--lms-radius-control); background:var(--lms-recessed); }
+.toggle-row + .toggle-row { margin-block-start:12px; }
+.toggle-row .t { flex:1; min-inline-size:0; } .toggle-row .t b { font-weight:500; display:block; }
+.switch { inline-size:36px; block-size:20px; border-radius:10px; background:var(--mud-palette-lines-inputs); position:relative; flex:none; }
+.switch::after { content:''; position:absolute; inset-block-start:2px; inset-inline-start:2px; inline-size:16px; block-size:16px; border-radius:50%; background:#fff; }
+.switch.on { background:var(--mud-palette-primary); } .switch.on::after { inset-inline-start:18px; }
+:root[data-theme=dark] .switch.on::after { background:var(--mud-palette-primary-text); }
+.switch.locked { opacity:.55; }
+.avatar { inline-size:40px; block-size:40px; border-radius:50%; display:grid; place-items:center; flex:none; font-size:14px; font-weight:600; background:color-mix(in srgb, var(--mud-palette-primary) 14%, transparent); color:var(--mud-palette-primary); }
+.avatar.sm { inline-size:32px; block-size:32px; font-size:12px; }
+.avatar.grp { background:color-mix(in srgb, var(--mud-palette-info) 14%, transparent); color:var(--mud-palette-info); }
+.dot { inline-size:8px; block-size:8px; border-radius:50%; background:var(--lms-accent); flex:none; }
+table { inline-size:100%; border-collapse:collapse; font-size:14px; }
+th { text-align:start; font-size:13px; font-weight:600; color:var(--mud-palette-text-secondary); background:var(--mud-palette-background-gray); padding:12px 16px; }
+td .ltr { white-space:nowrap; }
+td { padding:12px 16px; border-block-start:1px solid var(--mud-palette-table-lines); vertical-align:middle; }
+tr.sel td { background:color-mix(in srgb, var(--mud-palette-primary) 6%, transparent); }
+.alert { display:flex; gap:10px; align-items:flex-start; padding:12px 14px; border-radius:var(--lms-radius-control); font-size:14px; border:1px solid currentColor; }
+.alert-info { color:var(--mud-palette-info); background:color-mix(in srgb, var(--mud-palette-info) 6%, transparent); }
+.alert-warning { color:var(--mud-palette-warning); background:color-mix(in srgb, var(--mud-palette-warning) 7%, transparent); }
+.alert .t { color:var(--mud-palette-text-primary); }
+
+/* ---------- M6 additions (proposed lms-stitch.css block; see the spec, section 8) ---------- */
+.lms-inbox { display:grid; grid-template-columns:360px minmax(0,1fr); block-size:calc(100vh - 150px); min-block-size:560px; overflow:hidden; }
+.lms-inbox-list { min-inline-size:0; border-inline-end:1px solid var(--mud-palette-lines-default); display:flex; flex-direction:column; min-block-size:0; }
+.lms-inbox-tools { padding:12px; display:flex; flex-direction:column; gap:10px; border-block-end:1px solid var(--mud-palette-lines-default); }
+.lms-convs { overflow:auto; flex:1; }
+.lms-conv { display:flex; gap:12px; padding:12px 14px; border-block-end:1px solid var(--mud-palette-table-lines); align-items:flex-start; }
+.lms-conv[aria-current] { background:color-mix(in srgb, var(--mud-palette-primary) 8%, transparent); box-shadow:inset 3px 0 0 var(--mud-palette-primary); }
+[dir=rtl] .lms-conv[aria-current] { box-shadow:inset -3px 0 0 var(--mud-palette-primary); }
+.lms-conv-main { flex:1; min-inline-size:0; }
+.lms-conv-top { display:flex; gap:8px; align-items:baseline; }
+.lms-conv-name { font-weight:500; flex:1; min-inline-size:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.lms-conv.unread .lms-conv-name, .lms-conv.unread .lms-conv-preview { font-weight:700; color:var(--mud-palette-text-primary); }
+.lms-conv-preview { font-size:13.5px; color:var(--mud-palette-text-secondary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.lms-conv-side { display:flex; flex-direction:column; align-items:flex-end; gap:6px; }
+.lms-thread { display:flex; flex-direction:column; min-block-size:0; }
+.lms-thread-head { display:flex; align-items:center; gap:12px; padding:12px 16px; border-block-end:1px solid var(--mud-palette-lines-default); }
+.lms-thread-body { flex:1; overflow:auto; padding:16px 20px; display:flex; flex-direction:column; gap:10px; background:var(--mud-palette-background); }
+.lms-day { align-self:center; font-size:12px; font-weight:600; color:var(--mud-palette-text-secondary); background:var(--mud-palette-background-gray); padding:2px 10px; border-radius:999px; margin-block:6px; }
+.lms-msg { max-inline-size:min(560px, 80%); display:flex; flex-direction:column; gap:4px; }
+.lms-msg-them { align-self:flex-start; }
+.lms-msg-me { align-self:flex-end; align-items:flex-end; }
+.lms-bubble { padding:10px 14px; border-radius:14px; background:var(--mud-palette-surface); border:1px solid var(--mud-palette-lines-default); font-size:14.5px; overflow-wrap:anywhere; }
+.lms-msg-them .lms-bubble { border-start-start-radius:4px; }
+.lms-msg-me .lms-bubble { background:color-mix(in srgb, var(--mud-palette-primary) 12%, var(--mud-palette-surface)); border-color:transparent; border-start-end-radius:4px; }
+.lms-msg-meta { font-size:12px; color:var(--mud-palette-text-secondary); display:flex; gap:6px; align-items:center; }
+.lms-msg-from { font-size:12.5px; font-weight:600; color:var(--mud-palette-text-secondary); }
+.lms-attach { display:flex; align-items:center; gap:8px; margin-block-start:6px; padding:8px 10px; border-radius:var(--lms-radius-control); background:var(--lms-recessed); font-size:13px; }
+.lms-msg-removed .lms-bubble { background:transparent; border-style:dashed; color:var(--mud-palette-text-secondary); font-style:italic; }
+.lms-composer { display:flex; gap:8px; align-items:flex-end; padding:12px 16px; border-block-start:1px solid var(--mud-palette-lines-default); background:var(--mud-palette-surface); }
+.lms-composer .input { flex:1; min-height:44px; }
+.lms-composer-off { padding:12px 16px; border-block-start:1px solid var(--mud-palette-lines-default); background:var(--mud-palette-surface); }
+.lms-menu { position:absolute; z-index:5; min-inline-size:220px; padding:6px; border-radius:var(--lms-radius-surface); background:var(--mud-palette-surface); border:1px solid var(--mud-palette-lines-default); box-shadow:var(--lms-shadow-2); }
+.lms-menu div { display:flex; gap:10px; align-items:center; padding:9px 10px; border-radius:var(--lms-radius-control); font-size:14px; }
+.lms-menu .err { color:var(--mud-palette-error); }
+.lms-menu hr { border:0; border-block-start:1px solid var(--mud-palette-lines-default); margin:4px 0; }
+.lms-picker-pop { margin-block-start:6px; border-radius:var(--lms-radius-surface); border:1px solid var(--mud-palette-lines-default); background:var(--mud-palette-surface); box-shadow:var(--lms-shadow-2); overflow:hidden; }
+.lms-picker-group { font-size:12px; font-weight:600; color:var(--mud-palette-text-secondary); padding:10px 14px 4px; }
+.lms-picker-opt { display:flex; gap:10px; align-items:center; padding:8px 14px; font-size:14px; }
+.lms-picker-opt[aria-selected=true] { background:color-mix(in srgb, var(--mud-palette-primary) 8%, transparent); }
+.lms-picker-opt[aria-disabled=true] { color:var(--mud-palette-text-secondary); }
+.lms-picker-opt .grow { flex:1; min-inline-size:0; }
+.dialog-wrap { position:relative; min-block-size:100vh; background:var(--mud-palette-overlay-dark); display:grid; place-items:start center; padding:48px 16px; }
+.dialog { inline-size:min(640px, 100%); background:var(--mud-palette-surface); border-radius:var(--lms-radius-surface); box-shadow:var(--lms-shadow-2); }
+.dialog-head { display:flex; align-items:center; gap:12px; padding:18px 24px 8px; }
+.dialog-body { padding:8px 24px 16px; display:flex; flex-direction:column; gap:18px; }
+.dialog-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:8px; padding:12px 24px 20px; }
+.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.lms-ann-list { display:flex; flex-direction:column; gap:16px; max-inline-size:860px; }
+.lms-ann { padding:18px 20px; }
+.lms-ann.pinned { border-color:color-mix(in srgb, var(--mud-palette-primary) 35%, transparent); }
+.lms-ann-top { display:flex; gap:12px; align-items:flex-start; }
+.lms-ann-title { font-weight:600; font-size:16.5px; }
+.lms-ann-meta { display:flex; flex-wrap:wrap; gap:6px 12px; font-size:13px; color:var(--mud-palette-text-secondary); margin-block-start:2px; }
+.lms-ann-text { margin-block:10px 12px; font-size:14.5px; }
+.lms-audience { display:flex; flex-wrap:wrap; gap:6px; }
+.lms-notif-pop { position:absolute; inset-block-start:60px; inset-inline-end:84px; inline-size:400px; z-index:5; }
+.lms-notif { display:flex; gap:12px; padding:12px 16px; border-block-end:1px solid var(--mud-palette-table-lines); }
+.lms-notif.unread { background:color-mix(in srgb, var(--mud-palette-primary) 5%, transparent); }
+.lms-notif .grow { flex:1; min-inline-size:0; font-size:14px; }
+.lms-notif .grow b { font-weight:600; }
+.lms-kind { inline-size:36px; block-size:36px; border-radius:10px; display:grid; place-items:center; flex:none; background:var(--lms-recessed); color:var(--mud-palette-primary); }
+.lms-prefs td:not(:first-child), .lms-prefs th:not(:first-child) { text-align:center; }
+.lms-chan-head { display:flex; flex-direction:column; align-items:center; gap:2px; }
+.lms-mod { display:grid; grid-template-columns:minmax(0,1fr) 380px; gap:20px; align-items:start; }
+.lms-context .lms-msg { max-inline-size:100%; }
+.lms-flagged .lms-bubble { border:2px solid var(--mud-palette-warning); }
+.lms-stats { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:16px; margin-block-end:20px; }
+.lms-stat { display:flex; justify-content:space-between; gap:12px; padding:16px 20px; }
+.lms-stat-label { font-size:13px; font-weight:500; color:var(--mud-palette-text-secondary); }
+.lms-stat-value { font-size:28px; font-weight:700; line-height:1.2; }
+.mobile-only { display:none; }
+
+/* ---------- 360 px ---------- */
+@media (max-width: 899.98px) {
+  .shell { grid-template-columns:minmax(0,1fr); } .side { display:none; } .menu-btn { display:inline-grid; }
+  .appbar { padding-inline:8px; gap:4px; } .appbar .ctx { display:none; }
+  .page { padding:4px 16px 24px; }
+  .h4 { font-size:26px; }
+  .lms-inbox { grid-template-columns:minmax(0,1fr); block-size:auto; min-block-size:0; overflow:visible; }
+  .lms-inbox.show-thread .lms-inbox-list, .lms-inbox:not(.show-thread) .lms-thread { display:none; }
+  .lms-inbox-list { border:0; }
+  .lms-thread-body { min-block-size:420px; padding:12px; }
+  .lms-msg { max-inline-size:88%; }
+  .mobile-only { display:inline-grid; }
+  .grid2 { grid-template-columns:1fr; }
+  .alert { flex-wrap:wrap; } .alert > .btn { margin-inline-start:30px; }
+  .dialog-wrap { padding:0; place-items:stretch; } .dialog { border-radius:0; min-block-size:100vh; }
+  .lms-notif-pop { position:static; inline-size:auto; }
+  .lms-mod { grid-template-columns:1fr; }
+  .lms-stats { grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px; }
+  .lms-stat { flex-direction:column-reverse; padding:12px 14px; } .lms-stat-value { font-size:22px; }
+  table.stack thead { display:none; } table.stack tr { display:block; padding:12px 16px; border-block-start:1px solid var(--mud-palette-table-lines); }
+  table.stack td { display:flex; justify-content:space-between; gap:12px; padding:4px 0; border:0; }
+  table.stack td::before { content:attr(data-label); font-size:12.5px; color:var(--mud-palette-text-secondary); }
+  .lms-prefs-m td { align-items:center; } .lms-prefs-m td:first-child { font-weight:600; justify-content:flex-start; padding-block-end:6px; } .lms-prefs-m td:first-child::before { content:none; }
+  .lms-prefs-m td > span:first-of-type { margin-inline-start:auto; }
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const qs = new URLSearchParams(location.search);
+const lang = qs.get('lang') === 'ar' ? 'ar' : 'en';
+const theme = qs.get('theme') === 'dark' ? 'dark' : 'light';
+const screen = qs.get('screen') || 'inbox';
+document.documentElement.lang = lang; document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr'; document.documentElement.dataset.theme = theme;
+
+const S = {
+  en: {
+    app:'Learning Management System', ctx:'Al Noor Schools — North Branch (Teacher)', year:'2026/2027', other:'العربية',
+    secHome:'Home', secComm:'Communication', navInbox:'Messages', navAnn:'Announcements', navMod:'Moderation', navNotif:'Notifications', secAcad:'Academic', navClasses:'My class courses',
+    inboxTitle:'Messages', inboxSub:'Conversations with staff, students and guardians you may contact.', newMsg:'New message',
+    search:'Search messages', fAll:'All', fUnread:'Unread', fGroups:'Groups',
+    c1:'Huda Al-Harbi (guardian of Omar)', c1p:'Thank you, he will bring the form tomorrow.', c2:'Physics 1 · 10-A guardians', c2p:'You: The lab trip is on Thursday at 9:00.', c3:'Mr. Khalid Nasser', c3p:'Can you cover period 3 on Sunday?', c4:'Omar Saleh (10-A)', c4p:'I uploaded the homework again.', c5:'Grade 10 teachers', c5p:'Sara: Minutes of today’s meeting attached.',
+    t1:'10:42', t2:'09:15', t3:'Yesterday', t4:'Yesterday', t5:'Mon',
+    groupOf:'Group · 24 people', guardianOf:'Guardian of Omar Saleh · 10-A', today:'Today', yesterday:'Yesterday',
+    m1:'Good morning. Omar was absent on Sunday because of a fever. Is there anything he needs to catch up on?', m2:'Good morning, I hope he is feeling better. He missed the forces worksheet; I have attached it. The permission form for the lab trip is also due on Wednesday.',
+    m3:'Thank you, he will bring the form tomorrow.', seen:'Seen', sent:'Sent', attach:'Forces worksheet.pdf · 240 KB',
+    write:'Write a message', send:'Send', attachBtn:'Attach a file', moreActions:'More actions', back:'Back to messages',
+    gm1:'The lab trip is on Thursday at 9:00. Students should bring the signed form and a packed lunch.', gm2:'Will the bus be back before the end of the school day?', gm3:'Yes, the bus returns at 13:30.', gm4:'This message was removed by a moderator.',
+    fromHuda:'Huda Al-Harbi', fromAhmad:'Ahmad Yousef (guardian)',
+    menuMute:'Mute conversation', menuCopy:'Copy text', menuReport:'Report message', menuBlock:'Block Ahmad Yousef', menuLeave:'Leave group',
+    off:'You can only read this conversation. Messaging rules at your school don’t allow students to message other students.',
+    composeTitle:'New message', to:'To', toHelp:'Search for people, or a class or course group. Only people the messaging rules allow appear as choices.',
+    pickTyping:'10-A', grpClasses:'Classes and courses', grpPeople:'People', o1:'Physics 1 · 10-A — guardians', o1c:'24 people', o2:'Physics 1 · 10-A — students', o2c:'26 people', o3:'Huda Al-Harbi', o3c:'Guardian of Omar Saleh · 10-A', o4:'Omar Saleh', o4c:'Student · 10-A', o5:'Physics 1 · 10-B — guardians', o5c:'Not allowed: you don’t teach 10-B',
+    subject:'Subject (optional)', subjectHelp:'Shown as the group name when you write to several people.', message:'Message', msgPh:'Write your message…', groupNote:'Replies go to everyone in the group. To reply privately, people start a new message.',
+    cancel:'Cancel', sendBtn:'Send',
+    annTitle:'Announcements', annSub:'News for your school, units, classes and courses. Pinned items stay at the top until they expire.', newAnn:'New announcement',
+    fNow:'Current', fScheduled:'Scheduled', fExpired:'Expired', fMine:'Mine',
+    a1:'Parent–teacher meetings next week', a1t:'Meetings are on Tuesday and Wednesday from 16:00. Book a slot with each teacher from the Guardians page by Sunday.', a1m:'Principal’s office · 2026-11-12', a1x:'Until 2026-11-20',
+    a2:'Lab trip: signed forms due Wednesday', a2t:'Students in 10-A who are going on the lab trip must hand in the signed permission form by Wednesday.', a2m:'Mr. Faisal · 2026-11-11',
+    a3:'Mid-term exam timetable', a3t:'The timetable for the mid-term exams is attached. Exams start on 2026-11-30.', a3m:'Academic affairs · scheduled for 2026-11-15 07:00',
+    pinned:'Pinned', scheduled:'Scheduled', expires:'Expires', audOrg:'All of Al Noor Schools', audRoleG:'Guardians', audUnit:'North Branch', audClass:'10-A', audCourse:'Physics 1', audRoleS:'Students', audGrade:'Grade 10',
+    readBy:'Read by 412 of 590', readMore:'Read more', edit:'Edit', unpublish:'Unpublish',
+    acTitle:'New announcement', acTitleF:'Title', acTitleAr:'Title (Arabic)', acTitleEn:'Title (English)', acBody:'Text', aud:'Audience', audScope:'Who should see it',
+    scOrg:'Organization', scUnit:'Unit', scClass:'Class', scCourse:'Course', scGroup:'Group', scRole:'Role',
+    audPick:'Units', audRoles:'Roles in these units', rStaff:'Staff', rStudents:'Students', rGuardians:'Guardians', reach:'About 590 people will see it.',
+    when:'Publishing', pNow:'Now', pLater:'Schedule', pDate:'Date', pTime:'Time', tz:'Times are in your time zone: Asia/Riyadh',
+    pin:'Pin to the top', pinHelp:'Pinned announcements stay first until they expire.', expiry:'Expires on', expiryHelp:'After this date it moves to Expired. Leave empty to keep it.',
+    notify:'Notify the audience', notifyHelp:'Each person gets it through the channels they chose.', schedBtn:'Schedule',
+    ncTitle:'Notifications', markAll:'Mark all as read', seeAll:'See all notifications', settings:'Notification settings', earlier:'Earlier',
+    n1:'<b>Huda Al-Harbi</b> sent you a message', n1s:'“Thank you, he will bring the form tomorrow.”', n2:'<b>3 new messages</b> in Physics 1 · 10-A guardians', n3:'<b>New announcement:</b> Parent–teacher meetings next week', n4:'<b>Omar Saleh</b> submitted Forces worksheet', n5:'Your report about a message was <b>reviewed</b>',
+    tn1:'2 min', tn2:'20 min', tn3:'1 h', tn4:'Yesterday', tn5:'Mon',
+    prTitle:'Notification preferences', prSub:'Choose how each kind of update reaches you. In-app notifications are always on.',
+    chIn:'In-app', chEmail:'Email', chSms:'SMS', chPush:'Push', chInS:'Always on', chEmailS:'huda@…', chSmsS:'+966 5…', chPushS:'This device: off',
+    pushOff:'Push notifications are off on this device.', pushOn:'Turn on for this browser', pushHelp:'Your browser will ask for permission. You can turn it off again here or in the browser settings.',
+    evMsg:'New message', evMsgGrp:'New message in a group', evAnn:'New announcement', evAnnPin:'Pinned announcement', evGrade:'Grade published', evAbs:'Absence of my child', evMod:'Moderation decision about my report',
+    lockedNote:'Set by your school: can’t be turned off.', save:'Save',
+    modTitle:'Moderation', modSub:'Reported messages from all conversations at your school. Decide each report; the people involved are told the outcome.',
+    stOpen:'Open reports', stToday:'New today', stBlocked:'People blocked', stAvg:'Median time to decide',
+    colMsg:'Reported message', colReason:'Reason', colBy:'Reported by', colWhen:'When', colStatus:'Status',
+    r1:'You are all useless, nobody should…', r1r:'Harassment', r1b:'Omar Saleh', r1w:'2026-11-13 10:40', r2:'Click this link to get free…', r2r:'Spam', r2b:'Huda Al-Harbi', r2w:'2026-11-13 08:02', r3:'Meet me after school near…', r3r:'Safety concern', r3b:'Mr. Khalid Nasser', r3w:'2026-11-12 14:55', r4:'This homework is copied from…', r4r:'Other', r4b:'Sara Ali', r4w:'2026-11-11 09:20',
+    sNew:'New', sReview:'In review', sDone:'Removed',
+    detail:'Report details', convIn:'In “Grade 10 students — Physics project” · group of 6', context:'Conversation around the message', flagged:'Reported message', reasonL:'Reason given', reasonT:'“He keeps insulting our group in every message.”',
+    sender:'Sender', senderV:'Yousef Majid · Student · 10-A · 2 earlier reports, 0 removed',
+    decide:'Decision', keep:'Keep the message', keepH:'Close the report. The message stays.', remove:'Remove the message', removeH:'Everyone in the conversation sees “removed by a moderator”.', block:'Remove and block the sender', blockH:'Yousef can read but not send messages until you unblock him.',
+    note:'Note to the people involved (optional)', decideBtn:'Save decision', dm1:'Let’s split the slides: I take the intro.', dm2:'You are all useless, nobody should…', dm3:'Please keep it respectful.',
+    from1:'Lina', from2:'Yousef Majid', from3:'Omar Saleh'
+  },
+  ar: {
+    app:'نظام إدارة التعلم', ctx:'مدارس النور — فرع الشمال (معلم)', year:'2026/2027', other:'English',
+    secHome:'الرئيسية', secComm:'التواصل', navInbox:'الرسائل', navAnn:'الإعلانات', navMod:'الإشراف على الرسائل', navNotif:'الإشعارات', secAcad:'الأكاديمي', navClasses:'مقرراتي الفصلية',
+    inboxTitle:'الرسائل', inboxSub:'محادثاتك مع الموظفين والطلاب وأولياء الأمور الذين يمكنك مراسلتهم.', newMsg:'رسالة جديدة',
+    search:'ابحث في الرسائل', fAll:'الكل', fUnread:'غير المقروءة', fGroups:'المجموعات',
+    c1:'هدى الحربي (ولية أمر عمر)', c1p:'شكرًا لك، سيُحضر النموذج غدًا.', c2:'الفيزياء 1 · أولياء أمور 10-أ', c2p:'أنت: الرحلة إلى المختبر يوم الخميس الساعة 9:00.', c3:'أ. خالد ناصر', c3p:'هل يمكنك تغطية الحصة الثالثة يوم الأحد؟', c4:'عمر صالح (10-أ)', c4p:'رفعت الواجب مرة أخرى.', c5:'معلمو الصف العاشر', c5p:'سارة: مرفق محضر اجتماع اليوم.',
+    t1:'10:42', t2:'09:15', t3:'أمس', t4:'أمس', t5:'الاثنين',
+    groupOf:'مجموعة · 24 شخصًا', guardianOf:'ولية أمر عمر صالح · 10-أ', today:'اليوم', yesterday:'أمس',
+    m1:'صباح الخير. تغيّب عمر يوم الأحد بسبب الحمى. هل هناك ما يحتاج إلى تعويضه؟', m2:'صباح النور، أتمنى أن يكون بخير. فاتته ورقة عمل القوى، وقد أرفقتها. وموعد تسليم نموذج الموافقة على رحلة المختبر يوم الأربعاء.',
+    m3:'شكرًا لك، سيُحضر النموذج غدًا.', seen:'تمت القراءة', sent:'أُرسلت', attach:'ورقة عمل القوى.pdf · 240 ك.ب',
+    write:'اكتب رسالة', send:'إرسال', attachBtn:'إرفاق ملف', moreActions:'إجراءات أخرى', back:'العودة إلى الرسائل',
+    gm1:'رحلة المختبر يوم الخميس الساعة 9:00. يُحضر الطلاب النموذج الموقّع ووجبة غداء.', gm2:'هل ستعود الحافلة قبل نهاية اليوم الدراسي؟', gm3:'نعم، تعود الحافلة الساعة 13:30.', gm4:'حذف المشرف هذه الرسالة.',
+    fromHuda:'هدى الحربي', fromAhmad:'أحمد يوسف (ولي أمر)',
+    menuMute:'كتم المحادثة', menuCopy:'نسخ النص', menuReport:'الإبلاغ عن الرسالة', menuBlock:'حظر أحمد يوسف', menuLeave:'مغادرة المجموعة',
+    off:'يمكنك قراءة هذه المحادثة فقط. قواعد المراسلة في مدرستك لا تسمح للطلاب بمراسلة طلاب آخرين.',
+    composeTitle:'رسالة جديدة', to:'إلى', toHelp:'ابحث عن أشخاص أو عن مجموعة فصل أو مقرر. لا تظهر إلا الخيارات التي تسمح بها قواعد المراسلة.',
+    pickTyping:'10-أ', grpClasses:'الفصول والمقررات', grpPeople:'الأشخاص', o1:'الفيزياء 1 · 10-أ — أولياء الأمور', o1c:'24 شخصًا', o2:'الفيزياء 1 · 10-أ — الطلاب', o2c:'26 شخصًا', o3:'هدى الحربي', o3c:'ولية أمر عمر صالح · 10-أ', o4:'عمر صالح', o4c:'طالب · 10-أ', o5:'الفيزياء 1 · 10-ب — أولياء الأمور', o5c:'غير مسموح: لا تدرّس 10-ب',
+    subject:'الموضوع (اختياري)', subjectHelp:'يظهر اسمًا للمجموعة عند مراسلة عدة أشخاص.', message:'الرسالة', msgPh:'اكتب رسالتك…', groupNote:'تصل الردود إلى كل أفراد المجموعة. للرد على انفراد يبدأ الشخص رسالة جديدة.',
+    cancel:'إلغاء', sendBtn:'إرسال',
+    annTitle:'الإعلانات', annSub:'أخبار المدرسة والوحدات والفصول والمقررات. تبقى الإعلانات المثبّتة في الأعلى حتى ينتهي موعدها.', newAnn:'إعلان جديد',
+    fNow:'الحالية', fScheduled:'المجدولة', fExpired:'المنتهية', fMine:'إعلاناتي',
+    a1:'لقاءات أولياء الأمور والمعلمين الأسبوع القادم', a1t:'تُعقد اللقاءات يومي الثلاثاء والأربعاء من الساعة 16:00. احجز موعدًا مع كل معلم من صفحة أولياء الأمور قبل يوم الأحد.', a1m:'مكتب المدير · 2026-11-12', a1x:'حتى 2026-11-20',
+    a2:'رحلة المختبر: تسليم النماذج الموقّعة يوم الأربعاء', a2t:'على طلاب 10-أ المشاركين في رحلة المختبر تسليم نموذج الموافقة الموقّع قبل يوم الأربعاء.', a2m:'أ. فيصل · 2026-11-11',
+    a3:'جدول اختبارات منتصف الفصل', a3t:'مرفق جدول اختبارات منتصف الفصل. تبدأ الاختبارات يوم 2026-11-30.', a3m:'الشؤون الأكاديمية · مجدول في 2026-11-15 07:00',
+    pinned:'مثبّت', scheduled:'مجدول', expires:'ينتهي', audOrg:'كل مدارس النور', audRoleG:'أولياء الأمور', audUnit:'فرع الشمال', audClass:'10-أ', audCourse:'الفيزياء 1', audRoleS:'الطلاب', audGrade:'الصف العاشر',
+    readBy:'قرأه 412 من 590', readMore:'اقرأ المزيد', edit:'تعديل', unpublish:'إلغاء النشر',
+    acTitle:'إعلان جديد', acTitleF:'العنوان', acTitleAr:'العنوان (بالعربية)', acTitleEn:'العنوان (بالإنجليزية)', acBody:'النص', aud:'الجمهور', audScope:'من يرى الإعلان',
+    scOrg:'المؤسسة', scUnit:'الوحدة', scClass:'الفصل', scCourse:'المقرر', scGroup:'المجموعة', scRole:'الدور',
+    audPick:'الوحدات', audRoles:'الأدوار في هذه الوحدات', rStaff:'الموظفون', rStudents:'الطلاب', rGuardians:'أولياء الأمور', reach:'سيرى الإعلان نحو 590 شخصًا.',
+    when:'النشر', pNow:'الآن', pLater:'جدولة', pDate:'التاريخ', pTime:'الوقت', tz:'الأوقات بتوقيتك: Asia/Riyadh',
+    pin:'تثبيت في الأعلى', pinHelp:'تبقى الإعلانات المثبّتة أولًا حتى ينتهي موعدها.', expiry:'ينتهي في', expiryHelp:'بعد هذا التاريخ ينتقل إلى المنتهية. اتركه فارغًا لإبقائه.',
+    notify:'إشعار الجمهور', notifyHelp:'يصل الإشعار إلى كل شخص عبر القنوات التي اختارها.', schedBtn:'جدولة',
+    ncTitle:'الإشعارات', markAll:'تعليم الكل كمقروء', seeAll:'عرض كل الإشعارات', settings:'إعدادات الإشعارات', earlier:'سابقًا',
+    n1:'أرسلت إليك <b>هدى الحربي</b> رسالة', n1s:'«شكرًا لك، سيُحضر النموذج غدًا.»', n2:'<b>3 رسائل جديدة</b> في أولياء أمور الفيزياء 1 · 10-أ', n3:'<b>إعلان جديد:</b> لقاءات أولياء الأمور والمعلمين الأسبوع القادم', n4:'سلّم <b>عمر صالح</b> ورقة عمل القوى', n5:'<b>رُوجع</b> بلاغك عن رسالة',
+    tn1:'دقيقتان', tn2:'20 دقيقة', tn3:'ساعة', tn4:'أمس', tn5:'الاثنين',
+    prTitle:'تفضيلات الإشعارات', prSub:'اختر كيف يصلك كل نوع من التحديثات. إشعارات التطبيق تعمل دائمًا.',
+    chIn:'داخل المنصة', chEmail:'البريد الإلكتروني', chSms:'الرسائل النصية', chPush:'الإشعارات الفورية', chInS:'تعمل دائمًا', chEmailS:'huda@…', chSmsS:'+966 5…', chPushS:'هذا الجهاز: متوقفة',
+    pushOff:'الإشعارات الفورية متوقفة على هذا الجهاز.', pushOn:'تفعيلها لهذا المتصفح', pushHelp:'سيطلب المتصفح إذنك. يمكنك إيقافها مرة أخرى من هنا أو من إعدادات المتصفح.',
+    evMsg:'رسالة جديدة', evMsgGrp:'رسالة جديدة في مجموعة', evAnn:'إعلان جديد', evAnnPin:'إعلان مثبّت', evGrade:'نشر درجة', evAbs:'غياب ابني', evMod:'قرار الإشراف في بلاغي',
+    lockedNote:'تحدده مدرستك: لا يمكن إيقافه.', save:'حفظ',
+    modTitle:'الإشراف على الرسائل', modSub:'الرسائل المُبلغ عنها من كل المحادثات في مدرستك. اتخذ قرارًا في كل بلاغ، ويُبلَّغ المعنيون بالنتيجة.',
+    stOpen:'بلاغات مفتوحة', stToday:'جديدة اليوم', stBlocked:'أشخاص محظورون', stAvg:'الوسيط لوقت القرار',
+    colMsg:'الرسالة المُبلغ عنها', colReason:'السبب', colBy:'المُبلِغ', colWhen:'الوقت', colStatus:'الحالة',
+    r1:'أنتم جميعًا بلا فائدة، لا أحد يجب…', r1r:'إساءة', r1b:'عمر صالح', r1w:'2026-11-13 10:40', r2:'اضغط هذا الرابط للحصول على…', r2r:'رسائل مزعجة', r2b:'هدى الحربي', r2w:'2026-11-13 08:02', r3:'قابلني بعد المدرسة قرب…', r3r:'مخاوف على السلامة', r3b:'أ. خالد ناصر', r3w:'2026-11-12 14:55', r4:'هذا الواجب منسوخ من…', r4r:'أخرى', r4b:'سارة علي', r4w:'2026-11-11 09:20',
+    sNew:'جديد', sReview:'قيد المراجعة', sDone:'حُذفت',
+    detail:'تفاصيل البلاغ', convIn:'في «طلاب الصف العاشر — مشروع الفيزياء» · مجموعة من 6', context:'المحادثة حول الرسالة', flagged:'الرسالة المُبلغ عنها', reasonL:'السبب المذكور', reasonT:'«يسيء إلى مجموعتنا في كل رسالة.»',
+    sender:'المُرسِل', senderV:'يوسف ماجد · طالب · 10-أ · بلاغان سابقان، لم يُحذف شيء',
+    decide:'القرار', keep:'إبقاء الرسالة', keepH:'إغلاق البلاغ وتبقى الرسالة.', remove:'حذف الرسالة', removeH:'يرى كل من في المحادثة «حذف المشرف هذه الرسالة».', block:'الحذف وحظر المُرسِل', blockH:'يستطيع يوسف القراءة دون الإرسال حتى تلغي الحظر.',
+    note:'ملاحظة للمعنيين (اختيارية)', decideBtn:'حفظ القرار', dm1:'لنقسّم الشرائح: أتولى المقدمة.', dm2:'أنتم جميعًا بلا فائدة، لا أحد يجب…', dm3:'رجاءً لنحافظ على الاحترام.',
+    from1:'لينا', from2:'يوسف ماجد', from3:'عمر صالح'
+  }
+}[lang];
+
+const I = (n, cls='') => `<span class="ms ${cls}" aria-hidden="true">${n}</span>`;
+const nav = cur => `
+  <aside class="side"><div class="brand"><span class="brand-mark">${I('school')}</span>${S.app}</div>
+    <div class="nav">${I('home')}${S.secHome}</div>
+    <div class="nav-sec">${S.secAcad}</div><div class="nav">${I('auto_stories')}${S.navClasses}</div>
+    <div class="nav-sec">${S.secComm}</div>
+    <div class="nav" ${cur==='inbox'?'aria-current="page"':''}>${I('forum')}${S.navInbox}<span class="badge">4</span></div>
+    <div class="nav" ${cur==='ann'?'aria-current="page"':''}>${I('campaign')}${S.navAnn}</div>
+    <div class="nav" ${cur==='notif'?'aria-current="page"':''}>${I('notifications')}${S.navNotif}</div>
+    <div class="nav" ${cur==='mod'?'aria-current="page"':''}>${I('shield_person')}${S.navMod}<span class="badge">3</span></div>
+  </aside>`;
+const bar = (bellOpen=false) => `<header class="appbar"><button class="icon-btn menu-btn">${I('menu')}</button><span class="pill ctx">${S.ctx}</span><span class="pill ctx">${I('calendar_month','ms-sm')}${S.year}</span><span class="spacer"></span>
+  <button class="icon-btn ${bellOpen?'focus':''}" aria-label="${S.navNotif}">${I('notifications')}<span class="badge">5</span></button><button class="icon-btn">${I('dark_mode')}</button><span class="pill" style="background:none">${S.other}</span><button class="icon-btn">${I('account_circle')}</button></header>`;
+const shell = (cur, body, bellOpen) => `<div class="shell">${nav(cur)}<div style="position:relative">${bar(bellOpen)}<main class="page">${body}</main></div></div>`;
+const header = (title, sub, actions='') => `<div class="ph"><div class="ph-text"><h1 class="h4">${title}</h1><p class="sub">${sub}</p></div>${actions}</div>`;
+
+const conv = (n, name, prev, time, opts={}) => `<div class="lms-conv ${opts.unread?'unread':''}" ${opts.cur?'aria-current="true"':''}>
+  <span class="avatar ${opts.grp?'grp':''}">${opts.grp?I('groups'):n}</span>
+  <div class="lms-conv-main"><div class="lms-conv-top"><span class="lms-conv-name">${name}</span><span class="caption muted ltr">${time}</span></div>
+  <div class="lms-conv-preview">${prev}</div></div>${opts.unread?`<div class="lms-conv-side"><span class="badge" style="background:var(--mud-palette-primary);color:var(--mud-palette-primary-text)">${opts.unread}</span></div>`:''}</div>`;
+const list = cur => `<section class="lms-inbox-list" aria-label="${S.inboxTitle}">
+  <div class="lms-inbox-tools"><div class="input">${I('search')}<span class="ph-text">${S.search}</span></div>
+  <div class="seg" role="tablist"><span aria-selected="true">${S.fAll}</span><span>${S.fUnread}</span><span>${S.fGroups}</span></div></div>
+  <div class="lms-convs">${conv('HH', S.c1, S.c1p, S.t1, {cur:cur==='c1', unread:cur==='c1'?0:1})}${conv('', S.c2, S.c2p, S.t2, {grp:1, unread:3, cur:cur==='c2'})}${conv('KN', S.c3, S.c3p, S.t3)}${conv('OS', S.c4, S.c4p, S.t4)}${conv('', S.c5, S.c5p, S.t5, {grp:1})}</div></section>`;
+const msg = (side, text, meta, from='', extra='') => `<div class="lms-msg lms-msg-${side}">${from?`<span class="lms-msg-from">${from}</span>`:''}<div class="lms-bubble">${text}${extra}</div><span class="lms-msg-meta">${meta}</span></div>`;
+const composer = () => `<div class="lms-composer"><button class="icon-btn sm" aria-label="${S.attachBtn}">${I('attach_file')}</button><div class="input"><span class="ph-text">${S.write}</span></div><button class="btn btn-filled">${I('send','flip')}<span>${S.send}</span></button></div>`;
+
+function inbox() {
+  const thread = `<section class="lms-thread" aria-label="${S.c1}">
+    <div class="lms-thread-head"><button class="icon-btn sm mobile-only" aria-label="${S.back}">${I('arrow_back','flip')}</button><span class="avatar">HH</span><div style="flex:1;min-inline-size:0"><div style="font-weight:600">${S.c1}</div><div class="caption muted">${S.guardianOf}</div></div><button class="icon-btn" aria-label="${S.moreActions}">${I('more_vert')}</button></div>
+    <div class="lms-thread-body" role="log" aria-live="polite"><span class="lms-day">${S.yesterday}</span>
+      ${msg('them', S.m1, `<span class="ltr">16:05</span>`)}
+      ${msg('me', S.m2, `<span class="ltr">16:20</span> · ${I('done_all','ms-sm')} ${S.seen}`, '', `<div class="lms-attach">${I('picture_as_pdf')}<span>${S.attach}</span></div>`)}
+      <span class="lms-day">${S.today}</span>${msg('them', S.m3, `<span class="ltr">10:42</span>`)}</div>${composer()}</section>`;
+  return shell('inbox', header(S.inboxTitle, S.inboxSub, `<button class="btn btn-filled">${I('edit_square')}${S.newMsg}</button>`) + `<div class="card lms-inbox">${list('c1')}${thread}</div>`);
+}
+function thread() {
+  const t = `<section class="lms-thread" aria-label="${S.c2}" style="position:relative">
+    <div class="lms-thread-head"><button class="icon-btn sm mobile-only" aria-label="${S.back}">${I('arrow_back','flip')}</button><span class="avatar grp">${I('groups')}</span><div style="flex:1;min-inline-size:0"><div style="font-weight:600">${S.c2}</div><div class="caption muted">${S.groupOf}</div></div><button class="icon-btn">${I('more_vert')}</button></div>
+    <div class="lms-thread-body"><span class="lms-day">${S.today}</span>
+      ${msg('me', S.gm1, `<span class="ltr">09:15</span> · ${S.sent}`)}
+      <div style="position:relative">${msg('them', S.gm2, `<span class="ltr">09:31</span>`, S.fromHuda)}
+        <button class="icon-btn sm focus" aria-label="${S.moreActions}" aria-expanded="true" style="position:absolute;inset-block-start:22px;inset-inline-start:min(420px,72%)">${I('more_horiz')}</button>
+        <div class="lms-menu" role="menu" style="inset-block-start:58px;inset-inline-start:min(300px,30%)"><div>${I('notifications_off')}${S.menuMute}</div><div>${I('content_copy')}${S.menuCopy}</div><hr><div class="err">${I('flag')}${S.menuReport}</div><div class="err">${I('block')}${S.menuBlock}</div></div></div>
+      <div class="lms-msg lms-msg-them lms-msg-removed"><span class="lms-msg-from">${S.fromAhmad}</span><div class="lms-bubble">${I('do_not_disturb_on','ms-sm')} ${S.gm4}</div></div>
+      ${msg('me', S.gm3, `<span class="ltr">09:40</span> · ${I('done_all','ms-sm')} ${S.seen}`)}</div>
+    <div class="lms-composer-off"><div class="alert alert-info">${I('info')}<span class="t">${S.off}</span></div></div></section>`;
+  return shell('inbox', header(S.inboxTitle, S.inboxSub, `<button class="btn btn-filled">${I('edit_square')}${S.newMsg}</button>`) + `<div class="card lms-inbox show-thread">${list('c2')}${t}</div>`);
+}
+function compose() {
+  return `<div class="dialog-wrap"><div class="dialog" role="dialog" aria-labelledby="dt"><div class="dialog-head"><span class="sec-icon">${I('edit_square')}</span><h2 class="h6" id="dt" style="flex:1">${S.composeTitle}</h2><button class="icon-btn">${I('close')}</button></div>
+  <div class="dialog-body"><div class="field"><span class="label">${S.to}</span>
+    <div class="input focused"><span class="chip chip-input">${I('person')}${S.o3}<span class="ms ms-sm">close</span></span><span>${S.pickTyping}</span><span class="ph-text"></span></div>
+    <div class="lms-picker-pop" role="listbox"><div class="lms-picker-group">${S.grpClasses}</div>
+      <div class="lms-picker-opt" aria-selected="true">${I('groups')}<span class="grow">${S.o1}</span><span class="caption muted">${S.o1c}</span></div>
+      <div class="lms-picker-opt">${I('groups')}<span class="grow">${S.o2}</span><span class="caption muted">${S.o2c}</span></div>
+      <div class="lms-picker-opt" aria-disabled="true">${I('block')}<span class="grow">${S.o5}<div class="caption">${S.o5c}</div></span></div>
+      <div class="lms-picker-group">${S.grpPeople}</div>
+      <div class="lms-picker-opt">${I('check','ms-sm')}<span class="avatar sm">HH</span><span class="grow">${S.o3}<div class="caption muted">${S.o3c}</div></span></div>
+      <div class="lms-picker-opt"><span class="ms ms-sm" style="visibility:hidden">check</span><span class="avatar sm">OS</span><span class="grow">${S.o4}<div class="caption muted">${S.o4c}</div></span></div></div>
+    <span class="help">${S.toHelp}</span></div>
+  <div class="field"><span class="label">${S.subject}</span><div class="input"><span class="ph-text"></span></div><span class="help">${S.subjectHelp}</span></div>
+  <div class="field"><span class="label">${S.message}</span><div class="input" style="min-height:110px;align-items:flex-start"><span class="ph-text">${S.msgPh}</span></div></div>
+  <div class="alert alert-info">${I('info')}<span class="t">${S.groupNote}</span></div></div>
+  <div class="dialog-actions"><button class="btn btn-sm" style="margin-inline-end:auto">${I('attach_file')}${S.attachBtn}</button><button class="btn">${S.cancel}</button><button class="btn btn-filled">${I('send','flip')}${S.sendBtn}</button></div></div></div>`;
+}
+const ann = (o) => `<article class="card lms-ann ${o.pin?'pinned':''}"><div class="lms-ann-top"><span class="sec-icon">${I(o.icon)}</span><div style="flex:1;min-inline-size:0">
+  <div style="display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center"><h2 class="lms-ann-title">${o.t}</h2>${o.chips||''}</div><div class="lms-ann-meta">${o.m}</div></div>
+  <button class="icon-btn sm" aria-label="${S.moreActions}">${I('more_vert')}</button></div>
+  <p class="lms-ann-text">${o.x}</p><div style="display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between"><div class="lms-audience" aria-label="${S.aud}">${o.aud}</div>${o.read?`<span class="caption muted">${o.read}</span>`:''}</div></article>`;
+function announcements() {
+  const aud = (i, t) => `<span class="chip">${I(i)}${t}</span>`;
+  return shell('ann', header(S.annTitle, S.annSub, `<button class="btn btn-filled">${I('add')}${S.newAnn}</button>`) +
+    `<div class="seg" role="tablist" style="margin-block-end:20px"><span aria-selected="true">${S.fNow}</span><span>${S.fScheduled}</span><span>${S.fExpired}</span><span>${S.fMine}</span></div>
+    <div class="lms-ann-list">
+    ${ann({pin:1, icon:'push_pin', t:S.a1, chips:`<span class="chip chip-success chip-dot">${S.pinned}</span>`, m:`<span>${S.a1m}</span><span>${S.a1x}</span>`, x:S.a1t, aud:aud('domain',S.audOrg)+aud('family_restroom',S.audRoleG), read:S.readBy})}
+    ${ann({icon:'campaign', t:S.a2, m:`<span>${S.a2m}</span>`, x:S.a2t, aud:aud('menu_book',S.audCourse)+aud('groups',S.audClass)+aud('school',S.audRoleS)+aud('family_restroom',S.audRoleG)})}
+    ${ann({icon:'schedule', t:S.a3, chips:`<span class="chip chip-info chip-dot">${S.scheduled}</span>`, m:`<span>${S.a3m}</span>`, x:S.a3t, aud:aud('account_tree',S.audUnit)+aud('stairs',S.audGrade)})}
+    </div>`);
+}
+function announceCompose() {
+  return `<div class="dialog-wrap"><div class="dialog" role="dialog" style="inline-size:min(720px,100%)"><div class="dialog-head"><span class="sec-icon">${I('campaign')}</span><h2 class="h6" style="flex:1">${S.acTitle}</h2><button class="icon-btn">${I('close')}</button></div>
+  <div class="dialog-body">
+    <div class="grid2"><div class="field"><span class="label">${S.acTitleAr}</span><div class="input" dir="rtl">لقاءات أولياء الأمور والمعلمين</div></div><div class="field"><span class="label">${S.acTitleEn}</span><div class="input" dir="ltr">Parent–teacher meetings</div></div></div>
+    <div class="field"><span class="label">${S.acBody}</span><div class="input" style="min-height:80px;align-items:flex-start">${S.a1t}</div></div>
+    <fieldset style="border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:12px"><legend class="label" style="margin-block-end:8px">${S.audScope}</legend>
+      <div class="seg" style="flex-wrap:wrap"><span>${S.scOrg}</span><span aria-selected="true">${S.scUnit}</span><span>${S.scClass}</span><span>${S.scCourse}</span><span>${S.scGroup}</span></div>
+      <div class="field"><span class="label">${S.audPick}</span><div class="input"><span class="chip chip-input">${S.audUnit}<span class="ms ms-sm">close</span></span><span class="ph-text"></span>${I('arrow_drop_down')}</div></div>
+      <div class="field"><span class="label">${S.audRoles}</span><div style="display:flex;flex-wrap:wrap;gap:8px"><span class="chip chip-success">${I('check')}${S.rGuardians}</span><span class="chip chip-success">${I('check')}${S.rStaff}</span><span class="chip">${S.rStudents}</span></div></div>
+      <div class="alert alert-info">${I('groups')}<span class="t" role="status">${S.reach}</span></div></fieldset>
+    <div class="field"><span class="label">${S.when}</span><div class="seg"><span>${S.pNow}</span><span aria-selected="true">${S.pLater}</span></div></div>
+    <div class="grid2"><div class="field"><span class="label">${S.pDate}</span><div class="input"><span class="ltr">2026-11-15</span><span class="ph-text"></span>${I('event')}</div></div><div class="field"><span class="label">${S.pTime}</span><div class="input"><span class="ltr">07:00</span><span class="ph-text"></span>${I('schedule')}</div></div></div>
+    <span class="help" style="margin-block-start:-10px">${S.tz}</span>
+    <div><div class="toggle-row"><div class="t"><b>${S.pin}</b><span class="help">${S.pinHelp}</span></div><span class="switch on"></span></div>
+      <div class="toggle-row"><div class="t"><b>${S.notify}</b><span class="help">${S.notifyHelp}</span></div><span class="switch on"></span></div></div>
+    <div class="field"><span class="label">${S.expiry}</span><div class="input"><span class="ltr">2026-11-20</span><span class="ph-text"></span>${I('event')}</div><span class="help">${S.expiryHelp}</span></div></div>
+  <div class="dialog-actions"><button class="btn">${S.cancel}</button><button class="btn btn-filled">${I('schedule_send','flip')}${S.schedBtn}</button></div></div></div>`;
+}
+const notif = (icon, html, time, unread, sub='') => `<div class="lms-notif ${unread?'unread':''}"><span class="lms-kind">${I(icon)}</span><div class="grow">${html}${sub?`<div class="caption muted">${sub}</div>`:''}<div class="caption muted">${time}</div></div>${unread?'<span class="dot" aria-label="unread" style="margin-block-start:6px"></span>':''}</div>`;
+function notifications() {
+  const pop = `<div class="card lms-notif-pop" role="dialog" aria-label="${S.ncTitle}"><div class="card-head" style="padding:12px 16px"><h2 class="h6" style="flex:1">${S.ncTitle}</h2><button class="btn btn-sm">${S.markAll}</button><button class="icon-btn sm" aria-label="${S.settings}">${I('settings')}</button></div>
+    ${notif('forum', S.n1, S.tn1, 1, S.n1s)}${notif('groups', S.n2, S.tn2, 1)}${notif('campaign', S.n3, S.tn3, 1)}
+    <div class="lms-picker-group">${S.earlier}</div>${notif('assignment_turned_in', S.n4, S.tn4, 0)}${notif('shield_person', S.n5, S.tn5, 0)}
+    <div style="padding:10px 16px;text-align:center"><button class="btn btn-sm">${S.seeAll}</button></div></div>`;
+  return `<div class="shell">${nav('inbox')}<div style="position:relative">${bar(true)}${pop}<main class="page">${header(S.inboxTitle, S.inboxSub)}<div class="card lms-inbox" style="opacity:.5">${list('c1')}</div></main></div></div>`;
+}
+function prefs() {
+  const sw = (on, locked) => `<span style="display:inline-flex;gap:6px;align-items:center">${locked?I('lock','ms-sm muted'):''}<span class="switch ${on?'on':''} ${locked?'locked':''}" role="switch" aria-checked="${on}" ${locked?`aria-disabled="true" title="${S.lockedNote}"`:''}></span></span>`;
+  const row = (ev, a, b, c, d, lockB) => `<tr><td data-label="">${ev}</td><td data-label="${S.chIn}">${sw(a, true)}</td><td data-label="${S.chEmail}">${sw(b, lockB)}</td><td data-label="${S.chSms}">${sw(c)}</td><td data-label="${S.chPush}">${sw(d)}</td></tr>`;
+  const ch = (i, t, s) => `<div class="lms-chan-head">${I(i)}<span>${t}</span><span class="caption muted ltr">${s}</span></div>`;
+  return shell('notif', header(S.prTitle, S.prSub) +
+    `<div class="alert alert-warning" style="margin-block-end:16px;align-items:center">${I('notifications_off')}<span class="t" style="flex:1">${S.pushOff}<div class="help">${S.pushHelp}</div></span><button class="btn btn-outlined btn-sm">${S.pushOn}</button></div>
+    <div class="card"><table class="lms-prefs stack lms-prefs-m"><thead><tr><th></th><th>${ch('notifications',S.chIn,S.chInS)}</th><th>${ch('mail',S.chEmail,S.chEmailS)}</th><th>${ch('sms',S.chSms,S.chSmsS)}</th><th>${ch('phone_iphone',S.chPush,S.chPushS)}</th></tr></thead><tbody>
+    ${row(S.evMsg,1,1,0,1)}${row(S.evMsgGrp,1,0,0,0)}${row(S.evAnn,1,1,0,1)}${row(S.evAnnPin,1,1,1,1,true)}${row(S.evGrade,1,1,0,1)}${row(S.evAbs,1,1,1,1,true)}${row(S.evMod,1,1,0,0)}</tbody></table>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 20px;border-block-start:1px solid var(--mud-palette-lines-default)"><span class="help">${I('lock','ms-sm')} ${S.lockedNote}</span><button class="btn btn-filled">${S.save}</button></div></div>`);
+}
+function moderation() {
+  const st = (l, v, i) => `<div class="card lms-stat"><div><div class="lms-stat-label">${l}</div><div class="lms-stat-value">${v}</div></div><span class="sec-icon">${I(i)}</span></div>`;
+  const r = (k, chip, sel) => `<tr ${sel?'class="sel"':''}><td data-label="${S.colMsg}" style="max-inline-size:280px"><span style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${S['r'+k]}</span></td><td data-label="${S.colReason}">${S['r'+k+'r']}</td><td data-label="${S.colBy}">${S['r'+k+'b']}</td><td data-label="${S.colWhen}"><span class="ltr">${S['r'+k+'w']}</span></td><td data-label="${S.colStatus}">${chip}</td></tr>`;
+  const opt = (sel, t, h, err) => `<label class="toggle-row" style="align-items:flex-start;${sel?'outline:2px solid var(--mud-palette-primary);':''}"><span class="ms" style="color:${sel?'var(--mud-palette-primary)':'var(--mud-palette-action-default)'}">${sel?'radio_button_checked':'radio_button_unchecked'}</span><span class="t"><b ${err?'style="color:var(--mud-palette-error)"':''}>${t}</b><span class="help">${h}</span></span></label>`;
+  const detail = `<aside class="card" aria-labelledby="dd"><div class="card-head"><span class="sec-icon">${I('flag')}</span><div style="flex:1"><h2 class="h6" id="dd">${S.detail}</h2><div class="caption muted">${S.convIn}</div></div></div>
+    <div class="card-body" style="display:flex;flex-direction:column;gap:16px">
+      <div class="lms-context" style="display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:var(--lms-radius-control);background:var(--mud-palette-background)" aria-label="${S.context}">
+        ${msg('them', S.dm1, '<span class="ltr">10:31</span>', S.from1)}<div class="lms-flagged">${msg('them', S.dm2, `<span class="ltr">10:38</span> · <span class="chip chip-warning" style="height:22px">${I('flag')}${S.flagged}</span>`, S.from2)}</div>${msg('them', S.dm3, '<span class="ltr">10:40</span>', S.from3)}</div>
+      <div><div class="label">${S.reasonL}</div><p>${S.r1r} · ${S.reasonT}</p></div>
+      <div><div class="label">${S.sender}</div><p class="muted">${S.senderV}</p></div>
+      <fieldset style="border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:8px"><legend class="label" style="margin-block-end:6px">${S.decide}</legend>${opt(0,S.keep,S.keepH)}${opt(1,S.remove,S.removeH)}${opt(0,S.block,S.blockH,1)}</fieldset>
+      <div class="field"><span class="label">${S.note}</span><div class="input" style="min-height:64px"></div></div>
+      <div style="display:flex;justify-content:flex-end"><button class="btn btn-filled">${S.decideBtn}</button></div></div></aside>`;
+  return shell('mod', header(S.modTitle, S.modSub) +
+    `<div class="lms-stats">${st(S.stOpen,'3','flag')}${st(S.stToday,'2','today')}${st(S.stBlocked,'1','block')}${st(S.stAvg,'4 h','timer')}</div>
+    <div class="lms-mod"><div class="card"><div style="padding:12px 16px;border-block-end:1px solid var(--mud-palette-lines-default)"><div class="seg"><span aria-selected="true">${S.stOpen}</span><span>${S.sDone}</span></div></div>
+      <table class="stack"><thead><tr><th>${S.colMsg}</th><th>${S.colReason}</th><th>${S.colBy}</th><th>${S.colWhen}</th><th>${S.colStatus}</th></tr></thead><tbody>
+      ${r(1,`<span class="chip chip-warning chip-dot">${S.sReview}</span>`,1)}${r(2,`<span class="chip chip-info chip-dot">${S.sNew}</span>`)}${r(3,`<span class="chip chip-error chip-dot">${S.sNew}</span>`)}${r(4,`<span class="chip chip-info chip-dot">${S.sNew}</span>`)}</tbody></table></div>${detail}</div>`);
+}
+document.getElementById('app').innerHTML = ({inbox, thread, compose, announcements, 'announce-compose':announceCompose, notifications, prefs, moderation}[screen] || inbox)();
+</script>
+</body>
+</html>
