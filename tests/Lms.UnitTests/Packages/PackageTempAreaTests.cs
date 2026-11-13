@@ -73,49 +73,78 @@ public sealed class PackageTempAreaTests : IDisposable
     }
 
     [Fact]
-    public async Task Second_validation_for_the_same_client_waits()
+    public async Task A_second_validation_for_the_same_client_does_not_wait_it_is_told_to_come_back()
     {
         var gate = new PackageValidationGate(Options.Create(new PackageValidationOptions { MaxConcurrent = 2 }));
         var client = Guid.NewGuid();
-        var first = await gate.EnterAsync(client, default);
+        var first = gate.TryEnter(client);
+        Assert.NotNull(first);
 
-        var second = gate.EnterAsync(client, default);
-        await Task.Delay(100);
-        Assert.False(second.IsCompleted);
+        // Returns at once (a worker is never held), and another client still gets in.
+        Assert.Null(gate.TryEnter(client));
+        var other = gate.TryEnter(Guid.NewGuid());
+        Assert.NotNull(other);
 
-        var otherClient = await gate.EnterAsync(Guid.NewGuid(), default);
         await first.DisposeAsync();
-        await using var slot = await second.WaitAsync(TimeSpan.FromSeconds(5));
-        await otherClient.DisposeAsync();
+        var again = gate.TryEnter(client);
+        Assert.NotNull(again);
+        await again.DisposeAsync();
+        await other.DisposeAsync();
     }
 
     [Fact]
     public async Task The_server_runs_at_most_the_configured_number_of_validations()
     {
         var gate = new PackageValidationGate(Options.Create(new PackageValidationOptions { MaxConcurrent = 2 }));
-        var a = await gate.EnterAsync(Guid.NewGuid(), default);
-        var b = await gate.EnterAsync(Guid.NewGuid(), default);
+        var a = gate.TryEnter(Guid.NewGuid());
+        var b = gate.TryEnter(Guid.NewGuid());
+        var thirdClient = Guid.NewGuid();
 
-        var third = gate.EnterAsync(Guid.NewGuid(), default);
-        await Task.Delay(100);
-        Assert.False(third.IsCompleted);
+        Assert.NotNull(a);
+        Assert.NotNull(b);
+        Assert.Null(gate.TryEnter(thirdClient));
 
         await a.DisposeAsync();
-        await using var slot = await third.WaitAsync(TimeSpan.FromSeconds(5));
+        var third = gate.TryEnter(thirdClient);
+        Assert.NotNull(third);
+        await third.DisposeAsync();
         await b.DisposeAsync();
     }
 
     [Fact]
-    public async Task A_cancelled_wait_gives_the_client_slot_back()
+    public async Task A_refused_entry_leaves_no_slot_taken()
     {
         var gate = new PackageValidationGate(Options.Create(new PackageValidationOptions { MaxConcurrent = 1 }));
-        var holder = await gate.EnterAsync(Guid.NewGuid(), default);
+        var holder = gate.TryEnter(Guid.NewGuid());
         var client = Guid.NewGuid();
-        using var cancel = new CancellationTokenSource(100);
 
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => gate.EnterAsync(client, cancel.Token));
-        await holder.DisposeAsync();
+        Assert.Null(gate.TryEnter(client)); // the server is full; the client slot it briefly took is given back
+        await holder!.DisposeAsync();
 
-        await using var slot = await gate.EnterAsync(client, default).WaitAsync(TimeSpan.FromSeconds(5));
+        var slot = gate.TryEnter(client);
+        Assert.NotNull(slot);
+        await slot.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task The_temp_sweep_removes_only_old_job_areas()
+    {
+        var oldArea = Directory.CreateDirectory(Path.Combine(_parent, Guid.NewGuid().ToString("N")));
+        var freshArea = Directory.CreateDirectory(Path.Combine(_parent, Guid.NewGuid().ToString("N")));
+        var foreign = Directory.CreateDirectory(Path.Combine(_parent, "important-data"));
+        var hyphenated = Directory.CreateDirectory(Path.Combine(_parent, Guid.NewGuid().ToString("D")));
+        var past = DateTime.UtcNow - PackageTempSweepJob.MaxAge - TimeSpan.FromHours(1);
+        foreach (var d in new[] { oldArea, foreign, hyphenated })
+        {
+            Directory.SetLastWriteTimeUtc(d.FullName, past);
+        }
+
+        await new PackageTempSweepJob(Options.Create(new PackageValidationOptions { TempRoot = _parent }),
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<PackageTempSweepJob>.Instance).RunAsync();
+
+        Assert.False(Directory.Exists(oldArea.FullName));
+        Assert.True(Directory.Exists(freshArea.FullName));
+        Assert.True(Directory.Exists(foreign.FullName));
+        Assert.True(Directory.Exists(hyphenated.FullName));
     }
 }

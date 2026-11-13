@@ -80,6 +80,10 @@ internal sealed class HangfirePackageJobs(IBackgroundJobs jobs) : IPackageJobs
     public void ScheduleValidation(Guid organizationId, Guid packageId) =>
         jobs.EnqueueAsSystem<PackageValidationJob>(j => j.RunAsync(organizationId, packageId, CancellationToken.None));
 
+    public void ScheduleValidationLater(Guid organizationId, Guid packageId, TimeSpan delay) =>
+        jobs.ScheduleAsSystem<PackageValidationJob>(
+            $"package-validation:{packageId:N}", DateTimeOffset.UtcNow + delay, j => j.RunAsync(organizationId, packageId, CancellationToken.None));
+
     public void SchedulePurge(Guid organizationId, Guid packageId) =>
         jobs.EnqueueAsSystem<PackagePurgeJob>(j => j.RunAsync(organizationId, packageId, CancellationToken.None));
 }

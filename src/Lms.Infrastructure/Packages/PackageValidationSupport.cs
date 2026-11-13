@@ -17,19 +17,23 @@ public sealed class PackageValidationGate(IOptions<PackageValidationOptions> opt
     private readonly SemaphoreSlim _global = new(Math.Max(1, options.Value.MaxConcurrent));
     private readonly ConcurrentDictionary<Guid, SemaphoreSlim> _perClient = new();
 
-    /// <summary>Waits for a slot of the client and a slot of the server; dispose the result to give both back.</summary>
-    public async Task<Slot> EnterAsync(Guid organizationId, CancellationToken ct)
+    /// <summary>
+    /// Takes a slot of the client and a slot of the server if both are free right now; null when either is busy. It never waits: a job that
+    /// finds the gate busy reschedules itself, so a background worker is not held (with two workers, two uploads of one client would otherwise
+    /// stall every other client and every other job).
+    /// </summary>
+    public Slot? TryEnter(Guid organizationId)
     {
         var client = _perClient.GetOrAdd(organizationId, _ => new SemaphoreSlim(1));
-        await client.WaitAsync(ct);
-        try
+        if (!client.Wait(0))
         {
-            await _global.WaitAsync(ct);
+            return null;
         }
-        catch
+
+        if (!_global.Wait(0))
         {
             client.Release();
-            throw;
+            return null;
         }
 
         return new Slot(_global, client);
@@ -97,7 +101,9 @@ public sealed class PackageTempSweepJob(IOptions<PackageValidationOptions> optio
             return Task.CompletedTask;
         }
 
-        foreach (var directory in Directory.EnumerateDirectories(parent).Where(d => DateTime.UtcNow - Directory.GetLastWriteTimeUtc(d) > MaxAge))
+        // Only the job areas (a Guid in the N format), only past MaxAge: anything else under the folder is not ours to remove.
+        foreach (var directory in Directory.EnumerateDirectories(parent)
+                     .Where(d => Guid.TryParseExact(Path.GetFileName(d), "N", out _) && DateTime.UtcNow - Directory.GetLastWriteTimeUtc(d) > MaxAge))
         {
             try
             {

@@ -17,6 +17,9 @@ public sealed class PackageValidationOptions
 
     public TimeSpan Timeout { get; set; } = TimeSpan.FromMinutes(5);
 
+    /// <summary>How long a job that finds the gate busy waits before it runs again (it never holds a worker).</summary>
+    public TimeSpan RetryDelay { get; set; } = TimeSpan.FromSeconds(20);
+
     /// <summary>Validations that run at once on this server.</summary>
     public int MaxConcurrent { get; set; } = 2;
 
@@ -35,7 +38,8 @@ public sealed class PackageValidationOptions
 /// </summary>
 public sealed class PackageValidationJob(
     LmsDbContext db, IFileStorage files, IPackageStore store, ISettingsResolver settings, IEnumerable<IPackageValidator> validators,
-    IPackageScanner scanner, PackageValidationGate gate, IOptions<PackageValidationOptions> options, ILogger<PackageValidationJob> logger)
+    IPackageScanner scanner, PackageValidationGate gate, IPackageJobs jobs, IOptions<PackageValidationOptions> options,
+    ILogger<PackageValidationJob> logger)
 {
     public async Task RunAsync(Guid organizationId, Guid packageId, CancellationToken cancellationToken)
     {
@@ -45,7 +49,14 @@ public sealed class PackageValidationJob(
             return; // another client's id, deleted, or already decided: nothing to do (a replay changes nothing)
         }
 
-        await using var slot = await gate.EnterAsync(organizationId, cancellationToken);
+        // Never wait here: a busy gate means "come back later", and the worker is free for other clients and other jobs.
+        if (gate.TryEnter(organizationId) is not { } slot)
+        {
+            jobs.ScheduleValidationLater(organizationId, packageId, options.Value.RetryDelay);
+            return;
+        }
+
+        await using var held = slot;
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeout.CancelAfter(options.Value.Timeout);
         upload.MarkValidating();
@@ -110,6 +121,14 @@ public sealed class PackageValidationJob(
 
         var prefix = IPackageStore.PrefixOf(upload.OrganizationId, upload.Id);
         await PutAllAsync(prefix, area, ct);
+        // A delete may have come in while the files were being stored (its purge ran before they existed): then nothing may stay behind.
+        if (!await db.Set<PackageUpload>().AnyAsync(p => p.Id == upload.Id, CancellationToken.None))
+        {
+            await store.DeletePrefixAsync(prefix, CancellationToken.None);
+            logger.LogInformation("Package {PackageId} was deleted during validation; its files were removed", upload.Id);
+            return;
+        }
+
         upload.MarkReady(result.Title ?? upload.FileName, result.Version, result.MainLibrary, prefix, area.WrittenBytes);
         await db.SaveChangesAsync(CancellationToken.None);
     }
