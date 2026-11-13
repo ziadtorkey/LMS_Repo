@@ -55,6 +55,7 @@ public static class ClientServices
             services.AddSingleton<IBlueprintsApi>(new FakeBlueprintsApi { AutoSeed = true });
             services.AddSingleton<ILessonPlansApi, FakeLessonPlansApi>();
             services.AddSingleton<IFileUploadApi, FakeFileUploadApi>();
+            services.AddSingleton<ILibraryApi, FakeLibraryApi>();
             services.AddSingleton<IForumsApi, FakeForumsApi>();
             services.AddSingleton<IAssetsApi, FakeAssetsApi>();
             services.AddSingleton<IModulesApi, FakeModulesApi>();
@@ -102,6 +103,7 @@ public static class ClientServices
         services.AddScoped<IBlueprintsApi, BlueprintsApi>();
         services.AddScoped<ILessonPlansApi, LessonPlansApi>();
         services.AddScoped<IFileUploadApi, FileUploadApi>();
+        services.AddScoped<ILibraryApi, LibraryApi>();
         services.AddScoped<IForumsApi, ForumsApi>();
         services.AddScoped<IAssetsApi, AssetsApi>();
         services.AddScoped<IModulesApi, ModulesApi>();
