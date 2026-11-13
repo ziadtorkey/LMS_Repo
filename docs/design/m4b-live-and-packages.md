@@ -15,7 +15,8 @@ Everything in `docs/DESIGN.md` applies. This file only adds what M4b needs. The 
 - **Time zone.** Authoring shows the browser's IANA zone once, in the dialog's time section ("Times are in your time zone: Asia/Riyadh"). Lists don't repeat it.
 - **External links** (Zoom, recordings) never show the full URL. They show a **host hint** next to the link (`lms-host-hint`: an LTR caption chip with the host name, for example `zoom.us`) and "Opens in a new tab" for screen readers (visually hidden text, or the visible caption in the join panel).
 - **Disabled, not hidden.** Permissions decide whether an action exists. State (outside the join window, package not ready, provider not configured) disables it, with a caption that says why and when it changes.
-- **Live regions.** Countdowns use `role="timer"` with `aria-live="off"`, plus a polite status that announces at 15 min, 5 min and 1 min before the start and at the start. Save state and package checking use `role="status"` (`aria-live="polite"`). Errors use `role="alert"`.
+- **Live regions.** Countdowns use `role="timer"` with `aria-live="off"`, plus a polite status that announces at 15 min, 5 min and 1 min before the start and at the start. Package checking uses `role="status"` (`aria-live="polite"`). The player's save state announces only failures and the recovery after a failure (§5.2), never routine saving. Errors use `role="alert"`.
+- **Counted text in Arabic** (every number next to a noun, not only countdowns) uses the shared Arabic plural helper with four keys per noun: `_One` (1), `_Two` (2), `_Few` (3–10), `_Many` (11+, and 0). The en resx has the same four keys: `_One` holds the singular, the other three the plural. The full key list is in §8.
 - **Icons:** Rounded only. VideoCall (schedule), VideoCameraFront (live session kind), Event (date), Schedule (scheduled), SyncProblem (waiting for Zoom), PlayCircle (recording), Group (participants), UploadFile (upload), Inventory2 (package), Fullscreen / FullscreenExit, Close (exit), Refresh (reload), Visibility (preview).
 
 ---
@@ -38,7 +39,7 @@ Mockup: `screen=live-list`.
 | Column | Content |
 |---|---|
 | When | `lms-when`: date on line 1 (`yyyy-MM-dd`, `lms-cell-strong`), time range on line 2 (`lms-muted`), both LTR |
-| Session | Title (`Culture.Pick`). For a series, a caption under it: Rounded.Repeat icon (aria-hidden) and "Weekly · 3 of 12" |
+| Session | Title (`Culture.Pick`). For a series, a caption under it: Rounded.Repeat icon (aria-hidden) and "Weekly · 3 of 12" ("of N" has no noun, so it needs no plural form) |
 | Lesson | Lesson title, `lms-muted` |
 | Status | `LiveSessionStatusChip` (§2.2). For `SyncFailed`, the explanation caption sits **under the chip** (not only in a tooltip, so it shows on touch) |
 | Recording | Rounded.PlayCircle and "Recording" when there is one (a link that opens the recording); otherwise a dash |
@@ -74,17 +75,17 @@ Mockup: `screen=live-dialog`. `MaxWidth.Medium`, `FullWidth`. The title is "Sche
 2. **Time**: `lms-form-grid` with three cells.
    - Date (`MudDatePicker`, `yyyy-MM-dd`).
    - Start time (`MudTimePicker`, 24 h).
-   - Duration: a `MudSelect` of 15, 30, 45, 60, 90, 120, 180, 240, 360 and 480 min (default 60). A select avoids typing errors; the 15–480 limit then holds by construction.
+   - Duration: a `MudSelect` of 15, 30, 45, 60, 90, 120, 180, 240, 360 and 480 min (default 60), labelled with `Live_Duration_Minute_*` ("60 دقيقة"). A select avoids typing errors; the 15–480 limit then holds by construction.
    - Caption under the grid: "Times are in your time zone: **Asia/Riyadh**" (the zone id LTR).
 3. **Repeat**
    - `MudRadioGroup`, inline: **Once** (default) | **Weekly**.
    - Weekly adds:
-     - "Every [1 ▾] week(s)": a select of 1–4.
+     - "Every [1 ▾] week(s)": a select of 1–4. The option texts are whole phrases from `Live_EveryWeeks_*` ("Every week", "Every 2 weeks" / "كل أسبوع", "كل أسبوعين", "كل 3 أسابيع"), not a number plus a fixed word.
      - Day toggles (`lms-day-toggles`): seven small toggle chips in the culture's week order (`FirstDayOfWeek`, as the calendar does), using abbreviated day names. Each is a real toggle button with `aria-pressed`. The start date's day is pre-selected.
      - Ends: `MudRadioGroup` with **On date** [date picker] or **After** [number field] **sessions**. One is required (`recurrence_invalid` maps here).
    - **`RecurrencePreview`** (`lms-recurrence-preview`): a soft panel under the repeat fields.
-     - Line 1 (`role="status"`, polite): "12 sessions" / "12 جلسة". Above 52 it turns red: "A series can have at most 52 sessions. Choose an earlier end date or fewer sessions." Schedule is disabled until fixed.
-     - Then the first 6 dates as `yyyy-MM-dd HH:mm` (LTR) in a two-column list (one column at 360 px), plus "and 6 more" when longer.
+     - Line 1 (`role="status"`, polite): "12 sessions" / "12 جلسة" (`Live_Unit_Session_*`, §8). Above 52 it turns red: "A series can have at most 52 sessions. Choose an earlier end date or fewer sessions." Schedule is disabled until fixed.
+     - Then the first 6 dates as `yyyy-MM-dd HH:mm` (LTR) in a two-column list (one column at 360 px), plus "and 6 more" / "و6 جلسات أخرى" when longer (`Live_MoreSessions_*`).
 4. **Module**: the shared `ModuleMetadataForm` (visibility, target, completion rule from `CompletionRules.ForActivity(LiveSession)`: None / Manual / View, with the existing labels).
 
 **Actions** (`lms-dialog-actions`): Cancel (text), then **Schedule** (or **Save**) as filled primary with a spinner while saving.
@@ -102,7 +103,7 @@ Mockup: `screen=live-small`. `MaxWidth.ExtraSmall`. It opens before saving an ed
 - Title: "Edit a repeating session" / "Cancel a repeating session".
 - A `MudRadioGroup` stacked as two `lms-choice` rows (the whole row is clickable, with the label and a caption):
   - **This session only**, caption "2026-11-24 10:00".
-  - **This and following sessions**, caption "2026-11-24 and 8 later sessions".
+  - **This and following sessions**, caption "2026-11-24 and 8 later sessions" / "2026-11-24 و8 جلسات لاحقة" (`Live_LaterSessions_*`; with none later the row says only the date).
 - Actions: Back (text) and Continue (filled primary). When cancelling: **Cancel sessions** (filled Error, in this confirm dialog only).
 
 ### 2.5 `RecordingLinkDialog`
@@ -119,7 +120,7 @@ Mockup: `screen=live-small`. `MaxWidth.ExtraSmall`. It opens before saving an ed
 `MaxWidth.Medium`. Title: "Participants · {session title}".
 
 - **Intro** (`lms-muted`, body2): "Only people who signed in to Zoom with their school account are matched to students. Everyone else is listed as a guest."
-- **Table:** `MudSimpleTable lms-simple-table lms-stack-table` with the columns Name, Joined, Left, Time in session ("45 min") and Match.
+- **Table:** `MudSimpleTable lms-simple-table lms-stack-table` with the columns Name, Joined, Left, Time in session ("45 min", `Live_Duration_Minute_*`) and Match.
 - **Match chip:**
   - **Student** / طالب: Success text, Rounded.VerifiedUser.
   - **Guest** / ضيف: Default text, Rounded.PersonOutline.
@@ -157,12 +158,26 @@ Mockup: `screen=live-join` (one board with every state). The panel is a `Section
 | **Waiting for Zoom** (SyncFailed) | "Starts in 2 h 10 min" | Join, disabled | "The meeting is still being set up. Check back shortly." |
 | **Feature off** (`feature_disabled` on join) | outlined Info alert: "Live sessions are turned off for this school." | — | — |
 
-- The countdown text uses the largest two units: "in 2 days 3 h", "in 2 h 10 min", "in 8 min", and "in less than a minute". ar: "بعد يومين و3 ساعات", "بعد ساعتين و10 دقائق", "بعد 8 دقائق" and "بعد أقل من دقيقة". **Arabic needs plural forms:** keep separate resx keys for 1, 2, 3–10 and 11+ per unit (`Live_Unit_Hour_One`, `_Two`, `_Few`, `_Many`), using the shared Arabic plural helper (§7, Q2). Don't put "2 ساعة" on screen.
+- The countdown text uses the largest two units: "in 2 days 3 h", "in 2 h 10 min", "in 8 min", and "in less than a minute". ar: "بعد يومين و3 ساعات", "بعد ساعتين و10 دقائق", "بعد 8 دقائق" and "بعد أقل من دقيقة". **Arabic needs plural forms:** keep separate resx keys for 1, 2, 3–10 and 11+ per unit (`Live_Unit_Hour_One`, `_Two`, `_Few`, `_Many`), using the shared Arabic plural helper (§7, Q2; every key in §8). Don't put "2 ساعة" on screen.
 - When the window opens (or the session starts) while the page is open, the panel moves to the next state without a reload, and the polite status announces it ("You can join now").
 - `409 live_session_not_open` reloads the panel and shows the new state; no toast.
+- **Hidden or removed module (404).** When the module read answers 404, or `POST …/join` answers 404 because the module was hidden after the page loaded, the whole panel (summary row included) is replaced by the shared **module not-available state**: `EmptyState` with Rounded.SearchOff, "This activity isn't available" / "هذا النشاط غير متاح", and "It may have been hidden or removed. Go back to the course to see what's open to you." / "ربما أُخفي أو حُذف. ارجع إلى المقرر لترى المتاح لك.", plus a **Back to the course** text link. Keys `Module_NotAvailableTitle` and `Module_NotAvailableText`; the package player (§5.3) uses the same state. It never says whether the module was hidden or deleted (one identical 404). Test: `Invisible_session_module_is_not_found` asserts this state and that no title, time or join action of the session is rendered. If the blank tab was already opened for the join, it is closed first (the Task 15 join-failure rule).
 - **Staff in the viewer** (`LiveSessions.Manage`): the action is **Start the meeting** (same pattern, start URL), shown from the window opening. A second outlined action, **Participants**, appears once the session is Live or Ended. Staff also see the recording link action, which opens §2.5.
 
-### 3.2 Home and course home cards (Task 18)
+### 3.2 Reminder notification (Tasks 15 and 18)
+
+Event `Live.Reminder`, params `Title` (sent as `TitleAr` / `TitleEn`), `Course` (`CourseAr` / `CourseEn`) and `StartsAtUtc`. It's in-app only (the bell); opening it goes to the module.
+
+| Key | en | ar |
+|---|---|---|
+| `Notif_Live_Reminder` | Live session {Title} in {Course} starts at {StartsAtUtc}. Join from the lesson. | تبدأ الجلسة المباشرة {Title} في {Course} الساعة {StartsAtUtc}. انضم من الدرس. |
+| `NotifEvent_Live_Reminder` | Live session reminder | تذكير بجلسة مباشرة |
+
+- `{StartsAtUtc}` must not appear as a raw UTC string. `NotificationText` (Task 15 modifies it) formats a parameter whose name ends in `Utc` as local time: `HH:mm` when it's today, else `yyyy-MM-dd HH:mm`, invariant digits, wrapped in U+2066 … U+2069 (LTR isolate) so the date and time keep their order inside Arabic text.
+- The text doesn't say "in 30 minutes": `Live.ReminderMinutes` is a setting (5–1440), and the bell may be read later.
+- `Notification_types_have_both_languages` covers both keys.
+
+### 3.3 Home and course home cards (Task 18)
 
 - **Upcoming live sessions** (student) and **Sessions today** (teacher with `Manage`), each as a `SectionCard` with a title.
 - Each card holds a list of at most 5 `lms-item` rows:
@@ -196,14 +211,31 @@ Mockup: `screen=package-upload` (three dialogs: uploading/checking, rejected, re
   - A determinate `MudProgressLinear` with the percent as text.
   - A **Cancel upload** icon button with an aria-label.
 
+**Upload failed** (the request didn't succeed; the file row stays, the progress bar turns Error, step 1 shows as failed, and the message is an error caption under the row with `role="alert"`):
+
+| Cause | en | ar | Actions |
+|---|---|---|---|
+| Network error, timeout, or 5xx | The upload stopped. Check your connection and try again. | توقّف الرفع. تحقّق من اتصالك وحاول مرة أخرى. | **Retry** (outlined primary; sends the same file again from the start, the `File` is kept in memory) and **Choose another file** (text) |
+| `package_too_large` (the server limit is lower than the one the client checked) | This file is larger than the {Size} MB limit. | حجم هذا الملف أكبر من الحد المسموح ({Size} ميغابايت). | **Choose another file** only (a retry would fail the same way). `{Size}` comes from a fresh `GET /api/assets/limits` |
+| `feature_disabled` or `package_host_not_configured` mid-upload | the blocking alert below replaces the row | — | Close only |
+| any other code | `Error_package_invalid` (§4.2) | — | **Choose another file** |
+
+Retry and Choose another file are buttons in the dialog actions (`lms-dialog-actions`), Close stays. Focus moves to **Retry** (or to Choose another file when there is no Retry). Test names to add in Task 16: `Upload_network_failure_offers_retry_with_the_same_file`, `Server_too_large_shows_the_limit_without_retry`, `Feature_disabled_during_upload_shows_the_blocking_alert`.
+
 **Step 2, check.**
 - An indeterminate progress bar and the line "Checking the package. This usually takes under a minute." (`role="status"`).
 - After the polling cap: "Still checking. This can take a few minutes for large packages." plus a **Check again** outlined button.
+- A failed status read doesn't end the check: polling keeps its backoff. After 3 failed reads in a row the caption becomes "Can't reach the server right now. We'll keep trying." / "تعذّر الوصول إلى الخادم الآن. سنواصل المحاولة." (`role="status"`) with the same **Check again** button; it goes back to the normal line on the next good read.
 - **Keep the dialog open** (decided on Q1). A caption under the progress line says: "Keep this window open until the check finishes." / "أبقِ هذه النافذة مفتوحة حتى ينتهي الفحص." Closing the dialog stops polling.
+- **Close during upload or check asks first.** Close, Escape and the dialog's close icon open the standard `ConfirmDialog` (`MaxWidth.ExtraSmall`); the backdrop click is off for this dialog (`BackdropClick = false`):
+  - While checking: title "Close this window?" / "إغلاق هذه النافذة؟", text "Keep this window open until the check finishes. If you close it, you can continue from the lesson's module list." / "أبقِ هذه النافذة مفتوحة حتى ينتهي الفحص. إن أغلقتها فيمكنك المتابعة من قائمة وحدات الدرس.", actions **Keep open** (filled primary, default focus) and **Close anyway** (text).
+  - While uploading: the same title, text "Closing stops the upload." / "الإغلاق يوقف الرفع.", actions **Keep open** and **Stop upload** (text, Error). Stop upload cancels the request.
+  - In every other step Close closes at once.
 - **Pending row in the lesson.** A package still being checked shows in the lesson's module list as a placeholder row, so closing the tab isn't a dead end:
   - The row has the package kind icon, the file name (LTR) and a **Checking…** chip (Info text, small spinner).
   - Its single action, **Continue**, reopens this dialog at step 2, or at step 3 if the package is Ready by then.
   - A Rejected package shows a **Can't be used** chip (Error text), with **See why** (reopens the dialog on the reason) and **Remove** (deletes the upload).
+  - A Ready package that was never attached shows a **Ready to attach** chip (Success text), with **Continue** (step 3) and **Remove** (standard delete confirm). This is the screen that frees quota: without it an unattached package would count against `quota_exceeded` with no way to delete it.
   - The row is visible to staff only. Students never see it.
   - **Data needed:** the row has to survive a reload, so the server must be able to list the pending uploads of a class course together with the lesson they were started from. See §7.
 
@@ -269,7 +301,7 @@ An unknown code falls back to `Error_package_invalid`: "This package can't be us
 
 ## 5. Package player (Task 17)
 
-Mockups: `screen=player` (running, plus the preview banner) and `screen=player-states` (start card, timed out, save failed, finished).
+Mockups: `screen=player` (running, plus the preview banner) and `screen=player-states` (start card, timed out, save failed, finished). The mockup frame is a drawn placeholder, not an `<iframe>`; the frame attributes are in §5.2.
 
 ### 5.1 Before launch: start card
 
@@ -305,31 +337,76 @@ The start card is a `SectionCard`. Nothing loads in a frame until the learner pr
   - **Exit**, a text button with Rounded.Close. It ends the player view (flush first) and returns to the start card.
   - Both stay reachable in full screen, because the container (toolbar included) is what goes full screen.
 
-**Save state** (`PackageSaveState`, `role="status"`). It's quiet, with no colour except for failures:
+**Frame attributes** (Task 17, Decisions 12 and 14; the mockup draws a placeholder and doesn't relax any of them):
 
-| State | Look | en | ar |
+```html
+<iframe sandbox="allow-scripts" title="{module title}" referrerpolicy="no-referrer" allow="" src="{LaunchUrl}">
+```
+
+- `sandbox` is exactly `allow-scripts`: no `allow-forms`, no `allow-same-origin`, no `allow-top-navigation*`, no `allow-popups*`, no `allow-modals`.
+- `title` is the module title in the current language (`Culture.Pick`), so screen readers announce the frame by name.
+- `allow=""` grants no feature permissions. Full screen is the container's (the toolbar button), never the frame's.
+
+**Save state** (`PackageSaveState`). It's quiet, with no colour except for failures:
+
+| State | Look (in the toolbar) | en | ar |
 |---|---|---|---|
 | Idle | nothing | — | — |
 | Saving | small spinner + muted text | Saving… | جارٍ الحفظ… |
 | Saved | Rounded.CloudDone, muted | Saved | تم الحفظ |
-| Failed | Rounded.CloudOff, Error text, **Retry** text button | Couldn't save. Retrying… | تعذّر الحفظ. جارٍ إعادة المحاولة… |
+| Failed (retrying) | Rounded.CloudOff, Error text | Not saved | لم يُحفظ |
+| Refused (`package_commit_rejected`, attempt still open) | Rounded.CloudOff, Error text | Not saved | لم يُحفظ |
+
+- **The failure message goes under the toolbar**, not in it, at every width: a full-width strip `lms-player-msg` (Error tint, body2, `role="alert"`) between the toolbar and the frame.
+  - Failed: "Couldn't save your progress. Retrying…" / "تعذّر حفظ تقدّمك. جارٍ إعادة المحاولة…" with a **Retry** text button at the end of the strip.
+  - Refused: "Some of your progress couldn't be saved. Your earlier progress is kept." / "تعذّر حفظ جزء من تقدّمك. تقدّمك السابق محفوظ." No Retry (the same commit would be refused again); later commits keep going.
+  - The strip goes away on the next successful commit.
+- **Announcements:** the toolbar text is not a live region. Only the strip announces (`role="alert"`, once per failure episode), and after a failure the first successful save announces "Saved" once through a visually hidden polite status. Routine Saving / Saved is never announced.
+- **Retry** sends the pending commit now, skipping the rest of the backoff wait. It keeps the pending commit's `seq`: `seq` is never reset and never reused for other data. If more changes arrived while it was failing, they are coalesced into one commit under the next `seq`. `seq` continues per attempt across re-launch and Reload (same attempt), so a new bridge starts after the last `seq` of the old one. Automatic retries wait 2, 5 and 10 s, then every 30 s. Test to add: `Retry_resends_the_pending_commit_without_resetting_seq` (next to `Save_failure_shows_state_and_retries`).
 
 - The frame background is white in both themes. Packages are authored for a light page, and a dark frame edge looks broken. The container border keeps the frame visually separate in dark mode.
-- **Phones:** the player is full width, the toolbar keeps the icon buttons and hides the title, and the frame is `min-height: 70vh`.
+- **Phones (below 600 px):** the player is full width and the frame is `min-height: 70vh`. The toolbar is one row that never wraps (`flex-wrap: nowrap`): the save state (icon and short text) at the start, Full screen and Exit at the end; the title is hidden. Longer messages live in the `lms-player-msg` strip below it.
 - **Preview banner** (staff preview): an Info-tint strip above the toolbar, inside the container, with Rounded.Visibility: "Preview: nothing is recorded." / "معاينة: لا يُسجَّل أي شيء." In preview the save state is hidden.
 
-### 5.3 States over or instead of the frame
+### 5.3 Token lifetime: silent re-launch and the expired overlay
+
+The frame is on the content host (another site), so the app can't see what the content host answers inside it: an expired token gives a 404 page in the frame that the app never learns about. **The app decides from time it already knows, never from the frame.**
+
+- **Clock.** The launch answer carries `TokenExpiresAtUtc` and `ServerNowUtc`. Lifetime = `TokenExpiresAtUtc − ServerNowUtc`. The time left is computed like the quiz `AttemptTimer` (#406): server time at the response plus the time elapsed since it arrived; the browser clock is never compared with `TokenExpiresAtUtc`. Background tabs throttle timers and a sleeping laptop stops them, so the player re-checks at once on `visibilitychange` (to visible), `pageshow` and `focus`, as well as on its timer.
+- **Silent re-launch at 80 % of the lifetime** (Task 17, `Relaunch_swaps_the_frame_only_after_a_flush`):
+  1. Flush: drain the port, send the pending commit, wait for the answer. The save state shows "Saving…" meanwhile, as for any save.
+  2. `POST /api/packages/{id}/launch` again (same attempt, fresh token and `TokenExpiresAtUtc`).
+  3. Load the new frame hidden behind the old one. When it fires `load`, swap them and drop the old frame and its bridge. No overlay, no spinner over the content, nothing announced. The package returns to its last saved point (its bookmark); that is expected.
+  4. If focus was inside the old frame, it moves to the frame container (`tabindex="-1"`), so it isn't lost on `<body>`.
+  5. A network error or 5xx retries quietly (after 30 s, then every 60 s) while the old token is still valid. Nothing is shown unless the token then runs out.
+  6. A final answer replaces the player: 404 → the module not-available state (§3.1); `feature_disabled` / `package_host_not_configured` → their alerts (§5.4).
+- **Expired overlay.** It appears when the time left reaches 0 without a successful re-launch (the re-launch kept failing, or the tab slept past the expiry and wakes up late). It's the `lms-player-overlay` over the frame area; the toolbar stays usable.
+  - Markup: `role="alertdialog"`, `aria-labelledby` its heading "This activity timed out" / "انتهت مهلة النشاط", `aria-describedby` its text "Reload to continue where you left off." / "أعد التحميل لتكمل من حيث توقفت." No `aria-modal`, because Exit and Full screen in the toolbar stay available.
+  - The frame container gets `inert` while the overlay is shown, so Tab can't go behind the overlay into the frame.
+  - Focus moves to **Reload** (filled primary, Rounded.Refresh). The tab order is Reload, then the toolbar (Full screen, Exit).
+  - Reload calls launch for the same attempt (after a flush, if the port still answers), then removes the overlay and `inert` and puts focus on the frame container. While it runs, the button shows a spinner. If it fails, a caption under the button (`role="alert"`) says "Couldn't reload. Check your connection and try again." / "تعذّرت إعادة التحميل. تحقّق من اتصالك وحاول مرة أخرى." and Reload stays.
+  - Tests to add in Task 17: `Expired_overlay_comes_from_token_expiry_not_from_the_frame`, `Expired_overlay_makes_the_frame_inert_and_focuses_reload`, `Relaunch_failure_before_expiry_shows_nothing`, `Waking_after_expiry_shows_the_overlay_at_once`.
+
+### 5.4 Other states over or instead of the frame
 
 | State | Presentation | Text (en / ar) | Action |
 |---|---|---|---|
 | Launching | `LoadingState Lines="3"` inside the container | — | — |
-| Token expired | `lms-player-overlay` over the frame (surface at 94 %, centred, `role="alert"`) | This activity timed out. Reload to continue where you left off. / انتهت مهلة النشاط. أعد التحميل لتكمل من حيث توقفت. | **Reload** filled primary (same attempt) |
 | Finished | the frame is replaced by a result card in the container | Completed / مكتمل, Success chip, "Score 85 / 100" | **Open again** outlined; **Start again** text where allowed |
+| Attempt already closed (`409 package_commit_rejected`, and a fresh read says the attempt is no longer in progress, for example it was finished in another tab) | the frame is replaced by the result card, with an outlined Info alert on top | This attempt has already ended, maybe in another tab. Your result is below. / انتهت هذه المحاولة، ربما في تبويب آخر. نتيجتك أدناه. | as Finished |
+| Commit refused, attempt still open (`409 package_commit_rejected` for size or rate) | the frame keeps running; save state "Not saved" and the Refused strip (§5.2) | §5.2 | — |
+| Module hidden during the attempt (404 on commit or re-launch) | the module not-available state (§3.1) replaces the player | §3.1 | Back to the course |
 | Not ready (`409 package_not_ready`) | outlined Info alert instead of the start card | This activity isn't ready yet. Try again later. / هذا النشاط غير جاهز بعد. حاول لاحقاً. | — |
 | Host not configured | outlined Info alert | Packages aren't set up on this platform yet. / لم تُفعَّل الحزم على هذه المنصة بعد. | — |
-| Hidden module (404) | the standard not-found state | — | — |
+| Feature off (`feature_disabled`) | outlined Info alert | Packages are turned off for this school. / الحزم معطّلة في هذه المدرسة. | — |
+| Hidden module at launch (404) | the module not-available state (§3.1) | §3.1 | Back to the course |
 
-Focus: on Start, focus moves to the frame container (`tabindex="-1"`), so the next Tab goes into the frame. Exit and Full screen sit before the frame in the tab order, so keyboard users can always reach them by Shift+Tab from the frame's first control. The third-party note documents that we can't guarantee more.
+`package_commit_rejected` is one code for two causes (closed attempt, or size / rate), so the player tells them apart by re-reading the attempt (`PackageAttemptDto` status), not by the code. Test to add: `Commit_rejected_on_a_closed_attempt_shows_the_result`.
+
+**Focus**
+- On Start, focus moves to the frame container (`tabindex="-1"`), so the next Tab goes into the frame. Exit and Full screen sit before the frame in the tab order, so keyboard users can always reach them by Shift+Tab from the frame's first control. The third-party note documents that we can't guarantee more.
+- When the frame is replaced by the **Finished** card (or the "already ended" card), the frame is removed and focus moves to the card's heading (the module title, `tabindex="-1"`); the status and score are read next. Focus doesn't go to **Open again**, so a stray Enter doesn't start the activity again.
+- When any other state replaces the player (not available, alerts), focus moves to that state's heading or alert.
 
 ---
 
@@ -349,7 +426,7 @@ Focus: on Start, focus moves to the frame container (`tabindex="-1"`), so the ne
 | `lms-date-block` | 44 px day/month block for Home rows |
 | `lms-steps` | Horizontal numbered steps (`<ol>`), compact at 360 px |
 | `lms-dropzone` | Dashed upload area |
-| `lms-player`, `lms-player-bar`, `lms-player-frame`, `lms-player-overlay`, `lms-preview-strip` | §5.2–5.3 |
+| `lms-player`, `lms-player-bar`, `lms-player-frame`, `lms-player-overlay`, `lms-player-msg`, `lms-preview-strip` | §5.2–5.4 |
 
 The reference CSS for each is in the mockup (`docs/design/mockups/m4b.html`, the `/* lms-theme additions */` block). It's written with logical properties and palette variables only, so it can be copied into `lms-theme.css` as is.
 
@@ -360,4 +437,26 @@ The reference CSS for each is in the mockup (`docs/design/mockups/m4b.html`, the
   - A pending package shows as a "Checking…" row in the lesson's module list (§4.1).
   - The full list of a course's packages is a follow-up issue.
   - **Contract need for the pending row:** `POST /api/class-courses/{id}/packages` should accept an optional `LessonKey`, and a read such as `GET /api/class-courses/{id}/packages?status=pending` should return the uploads that aren't attached yet with that key. The Lead decides whether this joins the Task 2 contract.
+- **Purge of unattached packages (request to the Lead for BE3, Task 8b).** A package that is `Ready` but never attached, or `Uploaded` / `Rejected` and abandoned, should be purged after N days (proposal: a setting `Packages.UnattachedRetentionDays`, default 7) by the existing `PackagePurgeJob`, so abandoned uploads don't fill the client's quota. The pending row above shows a caption on such rows: "Removed automatically after 7 days if not attached." / "تُحذف تلقائياً بعد 7 أيام إن لم تُرفق." (`Package_PendingRetention`, the number and noun from `Live_Unit_Day_*`, §8).
 - **Q2. Arabic plurals (decided).** FE1 adds a small Arabic plural helper as a shared client utility (not only for live sessions), with unit tests for 0, 1, 2, 3–10 and 11+. Countdowns (§3.1) and any later counted text use it.
+
+## 8. Counted text: plural keys
+
+Every key below exists in both resx files with the four suffixes `_One`, `_Two`, `_Few` (3–10) and `_Many` (11+, and 0). In en, `_One` is the singular and the other three hold the same plural. `{0}` is the number (invariant digits). The shared helper picks the suffix; pages never build "number + noun" themselves.
+
+| Key | Used in | en (One / other) | ar One | ar Two | ar Few (3–10) | ar Many (11+) |
+|---|---|---|---|---|---|---|
+| `Live_Unit_Day_*` | countdown after "بعد", `Package_PendingRetention` | 1 day / {0} days | يوم | يومين | {0} أيام | {0} يوماً |
+| `Live_Unit_Hour_*` | countdown | 1 h / {0} h | ساعة | ساعتين | {0} ساعات | {0} ساعة |
+| `Live_Unit_Minute_*` | countdown | 1 min / {0} min | دقيقة | دقيقتين | {0} دقائق | {0} دقيقة |
+| `Live_Duration_Minute_*` | duration select, meta line, participants "Time in session" (standalone) | 1 min / {0} min | دقيقة واحدة | دقيقتان | {0} دقائق | {0} دقيقة |
+| `Live_Unit_Session_*` | recurrence preview line 1 | 1 session / {0} sessions | جلسة واحدة | جلستان | {0} جلسات | {0} جلسة |
+| `Live_MoreSessions_*` | recurrence preview "and N more" | and 1 more / and {0} more | وجلسة أخرى | وجلستان أخريان | و{0} جلسات أخرى | و{0} جلسة أخرى |
+| `Live_LaterSessions_*` | series scope caption | and 1 later session / and {0} later sessions | وجلسة لاحقة | وجلستان لاحقتان | و{0} جلسات لاحقة | و{0} جلسة لاحقة |
+| `Live_EveryWeeks_*` | repeat interval select (1–4) | Every week / Every {0} weeks | كل أسبوع | كل أسبوعين | كل {0} أسابيع | كل {0} أسبوعاً |
+
+Notes:
+- The countdown units always follow "بعد", and a second unit is joined with "و" in the same case, so their Two forms are genitive and the One forms carry no "واحد": "بعد يومين وساعتين", "بعد يوم و3 ساعات", "بعد ساعتين و10 دقائق". That's why the countdown (`Live_Unit_*`) and standalone durations (`Live_Duration_Minute_*`) are separate keys.
+- Durations of 11 and more use `_Many`: "60 دقيقة", "120 دقيقة" (the common modern form).
+- "3 of 12" (series position) has no noun and needs no plural key.
+- The helper's unit tests (Q2) cover 0, 1, 2, 3, 10, 11 and 100.
