@@ -23,7 +23,7 @@ public sealed class LibraryAndForumTests(E2EFixture fixture) : E2ETestBase(fixtu
 
     private static readonly byte[] Pdf = "%PDF-1.7\n%probe\n"u8.ToArray();
 
-    [Theory(Skip = NeedsM4a)]
+    [Theory]
     [InlineData("ar")]
     [InlineData("en")]
     public async Task Supervisor_adds_library_book_with_download_disabled_teacher_adds_it_to_lesson_student_reads_without_download(string culture)
@@ -74,7 +74,7 @@ public sealed class LibraryAndForumTests(E2EFixture fixture) : E2ETestBase(fixtu
         Assert.Equal(culture == "ar" ? "rtl" : "ltr", await new ShellPage(Page).HtmlDirAsync());
     }
 
-    [Theory(Skip = NeedsM4a)]
+    [Theory]
     [InlineData("ar")]
     [InlineData("en")]
     public async Task Student_posts_thread_teacher_pins_and_locks_it(string culture)
@@ -122,7 +122,7 @@ public sealed class LibraryAndForumTests(E2EFixture fixture) : E2ETestBase(fixtu
         Assert.Equal(culture == "ar" ? "rtl" : "ltr", await new ShellPage(Page).HtmlDirAsync());
     }
 
-    [Theory(Skip = NeedsM4a)]
+    [Theory]
     [InlineData("ar")]
     [InlineData("en")]
     public async Task Teacher_posts_pinned_announcement_and_students_are_notified(string culture)
@@ -156,7 +156,7 @@ public sealed class LibraryAndForumTests(E2EFixture fixture) : E2ETestBase(fixtu
         Assert.Equal(culture == "ar" ? "rtl" : "ltr", await new ShellPage(Page).HtmlDirAsync());
     }
 
-    [Theory(Skip = NeedsM4a)]
+    [Theory]
     [InlineData("ar")]
     [InlineData("en")]
     public async Task Nav_Library(string culture)
@@ -170,7 +170,7 @@ public sealed class LibraryAndForumTests(E2EFixture fixture) : E2ETestBase(fixtu
         {
             await M4Kit.SignInAsync(Page, user, password, culture);
             var shell = new ShellPage(Page);
-            await Expect(Page.GetByTestId("home-title")).ToBeVisibleAsync();
+            await Expect(Page.GetByTestId("user-menu")).ToBeVisibleAsync(); // the signed-in shell is up (the home page has no title test id)
             if (!await shell.Nav("home").IsVisibleAsync())
             {
                 // The drawer starts closed for some roles; open it once the page has settled.
