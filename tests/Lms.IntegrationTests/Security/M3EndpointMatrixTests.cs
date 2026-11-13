@@ -30,6 +30,7 @@ public sealed class M3EndpointMatrixTests(LmsApiFactory factory, ITestOutputHelp
     private static readonly HashSet<string> StudentReadable =
     [
         Routes.ClassCourseLessonPlanPattern, Routes.ClassCourseLessonModulesPattern, Routes.ClassCourseProgressPattern,
+        Routes.ClassCourseQuizzesPattern,
     ];
 
     private static IEnumerable<ProbeRow> M3Rows => M1ProbeRows.All.Where(r => IsM3(r.Pattern));

@@ -32,6 +32,6 @@ internal static class ModuleMapper
             states is null ? null : states.GetValueOrDefault(m.Id, CompletionStates.NotStarted));
     }
 
-    public static ModuleContentDto Content(LessonModule m, ModuleContent? content) =>
-        new(null, content?.BodyHtmlAr, content?.BodyHtmlEn, content?.Url, m.RefId);
+    public static ModuleContentDto Content(LessonModule m, ModuleContent? content, Asset? asset) =>
+        new(asset is null ? null : AssetEndpoints.ToDto(asset), content?.BodyHtmlAr, content?.BodyHtmlEn, content?.Url, m.RefId);
 }
