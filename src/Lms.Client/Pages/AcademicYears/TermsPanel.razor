@@ -6,39 +6,46 @@
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
 
-<MudStack Spacing="1" data-testid="@($"terms-{Year.Id}")">
-    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-        <MudText Typo="Typo.subtitle1">@L["Terms_Title"]</MudText>
+<div class="lms-year-panel" data-testid="@($"terms-{Year.Id}")">
+    <div class="lms-year-panel-head">
+        <MudText Typo="Typo.subtitle1" HtmlTag="h3" Class="lms-year-panel-title">@L["Terms_Title"]</MudText>
         @if (CanEdit)
         {
-            <MudButton Size="Size.Small" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Add" OnClick="() => OpenAsync(null)"
+            <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Add" OnClick="() => OpenAsync(null)"
                        data-testid="@($"term-new-{Year.Id}")">@L["Terms_New"]</MudButton>
         }
-    </MudStack>
+    </div>
     @if (Year.Terms.Count == 0)
     {
-        <MudText Typo="Typo.body2">@L["Common_Empty"]</MudText>
+        <MudText Typo="Typo.body2" Class="lms-muted lms-year-empty">@L["Terms_Empty"]</MudText>
     }
-    @foreach (var term in Year.Terms)
-    {
-        var t = term;
-        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Wrap="Wrap.Wrap">
-            <MudText>@CultureText.Pick(t.NameAr, t.NameEn)</MudText>
-            <MudText Typo="Typo.body2" dir="ltr">@t.StartDate.ToString("yyyy-MM-dd") – @t.EndDate.ToString("yyyy-MM-dd")</MudText>
-            @if (t.IsCurrent)
-            {
-                <MudChip T="string" Size="Size.Small" Color="Color.Success" data-testid="@($"term-current-{t.Id}")">@L["Terms_Current"]</MudChip>
-            }
-            @if (CanEdit)
-            {
-                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" aria-label="@L["Common_Edit"]"
-                               OnClick="() => OpenAsync(t)" data-testid="@($"term-edit-{t.Id}")" />
-                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" aria-label="@L["Common_Delete"]"
-                               OnClick="() => DeleteAsync(t)" data-testid="@($"term-delete-{t.Id}")" />
-            }
-        </MudStack>
-    }
-</MudStack>
+    <ul class="lms-item-list">
+        @foreach (var term in Year.Terms)
+        {
+            var t = term;
+            <li class="lms-item @(t.IsCurrent ? "lms-item-current" : null)">
+                <div class="lms-item-main">
+                    <span class="lms-cell-strong">@CultureText.Pick(t.NameAr, t.NameEn)</span>
+                    @if (t.IsCurrent)
+                    {
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Success" Class="lms-status-chip"
+                                 data-testid="@($"term-current-{t.Id}")">@L["Terms_Current"]</MudChip>
+                    }
+                    <span class="lms-item-meta lms-muted" dir="ltr">@t.StartDate.ToString("yyyy-MM-dd") – @t.EndDate.ToString("yyyy-MM-dd")</span>
+                </div>
+                @if (CanEdit)
+                {
+                    <div class="lms-row-actions">
+                        <MudIconButton Icon="@Icons.Material.Rounded.Edit" Size="Size.Small" aria-label="@L["Common_Edit"]"
+                                       OnClick="() => OpenAsync(t)" data-testid="@($"term-edit-{t.Id}")" />
+                        <MudIconButton Icon="@Icons.Material.Rounded.DeleteOutline" Size="Size.Small" Color="Color.Error" aria-label="@L["Common_Delete"]"
+                                       OnClick="() => DeleteAsync(t)" data-testid="@($"term-delete-{t.Id}")" />
+                    </div>
+                }
+            </li>
+        }
+    </ul>
+</div>
 
 @code {
     [Parameter, EditorRequired] public AcademicYearDto Year { get; set; } = default!;
