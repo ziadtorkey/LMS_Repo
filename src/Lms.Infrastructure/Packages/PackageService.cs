@@ -75,7 +75,7 @@ public sealed class PackageService(LmsDbContext db, IFileStorage files, IPackage
 }
 
 /// <summary>Enqueues the package jobs as system jobs of one client (the organization id is the payload).</summary>
-internal sealed class HangfirePackageJobs(IBackgroundJobs jobs) : IPackageJobs
+public sealed class HangfirePackageJobs(IBackgroundJobs jobs) : IPackageJobs
 {
     public void ScheduleValidation(Guid organizationId, Guid packageId) =>
         jobs.EnqueueAsSystem<PackageValidationJob>(j => j.RunAsync(organizationId, packageId, CancellationToken.None));

@@ -120,6 +120,37 @@ public sealed class ScormTrackerTests
         Assert.False(judged.Completed);
     }
 
+    [Theory]
+    [InlineData("1000000", "100")]
+    [InlineData("-500", "100")]
+    [InlineData("100", "1")]
+    [InlineData("50", "0")]
+    [InlineData("50", "-10")]
+    [InlineData("100.01", "100")]
+    public void A_score_outside_zero_to_the_maximum_is_no_score_and_never_reaches_the_gradebook(string raw, string max)
+    {
+        var judged = _tracker.Judge(Package("Scorm12"), CompletionRules.Score, 50,
+            M(("cmi.core.lesson_status", "passed"), ("cmi.core.score.raw", raw), ("cmi.core.score.max", max)));
+
+        Assert.Equal((null, null, null), (judged.ScoreRaw, judged.ScoreMin, judged.ScoreMax));
+        Assert.False(judged.Completed);
+    }
+
+    [Fact]
+    public void A_minimum_above_the_raw_score_or_below_zero_is_dropped_and_values_keep_two_decimals()
+    {
+        var bad = _tracker.Judge(Package("Scorm12"), CompletionRules.Submit, null,
+            M(("cmi.core.lesson_status", "completed"), ("cmi.core.score.raw", "40"), ("cmi.core.score.min", "60"), ("cmi.core.score.max", "100")));
+        var negative = _tracker.Judge(Package("Scorm12"), CompletionRules.Submit, null,
+            M(("cmi.core.lesson_status", "completed"), ("cmi.core.score.raw", "40"), ("cmi.core.score.min", "-5")));
+        var rounded = _tracker.Judge(Package("Scorm12"), CompletionRules.Submit, null,
+            M(("cmi.core.lesson_status", "completed"), ("cmi.core.score.raw", "66.66666"), ("cmi.core.score.max", "100.005")));
+
+        Assert.Equal((40m, null, 100m), (bad.ScoreRaw, bad.ScoreMin, bad.ScoreMax));
+        Assert.Null(negative.ScoreMin);
+        Assert.Equal((66.67m, 100.01m), (rounded.ScoreRaw, rounded.ScoreMax));
+    }
+
     [Fact]
     public void Scores_parse_with_a_decimal_point_whatever_the_server_culture()
     {

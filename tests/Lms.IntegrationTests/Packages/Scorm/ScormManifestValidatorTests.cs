@@ -29,6 +29,29 @@ public sealed class ScormManifestValidatorTests : IDisposable
         return await new ScormManifestValidator().ValidateAsync(area, default);
     }
 
+    [Theory]
+    [InlineData(4, 100, true)]
+    [InlineData(5, 110, false)]
+    public async Task A_launch_path_longer_than_the_column_is_an_invalid_manifest(int folders, int length, bool valid)
+    {
+        var path = string.Join('/', Enumerable.Range(0, folders).Select(i => new string((char)('a' + i), length))) + "/start.html";
+        var manifest = $"<?xml version=\"1.0\"?><manifest xmlns=\"http://www.imsproject.org/xsd/imscp_rootv1p1p2\" xmlns:adlcp=\"http://www.adlnet.org/xsd/adlcp_rootv1p2\">"
+                       + "<organizations default=\"o\"><organization identifier=\"o\"><title>T</title><item identifier=\"i\" identifierref=\"r\"><title>T</title></item></organization></organizations>"
+                       + $"<resources><resource identifier=\"r\" type=\"webcontent\" adlcp:scormtype=\"sco\" href=\"{path}\"><file href=\"{path}\"/></resource></resources></manifest>";
+        var zip = RawZipWriter.Write([RawZipWriter.File("imsmanifest.xml", manifest), RawZipWriter.File(path, "<html><body>x</body></html>")]);
+        await using var archive = new MemoryStream(zip);
+        var inspection = await ZipHardening.InspectAsync(archive, new ZipHardeningLimits());
+        Assert.True(inspection.Accepted, inspection.RejectReason);
+        using var area = new PackageTempArea(_root, 64L * 1024 * 1024);
+        await ZipHardening.ExtractAsync(archive, inspection, (entry, content) => area.WriteAsync(entry.Name, content, default));
+
+        var result = await new ScormManifestValidator().ValidateAsync(area, default);
+
+        Assert.Equal(valid, result.Valid);
+        Assert.Equal(valid ? null : "manifest_invalid", result.RejectReason);
+        Assert.True(path.Length > Lms.Domain.Packages.PackageUpload.MaxLaunchPathLength == !valid);
+    }
+
     [Fact]
     public async Task Scorm12_and_2004_are_detected()
     {

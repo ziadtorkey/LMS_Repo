@@ -77,6 +77,11 @@ public sealed class ScormManifestValidator : IPackageValidator
             }
         }
 
+        if (launch.Length > PackageUpload.MaxLaunchPathLength)
+        {
+            return PackageValidationResult.Reject(PackageRejectReasons.manifest_invalid);
+        }
+
         var title = items[0].Elements().FirstOrDefault(e => e.Name.LocalName == "title")?.Value.Trim()
                     ?? organization?.Elements().FirstOrDefault(e => e.Name.LocalName == "title")?.Value.Trim();
         return new PackageValidationResult(null, PackageTitles.Clean(title), version, null, launch);

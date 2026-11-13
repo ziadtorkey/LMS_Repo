@@ -36,12 +36,13 @@ public sealed class PackageValidationJobTests(LmsApiFactory factory) : IDisposab
         _tempRoots.Where(Directory.Exists).ToList().ForEach(d => Directory.Delete(d, recursive: true));
     }
 
-    private sealed class FakeValidator(PackageValidationResult? result = null, bool hang = false) : IPackageValidator
+    private sealed class FakeValidator(PackageValidationResult? result = null, bool hang = false, TaskCompletionSource? started = null) : IPackageValidator
     {
         public string Kind => PackageKinds.Scorm;
 
         public async Task<PackageValidationResult> ValidateAsync(IPackageContent content, CancellationToken ct)
         {
+            started?.TrySetResult();
             if (hang)
             {
                 await Task.Delay(Timeout.Infinite, ct);
@@ -68,6 +69,21 @@ public sealed class PackageValidationJobTests(LmsApiFactory factory) : IDisposab
         public Task<IReadOnlyList<string>> ListAsync(string prefix, CancellationToken ct = default) => inner.ListAsync(prefix, ct);
 
         public Task<int> DeletePrefixAsync(string prefix, CancellationToken ct = default) => inner.DeletePrefixAsync(prefix, ct);
+    }
+
+    private sealed class SilentJobs : IPackageJobs
+    {
+        public void ScheduleValidation(Guid organizationId, Guid packageId)
+        {
+        }
+
+        public void ScheduleValidationLater(Guid organizationId, Guid packageId, TimeSpan delay)
+        {
+        }
+
+        public void SchedulePurge(Guid organizationId, Guid packageId)
+        {
+        }
     }
 
     private sealed class RecordingJobs : IPackageJobs
@@ -124,6 +140,10 @@ public sealed class PackageValidationJobTests(LmsApiFactory factory) : IDisposab
                 o.TempRoot = tempRoot;
                 o.Timeout = timeout ?? TimeSpan.FromMinutes(2);
             });
+            // The shared test factory may run a background job server: an upload must not be validated behind the test's back by the real validators.
+            // The tests that need queued jobs register their own (the recording scheduler below).
+            services.RemoveAll<IPackageJobs>();
+            services.AddSingleton<IPackageJobs, SilentJobs>();
             services.RemoveAll<IPackageValidator>();
             if (withValidator)
             {
@@ -336,19 +356,21 @@ public sealed class PackageValidationJobTests(LmsApiFactory factory) : IDisposab
     [Fact]
     public async Task Quota_and_job_timeout_stop_a_bomb()
     {
+        // No wall-clock assertion: the validator signals that it started and then waits for the job's own timeout to cancel it, so the test
+        // proves the order (validator reached, then cancelled, then rejected, nothing stored) whatever the load of the machine.
+        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var s = await SetUpAsync("PV8", configure: services =>
         {
             services.RemoveAll<IPackageValidator>();
-            services.AddScoped<IPackageValidator>(_ => new FakeValidator(hang: true));
-        }, timeout: TimeSpan.FromMilliseconds(400));
+            services.AddScoped<IPackageValidator>(_ => new FakeValidator(hang: true, started: started));
+        }, timeout: TimeSpan.FromSeconds(10));
         var upload = await UploadCorpusAsync(s, "scorm12_valid");
 
-        var started = DateTime.UtcNow;
         await RunAsync(s, upload.OrganizationId, upload.Id);
 
+        Assert.True(started.Task.IsCompletedSuccessfully, "the validator was never reached");
         var row = await ReloadAsync(upload.Id);
         Assert.Equal(("Rejected", "validation_timeout"), (row.Status, row.RejectReason));
-        Assert.True(DateTime.UtcNow - started < TimeSpan.FromSeconds(30));
         Assert.Empty(await StoredAsync(s, row));
         Assert.Equal(0, TempAreas(s));
     }
@@ -517,6 +539,8 @@ public sealed class PackageValidationJobTests(LmsApiFactory factory) : IDisposab
         {
             services.RemoveAll<IBackgroundJobs>();
             services.AddScoped<IBackgroundJobs, RecordingBackgroundJobs>();
+            services.RemoveAll<IPackageJobs>();
+            services.AddScoped<IPackageJobs, HangfirePackageJobs>();
         });
         var upload = await UploadViaApiAsync(s);
         await RunQueuedAsync(s);

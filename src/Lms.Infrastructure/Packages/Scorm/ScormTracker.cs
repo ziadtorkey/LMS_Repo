@@ -59,19 +59,30 @@ public sealed class ScormTracker : IPackageTracker
         return percent >= minScore.Value;
     }
 
+    /// <summary>
+    /// The score as the gradebook may see it. SCORM tracking is reported by the content, so nothing is taken on trust: the maximum must be positive
+    /// (100 when none is reported), the raw score must lie between 0 and the maximum, the minimum (when given) between 0 and the raw score; a
+    /// score that breaks any of these is no score at all, and the values are rounded to the two decimals the gradebook keeps.
+    /// </summary>
     private static (decimal? Raw, decimal? Min, decimal? Max) Score(IReadOnlyDictionary<string, string> model, bool is2004)
     {
         var prefix = is2004 ? "cmi.score." : "cmi.core.score.";
         var raw = Number(model, prefix + "raw");
         var min = Number(model, prefix + "min");
         var max = Number(model, prefix + "max");
-        if (raw is null && is2004 && Number(model, "cmi.score.scaled") is { } scaled && scaled is >= -1m and <= 1m)
+        if (raw is null && is2004 && Number(model, "cmi.score.scaled") is { } scaled && scaled is >= 0m and <= 1m)
         {
-            // A SCO that reports only a scaled score (-1..1): read it as a percentage; a negative scaled score is no score.
-            return scaled < 0m ? (null, null, null) : (scaled * 100m, 0m, 100m);
+            // A SCO that reports only a scaled score (0..1): read it as a percentage; a negative or larger one is no score.
+            return (Math.Round(scaled * 100m, 2, MidpointRounding.AwayFromZero), 0m, 100m);
         }
 
-        return (raw, min, max);
+        if (raw is null || max is <= 0m || (max ?? 100m) is var ceiling && (raw < 0m || raw > ceiling))
+        {
+            return (null, null, null);
+        }
+
+        var cleanMin = min is { } m && m >= 0m && m <= raw ? Math.Round(m, 2, MidpointRounding.AwayFromZero) : (decimal?)null;
+        return (Math.Round(raw.Value, 2, MidpointRounding.AwayFromZero), cleanMin, max is null ? null : Math.Round(max.Value, 2, MidpointRounding.AwayFromZero));
     }
 
     private static bool Is(IReadOnlyDictionary<string, string> model, string key, string value) =>

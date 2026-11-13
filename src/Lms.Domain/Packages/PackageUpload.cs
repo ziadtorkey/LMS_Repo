@@ -18,6 +18,9 @@ public sealed class PackageUpload : UnitOwnedEntity
     public const string ReadyStatus = "Ready";
     public const string RejectedStatus = "Rejected";
 
+    /// <summary>Longest launch path the column holds.</summary>
+    public const int MaxLaunchPathLength = 500;
+
     private PackageUpload()
     {
         Kind = FileName = Status = Sha256 = StorePrefix = string.Empty;
