@@ -31,7 +31,7 @@ Defect classes: path escapes (zip-slip, `\`, absolute, drive, UNC, trailing dot/
 
 ### Open points found while building it (for Task 1 / the ADR)
 
-1. **No catalog reason** for "not a zip / truncated / empty file" (mapped to `manifest_invalid`), for names that are too long or too deep, device names, trailing dot/space and a local-vs-central name mismatch (all mapped to `unsafe_path`). Task 1 may add `invalid_archive` and `bad_name`; the cases would only change `expect`.
+1. **Reasons added by wave 3b (#500):** `invalid_archive` (not a zip, empty, truncated, no entries) and `bad_name` (too long or deep, device names, trailing dot/space, local-vs-central name mismatch). The cases map to them; `CorpusReasons` copies the catalog until #500 is on main.
 2. **Accept cases that the ADR may flip:** the HTML+ZIP polyglot prefix, the literal `%2e%2e%2f` name. They are accepted here because the name or prefix is harmless once stored literally and never served; if the ADR prefers to reject, change `expect` and the case's kind.
 3. **Not covered (follow-ups):** overlapping-entry zip quines, multi-disk archives, a real >4 GB Zip64 entry (only the 64-bit *claim* is tested), a zip comment of 65 535 bytes, and hardlinks (they do not exist in zip; tar is rejected as a nested archive).
 

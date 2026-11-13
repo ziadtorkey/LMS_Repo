@@ -26,19 +26,19 @@ public static partial class CorpusCases
         yield return PathCase("absolute_drive_letter", UnsafePath, "C:/Windows/evil.js", "Drive-letter absolute path.");
         yield return PathCase("drive_relative", UnsafePath, "C:evil.js", "Drive-relative path (no slash after the colon).");
         yield return PathCase("unc_path", UnsafePath, "//server/share/evil.js", "UNC path.");
-        yield return PathCase("trailing_dot_name", UnsafePath, "index.html.", "Windows strips a trailing dot, so this name becomes index.html and can shadow it.");
-        yield return PathCase("trailing_space_name", UnsafePath, "index.html ", "Windows strips a trailing space, same shadowing as the trailing dot.");
-        yield return PathCase("name_too_long", UnsafePath, new string('a', 300) + ".js", "A 304-character name (cap 255).");
-        yield return PathCase("path_too_deep", UnsafePath, string.Join('/', Enumerable.Range(0, 25).Select(i => "d" + i)) + "/f.js", "25 nested directories (cap 20).");
+        yield return PathCase("trailing_dot_name", BadName, "index.html.", "Windows strips a trailing dot, so this name becomes index.html and can shadow it.");
+        yield return PathCase("trailing_space_name", BadName, "index.html ", "Windows strips a trailing space, same shadowing as the trailing dot.");
+        yield return PathCase("name_too_long", BadName, new string('a', 300) + ".js", "A 304-character name (cap 255).");
+        yield return PathCase("path_too_deep", BadName, string.Join('/', Enumerable.Range(0, 25).Select(i => "d" + i)) + "/f.js", "25 nested directories (cap 20).");
 
         foreach (var device in new[] { "CON", "nul.txt", "Aux.html", "COM1.js", "lpt9" })
         {
-            yield return PathCase("device_name_" + device.ToLowerInvariant().Replace('.', '_'), UnsafePath, device, "Windows device name: opening it hangs or writes to a device.");
+            yield return PathCase("device_name_" + device.ToLowerInvariant().Replace('.', '_'), BadName, device, "Windows device name: opening it hangs or writes to a device.");
         }
 
         yield return Reject(
             "local_name_differs_from_central",
-            UnsafePath,
+            BadName,
             "The central directory says index2.html, the local header says ../evil.js: a reader that streams local headers extracts outside the root, one that reads the directory sees a safe name.",
             () => Pack(Scorm12().Append(new RawEntry { Name = "index2.html", LocalNameBytes = Utf8("../evil.js"), Data = Utf8("x") })),
             v => AnyName(v, n => n == "index2.html"),
@@ -207,10 +207,10 @@ public static partial class CorpusCases
 
     private static IEnumerable<CorpusCase> Structure()
     {
-        yield return Reject("not_a_zip_random_bytes", ManifestInvalid, "Random bytes with a .zip name.", () => Enumerable.Range(0, 4096).Select(i => (byte)((i * 31 + 7) % 251)).ToArray(), _ => true, raw: true, notes: "Raw file, not a zip: no catalog reason fits better; Task 1 may add one (open question in the README).");
-        yield return Reject("empty_file", ManifestInvalid, "Zero bytes.", () => [], _ => true, raw: true, notes: "Raw file, not a zip.");
-        yield return Reject("empty_archive", ManifestInvalid, "A valid zip with no entries.", () => Pack([]), v => v.Records.Count == 0);
-        yield return Reject("truncated_archive", ManifestInvalid, "A valid package cut in the middle of the central directory.", () => { var b = Pack(Scorm12()); return b[..^30]; }, _ => true, raw: true, notes: "Raw file, not a readable zip.");
+        yield return Reject("not_a_zip_random_bytes", InvalidArchive, "Random bytes with a .zip name.", () => Enumerable.Range(0, 4096).Select(i => (byte)((i * 31 + 7) % 251)).ToArray(), _ => true, raw: true, notes: "Raw file, not a zip.");
+        yield return Reject("empty_file", InvalidArchive, "Zero bytes.", () => [], _ => true, raw: true, notes: "Raw file, not a zip.");
+        yield return Reject("empty_archive", InvalidArchive, "A valid zip with no entries.", () => Pack([]), v => v.Records.Count == 0);
+        yield return Reject("truncated_archive", InvalidArchive, "A valid package cut in the middle of the central directory.", () => { var b = Pack(Scorm12()); return b[..^30]; }, _ => true, raw: true, notes: "Raw file, not a readable zip.");
         yield return Reject("no_manifest", ManifestInvalid, "A zip without imsmanifest.xml or h5p.json.", () => Pack([RawZipWriter.File("index.html", Sco)]), v => v.Records.All(r => r.NameUtf8 != "imsmanifest.xml"));
 
         yield return Accept(

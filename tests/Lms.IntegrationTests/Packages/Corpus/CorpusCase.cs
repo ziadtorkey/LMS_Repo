@@ -36,19 +36,20 @@ public sealed record CorpusCase(
     public string FileName => Name + ".zip";
 }
 
-/// <summary>Reject reasons of the Task 1 catalog (<c>PackageRejectReasons</c>); copied here because the catalog is not on main yet.</summary>
+/// <summary>Reject reasons of the wave 3b catalog (<c>PackageRejectReasons</c>); copied here so the corpus compiles before that contract is on main (a test pins the two lists together once it is).</summary>
 public static class CorpusReasons
 {
     public const string UnsafePath = "unsafe_path", TooManyEntries = "too_many_entries", TooLarge = "too_large", CompressionRatio = "compression_ratio",
         Symlink = "symlink", DuplicateName = "duplicate_name", BadNameEncoding = "bad_name_encoding", Executable = "executable",
         Encrypted = "encrypted", NestedArchive = "nested_archive", ManifestInvalid = "manifest_invalid", XmlUnsafe = "xml_unsafe",
-        MultiSco = "multi_sco", NeedsNestedFrames = "needs_nested_frames", H5pInvalid = "h5p_invalid";
+        MultiSco = "multi_sco", NeedsNestedFrames = "needs_nested_frames", H5pInvalid = "h5p_invalid",
+        InvalidArchive = "invalid_archive", BadName = "bad_name";
 
     public static readonly string[] All =
     [
         UnsafePath, TooManyEntries, TooLarge, CompressionRatio, Symlink, DuplicateName, BadNameEncoding, Executable, Encrypted,
         NestedArchive, ManifestInvalid, XmlUnsafe, MultiSco, NeedsNestedFrames, "needs_relaxed_policy", H5pInvalid, "validation_timeout",
-        "quota_exceeded", "scan_failed",
+        "quota_exceeded", "scan_failed", InvalidArchive, BadName,
     ];
 }
 
