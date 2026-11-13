@@ -4,7 +4,9 @@ namespace Lms.Shared.Content;
 /// A module node in the class lesson plan tree (nested in <c>ClassLessonDto.Modules</c>). For the Student role the
 /// server sends only modules visible to the caller now (published, inside the schedule window, targeted at the whole
 /// ClassCourse or at the caller's group) and fills <c>CompletionState</c>; staff get every module with
-/// <c>IsVisibleNow</c> for the chips and <c>CompletionState = null</c>.
+/// <c>IsVisibleNow</c> for the chips and <c>CompletionState = null</c>. <c>RefRemoved</c> = the activity this module points to
+/// (library resource, assignment, quiz, live session or package) was deleted; the module is kept as history in a closed class
+/// (#526) and the client shows a "removed" state instead of opening it. Default false.
 /// </summary>
 public sealed record ModuleNodeDto(
     Guid Id,
@@ -21,7 +23,8 @@ public sealed record ModuleNodeDto(
     string? GroupNameEn,
     string CompletionRule,
     bool IsVisibleNow,
-    string? CompletionState);
+    string? CompletionState,
+    bool RefRemoved = false);
 
 /// <summary>
 /// The typed content of a module. Content kinds (<see cref="ModuleKinds.Content"/>): File/Video/Audio carry

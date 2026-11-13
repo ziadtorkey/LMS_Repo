@@ -1,0 +1,119 @@
+@page "/enrollment-exceptions"
+@attribute [Authorize]
+@using System.Globalization
+@using Lms.Client.Components
+@using Lms.Client.Components.People
+@using Lms.Client.Services.Api
+@using Lms.Shared.Authorization
+@using Lms.Shared.Enrollment
+@implements IDisposable
+@inject IEnrollmentApi Api
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+@inject PermissionState PermState
+@inject ICultureService Culture
+
+<PageTitle>@L["Exception_Title"]</PageTitle>
+@if (!PermState.Loaded)
+{
+    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+}
+else if (!CanApprove && !PermState.Has(Permissions.Enrollment.RequestException))
+{
+    <Forbidden />
+}
+else
+{
+    <MudText Typo="Typo.h4" Class="mb-1" data-testid="exceptions-title">@L["Exception_Title"]</MudText>
+    <MudText Typo="Typo.body2" Class="mb-3">@L["Exception_Help"]</MudText>
+    <MudStack Row="true" Spacing="2" Class="mb-3" Wrap="Wrap.Wrap" AlignItems="AlignItems.Center">
+        @if (CanApprove)
+        {
+            <MudItem xs="12" sm="4">
+                <UnitPicker Value="_unitId" ValueChanged="OnUnitChanged" Label="@L["Staff_HomeUnit"]" Clearable="true" TestId="exceptions-filter-unit" />
+            </MudItem>
+        }
+        <MudSelect T="string" Value="_status" ValueChanged="OnStatusChanged" Label="@L["Common_Status"]" Clearable="true" Style="min-width: 10rem"
+                   data-testid="exceptions-filter-status">
+            @foreach (var status in ExceptionStatuses.All)
+            {
+                <MudSelectItem T="string" Value="@status">@L[$"ExceptionStatus_{status}"]</MudSelectItem>
+            }
+        </MudSelect>
+    </MudStack>
+    <ServerTable @ref="_table" T="EnrollmentExceptionDto" ServerData="LoadAsync">
+        <HeaderContent>
+            <MudTh>@L["Exception_Student"]</MudTh>
+            <MudTh>@L["Exception_Course"]</MudTh>
+            <MudTh>@L["Exception_Failed"]</MudTh>
+            <MudTh>@L["Exception_RequestedBy"]</MudTh>
+            <MudTh>@L["Common_Status"]</MudTh>
+            <MudTh></MudTh>
+        </HeaderContent>
+        <RowTemplate Context="e">
+            <MudTd DataLabel="@L["Exception_Student"]">@Culture.Pick(e.StudentNameAr, e.StudentNameEn) (<span dir="ltr">@e.StudentCode</span>)</MudTd>
+            <MudTd DataLabel="@L["Exception_Course"]">@Culture.Pick(e.CourseNameAr, e.CourseNameEn) · @Culture.Pick(e.ClassNameAr, e.ClassNameEn)</MudTd>
+            <MudTd DataLabel="@L["Exception_Failed"]">
+                <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap">
+                    @foreach (var type in e.FailedTypes)
+                    {
+                        <MudChip T="string" Size="Size.Small" data-testid="@($"failed-{e.Id}-{type}")">@L[$"RestrictionType_{type}"]</MudChip>
+                    }
+                </MudStack>
+            </MudTd>
+            <MudTd DataLabel="@L["Exception_RequestedBy"]">@(e.RequestedByNameAr is null ? "" : Culture.Pick(e.RequestedByNameAr, e.RequestedByNameEn ?? e.RequestedByNameAr))</MudTd>
+            <MudTd DataLabel="@L["Common_Status"]" data-testid="@($"exception-status-{e.Id}")">@L[$"ExceptionStatus_{e.Status}"]</MudTd>
+            <MudTd>
+                <MudButton Size="Size.Small" Variant="Variant.Outlined" OnClick="() => OpenAsync(e)" data-testid="@($"exception-open-{e.Id}")">@L["Exception_Review"]</MudButton>
+                @if (e.Status == ExceptionStatuses.Pending && !CanApprove && PermState.Has(Permissions.Enrollment.RequestException))
+                {
+                    <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Error" OnClick="() => CancelAsync(e)"
+                               data-testid="@($"exception-cancel-{e.Id}")">@L["Exception_Cancel"]</MudButton>
+                }
+            </MudTd>
+        </RowTemplate>
+    </ServerTable>
+}
+
+@code {
+    private ServerTable<EnrollmentExceptionDto> _table = default!;
+    private Guid? _unitId;
+    private string? _status = ExceptionStatuses.Pending;
+
+    /// <summary>Approvers see the whole queue and decide; requesters see their own requests and can cancel pending ones.</summary>
+    private bool CanApprove => PermState.Has(Permissions.Enrollment.ApproveException);
+
+    protected override async Task OnInitializedAsync()
+    {
+        PermState.Changed += OnPermissionsChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+    }
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => PermState.Changed -= OnPermissionsChanged;
+
+    private async Task<TableData<EnrollmentExceptionDto>> LoadAsync(TableState state, CancellationToken ct)
+    {
+        var result = await Api.ListExceptionsAsync(new ExceptionQuery(_unitId, _status, state.Page + 1, state.PageSize), ct);
+        return new TableData<EnrollmentExceptionDto> { Items = result.Items, TotalItems = result.Total };
+    }
+
+    private Task OnUnitChanged(Guid? id) { _unitId = id; return _table.ReloadAsync(); }
+    private Task OnStatusChanged(string? status) { _status = status; return _table.ReloadAsync(); }
+
+    private async Task OpenAsync(EnrollmentExceptionDto request)
+    {
+        var dialog = await Dialogs.ShowAsync<DecideExceptionDialog>(L["Exception_Review"],
+            new DialogParameters<DecideExceptionDialog> { { x => x.Request, request }, { x => x.CanDecide, CanApprove } },
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        if (await dialog.Result is { Canceled: false }) { Snackbar.Add(L["Common_Saved"], Severity.Success); await _table.ReloadAsync(); }
+    }
+
+    private async Task CancelAsync(EnrollmentExceptionDto request)
+    {
+        var ok = await ApiCalls.RunAsync(() => Api.CancelExceptionAsync(request.Id), Navigation, L, message => Snackbar.Add(message, Severity.Error));
+        if (ok) await _table.ReloadAsync();
+    }
+}

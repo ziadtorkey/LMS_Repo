@@ -28,6 +28,20 @@ public interface IEnrollmentApi
     Task TransferAsync(TransferStudentRequest request, CancellationToken ct = default);
 
     Task<IReadOnlyList<StudentTransferDto>> ListTransfersAsync(Guid studentId, CancellationToken ct = default);
+
+    /// <summary>Enrollment exceptions: the approvers' queue, or the requester's own requests (the server scopes the list).</summary>
+    Task<PagedResult<EnrollmentExceptionDto>> ListExceptionsAsync(ExceptionQuery query, CancellationToken ct = default);
+
+    /// <summary>Asks to enroll a student who fails the course restrictions; fails with a duplicate problem while one is pending.</summary>
+    Task RequestExceptionAsync(Guid classCourseId, RequestExceptionRequest request, CancellationToken ct = default);
+
+    Task ApproveExceptionAsync(Guid id, DecideExceptionRequest request, CancellationToken ct = default);
+
+    /// <summary>A comment is required.</summary>
+    Task RejectExceptionAsync(Guid id, DecideExceptionRequest request, CancellationToken ct = default);
+
+    /// <summary>The requester withdraws a pending request.</summary>
+    Task CancelExceptionAsync(Guid id, CancellationToken ct = default);
 }
 
 public sealed class EnrollmentApi(ApiHttp http) : IEnrollmentApi
@@ -64,6 +78,26 @@ public sealed class EnrollmentApi(ApiHttp http) : IEnrollmentApi
 
     public async Task<IReadOnlyList<StudentTransferDto>> ListTransfersAsync(Guid studentId, CancellationToken ct = default) =>
         await http.GetAsync<List<StudentTransferDto>>(Routes.StudentTransfers(studentId), ct);
+
+    public Task<PagedResult<EnrollmentExceptionDto>> ListExceptionsAsync(ExceptionQuery q, CancellationToken ct = default)
+    {
+        var parts = new List<string> { $"page={q.Page}", $"pageSize={q.PageSize}" };
+        if (q.OrgUnitId is { } unit) parts.Add($"orgUnitId={unit}");
+        if (!string.IsNullOrWhiteSpace(q.Status)) parts.Add($"status={Uri.EscapeDataString(q.Status)}");
+        return http.GetAsync<PagedResult<EnrollmentExceptionDto>>($"{Routes.EnrollmentExceptions}?{string.Join('&', parts)}", ct);
+    }
+
+    public Task RequestExceptionAsync(Guid classCourseId, RequestExceptionRequest request, CancellationToken ct = default) =>
+        http.SendAsync(HttpMethod.Post, Routes.ClassCourseExceptions(classCourseId), request, ct);
+
+    public Task ApproveExceptionAsync(Guid id, DecideExceptionRequest request, CancellationToken ct = default) =>
+        http.SendAsync(HttpMethod.Post, Routes.EnrollmentExceptionApprove(id), request, ct);
+
+    public Task RejectExceptionAsync(Guid id, DecideExceptionRequest request, CancellationToken ct = default) =>
+        http.SendAsync(HttpMethod.Post, Routes.EnrollmentExceptionReject(id), request, ct);
+
+    public Task CancelExceptionAsync(Guid id, CancellationToken ct = default) =>
+        http.SendAsync(HttpMethod.Post, Routes.EnrollmentExceptionCancel(id), new DecideExceptionRequest(null), ct);
 }
 
 /// <summary>In-memory fake for the standalone dev server and bUnit tests; records what the UI sent.</summary>
@@ -81,6 +115,12 @@ public sealed class FakeEnrollmentApi : IEnrollmentApi
     public List<(Guid Id, DropEnrollmentRequest Request)> Drops { get; } = [];
     public List<TransferStudentRequest> Previews { get; } = [];
     public List<TransferStudentRequest> Transfers { get; } = [];
+    public ExceptionQuery? LastExceptionQuery { get; private set; }
+    public List<(Guid ClassCourseId, RequestExceptionRequest Request)> ExceptionRequests { get; } = [];
+    public List<(Guid Id, string? Comment)> ExceptionApprovals { get; } = [];
+    public List<(Guid Id, string? Comment)> ExceptionRejections { get; } = [];
+    public List<Guid> ExceptionCancellations { get; } = [];
+    private readonly List<EnrollmentExceptionDto> _exceptions = [];
 
     /// <summary>What the next preview returns.</summary>
     public TransferPreviewDto Preview { get; set; } = new(["MATH1", "SCI1"], ["ART1"], ["ARAB1"], ["FR1"], false);
@@ -107,6 +147,9 @@ public sealed class FakeEnrollmentApi : IEnrollmentApi
             Enrollment("MUS1", "الموسيقى", "Music", EnrollmentSources.Manual, Guid.NewGuid()),
             Enrollment("ART1", "الفنون", "Art", EnrollmentSources.Exceptional, Guid.NewGuid(), EnrollmentStatuses.Dropped, "Schedule clash"),
         ]);
+        SeedException("S-1003", "عمر خالد", "Omar Khaled", ExceptionStatuses.Pending, "The student studied the course abroad.", "Gender");
+        SeedException("S-1004", "سارة علي", "Sara Ali", ExceptionStatuses.Pending, "Parent request.", "Religion", "Gender");
+        SeedException("S-1002", "ليلى حسن", "Laila Hassan", ExceptionStatuses.Rejected, "Wants to join.", "LevelType");
     }
 
     private static EnrollmentDto Enrollment(string code, string ar, string en, string source, Guid classCourseId,
@@ -116,7 +159,57 @@ public sealed class FakeEnrollmentApi : IEnrollmentApi
             dropReason, null, null, null);
 
     public IReadOnlyList<EnrollmentDto> Enrollments => _enrollments;
+    public IReadOnlyList<EnrollmentExceptionDto> Exceptions => _exceptions;
+
+    /// <summary>Seeds an exception request (tests and the dev server).</summary>
+    public EnrollmentExceptionDto SeedException(string studentCode, string nameAr, string nameEn, string status, string reason, params string[] failedTypes)
+    {
+        var item = new EnrollmentExceptionDto(Guid.NewGuid(), ClassCourseId, Guid.NewGuid(), studentCode, nameAr, nameEn, "الرياضيات", "Mathematics",
+            "الصف الأول أ", "Grade 1 A", failedTypes, reason, status, "مدير النظام", "Administrator", DateTime.UtcNow.AddHours(-3),
+            status == ExceptionStatuses.Pending ? null : "المشرف", status == ExceptionStatuses.Pending ? null : "Supervisor",
+            status == ExceptionStatuses.Pending ? null : DateTime.UtcNow.AddHours(-1), status == ExceptionStatuses.Rejected ? "Not justified." : null);
+        _exceptions.Add(item);
+        return item;
+    }
     public IReadOnlyList<ClassStudentDto> ClassStudents => _classStudents;
+
+    public Task<PagedResult<EnrollmentExceptionDto>> ListExceptionsAsync(ExceptionQuery query, CancellationToken ct = default)
+    {
+        LastExceptionQuery = query;
+        var rows = _exceptions.Where(e => query.Status is null || e.Status == query.Status).OrderByDescending(e => e.CreatedAt).ToList();
+        return Task.FromResult(new PagedResult<EnrollmentExceptionDto>(rows.Skip((query.Page - 1) * query.PageSize).Take(query.PageSize).ToList(), rows.Count, query.Page, query.PageSize));
+    }
+
+    public Task RequestExceptionAsync(Guid classCourseId, RequestExceptionRequest request, CancellationToken ct = default)
+    {
+        ExceptionRequests.Add((classCourseId, request));
+        FailIfSet();
+        return Task.CompletedTask;
+    }
+
+    private Task Decide(Guid id, string status, string? comment, List<(Guid, string?)> log)
+    {
+        FailIfSet();
+        log.Add((id, comment));
+        var index = _exceptions.FindIndex(e => e.Id == id);
+        _exceptions[index] = _exceptions[index] with { Status = status, DecisionComment = comment, DecidedAt = DateTime.UtcNow };
+        return Task.CompletedTask;
+    }
+
+    public Task ApproveExceptionAsync(Guid id, DecideExceptionRequest request, CancellationToken ct = default) =>
+        Decide(id, ExceptionStatuses.Approved, request.Comment, ExceptionApprovals);
+
+    public Task RejectExceptionAsync(Guid id, DecideExceptionRequest request, CancellationToken ct = default) =>
+        Decide(id, ExceptionStatuses.Rejected, request.Comment, ExceptionRejections);
+
+    public Task CancelExceptionAsync(Guid id, CancellationToken ct = default)
+    {
+        ExceptionCancellations.Add(id);
+        FailIfSet();
+        var index = _exceptions.FindIndex(e => e.Id == id);
+        if (index >= 0) _exceptions[index] = _exceptions[index] with { Status = ExceptionStatuses.Cancelled };
+        return Task.CompletedTask;
+    }
 
     private void FailIfSet()
     {
