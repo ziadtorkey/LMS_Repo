@@ -133,13 +133,13 @@ public sealed class ZoomSessionRowTests(LmsApiFactory factory) : IDisposable
         Assert.Equal(LiveSessionStatuses.SyncFailed, created.Status);
         Assert.Empty(Provider(host).Meetings);
 
-        var recovered = await SweepAsync(host);
+        var recovered = await SweepAsync(host, w.Tree.Org.Id);
 
         Assert.Equal(1, recovered);
         var after = await (await host.SendAsync(w.Teacher, HttpMethod.Get, Routes.LiveSession(created.Id))).Content.ReadFromJsonAsync<LiveSessionDto>();
         Assert.Equal(LiveSessionStatuses.Scheduled, after!.Status);
         Assert.Equal("Retry me", Assert.Single(Provider(host).Meetings.Values).Topic);
-        Assert.Equal(0, await SweepAsync(host)); // nothing left to retry
+        Assert.Equal(0, await SweepAsync(host, w.Tree.Org.Id)); // nothing left to retry
     }
 
     [Fact]
@@ -156,8 +156,8 @@ public sealed class ZoomSessionRowTests(LmsApiFactory factory) : IDisposable
         Assert.Equal([LiveSessionStatuses.SyncFailed, LiveSessionStatuses.SyncFailed], [first.Status, second.Status]);
 
         Provider(host).FailNext(1); // the sweep's first call fails: one client is retried next run, the other still recovers now
-        var firstRun = await SweepAsync(host);
-        var secondRun = await SweepAsync(host);
+        var firstRun = await SweepAsync(host, a.Tree.Org.Id, b.Tree.Org.Id);
+        var secondRun = await SweepAsync(host, a.Tree.Org.Id, b.Tree.Org.Id);
 
         Assert.Equal(1, firstRun);
         Assert.Equal(1, secondRun);
@@ -165,6 +165,53 @@ public sealed class ZoomSessionRowTests(LmsApiFactory factory) : IDisposable
         // Each meeting was created for its own client and class course.
         Assert.Contains(Provider(host).Meetings.Values, m => m.OrganizationId == a.Tree.Org.Id && m.ClassCourseId == a.ClassCourse.Id);
         Assert.Contains(Provider(host).Meetings.Values, m => m.OrganizationId == b.Tree.Org.Id && m.ClassCourseId == b.ClassCourse.Id);
+    }
+
+    /// <summary>The fake provider, but each create takes a moment, so two sweeps that are not excluded really do overlap.</summary>
+    private sealed class SlowProvider(FakeMeetingProvider inner) : IMeetingProvider
+    {
+        public string Name => inner.Name;
+
+        public async Task<MeetingResult> CreateMeetingAsync(MeetingRequest request, CancellationToken ct = default)
+        {
+            await Task.Delay(400, ct);
+            return await inner.CreateMeetingAsync(request, ct);
+        }
+
+        public Task UpdateMeetingAsync(string id, MeetingRequest request, CancellationToken ct = default) => inner.UpdateMeetingAsync(id, request, ct);
+
+        public Task DeleteMeetingAsync(string id, CancellationToken ct = default) => inner.DeleteMeetingAsync(id, ct);
+
+        public Task<IReadOnlyList<MeetingParticipant>> GetParticipantsAsync(string id, CancellationToken ct = default) => inner.GetParticipantsAsync(id, ct);
+
+        public Task<IReadOnlyList<MeetingRecording>> GetRecordingsAsync(string id, CancellationToken ct = default) => inner.GetRecordingsAsync(id, ct);
+
+        public Task<ProviderHealth> GetHealthAsync(CancellationToken ct = default) => inner.GetHealthAsync(ct);
+    }
+
+    [Fact]
+    public async Task Two_sweeps_at_once_create_one_meeting_per_session()
+    {
+        var host = new ContentTestHost(factory, services =>
+            services.AddSingleton<IMeetingProvider>(sp => new SlowProvider(sp.GetRequiredService<FakeMeetingProvider>())));
+        _hosts.Add(host);
+        var w = await host.SetUpAsync("ZS9");
+        await EnableAsync(factory, w);
+        Provider(host).FailNext(2);
+        var sessions = await CreateAsync(host, w.Teacher, w, Weekly(2));
+        Assert.All(sessions, s => Assert.Equal(LiveSessionStatuses.SyncFailed, s.Status));
+        Assert.Empty(Provider(host).Meetings);
+
+        var results = await Task.WhenAll(Task.Run(() => SweepAsync(host, w.Tree.Org.Id)), Task.Run(() => SweepAsync(host, w.Tree.Org.Id)));
+
+        Assert.Equal(2, Provider(host).Meetings.Count); // one meeting per session, not four
+        Assert.Equal(2, results.Sum());                 // and exactly one of the runs did the work
+        Assert.Contains(0, results);
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        var rows = await db.Set<LiveSession>().Where(s => s.ClassCourseId == w.ClassCourse.Id).ToListAsync();
+        Assert.All(rows, r => Assert.Equal(LiveSessionStatuses.Scheduled, r.Status));
+        Assert.Equal(2, rows.Select(r => r.ExternalMeetingId).Distinct().Count());
+        Assert.Equal(2, Provider(host).Meetings.Keys.Intersect(rows.Select(r => r.ExternalMeetingId!)).Count()); // no orphaned meeting
     }
 
     [Fact]
@@ -182,7 +229,7 @@ public sealed class ZoomSessionRowTests(LmsApiFactory factory) : IDisposable
             await db.SaveChangesAsync();
         }
 
-        Assert.Equal(0, await SweepAsync(host));
+        Assert.Equal(0, await SweepAsync(host, w.Tree.Org.Id));
         Assert.Empty(Provider(host).Meetings);
     }
 
@@ -221,10 +268,22 @@ public sealed class ZoomSessionRowTests(LmsApiFactory factory) : IDisposable
     }
 
     /// <summary>Runs the sweep the way the job server does: a fresh scope with the platform context.</summary>
-    private static async Task<int> SweepAsync(ContentTestHost host)
+    private static async Task<int> SweepAsync(ContentTestHost host, params Guid[] clients)
     {
         using var scope = host.Services.CreateScope();
         scope.ServiceProvider.GetRequiredService<Lms.Api.Infrastructure.HttpCurrentContext>().SetUser(Guid.Empty, true);
-        return await scope.ServiceProvider.GetRequiredService<ZoomSyncSweepJob>().RunAsync();
+        var job = scope.ServiceProvider.GetRequiredService<ZoomSyncSweepJob>();
+        if (clients.Length == 0)
+        {
+            return await job.RunAsync();
+        }
+
+        var recovered = 0;
+        foreach (var client in clients)
+        {
+            recovered += await job.RunForClientAsync(client);
+        }
+
+        return recovered;
     }
 }
