@@ -1240,6 +1240,11 @@
   <data name="MyCourses_EmptyText" xml:space="preserve"><value>Courses appear here once you are made their supervisor.</value></data>
   <data name="MyCourses_Subtitle" xml:space="preserve"><value>The courses you supervise.</value></data>
   <data name="Supervisor_NoneText" xml:space="preserve"><value>Add a supervisor from the staff who hold the Supervisor role.</value></data>
+  <data name="Academic_SectionCourses" xml:space="preserve"><value>Courses</value></data>
+  <data name="Academic_SectionLevel" xml:space="preserve"><value>Level transfer</value></data>
+  <data name="UnitCourses_NoneAvailableText" xml:space="preserve"><value>Allocate a course to this unit from the course page.</value></data>
+  <data name="UnitCourses_NoneBelowText" xml:space="preserve"><value>No courses are allocated to the units below yet.</value></data>
+  <data name="UnitSettings_Subtitle" xml:space="preserve"><value>The unit's details, settings, policies and courses.</value></data>
   <data name="ClassPage_Students" xml:space="preserve"><value>Students</value></data>
   <data name="ClassPage_Courses" xml:space="preserve"><value>Courses</value></data>
   <data name="ClassPage_Teachers" xml:space="preserve"><value>Teachers</value></data>

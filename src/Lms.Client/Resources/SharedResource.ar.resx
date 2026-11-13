@@ -1240,6 +1240,11 @@
   <data name="MyCourses_EmptyText" xml:space="preserve"><value>ستظهر هنا المقررات عندما تُعيَّن مشرفاً عليها.</value></data>
   <data name="MyCourses_Subtitle" xml:space="preserve"><value>المقررات التي تشرف عليها.</value></data>
   <data name="Supervisor_NoneText" xml:space="preserve"><value>أضف مشرفاً من الموظفين الذين لديهم دور المشرف.</value></data>
+  <data name="Academic_SectionCourses" xml:space="preserve"><value>المقررات</value></data>
+  <data name="Academic_SectionLevel" xml:space="preserve"><value>انتقال المستوى</value></data>
+  <data name="UnitCourses_NoneAvailableText" xml:space="preserve"><value>وزّع مقرراً على هذه الوحدة من صفحة المقرر.</value></data>
+  <data name="UnitCourses_NoneBelowText" xml:space="preserve"><value>لم تُوزَّع مقررات على الوحدات التابعة بعد.</value></data>
+  <data name="UnitSettings_Subtitle" xml:space="preserve"><value>بيانات الوحدة وإعداداتها وسياساتها ومقرراتها.</value></data>
   <data name="ClassPage_Students" xml:space="preserve"><value>الطلاب</value></data>
   <data name="ClassPage_Courses" xml:space="preserve"><value>المقررات</value></data>
   <data name="ClassPage_Teachers" xml:space="preserve"><value>المعلمون</value></data>
