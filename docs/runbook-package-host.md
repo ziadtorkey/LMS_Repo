@@ -30,4 +30,10 @@ access_log /var/log/nginx/content.log lms_content;
 Every response (errors included) carries `Content-Security-Policy: sandbox allow-scripts; ...`, `nosniff`, `Referrer-Policy: no-referrer`, `Cache-Control: private, no-store`, CORS `*` without credentials, and never `Set-Cookie`, `X-Frame-Options` or CORP/COEP/COOP. Every failure is the same empty 404. App responses add exactly `frame-src <content origin>` to their CSP.
 
 ## Revocation
-Markers (`PackageRevocations`) refuse tokens issued before them. Written today when a package is deleted; module hide and student unenroll hooks follow with T9b. A node picks a new marker up within `RevocationCacheSeconds`.
+Markers (`PackageRevocations`) refuse tokens issued before them. They are written when a package is deleted, when a SCORM/H5P module is hidden (visibility update through the module handlers or `IModuleWriter`), and when a student's course enrollment ends (the enrollment engine's drop). A node picks a marker up within `RevocationCacheSeconds` (30 s, per instance, no shared cache). Whether the package is still `Ready` and not deleted is read per file request (one small query), which makes a package delete effective at once; if this becomes a cost, cache readiness in the revocation cache.
+
+## Tokens
+Tokens are authenticated encrypted payloads from ASP.NET Data Protection (purpose `Lms.PackageHost.Token.v1`), not a hand-rolled HMAC: equivalent integrity, the key ring is shared by all nodes and protected by the deployment's key protection outside Development. ADR 0005 section 5 says "HMAC"; read it as this.
+
+## Behind a TLS-terminating proxy
+The host matches `PackageHost:Origin` by host and port, and derives the default port from the request scheme. Configure `ForwardedHeaders` (`KnownProxies`/`KnownNetworks`) so `X-Forwarded-Proto: https` is honoured; otherwise `https://content.example` (443) never matches and the host answers 404 for everything (it fails closed).
