@@ -28,10 +28,44 @@ public sealed class LmsApiFactory : WebApplicationFactory<Program>, IAsyncLifeti
         await Task.WhenAll(_mysql.StartAsync(), _minio.StartAsync());
         await using var db = CreateDbContext(TestCurrentContext.PlatformAdmin());
         await db.Database.MigrateAsync();
+        StartSampler();
+    }
+
+    private CancellationTokenSource? _samplerCts;
+
+    /// <summary>Opt-in diagnostic (#466): with <c>LMS_CONN_LOG</c> set, appends the MySQL process list grouped by user and query every 15 s.</summary>
+    private void StartSampler()
+    {
+        var path = Environment.GetEnvironmentVariable("LMS_CONN_LOG");
+        if (string.IsNullOrEmpty(path)) return;
+        _samplerCts = new CancellationTokenSource();
+        var cts = _samplerCts;
+        var root = new MySqlConnector.MySqlConnectionStringBuilder(_mysql.GetConnectionString()) { UserID = "root", Password = "lms_test_pw", Pooling = false };
+        _ = Task.Run(async () =>
+        {
+            while (!cts.IsCancellationRequested)
+            {
+                try
+                {
+                    await using var c = new MySqlConnector.MySqlConnection(root.ConnectionString);
+                    await c.OpenAsync();
+                    await using var cmd = new MySqlConnector.MySqlCommand(
+                        "SELECT USER, COALESCE(DB,'-'), COMMAND, COUNT(*), MAX(TIME), LEFT(COALESCE(INFO,''),70) FROM information_schema.processlist GROUP BY USER, DB, COMMAND, LEFT(COALESCE(INFO,''),70) ORDER BY 4 DESC LIMIT 12", c);
+                    await using var r = await cmd.ExecuteReaderAsync();
+                    var sb = new System.Text.StringBuilder();
+                    sb.AppendLine($"== {DateTime.UtcNow:HH:mm:ss}");
+                    while (await r.ReadAsync()) sb.AppendLine($"{r.GetString(0)} {r.GetString(1)} {r.GetString(2)} n={r.GetInt64(3)} maxT={r.GetInt64(4)} {r.GetString(5)}");
+                    await File.AppendAllTextAsync(path, sb.ToString());
+                }
+                catch (Exception ex) { await File.AppendAllTextAsync(path, $"sampler error {ex.GetType().Name}: {ex.Message}{Environment.NewLine}"); }
+                try { await Task.Delay(15000, cts.Token); } catch (OperationCanceledException) { }
+            }
+        });
     }
 
     async Task IAsyncLifetime.DisposeAsync()
     {
+        _samplerCts?.Cancel();
         await Task.WhenAll(_mysql.DisposeAsync().AsTask(), _minio.DisposeAsync().AsTask());
     }
 
