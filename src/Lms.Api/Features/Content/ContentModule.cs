@@ -1,4 +1,5 @@
 using Lms.Api.Infrastructure;
+using Lms.Domain.Content;
 using Lms.Shared;
 using Lms.Shared.Authorization;
 using Lms.Shared.Content;
@@ -10,7 +11,9 @@ public sealed class ContentModule : ILmsModule
 {
     public void AddServices(IServiceCollection services, IConfiguration configuration)
     {
+        services.AddHttpContextAccessor();
         services.AddScoped<ModuleAccess>();
+        services.AddScoped<IAssetReferenceReader, ModuleAssetReader>();
         services.AddScoped<ModuleHandlers>();
         services.AddScoped<CompletionRecorder>();
         services.AddScoped<ProgressReader>();
