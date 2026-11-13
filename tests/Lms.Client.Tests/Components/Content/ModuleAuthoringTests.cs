@@ -53,6 +53,19 @@ public sealed class ModuleAuthoringTests : ClientTestContext
         });
 
     [Fact]
+    public async Task A_fresh_module_dialog_shows_no_field_errors()
+    {
+        await StartAsync(Permissions.Modules.Manage);
+        OpenDialog(ModuleKinds.Page);
+        _dialogs.WaitForAssertion(() => Assert.NotNull(_dialogs.Find("[data-testid=module-save]")));
+
+        Assert.DoesNotContain("_targetError", _dialogs.Markup);
+        Assert.DoesNotContain("_visibilityError", _dialogs.Markup);
+        Assert.Empty(_dialogs.FindAll("[data-testid=module-target-error]"));
+        Assert.Empty(_dialogs.FindAll("[data-testid=module-visibility-error]"));
+    }
+
+    [Fact]
     public async Task Teacher_adds_page_module_under_own_lesson()
     {
         await StartAsync(Permissions.Modules.Manage);
