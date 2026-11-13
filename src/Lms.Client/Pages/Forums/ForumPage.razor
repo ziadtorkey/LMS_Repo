@@ -21,13 +21,14 @@ else if (!PermState.Has(Permissions.Forums.View))
 }
 else
 {
-    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3">
-        <MudText Typo="Typo.h5">@L["Forum_Title"]</MudText>
-        @if (PermState.Has(Permissions.Forums.Post))
-        {
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => _composing = !_composing" data-testid="forum-new">@L["Forum_NewThread"]</MudButton>
-        }
-    </MudStack>
+    <PageHeader Title="@L["Forum_Title"]" Subtitle="@L["Forum_Subtitle"]">
+        <Actions>
+            @if (PermState.Has(Permissions.Forums.Post))
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Add" OnClick="() => _composing = !_composing" data-testid="forum-new">@L["Forum_NewThread"]</MudButton>
+            }
+        </Actions>
+    </PageHeader>
 
     @if (_composing)
     {
@@ -53,7 +54,9 @@ else
     }
     else if (_threads.Count == 0)
     {
-        <MudAlert Severity="Severity.Info" data-testid="forum-empty">@L["Forum_Empty"]</MudAlert>
+        <SectionCard>
+            <EmptyState Title="@L["Forum_Empty"]" Text="@L["Forum_EmptyText"]" Icon="@Icons.Material.Rounded.Forum" TestId="forum-empty" />
+        </SectionCard>
     }
     else
     {

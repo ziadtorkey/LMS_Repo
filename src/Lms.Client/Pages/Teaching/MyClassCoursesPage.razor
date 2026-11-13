@@ -10,7 +10,7 @@
 @implements IDisposable
 
 <PageTitle>@L["MyClassCourses_Title"]</PageTitle>
-<MudText Typo="Typo.h4" Class="mb-4" data-testid="my-class-courses-title">@L["MyClassCourses_Title"]</MudText>
+<PageHeader Title="@L["MyClassCourses_Title"]" Subtitle="@L["MyClassCourses_Subtitle"]" TitleTestId="my-class-courses-title" />
 @if (!PermState.Loaded || _loading)
 {
     <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
@@ -32,7 +32,7 @@ else if (_items.Count == 0)
 }
 else
 {
-    <MudGrid>
+    <MudGrid Spacing="2">
         @foreach (var item in _items)
         {
             var cc = item;
@@ -49,7 +49,7 @@ else
                             {
                                 <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@L["MyClassCourses_Optional"]</MudChip>
                             }
-                            <MudChip T="string" Size="Size.Small" Color="@(cc.LessonPlanVersion is null ? Color.Default : Color.Primary)">
+                            <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@(cc.LessonPlanVersion is null ? Color.Default : Color.Primary)" data-testid="plan-version">
                                 @(cc.LessonPlanVersion is { } v ? L["MyClassCourses_PlanVersion", v] : L["MyClassCourses_NoPlan"])
                             </MudChip>
                         </MudStack>

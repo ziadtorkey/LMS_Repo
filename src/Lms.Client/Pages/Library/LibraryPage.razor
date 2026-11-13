@@ -18,13 +18,14 @@
 @implements IDisposable
 
 <PageTitle>@L["Library_Title"]</PageTitle>
-<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
-    <MudText Typo="Typo.h4">@L["Library_Title"]</MudText>
-    @if (PermState.Has(Permissions.Library.Manage))
-    {
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => EditAsync(null)" data-testid="library-new">@L["Library_New"]</MudButton>
-    }
-</MudStack>
+<PageHeader Title="@L["Library_Title"]" Subtitle="@L["Library_Subtitle"]">
+    <Actions>
+        @if (PermState.Has(Permissions.Library.Manage))
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Add" OnClick="() => EditAsync(null)" data-testid="library-new">@L["Library_New"]</MudButton>
+        }
+    </Actions>
+</PageHeader>
 
 @if (!PermState.Loaded)
 {
@@ -81,7 +82,9 @@ else
     }
     else if (_items.Count == 0)
     {
-        <MudAlert Severity="Severity.Info" data-testid="library-empty">@L["Library_Empty"]</MudAlert>
+        <SectionCard>
+            <EmptyState Title="@L["Library_Empty"]" Text="@L["Library_EmptyText"]" Icon="@Icons.Material.Rounded.LocalLibrary" TestId="library-empty" />
+        </SectionCard>
     }
     else
     {

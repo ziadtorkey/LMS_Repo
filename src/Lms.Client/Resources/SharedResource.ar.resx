@@ -1418,4 +1418,11 @@
   <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>لم يقبل الفحص الأمني هذه الحزمة.</value></data>
   <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>الملف ليس أرشيف zip صالحًا.</value></data>
   <data name="Error_package_reason_bad_name" xml:space="preserve"><value>اسم ملف في الحزمة غير صالح (طويل جدًا أو عميق جدًا أو محجوز).</value></data>
+  <data name="Forum_Subtitle" xml:space="preserve"><value>أسئلة ونقاشات هذا المقرر.</value></data>
+  <data name="Forum_EmptyText" xml:space="preserve"><value>ابدأ أول موضوع لطرح سؤال أو مشاركة فكرة.</value></data>
+  <data name="Announcements_Subtitle" xml:space="preserve"><value>أخبار وتذكيرات من معلّمي هذا المقرر.</value></data>
+  <data name="Announcements_EmptyText" xml:space="preserve"><value>ستظهر هنا إعلانات معلّمك.</value></data>
+  <data name="Library_Subtitle" xml:space="preserve"><value>كتب ومستندات وروابط مشتركة مع مدرستك.</value></data>
+  <data name="Library_EmptyText" xml:space="preserve"><value>غيّر عوامل التصفية، أو أضف موردًا إن كنت تدير المكتبة.</value></data>
+  <data name="MyClassCourses_Subtitle" xml:space="preserve"><value>مقررات الفصول التي تدرّسها هذا العام وخطط دروسها.</value></data>
 </root>

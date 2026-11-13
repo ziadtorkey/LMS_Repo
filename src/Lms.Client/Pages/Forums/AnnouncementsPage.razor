@@ -24,7 +24,7 @@ else if (!PermState.Has(Permissions.Forums.View))
 }
 else
 {
-    <MudText Typo="Typo.h5" Class="mb-3">@L["Announcements_Title"]</MudText>
+    <PageHeader Title="@L["Announcements_Title"]" Subtitle="@L["Announcements_Subtitle"]" />
     @if (PermState.Has(Permissions.Forums.Moderate))
     {
         <MudPaper Outlined="true" Class="pa-3 mb-3" data-testid="announcement-form">
@@ -54,7 +54,9 @@ else
     }
     else if (_items.Count == 0)
     {
-        <MudAlert Severity="Severity.Info" data-testid="announcements-empty">@L["Announcements_Empty"]</MudAlert>
+        <SectionCard>
+            <EmptyState Title="@L["Announcements_Empty"]" Text="@L["Announcements_EmptyText"]" Icon="@Icons.Material.Rounded.Campaign" TestId="announcements-empty" />
+        </SectionCard>
     }
     else
     {
@@ -67,15 +69,15 @@ else
                             <MudText Typo="Typo.subtitle1">@a.Title</MudText>
                             @if (a.IsPinned)
                             {
-                                <MudChip T="string" Size="Size.Small" Color="Color.Primary" data-testid="@($"announcement-pinned-{a.Id}")">@L["Forum_Pinned"]</MudChip>
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Primary" Icon="@Icons.Material.Rounded.PushPin" data-testid="@($"announcement-pinned-{a.Id}")">@L["Forum_Pinned"]</MudChip>
                             }
                             <MudSpacer />
-                            <MudText Typo="Typo.caption" Class="mud-text-secondary">
-                                @Culture.Pick(a.AuthorNameAr, a.AuthorNameEn) · <span dir="ltr">@a.CreatedAtUtc.ToLocalTime().ToString("d", System.Globalization.CultureInfo.CurrentCulture)</span>
+                            <MudText Typo="Typo.caption" Class="lms-muted">
+                                @Culture.Pick(a.AuthorNameAr, a.AuthorNameEn) · <span dir="ltr" data-testid="@($"announcement-date-{a.Id}")">@a.CreatedAtUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm", System.Globalization.CultureInfo.InvariantCulture)</span>
                             </MudText>
                             @if (PermState.Has(Permissions.Forums.Moderate))
                             {
-                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" aria-label="@L["Common_Delete"]"
+                                <MudIconButton Icon="@Icons.Material.Rounded.Delete" Size="Size.Small" Color="Color.Error" aria-label="@L["Common_Delete"]"
                                                OnClick="() => DeleteAsync(a)" data-testid="@($"announcement-delete-{a.Id}")" />
                             }
                         </MudStack>
