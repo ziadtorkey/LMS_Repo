@@ -1395,6 +1395,7 @@
   <data name="Error_package_invalid" xml:space="preserve"><value>This package cannot be used. See the reason shown with it.</value></data>
   <data name="Error_package_too_large" xml:space="preserve"><value>The package is too large to upload or would exceed your storage.</value></data>
   <data name="Error_package_not_ready" xml:space="preserve"><value>The package is not ready yet. Wait for the check to finish.</value></data>
+  <data name="Error_package_not_attached" xml:space="preserve"><value>The package is not attached to a lesson yet, so its grading method cannot be changed.</value></data>
   <data name="Error_package_commit_rejected" xml:space="preserve"><value>Your progress could not be saved because the attempt is closed or the data was not accepted.</value></data>
   <data name="Error_package_host_not_configured" xml:space="preserve"><value>Packages are not available yet: the separate content site has not been set up. Ask your platform administrator.</value></data>
   <data name="Error_package_reason_unsafe_path" xml:space="preserve"><value>A file in the package has a path that leaves the package folder.</value></data>
