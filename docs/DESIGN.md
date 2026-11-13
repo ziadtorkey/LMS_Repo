@@ -2,7 +2,11 @@
 
 The LMS should look like a calm, current product for school groups and universities. It must work for admins, teachers, students and parents, in Arabic (RTL, the default) and English, at 360 px and on desktop, in light and dark mode.
 
-The product owner approved this direction on #327 (pilot PR #334: Staff list, Staff profile, Edit staff dialog). Those pages are the reference implementation.
+**Source of truth: the Stitch design system "Serene Academic Emerald"** (`docs/design/stitch/`: 9 screens with their HTML, and `serene_academic_emerald/DESIGN.md`).
+- The owner adopted it on 2026-11-13 (#553). It replaces the earlier direction from #327/#334 wherever the two differ.
+- The non-negotiables still hold: Arabic RTL and English, light and dark mode, WCAG AA, and MudBlazor.
+- Where Stitch is silent (dark mode on most screens, RTL, 360 px), this file extends its patterns and says so.
+- Where a Stitch mock screen contradicts Stitch's own DESIGN.md or WCAG, see "Deviations from the Stitch mocks" below.
 
 Where things live:
 
@@ -10,6 +14,7 @@ Where things live:
 |---|---|
 | Palette, typography, radius, shadows (MudTheme) | `src/Lms.Client/Theme/LmsTheme.cs` |
 | Anything the theme cannot express (shell, tables, states, forms) | `src/Lms.Client/wwwroot/css/lms-theme.css` |
+| The Stitch foundation layer (cards, tables, inputs, segmented tabs, chips, stat tiles, save bar) | `src/Lms.Client/wwwroot/css/lms-stitch.css`, loaded after `lms-theme.css` |
 | Light/dark preference | `src/Lms.Client/wwwroot/js/theme.js` (`lms.theme` in localStorage; otherwise the device setting) |
 | Shared presentational components | `src/Lms.Client/Components/Ui/` |
 | Page-specific old rules (calendar, org tree, import) | `src/Lms.Client/wwwroot/css/app.css` |
@@ -27,53 +32,77 @@ Use palette colours through MudBlazor (`Color.Primary`, `Color.Error` and so on)
 
 | Role | Light | Dark | Use |
 |---|---|---|---|
-| Primary (brand green) | `#00663D` | `#4CC38A` | One filled action per page, links, active nav, focus ring |
+| Primary (institutional emerald) | `#00663D` | `#4CC38A` | The one filled action per page, active nav (filled), links |
 | Text on primary | `#FFFFFF` | `#032013` | Set automatically by `Color.Primary` |
-| Secondary (slate) | `#3E4C5E` | `#AAB7C5` | Rare; neutral emphasis |
-| Success | `#1D7344` | `#62C08B` | "Active", completed, passed |
-| Warning | `#9A5B00` | `#E5A647` | Expiring, deactivate, needs attention |
-| Error | `#B42318` | `#F2786D` | Delete, failed, validation |
-| Info | `#1F5FA6` | `#77AEEA` | Shared, informational chips/alerts |
-| Page background | `#F4F6F7` | `#0F1518` | `var(--mud-palette-background)` |
-| Surface (cards, sidebar, app bar) | `#FFFFFF` | `#162024` | `var(--mud-palette-surface)` |
-| Text primary / secondary | `#17212B` / `#526070` | `#E5ECEE` / `#9DACB5` | Secondary for labels, hints, meta |
-| Lines | `#E1E6EA` | `#28343A` | `var(--mud-palette-lines-default)` |
+| Secondary (slate) | `#3E4C5E` | `#94A3B8` | Quiet chrome, metadata |
+| Accent (vivid emerald) | `#10B981` (`--lms-accent`) | same | **Dots, live beacons, active indicators only.** It's 2.5:1 on white, so never use it for text. |
+| Success | `#1D7344` | `#34D399` | Active, completed, passed |
+| Warning | `#B45309` | `#FBBF24` | Pending, expiring, needs attention |
+| Error | `#B42318` | `#F87171` | Delete, failed, validation |
+| Info | `#1E40AF` | `#60A5FA` | Informational chips and alerts |
+| Canvas (level 0) | `#F8FAFC` | `#090D10` | `var(--mud-palette-background)` |
+| Surface (level 1: cards, sidebar) | `#FFFFFF` | `#121A20` | `var(--mud-palette-surface)` |
+| Soft panel / table header | `#F1F5F9` | `#16202A` | `var(--mud-palette-background-gray)` |
+| Recessed field / tab track | `#EFF4FF` | `#16202A` | `var(--lms-recessed)` |
+| Text primary / secondary | `#0B1C30` / `#475569` | `#E2E8F0` / `#94A3B8` | Secondary for labels, hints, meta |
+| Borders / row dividers | `#E2E8F0` / `#F1F5F9` | `#1E293B` / `#1E293B` | `--mud-palette-lines-default` / `--mud-palette-table-lines` |
+| Control borders | `#7A8793` | `#6A7B85` | `--mud-palette-lines-inputs` (3:1, WCAG 1.4.11) |
 
-Every text and background pair meets **WCAG AA (4.5:1)** in both modes. If you add a colour, check its contrast in both modes.
-
-The "Active" status chip is green on purpose; the product owner decided to keep it.
+Every text colour above reaches **WCAG AA (4.5:1)** on the surface and the canvas in both modes, and control borders reach 3:1. `LmsThemeTests` asserts this; if you add a colour, add it there.
 
 ### Typography
 
-- **Arabic UI:** Cairo. **English UI:** Inter. Both are free (OFL) fonts loaded from Google Fonts in `index.html`.
-- The theme picks the stack from the UI language. Arabic names inside the English UI fall back to Cairo.
+- **Headings** (page and section titles) use **Cairo in both languages**, following Stitch's headline tokens.
+- **Body text** uses Cairo in the Arabic UI and Inter in the English UI. Latin codes, emails and URLs inside Arabic go in `<span dir="ltr">`.
+- Both fonts are free (OFL) and load from Google Fonts in `index.html`.
 - Use `MudText` with a `Typo`. Never set `font-size` or `font-family` inline.
 
-| Typo | Size / weight | Use |
-|---|---|---|
-| `h4` (rendered as `h1`) | 26 px / 600 | Page title (through `PageHeader` only) |
-| `h6` (rendered as `h2`) | 17 px / 600 | Section title (through `SectionCard` only) |
-| `subtitle1` | 16 px / 500 | Emphasised line, empty-state title |
-| `body1` | 15 px / 400 | Default text |
-| `body2` | 14 px / 400 | Tables, subtitles, secondary text |
-| `caption` | 12 px | Helper text, small meta |
+| Typo | Size / weight | Stitch token | Use |
+|---|---|---|---|
+| `h4` (rendered as `h1`) | 32 px / 700 (26 px below 600 px) | headline-xl | Page title, through `PageHeader` only |
+| `h5` | 24 px / 600 | headline-lg | Large card titles, stat numbers |
+| `h6` (rendered as `h2`) | 18 px / 600 | headline-md | Section title, through `SectionCard` only |
+| `subtitle1` | 16 px / 500 | subtitle-lg | Emphasised line, empty-state title |
+| `subtitle2` | 13 px / 500 | label-default | Labels, overlines |
+| `body1` | 15 px / 400 | body-default | Default text |
+| `body2` | 14 px / 400 | body-table | Tables, subtitles, secondary text |
+| `caption` | 12 px | caption | Helper text, small meta |
 
-- Use sentence case. Buttons are never all-caps; the theme sets `TextTransform = none`.
+- Use **sentence case everywhere**. Nothing is uppercased: Stitch's DESIGN.md forbids it, and Arabic has no case.
 - Keep a single h1 per page, and don't skip heading levels.
 
 ### Spacing, radius, elevation and density
 
-- **Spacing scale:** 4, 8, 12, 16, 20, 24, 32, 48 px. Use MudBlazor spacing classes (`pa-4`, `mb-4`, `gap-2`) or the layout classes below.
-- **Page padding:** 24 px on desktop, 16 px at 600 px and below. The layout sets this; pages add none.
-- **Radius:** 8 px on controls (buttons, inputs, alerts, nav items) and 12 px on surfaces (cards, dialogs).
-- **Elevation:** surfaces are flat, with a 1 px border. Only menus, popovers and dialogs float. Don't use `MudPaper Elevation>0` on a page; use `SectionCard`.
-- **Density:** tables are dense (`Dense="true"`, 14 px text, about 10 px row padding). The product owner chose this.
+- **Grid:** 8 px base. The spacing scale is 4, 8, 12, 16, 20, 24, 32, 48 px.
+- **Page padding:** 32 px on desktop (from 1025 px), 24 px on tablets and 16 px below 600 px. The layout sets it; pages add none.
+- **Radius:** 8 px on controls (buttons, inputs, selects, tab pills, alerts, nav items), 12 px on surfaces (cards, dialogs, table containers), and fully round for status chips, avatars and live dots.
+- **Elevation:**
+  - **Level 0:** the canvas.
+  - **Level 1:** cards, tables and the sidebar. White (or dark surface) with a 1 px border and a micro-shadow (`--lms-shadow-1`).
+  - **Level 2:** menus, popovers and dialogs, with a diffused shadow (`--lms-shadow-2`).
+  - **Hover:** clickable cards (`lms-card-link`) lift by 1 px with an emerald-tinted border. Static cards don't move.
+- **Tables:** relaxed rows of about 52 px, with 16 px cell padding, a soft tinted header (13 px / 600, sentence case), hairline dividers and a neutral row hover. This replaces the earlier dense tables. Keep `Dense="true"` on `MudTable`; the padding comes from CSS.
+- **Inputs:** 40 px high, with a recessed fill, an 8 px radius and a 1 px control border. Focus turns the border emerald and adds a soft glow. All of this is applied in CSS to the standard MudBlazor inputs, so pages don't change their variant.
+- **Focus:** a visible two-tone ring (`--lms-focus-ring`: a 2 px surface gap and a 2 px emerald ring) on every interactive element.
 
 ### Icons
 
 - Use MudBlazor **Material Rounded** (`Icons.Material.Rounded.*`) in new UI. `NavCatalog` still uses Filled icons; leave them.
 - An icon next to text is decorative. An icon-only button needs an `aria-label`; a tooltip alone is not enough.
 - Direction icons (back, forward, next) must mirror in RTL. Add `Class="lms-icon-flip"`, or pick `ArrowBack`/`ArrowForward` by `Culture.IsRightToLeft`.
+
+---
+
+### Deviations from the Stitch mocks (and why)
+
+| Stitch mock | What we do | Why |
+|---|---|---|
+| ALL-CAPS overlines, sidebar group labels and table headers | Sentence case | Stitch's own DESIGN.md forbids uppercase; Arabic has no case |
+| A 15 % emerald glow as the only focus indicator | A two-tone 2 px ring plus the glow on inputs | The glow alone is under 3:1 (WCAG 2.4.7 / 1.4.11) |
+| Vivid emerald `#10B981` text ("→ Active") | `#10B981` only for dots and indicators; text uses Success | 2.5:1 on white fails AA |
+| A top navigation bar on the roles screen | The sidebar on every page | 8 of the 9 screens use the sidebar; one navigation pattern |
+| "Serene LMS" brand | Our app name (`App_Title`) | Placeholder in the mocks |
+| Dark mode, RTL and 360 px (mostly not drawn) | Extended from the tokens (table above), mirrored with logical CSS | Stitch is silent |
 
 ---
 
@@ -102,8 +131,15 @@ The "Active" status chip is green on purpose; the product owner decided to keep 
 | `PersonStatusChip` | A person's status | `Status` |
 | `StaffAvatar` | A person's photo, or initials when there is none | `PhotoFileId`, `Name`, `Size` |
 
+Stitch patterns (`lms-stitch.css`):
+- **Stat tiles** (`lms-stats` > `lms-stat`): a row of KPI cards at the top of dashboards and list pages. Each tile holds `lms-stat-label`, `lms-stat-value` and an `lms-stat-icon` tile.
+- **Card header icon** (`lms-section-icon`): a 36 px tinted icon tile before a `SectionCard` title, as on the Stitch settings cards.
+- **Segmented tabs:** `MudTabs Class="lms-tabs"` and `ClassCourseTabs` render as a pill track with a raised active tab. `MudToggleGroup` gets the same look.
+- **Save bar** (`lms-save-bar` with `lms-save-bar-text`): a sticky bar at the bottom of long settings forms when there are unsaved changes. Discard (text) and Save (filled) go at its end.
+- **Active nav item:** filled emerald with white text. Group the sidebar under `lms-nav-section` headings.
+
 Other patterns:
-- **Chips:** `Size.Small`. Roles use `Variant.Outlined` (`lms-role-chip`). States use `Variant.Text` with a colour, which gives a soft tint. Status chips carry a text label, not only a colour.
+- **Chips:** `Size.Small` renders as a 24 px pill with 12 px padding. Roles use `Variant.Outlined` (`lms-role-chip`). States use `Variant.Text` with a colour, for a soft tint, plus `lms-status-chip`, which adds the 6 px dot. Status chips carry a text label, not only a colour.
 - **Small, unpaged lists in `MudSimpleTable`:** use `Elevation="0" Class="lms-simple-table lms-stack-table"` inside a `SectionCard Flush`. Give each `td` a `data-label` attribute so phones show labelled cards. Put the actions cell in `<td class="lms-cell-actions">` with the actions title visually hidden.
 - **Row actions:** wrap icon buttons in `<div class="lms-row-actions">`. They render in the quiet action colour. Put risky actions last, in Warning or Error colour, after a `<span class="lms-row-actions-sep">`. Each icon button needs an `aria-label` and, in dense groups, a `MudTooltip` with the same text.
 - **Person cell in a table:** `<div class="lms-person-cell">` holds the avatar plus a `MudLink` with class `lms-person-link`.
