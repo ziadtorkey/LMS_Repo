@@ -1,0 +1,95 @@
+@using Lms.Client.Services
+@using Lms.Client.Services.Api
+@using Lms.Shared.Classes
+@using Lms.Shared.Teaching
+@inject ITeachingApi Api
+@inject IClassesApi Classes
+@inject IClassCoursesApi ClassCourses
+@inject IYearStore Years
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+@* A teacher's point of view: assign the teacher to several class courses at once (only courses they are eligible for, in the selected year). *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="2">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" data-testid="dialog-error">@_error</MudAlert>
+            }
+            @if (_result is not null)
+            {
+                <MudAlert Severity="Severity.Success" data-testid="bulk-result">@L["Teacher_BulkResult", _result.Assigned, _result.Skipped]</MudAlert>
+            }
+            <MudText data-testid="bulk-teacher">@Culture.Pick(Teacher.TeacherNameAr, Teacher.TeacherNameEn)</MudText>
+            <MudSelect T="string" @bind-Value="_role" Label="@L["Teacher_Role"]" data-testid="bulk-role">
+                @foreach (var role in TeacherRoles.All)
+                {
+                    <MudSelectItem T="string" Value="@role">@L[$"TeacherRole_{role}"]</MudSelectItem>
+                }
+            </MudSelect>
+            <MudText Typo="Typo.subtitle2">@L["Teacher_PickClassCourses"]</MudText>
+            @if (_loaded && _options.Count == 0)
+            {
+                <MudText Typo="Typo.caption" data-testid="bulk-none">@L["Teacher_NoClassCourses"]</MudText>
+            }
+            <MudStack Spacing="0" Style="max-height: 16rem; overflow-y: auto" data-testid="bulk-list">
+                @foreach (var option in _options)
+                {
+                    var id = option.Id;
+                    <MudCheckBox T="bool" Value="_picked.Contains(id)" ValueChanged="v => Toggle(id, v)" Dense="true"
+                                 Label="@($"{Culture.Pick(option.ClassNameAr, option.ClassNameEn)} · {Culture.Pick(option.CourseNameAr, option.CourseNameEn)}")"
+                                 data-testid="@($"bulk-pick-{option.Id}")" />
+                }
+            </MudStack>
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Close(DialogResult.Ok(_result is not null))" data-testid="dialog-cancel">@L["Common_Close"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="@(_saving || _picked.Count == 0)"
+                   data-testid="dialog-save">@L["Teacher_Assign"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    /// <summary>The eligibility row of the teacher (it names the unit and the teacher); the class courses offered are those of the teacher's eligible courses.</summary>
+    [Parameter, EditorRequired] public TeacherEligibilityDto Teacher { get; set; } = default!;
+
+    private IReadOnlyList<ClassCourseDto> _options = [];
+    private readonly HashSet<Guid> _picked = [];
+    private BulkAssignTeacherResultDto? _result;
+    private string _role = TeacherRoles.Assistant;
+    private string? _error;
+    private bool _saving, _loaded;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ApiCalls.RunAsync(async () =>
+        {
+            var eligibleCourses = (await Api.ListEligibilityAsync(new EligibilityQuery(Teacher.OrgUnitId, Teacher.UserId, null, 1, 200))).Items.Select(e => e.CourseId).ToHashSet();
+            var classes = (await Classes.ListAsync(new ClassQuery(Teacher.OrgUnitId, true, Years.SelectedYearId, ClassStatuses.Active, null, null, 1, 200))).Items;
+            var options = new List<ClassCourseDto>();
+            foreach (var cls in classes)
+                options.AddRange((await ClassCourses.ListForClassAsync(cls.Id)).Where(cc => eligibleCourses.Contains(cc.CourseId)));
+            _options = options;
+        }, Navigation, L, message => _error = message);
+        _loaded = true;
+    }
+
+    private void Toggle(Guid id, bool on)
+    {
+        if (on) _picked.Add(id); else _picked.Remove(id);
+    }
+
+    private async Task SaveAsync()
+    {
+        _error = null;
+        _saving = true;
+        await ApiCalls.RunAsync(async () => _result = await Api.BulkAssignAsync(new BulkAssignTeacherRequest(Teacher.UserId, _role, _picked.ToList())),
+            Navigation, L, message => _error = message);
+        _saving = false;
+        _picked.Clear();
+    }
+}
