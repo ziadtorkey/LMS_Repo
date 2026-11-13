@@ -56,13 +56,13 @@ public static class CorpusReasons
 /// <summary>Small builders shared by the case files: a valid SCORM 1.2 / 2004 / H5P base that each hostile case extends by one defect.</summary>
 internal static class Pkg
 {
-    public const string Sco = """
+    public static readonly string Sco = """
         <!doctype html><html><head><meta charset="utf-8"><title>SCO</title></head><body>
         <script>
         function findAPI(w){var n=0;while(w.API==null&&w.parent!=null&&w.parent!=w&&n++<10){w=w.parent}return w.API}
         var api=findAPI(window);if(api){api.LMSInitialize("");api.LMSSetValue("cmi.core.lesson_status","completed");api.LMSCommit("");api.LMSFinish("")}
         </script><p>Hello</p></body></html>
-        """;
+        """.ReplaceLineEndings("\n");
 
     public static string Manifest12(string href = "index.html", string extraResources = "", string attrs = "", string extraItems = "") => $"""
         <?xml version="1.0" encoding="UTF-8"?>
@@ -71,7 +71,7 @@ internal static class Pkg
             <item identifier="i1" identifierref="r1"><title>SCO</title></item>{extraItems}</organization></organizations>
           <resources><resource identifier="r1" type="webcontent" adlcp:scormtype="sco" href="{href}"><file href="{href}"/></resource>{extraResources}</resources>
         </manifest>
-        """;
+        """.ReplaceLineEndings("\n");
 
     public static string Manifest2004(string href = "index.html", string extraAttrs = "") => $"""
         <?xml version="1.0" encoding="UTF-8"?>
@@ -81,7 +81,7 @@ internal static class Pkg
             <item identifier="i1" identifierref="r1"><title>SCO</title></item></organization></organizations>
           <resources><resource identifier="r1" type="webcontent" adlcp:scormType="sco" href="{href}"><file href="{href}"/></resource></resources>
         </manifest>
-        """;
+        """.ReplaceLineEndings("\n");
 
     public static byte[] Utf8(string s) => Encoding.UTF8.GetBytes(s);
 
