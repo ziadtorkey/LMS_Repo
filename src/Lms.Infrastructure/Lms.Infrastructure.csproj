@@ -24,4 +24,8 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Lms.IntegrationTests" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Packages\Scorm\scorm-prelude.js" LogicalName="Lms.Infrastructure.Packages.Scorm.scorm-prelude.js" />
+  </ItemGroup>
+
 </Project>
