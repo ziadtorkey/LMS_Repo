@@ -49,7 +49,7 @@ internal sealed class PackageHostKit : IDisposable
 
     public PackageHostKit(
         LmsApiFactory factory, string? origin = ContentOrigin, string? appOrigin = AppOrigin, int cacheSeconds = 1, IPackagePageTransformer? transformer = null,
-        IPackageHostAsset? asset = null)
+        IPackageHostAsset? asset = null, Serilog.Core.ILogEventSink? logSink = null, bool platformAdminScopes = false)
     {
         _factory = factory;
         Host = factory.WithWebHostBuilder(builder =>
@@ -59,8 +59,28 @@ internal sealed class PackageHostKit : IDisposable
             builder.UseSetting("PackageHost:AppOrigin", appOrigin ?? string.Empty);
 
             builder.UseSetting("PackageHost:RevocationCacheSeconds", cacheSeconds.ToString());
+            if (logSink is not null)
+            {
+                builder.UseSetting("Serilog:MinimumLevel:Default", "Verbose");
+                builder.UseSetting("Serilog:MinimumLevel:Override:Microsoft", "Verbose");
+                builder.UseSetting("Serilog:MinimumLevel:Override:System", "Verbose");
+                builder.UseSetting("Serilog:MinimumLevel:Override:Microsoft.AspNetCore", "Verbose");
+                builder.UseSetting("Serilog:MinimumLevel:Override:Microsoft.AspNetCore.Hosting.Diagnostics", "Verbose");
+            }
             builder.ConfigureServices(services =>
             {
+                if (platformAdminScopes)
+                {
+                    // Lets a test resolve the real scoped services (IModuleWriter, ...) outside a request, acting as the platform.
+                    services.RemoveAll<Lms.Domain.Abstractions.ICurrentContext>();
+                    services.AddScoped<Lms.Domain.Abstractions.ICurrentContext>(_ => TestCurrentContext.PlatformAdmin());
+                }
+
+                if (logSink is not null)
+                {
+                    services.AddSingleton(logSink);
+                }
+
                 if (asset is not null)
                 {
                     services.AddSingleton(asset);
