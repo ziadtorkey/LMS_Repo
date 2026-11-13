@@ -11,6 +11,8 @@ public sealed class PackageContractTests
 {
     private static readonly Guid Id = Guid.Parse("11111111-1111-1111-1111-111111111111");
 
+    private static readonly Guid Other = Guid.Parse("22222222-2222-2222-2222-222222222222");
+
     private static readonly JsonSerializerOptions Web = new(JsonSerializerDefaults.Web);
 
     [Fact]
@@ -88,12 +90,19 @@ public sealed class PackageContractTests
         Assert.Equal("/api/package-attempts/{id:guid}/commit", Routes.PackageAttemptCommitPattern);
         Assert.Equal("/api/package-attempts/{id:guid}/finish", Routes.PackageAttemptFinishPattern);
         Assert.Equal($"/api/class-courses/{Id}/packages", Routes.ClassCoursePackages(Id));
+        Assert.Equal($"/api/class-courses/{Id}/packages?lessonKey={Other}", Routes.ClassCoursePackagesOfLesson(Id, Other));
         Assert.Equal($"/api/packages/{Id}", Routes.Package(Id));
         Assert.Equal($"/api/packages/{Id}/module", Routes.PackageModule(Id));
         Assert.Equal($"/api/packages/{Id}/launch", Routes.PackageLaunch(Id));
         Assert.Equal($"/api/packages/{Id}/preview", Routes.PackagePreview(Id));
         Assert.Equal($"/api/package-attempts/{Id}/commit", Routes.PackageAttemptCommit(Id));
         Assert.Equal($"/api/package-attempts/{Id}/finish", Routes.PackageAttemptFinish(Id));
+    }
+
+    [Fact]
+    public void Upload_form_fields_are_stable()
+    {
+        Assert.Equal(["file", "lessonKey", "kind"], [PackageUploadForm.File, PackageUploadForm.LessonKey, PackageUploadForm.Kind]);
     }
 
     [Fact]
@@ -130,9 +139,10 @@ public sealed class PackageContractTests
         var now = new DateTime(2026, 11, 20, 10, 0, 0, DateTimeKind.Utc);
         var module = new ModuleSettingsInput("حزمة", "Package", "Published", null, null, "Class", null, "Score", 80m);
 
-        RoundTrip(new PackageUploadDto(Id, PackageKinds.Scorm, PackageUploadStatuses.Ready, null, "Course", ScormVersions.Scorm12, null));
-        RoundTrip(new PackageUploadDto(Id, PackageKinds.H5p, PackageUploadStatuses.Rejected, PackageRejectReasons.invalid_archive, null, null, "H5P.Foo"));
-        RoundTrip(new AttachPackageModuleRequest(Id, module));
+        RoundTrip(new PackageUploadDto(Id, Other, Id, "course.zip", PackageKinds.Scorm, PackageUploadStatuses.Ready, null, "Course", ScormVersions.Scorm12, null, null, now));
+        RoundTrip(new PackageUploadDto(Id, Other, Id, "quiz.h5p", PackageKinds.H5p, PackageUploadStatuses.Rejected, PackageRejectReasons.invalid_archive, null, null, "H5P.Foo", Other, now));
+        RoundTrip(new PackageListQuery(Id, PackageUploadStatuses.Validating));
+        RoundTrip(new AttachPackageModuleRequest(module));
         RoundTrip(new PackageLaunchDto("https://content.example/p/token/index.html", Id, now, now, true));
         RoundTrip(new PackagePreviewDto("https://content.example/p/token/index.html", now, now));
         RoundTrip(new PackageCommitRequest(7, PackageCommitFormats.Scorm, new Dictionary<string, string> { ["cmi.core.lesson_status"] = "completed" }));
