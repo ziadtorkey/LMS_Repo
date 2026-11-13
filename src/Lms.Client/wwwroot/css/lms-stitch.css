@@ -145,3 +145,20 @@ html[data-theme="dark"] .mud-button-outlined { border-color: #334155; }
     flex: none; inline-size: 36px; block-size: 36px; border-radius: 10px; display: grid; place-items: center;
     color: var(--mud-palette-primary); background: color-mix(in srgb, var(--mud-palette-primary) 10%, transparent);
 }
+
+/* ---------- Organization tree (issue 562): each unit is a soft row, nested levels sit on a tinted rail ---------- */
+.lms-org-tree .mud-treeview-item-content { border-radius: var(--lms-radius-control); padding-block: 6px; }
+.lms-org-tree .mud-treeview-item-content:hover { background: var(--mud-palette-table-hover); }
+.lms-org-tree .mud-treeview-group { margin-inline-start: 14px; padding-inline-start: 10px; border-inline-start: 2px solid var(--mud-palette-table-lines); }
+.lms-org-tree .mud-treeview-item-icon { inline-size: 32px; block-size: 32px; border-radius: 8px; display: grid; place-items: center;
+    color: var(--mud-palette-primary); background: color-mix(in srgb, var(--mud-palette-primary) 10%, transparent); }
+.lms-code-chip.mud-chip { font-family: Inter, "Segoe UI", sans-serif; font-variant-numeric: tabular-nums; }
+@media (max-width: 599.98px) {
+    .lms-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .lms-stat { padding: 12px 14px; }
+    .lms-stat-icon { inline-size: 36px; block-size: 36px; }
+    .lms-stat-value { font-size: 1.5rem; }
+}
+/* Inactive units: a muted name instead of fading the whole row, so chips and actions keep AA contrast. */
+.lms-org-node.lms-org-inactive { opacity: 1; }
+.lms-org-node.lms-org-inactive .lms-org-name.mud-typography { color: var(--mud-palette-text-secondary); }

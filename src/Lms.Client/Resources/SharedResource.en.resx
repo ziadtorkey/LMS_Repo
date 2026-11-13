@@ -1418,4 +1418,10 @@
   <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>The security scan did not accept this package.</value></data>
   <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>The file is not a valid zip archive.</value></data>
   <data name="Error_package_reason_bad_name" xml:space="preserve"><value>A file name in the package is not usable (too long, too deep, or reserved).</value></data>
+  <data name="OrgTree_Summary" xml:space="preserve"><value>Organization summary</value></data>
+  <data name="OrgTree_StatUnits" xml:space="preserve"><value>Units</value></data>
+  <data name="OrgTree_StatActive" xml:space="preserve"><value>Active units</value></data>
+  <data name="OrgTree_StatDepth" xml:space="preserve"><value>Tiers deep</value></data>
+  <data name="OrgTree_StatLevels" xml:space="preserve"><value>Level types used</value></data>
+  <data name="OrgTree_Hierarchy" xml:space="preserve"><value>Hierarchy</value></data>
 </root>

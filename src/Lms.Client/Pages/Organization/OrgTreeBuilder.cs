@@ -52,4 +52,12 @@ public static class OrgTreeBuilder
             .Select(u => ToItem(u, true))
             .ToList();
     }
+
+    /// <summary>Tree icon by depth (Stitch organization tree): the root institution, campuses or schools, then divisions and levels.</summary>
+    public static string DepthIcon(int depth) => depth switch
+    {
+        0 => MudBlazor.Icons.Material.Rounded.AccountBalance,
+        1 => MudBlazor.Icons.Material.Rounded.Domain,
+        _ => MudBlazor.Icons.Material.Rounded.Layers,
+    };
 }

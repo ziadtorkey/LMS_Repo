@@ -1418,4 +1418,10 @@
   <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>لم يقبل الفحص الأمني هذه الحزمة.</value></data>
   <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>الملف ليس أرشيف zip صالحًا.</value></data>
   <data name="Error_package_reason_bad_name" xml:space="preserve"><value>اسم ملف في الحزمة غير صالح (طويل جدًا أو عميق جدًا أو محجوز).</value></data>
+  <data name="OrgTree_Summary" xml:space="preserve"><value>ملخص الهيكل</value></data>
+  <data name="OrgTree_StatUnits" xml:space="preserve"><value>الوحدات</value></data>
+  <data name="OrgTree_StatActive" xml:space="preserve"><value>الوحدات النشطة</value></data>
+  <data name="OrgTree_StatDepth" xml:space="preserve"><value>عدد المستويات</value></data>
+  <data name="OrgTree_StatLevels" xml:space="preserve"><value>أنواع المستويات المستخدمة</value></data>
+  <data name="OrgTree_Hierarchy" xml:space="preserve"><value>التسلسل الهرمي</value></data>
 </root>

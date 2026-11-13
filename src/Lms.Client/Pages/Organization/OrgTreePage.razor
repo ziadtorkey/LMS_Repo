@@ -22,7 +22,12 @@
     <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-4" data-testid="org-error">@_error</MudAlert>
 }
 
-<SectionCard Flush="true">
+@if (!_loading && _search is null && _units.Count > 0)
+{
+    <OrgTreeStats Units="_units" />
+}
+
+<SectionCard Flush="true" Title="@L["OrgTree_Hierarchy"]" TestId="org-tree-card">
     <div class="lms-filters" role="search" aria-label="@L["Common_Filters"]">
         <div class="lms-filter lms-filter-search">
             <MudTextField T="string" Value="_searchText" ValueChanged="OnSearchChanged" Label="@L["OrgTree_Search"]"
@@ -51,18 +56,16 @@
         <MudTreeView T="OrgUnitNodeDto" Items="_items" Dense="true" Class="lms-org-tree">
             <ItemTemplate Context="item">
                 <MudTreeViewItem T="OrgUnitNodeDto" Value="item.Value" Items="item.Children" Expanded="item.Expanded"
-                                 ExpandedChanged="@(open => SetExpanded(item.Value!.Id, open))" Icon="@Icons.Material.Rounded.AccountTree">
+                                 ExpandedChanged="@(open => SetExpanded(item.Value!.Id, open))" Icon="@OrgTreeBuilder.DepthIcon(item.Value!.Depth)">
                     <BodyContent>
                         @{ var unit = item.Value!; var inactive = unit.Status == OrgUnitStatuses.Inactive; var match = item is OrgTreeItem { IsMatch: true }; }
                         <div class="lms-org-node @(inactive ? "lms-org-inactive" : "") @(match ? "lms-org-match" : "")"
                              data-testid="@($"org-node-{unit.Id}")">
                             <div class="lms-org-label">
                                 <MudText Typo="Typo.body1" Class="lms-org-name">@Culture.Pick(unit.NameAr, unit.NameEn)</MudText>
-                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Class="lms-code-chip">@unit.Code</MudChip>
-                                @if (inactive)
-                                {
-                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Warning">@L["OrgTree_Inactive"]</MudChip>
-                                }
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Class="lms-code-chip"><span dir="ltr">@unit.Code</span></MudChip>
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@(inactive ? Color.Warning : Color.Success)" Class="lms-status-chip"
+                                         data-testid="@($"org-status-{unit.Id}")">@L[inactive ? "OrgTree_Inactive" : "ClientStatus_Active"]</MudChip>
                             </div>
                             <div class="lms-row-actions">
                                 @if (CanAddChild(unit))

@@ -259,4 +259,37 @@ public sealed class OrgTreePageTests : ClientTestContext
         Assert.Contains("ع-Root", layout.Find($"[data-testid=org-node-{_rootId}]").TextContent);
         Assert.Contains("الهيكل التنظيمي", layout.Find("[data-testid=org-title]").TextContent);
     }
+
+    [Fact]
+    public async Task Stat_tiles_summarise_the_loaded_tree()
+    {
+        var (page, _) = await RenderPageAsync(Permissions.OrgUnits.View);
+
+        var stats = page.Find("[data-testid=org-stats]");
+        Assert.Contains("lms-stats", stats.ClassName);
+        Assert.Equal("4", page.Find("[data-testid=org-stat-units] .lms-stat-value").TextContent.Trim());
+        Assert.Equal("3", page.Find("[data-testid=org-stat-active] .lms-stat-value").TextContent.Trim());
+        Assert.Equal("2", page.Find("[data-testid=org-stat-depth] .lms-stat-value").TextContent.Trim());
+        Assert.Equal("2", page.Find("[data-testid=org-stat-levels] .lms-stat-value").TextContent.Trim());
+    }
+
+    [Fact]
+    public async Task Every_unit_shows_its_status_as_a_soft_chip_with_a_dot()
+    {
+        var (page, _) = await RenderPageAsync(Permissions.OrgUnits.View);
+
+        var active = page.Find($"[data-testid=org-status-{_schoolId}]");
+        Assert.Contains("lms-status-chip", active.ClassName);
+        Assert.Contains("mud-chip-color-success", active.ClassName);
+        Assert.Contains("mud-chip-color-warning", page.Find($"[data-testid=org-status-{_inactiveId}]").ClassName);
+    }
+
+    [Fact]
+    public async Task The_tree_sits_in_a_titled_card()
+    {
+        var (page, _) = await RenderPageAsync(Permissions.OrgUnits.View);
+
+        var card = page.Find("[data-testid=org-tree-card]");
+        Assert.Equal("Hierarchy", card.QuerySelector("h2")!.TextContent.Trim());
+    }
 }
