@@ -1418,4 +1418,27 @@
   <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>The security scan did not accept this package.</value></data>
   <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>The file is not a valid zip archive.</value></data>
   <data name="Error_package_reason_bad_name" xml:space="preserve"><value>A file name in the package is not usable (too long, too deep, or reserved).</value></data>
+  <data name="Package_Start" xml:space="preserve"><value>Start</value></data>
+  <data name="Package_Resume" xml:space="preserve"><value>Resume</value></data>
+  <data name="Package_Preview" xml:space="preserve"><value>Preview</value></data>
+  <data name="Package_PreviewBanner" xml:space="preserve"><value>Preview: nothing is recorded.</value></data>
+  <data name="Package_ThirdParty" xml:space="preserve"><value>This activity comes from another provider. Some parts may not work with a keyboard or screen reader.</value></data>
+  <data name="Package_PhoneHint" xml:space="preserve"><value>Works best on a larger screen.</value></data>
+  <data name="Package_State_NotStarted" xml:space="preserve"><value>Not started</value></data>
+  <data name="Package_State_InProgress" xml:space="preserve"><value>In progress</value></data>
+  <data name="Package_State_Completed" xml:space="preserve"><value>Completed</value></data>
+  <data name="Package_Exit" xml:space="preserve"><value>Exit</value></data>
+  <data name="Package_Fullscreen" xml:space="preserve"><value>Full screen</value></data>
+  <data name="Package_ExitFullscreen" xml:space="preserve"><value>Exit full screen</value></data>
+  <data name="Package_Saving" xml:space="preserve"><value>Saving…</value></data>
+  <data name="Package_Saved" xml:space="preserve"><value>Saved</value></data>
+  <data name="Package_SaveFailed" xml:space="preserve"><value>Couldn't save. Retrying…</value></data>
+  <data name="Package_Retry" xml:space="preserve"><value>Retry</value></data>
+  <data name="Package_Expired" xml:space="preserve"><value>This activity timed out. Reload to continue where you left off.</value></data>
+  <data name="Package_Reload" xml:space="preserve"><value>Reload</value></data>
+  <data name="Package_OpenAgain" xml:space="preserve"><value>Open again</value></data>
+  <data name="Package_NotReady" xml:space="preserve"><value>This activity isn't ready yet. Try again later.</value></data>
+  <data name="Package_FrameTitle" xml:space="preserve"><value>{0} (interactive activity)</value></data>
+  <data name="Module_NotAvailableTitle" xml:space="preserve"><value>This activity isn't available</value></data>
+  <data name="Module_NotAvailableText" xml:space="preserve"><value>It may have been hidden or removed. Go back to the course to see what's open to you.</value></data>
 </root>

@@ -1418,4 +1418,27 @@
   <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>لم يقبل الفحص الأمني هذه الحزمة.</value></data>
   <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>الملف ليس أرشيف zip صالحًا.</value></data>
   <data name="Error_package_reason_bad_name" xml:space="preserve"><value>اسم ملف في الحزمة غير صالح (طويل جدًا أو عميق جدًا أو محجوز).</value></data>
+  <data name="Package_Start" xml:space="preserve"><value>ابدأ</value></data>
+  <data name="Package_Resume" xml:space="preserve"><value>استئناف</value></data>
+  <data name="Package_Preview" xml:space="preserve"><value>معاينة</value></data>
+  <data name="Package_PreviewBanner" xml:space="preserve"><value>معاينة: لا يُسجَّل أي شيء.</value></data>
+  <data name="Package_ThirdParty" xml:space="preserve"><value>يأتي هذا النشاط من جهة أخرى. قد لا تعمل بعض أجزائه مع لوحة المفاتيح أو قارئ الشاشة.</value></data>
+  <data name="Package_PhoneHint" xml:space="preserve"><value>يعمل بشكل أفضل على شاشة أكبر.</value></data>
+  <data name="Package_State_NotStarted" xml:space="preserve"><value>لم يبدأ</value></data>
+  <data name="Package_State_InProgress" xml:space="preserve"><value>قيد التنفيذ</value></data>
+  <data name="Package_State_Completed" xml:space="preserve"><value>مكتمل</value></data>
+  <data name="Package_Exit" xml:space="preserve"><value>خروج</value></data>
+  <data name="Package_Fullscreen" xml:space="preserve"><value>ملء الشاشة</value></data>
+  <data name="Package_ExitFullscreen" xml:space="preserve"><value>إنهاء ملء الشاشة</value></data>
+  <data name="Package_Saving" xml:space="preserve"><value>جارٍ الحفظ…</value></data>
+  <data name="Package_Saved" xml:space="preserve"><value>تم الحفظ</value></data>
+  <data name="Package_SaveFailed" xml:space="preserve"><value>تعذّر الحفظ. جارٍ إعادة المحاولة…</value></data>
+  <data name="Package_Retry" xml:space="preserve"><value>أعد المحاولة</value></data>
+  <data name="Package_Expired" xml:space="preserve"><value>انتهت مهلة النشاط. أعد التحميل لتكمل من حيث توقفت.</value></data>
+  <data name="Package_Reload" xml:space="preserve"><value>إعادة التحميل</value></data>
+  <data name="Package_OpenAgain" xml:space="preserve"><value>افتح مرة أخرى</value></data>
+  <data name="Package_NotReady" xml:space="preserve"><value>هذا النشاط غير جاهز بعد. حاول لاحقاً.</value></data>
+  <data name="Package_FrameTitle" xml:space="preserve"><value>{0} (نشاط تفاعلي)</value></data>
+  <data name="Module_NotAvailableTitle" xml:space="preserve"><value>هذا النشاط غير متاح</value></data>
+  <data name="Module_NotAvailableText" xml:space="preserve"><value>ربما أُخفي أو حُذف. ارجع إلى المقرر لترى المتاح لك.</value></data>
 </root>
