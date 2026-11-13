@@ -108,6 +108,7 @@ h1,h2,h3,p { margin:0; }
 .avatar.grp { background:color-mix(in srgb, var(--mud-palette-info) 14%, transparent); color:var(--mud-palette-info); }
 .dot { inline-size:8px; block-size:8px; border-radius:50%; background:var(--lms-accent); flex:none; }
 table { inline-size:100%; border-collapse:collapse; font-size:14px; }
+th, td { overflow-wrap:anywhere; }
 th { text-align:start; font-size:13px; font-weight:600; color:var(--mud-palette-text-secondary); background:var(--mud-palette-background-gray); padding:12px 16px; }
 td .ltr { white-space:nowrap; }
 td { padding:12px 16px; border-block-start:1px solid var(--mud-palette-table-lines); vertical-align:middle; }
@@ -180,7 +181,7 @@ tr.sel td { background:color-mix(in srgb, var(--mud-palette-primary) 6%, transpa
 .lms-kind { inline-size:36px; block-size:36px; border-radius:10px; display:grid; place-items:center; flex:none; background:var(--lms-recessed); color:var(--mud-palette-primary); }
 .lms-prefs td:not(:first-child), .lms-prefs th:not(:first-child) { text-align:center; }
 .lms-chan-head { display:flex; flex-direction:column; align-items:center; gap:2px; }
-.lms-mod { display:grid; grid-template-columns:minmax(0,1fr) 380px; gap:20px; align-items:start; }
+.lms-mod { display:grid; grid-template-columns:minmax(0,1fr) 360px; gap:20px; align-items:start; }
 .lms-context .lms-msg { max-inline-size:100%; }
 .lms-flagged .lms-bubble { border:2px solid var(--mud-palette-warning); }
 .lms-stats { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:16px; margin-block-end:20px; }
@@ -202,7 +203,7 @@ tr.sel td { background:color-mix(in srgb, var(--mud-palette-primary) 6%, transpa
   .lms-msg { max-inline-size:88%; }
   .mobile-only { display:inline-grid; }
   .grid2 { grid-template-columns:1fr; }
-  .alert { flex-wrap:wrap; } .alert > .btn { margin-inline-start:30px; }
+  .alert:has(> .btn) { flex-wrap:wrap; } .alert > .btn { margin-inline-start:30px; }
   .dialog-wrap { padding:0; place-items:stretch; } .dialog { border-radius:0; min-block-size:100vh; }
   .lms-notif-pop { position:static; inline-size:auto; }
   .lms-mod { grid-template-columns:1fr; }
@@ -237,7 +238,7 @@ const S = {
     m1:'Good morning. Omar was absent on Sunday because of a fever. Is there anything he needs to catch up on?', m2:'Good morning, I hope he is feeling better. He missed the forces worksheet; I have attached it. The permission form for the lab trip is also due on Wednesday.',
     m3:'Thank you, he will bring the form tomorrow.', seen:'Seen', sent:'Sent', attach:'Forces worksheet.pdf · 240 KB',
     write:'Write a message', send:'Send', attachBtn:'Attach a file', moreActions:'More actions', back:'Back to messages',
-    gm1:'The lab trip is on Thursday at 9:00. Students should bring the signed form and a packed lunch.', gm2:'Will the bus be back before the end of the school day?', gm3:'Yes, the bus returns at 13:30.', gm4:'This message was removed by a moderator.',
+    gm1:'The lab trip is on Thursday at 9:00. Students should bring the signed form and a packed lunch.', gm2:'Will the bus be back before the end of the school day?', gm3:'Yes, the bus returns at 13:30.', gm4:'This message was hidden by a moderator.',
     fromHuda:'Huda Al-Harbi', fromAhmad:'Ahmad Yousef (guardian)',
     menuMute:'Mute conversation', menuCopy:'Copy text', menuReport:'Report message', menuBlock:'Block Ahmad Yousef', menuLeave:'Leave group',
     off:'You can only read this conversation. Messaging rules at your school don’t allow students to message other students.',
@@ -276,6 +277,23 @@ const S = {
     decide:'Decision', keep:'Keep the message', keepH:'Close the report. The message stays.', remove:'Remove the message', removeH:'Everyone in the conversation sees “removed by a moderator”.', block:'Remove and block the sender', blockH:'Yousef can read but not send messages until you unblock him.',
     note:'Note to the people involved (optional)', decideBtn:'Save decision', dm1:'Let’s split the slides: I take the intro.', dm2:'You are all useless, nobody should…', dm3:'Please keep it respectful.',
     from1:'Lina', from2:'Yousef Majid', from3:'Omar Saleh'
+    , fDrafts:'Drafts', fWithdrawn:'Withdrawn', withdraw:'Withdraw', saveDraft:'Save as draft', unpublish:'Withdraw',
+    inclG:'Include guardians', inclGH:'Guardians with a portal account of every student reached get it too.', audInclG:'Guardians included',
+    reach:'About 600 people will see it (counted only in the units you can see).', attachF:'Attachments', attachH:'Up to 5 files, as in messages.', attachBtnA:'Add a file',
+    errTitleEn:'Enter the title in English too. Each reader sees the title in their language.',
+    stBlocked:'Restricted from messaging', liftR:'Lift restriction', sla:'Safety concern: review within 24 h',
+    dDismiss:'Dismiss the report', dDismissH:'The message stays. The reporter is told it was reviewed.', dHide:'Hide the message', dHideH:'Everyone in the conversation sees “hidden by a moderator”.',
+    dRestrict:'Hide it and restrict the sender', dRestrictH:'Yousef can read but can’t send until the end date. This is a moderator restriction, not a block between people.', forL:'For', days7:'7 days', untilL:'Until 2026-11-21',
+    dLock:'Lock the conversation', dLockH:'Nobody can send in it any more. For a group conversation that has gone wrong.',
+    csTitle:'Composer states', csBlockerL:'The person who blocked', csBlocker:'You blocked Ahmad Yousef. You don’t get his direct messages and he can’t get yours.', unblock:'Unblock',
+    csBlockedL:'The blocked person (never told)', csBlocked:'You can’t send messages in this conversation.', csRestrictedL:'Restricted by a moderator', csRestricted:'You can’t send messages until 2026-11-21. You can still read your conversations.',
+    csDisabledL:'Messaging turned off for the school', csDisabled:'Messaging is not enabled for your school.', csRateL:'Too many messages (429)', csRate:'You’re sending too fast. You can send again in 20 s.',
+    csRulesL:'Rules don’t allow sending', delMe:'Delete for me',
+    pushDenied:'Your browser blocks notifications from this site.', pushDeniedH:'To allow them, open the site settings in your browser (the icon next to the address) and allow Notifications, then come back to this page.',
+    rlTitle:'Messaging rules', rlSub:'Who may start a conversation with whom at your school. Each rule applies only inside the relationship it names.', rlFrom:'From', rlSave:'Save rules',
+    rlNote:'“Anyone” means anyone inside the sender’s own unit scope. Student to student is off by default (FR-MSG-02). Changes apply to new conversations and new messages; nothing already sent is hidden.',
+    roAdmin:'Org admin', roMgr:'Manager', roSup:'Supervisor', roCou:'Counselor', roTch:'Teacher', roStu:'Student', roGua:'Guardian',
+    vAny:'Anyone', vRel:'Own classes', vUnit:'Same unit', vNo:'Not allowed', navRules:'Messaging rules', secSec:'Security and settings'
   },
   ar: {
     app:'نظام إدارة التعلم', ctx:'مدارس النور — فرع الشمال (معلم)', year:'2026/2027', other:'English',
@@ -288,7 +306,7 @@ const S = {
     m1:'صباح الخير. تغيّب عمر يوم الأحد بسبب الحمى. هل هناك ما يحتاج إلى تعويضه؟', m2:'صباح النور، أتمنى أن يكون بخير. فاتته ورقة عمل القوى، وقد أرفقتها. وموعد تسليم نموذج الموافقة على رحلة المختبر يوم الأربعاء.',
     m3:'شكرًا لك، سيُحضر النموذج غدًا.', seen:'تمت القراءة', sent:'أُرسلت', attach:'ورقة عمل القوى.pdf · 240 ك.ب',
     write:'اكتب رسالة', send:'إرسال', attachBtn:'إرفاق ملف', moreActions:'إجراءات أخرى', back:'العودة إلى الرسائل',
-    gm1:'رحلة المختبر يوم الخميس الساعة 9:00. يُحضر الطلاب النموذج الموقّع ووجبة غداء.', gm2:'هل ستعود الحافلة قبل نهاية اليوم الدراسي؟', gm3:'نعم، تعود الحافلة الساعة 13:30.', gm4:'حذف المشرف هذه الرسالة.',
+    gm1:'رحلة المختبر يوم الخميس الساعة 9:00. يُحضر الطلاب النموذج الموقّع ووجبة غداء.', gm2:'هل ستعود الحافلة قبل نهاية اليوم الدراسي؟', gm3:'نعم، تعود الحافلة الساعة 13:30.', gm4:'أخفى المشرف هذه الرسالة.',
     fromHuda:'هدى الحربي', fromAhmad:'أحمد يوسف (ولي أمر)',
     menuMute:'كتم المحادثة', menuCopy:'نسخ النص', menuReport:'الإبلاغ عن الرسالة', menuBlock:'حظر أحمد يوسف', menuLeave:'مغادرة المجموعة',
     off:'يمكنك قراءة هذه المحادثة فقط. قواعد المراسلة في مدرستك لا تسمح للطلاب بمراسلة طلاب آخرين.',
@@ -327,6 +345,23 @@ const S = {
     decide:'القرار', keep:'إبقاء الرسالة', keepH:'إغلاق البلاغ وتبقى الرسالة.', remove:'حذف الرسالة', removeH:'يرى كل من في المحادثة «حذف المشرف هذه الرسالة».', block:'الحذف وحظر المُرسِل', blockH:'يستطيع يوسف القراءة دون الإرسال حتى تلغي الحظر.',
     note:'ملاحظة للمعنيين (اختيارية)', decideBtn:'حفظ القرار', dm1:'لنقسّم الشرائح: أتولى المقدمة.', dm2:'أنتم جميعًا بلا فائدة، لا أحد يجب…', dm3:'رجاءً لنحافظ على الاحترام.',
     from1:'لينا', from2:'يوسف ماجد', from3:'عمر صالح'
+    , fDrafts:'المسودات', fWithdrawn:'المسحوبة', withdraw:'سحب', saveDraft:'حفظ كمسودة', unpublish:'سحب',
+    inclG:'تضمين أولياء الأمور', inclGH:'يصل الإعلان أيضًا إلى أولياء أمور كل طالب يشمله إذا كان لديهم حساب في البوابة.', audInclG:'يشمل أولياء الأمور',
+    reach:'سيرى الإعلان نحو 600 شخص (العدّ داخل الوحدات التي تراها فقط).', attachF:'المرفقات', attachH:'حتى 5 ملفات، كما في الرسائل.', attachBtnA:'إضافة ملف',
+    errTitleEn:'أدخل العنوان بالإنجليزية أيضًا. يرى كل قارئ العنوان بلغته.',
+    stBlocked:'ممنوعون من المراسلة', liftR:'رفع المنع', sla:'مخاوف على السلامة: المراجعة خلال 24 ساعة',
+    dDismiss:'رفض البلاغ', dDismissH:'تبقى الرسالة، ويُبلَّغ المُبلِغ بأن البلاغ رُوجع.', dHide:'إخفاء الرسالة', dHideH:'يرى كل من في المحادثة «أخفاها المشرف».',
+    dRestrict:'الإخفاء ومنع المُرسِل من المراسلة', dRestrictH:'يستطيع يوسف القراءة دون الإرسال حتى تاريخ الانتهاء. هذا منع من المشرف، وليس حظرًا بين شخصين.', forL:'لمدة', days7:'7 أيام', untilL:'حتى 2026-11-21',
+    dLock:'قفل المحادثة', dLockH:'لا يستطيع أحد الإرسال فيها بعد الآن. لمحادثة جماعية خرجت عن مسارها.',
+    csTitle:'حالات مربع الكتابة', csBlockerL:'من قام بالحظر', csBlocker:'حظرت أحمد يوسف. لا تصلك رسائله المباشرة ولا تصله رسائلك.', unblock:'إلغاء الحظر',
+    csBlockedL:'المحظور (لا يُبلَّغ أبدًا)', csBlocked:'لا يمكنك إرسال رسائل في هذه المحادثة.', csRestrictedL:'ممنوع من المشرف', csRestricted:'لا يمكنك إرسال رسائل حتى 2026-11-21. ما زال بإمكانك قراءة محادثاتك.',
+    csDisabledL:'المراسلة متوقفة في المدرسة', csDisabled:'المراسلة غير مفعّلة في مدرستك.', csRateL:'رسائل كثيرة جدًا (429)', csRate:'ترسل بسرعة كبيرة. يمكنك الإرسال مجددًا بعد 20 ث.',
+    csRulesL:'القواعد لا تسمح بالإرسال', delMe:'حذف من عندي',
+    pushDenied:'يمنع متصفحك الإشعارات من هذا الموقع.', pushDeniedH:'للسماح بها افتح إعدادات الموقع في المتصفح (الرمز بجوار العنوان) واسمح بالإشعارات، ثم عُد إلى هذه الصفحة.',
+    rlTitle:'قواعد المراسلة', rlSub:'من يستطيع بدء محادثة مع من في مدرستك. تنطبق كل قاعدة داخل العلاقة التي تذكرها فقط.', rlFrom:'من', rlSave:'حفظ القواعد',
+    rlNote:'«أي شخص» تعني أي شخص داخل نطاق وحدات المُرسِل. مراسلة الطالب للطالب متوقفة افتراضيًا (FR-MSG-02). تنطبق التغييرات على المحادثات والرسائل الجديدة، ولا يُخفى شيء أُرسل سابقًا.',
+    roAdmin:'مسؤول المؤسسة', roMgr:'المدير', roSup:'المشرف', roCou:'المرشد', roTch:'المعلم', roStu:'الطالب', roGua:'ولي الأمر',
+    vAny:'أي شخص', vRel:'فصوله فقط', vUnit:'نفس الوحدة', vNo:'غير مسموح', navRules:'قواعد المراسلة', secSec:'الأمان والإعدادات'
   }
 }[lang];
 
@@ -339,7 +374,9 @@ const nav = cur => `
     <div class="nav" ${cur==='inbox'?'aria-current="page"':''}>${I('forum')}${S.navInbox}<span class="badge">4</span></div>
     <div class="nav" ${cur==='ann'?'aria-current="page"':''}>${I('campaign')}${S.navAnn}</div>
     <div class="nav" ${cur==='notif'?'aria-current="page"':''}>${I('notifications')}${S.navNotif}</div>
+    <div class="nav-sec">${S.secSec}</div>
     <div class="nav" ${cur==='mod'?'aria-current="page"':''}>${I('shield_person')}${S.navMod}<span class="badge">3</span></div>
+    <div class="nav" ${cur==='rules'?'aria-current="page"':''}>${I('rule')}${S.navRules}</div>
   </aside>`;
 const bar = (bellOpen=false) => `<header class="appbar"><button class="icon-btn menu-btn">${I('menu')}</button><span class="pill ctx">${S.ctx}</span><span class="pill ctx">${I('calendar_month','ms-sm')}${S.year}</span><span class="spacer"></span>
   <button class="icon-btn ${bellOpen?'focus':''}" aria-label="${S.navNotif}">${I('notifications')}<span class="badge">5</span></button><button class="icon-btn">${I('dark_mode')}</button><span class="pill" style="background:none">${S.other}</span><button class="icon-btn">${I('account_circle')}</button></header>`;
@@ -373,7 +410,7 @@ function thread() {
       ${msg('me', S.gm1, `<span class="ltr">09:15</span> · ${S.sent}`)}
       <div style="position:relative">${msg('them', S.gm2, `<span class="ltr">09:31</span>`, S.fromHuda)}
         <button class="icon-btn sm focus" aria-label="${S.moreActions}" aria-expanded="true" style="position:absolute;inset-block-start:22px;inset-inline-start:min(420px,72%)">${I('more_horiz')}</button>
-        <div class="lms-menu" role="menu" style="inset-block-start:58px;inset-inline-start:min(300px,30%)"><div>${I('notifications_off')}${S.menuMute}</div><div>${I('content_copy')}${S.menuCopy}</div><hr><div class="err">${I('flag')}${S.menuReport}</div><div class="err">${I('block')}${S.menuBlock}</div></div></div>
+        <div class="lms-menu" role="menu" style="inset-block-start:58px;inset-inline-start:min(300px,30%)"><div>${I('notifications_off')}${S.menuMute}</div><div>${I('content_copy')}${S.menuCopy}</div><div>${I('delete')}${S.delMe}</div><hr><div class="err">${I('flag')}${S.menuReport}</div><div class="err">${I('block')}${S.menuBlock}</div></div></div>
       <div class="lms-msg lms-msg-them lms-msg-removed"><span class="lms-msg-from">${S.fromAhmad}</span><div class="lms-bubble">${I('do_not_disturb_on','ms-sm')} ${S.gm4}</div></div>
       ${msg('me', S.gm3, `<span class="ltr">09:40</span> · ${I('done_all','ms-sm')} ${S.seen}`)}</div>
     <div class="lms-composer-off"><div class="alert alert-info">${I('info')}<span class="t">${S.off}</span></div></div></section>`;
@@ -403,30 +440,31 @@ const ann = (o) => `<article class="card lms-ann ${o.pin?'pinned':''}"><div clas
 function announcements() {
   const aud = (i, t) => `<span class="chip">${I(i)}${t}</span>`;
   return shell('ann', header(S.annTitle, S.annSub, `<button class="btn btn-filled">${I('add')}${S.newAnn}</button>`) +
-    `<div class="seg" role="tablist" style="margin-block-end:20px"><span aria-selected="true">${S.fNow}</span><span>${S.fScheduled}</span><span>${S.fExpired}</span><span>${S.fMine}</span></div>
+    `<div class="seg" role="tablist" style="margin-block-end:20px"><span aria-selected="true">${S.fNow}</span><span>${S.fScheduled}</span><span>${S.fDrafts}</span><span>${S.fExpired}</span><span>${S.fWithdrawn}</span></div>
     <div class="lms-ann-list">
     ${ann({pin:1, icon:'push_pin', t:S.a1, chips:`<span class="chip chip-success chip-dot">${S.pinned}</span>`, m:`<span>${S.a1m}</span><span>${S.a1x}</span>`, x:S.a1t, aud:aud('domain',S.audOrg)+aud('family_restroom',S.audRoleG), read:S.readBy})}
-    ${ann({icon:'campaign', t:S.a2, m:`<span>${S.a2m}</span>`, x:S.a2t, aud:aud('menu_book',S.audCourse)+aud('groups',S.audClass)+aud('school',S.audRoleS)+aud('family_restroom',S.audRoleG)})}
-    ${ann({icon:'schedule', t:S.a3, chips:`<span class="chip chip-info chip-dot">${S.scheduled}</span>`, m:`<span>${S.a3m}</span>`, x:S.a3t, aud:aud('account_tree',S.audUnit)+aud('stairs',S.audGrade)})}
+    ${ann({icon:'campaign', t:S.a2, m:`<span>${S.a2m}</span>`, x:S.a2t, aud:aud('menu_book',S.audCourse+' · '+S.audClass)+aud('family_restroom',S.audInclG)})}
+    ${ann({icon:'schedule', t:S.a3, chips:`<span class="chip chip-info chip-dot">${S.scheduled}</span>`, m:`<span>${S.a3m}</span>`, x:S.a3t, aud:aud('account_tree',S.audUnit)+aud('school',S.audRoleS)+aud('family_restroom',S.audInclG)})}
     </div>`);
 }
 function announceCompose() {
   return `<div class="dialog-wrap"><div class="dialog" role="dialog" style="inline-size:min(720px,100%)"><div class="dialog-head"><span class="sec-icon">${I('campaign')}</span><h2 class="h6" style="flex:1">${S.acTitle}</h2><button class="icon-btn">${I('close')}</button></div>
   <div class="dialog-body">
-    <div class="grid2"><div class="field"><span class="label">${S.acTitleAr}</span><div class="input" dir="rtl">لقاءات أولياء الأمور والمعلمين</div></div><div class="field"><span class="label">${S.acTitleEn}</span><div class="input" dir="ltr">Parent–teacher meetings</div></div></div>
+    <div class="grid2"><div class="field"><span class="label">${S.acTitleAr}</span><div class="input" dir="rtl">لقاءات أولياء الأمور والمعلمين</div></div><div class="field"><span class="label" style="color:var(--mud-palette-error)">${S.acTitleEn}</span><div class="input" dir="ltr" aria-invalid="true" style="border:2px solid var(--mud-palette-error)"><span class="ph-text"></span></div><span class="help" style="color:var(--mud-palette-error)">${I('error','ms-sm')} ${S.errTitleEn}</span></div></div>
     <div class="field"><span class="label">${S.acBody}</span><div class="input" style="min-height:80px;align-items:flex-start">${S.a1t}</div></div>
     <fieldset style="border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:12px"><legend class="label" style="margin-block-end:8px">${S.audScope}</legend>
-      <div class="seg" style="flex-wrap:wrap"><span>${S.scOrg}</span><span aria-selected="true">${S.scUnit}</span><span>${S.scClass}</span><span>${S.scCourse}</span><span>${S.scGroup}</span></div>
+      <div class="seg" style="flex-wrap:wrap"><span>${S.scOrg}</span><span aria-selected="true">${S.scUnit}</span><span>${S.scClass}</span><span>${S.scCourse}</span><span>${S.scGroup}</span><span>${S.scRole}</span></div>
       <div class="field"><span class="label">${S.audPick}</span><div class="input"><span class="chip chip-input">${S.audUnit}<span class="ms ms-sm">close</span></span><span class="ph-text"></span>${I('arrow_drop_down')}</div></div>
-      <div class="field"><span class="label">${S.audRoles}</span><div style="display:flex;flex-wrap:wrap;gap:8px"><span class="chip chip-success">${I('check')}${S.rGuardians}</span><span class="chip chip-success">${I('check')}${S.rStaff}</span><span class="chip">${S.rStudents}</span></div></div>
+      <div class="toggle-row"><div class="t"><b>${S.inclG}</b><span class="help">${S.inclGH}</span></div><span class="switch on"></span></div>
       <div class="alert alert-info">${I('groups')}<span class="t" role="status">${S.reach}</span></div></fieldset>
     <div class="field"><span class="label">${S.when}</span><div class="seg"><span>${S.pNow}</span><span aria-selected="true">${S.pLater}</span></div></div>
     <div class="grid2"><div class="field"><span class="label">${S.pDate}</span><div class="input"><span class="ltr">2026-11-15</span><span class="ph-text"></span>${I('event')}</div></div><div class="field"><span class="label">${S.pTime}</span><div class="input"><span class="ltr">07:00</span><span class="ph-text"></span>${I('schedule')}</div></div></div>
     <span class="help" style="margin-block-start:-10px">${S.tz}</span>
     <div><div class="toggle-row"><div class="t"><b>${S.pin}</b><span class="help">${S.pinHelp}</span></div><span class="switch on"></span></div>
       <div class="toggle-row"><div class="t"><b>${S.notify}</b><span class="help">${S.notifyHelp}</span></div><span class="switch on"></span></div></div>
+    <div class="field"><span class="label">${S.attachF}</span><div><button class="btn btn-outlined btn-sm">${I('attach_file')}${S.attachBtnA}</button></div><span class="help">${S.attachH}</span></div>
     <div class="field"><span class="label">${S.expiry}</span><div class="input"><span class="ltr">2026-11-20</span><span class="ph-text"></span>${I('event')}</div><span class="help">${S.expiryHelp}</span></div></div>
-  <div class="dialog-actions"><button class="btn">${S.cancel}</button><button class="btn btn-filled">${I('schedule_send','flip')}${S.schedBtn}</button></div></div></div>`;
+  <div class="dialog-actions"><button class="btn">${S.cancel}</button><button class="btn btn-outlined">${S.saveDraft}</button><button class="btn btn-filled">${I('schedule_send','flip')}${S.schedBtn}</button></div></div></div>`;
 }
 const notif = (icon, html, time, unread, sub='') => `<div class="lms-notif ${unread?'unread':''}"><span class="lms-kind">${I(icon)}</span><div class="grow">${html}${sub?`<div class="caption muted">${sub}</div>`:''}<div class="caption muted">${time}</div></div>${unread?'<span class="dot" aria-label="unread" style="margin-block-start:6px"></span>':''}</div>`;
 function notifications() {
@@ -441,7 +479,9 @@ function prefs() {
   const row = (ev, a, b, c, d, lockB) => `<tr><td data-label="">${ev}</td><td data-label="${S.chIn}">${sw(a, true)}</td><td data-label="${S.chEmail}">${sw(b, lockB)}</td><td data-label="${S.chSms}">${sw(c)}</td><td data-label="${S.chPush}">${sw(d)}</td></tr>`;
   const ch = (i, t, s) => `<div class="lms-chan-head">${I(i)}<span>${t}</span><span class="caption muted ltr">${s}</span></div>`;
   return shell('notif', header(S.prTitle, S.prSub) +
-    `<div class="alert alert-warning" style="margin-block-end:16px;align-items:center">${I('notifications_off')}<span class="t" style="flex:1">${S.pushOff}<div class="help">${S.pushHelp}</div></span><button class="btn btn-outlined btn-sm">${S.pushOn}</button></div>
+    (qs.get('push') === 'denied'
+      ? `<div class="alert alert-warning" style="margin-block-end:16px">${I('notifications_off')}<span class="t" style="flex:1">${S.pushDenied}<div class="help">${S.pushDeniedH}</div></span></div>`
+      : `<div class="alert alert-warning" style="margin-block-end:16px;align-items:center">${I('notifications_off')}<span class="t" style="flex:1">${S.pushOff}<div class="help">${S.pushHelp}</div></span><button class="btn btn-outlined btn-sm">${S.pushOn}</button></div>`) + `
     <div class="card"><table class="lms-prefs stack lms-prefs-m"><thead><tr><th></th><th>${ch('notifications',S.chIn,S.chInS)}</th><th>${ch('mail',S.chEmail,S.chEmailS)}</th><th>${ch('sms',S.chSms,S.chSmsS)}</th><th>${ch('phone_iphone',S.chPush,S.chPushS)}</th></tr></thead><tbody>
     ${row(S.evMsg,1,1,0,1)}${row(S.evMsgGrp,1,0,0,0)}${row(S.evAnn,1,1,0,1)}${row(S.evAnnPin,1,1,1,1,true)}${row(S.evGrade,1,1,0,1)}${row(S.evAbs,1,1,1,1,true)}${row(S.evMod,1,1,0,0)}</tbody></table>
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 20px;border-block-start:1px solid var(--mud-palette-lines-default)"><span class="help">${I('lock','ms-sm')} ${S.lockedNote}</span><button class="btn btn-filled">${S.save}</button></div></div>`);
@@ -456,16 +496,41 @@ function moderation() {
         ${msg('them', S.dm1, '<span class="ltr">10:31</span>', S.from1)}<div class="lms-flagged">${msg('them', S.dm2, `<span class="ltr">10:38</span> · <span class="chip chip-warning" style="height:22px">${I('flag')}${S.flagged}</span>`, S.from2)}</div>${msg('them', S.dm3, '<span class="ltr">10:40</span>', S.from3)}</div>
       <div><div class="label">${S.reasonL}</div><p>${S.r1r} · ${S.reasonT}</p></div>
       <div><div class="label">${S.sender}</div><p class="muted">${S.senderV}</p></div>
-      <fieldset style="border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:8px"><legend class="label" style="margin-block-end:6px">${S.decide}</legend>${opt(0,S.keep,S.keepH)}${opt(1,S.remove,S.removeH)}${opt(0,S.block,S.blockH,1)}</fieldset>
+      <fieldset style="border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:8px"><legend class="label" style="margin-block-end:6px">${S.decide}</legend>${opt(0,S.dDismiss,S.dDismissH)}${opt(0,S.dHide,S.dHideH)}${opt(1,S.dRestrict,S.dRestrictH,1)}
+        <div class="grid2" style="padding-inline-start:44px"><div class="field"><span class="label">${S.forL}</span><div class="input"><span>${S.days7}</span><span class="ph-text"></span>${I('arrow_drop_down')}</div><span class="help ltr">${S.untilL}</span></div></div>
+        ${opt(0,S.dLock,S.dLockH,1)}</fieldset>
       <div class="field"><span class="label">${S.note}</span><div class="input" style="min-height:64px"></div></div>
       <div style="display:flex;justify-content:flex-end"><button class="btn btn-filled">${S.decideBtn}</button></div></div></aside>`;
   return shell('mod', header(S.modTitle, S.modSub) +
     `<div class="lms-stats">${st(S.stOpen,'3','flag')}${st(S.stToday,'2','today')}${st(S.stBlocked,'1','block')}${st(S.stAvg,'4 h','timer')}</div>
-    <div class="lms-mod"><div class="card"><div style="padding:12px 16px;border-block-end:1px solid var(--mud-palette-lines-default)"><div class="seg"><span aria-selected="true">${S.stOpen}</span><span>${S.sDone}</span></div></div>
+    <div class="lms-mod"><div class="card"><div style="padding:12px 16px;border-block-end:1px solid var(--mud-palette-lines-default)"><div style="display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center"><div class="seg"><span aria-selected="true">${S.stOpen}</span><span>${S.sDone}</span></div><span class="chip chip-error">${I('timer')}${S.sla}</span></div></div>
       <table class="stack"><thead><tr><th>${S.colMsg}</th><th>${S.colReason}</th><th>${S.colBy}</th><th>${S.colWhen}</th><th>${S.colStatus}</th></tr></thead><tbody>
       ${r(1,`<span class="chip chip-warning chip-dot">${S.sReview}</span>`,1)}${r(2,`<span class="chip chip-info chip-dot">${S.sNew}</span>`)}${r(3,`<span class="chip chip-error chip-dot">${S.sNew}</span>`)}${r(4,`<span class="chip chip-info chip-dot">${S.sNew}</span>`)}</tbody></table></div>${detail}</div>`);
 }
-document.getElementById('app').innerHTML = ({inbox, thread, compose, announcements, 'announce-compose':announceCompose, notifications, prefs, moderation}[screen] || inbox)();
+
+function composerStates() {
+  const st = (label, html, action='') => `<div class="card" style="overflow:hidden"><div class="caption muted" style="padding:10px 16px;font-weight:600">${label}</div><div class="lms-composer-off" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">${html}${action}</div></div>`;
+  const al = (t, icon='info', cls='alert-info') => `<div class="alert ${cls}" style="flex:1;min-inline-size:220px">${I(icon)}<span class="t">${t}</span></div>`;
+  return shell('inbox', header(S.csTitle, S.inboxSub) + `<div style="display:flex;flex-direction:column;gap:16px;max-inline-size:860px">
+    ${st(S.csBlockerL, al(S.csBlocker,'block'), `<button class="btn btn-outlined">${S.unblock}</button>`)}
+    ${st(S.csBlockedL, al(S.csBlocked))}
+    ${st(S.csRulesL, al(S.off))}
+    ${st(S.csRestrictedL, al(S.csRestricted,'schedule','alert-warning'))}
+    ${st(S.csDisabledL, al(S.csDisabled,'toggle_off'))}
+    ${st(S.csRateL, `<div class="lms-composer" style="flex:1;padding:0;border:0"><div class="input"><span>${S.gm3}</span></div><button class="btn" disabled>${I('send','flip')}${S.send}</button></div><div class="help" role="status" style="inline-size:100%;color:var(--mud-palette-warning)">${I('hourglass_top','ms-sm')} ${S.csRate}</div>`)}
+  </div>`);
+}
+function rules() {
+  const roles = ['roAdmin','roMgr','roSup','roCou','roTch','roStu','roGua'];
+  const v = { roAdmin:'AAAAAAA', roMgr:'AAAAAAA', roSup:'UUUUUUU', roCou:'UUUUUUU', roTch:'UUUURRR', roStu:'NNNURNN', roGua:'NNNURNN' };
+  const cell = (c, to) => { const t = {A:S.vAny, U:S.vUnit, R:S.vRel, N:S.vNo}[c]; const cls = c==='N' ? '' : c==='A' ? 'chip-success' : 'chip-info';
+    return `<td data-label="${S[to]}"><span class="chip ${cls}">${t}${I('arrow_drop_down')}</span></td>`; };
+  return shell('rules', header(S.rlTitle, S.rlSub, `<button class="btn btn-filled">${S.rlSave}</button>`) +
+    `<div class="alert alert-info" style="margin-block-end:16px">${I('info')}<span class="t">${S.rlNote}</span></div>
+    <div class="card" style="overflow-x:auto"><table class="stack"><thead><tr><th>${S.rlFrom} → ${S.to}</th>${roles.map(r => `<th>${S[r]}</th>`).join('')}</tr></thead><tbody>
+    ${roles.map(r => `<tr><td data-label="${S.rlFrom}" style="font-weight:600">${S[r]}</td>${[...v[r]].map((c,i) => cell(c, roles[i])).join('')}</tr>`).join('')}</tbody></table></div>`);
+}
+document.getElementById('app').innerHTML = ({inbox, thread, compose, announcements, 'announce-compose':announceCompose, notifications, prefs, moderation, 'composer-states':composerStates, rules}[screen] || inbox)();
 </script>
 </body>
 </html>
