@@ -15,7 +15,7 @@ namespace Lms.Api.Features.Packages;
 internal static class PackageSupport
 {
     public static PackageUploadDto ToDto(PackageUpload u) =>
-        new(u.Id, u.ClassCourseId, u.LessonKey, u.FileName, u.Kind, u.Status, u.RejectReason, u.Title, u.Version, u.MainLibrary, u.ModuleId, u.CreatedAt);
+        new(u.Id, u.ClassCourseId, u.LessonKey, u.FileName, u.Kind, u.Status, u.RejectReason, u.Title, u.Version, u.MainLibrary, u.ModuleId, u.CreatedAt, u.GradingMethod);
 
     /// <summary>403 <c>feature_disabled</c> when <c>Features.ScormContent</c> is off at the class course's unit.</summary>
     public static async Task<IResult?> FlagAsync(ClassCourse classCourse, ISettingsResolver settings, CancellationToken ct) =>

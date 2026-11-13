@@ -18,6 +18,11 @@ public sealed class PackageUpload : UnitOwnedEntity
     public const string ReadyStatus = "Ready";
     public const string RejectedStatus = "Rejected";
 
+    // The same values as Lms.Shared.Packages.PackageGradingMethods (the domain does not reference the contract project; a unit test pins them).
+    public const string HighestMethod = "Highest";
+    public const string LastMethod = "Last";
+    public const string FirstMethod = "First";
+
     private PackageUpload()
     {
         Kind = FileName = Status = Sha256 = StorePrefix = string.Empty;
@@ -76,6 +81,9 @@ public sealed class PackageUpload : UnitOwnedEntity
     /// <summary>The module that uses the package, set when it is attached to its lesson.</summary>
     public Guid? ModuleId { get; private set; }
 
+    /// <summary>Which completed attempt is graded (D57; a <c>PackageGradingMethods</c> value), set when attached; null before.</summary>
+    public string? GradingMethod { get; private set; }
+
     public void MarkValidating() => Status = ValidatingStatus;
 
     public void Reject(string reason)
@@ -94,5 +102,11 @@ public sealed class PackageUpload : UnitOwnedEntity
         StorePrefix = storePrefix;
     }
 
-    public void AttachTo(Guid moduleId) => ModuleId = moduleId;
+    public void AttachTo(Guid moduleId, string gradingMethod = HighestMethod)
+    {
+        ModuleId = moduleId;
+        GradingMethod = gradingMethod;
+    }
+
+    public void SetGradingMethod(string gradingMethod) => GradingMethod = gradingMethod;
 }

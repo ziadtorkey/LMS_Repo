@@ -9,6 +9,8 @@ public enum GradeSourceKind
 {
     Assignment = 1,
     Quiz = 2,
+    Scorm = 3,
+    H5p = 4,
 }
 
 /// <summary>

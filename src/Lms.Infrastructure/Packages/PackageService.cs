@@ -90,6 +90,8 @@ public static class PackagesServiceCollectionExtensions
         services.AddScoped<IPackageStore, MinioPackageStore>();
         services.AddScoped<IPackageValidationScheduler, NoopPackageValidationScheduler>();
         services.AddScoped<PackageService>();
+        services.AddScoped<Attempts.PackageAttemptService>();
+        services.AddSingleton<IPackageTracker, Attempts.PlaceholderPackageTracker>();
         return services;
     }
 }

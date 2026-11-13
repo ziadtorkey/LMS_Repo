@@ -7,7 +7,12 @@ public sealed class PackagesModule : ILmsModule
 {
     public void AddServices(IServiceCollection services, IConfiguration configuration)
     {
+        services.AddScoped<PackageAttemptHandlers>();
     }
 
-    public void MapEndpoints(IEndpointRouteBuilder app) => PackageEndpoints.Map(app);
+    public void MapEndpoints(IEndpointRouteBuilder app)
+    {
+        PackageEndpoints.Map(app);
+        PackageAttemptEndpoints.Map(app);
+    }
 }

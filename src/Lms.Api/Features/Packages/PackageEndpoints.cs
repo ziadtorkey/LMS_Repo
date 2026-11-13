@@ -132,6 +132,11 @@ internal static class PackageEndpoints
             return closed;
         }
 
+        if (!PackageGradingMethods.All.Contains(request.GradingMethod))
+        {
+            return PackageSupport.Invalid("gradingMethod", "invalid_value");
+        }
+
         var kind = ModuleKindOf(upload);
         var settings = request.Module;
         if (!CompletionRules.ForActivity(kind).Contains(settings.CompletionRule))
@@ -157,7 +162,7 @@ internal static class PackageEndpoints
             return EnrollmentProblems.From(rule);
         }
 
-        upload.AttachTo(moduleId);
+        upload.AttachTo(moduleId, request.GradingMethod);
         await db.SaveChangesAsync(ct);
         var module = await db.Set<LessonModule>().FirstAsync(m => m.Id == moduleId, ct);
         var groups = await ModuleMapper.GroupsAsync(db, [module], ct);
