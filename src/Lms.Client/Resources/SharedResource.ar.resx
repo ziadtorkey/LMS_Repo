@@ -1418,4 +1418,11 @@
   <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>لم يقبل الفحص الأمني هذه الحزمة.</value></data>
   <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>الملف ليس أرشيف zip صالحًا.</value></data>
   <data name="Error_package_reason_bad_name" xml:space="preserve"><value>اسم ملف في الحزمة غير صالح (طويل جدًا أو عميق جدًا أو محجوز).</value></data>
+  <data name="Package_Grading" xml:space="preserve"><value>عند فتح الطالب له مرة أخرى</value></data>
+  <data name="Package_Grading_Highest" xml:space="preserve"><value>احتساب أعلى درجة</value></data>
+  <data name="Package_Grading_Last" xml:space="preserve"><value>احتساب آخر درجة</value></data>
+  <data name="Package_Grading_First" xml:space="preserve"><value>احتساب الدرجة الأولى</value></data>
+  <data name="Package_Grading_Highest_Help" xml:space="preserve"><value>يمكن للطلاب المحاولة مجددًا ولا تنخفض درجتهم.</value></data>
+  <data name="Package_Grading_Last_Help" xml:space="preserve"><value>كل محاولة جديدة تحلّ محل الدرجة حتى لو كانت أقل.</value></data>
+  <data name="Package_Grading_First_Help" xml:space="preserve"><value>المحاولات اللاحقة للتدريب ولا تُحتسب.</value></data>
 </root>

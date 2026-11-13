@@ -138,6 +138,8 @@ public sealed class FakePackagesApi : IPackagesApi
     public Task<ModuleNodeDto> AttachAsync(Guid id, AttachPackageModuleRequest request, CancellationToken ct = default)
     {
         if (AttachFailure is not null) return Task.FromException<ModuleNodeDto>(AttachFailure);
+        if (!PackageGradingMethods.All.Contains(request.GradingMethod))   // as the server: any other value is 400 validation_failed (D57)
+            return Task.FromException<ModuleNodeDto>(new ApiProblemException(400, ProblemCodes.validation_failed, null, null));
         if (Failure is not null) return Task.FromException<ModuleNodeDto>(Failure);
         if (!_items.TryGetValue(id, out var item))
             return Task.FromException<ModuleNodeDto>(new ApiProblemException(404, ProblemCodes.not_found, null, null));

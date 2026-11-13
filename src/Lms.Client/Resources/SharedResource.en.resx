@@ -1418,4 +1418,11 @@
   <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>The security scan did not accept this package.</value></data>
   <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>The file is not a valid zip archive.</value></data>
   <data name="Error_package_reason_bad_name" xml:space="preserve"><value>A file name in the package is not usable (too long, too deep, or reserved).</value></data>
+  <data name="Package_Grading" xml:space="preserve"><value>When a student opens it again</value></data>
+  <data name="Package_Grading_Highest" xml:space="preserve"><value>Keep the highest score</value></data>
+  <data name="Package_Grading_Last" xml:space="preserve"><value>Use the latest score</value></data>
+  <data name="Package_Grading_First" xml:space="preserve"><value>Keep the first score</value></data>
+  <data name="Package_Grading_Highest_Help" xml:space="preserve"><value>Students can try again; their score never goes down.</value></data>
+  <data name="Package_Grading_Last_Help" xml:space="preserve"><value>Each new attempt replaces the score, even if it's lower.</value></data>
+  <data name="Package_Grading_First_Help" xml:space="preserve"><value>Later attempts are practice and aren't graded.</value></data>
 </root>

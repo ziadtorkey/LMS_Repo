@@ -27,6 +27,27 @@
             <MudSelectItem T="string" Value="rule">@L[$"Package_Rule_{rule}"]</MudSelectItem>
         }
     </MudSelect>
+    @* D57 (design spec M4b §4.1): which attempt counts for the grade, per module. Only a Score rule has a score to keep; with None or Submit the
+       request sends the default. *@
+    @if (_rule == CompletionRules.Score)
+    {
+        <fieldset class="lms-fieldset" data-testid="package-grading">
+            <legend class="lms-fieldset-legend">@L["Package_Grading"]</legend>
+            <div role="radiogroup" aria-label="@L["Package_Grading"]">
+                @foreach (var method in PackageGradingMethods.All)
+                {
+                    var m = method;
+                    <label class="@("lms-choice" + (_grading == m ? " lms-choice-on" : ""))" data-testid="@($"package-grading-{m}")">
+                        <input type="radio" name="package-grading" checked="@(_grading == m)" @onchange="() => _grading = m" />
+                        <span>
+                            <span class="lms-cell-strong">@L[$"Package_Grading_{m}"]</span><br />
+                            <span class="lms-muted">@L[$"Package_Grading_{m}_Help"]</span>
+                        </span>
+                    </label>
+                }
+            </div>
+        </fieldset>
+    }
     @if (_error is not null)
     {
         <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" role="alert" data-testid="package-attach-error">@_error</MudAlert>
@@ -37,7 +58,7 @@
 </MudStack>
 
 @code {
-    private string _titleAr = "", _titleEn = "", _rule = CompletionRules.Submit;
+    private string _titleAr = "", _titleEn = "", _rule = CompletionRules.Submit, _grading = PackageGradingMethods.Highest;
     private string? _error;
     private bool _busy;
 
@@ -80,7 +101,7 @@
         _error = null;
         var settings = new ModuleSettingsInput(_titleAr.Trim(), _titleEn.Trim(), ModuleVisibilities.Published, null, null,
             ModuleTargets.ClassCourse, null, _rule, null);
-        _error = await OnAttach(new AttachPackageModuleRequest(settings));
+        _error = await OnAttach(new AttachPackageModuleRequest(settings, _rule == CompletionRules.Score ? _grading : PackageGradingMethods.Highest));
         _busy = false;
     }
 }
