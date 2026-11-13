@@ -29,7 +29,7 @@
 
 @if (!PermState.Loaded)
 {
-    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+    <LoadingState Lines="4" />
 }
 else if (!PermState.Has(Permissions.Library.View))
 {
@@ -37,48 +37,60 @@ else if (!PermState.Has(Permissions.Library.View))
 }
 else
 {
-    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap" Class="mb-4" data-testid="library-filters">
+    <SectionCard Flush="true" Class="mb-4">
+    <div class="lms-filters" role="search" aria-label="@L["Common_Filters"]" data-testid="library-filters">
+        <div class="lms-filter lms-filter-search">
         <MudTextField T="string" Value="_search" ValueChanged="v => ChangeAsync(() => _search = v)" Label="@L["Library_Search"]" Immediate="true"
-                      Clearable="true" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" data-testid="library-search" />
+                      Clearable="true" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Rounded.Search" data-testid="library-search" />
+        </div>
+        <div class="lms-filter">
         <MudSelect T="string" Value="_type" ValueChanged="v => ChangeAsync(() => _type = v)" Label="@L["Library_Type"]" Clearable="true" data-testid="library-type">
             @foreach (var t in LibraryResourceTypes.All)
             {
                 <MudSelectItem T="string" Value="@t">@L["LibraryType_" + t]</MudSelectItem>
             }
         </MudSelect>
+        </div>
         @if (_levels.Count > 0)
         {
+        <div class="lms-filter">
         <MudSelect T="Guid?" Value="_level" ValueChanged="v => ChangeAsync(() => _level = v)" Label="@L["Library_Level"]" Clearable="true" data-testid="library-level">
             @foreach (var l in _levels)
             {
                 <MudSelectItem T="Guid?" Value="@((Guid?)l.Id)">@Culture.Pick(l.NameAr, l.NameEn)</MudSelectItem>
             }
         </MudSelect>
+        </div>
         }
         @if (_courses.Count > 0)
         {
+        <div class="lms-filter">
         <MudSelect T="Guid?" Value="_course" ValueChanged="v => ChangeAsync(() => _course = v)" Label="@L["Library_Subject"]" Clearable="true" data-testid="library-course">
             @foreach (var c in _courses)
             {
                 <MudSelectItem T="Guid?" Value="@((Guid?)c.Id)">@Culture.Pick(c.NameAr, c.NameEn)</MudSelectItem>
             }
         </MudSelect>
+        </div>
         }
+        <div class="lms-filter">
         <MudSelect T="string" Value="_tag" ValueChanged="v => ChangeAsync(() => _tag = v)" Label="@L["Library_Tag"]" Clearable="true" data-testid="library-tag">
             @foreach (var t in _tags)
             {
                 <MudSelectItem T="string" Value="@t">@t</MudSelectItem>
             }
         </MudSelect>
-    </MudStack>
+        </div>
+    </div>
+    </SectionCard>
 
     @if (_error is not null)
     {
-        <MudAlert Severity="Severity.Error" data-testid="library-error">@_error</MudAlert>
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="library-error">@_error</MudAlert>
     }
     else if (_loading)
     {
-        <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+        <LoadingState Lines="4" />
     }
     else if (_items.Count == 0)
     {
@@ -88,38 +100,47 @@ else
     }
     else
     {
-        <MudGrid data-testid="library-grid">
+        <MudGrid Spacing="2" data-testid="library-grid">
             @foreach (var resource in _items)
             {
                 var r = resource;
                 <MudItem xs="12" sm="6" md="4" lg="3">
-                    <MudCard Class="h-100" data-testid="@($"library-card-{r.Id}")">
+                    <MudCard Class="h-100" Outlined="true" Elevation="0" data-testid="@($"library-card-{r.Id}")">
                         <LibraryCover Resource="r" />
                         <MudCardContent>
-                            <MudText Typo="Typo.subtitle1">@Culture.Pick(r.TitleAr, r.TitleEn)</MudText>
+                            <MudText Typo="Typo.subtitle1" HtmlTag="h2" Class="lms-wrap">@Culture.Pick(r.TitleAr, r.TitleEn)</MudText>
                             <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-1">
                                 <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@L["LibraryType_" + r.Type]</MudChip>
                                 @if (r.IsInherited)
                                 {
-                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" data-testid="@($"library-inherited-{r.Id}")">@Culture.Pick(r.OrgUnitNameAr, r.OrgUnitNameEn)</MudChip>
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Info" data-testid="@($"library-inherited-{r.Id}")">@Culture.Pick(r.OrgUnitNameAr, r.OrgUnitNameEn)</MudChip>
                                 }
                                 @foreach (var tag in r.Tags)
                                 {
-                                    <MudChip T="string" Size="Size.Small">@tag</MudChip>
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text"><bdi>@tag</bdi></MudChip>
                                 }
                             </MudStack>
                         </MudCardContent>
-                        <MudCardActions>
-                            <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="() => OpenAsync(r)" data-testid="@($"library-open-{r.Id}")">@L["Library_Open"]</MudButton>
-                            @if (PermState.Has(Permissions.Modules.Manage))
-                            {
-                                <MudButton Variant="Variant.Text" OnClick="() => AddToLessonAsync(r)" data-testid="@($"library-add-{r.Id}")">@L["Library_AddToLesson"]</MudButton>
-                            }
-                            @if (PermState.Has(Permissions.Library.Manage) && r.CanEdit)
-                            {
-                                <MudButton Variant="Variant.Text" OnClick="() => EditAsync(r)" data-testid="@($"library-edit-{r.Id}")">@L["Common_Edit"]</MudButton>
-                                <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="() => DeleteAsync(r)" data-testid="@($"library-delete-{r.Id}")">@L["Common_Delete"]</MudButton>
-                            }
+                        <MudCardActions Class="lms-card-actions">
+                            <MudButton Variant="Variant.Text" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.MenuBook" OnClick="() => OpenAsync(r)" data-testid="@($"library-open-{r.Id}")">@L["Library_Open"]</MudButton>
+                            <div class="lms-row-actions">
+                                @if (PermState.Has(Permissions.Modules.Manage))
+                                {
+                                    <MudTooltip Text="@L["Library_AddToLesson"]">
+                                        <MudIconButton Icon="@Icons.Material.Rounded.PlaylistAdd" Size="Size.Small" aria-label="@L["Library_AddToLesson"]" OnClick="() => AddToLessonAsync(r)" data-testid="@($"library-add-{r.Id}")" />
+                                    </MudTooltip>
+                                }
+                                @if (PermState.Has(Permissions.Library.Manage) && r.CanEdit)
+                                {
+                                    <MudTooltip Text="@L["Common_Edit"]">
+                                        <MudIconButton Icon="@Icons.Material.Rounded.Edit" Size="Size.Small" aria-label="@L["Common_Edit"]" OnClick="() => EditAsync(r)" data-testid="@($"library-edit-{r.Id}")" />
+                                    </MudTooltip>
+                                    <span class="lms-row-actions-sep" aria-hidden="true"></span>
+                                    <MudTooltip Text="@L["Common_Delete"]">
+                                        <MudIconButton Icon="@Icons.Material.Rounded.Delete" Size="Size.Small" Color="Color.Error" aria-label="@L["Common_Delete"]" OnClick="() => DeleteAsync(r)" data-testid="@($"library-delete-{r.Id}")" />
+                                    </MudTooltip>
+                                }
+                            </div>
                         </MudCardActions>
                     </MudCard>
                 </MudItem>

@@ -140,6 +140,48 @@ public sealed partial class M4aPresentationTests : LessonPlansTestContext
         Assert.Contains("mud-chip-text", chip.ClassName);
     }
 
+    [Fact]
+    public async Task Forum_threads_are_rows_of_one_card()
+    {
+        _forum.AddThread(Cc, "First");
+        _forum.AddThread(Cc, "Second");
+        await OpenAsync("en", Permissions.Forums.View);
+        var page = Render<ForumPage>(p => p.Add(x => x.Id, Cc));
+
+        var list = page.WaitForElement("[data-testid=forum-threads]", Wait);
+        Assert.Equal("UL", list.TagName);
+        Assert.Equal(2, list.QuerySelectorAll("li.lms-item").Length);
+        Assert.Single(page.FindAll("[data-testid=forum-threads-card]"));
+    }
+
+    [Fact]
+    public async Task Announcements_are_articles_in_one_card_with_their_own_heading()
+    {
+        _forum.Announcements.Add(new(Guid.NewGuid(), Cc, "Welcome", "<p>Hi</p>", false, Guid.NewGuid(), "م", "Teacher", DateTime.UtcNow, null));
+        _forum.Announcements.Add(new(Guid.NewGuid(), Cc, "Exam moved", "<p>Friday</p>", true, Guid.NewGuid(), "م", "Teacher", DateTime.UtcNow, null));
+        await OpenAsync("en", Permissions.Forums.View);
+        var page = Render<AnnouncementsPage>(p => p.Add(x => x.Id, Cc));
+
+        page.WaitForElement("[data-testid=announcements-list]", Wait);
+        var articles = page.FindAll("[data-testid=announcements-card] article");
+        Assert.Equal(2, articles.Count);
+        Assert.All(articles, a => Assert.NotNull(a.QuerySelector($"h2#{a.GetAttribute("aria-labelledby")}")));
+    }
+
+    [Fact]
+    public async Task Library_card_actions_are_labelled_icon_buttons_with_delete_last()
+    {
+        var own = _library.Add("Atlas");
+        await OpenAsync("en", Permissions.Library.View, Permissions.Library.Manage, Permissions.Modules.Manage);
+        var page = Render<LibraryPage>();
+
+        var card = page.WaitForElement($"[data-testid=library-card-{own.Id}]", Wait);
+        var buttons = card.QuerySelectorAll(".lms-row-actions button");
+        Assert.Equal(new[] { "Add to lesson", "Edit", "Delete" }, buttons.Select(b => b.GetAttribute("aria-label") ?? "").ToArray());
+        Assert.Equal($"library-delete-{own.Id}", buttons.Last().GetAttribute("data-testid"));
+        Assert.NotNull(page.Find("[data-testid=library-filters][role=search]"));
+    }
+
     [GeneratedRegex(@"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$")]
     private static partial Regex IsoDateTime();
 }

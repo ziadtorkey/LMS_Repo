@@ -13,7 +13,7 @@
 <ClassCourseTabs ClassCourseId="Id" Active="forum" />
 @if (!PermState.Loaded)
 {
-    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+    <LoadingState Lines="4" />
 }
 else if (!PermState.Has(Permissions.Forums.View))
 {
@@ -32,7 +32,7 @@ else
 
     @if (_composing)
     {
-        <MudPaper Outlined="true" Class="pa-3 mb-3" data-testid="forum-new-panel">
+        <SectionCard Title="@L["Forum_NewThread"]" Class="mb-4" TestId="forum-new-panel">
             <MudStack Spacing="2">
                 <MudTextField T="string" @bind-Value="_title" Label="@L["Forum_ThreadTitle"]" MaxLength="200" Immediate="true" data-testid="forum-new-title" />
                 <PostComposer ClassCourseId="Id" Label="@L["Forum_Message"]" SendLabel="@L["Forum_Post"]" TestId="forum-new-composer" OnSubmit="CreateAsync" />
@@ -41,16 +41,16 @@ else
                     <MudAlert Severity="Severity.Error" data-testid="forum-form-error">@_formError</MudAlert>
                 }
             </MudStack>
-        </MudPaper>
+        </SectionCard>
     }
 
     @if (_error is not null)
     {
-        <MudAlert Severity="Severity.Error" data-testid="forum-error">@_error</MudAlert>
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="forum-error">@_error</MudAlert>
     }
     else if (_loading)
     {
-        <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+        <SectionCard><LoadingState Lines="4" TestId="forum-loading" /></SectionCard>
     }
     else if (_threads.Count == 0)
     {
@@ -60,34 +60,35 @@ else
     }
     else
     {
-        <MudStack Spacing="1" data-testid="forum-threads">
-            @foreach (var t in _threads)
-            {
-                <MudPaper Outlined="true" Class="pa-3" data-testid="@($"forum-thread-{t.Id}")">
-                    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
-                        <MudLink Href="@($"class-courses/{Id}/forum/{t.Id}")" Typo="Typo.subtitle1" data-testid="@($"forum-thread-link-{t.Id}")">@t.Title</MudLink>
-                        @if (t.IsPinned)
-                        {
-                            <MudChip T="string" Size="Size.Small" Color="Color.Primary" data-testid="@($"forum-pinned-{t.Id}")">@L["Forum_Pinned"]</MudChip>
-                        }
-                        @if (t.IsLocked)
-                        {
-                            <MudChip T="string" Size="Size.Small" Icon="@Icons.Material.Filled.Lock" data-testid="@($"forum-locked-{t.Id}")">@L["Forum_Locked"]</MudChip>
-                        }
-                        <MudSpacer />
-                        <MudText Typo="Typo.caption" Class="mud-text-secondary">
-                            @Culture.Pick(t.AuthorNameAr, t.AuthorNameEn) · @L["Forum_Replies", t.ReplyCount]
+        <SectionCard TestId="forum-threads-card">
+            <ul class="lms-item-list" data-testid="forum-threads">
+                @foreach (var t in _threads)
+                {
+                    <li class="lms-item" data-testid="@($"forum-thread-{t.Id}")">
+                        <div class="lms-item-main">
+                            <MudLink Href="@($"class-courses/{Id}/forum/{t.Id}")" Class="lms-cell-strong lms-wrap" data-testid="@($"forum-thread-link-{t.Id}")">@t.Title</MudLink>
+                            @if (t.IsPinned)
+                            {
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Primary" Icon="@Icons.Material.Rounded.PushPin" data-testid="@($"forum-pinned-{t.Id}")">@L["Forum_Pinned"]</MudChip>
+                            }
+                            @if (t.IsLocked)
+                            {
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Icon="@Icons.Material.Rounded.Lock" data-testid="@($"forum-locked-{t.Id}")">@L["Forum_Locked"]</MudChip>
+                            }
+                        </div>
+                        <MudText Typo="Typo.caption" Class="lms-muted">
+                            <bdi>@Culture.Pick(t.AuthorNameAr, t.AuthorNameEn)</bdi> · @L["Forum_Replies", t.ReplyCount]
                         </MudText>
-                    </MudStack>
-                </MudPaper>
+                    </li>
+                }
+            </ul>
+            @if (_threads.Count < _total)
+            {
+                <div class="mt-3">
+                    <MudButton Variant="Variant.Outlined" Size="Size.Small" OnClick="MoreAsync" Disabled="_loadingMore" data-testid="forum-more">@L["Forum_MoreThreads", _total - _threads.Count]</MudButton>
+                </div>
             }
-        </MudStack>
-        @if (_threads.Count < _total)
-        {
-            <div class="mt-3">
-                <MudButton Variant="Variant.Outlined" OnClick="MoreAsync" Disabled="_loadingMore" data-testid="forum-more">@L["Forum_MoreThreads", _total - _threads.Count]</MudButton>
-            </div>
-        }
+        </SectionCard>
     }
 }
 

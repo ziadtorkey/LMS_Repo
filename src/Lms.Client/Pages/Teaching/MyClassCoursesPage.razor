@@ -13,7 +13,7 @@
 <PageHeader Title="@L["MyClassCourses_Title"]" Subtitle="@L["MyClassCourses_Subtitle"]" TitleTestId="my-class-courses-title" />
 @if (!PermState.Loaded || _loading)
 {
-    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+    <LoadingState Lines="4" />
 }
 else if (!PermState.Has(Permissions.LessonPlans.View))
 {

@@ -15,7 +15,7 @@
 <PageTitle>@L["Learn_Title"]</PageTitle>
 @if (!PermState.Loaded || _loading)
 {
-    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+    <LoadingState Lines="4" />
 }
 else if (!PermState.Has(Permissions.Modules.View))
 {
@@ -23,7 +23,7 @@ else if (!PermState.Has(Permissions.Modules.View))
 }
 else if (_error is not null || _plan is null)
 {
-    <MudAlert Severity="Severity.Error" data-testid="learn-error">@(_error ?? L["Api_Error"].Value)</MudAlert>
+    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="learn-error">@(_error ?? L["Api_Error"].Value)</MudAlert>
 }
 else
 {
@@ -51,8 +51,7 @@ else
         @foreach (var section in _plan.Sections.OrderBy(s => s.Order))
         {
             var sec = section;
-            <MudPaper Outlined="true" Class="pa-3" data-testid="@($"learn-section-{sec.Key}")">
-                <MudText Typo="Typo.h6" Class="mb-2">@SectionLabel() @sec.Order · @Culture.Pick(sec.TitleAr, sec.TitleEn)</MudText>
+            <SectionCard Title="@($"{SectionLabel()} {sec.Order} · {Culture.Pick(sec.TitleAr, sec.TitleEn)}")" TestId="@($"learn-section-{sec.Key}")">
                 <MudStack Spacing="2">
                     @foreach (var lesson in sec.Lessons.OrderBy(l => l.Order))
                     {
@@ -72,14 +71,14 @@ else
                                 <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Class="ms-4 py-1" data-testid="@($"learn-module-{m.Id}")">
                                     <MudIcon Icon="@KindIcon(m.Kind)" Size="Size.Small" aria-hidden="true" />
                                     <MudLink Href="@ModuleHref(m.Id)" data-testid="@($"learn-module-link-{m.Id}")">@Culture.Pick(m.TitleAr, m.TitleEn)</MudLink>
-                                    <MudChip T="string" Size="Size.Small" Color="@StateColor(m)"
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@StateColor(m)"
                                              data-testid="@($"learn-module-state-{m.Id}")">@StateText(m)</MudChip>
                                 </MudStack>
                             }
                         </div>
                     }
                 </MudStack>
-            </MudPaper>
+            </SectionCard>
         }
     </MudStack>
 }

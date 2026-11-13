@@ -1425,4 +1425,5 @@
   <data name="Library_Subtitle" xml:space="preserve"><value>Books, documents and links shared with your school.</value></data>
   <data name="Library_EmptyText" xml:space="preserve"><value>Change the filters, or add a resource if you manage the library.</value></data>
   <data name="MyClassCourses_Subtitle" xml:space="preserve"><value>The class courses you teach this year and their lesson plans.</value></data>
+  <data name="Announcements_New" xml:space="preserve"><value>New announcement</value></data>
 </root>
