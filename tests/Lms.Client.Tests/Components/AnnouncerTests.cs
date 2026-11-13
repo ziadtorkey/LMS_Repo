@@ -13,6 +13,7 @@ public sealed class AnnouncerTests : ClientTestContext
     {
         var cut = Render<AnnouncerRegion>();
         var region = cut.Find("[data-testid=announcer]");
+        Assert.Contains("lms-visually-hidden", region.ClassList);   // the class the app CSS defines; any other name would show the text on screen
         Assert.Equal("status", region.GetAttribute("role"));
         Assert.Equal("polite", region.GetAttribute("aria-live"));
         Assert.Equal("true", region.GetAttribute("aria-atomic"));

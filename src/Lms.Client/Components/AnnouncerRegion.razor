@@ -2,7 +2,7 @@
 @inject Announcer Announcer
 
 @* The one live region of the app (in the layout): visually hidden, polite, read as a whole. Each announcement is a new node. *@
-<div class="visually-hidden" role="status" aria-live="polite" aria-atomic="true" data-testid="announcer">
+<div class="lms-visually-hidden" role="status" aria-live="polite" aria-atomic="true" data-testid="announcer">
     @if (Announcer.Message is { Length: > 0 } message)
     {
         <span @key="Announcer.Count" data-n="@Announcer.Count">@message</span>
