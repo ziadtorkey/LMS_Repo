@@ -1422,4 +1422,5 @@
   <data name="Years_StatDays" xml:space="preserve"><value>عدد أيام العام</value></data>
   <data name="Years_StatTerms" xml:space="preserve"><value>الفصول الدراسية</value></data>
   <data name="Years_StatLeft" xml:space="preserve"><value>الأيام المتبقية</value></data>
+  <data name="Years_StatCurrentTerm" xml:space="preserve"><value>الفصل الحالي</value></data>
 </root>

@@ -52,7 +52,7 @@ public sealed class AcademicYearsPageTests : ClientTestContext
     {
         Culture.Current = new CultureInfo("en");
         await GrantAsync(Permissions.OrgUnits.View, Permissions.AcademicYears.View);
-        AroundToday(FakeUnits.SchoolId, AcademicYearStatuses.Active); // 61 days, 30 of them still ahead
+        AroundToday(FakeUnits.SchoolId, AcademicYearStatuses.Active); // 61 days
         var cut = RenderPage(FakeUnits.SchoolId);
 
         cut.WaitForElement("[data-testid=years-stats]");
@@ -60,11 +60,37 @@ public sealed class AcademicYearsPageTests : ClientTestContext
         Assert.Contains("Test year", cut.Find("[data-testid=stat-year]").TextContent);
         Assert.Equal("61", cut.Find("[data-testid=stat-days] .lms-stat-value").TextContent.Trim());
         Assert.Equal("0", cut.Find("[data-testid=stat-terms] .lms-stat-value").TextContent.Trim());
-        Assert.Equal("30", cut.Find("[data-testid=stat-left] .lms-stat-value").TextContent.Trim());
+        Assert.Empty(cut.FindAll("[data-testid=stat-left]")); // no client-clock figure: the date there is not the school's
     }
 
     [Fact]
-    public async Task A_planned_year_has_no_days_left_tile()
+    public async Task The_current_term_tile_shows_the_term_the_server_judges_current()
+    {
+        Culture.Current = new CultureInfo("en");
+        await GrantAsync(Permissions.OrgUnits.View, Permissions.AcademicYears.View);
+        var year = AroundToday(FakeUnits.SchoolId, AcademicYearStatuses.Active);
+        _years.AddTerm(year.Id, "الفصل الأول", "Term one", Today.AddDays(-30), Today.AddDays(10));
+        var cut = RenderPage(FakeUnits.SchoolId);
+
+        cut.WaitForElement("[data-testid=stat-term]");
+
+        Assert.Contains("Term one", cut.Find("[data-testid=stat-term]").TextContent);
+        Assert.Contains("1", cut.Find("[data-testid=stat-terms] .lms-stat-value").TextContent);
+    }
+
+    [Fact]
+    public void The_stat_tiles_are_compact_on_phones()
+    {
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir is not null && !File.Exists(Path.Combine(dir.FullName, "src", "Lms.Client", "wwwroot", "css", "lms-activities.css"))) dir = dir.Parent;
+        var css = File.ReadAllText(Path.Combine(dir!.FullName, "src", "Lms.Client", "wwwroot", "css", "lms-activities.css"));
+
+        Assert.Contains(".lms-stats { grid-template-columns: repeat(2, minmax(0, 1fr));", css);
+        Assert.Contains(".lms-stat-value { font-size: 1.25rem; }", css);
+    }
+
+    [Fact]
+    public async Task A_planned_year_has_no_current_term_tile()
     {
         Culture.Current = new CultureInfo("en");
         await GrantAsync(Permissions.OrgUnits.View, Permissions.AcademicYears.View);
@@ -73,7 +99,7 @@ public sealed class AcademicYearsPageTests : ClientTestContext
 
         cut.WaitForElement("[data-testid=years-stats]");
 
-        Assert.Empty(cut.FindAll("[data-testid=stat-left]"));
+        Assert.Empty(cut.FindAll("[data-testid=stat-term]"));
     }
 
     [Fact]
