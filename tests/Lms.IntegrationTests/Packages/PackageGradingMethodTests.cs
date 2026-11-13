@@ -213,6 +213,49 @@ public sealed class PackageGradingMethodTests(LmsApiFactory factory) : IDisposab
     }
 
     [Fact]
+    public async Task A_closed_class_refuses_the_change_with_409_and_nothing_changes()
+    {
+        var s = await SetUpAsync("GM9");
+        var id = await ReadyUploadAsync(s);
+        await s.Api.SendAsync(HttpMethod.Post, Routes.PackageModule(id), s.World.Teacher, new AttachPackageModuleRequest(Module()));
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            (await db.Set<Lms.Domain.Classes.Class>().SingleAsync(c => c.Id == s.World.Class.Id)).SetStatus(Lms.Domain.Classes.Class.ClosedStatus);
+            await db.SaveChangesAsync();
+        }
+
+        var response = await Put(s, id, s.World.Teacher, new UpdatePackageGradingMethodRequest(PackageGradingMethods.Last));
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        Assert.Equal("class_closed", await CodeAsync(response));
+        Assert.Equal(PackageGradingMethods.Highest, await StoredMethodAsync(id));
+        lock (CountingRecompute.Calls)
+        {
+            Assert.DoesNotContain(id, CountingRecompute.Calls);
+        }
+    }
+
+    [Fact]
+    public async Task With_the_ScormContent_feature_off_the_change_is_403_feature_disabled_and_nothing_changes()
+    {
+        var s = await SetUpAsync("GM10");
+        var id = await ReadyUploadAsync(s);
+        await s.Api.SendAsync(HttpMethod.Post, Routes.PackageModule(id), s.World.Teacher, new AttachPackageModuleRequest(Module()));
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            var flag = await db.Set<OrgUnitSetting>().SingleAsync(x => x.OrganizationId == s.World.Tree.Org.Id && x.Key == FeatureFlags.ScormContent.Name);
+            db.Remove(flag); // the default is off
+            await db.SaveChangesAsync();
+        }
+
+        var response = await Put(s, id, s.World.Teacher, new UpdatePackageGradingMethodRequest(PackageGradingMethods.Last));
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.Equal("feature_disabled", await CodeAsync(response));
+        Assert.Equal(PackageGradingMethods.Highest, await StoredMethodAsync(id));
+    }
+
+    [Fact]
     public async Task Another_client_cannot_see_or_change_the_method()
     {
         var a = await SetUpAsync("GM8A");
