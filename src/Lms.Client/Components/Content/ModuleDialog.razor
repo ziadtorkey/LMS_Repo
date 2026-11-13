@@ -1,3 +1,4 @@
+@using Lms.Client.Components.Content.Kinds
 @using Lms.Client.Components.Assets
 @using Lms.Client.Services.Api
 @using Lms.Shared
@@ -24,22 +25,14 @@
                     }
                     else
                     {
-                        <MudTextField T="string" @bind-Value="_model.BodyHtmlAr" Label="@L["Module_BodyAr"]" Lines="6" MaxLength="200000"
-                                      dir="rtl" lang="ar" data-testid="module-body-ar" />
-                        <MudTextField T="string" @bind-Value="_model.BodyHtmlEn" Label="@L["Module_BodyEn"]" Lines="6" MaxLength="200000"
-                                      dir="ltr" lang="en" data-testid="module-body-en" />
+                        <PageEditor Model="_model" />
                     }
                     break;
                 case ModuleKinds.Link:
-                    <MudTextField T="string" @bind-Value="_model.Url" Label="@L["Module_Url"]" MaxLength="2000" InputType="InputType.Url"
-                                  dir="ltr" data-testid="module-url" />
+                    <LinkEditor Model="_model" />
                     break;
                 case ModuleKinds.File or ModuleKinds.Video or ModuleKinds.Audio:
-                    @if (_model.AssetName is not null)
-                    {
-                        <MudText Typo="Typo.body2" data-testid="module-asset-name"><span dir="ltr">@_model.AssetName</span></MudText>
-                    }
-                    <AssetUploader ClassCourseId="ClassCourseId" AcceptedKinds="AssetKinds.AcceptedBy(Kind)" OnUploaded="OnAssetUploaded" />
+                    <AssetEditor Model="_model" ClassCourseId="ClassCourseId" Kind="@Kind" />
                     break;
             }
         </MudStack>
@@ -70,12 +63,6 @@
         if (Existing is not null) _model = ModuleFormModel.From(Existing);
     }
 
-    private void OnAssetUploaded(AssetDto asset)
-    {
-        _model.AssetId = asset.Id;
-        _model.AssetName = asset.FileName;
-    }
-
     private bool Validate()
     {
         _error = _visibilityError = _targetError = null;
@@ -92,6 +79,11 @@
                 _visibilityError = L["Error_module_visibility_range_invalid"];
                 return false;
             }
+        }
+        if (Kind == ModuleKinds.Link && !ModuleLinks.IsAllowed(_model.Url))
+        {
+            _error = L["Module_UrlInvalid"];
+            return false;
         }
         if (_model.Target == ModuleTargets.Group && _model.GroupId is null)
         {

@@ -1191,6 +1191,14 @@
   <data name="RichText_LinkUrl" xml:space="preserve"><value>Link address</value></data>
   <data name="RichText_NumberedList" xml:space="preserve"><value>Numbered list</value></data>
   <data name="RichText_Toolbar" xml:space="preserve"><value>Formatting toolbar</value></data>
+  <data name="Module_Title" xml:space="preserve"><value>Module</value></data>
+  <data name="Module_Back" xml:space="preserve"><value>Back to the course</value></data>
+  <data name="Module_MarkComplete" xml:space="preserve"><value>Mark as complete</value></data>
+  <data name="Module_Previous" xml:space="preserve"><value>Previous</value></data>
+  <data name="Module_Next" xml:space="preserve"><value>Next</value></data>
+  <data name="Module_NoContent" xml:space="preserve"><value>This module has no content yet.</value></data>
+  <data name="Module_Unsupported" xml:space="preserve"><value>This kind of module opens in its own page.</value></data>
+  <data name="Module_UrlInvalid" xml:space="preserve"><value>Enter a full web address starting with http:// or https://.</value></data>
   <data name="ClassPage_Students" xml:space="preserve"><value>Students</value></data>
   <data name="ClassPage_Courses" xml:space="preserve"><value>Courses</value></data>
   <data name="ClassPage_Teachers" xml:space="preserve"><value>Teachers</value></data>

@@ -1191,6 +1191,14 @@
   <data name="RichText_LinkUrl" xml:space="preserve"><value>عنوان الرابط</value></data>
   <data name="RichText_NumberedList" xml:space="preserve"><value>قائمة مرقمة</value></data>
   <data name="RichText_Toolbar" xml:space="preserve"><value>شريط أدوات التنسيق</value></data>
+  <data name="Module_Title" xml:space="preserve"><value>وحدة</value></data>
+  <data name="Module_Back" xml:space="preserve"><value>العودة إلى المقرر</value></data>
+  <data name="Module_MarkComplete" xml:space="preserve"><value>وضع علامة مكتملة</value></data>
+  <data name="Module_Previous" xml:space="preserve"><value>السابق</value></data>
+  <data name="Module_Next" xml:space="preserve"><value>التالي</value></data>
+  <data name="Module_NoContent" xml:space="preserve"><value>لا يوجد محتوى لهذه الوحدة بعد.</value></data>
+  <data name="Module_Unsupported" xml:space="preserve"><value>يُفتح هذا النوع من الوحدات في صفحته الخاصة.</value></data>
+  <data name="Module_UrlInvalid" xml:space="preserve"><value>أدخل عنوان ويب كاملًا يبدأ بـ http:// أو https://.</value></data>
   <data name="ClassPage_Students" xml:space="preserve"><value>الطلاب</value></data>
   <data name="ClassPage_Courses" xml:space="preserve"><value>المقررات</value></data>
   <data name="ClassPage_Teachers" xml:space="preserve"><value>المعلمون</value></data>
