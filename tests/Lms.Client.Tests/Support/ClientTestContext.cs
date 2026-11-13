@@ -64,7 +64,7 @@ public abstract class ClientTestContext : BunitContext, IAsyncLifetime
 
 public sealed class FakeCultureService : ICultureService
 {
-    private System.Globalization.CultureInfo _current = new("ar");
+    private System.Globalization.CultureInfo _current = Lms.Client.Services.CultureSetup.ForLms(new("ar"));
 
     /// <summary>
     /// The UI culture of the test. Setting it also sets the process-wide defaults, so continuations that run on other
@@ -75,8 +75,8 @@ public sealed class FakeCultureService : ICultureService
         get => _current;
         set
         {
-            _current = value;
-            Apply(value);
+            _current = Lms.Client.Services.CultureSetup.ForLms(value);
+            Apply(_current);
         }
     }
 
@@ -87,12 +87,14 @@ public sealed class FakeCultureService : ICultureService
     /// </summary>
     public static void ApplyDefaults(System.Globalization.CultureInfo culture)
     {
+        culture = Lms.Client.Services.CultureSetup.ForLms(culture); // as the app does at startup (#508)
         System.Globalization.CultureInfo.DefaultThreadCurrentCulture = culture;
         System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = culture;
     }
 
     public static void Apply(System.Globalization.CultureInfo culture)
     {
+        culture = Lms.Client.Services.CultureSetup.ForLms(culture);
         ApplyDefaults(culture);
         System.Globalization.CultureInfo.CurrentCulture = culture;
         System.Globalization.CultureInfo.CurrentUICulture = culture;
