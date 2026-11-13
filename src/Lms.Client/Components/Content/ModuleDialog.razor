@@ -18,7 +18,7 @@
             {
                 <MudAlert Severity="Severity.Error" data-testid="module-error">@_error</MudAlert>
             }
-            <ModuleMetadataForm Model="_model" Groups="Groups" VisibilityError="_visibilityError" TargetError="_targetError"
+            <ModuleMetadataForm Model="_model" Groups="Groups" VisibilityError="@_visibilityError" TargetError="@_targetError"
                                 Rules="@(IsPackage ? CompletionRules.ForActivity(Kind) : null)" />
 
             @* D57: an attached package module with a score rule: which attempt counts. Changed through the package, not the module. *@
