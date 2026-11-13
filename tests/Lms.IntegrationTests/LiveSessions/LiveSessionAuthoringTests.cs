@@ -288,6 +288,33 @@ public sealed class LiveSessionAuthoringTests(LmsApiFactory factory) : IDisposab
         Assert.Null((await db.Set<LiveSession>().SingleAsync(s => s.Id == created.Id)).ExternalMeetingId);
     }
 
+    [Theory]
+    [InlineData(MeetingFailure.CapacityExhausted, ProblemCodes.provider_unavailable)]
+    [InlineData(MeetingFailure.NotConfigured, ProblemCodes.provider_not_configured)]
+    public async Task A_provider_without_capacity_or_configuration_refuses_the_whole_request_and_creates_nothing(MeetingFailure failure, string code)
+    {
+        var w = await _t.SetUpAsync("LS16" + failure);
+        await EnableAsync(factory, w);
+        var provider = Provider(_t);
+        var first = Assert.Single(await CreateAsync(_t, w.Teacher, w, Single("Kept")));
+        provider.FailNext(2, failure); // the second occurrence of the series fails after the first was created... first call fails at once
+
+        var refused = await _t.SendAsync(w.Teacher, HttpMethod.Post, Routes.ClassCourseLiveSessions(w.ClassCourse.Id), Weekly(3, title: "Refused"));
+
+        Assert.Equal(HttpStatusCode.Conflict, refused.StatusCode);
+        Assert.Equal(code, await CodeAsync(refused));
+        if (failure == MeetingFailure.CapacityExhausted)
+        {
+            Assert.True(int.Parse(refused.Headers.GetValues("Retry-After").Single()) > 0);
+        }
+
+        Assert.Equal([first.Id], (await ListAsync(_t, w.Teacher, w)).Select(s => s.Id).ToArray()); // only the earlier session remains
+        Assert.Single(provider.Meetings);
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        Assert.False(await db.Set<LiveSessionSeries>().AnyAsync(x => x.ClassCourseId == w.ClassCourse.Id));
+        Assert.Equal(1, await db.Set<LessonModule>().CountAsync(m => m.ClassCourseId == w.ClassCourse.Id && m.Kind == ModuleKinds.LiveSession));
+    }
+
     [Fact]
     public async Task Lists_and_reads_never_contain_join_or_start_urls_and_the_row_holds_them_protected()
     {

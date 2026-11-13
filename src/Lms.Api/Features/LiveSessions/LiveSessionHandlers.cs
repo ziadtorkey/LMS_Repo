@@ -122,7 +122,7 @@ public sealed class LiveSessionHandlers(
 
             return Results.Created(Routes.LiveSession(sessions[0].Id), dtos);
         }
-        catch (Exception ex) when (ex is RecurrenceInvalidException or ModuleRuleException or LiveSessionCapException)
+        catch (Exception ex) when (ex is RecurrenceInvalidException or ModuleRuleException or LiveSessionCapException or LiveSessionProviderException)
         {
             return Failure(ex, http);
         }
@@ -211,7 +211,7 @@ public sealed class LiveSessionHandlers(
             var module = await ModuleOfAsync(session.Id, ct);
             return Results.Ok(await Mapper.SessionAsync(session, module!, true, await JoinWindowAsync(cc!, ct), clock.UtcNow, ct));
         }
-        catch (Exception ex) when (ex is RecurrenceInvalidException or ModuleRuleException or LiveSessionCapException)
+        catch (Exception ex) when (ex is RecurrenceInvalidException or ModuleRuleException or LiveSessionCapException or LiveSessionProviderException)
         {
             return Failure(ex, http);
         }
@@ -307,6 +307,11 @@ public sealed class LiveSessionHandlers(
             case LiveSessionCapException cap:
                 http.Response.Headers.RetryAfter = Math.Max(1, (int)Math.Ceiling((cap.ResetsAtUtc - clock.UtcNow).TotalSeconds)).ToString();
                 return ApiProblems.Conflict(ProblemCodes.provider_unavailable, "The daily live session limit of the client is reached.");
+            case LiveSessionProviderException provider when provider.Failure == MeetingFailure.NotConfigured:
+                return ApiProblems.Conflict(ProblemCodes.provider_not_configured, "Virtual classes are not configured.");
+            case LiveSessionProviderException provider:
+                http.Response.Headers.RetryAfter = Math.Max(1, provider.RetryAfterSeconds ?? 60).ToString();
+                return ApiProblems.Conflict(ProblemCodes.provider_unavailable, "No meeting host is available at that time.");
             default:
                 throw new InvalidOperationException("Not a live session rule failure.", ex);
         }

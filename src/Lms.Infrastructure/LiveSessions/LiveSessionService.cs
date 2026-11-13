@@ -19,6 +19,14 @@ public sealed class LiveSessionCapException(DateTime resetsAtUtc) : Exception("T
     public DateTime ResetsAtUtc { get; } = resetsAtUtc;
 }
 
+/// <summary>A create request was refused by the provider (no capacity, or not configured): nothing was created.</summary>
+public sealed class LiveSessionProviderException(MeetingFailure failure, int? retryAfterSeconds) : Exception("The meeting provider refused the request.")
+{
+    public MeetingFailure Failure { get; } = failure;
+
+    public int? RetryAfterSeconds { get; } = retryAfterSeconds;
+}
+
 /// <summary>
 /// Live session authoring (M4b Task 4, FR-VC-01): creates, updates and deletes sessions, their series and their lesson modules.
 /// The database part (rows and modules) is one transaction; the provider calls come after it and never roll it back, so a
@@ -60,33 +68,53 @@ public sealed class LiveSessionService(
             await transaction.CommitAsync(ct);
         }
 
-        await SyncNewAsync(classCourse, metadata, sessions, ct);
+        await SyncNewAsync(classCourse, metadata, sessions, rule?.TimeZoneId ?? "UTC", strict: true, ct);
         return sessions;
     }
 
-    /// <summary>The seam the sweep and the update path share: (re)creates the provider meeting of rows that have none.</summary>
-    public async Task SyncNewAsync(ClassCourse classCourse, ModuleMetadata metadata, IEnumerable<LiveSession> sessions, CancellationToken ct)
+    /// <summary>
+    /// Creates or updates the provider meeting of each row. A plain failure keeps the row in <c>SyncFailed</c> (the sweep retries).
+    /// With <paramref name="strict"/> (a create request) a provider that has no capacity or is not configured undoes the whole
+    /// request instead: nothing stays behind and <see cref="LiveSessionProviderException"/> carries the answer.
+    /// </summary>
+    public async Task SyncNewAsync(
+        ClassCourse classCourse, ModuleMetadata metadata, IReadOnlyList<LiveSession> sessions, string timeZoneId, bool strict, CancellationToken ct)
     {
         var cloud = (await settings.ResolveAsync(SettingKeys.LiveCloudRecordingEnabled, classCourse.OrgUnitPath, ct)).Value;
+        var synced = new List<LiveSession>();
         foreach (var session in sessions)
         {
-            var request = new MeetingRequest(
-                Topic(metadata), session.StartsAtUtc, session.DurationMinutes, classCourse.OrganizationId, classCourse.Id, cloud);
             try
             {
                 if (session.ExternalMeetingId is null)
                 {
+                    var request = RequestOf(session, classCourse, metadata, timeZoneId, cloud) with
+                    {
+                        ReserveHostAsync = async host =>
+                        {
+                            session.SetHost(host); // the pool slot is committed while the provider's allocation lock is held
+                            await db.SaveChangesAsync(ct);
+                        },
+                    };
                     var meeting = await provider.CreateMeetingAsync(request, ct);
                     session.Synced(
-                        meeting.ExternalMeetingId, meeting.HostUserKey, Protector.Protect(meeting.JoinUrl), Protector.Protect(meeting.StartUrl));
+                        meeting.ExternalMeetingId, meeting.HostUserKey ?? session.HostUserKey, Protector.Protect(meeting.JoinUrl),
+                        Protector.Protect(meeting.StartUrl));
+                    synced.Add(session);
                 }
                 else
                 {
-                    await provider.UpdateMeetingAsync(session.ExternalMeetingId, request, ct);
+                    await provider.UpdateMeetingAsync(
+                        session.ExternalMeetingId, RequestOf(session, classCourse, metadata, timeZoneId, cloud) with { HostUserKey = session.HostUserKey }, ct);
                     session.Synced(
                         session.ExternalMeetingId, session.HostUserKey, session.JoinUrlProtected ?? string.Empty,
                         session.StartUrlProtected ?? string.Empty);
                 }
+            }
+            catch (MeetingProviderException ex) when (strict && ex.Failure != MeetingFailure.Failed)
+            {
+                await UndoCreateAsync(sessions, synced, ct);
+                throw new LiveSessionProviderException(ex.Failure, ex.RetryAfterSeconds);
             }
             catch (MeetingProviderException ex)
             {
@@ -96,6 +124,31 @@ public sealed class LiveSessionService(
         }
 
         await db.SaveChangesAsync(ct);
+    }
+
+    private static MeetingRequest RequestOf(LiveSession session, ClassCourse classCourse, ModuleMetadata metadata, string timeZoneId, bool cloud) =>
+        new(session.Id, Topic(metadata), session.StartsAtUtc, session.DurationMinutes, timeZoneId, classCourse.OrganizationId, classCourse.Id, cloud);
+
+    /// <summary>A create request the provider refused for lack of capacity: the meetings it did create, the rows, the modules and the series all go.</summary>
+    private async Task UndoCreateAsync(IReadOnlyList<LiveSession> sessions, List<LiveSession> synced, CancellationToken ct)
+    {
+        await DeleteMeetingsAsync(synced.Select(s => s.ExternalMeetingId!), ct);
+        await using var transaction = await db.Database.BeginTransactionAsync(ct);
+        foreach (var session in sessions)
+        {
+            session.Cancel();
+            db.Remove(session);
+            await writer.DeleteForRefAsync(ModuleKinds.LiveSession, session.Id, ct);
+        }
+
+        var seriesIds = sessions.Where(s => s.SeriesId is not null).Select(s => s.SeriesId!.Value).Distinct().ToList();
+        foreach (var series in await db.Set<LiveSessionSeries>().Where(x => seriesIds.Contains(x.Id)).ToListAsync(ct))
+        {
+            db.Remove(series);
+        }
+
+        await db.SaveChangesAsync(ct);
+        await transaction.CommitAsync(ct);
     }
 
     /// <exception cref="RecurrenceInvalidException">The recurrence is not valid.</exception>
@@ -165,7 +218,7 @@ public sealed class LiveSessionService(
         }
 
         await DeleteMeetingsAsync(removedMeetings, ct);
-        await SyncNewAsync(classCourse, metadata, [.. touched, .. created], ct);
+        await SyncNewAsync(classCourse, metadata, [.. touched, .. created], series?.TimeZoneId ?? "UTC", strict: false, ct);
     }
 
     public async Task DeleteAsync(LiveSession session, string scope, CancellationToken ct)

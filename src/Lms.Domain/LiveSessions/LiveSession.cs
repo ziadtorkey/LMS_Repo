@@ -61,6 +61,9 @@ public sealed class LiveSession : UnitOwnedEntity
 
     public void AttachModule(Guid moduleId) => ModuleId = moduleId;
 
+    /// <summary>The pool host chosen for this session (booked before the meeting is created).</summary>
+    public void SetHost(string hostUserKey) => HostUserKey = hostUserKey;
+
     public void Reschedule(DateTime startsAtUtc, int durationMinutes)
     {
         StartsAtUtc = startsAtUtc;

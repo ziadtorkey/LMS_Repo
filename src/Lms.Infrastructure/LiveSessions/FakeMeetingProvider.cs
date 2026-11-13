@@ -5,13 +5,14 @@ namespace Lms.Infrastructure.LiveSessions;
 
 /// <summary>
 /// An in-memory <see cref="IMeetingProvider"/> for tests and for a host where Zoom is not configured. It records every call,
-/// hands out fake links and can be told to fail, so authoring is testable without a network. The real Zoom provider (M4b
-/// Task 5) replaces it when Zoom is configured.
+/// hands out fake links and can be told to fail, so authoring is testable without a network. It has no host pool, so it never
+/// calls <see cref="MeetingRequest.ReserveHostAsync"/>.
 /// </summary>
 public sealed class FakeMeetingProvider : IMeetingProvider
 {
     private readonly ConcurrentDictionary<string, MeetingRequest> _meetings = new();
     private int _failures;
+    private int _failureKind;
     private int _next;
 
     public string Name => "Fake";
@@ -24,7 +25,11 @@ public sealed class FakeMeetingProvider : IMeetingProvider
     public ConcurrentQueue<string> Updated { get; } = new();
 
     /// <summary>The next <paramref name="count"/> create, update and delete calls throw <see cref="MeetingProviderException"/>.</summary>
-    public void FailNext(int count) => Interlocked.Exchange(ref _failures, count);
+    public void FailNext(int count, MeetingFailure failure = MeetingFailure.Failed)
+    {
+        Interlocked.Exchange(ref _failureKind, (int)failure);
+        Interlocked.Exchange(ref _failures, count);
+    }
 
     public void Reset()
     {
@@ -70,7 +75,7 @@ public sealed class FakeMeetingProvider : IMeetingProvider
     {
         if (Interlocked.Decrement(ref _failures) >= 0)
         {
-            throw new MeetingProviderException("The fake provider was told to fail.", 30);
+            throw new MeetingProviderException((MeetingFailure)_failureKind, "The fake provider was told to fail.", 30);
         }
 
         Interlocked.Exchange(ref _failures, 0);
