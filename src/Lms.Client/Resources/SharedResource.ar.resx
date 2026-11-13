@@ -1452,4 +1452,7 @@
   <data name="Package_PracticeFinished" xml:space="preserve"><value>انتهى التدريب. ما زالت درجتك المحتسبة {0}.</value></data>
   <data name="Package_Score" xml:space="preserve"><value>الدرجة {0}</value></data>
   <data name="Package_LatestAttempt" xml:space="preserve"><value>آخر محاولة: {0}</value></data>
+  <data name="Package_Announce_Opened" xml:space="preserve"><value>فُتح النشاط.</value></data>
+  <data name="Package_Announce_Exit" xml:space="preserve"><value>عدتَ إلى بداية النشاط.</value></data>
+  <data name="Package_Announce_Finished" xml:space="preserve"><value>انتهى النشاط.</value></data>
 </root>

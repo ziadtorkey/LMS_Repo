@@ -1452,4 +1452,7 @@
   <data name="Package_PracticeFinished" xml:space="preserve"><value>Practice finished. Your graded score is still {0}.</value></data>
   <data name="Package_Score" xml:space="preserve"><value>Score {0}</value></data>
   <data name="Package_LatestAttempt" xml:space="preserve"><value>Latest attempt: {0}</value></data>
+  <data name="Package_Announce_Opened" xml:space="preserve"><value>The activity opened.</value></data>
+  <data name="Package_Announce_Exit" xml:space="preserve"><value>Back at the start of the activity.</value></data>
+  <data name="Package_Announce_Finished" xml:space="preserve"><value>The activity finished.</value></data>
 </root>

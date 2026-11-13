@@ -18,6 +18,9 @@
      package is ever put into this page's DOM;
    - the frame talks to this page only over one MessagePort (PackageBridge); the toolbar (Exit, Full screen) is outside the frame;
    - a token is re-launched at 80 % of its life, swapping the frame only after the pending progress was flushed. *@
+@* A polite status for what happens around the frame: opened, preview, save failed, expired, finished (X-10). The save state and the overlay
+   also carry their own roles; this one is the single place a screen reader hears the changes of the player as a whole. *@
+<span class="lms-visually-hidden" role="status" aria-live="polite" data-testid="package-announce">@_announcement</span>
 @switch (_phase)
 {
     case Phase.NotAvailable:
@@ -42,8 +45,10 @@
                            Method="@Method" OnReopen="StartAsync" />
         break;
     case Phase.Start:
+        <div tabindex="-1" @ref="_startHost" data-testid="package-start-host">
         <PackageStartCard Title="@Title" State="@State" Score="@GradedText" LatestScore="@LatestText" Reopen="@CanReopen" Method="@Method" CanStart="@(!IsStaff)"
                           CanPreview="@(IsStaff && PermState.Has(Permissions.Packages.View))" OnStart="StartAsync" OnPreview="PreviewAsync" />
+        </div>
         @if (_error is not null)
         {
             <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" role="alert" Class="mt-2" data-testid="package-error">@_error</MudAlert>
@@ -60,11 +65,11 @@
             <div class="lms-player-stage">
                 @* The sandbox is allow-scripts only: with no allow-same-origin the package gets an opaque origin, with no allow-forms,
                    allow-popups or allow-top-navigation it can neither submit, open windows nor navigate this page. *@
-                <iframe @key="_frameKey" @ref="_frame" class="lms-player-frame" src="@_url" sandbox="allow-scripts" allow="" referrerpolicy="no-referrer"
+                <iframe @key="_frameKey" @ref="_frame" class="lms-player-frame" inert="@(_phase == Phase.Expired ? "" : null)" src="@_url" sandbox="allow-scripts" allow="" referrerpolicy="no-referrer"
                         title="@L["Package_FrameTitle", Title]" data-testid="package-frame"></iframe>
                 @if (_phase == Phase.Expired)
                 {
-                    <div class="lms-player-overlay" role="alert" data-testid="package-expired">
+                    <div class="lms-player-overlay" role="alert" tabindex="-1" @ref="_overlay" data-testid="package-expired">
                         <div>
                             <MudText Typo="Typo.body1">@L["Package_Expired"]</MudText>
                             <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ReloadAsync" data-testid="package-reload">@L["Package_Reload"]</MudButton>
@@ -80,7 +85,9 @@
     private enum Phase { Start, Launching, Running, Expired, Finished, NotReady, HostNotConfigured, FeatureOff, NotAvailable }
 
     private Phase _phase = Phase.Start;
-    private ElementReference _container, _frame;
+    private ElementReference _container, _frame, _startHost, _overlay;
+    private bool _focusFrame, _focusStart, _focusOverlay;
+    private string? _announcement;
     private PackageBridge? _bridge;
     private ITimer? _timer;
     private string? _url, _error;
@@ -201,6 +208,8 @@
     private async Task EnterRunningAsync()
     {
         _phase = Phase.Running;
+        _focusFrame = true; // keyboard users land on the player: the next Tab goes into the frame, Shift+Tab to Exit / Full screen
+        _announcement = L[_preview ? "Package_PreviewBanner" : "Package_Announce_Opened"].Value;
         _saveStatus = PackageSaveStatus.Idle;
         _timer ??= Clock.CreateTimer(_ => _ = InvokeAsync(TickAsync), null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
         await Task.CompletedTask;
@@ -208,6 +217,10 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (_focusFrame && _phase == Phase.Running) { _focusFrame = false; await _container.FocusAsync(); }
+        else if (_focusStart && _phase == Phase.Start) { _focusStart = false; await _startHost.FocusAsync(); }
+        else if (_focusOverlay && _phase == Phase.Expired) { _focusOverlay = false; await _overlay.FocusAsync(); }
+
         // One bridge per frame: created after the frame element exists, so its load event is the one that hands over the port.
         if (_needsBridge && _phase is Phase.Running or Phase.Expired)
         {
@@ -229,6 +242,7 @@
     private void OnSaveStatusChanged()
     {
         _saveStatus = _bridge?.Status ?? PackageSaveStatus.Idle;
+        if (_saveStatus == PackageSaveStatus.Failed) _announcement = L["Package_SaveFailed"].Value;
         _ = InvokeAsync(StateHasChanged);
     }
 
@@ -241,7 +255,7 @@
     {
         if (_phase != Phase.Running || _relaunching) return;
         var now = ServerNow;
-        if (now >= _tokenExpires) { _phase = Phase.Expired; StateHasChanged(); return; }
+        if (now >= _tokenExpires) { _phase = Phase.Expired; _focusOverlay = true; _announcement = L["Package_Expired"].Value; StateHasChanged(); return; }
         // Re-launch at 80 % of the token's life (the same attempt), swapping the frame only after a flush. A preview just runs out.
         if (!_preview && now >= _tokenServerNow + (_tokenExpires - _tokenServerNow) * 0.8 && Clock.GetUtcNow() >= _nextRelaunchAt) await RelaunchAsync(visible: false);
     }
@@ -275,6 +289,7 @@
                 SetToken(l.LaunchUrl, l.ServerNowUtc, l.TokenExpiresAtUtc);
             }
             _phase = Phase.Running;
+            if (visible) _focusFrame = true; // Reload puts focus back on the player
         }
         catch (Exception ex) when (ex is ApiProblemException or HttpRequestException)
         {
@@ -301,6 +316,7 @@
             await CloseFrameAsync();
             await LoadMyStateAsync(); // the graded score may have changed (or not, for practice)
             _phase = Phase.Finished;
+            _announcement = L["Package_Announce_Finished"].Value;
             await OnFinished.InvokeAsync();
         }
         catch (Exception ex) when (ex is ApiProblemException or HttpRequestException)
@@ -317,6 +333,8 @@
         if (_bridge is not null && !_preview) await _bridge.FlushAsync();
         await CloseFrameAsync();
         _phase = Phase.Start;
+        _focusStart = true; // back on the start card, where the person left it
+        _announcement = L["Package_Announce_Exit"].Value;
     }
 
     private async Task CloseFrameAsync()
