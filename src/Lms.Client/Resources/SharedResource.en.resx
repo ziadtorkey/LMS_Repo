@@ -1346,12 +1346,7 @@
   <data name="Announcements_FormTitle" xml:space="preserve"><value>Announcement title</value></data>
   <data name="Forum_MoreReplies" xml:space="preserve"><value>Show more replies ({0} more)</value></data>
   <data name="Forum_MoreThreads" xml:space="preserve"><value>Show more threads ({0} more)</value></data>
-  <data name="Module_Placeholder" xml:space="preserve"><value>The {0} view is coming soon.</value></data>
-  <data name="Live_Status_Scheduled" xml:space="preserve"><value>Scheduled</value></data>
-  <data name="Live_Status_Live" xml:space="preserve"><value>Live now</value></data>
-  <data name="Live_Status_Ended" xml:space="preserve"><value>Ended</value></data>
-  <data name="Live_Status_Cancelled" xml:space="preserve"><value>Cancelled</value></data>
-  <data name="Live_Status_SyncFailed" xml:space="preserve"><value>Not synced</value></data>
+  <data name="Module_Placeholder" xml:space="preserve"><value>Coming soon: {0}.</value></data>
   <data name="Live_Match_Matched" xml:space="preserve"><value>Enrolled student</value></data>
   <data name="Live_Match_Guest" xml:space="preserve"><value>Guest</value></data>
   <data name="Live_Scope_This" xml:space="preserve"><value>This session only</value></data>
