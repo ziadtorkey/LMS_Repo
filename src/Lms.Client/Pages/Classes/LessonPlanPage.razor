@@ -17,6 +17,7 @@
 @implements IDisposable
 
 <PageTitle>@L["LessonPlan_Title"]</PageTitle>
+<Lms.Client.Pages.Forums.ClassCourseTabs ClassCourseId="Id" Active="plan" />
 @if (!PermState.Loaded || _loading)
 {
     <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />

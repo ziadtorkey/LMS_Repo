@@ -17,9 +17,14 @@
                        OnClick="() => ShiftAsync(-1)" data-testid="@($"module-up-{Module.Id}")" />
         <MudIconButton Icon="@Icons.Material.Filled.ArrowDownward" Size="Size.Small" Disabled="@(Index >= Siblings.Count - 1)" aria-label="@L["Module_MoveDown"]"
                        OnClick="() => ShiftAsync(1)" data-testid="@($"module-down-{Module.Id}")" />
-        <MudIconButton Icon="@(Module.Visibility == ModuleVisibilities.Hidden ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff)"
-                       Size="Size.Small" aria-label="@(Module.Visibility == ModuleVisibilities.Hidden ? L["Module_Show"] : L["Module_Hide"])"
-                       OnClick="ToggleHiddenAsync" data-testid="@($"module-toggle-{Module.Id}")" />
+        @* A scheduled module is not hidden by hand: Hidden carries no dates, so hiding it would drop its schedule and Show would
+           publish it outright. Its visibility is changed in the edit dialog, which keeps the dates in view. *@
+        @if (Module.Visibility != ModuleVisibilities.Scheduled)
+        {
+            <MudIconButton Icon="@(Module.Visibility == ModuleVisibilities.Hidden ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff)"
+                           Size="Size.Small" aria-label="@(Module.Visibility == ModuleVisibilities.Hidden ? L["Module_Show"] : L["Module_Hide"])"
+                           OnClick="ToggleHiddenAsync" data-testid="@($"module-toggle-{Module.Id}")" />
+        }
         <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" aria-label="@L["Common_Edit"]"
                        OnClick="EditAsync" data-testid="@($"module-edit-{Module.Id}")" />
         @if (OtherLessons.Count > 0)
