@@ -145,3 +145,17 @@ html[data-theme="dark"] .mud-button-outlined { border-color: #334155; }
     flex: none; inline-size: 36px; block-size: 36px; border-radius: 10px; display: grid; place-items: center;
     color: var(--mud-palette-primary); background: color-mix(in srgb, var(--mud-palette-primary) 10%, transparent);
 }
+
+/* ---------- Roles and permission matrix (issue 565) ---------- */
+.lms-perm-matrix { gap: 16px; }
+.lms-perm-module { border-radius: var(--lms-radius-surface); background: var(--mud-palette-surface); box-shadow: var(--lms-shadow-1); }
+.lms-perm-module-head { padding: 8px 16px 8px 8px; background: transparent; border-block-end: 1px solid var(--mud-palette-table-lines); }
+.lms-perm-count { padding: 2px 10px; border-radius: 9999px; background: var(--mud-palette-background-gray); }
+.lms-perm-module-on .lms-perm-count { background: color-mix(in srgb, var(--mud-palette-primary) 10%, transparent); }
+/* One permission per row: the label at the start, the checkbox at the end (row-reverse mirrors correctly in RTL). */
+.lms-perm-list { grid-template-columns: 1fr; padding: 4px 8px 8px; gap: 0; }
+.lms-perm-list .mud-checkbox { display: flex; flex-direction: row-reverse; justify-content: space-between; inline-size: 100%;
+    padding-block: 2px; border-block-end: 1px solid var(--mud-palette-table-lines); }
+.lms-perm-list > :last-child .mud-checkbox, .lms-perm-list .mud-checkbox:last-child { border-block-end: 0; }
+.lms-stat-value.lms-stat-value-text { font-size: 1.125rem; line-height: 1.6; }
+.lms-save-bar-info::before { background: var(--mud-palette-primary); }

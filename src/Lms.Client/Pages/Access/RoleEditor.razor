@@ -12,6 +12,22 @@
         <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-4" data-testid="role-error">@_error</MudAlert>
     }
 
+    @* Summary tiles (Stitch roles_permissions_matrix screen, issue 565): counted from the current selection. *@
+    <div class="lms-stats" role="list" aria-label="@L["Roles_Summary"]" data-testid="role-stats">
+        <div class="lms-stat" role="listitem" data-testid="role-stat-granted">
+            <div><div class="lms-stat-label">@L["Roles_StatGranted"]</div><div class="lms-stat-value"><span dir="ltr">@_selected.Count / @Total</span></div></div>
+            <span class="lms-stat-icon" aria-hidden="true"><MudIcon Icon="@Icons.Material.Rounded.VerifiedUser" /></span>
+        </div>
+        <div class="lms-stat" role="listitem" data-testid="role-stat-modules">
+            <div><div class="lms-stat-label">@L["Roles_StatModules"]</div><div class="lms-stat-value">@FullModules</div></div>
+            <span class="lms-stat-icon" aria-hidden="true"><MudIcon Icon="@Icons.Material.Rounded.Widgets" /></span>
+        </div>
+        <div class="lms-stat" role="listitem" data-testid="role-stat-kind">
+            <div><div class="lms-stat-label">@L["Roles_BaseKind"]</div><div class="lms-stat-value lms-stat-value-text">@L[$"BaseKind_{(Role?.BaseKind ?? _baseKind)}"]</div></div>
+            <span class="lms-stat-icon" aria-hidden="true"><MudIcon Icon="@Icons.Material.Rounded.Badge" /></span>
+        </div>
+    </div>
+
     <SectionCard Title="@(Role is null ? L["Roles_New"] : L["Roles_EditTitle"])">
         <BilingualNameFields @bind-NameAr="_nameAr" @bind-NameEn="_nameEn" />
         <div class="mt-2">
@@ -36,10 +52,11 @@
     </SectionCard>
 
     <SectionCard Title="@L["Roles_Permissions"]">
-        <PermissionMatrix Groups="Groups" Selected="_selected" />
+        <PermissionMatrix Groups="Groups" Selected="_selected" SelectedChanged="_ => StateHasChanged()" />
     </SectionCard>
 
-    <div class="lms-form-footer">
+    <div class="lms-save-bar" data-testid="role-save-bar">
+        <span class="lms-save-bar-text lms-save-bar-info">@L["Roles_GrantedCount", _selected.Count, Total]</span>
         <MudButton Variant="Variant.Text" OnClick="OnCancel" data-testid="role-cancel">@L["Common_Cancel"]</MudButton>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_saving"
                    StartIcon="@(_saving ? null : Icons.Material.Rounded.Check)" data-testid="role-save">
@@ -63,6 +80,9 @@
     [Parameter, EditorRequired] public IReadOnlyList<PermissionGroupDto> Groups { get; set; } = [];
     [Parameter] public EventCallback OnSaved { get; set; }
     [Parameter] public EventCallback OnCancel { get; set; }
+
+    private int Total => Groups.Sum(g => g.Permissions.Count);
+    private int FullModules => Groups.Count(g => g.Permissions.Count > 0 && g.Permissions.All(_selected.Contains));
 
     protected override void OnInitialized()
     {
