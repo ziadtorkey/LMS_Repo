@@ -148,6 +148,26 @@ Other patterns:
 - Tokens and shared components change only in `lane:ux` PRs. Frontend developers can propose changes in their PR description.
 - Keep `LmsTheme.cs`, `lms-theme.css` and this file in sync. A new rule or component also goes in the `lms-ui` skill (`.claude/skills/lms-ui/SKILL.md`).
 
+## 7a. M4b patterns: live sessions and package player
+
+The full spec is `docs/design/m4b-live-and-packages.md`. Mockups are in `docs/design/mockups/m4b.html` and screenshots in `docs/screenshots/ux-m4b/`. In short:
+
+- **External links** (Zoom, recordings) never show the URL. They show a host hint (`lms-host-hint`, LTR, for example `zoom.us`) and "Opens in a new tab".
+- **Server time** drives every countdown and window. Countdowns are `role="timer"` with polite announcements at 15, 5 and 1 min. Arabic countdowns use proper plural forms, never "2 ساعة".
+- **Session status chips** (`LiveSessionStatusChip`, `Variant.Text`):
+  - Scheduled: Info.
+  - Live now: Success, with a pulsing dot (static under reduced motion).
+  - Ended and Cancelled: Default.
+  - Waiting for Zoom (SyncFailed): Warning, with the explanation shown under the chip, not only in a tooltip.
+- **Join panel** (`lms-join-panel`): one primary Join button. It is disabled with a reason before the window opens, and never hidden. A blocked tab falls back to an "Open the meeting" link inside an Info alert.
+- **Recurrence preview** (`lms-recurrence-preview`): the count line is live, followed by the first 6 dates. More than 52 sessions blocks Schedule with a plain message.
+- **Package upload** uses three numbered steps (`lms-steps`: Upload · Check · Attach) and a dashed drop zone (`lms-dropzone`). Reject reasons are plain words with a next step (spec §4.2).
+- **Package player** (`lms-player`):
+  - A toolbar outside the frame holds the title, the save state, Full screen and Exit.
+  - The frame stays white in both themes.
+  - The staff preview has an Info strip: "Preview: nothing is recorded."
+  - A timed-out token shows an overlay with Reload.
+
 ## 8. Phase 2 status (page-by-page passes)
 
 This list was last updated on 2026-11-12. "Waiting" means an open feature PR touches the page; it gets its pass after that PR merges.
