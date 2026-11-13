@@ -147,8 +147,10 @@ public sealed class StudentProfilePageTests : StudentsTestContext
 
         Assert.Contains("أحمد سعيد", rtl.WaitForElement("[data-testid=profile-name]").TextContent);
         var tabs = rtl.Find("[data-testid=profile-tabs]");
-        Assert.Contains("الملف الشخصي", tabs.TextContent);
+        Assert.Contains("أولياء الأمور", tabs.TextContent);
         Assert.Contains("الميزات", tabs.TextContent);
+        // The personal details are the left/start card of the profile grid, not a tab.
+        Assert.Contains("الملف الشخصي", rtl.Find("[data-testid=tab-profile]").TextContent);
         // Codes and contact values stay LTR whatever the page direction.
         Assert.Equal("ltr", rtl.Find("[data-testid=profile-code]").GetAttribute("dir"));
     }

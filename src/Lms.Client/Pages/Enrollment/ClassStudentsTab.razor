@@ -9,70 +9,76 @@
 @inject NavigationManager Navigation
 
 @* The students tab of a class: who is in it, add students (with restriction skips and capacity), remove with a reason, move to another class. *@
-<MudStack Spacing="2" data-testid="class-students-tab">
+<div data-testid="class-students-tab">
     @if (_summary is not null)
     {
-        <MudAlert Severity="Severity.Success" data-testid="add-summary">@L["ClassStudents_AddSummary", _summary.Result.Added, _summary.Result.EnrollmentsCreated]</MudAlert>
+        <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Class="mb-3" data-testid="add-summary">@L["ClassStudents_AddSummary", _summary.Result.Added, _summary.Result.EnrollmentsCreated]</MudAlert>
         @if (_summary.Result.OverCapacity)
         {
-            <MudAlert Severity="Severity.Warning" data-testid="add-over-capacity">@L["ClassStudents_OverCapacity"]</MudAlert>
+            <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mb-3" data-testid="add-over-capacity">@L["ClassStudents_OverCapacity"]</MudAlert>
         }
         <RestrictionSkipsPanel Skips="_summary.Result.RestrictionSkips" Names="_summary.Names" CanRequestException="CanRequestException"
                                OnRequestException="OnRequestException" />
     }
-    @if (CanManage && !IsReadOnly)
-    {
-        <div>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PersonAdd" OnClick="AddAsync"
-                       data-testid="class-students-add">@L["ClassStudents_Add"]</MudButton>
-        </div>
-    }
-    @if (_failed)
-    {
-        <MudAlert Severity="Severity.Error" data-testid="api-error">@L["Api_Error"]</MudAlert>
-    }
-    else if (_students.Count == 0)
-    {
-        <MudText data-testid="class-students-empty">@L["ClassStudents_Empty"]</MudText>
-    }
-    else
-    {
-        <MudTable Items="_students" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" data-testid="class-students-table">
-            <HeaderContent>
-                <MudTh>@L["Student_Code"]</MudTh>
-                <MudTh>@L["Common_Name"]</MudTh>
-                <MudTh>@L["Student_Gender"]</MudTh>
-                <MudTh>@L["Enrollment_From"]</MudTh>
-                <MudTh>@L["Common_Status"]</MudTh>
-                <MudTh></MudTh>
-            </HeaderContent>
-            <RowTemplate Context="s">
-                <MudTd DataLabel="@L["Student_Code"]"><span dir="ltr">@s.StudentCode</span></MudTd>
-                <MudTd DataLabel="@L["Common_Name"]">
-                    <MudLink Href="@($"students/{s.StudentId}")" data-testid="@($"class-student-link-{s.Id}")">@Culture.Pick(s.NameAr, s.NameEn)</MudLink>
-                </MudTd>
-                <MudTd DataLabel="@L["Student_Gender"]">@L[$"Gender_{s.Gender}"]</MudTd>
-                <MudTd DataLabel="@L["Enrollment_From"]"><span dir="ltr">@s.From.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)</span></MudTd>
-                <MudTd DataLabel="@L["Common_Status"]" data-testid="@($"class-student-status-{s.Id}")">@L[$"ClassStudentStatus_{s.Status}"]</MudTd>
-                <MudTd>
-                    @if (s.Status == ClassStudentStatuses.Active && !IsReadOnly)
-                    {
-                        @if (CanTransfer)
-                        {
-                            <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="() => TransferAsync(s)"
-                                       data-testid="@($"class-student-transfer-{s.Id}")">@L["Transfer_Title"]</MudButton>
-                        }
-                        @if (CanManage)
-                        {
-                            <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Error" OnClick="() => RemoveAsync(s)"
-                                       data-testid="@($"class-student-remove-{s.Id}")">@L["ClassStudents_Remove"]</MudButton>
-                        }
-                    }
-                </MudTd>
-            </RowTemplate>
-        </MudTable>
-    }
-</MudStack>
+    <SectionCard Title="@L["ClassStudents_Title"]" Flush="true">
+        <Actions>
+            @if (CanManage && !IsReadOnly)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.PersonAdd" OnClick="AddAsync"
+                           data-testid="class-students-add">@L["ClassStudents_Add"]</MudButton>
+            }
+        </Actions>
+        <ChildContent>
+            @if (_failed)
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="ma-4" data-testid="api-error">@L["Api_Error"]</MudAlert>
+            }
+            else if (_students.Count == 0)
+            {
+                <EmptyState Title="@L["ClassStudents_Empty"]" Icon="@Icons.Material.Rounded.School" TestId="class-students-empty" />
+            }
+            else
+            {
+                <MudTable Items="_students" Dense="true" Hover="true" Elevation="0" HeaderClass="lms-table-head" Class="lms-table"
+                          Breakpoint="Breakpoint.Sm" data-testid="class-students-table">
+                    <HeaderContent>
+                        <MudTh>@L["Common_Name"]</MudTh>
+                        <MudTh>@L["Student_Code"]</MudTh>
+                        <MudTh>@L["Student_Gender"]</MudTh>
+                        <MudTh>@L["Enrollment_From"]</MudTh>
+                        <MudTh>@L["Common_Status"]</MudTh>
+                        <MudTh><span class="lms-visually-hidden">@L["Common_Actions"]</span></MudTh>
+                    </HeaderContent>
+                    <RowTemplate Context="s">
+                        <MudTd DataLabel="@L["Common_Name"]">
+                            <MudLink Href="@($"students/{s.StudentId}")" Typo="Typo.body2" Class="lms-person-link"
+                                     data-testid="@($"class-student-link-{s.Id}")">@Culture.Pick(s.NameAr, s.NameEn)</MudLink>
+                        </MudTd>
+                        <MudTd DataLabel="@L["Student_Code"]"><span dir="ltr" class="lms-muted">@s.StudentCode</span></MudTd>
+                        <MudTd DataLabel="@L["Student_Gender"]">@L[$"Gender_{s.Gender}"]</MudTd>
+                        <MudTd DataLabel="@L["Enrollment_From"]"><span class="lms-date-cell"><span dir="ltr">@s.From.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)</span></span></MudTd>
+                        <MudTd DataLabel="@L["Common_Status"]" data-testid="@($"class-student-status-{s.Id}")">@L[$"ClassStudentStatus_{s.Status}"]</MudTd>
+                        <MudTd Class="lms-cell-actions">
+                            @if (s.Status == ClassStudentStatuses.Active && !IsReadOnly)
+                            {
+                                @if (CanTransfer)
+                                {
+                                    <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="() => TransferAsync(s)"
+                                               data-testid="@($"class-student-transfer-{s.Id}")">@L["Transfer_Title"]</MudButton>
+                                }
+                                @if (CanManage)
+                                {
+                                    <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Error" OnClick="() => RemoveAsync(s)"
+                                               data-testid="@($"class-student-remove-{s.Id}")">@L["ClassStudents_Remove"]</MudButton>
+                                }
+                            }
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+        </ChildContent>
+    </SectionCard>
+</div>
 
 @code {
     private IReadOnlyList<ClassStudentDto> _students = [];

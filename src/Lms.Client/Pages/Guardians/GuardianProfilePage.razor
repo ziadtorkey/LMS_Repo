@@ -1,5 +1,7 @@
 @page "/guardians/{Id:guid}"
 @attribute [Authorize]
+@using Lms.Client.Components
+@using Lms.Client.Components.People
 @using Lms.Client.Services.Api
 @using Lms.Shared.Authorization
 @using Lms.Shared.People
@@ -12,64 +14,84 @@
 @inject NavigationManager Navigation
 
 <PageTitle>@L["Guardians_Title"]</PageTitle>
+<MudLink Href="guardians" Typo="Typo.body2" Class="lms-back-link" data-testid="profile-back">
+    <MudIcon Icon="@Icons.Material.Rounded.ArrowBack" Size="Size.Small" Class="lms-icon-flip" aria-hidden="true" />
+    @L["Guardian_BackToList"]
+</MudLink>
 @if (_error is not null)
 {
-    <MudAlert Severity="Severity.Error" data-testid="profile-error">@_error</MudAlert>
+    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="profile-error">@_error</MudAlert>
 }
 else if (_detail is null)
 {
-    <MudText>@L["Common_Loading"]</MudText>
+    <LoadingState Lines="4" TestId="profile-loading" />
 }
 else
 {
     var s = _detail.Summary;
-    <MudStack Spacing="3">
-        <MudText Typo="Typo.h4" data-testid="profile-name">@Culture.Pick(s.NameAr, s.NameEn)</MudText>
-        @if (PermState.Has(Permissions.Students.Update))
-        {
-            <div>
-                <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Edit" OnClick="EditAsync"
+    var name = Culture.Pick(s.NameAr, s.NameEn);
+    <PageHeader Title="@name" TitleTestId="profile-name" Class="lms-profile-header">
+        <Leading>
+            <StaffAvatar Name="@name" Size="Size.Large" />
+        </Leading>
+        <Badges>
+            <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@(s.HasPortalAccount ? Color.Success : Color.Default)">
+                @(s.HasPortalAccount ? L["Guardian_PortalActive"] : L["Guardian_PortalNone"])
+            </MudChip>
+        </Badges>
+        <Actions>
+            @if (PermState.Has(Permissions.Students.Update))
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Edit" OnClick="EditAsync"
                            data-testid="action-edit">@L["Guardian_Edit"]</MudButton>
-            </div>
-        }
-        <MudPaper Class="pa-3">
-            <MudStack Spacing="1">
-                <MudText data-testid="profile-mobile">@L["Student_Mobile"]: <span dir="ltr">@s.Mobile</span></MudText>
-                <MudText data-testid="profile-email">@L["Student_Email"]: <span dir="ltr">@s.Email</span></MudText>
-                <MudText data-testid="profile-national-id">@L["Student_NationalId"]: <span dir="ltr">@_detail.NationalId</span></MudText>
-                <MudText data-testid="profile-portal">@L["Student_Account"]: @(s.HasPortalAccount ? L["Guardian_PortalActive"] : L["Guardian_PortalNone"])</MudText>
-            </MudStack>
-        </MudPaper>
+            }
+        </Actions>
+    </PageHeader>
 
-        <MudText Typo="Typo.h6">@L["Guardian_Children"]</MudText>
-        @if (_detail.Children.Count == 0)
-        {
-            <MudText data-testid="children-empty">@L["Common_Empty"]</MudText>
-        }
-        else
-        {
-            <MudTable Items="_detail.Children" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" data-testid="children-table">
-                <HeaderContent>
-                    <MudTh>@L["Student_Code"]</MudTh>
-                    <MudTh>@L["Common_Name"]</MudTh>
-                    <MudTh>@L["Guardian_Relation"]</MudTh>
-                    <MudTh>@L["Staff_HomeUnit"]</MudTh>
-                </HeaderContent>
-                <RowTemplate Context="child">
-                    <MudTd DataLabel="@L["Student_Code"]"><span dir="ltr">@child.StudentCode</span></MudTd>
-                    <MudTd DataLabel="@L["Common_Name"]">
-                        <MudLink Href="@($"students/{child.StudentId}")" data-testid="@($"child-link-{child.StudentId}")">@Culture.Pick(child.NameAr, child.NameEn)</MudLink>
-                        @if (child.IsPrimary)
-                        {
-                            <MudIcon Icon="@Icons.Material.Filled.Star" Size="Size.Small" Color="Color.Warning" title="@L["Guardian_Primary"]" />
-                        }
-                    </MudTd>
-                    <MudTd DataLabel="@L["Guardian_Relation"]">@L[$"Relation_{child.Relation}"]</MudTd>
-                    <MudTd DataLabel="@L["Staff_HomeUnit"]">@Culture.Pick(child.HomeOrgUnitNameAr, child.HomeOrgUnitNameEn)</MudTd>
-                </RowTemplate>
-            </MudTable>
-        }
-    </MudStack>
+    <div class="lms-profile-grid">
+        <SectionCard Title="@L["Guardian_Details"]" Class="lms-profile-details">
+            <dl class="lms-details">
+                <DetailItem Label="@L["Student_Mobile"]" Value="@s.Mobile" Ltr="true" TestId="profile-mobile" />
+                <DetailItem Label="@L["Student_Email"]" Value="@s.Email" Ltr="true" TestId="profile-email" />
+                <DetailItem Label="@L["Student_NationalId"]" Value="@_detail.NationalId" Ltr="true" TestId="profile-national-id" />
+                <DetailItem Label="@L["Student_Account"]" TestId="profile-portal">@(s.HasPortalAccount ? L["Guardian_PortalActive"] : L["Guardian_PortalNone"])</DetailItem>
+            </dl>
+        </SectionCard>
+
+        <div class="lms-profile-main">
+            <SectionCard Title="@L["Guardian_Children"]" Flush="true">
+                @if (_detail.Children.Count == 0)
+                {
+                    <EmptyState Title="@L["Common_Empty"]" Icon="@Icons.Material.Rounded.School" TestId="children-empty" />
+                }
+                else
+                {
+                    <MudTable Items="_detail.Children" Dense="true" Hover="true" Elevation="0" HeaderClass="lms-table-head" Class="lms-table"
+                              Breakpoint="Breakpoint.Sm" data-testid="children-table">
+                        <HeaderContent>
+                            <MudTh>@L["Common_Name"]</MudTh>
+                            <MudTh>@L["Student_Code"]</MudTh>
+                            <MudTh>@L["Guardian_Relation"]</MudTh>
+                            <MudTh>@L["Staff_HomeUnit"]</MudTh>
+                        </HeaderContent>
+                        <RowTemplate Context="child">
+                            <MudTd DataLabel="@L["Common_Name"]">
+                                <MudLink Href="@($"students/{child.StudentId}")" Typo="Typo.body2" Class="lms-person-link"
+                                         data-testid="@($"child-link-{child.StudentId}")">@Culture.Pick(child.NameAr, child.NameEn)</MudLink>
+                                @if (child.IsPrimary)
+                                {
+                                    <MudIcon Icon="@Icons.Material.Rounded.Star" Size="Size.Small" Color="Color.Warning" title="@L["Guardian_Primary"]" />
+                                }
+                            </MudTd>
+                            <MudTd DataLabel="@L["Student_Code"]"><span dir="ltr" class="lms-muted">@child.StudentCode</span></MudTd>
+                            <MudTd DataLabel="@L["Guardian_Relation"]">@L[$"Relation_{child.Relation}"]</MudTd>
+                            <MudTd DataLabel="@L["Staff_HomeUnit"]">@Culture.Pick(child.HomeOrgUnitNameAr, child.HomeOrgUnitNameEn)</MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                }
+            </SectionCard>
+        </div>
+    </div>
 }
 
 @code {
