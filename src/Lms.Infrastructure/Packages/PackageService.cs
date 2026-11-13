@@ -134,6 +134,7 @@ public static class PackagesServiceCollectionExtensions
         services.AddSingleton<PackageValidationGate>();
         services.AddScoped<IPackageScanner, NoOpPackageScanner>();
         services.AddScoped<IPackageValidator, Scorm.ScormManifestValidator>();
+        services.AddScoped<IPackageValidator, H5p.H5pValidator>();
         services.AddScoped<IPackageJobs, HangfirePackageJobs>();
         services.AddScoped<PackageValidationJob>();
         services.AddScoped<PackagePurgeJob>();
