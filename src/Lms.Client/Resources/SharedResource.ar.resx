@@ -1418,4 +1418,14 @@
   <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>لم يقبل الفحص الأمني هذه الحزمة.</value></data>
   <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>الملف ليس أرشيف zip صالحًا.</value></data>
   <data name="Error_package_reason_bad_name" xml:space="preserve"><value>اسم ملف في الحزمة غير صالح (طويل جدًا أو عميق جدًا أو محجوز).</value></data>
+  <data name="UnitSettings_Identity" xml:space="preserve"><value>الهوية</value></data>
+  <data name="UnitSettings_IdentityHelp" xml:space="preserve"><value>الأسماء والرمز المستخدمة في كل أنحاء النظام.</value></data>
+  <data name="Academic_SectionLevelHelp" xml:space="preserve"><value>كيف ينتقل الطلاب إلى المستوى التالي.</value></data>
+  <data name="Academic_LevelTransferHelp" xml:space="preserve"><value>ينتقل الطلاب الذين يُنهون هذه الوحدة إلى المستوى التالي الذي تختاره.</value></data>
+  <data name="Academic_SectionCoursesHelp" xml:space="preserve"><value>أين تُعرَّف المقررات ومن يملكها.</value></data>
+  <data name="Academic_CourseManagementHelp" xml:space="preserve"><value>تستطيع هذه الوحدة إنشاء المقررات وامتلاكها للوحدات التابعة لها.</value></data>
+  <data name="Academic_SaveHint" xml:space="preserve"><value>تُطبَّق التغييرات على هذه الوحدة بعد الحفظ.</value></data>
+  <data name="Policies_CascadeNote" xml:space="preserve"><value>تُطبَّق السياسات التي تفعّلها هنا على هذه الوحدة وكل الوحدات التابعة لها. السياسة المعيّنة في مستوى أعلى تُظهر من عيّنها، ولا تُغيَّر إلا هناك.</value></data>
+  <data name="Policies_CardTitle" xml:space="preserve"><value>قيود التفويض</value></data>
+  <data name="Policies_CardHelp" xml:space="preserve"><value>امنع إجراءات في هذه الوحدة والوحدات التابعة لها.</value></data>
 </root>

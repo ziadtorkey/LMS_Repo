@@ -1,12 +1,22 @@
-@* A bordered surface for one block of a page, with an optional heading (h2) and heading actions.
-   Flush removes the body padding (for tables that reach the card edges). *@
+@* A bordered surface for one block of a page, with an optional heading (h2), a one-line subtitle, a decorative icon tile
+   (Stitch card header) and heading actions. Flush removes the body padding (for tables that reach the card edges). *@
 <section class="lms-section @(Flush ? "lms-section-flush" : "") @Class" data-testid="@TestId" aria-labelledby="@(Title is null ? null : _headingId)">
     @if (Title is not null || Actions is not null)
     {
         <div class="lms-section-head">
+            @if (Icon is not null)
+            {
+                <span class="lms-section-icon" aria-hidden="true"><MudIcon Icon="@Icon" Size="Size.Small" /></span>
+            }
             @if (Title is not null)
             {
-                <MudText Typo="Typo.h6" HtmlTag="h2" id="@_headingId" Class="lms-section-title">@Title</MudText>
+                <div class="lms-section-heading">
+                    <MudText Typo="Typo.h6" HtmlTag="h2" id="@_headingId" Class="lms-section-title">@Title</MudText>
+                    @if (!string.IsNullOrEmpty(Subtitle))
+                    {
+                        <MudText Typo="Typo.body2" Class="lms-section-subtitle">@Subtitle</MudText>
+                    }
+                </div>
             }
             @if (Actions is not null)
             {
@@ -21,6 +31,10 @@
     private readonly string _headingId = $"section-{Guid.NewGuid():N}";
 
     [Parameter] public string? Title { get; set; }
+    /// <summary>One line under the title (Stitch card header); keep it short.</summary>
+    [Parameter] public string? Subtitle { get; set; }
+    /// <summary>A Material Rounded icon shown in a tinted tile before the title; decorative.</summary>
+    [Parameter] public string? Icon { get; set; }
     [Parameter] public bool Flush { get; set; }
     [Parameter] public string? Class { get; set; }
     [Parameter] public string? TestId { get; set; }
