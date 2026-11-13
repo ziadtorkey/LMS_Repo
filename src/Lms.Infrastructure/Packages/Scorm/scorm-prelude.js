@@ -9,6 +9,7 @@
   var version = data.version === 'Scorm2004' ? 'Scorm2004' : 'Scorm12';
   var model = Object.assign({}, data.model || {});
   var dirty = {}, initialized = false, finished = false, lastError = '0';
+  var MAX_VALUE = 4096; // bytes per value: the port contract (and the server) refuse a longer one
   var MAX_CHUNK = 6000; // bytes of JSON per message: the port contract caps a message at 8 KB, the envelope needs the rest
 
   // A resumed attempt continues the server's sequence: the data block carries the last sequence number the server applied.
@@ -23,7 +24,8 @@
     var chunks = [], current = {}, bytes = 2;
     Object.keys(changes).forEach(function (key) {
       var pair = size(JSON.stringify(key)) + size(JSON.stringify(changes[key])) + 2;
-      if (pair > MAX_CHUNK) { return; } // one value alone is too big for the contract (the server would refuse it as well)
+      // A value over the contract is dropped on its own: the rest of the change set and the finish still go out (a refused SetValue cannot get here).
+      if (size(String(changes[key])) > MAX_VALUE || pair > MAX_CHUNK) { return; }
       if (bytes + pair > MAX_CHUNK && Object.keys(current).length) { chunks.push(current); current = {}; bytes = 2; }
       current[key] = changes[key];
       bytes += pair;
@@ -43,6 +45,7 @@
   }
   function set(key, value) {
     if (!initialized || finished) { lastError = '301'; return 'false'; }
+    if (size(String(value)) > MAX_VALUE) { lastError = '405'; return 'false'; } // out of range: the platform keeps at most 4 KB per value
     lastError = '0';
     model[key] = String(value);
     dirty[key] = String(value);
@@ -62,7 +65,7 @@
   }
   function init() { if (initialized) { lastError = '101'; return 'false'; } initialized = true; lastError = '0'; return 'true'; }
 
-  var errors = { '0': 'No error', '101': 'General exception', '301': 'Not initialized' };
+  var errors = { '0': 'No error', '101': 'General exception', '301': 'Not initialized', '405': 'Value out of range (too long)' };
   var common = {
     GetLastError: function () { return lastError; },
     GetErrorString: function (code) { return errors[String(code)] || ''; },

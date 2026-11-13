@@ -216,6 +216,48 @@ public sealed class ScormPreludeRuntimeTests
     }
 
     [Fact]
+    public void A_value_over_4_kb_is_refused_alone_and_the_status_and_the_finish_still_arrive()
+    {
+        if (!HasNode())
+        {
+            return;
+        }
+
+        var result = Run("{\"version\":\"Scorm2004\",\"seq\":-1,\"model\":{}}", """
+            api2004.Initialize('');
+            const status = api2004.SetValue('cmi.completion_status', 'completed');
+            const big = api2004.SetValue('cmi.suspend_data', 'x'.repeat(5000));
+            const error = api2004.GetLastError();
+            const ok = api2004.SetValue('cmi.success_status', 'passed');
+            api2004.Terminate('');
+            handshake();
+            return { status, big, error, ok, posted: posted.map(m => [m.type, m.seq, Object.keys(m.data).sort()]) };
+            """);
+
+        Assert.Equal(("true", "false", "405", "true"), (result.GetProperty("status").GetString(), result.GetProperty("big").GetString(), result.GetProperty("error").GetString(), result.GetProperty("ok").GetString()));
+        var messages = result.GetProperty("posted").EnumerateArray().ToList();
+        var last = messages[^1];
+        Assert.Equal("finish", last[0].GetString());
+        Assert.Equal(["cmi.completion_status", "cmi.success_status"], messages.SelectMany(m => m[2].EnumerateArray().Select(k => k.GetString()!)).Order());
+        Assert.DoesNotContain(messages, m => m[2].EnumerateArray().Any(k => k.GetString() == "cmi.suspend_data"));
+    }
+
+    [Fact]
+    public void A_value_of_exactly_4_kb_is_accepted()
+    {
+        if (!HasNode())
+        {
+            return;
+        }
+
+        var result = Run(Data12, "api12.LMSInitialize(''); const r = api12.LMSSetValue('cmi.suspend_data', 'y'.repeat(4096)); api12.LMSFinish(''); handshake(); return [r, posted.length, Object.keys(posted[0].data)];");
+
+        Assert.Equal("true", result[0].GetString());
+        Assert.Equal(1, result[1].GetInt32());
+        Assert.Equal("cmi.suspend_data", result[2][0].GetString());
+    }
+
+    [Fact]
     public void Calls_before_initialize_and_after_finish_fail_with_error_301()
     {
         if (!HasNode())
