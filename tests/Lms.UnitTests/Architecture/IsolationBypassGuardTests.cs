@@ -105,6 +105,8 @@ public sealed class IsolationBypassGuardTests
             "the blueprint of a course (owned by an ancestor unit) and the academic year of a class are read for classes anywhere in the client; client matched, deleted rows excluded (M3 Task 17, #225)",
         ["src/Lms.Infrastructure/Classes/LessonPlans/ClassLessonPlanSync.cs"] =
             "counting the plans of a published course across the whole client (classes outside the publisher's scope); client matched, deleted rows excluded (M3 Task 17, #225)",
+        ["src/Lms.Api/Features/CourseAssignments/CourseAssignmentNotifier.cs"] =
+            "course names of a class course for the assignment notices; the course is owned by an ancestor unit above the caller's scope; names only, client matched, deleted excluded (M4a Task 9, #359)",
         ["src/Lms.Infrastructure/People/PersonDuplicateFinder.cs"] =
             "client-wide duplicate checks reach sibling subtrees outside the caller's scope; client matched, deleted rows excluded, only the field name leaves (M2 Task 5, #157)",
     };

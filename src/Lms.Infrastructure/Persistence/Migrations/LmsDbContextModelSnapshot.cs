@@ -388,6 +388,10 @@ namespace Lms.Infrastructure.Persistence.Migrations
                         .HasPrecision(6)
                         .HasColumnType("datetime(6)");
 
+                    b.Property<DateTime?>("DueSoonNotifiedAtUtc")
+                        .HasPrecision(6)
+                        .HasColumnType("datetime(6)");
+
                     b.Property<string>("InstructionsHtmlAr")
                         .HasColumnType("longtext");
 
@@ -571,6 +575,104 @@ namespace Lms.Infrastructure.Persistence.Migrations
                     b.HasIndex("OrganizationId", "OrgUnitPath");
 
                     b.ToTable("Submissions", (string)null);
+                });
+
+            modelBuilder.Entity("Lms.Domain.Assignments.SubmissionFeedback", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid?>("AnnotatedFileAssetId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("AssignmentId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("ClassCourseId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("FeedbackHtml")
+                        .HasColumnType("longtext");
+
+                    b.Property<decimal>("FinalGrade")
+                        .HasPrecision(9, 2)
+                        .HasColumnType("decimal(9,2)");
+
+                    b.Property<DateTime>("GradedAtUtc")
+                        .HasPrecision(6)
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<Guid>("OrgUnitId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("OrgUnitPath")
+                        .IsRequired()
+                        .HasColumnType("varchar(400) CHARACTER SET ascii COLLATE ascii_general_ci");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<int?>("PenaltyPercentApplied")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Points")
+                        .HasPrecision(9, 2)
+                        .HasColumnType("decimal(9,2)");
+
+                    b.Property<DateTime?>("ReturnedAtUtc")
+                        .HasPrecision(6)
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<decimal?>("ReturnedFinalGrade")
+                        .HasPrecision(9, 2)
+                        .HasColumnType("decimal(9,2)");
+
+                    b.Property<int>("ReturnedRevision")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("SubmissionId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid?>("SubmissionKey")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AnnotatedFileAssetId");
+
+                    b.HasIndex("OrgUnitId");
+
+                    b.HasIndex("SubmissionId");
+
+                    b.HasIndex("SubmissionKey")
+                        .IsUnique();
+
+                    b.HasIndex("AssignmentId", "StudentId");
+
+                    b.HasIndex("OrganizationId", "OrgUnitPath");
+
+                    b.ToTable("SubmissionFeedbacks", (string)null);
                 });
 
             modelBuilder.Entity("Lms.Domain.Assignments.SubmissionFile", b =>
@@ -4877,6 +4979,26 @@ namespace Lms.Infrastructure.Persistence.Migrations
                     b.HasOne("Lms.Domain.People.StudentProfile", null)
                         .WithMany()
                         .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Lms.Domain.Assignments.SubmissionFeedback", b =>
+                {
+                    b.HasOne("Lms.Domain.Content.Asset", null)
+                        .WithMany()
+                        .HasForeignKey("AnnotatedFileAssetId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Lms.Domain.Organizations.OrgUnit", null)
+                        .WithMany()
+                        .HasForeignKey("OrgUnitId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Lms.Domain.Assignments.Submission", null)
+                        .WithMany()
+                        .HasForeignKey("SubmissionId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
