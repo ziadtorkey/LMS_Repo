@@ -1,36 +1,41 @@
-/* LMS SCORM prelude (M4b Task 10, Design A). Runs first in every page of a SCORM package inside the sandboxed frame.
-   Defines window.API (SCORM 1.2) and window.API_1484_11 (2004) on the page's own window, answers from the local data model at once (the
-   initial state is in <script id="lms-scorm-data">), and queues every change for the app page: commits are numbered (seq) and delivered over
-   the private MessagePort once the app hands it over. Nothing here reads a cookie, storage or the parent. */
+/* LMS SCORM prelude (M4b Task 10, Design A). Runs first in every page of a SCORM package inside the sandboxed frame, after the content-side
+   port shim (_lms/port-shim.js, which owns the private MessagePort handshake, the sequence numbers and the bounded queue).
+   Defines window.API (SCORM 1.2) and window.API_1484_11 (2004) on the page's own window, answers from the local data model at once (the initial
+   state is in <script id="lms-scorm-data">), and hands every change to window.lmsPort. Nothing here reads a cookie, storage or the parent. */
 (function () {
   'use strict';
   var data = {};
   try { data = JSON.parse(document.getElementById('lms-scorm-data').textContent) || {}; } catch (e) { data = {}; }
   var version = data.version === 'Scorm2004' ? 'Scorm2004' : 'Scorm12';
   var model = Object.assign({}, data.model || {});
-  var seq = typeof data.seq === 'number' ? data.seq : 0;
-  var queue = [], dirty = {}, port = null, initialized = false, finished = false, lastError = '0';
+  var dirty = {}, initialized = false, finished = false, lastError = '0';
+  var MAX_CHUNK = 6000; // bytes of JSON per message: the port contract caps a message at 8 KB, the envelope needs the rest
 
-  function flush() {
+  // A resumed attempt continues the server's sequence: the data block carries the last sequence number the server applied.
+  if (window.lmsPort && typeof window.lmsPort.resume === 'function' && typeof data.seq === 'number') { window.lmsPort.resume(data.seq); }
+
+  function size(text) { return new TextEncoder().encode(text).length; }
+
+  // Sends the change set as one or more messages of at most MAX_CHUNK bytes; the final message (when finishing) is a finish.
+  function send(changes, final) {
+    var port = window.lmsPort;
     if (!port) { return; }
-    while (queue.length) { port.postMessage(queue.shift()); }
-  }
-  function enqueue(format, changes, final) {
-    seq += 1;
-    queue.push({ type: final ? 'finish' : 'commit', seq: seq, format: format, data: changes });
-    flush();
+    var chunks = [], current = {}, bytes = 2;
+    Object.keys(changes).forEach(function (key) {
+      var pair = size(JSON.stringify(key)) + size(JSON.stringify(changes[key])) + 2;
+      if (pair > MAX_CHUNK) { return; } // one value alone is too big for the contract (the server would refuse it as well)
+      if (bytes + pair > MAX_CHUNK && Object.keys(current).length) { chunks.push(current); current = {}; bytes = 2; }
+      current[key] = changes[key];
+      bytes += pair;
+    });
+    if (Object.keys(current).length || final) { chunks.push(current); }
+    chunks.forEach(function (chunk, i) {
+      if (final && i === chunks.length - 1) { port.finish('Scorm', chunk); } else { port.commit('Scorm', chunk); }
+    });
   }
   function takeDirty() { var d = dirty; dirty = {}; return d; }
 
-  window.addEventListener('message', function (event) {
-    // The app page transfers one MessagePort; nothing else is trusted (the origin of this frame is opaque).
-    if (event.data && event.data.type === 'lms-port' && event.ports && event.ports[0] && !port) {
-      port = event.ports[0];
-      port.onmessage = function () { /* the app only listens */ };
-      flush();
-    }
-  });
-  window.addEventListener('pagehide', function () { if (initialized && !finished && Object.keys(dirty).length) { enqueue('Scorm', takeDirty(), false); } });
+  window.addEventListener('pagehide', function () { if (initialized && !finished && Object.keys(dirty).length) { send(takeDirty(), false); } });
 
   function get(key) {
     lastError = '0';
@@ -46,12 +51,12 @@
   function commit() {
     if (!initialized || finished) { lastError = '301'; return 'false'; }
     var d = takeDirty();
-    if (Object.keys(d).length) { enqueue('Scorm', d, false); }
+    if (Object.keys(d).length) { send(d, false); }
     return 'true';
   }
   function finish() {
     if (!initialized || finished) { lastError = '301'; return 'false'; }
-    enqueue('Scorm', takeDirty(), true);
+    send(takeDirty(), true);
     finished = true;
     return 'true';
   }
@@ -63,11 +68,11 @@
     GetErrorString: function (code) { return errors[String(code)] || ''; },
     GetDiagnostic: function (code) { return errors[String(code)] || ''; }
   };
-  var api12 = Object.assign({
+  var api12 = {
     LMSInitialize: function () { return init(); }, LMSFinish: function () { return finish(); },
     LMSGetValue: get, LMSSetValue: set, LMSCommit: function () { return commit(); },
     LMSGetLastError: common.GetLastError, LMSGetErrorString: common.GetErrorString, LMSGetDiagnostic: common.GetDiagnostic
-  });
+  };
   var api2004 = {
     Initialize: function () { return init(); }, Terminate: function () { return finish(); },
     GetValue: get, SetValue: set, Commit: function () { return commit(); },

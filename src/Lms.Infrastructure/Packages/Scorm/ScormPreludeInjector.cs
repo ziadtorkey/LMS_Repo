@@ -13,19 +13,21 @@ namespace Lms.Infrastructure.Packages.Scorm;
 /// </summary>
 public static class ScormPreludeInjector
 {
-    /// <summary>The markup inserted: the cacheable static script, then the data block (JSON made safe for a script element).</summary>
-    public static string Markup(string preludeSrc, string dataJson) =>
-        $"<script src=\"{System.Net.WebUtility.HtmlEncode(preludeSrc)}\"></script><script type=\"application/json\" id=\"lms-scorm-data\">{ScriptSafe(dataJson)}</script>";
+    /// <summary>The markup inserted: the content-side port shim, the data block (JSON made safe for a script element), then the cacheable prelude script that reads it.</summary>
+    public static string Markup(string preludeSrc, string dataJson, string? shimSrc = null) =>
+        (shimSrc is null ? string.Empty : $"<script src=\"{System.Net.WebUtility.HtmlEncode(shimSrc)}\"></script>")
+        + $"<script type=\"application/json\" id=\"lms-scorm-data\">{ScriptSafe(dataJson)}</script>"
+        + $"<script src=\"{System.Net.WebUtility.HtmlEncode(preludeSrc)}\"></script>";
 
     /// <summary>Injects into an HTML page; every other kind of file is returned as the same array (never modified).</summary>
-    public static byte[] InjectIfHtml(string relativePath, byte[] content, string preludeSrc, string dataJson) =>
+    public static byte[] InjectIfHtml(string relativePath, byte[] content, string preludeSrc, string dataJson, string? shimSrc = null) =>
         PackageContentTypes.For(relativePath).Type.StartsWith("text/html", StringComparison.Ordinal)
-            ? Inject(content, preludeSrc, dataJson)
+            ? Inject(content, preludeSrc, dataJson, shimSrc)
             : content;
 
-    public static byte[] Inject(byte[] html, string preludeSrc, string dataJson)
+    public static byte[] Inject(byte[] html, string preludeSrc, string dataJson, string? shimSrc = null)
     {
-        var markup = Markup(preludeSrc, dataJson);
+        var markup = Markup(preludeSrc, dataJson, shimSrc);
         if (IsUtf16(html))
         {
             // UTF-16 decodes cleanly in both directions, so it is the one case that goes through text.

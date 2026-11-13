@@ -78,6 +78,8 @@
         commit: function (format, data) { return make('commit', format, data); },
         // Flushes and ends the run; the page closes the attempt. Nothing is sent after it.
         finish: function (format, data) { return make('finish', format, data); },
+        // A resumed attempt continues the server's sequence: the next message gets last + 1 (never lower than the counter already is).
+        resume: function (last) { if (typeof last === 'number' && isFinite(last) && last >= -1 && Math.floor(last) + 1 > seq) { seq = Math.floor(last) + 1; } },
         // A non-sensitive control message from the page, for example 'pause'.
         onControl: function (handler) { onControl = typeof handler === 'function' ? handler : null; },
     });

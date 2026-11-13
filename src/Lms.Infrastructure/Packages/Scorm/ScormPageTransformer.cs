@@ -44,7 +44,23 @@ public sealed class ScormPageTransformer(LmsDbContext db, ScormPreludeAsset asse
         var version = await db.Set<PackageUpload>()
             .Where(p => p.Id == context.PackageId && p.OrganizationId == context.OrganizationId)
             .Select(p => p.Version).FirstOrDefaultAsync(ct) ?? ScormVersions.Scorm12;
-        var data = ScormInitialDataBlock.Build(version, new Dictionary<string, string>(), "ab-initio", 0);
-        return ScormPreludeInjector.InjectIfHtml(relativePath, html, context.PathPrefix + "_lms/" + asset.Name, data);
+
+        // The attempt of the token (never a preview, which has none) gives the current data model; the page continues the server's sequence.
+        var model = new Dictionary<string, string>();
+        long lastSeq = -1;
+        if (context.AttemptId is { } attemptId && !context.Preview)
+        {
+            var attempt = await db.Set<PackageAttempt>().FirstOrDefaultAsync(
+                a => a.Id == attemptId && a.PackageId == context.PackageId && a.OrganizationId == context.OrganizationId, ct);
+            if (attempt is not null)
+            {
+                model = attempt.Model;
+                lastSeq = attempt.LastSeq;
+            }
+        }
+
+        var data = ScormInitialDataBlock.Build(version, model, lastSeq >= 0 ? "resume" : "ab-initio", lastSeq);
+        return ScormPreludeInjector.InjectIfHtml(
+            relativePath, html, context.PathPrefix + "_lms/" + asset.Name, data, context.PathPrefix + "_lms/port-shim.js");
     }
 }
