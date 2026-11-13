@@ -1082,6 +1082,7 @@
   <data name="ModuleKind_Scorm" xml:space="preserve"><value>حزمة SCORM</value></data>
   <data name="ModuleKind_Video" xml:space="preserve"><value>فيديو</value></data>
   <data name="Module_Group" xml:space="preserve"><value>المجموعة: {0}</value></data>
+  <data name="Module_GroupField" xml:space="preserve"><value>المجموعة</value></data>
   <data name="Module_NotVisibleNow" xml:space="preserve"><value>غير ظاهر الآن</value></data>
   <data name="Module_ScheduledFrom" xml:space="preserve"><value>ظاهر من {0}</value></data>
   <data name="Module_ScheduledRange" xml:space="preserve"><value>ظاهر من {0} إلى {1}</value></data>
@@ -1094,6 +1095,21 @@
   <data name="Progress_Count" xml:space="preserve"><value>{0} من {1}</value></data>
   <data name="LessonPlan_Modules" xml:space="preserve"><value>الوحدات التعليمية</value></data>
   <data name="LessonPlan_ModulesLater" xml:space="preserve"><value>تصل الوحدات التعليمية في إصدار لاحق.</value></data>
+  <data name="Learn_Title" xml:space="preserve"><value>مقرري</value></data>
+  <data name="Learn_Continue" xml:space="preserve"><value>تابع من حيث توقفت</value></data>
+  <data name="Learn_ContinueOpen" xml:space="preserve"><value>متابعة</value></data>
+  <data name="Learn_AllDone" xml:space="preserve"><value>أنجزت كل ما نُشر حتى الآن.</value></data>
+  <data name="Learn_NothingYet" xml:space="preserve"><value>لم يُنشر شيء بعد.</value></data>
+  <data name="Learn_Progress" xml:space="preserve"><value>تم إنجاز {0} من {1}</value></data>
+  <data name="Learn_LessonProgress" xml:space="preserve"><value>{0}/{1}</value></data>
+  <data name="Learn_NotTracked" xml:space="preserve"><value>غير متتبَّع</value></data>
+  <data name="Learn_WaitingSubmit" xml:space="preserve"><value>بانتظار تسليمك</value></data>
+  <data name="Learn_WaitingScore" xml:space="preserve"><value>بانتظار الدرجة</value></data>
+  <data name="CompletionState_NotStarted" xml:space="preserve"><value>لم تبدأ</value></data>
+  <data name="CompletionState_InProgress" xml:space="preserve"><value>قيد التنفيذ</value></data>
+  <data name="CompletionState_Completed" xml:space="preserve"><value>مكتملة</value></data>
+  <data name="MyClassCourses_OpenCourse" xml:space="preserve"><value>فتح المقرر</value></data>
+  <data name="Home_ContinueLearning" xml:space="preserve"><value>تابع التعلّم</value></data>
   <data name="Asset_Limits" xml:space="preserve"><value>الأنواع المسموحة: {0}. الحد الأقصى للحجم: {1} ميجابايت.</value></data>
   <data name="Asset_Choose" xml:space="preserve"><value>اختر ملفًا لرفعه</value></data>
   <data name="Asset_TypeNotAllowed" xml:space="preserve"><value>نوع الملف غير مسموح هنا. المسموح: {0}.</value></data>
@@ -1107,6 +1123,31 @@
   <data name="Asset_Download" xml:space="preserve"><value>تنزيل</value></data>
   <data name="Asset_PreviewFailed" xml:space="preserve"><value>تعذّر تحميل الملف.</value></data>
   <data name="Asset_Reload" xml:space="preserve"><value>إعادة التحميل</value></data>
+  <data name="Module_Add" xml:space="preserve"><value>إضافة وحدة</value></data>
+  <data name="Module_Visibility" xml:space="preserve"><value>الظهور</value></data>
+  <data name="Module_VisibleFrom" xml:space="preserve"><value>يظهر من</value></data>
+  <data name="Module_VisibleTo" xml:space="preserve"><value>يظهر حتى</value></data>
+  <data name="Module_Time" xml:space="preserve"><value>الوقت</value></data>
+  <data name="Module_Target" xml:space="preserve"><value>موجّه إلى</value></data>
+  <data name="Module_Completion" xml:space="preserve"><value>الإكمال</value></data>
+  <data name="Module_BodyAr" xml:space="preserve"><value>محتوى الصفحة (عربي)</value></data>
+  <data name="Module_BodyEn" xml:space="preserve"><value>محتوى الصفحة (إنجليزي)</value></data>
+  <data name="Module_Url" xml:space="preserve"><value>عنوان الرابط (https://...)</value></data>
+  <data name="Module_MoveUp" xml:space="preserve"><value>نقل لأعلى</value></data>
+  <data name="Module_MoveDown" xml:space="preserve"><value>نقل لأسفل</value></data>
+  <data name="Module_Hide" xml:space="preserve"><value>إخفاء</value></data>
+  <data name="Module_Show" xml:space="preserve"><value>إظهار</value></data>
+  <data name="Module_Move" xml:space="preserve"><value>نقل إلى درس آخر</value></data>
+  <data name="Module_MoveTo" xml:space="preserve"><value>الدرس</value></data>
+  <data name="Module_DeleteConfirm" xml:space="preserve"><value>حذف الوحدة {0}؟</value></data>
+  <data name="ModuleVisibility_Published" xml:space="preserve"><value>منشورة</value></data>
+  <data name="ModuleVisibility_Hidden" xml:space="preserve"><value>مخفية</value></data>
+  <data name="ModuleVisibility_Scheduled" xml:space="preserve"><value>مجدولة</value></data>
+  <data name="ModuleTarget_ClassCourse" xml:space="preserve"><value>الفصل كاملًا</value></data>
+  <data name="ModuleTarget_Group" xml:space="preserve"><value>مجموعة واحدة</value></data>
+  <data name="CompletionRule_None" xml:space="preserve"><value>غير متتبَّعة</value></data>
+  <data name="CompletionRule_Manual" xml:space="preserve"><value>يحدّدها الطالب كمنجزة</value></data>
+  <data name="CompletionRule_View" xml:space="preserve"><value>عند فتح الطالب لها</value></data>
   <data name="RichText_Bold" xml:space="preserve"><value>غامق</value></data>
   <data name="RichText_BulletList" xml:space="preserve"><value>قائمة نقطية</value></data>
   <data name="RichText_Italic" xml:space="preserve"><value>مائل</value></data>
@@ -1143,4 +1184,37 @@
   <data name="Matrix_ChooseUnit" xml:space="preserve"><value>اختر وحدة لعرض فصولها.</value></data>
   <data name="Matrix_NoClasses" xml:space="preserve"><value>لا توجد فصول لهذه الوحدة في العام المحدد.</value></data>
   <data name="List_Separator" xml:space="preserve"><value>، </value></data>
+  <data name="ClassCourse_Sections" xml:space="preserve"><value>أقسام مقرر الفصل</value></data>
+  <data name="ClassCourse_TabPlan" xml:space="preserve"><value>الخطة</value></data>
+  <data name="ClassCourse_TabForum" xml:space="preserve"><value>المنتدى</value></data>
+  <data name="ClassCourse_TabAnnouncements" xml:space="preserve"><value>الإعلانات</value></data>
+  <data name="Forum_Title" xml:space="preserve"><value>المنتدى</value></data>
+  <data name="Forum_NewThread" xml:space="preserve"><value>موضوع جديد</value></data>
+  <data name="Forum_ThreadTitle" xml:space="preserve"><value>العنوان</value></data>
+  <data name="Forum_Message" xml:space="preserve"><value>الرسالة</value></data>
+  <data name="Forum_Post" xml:space="preserve"><value>نشر</value></data>
+  <data name="Forum_Reply" xml:space="preserve"><value>رد</value></data>
+  <data name="Forum_Empty" xml:space="preserve"><value>لا توجد مواضيع بعد.</value></data>
+  <data name="Forum_Pinned" xml:space="preserve"><value>مثبّت</value></data>
+  <data name="Forum_Locked" xml:space="preserve"><value>مقفل</value></data>
+  <data name="Forum_Replies" xml:space="preserve"><value>{0} ردود</value></data>
+  <data name="Forum_Back" xml:space="preserve"><value>العودة إلى المنتدى</value></data>
+  <data name="Forum_Moderate" xml:space="preserve"><value>إشراف</value></data>
+  <data name="Forum_Pin" xml:space="preserve"><value>تثبيت</value></data>
+  <data name="Forum_Unpin" xml:space="preserve"><value>إلغاء التثبيت</value></data>
+  <data name="Forum_Lock" xml:space="preserve"><value>قفل</value></data>
+  <data name="Forum_Unlock" xml:space="preserve"><value>فتح</value></data>
+  <data name="Forum_DeleteThread" xml:space="preserve"><value>حذف الموضوع</value></data>
+  <data name="Forum_DeleteThreadConfirm" xml:space="preserve"><value>حذف هذا الموضوع وكل ردوده؟</value></data>
+  <data name="Forum_DeletePostConfirm" xml:space="preserve"><value>حذف هذا الرد؟</value></data>
+  <data name="Forum_LockedNote" xml:space="preserve"><value>هذا الموضوع مقفل: لا ردود جديدة.</value></data>
+  <data name="Forum_Edited" xml:space="preserve"><value>(معدّل)</value></data>
+  <data name="Announcements_Title" xml:space="preserve"><value>الإعلانات</value></data>
+  <data name="Announcements_Notify" xml:space="preserve"><value>إشعار الطلاب</value></data>
+  <data name="Announcements_Publish" xml:space="preserve"><value>نشر</value></data>
+  <data name="Announcements_Empty" xml:space="preserve"><value>لا توجد إعلانات بعد.</value></data>
+  <data name="Announcements_DeleteConfirm" xml:space="preserve"><value>حذف الإعلان {0}؟</value></data>
+  <data name="Announcements_FormTitle" xml:space="preserve"><value>عنوان الإعلان</value></data>
+  <data name="Forum_MoreReplies" xml:space="preserve"><value>عرض مزيد من الردود ({0} أخرى)</value></data>
+  <data name="Forum_MoreThreads" xml:space="preserve"><value>عرض مزيد من المواضيع ({0} أخرى)</value></data>
 </root>

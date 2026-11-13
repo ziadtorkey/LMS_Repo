@@ -3,6 +3,7 @@
 @inject ILmsApi Api
 @inject NavigationManager Navigation
 @inject PermissionState PermState
+@using Lms.Client.Components.Content
 @using Lms.Shared.Authorization
 
 <PageTitle>@L["Home_Title"]</PageTitle>
@@ -21,6 +22,10 @@ else if (_failed)
 else if (_name is not null)
 {
     <MudText>@string.Format(L["Home_Welcome"].Value, _name)</MudText>
+    @if (PermState.Has(Permissions.Modules.View) && !PermState.Has(Permissions.Modules.Manage))
+    {
+        <ContinueLearningCards />
+    }
     @if (PermState.Has(Permissions.LessonPlans.View))
     {
         <MudCard Class="mt-4" Style="max-width: 420px" data-testid="home-my-class-courses">
