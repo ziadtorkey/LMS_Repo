@@ -12,7 +12,7 @@
 <PageTitle>@L["StaffImport_Title"]</PageTitle>
 @if (!PermState.Loaded)
 {
-    <MudProgressCircular Indeterminate="true" />
+    <LoadingState Lines="4" />
 }
 else if (!PermState.Has(Permissions.Staff.Import))
 {
@@ -20,8 +20,12 @@ else if (!PermState.Has(Permissions.Staff.Import))
 }
 else
 {
-    <MudButton Href="staff" Variant="Variant.Text" StartIcon="@Icons.Material.Filled.ArrowBack"
-               Class="mb-2" data-testid="staff-import-back">@L["Staff_Title"]</MudButton>
+    @* Same back link as the staff profile; the arrow mirrors in Arabic. The wizard itself (Components/Imports) is restyled
+       separately once the open import PRs merge. *@
+    <MudLink Href="staff" Typo="Typo.body2" Class="lms-back-link" data-testid="staff-import-back">
+        <MudIcon Icon="@Icons.Material.Rounded.ArrowBack" Size="Size.Small" Class="lms-icon-flip" aria-hidden="true" />
+        @L["Staff_BackToList"]
+    </MudLink>
     <ImportWizard Kind="@ImportKinds.Staff" TitleKey="StaffImport_Title" OnCommitted="OnCommitted" />
     <ImportHistory Kind="@ImportKinds.Staff" />
 }

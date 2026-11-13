@@ -24,7 +24,7 @@ namespace Lms.IntegrationTests.Content;
 /// <summary>A class course with a two-lesson plan, its teacher, an enrolled student and the callers around them.</summary>
 internal sealed record ContentWorld(
     AccessTree Tree, Class Class, Course Course, ClassCourse ClassCourse, RoleAssignment Admin, RoleAssignment Teacher,
-    RoleAssignment OtherTeacher, RoleAssignment Student, Guid StudentProfileId, RoleAssignment Stranger);
+    RoleAssignment OtherTeacher, RoleAssignment Student, Guid StudentProfileId, RoleAssignment Stranger, ClassCourse OtherClassCourse);
 
 internal sealed class ContentTestHost(LmsApiFactory factory) : IDisposable
 {
@@ -45,10 +45,11 @@ internal sealed class ContentTestHost(LmsApiFactory factory) : IDisposable
         var classCourse = await AddClassCourseWithPlanAsync(factory, cls, course);
         var admin = await AccessTestData.AssignAsync(factory, tree, tree.Root, BuiltInRoles.OrgAdmin, (await PeopleTestKit.AddUserAsync(factory)).Id);
         var teacher = await TeacherOfAsync(tree, classCourse);
-        var otherTeacher = await TeacherOfAsync(tree, await OtherClassCourseAsync(cls, course));
+        var otherClassCourse = await OtherClassCourseAsync(cls, course);
+        var otherTeacher = await TeacherOfAsync(tree, otherClassCourse);
         var (student, profile) = await EnrolledStudentAsync(tree, cls, classCourse);
         var stranger = await AccessTestData.AssignAsync(factory, tree, tree.School1, BuiltInRoles.Student, (await PeopleTestKit.AddUserAsync(factory)).Id);
-        return new ContentWorld(tree, cls, course, classCourse, admin, teacher, otherTeacher, student, profile, stranger);
+        return new ContentWorld(tree, cls, course, classCourse, admin, teacher, otherTeacher, student, profile, stranger, otherClassCourse);
     }
 
     private async Task<ClassCourse> OtherClassCourseAsync(Class cls, Course course)

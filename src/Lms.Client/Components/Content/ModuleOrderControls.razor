@@ -1,0 +1,124 @@
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Shared.Authorization
+@using Lms.Shared.Content
+@inject IModulesApi Modules
+@inject IDialogService Dialogs
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+@* Per-module authoring buttons: move up/down (the keyboard way to order), hide/show, edit, move to another lesson, delete.
+   Nothing is rendered for a caller without Modules.Manage or for a lesson that is read-only (removed from the blueprint). *@
+@if (!ReadOnly && PermState.Has(Permissions.Modules.Manage))
+{
+    <MudStack Row="true" Spacing="0" AlignItems="AlignItems.Center" data-testid="@($"module-controls-{Module.Id}")">
+        <MudIconButton Icon="@Icons.Material.Filled.ArrowUpward" Size="Size.Small" Disabled="@(Index <= 0)" aria-label="@L["Module_MoveUp"]"
+                       OnClick="() => ShiftAsync(-1)" data-testid="@($"module-up-{Module.Id}")" />
+        <MudIconButton Icon="@Icons.Material.Filled.ArrowDownward" Size="Size.Small" Disabled="@(Index >= Siblings.Count - 1)" aria-label="@L["Module_MoveDown"]"
+                       OnClick="() => ShiftAsync(1)" data-testid="@($"module-down-{Module.Id}")" />
+        @* A scheduled module is not hidden by hand: Hidden carries no dates, so hiding it would drop its schedule and Show would
+           publish it outright. Its visibility is changed in the edit dialog, which keeps the dates in view. *@
+        @if (Module.Visibility != ModuleVisibilities.Scheduled)
+        {
+            <MudIconButton Icon="@(Module.Visibility == ModuleVisibilities.Hidden ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff)"
+                           Size="Size.Small" aria-label="@(Module.Visibility == ModuleVisibilities.Hidden ? L["Module_Show"] : L["Module_Hide"])"
+                           OnClick="ToggleHiddenAsync" data-testid="@($"module-toggle-{Module.Id}")" />
+        }
+        <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" aria-label="@L["Common_Edit"]"
+                       OnClick="EditAsync" data-testid="@($"module-edit-{Module.Id}")" />
+        @if (OtherLessons.Count > 0)
+        {
+            <MudIconButton Icon="@Icons.Material.Filled.DriveFileMove" Size="Size.Small" aria-label="@L["Module_Move"]"
+                           OnClick="MoveAsync" data-testid="@($"module-move-{Module.Id}")" />
+        }
+        <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" aria-label="@L["Common_Delete"]"
+                       OnClick="DeleteAsync" data-testid="@($"module-delete-{Module.Id}")" />
+    </MudStack>
+    @if (_error is not null)
+    {
+        <MudText Color="Color.Error" Typo="Typo.caption" role="alert" data-testid="@($"module-controls-error-{Module.Id}")">@_error</MudText>
+    }
+}
+
+@code {
+    private string? _error;
+
+    [Parameter, EditorRequired] public Guid ClassCourseId { get; set; }
+    [Parameter, EditorRequired] public Guid LessonKey { get; set; }
+    [Parameter, EditorRequired] public ModuleNodeDto Module { get; set; } = default!;
+    /// <summary>The lesson's modules in the current order (including <see cref="Module"/>).</summary>
+    [Parameter, EditorRequired] public IReadOnlyList<ModuleNodeDto> Siblings { get; set; } = [];
+    [Parameter] public IReadOnlyList<ModuleLessonOption> OtherLessons { get; set; } = [];
+    [Parameter] public IReadOnlyList<ModuleGroupOption> Groups { get; set; } = [];
+    [Parameter] public bool ReadOnly { get; set; }
+    [Parameter] public RenderFragment<ModuleFormModel>? PageBody { get; set; }
+    /// <summary>Something changed on the server; the host reloads the plan.</summary>
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private int Index => Siblings.ToList().FindIndex(s => s.Id == Module.Id);
+
+    private async Task<bool> RunAsync(Func<Task> action)
+    {
+        _error = null;
+        var ok = await ApiCalls.RunAsync(action, Navigation, L, m => _error = m);
+        if (ok) await OnChanged.InvokeAsync();
+        return ok;
+    }
+
+    private async Task ShiftAsync(int delta)
+    {
+        var ids = Siblings.Select(s => s.Id).ToList();
+        var from = Index;
+        var to = from + delta;
+        if (from < 0 || to < 0 || to >= ids.Count) return;
+        (ids[from], ids[to]) = (ids[to], ids[from]);
+        await RunAsync(() => Modules.ReorderAsync(ClassCourseId, LessonKey, ids));
+    }
+
+    private async Task ToggleHiddenAsync()
+    {
+        await RunAsync(async () =>
+        {
+            var d = await Modules.GetAsync(Module.Id);
+            var visibility = d.Node.Visibility == ModuleVisibilities.Hidden ? ModuleVisibilities.Published : ModuleVisibilities.Hidden;
+            await Modules.UpdateAsync(Module.Id, new UpdateModuleRequest(d.Node.TitleAr, d.Node.TitleEn, visibility, null, null,
+                d.Node.Target, d.Node.GroupId, d.Node.CompletionRule, d.CompletionMinScore,
+                new ModuleContentInput(d.Content.Asset?.Id, d.Content.BodyHtmlAr, d.Content.BodyHtmlEn, d.Content.Url)));
+        });
+    }
+
+    private async Task EditAsync()
+    {
+        _error = null;
+        ModuleDetailDto? detail = null;
+        if (!await ApiCalls.RunAsync(async () => detail = await Modules.GetAsync(Module.Id), Navigation, L, m => _error = m)) return;
+        var dialog = await Dialogs.ShowAsync<ModuleDialog>(Culture.Pick(Module.TitleAr, Module.TitleEn), new DialogParameters<ModuleDialog>
+        {
+            { x => x.ClassCourseId, ClassCourseId },
+            { x => x.LessonKey, LessonKey },
+            { x => x.Kind, Module.Kind },
+            { x => x.Existing, detail },
+            { x => x.Groups, Groups },
+            { x => x.PageBody, PageBody },
+        }, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        if (await dialog.Result is { Canceled: false }) await OnChanged.InvokeAsync();
+    }
+
+    private async Task MoveAsync()
+    {
+        var dialog = await Dialogs.ShowAsync<MoveModuleDialog>(L["Module_Move"], new DialogParameters<MoveModuleDialog>
+        {
+            { x => x.ModuleId, Module.Id },
+            { x => x.Lessons, OtherLessons },
+        }, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        if (await dialog.Result is { Canceled: false }) await OnChanged.InvokeAsync();
+    }
+
+    private async Task DeleteAsync()
+    {
+        var title = Culture.Pick(Module.TitleAr, Module.TitleEn);
+        if (!await ConfirmDialog.AskAsync(Dialogs, L["Confirm_DeleteTitle"], string.Format(L["Module_DeleteConfirm"], title))) return;
+        await RunAsync(() => Modules.DeleteAsync(Module.Id));
+    }
+}

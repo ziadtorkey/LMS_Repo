@@ -1,62 +1,61 @@
+@using Lms.Client.Components
 @using Lms.Client.Services.Api
 @using Lms.Shared.Configuration
 @inject IConfigApi Api
 @inject ICultureService Culture
 @inject NavigationManager Navigation
 
-<MudStack Spacing="4">
+<div>
     @if (_error is not null)
     {
-        <MudAlert Severity="Severity.Error" data-testid="settings-error">@_error</MudAlert>
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-4" data-testid="settings-error">@_error</MudAlert>
     }
 
     @if (_loading)
     {
-        <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+        <LoadingState Lines="4" TestId="settings-loading" />
     }
     else
     {
         @foreach (var category in Categories)
         {
-            <div data-testid="@($"settings-group-{category}")">
-                <MudText Typo="Typo.h6" Class="mb-2">@L[$"SettingCategory_{category}"]</MudText>
-                <MudStack Spacing="2">
-                    @foreach (var definition in _catalog.Where(d => d.Category == category))
-                    {
-                        var name = definition.Name;
-                        var effective = _values.GetValueOrDefault(name);
-                        if (effective is null) continue;
-                        var readOnly = !CanEdit || effective.LockedByAncestor;
-                        <MudPaper Outlined="true" Class="pa-3" data-testid="@($"setting-row-{name}")">
-                            <MudStack Row="true" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Spacing="3">
-                                <MudText Class="flex-grow-1">@L["Setting_" + name.Replace('.', '_')]</MudText>
-                                <SettingEditor Definition="definition" Value="@effective.ValueJson" Disabled="readOnly"
-                                               Label="@L["Setting_" + name.Replace('.', '_')]"
-                                               ValueChanged="@(json => SaveAsync(effective, json, effective.DefinedHere && effective.IsLocked))" />
-                            </MudStack>
-                            <MudStack Row="true" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Spacing="2">
-                                @if (effective.LockedByAncestor)
-                                {
-                                    <MudIcon Icon="@Icons.Material.Filled.Lock" Size="Size.Small" />
-                                }
-                                <MudText Typo="Typo.caption" data-testid="@($"setting-source-{name}")">@SourceText(effective)</MudText>
-                                <MudSpacer />
-                                <MudCheckBox T="bool" Value="@(effective.DefinedHere && effective.IsLocked)" Dense="true" Disabled="readOnly"
-                                             Label="@L["Settings_Lock"]" data-testid="@($"setting-lock-{name}")"
-                                             ValueChanged="@(locked => SaveAsync(effective, effective.ValueJson, locked))" />
-                                @if (effective.DefinedHere && !readOnly)
-                                {
-                                    <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="() => ResetAsync(name)"
-                                               data-testid="@($"setting-reset-{name}")">@L["Settings_Reset"]</MudButton>
-                                }
-                            </MudStack>
-                        </MudPaper>
-                    }
-                </MudStack>
-            </div>
+            <section class="mb-6" data-testid="@($"settings-group-{category}")" aria-labelledby="@($"settings-heading-{category}")">
+                <MudText Typo="Typo.subtitle1" HtmlTag="h3" Class="mb-2" id="@($"settings-heading-{category}")">@L[$"SettingCategory_{category}"]</MudText>
+                @foreach (var definition in _catalog.Where(d => d.Category == category))
+                {
+                    var name = definition.Name;
+                    var effective = _values.GetValueOrDefault(name);
+                    if (effective is null) continue;
+                    var readOnly = !CanEdit || effective.LockedByAncestor;
+                    <div class="lms-setting-row" data-testid="@($"setting-row-{name}")">
+                        <div class="lms-setting-main">
+                            <MudText Class="lms-setting-name">@L["Setting_" + name.Replace('.', '_')]</MudText>
+                            <SettingEditor Definition="definition" Value="@effective.ValueJson" Disabled="readOnly"
+                                           Label="@L["Setting_" + name.Replace('.', '_')]"
+                                           ValueChanged="@(json => SaveAsync(effective, json, effective.DefinedHere && effective.IsLocked))" />
+                        </div>
+                        <div class="lms-setting-meta">
+                            @if (effective.LockedByAncestor)
+                            {
+                                <MudIcon Icon="@Icons.Material.Rounded.Lock" Size="Size.Small" Title="@L["Settings_Lock"]" />
+                            }
+                            <MudText Typo="Typo.caption" Class="lms-muted" data-testid="@($"setting-source-{name}")">@SourceText(effective)</MudText>
+                            <MudSpacer />
+                            <MudCheckBox T="bool" Value="@(effective.DefinedHere && effective.IsLocked)" Disabled="readOnly"
+                                         Label="@L["Settings_Lock"]" data-testid="@($"setting-lock-{name}")"
+                                         ValueChanged="@(locked => SaveAsync(effective, effective.ValueJson, locked))" />
+                            @if (effective.DefinedHere && !readOnly)
+                            {
+                                <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Warning" StartIcon="@Icons.Material.Rounded.Undo"
+                                           OnClick="() => ResetAsync(name)" data-testid="@($"setting-reset-{name}")">@L["Settings_Reset"]</MudButton>
+                            }
+                        </div>
+                    </div>
+                }
+            </section>
         }
     }
-</MudStack>
+</div>
 
 @code {
     [Parameter, EditorRequired] public Guid UnitId { get; set; }

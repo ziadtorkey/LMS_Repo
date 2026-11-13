@@ -12,14 +12,34 @@ public sealed class ApiHttp(HttpClient http, IContextStore context)
     public async Task<T> GetAsync<T>(string route, CancellationToken ct = default) =>
         (await SendAsync<T>(HttpMethod.Get, route, null, ct))!;
 
-    public async Task<TResponse?> SendAsync<TResponse>(HttpMethod method, string route, object? body, CancellationToken ct = default)
+    /// <summary>
+    /// GET for an optional lookup: a plain 403 throws <see cref="ApiForbiddenException"/> without sending the user to the
+    /// Forbidden page, so the caller can degrade (hide the control). Stale-context problems still redirect.
+    /// </summary>
+    public async Task<T> GetOptionalAsync<T>(string route, CancellationToken ct = default) =>
+        (await SendAsync<T>(HttpMethod.Get, route, null, ct, handlesForbidden: true))!;
+
+    public async Task<TResponse?> SendAsync<TResponse>(HttpMethod method, string route, object? body, CancellationToken ct = default, bool handlesForbidden = false)
     {
-        using var response = await SendCoreAsync(method, route, body, ct);
+        using var response = await SendCoreAsync(method, route, body, ct, handlesForbidden);
         // An empty body (204, or chunked with no length) is not JSON.
         var text = await response.Content.ReadAsStringAsync(ct);
         if (response.StatusCode == HttpStatusCode.NoContent || string.IsNullOrWhiteSpace(text))
             return default;
         return JsonSerializer.Deserialize<TResponse>(text, JsonSerializerOptions.Web);
+    }
+
+    /// <summary>Like <see cref="SendAsync{TResponse}"/> but also returns the value of one response header (null when absent).</summary>
+    public async Task<(TResponse? Value, string? Header)> SendWithHeaderAsync<TResponse>(
+        HttpMethod method, string route, object? body, string headerName, CancellationToken ct = default)
+    {
+        using var response = await SendCoreAsync(method, route, body, ct);
+        var header = response.Headers.TryGetValues(headerName, out var values) ? values.FirstOrDefault() : null;
+        var text = await response.Content.ReadAsStringAsync(ct);
+        var value = response.StatusCode == HttpStatusCode.NoContent || string.IsNullOrWhiteSpace(text)
+            ? default
+            : JsonSerializer.Deserialize<TResponse>(text, JsonSerializerOptions.Web);
+        return (value, header);
     }
 
     public async Task SendAsync(HttpMethod method, string route, object? body, CancellationToken ct = default)
@@ -36,9 +56,12 @@ public sealed class ApiHttp(HttpClient http, IContextStore context)
         request.Headers.AcceptLanguage.ParseAdd(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName);
         var file = new StreamContent(content);
         file.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
-        var form = new MultipartFormDataContent { { file, "file", fileName } };
+        // The fields (classCourseId, orgUnitId...) go BEFORE the file part: the server streams the multipart body and needs them
+        // first (a body with the file first is refused with 400).
+        var form = new MultipartFormDataContent();
         foreach (var (name, value) in fields ?? new Dictionary<string, string>())
             form.Add(new StringContent(value), name);
+        form.Add(file, "file", fileName);
         request.Content = form;
 
         using var response = await http.SendAsync(request, ct);
@@ -59,9 +82,10 @@ public sealed class ApiHttp(HttpClient http, IContextStore context)
         return (buffer, name);
     }
 
-    private async Task<HttpResponseMessage> SendCoreAsync(HttpMethod method, string route, object? body, CancellationToken ct)
+    private async Task<HttpResponseMessage> SendCoreAsync(HttpMethod method, string route, object? body, CancellationToken ct, bool handlesForbidden = false)
     {
         using var request = new HttpRequestMessage(method, route.TrimStart('/'));
+        if (handlesForbidden) request.Options.Set(ForbiddenRedirectHandler.HandlesForbidden, true);
         if (context.ActiveAssignmentId is { } id)
             request.Headers.Add(ContextHeader.Name, id.ToString());
         request.Headers.AcceptLanguage.ParseAdd(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName);
