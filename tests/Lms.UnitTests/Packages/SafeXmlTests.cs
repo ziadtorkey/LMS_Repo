@@ -79,6 +79,37 @@ public sealed class SafeXmlTests
     }
 
     [Fact]
+    public void A_deeply_nested_manifest_is_refused_fast()
+    {
+        var depth = 200_000;
+        var xml = new string('<', 0) + string.Concat(Enumerable.Repeat("<a>", depth)) + string.Concat(Enumerable.Repeat("</a>", depth));
+        var started = System.Diagnostics.Stopwatch.StartNew();
+
+        var result = SafeXml.Parse(Xml(xml), maxCharacters: 2_000_000);
+
+        Assert.Equal("xml_unsafe", result.RejectReason);
+        Assert.True(started.Elapsed < TimeSpan.FromSeconds(3), $"took {started.Elapsed}");
+    }
+
+    [Fact]
+    public void Nesting_at_the_limit_is_accepted_and_one_more_level_is_not()
+    {
+        string Nest(int levels) => string.Concat(Enumerable.Repeat("<a>", levels)) + string.Concat(Enumerable.Repeat("</a>", levels));
+
+        Assert.Null(SafeXml.Parse(Xml(Nest(SafeXml.MaxDepth))).RejectReason);
+        Assert.Equal("xml_unsafe", SafeXml.Parse(Xml(Nest(SafeXml.MaxDepth + 1))).RejectReason);
+    }
+
+    [Fact]
+    public void A_document_with_too_many_elements_is_refused()
+    {
+        var xml = "<m>" + string.Concat(Enumerable.Repeat("<i/>", SafeXml.MaxElements)) + "</m>";
+
+        Assert.Equal("xml_unsafe", SafeXml.Parse(Xml(xml), maxCharacters: 2_000_000).RejectReason);
+        Assert.Null(SafeXml.Parse(Xml("<m>" + string.Concat(Enumerable.Repeat("<i/>", 100)) + "</m>")).RejectReason);
+    }
+
+    [Fact]
     public void A_utf8_byte_order_mark_is_accepted()
     {
         var bytes = Encoding.UTF8.GetPreamble().Concat(Encoding.UTF8.GetBytes(Plain)).ToArray();

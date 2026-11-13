@@ -33,5 +33,8 @@ public interface IPackageJobs
 {
     void ScheduleValidation(Guid organizationId, Guid packageId);
 
+    /// <summary>Runs the validation again after <paramref name="delay"/> (one pending run per package): used when the job finds the server or the client busy, so a worker is never held waiting.</summary>
+    void ScheduleValidationLater(Guid organizationId, Guid packageId, TimeSpan delay);
+
     void SchedulePurge(Guid organizationId, Guid packageId);
 }

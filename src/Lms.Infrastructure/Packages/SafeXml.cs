@@ -14,6 +14,12 @@ public static class SafeXml
 {
     public const int MaxCharacters = 1_000_000;
 
+    /// <summary>Deepest element nesting accepted (a manifest is a few levels deep).</summary>
+    public const int MaxDepth = 64;
+
+    /// <summary>Most elements accepted in one document.</summary>
+    public const int MaxElements = 20_000;
+
     public sealed record Result(XDocument? Document, string? RejectReason);
 
     /// <summary>Parses the stream; the reason is <c>xml_unsafe</c> for a DOCTYPE or a document over the cap and <c>manifest_invalid</c> for anything not well-formed.</summary>
@@ -39,6 +45,14 @@ public static class SafeXml
                 return new Result(null, PackageRejectReasons.xml_unsafe);
             }
 
+            // A streaming pass first: depth and element count are checked as the tokens go by, so a deeply nested or huge document is refused
+            // in linear time before anything builds a tree from it.
+            buffer.Position = 0;
+            if (ExceedsShape(buffer, maxCharacters))
+            {
+                return new Result(null, PackageRejectReasons.xml_unsafe);
+            }
+
             buffer.Position = 0;
             using var reader = XmlReader.Create(buffer, Settings(maxCharacters, DtdProcessing.Prohibit));
             return new Result(XDocument.Load(reader, LoadOptions.None), null);
@@ -47,6 +61,21 @@ public static class SafeXml
         {
             return new Result(null, PackageRejectReasons.manifest_invalid);
         }
+    }
+
+    private static bool ExceedsShape(Stream buffer, int maxCharacters)
+    {
+        using var reader = XmlReader.Create(buffer, Settings(maxCharacters, DtdProcessing.Prohibit));
+        var elements = 0;
+        while (reader.Read())
+        {
+            if (reader.NodeType == XmlNodeType.Element && (++elements > MaxElements || reader.Depth >= MaxDepth))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /// <summary>

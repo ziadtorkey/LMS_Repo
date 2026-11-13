@@ -70,6 +70,44 @@ public sealed class PackageValidationJobTests(LmsApiFactory factory) : IDisposab
         public Task<int> DeletePrefixAsync(string prefix, CancellationToken ct = default) => inner.DeletePrefixAsync(prefix, ct);
     }
 
+    private sealed class RecordingJobs : IPackageJobs
+    {
+        public List<(Guid Org, Guid Package, TimeSpan Delay)> Later { get; } = [];
+
+        public void ScheduleValidation(Guid organizationId, Guid packageId)
+        {
+        }
+
+        public void ScheduleValidationLater(Guid organizationId, Guid packageId, TimeSpan delay) => Later.Add((organizationId, packageId, delay));
+
+        public void SchedulePurge(Guid organizationId, Guid packageId)
+        {
+        }
+    }
+
+    /// <summary>Soft-deletes the upload (as the delete route does) while its first file is being stored: the purge of the delete has already run.</summary>
+    private sealed class DeletingStore(IPackageStore inner, Func<Task> deleteUpload) : IPackageStore
+    {
+        private bool _deleted;
+
+        public async Task PutAsync(string prefix, string relativePath, string contentType, Stream content, long length, CancellationToken ct = default)
+        {
+            if (!_deleted)
+            {
+                _deleted = true;
+                await deleteUpload();
+            }
+
+            await inner.PutAsync(prefix, relativePath, contentType, content, length, ct);
+        }
+
+        public Task<PackageFile?> OpenAsync(string prefix, string relativePath, CancellationToken ct = default) => inner.OpenAsync(prefix, relativePath, ct);
+
+        public Task<IReadOnlyList<string>> ListAsync(string prefix, CancellationToken ct = default) => inner.ListAsync(prefix, ct);
+
+        public Task<int> DeletePrefixAsync(string prefix, CancellationToken ct = default) => inner.DeletePrefixAsync(prefix, ct);
+    }
+
     private sealed record Setup(ContentWorld World, OrgUnitTestHost Api, string TempRoot);
 
     private async Task<Setup> SetUpAsync(string name, Action<IServiceCollection>? configure = null, bool withValidator = true, TimeSpan? timeout = null)
@@ -287,6 +325,64 @@ public sealed class PackageValidationJobTests(LmsApiFactory factory) : IDisposab
         Assert.Equal(("Rejected", "validation_timeout"), (row.Status, row.RejectReason));
         Assert.True(DateTime.UtcNow - started < TimeSpan.FromSeconds(30));
         Assert.Empty(await StoredAsync(s, row));
+        Assert.Equal(0, TempAreas(s));
+    }
+
+    [Fact]
+    public async Task A_busy_gate_reschedules_the_job_instead_of_holding_the_worker_and_other_clients_still_run()
+    {
+        var gate = new PackageValidationGate(Microsoft.Extensions.Options.Options.Create(new PackageValidationOptions { MaxConcurrent = 2 }));
+        var jobs = new RecordingJobs();
+        void Shared(IServiceCollection services)
+        {
+            services.RemoveAll<PackageValidationGate>();
+            services.AddSingleton(gate);
+            services.RemoveAll<IPackageJobs>();
+            services.AddSingleton<IPackageJobs>(jobs);
+        }
+
+        var a = await SetUpAsync("PV13A", Shared);
+        var b = await SetUpAsync("PV13B", Shared);
+        var first = await UploadCorpusAsync(a, "scorm12_valid");
+        var second = await UploadCorpusAsync(a, "scorm12_valid");
+        var other = await UploadCorpusAsync(b, "scorm12_valid");
+        await using var busy = gate.TryEnter(first.OrganizationId); // client A's validation is running
+
+        var started = DateTime.UtcNow;
+        await RunAsync(a, second.OrganizationId, second.Id); // returns at once: a worker is not held
+        var waited = DateTime.UtcNow - started;
+        await RunAsync(b, other.OrganizationId, other.Id); // another client is not blocked
+
+        Assert.True(waited < TimeSpan.FromSeconds(2), $"the job waited {waited}");
+        Assert.Equal(PackageUploadStatuses.Uploaded, (await ReloadAsync(second.Id)).Status);
+        Assert.Equal([(second.OrganizationId, second.Id)], jobs.Later.Select(l => (l.Org, l.Package)));
+        Assert.True(jobs.Later[0].Delay > TimeSpan.Zero);
+        Assert.Equal(PackageUploadStatuses.Ready, (await ReloadAsync(other.Id)).Status);
+    }
+
+    [Fact]
+    public async Task A_package_deleted_during_validation_leaves_nothing_in_the_store()
+    {
+        PackageUpload? target = null;
+        var s = await SetUpAsync("PV14", configure: services =>
+        {
+            services.RemoveAll<IPackageStore>();
+            services.AddScoped<IPackageStore>(sp => new DeletingStore(ActivatorUtilities.CreateInstance<MinioPackageStore>(sp), async () =>
+            {
+                await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+                db.Remove(await db.Set<PackageUpload>().SingleAsync(p => p.Id == target!.Id));
+                await db.SaveChangesAsync();
+            }));
+        });
+        target = await UploadCorpusAsync(s, "scorm12_valid");
+
+        await RunAsync(s, target.OrganizationId, target.Id);
+
+        Assert.Empty(await StoredAsync(s, target));
+        await using var check = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        var row = await check.Set<PackageUpload>().IgnoreQueryFilters().SingleAsync(p => p.Id == target.Id);
+        Assert.True(row.IsDeleted);
+        Assert.NotEqual(PackageUploadStatuses.Ready, row.Status);
         Assert.Equal(0, TempAreas(s));
     }
 
