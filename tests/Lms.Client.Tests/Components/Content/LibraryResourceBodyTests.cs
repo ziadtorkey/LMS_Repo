@@ -1,6 +1,7 @@
 using System.Globalization;
 using Bunit;
 using Lms.Client.Components.Content.Kinds;
+using Lms.Shared;
 using Lms.Client.Services;
 using Lms.Client.Services.Api;
 using Lms.Client.Tests.Support;
@@ -158,6 +159,34 @@ public sealed class LibraryResourceBodyTests : ClientTestContext
         var cut = Open(Guid.NewGuid());
 
         Assert.NotEmpty(cut.FindAll("[data-testid=library-body-error]"));
+    }
+
+    [Fact]
+    public void The_loading_spinner_has_a_translated_label()
+    {
+        var gate = new TaskCompletionSource<LibraryResourceDto>();
+        Services.AddSingleton<ILibraryApi>(new PendingLibrary(gate.Task));
+        Culture.Current = new CultureInfo("ar");
+        Render<MudPopoverProvider>();
+
+        var cut = Render<LibraryResourceBody>(p => p.Add(x => x.ResourceId, Guid.NewGuid()));
+
+        // The Arabic text differs from the key ("Common_Loading"), so a missing key would show.
+        Assert.Equal("جارٍ التحميل", cut.Find("[data-testid=library-body-loading]").GetAttribute("aria-label"));
+        gate.SetCanceled();
+    }
+
+    private sealed class PendingLibrary(Task<LibraryResourceDto> pending) : ILibraryApi
+    {
+        public Task<LibraryResourceDto> GetAsync(Guid id, CancellationToken ct = default) => pending;
+        public Task<PagedResult<LibraryResourceDto>> SearchAsync(LibraryQuery query, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<IReadOnlyList<string>> TagsAsync(Guid orgUnitId, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<LibraryResourceDto> CreateAsync(SaveLibraryResourceRequest request, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<LibraryResourceDto> UpdateAsync(Guid id, SaveLibraryResourceRequest request, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task DeleteAsync(Guid id, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<AssetUrlDto> DownloadAsync(Guid id, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<(Stream Content, string FileName)> ReadAsync(Guid id, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<ModuleNodeDto> AddToLessonAsync(Guid id, AddLibraryResourceToLessonRequest request, CancellationToken ct = default) => throw new NotSupportedException();
     }
 
     [Fact]
