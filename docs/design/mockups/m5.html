@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LMS M5 mockups</title>
 <!-- Design reference only (docs/design/m5-assessment-timetable-attendance.md, plan Task 21). Not served by the app.
-     Open with ?screen=gradebook|publish|scales|scale-edit|weights|my-grades|timetable|attendance-today|attendance-take|attendance-live|excuse-submit|excuse-review|alerts&lang=ar|en&theme=light|dark -->
+     Open with ?screen=gradebook|publish|scales|scale-edit|weights|my-grades|timetable|attendance-today|attendance-take|attendance-live|my-attendance|excuse-submit|excuse-review|alerts|states&lang=ar|en&theme=light|dark -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
@@ -135,6 +135,16 @@ tr.sel td { background:color-mix(in srgb, var(--mud-palette-primary) 6%, transpa
 .tab[aria-current] { color:var(--mud-palette-primary); border-color:var(--mud-palette-primary); }
 .row-actions { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
 
+/* Chips use the palette hover tint, as MudBlazor's Text chips do (HoverOpacity 0.06 light / 0.08 dark): status text stays >= 4.5:1. */
+.chip-success { background:color-mix(in srgb, var(--mud-palette-success) 6%, var(--mud-palette-surface)); }
+.chip-info { background:color-mix(in srgb, var(--mud-palette-info) 6%, var(--mud-palette-surface)); }
+.chip-warning { background:color-mix(in srgb, var(--mud-palette-warning) 6%, var(--mud-palette-surface)); }
+.chip-error { background:color-mix(in srgb, var(--mud-palette-error) 6%, var(--mud-palette-surface)); }
+:root[data-theme=dark] .chip-success { background:color-mix(in srgb, var(--mud-palette-success) 8%, var(--mud-palette-surface)); }
+:root[data-theme=dark] .chip-info { background:color-mix(in srgb, var(--mud-palette-info) 8%, var(--mud-palette-surface)); }
+:root[data-theme=dark] .chip-warning { background:color-mix(in srgb, var(--mud-palette-warning) 8%, var(--mud-palette-surface)); }
+:root[data-theme=dark] .chip-error { background:color-mix(in srgb, var(--mud-palette-error) 8%, var(--mud-palette-surface)); }
+
 /* ---------- M5 additions (proposed lms-stitch.css block; see the spec, section 9) ---------- */
 /* Gradebook grid */
 .lms-gb-wrap { overflow:auto; max-block-size:560px; scroll-padding-block-start:76px; scroll-padding-inline-start:220px; border-radius:0 0 var(--lms-radius-surface) var(--lms-radius-surface); }
@@ -200,15 +210,23 @@ tr.sel td { background:color-mix(in srgb, var(--mud-palette-primary) 6%, transpa
 .lms-att-opt { min-block-size:44px; border-radius:var(--lms-radius-control); border:1px solid var(--mud-palette-lines-default); background:var(--mud-palette-surface); display:flex; align-items:center; justify-content:center; gap:6px; font-size:13.5px; font-weight:500; position:relative; color:var(--mud-palette-text-primary); }
 .lms-att-opt kbd { font:inherit; font-size:11px; color:var(--mud-palette-text-secondary); border:1px solid var(--mud-palette-lines-default); border-radius:4px; padding:0 4px; }
 .lms-att-opt[aria-checked=true] { border-width:2px; font-weight:700; }
-.lms-att-opt.p[aria-checked=true] { color:var(--mud-palette-success); border-color:var(--mud-palette-success); background:color-mix(in srgb, var(--mud-palette-success) 10%, var(--mud-palette-surface)); }
-.lms-att-opt.a[aria-checked=true] { color:var(--mud-palette-error); border-color:var(--mud-palette-error); background:color-mix(in srgb, var(--mud-palette-error) 10%, var(--mud-palette-surface)); }
-.lms-att-opt.l[aria-checked=true] { color:var(--mud-palette-warning); border-color:var(--mud-palette-warning); background:color-mix(in srgb, var(--mud-palette-warning) 12%, var(--mud-palette-surface)); }
-.lms-att-opt.e[aria-checked=true] { color:var(--mud-palette-info); border-color:var(--mud-palette-info); background:color-mix(in srgb, var(--mud-palette-info) 10%, var(--mud-palette-surface)); }
+.lms-att-opt.p[aria-checked=true] { color:var(--mud-palette-success); border-color:var(--mud-palette-success); background:color-mix(in srgb, var(--mud-palette-success) 8%, var(--mud-palette-surface)); }
+.lms-att-opt.a[aria-checked=true] { color:var(--mud-palette-error); border-color:var(--mud-palette-error); background:color-mix(in srgb, var(--mud-palette-error) 8%, var(--mud-palette-surface)); }
+.lms-att-opt.l[aria-checked=true] { color:var(--mud-palette-warning); border-color:var(--mud-palette-warning); background:color-mix(in srgb, var(--mud-palette-warning) 8%, var(--mud-palette-surface)); }
+.lms-att-opt.e[aria-checked=true] { color:var(--mud-palette-info); border-color:var(--mud-palette-info); background:color-mix(in srgb, var(--mud-palette-info) 8%, var(--mud-palette-surface)); }
 .lms-att-opt[aria-checked=true]::before { content:'check'; font-family:'Material Symbols Rounded'; font-size:18px; }
 .lms-att-bar { position:sticky; inset-block-end:0; z-index:4; display:flex; flex-wrap:wrap; align-items:center; gap:8px 16px; padding:12px 16px calc(12px + env(safe-area-inset-bottom)); background:var(--mud-palette-surface); border-block-start:1px solid var(--mud-palette-lines-default); box-shadow:0 -6px 16px -8px rgba(0,0,0,.18); }
 .lms-att-bar .counts { display:flex; flex-wrap:wrap; gap:6px; flex:1; }
 .lms-session { padding:16px; display:flex; flex-direction:column; gap:10px; }
 .lms-session-top { display:flex; gap:12px; align-items:flex-start; }
+/* Undo toast after Mark all present */
+.lms-toast { position:sticky; inset-block-end:84px; z-index:5; margin:0 16px 8px; display:flex; align-items:center; gap:12px; padding:10px 14px; border-radius:var(--lms-radius-control); background:var(--mud-palette-text-primary); color:var(--mud-palette-surface); box-shadow:var(--lms-shadow-2); font-size:14px; }
+.lms-toast .btn { color:var(--mud-palette-surface); height:32px; }
+/* Child selector and absence list */
+.lms-absence { display:flex; align-items:center; gap:12px; padding:12px 16px; border-block-end:1px solid var(--mud-palette-table-lines); flex-wrap:wrap; }
+.lms-absence .t { flex:1 1 220px; min-inline-size:0; }
+.lms-state { padding:20px; display:flex; flex-direction:column; align-items:center; text-align:center; gap:8px; }
+.lms-state .sec-icon { inline-size:48px; block-size:48px; }
 /* Excuses */
 .lms-steps { display:flex; gap:8px; align-items:center; }
 .lms-steps span { display:flex; align-items:center; gap:6px; font-size:13px; color:var(--mud-palette-text-secondary); }
@@ -222,7 +240,7 @@ tr.sel td { background:color-mix(in srgb, var(--mud-palette-primary) 6%, transpa
 .box.on { background:var(--mud-palette-primary); border-color:var(--mud-palette-primary); color:var(--mud-palette-primary-text); }
 .lms-review { display:grid; grid-template-columns:minmax(0,1fr) 420px; gap:20px; align-items:start; }
 .lms-history { display:flex; gap:4px; flex-wrap:wrap; }
-.lms-history span { inline-size:22px; block-size:22px; border-radius:5px; display:grid; place-items:center; font-size:11px; font-weight:700; }
+.lms-history span { inline-size:24px; block-size:24px; border:1px solid currentColor; border-radius:5px; display:grid; place-items:center; font-size:11px; font-weight:700; }
 .h-p { background:color-mix(in srgb, var(--mud-palette-success) 14%, transparent); color:var(--mud-palette-success); }
 .h-a { background:color-mix(in srgb, var(--mud-palette-error) 14%, transparent); color:var(--mud-palette-error); }
 .h-l { background:color-mix(in srgb, var(--mud-palette-warning) 16%, transparent); color:var(--mud-palette-warning); }
@@ -316,6 +334,18 @@ const S = {
     d1:'2 days', d2:'5 h', d3:'1 day', drawerT:'Excuse · Ahmed Saeed', hist:'Last 30 days', histKey:'P present · A absent · L late · E excused',
     docT:'medical-note.jpg · 380 KB', docH:'Images open here; PDFs download.', approve:'Approve', reject:'Reject', escalate:'Escalate', rejComment:'Comment (required to reject)', approveNote:'Approving makes 3 records Excused.',
     alTitle:'Absence alerts', alSub:'Students who crossed the threshold: 5 absences in 30 days, a late counts as half.', formula:'4 absences + 3 lates × ½ = 5.5', open2:'Open attendance', alDate:'Alert on 2026-11-14'
+    , hP:'P', hA:'A', hL:'L', hE:'E', histKey:'P present · A absent · L late · E excused',
+    kbHint:'Arrow keys move · Enter or F2 edits, Enter again saves · Tab saves and moves right · Shift+F10 opens the cell menu · Esc cancels', kbHelp:'Keyboard shortcuts',
+    undoT:'26 students marked present. Rows you had marked kept their status.', undo:'Undo',
+    maTitle:'Attendance · Ahmed Saeed', maSub:'10-A · Term 1. Absences and lates your child’s teachers recorded.', child:'Child', range:'Dates', rangeV:'2026-11-01 – 2026-11-15',
+    stAbs:'Absences', stLate:'Lates', stExc:'Excused', explain:'Explain this absence', exSubmitted:'Excuse submitted', exApproved:'Excuse approved', exRejected:'Excuse rejected',
+    a1:'2026-11-12 · Physics 1 · Period 2', a2:'2026-11-12 · Mathematics · Period 3', a3:'2026-11-13 · Arabic · Period 1', a4:'2026-11-05 · English · Period 4', a5:'2026-11-03 · Chemistry · Period 1',
+    lateTxt:'Late', absTxt:'Absent', excTxt:'Excused', windowClosed:'The time to explain this absence has passed.', guardianOnly:'Your guardian can submit an excuse.',
+    statesTitle:'Empty, loading and error states', stNoPeriods:'No periods yet', stNoPeriodsT:'Add the school day’s periods before you build a timetable.', addPeriods:'Set up periods',
+    stNotPub:'This timetable isn’t published yet', stNotPubT:'Students and teachers see it after it’s published.',
+    stNoSess:'No sessions on this day', stNoSessT:'2026-11-23 is a holiday (National Day). Pick another date.', stNoStu:'No students in this class course', stNoStuT:'Enroll students before you take attendance.',
+    stConflict:'Someone else saved this session at 09:21. We loaded their marks; your unsaved changes are kept below each row.', stQueue:'No excuses to review', stQueueT:'New excuses for students in your units appear here.',
+    stAlerts:'No students over the threshold', stAlertsT:'Students appear here after 5 absences in 30 days (a late counts as half).', stLoading:'Loading', stError:'Couldn’t load today’s sessions.', retry:'Try again'
   },
   ar: {
     app:'نظام إدارة التعلم', ctx:'مدارس النور — فرع الشمال (معلم)', year:'2026/2027', other:'English',
@@ -370,6 +400,18 @@ const S = {
     d1:'يومان', d2:'5 ساعات', d3:'يوم', drawerT:'عذر · أحمد سعيد', hist:'آخر 30 يومًا', histKey:'P حاضر · A غائب · L متأخر · E معذور',
     docT:'medical-note.jpg · 380 ك.ب', docH:'تُعرض الصور هنا؛ ملفات PDF تُنزَّل.', approve:'قبول', reject:'رفض', escalate:'تصعيد', rejComment:'تعليق (مطلوب للرفض)', approveNote:'القبول يجعل 3 سجلات «معذور».',
     alTitle:'تنبيهات الغياب', alSub:'الطلاب الذين تجاوزوا الحد: 5 غيابات في 30 يومًا، والتأخر يُحسب نصف غياب.', formula:'4 غيابات + 3 تأخيرات × ½ = 5.5', open2:'فتح الحضور', alDate:'تنبيه في 2026-11-14'
+    , hP:'ح', hA:'غ', hL:'ت', hE:'ع', histKey:'ح حاضر · غ غائب · ت متأخر · ع معذور',
+    kbHint:'الأسهم للتنقل · Enter أو F2 للتعديل وEnter مرة أخرى للحفظ · Tab للحفظ والانتقال · Shift+F10 لقائمة الخلية · Esc للإلغاء', kbHelp:'اختصارات لوحة المفاتيح',
+    undoT:'سُجّل 26 طالبًا حاضرين. احتفظت الصفوف المسجّلة سابقًا بحالتها.', undo:'تراجع',
+    maTitle:'الحضور · أحمد سعيد', maSub:'10-أ · الفصل الأول. الغياب والتأخر الذي سجّله معلمو ابنك.', child:'الابن', range:'التواريخ', rangeV:'2026-11-01 – 2026-11-15',
+    stAbs:'غيابات', stLate:'تأخيرات', stExc:'معذور', explain:'شرح هذا الغياب', exSubmitted:'تم تقديم العذر', exApproved:'قُبل العذر', exRejected:'رُفض العذر',
+    a1:'2026-11-12 · الفيزياء 1 · الحصة 2', a2:'2026-11-12 · الرياضيات · الحصة 3', a3:'2026-11-13 · العربية · الحصة 1', a4:'2026-11-05 · الإنجليزية · الحصة 4', a5:'2026-11-03 · الكيمياء · الحصة 1',
+    lateTxt:'متأخر', absTxt:'غائب', excTxt:'معذور', windowClosed:'انتهت مهلة شرح هذا الغياب.', guardianOnly:'يمكن لولي أمرك تقديم العذر.',
+    statesTitle:'حالات الفراغ والتحميل والأخطاء', stNoPeriods:'لا توجد حصص بعد', stNoPeriodsT:'أضف حصص اليوم الدراسي قبل بناء الجدول.', addPeriods:'إعداد الحصص',
+    stNotPub:'هذا الجدول غير منشور بعد', stNotPubT:'يراه الطلاب والمعلمون بعد نشره.',
+    stNoSess:'لا حصص في هذا اليوم', stNoSessT:'2026-11-23 إجازة (اليوم الوطني). اختر تاريخًا آخر.', stNoStu:'لا طلاب في هذا المقرر الفصلي', stNoStuT:'سجّل الطلاب قبل تسجيل الحضور.',
+    stConflict:'حفظ شخص آخر هذه الحصة الساعة 09:21. حمّلنا تسجيلاته، واحتفظنا بتغييراتك غير المحفوظة تحت كل صف.', stQueue:'لا أعذار للمراجعة', stQueueT:'تظهر هنا الأعذار الجديدة لطلاب وحداتك.',
+    stAlerts:'لا طلاب فوق الحد', stAlertsT:'يظهر الطلاب هنا بعد 5 غيابات في 30 يومًا (التأخر يُحسب نصف غياب).', stLoading:'جارٍ التحميل', stError:'تعذّر تحميل حصص اليوم.', retry:'إعادة المحاولة'
   }
 }[lang];
 const F = (t, ...a) => a.reduce((s, v, i) => s.replace(`{${i}}`, v), t);
@@ -418,7 +460,7 @@ function gradebookGrid() {
   return `<div class="card" style="overflow:hidden">
     <div class="lms-filters" style="display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;padding:12px 16px;border-block-end:1px solid var(--mud-palette-lines-default)">
       <div class="seg"><span aria-selected="true">${S.term}</span><span>${lang==='ar'?'الفصل الثاني':'Term 2'}</span></div>
-      ${chip(S.weightsOk,'chip-success lms-weights-chip','check_circle')}<span class="spacer" style="flex:1"></span><span class="caption muted">${I('keyboard','ms-sm')} ${S.kbHint}</span></div>
+      ${chip(S.weightsOk,'chip-success lms-weights-chip','check_circle')}<span class="spacer" style="flex:1"></span><span class="caption muted">${S.kbHint}</span><button class="icon-btn sm" aria-label="${S.kbHelp}">${I('keyboard')}</button></div>
     <div class="lms-gb-wrap" tabindex="-1"><table class="lms-gb" role="grid" aria-label="${S.gbTitle}" aria-describedby="gbhint">
       <colgroup><col><col span="3"><col span="3"><col span="2"><col span="2"></colgroup>
       <thead><tr><th class="lms-gb-student" rowspan="2" scope="col">${S.student}</th>
@@ -550,6 +592,7 @@ function attendanceTake(live) {
     `<div class="card" style="overflow:visible"><div style="display:flex;flex-wrap:wrap;gap:8px 12px;padding:12px 16px;border-block-end:1px solid var(--mud-palette-lines-default)"><div class="input" style="flex:1 1 220px">${I('search')}<span class="ph-text">${S.search}</span></div><button class="btn btn-outlined" style="min-block-size:44px">${I('skip_next','flip')}${S.nextUn}</button></div>
     ${row(0,'p', live?I('videocam','ms-sm')+' '+S.liveSrc:'')}${row(1,'l', live?I('videocam','ms-sm')+' '+S.liveLate:`${I('sticky_note_2','ms-sm')} ${S.noteLate}`)}${row(2,'a','',true)}${row(3,'p', live?I('videocam','ms-sm')+' '+S.liveSrc:'')}${row(4,'', `<span style="color:var(--mud-palette-warning)">${I('radio_button_unchecked','ms-sm')} ${S.unmarked}</span>`)}${row(5,'e')}
     ${live ? `<div style="padding:14px 16px;border-block-start:1px solid var(--mud-palette-lines-default)"><div class="label" style="margin-block-end:8px">${S.unmatchedT}</div><div class="lms-check" style="flex-wrap:wrap">${I('person_off')}<span style="flex:1">${S.guest}</span><div class="input" style="inline-size:200px"><span class="ph-text">${S.thisIs}</span>${I('arrow_drop_down')}</div><button class="btn btn-sm">${S.skip}</button></div></div>` : ''}
+    ${live ? '' : `<div class="lms-toast" role="status">${I('done_all')}<span style="flex:1">${S.undoT}</span><button class="btn btn-sm">${S.undo}</button></div>`}
     <div class="lms-att-bar" role="region" aria-label="Summary"><div class="counts" role="status">${chip(S.sumP,'chip-success')}${chip(S.sumA,'chip-error')}${chip(S.sumL,'chip-warning')}${chip(S.sumE,'chip-info')}${chip(S.sumU,'','radio_button_unchecked')}</div><span class="caption muted desk-only">${I('cloud_done','ms-sm')} ${S.online}</span><button class="btn btn-filled" style="min-block-size:44px">${live?S.confirmAtt:S.saveAtt}</button></div></div>`);
 }
 /* ---------- Excuses ---------- */
@@ -567,12 +610,12 @@ function excuseSubmit() {
 }
 function excuseReview() {
   const r = (s, b, rs, n, d, age, att, sel) => `<tr ${sel?'style="background:color-mix(in srgb, var(--mud-palette-primary) 6%, transparent)"':''}><td data-label="${S.colStudent}"><b>${s}</b></td><td data-label="${S.colSubmitter}">${b}</td><td data-label="${S.colReason}">${rs} ${att?I('attach_file','ms-sm muted'):''}</td><td data-label="${S.colSessions}" class="num">${n}</td><td data-label="${S.colDate}" class="num">${d}</td><td data-label="${S.colAge}">${age}</td></tr>`;
-  const hist = 'PPAPPLPPPPPAPPPPEPPPPAPPLPPPPA'.split('').map(c => `<span class="h-${c.toLowerCase()}" title="${c}">${c}</span>`).join('');
+  const hist = 'PPAPPLPPPPPAPPPPEPPPPAPPLPPPPA'.split('').map(c => `<span class="h-${c.toLowerCase()}" title="${S['h'+c]}">${S['h'+c]}</span>`).join('');
   const drawer = `<aside class="card" aria-labelledby="dr"><div class="card-head"><span class="sec-icon">${I('assignment_late')}</span><div style="flex:1"><h2 class="h6" id="dr">${S.drawerT}</h2><div class="caption muted">${S.r1b} · ${S.rIll}</div></div>${chip(S.stSub,'chip-info chip-dot')}</div>
     <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
     <div><div class="label" style="margin-block-end:6px">${S.covered}</div><div class="lms-check">${I('event_busy','ms-sm')}${S.cov1}</div><div class="lms-check">${I('event_busy','ms-sm')}${S.cov2}</div><div class="lms-check">${I('schedule','ms-sm')}${S.cov3}</div></div>
     <div><div class="label" style="margin-block-end:6px">${S.attach}</div><div class="lms-check" style="flex-wrap:wrap"><span style="inline-size:64px;block-size:48px;border-radius:6px;background:linear-gradient(135deg,var(--mud-palette-background-gray),var(--lms-recessed));display:grid;place-items:center">${I('image')}</span><span style="flex:1"><span class="num" style="direction:ltr">${S.docT}</span><div class="help">${S.docH}</div></span><button class="icon-btn sm" aria-label="Download">${I('download')}</button></div></div>
-    <div><div class="label" style="margin-block-end:6px">${S.hist}</div><div class="lms-history" dir="ltr">${hist}</div><div class="help" style="margin-block-start:4px">${S.histKey}</div></div>
+    <div><div class="label" style="margin-block-end:6px">${S.hist}</div><div class="lms-history" dir="ltr" role="img" aria-label="${S.hist}: ${S.stAbs} 4, ${S.stLate} 2, ${S.stExc} 1">${hist}</div><div class="help" style="margin-block-start:4px">${S.histKey}</div></div>
     <div class="field"><span class="label">${S.rejComment}</span><div class="input" style="min-height:60px"></div></div>
     <div class="alert alert-success">${I('verified')}<span class="t">${S.approveNote}</span></div>
     <div class="row-actions" style="justify-content:flex-end"><button class="btn btn-outlined">${I('trending_up')}${S.escalate}</button><button class="btn btn-outlined btn-error">${S.reject}</button><button class="btn btn-filled">${S.approve}</button></div></div></aside>`;
@@ -586,7 +629,37 @@ function alerts() {
     <div class="card"><table class="stack"><thead><tr><th>${S.colStudent}</th><th>${lang==='ar'?'الحساب':'Count'}</th><th>${lang==='ar'?'التاريخ':'Date'}</th><th><span class="vh">…</span></th></tr></thead><tbody>
     ${r(S.r1s, S.formula, S.alDate)}${r(S.r3s, lang==='ar'?'5 غيابات + 0 تأخير = 5':'5 absences + 0 lates = 5', S.alDate)}${r(S.s5+' · 10-A', lang==='ar'?'3 غيابات + 4 تأخيرات × ½ = 5':'3 absences + 4 lates × ½ = 5', S.alDate)}</tbody></table></div>`);
 }
-const screens = { gradebook, publish, scales, 'scale-edit':scaleEdit, weights, 'my-grades':myGrades, timetable, 'attendance-today':attendanceToday, 'attendance-take':() => attendanceTake(false), 'attendance-live':() => attendanceTake(true), 'excuse-submit':excuseSubmit, 'excuse-review':excuseReview, alerts };
+
+function myAttendance() {
+  const row = (d, st, ex) => `<div class="lms-absence"><div class="t"><span class="num" style="direction:inherit">${d}</span></div>${chip(st[0], st[1], st[2])}${ex}</div>`;
+  const absent = [S.absTxt,'chip-error','cancel'], late = [S.lateTxt,'chip-warning','schedule'], exc = [S.excTxt,'chip-info','verified'];
+  return shell('att', header(S.maTitle, S.maSub) +
+    `<div class="row-actions" style="margin-block-end:16px;align-items:flex-end"><div class="field"><span class="label">${S.child}</span><div class="seg"><span aria-selected="true">${S.s1}</span><span>${S.s2}</span></div></div>
+      <div class="field"><span class="label">${S.range}</span><div class="input" style="min-inline-size:240px"><span class="num">${S.rangeV}</span><span class="ph-text"></span>${I('date_range')}</div></div></div>
+    <div class="lms-stats"><div class="card lms-stat"><div><div class="lms-stat-label">${S.stAbs}</div><div class="lms-stat-value">3</div></div><span class="sec-icon">${I('cancel')}</span></div><div class="card lms-stat"><div><div class="lms-stat-label">${S.stLate}</div><div class="lms-stat-value">1</div></div><span class="sec-icon">${I('schedule')}</span></div><div class="card lms-stat"><div><div class="lms-stat-label">${S.stExc}</div><div class="lms-stat-value">1</div></div><span class="sec-icon">${I('verified')}</span></div></div>
+    <div class="card">
+    ${row(S.a1, absent, `<button class="btn btn-outlined btn-sm" style="min-block-size:44px">${S.explain}</button>`)}
+    ${row(S.a2, absent, chip(S.exSubmitted,'chip-info chip-dot'))}
+    ${row(S.a3, late, `<button class="btn btn-outlined btn-sm" style="min-block-size:44px">${S.explain}</button>`)}
+    ${row(S.a4, exc, chip(S.exApproved,'chip-success chip-dot'))}
+    ${row(S.a5, absent, `<span class="caption muted">${I('lock','ms-sm')} ${S.windowClosed}</span>`)}
+    </div>`);
+}
+function states() {
+  const st = (icon, t, d, action='', cls='') => `<div class="card lms-state ${cls}"><span class="sec-icon">${I(icon)}</span><b>${t}</b><p class="muted" style="max-inline-size:360px">${d}</p>${action}</div>`;
+  return shell('att', header(S.statesTitle, '') + `<div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(300px,1fr));gap:16px">
+    ${st('schedule', S.stNoPeriods, S.stNoPeriodsT, `<button class="btn btn-filled">${S.addPeriods}</button>`)}
+    ${st('unpublished', S.stNotPub, S.stNotPubT)}
+    ${st('event_busy', S.stNoSess, S.stNoSessT)}
+    ${st('group_off', S.stNoStu, S.stNoStuT)}
+    ${st('inbox', S.stQueue, S.stQueueT)}
+    ${st('notifications_none', S.stAlerts, S.stAlertsT)}
+    <div class="card" style="padding:16px;display:flex;flex-direction:column;gap:10px"><div class="caption muted">${S.stLoading}</div>${[1,2,3].map(() => `<div style="block-size:64px;border-radius:12px;background:var(--mud-palette-background-gray)"></div>`).join('')}</div>
+    <div class="card" style="padding:16px"><div class="alert alert-error" role="alert">${I('error')}<span class="t" style="flex:1">${S.stError}</span><button class="btn btn-sm btn-outlined">${S.retry}</button></div></div>
+    <div class="card" style="padding:16px"><div class="alert alert-warning" role="alert">${I('sync_problem')}<span class="t">${S.stConflict}</span></div></div>
+    </div>`);
+}
+const screens = { gradebook, publish, scales, 'scale-edit':scaleEdit, weights, 'my-grades':myGrades, timetable, 'attendance-today':attendanceToday, 'attendance-take':() => attendanceTake(false), 'attendance-live':() => attendanceTake(true), 'excuse-submit':excuseSubmit, 'excuse-review':excuseReview, alerts, 'my-attendance':myAttendance, states };
 document.getElementById('app').innerHTML = (screens[screen] || gradebook)();
 </script>
 </body>
