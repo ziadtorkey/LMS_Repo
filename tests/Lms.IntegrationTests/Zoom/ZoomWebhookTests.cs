@@ -251,6 +251,8 @@ public sealed class ZoomWebhookTests(LmsApiFactory factory) : IDisposable
         }
 
         Assert.Equal(HttpStatusCode.TooManyRequests, last);
-        Assert.Equal(HttpStatusCode.TooManyRequests, (await host.SendAnonymousAsync(Signed(Event("meeting.started", meeting)))).StatusCode); // blocked even if valid
+        // The address is blocked for bad requests, but Zoom's validly signed ones still get through (a shared proxy address must not lock Zoom out).
+        Assert.Equal(HttpStatusCode.OK, (await host.SendAnonymousAsync(Signed(Event("meeting.started", meeting, ",\"after\":1")))).StatusCode);
+        Assert.Equal(HttpStatusCode.TooManyRequests, (await host.SendAnonymousAsync(Signed("{}", secret: "bad"))).StatusCode);
     }
 }

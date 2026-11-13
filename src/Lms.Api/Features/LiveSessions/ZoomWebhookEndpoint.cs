@@ -11,9 +11,10 @@ using Microsoft.EntityFrameworkCore;
 namespace Lms.Api.Features.LiveSessions;
 
 /// <summary>
-/// <c>POST /api/integrations/zoom/webhook</c>: the one anonymous M4b route (D54), called by Zoom. Order of checks: the address is not over
-/// its failed-verification limit (429, no database), the body is at most 256 KB (413), the signature over the raw bytes and then the
-/// five-minute window (401, no hint; each failure counts against the address), the global ceiling for verified traffic (429), the
+/// <c>POST /api/integrations/zoom/webhook</c>: the one anonymous M4b route (D54), called by Zoom. Order of checks: the body is at most
+/// 256 KB (413), the signature over the raw bytes and then the five-minute window (a failure is 401 with no hint, or 429 without any
+/// database access once the address is over its failed-verification limit; a valid signature is never refused for the address), the
+/// global ceiling for verified traffic (429), the
 /// URL-validation challenge, then the event: its receipt and its effect are written in <b>one transaction</b>, a re-delivery is a 200
 /// no-op, and a failure rolls both back and answers 5xx so Zoom retries.
 /// </summary>
@@ -29,11 +30,6 @@ public static class ZoomWebhookEndpoint
         ILogger<ZoomWebhookLog> logger, CancellationToken ct)
     {
         var address = http.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-        if (limiter.IsBlocked(address))
-        {
-            return Results.StatusCode(StatusCodes.Status429TooManyRequests);
-        }
-
         var body = await ReadBodyAsync(http, ct);
         if (body is null)
         {
@@ -44,6 +40,14 @@ public static class ZoomWebhookEndpoint
             body, http.Request.Headers["x-zm-request-timestamp"].FirstOrDefault(), http.Request.Headers["x-zm-signature"].FirstOrDefault());
         if (verification != ZoomVerification.Valid)
         {
+            // An address over its failed-verification limit is refused without touching the database. The check comes after the (cheap)
+            // signature check on purpose: behind a proxy that does not forward the real address every caller shares one address, and a
+            // flood of bad requests must not lock Zoom itself out; a validly signed request always gets through.
+            if (limiter.IsBlocked(address))
+            {
+                return Results.StatusCode(StatusCodes.Status429TooManyRequests);
+            }
+
             limiter.RegisterFailure(address);
             logger.LogWarning("A Zoom webhook failed verification ({Reason})", verification); // never the payload or the headers
             return Results.Unauthorized();

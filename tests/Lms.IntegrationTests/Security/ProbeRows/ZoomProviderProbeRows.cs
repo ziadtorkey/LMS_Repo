@@ -14,9 +14,6 @@ public sealed class ZoomProviderProbeRows : IProbeRowModule
 
     private static IEnumerable<ProbeRow> Build() =>
     [
-        new("live sessions provider status", HttpMethod.Get, Routes.LiveSessionsProviderStatus,
-            (_, _) => Task.FromResult(new ProbeRequest(Routes.LiveSessionsProviderStatus)),
-            Expect(Ok, Ok, Ok, Ok, Ok, Ok)),
         // The one anonymous M4b route: every caller, signed in or not, is an unsigned request to Zoom's webhook and is refused the same way.
         new("zoom webhook (unsigned)", HttpMethod.Post, Routes.ZoomWebhook,
             (_, _) => Task.FromResult(new ProbeRequest(Routes.ZoomWebhook, new { @event = "meeting.ended" })),

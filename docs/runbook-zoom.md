@@ -45,7 +45,7 @@ Account-level settings can override what the platform sets per meeting. Set them
 
 ## 5. Webhook protection
 
-Order of checks: an address with too many failed verifications in a minute gets 429 without touching the database; body over 256 KB is 413; signature over the raw bytes in constant time, then a five-minute window (401 with no hint, and the failure counts against the address); then a high global ceiling for verified traffic (valid bursts and Zoom retries are never limited per address). Run the API behind a proxy that forwards the real client address (`ForwardedHeaders`), or the per-address limit sees only the proxy.
+Order of checks: body over 256 KB is 413; signature over the raw bytes in constant time, then a five-minute window (a failure is 401 with no hint and counts against the address; once an address has too many failures in a minute its failing requests get 429 without touching the database, but a **validly signed request is never refused for its address**, so a proxy that hides the real client address cannot lock Zoom out); then a high global ceiling for verified traffic (valid bursts and Zoom retries are never limited per address). Run the API behind a proxy that forwards the real client address (`ForwardedHeaders`), or the per-address limit sees only the proxy.
 
 If Zoom ever re-sends an event with its original timestamp (not a fresh one), the five-minute window refuses the retry: capture one such retry, and if confirmed widen the window to Zoom's retry schedule (receipts already deduplicate).
 

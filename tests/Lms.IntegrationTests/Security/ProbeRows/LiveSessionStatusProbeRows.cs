@@ -4,10 +4,9 @@ using static Lms.IntegrationTests.Security.ProbeExpect;
 namespace Lms.IntegrationTests.Security;
 
 /// <summary>
-/// The live session routes that are not tied to one class course or one session (M4b Task 1 contract, route table "Live sessions"):
-/// <c>upcoming</c> (filtered by relationship and unit scope, never 404) and <c>provider-status</c> (<c>LiveSessions.Manage</c>, no
-/// relationship check). The rows of the class course routes and of one session live in <c>LiveSessionsProbeRows</c> (Task 4) and
-/// those of recording, participants and join come with Tasks 5 to 7. They are pending until their route is mapped.
+/// The provider-status route, which is tied to no class course or session (<c>LiveSessions.Manage</c>, no relationship check). The
+/// rows of the class course routes, of one session and of <c>upcoming</c> live in <c>LiveSessionsProbeRows</c>; the Zoom webhook row is
+/// in <c>ZoomProviderProbeRows</c>. Each route has exactly one row: a duplicate fails the matrix.
 /// </summary>
 public sealed class LiveSessionStatusProbeRows : IProbeRowModule
 {
@@ -15,9 +14,6 @@ public sealed class LiveSessionStatusProbeRows : IProbeRowModule
 
     private static IEnumerable<ProbeRow> Build() =>
     [
-        new("live sessions upcoming", HttpMethod.Get, Routes.LiveSessionsUpcoming,
-            (_, _) => Task.FromResult(new ProbeRequest(Routes.LiveSessionsUpcoming)),
-            Expect(Ok, Ok, Ok, Ok, Ok, Ok)),
         new("live sessions provider status", HttpMethod.Get, Routes.LiveSessionsProviderStatus,
             (_, _) => Task.FromResult(new ProbeRequest(Routes.LiveSessionsProviderStatus)),
             Expect(Ok, Ok, Ok, Ok, Ok, Ok)),
