@@ -170,6 +170,7 @@ Other patterns:
 
 - Never hard-code UI text. Add every key to **both** `SharedResource.ar.resx` and `.en.resx`, and keep the wording short and plain in both. Business names come from `NameAr`/`NameEn` through `Culture.Pick`.
 - Keep emails, phone numbers, ids, dates and codes left-to-right: use `<span dir="ltr">` or `DetailItem Ltr="true"`. Dates use `yyyy-MM-dd` (invariant), as they do now.
+- **Western digits (0–9) in both languages** for grades, points, percentages, dates, times and counts (M5 L20; numbers are culture-invariant since #509). Numbers next to Arabic text sit in an LTR span with tabular numerals.
 - Use logical CSS only (`margin-inline-start`, `inset-inline-end`, `text-align: start`). Never use `left`/`right` or `ml-`/`mr-` for direction-dependent spacing. Use `ms-`/`me-`.
 - Check every page in Arabic and English, at 1440 and 360 px, in light and dark mode, before you open the PR.
 
@@ -179,6 +180,8 @@ Other patterns:
 - [ ] Every input has a visible label. Helper text explains rules. Errors show at the field.
 - [ ] Icon-only buttons have an `aria-label`. Decorative icons and avatars are `aria-hidden`.
 - [ ] Every control is keyboard reachable, with a visible focus ring (the theme provides it; never remove an outline).
+- [ ] **Focus is never obscured** (WCAG 2.4.11): inside a scroller with sticky headers or columns, set `scroll-padding` to their size so the focused item is never under them; test in LTR and RTL.
+- [ ] **Forced colors:** focus outlines use `Highlight`, and chips and toggle buttons keep a `CanvasText` border, so state survives Windows high-contrast mode.
 - [ ] Text contrast is at least 4.5:1 in light and dark mode.
 - [ ] Permission rules decide whether an action is hidden or disabled. Never hide an action only for looks.
 - [ ] Loading, empty and error states are all present (`ServerTable` handles lists).
@@ -222,6 +225,17 @@ The full spec is `docs/design/m4b-live-and-packages.md`. Mockups are in `docs/de
   - The frame stays white in both themes.
   - The staff preview has an Info strip: "Preview: nothing is recorded."
   - A timed-out token shows an overlay with Reload.
+
+## 7b. M5 patterns: gradebook, scales, timetable, attendance, excuses
+
+The full spec is `docs/design/m5-assessment-timetable-attendance.md`. Mockups are in `docs/design/mockups/m5.html` and screenshots in `docs/screenshots/ux-m5/`. In short:
+
+- **Gradebook grid** (`lms-gb`): a real `role="grid"` table with a sticky header and student column, category groups, tinted category, Final and Band columns, and text forms for every cell state. The keyboard follows plan L24 (Enter or F2 edits, Shift+F10 opens the menu). Below 600 px it becomes **one** student-first list (`lms-gb-item`).
+- **Weights chip** (`lms-weights-chip`): success at 100, warning with the missing amount otherwise.
+- **Scales**: a band editor plus a **coverage strip** (`lms-coverage`, LTR, with gaps hatched and also listed as text). The provisional chip appears on admin pages only, and publishing under a provisional scale is blocked with an error alert.
+- **Timetable** (`lms-tt`, `lms-slot`): the days mirror in RTL but the times don't. Exceptions and conflicts are chips with words. Moving works by keyboard (M, arrows, Enter, Esc), a menu, or drag. Below 900 px it becomes a day view.
+- **Attendance** (`lms-att-*`): four labelled 44 px buttons per row in a radiogroup, digit shortcuts 1–4 on desktop, and a sticky summary bar above the safe area.
+- **Excuses**: a stepper on phones, a review panel with the 30-day history strip (letters, not only colours), and raster-only inline previews.
 
 ## 8. Phase 2 status (page-by-page passes)
 
