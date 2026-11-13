@@ -227,6 +227,25 @@ public sealed class PackagePlayerTests : ClientTestContext
     }
 
     [Fact]
+    public async Task A_failed_flush_keeps_the_frame_and_the_progress_instead_of_relaunching()
+    {
+        var player = await StartedAsync();
+        var firstSrc = player.Find("[data-testid=package-frame]").GetAttribute("src");
+        await player.InvokeAsync(() => Bridge().OnPortMessage("commit", 9, "Scorm", new() { ["cmi.suspend_data"] = "keep me" }));
+        _api.CommitFailure = new HttpRequestException("offline");
+
+        _clock.Advance(TimeSpan.FromMinutes(97)); // 80 % of the token: the silent re-launch wants to swap the frame
+        player.WaitForAssertion(() => Assert.Equal("Failed", player.Find("[data-testid=package-save-state]").GetAttribute("data-status")), Wait);
+
+        Assert.Single(_api.Launches); // no new token was asked for
+        Assert.Equal(firstSrc, player.Find("[data-testid=package-frame]").GetAttribute("src")); // the frame stayed
+        Assert.True(Bridge().HasPending); // and the unsaved progress with it
+        _api.CommitFailure = null;
+        player.Find("[data-testid=package-save-retry]").Click();
+        player.WaitForAssertion(() => Assert.Equal(9, Assert.Single(_api.Commits).Request.Seq), Wait);
+    }
+
+    [Fact]
     public async Task Expired_token_offers_reload_with_the_same_attempt()
     {
         var player = await StartedAsync();

@@ -88,7 +88,8 @@
     private PackageAttemptDto? _attempt;
     private PackageSaveStatus _saveStatus = PackageSaveStatus.Idle;
     private DateTime _tokenServerNow, _tokenExpires;
-    private DateTimeOffset _tokenLoadedAt;
+    private DateTimeOffset _tokenLoadedAt, _nextRelaunchAt;
+    private static readonly TimeSpan RelaunchBackoff = TimeSpan.FromSeconds(20);
 
     /// <summary>The package of the module (<c>Content.RefId</c>).</summary>
     [Parameter, EditorRequired] public Guid? PackageId { get; set; }
@@ -213,7 +214,7 @@
         var now = ServerNow;
         if (now >= _tokenExpires) { _phase = Phase.Expired; StateHasChanged(); return; }
         // Re-launch at 80 % of the token's life (the same attempt), swapping the frame only after a flush. A preview just runs out.
-        if (!_preview && now >= _tokenServerNow + (_tokenExpires - _tokenServerNow) * 0.8) await RelaunchAsync(visible: false);
+        if (!_preview && now >= _tokenServerNow + (_tokenExpires - _tokenServerNow) * 0.8 && Clock.GetUtcNow() >= _nextRelaunchAt) await RelaunchAsync(visible: false);
     }
 
     private Task ReloadAsync() => RelaunchAsync(visible: true);
@@ -224,7 +225,16 @@
         _relaunching = true;
         try
         {
-            if (_bridge is not null) await _bridge.FlushAsync(); // drain the port and wait for the server's answer first
+            if (_bridge is not null)
+            {
+                await _bridge.FlushAsync(); // drain the port and wait for the server's answer first
+                // Progress that could not be saved must not be lost with the old frame: keep it, keep the save state (Retry), try later.
+                if (_bridge.HasPending || _bridge.Status == PackageSaveStatus.Failed)
+                {
+                    _nextRelaunchAt = Clock.GetUtcNow() + RelaunchBackoff;
+                    return;
+                }
+            }
             if (_preview)
             {
                 var p = await Api.PreviewAsync(id);
@@ -240,6 +250,7 @@
         catch (Exception ex) when (ex is ApiProblemException or HttpRequestException)
         {
             _phase = visible ? Phase.Expired : _phase; // a silent re-launch that failed keeps the frame until the token really runs out
+            _nextRelaunchAt = Clock.GetUtcNow() + RelaunchBackoff; // and is not retried every second
         }
         finally
         {
@@ -294,5 +305,10 @@
     {
         _timer?.Dispose();
         if (_bridge is not null) await _bridge.DisposeAsync();
+        if (_fullscreen)
+        {
+            try { await Js.InvokeVoidAsync("lmsPackageFullscreen.exit"); }
+            catch (JSDisconnectedException) { }
+        }
     }
 }
