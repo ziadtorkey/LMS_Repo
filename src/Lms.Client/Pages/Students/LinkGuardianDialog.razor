@@ -1,6 +1,7 @@
 @using Lms.Client.Components.People
 @using Lms.Client.Services.Api
 @inject IGuardiansApi Api
+@inject Microsoft.JSInterop.IJSRuntime Js
 @inject NavigationManager Navigation
 
 @* Links one guardian to a student: a registered guardian found by national id or mobile, or a new one. *@
@@ -33,6 +34,7 @@
     private async Task SaveAsync()
     {
         _error = null;
+        await FormFlush.CommitPendingAsync(Js);
         var rows = _rows.Where(r => !r.IsEmpty).ToList();
         if (rows.Count == 0 || !GuardianRow.ValidateAll(_rows)) return;
 

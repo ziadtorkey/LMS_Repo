@@ -17,6 +17,7 @@ internal sealed class AssignmentConfiguration : IEntityTypeConfiguration<Assignm
         builder.Property(x => x.InstructionsHtmlAr).HasColumnType("longtext");
         builder.Property(x => x.InstructionsHtmlEn).HasColumnType("longtext");
         builder.Property(x => x.DueAtUtc).HasPrecision(6);
+        builder.Property(x => x.DueSoonNotifiedAtUtc).HasPrecision(6);
         builder.Property(x => x.MaxGrade).HasPrecision(9, 2);
         builder.Property(x => x.LatePolicy).HasMaxLength(20).IsRequired();
         builder.Property(x => x.ResubmissionRule).HasMaxLength(20).IsRequired();
@@ -66,5 +67,25 @@ internal sealed class SubmissionFileConfiguration : IEntityTypeConfiguration<Sub
         builder.HasIndex(x => x.AssetId);
         builder.HasOne<Submission>().WithMany().HasForeignKey(x => x.SubmissionId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<Asset>().WithMany().HasForeignKey(x => x.AssetId).OnDelete(DeleteBehavior.Restrict);
+    }
+}
+
+internal sealed class SubmissionFeedbackConfiguration : IEntityTypeConfiguration<SubmissionFeedback>
+{
+    public void Configure(EntityTypeBuilder<SubmissionFeedback> builder)
+    {
+        builder.ToTable("SubmissionFeedbacks");
+        AcademicColumns.Unit(builder);
+        builder.Property(x => x.Points).HasPrecision(9, 2);
+        builder.Property(x => x.FinalGrade).HasPrecision(9, 2);
+        builder.Property(x => x.ReturnedFinalGrade).HasPrecision(9, 2);
+        builder.Property(x => x.FeedbackHtml).HasColumnType("longtext");
+        builder.Property(x => x.GradedAtUtc).HasPrecision(6);
+        builder.Property(x => x.ReturnedAtUtc).HasPrecision(6);
+        builder.HasIndex(x => x.SubmissionKey).IsUnique();
+        builder.HasIndex(x => new { x.AssignmentId, x.StudentId });
+        builder.HasIndex(x => new { x.OrganizationId, x.OrgUnitPath });
+        builder.HasOne<Submission>().WithMany().HasForeignKey(x => x.SubmissionId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<Asset>().WithMany().HasForeignKey(x => x.AnnotatedFileAssetId).OnDelete(DeleteBehavior.Restrict);
     }
 }
