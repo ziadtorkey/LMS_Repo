@@ -1141,6 +1141,8 @@
   <data name="CompletionState_NotStarted" xml:space="preserve"><value>Not started</value></data>
   <data name="CompletionState_InProgress" xml:space="preserve"><value>In progress</value></data>
   <data name="CompletionState_Completed" xml:space="preserve"><value>Done</value></data>
+  <data name="ClassCourse_TabForum" xml:space="preserve"><value>Forum</value></data>
+  <data name="ClassCourse_TabAnnouncements" xml:space="preserve"><value>Announcements</value></data>
   <data name="MyClassCourses_OpenCourse" xml:space="preserve"><value>Open course</value></data>
   <data name="Home_ContinueLearning" xml:space="preserve"><value>Continue learning</value></data>
   <data name="Asset_Limits" xml:space="preserve"><value>Allowed types: {0}. Maximum size: {1} MB.</value></data>
@@ -1259,8 +1261,6 @@
   <data name="Module_Completion" xml:space="preserve"><value>Completion</value></data>
   <data name="ClassCourse_Sections" xml:space="preserve"><value>Class course sections</value></data>
   <data name="ClassCourse_TabPlan" xml:space="preserve"><value>Plan</value></data>
-  <data name="ClassCourse_TabForum" xml:space="preserve"><value>Forum</value></data>
-  <data name="ClassCourse_TabAnnouncements" xml:space="preserve"><value>Announcements</value></data>
   <data name="Forum_Title" xml:space="preserve"><value>Forum</value></data>
   <data name="Forum_NewThread" xml:space="preserve"><value>New thread</value></data>
   <data name="Forum_ThreadTitle" xml:space="preserve"><value>Title</value></data>

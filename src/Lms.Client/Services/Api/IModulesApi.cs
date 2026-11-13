@@ -249,6 +249,7 @@ public sealed class FakeModulesApi : IModulesApi
 
     public Task<CourseProgressDto> GetProgressAsync(Guid classCourseId, Guid? studentId = null, CancellationToken ct = default)
     {
+        if (Failure is not null) return Task.FromException<CourseProgressDto>(Failure);
         var counted = _modules.Where(m => m.ClassCourseId == classCourseId && m.Node.IsVisibleNow && m.Node.CompletionRule != CompletionRules.None).ToList();
         var done = counted.Count(m => m.Node.CompletionState == CompletionStates.Completed);
         var lessons = counted.GroupBy(m => m.LessonKey)

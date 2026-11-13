@@ -1141,6 +1141,8 @@
   <data name="CompletionState_NotStarted" xml:space="preserve"><value>لم تبدأ</value></data>
   <data name="CompletionState_InProgress" xml:space="preserve"><value>قيد التنفيذ</value></data>
   <data name="CompletionState_Completed" xml:space="preserve"><value>مكتملة</value></data>
+  <data name="ClassCourse_TabForum" xml:space="preserve"><value>المنتدى</value></data>
+  <data name="ClassCourse_TabAnnouncements" xml:space="preserve"><value>الإعلانات</value></data>
   <data name="MyClassCourses_OpenCourse" xml:space="preserve"><value>فتح المقرر</value></data>
   <data name="Home_ContinueLearning" xml:space="preserve"><value>تابع التعلّم</value></data>
   <data name="Asset_Limits" xml:space="preserve"><value>الأنواع المسموحة: {0}. الحد الأقصى للحجم: {1} ميجابايت.</value></data>
@@ -1259,8 +1261,6 @@
   <data name="Module_Completion" xml:space="preserve"><value>الإكمال</value></data>
   <data name="ClassCourse_Sections" xml:space="preserve"><value>أقسام مقرر الفصل</value></data>
   <data name="ClassCourse_TabPlan" xml:space="preserve"><value>الخطة</value></data>
-  <data name="ClassCourse_TabForum" xml:space="preserve"><value>المنتدى</value></data>
-  <data name="ClassCourse_TabAnnouncements" xml:space="preserve"><value>الإعلانات</value></data>
   <data name="Forum_Title" xml:space="preserve"><value>المنتدى</value></data>
   <data name="Forum_NewThread" xml:space="preserve"><value>موضوع جديد</value></data>
   <data name="Forum_ThreadTitle" xml:space="preserve"><value>العنوان</value></data>
