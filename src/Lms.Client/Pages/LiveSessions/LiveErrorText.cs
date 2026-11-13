@@ -13,6 +13,35 @@ public static class LiveErrorText
     /// <c>provider_unavailable</c> says how long to wait: the <c>Retry-After</c> seconds rounded up to minutes ("in about 5 min"),
     /// "in a minute" below a minute or without the header. <c>feature_disabled</c> is the plain "turned off" message.
     /// </summary>
+    /// <summary>
+    /// <see cref="ApiCalls.RunAsync(Func{Task}, Microsoft.AspNetCore.Components.NavigationManager, IStringLocalizer{SharedResource}, Action{string})"/>
+    /// for live-session calls: the same redirects, but a problem is worded by <see cref="For"/> so <c>provider_unavailable</c> keeps its
+    /// <c>Retry-After</c> and <c>feature_disabled</c> its plain message.
+    /// </summary>
+    public static async Task<bool> RunAsync(Func<Task> action, Microsoft.AspNetCore.Components.NavigationManager navigation,
+        IStringLocalizer<SharedResource> l, bool arabic, Action<string> onError)
+    {
+        try
+        {
+            await action();
+            return true;
+        }
+        catch (Exception ex) when (ApiCalls.TryRedirect(ex, navigation))
+        {
+            return false;
+        }
+        catch (ApiProblemException ex)
+        {
+            onError(For(ex, l, arabic));
+            return false;
+        }
+        catch (HttpRequestException)
+        {
+            onError(l["Error_Generic"].Value);
+            return false;
+        }
+    }
+
     public static string For(ApiProblemException ex, IStringLocalizer<SharedResource> l, bool arabic)
     {
         if (ex.Code == ProblemCodes.feature_disabled) return l["Live_FeatureOff"];

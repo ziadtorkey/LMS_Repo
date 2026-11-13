@@ -136,13 +136,13 @@ else
         // The server range is generous (a session that has started is still upcoming until it ends); the exact split uses the server clock.
         var query = _upcoming ? new LiveSessionQuery(FromUtc: now.AddMinutes(-LiveSessionLimits.DurationMaxMinutes), PageSize: 100)
                               : new LiveSessionQuery(ToUtc: now, PageSize: 100);
-        var ok = await ApiCalls.RunAsync(async () =>
+        var ok = await LiveErrorText.RunAsync(async () =>
         {
             var page = await Live.ListAsync(Id, query);
             var rows = page.Items.Where(s => (s.EndsAtUtc > s.ServerNowUtc) == _upcoming).ToList();
             _items = _upcoming ? rows.OrderBy(s => s.StartsAtUtc).ToList() : rows.OrderByDescending(s => s.StartsAtUtc).ToList();
             await LoadSeriesSizesAsync();
-        }, Navigation, L, message => _error = message);
+        }, Navigation, L, Culture.IsRightToLeft, message => _error = message);
         if (!ok) _items = [];
         _loading = false;
     }
@@ -182,7 +182,7 @@ else
     private async Task<LiveSessionDto?> ReadAsync(LiveSessionListItemDto row)
     {
         LiveSessionDto? full = null;
-        var ok = await ApiCalls.RunAsync(async () => full = await Live.GetAsync(row.Id), Navigation, L, m => _error = m);
+        var ok = await LiveErrorText.RunAsync(async () => full = await Live.GetAsync(row.Id), Navigation, L, Culture.IsRightToLeft, m => _error = m);
         return ok ? full : null;
     }
 
@@ -214,7 +214,7 @@ else
         {
             return;
         }
-        if (await ApiCalls.RunAsync(() => Live.DeleteAsync(full.Id, scope), Navigation, L, m => _error = m)) await LoadAsync();
+        if (await LiveErrorText.RunAsync(() => Live.DeleteAsync(full.Id, scope), Navigation, L, Culture.IsRightToLeft, m => _error = m)) await LoadAsync();
     }
 
     private async Task<string?> AskScopeAsync(LiveSessionDto session, bool cancelling)

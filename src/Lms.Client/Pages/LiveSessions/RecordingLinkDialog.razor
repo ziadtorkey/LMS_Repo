@@ -64,8 +64,8 @@
         _saving = true;
         _error = null;
         LiveSessionDto? saved = null;
-        var ok = await ApiCalls.RunAsync(async () => saved = await Live.SetRecordingAsync(Session.Id, new RecordingLinkRequest(_url!.Trim())),
-            Navigation, L, message => _error = message);
+        var ok = await LiveErrorText.RunAsync(async () => saved = await Live.SetRecordingAsync(Session.Id, new RecordingLinkRequest(_url!.Trim())),
+            Navigation, L, Culture.IsRightToLeft, message => _error = message);
         _saving = false;
         if (ok && saved is not null) MudDialog.Close(DialogResult.Ok(saved));
     }

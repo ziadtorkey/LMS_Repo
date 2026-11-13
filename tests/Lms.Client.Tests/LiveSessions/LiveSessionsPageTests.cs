@@ -191,6 +191,41 @@ public sealed class LiveSessionsPageTests : LessonPlansTestContext
         page.WaitForAssertion(() => Assert.Contains($"delete {first.Id} {SeriesEditScopes.ThisAndFollowing}", _live.Calls), Wait);
     }
 
+    private static ApiProblemException Busy(int seconds = 300) =>
+        new(409, ProblemCodes.provider_unavailable, null, null, retryAfterSeconds: seconds);
+
+    [Fact]
+    public async Task Cancelling_a_session_keeps_the_retry_after_when_the_provider_is_busy()
+    {
+        var single = Seed();
+        var page = await OpenAsync();
+        _live.Failure = null;
+        page.Find($"[data-testid=live-cancel-{single.Id}]").Click();
+        Dialogs.WaitForElement(".mud-dialog button.mud-button-filled", Wait);
+        _live.Failure = Busy();
+
+        Dialogs.Find(".mud-dialog button.mud-button-filled").Click();
+
+        var error = page.WaitForElement("[data-testid=live-error]", Wait);
+        Assert.Contains("Try again in about 5 min", error.TextContent);
+    }
+
+    [Fact]
+    public async Task Saving_a_recording_link_keeps_the_retry_after_when_the_provider_is_busy()
+    {
+        var session = Seed();
+        var page = await OpenAsync();
+        page.Find($"[data-testid=live-recording-{session.Id}]").Click();
+        Dialogs.WaitForElement("input[data-testid=recording-url]", Wait);
+        Dialogs.Find("input[data-testid=recording-url]").Input("https://drive.google.com/file/d/abc/view");
+        _live.Failure = Busy();
+
+        Dialogs.Find("[data-testid=recording-save]").Click();
+
+        var error = Dialogs.WaitForElement("[data-testid=recording-error]", Wait);
+        Assert.Contains("Try again in about 5 min", error.TextContent);
+    }
+
     [Fact]
     public async Task SyncFailed_session_shows_the_explanation()
     {
