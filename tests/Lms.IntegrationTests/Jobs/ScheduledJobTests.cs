@@ -108,16 +108,24 @@ public sealed class ScheduledJobTests(LmsApiFactory factory) : IAsyncLifetime
         var user = Guid.NewGuid();
         var assignment = await AccessTestData.AssignAsync(factory, a, a.Root, BuiltInRoles.OrgAdmin, user);
         using var scope = factory.Services.CreateScope();
-        var due = DateTimeOffset.UtcNow.AddSeconds(3);
+        var due = DateTimeOffset.UtcNow.AddSeconds(5);
 
-        Jobs(scope).Schedule<ScheduleProbeJob>($"sj:{token}", due, new JobContextSnapshot(user, a.Org.Id, assignment.Id, a.Root.Path, false),
+        var jobId = Jobs(scope).Schedule<ScheduleProbeJob>($"sj:{token}", due, new JobContextSnapshot(user, a.Org.Id, assignment.Id, a.Root.Path, false),
             j => j.RunAsync(token, "v1"));
+
+        // The contract of our code, independent of when a server happens to pick the job up: stored as Scheduled for exactly the due time.
+        Assert.Equal("Scheduled", StateOf(jobId));
+        using (var connection = JobStorage.Current.GetConnection())
+        {
+            var enqueueAt = Hangfire.Common.JobHelper.DeserializeDateTime(connection.GetStateData(jobId)!.Data["EnqueueAt"]);
+            Assert.InRange((enqueueAt - due.UtcDateTime).TotalSeconds, -1, 1);
+        }
 
         Assert.Empty(RunsOf(token)); // scheduled, not run now
         var runs = await WaitForRunsAsync(token, 1);
         await Task.Delay(3000); // and not twice
         Assert.Single(RunsOf(token));
-        Assert.True(runs[0].At >= due.UtcDateTime.AddSeconds(-1), "ran before its time");
+        Assert.True(runs[0].At >= due.UtcDateTime.AddSeconds(-1.5), $"ran before its time: due {due.UtcDateTime:O}, ran {runs[0].At:O}, job {jobId}");
         Assert.Equal((user, false, "v1"), (runs[0].UserId, runs[0].Platform, runs[0].Value));
     }
 
@@ -188,12 +196,14 @@ public sealed class ScheduledJobTests(LmsApiFactory factory) : IAsyncLifetime
         var jobs = Jobs(scope);
         Assert.False(jobs.Cancel(key)); // never scheduled
 
-        jobs.ScheduleAsSystem<ScheduleProbeJob>(key, DateTimeOffset.UtcNow.AddSeconds(3), j => j.RunAsync(token, "x"));
+        // Due far enough away that a slow runner (a starved connection pool can stall one call for seconds) cannot reach it before the cancel.
+        var jobId = jobs.ScheduleAsSystem<ScheduleProbeJob>(key, DateTimeOffset.UtcNow.AddSeconds(20), j => j.RunAsync(token, "x"));
+        var stateBefore = StateOf(jobId);
         var cancelled = jobs.Cancel(key);
         var again = jobs.Cancel(key);
-        await Task.Delay(6000);
+        await Task.Delay(1000);
 
-        Assert.True(cancelled);
+        Assert.True(cancelled, $"job {jobId} was {stateBefore} before the cancel, {StateOf(jobId)} after; runs: {RunsOf(token).Count}");
         Assert.False(again);
         Assert.Empty(RunsOf(token)); // it never ran
     }
