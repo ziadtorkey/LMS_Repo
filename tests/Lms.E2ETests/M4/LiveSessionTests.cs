@@ -178,7 +178,7 @@ public sealed class LiveSessionTests(E2EFixture fixture) : E2ETestBase(fixture)
         await M4Kit.SignInAsync(Page, world.Student1.UserName, world.Student1.Password, culture);
         var shell = new ShellPage(Page);
         await shell.WaitReadyAsync();
-        await Expect(Page.GetByTestId("notifications-bell")).ToBeVisibleAsync(); // test id to be confirmed against ShellPage
+        await Expect(Page.GetByTestId("notif-toggle")).ToBeVisibleAsync(); // the bell button (menu: notif-bell, count: notif-badge)
         Assert.Equal(culture == "ar" ? "rtl" : "ltr", await new ShellPage(Page).HtmlDirAsync());
     }
 

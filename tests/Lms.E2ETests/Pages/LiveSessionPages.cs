@@ -15,6 +15,8 @@ public sealed class LiveSessionsPage(IPage page)
     public ILocator Forbidden => page.GetByTestId("live-forbidden");
     public ILocator ProviderNotConfigured => page.GetByTestId("live-provider-not-configured");
     public ILocator ProviderUnhealthy => page.GetByTestId("live-provider-unhealthy");
+    /// <summary>Polite status region of the list page: scheduled / saved / cancelled / recording saved (T19).</summary>
+    public ILocator Announce => page.GetByTestId("live-announce");
     public ILocator Upcoming => page.GetByTestId("live-filter-upcoming");
     public ILocator Past => page.GetByTestId("live-filter-past");
 
@@ -60,8 +62,8 @@ public sealed class LiveSessionDialog(IPage page)
     public ILocator TitleEn => page.GetByTestId("module-title-en").Locator("input");
 
     public ILocator Lesson => page.GetByTestId("live-lesson");
-    public ILocator Date => page.GetByTestId("live-date").Locator("input");
-    public ILocator Time => page.GetByTestId("live-time").Locator("input");
+    public ILocator Date => page.Locator("input[data-testid='live-date'], [data-testid='live-date'] input").First;
+    public ILocator Time => page.Locator("input[data-testid='live-time'], [data-testid='live-time'] input").First;
     public ILocator Duration => page.GetByTestId("live-duration");
 
     public ILocator Once => page.GetByTestId("repeat-once");
