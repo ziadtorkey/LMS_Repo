@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Serene LMS - Roles &amp; Permissions Matrix</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&amp;family=Inter:wght@400;500;600;700&amp;family=Public+Sans:wght@400;500;600;700&amp;family=Noto+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "error-container": "#ffdad6",
+            "primary-fixed": "#a0f5bf",
+            "on-background": "#0b1c30",
+            "surface-container": "#e5eeff",
+            "secondary": "#515f72",
+            "inverse-on-surface": "#eaf1ff",
+            "surface-variant": "#d3e4fe",
+            "on-surface-variant": "#3f4941",
+            "background": "#f8f9ff",
+            "border-subtle-dark": "#1E293B",
+            "success-bright": "#34D399",
+            "on-primary-fixed-variant": "#005230",
+            "background-dark": "#090D10",
+            "on-secondary-fixed-variant": "#3a485a",
+            "surface-container-lowest": "#ffffff",
+            "primary-fixed-dim": "#84d8a5",
+            "outline": "#6f7a71",
+            "surface": "#f8f9ff",
+            "outline-variant": "#bec9bf",
+            "surface-bright": "#f8f9ff",
+            "on-primary-container": "#8de1ad",
+            "surface-container-low": "#eff4ff",
+            "surface-container-high": "#dce9ff",
+            "warning-bright": "#FBBF24",
+            "tertiary-container": "#006645",
+            "success": "#1D7344",
+            "on-tertiary-fixed-variant": "#005236",
+            "on-error-container": "#93000a",
+            "info-bright": "#60A5FA",
+            "primary-container": "#00663d",
+            "surface-light": "#FFFFFF",
+            "secondary-container": "#d2e1f7",
+            "tertiary-fixed": "#6ffbbe",
+            "surface-dark": "#121A20",
+            "secondary-fixed": "#d5e4fa",
+            "tertiary-fixed-dim": "#4edea3",
+            "on-primary": "#ffffff",
+            "on-secondary-fixed": "#0e1c2c",
+            "on-tertiary": "#ffffff",
+            "inverse-surface": "#213145",
+            "on-surface": "#0b1c30",
+            "error-bright": "#F87171",
+            "border-subtle-light": "#E2E8F0",
+            "error": "#B42318",
+            "on-secondary-container": "#566477",
+            "surface-dim": "#cbdbf5",
+            "on-secondary": "#ffffff",
+            "primary": "#004c2c",
+            "warning": "#B45309",
+            "on-tertiary-container": "#5ae8ac",
+            "surface-container-highest": "#d3e4fe",
+            "on-tertiary-fixed": "#002113",
+            "secondary-fixed-dim": "#b9c8dd",
+            "inverse-primary": "#84d8a5",
+            "surface-tint": "#0e6c42",
+            "tertiary": "#004c32",
+            "on-error": "#ffffff",
+            "on-primary-fixed": "#002110",
+            "info": "#1E40AF",
+            "background-light": "#F8FAFC"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "margin": "1rem",
+            "space-md": "0.75rem",
+            "space-sm": "0.5rem",
+            "space-lg": "1.25rem",
+            "space-xl": "2rem",
+            "gutter-desktop": "1.5rem",
+            "margin-desktop": "2rem",
+            "space-xs": "0.25rem",
+            "gutter": "1.25rem"
+          },
+          "fontFamily": {
+            "subtitle-lg": ["Inter"],
+            "caption": ["Inter"],
+            "body-default": ["Inter"],
+            "headline-xl-mobile": ["Cairo"],
+            "body-table": ["Inter"],
+            "headline-md": ["Cairo"],
+            "headline-xl": ["Cairo"],
+            "body-table-medium": ["Inter"],
+            "label-default": ["Inter"],
+            "headline-lg": ["Cairo"]
+          },
+          "fontSize": {
+            "subtitle-lg": ["16px", { "lineHeight": "24px", "fontWeight": "500" }],
+            "caption": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+            "body-default": ["15px", { "lineHeight": "22px", "fontWeight": "400" }],
+            "headline-xl-mobile": ["26px", { "lineHeight": "34px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+            "body-table": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "headline-md": ["18px", { "lineHeight": "26px", "fontWeight": "600" }],
+            "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "body-table-medium": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+            "label-default": ["13px", { "lineHeight": "18px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+            "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .custom-checkbox:checked {
+      background-color: #00663d;
+      border-color: #00663d;
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface antialiased font-body-default min-h-screen pb-24">
+<!-- Shared Top Navigation Anchor -->
+<div class="relative flex h-auto w-full flex-col bg-[#f8fcfa] group/design-root overflow-x-hidden" style='font-family: "Public Sans", "Noto Sans", sans-serif;'>
+<div class="layout-container flex h-full grow flex-col">
+<div class="px-6 lg:px-16 flex flex-1 justify-center py-3">
+<div class="layout-content-container flex flex-col w-full max-w-[1440px] flex-1">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#e6f4ef] px-4 lg:px-8 py-3">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-3 text-[#0c1d16]">
+<div class="size-6 text-[#00663d]">
+<svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M39.475 21.6262C40.358 21.4363 40.6863 21.5589 40.7581 21.5934C40.7876 21.655 40.8547 21.857 40.8082 22.3336C40.7408 23.0255 40.4502 24.0046 39.8572 25.2301C38.6799 27.6631 36.5085 30.6631 33.5858 33.5858C30.6631 36.5085 27.6632 38.6799 25.2301 39.8572C24.0046 40.4502 23.0255 40.7407 22.3336 40.8082C21.8571 40.8547 21.6551 40.7875 21.5934 40.7581C21.5589 40.6863 21.4363 40.358 21.6262 39.475C21.8562 38.4054 22.4689 36.9657 23.5038 35.2817C24.7575 33.2417 26.5497 30.9744 28.7621 28.762C30.9744 26.5497 33.2417 24.7574 35.2817 23.5037C36.9657 22.4689 38.4054 21.8562 39.475 21.6262ZM4.41189 29.2403L18.7597 43.5881C19.8813 44.7097 21.4027 44.9179 22.7217 44.7893C24.0585 44.659 25.5148 44.1631 26.9723 43.4579C29.9052 42.0387 33.2618 39.5667 36.4142 36.4142C39.5667 33.2618 42.0387 29.9052 43.4579 26.9723C44.1631 25.5148 44.659 24.0585 44.7893 22.7217C44.9179 21.4027 44.7097 19.8813 43.5881 18.7597L29.2403 4.41187C27.8527 3.02428 25.8765 3.02573 24.2861 3.36776C22.6081 3.72863 20.7334 4.58419 18.8396 5.74801C16.4978 7.18716 13.9881 9.18353 11.5858 11.5858C9.18354 13.988 7.18717 16.4978 5.74802 18.8396C4.58421 20.7334 3.72865 22.6081 3.36778 24.2861C3.02574 25.8765 3.02429 27.8527 4.41189 29.2403Z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+<h2 class="text-[#0c1d16] text-lg font-bold leading-tight tracking-[-0.015em]">Serene LMS • Governance</h2>
+</div>
+<div class="hidden md:flex items-center gap-7">
+<a class="text-[#0c1d16] text-sm font-medium hover:text-primary transition-colors" href="#">Dashboard</a>
+<a class="text-[#0c1d16] text-sm font-medium hover:text-primary transition-colors" href="#">Academic Units</a>
+<a class="text-primary font-semibold text-sm border-b-2 border-primary pb-0.5" href="#">Roles &amp; Permissions</a>
+<a class="text-[#0c1d16] text-sm font-medium hover:text-primary transition-colors" href="#">Users &amp; Staff</a>
+<a class="text-[#0c1d16] text-sm font-medium hover:text-primary transition-colors" href="#">Compliance</a>
+</div>
+</div>
+<div class="flex flex-1 justify-end items-center gap-4">
+<label class="hidden sm:flex flex-col min-w-40 !h-9 max-w-60">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full border border-border-subtle-light bg-[#e6f4ef]">
+<div class="text-[#45a17c] flex items-center justify-center pl-3">
+<span class="material-symbols-outlined text-lg" data-icon="search">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 border-none bg-transparent focus:ring-0 h-full placeholder:text-[#45a17c] px-3 text-xs font-normal" placeholder="Search scope..."/>
+</div>
+</label>
+<div class="flex gap-2">
+<button class="flex items-center gap-1.5 cursor-pointer rounded-lg h-9 px-3 bg-surface-container-low border border-border-subtle-light text-on-surface text-xs font-semibold hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="history">history</span>
+<span>Audit History</span>
+</button>
+<button class="flex items-center gap-1.5 cursor-pointer rounded-lg h-9 px-3.5 bg-primary-container text-surface-light text-xs font-semibold hover:bg-primary transition-colors shadow-sm">
+<span class="material-symbols-outlined text-sm" data-icon="save">save</span>
+<span>Save Changes</span>
+</button>
+</div>
+<div class="aspect-square bg-cover bg-center rounded-full size-9 border border-outline-variant" data-alt="A dignified university administrator portrait in a brightly lit academic office setting with clean architectural glass and serene muted emerald branding tones in high-key daylight." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBkXVK-DKdVKo1aC4N7TeyjncmD7tI8kDTHiCsPPHLNbHhAEXQLBQE33EDWGjFzquVF8_Dyt7HCuo6aJfU8nMQChpf4meRAsL2vADv9QsWvUMHq4wMd2U5-pCqUwdLbJsCJ1jBEoHboWYnK8UzvoGK3IsldRv_VMDF1DZaTNsDcjowkgYk5TcWr5lfWdo_22ScQWSmp3Od0ynBUeS731FmOyIpCAapeC1CBrnN6fA8');"></div>
+</div>
+</header>
+</div>
+</div>
+</div>
+</div>
+<!-- Main Content Layout Container -->
+<main class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+<!-- 1. Breadcrumbs & PageHeader -->
+<div class="mb-6">
+<nav class="flex items-center gap-2 text-xs font-medium text-secondary mb-2.5">
+<a class="hover:text-primary transition-colors" href="#">Access Control</a>
+<span class="text-outline-variant">/</span>
+<a class="hover:text-primary transition-colors" href="#">Roles &amp; Permissions</a>
+<span class="text-outline-variant">/</span>
+<span class="text-on-surface font-semibold">Edit Role: Admin</span>
+</nav>
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+<div>
+<div class="flex flex-wrap items-center gap-2.5 mb-1.5">
+<h1 class="text-2xl lg:text-3xl font-bold font-headline-lg text-on-surface tracking-tight">Edit Role &amp; Permissions Matrix</h1>
+<!-- Badges -->
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-surface-container-high text-on-surface border border-outline-variant">
+<span class="material-symbols-outlined text-xs" data-icon="lock">lock</span>
+              System Protected
+            </span>
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#e6f4ef] text-success border border-[#cdeade]">
+<span class="size-1.5 rounded-full bg-success"></span>
+              Active Status
+            </span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-surface-container-lowest text-secondary border border-border-subtle-light">
+              Base Kind: Staff
+            </span>
+</div>
+<p class="text-sm text-secondary max-w-3xl">
+            Configure role identity, scope boundaries, and granular permission entitlements across institutional academic operations.
+          </p>
+</div>
+<!-- Action Buttons -->
+<div class="flex flex-wrap items-center gap-2 self-start lg:self-center">
+<button class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-surface-container-lowest border border-border-subtle-light text-on-surface text-xs font-semibold hover:bg-surface-container-low transition-colors shadow-xs">
+<span class="material-symbols-outlined text-base text-secondary" data-icon="group">group</span>
+<span>View Role Assignments (14 Assigned)</span>
+</button>
+<button class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-surface-container-lowest border border-border-subtle-light text-on-surface text-xs font-semibold hover:bg-surface-container-low transition-colors shadow-xs">
+<span class="material-symbols-outlined text-base text-secondary" data-icon="manage_history">manage_history</span>
+<span>Audit History</span>
+</button>
+<button class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-container text-surface-light text-xs font-semibold hover:bg-primary transition-colors shadow-sm">
+<span class="material-symbols-outlined text-base" data-icon="check_circle">check_circle</span>
+<span>Save Changes</span>
+</button>
+</div>
+</div>
+</div>
+<!-- 2. Top Telemetry KPI Row -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+<!-- KPI 1 -->
+<div class="bg-surface-container-lowest rounded-xl p-4 border border-border-subtle-light shadow-xs relative overflow-hidden">
+<div class="flex items-center justify-between text-secondary mb-1">
+<span class="text-xs font-medium uppercase tracking-wider">Total Entitlements</span>
+<span class="material-symbols-outlined text-primary text-base" data-icon="verified_user">verified_user</span>
+</div>
+<div class="text-xl font-bold text-on-surface mb-1">68 <span class="text-xs font-normal text-secondary">/ 74 Granted</span></div>
+<div class="w-full bg-surface-container rounded-full h-1.5 mb-2 overflow-hidden">
+<div class="bg-primary-container h-full rounded-full" style="width: 92%"></div>
+</div>
+<div class="flex items-center justify-between text-xs">
+<span class="text-success font-semibold flex items-center gap-0.5">
+<span class="material-symbols-outlined text-xs" data-icon="trending_up">trending_up</span> 92% Coverage
+          </span>
+<span class="text-secondary text-[11px]">6 Revoked</span>
+</div>
+</div>
+<!-- KPI 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-4 border border-border-subtle-light shadow-xs">
+<div class="flex items-center justify-between text-secondary mb-1">
+<span class="text-xs font-medium uppercase tracking-wider">Security Scope Level</span>
+<span class="material-symbols-outlined text-[#00663d] text-base" data-icon="shield">shield</span>
+</div>
+<div class="text-base font-bold text-on-surface mb-1 truncate">Multi-Campus Admin</div>
+<div class="flex items-center gap-1.5 text-xs text-secondary mt-2">
+<span class="material-symbols-outlined text-sm text-primary" data-icon="domain">domain</span>
+<span>Scope: 3 Campuses (Tier 0)</span>
+</div>
+</div>
+<!-- KPI 3 -->
+<div class="bg-surface-container-lowest rounded-xl p-4 border border-border-subtle-light shadow-xs">
+<div class="flex items-center justify-between text-secondary mb-1">
+<span class="text-xs font-medium uppercase tracking-wider">Assigned Users</span>
+<span class="material-symbols-outlined text-secondary text-base" data-icon="badge">badge</span>
+</div>
+<div class="text-xl font-bold text-on-surface mb-1">14 Staff</div>
+<div class="flex items-center gap-1.5 text-xs text-secondary mt-2">
+<span class="inline-flex size-2 rounded-full bg-success"></span>
+<span>14 Active accounts synced</span>
+</div>
+</div>
+<!-- KPI 4 -->
+<div class="bg-surface-container-lowest rounded-xl p-4 border border-border-subtle-light shadow-xs">
+<div class="flex items-center justify-between text-secondary mb-1">
+<span class="text-xs font-medium uppercase tracking-wider">Policy Conformance</span>
+<span class="material-symbols-outlined text-success text-base" data-icon="gavel">gavel</span>
+</div>
+<div class="text-base font-bold text-on-surface mb-1 truncate">MoE Security Tier 1</div>
+<div class="flex items-center justify-between text-xs text-secondary mt-2">
+<span class="text-primary font-medium">WCAG AA Compliant</span>
+<span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[#e6f4ef] text-success">Passed</span>
+</div>
+</div>
+</div>
+<!-- 3. Role Identity & Metadata SectionCard -->
+<div class="bg-surface-container-lowest rounded-xl border border-border-subtle-light shadow-xs p-5 mb-6">
+<div class="flex items-center justify-between pb-3 mb-4 border-b border-border-subtle-light">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-xl" data-icon="tune">tune</span>
+<h2 class="text-base font-bold font-headline-md text-on-surface">Role Definition &amp; Scope</h2>
+</div>
+<span class="text-xs text-secondary font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-xs" data-icon="lock">lock</span> System Immutable Metadata
+        </span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+<!-- English Name -->
+<div>
+<label class="block text-xs font-semibold text-secondary mb-1.5">Role Name (English) *</label>
+<div class="relative">
+<input class="w-full text-xs font-medium text-on-surface bg-surface-container-low border border-border-subtle-light rounded-lg px-3 py-2 focus:ring-1 focus:ring-primary focus:border-primary" type="text" value="Admin (Institutional Operations)"/>
+</div>
+</div>
+<!-- Arabic Name -->
+<div>
+<label class="block text-xs font-semibold text-secondary mb-1.5">Role Name (Arabic) *</label>
+<div class="relative">
+<input class="w-full text-xs font-bold font-headline-md text-on-surface bg-surface-container-low border border-border-subtle-light rounded-lg px-3 py-2 focus:ring-1 focus:ring-primary focus:border-primary text-right" dir="rtl" type="text" value="مسؤول النظام"/>
+</div>
+</div>
+<!-- Base Kind -->
+<div>
+<label class="block text-xs font-semibold text-secondary mb-1.5">Base Kind</label>
+<div class="relative flex items-center">
+<input class="w-full text-xs font-medium text-secondary bg-surface-container border border-border-subtle-light rounded-lg px-3 py-2 cursor-not-allowed" readonly="" type="text" value="Staff (Institutional Governance)"/>
+<span class="material-symbols-outlined text-xs text-outline absolute right-3 pointer-events-none" data-icon="lock">lock</span>
+</div>
+</div>
+</div>
+<!-- Description -->
+<div class="mb-5">
+<label class="block text-xs font-semibold text-secondary mb-1.5">Scope Description &amp; Responsibilities</label>
+<textarea class="w-full text-xs text-on-surface bg-surface-container-low border border-border-subtle-light rounded-lg px-3 py-2 focus:ring-1 focus:ring-primary focus:border-primary resize-none" rows="2">Grants administrative management authority over campus structures, course catalogs, academic years, and governance policies across affiliated campuses.</textarea>
+</div>
+<!-- Permissions Filter Bar Inside Matrix -->
+<div class="pt-4 border-t border-border-subtle-light flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+<!-- Search -->
+<div class="relative min-w-[260px] flex-1 max-w-md">
+<span class="material-symbols-outlined text-sm text-secondary absolute left-3 top-2.5" data-icon="search">search</span>
+<input class="w-full text-xs bg-surface-container-low border border-border-subtle-light rounded-lg pl-9 pr-3 py-2 placeholder:text-secondary focus:ring-1 focus:ring-primary focus:border-primary" placeholder="Filter 74 permissions across 18 domains..." type="text"/>
+</div>
+<!-- Filter Chips -->
+<div class="flex flex-wrap items-center gap-1.5 text-xs">
+<button class="px-2.5 py-1 rounded-lg bg-[#e6f4ef] text-primary font-semibold border border-[#cdeade]">All (74)</button>
+<button class="px-2.5 py-1 rounded-lg bg-surface-container-lowest text-secondary hover:bg-surface-container-low font-medium border border-border-subtle-light">Granted (68)</button>
+<button class="px-2.5 py-1 rounded-lg bg-surface-container-lowest text-secondary hover:bg-surface-container-low font-medium border border-border-subtle-light">Revoked (6)</button>
+<button class="px-2.5 py-1 rounded-lg bg-surface-container-lowest text-error hover:bg-error-container/20 font-medium border border-border-subtle-light flex items-center gap-1">
+<span class="material-symbols-outlined text-xs" data-icon="warning">warning</span> Sensitive (12)
+          </button>
+</div>
+<!-- Batch Action Quick Buttons -->
+<div class="flex items-center gap-2 border-l border-border-subtle-light pl-2">
+<button class="text-xs text-primary font-semibold hover:underline">Select All Granted</button>
+<span class="text-outline-variant">|</span>
+<button class="text-xs text-secondary hover:text-error transition-colors">Reset Tier</button>
+</div>
+</div>
+</div>
+<!-- 4. Permissions Matrix - Structured Modular Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
+<!-- Domain 1: Organization & Topology -->
+<div class="bg-surface-container-lowest rounded-xl border border-border-subtle-light shadow-xs p-4 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-2.5 mb-3 border-b border-border-subtle-light">
+<div class="flex items-center gap-2.5">
+<div class="size-7 rounded-lg bg-[#e6f4ef] text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-base" data-icon="account_tree">account_tree</span>
+</div>
+<h3 class="text-sm font-bold text-on-surface">Organization &amp; Topology</h3>
+</div>
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#e6f4ef] text-primary">5 / 5 Granted</span>
+<input checked="" class="custom-checkbox rounded size-4 text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>View academic units &amp; campuses</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Create organizational units</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Edit unit profile and metadata</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Delete or archive empty units</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Move units across hierarchy</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+</div>
+</div>
+</div>
+<!-- Domain 2: Roles & Governance -->
+<div class="bg-surface-container-lowest rounded-xl border border-border-subtle-light shadow-xs p-4 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-2.5 mb-3 border-b border-border-subtle-light">
+<div class="flex items-center gap-2.5">
+<div class="size-7 rounded-lg bg-[#e6f4ef] text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-base" data-icon="admin_panel_settings">admin_panel_settings</span>
+</div>
+<h3 class="text-sm font-bold text-on-surface">Roles &amp; Governance</h3>
+</div>
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#e6f4ef] text-primary">4 / 4 Granted</span>
+<input checked="" class="custom-checkbox rounded size-4 text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>View roles and entitlement matrix</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Create custom roles &amp; templates</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Edit role definitions &amp; scopes</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<div class="flex items-center gap-1.5">
+<span>Delete unassigned custom roles</span>
+<span class="text-[10px] px-1.5 py-0.2 rounded bg-error-container text-error font-medium">High Security</span>
+</div>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+</div>
+</div>
+</div>
+<!-- Domain 3: Role Assignments & Delegation -->
+<div class="bg-surface-container-lowest rounded-xl border border-border-subtle-light shadow-xs p-4 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-2.5 mb-3 border-b border-border-subtle-light">
+<div class="flex items-center gap-2.5">
+<div class="size-7 rounded-lg bg-[#e6f4ef] text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-base" data-icon="assignment_ind">assignment_ind</span>
+</div>
+<h3 class="text-sm font-bold text-on-surface">Role Assignments &amp; Delegation</h3>
+</div>
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#e6f4ef] text-primary">4 / 4 Granted</span>
+<input checked="" class="custom-checkbox rounded size-4 text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>View role assignments by user</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Assign roles to institutional staff</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Edit delegation expiry dates</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Revoke assigned permissions</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+</div>
+</div>
+</div>
+<!-- Domain 4: System Settings & Localizations -->
+<div class="bg-surface-container-lowest rounded-xl border border-border-subtle-light shadow-xs p-4 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-2.5 mb-3 border-b border-border-subtle-light">
+<div class="flex items-center gap-2.5">
+<div class="size-7 rounded-lg bg-[#e6f4ef] text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-base" data-icon="settings">settings</span>
+</div>
+<h3 class="text-sm font-bold text-on-surface">System Settings &amp; Localizations</h3>
+</div>
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#e6f4ef] text-primary">2 / 2 Granted</span>
+<input checked="" class="custom-checkbox rounded size-4 text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>View global institutional parameters</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Edit settings &amp; Hijri calendar sync rules</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+</div>
+</div>
+</div>
+<!-- Domain 5: Policies & Delegation Barriers -->
+<div class="bg-surface-container-lowest rounded-xl border border-border-subtle-light shadow-xs p-4 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-2.5 mb-3 border-b border-border-subtle-light">
+<div class="flex items-center gap-2.5">
+<div class="size-7 rounded-lg bg-[#e6f4ef] text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-base" data-icon="policy">policy</span>
+</div>
+<h3 class="text-sm font-bold text-on-surface">Policies &amp; Delegation Barriers</h3>
+</div>
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#e6f4ef] text-primary">2 / 2 Granted</span>
+<input checked="" class="custom-checkbox rounded size-4 text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>View institutional security policies</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Edit campus delegation firewall barriers</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+</div>
+</div>
+</div>
+<!-- Domain 6: Audit Logs & Forensic Tracking -->
+<div class="bg-surface-container-lowest rounded-xl border border-border-subtle-light shadow-xs p-4 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-2.5 mb-3 border-b border-border-subtle-light">
+<div class="flex items-center gap-2.5">
+<div class="size-7 rounded-lg bg-[#e6f4ef] text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-base" data-icon="fact_check">fact_check</span>
+</div>
+<h3 class="text-sm font-bold text-on-surface">Audit Logs &amp; Forensic Tracking</h3>
+</div>
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#e6f4ef] text-primary">2 / 2 Granted</span>
+<input checked="" class="custom-checkbox rounded size-4 text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>View institutional tamper-evident audit logs</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Export forensic audit log (CSV / Excel)</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+</div>
+</div>
+</div>
+<!-- Domain 7: Cloud Files & Quotas -->
+<div class="bg-surface-container-lowest rounded-xl border border-border-subtle-light shadow-xs p-4 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-2.5 mb-3 border-b border-border-subtle-light">
+<div class="flex items-center gap-2.5">
+<div class="size-7 rounded-lg bg-[#e6f4ef] text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-base" data-icon="cloud_sync">cloud_sync</span>
+</div>
+<h3 class="text-sm font-bold text-on-surface">Cloud Files &amp; Quotas</h3>
+</div>
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#e6f4ef] text-primary">2 / 2 Granted</span>
+<input checked="" class="custom-checkbox rounded size-4 text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Upload media assets &amp; SCORM packages</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Download &amp; manage institutional files</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+</div>
+</div>
+</div>
+<!-- Domain 8: Level Types & Grade Structures -->
+<div class="bg-surface-container-lowest rounded-xl border border-border-subtle-light shadow-xs p-4 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-2.5 mb-3 border-b border-border-subtle-light">
+<div class="flex items-center gap-2.5">
+<div class="size-7 rounded-lg bg-[#e6f4ef] text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-base" data-icon="layers">layers</span>
+</div>
+<h3 class="text-sm font-bold text-on-surface">Level Types &amp; Grade Structures</h3>
+</div>
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#e6f4ef] text-primary">4 / 4 Granted</span>
+<input checked="" class="custom-checkbox rounded size-4 text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>View educational level types</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Create grade structure levels</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Edit level progression schemes</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Delete unused level definitions</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+</div>
+</div>
+</div>
+<!-- Domain 9: Templates & Blueprints -->
+<div class="bg-surface-container-lowest rounded-xl border border-border-subtle-light shadow-xs p-4 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-2.5 mb-3 border-b border-border-subtle-light">
+<div class="flex items-center gap-2.5">
+<div class="size-7 rounded-lg bg-[#e6f4ef] text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-base" data-icon="copy_all">copy_all</span>
+</div>
+<h3 class="text-sm font-bold text-on-surface">Templates &amp; Blueprints</h3>
+</div>
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#e6f4ef] text-primary">4 / 4 Granted</span>
+<input checked="" class="custom-checkbox rounded size-4 text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>View master syllabus templates</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Create centralized curriculum blueprints</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Delete deprecated templates</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Apply templates to branch academic units</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+</div>
+</div>
+</div>
+<!-- Domain 10: Academic Years & Semesters -->
+<div class="bg-surface-container-lowest rounded-xl border border-border-subtle-light shadow-xs p-4 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-2.5 mb-3 border-b border-border-subtle-light">
+<div class="flex items-center gap-2.5">
+<div class="size-7 rounded-lg bg-[#e6f4ef] text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-base" data-icon="calendar_month">calendar_month</span>
+</div>
+<h3 class="text-sm font-bold text-on-surface">Academic Years &amp; Semesters</h3>
+</div>
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#e6f4ef] text-primary">4 / 4 Granted</span>
+<input checked="" class="custom-checkbox rounded size-4 text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>View academic years &amp; semester calendars</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Create new academic operational cycles</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Edit term dates &amp; holiday lockouts</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Delete uncommitted draft academic years</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+</div>
+</div>
+</div>
+<!-- Domain 11: Staff Directory & Human Capital -->
+<div class="bg-surface-container-lowest rounded-xl border border-border-subtle-light shadow-xs p-4 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-2.5 mb-3 border-b border-border-subtle-light">
+<div class="flex items-center gap-2.5">
+<div class="size-7 rounded-lg bg-[#e6f4ef] text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-base" data-icon="badge">badge</span>
+</div>
+<h3 class="text-sm font-bold text-on-surface">Staff Directory &amp; Human Capital</h3>
+</div>
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#e6f4ef] text-primary">5 / 5 Granted</span>
+<input checked="" class="custom-checkbox rounded size-4 text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>View faculty &amp; staff employment profiles</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Create new staff credentials</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Edit staff institutional profiles</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Delete / terminate staff records</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Import staff via batch Excel wizard</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+</div>
+</div>
+</div>
+<!-- Domain 12: Single Sign-on & Identity Providers -->
+<div class="bg-surface-container-lowest rounded-xl border border-border-subtle-light shadow-xs p-4 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-2.5 mb-3 border-b border-border-subtle-light">
+<div class="flex items-center gap-2.5">
+<div class="size-7 rounded-lg bg-[#e6f4ef] text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-base" data-icon="vpn_key">vpn_key</span>
+</div>
+<h3 class="text-sm font-bold text-on-surface">Single Sign-on &amp; Identity Providers</h3>
+</div>
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#e6f4ef] text-primary">2 / 2 Granted</span>
+<input checked="" class="custom-checkbox rounded size-4 text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>View SAML 2.0 / OIDC configurations</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<div class="flex items-center gap-1.5">
+<span>Manage Azure AD &amp; Google Workspace SSO</span>
+<span class="text-[10px] px-1.5 py-0.2 rounded bg-error-container text-error font-medium">Sensitive</span>
+</div>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+</div>
+</div>
+</div>
+<!-- Domain 13: Students & Registrations (Notice: 6 of 8 granted) -->
+<div class="bg-surface-container-lowest rounded-xl border border-border-subtle-light shadow-xs p-4 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-2.5 mb-3 border-b border-border-subtle-light">
+<div class="flex items-center gap-2.5">
+<div class="size-7 rounded-lg bg-[#e6f4ef] text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-base" data-icon="school">school</span>
+</div>
+<h3 class="text-sm font-bold text-on-surface">Students &amp; Registrations</h3>
+</div>
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-surface-container text-secondary">6 / 8 Granted</span>
+<input class="custom-checkbox rounded size-4 text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>View institutional student registry</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Create student accounts</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Edit student demographic data</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Delete student master accounts</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Import students via CSV bulk roster</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Approve student demographic change requests</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<!-- Unchecked: Staff Non-Applicable -->
+<label class="flex items-center justify-between text-xs text-secondary/70 hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span class="italic">Edit own student profile (N/A for Staff)</span>
+<input class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-secondary/70 hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span class="italic">View own children / ward link (N/A for Staff)</span>
+<input class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+</div>
+</div>
+</div>
+<!-- Domain 14: Courses & Curriculum Catalog -->
+<div class="bg-surface-container-lowest rounded-xl border border-border-subtle-light shadow-xs p-4 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-2.5 mb-3 border-b border-border-subtle-light">
+<div class="flex items-center gap-2.5">
+<div class="size-7 rounded-lg bg-[#e6f4ef] text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-base" data-icon="menu_book">menu_book</span>
+</div>
+<h3 class="text-sm font-bold text-on-surface">Courses &amp; Curriculum Catalog</h3>
+</div>
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#e6f4ef] text-primary">7 / 7 Granted</span>
+<input checked="" class="custom-checkbox rounded size-4 text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>View courses &amp; syllabi directory</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Create courses &amp; module outlines</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Edit courses &amp; grading rubrics</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Delete courses</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Import courses wizard (SCORM/IMS CC)</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Allocate courses to branch units</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Manage course lead supervisors</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+</div>
+</div>
+</div>
+<!-- Domain 15: Course Blueprints & Pacing -->
+<div class="bg-surface-container-lowest rounded-xl border border-border-subtle-light shadow-xs p-4 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-2.5 mb-3 border-b border-border-subtle-light">
+<div class="flex items-center gap-2.5">
+<div class="size-7 rounded-lg bg-[#e6f4ef] text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-base" data-icon="architecture">architecture</span>
+</div>
+<h3 class="text-sm font-bold text-on-surface">Course Blueprints &amp; Pacing</h3>
+</div>
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#e6f4ef] text-primary">3 / 3 Granted</span>
+<input checked="" class="custom-checkbox rounded size-4 text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>View blueprints &amp; weekly milestones</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Edit blueprints and locked pacing guides</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Publish blueprints to live campus sections</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+</div>
+</div>
+</div>
+<!-- Domain 16: Classes & Cohort Sections -->
+<div class="bg-surface-container-lowest rounded-xl border border-border-subtle-light shadow-xs p-4 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-2.5 mb-3 border-b border-border-subtle-light">
+<div class="flex items-center gap-2.5">
+<div class="size-7 rounded-lg bg-[#e6f4ef] text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-base" data-icon="meeting_room">meeting_room</span>
+</div>
+<h3 class="text-sm font-bold text-on-surface">Classes &amp; Cohort Sections</h3>
+</div>
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#e6f4ef] text-primary">6 / 6 Granted</span>
+<input checked="" class="custom-checkbox rounded size-4 text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>View active class cohorts &amp; rosters</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Create class cohort rooms</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Edit class schedules and room assignments</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Close / archive completed classes</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Delete empty scheduled classes</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Manage class course links</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+</div>
+</div>
+</div>
+<!-- Domain 17: Teacher & Supervisor Assignments -->
+<div class="bg-surface-container-lowest rounded-xl border border-border-subtle-light shadow-xs p-4 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-2.5 mb-3 border-b border-border-subtle-light">
+<div class="flex items-center gap-2.5">
+<div class="size-7 rounded-lg bg-[#e6f4ef] text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-base" data-icon="supervisor_account">supervisor_account</span>
+</div>
+<h3 class="text-sm font-bold text-on-surface">Teacher &amp; Supervisor Assignments</h3>
+</div>
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#e6f4ef] text-primary">2 / 2 Granted</span>
+<input checked="" class="custom-checkbox rounded size-4 text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>View teacher-class roster assignments</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Assign and reassign instructional faculty</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+</div>
+</div>
+</div>
+<!-- Domain 18: Student Enrollment & Exceptions -->
+<div class="bg-surface-container-lowest rounded-xl border border-border-subtle-light shadow-xs p-4 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-2.5 mb-3 border-b border-border-subtle-light">
+<div class="flex items-center gap-2.5">
+<div class="size-7 rounded-lg bg-[#e6f4ef] text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-base" data-icon="how_to_reg">how_to_reg</span>
+</div>
+<h3 class="text-sm font-bold text-on-surface">Student Enrollment &amp; Exceptions</h3>
+</div>
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#e6f4ef] text-primary">6 / 6 Granted</span>
+<input checked="" class="custom-checkbox rounded size-4 text-primary focus:ring-0 cursor-pointer" type="checkbox"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>View section enrollments and capacity limits</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Manage student enrollments and drop dates</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Import class student lists via CSV</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Transfer students across campuses</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Request prerequisite enrollment exceptions</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between text-xs text-on-surface hover:bg-surface-container-low p-1.5 rounded cursor-pointer transition-colors">
+<span>Approve prerequisite waiver exceptions</span>
+<input checked="" class="custom-checkbox rounded size-3.5 text-primary focus:ring-0" type="checkbox"/>
+</label>
+</div>
+</div>
+</div>
+</div>
+<!-- 5. Security Guardrails & Warning Footnote -->
+<div class="mb-8 p-3.5 rounded-xl bg-amber-50/80 border border-amber-200/80 flex items-start gap-3 text-warning">
+<span class="material-symbols-outlined text-lg mt-0.5" data-icon="shield_with_heart">shield_with_heart</span>
+<div class="text-xs">
+<span class="font-bold">Security Guardrail Active:</span>
+<span class="text-on-surface"> Modifications to built-in system administrator entitlements will impact 14 staff members immediately across all 3 campuses. Any elevation of access is indexed in immutable forensic logs.</span>
+</div>
+</div>
+</main>
+<!-- 6. Sticky Governance Action Bar (at bottom) -->
+<footer class="fixed bottom-0 left-0 right-0 z-40 bg-surface-container-lowest/95 backdrop-blur-md border-t border-border-subtle-light shadow-lg py-3 px-4 sm:px-8">
+<div class="max-w-[1440px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+<!-- Status Live Indicator -->
+<div class="flex items-center gap-2.5">
+<span class="relative flex size-2.5">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
+<span class="relative inline-flex rounded-full size-2.5 bg-success"></span>
+</span>
+<span class="text-xs font-medium text-secondary">0 pending unsaved modifications</span>
+<span class="hidden md:inline text-xs text-outline-variant">•</span>
+<span class="hidden md:inline text-xs text-secondary">Active Policy: <span class="font-semibold text-on-surface">MoE-Sec-2025</span></span>
+</div>
+<!-- Action Buttons -->
+<div class="flex items-center gap-3">
+<button class="text-xs font-semibold text-secondary hover:text-error transition-colors px-2 py-1.5">
+          Reset to System Default Permissions
+        </button>
+<button class="px-4 py-2 rounded-lg bg-surface-container-low border border-border-subtle-light text-on-surface text-xs font-semibold hover:bg-surface-container transition-colors">
+          Cancel / Discard
+        </button>
+<button class="px-5 py-2 rounded-lg bg-[#00663d] text-surface-light text-xs font-bold hover:bg-primary transition-colors shadow-sm flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm" data-icon="verified">verified</span>
+          Save &amp; Apply Permissions
+        </button>
+</div>
+</div>
+</footer>
+<script>
+    // Micro-interactions for interactive toggle states
+    document.querySelectorAll('.custom-checkbox').forEach(cb => {
+      cb.addEventListener('change', () => {
+        const liveIndicator = document.querySelector('footer span.text-secondary');
+        if (liveIndicator) {
+          liveIndicator.innerHTML = '<span class="text-amber-700 font-bold">1 unapplied entitlement change</span>';
+        }
+      });
+    });
+  </script>
+</body></html>

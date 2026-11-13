@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "on-secondary": "#ffffff",
+          "on-primary-fixed": "#002110",
+          "inverse-on-surface": "#eaf1ff",
+          "secondary-fixed": "#d5e4fa",
+          "surface-container-lowest": "#ffffff",
+          "on-primary-container": "#8de1ad",
+          "warning-bright": "#FBBF24",
+          "error": "#B42318",
+          "surface-light": "#FFFFFF",
+          "border-subtle-light": "#E2E8F0",
+          "on-secondary-fixed-variant": "#3a485a",
+          "primary-fixed-dim": "#84d8a5",
+          "error-bright": "#F87171",
+          "outline": "#6f7a71",
+          "success": "#1D7344",
+          "on-tertiary-container": "#5ae8ac",
+          "secondary": "#515f72",
+          "tertiary-fixed-dim": "#4edea3",
+          "on-background": "#0b1c30",
+          "on-surface-variant": "#3f4941",
+          "inverse-primary": "#84d8a5",
+          "primary-container": "#00663d",
+          "success-bright": "#34D399",
+          "secondary-fixed-dim": "#b9c8dd",
+          "on-error": "#ffffff",
+          "surface": "#f8f9ff",
+          "on-surface": "#0b1c30",
+          "on-tertiary-fixed-variant": "#005236",
+          "surface-bright": "#f8f9ff",
+          "info": "#1E40AF",
+          "on-secondary-fixed": "#0e1c2c",
+          "primary": "#004c2c",
+          "surface-dark": "#121A20",
+          "on-secondary-container": "#566477",
+          "warning": "#B45309",
+          "on-primary-fixed-variant": "#005230",
+          "primary-fixed": "#a0f5bf",
+          "surface-dim": "#cbdbf5",
+          "background-dark": "#090D10",
+          "outline-variant": "#bec9bf",
+          "on-primary": "#ffffff",
+          "inverse-surface": "#213145",
+          "error-container": "#ffdad6",
+          "on-tertiary": "#ffffff",
+          "tertiary-container": "#006645",
+          "surface-tint": "#0e6c42",
+          "secondary-container": "#d2e1f7",
+          "surface-container-highest": "#d3e4fe",
+          "tertiary": "#004c32",
+          "surface-container-low": "#eff4ff",
+          "on-error-container": "#93000a",
+          "on-tertiary-fixed": "#002113",
+          "background-light": "#F8FAFC",
+          "info-bright": "#60A5FA",
+          "background": "#f8f9ff",
+          "border-subtle-dark": "#1E293B",
+          "surface-container-high": "#dce9ff",
+          "tertiary-fixed": "#6ffbbe",
+          "surface-variant": "#d3e4fe",
+          "surface-container": "#e5eeff"
+        },
+        "borderRadius": {
+          "DEFAULT": "0.25rem",
+          "lg": "0.5rem",
+          "xl": "0.75rem",
+          "full": "9999px"
+        },
+        "spacing": {
+          "margin-desktop": "2rem",
+          "space-sm": "0.5rem",
+          "gutter-desktop": "1.5rem",
+          "space-md": "0.75rem",
+          "margin": "1rem",
+          "space-xl": "2rem",
+          "space-lg": "1.25rem",
+          "space-xs": "0.25rem",
+          "gutter": "1.25rem"
+        },
+        "fontFamily": {
+          "body-default": [
+            "Inter"
+          ],
+          "body-table-medium": [
+            "Inter"
+          ],
+          "label-default": [
+            "Inter"
+          ],
+          "headline-xl": [
+            "Cairo"
+          ],
+          "body-table": [
+            "Inter"
+          ],
+          "headline-md": [
+            "Cairo"
+          ],
+          "subtitle-lg": [
+            "Inter"
+          ],
+          "caption": [
+            "Inter"
+          ],
+          "headline-xl-mobile": [
+            "Cairo"
+          ],
+          "headline-lg": [
+            "Cairo"
+          ]
+        },
+        "fontSize": {
+          "body-default": [
+            "15px",
+            {
+              "lineHeight": "22px",
+              "fontWeight": "400"
+            }
+          ],
+          "body-table-medium": [
+            "14px",
+            {
+              "lineHeight": "20px",
+              "fontWeight": "500"
+            }
+          ],
+          "label-default": [
+            "13px",
+            {
+              "lineHeight": "18px",
+              "letterSpacing": "0.01em",
+              "fontWeight": "500"
+            }
+          ],
+          "headline-xl": [
+            "32px",
+            {
+              "lineHeight": "40px",
+              "letterSpacing": "-0.02em",
+              "fontWeight": "700"
+            }
+          ],
+          "body-table": [
+            "14px",
+            {
+              "lineHeight": "20px",
+              "fontWeight": "400"
+            }
+          ],
+          "headline-md": [
+            "18px",
+            {
+              "lineHeight": "26px",
+              "fontWeight": "600"
+            }
+          ],
+          "subtitle-lg": [
+            "16px",
+            {
+              "lineHeight": "24px",
+              "fontWeight": "500"
+            }
+          ],
+          "caption": [
+            "12px",
+            {
+              "lineHeight": "16px",
+              "fontWeight": "400"
+            }
+          ],
+          "headline-xl-mobile": [
+            "26px",
+            {
+              "lineHeight": "34px",
+              "letterSpacing": "-0.01em",
+              "fontWeight": "700"
+            }
+          ],
+          "headline-lg": [
+            "24px",
+            {
+              "lineHeight": "32px",
+              "letterSpacing": "-0.01em",
+              "fontWeight": "600"
+            }
+          ]
+        }
+      },
+    },
+  }</script></head><body class="bg-surface font-body-default text-body-default text-on-surface"><aside class="fixed inset-y-0 start-0 w-64 bg-surface-container-low shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex flex-col justify-between overflow-y-auto"><div class="flex flex-col"><div class="h-16 px-space-lg flex items-center gap-space-sm bg-surface-container-low"><div class="w-9 h-9 rounded-lg bg-primary flex items-center justify-center text-on-primary font-headline-md text-headline-md">S</div><div class="flex flex-col"><span class="font-headline-md text-headline-md text-primary leading-tight tracking-tight">Serene LMS</span><span class="font-caption text-caption text-on-surface-variant truncate max-w-[170px]">Al Noor Educational Network</span></div></div><div class="px-space-md pt-space-md"><div class="px-space-md py-space-xs mb-space-sm rounded-lg bg-surface-container flex items-center justify-between"><div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-[16px] text-primary">account_tree</span><span class="font-caption text-caption text-on-surface-variant truncate max-w-[130px]">Main School Org</span></div><span class="material-symbols-outlined text-[16px] text-on-surface-variant">unfold_more</span></div></div><nav class="flex-1 px-space-md space-y-space-xs mt-space-xs" data-active-classes="bg-primary-container text-on-primary font-semibold shadow-sm"><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[20px]">grid_view</span><span class="font-label-default text-label-default">Home</span></a><div class="pt-space-xs"><div class="px-space-md py-space-xs flex items-center justify-between text-on-surface-variant"><span class="font-caption text-caption uppercase tracking-wider">Structure</span></div><div class="space-y-space-xs mt-space-xs"><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="organization-tree" href="#"><span class="material-symbols-outlined text-[20px]">corporate_fare</span><span class="font-label-default text-label-default">Organization Tree</span></a><a aria-current="page" class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg transition-all bg-primary-container text-on-primary font-semibold shadow-sm" data-path="unit-settings" href="#"><span class="material-symbols-outlined text-[20px]">tune</span><span class="font-label-default text-label-default">Unit Settings</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="level-types" href="#"><span class="material-symbols-outlined text-[20px]">layers</span><span class="font-label-default text-label-default">Level Types</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="templates" href="#"><span class="material-symbols-outlined text-[20px]">content_copy</span><span class="font-label-default text-label-default">Templates</span></a></div></div><div class="pt-space-xs"><div class="px-space-md py-space-xs text-on-surface-variant"><span class="font-caption text-caption uppercase tracking-wider">Community</span></div><div class="space-y-space-xs mt-space-xs"><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="guardians" href="#"><span class="material-symbols-outlined text-[20px]">family_restroom</span><span class="font-label-default text-label-default">Guardians</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="staff" href="#"><span class="material-symbols-outlined text-[20px]">badge</span><span class="font-label-default text-label-default">Staff</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="students" href="#"><span class="material-symbols-outlined text-[20px]">school</span><span class="font-label-default text-label-default">Students</span></a></div></div><div class="pt-space-xs"><div class="px-space-md py-space-xs text-on-surface-variant"><span class="font-caption text-caption uppercase tracking-wider">Academic</span></div><div class="space-y-space-xs mt-space-xs"><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="courses" href="#"><span class="material-symbols-outlined text-[20px]">menu_book</span><span class="font-label-default text-label-default">Courses</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="classes" href="#"><span class="material-symbols-outlined text-[20px]">class</span><span class="font-label-default text-label-default">Classes</span></a></div></div><div class="pt-space-xs"><div class="px-space-md py-space-xs text-on-surface-variant"><span class="font-caption text-caption uppercase tracking-wider">Security &amp; Core</span></div><div class="space-y-space-xs mt-space-xs"><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="roles-permissions" href="#"><span class="material-symbols-outlined text-[20px]">security</span><span class="font-label-default text-label-default">Roles</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="audit-log" href="#"><span class="material-symbols-outlined text-[20px]">history</span><span class="font-label-default text-label-default">Audit log</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="settings" href="#"><span class="material-symbols-outlined text-[20px]">settings</span><span class="font-label-default text-label-default">Settings</span></a></div></div></nav></div><div class="p-space-md"><div class="p-space-md rounded-xl bg-surface-container flex items-center justify-between"><div class="flex items-center gap-space-sm"><div class="w-2 h-2 rounded-full bg-success"></div><div class="flex flex-col"><span class="font-caption text-caption text-on-surface font-medium">Online Term</span><span class="font-caption text-caption text-on-surface-variant">Autumn 2026</span></div></div><span class="material-symbols-outlined text-primary text-[18px]">verified</span></div></div></aside><div class="pl-64"><header class="fixed top-0 left-64 right-0 h-16 bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-space-xl"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs px-space-md py-space-xs rounded-lg bg-surface-container text-on-surface"><span class="material-symbols-outlined text-[18px] text-primary">calendar_month</span><span class="font-label-default text-label-default font-medium">Academic Year:</span><span class="font-label-default text-label-default font-semibold text-primary">2026/2027</span><span class="material-symbols-outlined text-[16px] text-on-surface-variant">expand_more</span></div></div><div class="flex items-center gap-space-md"><div class="flex items-center rounded-lg bg-surface-container p-0.5 text-on-surface-variant"><button class="px-space-sm py-0.5 rounded-md font-label-default text-label-default bg-surface text-primary font-semibold shadow-sm" type="button">EN</button><button class="px-space-sm py-0.5 rounded-md font-label-default text-label-default hover:text-on-surface transition-colors" type="button">العربية</button></div><button aria-label="Notifications" class="relative p-space-sm rounded-lg hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface transition-all" type="button"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-error text-on-error font-caption text-[11px] leading-tight flex items-center justify-center font-bold">5</span></button><div class="flex items-center gap-space-sm pl-space-sm"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div><div class="hidden md:flex flex-col text-start"><span class="font-label-default text-label-default text-on-surface font-semibold leading-tight">Admin User</span><span class="font-caption text-caption text-on-surface-variant leading-none">Main Org Head</span></div></div></div></header><main class="relative pt-16 w-full px-space-xl bg-surface min-h-screen"><div class="flex flex-col w-full pb-16">
+<!-- Top Breadcrumb & Quick History Back -->
+<div class="flex items-center justify-between py-space-sm mb-space-xs">
+<a class="inline-flex items-center gap-space-xs text-on-surface-variant hover:text-primary transition-colors group" href="#">
+<span class="material-symbols-outlined text-[18px] group-hover:-translate-x-0.5 transition-transform rtl:rotate-180">arrow_back</span>
+<span class="font-label-default text-label-default font-medium">Back to Organization tree</span>
+</a>
+<div class="flex items-center gap-space-sm text-on-surface-variant font-caption text-caption">
+<span class="inline-flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-primary">cloud_done</span>
+        All changes synchronized
+      </span>
+<span>•</span>
+<span>UID: NOOR-HQ-01</span>
+</div>
+</div>
+<!-- Page Header Card -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm mb-space-lg flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center flex-wrap gap-space-sm">
+<h1 class="font-headline-xl text-headline-xl text-on-surface tracking-tight">Al Noor Schools</h1>
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-success/10 text-success font-caption text-caption font-semibold">
+<span class="w-2 h-2 rounded-full bg-success-bright animate-pulse"></span>
+<span>Active</span>
+</div>
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-surface-container text-secondary font-caption text-caption">
+<span class="material-symbols-outlined text-[14px]">apartment</span>
+          Root Institution
+        </span>
+</div>
+<p class="font-body-default text-body-default text-on-surface-variant max-w-3xl">
+        The unit's core administrative details, localization, academic rules, and operational configurations.
+      </p>
+</div>
+<!-- Header Actions -->
+<div class="flex items-center gap-space-sm shrink-0 self-start md:self-center">
+<button class="inline-flex items-center gap-space-xs px-space-md py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-default text-label-default font-medium transition-all shadow-sm" type="button">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">history</span>
+<span>Audit history</span>
+</button>
+<button class="inline-flex items-center gap-space-xs px-space-lg py-2 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-default text-label-default font-semibold shadow-sm transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">save</span>
+<span>Save changes</span>
+</button>
+</div>
+</div>
+<!-- Elevated Segmented Tab Navigation -->
+<div class="bg-surface-container rounded-xl p-1 mb-space-lg flex items-center gap-1 overflow-x-auto">
+<button class="inline-flex items-center gap-space-xs px-space-lg py-2.5 rounded-lg bg-surface-container-lowest text-primary font-label-default text-label-default font-semibold shadow-sm shrink-0" type="button">
+<span class="material-symbols-outlined text-[18px] text-primary">tune</span>
+<span>General</span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary ml-1"></span>
+</button>
+<button class="inline-flex items-center gap-space-xs px-space-lg py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/60 font-label-default text-label-default font-medium transition-all shrink-0" type="button">
+<span class="material-symbols-outlined text-[18px]">school</span>
+<span>Academic</span>
+</button>
+<button class="inline-flex items-center gap-space-xs px-space-lg py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/60 font-label-default text-label-default font-medium transition-all shrink-0" type="button">
+<span class="material-symbols-outlined text-[18px]">toggle_on</span>
+<span>Feature Toggles</span>
+</button>
+<button class="inline-flex items-center gap-space-xs px-space-lg py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/60 font-label-default text-label-default font-medium transition-all shrink-0" type="button">
+<span class="material-symbols-outlined text-[18px]">menu_book</span>
+<span>Courses &amp; Allocations</span>
+</button>
+<button class="inline-flex items-center gap-space-xs px-space-lg py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/60 font-label-default text-label-default font-medium transition-all shrink-0" type="button">
+<span class="material-symbols-outlined text-[18px]">policy</span>
+<span>Governance Policies</span>
+</button>
+</div>
+<!-- Reference Previews Banner (Interactive context modal cues) -->
+<div class="mb-space-lg grid grid-cols-1 md:grid-cols-3 gap-space-md">
+<div class="relative overflow-hidden rounded-xl bg-surface-container-lowest p-space-md shadow-sm flex items-center gap-space-md group">
+<div class="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-surface-container">
+<img alt="General Settings Blueprint Reference" class="w-full h-full object-cover group-hover:scale-105 transition-transform" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJbeC4s6lXNOVHyIUgOOi4Ypj7xnL8HdWR1pDoSAB13YUHAs2qltLUX0sFuBFSkgjRWVqmvgR8ocA6VInkspF4kXQ8uQZQvoty9aTERM17ZyEXE7Igq8Vx2BVdqOw4rluYkECHOIe9PQaWFokoGVkpPNLPNl69PRYsbRf3j19wVvfqTwwstbj-qQLIYw6Kva0ndCx2G7aBCcljiPniq_sG5JBwXL9o0udn7aKYOZhUB6Tg55tbUnn7"/>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1 text-primary">
+<span class="material-symbols-outlined text-[16px]">verified</span>
+<span class="font-caption text-caption font-semibold uppercase tracking-wider">Identity Spec</span>
+</div>
+<p class="font-body-table-medium text-body-table-medium text-on-surface truncate">Dual Arabic &amp; Latin Naming</p>
+<p class="font-caption text-caption text-on-surface-variant">Validated hierarchy synced</p>
+</div>
+</div>
+<div class="relative overflow-hidden rounded-xl bg-surface-container-lowest p-space-md shadow-sm flex items-center gap-space-md group">
+<div class="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-surface-container">
+<img alt="Academic Progression Rules Blueprint Reference" class="w-full h-full object-cover group-hover:scale-105 transition-transform" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB4qeiGFr9-rASJ7OnsihrnaFfMK1A82QEOOvNO56lNxkBGHEZ_GGZ93llH3dvd9ZJsK_saEaHiiPjKkdQWXg9bWUpU751Xk1igwoJDnM3iOmTWSQO6VCaxHxFyATelyEcUK_4JHZYfaDo6uuwXRcSf47-qtm-V-WDbI_ZAuEqyBb3LagGbewSznzKudzLgzGPBJ9-dg1wJmStnCOodDU6nW4Dbdlo9vLGxzCaJ4j4fMgdEp1vbcYDA"/>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1 text-primary">
+<span class="material-symbols-outlined text-[16px]">analytics</span>
+<span class="font-caption text-caption font-semibold uppercase tracking-wider">Academic Engine</span>
+</div>
+<p class="font-body-table-medium text-body-table-medium text-on-surface truncate">Promotion &amp; Syllabus Rules</p>
+<p class="font-caption text-caption text-on-surface-variant">Automated grade progression</p>
+</div>
+</div>
+<div class="relative overflow-hidden rounded-xl bg-surface-container-lowest p-space-md shadow-sm flex items-center gap-space-md group">
+<div class="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-surface-container">
+<img alt="Unit Configuration Full Sheet Reference" class="w-full h-full object-cover group-hover:scale-105 transition-transform" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBOzR9pchWvXX7cs43VvsBSZROkL2q5SiWT0FdOlhBHTx6uNLkhDS31FqdnhBfx1IAJG4c9mQVFc9xl3CsWhkiKqXJ1mmGUYR08v--sZHMdhylnTCcJ8o6EgO1hTnvYybcjFP5Zqt8PhGoqTrp4QfRGRwErwWtj_15-wKK_N20TLXI0P9anLZVKrWAQtPK2-tJiWSmUSyDYleejG4YwtxFqX4a0DDsoqmoxcFPtShhtCiuTGMNXBUzM"/>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1 text-primary">
+<span class="material-symbols-outlined text-[16px]">rule_folder</span>
+<span class="font-caption text-caption font-semibold uppercase tracking-wider">Quotas &amp; Inheritance</span>
+</div>
+<p class="font-body-table-medium text-body-table-medium text-on-surface truncate">Storage &amp; Multi-Campus Lock</p>
+<p class="font-caption text-caption text-on-surface-variant">Sub-unit downward cascading</p>
+</div>
+</div>
+</div>
+<!-- Main 2-Column Responsive Workspace Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+<!-- LEFT COLUMN: Identity & Localization (5 cols) -->
+<div class="lg:col-span-6 flex flex-col gap-space-lg">
+<!-- Section Card: General Identity & Metadata -->
+<section class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between pb-space-xs">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">badge</span>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">General Identity &amp; Metadata</h2>
+<p class="font-caption text-caption text-on-surface-variant">Primary identifiers utilized across institutional portals and diplomas</p>
+</div>
+</div>
+<span class="font-caption text-caption px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant">Mandatory</span>
+</div>
+<div class="space-y-space-md pt-space-xs">
+<!-- Arabic Name -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-default text-label-default font-medium text-on-surface flex items-center justify-between">
+<span>Name in Arabic <span class="text-error">*</span></span>
+<span class="font-caption text-caption text-on-surface-variant font-normal">RTL Script • Official</span>
+</label>
+<div class="relative flex items-center">
+<input class="w-full h-10 px-space-md rounded-lg bg-surface-container-low text-on-surface font-headline-md text-headline-md font-semibold focus:outline-none focus:bg-surface-container-lowest shadow-sm transition-all" dir="rtl" type="text" value="مدارس النور"/>
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">translate</span>
+</div>
+</div>
+<p class="font-caption text-caption text-on-surface-variant">Rendered in Cairo typography for ministry compliance documents.</p>
+</div>
+<!-- English Name -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-default text-label-default font-medium text-on-surface flex items-center justify-between">
+<span>Name in English <span class="text-error">*</span></span>
+<span class="font-caption text-caption text-on-surface-variant font-normal">LTR Script • Global</span>
+</label>
+<div class="relative flex items-center">
+<input class="w-full h-10 px-space-md rounded-lg bg-surface-container-low text-on-surface font-body-default text-body-default font-medium focus:outline-none focus:bg-surface-container-lowest shadow-sm transition-all" type="text" value="Al Noor Schools"/>
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</div>
+</div>
+</div>
+<!-- Dual Field: Unit Code + Status -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+<!-- Unit Code -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-default text-label-default font-medium text-on-surface flex items-center gap-1">
+<span>Unit Code</span>
+<span class="material-symbols-outlined text-[14px] text-on-surface-variant" title="Immutable unique system identifier">lock</span>
+</label>
+<div class="h-10 px-space-md rounded-lg bg-surface-container flex items-center justify-between text-on-surface font-mono text-[13px] font-bold tracking-wider">
+<span>NOOR</span>
+<span class="font-caption text-caption px-1.5 py-0.5 rounded bg-surface-container-highest text-secondary text-[11px] font-sans">Immutable</span>
+</div>
+<p class="font-caption text-caption text-on-surface-variant">Assigned at institution provisioning.</p>
+</div>
+<!-- Status -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-default text-label-default font-medium text-on-surface">Unit Status</label>
+<div class="relative">
+<select class="w-full h-10 px-space-md pr-8 rounded-lg bg-surface-container-low text-on-surface font-label-default text-label-default font-medium appearance-none focus:outline-none shadow-sm cursor-pointer">
+<option selected="">Active (Operational)</option>
+<option>Suspended</option>
+<option>Draft</option>
+<option>Archived</option>
+</select>
+<div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">expand_more</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Unit Level Type -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-default text-label-default font-medium text-on-surface">Unit Level Type</label>
+<div class="relative">
+<select class="w-full h-10 px-space-md pr-8 rounded-lg bg-surface-container-low text-on-surface font-label-default text-label-default font-medium appearance-none focus:outline-none shadow-sm cursor-pointer">
+<option selected="">Central Administration / Main School</option>
+<option>Secondary Boys Campus</option>
+<option>Secondary Girls Campus</option>
+<option>Preparatory Division</option>
+<option>Early Childhood Center</option>
+</select>
+<div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">unfold_more</span>
+</div>
+</div>
+<p class="font-caption text-caption text-on-surface-variant">Governs the position within the educational organizational chart.</p>
+</div>
+</div>
+</section>
+<!-- Section Card: Localization & Timetable Calendar -->
+<section class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between pb-space-xs">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">language</span>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Localization &amp; Timetable Calendar</h2>
+<p class="font-caption text-caption text-on-surface-variant">Regional linguistic settings, calendar systems, and scheduling parameters</p>
+</div>
+</div>
+</div>
+<div class="space-y-space-md pt-space-xs">
+<!-- Default Language -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-default text-label-default font-medium text-on-surface">Default System Language</label>
+<div class="relative">
+<select class="w-full h-10 px-space-md pr-8 rounded-lg bg-surface-container-low text-on-surface font-label-default text-label-default font-medium appearance-none focus:outline-none shadow-sm cursor-pointer">
+<option selected="">Arabic (العربية) [Default System Wide]</option>
+<option>English (United States)</option>
+<option>French (Français)</option>
+</select>
+<div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">expand_more</span>
+</div>
+</div>
+<!-- Lock Checkbox -->
+<label class="flex items-center gap-2 mt-1 cursor-pointer select-none">
+<input checked="" class="w-4 h-4 rounded text-primary bg-surface-container focus:ring-0 cursor-pointer" type="checkbox"/>
+<span class="material-symbols-outlined text-[16px] text-primary">lock</span>
+<span class="font-caption text-caption text-on-surface font-medium">Lock for units below (prevent sub-campuses from overriding)</span>
+</label>
+</div>
+<!-- Hijri Calendar Switch Toggle -->
+<div class="p-space-md rounded-xl bg-surface-container-low flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-default text-label-default font-semibold text-on-surface">Show Hijri Calendar dates alongside Gregorian</span>
+<span class="font-caption text-caption text-on-surface-variant">Display dual date headers throughout student and parent portals</span>
+</div>
+<button class="w-12 h-6 rounded-full bg-primary p-0.5 transition-colors relative flex items-center" type="button">
+<span class="w-5 h-5 rounded-full bg-on-primary shadow-sm transform translate-x-6 transition-transform"></span>
+</button>
+</div>
+<div class="pt-space-xs flex items-center justify-between border-t border-surface-container">
+<label class="flex items-center gap-2 cursor-pointer select-none">
+<input checked="" class="w-4 h-4 rounded text-primary bg-surface-container focus:ring-0 cursor-pointer" type="checkbox"/>
+<span class="material-symbols-outlined text-[14px] text-primary">lock</span>
+<span class="font-caption text-caption text-on-surface-variant">Lock for all child units and affiliated academies</span>
+</label>
+<span class="font-caption text-caption text-primary font-medium">Umm al-Qura Standard</span>
+</div>
+</div>
+<!-- First Day of the Week -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-default text-label-default font-medium text-on-surface">First Day of Academic Week</label>
+<div class="relative">
+<select class="w-full h-10 px-space-md pr-8 rounded-lg bg-surface-container-low text-on-surface font-label-default text-label-default font-medium appearance-none focus:outline-none shadow-sm cursor-pointer">
+<option selected="">Sunday (الأحد) - GCC Educational Standard</option>
+<option>Monday (الإثنين) - International Curriculum</option>
+<option>Saturday (السبت)</option>
+</select>
+<div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- RIGHT COLUMN: Academic Progression & Quotas (6 cols) -->
+<div class="lg:col-span-6 flex flex-col gap-space-lg">
+<!-- Section Card: Academic Promotion & Progression Rules -->
+<section class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between pb-space-xs">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">grading</span>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Academic Promotion &amp; Progression Rules</h2>
+<p class="font-caption text-caption text-on-surface-variant">Automated stage transitions, cohort enrollment thresholds, and curriculum units</p>
+</div>
+</div>
+</div>
+<div class="space-y-space-md pt-space-xs">
+<!-- Toggle 1: Level Transfer / Promotion -->
+<div class="p-space-md rounded-xl bg-surface-container-low flex items-start justify-between gap-space-md">
+<div class="flex flex-col">
+<span class="font-label-default text-label-default font-semibold text-on-surface">Level transfer (promotion level)</span>
+<span class="font-caption text-caption text-on-surface-variant mt-0.5">
+                Allows students to be promoted or transitioned between academic grade levels within this unit.
+              </span>
+</div>
+<button class="w-12 h-6 rounded-full bg-primary p-0.5 transition-colors shrink-0 relative flex items-center" type="button">
+<span class="w-5 h-5 rounded-full bg-on-primary shadow-sm transform translate-x-6 transition-transform"></span>
+</button>
+</div>
+<!-- Toggle 2: Course Management Level -->
+<div class="p-space-md rounded-xl bg-surface-container-low flex items-start justify-between gap-space-md">
+<div class="flex flex-col">
+<span class="font-label-default text-label-default font-semibold text-on-surface">Course management level</span>
+<span class="font-caption text-caption text-on-surface-variant mt-0.5">
+                Enables local course catalog authoring and syllabus overrides for this specific unit.
+              </span>
+</div>
+<button class="w-12 h-6 rounded-full bg-primary p-0.5 transition-colors shrink-0 relative flex items-center" type="button">
+<span class="w-5 h-5 rounded-full bg-on-primary shadow-sm transform translate-x-6 transition-transform"></span>
+</button>
+</div>
+<!-- Select 1: Class Capacity Enforcement -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-default text-label-default font-medium text-on-surface">Class Capacity Enforcement</label>
+<div class="relative">
+<select class="w-full h-10 px-space-md pr-8 rounded-lg bg-surface-container-low text-on-surface font-label-default text-label-default font-medium appearance-none focus:outline-none shadow-sm cursor-pointer">
+<option selected="">Warn and allow exceeding threshold by 10%</option>
+<option>Strict hard cap (reject extra enrollments)</option>
+<option>Notify campus head only (no enrollment block)</option>
+<option>Disabled (no threshold checks)</option>
+</select>
+<div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">group_add</span>
+</div>
+</div>
+<p class="font-caption text-caption text-on-surface-variant">Standard classroom cohort size cap set to 28 students.</p>
+</div>
+<!-- Select 2: Blueprint Section Taxonomy Label -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-default text-label-default font-medium text-on-surface">Blueprint Section Taxonomy Label</label>
+<div class="relative">
+<select class="w-full h-10 px-space-md pr-8 rounded-lg bg-surface-container-low text-on-surface font-label-default text-label-default font-medium appearance-none focus:outline-none shadow-sm cursor-pointer">
+<option>Week (الأسبوع)</option>
+<option selected="">Module (الوحدة التعليمية)</option>
+<option>Unit (الفصل الدراسي)</option>
+<option>Chapter (الباب)</option>
+</select>
+<div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">splitscreen</span>
+</div>
+</div>
+<p class="font-caption text-caption text-on-surface-variant">Determines default breakdown labels within interactive teacher lesson planners.</p>
+</div>
+<!-- Toggle 3: Student Grade Transfer Policy -->
+<div class="p-space-md rounded-xl bg-surface-container-low flex items-start justify-between gap-space-md">
+<div class="flex flex-col">
+<span class="font-label-default text-label-default font-semibold text-on-surface">Student grade transfer policy</span>
+<span class="font-caption text-caption text-on-surface-variant mt-0.5">
+                Grades follow a transferred student across campuses automatically without administrative re-entry.
+              </span>
+</div>
+<button class="w-12 h-6 rounded-full bg-primary p-0.5 transition-colors shrink-0 relative flex items-center" type="button">
+<span class="w-5 h-5 rounded-full bg-on-primary shadow-sm transform translate-x-6 transition-transform"></span>
+</button>
+</div>
+</div>
+</section>
+<!-- Section Card: Storage & File Quotas -->
+<section class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between pb-space-xs">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">cloud_upload</span>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Storage &amp; File Quotas</h2>
+<p class="font-caption text-caption text-on-surface-variant">Asset size limitations for curriculum uploads and student assignments</p>
+</div>
+</div>
+<button class="text-primary hover:text-primary-container font-caption text-caption font-semibold flex items-center gap-1 transition-colors" type="button">
+<span class="material-symbols-outlined text-[14px]">refresh</span>
+<span>Reset to inherited default</span>
+</button>
+</div>
+<div class="space-y-space-md pt-space-xs">
+<!-- Max upload size -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-default text-label-default font-medium text-on-surface">Maximum Single File Upload Size</label>
+<div class="relative flex items-center">
+<input class="w-full h-10 px-space-md rounded-lg bg-surface-container-low text-on-surface font-body-default text-body-default font-semibold focus:outline-none focus:bg-surface-container-lowest shadow-sm transition-all" type="number" value="500"/>
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+<span class="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-default text-label-default font-bold">MB</span>
+</div>
+</div>
+<p class="font-caption text-caption text-on-surface-variant">Applies to SCORM packages, lesson lecture video captures, and digital portfolios.</p>
+</div>
+<!-- Storage Meter Progress Bar -->
+<div class="p-space-md rounded-xl bg-surface-container-low flex flex-col gap-space-xs">
+<div class="flex items-center justify-between font-caption text-caption">
+<span class="text-on-surface font-medium">Allocated Cloud Tenant Usage</span>
+<span class="text-primary font-bold">1.4 TB / 5.0 TB (28%)</span>
+</div>
+<div class="w-full h-2 rounded-full bg-surface-container overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 28%"></div>
+</div>
+</div>
+<!-- Lock downward hierarchy checkbox -->
+<label class="flex items-center gap-2 cursor-pointer select-none">
+<input checked="" class="w-4 h-4 rounded text-primary bg-surface-container focus:ring-0 cursor-pointer" type="checkbox"/>
+<span class="material-symbols-outlined text-[16px] text-primary">lock</span>
+<span class="font-caption text-caption text-on-surface font-medium">Lock for units below (enforce strict quota cap across all subordinate branches)</span>
+</label>
+</div>
+</section>
+</div>
+</div>
+<!-- Bottom Floating Action Bar Sticky Footer -->
+<div class="sticky bottom-4 z-30 mt-space-xl p-space-md rounded-xl bg-surface-container-lowest/95 backdrop-blur-xl shadow-lg border border-surface-container flex items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-sm">
+<span class="w-2.5 h-2.5 rounded-full bg-warning-bright animate-ping"></span>
+<span class="font-caption text-caption text-on-surface-variant">Unsaved modifications detected in <strong>Academic Rules</strong></span>
+</div>
+<div class="flex items-center gap-space-md">
+<button class="px-space-md py-2 text-on-surface-variant hover:text-on-surface font-label-default text-label-default font-medium transition-colors" type="button">
+        Discard changes
+      </button>
+<button class="inline-flex items-center gap-space-xs px-space-xl py-2.5 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-default text-label-default font-semibold shadow-sm transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">check_circle</span>
+<span>Save changes</span>
+</button>
+</div>
+</div>
+</div></main></div></body></html>
