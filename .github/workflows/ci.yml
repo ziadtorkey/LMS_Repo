@@ -5,6 +5,11 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
   push:
     branches: [main]
+    # Docs-only pushes to main (STATUS, PRD, plans, screenshots) don't touch code; skipping them keeps the
+    # shared runner pool for PR builds. PR runs are unchanged, so required checks still report on every PR.
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -33,7 +38,16 @@ jobs:
       - name: Integration tests (Testcontainers)
         env:
           LMS_PERF_BUDGET_FACTOR: "3" # shared runners are about 2x slower than a developer machine (X-09 budget scales)
+          LMS_CONN_LOG: ${{ runner.temp }}/mysql-connections.log # #466: MySQL connections by user/query every 15 s
         run: dotnet test tests/Lms.IntegrationTests -c Release --no-build
+      - name: Upload MySQL connection samples
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mysql-connections
+          path: ${{ runner.temp }}/mysql-connections.log
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Client tests
         run: dotnet test tests/Lms.Client.Tests -c Release --no-build
 

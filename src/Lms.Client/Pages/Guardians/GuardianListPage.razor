@@ -1,6 +1,7 @@
 @page "/guardians"
 @attribute [Authorize]
 @using Lms.Client.Components
+@using Lms.Client.Components.People
 @using Lms.Client.Services.Api
 @using Lms.Shared.Authorization
 @using Lms.Shared.People
@@ -12,7 +13,7 @@
 <PageTitle>@L["Guardians_Title"]</PageTitle>
 @if (!PermState.Loaded)
 {
-    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+    <LoadingState Lines="4" TestId="guardians-loading" />
 }
 else if (!PermState.Has(Permissions.Students.View))
 {
@@ -20,27 +21,44 @@ else if (!PermState.Has(Permissions.Students.View))
 }
 else
 {
-    <MudText Typo="Typo.h4" Class="mb-4" data-testid="guardians-title">@L["Guardians_Title"]</MudText>
-    <MudTextField T="string" Value="_search" ValueChanged="OnSearchChanged" Label="@L["Common_Search"]" Immediate="true"
-                  DebounceInterval="300" Clearable="true" Class="mb-3" data-testid="guardian-search" />
-    <ServerTable @ref="_table" T="GuardianSummaryDto" ServerData="LoadAsync">
-        <HeaderContent>
-            <MudTh>@L["Common_Name"]</MudTh>
-            <MudTh>@L["Student_Mobile"]</MudTh>
-            <MudTh>@L["Student_Email"]</MudTh>
-            <MudTh>@L["Guardian_Children"]</MudTh>
-            <MudTh>@L["Student_Account"]</MudTh>
-        </HeaderContent>
-        <RowTemplate Context="g">
-            <MudTd DataLabel="@L["Common_Name"]">
-                <MudLink Href="@($"guardians/{g.Id}")" data-testid="@($"guardian-link-{g.Id}")">@Culture.Pick(g.NameAr, g.NameEn)</MudLink>
-            </MudTd>
-            <MudTd DataLabel="@L["Student_Mobile"]"><span dir="ltr">@g.Mobile</span></MudTd>
-            <MudTd DataLabel="@L["Student_Email"]"><span dir="ltr">@g.Email</span></MudTd>
-            <MudTd DataLabel="@L["Guardian_Children"]">@g.ChildrenInScope</MudTd>
-            <MudTd DataLabel="@L["Student_Account"]">@(g.HasPortalAccount ? L["Guardian_PortalActive"] : L["Guardian_PortalNone"])</MudTd>
-        </RowTemplate>
-    </ServerTable>
+    <PageHeader Title="@L["Guardians_Title"]" Subtitle="@L["Guardians_Subtitle"]" TitleTestId="guardians-title" />
+
+    <SectionCard Flush="true">
+        <div class="lms-filters" role="search" aria-label="@L["Common_Filters"]">
+            <div class="lms-filter lms-filter-search">
+                <MudTextField T="string" Value="_search" ValueChanged="OnSearchChanged" Label="@L["Common_Search"]" Immediate="true"
+                              DebounceInterval="300" Clearable="true" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Rounded.Search"
+                              data-testid="guardian-search" />
+            </div>
+        </div>
+        <ServerTable @ref="_table" T="GuardianSummaryDto" ServerData="LoadAsync" EmptyTitle="@L["Guardians_EmptyTitle"]"
+                     EmptyText="@L["Guardians_EmptyText"]" EmptyIcon="@Icons.Material.Rounded.FamilyRestroom">
+            <HeaderContent>
+                <MudTh>@L["Common_Name"]</MudTh>
+                <MudTh>@L["Student_Mobile"]</MudTh>
+                <MudTh>@L["Student_Email"]</MudTh>
+                <MudTh>@L["Guardian_Children"]</MudTh>
+                <MudTh>@L["Student_Account"]</MudTh>
+            </HeaderContent>
+            <RowTemplate Context="g">
+                <MudTd DataLabel="@L["Common_Name"]">
+                    <div class="lms-person-cell">
+                        <StaffAvatar Name="@Culture.Pick(g.NameAr, g.NameEn)" Size="Size.Small" />
+                        <MudLink Href="@($"guardians/{g.Id}")" Typo="Typo.body2" Class="lms-person-link"
+                                 data-testid="@($"guardian-link-{g.Id}")">@Culture.Pick(g.NameAr, g.NameEn)</MudLink>
+                    </div>
+                </MudTd>
+                <MudTd DataLabel="@L["Student_Mobile"]"><span dir="ltr">@g.Mobile</span></MudTd>
+                <MudTd DataLabel="@L["Student_Email"]"><span dir="ltr" class="lms-muted">@g.Email</span></MudTd>
+                <MudTd DataLabel="@L["Guardian_Children"]">@g.ChildrenInScope</MudTd>
+                <MudTd DataLabel="@L["Student_Account"]">
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@(g.HasPortalAccount ? Color.Success : Color.Default)">
+                        @(g.HasPortalAccount ? L["Guardian_PortalActive"] : L["Guardian_PortalNone"])
+                    </MudChip>
+                </MudTd>
+            </RowTemplate>
+        </ServerTable>
+    </SectionCard>
 }
 
 @code {
