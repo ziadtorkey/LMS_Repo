@@ -363,6 +363,10 @@ All tenant-owned tables: `OrganizationId`; unit-scoped tables: `OrgUnitId`, `Org
 | D55 | M4b recordings | Cloud recording is off by default; a unit admin may enable it for their unit. Teachers can always attach a recording link manually (Z4/Z6). |
 | D56 | M4b package host | SCORM/H5P content is served from a separate registrable domain with a strict sandbox CSP and signed path tokens; no app-origin fallback (D51, spike #444). |
 | D57 | M4b package re-attempts | When a student opens a completed SCORM/H5P package again, the teacher chooses per module which completed attempt is graded: Highest (default), Last, or First (later attempts are practice). Owner decision 2026-11-13. |
+| D58 | M5 defaults | Owner accepted all M5 proposal defaults (#611 Q1–Q20): grade lock at year close stays in M7; GPA in M5 shows band points; a ClassCourse may pick a scale visible at its unit; periods per unit with override; missing grades normalised (setting); category average points-weighted (setting); no teacher-availability limits in v1; holidays skipped; Zoom attendance proposes Present, teacher confirms; guardians see published grades only; Excel export only (PDF report cards M7); LTI out of v1. Owner decision 2026-11-14. |
+| D59 | Saudi standards | Grading scales, GPA and academic-year structure must follow Saudi school standards: ship Saudi presets (Ministry of Education school grade bands and descriptors in Arabic and English; university 5-point and 4-point GPA scales) and support the Saudi term structure as configured per client (two or three terms per year). Presets are data, editable per client. Owner decision 2026-11-14. |
+| D60 | Timetable rooms | Rooms are a free-text label on a timetable slot in v1; no room list or clash detection. Owner decision 2026-11-14. |
+| D61 | Excuses and alerts | Who may submit absence excuses is a per-client setting (default: guardians only). Absence alert default: 5 absences in 30 days, a late counts as half, both configurable per client. Owner decision 2026-11-14. |
 
 ---
 
