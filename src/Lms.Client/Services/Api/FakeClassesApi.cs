@@ -41,6 +41,11 @@ public sealed class FakeClassesApi : IClassesApi
             rows.Skip((query.Page - 1) * query.PageSize).Take(query.PageSize).ToList(), rows.Count, query.Page, query.PageSize));
     }
 
+    public Task<ClassSummaryDto> GetAsync(Guid id, CancellationToken ct = default) =>
+        _classes.FirstOrDefault(c => c.Id == id) is { } found
+            ? Task.FromResult(found)
+            : Task.FromException<ClassSummaryDto>(new ApiProblemException(404, "not_found", null, null));
+
     private ClassSummaryDto Make(SaveClassRequest r)
     {
         var unit = FakeUnits.All.FirstOrDefault(u => u.Id == r.OrgUnitId);
