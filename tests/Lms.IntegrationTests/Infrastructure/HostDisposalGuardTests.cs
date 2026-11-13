@@ -21,22 +21,38 @@ public sealed class HostDisposalGuardTests(LmsApiFactory factory)
             || (typeof(IDisposable).IsAssignableFrom(fieldType) && fieldType.Name.EndsWith("TestKit", StringComparison.Ordinal))
             || (typeof(IDisposable).IsAssignableFrom(fieldType) && fieldType.Name.EndsWith("World", StringComparison.Ordinal)));
 
+    private static bool IsCompilerGenerated(Type type) =>
+        type.Name.Contains('<') || type.IsDefined(typeof(System.Runtime.CompilerServices.CompilerGeneratedAttribute), false)
+        || (type.DeclaringType is { } outer && IsCompilerGenerated(outer));
+
     private static bool IsDisposable(Type type) =>
         typeof(IDisposable).IsAssignableFrom(type) || typeof(IAsyncDisposable).IsAssignableFrom(type);
 
     [Fact]
-    public void Every_class_that_holds_a_host_in_a_field_is_disposable()
+    public void Every_class_that_holds_a_host_in_a_field_is_disposable_and_none_holds_one_in_a_static()
     {
-        const BindingFlags all = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
-        var offenders = typeof(HostDisposalGuardTests).Assembly.GetTypes()
-            .Where(t => !t.IsAbstract && !t.IsNested && !IsDisposable(t) && !t.IsDefined(typeof(System.Runtime.CompilerServices.CompilerGeneratedAttribute), false))
-            .Where(t => t.GetFields(all).Any(f => HoldsAHost(f.FieldType)))
-            .Select(t => t.FullName)
-            .Order()
+        const BindingFlags all = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
+        var types = typeof(HostDisposalGuardTests).Assembly.GetTypes()
+            .Where(t => !IsCompilerGenerated(t)) // closures and async state machines
             .ToList();
 
+        // A static field keeps its host for the whole run, whoever disposes it: never allowed. (The shared fixture's own handle is the exception.)
+        var statics = types
+            .SelectMany(t => t.GetFields(all).Where(f => f.IsStatic && HoldsAHost(f.FieldType)).Select(f => $"{t.FullName}.{f.Name} (static)"))
+            .Where(name => name != $"{typeof(LmsApiFactory).FullName}.<Current>k__BackingField (static)")
+            .ToList();
+
+        // An instance field needs a disposable owner (nested helper classes included; static classes cannot have instance fields).
+        var instances = types
+            .Where(t => !(t.IsAbstract && !t.IsSealed) && !IsDisposable(t) && !(t.IsNested && IsDisposable(t.DeclaringType!))) // a helper nested in a disposable test class is owned by it
+            .Where(t => t.GetFields(all).Any(f => !f.IsStatic && HoldsAHost(f.FieldType)))
+            .Select(t => t.FullName + " (instance field, not IDisposable)");
+
+        var offenders = statics.Concat(instances).Order().ToList();
+
         Assert.True(offenders.Count == 0,
-            "These classes keep a host in a field but are not IDisposable (implement Dispose and dispose the host):\n" + string.Join('\n', offenders));
+            "These classes keep a host alive (a field of a host type): make the class IDisposable and dispose it; never hold one in a static:\n"
+            + string.Join('\n', offenders));
     }
 
     [Fact]
