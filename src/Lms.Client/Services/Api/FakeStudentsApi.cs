@@ -217,6 +217,16 @@ public sealed class FakeGuardiansApi : IGuardiansApi
 
     public string? LastSearch { get; private set; }
 
+    /// <summary>The children returned for the signed-in guardian; tests and the dev server replace it (empty = none linked).</summary>
+    public List<MyChildDto> MyChildren { get; } =
+    [
+        new(Guid.Parse("00000000-0000-0000-0000-0000000000c1"), "S-1001", "أحمد سعيد", "Ahmed Saeed", "المدرسة الرئيسية", "Main School", null, GuardianRelations.Mother),
+        new(Guid.Parse("00000000-0000-0000-0000-0000000000c2"), "S-1002", "ليلى حسن", "Laila Hassan", "المدرسة الرئيسية", "Main School", null, GuardianRelations.Mother),
+    ];
+
+    public Task<IReadOnlyList<MyChildDto>> GetMyChildrenAsync(CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyList<MyChildDto>>(MyChildren.ToList());
+
     public Task<GuardianDetailDto> GetAsync(Guid id, CancellationToken ct = default) =>
         _guardians.FirstOrDefault(g => g.Summary.Id == id) is { } found
             ? Task.FromResult(found)

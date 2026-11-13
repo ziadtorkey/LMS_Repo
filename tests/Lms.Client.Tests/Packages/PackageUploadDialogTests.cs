@@ -214,7 +214,7 @@ public sealed class PackageUploadDialogTests : ClientTestContext
     [Theory]
     [InlineData(403, "feature_disabled", "turned off")]
     [InlineData(409, "package_host_not_configured", "platform administrator")]
-    [InlineData(409, "package_too_large", "storage is full")]
+    [InlineData(409, "package_too_large", "used all its storage")]
     public void Blocking_states_replace_the_drop_zone_as_soon_as_the_dialog_opens(int status, string code, string text)
     {
         _packages.ListFailure = new ApiProblemException(status, code, null, null);
