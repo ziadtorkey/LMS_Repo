@@ -139,8 +139,11 @@ public sealed class M2EndpointMatrixTests(LmsApiFactory factory, ITestOutputHelp
     [InlineData("/api/org-units", false)]
     public void Only_m2_routes_are_in_scope(string pattern, bool m2) => Assert.Equal(m2, IsM2(pattern));
 
+    /// <summary>The Development-only quiz-close trigger (M4a Task 11) is a dev tool of the quizzes module, tested in AutoSubmitTests.</summary>
+    private const string DevQuizClose = "/api/dev/jobs/quiz-close/{quizId:guid}";
+
     private static bool IsM2(string pattern) =>
-        M2Prefixes.Any(p => pattern.Equals(p, StringComparison.OrdinalIgnoreCase)
+        pattern != DevQuizClose && M2Prefixes.Any(p => pattern.Equals(p, StringComparison.OrdinalIgnoreCase)
                             || pattern.StartsWith(p + "/", StringComparison.OrdinalIgnoreCase));
 
     private bool IsMapped(ProbeRow row) =>

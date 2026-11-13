@@ -9,6 +9,7 @@
 @using Lms.Shared
 @using Lms.Shared.People
 @inject IStudentsApi Api
+@inject Microsoft.JSInterop.IJSRuntime Js
 @inject IClassesApi Classes
 @inject IConfigApi Config
 @inject IYearStore Years
@@ -132,6 +133,7 @@ else
     private async Task SaveAsync()
     {
         _error = null;
+        await FormFlush.CommitPendingAsync(Js); // a guardian field typed less than its debounce ago still counts
         await _form.ValidateAsync();
         var rowsOk = GuardianRow.ValidateAll(_guardians);
         if (!_form.IsValid || !rowsOk || _homeUnitId is null) return;
