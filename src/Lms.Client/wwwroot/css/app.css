@@ -75,3 +75,10 @@ html:lang(ar), html:lang(ar) body { font-family: Cairo, "Segoe UI", Tahoma, Aria
     border: 1px solid var(--mud-palette-lines-default); border-radius: var(--lms-radius-control); background: var(--mud-palette-surface);
 }
 .lms-lesson-row .lms-lesson-title { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+
+/* Unit settings: one setting or policy per flat row (control on the first line, source and lock on the second). */
+.lms-setting-row { padding: 12px 0; border-block-end: 1px solid var(--mud-palette-lines-default); min-width: 0; }
+.lms-setting-row:last-child { border-block-end: 0; }
+.lms-setting-main { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 16px; min-width: 0; }
+.lms-setting-name { flex: 1 1 14rem; min-width: 0; overflow-wrap: anywhere; }
+.lms-setting-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; margin-block-start: 4px; min-width: 0; }

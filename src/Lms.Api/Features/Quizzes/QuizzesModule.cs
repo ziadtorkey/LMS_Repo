@@ -12,16 +12,6 @@ public sealed class QuizzesModule : ILmsModule
     {
         services.AddScoped<QuizMapper>();
         services.AddScoped<QuizBuilderHandlers>();
-        services.AddScoped<AttemptService>();
-        services.AddScoped<QuizResults>();
-        services.AddScoped<AttemptHandlers>();
-        services.AddScoped<QuizResultHandlers>();
-        services.AddScoped<QuizOpenedNotifier>();
-        services.AddScoped<QuizCloseJob>();
-        if (configuration.GetValue("Jobs:ServerEnabled", true))
-        {
-            services.AddHostedService<QuizCloseRegistration>();
-        }
     }
 
     public void MapEndpoints(IEndpointRouteBuilder app)
@@ -53,28 +43,5 @@ public sealed class QuizzesModule : ILmsModule
         app.MapDelete(Routes.QuizQuestionPattern,
                 (Guid id, HttpContext http, QuizBuilderHandlers h, CancellationToken ct) => h.DeleteQuestionAsync(id, http, ct))
             .RequireAuthorization().RequirePermission(Permissions.Quizzes.Manage);
-
-        // Attempts (M4a Task 11): the student routes need Quizzes.Attempt, the reads Quizzes.View, the hand grading Quizzes.Grade.
-        app.MapGet(Routes.QuizSummaryPattern, (Guid id, HttpContext http, QuizResultHandlers h, CancellationToken ct) => h.SummaryAsync(id, http, ct))
-            .RequireAuthorization().RequirePermission(Permissions.Quizzes.View);
-        app.MapPost(Routes.QuizAttemptsPattern, (Guid id, HttpContext http, AttemptHandlers h, CancellationToken ct) => h.StartAsync(id, http, ct))
-            .RequireAuthorization().RequirePermission(Permissions.Quizzes.Attempt);
-        app.MapGet(Routes.QuizAttemptsPattern,
-                (Guid id, HttpContext http, QuizResultHandlers h, CancellationToken ct, int page = 1, int pageSize = Paging.DefaultPageSize) =>
-                    h.ListAsync(id, page, pageSize, http, ct))
-            .RequireAuthorization().RequirePermission(Permissions.Quizzes.View);
-        app.MapGet(Routes.QuizAttemptPattern, (Guid id, HttpContext http, AttemptHandlers h, CancellationToken ct) => h.GetAsync(id, http, ct))
-            .RequireAuthorization().RequirePermission(Permissions.Quizzes.Attempt);
-        app.MapPut(Routes.QuizAttemptAnswersPattern,
-                (Guid id, SaveAnswerRequest? r, HttpContext http, AttemptHandlers h, CancellationToken ct) => h.SaveAnswerAsync(id, r, http, ct))
-            .RequireAuthorization().RequirePermission(Permissions.Quizzes.Attempt);
-        app.MapPost(Routes.QuizAttemptSubmitPattern, (Guid id, HttpContext http, AttemptHandlers h, CancellationToken ct) => h.SubmitAsync(id, http, ct))
-            .RequireAuthorization().RequirePermission(Permissions.Quizzes.Attempt);
-        app.MapGet(Routes.QuizAttemptResultPattern, (Guid id, HttpContext http, QuizResultHandlers h, CancellationToken ct) => h.ResultAsync(id, http, ct))
-            .RequireAuthorization().RequirePermission(Permissions.Quizzes.View);
-        app.MapPut(Routes.QuizAttemptGradePattern,
-                (Guid id, GradeAttemptRequest? r, HttpContext http, QuizResultHandlers h, CancellationToken ct) => h.GradeAsync(id, r, http, ct))
-            .RequireAuthorization().RequirePermission(Permissions.Quizzes.Grade);
-        DevQuizCloseTrigger.Map(app);
     }
 }
