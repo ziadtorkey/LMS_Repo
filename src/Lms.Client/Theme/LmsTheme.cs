@@ -68,7 +68,7 @@ public static class LmsTheme
         ActionDisabled = "rgba(23,33,43,0.32)",
         ActionDisabledBackground = "rgba(23,33,43,0.08)",
         LinesDefault = "#E1E6EA",
-        LinesInputs = "#B9C3CC",
+        LinesInputs = "#7A8793",   // 3.7:1 on white: control borders need 3:1 (WCAG 1.4.11)
         TableLines = "#E7EBEE",
         TableHover = "rgba(0,102,61,0.04)",
         TableStriped = "rgba(23,33,43,0.02)",
@@ -114,7 +114,7 @@ public static class LmsTheme
         ActionDisabled = "rgba(229,236,238,0.3)",
         ActionDisabledBackground = "rgba(229,236,238,0.1)",
         LinesDefault = "#28343A",
-        LinesInputs = "#4A5A62",
+        LinesInputs = "#6A7B85",   // 3.9:1 on the dark surface (was 2.3:1)
         TableLines = "#243035",
         TableHover = "rgba(76,195,138,0.06)",
         TableStriped = "rgba(229,236,238,0.02)",

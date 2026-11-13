@@ -272,15 +272,3 @@ public static class FakeClasses
         new(Guid.Parse(id), code, ar, en, FakeUnits.SchoolId, "المدرسة الرئيسية", "Main School", Guid.Empty, "", "", capacity, students, 0,
             null, null, null, ClassStatuses.Active, false);
 }
-
-public sealed class FakeClassesApi : IClassesApi
-{
-    public ClassQuery? LastQuery { get; private set; }
-
-    public Task<PagedResult<ClassSummaryDto>> ListAsync(ClassQuery query, CancellationToken ct = default)
-    {
-        LastQuery = query;
-        var rows = FakeClasses.All.Where(c => query.OrgUnitId is null || c.OrgUnitId == query.OrgUnitId).ToList();
-        return Task.FromResult(new PagedResult<ClassSummaryDto>(rows, rows.Count, query.Page, query.PageSize));
-    }
-}

@@ -1,0 +1,82 @@
+@using Lms.Client.Services.Api
+@using Lms.Shared.Classes
+@using Lms.Shared.Content
+@using Lms.Shared.Library
+@inject ILibraryApi Library
+@inject ILessonPlansApi Plans
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+@* Adds a library resource to a lesson of one of the caller's class courses as a LibraryResource module. *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="2">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" data-testid="add-lesson-error">@_error</MudAlert>
+            }
+            <MudSelect T="Guid?" Value="_classCourse" ValueChanged="OnClassCourseChangedAsync" Label="@L["Library_ClassCourse"]" Required="true"
+                       RequiredError="@L["Common_Required"]" data-testid="add-lesson-course">
+                @foreach (var cc in _classCourses)
+                {
+                    <MudSelectItem T="Guid?" Value="@((Guid?)cc.Id)">@Culture.Pick(cc.CourseNameAr, cc.CourseNameEn) · @Culture.Pick(cc.ClassNameAr, cc.ClassNameEn)</MudSelectItem>
+                }
+            </MudSelect>
+            <MudSelect T="Guid?" @bind-Value="_lesson" Label="@L["Library_Lesson"]" Required="true" RequiredError="@L["Common_Required"]"
+                       Disabled="@(_lessons.Count == 0)" data-testid="add-lesson-lesson">
+                @foreach (var l in _lessons)
+                {
+                    <MudSelectItem T="Guid?" Value="@((Guid?)l.Key)">@Culture.Pick(l.TitleAr, l.TitleEn)</MudSelectItem>
+                }
+            </MudSelect>
+            <MudSelect T="string" @bind-Value="_rule" Label="@L["Module_Completion"]" data-testid="add-lesson-rule">
+                @foreach (var r in CompletionRules.ForActivity(ModuleKinds.LibraryResource))
+                {
+                    <MudSelectItem T="string" Value="@r">@L["CompletionRule_" + r]</MudSelectItem>
+                }
+            </MudSelect>
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()">@L["Common_Cancel"]</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddAsync" Disabled="@(_saving || _classCourse is null || _lesson is null)"
+                   data-testid="add-lesson-save">@L["Library_AddToLesson"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private IReadOnlyList<ClassCourseDto> _classCourses = [];
+    private IReadOnlyList<ClassLessonDto> _lessons = [];
+    private Guid? _classCourse, _lesson;
+    private string _rule = CompletionRules.None;
+    private string? _error;
+    private bool _saving;
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter, EditorRequired] public LibraryResourceDto Resource { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync() =>
+        await ApiCalls.RunAsync(async () => _classCourses = await Plans.GetMyClassCoursesAsync(), Navigation, L, m => _error = m);
+
+    private async Task OnClassCourseChangedAsync(Guid? id)
+    {
+        _classCourse = id; _lesson = null; _lessons = [];
+        if (id is not { } cc) return;
+        await ApiCalls.RunAsync(async () =>
+            _lessons = (await Plans.GetPlanAsync(cc)).Sections.Where(s => !s.IsHidden).OrderBy(s => s.Order)
+                .SelectMany(s => s.Lessons.Where(l => !l.IsHidden).OrderBy(l => l.Order)).ToList(),
+            Navigation, L, m => _error = m);
+    }
+
+    private async Task AddAsync()
+    {
+        if (_classCourse is not { } cc || _lesson is not { } lesson) return;
+        _saving = true; _error = null;
+        var settings = new ModuleSettingsInput(Resource.TitleAr, Resource.TitleEn, ModuleVisibilities.Published, null, null,
+            ModuleTargets.ClassCourse, null, _rule, null);
+        var ok = await ApiCalls.RunAsync(() => Library.AddToLessonAsync(Resource.Id, new AddLibraryResourceToLessonRequest(cc, lesson, settings)),
+            Navigation, L, m => _error = m);
+        _saving = false;
+        if (ok) MudDialog.Close(DialogResult.Ok(true));
+    }
+}
