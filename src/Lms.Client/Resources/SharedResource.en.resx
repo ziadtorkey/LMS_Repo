@@ -1540,4 +1540,8 @@
   <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>The package didn't pass the security check.</value></data>
   <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>The file isn't a valid .zip archive. Export the package again.</value></data>
   <data name="Error_package_reason_bad_name" xml:space="preserve"><value>Some file names in the package are too long, nested too deep or reserved. Rename them and export again.</value></data>
+  <data name="MyCourses_Result_One" xml:space="preserve"><value>1 course</value></data>
+  <data name="MyCourses_Result_Two" xml:space="preserve"><value>2 courses</value></data>
+  <data name="MyCourses_Result_Few" xml:space="preserve"><value>{0} courses</value></data>
+  <data name="MyCourses_Result_Many" xml:space="preserve"><value>{0} courses</value></data>
 </root>

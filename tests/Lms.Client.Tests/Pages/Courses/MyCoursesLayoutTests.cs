@@ -132,4 +132,29 @@ public sealed class MyCoursesLayoutTests : CoursesTestContext
         Assert.Contains("إسناد مقرر أو ربطه", page.Find("[data-testid=my-courses-assign]").TextContent);
         Assert.DoesNotContain("MyCourses_", page.Markup);   // a missing key would show its name
     }
+
+    [Fact]
+    public async Task The_filtered_result_count_is_announced_in_a_polite_live_region()
+    {
+        var page = await OpenAsync();
+        var region = page.Find("[data-testid=my-courses-result-count]");
+
+        Assert.Equal("status", region.GetAttribute("role"));
+        Assert.Equal("polite", region.GetAttribute("aria-live"));
+        Assert.Equal("1 course", region.TextContent.Trim());
+
+        page.Find("[data-testid=my-courses-search]").Input("no-such-course");
+        Assert.Equal("0 courses", page.Find("[data-testid=my-courses-result-count]").TextContent.Trim());
+    }
+
+    [Fact]
+    public async Task The_result_count_uses_the_arabic_plural_forms()
+    {
+        Culture.Current = new CultureInfo("ar");
+        var page = await OpenAsync();
+
+        Assert.Equal("دورة واحدة", page.Find("[data-testid=my-courses-result-count]").TextContent.Trim());
+        page.Find("[data-testid=my-courses-search]").Input("no-such-course");
+        Assert.Equal("0 دورة", page.Find("[data-testid=my-courses-result-count]").TextContent.Trim());
+    }
 }

@@ -68,6 +68,9 @@ else
         </div>
     </SectionCard>
 
+    @* The filtered result count, announced politely as the filters change (e.g. "12 courses"). *@
+    <div class="lms-visually-hidden" role="status" aria-live="polite" aria-atomic="true" data-testid="my-courses-result-count">@L.Count("MyCourses_Result", Visible.Count, Culture.IsRightToLeft)</div>
+
     @if (Visible.Count == 0)
     {
         <EmptyState Title="@L["MyCourses_NoMatch"]" Text="@L["MyCourses_NoMatchText"]" Icon="@Icons.Material.Rounded.SearchOff" TestId="my-courses-no-match" Class="mt-4" />

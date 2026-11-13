@@ -1540,4 +1540,8 @@
   <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>لم تجتز الحزمة الفحص الأمني.</value></data>
   <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>الملف ليس أرشيف zip صالحًا. صدّر الحزمة من جديد.</value></data>
   <data name="Error_package_reason_bad_name" xml:space="preserve"><value>بعض أسماء الملفات في الحزمة طويلة جدًا أو متداخلة بعمق أو محجوزة. أعد تسميتها وصدّر الحزمة من جديد.</value></data>
+  <data name="MyCourses_Result_One" xml:space="preserve"><value>دورة واحدة</value></data>
+  <data name="MyCourses_Result_Two" xml:space="preserve"><value>دورتان</value></data>
+  <data name="MyCourses_Result_Few" xml:space="preserve"><value>{0} دورات</value></data>
+  <data name="MyCourses_Result_Many" xml:space="preserve"><value>{0} دورة</value></data>
 </root>
