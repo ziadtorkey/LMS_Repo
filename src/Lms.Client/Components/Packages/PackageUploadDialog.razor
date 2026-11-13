@@ -1,5 +1,6 @@
 @using Lms.Client.Services.Api
 @using Lms.Client.Services.Packages
+@using Lms.Shared
 @using Lms.Shared.Content
 @using Lms.Shared.Packages
 @implements IDisposable
@@ -46,13 +47,17 @@
             }
             else if (_package is { Status: PackageUploadStatuses.Ready })
             {
-                <PackageAttachForm Package="_package" Lessons="Lessons" LessonKey="LessonKey" OnAttach="AttachAsync" />
+                <PackageAttachForm Package="_package" Lessons="Lessons" OnAttach="AttachAsync" />
             }
             else
             {
                 <MudStack Spacing="1" role="status" data-testid="package-checking">
                     <MudProgressLinear Indeterminate="true" Color="Color.Primary" aria-label="@L["Package_Checking"]" />
                     <MudText Typo="Typo.body2">@L[_stalled ? "Package_StillChecking" : "Package_Checking"]</MudText>
+                    @if (_error is not null)
+                    {
+                        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" role="alert" data-testid="package-poll-error">@_error</MudAlert>
+                    }
                     <MudText Typo="Typo.caption" Class="lms-muted">@L["Package_KeepOpen"]</MudText>
                     @if (_stalled)
                     {
@@ -84,7 +89,6 @@
     private string? _rejected, _error, _blocked, _fileName;
     private bool _uploading, _stalled;
     private double _progress;
-    private byte[]? _bytes;
     private long _maxBytes;
     private CancellationTokenSource? _cts, _pollCts;
 
@@ -93,8 +97,8 @@
     /// <summary><see cref="PackageKinds.Scorm"/> or <see cref="PackageKinds.H5p"/>.</summary>
     [Parameter] public string Kind { get; set; } = PackageKinds.Scorm;
     [Parameter] public IReadOnlyList<PackageLessonOption> Lessons { get; set; } = [];
-    /// <summary>The lesson the upload starts from (preselected when attaching).</summary>
-    [Parameter] public Guid? LessonKey { get; set; }
+    /// <summary>The lesson the package is for; required by the upload (the module is attached to that lesson).</summary>
+    [Parameter, EditorRequired] public Guid LessonKey { get; set; }
     /// <summary>Reopen a package that is already uploaded: the dialog starts at step 2, or 3 when it is ready.</summary>
     [Parameter] public Guid? ResumePackageId { get; set; }
 
@@ -104,7 +108,7 @@
 
     /// <summary>Opens the dialog; returns the new module when the package was attached.</summary>
     public static async Task<ModuleNodeDto?> ShowAsync(IDialogService dialogs, string title, Guid classCourseId, string kind,
-        IReadOnlyList<PackageLessonOption> lessons, Guid? lessonKey = null, Guid? resumePackageId = null)
+        IReadOnlyList<PackageLessonOption> lessons, Guid lessonKey, Guid? resumePackageId = null)
     {
         var reference = await dialogs.ShowAsync<PackageUploadDialog>(title, new DialogParameters<PackageUploadDialog>
         {
@@ -123,8 +127,36 @@
         {
             _step = 2;
             StartPolling(id);
+            return;
         }
+        await CheckBlockingStatesAsync();
     }
+
+    /// <summary>
+    /// The blocking states replace the drop zone from the start. The contract has no dedicated pre-check, so the list read of the
+    /// class course's packages stands in for it: it answers with the same feature, host and quota problems the upload would. Any other
+    /// failure here is ignored (the upload reports it).
+    /// </summary>
+    private async Task CheckBlockingStatesAsync()
+    {
+        try
+        {
+            await Packages.ListPendingAsync(ClassCourseId, LessonKey, PackageUploadStatuses.Validating);
+        }
+        catch (ApiProblemException ex) when (BlockFor(ex) is { } key)
+        {
+            _blocked = key;
+        }
+        catch (Exception ex) when (ex is ApiProblemException or HttpRequestException) { }
+    }
+
+    private static string? BlockFor(ApiProblemException ex) => ex.Code switch
+    {
+        ProblemCodes.feature_disabled => "Package_FeatureOff",
+        ProblemCodes.package_host_not_configured => "Package_HostNotConfigured",
+        ProblemCodes.package_too_large => "Error_package_reason_quota_exceeded",
+        _ => null,
+    };
 
     private async Task OnFileAsync(InputFileChangeEventArgs e)
     {
@@ -140,38 +172,31 @@
             _error = L["Package_TooLarge", MaxMb];
             return;
         }
-        var buffer = new MemoryStream();
-        await using (var input = file.OpenReadStream(_maxBytes > 0 ? _maxBytes : file.Size))
-            await input.CopyToAsync(buffer);
-        _bytes = buffer.ToArray();
         _fileName = file.Name;
-        await UploadAsync();
+        await UploadAsync(file);
     }
 
-    private async Task UploadAsync()
+    private async Task UploadAsync(IBrowserFile file)
     {
-        if (_bytes is null || _fileName is null) return;
         _uploading = true;
         _progress = 0;
         _cts = new CancellationTokenSource();
         var progress = new Progress<double>(v => { _progress = v; _ = InvokeAsync(StateHasChanged); });
         try
         {
-            var uploaded = await Packages.UploadAsync(ClassCourseId, Kind, LessonKey, _fileName, new MemoryStream(_bytes), progress, _cts.Token);
-            _bytes = null;
+            // The browser file is streamed straight into the request: no copy of the package is held in memory.
+            await using var input = file.OpenReadStream(_maxBytes > 0 ? _maxBytes : file.Size, _cts.Token);
+            var uploaded = await Packages.UploadAsync(ClassCourseId, Kind, LessonKey, file.Name, input, progress, _cts.Token, file.Size);
             _package = uploaded;
             _step = 2;
             StartPolling(uploaded.Id);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) { }
+        catch (ApiProblemException ex) when (ex.Code is ProblemCodes.feature_disabled or ProblemCodes.package_host_not_configured)
         {
-            _bytes = null;
+            _blocked = BlockFor(ex);
         }
-        catch (ApiProblemException ex) when (ex.Code is "feature_disabled" or "package_host_not_configured")
-        {
-            _blocked = ex.Code == "feature_disabled" ? "Package_FeatureOff" : "Package_HostNotConfigured";
-        }
-        catch (Exception ex) when (ex is ApiProblemException or HttpRequestException)
+        catch (Exception ex) when (ex is ApiProblemException or HttpRequestException or IOException)
         {
             _error = ex is ApiProblemException problem ? ProblemText.For(problem, L) : L["Error_Generic"].Value;
         }
@@ -188,6 +213,7 @@
         _pollCts?.Cancel();
         _pollCts = new CancellationTokenSource();
         _stalled = false;
+        _error = null;
         _ = PollAsync(id, _pollCts.Token);
     }
 
@@ -208,7 +234,7 @@
                 _package = dto;
                 if (dto.Status == PackageUploadStatuses.Rejected) { _rejected = dto.RejectReason ?? Blank; _step = 2; await InvokeAsync(StateHasChanged); return; }
                 if (dto.Status == PackageUploadStatuses.Ready) { _step = 3; await InvokeAsync(StateHasChanged); return; }
-                await Task.Delay(delay, token);
+                await Poll.Delay(delay, token);
                 delay = TimeSpan.FromTicks(Math.Min((long)(delay.Ticks * Poll.Backoff), Poll.MaxInterval.Ticks));
             }
             _stalled = true;

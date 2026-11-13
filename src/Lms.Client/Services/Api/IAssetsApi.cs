@@ -30,7 +30,7 @@ public sealed class AssetsApi(ApiHttp http) : IAssetsApi
 }
 
 /// <summary>Read-only wrapper that reports how much of the stream the transport has consumed.</summary>
-internal sealed class ProgressStream(Stream inner, IProgress<double>? progress) : Stream
+internal sealed class ProgressStream(Stream inner, IProgress<double>? progress, long? knownLength = null) : Stream
 {
     private long _read;
 
@@ -45,8 +45,9 @@ internal sealed class ProgressStream(Stream inner, IProgress<double>? progress) 
     private int Report(int n)
     {
         _read += n;
-        if (progress is not null && inner.CanSeek && inner.Length > 0)
-            progress.Report(Math.Min(1d, (double)_read / inner.Length));
+        var length = knownLength ?? (inner.CanSeek ? inner.Length : 0);
+        if (progress is not null && length > 0)
+            progress.Report(Math.Min(1d, (double)_read / length));
         return n;
     }
 

@@ -3,7 +3,8 @@
 @inject ICultureService Culture
 
 @* Step 3: what was found in the package and the module it becomes. Attach stays disabled until the check says Ready. Interim form:
-   it is replaced by the shared ModuleMetadataForm (visibility, target, schedule) once module authoring is on main. *@
+   it is replaced by the shared ModuleMetadataForm (visibility, target, schedule) once module authoring is on main. The lesson is the
+   one of the upload (PackageUploadDto.LessonKey): the attach request carries no lesson, so it is shown, not chosen. *@
 <MudStack Spacing="2" data-testid="package-attach-form">
     <MudPaper Outlined="true" Class="pa-3" data-testid="package-summary">
         <MudText Typo="Typo.subtitle2" data-testid="package-found-title">@(Package.Title ?? Package.FileName)</MudText>
@@ -11,12 +12,10 @@
         <MudText Typo="Typo.caption" Class="lms-muted"><bdi dir="ltr">@Package.FileName</bdi></MudText>
     </MudPaper>
 
-    <MudSelect T="Guid" @bind-Value="_lesson" Label="@L["Package_Lesson"]" Variant="Variant.Outlined" Margin="Margin.Dense" data-testid="package-lesson">
-        @foreach (var lesson in Lessons)
-        {
-            <MudSelectItem T="Guid" Value="lesson.Key">@Culture.Pick(lesson.NameAr, lesson.NameEn)</MudSelectItem>
-        }
-    </MudSelect>
+    @if (LessonName() is { } lessonName)
+    {
+        <MudText Typo="Typo.body2" data-testid="package-lesson"><span class="lms-muted">@L["Package_Lesson"]:</span> @lessonName</MudText>
+    }
     <MudTextField T="string" @bind-Value="_titleAr" Label="@L["Package_TitleAr"]" Variant="Variant.Outlined" Margin="Margin.Dense" MaxLength="200"
                   Immediate="true" dir="rtl" data-testid="package-title-ar" />
     <MudTextField T="string" @bind-Value="_titleEn" Label="@L["Package_TitleEn"]" Variant="Variant.Outlined" Margin="Margin.Dense" MaxLength="200"
@@ -38,15 +37,13 @@
 </MudStack>
 
 @code {
-    private Guid _lesson;
     private string _titleAr = "", _titleEn = "", _rule = CompletionRules.Submit;
     private string? _error;
     private bool _busy;
 
     [Parameter, EditorRequired] public PackageUploadDto Package { get; set; } = default!;
-    [Parameter, EditorRequired] public IReadOnlyList<PackageLessonOption> Lessons { get; set; } = [];
-    /// <summary>The lesson preselected (the one the upload was started from).</summary>
-    [Parameter] public Guid? LessonKey { get; set; }
+    /// <summary>Only used to show the name of the lesson the package was uploaded for.</summary>
+    [Parameter] public IReadOnlyList<PackageLessonOption> Lessons { get; set; } = [];
     /// <summary>Runs the attach; returns an error text, or null on success.</summary>
     [Parameter, EditorRequired] public Func<AttachPackageModuleRequest, Task<string?>> OnAttach { get; set; } = default!;
 
@@ -60,15 +57,18 @@
         return fromContract.Count > 0 ? fromContract : [CompletionRules.Submit, CompletionRules.Score];
     }
 
-    private bool CanAttach => Package.Status == PackageUploadStatuses.Ready && !_busy && _lesson != Guid.Empty
+    private bool CanAttach => Package.Status == PackageUploadStatuses.Ready && !_busy
         && !string.IsNullOrWhiteSpace(_titleAr) && !string.IsNullOrWhiteSpace(_titleEn);
 
     protected override void OnInitialized()
     {
-        _lesson = LessonKey ?? Lessons.FirstOrDefault()?.Key ?? Guid.Empty;
         _titleAr = _titleEn = Package.Title ?? "";
         _rule = Rules.Contains(CompletionRules.Submit) ? CompletionRules.Submit : Rules[0];
     }
+
+    private string? LessonName() => Lessons.FirstOrDefault(l => l.Key == Package.LessonKey) is { } lesson
+        ? Culture.Pick(lesson.NameAr, lesson.NameEn)
+        : null;
 
     private string TypeText() => Package.Kind == PackageKinds.H5p
         ? L["Package_TypeH5p", Package.MainLibrary ?? ""].Value
@@ -80,7 +80,7 @@
         _error = null;
         var settings = new ModuleSettingsInput(_titleAr.Trim(), _titleEn.Trim(), ModuleVisibilities.Published, null, null,
             ModuleTargets.ClassCourse, null, _rule, null);
-        _error = await OnAttach(new AttachPackageModuleRequest(_lesson, settings));
+        _error = await OnAttach(new AttachPackageModuleRequest(settings));
         _busy = false;
     }
 }

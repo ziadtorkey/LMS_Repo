@@ -5,7 +5,20 @@
         var n = i;
         var state = Failed && n == Current ? "failed" : n < Current ? "done" : n == Current ? "current" : "upcoming";
         <li class="lms-step lms-step--@state" aria-current="@(n == Current ? "step" : null)" data-testid="@($"package-step-{n}")">
-            <span class="lms-step-dot" aria-hidden="true">@(state == "done" ? "✓" : state == "failed" ? "!" : n.ToString())</span>
+            <span class="lms-step-dot" aria-hidden="true">
+                @if (state == "done")
+                {
+                    <MudIcon Icon="@Icons.Material.Rounded.Check" Size="Size.Small" />
+                }
+                else if (state == "failed")
+                {
+                    <MudIcon Icon="@Icons.Material.Rounded.PriorityHigh" Size="Size.Small" />
+                }
+                else
+                {
+                    @n
+                }
+            </span>
             <span class="lms-step-label">@L[Label(n)]</span>
         </li>
     }
