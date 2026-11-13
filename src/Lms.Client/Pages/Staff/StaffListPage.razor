@@ -31,6 +31,8 @@
     </Actions>
 </PageHeader>
 
+<ListCountStat Label="@L["Staff_StatTotal"]" Value="_total" Icon="@Icons.Material.Rounded.Badge" TestId="staff-stat-total" />
+
 <SectionCard Flush="true">
     <div class="lms-filters" role="search" aria-label="@L["Common_Filters"]">
         <div class="lms-filter lms-filter-search">
@@ -121,6 +123,7 @@
 @code {
     private ServerTable<StaffSummaryDto> _table = default!;
     private IReadOnlyList<RoleDto> _roles = [];
+    private int? _total;
     private string? _searchText, _status;
     private Guid? _unitId, _roleId;
 
@@ -147,7 +150,15 @@
         var query = new StaffQuery(_unitId, true, _roleId, _status,
             string.IsNullOrWhiteSpace(_searchText) ? null : _searchText.Trim(), true, null, state.Page + 1, state.PageSize);
         var result = await Api.ListAsync(query, ct);
+        await ShowTotalAsync(result.Total);
         return new TableData<StaffSummaryDto> { Items = result.Items, TotalItems = result.Total };
+    }
+
+    private async Task ShowTotalAsync(int total)
+    {
+        if (_total == total) return;
+        _total = total;
+        await InvokeAsync(StateHasChanged);
     }
 
     /// <summary>Days left when an active person's last usable day is within 14 days (incl. today); otherwise null.</summary>

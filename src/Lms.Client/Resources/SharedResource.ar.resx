@@ -1568,4 +1568,8 @@
   <data name="StudentImport_Subtitle" xml:space="preserve"><value>أضف عددًا كبيرًا من الطلاب دفعة واحدة من ملف إكسل.</value></data>
   <data name="ClassImport_Subtitle" xml:space="preserve"><value>وزّع الطلاب على الفصول من ملف إكسل.</value></data>
   <data name="Group_Subtitle" xml:space="preserve"><value>قسّم طلاب مقرر الفصل هذا إلى مجموعات.</value></data>
+  <data name="Staff_StatTotal" xml:space="preserve"><value>الموظفون</value></data>
+  <data name="Students_StatTotal" xml:space="preserve"><value>الطلاب</value></data>
+  <data name="Guardians_StatTotal" xml:space="preserve"><value>أولياء الأمور</value></data>
+  <data name="ChangeRequests_StatTotal" xml:space="preserve"><value>الطلبات</value></data>
 </root>

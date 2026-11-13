@@ -49,7 +49,7 @@ else
     </PageHeader>
 
     <div class="lms-profile-grid">
-        <SectionCard Title="@L["Guardian_Details"]" Class="lms-profile-details">
+        <SectionCard Title="@L["Guardian_Details"]" Icon="@Icons.Material.Rounded.Person" Class="lms-profile-details">
             <dl class="lms-details">
                 <DetailItem Label="@L["Student_Mobile"]" Value="@s.Mobile" Ltr="true" TestId="profile-mobile" />
                 <DetailItem Label="@L["Student_Email"]" Value="@s.Email" Ltr="true" TestId="profile-email" />
@@ -59,7 +59,7 @@ else
         </SectionCard>
 
         <div class="lms-profile-main">
-            <SectionCard Title="@L["Guardian_Children"]" Flush="true">
+            <SectionCard Title="@L["Guardian_Children"]" Icon="@Icons.Material.Rounded.FamilyRestroom" Flush="true">
                 @if (_detail.Children.Count == 0)
                 {
                     <EmptyState Title="@L["Common_Empty"]" Icon="@Icons.Material.Rounded.School" TestId="children-empty" />

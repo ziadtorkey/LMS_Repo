@@ -6,7 +6,13 @@
         <div class="lms-section-head">
             @if (Title is not null)
             {
-                <MudText Typo="Typo.h6" HtmlTag="h2" id="@_headingId" Class="lms-section-title">@Title</MudText>
+                <div class="lms-section-title-row">
+                    @if (Icon is not null)
+                    {
+                        <span class="lms-section-icon" aria-hidden="true"><MudIcon Icon="@Icon" Size="Size.Small" /></span>
+                    }
+                    <MudText Typo="Typo.h6" HtmlTag="h2" id="@_headingId" Class="lms-section-title">@Title</MudText>
+                </div>
             }
             @if (Actions is not null)
             {
@@ -21,6 +27,8 @@
     private readonly string _headingId = $"section-{Guid.NewGuid():N}";
 
     [Parameter] public string? Title { get; set; }
+    /// <summary>Decorative icon tile before the heading (Stitch card header).</summary>
+    [Parameter] public string? Icon { get; set; }
     [Parameter] public bool Flush { get; set; }
     [Parameter] public string? Class { get; set; }
     [Parameter] public string? TestId { get; set; }

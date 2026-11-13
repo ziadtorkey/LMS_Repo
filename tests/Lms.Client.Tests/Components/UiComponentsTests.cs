@@ -33,6 +33,28 @@ public sealed class UiComponentsTests : ClientTestContext
     }
 
     [Fact]
+    public void SectionCard_shows_an_icon_tile_before_the_heading_that_assistive_technology_skips()
+    {
+        var cut = Render<SectionCard>(p => p.Add(x => x.Title, "Roles").Add(x => x.Icon, MudBlazor.Icons.Material.Rounded.Badge));
+
+        var tile = cut.Find(".lms-section-icon");
+        Assert.Equal("true", tile.GetAttribute("aria-hidden"));
+        Assert.Equal("Roles", cut.Find("h2").TextContent.Trim()); // the heading stays the label of the section
+        Assert.Empty(Render<SectionCard>(p => p.Add(x => x.Title, "Roles")).FindAll(".lms-section-icon"));
+    }
+
+    [Fact]
+    public void ListCountStat_shows_the_server_total_or_a_dash_before_it_is_known()
+    {
+        var known = Render<ListCountStat>(p => p.Add(x => x.Label, "Staff members").Add(x => x.Value, 42).Add(x => x.Icon, MudBlazor.Icons.Material.Rounded.Badge).Add(x => x.TestId, "stat"));
+        Assert.Equal("42", known.Find("[data-testid=stat] .lms-stat-value").TextContent.Trim());
+        Assert.Contains("Staff members", known.Find("[data-testid=stat] .lms-stat-label").TextContent);
+
+        var unknown = Render<ListCountStat>(p => p.Add(x => x.Label, "Staff members").Add(x => x.TestId, "stat"));
+        Assert.Equal("–", unknown.Find("[data-testid=stat] .lms-stat-value").TextContent.Trim());
+    }
+
+    [Fact]
     public void SectionCard_labels_the_section_with_its_heading()
     {
         var cut = Render<SectionCard>(p => p.Add(x => x.Title, "Roles"));

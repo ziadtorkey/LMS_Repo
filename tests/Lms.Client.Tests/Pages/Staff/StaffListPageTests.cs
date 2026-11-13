@@ -35,6 +35,24 @@ public sealed class StaffListPageTests : StaffTestContext
     }
 
     [Fact]
+    public async Task A_stat_tile_shows_the_number_of_staff_the_server_reports()
+    {
+        var cut = await RenderPageAsync(Permissions.Staff.View);
+
+        cut.WaitForAssertion(() => Assert.Equal(Staff.All.Count.ToString(CultureInfo.InvariantCulture), cut.Find("[data-testid=staff-stat-total] .lms-stat-value").TextContent.Trim()));
+    }
+
+    [Fact]
+    public async Task The_stat_tile_shows_the_total_even_when_it_exceeds_the_page_size()
+    {
+        for (var i = 0; i < 60; i++) Staff.Add($"موظف {i}", $"Extra {i}", $"extra{i}@x.test", PersonStatuses.Active, []);
+        var cut = await RenderPageAsync(Permissions.Staff.View);
+
+        cut.WaitForAssertion(() => Assert.Equal(Staff.All.Count.ToString(CultureInfo.InvariantCulture), cut.Find("[data-testid=staff-stat-total] .lms-stat-value").TextContent.Trim()));
+        Assert.True(Staff.All.Count > cut.FindAll("tbody tr").Count); // the tile is the server total, not the rows on the page
+    }
+
+    [Fact]
     public async Task Filters_send_unit_role_status_and_search()
     {
         var cut = await RenderPageAsync(Permissions.Staff.View);

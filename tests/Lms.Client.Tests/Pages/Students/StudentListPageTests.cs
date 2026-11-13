@@ -22,6 +22,14 @@ public sealed class StudentListPageTests : StudentsTestContext
     }
 
     [Fact]
+    public async Task A_stat_tile_shows_the_number_of_students_the_server_reports()
+    {
+        var cut = await RenderPageAsync();
+        // one page of data: the tile (the server total) equals the rows shown
+        cut.WaitForAssertion(() => Assert.Equal(cut.FindAll("tbody tr").Count.ToString(CultureInfo.InvariantCulture), cut.Find("[data-testid=students-stat-total] .lms-stat-value").TextContent.Trim()));
+    }
+
+    [Fact]
     public async Task List_shows_code_name_unit_primary_guardian_and_status()
     {
         var page = await RenderPageAsync();

@@ -26,6 +26,9 @@ else
 {
     <PageHeader Title="@L["Nav_ChangeRequests"]" Subtitle="@L["ChangeRequests_Subtitle"]" TitleTestId="queue-title" />
 
+    <ListCountStat Label="@L["ChangeRequests_StatTotal"]" Value="_total" Icon="@Icons.Material.Rounded.EditNote" TestId="queue-stat-total" />
+
+
     <SectionCard Flush="true">
         <div class="lms-filters" role="search" aria-label="@L["Common_Filters"]">
             <div class="lms-filter">
@@ -71,6 +74,7 @@ else
 }
 
 @code {
+    private int? _total;
     private ServerTable<StudentChangeRequestDto> _table = default!;
     private Guid? _unitId;
     private string? _status = ChangeRequestStatuses.Pending;
@@ -88,6 +92,7 @@ else
     private async Task<TableData<StudentChangeRequestDto>> LoadAsync(TableState state, CancellationToken ct)
     {
         var result = await Api.ListAsync(new ChangeRequestQuery(_unitId, _status, state.Page + 1, state.PageSize), ct);
+        if (_total != result.Total) { _total = result.Total; await InvokeAsync(StateHasChanged); }
         return new TableData<StudentChangeRequestDto> { Items = result.Items, TotalItems = result.Total };
     }
 

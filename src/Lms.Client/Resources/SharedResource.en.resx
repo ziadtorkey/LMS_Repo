@@ -1568,4 +1568,8 @@
   <data name="StudentImport_Subtitle" xml:space="preserve"><value>Add many students at once from an Excel file.</value></data>
   <data name="ClassImport_Subtitle" xml:space="preserve"><value>Place students in classes from an Excel file.</value></data>
   <data name="Group_Subtitle" xml:space="preserve"><value>Split the students of this class course into groups.</value></data>
+  <data name="Staff_StatTotal" xml:space="preserve"><value>Staff members</value></data>
+  <data name="Students_StatTotal" xml:space="preserve"><value>Students</value></data>
+  <data name="Guardians_StatTotal" xml:space="preserve"><value>Guardians</value></data>
+  <data name="ChangeRequests_StatTotal" xml:space="preserve"><value>Requests</value></data>
 </root>
