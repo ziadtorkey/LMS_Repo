@@ -64,7 +64,11 @@ public static class BuiltInRoles
              Permissions.CourseAssignments.Grade,
              Permissions.Quizzes.View, Permissions.Quizzes.Manage, Permissions.Quizzes.Grade,
              Permissions.Library.View, Permissions.Library.Manage,
-             Permissions.Forums.View, Permissions.Forums.Post, Permissions.Forums.Moderate]),
+             Permissions.Forums.View, Permissions.Forums.Post, Permissions.Forums.Moderate,
+             // M4b wave 3b (D51): the staff side of SCORM and H5P packages (own class courses for the Teacher).
+             Permissions.Packages.Upload, Permissions.Packages.View,
+             // M4b wave 3a (D52 pattern): live sessions.
+             Permissions.LiveSessions.View, Permissions.LiveSessions.Manage]),
         new(Manager, RoleBaseKinds.Staff,
             new("مدير المدرسة", "School Manager"),
             new("العميد", "Dean"),
@@ -95,7 +99,11 @@ public static class BuiltInRoles
              Permissions.CourseAssignments.Grade,
              Permissions.Quizzes.View, Permissions.Quizzes.Manage, Permissions.Quizzes.Grade,
              Permissions.Library.View, Permissions.Library.Manage,
-             Permissions.Forums.View, Permissions.Forums.Post, Permissions.Forums.Moderate]),
+             Permissions.Forums.View, Permissions.Forums.Post, Permissions.Forums.Moderate,
+             // M4b wave 3b (D51): the staff side of SCORM and H5P packages (own class courses for the Teacher).
+             Permissions.Packages.Upload, Permissions.Packages.View,
+             // M4b wave 3a (D52 pattern): live sessions.
+             Permissions.LiveSessions.View, Permissions.LiveSessions.Manage]),
         new(Supervisor, RoleBaseKinds.Staff,
             new("المشرف الأكاديمي", "Academic Supervisor"),
             new("رئيس القسم", "Head of Department"),
@@ -115,7 +123,11 @@ public static class BuiltInRoles
              Permissions.Modules.View,
              // M4a wave 2: read activities; manage the library (FR-LIB-01 "managed by Supervisor/Admin/Teacher").
              Permissions.CourseAssignments.View, Permissions.Quizzes.View, Permissions.Library.View,
-             Permissions.Library.Manage, Permissions.Forums.View]),
+             Permissions.Library.Manage, Permissions.Forums.View,
+             // M4b wave 3b: a Supervisor previews packages.
+             Permissions.Packages.View,
+             // M4b wave 3a: see sessions of the unit (join link only, never the start link).
+             Permissions.LiveSessions.View]),
         new(Counselor, RoleBaseKinds.Staff,
             new("الأخصائي الاجتماعي", "Social Worker"),
             new("شؤون الطلاب", "Student Affairs"),
@@ -140,7 +152,11 @@ public static class BuiltInRoles
              Permissions.CourseAssignments.Grade,
              Permissions.Quizzes.View, Permissions.Quizzes.Manage, Permissions.Quizzes.Grade,
              Permissions.Library.View, Permissions.Library.Manage,
-             Permissions.Forums.View, Permissions.Forums.Post, Permissions.Forums.Moderate]),
+             Permissions.Forums.View, Permissions.Forums.Post, Permissions.Forums.Moderate,
+             // M4b wave 3b (D51): the staff side of SCORM and H5P packages (own class courses for the Teacher).
+             Permissions.Packages.Upload, Permissions.Packages.View,
+             // M4b wave 3a: live sessions of own ClassCourses (RelationshipRules).
+             Permissions.LiveSessions.View, Permissions.LiveSessions.Manage]),
         new(Student, RoleBaseKinds.Student,
             new("الطالب", "Student"),
             new("الطالب", "Student"),
@@ -151,7 +167,11 @@ public static class BuiltInRoles
              // M4a wave 2: own enrollments only (RelationshipRules); Submit and Attempt are SelfService.
              Permissions.CourseAssignments.View, Permissions.CourseAssignments.Submit,
              Permissions.Quizzes.View, Permissions.Quizzes.Attempt,
-             Permissions.Library.View, Permissions.Forums.View, Permissions.Forums.Post]),
+             Permissions.Library.View, Permissions.Forums.View, Permissions.Forums.Post,
+             // M4b wave 3b: own enrollments only (RelationshipRules).
+             Permissions.Packages.View,
+             // M4b wave 3a: sessions of own enrollments (RelationshipRules + IModuleAccess).
+             Permissions.LiveSessions.View]),
         new(Guardian, RoleBaseKinds.Guardian,
             new("ولي الأمر", "Parent"),
             new("ولي الأمر", "Parent"),

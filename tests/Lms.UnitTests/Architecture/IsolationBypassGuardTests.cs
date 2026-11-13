@@ -60,7 +60,7 @@ public sealed class IsolationBypassGuardTests
         ["src/Lms.Api/Features/OrgUnits/TransferTargetUsageCheck.cs"] =
             "existence check of a unit that names the deleted unit as its transfer target; it can sit outside the caller's scope (M1 Task 13, #48)",
         ["src/Lms.Infrastructure/Branches/BranchMaterializer.cs"] =
-            "setting locks sit on ancestors above the caller's scope when a copied branch is materialized (M1 Task 15, #50)",
+            "setting locks sit on ancestors above the caller's scope when a copied branch is materialized (M1 Task 15, #50); live course codes of the client outside the caller subtree, code keys only, for the copy's code-conflict check (M3 Task 10, #218)",
         ["src/Lms.Api/Features/LevelTypes/LevelTypeEndpoints.cs"] =
             "level types are client-wide, so the in-use count covers the whole client, not the caller subtree (M1 Task 8, #83)",
         ["src/Lms.Api/Features/Courses/Import/CourseImportDefinition.cs"] =

@@ -194,6 +194,12 @@ public sealed class ModuleHandlers(
             return problem;
         }
 
+        // An assignment, quiz or library module belongs to its feature (IModuleWriter): removing it here would orphan the activity.
+        if (!ModuleKinds.Content.Contains(module.Kind))
+        {
+            return ApiProblems.BadRequest(ProblemCodes.validation_failed, "Remove it through its own feature.");
+        }
+
         if (await GroupEndpoints.WritableAsync(cc!, db, guard, ct) is { } closed)
         {
             return closed;

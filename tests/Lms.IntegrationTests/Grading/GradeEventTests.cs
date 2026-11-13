@@ -90,7 +90,7 @@ public sealed class GradeEventTests(LmsApiFactory factory)
     }
 
     [Fact]
-    public async Task Event_carries_unit_fields_and_is_isolated()
+    public async Task GradeEvent_is_isolated_per_client_and_subtree()
     {
         var a = await AccessTestData.SeedAsync(factory, "GE5A");
         var b = await AccessTestData.SeedAsync(factory, "GE5B");
@@ -114,9 +114,40 @@ public sealed class GradeEventTests(LmsApiFactory factory)
         Assert.Equal(0, await SeenAsync(TestCurrentContext.For(a.Org.Id, a.School2.Path)));
         Assert.Equal(0, await SeenAsync(TestCurrentContext.For(b.Org.Id, b.Root.Path)));
         Assert.Equal(0, await SeenAsync(TestCurrentContext.For(a.Org.Id, null)));
+        // A scope below the event's unit (an ancestor-only row is invisible to it) and another client's scope on a path in our tree.
+        Assert.Equal(0, await SeenAsync(TestCurrentContext.For(a.Org.Id, a.School1.Path + Guid.NewGuid() + "/")));
+        Assert.Equal(0, await SeenAsync(TestCurrentContext.For(b.Org.Id, a.School1.Path)));
+        Assert.Equal(0, await SeenAsync(TestCurrentContext.For(b.Org.Id, a.Root.Path)));
         Assert.Equal(0, await SeenAsync(new TestCurrentContext { UserId = Guid.NewGuid() }));
 
         await using var audit = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
         Assert.True(await audit.AuditEntries.AnyAsync(e => e.EntityType == nameof(GradeEvent) && e.EntityId == stored.Id && e.Action == AuditAction.Created));
+    }
+
+    [Fact]
+    public async Task Quiz_scores_write_the_next_revision_only_when_the_score_changes()
+    {
+        var tree = await AccessTestData.SeedAsync(factory, "GE6");
+        var rows = await AcademicTestKit.AddAllAsync(factory, tree.School1);
+        var quiz = Guid.NewGuid();
+
+        async Task<bool> ScoreAsync(decimal points)
+        {
+            using var scope = new EngineScope(factory.Services);
+            var written = await scope.Services.GetRequiredService<IGradeEvents>().RecordScoreAsync(
+                GradeSourceKind.Quiz, quiz, rows.ClassCourse.Id, rows.Student.Id, points, 10, DateTime.UtcNow, default);
+            await scope.Db.SaveChangesAsync();
+            return written;
+        }
+
+        Assert.True(await ScoreAsync(6));
+        Assert.False(await ScoreAsync(6)); // a second attempt that leaves the final score alone
+        Assert.True(await ScoreAsync(9)); // a better attempt
+        Assert.True(await ScoreAsync(7)); // a regrade that lowers it
+
+        var stored = await RowsAsync(quiz);
+        Assert.Equal([1, 2, 3], stored.Select(e => e.Revision));
+        Assert.Equal([6m, 9m, 7m], stored.Select(e => e.Points));
+        Assert.All(stored, e => Assert.Equal(GradeSourceKind.Quiz, e.SourceKind));
     }
 }

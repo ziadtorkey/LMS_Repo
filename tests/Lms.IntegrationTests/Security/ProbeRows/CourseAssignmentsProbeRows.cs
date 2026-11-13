@@ -1,4 +1,8 @@
+using Lms.Domain.Assignments;
 using Lms.Domain.Classes;
+using Lms.IntegrationTests.Infrastructure;
+using Lms.IntegrationTests.People;
+using Microsoft.EntityFrameworkCore;
 using Lms.IntegrationTests.Academic;
 using Lms.IntegrationTests.Classes;
 using Lms.Shared;
@@ -48,8 +52,8 @@ public sealed class CourseAssignmentsProbeRows : IProbeRowModule
             async (w, _) => new ProbeRequest(Routes.CourseAssignmentSubmit(await NewAssignmentAsync(w)), new SubmitAssignmentRequest("<p>x</p>", [])),
             Expect(Forbidden, Forbidden, Forbidden, Forbidden, Forbidden, NotFound)),
         new("submission get", HttpMethod.Get, Routes.SubmissionPattern,
-            (_, _) => Task.FromResult(new ProbeRequest(Routes.Submission(Guid.NewGuid()))),
-            Expect(NotFound, NotFound, NotFound, NotFound, NotFound, NotFound)),
+            async (w, _) => new ProbeRequest(Routes.Submission(await NewSubmissionAsync(w))),
+            Expect(Ok, Ok, NotFound, NotFound, NotFound, Ok)),
     ];
 
     private static CreateCourseAssignmentRequest CreateBody() =>
@@ -78,5 +82,19 @@ public sealed class CourseAssignmentsProbeRows : IProbeRowModule
         var classCourse = await NewClassCourseAsync(w);
         var created = await w.Callers.SendOkAsync(RootAdmin, HttpMethod.Post, Routes.ClassCourseAssignments(classCourse.Id), CreateBody());
         return created.GetProperty("id").GetGuid();
+    }
+
+    /// <summary>A handed-in submission of a student of School1 (written directly: the probe callers are staff).</summary>
+    private static async Task<Guid> NewSubmissionAsync(M1ProbeWorld w)
+    {
+        var assignmentId = await NewAssignmentAsync(w);
+        var student = await PeopleTestKit.AddStudentAsync(w.Callers.Factory, w.Callers.A.School1, PeopleTestKit.NewCode());
+        await using var db = w.Callers.Factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        var assignment = await db.Set<Assignment>().SingleAsync(a => a.Id == assignmentId);
+        var submission = new Submission(assignment, student.Id);
+        submission.HandIn("<p>Probe</p>", false, DateTime.UtcNow);
+        db.Add(submission);
+        await db.SaveChangesAsync();
+        return submission.Id;
     }
 }
