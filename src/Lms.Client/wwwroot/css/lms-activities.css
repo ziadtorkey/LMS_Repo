@@ -6,6 +6,9 @@
 .lms-live-dot { display: inline-block; inline-size: 8px; block-size: 8px; border-radius: 50%; background: currentColor; animation: lms-live-pulse 2s ease-in-out infinite; }
 @keyframes lms-live-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
 @media (prefers-reduced-motion: reduce) { .lms-live-dot { animation: none; } }
+.lms-live-status { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 2px; min-inline-size: 0; }
+.lms-live-status .lms-live-dot { margin-inline-end: 6px; }
+.lms-live-status-hint { max-inline-size: 34ch; }
 
 /* ---------- Two-line date/time cell (date strong, time range muted), always left to right ---------- */
 .lms-when { display: flex; flex-direction: column; direction: ltr; text-align: start; white-space: nowrap; }

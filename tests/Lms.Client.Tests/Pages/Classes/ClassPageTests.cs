@@ -59,7 +59,7 @@ public sealed class ClassPageTests : ClassesTestContext
     [Fact]
     public async Task Page_shows_the_class_header_and_tabs_without_a_timetable()
     {
-        var page = await RenderPageAsync();
+        var page = await RenderPageAsync(Permissions.Classes.View, Permissions.TeacherAssignments.View);
 
         Assert.Contains("Grade 1 A", page.WaitForElement("[data-testid=class-title]").TextContent);
         Assert.Contains("12 / 30", page.Find("[data-testid=class-count]").TextContent);
@@ -69,6 +69,18 @@ public sealed class ClassPageTests : ClassesTestContext
         Assert.Contains("Teachers", tabs);
         Assert.DoesNotContain("Timetable", tabs); // arrives with the scheduling milestone
         Assert.EndsWith($"classes/{Class.Id}/students", page.Find("[data-testid=open-students]").GetAttribute("href"));
+    }
+
+    [Fact]
+    public async Task Teachers_tab_needs_TeacherAssignments_View()
+    {
+        var without = await RenderPageAsync(Permissions.Classes.View);
+        Assert.Contains("Courses", without.WaitForElement("[data-testid=class-tabs]").TextContent);
+        Assert.DoesNotContain("Teachers", without.Find("[data-testid=class-tabs]").TextContent);
+
+        await GrantAsync(Permissions.Classes.View, Permissions.TeacherAssignments.View); // providers are already rendered
+        var with = Render<ClassPage>(p => p.Add(x => x.Id, Class.Id));
+        Assert.Contains("Teachers", with.WaitForElement("[data-testid=class-tabs]").TextContent);
     }
 
     [Fact]
