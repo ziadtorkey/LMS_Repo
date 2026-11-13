@@ -132,4 +132,17 @@ public sealed class AssetUploaderTests : ClientTestContext
         cut.WaitForAssertion(() => Assert.Single(_uploaded));
         Assert.Single(_api.Uploads);
     }
+
+    [Fact]
+    public void The_extension_list_is_isolated_left_to_right_in_arabic()
+    {
+        Culture.Current = new System.Globalization.CultureInfo("ar");
+        var cut = RenderUploader([AssetKinds.Video]);
+
+        var bdi = cut.Find("[data-testid=asset-limits] bdi");
+
+        Assert.Equal("ltr", bdi.GetAttribute("dir"));
+        Assert.Contains(".mp4", bdi.TextContent);
+        Assert.Contains("ميجابايت", cut.Find("[data-testid=asset-limits]").TextContent);
+    }
 }

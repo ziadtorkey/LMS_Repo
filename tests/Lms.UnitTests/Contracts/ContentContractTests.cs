@@ -132,7 +132,7 @@ public sealed class ContentContractTests
             CompletionRules.Manual, false, CompletionStates.NotStarted);
         var asset = new AssetDto(Guid.NewGuid(), Guid.NewGuid(), AssetKinds.Video, "intro.mp4", "video/mp4", 1_048_576, 95, true,
             new DateTime(2026, 11, 12, 8, 0, 0, DateTimeKind.Utc));
-        var detail = new ModuleDetailDto(node, asset.ClassCourseId, Guid.NewGuid(), null,
+        var detail = new ModuleDetailDto(node, asset.ClassCourseId!.Value, Guid.NewGuid(), null,
             new ModuleContentDto(asset, null, null, null, null), null, Guid.NewGuid(), true, DateTime.UtcNow);
         var create = new CreateModuleRequest(ModuleKinds.Link, "رابط", "Link", ModuleVisibilities.Published, null, null,
             ModuleTargets.ClassCourse, null, CompletionRules.View, null, new ModuleContentInput(Url: "https://example.org"));
