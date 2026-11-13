@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using Lms.Domain.Classes;
 using Lms.Domain.Content;
 using Lms.Domain.LiveSessions;
+using Lms.Infrastructure.LiveSessions;
 using Lms.IntegrationTests.Content;
 using Lms.IntegrationTests.Infrastructure;
 using Lms.Shared;
@@ -10,6 +11,7 @@ using Lms.Shared.Configuration;
 using Lms.Shared.Content;
 using Lms.Shared.LiveSessions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using static Lms.IntegrationTests.Content.ContentTestHost;
 using static Lms.IntegrationTests.LiveSessions.LiveSessionTestKit;
 
@@ -313,6 +315,58 @@ public sealed class LiveSessionAuthoringTests(LmsApiFactory factory) : IDisposab
         await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
         Assert.False(await db.Set<LiveSessionSeries>().AnyAsync(x => x.ClassCourseId == w.ClassCourse.Id));
         Assert.Equal(1, await db.Set<LessonModule>().CountAsync(m => m.ClassCourseId == w.ClassCourse.Id && m.Kind == ModuleKinds.LiveSession));
+    }
+
+    [Theory]
+    [InlineData(false)] // occurrences 1 and 2 are created, 3 is refused
+    [InlineData(true)] // occurrence 1 fails plainly (row SyncFailed), 2 is created, 3 is refused
+    public async Task A_refusal_after_earlier_occurrences_deletes_their_meetings_and_leaves_no_rows_modules_or_series(bool firstFailsPlainly)
+    {
+        var w = await _t.SetUpAsync("LS17" + firstFailsPlainly);
+        await EnableAsync(factory, w);
+        var provider = Provider(_t);
+        var kept = Assert.Single(await CreateAsync(_t, w.Teacher, w, Single("Kept")));
+        provider.ScriptCreates(firstFailsPlainly ? MeetingFailure.Failed : null, null, MeetingFailure.CapacityExhausted);
+
+        var refused = await _t.SendAsync(w.Teacher, HttpMethod.Post, Routes.ClassCourseLiveSessions(w.ClassCourse.Id), Weekly(3, title: "Refused"));
+
+        Assert.Equal(HttpStatusCode.Conflict, refused.StatusCode);
+        Assert.Equal(ProblemCodes.provider_unavailable, await CodeAsync(refused));
+        Assert.True(int.Parse(refused.Headers.GetValues("Retry-After").Single()) > 0);
+        Assert.Equal(firstFailsPlainly ? 1 : 2, provider.Deleted.Count); // the meetings that were created are deleted again
+        Assert.Equal([kept.Id], (await ListAsync(_t, w.Teacher, w)).Select(s => s.Id).ToArray());
+        Assert.Single(provider.Meetings); // back to what it was before the request
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        Assert.False(await db.Set<LiveSessionSeries>().AnyAsync(x => x.ClassCourseId == w.ClassCourse.Id));
+        Assert.Equal(1, await db.Set<LiveSession>().CountAsync(x => x.ClassCourseId == w.ClassCourse.Id));
+        Assert.Equal(1, await db.Set<LessonModule>().CountAsync(m => m.ClassCourseId == w.ClassCourse.Id && m.Kind == ModuleKinds.LiveSession));
+    }
+
+    [Fact]
+    public async Task A_host_without_a_meeting_provider_answers_provider_not_configured_and_creates_nothing()
+    {
+        using var t = new ContentTestHost(factory, services => services.AddSingleton<IMeetingProvider, NotConfiguredMeetingProvider>());
+        var w = await t.SetUpAsync("LS18");
+        await EnableAsync(factory, w);
+
+        var response = await t.SendAsync(w.Teacher, HttpMethod.Post, Routes.ClassCourseLiveSessions(w.ClassCourse.Id), Single());
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        Assert.Equal(ProblemCodes.provider_not_configured, await CodeAsync(response));
+        Assert.Empty(await ListAsync(t, w.Teacher, w));
+    }
+
+    [Fact]
+    public async Task An_unexpected_provider_exception_keeps_the_session_in_sync_failed_instead_of_a_500()
+    {
+        var w = await _t.SetUpAsync("LS19");
+        await EnableAsync(factory, w);
+        Provider(_t).NextException = new HttpRequestException("connection reset");
+
+        var created = Assert.Single(await CreateAsync(_t, w.Teacher, w, Single()));
+
+        Assert.Equal(LiveSessionStatuses.SyncFailed, created.Status);
+        Assert.Single(await ListAsync(_t, w.Teacher, w));
     }
 
     [Fact]

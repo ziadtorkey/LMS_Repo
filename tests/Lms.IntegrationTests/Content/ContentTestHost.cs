@@ -134,6 +134,33 @@ internal sealed class ContentTestHost(LmsApiFactory factory, Action<IServiceColl
     public Task<HttpResponseMessage> CreateRawAsync(RoleAssignment caller, ContentWorld w, CreateModuleRequest request, Guid? lesson = null) =>
         SendAsync(caller, HttpMethod.Post, Routes.ClassCourseLessonModules(w.ClassCourse.Id, lesson ?? Lesson1), request);
 
+    /// <summary>Uploads an asset to a class course as the caller (multipart, like the real client).</summary>
+    public async Task<AssetDto> UploadAssetAsync(
+        RoleAssignment caller, Guid classCourseId, string fileName = "notes.pdf", string contentType = "application/pdf")
+    {
+        var form = new MultipartFormDataContent { { new StringContent(classCourseId.ToString()), AssetUploadForm.ClassCourseId } };
+        var file = new ByteArrayContent(SampleBytes(fileName));
+        file.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
+        form.Add(file, AssetUploadForm.File, fileName);
+        var response = await _host.SendRawAsync(new HttpRequestMessage(HttpMethod.Post, Routes.Assets) { Content = form }, caller);
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        return (await response.Content.ReadFromJsonAsync<AssetDto>())!;
+    }
+
+    /// <summary>A few bytes with the signature of the file type (the asset service checks magic bytes).</summary>
+    private static byte[] SampleBytes(string fileName) => Path.GetExtension(fileName).ToLowerInvariant() switch
+    {
+        ".png" => [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0],
+        ".mp4" or ".m4a" => [0, 0, 0, 0x18, (byte)'f', (byte)'t', (byte)'y', (byte)'p', (byte)'i', (byte)'s', (byte)'o', (byte)'m'],
+        ".mp3" => [(byte)'I', (byte)'D', (byte)'3', 3, 0, 0, 0, 0, 0, 0],
+        _ => "%PDF-1.7 module asset"u8.ToArray(),
+    };
+
+    public static CreateModuleRequest AssetModule(
+        string kind, Guid? assetId, string visibility = ModuleVisibilities.Published, string rule = CompletionRules.None,
+        string target = ModuleTargets.ClassCourse, Guid? groupId = null) =>
+        new(kind, "ملف", "Asset module", visibility, null, null, target, groupId, rule, null, new ModuleContentInput(AssetId: assetId));
+
     public static async Task<string?> CodeAsync(HttpResponseMessage response)
     {
         var json = await response.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();

@@ -123,6 +123,12 @@ public sealed class LiveSessionService(
                 logger.LogWarning(ex, "Live session {SessionId} could not be synced with the provider", session.Id);
                 session.SyncFailed();
             }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                // Whatever a provider throws (a timeout, a network error) is a plain failure: the row is kept for the sweep.
+                logger.LogWarning(ex, "Live session {SessionId} could not be synced with the provider (unexpected error)", session.Id);
+                session.SyncFailed();
+            }
         }
 
         await db.SaveChangesAsync(ct);
@@ -365,6 +371,8 @@ public sealed class LiveSessionService(
         var cap = (await settings.ResolveAsync(SettingKeys.LiveMaxCreatesPerDay, classCourse.OrgUnitPath, ct)).Value;
         var dayStart = clock.UtcNow.Date;
 
+        // Rows undone after a refused create keep their ExternalMeetingId on purpose: the meeting was created (and deleted) at the
+        // provider, so it still counts against the day.
         // ISOLATION-BYPASS: the daily cap counts the meetings the whole client created today, in every unit and including
         // rows deleted since (a delete does not give the quota back), so neither the subtree nor the soft-delete filter may
         // apply. Only the client's rows and only a count are read.

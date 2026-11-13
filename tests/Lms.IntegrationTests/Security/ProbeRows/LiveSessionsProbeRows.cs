@@ -22,7 +22,7 @@ public sealed class LiveSessionsProbeRows : IProbeRowModule
 {
     private static readonly Guid Section = Guid.NewGuid(), Lesson1 = Guid.NewGuid();
 
-    public IEnumerable<ProbeRow> Rows => Build().Select(r => r with { Milestone = 4 });
+    public IEnumerable<ProbeRow> Rows => Build().Select(r => r with { Milestone = ProbeMilestones.M4b });
 
     private static IEnumerable<ProbeRow> Build() =>
     [
