@@ -376,6 +376,11 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 .lms-month-head { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; min-width: 0; }
 @media (max-width: 599px) { .lms-month-head { font-size: .625rem; } }
 
+/* Search field with an explicit Search button (search on Enter or click) */
+.lms-search-row { display: flex; align-items: flex-start; gap: 12px; }
+.lms-search-row > .mud-input-control { flex: 1 1 auto; min-width: 0; }
+.lms-search-row > .mud-button-root { margin-top: 16px; flex-shrink: 0; }
+
 /* ---------- Role editor and permission matrix ---------- */
 .lms-role-editor { display: flex; flex-direction: column; gap: 20px; }
 .lms-role-editor .lms-section + .lms-section { margin-top: 0; }
