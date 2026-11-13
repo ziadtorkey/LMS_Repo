@@ -76,6 +76,44 @@ else
                             TestId="years-empty" />
             </SectionCard>
         }
+        @if (Headline is { } head)
+        {
+            @* The Stitch dashboard row, from the year's own data (no invented figures): the year that is running now (else the first one). *@
+            <div class="lms-stats" data-testid="years-stats">
+                <div class="lms-stat" data-testid="stat-year">
+                    <div>
+                        <div class="lms-stat-label">@L["Years_StatCurrent"]</div>
+                        <div class="lms-stat-value">@CultureText.Pick(head.NameAr, head.NameEn)</div>
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@StatusColor(head.Status)" Class="lms-status-chip">@L[$"YearStatus_{head.Status}"]</MudChip>
+                    </div>
+                    <span class="lms-stat-icon" aria-hidden="true"><MudIcon Icon="@Icons.Material.Rounded.CalendarMonth" /></span>
+                </div>
+                <div class="lms-stat" data-testid="stat-days">
+                    <div>
+                        <div class="lms-stat-label">@L["Years_StatDays"]</div>
+                        <div class="lms-stat-value">@(head.EndDate.DayNumber - head.StartDate.DayNumber + 1)</div>
+                    </div>
+                    <span class="lms-stat-icon" aria-hidden="true"><MudIcon Icon="@Icons.Material.Rounded.DateRange" /></span>
+                </div>
+                <div class="lms-stat" data-testid="stat-terms">
+                    <div>
+                        <div class="lms-stat-label">@L["Years_StatTerms"]</div>
+                        <div class="lms-stat-value">@head.Terms.Count</div>
+                    </div>
+                    <span class="lms-stat-icon" aria-hidden="true"><MudIcon Icon="@Icons.Material.Rounded.ViewTimeline" /></span>
+                </div>
+                @if (head.Status == AcademicYearStatuses.Active)
+                {
+                    <div class="lms-stat" data-testid="stat-left">
+                        <div>
+                            <div class="lms-stat-label">@L["Years_StatLeft"]</div>
+                            <div class="lms-stat-value">@Math.Max(0, head.EndDate.DayNumber - DateOnly.FromDateTime(DateTime.UtcNow).DayNumber)</div>
+                        </div>
+                        <span class="lms-stat-icon" aria-hidden="true"><MudIcon Icon="@Icons.Material.Rounded.HourglassBottom" /></span>
+                    </div>
+                }
+            </div>
+        }
         <div class="lms-years">
             @foreach (var year in ctx.Years)
             {
@@ -86,6 +124,7 @@ else
                 <section class="lms-section lms-year" data-testid="@($"year-{y.Id}")">
                     <div class="lms-year-head">
                         <div class="lms-year-title">
+                            <span class="lms-section-icon" aria-hidden="true"><MudIcon Icon="@Icons.Material.Rounded.CalendarMonth" Size="Size.Small" /></span>
                             @* The year name stays an h6: the E2E page object finds a year by its h6 text. *@
                             <MudText Typo="Typo.h6" Class="lms-section-title">@CultureText.Pick(y.NameAr, y.NameEn)</MudText>
                             <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@StatusColor(y.Status)" Class="lms-status-chip"
@@ -139,6 +178,9 @@ else
     private bool _loading = true, _failed, _hasPicker;
 
     [Parameter, SupplyParameterFromQuery(Name = "unit")] public Guid? UnitId { get; set; }
+
+    /// <summary>The year the dashboard row describes: the active one, else the first.</summary>
+    private AcademicYearDto? Headline => _context is { Years.Count: > 0 } c ? c.Years.FirstOrDefault(y => y.Status == AcademicYearStatuses.Active) ?? c.Years[0] : null;
 
     private bool Inherited => _hasPicker && _context is { } c && c.DefiningOrgUnitId != _unitId;
     private bool CanCreateHere => !_loading && !_failed && _hasPicker && _unitId != Guid.Empty && Perms.Has(Permissions.AcademicYears.Create) && !Inherited;
