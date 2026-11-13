@@ -12,10 +12,12 @@ public abstract class LessonPlansTestContext : StaffTestContext
 
     protected FakeLessonPlansApi Plans { get; } = new();
     protected StubSettingsApi Settings { get; } = new();
+    protected FakeModulesApi ModulesApi { get; } = new();
 
     protected LessonPlansTestContext()
     {
         Services.AddSingleton<ILessonPlansApi>(Plans);
+        Services.AddSingleton<IModulesApi>(ModulesApi);
         Services.AddSingleton<Lms.Client.Services.Api.IConfigApi>(Settings);
     }
 
