@@ -1,0 +1,47 @@
+using Lms.Infrastructure.Jobs;
+using Microsoft.Extensions.Options;
+
+namespace Lms.Infrastructure.Zoom;
+
+/// <summary>
+/// Reads the booked host slots around a time window. ISOLATION-BYPASS NOTE for the implementation: the pool is platform-wide, so
+/// the implementation reads slot columns (host, organization, start, end) across clients, selected through a projection so no
+/// other column or entity of another client is ever materialised.
+/// </summary>
+public interface IHostSlotStore
+{
+    Task<IReadOnlyList<HostSlot>> SlotsAroundAsync(DateTime fromUtc, DateTime toUtc, CancellationToken ct);
+}
+
+/// <summary>
+/// Picks a pool host for a new session without ever double-booking one. Read, decision and the caller's reservation (the insert of
+/// the session row) happen under one named lock, so two callers cannot both see the same host as free (D53). The lock is a database
+/// named lock, which holds across API nodes.
+/// </summary>
+public sealed class ZoomHostAllocator(IOptions<ZoomOptions> options, IJobKeyLock keyLock, IHostSlotStore slots, Func<int> sharePercent)
+{
+    private const string LockResource = "zoom:host-pool";
+    private static readonly TimeSpan LockTimeout = TimeSpan.FromSeconds(20);
+
+    /// <summary>
+    /// Chooses a host for <paramref name="startUtc"/>..<paramref name="endUtc"/> and calls <paramref name="reserve"/> with it while
+    /// the lock is held; <paramref name="reserve"/> must commit the slot (the session row) before it returns. Nothing is reserved
+    /// when the pool or the client's share is exhausted.
+    /// </summary>
+    public async Task<HostChoice> AllocateAsync(
+        Guid organizationId, DateTime startUtc, DateTime endUtc, Func<string, Task> reserve, CancellationToken ct = default)
+    {
+        var zoom = options.Value;
+        var buffer = TimeSpan.FromMinutes(Math.Max(0, zoom.HostBufferMinutes));
+        using var gate = await Task.Run(() => keyLock.Acquire(LockResource, LockTimeout), ct);
+
+        var around = await slots.SlotsAroundAsync(startUtc - buffer, endUtc + buffer, ct);
+        var choice = ZoomHostPlanner.Pick(zoom.HostPool, around, organizationId, startUtc, endUtc, buffer, sharePercent());
+        if (choice.HostId is { } host)
+        {
+            await reserve(host);
+        }
+
+        return choice;
+    }
+}
