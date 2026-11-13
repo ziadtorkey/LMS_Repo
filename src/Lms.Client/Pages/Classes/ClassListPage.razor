@@ -16,32 +16,31 @@
 @implements IDisposable
 
 <PageTitle>@L["Classes_Title"]</PageTitle>
-<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-2" Wrap="Wrap.Wrap">
-    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-        <MudText Typo="Typo.h4" data-testid="classes-title">@L["Classes_Title"]</MudText>
+<PageHeader Title="@L["Classes_Title"]" TitleTestId="classes-title">
+    <Badges>
         @if (Years.Selected is { } year)
         {
-            <MudChip T="string" Color="@(Years.IsReadOnly ? Color.Default : Color.Primary)" data-testid="classes-year">@Culture.Pick(year.NameAr, year.NameEn)</MudChip>
+            <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@(Years.IsReadOnly ? Color.Default : Color.Primary)" data-testid="classes-year">@Culture.Pick(year.NameAr, year.NameEn)</MudChip>
         }
-    </MudStack>
-    @if (!Years.IsReadOnly)
-    {
-        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap">
+    </Badges>
+    <Actions>
+        @if (!Years.IsReadOnly)
+        {
             <MudButton Variant="Variant.Text" Href="classes/matrix" data-testid="class-matrix">@L["Matrix_Title"]</MudButton>
             @if (PermState.Has(Permissions.Classes.Create))
             {
                 <MudButton Variant="Variant.Outlined" OnClick="CopyAsync" data-testid="class-copy">@L["CopyClasses_Title"]</MudButton>
                 <MudButton Variant="Variant.Outlined" OnClick="BulkAsync" data-testid="class-bulk">@L["BulkClasses_Title"]</MudButton>
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="NewAsync"
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Add" OnClick="NewAsync"
                            data-testid="class-new">@L["Class_New"]</MudButton>
             }
-        </MudStack>
-    }
-</MudStack>
+        }
+    </Actions>
+</PageHeader>
 
 @if (Years.IsReadOnly)
 {
-    <MudAlert Severity="Severity.Info" Class="mb-3" data-testid="classes-readonly">@L["Classes_YearClosed"]</MudAlert>
+    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-3" data-testid="classes-readonly">@L["Classes_YearClosed"]</MudAlert>
 }
 
 <MudStack Row="true" Spacing="2" Class="mb-3" Wrap="Wrap.Wrap" AlignItems="AlignItems.Center">
