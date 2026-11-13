@@ -57,9 +57,6 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseSerilogRequestLogging();
 
-app.UseBlazorFrameworkFiles();
-app.UseStaticFiles();
-
 app.UseRequestLocalization();
 app.UseRateLimiter();
 app.UseMiddleware<ExternalSchemeResolutionMiddleware>();
@@ -83,6 +80,11 @@ app.MapNotificationEndpoints();
 
 // Unknown API routes must be 404, not the SPA's index.html.
 app.MapFallback("/api/{**path}", () => Results.Problem(statusCode: StatusCodes.Status404NotFound, title: "Not found"));
+// Serves the client's static web assets, including the fingerprinted (content-hashed) files the Blazor import map in
+// index.html points at (/js/richtext.<hash>.js, /_framework/blazor.webassembly.<hash>.js). This replaces
+// UseBlazorFrameworkFiles + UseStaticFiles: UseBlazorFrameworkFiles runs its own branch without endpoint execution
+// and throws 500 for any asset that MapStaticAssets has matched ("request reached the end of the pipeline").
+app.MapStaticAssets();
 app.MapFallbackToFile("index.html");
 
 app.Run();

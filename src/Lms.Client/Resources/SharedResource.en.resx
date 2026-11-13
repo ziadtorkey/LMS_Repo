@@ -243,6 +243,11 @@
   <data name="Clients_Suspend" xml:space="preserve"><value>Suspend</value></data>
   <data name="Clients_Activate" xml:space="preserve"><value>Activate</value></data>
   <data name="Clients_CreatedOn" xml:space="preserve"><value>Created</value></data>
+  <data name="Clients_Subtitle" xml:space="preserve"><value>School groups and universities on the platform. Each client has its own organization tree, users and data.</value></data>
+  <data name="Clients_SearchHelp" xml:space="preserve"><value>Press Enter or Search to find a client by name.</value></data>
+  <data name="Clients_EmptyTitle" xml:space="preserve"><value>No clients found</value></data>
+  <data name="Clients_EmptyText" xml:space="preserve"><value>Change the search, or create the first client.</value></data>
+  <data name="Clients_AdminEmailHelp" xml:space="preserve"><value>An invitation to set a password is sent to this address.</value></data>
   <data name="LevelTypes_New" xml:space="preserve"><value>New level type</value></data>
   <data name="LevelTypes_Order" xml:space="preserve"><value>Order</value></data>
   <data name="Common_InvalidEmail" xml:space="preserve"><value>Enter a valid email address.</value></data>

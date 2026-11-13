@@ -6,47 +6,56 @@
 
 <MudDialog>
     <DialogContent>
-        <MudForm @ref="_form">
-            <MudStack Spacing="3">
-                @if (_error is not null)
-                {
-                    <MudAlert Severity="Severity.Error" data-testid="dialog-error">@_error</MudAlert>
-                }
+        <MudForm @ref="_form" Class="lms-form">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-4" data-testid="dialog-error">@_error</MudAlert>
+            }
 
-                <MudText Typo="Typo.subtitle2">@L["Clients_Name"]</MudText>
+            <fieldset class="lms-fieldset">
+                <legend class="lms-fieldset-legend">@L["Clients_Name"]</legend>
                 <BilingualNameFields @bind-NameAr="_nameAr" @bind-NameEn="_nameEn" IdPrefix="client-name" />
+                <div class="lms-form-grid">
+                    <MudSelect T="string" @bind-Value="_type" Label="@L["Clients_Type"]" data-testid="client-type">
+                        @foreach (var type in OrganizationTypes.All)
+                        {
+                            <MudSelectItem T="string" Value="@type">@L[$"ClientType_{type}"]</MudSelectItem>
+                        }
+                    </MudSelect>
+                    <MudTextField T="string" Value="_shortCode" ValueChanged="v => _shortCode = (v ?? string.Empty).ToLowerInvariant()" Label="@L["Clients_ShortCode"]"
+                                  HelperText="@L["Clients_ShortCodeHelp"]" Validation="@(new Func<string, string?>(ValidateShortCode))"
+                                  MaxLength="20" dir="ltr" Immediate="true" spellcheck="false" data-testid="client-short-code" />
+                </div>
+            </fieldset>
 
-                <MudSelect T="string" @bind-Value="_type" Label="@L["Clients_Type"]" data-testid="client-type">
-                    @foreach (var type in OrganizationTypes.All)
-                    {
-                        <MudSelectItem T="string" Value="@type">@L[$"ClientType_{type}"]</MudSelectItem>
-                    }
-                </MudSelect>
-
-                <MudText Typo="Typo.subtitle2">@L["Clients_RootLevel"]</MudText>
+            <fieldset class="lms-fieldset">
+                <legend class="lms-fieldset-legend">@L["Clients_RootLevel"]</legend>
                 <BilingualNameFields @bind-NameAr="_rootLevelAr" @bind-NameEn="_rootLevelEn" IdPrefix="root-level" />
-
                 <MudTextField T="string" @bind-Value="_rootCode" Label="@L["Clients_RootCode"]" Required="true"
                               RequiredError="@L["Common_Required"]" Validation="@(new Func<string, string?>(ValidateCode))"
-                              MaxLength="50" dir="ltr" data-testid="root-code" />
+                              MaxLength="50" dir="ltr" spellcheck="false" data-testid="root-code" />
+            </fieldset>
 
-                <MudTextField T="string" Value="_shortCode" ValueChanged="v => _shortCode = (v ?? string.Empty).ToLowerInvariant()" Label="@L["Clients_ShortCode"]"
-                              HelperText="@L["Clients_ShortCodeHelp"]" Validation="@(new Func<string, string?>(ValidateShortCode))"
-                              MaxLength="20" dir="ltr" Immediate="true" data-testid="client-short-code" />
-
-                <MudText Typo="Typo.subtitle2">@L["Clients_AdminName"]</MudText>
+            <fieldset class="lms-fieldset">
+                <legend class="lms-fieldset-legend">@L["Clients_AdminName"]</legend>
                 <BilingualNameFields @bind-NameAr="_adminAr" @bind-NameEn="_adminEn" IdPrefix="admin-name" />
-
                 <MudTextField T="string" @bind-Value="_adminEmail" Label="@L["Clients_AdminEmail"]" Required="true"
                               RequiredError="@L["Common_Required"]" Validation="@(new Func<string, string?>(ValidateEmail))"
-                              InputType="InputType.Email" dir="ltr" data-testid="admin-email" />
-            </MudStack>
+                              HelperText="@L["Clients_AdminEmailHelp"]" InputType="InputType.Email" dir="ltr" spellcheck="false"
+                              data-testid="admin-email" />
+            </fieldset>
         </MudForm>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
+        <MudButton Variant="Variant.Text" OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
         <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="_saving"
-                   data-testid="dialog-save">@L["Common_Save"]</MudButton>
+                   StartIcon="@(_saving ? null : Icons.Material.Rounded.Check)" data-testid="dialog-save">
+            @if (_saving)
+            {
+                <MudProgressCircular Indeterminate="true" Size="Size.Small" Class="me-2" aria-hidden="true" />
+            }
+            @L["Common_Save"]
+        </MudButton>
     </DialogActions>
 </MudDialog>
 

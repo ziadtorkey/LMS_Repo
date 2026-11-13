@@ -243,6 +243,11 @@
   <data name="Clients_Suspend" xml:space="preserve"><value>إيقاف</value></data>
   <data name="Clients_Activate" xml:space="preserve"><value>تفعيل</value></data>
   <data name="Clients_CreatedOn" xml:space="preserve"><value>تاريخ الإنشاء</value></data>
+  <data name="Clients_Subtitle" xml:space="preserve"><value>مجموعات المدارس والجامعات على المنصة. لكل عميل هيكله التنظيمي ومستخدموه وبياناته الخاصة.</value></data>
+  <data name="Clients_SearchHelp" xml:space="preserve"><value>اضغط Enter أو زر البحث للبحث عن عميل بالاسم.</value></data>
+  <data name="Clients_EmptyTitle" xml:space="preserve"><value>لا يوجد عملاء</value></data>
+  <data name="Clients_EmptyText" xml:space="preserve"><value>غيّر البحث، أو أنشئ أول عميل.</value></data>
+  <data name="Clients_AdminEmailHelp" xml:space="preserve"><value>تُرسل إلى هذا العنوان دعوة لتعيين كلمة المرور.</value></data>
   <data name="LevelTypes_New" xml:space="preserve"><value>نوع مستوى جديد</value></data>
   <data name="LevelTypes_Order" xml:space="preserve"><value>الترتيب</value></data>
   <data name="Common_InvalidEmail" xml:space="preserve"><value>أدخل بريدًا إلكترونيًا صالحًا.</value></data>
