@@ -64,6 +64,21 @@ public static class SettingCatalog
         new(SettingKeys.BlueprintsSectionLabel.Name, SettingValueKinds.Enum, SettingCategories.Academic, "\"Week\"",
             AllowedValues: ["Week", "Unit", "Chapter"]),
         new(SettingKeys.EnrollmentTransferCarriesGrades.Name, SettingValueKinds.Bool, SettingCategories.Academic, "true"),
+        new(SettingKeys.AssignmentsLatePenaltyDefaultPercent.Name, SettingValueKinds.Int, SettingCategories.Academic, "10",
+            Min: 0, Max: 100),
+        new(SettingKeys.QuizzesAutoSubmitGraceSeconds.Name, SettingValueKinds.Int, SettingCategories.Academic, "30",
+            Min: 0, Max: 300),
+        new(SettingKeys.PackagesMaxEntries.Name, SettingValueKinds.Int, SettingCategories.Files, "10000", Min: 100, Max: 100000),
+        new(SettingKeys.PackagesMaxUncompressedMb.Name, SettingValueKinds.Int, SettingCategories.Files, "1024", Min: 1, Max: 10240),
+        new(SettingKeys.PackagesMaxClientStorageMb.Name, SettingValueKinds.Int, SettingCategories.Files, "10240", Min: 1, Max: 1048576),
+        new(SettingKeys.PackagesTokenMinutes.Name, SettingValueKinds.Int, SettingCategories.Files, "120", Min: 5, Max: 480),
+        new(SettingKeys.PackagesCommitMinIntervalSeconds.Name, SettingValueKinds.Int, SettingCategories.Files, "2", Min: 0, Max: 60),
+        // M4b live sessions: Academic, like the other teaching settings (the settings page shows a fixed category list).
+        new(SettingKeys.LiveJoinWindowMinutes.Name, SettingValueKinds.Int, SettingCategories.Academic, "15", Min: 0, Max: 60),
+        new(SettingKeys.LiveReminderMinutes.Name, SettingValueKinds.Int, SettingCategories.Academic, "30", Min: 5, Max: 1440),
+        new(SettingKeys.LiveMaxCreatesPerDay.Name, SettingValueKinds.Int, SettingCategories.Academic, "500",
+            Min: 1, Max: 10_000),
+        new(SettingKeys.LiveCloudRecordingEnabled.Name, SettingValueKinds.Bool, SettingCategories.Academic, "false"),
     ];
 
     /// <summary>The definition with this exact (case-sensitive) name, or null.</summary>

@@ -12,40 +12,52 @@
     <DialogContent>
         @if (_loadError is not null)
         {
-            <MudAlert Severity="Severity.Error" data-testid="course-load-error">@_loadError</MudAlert>
+            <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="course-load-error">@_loadError</MudAlert>
         }
         else if (!_loaded)
         {
-            <MudText>@L["Common_Loading"]</MudText>
+            <LoadingState Lines="4" TestId="course-loading" />
         }
         else
         {
-            <MudForm @ref="_form">
-                <MudStack Spacing="3">
-                    @if (_error is not null)
-                    {
-                        <MudAlert Severity="Severity.Error" data-testid="dialog-error">@_error</MudAlert>
-                    }
-                    @if (ReadOnly)
-                    {
-                        <MudAlert Severity="Severity.Info" data-testid="course-readonly">@L["Course_ReadOnly"]</MudAlert>
-                    }
+            <MudForm @ref="_form" Class="lms-form">
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-4" data-testid="dialog-error">@_error</MudAlert>
+                }
+                @if (ReadOnly)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-4" data-testid="course-readonly">@L["Course_ReadOnly"]</MudAlert>
+                }
+
+                <fieldset class="lms-fieldset">
+                    <legend class="lms-fieldset-legend">@L["Course_SectionBasics"]</legend>
                     <MudTextField T="string" @bind-Value="_code" Label="@L["Course_Code"]" Required="true" RequiredError="@L["Common_Required"]"
                                   MaxLength="50" Validation="(Func<string, string?>)ValidateCode" ReadOnly="ReadOnly" dir="ltr"
-                                  Error="_codeError is not null" ErrorText="@_codeError" data-testid="course-code" />
+                                  HelperText="@L["Course_CodeHelp"]" Error="_codeError is not null" ErrorText="@_codeError" data-testid="course-code" />
                     <BilingualNameFields @bind-NameAr="_nameAr" @bind-NameEn="_nameEn" IdPrefix="course-name" />
+                </fieldset>
+
+                <fieldset class="lms-fieldset">
+                    <legend class="lms-fieldset-legend">@L["Course_SectionDetails"]</legend>
                     <MudTextField T="string" @bind-Value="_descriptionAr" Label="@L["Course_DescriptionAr"]" Lines="2" MaxLength="2000"
                                   ReadOnly="ReadOnly" dir="rtl" lang="ar" data-testid="course-desc-ar" />
                     <MudTextField T="string" @bind-Value="_descriptionEn" Label="@L["Course_DescriptionEn"]" Lines="2" MaxLength="2000"
                                   ReadOnly="ReadOnly" dir="ltr" lang="en" data-testid="course-desc-en" />
-                    <MudSelect T="string" @bind-Value="_language" Label="@L["Course_Language"]" ReadOnly="ReadOnly" data-testid="course-language">
-                        @foreach (var lang in Languages)
-                        {
-                            <MudSelectItem T="string" Value="@lang">@L[$"Course_Language_{lang}"]</MudSelectItem>
-                        }
-                    </MudSelect>
-                    <MudNumericField T="int" @bind-Value="_periods" Label="@L["Course_WeeklyPeriods"]" Min="0" Max="40"
-                                     ReadOnly="ReadOnly" data-testid="course-periods" />
+                    <div class="lms-form-grid">
+                        <MudSelect T="string" @bind-Value="_language" Label="@L["Course_Language"]" ReadOnly="ReadOnly" data-testid="course-language">
+                            @foreach (var lang in Languages)
+                            {
+                                <MudSelectItem T="string" Value="@lang">@L[$"Course_Language_{lang}"]</MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudNumericField T="int" @bind-Value="_periods" Label="@L["Course_WeeklyPeriods"]" Min="0" Max="40"
+                                         ReadOnly="ReadOnly" data-testid="course-periods" />
+                    </div>
+                </fieldset>
+
+                <fieldset class="lms-fieldset">
+                    <legend class="lms-fieldset-legend">@L["Course_SectionOwner"]</legend>
                     <UnitPicker @bind-Value="_ownerId" Label="@L["Course_Owner"]" Required="true" ReadOnly="ReadOnly" TestId="course-owner"
                                 Filter="IsOwnerCandidate" />
                     @if (!ReadOnly && CourseId is null)
@@ -58,17 +70,25 @@
                             }
                         </MudSelect>
                     }
-                </MudStack>
+                </fieldset>
             </MudForm>
         }
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@(ReadOnly ? L["Common_Close"] : L["Common_Cancel"])</MudButton>
-        @if (!ReadOnly)
-        {
-            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="_saving || !_loaded"
-                       data-testid="dialog-save">@L["Common_Save"]</MudButton>
-        }
+        <div class="lms-dialog-actions">
+            <MudButton Variant="Variant.Text" OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@(ReadOnly ? L["Common_Close"] : L["Common_Cancel"])</MudButton>
+            @if (!ReadOnly)
+            {
+                <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="_saving || !_loaded"
+                           StartIcon="@(_saving ? null : Icons.Material.Rounded.Check)" data-testid="dialog-save">
+                    @if (_saving)
+                    {
+                        <MudProgressCircular Indeterminate="true" Size="Size.Small" Class="me-2" aria-hidden="true" />
+                    }
+                    @L["Common_Save"]
+                </MudButton>
+            }
+        </div>
     </DialogActions>
 </MudDialog>
 

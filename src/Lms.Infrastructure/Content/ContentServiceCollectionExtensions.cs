@@ -5,10 +5,12 @@ namespace Lms.Infrastructure.Content;
 
 public static class ContentServiceCollectionExtensions
 {
-    /// <summary>The rich-text sanitiser (M4a).</summary>
+    /// <summary>The rich-text sanitiser and the asset service (M4a foundations).</summary>
     public static IServiceCollection AddContent(this IServiceCollection services)
     {
         services.AddSingleton<IRichTextSanitizer, RichTextSanitizer>();
+        services.AddScoped<IAssetService, AssetService>();
+        services.AddScoped<IModuleWriter, ModuleWriter>();
         return services;
     }
 }

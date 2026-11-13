@@ -79,10 +79,13 @@ public sealed class JobsModule : ILmsModule
             {
                 options.WorkerCount = Math.Max(1, configuration.GetValue("Jobs:WorkerCount", 2));
                 options.Queues = JobQueues.All;
+                // How soon a delayed or scheduled job is picked up once due (Hangfire default 15 s is too coarse for reminders).
+                options.SchedulePollingInterval = TimeSpan.FromSeconds(Math.Max(1, configuration.GetValue("Jobs:SchedulePollIntervalSeconds", 5)));
             });
         }
 
         services.AddSingleton(JobSettings.Parse(configuration[JobSettings.TimeZoneKey]));
+        services.AddSingleton<IJobKeyLock>(new MySqlJobKeyLock(connectionString));
         services.AddScoped<IBackgroundJobs, BackgroundJobs>();
     }
 

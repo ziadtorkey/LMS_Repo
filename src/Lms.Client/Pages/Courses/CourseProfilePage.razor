@@ -1,0 +1,125 @@
+@page "/courses/{Id:guid}"
+@attribute [Authorize]
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Shared.Authorization
+@using Lms.Shared.Courses
+@inject ICoursesApi Api
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<PageTitle>@L["CourseProfile_Title"]</PageTitle>
+<MudLink Href="courses" Typo="Typo.body2" Class="lms-back-link" data-testid="course-profile-back">
+    <MudIcon Icon="@Icons.Material.Rounded.ArrowBack" Size="Size.Small" Class="lms-icon-flip" aria-hidden="true" />
+    @L["CourseProfile_BackToList"]
+</MudLink>
+@if (_error is not null)
+{
+    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="course-profile-error">@_error</MudAlert>
+}
+else if (_detail is null)
+{
+    <LoadingState Lines="5" TestId="course-profile-loading" />
+}
+else
+{
+    var s = _detail.Summary;
+    <PageHeader Title="@Culture.Pick(s.NameAr, s.NameEn)" TitleTestId="course-profile-name" Class="lms-profile-header">
+        <Badges>
+            @if (s.IsInherited)
+            {
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Info" data-testid="course-profile-inherited">@L["Course_Inherited"]</MudChip>
+            }
+            <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Class="lms-status-chip" Color="@(s.Status == CourseStatuses.Active ? Color.Success : Color.Default)">@L[$"CourseStatus_{s.Status}"]</MudChip>
+        </Badges>
+        <Actions>
+            @if (CanUpdate)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Edit" OnClick="EditAsync"
+                           data-testid="course-edit">@L["Course_Edit"]</MudButton>
+            }
+        </Actions>
+    </PageHeader>
+
+    <div class="lms-profile-grid">
+        <SectionCard Title="@L["CourseProfile_Details"]" Class="lms-profile-details" TestId="course-profile-details">
+            <dl class="lms-details">
+                <DetailItem Label="@L["Course_Code"]" Value="@s.Code" Ltr="true" TestId="course-profile-code" />
+                <DetailItem Label="@L["Course_Owner"]" Value="@Culture.Pick(s.OwnerOrgUnitNameAr, s.OwnerOrgUnitNameEn)" TestId="course-profile-owner" />
+                <DetailItem Label="@L["Course_Language"]" Value="@L[$"Course_Language_{s.Language}"]" />
+                <DetailItem Label="@L["Course_WeeklyPeriods"]" Value="@s.WeeklyPeriods.ToString()" />
+                <DetailItem Label="@L["Course_Description"]" Value="@Culture.Pick(_detail.DescriptionAr ?? "", _detail.DescriptionEn ?? "")" />
+            </dl>
+        </SectionCard>
+
+        <div class="lms-profile-main">
+            <SectionCard Flush="true">
+                <MudTabs Class="lms-tabs" Elevation="0" Rounded="false" ApplyEffectsToContainer="true" MinimumTabWidth="80px" TabPanelsClass="pa-4" data-testid="course-tabs">
+                    <MudTabPanel Text="@L["CourseProfile_Allocations"]" Visible="PermState.Has(Permissions.Courses.Allocate)" data-testid="tab-allocations">
+                        <AllocationsTab Course="s" CanEdit="CanAllocate" OnChanged="ReloadAsync" />
+                    </MudTabPanel>
+                    <MudTabPanel Text="@L["CourseProfile_Restrictions"]" data-testid="tab-restrictions">
+                        <RestrictionsTab Course="_detail" CanEdit="CanUpdate" OnChanged="ReloadAsync" />
+                    </MudTabPanel>
+                    <MudTabPanel Text="@L["CourseProfile_Supervisors"]" data-testid="tab-supervisors">
+                        <SupervisorsTab Course="_detail" CanEdit="CanManageSupervisors" OnChanged="ReloadAsync" />
+                    </MudTabPanel>
+                    <MudTabPanel Text="@L["CourseProfile_Blueprint"]" Visible="PermState.Has(Permissions.Blueprints.View)" data-testid="tab-blueprint">
+                        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Href="@($"courses/{s.Id}/blueprint")" StartIcon="@Icons.Material.Rounded.AccountTree"
+                                       data-testid="blueprint-link">@L["CourseProfile_OpenBlueprint"]</MudButton>
+                            @if (s.HasPublishedBlueprint)
+                            {
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Success">@L["MyCourses_BlueprintPublished"]</MudChip>
+                            }
+                        </MudStack>
+                    </MudTabPanel>
+                </MudTabs>
+            </SectionCard>
+        </div>
+    </div>
+}
+
+@code {
+    private CourseDetailDto? _detail;
+    private string? _error;
+
+    [Parameter] public Guid Id { get; set; }
+
+    private bool CanUpdate => _detail is { CanEdit: true, Summary.IsInherited: false } && PermState.Has(Permissions.Courses.Update);
+    private bool CanAllocate => _detail is { CanEdit: true } && PermState.Has(Permissions.Courses.Allocate);
+    private bool CanManageSupervisors => _detail is { CanEdit: true, Summary.IsInherited: false } && PermState.Has(Permissions.Courses.ManageSupervisors);
+
+    protected override async Task OnInitializedAsync()
+    {
+        PermState.Changed += OnPermissionsChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+    }
+
+    protected override Task OnParametersSetAsync() => ReloadAsync();
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => PermState.Changed -= OnPermissionsChanged;
+
+    private async Task ReloadAsync()
+    {
+        _error = null;
+        await ApiCalls.RunAsync(async () => _detail = await Api.GetAsync(Id), Navigation, L, message => _error = message);
+    }
+
+    private async Task EditAsync()
+    {
+        var dialog = await Dialogs.ShowAsync<CourseDialog>(L["Course_Edit"],
+            new DialogParameters<CourseDialog> { { x => x.CourseId, Id } }, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        if (await dialog.Result is { Canceled: false })
+        {
+            Snackbar.Add(L["Common_Saved"], Severity.Success);
+            await ReloadAsync();
+        }
+    }
+}

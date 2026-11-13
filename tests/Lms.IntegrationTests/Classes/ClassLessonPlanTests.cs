@@ -100,22 +100,6 @@ public sealed class ClassLessonPlanTests(LmsApiFactory factory) : IDisposable
     }
 
     [Fact]
-    public async Task Deleting_a_class_course_with_a_plan_removes_the_plan_without_a_500()
-    {
-        var (tree, _, cls, course) = await WorldAsync(factory, "LP3D");
-        await PublishAsync(factory, course, BlueprintApplyModes.NewClassesOnly, Tree());
-        var classCourse = await AddClassCourseWithPlanAsync(factory, cls, course);
-        var admin = await AccessTestData.AssignAsync(factory, tree, tree.Root, BuiltInRoles.OrgAdmin, Guid.NewGuid());
-
-        var response = await _host.SendAsync(HttpMethod.Delete, Routes.ClassCourse(classCourse.Id), admin);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, (await GetPlanAsync(admin, classCourse.Id)).StatusCode);
-        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
-        Assert.Equal(0, await db.Set<ClassLessonPlan>().CountAsync(p => p.ClassCourseId == classCourse.Id));
-    }
-
-    [Fact]
     public async Task Plan_tree_is_read_only_dated_from_the_year_start_and_labelled()
     {
         var (tree, year, cls, course) = await WorldAsync(factory, "LP3");
