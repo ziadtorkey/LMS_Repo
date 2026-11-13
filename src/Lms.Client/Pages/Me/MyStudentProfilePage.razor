@@ -46,7 +46,7 @@ else
         <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-4" data-testid="pending-message">@L["MyProfile_PendingBlocks"]</MudAlert>
     }
 
-    <SectionCard Title="@L["MyProfile_Details"]">
+    <SectionCard Title="@L["MyProfile_Details"]" Icon="@Icons.Material.Rounded.School">
         <MudForm Class="lms-form">
             <div class="lms-form-grid">
                 @foreach (var field in StudentFields.Requestable)
@@ -74,7 +74,7 @@ else
         </MudForm>
     </SectionCard>
 
-    <SectionCard Title="@L["MyProfile_Requests"]" Flush="true" Class="mt-4">
+    <SectionCard Title="@L["MyProfile_Requests"]" Icon="@Icons.Material.Rounded.EditNote" Flush="true" Class="mt-4">
         @if (_requests.Count == 0)
         {
             <EmptyState Title="@L["Common_Empty"]" Text="@L["MyProfile_RequestsEmptyText"]" Icon="@Icons.Material.Rounded.EditNote" TestId="requests-empty" />

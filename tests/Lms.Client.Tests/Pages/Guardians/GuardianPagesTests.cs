@@ -17,6 +17,15 @@ public sealed class GuardianPagesTests : StudentsTestContext
     }
 
     [Fact]
+    public async Task A_stat_tile_shows_the_number_of_guardians_the_server_reports()
+    {
+        await GrantViewAsync();
+        var cut = Render<GuardianListPage>();
+        cut.WaitForElement($"[data-testid=guardian-link-{FakeGuardiansApi.MonaId}]");
+        cut.WaitForAssertion(() => Assert.Equal(cut.FindAll("tbody tr").Count.ToString(System.Globalization.CultureInfo.InvariantCulture), cut.Find("[data-testid=guardians-stat-total] .lms-stat-value").TextContent.Trim()));
+    }
+
+    [Fact]
     public async Task Guardian_list_searches_and_links_to_profiles()
     {
         Culture.Current = new CultureInfo("en");

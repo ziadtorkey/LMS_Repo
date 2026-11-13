@@ -145,3 +145,7 @@ html[data-theme="dark"] .mud-button-outlined { border-color: #334155; }
     flex: none; inline-size: 36px; block-size: 36px; border-radius: 10px; display: grid; place-items: center;
     color: var(--mud-palette-primary); background: color-mix(in srgb, var(--mud-palette-primary) 10%, transparent);
 }
+
+.lms-section-title-row { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.lms-stats-single { grid-template-columns: minmax(0, 280px); }
+@media (max-width: 599px) { .lms-stats-single { grid-template-columns: 1fr; } }

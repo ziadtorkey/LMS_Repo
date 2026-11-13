@@ -84,7 +84,7 @@ else
     }
 
     <div class="lms-profile-grid">
-        <SectionCard Title="@L["Staff_Details"]" Class="lms-profile-details">
+        <SectionCard Title="@L["Staff_Details"]" Icon="@Icons.Material.Rounded.Badge" Class="lms-profile-details">
             <dl class="lms-details">
                 <DetailItem Label="@L["Staff_Email"]" Value="@s.Email" Ltr="true" TestId="profile-email" />
                 @if (!_detail.IsLimitedView)
@@ -102,7 +102,7 @@ else
         </SectionCard>
 
         <div class="lms-profile-main">
-            <SectionCard Title="@L["Staff_Roles"]" Flush="true">
+            <SectionCard Title="@L["Staff_Roles"]" Icon="@Icons.Material.Rounded.AdminPanelSettings" Flush="true">
                 <MudTable Items="s.Roles" Dense="true" Hover="true" Elevation="0" HeaderClass="lms-table-head"
                           Class="lms-staff-roles lms-table" data-testid="profile-roles">
                     <HeaderContent>
@@ -140,7 +140,7 @@ else
 
             @if (!_detail.IsLimitedView)
             {
-                <SectionCard Title="@L["Staff_StatusHistory"]" Flush="true">
+                <SectionCard Title="@L["Staff_StatusHistory"]" Icon="@Icons.Material.Rounded.History" Flush="true">
                     <MudTable Items="_detail.StatusHistory" Dense="true" Elevation="0" HeaderClass="lms-table-head" Class="lms-table"
                               data-testid="profile-history">
                         <HeaderContent>

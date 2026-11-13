@@ -25,6 +25,14 @@ public sealed class ChangeRequestQueuePageTests : StudentsTestContext
         return Render<ChangeRequestQueuePage>();
     }
 
+    [Fact]
+    public async Task A_stat_tile_shows_the_number_of_requests_the_server_reports()
+    {
+        var cut = await RenderPageAsync(Permissions.Students.ApproveChanges);
+        cut.WaitForElement("tbody tr");
+        cut.WaitForAssertion(() => Assert.Equal(cut.FindAll("tbody tr").Count.ToString(System.Globalization.CultureInfo.InvariantCulture), cut.Find("[data-testid=queue-stat-total] .lms-stat-value").TextContent.Trim()));
+    }
+
     private StudentChangeRequestDto Pending => _api.All.First(r => r.Status == ChangeRequestStatuses.Pending);
 
     private async Task OpenAsync(IRenderedComponent<ChangeRequestQueuePage> cut, StudentChangeRequestDto request)

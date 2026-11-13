@@ -23,6 +23,9 @@ else
 {
     <PageHeader Title="@L["Guardians_Title"]" Subtitle="@L["Guardians_Subtitle"]" TitleTestId="guardians-title" />
 
+    <ListCountStat Label="@L["Guardians_StatTotal"]" Value="_total" Icon="@Icons.Material.Rounded.FamilyRestroom" TestId="guardians-stat-total" />
+
+
     <SectionCard Flush="true">
         <div class="lms-filters" role="search" aria-label="@L["Common_Filters"]">
             <div class="lms-filter lms-filter-search">
@@ -63,6 +66,7 @@ else
 
 @code {
     private ServerTable<GuardianSummaryDto> _table = default!;
+    private int? _total;
     private string? _search;
 
     protected override async Task OnInitializedAsync()
@@ -78,6 +82,7 @@ else
     private async Task<TableData<GuardianSummaryDto>> LoadAsync(TableState state, CancellationToken ct)
     {
         var page = await Api.ListAsync(string.IsNullOrWhiteSpace(_search) ? null : _search.Trim(), state.Page + 1, state.PageSize, ct);
+        if (_total != page.Total) { _total = page.Total; await InvokeAsync(StateHasChanged); }
         return new TableData<GuardianSummaryDto> { Items = page.Items, TotalItems = page.Total };
     }
 

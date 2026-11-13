@@ -1,0 +1,20 @@
+@* One Stitch stat tile above a list: what the server reports as the total of the current result (a dash until it is known). *@
+<div class="lms-stats lms-stats-single" data-testid="@TestId">
+    <div class="lms-stat">
+        <div>
+            <div class="lms-stat-label">@Label</div>
+            <div class="lms-stat-value">@(Value is { } v ? v.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) : "\u2013")</div>
+        </div>
+        @if (Icon is not null)
+        {
+            <span class="lms-stat-icon" aria-hidden="true"><MudIcon Icon="@Icon" /></span>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Label { get; set; } = "";
+    [Parameter] public int? Value { get; set; }
+    [Parameter] public string? Icon { get; set; }
+    [Parameter] public string? TestId { get; set; }
+}

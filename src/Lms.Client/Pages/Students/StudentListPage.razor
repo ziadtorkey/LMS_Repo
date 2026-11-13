@@ -31,6 +31,8 @@
     </Actions>
 </PageHeader>
 
+<ListCountStat Label="@L["Students_StatTotal"]" Value="_total" Icon="@Icons.Material.Rounded.School" TestId="students-stat-total" />
+
 <SectionCard Flush="true">
     <div class="lms-filters" role="search" aria-label="@L["Common_Filters"]">
         <div class="lms-filter lms-filter-search">
@@ -114,6 +116,7 @@
 
 @code {
     private ServerTable<StudentSummaryDto> _table = default!;
+    private int? _total;
     private string? _searchText, _status, _gender;
     private Guid? _unitId;
     private bool _unplaced;
@@ -133,6 +136,7 @@
         var query = new StudentQuery(_unitId, true, _status, _gender, string.IsNullOrWhiteSpace(_searchText) ? null : _searchText.Trim(), null,
             state.Page + 1, state.PageSize, null, _unplaced);
         var result = await Api.ListAsync(query, ct);
+        if (_total != result.Total) { _total = result.Total; await InvokeAsync(StateHasChanged); }
         return new TableData<StudentSummaryDto> { Items = result.Items, TotalItems = result.Total };
     }
 

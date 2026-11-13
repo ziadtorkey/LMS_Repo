@@ -35,6 +35,14 @@ public sealed class StaffListPageTests : StaffTestContext
     }
 
     [Fact]
+    public async Task A_stat_tile_shows_the_number_of_staff_the_server_reports()
+    {
+        var cut = await RenderPageAsync(Permissions.Staff.View);
+
+        cut.WaitForAssertion(() => Assert.Equal(Staff.All.Count.ToString(CultureInfo.InvariantCulture), cut.Find("[data-testid=staff-stat-total] .lms-stat-value").TextContent.Trim()));
+    }
+
+    [Fact]
     public async Task Filters_send_unit_role_status_and_search()
     {
         var cut = await RenderPageAsync(Permissions.Staff.View);
