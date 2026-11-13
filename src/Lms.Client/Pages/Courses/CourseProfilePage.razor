@@ -1,5 +1,6 @@
 @page "/courses/{Id:guid}"
 @attribute [Authorize]
+@using Lms.Client.Components
 @using Lms.Client.Services.Api
 @using Lms.Shared.Authorization
 @using Lms.Shared.Courses
@@ -12,63 +13,75 @@
 @implements IDisposable
 
 <PageTitle>@L["CourseProfile_Title"]</PageTitle>
+<MudLink Href="courses" Typo="Typo.body2" Class="lms-back-link" data-testid="course-profile-back">
+    <MudIcon Icon="@Icons.Material.Rounded.ArrowBack" Size="Size.Small" Class="lms-icon-flip" aria-hidden="true" />
+    @L["CourseProfile_BackToList"]
+</MudLink>
 @if (_error is not null)
 {
-    <MudAlert Severity="Severity.Error" data-testid="course-profile-error">@_error</MudAlert>
+    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="course-profile-error">@_error</MudAlert>
 }
 else if (_detail is null)
 {
-    <MudText>@L["Common_Loading"]</MudText>
+    <LoadingState Lines="5" TestId="course-profile-loading" />
 }
 else
 {
     var s = _detail.Summary;
-    <MudStack Spacing="3">
-        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
-            <div>
-                <MudText Typo="Typo.h4" data-testid="course-profile-name">@Culture.Pick(s.NameAr, s.NameEn)</MudText>
-                <MudText Typo="Typo.body2"><span dir="ltr">@s.Code</span></MudText>
-            </div>
-            <MudStack Row="true" Spacing="1">
-                @if (s.IsInherited)
-                {
-                    <MudChip T="string" Color="Color.Info" data-testid="course-profile-inherited">@L["Course_Inherited"]</MudChip>
-                }
-                <MudChip T="string" Color="@(s.Status == CourseStatuses.Active ? Color.Success : Color.Default)">@L[$"CourseStatus_{s.Status}"]</MudChip>
-            </MudStack>
-        </MudStack>
+    <PageHeader Title="@Culture.Pick(s.NameAr, s.NameEn)" TitleTestId="course-profile-name" Class="lms-profile-header">
+        <Badges>
+            @if (s.IsInherited)
+            {
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Info" data-testid="course-profile-inherited">@L["Course_Inherited"]</MudChip>
+            }
+            <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Class="lms-status-chip" Color="@(s.Status == CourseStatuses.Active ? Color.Success : Color.Default)">@L[$"CourseStatus_{s.Status}"]</MudChip>
+        </Badges>
+        <Actions>
+            @if (CanUpdate)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Edit" OnClick="EditAsync"
+                           data-testid="course-edit">@L["Course_Edit"]</MudButton>
+            }
+        </Actions>
+    </PageHeader>
 
-        <MudTabs Class="lms-tabs" Elevation="0" Rounded="false" ApplyEffectsToContainer="true" MinimumTabWidth="80px" TabPanelsClass="pa-4" data-testid="course-tabs">
-            <MudTabPanel Text="@L["CourseProfile_Details"]" data-testid="tab-details">
-                <MudStack Spacing="2">
-                    <MudText data-testid="course-profile-owner">@L["Course_Owner"]: @Culture.Pick(s.OwnerOrgUnitNameAr, s.OwnerOrgUnitNameEn)</MudText>
-                    <MudText>@L["Course_Language"]: @L[$"Course_Language_{s.Language}"]</MudText>
-                    <MudText>@L["Course_WeeklyPeriods"]: @s.WeeklyPeriods</MudText>
-                    <MudText>@Culture.Pick(_detail.DescriptionAr ?? "", _detail.DescriptionEn ?? "")</MudText>
-                    @if (CanUpdate)
-                    {
-                        <MudButton Variant="Variant.Outlined" OnClick="EditAsync" data-testid="course-edit">@L["Course_Edit"]</MudButton>
-                    }
-                </MudStack>
-            </MudTabPanel>
-            <MudTabPanel Text="@L["CourseProfile_Allocations"]" Visible="PermState.Has(Permissions.Courses.Allocate)" data-testid="tab-allocations">
-                <AllocationsTab Course="s" CanEdit="CanAllocate" OnChanged="ReloadAsync" />
-            </MudTabPanel>
-            <MudTabPanel Text="@L["CourseProfile_Restrictions"]" data-testid="tab-restrictions">
-                <RestrictionsTab Course="_detail" CanEdit="CanUpdate" OnChanged="ReloadAsync" />
-            </MudTabPanel>
-            <MudTabPanel Text="@L["CourseProfile_Supervisors"]" data-testid="tab-supervisors">
-                <SupervisorsTab Course="_detail" CanEdit="CanManageSupervisors" OnChanged="ReloadAsync" />
-            </MudTabPanel>
-            <MudTabPanel Text="@L["CourseProfile_Blueprint"]" Visible="PermState.Has(Permissions.Blueprints.View)" data-testid="tab-blueprint">
-                <MudLink Href="@($"courses/{s.Id}/blueprint")" data-testid="blueprint-link">@L["CourseProfile_OpenBlueprint"]</MudLink>
-                @if (s.HasPublishedBlueprint)
-                {
-                    <MudChip T="string" Size="Size.Small" Color="Color.Success">@L["MyCourses_BlueprintPublished"]</MudChip>
-                }
-            </MudTabPanel>
-        </MudTabs>
-    </MudStack>
+    <div class="lms-profile-grid">
+        <SectionCard Title="@L["CourseProfile_Details"]" Class="lms-profile-details" TestId="course-profile-details">
+            <dl class="lms-details">
+                <DetailItem Label="@L["Course_Code"]" Value="@s.Code" Ltr="true" TestId="course-profile-code" />
+                <DetailItem Label="@L["Course_Owner"]" Value="@Culture.Pick(s.OwnerOrgUnitNameAr, s.OwnerOrgUnitNameEn)" TestId="course-profile-owner" />
+                <DetailItem Label="@L["Course_Language"]" Value="@L[$"Course_Language_{s.Language}"]" />
+                <DetailItem Label="@L["Course_WeeklyPeriods"]" Value="@s.WeeklyPeriods.ToString()" />
+                <DetailItem Label="@L["Course_Description"]" Value="@Culture.Pick(_detail.DescriptionAr ?? "", _detail.DescriptionEn ?? "")" />
+            </dl>
+        </SectionCard>
+
+        <div class="lms-profile-main">
+            <SectionCard Flush="true">
+                <MudTabs Class="lms-tabs" Elevation="0" Rounded="false" ApplyEffectsToContainer="true" MinimumTabWidth="80px" TabPanelsClass="pa-4" data-testid="course-tabs">
+                    <MudTabPanel Text="@L["CourseProfile_Allocations"]" Visible="PermState.Has(Permissions.Courses.Allocate)" data-testid="tab-allocations">
+                        <AllocationsTab Course="s" CanEdit="CanAllocate" OnChanged="ReloadAsync" />
+                    </MudTabPanel>
+                    <MudTabPanel Text="@L["CourseProfile_Restrictions"]" data-testid="tab-restrictions">
+                        <RestrictionsTab Course="_detail" CanEdit="CanUpdate" OnChanged="ReloadAsync" />
+                    </MudTabPanel>
+                    <MudTabPanel Text="@L["CourseProfile_Supervisors"]" data-testid="tab-supervisors">
+                        <SupervisorsTab Course="_detail" CanEdit="CanManageSupervisors" OnChanged="ReloadAsync" />
+                    </MudTabPanel>
+                    <MudTabPanel Text="@L["CourseProfile_Blueprint"]" Visible="PermState.Has(Permissions.Blueprints.View)" data-testid="tab-blueprint">
+                        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Href="@($"courses/{s.Id}/blueprint")" StartIcon="@Icons.Material.Rounded.AccountTree"
+                                       data-testid="blueprint-link">@L["CourseProfile_OpenBlueprint"]</MudButton>
+                            @if (s.HasPublishedBlueprint)
+                            {
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Success">@L["MyCourses_BlueprintPublished"]</MudChip>
+                            }
+                        </MudStack>
+                    </MudTabPanel>
+                </MudTabs>
+            </SectionCard>
+        </div>
+    </div>
 }
 
 @code {

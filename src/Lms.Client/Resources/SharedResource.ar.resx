@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
   <resheader name="version"><value>2.0</value></resheader>
@@ -1217,6 +1217,29 @@
   <data name="Module_NoContent" xml:space="preserve"><value>لا يوجد محتوى لهذه الوحدة بعد.</value></data>
   <data name="Module_Unsupported" xml:space="preserve"><value>يُفتح هذا النوع من الوحدات في صفحته الخاصة.</value></data>
   <data name="Module_UrlInvalid" xml:space="preserve"><value>أدخل عنوان ويب كاملًا يبدأ بـ http:// أو https://.</value></data>
+  <data name="Allocation_EmptyText" xml:space="preserve"><value>وزّع المقرر على وحدة لتظهر فيها الفصول.</value></data>
+  <data name="Blueprint_BackToCourse" xml:space="preserve"><value>المقرر</value></data>
+  <data name="Blueprint_Content" xml:space="preserve"><value>المحتوى</value></data>
+  <data name="Blueprint_EmptyTreeText" xml:space="preserve"><value>أضف قسماً ثم الدروس داخله.</value></data>
+  <data name="Blueprint_NoPublishedText" xml:space="preserve"><value>ابدأ بتعديل المسودة ثم انشرها لتُطبَّق على الفصول.</value></data>
+  <data name="Blueprint_PublishedOn" xml:space="preserve"><value>تاريخ النشر</value></data>
+  <data name="Blueprint_Version" xml:space="preserve"><value>الإصدار</value></data>
+  <data name="CourseImport_Subtitle" xml:space="preserve"><value>ارفع ملف Excel لإضافة مقررات دفعة واحدة.</value></data>
+  <data name="CourseProfile_BackToList" xml:space="preserve"><value>المقررات</value></data>
+  <data name="Course_BackToList" xml:space="preserve"><value>المقررات</value></data>
+  <data name="Course_CodeHelp" xml:space="preserve"><value>حروف وأرقام وشرطات فقط، حتى 50 حرفاً.</value></data>
+  <data name="Course_Description" xml:space="preserve"><value>الوصف</value></data>
+  <data name="Course_EmptyText" xml:space="preserve"><value>غيّر عوامل التصفية أو أضف مقرراً جديداً.</value></data>
+  <data name="Course_EmptyTitle" xml:space="preserve"><value>لا توجد مقررات</value></data>
+  <data name="Course_SectionBasics" xml:space="preserve"><value>الأساسيات</value></data>
+  <data name="Course_SectionDetails" xml:space="preserve"><value>التفاصيل</value></data>
+  <data name="Course_SectionOwner" xml:space="preserve"><value>الملكية والتوزيع</value></data>
+  <data name="Course_Subtitle" xml:space="preserve"><value>كتالوج المقررات وملكيتها وتوزيعها على الوحدات.</value></data>
+  <data name="Lesson_SectionPlan" xml:space="preserve"><value>الأهداف والتوقيت</value></data>
+  <data name="Lesson_SectionTitle" xml:space="preserve"><value>العنوان</value></data>
+  <data name="MyCourses_EmptyText" xml:space="preserve"><value>ستظهر هنا المقررات عندما تُعيَّن مشرفاً عليها.</value></data>
+  <data name="MyCourses_Subtitle" xml:space="preserve"><value>المقررات التي تشرف عليها.</value></data>
+  <data name="Supervisor_NoneText" xml:space="preserve"><value>أضف مشرفاً من الموظفين الذين لديهم دور المشرف.</value></data>
   <data name="ClassPage_Students" xml:space="preserve"><value>الطلاب</value></data>
   <data name="ClassPage_Courses" xml:space="preserve"><value>المقررات</value></data>
   <data name="ClassPage_Teachers" xml:space="preserve"><value>المعلمون</value></data>
