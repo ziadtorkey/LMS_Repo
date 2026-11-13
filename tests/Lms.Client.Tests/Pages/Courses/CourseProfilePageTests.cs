@@ -44,6 +44,9 @@ public sealed class CourseProfilePageTests : CoursesTestContext
     private static List<string> VisibleTabs(IRenderedComponent<CourseProfilePage> page) =>
         page.FindAll("[data-testid=course-tabs] .mud-tab:not(.mud-tab-panel-hidden)").Select(t => System.Text.RegularExpressions.Regex.Replace(t.TextContent.Trim(), @"\d+$", "")).ToList(); // the count badge is not part of the name
 
+    private static string CountOf(IRenderedComponent<CourseProfilePage> page, string label) =>
+        page.FindAll("[data-testid=course-tabs] .mud-tab").First(t => t.TextContent.Contains(label)).QuerySelector(".lms-tab-count")!.TextContent.Trim();
+
     [Fact]
     public async Task The_header_has_an_icon_tile_the_code_chip_and_tab_counts()
     {
@@ -51,9 +54,12 @@ public sealed class CourseProfilePageTests : CoursesTestContext
 
         Assert.NotNull(page.Find(".lms-page-header-leading .lms-kind-tile"));
         Assert.Equal(Math.Summary.Code, page.Find("[data-testid=course-profile-code-chip]").TextContent.Trim());
-        var tabs = page.FindAll("[data-testid=course-tabs] .mud-tab").Select(t => t.TextContent.Trim()).ToList();
-        if (Math.Supervisors.Count > 0) Assert.Contains($"Supervisors{Math.Supervisors.Count}", tabs); // a count badge on a tab that has rows
-        if (Math.Restrictions.Count > 0) Assert.Contains($"Restrictions{Math.Restrictions.Count}", tabs);
+        // The Mathematics fixture has rows in both lists, so these assertions always check something.
+        Assert.NotEmpty(Math.Supervisors);
+        Assert.NotEmpty(Math.Restrictions);
+        Assert.Equal(Math.Supervisors.Count.ToString(), CountOf(page, "Supervisors"));
+        Assert.Equal(Math.Restrictions.Count.ToString(), CountOf(page, "Restrictions"));
+        Assert.Empty(page.FindAll(".mud-badge")); // no floating badge: the count lives inside the label
         Assert.Single(page.FindAll("h1"));
     }
 

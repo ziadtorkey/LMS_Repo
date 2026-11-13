@@ -69,11 +69,17 @@ else
                     <MudTabPanel Text="@L["CourseProfile_Allocations"]" Visible="PermState.Has(Permissions.Courses.Allocate)" data-testid="tab-allocations">
                         <AllocationsTab Course="s" CanEdit="CanAllocate" OnChanged="ReloadAsync" />
                     </MudTabPanel>
-                    <MudTabPanel Text="@L["CourseProfile_Restrictions"]" BadgeData="@Count(_detail.Restrictions.Count)" BadgeColor="Color.Default" data-testid="tab-restrictions">
+                    <MudTabPanel data-testid="tab-restrictions">
+                        <TabContent>@TabLabel(L["CourseProfile_Restrictions"].Value, _detail.Restrictions.Count)</TabContent>
+                        <ChildContent>
                         <RestrictionsTab Course="_detail" CanEdit="CanUpdate" OnChanged="ReloadAsync" />
+                        </ChildContent>
                     </MudTabPanel>
-                    <MudTabPanel Text="@L["CourseProfile_Supervisors"]" BadgeData="@Count(_detail.Supervisors.Count)" BadgeColor="Color.Default" data-testid="tab-supervisors">
+                    <MudTabPanel data-testid="tab-supervisors">
+                        <TabContent>@TabLabel(L["CourseProfile_Supervisors"].Value, _detail.Supervisors.Count)</TabContent>
+                        <ChildContent>
                         <SupervisorsTab Course="_detail" CanEdit="CanManageSupervisors" OnChanged="ReloadAsync" />
+                        </ChildContent>
                     </MudTabPanel>
                     <MudTabPanel Text="@L["CourseProfile_Blueprint"]" Visible="PermState.Has(Permissions.Blueprints.View)" data-testid="tab-blueprint">
                         <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
@@ -92,8 +98,19 @@ else
 }
 
 @code {
-    /// <summary>A tab count badge only when there is something to count (an empty tab shows no zero).</summary>
-    private static int? Count(int n) => n > 0 ? n : null;
+    /// <summary>A tab label with its row count after it, only when there is something to count (an empty tab shows no zero).</summary>
+    private static RenderFragment TabLabel(string text, int count) => builder =>
+    {
+        builder.AddContent(0, text);
+        if (count > 0)
+        {
+            // Inside the label (not a floating badge), so it can never overlap the next tab at phone width.
+            builder.OpenElement(1, "span");
+            builder.AddAttribute(2, "class", "lms-tab-count");
+            builder.AddContent(3, count.ToString());
+            builder.CloseElement();
+        }
+    };
 
     private CourseDetailDto? _detail;
     private string? _error;

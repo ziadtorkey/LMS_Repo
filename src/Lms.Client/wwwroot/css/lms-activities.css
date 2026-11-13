@@ -126,3 +126,9 @@
     display: inline-flex; align-items: center; block-size: 24px; padding-inline: 10px; border-radius: 6px; font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
     font-size: .75rem; font-weight: 600; color: var(--mud-palette-primary); background: color-mix(in srgb, var(--mud-palette-primary) 10%, transparent);
 }
+
+/* A row count inside a tab label (Stitch tabs): a small pill after the text, in the flow so it never overlaps the next tab. */
+.lms-tab-count {
+    display: inline-block; margin-inline-start: 6px; min-inline-size: 20px; padding-inline: 6px; border-radius: 9999px; text-align: center;
+    font-size: .75rem; font-weight: 600; line-height: 20px; color: var(--mud-palette-text-secondary); background: var(--mud-palette-gray-lighter, rgba(100,116,139,.16));
+}
