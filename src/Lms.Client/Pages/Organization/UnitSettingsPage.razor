@@ -42,6 +42,9 @@ else
         <MudTabPanel Text="@L["UnitSettings_Settings"]" Visible="PermState.Has(Permissions.Settings.View)" data-testid="tab-settings">
             <SettingsTab UnitId="_unit.Id" CanEdit="PermState.Has(Permissions.Settings.Update)" />
         </MudTabPanel>
+        <MudTabPanel Text="@L["UnitSettings_Courses"]" Visible="PermState.Has(Permissions.Courses.View)" data-testid="tab-courses">
+            <UnitCoursesTab UnitId="_unit.Id" />
+        </MudTabPanel>
         <MudTabPanel Text="@L["UnitSettings_Policies"]" Visible="PermState.Has(Permissions.Policies.View)" data-testid="tab-policies">
             <PoliciesTab UnitId="_unit.Id" CanEdit="PermState.Has(Permissions.Policies.Update)" />
         </MudTabPanel>

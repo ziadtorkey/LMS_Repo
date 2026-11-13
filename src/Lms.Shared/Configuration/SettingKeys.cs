@@ -37,4 +37,11 @@ public static class SettingKeys
 
     /// <summary>Whether grades follow a transferred student (read by the M5 gradebook).</summary>
     public static readonly SettingKey<bool> EnrollmentTransferCarriesGrades = new("Enrollment.TransferCarriesGrades", true);
+
+    // M4a (FR-ASG-01, FR-QZ-02)
+    /// <summary>The penalty a new <c>Penalty</c>-policy assignment starts with (0–100 %); the teacher may change it.</summary>
+    public static readonly SettingKey<int> AssignmentsLatePenaltyDefaultPercent = new("Assignments.LatePenaltyDefaultPercent", 10);
+
+    /// <summary>Seconds after an attempt's <c>EndsAtUtc</c> during which a last autosave or submit is still taken (0–300).</summary>
+    public static readonly SettingKey<int> QuizzesAutoSubmitGraceSeconds = new("Quizzes.AutoSubmitGraceSeconds", 30);
 }

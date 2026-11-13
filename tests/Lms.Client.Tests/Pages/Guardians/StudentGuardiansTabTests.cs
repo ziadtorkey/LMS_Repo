@@ -1,5 +1,6 @@
 using System.Globalization;
 using Bunit;
+using Microsoft.Extensions.DependencyInjection;
 using Lms.Client.Pages.Students;
 using Lms.Client.Services.Api;
 using Lms.Client.Tests.Support;
@@ -178,5 +179,18 @@ public sealed class StudentGuardiansTabTests : StudentsTestContext
         Assert.Empty(cut.FindAll("[data-testid=guardian-link-new]"));
         Assert.Empty(cut.FindAll($"[data-testid=guardian-unlink-{PrimaryId}]"));
         Assert.Empty(cut.FindAll($"[data-testid=guardian-invite-{SecondId}]"));
+    }
+
+    [Fact]
+    public void A_role_without_Settings_View_still_gets_the_guardians_tab()
+    {
+        Settings.Failure = new Lms.Client.Services.ApiForbiddenException();
+        var navigation = Services.GetRequiredService<Microsoft.AspNetCore.Components.NavigationManager>();
+        var before = navigation.Uri;
+
+        var cut = RenderTab();
+
+        cut.WaitForElement("[data-testid=guardians-table]");
+        Assert.Equal(before, navigation.Uri); // not sent to /forbidden
     }
 }
