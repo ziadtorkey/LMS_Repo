@@ -35,10 +35,20 @@ public sealed class Assignment : UnitOwnedEntity
     public bool AllowText { get; private set; }
     public bool AllowFiles { get; private set; }
 
+    /// <summary>When the "due soon" reminder was sent (once per assignment); cleared when the due date changes.</summary>
+    public DateTime? DueSoonNotifiedAtUtc { get; private set; }
+
+    public void MarkDueSoonNotified(DateTime nowUtc) => DueSoonNotifiedAtUtc = nowUtc;
+
     public void Apply(
         string? instructionsAr, string? instructionsEn, DateTime? dueAtUtc, decimal maxGrade, string latePolicy, int? penaltyPercent,
         string resubmissionRule, bool allowText, bool allowFiles)
     {
+        if (DueAtUtc != dueAtUtc)
+        {
+            DueSoonNotifiedAtUtc = null; // a new due date gets its own reminder
+        }
+
         InstructionsHtmlAr = instructionsAr;
         InstructionsHtmlEn = instructionsEn;
         DueAtUtc = dueAtUtc;
