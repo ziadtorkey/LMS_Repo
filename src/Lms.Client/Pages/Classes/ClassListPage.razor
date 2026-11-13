@@ -81,7 +81,7 @@
         <MudTd DataLabel="@L["Class_Homeroom"]">@(cls.HomeroomTeacherNameAr is null ? "" : Culture.Pick(cls.HomeroomTeacherNameAr, cls.HomeroomTeacherNameEn ?? cls.HomeroomTeacherNameAr))</MudTd>
         <MudTd DataLabel="@L["Class_Courses"]">@cls.CourseCount</MudTd>
         <MudTd DataLabel="@L["Common_Status"]">
-            <MudChip T="string" Size="Size.Small" Color="@(cls.Status == ClassStatuses.Active ? Color.Success : Color.Default)">@L[$"ClassStatus_{cls.Status}"]</MudChip>
+            <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Class="lms-status-chip" Color="@(cls.Status == ClassStatuses.Active ? Color.Success : Color.Default)">@L[$"ClassStatus_{cls.Status}"]</MudChip>
         </MudTd>
         <MudTd>
             @if (!cls.IsReadOnly && !Years.IsReadOnly)
