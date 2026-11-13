@@ -23,7 +23,8 @@ namespace Lms.Api.Features.Quizzes;
 /// student has started an attempt the correct options, points, question set and pool are locked (409 <c>quiz_has_attempts</c>).
 /// </summary>
 public sealed class QuizBuilderHandlers(
-    LmsDbContext db, QuizMapper mapper, IModuleWriter modules, ModuleAccess access, IClock clock, PlacementGuard guard)
+    LmsDbContext db, QuizMapper mapper, IModuleWriter modules, ModuleAccess access, IClock clock, PlacementGuard guard, AttemptService attempts,
+    QuizOpenedNotifier opened)
 {
     public async Task<IResult> ListAsync(Guid classCourseId, int page, int pageSize, HttpContext http, CancellationToken ct)
     {
@@ -65,12 +66,21 @@ public sealed class QuizBuilderHandlers(
         var ids = pageRows.Select(r => r.Quiz.Id).ToList();
         var questionCounts = await db.Set<QuizQuestion>().Where(q => ids.Contains(q.QuizId)).GroupBy(q => q.QuizId)
             .Select(g => new { g.Key, Count = g.Count() }).ToDictionaryAsync(x => x.Key, x => x.Count, ct);
-        var attempts = await db.Set<QuizAttempt>().Where(a => ids.Contains(a.QuizId) && (studentId == null || a.StudentId == studentId))
+        var attemptCounts = await db.Set<QuizAttempt>().Where(a => ids.Contains(a.QuizId) && (studentId == null || a.StudentId == studentId))
             .GroupBy(a => a.QuizId).Select(g => new { g.Key, Count = g.Count() }).ToDictionaryAsync(x => x.Key, x => x.Count, ct);
+        var scores = new Dictionary<Guid, decimal?>();
+        foreach (var r in pageRows.Where(r => studentId is not null && r.Quiz.ReviewPolicy != Lms.Shared.Quizzes.ReviewPolicies.None))
+        {
+            // The student score follows the review policy: with None it is not shown.
+            var total = await db.Set<QuizQuestion>().Where(q => q.QuizId == r.Quiz.Id).SumAsync(q => (decimal?)q.Points, ct) ?? 0m;
+            var graded = await attempts.GradedAttemptsAsync(r.Quiz.Id, studentId!.Value, ct);
+            scores[r.Quiz.Id] = QuizScoring.Final(graded, r.Quiz.GradingMethod, total)?.Points;
+        }
+
         var items = pageRows.Select(r => new QuizListItemDto(
             r.Quiz.Id, r.Module.Id, r.Quiz.LessonKey, r.Module.TitleAr, r.Module.TitleEn, r.Module.Visibility, r.Module.IsVisibleNow(now),
             ModuleMapper.Utc(r.Quiz.OpensAtUtc), ModuleMapper.Utc(r.Quiz.ClosesAtUtc), questionCounts.GetValueOrDefault(r.Quiz.Id),
-            isStudent ? null : attempts.GetValueOrDefault(r.Quiz.Id), isStudent ? attempts.GetValueOrDefault(r.Quiz.Id) : null, null)).ToList();
+            isStudent ? null : attemptCounts.GetValueOrDefault(r.Quiz.Id), isStudent ? attemptCounts.GetValueOrDefault(r.Quiz.Id) : null, scores.GetValueOrDefault(r.Quiz.Id))).ToList();
         return Results.Ok(new PagedResult<QuizListItemDto>(items, rows.Count, page, pageSize));
     }
 
@@ -124,6 +134,7 @@ public sealed class QuizBuilderHandlers(
         db.Add(quiz);
         await db.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
+        await opened.NotifyDueAsync(quiz.Id, ct); // published already open (it needs a question, so usually the first question triggers it)
         return Results.Created(Routes.Quiz(quiz.Id), await mapper.BuilderAsync(quiz, true, clock.UtcNow, ct));
     }
 
@@ -195,6 +206,7 @@ public sealed class QuizBuilderHandlers(
         Apply(quiz, request.DescriptionAr, request.DescriptionEn, request.Settings);
         await db.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
+        await opened.NotifyDueAsync(quiz.Id, ct); // an edit can publish it or open it now
         return Results.Ok(await mapper.BuilderAsync(quiz, true, clock.UtcNow, ct));
     }
 
@@ -221,6 +233,7 @@ public sealed class QuizBuilderHandlers(
         db.Add(question);
         var options = AddOptions(question, input.Options);
         await db.SaveChangesAsync(ct);
+        await opened.NotifyDueAsync(id, ct); // the first question makes an open quiz takeable
         return Results.Created(Routes.QuizQuestion(question.Id), QuizMapper.Question(question, options));
     }
 
