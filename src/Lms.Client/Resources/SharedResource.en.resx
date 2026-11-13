@@ -1565,4 +1565,5 @@
   <data name="Quiz_Minutes" xml:space="preserve"><value>{0} min</value></data>
   <data name="Quiz_Seconds" xml:space="preserve"><value>{0} s</value></data>
   <data name="Quiz_SubmitUnsaved" xml:space="preserve"><value>Some answers are not saved yet. Retry saving, then submit.</value></data>
+  <data name="Quiz_TimeLimitChip" xml:space="preserve"><value>{0} minutes</value></data>
 </root>

@@ -38,7 +38,7 @@ else if (_attempt is null)
             <MudChip T="string" Size="Size.Small">@L["Quiz_QuestionCount", _summary.QuestionCount]</MudChip>
             @if (_summary.TimeLimitMinutes is { } minutes)
             {
-                <MudChip T="string" Size="Size.Small" data-testid="quiz-time-limit">@L["Quiz_TimeLimit", minutes]</MudChip>
+                <MudChip T="string" Size="Size.Small" data-testid="quiz-time-limit">@L["Quiz_TimeLimitChip", minutes]</MudChip>
             }
             <MudChip T="string" Size="Size.Small" data-testid="quiz-attempts-left">
                 @(_summary.AttemptsLeft is { } left ? L["Quiz_AttemptsLeft", left].Value : L["Quiz_AttemptsUnlimited"].Value)
