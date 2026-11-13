@@ -30,10 +30,15 @@ public sealed class ZoomSyncSweepJob(
     private const int BatchPerClient = 100;
 
     /// <summary>Returns the number of sessions that are in sync after the run.</summary>
-    public async Task<int> RunAsync(CancellationToken ct = default)
+    public Task<int> RunAsync(CancellationToken ct = default) => RunAsync(null, ct);
+
+    /// <summary>One client only (an operator re-running a single client, and tests that share a database with other clients).</summary>
+    public Task<int> RunForClientAsync(Guid organizationId, CancellationToken ct = default) => RunAsync(organizationId, ct);
+
+    private async Task<int> RunAsync(Guid? only, CancellationToken ct)
     {
         // The platform context sees every client; the list of clients is platform-level data.
-        var organizationIds = await db.Set<Organization>().Select(o => o.Id).ToListAsync(ct);
+        var organizationIds = await db.Set<Organization>().Where(o => only == null || o.Id == only).Select(o => o.Id).ToListAsync(ct);
         var recovered = 0;
         foreach (var organizationId in organizationIds)
         {

@@ -133,13 +133,13 @@ public sealed class ZoomSessionRowTests(LmsApiFactory factory) : IDisposable
         Assert.Equal(LiveSessionStatuses.SyncFailed, created.Status);
         Assert.Empty(Provider(host).Meetings);
 
-        var recovered = await SweepAsync(host);
+        var recovered = await SweepAsync(host, w.Tree.Org.Id);
 
         Assert.Equal(1, recovered);
         var after = await (await host.SendAsync(w.Teacher, HttpMethod.Get, Routes.LiveSession(created.Id))).Content.ReadFromJsonAsync<LiveSessionDto>();
         Assert.Equal(LiveSessionStatuses.Scheduled, after!.Status);
         Assert.Equal("Retry me", Assert.Single(Provider(host).Meetings.Values).Topic);
-        Assert.Equal(0, await SweepAsync(host)); // nothing left to retry
+        Assert.Equal(0, await SweepAsync(host, w.Tree.Org.Id)); // nothing left to retry
     }
 
     [Fact]
@@ -156,8 +156,8 @@ public sealed class ZoomSessionRowTests(LmsApiFactory factory) : IDisposable
         Assert.Equal([LiveSessionStatuses.SyncFailed, LiveSessionStatuses.SyncFailed], [first.Status, second.Status]);
 
         Provider(host).FailNext(1); // the sweep's first call fails: one client is retried next run, the other still recovers now
-        var firstRun = await SweepAsync(host);
-        var secondRun = await SweepAsync(host);
+        var firstRun = await SweepAsync(host, a.Tree.Org.Id, b.Tree.Org.Id);
+        var secondRun = await SweepAsync(host, a.Tree.Org.Id, b.Tree.Org.Id);
 
         Assert.Equal(1, firstRun);
         Assert.Equal(1, secondRun);
@@ -202,7 +202,7 @@ public sealed class ZoomSessionRowTests(LmsApiFactory factory) : IDisposable
         Assert.All(sessions, s => Assert.Equal(LiveSessionStatuses.SyncFailed, s.Status));
         Assert.Empty(Provider(host).Meetings);
 
-        var results = await Task.WhenAll(Task.Run(() => SweepAsync(host)), Task.Run(() => SweepAsync(host)));
+        var results = await Task.WhenAll(Task.Run(() => SweepAsync(host, w.Tree.Org.Id)), Task.Run(() => SweepAsync(host, w.Tree.Org.Id)));
 
         Assert.Equal(2, Provider(host).Meetings.Count); // one meeting per session, not four
         Assert.Equal(2, results.Sum());                 // and exactly one of the runs did the work
@@ -229,7 +229,7 @@ public sealed class ZoomSessionRowTests(LmsApiFactory factory) : IDisposable
             await db.SaveChangesAsync();
         }
 
-        Assert.Equal(0, await SweepAsync(host));
+        Assert.Equal(0, await SweepAsync(host, w.Tree.Org.Id));
         Assert.Empty(Provider(host).Meetings);
     }
 
@@ -268,10 +268,22 @@ public sealed class ZoomSessionRowTests(LmsApiFactory factory) : IDisposable
     }
 
     /// <summary>Runs the sweep the way the job server does: a fresh scope with the platform context.</summary>
-    private static async Task<int> SweepAsync(ContentTestHost host)
+    private static async Task<int> SweepAsync(ContentTestHost host, params Guid[] clients)
     {
         using var scope = host.Services.CreateScope();
         scope.ServiceProvider.GetRequiredService<Lms.Api.Infrastructure.HttpCurrentContext>().SetUser(Guid.Empty, true);
-        return await scope.ServiceProvider.GetRequiredService<ZoomSyncSweepJob>().RunAsync();
+        var job = scope.ServiceProvider.GetRequiredService<ZoomSyncSweepJob>();
+        if (clients.Length == 0)
+        {
+            return await job.RunAsync();
+        }
+
+        var recovered = 0;
+        foreach (var client in clients)
+        {
+            recovered += await job.RunForClientAsync(client);
+        }
+
+        return recovered;
     }
 }
