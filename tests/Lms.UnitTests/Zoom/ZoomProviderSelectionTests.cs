@@ -32,9 +32,9 @@ public sealed class ZoomProviderSelectionTests
         var services = new ServiceCollection()
             .AddSingleton<IClock>(new ManualClock(DateTime.UtcNow))
             .AddSingleton<IJobKeyLock>(new InProcessJobKeyLock())
-            .AddScoped<IHostSlotStore, Slots>()
             .AddSingleton<IHostEnvironment>(new Env(environment))
-            .AddZoom(config);
+            .AddZoom(config)
+            .AddScoped<IHostSlotStore, Slots>(); // replaces the EF store (needs a database)
         var scope = services.BuildServiceProvider().CreateScope();
         return scope.ServiceProvider.GetRequiredService<IMeetingProvider>();
     }

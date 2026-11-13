@@ -5,6 +5,7 @@ using Lms.Infrastructure.Jobs;
 using Lms.Shared.LiveSessions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
@@ -41,10 +42,13 @@ public static class ZoomServiceCollectionExtensions
         // authoring works offline. Any other host without credentials gets the Zoom provider, which answers provider_not_configured.
         services.AddSingleton<FakeMeetingProvider>();
         services.AddScoped<ZoomMeetingProvider>();
-        services.AddScoped<IMeetingProvider>(sp =>
+        // Replaces the "no provider" default the live-session module registers.
+        services.Replace(ServiceDescriptor.Scoped<IMeetingProvider>(sp =>
             !sp.GetRequiredService<IOptions<ZoomOptions>>().Value.IsConfigured && sp.GetService<IHostEnvironment>()?.IsDevelopment() == true
                 ? sp.GetRequiredService<FakeMeetingProvider>()
-                : sp.GetRequiredService<ZoomMeetingProvider>());
+                : sp.GetRequiredService<ZoomMeetingProvider>()));
+        services.AddScoped<IHostSlotStore, EfHostSlotStore>();
+        services.AddScoped<ZoomSyncSweepJob>();
         return services;
     }
 
