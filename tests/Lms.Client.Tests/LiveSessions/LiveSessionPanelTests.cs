@@ -314,6 +314,9 @@ public sealed class LiveSessionPanelTests : StaffTestContext
         Assert.Contains(chips, c => c.GetAttribute("data-match") == ParticipantMatchStates.Matched);
         Assert.Contains(chips, c => c.GetAttribute("data-match") == ParticipantMatchStates.Guest && c.TextContent.Contains("Guest"));
         Assert.Contains("iPhone (guest)", Dialogs.Markup);
+        // Safe at 360 px: the table turns into labelled cards (lms-stack-table, every cell has its data-label).
+        Assert.Contains("lms-stack-table", Dialogs.Find("[data-testid=participants-table]").ClassList);
+        Assert.All(Dialogs.FindAll("[data-testid=participants-table] tbody td"), td => Assert.False(string.IsNullOrEmpty(td.GetAttribute("data-label"))));
     }
 
     [Fact]
@@ -326,6 +329,29 @@ public sealed class LiveSessionPanelTests : StaffTestContext
         Assert.Equal("تبدأ بعد ساعتين و10 دقائق", cut.Find("[data-testid=live-countdown]").TextContent.Trim());
         Assert.Contains("الانضمام", cut.Find("[data-testid=live-join-zone]").GetAttribute("aria-label"));
         Assert.Contains("دقيقة", cut.Find("[data-testid=live-caption]").TextContent);
+    }
+
+    [Fact]
+    public async Task Status_is_shown_with_the_shared_status_chip_and_explains_a_session_waiting_for_zoom()
+    {
+        var session = Seed(_serverNow.AddHours(1), LiveSessionStatuses.SyncFailed);
+        var cut = await OpenAsync(session.Id);
+
+        Assert.Equal(LiveSessionStatuses.SyncFailed, cut.Find("[data-testid=live-status]").GetAttribute("data-status"));
+        Assert.NotNull(cut.Find("[data-testid=live-status-hint]"));
+    }
+
+    [Theory]
+    [InlineData(5, "5 دقائق")]
+    [InlineData(60, "60 دقيقة")]
+    [InlineData(2, "دقيقتان")]
+    public async Task Session_duration_uses_the_right_arabic_plural_family(int minutes, string expected)
+    {
+        Culture.Current = new CultureInfo("ar");
+        var session = _fake.Seed(CourseId, LessonKey, _serverNow.AddHours(2), minutes, LiveSessionStatuses.Scheduled, "x");
+        var cut = await OpenAsync(session.Id);
+
+        Assert.Contains(expected, cut.Find("[data-testid=live-meta]").TextContent);
     }
 
     private static string LiveJoinScript()

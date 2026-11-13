@@ -1126,6 +1126,12 @@
   <data name="ModuleKind_LibraryResource" xml:space="preserve"><value>Library resource</value></data>
   <data name="ModuleKind_Link" xml:space="preserve"><value>Link</value></data>
   <data name="ModuleKind_LiveSession" xml:space="preserve"><value>Live session</value></data>
+  <data name="LiveSession_Status_Scheduled" xml:space="preserve"><value>Scheduled</value></data>
+  <data name="LiveSession_Status_Live" xml:space="preserve"><value>Live now</value></data>
+  <data name="LiveSession_Status_Ended" xml:space="preserve"><value>Ended</value></data>
+  <data name="LiveSession_Status_Cancelled" xml:space="preserve"><value>Cancelled</value></data>
+  <data name="LiveSession_Status_SyncFailed" xml:space="preserve"><value>Waiting for Zoom</value></data>
+  <data name="LiveSession_SyncFailedHint" xml:space="preserve"><value>Zoom couldn't be reached. The LMS will retry automatically; you don't need to do anything.</value></data>
   <data name="ModuleKind_Page" xml:space="preserve"><value>Page</value></data>
   <data name="ModuleKind_Quiz" xml:space="preserve"><value>Quiz</value></data>
   <data name="ModuleKind_Scorm" xml:space="preserve"><value>SCORM package</value></data>
@@ -1340,12 +1346,7 @@
   <data name="Announcements_FormTitle" xml:space="preserve"><value>Announcement title</value></data>
   <data name="Forum_MoreReplies" xml:space="preserve"><value>Show more replies ({0} more)</value></data>
   <data name="Forum_MoreThreads" xml:space="preserve"><value>Show more threads ({0} more)</value></data>
-  <data name="Module_Placeholder" xml:space="preserve"><value>The {0} view is coming soon.</value></data>
-  <data name="Live_Status_Scheduled" xml:space="preserve"><value>Scheduled</value></data>
-  <data name="Live_Status_Live" xml:space="preserve"><value>Live now</value></data>
-  <data name="Live_Status_Ended" xml:space="preserve"><value>Ended</value></data>
-  <data name="Live_Status_Cancelled" xml:space="preserve"><value>Cancelled</value></data>
-  <data name="Live_Status_SyncFailed" xml:space="preserve"><value>Not synced</value></data>
+  <data name="Module_Placeholder" xml:space="preserve"><value>Coming soon: {0}.</value></data>
   <data name="Live_Match_Matched" xml:space="preserve"><value>Enrolled student</value></data>
   <data name="Live_Match_Guest" xml:space="preserve"><value>Guest</value></data>
   <data name="Live_Scope_This" xml:space="preserve"><value>This session only</value></data>
@@ -1356,7 +1357,7 @@
   <data name="Package_Step_Upload" xml:space="preserve"><value>Upload</value></data>
   <data name="Package_Step_Check" xml:space="preserve"><value>Check</value></data>
   <data name="Package_Step_Attach" xml:space="preserve"><value>Attach</value></data>
-  <data name="Package_DropHint" xml:space="preserve"><value>Drop a file here or choose one.</value></data>
+  <data name="Package_DropHint" xml:space="preserve"><value>Drop the file here, or choose it from your device.</value></data>
   <data name="Package_Choose" xml:space="preserve"><value>Choose a file</value></data>
   <data name="Package_LimitsScorm" xml:space="preserve"><value>SCORM 1.2 or 2004, one learning object, up to {0} MB.</value></data>
   <data name="Package_LimitsH5p" xml:space="preserve"><value>An .h5p file, up to {0} MB.</value></data>
@@ -1402,32 +1403,32 @@
   <data name="AuditEntity_PackageUpload" xml:space="preserve"><value>Package upload</value></data>
   <data name="AuditEntity_ScormPackage" xml:space="preserve"><value>SCORM package</value></data>
   <data name="AuditEntity_H5pContent" xml:space="preserve"><value>H5P content</value></data>
-  <data name="Error_package_invalid" xml:space="preserve"><value>This package cannot be used. See the reason shown with it.</value></data>
+  <data name="Error_package_invalid" xml:space="preserve"><value>This package can't be used. Check that it's a SCORM or H5P export.</value></data>
   <data name="Error_package_too_large" xml:space="preserve"><value>The package is too large to upload or would exceed your storage.</value></data>
   <data name="Error_package_not_ready" xml:space="preserve"><value>The package is not ready yet. Wait for the check to finish.</value></data>
   <data name="Error_package_commit_rejected" xml:space="preserve"><value>Your progress could not be saved because the attempt is closed or the data was not accepted.</value></data>
-  <data name="Error_package_host_not_configured" xml:space="preserve"><value>Packages are not available yet: the separate content site has not been set up. Ask your platform administrator.</value></data>
-  <data name="Error_package_reason_unsafe_path" xml:space="preserve"><value>A file in the package has a path that leaves the package folder.</value></data>
+  <data name="Error_package_host_not_configured" xml:space="preserve"><value>Packages aren't set up on this platform yet. Ask your platform administrator.</value></data>
+  <data name="Error_package_reason_unsafe_path" xml:space="preserve"><value>Some files in the package point outside it. Export the package again.</value></data>
   <data name="Error_package_reason_too_many_entries" xml:space="preserve"><value>The package has too many files.</value></data>
   <data name="Error_package_reason_too_large" xml:space="preserve"><value>The package is too large once unpacked.</value></data>
-  <data name="Error_package_reason_compression_ratio" xml:space="preserve"><value>The package is compressed far more than normal content, so it was refused as unsafe.</value></data>
-  <data name="Error_package_reason_symlink" xml:space="preserve"><value>The package contains a shortcut (symbolic link), which is not allowed.</value></data>
+  <data name="Error_package_reason_compression_ratio" xml:space="preserve"><value>The package is compressed in an unsafe way. Export it again.</value></data>
+  <data name="Error_package_reason_symlink" xml:space="preserve"><value>The package contains links to other files, which aren't allowed.</value></data>
   <data name="Error_package_reason_duplicate_name" xml:space="preserve"><value>Two files in the package have the same name.</value></data>
-  <data name="Error_package_reason_bad_name_encoding" xml:space="preserve"><value>A file name in the package contains hidden or invalid characters.</value></data>
-  <data name="Error_package_reason_executable" xml:space="preserve"><value>The package contains a program or script file that is not allowed.</value></data>
-  <data name="Error_package_reason_encrypted" xml:space="preserve"><value>The package contains a password-protected file.</value></data>
-  <data name="Error_package_reason_nested_archive" xml:space="preserve"><value>The package contains another compressed archive, which is not allowed.</value></data>
-  <data name="Error_package_reason_manifest_invalid" xml:space="preserve"><value>The package description file is missing or wrong, or the start page is missing.</value></data>
-  <data name="Error_package_reason_xml_unsafe" xml:space="preserve"><value>The package description uses features that are not allowed.</value></data>
-  <data name="Error_package_reason_multi_sco" xml:space="preserve"><value>Packages with several lessons or sequencing rules are not supported yet.</value></data>
-  <data name="Error_package_reason_needs_nested_frames" xml:space="preserve"><value>The start page uses frames, which this platform does not support.</value></data>
-  <data name="Error_package_reason_needs_relaxed_policy" xml:space="preserve"><value>The content needs permissions that the platform does not allow.</value></data>
-  <data name="Error_package_reason_h5p_invalid" xml:space="preserve"><value>The H5P file is incomplete or has invalid content.</value></data>
-  <data name="Error_package_reason_validation_timeout" xml:space="preserve"><value>Checking the package took too long. Try a smaller package.</value></data>
-  <data name="Error_package_reason_quota_exceeded" xml:space="preserve"><value>Your package storage is full. Delete unused packages first.</value></data>
-  <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>The security scan did not accept this package.</value></data>
-  <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>The file is not a valid zip archive.</value></data>
-  <data name="Error_package_reason_bad_name" xml:space="preserve"><value>A file name in the package is not usable (too long, too deep, or reserved).</value></data>
+  <data name="Error_package_reason_bad_name_encoding" xml:space="preserve"><value>Some file names can't be read. Rename them with plain letters and digits.</value></data>
+  <data name="Error_package_reason_executable" xml:space="preserve"><value>The package contains programs or old plug-in files (such as Flash), which aren't allowed.</value></data>
+  <data name="Error_package_reason_encrypted" xml:space="preserve"><value>The package is password-protected. Upload it without a password.</value></data>
+  <data name="Error_package_reason_nested_archive" xml:space="preserve"><value>The package has another .zip file inside it. Upload the inner package instead.</value></data>
+  <data name="Error_package_reason_manifest_invalid" xml:space="preserve"><value>This isn't a valid SCORM or H5P package: its description file or start page is missing or broken.</value></data>
+  <data name="Error_package_reason_xml_unsafe" xml:space="preserve"><value>The package's description file uses features that aren't allowed. Export it again.</value></data>
+  <data name="Error_package_reason_multi_sco" xml:space="preserve"><value>The package has more than one learning object. Export each one as its own package.</value></data>
+  <data name="Error_package_reason_needs_nested_frames" xml:space="preserve"><value>The package shows its content inside frames, which can't run safely here. Export it with a single-page player if your tool offers one.</value></data>
+  <data name="Error_package_reason_needs_relaxed_policy" xml:space="preserve"><value>The package needs browser features that aren't allowed for security reasons.</value></data>
+  <data name="Error_package_reason_h5p_invalid" xml:space="preserve"><value>This H5P file is incomplete or uses a content type we don't support.</value></data>
+  <data name="Error_package_reason_validation_timeout" xml:space="preserve"><value>Checking the package took too long. Try again, or upload a smaller package.</value></data>
+  <data name="Error_package_reason_quota_exceeded" xml:space="preserve"><value>Your school has used all its storage for packages. Delete packages you no longer need, or ask your administrator.</value></data>
+  <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>The package didn't pass the security check.</value></data>
+  <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>The file isn't a valid .zip archive. Export the package again.</value></data>
+  <data name="Error_package_reason_bad_name" xml:space="preserve"><value>Some file names in the package are too long, nested too deep or reserved. Rename them and export again.</value></data>
   <data name="Live_Join" xml:space="preserve"><value>Join the session</value></data>
   <data name="Live_Start" xml:space="preserve"><value>Start the meeting</value></data>
   <data name="Live_Opening" xml:space="preserve"><value>Opening Zoom…</value></data>
@@ -1454,7 +1455,7 @@
   <data name="Live_Participant" xml:space="preserve"><value>Participant</value></data>
   <data name="Live_Joined" xml:space="preserve"><value>Joined</value></data>
   <data name="Live_Left" xml:space="preserve"><value>Left</value></data>
-  <data name="Live_Duration" xml:space="preserve"><value>Time in session</value></data>
+  <data name="Live_Duration" xml:space="preserve"><value>Duration</value></data>
   <data name="Live_MatchState" xml:space="preserve"><value>Match</value></data>
   <data name="Live_ShowMore" xml:space="preserve"><value>Show more</value></data>
   <data name="Live_LessThanMinute" xml:space="preserve"><value>less than a minute</value></data>
@@ -1469,8 +1470,91 @@
   <data name="Live_Unit_Hour_Two" xml:space="preserve"><value>{0} h</value></data>
   <data name="Live_Unit_Hour_Few" xml:space="preserve"><value>{0} h</value></data>
   <data name="Live_Unit_Hour_Many" xml:space="preserve"><value>{0} h</value></data>
-  <data name="Live_Unit_Minute_One" xml:space="preserve"><value>{0} min</value></data>
-  <data name="Live_Unit_Minute_Two" xml:space="preserve"><value>{0} min</value></data>
+  <data name="Live_Unit_Minute_One" xml:space="preserve"><value>1 min</value></data>
+  <data name="Live_Unit_Minute_Two" xml:space="preserve"><value>2 min</value></data>
   <data name="Live_Unit_Minute_Few" xml:space="preserve"><value>{0} min</value></data>
   <data name="Live_Unit_Minute_Many" xml:space="preserve"><value>{0} min</value></data>
+  <data name="ClassCourse_TabLive" xml:space="preserve"><value>Live sessions</value></data>
+  <data name="Live_Title" xml:space="preserve"><value>Live sessions</value></data>
+  <data name="Live_Subtitle" xml:space="preserve"><value>Online classes for this course. Students join from the lesson.</value></data>
+  <data name="Live_Schedule" xml:space="preserve"><value>Schedule a session</value></data>
+  <data name="Live_ScheduleAction" xml:space="preserve"><value>Schedule</value></data>
+  <data name="Live_Filter" xml:space="preserve"><value>Which sessions</value></data>
+  <data name="Live_Upcoming" xml:space="preserve"><value>Upcoming</value></data>
+  <data name="Live_Past" xml:space="preserve"><value>Past</value></data>
+  <data name="Live_Col_When" xml:space="preserve"><value>When</value></data>
+  <data name="Live_Col_Session" xml:space="preserve"><value>Session</value></data>
+  <data name="Live_Col_Lesson" xml:space="preserve"><value>Lesson</value></data>
+  <data name="Live_Col_Status" xml:space="preserve"><value>Status</value></data>
+  <data name="Live_Col_Recording" xml:space="preserve"><value>Recording</value></data>
+  <data name="Live_Col_Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="Live_Edit" xml:space="preserve"><value>Edit session</value></data>
+  <data name="Live_RecordingLink" xml:space="preserve"><value>Recording link</value></data>
+  <data name="Live_CancelSession" xml:space="preserve"><value>Cancel session</value></data>
+  <data name="Live_CancelConfirm" xml:space="preserve"><value>Cancel this session? Students will no longer see it.</value></data>
+  <data name="Live_Recording" xml:space="preserve"><value>Recording</value></data>
+  <data name="Live_Empty_Upcoming_Title" xml:space="preserve"><value>No upcoming sessions</value></data>
+  <data name="Live_Empty_Upcoming_Staff" xml:space="preserve"><value>Schedule a session so students can join from the lesson.</value></data>
+  <data name="Live_Empty_Upcoming_Student" xml:space="preserve"><value>Your teacher hasn't scheduled any yet.</value></data>
+  <data name="Live_Empty_Past_Title" xml:space="preserve"><value>No past sessions</value></data>
+  <data name="Live_Empty_Past_Text" xml:space="preserve"><value>Sessions appear here after they end.</value></data>
+  <data name="Live_SeriesCaption" xml:space="preserve"><value>Weekly · {0} of {1}</value></data>
+  <data name="Live_SeriesCaptionShort" xml:space="preserve"><value>Weekly</value></data>
+  <data name="Live_ProviderNotConfigured" xml:space="preserve"><value>Live sessions aren't set up yet. Ask your platform administrator.</value></data>
+  <data name="Live_ProviderUnhealthy" xml:space="preserve"><value>Zoom isn't responding right now. New sessions may fail; existing ones keep working.</value></data>
+  <data name="Live_Error_Busy" xml:space="preserve"><value>Zoom is busy. Try again in about {0}.</value></data>
+  <data name="Live_Error_BusyShort" xml:space="preserve"><value>Zoom is busy. Try again in a minute.</value></data>
+  <data name="Live_DialogTitleNew" xml:space="preserve"><value>Schedule a live session</value></data>
+  <data name="Live_DialogTitleEdit" xml:space="preserve"><value>Edit live session</value></data>
+  <data name="Live_SectionSession" xml:space="preserve"><value>Session</value></data>
+  <data name="Live_SectionTime" xml:space="preserve"><value>Time</value></data>
+  <data name="Live_SectionRepeat" xml:space="preserve"><value>Repeat</value></data>
+  <data name="Live_SectionModule" xml:space="preserve"><value>In the lesson</value></data>
+  <data name="Live_TitleHelp" xml:space="preserve"><value>Participants see this title in Zoom.</value></data>
+  <data name="Live_Lesson" xml:space="preserve"><value>Lesson</value></data>
+  <data name="Live_Date" xml:space="preserve"><value>Date</value></data>
+  <data name="Live_StartTime" xml:space="preserve"><value>Start time</value></data>
+  <data name="Live_TimeZone" xml:space="preserve"><value>Times are in your time zone:</value></data>
+  <data name="Live_Repeat_Once" xml:space="preserve"><value>Once</value></data>
+  <data name="Live_Repeat_Weekly" xml:space="preserve"><value>Weekly</value></data>
+  <data name="Live_Every" xml:space="preserve"><value>Repeats</value></data>
+  <data name="Live_Days" xml:space="preserve"><value>On these days</value></data>
+  <data name="Live_Ends" xml:space="preserve"><value>Ends</value></data>
+  <data name="Live_EndsOn" xml:space="preserve"><value>On date</value></data>
+  <data name="Live_EndsAfter" xml:space="preserve"><value>After</value></data>
+  <data name="Live_EndsAfterSuffix" xml:space="preserve"><value>sessions</value></data>
+  <data name="Live_EndsRequired" xml:space="preserve"><value>Choose an end date or a number of sessions.</value></data>
+  <data name="Live_TooMany" xml:space="preserve"><value>A series can have at most {0} sessions. Choose an earlier end date or fewer sessions.</value></data>
+  <data name="Live_EditSeriesTitle" xml:space="preserve"><value>Edit a repeating session</value></data>
+  <data name="Live_CancelSeriesTitle" xml:space="preserve"><value>Cancel a repeating session</value></data>
+  <data name="Live_ScopeLabel" xml:space="preserve"><value>Which sessions</value></data>
+  <data name="Live_Continue" xml:space="preserve"><value>Continue</value></data>
+  <data name="Live_CancelSessions" xml:space="preserve"><value>Cancel sessions</value></data>
+  <data name="Live_RecordingTitle" xml:space="preserve"><value>Recording link</value></data>
+  <data name="Live_RecordingUrl" xml:space="preserve"><value>Link</value></data>
+  <data name="Live_RecordingHelp" xml:space="preserve"><value>Paste a link that starts with https://.</value></data>
+  <data name="Live_RecordingOpensOn" xml:space="preserve"><value>Opens on</value></data>
+  <data name="Live_RecordingInvalid" xml:space="preserve"><value>Use a link that starts with https:// or http://.</value></data>
+  <data name="Live_RecordingBy_Provider" xml:space="preserve"><value>Added by Zoom</value></data>
+  <data name="Live_RecordingBy_Manual" xml:space="preserve"><value>Added by a teacher</value></data>
+  <data name="Live_Duration_Minute_One" xml:space="preserve"><value>1 min</value></data>
+  <data name="Live_Duration_Minute_Two" xml:space="preserve"><value>2 min</value></data>
+  <data name="Live_Duration_Minute_Few" xml:space="preserve"><value>{0} min</value></data>
+  <data name="Live_Duration_Minute_Many" xml:space="preserve"><value>{0} min</value></data>
+  <data name="Live_Unit_Session_One" xml:space="preserve"><value>1 session</value></data>
+  <data name="Live_Unit_Session_Two" xml:space="preserve"><value>2 sessions</value></data>
+  <data name="Live_Unit_Session_Few" xml:space="preserve"><value>{0} sessions</value></data>
+  <data name="Live_Unit_Session_Many" xml:space="preserve"><value>{0} sessions</value></data>
+  <data name="Live_MoreSessions_One" xml:space="preserve"><value>and 1 more</value></data>
+  <data name="Live_MoreSessions_Two" xml:space="preserve"><value>and 2 more</value></data>
+  <data name="Live_MoreSessions_Few" xml:space="preserve"><value>and {0} more</value></data>
+  <data name="Live_MoreSessions_Many" xml:space="preserve"><value>and {0} more</value></data>
+  <data name="Live_LaterSessions_One" xml:space="preserve"><value>and 1 later session</value></data>
+  <data name="Live_LaterSessions_Two" xml:space="preserve"><value>and 2 later sessions</value></data>
+  <data name="Live_LaterSessions_Few" xml:space="preserve"><value>and {0} later sessions</value></data>
+  <data name="Live_LaterSessions_Many" xml:space="preserve"><value>and {0} later sessions</value></data>
+  <data name="Live_EveryWeeks_One" xml:space="preserve"><value>Every week</value></data>
+  <data name="Live_EveryWeeks_Two" xml:space="preserve"><value>Every 2 weeks</value></data>
+  <data name="Live_EveryWeeks_Few" xml:space="preserve"><value>Every {0} weeks</value></data>
+  <data name="Live_EveryWeeks_Many" xml:space="preserve"><value>Every {0} weeks</value></data>
 </root>

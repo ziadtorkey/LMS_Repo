@@ -18,16 +18,6 @@ public sealed class LiveTimeFormatTests : ClientTestContext
     }
 
     [Theory]
-    [InlineData(1, PluralForm.One)]
-    [InlineData(2, PluralForm.Two)]
-    [InlineData(3, PluralForm.Few)]
-    [InlineData(10, PluralForm.Few)]
-    [InlineData(11, PluralForm.Many)]
-    [InlineData(59, PluralForm.Many)]
-    [InlineData(103, PluralForm.Few)]
-    public void Arabic_plural_forms(int n, PluralForm expected) => Assert.Equal(expected, LiveTimeFormat.Form(n, arabic: true));
-
-    [Theory]
     [InlineData(1, "ar", "بعد دقيقة")]
     [InlineData(2, "ar", "بعد دقيقتين")]
     [InlineData(8, "ar", "بعد 8 دقائق")]

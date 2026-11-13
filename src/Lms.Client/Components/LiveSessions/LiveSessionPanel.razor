@@ -37,7 +37,7 @@ else if (_session is { } s)
                 <MudStack Spacing="0">
                     <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
                         <MudText Typo="Typo.subtitle1" data-testid="live-title">@Culture.Pick(s.Module.TitleAr, s.Module.TitleEn)</MudText>
-                        <MudChip T="string" Size="Size.Small" Color="@ChipColor(phase, s)" Variant="Variant.Text" data-testid="live-status">@L["Live_Status_" + StatusKey(phase, s)]</MudChip>
+                        <LiveSessionStatusChip Status="@StatusKey(phase, s)" ShowHint="true" />
                     </MudStack>
                     <MudText Typo="Typo.body2" Class="lms-muted" data-testid="live-meta">
                         <span dir="ltr">@Local(s.StartsAtUtc, "yyyy-MM-dd") · @Local(s.StartsAtUtc, "HH:mm")–@Local(s.EndsAtUtc, "HH:mm")</span> · @DurationText(s.DurationMinutes)
@@ -210,16 +210,7 @@ else if (_session is { } s)
         _ => phase switch { LivePhase.Live => LiveSessionStatuses.Live, LivePhase.Ended => LiveSessionStatuses.Ended, _ => LiveSessionStatuses.Scheduled },
     };
 
-    private static Color ChipColor(LivePhase phase, LiveSessionDto s) => StatusKey(phase, s) switch
-    {
-        LiveSessionStatuses.Live => Color.Success,
-        LiveSessionStatuses.Cancelled => Color.Error,
-        LiveSessionStatuses.SyncFailed => Color.Warning,
-        LiveSessionStatuses.Ended => Color.Default,
-        _ => Color.Info,
-    };
-
-    private string DurationText(int minutes) => string.Format(CultureInfo.InvariantCulture, L["Live_Unit_Minute_Many"].Value, minutes);
+    private string DurationText(int minutes) => L.Count("Live_Duration_Minute", minutes, Culture.IsRightToLeft);
 
     private static string Local(DateTime utc, string format) =>
         DateTime.SpecifyKind(utc, DateTimeKind.Utc).ToLocalTime().ToString(format, CultureInfo.InvariantCulture);

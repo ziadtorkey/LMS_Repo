@@ -25,7 +25,7 @@
             }
             else
             {
-                <MudSimpleTable Dense="true" Outlined="true" data-testid="participants-table">
+                <MudSimpleTable Dense="true" Outlined="true" Class="lms-stack-table" data-testid="participants-table">
                     <thead>
                         <tr>
                             <th>@L["Live_Participant"]</th>
@@ -39,11 +39,11 @@
                         @foreach (var p in _rows)
                         {
                             <tr data-testid="@($"participant-{p.Id}")">
-                                <td>@Name(p)</td>
-                                <td><span dir="ltr">@Time(p.JoinedAtUtc)</span></td>
-                                <td><span dir="ltr">@(p.LeftAtUtc is { } left ? Time(left) : "–")</span></td>
-                                <td>@string.Format(CultureInfo.InvariantCulture, L["Live_Unit_Minute_Many"].Value, p.DurationMinutes)</td>
-                                <td>
+                                <td data-label="@L["Live_Participant"]">@Name(p)</td>
+                                <td data-label="@L["Live_Joined"]"><span dir="ltr">@Time(p.JoinedAtUtc)</span></td>
+                                <td data-label="@L["Live_Left"]"><span dir="ltr">@(p.LeftAtUtc is { } left ? Time(left) : "–")</span></td>
+                                <td data-label="@L["Live_Duration"]">@L.Count("Live_Duration_Minute", p.DurationMinutes, Culture.IsRightToLeft)</td>
+                                <td data-label="@L["Live_MatchState"]">
                                     <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@(p.MatchState == ParticipantMatchStates.Matched ? Color.Success : Color.Default)"
                                              data-testid="@($"participant-match-{p.Id}")" data-match="@p.MatchState">@L["Live_Match_" + p.MatchState]</MudChip>
                                 </td>
