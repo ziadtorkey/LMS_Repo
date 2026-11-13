@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using Bunit;
 using Lms.Client.Layout;
 using Lms.Client.Tests.Support;
@@ -97,4 +98,30 @@ public sealed class NavMenuTests : ClientTestContext
 
     private static HashSet<string> RoundedIcons() =>
         typeof(MudBlazor.Icons.Material.Rounded).GetFields().Select(f => (string)f.GetValue(null)!).ToHashSet();
+
+    [Fact]
+    public async Task Active_item_carries_aria_current_page_and_follows_navigation()
+    {
+        var nav = Services.GetRequiredService<Microsoft.AspNetCore.Components.NavigationManager>();
+        nav.NavigateTo("roles/123");
+        var cut = await RenderNavAsync([Permissions.Roles.View, Permissions.Audit.View]);
+
+        Assert.Equal("page", cut.Find("[data-testid=nav-roles]").GetAttribute("aria-current"));
+        Assert.Null(cut.Find("[data-testid=nav-home]").GetAttribute("aria-current"));
+        Assert.Null(cut.Find("[data-testid=nav-audit]").GetAttribute("aria-current"));
+
+        nav.NavigateTo("");
+        cut.WaitForAssertion(() => Assert.Equal("page", cut.Find("[data-testid=nav-home]").GetAttribute("aria-current")));
+        Assert.Null(cut.Find("[data-testid=nav-roles]").GetAttribute("aria-current"));
+    }
+
+    [Fact]
+    public async Task Sidebar_navigation_has_an_accessible_name()
+    {
+        var cut = await RenderNavAsync([Permissions.Roles.View]);
+
+        var nav = cut.Find("[data-testid=nav-main]");
+        Assert.Equal("NAV", nav.TagName);
+        Assert.False(string.IsNullOrWhiteSpace(nav.GetAttribute("aria-label")));
+    }
 }

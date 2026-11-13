@@ -163,4 +163,11 @@ html[data-theme="dark"] .mud-button-outlined { border-color: #334155; }
 .lms-appbar .lms-context-label .mud-button-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
 .lms-appbar .lms-year-select .mud-input.mud-input-outlined { background: var(--lms-recessed); border-radius: 9999px; }
 .lms-appbar .lms-year-select .mud-input-outlined-border { border-radius: 9999px; border-color: transparent !important; }
-@media (max-width: 599.98px) { .lms-appbar .lms-context-label.mud-button-root { max-inline-size: 28vw; } }
+.lms-appbar-tools > .mud-tooltip-root:has(.lms-context-label) { min-inline-size: 0; flex: 0 1 auto; display: flex; }
+.lms-appbar .lms-context-label.mud-button-root { overflow: hidden; min-inline-size: 0; max-inline-size: 100%; }
+.lms-appbar .lms-year-selector, .lms-appbar-tools > :not(.mud-tooltip-root) { flex-shrink: 0; }
+@media (max-width: 599.98px) {
+    .lms-appbar .lms-appbar-tools { gap: 6px; }
+    .lms-appbar-tools > .mud-tooltip-root:has(.lms-context-label) { max-inline-size: 26vw; }
+    .lms-appbar .lms-context-label.mud-button-root { padding-inline: 8px; }
+}
