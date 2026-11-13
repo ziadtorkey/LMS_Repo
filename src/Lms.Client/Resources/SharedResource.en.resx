@@ -1094,6 +1094,30 @@
   <data name="Flag_Inherit" xml:space="preserve"><value>Inherit ({0})</value></data>
   <data name="Flag_On" xml:space="preserve"><value>On</value></data>
   <data name="Flag_Off" xml:space="preserve"><value>Off</value></data>
+  <data name="Nav_Exceptions" xml:space="preserve"><value>Enrollment exceptions</value></data>
+  <data name="Exception_Title" xml:space="preserve"><value>Enrollment exceptions</value></data>
+  <data name="Exception_Help" xml:space="preserve"><value>A student who does not meet a course's restrictions can be enrolled only if an exception is approved.</value></data>
+  <data name="Exception_Request" xml:space="preserve"><value>Request an exception</value></data>
+  <data name="Exception_Reason" xml:space="preserve"><value>Why should this student be enrolled?</value></data>
+  <data name="Exception_Sent" xml:space="preserve"><value>The exception request was sent for approval.</value></data>
+  <data name="Exception_Send" xml:space="preserve"><value>Send request</value></data>
+  <data name="Exception_ReasonRequired" xml:space="preserve"><value>Enter the reason for the exception.</value></data>
+  <data name="Exception_Student" xml:space="preserve"><value>Student</value></data>
+  <data name="Exception_Course" xml:space="preserve"><value>Course</value></data>
+  <data name="Exception_Failed" xml:space="preserve"><value>Restrictions not met</value></data>
+  <data name="Exception_RequestedBy" xml:space="preserve"><value>Requested by</value></data>
+  <data name="Exception_Review" xml:space="preserve"><value>Review</value></data>
+  <data name="Exception_Approve" xml:space="preserve"><value>Approve</value></data>
+  <data name="Exception_Reject" xml:space="preserve"><value>Reject</value></data>
+  <data name="Exception_Comment" xml:space="preserve"><value>Comment</value></data>
+  <data name="Exception_CommentRequired" xml:space="preserve"><value>Enter a reason for rejecting.</value></data>
+  <data name="Exception_Cancel" xml:space="preserve"><value>Cancel request</value></data>
+  <data name="Exception_Decision" xml:space="preserve"><value>Decision</value></data>
+  <data name="Exception_YourReason" xml:space="preserve"><value>Reason</value></data>
+  <data name="ExceptionStatus_Pending" xml:space="preserve"><value>Pending</value></data>
+  <data name="ExceptionStatus_Approved" xml:space="preserve"><value>Approved</value></data>
+  <data name="ExceptionStatus_Rejected" xml:space="preserve"><value>Rejected</value></data>
+  <data name="ExceptionStatus_Cancelled" xml:space="preserve"><value>Cancelled</value></data>
   <data name="TransferReject_not_placed" xml:space="preserve"><value>The student is not placed in a class, so there is nothing to transfer from.</value></data>
   <data name="TransferReject_different_year" xml:space="preserve"><value>The new class belongs to a different academic year.</value></data>
   <data name="TransferReject_same_class" xml:space="preserve"><value>The student is already in this class.</value></data>

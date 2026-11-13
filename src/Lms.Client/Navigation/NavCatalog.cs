@@ -11,6 +11,7 @@ public static class NavCatalog
         new("Nav_Home", "", Icons.Material.Filled.Home, null),
         new("Nav_OrgUnits", "org-units", Icons.Material.Filled.AccountTree, Permissions.OrgUnits.View),
         new("Nav_LevelTypes", "level-types", Icons.Material.Filled.Layers, Permissions.LevelTypes.View),
+        new("Nav_Exceptions", "enrollment-exceptions", Icons.Material.Filled.Gavel, Permissions.Enrollment.ApproveException),
         new("Nav_Guardians", "guardians", Icons.Material.Filled.FamilyRestroom, Permissions.Students.View),
         new("Nav_Eligibility", "teaching/eligibility", Icons.Material.Filled.HowToReg, Permissions.TeacherAssignments.View),
         new("Nav_Staff", "staff", Icons.Material.Filled.Badge, Permissions.Staff.View),
