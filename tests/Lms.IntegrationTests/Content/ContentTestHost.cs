@@ -32,6 +32,8 @@ internal sealed class ContentTestHost(LmsApiFactory factory) : IDisposable
 
     private readonly OrgUnitTestHost _host = new(factory);
 
+    public IServiceProvider Services => _host.Services;
+
     public void Dispose() => _host.Dispose();
 
     public Task<HttpResponseMessage> SendAsync(RoleAssignment caller, HttpMethod method, string url, object? body = null) =>
