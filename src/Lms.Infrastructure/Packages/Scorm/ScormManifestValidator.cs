@@ -79,7 +79,7 @@ public sealed class ScormManifestValidator : IPackageValidator
 
         var title = items[0].Elements().FirstOrDefault(e => e.Name.LocalName == "title")?.Value.Trim()
                     ?? organization?.Elements().FirstOrDefault(e => e.Name.LocalName == "title")?.Value.Trim();
-        return new PackageValidationResult(null, string.IsNullOrWhiteSpace(title) ? null : title, version, null, launch);
+        return new PackageValidationResult(null, PackageTitles.Clean(title), version, null, launch);
     }
 
     private static bool IsHtml(string path) => PackageContentTypes.For(path).Type.StartsWith("text/html", StringComparison.Ordinal);
