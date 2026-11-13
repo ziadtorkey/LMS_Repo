@@ -157,7 +157,7 @@ Mockup: `screen=live-join` (one board with every state). The panel is a `Section
 | **Waiting for Zoom** (SyncFailed) | "Starts in 2 h 10 min" | Join, disabled | "The meeting is still being set up. Check back shortly." |
 | **Feature off** (`feature_disabled` on join) | outlined Info alert: "Live sessions are turned off for this school." | — | — |
 
-- The countdown text uses the largest two units: "in 2 days 3 h", "in 2 h 10 min", "in 8 min", and "in less than a minute". ar: "بعد يومين و3 ساعات", "بعد ساعتين و10 دقائق", "بعد 8 دقائق" and "بعد أقل من دقيقة". **Arabic needs plural forms:** keep separate resx keys for 1, 2, 3–10 and 11+ per unit (`Live_Unit_Hour_One`, `_Two`, `_Few`, `_Many`), with a small helper in `Components/LiveSessions/CountdownText.cs`. Don't put "2 ساعة" on screen.
+- The countdown text uses the largest two units: "in 2 days 3 h", "in 2 h 10 min", "in 8 min", and "in less than a minute". ar: "بعد يومين و3 ساعات", "بعد ساعتين و10 دقائق", "بعد 8 دقائق" and "بعد أقل من دقيقة". **Arabic needs plural forms:** keep separate resx keys for 1, 2, 3–10 and 11+ per unit (`Live_Unit_Hour_One`, `_Two`, `_Few`, `_Many`), using the shared Arabic plural helper (§7, Q2). Don't put "2 ساعة" on screen.
 - When the window opens (or the session starts) while the page is open, the panel moves to the next state without a reload, and the polite status announces it ("You can join now").
 - `409 live_session_not_open` reloads the panel and shows the new state; no toast.
 - **Staff in the viewer** (`LiveSessions.Manage`): the action is **Start the meeting** (same pattern, start URL), shown from the window opening. A second outlined action, **Participants**, appears once the session is Live or Ended. Staff also see the recording link action, which opens §2.5.
@@ -199,7 +199,13 @@ Mockup: `screen=package-upload` (three dialogs: uploading/checking, rejected, re
 **Step 2, check.**
 - An indeterminate progress bar and the line "Checking the package. This usually takes under a minute." (`role="status"`).
 - After the polling cap: "Still checking. This can take a few minutes for large packages." plus a **Check again** outlined button.
-- Closing the dialog stops polling. See open question Q1.
+- **Keep the dialog open** (decided on Q1). A caption under the progress line says: "Keep this window open until the check finishes." / "أبقِ هذه النافذة مفتوحة حتى ينتهي الفحص." Closing the dialog stops polling.
+- **Pending row in the lesson.** A package still being checked shows in the lesson's module list as a placeholder row, so closing the tab isn't a dead end:
+  - The row has the package kind icon, the file name (LTR) and a **Checking…** chip (Info text, small spinner).
+  - Its single action, **Continue**, reopens this dialog at step 2, or at step 3 if the package is Ready by then.
+  - A Rejected package shows a **Can't be used** chip (Error text), with **See why** (reopens the dialog on the reason) and **Remove** (deletes the upload).
+  - The row is visible to staff only. Students never see it.
+  - **Data needed:** the row has to survive a reload, so the server must be able to list the pending uploads of a class course together with the lesson they were started from. See §7.
 
 **Rejected.**
 - Step 2 is shown as failed, with an outlined Error alert titled **This package can't be used** and the plain reason from §4.2 below it.
@@ -347,10 +353,11 @@ Focus: on Start, focus moves to the frame container (`tabindex="-1"`), so the ne
 
 The reference CSS for each is in the mockup (`docs/design/mockups/m4b.html`, the `/* lms-theme additions */` block). It's written with logical properties and palette variables only, so it can be copied into `lms-theme.css` as is.
 
-## 7. Open questions for the Team Lead
+## 7. Decisions on the open questions (Team Lead, 2026-11-13)
 
-- **Q1. Reopening a package after the dialog closes.** Task 16 has no list of a course's packages. If a teacher closes the dialog while the package is still being checked, there's no screen to come back to and attach it. Options:
-  - (a) Keep the dialog open until Ready or Rejected and say so: "Keep this window open until the check finishes."
-  - (b) Add a small "Packages" list (status chips from §4.3, Attach and Delete actions) to the lesson plan's add-module menu.
-  - I recommend (a) for M4b, with a caption, and (b) later.
-- **Q2. Arabic plurals in the countdown.** This needs four resx forms per unit (§3.1). It's a small helper; please confirm FE1 may add it in Task 15.
+- **Q1. Reopening a package (decided).**
+  - The upload dialog stays open until the check ends, with the caption in §4.1.
+  - A pending package shows as a "Checking…" row in the lesson's module list (§4.1).
+  - The full list of a course's packages is a follow-up issue.
+  - **Contract need for the pending row:** `POST /api/class-courses/{id}/packages` should accept an optional `LessonKey`, and a read such as `GET /api/class-courses/{id}/packages?status=pending` should return the uploads that aren't attached yet with that key. The Lead decides whether this joins the Task 2 contract.
+- **Q2. Arabic plurals (decided).** FE1 adds a small Arabic plural helper as a shared client utility (not only for live sessions), with unit tests for 0, 1, 2, 3–10 and 11+. Countdowns (§3.1) and any later counted text use it.
