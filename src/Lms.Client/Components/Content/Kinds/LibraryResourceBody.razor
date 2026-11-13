@@ -1,0 +1,102 @@
+@using Lms.Client.Components.Assets
+@using Lms.Client.Services.Api
+@using Lms.Shared.Library
+@inject ILibraryApi Library
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+@* A LibraryResource module in the student viewer: the resource it points to (the module only carries its id). The file opens in
+   the preview without its own download button; the download button follows the resource's own setting, and a link resource opens
+   in a new tab (http/https only). *@
+@if (_loading)
+{
+    <MudProgressCircular Indeterminate="true" Size="Size.Small" aria-label="@L["Loading"]" data-testid="library-body-loading" />
+}
+else if (_resource is null)
+{
+    @if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" role="alert" data-testid="library-body-error">@_error</MudAlert>
+    }
+    else
+    {
+        <MudText Typo="Typo.body2" data-testid="library-body-empty">@L["Module_NoContent"]</MudText>
+    }
+}
+else
+{
+    <MudStack Spacing="2" data-testid="library-body">
+        <MudText Typo="Typo.subtitle1">@Culture.Pick(_resource.TitleAr, _resource.TitleEn)</MudText>
+        @if (Culture.Pick(_resource.DescriptionAr ?? "", _resource.DescriptionEn ?? "") is { Length: > 0 } description)
+        {
+            <MudText Typo="Typo.body2">@description</MudText>
+        }
+        @if (_resource.Type == LibraryResourceTypes.Link)
+        {
+            @if (ModuleLinks.IsAllowed(_resource.Url))
+            {
+                <MudLink Href="@_resource.Url" Target="_blank" rel="noopener noreferrer" data-testid="library-link">
+                    <span dir="ltr">@_resource.Url</span>
+                </MudLink>
+            }
+            else
+            {
+                <MudText Color="Color.Error" Typo="Typo.body2" data-testid="library-link-blocked">@L["Module_UrlInvalid"]</MudText>
+            }
+        }
+        else if (_resource.File is { } file)
+        {
+            <AssetPreview Asset="file" AllowDownload="false" />
+        }
+        else
+        {
+            <MudText Typo="Typo.body2" data-testid="library-body-empty">@L["Module_NoContent"]</MudText>
+        }
+        @if (_error is not null)
+        {
+            <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" role="alert" data-testid="library-body-error">@_error</MudAlert>
+        }
+        @if (_resource.DownloadAllowed && _resource.Type != LibraryResourceTypes.Link && _resource.File is not null)
+        {
+            <div>
+                <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Download" OnClick="DownloadAsync"
+                           data-testid="library-download">@L["Asset_Download"]</MudButton>
+            </div>
+        }
+    </MudStack>
+}
+
+@code {
+    private LibraryResourceDto? _resource;
+    private string? _error;
+    private bool _loading = true;
+    private Guid? _loadedFor;
+
+    /// <summary>The library resource the module points to (<c>Content.RefId</c>); null when the module has none.</summary>
+    [Parameter] public Guid? ResourceId { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (ResourceId == _loadedFor && !_loading) return;
+        _loadedFor = ResourceId;
+        _resource = null;
+        _error = null;
+        if (ResourceId is not { } id)
+        {
+            _loading = false;
+            return;
+        }
+        _loading = true;
+        await ApiCalls.RunAsync(async () => _resource = await Library.GetAsync(id), Navigation, L, message => _error = message);
+        _loading = false;
+    }
+
+    private async Task DownloadAsync()
+    {
+        if (_resource is null) return;
+        _error = null;
+        string? url = null;
+        var ok = await ApiCalls.RunAsync(async () => url = (await Library.DownloadAsync(_resource.Id)).Url, Navigation, L, message => _error = message);
+        if (ok && url is not null) Navigation.NavigateTo(url, forceLoad: true);
+    }
+}
