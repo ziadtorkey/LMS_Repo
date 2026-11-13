@@ -1418,4 +1418,26 @@
   <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>لم يقبل الفحص الأمني هذه الحزمة.</value></data>
   <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>الملف ليس أرشيف zip صالحًا.</value></data>
   <data name="Error_package_reason_bad_name" xml:space="preserve"><value>اسم ملف في الحزمة غير صالح (طويل جدًا أو عميق جدًا أو محجوز).</value></data>
+  <data name="MyCourses_StatSupervised" xml:space="preserve"><value>مقررات تشرف عليها</value></data>
+  <data name="MyCourses_StatAllocations" xml:space="preserve"><value>تخصيصات الفصول</value></data>
+  <data name="MyCourses_StatPublished" xml:space="preserve"><value>مخططات منشورة</value></data>
+  <data name="MyCourses_StatPending" xml:space="preserve"><value>بدون مخطط منشور</value></data>
+  <data name="MyCourses_Filter" xml:space="preserve"><value>تصفية بالاسم أو الرمز</value></data>
+  <data name="MyCourses_FilterUnit" xml:space="preserve"><value>الوحدة</value></data>
+  <data name="MyCourses_AllUnits" xml:space="preserve"><value>كل الوحدات</value></data>
+  <data name="MyCourses_FilterBlueprint" xml:space="preserve"><value>المخطط</value></data>
+  <data name="MyCourses_AllBlueprints" xml:space="preserve"><value>كل المخططات</value></data>
+  <data name="MyCourses_View" xml:space="preserve"><value>طريقة العرض</value></data>
+  <data name="MyCourses_ViewGrid" xml:space="preserve"><value>عرض شبكي</value></data>
+  <data name="MyCourses_ViewList" xml:space="preserve"><value>عرض قائمة</value></data>
+  <data name="MyCourses_NoMatch" xml:space="preserve"><value>لا يوجد مقرر مطابق</value></data>
+  <data name="MyCourses_NoMatchText" xml:space="preserve"><value>غيّر عوامل التصفية أو امسحها.</value></data>
+  <data name="MyCourses_Periods" xml:space="preserve"><value>الحصص أسبوعيًا: {0}</value></data>
+  <data name="MyCourses_AssignTitle" xml:space="preserve"><value>إسناد مقرر أو ربطه</value></data>
+  <data name="MyCourses_AssignText" xml:space="preserve"><value>اطلب من المسؤول تعيينك مشرفًا على مقرر، أو ابدأ من قالب.</value></data>
+  <data name="MyCourses_ExploreTemplates" xml:space="preserve"><value>استعرض القوالب</value></data>
+  <data name="MyCourses_ColCourse" xml:space="preserve"><value>المقرر</value></data>
+  <data name="MyCourses_ColUnit" xml:space="preserve"><value>الوحدة</value></data>
+  <data name="MyCourses_ColBlueprint" xml:space="preserve"><value>المخطط</value></data>
+  <data name="MyCourses_ColPeriods" xml:space="preserve"><value>الحصص أسبوعيًا</value></data>
 </root>
