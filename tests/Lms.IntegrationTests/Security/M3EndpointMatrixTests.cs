@@ -30,8 +30,7 @@ public sealed class M3EndpointMatrixTests(LmsApiFactory factory, ITestOutputHelp
     private static readonly HashSet<string> StudentReadable =
     [
         Routes.ClassCourseLessonPlanPattern, Routes.ClassCourseLessonModulesPattern, Routes.ClassCourseProgressPattern, Routes.ClassCourseLiveSessionsPattern,
-        Routes.LiveSessionPattern,
-        Routes.ClassCourseAssignmentsPattern,
+        Routes.LiveSessionPattern, Routes.ClassCourseAssignmentsPattern,
         Routes.ClassCourseQuizzesPattern,
     ];
 

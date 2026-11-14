@@ -1494,6 +1494,65 @@
   <data name="Error_package_reason_compression_ratio" xml:space="preserve"><value>The package is compressed in an unsafe way. Export it again.</value></data>
   <data name="Error_package_reason_symlink" xml:space="preserve"><value>The package contains links to other files, which aren't allowed.</value></data>
   <data name="Error_package_reason_duplicate_name" xml:space="preserve"><value>Two files in the package have the same name.</value></data>
+  <data name="Assignment_AllowFiles" xml:space="preserve"><value>Allow file uploads</value></data>
+  <data name="Assignment_AllowText" xml:space="preserve"><value>Allow written text</value></data>
+  <data name="Assignment_Attachments" xml:space="preserve"><value>Attachments</value></data>
+  <data name="Assignment_BlockNeedsDue" xml:space="preserve"><value>Set a due date when late hand-ins are not accepted.</value></data>
+  <data name="Assignment_Due" xml:space="preserve"><value>Due</value></data>
+  <data name="Assignment_Edit" xml:space="preserve"><value>Edit assignment</value></data>
+  <data name="Assignment_InstructionsAr" xml:space="preserve"><value>Instructions (Arabic)</value></data>
+  <data name="Assignment_InstructionsEn" xml:space="preserve"><value>Instructions (English)</value></data>
+  <data name="Assignment_LatePolicy" xml:space="preserve"><value>Late hand-ins</value></data>
+  <data name="Assignment_Lesson" xml:space="preserve"><value>Lesson</value></data>
+  <data name="Assignment_MaxGrade" xml:space="preserve"><value>Maximum grade</value></data>
+  <data name="Assignment_MaxGradeInvalid" xml:space="preserve"><value>The maximum grade must be between 0.01 and 1000.</value></data>
+  <data name="Assignment_MinScore" xml:space="preserve"><value>Minimum score (%)</value></data>
+  <data name="Assignment_NeedSubmitType" xml:space="preserve"><value>Allow text, files or both.</value></data>
+  <data name="Assignment_PenaltyPercent" xml:space="preserve"><value>Penalty (%)</value></data>
+  <data name="Assignment_PenaltyRequired" xml:space="preserve"><value>Enter a penalty from 1 to 100.</value></data>
+  <data name="Assignment_RemoveAttachment" xml:space="preserve"><value>Remove attachment</value></data>
+  <data name="Assignment_Resubmission" xml:space="preserve"><value>Resubmission</value></data>
+  <data name="Assignments_Counts" xml:space="preserve"><value>{0} submitted · {1} graded</value></data>
+  <data name="Assignments_Handed" xml:space="preserve"><value>Hand-ins</value></data>
+  <data name="Assignments_Name" xml:space="preserve"><value>Assignment</value></data>
+  <data name="Assignments_New" xml:space="preserve"><value>New assignment</value></data>
+  <data name="Assignments_Submissions" xml:space="preserve"><value>Submissions</value></data>
+  <data name="CompletionRule_Score" xml:space="preserve"><value>When a minimum score is reached</value></data>
+  <data name="CompletionRule_Submit" xml:space="preserve"><value>When submitted</value></data>
+  <data name="Grade_AboveMax" xml:space="preserve"><value>The grade cannot be above {0}.</value></data>
+  <data name="Grade_Annotated" xml:space="preserve"><value>Annotated file</value></data>
+  <data name="Grade_Feedback" xml:space="preserve"><value>Feedback</value></data>
+  <data name="Grade_NoWork" xml:space="preserve"><value>No text or files.</value></data>
+  <data name="Grade_Out" xml:space="preserve"><value>Grade (out of {0})</value></data>
+  <data name="Grade_Penalty" xml:space="preserve"><value>Late penalty {0}%: final grade {1}</value></data>
+  <data name="Grade_RemoveAnnotated" xml:space="preserve"><value>Remove annotated file</value></data>
+  <data name="Grade_Returned" xml:space="preserve"><value>Grade saved and returned to the student.</value></data>
+  <data name="Grade_Save" xml:space="preserve"><value>Save grade</value></data>
+  <data name="Grade_SaveReturn" xml:space="preserve"><value>Save and return to student</value></data>
+  <data name="Grade_Saved" xml:space="preserve"><value>Grade saved.</value></data>
+  <data name="Grade_Title" xml:space="preserve"><value>Grade submission</value></data>
+  <data name="Grade_Work" xml:space="preserve"><value>Student's work</value></data>
+  <data name="LatePolicy_Allow" xml:space="preserve"><value>Accepted, marked late</value></data>
+  <data name="LatePolicy_Block" xml:space="preserve"><value>Not accepted</value></data>
+  <data name="LatePolicy_Penalty" xml:space="preserve"><value>Accepted with a penalty</value></data>
+  <data name="ResubmissionRule_None" xml:space="preserve"><value>Not allowed</value></data>
+  <data name="ResubmissionRule_UntilDue" xml:space="preserve"><value>Until the due date</value></data>
+  <data name="ResubmissionRule_UntilGraded" xml:space="preserve"><value>Until graded</value></data>
+  <data name="SubmissionStatus_Draft" xml:space="preserve"><value>Draft</value></data>
+  <data name="SubmissionStatus_Graded" xml:space="preserve"><value>Graded</value></data>
+  <data name="SubmissionStatus_Late" xml:space="preserve"><value>Late</value></data>
+  <data name="SubmissionStatus_None" xml:space="preserve"><value>Not handed in</value></data>
+  <data name="SubmissionStatus_Returned" xml:space="preserve"><value>Returned</value></data>
+  <data name="SubmissionStatus_Submitted" xml:space="preserve"><value>Submitted</value></data>
+  <data name="Submissions_At" xml:space="preserve"><value>Handed in</value></data>
+  <data name="Submissions_Grade" xml:space="preserve"><value>Grade</value></data>
+  <data name="Submissions_GradeAction" xml:space="preserve"><value>Grade</value></data>
+  <data name="Submissions_Late" xml:space="preserve"><value>Late</value></data>
+  <data name="Submissions_OnlyLate" xml:space="preserve"><value>Late only</value></data>
+  <data name="Submissions_Status" xml:space="preserve"><value>Status</value></data>
+  <data name="Submissions_Student" xml:space="preserve"><value>Student</value></data>
+  <data name="Submissions_Title" xml:space="preserve"><value>Assignment submissions</value></data>
+  <data name="Assignment_MinScoreUnknown" xml:space="preserve"><value>The minimum score could not be read. Close the dialog and try again.</value></data>
   <data name="Nav_Eligibility" xml:space="preserve"><value>Teacher eligibility</value></data>
   <data name="Eligibility_Title" xml:space="preserve"><value>Teacher eligibility</value></data>
   <data name="Eligibility_Help" xml:space="preserve"><value>Say which teachers may teach which courses at a unit. Only eligible teachers can be assigned to a class course.</value></data>
@@ -1568,4 +1627,58 @@
   <data name="StudentImport_Subtitle" xml:space="preserve"><value>Add many students at once from an Excel file.</value></data>
   <data name="ClassImport_Subtitle" xml:space="preserve"><value>Place students in classes from an Excel file.</value></data>
   <data name="Group_Subtitle" xml:space="preserve"><value>Split the students of this class course into groups.</value></data>
+  <data name="Error_gradebook_locked" xml:space="preserve"><value>This gradebook is locked: grades can no longer be changed.</value></data>
+  <data name="Error_scale_provisional" xml:space="preserve"><value>This grading scale has not been confirmed yet. Confirm it, or acknowledge that you publish under an unconfirmed scale.</value></data>
+  <data name="Error_scale_bands_invalid" xml:space="preserve"><value>The bands must cover 0 to 100 without gaps or overlaps.</value></data>
+  <data name="Error_scale_in_use" xml:space="preserve"><value>A gradebook uses this scale, so it cannot be deleted.</value></data>
+  <data name="Error_weights_invalid" xml:space="preserve"><value>A weight must be between 0 and 100.</value></data>
+  <data name="Error_grade_out_of_range" xml:space="preserve"><value>The score must be between 0 and the maximum points of the item.</value></data>
+  <data name="Error_grade_override_reason_required" xml:space="preserve"><value>Give a reason (up to 500 characters) to replace a score.</value></data>
+  <data name="Error_grade_import_invalid" xml:space="preserve"><value>The file is not a valid Excel file (.xlsx) or it is too large.</value></data>
+  <data name="Error_grade_import_expired" xml:space="preserve"><value>The import preview expired. Upload the file again.</value></data>
+  <data name="Error_terms_have_dependants" xml:space="preserve"><value>A term already has a gradebook, timetable or attendance, so the terms of this year cannot be changed.</value></data>
+  <data name="Error_concurrency_conflict" xml:space="preserve"><value>Someone else changed this row. It was reloaded with the current values.</value></data>
+  <data name="Setting_Org_TimeZone" xml:space="preserve"><value>Time zone of the school group</value></data>
+  <data name="Setting_Grades_MissingPolicy" xml:space="preserve"><value>When a score is missing</value></data>
+  <data name="SettingValue_Grades_MissingPolicy_Normalise" xml:space="preserve"><value>Calculate from the graded categories</value></data>
+  <data name="SettingValue_Grades_MissingPolicy_Zero" xml:space="preserve"><value>Count as zero</value></data>
+  <data name="SettingValue_Grades_MissingPolicy_HideUntilComplete" xml:space="preserve"><value>Hide the total until everything is graded</value></data>
+  <data name="Setting_Grades_CategoryMethod" xml:space="preserve"><value>How a category is calculated</value></data>
+  <data name="SettingValue_Grades_CategoryMethod_PointsWeighted" xml:space="preserve"><value>Total points over total maximum points</value></data>
+  <data name="SettingValue_Grades_CategoryMethod_PercentAverage" xml:space="preserve"><value>Average of the item percentages</value></data>
+  <data name="Setting_Grades_DecimalPlaces" xml:space="preserve"><value>Decimal places of grades</value></data>
+  <data name="Setting_AcademicYears_TermsPerYear" xml:space="preserve"><value>Terms per academic year</value></data>
+  <data name="NotifEvent_Grades_Published" xml:space="preserve"><value>Grades published</value></data>
+  <data name="Notif_Grades_Published" xml:space="preserve"><value>New grades are available in {CourseName}.</value></data>
+  <data name="Grd_ScaleKind_Percentage" xml:space="preserve"><value>Percentage</value></data>
+  <data name="Grd_ScaleKind_Letter" xml:space="preserve"><value>Letters</value></data>
+  <data name="Grd_ScaleKind_Gpa" xml:space="preserve"><value>GPA</value></data>
+  <data name="Grd_PublishState_Hidden" xml:space="preserve"><value>Hidden</value></data>
+  <data name="Grd_PublishState_Published" xml:space="preserve"><value>Published</value></data>
+  <data name="Grd_PublishState_Scheduled" xml:space="preserve"><value>Scheduled</value></data>
+  <data name="Grd_CellState_Event" xml:space="preserve"><value>From an activity</value></data>
+  <data name="Grd_CellState_Manual" xml:space="preserve"><value>Entered by hand</value></data>
+  <data name="Grd_CellState_Override" xml:space="preserve"><value>Replaced</value></data>
+  <data name="Grd_CellState_NewerScoreExists" xml:space="preserve"><value>Newer score available</value></data>
+  <data name="Grd_CellState_Excused" xml:space="preserve"><value>Excused</value></data>
+  <data name="Grd_CellState_Empty" xml:space="preserve"><value>Not graded</value></data>
+  <data name="Grd_GradebookState_Open" xml:space="preserve"><value>Open</value></data>
+  <data name="Grd_GradebookState_Locked" xml:space="preserve"><value>Locked</value></data>
+  <data name="Grd_PublishMode_Now" xml:space="preserve"><value>Publish now</value></data>
+  <data name="Grd_PublishMode_Schedule" xml:space="preserve"><value>Schedule</value></data>
+  <data name="Grd_PublishMode_Hide" xml:space="preserve"><value>Hide</value></data>
+  <data name="Perm_Grades_View" xml:space="preserve"><value>View grading scales and gradebooks</value></data>
+  <data name="Perm_Grades_Manage" xml:space="preserve"><value>Manage gradebooks and enter grades</value></data>
+  <data name="Perm_Grades_Publish" xml:space="preserve"><value>Publish grades to students and guardians</value></data>
+  <data name="Perm_Grades_ConfigureScales" xml:space="preserve"><value>Configure grading scales and weight templates</value></data>
+  <data name="Perm_Grades_ViewReports" xml:space="preserve"><value>View grade reports</value></data>
+  <data name="Perm_Grades_ViewOwn" xml:space="preserve"><value>View own published grades</value></data>
+  <data name="AuditEntity_GradingScale" xml:space="preserve"><value>Grading scale</value></data>
+  <data name="AuditEntity_WeightTemplate" xml:space="preserve"><value>Weight template</value></data>
+  <data name="AuditEntity_Gradebook" xml:space="preserve"><value>Gradebook</value></data>
+  <data name="AuditEntity_GradeCategory" xml:space="preserve"><value>Grade category</value></data>
+  <data name="AuditEntity_GradeItem" xml:space="preserve"><value>Grade item</value></data>
+  <data name="AuditEntity_GradeEntry" xml:space="preserve"><value>Grade entry</value></data>
+  <data name="AuditEntity_GradeSnapshot" xml:space="preserve"><value>Grade snapshot</value></data>
+  <data name="PermModule_Grades" xml:space="preserve"><value>Grades</value></data>
 </root>
