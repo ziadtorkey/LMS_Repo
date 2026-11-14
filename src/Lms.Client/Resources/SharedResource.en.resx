@@ -1494,6 +1494,13 @@
   <data name="Error_package_reason_compression_ratio" xml:space="preserve"><value>The package is compressed in an unsafe way. Export it again.</value></data>
   <data name="Error_package_reason_symlink" xml:space="preserve"><value>The package contains links to other files, which aren't allowed.</value></data>
   <data name="Error_package_reason_duplicate_name" xml:space="preserve"><value>Two files in the package have the same name.</value></data>
+  <data name="Blueprint_VersionsSubtitle" xml:space="preserve"><value>Complete audit trail of revisions and published versions.</value></data>
+  <data name="Blueprint_Overview" xml:space="preserve"><value>Blueprint overview</value></data>
+  <data name="Blueprint_StatSections" xml:space="preserve"><value>Sections</value></data>
+  <data name="Blueprint_StatLessons" xml:space="preserve"><value>Lessons</value></data>
+  <data name="Blueprint_StatPeriods" xml:space="preserve"><value>Periods per week</value></data>
+  <data name="Blueprint_StatVersion" xml:space="preserve"><value>Version</value></data>
+  <data name="Blueprint_LessonsCount" xml:space="preserve"><value>Lessons: {0}</value></data>
   <data name="MyCourses_StatSupervised" xml:space="preserve"><value>Supervised courses</value></data>
   <data name="MyCourses_StatAllocations" xml:space="preserve"><value>Class allocations</value></data>
   <data name="MyCourses_StatPublished" xml:space="preserve"><value>Published blueprints</value></data>
@@ -1815,6 +1822,10 @@
   <data name="AuditEntity_GradeEntry" xml:space="preserve"><value>Grade entry</value></data>
   <data name="AuditEntity_GradeSnapshot" xml:space="preserve"><value>Grade snapshot</value></data>
   <data name="PermModule_Grades" xml:space="preserve"><value>Grades</value></data>
+  <data name="ClassCourse_TabGradebook" xml:space="preserve"><value>Gradebook</value></data>
+  <data name="Grd_Title" xml:space="preserve"><value>Gradebook</value></data>
+  <data name="Grd_GridSoonTitle" xml:space="preserve"><value>The gradebook grid is on its way</value></data>
+  <data name="Grd_GridSoonText" xml:space="preserve"><value>Categories, items and scores for this class course will appear here.</value></data>
   <data name="NavSection_Structure" xml:space="preserve"><value>Structure</value></data>
   <data name="NavSection_People" xml:space="preserve"><value>People</value></data>
   <data name="NavSection_Academic" xml:space="preserve"><value>Academic</value></data>

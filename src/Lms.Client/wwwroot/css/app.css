@@ -83,6 +83,19 @@ html:lang(ar), html:lang(ar) body { font-family: Cairo, "Segoe UI", Tahoma, Aria
 .lms-setting-name { flex: 1 1 14rem; min-width: 0; overflow-wrap: anywhere; }
 .lms-setting-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; margin-block-start: 4px; min-width: 0; }
 
+/* ---------- Course blueprint (Stitch course_blueprint_*): main column, overview column, numbered lessons ---------- */
+.lms-blueprint-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; align-items: start; }
+@media (min-width: 1100px) { .lms-blueprint-layout { grid-template-columns: minmax(0, 1fr) 320px; } .lms-blueprint-side { position: sticky; inset-block-start: 16px; } }
+.lms-blueprint-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.lms-blueprint-stat { padding: 12px 14px; border-radius: var(--lms-radius-control); background: var(--mud-palette-background-gray); min-inline-size: 0; }
+.lms-section-head-text { min-inline-size: 0; flex: 1 1 auto; }
+.lms-section-head:has(.lms-section-icon) { justify-content: flex-start; gap: 12px; }
+.lms-section-head:has(.lms-section-icon) .lms-section-actions { margin-inline-start: auto; }
+.lms-section-subtitle, .lms-section-count { display: block; }
+.lms-lesson-number {
+    flex: none; display: inline-grid; place-items: center; min-inline-size: 36px; block-size: 24px; padding-inline: 6px; margin-inline-end: 8px; border-radius: 6px;
+    background: var(--mud-palette-surface); border: 1px solid var(--mud-palette-lines-default); font-size: .75rem; font-weight: 600; font-variant-numeric: tabular-nums;
+}
 /* ---------- My courses (Stitch my_courses): course cards and the assign card ---------- */
 .lms-course-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; align-items: stretch; }
 .lms-course-head { display: flex; align-items: center; gap: 12px; min-inline-size: 0; }
@@ -97,3 +110,6 @@ html:lang(ar), html:lang(ar) body { font-family: Cairo, "Segoe UI", Tahoma, Aria
 /* Lesson plan: a module with its authoring buttons, and the add-module menu under a lesson. */
 .lms-module-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px 8px; min-width: 0; }
 .lms-plan-add { margin-block-start: 4px; }
+
+/* Class course tabs: wrap instead of overflowing at 360 px when more tabs join (M5 Task 22). */
+.lms-course-tabs { flex-wrap: wrap; }
