@@ -1,0 +1,27 @@
+@using Lms.Client.Services.Sso
+
+@* The signing certificate of a SAML provider: the fingerprint (left to right) and the expiry date, with a warning chip, in words and an icon, from 30 days before it expires. *@
+@if (!string.IsNullOrEmpty(Fingerprint))
+{
+    <div class="lms-cert" data-testid="sso-cert">
+        <span class="lms-cert-fp" dir="ltr" data-testid="sso-cert-fingerprint">@Fingerprint</span>
+        @if (Expires is { } e)
+        {
+            <span class="lms-muted" data-testid="sso-cert-expiry">@string.Format(L["Sso_CertExpires"].Value, "\u2066" + e.ToString("yyyy-MM-dd") + "\u2069")</span>
+            @if (DaysLeft is { } days && days <= SsoLimits.CertWarnDays)
+            {
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Warning" Icon="@Icons.Material.Rounded.WarningAmber" Class="lms-status-chip" data-testid="sso-cert-warning">
+                    @(days < 0 ? L["Sso_CertExpired"].Value : string.Format(L["Sso_CertDays"].Value, days))
+                </MudChip>
+            }
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public string? Fingerprint { get; set; }
+    [Parameter] public DateOnly? Expires { get; set; }
+    [Inject] private TimeProvider Clock { get; set; } = default!;
+
+    private int? DaysLeft => Expires is { } e ? e.DayNumber - DateOnly.FromDateTime(Clock.GetLocalNow().DateTime).DayNumber : null;
+}

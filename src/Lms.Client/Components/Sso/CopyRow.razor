@@ -1,0 +1,21 @@
+@inject IJSRuntime Js
+
+@* A value the school gives the identity team, with a Copy button (spec m7-year-end section 10.1): left to right, monospace, wraps anywhere. *@
+<div class="lms-copy-row" data-testid="@TestId">
+    <span class="lms-field-label">@Label</span>
+    <code class="lms-copy-value" dir="ltr" data-testid="@($"{TestId}-value")">@Value</code>
+    <MudButton Variant="Variant.Text" Size="Size.Small" StartIcon="@Icons.Material.Rounded.ContentCopy" OnClick="CopyAsync" data-testid="@($"{TestId}-copy")"
+               aria-label="@($"{L["Idp_Copy"]}: {Label}")">@L["Idp_Copy"]</MudButton>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Label { get; set; } = "";
+    [Parameter, EditorRequired] public string Value { get; set; } = "";
+    [Parameter] public string? TestId { get; set; }
+
+    private async Task CopyAsync()
+    {
+        try { await Js.InvokeVoidAsync("navigator.clipboard.writeText", Value); }
+        catch (JSException) { /* clipboard blocked: the value stays selectable */ }
+    }
+}

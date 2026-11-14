@@ -1891,4 +1891,53 @@
   <data name="Job_Failed" xml:space="preserve"><value>The job did not finish. Check the result below.</value></data>
   <data name="Job_PollFailed" xml:space="preserve"><value>Could not read the progress just now. Trying again.</value></data>
   <data name="Confirm_TypeToConfirm" xml:space="preserve"><value>Type {0} to confirm</value></data>
+  <data name="SsoKind_Saml" xml:space="preserve"><value>SAML 2.0</value></data>
+  <data name="SsoKind_Ldap" xml:space="preserve"><value>LDAP / Active Directory</value></data>
+  <data name="Sso_MetadataSource" xml:space="preserve"><value>Identity provider metadata</value></data>
+  <data name="Sso_MetadataUrl" xml:space="preserve"><value>Metadata URL</value></data>
+  <data name="Sso_MetadataUpload" xml:space="preserve"><value>Upload XML</value></data>
+  <data name="Sso_ChooseXml" xml:space="preserve"><value>Choose an XML file</value></data>
+  <data name="Sso_XmlHelp" xml:space="preserve"><value>XML files only, up to {0} KB.</value></data>
+  <data name="Sso_Err_XmlOnly" xml:space="preserve"><value>Only XML files are accepted.</value></data>
+  <data name="Sso_Err_TooBig" xml:space="preserve"><value>The file is larger than {0} KB.</value></data>
+  <data name="Sso_IdpEntityId" xml:space="preserve"><value>Identity provider entity ID</value></data>
+  <data name="Sso_SsoUrl" xml:space="preserve"><value>Sign-on URL</value></data>
+  <data name="Sso_CertExpires" xml:space="preserve"><value>Expires {0}</value></data>
+  <data name="Sso_CertDays" xml:space="preserve"><value>{0} days left</value></data>
+  <data name="Sso_CertExpired" xml:space="preserve"><value>Expired</value></data>
+  <data name="Sso_EmailAttribute" xml:space="preserve"><value>Email attribute</value></data>
+  <data name="Sso_NationalIdAttribute" xml:space="preserve"><value>National ID attribute</value></data>
+  <data name="Sso_SpInitiated" xml:space="preserve"><value>Sign-in starts from the LMS (SP-initiated). Starting from the identity provider's portal is not supported in v1.</value></data>
+  <data name="Sso_SpTitle" xml:space="preserve"><value>Give these to your identity team</value></data>
+  <data name="Sso_AcsUrl" xml:space="preserve"><value>Reply (ACS) URL</value></data>
+  <data name="Sso_SpEntityId" xml:space="preserve"><value>Entity ID</value></data>
+  <data name="Sso_SpMetadataUrl" xml:space="preserve"><value>Our metadata URL</value></data>
+  <data name="Sso_Host" xml:space="preserve"><value>Server</value></data>
+  <data name="Sso_Port" xml:space="preserve"><value>Port</value></data>
+  <data name="Sso_Transport" xml:space="preserve"><value>Secure connection</value></data>
+  <data name="Sso_Transport_Ldaps" xml:space="preserve"><value>LDAPS</value></data>
+  <data name="Sso_Transport_StartTls" xml:space="preserve"><value>StartTLS</value></data>
+  <data name="Sso_NoPlainLdap" xml:space="preserve"><value>Unencrypted LDAP is not offered.</value></data>
+  <data name="Sso_BindDn" xml:space="preserve"><value>Service account (bind DN)</value></data>
+  <data name="Sso_BindPassword" xml:space="preserve"><value>Service account password</value></data>
+  <data name="Sso_PasswordStored" xml:space="preserve"><value>Stored. Leave empty to keep it.</value></data>
+  <data name="Sso_SearchBase" xml:space="preserve"><value>Search base</value></data>
+  <data name="Sso_UserFilter" xml:space="preserve"><value>User filter</value></data>
+  <data name="Sso_NoGroupMapping" xml:space="preserve"><value>Roles are assigned in the LMS. Directory groups are not mapped to roles in v1.</value></data>
+  <data name="Sso_TestResult" xml:space="preserve"><value>Connection test result</value></data>
+  <data name="SsoCheck_Reachable_Ok" xml:space="preserve"><value>The server answered.</value></data>
+  <data name="SsoCheck_Reachable_Fail" xml:space="preserve"><value>The server did not answer. Check the host and port.</value></data>
+  <data name="SsoCheck_Encrypted_Ok" xml:space="preserve"><value>The connection is encrypted.</value></data>
+  <data name="SsoCheck_Encrypted_Fail" xml:space="preserve"><value>The secure connection could not be set up.</value></data>
+  <data name="SsoCheck_Bind_Ok" xml:space="preserve"><value>The service account signed in.</value></data>
+  <data name="SsoCheck_Bind_Fail" xml:space="preserve"><value>The service account could not sign in. Check the bind DN and password.</value></data>
+  <data name="SsoCheck_Search_Ok" xml:space="preserve"><value>The search found users.</value></data>
+  <data name="SsoCheck_Search_Fail" xml:space="preserve"><value>The search found no user. Check the search base.</value></data>
+  <data name="SsoCheck_Metadata_Ok" xml:space="preserve"><value>The metadata was read.</value></data>
+  <data name="SsoCheck_Metadata_Fail" xml:space="preserve"><value>The metadata could not be read. Check the URL or the file.</value></data>
+  <data name="SsoCheck_Certificate_Ok" xml:space="preserve"><value>The signing certificate is valid.</value></data>
+  <data name="SsoCheck_Certificate_Fail" xml:space="preserve"><value>The signing certificate is missing or expired.</value></data>
+  <data name="SsoCheck_SignedAssertions_Ok" xml:space="preserve"><value>Signed assertions are required.</value></data>
+  <data name="SsoCheck_SignedAssertions_Fail" xml:space="preserve"><value>Signed assertions are not required.</value></data>
+  <data name="Sso_New" xml:space="preserve"><value>Add SAML or LDAP</value></data>
 </root>

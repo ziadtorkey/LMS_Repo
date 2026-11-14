@@ -1,0 +1,33 @@
+@using Lms.Client.Services.Sso
+
+@* LDAP / Active Directory (D85, spec section 10.2): search-bind over LDAPS or StartTLS only (an unencrypted option is not offered), a service account whose password is
+   write-only (the stored one is never read back: the field starts empty and says it is stored), and the search that finds the user. Roles stay in the LMS. *@
+<div data-testid="sso-ldap-fields">
+    <div class="lms-form-grid">
+        <MudTextField T="string" @bind-Value="Model.Host" Label="@L["Sso_Host"]" dir="ltr" Variant="Variant.Outlined" Margin="Margin.Dense" data-testid="sso-ldap-host" />
+        <MudNumericField T="int" @bind-Value="Model.Port" Label="@L["Sso_Port"]" Min="1" Max="65535" HideSpinButtons="true" dir="ltr" Variant="Variant.Outlined" Margin="Margin.Dense" data-testid="sso-ldap-port" />
+    </div>
+    <div class="lms-seg-group mt-2" role="group" aria-label="@L["Sso_Transport"]" data-testid="sso-ldap-transport">
+        @foreach (var t in LdapTransports.All)
+        {
+            var transport = t;
+            <button type="button" class="@($"lms-seg{(Model.Transport == transport ? " on" : "")}")" aria-pressed="@(Model.Transport == transport ? "true" : "false")"
+                    @onclick="() => Model.Transport = transport" data-testid="@($"sso-ldap-transport-{transport}")">@L[$"Sso_Transport_{transport}"]</button>
+        }
+    </div>
+    <p class="lms-muted" data-testid="sso-ldap-no-plain">@L["Sso_NoPlainLdap"]</p>
+    <MudTextField T="string" @bind-Value="Model.BindDn" Label="@L["Sso_BindDn"]" dir="ltr" Variant="Variant.Outlined" Margin="Margin.Dense" data-testid="sso-ldap-bind-dn" />
+    <MudTextField T="string" @bind-Value="Model.BindPassword" Label="@L["Sso_BindPassword"]" InputType="InputType.Password" autocomplete="new-password" dir="ltr" Variant="Variant.Outlined"
+                  Margin="Margin.Dense" Class="mt-2" HelperText="@(Model.BindPasswordStored ? L["Sso_PasswordStored"].Value : null)" data-testid="sso-ldap-bind-password" />
+    <MudTextField T="string" @bind-Value="Model.SearchBase" Label="@L["Sso_SearchBase"]" dir="ltr" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-2" data-testid="sso-ldap-base" />
+    <MudTextField T="string" @bind-Value="Model.UserFilter" Label="@L["Sso_UserFilter"]" dir="ltr" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-2" data-testid="sso-ldap-filter" />
+    <div class="lms-form-grid mt-2">
+        <MudTextField T="string" @bind-Value="Model.LdapEmailAttribute" Label="@L["Sso_EmailAttribute"]" dir="ltr" Variant="Variant.Outlined" Margin="Margin.Dense" data-testid="sso-ldap-email" />
+        <MudTextField T="string" @bind-Value="Model.LdapNationalIdAttribute" Label="@L["Sso_NationalIdAttribute"]" dir="ltr" Variant="Variant.Outlined" Margin="Margin.Dense" data-testid="sso-ldap-national" />
+    </div>
+    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" Class="mt-2">@L["Sso_NoGroupMapping"]</MudAlert>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public SsoFormModel Model { get; set; } = default!;
+}

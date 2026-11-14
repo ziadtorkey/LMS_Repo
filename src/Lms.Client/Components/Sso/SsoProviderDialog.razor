@@ -1,0 +1,93 @@
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.Sso
+@inject ISsoProvidersApi Api
+@inject NavigationManager Navigation
+
+@* SAML 2.0 and LDAP provider settings (FR-SEC-08 part 2, D85; spec m7-year-end section 10): the kind picks its own field group, secrets are write-only and never rendered,
+   and Test connection says in plain words which check failed. Full screen on phones. A failed test does not stop saving a disabled provider. *@
+<MudDialog Class="lms-dialog-fs">
+    <DialogContent>
+        <div class="lms-form" data-testid="sso-dialog">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-3" data-testid="sso-error">@_error</MudAlert>
+            }
+            <MudSelect T="string" @bind-Value="_m.Kind" Label="@L["Idp_Kind"]" Variant="Variant.Outlined" Margin="Margin.Dense" Disabled="Existing is not null" data-testid="sso-kind">
+                @foreach (var kind in SsoKinds.All)
+                {
+                    <MudSelectItem T="string" Value="@kind">@L[$"SsoKind_{kind}"]</MudSelectItem>
+                }
+            </MudSelect>
+            <MudTextField T="string" @bind-Value="_m.Slug" Label="@L["Idp_Slug"]" MaxLength="40" dir="ltr" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-2" data-testid="sso-slug" />
+            <BilingualNameFields @bind-NameAr="_m.NameAr" @bind-NameEn="_m.NameEn" IdPrefix="sso-name" />
+
+            @if (_m.Kind == SsoKinds.Saml)
+            {
+                <SamlFields Model="_m" Sp="_sp" />
+            }
+            else
+            {
+                <LdapFields Model="_m" />
+            }
+
+            <MudSwitch T="bool" @bind-Value="_m.Enabled" Label="@L["Common_Enabled"]" Color="Color.Primary" Class="mt-2" data-testid="sso-enabled" />
+
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Wrap="Wrap.Wrap" Class="mt-2">
+                <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.NetworkCheck" OnClick="TestAsync" Disabled="_testing" data-testid="sso-test">@L["Idp_Test"]</MudButton>
+            </MudStack>
+            @if (_result is not null)
+            {
+                <ul class="lms-checks" role="status" aria-label="@L["Sso_TestResult"]" data-testid="sso-test-result">
+                    @foreach (var c in _result.Checks)
+                    {
+                        <li class="@(c.Ok ? "ok" : "fail")" data-testid="@($"sso-check-{c.Key}")">
+                            <MudIcon Icon="@(c.Ok ? Icons.Material.Rounded.CheckCircle : Icons.Material.Rounded.Cancel)" Size="Size.Small" aria-hidden="true" />
+                            <span>@L[$"SsoCheck_{c.Key}_{(c.Ok ? "Ok" : "Fail")}"]@(string.IsNullOrEmpty(c.Detail) ? "" : $" ({c.Detail})")</span>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" OnClick="() => MudDialog.Cancel()" data-testid="sso-cancel">@L["Common_Cancel"]</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_saving" OnClick="SaveAsync" data-testid="sso-save">@L["Common_Save"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public SsoProviderDto? Existing { get; set; }
+
+    private SsoFormModel _m = new();
+    private SpValuesDto? _sp;
+    private SsoTestResultDto? _result;
+    private string? _error;
+    private bool _saving, _testing;
+
+    protected override void OnInitialized()
+    {
+        if (Existing is null) return;
+        _m = SsoFormModel.From(Existing);
+        _sp = Existing.Sp;
+    }
+
+    private async Task TestAsync()
+    {
+        _testing = true; _error = null;
+        var ok = await ApiCalls.RunAsync(async () => _result = await Api.TestAsync(_m.ToRequest()), Navigation, L, e => _error = e);
+        _testing = false;
+        if (!ok) _result = null;
+    }
+
+    private async Task SaveAsync()
+    {
+        _saving = true; _error = null;
+        SsoProviderDto? saved = null;
+        var request = _m.ToRequest();
+        var ok = await ApiCalls.RunAsync(async () => saved = Existing is null ? await Api.CreateAsync(request) : await Api.UpdateAsync(Existing.Id, request), Navigation, L, e => _error = e);
+        _saving = false;
+        if (ok) MudDialog.Close(DialogResult.Ok(saved));
+    }
+}

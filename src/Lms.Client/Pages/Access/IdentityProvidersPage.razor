@@ -10,6 +10,7 @@
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+@inject IServiceProvider Services
 
 <PageTitle>@L["Idp_Title"]</PageTitle>
 @if (!Perms.Loaded)
@@ -28,6 +29,10 @@ else
             {
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Add"
                            OnClick="() => OpenAsync(null)" data-testid="idp-new">@L["Idp_New"]</MudButton>
+                @if (HasSso)
+                {
+                    <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.Add" OnClick="OpenSsoAsync" data-testid="idp-new-sso">@L["Sso_New"]</MudButton>
+                }
             }
         </Actions>
     </PageHeader>
@@ -125,6 +130,15 @@ else
         _failed = failed;
         _items = items ?? [];
         _loading = false;
+    }
+
+    /// <summary>SAML and LDAP are offered only when the SSO client is registered (the contract is not in yet, so a real build does not show them).</summary>
+    private bool HasSso => Services.GetService(typeof(Lms.Client.Services.Sso.ISsoProvidersApi)) is not null;
+
+    private async Task OpenSsoAsync()
+    {
+        var dialog = await Dialogs.ShowAsync<Lms.Client.Components.Sso.SsoProviderDialog>(L["Sso_New"], new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        if (await dialog.Result is { Canceled: false }) Snackbar.Add(L["Common_Saved"], Severity.Success);
     }
 
     private async Task OpenAsync(IdentityProviderDto? existing)

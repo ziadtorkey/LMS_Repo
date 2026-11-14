@@ -76,6 +76,7 @@ public static class ClientServices
             services.AddSingleton<Lms.Client.Services.YearEnd.IPromotionApi, Lms.Client.Services.YearEnd.FakePromotionApi>();
             services.AddSingleton<Lms.Client.Services.YearEnd.ILifecycleApi, Lms.Client.Services.YearEnd.FakeLifecycleApi>();
             services.AddSingleton<Lms.Client.Services.YearEnd.INewYearApi, Lms.Client.Services.YearEnd.FakeNewYearApi>();
+            services.AddSingleton<Lms.Client.Services.Sso.ISsoProvidersApi, Lms.Client.Services.Sso.FakeSsoProvidersApi>();
             services.AddSingleton<IActivityOverviewApi, FakeActivityOverviewApi>();
             services.AddScoped<AuthenticationStateProvider, FakeAuthenticationStateProvider>();
             services.AddAuthorizationCore();

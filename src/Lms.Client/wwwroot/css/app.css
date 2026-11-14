@@ -112,4 +112,20 @@ html:lang(ar), html:lang(ar) body { font-family: Cairo, "Segoe UI", Tahoma, Aria
 .lms-plan-add { margin-block-start: 4px; }
 
 /* Class course tabs: wrap instead of overflowing at 360 px when more tabs join (M5 Task 22). */
-.lms-course-tabs { flex-wrap: wrap; }
+.lms-course-tabs { flex-wrap: wrap; }
+
+/* ---------- SAML and LDAP providers (M7 H7) ---------- */
+.lms-seg-group { display: flex; flex-wrap: wrap; gap: 8px; }
+.lms-seg { min-block-size: 40px; padding-inline: 16px; border: 1px solid var(--mud-palette-lines-inputs); border-radius: 20px; background: none; color: inherit; font: inherit; cursor: pointer; }
+.lms-seg.on { background: var(--mud-palette-primary); border-color: var(--mud-palette-primary); color: var(--mud-palette-primary-text); }
+.lms-seg:focus-visible { outline: 2px solid var(--mud-palette-primary); outline-offset: 2px; }
+.lms-cert { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-block-start: 8px; min-width: 0; }
+.lms-cert-fp { font-family: var(--lms-mono, ui-monospace, monospace); overflow-wrap: anywhere; }
+.lms-copy-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 8px; align-items: center; padding-block: 6px; }
+.lms-copy-row .lms-field-label { grid-column: 1 / -1; }
+.lms-copy-value { font-family: var(--lms-mono, ui-monospace, monospace); overflow-wrap: anywhere; word-break: break-all; min-width: 0; }
+.lms-checks { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 6px; }
+.lms-checks li { display: flex; align-items: flex-start; gap: 8px; }
+.lms-checks li.fail { color: var(--mud-palette-error); }
+.lms-dialog-h { margin: 12px 0 6px; font-size: 1rem; font-weight: 600; }
+@media (max-width: 599px) { .lms-dialog-fs.mud-dialog { inline-size: 100vw; max-inline-size: 100vw; block-size: 100dvh; max-block-size: 100dvh; margin: 0; border-radius: 0; } }
