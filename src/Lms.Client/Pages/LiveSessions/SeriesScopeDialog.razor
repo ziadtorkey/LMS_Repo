@@ -1,0 +1,51 @@
+@using Lms.Client.Services
+@using Lms.Shared.LiveSessions
+@inject ICultureService Culture
+
+@* Which occurrences of a series an edit or a cancel touches (design spec M4b §2.4). Dates come from the caller (local, yyyy-MM-dd HH:mm). *@
+<MudDialog>
+    <DialogContent>
+        <div role="radiogroup" aria-label="@L["Live_ScopeLabel"]" data-testid="series-scope">
+            <label class="@ChoiceClass(SeriesEditScopes.This)" data-testid="scope-this">
+                <input type="radio" name="live-scope" checked="@(_scope == SeriesEditScopes.This)" @onchange="() => _scope = SeriesEditScopes.This" />
+                <span>
+                    <span class="lms-cell-strong">@L["Live_Scope_This"]</span><br />
+                    <span class="lms-muted" dir="ltr">@When</span>
+                </span>
+            </label>
+            <label class="@ChoiceClass(SeriesEditScopes.ThisAndFollowing)" data-testid="scope-following">
+                <input type="radio" name="live-scope" checked="@(_scope == SeriesEditScopes.ThisAndFollowing)" @onchange="() => _scope = SeriesEditScopes.ThisAndFollowing" />
+                <span>
+                    <span class="lms-cell-strong">@L["Live_Scope_ThisAndFollowing"]</span><br />
+                    <span class="lms-muted">@FollowingCaption</span>
+                </span>
+            </label>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <div class="lms-dialog-actions">
+            <MudButton OnClick="() => MudDialog.Cancel()" data-testid="scope-back">@L["Common_Back"]</MudButton>
+            <MudButton Variant="Variant.Filled" Color="@(Cancelling ? Color.Error : Color.Primary)" OnClick="() => MudDialog.Close(DialogResult.Ok(_scope))"
+                       data-testid="scope-continue">@L[Cancelling ? "Live_CancelSessions" : "Live_Continue"]</MudButton>
+        </div>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private string _scope = SeriesEditScopes.This;
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    /// <summary>True when the dialog asks before cancelling (the confirm button is then the red "Cancel sessions").</summary>
+    [Parameter] public bool Cancelling { get; set; }
+    /// <summary>The occurrence being edited, local "yyyy-MM-dd HH:mm".</summary>
+    [Parameter, EditorRequired] public string When { get; set; } = "";
+    /// <summary>The date part of <see cref="When"/> (the "and N later sessions" caption starts with it).</summary>
+    [Parameter, EditorRequired] public string Date { get; set; } = "";
+    [Parameter] public int LaterCount { get; set; }
+
+    private string ChoiceClass(string scope) => "lms-choice" + (_scope == scope ? " lms-choice-on" : "");
+
+    private string FollowingCaption => LaterCount == 0
+        ? Date
+        : Date + " " + L.Count("Live_LaterSessions", LaterCount, Culture.IsRightToLeft);
+}
