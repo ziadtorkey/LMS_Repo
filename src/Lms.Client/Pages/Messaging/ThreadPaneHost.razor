@@ -26,7 +26,23 @@ else
     var conversation = _conversation;
     <ThreadPane Label="@Name">
         <Header>
-            <ThreadHeader Name="@Name" IsGroup="conversation.Kind == ConversationKinds.Group" MemberCount="Members" OnMembers="MembersAsync" OnBack="BackAsync" />
+            <ThreadHeader Name="@Name" IsGroup="conversation.Kind == ConversationKinds.Group" MemberCount="Members" OnMembers="MembersAsync" OnBack="BackAsync">
+                <Actions>
+                    @if (Other is not null && CanSend)
+                    {
+                        <MudMenu Icon="@Icons.Material.Rounded.MoreVert" AriaLabel="@L["Msg_More"]" Dense="true" data-testid="thread-more">
+                            @if (_blockedByMe)
+                            {
+                                <MudMenuItem OnClick="UnblockAsync" data-testid="thread-unblock">@L["Msg_Unblock"]</MudMenuItem>
+                            }
+                            else
+                            {
+                                <MudMenuItem OnClick="BlockAsync" data-testid="thread-block">@L["Msg_Block"]</MudMenuItem>
+                            }
+                        </MudMenu>
+                    }
+                </Actions>
+            </ThreadHeader>
         </Header>
         <ChildContent>
             @if (_nextBefore is not null)
@@ -103,10 +119,15 @@ else
     private bool _loading = true, _loadingEarlier, _sending, _scrollDown;
     private string? _draft, _error;
     private IJSObjectReference? _module;
+    private readonly HashSet<Guid> _reported = [];
+    private bool _blockedByMe;
 
     private string Name => _conversation is null ? "" : !string.IsNullOrWhiteSpace(_conversation.Title)
         ? _conversation.Title
         : string.Join(", ", _conversation.Participants.Where(p => p.UserId != PermState.UserId).Select(p => CultureText.Pick(p.NameAr, p.NameEn)));
+
+    /// <summary>The other person of a direct conversation (the one a block applies to).</summary>
+    private ParticipantDto? Other => _conversation is { Kind: ConversationKinds.Direct } c ? c.Participants.FirstOrDefault(p => p.UserId != PermState.UserId) : null;
 
     private int Members => _conversation?.Participants.Count(p => !p.Left) ?? 0;
 
@@ -143,6 +164,7 @@ else
         _nextBefore = loaded.page.NextBeforeId;
         _dividerBefore = DividerFor(UnreadCount);
         _scrollDown = true;
+        await LoadBlockAsync();
 
         await ApiCalls.RunAsync(() => Messaging.MarkReadAsync(ConversationId), Navigation, L, e => _error = e);
         await OnChanged.InvokeAsync();
@@ -190,6 +212,38 @@ else
         var i = _messages.FindIndex(m => m.Id == message.Id);
         if (i >= 0) _messages[i] = message with { State = MessageStates.Deleted, Body = null, CanDelete = false };
         await OnChanged.InvokeAsync();
+    }
+
+    private async Task LoadBlockAsync()
+    {
+        if (Other is not { } other) return;
+        var (blocks, _) = await ApiCalls.RunAsync(() => Messaging.ListBlocksAsync(), Navigation);
+        _blockedByMe = blocks?.Any(b => b.UserId == other.UserId) ?? false;
+    }
+
+    private async Task ReportAsync(MessageDto message)
+    {
+        var dialog = await Dialogs.ShowAsync<ReportDialog>(L["Msg_Report_Title"], new DialogParameters<ReportDialog> { { x => x.MessageId, message.Id } },
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false }) _reported.Add(message.Id);
+    }
+
+    private async Task BlockAsync()
+    {
+        if (Other is not { } other) return;
+        var dialog = await Dialogs.ShowAsync<BlockUserDialog>(L["Msg_Block"],
+            new DialogParameters<BlockUserDialog> { { x => x.UserId, other.UserId }, { x => x.Name, CultureText.Pick(other.NameAr, other.NameEn) } },
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false }) { _blockedByMe = true; await OnChanged.InvokeAsync(); }
+    }
+
+    private async Task UnblockAsync()
+    {
+        if (Other is not { } other) return;
+        var ok = await ApiCalls.RunAsync(() => Messaging.UnblockAsync(other.UserId), Navigation, L, e => _error = e);
+        if (ok) { _blockedByMe = false; await OnChanged.InvokeAsync(); }
     }
 
     private async Task MembersAsync()

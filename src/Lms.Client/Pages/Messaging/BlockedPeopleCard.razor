@@ -1,0 +1,45 @@
+@using Lms.Client.Services.Messaging
+@using Lms.Shared.Messaging
+@inject IMessagingApi Messaging
+@inject NavigationManager Navigation
+
+@* The people the caller blocked, with Unblock. Only the owner of a block ever sees it: nobody is told they were blocked, so this list is never shown to
+   the blocked person. Nothing renders when there is no block. *@
+@if (_blocks.Count > 0)
+{
+    <SectionCard Title="@L["Msg_Blocked_Title"]" TestId="blocked-card">
+        <ul class="lms-members" data-testid="blocked-list">
+            @foreach (var b in _blocks)
+            {
+                var block = b;
+                <li class="lms-member" data-testid="@($"blocked-{block.UserId}")">
+                    <span class="lms-member-name"><bdi>@CultureText.Pick(block.NameAr, block.NameEn)</bdi></span>
+                    <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="() => UnblockAsync(block)" data-testid="@($"unblock-{block.UserId}")">@L["Msg_Unblock"]</MudButton>
+                </li>
+            }
+        </ul>
+    </SectionCard>
+}
+
+@code {
+    /// <summary>Raised after someone was unblocked, so an open thread can offer the composer again.</summary>
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private IReadOnlyList<BlockDto> _blocks = [];
+
+    protected override Task OnInitializedAsync() => RefreshAsync();
+
+    public async Task RefreshAsync()
+    {
+        var (blocks, _) = await ApiCalls.RunAsync(() => Messaging.ListBlocksAsync(), Navigation);
+        _blocks = blocks ?? [];
+        StateHasChanged();
+    }
+
+    private async Task UnblockAsync(BlockDto block)
+    {
+        await ApiCalls.RunAsync(() => Messaging.UnblockAsync(block.UserId), Navigation, L, _ => { });
+        await RefreshAsync();
+        await OnChanged.InvokeAsync();
+    }
+}

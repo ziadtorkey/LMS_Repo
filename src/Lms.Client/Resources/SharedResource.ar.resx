@@ -2154,4 +2154,16 @@
   <data name="Msg_Group_ReadOnlyHelp" xml:space="preserve"><value>لا ينشر في المجموعة للقراءة فقط إلا الموظفون.</value></data>
   <data name="Msg_Recipient_Unavailable" xml:space="preserve"><value>لا يمكنك مراسلة هذا الشخص.</value></data>
   <data name="Msg_Group_Members_Title" xml:space="preserve"><value>أعضاء المجموعة</value></data>
+  <data name="Msg_More" xml:space="preserve"><value>المزيد من الإجراءات</value></data>
+  <data name="Msg_Report" xml:space="preserve"><value>الإبلاغ عن الرسالة</value></data>
+  <data name="Msg_Report_Title" xml:space="preserve"><value>الإبلاغ عن رسالة</value></data>
+  <data name="Msg_Report_Reason" xml:space="preserve"><value>لماذا تبلغ عنها؟</value></data>
+  <data name="Msg_Report_Note" xml:space="preserve"><value>أضف ملاحظة (اختياري)</value></data>
+  <data name="Msg_Report_Submit" xml:space="preserve"><value>إرسال البلاغ</value></data>
+  <data name="Msg_Reported" xml:space="preserve"><value>تم الإبلاغ</value></data>
+  <data name="Msg_Block" xml:space="preserve"><value>حظر</value></data>
+  <data name="Msg_Unblock" xml:space="preserve"><value>إلغاء الحظر</value></data>
+  <data name="Msg_Block_Text" xml:space="preserve"><value>حظر {0}؟ لن تصلك رسائل مباشرة من هذا الشخص ولن يستطيع مراسلتك، ولن يعلم بذلك. تبقيان معا في أي مجموعة.</value></data>
+  <data name="Msg_Blocked_ByMe" xml:space="preserve"><value>لقد حظرت هذا الشخص. ألغِ الحظر لتكتب مجددا.</value></data>
+  <data name="Msg_Blocked_Title" xml:space="preserve"><value>المحظورون</value></data>
 </root>
