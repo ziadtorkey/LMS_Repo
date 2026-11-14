@@ -9,6 +9,12 @@ public enum GradeSourceKind
 {
     Assignment = 1,
     Quiz = 2,
+
+    /// <summary>A SCORM package attempt (M4b Task 10).</summary>
+    Scorm = 3,
+
+    /// <summary>An H5P content attempt (M4b Task 11).</summary>
+    H5p = 4,
 }
 
 /// <summary>

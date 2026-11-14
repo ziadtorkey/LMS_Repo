@@ -124,6 +124,7 @@ public sealed class PackageValidationJobTests(LmsApiFactory factory) : IDisposab
                 o.TempRoot = tempRoot;
                 o.Timeout = timeout ?? TimeSpan.FromMinutes(2);
             });
+            services.RemoveAll<IPackageValidator>();
             if (withValidator)
             {
                 services.AddScoped<IPackageValidator>(_ => new FakeValidator());
@@ -217,6 +218,29 @@ public sealed class PackageValidationJobTests(LmsApiFactory factory) : IDisposab
         Assert.Equal((PackageUploadStatuses.Rejected, reason), (row.Status, row.RejectReason));
         Assert.Empty(await StoredAsync(s, row));
         Assert.Equal(0, TempAreas(s));
+    }
+
+    [Fact]
+    public async Task The_registered_scorm_validator_decides_with_the_real_manifest()
+    {
+        var s = await SetUpAsync("PV3B", configure: services =>
+        {
+            services.RemoveAll<IPackageValidator>();
+            services.AddScoped<IPackageValidator, Lms.Infrastructure.Packages.Scorm.ScormManifestValidator>();
+        });
+        var ok = await UploadCorpusAsync(s, "scorm12_valid");
+        var multi = await UploadCorpusAsync(s, "multi_sco");
+        var frames = await UploadCorpusAsync(s, "launch_frameset");
+
+        await RunAsync(s, ok.OrganizationId, ok.Id);
+        await RunAsync(s, multi.OrganizationId, multi.Id);
+        await RunAsync(s, frames.OrganizationId, frames.Id);
+
+        var ready = await ReloadAsync(ok.Id);
+        Assert.Equal((PackageUploadStatuses.Ready, "SCO", ScormVersions.Scorm12), (ready.Status, ready.Title, ready.Version));
+        Assert.Equal("multi_sco", (await ReloadAsync(multi.Id)).RejectReason);
+        Assert.Equal("needs_nested_frames", (await ReloadAsync(frames.Id)).RejectReason);
+        Assert.Empty(await StoredAsync(s, await ReloadAsync(multi.Id)));
     }
 
     [Fact]
@@ -358,6 +382,58 @@ public sealed class PackageValidationJobTests(LmsApiFactory factory) : IDisposab
         Assert.Equal([(second.OrganizationId, second.Id)], jobs.Later.Select(l => (l.Org, l.Package)));
         Assert.True(jobs.Later[0].Delay > TimeSpan.Zero);
         Assert.Equal(PackageUploadStatuses.Ready, (await ReloadAsync(other.Id)).Status);
+    }
+
+    [Fact]
+    public async Task A_rescheduled_run_is_jittered_and_a_package_that_waits_too_long_is_rejected_as_validation_timeout()
+    {
+        var gate = new PackageValidationGate(Microsoft.Extensions.Options.Options.Create(new PackageValidationOptions { MaxConcurrent = 2 }));
+        var jobs = new RecordingJobs();
+        var retry = TimeSpan.FromSeconds(20);
+        var s = await SetUpAsync("PV15", services =>
+        {
+            services.RemoveAll<PackageValidationGate>();
+            services.AddSingleton(gate);
+            services.RemoveAll<IPackageJobs>();
+            services.AddSingleton<IPackageJobs>(jobs);
+            services.Configure<PackageValidationOptions>(o =>
+            {
+                o.RetryDelay = retry;
+                o.MaxWaitAge = TimeSpan.FromHours(1);
+            });
+        });
+        var upload = await UploadCorpusAsync(s, "scorm12_valid");
+        await using var busy = gate.TryEnter(upload.OrganizationId);
+
+        for (var i = 0; i < 12; i++)
+        {
+            await RunAsync(s, upload.OrganizationId, upload.Id);
+        }
+
+        Assert.Equal(12, jobs.Later.Count);
+        Assert.All(jobs.Later, l => Assert.InRange(l.Delay, retry, retry * 1.5));
+        Assert.True(jobs.Later.Select(l => l.Delay).Distinct().Count() > 1, "the delays are not jittered");
+        Assert.Equal(PackageUploadStatuses.Uploaded, (await ReloadAsync(upload.Id)).Status);
+
+        // Past the maximum age the next attempt gives up instead of waiting again.
+        var expired = await SetUpAsync("PV16", services =>
+        {
+            services.RemoveAll<PackageValidationGate>();
+            services.AddSingleton(gate);
+            services.RemoveAll<IPackageJobs>();
+            services.AddSingleton<IPackageJobs>(jobs);
+            services.Configure<PackageValidationOptions>(o => o.MaxWaitAge = TimeSpan.Zero);
+        });
+        var old = await UploadCorpusAsync(expired, "scorm12_valid");
+        await using var busy2 = gate.TryEnter(old.OrganizationId);
+        var before = jobs.Later.Count;
+        await Task.Delay(50);
+
+        await RunAsync(expired, old.OrganizationId, old.Id);
+
+        var row = await ReloadAsync(old.Id);
+        Assert.Equal(("Rejected", "validation_timeout"), (row.Status, row.RejectReason));
+        Assert.Equal(before, jobs.Later.Count);
     }
 
     [Fact]
