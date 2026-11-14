@@ -70,4 +70,7 @@ public static class ProbeMilestones
 
     /// <summary>M5 (assessment, timetable and attendance). Rows of M5 routes set it; not a closed milestone yet.</summary>
     public const int M5 = 6;
+
+    /// <summary>M6 (communication: messaging, announcements, moderation, delivery). Rows of M6 routes set it; not a closed milestone yet.</summary>
+    public const int M6 = 7;
 }
