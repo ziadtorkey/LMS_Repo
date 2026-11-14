@@ -50,4 +50,7 @@ public sealed class ConversationParticipant : Entity, ITenantOwned
     }
 
     public void Leave(DateTime atUtc) => LeftAtUtc = atUtc;
+
+    /// <summary>A member who left or was removed is added again: they read and post from now on.</summary>
+    public void Rejoin() => LeftAtUtc = null;
 }

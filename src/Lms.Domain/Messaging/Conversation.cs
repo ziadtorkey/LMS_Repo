@@ -70,4 +70,7 @@ public sealed class Conversation : AuditableEntity, ITenantOwned
     }
 
     public void NoteMessage(DateTime atUtc) => LastMessageAtUtc = atUtc;
+
+    /// <summary>The owner of a group sets it read-only (only staff can post) or opens it again.</summary>
+    public void SetReadOnly(bool readOnly) => IsReadOnly = readOnly;
 }
