@@ -1765,11 +1765,9 @@
   <data name="Prefs_Event" xml:space="preserve"><value>Event</value></data>
   <data name="Prefs_Channel_InApp" xml:space="preserve"><value>In-app</value></data>
   <data name="Prefs_Channel_Email" xml:space="preserve"><value>Email</value></data>
-  <data name="Prefs_Channel_Sms" xml:space="preserve"><value>SMS</value></data>
   <data name="Prefs_Channel_Push" xml:space="preserve"><value>Push</value></data>
   <data name="Prefs_Fix" xml:space="preserve"><value>Add it in your profile</value></data>
   <data name="Prefs_Locked" xml:space="preserve"><value>Set by your school: can’t be turned off.</value></data>
-  <data name="Prefs_NoPhone" xml:space="preserve"><value>Add a mobile number in your profile</value></data>
   <data name="Prefs_PushUnsupported" xml:space="preserve"><value>Not available on this browser</value></data>
   <data name="Prefs_PushOff" xml:space="preserve"><value>Push notifications are off on this device.</value></data>
   <data name="Prefs_PushOffHelp" xml:space="preserve"><value>Your browser will ask for permission. You can turn it off again here or in the browser settings.</value></data>
@@ -1812,4 +1810,7 @@
   <data name="Rules_Role_Teacher" xml:space="preserve"><value>Teacher</value></data>
   <data name="Rules_Role_Student" xml:space="preserve"><value>Student</value></data>
   <data name="Rules_Role_Guardian" xml:space="preserve"><value>Guardian</value></data>
+  <data name="Rules_Wider" xml:space="preserve"><value>wider than the safeguarding default</value></data>
+  <data name="Msg_ReadOnly_ClassGroup" xml:space="preserve"><value>Only the teacher posts in this class group. To ask something, message the teacher privately.</value></data>
+  <data name="Msg_MessageTeacher" xml:space="preserve"><value>Message the teacher</value></data>
 </root>

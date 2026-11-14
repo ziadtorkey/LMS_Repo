@@ -90,6 +90,60 @@ public sealed class MessagingComponents4Tests : ClientTestContext
     }
 
     [Fact]
+    public void Each_default_is_the_ceiling_and_only_narrower_values_are_allowed()
+    {
+        var cells = MessagingRulesMatrix.D69Defaults();
+        var studentToTeacher = cells[(MessagingRole.Student, MessagingRole.Teacher)];
+
+        Assert.Equal(MessagingVia.Relationship, studentToTeacher.Max);
+        Assert.False(studentToTeacher.Allows(MessagingVia.Anywhere));
+        Assert.False(studentToTeacher.Allows(MessagingVia.SameUnit));
+        Assert.True(studentToTeacher.Allows(MessagingVia.Relationship));
+        Assert.True(studentToTeacher.Allows(MessagingVia.NotAllowed));
+        Assert.False(cells[(MessagingRole.Manager, MessagingRole.Teacher)].Allows(MessagingVia.Anywhere)); // Same unit is the ceiling
+        Assert.True(cells[(MessagingRole.OrgAdmin, MessagingRole.Teacher)].Allows(MessagingVia.Anywhere));
+        Assert.False(cells[(MessagingRole.Student, MessagingRole.Student)].Allows(MessagingVia.NotAllowed)); // locked: nothing changes
+    }
+
+    [Fact]
+    public async Task Set_rejects_a_wider_value_and_any_change_to_a_locked_cell_and_raises_nothing()
+    {
+        English();
+        var cells = MessagingRulesMatrix.D69Defaults();
+        var changed = 0;
+        var cut = Render<MessagingRulesMatrix>(p => p.Add(c => c.Cells, cells).Add(c => c.OnChanged, EventCallback.Factory.Create(this, () => changed++)));
+
+        var guardianToCounselor = cells[(MessagingRole.Guardian, MessagingRole.Counselor)];
+        Assert.False(await cut.InvokeAsync(() => cut.Instance.SetAsync(guardianToCounselor, MessagingVia.Anywhere)));
+        Assert.Equal(MessagingVia.Relationship, guardianToCounselor.Via);
+
+        var locked = cells[(MessagingRole.Manager, MessagingRole.Student)];
+        Assert.False(await cut.InvokeAsync(() => cut.Instance.SetAsync(locked, MessagingVia.NotAllowed)));
+        Assert.Equal(MessagingVia.GroupsOnly, locked.Via);
+        Assert.Equal(0, changed);
+
+        Assert.True(await cut.InvokeAsync(() => cut.Instance.SetAsync(guardianToCounselor, MessagingVia.NotAllowed)));
+        Assert.Equal(MessagingVia.NotAllowed, guardianToCounselor.Via);
+        Assert.Equal(1, changed);
+        Assert.True(guardianToCounselor.Allows(MessagingVia.Relationship)); // narrowed, and can return up to its default
+    }
+
+    [Fact]
+    public async Task Wider_options_are_shown_disabled_with_the_reason()
+    {
+        English();
+        var popovers = Render<MudBlazor.MudPopoverProvider>();
+        var cut = Render<MessagingRulesMatrix>(p => p.Add(c => c.Cells, MessagingRulesMatrix.D69Defaults()));
+
+        await cut.Find("[data-testid=rules-Student-Teacher] .mud-select .mud-input-control").MouseDownAsync(new MouseEventArgs());
+        var items = popovers.FindAll(".mud-popover-open .mud-list-item");
+        var anywhere = items.Single(i => i.TextContent.Contains("Anyone"));
+        Assert.Contains("mud-list-item-disabled", anywhere.ClassName);
+        Assert.Contains("wider than the safeguarding default", anywhere.TextContent);
+        Assert.DoesNotContain("mud-list-item-disabled", items.Single(i => i.TextContent.Trim().StartsWith("Not allowed")).ClassName);
+    }
+
+    [Fact]
     public void Matrix_shows_a_select_only_for_unlocked_cells_and_labels_rows_for_phones()
     {
         English();

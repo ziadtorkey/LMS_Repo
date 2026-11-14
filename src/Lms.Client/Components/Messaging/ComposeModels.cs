@@ -41,9 +41,30 @@ public enum MessagingRole
     Guardian,
 }
 
-/// <summary>One cell of the rules matrix: the rule, and whether D69 locks it.</summary>
+/// <summary>
+/// One cell of the rules matrix. A school may only narrow a rule, never widen it (D69: the Org Admin may tighten per client): the server's default
+/// for the cell is its <see cref="Ceiling"/>, and a value wider than it is never offered or accepted. A cell D69 fixes is <see cref="Locked"/>.
+/// </summary>
 public sealed class RuleCellValue
 {
     public MessagingVia Via { get; set; }
+
+    /// <summary>The widest value this cell may take: the platform default (D69 floor). Set by the server; defaults to the initial value.</summary>
+    public MessagingVia? Ceiling { get; init; }
     public bool Locked { get; init; }
+
+    public MessagingVia Max => Ceiling ?? Via;
+
+    /// <summary>Narrow to wide: Not allowed, Own classes, Same unit, Anyone. Groups only is a locked D69 value.</summary>
+    public static int Rank(MessagingVia via) => via switch
+    {
+        MessagingVia.NotAllowed => 0,
+        MessagingVia.Relationship => 1,
+        MessagingVia.SameUnit => 2,
+        MessagingVia.Anywhere => 3,
+        _ => -1,
+    };
+
+    /// <summary>Whether this cell may take <paramref name="via"/>: never on a locked cell, never wider than the ceiling.</summary>
+    public bool Allows(MessagingVia via) => !Locked && Rank(via) >= 0 && Rank(via) <= Rank(Max);
 }

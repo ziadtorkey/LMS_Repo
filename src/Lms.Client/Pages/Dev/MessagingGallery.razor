@@ -50,7 +50,9 @@ else
                 <Footer>
                     @if (_readOnly)
                     {
-                        <ComposerOff Reason="@T("يمكنك قراءة هذه المحادثة فقط. لا تسمح قواعد المراسلة في مدرستك للطلاب بمراسلة طلاب آخرين.", "You can only read this conversation. Messaging rules at your school don't allow students to message other students.")" />
+                        <ComposerOff Reason="@L["Msg_ReadOnly_ClassGroup"]">
+                            <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="lms-touch mt-2" StartIcon="@Icons.Material.Rounded.Edit">@L["Msg_MessageTeacher"]</MudButton>
+                        </ComposerOff>
                     }
                     else
                     {
@@ -201,14 +203,13 @@ else
     [
         new() { Key = "msg", Label = "New message", On = { [NotificationChannel.Email] = true, [NotificationChannel.Push] = true } },
         new() { Key = "ann-pin", Label = "Pinned announcement", On = { [NotificationChannel.Email] = true }, Locked = { NotificationChannel.Email } },
-        new() { Key = "abs", Label = "Absence of my child", On = { [NotificationChannel.Email] = true, [NotificationChannel.Sms] = true }, Locked = { NotificationChannel.Email, NotificationChannel.Sms } },
+        new() { Key = "abs", Label = "Absence of my child", On = { [NotificationChannel.Email] = true, [NotificationChannel.Push] = true }, Locked = { NotificationChannel.Email } },
     ];
 
     private IReadOnlyList<ChannelColumn> PrefColumns =>
     [
         new(NotificationChannel.InApp, T("تعمل دائمًا", "Always on")),
         new(NotificationChannel.Email, "huda@…"),
-        new(NotificationChannel.Sms, "+966 5…"),
         new(NotificationChannel.Push, T("هذا الجهاز: متوقفة", "This device: off")),
     ];
     private bool _showThread = true, _readOnly;

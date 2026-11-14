@@ -12,12 +12,11 @@ public sealed class MessagingComponents3Tests : ClientTestContext
 {
     private static void English() => FakeCultureService.Apply(new CultureInfo("en"));
 
-    private static IReadOnlyList<ChannelColumn> Columns(bool hasPhone = true) =>
+    private static IReadOnlyList<ChannelColumn> Columns(bool push = true) =>
     [
         new(NotificationChannel.InApp, "Always on"),
         new(NotificationChannel.Email, "huda@…"),
-        new(NotificationChannel.Sms, "+966 5…", hasPhone, hasPhone ? null : "Add a mobile number in your profile", hasPhone ? null : "me/profile"),
-        new(NotificationChannel.Push, "This device: off"),
+        new(NotificationChannel.Push, "This device: off", push, push ? null : "Not available on this browser"),
     ];
 
     [Fact]
@@ -55,14 +54,22 @@ public sealed class MessagingComponents3Tests : ClientTestContext
     }
 
     [Fact]
-    public void Without_a_mobile_number_sms_is_disabled_and_says_why()
+    public void Without_push_in_this_browser_the_push_column_is_disabled_and_says_why()
     {
         English();
-        var cut = Render<ChannelPreferences>(p => p.Add(c => c.Columns, Columns(hasPhone: false)).Add(c => c.Rows, new[] { new PreferenceRow { Key = "msg", Label = "New message" } }));
+        var cut = Render<ChannelPreferences>(p => p.Add(c => c.Columns, Columns(push: false)).Add(c => c.Rows, new[] { new PreferenceRow { Key = "msg", Label = "New message" } }));
 
-        Assert.True(cut.Find("[data-testid=prefs-msg-Sms] input").HasAttribute("disabled"));
-        Assert.Contains("Add a mobile number", cut.Find("[data-testid=prefs-col-Sms]").TextContent);
-        Assert.Equal("me/profile", cut.Find("[data-testid=prefs-col-Sms] a").GetAttribute("href"));
+        Assert.True(cut.Find("[data-testid=prefs-msg-Push] input").HasAttribute("disabled"));
+        Assert.Contains("Not available on this browser", cut.Find("[data-testid=prefs-col-Push]").TextContent);
+    }
+
+    [Fact]
+    public void There_is_no_sms_channel_in_v1()
+    {
+        English();
+        Assert.DoesNotContain("Sms", Enum.GetNames<NotificationChannel>());
+        var cut = Render<ChannelPreferences>(p => p.Add(c => c.Columns, Columns()).Add(c => c.Rows, new[] { new PreferenceRow { Key = "msg", Label = "New message" } }));
+        Assert.DoesNotContain("SMS", cut.Markup);
     }
 
     [Fact]
