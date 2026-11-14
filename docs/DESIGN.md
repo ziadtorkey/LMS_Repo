@@ -235,6 +235,8 @@ The full spec is `docs/design/m5-assessment-timetable-attendance.md`. Mockups ar
 - **Scales**: a band editor plus a **coverage strip** (`lms-coverage`, LTR, with gaps hatched and also listed as text). The provisional chip appears on admin pages only, and publishing under a provisional scale is blocked with an error alert.
 - **Timetable** (`lms-tt`, `lms-slot`): the days mirror in RTL but the times don't. Exceptions and conflicts are chips with words. Moving works by keyboard (M, arrows, Enter, Esc), a menu, or drag. Below 900 px it becomes a day view.
 - **Attendance** (`lms-att-*`): four labelled 44 px buttons per row in a radiogroup, digit shortcuts 1–4 on desktop, and a sticky summary bar above the safe area.
+- **Single-key shortcuts** (timetable M, attendance 1–4) act only while their card or row has focus, are matched by `event.code`, and are listed in a Keyboard shortcuts dialog (WCAG 2.1.4).
+- **Status tints:** chips use the palette hover tint (6 % light, 8 % dark), as MudBlazor's Text chips do; selected status buttons use 8 %. A light-mode warning tint above 8 % fails 4.5:1.
 - **Excuses**: a stepper on phones, a review panel with the 30-day history strip (letters, not only colours), and raster-only inline previews.
 
 ## 8. Phase 2 status (page-by-page passes)

@@ -2,8 +2,8 @@
 
 **Plan:** `docs/superpowers/plans/2026-11-18-m5-assessment-timetable-attendance.md` (#621), Task 21. This spec is the gate for the FE pages and dialogs of Tasks 23–39.
 **PRD:** FR-GRD-01..05, FR-TT-01..06, FR-ATT-01, FR-EXC-01..04, X-01, X-10; owner decisions D58–D65; Lead decisions L7, L10–L25.
-**Mockups:** `docs/design/mockups/m5.html`: static HTML in the Stitch tokens (`LmsTheme.cs`, `lms-stitch.css`). Open it with `?screen=gradebook|publish|scales|scale-edit|weights|my-grades|timetable|attendance-today|attendance-take|attendance-live|excuse-submit|excuse-review|alerts&lang=ar|en&theme=light|dark`.
-**Screenshots:** `docs/screenshots/ux-m5/<screen>-<lang>-<theme>-<width>.png`. Each of the 13 screens is shot at 1440 px (en light, ar dark) and 360 px (ar light, en dark), 52 in all, and none scrolls sideways. Below 600 px the mockup renders the phone layout (the gradebook list, the timetable day view) instead of hiding the desktop one.
+**Mockups:** `docs/design/mockups/m5.html`: static HTML in the Stitch tokens (`LmsTheme.cs`, `lms-stitch.css`). Open it with `?screen=gradebook|publish|scales|scale-edit|weights|my-grades|timetable|attendance-today|attendance-take|attendance-live|my-attendance|excuse-submit|excuse-review|alerts|states&lang=ar|en&theme=light|dark`.
+**Screenshots:** `docs/screenshots/ux-m5/<screen>-<lang>-<theme>-<width>.png`. Each of the 15 screens is shot at 1440 px (en light, ar dark) and 360 px (ar light, en dark), 60 in all, and none scrolls sideways. Below 600 px the mockup renders the phone layout (the gradebook list, the timetable day view) instead of hiding the desktop one.
 
 Everything in `docs/DESIGN.md` applies. This file only adds what M5 needs. Where FE1's proposal (#616) and the plan's Lead decisions differ, **the plan wins**: the keyboard model is L24 (not #616's F2 menu) and the attendance shortcuts are digits (L25, not P/A/L/E). The new classes in §9 go into `lms-stitch.css` in one `lane:ux` PR before Tasks 23–38 start.
 
@@ -15,6 +15,7 @@ Everything in `docs/DESIGN.md` applies. This file only adds what M5 needs. Where
 - **The client never computes a grade (L18).** Category results, the final grade, the band and `isValid` all come from the server. The only client-side arithmetic is the preview total in the weights chip while someone is typing.
 - **Colour is never the only signal.** Every cell state, attendance status, chip and coverage problem also has a text form, an icon or a pattern, and a text alternative for screen readers.
 - **Server time** (`serverNowUtc`) decides edit windows, scheduled publishing and excuse deadlines, as in M4b. The client time zone is `Org.TimeZone` (default `Asia/Riyadh`, D64), and it's shown once wherever a time is typed.
+- **Single-key shortcuts (WCAG 2.1.4).** The timetable's **M** and the attendance digits **1–4** are active **only while their card or row has focus**. They're matched by `event.code` (`KeyM`, `Digit1`–`Digit4`), so an Arabic keyboard layout works, and they're listed in each page's **Keyboard shortcuts** dialog (a Keyboard icon button next to the hint).
 - **Optimistic concurrency (L12).** A `concurrency_conflict` reloads the row or session, shows "Someone else changed this. We loaded the latest values." in a polite live region, and keeps the user's typed value in the field so they can apply it again.
 - **Icons**, Rounded only:
   - **Grading:** Assignment (score from an event), Grading (scales), Balance (weights), Publish, Pending (provisional).
@@ -58,7 +59,11 @@ A legend under the grid (`lms-gb-legend`) repeats these forms, so nothing relies
 
 ### 2.3 Keyboard (L24, verbatim)
 - **Moving:** the arrow keys move between cells, Home and End go to the ends of the row, and Ctrl+Home goes to the first cell. There's one roving `tabindex`, so Tab leaves the grid in navigation mode.
-- **Editing:** **Enter or F2** toggles editing. While editing, Tab commits and moves right, Enter commits and moves down, and Esc cancels. Entering and leaving edit mode are announced ("Editing Lab report for Omar Khaled", "Saved").
+- **Editing:** **Enter or F2** toggles editing (L24).
+  - **While editing:** **Enter commits and stays on the cell**, back in navigation mode. **Tab** commits and moves right. Esc cancels.
+  - **To go down a column:** Enter to commit, then the Down arrow.
+  - **One rule everywhere:** the tests and the live-region messages follow this rule, and the hint under the grid says it: "Enter or F2 edits, Enter again saves".
+  - **Announcements:** entering and leaving edit mode are announced ("Editing Lab report for Omar Khaled", "Saved").
 - **Cell menu:** **Shift+F10** or the context-menu key opens it. It offers Override score…, Excuse from this item and Clear score, and, for the newer-score state, **Keep my override / Use the newer score**. Clear sits last, in the error colour. Focus returns to the cell when the menu closes.
 - **Focus outline:** a 2 px primary outline at −2 px offset plus a 4 px surface inset, at least 3:1 against the selected, hover and override backgrounds in both themes. In forced-colors mode it's `outline: 2px solid Highlight`.
 - **Override:** the dialog requires a reason, and the server row replaces the optimistic value.
@@ -81,6 +86,8 @@ A legend under the grid (`lms-gb-legend`) repeats these forms, so nothing relies
 - **No students:** an `EmptyState` linking to enrollment.
 - **No items:** "Add a grade item. Assignments and quizzes appear here when they're scored."
 - **Locked (M7 seam):** an Info banner, and every cell is read-only.
+- **Load failure:** an error alert with **Try again**; the grid keeps its last data if it had any.
+- **Staff-only labels:** "Hidden", "Scheduled", the "newer score" chip, the override flag and the source icons exist **only on staff pages**. `MyGradesPage` and `ChildGradesPage` never show them, and they never show a hidden item at all, even as a count (§8 checklist; the E2E hidden-item scenario asserts it).
 
 ## 3. Scales and weight templates (Task 23, D59, D62, D63)
 
@@ -131,7 +138,7 @@ Mockup: `screen=timetable` (1440: the week builder in the middle of a keyboard m
    - **Badges** from exceptions, shown only on the week of that date: **Substitute: {name}** (info, SwapHoriz) and **Cancelled** (error, EventBusy).
    - **Conflicts:** a warning chip with the conflict in words ("Teacher double-booked") and a warning-coloured bar. Conflicts come from the server's answer only.
 3. **Moving a lesson** (WCAG 2.1.1, 2.5.1):
-   - **Keyboard:** select a card and press **M**. An info status line says "Moving 'Mathematics': use the arrow keys, Enter to drop, Esc to cancel." The target cell shows "Drop here" in a dashed primary outline.
+   - **Keyboard:** focus a card and press **M** (only while that card has focus, §1). An info status line says "Moving 'Mathematics': use the arrow keys, Enter to drop, Esc to cancel." The target cell shows "Drop here" in a dashed primary outline.
    - **Pointer:** drag and drop does the same.
    - **Menu and phones:** a "Move to…" option (day and period selects) is the third way and the one used on phones.
    - **Block mode:** a refused move restores the card and shows the server's message, with the clashing card highlighted.
@@ -147,7 +154,12 @@ Mockup: `screen=timetable` (1440: the week builder in the middle of a keyboard m
 6. **Read-only views** (class, teacher `/me/timetable`, student, guardian): the same component without edit affordances.
    - **Teacher view:** cards show the class name instead of the teacher.
    - **Live-session slots** show M4b's Join entry.
-7. **Set-up page:**
+7. **States** (`screen=states`):
+   - **No periods yet:** "Add the school day's periods before you build a timetable" with **Set up periods**.
+   - **Not published:** for students and teachers, "This timetable isn't published yet. Students and teachers see it after it's published."
+   - **No lessons in a week:** an empty grid with "+" cells for builders; read-only views say "No lessons this week".
+   - **Loading:** a skeleton of the grid. **Error:** an error alert with **Try again**.
+8. **Set-up page:**
    - **Periods:** a table and a dialog. Times are entered LTR, and overlaps and ordering are shown at the field.
    - **Working days:** seven toggle chips.
    - **Conflict mode:** Block or Warn, each with a one-line sentence on what it does.
@@ -166,6 +178,11 @@ Mockups: `screen=attendance-today`, `screen=attendance-take` and `screen=attenda
      - **One action:** **Take attendance** (filled, 44 px), or **Review**.
 2. **Taking attendance** (`/attendance/sessions/{id}`):
    - **Header:** the course, class and period title, and **Mark all present**, the first action (filled, 44 px). A search field and **Next unmarked** come before the roster.
+   - **Mark all present is safe on a phone:**
+     - It marks **only unmarked rows**; rows the teacher already set keep their status.
+     - It announces the result politely ("26 students marked present. Rows you had marked kept their status.").
+     - An **Undo** toast (`lms-toast`) above the summary bar restores the previous marks until Save or until the toast is dismissed.
+     - Nothing is sent to the server until Save.
    - **Rows** (`lms-att-row`): the avatar, name and a note line (for example "Arrived at 09:12" or the live-session source), then a **radio group of four labelled buttons** (`lms-att-opts`), each at least 44 px high: Present · Absent · Late · Excused.
      - Each has an icon **and** its word, and the selected one adds a check mark and a 2 px border in the status colour. Colour supports the meaning but never carries it alone.
      - The digit hints `1`–`4` are drawn on the buttons on desktop (L25: matched by `event.code`, active only while a row has focus). Below 600 px the hints are hidden and the buttons fill the row width.
@@ -177,10 +194,37 @@ Mockups: `screen=attendance-today`, `screen=attendance-take` and `screen=attenda
      - **On phones:** the counts form one scrollable line, and Save takes the full width.
    - **Local draft (L25):** a warning banner says "You have unsaved marks from 08:58 on this device", with **Restore** and **Discard**. The draft never overwrites a newer server state, and it's cleared on save and sign-out.
    - **After the edit window:** users with `Attendance.Edit` must enter a reason, and the history drawer shows "Edited by {name}".
-3. **Live-session proposal (L11):**
+3. **States** (`screen=states`):
+   - **No sessions on a day:** "No sessions on this day", with the reason when the server gives one: a holiday ("2026-11-23 is a holiday (National Day)") or a non-working day.
+   - **Window closed:** the session card shows the **Edit window closed** chip (Lock); only users with `Attendance.Edit` see Edit, and they must give a reason.
+   - **No students:** "No students in this class course. Enroll students before you take attendance." Mark all present and Save are disabled.
+   - **Taken by someone else** (`concurrency_conflict`): a warning alert, "Someone else saved this session at 09:21. We loaded their marks; your unsaved changes are kept below each row." Each changed row shows "Your mark: Absent" with a one-tap **Use mine**.
+   - **Loading:** card skeletons. **Error:** an error alert with **Try again**.
+4. **Live-session proposal (L11):**
    - **Banner:** "These marks were proposed from the Zoom participants list. Check them, then confirm."
    - **Rows:** each proposed row shows its source ("Joined for 44 min", "Joined late at 09:14"). The filled action becomes **Confirm attendance**.
    - **Unmatched participants:** a section lists **Zoom participants not matched** ("iPad Air" (guest)), each with a "This is…" student picker and **Skip**. Only `Matched` participants are proposed automatically, so there's no name guessing.
+
+## 5a. Student and guardian attendance (Task 36)
+
+Mockup: `screen=my-attendance` (the guardian of two children).
+
+1. **Routes:** `/me/attendance` (student) and `/me/children/{studentId}/attendance` (guardian).
+2. **Header:** "Attendance · {child}", with the class and term in the subtitle.
+3. **Guardian of several children:** a **child selector** (segmented control, or a select when there are more than three) at the top. It switches the whole page; rows of two children are never mixed. The server checks the guardian link (L16).
+4. **Date range:** a field defaulting to the current term, with dates LTR.
+5. **Stat tiles:** Absences, Lates and Excused for the range (two per row at 360 px).
+6. **The list:** one row per **absent, late or excused** session, newest first (present sessions aren't listed). Each row has:
+   - the date, course and period;
+   - the status chip with its word and icon: Absent (error, Cancel), Late (warning, Schedule), Excused (info, Verified);
+   - the excuse state:
+     - **Explain this absence** (outlined, 44 px) while it's excusable and `canSubmitExcuse` is true;
+     - the excuse status chip once one exists: Excuse submitted, approved or rejected;
+     - "The time to explain this absence has passed." with a Lock icon after the window;
+     - for a student under `GuardiansOnly`, no button and the line "Your guardian can submit an excuse." (from `canSubmitExcuse`, L21).
+   - The header also has **Submit an excuse** for a range.
+7. **Empty state:** "No absences or lates in this period."
+8. **At 360 px:** the rows wrap, with the date line first and the chips and action under it; the action keeps 44 px.
 
 ## 6. Excuses and absence alerts (Tasks 36–38)
 
@@ -201,16 +245,18 @@ Mockups: `screen=excuse-submit`, `screen=excuse-review` and `screen=alerts`.
    - **Detail panel:** a 420 px panel beside the queue at 1100 px and wider, and a full-screen drawer below that. Its contents:
      - **Covered sessions**, each with a status icon and its word.
      - **The document:** an image thumbnail when it's a raster image. PDFs download only, never inline and never as HTML (L10). A 5-minute signed link is fetched on click.
-     - **The last 30 days**, as a strip of small LTR squares (`lms-history`): **P/A/L/E letters in each square** with a key below, so it doesn't depend on colour.
+     - **The last 30 days**, as a strip of small LTR squares (`lms-history`). Each square holds a **localised short form from resources**: P, A, L, E in English and ح, غ, ت, ع in Arabic. A key below spells them out, so the strip doesn't depend on colour. The strip has `role="img"` with a summary label ("Last 30 days: absences 4, lates 2, excused 1"). A test asserts that the Arabic strip contains no Latin letters.
      - **Comment:** required to reject, and validated before the call.
      - **Approval preview:** "Approving makes 3 records Excused."
      - **Actions:** Escalate (outlined, with a picker of reviewers in scope, Manager first; L14), Reject (outlined, error colour) and Approve (filled).
      - **Reviewer is the submitter:** the server refuses (409), and the message is shown in the panel.
    - **Bulk approve:** select rows, then confirm with the count. There's no bulk reject.
+   - **Empty queue:** "No excuses to review. New excuses for students in your units appear here." **Loading:** table skeleton. **Error:** an alert with **Try again**.
 4. **Absence alerts** (`/attendance/alerts`):
    - **Stat tiles:** "Students over the threshold" and "New this week".
    - **Table:** the student, the formula in words ("4 absences + 3 lates × ½ = 5.5", D61), the alert date and **Open attendance**.
    - **Threshold settings** live in the attendance settings group.
+   - **Empty:** "No students over the threshold. Students appear here after 5 absences in 30 days (a late counts as half)." The numbers come from the settings.
 
 ## 7. Notifications (L26)
 
@@ -218,15 +264,31 @@ The texts carry labels only, never a grade value or a hidden item's title, for e
 
 ## 8. Accessibility checklist for M5 (for the Task 39 sign-off)
 
-- [ ] The grid follows L24: Enter or F2 to edit, Shift+F10 for the menu, Tab only while editing, the focused cell is never under a sticky header or column in LTR or RTL, the focus outline is at least 3:1 and visible in forced colors, and edit mode is announced on entering and leaving.
+- [ ] The grid follows L24 and §2.3: Enter or F2 to edit, Enter again commits and stays, Shift+F10 for the menu, Tab only while editing, the focused cell is never under a sticky header or column in LTR or RTL, the focus outline is at least 3:1 and visible in forced colors, and edit mode is announced on entering and leaving.
 - [ ] Every cell state and attendance status has a text form (§2.2, §5.2), and the legend is present.
 - [ ] Attendance buttons are at least 44 px, in one `radiogroup` per row named by the student. The digit shortcuts work only while a row has focus, and the summary is `role="status"`.
 - [ ] Timetable moves work by keyboard (M, arrows, Enter, Esc), by the "Move to…" menu, and by drag. Drag is never the only way.
+- [ ] Single-key shortcuts (M, 1–4) work only while their card or row has focus, are matched by `event.code`, and are listed in the Keyboard shortcuts dialog (WCAG 2.1.4).
+- [ ] Mark all present changes only unmarked rows, announces the count, and can be undone until Save.
+- [ ] The Arabic history strip has no Latin letters.
+- [ ] Hidden/Scheduled labels, the newer-score chip, override flags and hidden items never appear on student or guardian pages.
+- [ ] Every M5 page has its empty, loading and error state (§2.6, §4.7, §5.3, §5a.7, §6).
 - [ ] The coverage strip's problems also appear as text, and Save is disabled with the reason visible.
 - [ ] Every dialog and drawer returns focus to the control that opened it. The phone gradebook and the stepper have one heading each.
 - [ ] Reduced motion: no animated transitions in the grid or the timetable move. The saving spinner is static under `prefers-reduced-motion`.
 - [ ] Forced colors: chips and status buttons keep a border (`border: 1px solid CanvasText`), and the selected attendance button uses `Highlight`.
-- [ ] Nothing scrolls sideways at 360 px. All 52 shots were checked with `scrollWidth`.
+- [ ] Contrast of status colours on their tints, measured (WCAG 1.4.3 text 4.5:1, 1.4.11 borders 3:1):
+
+  | Status | Light: text on 8 % button tint · on 6 % chip · border vs surface | Dark: text on 8 % tint · on 8 % chip · border vs surface |
+  |---|---|---|
+  | Present / success | 5.23 · 5.38 · 5.85 | 7.92 · 7.92 · 9.15 |
+  | Absent / error | 5.76 · 5.96 · 6.57 | 5.74 · 5.74 · 6.36 |
+  | Late / warning | 4.51 · 4.63 · 5.02 | 9.04 · 9.04 · 10.53 |
+  | Excused / info | 7.64 · 7.9 · 8.72 | 6.12 · 6.12 · 6.92 |
+  | Focus outline vs selected row (5 % primary) | 6.55 | 7.33 |
+
+  Chips use the palette hover tint, exactly as MudBlazor's Text chips do (`HoverOpacity` 0.06 light, 0.08 dark). **Don't raise a warning tint above 8 % in light mode**: at 12–14 % warning text drops to 4.1–4.3:1.
+- [ ] Nothing scrolls sideways at 360 px. All 60 shots were checked with `scrollWidth`.
 
 ## 9. New classes (`lms-stitch.css`)
 
@@ -243,6 +305,8 @@ The reference CSS is the "M5 additions" block in `m5.html`. It uses logical prop
 | `lms-session`, `lms-session-top` | Today's session cards |
 | `lms-att-row`, `lms-att-who`, `lms-att-opts`, `lms-att-opt` (+ `p`, `a`, `l`, `e`), `lms-att-bar` | Taking attendance |
 | `lms-check`, `lms-review`, `lms-history` (+ `h-p`, `h-a`, `h-l`, `h-e`) | Excuse checklists, the review layout and the history strip |
+| `lms-toast` | The undo toast after Mark all present |
+| `lms-absence`, `lms-state` | Student/guardian absence rows; empty-state cards |
 | `lms-steps` | Already in `lms-activities.css` (M4b); reuse it, don't copy it |
 
 ## 10. Open points for the Team Lead
