@@ -1487,13 +1487,28 @@
   <data name="Error_package_not_ready" xml:space="preserve"><value>الحزمة ليست جاهزة بعد. انتظر حتى ينتهي الفحص.</value></data>
   <data name="Error_package_not_attached" xml:space="preserve"><value>الحزمة غير مضافة إلى درس بعد، لذا لا يمكن تغيير طريقة احتساب الدرجة.</value></data>
   <data name="Error_package_commit_rejected" xml:space="preserve"><value>تعذّر حفظ تقدّمك لأن المحاولة مغلقة أو لم تُقبل البيانات.</value></data>
-  <data name="Blueprint_VersionsSubtitle" xml:space="preserve"><value>سجل كامل لمراجعات المخطط ونسخه المنشورة.</value></data>
-  <data name="Blueprint_Overview" xml:space="preserve"><value>نظرة عامة على المخطط</value></data>
-  <data name="Blueprint_StatSections" xml:space="preserve"><value>الأقسام</value></data>
-  <data name="Blueprint_StatLessons" xml:space="preserve"><value>الدروس</value></data>
-  <data name="Blueprint_StatPeriods" xml:space="preserve"><value>الحصص أسبوعيًا</value></data>
-  <data name="Blueprint_StatVersion" xml:space="preserve"><value>النسخة</value></data>
-  <data name="Blueprint_LessonsCount" xml:space="preserve"><value>الدروس: {0}</value></data>
+  <data name="Error_package_host_not_configured" xml:space="preserve"><value>لم تُفعَّل الحزم على هذه المنصة بعد. تواصل مع مسؤول المنصة.</value></data>
+  <data name="Error_package_reason_unsafe_path" xml:space="preserve"><value>بعض الملفات في الحزمة تشير إلى خارجها. صدّر الحزمة من جديد.</value></data>
+  <data name="Error_package_reason_too_many_entries" xml:space="preserve"><value>تحتوي الحزمة على عدد كبير جدًا من الملفات.</value></data>
+  <data name="Error_package_reason_too_large" xml:space="preserve"><value>حجم الحزمة بعد فكّ الضغط أكبر من المسموح.</value></data>
+  <data name="Error_package_reason_compression_ratio" xml:space="preserve"><value>طريقة ضغط الحزمة غير آمنة. صدّرها من جديد.</value></data>
+  <data name="Error_package_reason_symlink" xml:space="preserve"><value>تحتوي الحزمة على روابط لملفات أخرى، وهذا غير مسموح.</value></data>
+  <data name="Error_package_reason_duplicate_name" xml:space="preserve"><value>يوجد ملفان بالاسم نفسه في الحزمة.</value></data>
+  <data name="Error_package_reason_bad_name_encoding" xml:space="preserve"><value>تعذّرت قراءة بعض أسماء الملفات. أعد تسميتها بحروف وأرقام بسيطة.</value></data>
+  <data name="Error_package_reason_executable" xml:space="preserve"><value>تحتوي الحزمة على برامج أو ملفات إضافات قديمة (مثل Flash)، وهذا غير مسموح.</value></data>
+  <data name="Error_package_reason_encrypted" xml:space="preserve"><value>الحزمة محمية بكلمة مرور. ارفعها دون كلمة مرور.</value></data>
+  <data name="Error_package_reason_nested_archive" xml:space="preserve"><value>تحتوي الحزمة على ملف مضغوط آخر بداخلها. ارفع الحزمة الداخلية بدلًا منها.</value></data>
+  <data name="Error_package_reason_manifest_invalid" xml:space="preserve"><value>هذه ليست حزمة SCORM أو H5P صالحة: ملف الوصف أو صفحة البداية مفقود أو تالف.</value></data>
+  <data name="Error_package_reason_xml_unsafe" xml:space="preserve"><value>يستخدم ملف وصف الحزمة خصائص غير مسموحة. صدّرها من جديد.</value></data>
+  <data name="Error_package_reason_multi_sco" xml:space="preserve"><value>تحتوي الحزمة على أكثر من وحدة تعلّم. صدّر كل وحدة في حزمة مستقلة.</value></data>
+  <data name="Error_package_reason_needs_nested_frames" xml:space="preserve"><value>تعرض الحزمة محتواها داخل إطارات، ولا يمكن تشغيلها بأمان هنا. صدّرها بمشغّل من صفحة واحدة إن كانت أداتك توفّر ذلك.</value></data>
+  <data name="Error_package_reason_needs_relaxed_policy" xml:space="preserve"><value>تحتاج الحزمة إلى خصائص في المتصفح غير مسموحة لأسباب أمنية.</value></data>
+  <data name="Error_package_reason_h5p_invalid" xml:space="preserve"><value>ملف H5P غير مكتمل أو يستخدم نوع محتوى غير مدعوم.</value></data>
+  <data name="Error_package_reason_validation_timeout" xml:space="preserve"><value>استغرق فحص الحزمة وقتًا طويلًا. حاول مرة أخرى أو ارفع حزمة أصغر.</value></data>
+  <data name="Error_package_reason_quota_exceeded" xml:space="preserve"><value>استُهلكت مساحة التخزين المخصصة للحزم في مدرستك. احذف حزمًا لم تعد تحتاجها أو تواصل مع المسؤول.</value></data>
+  <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>لم تجتز الحزمة الفحص الأمني.</value></data>
+  <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>الملف ليس أرشيف zip صالحًا. صدّر الحزمة من جديد.</value></data>
+  <data name="Error_package_reason_bad_name" xml:space="preserve"><value>بعض أسماء الملفات في الحزمة طويلة جدًا أو متداخلة بعمق أو محجوزة. أعد تسميتها وصدّر الحزمة من جديد.</value></data>
   <data name="MyCourses_StatSupervised" xml:space="preserve"><value>مقررات تشرف عليها</value></data>
   <data name="MyCourses_StatAllocations" xml:space="preserve"><value>تخصيصات الفصول</value></data>
   <data name="MyCourses_StatPublished" xml:space="preserve"><value>مخططات منشورة</value></data>
@@ -1598,6 +1613,30 @@
   <data name="Submissions_Student" xml:space="preserve"><value>الطالب</value></data>
   <data name="Submissions_Title" xml:space="preserve"><value>تسليمات الواجب</value></data>
   <data name="Assignment_MinScoreUnknown" xml:space="preserve"><value>تعذّر قراءة الحد الأدنى للدرجة. أغلق النافذة وحاول مجدداً.</value></data>
+  <data name="AssignmentStudent_Title" xml:space="preserve"><value>الواجب</value></data>
+  <data name="AssignmentStudent_DueIn" xml:space="preserve"><value>يتبقى {0}</value></data>
+  <data name="AssignmentStudent_OverdueBy" xml:space="preserve"><value>تأخر {0}</value></data>
+  <data name="AssignmentStudent_LateAllowed" xml:space="preserve"><value>ما زال بإمكانك التسليم متأخرًا.</value></data>
+  <data name="AssignmentStudent_LatePenalty" xml:space="preserve"><value>يُخصم {0}% من الدرجة على التسليم المتأخر.</value></data>
+  <data name="AssignmentStudent_LateBlocked" xml:space="preserve"><value>لم يعد التسليم المتأخر مقبولًا.</value></data>
+  <data name="AssignmentStudent_Grade" xml:space="preserve"><value>درجتك</value></data>
+  <data name="AssignmentStudent_PenaltyApplied" xml:space="preserve"><value>خصم تأخير {0}% من {1}.</value></data>
+  <data name="AssignmentStudent_Feedback" xml:space="preserve"><value>الملاحظات</value></data>
+  <data name="AssignmentStudent_HandedIn" xml:space="preserve"><value>لقد سلّمت هذا الواجب.</value></data>
+  <data name="AssignmentStudent_WasLate" xml:space="preserve"><value>وكان متأخرًا.</value></data>
+  <data name="AssignmentStudent_WaitingReturn" xml:space="preserve"><value>صحّحه معلمك وسيعيده إليك قريبًا.</value></data>
+  <data name="AssignmentStudent_ReadOnly" xml:space="preserve"><value>يمكنك قراءة الواجب دون تسليم عمل.</value></data>
+  <data name="AssignmentStudent_CannotSubmit" xml:space="preserve"><value>لا يمكنك التسليم الآن.</value></data>
+  <data name="AssignmentStudent_YourWork" xml:space="preserve"><value>عملك</value></data>
+  <data name="AssignmentStudent_Resubmit" xml:space="preserve"><value>إعادة التسليم</value></data>
+  <data name="AssignmentStudent_Submit" xml:space="preserve"><value>تسليم</value></data>
+  <data name="AssignmentStudent_SaveDraft" xml:space="preserve"><value>حفظ كمسودة</value></data>
+  <data name="AssignmentStudent_Text" xml:space="preserve"><value>إجابتك</value></data>
+  <data name="AssignmentStudent_NeedTextOrFile" xml:space="preserve"><value>اكتب إجابتك أو أرفق ملفًا أولًا.</value></data>
+  <data name="Duration_DaysHours" xml:space="preserve"><value>{0} يوم {1} ساعة</value></data>
+  <data name="Duration_HoursMinutes" xml:space="preserve"><value>{0} ساعة {1} دقيقة</value></data>
+  <data name="Duration_Minutes" xml:space="preserve"><value>{0} دقيقة</value></data>
+  <data name="AssignmentStudent_RemoveFile" xml:space="preserve"><value>إزالة</value></data>
   <data name="Nav_Eligibility" xml:space="preserve"><value>أهلية المعلمين</value></data>
   <data name="Eligibility_Title" xml:space="preserve"><value>أهلية المعلمين</value></data>
   <data name="Eligibility_Help" xml:space="preserve"><value>حدّد أي المعلمين يجوز لهم تدريس أي المقررات في وحدة. لا يمكن تعيين إلا المعلمين المؤهلين على مقرر فصل.</value></data>
@@ -1632,28 +1671,6 @@
   <data name="Teacher_BulkResult" xml:space="preserve"><value>تم إنشاء {0} تعيينًا، وتخطي {1} (معيَّن بالفعل).</value></data>
   <data name="TeacherRole_Primary" xml:space="preserve"><value>أساسي</value></data>
   <data name="TeacherRole_Assistant" xml:space="preserve"><value>مساعد</value></data>
-  <data name="Error_package_host_not_configured" xml:space="preserve"><value>لم تُفعَّل الحزم على هذه المنصة بعد. تواصل مع مسؤول المنصة.</value></data>
-  <data name="Error_package_reason_unsafe_path" xml:space="preserve"><value>بعض الملفات في الحزمة تشير إلى خارجها. صدّر الحزمة من جديد.</value></data>
-  <data name="Error_package_reason_too_many_entries" xml:space="preserve"><value>تحتوي الحزمة على عدد كبير جدًا من الملفات.</value></data>
-  <data name="Error_package_reason_too_large" xml:space="preserve"><value>حجم الحزمة بعد فكّ الضغط أكبر من المسموح.</value></data>
-  <data name="Error_package_reason_compression_ratio" xml:space="preserve"><value>طريقة ضغط الحزمة غير آمنة. صدّرها من جديد.</value></data>
-  <data name="Error_package_reason_symlink" xml:space="preserve"><value>تحتوي الحزمة على روابط لملفات أخرى، وهذا غير مسموح.</value></data>
-  <data name="Error_package_reason_duplicate_name" xml:space="preserve"><value>يوجد ملفان بالاسم نفسه في الحزمة.</value></data>
-  <data name="Error_package_reason_bad_name_encoding" xml:space="preserve"><value>تعذّرت قراءة بعض أسماء الملفات. أعد تسميتها بحروف وأرقام بسيطة.</value></data>
-  <data name="Error_package_reason_executable" xml:space="preserve"><value>تحتوي الحزمة على برامج أو ملفات إضافات قديمة (مثل Flash)، وهذا غير مسموح.</value></data>
-  <data name="Error_package_reason_encrypted" xml:space="preserve"><value>الحزمة محمية بكلمة مرور. ارفعها دون كلمة مرور.</value></data>
-  <data name="Error_package_reason_nested_archive" xml:space="preserve"><value>تحتوي الحزمة على ملف مضغوط آخر بداخلها. ارفع الحزمة الداخلية بدلًا منها.</value></data>
-  <data name="Error_package_reason_manifest_invalid" xml:space="preserve"><value>هذه ليست حزمة SCORM أو H5P صالحة: ملف الوصف أو صفحة البداية مفقود أو تالف.</value></data>
-  <data name="Error_package_reason_xml_unsafe" xml:space="preserve"><value>يستخدم ملف وصف الحزمة خصائص غير مسموحة. صدّرها من جديد.</value></data>
-  <data name="Error_package_reason_multi_sco" xml:space="preserve"><value>تحتوي الحزمة على أكثر من وحدة تعلّم. صدّر كل وحدة في حزمة مستقلة.</value></data>
-  <data name="Error_package_reason_needs_nested_frames" xml:space="preserve"><value>تعرض الحزمة محتواها داخل إطارات، ولا يمكن تشغيلها بأمان هنا. صدّرها بمشغّل من صفحة واحدة إن كانت أداتك توفّر ذلك.</value></data>
-  <data name="Error_package_reason_needs_relaxed_policy" xml:space="preserve"><value>تحتاج الحزمة إلى خصائص في المتصفح غير مسموحة لأسباب أمنية.</value></data>
-  <data name="Error_package_reason_h5p_invalid" xml:space="preserve"><value>ملف H5P غير مكتمل أو يستخدم نوع محتوى غير مدعوم.</value></data>
-  <data name="Error_package_reason_validation_timeout" xml:space="preserve"><value>استغرق فحص الحزمة وقتًا طويلًا. حاول مرة أخرى أو ارفع حزمة أصغر.</value></data>
-  <data name="Error_package_reason_quota_exceeded" xml:space="preserve"><value>استُهلكت مساحة التخزين المخصصة للحزم في مدرستك. احذف حزمًا لم تعد تحتاجها أو تواصل مع المسؤول.</value></data>
-  <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>لم تجتز الحزمة الفحص الأمني.</value></data>
-  <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>الملف ليس أرشيف zip صالحًا. صدّر الحزمة من جديد.</value></data>
-  <data name="Error_package_reason_bad_name" xml:space="preserve"><value>بعض أسماء الملفات في الحزمة طويلة جدًا أو متداخلة بعمق أو محجوزة. أعد تسميتها وصدّر الحزمة من جديد.</value></data>
   <data name="ClassCourse_TabLive" xml:space="preserve"><value>الجلسات المباشرة</value></data>
   <data name="Live_Title" xml:space="preserve"><value>الجلسات المباشرة</value></data>
   <data name="Live_Subtitle" xml:space="preserve"><value>حصص عبر الإنترنت لهذا المقرر. ينضم الطلاب من الدرس.</value></data>
@@ -1822,16 +1839,23 @@
   <data name="AuditEntity_GradeEntry" xml:space="preserve"><value>درجة</value></data>
   <data name="AuditEntity_GradeSnapshot" xml:space="preserve"><value>لقطة الدرجات</value></data>
   <data name="PermModule_Grades" xml:space="preserve"><value>الدرجات</value></data>
-  <data name="ClassCourse_TabGradebook" xml:space="preserve"><value>دفتر الدرجات</value></data>
-  <data name="Grd_Title" xml:space="preserve"><value>دفتر الدرجات</value></data>
-  <data name="Grd_GridSoonTitle" xml:space="preserve"><value>جدول الدرجات قادم قريبًا</value></data>
-  <data name="Grd_GridSoonText" xml:space="preserve"><value>ستظهر هنا فئات الدرجات وبنودها ودرجات هذا المقرر الدراسي.</value></data>
   <data name="NavSection_Structure" xml:space="preserve"><value>الهيكل</value></data>
   <data name="NavSection_People" xml:space="preserve"><value>الأشخاص</value></data>
   <data name="NavSection_Academic" xml:space="preserve"><value>الأكاديمي</value></data>
   <data name="NavSection_Security" xml:space="preserve"><value>الأمان والإعدادات</value></data>
   <data name="App_Subtitle" xml:space="preserve"><value>المنصة الأكاديمية</value></data>
   <data name="Nav_Main" xml:space="preserve"><value>التنقل الرئيسي</value></data>
+  <data name="Blueprint_VersionsSubtitle" xml:space="preserve"><value>سجل كامل لمراجعات المخطط ونسخه المنشورة.</value></data>
+  <data name="Blueprint_Overview" xml:space="preserve"><value>نظرة عامة على المخطط</value></data>
+  <data name="Blueprint_StatSections" xml:space="preserve"><value>الأقسام</value></data>
+  <data name="Blueprint_StatLessons" xml:space="preserve"><value>الدروس</value></data>
+  <data name="Blueprint_StatPeriods" xml:space="preserve"><value>الحصص أسبوعيًا</value></data>
+  <data name="Blueprint_StatVersion" xml:space="preserve"><value>النسخة</value></data>
+  <data name="Blueprint_LessonsCount" xml:space="preserve"><value>الدروس: {0}</value></data>
+  <data name="ClassCourse_TabGradebook" xml:space="preserve"><value>دفتر الدرجات</value></data>
+  <data name="Grd_Title" xml:space="preserve"><value>دفتر الدرجات</value></data>
+  <data name="Grd_GridSoonTitle" xml:space="preserve"><value>جدول الدرجات قادم قريبًا</value></data>
+  <data name="Grd_GridSoonText" xml:space="preserve"><value>ستظهر هنا فئات الدرجات وبنودها ودرجات هذا المقرر الدراسي.</value></data>
   <data name="UnitSettings_Identity" xml:space="preserve"><value>الهوية</value></data>
   <data name="UnitSettings_IdentityHelp" xml:space="preserve"><value>الأسماء والرمز المستخدمة في كل أنحاء النظام.</value></data>
   <data name="Academic_SectionLevelHelp" xml:space="preserve"><value>كيف ينتقل الطلاب إلى المستوى التالي.</value></data>
