@@ -185,7 +185,7 @@ public sealed class M4aVisibilityProbeTests(LmsApiFactory factory) : IDisposable
         // A classmate holds the same permissions (same class course, other group) and still gets a 404, not a 403 and not the payload.
         await ExpectAsync(c.OtherGroupStudent, "classmate", "submission", HttpMethod.Get, Routes.Submission(submissionId), HttpStatusCode.NotFound);
         using var grade = await _t.SendAsync(c.OtherGroupStudent, HttpMethod.Put, Routes.SubmissionGrade(submissionId), new GradeSubmissionRequest(10, "mine", null));
-        Assert.True(grade.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.Forbidden, $"a student grading: got {(int)grade.StatusCode}");
+        Assert.True(grade.StatusCode == HttpStatusCode.Forbidden, $"a student grading must be refused with 403 (no grading permission, checked before the relationship): got {(int)grade.StatusCode}");
         await ExpectAsync(c.OtherGroupStudent, "classmate", "my submission is their own, empty", HttpMethod.Get, Routes.CourseAssignmentMySubmission(assignment.Id), HttpStatusCode.OK);
     }
 }
