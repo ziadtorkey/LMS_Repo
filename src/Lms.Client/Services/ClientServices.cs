@@ -19,6 +19,7 @@ public static class ClientServices
     {
         services.AddLocalization();
         services.AddMudServices();
+        services.TryAddSingleton(TimeProvider.System);
         services.AddScoped<ClientTimeZone>();
         services.AddTransient<MudBlazor.MudLocalizer, LmsMudLocalizer>();
         services.AddScoped<ICultureService, CultureService>();

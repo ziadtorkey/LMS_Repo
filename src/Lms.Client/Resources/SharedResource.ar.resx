@@ -1875,4 +1875,31 @@
   <data name="StGrades_Points" xml:space="preserve"><value>النقاط</value></data>
   <data name="StGrades_TotalWaits" xml:space="preserve"><value>يظهر المجموع عند رصد جميع الدرجات المنشورة.</value></data>
   <data name="StGrades_Children" xml:space="preserve"><value>الابن/الابنة</value></data>
+  <data name="Years_TermsPerYear" xml:space="preserve"><value>عدد الفصول في العام</value></data>
+  <data name="Years_TermsPerYearHelp" xml:space="preserve"><value>فصلان أو ثلاثة. تبقى الفصول الحالية كما هي ويمكنك تعديلها بعد ذلك.</value></data>
+  <data name="Years_TermNamesPreview" xml:space="preserve"><value>أسماء الفصول</value></data>
+  <data name="Years_TermNumber" xml:space="preserve"><value>الفصل {0}</value></data>
+  <data name="GradeSettings_Title" xml:space="preserve"><value>الدرجات</value></data>
+  <data name="TimeZone_Help" xml:space="preserve"><value>منطقة زمنية بمعرّف IANA مثل Asia/Riyadh. تتبعها التواريخ والأوقات.</value></data>
+  <data name="Common_UnsavedChanges" xml:space="preserve"><value>لديك تغييرات غير محفوظة</value></data>
+  <data name="Common_Discard" xml:space="preserve"><value>تجاهل</value></data>
+  <data name="GradeReports_Title" xml:space="preserve"><value>تقارير الدرجات</value></data>
+  <data name="GradeReports_Subtitle" xml:space="preserve"><value>المجاميع لكل طالب ومقرر، حتى الوقت المعروض.</value></data>
+  <data name="GradeReports_Export" xml:space="preserve"><value>تصدير إلى Excel</value></data>
+  <data name="GradeReports_Kind" xml:space="preserve"><value>التقرير</value></data>
+  <data name="GradeReports_Kind_class" xml:space="preserve"><value>حسب الفصل</value></data>
+  <data name="GradeReports_Kind_course" xml:space="preserve"><value>حسب المقرر</value></data>
+  <data name="GradeReports_Kind_student" xml:space="preserve"><value>حسب الطالب</value></data>
+  <data name="GradeReports_Class" xml:space="preserve"><value>الفصل</value></data>
+  <data name="GradeReports_Course" xml:space="preserve"><value>المقرر</value></data>
+  <data name="GradeReports_PickTitle" xml:space="preserve"><value>اختر ما تريد التقرير عنه</value></data>
+  <data name="GradeReports_PickText" xml:space="preserve"><value>اختر فصلًا أو مقررًا لعرض درجاته.</value></data>
+  <data name="GradeReports_AsOf" xml:space="preserve"><value>تم الحساب في</value></data>
+  <data name="GradeReports_EmptyTitle" xml:space="preserve"><value>لا توجد درجات بعد</value></data>
+  <data name="GradeReports_EmptyText" xml:space="preserve"><value>لم تُرصد درجات لهذا الاختيار.</value></data>
+  <data name="GradeReports_Col_Course" xml:space="preserve"><value>المقرر</value></data>
+  <data name="GradeReports_Col_Total" xml:space="preserve"><value>المجموع</value></data>
+  <data name="GradeReports_Col_Band" xml:space="preserve"><value>التقدير</value></data>
+  <data name="Nav_GradeReports" xml:space="preserve"><value>تقارير الدرجات</value></data>
+  <data name="Years_SavedTermsKept" xml:space="preserve"><value>تم حفظ العام الدراسي، لكن عدد الفصول لم يتغير.</value></data>
 </root>

@@ -42,6 +42,7 @@ public abstract class ClientTestContext : BunitContext, IAsyncLifetime
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddMudServices();
         Services.AddScoped<Lms.Client.Services.ClientTimeZone>();
+        Services.AddSingleton<TimeProvider>(TimeProvider.System);
         Services.AddTransient<MudBlazor.MudLocalizer, LmsMudLocalizer>();
         Services.AddLocalization();
         Services.AddSingleton<ICultureService>(Culture);
