@@ -16,7 +16,7 @@ public static partial class Routes
     /// <summary>GET → <c>ConversationDto</c> — <c>Messaging.View</c>; participant only (404 otherwise); muting and leaving are their own routes below.</summary>
     public const string ConversationPattern = Conversations + "/{id:guid}";
 
-    /// <summary>GET <c>?beforeId=&amp;pageSize=</c> → <c>MessagePageDto</c> — <c>Messaging.View</c>; POST (<c>SendMessageRequest</c> → <c>MessageDto</c>) — <c>Messaging.Send</c>; participant who has not left; 403 restricted; 403 <c>group_read_only</c> for a student in any group (D74) and for anyone when the group is read-only; 409 <c>conversation_closed</c>; 400 <c>message_too_long</c>; 429 <c>rate_limited</c>.</summary>
+    /// <summary>GET <c>?beforeId=&amp;pageSize=</c> → <c>MessagePageDto</c> — <c>Messaging.View</c>; POST (<c>SendMessageRequest</c> → <c>MessageDto</c>) — <c>Messaging.Send</c>; participant who has not left; 403 restricted; 403 <c>group_read_only</c> for a student in any group (D74), for a guardian outside a teacher-run group that includes guardians (D77) and for anyone but staff when the group is read-only; 409 <c>conversation_closed</c>; 400 <c>message_too_long</c>; 429 <c>rate_limited</c>.</summary>
     public const string ConversationMessagesPattern = ConversationPattern + "/messages";
 
     /// <summary>DELETE — <c>Messaging.Send</c>: the sender deletes their own message for everyone within <c>MessagingLimits.DeleteWindowMinutes</c> (409 <c>message_delete_window_closed</c> after); there is no edit.</summary>
@@ -34,7 +34,7 @@ public static partial class Routes
     /// <summary>DELETE — <c>Messaging.Send</c>; the group's owner removes a member (the owner leaves with <c>…/leave</c>); 404 for another participant.</summary>
     public const string ConversationParticipantPattern = ConversationParticipantsPattern + "/{userId:guid}";
 
-    /// <summary>PUT (no body → <c>ConversationDto</c>) and DELETE — <c>Messaging.Send</c> for the group's owner (a teacher), or <c>Messaging.Moderate</c> with <c>UnitAccess</c> at the conversation's unit for a moderator: sets or clears <c>IsReadOnly</c>, which is distinct from the moderator's lock (<c>IsLocked</c>, 409 <c>conversation_closed</c>). Only staff can post in a read-only group (D74: students never post in a group).</summary>
+    /// <summary>PUT (no body → <c>ConversationDto</c>) and DELETE — <c>Messaging.Send</c> for the group's owner (a teacher), or <c>Messaging.Moderate</c> with <c>UnitAccess</c> at the conversation's unit for a moderator: sets or clears <c>IsReadOnly</c>, which is distinct from the moderator's lock (<c>IsLocked</c>, 409 <c>conversation_closed</c>). Only staff can post in a read-only group (D74: students never post in a group; D77: guardians post only in teacher-run groups that include guardians, and not when it is read-only).</summary>
     public const string ConversationReadOnlyPattern = ConversationPattern + "/read-only";
 
     /// <summary>POST (no body) — <c>Messaging.Send</c>: marks the conversation read up to its last message (<c>LastReadMessageId</c>).</summary>

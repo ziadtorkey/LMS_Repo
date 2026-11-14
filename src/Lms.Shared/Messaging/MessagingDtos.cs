@@ -52,7 +52,7 @@ public sealed record MessageDto(
     DateTime? DeletedAtUtc,
     bool CanDelete);
 
-/// <summary>POST <c>/api/conversations</c>: a direct one (one other user) or a group (two or more others, at most <c>Messaging.MaxGroupSize</c>); only staff create groups. <c>ClassCourseId</c> makes it a class or course group a teacher of that class course created (own ClassCourses only); <b>students never post in a group</b> (D74): they read it and reply privately to the teacher. The rules matrix is checked for every participant (403 <c>messaging_not_allowed</c>).</summary>
+/// <summary>POST <c>/api/conversations</c>: a direct one (one other user) or a group (two or more others, at most <c>Messaging.MaxGroupSize</c>); only staff create groups. <c>ClassCourseId</c> makes it a class or course group a teacher of that class course created (own ClassCourses only); <b>students never post in a group</b> (D74): they read it and reply privately to the teacher; <b>guardians may post in a teacher-run group that includes guardians</b> (D77). The rules matrix is checked for every participant (403 <c>messaging_not_allowed</c>).</summary>
 public sealed record CreateConversationRequest(string Kind, IReadOnlyList<Guid> ParticipantUserIds, string? Title, string? FirstMessage, Guid? ClassCourseId = null);
 
 /// <summary>POST <c>…/participants</c>: members to add to a group (owner to member check for each).</summary>

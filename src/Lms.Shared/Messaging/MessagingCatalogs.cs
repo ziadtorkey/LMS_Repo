@@ -115,7 +115,7 @@ public static class AnnouncementRoleFilters
     public static IReadOnlyList<string> All { get; } = [Staff, Students, Guardians];
 }
 
-/// <summary>The state of one outbound delivery (email, SMS, push) in the outbox.</summary>
+/// <summary>The state of one outbound delivery (email, push) in the outbox.</summary>
 public static class DeliveryStatuses
 {
     public const string Pending = "Pending";
@@ -126,7 +126,7 @@ public static class DeliveryStatuses
     /// <summary>Not sent by rule: opt-out, suppression, per-recipient cap, no contact.</summary>
     public const string Skipped = "Skipped";
 
-    /// <summary>Held past its time to live (a held SMS starts its clock when the hold ends).</summary>
+    /// <summary>Held past its time to live (a held push starts its clock when the hold ends).</summary>
     public const string Expired = "Expired";
 
     public static IReadOnlyList<string> All { get; } = [Pending, Sending, Sent, Failed, Skipped, Expired];
@@ -140,10 +140,8 @@ public static class ChannelStates
     public const string Blocked = "Blocked";
     public const string Bounced = "Bounced";
 
-    /// <summary>The channel is never used for this account: SMS for a guardian or a student (D72, D75: SMS only to adults about themselves; guardians get email and push).</summary>
-    public const string NotAllowed = "NotAllowed";
 
-    public static IReadOnlyList<string> All { get; } = [Active, NeedsSetup, Blocked, Bounced, NotAllowed];
+    public static IReadOnlyList<string> All { get; } = [Active, NeedsSetup, Blocked, Bounced];
 }
 
 /// <summary>Where an effective notification preference comes from.</summary>
@@ -153,10 +151,8 @@ public static class PreferenceSources
     public const string User = "User";
     public const string Mandatory = "Mandatory";
 
-    /// <summary>A platform rule decides, not the user or the client: SMS is never sent to a guardian or about a minor (D72, D75).</summary>
-    public const string Policy = "Policy";
 
-    public static IReadOnlyList<string> All { get; } = [Default, User, Mandatory, Policy];
+    public static IReadOnlyList<string> All { get; } = [Default, User, Mandatory];
 }
 
 /// <summary>Limits of messaging and announcements (D66 defaults; the client settings narrow or raise within the settings catalog).</summary>

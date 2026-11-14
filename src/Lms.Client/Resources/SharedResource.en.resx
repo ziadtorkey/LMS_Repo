@@ -391,7 +391,6 @@
   <data name="Notif_Preferences" xml:space="preserve"><value>Notification preferences</value></data>
   <data name="Channel_InApp" xml:space="preserve"><value>In-app</value></data>
   <data name="Channel_Email" xml:space="preserve"><value>Email</value></data>
-  <data name="Channel_Sms" xml:space="preserve"><value>SMS</value></data>
   <data name="Channel_Push" xml:space="preserve"><value>Push</value></data>
   <data name="Notif_Access_RoleAssigned" xml:space="preserve"><value>You were given the role {RoleName} at {OrgUnitName}.</value></data>
   <data name="Notif_Access_RoleRemoved" xml:space="preserve"><value>Your role {RoleName} at {OrgUnitName} was removed.</value></data>
@@ -1761,13 +1760,10 @@
   <data name="PermModule_Announcements" xml:space="preserve"><value>Announcements</value></data>
   <data name="PermModule_Comms" xml:space="preserve"><value>Communication</value></data>
   <data name="Setting_Comms_EmailEnabled" xml:space="preserve"><value>Allow email notices</value></data>
-  <data name="Setting_Comms_SmsEnabled" xml:space="preserve"><value>Allow SMS notices</value></data>
   <data name="Setting_Comms_PushEnabled" xml:space="preserve"><value>Allow push notices</value></data>
   <data name="Setting_Comms_MaxEmailPerDay" xml:space="preserve"><value>Emails per day (client)</value></data>
-  <data name="Setting_Comms_MaxSmsPerDay" xml:space="preserve"><value>SMS per day (client)</value></data>
   <data name="Setting_Comms_MaxPushPerDay" xml:space="preserve"><value>Push notices per day (client)</value></data>
   <data name="Setting_Comms_MaxEmailPerUserPerDay" xml:space="preserve"><value>Emails per person per day</value></data>
-  <data name="Setting_Comms_MaxSmsPerUserPerDay" xml:space="preserve"><value>SMS per person per day</value></data>
   <data name="Setting_Comms_MaxPushPerUserPerDay" xml:space="preserve"><value>Push notices per person per day</value></data>
   <data name="Setting_Comms_QuietHours_Enabled" xml:space="preserve"><value>Quiet hours</value></data>
   <data name="Setting_Comms_QuietHours_Start" xml:space="preserve"><value>Quiet hours start</value></data>
@@ -1846,7 +1842,4 @@
   <data name="Comms_PrefSource_Mandatory" xml:space="preserve"><value>Required</value></data>
   <data name="Msg_Rule_SameUnit" xml:space="preserve"><value>Anyone in the same unit</value></data>
   <data name="Error_group_read_only" xml:space="preserve"><value>Only staff can post in this group.</value></data>
-  <data name="Error_channel_not_allowed" xml:space="preserve"><value>This channel is not used for this account.</value></data>
-  <data name="Comms_ChannelState_NotAllowed" xml:space="preserve"><value>Not available for this account</value></data>
-  <data name="Comms_PrefSource_Policy" xml:space="preserve"><value>Set by the platform</value></data>
 </root>
