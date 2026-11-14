@@ -32,6 +32,12 @@ public sealed class TakeAttendanceProbeRows : IProbeRowModule
         new("attendance report", HttpMethod.Get, Routes.AttendanceReportPattern,
             async (w, _) => new ProbeRequest($"{Routes.AttendanceReport(AttendanceReportKinds.Class)}?classId={(await TimetableKit.NewWorldAsync(w.Callers.Factory, w.Callers.A.School1)).Class.Id}"),
             Expect(Ok, Ok, NotFound, Forbidden, NotFound, NotFound)),
+        new("attendance alerts", HttpMethod.Get, Routes.AttendanceAlertsPattern,
+            (_, _) => Task.FromResult(new ProbeRequest(Routes.AttendanceAlertsPattern)),
+            Expect(Ok, Ok, Ok, Forbidden, Ok, Ok)),
+        new("attendance report export", HttpMethod.Get, Routes.AttendanceReportExportPattern,
+            async (w, _) => new ProbeRequest($"{Routes.AttendanceReportExport(AttendanceReportKinds.Class)}?classId={(await TimetableKit.NewWorldAsync(w.Callers.Factory, w.Callers.A.School1)).Class.Id}"),
+            Expect(Ok, Ok, NotFound, Forbidden, NotFound, NotFound)),
         // A guardian or student reaches only their own child (404 for anyone else's); staff hold no Attendance.ViewOwn (403). The link rule is tested in AttendanceReadTests.
         new("attendance of a child", HttpMethod.Get, Routes.StudentAttendancePattern,
             (_, _) => Task.FromResult(new ProbeRequest(Routes.StudentAttendance(Guid.NewGuid()))),

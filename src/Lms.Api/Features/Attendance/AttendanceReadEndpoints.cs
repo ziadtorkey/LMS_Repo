@@ -28,6 +28,7 @@ public static class AttendanceReadEndpoints
     {
         app.MapGet(Routes.OrgUnitAttendanceSessionsPattern, SearchAsync).RequirePermission(Permissions.Attendance.View);
         app.MapGet(Routes.AttendanceReportPattern, ReportAsync).RequirePermission(Permissions.Attendance.View);
+        app.MapGet(Routes.AttendanceReportExportPattern, ExportReportAsync).RequirePermission(Permissions.Attendance.View);
         app.MapGet(Routes.MeAttendance, MineAsync).RequirePermission(Permissions.Attendance.ViewOwn);
         app.MapGet(Routes.StudentAttendancePattern, ChildAsync).RequirePermission(Permissions.Attendance.ViewOwn);
         return app;
@@ -78,9 +79,25 @@ public static class AttendanceReadEndpoints
         string kind, [AsParameters] AttendanceReportQuery query, HttpContext http, LmsDbContext db, ICurrentContext current, IClientCalendar calendar, IClock clock,
         ExceptionLookups lookups, CancellationToken ct)
     {
+        var (dto, problem) = await BuildReportAsync(kind, query, http, db, current, calendar, clock, lookups, all: false, ct);
+        return dto is null ? problem! : Results.Ok(dto);
+    }
+
+    private static async Task<IResult> ExportReportAsync(
+        string kind, [AsParameters] AttendanceReportQuery query, HttpContext http, LmsDbContext db, ICurrentContext current, IClientCalendar calendar, IClock clock,
+        ExceptionLookups lookups, CancellationToken ct)
+    {
+        var (dto, problem) = await BuildReportAsync(kind, query, http, db, current, calendar, clock, lookups, all: true, ct);
+        return dto is null ? problem! : Results.File(AttendanceReportExporter.ToXlsx(dto), AttendanceReportExporter.ContentType, $"attendance-{kind}-{dto.From:yyyyMMdd}-{dto.To:yyyyMMdd}.xlsx");
+    }
+
+    private static async Task<(AttendanceReportDto? Dto, IResult? Problem)> BuildReportAsync(
+        string kind, AttendanceReportQuery query, HttpContext http, LmsDbContext db, ICurrentContext current, IClientCalendar calendar, IClock clock,
+        ExceptionLookups lookups, bool all, CancellationToken ct)
+    {
         if (!AttendanceReportKinds.All.Contains(kind) || current.OrganizationId is not { } organizationId)
         {
-            return ApiProblems.NotFound();
+            return (null, ApiProblems.NotFound());
         }
 
         var today = await calendar.LocalTodayAsync(organizationId, ct);
@@ -88,7 +105,7 @@ public static class AttendanceReadEndpoints
         var start = query.From ?? to.AddDays(-DefaultRangeDays);
         if (to < start || to.DayNumber - start.DayNumber > 366)
         {
-            return ApiProblems.BadRequest(ProblemCodes.validation_failed, "The range is at most 366 days.");
+            return (null, ApiProblems.BadRequest(ProblemCodes.validation_failed, "The range is at most 366 days."));
         }
 
         var page = Math.Max(1, query.Page);
@@ -102,13 +119,13 @@ public static class AttendanceReadEndpoints
         {
             if (query.StudentId is not { } studentId)
             {
-                return ApiProblems.BadRequest(ProblemCodes.validation_failed, "studentId is required.");
+                return (null, ApiProblems.BadRequest(ProblemCodes.validation_failed, "studentId is required."));
             }
 
             var (student, problem) = await http.CheckStudentAsync(Permissions.Attendance.View, studentId, ct);
             if (student is null)
             {
-                return problem!;
+                return (null, problem);
             }
 
             var mine = await records.Where(r => r.StudentProfileId == studentId).ToListAsync(ct);
@@ -122,13 +139,13 @@ public static class AttendanceReadEndpoints
         {
             if (query.ClassId is not { } classId)
             {
-                return ApiProblems.BadRequest(ProblemCodes.validation_failed, "classId is required.");
+                return (null, ApiProblems.BadRequest(ProblemCodes.validation_failed, "classId is required."));
             }
 
             var (cls, problem) = await http.CheckClassAsync(Permissions.Attendance.View, classId, ct);
             if (cls is null)
             {
-                return problem!;
+                return (null, problem);
             }
 
             var mine = await records.Where(r => r.ClassId == classId && (query.ClassCourseId == null || r.ClassCourseId == query.ClassCourseId)).ToListAsync(ct);
@@ -144,8 +161,8 @@ public static class AttendanceReadEndpoints
         var total = AttendanceSummaries.Summarize(rows.SelectMany(r => Enumerable.Repeat("Present", r.Summary.Present)
             .Concat(Enumerable.Repeat("Absent", r.Summary.Absent)).Concat(Enumerable.Repeat("Late", r.Summary.Late)).Concat(Enumerable.Repeat("Excused", r.Summary.Excused)))
             .Cast<string?>());
-        var paged = rows.Skip((page - 1) * size).Take(size).ToList();
-        return Results.Ok(new AttendanceReportDto(kind, start, to, total, new PagedResult<AttendanceReportRowDto>(paged, rows.Count, page, size), clock.UtcNow, clock.UtcNow));
+        var paged = all ? rows : rows.Skip((page - 1) * size).Take(size).ToList();
+        return (new AttendanceReportDto(kind, start, to, total, new PagedResult<AttendanceReportRowDto>(paged, rows.Count, all ? 1 : page, all ? Math.Max(1, rows.Count) : size), clock.UtcNow, clock.UtcNow), null);
     }
 
     private static async Task<IResult> MineAsync(
