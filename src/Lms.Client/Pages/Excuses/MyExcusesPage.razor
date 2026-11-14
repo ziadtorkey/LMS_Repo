@@ -34,7 +34,7 @@ else
                 <div class="lms-excuse-head">
                     <div>
                         <MudText Typo="Typo.subtitle1">@Culture.Pick(excuse.StudentNameAr, excuse.StudentNameEn)</MudText>
-                        <MudText Typo="Typo.body2" Class="lms-muted">@L[$"Exc_Reason_{excuse.Reason}"] · <span dir="ltr">@excuse.SubmittedAtUtc.ToString("yyyy-MM-dd")</span></MudText>
+                        <MudText Typo="Typo.body2" Class="lms-muted">@L[$"Exc_Reason_{excuse.Reason}"] · <LocalTime Utc="excuse.SubmittedAtUtc" Format="yyyy-MM-dd" /></MudText>
                     </div>
                     <ExcuseStatusChip Status="@excuse.Status" TestId="@($"excuse-status-{excuse.Id}")" />
                 </div>
@@ -54,7 +54,7 @@ else
                     <ul class="lms-excuse-covered" data-testid="@($"excuse-history-{excuse.Id}")">
                         @foreach (var step in excuse.History)
                         {
-                            <li>@L[$"Exc_Status_{step.Status}"] · @Culture.Pick(step.ByNameAr, step.ByNameEn) · <span dir="ltr">@step.AtUtc.ToString("yyyy-MM-dd HH:mm")</span>@(string.IsNullOrWhiteSpace(step.Comment) ? "" : " · " + step.Comment)</li>
+                            <li>@L[$"Exc_Status_{step.Status}"] · @Culture.Pick(step.ByNameAr, step.ByNameEn) · <LocalTime Utc="step.AtUtc" />@(string.IsNullOrWhiteSpace(step.Comment) ? "" : " · " + step.Comment)</li>
                         }
                     </ul>
                 </details>
