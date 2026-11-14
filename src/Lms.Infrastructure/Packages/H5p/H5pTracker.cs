@@ -52,12 +52,12 @@ public sealed class H5pTracker : IPackageTracker
         var raw = Number(model, "result.score.raw");
         if (raw is null && Number(model, "result.score.scaled") is { } scaled and >= -1m and <= 1m)
         {
-            return (scaled * DefaultMax, 0m, DefaultMax); // a scaled score (-1..1) read on the 0..100 scale
+            return (Math.Max(0m, scaled * DefaultMax), 0m, DefaultMax); // a scaled score (-1..1) read on the 0..100 scale
         }
 
-        if (raw is { } value && max is { } ceiling && value > ceiling)
+        if (raw is { } value)
         {
-            raw = ceiling; // never above the maximum
+            raw = Math.Clamp(value, 0m, max ?? DefaultMax); // never below 0 and never above the maximum (100 when the content reports none)
         }
 
         return (raw, min, max);

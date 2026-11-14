@@ -81,4 +81,19 @@ public sealed class H5pTrackerTests
         Assert.Equal(10m, capped.ScoreMax);
         Assert.True(capped.Completed);
     }
+
+    [Fact]
+    public void Raw_is_clamped_into_zero_and_the_maximum_and_the_maximum_defaults_to_100()
+    {
+        var huge = Judge(CompletionRules.Score, 60m, ("result.score.raw", "999999"));
+        Assert.Equal(100m, huge.ScoreRaw); // no maximum reported: 100 is the ceiling
+
+        var negative = Judge(CompletionRules.Score, 60m, ("result.score.raw", "-500"));
+        Assert.Equal(0m, negative.ScoreRaw);
+        Assert.False(negative.Completed);
+
+        var overMax = Judge(CompletionRules.Score, 60m, ("result.score.raw", "50"), ("result.score.max", "10"));
+        Assert.Equal(10m, overMax.ScoreRaw);
+        Assert.Equal(0m, Judge(CompletionRules.Score, 60m, ("result.score.scaled", "-0.5")).ScoreRaw); // a negative scaled score is 0
+    }
 }
