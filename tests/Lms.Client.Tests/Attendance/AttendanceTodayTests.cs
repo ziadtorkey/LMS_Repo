@@ -184,9 +184,56 @@ public sealed class AttendanceTodayTests : StaffTestContext
     }
 
     [Fact]
+    public async Task A_View_holder_picks_a_unit_and_sees_its_sessions_with_Edit_only_after_the_window_and_with_permission()
+    {
+        Culture.Current = new CultureInfo("en");
+        await GrantAsync(Permissions.Attendance.View, Permissions.Attendance.Edit); // a counselor: no Take
+        RenderProviders();
+        var page = Render<AttendanceTodayPage>();
+        page.WaitForElement("[data-testid=attendance-choose-unit]"); // nothing is listed before a unit is chosen
+        Assert.Empty(page.FindAll("[data-testid=attendance-unit-mode]")); // View only: no "my sessions" switch
+
+        var picker = page.FindComponent<Lms.Client.Components.People.UnitPicker>();
+        await page.InvokeAsync(() => picker.Instance.ValueChanged.InvokeAsync(FakeUnits.SchoolId));
+        await page.InvokeAsync(() => page.FindComponent<MudBlazor.MudDatePicker>().Instance.DateChanged.InvokeAsync(new DateTime(2026, 11, 18))); // the day of the fake sessions
+
+        page.WaitForElement("[data-testid=attendance-sessions]");
+        Assert.Contains("Edit attendance", page.Find($"[data-testid=session-primary-{FakeAttendanceApi.SessionClosed}]").TextContent); // the lock is for editing: Edit holds it
+        Assert.Contains("Review", page.Find($"[data-testid=session-primary-{FakeAttendanceApi.SessionOpen}]").TextContent); // an open session is not theirs to take
+    }
+
+    [Fact]
+    public async Task A_View_holder_without_Edit_can_only_review()
+    {
+        Culture.Current = new CultureInfo("en");
+        await GrantAsync(Permissions.Attendance.View);
+        RenderProviders();
+        var page = Render<AttendanceTodayPage>();
+        var picker = page.FindComponent<Lms.Client.Components.People.UnitPicker>();
+        await page.InvokeAsync(() => picker.Instance.ValueChanged.InvokeAsync(FakeUnits.SchoolId));
+        await page.InvokeAsync(() => page.FindComponent<MudBlazor.MudDatePicker>().Instance.DateChanged.InvokeAsync(new DateTime(2026, 11, 18))); // the day of the fake sessions
+
+        page.WaitForElement("[data-testid=attendance-sessions]");
+
+        Assert.All(page.FindAll("[data-testid^=session-primary-]"), b => Assert.Contains("Review", b.TextContent));
+    }
+
+    [Fact]
+    public async Task Take_plus_View_gets_a_switch_between_my_sessions_and_a_unit()
+    {
+        Culture.Current = new CultureInfo("en");
+        await GrantAsync(Permissions.Attendance.Take, Permissions.Attendance.View);
+        RenderProviders();
+        var page = Render<AttendanceTodayPage>();
+        page.WaitForElement("[data-testid=attendance-sessions]"); // "my sessions today" as before
+
+        Assert.NotNull(page.Find("[data-testid=attendance-unit-mode]"));
+    }
+
+    [Fact]
     public async Task Without_Attendance_Take_the_page_is_forbidden()
     {
-        await GrantAsync(Permissions.Attendance.View);
+        await GrantAsync(Permissions.Attendance.ViewOwn);
         RenderProviders();
 
         var page = Render<AttendanceTodayPage>();

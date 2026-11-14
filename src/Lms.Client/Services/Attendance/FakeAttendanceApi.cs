@@ -1,5 +1,6 @@
 using Lms.Client.Services;
 using Lms.Client.Services.Api;
+using Lms.Shared;
 using Lms.Shared.Attendance;
 
 namespace Lms.Client.Services.Attendance;
@@ -60,6 +61,12 @@ public sealed class FakeAttendanceApi : IAttendanceApi
     {
         var day = date ?? LocalToday();
         return Task.FromResult<IReadOnlyList<AttendanceSessionListItemDto>>(_sessions.Where(s => s.Date == day).Select(s => s.Dto(_clock)).ToList());
+    }
+
+    public Task<PagedResult<AttendanceSessionListItemDto>> SearchSessionsAsync(Guid unitId, AttendanceSessionSearchQuery query, CancellationToken ct = default)
+    {
+        var rows = _sessions.Where(s => s.Date >= query.From && s.Date <= query.To && (query.State is null || s.State == query.State)).Select(s => s.Dto(_clock)).ToList();
+        return Task.FromResult(new PagedResult<AttendanceSessionListItemDto>(rows.Skip((query.Page - 1) * query.PageSize).Take(query.PageSize).ToList(), rows.Count, query.Page, query.PageSize));
     }
 
     public Task<AttendanceSessionListItemDto> CreateAdHocAsync(Guid classCourseId, CreateAdHocAttendanceSessionRequest request, CancellationToken ct = default)

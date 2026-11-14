@@ -1738,4 +1738,7 @@
   <data name="Att_Summary" xml:space="preserve"><value>ملخص الحضور</value></data>
   <data name="Att_Save" xml:space="preserve"><value>حفظ الحضور</value></data>
   <data name="Att_Save_Changes" xml:space="preserve"><value>حفظ التغييرات</value></data>
+  <data name="Att_Unit_Mode" xml:space="preserve"><value>حصص وحدة</value></data>
+  <data name="Att_Unit_ChooseTitle" xml:space="preserve"><value>اختر وحدة</value></data>
+  <data name="Att_Unit_ChooseText" xml:space="preserve"><value>اختر وحدة ويومًا لعرض حصص الحضور فيها، بما فيها المغلقة.</value></data>
 </root>

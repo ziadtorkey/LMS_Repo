@@ -1738,4 +1738,7 @@
   <data name="Att_Summary" xml:space="preserve"><value>Attendance summary</value></data>
   <data name="Att_Save" xml:space="preserve"><value>Save attendance</value></data>
   <data name="Att_Save_Changes" xml:space="preserve"><value>Save changes</value></data>
+  <data name="Att_Unit_Mode" xml:space="preserve"><value>Sessions of a unit</value></data>
+  <data name="Att_Unit_ChooseTitle" xml:space="preserve"><value>Choose a unit</value></data>
+  <data name="Att_Unit_ChooseText" xml:space="preserve"><value>Pick a unit and a day to see its attendance sessions, including closed ones.</value></data>
 </root>
