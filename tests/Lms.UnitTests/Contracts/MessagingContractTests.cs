@@ -233,6 +233,26 @@ public sealed class MessagingContractTests
     }
 
     [Fact]
+    public void Announcements_carry_an_urgent_flag_and_a_capability_dto_and_urgent_means_no_sms()
+    {
+        var create = new CreateAnnouncementRequest(Id, "عاجل", "Urgent", "نص", null, [new AnnouncementTargetDto(AnnouncementTargetKinds.Organization, null, true)],
+            [AnnouncementRoleFilters.Guardians], null, null, true, true, null, true, IsUrgent: true);
+        var update = new UpdateAnnouncementRequest("عاجل", "Urgent", null, null, [], null, null, null, true, true, null, IsUrgent: true);
+
+        Assert.True(Round(create).IsUrgent);
+        Assert.True(Round(update).IsUrgent);
+        Assert.False(new MyAnnouncementDto(Id, "ع", "E", null, null, [], "م", "A", DateTime.UtcNow, false, false, null).IsUrgent); // older shapes default to not urgent
+        Assert.Equal((true, false, true), (Round(new AnnouncementCapabilitiesDto(true, false, true)).CanAuthorUnitAnnouncements,
+            Round(new AnnouncementCapabilitiesDto(true, false, true)).CanAuthorClassCourseAnnouncements, Round(new AnnouncementCapabilitiesDto(true, false, true)).CanMarkUrgent));
+        Assert.StartsWith("/api/", Routes.OrgAnnouncementCapabilities, StringComparison.Ordinal);
+        // D76: urgent is push and email, immediately; the doc says so and no SMS channel exists to fall back on
+        var text = File.ReadAllText(Path.Combine(RepoRoot(), "src", "Lms.Shared", "Messaging", "AnnouncementDtos.cs"));
+        Assert.Contains("IsUrgent", text, StringComparison.Ordinal);
+        Assert.Contains("push", text, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain(NotificationChannels.All, c => c.Equals("Sms", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public void Dtos_round_trip_with_arabic_text()
     {
         var participant = new ParticipantDto(Id, "سارة", "Sara", BuiltInRoles.Teacher, false);
@@ -269,7 +289,7 @@ public sealed class MessagingContractTests
             Routes.MessageReportPattern, Routes.MyBlocks, Routes.MyBlockPattern, Routes.MessagingRecipients, Routes.MessagingRulesSummary, Routes.MessagingLimits,
             Routes.MyUnreadTotal, Routes.ModerationReports, Routes.ModerationReportPattern, Routes.ModerationReportResolvePattern, Routes.ModerationStats,
             Routes.OrgAnnouncements, Routes.OrgAnnouncementPattern, Routes.OrgAnnouncementPublishPattern, Routes.OrgAnnouncementWithdrawPattern,
-            Routes.OrgAnnouncementAudiencePreview, Routes.MyAnnouncements, Routes.MyAnnouncementReadPattern, Routes.MyPushSubscriptions, Routes.MyPushSubscriptionPattern,
+            Routes.OrgAnnouncementAudiencePreview, Routes.OrgAnnouncementCapabilities, Routes.MyAnnouncements, Routes.MyAnnouncementReadPattern, Routes.MyPushSubscriptions, Routes.MyPushSubscriptionPattern,
             Routes.MyEffectivePreferences, Routes.MyChannels, Routes.MyEmailTest, Routes.CommsMessagingRules, Routes.CommsProviderStatus, Routes.CommsSettings,
             Routes.EmailEventsWebhook, Routes.DevCommsOutbox,
         };
@@ -302,7 +322,7 @@ public sealed class MessagingContractTests
         var matches = Regex.Matches(text, @"((?:\s*///[^\n]*\n)+)\s*public const string (\w+) =");
         var routes = matches.Select(m => (Name: m.Groups[2].Value, Doc: m.Groups[1].Value)).ToList();
 
-        Assert.True(routes.Count >= 39, $"found {routes.Count} documented route constants");
+        Assert.True(routes.Count >= 40, $"found {routes.Count} documented route constants");
         Assert.All(routes, r => Assert.Matches(@"Messaging\.\w+|Announcements\.\w+|Comms\.\w+|authenticated|anonymous|Development only|participant", r.Doc));
         Assert.Equal(Regex.Matches(text, @"public const string \w+ =").Count, routes.Count);
     }

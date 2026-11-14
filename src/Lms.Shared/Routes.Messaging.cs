@@ -91,6 +91,9 @@ public static partial class Routes
     /// <summary>POST (<c>AudiencePreviewRequest</c> → <c>AudiencePreviewDto</c>) — <c>Announcements.Manage</c>: the count before publishing.</summary>
     public const string OrgAnnouncementAudiencePreview = OrgAnnouncements + "/audience-preview";
 
+    /// <summary>GET → <c>AnnouncementCapabilitiesDto</c> — <c>Announcements.View</c>: what the caller may author (unit-level targets, class-course targets, urgent); never inferred from another permission.</summary>
+    public const string OrgAnnouncementCapabilities = OrgAnnouncements + "/capabilities";
+
     /// <summary>GET → <c>MyAnnouncementDto</c> page — <c>Announcements.View</c>; only the caller's own recipient rows, active, pinned first.</summary>
     public const string MyAnnouncements = "/api/me/announcements";
 
