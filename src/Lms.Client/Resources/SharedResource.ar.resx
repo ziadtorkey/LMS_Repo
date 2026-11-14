@@ -1738,4 +1738,42 @@
   <data name="Att_Summary" xml:space="preserve"><value>ملخص الحضور</value></data>
   <data name="Att_Save" xml:space="preserve"><value>حفظ الحضور</value></data>
   <data name="Att_Save_Changes" xml:space="preserve"><value>حفظ التغييرات</value></data>
+  <data name="Common_Date" xml:space="preserve"><value>التاريخ</value></data>
+  <data name="Nav_MyAttendance" xml:space="preserve"><value>حضوري</value></data>
+  <data name="OwnAtt_Title" xml:space="preserve"><value>الحضور</value></data>
+  <data name="OwnAtt_Percent" xml:space="preserve"><value>نسبة الحضور</value></data>
+  <data name="OwnAtt_Sessions" xml:space="preserve"><value>الحصص</value></data>
+  <data name="OwnAtt_Course" xml:space="preserve"><value>المقرر</value></data>
+  <data name="OwnAtt_EmptyTitle" xml:space="preserve"><value>لا توجد حصص في هذه الفترة</value></data>
+  <data name="OwnAtt_EmptyText" xml:space="preserve"><value>تظهر الحصص هنا بعد تسجيل الحضور.</value></data>
+  <data name="OwnAtt_Shown" xml:space="preserve"><value>{0} من {1} حصة</value></data>
+  <data name="Exc_Column" xml:space="preserve"><value>العذر</value></data>
+  <data name="Exc_Explain" xml:space="preserve"><value>تقديم عذر لهذا الغياب</value></data>
+  <data name="Exc_Submit_Open" xml:space="preserve"><value>تقديم عذر</value></data>
+  <data name="Exc_Submit" xml:space="preserve"><value>تقديم</value></data>
+  <data name="Exc_Submitted" xml:space="preserve"><value>تم تقديم العذر.</value></data>
+  <data name="Exc_Guardian_Sentence" xml:space="preserve"><value>يمكن لولي أمرك تقديم عذر عن الغياب.</value></data>
+  <data name="Exc_Policy_Hint" xml:space="preserve"><value>يمكنك تقديم العذر خلال {0} أيام من الغياب.</value></data>
+  <data name="Exc_Section_When" xml:space="preserve"><value>أي غياب</value></data>
+  <data name="Exc_Section_Why" xml:space="preserve"><value>السبب</value></data>
+  <data name="Exc_Section_Attachment" xml:space="preserve"><value>المرفق</value></data>
+  <data name="Exc_From" xml:space="preserve"><value>من</value></data>
+  <data name="Exc_To" xml:space="preserve"><value>إلى</value></data>
+  <data name="Exc_Reason" xml:space="preserve"><value>السبب</value></data>
+  <data name="Exc_Reason_Required" xml:space="preserve"><value>اختر سببًا.</value></data>
+  <data name="Exc_Sessions_Required" xml:space="preserve"><value>حدّد حصة واحدة على الأقل.</value></data>
+  <data name="Exc_Details" xml:space="preserve"><value>تفاصيل (اختياري)</value></data>
+  <data name="Exc_Attachment_Help" xml:space="preserve"><value>اختياري ما لم يتطلبه السبب. حتى {0} ميغابايت؛ المسموح: {1}.</value></data>
+  <data name="Exc_Attachment_Required" xml:space="preserve"><value>المرفق مطلوب لهذا السبب.</value></data>
+  <data name="Exc_Attachment_Type" xml:space="preserve"><value>نوع الملف هذا غير مسموح.</value></data>
+  <data name="Exc_Attachment_Size" xml:space="preserve"><value>حجم الملف أكبر من {0} ميغابايت.</value></data>
+  <data name="Exc_My_Title" xml:space="preserve"><value>أعذاري</value></data>
+  <data name="Exc_My_Subtitle" xml:space="preserve"><value>الأعذار التي قدّمتها وما تقرر بشأنها.</value></data>
+  <data name="Exc_My_EmptyTitle" xml:space="preserve"><value>لا توجد أعذار بعد</value></data>
+  <data name="Exc_My_EmptyText" xml:space="preserve"><value>افتح صفحة الحضور واختر تقديم عذر لهذا الغياب.</value></data>
+  <data name="Exc_Decision" xml:space="preserve"><value>القرار</value></data>
+  <data name="Exc_History" xml:space="preserve"><value>السجل</value></data>
+  <data name="Exc_Withdraw" xml:space="preserve"><value>سحب</value></data>
+  <data name="Exc_Withdrawn" xml:space="preserve"><value>تم سحب العذر.</value></data>
+  <data name="Exc_Attendance_Link" xml:space="preserve"><value>الحضور</value></data>
 </root>

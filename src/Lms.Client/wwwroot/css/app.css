@@ -121,3 +121,19 @@ html:lang(ar), html:lang(ar) body { font-family: Cairo, "Segoe UI", Tahoma, Aria
 .lms-att-counts { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: .8125rem; min-width: 0; }
 .lms-att-count strong { font-variant-numeric: tabular-nums; margin-inline-start: 2px; }
 @media (max-width: 599px) { .lms-att-btn { flex-direction: column; gap: 2px; font-size: .75rem; padding-block: 4px; } .lms-att-key { display: none; } }
+
+/* ---------- Own attendance and excuses (M5 Task 36) ---------- */
+.lms-excuse-list { display: grid; gap: 16px; }
+.lms-excuse-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; min-width: 0; }
+.lms-excuse-covered { margin: 8px 0 0; padding-inline-start: 20px; font-size: .875rem; }
+.lms-excuse-sessions { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 2px; }
+@media (max-width: 599px) {
+    /* On a phone the excuse dialog is a full-screen sheet, the sections one under the other. */
+    .lms-dialog-sheet.mud-dialog { margin: 0; inline-size: 100vw; max-inline-size: 100vw; block-size: 100dvh; max-block-size: 100dvh; border-radius: 0; }
+}
+@media (max-width: 599px) {
+    /* Five count tiles in two columns, so the session list stays on the first screen of a phone. */
+    .lms-stats.lms-stats-compact { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-block-end: 12px; }
+    .lms-stats.lms-stats-compact .lms-stat { padding: 10px 12px; }
+    .lms-stats.lms-stats-compact .lms-stat-value { font-size: 1.375rem; }
+}
