@@ -1,0 +1,55 @@
+@page "/promotion"
+@page "/promotion/{RunId:guid}"
+@attribute [Authorize]
+@using Lms.Shared.Authorization
+@inject PermissionState PermState
+@implements IDisposable
+
+<PageTitle>@L["Promo_Title"]</PageTitle>
+<PageHeader Title="@L["Promo_Title"]" Subtitle="@L["Promo_Subtitle"]" TitleTestId="promo-title" />
+
+@if (!PermState.Loaded)
+{
+    <LoadingState Lines="4" TestId="promo-loading" />
+}
+else if (!PermState.Has(Permissions.Promotion.Run))
+{
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" data-testid="promo-forbidden">@L["Forbidden_Title"]</MudAlert>
+}
+else
+{
+    <ol class="lms-steps" aria-label="@L["Promo_Steps"]" data-testid="promo-steps">
+        <li class="@(RunId is null ? "" : "lms-step-done")" aria-current="@(RunId is null ? "step" : null)" data-testid="promo-step-choose">
+            <span class="lms-step-number" aria-hidden="true">1</span><span class="lms-step-label">@L["Promo_Step_Choose"]</span>
+        </li>
+        <li aria-current="@(RunId is not null ? "step" : null)" data-testid="promo-step-preview">
+            <span class="lms-step-number" aria-hidden="true">2</span><span class="lms-step-label">@L["Promo_Step_Preview"]</span>
+        </li>
+        <li data-testid="promo-step-run">
+            <span class="lms-step-number" aria-hidden="true">3</span><span class="lms-step-label">@L["Promo_Step_Run"]</span>
+        </li>
+    </ol>
+
+    @if (RunId is { } id)
+    {
+        <PromotionPreview @key="id" RunId="id" />
+    }
+    else
+    {
+        <PromotionSetup />
+    }
+}
+
+@code {
+    [Parameter] public Guid? RunId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        PermState.Changed += OnPermissionsChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+    }
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => PermState.Changed -= OnPermissionsChanged;
+}
