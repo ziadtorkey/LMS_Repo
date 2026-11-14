@@ -1835,4 +1835,14 @@
   <data name="AttReports_Student" xml:space="preserve"><value>By student</value></data>
   <data name="AttReports_Class" xml:space="preserve"><value>By class</value></data>
   <data name="AttReports_AsOf" xml:space="preserve"><value>Computed {0}</value></data>
+  <data name="Att_Proposal_Banner" xml:space="preserve"><value>These marks were proposed from the Zoom participants list. Check them, then confirm. Nothing is final until you do.</value></data>
+  <data name="Att_Proposal_Unavailable" xml:space="preserve"><value>Zoom has not returned the participant list yet, so nobody is proposed. Mark attendance by hand, or come back later.</value></data>
+  <data name="Att_Proposal_Joined" xml:space="preserve"><value>In Zoom {0} min, joined {1}</value></data>
+  <data name="Att_Proposal_Minutes" xml:space="preserve"><value>In Zoom {0} min</value></data>
+  <data name="Att_Proposal_NotSeen" xml:space="preserve"><value>Not seen in Zoom</value></data>
+  <data name="Att_Unmatched_Title" xml:space="preserve"><value>Zoom participants not matched</value></data>
+  <data name="Att_Unmatched_Help" xml:space="preserve"><value>Match each to a student, or leave it empty to skip it.</value></data>
+  <data name="Att_Unmatched_This" xml:space="preserve"><value>This is</value></data>
+  <data name="Att_Unmatched_Save" xml:space="preserve"><value>Save matches</value></data>
+  <data name="AttReports_ClassFilter" xml:space="preserve"><value>Class</value></data>
 </root>

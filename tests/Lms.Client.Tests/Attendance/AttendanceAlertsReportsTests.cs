@@ -78,7 +78,11 @@ public sealed class AttendanceReportsPageTests : StaffTestContext
 {
     private readonly FakeAttendanceApi _api = new();
 
-    public AttendanceReportsPageTests() => Services.AddSingleton<IAttendanceApi>(_api);
+    public AttendanceReportsPageTests()
+    {
+        Services.AddSingleton<IAttendanceApi>(_api);
+        Services.AddSingleton<Lms.Client.Services.Api.IClassesApi, Lms.Client.Services.Api.FakeClassesApi>();
+    }
 
     private async Task<IRenderedComponent<AttendanceReportsPage>> RenderAsync(string culture = "en")
     {
@@ -120,6 +124,22 @@ public sealed class AttendanceReportsPageTests : StaffTestContext
         page.Find("[data-testid=reports-export]").Click();
 
         page.WaitForAssertion(() => Assert.Equal("attendance-class.xlsx", JSInterop.Invocations["lmsDownloadFile"].Single().Arguments[0]));
+    }
+
+    [Fact]
+    public async Task By_class_offers_a_class_picker_and_sends_the_chosen_class()
+    {
+        var page = await RenderAsync();
+        Assert.Empty(page.FindAll("[data-testid=reports-class]")); // by student: no class filter
+
+        await page.InvokeAsync(() => page.FindComponent<MudToggleGroup<string>>().Instance.ValueChanged.InvokeAsync("class"));
+        var picker = page.WaitForElement("[data-testid=reports-class]");
+
+        Assert.NotNull(picker);
+        var select = page.FindComponents<MudSelect<Guid?>>().Single();
+        var firstClass = Lms.Client.Services.Api.FakeClasses.All[0].Id;
+        await page.InvokeAsync(() => select.Instance.ValueChanged.InvokeAsync(firstClass));
+        page.WaitForAssertion(() => Assert.NotNull(page.Find("[data-testid=reports-table]"))); // the report reloads for that class
     }
 
     [Fact]

@@ -1,0 +1,48 @@
+@using Lms.Shared.Attendance
+@inject ICultureService Culture
+
+@* Zoom participants the server could not match to a student (guests, nicknames, shared accounts). The teacher maps each to a student of the class or leaves it
+   unmapped; the mapping is kept for this session. *@
+@if (Participants.Count > 0)
+{
+    <SectionCard Title="@L["Att_Unmatched_Title"]" TestId="unmatched">
+        <MudText Typo="Typo.body2" Class="lms-muted mb-2">@L["Att_Unmatched_Help"]</MudText>
+        <ul class="lms-att-list">
+            @foreach (var p in Participants)
+            {
+                var id = p.ParticipantId;
+                <li class="lms-att-row" data-testid="@($"unmatched-{id}")">
+                    <div class="lms-att-who">
+                        <span class="lms-cell-strong">@p.DisplayName</span>
+                        <span class="lms-muted">@string.Format(L["Att_Proposal_Minutes"], p.JoinedMinutes)</span>
+                    </div>
+                    <MudSelect T="Guid?" Value="@Choice(id, p)" ValueChanged="s => Choose(id, s)" Label="@L["Att_Unmatched_This"]" Variant="Variant.Outlined" Margin="Margin.Dense"
+                               Clearable="true" Disabled="Disabled" data-testid="@($"unmatched-select-{id}")">
+                        @foreach (var student in Students)
+                        {
+                            <MudSelectItem T="Guid?" Value="@((Guid?)student.StudentId)">@Culture.Pick(student.StudentNameAr, student.StudentNameEn)</MudSelectItem>
+                        }
+                    </MudSelect>
+                </li>
+            }
+        </ul>
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="SaveAsync" Disabled="@(Disabled || _choices.Count == 0)" data-testid="unmatched-save">@L["Att_Unmatched_Save"]</MudButton>
+    </SectionCard>
+}
+
+@code {
+    private readonly Dictionary<Guid, Guid?> _choices = [];
+
+    [Parameter, EditorRequired] public IReadOnlyList<UnmatchedParticipantDto> Participants { get; set; } = [];
+    [Parameter, EditorRequired] public IReadOnlyList<AttendanceRecordDto> Students { get; set; } = [];
+    [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>The mappings the teacher chose (a participant left empty is skipped).</summary>
+    [Parameter] public EventCallback<IReadOnlyList<LiveMappingEntry>> OnSave { get; set; }
+
+    private Guid? Choice(Guid participantId, UnmatchedParticipantDto p) => _choices.TryGetValue(participantId, out var c) ? c : p.MappedStudentId;
+
+    private void Choose(Guid participantId, Guid? student) => _choices[participantId] = student;
+
+    private Task SaveAsync() => OnSave.InvokeAsync(_choices.Select(c => new LiveMappingEntry(c.Key, c.Value)).ToList());
+}
