@@ -1,0 +1,94 @@
+@page "/announcements/{Id:guid}"
+@attribute [Authorize]
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.Messaging
+@using Lms.Shared.Authorization
+@using Lms.Shared.Messaging
+@inject IAnnouncementsApi Api
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+@* One announcement. A reader sees their own copy (and opening it marks it read); an author or admin in scope also sees the status and the reach. The text is
+   shown as text, never as markup. *@
+<PageTitle>@L["Announce_Title"]</PageTitle>
+@if (!PermState.Loaded || _loading)
+{
+    <LoadingState Lines="4" TestId="annd-loading" />
+}
+else if (_notFound)
+{
+    <EmptyState Title="@L["Announce_NotFoundTitle"]" Text="@L["Announce_NotFoundText"]" Icon="@Icons.Material.Rounded.SearchOff" TestId="annd-notfound">
+        <MudButton Variant="Variant.Outlined" Href="announcements">@L["Announce_Back"]</MudButton>
+    </EmptyState>
+}
+else
+{
+    <MudButton Variant="Variant.Text" StartIcon="@Icons.Material.Rounded.ArrowBack" Href="announcements" Class="lms-icon-flip-start" data-testid="annd-back">@L["Announce_Back"]</MudButton>
+    <PageHeader Title="@Culture.Pick(_titleAr, _titleEn)" Subtitle="@Culture.Pick(_authorAr, _authorEn)" TitleTestId="annd-title">
+        <Badges>
+            @if (_managed is not null)
+            {
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" data-testid="annd-status">@L[$"Ann_Status_{_managed.Status}"]</MudChip>
+            }
+        </Badges>
+    </PageHeader>
+    <SectionCard>
+        <div class="lms-ann-body" data-testid="annd-body">@Culture.Pick(_bodyAr ?? _bodyEn ?? string.Empty, _bodyEn ?? _bodyAr ?? string.Empty)</div>
+        @if (_managed is { AudienceCount: { } count })
+        {
+            <MudText Typo="Typo.body2" Class="lms-muted mt-3" data-testid="annd-reach">@string.Format(Culture.Current, L["Announce_ReachCount"].Value, count)</MudText>
+        }
+        @if (_attachments.Count > 0)
+        {
+            <ul class="lms-item-list mt-3" data-testid="annd-files">
+                @foreach (var f in _attachments)
+                {
+                    <li class="lms-item"><span dir="ltr">@f.FileName</span></li>
+                }
+            </ul>
+        }
+    </SectionCard>
+}
+
+@code {
+    private string _titleAr = "", _titleEn = "", _authorAr = "", _authorEn = "";
+    private string? _bodyAr, _bodyEn;
+    private IReadOnlyList<AnnouncementAttachmentDto> _attachments = [];
+    private AnnouncementDto? _managed;
+    private bool _loading = true, _notFound;
+
+    [Parameter] public Guid Id { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _loading = true;
+        _notFound = false;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        await ApiCalls.RunAsync(async () =>
+        {
+            var mine = (await Api.ListMineAsync(1, 200)).Items.FirstOrDefault(a => a.Id == Id);
+            if (mine is not null)
+            {
+                (_titleAr, _titleEn, _authorAr, _authorEn, _bodyAr, _bodyEn, _attachments) = (mine.TitleAr, mine.TitleEn, mine.AuthorNameAr, mine.AuthorNameEn, mine.BodyAr, mine.BodyEn, mine.Attachments);
+                if (!mine.IsRead) await Api.MarkReadAsync(Id);
+            }
+
+            if (PermState.Has(Permissions.Announcements.Manage))
+            {
+                try
+                {
+                    _managed = await Api.GetAsync(Id);
+                    (_titleAr, _titleEn, _authorAr, _authorEn, _bodyAr, _bodyEn, _attachments) = (_managed.TitleAr, _managed.TitleEn, _managed.AuthorNameAr, _managed.AuthorNameEn, _managed.BodyAr, _managed.BodyEn, _managed.Attachments);
+                }
+                catch (ApiProblemException ex) when (ex.Status is 404 or 403)
+                {
+                    _managed = null; // not an author or admin in scope: a reader view only
+                }
+            }
+
+            _notFound = mine is null && _managed is null; // not addressed to this person and not theirs to manage: the server never says which
+        }, Navigation, L, _ => _notFound = true);
+        _loading = false;
+    }
+}

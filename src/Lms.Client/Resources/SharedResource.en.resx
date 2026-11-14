@@ -2139,6 +2139,34 @@
   <data name="MsgPage_Left" xml:space="preserve"><value>left</value></data>
   <data name="MsgPage_GroupReadOnly" xml:space="preserve"><value>You can read this group. To ask the teacher something, send a private message.</value></data>
   <data name="MsgPage_DeleteClosed" xml:space="preserve"><value>The time to delete this message has passed.</value></data>
+  <data name="Announce_Title" xml:space="preserve"><value>Announcements</value></data>
+  <data name="Announce_Subtitle" xml:space="preserve"><value>What your school sent you, and what you send.</value></data>
+  <data name="Announce_New" xml:space="preserve"><value>New announcement</value></data>
+  <data name="Announce_Feed" xml:space="preserve"><value>For me</value></data>
+  <data name="Announce_Manage" xml:space="preserve"><value>Manage</value></data>
+  <data name="Announce_EmptyTitle" xml:space="preserve"><value>No announcements</value></data>
+  <data name="Announce_EmptyText" xml:space="preserve"><value>Announcements sent to you appear here.</value></data>
+  <data name="Announce_ManageEmptyTitle" xml:space="preserve"><value>Nothing here yet</value></data>
+  <data name="Announce_ManageEmptyText" xml:space="preserve"><value>Write an announcement to reach students, guardians or staff.</value></data>
+  <data name="Announce_Unread" xml:space="preserve"><value>New</value></data>
+  <data name="Announce_MarkRead" xml:space="preserve"><value>Mark as read</value></data>
+  <data name="Announce_Open" xml:space="preserve"><value>Open</value></data>
+  <data name="Announce_Status" xml:space="preserve"><value>Status</value></data>
+  <data name="Announce_Reach" xml:space="preserve"><value>Reach</value></data>
+  <data name="Announce_Withdraw" xml:space="preserve"><value>Withdraw</value></data>
+  <data name="Announce_Back" xml:space="preserve"><value>Back to announcements</value></data>
+  <data name="Announce_NotFoundTitle" xml:space="preserve"><value>Announcement not found</value></data>
+  <data name="Announce_NotFoundText" xml:space="preserve"><value>It does not exist, or it was not sent to you.</value></data>
+  <data name="Announce_ReachCount" xml:space="preserve"><value>Sent to {0} people.</value></data>
+  <data name="Announce_ComposeTitle" xml:space="preserve"><value>New announcement</value></data>
+  <data name="Announce_EditTitle" xml:space="preserve"><value>Edit announcement</value></data>
+  <data name="Announce_ComposeSubtitle" xml:space="preserve"><value>Write it in Arabic and English, choose who sees it and when.</value></data>
+  <data name="Announce_NotEditable" xml:space="preserve"><value>This announcement was already published, so it can no longer be edited. You can withdraw it from the list.</value></data>
+  <data name="Announce_Targets" xml:space="preserve"><value>Choose</value></data>
+  <data name="Announce_TimeMissing" xml:space="preserve"><value>That time does not exist in your time zone (the clocks skip it). Pick another time.</value></data>
+  <data name="Nav_Announcements" xml:space="preserve"><value>Announcements</value></data>
+  <data name="Announce_SourceCourse" xml:space="preserve"><value>Course board</value></data>
+  <data name="Announce_SourceSchool" xml:space="preserve"><value>School announcement</value></data>
   <data name="Package_Start" xml:space="preserve"><value>Start</value></data>
   <data name="Package_Resume" xml:space="preserve"><value>Resume</value></data>
   <data name="Package_Preview" xml:space="preserve"><value>Preview</value></data>

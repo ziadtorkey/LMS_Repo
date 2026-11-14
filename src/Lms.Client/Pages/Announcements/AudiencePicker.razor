@@ -1,0 +1,49 @@
+@using Lms.Client.Components.Messaging
+@using Lms.Client.Services.Api
+@using Lms.Shared
+@using Lms.Shared.Classes
+@inject IUnitLookupApi Units
+@inject IClassesApi Classes
+@inject ILessonPlansApi LessonPlans
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+@* The targets of one announcement for the chosen scope: units, classes, or the author's own class courses (a teacher never sees another course). The server
+   checks every target against the author's unit scope again (400 announcement_target_invalid, 403 out of scope). *@
+<MudSelect T="Guid" MultiSelection="true" SelectedValues="Selected" SelectedValuesChanged="OnSelected" Label="@L["Announce_Targets"]" Disabled="_loading"
+           data-testid="audience-select" AnchorOrigin="Origin.BottomCenter">
+    @foreach (var (id, name) in _options)
+    {
+        <MudSelectItem T="Guid" Value="id" data-testid="@($"audience-option-{id}")">@name</MudSelectItem>
+    }
+</MudSelect>
+
+@code {
+    private List<(Guid Id, string Name)> _options = [];
+    private bool _loading = true;
+    private AudienceScopeKind _loadedFor = AudienceScopeKind.Organization;
+
+    [Parameter, EditorRequired] public AudienceScopeKind Scope { get; set; }
+    [Parameter, EditorRequired] public IReadOnlyCollection<Guid> Selected { get; set; } = [];
+    [Parameter] public EventCallback<IEnumerable<Guid>> SelectedChanged { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!_loading && _loadedFor == Scope) return;
+        _loading = true;
+        _loadedFor = Scope;
+        await ApiCalls.RunAsync(async () =>
+        {
+            _options = Scope switch
+            {
+                AudienceScopeKind.Unit => [.. (await Units.GetUnitsAsync()).Select(u => (u.Id, Culture.Pick(u.NameAr, u.NameEn)))],
+                AudienceScopeKind.Class => [.. (await Classes.ListAsync(new ClassQuery(null, true, null, null, null, null, 1, 100))).Items.Select(c => (c.Id, Culture.Pick(c.NameAr, c.NameEn)))],
+                AudienceScopeKind.ClassCourse => [.. (await LessonPlans.GetMyClassCoursesAsync()).Select(c => (c.Id, $"{Culture.Pick(c.CourseNameAr, c.CourseNameEn)} · {Culture.Pick(c.ClassNameAr, c.ClassNameEn)}"))],
+                _ => [],
+            };
+        }, Navigation, L, _ => _options = []);
+        _loading = false;
+    }
+
+    private Task OnSelected(IEnumerable<Guid> values) => SelectedChanged.InvokeAsync(values);
+}

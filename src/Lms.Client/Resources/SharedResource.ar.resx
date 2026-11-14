@@ -2139,6 +2139,34 @@
   <data name="MsgPage_Left" xml:space="preserve"><value>غادر</value></data>
   <data name="MsgPage_GroupReadOnly" xml:space="preserve"><value>يمكنك قراءة هذه المجموعة. لتسأل المعلم عن شيء أرسل له رسالة خاصة.</value></data>
   <data name="MsgPage_DeleteClosed" xml:space="preserve"><value>انتهت مهلة حذف هذه الرسالة.</value></data>
+  <data name="Announce_Title" xml:space="preserve"><value>الإعلانات</value></data>
+  <data name="Announce_Subtitle" xml:space="preserve"><value>ما أرسلته لك مدرستك، وما ترسله أنت.</value></data>
+  <data name="Announce_New" xml:space="preserve"><value>إعلان جديد</value></data>
+  <data name="Announce_Feed" xml:space="preserve"><value>لي</value></data>
+  <data name="Announce_Manage" xml:space="preserve"><value>الإدارة</value></data>
+  <data name="Announce_EmptyTitle" xml:space="preserve"><value>لا توجد إعلانات</value></data>
+  <data name="Announce_EmptyText" xml:space="preserve"><value>تظهر هنا الإعلانات المرسلة إليك.</value></data>
+  <data name="Announce_ManageEmptyTitle" xml:space="preserve"><value>لا شيء هنا بعد</value></data>
+  <data name="Announce_ManageEmptyText" xml:space="preserve"><value>اكتب إعلانًا ليصل إلى الطلاب أو أولياء الأمور أو الموظفين.</value></data>
+  <data name="Announce_Unread" xml:space="preserve"><value>جديد</value></data>
+  <data name="Announce_MarkRead" xml:space="preserve"><value>تعليم كمقروء</value></data>
+  <data name="Announce_Open" xml:space="preserve"><value>فتح</value></data>
+  <data name="Announce_Status" xml:space="preserve"><value>الحالة</value></data>
+  <data name="Announce_Reach" xml:space="preserve"><value>عدد المستلمين</value></data>
+  <data name="Announce_Withdraw" xml:space="preserve"><value>سحب</value></data>
+  <data name="Announce_Back" xml:space="preserve"><value>العودة إلى الإعلانات</value></data>
+  <data name="Announce_NotFoundTitle" xml:space="preserve"><value>الإعلان غير موجود</value></data>
+  <data name="Announce_NotFoundText" xml:space="preserve"><value>إما أنه غير موجود أو لم يُرسل إليك.</value></data>
+  <data name="Announce_ReachCount" xml:space="preserve"><value>أُرسل إلى {0} شخصًا.</value></data>
+  <data name="Announce_ComposeTitle" xml:space="preserve"><value>إعلان جديد</value></data>
+  <data name="Announce_EditTitle" xml:space="preserve"><value>تعديل الإعلان</value></data>
+  <data name="Announce_ComposeSubtitle" xml:space="preserve"><value>اكتبه بالعربية والإنجليزية، واختر من يراه ومتى.</value></data>
+  <data name="Announce_NotEditable" xml:space="preserve"><value>نُشر هذا الإعلان بالفعل فلم يعد قابلًا للتعديل. يمكنك سحبه من القائمة.</value></data>
+  <data name="Announce_Targets" xml:space="preserve"><value>اختر</value></data>
+  <data name="Announce_TimeMissing" xml:space="preserve"><value>هذا الوقت غير موجود في منطقتك الزمنية (تتخطاه الساعة). اختر وقتًا آخر.</value></data>
+  <data name="Nav_Announcements" xml:space="preserve"><value>الإعلانات</value></data>
+  <data name="Announce_SourceCourse" xml:space="preserve"><value>لوحة المقرر</value></data>
+  <data name="Announce_SourceSchool" xml:space="preserve"><value>إعلان المدرسة</value></data>
   <data name="Package_Start" xml:space="preserve"><value>ابدأ</value></data>
   <data name="Package_Resume" xml:space="preserve"><value>استئناف</value></data>
   <data name="Package_Preview" xml:space="preserve"><value>معاينة</value></data>

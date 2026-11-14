@@ -1,0 +1,188 @@
+@page "/announcements"
+@attribute [Authorize]
+@using Lms.Client.Components.Messaging
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.Messaging
+@using Lms.Shared
+@using Lms.Shared.Authorization
+@using Lms.Shared.Messaging
+@inject IAnnouncementsApi Api
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+@* Announcements (M6 Task 25): what was sent to me (pinned first, read state), and for authors the Manage tab with the drafts, scheduled and published ones.
+   The body is shown as text: nothing a author typed is ever rendered as markup. *@
+<PageTitle>@L["Announce_Title"]</PageTitle>
+@if (!PermState.Loaded)
+{
+    <LoadingState Lines="4" TestId="anns-loading" />
+}
+else if (!PermState.Has(Permissions.Announcements.View) && !PermState.Has(Permissions.Announcements.Manage))
+{
+    <Forbidden />
+}
+else
+{
+    <PageHeader Title="@L["Announce_Title"]" Subtitle="@L["Announce_Subtitle"]" TitleTestId="anns-title">
+        <Actions>
+            @if (CanManage)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Campaign" Href="announcements/new" data-testid="anns-new">@L["Announce_New"]</MudButton>
+            }
+        </Actions>
+    </PageHeader>
+
+    @if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-3" data-testid="anns-error">@_error</MudAlert>
+    }
+
+    @if (CanManage)
+    {
+        <MudTabs Elevation="0" Rounded="true" ActivePanelIndex="_tab" ActivePanelIndexChanged="i => _tab = i" data-testid="anns-tabs">
+            <MudTabPanel Text="@L["Announce_Feed"]" data-testid="anns-tab-feed">@Feed()</MudTabPanel>
+            <MudTabPanel Text="@L["Announce_Manage"]" data-testid="anns-tab-manage">@Manage()</MudTabPanel>
+        </MudTabs>
+    }
+    else
+    {
+        @Feed()
+    }
+}
+
+@code {
+    private IReadOnlyList<MyAnnouncementDto> _mine = [];
+    private IReadOnlyList<AnnouncementListItemDto> _managed = [];
+    private string? _error, _status;
+    private int _tab;
+    private bool _loading = true;
+
+    [SupplyParameterFromQuery(Name = "tab")] [Parameter] public string? TabQuery { get; set; }
+
+    private bool CanManage => PermState.Has(Permissions.Announcements.Manage);
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        _tab = TabQuery == "manage" ? 1 : 0;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _error = null;
+        await ApiCalls.RunAsync(async () =>
+        {
+            if (PermState.Has(Permissions.Announcements.View)) _mine = (await Api.ListMineAsync()).Items;
+            if (CanManage) _managed = (await Api.ListAsync(new AnnouncementQuery(_status))).Items;
+        }, Navigation, L, m => _error = m);
+        _loading = false;
+    }
+
+    private RenderFragment Feed() => __builder =>
+    {
+        if (_loading)
+        {
+            <LoadingState Lines="3" TestId="anns-feed-loading" />
+        }
+        else if (_mine.Count == 0)
+        {
+            <EmptyState Title="@L["Announce_EmptyTitle"]" Text="@L["Announce_EmptyText"]" Icon="@Icons.Material.Rounded.Campaign" TestId="anns-empty" />
+        }
+        else
+        {
+            <div class="lms-ann-list" data-testid="anns-feed">
+                @foreach (var a in _mine)
+                {
+                    var ann = a;
+                    <AnnouncementCard Title="@Culture.Pick(ann.TitleAr, ann.TitleEn)" Body="@Culture.Pick(ann.BodyAr ?? ann.BodyEn ?? string.Empty, ann.BodyEn ?? ann.BodyAr ?? string.Empty)"
+                                      Pinned="ann.IsPinned" TestId="@($"ann-card-{ann.Id}")">
+                        <Details>
+                            <span><bdi>@Culture.Pick(ann.AuthorNameAr, ann.AuthorNameEn)</bdi></span>
+                            <LocalTime Utc="ann.PublishedAtUtc" />
+                            @if (!ann.IsRead) { <MudChip T="string" Size="Size.Small" Color="Color.Primary" data-testid="@($"ann-unread-{ann.Id}")">@L["Announce_Unread"]</MudChip> }
+                        </Details>
+                        <Actions>
+                            @if (!ann.IsRead)
+                            {
+                                <MudButton Size="Size.Small" OnClick="() => ReadAsync(ann.Id)" data-testid="@($"ann-read-{ann.Id}")">@L["Announce_MarkRead"]</MudButton>
+                            }
+                            <MudButton Size="Size.Small" Href="@($"announcements/{ann.Id}")" data-testid="@($"ann-open-{ann.Id}")">@L["Announce_Open"]</MudButton>
+                        </Actions>
+                    </AnnouncementCard>
+                }
+            </div>
+        }
+    };
+
+    private RenderFragment Manage() => __builder =>
+    {
+        <div class="lms-filters" role="search" aria-label="@L["Common_Filters"]">
+            <div class="lms-filter">
+                <MudSelect T="string" Value="_status" ValueChanged="StatusAsync" Label="@L["Announce_Status"]" Clearable="true" data-testid="anns-status">
+                    @foreach (var s in AnnouncementStatuses.All)
+                    {
+                        <MudSelectItem T="string" Value="s">@L[$"Ann_Status_{s}"]</MudSelectItem>
+                    }
+                </MudSelect>
+            </div>
+        </div>
+        @if (_managed.Count == 0)
+        {
+            <EmptyState Title="@L["Announce_ManageEmptyTitle"]" Text="@L["Announce_ManageEmptyText"]" Icon="@Icons.Material.Rounded.Campaign" TestId="anns-manage-empty" />
+        }
+        else
+        {
+            <MudSimpleTable Elevation="0" Class="lms-simple-table lms-stack-table" data-testid="anns-table">
+                <thead><tr><th>@L["Common_Name"]</th><th>@L["Announce_Status"]</th><th>@L["Announce_Reach"]</th><th><span class="lms-visually-hidden">@L["Common_Actions"]</span></th></tr></thead>
+                <tbody>
+                    @foreach (var a in _managed)
+                    {
+                        var ann = a;
+                        <tr data-testid="@($"ann-row-{ann.Id}")">
+                            <td data-label="@L["Common_Name"]"><span class="lms-cell-strong">@Culture.Pick(ann.TitleAr, ann.TitleEn)</span>@if (ann.IsPinned) { <MudIcon Icon="@Icons.Material.Rounded.PushPin" Size="Size.Small" aria-label="@L["Ann_Pinned"]" /> }</td>
+                            <td data-label="@L["Announce_Status"]"><MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" data-testid="@($"ann-status-{ann.Id}")">@L[$"Ann_Status_{ann.Status}"]</MudChip>
+                                @if (ann.Status == AnnouncementStatuses.Scheduled && ann.PublishAtUtc is { } at) { <LocalTime Utc="at" /> }</td>
+                            <td data-label="@L["Announce_Reach"]"><span dir="ltr">@(ann.AudienceCount?.ToString() ?? "–")</span></td>
+                            <td data-label="@L["Common_Actions"]" class="lms-cell-actions">
+                                <MudButton Size="Size.Small" Href="@($"announcements/{ann.Id}")">@L["Announce_Open"]</MudButton>
+                                @if (ann.Status is AnnouncementStatuses.Draft or AnnouncementStatuses.Scheduled)
+                                {
+                                    <MudButton Size="Size.Small" Href="@($"announcements/{ann.Id}/edit")" data-testid="@($"ann-edit-{ann.Id}")">@L["Common_Edit"]</MudButton>
+                                }
+                                @if (ann.Status == AnnouncementStatuses.Draft)
+                                {
+                                    <MudButton Size="Size.Small" Color="Color.Primary" OnClick="() => PublishAsync(ann.Id)" data-testid="@($"ann-publish-{ann.Id}")">@L["Ann_Publish"]</MudButton>
+                                    <MudButton Size="Size.Small" Color="Color.Error" OnClick="() => DeleteAsync(ann.Id)" data-testid="@($"ann-delete-{ann.Id}")">@L["Common_Delete"]</MudButton>
+                                }
+                                @if (ann.Status is AnnouncementStatuses.Published or AnnouncementStatuses.Scheduled)
+                                {
+                                    <MudButton Size="Size.Small" Color="Color.Warning" OnClick="() => WithdrawAsync(ann.Id)" data-testid="@($"ann-withdraw-{ann.Id}")">@L["Announce_Withdraw"]</MudButton>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        }
+    };
+
+    private async Task StatusAsync(string? status)
+    {
+        _status = status;
+        await LoadAsync();
+    }
+
+    private async Task Act(Func<Task> action)
+    {
+        _error = null;
+        await ApiCalls.RunAsync(action, Navigation, L, m => _error = m);
+        await LoadAsync();
+    }
+
+    private Task ReadAsync(Guid id) => Act(() => Api.MarkReadAsync(id));
+    private Task PublishAsync(Guid id) => Act(async () => await Api.PublishAsync(id));
+    private Task WithdrawAsync(Guid id) => Act(async () => await Api.WithdrawAsync(id));
+    private Task DeleteAsync(Guid id) => Act(() => Api.DeleteAsync(id));
+}

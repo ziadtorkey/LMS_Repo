@@ -26,6 +26,9 @@ public sealed class FakeAnnouncementsApi : IAnnouncementsApi
         [AnnouncementRoleFilters.Guardians] = 310,
     };
 
+    /// <summary>Targets outside the author scope: the server answers 403 for them, as the unit access check does.</summary>
+    public HashSet<Guid> OutOfScope { get; } = [];
+
     public AudiencePreviewRequest? LastPreview { get; private set; }
 
     private static ApiProblemException Problem(int status, string code) => new(status, code, null, null);
@@ -36,6 +39,7 @@ public sealed class FakeAnnouncementsApi : IAnnouncementsApi
 
     private void ValidateTargets(IReadOnlyList<AnnouncementTargetDto> targets)
     {
+        if (targets.Any(t => t.TargetId is { } id && OutOfScope.Contains(id))) throw Problem(403, "MissingPermission");
         if (targets.Count == 0) throw Problem(400, ProblemCodes.announcement_target_invalid);
         if (targets.Any(t => t.Kind != AnnouncementTargetKinds.Organization && t.TargetId is null)) throw Problem(400, ProblemCodes.announcement_target_invalid);
     }
@@ -63,6 +67,8 @@ public sealed class FakeAnnouncementsApi : IAnnouncementsApi
             throw Problem(400, ProblemCodes.validation_failed);
         ValidateTargets(r.Targets);
         var now = Now();
+        if (r.PublishAtUtc is { } scheduled && scheduled <= now && r.Publish) throw Problem(400, ProblemCodes.validation_failed); // the server clock: a schedule lies in the future
+        if (r.ExpiresAtUtc is { } expires && expires <= (r.PublishAtUtc ?? now)) throw Problem(400, ProblemCodes.validation_failed); // expiry follows publish
         var status = Status(r.PublishAtUtc, now, r.Publish);
         var item = new AnnouncementDto(Guid.NewGuid(), r.AuthoringUnitId, r.TitleAr.Trim(), r.TitleEn.Trim(), r.BodyAr, r.BodyEn, status, r.Targets, r.RoleFilters ?? [],
             r.PublishAtUtc, status == AnnouncementStatuses.Published ? now : null, r.ExpiresAtUtc, r.IsPinned, r.Notify, [], Guid.NewGuid(), "المؤلف", "Author",
@@ -130,6 +136,16 @@ public sealed class FakeAnnouncementsApi : IAnnouncementsApi
             .Select(a => new MyAnnouncementDto(a.Id, a.TitleAr, a.TitleEn, a.BodyAr, a.BodyEn, a.Attachments, a.AuthorNameAr, a.AuthorNameEn,
                 a.PublishedAtUtc ?? a.CreatedAtUtc, a.IsPinned, _read.Contains(a.Id), a.EditedAtUtc)).ToList();
         return Task.FromResult(new PagedResult<MyAnnouncementDto>([.. rows.Skip((page - 1) * pageSize).Take(pageSize)], rows.Count, page, pageSize));
+    }
+
+    public Task<IReadOnlyList<MyAnnouncementDto>> ListForCourseAsync(Guid classCourseId, CancellationToken ct = default)
+    {
+        var now = Now();
+        var rows = _items.Where(a => a.Status == AnnouncementStatuses.Published && (a.ExpiresAtUtc is null || a.ExpiresAtUtc > now)
+                && a.Targets.Any(t => t.Kind == AnnouncementTargetKinds.ClassCourse && t.TargetId == classCourseId))
+            .Select(a => new MyAnnouncementDto(a.Id, a.TitleAr, a.TitleEn, a.BodyAr, a.BodyEn, a.Attachments, a.AuthorNameAr, a.AuthorNameEn,
+                a.PublishedAtUtc ?? a.CreatedAtUtc, a.IsPinned, _read.Contains(a.Id), a.EditedAtUtc)).ToList();
+        return Task.FromResult<IReadOnlyList<MyAnnouncementDto>>(rows);
     }
 
     public Task MarkReadAsync(Guid id, CancellationToken ct = default)

@@ -1,0 +1,233 @@
+@page "/announcements/new"
+@page "/announcements/{Id:guid}/edit"
+@attribute [Authorize]
+@implements IDisposable
+@using Lms.Client.Components.Messaging
+@using Lms.Client.Services
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.Messaging
+@using Lms.Shared.Authorization
+@using Lms.Shared.Messaging
+@inject IAnnouncementsApi Api
+@inject ILmsApi Me
+@inject IContextStore Context
+@inject ClientTimeZone Zone
+@inject TimeProvider Time
+@inject PermissionState PermState
+@inject NavigationManager Navigation
+
+@* Compose, schedule or edit an announcement (M6 Task 25, FR-MSG-03). The form is the designer one: both titles, the audience, who (staff, students, guardians),
+   Now or Schedule in the client zone, pin and notify. There is no SMS and no urgent switch (D76; the urgent switch belongs to unit-level authors and is not
+   in the contract yet). The reach shown comes from the server preview; the server clock judges a schedule. *@
+<PageTitle>@L["Announce_ComposeTitle"]</PageTitle>
+@if (!PermState.Loaded)
+{
+    <LoadingState Lines="4" TestId="annc-loading" />
+}
+else if (!PermState.Has(Permissions.Announcements.Manage))
+{
+    <Forbidden />
+}
+else
+{
+    <PageHeader Title="@(Id is null ? L["Announce_ComposeTitle"] : L["Announce_EditTitle"])" Subtitle="@L["Announce_ComposeSubtitle"]" TitleTestId="annc-title" />
+    @if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-3" data-testid="annc-error">@_error</MudAlert>
+    }
+    @if (_notEditable)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" data-testid="annc-not-editable">@L["Announce_NotEditable"]</MudAlert>
+    }
+    else if (_ready)
+    {
+        <SectionCard>
+            <AnnouncementComposerForm Draft="_draft" AllowedScopes="_scopes" ReachCount="_reach" TimeZoneId="@_zone.Id" NowLocal="_nowLocal" Busy="_busy"
+                                      OnScopeChanged="ScopeChangedAsync" OnSaveDraft="d => SaveAsync(d, publish: false)" OnPublish="d => SaveAsync(d, publish: true)" OnCancel="CancelAsync">
+                <Targets>
+                    <AudiencePicker Scope="_draft.Scope" Selected="_draft.TargetIds" SelectedChanged="TargetsChangedAsync" />
+                </Targets>
+            </AnnouncementComposerForm>
+        </SectionCard>
+    }
+}
+
+@code {
+    private static readonly AudienceScopeKind[] UnitLevel = [AudienceScopeKind.Organization, AudienceScopeKind.Unit, AudienceScopeKind.Class, AudienceScopeKind.ClassCourse];
+    private static readonly AudienceScopeKind[] TeacherOnly = [AudienceScopeKind.ClassCourse];
+
+    private readonly AnnouncementDraft _draft = new();
+    private IReadOnlyList<AudienceScopeKind> _scopes = UnitLevel;
+    private TimeZoneInfo _zone = ClientCalendar.Zone();
+    private DateTime _nowLocal;
+    private Guid _unitId;
+    private int? _reach;
+    private string _previewedRoles = string.Empty;
+    private PeriodicTimer? _watch;
+    private string? _error;
+    private bool _ready, _busy, _notEditable;
+
+    [Parameter] public Guid? Id { get; set; }
+
+    private bool UnitLevelAuthor => PermState.Has(Permissions.OrgUnits.View);
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        if (!PermState.Has(Permissions.Announcements.Manage)) return;
+        _zone = await Zone.GetAsync();
+        _nowLocal = ClientCalendar.ToLocal(Time.GetUtcNow().UtcDateTime, _zone);
+        _scopes = UnitLevelAuthor ? UnitLevel : TeacherOnly;
+        _draft.Scope = _scopes[0] == AudienceScopeKind.Organization ? AudienceScopeKind.Unit : _scopes[0];
+        if (!UnitLevelAuthor) _draft.Roles.Remove(AudienceRole.Guardians); // a teacher writes to students by default; the author adds guardians on purpose
+        await ApiCalls.RunAsync(async () =>
+        {
+            var me = await Me.GetMeAsync();
+            _unitId = me.Contexts.FirstOrDefault(c => c.AssignmentId == Context.ActiveAssignmentId)?.OrgUnitId ?? me.Contexts.FirstOrDefault()?.OrgUnitId ?? Guid.Empty;
+            if (Id is { } id) Load(await Api.GetAsync(id));
+        }, Navigation, L, m => _error = m);
+        _ready = true;
+    }
+
+    private void Load(AnnouncementDto a)
+    {
+        if (a.Status is not (AnnouncementStatuses.Draft or AnnouncementStatuses.Scheduled))
+        {
+            _notEditable = true; // published, withdrawn or expired: the server answers 409 announcement_not_editable, so do not offer the form
+            return;
+        }
+
+        _unitId = a.AuthoringUnitId;
+        _draft.TitleAr = a.TitleAr;
+        _draft.TitleEn = a.TitleEn;
+        _draft.BodyAr = a.BodyAr ?? string.Empty;
+        _draft.BodyEn = a.BodyEn ?? string.Empty;
+        _draft.Pin = a.IsPinned;
+        _draft.Notify = a.Notify;
+        if (a.Targets.FirstOrDefault() is { } t && Enum.TryParse<AudienceScopeKind>(t.Kind, out var kind))
+        {
+            _draft.Scope = kind;
+            _draft.IncludeSubtree = t.IncludeSubtree;
+            foreach (var target in a.Targets.Where(x => x.TargetId is not null)) _draft.TargetIds.Add(target.TargetId!.Value);
+        }
+
+        _draft.Roles.Clear();
+        foreach (var r in a.RoleFilters) if (Enum.TryParse<AudienceRole>(r, out var role)) _draft.Roles.Add(role);
+        if (a.PublishAtUtc is { } at)
+        {
+            _draft.Mode = PublishMode.Schedule;
+            _draft.PublishAtLocal = ClientCalendar.ToLocal(at, _zone);
+        }
+
+        if (a.ExpiresAtUtc is { } exp) _draft.ExpiresOn = DateOnly.FromDateTime(ClientCalendar.ToLocal(exp, _zone));
+    }
+
+    private IReadOnlyList<AnnouncementTargetDto> Targets() =>
+        _draft.Scope == AudienceScopeKind.Organization
+            ? [new(AudienceScopeKind.Organization.ToString(), null, true)]
+            : [.. _draft.TargetIds.Select(id => new AnnouncementTargetDto(_draft.Scope.ToString(), id, _draft.Scope == AudienceScopeKind.Unit && _draft.IncludeSubtree))];
+
+    private IReadOnlyList<string> Roles() => [.. _draft.Roles.Select(r => r.ToString())];
+
+    private async Task TargetsChangedAsync(IEnumerable<Guid> ids)
+    {
+        _draft.TargetIds.Clear();
+        _draft.TargetIds.AddRange(ids);
+        await PreviewAsync();
+    }
+
+    private async Task ScopeChangedAsync(AudienceScopeKind kind) => await PreviewAsync();
+
+    // The designer role chips keep their own state and raise no event, so the reach follows them on the 500 ms debounce the spec asks for.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        _watch = new PeriodicTimer(TimeSpan.FromMilliseconds(500));
+        _ = WatchRolesAsync(_watch);
+        await Task.CompletedTask;
+    }
+
+    private async Task WatchRolesAsync(PeriodicTimer timer)
+    {
+        try
+        {
+            while (await timer.WaitForNextTickAsync())
+            {
+                var signature = string.Join(',', Roles().Order());
+                if (!_ready || signature == _previewedRoles) continue;
+                await InvokeAsync(async () =>
+                {
+                    if (_reach is not null || _draft.Scope == AudienceScopeKind.Organization || _draft.TargetIds.Count > 0) await PreviewAsync();
+                    else _previewedRoles = signature;
+                    StateHasChanged();
+                });
+            }
+        }
+        catch (ObjectDisposedException)
+        {
+        }
+    }
+
+    public void Dispose() => _watch?.Dispose();
+
+    private async Task PreviewAsync()
+    {
+        _previewedRoles = string.Join(',', Roles().Order());
+        _reach = null;
+        if (_draft.Scope != AudienceScopeKind.Organization && _draft.TargetIds.Count == 0) return;
+        await ApiCalls.RunAsync(async () => _reach = (await Api.PreviewAudienceAsync(new AudiencePreviewRequest(_unitId, Targets(), Roles()))).Count, Navigation, L, m => _error = m);
+    }
+
+    private bool TryUtc(DateTime local, out DateTime utc) => AnnouncementTime.TryToUtc(local, _zone, out utc);
+
+    private async Task SaveAsync(AnnouncementDraft d, bool publish)
+    {
+        _error = null;
+        DateTime? publishAt = null, expires = null;
+        if (d.Mode == PublishMode.Schedule && d.PublishAtLocal is { } local)
+        {
+            if (!TryUtc(local, out var at))
+            {
+                _error = L["Announce_TimeMissing"]; // the clocks skip this time in the client zone
+                return;
+            }
+
+            publishAt = at;
+        }
+
+        if (d.ExpiresOn is { } on)
+        {
+            if (!TryUtc(on.ToDateTime(new TimeOnly(23, 59)), out var end))
+            {
+                _error = L["Announce_TimeMissing"];
+                return;
+            }
+
+            expires = end;
+        }
+
+        _busy = true;
+        var ok = await ApiCalls.RunAsync(async () =>
+        {
+            if (Id is { } id)
+            {
+                await Api.UpdateAsync(id, new UpdateAnnouncementRequest(d.TitleAr.Trim(), d.TitleEn.Trim(), Blank(d.BodyAr), Blank(d.BodyEn), Targets(), Roles(), publishAt, expires, d.Pin, d.Notify, null));
+                if (publish) await Api.PublishAsync(id);
+            }
+            else
+            {
+                await Api.CreateAsync(new CreateAnnouncementRequest(_unitId, d.TitleAr.Trim(), d.TitleEn.Trim(), Blank(d.BodyAr), Blank(d.BodyEn), Targets(), Roles(), publishAt, expires, d.Pin, d.Notify, null, publish));
+            }
+        }, Navigation, L, m => _error = m);
+        _busy = false;
+        if (ok) Navigation.NavigateTo("announcements?tab=manage");
+    }
+
+    private static string? Blank(string value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private Task CancelAsync()
+    {
+        Navigation.NavigateTo("announcements?tab=manage");
+        return Task.CompletedTask;
+    }
+}
