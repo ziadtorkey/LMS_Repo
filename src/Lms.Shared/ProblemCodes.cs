@@ -247,9 +247,6 @@ public static class ProblemCodes
     /// <summary>A cap or rate limit was reached: messages a minute, new conversations or announcements a day, searches, test emails (429).</summary>
     public const string rate_limited = nameof(rate_limited);
 
-    /// <summary>A student cannot post in a group (D74), or the group was set read-only; guardians may post only in teacher-run groups that include guardians (D77), staff always (403).</summary>
-    public const string group_read_only = nameof(group_read_only);
-
     /// <summary>The caller cannot post now (403): the conversation is read-only for them, see <c>ConversationReadOnlyReasons</c> (the <c>reason</c> field); history stays readable.</summary>
     public const string conversation_read_only = nameof(conversation_read_only);
 
