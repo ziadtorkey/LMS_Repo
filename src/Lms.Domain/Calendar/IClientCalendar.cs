@@ -23,6 +23,12 @@ public interface IClientCalendar
     Task<bool> IsHolidayAsync(Guid orgUnitId, DateOnly date, CancellationToken cancellationToken);
 
     /// <summary>
+    /// The number of school days (working weekday, not a holiday) strictly after <paramref name="after"/> up to and including <paramref name="through"/>;
+    /// 0 on the same day or when <paramref name="through"/> is earlier. Both are client-local dates (get today from <see cref="LocalTodayAsync"/>).
+    /// </summary>
+    Task<int> SchoolDaysBetweenAsync(Guid orgUnitId, DateOnly after, DateOnly through, CancellationToken cancellationToken);
+
+    /// <summary>
     /// The date <paramref name="schoolDays"/> working, non-holiday days after (positive) or before (negative) <paramref name="from"/>; 0 returns
     /// <paramref name="from"/>. Throws <see cref="InvalidOperationException"/> when the unit has no working day to count on.
     /// </summary>

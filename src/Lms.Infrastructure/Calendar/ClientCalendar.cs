@@ -79,6 +79,27 @@ internal sealed class ClientCalendar(LmsDbContext db, ISettingsResolver settings
         return date;
     }
 
+    public async Task<int> SchoolDaysBetweenAsync(Guid orgUnitId, DateOnly after, DateOnly through, CancellationToken cancellationToken)
+    {
+        if (through <= after)
+        {
+            return 0;
+        }
+
+        var unit = await FindUnitAsync(orgUnitId, cancellationToken);
+        var working = await WorkingDaysAsync(orgUnitId, cancellationToken);
+        var count = 0;
+        for (var date = after.AddDays(1); date <= through; date = date.AddDays(1))
+        {
+            if (working.Contains(WorkingDayName(date.DayOfWeek)) && !await holidays.IsNonWorkingDayAsync(unit.Path, date, cancellationToken))
+            {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
     private async Task<IReadOnlyList<string>> WorkingDaysAsync(Guid orgUnitId, CancellationToken cancellationToken)
     {
         var unit = await FindUnitAsync(orgUnitId, cancellationToken);

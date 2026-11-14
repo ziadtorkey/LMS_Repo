@@ -121,6 +121,22 @@ public sealed class ClientCalendarTests(LmsApiFactory factory)
         Assert.Equal(new DateOnly(2027, 1, 10), await calendar.AddSchoolDaysAsync(tree.School1.Id, new DateOnly(2027, 1, 12), -1, default)); // back over the holiday
     }
 
+    [Fact]
+    public async Task School_days_between_counts_after_the_first_date_up_to_the_second()
+    {
+        var tree = await AccessTestData.SeedAsync(factory, "CC8");
+        await SeedHolidayAsync(tree, tree.Root, new DateOnly(2027, 1, 11)); // Monday
+        using var scope = new EngineScope(factory.Services);
+        var calendar = scope.Services.GetRequiredService<IClientCalendar>();
+
+        Assert.Equal(0, await calendar.SchoolDaysBetweenAsync(tree.School1.Id, Thursday, Thursday, default));
+        Assert.Equal(0, await calendar.SchoolDaysBetweenAsync(tree.School1.Id, Thursday, Thursday.AddDays(-1), default));
+        Assert.Equal(0, await calendar.SchoolDaysBetweenAsync(tree.School1.Id, Thursday, Thursday.AddDays(2), default)); // Fri, Sat
+        Assert.Equal(1, await calendar.SchoolDaysBetweenAsync(tree.School1.Id, Thursday, Thursday.AddDays(3), default)); // Sunday
+        Assert.Equal(1, await calendar.SchoolDaysBetweenAsync(tree.School1.Id, Thursday, Thursday.AddDays(4), default)); // Monday is a holiday
+        Assert.Equal(2, await calendar.SchoolDaysBetweenAsync(tree.School1.Id, Thursday, Thursday.AddDays(5), default)); // Tuesday
+    }
+
     private async Task SeedHolidayAsync(AccessTree tree, Lms.Domain.Organizations.OrgUnit unit, DateOnly date)
     {
         var year = await SeedYearAsync(factory, tree.Root, new DateOnly(2026, 9, 1), new DateOnly(2027, 6, 30), AcademicYearStatus.Active);
