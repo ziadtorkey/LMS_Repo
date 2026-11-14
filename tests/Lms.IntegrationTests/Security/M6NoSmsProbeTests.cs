@@ -29,7 +29,14 @@ public sealed class M6NoSmsProbeTests(LmsApiFactory factory, ITestOutputHelper o
         typeof(Lms.Infrastructure.Persistence.LmsDbContext).Assembly,
     ];
 
-    private static bool IsSms(string? text) => text is not null && text.Contains("sms", StringComparison.OrdinalIgnoreCase);
+    /// <summary>
+    /// Public names that may contain "sms" (L9, QA1 on #770). The plan keeps <c>NotificationChannels.Sms</c> out of v1 but allows the outbox to refuse an <c>Sms</c> row by a
+    /// <b>private</b> constant or a literal, which this scan does not see. A public name for the refusal (a test seam, a catalog guard) is not needed; if #750 needs one it is
+    /// added here with the reason, by exact name, in the PR that adds it. Empty today.
+    /// </summary>
+    private static readonly HashSet<string> AllowedPublicNames = [];
+
+    private static bool IsSms(string? text) => text is not null && !AllowedPublicNames.Contains(text) && text.Contains("sms", StringComparison.OrdinalIgnoreCase);
 
     private static IEnumerable<Type> PublicTypes(Assembly assembly) =>
         assembly.GetTypes().Where(t => t.IsPublic || t.IsNestedPublic);
@@ -90,16 +97,15 @@ public sealed class M6NoSmsProbeTests(LmsApiFactory factory, ITestOutputHelper o
     [Fact]
     public async Task The_outbox_holds_no_sms_row()
     {
-        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
-        var tables = await db.Database.SqlQueryRaw<string>(
-            "SELECT TABLE_NAME AS Value FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'DeliveryOutbox'").ToListAsync();
-        if (tables.Count == 0)
+        if (await M6Pending.SkipAsync(factory, output, M6Pending.OutboxTable))
         {
-            output.WriteLine("PENDING: the DeliveryOutbox table is not on this branch yet (#750).");
             return;
         }
 
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
         var sms = await db.Database.SqlQueryRaw<int>("SELECT COUNT(*) AS Value FROM DeliveryOutbox WHERE LOWER(Channel) = 'sms'").SingleAsync();
         Assert.Equal(0, sms);
+        // This reads the rows the other tests of the collection happened to make. The real L9 probe (the writer refuses an Sms row, the dispatcher never claims one,
+        // per publish path) is M6PendingProbeTests.The_outbox_writer_refuses_an_sms_row_and_the_dispatcher_never_claims_it, which fails with instructions once #750 is here.
     }
 }

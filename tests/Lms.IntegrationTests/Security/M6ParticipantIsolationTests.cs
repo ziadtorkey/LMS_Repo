@@ -32,22 +32,12 @@ public sealed class M6ParticipantIsolationTests(LmsApiFactory factory, ITestOutp
         return data;
     }
 
-    private bool Ready()
-    {
-        if (M6Kit.IsMapped(factory, HttpMethod.Post, Routes.Conversations))
-        {
-            return true;
-        }
-
-        output.WriteLine("PENDING: POST /api/conversations is not mapped yet (#733).");
-        return false;
-    }
 
     [Theory]
     [MemberData(nameof(OutsiderData))]
     public async Task A_non_participant_cannot_read_the_conversation_or_its_messages(M4aCaller outsider)
     {
-        if (!Ready())
+        if (await M6Pending.SkipAsync(factory, output, M6Pending.CreateConversation))
         {
             return;
         }
@@ -65,7 +55,7 @@ public sealed class M6ParticipantIsolationTests(LmsApiFactory factory, ITestOutp
     [MemberData(nameof(OutsiderData))]
     public async Task A_non_participant_never_sees_the_conversation_in_the_inbox_the_search_or_the_unread_total(M4aCaller outsider)
     {
-        if (!Ready())
+        if (await M6Pending.SkipAsync(factory, output, M6Pending.CreateConversation))
         {
             return;
         }
@@ -94,7 +84,7 @@ public sealed class M6ParticipantIsolationTests(LmsApiFactory factory, ITestOutp
     [MemberData(nameof(OutsiderData))]
     public async Task A_foreign_conversation_and_a_missing_one_look_the_same(M4aCaller outsider)
     {
-        if (!Ready())
+        if (await M6Pending.SkipAsync(factory, output, M6Pending.CreateConversation))
         {
             return;
         }
@@ -116,7 +106,7 @@ public sealed class M6ParticipantIsolationTests(LmsApiFactory factory, ITestOutp
     [InlineData(Caller.School1Teacher)]
     public async Task An_admin_is_not_a_participant(Caller caller)
     {
-        if (!Ready())
+        if (await M6Pending.SkipAsync(factory, output, M6Pending.CreateConversation))
         {
             return;
         }
@@ -137,7 +127,7 @@ public sealed class M6ParticipantIsolationTests(LmsApiFactory factory, ITestOutp
     [Fact]
     public async Task Only_the_owner_changes_the_members_of_a_group()
     {
-        if (!Ready())
+        if (await M6Pending.SkipAsync(factory, output, M6Pending.CreateConversation))
         {
             return;
         }

@@ -4,9 +4,7 @@ using Lms.IntegrationTests.Infrastructure;
 using Lms.Shared;
 using Lms.Shared.Configuration;
 using Lms.Shared.Messaging;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Lms.IntegrationTests.Security;
 
@@ -33,19 +31,13 @@ public static class M6Kit
         return w;
     }
 
-    /// <summary>Whether the backend has mapped this route and method (rows and tests wait for it).</summary>
-    public static bool IsMapped(LmsApiFactory factory, HttpMethod method, string pattern) =>
-        factory.Services.GetRequiredService<EndpointDataSource>().Endpoints.OfType<RouteEndpoint>()
-            .Where(e => string.Equals(e.RoutePattern.RawText, pattern, StringComparison.OrdinalIgnoreCase))
-            .Any(e => (e.Metadata.GetMetadata<HttpMethodMetadata>()?.HttpMethods ?? ["*"]).Contains(method.Method, StringComparer.OrdinalIgnoreCase));
-
     /// <summary>A direct conversation of teacher A and student 1 (made by the teacher), with one message.</summary>
     public static Task<Guid> NewDirectAsync(M1ProbeWorld w) =>
         CreateAsync(w, ConversationKinds.Direct, null, M4aCaller.StudentGroup1);
 
-    /// <summary>A group of teacher A (the owner) with both students of class course X, with one message.</summary>
+    /// <summary>A group of teacher A (the owner) with both students of class course X and the guardian of student 1 (four members, so a member can leave or be removed), with one message.</summary>
     public static Task<Guid> NewGroupAsync(M1ProbeWorld w) =>
-        CreateAsync(w, ConversationKinds.Group, "QA group", M4aCaller.StudentGroup1, M4aCaller.StudentGroup2);
+        CreateAsync(w, ConversationKinds.Group, "QA group", M4aCaller.StudentGroup1, M4aCaller.StudentGroup2, M4aCaller.Guardian);
 
     private static async Task<Guid> CreateAsync(M1ProbeWorld w, string kind, string? title, params M4aCaller[] others)
     {

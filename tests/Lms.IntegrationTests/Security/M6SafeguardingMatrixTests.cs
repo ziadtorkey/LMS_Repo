@@ -1,12 +1,9 @@
 using System.Net;
 using System.Net.Http.Json;
-using Lms.Api.Infrastructure;
 using Lms.IntegrationTests.Infrastructure;
 using Lms.Shared;
 using Lms.Shared.Authorization;
 using Lms.Shared.Messaging;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
 
 namespace Lms.IntegrationTests.Security;
@@ -14,7 +11,7 @@ namespace Lms.IntegrationTests.Security;
 /// <summary>
 /// The D69 safeguarding-first matrix (M6 plan Task 31, PRD D69, L18, L25): who may write to whom, probed through every entry path. Two layers:
 /// <list type="number">
-/// <item><b>The oracle</b> is written out here as a literal 7 x 7 grid from the PRD (S = SameUnit, R = Relationship, D = Deny; sender row, recipient column),
+/// <item><b>The oracle</b> is written out here as a literal 7 x 7 grid from the plan table (L4; the PRD states the rule in words) (S = SameUnit, R = Relationship, D = Deny; sender row, recipient column),
 /// independent of <see cref="MessagingRuleDefaults"/>, so a drift of the contract default fails here (the corrected SameUnit cells included: staff to staff,
 /// manager and Org Admin to guardians). Runnable now.</item>
 /// <item><b>The API probes</b> create a direct conversation and search recipients as each pair of callers of the M4a world (teachers A and B, three
@@ -32,7 +29,7 @@ public sealed class M6SafeguardingMatrixTests(LmsApiFactory factory, ITestOutput
     private static readonly string[] Order =
         [BuiltInRoles.Student, BuiltInRoles.Guardian, BuiltInRoles.Teacher, BuiltInRoles.Counselor, BuiltInRoles.Supervisor, BuiltInRoles.Manager, BuiltInRoles.OrgAdmin];
 
-    /// <summary>PRD D69 as a grid. Rows: sender; columns in <see cref="Order"/>.</summary>
+    /// <summary>The plan table of D69 (L4) as a grid. Rows: sender; columns in <see cref="Order"/>.</summary>
     private static readonly string[] Grid =
     [
         "DDRRDDD", // Student: only their own teachers and counselor
@@ -68,7 +65,7 @@ public sealed class M6SafeguardingMatrixTests(LmsApiFactory factory, ITestOutput
 
     [Theory]
     [MemberData(nameof(Cells))]
-    public void Contract_default_equals_the_PRD_matrix(string from, string to, string expected) =>
+    public void Contract_default_equals_the_plan_matrix(string from, string to, string expected) =>
         Assert.Equal(expected, MessagingRuleDefaults.Default(from, to));
 
     [Fact]
@@ -140,14 +137,12 @@ public sealed class M6SafeguardingMatrixTests(LmsApiFactory factory, ITestOutput
 
         return data;
     }
-
     [Theory]
     [MemberData(nameof(Pairs))]
     public async Task Create_direct_follows_the_matrix(M4aCaller from, M4aCaller to)
     {
-        if (!Mapped(HttpMethod.Post, Routes.Conversations))
+        if (await M6Pending.SkipAsync(factory, output, M6Pending.CreateConversation))
         {
-            output.WriteLine("PENDING: POST /api/conversations is not mapped yet (#733).");
             return;
         }
 
@@ -163,16 +158,52 @@ public sealed class M6SafeguardingMatrixTests(LmsApiFactory factory, ITestOutput
         {
             Assert.True(response.StatusCode == HttpStatusCode.Forbidden && body.Contains(ProblemCodes.messaging_not_allowed),
                 $"{from} → {to} must be refused with 403 messaging_not_allowed, got {(int)response.StatusCode}: {body}");
+
+            // L18: a block, a rule and an ended relationship are one reason to the sender. A direct start never says "rule" or "relationship" (those come only
+            // from an owner adding a member), so the sender learns nothing about which cell refused them.
+            var reason = M6Pending.ReasonOf(body);
+            Assert.True(reason is MessagingNotAllowedReasons.BlockedOrRule or MessagingNotAllowedReasons.Restricted,
+                $"{from} → {to}: the reason must be '{MessagingNotAllowedReasons.BlockedOrRule}' (or '{MessagingNotAllowedReasons.Restricted}' for a restricted sender), got '{reason}'. Body: {body}");
         }
+    }
+
+    /// <summary>
+    /// Every denied start looks the same to the sender (checklist #762 row 2.3): the same status, the same problem shape and the same body (trace id and instance
+    /// aside), so the answer cannot tell a rule from a block from an ended relationship, or one denied person from another, by content or length.
+    /// </summary>
+    [Fact]
+    public async Task Every_denied_start_has_the_same_body()
+    {
+        if (await M6Pending.SkipAsync(factory, output, M6Pending.CreateConversation))
+        {
+            return;
+        }
+
+        var w = await M6Kit.WorldAsync(factory);
+        var bodies = new Dictionary<string, string>();
+        foreach (var from in Enum.GetValues<M4aCaller>())
+        {
+            foreach (var to in Enum.GetValues<M4aCaller>().Where(t => t != from && !Allowed(from, t)))
+            {
+                using var response = await w.SendAsync(from, HttpMethod.Post, Routes.Conversations,
+                    new CreateConversationRequest(ConversationKinds.Direct, [w.AssignmentOf(to).UserId], null, "hello"));
+                Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+                bodies[$"{from} → {to}"] = M6Pending.Normalize(await response.Content.ReadAsStringAsync());
+            }
+        }
+
+        Assert.NotEmpty(bodies);
+        var first = bodies.First();
+        var different = bodies.Where(b => b.Value != first.Value).Select(b => $"{b.Key} (length {b.Value.Length}) differs from {first.Key} (length {first.Value.Length}): {b.Value}").ToList();
+        Assert.True(different.Count == 0, "Denied starts must answer with identical bodies:\n" + string.Join('\n', different));
     }
 
     [Theory]
     [MemberData(nameof(Pairs))]
     public async Task Recipient_search_lists_exactly_the_people_the_matrix_allows(M4aCaller from, M4aCaller to)
     {
-        if (!Mapped(HttpMethod.Get, Routes.MessagingRecipients))
+        if (await M6Pending.SkipAsync(factory, output, M6Pending.Recipients))
         {
-            output.WriteLine("PENDING: GET /api/messaging/recipients is not mapped yet (#747).");
             return;
         }
 
@@ -183,9 +214,4 @@ public sealed class M6SafeguardingMatrixTests(LmsApiFactory factory, ITestOutput
         var listed = people.Any(p => p.UserId == w.AssignmentOf(to).UserId);
         Assert.True(listed == Allowed(from, to), $"{from} → {to}: recipient search {(listed ? "lists" : "hides")} a person the matrix {(Allowed(from, to) ? "allows" : "denies")}.");
     }
-
-    private bool Mapped(HttpMethod method, string pattern) =>
-        factory.Services.GetRequiredService<EndpointDataSource>().Endpoints.OfType<RouteEndpoint>()
-            .Where(e => string.Equals(e.RoutePattern.RawText, pattern, StringComparison.OrdinalIgnoreCase))
-            .Any(e => (e.Metadata.GetMetadata<HttpMethodMetadata>()?.HttpMethods ?? ["*"]).Contains(method.Method, StringComparer.OrdinalIgnoreCase));
 }
