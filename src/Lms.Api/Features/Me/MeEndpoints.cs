@@ -43,11 +43,14 @@ public static class MeEndpoints
             .ToListAsync(ct);
         var names = await profiles.GetDisplayNamesAsync(userId, ct);
 
+        // The client's time zone (D64) rides with every context: a teacher, student or guardian has no Settings.View to read it.
+        var zones = await ClientTimeZoneReader.ReadAsync(db, [.. assignments.Select(a => (a.OrganizationId, a.OrgUnitPath)).Distinct()], ct);
+
         return Results.Ok(new MeDto(
             userId, names.Ar, names.En, context.IsPlatformAdmin,
             assignments.Select(a => new UserContextDto(
                 a.AssignmentId, a.OrganizationId, a.OrganizationNameAr, a.OrganizationNameEn,
-                a.OrgUnitId, a.OrgUnitNameAr, a.OrgUnitNameEn, a.RoleNameAr, a.RoleNameEn)).ToList()));
+                a.OrgUnitId, a.OrgUnitNameAr, a.OrgUnitNameEn, a.RoleNameAr, a.RoleNameEn, zones[(a.OrganizationId, a.OrgUnitPath)])).ToList()));
     }
 
     private static async Task<IResult> GetPermissionsAsync(

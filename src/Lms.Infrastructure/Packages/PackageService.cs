@@ -2,15 +2,18 @@ using System.Security.Cryptography;
 using Lms.Domain.Classes;
 using Lms.Domain.Files;
 using Lms.Domain.Packages;
+using Lms.Infrastructure.Jobs;
 using Lms.Infrastructure.Persistence;
 using Lms.Shared.Packages;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Lms.Infrastructure.Packages;
 
 /// <summary>The upload of a package archive: the file store, the <see cref="PackageUpload"/> row and the hand-over to the validation job.</summary>
-public sealed class PackageService(LmsDbContext db, IFileStorage files, IPackageValidationScheduler scheduler)
+public sealed class PackageService(LmsDbContext db, IFileStorage files, IPackageJobs jobs)
 {
     /// <summary>Package extensions by kind: SCORM is a zip, H5P is an .h5p (also a zip).</summary>
     public static bool ExtensionMatches(string kind, string fileName) => kind switch
@@ -44,7 +47,7 @@ public sealed class PackageService(LmsDbContext db, IFileStorage files, IPackage
             throw;
         }
 
-        await scheduler.ScheduleAsync(upload.OrganizationId, upload.Id, ct);
+        jobs.ScheduleValidation(upload.OrganizationId, upload.Id);
         return upload;
     }
 
@@ -54,11 +57,12 @@ public sealed class PackageService(LmsDbContext db, IFileStorage files, IPackage
     /// </summary>
     public async Task DeleteAsync(PackageUpload upload, CancellationToken ct)
     {
-        var archiveFileId = upload.ArchiveFileId;
+        var (organizationId, packageId, archiveFileId) = (upload.OrganizationId, upload.Id, upload.ArchiveFileId);
         db.Remove(upload);
         await db.SaveChangesAsync(ct);
         // Soft-deleting the file while the tracked upload still points at it would look like a severed required relationship.
         db.Entry(upload).State = Microsoft.EntityFrameworkCore.EntityState.Detached;
+        jobs.SchedulePurge(organizationId, packageId);
         try
         {
             await files.DeleteAsync(archiveFileId, ct);
@@ -70,10 +74,40 @@ public sealed class PackageService(LmsDbContext db, IFileStorage files, IPackage
     }
 }
 
-/// <summary>Until the validation job (Task 8b) registers its own scheduler, an upload simply stays <c>Uploaded</c>.</summary>
-internal sealed class NoopPackageValidationScheduler : IPackageValidationScheduler
+/// <summary>Enqueues the package jobs as system jobs of one client (the organization id is the payload).</summary>
+internal sealed class HangfirePackageJobs(IBackgroundJobs jobs) : IPackageJobs
 {
-    public Task ScheduleAsync(Guid organizationId, Guid packageId, CancellationToken ct = default) => Task.CompletedTask;
+    public void ScheduleValidation(Guid organizationId, Guid packageId) =>
+        jobs.EnqueueAsSystem<PackageValidationJob>(j => j.RunAsync(organizationId, packageId, CancellationToken.None));
+
+    public void ScheduleValidationLater(Guid organizationId, Guid packageId, TimeSpan delay) =>
+        jobs.ScheduleAsSystem<PackageValidationJob>(
+            $"package-validation:{packageId:N}", DateTimeOffset.UtcNow + delay, j => j.RunAsync(organizationId, packageId, CancellationToken.None));
+
+    public void SchedulePurge(Guid organizationId, Guid packageId) =>
+        jobs.EnqueueAsSystem<PackagePurgeJob>(j => j.RunAsync(organizationId, packageId, CancellationToken.None));
+}
+
+/// <summary>Registers the recurring sweep of abandoned temp areas.</summary>
+internal sealed class PackageTempSweepRegistrar(IServiceScopeFactory scopes, ILogger<PackageTempSweepRegistrar> logger) : IHostedService
+{
+    public Task StartAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            using var scope = scopes.CreateScope();
+            scope.ServiceProvider.GetRequiredService<IBackgroundJobs>()
+                .AddOrUpdateRecurring<PackageTempSweepJob>(PackageTempSweepJob.JobId, j => j.RunAsync(), "*/30 * * * *");
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "The package temp sweep could not be registered; it is retried at the next start");
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 }
 
 public static class PackagesServiceCollectionExtensions
@@ -88,7 +122,28 @@ public static class PackagesServiceCollectionExtensions
         });
         services.AddScoped<IPackageRevocations, PackageRevocationWriter>();
         services.AddScoped<IPackageStore, MinioPackageStore>();
-        services.AddScoped<IPackageValidationScheduler, NoopPackageValidationScheduler>();
+        services.Configure<PackageValidationOptions>(o =>
+        {
+            var section = configuration.GetSection(PackageValidationOptions.Section);
+            if (TimeSpan.TryParse(section["Timeout"], System.Globalization.CultureInfo.InvariantCulture, out var timeout))
+            {
+                o.Timeout = timeout;
+            }
+
+            if (int.TryParse(section["MaxConcurrent"], out var concurrent) && concurrent > 0)
+            {
+                o.MaxConcurrent = concurrent;
+            }
+
+            o.TempRoot = section["TempRoot"];
+        });
+        services.AddSingleton<PackageValidationGate>();
+        services.AddScoped<IPackageScanner, NoOpPackageScanner>();
+        services.AddScoped<IPackageJobs, HangfirePackageJobs>();
+        services.AddScoped<PackageValidationJob>();
+        services.AddScoped<PackagePurgeJob>();
+        services.AddScoped<PackageTempSweepJob>();
+        services.AddHostedService<PackageTempSweepRegistrar>();
         services.AddScoped<PackageService>();
         return services;
     }

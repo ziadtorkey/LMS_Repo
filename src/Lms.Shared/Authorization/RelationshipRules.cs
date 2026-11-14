@@ -40,11 +40,15 @@ public static class RelationshipRules
             // M4b wave 3b: packages of own class courses.
             Permissions.Packages.Upload, Permissions.Packages.View,
             // M4b wave 3a: live sessions of own ClassCourses.
-            Permissions.LiveSessions.View, Permissions.LiveSessions.Manage)),
+            Permissions.LiveSessions.View, Permissions.LiveSessions.Manage,
+            // M5 wave 1: grades of own ClassCourses with an assignment active today (L15).
+            Permissions.Grades.View, Permissions.Grades.Manage, Permissions.Grades.Publish)),
         new(BuiltInRoles.Supervisor, Relationships.SupervisedCourses, ImmutableArray.Create(
             Permissions.Courses.Update, Permissions.Courses.Delete, Permissions.Courses.Allocate,
             Permissions.Blueprints.Edit, Permissions.Blueprints.Publish, Permissions.TeacherAssignments.Manage,
-            Permissions.Enrollment.ApproveException, Permissions.Students.View)),
+            Permissions.Enrollment.ApproveException, Permissions.Students.View,
+            // M5 wave 1: grades and reports of supervised courses only (L16).
+            Permissions.Grades.View, Permissions.Grades.ViewReports)),
         new(BuiltInRoles.Student, Relationships.OwnEnrollments, ImmutableArray.Create(
             Permissions.LessonPlans.View, Permissions.Modules.View,
             Permissions.CourseAssignments.View, Permissions.CourseAssignments.Submit,
