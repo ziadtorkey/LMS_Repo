@@ -58,6 +58,7 @@ public sealed class TimetableSlot : UnitOwnedEntity, ILiveKeyed
         PeriodId = periodId;
         RoomName = roomName;
         SlotKey = BuildKey(classCourseId, TermId, day, periodId);
+        State = DraftState; // an edit of a published slot returns it to Draft until the week is published again
         Version++;
     }
 

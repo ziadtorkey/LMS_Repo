@@ -38,6 +38,21 @@ public sealed class TimetableService(LmsDbContext db)
                 && s.Id != candidate.Id && (s.TeacherUserId == candidate.TeacherUserId || s.ClassId == candidate.ClassId))
             .ToListAsync(ct);
 
+    /// <summary>The clashes of every slot of the term in one read (no query per slot): the term's slots of the client that share a teacher or the class, clashed in memory.</summary>
+    public async Task<(Dictionary<Guid, IReadOnlyList<SlotClash>> ClashesBySlot, List<TimetableSlot> Others)> ClashesForAsync(
+        Class @class, Guid termId, IReadOnlyCollection<TimetableSlot> slots, CancellationToken ct)
+    {
+        var teacherIds = slots.Select(s => s.TeacherUserId).Distinct().ToList();
+        // ISOLATION-BYPASS: a teacher can teach in classes of sibling schools, outside the caller's subtree; limited to the client, live rows, one term and the
+        // teachers or class of the slots being checked; only the kind of a clash leaves for a slot the caller cannot read (see DescribeAsync).
+        var others = await db.Set<TimetableSlot>().IgnoreQueryFilters()
+            .Where(s => !s.IsDeleted && s.OrganizationId == @class.OrganizationId && s.TermId == termId && (teacherIds.Contains(s.TeacherUserId) || s.ClassId == @class.Id))
+            .ToListAsync(ct);
+        var places = others.Select(ToPlace).ToList();
+        var result = slots.ToDictionary(s => s.Id, s => ConflictChecker.Find(ToPlace(s), places));
+        return (result, others);
+    }
+
     public static IReadOnlyList<SlotClash> Clashes(TimetableSlot candidate, IEnumerable<TimetableSlot> others) =>
         ConflictChecker.Find(ToPlace(candidate), others.Select(ToPlace));
 
@@ -46,12 +61,26 @@ public sealed class TimetableService(LmsDbContext db)
     public async Task<IReadOnlyList<SlotConflictDto>> DescribeAsync(Guid organizationId, IReadOnlyList<SlotClash> clashes, IReadOnlyCollection<TimetableSlot> slots, CancellationToken ct)
     {
         var bySlot = slots.ToDictionary(s => s.Id);
-        var names = await NamesAsync(organizationId, slots, ct);
-        return clashes.Where(c => bySlot.ContainsKey(c.SlotId)).Select(c =>
+        // Only slots the caller can read (the filtered set) are described; a clash with a slot of a school the caller cannot see is reported by its kind alone.
+        var ids = slots.Select(s => s.Id).ToList();
+        var readable = (await db.Set<TimetableSlot>().Where(s => ids.Contains(s.Id)).Select(s => s.Id).ToListAsync(ct)).ToHashSet();
+        var visible = slots.Where(s => readable.Contains(s.Id)).ToList();
+        var names = await NamesAsync(organizationId, visible, ct);
+        var described = new List<SlotConflictDto>();
+        foreach (var c in clashes.Where(c => bySlot.ContainsKey(c.SlotId)))
         {
-            var slot = bySlot[c.SlotId];
-            return new SlotConflictDto(c.Kind, slot.Id, names.CourseAr(slot), names.CourseEn(slot), names.Teacher(slot));
-        }).ToList();
+            if (readable.Contains(c.SlotId))
+            {
+                var slot = bySlot[c.SlotId];
+                described.Add(new SlotConflictDto(c.Kind, slot.Id, names.CourseAr(slot), names.CourseEn(slot), names.Teacher(slot)));
+            }
+            else if (!described.Any(d => d.SlotId == Guid.Empty && d.Kind == c.Kind))
+            {
+                described.Add(new SlotConflictDto(c.Kind, Guid.Empty, string.Empty, string.Empty, string.Empty));
+            }
+        }
+
+        return described;
     }
 
     public async Task<IReadOnlyList<SlotDto>> ToDtosAsync(Guid organizationId, IReadOnlyCollection<TimetableSlot> slots, ISet<Guid>? conflicting, CancellationToken ct)
