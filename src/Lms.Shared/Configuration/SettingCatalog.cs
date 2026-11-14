@@ -104,6 +104,7 @@ public static class SettingCatalog
         new(SettingKeys.MessagingMaxPerMinute.Name, SettingValueKinds.Int, SettingCategories.Features, "30", Min: 1, Max: 120, ClientLevelOnly: true),
         new(SettingKeys.MessagingMaxNewConversationsPerDay.Name, SettingValueKinds.Int, SettingCategories.Features, "20", Min: 1, Max: 200, ClientLevelOnly: true),
         new(SettingKeys.MessagingMaxGroupSize.Name, SettingValueKinds.Int, SettingCategories.Features, "50", Min: 3, Max: 200, ClientLevelOnly: true),
+        new(SettingKeys.MessagingUploadsPerMinute.Name, SettingValueKinds.Int, SettingCategories.Features, "10", Min: 1, Max: 60, ClientLevelOnly: true),
         new(SettingKeys.AnnouncementsMaxPerAuthorPerDay.Name, SettingValueKinds.Int, SettingCategories.Features, "10", Min: 1, Max: 100, ClientLevelOnly: true),
         // M5 wave 2: the school week and the conflict mode of the timetable builder.
         new(SettingKeys.TimetableWorkingDays.Name, SettingValueKinds.StringSet, SettingCategories.Academic,

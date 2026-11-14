@@ -36,7 +36,7 @@ public static class MessagingRuleModes
     /// <summary>Never allowed.</summary>
     public const string Deny = "Deny";
 
-    /// <summary>Allowed to anyone in the same unit (looser than a relationship; no D69 default uses it, so a client can never choose it).</summary>
+    /// <summary>Allowed to anyone in the same unit (looser than a relationship): the D69 default among staff and from a manager or Org Admin to guardians; a client may only narrow it.</summary>
     public const string SameUnit = "SameUnit";
 
     public static IReadOnlyList<string> All { get; } = [Deny, Relationship, SameUnit, Allow];
@@ -192,4 +192,32 @@ public static class MessagingLimits
     public const int AudiencePreviewSampleMax = 10;
     public const int PushEndpointMaxLength = 1000;
     public const int EmailTestsPerDay = 3;
+}
+
+/// <summary>
+/// <c>ConversationDto.ReadOnlyReason</c> (L25, D74, D77): why the caller cannot post. A block and a rule are one reason to the sender (<see cref="BlockedOrRule"/>).
+/// </summary>
+public static class ConversationReadOnlyReasons
+{
+    public const string GroupStudentsReadOnly = "group_students_read_only";
+    public const string GroupGuardiansReadOnly = "group_guardians_read_only";
+    public const string Rule = "rule";
+    public const string BlockedOrRule = "blocked_or_rule";
+    public const string Restricted = "restricted";
+    public const string Locked = "locked";
+
+    public static IReadOnlyList<string> All { get; } = [GroupStudentsReadOnly, GroupGuardiansReadOnly, Rule, BlockedOrRule, Restricted, Locked];
+}
+
+/// <summary>The <c>reason</c> of a 403/422 <c>messaging_not_allowed</c> problem (L18).</summary>
+public static class MessagingNotAllowedReasons
+{
+    public const string Rule = "rule";
+    public const string Relationship = "relationship";
+    public const string Restricted = "restricted";
+    public const string BlockedOrRule = "blocked_or_rule";
+    public const string PrivateGroupWithStudent = "private_group_with_student";
+    public const string GroupFull = "group_full";
+
+    public static IReadOnlyList<string> All { get; } = [Rule, Relationship, Restricted, BlockedOrRule, PrivateGroupWithStudent, GroupFull];
 }

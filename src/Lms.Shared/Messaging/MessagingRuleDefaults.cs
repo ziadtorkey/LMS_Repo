@@ -33,10 +33,10 @@ public static class MessagingRuleDefaults
             BuiltInRoles.Student => to is BuiltInRoles.Teacher or BuiltInRoles.Counselor ? MessagingRuleModes.Relationship : MessagingRuleModes.Deny,
             BuiltInRoles.Guardian => to is BuiltInRoles.Teacher or BuiltInRoles.Counselor ? MessagingRuleModes.Relationship : MessagingRuleModes.Deny,
             BuiltInRoles.Teacher => to is BuiltInRoles.Student or BuiltInRoles.Guardian ? MessagingRuleModes.Relationship
-                : Staff.Contains(to) ? MessagingRuleModes.Allow : MessagingRuleModes.Deny,
+                : Staff.Contains(to) ? MessagingRuleModes.SameUnit : MessagingRuleModes.Deny,
             BuiltInRoles.Counselor or BuiltInRoles.Supervisor => to is BuiltInRoles.Student or BuiltInRoles.Guardian ? MessagingRuleModes.Relationship
-                : Staff.Contains(to) ? MessagingRuleModes.Allow : MessagingRuleModes.Deny,
-            BuiltInRoles.Manager or BuiltInRoles.OrgAdmin => to == BuiltInRoles.Student ? MessagingRuleModes.Deny : MessagingRuleModes.Allow,
+                : Staff.Contains(to) ? MessagingRuleModes.SameUnit : MessagingRuleModes.Deny,
+            BuiltInRoles.Manager or BuiltInRoles.OrgAdmin => to == BuiltInRoles.Student ? MessagingRuleModes.Deny : MessagingRuleModes.SameUnit,
             _ => MessagingRuleModes.Deny,
         };
     }
