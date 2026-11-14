@@ -61,7 +61,7 @@ public static class TakeAttendanceEndpoints
 
     private static async Task<IResult> PutRecordsAsync(
         Guid id, TakeAttendanceRequest? body, HttpContext http, LmsDbContext db, ICurrentContext current, IClientCalendar calendar, IAccessEvaluator evaluator,
-        AttendanceRoster roster, ISettingsResolver settings, IClock clock, AttendanceRecordsMapper mapper, CancellationToken ct)
+        AttendanceRoster roster, ISettingsResolver settings, IClock clock, AttendanceRecordsMapper mapper, AbsenceNotifier notifier, CancellationToken ct)
     {
         var (access, problem) = await OpenAsync(id, http, db, current, calendar, evaluator, ct);
         if (access is null)
@@ -108,6 +108,7 @@ public static class TakeAttendanceEndpoints
         var byStudent = records.ToDictionary(r => r.StudentProfileId);
         var kind = AttendanceTaker.ChangeKind(taken, inWindow);
         var changes = new List<AttendanceRecordChange>();
+        var studentOf = new Dictionary<Guid, Guid>();
         foreach (var (student, (status, note)) in plan.Final)
         {
             var cleanNote = string.IsNullOrWhiteSpace(note) ? null : note.Trim()[..Math.Min(note.Trim().Length, AttendanceLimits.NoteMaxLength)];
@@ -115,10 +116,12 @@ public static class TakeAttendanceEndpoints
             {
                 record = new AttendanceRecord(session, student, status, cleanNote);
                 db.Add(record);
+                studentOf[record.Id] = student;
                 changes.Add(new AttendanceRecordChange(record, null, status, kind, current.UserId!.Value, body.Reason?.Trim(), now));
                 continue;
             }
 
+            studentOf[record.Id] = student;
             if (record.Status != status)
             {
                 changes.Add(new AttendanceRecordChange(record, record.Status, status, kind, current.UserId!.Value, body.Reason?.Trim(), now));
@@ -138,6 +141,8 @@ public static class TakeAttendanceEndpoints
             return ApiProblems.Conflict(ProblemCodes.concurrency_conflict);
         }
 
+        // The family is told once per student whose new status is Absent or Late (first take or a change); never the note.
+        await notifier.NotifyAsync(session, changes.Where(c => AbsenceNotifier.IsNoticeable(c.ToStatus)).Select(c => studentOf[c.AttendanceRecordId]).Distinct().ToList(), ct);
         return Results.Ok(await mapper.ToDtoAsync(session, current.UserId!.Value, ct));
     }
 
