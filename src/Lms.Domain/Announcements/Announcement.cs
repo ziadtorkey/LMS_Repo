@@ -64,6 +64,24 @@ public sealed class Announcement : UnitOwnedEntity
         IsUrgent = urgent;
     }
 
+    public void Schedule(DateTime publishAtUtc)
+    {
+        Status = AnnouncementStates.Scheduled;
+        PublishAtUtc = publishAtUtc;
+    }
+
+    /// <summary>The audience snapshot is taken; from now on only the expiry and the pin change.</summary>
+    public void MarkPublished(DateTime now, int audienceCount)
+    {
+        Status = AnnouncementStates.Published;
+        PublishedAtUtc = now;
+        AudienceCount = audienceCount;
+    }
+
+    public void Withdraw() => Status = AnnouncementStates.Withdrawn;
+
+    public void Expire() => Status = AnnouncementStates.Expired;
+
     /// <summary>After publishing only the expiry and the pin change; a changed body sets the visible marker (no new notification).</summary>
     public void EditPublished(string? bodyAr, string? bodyEn, DateTime? expiresAtUtc, bool pinned, DateTime now)
     {

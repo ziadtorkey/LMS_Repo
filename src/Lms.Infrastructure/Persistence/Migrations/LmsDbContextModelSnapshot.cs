@@ -456,6 +456,41 @@ namespace Lms.Infrastructure.Persistence.Migrations
                     b.ToTable("Announcements", (string)null);
                 });
 
+            modelBuilder.Entity("Lms.Domain.Announcements.AnnouncementRecipient", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("AnnouncementId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Audience")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime?>("ReadAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AnnouncementId", "UserId")
+                        .IsUnique();
+
+                    b.HasIndex("OrganizationId", "UserId", "ReadAtUtc");
+
+                    b.ToTable("AnnouncementRecipients", (string)null);
+                });
+
             modelBuilder.Entity("Lms.Domain.Announcements.AnnouncementTarget", b =>
                 {
                     b.Property<Guid>("Id")

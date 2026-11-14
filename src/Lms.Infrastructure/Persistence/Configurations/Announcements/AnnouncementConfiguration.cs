@@ -31,3 +31,14 @@ internal sealed class AnnouncementTargetConfiguration : IEntityTypeConfiguration
         builder.HasIndex(x => x.AnnouncementId);
     }
 }
+
+internal sealed class AnnouncementRecipientConfiguration : IEntityTypeConfiguration<AnnouncementRecipient>
+{
+    public void Configure(EntityTypeBuilder<AnnouncementRecipient> builder)
+    {
+        builder.ToTable("AnnouncementRecipients");
+        builder.Property(x => x.Audience).HasMaxLength(20).IsRequired();
+        builder.HasIndex(x => new { x.AnnouncementId, x.UserId }).IsUnique();
+        builder.HasIndex(x => new { x.OrganizationId, x.UserId, x.ReadAtUtc });
+    }
+}

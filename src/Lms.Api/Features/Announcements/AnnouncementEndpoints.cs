@@ -4,6 +4,7 @@ using Lms.Domain.Abstractions;
 using Lms.Domain.Announcements;
 using Lms.Domain.Content;
 using Lms.Domain.Organizations;
+using Lms.Infrastructure.Announcements;
 using Lms.Infrastructure.Persistence;
 using Lms.Shared;
 using Lms.Shared.Authorization;
@@ -13,7 +14,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Lms.Api.Features.Announcements;
 
 /// <summary>
-/// The announcement store under <c>/api/comms/announcements</c> (M6 Task 13). Slice 1: capabilities, list, read, create and edit a draft, delete a draft.
+/// The announcement store under <c>/api/comms/announcements</c> (M6 Task 13). Capabilities, list, read, create and edit, delete a draft, audience preview, publish (now or scheduled) and withdraw.
 /// An unrestricted grant (a unit admin) sees every announcement in scope; a restricted one (a Teacher) sees only their own.
 /// </summary>
 internal static class AnnouncementEndpoints
@@ -26,6 +27,9 @@ internal static class AnnouncementEndpoints
         app.MapGet(Routes.OrgAnnouncementPattern, GetAsync).RequireAuthorization().RequirePermission(Permissions.Announcements.Manage);
         app.MapPut(Routes.OrgAnnouncementPattern, UpdateAsync).RequireAuthorization().RequirePermission(Permissions.Announcements.Manage);
         app.MapDelete(Routes.OrgAnnouncementPattern, DeleteAsync).RequireAuthorization().RequirePermission(Permissions.Announcements.Manage);
+        app.MapPost(Routes.OrgAnnouncementPublishPattern, PublishAsync).RequireAuthorization().RequirePermission(Permissions.Announcements.Manage);
+        app.MapPost(Routes.OrgAnnouncementWithdrawPattern, WithdrawAsync).RequireAuthorization().RequirePermission(Permissions.Announcements.Manage);
+        app.MapPost(Routes.OrgAnnouncementAudiencePreview, PreviewAsync).RequireAuthorization().RequirePermission(Permissions.Announcements.Manage);
     }
 
     private static async Task<IResult> CapabilitiesAsync(HttpContext http, LmsDbContext db, ICurrentContext context, TargetScopeGuard guard, CancellationToken ct)
@@ -65,7 +69,7 @@ internal static class AnnouncementEndpoints
 
     private static async Task<IResult> CreateAsync(
         CreateAnnouncementRequest? request, HttpContext http, ICurrentContext context, LmsDbContext db, TargetScopeGuard guard, IRichTextSanitizer sanitizer,
-        AnnouncementMapper mapper, CancellationToken ct)
+        AnnouncementMapper mapper, AnnouncementService service, CancellationToken ct)
     {
         if (request is null || context.UserId is not { } userId)
         {
@@ -86,24 +90,29 @@ internal static class AnnouncementEndpoints
             return problem;
         }
 
-        if (request.Publish)
-        {
-            return ForumSupport.Invalid("publish", "not_available"); // publishing arrives with the audience resolver (next slice of Task 13)
-        }
-
         var row = new Announcement(unit!, userId);
         row.SetContent(
-            request.TitleAr, request.TitleEn, clean!.BodyAr, clean.BodyEn, request.RoleFilters ?? [], request.PublishAtUtc, request.ExpiresAtUtc,
-            request.IsPinned, request.Notify, request.IsUrgent);
+            request.TitleAr, request.TitleEn, clean!.BodyAr, clean.BodyEn, await ChipsAsync(request.RoleFilters, guard, ct), request.PublishAtUtc,
+            request.ExpiresAtUtc, request.IsPinned, request.Notify, request.IsUrgent);
+        if (request.Publish && !await service.UnderAuthorCapAsync(row, ct))
+        {
+            return ApiProblems.TooManyRequests(ProblemCodes.rate_limited);
+        }
+
         db.Set<Announcement>().Add(row);
         db.Set<AnnouncementTarget>().AddRange(request.Targets.Select(t => new AnnouncementTarget(row, t.Kind, t.TargetId, t.IncludeSubtree)));
         await db.SaveChangesAsync(ct);
+        if (request.Publish)
+        {
+            await service.PublishAsync(row, ct);
+        }
+
         return Results.Created(Routes.OrgAnnouncement(row.Id), (await mapper.ToDtosAsync([row], ct))[0]);
     }
 
     private static async Task<IResult> UpdateAsync(
         Guid id, UpdateAnnouncementRequest? request, HttpContext http, ICurrentContext context, LmsDbContext db, TargetScopeGuard guard,
-        IRichTextSanitizer sanitizer, IClock clock, AnnouncementMapper mapper, CancellationToken ct)
+        IRichTextSanitizer sanitizer, IClock clock, AnnouncementMapper mapper, AnnouncementService service, CancellationToken ct)
     {
         var row = await (await VisibleAsync(db, context, guard, ct)).FirstOrDefaultAsync(a => a.Id == id, ct);
         if (row is null)
@@ -126,8 +135,13 @@ internal static class AnnouncementEndpoints
 
         if (row.IsEditable)
         {
+            if (row.Status == AnnouncementStates.Scheduled && (request.PublishAtUtc is not { } at || at <= clock.UtcNow))
+            {
+                return ForumSupport.Invalid("publishAtUtc", "must_be_later"); // withdraw cancels a schedule; an edit keeps it ahead
+            }
+
             row.SetContent(
-                request.TitleAr, request.TitleEn, clean!.BodyAr, clean.BodyEn, request.RoleFilters ?? [], request.PublishAtUtc, request.ExpiresAtUtc,
+                request.TitleAr, request.TitleEn, clean!.BodyAr, clean.BodyEn, await ChipsAsync(request.RoleFilters, guard, ct), request.PublishAtUtc, request.ExpiresAtUtc,
                 request.IsPinned, request.Notify, request.IsUrgent);
             db.Set<AnnouncementTarget>().RemoveRange(await db.Set<AnnouncementTarget>().Where(t => t.AnnouncementId == row.Id).ToListAsync(ct));
             db.Set<AnnouncementTarget>().AddRange(request.Targets.Select(t => new AnnouncementTarget(row, t.Kind, t.TargetId, t.IncludeSubtree)));
@@ -142,8 +156,86 @@ internal static class AnnouncementEndpoints
         }
 
         await db.SaveChangesAsync(ct);
+        if (row.Status == AnnouncementStates.Scheduled)
+        {
+            service.Reschedule(row); // the keyed job moves, it is never duplicated
+        }
+
         return Results.Ok((await mapper.ToDtosAsync([row], ct))[0]);
     }
+
+    private static async Task<IResult> PublishAsync(
+        Guid id, ICurrentContext context, LmsDbContext db, TargetScopeGuard guard, AnnouncementService service, AnnouncementMapper mapper, CancellationToken ct)
+    {
+        var row = await (await VisibleAsync(db, context, guard, ct)).FirstOrDefaultAsync(a => a.Id == id, ct);
+        if (row is null)
+        {
+            return ApiProblems.NotFound();
+        }
+
+        if (row.Status != AnnouncementStates.Draft)
+        {
+            return ApiProblems.Conflict(ProblemCodes.announcement_not_editable);
+        }
+
+        if (!await service.UnderAuthorCapAsync(row, ct))
+        {
+            return ApiProblems.TooManyRequests(ProblemCodes.rate_limited);
+        }
+
+        await service.PublishAsync(row, ct);
+        return Results.Ok((await mapper.ToDtosAsync([row], ct))[0]);
+    }
+
+    private static async Task<IResult> WithdrawAsync(
+        Guid id, ICurrentContext context, LmsDbContext db, TargetScopeGuard guard, AnnouncementService service, AnnouncementMapper mapper, CancellationToken ct)
+    {
+        var row = await (await VisibleAsync(db, context, guard, ct)).FirstOrDefaultAsync(a => a.Id == id, ct);
+        if (row is null)
+        {
+            return ApiProblems.NotFound();
+        }
+
+        if (row.Status is not (AnnouncementStates.Scheduled or AnnouncementStates.Published))
+        {
+            return ApiProblems.Conflict(ProblemCodes.announcement_not_editable);
+        }
+
+        await service.WithdrawAsync(row, ct);
+        return Results.Ok((await mapper.ToDtosAsync([row], ct))[0]);
+    }
+
+    private static async Task<IResult> PreviewAsync(
+        AudiencePreviewRequest? request, HttpContext http, ICurrentContext context, LmsDbContext db, TargetScopeGuard guard, AudienceResolver resolver,
+        IClock clock, CancellationToken ct)
+    {
+        if (request is null || !TargetScopeGuard.IsWellFormed(request.Targets))
+        {
+            return ApiProblems.BadRequest(ProblemCodes.announcement_target_invalid);
+        }
+
+        var (_, unitProblem) = await guard.AuthoringUnitAsync(http, request.AuthoringUnitId, ct);
+        if (unitProblem is not null)
+        {
+            return unitProblem;
+        }
+
+        if (await guard.CheckAsync(http, request.Targets, ct) is { } unreachable)
+        {
+            return unreachable;
+        }
+
+        var chips = await ChipsAsync(request.RoleFilters, guard, ct);
+        var audience = await resolver.ResolveAsync(
+            [.. request.Targets.Select(t => new AudienceTarget(t.Kind, t.TargetId, t.IncludeSubtree))], chips, context.UserId, DateOnly.FromDateTime(clock.UtcNow), ct);
+        var sampleIds = audience.Users.Keys.Take(10).ToList();
+        var names = await db.Set<Lms.Domain.Identity.User>().AsNoTracking().Where(u => sampleIds.Contains(u.Id))
+            .Select(u => string.IsNullOrEmpty(u.DisplayNameEn) ? u.DisplayNameAr : u.DisplayNameEn).ToListAsync(ct);
+        return Results.Ok(new AudiencePreviewDto(audience.Count, names));
+    }
+
+    private static async Task<IReadOnlyList<string>> ChipsAsync(IReadOnlyList<string>? chosen, TargetScopeGuard guard, CancellationToken ct) =>
+        AnnouncementService.EffectiveChips(chosen, await guard.IsUnrestrictedAsync(ct));
 
     private static async Task<IResult> DeleteAsync(Guid id, ICurrentContext context, LmsDbContext db, TargetScopeGuard guard, CancellationToken ct)
     {

@@ -136,7 +136,7 @@ public sealed class AnnouncementAuthoringTests(LmsApiFactory factory)
     }
 
     [Fact]
-    public async Task A_draft_can_be_edited_with_new_targets_listed_and_deleted_and_publish_is_not_available_yet()
+    public async Task A_draft_can_be_edited_with_new_targets_listed_and_deleted()
     {
         using var w = await ForumTestWorld.CreateAsync(factory, "AA8");
         var made = await CreateOkAsync(w, w.Admin, Request(RootUnit(w), [Cc(w.ClassCourseA)]));
@@ -146,14 +146,12 @@ public sealed class AnnouncementAuthoringTests(LmsApiFactory factory)
         var updated = await w.ReadAsync<AnnouncementDto>(edit);
         var list = await w.ReadAsync<PagedResult<AnnouncementListItemDto>>(
             await w.SendAsync(w.Admin, HttpMethod.Get, Routes.OrgAnnouncements + "?status=Draft"));
-        var publish = await w.SendAsync(w.Admin, HttpMethod.Post, Routes.OrgAnnouncements, Request(RootUnit(w), [Org()]) with { Publish = true });
         var deleted = await w.SendAsync(w.Admin, HttpMethod.Delete, Routes.OrgAnnouncement(made.Id));
 
         Assert.Equal("New", updated.TitleEn);
         Assert.True(updated.IsPinned);
         Assert.Equal([w.ClassCourseB], updated.Targets.Select(t => t.TargetId!.Value));
         Assert.Contains(list.Items, i => i.Id == made.Id);
-        Assert.Equal(HttpStatusCode.BadRequest, publish.StatusCode);
         Assert.Equal(HttpStatusCode.NoContent, deleted.StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await w.SendAsync(w.Admin, HttpMethod.Get, Routes.OrgAnnouncement(made.Id))).StatusCode);
     }

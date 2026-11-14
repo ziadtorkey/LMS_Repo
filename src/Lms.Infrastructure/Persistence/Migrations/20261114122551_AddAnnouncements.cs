@@ -12,6 +12,24 @@ namespace Lms.Infrastructure.Persistence.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "AnnouncementRecipients",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "char(36)", nullable: false),
+                    OrganizationId = table.Column<Guid>(type: "char(36)", nullable: false),
+                    AnnouncementId = table.Column<Guid>(type: "char(36)", nullable: false),
+                    UserId = table.Column<Guid>(type: "char(36)", nullable: false),
+                    Audience = table.Column<string>(type: "varchar(20)", maxLength: 20, nullable: false),
+                    CreatedAtUtc = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    ReadAtUtc = table.Column<DateTime>(type: "datetime(6)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AnnouncementRecipients", x => x.Id);
+                })
+                .Annotation("MySQL:Charset", "utf8mb4");
+
+            migrationBuilder.CreateTable(
                 name: "Announcements",
                 columns: table => new
                 {
@@ -73,6 +91,17 @@ namespace Lms.Infrastructure.Persistence.Migrations
                 .Annotation("MySQL:Charset", "utf8mb4");
 
             migrationBuilder.CreateIndex(
+                name: "IX_AnnouncementRecipients_AnnouncementId_UserId",
+                table: "AnnouncementRecipients",
+                columns: new[] { "AnnouncementId", "UserId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AnnouncementRecipients_OrganizationId_UserId_ReadAtUtc",
+                table: "AnnouncementRecipients",
+                columns: new[] { "OrganizationId", "UserId", "ReadAtUtc" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Announcements_OrganizationId_AuthorUserId_CreatedAt",
                 table: "Announcements",
                 columns: new[] { "OrganizationId", "AuthorUserId", "CreatedAt" });
@@ -91,6 +120,9 @@ namespace Lms.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "AnnouncementRecipients");
+
             migrationBuilder.DropTable(
                 name: "Announcements");
 
