@@ -25,7 +25,7 @@
             var editing = EditingItem == item.Id;
             <GradeCell Cell="cell" Item="item" StudentId="Row.StudentId" StudentName="@Name" RowIndex="RowIndex" ColIndex="c" Focused="FocusCol == c"
                        Editing="editing" Draft="@(editing ? Session?.Draft ?? "" : "")" MenuOpen="MenuCol == c" Ui="Session?.Cell(Row.StudentId, item.Id)"
-                       OnKey="e => OnKey.InvokeAsync((RowIndex, c, e))" OnFocusCell="() => OnFocusCell.InvokeAsync((RowIndex, c))"
+                       OnKey="e => OnKey.InvokeAsync((RowIndex, c, e))" OnFocusCell="() => OnFocusCell.InvokeAsync((RowIndex, c))" OnBlur="() => OnBlur.InvokeAsync((RowIndex, c))"
                        OnDraft="v => Session?.SetDraft(v)" OnMenu="a => OnMenu.InvokeAsync((RowIndex, c, a))" />
         }
         var rc = col++;
@@ -72,6 +72,7 @@
     [Parameter] public EventCallback<GradeRowDto> OnStudent { get; set; }
     [Parameter] public EventCallback<(int Row, int Col, KeyboardEventArgs Args)> OnKey { get; set; }
     [Parameter] public EventCallback<(int Row, int Col)> OnFocusCell { get; set; }
+    [Parameter] public EventCallback<(int Row, int Col)> OnBlur { get; set; }
     [Parameter] public EventCallback<(int Row, int Col, string Action)> OnMenu { get; set; }
 
     private string Name => Culture.Pick(Row.StudentNameAr, Row.StudentNameEn);

@@ -347,6 +347,62 @@ public sealed class GradebookConfigTests : ClientTestContext
         Assert.DoesNotContain("SettingValue_Grades", page.Markup); // a missing label would show its key
     }
 
+    // ---- the term every write is for ----
+
+    private async Task<IRenderedComponent<GradebookPage>> OpenSecondTermAsync()
+    {
+        _api.Term2HasItems = true;
+        Services.GetRequiredService<Microsoft.AspNetCore.Components.NavigationManager>().NavigateTo($"class-courses/{Cc}/gradebook?termId={FakeGradebookApi.Term2Id}");
+        var page = await OpenAsync();
+        page.WaitForAssertion(() => Assert.Equal(FakeGradebookApi.Term2Id, _api.LastQuery!.TermId), Wait);
+        return page;
+    }
+
+    [Fact]
+    public async Task Saving_weights_is_sent_for_the_displayed_term()
+    {
+        var page = await OpenSecondTermAsync();
+
+        page.Find("[data-testid=cat-save]").Click();
+
+        page.WaitForAssertion(() => Assert.Equal(FakeGradebookApi.Term2Id, _api.LastWriteTermId), Wait);
+    }
+
+    [Fact]
+    public async Task Saving_the_scale_and_calculation_is_sent_for_the_displayed_term()
+    {
+        var page = await OpenSecondTermAsync();
+
+        page.Find("[data-testid=config-save]").Click();
+
+        page.WaitForAssertion(() => Assert.Equal(FakeGradebookApi.Term2Id, _api.LastWriteTermId), Wait);
+    }
+
+    [Fact]
+    public async Task A_new_item_is_added_to_the_displayed_term()
+    {
+        var page = await OpenSecondTermAsync();
+        page.Find("[data-testid=item-add]").Click();
+        _dialogs.WaitForElement("[data-testid=item-title-ar]", Wait);
+        _dialogs.Find("[data-testid=item-title-ar]").Change("مشروع");
+        _dialogs.Find("[data-testid=item-title-en]").Change("Project");
+        _dialogs.Find("[data-testid=item-max]").Input("25");
+
+        _dialogs.Find("[data-testid=dialog-save]").Click();
+
+        page.WaitForAssertion(() => Assert.Equal(FakeGradebookApi.Term2Id, _api.LastWriteTermId), Wait);
+    }
+
+    [Fact]
+    public async Task On_the_current_term_the_writes_name_it_as_well()
+    {
+        var page = await OpenAsync();
+
+        page.Find("[data-testid=cat-save]").Click();
+
+        page.WaitForAssertion(() => Assert.Equal(FakeGradebookApi.DemoTermId, _api.LastWriteTermId), Wait);
+    }
+
     // ---- RTL ----
 
     [Fact]

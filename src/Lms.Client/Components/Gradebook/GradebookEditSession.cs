@@ -32,7 +32,7 @@ public enum SaveResult
     Failed,
 }
 
-public sealed class GradebookEditSession(IGradebookApi api, Guid classCourseId, IStringLocalizer<SharedResource> l, Func<Task> reloadRows)
+public sealed class GradebookEditSession(IGradebookApi api, Guid classCourseId, Guid? termId, IStringLocalizer<SharedResource> l, Func<Task> reloadRows)
 {
     private readonly Dictionary<(Guid Student, Guid Item), CellUi> _cells = [];
     private readonly Dictionary<(Guid Student, Guid Item), Func<Task>> _retries = [];
@@ -180,7 +180,7 @@ public sealed class GradebookEditSession(IGradebookApi api, Guid classCourseId, 
         Changed?.Invoke();
         try
         {
-            var saved = await api.UpsertEntriesAsync(classCourseId, new UpsertEntriesRequest(row.StudentId, row.Version, [change]));
+            var saved = await api.UpsertEntriesAsync(classCourseId, new UpsertEntriesRequest(row.StudentId, row.Version, [change]), termId);
             _cells.Remove(key);
             Touch(row.StudentId);
             RowReplaced?.Invoke(saved);
