@@ -108,6 +108,24 @@ public sealed class AnnouncementDeliveryTests(LmsApiFactory factory)
         await w.ReadAsync<AnnouncementDto>(await w.SendAsync(w.Admin, HttpMethod.Get, Routes.OrgAnnouncement(id)));
 
     [Fact]
+    public async Task Announcements_published_does_not_email_by_default_and_only_urgent_does()
+    {
+        // The catalog decision (#766): the event offers in-app only, so no preference can add email; urgency is the one way to email.
+        Assert.Equal([NotificationChannels.InApp], NotificationEvents.Find(NotificationEvents.AnnouncementsPublished)!.DefaultChannels ?? [NotificationChannels.InApp]);
+
+        using var w = await ForumTestWorld.CreateAsync(factory, "AD1B");
+        await PreferEmailAsync(w.StudentA.UserId);
+
+        await CreateOkAsync(w, w.Admin, Request(w.World.Tree.Root.Id, [Cc(w.ClassCourseA)]));
+        Assert.Empty(await OutboxAsync(w.StudentA.UserId));
+        Assert.Empty(await OutboxAsync(w.StudentA2.UserId));
+
+        await CreateOkAsync(w, w.Admin, Request(w.World.Tree.Root.Id, [Cc(w.ClassCourseA)], urgent: true));
+        Assert.Equal(NotificationChannels.Email, Assert.Single(await OutboxAsync(w.StudentA.UserId)).Channel);
+        Assert.Single(await OutboxAsync(w.StudentA2.UserId));
+    }
+
+    [Fact]
     public async Task A_silent_post_sends_no_notification()
     {
         using var w = await ForumTestWorld.CreateAsync(factory, "AD2");
