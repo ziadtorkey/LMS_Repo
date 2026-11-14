@@ -3,35 +3,43 @@ using MudBlazor;
 
 namespace Lms.Client.Navigation;
 
-/// <summary>All navigation entries; later milestones append items here.</summary>
+/// <summary>All navigation entries, grouped into sidebar sections (Stitch, #561); later milestones append items here.</summary>
 public static class NavCatalog
 {
+    public const string Structure = "NavSection_Structure";
+    public const string People = "NavSection_People";
+    public const string Academic = "NavSection_Academic";
+    public const string Security = "NavSection_Security";
+
+    /// <summary>Section order in the sidebar.</summary>
+    public static readonly IReadOnlyList<string> Sections = [Structure, People, Academic, Security];
+
     public static readonly IReadOnlyList<NavItem> Items =
     [
-        new("Nav_Home", "", Icons.Material.Filled.Home, null),
-        new("Nav_OrgUnits", "org-units", Icons.Material.Filled.AccountTree, Permissions.OrgUnits.View),
-        new("Nav_LevelTypes", "level-types", Icons.Material.Filled.Layers, Permissions.LevelTypes.View),
-        new("Nav_Exceptions", "enrollment-exceptions", Icons.Material.Filled.Gavel, Permissions.Enrollment.ApproveException),
-        new("Nav_Guardians", "guardians", Icons.Material.Filled.FamilyRestroom, Permissions.Students.View),
-        new("Nav_Eligibility", "teaching/eligibility", Icons.Material.Filled.HowToReg, Permissions.TeacherAssignments.View),
-        new("Nav_Staff", "staff", Icons.Material.Filled.Badge, Permissions.Staff.View),
-        new("Nav_MyChildren", "me/children", Icons.Material.Filled.FamilyRestroom, Permissions.Students.ViewChildren),
-        new("Nav_MyProfile", "me/profile", Icons.Material.Filled.Person, Permissions.Students.SelfEdit),
-        new("Nav_ChangeRequests", "student-change-requests", Icons.Material.Filled.RuleFolder, Permissions.Students.ApproveChanges),
-        new("Nav_Students", "students", Icons.Material.Filled.School, Permissions.Students.View),
-        new("Nav_Courses", "courses", Icons.Material.Filled.MenuBook, Permissions.Courses.View),
-        new("Nav_MyCourses", "me/courses", Icons.Material.Filled.FactCheck, Permissions.Courses.View),
-        new("Nav_Classes", "classes", Icons.Material.Filled.Groups, Permissions.Classes.View),
-        new("Nav_MyClassCourses", "me/class-courses", Icons.Material.Filled.AutoStories, Permissions.LessonPlans.View),
-        new("Nav_Library", "library", Icons.Material.Filled.LocalLibrary, Permissions.Library.View),
-        new("Nav_Roles", "roles", Icons.Material.Filled.AdminPanelSettings, Permissions.Roles.View),
-        new("Nav_Assignments", "assignments", Icons.Material.Filled.GroupAdd, Permissions.Assignments.View),
-        new("Nav_GradingScales", "grading/scales", Icons.Material.Filled.Grading, Permissions.Grades.ConfigureScales),
-        new("Nav_AcademicYears", "academic-years", Icons.Material.Filled.CalendarMonth, Permissions.AcademicYears.View),
-        new("Nav_Templates", "templates", Icons.Material.Filled.ContentCopy, Permissions.Templates.View),
-        new("Nav_IdentityProviders", "identity-providers", Icons.Material.Filled.Login, Permissions.IdentityProviders.View),
-        new("Nav_Settings", "settings", Icons.Material.Filled.Settings, Permissions.Settings.View),
-        new("Nav_Audit", "audit", Icons.Material.Filled.History, Permissions.Audit.View),
-        new("Nav_Clients", "clients", Icons.Material.Filled.Business, null, PlatformAdminOnly: true),
+        new("Nav_Home", "", Icons.Material.Rounded.Home, null),
+        new("Nav_OrgUnits", "org-units", Icons.Material.Rounded.AccountTree, Permissions.OrgUnits.View, Section: Structure),
+        new("Nav_LevelTypes", "level-types", Icons.Material.Rounded.Layers, Permissions.LevelTypes.View, Section: Structure),
+        new("Nav_AcademicYears", "academic-years", Icons.Material.Rounded.CalendarMonth, Permissions.AcademicYears.View, Section: Structure),
+        new("Nav_Templates", "templates", Icons.Material.Rounded.ContentCopy, Permissions.Templates.View, Section: Structure),
+        new("Nav_Staff", "staff", Icons.Material.Rounded.Badge, Permissions.Staff.View, Section: People),
+        new("Nav_Students", "students", Icons.Material.Rounded.School, Permissions.Students.View, Section: People),
+        new("Nav_Guardians", "guardians", Icons.Material.Rounded.FamilyRestroom, Permissions.Students.View, Section: People),
+        new("Nav_MyChildren", "me/children", Icons.Material.Rounded.FamilyRestroom, Permissions.Students.ViewChildren, Section: People),
+        new("Nav_ChangeRequests", "student-change-requests", Icons.Material.Rounded.RuleFolder, Permissions.Students.ApproveChanges, Section: People),
+        new("Nav_Exceptions", "enrollment-exceptions", Icons.Material.Rounded.Gavel, Permissions.Enrollment.ApproveException, Section: People),
+        new("Nav_MyProfile", "me/profile", Icons.Material.Rounded.Person, Permissions.Students.SelfEdit, Section: People),
+        new("Nav_Courses", "courses", Icons.Material.Rounded.MenuBook, Permissions.Courses.View, Section: Academic),
+        new("Nav_MyCourses", "me/courses", Icons.Material.Rounded.FactCheck, Permissions.Courses.View, Section: Academic),
+        new("Nav_Classes", "classes", Icons.Material.Rounded.Groups, Permissions.Classes.View, Section: Academic),
+        new("Nav_Eligibility", "teaching/eligibility", Icons.Material.Rounded.HowToReg, Permissions.TeacherAssignments.View, Section: Academic),
+        new("Nav_MyClassCourses", "me/class-courses", Icons.Material.Rounded.AutoStories, Permissions.LessonPlans.View, Section: Academic),
+        new("Nav_GradingScales", "grading/scales", Icons.Material.Rounded.Grading, Permissions.Grades.ConfigureScales, Section: Academic),
+        new("Nav_Library", "library", Icons.Material.Rounded.LocalLibrary, Permissions.Library.View, Section: Academic),
+        new("Nav_Roles", "roles", Icons.Material.Rounded.AdminPanelSettings, Permissions.Roles.View, Section: Security),
+        new("Nav_Assignments", "assignments", Icons.Material.Rounded.GroupAdd, Permissions.Assignments.View, Section: Security),
+        new("Nav_IdentityProviders", "identity-providers", Icons.Material.Rounded.Login, Permissions.IdentityProviders.View, Section: Security),
+        new("Nav_Settings", "settings", Icons.Material.Rounded.Settings, Permissions.Settings.View, Section: Security),
+        new("Nav_Audit", "audit", Icons.Material.Rounded.History, Permissions.Audit.View, Section: Security),
+        new("Nav_Clients", "clients", Icons.Material.Rounded.Business, null, PlatformAdminOnly: true, Section: Security),
     ];
 }

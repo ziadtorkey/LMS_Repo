@@ -30,6 +30,7 @@ public static class ClientServices
         services.AddScoped<IYearStore, YearStore>();
         services.AddScoped<INotificationFeed, NotificationFeed>();
         services.AddSingleton<Lms.Client.Services.Packages.PackagePollOptions>();
+        services.AddSingleton<Lms.Client.Services.Packages.PackageBridgeOptions>();
 
         if (configuration.GetValue<bool>("Lms:UseFakeApi"))
         {
@@ -58,11 +59,14 @@ public static class ClientServices
             services.AddSingleton<ICoursesApi, FakeCoursesApi>();
             services.AddSingleton<IBlueprintsApi>(new FakeBlueprintsApi { AutoSeed = true });
             services.AddSingleton<ILessonPlansApi, FakeLessonPlansApi>();
+            services.AddSingleton<ICourseAssignmentsApi, FakeCourseAssignmentsApi>();
+            services.AddSingleton<IClassCourseGroupsApi, FakeClassCourseGroupsApi>();
             services.AddSingleton<IFileUploadApi, FakeFileUploadApi>();
             services.AddSingleton<ILibraryApi, FakeLibraryApi>();
             services.AddSingleton<IForumsApi, FakeForumsApi>();
             services.AddSingleton<IAssetsApi, FakeAssetsApi>();
             services.AddSingleton<Lms.Client.Services.Packages.IPackagesApi, Lms.Client.Services.Packages.FakePackagesApi>();
+            services.AddSingleton<Lms.Client.Services.Packages.IPackagePlayerApi, Lms.Client.Services.Packages.FakePackagePlayerApi>();
             services.AddSingleton<IModulesApi, FakeModulesApi>();
             services.AddSingleton<ILiveSessionsApi, FakeLiveSessionsApi>();
             services.AddSingleton<Lms.Client.Services.Grading.IGradingScalesApi, Lms.Client.Services.Grading.FakeGradingScalesApi>();
@@ -113,11 +117,14 @@ public static class ClientServices
         services.AddScoped<ICoursesApi, CoursesApi>();
         services.AddScoped<IBlueprintsApi, BlueprintsApi>();
         services.AddScoped<ILessonPlansApi, LessonPlansApi>();
+        services.AddScoped<ICourseAssignmentsApi, CourseAssignmentsApi>();
+        services.AddScoped<IClassCourseGroupsApi, ClassCourseGroupsApi>();
         services.AddScoped<IFileUploadApi, FileUploadApi>();
         services.AddScoped<ILibraryApi, LibraryApi>();
         services.AddScoped<IForumsApi, ForumsApi>();
         services.AddScoped<IAssetsApi, AssetsApi>();
         services.AddScoped<Lms.Client.Services.Packages.IPackagesApi, Lms.Client.Services.Packages.PackagesApi>();
+        services.AddScoped<Lms.Client.Services.Packages.IPackagePlayerApi, Lms.Client.Services.Packages.PackagePlayerApi>();
         services.AddScoped<IModulesApi, ModulesApi>();
         services.AddScoped<ILiveSessionsApi, LiveSessionsApi>();
         services.AddScoped<Lms.Client.Services.Grading.IGradingScalesApi, Lms.Client.Services.Grading.GradingScalesApi>();

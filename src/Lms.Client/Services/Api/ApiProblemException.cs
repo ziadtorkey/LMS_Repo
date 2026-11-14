@@ -8,7 +8,7 @@ namespace Lms.Client.Services.Api;
 /// An RFC 7807 error answered by the API. <see cref="Code"/> is the ProblemCodes value
 /// (or the access-denial reason, e.g. BlockedByPolicy); <see cref="Detail"/> is server-localized text.
 /// </summary>
-public sealed class ApiProblemException(int status, string? code, string? detail, IReadOnlyDictionary<string, string[]>? errors, string? field = null, int? count = null, string? reason = null, IReadOnlyList<string>? codes = null, IReadOnlyList<ApiProblemItem>? problems = null)
+public sealed class ApiProblemException(int status, string? code, string? detail, IReadOnlyDictionary<string, string[]>? errors, string? field = null, int? count = null, string? reason = null, IReadOnlyList<string>? codes = null, IReadOnlyList<ApiProblemItem>? problems = null, int? retryAfterSeconds = null)
     : HttpRequestException($"API error {status} {code}", null, (HttpStatusCode)status)
 {
     public const string InvalidContext = "invalid_context";
@@ -27,6 +27,12 @@ public sealed class ApiProblemException(int status, string? code, string? detail
 
     /// <summary>The problem's <c>reason</c> extension (e.g. why a transfer is invalid, <c>TransferRejectReasons</c>), when present.</summary>
     public string? Reason { get; } = reason;
+
+    /// <summary>The <c>Retry-After</c> header in seconds (live sessions: <c>provider_unavailable</c> always carries it), when present.</summary>
+    public int? RetryAfterSeconds { get; } = retryAfterSeconds;
+
+    private static int? RetryAfterOf(HttpResponseMessage response) =>
+        response.Headers.RetryAfter is { } r ? (r.Delta is { } d ? (int)Math.Ceiling(d.TotalSeconds) : r.Date is { } at ? Math.Max(0, (int)Math.Ceiling((at - DateTimeOffset.UtcNow).TotalSeconds)) : null) : null;
     /// <summary>The problem's <c>codes</c> extension (e.g. which class codes collide in a bulk create), when present.</summary>
     public IReadOnlyList<string> Codes { get; } = codes ?? [];
 
@@ -74,7 +80,7 @@ public sealed class ApiProblemException(int status, string? code, string? detail
         catch (JsonException) { }
         catch (NotSupportedException) { }
         catch (InvalidOperationException) { }
-        return new ApiProblemException((int)response.StatusCode, code, detail, errors, field, count, reason, codes, problems);
+        return new ApiProblemException((int)response.StatusCode, code, detail, errors, field, count, reason, codes, problems, RetryAfterOf(response));
     }
 
     /// <summary>

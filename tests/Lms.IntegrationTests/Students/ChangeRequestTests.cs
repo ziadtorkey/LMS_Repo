@@ -14,10 +14,12 @@ namespace Lms.IntegrationTests.Students;
 
 /// <summary>M3 Task 22 (#230), D27 / FR-STU-04: requests for critical fields and the approval queue.</summary>
 [Collection(ApiCollection.Name)]
-public sealed class ChangeRequestTests
+public sealed class ChangeRequestTests : IDisposable
 {
     private readonly LmsApiFactory _factory;
     private readonly SelfServiceKit _kit;
+
+    public void Dispose() => _kit.Dispose();
 
     public ChangeRequestTests(LmsApiFactory factory)
     {

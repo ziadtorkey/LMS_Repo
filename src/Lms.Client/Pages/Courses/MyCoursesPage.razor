@@ -2,11 +2,15 @@
 @attribute [Authorize]
 @using Lms.Client.Components
 @using Lms.Client.Services.Api
+@using Lms.Shared.Authorization
 @using Lms.Shared.Courses
 @inject ICoursesApi Api
 @inject ICultureService Culture
 @inject NavigationManager Navigation
+@inject PermissionState PermState
 
+@* My courses in the Stitch layout (docs/design/stitch/my_courses): KPI tiles, a filter toolbar with a grid / list toggle, course cards (or a
+   table), and the "assign or link a course" card. Only what the API gives is shown: no student counts, progress or timetable. *@
 <PageTitle>@L["MyCourses_Title"]</PageTitle>
 <PageHeader Title="@L["MyCourses_Title"]" Subtitle="@L["MyCourses_Subtitle"]" TitleTestId="my-courses-title" />
 
@@ -26,35 +30,167 @@ else if (_courses.Count == 0)
 }
 else
 {
-    <MudGrid>
-        @foreach (var course in _courses)
-        {
-            var current = course;
-            <MudItem xs="12" sm="6" md="4">
-            <SectionCard Title="@Culture.Pick(current.NameAr, current.NameEn)" TestId="@($"my-course-{current.Id}")">
-                <MudStack Spacing="2">
-                    <MudText Typo="Typo.body2" Class="lms-muted"><span dir="ltr">@current.Code</span> · @Culture.Pick(current.OwnerOrgUnitNameAr, current.OwnerOrgUnitNameEn)</MudText>
-                    <div class="lms-chip-row">
-                        <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@(current.HasPublishedBlueprint ? Color.Success : Color.Default)"
-                                 data-testid="@($"my-course-blueprint-{current.Id}")">
-                            @(current.HasPublishedBlueprint ? L["MyCourses_BlueprintPublished"] : L["MyCourses_NoBlueprint"])
-                        </MudChip>
-                    </div>
-                    <div>
-                        <MudButton Href="@($"courses/{current.Id}")" Variant="Variant.Outlined" Color="Color.Primary" EndIcon="@Icons.Material.Rounded.ArrowForward" IconClass="lms-icon-flip"
-                                   data-testid="@($"my-course-open-{current.Id}")">@L["MyCourses_Open"]</MudButton>
-                    </div>
-                </MudStack>
-            </SectionCard>
-            </MudItem>
-        }
-    </MudGrid>
+    <div class="lms-stats" data-testid="my-courses-stats">
+        @Stat("my-courses-stat-supervised", L["MyCourses_StatSupervised"], _courses.Count, Icons.Material.Rounded.MenuBook)
+        @Stat("my-courses-stat-allocations", L["MyCourses_StatAllocations"], _courses.Sum(c => c.AllocationCount), Icons.Material.Rounded.Groups)
+        @Stat("my-courses-stat-published", L["MyCourses_StatPublished"], _courses.Count(c => c.HasPublishedBlueprint), Icons.Material.Rounded.TaskAlt)
+        @Stat("my-courses-stat-pending", L["MyCourses_StatPending"], _courses.Count(c => !c.HasPublishedBlueprint), Icons.Material.Rounded.PendingActions)
+    </div>
+
+    <SectionCard Flush="true" TestId="my-courses-toolbar">
+        <div class="lms-filters">
+            <MudTextField T="string" Value="_search" ValueChanged="v => _search = v" Immediate="true" Label="@L["MyCourses_Filter"]" Clearable="true"
+                          Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Rounded.Search" Variant="Variant.Outlined" Margin="Margin.Dense"
+                          data-testid="my-courses-search" />
+            <MudSelect T="string" Value="_unit" ValueChanged="v => _unit = v" Label="@L["MyCourses_FilterUnit"]" Variant="Variant.Outlined" Margin="Margin.Dense"
+                       data-testid="my-courses-unit">
+                <MudSelectItem T="string" Value="@AllUnits">@L["MyCourses_AllUnits"]</MudSelectItem>
+                @foreach (var unit in Units)
+                {
+                    <MudSelectItem T="string" Value="@unit.Key">@unit.Name</MudSelectItem>
+                }
+            </MudSelect>
+            <MudSelect T="string" Value="_blueprint" ValueChanged="v => _blueprint = v" Label="@L["MyCourses_FilterBlueprint"]" Variant="Variant.Outlined" Margin="Margin.Dense"
+                       data-testid="my-courses-blueprint-filter">
+                <MudSelectItem T="string" Value="@AllBlueprints">@L["MyCourses_AllBlueprints"]</MudSelectItem>
+                <MudSelectItem T="string" Value="@BlueprintPublished">@L["MyCourses_BlueprintPublished"]</MudSelectItem>
+                <MudSelectItem T="string" Value="@BlueprintMissing">@L["MyCourses_NoBlueprint"]</MudSelectItem>
+            </MudSelect>
+            <MudToggleGroup T="bool" Value="_grid" ValueChanged="v => _grid = v" Color="Color.Primary" Size="Size.Small" aria-label="@L["MyCourses_View"]"
+                            data-testid="my-courses-view">
+                <MudToggleItem T="bool" Value="true" aria-label="@L["MyCourses_ViewGrid"]" data-testid="my-courses-view-grid">
+                    <MudIcon Icon="@Icons.Material.Rounded.GridView" Size="Size.Small" aria-hidden="true" />
+                </MudToggleItem>
+                <MudToggleItem T="bool" Value="false" aria-label="@L["MyCourses_ViewList"]" data-testid="my-courses-view-list">
+                    <MudIcon Icon="@Icons.Material.Rounded.ViewList" Size="Size.Small" aria-hidden="true" />
+                </MudToggleItem>
+            </MudToggleGroup>
+        </div>
+    </SectionCard>
+
+    @if (Visible.Count == 0)
+    {
+        <EmptyState Title="@L["MyCourses_NoMatch"]" Text="@L["MyCourses_NoMatchText"]" Icon="@Icons.Material.Rounded.SearchOff" TestId="my-courses-no-match" Class="mt-4" />
+    }
+    else if (_grid)
+    {
+        <div class="lms-course-grid mt-4" data-testid="my-courses-grid">
+            @foreach (var course in Visible)
+            {
+                var current = course;
+                <SectionCard TestId="@($"my-course-{current.Id}")">
+                    <MudStack Spacing="2">
+                        <div class="lms-course-head">
+                            <span class="lms-kind-tile" aria-hidden="true"><MudIcon Icon="@Icons.Material.Rounded.MenuBook" /></span>
+                            <div class="lms-course-head-text">
+                                <h2 class="lms-course-name">@Culture.Pick(current.NameAr, current.NameEn)</h2>
+                                <div class="lms-muted lms-course-meta"><span dir="ltr">@current.Code</span> · @Culture.Pick(current.OwnerOrgUnitNameAr, current.OwnerOrgUnitNameEn)</div>
+                            </div>
+                        </div>
+                        <div class="lms-chip-row">
+                            <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Class="lms-status-chip" Color="@(current.HasPublishedBlueprint ? Color.Success : Color.Default)"
+                                     data-testid="@($"my-course-blueprint-{current.Id}")">
+                                @(current.HasPublishedBlueprint ? L["MyCourses_BlueprintPublished"] : L["MyCourses_NoBlueprint"])
+                            </MudChip>
+                            <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" data-testid="@($"my-course-periods-{current.Id}")">
+                                @L["MyCourses_Periods", current.WeeklyPeriods]
+                            </MudChip>
+                        </div>
+                        <div>
+                            <MudButton Href="@($"courses/{current.Id}")" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Rounded.ArrowForward" IconClass="lms-icon-flip"
+                                       data-testid="@($"my-course-open-{current.Id}")">@L["MyCourses_Open"]</MudButton>
+                        </div>
+                    </MudStack>
+                </SectionCard>
+            }
+            @* The "assign or link a course" card of the Stitch screen. Its action only exists for someone who can read templates. *@
+            <div class="lms-course-assign" data-testid="my-courses-assign">
+                <span class="lms-kind-tile" aria-hidden="true"><MudIcon Icon="@Icons.Material.Rounded.Add" /></span>
+                <h2 class="lms-course-name">@L["MyCourses_AssignTitle"]</h2>
+                <p class="lms-muted">@L["MyCourses_AssignText"]</p>
+                @if (PermState.Has(Permissions.Templates.View))
+                {
+                    <MudButton Href="templates" Variant="Variant.Outlined" Color="Color.Primary" data-testid="my-courses-assign-link">@L["MyCourses_ExploreTemplates"]</MudButton>
+                }
+            </div>
+        </div>
+    }
+    else
+    {
+        <SectionCard Flush="true" Class="mt-4" TestId="my-courses-table">
+            <MudSimpleTable Elevation="0" Class="lms-simple-table lms-stack-table">
+                <thead>
+                    <tr>
+                        <th>@L["MyCourses_ColCourse"]</th>
+                        <th>@L["MyCourses_ColUnit"]</th>
+                        <th>@L["MyCourses_ColBlueprint"]</th>
+                        <th>@L["MyCourses_ColPeriods"]</th>
+                        <th class="lms-cell-actions"><span class="lms-visually-hidden">@L["Common_Actions"]</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var course in Visible)
+                    {
+                        var current = course;
+                        <tr data-testid="@($"my-course-{current.Id}")">
+                            <td data-label="@L["MyCourses_ColCourse"]"><span class="lms-cell-strong">@Culture.Pick(current.NameAr, current.NameEn)</span> <span class="lms-muted" dir="ltr">@current.Code</span></td>
+                            <td data-label="@L["MyCourses_ColUnit"]">@Culture.Pick(current.OwnerOrgUnitNameAr, current.OwnerOrgUnitNameEn)</td>
+                            <td data-label="@L["MyCourses_ColBlueprint"]">
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Class="lms-status-chip" Color="@(current.HasPublishedBlueprint ? Color.Success : Color.Default)"
+                                         data-testid="@($"my-course-blueprint-{current.Id}")">
+                                    @(current.HasPublishedBlueprint ? L["MyCourses_BlueprintPublished"] : L["MyCourses_NoBlueprint"])
+                                </MudChip>
+                            </td>
+                            <td data-label="@L["MyCourses_ColPeriods"]">@current.WeeklyPeriods</td>
+                            <td class="lms-cell-actions">
+                                <MudButton Href="@($"courses/{current.Id}")" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" EndIcon="@Icons.Material.Rounded.ArrowForward" IconClass="lms-icon-flip"
+                                           data-testid="@($"my-course-open-{current.Id}")">@L["MyCourses_Open"]</MudButton>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        </SectionCard>
+    }
 }
 
 @code {
-    private IReadOnlyList<CourseSummaryDto>? _courses;
-    private string? _error;
+    private const string AllUnits = "*", AllBlueprints = "*", BlueprintPublished = "published", BlueprintMissing = "none";
 
-    protected override async Task OnInitializedAsync() =>
+    private IReadOnlyList<CourseSummaryDto>? _courses;
+    private string? _error, _search;
+    private string _unit = AllUnits, _blueprint = AllBlueprints;
+    private bool _grid = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!PermState.Loaded) await PermState.RefreshAsync();
         await ApiCalls.RunAsync(async () => _courses = await Api.GetMySupervisedAsync(), Navigation, L, message => _error = message);
+    }
+
+    /// <summary>The owner units of the supervised courses, for the unit filter.</summary>
+    private IEnumerable<(string Key, string Name)> Units =>
+        (_courses ?? []).GroupBy(c => c.OwnerOrgUnitId)
+            .Select(g => (g.Key.ToString(), Culture.Pick(g.First().OwnerOrgUnitNameAr, g.First().OwnerOrgUnitNameEn)))
+            .OrderBy(u => u.Item2);
+
+    private List<CourseSummaryDto> Visible => (_courses ?? [])
+        .Where(c => string.IsNullOrWhiteSpace(_search)
+            || c.Code.Contains(_search, StringComparison.OrdinalIgnoreCase)
+            || c.NameAr.Contains(_search, StringComparison.OrdinalIgnoreCase)
+            || c.NameEn.Contains(_search, StringComparison.OrdinalIgnoreCase))
+        .Where(c => _unit == AllUnits || c.OwnerOrgUnitId.ToString() == _unit)
+        .Where(c => _blueprint == AllBlueprints || (_blueprint == BlueprintPublished ? c.HasPublishedBlueprint : !c.HasPublishedBlueprint))
+        .ToList();
+
+    private RenderFragment Stat(string testId, string label, int value, string icon) => __builder =>
+    {
+        <div class="lms-stat" data-testid="@testId">
+            <div>
+                <div class="lms-stat-label">@label</div>
+                <div class="lms-stat-value" data-testid="@($"{testId}-value")">@value</div>
+            </div>
+            <span class="lms-stat-icon" aria-hidden="true"><MudIcon Icon="@icon" /></span>
+        </div>
+    };
 }

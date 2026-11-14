@@ -16,14 +16,17 @@
             // Copies of the loop variables: the child content below runs after the loop has moved on.
             var s = sectionIndex;
             var section = Model.Sections[s];
-            <SectionCard Title="@SectionTitle(s, section)" TestId="@($"section-{s}")">
+            <SectionCard Title="@SectionTitle(s, section)" Icon="@Icons.Material.Rounded.ViewWeek" TestId="@($"section-{s}")">
+                <HeadMeta><span class="lms-muted lms-section-count" data-testid="@($"section-count-{s}")">@L["Blueprint_LessonsCount", section.Lessons.Count]</span></HeadMeta>
+                <ChildContent>
                 <MudList T="string" Dense="true">
                     @for (var lessonIndex = 0; lessonIndex < section.Lessons.Count; lessonIndex++)
                     {
                         var l = lessonIndex;
                         var lesson = section.Lessons[l];
                         <MudListItem T="string" data-testid="@($"lesson-{s}-{l}")">
-                            @(l + 1). @CultureText.Pick(lesson.TitleAr, lesson.TitleEn)
+                            <span class="lms-lesson-number" dir="ltr">@($"{s + 1}.{l + 1}")</span>
+                            @CultureText.Pick(lesson.TitleAr, lesson.TitleEn)
                             @if (lesson.PlannedOffsetDays is { } day)
                             {
                                 <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@L["Lesson_DayN", day]</MudChip>
@@ -31,6 +34,7 @@
                         </MudListItem>
                     }
                 </MudList>
+                </ChildContent>
             </SectionCard>
         }
     </MudStack>
@@ -45,7 +49,8 @@ else
                 {
                     var index = sectionIndex;
                     var section = Model.Sections[index];
-                    <SectionCard Title="@SectionName(index)" TestId="@($"section-{index}")">
+                    <SectionCard Title="@SectionName(index)" Icon="@Icons.Material.Rounded.ViewWeek" TestId="@($"section-{index}")">
+                        <HeadMeta><span class="lms-muted lms-section-count" data-testid="@($"section-count-{index}")">@L["Blueprint_LessonsCount", section.Lessons.Count]</span></HeadMeta>
                         <Actions>
                             <div class="lms-row-actions">
                                 <MudIconButton Icon="@Icons.Material.Rounded.KeyboardArrowUp" Size="Size.Small" Disabled="index == 0" aria-label="@L["Blueprint_MoveUp"]"
@@ -87,6 +92,7 @@ else
             }
             <div class="lms-lesson-row" data-testid="@($"lesson-{s}-{l}")">
                 <MudIcon Icon="@Icons.Material.Rounded.DragIndicator" Class="lms-drag-handle" aria-hidden="true" data-testid="@($"drag-handle-{s}-{l}")" />
+                <span class="lms-lesson-number" dir="ltr">@($"{s + 1}.{l + 1}")</span>
                 <span class="lms-lesson-title">@(string.IsNullOrWhiteSpace(CultureText.Pick(context.TitleAr, context.TitleEn)) ? L["Blueprint_UntitledLesson"].Value : CultureText.Pick(context.TitleAr, context.TitleEn))</span>
                 <div class="lms-row-actions">
                     <MudIconButton Icon="@Icons.Material.Rounded.KeyboardArrowUp" Size="Size.Small" aria-label="@L["Blueprint_MoveUp"]"

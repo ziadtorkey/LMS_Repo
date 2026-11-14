@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Lms.Infrastructure.Grading;
 
-internal sealed class GradeEventWriter(LmsDbContext db) : IGradeEvents
+internal sealed class GradeEventWriter(LmsDbContext db, IEnumerable<IGradeEventObserver> observers) : IGradeEvents
 {
     public async Task<bool> RecordAsync(GradeEventInput input, CancellationToken ct)
     {
@@ -25,7 +25,15 @@ internal sealed class GradeEventWriter(LmsDbContext db) : IGradeEvents
         }
 
         var classCourse = await db.Set<ClassCourse>().SingleAsync(c => c.Id == input.ClassCourseId, ct);
-        db.Add(new GradeEvent(classCourse, input));
+        var gradeEvent = new GradeEvent(classCourse, input);
+        db.Add(gradeEvent);
+
+        // Observers (the gradebook item of the source) work in this same unit of work, so item and grade commit or roll back together.
+        foreach (var observer in observers)
+        {
+            await observer.OnRecordedAsync(gradeEvent, classCourse, ct);
+        }
+
         return true;
     }
 
