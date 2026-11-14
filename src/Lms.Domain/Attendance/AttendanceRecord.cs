@@ -34,5 +34,11 @@ public sealed class AttendanceRecord : UnitOwnedEntity, ILiveKeyed
     /// <summary>"sessionId:studentId" while live; unique per session and student.</summary>
     public string? RecordKey { get; private set; }
 
+    public void Set(string? status, string? note)
+    {
+        Status = status;
+        Note = note;
+    }
+
     public void ClearLiveKeys() => RecordKey = null;
 }

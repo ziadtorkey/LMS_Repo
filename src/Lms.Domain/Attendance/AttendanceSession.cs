@@ -65,5 +65,18 @@ public sealed class AttendanceSession : UnitOwnedEntity, ILiveKeyed
     /// <summary>"slotId:yyyyMMdd" while live and generated from a slot; unique, so a second live session for the same slot and date is refused by the database.</summary>
     public string? SessionKey { get; private set; }
 
+    /// <summary>Marks the session Taken the first time attendance is saved; later saves only advance the version.</summary>
+    public void RecordSave(Guid userId, DateTime atUtc)
+    {
+        if (State != TakenState)
+        {
+            State = TakenState;
+            TakenByUserId = userId;
+            TakenAtUtc = atUtc;
+        }
+
+        Version++;
+    }
+
     public void ClearLiveKeys() => SessionKey = null;
 }
