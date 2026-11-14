@@ -212,9 +212,7 @@ public sealed class AttendanceTakePageTests : StaffTestContext
         Culture.Current = new CultureInfo("en");
         await GrantAsync(Permissions.Attendance.Take);
         var active = Context.ActiveAssignmentId!.Value;
-        Api.Me = Api.Me with { Contexts = [new Lms.Shared.Me.UserContextDto(active, Guid.NewGuid(), "م", "School", Guid.NewGuid(), "ص", "Grade", "م", "Teacher")] };
-        Config.Settings.RemoveAll(c => c.Name == Lms.Shared.Configuration.SettingKeys.OrgTimeZone.Name);
-        Config.Settings.Add(new Lms.Shared.Configuration.EffectiveSettingDto(Lms.Shared.Configuration.SettingKeys.OrgTimeZone.Name, "\"Etc/UTC\"", false, false, false, null, null, null));
+        Api.Me = Api.Me with { Contexts = [new Lms.Shared.Me.UserContextDto(active, Guid.NewGuid(), "م", "School", Guid.NewGuid(), "ص", "Grade", "م", "Teacher", "Etc/UTC")] };
         RenderProviders();
 
         var page = Render<AttendanceTakePage>(p => p.Add(x => x.Id, FakeAttendanceApi.SessionOpen));
