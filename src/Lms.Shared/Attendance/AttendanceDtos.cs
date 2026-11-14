@@ -31,6 +31,19 @@ public sealed record AttendanceSessionListItemDto(
     int Version,
     DateTime ServerNowUtc);
 
+/// <summary>
+/// Query of <c>GET /api/org-units/{id}/attendance-sessions</c> (Attendance.View): sessions of the unit's subtree between two local dates (at most
+/// <see cref="AttendanceLimits.SearchMaxDays"/> days), optionally of one class, one class course or one state (<see cref="AttendanceSessionStates"/>).
+/// </summary>
+public sealed record AttendanceSessionSearchQuery(
+    DateOnly From,
+    DateOnly To,
+    Guid? ClassId = null,
+    Guid? ClassCourseId = null,
+    string? State = null,
+    int Page = 1,
+    int PageSize = Paging.DefaultPageSize);
+
 /// <summary>Body of <c>POST /api/class-courses/{id}/attendance-sessions</c>: an ad hoc session for a ClassCourse on a (past or today's) local date; a future date is 409 <c>attendance_session_future</c>.</summary>
 public sealed record CreateAdHocAttendanceSessionRequest(DateOnly Date, Guid? PeriodId = null);
 
