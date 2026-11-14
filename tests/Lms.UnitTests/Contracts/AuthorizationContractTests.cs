@@ -21,7 +21,7 @@ public partial class AuthorizationContractTests
     }
 
     [Fact]
-    public void Permission_catalog_contains_exactly_the_M0_to_M5_wave_1_set()
+    public void Permission_catalog_contains_exactly_the_M0_to_M5_wave_3_set()
     {
         string[] expected =
         [
@@ -56,6 +56,8 @@ public partial class AuthorizationContractTests
             "Grades.View", "Grades.Manage", "Grades.Publish", "Grades.ConfigureScales", "Grades.ViewReports", "Grades.ViewOwn",
             // M5 wave 2 (timetable)
             "Timetable.View", "Timetable.Manage", "Timetable.Configure", "Timetable.ViewOwn",
+            "Attendance.Take", "Attendance.Edit", "Attendance.View", "Attendance.ViewOwn",
+            "Excuses.Submit", "Excuses.Review", "Excuses.Escalate",
         ];
         Assert.Equal(expected.Order(StringComparer.Ordinal), Permissions.All.Order(StringComparer.Ordinal));
     }
@@ -135,6 +137,10 @@ public partial class AuthorizationContractTests
             "concurrency_conflict",
             // M5 wave 2 (timetable)
             "timetable_conflict", "period_overlap", "period_in_use", "timetable_not_published", "exception_date_invalid", "exception_substitute_invalid",
+            // M5 wave 3 (attendance and excuses)
+            "attendance_edit_window_closed", "attendance_session_future", "attendance_unmarked_rows", "attendance_reason_required",
+            "attendance_not_a_proposal", "excuse_out_of_policy", "excuse_submitter_not_allowed", "excuse_reviewer_is_submitter",
+            "excuse_comment_required", "excuse_attachment_invalid", "excuse_not_pending",
         ];
 
         Assert.All(fields, f => Assert.Equal(f.Name, (string)f.GetRawConstantValue()!));
