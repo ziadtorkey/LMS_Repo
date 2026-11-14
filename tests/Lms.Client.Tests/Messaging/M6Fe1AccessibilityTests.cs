@@ -170,6 +170,7 @@ public sealed class M6Fe1AccessibilityTests : ClientTestContext
         cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll($"[data-testid=msg-report-{m.Id}]")));
         cut.Find($"[data-testid=msg-report-{m.Id}]").Click();
         _dialogs.WaitForAssertion(() => Assert.NotEmpty(_dialogs.FindAll("[data-testid=report-submit]")));
+        _dialogs.Find($"[data-testid=report-reason-{ReportReasons.Safety}]").Click();
         _dialogs.Find("[data-testid=report-submit]").Click();
 
         cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll($"[data-testid=msg-reported-{m.Id}]")));
