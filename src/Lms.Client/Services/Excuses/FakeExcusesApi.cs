@@ -30,6 +30,24 @@ public sealed class FakeExcusesApi : IExcusesApi
 
     public IReadOnlyList<ExcuseDto> All => _excuses;
 
+    private readonly Dictionary<Guid, (string Name, string Type)> _attachments = [];
+
+    /// <summary>Demo rows for the review queue in the fake-API app and the tests: one with a photo, one with a PDF, one without an attachment.</summary>
+    public FakeExcusesApi Seed()
+    {
+        var user = CurrentUser;
+        CurrentUser = Guardian;
+        foreach (var (reason, text, file, type) in new[] { ("Illness", "Fever, back on Sunday", "note.png", "image/png"), ("Family", "Family event", "letter.pdf", "application/pdf"), ("Other", "Car trouble", (string?)null, (string?)null) })
+        {
+            Guid? attachment = null;
+            if (file is not null) { attachment = Guid.NewGuid(); _attachments[attachment.Value] = (file, type!); }
+            SubmitAsync(new SubmitExcuseRequest(Student, reason, text, DateOnly.FromDateTime(Now.AddDays(-1)), null, null, attachment)).GetAwaiter().GetResult();
+        }
+
+        CurrentUser = user == Guardian ? Counselor : user; // the demo signs in as the counselor
+        return this;
+    }
+
     public Task<ExcusePolicyDto> GetPolicyAsync(Guid studentId, CancellationToken ct = default) => Task.FromResult(new ExcusePolicyDto(
         studentId, "GuardiansOnly", !CurrentUserIsStudent, 5, ["Illness", "Family", "Official", "Other"], ["Illness"], 5, ["image/jpeg", "image/png", "application/pdf"], Now));
 
@@ -72,7 +90,7 @@ public sealed class FakeExcusesApi : IExcusesApi
     public Task<PagedResult<ExcuseReviewItemDto>> GetReviewQueueAsync(ExcuseReviewQuery query, CancellationToken ct = default)
     {
         var rows = _excuses.Where(e => query.Status is null || e.Status == query.Status)
-            .Select(e => new ExcuseReviewItemDto(e, [], (int)(Now - e.SubmittedAtUtc).TotalDays)).ToList();
+            .Select(e => new ExcuseReviewItemDto(e, [new RecentAbsenceDto(DateOnly.FromDateTime(Now.AddDays(-9)), "العلوم", "Science", "Absent")], (int)(Now - e.SubmittedAtUtc).TotalDays)).ToList();
         return Task.FromResult(new PagedResult<ExcuseReviewItemDto>(rows.Skip((query.Page - 1) * query.PageSize).Take(query.PageSize).ToList(), rows.Count, query.Page, query.PageSize));
     }
 
@@ -95,7 +113,16 @@ public sealed class FakeExcusesApi : IExcusesApi
         Task.FromResult<IReadOnlyList<EscalationTargetDto>>([new EscalationTargetDto(Guid.Parse("70000000-0000-0000-0000-000000000002"), "المدير", "Manager", "مدير", "Manager", true)]);
 
     public Task<ExcuseAttachmentUrlDto> GetAttachmentUrlAsync(Guid excuseId, CancellationToken ct = default) =>
-        Task.FromResult(new ExcuseAttachmentUrlDto("https://files.example.test/excuse.pdf", Now.AddMinutes(5), "excuse.pdf", "application/pdf", false));
+        Task.FromResult(AttachmentOf(excuseId));
+
+    private ExcuseAttachmentUrlDto AttachmentOf(Guid excuseId)
+    {
+        var index = _excuses.FindIndex(e => e.Id == excuseId);
+        if (index < 0) throw Problem(404, "excuse_not_found");
+        var (name, type) = _attachments.Count == 0 ? ("excuse.pdf", "application/pdf") : _attachments.Values.ElementAt(index % _attachments.Count);
+        var image = type.StartsWith("image/", StringComparison.Ordinal);
+        return new ExcuseAttachmentUrlDto(image ? "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==" : "https://files.example.test/" + name, Now.AddMinutes(5), name, type, image);
+    }
 
     private DateTime Now => _clock.GetUtcNow().UtcDateTime;
 

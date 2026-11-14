@@ -1,0 +1,62 @@
+@using Lms.Client.Services.Excuses
+@using Lms.Shared.Excuses
+@inject IExcusesApi Api
+@inject NavigationManager Navigation
+
+@* The attachment of an excuse for the reviewer (L10): a raster image is shown inline from the short-lived signed URL; a PDF or anything else is
+   a download link only, and no HTML is ever put in the page. The signed URL is read when the preview opens, not stored. *@
+<div class="lms-attachment" data-testid="attachment">
+    @if (!HasAttachment)
+    {
+        <MudText Typo="Typo.body2" Class="lms-muted" data-testid="attachment-none">@L["Exc_Attachment_None"]</MudText>
+    }
+    else if (_loading)
+    {
+        <LoadingState Lines="2" TestId="attachment-loading" />
+    }
+    else if (_failed || _url is null)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Dense="true" data-testid="attachment-error">
+            @L["Api_Error"]
+            <MudButton Variant="Variant.Text" OnClick="LoadAsync">@L["Common_Retry"]</MudButton>
+        </MudAlert>
+    }
+    else if (_url.InlinePreview && IsRaster(_url.ContentType))
+    {
+        <img src="@_url.Url" alt="@_url.FileName" class="lms-attachment-image" loading="lazy" referrerpolicy="no-referrer" data-testid="attachment-image" />
+        <div><a href="@_url.Url" download="@_url.FileName" rel="noopener noreferrer" data-testid="attachment-download"><span dir="ltr">@_url.FileName</span></a></div>
+    }
+    else
+    {
+        <a href="@_url.Url" download="@_url.FileName" rel="noopener noreferrer" class="lms-attachment-link" data-testid="attachment-download">
+            <MudIcon Icon="@Icons.Material.Rounded.Download" Size="Size.Small" /> @L["Exc_Attachment_Download"] <span dir="ltr">(@_url.FileName)</span>
+        </a>
+    }
+</div>
+
+@code {
+    private ExcuseAttachmentUrlDto? _url;
+    private bool _loading, _failed;
+    private Guid _loadedFor;
+
+    [Parameter, EditorRequired] public Guid ExcuseId { get; set; }
+    [Parameter] public bool HasAttachment { get; set; }
+
+    private static bool IsRaster(string contentType) => contentType is "image/jpeg" or "image/png" or "image/webp";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (HasAttachment && _loadedFor != ExcuseId) await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loadedFor = ExcuseId;
+        _loading = true;
+        _failed = false;
+        var (value, failed) = await ApiCalls.RunAsync(() => Api.GetAttachmentUrlAsync(ExcuseId), Navigation);
+        _url = value;
+        _failed = failed;
+        _loading = false;
+    }
+}

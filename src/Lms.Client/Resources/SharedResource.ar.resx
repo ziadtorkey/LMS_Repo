@@ -1776,6 +1776,39 @@
   <data name="Exc_Withdraw" xml:space="preserve"><value>سحب</value></data>
   <data name="Exc_Withdrawn" xml:space="preserve"><value>تم سحب العذر.</value></data>
   <data name="Exc_Attendance_Link" xml:space="preserve"><value>الحضور</value></data>
+  <data name="Nav_ExcuseReview" xml:space="preserve"><value>مراجعة الأعذار</value></data>
+  <data name="Exc_Review_Title" xml:space="preserve"><value>مراجعة الأعذار</value></data>
+  <data name="Exc_Review_Subtitle" xml:space="preserve"><value>الأعذار بانتظار القرار. افتح عذرًا للموافقة عليه أو رفضه أو تصعيده.</value></data>
+  <data name="Exc_Review_EmptyTitle" xml:space="preserve"><value>لا شيء بانتظار القرار</value></data>
+  <data name="Exc_Review_EmptyText" xml:space="preserve"><value>تظهر هنا الأعذار التي يقدمها أولياء الأمور. غيّر مرشح الحالة لرؤية الأعذار المنتهية.</value></data>
+  <data name="Exc_Review_Open" xml:space="preserve"><value>مراجعة</value></data>
+  <data name="Exc_Select" xml:space="preserve"><value>تحديد</value></data>
+  <data name="Exc_Col_Submitter" xml:space="preserve"><value>مقدَّم من</value></data>
+  <data name="Exc_Col_Sessions" xml:space="preserve"><value>الحصص</value></data>
+  <data name="Exc_Col_Submitted" xml:space="preserve"><value>تاريخ التقديم</value></data>
+  <data name="Exc_Age_Days" xml:space="preserve"><value>قبل {0} يوم</value></data>
+  <data name="Exc_Review_Covered" xml:space="preserve"><value>الحصص التي يغطيها</value></data>
+  <data name="Exc_Review_Recent" xml:space="preserve"><value>غيابات هذا الطالب الأخيرة</value></data>
+  <data name="Exc_Review_Recent_None" xml:space="preserve"><value>لا توجد غيابات أخرى حديثة.</value></data>
+  <data name="Exc_Comment" xml:space="preserve"><value>تعليق</value></data>
+  <data name="Exc_Comment_Help" xml:space="preserve"><value>مطلوب عند الرفض؛ اختياري عند الموافقة أو التصعيد.</value></data>
+  <data name="Exc_Approve_Effect" xml:space="preserve"><value>تؤدي الموافقة إلى تسجيل {0} سجل(ات) بحالة غياب بعذر.</value></data>
+  <data name="Exc_Approve" xml:space="preserve"><value>موافقة</value></data>
+  <data name="Exc_Reject" xml:space="preserve"><value>رفض</value></data>
+  <data name="Exc_Escalate" xml:space="preserve"><value>تصعيد</value></data>
+  <data name="Exc_Approved" xml:space="preserve"><value>تمت الموافقة على العذر.</value></data>
+  <data name="Exc_Rejected" xml:space="preserve"><value>تم رفض العذر.</value></data>
+  <data name="Exc_Escalated" xml:space="preserve"><value>تم تصعيد العذر.</value></data>
+  <data name="Exc_Escalate_To" xml:space="preserve"><value>تصعيد إلى</value></data>
+  <data name="Exc_Escalate_Required" xml:space="preserve"><value>اختر من سيُصعَّد إليه.</value></data>
+  <data name="Exc_Attachment_None" xml:space="preserve"><value>لا يوجد مرفق.</value></data>
+  <data name="Exc_Attachment_Download" xml:space="preserve"><value>تنزيل المرفق</value></data>
+  <data name="Exc_Bulk_Approve" xml:space="preserve"><value>الموافقة على المحدد</value></data>
+  <data name="Exc_Bulk_Approve_N" xml:space="preserve"><value>الموافقة على {0} محدد</value></data>
+  <data name="Exc_Bulk_Confirm" xml:space="preserve"><value>الموافقة على {0} عذر(أعذار)؟ يصبح كل سجل مشمول بحالة غياب بعذر. للرفض افتح العذر واكتب تعليقًا.</value></data>
+  <data name="Exc_Bulk_Done" xml:space="preserve"><value>تمت الموافقة على {0} عذر(أعذار).</value></data>
+  <data name="Exc_Bulk_Partial" xml:space="preserve"><value>تمت الموافقة على {0}، وتعذّرت {1} (تم البتّ فيها أو هي من تقديمك).</value></data>
+  <data name="Exc_Age_Today" xml:space="preserve"><value>اليوم</value></data>
   <data name="Att_Unit_Mode" xml:space="preserve"><value>حصص وحدة</value></data>
   <data name="Att_Unit_ChooseTitle" xml:space="preserve"><value>اختر وحدة</value></data>
   <data name="Att_Unit_ChooseText" xml:space="preserve"><value>اختر وحدة ويومًا لعرض حصص الحضور فيها، بما فيها المغلقة.</value></data>

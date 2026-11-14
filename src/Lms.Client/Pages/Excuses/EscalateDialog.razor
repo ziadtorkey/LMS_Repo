@@ -1,0 +1,70 @@
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.Excuses
+@using Lms.Shared.Excuses
+@inject IExcusesApi Api
+@inject NavigationManager Navigation
+@inject ICultureService Culture
+
+@* Escalates an excuse to a staff member the server lists as a valid target (holds Excuses.Review or Excuses.Escalate in scope, L14). *@
+<MudDialog>
+    <DialogContent>
+        @if (_targets is null)
+        {
+            <LoadingState Lines="2" TestId="escalate-loading" />
+        }
+        else
+        {
+            <MudStack Spacing="3">
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="dialog-error">@_error</MudAlert>
+                }
+                <MudSelect T="Guid?" @bind-Value="_target" Label="@L["Exc_Escalate_To"]" Variant="Variant.Outlined" Required="true" data-testid="escalate-target">
+                    @foreach (var t in _targets)
+                    {
+                        <MudSelectItem T="Guid?" Value="@((Guid?)t.UserId)">@Culture.Pick(t.NameAr, t.NameEn)@(Role(t) is { } r ? " · " + r : "")</MudSelectItem>
+                    }
+                </MudSelect>
+                <MudTextField T="string" @bind-Value="_comment" Label="@L["Exc_Comment"]" Lines="3" MaxLength="ExcuseLimits.CommentMaxLength" Variant="Variant.Outlined" data-testid="escalate-comment" />
+            </MudStack>
+        }
+    </DialogContent>
+    <DialogActions>
+        <div class="lms-dialog-actions">
+            <MudButton Variant="Variant.Text" OnClick="() => MudDialog.Cancel()" data-testid="escalate-cancel">@L["Common_Cancel"]</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SendAsync" Disabled="@(_targets is null || _saving)" data-testid="escalate-send">@L["Exc_Escalate"]</MudButton>
+        </div>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired] public Guid ExcuseId { get; set; }
+
+    private IReadOnlyList<EscalationTargetDto>? _targets;
+    private Guid? _target;
+    private string? _comment, _error;
+    private bool _saving;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var (targets, failed) = await ApiCalls.RunAsync(() => Api.GetEscalationTargetsAsync(ExcuseId), Navigation);
+        if (failed) { MudDialog.Cancel(); return; }
+        _targets = targets ?? [];
+        _target = _targets.FirstOrDefault(t => t.IsDefault)?.UserId; // the Manager by default
+    }
+
+    private string? Role(EscalationTargetDto t) => t.RoleNameAr is null || t.RoleNameEn is null ? null : Culture.Pick(t.RoleNameAr, t.RoleNameEn);
+
+    private async Task SendAsync()
+    {
+        _error = null;
+        if (_target is not { } target) { _error = L["Exc_Escalate_Required"]; return; }
+        _saving = true;
+        var ok = await ApiCalls.RunAsync(() => Api.EscalateAsync(ExcuseId, new EscalateExcuseRequest(target, string.IsNullOrWhiteSpace(_comment) ? null : _comment.Trim())),
+            Navigation, L, message => _error = message);
+        _saving = false;
+        if (ok) MudDialog.Close(DialogResult.Ok(true));
+    }
+}
