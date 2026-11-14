@@ -2363,6 +2363,150 @@ namespace Lms.Infrastructure.Persistence.Migrations
                     b.ToTable("StudentTransfers", (string)null);
                 });
 
+            modelBuilder.Entity("Lms.Domain.Excuses.AbsenceExcuse", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid?>("AttachmentFileId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime?>("DateFrom")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime?>("DateTo")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime?>("DecidedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("DecisionComment")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("EscalatedToUserId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<Guid>("OrgUnitId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("OrgUnitPath")
+                        .IsRequired()
+                        .HasColumnType("varchar(400) CHARACTER SET ascii COLLATE ascii_general_ci");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<string>("ReasonText")
+                        .HasMaxLength(1000)
+                        .HasColumnType("varchar(1000)");
+
+                    b.Property<Guid?>("ReviewerUserId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<Guid>("StudentProfileId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("SubmittedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid>("SubmittedByUserId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AttachmentFileId");
+
+                    b.HasIndex("OrgUnitId");
+
+                    b.HasIndex("SubmittedByUserId");
+
+                    b.HasIndex("StudentProfileId", "Status");
+
+                    b.HasIndex("OrganizationId", "OrgUnitPath", "Status");
+
+                    b.ToTable("AbsenceExcuses", (string)null);
+                });
+
+            modelBuilder.Entity("Lms.Domain.Excuses.AbsenceExcuseSession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("AbsenceExcuseId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("AttendanceSessionId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<Guid>("OrgUnitId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("OrgUnitPath")
+                        .IsRequired()
+                        .HasColumnType("varchar(400) CHARACTER SET ascii COLLATE ascii_general_ci");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AttendanceSessionId");
+
+                    b.HasIndex("OrgUnitId");
+
+                    b.HasIndex("AbsenceExcuseId", "AttendanceSessionId")
+                        .IsUnique();
+
+                    b.ToTable("AbsenceExcuseSessions", (string)null);
+                });
+
             modelBuilder.Entity("Lms.Domain.Files.StoredFile", b =>
                 {
                     b.Property<Guid>("Id")
@@ -5578,6 +5722,41 @@ namespace Lms.Infrastructure.Persistence.Migrations
                     b.HasOne("Lms.Domain.Classes.Class", null)
                         .WithMany()
                         .HasForeignKey("ToClassId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Lms.Domain.Excuses.AbsenceExcuse", b =>
+                {
+                    b.HasOne("Lms.Domain.Files.StoredFile", null)
+                        .WithMany()
+                        .HasForeignKey("AttachmentFileId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Lms.Domain.Organizations.OrgUnit", null)
+                        .WithMany()
+                        .HasForeignKey("OrgUnitId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Lms.Domain.People.StudentProfile", null)
+                        .WithMany()
+                        .HasForeignKey("StudentProfileId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Lms.Domain.Excuses.AbsenceExcuseSession", b =>
+                {
+                    b.HasOne("Lms.Domain.Excuses.AbsenceExcuse", null)
+                        .WithMany()
+                        .HasForeignKey("AbsenceExcuseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Lms.Domain.Organizations.OrgUnit", null)
+                        .WithMany()
+                        .HasForeignKey("OrgUnitId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

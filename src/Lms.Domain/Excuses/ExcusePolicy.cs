@@ -1,14 +1,6 @@
-namespace Lms.Domain.Excuses;
+using Lms.Domain.Abstractions;
 
-/// <summary>
-/// Counts school days for the excuse deadline (L13): working days of the unit minus holidays, in the client's time zone. Implemented by the
-/// client calendar service of M5 Task 13; the policy only needs this one question.
-/// </summary>
-public interface ISchoolDayCalendar
-{
-    /// <summary>The number of school days after <paramref name="absenceDate"/> up to and including <paramref name="today"/> (0 on the day itself).</summary>
-    int SchoolDaysSince(DateOnly absenceDate, DateOnly today);
-}
+namespace Lms.Domain.Excuses;
 
 /// <summary>The per-client rules of the excuse policy (settings <c>Excuses.AllowedReasons</c>, <c>AttachmentRequiredReasons</c>, <c>MaxDaysAfterAbsence</c>).</summary>
 public sealed record ExcuseRules(IReadOnlySet<string> AllowedReasons, IReadOnlySet<string> AttachmentRequiredReasons, int MaxDaysAfterAbsence);
@@ -38,7 +30,7 @@ public static class ExcusePolicy
 {
     public static ExcusePolicyResult Evaluate(
         ExcuseRules rules, string reason, bool hasAttachment, DateOnly from, DateOnly to, DateOnly today,
-        IReadOnlyCollection<DateOnly> absenceDates, ISchoolDayCalendar calendar)
+        IReadOnlyCollection<DateOnly> absenceDates, IClientCalendar calendar)
     {
         if (from > to || to > today)
         {

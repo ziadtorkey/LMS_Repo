@@ -1,3 +1,4 @@
+using Lms.Domain.Abstractions;
 using Lms.Domain.Excuses;
 
 namespace Lms.UnitTests.Excuses;
@@ -5,7 +6,7 @@ namespace Lms.UnitTests.Excuses;
 public sealed class ExcusePolicyTests
 {
     // Sunday to Thursday are school days (the default Saudi week); Friday and Saturday are not.
-    private sealed class WeekCalendar(params DateOnly[] holidays) : ISchoolDayCalendar
+    private sealed class WeekCalendar(params DateOnly[] holidays) : IClientCalendar
     {
         public int SchoolDaysSince(DateOnly absenceDate, DateOnly today)
         {
@@ -27,7 +28,7 @@ public sealed class ExcusePolicyTests
         new HashSet<string> { "Illness", "Family", "Official", "Other" }, new HashSet<string> { "Illness" }, 5);
 
     private static ExcusePolicyResult Check(
-        string reason, bool attachment, DateOnly from, DateOnly to, DateOnly today, DateOnly[] absences, ISchoolDayCalendar? calendar = null) =>
+        string reason, bool attachment, DateOnly from, DateOnly to, DateOnly today, DateOnly[] absences, IClientCalendar? calendar = null) =>
         ExcusePolicy.Evaluate(Rules, reason, attachment, from, to, today, absences, calendar ?? new WeekCalendar());
 
     [Fact]
