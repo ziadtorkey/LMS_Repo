@@ -16,7 +16,7 @@
             }
             @if (ReadOnly)
             {
-                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" data-testid="scale-readonly">@L["ScaleDialog_ReadOnly"]</MudAlert>
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" data-testid="scale-readonly">@ReadOnlyReason</MudAlert>
             }
             <fieldset class="lms-fieldset">
                 <legend>@L["ScaleDialog_General"]</legend>
@@ -31,8 +31,8 @@
                 </MudStack>
             </fieldset>
             <MudText Typo="Typo.subtitle1" Class="lms-section-title">@L["Scales_Bands"]</MudText>
-            <BandCoverageStrip Bands="_bands" />
-            <BandEditor Bands="_bands" ReadOnly="ReadOnly" BandsChanged="StateHasChanged" />
+            <BandCoverageStrip Bands="_bands" ServerProblems="_serverProblems" />
+            <BandEditor Bands="_bands" ReadOnly="ReadOnly" Problems="_serverProblems" BandsChanged="OnBandsChanged" />
         </MudStack>
     </DialogContent>
     <DialogActions>
@@ -58,6 +58,9 @@
     /// <summary>The scale to edit or view; null creates a new one.</summary>
     [Parameter] public GradingScaleDto? Existing { get; set; }
 
+    /// <summary>The unit an inherited scale comes from (named in the read-only reason); null for a preset or an own scale.</summary>
+    [Parameter] public string? SourceUnitName { get; set; }
+
     /// <summary>An inherited scale or a preset template: shown, not edited.</summary>
     [Parameter] public bool ReadOnly { get; set; }
 
@@ -65,6 +68,19 @@
     private string _nameAr = "", _nameEn = "", _kind = ScaleKinds.Percentage;
     private string? _error;
     private bool _saving;
+    private IReadOnlyList<ApiProblemItem> _serverProblems = [];
+
+    private string ReadOnlyReason =>
+        Existing is { IsTemplate: true } ? L["ScaleDialog_ReadOnlyPreset"].Value
+        : SourceUnitName is { Length: > 0 } unit ? string.Format(System.Globalization.CultureInfo.CurrentCulture, L["ScaleDialog_ReadOnlyFrom"].Value, unit)
+        : L["ScaleDialog_ReadOnly"].Value;
+
+    /// <summary>Editing a band clears what the server said about the last save: it no longer describes these bands.</summary>
+    private void OnBandsChanged()
+    {
+        _serverProblems = [];
+        StateHasChanged();
+    }
 
     protected override void OnInitialized()
     {
@@ -83,6 +99,7 @@
     private async Task SaveAsync()
     {
         _error = null;
+        _serverProblems = [];
         if (string.IsNullOrWhiteSpace(_nameAr) || string.IsNullOrWhiteSpace(_nameEn)
             || _bands.Any(b => string.IsNullOrWhiteSpace(b.Code) || b.MinPercent is null || b.MaxPercent is null))
         {
@@ -100,6 +117,7 @@
         catch (ApiProblemException ex)
         {
             _error = ProblemText.For(ex, L);
+            _serverProblems = ex.Problems; // each gap or overlap is shown next to the bands, not only in this alert
         }
         catch (Exception ex) when (ApiCalls.TryRedirect(ex, Navigation))
         {

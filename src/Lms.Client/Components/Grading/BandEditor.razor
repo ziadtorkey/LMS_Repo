@@ -1,4 +1,5 @@
 @using System.Globalization
+@using Lms.Client.Services.Api
 @using Lms.Shared.Grading
 
 @* The bands of a scale, one card per band (a table of nine columns does not fit a phone). Read only for an inherited scale or a preset. *@
@@ -7,14 +8,19 @@
     {
         var band = Bands[i];
         var n = i;
-        <fieldset class="lms-fieldset lms-band" data-testid="@($"band-{n}")">
+        var bad = IsMarked(band);
+        <fieldset class="lms-fieldset lms-band @(bad ? "lms-band-bad" : null)" data-testid="@($"band-{n}")" aria-invalid="@(bad ? "true" : null)">
             <legend>@string.Format(CultureInfo.CurrentCulture, L["Band_Number"].Value, n + 1)</legend>
+            @if (bad)
+            {
+                <MudText Typo="Typo.body2" Color="Color.Error" role="alert" data-testid="@($"band-problem-{n}")">@L["Band_Problem_Marked"]</MudText>
+            }
             <div class="lms-form-grid">
                 <MudTextField T="string" @bind-Value="band.Code" @bind-Value:after="Changed" Label="@L["Band_Code"]" MaxLength="20" ReadOnly="ReadOnly" Immediate="true" dir="ltr"
                               data-testid="@($"band-code-{n}")" />
-                <MudNumericField T="decimal?" @bind-Value="band.MinPercent" @bind-Value:after="Changed" Label="@L["Band_Min"]" Min="0m" Max="100m" Step="0.01m" ReadOnly="ReadOnly" Immediate="true"
+                <MudNumericField T="decimal?" @bind-Value="band.MinPercent" @bind-Value:after="Changed" Label="@L["Band_Min"]" Min="0m" Max="100m" Step="0.01m" ReadOnly="ReadOnly" Immediate="true" Error="bad"
                                  HideSpinButtons="true" dir="ltr" data-testid="@($"band-min-{n}")" />
-                <MudNumericField T="decimal?" @bind-Value="band.MaxPercent" @bind-Value:after="Changed" Label="@L["Band_Max"]" Min="0m" Max="100m" Step="0.01m" ReadOnly="ReadOnly" Immediate="true"
+                <MudNumericField T="decimal?" @bind-Value="band.MaxPercent" @bind-Value:after="Changed" Label="@L["Band_Max"]" Min="0m" Max="100m" Step="0.01m" ReadOnly="ReadOnly" Immediate="true" Error="bad"
                                  HideSpinButtons="true" dir="ltr" data-testid="@($"band-max-{n}")" />
                 <MudNumericField T="decimal?" @bind-Value="band.Points" Label="@L["Band_Points"]" Min="0m" Step="0.01m" ReadOnly="ReadOnly" HideSpinButtons="true" dir="ltr"
                                  data-testid="@($"band-points-{n}")" />
@@ -42,6 +48,18 @@
     [Parameter] public List<BandRow> Bands { get; set; } = [];
     [Parameter] public bool ReadOnly { get; set; }
     [Parameter] public EventCallback BandsChanged { get; set; }
+
+    /// <summary>The problems of the last refused save: the bands each one concerns are marked.</summary>
+    [Parameter] public IReadOnlyList<ApiProblemItem> Problems { get; set; } = [];
+
+    /// <summary>A gap concerns the bands on either side of it, an overlap the bands that share the range, a range problem the band itself.</summary>
+    private bool IsMarked(BandRow b) => b.MinPercent is { } min && b.MaxPercent is { } max && Problems.Any(p => p switch
+    {
+        { Kind: "Gap", From: { } from, To: { } to } => max == from || min == to,
+        { Kind: "Overlap", From: { } from, To: { } to } => min < to && max > from,
+        { Kind: "Range", From: { } from, To: { } to } => min == from && max == to,
+        _ => false,
+    });
 
     private Task Changed() => BandsChanged.InvokeAsync();
 

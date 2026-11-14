@@ -1697,4 +1697,12 @@
   <data name="WTemplates_EmptyTitle" xml:space="preserve"><value>لا توجد قوالب أوزان بعد</value></data>
   <data name="WTemplates_EmptyText" xml:space="preserve"><value>أنشئ قالبا، مثل أعمال الفصل والاختبارات.</value></data>
   <data name="WTemplates_DeleteConfirm" xml:space="preserve"><value>هل تريد حذف القالب {0}؟</value></data>
+  <data name="Band_ServerGap" xml:space="preserve"><value>وجد الخادم فجوة بين {0} و{1}. أغلقها بتعديل الفئات المجاورة.</value></data>
+  <data name="Band_ServerOverlap" xml:space="preserve"><value>وجد الخادم تداخلا بين الفئات من {0} إلى {1}.</value></data>
+  <data name="Band_ServerRange" xml:space="preserve"><value>وجد الخادم فئة تبدأ عند {0} وتنتهي عند {1}. يجب أن تنتهي بعد أن تبدأ.</value></data>
+  <data name="Band_ServerCount" xml:space="preserve"><value>يحتاج المقياس إلى ما بين فئة واحدة و20 فئة.</value></data>
+  <data name="Band_ServerOther" xml:space="preserve"><value>رفض الخادم هذه الفئات. راجع الرموز والنقاط.</value></data>
+  <data name="Band_Problem_Marked" xml:space="preserve"><value>هذه الفئة جزء من مشكلة وجدها الخادم. راجع القائمة أعلاه.</value></data>
+  <data name="ScaleDialog_ReadOnlyFrom" xml:space="preserve"><value>هذا من {0}. غيّره هناك؛ يمكنك هنا قراءته فقط.</value></data>
+  <data name="ScaleDialog_ReadOnlyPreset" xml:space="preserve"><value>هذا نموذج جاهز. أضفه إلى وحدتك من قائمة النماذج لاستخدامه أو تعديله.</value></data>
 </root>

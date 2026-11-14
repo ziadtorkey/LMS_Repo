@@ -100,3 +100,4 @@ html:lang(ar), html:lang(ar) body { font-family: Cairo, "Segoe UI", Tahoma, Aria
 @media (max-width: 599px) { .lms-weight-row { grid-template-columns: minmax(0, 1fr) auto; } .lms-weight-row > :nth-child(1), .lms-weight-row > :nth-child(2) { grid-column: 1 / -1; } }
 /* Class course tabs: wrap instead of overflowing at 360 px when more tabs join (M5 Task 22). */
 .lms-course-tabs { flex-wrap: wrap; }
+.lms-band-bad { border-color: var(--mud-palette-error); }

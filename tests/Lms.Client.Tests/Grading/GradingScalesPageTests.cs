@@ -19,6 +19,7 @@ public sealed class GradingScalesPageTests : ClientTestContext
 {
     private static readonly TimeSpan Wait = TimeSpan.FromSeconds(5);
     private static readonly Guid Unit = FakeGradingScalesApi.DemoUnitId;
+    private static readonly Guid Head = Guid.Parse("00000000-0000-0000-0000-0000000e00aa");
     private readonly FakeGradingScalesApi _scales = new();
     private IRenderedComponent<MudDialogProvider> _dialogs = default!;
     private IRenderedComponent<MudPopoverProvider> _popovers = default!;
@@ -29,7 +30,8 @@ public sealed class GradingScalesPageTests : ClientTestContext
         Culture.Current = new CultureInfo("en");
         Services.AddSingleton<IGradingScalesApi>(_scales);
         var unit = new OrgUnitNodeDto(Unit, null, Guid.NewGuid(), "مدرسة", "School", "SCH", 0, "Active", false, null, false, false, []);
-        Services.AddSingleton<IUnitLookupApi>(new SingleUnit(unit));
+        var head = new OrgUnitNodeDto(Head, Unit, Guid.NewGuid(), "المقر", "Head office", "HQ", 1, "Active", false, null, false, false, []);
+        Services.AddSingleton<IUnitLookupApi>(new SingleUnit(unit, head)); // the second unit only gives the name an inherited scale points at
     }
 
     private async Task<IRenderedComponent<GradingScalesPage>> OpenAsync(params string[] permissions)
@@ -177,9 +179,21 @@ public sealed class GradingScalesPageTests : ClientTestContext
         Assert.DoesNotContain("Grd_", page.Markup);
     }
 
-    private sealed class SingleUnit(OrgUnitNodeDto unit) : IUnitLookupApi
+    [Fact]
+    public async Task Opening_an_inherited_scale_says_which_unit_it_comes_from()
+    {
+        var inherited = _scales.SeedInherited(Unit, Head, "Head office scale");
+        var page = await OpenAsync();
+
+        page.Find($"[data-testid=scale-edit-{inherited.Id}]").Click();
+
+        _dialogs.WaitForElement("[data-testid=scale-readonly]", Wait);
+        Assert.Contains("Head office", _dialogs.Find("[data-testid=scale-readonly]").TextContent);
+    }
+
+    private sealed class SingleUnit(params OrgUnitNodeDto[] units) : IUnitLookupApi
     {
         public Task<IReadOnlyList<OrgUnitNodeDto>> GetUnitsAsync(CancellationToken ct = default) =>
-            Task.FromResult<IReadOnlyList<OrgUnitNodeDto>>([unit]);
+            Task.FromResult<IReadOnlyList<OrgUnitNodeDto>>(units);
     }
 }
