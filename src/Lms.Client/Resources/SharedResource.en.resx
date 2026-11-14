@@ -1494,6 +1494,13 @@
   <data name="Error_package_reason_compression_ratio" xml:space="preserve"><value>The package is compressed in an unsafe way. Export it again.</value></data>
   <data name="Error_package_reason_symlink" xml:space="preserve"><value>The package contains links to other files, which aren't allowed.</value></data>
   <data name="Error_package_reason_duplicate_name" xml:space="preserve"><value>Two files in the package have the same name.</value></data>
+  <data name="Blueprint_VersionsSubtitle" xml:space="preserve"><value>Complete audit trail of revisions and published versions.</value></data>
+  <data name="Blueprint_Overview" xml:space="preserve"><value>Blueprint overview</value></data>
+  <data name="Blueprint_StatSections" xml:space="preserve"><value>Sections</value></data>
+  <data name="Blueprint_StatLessons" xml:space="preserve"><value>Lessons</value></data>
+  <data name="Blueprint_StatPeriods" xml:space="preserve"><value>Periods per week</value></data>
+  <data name="Blueprint_StatVersion" xml:space="preserve"><value>Version</value></data>
+  <data name="Blueprint_LessonsCount" xml:space="preserve"><value>Lessons: {0}</value></data>
   <data name="MyCourses_StatSupervised" xml:space="preserve"><value>Supervised courses</value></data>
   <data name="MyCourses_StatAllocations" xml:space="preserve"><value>Class allocations</value></data>
   <data name="MyCourses_StatPublished" xml:space="preserve"><value>Published blueprints</value></data>

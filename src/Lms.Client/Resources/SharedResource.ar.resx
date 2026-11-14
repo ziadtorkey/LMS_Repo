@@ -1487,6 +1487,13 @@
   <data name="Error_package_not_ready" xml:space="preserve"><value>الحزمة ليست جاهزة بعد. انتظر حتى ينتهي الفحص.</value></data>
   <data name="Error_package_not_attached" xml:space="preserve"><value>الحزمة غير مضافة إلى درس بعد، لذا لا يمكن تغيير طريقة احتساب الدرجة.</value></data>
   <data name="Error_package_commit_rejected" xml:space="preserve"><value>تعذّر حفظ تقدّمك لأن المحاولة مغلقة أو لم تُقبل البيانات.</value></data>
+  <data name="Blueprint_VersionsSubtitle" xml:space="preserve"><value>سجل كامل لمراجعات المخطط ونسخه المنشورة.</value></data>
+  <data name="Blueprint_Overview" xml:space="preserve"><value>نظرة عامة على المخطط</value></data>
+  <data name="Blueprint_StatSections" xml:space="preserve"><value>الأقسام</value></data>
+  <data name="Blueprint_StatLessons" xml:space="preserve"><value>الدروس</value></data>
+  <data name="Blueprint_StatPeriods" xml:space="preserve"><value>الحصص أسبوعيًا</value></data>
+  <data name="Blueprint_StatVersion" xml:space="preserve"><value>النسخة</value></data>
+  <data name="Blueprint_LessonsCount" xml:space="preserve"><value>الدروس: {0}</value></data>
   <data name="MyCourses_StatSupervised" xml:space="preserve"><value>مقررات تشرف عليها</value></data>
   <data name="MyCourses_StatAllocations" xml:space="preserve"><value>تخصيصات الفصول</value></data>
   <data name="MyCourses_StatPublished" xml:space="preserve"><value>مخططات منشورة</value></data>

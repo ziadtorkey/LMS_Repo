@@ -63,7 +63,8 @@ else
         </Actions>
     </PageHeader>
 
-    <MudStack Spacing="3">
+    <div class="lms-blueprint-layout" data-testid="blueprint-layout">
+    <MudStack Spacing="3" Class="lms-blueprint-main" data-testid="blueprint-main">
         @if (_stale)
         {
             <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" data-testid="blueprint-stale">
@@ -97,7 +98,7 @@ else
             <BlueprintTree Model="_model" ReadOnly="!_editing" SectionLabel="@_sectionLabel" OnChanged="() => InvokeAsync(StateHasChanged)" />
         }
 
-        <SectionCard Title="@L["Blueprint_Versions"]" Flush="true">
+        <SectionCard Title="@L["Blueprint_Versions"]" Icon="@Icons.Material.Rounded.History" Subtitle="@L["Blueprint_VersionsSubtitle"]" Flush="true" TestId="blueprint-history">
             <MudSimpleTable Dense="true" Elevation="0" Class="lms-simple-table lms-stack-table" data-testid="blueprint-versions">
                 <thead>
                     <tr>
@@ -131,6 +132,19 @@ else
             </MudSimpleTable>
         </SectionCard>
     </MudStack>
+
+    @* The Stitch "overview" column: only figures the page already has (no educators, duration or tools). *@
+    <aside class="lms-blueprint-side">
+        <SectionCard Title="@L["Blueprint_Overview"]" Icon="@Icons.Material.Rounded.Insights" TestId="blueprint-overview">
+            <div class="lms-blueprint-stats">
+                @OverviewStat("blueprint-stat-sections", L["Blueprint_StatSections"], _model.Sections.Count.ToString())
+                @OverviewStat("blueprint-stat-lessons", L["Blueprint_StatLessons"], _model.Sections.Sum(s => s.Lessons.Count).ToString())
+                @OverviewStat("blueprint-stat-periods", L["Blueprint_StatPeriods"], _course.Summary.WeeklyPeriods.ToString())
+                @OverviewStat("blueprint-stat-version", L["Blueprint_StatVersion"], _editing ? L["BlueprintStatus_Draft"].Value : _shown is null ? "—" : _shown.Version.ToString())
+            </div>
+        </SectionCard>
+    </aside>
+    </div>
 }
 
 @code {
@@ -143,6 +157,14 @@ else
     private bool _editing, _busy, _stale;
 
     [Parameter] public Guid Id { get; set; }
+
+    private RenderFragment OverviewStat(string testId, string label, string value) => __builder =>
+    {
+        <div class="lms-blueprint-stat" data-testid="@testId">
+            <div class="lms-stat-label">@label</div>
+            <div class="lms-stat-value" dir="ltr" data-testid="@($"{testId}-value")">@value</div>
+        </div>
+    };
 
     private bool CanEdit => _course is { CanEdit: true } && PermState.Has(Permissions.Blueprints.Edit);
 
