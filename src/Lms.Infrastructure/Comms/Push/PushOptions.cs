@@ -15,5 +15,8 @@ public sealed class PushOptions
 
     public string PrivateKey { get; set; } = string.Empty;
 
+    /// <summary>Hosts (and their subdomains) a subscription endpoint may point at; empty means <see cref="PushEndpointPolicy.DefaultHostSuffixes"/>.</summary>
+    public string[] AllowedHostSuffixes { get; set; } = [];
+
     public bool IsConfigured => !string.IsNullOrWhiteSpace(PublicKey) && !string.IsNullOrWhiteSpace(PrivateKey) && !string.IsNullOrWhiteSpace(Subject);
 }

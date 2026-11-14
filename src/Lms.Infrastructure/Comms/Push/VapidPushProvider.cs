@@ -28,6 +28,12 @@ public sealed class VapidPushProvider(PushServiceClient client, IOptions<PushOpt
             return new PushResult(PushResultKind.NotConfigured, "not_configured");
         }
 
+        if (!PushEndpointPolicy.IsAllowed(target.Endpoint, _options.AllowedHostSuffixes))
+        {
+            // Re-checked at send time: a row written before the policy, or by hand, never makes the server call another host. The channel deletes the row.
+            return new PushResult(PushResultKind.Gone, "push_endpoint_refused");
+        }
+
         if (!_authenticated)
         {
             client.DefaultAuthentication = new VapidAuthentication(_options.PublicKey, _options.PrivateKey) { Subject = _options.Subject };

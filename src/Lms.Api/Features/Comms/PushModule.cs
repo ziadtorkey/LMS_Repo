@@ -24,7 +24,7 @@ public sealed class PushModule : ILmsModule
             return;
         }
 
-        services.AddHttpClient<PushServiceClient>();
+        services.AddHttpClient<PushServiceClient>().ConfigurePrimaryHttpMessageHandler(PushEndpointPolicy.CreateHandler);
         services.AddScoped<IPushProvider, VapidPushProvider>();
         services.AddScoped<IDeliveryChannel, PushDeliveryChannel>();
     }

@@ -5,6 +5,7 @@ using Lms.Infrastructure.Persistence;
 using Lms.Shared;
 using Lms.Shared.Messaging;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Lms.Api.Features.Comms;
 
@@ -34,18 +35,18 @@ public static class PushSubscriptionEndpoints
     }
 
     private static async Task<IResult> SaveAsync(
-        SavePushSubscriptionRequest request, LmsDbContext db, ICurrentContext context, PushKeyProtector protector, IClock clock, CancellationToken ct)
+        SavePushSubscriptionRequest request, LmsDbContext db, ICurrentContext context, PushKeyProtector protector, IClock clock, IOptions<PushOptions> options, CancellationToken ct)
     {
         if (context.UserId is not { } userId || context.OrganizationId is not { } organizationId)
         {
             return Problem(StatusCodes.Status404NotFound, ProblemCodes.not_found); // no active client: nothing of the caller to save into
         }
 
-        if (!IsValid(request))
+        if (!IsValid(request, options.Value))
         {
-            return Results.ValidationProblem(
-                new Dictionary<string, string[]> { ["subscription"] = ["push_subscription_invalid"] },
-                extensions: new Dictionary<string, object?> { ["code"] = ProblemCodes.validation_failed });
+            return Results.Problem(
+                statusCode: StatusCodes.Status422UnprocessableEntity, title: "push_subscription_invalid",
+                extensions: new Dictionary<string, object?> { ["code"] = ProblemCodes.validation_failed, ["reason"] = "push_subscription_invalid" });
         }
 
         // One row per browser: saving the same endpoint again (the keys rotated, or another person signed in on the device) replaces the old row.
@@ -74,9 +75,9 @@ public static class PushSubscriptionEndpoints
         return Results.NoContent();
     }
 
-    private static bool IsValid(SavePushSubscriptionRequest r) =>
+    private static bool IsValid(SavePushSubscriptionRequest r, PushOptions options) =>
         !string.IsNullOrWhiteSpace(r.Endpoint) && r.Endpoint.Length <= PushSubscription.MaxEndpointLength
-        && Uri.TryCreate(r.Endpoint, UriKind.Absolute, out var uri) && uri.Scheme == Uri.UriSchemeHttps
+        && PushEndpointPolicy.IsAllowed(r.Endpoint, options.AllowedHostSuffixes)
         && !string.IsNullOrWhiteSpace(r.P256dh) && r.P256dh.Length <= PushSubscription.MaxKeyLength
         && !string.IsNullOrWhiteSpace(r.Auth) && r.Auth.Length <= PushSubscription.MaxKeyLength;
 

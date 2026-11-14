@@ -22,7 +22,7 @@ public sealed class PushChannelTests(LmsApiFactory factory)
     private FakePushProvider Provider => factory.Services.GetRequiredService<FakePushProvider>();
 
     private static SavePushSubscriptionRequest Subscription(string name, string label = "Chrome on Windows") =>
-        new($"https://push.example.test/send/{name}", "BPublicKeyOfTheBrowser" + name, "AuthSecret" + name, label);
+        new($"https://fcm.googleapis.com/send/{name}", "BPublicKeyOfTheBrowser" + name, "AuthSecret" + name, label);
 
     private async Task<(AccessTree Tree, Guid User, Guid Assignment)> NewMemberAsync(string name)
     {
@@ -62,7 +62,7 @@ public sealed class PushChannelTests(LmsApiFactory factory)
 
         Assert.Equal(HttpStatusCode.Created, created.StatusCode);
         Assert.Equal(["Chrome on Windows"], listed.Select(s => s.DeviceLabel));
-        Assert.DoesNotContain("push.example.test", await created.Content.ReadAsStringAsync()); // the endpoint is a capability URL: never returned
+        Assert.DoesNotContain("fcm.googleapis.com", await created.Content.ReadAsStringAsync()); // the endpoint is a capability URL: never returned
         await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
         var row = await db.Set<PushSubscription>().SingleAsync(s => s.UserId == user);
         Assert.DoesNotContain(request.P256dh, row.ProtectedP256dh);
@@ -84,17 +84,26 @@ public sealed class PushChannelTests(LmsApiFactory factory)
     }
 
     [Theory]
-    [InlineData("http://push.example.test/insecure", "k", "a")]
+    [InlineData("http://fcm.googleapis.com/insecure", "k", "a")]
     [InlineData("not a url", "k", "a")]
-    [InlineData("https://push.example.test/x", "", "a")]
-    [InlineData("https://push.example.test/x", "k", "")]
+    [InlineData("https://fcm.googleapis.com/x", "", "a")]
+    [InlineData("https://fcm.googleapis.com/x", "k", "")]
+    [InlineData("https://localhost/x", "k", "a")]
+    [InlineData("https://10.0.0.1/x", "k", "a")]
+    [InlineData("https://169.254.169.254/x", "k", "a")]
+    [InlineData("https://[::1]/x", "k", "a")]
+    [InlineData("https://evil.example/x", "k", "a")]
+    [InlineData("https://fcm.googleapis.com.evil.example/x", "k", "a")]
+    [InlineData("https://fcm.googleapis.com:8443/x", "k", "a")]
+    [InlineData("https://user@fcm.googleapis.com/x", "k", "a")]
     public async Task Invalid_subscriptions_are_refused(string endpoint, string p256dh, string auth)
     {
         var (_, user, assignment) = await NewMemberAsync("PU3");
 
         var response = await SendAsync(HttpMethod.Post, Routes.MyPushSubscriptions, user, assignment, new SavePushSubscriptionRequest(endpoint, p256dh, auth, null));
 
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        Assert.Contains("push_subscription_invalid", await response.Content.ReadAsStringAsync());
     }
 
     [Fact]
@@ -103,9 +112,9 @@ public sealed class PushChannelTests(LmsApiFactory factory)
         var (_, user, assignment) = await NewMemberAsync("PU4");
 
         var response = await SendAsync(HttpMethod.Post, Routes.MyPushSubscriptions, user, assignment,
-            new SavePushSubscriptionRequest("https://push.example.test/" + new string('a', PushSubscription.MaxEndpointLength), "k", "a", null));
+            new SavePushSubscriptionRequest("https://fcm.googleapis.com/" + new string('a', PushSubscription.MaxEndpointLength), "k", "a", null));
 
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
     }
 
     [Fact]

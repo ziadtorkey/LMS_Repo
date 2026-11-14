@@ -38,7 +38,7 @@ public sealed class VapidPushProviderTests
         using var http = new HttpClient(new ThrowingHandler());
         var provider = new VapidPushProvider(new PushServiceClient(http), Options.Create(new PushOptions { Subject = "mailto:dev@lms.test" }));
 
-        var result = await provider.SendAsync(new PushTarget("https://push.example.test/x", "k", "a"), [1], TimeSpan.FromHours(1), false, CancellationToken.None);
+        var result = await provider.SendAsync(new PushTarget("https://fcm.googleapis.com/x", "k", "a"), [1], TimeSpan.FromHours(1), false, CancellationToken.None);
 
         Assert.Equal(PushResultKind.NotConfigured, result.Kind);
         Assert.Null(provider.PublicKey);
