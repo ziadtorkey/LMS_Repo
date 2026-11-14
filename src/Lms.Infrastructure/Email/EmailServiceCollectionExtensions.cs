@@ -20,6 +20,7 @@ public static class EmailServiceCollectionExtensions
             o.Password = section["Password"];
         });
         services.AddSingleton<IEmailSender, SmtpEmailSender>();
+        services.AddSingleton<Lms.Domain.Comms.IEmailProvider, Lms.Infrastructure.Comms.Email.MailKitEmailProvider>(); // the outbox dispatcher (M6 Task 5) sends through it
         return services;
     }
 }
