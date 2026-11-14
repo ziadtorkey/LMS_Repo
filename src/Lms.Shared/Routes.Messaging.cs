@@ -16,7 +16,7 @@ public static partial class Routes
     /// <summary>GET → <c>ConversationDto</c> — <c>Messaging.View</c>; participant only (404 otherwise); muting and leaving are their own routes below.</summary>
     public const string ConversationPattern = Conversations + "/{id:guid}";
 
-    /// <summary>GET <c>?beforeId=&amp;pageSize=</c> → <c>MessagePageDto</c> — <c>Messaging.View</c>; POST (<c>SendMessageRequest</c> → <c>MessageDto</c>) — <c>Messaging.Send</c>; participant who has not left; 403 restricted; 403 <c>group_read_only</c> for a student in any group (D74), for a guardian outside a teacher-run group that includes guardians (D77) and for anyone but staff when the group is read-only; 409 <c>conversation_closed</c>; 400 <c>message_too_long</c>; 429 <c>rate_limited</c>.</summary>
+    /// <summary>GET <c>?beforeId=&amp;pageSize=</c> → <c>MessagePageDto</c> — <c>Messaging.View</c>; POST (<c>SendMessageRequest</c> → <c>MessageDto</c>) — <c>Messaging.Send</c>; participant who has not left; 403 restricted; 403 <c>conversation_read_only</c> (reason <c>group_students_read_only</c>) for a student in any group (D74), for a guardian outside a teacher-run group that includes guardians (D77) and for anyone but staff when the group is read-only; 409 <c>conversation_closed</c>; 400 <c>message_too_long</c>; 429 <c>rate_limited</c>.</summary>
     public const string ConversationMessagesPattern = ConversationPattern + "/messages";
 
     /// <summary>DELETE — <c>Messaging.Send</c>: the sender deletes their own message for everyone within <c>MessagingLimits.DeleteWindowMinutes</c> (409 <c>message_delete_window_closed</c> after); there is no edit.</summary>

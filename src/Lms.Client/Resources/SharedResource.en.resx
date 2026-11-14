@@ -1986,12 +1986,11 @@
   <data name="Msg_Reason_Other" xml:space="preserve"><value>Other</value></data>
   <data name="Msg_ReadOnly_group_students_read_only" xml:space="preserve"><value>Only the teacher and staff post in this group. You can reply to the teacher privately.</value></data>
   <data name="Msg_ReadOnly_group_guardians_read_only" xml:space="preserve"><value>Only staff post in this group.</value></data>
-  <data name="Msg_ReadOnly_rule" xml:space="preserve"><value>This conversation is read-only because messaging rules changed.</value></data>
   <data name="Msg_ReadOnly_blocked_or_rule" xml:space="preserve"><value>You cannot send messages in this conversation.</value></data>
   <data name="Msg_ReadOnly_restricted" xml:space="preserve"><value>Your messaging is restricted for now.</value></data>
   <data name="Msg_ReadOnly_locked" xml:space="preserve"><value>A moderator locked this conversation.</value></data>
   <data name="Msg_Denied_rule" xml:space="preserve"><value>You cannot send messages to this person.</value></data>
-  <data name="Msg_Denied_relationship" xml:space="preserve"><value>You can only message people you share a class with.</value></data>
+  <data name="Msg_Denied_relationship" xml:space="preserve"><value>You can only message people you work with in school.</value></data>
   <data name="Msg_Denied_restricted" xml:space="preserve"><value>Your messaging is restricted for now.</value></data>
   <data name="Msg_Denied_blocked_or_rule" xml:space="preserve"><value>You cannot send messages to this person.</value></data>
   <data name="Msg_Denied_private_group_with_student" xml:space="preserve"><value>A group with a student needs at least three members.</value></data>
@@ -2035,7 +2034,6 @@
   <data name="Comms_PrefSource_User" xml:space="preserve"><value>Your choice</value></data>
   <data name="Comms_PrefSource_Mandatory" xml:space="preserve"><value>Required</value></data>
   <data name="Msg_Rule_SameUnit" xml:space="preserve"><value>Anyone in the same unit</value></data>
-  <data name="Error_group_read_only" xml:space="preserve"><value>Only staff can post in this group.</value></data>
   <data name="Error_conversation_read_only" xml:space="preserve"><value>You cannot post in this conversation.</value></data>
   <data name="Error_comms_cap_above_ceiling" xml:space="preserve"><value>This limit is above the maximum the platform allows.</value></data>
   <data name="Error_attachment_invalid" xml:space="preserve"><value>The attachment is not allowed: check its type and size, and the number of attachments.</value></data>
