@@ -58,12 +58,19 @@ public sealed class AbsenceExcuse : UnitOwnedEntity
 
     public Guid? EscalatedToUserId { get; private set; }
 
+    public Guid? EscalatedByUserId { get; private set; }
+
+    /// <summary>The comment of the escalation (the decision comment stays the final decision's).</summary>
+    public string? EscalationComment { get; private set; }
+
+    public DateTime? EscalatedAtUtc { get; private set; }
+
     public DateTime SubmittedAtUtc { get; private set; }
 
     public DateTime? DecidedAtUtc { get; private set; }
 
     /// <summary>The submitter withdraws it while it is still <c>Submitted</c>.</summary>
-    public void Withdraw(Guid byUserId)
+    public void Withdraw(Guid byUserId, DateTime nowUtc)
     {
         if (byUserId != SubmittedByUserId)
         {
@@ -71,6 +78,7 @@ public sealed class AbsenceExcuse : UnitOwnedEntity
         }
 
         Status = ExcuseStateMachine.Apply(Status, ExcuseAction.Withdraw);
+        DecidedAtUtc = nowUtc;
     }
 
     /// <summary>A reviewer rejects it (a comment is required); the covered records stay Absent.</summary>
@@ -97,12 +105,14 @@ public sealed class AbsenceExcuse : UnitOwnedEntity
     }
 
     /// <summary>A counselor hands it to another staff member (L14); the target is validated by the caller.</summary>
-    public void Escalate(Guid reviewerUserId, Guid targetUserId, string? comment)
+    public void Escalate(Guid reviewerUserId, Guid targetUserId, string? comment, DateTime nowUtc)
     {
         EnsureMayReview(reviewerUserId);
         Status = ExcuseStateMachine.Apply(Status, ExcuseAction.Escalate);
         EscalatedToUserId = targetUserId;
-        DecisionComment = comment;
+        EscalatedByUserId = reviewerUserId;
+        EscalatedAtUtc = nowUtc;
+        EscalationComment = comment;
     }
 
     private void EnsureMayReview(Guid reviewerUserId)

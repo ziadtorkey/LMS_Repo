@@ -2393,8 +2393,18 @@ namespace Lms.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<DateTime?>("EscalatedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("EscalatedByUserId")
+                        .HasColumnType("char(36)");
+
                     b.Property<Guid?>("EscalatedToUserId")
                         .HasColumnType("char(36)");
+
+                    b.Property<string>("EscalationComment")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("tinyint(1)");
