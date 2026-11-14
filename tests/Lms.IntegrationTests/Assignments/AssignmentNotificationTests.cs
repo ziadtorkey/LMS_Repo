@@ -18,10 +18,12 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Lms.IntegrationTests.Assignments;
 
 [Collection(ApiCollection.Name)]
-public sealed class AssignmentNotificationTests
+public sealed class AssignmentNotificationTests : IDisposable
 {
     private readonly LmsApiFactory _factory;
     private readonly WebApplicationFactory<Program> _host;
+
+    public void Dispose() => _host.Dispose();
 
     public AssignmentNotificationTests(LmsApiFactory factory)
     {
