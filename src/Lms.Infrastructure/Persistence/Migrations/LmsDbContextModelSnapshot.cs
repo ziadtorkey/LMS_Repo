@@ -4422,6 +4422,11 @@ namespace Lms.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<long>("ExtractedBytes")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(0L);
+
                     b.Property<string>("FileName")
                         .IsRequired()
                         .HasMaxLength(255)

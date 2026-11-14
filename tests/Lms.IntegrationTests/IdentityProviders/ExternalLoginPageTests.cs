@@ -5,9 +5,11 @@ using Lms.IntegrationTests.Infrastructure;
 namespace Lms.IntegrationTests.IdentityProviders;
 
 [Collection(ApiCollection.Name)]
-public sealed class ExternalLoginPageTests(LmsApiFactory factory)
+public sealed class ExternalLoginPageTests(LmsApiFactory factory) : IDisposable
 {
     private readonly AuthTestHost _host = new(factory);
+
+    public void Dispose() => _host.Dispose();
 
     [Fact]
     public async Task Login_page_renders_rtl_in_arabic_with_sso_link()
