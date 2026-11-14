@@ -88,7 +88,11 @@ internal static class ExcuseReviewEndpoints
             return Refused(ex);
         }
 
-        await db.SaveChangesAsync(ct);
+        if (!await SaveOrLostRaceAsync(db, ct))
+        {
+            return ApiProblems.Conflict(ProblemCodes.excuse_not_pending); // another decision (approve, reject, escalate or withdraw) won the excuse first
+        }
+
         await NotifyAsync(db, excuse, (s, e) => notifier.DecidedAsync(e, s, ct), ct);
         return Results.Ok((await ExcuseMapper.ToDtosAsync(db, [excuse], current.UserId!.Value, clock.UtcNow, ct))[0]);
     }
@@ -124,7 +128,11 @@ internal static class ExcuseReviewEndpoints
             return Refused(ex);
         }
 
-        await db.SaveChangesAsync(ct);
+        if (!await SaveOrLostRaceAsync(db, ct))
+        {
+            return ApiProblems.Conflict(ProblemCodes.excuse_not_pending); // another decision (approve, reject, escalate or withdraw) won the excuse first
+        }
+
         await NotifyAsync(db, excuse, (s, e) => notifier.EscalatedAsync(e, s, request.TargetUserId, ct), ct);
         return Results.Ok((await ExcuseMapper.ToDtosAsync(db, [excuse], current.UserId!.Value, clock.UtcNow, ct))[0]);
     }
@@ -164,6 +172,20 @@ internal static class ExcuseReviewEndpoints
 
         var access = await http.CheckUnitAsync(permission, excuse.OrgUnitId, ct);
         return access.Problem is not null ? (null, access.Problem) : (excuse, null);
+    }
+
+    /// <summary>Saves; false when the row version moved under us (a concurrent decision), so the caller answers 409 instead of overwriting it.</summary>
+    internal static async Task<bool> SaveOrLostRaceAsync(LmsDbContext db, CancellationToken ct)
+    {
+        try
+        {
+            await db.SaveChangesAsync(ct);
+            return true;
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return false;
+        }
     }
 
     internal static IResult Refused(Exception ex) => ex is ExcuseReviewerIsSubmitterException

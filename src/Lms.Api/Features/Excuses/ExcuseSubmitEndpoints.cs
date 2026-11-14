@@ -79,7 +79,8 @@ internal static class ExcuseSubmitEndpoints
     }
 
     private static async Task<IResult> SubmitAsync(
-        SubmitExcuseRequest? body, LmsDbContext db, ICurrentContext current, ExcuseSubmissionService service, IClock clock, CancellationToken ct)
+        SubmitExcuseRequest? body, LmsDbContext db, ICurrentContext current, ExcuseSubmissionService service, IClock clock, IFileStorage storage,
+        ExcuseAttachmentValidator validator, ISettingsResolver settings, CancellationToken ct)
     {
         if (current.UserId is not { } me)
         {
@@ -105,12 +106,12 @@ internal static class ExcuseSubmitEndpoints
             return ApiProblems.Forbidden(ProblemCodes.excuse_submitter_not_allowed);
         }
 
-        if (body.AttachmentFileId is { } fileId && !await AttachmentUsableAsync(db, fileId, me, ct))
+        var student = relation.Student;
+        if (body.AttachmentFileId is { } fileId && !await AttachmentUsableAsync(db, storage, validator, settings, student.OrgUnitPath, fileId, me, ct))
         {
             return ApiProblems.BadRequest(ProblemCodes.excuse_attachment_invalid);
         }
 
-        var student = relation.Student;
         var today = await service.TodayAsync(student.OrganizationId, ct);
         var sessionIds = body.SessionIds?.Distinct().ToList();
         // By session ids the ids choose what is covered, so the whole history up to today is searched; by dates the range is the one the submitter chose.
@@ -134,10 +135,27 @@ internal static class ExcuseSubmitEndpoints
     }
 
     /// <summary>The file must be one the caller uploaded and no other excuse holds (L10), so a file id learned elsewhere cannot be attached and read back.</summary>
-    private static async Task<bool> AttachmentUsableAsync(LmsDbContext db, Guid fileId, Guid callerUserId, CancellationToken ct)
+    private static async Task<bool> AttachmentUsableAsync(
+        LmsDbContext db, IFileStorage storage, ExcuseAttachmentValidator validator, ISettingsResolver settings, string unitPath, Guid fileId, Guid callerUserId, CancellationToken ct)
     {
         var file = await db.Set<StoredFile>().FirstOrDefaultAsync(f => f.Id == fileId, ct);
-        return file is not null && file.CreatedBy == callerUserId && !await db.Set<AbsenceExcuse>().AnyAsync(e => e.AttachmentFileId == fileId, ct);
+        if (file is null || file.CreatedBy != callerUserId || await db.Set<AbsenceExcuse>().AnyAsync(e => e.AttachmentFileId == fileId, ct))
+        {
+            return false;
+        }
+
+        // D65, L10: the stored bytes are checked again at attach time (type by content, size cap, scanner), whatever the upload route did, so a file that was never an
+        // allowed attachment cannot be attached by id.
+        var maxMb = (await settings.ResolveAsync(SettingKeys.ExcusesMaxAttachmentMb, unitPath, ct)).Value;
+        try
+        {
+            await using var content = await storage.OpenReadAsync(fileId, ct);
+            return (await validator.CheckAsync(content, file.FileName, maxMb * 1024L * 1024L, ct)).IsValid;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            return false; // a missing or unreadable object is not a valid attachment
+        }
     }
 
     private static async Task<IResult> MineAsync(
@@ -153,8 +171,14 @@ internal static class ExcuseSubmitEndpoints
             return ApiProblems.NotFound(); // a child that is not the caller's
         }
 
+        // A guardian sees what they submitted only while they are still linked to the child: an unlinked former guardian reads nothing (the link is checked now, not
+        // remembered through SubmittedByUserId).
         var ownProfiles = db.Set<StudentProfile>().Where(s => s.UserId == me).Select(s => s.Id);
-        var rows = db.Set<AbsenceExcuse>().Where(e => e.SubmittedByUserId == me || ownProfiles.Contains(e.StudentProfileId));
+        var linkedChildren = from link in db.Set<StudentGuardian>()
+                             join g in db.Set<GuardianProfile>() on link.GuardianId equals g.Id
+                             where g.UserId == me
+                             select link.StudentId;
+        var rows = db.Set<AbsenceExcuse>().Where(e => ownProfiles.Contains(e.StudentProfileId) || e.SubmittedByUserId == me && linkedChildren.Contains(e.StudentProfileId));
         if (query.StudentId is { } only)
         {
             rows = rows.Where(e => e.StudentProfileId == only);
@@ -172,12 +196,17 @@ internal static class ExcuseSubmitEndpoints
         return Results.Ok(new PagedResult<ExcuseDto>(await ExcuseMapper.ToDtosAsync(db, items, me, clock.UtcNow, ct), total, page, size));
     }
 
-    private static async Task<IResult> WithdrawAsync(Guid id, LmsDbContext db, ICurrentContext current, IClock clock, CancellationToken ct)
+    private static async Task<IResult> WithdrawAsync(Guid id, LmsDbContext db, ICurrentContext current, IClock clock, ExcuseSubmissionService service, CancellationToken ct)
     {
         var excuse = await db.Set<AbsenceExcuse>().FirstOrDefaultAsync(e => e.Id == id, ct);
         if (excuse is null || current.UserId is not { } me || excuse.SubmittedByUserId != me)
         {
             return ApiProblems.NotFound(); // only the submitter reaches it
+        }
+
+        if (!await service.CanActForAsync(excuse.StudentProfileId, me, ct))
+        {
+            return ApiProblems.NotFound(); // and only while they are still the student's guardian (or the student): a former guardian is a stranger now
         }
 
         try
@@ -189,7 +218,11 @@ internal static class ExcuseSubmitEndpoints
             return ApiProblems.Conflict(ProblemCodes.excuse_not_pending);
         }
 
-        await db.SaveChangesAsync(ct);
+        if (!await ExcuseReviewEndpoints.SaveOrLostRaceAsync(db, ct))
+        {
+            return ApiProblems.Conflict(ProblemCodes.excuse_not_pending); // a reviewer decided it first
+        }
+
         return Results.Ok((await ExcuseMapper.ToDtosAsync(db, [excuse], me, clock.UtcNow, ct))[0]);
     }
 }

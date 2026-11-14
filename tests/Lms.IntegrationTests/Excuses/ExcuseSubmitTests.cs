@@ -1,3 +1,4 @@
+using System.Text;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -5,7 +6,13 @@ using Lms.Domain.Access;
 using Lms.Domain.Attendance;
 using Lms.Domain.Classes;
 using Lms.Domain.Enrollment;
+using Lms.Domain.Excuses;
+using Lms.Domain.Files;
 using Lms.Domain.Notifications;
+using Lms.Infrastructure;
+using Lms.Infrastructure.Files;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Lms.Domain.People;
 using Lms.Domain.Teaching;
 using Lms.IntegrationTests.Access;
@@ -312,5 +319,143 @@ public sealed class ExcuseSubmitTests(LmsApiFactory factory)
         Assert.Empty(await ListAsync(s.OtherGuardian));
         Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(factory, HttpMethod.Get, $"{Routes.MeExcuses}?studentId={s.Students[0]}", s.OtherGuardian)).StatusCode);
         Assert.Empty(await ListAsync(s.Guardian, "?status=Approved"));
+    }
+
+    /// <summary>Stores a file as the caller (the object really goes to MinIO and its CreatedBy is the caller).</summary>
+    private async Task<Guid> StoreFileAsync(Setup s, Guid callerUser, string fileName, byte[] bytes)
+    {
+        var ctx = TestCurrentContext.For(s.Tree.Org.Id, s.Tree.School1.Path);
+        ctx.UserId = callerUser;
+        await using var db = factory.CreateDbContext(ctx);
+        var template = factory.Services.GetRequiredService<IOptions<StorageOptions>>().Value;
+        var options = Options.Create(new StorageOptions
+        {
+            Endpoint = template.Endpoint, PublicEndpoint = template.PublicEndpoint, AccessKey = template.AccessKey, SecretKey = template.SecretKey,
+            Region = template.Region, AllowedExtensions = template.AllowedExtensions,
+        });
+        var storage = new MinioFileStorage(db, new Lms.Infrastructure.Configuration.SettingsResolver(db, ctx), new MinioClients(options), options, new SystemClock());
+        var stored = await storage.UploadAsync(new FileUploadRequest(fileName, "application/octet-stream", bytes.Length, s.Tree.School1.Id), new MemoryStream(bytes));
+        return stored.Id;
+    }
+
+    private static readonly byte[] Png = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0x0D, 0x49, 0x48, 0x44, 0x52];
+
+    [Fact]
+    public async Task An_attachment_is_checked_by_its_content_at_submit_and_a_file_of_another_user_is_refused()
+    {
+        var s = await SetUpAsync("XS9");
+        var fake = await StoreFileAsync(s, s.GuardianUser, "note.png", Encoding.ASCII.GetBytes("this is plain text, not a png at all"));
+        var real = await StoreFileAsync(s, s.GuardianUser, "note.png", Png);
+        var foreign = await StoreFileAsync(s, Guid.NewGuid(), "other.png", Png);
+        Task<HttpResponseMessage> WithFile(Guid file) => SendAsync(factory, HttpMethod.Post, Routes.ExcusesPattern, s.Guardian,
+            new SubmitExcuseRequest(s.Students[0], ExcuseReasons.Illness, null, SchoolDayBefore(1), SchoolDayBefore(0), null, file));
+
+        var notAnImage = await WithFile(fake);
+        var someoneElses = await WithFile(foreign);
+        var missing = await WithFile(Guid.NewGuid());
+        var ok = await WithFile(real);
+
+        Assert.Equal((HttpStatusCode.BadRequest, ProblemCodes.excuse_attachment_invalid), (notAnImage.StatusCode, await CodeAsync(notAnImage))); // D65: sniffed, not trusted by name
+        Assert.Equal((HttpStatusCode.BadRequest, HttpStatusCode.BadRequest), (someoneElses.StatusCode, missing.StatusCode));
+        var excuse = await DtoAsync(ok);
+        Assert.True(excuse.HasAttachment);
+        Assert.Equal("note.png", excuse.AttachmentFileName);
+    }
+
+    [Fact]
+    public async Task An_absence_older_than_the_calendar_can_count_is_too_late_not_a_server_error()
+    {
+        var s = await SetUpAsync("XS10");
+        var ancient = DateOnly.FromDateTime(DateTime.UtcNow.AddHours(3)).AddDays(-420);
+        while (ancient.DayOfWeek is DayOfWeek.Friday or DayOfWeek.Saturday)
+        {
+            ancient = ancient.AddDays(-1);
+        }
+
+        // Ad hoc sessions reach back at most 92 days, so the old session is written directly, as a Taken session with the student Absent.
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            var classCourse = await db.Set<ClassCourse>().SingleAsync(c => c.Id == s.World.Math.Id);
+            var old = new AttendanceSession(classCourse, ancient, null, s.World.Second.Id, AttendanceSession.AdHocSource);
+            old.RecordSave(Guid.NewGuid(), DateTime.UtcNow);
+            db.Add(old);
+            db.Add(new AttendanceRecord(old, s.Students[0], AttendanceStatuses.Absent, null));
+            await db.SaveChangesAsync();
+        }
+
+        var byDates = await SubmitAsync(s.Guardian, s.Students[0], ExcuseReasons.Illness, ancient, ancient);
+        var wide = await SubmitAsync(s.Guardian, s.Students[0], ExcuseReasons.Illness, ancient.AddDays(-5), SchoolDayBefore(0));
+
+        Assert.Equal((HttpStatusCode.Conflict, (ProblemCodes.excuse_out_of_policy, ExcusePolicyViolations.TooLate)), (byDates.StatusCode, await ProblemAsync(byDates)));
+        Assert.Equal(HttpStatusCode.Created, wide.StatusCode); // the recent absences in a wide range are still coverable; the ancient one is left out
+        Assert.DoesNotContain((await DtoAsync(wide)).Sessions, x => x.Date == ancient);
+    }
+
+    [Fact]
+    public async Task An_unlinked_former_guardian_reads_and_withdraws_nothing_any_more()
+    {
+        var s = await SetUpAsync("XS11");
+        var excuse = await DtoAsync(await SubmitAsync(s.Guardian, s.Students[0], ExcuseReasons.Illness, SchoolDayBefore(1), SchoolDayBefore(0)));
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            var link = await db.Set<StudentGuardian>().SingleAsync(l => l.StudentId == s.Students[0]);
+            db.Remove(link); // the guardian is unlinked from the child
+            await db.SaveChangesAsync();
+        }
+
+        var list = await SendAsync(factory, HttpMethod.Get, Routes.MeExcuses, s.Guardian);
+        var withdraw = await SendAsync(factory, HttpMethod.Post, Routes.ExcuseWithdraw(excuse.Id), s.Guardian);
+        var policy = await SendAsync(factory, HttpMethod.Get, Routes.StudentExcusePolicy(s.Students[0]), s.Guardian);
+
+        Assert.Empty((await list.Content.ReadFromJsonAsync<PagedResult<ExcuseDto>>(Web))!.Items);
+        Assert.Equal((HttpStatusCode.NotFound, HttpStatusCode.NotFound), (withdraw.StatusCode, policy.StatusCode));
+        await using var read = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        Assert.Equal(ExcuseStatuses.Submitted, (await read.Set<AbsenceExcuse>().SingleAsync(e => e.Id == excuse.Id)).Status); // untouched
+    }
+
+    [Fact]
+    public async Task A_second_decision_on_a_stale_excuse_loses_with_a_concurrency_check()
+    {
+        var s = await SetUpAsync("XS12");
+        var excuse = await DtoAsync(await SubmitAsync(s.Guardian, s.Students[0], ExcuseReasons.Illness, SchoolDayBefore(1), SchoolDayBefore(0)));
+        await using var first = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        await using var second = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        var loadedFirst = await first.Set<AbsenceExcuse>().SingleAsync(e => e.Id == excuse.Id);
+        var loadedSecond = await second.Set<AbsenceExcuse>().SingleAsync(e => e.Id == excuse.Id);
+        loadedFirst.Withdraw(loadedFirst.SubmittedByUserId, DateTime.UtcNow);
+        await first.SaveChangesAsync();
+
+        loadedSecond.Approve(Guid.NewGuid(), null, DateTime.UtcNow); // a reviewer who loaded it before the withdrawal
+
+        await Assert.ThrowsAsync<DbUpdateConcurrencyException>(() => second.SaveChangesAsync());
+    }
+
+    [Fact]
+    public async Task Approve_racing_withdraw_has_one_winner_and_the_records_match_it()
+    {
+        for (var round = 0; round < 3; round++)
+        {
+            var s = await SetUpAsync("XR" + round);
+            var excuse = await DtoAsync(await SubmitAsync(s.Guardian, s.Students[0], ExcuseReasons.Illness, SchoolDayBefore(1), SchoolDayBefore(0)));
+
+            var approve = SendAsync(factory, HttpMethod.Post, Routes.ExcuseApprove(excuse.Id), s.Counselor, new ApproveExcuseRequest(null));
+            var withdraw = SendAsync(factory, HttpMethod.Post, Routes.ExcuseWithdraw(excuse.Id), s.Guardian);
+            var results = await Task.WhenAll(approve, withdraw);
+
+            await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+            var status = (await db.Set<AbsenceExcuse>().SingleAsync(e => e.Id == excuse.Id)).Status;
+            var statuses = (await StatusesAsync(s.Students[0], s.Sessions)).Values.ToList();
+            Assert.Single(results, r => r.StatusCode == HttpStatusCode.OK); // exactly one decision won
+            Assert.All(results.Where(r => r.StatusCode != HttpStatusCode.OK), r => Assert.Equal(HttpStatusCode.Conflict, r.StatusCode));
+            if (status == ExcuseStatuses.Approved)
+            {
+                Assert.All(statuses, v => Assert.Equal(AttendanceStatuses.Excused, v));
+            }
+            else
+            {
+                Assert.Equal(ExcuseStatuses.Withdrawn, status);
+                Assert.All(statuses, v => Assert.Equal(AttendanceStatuses.Absent, v)); // never Withdrawn with Excused records
+            }
+        }
     }
 }

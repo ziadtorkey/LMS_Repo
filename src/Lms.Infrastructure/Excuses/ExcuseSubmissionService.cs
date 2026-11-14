@@ -41,6 +41,9 @@ public sealed class ExcuseSubmissionService(LmsDbContext db, ISettingsResolver s
         return isSelf || isGuardian ? new ExcuseRelation(student, isGuardian, isSelf) : null;
     }
 
+    /// <summary>True when the caller is, right now, the student or a linked guardian of the student (a past link does not count).</summary>
+    public async Task<bool> CanActForAsync(Guid studentId, Guid callerUserId, CancellationToken ct) => await RelationAsync(studentId, callerUserId, ct) is not null;
+
     /// <summary>True when this caller may submit for the student: a guardian always, the student only when the client allows it (<c>Excuses.Submitters</c>).</summary>
     public async Task<bool> CanSubmitAsync(ExcuseRelation relation, CancellationToken ct) =>
         relation.IsGuardian || relation.IsSelf && await SubmittersAsync(relation.Student.OrgUnitPath, ct) == ExcuseSubmitters.GuardiansAndStudents;

@@ -70,7 +70,8 @@ internal static class ExcuseApproveEndpoints
         }
         catch (DbUpdateConcurrencyException)
         {
-            return ApiProblems.Conflict(ProblemCodes.concurrency_conflict);
+            // The excuse version moved (another decision won it) or a teacher saved a covered session meanwhile: nothing was changed, ask again.
+            return ApiProblems.Conflict(ProblemCodes.excuse_not_pending);
         }
 
         await ExcuseReviewEndpoints.NotifyAsync(db, excuse, (s, e) => notifier.DecidedAsync(e, s, ct), ct);

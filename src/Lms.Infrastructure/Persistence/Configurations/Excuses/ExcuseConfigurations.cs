@@ -19,6 +19,7 @@ internal sealed class AbsenceExcuseConfiguration : IEntityTypeConfiguration<Abse
         builder.Property(x => x.Status).HasMaxLength(20).IsRequired();
         builder.Property(x => x.DecisionComment).HasMaxLength(500);
         builder.Property(x => x.EscalationComment).HasMaxLength(500);
+        builder.Property(x => x.Version).IsConcurrencyToken();
         builder.HasOne<StudentProfile>().WithMany().HasForeignKey(x => x.StudentProfileId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<StoredFile>().WithMany().HasForeignKey(x => x.AttachmentFileId).OnDelete(DeleteBehavior.Restrict);
         builder.HasIndex(x => new { x.OrganizationId, x.OrgUnitPath, x.Status });

@@ -2681,6 +2681,10 @@ namespace Lms.Infrastructure.Persistence.Migrations
                     b.Property<Guid?>("UpdatedBy")
                         .HasColumnType("char(36)");
 
+                    b.Property<int>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AttachmentFileId");

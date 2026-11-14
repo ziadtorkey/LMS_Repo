@@ -48,6 +48,40 @@ public sealed class ExcusePolicyTests
         string reason, bool attachment, DateOnly from, DateOnly to, DateOnly today, DateOnly[] absences, IClientCalendar? calendar = null) =>
         ExcusePolicy.EvaluateAsync(Rules, reason, attachment, from, to, today, absences, Unit, calendar ?? new WeekCalendar());
 
+    private sealed class CountingCalendar : IClientCalendar
+    {
+        public int Calls { get; private set; }
+
+        public Task<int> SchoolDaysBetweenAsync(Guid orgUnitId, DateOnly after, DateOnly through, CancellationToken cancellationToken)
+        {
+            Calls++;
+            throw new InvalidOperationException("No school day found within the look-ahead limit.");
+        }
+
+        public Task<TimeZoneInfo> GetTimeZoneAsync(Guid organizationId, CancellationToken cancellationToken) => throw new NotSupportedException();
+
+        public Task<DateOnly> LocalTodayAsync(Guid organizationId, CancellationToken cancellationToken) => throw new NotSupportedException();
+
+        public Task<DateOnly> LocalDateAsync(Guid organizationId, DateTime instantUtc, CancellationToken cancellationToken) => throw new NotSupportedException();
+
+        public Task<bool> IsWorkingDayAsync(Guid orgUnitId, DateOnly date, CancellationToken cancellationToken) => throw new NotSupportedException();
+
+        public Task<bool> IsHolidayAsync(Guid orgUnitId, DateOnly date, CancellationToken cancellationToken) => throw new NotSupportedException();
+
+        public Task<DateOnly> AddSchoolDaysAsync(Guid orgUnitId, DateOnly from, int schoolDays, CancellationToken cancellationToken) => throw new NotSupportedException();
+    }
+
+    [Fact]
+    public async Task An_absence_older_than_the_look_back_is_too_late_without_asking_the_calendar()
+    {
+        var calendar = new CountingCalendar(); // it would throw (the real one cannot count beyond a year)
+        var old = Thursday.AddDays(-(ExcusePolicy.MaxLookBackDays + 5));
+
+        var result = await CheckAsync("Family", false, old, Thursday, Thursday, [old], calendar);
+
+        Assert.Equal((ExcuseViolation.TooLate, 0), (result.Violation, calendar.Calls));
+    }
+
     [Fact]
     public async Task An_absence_inside_the_deadline_is_coverable()
     {

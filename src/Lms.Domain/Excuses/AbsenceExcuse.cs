@@ -30,6 +30,7 @@ public sealed class AbsenceExcuse : UnitOwnedEntity
         AttachmentFileId = attachmentFileId;
         Status = ExcuseStatus.Submitted;
         SubmittedAtUtc = nowUtc;
+        Version = 1;
     }
 
     public Guid StudentProfileId { get; private set; }
@@ -69,6 +70,9 @@ public sealed class AbsenceExcuse : UnitOwnedEntity
 
     public DateTime? DecidedAtUtc { get; private set; }
 
+    /// <summary>The row version, a concurrency token: every status change moves it, so approve, reject, escalate and withdraw cannot all win the same excuse.</summary>
+    public int Version { get; private set; }
+
     /// <summary>The submitter withdraws it while it is still <c>Submitted</c>.</summary>
     public void Withdraw(Guid byUserId, DateTime nowUtc)
     {
@@ -79,6 +83,7 @@ public sealed class AbsenceExcuse : UnitOwnedEntity
 
         Status = ExcuseStateMachine.Apply(Status, ExcuseAction.Withdraw);
         DecidedAtUtc = nowUtc;
+        Version++;
     }
 
     /// <summary>A reviewer rejects it (a comment is required); the covered records stay Absent.</summary>
@@ -89,6 +94,7 @@ public sealed class AbsenceExcuse : UnitOwnedEntity
         ReviewerUserId = reviewerUserId;
         DecisionComment = comment;
         DecidedAtUtc = nowUtc;
+        Version++;
     }
 
     /// <summary>
@@ -101,6 +107,7 @@ public sealed class AbsenceExcuse : UnitOwnedEntity
         ReviewerUserId = reviewerUserId;
         DecisionComment = comment;
         DecidedAtUtc = nowUtc;
+        Version++;
     }
 
     /// <summary>A counselor hands it to another staff member (L14); the target is validated by the caller.</summary>
@@ -112,6 +119,7 @@ public sealed class AbsenceExcuse : UnitOwnedEntity
         EscalatedByUserId = reviewerUserId;
         EscalatedAtUtc = nowUtc;
         EscalationComment = comment;
+        Version++;
     }
 
     private void EnsureMayReview(Guid reviewerUserId)

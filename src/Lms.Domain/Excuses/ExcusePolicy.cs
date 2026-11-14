@@ -28,6 +28,9 @@ public sealed record ExcusePolicyResult(string? Violation, IReadOnlyList<DateOnl
 /// </summary>
 public static class ExcusePolicy
 {
+    /// <summary>The oldest absence (in calendar days) the policy looks at; the calendar counts school days only inside a year.</summary>
+    public const int MaxLookBackDays = 365;
+
     public static async Task<ExcusePolicyResult> EvaluateAsync(
         ExcuseRules rules, string reason, bool hasAttachment, DateOnly from, DateOnly to, DateOnly today,
         IReadOnlyCollection<DateOnly> absenceDates, Guid orgUnitId, IClientCalendar calendar, CancellationToken ct = default)
@@ -56,6 +59,12 @@ public static class ExcusePolicy
         var inTime = new List<DateOnly>();
         foreach (var date in inRange)
         {
+            // Older than the calendar can count (a year) is plainly too late; the calendar is not asked, so no 500 and no unbounded scan.
+            if (today.DayNumber - date.DayNumber > MaxLookBackDays)
+            {
+                continue;
+            }
+
             if (await calendar.SchoolDaysBetweenAsync(orgUnitId, date, today, ct) <= rules.MaxDaysAfterAbsence)
             {
                 inTime.Add(date);

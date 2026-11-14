@@ -24,6 +24,8 @@ public sealed partial class GuardianAccessGuardTests
             "the guardian users of a student marked Absent or Late are the recipients of Attendance.Absent; only user ids leave, through the notification publisher (M5 Task 17)",
         ["src/Lms.Api/Features/Guardians/GuardianPortalEndpoints.cs"] =
             "my children: the signed-in user's own guardian profile (by their user id, client filter of the table); children come from StudentGuardian in the caller's scope (M3 Task 25, #233)",
+        ["src/Lms.Api/Features/Excuses/ExcuseSubmitEndpoints.cs"] =
+            "my excuses lists what the caller submitted only while they are still linked to the child: the signed-in user own guardian profile (by user id) and an active StudentGuardian link; only the student ids of the caller own links are used inside the query (M5 Task 19, L21)",
         ["src/Lms.Infrastructure/Excuses/ExcuseSubmissionService.cs"] =
             "a guardian submits and reads excuses for their own children only: the signed-in user own guardian profile (by user id, client filter of the table) and an active StudentGuardian link to the student; nothing else of the link leaves (M5 Task 19, L21)",
         ["src/Lms.Api/Features/Timetable/TimetableViewEndpoints.cs"] =
