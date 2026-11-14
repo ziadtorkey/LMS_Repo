@@ -177,6 +177,30 @@ html[data-theme="dark"] .mud-button-outlined { border-color: #334155; }
     .lms-appbar .lms-context-label.mud-button-root { padding-inline: 8px; }
 }
 
+/* ---------- Card headers with icon and subtitle; unit settings (issue 563) ---------- */
+.lms-section-head { justify-content: flex-start; }
+.lms-section-head-text { flex: 1 1 auto; min-inline-size: 0; }
+.lms-section-subtitle.mud-typography { color: var(--mud-palette-text-secondary); margin-block-start: 2px; }
+.lms-section-actions { margin-inline-start: auto; }
+.lms-tabs.lms-tabs-standalone .mud-tabs-tabbar { margin: 0 0 20px; }
+.lms-tabs.lms-tabs-standalone .mud-tabs-panels.lms-tab-panels { padding: 0; background: transparent; }
+.lms-card-grid { display: grid; grid-template-columns: 1fr; gap: 20px; align-items: start; }
+@media (min-width: 1100px) { .lms-card-grid { grid-template-columns: 1fr 1fr; } }
+.lms-card-grid > .lms-section + .lms-section { margin-block-start: 0; }
+.lms-narrow-card { max-inline-size: 720px; }
+/* A setting toggle as a soft panel: the label at the start, the switch at the end, a one-line explanation under it. */
+.lms-toggle-row { padding: 12px 14px; border-radius: var(--lms-radius-control); background: var(--lms-recessed); }
+.lms-toggle-row + .lms-toggle-row, .lms-toggle-row + * { margin-block-start: 12px; }
+.lms-toggle-row .mud-switch { display: flex; justify-content: space-between; inline-size: 100%; margin: 0; }
+.lms-toggle-row .mud-switch .mud-typography { font-weight: 500; }
+.lms-toggle-help.mud-typography { display: block; color: var(--mud-palette-text-secondary); margin-block-start: 2px; }
+
+/* ---------- Unit settings: settings and policies (issue 564) ---------- */
+.lms-section .lms-setting-row { padding: 12px 14px; border: 0; border-radius: var(--lms-radius-control); background: var(--lms-recessed); }
+.lms-section .lms-setting-row + .lms-setting-row { margin-block-start: 12px; }
+.lms-section .lms-setting-name.mud-typography { font-weight: 500; }
+.lms-save-bar-info::before { background: var(--mud-palette-primary); }
+
 /* ---------- Collapsible icon rail (issue 561): from 960 px the sidebar can shrink to the theme's 72 px mini width ---------- */
 .lms-drawer .mud-navmenu { flex: 1 1 auto; }
 .lms-drawer .lms-nav-tip { display: block; }
