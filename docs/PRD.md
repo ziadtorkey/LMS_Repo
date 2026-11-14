@@ -379,6 +379,8 @@ All tenant-owned tables: `OrganizationId`; unit-scoped tables: `OrgUnitId`, `Org
 | D71 | Communication retention | Plan defaults accepted, pending legal advice: deliveries 90 days; messages the school year + 1 year; report context and removed originals 180 days; each client may shorten. Owner decision 2026-11-14 (M6 plan O2). |
 | D72 | SMS and minors | No SMS about minors: SMS goes only to adults about themselves; guardians receive news about their children by email and push. Consent wording (ar/en) drafted by the Lead for owner review before go-live. Owner decision 2026-11-14 (M6 plan O3). |
 | D73 | Provider data region | Prefer in-Kingdom or GCC processing for the email relay, SMS gateway and push services where offered; otherwise any region, since bodies hold no student data (D66). Owner decision 2026-11-14 (M6 plan O5). |
+| D74 | Class groups read-only for students | In class-course groups only the teacher (and staff) post; students read and reply privately to the teacher. D69 "never message other students" means never, including group posts. Owner decision 2026-11-14. |
+| D75 | No SMS to guardians | Guardians never receive SMS, not even urgent school-wide announcements; they get email and push. SMS is only for adult accounts about themselves (D72). Owner decision 2026-11-14. |
 
 ---
 
