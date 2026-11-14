@@ -123,3 +123,12 @@
     .lms-player-bar { justify-content: flex-end; }
     .lms-player-bar .lms-save-state { margin-inline-end: auto; white-space: normal; min-inline-size: 0; font-size: .75rem; }
 }
+
+/* Stat tiles on phones: two per row and compact, so the row is not a tall stack above the content. */
+.lms-stat-sub { font-size: .75rem; margin-block-start: 2px; }
+@media (max-width: 599.98px) {
+    .lms-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-block-end: 16px; }
+    .lms-stat { padding: 10px 12px; gap: 8px; }
+    .lms-stat-value { font-size: 1.25rem; }
+    .lms-stat-icon { inline-size: 32px; block-size: 32px; border-radius: 8px; }
+}

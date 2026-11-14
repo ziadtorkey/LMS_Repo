@@ -1513,6 +1513,7 @@
   <data name="Years_StatDays" xml:space="preserve"><value>Days in the year</value></data>
   <data name="Years_StatTerms" xml:space="preserve"><value>Terms</value></data>
   <data name="Years_StatLeft" xml:space="preserve"><value>Days left</value></data>
+  <data name="Years_StatCurrentTerm" xml:space="preserve"><value>Current term</value></data>
   <data name="Assignment_AllowFiles" xml:space="preserve"><value>Allow file uploads</value></data>
   <data name="Assignment_AllowText" xml:space="preserve"><value>Allow written text</value></data>
   <data name="Assignment_Attachments" xml:space="preserve"><value>Attachments</value></data>

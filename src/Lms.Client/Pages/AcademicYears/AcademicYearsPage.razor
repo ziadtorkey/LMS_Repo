@@ -102,14 +102,16 @@ else
                     </div>
                     <span class="lms-stat-icon" aria-hidden="true"><MudIcon Icon="@Icons.Material.Rounded.ViewTimeline" /></span>
                 </div>
-                @if (head.Status == AcademicYearStatuses.Active)
+                @* The term the server judges current (no clock here: the browser's date is not the school's). *@
+                @if (head.Terms.FirstOrDefault(t => t.IsCurrent) is { } current)
                 {
-                    <div class="lms-stat" data-testid="stat-left">
+                    <div class="lms-stat" data-testid="stat-term">
                         <div>
-                            <div class="lms-stat-label">@L["Years_StatLeft"]</div>
-                            <div class="lms-stat-value">@Math.Max(0, head.EndDate.DayNumber - DateOnly.FromDateTime(DateTime.UtcNow).DayNumber)</div>
+                            <div class="lms-stat-label">@L["Years_StatCurrentTerm"]</div>
+                            <div class="lms-stat-value lms-stat-text">@CultureText.Pick(current.NameAr, current.NameEn)</div>
+                            <div class="lms-muted lms-stat-sub" dir="ltr">@current.StartDate.ToString("yyyy-MM-dd") – @current.EndDate.ToString("yyyy-MM-dd")</div>
                         </div>
-                        <span class="lms-stat-icon" aria-hidden="true"><MudIcon Icon="@Icons.Material.Rounded.HourglassBottom" /></span>
+                        <span class="lms-stat-icon" aria-hidden="true"><MudIcon Icon="@Icons.Material.Rounded.EventAvailable" /></span>
                     </div>
                 }
             </div>
