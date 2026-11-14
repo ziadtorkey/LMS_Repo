@@ -393,3 +393,12 @@ Findings from writing them: the substitute (any Teacher) can read the class time
 | F9 (#744) | low | #661: a teacher's take accepts `Excused` directly (bypasses the excuse flow); decide with Task 19 |
 | F10 (#745) | low | #656: guardian recipients when `Features.GuardianPortal` is turned off after activation; `Org.TimeZone` unknown-id write validation (row 8.5) |
 | F11 (#755) | low | Every teacher of the school can read the staff `Note` of a timetable exception (`Timetable.View`); found by the substitute attack tests |
+
+## 11. Rows that re-open, and carry-over to M6
+
+| Rows | Re-opened by |
+|---|---|
+| 4.12 (substitute caller probe rows), 8.1 (route/permission oracle, M5 matrix) | #624 (`qa/m5-probe-suite`, QA3): it adds the relationship probes and the M5 matrix and turns its pending rows live as each route merges |
+| 5.12 (copy-term / copy-from), 5.13 (timetable export) | the Task 14 part 2 PR (BE), not opened yet; it follows #643 (part 1). The review of that PR must run both rows and the `SpreadsheetCell.Safe` check of section 2 |
+
+M6 security checklist: F1 (#736, `Cache-Control: private, no-store` on authenticated API responses) applies to every M6 read of personal data (messages, conversation lists, announcement feeds, attachment URLs, notification preferences). Link #736 from the M6 checklist and verify it there once the middleware lands.
