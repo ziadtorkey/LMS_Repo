@@ -1861,6 +1861,10 @@
   <data name="AuditEntity_TimetableSlot" xml:space="preserve"><value>حصة الجدول</value></data>
   <data name="AuditEntity_TimetableException" xml:space="preserve"><value>استثناء الجدول</value></data>
   <data name="PermModule_Timetable" xml:space="preserve"><value>الجدول الدراسي</value></data>
+  <data name="ClassCourse_TabGradebook" xml:space="preserve"><value>دفتر الدرجات</value></data>
+  <data name="Grd_Title" xml:space="preserve"><value>دفتر الدرجات</value></data>
+  <data name="Grd_GridSoonTitle" xml:space="preserve"><value>جدول الدرجات قادم قريبًا</value></data>
+  <data name="Grd_GridSoonText" xml:space="preserve"><value>ستظهر هنا فئات الدرجات وبنودها ودرجات هذا المقرر الدراسي.</value></data>
   <data name="NavSection_Structure" xml:space="preserve"><value>الهيكل</value></data>
   <data name="NavSection_People" xml:space="preserve"><value>الأشخاص</value></data>
   <data name="NavSection_Academic" xml:space="preserve"><value>الأكاديمي</value></data>
