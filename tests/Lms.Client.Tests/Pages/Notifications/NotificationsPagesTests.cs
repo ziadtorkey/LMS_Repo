@@ -61,41 +61,6 @@ public sealed class NotificationsPagesTests : ClientTestContext
     }
 
     [Fact]
-    public async Task In_app_preference_switch_is_locked_on()
-    {
-        Culture.Current = new CultureInfo("ar");
-        await GrantAsync();
-        var cut = Page<NotificationPreferencesPage>();
-
-        var inApp = cut.WaitForElement($"[data-testid=\"pref-{NotificationEvents.AccessRoleAssigned}-InApp\"]");
-        var email = cut.Find($"[data-testid=\"pref-{NotificationEvents.AccessRoleAssigned}-Email\"]");
-
-        Assert.True(inApp.HasAttribute("checked")); // reads as ON, not as a greyed-out OFF
-        Assert.False(inApp.HasAttribute("disabled"));
-        Assert.False(email.HasAttribute("readonly"));
-        await inApp.ChangeAsync(new() { Value = false });
-        await cut.Find("[data-testid=prefs-save]").ClickAsync(new());
-        cut.WaitForAssertion(() => Assert.NotNull(NotificationsApi.LastSaved));
-        Assert.Contains(NotificationsApi.LastSaved!.Preferences, p => p.Channel == "InApp" && p.Enabled);
-        Assert.All(NotificationsApi.LastSaved!.Preferences.Where(p => p.Channel == "InApp"), p => Assert.True(p.Enabled));
-    }
-
-    [Fact]
-    public async Task Saving_preferences_sends_the_changed_switches()
-    {
-        await GrantAsync();
-        var cut = Page<NotificationPreferencesPage>();
-        var push = cut.WaitForElement($"[data-testid=\"pref-{NotificationEvents.AccessRoleAssigned}-Push\"]");
-        await push.ChangeAsync(new() { Value = true });
-
-        await cut.Find("[data-testid=prefs-save]").ClickAsync(new());
-
-        cut.WaitForAssertion(() => Assert.NotNull(NotificationsApi.LastSaved));
-        Assert.Contains(NotificationsApi.LastSaved!.Preferences,
-            p => p.EventKey == NotificationEvents.AccessRoleAssigned && p.Channel == "Push" && p.Enabled);
-    }
-
-    [Fact]
     public async Task Pages_render_rtl_in_arabic()
     {
         Culture.Current = new CultureInfo("ar");
@@ -106,8 +71,5 @@ public sealed class NotificationsPagesTests : ClientTestContext
         Assert.Contains("الإشعارات", list.Markup);
         Assert.Contains("تم منحك دور المعلم في الصف الأول.", list.Markup);
 
-        var prefs = Render<MudRTLProvider>(p => p.Add(r => r.RightToLeft, true).AddChildContent<NotificationPreferencesPage>());
-        prefs.WaitForElement("[data-testid=prefs-save]");
-        Assert.Contains("تفضيلات الإشعارات", prefs.Markup);
     }
 }

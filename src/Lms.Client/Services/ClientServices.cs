@@ -75,6 +75,7 @@ public static class ClientServices
             services.AddSingleton<Lms.Client.Services.Messaging.IMessagingApi, Lms.Client.Services.Messaging.FakeMessagingApi>();
             services.AddSingleton<Lms.Client.Services.Messaging.IAnnouncementsApi, Lms.Client.Services.Messaging.FakeAnnouncementsApi>();
             services.AddSingleton<Lms.Client.Services.Messaging.ICommsApi, Lms.Client.Services.Messaging.FakeCommsApi>();
+            services.AddSingleton<Lms.Client.Services.Messaging.IPushDevice, Lms.Client.Services.Messaging.FakePushDevice>();
             services.AddScoped<AuthenticationStateProvider, FakeAuthenticationStateProvider>();
             services.AddAuthorizationCore();
             return;
@@ -134,5 +135,6 @@ public static class ClientServices
         services.AddScoped<Lms.Client.Services.Messaging.IMessagingApi, Lms.Client.Services.Messaging.MessagingApi>();
         services.AddScoped<Lms.Client.Services.Messaging.IAnnouncementsApi, Lms.Client.Services.Messaging.AnnouncementsApi>();
         services.AddScoped<Lms.Client.Services.Messaging.ICommsApi, Lms.Client.Services.Messaging.CommsApi>();
+        services.AddScoped<Lms.Client.Services.Messaging.IPushDevice, Lms.Client.Services.Messaging.PushDevice>();
     }
 }

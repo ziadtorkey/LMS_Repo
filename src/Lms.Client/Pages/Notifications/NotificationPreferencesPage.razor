@@ -1,11 +1,19 @@
 @page "/notifications/preferences"
 @attribute [Authorize]
+@using Lms.Client.Components.Messaging
 @using Lms.Client.Services.Api
+@using Lms.Client.Services.Messaging
+@using Lms.Shared
+@using Lms.Shared.Messaging
 @using Lms.Shared.Notifications
-@inject INotificationsApi Api
+@inject ICommsApi Api
+@inject IPushDevice Push
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 
+@* Channels and preferences (M6 Task 26, FR-NOT-01, FR-NOT-03, D66, D76): events by channel (in-app, email, push; there is no SMS), the effective value and where
+   it comes from, mandatory events locked, a channel that is off or has no contact disabled with its reason, push on this browser (asked only after a click, with
+   the consent sentence the first time), a test email and the push devices. Changes are saved together from the save bar. *@
 <PageTitle>@L["Notif_Preferences"]</PageTitle>
 <MudLink Href="notifications" Typo="Typo.body2" Class="lms-back-link" data-testid="prefs-back">
     <MudIcon Icon="@Icons.Material.Rounded.ArrowBack" Size="Size.Small" Class="lms-icon-flip" aria-hidden="true" />
@@ -22,8 +30,7 @@ else if (_failed)
     <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="api-error">
         <div class="d-flex align-center flex-wrap gap-2">
             <span>@L["Api_Error"]</span>
-            <MudButton Variant="Variant.Outlined" Size="Size.Small" Color="Color.Error" StartIcon="@Icons.Material.Rounded.Refresh"
-                       OnClick="LoadAsync">@L["Common_Retry"]</MudButton>
+            <MudButton Variant="Variant.Outlined" Size="Size.Small" Color="Color.Error" StartIcon="@Icons.Material.Rounded.Refresh" OnClick="LoadAsync">@L["Common_Retry"]</MudButton>
         </div>
     </MudAlert>
 }
@@ -31,96 +38,238 @@ else
 {
     @if (_error is not null)
     {
-        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-4" data-testid="prefs-error">@_error</MudAlert>
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-3" data-testid="prefs-error">@_error</MudAlert>
     }
-    <SectionCard Flush="true">
-        <div class="lms-prefs-legend">
-            <MudIcon Icon="@Icons.Material.Rounded.Lock" Size="Size.Small" aria-hidden="true" />
-            <span>@L["Notif_LockedHint"]</span>
-        </div>
-        <MudSimpleTable Dense="true" Elevation="0" Class="lms-simple-table lms-stack-table lms-prefs-table">
-            <thead>
-                <tr>
-                    <th>@L["Notif_Event"]</th>
-                    @foreach (var channel in NotificationChannels.All)
-                    {
-                        <th class="lms-prefs-channel">@L[$"Channel_{channel}"]</th>
-                    }
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var ev in _events)
-                {
-                    var key = ev;
-                    <tr>
-                        <td class="lms-cell-strong lms-prefs-event">@L[NotificationText.EventLabelKey(key)]</td>
-                        @foreach (var channel in NotificationChannels.All)
-                        {
-                            var c = channel;
-                            var pref = Find(key, c);
-                            <td data-label="@L[$"Channel_{c}"]" class="lms-prefs-channel">
-                                <span class="lms-prefs-switch">
-                                    <MudSwitch T="bool" Value="pref?.Enabled ?? false" ValueChanged="v => Toggle(key, c, v)" Color="@(pref?.Locked == true ? Color.Success : Color.Primary)"
-                                               ReadOnly="@(pref?.Locked == true)" Disabled="@(pref is null)"
-                                               aria-label="@($"{L[NotificationText.EventLabelKey(key)]} – {L[$"Channel_{c}"]}")"
-                                               data-testid="@($"pref-{key}-{c}")" />
-                                    @if (pref?.Locked == true)
-                                    {
-                                        <MudIcon Icon="@Icons.Material.Rounded.Lock" Size="Size.Small" Class="lms-muted" aria-hidden="true" />
-                                    }
-                                </span>
-                            </td>
-                        }
-                    </tr>
-                }
-            </tbody>
-        </MudSimpleTable>
-    </SectionCard>
-    <div class="lms-prefs-footer">
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_saving"
-                   StartIcon="@(_saving ? null : Icons.Material.Rounded.Check)" data-testid="prefs-save">
-            @if (_saving)
-            {
-                <MudProgressCircular Indeterminate="true" Size="Size.Small" Class="me-2" aria-hidden="true" />
-            }
-            @L["Common_Save"]
-        </MudButton>
+    @if (EmailChannel is { State: ChannelStates.Bounced })
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mb-3" data-testid="prefs-email-bounced">@L["PrefsPage_EmailBounced"]</MudAlert>
+    }
+
+    <div class="mb-3">
+        <PushPermissionAlert State="_push" OnTurnOn="TurnOnAsync" Busy="_busy" />
+        @if (_consentOpen)
+        {
+            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mt-2" data-testid="push-consent">
+                <div>@L["PrefsPage_PushConsent"]</div>
+                <div class="d-flex gap-2 mt-2">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" OnClick="AgreeAsync" Disabled="_busy" data-testid="push-consent-agree">@L["PrefsPage_PushAgree"]</MudButton>
+                    <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="() => _consentOpen = false" data-testid="push-consent-cancel">@L["Common_Cancel"]</MudButton>
+                </div>
+            </MudAlert>
+        }
+        @if (_push == PushState.Unsupported)
+        {
+            <MudText Typo="Typo.body2" Class="lms-muted mt-2" data-testid="push-unsupported">@L["Prefs_PushUnsupported"]</MudText>
+        }
     </div>
+
+    <SectionCard Flush="true">
+        <ChannelPreferences Columns="Columns()" Rows="_rows" OnChanged="Changed" />
+    </SectionCard>
+
+    <details class="lms-prefs-sources mt-3" data-testid="prefs-sources">
+        <summary>@L["PrefsPage_Sources"]</summary>
+        <ul class="lms-item-list">
+            @foreach (var p in _original.Where(p => p.Source != PreferenceSources.Default))
+            {
+                <li class="lms-item" data-testid="@($"prefs-source-{p.EventKey}-{p.Channel}")">
+                    @L[NotificationText.EventLabelKey(p.EventKey)] · @L[$"Prefs_Channel_{p.Channel}"]: @L[$"PrefsPage_Source_{p.Source}"]
+                </li>
+            }
+        </ul>
+    </details>
+
+    <SectionCard Title="@L["PrefsPage_Email"]">
+        <div class="d-flex align-center flex-wrap gap-2">
+            <MudButton Variant="Variant.Outlined" Size="Size.Small" OnClick="TestEmailAsync" Disabled="_busy || EmailChannel is not { State: ChannelStates.Active }" data-testid="prefs-test-email">@L["PrefsPage_TestEmail"]</MudButton>
+            @if (_testResult is not null)
+            {
+                <span role="status" data-testid="prefs-test-result">@_testResult</span>
+            }
+        </div>
+    </SectionCard>
+
+    @if (_devices.Count > 0)
+    {
+        <SectionCard Title="@L["PrefsPage_Devices"]">
+            <ul class="lms-item-list" data-testid="prefs-devices">
+                @foreach (var d in _devices)
+                {
+                    var device = d;
+                    <li class="lms-item" data-testid="@($"prefs-device-{device.Id}")">
+                        <span>@device.DeviceLabel</span>
+                        <MudButton Size="Size.Small" Color="Color.Warning" OnClick="() => RemoveDeviceAsync(device.Id)" data-testid="@($"prefs-device-remove-{device.Id}")">@L["Common_Delete"]</MudButton>
+                    </li>
+                }
+            </ul>
+        </SectionCard>
+    }
+
+    @if (_dirty)
+    {
+        <div class="lms-save-bar" role="region" aria-label="@L["Common_UnsavedChanges"]" data-testid="prefs-bar">
+            <span class="lms-save-bar-text">@L["Common_UnsavedChanges"]</span>
+            <MudButton Variant="Variant.Text" OnClick="LoadAsync" Disabled="_saving" data-testid="prefs-discard">@L["Common_Discard"]</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_saving" data-testid="prefs-save">@L["Common_Save"]</MudButton>
+        </div>
+    }
 }
 
 @code {
-    private List<NotificationPreferenceDto> _prefs = [];
-    private List<string> _events = [];
-    private bool _loading = true, _failed, _saving;
-    private string? _error;
+    private static readonly NotificationChannel[] Shown = [NotificationChannel.InApp, NotificationChannel.Email, NotificationChannel.Push]; // D76: no SMS
+
+    private List<EffectivePreferenceDto> _original = [];
+    private readonly List<PreferenceRow> _rows = [];
+    private IReadOnlyList<ContactChannelDto> _channels = [];
+    private IReadOnlyList<PushSubscriptionDto> _devices = [];
+    private PushState _push = PushState.Unsupported;
+    private string? _error, _testResult;
+    private bool _loading = true, _failed, _saving, _dirty, _busy, _consentOpen;
+
+    private ContactChannelDto? EmailChannel => _channels.FirstOrDefault(c => c.Channel == NotificationChannels.Email);
 
     protected override Task OnInitializedAsync() => LoadAsync();
 
     private async Task LoadAsync()
     {
-        _loading = true; _failed = false;
-        var (prefs, failed) = await ApiCalls.RunAsync(() => Api.GetPreferencesAsync(), Navigation);
-        _failed = failed;
-        _prefs = [.. prefs ?? []];
-        _events = _prefs.Select(p => p.EventKey).Distinct(StringComparer.Ordinal).ToList();
+        _loading = true;
+        _failed = false;
+        _error = null;
+        var ok = await ApiCalls.RunAsync(async () =>
+        {
+            _original = [.. (await Api.GetEffectivePreferencesAsync()).Where(p => NotificationChannels.All.Contains(p.Channel))];
+            _channels = await Api.GetChannelsAsync();
+            _devices = await Api.GetPushSubscriptionsAsync();
+            _push = await Push.GetStateAsync();
+        }, Navigation, L, _ => _failed = true);
+        _failed = !ok;
+        BuildRows();
+        _dirty = false;
         _loading = false;
     }
 
-    private NotificationPreferenceDto? Find(string eventKey, string channel) =>
-        _prefs.FirstOrDefault(p => p.EventKey == eventKey && p.Channel == channel);
-
-    private void Toggle(string eventKey, string channel, bool on)
+    private void BuildRows()
     {
-        var i = _prefs.FindIndex(p => p.EventKey == eventKey && p.Channel == channel);
-        if (i >= 0 && !_prefs[i].Locked) _prefs[i] = _prefs[i] with { Enabled = on };
+        _rows.Clear();
+        foreach (var group in _original.GroupBy(p => p.EventKey))
+        {
+            var row = new PreferenceRow { Key = group.Key, Label = L[NotificationText.EventLabelKey(group.Key)] };
+            foreach (var p in group)
+            {
+                if (!Enum.TryParse<NotificationChannel>(p.Channel, out var channel) || !Shown.Contains(channel)) continue;
+                row.On[channel] = p.Enabled;
+                if (p.Mandatory) row.Locked.Add(channel);
+            }
+
+            _rows.Add(row);
+        }
+    }
+
+    private IReadOnlyList<ChannelColumn> Columns()
+    {
+        var email = EmailChannel;
+        var emailColumn = email is { State: ChannelStates.Active }
+            ? new ChannelColumn(NotificationChannel.Email, email.MaskedAddress ?? string.Empty)
+            : new ChannelColumn(NotificationChannel.Email, string.Empty, false, email?.State switch
+            {
+                ChannelStates.Bounced => L["PrefsPage_EmailBouncedShort"],
+                ChannelStates.Blocked => L["PrefsPage_EmailBlocked"],
+                _ => L["PrefsPage_NoEmail"],
+            }, "me/profile");
+        var pushColumn = _push switch
+        {
+            PushState.On => new ChannelColumn(NotificationChannel.Push, L["PrefsPage_PushOnHere"]),
+            PushState.Unsupported => new ChannelColumn(NotificationChannel.Push, string.Empty, false, L["Prefs_PushUnsupported"]),
+            PushState.Denied => new ChannelColumn(NotificationChannel.Push, string.Empty, false, L["Prefs_PushDenied"]),
+            _ => new ChannelColumn(NotificationChannel.Push, string.Empty, false, L["PrefsPage_PushOffHere"]),
+        };
+        return [new ChannelColumn(NotificationChannel.InApp, L["PrefsPage_AlwaysOn"]), emailColumn, pushColumn];
+    }
+
+    private void Changed()
+    {
+        _dirty = _original.Any(p => Enum.TryParse<NotificationChannel>(p.Channel, out var c) && Shown.Contains(c)
+            && _rows.First(r => r.Key == p.EventKey).On.GetValueOrDefault(c) != p.Enabled && c != NotificationChannel.InApp);
     }
 
     private async Task SaveAsync()
     {
-        _saving = true; _error = null;
-        var saved = await ApiCalls.RunAsync(() => Api.SavePreferencesAsync(new SetNotificationPreferencesRequest(_prefs)),
-            Navigation, L, m => _error = m);
+        _saving = true;
+        _error = null;
+        var changes = new List<SavePreferenceRequest>();
+        foreach (var p in _original)
+        {
+            if (!Enum.TryParse<NotificationChannel>(p.Channel, out var c) || c == NotificationChannel.InApp || !Shown.Contains(c)) continue;
+            var now = _rows.First(r => r.Key == p.EventKey).On.GetValueOrDefault(c);
+            if (now != p.Enabled) changes.Add(new SavePreferenceRequest(p.EventKey, p.Channel, now));
+        }
+
+        var saved = await ApiCalls.RunAsync(() => Api.SavePreferencesAsync(new SavePreferencesRequest(changes)), Navigation, L, m => _error = m);
         _saving = false;
-        if (saved) Snackbar.Add(L["Common_Saved"], Severity.Success);
+        if (!saved) return; // the refusal (a mandatory event) is shown and the switches stay as they are
+        Snackbar.Add(L["Common_Saved"], Severity.Success);
+        await LoadAsync();
+    }
+
+    private async Task TurnOnAsync()
+    {
+        if (!await Push.HasConsentAsync())
+        {
+            _consentOpen = true; // the first time: the consent sentence before the browser prompt
+            return;
+        }
+
+        await SubscribeAsync();
+    }
+
+    private async Task AgreeAsync()
+    {
+        await Push.RecordConsentAsync();
+        _consentOpen = false;
+        await SubscribeAsync();
+    }
+
+    private async Task SubscribeAsync()
+    {
+        _busy = true;
+        _error = null;
+        var registration = await Push.SubscribeAsync(); // this is the only place the browser is asked, and it is reached from a click
+        if (registration is not null)
+        {
+            await ApiCalls.RunAsync(() => Api.AddPushSubscriptionAsync(registration), Navigation, L, m => _error = m);
+        }
+
+        _push = await Push.GetStateAsync();
+        await ApiCalls.RunAsync(async () => _devices = await Api.GetPushSubscriptionsAsync(), Navigation, L, _ => { });
+        _busy = false;
+    }
+
+    private async Task RemoveDeviceAsync(Guid id)
+    {
+        await ApiCalls.RunAsync(() => Api.RemovePushSubscriptionAsync(id), Navigation, L, m => _error = m);
+        _devices = await Api.GetPushSubscriptionsAsync();
+        await Push.UnsubscribeAsync();
+        _push = await Push.GetStateAsync();
+    }
+
+    private async Task TestEmailAsync()
+    {
+        _busy = true;
+        _testResult = null;
+        try
+        {
+            var result = await Api.SendTestEmailAsync();
+            _testResult = result.Accepted ? L["PrefsPage_TestSent"] : L["PrefsPage_TestFailed"];
+        }
+        catch (ApiProblemException ex) when (ex.Status == 429 || ex.Code == ProblemCodes.rate_limited)
+        {
+            _testResult = string.Format(L["PrefsPage_TestLimit"].Value, MessagingLimits.EmailTestsPerDay); // three a day
+        }
+        catch (Exception ex) when (ex is ApiProblemException or HttpRequestException)
+        {
+            _testResult = L["Api_Error"];
+        }
+
+        _busy = false;
     }
 }

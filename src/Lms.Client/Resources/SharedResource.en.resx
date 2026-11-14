@@ -391,7 +391,6 @@
   <data name="Notif_Preferences" xml:space="preserve"><value>Notification preferences</value></data>
   <data name="Channel_InApp" xml:space="preserve"><value>In-app</value></data>
   <data name="Channel_Email" xml:space="preserve"><value>Email</value></data>
-  <data name="Channel_Sms" xml:space="preserve"><value>SMS</value></data>
   <data name="Channel_Push" xml:space="preserve"><value>Push</value></data>
   <data name="Notif_Access_RoleAssigned" xml:space="preserve"><value>You were given the role {RoleName} at {OrgUnitName}.</value></data>
   <data name="Notif_Access_RoleRemoved" xml:space="preserve"><value>Your role {RoleName} at {OrgUnitName} was removed.</value></data>
@@ -1790,13 +1789,10 @@
   <data name="PermModule_Announcements" xml:space="preserve"><value>Announcements</value></data>
   <data name="PermModule_Comms" xml:space="preserve"><value>Communication</value></data>
   <data name="Setting_Comms_EmailEnabled" xml:space="preserve"><value>Allow email notices</value></data>
-  <data name="Setting_Comms_SmsEnabled" xml:space="preserve"><value>Allow SMS notices</value></data>
   <data name="Setting_Comms_PushEnabled" xml:space="preserve"><value>Allow push notices</value></data>
   <data name="Setting_Comms_MaxEmailPerDay" xml:space="preserve"><value>Emails per day (client)</value></data>
-  <data name="Setting_Comms_MaxSmsPerDay" xml:space="preserve"><value>SMS per day (client)</value></data>
   <data name="Setting_Comms_MaxPushPerDay" xml:space="preserve"><value>Push notices per day (client)</value></data>
   <data name="Setting_Comms_MaxEmailPerUserPerDay" xml:space="preserve"><value>Emails per person per day</value></data>
-  <data name="Setting_Comms_MaxSmsPerUserPerDay" xml:space="preserve"><value>SMS per person per day</value></data>
   <data name="Setting_Comms_MaxPushPerUserPerDay" xml:space="preserve"><value>Push notices per person per day</value></data>
   <data name="Setting_Comms_QuietHours_Enabled" xml:space="preserve"><value>Quiet hours</value></data>
   <data name="Setting_Comms_QuietHours_Start" xml:space="preserve"><value>Quiet hours start</value></data>
@@ -1955,7 +1951,6 @@
   <data name="Prefs_Event" xml:space="preserve"><value>Event</value></data>
   <data name="Prefs_Channel_InApp" xml:space="preserve"><value>In-app</value></data>
   <data name="Prefs_Channel_Email" xml:space="preserve"><value>Email</value></data>
-  <data name="Prefs_Channel_Sms" xml:space="preserve"><value>SMS</value></data>
   <data name="Prefs_Channel_Push" xml:space="preserve"><value>Push</value></data>
   <data name="Prefs_Fix" xml:space="preserve"><value>Add it in your profile</value></data>
   <data name="Prefs_Locked" xml:space="preserve"><value>Set by your school: can’t be turned off.</value></data>
@@ -2165,6 +2160,25 @@
   <data name="Announce_Targets" xml:space="preserve"><value>Choose</value></data>
   <data name="Announce_TimeMissing" xml:space="preserve"><value>That time does not exist in your time zone (the clocks skip it). Pick another time.</value></data>
   <data name="Nav_Announcements" xml:space="preserve"><value>Announcements</value></data>
+  <data name="PrefsPage_EmailBounced" xml:space="preserve"><value>Emails to your address are bouncing, so email is paused. Update your address in your profile.</value></data>
+  <data name="PrefsPage_PushConsent" xml:space="preserve"><value>Notifications will be sent to this browser even when the site is closed. They carry a short notice only, never message text. You can turn them off here at any time.</value></data>
+  <data name="PrefsPage_PushAgree" xml:space="preserve"><value>Agree and continue</value></data>
+  <data name="PrefsPage_Sources" xml:space="preserve"><value>Where these settings come from</value></data>
+  <data name="PrefsPage_Source_User" xml:space="preserve"><value>set by you</value></data>
+  <data name="PrefsPage_Source_Mandatory" xml:space="preserve"><value>required by your school</value></data>
+  <data name="PrefsPage_Source_Policy" xml:space="preserve"><value>decided by the platform</value></data>
+  <data name="PrefsPage_Email" xml:space="preserve"><value>Email</value></data>
+  <data name="PrefsPage_TestEmail" xml:space="preserve"><value>Send me a test email</value></data>
+  <data name="PrefsPage_TestSent" xml:space="preserve"><value>Test email sent.</value></data>
+  <data name="PrefsPage_TestFailed" xml:space="preserve"><value>The test email could not be sent.</value></data>
+  <data name="PrefsPage_TestLimit" xml:space="preserve"><value>You can send {0} test emails a day. Try again tomorrow.</value></data>
+  <data name="PrefsPage_Devices" xml:space="preserve"><value>Browsers with push</value></data>
+  <data name="PrefsPage_AlwaysOn" xml:space="preserve"><value>Always on</value></data>
+  <data name="PrefsPage_NoEmail" xml:space="preserve"><value>No email address on your profile</value></data>
+  <data name="PrefsPage_EmailBouncedShort" xml:space="preserve"><value>Emails to this address bounced</value></data>
+  <data name="PrefsPage_EmailBlocked" xml:space="preserve"><value>Email is blocked for this address</value></data>
+  <data name="PrefsPage_PushOnHere" xml:space="preserve"><value>This browser: on</value></data>
+  <data name="PrefsPage_PushOffHere" xml:space="preserve"><value>Turn on push for this browser first</value></data>
   <data name="Announce_SourceCourse" xml:space="preserve"><value>Course board</value></data>
   <data name="Announce_SourceSchool" xml:space="preserve"><value>School announcement</value></data>
   <data name="Package_Start" xml:space="preserve"><value>Start</value></data>
