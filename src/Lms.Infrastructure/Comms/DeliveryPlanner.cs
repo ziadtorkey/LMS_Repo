@@ -47,7 +47,8 @@ public sealed class DeliveryPlanner(LmsDbContext db, CommsClientSettings setting
                 // The same function as the preferences page (L10): event default and user choice and client switch and a usable contact.
                 var choice = saved.TryGetValue((userId, channel), out var enabled) ? enabled : (bool?)null;
                 var effective = EffectivePreferences.Resolve(new PreferenceInputs(definition, channel, choice, true, addresses.ContainsKey(userId)));
-                if (!effective.Enabled || !addresses.TryGetValue(userId, out var address))
+                // An urgent announcement reaches people on email and push whatever they chose (the client switch above still applies).
+                if ((!effective.Enabled && !urgent) || !addresses.TryGetValue(userId, out var address))
                 {
                     continue; // switched off, or no contact: no row
                 }

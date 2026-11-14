@@ -219,7 +219,7 @@ public sealed class AnnouncementPublishingTests(LmsApiFactory factory)
 
         var published = await w.ReadAsync<AnnouncementDto>(await w.SendAsync(w.Admin, HttpMethod.Post, Routes.OrgAnnouncementPublish(draft.Id)));
         Assert.NotNull(published.DeliverySummary);
-        Assert.Empty(published.DeliverySummary!.Counts); // the fan-out of Task 14 has not written any notice for it yet
+        var inAppBefore = published.DeliverySummary!.Counts.SingleOrDefault(c => c.Channel == "InApp")?.Count ?? 0; // Task 14's fan-out writes the in-app notices
 
         var notice = new Lms.Domain.Notifications.Notification(w.World.Tree.Org.Id, w.StudentA.UserId, Lms.Shared.Notifications.NotificationEvents.AnnouncementsPublished, "{}", null, DateTime.UtcNow, published.Id);
         await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
@@ -231,7 +231,7 @@ public sealed class AnnouncementPublishingTests(LmsApiFactory factory)
 
         var again = await w.ReadAsync<AnnouncementDto>(await w.SendAsync(w.Admin, HttpMethod.Get, Routes.OrgAnnouncement(published.Id)));
         Assert.Equal(
-            [("InApp", "Sent", 1), ("Email", "Pending", 1)],
+            [("InApp", "Sent", inAppBefore + 1), ("Email", "Pending", 1)],
             again.DeliverySummary!.Counts.Select(c => (c.Channel, c.Status, c.Count)));
         var silent = await CreateOkAsync(w, w.Admin, Request(Root(w), [Cc(w.ClassCourseA)]) with { Notify = false });
         Assert.Null(silent.DeliverySummary); // Notify is off
