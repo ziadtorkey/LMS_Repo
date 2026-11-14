@@ -80,8 +80,8 @@ public sealed class YearEndContractTests
     {
         Assert.All(M7Permissions, p => Assert.Equal(12, BuiltInRoleDefaults.IntroducedIn(p)));
         Assert.Equal(M7Permissions.Append(Permissions.Students.ManageWithdrawalReasons).Order(StringComparer.Ordinal), BuiltInRoleDefaults.IntroducedInVersion12.Order(StringComparer.Ordinal)); // wave 2 adds the reasons permission
-        // The Lead sets CurrentVersion to 12 after M6 (version 11) lands; this wave must not change it.
-        Assert.True(BuiltInRoleDefaults.CurrentVersion < 12);
+        // Wave 2 sets CurrentVersion to 12 (it merges after M6, version 11).
+        Assert.Equal(12, BuiltInRoleDefaults.CurrentVersion); // wave 2 sets it; M6 (version 11) lands before it
     }
 
     [Fact]

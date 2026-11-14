@@ -64,9 +64,9 @@ public sealed class GradingContractTests
     }
 
     [Fact]
-    public void Defaults_version_is_8()
+    public void Grade_permissions_were_introduced_in_defaults_version_8()
     {
-        Assert.Equal(8, BuiltInRoleDefaults.CurrentVersion);
+        Assert.Equal(12, BuiltInRoleDefaults.CurrentVersion); // M7 wave 2 (the grade permissions themselves stay version 8)
         Assert.All(GradePermissions, p => Assert.Equal(8, BuiltInRoleDefaults.IntroducedIn(p)));
         Assert.Equal(GradePermissions.Order(StringComparer.Ordinal), BuiltInRoleDefaults.IntroducedInVersion8.Order(StringComparer.Ordinal));
     }

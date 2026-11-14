@@ -7,9 +7,9 @@ namespace Lms.UnitTests.Access;
 public class BuiltInRoleDefaultsTests
 {
     [Fact]
-    public void Current_version_is_8_for_the_M5_wave_1_defaults()
+    public void Current_version_is_12_after_the_M7_wave_2_defaults()
     {
-        Assert.Equal(8, BuiltInRoleDefaults.CurrentVersion);
+        Assert.Equal(12, BuiltInRoleDefaults.CurrentVersion);
     }
 
     [Theory]

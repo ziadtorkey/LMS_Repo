@@ -42,12 +42,13 @@ public sealed record YearClosePreviewDto(
 public sealed record CloseYearRequest(string ConfirmName);
 
 /// <summary>The answer to a close: the year is Closed and its gradebooks and attendance are read-only (409 <c>gradebook_locked</c>, <c>year_closed</c> from then on).</summary>
-public sealed record YearClosedDto(Guid YearId, DateTime ClosedAtUtc, int GradebooksLocked, int AttendanceSessionsLocked, DateTime ServerNowUtc, bool LockSnapshotsPending = false);
+/// <remarks><c>LocksFinalising</c>: the gradebooks are locked at once but their lock snapshots are still being written by a job; reads are correct meanwhile (M7 L3).</remarks>
+public sealed record YearClosedDto(Guid YearId, DateTime ClosedAtUtc, int GradebooksLocked, int AttendanceSessionsLocked, DateTime ServerNowUtc, bool LocksFinalising = false);
 
 /// <summary>One class of the closing report (GET <c>…/closing-report</c>, read only).</summary>
 public sealed record ClosingReportRowDto(Guid ClassId, string ClassNameAr, string ClassNameEn, int Students, int Gradebooks, int GradebooksPublished, int AttendanceSessions);
 
-public sealed record ClosingReportDto(Guid YearId, DateTime ClosedAtUtc, IReadOnlyList<ClosingReportRowDto> Classes, bool LockSnapshotsPending = false);
+public sealed record ClosingReportDto(Guid YearId, DateTime ClosedAtUtc, IReadOnlyList<ClosingReportRowDto> Classes, bool LocksFinalising = false);
 
 // --- grade change after close (FR-GRD-06, D80)
 

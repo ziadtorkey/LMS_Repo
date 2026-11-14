@@ -125,9 +125,9 @@ public sealed class YearEndWave2ContractTests
         var closed = new YearClosedDto(Guid.NewGuid(), DateTime.UtcNow, 1, 2, DateTime.UtcNow);
         var report = new ClosingReportDto(Guid.NewGuid(), DateTime.UtcNow, []);
 
-        Assert.False(closed.LockSnapshotsPending);
-        Assert.False(report.LockSnapshotsPending);
-        Assert.True((closed with { LockSnapshotsPending = true }).LockSnapshotsPending);
+        Assert.False(closed.LocksFinalising);
+        Assert.False(report.LocksFinalising);
+        Assert.True((closed with { LocksFinalising = true }).LocksFinalising);
     }
 
     [Fact]
@@ -137,4 +137,24 @@ public sealed class YearEndWave2ContractTests
         Assert.Contains("WithdrawalReason", Lms.Shared.Auditing.AuditCatalog.EntityTypes);
         Assert.Contains("YearOpenRun", Lms.Shared.Auditing.AuditCatalog.EntityTypes);
     }
+
+    [Fact]
+    public void A_manager_cannot_create_edit_or_assign_a_role_that_holds_AcademicYears_Close_or_the_reasons_permission()
+    {
+        var manager = BuiltInRoles.Get(BuiltInRoles.Manager).DefaultPermissions.ToHashSet();
+
+        foreach (var permission in new[] { Permissions.AcademicYears.Close, Permissions.Students.ManageWithdrawalReasons })
+        {
+            Assert.DoesNotContain(permission, manager);
+            // creating or editing a role that holds it (D16, the same rule the role editor and the assignment endpoint use)
+            Assert.Equal(ProblemCodes.permission_escalation, Lms.Infrastructure.Access.RolePermissionRules.Validate([permission], [], manager, false, null));
+            // assigning an existing role that holds it: the role's current permissions are beyond the caller
+            Assert.False(Lms.Infrastructure.Access.RolePermissionRules.CanModify([permission], manager, false));
+        }
+
+        // the Org Admin holds both, so the Org Admin may
+        var admin = BuiltInRoles.Get(BuiltInRoles.OrgAdmin).DefaultPermissions.ToHashSet();
+        Assert.Null(Lms.Infrastructure.Access.RolePermissionRules.Validate([Permissions.AcademicYears.Close], [], admin, false, null));
+    }
+
 }
