@@ -1,0 +1,154 @@
+@page "/excuses/review"
+@attribute [Authorize]
+@using Lms.Client.Components
+@using Lms.Client.Components.People
+@using Lms.Client.Services.Excuses
+@using Lms.Shared.Authorization
+@using Lms.Shared.Excuses
+@inject IExcusesApi Api
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+@inject PermissionState PermState
+@inject ICultureService Culture
+
+<PageTitle>@L["Exc_Review_Title"]</PageTitle>
+@if (!PermState.Loaded)
+{
+    <LoadingState Lines="4" TestId="review-loading" />
+}
+else if (!PermState.Has(Permissions.Excuses.Review))
+{
+    <Forbidden />
+}
+else
+{
+    <PageHeader Title="@L["Exc_Review_Title"]" Subtitle="@L["Exc_Review_Subtitle"]" TitleTestId="review-page-title">
+        <Actions>
+            @if (_selected.Count > 0)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.DoneAll" OnClick="BulkApproveAsync" data-testid="bulk-approve">
+                    @string.Format(L["Exc_Bulk_Approve_N"], _selected.Count)
+                </MudButton>
+            }
+        </Actions>
+    </PageHeader>
+
+    <SectionCard Flush="true">
+        <div class="lms-filters" role="search" aria-label="@L["Common_Filters"]">
+            <div class="lms-filter">
+                <MudSelect T="string" Value="_status" ValueChanged="OnStatusChanged" Label="@L["Common_Status"]" Clearable="true" data-testid="review-filter-status">
+                    @foreach (var status in ExcuseStatuses.All)
+                    {
+                        <MudSelectItem T="string" Value="@status">@L[$"Exc_Status_{status}"]</MudSelectItem>
+                    }
+                </MudSelect>
+            </div>
+            <div class="lms-filter">
+                <UnitPicker Value="_unitId" ValueChanged="OnUnitChanged" Label="@L["Staff_HomeUnit"]" Clearable="true" TestId="review-filter-unit" />
+            </div>
+        </div>
+        <ServerTable @ref="_table" T="ExcuseReviewItemDto" ServerData="LoadAsync" EmptyTitle="@L["Exc_Review_EmptyTitle"]" EmptyText="@L["Exc_Review_EmptyText"]"
+                     EmptyIcon="@Icons.Material.Rounded.Receipt">
+            <HeaderContent>
+                <MudTh><span class="lms-visually-hidden">@L["Exc_Select"]</span></MudTh>
+                <MudTh>@L["Common_Name"]</MudTh>
+                <MudTh>@L["Exc_Col_Submitter"]</MudTh>
+                <MudTh>@L["Exc_Reason"]</MudTh>
+                <MudTh>@L["Exc_Col_Sessions"]</MudTh>
+                <MudTh>@L["Exc_Col_Submitted"]</MudTh>
+                <MudTh>@L["Common_Status"]</MudTh>
+                <MudTh><span class="lms-visually-hidden">@L["Common_Actions"]</span></MudTh>
+            </HeaderContent>
+            <RowTemplate Context="item">
+                @{ var e = item.Excuse; }
+                <MudTd DataLabel="@L["Exc_Select"]">
+                    @if (e.Status is ExcuseStatuses.Submitted or ExcuseStatuses.Escalated)
+                    {
+                        <MudCheckBox T="bool" Value="@_selected.Contains(e.Id)" ValueChanged="on => Toggle(e.Id, on)" Color="Color.Primary" aria-label="@L["Exc_Select"]"
+                                     data-testid="@($"review-select-{e.Id}")" />
+                    }
+                </MudTd>
+                <MudTd DataLabel="@L["Common_Name"]">
+                    <span class="lms-cell-strong">@Culture.Pick(e.StudentNameAr, e.StudentNameEn)</span>
+                    <span class="lms-muted" dir="ltr">@e.StudentNumber</span>
+                </MudTd>
+                <MudTd DataLabel="@L["Exc_Col_Submitter"]">@Culture.Pick(e.SubmittedByNameAr, e.SubmittedByNameEn)</MudTd>
+                <MudTd DataLabel="@L["Exc_Reason"]">
+                    @L[$"Exc_Reason_{e.Reason}"]
+                    @if (e.HasAttachment) { <MudIcon Icon="@Icons.Material.Rounded.AttachFile" Size="Size.Small" Title="@L["Exc_Section_Attachment"]" /> }
+                </MudTd>
+                <MudTd DataLabel="@L["Exc_Col_Sessions"]">@e.Sessions.Count</MudTd>
+                <MudTd DataLabel="@L["Exc_Col_Submitted"]">
+                    <span dir="ltr" class="lms-date-cell">@e.SubmittedAtUtc.ToString("yyyy-MM-dd")</span>
+                    <span class="lms-muted">@(item.AgeDays == 0 ? L["Exc_Age_Today"].Value : string.Format(L["Exc_Age_Days"], item.AgeDays))</span>
+                </MudTd>
+                <MudTd DataLabel="@L["Common_Status"]"><ExcuseStatusChip Status="@e.Status" TestId="@($"review-status-{e.Id}")" /></MudTd>
+                <MudTd DataLabel="@L["Common_Actions"]" Class="lms-cell-actions">
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" OnClick="() => OpenDrawer(item)" data-testid="@($"review-open-{e.Id}")">@L["Exc_Review_Open"]</MudButton>
+                </MudTd>
+            </RowTemplate>
+        </ServerTable>
+    </SectionCard>
+
+    <ExcuseReviewDrawer Item="_open" @bind-Open="_drawerOpen" OnChanged="ReloadAsync" />
+}
+
+@code {
+    private ServerTable<ExcuseReviewItemDto> _table = default!;
+    private readonly HashSet<Guid> _selected = [];
+    private string? _status = ExcuseStatuses.Submitted; // the queue opens on what waits for a decision
+    private Guid? _unitId;
+    private ExcuseReviewItemDto? _open;
+    private bool _drawerOpen;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+    }
+
+    private async Task<TableData<ExcuseReviewItemDto>> LoadAsync(TableState state, CancellationToken ct)
+    {
+        var page = await Api.GetReviewQueueAsync(new ExcuseReviewQuery(_status, _unitId, Page: state.Page + 1, PageSize: state.PageSize), ct);
+        return new TableData<ExcuseReviewItemDto> { Items = page.Items, TotalItems = page.Total };
+    }
+
+    private Task OnStatusChanged(string? status) { _status = status; _selected.Clear(); return _table.ReloadAsync(); }
+
+    private Task OnUnitChanged(Guid? unit) { _unitId = unit; _selected.Clear(); return _table.ReloadAsync(); }
+
+    private async Task ReloadAsync()
+    {
+        _selected.Clear();
+        await _table.ReloadAsync();
+    }
+
+    private void Toggle(Guid id, bool on)
+    {
+        if (on) _selected.Add(id); else _selected.Remove(id);
+    }
+
+    private void OpenDrawer(ExcuseReviewItemDto item)
+    {
+        _open = item;
+        _drawerOpen = true;
+    }
+
+    private async Task BulkApproveAsync()
+    {
+        var dialog = await Dialogs.ShowAsync<BulkApproveDialog>(L["Exc_Bulk_Approve"], new DialogParameters<BulkApproveDialog> { { x => x.Count, _selected.Count } },
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        if (await dialog.Result is not { Canceled: false }) return;
+
+        var done = 0;
+        var failed = 0;
+        foreach (var id in _selected.ToList())
+        {
+            try { await Api.ApproveAsync(id, new ApproveExcuseRequest(null)); done++; }
+            catch (Exception ex) when (ex is Services.Api.ApiProblemException or HttpRequestException) { failed++; } // e.g. decided meanwhile, or your own submission
+        }
+
+        Snackbar.Add(failed == 0 ? string.Format(L["Exc_Bulk_Done"], done) : string.Format(L["Exc_Bulk_Partial"], done, failed), failed == 0 ? Severity.Success : Severity.Warning);
+        await ReloadAsync();
+    }
+}

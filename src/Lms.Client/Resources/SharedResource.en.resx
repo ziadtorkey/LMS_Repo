@@ -1776,4 +1776,37 @@
   <data name="Exc_Withdraw" xml:space="preserve"><value>Withdraw</value></data>
   <data name="Exc_Withdrawn" xml:space="preserve"><value>The excuse was withdrawn.</value></data>
   <data name="Exc_Attendance_Link" xml:space="preserve"><value>Attendance</value></data>
+  <data name="Nav_ExcuseReview" xml:space="preserve"><value>Excuse review</value></data>
+  <data name="Exc_Review_Title" xml:space="preserve"><value>Excuse review</value></data>
+  <data name="Exc_Review_Subtitle" xml:space="preserve"><value>Excuses waiting for a decision. Open one to approve, reject or escalate it.</value></data>
+  <data name="Exc_Review_EmptyTitle" xml:space="preserve"><value>Nothing waiting</value></data>
+  <data name="Exc_Review_EmptyText" xml:space="preserve"><value>Excuses submitted by guardians appear here. Change the status filter to see decided ones.</value></data>
+  <data name="Exc_Review_Open" xml:space="preserve"><value>Review</value></data>
+  <data name="Exc_Select" xml:space="preserve"><value>Select</value></data>
+  <data name="Exc_Col_Submitter" xml:space="preserve"><value>Submitted by</value></data>
+  <data name="Exc_Col_Sessions" xml:space="preserve"><value>Sessions</value></data>
+  <data name="Exc_Col_Submitted" xml:space="preserve"><value>Submitted</value></data>
+  <data name="Exc_Age_Days" xml:space="preserve"><value>{0} d ago</value></data>
+  <data name="Exc_Review_Covered" xml:space="preserve"><value>Sessions covered</value></data>
+  <data name="Exc_Review_Recent" xml:space="preserve"><value>Recent absences of this student</value></data>
+  <data name="Exc_Review_Recent_None" xml:space="preserve"><value>No other recent absences.</value></data>
+  <data name="Exc_Comment" xml:space="preserve"><value>Comment</value></data>
+  <data name="Exc_Comment_Help" xml:space="preserve"><value>Required to reject; optional when approving or escalating.</value></data>
+  <data name="Exc_Approve_Effect" xml:space="preserve"><value>Approving marks {0} record(s) as Excused.</value></data>
+  <data name="Exc_Approve" xml:space="preserve"><value>Approve</value></data>
+  <data name="Exc_Reject" xml:space="preserve"><value>Reject</value></data>
+  <data name="Exc_Escalate" xml:space="preserve"><value>Escalate</value></data>
+  <data name="Exc_Approved" xml:space="preserve"><value>The excuse was approved.</value></data>
+  <data name="Exc_Rejected" xml:space="preserve"><value>The excuse was rejected.</value></data>
+  <data name="Exc_Escalated" xml:space="preserve"><value>The excuse was escalated.</value></data>
+  <data name="Exc_Escalate_To" xml:space="preserve"><value>Escalate to</value></data>
+  <data name="Exc_Escalate_Required" xml:space="preserve"><value>Choose who to escalate to.</value></data>
+  <data name="Exc_Attachment_None" xml:space="preserve"><value>No attachment.</value></data>
+  <data name="Exc_Attachment_Download" xml:space="preserve"><value>Download the attachment</value></data>
+  <data name="Exc_Bulk_Approve" xml:space="preserve"><value>Approve selected</value></data>
+  <data name="Exc_Bulk_Approve_N" xml:space="preserve"><value>Approve {0} selected</value></data>
+  <data name="Exc_Bulk_Confirm" xml:space="preserve"><value>Approve {0} excuse(s)? Each covered record becomes Excused. To reject, open the excuse and give a comment.</value></data>
+  <data name="Exc_Bulk_Done" xml:space="preserve"><value>{0} excuse(s) approved.</value></data>
+  <data name="Exc_Bulk_Partial" xml:space="preserve"><value>{0} approved, {1} could not be approved (decided meanwhile, or your own).</value></data>
+  <data name="Exc_Age_Today" xml:space="preserve"><value>today</value></data>
 </root>

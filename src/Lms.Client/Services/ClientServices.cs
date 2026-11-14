@@ -41,7 +41,7 @@ public static class ClientServices
             services.AddScoped<IYearsApi, FakeYearsApi>();
             services.AddScoped<INotificationsApi, FakeNotificationsApi>();
             services.AddSingleton<Lms.Client.Services.Attendance.IAttendanceApi, Lms.Client.Services.Attendance.FakeAttendanceApi>();
-            services.AddSingleton<Lms.Client.Services.Excuses.IExcusesApi, Lms.Client.Services.Excuses.FakeExcusesApi>();
+            services.AddSingleton<Lms.Client.Services.Excuses.IExcusesApi>(_ => new Lms.Client.Services.Excuses.FakeExcusesApi().Seed());
             services.AddSingleton<IImportsApi, FakeImportsApi>();
             services.AddScoped<INotificationConnection, FakeNotificationConnection>();
             services.AddSingleton<IClientsApi, FakeClientsApi>();

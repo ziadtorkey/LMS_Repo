@@ -1,0 +1,182 @@
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.Excuses
+@using Lms.Shared.Excuses
+@inject IExcusesApi Api
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+@inject ICultureService Culture
+
+@* The counselor's view of one excuse: the details, the attachment, the sessions it covers and the student's recent absences for context, with
+   Approve, Reject (a comment is required and checked before the call) and Escalate. Opens from the end edge (the left edge in Arabic). *@
+<MudDrawer Open="@Open" OpenChanged="OpenChanged" Anchor="Anchor.End" Variant="DrawerVariant.Temporary" Elevation="2" Width="min(480px, 100vw)"
+           Class="lms-history-drawer" data-testid="review-drawer">
+    @if (Item is { } item)
+    {
+        var excuse = item.Excuse;
+        <div class="pa-4" @onkeydown="OnKeyDown">
+            <div class="d-flex align-center justify-space-between mb-3">
+                <MudText Typo="Typo.h6" HtmlTag="h2" data-testid="review-title">@Culture.Pick(excuse.StudentNameAr, excuse.StudentNameEn)</MudText>
+                <MudIconButton @ref="_close" Icon="@Icons.Material.Rounded.Close" Class="lms-touch" aria-label="@L["Common_Close"]" OnClick="CloseAsync" data-testid="review-close" />
+            </div>
+
+            <dl class="lms-details">
+                <DetailItem Label="@L["Student_Code"]" Ltr="true" Value="@excuse.StudentNumber" />
+                <DetailItem Label="@L["Exc_Col_Submitter"]" Value="@Culture.Pick(excuse.SubmittedByNameAr, excuse.SubmittedByNameEn)" />
+                <DetailItem Label="@L["Exc_Reason"]" Value="@L[$"Exc_Reason_{excuse.Reason}"].Value" />
+                <DetailItem Label="@L["Exc_Details"]" Value="@excuse.ReasonText" />
+                <DetailItem Label="@L["Common_Status"]" Value="@L[$"Exc_Status_{excuse.Status}"].Value" />
+            </dl>
+
+            <MudText Typo="Typo.subtitle2" Class="mt-3">@L["Exc_Section_Attachment"]</MudText>
+            <AttachmentPreview ExcuseId="excuse.Id" HasAttachment="excuse.HasAttachment" />
+
+            <MudText Typo="Typo.subtitle2" Class="mt-3">@L["Exc_Review_Covered"]</MudText>
+            <ul class="lms-excuse-covered" data-testid="review-sessions">
+                @foreach (var session in excuse.Sessions)
+                {
+                    <li><span dir="ltr">@session.Date.ToString("yyyy-MM-dd")</span> · @Culture.Pick(session.CourseNameAr, session.CourseNameEn) · @L[$"Att_Status_{session.RecordStatus}"]</li>
+                }
+            </ul>
+
+            <MudText Typo="Typo.subtitle2" Class="mt-3">@L["Exc_Review_Recent"]</MudText>
+            @if (item.RecentAbsences.Count == 0)
+            {
+                <MudText Typo="Typo.body2" Class="lms-muted" data-testid="review-recent-none">@L["Exc_Review_Recent_None"]</MudText>
+            }
+            else
+            {
+                <ul class="lms-excuse-covered" data-testid="review-recent">
+                    @foreach (var a in item.RecentAbsences)
+                    {
+                        <li><span dir="ltr">@a.Date.ToString("yyyy-MM-dd")</span> · @Culture.Pick(a.CourseNameAr, a.CourseNameEn) · @L[$"Att_Status_{a.Status}"]</li>
+                    }
+                </ul>
+            }
+
+            @if (Decidable(excuse))
+            {
+                <MudTextField T="string" @bind-Value="_comment" Label="@L["Exc_Comment"]" HelperText="@L["Exc_Comment_Help"]" Lines="3" MaxLength="ExcuseLimits.CommentMaxLength"
+                              Variant="Variant.Outlined" Class="mt-3" Error="@_commentMissing" ErrorText="@L["Error_excuse_comment_required"]" data-testid="review-comment" />
+                <MudText Typo="Typo.body2" Class="lms-muted mt-1" data-testid="review-approve-effect">@string.Format(L["Exc_Approve_Effect"], Becoming(excuse))</MudText>
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Dense="true" Class="mt-2" data-testid="review-error">@_error</MudAlert>
+                }
+                <div class="lms-dialog-actions mt-3">
+                    <MudButton Variant="Variant.Text" Color="Color.Warning" OnClick="() => EscalateAsync(excuse)" Disabled="@_busy" Class="lms-touch" data-testid="review-escalate">@L["Exc_Escalate"]</MudButton>
+                    <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="() => RejectAsync(excuse)" Disabled="@_busy" Class="lms-touch" data-testid="review-reject">@L["Exc_Reject"]</MudButton>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => ApproveAsync(excuse)" Disabled="@_busy" Class="lms-touch" data-testid="review-approve">@L["Exc_Approve"]</MudButton>
+                </div>
+            }
+            else if (!string.IsNullOrWhiteSpace(excuse.DecisionComment))
+            {
+                <MudText Typo="Typo.body2" Class="mt-3" data-testid="review-decision"><strong>@L["Exc_Decision"]:</strong> @excuse.DecisionComment</MudText>
+            }
+        </div>
+    }
+</MudDrawer>
+
+@code {
+    private MudIconButton? _close;
+    private string? _comment, _error;
+    private bool _commentMissing, _busy, _focusClose, _wasOpen;
+    private Guid? _shown;
+
+    [Parameter] public ExcuseReviewItemDto? Item { get; set; }
+    [Parameter] public bool Open { get; set; }
+    [Parameter] public EventCallback<bool> OpenChanged { get; set; }
+
+    /// <summary>Raised after a decision or an escalation, so the queue reloads.</summary>
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private static bool Decidable(ExcuseDto e) => e.Status is ExcuseStatuses.Submitted or ExcuseStatuses.Escalated;
+
+    /// <summary>How many records approval turns into Excused: the covered sessions still Absent or Late.</summary>
+    private static int Becoming(ExcuseDto e) => e.Sessions.Count(s => s.RecordStatus is "Absent" or "Late");
+
+    protected override void OnParametersSet()
+    {
+        var opening = Open && !_wasOpen;
+        _wasOpen = Open;
+        if (opening || (Item is { } i && _shown != i.Excuse.Id))
+        {
+            _shown = Item?.Excuse.Id;
+            _comment = null;
+            _error = null;
+            _commentMissing = false;
+            _focusClose = Open;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusClose && Open && _close is not null)
+        {
+            _focusClose = false;
+            await _close.FocusAsync();
+        }
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape") await CloseAsync();
+    }
+
+    private Task CloseAsync() => OpenChanged.InvokeAsync(false);
+
+    private async Task ApproveAsync(ExcuseDto excuse)
+    {
+        _commentMissing = false;
+        await DecideAsync(() => Api.ApproveAsync(excuse.Id, new ApproveExcuseRequest(string.IsNullOrWhiteSpace(_comment) ? null : _comment.Trim())), "Exc_Approved");
+    }
+
+    private async Task RejectAsync(ExcuseDto excuse)
+    {
+        _commentMissing = string.IsNullOrWhiteSpace(_comment);
+        if (_commentMissing) return; // a rejection is explained: nothing is sent without the comment
+        await DecideAsync(() => Api.RejectAsync(excuse.Id, new RejectExcuseRequest(_comment!.Trim())), "Exc_Rejected");
+    }
+
+    private async Task EscalateAsync(ExcuseDto excuse)
+    {
+        var dialog = await Dialogs.ShowAsync<EscalateDialog>(L["Exc_Escalate"], new DialogParameters<EscalateDialog> { { x => x.ExcuseId, excuse.Id } },
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        if (await dialog.Result is { Canceled: false })
+        {
+            Snackbar.Add(L["Exc_Escalated"], Severity.Success);
+            await OnChanged.InvokeAsync();
+            await CloseAsync();
+        }
+    }
+
+    private async Task DecideAsync(Func<Task<ExcuseDto>> call, string doneKey)
+    {
+        _busy = true;
+        _error = null;
+        try
+        {
+            await call();
+            Snackbar.Add(L[doneKey], Severity.Success);
+            await OnChanged.InvokeAsync();
+            await CloseAsync();
+        }
+        catch (ApiProblemException ex) when (ex.Code is "excuse_reviewer_is_submitter" or "excuse_comment_required")
+        {
+            _error = L[$"Error_{ex.Code}"];
+        }
+        catch (ApiProblemException ex) when (ex.Code == "excuse_not_pending")
+        {
+            _error = L["Error_excuse_not_pending"]; // someone decided it first: the queue shows the new state
+            await OnChanged.InvokeAsync();
+        }
+        catch (Exception ex) when (ex is ApiProblemException or HttpRequestException)
+        {
+            _error = L["Api_Error"];
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}

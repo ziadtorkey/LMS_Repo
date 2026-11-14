@@ -1,0 +1,19 @@
+@* Confirms approving several excuses at once. It says how many, and that each covered record becomes Excused. There is no bulk reject:
+   a rejection needs its own comment. *@
+<MudDialog>
+    <DialogContent>
+        <MudText data-testid="bulk-message">@string.Format(L["Exc_Bulk_Confirm"], Count)</MudText>
+    </DialogContent>
+    <DialogActions>
+        <div class="lms-dialog-actions">
+            <MudButton Variant="Variant.Text" OnClick="() => MudDialog.Cancel()" data-testid="bulk-cancel">@L["Common_Cancel"]</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => MudDialog.Close(DialogResult.Ok(true))" data-testid="bulk-confirm">@string.Format(L["Exc_Bulk_Approve_N"], Count)</MudButton>
+        </div>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired] public int Count { get; set; }
+}

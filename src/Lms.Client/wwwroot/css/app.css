@@ -141,3 +141,5 @@ html:lang(ar), html:lang(ar) body { font-family: Cairo, "Segoe UI", Tahoma, Aria
 .lms-touch.mud-button-root, .lms-touch.mud-icon-button { min-block-size: 44px; min-inline-size: 44px; }
 .lms-date-filter { max-inline-size: 220px; }
 .lms-session-grid > .lms-section + .lms-section { margin-block-start: 0; }
+.lms-attachment-image { display: block; max-inline-size: 100%; max-block-size: 320px; border-radius: 8px; border: 1px solid var(--mud-palette-lines-default); margin-block-end: 4px; }
+.lms-attachment-link { display: inline-flex; align-items: center; gap: 6px; }
