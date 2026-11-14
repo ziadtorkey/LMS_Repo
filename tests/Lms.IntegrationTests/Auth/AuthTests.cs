@@ -10,9 +10,11 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Lms.IntegrationTests.Auth;
 
 [Collection(ApiCollection.Name)]
-public sealed class AuthTests(LmsApiFactory factory)
+public sealed class AuthTests(LmsApiFactory factory) : IDisposable
 {
     private readonly AuthTestHost _host = new(factory);
+
+    public void Dispose() => _host.Dispose();
 
     private static string Relative(Uri uri) => uri.IsAbsoluteUri ? uri.PathAndQuery : uri.OriginalString;
 

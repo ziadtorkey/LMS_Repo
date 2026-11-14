@@ -9,10 +9,12 @@ namespace Lms.IntegrationTests.Auth;
 
 /// <summary>D24: a temporary password must be replaced at first sign-in, before any token is issued (Review Focus 5).</summary>
 [Collection(ApiCollection.Name)]
-public sealed class MustChangePasswordTests(LmsApiFactory factory)
+public sealed class MustChangePasswordTests(LmsApiFactory factory) : IDisposable
 {
     private const string NewPassword = "N3wStrongPass";
     private readonly AuthTestHost _host = new(factory);
+
+    public void Dispose() => _host.Dispose();
 
     private async Task<User> MustChangeUserAsync(string? email = null)
     {

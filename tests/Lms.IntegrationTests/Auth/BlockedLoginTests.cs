@@ -7,9 +7,11 @@ using Microsoft.EntityFrameworkCore;
 namespace Lms.IntegrationTests.Auth;
 
 [Collection(ApiCollection.Name)]
-public sealed class BlockedLoginTests(LmsApiFactory factory)
+public sealed class BlockedLoginTests(LmsApiFactory factory) : IDisposable
 {
     private readonly AuthTestHost _host = new(factory);
+
+    public void Dispose() => _host.Dispose();
 
     private async Task<string> LoginMessageAsync(UserStatus status, string culture)
     {
