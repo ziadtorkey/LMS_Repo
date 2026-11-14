@@ -206,7 +206,6 @@ public sealed class MessagingContractTests
         Assert.Equal(Id, Round(new CreateConversationRequest(ConversationKinds.Group, [Id, Id], "فصل", null, Id)).ClassCourseId);
         Assert.Equal([Id], Round(new AddParticipantsRequest([Id])).UserIds);
         Assert.False(new ConversationDto(Id, ConversationKinds.Direct, null, [], false, false, DateTime.UtcNow).IsReadOnly); // older shapes default to writable
-        Assert.Equal("group_read_only", ProblemCodes.group_read_only); // D74: students never post in a group
     }
 
     [Fact]
@@ -227,7 +226,6 @@ public sealed class MessagingContractTests
         // D74 (students never post in a group) and D77 (guardians may post in teacher-run groups that include guardians) live in one code and the route docs
         var text = File.ReadAllText(Path.Combine(RepoRoot(), "src", "Lms.Shared", "Routes.Messaging.cs"));
 
-        Assert.Equal("group_read_only", ProblemCodes.group_read_only);
         Assert.Contains("D74", text, StringComparison.Ordinal);
         Assert.Contains("D77", text, StringComparison.Ordinal);
         Assert.Contains("guardian", text, StringComparison.OrdinalIgnoreCase);

@@ -1983,12 +1983,11 @@
   <data name="Msg_Reason_Other" xml:space="preserve"><value>أخرى</value></data>
   <data name="Msg_ReadOnly_group_students_read_only" xml:space="preserve"><value>المعلم والموظفون فقط يكتبون في هذه المجموعة. يمكنك مراسلة المعلم بشكل خاص.</value></data>
   <data name="Msg_ReadOnly_group_guardians_read_only" xml:space="preserve"><value>الموظفون فقط يكتبون في هذه المجموعة.</value></data>
-  <data name="Msg_ReadOnly_rule" xml:space="preserve"><value>هذه المحادثة للقراءة فقط بسبب تغيّر قواعد المراسلة.</value></data>
   <data name="Msg_ReadOnly_blocked_or_rule" xml:space="preserve"><value>لا يمكنك إرسال رسائل في هذه المحادثة.</value></data>
   <data name="Msg_ReadOnly_restricted" xml:space="preserve"><value>المراسلة مقيّدة لحسابك حاليًا.</value></data>
   <data name="Msg_ReadOnly_locked" xml:space="preserve"><value>قام مشرف بإغلاق هذه المحادثة.</value></data>
   <data name="Msg_Denied_rule" xml:space="preserve"><value>لا يمكنك إرسال رسائل إلى هذا الشخص.</value></data>
-  <data name="Msg_Denied_relationship" xml:space="preserve"><value>يمكنك مراسلة من تشاركهم فصلًا دراسيًا فقط.</value></data>
+  <data name="Msg_Denied_relationship" xml:space="preserve"><value>يمكنك مراسلة الأشخاص الذين تتعامل معهم في المدرسة فقط.</value></data>
   <data name="Msg_Denied_restricted" xml:space="preserve"><value>المراسلة مقيّدة لحسابك حاليًا.</value></data>
   <data name="Msg_Denied_blocked_or_rule" xml:space="preserve"><value>لا يمكنك إرسال رسائل إلى هذا الشخص.</value></data>
   <data name="Msg_Denied_private_group_with_student" xml:space="preserve"><value>المجموعة التي تضم طالبًا تحتاج إلى ثلاثة أعضاء على الأقل.</value></data>
@@ -2046,7 +2045,6 @@
   <data name="Comms_PrefSource_User" xml:space="preserve"><value>اختيارك</value></data>
   <data name="Comms_PrefSource_Mandatory" xml:space="preserve"><value>إلزامي</value></data>
   <data name="Msg_Rule_SameUnit" xml:space="preserve"><value>أي شخص في نفس الوحدة</value></data>
-  <data name="Error_group_read_only" xml:space="preserve"><value>المراسلة في هذه المجموعة للموظفين فقط.</value></data>
   <data name="MyCourses_StatSupervised" xml:space="preserve"><value>مقررات تشرف عليها</value></data>
   <data name="MyCourses_StatAllocations" xml:space="preserve"><value>تخصيصات الفصول</value></data>
   <data name="MyCourses_StatPublished" xml:space="preserve"><value>مخططات منشورة</value></data>

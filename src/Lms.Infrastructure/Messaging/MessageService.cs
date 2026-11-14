@@ -44,7 +44,7 @@ public sealed class MessageService(LmsDbContext db, ICurrentContext context, ICl
 
         if (conversation.IsReadOnly)
         {
-            return SendResult.Refused(ProblemCodes.group_read_only, 403);
+            return SendResult.Refused(ProblemCodes.conversation_read_only, 403);
         }
 
         if (!(await policy.CanPostAsync(me.UserId, conversation, ct)).Allowed)
