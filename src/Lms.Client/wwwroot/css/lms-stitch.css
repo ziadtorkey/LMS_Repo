@@ -200,3 +200,77 @@ html[data-theme="dark"] .mud-button-outlined { border-color: #334155; }
 .lms-section .lms-setting-row + .lms-setting-row { margin-block-start: 12px; }
 .lms-section .lms-setting-name.mud-typography { font-weight: 500; }
 .lms-save-bar-info::before { background: var(--mud-palette-primary); }
+
+/* ---------- M7 year-end components (spec PR 814, section 11) ---------- */
+.lms-year-lock { margin-inline-end: 2px; }
+/* YearChip: the year's name, then its status chip; a closed year shows the lock instead of the dot. */
+.lms-year-chip { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; }
+.lms-year-chip[data-status="Closed"] .lms-status-chip::before { content: none; }
+/* ConfirmEffectDialog: the pattern for actions with consequences; full screen below 600 px. */
+.lms-confirm-effect { display: flex; flex-direction: column; gap: 16px; }
+.lms-confirm-heading { margin: 0 0 8px; font-size: .8125rem; font-weight: 600; }
+@media (max-width: 599.98px) {
+    .mud-dialog.lms-dialog-sheet { margin: 0; inline-size: 100%; max-inline-size: none; min-block-size: 100dvh; max-block-size: 100dvh; border-radius: 0; }
+    .mud-dialog.lms-dialog-sheet .mud-dialog-actions { position: sticky; inset-block-end: 0; background: var(--mud-palette-surface); border-block-start: 1px solid var(--mud-palette-lines-default); }
+    .mud-dialog.lms-dialog-sheet .mud-dialog-actions .mud-button-root { flex: 1 1 auto; min-block-size: 44px; }
+}
+/* JobProgressPanel: an 8 px rounded bar under a bold title; the line under it says how far it is. */
+.lms-job { display: flex; flex-direction: column; gap: 6px; }
+.lms-job-title { margin: 0; font-weight: 600; }
+.lms-job .mud-progress-linear { block-size: 8px; border-radius: 4px; }
+.lms-job .mud-progress-linear .mud-progress-linear-bar { border-radius: 4px; }
+/* "What will happen": one effect per recessed row (icon, words, an optional Review link); warning rows use the warning icon colour. */
+.lms-effects, .lms-issue-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.lms-effects li { display: flex; gap: 12px; align-items: flex-start; padding: 10px 12px; border-radius: var(--lms-radius-control); background: var(--lms-recessed); }
+.lms-effects li > .mud-icon-root { color: var(--mud-palette-primary); flex: none; }
+.lms-effects li.lms-effects-warn > .mud-icon-root { color: var(--mud-palette-warning); }
+.lms-effects-text { flex: 1; min-inline-size: 0; }
+.lms-effects-link { font-weight: 600; white-space: nowrap; }
+.lms-issue-list { margin-block-start: 6px; }
+/* Typed confirmation, only for an action nothing can undo (closing a year). */
+.lms-confirm-type { padding: 14px; border-radius: var(--lms-radius-control); border: 1px solid color-mix(in srgb, var(--mud-palette-error) 40%, transparent);
+    background: color-mix(in srgb, var(--mud-palette-error) 4%, transparent); }
+/* Native selects and checkboxes in dense rows: real form controls for keyboards and screen readers, drawn in the Stitch input style. */
+.lms-native-select { min-block-size: 36px; padding-block: 4px; padding-inline: 10px 28px; border-radius: var(--lms-radius-control); border: 1px solid var(--mud-palette-lines-inputs);
+    background-color: var(--lms-recessed); color: var(--mud-palette-text-primary); font: inherit; font-size: .875rem; max-inline-size: 100%; }
+.lms-native-select:focus-visible, .lms-native-check:focus-visible { outline: none; box-shadow: var(--lms-focus-ring); }
+.lms-native-select[aria-invalid="true"] { border-color: var(--mud-palette-error); }
+.lms-native-select-block { inline-size: 100%; min-block-size: 40px; }
+.lms-native-check { inline-size: 18px; block-size: 18px; accent-color: var(--mud-palette-primary); }
+.lms-native-field { display: flex; flex-direction: column; gap: 6px; }
+.lms-native-label { font-size: .8125rem; font-weight: 500; }
+.lms-withdraw-reason .lms-field-error { font-size: .75rem; color: var(--mud-palette-error); }
+.lms-withdraw-reason .lms-field-help { display: flex; gap: 6px; align-items: center; margin-block-start: 4px; font-size: .75rem; color: var(--mud-palette-text-secondary); }
+/* Promotion review rows. */
+.lms-promo-select { inline-size: 44px; }
+.lms-promo-student { font-weight: 500; text-align: start; }
+.lms-promo-code { display: block; font-size: .75rem; font-weight: 400; color: var(--mud-palette-text-secondary); }
+.lms-promo-notes { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+.lms-promo-warnings, .lms-promo-changed { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+tr.lms-row-selected > * { background: color-mix(in srgb, var(--mud-palette-primary) 6%, transparent); }
+/* Undo window: the clock time in words, the action at the end; neutral once the window is over. */
+.lms-undo { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 14px 16px; border-radius: var(--lms-radius-surface);
+    background: color-mix(in srgb, var(--mud-palette-info) 8%, var(--mud-palette-surface)); border: 1px solid color-mix(in srgb, var(--mud-palette-info) 35%, transparent); }
+.lms-undo > .mud-icon-root { color: var(--mud-palette-info); }
+.lms-undo-text { flex: 1 1 280px; min-inline-size: 0; }
+.lms-undo.over { background: var(--mud-palette-background-gray); border-color: var(--mud-palette-lines-default); }
+.lms-undo.over > .mud-icon-root { color: var(--mud-palette-text-secondary); }
+/* Year-end checklist: state disc, title and detail, one action at the end. */
+.lms-checklist { list-style: none; margin: 0; padding: 0; }
+.lms-checklist > li { display: flex; gap: 14px; align-items: flex-start; padding-block: 14px; border-block-start: 1px solid var(--mud-palette-table-lines); }
+.lms-checklist > li:first-child { border-block-start: 0; padding-block-start: 0; }
+.lms-checklist-state { inline-size: 28px; block-size: 28px; border-radius: 50%; display: grid; place-items: center; flex: none; font-size: .8125rem; font-weight: 700;
+    background: var(--mud-palette-background-gray); color: var(--mud-palette-text-secondary); }
+.lms-checklist-done { background: color-mix(in srgb, var(--mud-palette-success) 14%, transparent); color: var(--mud-palette-success); }
+.lms-checklist-attention { background: color-mix(in srgb, var(--mud-palette-warning) 14%, transparent); color: var(--mud-palette-warning); }
+.lms-checklist-text { flex: 1; min-inline-size: 0; display: flex; flex-direction: column; gap: 2px; }
+.lms-checklist-title { font-weight: 600; }
+.lms-checklist-detail { font-size: .8125rem; color: var(--mud-palette-text-secondary); }
+.lms-checklist-link { font-weight: 600; white-space: nowrap; }
+@media (max-width: 599.98px) {
+    .lms-native-select { min-block-size: 44px; }
+    .lms-promo-changed .mud-button-root, .lms-checklist .mud-button-root { min-block-size: 44px; }
+    .lms-checklist > li { flex-wrap: wrap; } .lms-checklist-text { flex-basis: calc(100% - 42px); }
+    .lms-checklist > li > .mud-button-root, .lms-checklist > li > .lms-checklist-link { margin-inline-start: 42px; }
+    .lms-undo > .mud-button-root { flex: 1 1 100%; min-block-size: 44px; }
+}

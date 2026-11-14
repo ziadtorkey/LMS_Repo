@@ -1,26 +1,74 @@
 @implements IAsyncDisposable
 @inject IJSRuntime Js
 
-@* Confirms a year-end action by saying what it does and how much it touches; a typed confirmation (the year name, the number of students) only where the action cannot be undone by the UI (M7 H1). *@
-<MudDialog>
+@* Confirms a year-end action by saying what it does and how much it touches; a typed confirmation (the year name, the number of students) only where the action cannot be undone by the UI (M7 H1).
+   Drawn as the design spec's one pattern for actions with consequences (spec PR 814 §1, §4): the effect sentence, an optional "What will happen" list, optional "Worth checking
+   first" warnings with Review links (they never block), optional blocking problems (the confirm button is disabled and says why), then the typed confirmation in its own
+   tinted block. Full screen below 600 px (lms-dialog-sheet). *@
+<MudDialog Class="lms-dialog-sheet">
     <DialogContent>
-        <div class="lms-form" data-testid="confirm-effect" @ref="_root">
+        <div class="lms-confirm-effect" data-testid="confirm-effect" @ref="_root">
             <p data-testid="confirm-effect-text">@Effect</p>
             @if (!string.IsNullOrEmpty(CountText))
             {
                 <p class="lms-muted" data-testid="confirm-effect-count">@CountText</p>
             }
+            @if (Blocking is { Count: > 0 })
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="confirm-effect-blocking">
+                    <span id="@_whyId">@L["Confirm_Blocking"]</span>
+                    <ul class="lms-issue-list">
+                        @foreach (var b in Blocking)
+                        {
+                            <li>@b</li>
+                        }
+                    </ul>
+                </MudAlert>
+            }
+            @if (Effects is { Count: > 0 })
+            {
+                <section aria-labelledby="@(_whyId + "-will")">
+                    <p class="lms-confirm-heading" id="@(_whyId + "-will")">@L["Confirm_WillHappen"]</p>
+                    <ul class="lms-effects" data-testid="confirm-effect-effects">
+                        @foreach (var e in Effects)
+                        {
+                            <li><MudIcon Icon="@Icons.Material.Rounded.CheckCircleOutline" aria-hidden="true" /><span class="lms-effects-text">@e</span></li>
+                        }
+                    </ul>
+                </section>
+            }
+            @if (Warnings is { Count: > 0 })
+            {
+                <section aria-labelledby="@(_whyId + "-check")">
+                    <p class="lms-confirm-heading" id="@(_whyId + "-check")">@L["Confirm_CheckFirst"]</p>
+                    <ul class="lms-effects" data-testid="confirm-effect-warnings">
+                        @foreach (var w in Warnings)
+                        {
+                            <li class="lms-effects-warn">
+                                <MudIcon Icon="@Icons.Material.Rounded.Warning" aria-hidden="true" />
+                                <span class="lms-effects-text">@w.Text</span>
+                                @if (w.Href is not null)
+                                {
+                                    <MudLink Href="@w.Href" Target="_blank" Class="lms-effects-link">@L["Confirm_Review"]</MudLink>
+                                }
+                            </li>
+                        }
+                    </ul>
+                </section>
+            }
             @if (!string.IsNullOrEmpty(Expected))
             {
-                <MudTextField T="string" @bind-Value="_typed" Immediate="true" Label="@string.Format(L["Confirm_TypeToConfirm"].Value, Expected)" Variant="Variant.Outlined" Margin="Margin.Dense"
-                              dir="auto" data-testid="confirm-effect-input" />
+                <div class="lms-confirm-type">
+                    <MudTextField T="string" @bind-Value="_typed" Immediate="true" Label="@string.Format(L["Confirm_TypeToConfirm"].Value, Expected)" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                  dir="auto" data-testid="confirm-effect-input" />
+                </div>
             }
         </div>
     </DialogContent>
     <DialogActions>
-        <MudButton Variant="Variant.Text" OnClick="() => MudDialog.Cancel()" data-testid="confirm-effect-cancel">@L["Common_Cancel"]</MudButton>
-        <MudButton Variant="Variant.Filled" Color="@(Danger ? Color.Error : Color.Primary)" Disabled="!Matches" OnClick="() => MudDialog.Close(DialogResult.Ok(true))"
-                   data-testid="confirm-effect-yes">@(ConfirmText ?? L["Common_Confirm"].Value)</MudButton>
+        <MudButton Variant="Variant.Outlined" OnClick="() => MudDialog.Cancel()" data-testid="confirm-effect-cancel">@L["Common_Cancel"]</MudButton>
+        <MudButton Variant="Variant.Filled" Color="@(Danger ? Color.Error : Color.Primary)" Disabled="!CanConfirm" OnClick="() => MudDialog.Close(DialogResult.Ok(true))"
+                   aria-describedby="@(Blocking is { Count: > 0 } ? _whyId : null)" data-testid="confirm-effect-yes">@(ConfirmText ?? L["Common_Confirm"].Value)</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -39,6 +87,16 @@
     [Parameter] public string? ConfirmText { get; set; }
     [Parameter] public bool Danger { get; set; }
 
+    /// <summary>"What will happen": one already-localized line per effect, with its count ("184 gradebooks are locked.").</summary>
+    [Parameter] public IReadOnlyList<string>? Effects { get; set; }
+
+    /// <summary>"Worth checking first": warnings that never block (D79, D84), each with an optional Review link.</summary>
+    [Parameter] public IReadOnlyList<ConfirmIssue>? Warnings { get; set; }
+
+    /// <summary>Problems the server says must be fixed first; while any are listed the confirm button stays disabled and points at them.</summary>
+    [Parameter] public IReadOnlyList<string>? Blocking { get; set; }
+
+    private readonly string _whyId = $"ce-{Guid.NewGuid():N}";
     private string? _typed;
     private ElementReference _root;
     private IJSObjectReference? _module, _handle;
@@ -67,13 +125,16 @@
     }
 
     private bool Matches => string.IsNullOrEmpty(Expected) || string.Equals(_typed?.Trim(), Expected.Trim(), StringComparison.OrdinalIgnoreCase);
+    private bool CanConfirm => Matches && Blocking is not { Count: > 0 };
 
     /// <summary>Shows the dialog; true only when the person confirms.</summary>
-    public static async Task<bool> AskAsync(IDialogService dialogs, string title, string effect, string? countText = null, string? expected = null, string? confirmText = null, bool danger = false)
+    public static async Task<bool> AskAsync(IDialogService dialogs, string title, string effect, string? countText = null, string? expected = null, string? confirmText = null, bool danger = false,
+        IReadOnlyList<string>? effects = null, IReadOnlyList<ConfirmIssue>? warnings = null, IReadOnlyList<string>? blocking = null)
     {
         var reference = await dialogs.ShowAsync<ConfirmEffectDialog>(title, new DialogParameters<ConfirmEffectDialog>
         {
             { x => x.Effect, effect }, { x => x.CountText, countText }, { x => x.Expected, expected }, { x => x.ConfirmText, confirmText }, { x => x.Danger, danger },
+            { x => x.Effects, effects }, { x => x.Warnings, warnings }, { x => x.Blocking, blocking },
         }, new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true });
         var result = await reference.Result;
         return result is { Canceled: false };

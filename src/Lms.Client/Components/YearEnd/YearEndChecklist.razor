@@ -1,0 +1,64 @@
+@using System.Globalization
+
+@* The year-end checklist card on the Org Admin and Manager home (spec #814 §2, D86: from 60 days before the year end). An ordered list of steps; each has
+   a state disc, its state in words (visually hidden next to the disc), a one-line detail and one action. Nothing here blocks: steps are links. *@
+<SectionCard Icon="@Icons.Material.Rounded.EventAvailable" Title="@string.Format(CultureInfo.CurrentCulture, L["YearEnd_Checklist_Title"].Value, YearName)" TestId="yearend-checklist">
+    <HeadMeta>
+        <MudText Typo="Typo.body2" Class="lms-muted">@((MarkupString)Subtitle)</MudText>
+    </HeadMeta>
+    <ChildContent>
+        <ol class="lms-checklist">
+            @for (var i = 0; i < Steps.Count; i++)
+            {
+                var step = Steps[i];
+                var n = i + 1;
+                <li data-testid="@($"yearend-step-{n}")" data-state="@step.State">
+                    <span class="@($"lms-checklist-state lms-checklist-{step.State.ToString().ToLowerInvariant()}")" aria-hidden="true">
+                        @switch (step.State)
+                        {
+                            case YearEndStepState.Done:
+                                <MudIcon Icon="@Icons.Material.Rounded.Check" Size="Size.Small" />
+                                break;
+                            case YearEndStepState.Attention:
+                                <MudIcon Icon="@Icons.Material.Rounded.PriorityHigh" Size="Size.Small" />
+                                break;
+                            default:
+                                @n
+                                break;
+                        }
+                    </span>
+                    <div class="lms-checklist-text">
+                        <span class="@(step.State == YearEndStepState.NotYet ? "lms-checklist-title lms-muted" : "lms-checklist-title")">@step.Title</span>
+                        <span class="lms-visually-hidden">: @L[$"YearEnd_Step_{step.State}"].</span>
+                        <span class="lms-checklist-detail">@step.Detail</span>
+                    </div>
+                    @if (step.Href is not null && step.ActionText is not null)
+                    {
+                        @if (step.State == YearEndStepState.ToDo)
+                        {
+                            <MudButton Href="@step.Href" Variant="Variant.Outlined" Size="Size.Small" Class="lms-touch">@step.ActionText</MudButton>
+                        }
+                        else
+                        {
+                            <MudLink Href="@step.Href" Class="lms-checklist-link">@step.ActionText</MudLink>
+                        }
+                    }
+                </li>
+            }
+        </ol>
+    </ChildContent>
+</SectionCard>
+
+@code {
+    [Parameter, EditorRequired] public string YearName { get; set; } = "";
+    [Parameter, EditorRequired] public DateOnly EndDate { get; set; }
+    /// <summary>Days until the year ends, from the server's date (never the browser clock).</summary>
+    [Parameter, EditorRequired] public int DaysLeft { get; set; }
+    [Parameter, EditorRequired] public IReadOnlyList<YearEndStep> Steps { get; set; } = [];
+
+    private static bool Arabic => CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "ar";
+
+    private string Subtitle => string.Format(CultureInfo.CurrentCulture, L["YearEnd_Checklist_Sub"].Value,
+        $"<span class=\"lms-checklist-date\" dir=\"ltr\">{EndDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}</span>",
+        System.Net.WebUtility.HtmlEncode(L.Count("YearEnd_Days", DaysLeft, Arabic)));
+}

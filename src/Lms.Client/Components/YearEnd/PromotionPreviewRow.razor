@@ -1,0 +1,88 @@
+@using Lms.Shared.YearEnd
+
+@* One student of the promotion review (spec #814 §7.2, D83, D84): select box, student (name, code LTR), source class, the outcome and the target class as
+   native selects named for the student, and the row's notes as text chips. The suggestion comes from the level mapping; a changed row says "Changed" and
+   offers "Reset to suggested". The row raises a decision; the page saves it as a draft and announces it. Below 600 px the table stacks (lms-stack-table). *@
+<tr class="@(Selected ? "lms-row-selected" : null)" data-testid="@($"promo-row-{Row.StudentId}")">
+    <td class="lms-promo-select">
+        <input type="checkbox" class="lms-native-check" checked="@Selected" disabled="@Disabled" aria-label="@Format("Promo_SelectRow", Name)"
+               @onchange="e => SelectedChanged.InvokeAsync(e.Value is true)" />
+    </td>
+    <th scope="row" class="lms-promo-student">
+        <bdi>@Name</bdi>
+        <span class="lms-promo-code" dir="ltr">@Row.StudentCode</span>
+    </th>
+    <td data-label="@L["Promo_Col_From"]"><span dir="ltr">@CultureText.Pick(Row.SourceClassNameAr, Row.SourceClassNameEn)</span></td>
+    <td data-label="@L["Promo_Col_Outcome"]">
+        <select class="lms-native-select" aria-label="@Format("Promo_OutcomeFor", Name)" disabled="@Disabled" data-testid="@($"promo-outcome-{Row.StudentId}")"
+                @onchange="e => DecideAsync(e.Value as string ?? Row.Outcome, Row.TargetClassId)">
+            @foreach (var outcome in PromotionOutcomes.All)
+            {
+                <option value="@outcome" selected="@(outcome == Row.Outcome)">@L[$"Promo_Outcome_{outcome}"]</option>
+            }
+        </select>
+    </td>
+    <td data-label="@L["Promo_Col_Target"]" class="lms-promo-target">
+        @if (NeedsTarget)
+        {
+            <select class="lms-native-select" aria-label="@Format("Promo_TargetFor", Name)" aria-invalid="@(Row.TargetClassId is null ? "true" : null)"
+                    disabled="@Disabled" data-testid="@($"promo-target-{Row.StudentId}")"
+                    @onchange="e => DecideAsync(Row.Outcome, Guid.TryParse(e.Value as string, out var id) ? id : null)">
+                <option value="" selected="@(Row.TargetClassId is null)">@L["Promo_ChooseClass"]</option>
+                @foreach (var c in TargetClasses)
+                {
+                    <option value="@c.Id" selected="@(c.Id == Row.TargetClassId)">@CultureText.Pick(c.NameAr, c.NameEn)</option>
+                }
+            </select>
+        }
+        else
+        {
+            <span class="lms-muted">@L["Promo_NotNeeded"]</span>
+        }
+    </td>
+    <td data-label="@L["Promo_Col_Note"]" class="lms-promo-notes">
+        @if (Row.ProblemCode is { } problem)
+        {
+            <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Error" Icon="@Icons.Material.Rounded.Error" Class="lms-promo-problem">@L[$"Promo_Problem_{problem}"]</MudChip>
+        }
+        @if (Row.WarningCodes.Count > 0)
+        {
+            <span class="lms-promo-warnings">
+                @foreach (var w in Row.WarningCodes)
+                {
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Warning" Class="lms-status-chip">@L[$"Promo_Warn_{w}"]</MudChip>
+                }
+            </span>
+        }
+        @if (Changed)
+        {
+            <span class="lms-promo-changed">
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Info" Class="lms-status-chip">@L["Promo_Changed"]</MudChip>
+                <MudButton Variant="Variant.Text" Size="Size.Small" Class="lms-touch" Disabled="Disabled" OnClick="() => DecideAsync(Row.SuggestedOutcome, Row.TargetClassId)"
+                           data-testid="@($"promo-row-{Row.StudentId}-reset")">@L["Promo_Reset"]</MudButton>
+            </span>
+        }
+        @if (Row.ProblemCode is null && Row.WarningCodes.Count == 0 && !Changed)
+        {
+            <span class="lms-muted" aria-hidden="true">—</span>
+        }
+    </td>
+</tr>
+
+@code {
+    [Parameter, EditorRequired] public PromotionRowDto Row { get; set; } = default!;
+    /// <summary>The target year's classes of the mapped next level (the server's list for this row's level).</summary>
+    [Parameter] public IReadOnlyList<PromotionTargetClass> TargetClasses { get; set; } = [];
+    [Parameter] public bool Selected { get; set; }
+    [Parameter] public EventCallback<bool> SelectedChanged { get; set; }
+    [Parameter] public EventCallback<PromotionDecisionDto> OnDecision { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+
+    private string Name => CultureText.Pick(Row.NameAr, Row.NameEn);
+    private bool NeedsTarget => Row.Outcome is PromotionOutcomes.Promote or PromotionOutcomes.Repeat;
+    private bool Changed => Row.Outcome != Row.SuggestedOutcome;
+
+    private string Format(string key, string name) => string.Format(System.Globalization.CultureInfo.CurrentCulture, L[key].Value, name);
+
+    private Task DecideAsync(string outcome, Guid? target) => OnDecision.InvokeAsync(new PromotionDecisionDto(Row.StudentId, outcome, target));
+}
