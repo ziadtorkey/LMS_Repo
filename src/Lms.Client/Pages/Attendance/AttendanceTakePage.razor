@@ -140,7 +140,7 @@
 
     [Parameter] public Guid Id { get; set; }
 
-    private bool Future => _data is { } d && d.Session.Date > DateOnly.FromDateTime(d.Session.ServerNowUtc);
+    private bool Future => _data is { } d && d.Session.Date > ClientCalendar.Today(d.Session.ServerNowUtc); // the session day is a client-zone day (D64), so is "today"
     private bool AfterWindow => _data is { } d && d.Session.State == AttendanceSessionStates.Taken && d.Session.EditableUntilUtc is { } until && until < d.Session.ServerNowUtc;
     private bool CanEditAfterWindow => PermState.Has(Permissions.Attendance.Edit);
     private bool Editable => !Future && (!AfterWindow || CanEditAfterWindow);

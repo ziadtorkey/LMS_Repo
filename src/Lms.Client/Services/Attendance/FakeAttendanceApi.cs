@@ -1,3 +1,4 @@
+using Lms.Client.Services;
 using Lms.Client.Services.Api;
 using Lms.Shared.Attendance;
 
@@ -17,7 +18,6 @@ public sealed class FakeAttendanceApi : IAttendanceApi
     private static readonly Guid ClassCourse = Guid.Parse("c0000000-0000-0000-0000-000000000001");
     private static readonly Guid Teacher = Guid.Parse("e0000000-0000-0000-0000-000000000001");
 
-    private static readonly TimeZoneInfo Riyadh = TimeZoneInfo.CreateCustomTimeZone("Asia/Riyadh", TimeSpan.FromHours(3), "Riyadh", "Riyadh");
     private readonly TimeProvider _clock;
     private readonly TimeZoneInfo _zone;
     private readonly List<Row> _sessions = [];
@@ -37,7 +37,7 @@ public sealed class FakeAttendanceApi : IAttendanceApi
     public FakeAttendanceApi(TimeProvider clock, TimeZoneInfo? zone = null)
     {
         _clock = clock;
-        _zone = zone ?? Riyadh;
+        _zone = zone ?? ClientCalendar.Zone();
         var now = clock.GetUtcNow().UtcDateTime;
         var today = LocalToday();
         Add(SessionOpen, 1, AttendanceSources.Timetable, AttendanceSessionStates.Open, 0, now.AddHours(48), today);
@@ -132,7 +132,7 @@ public sealed class FakeAttendanceApi : IAttendanceApi
     }
 
     /// <summary>The client's local day by the server clock.</summary>
-    private DateOnly LocalToday() => DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(_clock.GetUtcNow(), _zone).DateTime);
+    private DateOnly LocalToday() => ClientCalendar.Today(_clock.GetUtcNow().UtcDateTime, _zone);
 
     private Row Add(Guid id, int period, string source, string state, int marked, DateTime editableUntil, DateOnly date, bool proposal = false, bool substitute = false)
     {
