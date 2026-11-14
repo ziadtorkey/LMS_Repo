@@ -379,6 +379,20 @@ All tenant-owned tables: `OrganizationId`; unit-scoped tables: `OrgUnitId`, `Org
 | D71 | Communication retention | Plan defaults accepted, pending legal advice: deliveries 90 days; messages the school year + 1 year; report context and removed originals 180 days; each client may shorten. Owner decision 2026-11-14 (M6 plan O2). |
 | D72 | SMS and minors | No SMS about minors: SMS goes only to adults about themselves; guardians receive news about their children by email and push. Consent wording (ar/en) drafted by the Lead for owner review before go-live. Owner decision 2026-11-14 (M6 plan O3). |
 | D73 | Provider data region | Prefer in-Kingdom or GCC processing for the email relay, SMS gateway and push services where offered; otherwise any region, since bodies hold no student data (D66). Owner decision 2026-11-14 (M6 plan O5). |
+| D74 | Class groups read-only for students | In class-course groups only the teacher (and staff) post; students read and reply privately to the teacher. D69 "never message other students" means never, including group posts. Owner decision 2026-11-14. |
+| D75 | No SMS to guardians | Guardians never receive SMS, not even urgent school-wide announcements; they get email and push. SMS is only for adult accounts about themselves (D72). Owner decision 2026-11-14. |
+| D76 | No SMS in v1 | No SMS anywhere in v1: no SMS channel, preferences, caps, consent or gateway. Email and push only. SMS may come in a later version. Supersedes D68 and the SMS parts of D66, D72, D73 and D75. Owner decision 2026-11-14. |
+| D77 | Guardians may post in groups | In teacher-run groups that include guardians, guardians may post (other guardians read it). Students stay read-only (D74). Owner decision 2026-11-14. |
+| D78 | Who runs promotion | Org Admin anywhere, and a Manager inside their own units. Owner decision 2026-11-14 (M7). |
+| D79 | Close before promote | A year must be Closed before promotion runs; no reopen in v1 (late fixes go through grade-change approval). Closing warns, but does not block, when grades are unpublished. Owner decision 2026-11-14. |
+| D80 | Grade-change approval | After close, a Manager or the Org Admin approves a grade change, never the requester (FR-GRD-06). Owner decision 2026-11-14. |
+| D81 | After leaving | After withdrawal or graduation the guardian keeps read access to the child's closed years; the withdrawal reason is staff-only. Owner decision 2026-11-14. |
+| D82 | Who withdraws | Org Admin, Manager and Counselor may withdraw a student; the reason comes from a client-managed list plus "Other" with a note. Owner decision 2026-11-14. |
+| D83 | Promotion outcome | Promotion suggests the next level from the level mapping only (no grade pass/fail rule in v1); every row stays editable. Owner decision 2026-11-14. |
+| D84 | Promotion blockers and failures | Open grade-change and excuse requests show as warnings, not blocks. A run succeeds per student with a failure list to fix and re-run; undo restores the successful ones. No bulk withdrawal in v1. Owner decision 2026-11-14. |
+| D85 | SAML and LDAP scope | v1: SP-initiated SAML only; LDAP search-bind over LDAPS or StartTLS only; no group-to-role mapping (roles are assigned in the LMS). Owner decision 2026-11-14. |
+| D86 | Year-end checklist | Shown on the home pages from 60 days before the year end. Owner decision 2026-11-14. |
+| D87 | Accessibility target | WCAG 2.1 AA (X-10); no AAA requirement. Owner decision 2026-11-14. |
 
 ---
 

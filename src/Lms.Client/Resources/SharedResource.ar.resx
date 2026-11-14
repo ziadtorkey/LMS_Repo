@@ -1487,6 +1487,35 @@
   <data name="Error_package_not_ready" xml:space="preserve"><value>الحزمة ليست جاهزة بعد. انتظر حتى ينتهي الفحص.</value></data>
   <data name="Error_package_not_attached" xml:space="preserve"><value>الحزمة غير مضافة إلى درس بعد، لذا لا يمكن تغيير طريقة احتساب الدرجة.</value></data>
   <data name="Error_package_commit_rejected" xml:space="preserve"><value>تعذّر حفظ تقدّمك لأن المحاولة مغلقة أو لم تُقبل البيانات.</value></data>
+  <data name="Blueprint_VersionsSubtitle" xml:space="preserve"><value>سجل كامل لمراجعات المخطط ونسخه المنشورة.</value></data>
+  <data name="Blueprint_Overview" xml:space="preserve"><value>نظرة عامة على المخطط</value></data>
+  <data name="Blueprint_StatSections" xml:space="preserve"><value>الأقسام</value></data>
+  <data name="Blueprint_StatLessons" xml:space="preserve"><value>الدروس</value></data>
+  <data name="Blueprint_StatPeriods" xml:space="preserve"><value>الحصص أسبوعيًا</value></data>
+  <data name="Blueprint_StatVersion" xml:space="preserve"><value>النسخة</value></data>
+  <data name="Blueprint_LessonsCount" xml:space="preserve"><value>الدروس: {0}</value></data>
+  <data name="MyCourses_StatSupervised" xml:space="preserve"><value>مقررات تشرف عليها</value></data>
+  <data name="MyCourses_StatAllocations" xml:space="preserve"><value>تخصيصات الفصول</value></data>
+  <data name="MyCourses_StatPublished" xml:space="preserve"><value>مخططات منشورة</value></data>
+  <data name="MyCourses_StatPending" xml:space="preserve"><value>بدون مخطط منشور</value></data>
+  <data name="MyCourses_Filter" xml:space="preserve"><value>تصفية بالاسم أو الرمز</value></data>
+  <data name="MyCourses_FilterUnit" xml:space="preserve"><value>الوحدة</value></data>
+  <data name="MyCourses_AllUnits" xml:space="preserve"><value>كل الوحدات</value></data>
+  <data name="MyCourses_FilterBlueprint" xml:space="preserve"><value>المخطط</value></data>
+  <data name="MyCourses_AllBlueprints" xml:space="preserve"><value>كل المخططات</value></data>
+  <data name="MyCourses_View" xml:space="preserve"><value>طريقة العرض</value></data>
+  <data name="MyCourses_ViewGrid" xml:space="preserve"><value>عرض شبكي</value></data>
+  <data name="MyCourses_ViewList" xml:space="preserve"><value>عرض قائمة</value></data>
+  <data name="MyCourses_NoMatch" xml:space="preserve"><value>لا يوجد مقرر مطابق</value></data>
+  <data name="MyCourses_NoMatchText" xml:space="preserve"><value>غيّر عوامل التصفية أو امسحها.</value></data>
+  <data name="MyCourses_Periods" xml:space="preserve"><value>الحصص أسبوعيًا: {0}</value></data>
+  <data name="MyCourses_AssignTitle" xml:space="preserve"><value>إسناد مقرر أو ربطه</value></data>
+  <data name="MyCourses_AssignText" xml:space="preserve"><value>اطلب من المسؤول تعيينك مشرفًا على مقرر، أو ابدأ من قالب.</value></data>
+  <data name="MyCourses_ExploreTemplates" xml:space="preserve"><value>استعرض القوالب</value></data>
+  <data name="MyCourses_ColCourse" xml:space="preserve"><value>المقرر</value></data>
+  <data name="MyCourses_ColUnit" xml:space="preserve"><value>الوحدة</value></data>
+  <data name="MyCourses_ColBlueprint" xml:space="preserve"><value>المخطط</value></data>
+  <data name="MyCourses_ColPeriods" xml:space="preserve"><value>الحصص أسبوعيًا</value></data>
   <data name="Package_Start" xml:space="preserve"><value>ابدأ</value></data>
   <data name="Package_Resume" xml:space="preserve"><value>استئناف</value></data>
   <data name="Package_Preview" xml:space="preserve"><value>معاينة</value></data>
@@ -1793,10 +1822,24 @@
   <data name="AuditEntity_GradeEntry" xml:space="preserve"><value>درجة</value></data>
   <data name="AuditEntity_GradeSnapshot" xml:space="preserve"><value>لقطة الدرجات</value></data>
   <data name="PermModule_Grades" xml:space="preserve"><value>الدرجات</value></data>
+  <data name="ClassCourse_TabGradebook" xml:space="preserve"><value>دفتر الدرجات</value></data>
+  <data name="Grd_Title" xml:space="preserve"><value>دفتر الدرجات</value></data>
+  <data name="Grd_GridSoonTitle" xml:space="preserve"><value>جدول الدرجات قادم قريبًا</value></data>
+  <data name="Grd_GridSoonText" xml:space="preserve"><value>ستظهر هنا فئات الدرجات وبنودها ودرجات هذا المقرر الدراسي.</value></data>
   <data name="NavSection_Structure" xml:space="preserve"><value>الهيكل</value></data>
   <data name="NavSection_People" xml:space="preserve"><value>الأشخاص</value></data>
   <data name="NavSection_Academic" xml:space="preserve"><value>الأكاديمي</value></data>
   <data name="NavSection_Security" xml:space="preserve"><value>الأمان والإعدادات</value></data>
   <data name="App_Subtitle" xml:space="preserve"><value>المنصة الأكاديمية</value></data>
   <data name="Nav_Main" xml:space="preserve"><value>التنقل الرئيسي</value></data>
+  <data name="UnitSettings_Identity" xml:space="preserve"><value>الهوية</value></data>
+  <data name="UnitSettings_IdentityHelp" xml:space="preserve"><value>الأسماء والرمز المستخدمة في كل أنحاء النظام.</value></data>
+  <data name="Academic_SectionLevelHelp" xml:space="preserve"><value>كيف ينتقل الطلاب إلى المستوى التالي.</value></data>
+  <data name="Academic_LevelTransferHelp" xml:space="preserve"><value>ينتقل الطلاب الذين يُنهون هذه الوحدة إلى المستوى التالي الذي تختاره.</value></data>
+  <data name="Academic_SectionCoursesHelp" xml:space="preserve"><value>أين تُعرَّف المقررات ومن يملكها.</value></data>
+  <data name="Academic_CourseManagementHelp" xml:space="preserve"><value>تستطيع هذه الوحدة إنشاء المقررات وامتلاكها للوحدات التابعة لها.</value></data>
+  <data name="Academic_SaveHint" xml:space="preserve"><value>تُطبَّق التغييرات على هذه الوحدة بعد الحفظ.</value></data>
+  <data name="Policies_CascadeNote" xml:space="preserve"><value>تُطبَّق السياسات التي تفعّلها هنا على هذه الوحدة وكل الوحدات التابعة لها. السياسة المعيّنة في مستوى أعلى تُظهر من عيّنها، ولا تُغيَّر إلا هناك.</value></data>
+  <data name="Policies_CardTitle" xml:space="preserve"><value>قيود التفويض</value></data>
+  <data name="Policies_CardHelp" xml:space="preserve"><value>امنع إجراءات في هذه الوحدة والوحدات التابعة لها.</value></data>
 </root>

@@ -11,6 +11,14 @@ namespace Lms.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AddColumn<string>(
+                name: "GradingMethod",
+                table: "PackageUploads",
+                type: "varchar(10)",
+                maxLength: 10,
+                nullable: false,
+                defaultValue: "Highest");
+
             migrationBuilder.CreateTable(
                 name: "PackageAttempts",
                 columns: table => new
@@ -87,6 +95,10 @@ namespace Lms.Infrastructure.Persistence.Migrations
         {
             migrationBuilder.DropTable(
                 name: "PackageAttempts");
+
+            migrationBuilder.DropColumn(
+                name: "GradingMethod",
+                table: "PackageUploads");
         }
     }
 }
