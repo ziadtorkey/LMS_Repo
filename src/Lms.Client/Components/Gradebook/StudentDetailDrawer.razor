@@ -1,0 +1,71 @@
+@using Lms.Shared.Grading
+@inject ICultureService Culture
+
+@* The staff preview of one student (L6): exactly what the student and their guardians see, read with the staff route so no rule is duplicated here. *@
+<MudDrawer Open="Open" OpenChanged="OpenChanged" Anchor="Anchor.End" Variant="DrawerVariant.Temporary" Overlay="true" Width="420px" Elevation="2"
+           aria-label="@L["Grd_Drawer_Title"]" data-testid="student-drawer">
+    <MudDrawerHeader>
+        <MudText Typo="Typo.h6" data-testid="drawer-title">@string.Format(Culture.Current, L["Grd_Drawer_Title"].Value, StudentName)</MudText>
+        <MudSpacer />
+        <MudIconButton Icon="@Icons.Material.Rounded.Close" aria-label="@L["Common_Close"]" OnClick="() => OpenChanged.InvokeAsync(false)" data-testid="drawer-close" />
+    </MudDrawerHeader>
+    <div class="px-4 pb-4">
+        @if (Loading)
+        {
+            <LoadingState Lines="4" TestId="drawer-loading" />
+        }
+        else if (Failed)
+        {
+            <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="drawer-error">@L["Api_Error"]</MudAlert>
+        }
+        else if (Data is { } d)
+        {
+            <MudText Typo="Typo.body2" Class="lms-muted mb-3" data-testid="drawer-note">@L["Grd_Drawer_Note"]</MudText>
+            @if (d.Items.Count == 0)
+            {
+                <EmptyState Title="@L["Grd_Drawer_Empty"]" Icon="@Icons.Material.Rounded.VisibilityOff" TestId="drawer-empty" />
+            }
+            else
+            {
+                <MudSimpleTable Dense="true" Elevation="0" Class="lms-simple-table" data-testid="drawer-items">
+                    <thead><tr><th>@L["Grd_Item"]</th><th>@L["Grd_Score"]</th></tr></thead>
+                    <tbody>
+                        @foreach (var item in d.Items)
+                        {
+                            <tr data-testid="@($"drawer-item-{item.ItemId}")">
+                                <td>@Culture.Pick(item.TitleAr, item.TitleEn)</td>
+                                <td>
+                                    @if (item.Excused)
+                                    {
+                                        <span>@L["Grd_Cell_ExcusedChip"]</span>
+                                    }
+                                    else
+                                    {
+                                        <span dir="ltr">@GradeFormat.Points(item.Points) / @GradeFormat.Points(item.MaxPoints)</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </MudSimpleTable>
+                <div class="lms-gb-item" data-testid="drawer-final">
+                    <div class="t"><b>@L["Grd_Final"]</b></div>
+                    <span dir="ltr">@GradeFormat.Percent(d.FinalPercent, d.DecimalPlaces)</span>
+                    @if (d.BandCode is not null)
+                    {
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@Culture.Pick(d.BandLabelAr ?? d.BandCode, d.BandLabelEn ?? d.BandCode)</MudChip>
+                    }
+                </div>
+            }
+        }
+    </div>
+</MudDrawer>
+
+@code {
+    [Parameter] public bool Open { get; set; }
+    [Parameter] public EventCallback<bool> OpenChanged { get; set; }
+    [Parameter] public string StudentName { get; set; } = "";
+    [Parameter] public StudentCourseGradesDto? Data { get; set; }
+    [Parameter] public bool Loading { get; set; }
+    [Parameter] public bool Failed { get; set; }
+}

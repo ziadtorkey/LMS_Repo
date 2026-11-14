@@ -1624,8 +1624,6 @@
   <data name="PermModule_Grades" xml:space="preserve"><value>Grades</value></data>
   <data name="ClassCourse_TabGradebook" xml:space="preserve"><value>Gradebook</value></data>
   <data name="Grd_Title" xml:space="preserve"><value>Gradebook</value></data>
-  <data name="Grd_GridSoonTitle" xml:space="preserve"><value>The gradebook grid is on its way</value></data>
-  <data name="Grd_GridSoonText" xml:space="preserve"><value>Categories, items and scores for this class course will appear here.</value></data>
   <data name="Nav_GradingScales" xml:space="preserve"><value>Grading scales</value></data>
   <data name="Grading_Sections" xml:space="preserve"><value>Grading settings</value></data>
   <data name="Grd_TabScales" xml:space="preserve"><value>Scales</value></data>
@@ -1697,4 +1695,50 @@
   <data name="WTemplates_EmptyTitle" xml:space="preserve"><value>No weight templates yet</value></data>
   <data name="WTemplates_EmptyText" xml:space="preserve"><value>Create one, for example coursework and exams.</value></data>
   <data name="WTemplates_DeleteConfirm" xml:space="preserve"><value>Delete the template {0}?</value></data>
+  <data name="Grd_Toolbar" xml:space="preserve"><value>Gradebook toolbar</value></data>
+  <data name="Grd_TermScale" xml:space="preserve"><value>{0} · {1}</value></data>
+  <data name="Grd_Grid_Label" xml:space="preserve"><value>Gradebook of this class course</value></data>
+  <data name="Grd_Student" xml:space="preserve"><value>Student</value></data>
+  <data name="Grd_Final" xml:space="preserve"><value>Final</value></data>
+  <data name="Grd_Final_Title" xml:space="preserve"><value>Calculated from graded items only</value></data>
+  <data name="Grd_Band" xml:space="preserve"><value>Band</value></data>
+  <data name="Grd_Category_Result" xml:space="preserve"><value>Category</value></data>
+  <data name="Grd_Item" xml:space="preserve"><value>Item</value></data>
+  <data name="Grd_Score" xml:space="preserve"><value>Score</value></data>
+  <data name="Grd_OutOf" xml:space="preserve"><value>out of {0}</value></data>
+  <data name="Grd_Item_AutoHidden" xml:space="preserve"><value>Hidden until published</value></data>
+  <data name="Grd_Item_Scheduled" xml:space="preserve"><value>Scheduled {0}</value></data>
+  <data name="Grd_Cell_FromEvent" xml:space="preserve"><value>{0} of {1}, from {2}</value></data>
+  <data name="Grd_Cell_Manual" xml:space="preserve"><value>{0} of {1}</value></data>
+  <data name="Grd_Cell_Override" xml:space="preserve"><value>{0} of {1}, overridden: {2}</value></data>
+  <data name="Grd_Cell_NewerScore" xml:space="preserve"><value>{0} of {1}, overridden; a newer score exists</value></data>
+  <data name="Grd_Cell_Excused" xml:space="preserve"><value>Excused</value></data>
+  <data name="Grd_Cell_None" xml:space="preserve"><value>No score</value></data>
+  <data name="Grd_Cell_ExcusedChip" xml:space="preserve"><value>Excused</value></data>
+  <data name="Grd_Cell_NewerChip" xml:space="preserve"><value>Newer score</value></data>
+  <data name="Grd_Weights_Ok" xml:space="preserve"><value>Weights total {0}</value></data>
+  <data name="Grd_Weights_Missing" xml:space="preserve"><value>Weights total {0}: {1} missing</value></data>
+  <data name="Grd_Weights_Over" xml:space="preserve"><value>Weights total {0}: {1} over</value></data>
+  <data name="Grd_Locked_Banner" xml:space="preserve"><value>This gradebook is locked. Scores can be read but not changed.</value></data>
+  <data name="Grd_Empty_Students_Title" xml:space="preserve"><value>No students in this class course yet</value></data>
+  <data name="Grd_Empty_Students_Text" xml:space="preserve"><value>Students appear here once they are placed in the class and enrolled.</value></data>
+  <data name="Grd_Empty_Students_Action" xml:space="preserve"><value>Go to the course</value></data>
+  <data name="Grd_Empty_Items_Title" xml:space="preserve"><value>Add a grade item</value></data>
+  <data name="Grd_Empty_Items_Text" xml:space="preserve"><value>Assignments and quizzes appear here when they are scored.</value></data>
+  <data name="Grd_Paging" xml:space="preserve"><value>Gradebook pages</value></data>
+  <data name="Grd_Legend_Event" xml:space="preserve"><value>Score from an assignment, quiz or package (read only)</value></data>
+  <data name="Grd_Legend_Override" xml:space="preserve"><value>Score changed by hand</value></data>
+  <data name="Grd_Legend_Newer" xml:space="preserve"><value>Changed by hand, and a newer score exists</value></data>
+  <data name="Grd_Legend_Excused" xml:space="preserve"><value>Excused from this item</value></data>
+  <data name="Grd_Legend_None" xml:space="preserve"><value>No score yet</value></data>
+  <data name="Grd_Phone_Note" xml:space="preserve"><value>The phone is for checking or correcting one student. Use a larger screen to enter a whole class.</value></data>
+  <data name="Grd_Search_Student" xml:space="preserve"><value>Find a student</value></data>
+  <data name="Grd_Search_None" xml:space="preserve"><value>No student matches</value></data>
+  <data name="Grd_Prev_Student" xml:space="preserve"><value>Previous student</value></data>
+  <data name="Grd_Next_Student" xml:space="preserve"><value>Next student</value></data>
+  <data name="Grd_StudentPosition" xml:space="preserve"><value>{0} of {1}</value></data>
+  <data name="Grd_Drawer_Open" xml:space="preserve"><value>See what the student sees</value></data>
+  <data name="Grd_Drawer_Title" xml:space="preserve"><value>What {0} sees</value></data>
+  <data name="Grd_Drawer_Note" xml:space="preserve"><value>This is exactly what the student and their guardians see: published items only.</value></data>
+  <data name="Grd_Drawer_Empty" xml:space="preserve"><value>No grade has been published to this student yet.</value></data>
 </root>

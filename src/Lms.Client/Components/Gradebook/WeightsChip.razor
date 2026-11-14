@@ -1,0 +1,26 @@
+@using Lms.Shared.Grading
+@using System.Globalization
+@inject ICultureService Culture
+
+@* The weights total: a success chip at 100, a warning that says how far off it is otherwise (spec 2.1). The server owns the total. *@
+<MudChip T="string" Size="Size.Small" Color="@(Valid ? Color.Success : Color.Warning)" Class="lms-weights-chip" role="status" data-testid="weights-chip">
+    <MudIcon Icon="@(Valid ? Icons.Material.Rounded.CheckCircle : Icons.Material.Rounded.WarningAmber)" Size="Size.Small" aria-hidden="true" />
+    @Text
+</MudChip>
+
+@code {
+    [Parameter, EditorRequired] public decimal Total { get; set; }
+
+    private bool Valid => Total == 100m;
+
+    private string Text
+    {
+        get
+        {
+            var total = GradeFormat.Points(Total);
+            if (Valid) return string.Format(Culture.Current, L["Grd_Weights_Ok"].Value, total);
+            var diff = GradeFormat.Points(Math.Abs(100m - Total));
+            return string.Format(Culture.Current, L[Total < 100m ? "Grd_Weights_Missing" : "Grd_Weights_Over"].Value, total, diff);
+        }
+    }
+}

@@ -31,6 +31,7 @@ public static class ClientServices
         services.AddScoped<INotificationFeed, NotificationFeed>();
         services.AddSingleton<Lms.Client.Services.Packages.PackagePollOptions>();
 
+        services.AddScoped<IViewport, Viewport>(); // both modes: the gradebook renders one layout per size
         if (configuration.GetValue<bool>("Lms:UseFakeApi"))
         {
             services.AddScoped<ILmsApi, FakeLmsApi>();

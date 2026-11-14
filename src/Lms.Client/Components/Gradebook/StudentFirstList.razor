@@ -1,0 +1,120 @@
+@using Lms.Shared.Grading
+@inject ICultureService Culture
+
+@* The phone gradebook (L19): one student at a time, items as rows grouped by category, Final and Band in the footer. The desktop grid is not rendered
+   at all on a phone, so nothing is hidden with CSS. Scores are shown as text here; correcting one is Task 25. *@
+<div class="lms-gb-phone" data-testid="student-first-list">
+    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" Class="mb-3" data-testid="phone-note">@L["Grd_Phone_Note"]</MudAlert>
+    <MudTextField T="string" Value="_search" ValueChanged="OnSearch" Immediate="true" Label="@L["Grd_Search_Student"]" Clearable="true"
+                  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Rounded.Search" Class="mb-3" data-testid="student-search" />
+    @if (Matches.Count == 0)
+    {
+        <EmptyState Title="@L["Grd_Search_None"]" Icon="@Icons.Material.Rounded.SearchOff" TestId="student-search-none" />
+    }
+    else
+    {
+        var row = Current!;
+        <div class="lms-gb-picker">
+            <MudIconButton Icon="@Icons.Material.Rounded.ChevronLeft" Class="lms-icon-flip" aria-label="@L["Grd_Prev_Student"]" Disabled="_index == 0"
+                           OnClick="() => Move(-1)" data-testid="student-prev" />
+            <div class="who">
+                <b data-testid="student-name">@Culture.Pick(row.StudentNameAr, row.StudentNameEn)</b>
+                <div class="lms-muted" data-testid="student-position">@string.Format(Culture.Current, L["Grd_StudentPosition"].Value, _index + 1, Matches.Count)</div>
+            </div>
+            <MudIconButton Icon="@Icons.Material.Rounded.ChevronRight" Class="lms-icon-flip" aria-label="@L["Grd_Next_Student"]" Disabled="_index >= Matches.Count - 1"
+                           OnClick="() => Move(1)" data-testid="student-next" />
+        </div>
+        @foreach (var group in Groups)
+        {
+            <MudText Typo="Typo.subtitle2" Class="px-3 pt-3">@Culture.Pick(group.Category.NameAr, group.Category.NameEn)</MudText>
+            @foreach (var item in group.Items)
+            {
+                var cell = row.Cells.FirstOrDefault(c => c.ItemId == item.Id) ?? new GradeCellDto(item.Id, null, GradeCellStates.Empty, null);
+                <div class="lms-gb-item" data-testid="@($"phone-item-{item.Id}")" data-state="@cell.State">
+                    <div class="t">
+                        @Culture.Pick(item.TitleAr, item.TitleEn)
+                        <small>@string.Format(Culture.Current, L["Grd_OutOf"].Value, GradeFormat.Points(item.MaxPoints)) · @StateText(item)</small>
+                    </div>
+                    @switch (cell.State)
+                    {
+                        case GradeCellStates.Excused:
+                            <span class="mini mini-muted">@L["Grd_Cell_ExcusedChip"]</span>
+                            break;
+                        case GradeCellStates.Empty:
+                            <span aria-label="@L["Grd_Cell_None"]">–</span>
+                            break;
+                        default:
+                            @if (cell.State == GradeCellStates.Event)
+                            {
+                                <MudIcon Icon="@Icons.Material.Rounded.Assignment" Size="Size.Small" aria-hidden="true" />
+                            }
+                            <span class="score" dir="ltr" aria-label="@CellLabel(cell, item)">@GradeFormat.Points(cell.Points)</span>
+                            @if (cell.State == GradeCellStates.NewerScoreExists)
+                            {
+                                <span class="mini mini-warn">@L["Grd_Cell_NewerChip"]</span>
+                            }
+                            break;
+                    }
+                </div>
+            }
+        }
+        <div class="lms-gb-item" data-testid="phone-final">
+            <div class="t"><b>@L["Grd_Final"]</b></div>
+            <span dir="ltr">@GradeFormat.Percent(row.FinalPercent, Places)</span>
+            @if (row.BandCode is not null)
+            {
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" data-testid="phone-band">@Culture.Pick(row.BandLabelAr ?? row.BandCode, row.BandLabelEn ?? row.BandCode)</MudChip>
+            }
+        </div>
+        <div class="px-3 py-2">
+            <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="() => OnStudent.InvokeAsync(row)" data-testid="phone-preview">@L["Grd_Drawer_Open"]</MudButton>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<CategoryGroup> Groups { get; set; } = [];
+    [Parameter, EditorRequired] public IReadOnlyList<GradeRowDto> Rows { get; set; } = [];
+    [Parameter] public int Places { get; set; } = 2;
+    [Parameter] public EventCallback<GradeRowDto> OnStudent { get; set; }
+
+    private string _search = "";
+    private int _index;
+
+    /// <summary>The students that match the search (name or number), in the server's order.</summary>
+    private IReadOnlyList<GradeRowDto> Matches => string.IsNullOrWhiteSpace(_search)
+        ? Rows
+        : [.. Rows.Where(r => r.StudentNameAr.Contains(_search, StringComparison.OrdinalIgnoreCase)
+                              || r.StudentNameEn.Contains(_search, StringComparison.OrdinalIgnoreCase)
+                              || r.StudentNumber.Contains(_search, StringComparison.OrdinalIgnoreCase))];
+
+    private GradeRowDto? Current => Matches.Count == 0 ? null : Matches[Math.Clamp(_index, 0, Matches.Count - 1)];
+
+    private void OnSearch(string value)
+    {
+        _search = value ?? "";
+        _index = 0;
+    }
+
+    private void Move(int by) => _index = Math.Clamp(_index + by, 0, Math.Max(0, Matches.Count - 1));
+
+    private string StateText(GradeItemDto item) => item.PublishState switch
+    {
+        PublishStates.Published => L["Grd_PublishState_Published"].Value,
+        PublishStates.Scheduled => L["Grd_PublishState_Scheduled"].Value,
+        _ => item.IsManual ? L["Grd_PublishState_Hidden"].Value : L["Grd_Item_AutoHidden"].Value,
+    };
+
+    private string CellLabel(GradeCellDto cell, GradeItemDto item)
+    {
+        var points = GradeFormat.Points(cell.Points);
+        var max = GradeFormat.Points(item.MaxPoints);
+        return cell.State switch
+        {
+            GradeCellStates.Event => string.Format(Culture.Current, L["Grd_Cell_FromEvent"].Value, points, max, Culture.Pick(item.TitleAr, item.TitleEn)),
+            GradeCellStates.Override => string.Format(Culture.Current, L["Grd_Cell_Override"].Value, points, max, cell.Reason),
+            GradeCellStates.NewerScoreExists => string.Format(Culture.Current, L["Grd_Cell_NewerScore"].Value, points, max),
+            _ => string.Format(Culture.Current, L["Grd_Cell_Manual"].Value, points, max),
+        };
+    }
+}

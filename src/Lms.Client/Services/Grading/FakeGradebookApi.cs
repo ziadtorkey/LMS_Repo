@@ -52,6 +52,26 @@ public sealed class FakeGradebookApi : IGradebookApi
     /// <summary>The caller can manage / publish (a teacher). False models a read-only viewer.</summary>
     public bool CanManage { get; set; } = true;
 
+    /// <summary>The last grid query the page sent (term and paging), for tests.</summary>
+    public GradebookQuery? LastQuery { get; private set; }
+
+    /// <summary>How many times the staff preview of a student was read.</summary>
+    public int StudentViewCalls { get; private set; }
+
+    /// <summary>Models a course with no students placed, or with no grade items yet (the empty states of the grid).</summary>
+    public bool NoStudents { get; set; }
+
+    public bool NoItems { get; set; }
+
+    /// <summary>When set, the next <see cref="GetAsync"/> fails once (a load failure with Try again).</summary>
+    public Exception? NextFailure { get; set; }
+
+    /// <summary>Lets a test reshape the answer of <see cref="GetAsync"/> (a different total, a locked state, values the page must show as given).</summary>
+    public Func<GradebookDto, GradebookQuery, GradebookDto>? Transform { get; set; }
+
+    /// <summary>Sets one cell directly, in any state (the demo cannot reach every state through the rules).</summary>
+    public void SetCell(Guid studentId, GradeCellDto cell) => _cells[(studentId, cell.ItemId)] = cell;
+
     /// <summary>The last publish request, for tests.</summary>
     public PublishItemsRequest? LastPublish { get; private set; }
 
@@ -131,7 +151,14 @@ public sealed class FakeGradebookApi : IGradebookApi
     public Task<GradebookDto> GetAsync(Guid classCourseId, GradebookQuery query, CancellationToken ct = default)
     {
         EnsureCourse(classCourseId);
-        var all = StudentIds.Select(Row).ToList();
+        LastQuery = query;
+        if (NextFailure is { } failure)
+        {
+            NextFailure = null;
+            throw failure;
+        }
+
+        var all = NoStudents ? [] : StudentIds.Select(Row).ToList();
         var page = Math.Max(1, query.Page);
         var size = Math.Clamp(query.PageSize, 1, GradingLimits.GridPageSizeMax);
         var total = _categories.Sum(c => c.Weight);
@@ -139,9 +166,10 @@ public sealed class FakeGradebookApi : IGradebookApi
         var rows = new PagedResult<GradeRowDto>([.. all.Skip((page - 1) * size).Take(size)], all.Count, page, size);
         var config = new GradebookConfigDto(_scaleId, Scale.NameAr, Scale.NameEn, Scale.Provisional, GradingLimits.DecimalPlacesDefault,
             CategoryMethods.PointsWeighted, MissingPolicies.Normalise, RoundingModes.HalfUp);
-        return Task.FromResult(new GradebookDto(Guid.Parse("00000000-0000-0000-0000-0000000e0061"), classCourseId, DemoTermId, "الفصل الأول", "Term 1", config,
-            [.. _categories], [.. _items.OrderBy(i => i.Order)], rows, total == 100m, total, Locked ? GradebookStates.Locked : GradebookStates.Open,
-            Locked ? now : null, 0, CanManage, CanManage, now, now));
+        var book = new GradebookDto(Guid.Parse("00000000-0000-0000-0000-0000000e0061"), classCourseId, DemoTermId, "الفصل الأول", "Term 1", config,
+            [.. _categories], NoItems ? [] : [.. _items.OrderBy(i => i.Order)], rows, total == 100m, total, Locked ? GradebookStates.Locked : GradebookStates.Open,
+            Locked ? now : null, 0, CanManage, CanManage, now, now);
+        return Task.FromResult(Transform is null ? book : Transform(book, query));
     }
 
     public Task<GradebookConfigDto> SaveConfigAsync(Guid classCourseId, SaveGradebookConfigRequest request, CancellationToken ct = default)
@@ -303,6 +331,7 @@ public sealed class FakeGradebookApi : IGradebookApi
     {
         EnsureCourse(classCourseId);
         if (!CanManage) throw Problem(403, "MissingPermission");
+        StudentViewCalls++;
         return Task.FromResult(CourseGrades(_versions.ContainsKey(studentId) ? studentId : throw Problem(404, ProblemCodes.not_found)));
     }
 

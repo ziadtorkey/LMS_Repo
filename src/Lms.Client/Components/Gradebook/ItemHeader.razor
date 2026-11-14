@@ -1,0 +1,31 @@
+@using System.Globalization
+@using Lms.Shared.Grading
+@inject ICultureService Culture
+
+@* The column header of one grade item: title, "out of N" and its publish state in words. These labels exist on staff pages only. *@
+<th scope="col" data-testid="@($"item-{Item.Id}")">
+    <div class="lms-gb-hdr">
+        <span>
+            @if (!Item.IsManual)
+            {
+                <MudIcon Icon="@Icons.Material.Rounded.Assignment" Size="Size.Small" aria-hidden="true" />
+            }
+            @Culture.Pick(Item.TitleAr, Item.TitleEn)
+        </span>
+        <small>@string.Format(Culture.Current, L["Grd_OutOf"].Value, GradeFormat.Points(Item.MaxPoints))</small>
+        <small data-testid="@($"item-state-{Item.Id}")">@StateText</small>
+    </div>
+</th>
+
+@code {
+    [Parameter, EditorRequired] public GradeItemDto Item { get; set; } = default!;
+
+    private string StateText => Item.PublishState switch
+    {
+        PublishStates.Published => L["Grd_PublishState_Published"].Value,
+        PublishStates.Scheduled => string.Format(Culture.Current, L["Grd_Item_Scheduled"].Value,
+            Item.PublishAtUtc is { } at ? at.ToString("MM-dd", CultureInfo.InvariantCulture) : ""),
+        // An item that comes from an assignment or a quiz stays hidden until the teacher publishes it: say so.
+        _ => Item.IsManual ? L["Grd_PublishState_Hidden"].Value : L["Grd_Item_AutoHidden"].Value,
+    };
+}

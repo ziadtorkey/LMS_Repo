@@ -1,0 +1,60 @@
+@using Lms.Shared.Grading
+@inject ICultureService Culture
+
+@* The desktop grid: a real table with role=grid, category groups over their items, a result column per category, then Final and Band. The server
+   computed every number; this component only lays them out (L18). Sticky edges and scroll-padding come from lms-gb-wrap (spec 2.1). *@
+<div class="lms-gb-wrap" data-testid="gradebook-grid-wrap">
+    <table class="lms-gb" role="grid" aria-label="@L["Grd_Grid_Label"]" aria-describedby="gb-legend" data-testid="gradebook-grid">
+        <colgroup>
+            <col />
+        </colgroup>
+        @foreach (var group in Groups)
+        {
+            <colgroup span="@(group.Items.Count + 1)" data-testid="@($"colgroup-{group.Category.Id}")"></colgroup>
+        }
+        <colgroup span="2"></colgroup>
+        <thead>
+            <tr>
+                <th class="lms-gb-student" rowspan="2" scope="col">@L["Grd_Student"]</th>
+                @foreach (var group in Groups)
+                {
+                    <th colspan="@(group.Items.Count + 1)" scope="colgroup" class="lms-gb-cat" data-testid="@($"category-{group.Category.Id}")">
+                        @Culture.Pick(group.Category.NameAr, group.Category.NameEn) · <span dir="ltr">@GradeFormat.Points(group.Category.Weight)</span>
+                    </th>
+                }
+                <th rowspan="2" scope="col" class="lms-gb-final">@L["Grd_Final"]</th>
+                <th rowspan="2" scope="col">@L["Grd_Band"]</th>
+            </tr>
+            <tr>
+                @foreach (var group in Groups)
+                {
+                    @foreach (var item in group.Items)
+                    {
+                        <ItemHeader Item="item" />
+                    }
+                    <th scope="col" class="lms-gb-catres">@L["Grd_Category_Result"]</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @for (var i = 0; i < Rows.Count; i++)
+            {
+                <GradeRow @key="Rows[i].StudentId" Row="Rows[i]" Groups="Groups" Places="Places" FirstRow="i == 0" OnStudent="OnStudent" />
+            }
+        </tbody>
+    </table>
+</div>
+<div id="gb-legend" class="lms-gb-legend" data-testid="gradebook-legend">
+    <span><MudIcon Icon="@Icons.Material.Rounded.Assignment" Size="Size.Small" aria-hidden="true" />@L["Grd_Legend_Event"]</span>
+    <span><span class="lms-gb-swatch" aria-hidden="true"></span>@L["Grd_Legend_Override"]</span>
+    <span><span class="mini mini-warn">@L["Grd_Cell_NewerChip"]</span>@L["Grd_Legend_Newer"]</span>
+    <span><span class="mini mini-muted">@L["Grd_Cell_ExcusedChip"]</span>@L["Grd_Legend_Excused"]</span>
+    <span><span aria-hidden="true">–</span>@L["Grd_Legend_None"]</span>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<CategoryGroup> Groups { get; set; } = [];
+    [Parameter, EditorRequired] public IReadOnlyList<GradeRowDto> Rows { get; set; } = [];
+    [Parameter] public int Places { get; set; } = 2;
+    [Parameter] public EventCallback<GradeRowDto> OnStudent { get; set; }
+}
