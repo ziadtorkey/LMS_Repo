@@ -16,7 +16,7 @@
 <PageTitle>@L["ClassStudents_Title"]</PageTitle>
 @if (!PermState.Loaded)
 {
-    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+    <LoadingState Lines="3" />
 }
 else if (!PermState.Has(Permissions.Classes.View))
 {
@@ -24,13 +24,20 @@ else if (!PermState.Has(Permissions.Classes.View))
 }
 else if (_class is null)
 {
-    <MudText>@(_loaded ? L["Common_Empty"] : L["Common_Loading"])</MudText>
+    @if (_loaded)
+    {
+        <EmptyState Title="@L["Common_Empty"]" Icon="@Icons.Material.Rounded.School" />
+    }
+    else
+    {
+        <LoadingState Lines="3" />
+    }
 }
 else
 {
     @* A thin host for the students tab (the class view that will embed it belongs to the classes pages). *@
-    <MudText Typo="Typo.h4" Class="mb-1" data-testid="class-title">@Culture.Pick(_class.NameAr, _class.NameEn)</MudText>
-    <MudText Typo="Typo.body2" Class="mb-3" data-testid="class-subtitle">@string.Join(" · ", new[] { Culture.Pick(_class.YearNameAr, _class.YearNameEn), Culture.Pick(_class.OrgUnitNameAr, _class.OrgUnitNameEn) }.Where(x => !string.IsNullOrWhiteSpace(x)))</MudText>
+    <PageHeader Title="@Culture.Pick(_class.NameAr, _class.NameEn)" TitleTestId="class-title" />
+    <MudText Typo="Typo.body2" Class="lms-muted mb-4" data-testid="class-subtitle">@string.Join(" · ", new[] { Culture.Pick(_class.YearNameAr, _class.YearNameEn), Culture.Pick(_class.OrgUnitNameAr, _class.OrgUnitNameEn) }.Where(x => !string.IsNullOrWhiteSpace(x)))</MudText>
     <ClassStudentsTab Class="_class" CanManage="PermState.Has(Permissions.Enrollment.Manage)" CanTransfer="PermState.Has(Permissions.Enrollment.Transfer)"
                       CanRequestException="PermState.Has(Permissions.Enrollment.RequestException)" OnRequestException="RequestException" />
 }

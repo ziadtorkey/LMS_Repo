@@ -13,9 +13,32 @@ internal static class RecurrenceExpander
 {
     public static IReadOnlyList<DateTime> Expand(DateTime startsAtUtc, LiveRecurrenceInput r)
     {
+        var all = ExpandUpTo(startsAtUtc, r, LiveSessionLimits.MaxOccurrences);
+        return all.Count is 0 or > LiveSessionLimits.MaxOccurrences ? throw Invalid() : all;
+    }
+
+    /// <summary>
+    /// For the schedule dialog's preview: the same rules, but a series longer than the limit is reported (as
+    /// <c>count</c> = limit + 1) instead of refused, so the dialog can say so.
+    /// </summary>
+    public static (int Count, IReadOnlyList<DateTime> Dates)? Preview(DateTime startsAtUtc, LiveRecurrenceInput r)
+    {
+        try
+        {
+            var all = ExpandUpTo(startsAtUtc, r, LiveSessionLimits.MaxOccurrences + 1);
+            return all.Count == 0 ? null : (all.Count, all);
+        }
+        catch (ApiProblemException)
+        {
+            return null;
+        }
+    }
+
+    private static IReadOnlyList<DateTime> ExpandUpTo(DateTime startsAtUtc, LiveRecurrenceInput r, int cap)
+    {
         if (r.IntervalWeeks < LiveSessionLimits.MinIntervalWeeks) throw Invalid();
         if (r.Count is null == r.UntilUtc is null) throw Invalid(); // exactly one end
-        if (r.Count is { } c && (c < 1 || c > LiveSessionLimits.MaxOccurrences)) throw Invalid();
+        if (r.Count is { } c && (c < 1 || (c > LiveSessionLimits.MaxOccurrences && cap == LiveSessionLimits.MaxOccurrences))) throw Invalid();
         if (r.UntilUtc is { } until && until <= startsAtUtc) throw Invalid();
 
         var days = r.DaysOfWeek.Select(ParseDay).Distinct().Order().ToList();
@@ -28,23 +51,21 @@ internal static class RecurrenceExpander
         var firstLocal = TimeZoneInfo.ConvertTimeFromUtc(startsAtUtc, zone);
         var weekStart = firstLocal.Date.AddDays(-(int)firstLocal.DayOfWeek);
         var result = new List<DateTime>();
-        for (var block = 0; result.Count <= LiveSessionLimits.MaxOccurrences; block++)
+        for (var block = 0; result.Count <= cap; block++)
         {
             foreach (var day in days)
             {
                 var date = weekStart.AddDays(block * 7 * r.IntervalWeeks + (int)day);
                 var utc = ToUtc(date + firstLocal.TimeOfDay, zone);
                 if (utc < startsAtUtc) continue;
-                if (r.UntilUtc is { } end && utc > end) return Finish(result);
+                if (r.UntilUtc is { } end && utc > end) return result;
                 result.Add(utc);
                 if (r.Count is { } n && result.Count == n) return result;
+                if (result.Count > cap) return result;
             }
         }
-        return Finish(result);
+        return result;
     }
-
-    private static IReadOnlyList<DateTime> Finish(List<DateTime> result) =>
-        result.Count is 0 or > LiveSessionLimits.MaxOccurrences ? throw Invalid() : result;
 
     private static DateTime ToUtc(DateTime wallClock, TimeZoneInfo zone)
     {
