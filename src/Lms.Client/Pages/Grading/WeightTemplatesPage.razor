@@ -105,6 +105,7 @@ else
 @code {
     private IReadOnlyList<WeightTemplateDto> _templates = [];
     private Guid? _unitId;
+    private Dictionary<Guid, string> _unitNames = [];
     private bool _loading = true, _failed;
 
     private bool CanConfigure => Perms.Has(Permissions.Grades.ConfigureScales);
@@ -115,6 +116,7 @@ else
     {
         var (units, failed) = await ApiCalls.RunAsync(() => UnitsApi.GetUnitsAsync(), Navigation);
         _unitId = units is { Count: > 0 } ? UnitTree.Order(units)[0].Id : null;
+        _unitNames = (units ?? []).ToDictionary(u => u.Id, u => CultureText.Pick(u.NameAr, u.NameEn));
         _failed = failed;
         _loading = false;
         if (_unitId is not null) await LoadAsync();
@@ -147,6 +149,7 @@ else
         var dialog = await Dialogs.ShowAsync<WeightTemplateDialog>(title, new DialogParameters<WeightTemplateDialog>
         {
             { x => x.UnitId, unit }, { x => x.Existing, template }, { x => x.ReadOnly, readOnly },
+            { x => x.SourceUnitName, template?.InheritedFromUnitId is { } from && _unitNames.TryGetValue(from, out var name) ? name : null },
         }, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseOnEscapeKey = true });
         var result = await dialog.Result;
         if (result is { Canceled: false })

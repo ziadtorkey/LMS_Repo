@@ -1,4 +1,5 @@
 @using System.Globalization
+@using Lms.Client.Services.Api
 @using Lms.Shared.Grading
 
 @* A strip of the bands over 0 to 100 and, as text, every gap and overlap (colour is never the only signal). A hint: the server has the last word. *@
@@ -10,6 +11,16 @@
         }
     </div>
     <div class="lms-band-scale" dir="ltr" aria-hidden="true"><span>0</span><span>100</span></div>
+    @if (ServerProblems.Count > 0)
+    {
+        @* What the server found when it refused the save: each gap or overlap with its range, next to the bands it concerns. *@
+        <ul class="lms-band-issues" role="alert" data-testid="band-server-issues">
+            @foreach (var p in ServerProblems)
+            {
+                <li data-testid="@($"band-server-{p.Kind}")">@ServerText(p)</li>
+            }
+        </ul>
+    }
     @if (Issues.Count == 0)
     {
         <MudText Typo="Typo.body2" Color="Color.Success" role="status" data-testid="band-coverage-ok">@L["Band_CoverageOk"]</MudText>
@@ -27,6 +38,24 @@
 
 @code {
     [Parameter] public IReadOnlyList<BandRow> Bands { get; set; } = [];
+
+    /// <summary>The problems the answer to a refused save carried (problems with kind, from and to); empty until then and after the next edit.</summary>
+    [Parameter] public IReadOnlyList<ApiProblemItem> ServerProblems { get; set; } = [];
+
+    private string ServerText(ApiProblemItem p)
+    {
+        var from = p.From?.ToString("0.##", CultureInfo.InvariantCulture) ?? "";
+        var to = p.To?.ToString("0.##", CultureInfo.InvariantCulture) ?? "";
+        var key = p.Kind switch
+        {
+            "Gap" => "Band_ServerGap",
+            "Overlap" => "Band_ServerOverlap",
+            "Range" => "Band_ServerRange",
+            "Count" => "Band_ServerCount",
+            _ => "Band_ServerOther",
+        };
+        return string.Format(CultureInfo.CurrentCulture, L[key].Value, from, to);
+    }
 
     private IReadOnlyList<CoverageIssue> Issues => BandCoverage.Analyse(Filled.Select(b => (b.MinPercent!.Value, b.MaxPercent!.Value)));
 

@@ -1741,4 +1741,12 @@
   <data name="Grd_Drawer_Title" xml:space="preserve"><value>What {0} sees</value></data>
   <data name="Grd_Drawer_Note" xml:space="preserve"><value>This is exactly what the student and their guardians see: published items only.</value></data>
   <data name="Grd_Drawer_Empty" xml:space="preserve"><value>No grade has been published to this student yet.</value></data>
+  <data name="Band_ServerGap" xml:space="preserve"><value>The server found a gap between {0} and {1}. Close it by changing the neighbouring bands.</value></data>
+  <data name="Band_ServerOverlap" xml:space="preserve"><value>The server found bands that overlap between {0} and {1}.</value></data>
+  <data name="Band_ServerRange" xml:space="preserve"><value>The server found a band that starts at {0} and ends at {1}. It must end after it starts.</value></data>
+  <data name="Band_ServerCount" xml:space="preserve"><value>The scale needs between 1 and 20 bands.</value></data>
+  <data name="Band_ServerOther" xml:space="preserve"><value>The server refused these bands. Check the codes and points.</value></data>
+  <data name="Band_Problem_Marked" xml:space="preserve"><value>This band is part of a problem the server found. See the list above.</value></data>
+  <data name="ScaleDialog_ReadOnlyFrom" xml:space="preserve"><value>This comes from {0}. Change it there; here it can only be read.</value></data>
+  <data name="ScaleDialog_ReadOnlyPreset" xml:space="preserve"><value>This is a preset. Add it to your unit from the preset menu to use it or change it.</value></data>
 </root>

@@ -16,7 +16,7 @@
             }
             @if (ReadOnly)
             {
-                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" data-testid="template-readonly">@L["ScaleDialog_ReadOnly"]</MudAlert>
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" data-testid="template-readonly">@(SourceUnitName is { Length: > 0 } unit ? string.Format(System.Globalization.CultureInfo.CurrentCulture, L["ScaleDialog_ReadOnlyFrom"].Value, unit) : L["ScaleDialog_ReadOnly"].Value)</MudAlert>
             }
             <BilingualNameFields @bind-NameAr="_nameAr" @bind-NameEn="_nameEn" IdPrefix="template-name" />
             <MudText Typo="Typo.subtitle1" Class="lms-section-title">@L["WTemplates_Items"]</MudText>
@@ -38,6 +38,9 @@
     [Parameter, EditorRequired] public Guid UnitId { get; set; }
     [Parameter] public WeightTemplateDto? Existing { get; set; }
     [Parameter] public bool ReadOnly { get; set; }
+
+    /// <summary>The unit an inherited template comes from (named in the read-only reason).</summary>
+    [Parameter] public string? SourceUnitName { get; set; }
 
     private readonly List<CategoryWeightsEditor.WeightRow> _items = [];
     private string _nameAr = "", _nameEn = "";
