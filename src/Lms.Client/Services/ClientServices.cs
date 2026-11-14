@@ -19,6 +19,7 @@ public static class ClientServices
     {
         services.AddLocalization();
         services.AddMudServices();
+        services.AddScoped<Lms.Client.Services.Messaging.MessagingRealtime>();
         services.AddTransient<MudBlazor.MudLocalizer, LmsMudLocalizer>();
         services.AddScoped<ICultureService, CultureService>();
         // Singleton on purpose: IHttpClientFactory builds its message handlers in their own DI scope, and the
@@ -42,6 +43,7 @@ public static class ClientServices
             services.AddScoped<INotificationsApi, FakeNotificationsApi>();
             services.AddSingleton<IImportsApi, FakeImportsApi>();
             services.AddScoped<INotificationConnection, FakeNotificationConnection>();
+            services.AddSingleton<Lms.Client.Services.Messaging.IMessagingHub, Lms.Client.Services.Messaging.FakeMessagingHub>();
             services.AddSingleton<IClientsApi, FakeClientsApi>();
             services.AddSingleton<IOrgApi, FakeOrgApi>();
             services.AddSingleton<ITemplatesApi, FakeTemplatesApi>();
