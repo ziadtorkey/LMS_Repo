@@ -18,6 +18,14 @@ public sealed partial class StitchStylesheetTests
     private static string Css() => RepoFile("wwwroot", "css", "lms-stitch.css");
 
     [Fact]
+    public void Timetable_styles_live_in_the_stitch_layer_not_in_app_css()
+    {
+        Assert.DoesNotContain(".lms-tt", RepoFile("wwwroot", "css", "app.css"), StringComparison.Ordinal);
+        Assert.Contains(".lms-tt-slot", Css(), StringComparison.Ordinal);
+        Assert.Contains(".lms-touch.mud-button-root", Css(), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Stitch_layer_is_linked_after_the_theme_and_before_the_activity_styles()
     {
         var index = RepoFile("wwwroot", "index.html");
