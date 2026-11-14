@@ -78,6 +78,27 @@ public sealed class LiveProposalTests : StaffTestContext
     }
 
     [Fact]
+    public async Task The_join_time_is_shown_on_the_clients_clock_not_UTC()
+    {
+        var clock = new FixedClock(new DateTimeOffset(2026, 11, 18, 20, 0, 0, TimeSpan.Zero)); // the fake says they joined an hour earlier: 19:00 UTC
+        Services.AddSingleton<IAttendanceApi>(new FakeAttendanceApi(clock));
+        Culture.Current = new CultureInfo("en");
+        await GrantAsync(Permissions.Attendance.Take);
+        Api.Me = Api.Me with { Contexts = [new Lms.Shared.Me.UserContextDto(Context.ActiveAssignmentId!.Value, Guid.NewGuid(), "م", "School", Guid.NewGuid(), "ص", "Grade", "م", "Teacher", "Asia/Tokyo")] };
+        RenderProviders();
+
+        var page = Render<AttendanceTakePage>(p => p.Add(x => x.Id, Session));
+        page.WaitForElement("[data-testid=att-roster]");
+
+        page.WaitForAssertion(() => Assert.Contains("joined 04:00", page.Find($"[data-testid=proposal-hint-{Ahmed}]").TextContent)); // 19:00 UTC is 04:00 in Tokyo
+    }
+
+    private sealed class FixedClock(DateTimeOffset now) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => now;
+    }
+
+    [Fact]
     public async Task Unmatched_guests_can_be_mapped_or_skipped()
     {
         var page = await RenderAsync();
