@@ -30,7 +30,15 @@ else if (!PermState.Has(Permissions.Grades.View) && !PermState.Has(Permissions.G
 }
 else
 {
-    <PageHeader Title="@L["Grd_Title"]" Subtitle="@Subtitle" TitleTestId="gradebook-title" />
+    <PageHeader Title="@L["Grd_Title"]" Subtitle="@Subtitle" TitleTestId="gradebook-title">
+        <Actions>
+            @if (CanManageBook)
+            {
+                <MudIconButton Icon="@Icons.Material.Rounded.Settings" aria-label="@L["Grd_Config_Open"]" aria-expanded="@(_settingsOpen ? "true" : "false")" aria-controls="gradebook-config"
+                               OnClick="() => _settingsOpen = !_settingsOpen" data-testid="gradebook-settings" />
+            }
+        </Actions>
+    </PageHeader>
     @if (_error is not null && _book is null)
     {
         <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="gradebook-error">
@@ -59,6 +67,10 @@ else
         @if (_book.State == GradebookStates.Locked)
         {
             <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-3" data-testid="gradebook-locked">@L["Grd_Locked_Banner"]</MudAlert>
+        }
+        @if (_settingsOpen && CanManageBook)
+        {
+            <GradebookConfigPanel Book="_book" ClassCourseId="Id" TermId="_book.TermId" OnChanged="() => LoadAsync(_pageNo)" />
         }
         <SectionCard Flush="true" TestId="gradebook-card">
             <div class="lms-gb-toolbar" role="toolbar" aria-label="@L["Grd_Toolbar"]">
@@ -113,6 +125,10 @@ else
     private string _drawerName = "";
     private StudentCourseGradesDto? _preview;
     private GradebookEditSession? _session;
+    private bool _settingsOpen;
+
+    /// <summary>Settings (categories, weights, scale, items) are for someone who may manage a gradebook that is still open.</summary>
+    private bool CanManageBook => _book is { CanManage: true, State: not GradebookStates.Locked };
 
     /// <summary>Scores can be changed by someone who may manage the gradebook, while it is open.</summary>
     private bool CanEdit => _book is { CanManage: true, State: not GradebookStates.Locked };
@@ -163,6 +179,7 @@ else
         _loadedTerm = TermId;
         if (_session is not null) _session.RowReplaced -= OnRowReplaced;
         _session = null; // unsaved edits belong to the term they were typed in
+        _settingsOpen = false;
         await LoadAsync(1);
     }
 

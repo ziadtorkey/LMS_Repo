@@ -1777,6 +1777,40 @@
   <data name="Grd_Override_ReasonRequired" xml:space="preserve"><value>اكتب سبب التعديل.</value></data>
   <data name="Grd_Override_Apply" xml:space="preserve"><value>تعديل</value></data>
   <data name="Grd_Override_Short" xml:space="preserve"><value>تعديل</value></data>
+  <data name="Grd_Config_Title" xml:space="preserve"><value>إعدادات دفتر الدرجات</value></data>
+  <data name="Grd_Config_Open" xml:space="preserve"><value>إعدادات دفتر الدرجات</value></data>
+  <data name="Grd_Config_Categories" xml:space="preserve"><value>الفئات والأوزان</value></data>
+  <data name="Grd_Config_Settings" xml:space="preserve"><value>المقياس وطريقة الحساب</value></data>
+  <data name="Grd_Config_Items" xml:space="preserve"><value>بنود الدرجات</value></data>
+  <data name="Grd_Config_Scale" xml:space="preserve"><value>مقياس التقدير</value></data>
+  <data name="Grd_Config_NoUnit" xml:space="preserve"><value>قائمة المقاييس غير متاحة لهذا المقرر هنا.</value></data>
+  <data name="Grd_Config_Places" xml:space="preserve"><value>المنازل العشرية</value></data>
+  <data name="Grd_Config_Method" xml:space="preserve"><value>طريقة جمع بنود الفئة</value></data>
+  <data name="Grd_Config_Missing" xml:space="preserve"><value>الدرجة المفقودة</value></data>
+  <data name="Grd_Config_Saved" xml:space="preserve"><value>تم الحفظ.</value></data>
+  <data name="Grd_Cat_NameAr" xml:space="preserve"><value>الفئة (عربي)</value></data>
+  <data name="Grd_Cat_NameEn" xml:space="preserve"><value>الفئة (إنجليزي)</value></data>
+  <data name="Grd_Cat_MoveUp" xml:space="preserve"><value>نقل للأعلى</value></data>
+  <data name="Grd_Cat_MoveDown" xml:space="preserve"><value>نقل للأسفل</value></data>
+  <data name="Grd_Cat_Remove" xml:space="preserve"><value>حذف الفئة</value></data>
+  <data name="Grd_Cat_Add" xml:space="preserve"><value>إضافة فئة</value></data>
+  <data name="Grd_Cat_Save" xml:space="preserve"><value>حفظ الفئات</value></data>
+  <data name="Grd_Template_Open" xml:space="preserve"><value>تطبيق قالب أوزان</value></data>
+  <data name="Grd_Template_Title" xml:space="preserve"><value>تطبيق قالب أوزان</value></data>
+  <data name="Grd_Template_Apply" xml:space="preserve"><value>نسخ إلى الفئات</value></data>
+  <data name="Grd_Template_CopyNote" xml:space="preserve"><value>تُنسخ الأسماء والأوزان إلى الفئات أدناه. تغيير القالب لاحقا لا يغيّر دفتر الدرجات هذا، ولا يُحفظ شيء حتى تحفظ الفئات.</value></data>
+  <data name="Grd_Template_Copied" xml:space="preserve"><value>تم نسخ القالب. احفظ الفئات للإبقاء عليه.</value></data>
+  <data name="Grd_Item_Category" xml:space="preserve"><value>الفئة</value></data>
+  <data name="Grd_Item_Max" xml:space="preserve"><value>الدرجة العظمى</value></data>
+  <data name="Grd_Item_MaxHelp" xml:space="preserve"><value>رقم من {0} إلى {1}.</value></data>
+  <data name="Grd_Item_Add" xml:space="preserve"><value>إضافة بند</value></data>
+  <data name="Grd_Item_AddTitle" xml:space="preserve"><value>إضافة بند درجات</value></data>
+  <data name="Grd_Item_EditTitle" xml:space="preserve"><value>تعديل بند الدرجات</value></data>
+  <data name="Grd_Item_DeleteConfirm" xml:space="preserve"><value>هل تريد حذف البند {0} والدرجات المدخلة له؟</value></data>
+  <data name="Grd_Item_FromActivity" xml:space="preserve"><value>من واجب أو اختبار</value></data>
+  <data name="Grd_Uncategorised_Text" xml:space="preserve"><value>{0} بنود بلا فئة، لذلك لا تدخل في أي وزن.</value></data>
+  <data name="Grd_Uncategorised_MoveTo" xml:space="preserve"><value>نقل إلى</value></data>
+  <data name="Grd_Uncategorised_Move" xml:space="preserve"><value>نقلها</value></data>
   <data name="Grd_Term_Label" xml:space="preserve"><value>الفصل</value></data>
   <data name="Grd_Withdrew_On" xml:space="preserve"><value>انسحب في {0}</value></data>
   <data name="Grd_Withdrawn" xml:space="preserve"><value>منسحب</value></data>

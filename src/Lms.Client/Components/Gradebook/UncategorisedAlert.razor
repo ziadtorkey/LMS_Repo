@@ -1,0 +1,39 @@
+@using Lms.Shared.Grading
+@inject ICultureService Culture
+
+@* Items that sit in no category count toward no weight. The alert says how many and offers to move them all into a category (spec 2.1). *@
+@if (Items.Count > 0)
+{
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mb-3" data-testid="uncategorised-alert">
+        <div class="d-flex align-center flex-wrap gap-2">
+            <span>@string.Format(Culture.Current, L["Grd_Uncategorised_Text"].Value, Items.Count)</span>
+            <MudSelect T="Guid" Value="_target" ValueChanged="v => _target = v" Label="@L["Grd_Uncategorised_MoveTo"]" Dense="true" Margin="Margin.Dense" Class="lms-gb-move"
+                       data-testid="uncategorised-target">
+                @foreach (var c in Categories)
+                {
+                    <MudSelectItem T="Guid" Value="@c.Id">@Culture.Pick(c.NameAr, c.NameEn)</MudSelectItem>
+                }
+            </MudSelect>
+            <MudButton Variant="Variant.Outlined" Size="Size.Small" Disabled="_target == Guid.Empty || Busy" OnClick="() => OnMove.InvokeAsync(_target)"
+                       data-testid="uncategorised-move">@L["Grd_Uncategorised_Move"]</MudButton>
+        </div>
+    </MudAlert>
+}
+
+@code {
+    /// <summary>The items in the uncategorised bucket.</summary>
+    [Parameter] public IReadOnlyList<GradeItemDto> Items { get; set; } = [];
+
+    /// <summary>The real categories an item can move to.</summary>
+    [Parameter] public IReadOnlyList<GradeCategoryDto> Categories { get; set; } = [];
+
+    [Parameter] public bool Busy { get; set; }
+    [Parameter] public EventCallback<Guid> OnMove { get; set; }
+
+    private Guid _target;
+
+    protected override void OnParametersSet()
+    {
+        if (_target == Guid.Empty || Categories.All(c => c.Id != _target)) _target = Categories.FirstOrDefault()?.Id ?? Guid.Empty;
+    }
+}

@@ -21,6 +21,8 @@ public sealed class FakeGradebookApi : IGradebookApi
     public static readonly Guid Term2Id = Guid.Parse("00000000-0000-0000-0000-0000000e0011");
     public static readonly Guid HomeworkCategoryId = Guid.Parse("00000000-0000-0000-0000-0000000e0021");
     public static readonly Guid ExamsCategoryId = Guid.Parse("00000000-0000-0000-0000-0000000e0022");
+    /// <summary>The bucket for items that sit in no category (a deleted category's items land here); it carries no weight.</summary>
+    public static readonly Guid UncategorisedId = Guid.Parse("00000000-0000-0000-0000-0000000e0023");
     public static readonly Guid ManualItemId = Guid.Parse("00000000-0000-0000-0000-0000000e0031");
     public static readonly Guid AutoItemId = Guid.Parse("00000000-0000-0000-0000-0000000e0032");
     public static readonly Guid[] StudentIds =
@@ -29,7 +31,9 @@ public sealed class FakeGradebookApi : IGradebookApi
     ];
 
     private readonly FakeGradingScalesApi _scales;
-    private readonly Guid _scaleId;
+    private Guid _scaleId;
+    private int _places = GradingLimits.DecimalPlacesDefault;
+    private string _method = CategoryMethods.PointsWeighted, _missing = MissingPolicies.Normalise;
     private readonly List<GradeCategoryDto> _categories =
     [
         new(HomeworkCategoryId, "الواجبات", "Homework", 30m, 1, false),
@@ -85,6 +89,14 @@ public sealed class FakeGradebookApi : IGradebookApi
     /// <summary>Lets a test reshape the answer of <see cref="GetAsync"/> (a different total, a locked state, values the page must show as given).</summary>
     public Func<GradebookDto, GradebookQuery, GradebookDto>? Transform { get; set; }
 
+    /// <summary>Adds a manual item that sits in no category, so the page offers to move it.</summary>
+    public GradeItemDto SeedUncategorisedItem(string titleEn = "Loose item")
+    {
+        var item = new GradeItemDto(Guid.NewGuid(), UncategorisedId, titleEn, titleEn, null, null, true, 10m, PublishStates.Hidden, null, null, _items.Count + 1);
+        _items.Add(item);
+        return item;
+    }
+
     private readonly Dictionary<Guid, DateOnly> _withdrawn = [];
 
     /// <summary>Marks a student as having left the course on a day (the staff row stays, with <c>IsWithdrawn</c>).</summary>
@@ -128,6 +140,14 @@ public sealed class FakeGradebookApi : IGradebookApi
         if (Locked) throw Problem(409, ProblemCodes.gradebook_locked);
     }
 
+    /// <summary>The categories plus the uncategorised bucket when an item sits in it.</summary>
+    private List<GradeCategoryDto> Categories()
+    {
+        var all = new List<GradeCategoryDto>(_categories);
+        if (_items.Any(i => i.CategoryId == UncategorisedId)) all.Add(new GradeCategoryDto(UncategorisedId, "بدون فئة", "Uncategorised", 0m, 99, true));
+        return all;
+    }
+
     private GradeItemDto Item(Guid id) => _items.FirstOrDefault(i => i.Id == id) ?? throw Problem(404, ProblemCodes.not_found);
 
     private GradeCellDto Cell(Guid student, Guid item) =>
@@ -140,9 +160,9 @@ public sealed class FakeGradebookApi : IGradebookApi
         var weights = 0m;
         foreach (var group in scoredList.GroupBy(s => s.Category))
         {
-            var category = _categories.First(c => c.Id == group.Key);
+            var category = _categories.FirstOrDefault(c => c.Id == group.Key);
             var max = group.Sum(g => g.Max);
-            if (max == 0m) continue;
+            if (category is null || max == 0m) continue; // an item in no category counts toward no weight
             weighted += group.Sum(g => g.Points) / max * 100m * category.Weight;
             weights += category.Weight;
         }
@@ -186,10 +206,11 @@ public sealed class FakeGradebookApi : IGradebookApi
         var total = _categories.Sum(c => c.Weight);
         var now = DateTime.UtcNow;
         var rows = new PagedResult<GradeRowDto>([.. all.Skip((page - 1) * size).Take(size)], all.Count, page, size);
-        var config = new GradebookConfigDto(_scaleId, Scale.NameAr, Scale.NameEn, Scale.Provisional, GradingLimits.DecimalPlacesDefault,
-            CategoryMethods.PointsWeighted, MissingPolicies.Normalise, RoundingModes.HalfUp);
+        var config = new GradebookConfigDto(_scaleId, Scale.NameAr, Scale.NameEn, Scale.Provisional, _places,
+            _method, _missing, RoundingModes.HalfUp);
         var book = new GradebookDto(Guid.Parse("00000000-0000-0000-0000-0000000e0061"), classCourseId, DemoTermId, "الفصل الأول", "Term 1", config,
-            [.. _categories], NoItems ? [] : [.. _items.OrderBy(i => i.Order)], rows, total == 100m, total, Locked ? GradebookStates.Locked : GradebookStates.Open,
+            Categories(),
+            NoItems ? [] : [.. _items.OrderBy(i => i.Order)], rows, total == 100m, total, Locked ? GradebookStates.Locked : GradebookStates.Open,
             Locked ? now : null, 0, CanManage, CanManage, now, now);
         // The second term of the demo year has no grade items yet.
         if (query.TermId == Term2Id) book = book with { TermId = Term2Id, TermNameAr = "الفصل الثاني", TermNameEn = "Term 2", Items = Term2HasItems ? book.Items : [] };
@@ -203,8 +224,9 @@ public sealed class FakeGradebookApi : IGradebookApi
         if (request.DecimalPlaces is < GradingLimits.DecimalPlacesMin or > GradingLimits.DecimalPlacesMax
             || !CategoryMethods.All.Contains(request.CategoryMethod) || !MissingPolicies.All.Contains(request.MissingPolicy))
             throw Problem(400, ProblemCodes.validation_failed);
-        return Task.FromResult(new GradebookConfigDto(request.ScaleId ?? _scaleId, Scale.NameAr, Scale.NameEn, Scale.Provisional, request.DecimalPlaces,
-            request.CategoryMethod, request.MissingPolicy, RoundingModes.HalfUp));
+        _scaleId = request.ScaleId ?? _scaleId;
+        (_places, _method, _missing) = (request.DecimalPlaces, request.CategoryMethod, request.MissingPolicy);
+        return Task.FromResult(new GradebookConfigDto(_scaleId, Scale.NameAr, Scale.NameEn, Scale.Provisional, _places, _method, _missing, RoundingModes.HalfUp));
     }
 
     public Task<IReadOnlyList<GradeCategoryDto>> SaveCategoriesAsync(Guid classCourseId, SaveGradeCategoriesRequest request, Guid? termId = null, CancellationToken ct = default)
@@ -214,6 +236,9 @@ public sealed class FakeGradebookApi : IGradebookApi
         if (request.Categories.Any(c => c.Weight is < GradingLimits.WeightMin or > GradingLimits.WeightMax)) throw Problem(400, ProblemCodes.weights_invalid);
         _categories.Clear();
         _categories.AddRange(request.Categories.Select((c, i) => new GradeCategoryDto(c.Id ?? Guid.NewGuid(), c.NameAr, c.NameEn, c.Weight, i + 1, false)));
+        // Items of a category that is gone sit in no category until the teacher moves them.
+        for (var n = 0; n < _items.Count; n++)
+            if (_items[n].CategoryId != UncategorisedId && _categories.All(c => c.Id != _items[n].CategoryId)) _items[n] = _items[n] with { CategoryId = UncategorisedId };
         return Task.FromResult<IReadOnlyList<GradeCategoryDto>>([.. _categories]);
     }
 

@@ -149,3 +149,4 @@ html:lang(ar), html:lang(ar) body { font-family: Cairo, "Segoe UI", Tahoma, Aria
 .lms-gb-menu { padding: 4px; min-inline-size: 200px; }
 .lms-gb-menu [role=menu] { display: flex; flex-direction: column; align-items: stretch; }
 .lms-gb-menu .mud-button-root { justify-content: flex-start; text-transform: none; }
+.lms-gb-move { min-inline-size: 180px; flex: 0 1 220px; }
