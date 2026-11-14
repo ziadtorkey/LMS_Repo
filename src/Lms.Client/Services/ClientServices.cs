@@ -39,6 +39,8 @@ public static class ClientServices
             services.AddScoped<IUnitLookupApi, FakeUnitLookupApi>();
             services.AddScoped<IYearsApi, FakeYearsApi>();
             services.AddScoped<INotificationsApi, FakeNotificationsApi>();
+            services.AddSingleton<Lms.Client.Services.Attendance.IAttendanceApi, Lms.Client.Services.Attendance.FakeAttendanceApi>();
+            services.AddSingleton<Lms.Client.Services.Excuses.IExcusesApi, Lms.Client.Services.Excuses.FakeExcusesApi>();
             services.AddSingleton<IImportsApi, FakeImportsApi>();
             services.AddScoped<INotificationConnection, FakeNotificationConnection>();
             services.AddSingleton<IClientsApi, FakeClientsApi>();
@@ -84,6 +86,8 @@ public static class ClientServices
         services.AddScoped<IUnitLookupApi, UnitLookupApi>();
         services.AddScoped<IYearsApi, YearsApi>();
         services.AddScoped<INotificationsApi, NotificationsApi>();
+        services.AddScoped<Lms.Client.Services.Attendance.IAttendanceApi, Lms.Client.Services.Attendance.AttendanceApi>();
+        services.AddScoped<Lms.Client.Services.Excuses.IExcusesApi, Lms.Client.Services.Excuses.ExcusesApi>();
         services.AddScoped<IImportsApi, ImportsApi>();
         services.AddScoped<INotificationConnection, NotificationConnection>();
         services.AddHttpClient<ILmsApi, LmsApiClient>(c => c.BaseAddress = new Uri(baseAddress))

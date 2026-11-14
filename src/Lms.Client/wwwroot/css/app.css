@@ -86,3 +86,15 @@ html:lang(ar), html:lang(ar) body { font-family: Cairo, "Segoe UI", Tahoma, Aria
 /* Lesson plan: a module with its authoring buttons, and the add-module menu under a lesson. */
 .lms-module-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px 8px; min-width: 0; }
 .lms-plan-add { margin-block-start: 4px; }
+
+/* ---------- Attendance today (M5 Task 33): session cards and the change history drawer ---------- */
+.lms-session-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.lms-session-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; min-width: 0; }
+.lms-session-title { min-width: 0; overflow-wrap: anywhere; }
+.lms-session-actions { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.lms-history-list { list-style: none; margin: 0; padding: 0; display: grid; }
+.lms-history-item { display: grid; gap: 4px; padding-block: 12px; font-size: .875rem; }
+.lms-history-item + .lms-history-item { border-block-start: 1px solid var(--mud-palette-table-lines); }
+.lms-touch.mud-button-root, .lms-touch.mud-icon-button { min-block-size: 44px; min-inline-size: 44px; }
+.lms-date-filter { max-inline-size: 220px; }
+.lms-session-grid > .lms-section + .lms-section { margin-block-start: 0; }

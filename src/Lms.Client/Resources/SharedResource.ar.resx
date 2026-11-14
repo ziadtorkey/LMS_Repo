@@ -1702,4 +1702,24 @@
   <data name="PermModule_Excuses" xml:space="preserve"><value>الأعذار</value></data>
   <data name="AuditEntity_AttendanceRecordChange" xml:space="preserve"><value>تعديل حضور</value></data>
   <data name="AuditEntity_AbsenceExcuse" xml:space="preserve"><value>عذر غياب</value></data>
+  <data name="Att_Proposed_Chip" xml:space="preserve"><value>مقترح من الحصة المباشرة</value></data>
+  <data name="Att_Window_Closed" xml:space="preserve"><value>انتهت مهلة التعديل</value></data>
+  <data name="Att_Substitute_Banner" xml:space="preserve"><value>أنت البديل</value></data>
+  <data name="Att_Progress" xml:space="preserve"><value>تم تسجيل {0} من {1}</value></data>
+  <data name="Att_Action_Confirm" xml:space="preserve"><value>تأكيد الحضور</value></data>
+  <data name="Att_Action_Take" xml:space="preserve"><value>تسجيل الحضور</value></data>
+  <data name="Att_Action_Edit" xml:space="preserve"><value>تعديل الحضور</value></data>
+  <data name="Att_Action_Review" xml:space="preserve"><value>مراجعة</value></data>
+  <data name="Att_History_Open" xml:space="preserve"><value>عرض سجل التغييرات</value></data>
+  <data name="Att_History_Title" xml:space="preserve"><value>سجل التغييرات</value></data>
+  <data name="Att_History_EmptyTitle" xml:space="preserve"><value>لا توجد تغييرات بعد</value></data>
+  <data name="Att_History_EmptyText" xml:space="preserve"><value>تظهر التغييرات على التسجيل هنا بعد أخذ الحضور.</value></data>
+  <data name="Att_Today_Title" xml:space="preserve"><value>الحضور</value></data>
+  <data name="Att_Today_Subtitle" xml:space="preserve"><value>حصصك لهذا اليوم. سجّل الحضور أو راجع ما سُجّل.</value></data>
+  <data name="Att_Today_EmptyTitle" xml:space="preserve"><value>لا توجد حصص في هذا اليوم</value></data>
+  <data name="Att_Today_EmptyText" xml:space="preserve"><value>تظهر الحصص هنا عند نشر الجدول الدراسي. اختر يومًا آخر لرؤية الأيام السابقة.</value></data>
+  <data name="Att_Date" xml:space="preserve"><value>التاريخ</value></data>
+  <data name="Att_Unit_Mode" xml:space="preserve"><value>حصص وحدة</value></data>
+  <data name="Att_Unit_ChooseTitle" xml:space="preserve"><value>اختر وحدة</value></data>
+  <data name="Att_Unit_ChooseText" xml:space="preserve"><value>اختر وحدة ويومًا لعرض حصص الحضور فيها، بما فيها المغلقة.</value></data>
 </root>

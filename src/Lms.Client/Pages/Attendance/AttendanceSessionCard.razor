@@ -1,0 +1,75 @@
+@using Lms.Shared.Attendance
+@using Lms.Shared.Authorization
+@inject ICultureService Culture
+@inject PermissionState PermState
+
+@* One attendance session of the day: what it is, how far it is, and the one thing to do next. The edit window is judged by the server clock
+   the answer carries (ServerNowUtc), never by the browser clock. *@
+<SectionCard Class="lms-session-card" TestId="@($"session-{Session.Id}")">
+    <div class="lms-session-head">
+        <div class="lms-session-title">
+            <MudText Typo="Typo.subtitle1" HtmlTag="h3">@Culture.Pick(Session.CourseNameAr, Session.CourseNameEn)</MudText>
+            <MudText Typo="Typo.body2" Class="lms-muted">@Culture.Pick(Session.ClassNameAr, Session.ClassNameEn)</MudText>
+        </div>
+        @if (Session.StartsAt is { } start && Session.EndsAt is { } end)
+        {
+            <span class="lms-date-cell" dir="ltr" data-testid="@($"session-time-{Session.Id}")">@start.ToString("HH:mm")–@end.ToString("HH:mm")</span>
+        }
+    </div>
+
+    <div class="lms-chip-row mt-2">
+        <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@(Taken ? Color.Success : Color.Info)" Class="lms-status-chip"
+                 data-testid="@($"session-state-{Session.Id}")">@L[Taken ? "Att_State_Taken" : "Att_State_Open"]</MudChip>
+        @if (Session.IsProposal)
+        {
+            <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Info" data-testid="@($"session-proposal-{Session.Id}")">@L["Att_Proposed_Chip"]</MudChip>
+        }
+        @if (Session.Source == AttendanceSources.AdHoc)
+        {
+            <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@L["Att_Source_AdHoc"]</MudChip>
+        }
+        @if (Session.IsSubstitute)
+        {
+            <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Info" Icon="@Icons.Material.Rounded.SwapHoriz" data-testid="@($"session-substitute-{Session.Id}")">@L["Att_Substitute_Banner"]</MudChip>
+        }
+        @if (Locked)
+        {
+            <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Default" data-testid="@($"session-locked-{Session.Id}")"
+                     Icon="@Icons.Material.Rounded.Lock">@L["Att_Window_Closed"]</MudChip>
+        }
+    </div>
+
+
+    <MudText Typo="Typo.body2" Class="lms-muted mt-2" data-testid="@($"session-progress-{Session.Id}")">@string.Format(L["Att_Progress"], Session.MarkedCount, Session.RosterCount)</MudText>
+
+    <div class="lms-session-actions mt-3">
+        @if (PrimaryKey is not null)
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="lms-touch" Href="@($"attendance/sessions/{Session.Id}")"
+                       data-testid="@($"session-primary-{Session.Id}")">@L[PrimaryKey]</MudButton>
+        }
+        <MudIconButton Icon="@Icons.Material.Rounded.History" Class="lms-touch" aria-label="@L["Att_History_Open"]"
+                       OnClick="() => OnHistory.InvokeAsync(Session)" data-testid="@($"session-history-{Session.Id}")" />
+    </div>
+</SectionCard>
+
+@code {
+    [Parameter, EditorRequired] public AttendanceSessionListItemDto Session { get; set; } = default!;
+    [Parameter] public EventCallback<AttendanceSessionListItemDto> OnHistory { get; set; }
+
+    private bool Taken => Session.State == AttendanceSessionStates.Taken;
+
+    /// <summary>Taken and past the edit window by the server's clock.</summary>
+    private bool Locked => Taken && Session.EditableUntilUtc is { } until && until < Session.ServerNowUtc;
+
+    private bool CanEdit => PermState.Has(Permissions.Attendance.Edit);
+
+    private bool CanTake => PermState.Has(Permissions.Attendance.Take);
+
+    /// <summary>One primary action: Take (open), Confirm (a proposal), Review (taken), Edit (taken after the window, with permission only).</summary>
+    private string PrimaryKey =>
+        Session.IsProposal ? (CanTake ? "Att_Action_Confirm" : "Att_Action_Review")
+        : !Taken ? (CanTake ? "Att_Action_Take" : "Att_Action_Review")
+        : Locked && CanEdit ? "Att_Action_Edit" // the lock is for editing: without Attendance.Edit the session can still be read
+        : "Att_Action_Review";
+}

@@ -1,0 +1,144 @@
+@page "/attendance"
+@attribute [Authorize]
+@using Lms.Client.Components.People
+@using Lms.Client.Services.Attendance
+@using Lms.Shared
+@using Lms.Shared.Attendance
+@using Lms.Shared.Authorization
+@inject IAttendanceApi Api
+@inject NavigationManager Navigation
+@inject PermissionState PermState
+
+<PageTitle>@L["Att_Today_Title"]</PageTitle>
+@if (!PermState.Loaded)
+{
+    <LoadingState Lines="4" TestId="attendance-loading" />
+}
+else if (!CanTake && !CanView)
+{
+    <Forbidden />
+}
+else
+{
+    <PageHeader Title="@L["Att_Today_Title"]" Subtitle="@L["Att_Today_Subtitle"]" TitleTestId="attendance-title" />
+
+    <div class="lms-filters mb-4" role="search" aria-label="@L["Common_Filters"]">
+        @if (CanView)
+        {
+            <div class="lms-filter">
+                <UnitPicker Value="_unitId" ValueChanged="OnUnitChanged" Label="@L["Staff_HomeUnit"]" TestId="attendance-unit" />
+            </div>
+        }
+        @if (CanTake && CanView)
+        {
+            <div class="lms-filter">
+                <MudSwitch T="bool" Value="_unitMode" ValueChanged="OnModeChanged" Color="Color.Primary" Label="@L["Att_Unit_Mode"]" data-testid="attendance-unit-mode" />
+            </div>
+        }
+        <div class="lms-filter">
+            <MudDatePicker Date="_date?.ToDateTime(TimeOnly.MinValue)" DateChanged="OnDateChanged" Label="@L["Att_Date"]" Variant="Variant.Outlined"
+                           DateFormat="yyyy-MM-dd" Clearable="false" Class="lms-date-filter" data-testid="attendance-date" />
+        </div>
+    </div>
+
+    @if (_loading)
+    {
+        <LoadingState Lines="4" TestId="attendance-loading" />
+    }
+    else if (_failed)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="api-error">
+            @L["Api_Error"]
+            <MudButton Variant="Variant.Text" OnClick="LoadAsync">@L["Common_Retry"]</MudButton>
+        </MudAlert>
+    }
+    else if (_unitMode && _unitId is null)
+    {
+        <EmptyState Title="@L["Att_Unit_ChooseTitle"]" Text="@L["Att_Unit_ChooseText"]" Icon="@Icons.Material.Rounded.AccountTree" TestId="attendance-choose-unit" />
+    }
+    else if (_sessions.Count == 0)
+    {
+        <EmptyState Title="@L["Att_Today_EmptyTitle"]" Text="@L["Att_Today_EmptyText"]" Icon="@Icons.Material.Rounded.EventAvailable" />
+    }
+    else
+    {
+        <div class="lms-session-grid" data-testid="attendance-sessions">
+            @foreach (var session in _sessions)
+            {
+                <AttendanceSessionCard Session="session" OnHistory="OpenHistory" />
+            }
+        </div>
+    }
+
+    <AttendanceHistoryDrawer @bind-Open="_historyOpen" SessionId="_historyFor" />
+}
+
+@code {
+    private IReadOnlyList<AttendanceSessionListItemDto> _sessions = [];
+    private Guid? _unitId;
+    private bool _unitMode;
+    private bool _loading = true, _failed, _historyOpen;
+    private DateOnly? _date;
+    private Guid? _historyFor;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        _unitMode = !CanTake; // Take holders see their own sessions; View-only holders (counselor, manager, supervisor) pick a unit and a day
+        if (CanTake || CanView) await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _failed = false;
+        IReadOnlyList<AttendanceSessionListItemDto>? value = null;
+        var failed = false;
+        if (_unitMode)
+        {
+            if (_unitId is { } unit)
+            {
+                var day = _date ?? DateOnly.FromDateTime(DateTime.Now);
+                (var page, failed) = await ApiCalls.RunAsync(() => Api.SearchSessionsAsync(unit, new AttendanceSessionSearchQuery(day, day, PageSize: 100)), Navigation);
+                value = page?.Items;
+            }
+        }
+        else
+        {
+            (value, failed) = await ApiCalls.RunAsync(() => Api.GetSessionsAsync(_date), Navigation);
+        }
+
+        _sessions = value ?? [];
+        // The server answered for its (client time zone) day when none was chosen: show that day so the control is never blank.
+        _date ??= _sessions.Count > 0 ? _sessions[0].Date : DateOnly.FromDateTime(DateTime.Now);
+        _failed = failed;
+        _loading = false;
+    }
+
+    private bool CanTake => PermState.Has(Permissions.Attendance.Take);
+    private bool CanView => PermState.Has(Permissions.Attendance.View);
+
+    private Task OnUnitChanged(Guid? unit)
+    {
+        _unitId = unit;
+        return LoadAsync();
+    }
+
+    private Task OnModeChanged(bool unitMode)
+    {
+        _unitMode = unitMode;
+        return LoadAsync();
+    }
+
+    private Task OnDateChanged(DateTime? date)
+    {
+        _date = date is { } d ? DateOnly.FromDateTime(d) : null;
+        return LoadAsync();
+    }
+
+    private void OpenHistory(AttendanceSessionListItemDto session)
+    {
+        _historyFor = session.Id;
+        _historyOpen = true;
+    }
+}
