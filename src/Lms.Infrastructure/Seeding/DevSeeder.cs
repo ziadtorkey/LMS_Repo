@@ -44,10 +44,13 @@ public sealed class DevSeeder(string connectionString, IHostEnvironment environm
             await SeedUsersAsync(db, school, university, options!, cancellationToken);
         }
 
+        // M5 demo data (gradebook, timetable, attendance): after the users, so the sample accounts can be linked to it.
+        await M5DemoSeeder.SeedAsync(db, school, university, cancellationToken);
+
         return true;
     }
 
-    private sealed record SeededClient(Organization Organization, Dictionary<string, OrgUnit> Units);
+    internal sealed record SeededClient(Organization Organization, Dictionary<string, OrgUnit> Units);
 
     private static async Task<SeededClient> SeedTreeAsync(LmsDbContext db, DevSeedData.ClientSeed seed, CancellationToken ct)
     {

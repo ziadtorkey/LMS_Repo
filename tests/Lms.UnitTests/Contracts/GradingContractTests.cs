@@ -64,9 +64,9 @@ public sealed class GradingContractTests
     }
 
     [Fact]
-    public void Defaults_version_is_8()
+    public void Grading_permissions_are_introduced_in_defaults_version_8()
     {
-        Assert.Equal(8, BuiltInRoleDefaults.CurrentVersion);
+        Assert.True(BuiltInRoleDefaults.CurrentVersion >= 8); // later waves bump it (9 timetable, 10 attendance and excuses)
         Assert.All(GradePermissions, p => Assert.Equal(8, BuiltInRoleDefaults.IntroducedIn(p)));
         Assert.Equal(GradePermissions.Order(StringComparer.Ordinal), BuiltInRoleDefaults.IntroducedInVersion8.Order(StringComparer.Ordinal));
     }
@@ -299,6 +299,7 @@ public sealed class GradingContractTests
         Assert.Equal($"/api/class-courses/{cc}/gradebook/categories?termId={term}", Routes.ClassCourseGradebookCategories(cc, term));
         Assert.Equal($"/api/class-courses/{cc}/gradebook/items?termId={term}", Routes.ClassCourseGradebookItems(cc, term));
         Assert.Equal($"/api/class-courses/{cc}/gradebook/entries?termId={term}", Routes.ClassCourseGradebookEntries(cc, term));
+        // an item names its gradebook, so its routes need no term and the item builder stays on the plain items route
         var item = Guid.NewGuid();
         Assert.Equal($"/api/class-courses/{cc}/gradebook/items/{item}", Routes.ClassCourseGradebookItem(cc, item));
         Assert.Equal($"/api/class-courses/{cc}/gradebook/items/publish", Routes.ClassCourseGradebookPublish(cc));
@@ -315,6 +316,7 @@ public sealed class GradingContractTests
 
         Assert.True(left.IsWithdrawn);
         Assert.Equal(new DateOnly(2026, 11, 1), left.WithdrawnOn);
+        // the student-facing shapes have no withdrawn marker: other students and guardians never see a classmate's row
         Assert.DoesNotContain(typeof(StudentCourseGradesDto).GetProperties(), p => p.Name.Contains("Withdrawn", StringComparison.Ordinal));
     }
 

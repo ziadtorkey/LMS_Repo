@@ -1793,10 +1793,123 @@
   <data name="AuditEntity_GradeEntry" xml:space="preserve"><value>Grade entry</value></data>
   <data name="AuditEntity_GradeSnapshot" xml:space="preserve"><value>Grade snapshot</value></data>
   <data name="PermModule_Grades" xml:space="preserve"><value>Grades</value></data>
-  <data name="NavSection_Structure" xml:space="preserve"><value>Structure</value></data>
-  <data name="NavSection_People" xml:space="preserve"><value>People</value></data>
-  <data name="NavSection_Academic" xml:space="preserve"><value>Academic</value></data>
-  <data name="NavSection_Security" xml:space="preserve"><value>Security and settings</value></data>
-  <data name="App_Subtitle" xml:space="preserve"><value>Academic platform</value></data>
-  <data name="Nav_Main" xml:space="preserve"><value>Main navigation</value></data>
+  <data name="Error_timetable_conflict" xml:space="preserve"><value>This slot clashes with another one: the teacher or the class is already booked at that time.</value></data>
+  <data name="Error_period_overlap" xml:space="preserve"><value>The period overlaps another period of this school, or it does not start before it ends.</value></data>
+  <data name="Error_period_in_use" xml:space="preserve"><value>A timetable slot uses this period, so it cannot be deleted.</value></data>
+  <data name="Error_timetable_not_published" xml:space="preserve"><value>This slot is still a draft. Publish the timetable first.</value></data>
+  <data name="Error_exception_date_invalid" xml:space="preserve"><value>The date must be a school day of this slot inside the term, and the slot can have only one exception per date.</value></data>
+  <data name="Error_exception_substitute_invalid" xml:space="preserve"><value>The substitute must be another teacher of this school group who is free in that period on that date.</value></data>
+  <data name="Setting_Timetable_WorkingDays" xml:space="preserve"><value>School days of the week</value></data>
+  <data name="SettingValue_Timetable_WorkingDays_Sun" xml:space="preserve"><value>Sunday</value></data>
+  <data name="SettingValue_Timetable_WorkingDays_Mon" xml:space="preserve"><value>Monday</value></data>
+  <data name="SettingValue_Timetable_WorkingDays_Tue" xml:space="preserve"><value>Tuesday</value></data>
+  <data name="SettingValue_Timetable_WorkingDays_Wed" xml:space="preserve"><value>Wednesday</value></data>
+  <data name="SettingValue_Timetable_WorkingDays_Thu" xml:space="preserve"><value>Thursday</value></data>
+  <data name="SettingValue_Timetable_WorkingDays_Fri" xml:space="preserve"><value>Friday</value></data>
+  <data name="SettingValue_Timetable_WorkingDays_Sat" xml:space="preserve"><value>Saturday</value></data>
+  <data name="Setting_Timetable_ConflictMode" xml:space="preserve"><value>Timetable clashes</value></data>
+  <data name="SettingValue_Timetable_ConflictMode_Block" xml:space="preserve"><value>Block the save</value></data>
+  <data name="SettingValue_Timetable_ConflictMode_Warn" xml:space="preserve"><value>Save and warn</value></data>
+  <data name="Tt_SlotState_Draft" xml:space="preserve"><value>Draft</value></data>
+  <data name="Tt_SlotState_Published" xml:space="preserve"><value>Published</value></data>
+  <data name="Tt_ConflictKind_TeacherDoubleBooked" xml:space="preserve"><value>The teacher is already booked then</value></data>
+  <data name="Tt_ConflictKind_ClassDoubleBooked" xml:space="preserve"><value>The class is already booked then</value></data>
+  <data name="Tt_ExceptionKind_Substitute" xml:space="preserve"><value>Substitute teacher</value></data>
+  <data name="Tt_ExceptionKind_Cancelled" xml:space="preserve"><value>Cancelled</value></data>
+  <data name="Tt_ExceptionKind_Moved" xml:space="preserve"><value>Moved to another period</value></data>
+  <data name="Tt_SlotBadge_Conflict" xml:space="preserve"><value>Clash</value></data>
+  <data name="Tt_SlotBadge_HasException" xml:space="preserve"><value>Has a change</value></data>
+  <data name="Tt_SlotBadge_DraftChange" xml:space="preserve"><value>Not republished</value></data>
+  <data name="Tt_CopySkip_ClassCourseMissing" xml:space="preserve"><value>The course is not taught in this term</value></data>
+  <data name="Tt_CopySkip_TeacherMissing" xml:space="preserve"><value>The teacher is no longer assigned</value></data>
+  <data name="Tt_CopySkip_PeriodMissing" xml:space="preserve"><value>The period no longer exists</value></data>
+  <data name="Tt_CopySkip_SlotExists" xml:space="preserve"><value>The target term already has a slot there</value></data>
+  <data name="Perm_Timetable_View" xml:space="preserve"><value>View timetables and periods</value></data>
+  <data name="Perm_Timetable_Manage" xml:space="preserve"><value>Build and publish timetables</value></data>
+  <data name="Perm_Timetable_Configure" xml:space="preserve"><value>Configure periods</value></data>
+  <data name="Perm_Timetable_ViewOwn" xml:space="preserve"><value>View own timetable</value></data>
+  <data name="AuditEntity_Period" xml:space="preserve"><value>Period</value></data>
+  <data name="AuditEntity_TimetableSlot" xml:space="preserve"><value>Timetable slot</value></data>
+  <data name="AuditEntity_TimetableException" xml:space="preserve"><value>Timetable exception</value></data>
+  <data name="PermModule_Timetable" xml:space="preserve"><value>Timetable</value></data>
+  <data name="Error_attendance_edit_window_closed" xml:space="preserve"><value>The edit window of this attendance has closed. Ask a manager or counselor to correct it.</value></data>
+  <data name="Error_attendance_session_future" xml:space="preserve"><value>This session is on a future date. Attendance can only be taken for today or earlier.</value></data>
+  <data name="Error_attendance_unmarked_rows" xml:space="preserve"><value>Mark every student before saving.</value></data>
+  <data name="Error_attendance_reason_required" xml:space="preserve"><value>Give a reason (up to 500 characters) to edit attendance after the edit window.</value></data>
+  <data name="Error_attendance_not_a_proposal" xml:space="preserve"><value>Only attendance proposed from a live session can be confirmed.</value></data>
+  <data name="Error_excuse_out_of_policy" xml:space="preserve"><value>This excuse is outside the school policy.</value></data>
+  <data name="Error_excuse_submitter_not_allowed" xml:space="preserve"><value>Only a guardian can submit an excuse for this student.</value></data>
+  <data name="Error_excuse_reviewer_is_submitter" xml:space="preserve"><value>You cannot review an excuse you submitted.</value></data>
+  <data name="Error_excuse_comment_required" xml:space="preserve"><value>Write a comment (up to 500 characters) to reject an excuse.</value></data>
+  <data name="Error_excuse_attachment_invalid" xml:space="preserve"><value>The attachment must be a JPEG, PNG, WebP or PDF file within the size limit.</value></data>
+  <data name="Error_excuse_not_pending" xml:space="preserve"><value>This excuse has already been decided or withdrawn.</value></data>
+  <data name="Exc_Violation_TooLate" xml:space="preserve"><value>The absence is older than the period allowed for excuses.</value></data>
+  <data name="Exc_Violation_ReasonNotAllowed" xml:space="preserve"><value>This reason is not accepted by the school.</value></data>
+  <data name="Exc_Violation_AttachmentRequired" xml:space="preserve"><value>This reason needs an attachment.</value></data>
+  <data name="Exc_Violation_NothingToExcuse" xml:space="preserve"><value>None of the chosen days has an absence or a late arrival to excuse.</value></data>
+  <data name="Exc_Violation_DatesInvalid" xml:space="preserve"><value>The dates are in the future or reversed.</value></data>
+  <data name="Setting_Attendance_GenerateDaysAhead" xml:space="preserve"><value>Days of sessions created ahead from the timetable</value></data>
+  <data name="Setting_Attendance_EditWindowHours" xml:space="preserve"><value>Hours a teacher can edit attendance after taking it</value></data>
+  <data name="Setting_Attendance_LiveMinPercent" xml:space="preserve"><value>Share of a live session that counts as present (%)</value></data>
+  <data name="Setting_Attendance_LateAfterMinutes" xml:space="preserve"><value>Minutes after the start that count as late</value></data>
+  <data name="Setting_Attendance_AbsentThreshold" xml:space="preserve"><value>Absences that trigger an alert</value></data>
+  <data name="Setting_Attendance_ThresholdWindowDays" xml:space="preserve"><value>Days counted for the absence alert</value></data>
+  <data name="Setting_Attendance_LateWeightPercent" xml:space="preserve"><value>A late arrival counts as this share of an absence (%)</value></data>
+  <data name="Setting_Excuses_Submitters" xml:space="preserve"><value>Who can submit an excuse</value></data>
+  <data name="SettingValue_Excuses_Submitters_GuardiansOnly" xml:space="preserve"><value>Guardians only</value></data>
+  <data name="SettingValue_Excuses_Submitters_GuardiansAndStudents" xml:space="preserve"><value>Guardians and students</value></data>
+  <data name="Setting_Excuses_MaxDaysAfterAbsence" xml:space="preserve"><value>School days allowed to submit an excuse after an absence</value></data>
+  <data name="Setting_Excuses_AllowedReasons" xml:space="preserve"><value>Accepted excuse reasons</value></data>
+  <data name="Setting_Excuses_AttachmentRequiredReasons" xml:space="preserve"><value>Reasons that need an attachment</value></data>
+  <data name="SettingValue_Excuses_AllowedReasons_Illness" xml:space="preserve"><value>Illness</value></data>
+  <data name="SettingValue_Excuses_AttachmentRequiredReasons_Illness" xml:space="preserve"><value>Illness</value></data>
+  <data name="Exc_Reason_Illness" xml:space="preserve"><value>Illness</value></data>
+  <data name="SettingValue_Excuses_AllowedReasons_Family" xml:space="preserve"><value>Family circumstances</value></data>
+  <data name="SettingValue_Excuses_AttachmentRequiredReasons_Family" xml:space="preserve"><value>Family circumstances</value></data>
+  <data name="Exc_Reason_Family" xml:space="preserve"><value>Family circumstances</value></data>
+  <data name="SettingValue_Excuses_AllowedReasons_Official" xml:space="preserve"><value>Official obligation</value></data>
+  <data name="SettingValue_Excuses_AttachmentRequiredReasons_Official" xml:space="preserve"><value>Official obligation</value></data>
+  <data name="Exc_Reason_Official" xml:space="preserve"><value>Official obligation</value></data>
+  <data name="SettingValue_Excuses_AllowedReasons_Other" xml:space="preserve"><value>Other</value></data>
+  <data name="SettingValue_Excuses_AttachmentRequiredReasons_Other" xml:space="preserve"><value>Other</value></data>
+  <data name="Exc_Reason_Other" xml:space="preserve"><value>Other</value></data>
+  <data name="Setting_Excuses_MaxAttachmentMb" xml:space="preserve"><value>Largest excuse attachment (MB)</value></data>
+  <data name="Setting_Excuses_AttachmentRetentionDays" xml:space="preserve"><value>Days to keep attachments of rejected or withdrawn excuses</value></data>
+  <data name="NotifEvent_Attendance_Absent" xml:space="preserve"><value>Absence or late arrival recorded</value></data>
+  <data name="Notif_Attendance_Absent" xml:space="preserve"><value>{StudentName} was marked {Status} in {CourseName} on {Date}.</value></data>
+  <data name="NotifEvent_Excuses_Decided" xml:space="preserve"><value>Excuse decided</value></data>
+  <data name="Notif_Excuses_Decided" xml:space="preserve"><value>The excuse for {StudentName} was {Decision}.</value></data>
+  <data name="NotifEvent_Excuses_Escalated" xml:space="preserve"><value>Excuse escalated to you</value></data>
+  <data name="Notif_Excuses_Escalated" xml:space="preserve"><value>An excuse for {StudentName} was escalated to you.</value></data>
+  <data name="NotifEvent_Attendance_ThresholdCrossed" xml:space="preserve"><value>Absence threshold reached</value></data>
+  <data name="Notif_Attendance_ThresholdCrossed" xml:space="preserve"><value>{StudentName} reached {Absences} absences in the last {WindowDays} days.</value></data>
+  <data name="Att_Status_Present" xml:space="preserve"><value>Present</value></data>
+  <data name="Att_Status_Absent" xml:space="preserve"><value>Absent</value></data>
+  <data name="Att_Status_Late" xml:space="preserve"><value>Late</value></data>
+  <data name="Att_Status_Excused" xml:space="preserve"><value>Excused</value></data>
+  <data name="Att_Source_Timetable" xml:space="preserve"><value>From the timetable</value></data>
+  <data name="Att_Source_AdHoc" xml:space="preserve"><value>Added by the teacher</value></data>
+  <data name="Att_Source_Live" xml:space="preserve"><value>Proposed from a live session</value></data>
+  <data name="Att_State_Open" xml:space="preserve"><value>Open</value></data>
+  <data name="Att_State_Taken" xml:space="preserve"><value>Taken</value></data>
+  <data name="Att_ChangeKind_Taken" xml:space="preserve"><value>Taken</value></data>
+  <data name="Att_ChangeKind_Edited" xml:space="preserve"><value>Edited</value></data>
+  <data name="Att_ChangeKind_EditedAfterWindow" xml:space="preserve"><value>Edited after the window</value></data>
+  <data name="Att_ChangeKind_ExcuseApproved" xml:space="preserve"><value>Excuse approved</value></data>
+  <data name="Exc_Status_Submitted" xml:space="preserve"><value>Submitted</value></data>
+  <data name="Exc_Status_Approved" xml:space="preserve"><value>Approved</value></data>
+  <data name="Exc_Status_Rejected" xml:space="preserve"><value>Rejected</value></data>
+  <data name="Exc_Status_Escalated" xml:space="preserve"><value>Escalated</value></data>
+  <data name="Exc_Status_Withdrawn" xml:space="preserve"><value>Withdrawn</value></data>
+  <data name="Perm_Attendance_Take" xml:space="preserve"><value>Take attendance</value></data>
+  <data name="Perm_Attendance_Edit" xml:space="preserve"><value>Edit attendance after the edit window</value></data>
+  <data name="Perm_Attendance_View" xml:space="preserve"><value>View attendance, reports and alerts</value></data>
+  <data name="Perm_Attendance_ViewOwn" xml:space="preserve"><value>View own attendance</value></data>
+  <data name="Perm_Excuses_Submit" xml:space="preserve"><value>Submit and track absence excuses</value></data>
+  <data name="Perm_Excuses_Review" xml:space="preserve"><value>Review absence excuses</value></data>
+  <data name="Perm_Excuses_Escalate" xml:space="preserve"><value>Escalate absence excuses</value></data>
+  <data name="PermModule_Attendance" xml:space="preserve"><value>Attendance</value></data>
+  <data name="PermModule_Excuses" xml:space="preserve"><value>Excuses</value></data>
+  <data name="AuditEntity_AttendanceRecordChange" xml:space="preserve"><value>Attendance change</value></data>
+  <data name="AuditEntity_AbsenceExcuse" xml:space="preserve"><value>Absence excuse</value></data>
 </root>

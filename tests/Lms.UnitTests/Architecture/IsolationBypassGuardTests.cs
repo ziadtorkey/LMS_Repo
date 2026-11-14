@@ -45,8 +45,12 @@ public sealed class IsolationBypassGuardTests
             "effective policies set on ancestors above the caller's scope (M1 Task 12, #94)",
         ["src/Lms.Infrastructure/Organizations/OrgPolicyReader.cs"] =
             "policies set on ancestors above the caller's scope, to show blocked permissions in the org tree (M1 Task 9, #99)",
+        ["src/Lms.Infrastructure/Grading/Gradebooks/GradeRowVersions.cs"] =
+            "the soft-deleted entries of a removed item still count towards a row version so it never falls; bound to one gradebook, its client and the students asked for, versions only (M5 Task 8, QA1 on #650)",
         ["src/Lms.Infrastructure/Grading/Scales/ScaleResolver.cs"] =
             "scales and weight templates of ancestor units sit above the caller scope; client-limited, live rows, bound to the unit's exact ancestor-or-self paths, names, kinds, bands and weights only (M5 Task 4, site 1)",
+        ["src/Lms.Infrastructure/Grading/Reads/GradeLookups.cs"] =
+            "the course and the term of a class course are defined above a student, guardian or teacher scope; client-limited, live rows, one id each, names and dates only (M5 Task 9)",
         ["src/Lms.Infrastructure/Grading/Scales/PresetReconciler.cs"] =
             "system context: seeds one client's presets at its root unit; root unit and scales read by the client id parameter, soft-deleted plain default included so it is not re-created (M5 Task 4, site 9)",
         ["src/Lms.Infrastructure/Access/BuiltInRoleStartupReconciler.cs"] =
@@ -73,6 +77,8 @@ public sealed class IsolationBypassGuardTests
             "level types are client-wide, so the in-use count covers the whole client, not the caller subtree (M1 Task 8, #83)",
         ["src/Lms.Api/Features/Courses/Import/CourseImportDefinition.cs"] =
             "live course codes of the client outside the caller subtree, only the code keys (course code is unique per client, M3 Task 6, #214)",
+        ["src/Lms.Infrastructure/Grading/Gradebooks/EventTermResolver.cs"] =
+            "the terms of the year of a class course are defined at an ancestor unit above the caller scope; client matched, deleted terms excluded by hand, one year only (M5 Task 7, D58 Q8)",
         ["src/Lms.Infrastructure/LiveSessions/LiveSessionService.cs"] =
             "the daily live-session create cap counts the meetings the whole client created today, in every unit and including rows deleted since; client-limited, count only (M4b Task 4, #471)",
         ["src/Lms.Infrastructure/Zoom/EfHostSlotStore.cs"] =
@@ -91,6 +97,16 @@ public sealed class IsolationBypassGuardTests
             "delete also removes calendar events at descendant units, restricted to the year's client (M1 Task 22, #57)",
         ["src/Lms.Api/Features/AcademicYears/CalendarEndpoints.cs"] =
             "events and names inherited from ancestor units, restricted to the unit's client (M1 Task 22, #57)",
+        ["src/Lms.Api/Features/Attendance/TakeAttendanceEndpoints.cs"] =
+            "the substitute exception of a session may lie outside the covering teacher scope; client matched, deleted rows excluded, exactly this slot, date and caller, only a yes/no leaves (M5 Task 17)",
+        ["src/Lms.Infrastructure/Attendance/AbsenceNotifier.cs"] =
+            "the course of a class course is owned above the caller scope; only its names go into the absence notice; client matched, deleted rows excluded (M5 Task 17)",
+        ["src/Lms.Infrastructure/Timetable/PeriodService.cs"] =
+            "periods of ancestor units apply to descendants, restricted to the client and the exact ancestor paths; only the deepest defining unit rows leave (M5 Task 13)",
+        ["src/Lms.Infrastructure/Timetable/TimetableService.cs"] =
+            "terms of the class year and courses sit above the caller scope (names only); clash candidates are slots of the same teacher or class in sibling schools; client matched, deleted rows excluded (M5 Task 14, bypass site 3)",
+        ["src/Lms.Infrastructure/Calendar/ClientCalendar.cs"] =
+            "the client root path (above a school admin scope) is read only to resolve the client-level Org.TimeZone setting (M5 Task 13, L2)",
         ["src/Lms.Infrastructure/AcademicYears/AcademicCalendar.cs"] =
             "holidays of ancestor units apply to descendants, restricted to the client and effective years (M1 Task 22, #57)",
         ["src/Lms.Infrastructure/People/PersonStatusService.cs"] =
@@ -105,6 +121,10 @@ public sealed class IsolationBypassGuardTests
             "the course and its supervisors of an exceptional-enrollment request are owned above the class, out of an approver's scope; client matched, deleted rows excluded, only names and user ids leave (M3 Task 11, #219)",
         ["src/Lms.Api/Features/Forums/AnnouncementNotifier.cs"] =
             "the course of a class course is owned above the caller's scope; only its names go into the notification; client matched, deleted rows excluded (M4a Task 13, #363)",
+        ["src/Lms.Infrastructure/Excuses/ExcuseEscalationTargets.cs"] =
+            "escalation targets are managers and counselors assigned at the student school or above, outside the reviewer scope; assignments read at the student unit and its ancestors only, client matched, deleted rows and inactive users excluded; only ids, names and the role key leave (M5 Task 19)",
+        ["src/Lms.Api/Features/Timetable/ExceptionEndpoints.cs"] =
+            "the term of a slot belongs to the class academic year, defined at an ancestor unit above the caller; limited to the slot client and term id, live rows only; only the term dates are read (M5 Task 15)",
         ["src/Lms.Api/Features/Library/LibraryQueries.cs"] =
             "library resources, their tags, levels, owner unit names and unit-owned assets sit at ancestors of the browsed unit, above the caller's scope (D13: visible below the owner, read-only); client matched, deleted rows excluded, ancestor chain of the browsed unit only (M4a Task 12, #362)",
         ["src/Lms.Infrastructure/Enrollment/PlacementGuard.cs"] =

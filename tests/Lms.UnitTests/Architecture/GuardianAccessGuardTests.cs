@@ -18,10 +18,21 @@ public sealed partial class GuardianAccessGuardTests
         ["src/Lms.Infrastructure/People/PersonDuplicateFinder.cs"] =
             "client-wide match by national id or mobile (guardians may already exist through a sibling subtree); returns the entity to "
             + "Infrastructure callers only, the M3 match endpoint projects name and masked mobile (M2 Task 5, #157)",
+        ["src/Lms.Api/Features/Attendance/AttendanceReadEndpoints.cs"] =
+            "a guardian reads their own children's attendance: the signed-in user's own guardian profile (by user id) and a live StudentGuardian link; another child is 404 (M5 Task 17)",
+        ["src/Lms.Infrastructure/Attendance/AbsenceNotifier.cs"] =
+            "the guardian users of a student marked Absent or Late are the recipients of Attendance.Absent; only user ids leave, through the notification publisher (M5 Task 17)",
         ["src/Lms.Api/Features/Guardians/GuardianPortalEndpoints.cs"] =
             "my children: the signed-in user's own guardian profile (by their user id, client filter of the table); children come from StudentGuardian in the caller's scope (M3 Task 25, #233)",
+        ["src/Lms.Api/Features/GradeReads/StudentGradeEndpoints.cs"] =
+            "a guardian reads a child grades: the signed-in user own guardian profile (by user id, client filter of the table), then the live StudentGuardian link to that child; a miss is 404 (M5 Task 9)",
+        ["src/Lms.Api/Features/Timetable/TimetableViewEndpoints.cs"] =
+            "a guardian reads the timetable of their own children only: the signed-in user own guardian profile (by user id, client filter of the table) and an active StudentGuardian link to the requested student; no other guardian data leaves (M5 Task 15)",
         ["src/Lms.Infrastructure/Enrollment/TransferNotifier.cs"] =
             "portal user ids of the guardians linked to the transferred student (links in the caller's scope); only user ids leave (M3 Task 28, #236)",
+        ["src/Lms.Infrastructure/Grading/Publishing/GradePublishedNotifier.cs"] =
+            "portal user ids of the guardians linked (live StudentGuardian rows of the publishing class course's students) to be told that grades were published; "
+            + "only user ids leave, no guardian data (M5 Task 11)",
         ["src/Lms.Infrastructure/People/PersonStatusService.cs"] =
             "recompute a user's account status: only whether the user has a live guardian profile (M2 Task 6, #158)",
         ["src/Lms.Infrastructure/Identity/External/ExternalLoginLinker.cs"] =
