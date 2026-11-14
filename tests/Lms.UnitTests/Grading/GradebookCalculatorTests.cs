@@ -253,6 +253,70 @@ public sealed class GradebookCalculatorTests
     }
 
     [Fact]
+    public void An_all_excused_category_does_not_take_part_and_the_others_carry_the_final()
+    {
+        var result = GradebookCalculator.Calculate(TwoCategories(
+            events: [new(Item1, Student, 1, 80m)],
+            entries: [new(Item2, Student, null, IsExcused: true), new(Item3, Student, null, IsExcused: true)]));
+
+        var student = Only(result);
+        Assert.Equal(80m, student.FinalPercent); // category 2 has no counted item, so category 1 is normalised to the whole
+        Assert.False(student.Categories.Single(c => c.CategoryId == Cat2).Participates);
+        Assert.True(student.IsComplete);          // excused items are not missing
+    }
+
+    [Fact]
+    public void An_empty_gradebook_gives_no_students_and_never_throws()
+    {
+        var result = GradebookCalculator.Calculate(Input([], [], bands: []));
+
+        Assert.Empty(result.Students);
+        Assert.False(result.IsValid); // no categories: the weights total 0, not 100
+        Assert.NotEmpty(result.Warnings);
+    }
+
+    [Fact]
+    public void Points_above_the_maximum_are_not_clamped_so_extra_credit_is_implicit()
+    {
+        var result = GradebookCalculator.Calculate(Input([new(Cat1, 100m)], [new(Item1, Cat1, 10m)], [new(Item1, Student, 1, 12m)]));
+
+        Assert.Equal(120m, Only(result).FinalPercent);
+        Assert.Equal(120m, Only(result).Items.Single().Percent);
+    }
+
+    [Fact]
+    public void Negative_points_are_not_clamped_either()
+    {
+        var result = GradebookCalculator.Calculate(Input([new(Cat1, 100m)], [new(Item1, Cat1, 10m)], [new(Item1, Student, 1, -2m)]));
+
+        Assert.Equal(-20m, Only(result).FinalPercent);
+        Assert.Null(Only(result).Band); // below the lowest band (min 0): no band; entry validation (L12) keeps points non-negative
+    }
+
+    [Fact]
+    public void The_result_and_the_warning_do_not_depend_on_the_culture_of_the_thread()
+    {
+        var input = Input([new(Cat1, 70m), new(Cat2, 20.5m)], [new(Item1, Cat1, 100m)], [new(Item1, Student, 1, 83.456m)]);
+        var original = System.Globalization.CultureInfo.CurrentCulture;
+        try
+        {
+            System.Globalization.CultureInfo.CurrentCulture = new System.Globalization.CultureInfo("en-US");
+            var english = GradebookCalculator.Calculate(input);
+            System.Globalization.CultureInfo.CurrentCulture = new System.Globalization.CultureInfo("ar-SA");
+            var arabic = GradebookCalculator.Calculate(input);
+
+            Assert.Equal(english.Warnings, arabic.Warnings);
+            Assert.Contains("90.5", arabic.Warnings.Single(w => w.Contains("total")));
+            Assert.Equal(english.Students.Single().FinalPercent, arabic.Students.Single().FinalPercent);
+            Assert.Equal(83.46m, arabic.Students.Single().FinalPercent);
+        }
+        finally
+        {
+            System.Globalization.CultureInfo.CurrentCulture = original;
+        }
+    }
+
+    [Fact]
     public void A_student_with_no_scores_has_no_final_and_no_band()
     {
         var result = GradebookCalculator.Calculate(Input([new(Cat1, 100m)], [new(Item1, Cat1, 10m)], students: [Student]));

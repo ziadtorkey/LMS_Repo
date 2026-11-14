@@ -30,5 +30,5 @@
     { "student": "u3", "final": 83, "band": "B", "gpa": 4.00, "complete": true },
     { "student": "u4", "final": 75, "band": "C+", "gpa": 3.50, "complete": true }
   ],
-  "handComputation": "u1: mid 27/30=90, final 44/50=88, labs mean(100, 50)=75 -> 27+35.2+22.5 = 84.7. u2: mid 100, final missing counts 0, labs mean(90, 0)=45 -> 30+0+13.5 = 43.5. u3: mid 50, final 95, labs 100 -> 15+38+30 = 83. u4: mid 22/30=73.333.., final 80, labs mean(70,70)=70 -> 22+32+21 = 75.0, which is exactly the lower bound of C+ (inclusive)."
+  "handComputation": "u1: mid 27/30=90, final 44/50=88, labs mean(100, 50)=75 -> 27+35.2+22.5 = 84.7. u2: mid 100, final missing counts 0, labs mean(90, 0)=45 -> 30+0+13.5 = 43.5. u3: mid 50, final 95, labs 100 -> 15+38+30 = 83. u4: mid 22/30=73.333.., final 80, labs mean(70,70)=70 -> 22+32+21 = 75.0, which is exactly the lower bound of C+ (inclusive). In decimal arithmetic 73.333.. x 0.3 is 21.99999.. and the sum is 74.99999.., so this case is C+ only because the final is rounded half-up to one place before the band lookup (the band follows the rounded percentage); it pins that rule."
 }

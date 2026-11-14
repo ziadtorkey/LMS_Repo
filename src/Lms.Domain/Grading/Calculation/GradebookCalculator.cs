@@ -12,7 +12,9 @@ namespace Lms.Domain.Grading.Calculation;
 /// the categories that have scores. <c>HideUntilComplete</c> gives no final while an item of a weighted category is missing.</item>
 /// <item>The final is rounded half-up once, at the end; the band is looked up from the rounded percentage.</item>
 /// </list>
-/// Weights outside 0-100 or not totalling 100 make the result <c>IsValid = false</c> with a warning but never stop the calculation.
+/// Weights outside 0-100 or not totalling 100 make the result <c>IsValid = false</c> with a warning (culture-invariant text) but never
+/// stop the calculation. Scores are never clamped: points above the maximum give a percentage above 100 (extra credit is implicit) and
+/// negative points give a negative percentage, so a caller that must refuse them validates on entry (L12), not here.
 /// </summary>
 public static class GradebookCalculator
 {
@@ -133,7 +135,7 @@ public static class GradebookCalculator
         var total = categories.Sum(c => c.Weight);
         if (Math.Abs(total - 100m) > WeightTolerance)
         {
-            warnings.Add($"The category weights total {total} and not 100.");
+            warnings.Add($"The category weights total {total.ToString(System.Globalization.CultureInfo.InvariantCulture)} and not 100.");
         }
 
         return warnings;
