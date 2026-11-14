@@ -18,7 +18,8 @@ public sealed class FakeMessagingApi : IMessagingApi
     public static readonly Guid UnitA = Guid.Parse("00000000-0000-0000-0000-0000000a0001");
     public static readonly Guid UnitB = Guid.Parse("00000000-0000-0000-0000-0000000a0002");
 
-    public static readonly FakeMessagingUser Sara = new(Guid.Parse("00000000-0000-0000-0000-0000000b0001"), "سارة", "Sara", BuiltInRoles.Student, UnitA);
+    /// <summary>The signed-in user of the standalone server (its fake me has this user id).</summary>
+    public static readonly FakeMessagingUser Sara = new(Guid.Parse("00000000-0000-0000-0000-0000000000b1"), "سارة", "Sara", BuiltInRoles.Student, UnitA);
     public static readonly FakeMessagingUser Omar = new(Guid.Parse("00000000-0000-0000-0000-0000000b0002"), "عمر", "Omar", BuiltInRoles.Student, UnitA);
     public static readonly FakeMessagingUser Huda = new(Guid.Parse("00000000-0000-0000-0000-0000000b0003"), "هدى", "Huda", BuiltInRoles.Teacher, UnitA);
     public static readonly FakeMessagingUser Khaled = new(Guid.Parse("00000000-0000-0000-0000-0000000b0004"), "خالد", "Khaled", BuiltInRoles.Guardian, UnitA);

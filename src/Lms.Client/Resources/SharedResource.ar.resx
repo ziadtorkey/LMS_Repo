@@ -1986,4 +1986,26 @@
   <data name="Mod_Status_InReview" xml:space="preserve"><value>قيد المراجعة</value></data>
   <data name="Mod_Status_Removed" xml:space="preserve"><value>أُزيلت</value></data>
   <data name="Mod_Status_Kept" xml:space="preserve"><value>أُبقيت</value></data>
+  <data name="MsgPage_Title" xml:space="preserve"><value>الرسائل</value></data>
+  <data name="MsgPage_Subtitle" xml:space="preserve"><value>محادثاتك. لا يقرأ المحادثة إلا المشاركون فيها.</value></data>
+  <data name="MsgPage_New" xml:space="preserve"><value>رسالة جديدة</value></data>
+  <data name="MsgPage_EmptyTitle" xml:space="preserve"><value>لا توجد محادثات بعد</value></data>
+  <data name="MsgPage_EmptyText" xml:space="preserve"><value>ابدأ رسالة جديدة إلى شخص يُسمح لك بمراسلته.</value></data>
+  <data name="MsgPage_PickTitle" xml:space="preserve"><value>اختر محادثة</value></data>
+  <data name="MsgPage_PickText" xml:space="preserve"><value>اختر محادثة من القائمة لقراءتها.</value></data>
+  <data name="MsgPage_NotFoundTitle" xml:space="preserve"><value>المحادثة غير موجودة</value></data>
+  <data name="MsgPage_NotFoundText" xml:space="preserve"><value>إما أنها غير موجودة أو أنك لست مشاركًا فيها.</value></data>
+  <data name="MsgPage_Older" xml:space="preserve"><value>عرض الرسائل الأقدم</value></data>
+  <data name="MsgPage_Delete" xml:space="preserve"><value>حذف الرسالة</value></data>
+  <data name="MsgPage_DeleteHint" xml:space="preserve"><value>حذف للجميع. ممكن خلال {0} دقيقة من الإرسال.</value></data>
+  <data name="MsgPage_Locked" xml:space="preserve"><value>أُغلقت هذه المحادثة. يمكنك قراءتها فقط.</value></data>
+  <data name="MsgPage_ReadOnly" xml:space="preserve"><value>يمكنك قراءة هذه المحادثة دون الرد.</value></data>
+  <data name="MsgNew_None" xml:space="preserve"><value>لا تسمح قواعد مدرستك لك ببدء محادثة مع أحد.</value></data>
+  <data name="MsgNew_Search" xml:space="preserve"><value>ابحث عن أشخاص</value></data>
+  <data name="MsgNew_Recipients" xml:space="preserve"><value>المستلمون</value></data>
+  <data name="MsgNew_NoMatch" xml:space="preserve"><value>لا أحد ممن يُسمح لك بمراسلتهم يطابق هذا البحث.</value></data>
+  <data name="MsgNew_GroupTitle" xml:space="preserve"><value>اسم المجموعة</value></data>
+  <data name="MsgNew_NoGroups" xml:space="preserve"><value>لا تسمح قواعد مدرستك لك بإنشاء محادثات جماعية. اختر شخصًا واحدًا.</value></data>
+  <data name="MsgNew_GroupTooBig" xml:space="preserve"><value>أقصى عدد للمجموعة {0} شخصًا.</value></data>
+  <data name="Nav_Messages" xml:space="preserve"><value>الرسائل</value></data>
 </root>

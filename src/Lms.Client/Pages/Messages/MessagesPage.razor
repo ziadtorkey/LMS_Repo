@@ -1,0 +1,265 @@
+@page "/messages"
+@page "/messages/{Id:guid}"
+@attribute [Authorize]
+@using Lms.Client.Components.Messaging
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.Messaging
+@using Lms.Shared.Authorization
+@using Lms.Shared.Messaging
+@inject IMessagingApi Api
+@inject ILmsApi Me
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject ClientTimeZone Zone
+@inject IDialogService Dialogs
+@inject NavigationManager Navigation
+
+@* The inbox and the conversation (M6, #612). A conversation is visible only to its participants: the server answers 404 to anyone else and the page then shows
+   the not-found state. Who can be written to is the server's rules matrix (D69), surfaced in the new-message dialog; a message is deleted by its sender inside
+   the delete window the server reports. Realtime and moderation are later tasks. *@
+<PageTitle>@L["MsgPage_Title"]</PageTitle>
+@if (!PermState.Loaded)
+{
+    <LoadingState Lines="4" TestId="msg-loading" />
+}
+else if (!PermState.Has(Permissions.Messaging.View))
+{
+    <Forbidden />
+}
+else
+{
+    <PageHeader Title="@L["MsgPage_Title"]" Subtitle="@L["MsgPage_Subtitle"]" TitleTestId="msg-title">
+        <Actions>
+            @if (PermState.Has(Permissions.Messaging.Send))
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Edit" OnClick="NewAsync" data-testid="msg-new">@L["MsgPage_New"]</MudButton>
+            }
+        </Actions>
+    </PageHeader>
+
+    @if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-3" data-testid="msg-error">@_error</MudAlert>
+    }
+
+    <InboxLayout ShowThread="Id is not null">
+        <List>
+            @if (_loadingInbox)
+            {
+                <LoadingState Lines="5" TestId="msg-inbox-loading" />
+            }
+            else if (_inbox.Count == 0)
+            {
+                <EmptyState Title="@L["MsgPage_EmptyTitle"]" Text="@L["MsgPage_EmptyText"]" Icon="@Icons.Material.Rounded.Forum" TestId="msg-empty" />
+            }
+            else
+            {
+                <div class="lms-convs" data-testid="msg-inbox">
+                    @foreach (var c in _inbox)
+                    {
+                        <ConversationRow Href="@($"messages/{c.Id}")" Name="@NameOf(c)" Preview="@(c.LastMessagePreview ?? string.Empty)" TimeText="@TimeOf(c.LastMessageAtUtc)"
+                                         UnreadCount="c.UnreadCount" IsGroup="c.Kind == ConversationKinds.Group" Current="c.Id == Id" TestId="@($"msg-row-{c.Id}")" />
+                    }
+                </div>
+            }
+        </List>
+        <Thread>
+            @if (_notFound)
+            {
+                <EmptyState Title="@L["MsgPage_NotFoundTitle"]" Text="@L["MsgPage_NotFoundText"]" Icon="@Icons.Material.Rounded.SearchOff" TestId="msg-notfound">
+                    <MudButton Variant="Variant.Outlined" Href="messages">@L["Msg_Back"]</MudButton>
+                </EmptyState>
+            }
+            else if (_conversation is not null)
+            {
+                <ThreadPane Label="@NameOf(_conversation)">
+                    <Header>
+                        <ThreadHeader Name="@NameOf(_conversation)" IsGroup="_conversation.Kind == ConversationKinds.Group" MemberCount="_conversation.Participants.Count"
+                                      OnBack="BackAsync" />
+                    </Header>
+                    <ChildContent>
+                        @if (_older is not null)
+                        {
+                            <div class="d-flex justify-center"><MudButton Size="Size.Small" Variant="Variant.Text" OnClick="LoadOlderAsync" data-testid="msg-older">@L["MsgPage_Older"]</MudButton></div>
+                        }
+                        @foreach (var (day, messages) in Days())
+                        {
+                            <DaySeparator Text="@day" />
+                            @foreach (var m in messages)
+                            {
+                                var message = m;
+                                <MessageBubble Mine="message.SenderUserId == _me" From="@(message.SenderUserId == _me ? null : Culture.Pick(message.SenderNameAr, message.SenderNameEn))"
+                                               Text="@(message.Body ?? string.Empty)" TimeText="@TimeOf(message.CreatedAtUtc)"
+                                               Removal="message.State switch { MessageStates.Deleted => MessageRemoval.BySender, MessageStates.Removed => MessageRemoval.ByModerator, _ => MessageRemoval.None }"
+                                               TestId="@($"msg-bubble-{message.Id}")">
+                                    <Actions>
+                                        @if (message.CanDelete)
+                                        {
+                                            <MudTooltip Text="@string.Format(Culture.Current, L["MsgPage_DeleteHint"].Value, _limits?.DeleteWindowMinutes)">
+                                                <MudIconButton Icon="@Icons.Material.Rounded.DeleteOutline" Size="Size.Small" aria-label="@L["MsgPage_Delete"]"
+                                                               OnClick="() => DeleteAsync(message)" data-testid="@($"msg-delete-{message.Id}")" />
+                                            </MudTooltip>
+                                        }
+                                    </Actions>
+                                </MessageBubble>
+                            }
+                        }
+                    </ChildContent>
+                    <Footer>
+                        @if (_conversation.IsLocked)
+                        {
+                            <ComposerOff Reason="@L["MsgPage_Locked"]" />
+                        }
+                        else if (!PermState.Has(Permissions.Messaging.Send))
+                        {
+                            <ComposerOff Reason="@L["MsgPage_ReadOnly"]" />
+                        }
+                        else
+                        {
+                            <MessageComposer @bind-Value="_draft" OnSend="SendAsync" Sending="_sending" />
+                            <MudText Typo="Typo.caption" Class="lms-muted" data-testid="msg-counter" dir="ltr">@((_draft ?? string.Empty).Length) / @(_limits?.MaxBodyLength)</MudText>
+                        }
+                    </Footer>
+                </ThreadPane>
+            }
+            else if (Id is null)
+            {
+                <EmptyState Title="@L["MsgPage_PickTitle"]" Text="@L["MsgPage_PickText"]" Icon="@Icons.Material.Rounded.ChatBubbleOutline" TestId="msg-pick" />
+            }
+        </Thread>
+    </InboxLayout>
+}
+
+@code {
+    [Parameter] public Guid? Id { get; set; }
+
+    private IReadOnlyList<ConversationListItemDto> _inbox = [];
+    private ConversationDto? _conversation;
+    private List<MessageDto> _messages = [];
+    private Guid? _older;
+    private MessagingLimitsDto? _limits;
+    private TimeZoneInfo _zone = ClientCalendar.Zone();
+    private Guid _me;
+    private string? _draft, _error;
+    private bool _loadingInbox = true, _sending, _notFound;
+    private Guid? _loaded;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        if (!PermState.Has(Permissions.Messaging.View)) return;
+        _zone = await Zone.GetAsync();
+        await Run(async () => _me = (await Me.GetMeAsync()).UserId);
+        await Run(async () => _limits = await Api.GetLimitsAsync());
+        await LoadInboxAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_loadingInbox || Id == _loaded) return;
+        await OpenAsync();
+    }
+
+    private async Task Run(Func<Task> action)
+    {
+        _error = null;
+        await ApiCalls.RunAsync(action, Navigation, L, m => _error = m);
+    }
+
+    private async Task LoadInboxAsync()
+    {
+        await Run(async () => _inbox = (await Api.ListConversationsAsync()).Items);
+        _loadingInbox = false;
+        await OpenAsync();
+    }
+
+    private async Task OpenAsync()
+    {
+        _loaded = Id;
+        _conversation = null;
+        _messages = [];
+        _older = null;
+        _notFound = false;
+        _draft = null;
+        if (Id is not { } id) return;
+        try
+        {
+            _conversation = await Api.GetConversationAsync(id);
+            var page = await Api.GetMessagesAsync(id, new MessageQuery());
+            _messages = [.. page.Items.Reverse()];
+            _older = page.NextBeforeId;
+            await Api.MarkReadAsync(id);
+            _inbox = (await Api.ListConversationsAsync()).Items;
+        }
+        catch (ApiProblemException ex) when (ex.Status == 404)
+        {
+            _notFound = true; // not a participant (or no such conversation): the server never says which
+        }
+        catch (Exception ex) when (ex is ApiProblemException or HttpRequestException)
+        {
+            _error = ex is ApiProblemException problem ? ProblemText.For(problem, L) : L["Error_Generic"].Value;
+        }
+    }
+
+    private async Task LoadOlderAsync()
+    {
+        if (_conversation is null || _older is null) return;
+        await Run(async () =>
+        {
+            var page = await Api.GetMessagesAsync(_conversation.Id, new MessageQuery(_older));
+            _messages.InsertRange(0, page.Items.Reverse());
+            _older = page.NextBeforeId;
+        });
+    }
+
+    private async Task SendAsync()
+    {
+        if (_conversation is null || string.IsNullOrWhiteSpace(_draft)) return;
+        _sending = true;
+        var sent = await ApiCalls.RunAsync(async () =>
+        {
+            var message = await Api.SendAsync(_conversation.Id, new SendMessageRequest(_draft!, null));
+            _messages.Add(message);
+        }, Navigation, L, m => _error = m);
+        _sending = false;
+        if (!sent) return; // the draft stays so nothing typed is lost
+        _draft = null;
+        _error = null;
+        await Run(async () => _inbox = (await Api.ListConversationsAsync()).Items);
+    }
+
+    private async Task DeleteAsync(MessageDto message)
+    {
+        await Run(async () =>
+        {
+            await Api.DeleteMessageAsync(message.ConversationId, message.Id);
+            _messages[_messages.FindIndex(m => m.Id == message.Id)] = message with { Body = null, State = MessageStates.Deleted, CanDelete = false };
+        });
+    }
+
+    private Task NewAsync() =>
+        DialogFlow.ShowAsync(Dialogs, L["MsgPage_New"], new DialogParameters<NewConversationDialog>(), () => InvokeAsync(async () =>
+        {
+            await LoadInboxAsync();
+            StateHasChanged();
+        }));
+
+    private Task BackAsync()
+    {
+        Navigation.NavigateTo("messages");
+        return Task.CompletedTask;
+    }
+
+    private string NameOf(ConversationListItemDto c) => c.Title ?? Others(c.Participants);
+
+    private string NameOf(ConversationDto c) => c.Title ?? Others(c.Participants);
+
+    private string Others(IReadOnlyList<ParticipantDto> participants) =>
+        string.Join(", ", participants.Where(p => p.UserId != _me && !p.Left).Select(p => Culture.Pick(p.NameAr, p.NameEn)));
+
+    private string TimeOf(DateTime? utc) => utc is { } t ? ClientCalendar.ToLocal(t, _zone).ToString("HH:mm", System.Globalization.CultureInfo.InvariantCulture) : string.Empty;
+
+    private IEnumerable<(string Day, List<MessageDto> Items)> Days() =>
+        _messages.GroupBy(m => ClientCalendar.ToLocal(m.CreatedAtUtc, _zone).Date)
+            .Select(g => (g.Key.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture), g.ToList()));
+}

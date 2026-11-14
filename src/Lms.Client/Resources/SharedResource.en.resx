@@ -1986,4 +1986,26 @@
   <data name="Mod_Status_InReview" xml:space="preserve"><value>In review</value></data>
   <data name="Mod_Status_Removed" xml:space="preserve"><value>Removed</value></data>
   <data name="Mod_Status_Kept" xml:space="preserve"><value>Kept</value></data>
+  <data name="MsgPage_Title" xml:space="preserve"><value>Messages</value></data>
+  <data name="MsgPage_Subtitle" xml:space="preserve"><value>Your conversations. Only the people in a conversation can read it.</value></data>
+  <data name="MsgPage_New" xml:space="preserve"><value>New message</value></data>
+  <data name="MsgPage_EmptyTitle" xml:space="preserve"><value>No conversations yet</value></data>
+  <data name="MsgPage_EmptyText" xml:space="preserve"><value>Start a new message to someone you are allowed to write to.</value></data>
+  <data name="MsgPage_PickTitle" xml:space="preserve"><value>Choose a conversation</value></data>
+  <data name="MsgPage_PickText" xml:space="preserve"><value>Pick a conversation from the list to read it.</value></data>
+  <data name="MsgPage_NotFoundTitle" xml:space="preserve"><value>Conversation not found</value></data>
+  <data name="MsgPage_NotFoundText" xml:space="preserve"><value>It does not exist, or you are not part of it.</value></data>
+  <data name="MsgPage_Older" xml:space="preserve"><value>Show older messages</value></data>
+  <data name="MsgPage_Delete" xml:space="preserve"><value>Delete message</value></data>
+  <data name="MsgPage_DeleteHint" xml:space="preserve"><value>Delete for everyone. Possible for {0} minutes after sending.</value></data>
+  <data name="MsgPage_Locked" xml:space="preserve"><value>This conversation was closed. You can only read it.</value></data>
+  <data name="MsgPage_ReadOnly" xml:space="preserve"><value>You can read this conversation but not reply.</value></data>
+  <data name="MsgNew_None" xml:space="preserve"><value>Your school rules do not let you start a conversation with anyone.</value></data>
+  <data name="MsgNew_Search" xml:space="preserve"><value>Search people</value></data>
+  <data name="MsgNew_Recipients" xml:space="preserve"><value>Recipients</value></data>
+  <data name="MsgNew_NoMatch" xml:space="preserve"><value>Nobody you may write to matches this search.</value></data>
+  <data name="MsgNew_GroupTitle" xml:space="preserve"><value>Group name</value></data>
+  <data name="MsgNew_NoGroups" xml:space="preserve"><value>Your school rules do not let you create group conversations. Pick one person.</value></data>
+  <data name="MsgNew_GroupTooBig" xml:space="preserve"><value>A group can have {0} people at most.</value></data>
+  <data name="Nav_Messages" xml:space="preserve"><value>Messages</value></data>
 </root>
