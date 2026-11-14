@@ -39,6 +39,7 @@ public sealed class PackageRevocationHookTests(LmsApiFactory factory) : IDisposa
         await using var scope = _kit.Host.Services.CreateAsyncScope();
         var store = scope.ServiceProvider.GetRequiredService<IPackageStore>();
         await store.PutAsync(upload.StorePrefix, "index.html", "text/html; charset=utf-8", new MemoryStream("<p/>"u8.ToArray()), 4);
+        await _kit.AttachModuleAsync(upload);
         return upload;
     }
 

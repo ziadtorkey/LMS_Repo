@@ -15,6 +15,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseSerilog((context, services, configuration) => configuration
     .ReadFrom.Configuration(context.Configuration)
+    .ReadFrom.Services(services) // sinks and enrichers registered in DI (integration tests capture logs this way)
     .Enrich.FromLogContext()
     .Enrich.With<TokenScrubbingEnricher>() // package tokens never reach a log (ADR 0005)
     .WriteTo.Console(outputTemplate:

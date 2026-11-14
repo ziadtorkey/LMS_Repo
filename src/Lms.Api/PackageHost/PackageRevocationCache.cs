@@ -1,3 +1,5 @@
+using Lms.Domain.Classes;
+using Lms.Domain.Content;
 using Lms.Domain.Packages;
 using Lms.Infrastructure.Packages;
 using Microsoft.EntityFrameworkCore;
@@ -16,18 +18,37 @@ public sealed class PackageRevocationCache(IMemoryCache cache, PackageSystemCont
 {
     private sealed record Marker(Guid? Student, long AtUnix);
 
+    private sealed record State(List<Marker> Markers, bool Available);
+
     public async Task<bool> IsRevokedAsync(PackageTokenClaims claims, CancellationToken ct)
     {
-        var markers = await cache.GetOrCreateAsync((claims.Org, claims.Package), async entry =>
+        var state = await cache.GetOrCreateAsync((claims.Org, claims.Package), async entry =>
         {
             entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(Math.Max(0, options.Value.RevocationCacheSeconds));
             await using var db = contexts.Create(claims);
             var rows = await db.Set<PackageRevocation>().Where(r => r.PackageId == claims.Package)
                 .Select(r => new { r.StudentProfileId, r.RevokedAtUtc }).ToListAsync(ct);
-            return rows.Select(r => new Marker(
+            var markers = rows.Select(r => new Marker(
                 r.StudentProfileId, new DateTimeOffset(DateTime.SpecifyKind(r.RevokedAtUtc, DateTimeKind.Utc)).ToUnixTimeSeconds())).ToList();
+
+            // The module of the package must still exist, be inside its visibility window and sit in a lesson and section that are not hidden:
+            // window expiry, a module delete on its own and a lesson or section hide take effect within the cache bound without markers.
+            var now = DateTime.UtcNow;
+            var available = await (from p in db.Set<PackageUpload>()
+                                   join m in db.Set<LessonModule>() on p.ModuleId equals m.Id
+                                   join l in db.Set<ClassLesson>() on m.ClassLessonId equals l.Id
+                                   join s in db.Set<ClassSection>() on l.SectionId equals s.Id
+                                   where p.Id == claims.Package && !l.IsHidden && !s.IsHidden
+                                         && (m.Visibility == LessonModule.PublishedVisibility
+                                             || (m.Visibility == LessonModule.ScheduledVisibility
+                                                 && (m.VisibleFromUtc == null || m.VisibleFromUtc <= now)
+                                                 && (m.VisibleToUtc == null || now < m.VisibleToUtc)))
+                                   select m.Id).AnyAsync(ct);
+            return new State(markers, available);
         });
 
-        return markers!.Any(m => (m.Student is null || m.Student == claims.Student) && m.AtUnix >= claims.Iat);
+        // A preview token is the teacher's own look at a package that may not be attached or visible yet: only the markers apply to it.
+        return state!.Markers.Any(m => (m.Student is null || m.Student == claims.Student) && m.AtUnix >= claims.Iat)
+               || (!claims.Preview && !state.Available);
     }
 }

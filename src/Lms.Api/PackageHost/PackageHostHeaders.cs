@@ -41,6 +41,12 @@ public sealed class PackageHostHeadersMiddleware(RequestDelegate next, IOptions<
             return;
         }
 
+        if (!HttpMethods.IsGet(context.Request.Method) && !HttpMethods.IsHead(context.Request.Method))
+        {
+            context.Response.StatusCode = StatusCodes.Status404NotFound; // the one answer of every failure, not 405
+            return;
+        }
+
         try
         {
             await next(context);
