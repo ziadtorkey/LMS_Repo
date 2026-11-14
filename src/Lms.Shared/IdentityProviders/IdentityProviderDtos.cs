@@ -6,7 +6,13 @@ public static class IdentityProviderKinds
     public const string Oidc = "Oidc";
     public const string AzureAd = "AzureAd";
 
-    public static IReadOnlyList<string> All { get; } = [Oidc, AzureAd];
+    /// <summary>M7 wave 2 (D85): SAML 2.0, SP-initiated only. The settings are <see cref="SamlSettingsDto"/>.</summary>
+    public const string Saml = "Saml";
+
+    /// <summary>M7 wave 2 (D85): LDAP search-bind over LDAPS or StartTLS only. The settings are <see cref="LdapSettingsDto"/>.</summary>
+    public const string Ldap = "Ldap";
+
+    public static IReadOnlyList<string> All { get; } = [Oidc, AzureAd, Saml, Ldap];
 }
 
 /// <summary>How an external identity is matched to a person of the provider's client (no auto-provisioning).</summary>
@@ -34,7 +40,9 @@ public sealed record IdentityProviderDto(
     string? NationalIdClaim,
     IReadOnlyList<string> EmailDomains,
     bool Enabled,
-    string CallbackUrl);
+    string CallbackUrl,
+    SamlSettingsDto? Saml = null,
+    LdapSettingsDto? Ldap = null);
 
 /// <summary>
 /// Body of POST /api/identity-providers and PUT /api/identity-providers/{id}. On update a null
@@ -53,7 +61,12 @@ public sealed record SaveIdentityProviderRequest(
     string MatchBy,
     string? NationalIdClaim,
     IReadOnlyList<string> EmailDomains,
-    bool Enabled);
+    bool Enabled,
+    SamlSettingsRequest? Saml = null,
+    LdapSettingsRequest? Ldap = null);
 
-/// <summary>Result of POST /api/identity-providers/{id}/test (discovery document fetch).</summary>
-public sealed record ProviderTestResultDto(bool Ok, string? Issuer, string? Error);
+/// <summary>
+/// Result of POST /api/identity-providers/{id}/test. Oidc and AzureAd: the discovery document fetch, always 200 with <c>Ok</c> (unchanged). Saml and Ldap (M7): 200 when every check passes; otherwise
+/// <b>422 <c>provider_test_failed</c></b> whose problem body carries this DTO in <c>extra</c> with <c>Ok</c> false and the named <c>Checks</c> (<see cref="ProviderTestCheckCodes"/>); never a secret, an address or a server message.
+/// </summary>
+public sealed record ProviderTestResultDto(bool Ok, string? Issuer, string? Error, IReadOnlyList<ProviderTestCheckDto>? Checks = null);

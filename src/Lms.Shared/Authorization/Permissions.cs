@@ -134,6 +134,9 @@ public static class Permissions
 
         /// <summary>M7 wave 1 (FR-STU-08): search the read-only archive of students who left.</summary>
         public const string ViewArchive = "Students.ViewArchive";
+
+        /// <summary>M7 wave 2 (D82, D18): edit the client's list of withdrawal reasons (PUT <c>/api/withdrawal-reasons</c>); the client-root Org Admin only. Reading the list needs <see cref="Withdraw"/>.</summary>
+        public const string ManageWithdrawalReasons = "Students.ManageWithdrawalReasons";
     }
 
     public static class Courses

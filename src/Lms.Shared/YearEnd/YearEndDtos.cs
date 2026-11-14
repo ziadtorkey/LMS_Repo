@@ -42,12 +42,12 @@ public sealed record YearClosePreviewDto(
 public sealed record CloseYearRequest(string ConfirmName);
 
 /// <summary>The answer to a close: the year is Closed and its gradebooks and attendance are read-only (409 <c>gradebook_locked</c>, <c>year_closed</c> from then on).</summary>
-public sealed record YearClosedDto(Guid YearId, DateTime ClosedAtUtc, int GradebooksLocked, int AttendanceSessionsLocked, DateTime ServerNowUtc);
+public sealed record YearClosedDto(Guid YearId, DateTime ClosedAtUtc, int GradebooksLocked, int AttendanceSessionsLocked, DateTime ServerNowUtc, bool LockSnapshotsPending = false);
 
 /// <summary>One class of the closing report (GET <c>…/closing-report</c>, read only).</summary>
 public sealed record ClosingReportRowDto(Guid ClassId, string ClassNameAr, string ClassNameEn, int Students, int Gradebooks, int GradebooksPublished, int AttendanceSessions);
 
-public sealed record ClosingReportDto(Guid YearId, DateTime ClosedAtUtc, IReadOnlyList<ClosingReportRowDto> Classes);
+public sealed record ClosingReportDto(Guid YearId, DateTime ClosedAtUtc, IReadOnlyList<ClosingReportRowDto> Classes, bool LockSnapshotsPending = false);
 
 // --- grade change after close (FR-GRD-06, D80)
 
@@ -219,6 +219,13 @@ public static class WithdrawalReasons
 /// <summary>PUT <c>/api/withdrawal-reasons</c>: the whole list of the client (<c>Settings.Update</c>-class right, client root).</summary>
 public sealed record SaveWithdrawalReasonsRequest(IReadOnlyList<WithdrawalReasonDto> Reasons);
 
+public static class WithdrawalReasonLimits
+{
+    public const int MaxReasons = 30;
+    public const int KeyMaxLength = 50;
+    public const int NameMaxLength = 100;
+}
+
 /// <summary>POST <c>…/withdraw</c> (<c>Students.Withdraw</c>): the student becomes inactive on <c>EffectiveDate</c> (today or earlier acts at once; a later date acts on that date), cannot sign in, leaves active lists; history stays (FR-STU-08). The reason is staff-only (D81); <c>Other</c> needs a note.</summary>
 public sealed record WithdrawStudentRequest(string ReasonKey, string? Note, DateOnly EffectiveDate);
 
@@ -246,6 +253,46 @@ public sealed record ArchivedStudentDto(
 
 /// <summary>GET <c>/api/students/archive</c> (<c>Students.ViewArchive</c>; unit scope): server-paged, never exposes a national id.</summary>
 public sealed record ArchiveQuery(string? Search = null, string? ExitKind = null, Guid? YearId = null, Guid? OrgUnitId = null, int Page = 1, int PageSize = Paging.DefaultPageSize);
+
+// --- year-end checklist (D86; M7 wave 2)
+
+/// <summary>The steps of a year end, in order. The client maps each to plain words (<c>YearStep_&lt;step&gt;</c>).</summary>
+public static class YearEndChecklistSteps
+{
+    public const string PublishGrades = "PublishGrades";
+    public const string ApproveGradeChanges = "ApproveGradeChanges";
+    public const string CloseYear = "CloseYear";
+    public const string RunPromotion = "RunPromotion";
+    public const string OpenNextYear = "OpenNextYear";
+    public static IReadOnlyList<string> All { get; } = [PublishGrades, ApproveGradeChanges, CloseYear, RunPromotion, OpenNextYear];
+}
+
+/// <summary><c>Done</c> nothing left; <c>Todo</c> work remains; <c>Warning</c> work remains and the date is near or past; <c>NotApplicable</c> the caller cannot act on it or it does not apply.</summary>
+public static class YearEndChecklistStates
+{
+    public const string Todo = "Todo";
+    public const string Warning = "Warning";
+    public const string Done = "Done";
+    public const string NotApplicable = "NotApplicable";
+    public static IReadOnlyList<string> All { get; } = [Todo, Warning, Done, NotApplicable];
+}
+
+/// <summary><c>Count</c> is what remains: unpublished items, pending requests, students not yet promoted; 0 when Done or for a step with no count.</summary>
+public sealed record YearEndChecklistStepDto(string Step, string State, int Count);
+
+/// <summary>One year the caller manages. <c>OpenPromotionRunId</c> links to a Draft or Running run of the caller's scope.</summary>
+public sealed record YearEndChecklistYearDto(
+    Guid YearId,
+    string NameAr,
+    string NameEn,
+    DateOnly EndDate,
+    int DaysToEnd,
+    string YearStatus,
+    IReadOnlyList<YearEndChecklistStepDto> Steps,
+    Guid? OpenPromotionRunId);
+
+/// <summary>GET <c>/api/me/year-end-checklist</c>. <c>ShowFromDaysBeforeEnd</c> echoes <c>Years.EndChecklistDays</c> (default 60, D86); the client shows nothing when <c>Years</c> is empty.</summary>
+public sealed record YearEndChecklistDto(IReadOnlyList<YearEndChecklistYearDto> Years, int ShowFromDaysBeforeEnd, DateTime ServerNowUtc);
 
 // --- open the next year (FR-YEAR-05, FR-ORG-07/08, D22)
 

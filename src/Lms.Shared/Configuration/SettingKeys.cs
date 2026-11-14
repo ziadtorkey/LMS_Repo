@@ -95,4 +95,10 @@ public static class SettingKeys
 
     /// <summary>Terms per academic year, 2 or 3 (client level, D62).</summary>
     public static readonly SettingKey<int> AcademicYearsTermsPerYear = new("AcademicYears.TermsPerYear", 2);
+
+    /// <summary>M7 wave 2 (FR-STU-07, D12): how long a promotion run may be undone after it finished, in minutes (and only before any activity in the new year). Client level.</summary>
+    public static readonly SettingKey<int> YearsPromotionUndoWindowMinutes = new("Years.PromotionUndoWindowMinutes", 10);
+
+    /// <summary>M7 wave 2 (D86): the year-end checklist shows on the home pages from this many days before the year ends. Client level.</summary>
+    public static readonly SettingKey<int> YearsEndChecklistDays = new("Years.EndChecklistDays", 60);
 }

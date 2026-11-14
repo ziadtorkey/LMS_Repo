@@ -104,7 +104,7 @@ public static class BuiltInRoleDefaults
     public static readonly IReadOnlySet<string> IntroducedInVersion12 = new HashSet<string>
     {
         Permissions.AcademicYears.Close, Permissions.Grades.ChangeRequest, Permissions.Grades.ChangeApprove, Permissions.Promotion.Run,
-        Permissions.Students.Withdraw, Permissions.Students.Readmit, Permissions.Students.ViewArchive,
+        Permissions.Students.Withdraw, Permissions.Students.Readmit, Permissions.Students.ViewArchive, Permissions.Students.ManageWithdrawalReasons,
     };
 
     /// <summary>Permissions introduced by defaults version 8 (M5 wave 1: grading).</summary>

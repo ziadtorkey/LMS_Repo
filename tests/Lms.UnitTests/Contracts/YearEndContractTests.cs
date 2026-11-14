@@ -79,7 +79,7 @@ public sealed class YearEndContractTests
     public void Every_wave_1_permission_is_introduced_in_defaults_version_12_and_the_current_version_is_untouched()
     {
         Assert.All(M7Permissions, p => Assert.Equal(12, BuiltInRoleDefaults.IntroducedIn(p)));
-        Assert.Equal(M7Permissions.Order(StringComparer.Ordinal), BuiltInRoleDefaults.IntroducedInVersion12.Order(StringComparer.Ordinal));
+        Assert.Equal(M7Permissions.Append(Permissions.Students.ManageWithdrawalReasons).Order(StringComparer.Ordinal), BuiltInRoleDefaults.IntroducedInVersion12.Order(StringComparer.Ordinal)); // wave 2 adds the reasons permission
         // The Lead sets CurrentVersion to 12 after M6 (version 11) lands; this wave must not change it.
         Assert.True(BuiltInRoleDefaults.CurrentVersion < 12);
     }

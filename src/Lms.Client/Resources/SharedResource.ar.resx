@@ -1886,4 +1886,35 @@
   <data name="AuditEntity_GradeChangeRequest" xml:space="preserve"><value>طلب تعديل درجة</value></data>
   <data name="AuditEntity_PromotionRun" xml:space="preserve"><value>تشغيل ترقية</value></data>
   <data name="AuditEntity_StudentExit" xml:space="preserve"><value>مغادرة طالب</value></data>
+  <data name="IdpKind_Saml" xml:space="preserve"><value>SAML 2.0</value></data>
+  <data name="IdpKind_Ldap" xml:space="preserve"><value>LDAP</value></data>
+  <data name="LdapTls_Ldaps" xml:space="preserve"><value>LDAPS (اتصال مشفر)</value></data>
+  <data name="LdapTls_StartTls" xml:space="preserve"><value>StartTLS</value></data>
+  <data name="SamlNameId_EmailAddress" xml:space="preserve"><value>البريد الإلكتروني</value></data>
+  <data name="SamlNameId_Persistent" xml:space="preserve"><value>معرّف دائم</value></data>
+  <data name="SamlNameId_Unspecified" xml:space="preserve"><value>غير محدد</value></data>
+  <data name="ProviderCheck_SsoUrlReachable" xml:space="preserve"><value>رابط تسجيل الدخول لدى المزود متاح.</value></data>
+  <data name="ProviderCheck_SigningCertificatesValid" xml:space="preserve"><value>شهادات التوقيع صالحة.</value></data>
+  <data name="ProviderCheck_SigningCertificateExpiresSoon" xml:space="preserve"><value>إحدى شهادات التوقيع ستنتهي قريبا.</value></data>
+  <data name="ProviderCheck_HostReachable" xml:space="preserve"><value>الخادم متاح.</value></data>
+  <data name="ProviderCheck_TlsEstablished" xml:space="preserve"><value>تم إنشاء اتصال مشفر.</value></data>
+  <data name="ProviderCheck_ServerCertificateTrusted" xml:space="preserve"><value>شهادة الخادم موثوقة.</value></data>
+  <data name="ProviderCheck_ServiceBindSucceeded" xml:space="preserve"><value>نجح الدخول بحساب الخدمة.</value></data>
+  <data name="ProviderCheck_BaseDnFound" xml:space="preserve"><value>تم العثور على مسار البحث الأساسي.</value></data>
+  <data name="ProviderCheck_SearchFilterValid" xml:space="preserve"><value>مرشح البحث صالح.</value></data>
+  <data name="ProviderCheck_AttributesFound" xml:space="preserve"><value>تم العثور على السمات المطلوبة.</value></data>
+  <data name="Perm_Students_ManageWithdrawalReasons" xml:space="preserve"><value>إدارة قائمة أسباب الانسحاب</value></data>
+  <data name="Setting_Years_PromotionUndoWindowMinutes" xml:space="preserve"><value>مهلة التراجع عن الترحيل (بالدقائق)</value></data>
+  <data name="Setting_Years_EndChecklistDays" xml:space="preserve"><value>عدد أيام إظهار قائمة نهاية العام قبل انتهائه</value></data>
+  <data name="AuditEntity_WithdrawalReason" xml:space="preserve"><value>سبب انسحاب</value></data>
+  <data name="AuditEntity_YearOpenRun" xml:space="preserve"><value>فتح سنة جديدة</value></data>
+  <data name="YearStep_PublishGrades" xml:space="preserve"><value>نشر الدرجات</value></data>
+  <data name="YearStep_ApproveGradeChanges" xml:space="preserve"><value>البت في طلبات تعديل الدرجات</value></data>
+  <data name="YearStep_CloseYear" xml:space="preserve"><value>إغلاق السنة</value></data>
+  <data name="YearStep_RunPromotion" xml:space="preserve"><value>ترحيل الطلاب</value></data>
+  <data name="YearStep_OpenNextYear" xml:space="preserve"><value>فتح السنة الجديدة</value></data>
+  <data name="YearStepState_Todo" xml:space="preserve"><value>مطلوب</value></data>
+  <data name="YearStepState_Warning" xml:space="preserve"><value>يحتاج متابعة</value></data>
+  <data name="YearStepState_Done" xml:space="preserve"><value>تم</value></data>
+  <data name="YearStepState_NotApplicable" xml:space="preserve"><value>لا ينطبق</value></data>
 </root>

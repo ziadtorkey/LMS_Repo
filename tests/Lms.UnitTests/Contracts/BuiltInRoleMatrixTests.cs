@@ -47,6 +47,7 @@ public class BuiltInRoleMatrixTests
                 "Packages.Upload", "Packages.View",
                 "Grades.View", "Grades.Manage", "Grades.Publish", "Grades.ConfigureScales", "Grades.ViewReports",
                 "AcademicYears.Close", "Grades.ChangeRequest", "Grades.ChangeApprove", "Promotion.Run", "Students.Withdraw", "Students.Readmit", "Students.ViewArchive",
+                "Students.ManageWithdrawalReasons",
             ]
         },
         {

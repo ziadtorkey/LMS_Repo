@@ -38,6 +38,10 @@ public static partial class IdentityProviderValidators
         {
             errors["kind"] = ["invalid_value"];
         }
+        else if (kind is IdentityProviderKinds.Saml or IdentityProviderKinds.Ldap)
+        {
+            errors["kind"] = ["not_yet_available"]; // the contract names them (M7 wave 2); the providers arrive with M7 Tasks 10 and 11, which remove this line
+        }
 
         if (!SlugPattern().IsMatch(slug))
         {
