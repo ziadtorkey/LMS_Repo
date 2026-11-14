@@ -16,7 +16,8 @@ public sealed class FakeAttendanceApi : IAttendanceApi
     public static readonly Guid SessionClosed = Guid.Parse("a0000000-0000-0000-0000-000000000003");
     public static readonly Guid SessionProposal = Guid.Parse("a0000000-0000-0000-0000-000000000004");
     public static readonly Guid SessionSubstitute = Guid.Parse("a0000000-0000-0000-0000-000000000005");
-    private static readonly Guid ClassCourse = Guid.Parse("c0000000-0000-0000-0000-000000000001");
+    /// <summary>The demo class course: the lesson plan fake's Arabic course, so the live sessions of that course find their attendance proposal.</summary>
+    private static readonly Guid ClassCourse = Lms.Client.Services.Api.FakeLessonPlansApi.ArabicClassCourseId;
     private static readonly Guid Teacher = Guid.Parse("e0000000-0000-0000-0000-000000000001");
 
     private readonly TimeProvider _clock;

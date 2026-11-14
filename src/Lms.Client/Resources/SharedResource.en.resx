@@ -1934,4 +1934,6 @@
   <data name="Att_Unmatched_This" xml:space="preserve"><value>This is</value></data>
   <data name="Att_Unmatched_Save" xml:space="preserve"><value>Save matches</value></data>
   <data name="AttReports_ClassFilter" xml:space="preserve"><value>Class</value></data>
+  <data name="Live_TakeAttendance" xml:space="preserve"><value>Take attendance</value></data>
+  <data name="Live_AttendanceNone" xml:space="preserve"><value>No attendance proposal for this session yet. It appears after the participants have been imported.</value></data>
 </root>

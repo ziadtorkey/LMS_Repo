@@ -7,10 +7,13 @@
 @using Lms.Client.Services
 @using Lms.Client.Services.Api
 @using Lms.Client.Services.LiveSessions
+@using Lms.Shared.Attendance
 @using Lms.Shared.Authorization
 @using Lms.Shared.Classes
 @using Lms.Shared.LiveSessions
 @inject ILiveSessionsApi Live
+@inject Lms.Client.Services.Attendance.IAttendanceApi Attendance
+@inject ISnackbar Snackbar
 @inject ILessonPlansApi Plans
 @inject PermissionState PermState
 @inject ICultureService Culture
@@ -72,6 +75,7 @@ else
         else
         {
             <LiveSessionsList Items="_items" Staff="Staff" LessonOfModule="_lessonOfModule" SeriesSizes="_seriesSizes" RecordingUrls="_recordingUrls"
+                              AttendanceEnabled="PermState.Has(Permissions.Attendance.Take)" OnAttendance="AttendanceAsync"
                               OnEdit="EditAsync" OnRecording="RecordingAsync" OnCancel="CancelAsync" />
         }
     </SectionCard>
@@ -248,6 +252,25 @@ else
             new DialogOptions { MaxWidth = MaxWidth.ExtraSmall, FullWidth = true });
         var result = await dialog.Result;
         return result is { Canceled: false, Data: string scope } ? scope : null;
+    }
+
+    /// <summary>
+    /// Opens the take-attendance page of this live session's proposal. The proposal is a normal attendance session of the teacher on the session's
+    /// client day (source Live); it exists only after the participants were imported, so none yet is said in words.
+    /// </summary>
+    private async Task AttendanceAsync(LiveSessionListItemDto row)
+    {
+        var day = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(row.StartsAtUtc, DateTimeKind.Utc), ClientCalendar.Zone()));
+        var (sessions, failed) = await ApiCalls.RunAsync(() => Attendance.GetSessionsAsync(day), Navigation);
+        if (failed) { Snackbar.Add(L["Api_Error"], Severity.Error); return; }
+        var proposal = sessions?.FirstOrDefault(a => a.ClassCourseId == Id && a.Source == AttendanceSources.Live);
+        if (proposal is null)
+        {
+            Snackbar.Add(L["Live_AttendanceNone"], Severity.Info);
+            return;
+        }
+
+        Navigation.NavigateTo($"attendance/sessions/{proposal.Id}");
     }
 
     private async Task RecordingAsync(LiveSessionListItemDto row)
