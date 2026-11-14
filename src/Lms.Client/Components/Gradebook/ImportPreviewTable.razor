@@ -1,0 +1,46 @@
+@using Lms.Shared.Grading
+@inject ICultureService Culture
+
+@* What applying a grade column would do (L9): the counts, the codes that match nobody, the scores out of range, and the rows with errors. Nothing is
+   written until the teacher applies; the server re-checks everything on apply. *@
+<div data-testid="import-preview">
+    <MudText Typo="Typo.body2" data-testid="import-counts">
+        @string.Format(Culture.Current, L["GradeImport_Counts"].Value, Preview.TotalRows, Preview.Overwrites)
+    </MudText>
+    <MudText Typo="Typo.caption" Class="lms-muted d-block mb-2" data-testid="import-event-note">@L["GradeImport_EventNote"]</MudText>
+
+    @if (Preview.UnknownCodes.Count > 0)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mb-2" data-testid="import-unknown">
+            @L["GradeImport_Unknown"]: <span dir="ltr">@string.Join(", ", Preview.UnknownCodes)</span>
+        </MudAlert>
+    }
+    @if (Preview.OutOfRange.Count > 0)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mb-2" data-testid="import-out-of-range">
+            @L["GradeImport_OutOfRange"]
+            <ul>
+                @foreach (var row in Preview.OutOfRange)
+                {
+                    <li><span dir="ltr">@row.StudentNumber</span> (@string.Format(Culture.Current, L["GradeImport_Row"].Value, row.Row)): <span dir="ltr">@row.Points</span></li>
+                }
+            </ul>
+        </MudAlert>
+    }
+    @if (Preview.Errors.Count > 0)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-2" data-testid="import-errors">
+            @L["GradeImport_Errors"]
+            <ul>
+                @foreach (var row in Preview.Errors)
+                {
+                    <li>@string.Format(Culture.Current, L["GradeImport_Row"].Value, row.Row): <span dir="ltr">@row.StudentNumber</span></li>
+                }
+            </ul>
+        </MudAlert>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public GradeImportPreviewDto Preview { get; set; } = default!;
+}

@@ -1770,5 +1770,20 @@
   <data name="Publish_SubmitHide" xml:space="preserve"><value>إخفاء</value></data>
   <data name="Publish_Result" xml:space="preserve"><value>تم تغيير {0} بنود. تأثر {1} طلاب.</value></data>
   <data name="Publish_Notified" xml:space="preserve"><value>تمت جدولة {0} إشعارات.</value></data>
+  <data name="GradeImport_Open" xml:space="preserve"><value>استيراد عمود أو تصديره</value></data>
+  <data name="GradeImport_Title" xml:space="preserve"><value>استيراد وتصدير عمود الدرجات</value></data>
+  <data name="GradeImport_Item" xml:space="preserve"><value>البند</value></data>
+  <data name="GradeImport_Export" xml:space="preserve"><value>تصدير إلى Excel</value></data>
+  <data name="GradeImport_Choose" xml:space="preserve"><value>اختر ملف Excel</value></data>
+  <data name="GradeImport_XlsxOnly" xml:space="preserve"><value>يُقبل ملف Excel بصيغة xlsx فقط.</value></data>
+  <data name="GradeImport_Apply" xml:space="preserve"><value>تطبيق</value></data>
+  <data name="GradeImport_Counts" xml:space="preserve"><value>{0} صفوف في الملف. {1} منها سيستبدل درجة موجودة.</value></data>
+  <data name="GradeImport_EventNote" xml:space="preserve"><value>الدرجات القادمة من الواجبات والاختبارات لا يغيّرها الاستيراد.</value></data>
+  <data name="GradeImport_Unknown" xml:space="preserve"><value>أرقام الطلاب هذه لا تطابق أحدًا في هذا المقرر</value></data>
+  <data name="GradeImport_OutOfRange" xml:space="preserve"><value>هذه الدرجات أعلى من الحد الأقصى أو أقل من صفر</value></data>
+  <data name="GradeImport_Errors" xml:space="preserve"><value>في هذه الصفوف أخطاء</value></data>
+  <data name="GradeImport_Row" xml:space="preserve"><value>الصف {0}</value></data>
+  <data name="GradeImport_Done" xml:space="preserve"><value>تمت كتابة {0} درجات وتخطي {1}.</value></data>
   <data name="Publish_TimeMissing" xml:space="preserve"><value>هذا الوقت غير موجود في منطقتك الزمنية (تتخطاه الساعة). اختر وقتًا آخر.</value></data>
+  <data name="GradeImport_TooLarge" xml:space="preserve"><value>الملف كبير جدًا (الحد الأقصى 10 ميجابايت).</value></data>
 </root>
