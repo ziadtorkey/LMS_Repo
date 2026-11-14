@@ -1,0 +1,378 @@
+@page "/attendance/sessions/{Id:guid}"
+@attribute [Authorize]
+@implements IAsyncDisposable
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.Attendance
+@using Lms.Shared.Attendance
+@using Lms.Shared.Authorization
+@inject IAttendanceApi Api
+@inject AttendanceDraftStore Drafts
+@inject NavigationManager Navigation
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject IJSRuntime Js
+@inject ClientTimeZone Zone
+
+<PageTitle>@L["Att_Take_Title"]</PageTitle>
+<div @ref="_root" class="lms-att-page">
+    @if (!PermState.Loaded || _loading)
+    {
+        <LoadingState Lines="6" TestId="take-loading" />
+    }
+    else if (!CanTake && !CanEditAfterWindow && !PermState.Has(Permissions.Attendance.View))
+    {
+        <Forbidden />
+    }
+    else if (_failed || _data is null)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="api-error">
+            @L["Api_Error"]
+            <MudButton Variant="Variant.Text" OnClick="LoadAsync">@L["Common_Retry"]</MudButton>
+        </MudAlert>
+    }
+    else
+    {
+        var session = _data.Session;
+        <MudLink Href="attendance" Class="lms-back-link" data-testid="take-back"><MudIcon Icon="@Icons.Material.Rounded.ArrowBack" Size="Size.Small" Class="lms-icon-flip" /> @L["Att_Today_Title"]</MudLink>
+        <PageHeader Title="@Culture.Pick(session.CourseNameAr, session.CourseNameEn)" TitleTestId="take-title"
+                    Subtitle="@($"{Culture.Pick(session.ClassNameAr, session.ClassNameEn)} · ⁦{session.Date:yyyy-MM-dd}⁩")">
+            <Actions>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="lms-touch" StartIcon="@Icons.Material.Rounded.DoneAll" OnClick="MarkAllPresent" Disabled="@(!Editable)"
+                           data-testid="att-mark-all">@L["Att_Mark_All"]</MudButton>
+            </Actions>
+        </PageHeader>
+
+        @if (_markAllMessage is not null)
+        {
+            <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Class="mb-3" data-testid="att-mark-all-message" role="status">
+                @_markAllMessage
+                <MudButton Variant="Variant.Text" OnClick="UndoMarkAll" data-testid="att-mark-all-undo">@L["Att_Undo"]</MudButton>
+            </MudAlert>
+        }
+
+        @if (Future)
+        {
+            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-3" data-testid="att-future">@L["Att_Future_Disabled"]</MudAlert>
+        }
+        else if (AfterWindow && !CanEditAfterWindow)
+        {
+            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-3" data-testid="att-window-closed">@L["Att_Window_Closed_Readonly"]</MudAlert>
+        }
+        else if (!Editable)
+        {
+            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-3" data-testid="att-read-only">@L["Att_Read_Only"]</MudAlert>
+        }
+
+        @if (_draftOffer is not null)
+        {
+            <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mb-3" data-testid="att-draft-banner">
+                @L["Att_Draft_Banner"]
+                <MudButton Variant="Variant.Text" OnClick="RestoreDraft" data-testid="att-draft-restore">@L["Att_Draft_Restore"]</MudButton>
+                <MudButton Variant="Variant.Text" OnClick="DiscardDraft" data-testid="att-draft-discard">@L["Att_Draft_Discard"]</MudButton>
+            </MudAlert>
+        }
+
+        @if (_conflict)
+        {
+            <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mb-3" data-testid="att-conflict">@L["Error_concurrency_conflict"]</MudAlert>
+        }
+
+        @if (_saveError is not null)
+        {
+            <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-3" data-testid="att-save-error">
+                @_saveError
+                <MudButton Variant="Variant.Text" OnClick="SaveAsync" data-testid="att-save-retry">@L["Common_Retry"]</MudButton>
+            </MudAlert>
+        }
+        else if (_saved)
+        {
+            <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Class="mb-3" data-testid="att-saved">@L["Att_Saved"]</MudAlert>
+        }
+
+        <SectionCard Flush="true">
+            <div class="lms-att-tools">
+                @if (_data.Records.Count > 12)
+                {
+                    <MudTextField T="string" @bind-Value="_search" Immediate="true" Clearable="true" Label="@L["Common_Search"]" Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Rounded.Search" Variant="Variant.Outlined" Margin="Margin.Dense" data-testid="att-search" />
+                }
+                <MudButton Variant="Variant.Text" StartIcon="@Icons.Material.Rounded.SkipNext" OnClick="NextUnmarkedAsync" Disabled="@(Unmarked == 0)"
+                           data-testid="att-next">@L["Att_Next_Unmarked"]</MudButton>
+            </div>
+            <p class="lms-muted lms-att-rule" data-testid="att-late-rule">@LateRule</p>
+            <ul class="lms-att-list" data-testid="att-roster">
+                @foreach (var record in Visible)
+                {
+                    var status = Effective(record.StudentId);
+                    var name = Culture.Pick(record.StudentNameAr, record.StudentNameEn);
+                    <li class="lms-att-row" data-row="@record.StudentId" data-testid="@($"att-row-{record.StudentId}")">
+                        <div class="lms-att-who">
+                            <span class="lms-cell-strong">@name</span>
+                            <span class="lms-muted" dir="ltr">@record.StudentNumber</span>
+                            @if (status is null)
+                            {
+                                <span class="lms-att-unmarked" data-testid="@($"att-unmarked-{record.StudentId}")">@L["Att_Unmarked"]</span>
+                            }
+                        </div>
+                        <StatusSegmented Value="@status" ValueChanged="s => SetStatus(record.StudentId, s)" StudentName="@name" TestId="@record.StudentId.ToString()" Disabled="@(!Editable)" />
+                        @if (status is AttendanceStatuses.Absent or AttendanceStatuses.Late)
+                        {
+                            @if (!_notes.ContainsKey(record.StudentId) && !_notesOpen.Contains(record.StudentId))
+                            {
+                                <div><MudButton Variant="Variant.Text" Size="Size.Small" StartIcon="@Icons.Material.Rounded.NoteAdd" OnClick="() => _notesOpen.Add(record.StudentId)" Disabled="@(!Editable)"
+                                                data-testid="@($"att-note-add-{record.StudentId}")">@L["Att_Note_Add"]</MudButton></div>
+                            }
+                            else
+                            {
+                            <MudTextField T="string" Value="@_notes.GetValueOrDefault(record.StudentId)" ValueChanged="n => SetNote(record.StudentId, n)" Label="@L["Att_Note"]"
+                                          MaxLength="AttendanceLimits.NoteMaxLength" Variant="Variant.Outlined" Margin="Margin.Dense" Disabled="@(!Editable)"
+                                          Class="lms-att-note" data-testid="@($"att-note-{record.StudentId}")" />
+                            }
+                        }
+                    </li>
+                }
+            </ul>
+        </SectionCard>
+
+        @if (AfterWindow && CanEditAfterWindow)
+        {
+            <MudTextField T="string" @bind-Value="_reason" Label="@L["Att_Reason"]" HelperText="@L["Att_Reason_Help"]" Required="true" Variant="Variant.Outlined"
+                          Error="@_reasonMissing" ErrorText="@L["Error_attendance_reason_required"]" MaxLength="AttendanceLimits.ReasonMaxLength" Class="mt-3" data-testid="att-reason" />
+        }
+
+        <AttendanceSummaryBar Counts="_counts" Unmarked="Unmarked" CanSave="@CanSave" Saving="_saving" OnSave="SaveAsync" SaveKey="@(session.State == AttendanceSessionStates.Taken ? "Att_Save_Changes" : "Att_Save")" />
+    }
+</div>
+
+@code {
+    private static readonly string[] ByDigit = [AttendanceStatuses.Present, AttendanceStatuses.Absent, AttendanceStatuses.Late, AttendanceStatuses.Excused];
+
+    private ElementReference _root;
+    private IJSObjectReference? _module, _handle;
+    private DotNetObjectReference<AttendanceTakePage>? _self;
+    private AttendanceRecordsDto? _data;
+    private readonly Dictionary<Guid, string> _explicit = [];
+    private readonly Dictionary<Guid, string> _notes = [];
+    private IReadOnlyDictionary<Guid, string>? _draftOffer;
+    private IReadOnlyDictionary<string, int> _counts = new Dictionary<string, int>();
+    private string? _default, _search, _reason, _saveError;
+    private bool _loading = true, _failed, _saving, _saved, _conflict, _reasonMissing;
+    private Guid? _focusNext;
+    private string? _previousDefault;
+    private readonly HashSet<Guid> _notesOpen = [];
+    private string? _markAllMessage;
+    private TimeZoneInfo _zone = ClientCalendar.Zone();
+
+    [Parameter] public Guid Id { get; set; }
+
+    private bool Future => _data is { } d && d.Session.Date > ClientCalendar.Today(d.Session.ServerNowUtc, _zone); // the session day is a client-zone day (D64), so is "today"
+    private bool AfterWindow => _data is { } d && d.Session.State == AttendanceSessionStates.Taken && d.Session.EditableUntilUtc is { } until && until < d.Session.ServerNowUtc;
+    private bool CanTake => PermState.Has(Permissions.Attendance.Take);
+    private bool CanEditAfterWindow => PermState.Has(Permissions.Attendance.Edit);
+
+    /// <summary>Inside the window only Attendance.Take marks; after it only Attendance.Edit does (the server enforces both).</summary>
+    private bool Editable => !Future && (AfterWindow ? CanEditAfterWindow : CanTake);
+    private bool CanSave => _data is not null && Editable && Unmarked == 0 && !_saving;
+    private int Unmarked => _data?.Records.Count(r => Effective(r.StudentId) is null) ?? 0;
+
+    private IEnumerable<AttendanceRecordDto> Visible => _data is null ? [] : string.IsNullOrWhiteSpace(_search)
+        ? _data.Records
+        : _data.Records.Where(r => Culture.Pick(r.StudentNameAr, r.StudentNameEn).Contains(_search.Trim(), StringComparison.CurrentCultureIgnoreCase) || r.StudentNumber.Contains(_search.Trim(), StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>D61: the late rule is shown where the teacher marks it, from the default of the setting (a client can change it).</summary>
+    private string LateRule => AttendanceLimits.LateWeightPercentDefault == 50 ? L["Att_Late_Rule_Half"] : string.Format(L["Att_Late_Rule_Percent"], AttendanceLimits.LateWeightPercentDefault);
+
+    private string? Effective(Guid studentId) => _explicit.TryGetValue(studentId, out var s) ? s : _default;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        await LoadAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _self = DotNetObjectReference.Create(this);
+            try
+            {
+                _module = await Js.InvokeAsync<IJSObjectReference>("import", "./js/attendance-keys.js");
+                _handle = await _module.InvokeAsync<IJSObjectReference>("attach", _root, _self);
+            }
+            catch (JSDisconnectedException) { }
+        }
+
+        if (_focusNext is { } id && _module is not null)
+        {
+            _focusNext = null;
+            try { await _module.InvokeVoidAsync("focusRow", _root, id); }
+            catch (JSDisconnectedException) { }
+        }
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _failed = false;
+        _zone = await Zone.GetAsync();
+        var (value, failed) = await ApiCalls.RunAsync(() => Api.GetRecordsAsync(Id), Navigation);
+        _failed = failed;
+        if (value is not null) await ApplyServerAsync(value, offerDraft: true);
+        _loading = false;
+    }
+
+    private async Task ApplyServerAsync(AttendanceRecordsDto data, bool offerDraft)
+    {
+        _data = data;
+        _explicit.Clear();
+        _notes.Clear();
+        _default = null;
+        foreach (var record in data.Records)
+        {
+            if (record.Status is { } s) _explicit[record.StudentId] = s;
+            if (!string.IsNullOrEmpty(record.Note)) _notes[record.StudentId] = record.Note;
+        }
+
+        _draftOffer = null;
+        if (offerDraft && Editable)
+        {
+            // A draft is offered only when it was made against exactly this server version and differs from what is shown (spike S4, L25).
+            var draft = await Drafts.LoadAsync(data.Session.Id, data.Session.Version);
+            if (draft is not null && !draft.OrderBy(d => d.Key).SequenceEqual(_explicit.OrderBy(d => d.Key))) _draftOffer = draft;
+        }
+
+        Recount();
+    }
+
+    private void Recount()
+    {
+        _counts = AttendanceStatuses.All.ToDictionary(s => s, s => _data?.Records.Count(r => Effective(r.StudentId) == s) ?? 0);
+    }
+
+    private async Task SetStatus(Guid studentId, string status)
+    {
+        if (!Editable) return;
+        _explicit[studentId] = status;
+        await Changed();
+    }
+
+    private void SetNote(Guid studentId, string? note)
+    {
+        if (string.IsNullOrWhiteSpace(note)) _notes.Remove(studentId); else _notes[studentId] = note;
+    }
+
+    private async Task MarkAllPresent()
+    {
+        if (!Editable) return;
+        var newly = _data?.Records.Count(r => Effective(r.StudentId) is null) ?? 0;
+        _previousDefault = _default;
+        _default = AttendanceStatuses.Present; // rows nobody has marked yet are Present; the teacher taps the exceptions
+        await Changed();
+        _markAllMessage = string.Format(L["Att_Mark_All_Done"], newly);
+    }
+
+    private async Task UndoMarkAll()
+    {
+        _default = _previousDefault;
+        await Changed();
+        _markAllMessage = null;
+    }
+
+    private async Task Changed()
+    {
+        _saved = false;
+        _saveError = null;
+        _conflict = false;
+        _markAllMessage = null; // any other change ends the undo
+        Recount();
+        if (_data is { } d)
+        {
+            var marks = d.Records.Select(r => (r.StudentId, Status: Effective(r.StudentId))).Where(m => m.Status is not null).ToDictionary(m => m.StudentId, m => m.Status!);
+            await Drafts.SaveAsync(d.Session.Id, d.Session.Version, marks);
+        }
+    }
+
+    /// <summary>Digits 1 to 4 on a focused row (forwarded by the JS module).</summary>
+    [JSInvokable]
+    public async Task OnDigit(string studentId, int digit)
+    {
+        if (digit is >= 1 and <= 4 && Guid.TryParse(studentId, out var id) && _data?.Records.Any(r => r.StudentId == id) == true)
+        {
+            await SetStatus(id, ByDigit[digit - 1]);
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private Task NextUnmarkedAsync()
+    {
+        _focusNext = _data?.Records.FirstOrDefault(r => Effective(r.StudentId) is null)?.StudentId;
+        return Task.CompletedTask;
+    }
+
+    private async Task RestoreDraft()
+    {
+        if (_draftOffer is null) return;
+        foreach (var (id, status) in _draftOffer) _explicit[id] = status;
+        _draftOffer = null;
+        await Changed();
+    }
+
+    private async Task DiscardDraft()
+    {
+        _draftOffer = null;
+        if (_data is { } d) await Drafts.ClearAsync(d.Session.Id);
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_data is not { } d || !CanSave) return;
+        _reasonMissing = AfterWindow && string.IsNullOrWhiteSpace(_reason);
+        if (_reasonMissing) return;
+
+        _saving = true;
+        _saveError = null;
+        _conflict = false;
+        // The default plus the exceptions (a mark that differs from it); without a default every mark is sent.
+        var records = _explicit.Where(m => _default is null || m.Value != _default)
+            .Select(m => new TakeAttendanceRecord(m.Key, m.Value, _notes.GetValueOrDefault(m.Key))).ToList();
+        try
+        {
+            var result = await Api.TakeAsync(d.Session.Id, new TakeAttendanceRequest(_default, records, AfterWindow ? _reason!.Trim() : null, d.Session.Version));
+            await Drafts.ClearAsync(d.Session.Id);
+            await ApplyServerAsync(result, offerDraft: false);
+            _saved = true;
+        }
+        catch (ApiProblemException ex) when (ex.Code == "concurrency_conflict")
+        {
+            _conflict = true; // someone else saved first: show the newer state; the old draft is for an older version and is dropped
+            await Drafts.ClearAsync(d.Session.Id);
+            var (fresh, _) = await ApiCalls.RunAsync(() => Api.GetRecordsAsync(Id), Navigation);
+            if (fresh is not null) await ApplyServerAsync(fresh, offerDraft: false);
+        }
+        catch (ApiProblemException ex) when (ex.Code is "attendance_unmarked_rows" or "attendance_reason_required" or "attendance_edit_window_closed" or "attendance_session_future")
+        {
+            _saveError = L[$"Error_{ex.Code}"];
+        }
+        catch (Exception ex) when (ex is ApiProblemException or HttpRequestException)
+        {
+            _saveError = L["Api_Error"]; // the marks stay on the page (and in the draft); Retry sends them again
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_handle is not null) { await _handle.InvokeVoidAsync("dispose"); await _handle.DisposeAsync(); }
+            if (_module is not null) await _module.DisposeAsync();
+        }
+        catch (JSDisconnectedException) { }
+
+        _self?.Dispose();
+    }
+}

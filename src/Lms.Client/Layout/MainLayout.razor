@@ -111,6 +111,8 @@
     {
         await ContextStore.ClearAsync();
         Permissions.Clear();
+        try { await JS.InvokeVoidAsync("lmsAttendanceDrafts.clearAll", Lms.Client.Services.Attendance.AttendanceDraftStore.Prefix); } // unsent attendance marks do not outlive the session
+        catch (JSException) { }
         Navigation.NavigateToLogout("authentication/logout");
     }
 }

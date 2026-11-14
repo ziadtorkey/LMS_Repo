@@ -1719,7 +1719,30 @@
   <data name="Att_Today_EmptyTitle" xml:space="preserve"><value>No sessions on this day</value></data>
   <data name="Att_Today_EmptyText" xml:space="preserve"><value>Sessions appear here when the timetable is published. Pick another day to see earlier ones.</value></data>
   <data name="Att_Date" xml:space="preserve"><value>Date</value></data>
+  <data name="Nav_Attendance" xml:space="preserve"><value>Attendance</value></data>
+  <data name="Att_Take_Title" xml:space="preserve"><value>Take attendance</value></data>
+  <data name="Att_Mark_All" xml:space="preserve"><value>Mark all present</value></data>
+  <data name="Att_Future_Disabled" xml:space="preserve"><value>This session has not happened yet, so attendance cannot be taken.</value></data>
+  <data name="Att_Window_Closed_Readonly" xml:space="preserve"><value>The edit window for this session has closed. Ask someone who can edit attendance to change it.</value></data>
+  <data name="Att_Draft_Banner" xml:space="preserve"><value>You have unsaved marks for this session from earlier on this device.</value></data>
+  <data name="Att_Draft_Restore" xml:space="preserve"><value>Restore</value></data>
+  <data name="Att_Draft_Discard" xml:space="preserve"><value>Discard</value></data>
+  <data name="Att_Saved" xml:space="preserve"><value>Attendance saved.</value></data>
+  <data name="Att_Next_Unmarked" xml:space="preserve"><value>Next unmarked</value></data>
+  <data name="Att_Late_Rule_Half" xml:space="preserve"><value>A late counts as half an absence toward the absence alert.</value></data>
+  <data name="Att_Late_Rule_Percent" xml:space="preserve"><value>A late counts as {0}% of an absence toward the absence alert.</value></data>
+  <data name="Att_Unmarked" xml:space="preserve"><value>Unmarked</value></data>
+  <data name="Att_Note" xml:space="preserve"><value>Note</value></data>
+  <data name="Att_Reason" xml:space="preserve"><value>Reason for the change</value></data>
+  <data name="Att_Reason_Help" xml:space="preserve"><value>Required: this edit is after the edit window and is recorded.</value></data>
+  <data name="Att_Summary" xml:space="preserve"><value>Attendance summary</value></data>
+  <data name="Att_Save" xml:space="preserve"><value>Save attendance</value></data>
+  <data name="Att_Save_Changes" xml:space="preserve"><value>Save changes</value></data>
   <data name="Att_Unit_Mode" xml:space="preserve"><value>Sessions of a unit</value></data>
   <data name="Att_Unit_ChooseTitle" xml:space="preserve"><value>Choose a unit</value></data>
   <data name="Att_Unit_ChooseText" xml:space="preserve"><value>Pick a unit and a day to see its attendance sessions, including closed ones.</value></data>
+  <data name="Att_Undo" xml:space="preserve"><value>Undo</value></data>
+  <data name="Att_Mark_All_Done" xml:space="preserve"><value>{0} students marked present. Rows you had marked kept their status.</value></data>
+  <data name="Att_Note_Add" xml:space="preserve"><value>Add note</value></data>
+  <data name="Att_Read_Only" xml:space="preserve"><value>You can review this session. Marking is done by the teacher of the class (or, after the window, by someone who can edit attendance).</value></data>
 </root>

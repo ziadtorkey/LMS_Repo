@@ -8,6 +8,7 @@
 @inject IAttendanceApi Api
 @inject NavigationManager Navigation
 @inject PermissionState PermState
+@inject ClientTimeZone Zone
 
 <PageTitle>@L["Att_Today_Title"]</PageTitle>
 @if (!PermState.Loaded)
@@ -98,7 +99,7 @@ else
         {
             if (_unitId is { } unit)
             {
-                var day = _date ?? DateOnly.FromDateTime(DateTime.Now);
+                var day = _date ?? await Zone.TodayAsync(DateTime.UtcNow);
                 (var page, failed) = await ApiCalls.RunAsync(() => Api.SearchSessionsAsync(unit, new AttendanceSessionSearchQuery(day, day, PageSize: 100)), Navigation);
                 value = page?.Items;
             }
@@ -110,7 +111,7 @@ else
 
         _sessions = value ?? [];
         // The server answered for its (client time zone) day when none was chosen: show that day so the control is never blank.
-        _date ??= _sessions.Count > 0 ? _sessions[0].Date : DateOnly.FromDateTime(DateTime.Now);
+        _date ??= _sessions.Count > 0 ? _sessions[0].Date : await Zone.TodayAsync(DateTime.UtcNow);
         _failed = failed;
         _loading = false;
     }
