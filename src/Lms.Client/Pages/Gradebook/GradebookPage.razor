@@ -4,6 +4,7 @@
 @using Lms.Client.Components
 @using Lms.Client.Components.Gradebook
 @using Lms.Client.Pages.Forums
+@using Lms.Client.Services
 @using Lms.Client.Services.Api
 @using Lms.Client.Services.Grading
 @using Lms.Shared.Authorization
@@ -14,6 +15,7 @@
 @inject IViewport Viewport
 @inject IGradebookUnit UnitOf
 @inject NavigationManager Navigation
+@inject IDialogService Dialogs
 
 @* The gradebook of a class course, read and render (M5 Task 24): the desktop grid, or on a phone the student-first list (ONE layout, L19). Every number
    comes from the server (L18). Editing, publishing, import and export are Tasks 25 to 28. *@
@@ -63,6 +65,11 @@ else
             <div class="lms-gb-toolbar" role="toolbar" aria-label="@L["Grd_Toolbar"]">
                 <TermPicker Terms="_terms" Current="_book.TermId" CurrentName="@Culture.Pick(_book.TermNameAr, _book.TermNameEn)" OnPick="PickTermAsync" />
                 <WeightsChip Total="_book.WeightsTotal" />
+                @if (_book.CanPublish && _book.Items.Count > 0)
+                {
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Visibility" OnClick="OpenPublishAsync"
+                               data-testid="gradebook-publish">@L["Publish_Open"]</MudButton>
+                }
             </div>
             @if (_book.Rows.Total == 0)
             {
@@ -107,6 +114,16 @@ else
     private bool _drawerOpen, _previewLoading, _previewFailed;
     private string _drawerName = "";
     private StudentCourseGradesDto? _preview;
+
+    /// <summary>Publish, schedule or hide items. Allowed on a locked gradebook too (Lead ruling): the server only refuses entering grades there.</summary>
+    private Task OpenPublishAsync() =>
+        DialogFlow.ShowAsync(Dialogs, L["Publish_Title"], new DialogParameters<PublishItemsDialog>
+        {
+            { x => x.ClassCourseId, Id },
+            { x => x.Items, _book!.Items },
+            { x => x.Preselected, _book.Items.Where(i => i.PublishState == PublishStates.Hidden).Select(i => i.Id).ToList() },
+            { x => x.ScaleProvisional, _book.Config.ScaleProvisional },
+        }, () => InvokeAsync(async () => { await LoadAsync(_pageNo); StateHasChanged(); })); // the grid shows the new states
 
     private int PageCount => _book is null ? 1 : (int)Math.Ceiling(_book.Rows.Total / (double)Math.Max(1, _book.Rows.PageSize));
 

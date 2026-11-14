@@ -1,0 +1,152 @@
+@using Lms.Client.Services
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.Grading
+@using Lms.Shared.Grading
+@inject IGradebookApi Api
+@inject ICultureService Culture
+@inject ClientTimeZone Zone
+@inject NavigationManager Navigation
+
+@* Publish, schedule or hide grade items (FR-GRD-05, D58). The server decides: its clock judges a schedule, it refuses a provisional scale until the teacher
+   acknowledges it (audited), and a publish on a locked gradebook is allowed (Lead ruling): only entering grades is blocked there. *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="3">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="publish-error">@_error</MudAlert>
+            }
+            @if (_result is { } result)
+            {
+                <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" data-testid="publish-result">
+                    @string.Format(Culture.Current, L["Publish_Result"].Value, result.ItemsChanged, result.AffectedStudents)
+                    @if (result.NotificationsQueued > 0)
+                    {
+                        <span data-testid="publish-notified"> @string.Format(Culture.Current, L["Publish_Notified"].Value, result.NotificationsQueued)</span>
+                    }
+                </MudAlert>
+            }
+            else
+            {
+                <fieldset class="lms-fieldset">
+                    <legend>@L["Publish_Items"]</legend>
+                    @foreach (var item in Items)
+                    {
+                        var id = item.Id;
+                        <div class="d-flex align-center gap-2" data-testid="@($"publish-row-{id}")">
+                            <MudCheckBox T="bool" Value="_picked.Contains(id)" ValueChanged="v => Pick(id, v)" Label="@Culture.Pick(item.TitleAr, item.TitleEn)"
+                                         data-testid="@($"publish-pick-{id}")" />
+                            <PublishStateChip Item="item" TestId="@($"publish-state-{id}")" />
+                        </div>
+                    }
+                </fieldset>
+
+                <MudRadioGroup T="string" Value="_mode" ValueChanged="v => _mode = v" aria-label="@L["Publish_Mode"]" data-testid="publish-mode">
+                    <MudRadio T="string" Value="@PublishModes.Now" data-testid="publish-mode-now">@L["Publish_Now"]</MudRadio>
+                    <MudRadio T="string" Value="@PublishModes.Schedule" data-testid="publish-mode-schedule">@L["Publish_Schedule"]</MudRadio>
+                    <MudRadio T="string" Value="@PublishModes.Hide" data-testid="publish-mode-hide">@L["Publish_Hide"]</MudRadio>
+                </MudRadioGroup>
+
+                @if (_mode == PublishModes.Schedule)
+                {
+                    <div class="lms-form-grid">
+                        <MudDatePicker Date="_date" DateChanged="d => _date = d" Label="@L["Publish_Date"]" data-testid="publish-date" />
+                        <MudTimePicker Time="_time" TimeChanged="t => _time = t" Label="@L["Publish_Time"]" data-testid="publish-time" />
+                    </div>
+                }
+
+                @if (_mode == PublishModes.Hide)
+                {
+                    <MudText Typo="Typo.body2" data-testid="publish-hide-note">@L["Publish_HideNote"]</MudText>
+                }
+                else
+                {
+                    <MudText Typo="Typo.body2" data-testid="publish-confirm">@L["Publish_Confirm"]</MudText>
+                }
+
+                @if (NeedsAcknowledge)
+                {
+                    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" data-testid="publish-provisional">
+                        <div>@L["Publish_ProvisionalWarning"]</div>
+                        <MudCheckBox T="bool" Value="_ack" ValueChanged="v => _ack = v" Label="@L["Publish_ProvisionalAck"]" data-testid="publish-ack" />
+                    </MudAlert>
+                }
+            }
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        @if (_result is null)
+        {
+            <MudButton OnClick="() => MudDialog.Cancel()" data-testid="publish-cancel">@L["Common_Cancel"]</MudButton>
+            <MudButton Variant="Variant.Filled" Color="@(_mode == PublishModes.Hide ? Color.Warning : Color.Primary)" OnClick="SubmitAsync"
+                       Disabled="@(_saving || _picked.Count == 0 || (NeedsAcknowledge && !_ack))" data-testid="publish-submit">@SubmitText</MudButton>
+        }
+        else
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => MudDialog.Close(DialogResult.Ok(true))" data-testid="publish-done">@L["Common_Close"]</MudButton>
+        }
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private readonly HashSet<Guid> _picked = [];
+    private string _mode = PublishModes.Now;
+    private DateTime? _date;
+    private TimeSpan? _time;
+    private bool _ack, _saving, _serverAsksAck;
+    private string? _error;
+    private PublishResultDto? _result;
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter, EditorRequired] public Guid ClassCourseId { get; set; }
+    [Parameter, EditorRequired] public IReadOnlyList<GradeItemDto> Items { get; set; } = [];
+    [Parameter] public IReadOnlyList<Guid> Preselected { get; set; } = [];
+    [Parameter] public bool ScaleProvisional { get; set; }
+
+    private bool NeedsAcknowledge => _mode != PublishModes.Hide && (ScaleProvisional || _serverAsksAck);
+
+    private string SubmitText => _mode switch
+    {
+        PublishModes.Schedule => L["Publish_SubmitSchedule"],
+        PublishModes.Hide => L["Publish_SubmitHide"],
+        _ => L["Publish_SubmitNow"],
+    };
+
+    protected override void OnInitialized()
+    {
+        foreach (var id in Preselected) _picked.Add(id);
+    }
+
+    private void Pick(Guid id, bool on)
+    {
+        if (on) _picked.Add(id); else _picked.Remove(id);
+    }
+
+    private async Task SubmitAsync()
+    {
+        _error = null;
+        DateTime? atUtc = null;
+        if (_mode == PublishModes.Schedule)
+        {
+            if (_date is null || _time is null)
+            {
+                _error = L["Common_Required"];
+                return;
+            }
+
+            if (!ScheduleTime.TryToUtc(_date.Value, _time.Value, await Zone.GetAsync(), out var utc))
+            {
+                _error = L["Publish_TimeMissing"]; // the clocks skip this time in the client zone: ask for another, send nothing
+                return;
+            }
+
+            atUtc = utc; // the server decides whether it is in the future, by its own clock
+        }
+
+        _saving = true;
+        var request = new PublishItemsRequest([.. _picked], _mode, atUtc, _ack);
+        var done = await ApiCalls.RunAsync(async () => _result = await Api.PublishAsync(ClassCourseId, request), Navigation, L, m => _error = m);
+        _saving = false;
+        if (!done && _error == L["Error_scale_provisional"].Value) _serverAsksAck = true; // the scale turned provisional meanwhile: ask for the acknowledgement
+    }
+}

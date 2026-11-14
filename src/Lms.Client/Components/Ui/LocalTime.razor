@@ -1,0 +1,16 @@
+@inject ClientTimeZone Zone
+
+@* A UTC instant shown in the client's time zone (D64), left to right. Dates and times that come from the server as UTC are never shown raw. *@
+<span dir="ltr" class="@Class" data-testid="@TestId">@_text</span>
+
+@code {
+    private string _text = "";
+
+    [Parameter, EditorRequired] public DateTime Utc { get; set; }
+    [Parameter] public string Format { get; set; } = "yyyy-MM-dd HH:mm";
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public string? TestId { get; set; }
+
+    protected override async Task OnParametersSetAsync() =>
+        _text = ClientCalendar.ToLocal(Utc, await Zone.GetAsync()).ToString(Format, System.Globalization.CultureInfo.InvariantCulture);
+}
