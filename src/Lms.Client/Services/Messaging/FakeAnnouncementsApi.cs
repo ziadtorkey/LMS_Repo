@@ -63,6 +63,8 @@ public sealed class FakeAnnouncementsApi : IAnnouncementsApi
             throw Problem(400, ProblemCodes.validation_failed);
         ValidateTargets(r.Targets);
         var now = Now();
+        if (r.PublishAtUtc is { } scheduled && scheduled <= now && r.Publish) throw Problem(400, ProblemCodes.validation_failed); // the server clock: a schedule lies in the future
+        if (r.ExpiresAtUtc is { } expires && expires <= (r.PublishAtUtc ?? now)) throw Problem(400, ProblemCodes.validation_failed); // expiry follows publish
         var status = Status(r.PublishAtUtc, now, r.Publish);
         var item = new AnnouncementDto(Guid.NewGuid(), r.AuthoringUnitId, r.TitleAr.Trim(), r.TitleEn.Trim(), r.BodyAr, r.BodyEn, status, r.Targets, r.RoleFilters ?? [],
             r.PublishAtUtc, status == AnnouncementStatuses.Published ? now : null, r.ExpiresAtUtc, r.IsPinned, r.Notify, [], Guid.NewGuid(), "المؤلف", "Author",
