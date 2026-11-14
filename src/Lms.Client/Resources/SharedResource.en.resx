@@ -1652,4 +1652,5 @@
   <data name="GradeReports_Col_Total" xml:space="preserve"><value>Total</value></data>
   <data name="GradeReports_Col_Band" xml:space="preserve"><value>Band</value></data>
   <data name="Nav_GradeReports" xml:space="preserve"><value>Grade reports</value></data>
+  <data name="Years_SavedTermsKept" xml:space="preserve"><value>The year was saved, but the number of terms was not changed.</value></data>
 </root>

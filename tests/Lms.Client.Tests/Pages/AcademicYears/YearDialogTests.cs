@@ -79,7 +79,9 @@ public sealed class YearDialogTests : ClientTestContext
         await PickAsync(3);
         await _dialogs.Find("[data-testid=year-save]").ClickAsync(new());
 
-        Assert.Contains("already has a gradebook, timetable or attendance", _dialogs.WaitForElement("[data-testid=year-error]").TextContent);
+        var message = _dialogs.WaitForElement("[data-testid=year-error]").TextContent;
+        Assert.Contains("The year was saved, but the number of terms was not changed.", message);
+        Assert.Contains("already has a gradebook, timetable or attendance", message);
         Assert.NotEmpty(_dialogs.FindAll("[data-testid=year-save]")); // the dialog stays open
         Assert.Null(_years.LastStructure);
     }

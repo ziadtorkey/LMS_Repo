@@ -84,7 +84,7 @@ else
         {
             @if (_asOf is { } asOf)
             {
-                <MudText Typo="Typo.caption" Class="lms-muted mb-2" data-testid="reports-as-of">@L["GradeReports_AsOf"] <span dir="ltr">@asOf.ToLocalTime().ToString("yyyy-MM-dd HH:mm", System.Globalization.CultureInfo.InvariantCulture)</span></MudText>
+                <MudText Typo="Typo.caption" Class="lms-muted mb-2" data-testid="reports-as-of">@L["GradeReports_AsOf"] <LocalTime Utc="asOf" /></MudText>
             }
             <ServerTable @ref="_table" T="GradeReportRowDto" ServerData="LoadAsync" EmptyTitle="@L["GradeReports_EmptyTitle"]" EmptyText="@L["GradeReports_EmptyText"]">
                 <HeaderContent>

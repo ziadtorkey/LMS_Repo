@@ -49,7 +49,7 @@
     private string _nameAr = "", _nameEn = "";
     private DateTime? _start, _end;
     private string? _error;
-    private bool _saving;
+    private bool _saving, _yearSaved;
     private TermStructureDto? _structure; // loaded only for a Planned year: the count is switchable until the year starts (D62, L8)
     private int _termsPerYear;
 
@@ -90,6 +90,7 @@
         }
 
         _saving = true;
+        _yearSaved = false;
         var request = new SaveAcademicYearRequest(UnitId, _nameAr.Trim(), _nameEn.Trim(),
             DateOnly.FromDateTime(_start.Value), DateOnly.FromDateTime(_end.Value));
         var saved = await ApiCalls.RunAsync(async () =>
@@ -103,10 +104,18 @@
             await Api.UpdateYearAsync(Existing.Id, request);
             if (_structure is not null && _termsPerYear != _structure.TermsPerYear)
             {
-                // 409 terms_have_dependants stays in the dialog with its own message (the year itself was saved).
-                await Api.SetTermStructureAsync(Existing.Id, _structure with { TermsPerYear = _termsPerYear });
+                try
+                {
+                    await Api.SetTermStructureAsync(Existing.Id, _structure with { TermsPerYear = _termsPerYear });
+                }
+                catch (ApiProblemException ex) when (ex.Status == 409)
+                {
+                    // The year itself was saved; say so, and that only the term count stayed as it was.
+                    _yearSaved = true;
+                    throw;
+                }
             }
-        }, Navigation, L, m => _error = m);
+        }, Navigation, L, m => _error = _yearSaved ? L["Years_SavedTermsKept"].Value + " " + m : m);
         _saving = false;
         if (saved) MudDialog.Close(DialogResult.Ok(true));
     }

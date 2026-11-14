@@ -1652,4 +1652,5 @@
   <data name="GradeReports_Col_Total" xml:space="preserve"><value>المجموع</value></data>
   <data name="GradeReports_Col_Band" xml:space="preserve"><value>التقدير</value></data>
   <data name="Nav_GradeReports" xml:space="preserve"><value>تقارير الدرجات</value></data>
+  <data name="Years_SavedTermsKept" xml:space="preserve"><value>تم حفظ العام الدراسي، لكن عدد الفصول لم يتغير.</value></data>
 </root>
