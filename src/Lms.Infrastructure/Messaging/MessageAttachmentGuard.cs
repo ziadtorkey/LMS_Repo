@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Lms.Infrastructure.Messaging;
 
 /// <summary>The outcome of an upload or a bind: the attachment, or the problem code and status.</summary>
-public sealed record AttachmentResult(MessageAttachment? Attachment, string? ProblemCode, int Status, int? RetryAfterSeconds = null)
+public sealed record AttachmentResult(MessageAttachment? Attachment, string? ProblemCode, int Status, int? RetryAfterSeconds = null, string? Reason = null)
 {
     public static AttachmentResult Ok(MessageAttachment attachment) => new(attachment, null, 201);
 
@@ -21,7 +21,7 @@ public sealed record AttachmentResult(MessageAttachment? Attachment, string? Pro
 /// allow-list that leaves out every active type (HTML, SVG, XML, JS, archives and macro-enabled Office formats), checks at <b>attach time</b> (the uploader is a participant who may
 /// post right now), pending rows bound to their uploader and one conversation, and an hourly upload cap.
 /// </summary>
-public sealed class MessageAttachmentGuard(LmsDbContext db, IFileStorage storage, ICurrentContext context, IClock clock, IMessagingPolicy policy, IFileScanner scanner)
+public sealed class MessageAttachmentGuard(LmsDbContext db, IFileStorage storage, ICurrentContext context, IClock clock, IMessagingPolicy policy, IFileScanner scanner, GroupPostingRules groupRules)
 {
     public const int UploadsPerHour = 30;
 
@@ -50,7 +50,12 @@ public sealed class MessageAttachmentGuard(LmsDbContext db, IFileStorage storage
             return AttachmentResult.Refused(ProblemCodes.conversation_closed, 409);
         }
 
-        if (conversation.IsReadOnly || !(await policy.CanPostAsync(me.UserId, conversation, ct)).Allowed)
+        if (await groupRules.BlockReasonAsync(conversation, me.UserId, ct) is { } reason)
+        {
+            return new AttachmentResult(null, ProblemCodes.conversation_read_only, 403, null, reason);
+        }
+
+        if (!(await policy.CanPostAsync(me.UserId, conversation, ct)).Allowed)
         {
             return AttachmentResult.Refused(ProblemCodes.messaging_not_allowed, 403); // a person who may not post here may not upload here (checked now, not at create time)
         }

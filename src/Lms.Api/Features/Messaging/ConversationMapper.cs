@@ -8,16 +8,15 @@ using Microsoft.EntityFrameworkCore;
 namespace Lms.Api.Features.Messaging;
 
 /// <summary>Builds the conversation DTOs: participants with names ("Former user" for a deleted account), the caller mute and read-only state.</summary>
-public sealed class ConversationMapper(LmsDbContext db, ReadStateService readState, IClock clock)
+public sealed class ConversationMapper(LmsDbContext db, ReadStateService readState, IClock clock, GroupPostingRules groupRules)
 {
     public async Task<ConversationDto> ToDtoAsync(ConversationAccessResult access, CancellationToken ct)
     {
         var participants = await ParticipantsAsync([access.Conversation.Id], ct);
         var c = access.Conversation;
         var reason = c.IsLocked ? ConversationReadOnlyReasons.Locked
-            : c.IsReadOnly ? ConversationReadOnlyReasons.GroupStudentsReadOnly
             : access.Me.HasLeft ? ConversationReadOnlyReasons.BlockedOrRule
-            : null; // the D69 policy (Task 11) refines the reason; until then these are the causes this kernel knows
+            : await groupRules.BlockReasonAsync(c, access.Me.UserId, ct); // D74, D77; the D69 policy (Task 11) adds the block, rule and restriction reasons
         return new ConversationDto(c.Id, c.Kind, c.Title, participants[c.Id], c.IsLocked, IsMuted(access.Me), c.CreatedAtUtc,
             IsReadOnly: c.IsReadOnly || access.Me.HasLeft, OwnerUserId: c.OwnerUserId, ClassCourseId: c.ClassCourseId, CanPost: reason is null, ReadOnlyReason: reason);
     }

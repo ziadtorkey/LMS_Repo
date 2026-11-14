@@ -154,7 +154,7 @@ public static class MessageActionEndpoints
             return Results.Problem(statusCode: 429, title: "Too many requests", extensions: new Dictionary<string, object?> { ["code"] = ProblemCodes.rate_limited });
         }
 
-        return ConversationEndpoints.Problem(new SendResult(null, result.ProblemCode, result.Status));
+        return ConversationEndpoints.Problem(new SendResult(null, result.ProblemCode, result.Status, null, result.Reason));
     }
 
     /// <summary>The uploader removes their own pending attachment; another person, an attached file and a non-participant all get 404.</summary>
