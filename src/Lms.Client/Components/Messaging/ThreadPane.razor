@@ -1,0 +1,25 @@
+@* The conversation pane (spec #615 §2.5, §2.6, §9; classes lms-thread, lms-thread-head, lms-thread-body). The body is a focusable log the user can
+   scroll with the keyboard; it is not itself live, so the user's own messages are not read back. The page puts other people's new messages
+   ("name: text") in Announcement, which one polite status reads once. *@
+<section class="lms-thread" aria-label="@Label" data-testid="thread">
+    @if (Header is not null)
+    {
+        <header class="lms-thread-head">@Header</header>
+    }
+    <div class="lms-thread-body" role="log" aria-live="off" aria-label="@L["Msg_Thread_Log"]" tabindex="0" data-testid="thread-body">
+        @ChildContent
+    </div>
+    <div class="lms-visually-hidden" role="status" aria-live="polite" aria-atomic="true" data-testid="thread-announce">@Announcement</div>
+    @Footer
+</section>
+
+@code {
+    /// <summary>The conversation's name, as the pane's accessible name.</summary>
+    [Parameter, EditorRequired] public string Label { get; set; } = "";
+    [Parameter] public RenderFragment? Header { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>The composer, or <see cref="ComposerOff"/>.</summary>
+    [Parameter] public RenderFragment? Footer { get; set; }
+    [Parameter] public string? Announcement { get; set; }
+}

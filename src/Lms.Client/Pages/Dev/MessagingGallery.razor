@@ -1,0 +1,101 @@
+@page "/dev/messaging-gallery"
+@attribute [Authorize]
+@using Lms.Client.Components.Messaging
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@inject ICultureService Culture
+
+@* The M6 components with sample text, for the designer and FE to see them in both languages and themes before the M6 pages exist. It exists only on
+   the standalone dev server (Lms:UseFakeApi=true); against a real API it is the not-found page. The sample text is gallery-only, so it isn't in resources. *@
+@if (!Configuration.GetValue<bool>("Lms:UseFakeApi"))
+{
+    <NotFound />
+}
+else
+{
+    <PageTitle>M6 components</PageTitle>
+    <PageHeader Title="M6 components" Subtitle="Inbox, thread, composer and announcements (spec PR 615). Standalone only." TitleTestId="gallery-title" />
+
+    <InboxLayout ShowThread="_showThread">
+        <List>
+            <div class="lms-inbox-tools">
+                <MudTextField T="string" Placeholder="@T("ابحث في الرسائل", "Search messages")" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Rounded.Search" />
+            </div>
+            <div class="lms-convs">
+                <ConversationRow Href="dev/messaging-gallery" Name="@T("هدى الحربي", "Huda Al-Harbi")" Preview="@T("أراكم غدًا في الاجتماع.", "See you at tomorrow's meeting.")" TimeText="10:42" UnreadCount="2" Current="true" TestId="row-1" />
+                <ConversationRow Href="dev/messaging-gallery" Name="@T("فيزياء 1 · 10-أ — أولياء الأمور", "Physics 1 · 10-A — guardians")" Preview="@T("شكرًا على التذكير.", "Thanks for the reminder.")" PreviewAuthor="@T("سارة", "Sara")" TimeText="@T("أمس", "Yesterday")" IsGroup="true" TestId="row-2" />
+                <ConversationRow Href="dev/messaging-gallery" Name="Omar Saleh" Preview="@T("تم استلام الواجب.", "The homework arrived.")" PreviewAuthor="@T("أنت", "You")" TimeText="2026-11-09" TestId="row-3" />
+            </div>
+        </List>
+        <Thread>
+            <ThreadPane Label="@T("هدى الحربي", "Huda Al-Harbi")" Announcement="@_announce">
+                <Header>
+                    <MudIconButton Icon="@Icons.Material.Rounded.ArrowBack" Class="lms-icon-flip lms-touch lms-thread-back" aria-label="@T("العودة إلى الرسائل", "Back to messages")" OnClick="() => _showThread = false" />
+                    <MudAvatar Size="Size.Medium" Class="lms-conv-avatar" aria-hidden="true">HA</MudAvatar>
+                    <div class="flex-grow-1" style="min-inline-size:0"><b><bdi>@T("هدى الحربي", "Huda Al-Harbi")</bdi></b><div class="lms-muted" style="font-size:.8125rem">@T("ولية أمر عمر صالح · 10-أ", "Guardian of Omar Saleh · 10-A")</div></div>
+                    <MudIconButton Icon="@Icons.Material.Rounded.MoreVert" Class="lms-touch" aria-label="@T("مزيد من الإجراءات", "More actions")" />
+                </Header>
+                <ChildContent>
+                    <DaySeparator Text="@T("أمس", "Yesterday")" />
+                    <MessageBubble Text="@T("مرحبًا أستاذ، هل يمكن تأجيل موعد الاجتماع؟", "Hello, could we move the meeting?")" TimeText="16:05" />
+                    <MessageBubble Mine="true" Text="@T("بالتأكيد، ما رأيك في الخميس الساعة 10؟", "Of course — how about Thursday at 10?")" TimeText="16:12" Status="MessageStatus.Sent">
+                        <Attachments><div class="lms-attach"><MudIcon Icon="@Icons.Material.Rounded.PictureAsPdf" Size="Size.Small" aria-hidden="true" /><span dir="ltr">meeting-agenda.pdf</span><span class="lms-muted">· 84 KB</span></div></Attachments>
+                    </MessageBubble>
+                    <DaySeparator Text="@T("اليوم", "Today")" />
+                    <MessageBubble Text="@T("أراكم غدًا في الاجتماع.", "See you at tomorrow's meeting.")" TimeText="10:42">
+                        <Actions><MudIconButton Icon="@Icons.Material.Rounded.MoreVert" Size="Size.Small" aria-label="@T("إجراءات الرسالة", "Message actions")" /></Actions>
+                    </MessageBubble>
+                    <MessageBubble Removal="MessageRemoval.ByModerator" TimeText="10:44" />
+                    <MessageBubble Mine="true" Removal="MessageRemoval.BySender" TimeText="10:45" />
+                    <MessageBubble Mine="true" Text="@T("شكرًا لك.", "Thank you.")" TimeText="10:46" Status="MessageStatus.Failed" OnRetry="Retry" />
+                </ChildContent>
+                <Footer>
+                    @if (_readOnly)
+                    {
+                        <ComposerOff Reason="@T("يمكنك قراءة هذه المحادثة فقط. لا تسمح قواعد المراسلة في مدرستك للطلاب بمراسلة طلاب آخرين.", "You can only read this conversation. Messaging rules at your school don't allow students to message other students.")" />
+                    }
+                    else
+                    {
+                        <MessageComposer @bind-Value="_draft" OnSend="Send" OnAttach="() => { }" />
+                    }
+                </Footer>
+            </ThreadPane>
+        </Thread>
+    </InboxLayout>
+    <div class="d-flex gap-2 flex-wrap my-3">
+        <MudButton Variant="Variant.Outlined" OnClick="() => _showThread = !_showThread" data-testid="gallery-pane">Toggle pane (below 900 px)</MudButton>
+        <MudButton Variant="Variant.Outlined" OnClick="() => _readOnly = !_readOnly" data-testid="gallery-readonly">Toggle read-only composer</MudButton>
+    </div>
+
+    <div class="lms-ann-list">
+        <AnnouncementCard Title="@T("أمسية أولياء الأمور", "Parents' evening")" Pinned="true" ReadCount="@T("قرأها 412 من 590", "Read by 412 of 590")"
+                          Body="@T("ندعوكم لحضور أمسية أولياء الأمور يوم الخميس الساعة السادسة مساءً في القاعة الكبرى.", "You're invited to parents' evening on Thursday at 6 pm in the main hall.")">
+            <Details><span><bdi>@T("مكتب المدير", "Principal's office")</bdi></span><span dir="ltr">2026-11-14</span><span>@T("حتى", "Until") <span dir="ltr">2026-11-20</span></span></Details>
+            <Audience>
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Icon="@Icons.Material.Rounded.AccountTree">@T("فرع الشمال", "North Branch")</MudChip>
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Icon="@Icons.Material.Rounded.FamilyRestroom">@T("أولياء الأمور", "Guardians")</MudChip>
+            </Audience>
+            <Actions><MudIconButton Icon="@Icons.Material.Rounded.MoreVert" Class="lms-touch" aria-label="@T("مزيد من الإجراءات", "More actions")" /></Actions>
+        </AnnouncementCard>
+        <AnnouncementCard Title="@T("تغيير موعد الاختبار", "Exam date moved")" Scheduled="true" Body="@LongBody">
+            <Details><span><bdi>@T("أ. صالح", "A. Saleh")</bdi></span><span dir="ltr">2026-11-15 08:00</span></Details>
+            <Audience><MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Icon="@Icons.Material.Rounded.MenuBook">@T("فيزياء 1 · 10-أ", "Physics 1 · 10-A")</MudChip></Audience>
+        </AnnouncementCard>
+    </div>
+}
+
+@code {
+    private bool _showThread = true, _readOnly;
+    private string? _draft, _announce;
+
+    private string T(string ar, string en) => Culture.IsRightToLeft ? ar : en;
+
+    private string LongBody => string.Join("\n", Enumerable.Repeat(T("نُقل اختبار الفيزياء إلى يوم الأحد. راجعوا الفصل الثالث والرابع، وأحضروا الآلة الحاسبة.", "The physics exam moves to Sunday. Revise chapters three and four, and bring a calculator."), 5));
+
+    private void Retry() => _announce = T("أُعيدت المحاولة", "Retried");
+
+    private void Send()
+    {
+        _announce = null;
+        _draft = null;
+    }
+}

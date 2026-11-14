@@ -1,0 +1,12 @@
+@* The inbox card (spec #615 §2.2, class lms-inbox): the list (360 px) and the thread side by side from 900 px, one pane at a time below that.
+   ShowThread picks the pane on narrow screens (the page sets it on /messages/{id}); on wide screens both show. *@
+<div class="@($"lms-section lms-section-flush lms-inbox{(ShowThread ? " show-thread" : "")}")" data-testid="inbox">
+    <div class="lms-inbox-list">@List</div>
+    <div class="lms-inbox-thread">@Thread</div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public RenderFragment List { get; set; } = default!;
+    [Parameter] public RenderFragment? Thread { get; set; }
+    [Parameter] public bool ShowThread { get; set; }
+}

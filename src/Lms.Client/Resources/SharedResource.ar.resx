@@ -1770,4 +1770,22 @@
   <data name="AuditEntity_GradeEntry" xml:space="preserve"><value>درجة</value></data>
   <data name="AuditEntity_GradeSnapshot" xml:space="preserve"><value>لقطة الدرجات</value></data>
   <data name="PermModule_Grades" xml:space="preserve"><value>الدرجات</value></data>
+  <data name="Msg_Conv_Unread" xml:space="preserve"><value>{0} غير مقروءة</value></data>
+  <data name="Msg_Status_Sending" xml:space="preserve"><value>جارٍ الإرسال…</value></data>
+  <data name="Msg_Status_Sent" xml:space="preserve"><value>أُرسلت</value></data>
+  <data name="Msg_Status_Seen" xml:space="preserve"><value>شوهدت</value></data>
+  <data name="Msg_Status_Failed" xml:space="preserve"><value>لم تُرسل</value></data>
+  <data name="Msg_Removed_ByModerator" xml:space="preserve"><value>أزال المشرف هذه الرسالة.</value></data>
+  <data name="Msg_Removed_BySender" xml:space="preserve"><value>رسالة محذوفة</value></data>
+  <data name="Msg_Removed_ByMe" xml:space="preserve"><value>حذفت هذه الرسالة.</value></data>
+  <data name="Msg_Attach" xml:space="preserve"><value>إرفاق ملف</value></data>
+  <data name="Msg_Composer_Placeholder" xml:space="preserve"><value>اكتب رسالة</value></data>
+  <data name="Msg_Composer_Hint" xml:space="preserve"><value>Ctrl+Enter للإرسال</value></data>
+  <data name="Msg_Send" xml:space="preserve"><value>إرسال</value></data>
+  <data name="Msg_Thread_Log" xml:space="preserve"><value>الرسائل</value></data>
+  <data name="Ann_Pinned" xml:space="preserve"><value>مثبّت</value></data>
+  <data name="Ann_Scheduled" xml:space="preserve"><value>مجدول</value></data>
+  <data name="Ann_ReadMore" xml:space="preserve"><value>اقرأ المزيد</value></data>
+  <data name="Ann_ReadLess" xml:space="preserve"><value>عرض أقل</value></data>
+  <data name="Ann_Audience" xml:space="preserve"><value>الجمهور</value></data>
 </root>

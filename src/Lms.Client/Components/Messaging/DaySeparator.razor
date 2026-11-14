@@ -1,0 +1,6 @@
+@* A day label between messages (spec #615 §2.6, class lms-day): "Today", "Yesterday" or a date, already formatted by the page. *@
+<div class="lms-day"><span dir="auto">@Text</span></div>
+
+@code {
+    [Parameter, EditorRequired] public string Text { get; set; } = "";
+}
