@@ -202,6 +202,63 @@ public sealed class AnnouncementPublishingTests(LmsApiFactory factory)
         Assert.Equal(4, await PreviewAsync(w, w.Admin, Root(w), [Cc(w.ClassCourseA)])); // the unit-author default: all three chips
     }
 
+    [Fact]
+    public async Task Preview_returns_the_count_per_chip_and_the_dto_carries_the_server_clock_and_the_delivery_summary()
+    {
+        using var w = await ForumTestWorld.CreateAsync(factory, "AP6B");
+        await AddGuardianOfAsync(w, w.StudentA.UserId);
+        var preview = await w.ReadAsync<AudiencePreviewDto>(await w.SendAsync(w.Admin, HttpMethod.Post, Routes.OrgAnnouncementAudiencePreview,
+            new AudiencePreviewRequest(Root(w), [Cc(w.ClassCourseA)], [AnnouncementRoleFilters.Students, AnnouncementRoleFilters.Guardians])));
+        Assert.Equal((2, 1, 3), (preview.CountsByChip[AnnouncementRoleFilters.Students], preview.CountsByChip[AnnouncementRoleFilters.Guardians], preview.Count));
+        Assert.False(preview.CountsByChip.ContainsKey(AnnouncementRoleFilters.Staff));
+
+        var before = DateTime.UtcNow;
+        var draft = await CreateOkAsync(w, w.Admin, Request(Root(w), [Cc(w.ClassCourseA)], publish: false) with { Notify = true });
+        Assert.InRange(draft.ServerNowUtc, before.AddSeconds(-1), DateTime.UtcNow.AddSeconds(1));
+        Assert.Null(draft.DeliverySummary); // nothing before publishing
+
+        var published = await w.ReadAsync<AnnouncementDto>(await w.SendAsync(w.Admin, HttpMethod.Post, Routes.OrgAnnouncementPublish(draft.Id)));
+        Assert.NotNull(published.DeliverySummary);
+        Assert.Empty(published.DeliverySummary!.Counts); // the fan-out of Task 14 has not written any notice for it yet
+
+        var notice = new Lms.Domain.Notifications.Notification(w.World.Tree.Org.Id, w.StudentA.UserId, Lms.Shared.Notifications.NotificationEvents.AnnouncementsPublished, "{}", null, DateTime.UtcNow, published.Id);
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            db.Add(notice);
+            db.Add(new Lms.Domain.Comms.DeliveryOutbox(w.World.Tree.Org.Id, notice.Id, w.StudentA.UserId, "Email", null, false, DateTime.UtcNow, null, TimeSpan.FromHours(1)));
+            await db.SaveChangesAsync();
+        }
+
+        var again = await w.ReadAsync<AnnouncementDto>(await w.SendAsync(w.Admin, HttpMethod.Get, Routes.OrgAnnouncement(published.Id)));
+        Assert.Equal(
+            [("InApp", "Sent", 1), ("Email", "Pending", 1)],
+            again.DeliverySummary!.Counts.Select(c => (c.Channel, c.Status, c.Count)));
+        var silent = await CreateOkAsync(w, w.Admin, Request(Root(w), [Cc(w.ClassCourseA)]) with { Notify = false });
+        Assert.Null(silent.DeliverySummary); // Notify is off
+    }
+
+    [Fact]
+    public async Task A_platform_context_publish_still_reaches_only_the_announcements_own_client()
+    {
+        using var a = await ForumTestWorld.CreateAsync(factory, "AP16A");
+        using var b = await ForumTestWorld.CreateAsync(factory, "AP16B");
+        var draft = await CreateOkAsync(a, a.Admin, Request(Root(a), [new AnnouncementTargetDto(AnnouncementTargetKinds.Organization, null, false)],
+            [AnnouncementRoleFilters.Students, AnnouncementRoleFilters.Staff], publish: false));
+
+        using (var scope = factory.Services.CreateScope())
+        {
+            scope.ServiceProvider.GetRequiredService<HttpCurrentContext>().SetUser(Guid.NewGuid(), true); // platform admin: the filters hide nothing
+            var row = await scope.ServiceProvider.GetRequiredService<Lms.Infrastructure.Persistence.LmsDbContext>().Set<Announcement>().SingleAsync(x => x.Id == draft.Id);
+            await scope.ServiceProvider.GetRequiredService<AnnouncementService>().PublishNowAsync(row, default);
+        }
+
+        var users = (await RecipientsAsync(draft.Id)).Select(r => r.UserId).ToHashSet();
+        Assert.Contains(a.StudentA.UserId, users);
+        Assert.DoesNotContain(b.StudentA.UserId, users);
+        Assert.DoesNotContain(b.TeacherA.UserId, users);
+        Assert.DoesNotContain(b.Admin.UserId, users);
+    }
+
     // --- publish, schedule, withdraw, expire
 
     [Fact]

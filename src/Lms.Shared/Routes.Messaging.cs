@@ -16,7 +16,7 @@ public static partial class Routes
     /// <summary>GET → <c>ConversationDto</c> — <c>Messaging.View</c>; participant only (404 otherwise); muting and leaving are their own routes below.</summary>
     public const string ConversationPattern = Conversations + "/{id:guid}";
 
-    /// <summary>GET <c>?beforeId=&amp;pageSize=</c> → <c>MessagePageDto</c> — <c>Messaging.View</c>; POST (<c>SendMessageRequest</c> → <c>MessageDto</c>) — <c>Messaging.Send</c>; participant who has not left; 403 restricted; 403 <c>group_read_only</c> for a student in any group (D74), for a guardian outside a teacher-run group that includes guardians (D77) and for anyone but staff when the group is read-only; 409 <c>conversation_closed</c>; 400 <c>message_too_long</c>; 429 <c>rate_limited</c>.</summary>
+    /// <summary>GET <c>?beforeId=&amp;pageSize=</c> → <c>MessagePageDto</c> — <c>Messaging.View</c>; POST (<c>SendMessageRequest</c> → <c>MessageDto</c>) — <c>Messaging.Send</c>; participant who has not left; 403 restricted; 403 <c>conversation_read_only</c> (reason <c>group_students_read_only</c>) for a student in any group (D74), for a guardian outside a teacher-run group that includes guardians (D77) and for anyone but staff when the group is read-only; 409 <c>conversation_closed</c>; 400 <c>message_too_long</c>; 429 <c>rate_limited</c>.</summary>
     public const string ConversationMessagesPattern = ConversationPattern + "/messages";
 
     /// <summary>DELETE — <c>Messaging.Send</c>: the sender deletes their own message for everyone within <c>MessagingLimits.DeleteWindowMinutes</c> (409 <c>message_delete_window_closed</c> after); there is no edit.</summary>
@@ -39,6 +39,15 @@ public static partial class Routes
 
     /// <summary>POST (no body) — <c>Messaging.Send</c>: marks the conversation read up to its last message (<c>LastReadMessageId</c>).</summary>
     public const string ConversationReadPattern = ConversationPattern + "/read";
+
+    /// <summary>POST (multipart, one file → <c>PendingAttachmentDto</c>, 201) — <c>Messaging.Send</c>; at attach time the caller is a participant who may post (404 non-participant; 403 left, restricted or read-only for them); <c>Messaging.MaxAttachmentMb</c> per file (413), the asset allow-list (422 <c>attachment_invalid</c>), at most <c>MessagingLimits.MaxAttachmentsPerMessage</c> pending, <c>Messaging.UploadsPerMinute</c> (429 <c>rate_limited</c>).</summary>
+    public const string ConversationAttachmentsPattern = ConversationPattern + "/attachments";
+
+    /// <summary>DELETE — <c>Messaging.Send</c>: the uploader removes their own pending attachment (404 for another user's or an attached one).</summary>
+    public const string ConversationAttachmentPattern = ConversationAttachmentsPattern + "/{aid:guid}";
+
+    /// <summary>GET → a signed, short-lived URL — <c>Messaging.View</c>; participants only (404 otherwise).</summary>
+    public const string MessageAttachmentUrlPattern = MessagePattern + "/attachments/{fid:guid}/url";
 
     /// <summary>GET <c>?q=&amp;conversationId=&amp;page=</c> → <c>MessageSearchResultDto[]</c> — <c>Messaging.View</c>; only the caller's conversations; minimum 2 characters, 50 results, a 200-hit window, rate limited.</summary>
     public const string MessageSearch = "/api/messages/search";
@@ -90,6 +99,12 @@ public static partial class Routes
 
     /// <summary>POST (<c>AudiencePreviewRequest</c> → <c>AudiencePreviewDto</c>) — <c>Announcements.Manage</c>: the count before publishing.</summary>
     public const string OrgAnnouncementAudiencePreview = OrgAnnouncements + "/audience-preview";
+
+    /// <summary>POST (multipart, one file → <c>AnnouncementAttachmentUploadDto</c>) — <c>Announcements.Manage</c>: uploads a pending attachment for a draft; the asset file rules, up to <c>Announcements.MaxAttachments</c>; 429 <c>rate_limited</c> (<c>Announcements.UploadsPerMinute</c>); 422 <c>attachment_invalid</c>.</summary>
+    public const string OrgAnnouncementAttachments = OrgAnnouncements + "/attachments";
+
+    /// <summary>DELETE — <c>Announcements.Manage</c>: removes a pending attachment the caller uploaded and no saved announcement uses yet (404 otherwise).</summary>
+    public const string OrgAnnouncementAttachmentPattern = OrgAnnouncementAttachments + "/{fileId:guid}";
 
     /// <summary>GET → <c>AnnouncementCapabilitiesDto</c> — <c>Announcements.View</c>: what the caller may author (unit-level targets, class-course targets, urgent); never inferred from another permission.</summary>
     public const string OrgAnnouncementCapabilities = OrgAnnouncements + "/capabilities";
@@ -149,6 +164,9 @@ public static partial class Routes
     public static string ConversationRead(Guid id) => $"{Conversation(id)}/read";
     public static string ConversationMute(Guid id) => $"{Conversation(id)}/mute";
     public static string ConversationLeave(Guid id) => $"{Conversation(id)}/leave";
+    public static string ConversationAttachments(Guid id) => $"{Conversation(id)}/attachments";
+    public static string ConversationAttachment(Guid id, Guid attachmentId) => $"{ConversationAttachments(id)}/{attachmentId}";
+    public static string MessageAttachmentUrl(Guid id, Guid messageId, Guid fileId) => $"{Message(id, messageId)}/attachments/{fileId}/url";
     public static string ConversationParticipants(Guid id) => $"{Conversation(id)}/participants";
     public static string ConversationParticipant(Guid id, Guid userId) => $"{ConversationParticipants(id)}/{userId}";
     public static string ConversationReadOnly(Guid id) => $"{Conversation(id)}/read-only";
@@ -162,6 +180,7 @@ public static partial class Routes
     public static string ModerationReport(Guid id) => $"{ModerationReports}/{id}";
     public static string ModerationReportResolve(Guid id) => $"{ModerationReport(id)}/resolve";
     public static string OrgAnnouncement(Guid id) => $"{OrgAnnouncements}/{id}";
+    public static string OrgAnnouncementAttachment(Guid fileId) => $"{OrgAnnouncementAttachments}/{fileId}";
     public static string OrgAnnouncementPublish(Guid id) => $"{OrgAnnouncement(id)}/publish";
     public static string OrgAnnouncementWithdraw(Guid id) => $"{OrgAnnouncement(id)}/withdraw";
     public static string MyAnnouncementRead(Guid id) => $"{MyAnnouncements}/{id}/read";

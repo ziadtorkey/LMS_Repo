@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Lms.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(LmsDbContext))]
-    [Migration("20261114122551_AddAnnouncements")]
+    [Migration("20261114130245_AddAnnouncements")]
     partial class AddAnnouncements
     {
         /// <inheritdoc />
@@ -4064,12 +4064,17 @@ namespace Lms.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("ReadAt")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<Guid?>("SourceId")
+                        .HasColumnType("char(36)");
+
                     b.Property<Guid>("UserId")
                         .HasColumnType("char(36)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("OrganizationId");
+
+                    b.HasIndex("SourceId");
 
                     b.HasIndex("UserId", "ReadAt", "CreatedAt");
 

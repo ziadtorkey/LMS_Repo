@@ -11,6 +11,12 @@ namespace Lms.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AddColumn<Guid>(
+                name: "SourceId",
+                table: "Notifications",
+                type: "char(36)",
+                nullable: true);
+
             migrationBuilder.CreateTable(
                 name: "AnnouncementRecipients",
                 columns: table => new
@@ -91,6 +97,11 @@ namespace Lms.Infrastructure.Persistence.Migrations
                 .Annotation("MySQL:Charset", "utf8mb4");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Notifications_SourceId",
+                table: "Notifications",
+                column: "SourceId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_AnnouncementRecipients_AnnouncementId_UserId",
                 table: "AnnouncementRecipients",
                 columns: new[] { "AnnouncementId", "UserId" },
@@ -128,6 +139,14 @@ namespace Lms.Infrastructure.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "AnnouncementTargets");
+
+            migrationBuilder.DropIndex(
+                name: "IX_Notifications_SourceId",
+                table: "Notifications");
+
+            migrationBuilder.DropColumn(
+                name: "SourceId",
+                table: "Notifications");
         }
     }
 }

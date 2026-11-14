@@ -28,9 +28,12 @@ public sealed record Audience(IReadOnlyDictionary<Guid, string> Users)
 /// </summary>
 public sealed class AudienceResolver(LmsDbContext db)
 {
+    private Guid org;
+
     public async Task<Audience> ResolveAsync(
-        IReadOnlyList<AudienceTarget> targets, IReadOnlyCollection<string> chips, Guid? excludeUserId, DateOnly today, CancellationToken ct)
+        Guid organizationId, IReadOnlyList<AudienceTarget> targets, IReadOnlyCollection<string> chips, Guid? excludeUserId, DateOnly today, CancellationToken ct)
     {
+        org = organizationId; // a platform-admin caller sees every client through the filters: the client is also pinned by hand
         var studentIds = new HashSet<Guid>();
         var staffUserIds = new HashSet<Guid>();
         foreach (var target in targets)
@@ -84,7 +87,7 @@ public sealed class AudienceResolver(LmsDbContext db)
 
     private async Task<HashSet<Guid>> StudentsAsync(AudienceTarget target, DateOnly today, CancellationToken ct)
     {
-        var active = db.Set<StudentProfile>().Where(s => s.Status == PersonStatus.Active);
+        var active = db.Set<StudentProfile>().Where(s => s.OrganizationId == org && s.Status == PersonStatus.Active);
         IQueryable<Guid> ids;
         switch (target.Kind)
         {
@@ -92,7 +95,7 @@ public sealed class AudienceResolver(LmsDbContext db)
                 ids = active.Select(s => s.Id);
                 break;
             case AnnouncementTargetKinds.Unit when target.TargetId is { } unitId:
-                var path = await db.Set<OrgUnit>().Where(u => u.Id == unitId).Select(u => u.Path).FirstOrDefaultAsync(ct);
+                var path = await db.Set<OrgUnit>().Where(u => u.OrganizationId == org && u.Id == unitId).Select(u => u.Path).FirstOrDefaultAsync(ct);
                 if (path is null)
                 {
                     return [];
@@ -101,17 +104,17 @@ public sealed class AudienceResolver(LmsDbContext db)
                 ids = active.Where(s => target.IncludeSubtree ? s.OrgUnitPath.StartsWith(path) : s.OrgUnitPath == path).Select(s => s.Id);
                 break;
             case AnnouncementTargetKinds.Level when target.TargetId is { } levelId:
-                var classIds = db.Set<Class>().Where(c => db.Set<OrgUnit>().Any(u => u.Id == c.OrgUnitId && u.LevelTypeId == levelId)).Select(c => c.Id);
-                ids = db.Set<ClassStudent>().Where(p => p.Status == ClassStudent.ActiveStatus && classIds.Contains(p.ClassId)).Select(p => p.StudentId);
+                var classIds = db.Set<Class>().Where(c => c.OrganizationId == org && db.Set<OrgUnit>().Any(u => u.Id == c.OrgUnitId && u.LevelTypeId == levelId)).Select(c => c.Id);
+                ids = db.Set<ClassStudent>().Where(p => p.OrganizationId == org && p.Status == ClassStudent.ActiveStatus && classIds.Contains(p.ClassId)).Select(p => p.StudentId);
                 break;
             case AnnouncementTargetKinds.Class when target.TargetId is { } classId:
-                ids = db.Set<ClassStudent>().Where(p => p.Status == ClassStudent.ActiveStatus && p.ClassId == classId).Select(p => p.StudentId);
+                ids = db.Set<ClassStudent>().Where(p => p.OrganizationId == org && p.Status == ClassStudent.ActiveStatus && p.ClassId == classId).Select(p => p.StudentId);
                 break;
             case AnnouncementTargetKinds.ClassCourse when target.TargetId is { } classCourseId:
-                ids = db.Set<CourseEnrollment>().Where(e => e.Status == CourseEnrollment.ActiveStatus && e.ClassCourseId == classCourseId).Select(e => e.StudentId);
+                ids = db.Set<CourseEnrollment>().Where(e => e.OrganizationId == org && e.Status == CourseEnrollment.ActiveStatus && e.ClassCourseId == classCourseId).Select(e => e.StudentId);
                 break;
             case AnnouncementTargetKinds.Group when target.TargetId is { } groupId:
-                ids = db.Set<GroupMember>().Where(m => m.GroupId == groupId).Select(m => m.StudentId);
+                ids = db.Set<GroupMember>().Where(m => m.OrganizationId == org && m.GroupId == groupId).Select(m => m.StudentId);
                 break;
             default:
                 return [];
@@ -123,9 +126,9 @@ public sealed class AudienceResolver(LmsDbContext db)
 
     private async Task<HashSet<Guid>> StaffAsync(AudienceTarget target, DateOnly today, CancellationToken ct)
     {
-        var assignments = db.Set<RoleAssignment>().Where(a => (a.ValidFrom == null || a.ValidFrom <= today) && (a.ValidTo == null || a.ValidTo >= today))
-            .Join(db.Set<Role>().Where(r => r.BaseKind == RoleBaseKind.Staff), a => a.RoleId, r => r.Id, (a, _) => a);
-        var teachers = db.Set<ClassCourseTeacher>().Where(t => t.To == null || t.To >= today);
+        var assignments = db.Set<RoleAssignment>().Where(a => a.OrganizationId == org && (a.ValidFrom == null || a.ValidFrom <= today) && (a.ValidTo == null || a.ValidTo >= today))
+            .Join(db.Set<Role>().Where(r => r.OrganizationId == org && r.BaseKind == RoleBaseKind.Staff), a => a.RoleId, r => r.Id, (a, _) => a);
+        var teachers = db.Set<ClassCourseTeacher>().Where(t => t.OrganizationId == org && (t.To == null || t.To >= today));
         IQueryable<Guid> users;
         switch (target.Kind)
         {
@@ -133,7 +136,7 @@ public sealed class AudienceResolver(LmsDbContext db)
                 users = assignments.Select(a => a.UserId);
                 break;
             case AnnouncementTargetKinds.Unit when target.TargetId is { } unitId:
-                var path = await db.Set<OrgUnit>().Where(u => u.Id == unitId).Select(u => u.Path).FirstOrDefaultAsync(ct);
+                var path = await db.Set<OrgUnit>().Where(u => u.OrganizationId == org && u.Id == unitId).Select(u => u.Path).FirstOrDefaultAsync(ct);
                 if (path is null)
                 {
                     return [];
@@ -142,7 +145,7 @@ public sealed class AudienceResolver(LmsDbContext db)
                 users = assignments.Where(a => target.IncludeSubtree ? a.OrgUnitPath.StartsWith(path) : a.OrgUnitPath == path).Select(a => a.UserId);
                 break;
             case AnnouncementTargetKinds.Level when target.TargetId is { } levelId:
-                var inLevel = db.Set<Class>().Where(c => db.Set<OrgUnit>().Any(u => u.Id == c.OrgUnitId && u.LevelTypeId == levelId)).Select(c => c.Id);
+                var inLevel = db.Set<Class>().Where(c => c.OrganizationId == org && db.Set<OrgUnit>().Any(u => u.Id == c.OrgUnitId && u.LevelTypeId == levelId)).Select(c => c.Id);
                 users = teachers.Where(t => db.Set<ClassCourse>().Any(cc => cc.Id == t.ClassCourseId && inLevel.Contains(cc.ClassId))).Select(t => t.UserId);
                 break;
             case AnnouncementTargetKinds.Class when target.TargetId is { } classId:
@@ -152,7 +155,7 @@ public sealed class AudienceResolver(LmsDbContext db)
                 users = teachers.Where(t => t.ClassCourseId == classCourseId).Select(t => t.UserId);
                 break;
             case AnnouncementTargetKinds.Group when target.TargetId is { } groupId:
-                users = teachers.Where(t => db.Set<StudentGroup>().Any(g => g.Id == groupId && g.ClassCourseId == t.ClassCourseId)).Select(t => t.UserId);
+                users = teachers.Where(t => db.Set<StudentGroup>().Any(g => g.OrganizationId == org && g.Id == groupId && g.ClassCourseId == t.ClassCourseId)).Select(t => t.UserId);
                 break;
             default:
                 return [];
@@ -162,11 +165,11 @@ public sealed class AudienceResolver(LmsDbContext db)
     }
 
     private async Task<List<Guid>> StudentUsersAsync(HashSet<Guid> studentIds, CancellationToken ct) =>
-        await db.Set<StudentProfile>().Where(s => studentIds.Contains(s.Id) && s.UserId != null).Select(s => s.UserId!.Value).Distinct().ToListAsync(ct);
+        await db.Set<StudentProfile>().Where(s => s.OrganizationId == org && studentIds.Contains(s.Id) && s.UserId != null).Select(s => s.UserId!.Value).Distinct().ToListAsync(ct);
 
     private async Task<List<Guid>> GuardianUsersAsync(HashSet<Guid> studentIds, CancellationToken ct)
     {
-        var guardianIds = db.Set<StudentGuardian>().Where(l => studentIds.Contains(l.StudentId)).Select(l => l.GuardianId);
-        return await db.Set<GuardianProfile>().Where(g => guardianIds.Contains(g.Id) && g.UserId != null).Select(g => g.UserId!.Value).Distinct().ToListAsync(ct);
+        var guardianIds = db.Set<StudentGuardian>().Where(l => l.OrganizationId == org && studentIds.Contains(l.StudentId)).Select(l => l.GuardianId);
+        return await db.Set<GuardianProfile>().Where(g => g.OrganizationId == org && guardianIds.Contains(g.Id) && g.UserId != null).Select(g => g.UserId!.Value).Distinct().ToListAsync(ct);
     }
 }
