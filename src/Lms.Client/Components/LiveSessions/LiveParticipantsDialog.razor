@@ -1,0 +1,115 @@
+@using System.Globalization
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.LiveSessions
+@using Lms.Shared
+@using Lms.Shared.LiveSessions
+@inject ILiveSessionsApi Api
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+@* Staff only: who joined the session. A guest shows only the name Zoom reported and is never attached to a student. *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="2" data-testid="participants-dialog">
+            <MudText Typo="Typo.body2" Class="lms-muted" data-testid="participants-intro">@L["Live_ParticipantsIntro"]</MudText>
+            @if (_loading)
+            {
+                <LoadingState Lines="3" TestId="participants-loading" />
+            }
+            else if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" role="alert" data-testid="participants-error">@_error</MudAlert>
+            }
+            else if (_rows.Count == 0)
+            {
+                <MudText Typo="Typo.body2" Class="lms-muted" data-testid="participants-empty">@L[Ended ? "Live_NoParticipants" : "Live_NoParticipantsYet"]</MudText>
+            }
+            else
+            {
+                <MudSimpleTable Dense="true" Outlined="true" Class="lms-simple-table lms-stack-table" data-testid="participants-table">
+                    <thead>
+                        <tr>
+                            <th>@L["Live_Participant"]</th>
+                            <th>@L["Live_Joined"]</th>
+                            <th>@L["Live_Left"]</th>
+                            <th>@L["Live_Duration"]</th>
+                            <th>@L["Live_MatchState"]</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in _rows)
+                        {
+                            <tr data-testid="@($"participant-{p.Id}")">
+                                <td data-label="@L["Live_Participant"]"><bdi>@Name(p)</bdi></td>
+                                <td data-label="@L["Live_Joined"]"><span dir="ltr">@Time(p.JoinedAtUtc)</span></td>
+                                <td data-label="@L["Live_Left"]"><span dir="ltr">@(p.LeftAtUtc is { } left ? Time(left) : "–")</span></td>
+                                <td data-label="@L["Live_Duration"]">@L.Count("Live_Duration_Minute", p.DurationMinutes, Culture.IsRightToLeft)</td>
+                                <td data-label="@L["Live_MatchState"]">
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@(p.MatchState == ParticipantMatchStates.Matched ? Color.Success : Color.Default)"
+                                             data-testid="@($"participant-match-{p.Id}")" data-match="@p.MatchState">@L["Live_Match_" + p.MatchState]</MudChip>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </MudSimpleTable>
+                @if (_rows.Count < _total)
+                {
+                    <div><MudButton Variant="Variant.Outlined" Size="Size.Small" OnClick="MoreAsync" data-testid="participants-more">@L["Live_ShowMore"]</MudButton></div>
+                }
+            }
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="participants-close">@L["Common_Close"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private readonly List<LiveParticipantDto> _rows = [];
+    private int _page = 1, _total;
+    private bool _loading = true;
+    private string? _error;
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter, EditorRequired] public Guid SessionId { get; set; }
+    /// <summary>The session has ended: an empty list then means nobody joined, not that the report is still to come.</summary>
+    [Parameter] public bool Ended { get; set; }
+
+    public static async Task ShowAsync(IDialogService dialogs, string title, Guid sessionId, bool ended = true)
+    {
+        var reference = await dialogs.ShowAsync<LiveParticipantsDialog>(title, new DialogParameters<LiveParticipantsDialog> { { x => x.SessionId, sessionId }, { x => x.Ended, ended } },
+            new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true });
+        await reference.Result;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+        _loading = false;
+    }
+
+    private async Task LoadAsync()
+    {
+        var ok = await ApiCalls.RunAsync(async () =>
+        {
+            var page = await Api.ListParticipantsAsync(SessionId, new LiveParticipantQuery(Page: _page));
+            _rows.AddRange(page.Items);
+            _total = page.Total;
+        }, Navigation, L, m => _error = m);
+        if (!ok && _error is null) _error = L["Error_Generic"].Value;
+    }
+
+    private async Task MoreAsync()
+    {
+        _page++;
+        await LoadAsync();
+    }
+
+    private string Name(LiveParticipantDto p) =>
+        p.MatchState == ParticipantMatchStates.Matched && Culture.Pick(p.StudentNameAr ?? "", p.StudentNameEn ?? "") is { Length: > 0 } student
+            ? student
+            : p.DisplayName;
+
+    private static string Time(DateTime utc) =>
+        DateTime.SpecifyKind(utc, DateTimeKind.Utc).ToLocalTime().ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
+}

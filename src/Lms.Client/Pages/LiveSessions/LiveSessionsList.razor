@@ -79,6 +79,11 @@
                                                OnClick="() => OnEdit.InvokeAsync(s)" data-testid="@($"live-edit-{s.Id}")" />
                             </MudTooltip>
                         }
+                        @if (s.Status is LiveSessionStatuses.Live or LiveSessionStatuses.Ended)
+                        {
+                            <MudIconButton Icon="@Icons.Material.Rounded.Groups" Size="Size.Small" aria-label="@L["Live_Participants"]" title="@L["Live_Participants"]"
+                                           OnClick="() => OnParticipants.InvokeAsync(s)" data-testid="@($"live-participants-{s.Id}")" />
+                        }
                         <MudTooltip Text="@L["Live_RecordingLink"]">
                             <MudIconButton Icon="@Icons.Material.Rounded.Link" Size="Size.Small" aria-label="@L["Live_RecordingLink"]"
                                            OnClick="() => OnRecording.InvokeAsync(s)" data-testid="@($"live-recording-{s.Id}")" />
@@ -111,6 +116,8 @@
     [Parameter] public IReadOnlyDictionary<Guid, string> RecordingUrls { get; set; } = new Dictionary<Guid, string>();
     [Parameter] public EventCallback<LiveSessionListItemDto> OnEdit { get; set; }
     [Parameter] public EventCallback<LiveSessionListItemDto> OnRecording { get; set; }
+    /// <summary>Staff: who joined a live or ended session.</summary>
+    [Parameter] public EventCallback<LiveSessionListItemDto> OnParticipants { get; set; }
     [Parameter] public EventCallback<LiveSessionListItemDto> OnCancel { get; set; }
 
     private DateTime Local(DateTime utc) => TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(utc, DateTimeKind.Utc), Clock.LocalTimeZone);

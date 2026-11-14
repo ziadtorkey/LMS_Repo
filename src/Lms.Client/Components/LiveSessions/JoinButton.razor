@@ -1,0 +1,114 @@
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.LiveSessions
+@using Microsoft.JSInterop
+@inject ILiveSessionsApi Api
+@inject IJSRuntime Js
+@inject NavigationManager Navigation
+
+@* Joins (or, for staff, starts) a live session in a new tab. The tab is opened synchronously inside the click, before any await, and
+   pointed at the URL once the API answers; the URL is never in the markup before that, and never stored. If the browser blocked the
+   tab, the URL from the response is offered as a visible link. *@
+<MudStack Spacing="1" data-testid="join-zone">
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(Disabled || _joining)" OnClick="JoinAsync"
+               StartIcon="@(_joining ? null : Icons.Material.Rounded.VideoCameraFront)" data-testid="join-button">
+        @if (_joining)
+        {
+            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="me-2" aria-hidden="true" />
+            @L["Live_Opening"]
+        }
+        else
+        {
+            @L[Staff ? "Live_Start" : "Live_Join"]
+        }
+    </MudButton>
+    @if (_blockedUrl is not null)
+    {
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" role="status" data-testid="join-blocked">
+            @L["Live_TabBlocked"]
+            <MudButton Variant="Variant.Outlined" Size="Size.Small" Href="@_blockedUrl" Target="_blank" rel="noopener noreferrer"
+                       data-testid="join-fallback-link">@L["Live_OpenMeeting"]</MudButton>
+        </MudAlert>
+    }
+    @if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" role="alert" data-testid="join-error">
+            @_error
+            <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="JoinAsync" data-testid="join-retry">@L["Live_TryAgain"]</MudButton>
+        </MudAlert>
+    }
+</MudStack>
+
+@code {
+    private bool _joining;
+    private string? _error, _blockedUrl;
+
+    [Parameter, EditorRequired] public Guid SessionId { get; set; }
+    /// <summary>Staff start the meeting (the start URL); everyone else joins.</summary>
+    [Parameter] public bool Staff { get; set; }
+    /// <summary>Before the join window, cancelled, still being set up: the button is shown but cannot be pressed.</summary>
+    [Parameter] public bool Disabled { get; set; }
+    /// <summary>409 live_session_not_open: the page reloads the session and shows the state the server now sees.</summary>
+    [Parameter] public EventCallback OnNotOpen { get; set; }
+    /// <summary>404: the module was hidden or removed after the page loaded.</summary>
+    [Parameter] public EventCallback OnNotFound { get; set; }
+    /// <summary>403 feature_disabled: live sessions are off for this school.</summary>
+    [Parameter] public EventCallback OnFeatureOff { get; set; }
+
+    private async Task JoinAsync()
+    {
+        _error = null;
+        _blockedUrl = null;
+        _joining = true;
+        var tab = OpenTab(); // synchronous, before any await: the click's user activation must still be live
+        try
+        {
+            var join = await Api.JoinAsync(SessionId);
+            if (tab is not null && await Js.InvokeAsync<bool>("lmsLiveJoin.navigate", tab, join.Url))
+                return;
+            _blockedUrl = join.Url;
+        }
+        catch (Exception ex) when (ex is ApiProblemException or HttpRequestException || ApiCalls.TryRedirect(ex, Navigation))
+        {
+            await CloseTabAsync(tab);
+            await HandleFailureAsync(ex);
+        }
+        finally
+        {
+            _joining = false;
+        }
+    }
+
+    private string? OpenTab() =>
+        Js is IJSInProcessRuntime sync ? sync.Invoke<string?>("lmsLiveJoin.open") : null;
+
+    private async Task CloseTabAsync(string? tab)
+    {
+        if (tab is null) return;
+        try { await Js.InvokeVoidAsync("lmsLiveJoin.close", tab); }
+        catch (JSDisconnectedException) { }
+    }
+
+    private async Task HandleFailureAsync(Exception ex)
+    {
+        if (ex is not ApiProblemException problem)
+        {
+            if (ex is HttpRequestException) _error = L["Error_Generic"].Value;
+            return; // a redirect (sign-in, forbidden, context) was already started
+        }
+        switch (problem.Status, problem.Code)
+        {
+            case (409, "live_session_not_open"):
+                await OnNotOpen.InvokeAsync();
+                break;
+            case (404, _):
+                await OnNotFound.InvokeAsync();
+                break;
+            case (403, "feature_disabled"):
+                await OnFeatureOff.InvokeAsync();
+                break;
+            default:
+                _error = ProblemText.For(problem, L);
+                break;
+        }
+    }
+}

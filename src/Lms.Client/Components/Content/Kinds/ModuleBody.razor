@@ -1,6 +1,7 @@
 @using Lms.Client.Components.Assets
 @using Lms.Client.Components.Content
 @using Lms.Client.Components.Editors
+@using Lms.Client.Components.LiveSessions
 @using Lms.Shared.Content
 @inject ICultureService Culture
 
@@ -42,6 +43,9 @@
         break;
     case ModuleKinds.LibraryResource:
         <LibraryResourceBody ResourceId="Detail.Content.RefId" />
+        break;
+    case ModuleKinds.LiveSession:
+        <LiveSessionPanel SessionId="Detail.Content.RefId" ClassCourseId="Detail.ClassCourseId" />
         break;
     default:
         <MudText Typo="Typo.body2" data-testid="module-unsupported">@L["Module_Unsupported"]</MudText>

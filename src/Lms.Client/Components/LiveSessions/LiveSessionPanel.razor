@@ -1,0 +1,240 @@
+@using System.Globalization
+@using Lms.Client.Components.Content
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.LiveSessions
+@using Lms.Shared.Authorization
+@using Lms.Shared.LiveSessions
+@implements IDisposable
+@inject ILiveSessionsApi Api
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+@inject IDialogService Dialogs
+@inject TimeProvider Clock
+
+@* A live session module in the viewer: what it is, when, and the join zone. Every time comparison uses the server clock: the
+   server's "now" from the last read plus the time elapsed since it arrived; the browser's own date never decides anything. *@
+@if (_loading)
+{
+    <LoadingState Lines="3" TestId="live-loading" />
+}
+else if (_notAvailable)
+{
+    <EmptyState Icon="@Icons.Material.Rounded.SearchOff" Title="@L["Module_NotAvailableTitle"]" Text="@L["Module_NotAvailableText"]" TestId="live-not-available">
+        <MudLink Href="@($"class-courses/{ClassCourseId}")" data-testid="live-back">@L["Module_Back"]</MudLink>
+    </EmptyState>
+}
+else if (_error is not null)
+{
+    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" role="alert" data-testid="live-error">@_error</MudAlert>
+}
+else if (_session is { } s)
+{
+    var phase = Phase();
+    <SectionCard TestId="live-panel">
+        <MudStack Spacing="3">
+            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+                <span class="lms-kind-tile" aria-hidden="true"><MudIcon Icon="@Icons.Material.Rounded.VideoCameraFront" /></span>
+                <MudStack Spacing="0">
+                    <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                        <MudText Typo="Typo.subtitle1" data-testid="live-title">@Culture.Pick(s.Module.TitleAr, s.Module.TitleEn)</MudText>
+                        <LiveSessionStatusChip Status="@StatusKey(phase, s)" ShowHint="true" />
+                    </MudStack>
+                    <MudText Typo="Typo.body2" Class="lms-muted" data-testid="live-meta">
+                        <span dir="ltr">@Local(s.StartsAtUtc, "yyyy-MM-dd") · @Local(s.StartsAtUtc, "HH:mm")–@Local(s.EndsAtUtc, "HH:mm")</span> · @DurationText(s.DurationMinutes)
+                    </MudText>
+                </MudStack>
+            </MudStack>
+
+            <div class="lms-join-panel" role="region" aria-label="@L["Live_JoinRegion"]" data-testid="live-join-zone">
+                @switch (phase)
+                {
+                    case LivePhase.Cancelled:
+                        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" data-testid="live-cancelled">@L["Live_CancelledNote"]</MudAlert>
+                        break;
+                    case LivePhase.Ended:
+                        <MudText Typo="Typo.body1" data-testid="live-ended">@L["Live_EndedOn", Local(s.EndsAtUtc, "yyyy-MM-dd"), Local(s.EndsAtUtc, "HH:mm")]</MudText>
+                        @if (ModuleLinks.IsAllowed(s.RecordingUrl)) @* http/https only: a stored javascript: link is never rendered *@
+                        {
+                            <div>
+                                <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.PlayCircle" Href="@s.RecordingUrl" Target="_blank"
+                                           rel="noopener noreferrer nofollow" data-testid="live-recording">@L["Live_WatchRecording"]</MudButton>
+                                <span class="lms-host-hint" dir="ltr" data-testid="live-recording-host">@Host(s.RecordingUrl!)</span>
+                                <MudText Typo="Typo.caption" Class="lms-muted">@L["Live_OpensNewTab"]</MudText>
+                            </div>
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.caption" Class="lms-muted" data-testid="live-no-recording">@L["Live_NoRecording"]</MudText>
+                        }
+                        break;
+                    default:
+                        <MudText Typo="Typo.h6" role="timer" data-testid="live-countdown">@MainLine(phase, s)</MudText>
+                        <JoinButton SessionId="s.Id" Staff="IsStaff" Disabled="@JoinDisabled(phase, s)" OnNotOpen="ReloadAsync"
+                                    OnNotFound="MarkNotAvailable" OnFeatureOff="MarkFeatureOff" />
+                        <MudText Typo="Typo.caption" Class="lms-muted" data-testid="live-caption">@Caption(phase, s)</MudText>
+                        break;
+                }
+                @if (_featureOff)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" data-testid="live-feature-off">@L["Live_FeatureOff"]</MudAlert>
+                }
+                <span class="lms-visually-hidden" role="status" aria-live="polite" data-testid="live-announce">@_announcement</span>
+            </div>
+
+            @if (IsStaff && phase is LivePhase.Live or LivePhase.Ended)
+            {
+                <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                    <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.Groups" OnClick="ShowParticipantsAsync"
+                               data-testid="live-participants">@L["Live_Participants"]</MudButton>
+                    <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.Link" OnClick="EditRecordingAsync"
+                               data-testid="live-recording-edit">@L["Live_RecordingLink"]</MudButton>
+                </MudStack>
+            }
+        </MudStack>
+    </SectionCard>
+}
+
+@code {
+    private enum LivePhase { Before, WindowOpen, Live, Ended, Cancelled }
+
+    private LiveSessionDto? _session;
+    private bool _loading = true, _notAvailable, _featureOff;
+    private string? _error, _announcement;
+    private DateTimeOffset _loadedAt;
+    private LivePhase? _lastPhase;
+    private ITimer? _timer;
+
+    [Parameter, EditorRequired] public Guid? SessionId { get; set; }
+    [Parameter, EditorRequired] public Guid ClassCourseId { get; set; }
+
+    private bool IsStaff => PermState.Has(Permissions.LiveSessions.Manage);
+
+    /// <summary>The server's clock now: its time at the last read plus what elapsed here since.</summary>
+    private DateTime ServerNow => _session is null ? DateTime.UtcNow : _session.ServerNowUtc + (Clock.GetUtcNow() - _loadedAt);
+
+    protected override async Task OnInitializedAsync()
+    {
+        _timer = Clock.CreateTimer(_ => _ = InvokeAsync(Tick), null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        if (SessionId is not { } id) { _loading = false; _notAvailable = true; return; }
+        try
+        {
+            _session = await Api.GetAsync(id);
+            _loadedAt = Clock.GetUtcNow();
+            _lastPhase = Phase();
+        }
+        catch (ApiProblemException ex) when (ex.Status == 404)
+        {
+            _session = null;
+            _notAvailable = true;
+        }
+        catch (Exception ex) when (ex is ApiProblemException or HttpRequestException || ApiCalls.TryRedirect(ex, Navigation))
+        {
+            _error = ex is ApiProblemException problem ? ProblemText.For(problem, L) : ex is HttpRequestException ? L["Error_Generic"].Value : null;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task ReloadAsync()
+    {
+        await LoadAsync();
+        StateHasChanged();
+    }
+
+    private void MarkNotAvailable()
+    {
+        _session = null;
+        _notAvailable = true;
+    }
+
+    private void MarkFeatureOff() => _featureOff = true;
+
+    /// <summary>One tick per second: the countdown re-renders, and a state change (the window opens, the session starts) is announced.</summary>
+    private void Tick()
+    {
+        if (_session is null) return;
+        var phase = Phase();
+        if (_lastPhase is { } last && last != phase)
+            _announcement = phase switch
+            {
+                LivePhase.WindowOpen => L["Live_NowCanJoin"].Value,
+                LivePhase.Live => L["Live_NowStarted"].Value,
+                LivePhase.Ended => L["Live_NowEnded"].Value,
+                _ => null,
+            };
+        _lastPhase = phase;
+        StateHasChanged();
+    }
+
+    private LivePhase Phase()
+    {
+        var s = _session!;
+        if (s.Status == LiveSessionStatuses.Cancelled) return LivePhase.Cancelled;
+        var now = ServerNow;
+        if (s.Status == LiveSessionStatuses.Ended || now >= s.EndsAtUtc) return LivePhase.Ended;
+        if (s.Status == LiveSessionStatuses.Live || now >= s.StartsAtUtc) return LivePhase.Live;
+        return now >= s.JoinOpensAtUtc ? LivePhase.WindowOpen : LivePhase.Before;
+    }
+
+    /// <summary>Waiting for Zoom (SyncFailed) never lets anyone in; staff can start from the window opening, the rest join from it.</summary>
+    private bool JoinDisabled(LivePhase phase, LiveSessionDto s) =>
+        s.Status == LiveSessionStatuses.SyncFailed || phase == LivePhase.Before;
+
+    private string MainLine(LivePhase phase, LiveSessionDto s)
+    {
+        var arabic = Culture.IsRightToLeft;
+        if (phase == LivePhase.Live)
+        {
+            var ago = LiveTimeFormat.Describe(ServerNow - s.StartsAtUtc, L, arabic);
+            return L["Live_StartedAgo", ago, Local(s.EndsAtUtc, "HH:mm")].Value;
+        }
+        return L["Live_StartsIn", LiveTimeFormat.Describe(s.StartsAtUtc - ServerNow, L, arabic)].Value;
+    }
+
+    private string Caption(LivePhase phase, LiveSessionDto s)
+    {
+        if (s.Status == LiveSessionStatuses.SyncFailed) return L["Live_SettingUp"].Value;
+        if (phase == LivePhase.Before) return L["Live_JoinFrom", L.Count("Live_Unit_Minute", (int)(s.StartsAtUtc - s.JoinOpensAtUtc).TotalMinutes, Culture.IsRightToLeft)].Value;
+        return L["Live_OpensZoom"].Value;
+    }
+
+    /// <summary>The status shown: the server's, except that the clock may already have moved the session on (Live, Ended).</summary>
+    private static string StatusKey(LivePhase phase, LiveSessionDto s) => s.Status switch
+    {
+        LiveSessionStatuses.Cancelled or LiveSessionStatuses.SyncFailed => s.Status,
+        _ => phase switch { LivePhase.Live => LiveSessionStatuses.Live, LivePhase.Ended => LiveSessionStatuses.Ended, _ => LiveSessionStatuses.Scheduled },
+    };
+
+    private string DurationText(int minutes) => L.Count("Live_Duration_Minute", minutes, Culture.IsRightToLeft);
+
+    private static string Local(DateTime utc, string format) =>
+        DateTime.SpecifyKind(utc, DateTimeKind.Utc).ToLocalTime().ToString(format, CultureInfo.InvariantCulture);
+
+    private static string Host(string url) => Uri.TryCreate(url, UriKind.Absolute, out var uri) ? uri.Host : "";
+
+    private async Task ShowParticipantsAsync()
+    {
+        if (_session is null) return;
+        await LiveParticipantsDialog.ShowAsync(Dialogs, L["Live_Participants"], _session.Id, Phase() == LivePhase.Ended);
+    }
+
+    /// <summary>Staff attach or change the recording link (the dialog of the schedule page); the panel then reloads.</summary>
+    private async Task EditRecordingAsync()
+    {
+        if (_session is null) return;
+        var dialog = await Dialogs.ShowAsync<Lms.Client.Pages.LiveSessions.RecordingLinkDialog>(L["Live_RecordingTitle"],
+            new DialogParameters<Lms.Client.Pages.LiveSessions.RecordingLinkDialog> { { x => x.Session, _session } },
+            new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true });
+        if (await dialog.Result is { Canceled: false }) await ReloadAsync();
+    }
+
+    public void Dispose() => _timer?.Dispose();
+}

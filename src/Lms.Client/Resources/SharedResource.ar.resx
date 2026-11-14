@@ -1602,6 +1602,47 @@
   <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>لم تجتز الحزمة الفحص الأمني.</value></data>
   <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>الملف ليس أرشيف zip صالحًا. صدّر الحزمة من جديد.</value></data>
   <data name="Error_package_reason_bad_name" xml:space="preserve"><value>بعض أسماء الملفات في الحزمة طويلة جدًا أو متداخلة بعمق أو محجوزة. أعد تسميتها وصدّر الحزمة من جديد.</value></data>
+  <data name="Live_Join" xml:space="preserve"><value>انضم إلى الجلسة</value></data>
+  <data name="Live_Start" xml:space="preserve"><value>ابدأ الاجتماع</value></data>
+  <data name="Live_Opening" xml:space="preserve"><value>جارٍ فتح Zoom…</value></data>
+  <data name="Live_TabBlocked" xml:space="preserve"><value>حجب المتصفح التبويب الجديد.</value></data>
+  <data name="Live_OpenMeeting" xml:space="preserve"><value>افتح الاجتماع</value></data>
+  <data name="Live_TryAgain" xml:space="preserve"><value>حاول مرة أخرى</value></data>
+  <data name="Live_JoinRegion" xml:space="preserve"><value>الانضمام</value></data>
+  <data name="Live_CancelledNote" xml:space="preserve"><value>أُلغيت هذه الجلسة.</value></data>
+  <data name="Live_EndedOn" xml:space="preserve"><value>انتهت بتاريخ {0} الساعة {1}.</value></data>
+  <data name="Live_WatchRecording" xml:space="preserve"><value>شاهد التسجيل</value></data>
+  <data name="Live_OpensNewTab" xml:space="preserve"><value>يُفتح في تبويب جديد.</value></data>
+  <data name="Live_NoRecording" xml:space="preserve"><value>لا يوجد تسجيل بعد. قد يضيفه معلمك لاحقاً.</value></data>
+  <data name="Live_StartsIn" xml:space="preserve"><value>تبدأ بعد {0}</value></data>
+  <data name="Live_StartedAgo" xml:space="preserve"><value>بدأت قبل {0} · تنتهي الساعة {1}</value></data>
+  <data name="Live_SettingUp" xml:space="preserve"><value>ما زال الاجتماع قيد الإعداد. عُد بعد قليل.</value></data>
+  <data name="Live_JoinFrom" xml:space="preserve"><value>يمكنك الانضمام قبل البدء بمدة {0}.</value></data>
+  <data name="Live_OpensZoom" xml:space="preserve"><value>يُفتح Zoom في تبويب جديد.</value></data>
+  <data name="Live_FeatureOff" xml:space="preserve"><value>الجلسات المباشرة متوقفة في هذه المدرسة.</value></data>
+  <data name="Live_NowCanJoin" xml:space="preserve"><value>يمكنك الانضمام الآن.</value></data>
+  <data name="Live_NowStarted" xml:space="preserve"><value>بدأت الجلسة.</value></data>
+  <data name="Live_NowEnded" xml:space="preserve"><value>انتهت الجلسة.</value></data>
+  <data name="Live_Participants" xml:space="preserve"><value>المشاركون</value></data>
+  <data name="Live_NoParticipants" xml:space="preserve"><value>لا يوجد مشاركون بعد.</value></data>
+  <data name="Live_Participant" xml:space="preserve"><value>المشارك</value></data>
+  <data name="Live_Joined" xml:space="preserve"><value>وقت الدخول</value></data>
+  <data name="Live_Left" xml:space="preserve"><value>وقت الخروج</value></data>
+  <data name="Live_Duration" xml:space="preserve"><value>المدة</value></data>
+  <data name="Live_MatchState" xml:space="preserve"><value>المطابقة</value></data>
+  <data name="Live_ShowMore" xml:space="preserve"><value>عرض المزيد</value></data>
+  <data name="Live_LessThanMinute" xml:space="preserve"><value>أقل من دقيقة</value></data>
+  <data name="Live_Join_Pair" xml:space="preserve"><value>{0} و{1}</value></data>
+  <data name="Module_NotAvailableTitle" xml:space="preserve"><value>هذا النشاط غير متاح</value></data>
+  <data name="Module_NotAvailableText" xml:space="preserve"><value>ربما أُخفي أو حُذف. ارجع إلى المقرر لترى المتاح لك.</value></data>
+  <data name="Live_Unit_Day_One" xml:space="preserve"><value>يوم</value></data>
+  <data name="Live_Unit_Day_Two" xml:space="preserve"><value>يومين</value></data>
+  <data name="Live_Unit_Day_Few" xml:space="preserve"><value>{0} أيام</value></data>
+  <data name="Live_Unit_Day_Many" xml:space="preserve"><value>{0} يوماً</value></data>
+  <data name="Live_Unit_Hour_One" xml:space="preserve"><value>ساعة</value></data>
+  <data name="Live_Unit_Hour_Two" xml:space="preserve"><value>ساعتين</value></data>
+  <data name="Live_Unit_Hour_Few" xml:space="preserve"><value>{0} ساعات</value></data>
+  <data name="Live_Unit_Hour_Many" xml:space="preserve"><value>{0} ساعة</value></data>
   <data name="ClassCourse_TabLive" xml:space="preserve"><value>الجلسات المباشرة</value></data>
   <data name="Live_Title" xml:space="preserve"><value>الجلسات المباشرة</value></data>
   <data name="Live_Subtitle" xml:space="preserve"><value>حصص عبر الإنترنت لهذا المقرر. ينضم الطلاب من الدرس.</value></data>
@@ -1630,7 +1671,6 @@
   <data name="Live_SeriesCaptionShort" xml:space="preserve"><value>أسبوعياً</value></data>
   <data name="Live_ProviderNotConfigured" xml:space="preserve"><value>الجلسات المباشرة غير مُعدّة بعد. اطلب من مسؤول المنصة إعدادها.</value></data>
   <data name="Live_ProviderUnhealthy" xml:space="preserve"><value>لا يستجيب Zoom حالياً. قد تفشل الجلسات الجديدة، أما الحالية فتعمل كالمعتاد.</value></data>
-  <data name="Live_FeatureOff" xml:space="preserve"><value>الجلسات المباشرة متوقفة في هذه المدرسة.</value></data>
   <data name="Live_Error_Busy" xml:space="preserve"><value>Zoom مشغول. أعد المحاولة بعد حوالي {0}.</value></data>
   <data name="Live_Error_BusyShort" xml:space="preserve"><value>Zoom مشغول. أعد المحاولة بعد دقيقة.</value></data>
   <data name="Live_DialogTitleNew" xml:space="preserve"><value>جدولة جلسة مباشرة</value></data>
@@ -1643,7 +1683,6 @@
   <data name="Live_Lesson" xml:space="preserve"><value>الدرس</value></data>
   <data name="Live_Date" xml:space="preserve"><value>التاريخ</value></data>
   <data name="Live_StartTime" xml:space="preserve"><value>وقت البدء</value></data>
-  <data name="Live_Duration" xml:space="preserve"><value>المدة</value></data>
   <data name="Live_TimeZone" xml:space="preserve"><value>الأوقات بتوقيتك المحلي:</value></data>
   <data name="Live_Repeat_Once" xml:space="preserve"><value>مرة واحدة</value></data>
   <data name="Live_Repeat_Weekly" xml:space="preserve"><value>أسبوعياً</value></data>
@@ -1691,6 +1730,8 @@
   <data name="Live_EveryWeeks_Two" xml:space="preserve"><value>كل أسبوعين</value></data>
   <data name="Live_EveryWeeks_Few" xml:space="preserve"><value>كل {0} أسابيع</value></data>
   <data name="Live_EveryWeeks_Many" xml:space="preserve"><value>كل {0} أسبوعاً</value></data>
+  <data name="Live_ParticipantsIntro" xml:space="preserve"><value>من انضم إلى هذه الجلسة بحسب تقرير Zoom. الضيف هو من تعذّرت مطابقته مع طالب مسجّل.</value></data>
+  <data name="Live_NoParticipantsYet" xml:space="preserve"><value>يظهر المشاركون هنا بعد انتهاء الجلسة.</value></data>
   <data name="Students_Subtitle" xml:space="preserve"><value>طلاب جهتك وفصولهم وأولياء أمورهم.</value></data>
   <data name="Students_EmptyTitle" xml:space="preserve"><value>لا يوجد طلاب مطابقون</value></data>
   <data name="Students_EmptyText" xml:space="preserve"><value>غيّر عوامل التصفية أو أضف طالبًا جديدًا.</value></data>
