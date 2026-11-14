@@ -176,4 +176,19 @@ public sealed class OutboundTransportTests
         await guarded.SendAsync(Sms()); // an adult, about themselves
         Assert.Single(inner.Sent);
     }
+
+    [Fact]
+    public async Task No_sms_to_a_guardian_even_for_an_urgent_announcement_with_its_own_code()
+    {
+        var inner = new FakeSmsProvider(new ListLogger<FakeSmsProvider>(), new FixedClock());
+        var guarded = new GuardedSmsProvider(inner);
+
+        var refused = await Assert.ThrowsAsync<SmsRefusedException>(() => guarded.SendAsync(Sms() with { RecipientIsGuardian = true }));
+        var minorFirst = await Assert.ThrowsAsync<SmsRefusedException>(() => guarded.SendAsync(Sms() with { RecipientIsGuardian = true, ConcernsAnotherPerson = true }));
+
+        Assert.Equal("sms_not_allowed_for_guardian", refused.Code);
+        Assert.Equal(SmsRefusal.NotAllowedForGuardian, refused.Code);
+        Assert.Equal(SmsRefusal.NotAllowedForMinor, minorFirst.Code); // news about a child is refused as such, whoever the recipient is
+        Assert.Empty(inner.Sent);
+    }
 }
