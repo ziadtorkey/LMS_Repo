@@ -46,6 +46,7 @@ public class BuiltInRoleMatrixTests
                 "LiveSessions.View", "LiveSessions.Manage",
                 "Packages.Upload", "Packages.View",
                 "Grades.View", "Grades.Manage", "Grades.Publish", "Grades.ConfigureScales", "Grades.ViewReports",
+                "AcademicYears.Close", "Grades.ChangeRequest", "Grades.ChangeApprove", "Promotion.Run", "Students.Withdraw", "Students.Readmit", "Students.ViewArchive",
             ]
         },
         {
@@ -73,6 +74,7 @@ public class BuiltInRoleMatrixTests
                 "LiveSessions.View", "LiveSessions.Manage",
                 "Packages.Upload", "Packages.View",
                 "Grades.View", "Grades.Manage", "Grades.Publish", "Grades.ConfigureScales", "Grades.ViewReports",
+                "Grades.ChangeRequest", "Grades.ChangeApprove", "Promotion.Run", "Students.Withdraw", "Students.Readmit", "Students.ViewArchive",
             ]
         },
         {
@@ -88,7 +90,7 @@ public class BuiltInRoleMatrixTests
                 "Modules.View",
                 "CourseAssignments.View", "Quizzes.View", "Library.View", "Library.Manage", "Forums.View",
                 "LiveSessions.View", "Packages.View",
-                "Grades.View", "Grades.ViewReports",
+                "Grades.View", "Grades.ViewReports", "Students.ViewArchive",
             ]
         },
         {
@@ -97,7 +99,7 @@ public class BuiltInRoleMatrixTests
                 "Files.Upload", "Files.Download", "AcademicYears.View", "Staff.View",
                 "Students.View", "Students.Update", "Students.ApproveChanges", "Classes.View",
                 "Enrollment.View", "Enrollment.RequestException", "Groups.View",
-                "Library.View",
+                "Library.View", "Students.Withdraw", "Students.ViewArchive",
             ]
         },
         {
@@ -113,7 +115,7 @@ public class BuiltInRoleMatrixTests
                 "Forums.View", "Forums.Post", "Forums.Moderate",
                 "LiveSessions.View", "LiveSessions.Manage",
                 "Packages.Upload", "Packages.View",
-                "Grades.View", "Grades.Manage", "Grades.Publish",
+                "Grades.View", "Grades.Manage", "Grades.Publish", "Grades.ChangeRequest",
             ]
         },
         { "Student", ["Files.Upload", "Files.Download", "AcademicYears.View", "Students.SelfEdit", "LessonPlans.View",

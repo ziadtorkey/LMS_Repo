@@ -22,7 +22,7 @@ public sealed class GradingContractTests
         ["Grades.View", "Grades.Manage", "Grades.Publish", "Grades.ConfigureScales", "Grades.ViewReports", "Grades.ViewOwn"];
 
     private static IReadOnlyList<string> GradesOf(string role) =>
-        BuiltInRoles.Get(role).DefaultPermissions.Where(p => p.StartsWith("Grades.", StringComparison.Ordinal)).Order(StringComparer.Ordinal).ToList();
+        BuiltInRoles.Get(role).DefaultPermissions.Where(p => GradePermissions.Contains(p)).Order(StringComparer.Ordinal).ToList(); // the M5 set; M7 adds Grades.ChangeRequest and ChangeApprove (YearEndContractTests)
 
     [Fact]
     public void Grading_permissions_follow_the_matrix()

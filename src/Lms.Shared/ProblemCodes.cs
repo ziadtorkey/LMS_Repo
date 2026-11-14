@@ -242,4 +242,47 @@ public static class ProblemCodes
 
     /// <summary>The row changed since it was loaded (a stale <c>Version</c>); the answer carries the current value (409, L12).</summary>
     public const string concurrency_conflict = nameof(concurrency_conflict);
+
+    // M7 wave 1 (year end, FE proposal #808).
+    /// <summary>Closing the year is refused: the response lists the blocking issues (409, M7).</summary>
+    public const string year_close_blocked = nameof(year_close_blocked);
+
+    /// <summary>A promotion needs a Closed source year (409, D79).</summary>
+    public const string year_not_closed = nameof(year_not_closed);
+
+    /// <summary>The grade already has an open change request (409, FR-GRD-06).</summary>
+    public const string grade_change_pending = nameof(grade_change_pending);
+
+    /// <summary>The requester cannot decide their own grade-change request, or the grade is not in a closed year (403, D80).</summary>
+    public const string grade_change_not_allowed = nameof(grade_change_not_allowed);
+
+    /// <summary>Another promotion run of this source unit is still running (409).</summary>
+    public const string promotion_in_progress = nameof(promotion_in_progress);
+
+    /// <summary>The run is no longer a draft or has blocking issues (409).</summary>
+    public const string promotion_conflict = nameof(promotion_conflict);
+
+    /// <summary>The undo window of the promotion has ended (409, D12).</summary>
+    public const string promotion_undo_window_over = nameof(promotion_undo_window_over);
+
+    /// <summary>Something happened in the new year after the promotion: it can no longer be undone (409, D12).</summary>
+    public const string promotion_undo_activity_exists = nameof(promotion_undo_activity_exists);
+
+    /// <summary>The student is already withdrawn, graduated or inactive (409, FR-STU-08).</summary>
+    public const string student_already_inactive = nameof(student_already_inactive);
+
+    /// <summary>The effective date is not allowed (422).</summary>
+    public const string effective_date_invalid = nameof(effective_date_invalid);
+
+    /// <summary>The class chosen for re-admission has no room (409).</summary>
+    public const string readmit_class_full = nameof(readmit_class_full);
+
+    /// <summary>The class of the chosen year is closed (409).</summary>
+    public const string readmit_year_closed = nameof(readmit_year_closed);
+
+    /// <summary>Opening the next year needs a year to copy from or a template (400).</summary>
+    public const string copy_nothing_selected = nameof(copy_nothing_selected);
+
+    /// <summary>A test of an identity-provider connection failed; the answer names the failed checks, never a secret (422, M7).</summary>
+    public const string provider_test_failed = nameof(provider_test_failed);
 }

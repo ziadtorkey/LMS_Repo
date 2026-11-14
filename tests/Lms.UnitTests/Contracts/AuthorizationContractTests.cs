@@ -21,7 +21,7 @@ public partial class AuthorizationContractTests
     }
 
     [Fact]
-    public void Permission_catalog_contains_exactly_the_M0_to_M5_wave_1_set()
+    public void Permission_catalog_contains_exactly_the_M0_to_M7_wave_1_set()
     {
         string[] expected =
         [
@@ -54,6 +54,8 @@ public partial class AuthorizationContractTests
             "LiveSessions.View", "LiveSessions.Manage",
             "Packages.Upload", "Packages.View",
             "Grades.View", "Grades.Manage", "Grades.Publish", "Grades.ConfigureScales", "Grades.ViewReports", "Grades.ViewOwn",
+            // M7 wave 1 (year end)
+            "AcademicYears.Close", "Grades.ChangeRequest", "Grades.ChangeApprove", "Promotion.Run", "Students.Withdraw", "Students.Readmit", "Students.ViewArchive",
         ];
         Assert.Equal(expected.Order(StringComparer.Ordinal), Permissions.All.Order(StringComparer.Ordinal));
     }
@@ -131,6 +133,10 @@ public partial class AuthorizationContractTests
             "gradebook_locked", "scale_provisional", "scale_bands_invalid", "scale_in_use", "weights_invalid", "grade_out_of_range",
             "grade_override_reason_required", "grade_import_invalid", "grade_import_expired", "terms_have_dependants",
             "concurrency_conflict",
+            // M7 wave 1 (year end)
+            "year_close_blocked", "year_not_closed", "grade_change_pending", "grade_change_not_allowed", "promotion_in_progress", "promotion_conflict",
+            "promotion_undo_window_over", "promotion_undo_activity_exists", "student_already_inactive", "effective_date_invalid", "readmit_class_full",
+            "readmit_year_closed", "copy_nothing_selected", "provider_test_failed",
         ];
 
         Assert.All(fields, f => Assert.Equal(f.Name, (string)f.GetRawConstantValue()!));

@@ -88,6 +88,9 @@ public static class Permissions
         public const string Create = "AcademicYears.Create";
         public const string Update = "AcademicYears.Update";
         public const string Delete = "AcademicYears.Delete";
+
+        /// <summary>M7 wave 1 (FR-YEAR-04, D79): close a year (locks grades and attendance, opens the promotion). Org Admin only (D17); there is no reopen in v1.</summary>
+        public const string Close = "AcademicYears.Close";
     }
 
     // M2 People (D23: the Students.* permissions arrive with the M3 contract).
@@ -122,6 +125,15 @@ public static class Permissions
 
         /// <summary>A guardian reads their own children (FR-STU-06).</summary>
         public const string ViewChildren = "Students.ViewChildren";
+
+        /// <summary>M7 wave 1 (FR-STU-08, D82): withdraw or graduate a student (Org Admin, Manager, Counselor).</summary>
+        public const string Withdraw = "Students.Withdraw";
+
+        /// <summary>M7 wave 1 (FR-STU-08): re-admit a withdrawn or graduated student into a class (Org Admin, Manager).</summary>
+        public const string Readmit = "Students.Readmit";
+
+        /// <summary>M7 wave 1 (FR-STU-08): search the read-only archive of students who left.</summary>
+        public const string ViewArchive = "Students.ViewArchive";
     }
 
     public static class Courses
@@ -280,6 +292,19 @@ public static class Permissions
 
         /// <summary>A student's own published grades, a guardian's children's published grades.</summary>
         public const string ViewOwn = "Grades.ViewOwn";
+
+        /// <summary>M7 wave 1 (FR-GRD-06): ask for a change to a grade of a closed year (a teacher of the own ClassCourse).</summary>
+        public const string ChangeRequest = "Grades.ChangeRequest";
+
+        /// <summary>M7 wave 1 (FR-GRD-06, D80): approve or reject a grade-change request; a Manager or the Org Admin, never the requester.</summary>
+        public const string ChangeApprove = "Grades.ChangeApprove";
+    }
+
+    // M7 wave 1 (FE proposal #808): the promotion run of a year end (FR-STU-07, D12, D78).
+    /// <summary>Promotion run: create, preview, edit decisions, execute and undo (Org Admin anywhere, Manager inside their own units).</summary>
+    public static class Promotion
+    {
+        public const string Run = "Promotion.Run";
     }
 
     // M4b Live sessions, wave 3a (M4b plan Task 1). Teacher: own ClassCourses; Student: own enrollments, and only the

@@ -97,6 +97,16 @@ public static class BuiltInRoleDefaults
         Permissions.LiveSessions.View, Permissions.LiveSessions.Manage,
     };
 
+    /// <summary>
+    /// Permissions introduced by defaults version 12 (M7 wave 1: year close, grade-change approval, promotion, withdrawal). <see cref="CurrentVersion"/> is set to 12 by the Lead after
+    /// M6 (version 11) lands; this wave only defines the set and its <see cref="IntroducedIn"/> mapping.
+    /// </summary>
+    public static readonly IReadOnlySet<string> IntroducedInVersion12 = new HashSet<string>
+    {
+        Permissions.AcademicYears.Close, Permissions.Grades.ChangeRequest, Permissions.Grades.ChangeApprove, Permissions.Promotion.Run,
+        Permissions.Students.Withdraw, Permissions.Students.Readmit, Permissions.Students.ViewArchive,
+    };
+
     /// <summary>Permissions introduced by defaults version 8 (M5 wave 1: grading).</summary>
     public static readonly IReadOnlySet<string> IntroducedInVersion8 = new HashSet<string>
     {
@@ -124,6 +134,7 @@ public static class BuiltInRoleDefaults
         : IntroducedInVersion6.Contains(permission) ? 6
         : IntroducedInVersion7.Contains(permission) ? 7
         : IntroducedInVersion8.Contains(permission) ? 8
+        : IntroducedInVersion12.Contains(permission) ? 12
         : 1;
 
     /// <summary>
