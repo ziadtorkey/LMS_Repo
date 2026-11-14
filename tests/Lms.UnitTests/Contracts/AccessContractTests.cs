@@ -29,6 +29,9 @@ public class AccessContractTests
             "PackageUpload", "ScormPackage", "H5pContent",
             "LiveSessionSeries", "LiveSession",
             "GradingScale", "WeightTemplate", "Gradebook", "GradeCategory", "GradeItem", "GradeEntry", "GradeSnapshot",
+            "Conversation", "MessageReport", "MessagingRestriction", "MessagingRule", "Announcement", "ModerationRead",
+            "Period", "TimetableSlot", "TimetableException",
+            "AttendanceRecordChange", "AbsenceExcuse",
         ], AuditCatalog.EntityTypes);
     }
 

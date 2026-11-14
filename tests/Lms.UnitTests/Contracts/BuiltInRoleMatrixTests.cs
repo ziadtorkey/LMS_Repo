@@ -46,6 +46,9 @@ public class BuiltInRoleMatrixTests
                 "LiveSessions.View", "LiveSessions.Manage",
                 "Packages.Upload", "Packages.View",
                 "Grades.View", "Grades.Manage", "Grades.Publish", "Grades.ConfigureScales", "Grades.ViewReports",
+                "Attendance.Take", "Attendance.Edit", "Attendance.View", "Excuses.Review", "Excuses.Escalate",
+                "Timetable.View", "Timetable.Manage", "Timetable.Configure",
+                "Messaging.View", "Messaging.Send", "Messaging.Moderate", "Announcements.View", "Announcements.Manage", "Comms.Manage",
             ]
         },
         {
@@ -73,6 +76,9 @@ public class BuiltInRoleMatrixTests
                 "LiveSessions.View", "LiveSessions.Manage",
                 "Packages.Upload", "Packages.View",
                 "Grades.View", "Grades.Manage", "Grades.Publish", "Grades.ConfigureScales", "Grades.ViewReports",
+                "Attendance.Take", "Attendance.Edit", "Attendance.View", "Excuses.Review", "Excuses.Escalate",
+                "Timetable.View", "Timetable.Manage", "Timetable.Configure",
+                "Messaging.View", "Messaging.Send", "Announcements.View", "Announcements.Manage",
             ]
         },
         {
@@ -88,7 +94,8 @@ public class BuiltInRoleMatrixTests
                 "Modules.View",
                 "CourseAssignments.View", "Quizzes.View", "Library.View", "Library.Manage", "Forums.View",
                 "LiveSessions.View", "Packages.View",
-                "Grades.View", "Grades.ViewReports",
+                "Grades.View", "Grades.ViewReports", "Attendance.View", "Timetable.View",
+                "Messaging.View", "Messaging.Send", "Announcements.View", "Announcements.Manage",
             ]
         },
         {
@@ -98,6 +105,8 @@ public class BuiltInRoleMatrixTests
                 "Students.View", "Students.Update", "Students.ApproveChanges", "Classes.View",
                 "Enrollment.View", "Enrollment.RequestException", "Groups.View",
                 "Library.View",
+                "Attendance.View", "Attendance.Edit", "Excuses.Review", "Excuses.Escalate", "Timetable.View",
+                "Messaging.View", "Messaging.Send", "Announcements.View",
             ]
         },
         {
@@ -113,18 +122,19 @@ public class BuiltInRoleMatrixTests
                 "Forums.View", "Forums.Post", "Forums.Moderate",
                 "LiveSessions.View", "LiveSessions.Manage",
                 "Packages.Upload", "Packages.View",
-                "Grades.View", "Grades.Manage", "Grades.Publish",
+                "Grades.View", "Grades.Manage", "Grades.Publish", "Attendance.Take", "Timetable.View", "Timetable.ViewOwn",
+                "Messaging.View", "Messaging.Send", "Announcements.View", "Announcements.Manage",
             ]
         },
         { "Student", ["Files.Upload", "Files.Download", "AcademicYears.View", "Students.SelfEdit", "LessonPlans.View",
             "Modules.View", "CourseAssignments.View", "CourseAssignments.Submit", "Quizzes.View", "Quizzes.Attempt",
-            "Library.View", "Forums.View", "Forums.Post", "LiveSessions.View", "Packages.View", "Grades.ViewOwn"] },
-        { "Guardian", ["Files.Download", "AcademicYears.View", "Students.ViewChildren", "Grades.ViewOwn"] },
+            "Library.View", "Forums.View", "Forums.Post", "LiveSessions.View", "Packages.View", "Grades.ViewOwn", "Timetable.ViewOwn", "Attendance.ViewOwn", "Excuses.Submit", "Messaging.View", "Messaging.Send", "Announcements.View"] },
+        { "Guardian", ["Files.Download", "AcademicYears.View", "Students.ViewChildren", "Grades.ViewOwn", "Timetable.ViewOwn", "Attendance.ViewOwn", "Excuses.Submit", "Messaging.View", "Messaging.Send", "Announcements.View"] },
     };
 
     [Theory]
     [MemberData(nameof(Matrix))]
-    public void Built_in_roles_match_the_M5_matrix_exactly(string roleKey, string[] expected)
+    public void Built_in_roles_match_the_M6_matrix_exactly(string roleKey, string[] expected)
     {
         var actual = BuiltInRoles.Get(roleKey).DefaultPermissions;
 
@@ -163,8 +173,9 @@ public class BuiltInRoleMatrixTests
         string[] staff = [BuiltInRoles.OrgAdmin, BuiltInRoles.Manager, BuiltInRoles.Supervisor, BuiltInRoles.Counselor,
             BuiltInRoles.Teacher];
 
+        // Timetable.ViewOwn is the one exception (M5 wave 2): a teacher sees their own slots across classes; it reaches only the holder's own data.
         Assert.All(staff, r =>
-            Assert.Empty(BuiltInRoles.Get(r).DefaultPermissions.Intersect(Permissions.SelfService, StringComparer.Ordinal)));
+            Assert.DoesNotContain(BuiltInRoles.Get(r).DefaultPermissions, p => p != Permissions.Timetable.ViewOwn && Permissions.SelfService.Contains(p)));
     }
 
     [Fact]
@@ -181,8 +192,9 @@ public class BuiltInRoleMatrixTests
         Assert.All(new[] { BuiltInRoles.OrgAdmin, BuiltInRoles.Manager }, r =>
             Assert.Empty(staffSide.Except(BuiltInRoles.Get(r).DefaultPermissions, StringComparer.Ordinal)));
         // ...so the Teacher role stays a subset the Manager can hand out (D16 escalation guard).
+        // Self-service permissions (Timetable.ViewOwn of a teacher's own slots) count as held by every caller (Permissions.WithSelfService).
         Assert.Empty(BuiltInRoles.Get(BuiltInRoles.Teacher).DefaultPermissions
-            .Except(BuiltInRoles.Get(BuiltInRoles.Manager).DefaultPermissions, StringComparer.Ordinal));
+            .Except(Permissions.WithSelfService(BuiltInRoles.Get(BuiltInRoles.Manager).DefaultPermissions), StringComparer.Ordinal));
     }
 
     [Fact]

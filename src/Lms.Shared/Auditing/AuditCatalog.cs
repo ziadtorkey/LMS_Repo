@@ -45,6 +45,14 @@ public static class AuditCatalog
         "LiveSessionSeries", "LiveSession",
         // M5 wave 1: grading (overrides, publish changes and scale acknowledgements are the audited changes).
         "GradingScale", "WeightTemplate", "Gradebook", "GradeCategory", "GradeItem", "GradeEntry", "GradeSnapshot",
+        // M6 wave 1: moderation, rules and announcements (messages themselves are not audited row by row: volume and privacy; moderation actions are).
+        "Conversation", "MessageReport", "MessagingRestriction", "MessagingRule", "Announcement",
+        // M6 wave 4: every moderator read of a reported message, its context or an attachment of it is audited as ModerationRead.
+        "ModerationRead",
+        // M5 wave 2: periods, timetable slots and their exceptions (publish, move, substitute are the audited changes).
+        "Period", "TimetableSlot", "TimetableException",
+        // M5 wave 3: attendance edits and excuse decisions (the change history and the decisions are the audited changes).
+        "AttendanceRecordChange", "AbsenceExcuse",
     ];
 
     public static IReadOnlyList<string> SecurityEvents { get; } =

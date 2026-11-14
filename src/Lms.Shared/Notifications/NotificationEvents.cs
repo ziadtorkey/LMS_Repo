@@ -3,14 +3,14 @@ using Lms.Shared.Authorization;
 namespace Lms.Shared.Notifications;
 
 /// <summary>Delivery channels (FR-NOT-01). M1 delivers InApp only; the others are stored preferences for M6.</summary>
+// D76: no SMS in v1; the channels are in-app, email and Web Push.
 public static class NotificationChannels
 {
     public const string InApp = "InApp";
     public const string Email = "Email";
-    public const string Sms = "Sms";
     public const string Push = "Push";
 
-    public static IReadOnlyList<string> All { get; } = [InApp, Email, Sms, Push];
+    public static IReadOnlyList<string> All { get; } = [InApp, Email, Push];
 }
 
 /// <summary>Where the default recipient roles of an event are looked up, relative to the event's unit.</summary>
@@ -34,7 +34,10 @@ public sealed record NotificationEventDefinition(
     string Key,
     IReadOnlyList<string> DefaultRecipientRoles,
     IReadOnlyList<string> Parameters,
-    string RecipientScope = RecipientScopes.Subtree);
+    string RecipientScope = RecipientScopes.Subtree,
+    IReadOnlyList<string>? DefaultChannels = null,
+    bool Mandatory = false,
+    bool Urgent = false);
 
 /// <summary>Notification event catalog ("Module.Event" keys). Later milestones append; never rename a key.</summary>
 public static class NotificationEvents
@@ -70,6 +73,24 @@ public static class NotificationEvents
     // M5 wave 1 (M5 plan Task 1, L26). Named recipients: the student and the linked guardians whose visible grades changed, one per student per publish
     // batch. No grade value and no item title in any notification, log or error.
     public const string GradesPublished = "Grades.Published";
+
+    // M6 wave 1 (#613 section 16: one catalog, keys never renamed). No message text and no grade value in any notice.
+    public const string MessagesNewMessage = "Messages.NewMessage";
+    public const string AnnouncementsPublished = "Announcements.Published";
+    public const string MessagingWarning = "Messaging.Warning";
+    public const string MessagingRestricted = "Messaging.Restricted";
+    public const string MessagingReportResolved = "Messaging.ReportResolved";
+
+    // M6 wave 4: moderation. Two keys so only a safety concern is mandatory: an ordinary report notice can be switched off, a safety one cannot.
+    public const string ModerationReportReceived = "Moderation.ReportReceived";
+    public const string ModerationSafetyReportReceived = "Moderation.SafetyReportReceived";
+    public const string CommsCapReached = "Comms.CapReached";
+
+    // M5 wave 3 (M5 plan Task 3, L26, L11 item 10). Named recipients unless a default role is given. No grade value anywhere; attendance texts name the student, the course and the date only.
+    public const string AttendanceAbsent = "Attendance.Absent";
+    public const string ExcusesDecided = "Excuses.Decided";
+    public const string ExcusesEscalated = "Excuses.Escalated";
+    public const string AttendanceThresholdCrossed = "Attendance.ThresholdCrossed";
 
     public static IReadOnlyList<NotificationEventDefinition> All { get; } =
     [
@@ -114,6 +135,31 @@ public static class NotificationEvents
         new(LiveReminder, [], ["TitleAr", "TitleEn", "CourseNameAr", "CourseNameEn", "StartsAtUtc"]),
         // Named recipients: the student and the linked guardians, once per publish batch. Course name only: never a score or an item title.
         new(GradesPublished, [], ["CourseNameAr", "CourseNameEn"]),
+        // Named recipients: a participant who has no unread notice of the conversation (throttled: one unread notice per conversation). The sender's name only.
+        new(MessagesNewMessage, [], ["SenderNameAr", "SenderNameEn"]),
+        // Named recipients: the snapshot of the audience, one event per batch; when the author asked to notify. Title only, never the body.
+        new(AnnouncementsPublished, [], ["TitleAr", "TitleEn"]),
+        // Named recipient: the sender of a reported message when a moderator warns them. Mandatory (moderation outcomes cannot be switched off).
+        new(MessagingWarning, [], [], DefaultChannels: [NotificationChannels.InApp, NotificationChannels.Email], Mandatory: true),
+        // Named recipient: a user whose messaging right was restricted until the date. Mandatory.
+        new(MessagingRestricted, [], ["UntilUtc"], DefaultChannels: [NotificationChannels.InApp, NotificationChannels.Email], Mandatory: true),
+        // Named recipient: the reporter, with the outcome code Reviewed only (never the action or a note) and nothing about the other person. Mandatory.
+        new(MessagingReportResolved, [], ["Outcome"], DefaultChannels: [NotificationChannels.InApp], Mandatory: true),
+        // The Org Admins at or above the report's unit when a message is reported. The reason code only: never the message text or a name.
+        new(ModerationReportReceived, [BuiltInRoles.OrgAdmin], ["Reason"], RecipientScopes.AncestorsAndSelf, [NotificationChannels.InApp, NotificationChannels.Email]),
+        // The same for a safety concern: mandatory and urgent (sent at once, ignoring quiet hours), on in-app, email and push.
+        new(ModerationSafetyReportReceived, [BuiltInRoles.OrgAdmin], ["Reason"], RecipientScopes.AncestorsAndSelf,
+            [NotificationChannels.InApp, NotificationChannels.Email, NotificationChannels.Push], Mandatory: true, Urgent: true),
+        // Org Admins of the client when a daily cap of a channel is reached.
+        new(CommsCapReached, [BuiltInRoles.OrgAdmin], ["Channel"], DefaultChannels: [NotificationChannels.InApp, NotificationChannels.Email]),
+        // Named recipients: the student's linked guardians (and the student), one per guardian per session, only when attendance is Taken or a live proposal is confirmed, never on the proposal.
+        new(AttendanceAbsent, [], ["StudentNameAr", "StudentNameEn", "CourseNameAr", "CourseNameEn", "Date", "Status"]),
+        // Named recipient: the submitter. Decision is Approved or Rejected.
+        new(ExcusesDecided, [], ["StudentNameAr", "StudentNameEn", "Decision"]),
+        // Named recipient: the staff member the excuse was escalated to.
+        new(ExcusesEscalated, [], ["StudentNameAr", "StudentNameEn"]),
+        // Default recipient: the Counselors of the student's unit, once per crossing.
+        new(AttendanceThresholdCrossed, [BuiltInRoles.Counselor], ["StudentNameAr", "StudentNameEn", "Absences", "WindowDays"]),
     ];
 
     /// <summary>The definition with this exact (case-sensitive) key, or null.</summary>

@@ -95,4 +95,96 @@ public static class SettingKeys
 
     /// <summary>Terms per academic year, 2 or 3 (client level, D62).</summary>
     public static readonly SettingKey<int> AcademicYearsTermsPerYear = new("AcademicYears.TermsPerYear", 2);
+
+    // M6 wave 1 (D66 defaults; every Comms.* and Messaging.* setting is client level, edited by the Org Admin at the client root).
+    /// <summary>Whether the client's notices may use email at all.</summary>
+    public static readonly SettingKey<bool> CommsEmailEnabled = new("Comms.EmailEnabled", true);
+
+    /// <summary>Whether the client's notices may use Web Push.</summary>
+    public static readonly SettingKey<bool> CommsPushEnabled = new("Comms.PushEnabled", false);
+
+    /// <summary>Daily caps per client (D66: 5,000 email, 20,000 push; D76: no SMS), counted in the client's day; the admin may raise them up to a platform ceiling.</summary>
+    public static readonly SettingKey<int> CommsMaxEmailPerDay = new("Comms.MaxEmailPerDay", 5000);
+
+    public static readonly SettingKey<int> CommsMaxPushPerDay = new("Comms.MaxPushPerDay", 20000);
+
+    /// <summary>Daily caps per recipient and channel.</summary>
+    public static readonly SettingKey<int> CommsMaxEmailPerUserPerDay = new("Comms.MaxEmailPerUserPerDay", 20);
+
+    public static readonly SettingKey<int> CommsMaxPushPerUserPerDay = new("Comms.MaxPushPerUserPerDay", 50);
+
+    /// <summary>Quiet hours hold push (never email, in-app, mandatory or urgent events); off by default, 21:00-07:00 in the client time zone when on.</summary>
+    public static readonly SettingKey<bool> CommsQuietHoursEnabled = new("Comms.QuietHours.Enabled", false);
+
+    public static readonly SettingKey<string> CommsQuietHoursStart = new("Comms.QuietHours.Start", "21:00");
+    public static readonly SettingKey<string> CommsQuietHoursEnd = new("Comms.QuietHours.End", "07:00");
+
+    /// <summary>Days delivery rows are kept (D66: 90).</summary>
+    public static readonly SettingKey<int> CommsDeliveryRetentionDays = new("Comms.DeliveryRetentionDays", 90);
+
+    /// <summary>Whether participants see "seen by" (off by default; staff only in groups, students never see staff read state).</summary>
+    public static readonly SettingKey<bool> MessagingReadReceipts = new("Messaging.ReadReceipts", false);
+
+    public static readonly SettingKey<int> MessagingMaxPerMinute = new("Messaging.MaxPerMinute", 30);
+    public static readonly SettingKey<int> MessagingMaxNewConversationsPerDay = new("Messaging.MaxNewConversationsPerDay", 20);
+    public static readonly SettingKey<int> MessagingMaxGroupSize = new("Messaging.MaxGroupSize", 50);
+
+    // M6 wave 4: moderation (client level, Org Admin at the root).
+    /// <summary>Days a report keeps its frozen context after it is resolved (D71: 180; each client may shorten, legal advice pending).</summary>
+    public static readonly SettingKey<int> ModerationReportContextRetentionDays = new("Moderation.ReportContextRetentionDays", 180);
+
+    /// <summary>Reports one user can file per day.</summary>
+    public static readonly SettingKey<int> ModerationMaxReportsPerUserPerDay = new("Moderation.MaxReportsPerUserPerDay", 20);
+
+    /// <summary>The review target of a safety concern in hours (the queue marks it overdue after this).</summary>
+    public static readonly SettingKey<int> ModerationSafetyReviewHours = new("Moderation.SafetyReviewHours", 24);
+
+    /// <summary>Per-author cap of announcements a day.</summary>
+    public static readonly SettingKey<int> AnnouncementsMaxPerAuthorPerDay = new("Announcements.MaxPerAuthorPerDay", 10);
+
+    // M5 wave 2 (M5 plan Task 2).
+    /// <summary>The school week as a JSON array of <c>WorkingDayNames</c>, Sunday to Thursday by default (D58); read through the unit hierarchy.</summary>
+    public static readonly SettingKey<IReadOnlyList<string>> TimetableWorkingDays = new("Timetable.WorkingDays", ["Sun", "Mon", "Tue", "Wed", "Thu"]);
+
+    /// <summary>What a slot save does with a clash: <c>Block</c> (default) or <c>Warn</c> (FR-TT-03).</summary>
+    public static readonly SettingKey<string> TimetableConflictMode = new("Timetable.ConflictMode", "Block");
+    // M5 wave 3 (M5 plan Task 3: D58, D61, L11, L13, L14).
+    /// <summary>Days of timetable sessions created ahead by the generator (1-30).</summary>
+    public static readonly SettingKey<int> AttendanceGenerateDaysAhead = new("Attendance.GenerateDaysAhead", 7);
+
+    /// <summary>Hours after a session is taken during which the teacher may still edit it (L14).</summary>
+    public static readonly SettingKey<int> AttendanceEditWindowHours = new("Attendance.EditWindowHours", 48);
+
+    /// <summary>A live participant counts as present at this percent of the scheduled length (L11).</summary>
+    public static readonly SettingKey<int> AttendanceLiveMinPercent = new("Attendance.LiveMinPercent", 50);
+
+    /// <summary>A live participant joining this many minutes after the start is proposed Late.</summary>
+    public static readonly SettingKey<int> AttendanceLateAfterMinutes = new("Attendance.LateAfterMinutes", 10);
+
+    /// <summary>Absence alert: the score at which the counselor is alerted (D61: 5 in 30 days).</summary>
+    public static readonly SettingKey<int> AttendanceAbsentThreshold = new("Attendance.AbsentThreshold", 5);
+
+    /// <summary>Absence alert: the window in days.</summary>
+    public static readonly SettingKey<int> AttendanceThresholdWindowDays = new("Attendance.ThresholdWindowDays", 30);
+
+    /// <summary>Absence alert: a Late counts as this percent of an absence (D61: half).</summary>
+    public static readonly SettingKey<int> AttendanceLateWeightPercent = new("Attendance.LateWeightPercent", 50);
+
+    /// <summary>Who may submit an excuse: <c>GuardiansOnly</c> or <c>GuardiansAndStudents</c> (D61).</summary>
+    public static readonly SettingKey<string> ExcusesSubmitters = new("Excuses.Submitters", "GuardiansOnly");
+
+    /// <summary>School days after an absence within which an excuse may be submitted (L13).</summary>
+    public static readonly SettingKey<int> ExcusesMaxDaysAfterAbsence = new("Excuses.MaxDaysAfterAbsence", 5);
+
+    /// <summary>The reasons a submitter may choose (a subset of <c>ExcuseReasons</c>, default all).</summary>
+    public static readonly SettingKey<IReadOnlyList<string>> ExcusesAllowedReasons = new("Excuses.AllowedReasons", Excuses.ExcuseReasons.All);
+
+    /// <summary>The reasons that need an attachment (default none).</summary>
+    public static readonly SettingKey<IReadOnlyList<string>> ExcusesAttachmentRequiredReasons = new("Excuses.AttachmentRequiredReasons", Array.Empty<string>());
+
+    /// <summary>Largest excuse attachment in MB (L10).</summary>
+    public static readonly SettingKey<int> ExcusesMaxAttachmentMb = new("Excuses.MaxAttachmentMb", 5);
+
+    /// <summary>Days after which the attachments of rejected or withdrawn excuses are purged by the retention job (L10, Task 19); the excuse stays readable.</summary>
+    public static readonly SettingKey<int> ExcusesAttachmentRetentionDays = new("Excuses.AttachmentRetentionDays", 365);
 }
