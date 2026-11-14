@@ -41,6 +41,7 @@ public sealed class NotificationConnection(
     public event Action<NotificationDto>? Received;
     public event Action<Guid, Guid>? MessageReceived;
     public event Action<Guid>? ConversationChanged;
+    public event Action<Guid>? ConversationRead;
     public event Action<bool>? Disconnected;
     public bool IsStarted => _hub?.State is HubConnectionState.Connected or HubConnectionState.Reconnecting;
     public bool IsConnected => _hub?.State == HubConnectionState.Connected;
@@ -71,6 +72,7 @@ public sealed class NotificationConnection(
         // After a reconnect the server has forgotten the context: say again which one is active.
         hub.On<MessageReceivedEvent>(NotificationHub.MessageReceivedMethod, e => MessageReceived?.Invoke(e.ConversationId, e.MessageId));
         hub.On<ConversationChangedEvent>(NotificationHub.ConversationChangedMethod, e => ConversationChanged?.Invoke(e.ConversationId));
+        hub.On<ConversationReadEvent>(NotificationHub.ConversationReadMethod, e => ConversationRead?.Invoke(e.ConversationId));
         hub.Reconnecting += _ => { Disconnected?.Invoke(true); return Task.CompletedTask; };
         hub.Closed += _ => { Disconnected?.Invoke(true); return Task.CompletedTask; };
         hub.Reconnected += async _ =>

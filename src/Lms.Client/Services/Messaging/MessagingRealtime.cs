@@ -15,6 +15,9 @@ public interface IMessagingHub
     /// <summary>The members or the state (locked, read-only) of a conversation changed: reload them.</summary>
     event Action<Guid>? ConversationChanged;
 
+    /// <summary>The caller read a conversation in another tab or device (ids only): its unread count is stale here.</summary>
+    event Action<Guid>? ConversationRead;
+
     /// <summary>The connection dropped (true) or is up again (false).</summary>
     event Action<bool>? Disconnected;
 
@@ -54,6 +57,7 @@ public sealed class MessagingRealtime : IAsyncDisposable
         if (_context is not null) _context.Changed += OnContextChanged; // the notification feed moves the hub; this only forgets the old context
         _hub.MessageReceived += OnMessageReceived;
         _hub.ConversationChanged += OnConversationChanged;
+        _hub.ConversationRead += OnConversationRead;
         _hub.Disconnected += OnDisconnected;
     }
 
@@ -70,6 +74,9 @@ public sealed class MessagingRealtime : IAsyncDisposable
 
     /// <summary>The members or the state of a conversation changed.</summary>
     public event Action<Guid>? ConversationChanged;
+
+    /// <summary>The person read a conversation elsewhere: the badge and the list must drop its unread count.</summary>
+    public event Action<Guid>? ConversationRead;
 
     /// <summary>After a reconnect: the newest page of the open conversation (merge it by id) and a request to reload the inbox.</summary>
     public event Action<Guid?, IReadOnlyList<MessageDto>>? Resynced;
@@ -147,6 +154,12 @@ public sealed class MessagingRealtime : IAsyncDisposable
 
     private void OnConversationChanged(Guid conversationId) => ConversationChanged?.Invoke(conversationId);
 
+    private void OnConversationRead(Guid conversationId)
+    {
+        _announced.Remove(conversationId); // read elsewhere: its next message is news again
+        ConversationRead?.Invoke(conversationId);
+    }
+
     private void OnDisconnected(bool disconnected)
     {
         ConnectionChanged?.Invoke(!disconnected);
@@ -173,6 +186,7 @@ public sealed class MessagingRealtime : IAsyncDisposable
     {
         _hub.MessageReceived -= OnMessageReceived;
         _hub.ConversationChanged -= OnConversationChanged;
+        _hub.ConversationRead -= OnConversationRead;
         _hub.Disconnected -= OnDisconnected;
         if (_context is not null) _context.Changed -= OnContextChanged;
         await _hub.StopAsync();
@@ -185,6 +199,7 @@ public sealed class FakeMessagingHub : IMessagingHub
 {
     public event Action<Guid, Guid>? MessageReceived;
     public event Action<Guid>? ConversationChanged;
+    public event Action<Guid>? ConversationRead;
     public event Action<bool>? Disconnected;
 
     public bool IsConnected { get; private set; }
@@ -213,6 +228,7 @@ public sealed class FakeMessagingHub : IMessagingHub
 
     public void Receive(Guid conversationId, Guid messageId) => MessageReceived?.Invoke(conversationId, messageId);
     public void Change(Guid conversationId) => ConversationChanged?.Invoke(conversationId);
+    public void Read(Guid conversationId) => ConversationRead?.Invoke(conversationId);
 
     public void Drop()
     {
