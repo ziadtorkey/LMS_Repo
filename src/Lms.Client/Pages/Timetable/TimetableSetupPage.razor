@@ -1,0 +1,131 @@
+@page "/org-units/{UnitId:guid}/timetable-setup"
+@attribute [Authorize]
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.Timetable
+@using Lms.Shared.Authorization
+@using Lms.Shared.Timetable
+@inject ITimetableApi Api
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+@inject PermissionState PermState
+@inject ICultureService Culture
+
+<PageTitle>@L["Tt_Setup_Title"]</PageTitle>
+@if (!PermState.Loaded)
+{
+    <LoadingState Lines="4" TestId="setup-loading" />
+}
+else if (!PermState.Has(Permissions.Timetable.Configure))
+{
+    <Forbidden />
+}
+else
+{
+    <PageHeader Title="@L["Tt_Setup_Title"]" Subtitle="@L["Tt_Setup_Subtitle"]" TitleTestId="setup-title">
+        <Actions>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Add" Class="lms-touch" OnClick="() => OpenAsync(null)" data-testid="period-new">@L["Tt_Period_New"]</MudButton>
+        </Actions>
+    </PageHeader>
+
+    <WorkingDaysEditor UnitId="UnitId" />
+
+    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="my-3" data-testid="setup-settings-note">@L["Tt_Setup_SettingsNote"]</MudAlert>
+
+    <SectionCard Flush="true" Title="@L["Tt_Periods"]">
+        @if (_loading)
+        {
+            <LoadingState Lines="3" TestId="periods-loading" />
+        }
+        else if (_failed)
+        {
+            <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="ma-3" data-testid="api-error">
+                @L["Api_Error"]
+                <MudButton Variant="Variant.Text" OnClick="LoadAsync">@L["Common_Retry"]</MudButton>
+            </MudAlert>
+        }
+        else if (_periods.Count == 0)
+        {
+            <EmptyState Title="@L["Tt_Periods_EmptyTitle"]" Text="@L["Tt_Periods_EmptyText"]" Icon="@Icons.Material.Rounded.Schedule" />
+        }
+        else
+        {
+            <MudSimpleTable Elevation="0" Class="lms-simple-table lms-stack-table" data-testid="periods-table">
+                <thead>
+                    <tr><th>@L["Common_Name"]</th><th>@L["Tt_Period_Start"]</th><th>@L["Tt_Period_End"]</th><th><span class="lms-visually-hidden">@L["Common_Actions"]</span></th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in _periods)
+                    {
+                        <tr data-testid="@($"period-row-{p.Id}")">
+                            <td data-label="@L["Common_Name"]"><span class="lms-cell-strong">@Culture.Pick(p.NameAr, p.NameEn)</span>
+                                @if (p.InheritedFromUnitId is not null) { <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" data-testid="@($"period-inherited-{p.Id}")">@L["Tt_Period_Inherited"]</MudChip> }</td>
+                            <td data-label="@L["Tt_Period_Start"]"><span dir="ltr">@p.StartTime.ToString("HH:mm")</span></td>
+                            <td data-label="@L["Tt_Period_End"]"><span dir="ltr">@p.EndTime.ToString("HH:mm")</span></td>
+                            <td data-label="@L["Common_Actions"]" class="lms-cell-actions">
+                                @if (p.InheritedFromUnitId is null)
+                                {
+                                    <div class="lms-row-actions">
+                                        <MudIconButton Icon="@Icons.Material.Rounded.Edit" Class="lms-touch" aria-label="@L["Common_Edit"]" OnClick="() => OpenAsync(p)" data-testid="@($"period-edit-{p.Id}")" />
+                                        <span class="lms-row-actions-sep"></span>
+                                        <MudIconButton Icon="@Icons.Material.Rounded.Delete" Color="Color.Error" Class="lms-touch" aria-label="@L["Common_Delete"]" OnClick="() => DeleteAsync(p)" data-testid="@($"period-delete-{p.Id}")" />
+                                    </div>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        }
+    </SectionCard>
+}
+
+@code {
+    private IReadOnlyList<PeriodDto> _periods = [];
+    private bool _loading = true, _failed;
+
+    [Parameter] public Guid UnitId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        if (PermState.Has(Permissions.Timetable.Configure)) await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _failed = false;
+        var (value, failed) = await ApiCalls.RunAsync(() => Api.GetPeriodsAsync(UnitId), Navigation);
+        _periods = value?.OrderBy(p => p.Order).ToList() ?? [];
+        _failed = failed;
+        _loading = false;
+    }
+
+    private async Task OpenAsync(PeriodDto? period)
+    {
+        var dialog = await Dialogs.ShowAsync<PeriodDialog>(L[period is null ? "Tt_Period_New" : "Tt_Period_Edit"],
+            new DialogParameters<PeriodDialog> { { x => x.UnitId, UnitId }, { x => x.Existing, period }, { x => x.NextOrder, _periods.Count + 1 } },
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        if (await dialog.Result is { Canceled: false }) await LoadAsync();
+    }
+
+    private async Task DeleteAsync(PeriodDto period)
+    {
+        if (!await ConfirmDialog.AskAsync(Dialogs, L["Tt_Period_Delete"], string.Format(L["Tt_Period_DeleteConfirm"], Culture.Pick(period.NameAr, period.NameEn)), L["Common_Delete"])) return;
+        try
+        {
+            await Api.DeletePeriodAsync(UnitId, period.Id);
+            await LoadAsync();
+        }
+        catch (ApiProblemException ex) when (ex.Code == "period_in_use")
+        {
+            Snackbar.Add(L["Error_period_in_use"], Severity.Warning);
+        }
+        catch (Exception ex) when (ex is ApiProblemException or HttpRequestException)
+        {
+            Snackbar.Add(L["Api_Error"], Severity.Error);
+        }
+    }
+}

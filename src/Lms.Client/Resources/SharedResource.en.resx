@@ -1568,6 +1568,27 @@
   <data name="StudentImport_Subtitle" xml:space="preserve"><value>Add many students at once from an Excel file.</value></data>
   <data name="ClassImport_Subtitle" xml:space="preserve"><value>Place students in classes from an Excel file.</value></data>
   <data name="Group_Subtitle" xml:space="preserve"><value>Split the students of this class course into groups.</value></data>
+  <data name="Tt_Page_Title" xml:space="preserve"><value>Timetable</value></data>
+  <data name="Tt_Page_Subtitle" xml:space="preserve"><value>The weekly lessons of the class. Move a lesson with the keyboard, the menu or a drag; publish when it is ready.</value></data>
+  <data name="Tt_Mode_Block" xml:space="preserve"><value>Block clashes</value></data>
+  <data name="Tt_Mode_Warn" xml:space="preserve"><value>Warn about clashes</value></data>
+  <data name="Tt_Grid_Label" xml:space="preserve"><value>Weekly timetable</value></data>
+  <data name="Tt_Period_Header" xml:space="preserve"><value>Period</value></data>
+  <data name="Tt_Period_N" xml:space="preserve"><value>Period {0}</value></data>
+  <data name="Tt_Period_Label" xml:space="preserve"><value>Period</value></data>
+  <data name="Tt_Day" xml:space="preserve"><value>Day</value></data>
+  <data name="Tt_Slot_Move" xml:space="preserve"><value>Move {0} to…</value></data>
+  <data name="Tt_Move_Confirm" xml:space="preserve"><value>Move</value></data>
+  <data name="Tt_Warn_Chip" xml:space="preserve"><value>Clash</value></data>
+  <data name="Tt_Empty_Cell" xml:space="preserve"><value>Empty, {0}, {1}</value></data>
+  <data name="Tt_Slot_Cell" xml:space="preserve"><value>{0}, {1}, {2}, {3}</value></data>
+  <data name="Tt_Held" xml:space="preserve"><value>{0} picked up. Use the arrow keys to choose a place, Enter to drop it, Escape to cancel.</value></data>
+  <data name="Tt_Moved" xml:space="preserve"><value>{0} moved to {1}.</value></data>
+  <data name="Tt_Cancelled" xml:space="preserve"><value>Move cancelled.</value></data>
+  <data name="Tt_Refused" xml:space="preserve"><value>The move was not saved.</value></data>
+  <data name="Tt_Clash_Class" xml:space="preserve"><value>That place is taken by {0}.</value></data>
+  <data name="Tt_Clash_Teacher" xml:space="preserve"><value>{0} already teaches {1} then.</value></data>
+  <data name="Tt_Hint" xml:space="preserve"><value>Keyboard: M or Enter picks up a lesson, the arrow keys choose a place, Enter drops it, Escape cancels. F2 opens the lesson menu. You can also drag a lesson (touch: press and hold).</value></data>
   <data name="Error_gradebook_locked" xml:space="preserve"><value>This gradebook is locked: grades can no longer be changed.</value></data>
   <data name="Error_scale_provisional" xml:space="preserve"><value>This grading scale has not been confirmed yet. Confirm it, or acknowledge that you publish under an unconfirmed scale.</value></data>
   <data name="Error_scale_bands_invalid" xml:space="preserve"><value>The bands must cover 0 to 100 without gaps or overlaps.</value></data>
@@ -1623,8 +1644,8 @@
   <data name="AuditEntity_GradeSnapshot" xml:space="preserve"><value>Grade snapshot</value></data>
   <data name="PermModule_Grades" xml:space="preserve"><value>Grades</value></data>
   <data name="Error_timetable_conflict" xml:space="preserve"><value>This slot clashes with another one: the teacher or the class is already booked at that time.</value></data>
-  <data name="Error_period_overlap" xml:space="preserve"><value>The period overlaps another period of this school, or it does not start before it ends.</value></data>
-  <data name="Error_period_in_use" xml:space="preserve"><value>A timetable slot uses this period, so it cannot be deleted.</value></data>
+  <data name="Error_period_overlap" xml:space="preserve"><value>The period overlaps another one, or it does not end after it starts.</value></data>
+  <data name="Error_period_in_use" xml:space="preserve"><value>A lesson uses this period, so it cannot be deleted.</value></data>
   <data name="Error_timetable_not_published" xml:space="preserve"><value>This slot is still a draft. Publish the timetable first.</value></data>
   <data name="Error_exception_date_invalid" xml:space="preserve"><value>The date must be a school day of this slot inside the term, and the slot can have only one exception per date.</value></data>
   <data name="Error_exception_substitute_invalid" xml:space="preserve"><value>The substitute must be another teacher of this school group who is free in that period on that date.</value></data>
@@ -1649,10 +1670,10 @@
   <data name="Tt_SlotBadge_Conflict" xml:space="preserve"><value>Clash</value></data>
   <data name="Tt_SlotBadge_HasException" xml:space="preserve"><value>Has a change</value></data>
   <data name="Tt_SlotBadge_DraftChange" xml:space="preserve"><value>Not republished</value></data>
-  <data name="Tt_CopySkip_ClassCourseMissing" xml:space="preserve"><value>The course is not taught in this term</value></data>
-  <data name="Tt_CopySkip_TeacherMissing" xml:space="preserve"><value>The teacher is no longer assigned</value></data>
-  <data name="Tt_CopySkip_PeriodMissing" xml:space="preserve"><value>The period no longer exists</value></data>
-  <data name="Tt_CopySkip_SlotExists" xml:space="preserve"><value>The target term already has a slot there</value></data>
+  <data name="Tt_CopySkip_ClassCourseMissing" xml:space="preserve"><value>the course is no longer in this class</value></data>
+  <data name="Tt_CopySkip_TeacherMissing" xml:space="preserve"><value>the teacher is no longer available</value></data>
+  <data name="Tt_CopySkip_PeriodMissing" xml:space="preserve"><value>the period no longer exists</value></data>
+  <data name="Tt_CopySkip_SlotExists" xml:space="preserve"><value>a lesson is already there</value></data>
   <data name="Perm_Timetable_View" xml:space="preserve"><value>View timetables and periods</value></data>
   <data name="Perm_Timetable_Manage" xml:space="preserve"><value>Build and publish timetables</value></data>
   <data name="Perm_Timetable_Configure" xml:space="preserve"><value>Configure periods</value></data>
@@ -1661,4 +1682,54 @@
   <data name="AuditEntity_TimetableSlot" xml:space="preserve"><value>Timetable slot</value></data>
   <data name="AuditEntity_TimetableException" xml:space="preserve"><value>Timetable exception</value></data>
   <data name="PermModule_Timetable" xml:space="preserve"><value>Timetable</value></data>
+  <data name="Tt_Clash_Hidden" xml:space="preserve"><value>another lesson</value></data>
+  <data name="Tt_Add_Lesson" xml:space="preserve"><value>Add a lesson, {0}, {1}</value></data>
+  <data name="Tt_State_Draft" xml:space="preserve"><value>Draft</value></data>
+  <data name="Tt_Has_Exception" xml:space="preserve"><value>Changed on a date</value></data>
+  <data name="Tt_Course" xml:space="preserve"><value>Course</value></data>
+  <data name="Tt_Teacher" xml:space="preserve"><value>Teacher</value></data>
+  <data name="Tt_Room" xml:space="preserve"><value>Room</value></data>
+  <data name="Tt_Room_Help" xml:space="preserve"><value>Free text, for example 101 or Lab 2. Rooms are not checked for clashes.</value></data>
+  <data name="Tt_Slot_Required" xml:space="preserve"><value>Choose a course and a teacher.</value></data>
+  <data name="Tt_Copy_From" xml:space="preserve"><value>Copy lessons from</value></data>
+  <data name="Tt_Copy_Help" xml:space="preserve"><value>Lessons are copied as drafts. Lessons that already exist, or whose course, teacher or period is gone, are skipped.</value></data>
+  <data name="Tt_Copy_Done" xml:space="preserve"><value>{0} lessons copied as drafts.</value></data>
+  <data name="Tt_Copy_Skipped" xml:space="preserve"><value>Not copied</value></data>
+  <data name="Tt_Copy_Run" xml:space="preserve"><value>Copy</value></data>
+  <data name="Tt_Copy_Open" xml:space="preserve"><value>Copy from another term</value></data>
+  <data name="Tt_Publish" xml:space="preserve"><value>Publish</value></data>
+  <data name="Tt_Publish_Confirm" xml:space="preserve"><value>Publish {0} draft lesson(s)? Students and teachers will see them, and attendance sessions are created for the coming days.</value></data>
+  <data name="Tt_Export" xml:space="preserve"><value>Export to Excel</value></data>
+  <data name="Tt_Validate" xml:space="preserve"><value>Check for conflicts</value></data>
+  <data name="Tt_Term" xml:space="preserve"><value>Term</value></data>
+  <data name="Tt_State_Published" xml:space="preserve"><value>All published</value></data>
+  <data name="Tt_State_Drafts" xml:space="preserve"><value>{0} draft lesson(s) waiting to publish</value></data>
+  <data name="Tt_Conflicts_Title" xml:space="preserve"><value>Conflicts</value></data>
+  <data name="Tt_Conflicts_None" xml:space="preserve"><value>No conflicts in this term.</value></data>
+  <data name="Tt_Published" xml:space="preserve"><value>{0} lesson(s) published.</value></data>
+  <data name="Tt_Published_Queued" xml:space="preserve"><value>{0} lesson(s) published. Attendance sessions are being created.</value></data>
+  <data name="Tt_Add_Title" xml:space="preserve"><value>Add a lesson</value></data>
+  <data name="Tt_Edit_Title" xml:space="preserve"><value>Edit the lesson</value></data>
+  <data name="Tt_Delete_Title" xml:space="preserve"><value>Delete the lesson</value></data>
+  <data name="Tt_Delete_Confirm" xml:space="preserve"><value>Delete {0} from the timetable?</value></data>
+  <data name="Tt_Setup_Title" xml:space="preserve"><value>Timetable set-up</value></data>
+  <data name="Tt_Setup_Subtitle" xml:space="preserve"><value>The periods of the school day.</value></data>
+  <data name="Tt_Setup_SettingsNote" xml:space="preserve"><value>What to do about clashes (block or warn) is a unit setting: change it in the Settings tab of the unit.</value></data>
+  <data name="Tt_Periods" xml:space="preserve"><value>Periods</value></data>
+  <data name="Tt_Periods_EmptyTitle" xml:space="preserve"><value>No periods yet</value></data>
+  <data name="Tt_Periods_EmptyText" xml:space="preserve"><value>Add the periods of the day (a name, a start and an end time) before building a timetable.</value></data>
+  <data name="Tt_Period_New" xml:space="preserve"><value>New period</value></data>
+  <data name="Tt_Period_Edit" xml:space="preserve"><value>Edit the period</value></data>
+  <data name="Tt_Period_Delete" xml:space="preserve"><value>Delete the period</value></data>
+  <data name="Tt_Period_DeleteConfirm" xml:space="preserve"><value>Delete {0}?</value></data>
+  <data name="Tt_Period_Inherited" xml:space="preserve"><value>From a parent unit</value></data>
+  <data name="Tt_Period_Start" xml:space="preserve"><value>Starts</value></data>
+  <data name="Tt_Period_End" xml:space="preserve"><value>Ends</value></data>
+  <data name="Tt_Period_Order" xml:space="preserve"><value>Order</value></data>
+  <data name="Tt_Period_Required" xml:space="preserve"><value>Give the period a name in both languages and a start and end time.</value></data>
+  <data name="Tt_Publish_Refused" xml:space="preserve"><value>Nothing was published: the timetable has clashes. They are listed below; fix them and publish again.</value></data>
+  <data name="Tt_WorkingDays" xml:space="preserve"><value>Working days</value></data>
+  <data name="Tt_WorkingDays_None" xml:space="preserve"><value>Choose at least one working day.</value></data>
+  <data name="Tt_WorkingDays_Saved" xml:space="preserve"><value>Working days saved.</value></data>
+  <data name="Tt_WorkingDays_Forbidden" xml:space="preserve"><value>You may not change the working days of this unit.</value></data>
 </root>

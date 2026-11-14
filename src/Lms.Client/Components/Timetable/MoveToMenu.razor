@@ -1,0 +1,48 @@
+@using Lms.Shared.Timetable
+@inject ICultureService Culture
+
+@* The panel of one lesson: "Move to" (the same move as the keyboard and the drag, for assistive technology and for phones, where a drag is awkward),
+   Edit and Delete. *@
+<MudPaper Outlined="true" Class="pa-4 mt-3" role="group" aria-labelledby="tt-move-title" data-testid="tt-move-menu">
+    <MudText Typo="Typo.subtitle1" HtmlTag="h3" id="tt-move-title">@string.Format(L["Tt_Slot_Move"], Culture.Pick(Slot.CourseNameAr, Slot.CourseNameEn))</MudText>
+    <div class="lms-tt-move-fields">
+        <MudSelect T="int" @bind-Value="_day" Label="@L["Tt_Day"]" Variant="Variant.Outlined" data-testid="tt-move-day">
+            @foreach (var day in Days)
+            {
+                <MudSelectItem T="int" Value="@((int)day)">@Culture.Current.DateTimeFormat.GetDayName(day)</MudSelectItem>
+            }
+        </MudSelect>
+        <MudSelect T="Guid" @bind-Value="_period" Label="@L["Tt_Period_Label"]" Variant="Variant.Outlined" data-testid="tt-move-period">
+            @foreach (var p in Periods)
+            {
+                <MudSelectItem T="Guid" Value="@p.Id">@Culture.Pick(p.NameAr, p.NameEn)</MudSelectItem>
+            }
+        </MudSelect>
+    </div>
+    <div class="d-flex flex-wrap gap-2 mt-3">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="lms-touch" OnClick="MoveAsync" data-testid="tt-move-confirm">@L["Tt_Move_Confirm"]</MudButton>
+        <MudButton Variant="Variant.Outlined" Class="lms-touch" OnClick="OnEdit" data-testid="tt-edit">@L["Common_Edit"]</MudButton>
+        <MudButton Variant="Variant.Text" Color="Color.Error" Class="lms-touch" OnClick="OnDelete" data-testid="tt-delete">@L["Common_Delete"]</MudButton>
+        <MudButton Variant="Variant.Text" Class="lms-touch" OnClick="OnClose" data-testid="tt-move-cancel">@L["Common_Cancel"]</MudButton>
+    </div>
+</MudPaper>
+
+@code {
+    private int _day;
+    private Guid _period;
+
+    [Parameter, EditorRequired] public SlotDto Slot { get; set; } = default!;
+    [Parameter, EditorRequired] public IReadOnlyList<DayOfWeek> Days { get; set; } = [];
+    [Parameter, EditorRequired] public IReadOnlyList<PeriodDto> Periods { get; set; } = [];
+    [Parameter] public Func<(DayOfWeek, Guid), Task>? OnMove { get; set; }
+    [Parameter] public EventCallback OnEdit { get; set; }
+    [Parameter] public EventCallback OnDelete { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (_day == 0 && _period == Guid.Empty) { _day = (int)Slot.DayOfWeek; _period = Slot.PeriodId; }
+    }
+
+    private Task MoveAsync() => OnMove is null ? Task.CompletedTask : OnMove(((DayOfWeek)_day, _period));
+}
