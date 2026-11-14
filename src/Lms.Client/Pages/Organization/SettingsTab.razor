@@ -1,6 +1,7 @@
 @using Lms.Client.Components
 @using Lms.Client.Services.Api
 @using Lms.Shared.Configuration
+@using Lms.Client.Pages.Settings
 @inject IConfigApi Api
 @inject ICultureService Culture
 @inject NavigationManager Navigation
@@ -17,11 +18,13 @@
     }
     else
     {
+        <ClientTimeZoneSetting UnitId="UnitId" CanEdit="CanEdit" />
+        <GradeSettingsGroup UnitId="UnitId" CanEdit="CanEdit" />
         @foreach (var category in Categories)
         {
             <section class="mb-6" data-testid="@($"settings-group-{category}")" aria-labelledby="@($"settings-heading-{category}")">
                 <MudText Typo="Typo.subtitle1" HtmlTag="h3" Class="mb-2" id="@($"settings-heading-{category}")">@L[$"SettingCategory_{category}"]</MudText>
-                @foreach (var definition in _catalog.Where(d => d.Category == category))
+                @foreach (var definition in _catalog.Where(d => d.Category == category && !IsGrouped(d.Name)))
                 {
                     var name = definition.Name;
                     var effective = _values.GetValueOrDefault(name);
@@ -63,6 +66,9 @@
 
     private static readonly string[] Categories =
         [SettingCategories.General, SettingCategories.Files, SettingCategories.Features, SettingCategories.People, SettingCategories.Academic];
+
+    /// <summary>Settings with their own group above (time zone, grading); the generic list skips them.</summary>
+    private static bool IsGrouped(string name) => name == SettingKeys.OrgTimeZone.Name || name.StartsWith("Grades.", StringComparison.Ordinal);
 
     private IReadOnlyList<SettingDefinition> _catalog = [];
     private Dictionary<string, EffectiveSettingDto> _values = [];

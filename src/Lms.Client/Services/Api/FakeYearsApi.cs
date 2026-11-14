@@ -29,6 +29,14 @@ public sealed class FakeYearsApi : IYearsApi
     public SaveTermRequest? LastTerm { get; private set; }
     public SaveCalendarEventRequest? LastEvent { get; private set; }
 
+    /// <summary>The structure the server answers (tests change it); a year's own switch is kept in <see cref="Structures"/>.</summary>
+    public TermStructureDto DefaultStructure { get; set; } = new(2,
+        [new(1, "الفصل الأول", "Term 1"), new(2, "الفصل الثاني", "Term 2"), new(3, "الفصل الثالث", "Term 3")]);
+    public Dictionary<Guid, TermStructureDto> Structures { get; } = [];
+    /// <summary>When true a structure switch is refused as the server does when a term has a gradebook, slot or session.</summary>
+    public bool TermsHaveDependants { get; set; }
+    public TermStructureDto? LastStructure { get; private set; }
+
     public FakeYearsApi()
     {
         // The group defines 2026/2027 (active, two terms); schools and grades inherit it.
@@ -190,5 +198,19 @@ public sealed class FakeYearsApi : IYearsApi
         if (NextFailure is not { } ex) return;
         NextFailure = null;
         throw ex;
+    }
+
+    public Task<TermStructureDto> GetTermStructureAsync(Guid yearId, CancellationToken ct = default) =>
+        Task.FromResult(Structures.GetValueOrDefault(yearId) ?? DefaultStructure);
+
+    public Task SetTermStructureAsync(Guid yearId, TermStructureDto structure, CancellationToken ct = default)
+    {
+        Fail();
+        var y = _years.First(x => x.Id == yearId);
+        if (y.Status != AcademicYearStatuses.Planned) throw new ApiProblemException(409, y.Status == AcademicYearStatuses.Closed ? "year_closed" : "year_active", null, null);
+        if (TermsHaveDependants) throw new ApiProblemException(409, "terms_have_dependants", null, null);
+        LastStructure = structure;
+        Structures[yearId] = structure;
+        return Task.CompletedTask;
     }
 }

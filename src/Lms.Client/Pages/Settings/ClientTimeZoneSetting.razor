@@ -1,0 +1,81 @@
+@using System.Text.Json
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Shared.Configuration
+@inject IConfigApi Api
+@inject NavigationManager Navigation
+
+@* The client time zone (D64): an IANA id picked from a list, saved on its own. Every date the app shows follows it. *@
+<section class="mb-6" data-testid="client-timezone" aria-labelledby="client-timezone-heading">
+    <MudText Typo="Typo.subtitle1" HtmlTag="h3" Class="mb-2" id="client-timezone-heading">@L["Setting_Org_TimeZone"]</MudText>
+    @if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-3" data-testid="client-timezone-error">@_error</MudAlert>
+    }
+    @if (!_loading && _present)
+    {
+        <div class="lms-form-grid">
+            <MudSelect T="string" Value="_zone" ValueChanged="v => _zone = v" Label="@L["Setting_Org_TimeZone"]" HelperText="@L["TimeZone_Help"]"
+                       Disabled="!CanEdit" data-testid="client-timezone-select">
+                @foreach (var id in Zones)
+                {
+                    <MudSelectItem T="string" Value="id">@id</MudSelectItem>
+                }
+            </MudSelect>
+            @if (CanEdit)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_saving || _zone == _saved"
+                           data-testid="client-timezone-save">@L["Common_Save"]</MudButton>
+            }
+        </div>
+    }
+</section>
+
+@code {
+    [Parameter, EditorRequired] public Guid UnitId { get; set; }
+    [Parameter] public bool CanEdit { get; set; }
+
+    private string _zone = "", _saved = "";
+    private string? _error;
+    private bool _loading = true, _saving, _present;
+
+    /// <summary>The IANA ids this device knows (the tz database of the browser), always with the Gulf zones and UTC.</summary>
+    public static IReadOnlyList<string> KnownZones { get; } = BuildZones();
+
+    private IEnumerable<string> Zones => _saved.Length == 0 || KnownZones.Contains(_saved) ? KnownZones : KnownZones.Append(_saved).Order(StringComparer.Ordinal);
+
+    private static IReadOnlyList<string> BuildZones()
+    {
+        var ids = new HashSet<string>(StringComparer.Ordinal) { "UTC", "Asia/Riyadh", "Asia/Dubai", "Asia/Kuwait", "Asia/Qatar", "Asia/Bahrain", "Asia/Muscat", "Africa/Cairo" };
+        foreach (var zone in TimeZoneInfo.GetSystemTimeZones())
+        {
+            if (zone.Id.Contains('/')) ids.Add(zone.Id);
+            else if (TimeZoneInfo.TryConvertWindowsIdToIanaId(zone.Id, out var iana) && iana.Contains('/')) ids.Add(iana);
+        }
+
+        return ids.Order(StringComparer.Ordinal).ToList();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await ApiCalls.RunAsync(async () =>
+        {
+            var all = await Api.GetSettingsAsync(UnitId);
+            var value = all.FirstOrDefault(s => s.Name == SettingKeys.OrgTimeZone.Name);
+            _present = value is not null; // the server answers it for the client root only
+            _saved = _zone = value is null ? "" : JsonSerializer.Deserialize<string>(value.ValueJson) ?? "";
+        }, Navigation, L, m => _error = m);
+        _loading = false;
+    }
+
+    private async Task SaveAsync()
+    {
+        _saving = true;
+        _error = null;
+        var ok = await ApiCalls.RunAsync(
+            () => Api.SetSettingAsync(UnitId, SettingKeys.OrgTimeZone.Name, new SetSettingRequest(JsonSerializer.Serialize(_zone), false)),
+            Navigation, L, m => _error = m);
+        if (ok) _saved = _zone;
+        _saving = false;
+    }
+}

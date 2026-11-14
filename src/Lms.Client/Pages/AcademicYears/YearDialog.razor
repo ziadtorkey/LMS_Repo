@@ -1,8 +1,10 @@
 @using Lms.Client.Components
 @using Lms.Client.Services.Api
 @using Lms.Shared.AcademicYears
+@using Lms.Shared.Grading
 @inject IYearsApi Api
 @inject NavigationManager Navigation
+@inject ICultureService Culture
 
 @* Create (at UnitId) or edit an academic year: bilingual name and dates. Overlap and closed-year rules come from the server. *@
 <MudDialog>
@@ -15,6 +17,25 @@
             <BilingualNameFields @bind-NameAr="_nameAr" @bind-NameEn="_nameEn" />
             <MudDatePicker Date="_start" DateChanged="d => _start = d" Label="@L["Years_Start"]" data-testid="year-start" />
             <MudDatePicker Date="_end" DateChanged="d => _end = d" Label="@L["Years_End"]" data-testid="year-end" />
+            @if (_structure is not null)
+            {
+                <fieldset class="lms-fieldset" data-testid="year-terms-option">
+                    <legend>@L["Years_TermsPerYear"]</legend>
+                    <MudSelect T="int" Value="_termsPerYear" ValueChanged="v => _termsPerYear = v" Label="@L["Years_TermsPerYear"]"
+                               HelperText="@L["Years_TermsPerYearHelp"]" data-testid="year-terms-count">
+                        @for (var n = GradingLimits.TermsPerYearMin; n <= GradingLimits.TermsPerYearMax; n++)
+                        {
+                            <MudSelectItem T="int" Value="n">@n</MudSelectItem>
+                        }
+                    </MudSelect>
+                    <ol class="lms-item-list" aria-label="@L["Years_TermNamesPreview"]" data-testid="year-terms-preview">
+                        @foreach (var order in Enumerable.Range(1, _termsPerYear))
+                        {
+                            <li data-testid="@($"year-term-name-{order}")">@PreviewName(order)</li>
+                        }
+                    </ol>
+                </fieldset>
+            }
         </MudStack>
     </DialogContent>
     <DialogActions>
@@ -29,18 +50,30 @@
     private DateTime? _start, _end;
     private string? _error;
     private bool _saving;
+    private TermStructureDto? _structure; // loaded only for a Planned year: the count is switchable until the year starts (D62, L8)
+    private int _termsPerYear;
 
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public Guid UnitId { get; set; }
     [Parameter] public AcademicYearDto? Existing { get; set; }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         if (Existing is null) return;
         _nameAr = Existing.NameAr; _nameEn = Existing.NameEn;
         _start = Existing.StartDate.ToDateTime(TimeOnly.MinValue);
         _end = Existing.EndDate.ToDateTime(TimeOnly.MinValue);
+        if (Existing.Status != AcademicYearStatuses.Planned) return;
+        // The count comes from the server (the client's own setting); the dialog has no default of its own.
+        await ApiCalls.RunAsync(async () =>
+        {
+            _structure = await Api.GetTermStructureAsync(Existing.Id);
+            _termsPerYear = _structure.TermsPerYear;
+        }, Navigation, L, m => _error = m);
     }
+
+    private string PreviewName(int order) =>
+        _structure!.TermNames.FirstOrDefault(n => n.Order == order) is { } name ? Culture.Pick(name.NameAr, name.NameEn) : string.Format(L["Years_TermNumber"].Value, order);
 
     private async Task SaveAsync()
     {
@@ -59,9 +92,21 @@
         _saving = true;
         var request = new SaveAcademicYearRequest(UnitId, _nameAr.Trim(), _nameEn.Trim(),
             DateOnly.FromDateTime(_start.Value), DateOnly.FromDateTime(_end.Value));
-        var saved = await ApiCalls.RunAsync(
-            () => Existing is null ? Api.CreateYearAsync(request) : Api.UpdateYearAsync(Existing.Id, request),
-            Navigation, L, m => _error = m);
+        var saved = await ApiCalls.RunAsync(async () =>
+        {
+            if (Existing is null)
+            {
+                await Api.CreateYearAsync(request);
+                return;
+            }
+
+            await Api.UpdateYearAsync(Existing.Id, request);
+            if (_structure is not null && _termsPerYear != _structure.TermsPerYear)
+            {
+                // 409 terms_have_dependants stays in the dialog with its own message (the year itself was saved).
+                await Api.SetTermStructureAsync(Existing.Id, _structure with { TermsPerYear = _termsPerYear });
+            }
+        }, Navigation, L, m => _error = m);
         _saving = false;
         if (saved) MudDialog.Close(DialogResult.Ok(true));
     }

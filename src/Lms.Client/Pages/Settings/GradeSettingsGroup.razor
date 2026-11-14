@@ -1,0 +1,118 @@
+@using System.Text.Json
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Shared.Configuration
+@inject IConfigApi Api
+@inject NavigationManager Navigation
+
+@* The grading settings of a unit as one group with a save bar: nothing is sent until Save (FR-GRD-04, D58). Locks and inheritance stay on the generic list. *@
+<section class="mb-6" data-testid="grade-settings" aria-labelledby="grade-settings-heading">
+    <MudText Typo="Typo.subtitle1" HtmlTag="h3" Class="mb-2" id="grade-settings-heading">@L["GradeSettings_Title"]</MudText>
+    @if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-3" data-testid="grade-settings-error">@_error</MudAlert>
+    }
+    @if (_loading)
+    {
+        <LoadingState Lines="3" TestId="grade-settings-loading" />
+    }
+    else if (_edited.Count > 0)
+    {
+        <div class="lms-form-grid">
+            @foreach (var key in EnumKeys)
+            {
+                var name = key;
+                <MudSelect T="string" Value="_edited[name]" ValueChanged="v => Set(name, v)" Label="@L[Label(name)]" Disabled="!CanEdit"
+                           data-testid="@($"grade-setting-{name}")">
+                    @foreach (var allowed in _allowed[name])
+                    {
+                        <MudSelectItem T="string" Value="allowed">@L[$"SettingValue_{name.Replace('.', '_')}_{allowed}"]</MudSelectItem>
+                    }
+                </MudSelect>
+            }
+            <MudNumericField T="int" Value="_decimals" ValueChanged="v => Set(DecimalKey, v.ToString())" Min="_min" Max="_max" Label="@L[Label(DecimalKey)]"
+                             Disabled="!CanEdit" data-testid="grade-setting-decimals" />
+        </div>
+        @if (_dirty)
+        {
+            <div class="lms-save-bar" role="region" aria-label="@L["Common_UnsavedChanges"]" data-testid="grade-settings-bar">
+                <span class="lms-save-bar-text">@L["Common_UnsavedChanges"]</span>
+                <MudButton Variant="Variant.Text" OnClick="LoadAsync" Disabled="_saving" data-testid="grade-settings-discard">@L["Common_Discard"]</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_saving" data-testid="grade-settings-save">@L["Common_Save"]</MudButton>
+            </div>
+        }
+    }
+</section>
+
+@code {
+    private const string DecimalKey = "Grades.DecimalPlaces";
+    private static readonly string[] EnumKeys = [SettingKeys.GradesMissingPolicy.Name, SettingKeys.GradesCategoryMethod.Name];
+
+    [Parameter, EditorRequired] public Guid UnitId { get; set; }
+    [Parameter] public bool CanEdit { get; set; }
+
+    private readonly Dictionary<string, string> _edited = [];
+    private readonly Dictionary<string, string> _saved = [];
+    private readonly Dictionary<string, IReadOnlyList<string>> _allowed = [];
+    private Dictionary<string, EffectiveSettingDto> _effective = [];
+    private int _decimals, _min, _max;
+    private bool _loading = true, _saving, _dirty;
+    private string? _error;
+
+    protected override async Task OnParametersSetAsync() => await LoadAsync();
+
+    private static string Label(string name) => "Setting_" + name.Replace('.', '_');
+
+    private static string Text(string json) => JsonSerializer.Deserialize<JsonElement>(json) is { ValueKind: JsonValueKind.String } e ? e.GetString()! : json;
+
+    private async Task LoadAsync()
+    {
+        _error = null;
+        var ok = await ApiCalls.RunAsync(async () =>
+        {
+            var catalog = await Api.GetSettingCatalogAsync();
+            _effective = (await Api.GetSettingsAsync(UnitId)).ToDictionary(s => s.Name);
+            foreach (var key in EnumKeys) _allowed[key] = catalog.First(d => d.Name == key).AllowedValues ?? [];
+            var places = catalog.First(d => d.Name == DecimalKey);
+            (_min, _max) = ((int)(places.Min ?? 0), (int)(places.Max ?? 4));
+        }, Navigation, L, m => _error = m);
+        if (ok)
+        {
+            foreach (var key in EnumKeys.Append(DecimalKey))
+            {
+                _saved[key] = _edited[key] = Text(_effective[key].ValueJson);
+            }
+
+            _decimals = int.Parse(_edited[DecimalKey], System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        _dirty = false;
+        _loading = false;
+    }
+
+    private void Set(string name, string value)
+    {
+        _edited[name] = value;
+        if (name == DecimalKey) _decimals = int.Parse(value, System.Globalization.CultureInfo.InvariantCulture);
+        _dirty = _edited.Any(e => e.Value != _saved[e.Key]);
+    }
+
+    private async Task SaveAsync()
+    {
+        _saving = true;
+        _error = null;
+        var saved = await ApiCalls.RunAsync(async () =>
+        {
+            foreach (var (name, value) in _edited.Where(e => e.Value != _saved[e.Key]).ToList())
+            {
+                var json = name == DecimalKey ? value : JsonSerializer.Serialize(value);
+                var current = _effective[name];
+                await Api.SetSettingAsync(UnitId, name, new SetSettingRequest(json, current.DefinedHere && current.IsLocked));
+            }
+        }, Navigation, L, m => _error = m);
+        _saving = false;
+        var message = _error;
+        await LoadAsync(); // show the server state (it may have normalised or rejected a value)
+        if (!saved) _error = message;
+    }
+}
