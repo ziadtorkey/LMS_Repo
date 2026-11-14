@@ -153,7 +153,7 @@ public sealed class MessagingContractTests
         Assert.Equal((90, false, 50, 10), (SettingKeys.CommsDeliveryRetentionDays.Default, SettingKeys.MessagingReadReceipts.Default,
             SettingKeys.MessagingMaxGroupSize.Default, SettingKeys.AnnouncementsMaxPerAuthorPerDay.Default));
         var commsSettings = SettingCatalog.All.Where(d => d.Name.StartsWith("Comms.") || d.Name.StartsWith("Messaging.") || d.Name.StartsWith("Announcements.")).ToList();
-        Assert.Equal(15, commsSettings.Count);
+        Assert.Equal(17, commsSettings.Count);
         Assert.All(commsSettings, d => Assert.True(d.ClientLevelOnly, d.Name)); // only the Org Admin at the client root edits them
         Assert.All(SettingCatalog.All.Where(d => d.Kind == SettingValueKinds.Int), d => Assert.True(d.Min is not null && d.Max is not null, d.Name));
     }

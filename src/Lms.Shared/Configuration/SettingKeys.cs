@@ -132,6 +132,12 @@ public static class SettingKeys
     /// <summary>Per-author cap of announcements a day.</summary>
     public static readonly SettingKey<int> AnnouncementsMaxPerAuthorPerDay = new("Announcements.MaxPerAuthorPerDay", 10);
 
+    /// <summary>Attachments on one announcement.</summary>
+    public static readonly SettingKey<int> AnnouncementsMaxAttachments = new("Announcements.MaxAttachments", 5);
+
+    /// <summary>Announcement attachment uploads a minute per author.</summary>
+    public static readonly SettingKey<int> AnnouncementsUploadsPerMinute = new("Announcements.UploadsPerMinute", 10);
+
     // M5 wave 2 (M5 plan Task 2).
     /// <summary>The school week as a JSON array of <c>WorkingDayNames</c>, Sunday to Thursday by default (D58); read through the unit hierarchy.</summary>
     public static readonly SettingKey<IReadOnlyList<string>> TimetableWorkingDays = new("Timetable.WorkingDays", ["Sun", "Mon", "Tue", "Wed", "Thu"]);
