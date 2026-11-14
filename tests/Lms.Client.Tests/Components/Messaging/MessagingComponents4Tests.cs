@@ -144,6 +144,20 @@ public sealed class MessagingComponents4Tests : ClientTestContext
     }
 
     [Fact]
+    public void A_cell_the_server_refused_shows_its_error_as_text()
+    {
+        English();
+        var cells = MessagingRulesMatrix.D69Defaults();
+        cells[(MessagingRole.Teacher, MessagingRole.Guardian)].Error = "Wider than your school's default.";
+        var cut = Render<MessagingRulesMatrix>(p => p.Add(c => c.Cells, cells));
+
+        var error = cut.Find("[data-testid=rules-cell-error-Teacher-Guardian]");
+        Assert.Equal("alert", error.GetAttribute("role"));
+        Assert.Contains("Wider than your school's default.", error.TextContent);
+        Assert.Single(cut.FindAll("[data-testid^=rules-cell-error-]"));
+    }
+
+    [Fact]
     public void Matrix_shows_a_select_only_for_unlocked_cells_and_labels_rows_for_phones()
     {
         English();
