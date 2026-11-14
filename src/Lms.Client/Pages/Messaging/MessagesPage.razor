@@ -78,6 +78,11 @@ else
         await LoadAsync();
     }
 
+    protected override void OnParametersSet()
+    {
+        if (!IsNewRoute) _newOpened = false; // leaving /messages/new and coming back (a link from a profile) opens the form again
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (_newOpened || _loading || !PermState.Loaded || !IsNewRoute) return;

@@ -63,7 +63,7 @@
         var (summary, _) = await ApiCalls.RunAsync(() => Messaging.GetRulesSummaryAsync(), Navigation);
         var (limits, _) = await ApiCalls.RunAsync(() => Messaging.GetLimitsAsync(), Navigation);
         _summary = summary;
-        _max = limits is null ? 0 : limits.MaxGroupSize - 1;
+        _max = (limits?.MaxGroupSize ?? MessagingLimits.DefaultMaxGroupSize) - 1; // when the limits cannot be read, the default still applies: never an unlimited group
         _ready = true;
     }
 
