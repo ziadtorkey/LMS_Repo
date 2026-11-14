@@ -1741,4 +1741,8 @@
   <data name="Att_Unit_Mode" xml:space="preserve"><value>حصص وحدة</value></data>
   <data name="Att_Unit_ChooseTitle" xml:space="preserve"><value>اختر وحدة</value></data>
   <data name="Att_Unit_ChooseText" xml:space="preserve"><value>اختر وحدة ويومًا لعرض حصص الحضور فيها، بما فيها المغلقة.</value></data>
+  <data name="Att_Undo" xml:space="preserve"><value>تراجع</value></data>
+  <data name="Att_Mark_All_Done" xml:space="preserve"><value>تم تحديد {0} طالبًا حاضرين. بقيت حالة من سبق تسجيلهم كما هي.</value></data>
+  <data name="Att_Note_Add" xml:space="preserve"><value>إضافة ملاحظة</value></data>
+  <data name="Att_Read_Only" xml:space="preserve"><value>يمكنك مراجعة هذه الحصة. يسجّل الحضور معلم الصف (أو، بعد المهلة، من يملك صلاحية تعديل الحضور).</value></data>
 </root>

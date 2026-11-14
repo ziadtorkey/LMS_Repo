@@ -13,7 +13,7 @@
 @code {
     private IEnumerable<NavItem> Visible => NavCatalog.Items.Where(i =>
         (!i.PlatformAdminOnly || Permissions.IsPlatformAdmin) &&
-        (i.RequiredPermission is null || Permissions.Has(i.RequiredPermission)));
+        (i.RequiredPermission is null || Permissions.Has(i.RequiredPermission) || (i.AlsoPermission is not null && Permissions.Has(i.AlsoPermission))));
 
     protected override async Task OnInitializedAsync()
     {

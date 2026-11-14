@@ -1741,4 +1741,8 @@
   <data name="Att_Unit_Mode" xml:space="preserve"><value>Sessions of a unit</value></data>
   <data name="Att_Unit_ChooseTitle" xml:space="preserve"><value>Choose a unit</value></data>
   <data name="Att_Unit_ChooseText" xml:space="preserve"><value>Pick a unit and a day to see its attendance sessions, including closed ones.</value></data>
+  <data name="Att_Undo" xml:space="preserve"><value>Undo</value></data>
+  <data name="Att_Mark_All_Done" xml:space="preserve"><value>{0} students marked present. Rows you had marked kept their status.</value></data>
+  <data name="Att_Note_Add" xml:space="preserve"><value>Add note</value></data>
+  <data name="Att_Read_Only" xml:space="preserve"><value>You can review this session. Marking is done by the teacher of the class (or, after the window, by someone who can edit attendance).</value></data>
 </root>
