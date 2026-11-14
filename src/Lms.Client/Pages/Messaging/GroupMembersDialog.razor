@@ -1,0 +1,97 @@
+@using Lms.Client.Components.Messaging
+@using Lms.Client.Services.Messaging
+@using Lms.Shared.Messaging
+@inject IMessagingApi Messaging
+@inject PermissionState PermState
+@inject NavigationManager Navigation
+
+@* Who can read a group (spec #615 §2.5): everyone in it is listed, so nobody is surprised by who sees a message. The owner can add and remove people and
+   set the group read-only (then only staff post, D74); everyone else only reads the list. *@
+<MudDialog>
+    <DialogContent>
+        <div class="lms-form" data-testid="members">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-3" data-testid="members-error">@_error</MudAlert>
+            }
+            <p class="lms-members-count" data-testid="members-count">@string.Format(L["Msg_Group_Members"].Value, Active.Count())</p>
+            <ul class="lms-members" data-testid="members-list">
+                @foreach (var p in _conversation.Participants)
+                {
+                    var person = p;
+                    <li class="lms-member" data-testid="@($"member-{person.UserId}")">
+                        <span class="lms-member-name"><bdi>@CultureText.Pick(person.NameAr, person.NameEn)</bdi></span>
+                        @if (person.RoleKey is { } role)
+                        {
+                            <span class="lms-member-role">@L[$"Msg_Role_{role}"]</span>
+                        }
+                        @if (person.Left)
+                        {
+                            <span class="lms-member-left">@L["Msg_Member_Left"]</span>
+                        }
+                        else if (IsOwner && person.UserId != PermState.UserId)
+                        {
+                            <MudIconButton Icon="@Icons.Material.Rounded.PersonRemove" Size="Size.Small" aria-label="@L["Msg_Member_Remove"]" OnClick="() => RemoveAsync(person)"
+                                           data-testid="@($"member-remove-{person.UserId}")" />
+                        }
+                    </li>
+                }
+            </ul>
+            @if (IsOwner)
+            {
+                <MudSwitch T="bool" Value="_conversation.IsReadOnly" ValueChanged="SetReadOnlyAsync" Color="Color.Primary" Label="@L["Msg_Group_ReadOnly"]" data-testid="members-readonly" />
+                <p class="lms-picker-hint">@L["Msg_Group_ReadOnlyHelp"]</p>
+                @if (Active.Count() >= _max)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" data-testid="members-full">@string.Format(L["Msg_Group_Max"].Value, _max)</MudAlert>
+                }
+                else
+                {
+                    <RecipientPicker Multiple="true" MaxPeople="_max - Active.Count()" GroupLimit="_max" Exclude="Active.Select(p => p.UserId).ToList()" SelectedChanged="p => _toAdd = p" />
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-2" Disabled="_toAdd.Count == 0 || _busy" OnClick="AddAsync" data-testid="members-add">@L["Msg_Member_Add"]</MudButton>
+                }
+            }
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" OnClick="() => MudDialog.Close(DialogResult.Ok(_changed))" data-testid="members-close">@L["Common_Close"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter, EditorRequired] public ConversationDto Conversation { get; set; } = default!;
+
+    private ConversationDto _conversation = default!;
+    private IReadOnlyList<RecipientDto> _toAdd = [];
+    private string? _error;
+    private bool _busy, _changed;
+    private int _max = MessagingLimits.DefaultMaxGroupSize;
+
+    private IEnumerable<ParticipantDto> Active => _conversation.Participants.Where(p => !p.Left);
+    private bool IsOwner => _conversation.OwnerUserId is { } o && o == PermState.UserId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _conversation = Conversation;
+        var (limits, _) = await ApiCalls.RunAsync(() => Messaging.GetLimitsAsync(), Navigation);
+        if (limits is not null) _max = limits.MaxGroupSize;
+    }
+
+    private async Task Run(Func<Task<ConversationDto?>> action)
+    {
+        _error = null; _busy = true;
+        ConversationDto? next = null;
+        var ok = await ApiCalls.RunAsync(async () => next = await action(), Navigation, L, e => _error = e);
+        _busy = false;
+        if (!ok) return;
+        _changed = true;
+        _conversation = next ?? await Messaging.GetConversationAsync(_conversation.Id);
+    }
+
+    private Task AddAsync() => Run(async () => { var c = await Messaging.AddParticipantsAsync(_conversation.Id, new AddParticipantsRequest([.. _toAdd.Select(p => p.UserId)])); _toAdd = []; return c; });
+
+    private Task RemoveAsync(ParticipantDto person) => Run(async () => { await Messaging.RemoveParticipantAsync(_conversation.Id, person.UserId); return null; });
+
+    private Task SetReadOnlyAsync(bool value) => Run(() => Messaging.SetReadOnlyAsync(_conversation.Id, value)!);
+}

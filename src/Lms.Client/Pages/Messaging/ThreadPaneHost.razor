@@ -9,6 +9,7 @@
 @inject NavigationManager Navigation
 @inject TimeProvider Clock
 @inject IJSRuntime Js
+@inject IDialogService Dialogs
 
 @* One open conversation (spec #615 §2.5-§2.9): the header, the messages with day separators and one "new messages" divider, Load earlier, the composer or
    the reason there is none. Message text is written as text, so nothing in it is markup. The server decides who may post, delete or read; this only shows it. *@
@@ -25,7 +26,7 @@ else
     var conversation = _conversation;
     <ThreadPane Label="@Name">
         <Header>
-            <ThreadHeader Name="@Name" IsGroup="conversation.Kind == ConversationKinds.Group" MemberCount="Members" OnBack="BackAsync" />
+            <ThreadHeader Name="@Name" IsGroup="conversation.Kind == ConversationKinds.Group" MemberCount="Members" OnMembers="MembersAsync" OnBack="BackAsync" />
         </Header>
         <ChildContent>
             @if (_nextBefore is not null)
@@ -189,6 +190,20 @@ else
         var i = _messages.FindIndex(m => m.Id == message.Id);
         if (i >= 0) _messages[i] = message with { State = MessageStates.Deleted, Body = null, CanDelete = false };
         await OnChanged.InvokeAsync();
+    }
+
+    private async Task MembersAsync()
+    {
+        if (_conversation is null) return;
+        var dialog = await Dialogs.ShowAsync<GroupMembersDialog>(L["Msg_Group_Members_Title"],
+            new DialogParameters<GroupMembersDialog> { { x => x.Conversation, _conversation } }, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: true })
+        {
+            var (fresh, _) = await ApiCalls.RunAsync(() => Messaging.GetConversationAsync(ConversationId), Navigation);
+            if (fresh is not null) _conversation = fresh;
+            await OnChanged.InvokeAsync();
+        }
     }
 
     private Task BackAsync()

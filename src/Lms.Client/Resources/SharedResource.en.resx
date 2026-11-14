@@ -2131,4 +2131,27 @@
   <data name="Msg_ReadOnly" xml:space="preserve"><value>You cannot reply to this conversation.</value></data>
   <data name="Msg_Reply_Privately" xml:space="preserve"><value>Reply privately</value></data>
   <data name="Msg_Thread_Missing" xml:space="preserve"><value>This conversation is not available.</value></data>
+  <data name="Msg_Picker_Search" xml:space="preserve"><value>Search people</value></data>
+  <data name="Msg_Picker_Hint" xml:space="preserve"><value>You can message: {0}.</value></data>
+  <data name="Msg_Picker_HintNone" xml:space="preserve"><value>Your school's rules do not let you start a message.</value></data>
+  <data name="Msg_Picker_None" xml:space="preserve"><value>No one matches.</value></data>
+  <data name="Msg_Role_Student" xml:space="preserve"><value>students</value></data>
+  <data name="Msg_Role_Guardian" xml:space="preserve"><value>guardians</value></data>
+  <data name="Msg_Role_Teacher" xml:space="preserve"><value>teachers</value></data>
+  <data name="Msg_Role_Counselor" xml:space="preserve"><value>counselors</value></data>
+  <data name="Msg_Role_Supervisor" xml:space="preserve"><value>supervisors</value></data>
+  <data name="Msg_Role_Manager" xml:space="preserve"><value>managers</value></data>
+  <data name="Msg_Role_OrgAdmin" xml:space="preserve"><value>organisation admins</value></data>
+  <data name="Msg_New_Message" xml:space="preserve"><value>New message</value></data>
+  <data name="Msg_New_Group" xml:space="preserve"><value>New group</value></data>
+  <data name="Msg_Group_Title" xml:space="preserve"><value>Group name</value></data>
+  <data name="Msg_Group_Min" xml:space="preserve"><value>Pick at least two people for a group.</value></data>
+  <data name="Msg_Group_Max" xml:space="preserve"><value>A group has at most {0} people.</value></data>
+  <data name="Msg_Member_Left" xml:space="preserve"><value>Left</value></data>
+  <data name="Msg_Member_Remove" xml:space="preserve"><value>Remove from the group</value></data>
+  <data name="Msg_Member_Add" xml:space="preserve"><value>Add to the group</value></data>
+  <data name="Msg_Group_ReadOnly" xml:space="preserve"><value>Read-only group</value></data>
+  <data name="Msg_Group_ReadOnlyHelp" xml:space="preserve"><value>Only staff can post in a read-only group.</value></data>
+  <data name="Msg_Recipient_Unavailable" xml:space="preserve"><value>You cannot message this person.</value></data>
+  <data name="Msg_Group_Members_Title" xml:space="preserve"><value>Group members</value></data>
 </root>
