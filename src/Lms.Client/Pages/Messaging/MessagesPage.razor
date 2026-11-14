@@ -9,9 +9,13 @@
 @inject IMessagingState State
 @inject PermissionState PermState
 @inject NavigationManager Navigation
+@inject MessagingRealtime Realtime
+@implements IDisposable
 
 <PageTitle>@L["Msg_Page_Title"]</PageTitle>
 <PageHeader Title="@L["Msg_Page_Title"]" Subtitle="@L["Msg_Page_Subtitle"]" TitleTestId="messages-title" />
+<RealtimeBanner />
+<div class="lms-visually-hidden" role="status" aria-live="polite" data-testid="messages-announcer">@_announcement</div>
 
 @if (!PermState.Loaded || _loading)
 {
@@ -55,8 +59,12 @@ else
     private Guid? _unreadFor;
     private int _unreadAtOpen;
 
+    private string? _announcement;
+
     protected override async Task OnInitializedAsync()
     {
+        Realtime.OtherThreadMessage += OnOtherThread;
+        Realtime.ContextReset += OnContextReset;
         if (!PermState.Loaded) await PermState.RefreshAsync();
         await LoadAsync();
     }
@@ -82,6 +90,28 @@ else
             if (page is not null) { _inbox = page.Items; _total = page.Total; }
         }
         _loading = false;
+    }
+
+    /// <summary>A message in a conversation that is not open: the list and the badge ask the server again, and a polite announcement says so once (no text of the message).</summary>
+    private void OnOtherThread(Guid conversationId, bool announce) => _ = InvokeAsync(async () =>
+    {
+        if (announce) _announcement = L["Msg_Announce_New"];
+        await ChangedAsync();
+    });
+
+    /// <summary>The context changed: what is shown belongs to the old one.</summary>
+    private void OnContextReset() => _ = InvokeAsync(async () =>
+    {
+        _announcement = null;
+        await LoadAsync();
+        await State.RefreshAsync();
+        StateHasChanged();
+    });
+
+    public void Dispose()
+    {
+        Realtime.OtherThreadMessage -= OnOtherThread;
+        Realtime.ContextReset -= OnContextReset;
     }
 
     private async Task ChangedAsync()

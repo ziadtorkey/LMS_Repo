@@ -2133,4 +2133,6 @@
   <data name="Msg_Thread_Missing" xml:space="preserve"><value>This conversation is not available.</value></data>
   <data name="Msg_Inbox_Capped" xml:space="preserve"><value>Showing your latest {0} conversations.</value></data>
   <data name="Realtime_Offline" xml:space="preserve"><value>Live updates are paused. Reconnecting; new messages will appear when it is back.</value></data>
+  <data name="Msg_Jump_New" xml:space="preserve"><value>{0} new messages</value></data>
+  <data name="Msg_Announce_New" xml:space="preserve"><value>New message in another conversation.</value></data>
 </root>

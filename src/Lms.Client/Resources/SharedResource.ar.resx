@@ -2133,4 +2133,6 @@
   <data name="Msg_Thread_Missing" xml:space="preserve"><value>هذه المحادثة غير متاحة.</value></data>
   <data name="Msg_Inbox_Capped" xml:space="preserve"><value>يظهر آخر {0} محادثة لديك.</value></data>
   <data name="Realtime_Offline" xml:space="preserve"><value>التحديث المباشر متوقف. جارٍ إعادة الاتصال وستظهر الرسائل الجديدة عند عودته.</value></data>
+  <data name="Msg_Jump_New" xml:space="preserve"><value>{0} رسائل جديدة</value></data>
+  <data name="Msg_Announce_New" xml:space="preserve"><value>رسالة جديدة في محادثة أخرى.</value></data>
 </root>

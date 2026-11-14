@@ -24,6 +24,21 @@ public interface IMessagingHub
     Task StopAsync();
 }
 
+/// <summary>
+/// The hub method and event names of messaging, in one place. TODO(L13): these are placeholders until the contract names them; renaming is a change of these lines only.
+/// </summary>
+public static class MessagingHubMethods
+{
+    /// <summary>Server to client: a message arrived (<c>MessageReceivedEvent</c>: conversation id and message id).</summary>
+    public const string MessageReceived = "MessageReceived";
+
+    /// <summary>Server to client: the members or the state of a conversation changed (conversation id).</summary>
+    public const string ConversationChanged = "ConversationChanged";
+
+    /// <summary>Client to server: the active context changed.</summary>
+    public const string SwitchContext = "SwitchContext";
+}
+
 /// <summary>When to try again after the hub connection drops: at once, then 2, 5, 10 and 30 seconds, then every minute, never giving up while the page is open.</summary>
 public static class RealtimeBackoff
 {
