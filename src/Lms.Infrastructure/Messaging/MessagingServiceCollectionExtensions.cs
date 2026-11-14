@@ -14,6 +14,7 @@ public static class MessagingServiceCollectionExtensions
         services.AddScoped<ReadStateService>();
         services.AddScoped<GroupService>();
         services.AddScoped<MessagingEvents>();
+        services.AddScoped<GroupPostingRules>();
         services.AddScoped<MessageSearch>();
         services.AddSingleton<MessageSearchThrottle>();
         services.TryAddSingleton<IMessagingRealtime, NoOpMessagingRealtime>(); // the API registers the SignalR transport

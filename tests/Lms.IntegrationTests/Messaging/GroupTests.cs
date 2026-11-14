@@ -11,6 +11,7 @@ using Lms.Shared;
 using Lms.Shared.Authorization;
 using Lms.Shared.Configuration;
 using Lms.Shared.Messaging;
+using Microsoft.EntityFrameworkCore;
 using static Lms.IntegrationTests.AcademicYears.YearTestKit;
 
 namespace Lms.IntegrationTests.Messaging;
@@ -83,20 +84,59 @@ public sealed class GroupTests(LmsApiFactory factory)
     }
 
     [Fact]
-    public async Task A_read_only_group_refuses_posts_until_the_owner_opens_it_again()
+    public async Task An_owner_set_read_only_does_not_block_staff_and_the_dto_says_so()
     {
         var s = await SetUpAsync("MG3");
         var group = await ReadAsync<ConversationDto>(await CreateGroupAsync(s.Owner, null, s.B.UserId, s.C.UserId));
 
         Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(factory, HttpMethod.Put, Routes.ConversationReadOnly(group.Id), s.B)).StatusCode);
-        var locked = await SendAsync(factory, HttpMethod.Put, Routes.ConversationReadOnly(group.Id), s.Owner);
-        Assert.True((await ReadAsync<ConversationDto>(locked)).IsReadOnly);
-        var refused = await SendAsync(factory, HttpMethod.Post, Routes.ConversationMessages(group.Id), s.B, new SendMessageRequest("hi", null));
-        Assert.Equal(HttpStatusCode.Forbidden, refused.StatusCode);
-        Assert.Equal(ProblemCodes.conversation_read_only, (await refused.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("code").GetString());
+        var locked = await ReadAsync<ConversationDto>(await SendAsync(factory, HttpMethod.Put, Routes.ConversationReadOnly(group.Id), s.Owner));
 
+        Assert.True(locked.IsReadOnly);
+        Assert.True(locked.CanPost); // read-only is for students and guardians; staff still post (D74)
+        Assert.Null(locked.ReadOnlyReason);
+        Assert.Equal(HttpStatusCode.Created, (await SendAsync(factory, HttpMethod.Post, Routes.ConversationMessages(group.Id), s.B, new SendMessageRequest("staff may post", null))).StatusCode);
         Assert.False((await ReadAsync<ConversationDto>(await SendAsync(factory, HttpMethod.Delete, Routes.ConversationReadOnly(group.Id), s.Owner))).IsReadOnly);
-        Assert.Equal(HttpStatusCode.Created, (await SendAsync(factory, HttpMethod.Post, Routes.ConversationMessages(group.Id), s.B, new SendMessageRequest("hi", null))).StatusCode);
+    }
+
+    [Fact]
+    public async Task An_org_admin_who_is_not_a_member_gets_404_on_a_real_group()
+    {
+        var s = await SetUpAsync("MG5");
+        var group = await ReadAsync<ConversationDto>(await CreateGroupAsync(s.Owner, "Closed", s.B.UserId, s.C.UserId));
+        var admin = await AccessTestData.AssignAsync(factory, s.Tree, s.Tree.Root, BuiltInRoles.OrgAdmin, Guid.NewGuid());
+
+        Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(factory, HttpMethod.Get, Routes.Conversation(group.Id), admin)).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(factory, HttpMethod.Get, Routes.ConversationMessages(group.Id), admin)).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(factory, HttpMethod.Post, Routes.ConversationMessages(group.Id), admin, new SendMessageRequest("hi", null))).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(factory, HttpMethod.Post, Routes.ConversationParticipants(group.Id), admin, new AddParticipantsRequest([s.D.UserId]))).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(factory, HttpMethod.Put, Routes.ConversationReadOnly(group.Id), admin)).StatusCode);
+        Assert.DoesNotContain(await ReadAsync<List<ConversationListItemDto>>(await SendAsync(factory, HttpMethod.Get, Routes.Conversations, admin)), c => c.Id == group.Id);
+    }
+
+    [Fact]
+    public async Task Page_sizes_are_clamped_to_the_contract_limits()
+    {
+        var s = await SetUpAsync("MG6");
+        var conversation = await ReadAsync<ConversationDto>(await SendAsync(factory, HttpMethod.Post, Routes.Conversations, s.Owner, new CreateConversationRequest(ConversationKinds.Direct, [s.B.UserId], null, null)));
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            var entity = await db.Set<Conversation>().SingleAsync(c => c.Id == conversation.Id);
+            for (var i = 0; i < MessagingLimits.MessagePageSizeMax + 5; i++)
+            {
+                db.Add(new Message(entity, s.Owner.UserId, $"m{i}", DateTime.UtcNow.AddSeconds(i)));
+            }
+
+            await db.SaveChangesAsync();
+        }
+
+        var big = await ReadAsync<MessagePageDto>(await SendAsync(factory, HttpMethod.Get, Routes.ConversationMessages(conversation.Id, null, 1000), s.B));
+        Assert.Equal(MessagingLimits.MessagePageSizeMax, big.Items.Count); // never more than the maximum
+        Assert.NotNull(big.NextBeforeId);
+        var small = await ReadAsync<MessagePageDto>(await SendAsync(factory, HttpMethod.Get, Routes.ConversationMessages(conversation.Id, null, 0), s.B));
+        Assert.Single(small.Items); // never fewer than one
+        var inbox = await ReadAsync<List<ConversationListItemDto>>(await SendAsync(factory, HttpMethod.Get, Routes.Conversations + "?page=1&pageSize=0", s.Owner));
+        Assert.Single(inbox);
     }
 
     [Fact]

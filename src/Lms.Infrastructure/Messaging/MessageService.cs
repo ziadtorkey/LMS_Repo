@@ -16,7 +16,7 @@ public sealed record SendResult(Message? Message, string? ProblemCode, int Statu
 }
 
 /// <summary>Sending, paging and mapping messages (FR-MSG-01, L6, L20): keyset pages newest first, a neutral name for a former user, a left member reads up to leaving.</summary>
-public sealed class MessageService(LmsDbContext db, ICurrentContext context, IClock clock, IMessagingPolicy policy, MessageAttachmentGuard attachments, Lms.Domain.Files.IFileStorage storage, MessagingEvents events)
+public sealed class MessageService(LmsDbContext db, ICurrentContext context, IClock clock, IMessagingPolicy policy, MessageAttachmentGuard attachments, Lms.Domain.Files.IFileStorage storage, MessagingEvents events, GroupPostingRules groupRules)
 {
     public const string FormerUserAr = "مستخدم سابق";
     public const string FormerUserEn = "Former user";
@@ -42,9 +42,9 @@ public sealed class MessageService(LmsDbContext db, ICurrentContext context, ICl
             return SendResult.Refused(ProblemCodes.conversation_closed, 409);
         }
 
-        if (conversation.IsReadOnly)
+        if (await groupRules.BlockReasonAsync(conversation, me.UserId, ct) is { } reason)
         {
-            return new SendResult(null, ProblemCodes.conversation_read_only, 403, null, ConversationReadOnlyReasons.GroupStudentsReadOnly);
+            return new SendResult(null, ProblemCodes.conversation_read_only, 403, null, reason); // D74, D77: students never post in a group, guardians only in a teacher-run one
         }
 
         if (!(await policy.CanPostAsync(me.UserId, conversation, ct)).Allowed)
