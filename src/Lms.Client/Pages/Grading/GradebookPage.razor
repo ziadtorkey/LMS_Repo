@@ -19,7 +19,9 @@ else if (!PermState.Has(Permissions.Grades.View))
 else
 {
     <PageHeader Title="@L["Grd_Title"]" TitleTestId="gradebook-title" />
-    <EmptyState Title="@L["Grd_GridSoonTitle"]" Text="@L["Grd_GridSoonText"]" Icon="@Icons.Material.Rounded.Grading" TestId="gradebook-soon" />
+    <SectionCard>
+        <EmptyState Title="@L["Grd_GridSoonTitle"]" Text="@L["Grd_GridSoonText"]" Icon="@Icons.Material.Rounded.Grading" TestId="gradebook-soon" />
+    </SectionCard>
 }
 
 @code {

@@ -1624,7 +1624,7 @@
   <data name="PermModule_Grades" xml:space="preserve"><value>الدرجات</value></data>
   <data name="ClassCourse_TabGradebook" xml:space="preserve"><value>دفتر الدرجات</value></data>
   <data name="Grd_Title" xml:space="preserve"><value>دفتر الدرجات</value></data>
-  <data name="Grd_GridSoonTitle" xml:space="preserve"><value>جدول الدرجات قادم قريبا</value></data>
+  <data name="Grd_GridSoonTitle" xml:space="preserve"><value>جدول الدرجات قادم قريبًا</value></data>
   <data name="Grd_GridSoonText" xml:space="preserve"><value>ستظهر هنا فئات الدرجات وبنودها ودرجات هذا المقرر الدراسي.</value></data>
   <data name="Nav_GradingScales" xml:space="preserve"><value>مقاييس التقدير</value></data>
   <data name="Grading_Sections" xml:space="preserve"><value>إعدادات التقدير</value></data>

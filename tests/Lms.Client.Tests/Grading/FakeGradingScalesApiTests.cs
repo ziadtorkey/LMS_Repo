@@ -140,4 +140,18 @@ public sealed class FakeGradingScalesApiTests
 
         Assert.DoesNotContain(await _api.ListTemplatesAsync(Unit), t => t.Id == created.Id);
     }
+
+    [Fact]
+    public async Task The_fake_presets_are_synthetic_and_valid_bands_never_real_preset_data()
+    {
+        var presets = (await _api.ListScalesAsync(Unit)).Where(x => x.IsTemplate).ToList();
+
+        Assert.NotEmpty(presets);
+        Assert.All(presets, p =>
+        {
+            FakeGradingScalesApi.ValidateBands([.. p.Bands.Select(b => new SaveGradingScaleBandRequest(b.Order, b.MinPercent, b.MaxPercent, b.Code, b.LabelAr, b.LabelEn, null, null, null))]);
+            Assert.All(p.Bands, b => Assert.StartsWith("B", b.Code));
+            Assert.All(p.Bands, b => Assert.Contains("Band", b.LabelEn));
+        });
+    }
 }
