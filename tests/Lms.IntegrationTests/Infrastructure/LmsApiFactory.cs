@@ -25,6 +25,7 @@ public sealed class LmsApiFactory : WebApplicationFactory<Program>, IAsyncLifeti
 
     public async Task InitializeAsync()
     {
+        Current = this;
         await Task.WhenAll(_mysql.StartAsync(), _minio.StartAsync());
         await using var db = CreateDbContext(TestCurrentContext.PlatformAdmin());
         await db.Database.MigrateAsync();
@@ -117,12 +118,45 @@ public sealed class LmsApiFactory : WebApplicationFactory<Program>, IAsyncLifeti
     /// Each server holds several long-lived MySQL connections from one shared 100-connection pool, and about thirty derived hosts live until
     /// the end of the run: together they exhausted the pool (#466). The shared root host keeps its server for the job tests.
     /// </summary>
-    public new WebApplicationFactory<Program> WithWebHostBuilder(Action<IWebHostBuilder> configuration) =>
-        base.WithWebHostBuilder(builder =>
+    public new WebApplicationFactory<Program> WithWebHostBuilder(Action<IWebHostBuilder> configuration)
+    {
+        var host = base.WithWebHostBuilder(builder =>
         {
             builder.UseSetting("Jobs:ServerEnabled", "false");
             configuration(builder);
         });
+        _derived.Add(host);
+        return host;
+    }
+
+    private readonly System.Collections.Concurrent.ConcurrentBag<WebApplicationFactory<Program>> _derived = [];
+
+    /// <summary>How many derived hosts are tracked and not yet disposed (for the cleanup guard).</summary>
+    internal int TrackedDerivedHosts => _derived.Count;
+
+    /// <summary>The factory the current run shares (one per process); <see cref="DerivedHostCleanupAttribute"/> reaches it from here.</summary>
+    internal static LmsApiFactory? Current { get; private set; }
+
+    /// <summary>
+    /// Disposes every derived host created so far. A derived host is kept alive by its parent until the parent is disposed, so a test
+    /// that does not dispose its own host leaves a whole application (DI container, EF model, caches) in memory for the rest of the run:
+    /// about 200 such hosts took a full run past 13 GB, where it slowed to a crawl and CI cancelled it as hung (#466, #618). The api
+    /// collection runs its tests one at a time, so after a test every derived host belongs to a finished test.
+    /// </summary>
+    internal void DisposeDerivedHosts()
+    {
+        while (_derived.TryTake(out var host))
+        {
+            try
+            {
+                host.Dispose();
+            }
+            catch (ObjectDisposedException)
+            {
+                // the test disposed it already
+            }
+        }
+    }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -134,10 +168,13 @@ public sealed class LmsApiFactory : WebApplicationFactory<Program>, IAsyncLifeti
         builder.UseSetting("Storage:AccessKey", MinioBuilder.DefaultUsername);
         builder.UseSetting("Storage:SecretKey", MinioBuilder.DefaultPassword);
         builder.UseSetting("Auth:WasmOrigins:0", "http://localhost");
+        builder.UseSetting("PackageHost:Origin", "http://127.0.0.1:5999"); // a content origin on another site than the test server (http://localhost)
         builder.ConfigureServices(services =>
         {
             services.AddAuthentication(TestAuthHandler.SchemeName)
                 .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(TestAuthHandler.SchemeName, _ => { });
+            services.AddSingleton<Lms.Infrastructure.LiveSessions.FakeMeetingProvider>();
+            services.AddSingleton<Lms.Domain.LiveSessions.IMeetingProvider>(sp => sp.GetRequiredService<Lms.Infrastructure.LiveSessions.FakeMeetingProvider>());
             services.AddSingleton<IEndpointModule, TestEndpoints>();
             services.AddSingleton<TestPolicyEvaluator>();
             services.AddScoped<IPolicyEvaluator>(sp => sp.GetRequiredService<TestPolicyEvaluator>());

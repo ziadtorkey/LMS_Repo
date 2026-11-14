@@ -185,6 +185,7 @@ public sealed class ModuleHandlers(
         module.Apply(
             request.TitleAr.Trim(), request.TitleEn.Trim(), request.Visibility, request.VisibleFromUtc, request.VisibleToUtc, request.Target,
             request.GroupId, request.CompletionRule, null);
+        await Lms.Infrastructure.Packages.PackageRevocationHooks.ModuleChangedAsync(db, module, clock.UtcNow, ct); // a hidden package module revokes its tokens
         await db.SaveChangesAsync(ct);
         return Results.Ok(await DetailAsync(module, content, cc!, http, ct));
     }

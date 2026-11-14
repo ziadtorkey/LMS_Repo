@@ -45,6 +45,14 @@ public sealed class IsolationBypassGuardTests
             "effective policies set on ancestors above the caller's scope (M1 Task 12, #94)",
         ["src/Lms.Infrastructure/Organizations/OrgPolicyReader.cs"] =
             "policies set on ancestors above the caller's scope, to show blocked permissions in the org tree (M1 Task 9, #99)",
+        ["src/Lms.Infrastructure/Grading/Scales/ScaleResolver.cs"] =
+            "scales and weight templates of ancestor units sit above the caller scope; client-limited, live rows, bound to the unit's exact ancestor-or-self paths, names, kinds, bands and weights only (M5 Task 4, site 1)",
+        ["src/Lms.Infrastructure/Grading/Scales/PresetReconciler.cs"] =
+            "system context: seeds one client's presets at its root unit; root unit and scales read by the client id parameter, soft-deleted plain default included so it is not re-created (M5 Task 4, site 9)",
+        ["src/Lms.Infrastructure/Access/BuiltInRoleStartupReconciler.cs"] =
+            "platform startup lists the live clients' ids only, to seed their grading presets (M5 Task 4, site 9)",
+        ["src/Lms.Api/Features/Me/ClientTimeZoneReader.cs"] =
+            "GET /api/me runs before a client is chosen: the Org.TimeZone rows of the clients of the caller's valid assignments, bound to that client and the units' ancestor paths, the zone id only (M5 wave 1, D64)",
         ["src/Lms.Api/Features/Blueprints/BlueprintReader.cs"] =
             "blueprints of an inherited course sit at an ancestor unit above the caller; client-limited, live rows, courses already found visible (M3 Task 16)",
         ["src/Lms.Api/Features/Classes/ClassLookups.cs"] =
@@ -65,6 +73,12 @@ public sealed class IsolationBypassGuardTests
             "level types are client-wide, so the in-use count covers the whole client, not the caller subtree (M1 Task 8, #83)",
         ["src/Lms.Api/Features/Courses/Import/CourseImportDefinition.cs"] =
             "live course codes of the client outside the caller subtree, only the code keys (course code is unique per client, M3 Task 6, #214)",
+        ["src/Lms.Infrastructure/Grading/Gradebooks/EventTermResolver.cs"] =
+            "the terms of the year of a class course are defined at an ancestor unit above the caller scope; client matched, deleted terms excluded by hand, one year only (M5 Task 7, D58 Q8)",
+        ["src/Lms.Infrastructure/LiveSessions/LiveSessionService.cs"] =
+            "the daily live-session create cap counts the meetings the whole client created today, in every unit and including rows deleted since; client-limited, count only (M4b Task 4, #471)",
+        ["src/Lms.Infrastructure/Zoom/EfHostSlotStore.cs"] =
+            "the Zoom host pool is shared by every client, so a host booked by another client is busy for this one; live-session slot columns only (host, client id, start, duration), projected, soft delete re-applied (M4b Task 5, #472)",
         ["src/Lms.Infrastructure/Courses/CourseCatalog.cs"] =
             "courses and allocations owned by ancestors of the caller scope, restricted to the client (M3 Task 5, #213)",
         ["src/Lms.Infrastructure/Notifications/NotificationRecipientResolver.cs"] =

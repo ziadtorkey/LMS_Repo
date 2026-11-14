@@ -1,0 +1,29 @@
+@page "/class-courses/{Id:guid}/gradebook"
+@attribute [Authorize]
+@using Lms.Client.Components
+@using Lms.Client.Pages.Forums
+@using Lms.Shared.Authorization
+@inject PermissionState PermState
+
+@* The gradebook tab of a class course. This is the shell the tab links to; the grid itself (M5 Task 24) replaces the empty state. *@
+<PageTitle>@L["Grd_Title"]</PageTitle>
+<ClassCourseTabs ClassCourseId="Id" Active="gradebook" />
+@if (!PermState.Loaded)
+{
+    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+}
+else if (!PermState.Has(Permissions.Grades.View))
+{
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" data-testid="gradebook-forbidden">@L["Forbidden_Title"]</MudAlert>
+}
+else
+{
+    <PageHeader Title="@L["Grd_Title"]" TitleTestId="gradebook-title" />
+    <SectionCard>
+        <EmptyState Title="@L["Grd_GridSoonTitle"]" Text="@L["Grd_GridSoonText"]" Icon="@Icons.Material.Rounded.Grading" TestId="gradebook-soon" />
+    </SectionCard>
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+}

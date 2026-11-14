@@ -1,6 +1,8 @@
 using Lms.Api.Infrastructure;
 using Lms.Domain.Configuration;
 using Lms.Infrastructure.Configuration;
+using Lms.Infrastructure.Packages;
+using Microsoft.Extensions.Options;
 using Lms.Shared;
 using Lms.Shared.Authorization;
 using Lms.Shared.Configuration;
@@ -27,7 +29,7 @@ public static class SettingEndpoints
 
     private static async Task<IResult> SetAsync(
         Guid id, string name, HttpContext http, ISettingsResolver settings, IEffectiveSettingsReader reader,
-        IEnumerable<ISettingChangeGuard> guards, SetSettingRequest? body, CancellationToken ct)
+        IEnumerable<ISettingChangeGuard> guards, SetSettingRequest? body, IOptions<PackageHostOptions> packageHost, CancellationToken ct)
     {
         var access = await http.CheckUnitAsync(Permissions.Settings.Update, id, ct);
         if (access.Problem is not null)
@@ -39,6 +41,11 @@ public static class SettingEndpoints
         if (definition is null)
         {
             return ApiProblems.NotFound();
+        }
+
+        if (name == FeatureFlags.ScormContent.Name && ScormContentEnableGuard.Refuses(body?.ValueJson, packageHost.Value))
+        {
+            return ApiProblems.Conflict(ProblemCodes.package_host_not_configured); // D56: no package content without a separate content domain
         }
 
         var error = SettingValueValidator.Validate(definition, body?.ValueJson ?? string.Empty);

@@ -1,20 +1,30 @@
 @using Lms.Shared.Authorization
 @inject PermissionState PermState
 
-@* Plan · Forum · Announcements of one class course. The plan is always there; the other two need Forums.View. *@
-<MudStack Row="true" Spacing="1" Class="mb-3" role="navigation" aria-label="@L["ClassCourse_Sections"]" data-testid="class-course-tabs">
-    <MudButton Href="@($"class-courses/{ClassCourseId}/plan")" Variant="@VariantOf("plan")" data-testid="tab-plan">@L["ClassCourse_TabPlan"]</MudButton>
+@* Plan · Forum · Announcements · Gradebook · Live sessions of one class course. The plan is always there; forum and announcements need Forums.View, the gradebook Grades.View or Grades.Manage, live sessions LiveSessions.Manage. *@
+<MudStack Row="true" Spacing="1" Class="lms-course-tabs mb-3" role="navigation" aria-label="@L["ClassCourse_Sections"]" data-testid="class-course-tabs">
+    <MudButton Href="@($"class-courses/{ClassCourseId}/plan")" Variant="Variant.Text" aria-current="@CurrentOf("plan")" data-testid="tab-plan">@L["ClassCourse_TabPlan"]</MudButton>
     @if (PermState.Has(Permissions.Forums.View))
     {
-        <MudButton Href="@($"class-courses/{ClassCourseId}/forum")" Variant="@VariantOf("forum")" data-testid="tab-forum">@L["ClassCourse_TabForum"]</MudButton>
-        <MudButton Href="@($"class-courses/{ClassCourseId}/announcements")" Variant="@VariantOf("announcements")" data-testid="tab-announcements">@L["ClassCourse_TabAnnouncements"]</MudButton>
+        <MudButton Href="@($"class-courses/{ClassCourseId}/forum")" Variant="Variant.Text" aria-current="@CurrentOf("forum")" data-testid="tab-forum">@L["ClassCourse_TabForum"]</MudButton>
+        <MudButton Href="@($"class-courses/{ClassCourseId}/announcements")" Variant="Variant.Text" aria-current="@CurrentOf("announcements")" data-testid="tab-announcements">@L["ClassCourse_TabAnnouncements"]</MudButton>
+    }
+    @* M5: the gradebook of the class course (staff with Grades.View). The Attendance tab comes with the first attendance task (Task 33), when the wave 3 permissions are on this branch's base. *@
+    @if (PermState.Has(Permissions.Grades.View) || PermState.Has(Permissions.Grades.Manage))
+    {
+        <MudButton Href="@($"class-courses/{ClassCourseId}/gradebook")" Variant="Variant.Text" aria-current="@CurrentOf("gradebook")" data-testid="tab-gradebook">@L["ClassCourse_TabGradebook"]</MudButton>
+    }
+    @if (PermState.Has(Permissions.LiveSessions.Manage))
+    {
+        <MudButton Href="@($"class-courses/{ClassCourseId}/live-sessions")" Variant="Variant.Text" aria-current="@CurrentOf("live-sessions")" data-testid="tab-live-sessions">@L["ClassCourse_TabLive"]</MudButton>
     }
 </MudStack>
 
 @code {
     [Parameter, EditorRequired] public Guid ClassCourseId { get; set; }
-    /// <summary>"plan", "forum" or "announcements".</summary>
+    /// <summary>"plan", "forum", "announcements", "gradebook" or "live-sessions".</summary>
     [Parameter, EditorRequired] public string Active { get; set; } = "plan";
 
-    private Variant VariantOf(string tab) => tab == Active ? Variant.Filled : Variant.Text;
+    /// <summary>The raised pill of the Stitch tab track is drawn from <c>aria-current="page"</c>, which is also what a screen reader announces.</summary>
+    private string? CurrentOf(string tab) => tab == Active ? "page" : null;
 }
