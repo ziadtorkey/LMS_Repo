@@ -1699,4 +1699,67 @@
   <data name="Ann_ReadMore" xml:space="preserve"><value>اقرأ المزيد</value></data>
   <data name="Ann_ReadLess" xml:space="preserve"><value>عرض أقل</value></data>
   <data name="Ann_Audience" xml:space="preserve"><value>الجمهور</value></data>
+  <data name="Notif_Unread_Name" xml:space="preserve"><value>غير مقروء: {0}</value></data>
+  <data name="Notif_MarkAll" xml:space="preserve"><value>تعليم الكل كمقروء</value></data>
+  <data name="Notif_Settings" xml:space="preserve"><value>إعدادات الإشعارات</value></data>
+  <data name="Notif_EmptyText" xml:space="preserve"><value>تظهر هنا الرسائل والدرجات والإعلانات الجديدة.</value></data>
+  <data name="Notif_SeeAll" xml:space="preserve"><value>عرض كل الإشعارات</value></data>
+  <data name="Notif_Earlier" xml:space="preserve"><value>سابقًا</value></data>
+  <data name="Msg_D69_Title" xml:space="preserve"><value>لا يظهر الطلاب هنا</value></data>
+  <data name="Msg_D69_Text" xml:space="preserve"><value>يتواصل المديرون ومسؤولو المؤسسة مع الطلاب عبر محادثة فصل أو مجموعة، أو عبر إعلان، لا برسالة خاصة. تحدد ذلك قواعد الحماية في مدرستك.</value></data>
+  <data name="Msg_Back" xml:space="preserve"><value>العودة إلى الرسائل</value></data>
+  <data name="Msg_Group_Members" xml:space="preserve"><value>مجموعة · الأعضاء: {0}</value></data>
+  <data name="Msg_Group_Note" xml:space="preserve"><value>تصل الردود إلى كل أفراد المجموعة. للرد على انفراد يبدأ الشخص رسالة جديدة.</value></data>
+  <data name="Msg_Picker_Classes" xml:space="preserve"><value>الفصول والمقررات</value></data>
+  <data name="Msg_Picker_People" xml:space="preserve"><value>الأشخاص</value></data>
+  <data name="Rules_Locked" xml:space="preserve"><value>تحدده المنصة (الحماية): لا يمكن تخفيفه</value></data>
+  <data name="Rules_Via_Anywhere" xml:space="preserve"><value>أي شخص</value></data>
+  <data name="Rules_Via_SameUnit" xml:space="preserve"><value>نفس الوحدة</value></data>
+  <data name="Rules_Via_Relationship" xml:space="preserve"><value>فصوله فقط</value></data>
+  <data name="Rules_Via_NotAllowed" xml:space="preserve"><value>غير مسموح</value></data>
+  <data name="Rules_Via_GroupsOnly" xml:space="preserve"><value>عبر المجموعات فقط</value></data>
+  <data name="Ann_Roles" xml:space="preserve"><value>من يراه داخل هذه الأهداف</value></data>
+  <data name="Ann_Role_Staff" xml:space="preserve"><value>الموظفون</value></data>
+  <data name="Ann_Role_Students" xml:space="preserve"><value>الطلاب</value></data>
+  <data name="Ann_Role_Guardians" xml:space="preserve"><value>أولياء الأمور</value></data>
+  <data name="Ann_Reach_Counting" xml:space="preserve"><value>جارٍ حساب من سيراه…</value></data>
+  <data name="Ann_Reach_None" xml:space="preserve"><value>لا أحد ضمن نطاقك يطابق هذه الاختيارات بعد.</value></data>
+  <data name="Ann_Reach_Exact" xml:space="preserve"><value>عدد من سيرونه: {0}.</value></data>
+  <data name="Ann_Reach_About" xml:space="preserve"><value>عدد من سيرونه نحو {0} (العدّ داخل الوحدات التي تراها فقط).</value></data>
+  <data name="Ann_TitleAr" xml:space="preserve"><value>العنوان (بالعربية)</value></data>
+  <data name="Ann_TitleEn" xml:space="preserve"><value>العنوان (بالإنجليزية)</value></data>
+  <data name="Ann_BodyAr" xml:space="preserve"><value>النص (بالعربية)</value></data>
+  <data name="Ann_BodyEn" xml:space="preserve"><value>النص (بالإنجليزية)</value></data>
+  <data name="Ann_Error_TitleAr" xml:space="preserve"><value>أدخل العنوان بالعربية أيضًا. يرى كل قارئ العنوان بلغته.</value></data>
+  <data name="Ann_Error_TitleEn" xml:space="preserve"><value>أدخل العنوان بالإنجليزية أيضًا. يرى كل قارئ العنوان بلغته.</value></data>
+  <data name="Ann_Error_Body" xml:space="preserve"><value>اكتب النص بلغة واحدة على الأقل.</value></data>
+  <data name="Ann_Who" xml:space="preserve"><value>من يرى الإعلان</value></data>
+  <data name="Ann_Scope_Organization" xml:space="preserve"><value>المؤسسة</value></data>
+  <data name="Ann_Scope_Unit" xml:space="preserve"><value>الوحدة</value></data>
+  <data name="Ann_Scope_Level" xml:space="preserve"><value>المستوى</value></data>
+  <data name="Ann_Scope_Class" xml:space="preserve"><value>الفصل</value></data>
+  <data name="Ann_Scope_ClassCourse" xml:space="preserve"><value>المقرر</value></data>
+  <data name="Ann_Scope_Group" xml:space="preserve"><value>المجموعة</value></data>
+  <data name="Ann_Error_Targets" xml:space="preserve"><value>اختر هدفًا واحدًا على الأقل.</value></data>
+  <data name="Ann_IncludeSubtree" xml:space="preserve"><value>تضمين الوحدات التابعة</value></data>
+  <data name="Ann_IncludeSubtreeHelp" xml:space="preserve"><value>تراه أيضًا الوحدات التابعة للوحدات المختارة.</value></data>
+  <data name="Ann_Error_Roles" xml:space="preserve"><value>اختر من يراه: الموظفون أو الطلاب أو أولياء الأمور.</value></data>
+  <data name="Ann_Publishing" xml:space="preserve"><value>النشر</value></data>
+  <data name="Ann_Mode_Now" xml:space="preserve"><value>الآن</value></data>
+  <data name="Ann_Mode_Schedule" xml:space="preserve"><value>جدولة</value></data>
+  <data name="Ann_Date" xml:space="preserve"><value>التاريخ</value></data>
+  <data name="Ann_Time" xml:space="preserve"><value>الوقت</value></data>
+  <data name="Ann_Error_When" xml:space="preserve"><value>اختر تاريخًا ووقتًا في المستقبل.</value></data>
+  <data name="Ann_TimeZone" xml:space="preserve"><value>الأوقات بتوقيتك: {0}</value></data>
+  <data name="Ann_Pin" xml:space="preserve"><value>تثبيت في الأعلى</value></data>
+  <data name="Ann_PinHelp" xml:space="preserve"><value>تبقى الإعلانات المثبّتة أولًا حتى ينتهي موعدها.</value></data>
+  <data name="Ann_Notify" xml:space="preserve"><value>إشعار الجمهور</value></data>
+  <data name="Ann_NotifyHelp" xml:space="preserve"><value>يصل الإشعار إلى كل شخص عبر القنوات التي اختارها.</value></data>
+  <data name="Ann_Attachments" xml:space="preserve"><value>المرفقات</value></data>
+  <data name="Ann_AttachmentsHelp" xml:space="preserve"><value>حتى 5 ملفات، كما في الرسائل.</value></data>
+  <data name="Ann_Expires" xml:space="preserve"><value>ينتهي في</value></data>
+  <data name="Ann_ExpiresHelp" xml:space="preserve"><value>بعد هذا التاريخ ينتقل إلى المنتهية. اتركه فارغًا لإبقائه.</value></data>
+  <data name="Ann_SaveDraft" xml:space="preserve"><value>حفظ كمسودة</value></data>
+  <data name="Ann_Schedule" xml:space="preserve"><value>جدولة</value></data>
+  <data name="Ann_Publish" xml:space="preserve"><value>نشر</value></data>
 </root>

@@ -1,0 +1,39 @@
+@* One cell of the messaging-rules matrix (spec #615 §7a): who in the "From" role may message the "To" role. A D69 safeguarding cell is locked: a plain chip
+   with the Lock icon and the accessible text "Set by the platform (safeguarding): can't be loosened", no dropdown. Other cells show the page's select
+   (ChildContent) when editable, or the tinted chip when read-only: success for Anyone, info for the narrower two, neutral for Not allowed. *@
+@if (Locked || ChildContent is null)
+{
+    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@ChipColor" Class="@($"lms-rule-chip{(Locked ? " locked" : "")}")"
+             title="@(Locked ? L["Rules_Locked"].Value : null)" data-testid="@TestId">
+        @if (Locked)
+        {
+            <MudIcon Icon="@Icons.Material.Rounded.Lock" Size="Size.Small" aria-hidden="true" />
+        }
+        @L[$"Rules_Via_{Via}"]
+        @if (Locked)
+        {
+            <span class="lms-visually-hidden">@L["Rules_Locked"]</span>
+        }
+    </MudChip>
+}
+else
+{
+    @ChildContent
+}
+
+@code {
+    /// <summary>#613 <c>MessagingRule.Via</c>, plus GroupsOnly for the D69 manager and admin to student cell.</summary>
+    [Parameter, EditorRequired] public MessagingVia Via { get; set; }
+    [Parameter] public bool Locked { get; set; }
+
+    /// <summary>The editable select, rendered only when the cell isn't locked.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string? TestId { get; set; }
+
+    private Color ChipColor => Via switch
+    {
+        MessagingVia.Anywhere => Color.Success,
+        MessagingVia.SameUnit or MessagingVia.Relationship or MessagingVia.GroupsOnly => Color.Info,
+        _ => Color.Default,
+    };
+}

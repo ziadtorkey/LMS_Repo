@@ -1,0 +1,33 @@
+@* One notification (spec #615 §5.2, class lms-notif): the kind tile, the sentence with the actor in bold (a bdi), an optional quote and the time. It is one
+   link whose accessible name starts with "Unread:" when it is unread, so the tint and the dot are never the only signal. *@
+<a class="@($"lms-notif{(Unread ? " unread" : "")}")" href="@Href" aria-label="@Label" data-testid="@TestId">
+    <span class="lms-kind" aria-hidden="true"><MudIcon Icon="@Icon" Size="Size.Small" /></span>
+    <span class="lms-notif-main">
+        <span class="lms-notif-text">@ChildContent</span>
+        @if (!string.IsNullOrEmpty(Quote))
+        {
+            <span class="lms-notif-quote" dir="auto">@Quote</span>
+        }
+        <span class="lms-notif-time" dir="auto">@TimeText</span>
+    </span>
+</a>
+
+@code {
+    [Parameter, EditorRequired] public string Href { get; set; } = "";
+    [Parameter] public string Icon { get; set; } = Icons.Material.Rounded.Notifications;
+
+    /// <summary>The sentence as markup, e.g. &lt;b&gt;&lt;bdi&gt;Huda&lt;/bdi&gt;&lt;/b&gt; sent you a message.</summary>
+    [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
+
+    /// <summary>The same sentence as plain text, for the accessible name.</summary>
+    [Parameter, EditorRequired] public string Text { get; set; } = "";
+    [Parameter] public string? Quote { get; set; }
+
+    /// <summary>Relative time, already formatted ("2 min", "Yesterday").</summary>
+    [Parameter] public string TimeText { get; set; } = "";
+    [Parameter] public bool Unread { get; set; }
+    [Parameter] public string? TestId { get; set; }
+
+    private string Label => string.Join(", ", new[] { Unread ? string.Format(System.Globalization.CultureInfo.CurrentCulture, L["Notif_Unread_Name"].Value, Text) : Text, Quote, TimeText }
+        .Where(s => !string.IsNullOrWhiteSpace(s)));
+}

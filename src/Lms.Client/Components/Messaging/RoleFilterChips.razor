@@ -1,0 +1,47 @@
+@* "Who in these targets" (spec #615 §4.4, #613 rev 3 RoleFilter): Staff, Students and Guardians as toggle chips with aria-pressed and a check mark, so the
+   choice isn't shown by colour alone. At least one must stay on; the page shows the error when it validates. *@
+<div class="lms-role-chips" role="group" aria-labelledby="@_labelId" data-testid="role-chips">
+    <span class="lms-field-label" id="@_labelId">@L["Ann_Roles"]</span>
+    <div class="lms-role-chip-row">
+        @foreach (var role in Enum.GetValues<AudienceRole>())
+        {
+            var r = role;
+            var on = Selected.Contains(r);
+            <button type="button" class="@($"lms-role-chip{(on ? " on" : "")}")" aria-pressed="@(on ? "true" : "false")" disabled="@Disabled"
+                    @onclick="() => ToggleAsync(r)" data-testid="@($"role-{r}")">
+                @if (on)
+                {
+                    <MudIcon Icon="@Icons.Material.Rounded.Check" Size="Size.Small" aria-hidden="true" />
+                }
+                <MudIcon Icon="@IconOf(r)" Size="Size.Small" aria-hidden="true" />
+                @L[$"Ann_Role_{r}"]
+            </button>
+        }
+    </div>
+    @if (Error is not null)
+    {
+        <span class="lms-field-error" role="alert" data-testid="role-error">@Error</span>
+    }
+</div>
+
+@code {
+    private readonly string _labelId = "rf-" + Guid.NewGuid().ToString("N")[..8];
+
+    [Parameter, EditorRequired] public HashSet<AudienceRole> Selected { get; set; } = [];
+    [Parameter] public EventCallback SelectedChanged { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public string? Error { get; set; }
+
+    private static string IconOf(AudienceRole role) => role switch
+    {
+        AudienceRole.Staff => Icons.Material.Rounded.Badge,
+        AudienceRole.Students => Icons.Material.Rounded.School,
+        _ => Icons.Material.Rounded.FamilyRestroom,
+    };
+
+    private async Task ToggleAsync(AudienceRole role)
+    {
+        if (!Selected.Remove(role)) Selected.Add(role);
+        await SelectedChanged.InvokeAsync();
+    }
+}
