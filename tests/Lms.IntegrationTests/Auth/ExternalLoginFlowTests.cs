@@ -16,10 +16,12 @@ namespace Lms.IntegrationTests.Auth;
 
 /// <summary>The whole browser flow against a real OpenID Connect provider (mock-oauth2-server container).</summary>
 [Collection(ApiCollection.Name)]
-public sealed class ExternalLoginFlowTests(LmsApiFactory factory)
+public sealed class ExternalLoginFlowTests(LmsApiFactory factory) : IDisposable
 {
     private static readonly JsonSerializerOptions Web = new(JsonSerializerDefaults.Web);
     private readonly AuthTestHost _host = new(factory);
+
+    public void Dispose() => _host.Dispose();
 
     [Fact]
     public async Task End_to_end_code_flow_against_mock_oauth2_server_issues_token_with_ext_org()
