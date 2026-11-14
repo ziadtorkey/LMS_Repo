@@ -27,7 +27,7 @@ public class ConfigurationContractTests
     [Fact]
     public void Declared_keys_are_found()
     {
-        Assert.Equal(32, DeclaredKeys().Count());
+        Assert.Equal(47, DeclaredKeys().Count());
     }
 
     [Theory]
@@ -68,6 +68,11 @@ public class ConfigurationContractTests
             "Packages.CommitMinIntervalSeconds",
             "Live.JoinWindowMinutes", "Live.ReminderMinutes", "Live.MaxCreatesPerDay", "Live.CloudRecordingEnabled",
             "Org.TimeZone", "Grades.MissingPolicy", "Grades.CategoryMethod", "Grades.DecimalPlaces", "AcademicYears.TermsPerYear",
+            "Timetable.WorkingDays", "Timetable.ConflictMode",
+            "Attendance.GenerateDaysAhead", "Attendance.EditWindowHours", "Attendance.LiveMinPercent", "Attendance.LateAfterMinutes",
+            "Attendance.AbsentThreshold", "Attendance.ThresholdWindowDays", "Attendance.LateWeightPercent",
+            "Excuses.Submitters", "Excuses.MaxDaysAfterAbsence", "Excuses.AllowedReasons", "Excuses.AttachmentRequiredReasons",
+            "Excuses.MaxAttachmentMb", "Excuses.AttachmentRetentionDays",
         ], SettingCatalog.All.Select(d => d.Name));
 
         var culture = SettingCatalog.Find("Ui.DefaultCulture")!;

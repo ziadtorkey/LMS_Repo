@@ -1770,4 +1770,123 @@
   <data name="AuditEntity_GradeEntry" xml:space="preserve"><value>درجة</value></data>
   <data name="AuditEntity_GradeSnapshot" xml:space="preserve"><value>لقطة الدرجات</value></data>
   <data name="PermModule_Grades" xml:space="preserve"><value>الدرجات</value></data>
+  <data name="Error_timetable_conflict" xml:space="preserve"><value>تتعارض هذه الحصة مع حصة أخرى: المعلم أو الفصل محجوز في الوقت نفسه.</value></data>
+  <data name="Error_period_overlap" xml:space="preserve"><value>تتداخل الفترة مع فترة أخرى في هذه المدرسة، أو لا تبدأ قبل نهايتها.</value></data>
+  <data name="Error_period_in_use" xml:space="preserve"><value>تستخدم إحدى حصص الجدول هذه الفترة، لذا لا يمكن حذفها.</value></data>
+  <data name="Error_timetable_not_published" xml:space="preserve"><value>هذه الحصة ما زالت مسودة. انشر الجدول أولاً.</value></data>
+  <data name="Error_exception_date_invalid" xml:space="preserve"><value>يجب أن يكون التاريخ يوم دراسة لهذه الحصة داخل الفصل، وللحصة استثناء واحد فقط في اليوم الواحد.</value></data>
+  <data name="Error_exception_substitute_invalid" xml:space="preserve"><value>يجب أن يكون البديل معلماً آخر في مجموعة المدارس ولا يكون مشغولاً في هذه الفترة في ذلك التاريخ.</value></data>
+  <data name="Setting_Timetable_WorkingDays" xml:space="preserve"><value>أيام الدراسة في الأسبوع</value></data>
+  <data name="SettingValue_Timetable_WorkingDays_Sun" xml:space="preserve"><value>الأحد</value></data>
+  <data name="SettingValue_Timetable_WorkingDays_Mon" xml:space="preserve"><value>الاثنين</value></data>
+  <data name="SettingValue_Timetable_WorkingDays_Tue" xml:space="preserve"><value>الثلاثاء</value></data>
+  <data name="SettingValue_Timetable_WorkingDays_Wed" xml:space="preserve"><value>الأربعاء</value></data>
+  <data name="SettingValue_Timetable_WorkingDays_Thu" xml:space="preserve"><value>الخميس</value></data>
+  <data name="SettingValue_Timetable_WorkingDays_Fri" xml:space="preserve"><value>الجمعة</value></data>
+  <data name="SettingValue_Timetable_WorkingDays_Sat" xml:space="preserve"><value>السبت</value></data>
+  <data name="Setting_Timetable_ConflictMode" xml:space="preserve"><value>تعارضات الجدول</value></data>
+  <data name="SettingValue_Timetable_ConflictMode_Block" xml:space="preserve"><value>منع الحفظ</value></data>
+  <data name="SettingValue_Timetable_ConflictMode_Warn" xml:space="preserve"><value>الحفظ مع تنبيه</value></data>
+  <data name="Tt_SlotState_Draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="Tt_SlotState_Published" xml:space="preserve"><value>منشور</value></data>
+  <data name="Tt_ConflictKind_TeacherDoubleBooked" xml:space="preserve"><value>المعلم محجوز في هذا الوقت</value></data>
+  <data name="Tt_ConflictKind_ClassDoubleBooked" xml:space="preserve"><value>الفصل محجوز في هذا الوقت</value></data>
+  <data name="Tt_ExceptionKind_Substitute" xml:space="preserve"><value>معلم بديل</value></data>
+  <data name="Tt_ExceptionKind_Cancelled" xml:space="preserve"><value>ملغاة</value></data>
+  <data name="Tt_ExceptionKind_Moved" xml:space="preserve"><value>منقولة إلى فترة أخرى</value></data>
+  <data name="Tt_SlotBadge_Conflict" xml:space="preserve"><value>تعارض</value></data>
+  <data name="Tt_SlotBadge_HasException" xml:space="preserve"><value>فيها تغيير</value></data>
+  <data name="Tt_SlotBadge_DraftChange" xml:space="preserve"><value>غير منشورة بعد التعديل</value></data>
+  <data name="Tt_CopySkip_ClassCourseMissing" xml:space="preserve"><value>المقرر غير مدرَّس في هذا الفصل الدراسي</value></data>
+  <data name="Tt_CopySkip_TeacherMissing" xml:space="preserve"><value>المعلم لم يعد مكلفاً</value></data>
+  <data name="Tt_CopySkip_PeriodMissing" xml:space="preserve"><value>الفترة لم تعد موجودة</value></data>
+  <data name="Tt_CopySkip_SlotExists" xml:space="preserve"><value>في الفصل الدراسي الهدف حصة في هذا الموضع</value></data>
+  <data name="Perm_Timetable_View" xml:space="preserve"><value>عرض الجداول والفترات</value></data>
+  <data name="Perm_Timetable_Manage" xml:space="preserve"><value>بناء الجداول ونشرها</value></data>
+  <data name="Perm_Timetable_Configure" xml:space="preserve"><value>ضبط الفترات</value></data>
+  <data name="Perm_Timetable_ViewOwn" xml:space="preserve"><value>عرض الجدول الخاص</value></data>
+  <data name="AuditEntity_Period" xml:space="preserve"><value>الفترة</value></data>
+  <data name="AuditEntity_TimetableSlot" xml:space="preserve"><value>حصة الجدول</value></data>
+  <data name="AuditEntity_TimetableException" xml:space="preserve"><value>استثناء الجدول</value></data>
+  <data name="PermModule_Timetable" xml:space="preserve"><value>الجدول الدراسي</value></data>
+  <data name="Error_attendance_edit_window_closed" xml:space="preserve"><value>انتهت مهلة تعديل هذا التحضير. اطلب من المدير أو الأخصائي تصحيحه.</value></data>
+  <data name="Error_attendance_session_future" xml:space="preserve"><value>هذه الحصة في تاريخ لاحق. يمكن تسجيل الحضور لليوم أو لما قبله فقط.</value></data>
+  <data name="Error_attendance_unmarked_rows" xml:space="preserve"><value>سجّل حالة كل طالب قبل الحفظ.</value></data>
+  <data name="Error_attendance_reason_required" xml:space="preserve"><value>اكتب سببًا (حتى 500 حرف) لتعديل الحضور بعد انتهاء المهلة.</value></data>
+  <data name="Error_attendance_not_a_proposal" xml:space="preserve"><value>يمكن اعتماد الحضور المقترح من الحصة المباشرة فقط.</value></data>
+  <data name="Error_excuse_out_of_policy" xml:space="preserve"><value>هذا العذر خارج سياسة المدرسة.</value></data>
+  <data name="Error_excuse_submitter_not_allowed" xml:space="preserve"><value>يمكن لولي الأمر فقط تقديم عذر لهذا الطالب.</value></data>
+  <data name="Error_excuse_reviewer_is_submitter" xml:space="preserve"><value>لا يمكنك مراجعة عذر قدّمته بنفسك.</value></data>
+  <data name="Error_excuse_comment_required" xml:space="preserve"><value>اكتب تعليقًا (حتى 500 حرف) لرفض العذر.</value></data>
+  <data name="Error_excuse_attachment_invalid" xml:space="preserve"><value>يجب أن يكون المرفق ملف JPEG أو PNG أو WebP أو PDF ضمن الحجم المسموح.</value></data>
+  <data name="Error_excuse_not_pending" xml:space="preserve"><value>تم البتّ في هذا العذر أو سحبه بالفعل.</value></data>
+  <data name="Exc_Violation_TooLate" xml:space="preserve"><value>مضت على الغياب مدة أطول من المسموح لتقديم العذر.</value></data>
+  <data name="Exc_Violation_ReasonNotAllowed" xml:space="preserve"><value>هذا السبب غير مقبول لدى المدرسة.</value></data>
+  <data name="Exc_Violation_AttachmentRequired" xml:space="preserve"><value>هذا السبب يتطلب مرفقًا.</value></data>
+  <data name="Exc_Violation_NothingToExcuse" xml:space="preserve"><value>لا يوجد في الأيام المختارة غياب أو تأخر لتقديم عذر عنه.</value></data>
+  <data name="Exc_Violation_DatesInvalid" xml:space="preserve"><value>التواريخ في المستقبل أو معكوسة.</value></data>
+  <data name="Setting_Attendance_GenerateDaysAhead" xml:space="preserve"><value>عدد الأيام التي تُنشأ حصصها مسبقًا من الجدول</value></data>
+  <data name="Setting_Attendance_EditWindowHours" xml:space="preserve"><value>عدد الساعات التي يمكن للمعلم فيها تعديل الحضور بعد تسجيله</value></data>
+  <data name="Setting_Attendance_LiveMinPercent" xml:space="preserve"><value>نسبة الحضور في الحصة المباشرة التي تُعدّ حضورًا (%)</value></data>
+  <data name="Setting_Attendance_LateAfterMinutes" xml:space="preserve"><value>الدقائق بعد البدء التي تُعدّ تأخرًا</value></data>
+  <data name="Setting_Attendance_AbsentThreshold" xml:space="preserve"><value>عدد الغيابات الذي يطلق التنبيه</value></data>
+  <data name="Setting_Attendance_ThresholdWindowDays" xml:space="preserve"><value>عدد الأيام المحتسبة في تنبيه الغياب</value></data>
+  <data name="Setting_Attendance_LateWeightPercent" xml:space="preserve"><value>يُحتسب التأخر بهذه النسبة من الغياب (%)</value></data>
+  <data name="Setting_Excuses_Submitters" xml:space="preserve"><value>من يمكنه تقديم عذر</value></data>
+  <data name="SettingValue_Excuses_Submitters_GuardiansOnly" xml:space="preserve"><value>أولياء الأمور فقط</value></data>
+  <data name="SettingValue_Excuses_Submitters_GuardiansAndStudents" xml:space="preserve"><value>أولياء الأمور والطلاب</value></data>
+  <data name="Setting_Excuses_MaxDaysAfterAbsence" xml:space="preserve"><value>عدد أيام الدراسة المسموحة لتقديم العذر بعد الغياب</value></data>
+  <data name="Setting_Excuses_AllowedReasons" xml:space="preserve"><value>أسباب الأعذار المقبولة</value></data>
+  <data name="Setting_Excuses_AttachmentRequiredReasons" xml:space="preserve"><value>الأسباب التي تتطلب مرفقًا</value></data>
+  <data name="SettingValue_Excuses_AllowedReasons_Illness" xml:space="preserve"><value>مرض</value></data>
+  <data name="SettingValue_Excuses_AttachmentRequiredReasons_Illness" xml:space="preserve"><value>مرض</value></data>
+  <data name="Exc_Reason_Illness" xml:space="preserve"><value>مرض</value></data>
+  <data name="SettingValue_Excuses_AllowedReasons_Family" xml:space="preserve"><value>ظروف أسرية</value></data>
+  <data name="SettingValue_Excuses_AttachmentRequiredReasons_Family" xml:space="preserve"><value>ظروف أسرية</value></data>
+  <data name="Exc_Reason_Family" xml:space="preserve"><value>ظروف أسرية</value></data>
+  <data name="SettingValue_Excuses_AllowedReasons_Official" xml:space="preserve"><value>التزام رسمي</value></data>
+  <data name="SettingValue_Excuses_AttachmentRequiredReasons_Official" xml:space="preserve"><value>التزام رسمي</value></data>
+  <data name="Exc_Reason_Official" xml:space="preserve"><value>التزام رسمي</value></data>
+  <data name="SettingValue_Excuses_AllowedReasons_Other" xml:space="preserve"><value>أخرى</value></data>
+  <data name="SettingValue_Excuses_AttachmentRequiredReasons_Other" xml:space="preserve"><value>أخرى</value></data>
+  <data name="Exc_Reason_Other" xml:space="preserve"><value>أخرى</value></data>
+  <data name="Setting_Excuses_MaxAttachmentMb" xml:space="preserve"><value>أكبر حجم لمرفق العذر (ميغابايت)</value></data>
+  <data name="Setting_Excuses_AttachmentRetentionDays" xml:space="preserve"><value>عدد أيام الاحتفاظ بمرفقات الأعذار المرفوضة أو المسحوبة</value></data>
+  <data name="NotifEvent_Attendance_Absent" xml:space="preserve"><value>تسجيل غياب أو تأخر</value></data>
+  <data name="Notif_Attendance_Absent" xml:space="preserve"><value>سُجّلت حالة {Status} للطالب {StudentName} في {CourseName} بتاريخ {Date}.</value></data>
+  <data name="NotifEvent_Excuses_Decided" xml:space="preserve"><value>البتّ في العذر</value></data>
+  <data name="Notif_Excuses_Decided" xml:space="preserve"><value>تم البتّ في عذر {StudentName}: {Decision}.</value></data>
+  <data name="NotifEvent_Excuses_Escalated" xml:space="preserve"><value>عذر محوَّل إليك</value></data>
+  <data name="Notif_Excuses_Escalated" xml:space="preserve"><value>حُوِّل إليك عذر خاص بالطالب {StudentName}.</value></data>
+  <data name="NotifEvent_Attendance_ThresholdCrossed" xml:space="preserve"><value>بلوغ حدّ الغياب</value></data>
+  <data name="Notif_Attendance_ThresholdCrossed" xml:space="preserve"><value>بلغ الطالب {StudentName} عدد {Absences} غيابات خلال آخر {WindowDays} يومًا.</value></data>
+  <data name="Att_Status_Present" xml:space="preserve"><value>حاضر</value></data>
+  <data name="Att_Status_Absent" xml:space="preserve"><value>غائب</value></data>
+  <data name="Att_Status_Late" xml:space="preserve"><value>متأخر</value></data>
+  <data name="Att_Status_Excused" xml:space="preserve"><value>غياب بعذر</value></data>
+  <data name="Att_Source_Timetable" xml:space="preserve"><value>من الجدول</value></data>
+  <data name="Att_Source_AdHoc" xml:space="preserve"><value>أضافها المعلم</value></data>
+  <data name="Att_Source_Live" xml:space="preserve"><value>مقترحة من حصة مباشرة</value></data>
+  <data name="Att_State_Open" xml:space="preserve"><value>مفتوحة</value></data>
+  <data name="Att_State_Taken" xml:space="preserve"><value>مسجَّلة</value></data>
+  <data name="Att_ChangeKind_Taken" xml:space="preserve"><value>تسجيل</value></data>
+  <data name="Att_ChangeKind_Edited" xml:space="preserve"><value>تعديل</value></data>
+  <data name="Att_ChangeKind_EditedAfterWindow" xml:space="preserve"><value>تعديل بعد المهلة</value></data>
+  <data name="Att_ChangeKind_ExcuseApproved" xml:space="preserve"><value>قبول عذر</value></data>
+  <data name="Exc_Status_Submitted" xml:space="preserve"><value>مقدَّم</value></data>
+  <data name="Exc_Status_Approved" xml:space="preserve"><value>مقبول</value></data>
+  <data name="Exc_Status_Rejected" xml:space="preserve"><value>مرفوض</value></data>
+  <data name="Exc_Status_Escalated" xml:space="preserve"><value>محوَّل</value></data>
+  <data name="Exc_Status_Withdrawn" xml:space="preserve"><value>مسحوب</value></data>
+  <data name="Perm_Attendance_Take" xml:space="preserve"><value>تسجيل الحضور</value></data>
+  <data name="Perm_Attendance_Edit" xml:space="preserve"><value>تعديل الحضور بعد انتهاء المهلة</value></data>
+  <data name="Perm_Attendance_View" xml:space="preserve"><value>عرض الحضور والتقارير والتنبيهات</value></data>
+  <data name="Perm_Attendance_ViewOwn" xml:space="preserve"><value>عرض الحضور الخاص</value></data>
+  <data name="Perm_Excuses_Submit" xml:space="preserve"><value>تقديم أعذار الغياب ومتابعتها</value></data>
+  <data name="Perm_Excuses_Review" xml:space="preserve"><value>مراجعة أعذار الغياب</value></data>
+  <data name="Perm_Excuses_Escalate" xml:space="preserve"><value>تحويل أعذار الغياب</value></data>
+  <data name="PermModule_Attendance" xml:space="preserve"><value>الحضور</value></data>
+  <data name="PermModule_Excuses" xml:space="preserve"><value>الأعذار</value></data>
+  <data name="AuditEntity_AttendanceRecordChange" xml:space="preserve"><value>تعديل حضور</value></data>
+  <data name="AuditEntity_AbsenceExcuse" xml:space="preserve"><value>عذر غياب</value></data>
 </root>
