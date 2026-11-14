@@ -1494,6 +1494,14 @@
   <data name="Error_package_reason_compression_ratio" xml:space="preserve"><value>The package is compressed in an unsafe way. Export it again.</value></data>
   <data name="Error_package_reason_symlink" xml:space="preserve"><value>The package contains links to other files, which aren't allowed.</value></data>
   <data name="Error_package_reason_duplicate_name" xml:space="preserve"><value>Two files in the package have the same name.</value></data>
+  <data name="Import_Steps" xml:space="preserve"><value>Import steps</value></data>
+  <data name="Import_TemplateFile" xml:space="preserve"><value>Excel template</value></data>
+  <data name="Import_TemplateFileHint" xml:space="preserve"><value>The columns this import expects, in the language you chose.</value></data>
+  <data name="Import_DropHint" xml:space="preserve"><value>Drag and drop your completed spreadsheet here, or browse your device.</value></data>
+  <data name="Import_DropLimits" xml:space="preserve"><value>An .xlsx file, up to {0} MB.</value></data>
+  <data name="Import_StatRows" xml:space="preserve"><value>Rows</value></data>
+  <data name="Import_StatValid" xml:space="preserve"><value>Valid rows</value></data>
+  <data name="Import_StatErrors" xml:space="preserve"><value>Rows with errors</value></data>
   <data name="Package_Start" xml:space="preserve"><value>Start</value></data>
   <data name="Package_Resume" xml:space="preserve"><value>Resume</value></data>
   <data name="Package_Preview" xml:space="preserve"><value>Preview</value></data>

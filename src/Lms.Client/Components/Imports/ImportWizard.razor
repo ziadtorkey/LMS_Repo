@@ -1,4 +1,5 @@
 @using System.Globalization
+@using Lms.Client.Components
 @using Lms.Client.Components.People
 @using Lms.Client.Services.Api
 @using Lms.Shared.Imports
@@ -12,62 +13,99 @@
 @inject IJSRuntime Js
 
 @* Reusable Excel import: 1 template, 2 target unit + file, 3 review (polls while the server works) and commit, 4 result. *@
-<SectionCard Title="@(ShowTitle ? L[TitleKey].Value : null)" TestId="import-wizard">
+<div class="lms-import" data-testid="import-wizard">
+    @if (ShowTitle)
+    {
+        <MudText Typo="Typo.h4" HtmlTag="h1" Class="mb-3">@L[TitleKey]</MudText>
+    }
     @Banner
-    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap" Class="mb-4" data-testid="import-steps">
-        @for (var i = 0; i < _stepKeys.Length; i++)
-        {
-            var index = i;
-            <MudChip T="string" Size="Size.Small" Color="@(index == _step ? Color.Primary : Color.Default)"
-                     Variant="@(index <= _step ? Variant.Filled : Variant.Outlined)"
-                     data-testid="@($"import-step-{index}")">@((index + 1) + ". " + L[_stepKeys[index]])</MudChip>
-        }
-    </MudStack>
+    <SectionCard Class="mb-4">
+        <ol class="lms-steps lms-import-steps" aria-label="@L["Import_Steps"]" data-testid="import-steps">
+            @for (var i = 0; i < _stepKeys.Length; i++)
+            {
+                var index = i;
+                <li class="@(index < _step ? "lms-step-done" : null)" aria-current="@(index == _step ? "step" : null)" data-testid="@($"import-step-{index}")">
+                    <span class="lms-step-number" aria-hidden="true">
+                        @if (index < _step)
+                        {
+                            <MudIcon Icon="@Icons.Material.Rounded.Check" Size="Size.Small" />
+                        }
+                        else
+                        {
+                            @(index + 1)
+                        }
+                    </span>
+                    <span class="lms-step-label">@L[_stepKeys[index]]</span>
+                </li>
+            }
+        </ol>
+    </SectionCard>
 
     @if (_error is not null)
     {
-        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-3" data-testid="import-error">@_error</MudAlert>
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-3" role="alert" data-testid="import-error">@_error</MudAlert>
     }
 
     @switch (_step)
     {
         case 0:
-            <MudStack Spacing="3" data-testid="import-step-template">
-                @Help
-                <MudRadioGroup T="string" Value="_culture" ValueChanged="c => _culture = c" data-testid="import-template-language">
-                    <MudText Typo="Typo.subtitle2">@L["Import_TemplateLanguage"]</MudText>
-                    <MudRadio T="string" Value="@("ar")" data-testid="import-lang-ar">العربية</MudRadio>
-                    <MudRadio T="string" Value="@("en")" data-testid="import-lang-en">English</MudRadio>
-                </MudRadioGroup>
-                <MudStack Row="true" Spacing="2">
-                    <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.Download"
-                               OnClick="DownloadTemplateAsync" data-testid="import-template">@L["Import_DownloadTemplate"]</MudButton>
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => _step = 1"
-                               data-testid="import-next">@L["Common_Next"]</MudButton>
+            <SectionCard Title="@L["Import_Step_Template"]" TestId="import-step-template">
+                <MudStack Spacing="3">
+                    @Help
+                    <MudRadioGroup T="string" Value="_culture" ValueChanged="c => _culture = c" data-testid="import-template-language">
+                        <MudText Typo="Typo.subtitle2">@L["Import_TemplateLanguage"]</MudText>
+                        <MudRadio T="string" Value="@("ar")" data-testid="import-lang-ar">العربية</MudRadio>
+                        <MudRadio T="string" Value="@("en")" data-testid="import-lang-en">English</MudRadio>
+                    </MudRadioGroup>
+                    @* The template download as a soft panel with the file icon, as on the Stitch screen. *@
+                    <div class="lms-import-template" data-testid="import-template-panel">
+                        <span class="lms-kind-tile" aria-hidden="true"><MudIcon Icon="@Icons.Material.Rounded.TableView" /></span>
+                        <div class="lms-import-template-text">
+                            <div class="lms-cell-strong">@L["Import_TemplateFile"]</div>
+                            <div class="lms-muted lms-import-hint">@L["Import_TemplateFileHint"]</div>
+                        </div>
+                        <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.Download"
+                                   OnClick="DownloadTemplateAsync" data-testid="import-template">@L["Import_DownloadTemplate"]</MudButton>
+                    </div>
+                    <div class="lms-dialog-actions">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Rounded.ArrowForward" IconClass="lms-icon-flip"
+                                   OnClick="() => _step = 1" data-testid="import-next">@L["Common_Next"]</MudButton>
+                    </div>
                 </MudStack>
-            </MudStack>
+            </SectionCard>
             break;
 
         case 1:
-            <MudStack Spacing="3" data-testid="import-step-upload">
-                <UnitPicker Value="_unitId" ValueChanged="id => _unitId = id ?? Guid.Empty"
-                            Label="@L["Import_TargetUnit"]" TestId="import-unit" />
-                <InputFile accept=".xlsx" OnChange="FileChosenAsync" data-testid="import-file" aria-label="@L["Import_ChooseFile"]" />
-                @if (_file is not null)
-                {
-                    <MudText Typo="Typo.body2" dir="ltr" data-testid="import-file-name">@_file.Name</MudText>
-                }
-                @if (_fileError is not null)
-                {
-                    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" data-testid="import-file-error">@_fileError</MudAlert>
-                }
-                <MudStack Row="true" Spacing="2">
-                    <MudButton Variant="Variant.Text" OnClick="() => _step = 0" data-testid="import-back">@L["Common_Back"]</MudButton>
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="UploadAsync"
-                               Disabled="@(_file is null || _fileError is not null || _unitId == Guid.Empty || _busy)"
-                               data-testid="import-upload">@L["Import_Upload"]</MudButton>
+            <SectionCard Title="@L["Import_Step_Upload"]" TestId="import-step-upload">
+                <MudStack Spacing="3">
+                    <UnitPicker Value="_unitId" ValueChanged="id => _unitId = id ?? Guid.Empty"
+                                Label="@L["Import_TargetUnit"]" TestId="import-unit" />
+                    @* The file input fills the whole drop zone, so dropping a file on it works as well as browsing. *@
+                    <div class="lms-dropzone lms-import-dropzone" data-testid="import-dropzone">
+                        <MudIcon Icon="@Icons.Material.Rounded.CloudUpload" Size="Size.Large" aria-hidden="true" />
+                        <div class="lms-cell-strong">@L["Import_DropHint"]</div>
+                        <div class="lms-muted lms-import-hint">@L["Import_DropLimits", ImportLimits.MaxFileBytes / (1024 * 1024)]</div>
+                        <InputFile accept=".xlsx" OnChange="FileChosenAsync" data-testid="import-file" aria-label="@L["Import_ChooseFile"]" />
+                    </div>
+                    @if (_file is not null)
+                    {
+                        <div class="lms-file-row">
+                            <MudIcon Icon="@Icons.Material.Rounded.Description" aria-hidden="true" />
+                            <div class="lms-file-row-main"><div class="lms-file-row-name" dir="ltr" data-testid="import-file-name">@_file.Name</div></div>
+                        </div>
+                    }
+                    @if (_fileError is not null)
+                    {
+                        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" role="alert" data-testid="import-file-error">@_fileError</MudAlert>
+                    }
+                    <div class="lms-dialog-actions">
+                        <MudButton Variant="Variant.Text" OnClick="() => _step = 0" data-testid="import-back">@L["Common_Back"]</MudButton>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="UploadAsync"
+                                   Disabled="@(_file is null || _fileError is not null || _unitId == Guid.Empty || _busy)"
+                                   data-testid="import-upload">@L["Import_Upload"]</MudButton>
+                    </div>
                 </MudStack>
-            </MudStack>
+            </SectionCard>
             break;
 
         case 2 when _batch is not null:
@@ -84,7 +122,12 @@
                 }
                 else
                 {
-                    <MudText data-testid="import-summary">@string.Format(CultureInfo.CurrentCulture, L["Import_RowsSummary"].Value, _batch.RowCount, _batch.ErrorCount)</MudText>
+                    <div class="lms-stats lms-import-stats" data-testid="import-summary">
+                        <span class="lms-visually-hidden">@string.Format(CultureInfo.CurrentCulture, L["Import_RowsSummary"].Value, _batch.RowCount, _batch.ErrorCount)</span>
+                        @SummaryTile("import-stat-rows", L["Import_StatRows"], _batch.RowCount, Icons.Material.Rounded.TableRows)
+                        @SummaryTile("import-stat-valid", L["Import_StatValid"], Math.Max(0, _batch.RowCount - _batch.ErrorCount), Icons.Material.Rounded.TaskAlt)
+                        @SummaryTile("import-stat-errors", L["Import_StatErrors"], _batch.ErrorCount, Icons.Material.Rounded.ErrorOutline)
+                    </div>
                 }
 
                 @if (_batch.Status == ImportStatuses.Invalid)
@@ -129,7 +172,7 @@
             </MudStack>
             break;
     }
-</SectionCard>
+</div>
 
 @code {
     /// <summary>False when the hosting page already shows the title (its page header).</summary>
@@ -166,6 +209,17 @@
 
     /// <summary>How often the batch is re-read while the server validates or commits it.</summary>
     [Parameter] public TimeSpan PollInterval { get; set; } = TimeSpan.FromSeconds(2);
+
+    private RenderFragment SummaryTile(string testId, string label, int value, string icon) => __builder =>
+    {
+        <div class="lms-stat" data-testid="@testId">
+            <div>
+                <div class="lms-stat-label">@label</div>
+                <div class="lms-stat-value" data-testid="@($"{testId}-value")">@value</div>
+            </div>
+            <span class="lms-stat-icon" aria-hidden="true"><MudIcon Icon="@icon" /></span>
+        </div>
+    };
 
     private bool Working => _batch?.Status is ImportStatuses.Uploaded or ImportStatuses.Validating or ImportStatuses.Committing;
     private string WorkingKey => _batch?.Status == ImportStatuses.Committing ? "Import_Committing" : "Import_Validating";
