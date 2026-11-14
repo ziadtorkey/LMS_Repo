@@ -1951,6 +1951,8 @@
   <data name="Setting_Messaging_MaxNewConversationsPerDay" xml:space="preserve"><value>عدد المحادثات الجديدة يوميًا</value></data>
   <data name="Setting_Messaging_MaxGroupSize" xml:space="preserve"><value>أكبر حجم لمحادثة جماعية</value></data>
   <data name="Setting_Messaging_UploadsPerMinute" xml:space="preserve"><value>عدد رفع المرفقات في الدقيقة</value></data>
+  <data name="Setting_Messaging_RetentionYearsAfterClose" xml:space="preserve"><value>عدد سنوات الاحتفاظ بالرسائل بعد إغلاق العام الدراسي</value></data>
+  <data name="Setting_Messaging_RemovedOriginalRetentionDays" xml:space="preserve"><value>عدد أيام الاحتفاظ بالنص الأصلي للرسالة المحذوفة</value></data>
   <data name="Setting_Announcements_MaxPerAuthorPerDay" xml:space="preserve"><value>عدد الإعلانات لكل كاتب يوميًا</value></data>
   <data name="NotifEvent_Messages_NewMessage" xml:space="preserve"><value>رسالة جديدة</value></data>
   <data name="Notif_Messages_NewMessage" xml:space="preserve"><value>أرسل لك {SenderName} رسالة.</value></data>

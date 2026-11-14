@@ -142,6 +142,12 @@ public static class SettingKeys
     /// <summary>Per-user cap of message attachment uploads a minute (429 <c>rate_limited</c> over it).</summary>
     public static readonly SettingKey<int> MessagingUploadsPerMinute = new("Messaging.UploadsPerMinute", 10);
 
+    /// <summary>School years messages are kept after the year closes (D71: 1).</summary>
+    public static readonly SettingKey<int> MessagingRetentionYearsAfterClose = new("Messaging.RetentionYearsAfterClose", 1);
+
+    /// <summary>Days the original text of a moderator-removed message is kept (D71: 180).</summary>
+    public static readonly SettingKey<int> MessagingRemovedOriginalRetentionDays = new("Messaging.RemovedOriginalRetentionDays", 180);
+
     /// <summary>Per-author cap of announcements a day.</summary>
     public static readonly SettingKey<int> AnnouncementsMaxPerAuthorPerDay = new("Announcements.MaxPerAuthorPerDay", 10);
 
