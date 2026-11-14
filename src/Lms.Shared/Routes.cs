@@ -7,6 +7,9 @@ namespace Lms.Shared;
 public static partial class Routes
 {
     public const string Me = "/api/me";
+
+    /// <summary>GET → <c>CapabilitiesDto</c> — authenticated, no permission (M6 L17): the effective feature flags of the caller's active context.</summary>
+    public const string MeCapabilities = Me + "/capabilities";
     public const string MyPermissions = "/api/me/permissions";
 
     // M1 organization (Task 1)

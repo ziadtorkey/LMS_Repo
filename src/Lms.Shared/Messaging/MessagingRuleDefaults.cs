@@ -33,13 +33,16 @@ public static class MessagingRuleDefaults
             BuiltInRoles.Student => to is BuiltInRoles.Teacher or BuiltInRoles.Counselor ? MessagingRuleModes.Relationship : MessagingRuleModes.Deny,
             BuiltInRoles.Guardian => to is BuiltInRoles.Teacher or BuiltInRoles.Counselor ? MessagingRuleModes.Relationship : MessagingRuleModes.Deny,
             BuiltInRoles.Teacher => to is BuiltInRoles.Student or BuiltInRoles.Guardian ? MessagingRuleModes.Relationship
-                : Staff.Contains(to) ? MessagingRuleModes.Allow : MessagingRuleModes.Deny,
+                : Staff.Contains(to) ? MessagingRuleModes.SameUnit : MessagingRuleModes.Deny,
             BuiltInRoles.Counselor or BuiltInRoles.Supervisor => to is BuiltInRoles.Student or BuiltInRoles.Guardian ? MessagingRuleModes.Relationship
-                : Staff.Contains(to) ? MessagingRuleModes.Allow : MessagingRuleModes.Deny,
-            BuiltInRoles.Manager or BuiltInRoles.OrgAdmin => to == BuiltInRoles.Student ? MessagingRuleModes.Deny : MessagingRuleModes.Allow,
+                : Staff.Contains(to) ? MessagingRuleModes.SameUnit : MessagingRuleModes.Deny,
+            BuiltInRoles.Manager or BuiltInRoles.OrgAdmin => to == BuiltInRoles.Student ? MessagingRuleModes.Deny : MessagingRuleModes.SameUnit,
             _ => MessagingRuleModes.Deny,
         };
     }
+
+    /// <summary>The field name of a refused cell in the 400 <c>rules_looser_than_default</c> problem: <c>From&gt;To</c>, for example <c>Student&gt;Teacher</c>.</summary>
+    public static string CellField(string fromRole, string toRole) => $"{fromRole}>{toRole}";
 
     /// <summary>The whole default matrix, one cell per (sender, recipient) pair.</summary>
     public static IReadOnlyList<MessagingRuleCellDto> Matrix() =>

@@ -7,7 +7,7 @@ public sealed record AnnouncementAttachmentDto(Guid FileId, string FileName, str
 
 /// <summary>
 /// An announcement as its authors and admins see it (<c>Announcements.Manage</c> at the authoring unit; a Teacher only for own ClassCourses and their groups).
-/// Bilingual: both titles are required, the body is Arabic and/or English. <c>AudienceCount</c> is the size of the recipient snapshot made at publish time
+/// Bilingual: both titles are required, the body is Arabic and/or English. <c>IsUrgent</c> (D76, no SMS in v1): sent immediately, ignoring quiet hours and a schedule, pinned, on push <b>and</b> email. <c>AudienceCount</c> is the size of the recipient snapshot made at publish time
 /// (null until published). <c>EditedAtUtc</c> marks a body edited after publishing.
 /// </summary>
 public sealed record AnnouncementDto(
@@ -31,7 +31,8 @@ public sealed record AnnouncementDto(
     string AuthorNameEn,
     int? AudienceCount,
     DateTime? EditedAtUtc,
-    DateTime CreatedAtUtc);
+    DateTime CreatedAtUtc,
+    bool IsUrgent = false);
 
 public sealed record AnnouncementListItemDto(
     Guid Id,
@@ -44,7 +45,8 @@ public sealed record AnnouncementListItemDto(
     DateTime? ExpiresAtUtc,
     int? AudienceCount,
     string AuthorNameAr,
-    string AuthorNameEn);
+    string AuthorNameEn,
+    bool IsUrgent = false);
 
 /// <summary>
 /// POST <c>/api/announcements</c>. <c>Publish</c> false saves a <c>Draft</c>; true publishes now (or schedules when <c>PublishAtUtc</c> is in the future).
@@ -63,7 +65,8 @@ public sealed record CreateAnnouncementRequest(
     bool IsPinned,
     bool Notify,
     IReadOnlyList<Guid>? AttachmentFileIds,
-    bool Publish);
+    bool Publish,
+    bool IsUrgent = false);
 
 /// <summary>
 /// PUT <c>/api/announcements/{id}</c>: everything while <c>Draft</c> or <c>Scheduled</c>; once <c>Published</c> only the expiry and the pin change and a body edit
@@ -80,9 +83,17 @@ public sealed record UpdateAnnouncementRequest(
     DateTime? ExpiresAtUtc,
     bool IsPinned,
     bool Notify,
-    IReadOnlyList<Guid>? AttachmentFileIds);
+    IReadOnlyList<Guid>? AttachmentFileIds,
+    bool IsUrgent = false);
 
 public sealed record AnnouncementQuery(string? Status = null, int Page = 1, int PageSize = Paging.DefaultPageSize);
+
+/// <summary>
+/// What the caller may author (GET <c>/api/comms/announcements/capabilities</c>, <c>Announcements.View</c>): the client never infers it from <c>OrgUnits.View</c>.
+/// <c>CanAuthorUnitAnnouncements</c> = <c>Announcements.Manage</c> at some unit and a target of kind Organization, Unit, Level or Class in scope (a Teacher: false, own
+/// ClassCourses and their groups only); <c>CanAuthorClassCourseAnnouncements</c> = ClassCourse or Group targets of the caller's own class courses; <c>CanMarkUrgent</c> = may set <c>IsUrgent</c>.
+/// </summary>
+public sealed record AnnouncementCapabilitiesDto(bool CanAuthorUnitAnnouncements, bool CanAuthorClassCourseAnnouncements, bool CanMarkUrgent);
 
 /// <summary>POST <c>/api/announcements/audience-preview</c>: the count (and a capped sample of names inside the author's own scope) before publishing.</summary>
 public sealed record AudiencePreviewRequest(
@@ -103,4 +114,5 @@ public sealed record MyAnnouncementDto(
     DateTime PublishedAtUtc,
     bool IsPinned,
     bool IsRead,
-    DateTime? EditedAtUtc);
+    DateTime? EditedAtUtc,
+    bool IsUrgent = false);
