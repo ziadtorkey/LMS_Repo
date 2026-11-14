@@ -47,7 +47,7 @@
                 var r = i;
                 <GradeRow @key="Rows[i].StudentId" Row="Rows[i]" Groups="Groups" Places="Places" RowIndex="i" FocusCol="@(_row == i ? _col : -1)"
                           EditingItem="@(Session?.Editing is { } e && e.Student == Rows[i].StudentId ? e.Item : null)" MenuCol="@(_menuRow == i ? _col : -1)"
-                          Session="Session" OnStudent="OnStudent" OnKey="OnCellKeyAsync" OnFocusCell="OnFocusCell" OnMenu="OnMenuAsync" />
+                          Session="Session" OnStudent="OnStudent" OnKey="OnCellKeyAsync" OnFocusCell="OnFocusCell" OnBlur="OnBlurAsync" OnMenu="OnMenuAsync" />
             }
         </tbody>
     </table>
@@ -159,6 +159,18 @@
 
                 break;
         }
+    }
+
+    /// <summary>
+    /// The input lost the focus (a click elsewhere, or the page is being left): what was typed is saved, as Enter would. A rejected value is announced and dropped;
+    /// the focus is left where the user put it.
+    /// </summary>
+    private async Task OnBlurAsync((int Row, int Col) at)
+    {
+        if (Session?.Editing is not { } e || ItemAt(at.Col) is not { } item || RowAt(at.Row).StudentId != e.Student || item.Id != e.Item) return;
+        var outcome = await Session.SetScoreAsync(RowAt(at.Row), item, Session.Draft);
+        Session.EndEdit();
+        if (outcome == SaveResult.Saved) Session.Dismiss(e.Student, e.Item);
     }
 
     private async Task StartEditAsync(int r, int c)

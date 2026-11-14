@@ -12,6 +12,7 @@
 @inject PermissionState PermState
 @inject ICultureService Culture
 @inject IViewport Viewport
+@inject IJSRuntime Js
 @inject IGradebookUnit UnitOf
 @inject NavigationManager Navigation
 
@@ -94,7 +95,7 @@ else
     {
         <GridLiveRegion Session="_session" />
     }
-    <StudentDetailDrawer Open="_drawerOpen" OpenChanged="v => _drawerOpen = v" StudentName="@_drawerName" Data="_preview" Loading="_previewLoading" Failed="_previewFailed" />
+    <StudentDetailDrawer Open="_drawerOpen" OpenChanged="CloseDrawerAsync" StudentName="@_drawerName" Data="_preview" Loading="_previewLoading" Failed="_previewFailed" />
 }
 
 @code {
@@ -132,6 +133,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         Viewport.Changed += OnViewportChanged;
+        _leaving = Navigation.RegisterLocationChangingHandler(CommitBeforeLeavingAsync);
         await Viewport.EnsureAsync();
         _terms = await UnitOf.TermsAsync(Id);
         _loadedTerm = TermId;
@@ -140,7 +142,7 @@ else
 
     private GradebookEditSession CreateSession()
     {
-        var session = new GradebookEditSession(Api, Id, L, () => LoadAsync(_pageNo));
+        var session = new GradebookEditSession(Api, Id, _book?.TermId, L, () => LoadAsync(_pageNo));
         session.RowReplaced += OnRowReplaced;
         return session;
     }
@@ -193,13 +195,46 @@ else
         await InvokeAsync(StateHasChanged);
     }
 
+    private Guid? _drawerStudent;
+
+    private async Task FocusAsync(string testId)
+    {
+        await Task.Delay(120); // the drawer renders a moment after it opens
+        try
+        {
+            var module = await Js.InvokeAsync<IJSObjectReference>("import", "./js/gradebook-grid.js");
+            await module.InvokeVoidAsync("focusTestId", testId);
+        }
+        catch (JSException)
+        {
+        }
+    }
+
+    /// <summary>Closing the drawer returns the focus to the student button that opened it.</summary>
+    private async Task CloseDrawerAsync(bool open)
+    {
+        _drawerOpen = open;
+        if (open || _drawerStudent is not { } id) return;
+        await Task.Delay(50); // the drawer's overlay is still releasing the focus
+        try
+        {
+            var module = await Js.InvokeAsync<IJSObjectReference>("import", "./js/gradebook-grid.js");
+            await module.InvokeVoidAsync("focusTestId", $"student-{id}");
+        }
+        catch (JSException)
+        {
+        }
+    }
+
     private async Task OpenStudentAsync(GradeRowDto row)
     {
+        _drawerStudent = row.StudentId;
         _drawerName = Culture.Pick(row.StudentNameAr, row.StudentNameEn);
         _drawerOpen = true;
         _preview = null;
         _previewFailed = false;
         _previewLoading = true;
+        _ = FocusAsync("drawer-close"); // the focus moves into the drawer so Esc and Tab work there
         try
         {
             _preview = await Api.GetStudentViewAsync(Id, row.StudentId, _book?.TermId);
@@ -218,8 +253,22 @@ else
         }
     }
 
+    private IDisposable? _leaving;
+
+    /// <summary>Leaving the page with a half-typed score saves it first (the FormFlush rule of the plan): a click on a link does not lose it.</summary>
+    private async ValueTask CommitBeforeLeavingAsync(Microsoft.AspNetCore.Components.Routing.LocationChangingContext context)
+    {
+        if (_session?.Editing is not { } e || _book is null) return;
+        var row = _book.Rows.Items.FirstOrDefault(r => r.StudentId == e.Student);
+        var item = _book.Items.FirstOrDefault(i => i.Id == e.Item);
+        if (row is null || item is null) return;
+        await _session.SetScoreAsync(row, item, _session.Draft);
+        _session.EndEdit();
+    }
+
     public void Dispose()
     {
+        _leaving?.Dispose();
         Viewport.Changed -= OnViewportChanged;
         if (_session is not null) _session.RowReplaced -= OnRowReplaced;
     }
