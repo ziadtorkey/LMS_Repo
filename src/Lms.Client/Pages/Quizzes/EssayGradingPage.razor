@@ -1,0 +1,119 @@
+@page "/class-courses/{Id:guid}/quizzes/{QuizId:guid}/attempts/{AttemptId:guid}/grade"
+@attribute [Authorize]
+@using Lms.Client.Services.Api
+@using Lms.Shared.Authorization
+@using Lms.Shared.Quizzes
+@inject IQuizAttemptsApi Quizzes
+@inject PermissionState PermState
+@inject NavigationManager Navigation
+
+<PageTitle>@L["Essay_Title"]</PageTitle>
+@if (!PermState.Loaded || _loading)
+{
+    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+}
+else if (!PermState.Has(Permissions.Quizzes.Grade))
+{
+    <MudAlert Severity="Severity.Warning" data-testid="grading-forbidden">@L["Forbidden_Title"]</MudAlert>
+}
+else if (_result is null)
+{
+    <MudAlert Severity="Severity.Error" data-testid="grading-error">@(_error ?? L["Api_Error"].Value)</MudAlert>
+}
+else
+{
+    <MudStack Spacing="3" data-testid="essay-grading">
+        <MudLink Href="@($"class-courses/{Id}/quizzes/{QuizId}/attempts")" data-testid="grading-back">@L["Quiz_BackToQuiz"]</MudLink>
+        <MudText Typo="Typo.h5">@L["Essay_Title"] · @L["Quiz_AttemptN", _result.Number]</MudText>
+        @if (_error is not null)
+        {
+            <MudAlert Severity="Severity.Error" data-testid="grading-action-error">@_error</MudAlert>
+        }
+        @foreach (var q in Essays)
+        {
+            var question = q;
+            <MudPaper Outlined="true" Class="pa-3" data-testid="@($"essay-{question.QuestionId}")">
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.subtitle1">@question.Order. @question.Text</MudText>
+                    <MudText Typo="Typo.body2" Class="mud-text-secondary" data-testid="@($"essay-answer-{question.QuestionId}")">@(question.EssayText ?? L["Quiz_NoAnswer"].Value)</MudText>
+                    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+                        <MudNumericField T="decimal?" Value="@PointsOf(question.QuestionId)" ValueChanged="v => SetPoints(question, v)"
+                                         Min="0" Max="question.Points" Label="@($"{L["Essay_Points"]} (0–{question.Points})")" Immediate="true"
+                                         data-testid="@($"essay-points-{question.QuestionId}")" />
+                        <MudTextField T="string" Value="@_feedback.GetValueOrDefault(question.QuestionId)" ValueChanged="v => _feedback[question.QuestionId] = v"
+                                      Label="@L["Essay_Comment"]" MaxLength="2000" Immediate="true" data-testid="@($"essay-comment-{question.QuestionId}")" />
+                    </MudStack>
+                </MudStack>
+            </MudPaper>
+        }
+        @if (Essays.Count == 0)
+        {
+            <MudAlert Severity="Severity.Info" data-testid="grading-no-essays">@L["Essay_None"]</MudAlert>
+        }
+        <MudStack Row="true" Spacing="2">
+            <MudButton Variant="Variant.Outlined" OnClick="() => SaveAsync(false)" Disabled="@(_saving || _points.Count == 0)" data-testid="grading-save">@L["Essay_Save"]</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => SaveAsync(true)" Disabled="@(_saving || !AllGraded)"
+                       data-testid="grading-finalize">@L["Essay_Finalize"]</MudButton>
+        </MudStack>
+        @if (!AllGraded && Essays.Count > 0)
+        {
+            <MudText Typo="Typo.caption" data-testid="grading-finalize-hint">@L["Essay_FinalizeHint"]</MudText>
+        }
+    </MudStack>
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+    [Parameter] public Guid QuizId { get; set; }
+    [Parameter] public Guid AttemptId { get; set; }
+
+    private AttemptResultDto? _result;
+    private readonly Dictionary<Guid, decimal> _points = [];
+    private readonly Dictionary<Guid, string?> _feedback = [];
+    private string? _error;
+    private bool _loading = true, _saving;
+
+    private IReadOnlyList<AttemptResultQuestionDto> Essays =>
+        _result?.Questions?.Where(q => q.Type == QuestionTypes.Essay).OrderBy(q => q.Order).ToList() ?? [];
+
+    /// <summary>Finalizing needs a grade (entered now or saved before) for every essay.</summary>
+    private bool AllGraded => Essays.Count > 0 && Essays.All(q => _points.ContainsKey(q.QuestionId));
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        _loading = true;
+        if (PermState.Has(Permissions.Quizzes.Grade))
+        {
+            await ApiCalls.RunAsync(async () => _result = await Quizzes.GetResultAsync(AttemptId), Navigation, L, m => _error = m);
+            foreach (var q in Essays)
+            {
+                if (q.AwardedPoints is { } p) _points[q.QuestionId] = p;
+                if (q.Feedback is not null) _feedback[q.QuestionId] = q.Feedback;
+            }
+        }
+        _loading = false;
+    }
+
+    /// <summary>Null (empty field) = not graded yet, so typing 0 is a real change and a real grade.</summary>
+    private decimal? PointsOf(Guid questionId) => _points.TryGetValue(questionId, out var v) ? v : null;
+
+    /// <summary>Points never go above what the question is worth (or below zero).</summary>
+    private void SetPoints(AttemptResultQuestionDto q, decimal? value)
+    {
+        if (value is null) { _points.Remove(q.QuestionId); return; }
+        _points[q.QuestionId] = Math.Clamp(value.Value, 0, q.Points);
+    }
+
+    private async Task SaveAsync(bool finalize)
+    {
+        _error = null;
+        var grades = Essays.Where(q => _points.ContainsKey(q.QuestionId))
+            .Select(q => new EssayGradeInput(q.QuestionId, _points[q.QuestionId], string.IsNullOrWhiteSpace(_feedback.GetValueOrDefault(q.QuestionId)) ? null : _feedback[q.QuestionId]))
+            .ToList();
+        _saving = true;
+        var ok = await ApiCalls.RunAsync(async () => _result = await Quizzes.GradeAsync(AttemptId, new GradeAttemptRequest(grades)), Navigation, L, m => _error = m);
+        _saving = false;
+        if (ok && finalize) Navigation.NavigateTo($"class-courses/{Id}/quizzes/{QuizId}/attempts");
+    }
+}
