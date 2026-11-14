@@ -28,15 +28,15 @@ else if (_error is not null || _plan is null)
 else
 {
     <MudStack Spacing="3">
-        <MudStack Spacing="1" data-testid="learn-header">
-            <MudText Typo="Typo.h4">@(_header is { } cc ? Culture.Pick(cc.CourseNameAr, cc.CourseNameEn) : L["Learn_Title"].Value)</MudText>
+        <div data-testid="learn-header">
+            <PageHeader Title="@(_header is { } cc ? Culture.Pick(cc.CourseNameAr, cc.CourseNameEn) : L["Learn_Title"].Value)" Class="mb-2" />
             @if (_plan.Progress is { } progress)
             {
-                <MudText Typo="Typo.body2" data-testid="learn-progress-text">@L["Learn_Progress", progress.Completed, progress.Total]</MudText>
-                <MudProgressLinear Value="@Percent(progress)" Color="Color.Primary" aria-label="@L["Learn_Progress", progress.Completed, progress.Total]"
+                <MudText Typo="Typo.body2" Class="lms-muted mb-1" data-testid="learn-progress-text">@L["Learn_Progress", progress.Completed, progress.Total]</MudText>
+                <MudProgressLinear Value="@Percent(progress)" Color="Color.Primary" Rounded="true" Class="lms-progress" aria-label="@L["Learn_Progress", progress.Completed, progress.Total]"
                                    data-testid="learn-progress-bar" />
             }
-        </MudStack>
+        </div>
 
         @if (PermState.Has(ForumsView))
         {
@@ -70,7 +70,7 @@ else
                             {
                                 var m = module;
                                 <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Class="ms-4 py-1" data-testid="@($"learn-module-{m.Id}")">
-                                    <MudIcon Icon="@KindIcon(m.Kind)" Size="Size.Small" />
+                                    <MudIcon Icon="@KindIcon(m.Kind)" Size="Size.Small" aria-hidden="true" />
                                     <MudLink Href="@ModuleHref(m.Id)" data-testid="@($"learn-module-link-{m.Id}")">@Culture.Pick(m.TitleAr, m.TitleEn)</MudLink>
                                     <MudChip T="string" Size="Size.Small" Color="@StateColor(m)"
                                              data-testid="@($"learn-module-state-{m.Id}")">@StateText(m)</MudChip>

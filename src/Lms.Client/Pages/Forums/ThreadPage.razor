@@ -30,27 +30,33 @@ else
 {
     var thread = _detail.Thread;
     <MudStack Spacing="3">
-        <MudLink Href="@($"class-courses/{Id}/forum")" data-testid="thread-back">@L["Forum_Back"]</MudLink>
-        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
-            <MudText Typo="Typo.h5" data-testid="thread-title">@thread.Title</MudText>
-            @if (thread.IsPinned)
-            {
-                <MudChip T="string" Size="Size.Small" Color="Color.Primary" data-testid="thread-pinned">@L["Forum_Pinned"]</MudChip>
-            }
-            @if (thread.IsLocked)
-            {
-                <MudChip T="string" Size="Size.Small" Icon="@Icons.Material.Filled.Lock" data-testid="thread-locked">@L["Forum_Locked"]</MudChip>
-            }
-            <MudSpacer />
-            @if (_detail.CanModerate)
-            {
-                <MudMenu Label="@L["Forum_Moderate"]" Variant="Variant.Outlined" Size="Size.Small" data-testid="thread-moderate">
-                    <MudMenuItem OnClick="() => ModerateAsync(!thread.IsPinned, thread.IsLocked)" data-testid="thread-pin">@L[thread.IsPinned ? "Forum_Unpin" : "Forum_Pin"]</MudMenuItem>
-                    <MudMenuItem OnClick="() => ModerateAsync(thread.IsPinned, !thread.IsLocked)" data-testid="thread-lock">@L[thread.IsLocked ? "Forum_Unlock" : "Forum_Lock"]</MudMenuItem>
-                    <MudMenuItem OnClick="() => DeleteAsync(_detail.OpeningPost, true)" data-testid="thread-delete">@L["Forum_DeleteThread"]</MudMenuItem>
-                </MudMenu>
-            }
-        </MudStack>
+        <MudLink Href="@($"class-courses/{Id}/forum")" Typo="Typo.body2" Class="lms-back-link" data-testid="thread-back">
+            <MudIcon Icon="@Icons.Material.Rounded.ArrowBack" Size="Size.Small" Class="lms-icon-flip" aria-hidden="true" />
+            @L["Forum_Back"]
+        </MudLink>
+        <PageHeader Title="@thread.Title" TitleTestId="thread-title" Class="mb-0">
+            <Badges>
+                @if (thread.IsPinned)
+                {
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Primary" Icon="@Icons.Material.Rounded.PushPin" data-testid="thread-pinned">@L["Forum_Pinned"]</MudChip>
+                }
+                @if (thread.IsLocked)
+                {
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Icon="@Icons.Material.Rounded.Lock" data-testid="thread-locked">@L["Forum_Locked"]</MudChip>
+                }
+            </Badges>
+            <Actions>
+                @if (_detail.CanModerate)
+                {
+                    <MudMenu Label="@L["Forum_Moderate"]" Variant="Variant.Outlined" Size="Size.Small" EndIcon="@Icons.Material.Rounded.ArrowDropDown" data-testid="thread-moderate">
+                        <MudMenuItem OnClick="() => ModerateAsync(!thread.IsPinned, thread.IsLocked)" data-testid="thread-pin">@L[thread.IsPinned ? "Forum_Unpin" : "Forum_Pin"]</MudMenuItem>
+                        <MudMenuItem OnClick="() => ModerateAsync(thread.IsPinned, !thread.IsLocked)" data-testid="thread-lock">@L[thread.IsLocked ? "Forum_Unlock" : "Forum_Lock"]</MudMenuItem>
+                        <MudDivider />
+                        <MudMenuItem OnClick="() => DeleteAsync(_detail.OpeningPost, true)" Class="mud-error-text" data-testid="thread-delete">@L["Forum_DeleteThread"]</MudMenuItem>
+                    </MudMenu>
+                }
+            </Actions>
+        </PageHeader>
 
         @if (_error is not null)
         {

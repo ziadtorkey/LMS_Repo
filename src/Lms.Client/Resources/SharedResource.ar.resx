@@ -1799,4 +1799,11 @@
   <data name="NavSection_Security" xml:space="preserve"><value>الأمان والإعدادات</value></data>
   <data name="App_Subtitle" xml:space="preserve"><value>المنصة الأكاديمية</value></data>
   <data name="Nav_Main" xml:space="preserve"><value>التنقل الرئيسي</value></data>
+  <data name="Forum_Subtitle" xml:space="preserve"><value>أسئلة ونقاشات هذا المقرر.</value></data>
+  <data name="Forum_EmptyText" xml:space="preserve"><value>ابدأ أول موضوع لطرح سؤال أو مشاركة فكرة.</value></data>
+  <data name="Announcements_Subtitle" xml:space="preserve"><value>أخبار وتذكيرات من معلّمي هذا المقرر.</value></data>
+  <data name="Announcements_EmptyText" xml:space="preserve"><value>ستظهر هنا إعلانات معلّمك.</value></data>
+  <data name="Library_Subtitle" xml:space="preserve"><value>كتب ومستندات وروابط مشتركة مع مدرستك.</value></data>
+  <data name="Library_EmptyText" xml:space="preserve"><value>غيّر عوامل التصفية، أو أضف موردًا إن كنت تدير المكتبة.</value></data>
+  <data name="MyClassCourses_Subtitle" xml:space="preserve"><value>مقررات الفصول التي تدرّسها هذا العام وخطط دروسها.</value></data>
 </root>

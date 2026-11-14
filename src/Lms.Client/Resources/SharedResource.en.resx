@@ -1799,4 +1799,11 @@
   <data name="NavSection_Security" xml:space="preserve"><value>Security and settings</value></data>
   <data name="App_Subtitle" xml:space="preserve"><value>Academic platform</value></data>
   <data name="Nav_Main" xml:space="preserve"><value>Main navigation</value></data>
+  <data name="Forum_Subtitle" xml:space="preserve"><value>Questions and discussion for this class course.</value></data>
+  <data name="Forum_EmptyText" xml:space="preserve"><value>Start the first thread to ask a question or share an idea.</value></data>
+  <data name="Announcements_Subtitle" xml:space="preserve"><value>News and reminders from the teachers of this class course.</value></data>
+  <data name="Announcements_EmptyText" xml:space="preserve"><value>Your teacher's announcements will appear here.</value></data>
+  <data name="Library_Subtitle" xml:space="preserve"><value>Books, documents and links shared with your school.</value></data>
+  <data name="Library_EmptyText" xml:space="preserve"><value>Change the filters, or add a resource if you manage the library.</value></data>
+  <data name="MyClassCourses_Subtitle" xml:space="preserve"><value>The class courses you teach this year and their lesson plans.</value></data>
 </root>

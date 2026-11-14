@@ -8,7 +8,7 @@
     <MudStack Spacing="1">
         <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
             <MudText Typo="Typo.subtitle2">@Culture.Pick(Post.AuthorNameAr, Post.AuthorNameEn)</MudText>
-            <MudText Typo="Typo.caption" Class="mud-text-secondary"><span dir="ltr">@Post.CreatedAtUtc.ToLocalTime().ToString("g", System.Globalization.CultureInfo.CurrentCulture)</span></MudText>
+            <MudText Typo="Typo.caption" Class="lms-muted"><span dir="ltr">@Post.CreatedAtUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm", System.Globalization.CultureInfo.InvariantCulture)</span></MudText>
             @if (Post.EditedAtUtc is not null)
             {
                 <MudText Typo="Typo.caption" Class="mud-text-secondary">@L["Forum_Edited"]</MudText>
@@ -16,7 +16,7 @@
             <MudSpacer />
             @if (Post.CanDelete && !Post.IsOpeningPost && OnDelete.HasDelegate)
             {
-                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" aria-label="@L["Common_Delete"]"
+                <MudIconButton Icon="@Icons.Material.Rounded.Delete" Size="Size.Small" Color="Color.Error" aria-label="@L["Common_Delete"]"
                                OnClick="() => OnDelete.InvokeAsync(Post)" data-testid="@($"post-delete-{Post.Id}")" />
             }
         </MudStack>
