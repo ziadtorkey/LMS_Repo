@@ -1,0 +1,73 @@
+@page "/classes/{ClassId:guid}/students"
+@attribute [Authorize]
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Shared.Authorization
+@using Lms.Shared.Classes
+@using Lms.Shared.Enrollment
+@implements IDisposable
+@inject IClassesApi Classes
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+
+<PageTitle>@L["ClassStudents_Title"]</PageTitle>
+@if (!PermState.Loaded)
+{
+    <LoadingState Lines="3" />
+}
+else if (!PermState.Has(Permissions.Classes.View))
+{
+    <Forbidden />
+}
+else if (_class is null)
+{
+    @if (_loaded)
+    {
+        <EmptyState Title="@L["Common_Empty"]" Icon="@Icons.Material.Rounded.School" />
+    }
+    else
+    {
+        <LoadingState Lines="3" />
+    }
+}
+else
+{
+    @* A thin host for the students tab (the class view that will embed it belongs to the classes pages). *@
+    <PageHeader Title="@Culture.Pick(_class.NameAr, _class.NameEn)" TitleTestId="class-title" />
+    <MudText Typo="Typo.body2" Class="lms-muted mb-4" data-testid="class-subtitle">@string.Join(" · ", new[] { Culture.Pick(_class.YearNameAr, _class.YearNameEn), Culture.Pick(_class.OrgUnitNameAr, _class.OrgUnitNameEn) }.Where(x => !string.IsNullOrWhiteSpace(x)))</MudText>
+    <ClassStudentsTab Class="_class" CanManage="PermState.Has(Permissions.Enrollment.Manage)" CanTransfer="PermState.Has(Permissions.Enrollment.Transfer)"
+                      CanRequestException="PermState.Has(Permissions.Enrollment.RequestException)" OnRequestException="RequestException" />
+}
+
+@code {
+    private ClassSummaryDto? _class;
+    private bool _loaded;
+
+    [Parameter] public Guid ClassId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        PermState.Changed += OnPermissionsChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        if (!PermState.Has(Permissions.Classes.View)) return;
+        await ApiCalls.RunAsync(
+            async () => _class = (await Classes.ListAsync(new ClassQuery(null, true, null, null, null, null, 1, 200))).Items.FirstOrDefault(c => c.Id == ClassId),
+            Navigation, L, _ => { });
+        _loaded = true;
+    }
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => PermState.Changed -= OnPermissionsChanged;
+
+    /// <summary>Opens the exception request for the skipped student and course.</summary>
+    private async Task RequestException(RestrictionSkipDto skip)
+    {
+        var dialog = await Dialogs.ShowAsync<RequestExceptionDialog>(L["Exception_Request"],
+            new DialogParameters<RequestExceptionDialog> { { x => x.Skip, skip } }, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        if (await dialog.Result is { Canceled: false }) Snackbar.Add(L["Exception_Sent"], Severity.Success);
+    }
+}

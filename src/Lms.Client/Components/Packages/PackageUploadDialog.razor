@@ -1,0 +1,282 @@
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.Packages
+@using Lms.Shared
+@using Lms.Shared.Content
+@using Lms.Shared.Packages
+@implements IDisposable
+@inject IPackagesApi Packages
+@inject IAssetsApi AssetApi
+@inject IDialogService Dialogs
+@inject NavigationManager Navigation
+@inject PackagePollOptions Poll
+
+@* Adding a package: 1 upload, 2 check, 3 attach. The dialog stays open while the package is checked (closing stops the polling); a
+   package that is still being checked can be reopened at step 2 or 3 through ResumePackageId. *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="3" data-testid="package-dialog">
+            <PackageSteps Current="_step" Failed="_rejected is not null" />
+            @if (_blocked is not null)
+            {
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" data-testid="package-blocked">@L[_blocked]</MudAlert>
+            }
+            else if (_step == 1)
+            {
+                <MudStack Spacing="1" Class="lms-dropzone" data-testid="package-dropzone">
+                    @if (_uploading)
+                    {
+                        <MudText Typo="Typo.body2" data-testid="package-uploading"><bdi dir="ltr">@_fileName</bdi></MudText>
+                        <MudProgressLinear Value="@(_progress * 100)" Color="Color.Primary" aria-label="@L["Package_Uploading", _fileName ?? ""]" data-testid="package-progress" />
+                        <div><MudButton Size="Size.Small" Variant="Variant.Text" OnClick="CancelUpload" data-testid="package-cancel-upload">@L["Package_CancelUpload"]</MudButton></div>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.body2">@L["Package_DropHint"]</MudText>
+                        <InputFile OnChange="OnFileAsync" accept="@Extension" aria-label="@L["Package_Choose"]" data-testid="package-input" />
+                        <MudText Typo="Typo.caption" Class="lms-muted" data-testid="package-limits">@LimitsText()</MudText>
+                    }
+                    @if (_error is not null)
+                    {
+                        <MudText Color="Color.Error" Typo="Typo.caption" role="alert" data-testid="package-error">@_error</MudText>
+                    }
+                </MudStack>
+            }
+            else if (_rejected is not null)
+            {
+                <PackageRejectReason Reason="@_rejected" />
+            }
+            else if (_package is { Status: PackageUploadStatuses.Ready })
+            {
+                <PackageAttachForm Package="_package" Lessons="Lessons" OnAttach="AttachAsync" />
+            }
+            else
+            {
+                <MudStack Spacing="1" role="status" data-testid="package-checking">
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" aria-label="@L["Package_Checking"]" />
+                    <MudText Typo="Typo.body2">@L[_stalled ? "Package_StillChecking" : "Package_Checking"]</MudText>
+                    @if (_error is not null)
+                    {
+                        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" role="alert" data-testid="package-poll-error">@_error</MudAlert>
+                    }
+                    <MudText Typo="Typo.caption" Class="lms-muted">@L["Package_KeepOpen"]</MudText>
+                    @if (_stalled)
+                    {
+                        <div><MudButton Variant="Variant.Outlined" OnClick="CheckAgain" data-testid="package-check-again">@L["Package_CheckAgain"]</MudButton></div>
+                    }
+                </MudStack>
+            }
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        @if (_package is { Status: PackageUploadStatuses.Ready } && _rejected is null)
+        {
+            <MudButton Color="Color.Error" Variant="Variant.Text" OnClick="DeleteAsync" data-testid="package-delete">@L["Package_Delete"]</MudButton>
+            <MudSpacer />
+        }
+        @if (_rejected is not null)
+        {
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="ChooseAnotherAsync" data-testid="package-choose-another">@L["Package_ChooseAnother"]</MudButton>
+            <MudSpacer />
+        }
+        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="package-close">@L["Common_Close"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private const string Blank = "";
+    private int _step = 1;
+    private PackageUploadDto? _package;
+    private string? _rejected, _error, _blocked, _fileName;
+    private bool _uploading, _stalled;
+    private double _progress;
+    private long _maxBytes;
+    private CancellationTokenSource? _cts, _pollCts;
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter, EditorRequired] public Guid ClassCourseId { get; set; }
+    /// <summary><see cref="PackageKinds.Scorm"/> or <see cref="PackageKinds.H5p"/>.</summary>
+    [Parameter] public string Kind { get; set; } = PackageKinds.Scorm;
+    [Parameter] public IReadOnlyList<PackageLessonOption> Lessons { get; set; } = [];
+    /// <summary>The lesson the package is for; required by the upload (the module is attached to that lesson).</summary>
+    [Parameter, EditorRequired] public Guid LessonKey { get; set; }
+    /// <summary>Reopen a package that is already uploaded: the dialog starts at step 2, or 3 when it is ready.</summary>
+    [Parameter] public Guid? ResumePackageId { get; set; }
+
+    private string Extension => Kind == PackageKinds.H5p ? ".h5p" : ".zip";
+    private long MaxMb => _maxBytes / (1024 * 1024);
+    private string LimitsText() => Kind == PackageKinds.H5p ? L["Package_LimitsH5p", MaxMb].Value : L["Package_LimitsScorm", MaxMb].Value;
+
+    /// <summary>Opens the dialog; returns the new module when the package was attached.</summary>
+    public static async Task<ModuleNodeDto?> ShowAsync(IDialogService dialogs, string title, Guid classCourseId, string kind,
+        IReadOnlyList<PackageLessonOption> lessons, Guid lessonKey, Guid? resumePackageId = null)
+    {
+        var reference = await dialogs.ShowAsync<PackageUploadDialog>(title, new DialogParameters<PackageUploadDialog>
+        {
+            { x => x.ClassCourseId, classCourseId }, { x => x.Kind, kind }, { x => x.Lessons, lessons },
+            { x => x.LessonKey, lessonKey }, { x => x.ResumePackageId, resumePackageId },
+        }, new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true });
+        var result = await reference.Result;
+        return result is { Canceled: false } ? result.Data as ModuleNodeDto : null;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var (limits, _) = await ApiCalls.RunAsync(() => AssetApi.GetLimitsAsync(ClassCourseId), Navigation);
+        _maxBytes = limits?.MaxBytes ?? 0;
+        if (ResumePackageId is { } id)
+        {
+            _step = 2;
+            StartPolling(id);
+            return;
+        }
+        await CheckBlockingStatesAsync();
+    }
+
+    /// <summary>
+    /// The blocking states replace the drop zone from the start. The contract has no dedicated pre-check, so the list read of the
+    /// class course's packages stands in for it: it answers with the same feature, host and quota problems the upload would. Any other
+    /// failure here is ignored (the upload reports it).
+    /// </summary>
+    private async Task CheckBlockingStatesAsync()
+    {
+        try
+        {
+            await Packages.ListPendingAsync(ClassCourseId, LessonKey, PackageUploadStatuses.Validating);
+        }
+        catch (ApiProblemException ex) when (BlockFor(ex) is { } key)
+        {
+            _blocked = key;
+        }
+        catch (Exception ex) when (ex is ApiProblemException or HttpRequestException) { }
+    }
+
+    private static string? BlockFor(ApiProblemException ex) => ex.Code switch
+    {
+        ProblemCodes.feature_disabled => "Package_FeatureOff",
+        ProblemCodes.package_host_not_configured => "Package_HostNotConfigured",
+        ProblemCodes.package_too_large => "Error_package_reason_quota_exceeded",
+        _ => null,
+    };
+
+    private async Task OnFileAsync(InputFileChangeEventArgs e)
+    {
+        _error = null;
+        var file = e.File;
+        if (!file.Name.EndsWith(Extension, StringComparison.OrdinalIgnoreCase))
+        {
+            _error = L["Package_WrongType", Extension];
+            return;
+        }
+        if (_maxBytes > 0 && file.Size > _maxBytes)
+        {
+            _error = L["Package_TooLarge", MaxMb];
+            return;
+        }
+        _fileName = file.Name;
+        await UploadAsync(file);
+    }
+
+    private async Task UploadAsync(IBrowserFile file)
+    {
+        _uploading = true;
+        _progress = 0;
+        _cts = new CancellationTokenSource();
+        var progress = new Progress<double>(v => { _progress = v; _ = InvokeAsync(StateHasChanged); });
+        try
+        {
+            // The browser file is streamed straight into the request: no copy of the package is held in memory.
+            await using var input = file.OpenReadStream(_maxBytes > 0 ? _maxBytes : file.Size, _cts.Token);
+            var uploaded = await Packages.UploadAsync(ClassCourseId, Kind, LessonKey, file.Name, input, progress, _cts.Token, file.Size);
+            _package = uploaded;
+            _step = 2;
+            StartPolling(uploaded.Id);
+        }
+        catch (OperationCanceledException) { }
+        catch (ApiProblemException ex) when (ex.Code is ProblemCodes.feature_disabled or ProblemCodes.package_host_not_configured)
+        {
+            _blocked = BlockFor(ex);
+        }
+        catch (Exception ex) when (ex is ApiProblemException or HttpRequestException or IOException)
+        {
+            _error = ex is ApiProblemException problem ? ProblemText.For(problem, L) : L["Error_Generic"].Value;
+        }
+        finally
+        {
+            _uploading = false;
+        }
+    }
+
+    private void CancelUpload() => _cts?.Cancel();
+
+    private void StartPolling(Guid id)
+    {
+        _pollCts?.Cancel();
+        _pollCts = new CancellationTokenSource();
+        _stalled = false;
+        _error = null;
+        _ = PollAsync(id, _pollCts.Token);
+    }
+
+    private void CheckAgain()
+    {
+        if (_package is not null) StartPolling(_package.Id);
+    }
+
+    /// <summary>Reads the check state with a growing delay; stops when the check ends, the dialog closes, or the cap is reached.</summary>
+    private async Task PollAsync(Guid id, CancellationToken token)
+    {
+        var delay = Poll.Interval;
+        try
+        {
+            for (var poll = 0; poll < Poll.MaxPolls; poll++)
+            {
+                var dto = await Packages.GetAsync(id, token);
+                _package = dto;
+                if (dto.Status == PackageUploadStatuses.Rejected) { _rejected = dto.RejectReason ?? Blank; _step = 2; await InvokeAsync(StateHasChanged); return; }
+                if (dto.Status == PackageUploadStatuses.Ready) { _step = 3; await InvokeAsync(StateHasChanged); return; }
+                await Poll.Delay(delay, token);
+                delay = TimeSpan.FromTicks(Math.Min((long)(delay.Ticks * Poll.Backoff), Poll.MaxInterval.Ticks));
+            }
+            _stalled = true;
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex) when (ex is ApiProblemException or HttpRequestException)
+        {
+            _error = ex is ApiProblemException problem ? ProblemText.For(problem, L) : L["Error_Generic"].Value;
+            _stalled = true;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task<string?> AttachAsync(AttachPackageModuleRequest request)
+    {
+        string? error = null;
+        ModuleNodeDto? node = null;
+        var ok = await ApiCalls.RunAsync(async () => node = await Packages.AttachAsync(_package!.Id, request), Navigation, L, m => error = m);
+        if (ok && node is not null) MudDialog.Close(DialogResult.Ok(node));
+        return error;
+    }
+
+    private async Task DeleteAsync()
+    {
+        if (_package is null || !await ConfirmDialog.AskAsync(Dialogs, L["Package_Delete"], L["Package_DeleteConfirm"])) return;
+        var ok = await ApiCalls.RunAsync(() => Packages.DeleteAsync(_package.Id), Navigation, L, m => _error = m);
+        if (ok) MudDialog.Cancel();
+    }
+
+    private async Task ChooseAnotherAsync()
+    {
+        if (_package is { } rejected)
+            await ApiCalls.RunAsync(() => Packages.DeleteAsync(rejected.Id), Navigation, L, m => _error = m);
+        _package = null;
+        _rejected = null;
+        _step = 1;
+    }
+
+    public void Dispose()
+    {
+        _pollCts?.Cancel();
+        _cts?.Cancel();
+    }
+}

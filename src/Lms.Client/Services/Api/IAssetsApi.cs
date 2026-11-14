@@ -43,7 +43,7 @@ public sealed class AssetsApi(ApiHttp http) : IAssetsApi
 }
 
 /// <summary>Read-only wrapper that reports how much of the stream the transport has consumed.</summary>
-internal sealed class ProgressStream(Stream inner, IProgress<double>? progress) : Stream
+internal sealed class ProgressStream(Stream inner, IProgress<double>? progress, long? knownLength = null) : Stream
 {
     private long _read;
 
@@ -58,8 +58,9 @@ internal sealed class ProgressStream(Stream inner, IProgress<double>? progress) 
     private int Report(int n)
     {
         _read += n;
-        if (progress is not null && inner.CanSeek && inner.Length > 0)
-            progress.Report(Math.Min(1d, (double)_read / inner.Length));
+        var length = knownLength ?? (inner.CanSeek ? inner.Length : 0);
+        if (progress is not null && length > 0)
+            progress.Report(Math.Min(1d, (double)_read / length));
         return n;
     }
 
@@ -90,6 +91,8 @@ public sealed class FakeAssetsApi : IAssetsApi
     public int FailuresLeft { get; set; }
     /// <summary>When set, uploads wait for it (cancel tests).</summary>
     public TaskCompletionSource? Gate { get; set; }
+    /// <summary>Completed when an upload has reported its progress and reached <see cref="Gate"/> (the signal tests wait on instead of time).</summary>
+    public TaskCompletionSource GateReached { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
     public TimeSpan UrlLifetime { get; set; } = TimeSpan.FromMinutes(5);
     /// <summary>The fake "server clock".</summary>
     public Func<DateTime> ServerNow { get; set; } = () => DateTime.UtcNow;
@@ -102,7 +105,11 @@ public sealed class FakeAssetsApi : IAssetsApi
         using var buffer = new MemoryStream();
         await content.CopyToAsync(buffer, ct);
         progress?.Report(0.5);
-        if (Gate is not null) await Gate.Task.WaitAsync(ct);
+        if (Gate is not null)
+        {
+            GateReached.TrySetResult();
+            await Gate.Task.WaitAsync(ct);
+        }
         if (FailuresLeft > 0) { FailuresLeft--; throw Failure ?? new HttpRequestException("boom"); }
         if (Failure is not null) throw Failure;
         progress?.Report(1);
