@@ -2319,4 +2319,22 @@
   <data name="ModQueue_Paging" xml:space="preserve"><value>Pages of reports</value></data>
   <data name="ModQueue_OpenFile" xml:space="preserve"><value>Open file</value></data>
   <data name="ModQueue_Download" xml:space="preserve"><value>Download</value></data>
+  <data name="Setting_Messaging_UploadsPerMinute" xml:space="preserve"><value>Attachment uploads per minute</value></data>
+  <data name="Msg_ReadOnly_group_students_read_only" xml:space="preserve"><value>Only the teacher and staff post in this group. You can reply to the teacher privately.</value></data>
+  <data name="Msg_ReadOnly_group_guardians_read_only" xml:space="preserve"><value>Only staff post in this group.</value></data>
+  <data name="Msg_ReadOnly_blocked_or_rule" xml:space="preserve"><value>You cannot send messages in this conversation.</value></data>
+  <data name="Msg_ReadOnly_restricted" xml:space="preserve"><value>Your messaging is restricted for now.</value></data>
+  <data name="Msg_ReadOnly_locked" xml:space="preserve"><value>A moderator locked this conversation.</value></data>
+  <data name="Msg_Denied_rule" xml:space="preserve"><value>You cannot send messages to this person.</value></data>
+  <data name="Msg_Denied_relationship" xml:space="preserve"><value>You can only message people you work with in school.</value></data>
+  <data name="Msg_Denied_restricted" xml:space="preserve"><value>Your messaging is restricted for now.</value></data>
+  <data name="Msg_Denied_blocked_or_rule" xml:space="preserve"><value>You cannot send messages to this person.</value></data>
+  <data name="Msg_Denied_private_group_with_student" xml:space="preserve"><value>A group with a student needs at least three members.</value></data>
+  <data name="Msg_Denied_group_full" xml:space="preserve"><value>This group has reached its size limit.</value></data>
+  <data name="Ann_Source_CourseBoard" xml:space="preserve"><value>Course board</value></data>
+  <data name="Ann_Source_School" xml:space="preserve"><value>School</value></data>
+  <data name="Error_conversation_read_only" xml:space="preserve"><value>You cannot post in this conversation.</value></data>
+  <data name="Error_comms_cap_above_ceiling" xml:space="preserve"><value>This limit is above the maximum the platform allows.</value></data>
+  <data name="Error_attachment_invalid" xml:space="preserve"><value>The attachment is not allowed: check its type and size, and the number of attachments.</value></data>
+  <data name="Msg_ReadOnly_rule" xml:space="preserve"><value>This conversation is read-only because messaging rules changed.</value></data>
 </root>

@@ -94,8 +94,9 @@ html:lang(ar), html:lang(ar) body { font-family: Cairo, "Segoe UI", Tahoma, Aria
     .lms-mod-panel .lms-mod-panel-close { display: inline-flex; }
 }
 
-/* Announcement composer: below 600 px the audience scope options stack and wrap, so a long English label is never cut off. */
+/* Announcement composer: MudToggleGroup is a CSS grid with an inline four-column template, so below 600 px the options are shown two by two (the inline style needs !important):
+   a long English label is never cut off, and the labels stay centred like every other segmented control. */
 @media (max-width: 599.98px) {
-    .lms-ann-scopes { flex-direction: column; align-items: stretch; }
-    .lms-ann-scopes .mud-toggle-item { white-space: normal; text-align: start; justify-content: flex-start; min-inline-size: 0; }
+    .lms-ann-scopes { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+    .lms-ann-scopes .mud-toggle-item { white-space: normal; margin: 0 !important; }
 }

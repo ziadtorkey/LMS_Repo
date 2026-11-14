@@ -37,6 +37,8 @@ public static class NavCatalog
         new("Nav_Library", "library", Icons.Material.Rounded.LocalLibrary, Permissions.Library.View, Section: Academic),
         new("Nav_Messages", "messages", Icons.Material.Rounded.Forum, Permissions.Messaging.View, Section: Communication),
         new("Nav_Announcements", "announcements", Icons.Material.Rounded.Campaign, Permissions.Announcements.View, Section: Communication),
+        new("Nav_MessagingRules", "settings/messaging-rules", Icons.Material.Rounded.Rule, Permissions.Comms.Manage, Section: Security),
+        new("Nav_CommunicationSettings", "settings/communication", Icons.Material.Rounded.Tune, Permissions.Comms.Manage, Section: Security),
         new("Nav_Moderation", "moderation/messages", Icons.Material.Rounded.Shield, Permissions.Messaging.Moderate, Section: Communication),
         new("Nav_Roles", "roles", Icons.Material.Rounded.AdminPanelSettings, Permissions.Roles.View, Section: Security),
         new("Nav_Assignments", "assignments", Icons.Material.Rounded.GroupAdd, Permissions.Assignments.View, Section: Security),

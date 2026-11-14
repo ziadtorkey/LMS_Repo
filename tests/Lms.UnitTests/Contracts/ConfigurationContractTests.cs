@@ -27,7 +27,7 @@ public class ConfigurationContractTests
     [Fact]
     public void Declared_keys_are_found()
     {
-        Assert.Equal(65, DeclaredKeys().Count());
+        Assert.Equal(66, DeclaredKeys().Count());
     }
 
     [Theory]
@@ -72,7 +72,7 @@ public class ConfigurationContractTests
             "Comms.MaxEmailPerUserPerDay", "Comms.MaxPushPerUserPerDay", "Comms.QuietHours.Enabled",
             "Comms.QuietHours.Start", "Comms.QuietHours.End", "Comms.DeliveryRetentionDays", "Messaging.ReadReceipts", "Messaging.MaxPerMinute",
             "Messaging.MaxNewConversationsPerDay", "Messaging.MaxGroupSize", "Moderation.ReportContextRetentionDays", "Moderation.MaxReportsPerUserPerDay",
-            "Moderation.SafetyReviewHours", "Announcements.MaxPerAuthorPerDay",
+            "Moderation.SafetyReviewHours", "Messaging.UploadsPerMinute", "Announcements.MaxPerAuthorPerDay",
             "Timetable.WorkingDays", "Timetable.ConflictMode",
             "Attendance.GenerateDaysAhead", "Attendance.EditWindowHours", "Attendance.LiveMinPercent", "Attendance.LateAfterMinutes",
             "Attendance.AbsentThreshold", "Attendance.ThresholdWindowDays", "Attendance.LateWeightPercent",

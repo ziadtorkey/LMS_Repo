@@ -167,14 +167,18 @@ public sealed class M6Fe2AccessibilityTests : ClientTestContext
     }
 
     [Fact]
-    public void The_audience_options_wrap_below_600px_so_no_label_is_cut_off()
+    public void The_audience_options_are_two_by_two_below_600px_so_the_four_columns_cannot_return()
     {
         var dir = AppContext.BaseDirectory;
         while (dir is not null && !Directory.Exists(Path.Combine(dir, "src", "Lms.Client"))) dir = Path.GetDirectoryName(dir);
         var css = File.ReadAllText(Path.Combine(dir!, "src", "Lms.Client", "wwwroot", "css", "app.css"));
 
-        var rule = css[css.IndexOf(".lms-ann-scopes { flex-direction", StringComparison.Ordinal)..];
-        Assert.Contains("flex-direction: column", rule);
-        Assert.Contains("white-space: normal", rule);
+        var start = css.IndexOf(".lms-ann-scopes { grid-template-columns", StringComparison.Ordinal);
+        Assert.True(start > css.IndexOf("@media (max-width: 599.98px)", css.IndexOf("Announcement composer: MudToggleGroup", StringComparison.Ordinal), StringComparison.Ordinal) - 1, "the rule must sit inside the 600 px query");
+        var query = css[start..];
+
+        Assert.Contains(".lms-ann-scopes { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }", query); // MudBlazor sets four columns inline: only !important beats it
+        Assert.Contains("white-space: normal", query);
+        Assert.DoesNotContain("text-align: start", query); // the labels stay centred
     }
 }
