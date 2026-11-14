@@ -145,6 +145,8 @@ public static class PackagesServiceCollectionExtensions
         services.AddScoped<PackageTempSweepJob>();
         services.AddHostedService<PackageTempSweepRegistrar>();
         services.AddScoped<PackageService>();
+        services.AddScoped<Attempts.PackageAttemptService>();
+        services.AddSingleton<IPackageTracker, Attempts.PlaceholderPackageTracker>();
         return services;
     }
 }
