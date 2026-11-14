@@ -63,20 +63,27 @@ public sealed class GradingScaleIsolationTests(LmsApiFactory factory)
         }
     }
 
-    [Fact]
-    public async Task Scale_and_weight_template_tables_are_isolated_by_client_subtree_and_soft_delete()
+    private async Task RunAsync<T>(string name, Func<Place, Guid> idOf, bool softDeletes) where T : class
     {
-        var a = await AccessTestData.SeedAsync(factory, "GSIsoA");
-        var b = await AccessTestData.SeedAsync(factory, "GSIsoB");
+        var a = await AccessTestData.SeedAsync(factory, name + "A");
+        var b = await AccessTestData.SeedAsync(factory, name + "B");
         var school1 = await AddPlaceAsync(a.School1);
         var school2 = await AddPlaceAsync(a.School2);
         var clientB = await AddPlaceAsync(b.Root);
         var rootA = await AddPlaceAsync(a.Root);
-
-        // Bands and items have no soft delete (they are replaced wholesale), so they are checked without it.
-        await AssertIsolatedAsync<GradingScaleBand>(p => p.Band.Id, school1, school2, clientB, rootA, a, b, softDeletes: false);
-        await AssertIsolatedAsync<WeightTemplateItem>(p => p.Item.Id, school1, school2, clientB, rootA, a, b, softDeletes: false);
-        await AssertIsolatedAsync<GradingScale>(p => p.Scale.Id, school1, school2, clientB, rootA, a, b, softDeletes: true);
-        await AssertIsolatedAsync<WeightTemplate>(p => p.Template.Id, school1, school2, clientB, rootA, a, b, softDeletes: true);
+        await AssertIsolatedAsync<T>(idOf, school1, school2, clientB, rootA, a, b, softDeletes);
     }
+
+    [Fact]
+    public Task GradingScale_is_isolated_per_client_and_subtree() => RunAsync<GradingScale>("GSIs", p => p.Scale.Id, softDeletes: true);
+
+    [Fact]
+    public Task WeightTemplate_is_isolated_per_client_and_subtree() => RunAsync<WeightTemplate>("WTIs", p => p.Template.Id, softDeletes: true);
+
+    // Bands and items have no soft delete (they are replaced wholesale).
+    [Fact]
+    public Task GradingScaleBand_is_isolated_per_client_and_subtree() => RunAsync<GradingScaleBand>("GBIs", p => p.Band.Id, softDeletes: false);
+
+    [Fact]
+    public Task WeightTemplateItem_is_isolated_per_client_and_subtree() => RunAsync<WeightTemplateItem>("WIIs", p => p.Item.Id, softDeletes: false);
 }
