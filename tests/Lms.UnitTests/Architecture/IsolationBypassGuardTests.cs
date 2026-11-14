@@ -103,6 +103,8 @@ public sealed class IsolationBypassGuardTests
             "the course and its supervisors of an exceptional-enrollment request are owned above the class, out of an approver's scope; client matched, deleted rows excluded, only names and user ids leave (M3 Task 11, #219)",
         ["src/Lms.Api/Features/Forums/AnnouncementNotifier.cs"] =
             "the course of a class course is owned above the caller's scope; only its names go into the notification; client matched, deleted rows excluded (M4a Task 13, #363)",
+        ["src/Lms.Infrastructure/Excuses/ExcuseSubmissionService.cs"] =
+            "the course of a class course is owned by an ancestor unit above the caller scope (a guardian reads their child through the link); only course names are read, for class courses the caller already sees; client matched, deleted rows excluded (M5 Task 19)",
         ["src/Lms.Infrastructure/Excuses/ExcuseEscalationTargets.cs"] =
             "escalation targets are managers and counselors assigned at the student school or above, outside the reviewer scope; assignments read at the student unit and its ancestors only, client matched, deleted rows and inactive users excluded; only ids, names and the role key leave (M5 Task 19)",
         ["src/Lms.Api/Features/Timetable/ExceptionEndpoints.cs"] =

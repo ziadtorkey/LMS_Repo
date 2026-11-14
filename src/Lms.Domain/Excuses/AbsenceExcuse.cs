@@ -92,8 +92,7 @@ public sealed class AbsenceExcuse : UnitOwnedEntity
     }
 
     /// <summary>
-    /// A reviewer approves it. This only moves the excuse; flipping the covered attendance records to <c>Excused</c> in the same transaction
-    /// is added with the attendance tables (Task 16/17) and is why no approve endpoint exists yet.
+    /// A reviewer approves it. This only moves the excuse; the approve endpoint flips the covered attendance records to <c>Excused</c> in the same save.
     /// </summary>
     public void Approve(Guid reviewerUserId, string? comment, DateTime nowUtc)
     {

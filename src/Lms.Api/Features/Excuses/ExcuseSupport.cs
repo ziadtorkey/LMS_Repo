@@ -1,4 +1,6 @@
+using Lms.Domain.Attendance;
 using Lms.Domain.Excuses;
+using Lms.Infrastructure.Excuses;
 using Lms.Domain.Notifications;
 using Lms.Domain.People;
 using Lms.Infrastructure.Persistence;
@@ -26,6 +28,7 @@ internal static class ExcuseMapper
             .Where(id => id is not null).Select(id => id!.Value).Distinct().ToList();
         var users = await db.Users.Where(u => userIds.Contains(u.Id)).Select(u => new { u.Id, u.DisplayNameAr, u.DisplayNameEn }).ToDictionaryAsync(u => u.Id, ct);
         var fileNames = await AttachmentNamesAsync(db, excuses, ct);
+        var sessions = await SessionsAsync(db, excuses, ct);
 
         (string Ar, string En) Name(Guid? id) =>
             id is { } v && users.TryGetValue(v, out var u) ? (u.DisplayNameAr, u.DisplayNameEn) : (string.Empty, string.Empty);
@@ -53,11 +56,38 @@ internal static class ExcuseMapper
             return new ExcuseDto(
                 e.Id, e.StudentProfileId, student?.NameAr ?? string.Empty, student?.NameEn ?? string.Empty, student?.StudentCode ?? string.Empty,
                 e.SubmittedByUserId, submitter.Ar, submitter.En, e.Reason, e.ReasonText, e.DateFrom, e.DateTo, e.Status,
-                [], // the covered sessions are named once the attendance tables exist (M5 Task 16)
+                sessions.GetValueOrDefault(e.Id) ?? [],
                 e.AttachmentFileId is not null, e.AttachmentFileId is { } f ? fileNames.GetValueOrDefault(f) : null,
                 e.DecisionComment, e.ReviewerUserId, reviewer.Ar, reviewer.En, e.EscalatedToUserId, target.Ar, target.En,
                 e.SubmittedAtUtc, e.DecidedAtUtc, e.Status == ExcuseStatuses.Submitted && e.SubmittedByUserId == callerUserId, history, nowUtc);
         }).ToList();
+    }
+
+    /// <summary>The sessions each excuse covers with the record's current status (it becomes Excused on approval); only names and the status leave.</summary>
+    private static async Task<Dictionary<Guid, List<ExcuseSessionDto>>> SessionsAsync(LmsDbContext db, IReadOnlyList<AbsenceExcuse> excuses, CancellationToken ct)
+    {
+        var excuseIds = excuses.Select(e => e.Id).ToList();
+        var rows = await (from link in db.Set<AbsenceExcuseSession>()
+                          join s in db.Set<AttendanceSession>() on link.AttendanceSessionId equals s.Id
+                          where excuseIds.Contains(link.AbsenceExcuseId)
+                          select new { link.AbsenceExcuseId, SessionId = s.Id, s.Date, s.ClassCourseId }).ToListAsync(ct);
+        if (rows.Count == 0)
+        {
+            return [];
+        }
+
+        var studentOf = excuses.ToDictionary(e => e.Id, e => e.StudentProfileId);
+        var studentIds = studentOf.Values.Distinct().ToList();
+        var sessionIds = rows.Select(r => r.SessionId).Distinct().ToList();
+        var statuses = (await db.Set<AttendanceRecord>().Where(r => sessionIds.Contains(r.AttendanceSessionId) && studentIds.Contains(r.StudentProfileId))
+                .Select(r => new { r.AttendanceSessionId, r.StudentProfileId, r.Status }).ToListAsync(ct))
+            .ToDictionary(r => (r.AttendanceSessionId, r.StudentProfileId), r => r.Status);
+        var names = await ExcuseSubmissionService.CourseNamesAsync(db, excuses[0].OrganizationId, rows.Select(r => r.ClassCourseId).Distinct().ToList(), ct);
+        return rows.GroupBy(r => r.AbsenceExcuseId).ToDictionary(g => g.Key, g => g.OrderBy(r => r.Date).ThenBy(r => r.SessionId).Select(r =>
+        {
+            var name = names.GetValueOrDefault(r.ClassCourseId);
+            return new ExcuseSessionDto(r.SessionId, r.Date, name.Ar ?? string.Empty, name.En ?? string.Empty, statuses.GetValueOrDefault((r.SessionId, studentOf[g.Key])) ?? string.Empty);
+        }).ToList());
     }
 
     private static async Task<Dictionary<Guid, string>> AttachmentNamesAsync(LmsDbContext db, IReadOnlyList<AbsenceExcuse> excuses, CancellationToken ct)

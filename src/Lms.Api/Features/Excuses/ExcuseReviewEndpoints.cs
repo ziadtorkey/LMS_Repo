@@ -13,8 +13,8 @@ namespace Lms.Api.Features.Excuses;
 
 /// <summary>
 /// The review side of excuses (FR-EXC-03, M5 Task 19): the counselor queue, reject, escalate and the escalation targets. An excuse is read through the
-/// unit-subtree filters, so one outside the caller's scope is a 404; the permission is then checked at the excuse's own unit. Approve waits for the attendance
-/// tables (it must flip the covered records in the same transaction, Task 16/17) and has no endpoint yet.
+/// unit-subtree filters, so one outside the caller's scope is a 404; the permission is then checked at the excuse's own unit. Approve is in
+/// <see cref="ExcuseApproveEndpoints"/>, submit and withdraw in <see cref="ExcuseSubmitEndpoints"/>.
 /// </summary>
 internal static class ExcuseReviewEndpoints
 {
@@ -153,7 +153,7 @@ internal static class ExcuseReviewEndpoints
         return Results.Ok(list);
     }
 
-    private static async Task<(AbsenceExcuse? Excuse, IResult? Problem)> LoadAsync(
+    internal static async Task<(AbsenceExcuse? Excuse, IResult? Problem)> LoadAsync(
         Guid id, string permission, HttpContext http, LmsDbContext db, CancellationToken ct)
     {
         var excuse = await db.Set<AbsenceExcuse>().FirstOrDefaultAsync(e => e.Id == id, ct);
@@ -166,11 +166,11 @@ internal static class ExcuseReviewEndpoints
         return access.Problem is not null ? (null, access.Problem) : (excuse, null);
     }
 
-    private static IResult Refused(Exception ex) => ex is ExcuseReviewerIsSubmitterException
+    internal static IResult Refused(Exception ex) => ex is ExcuseReviewerIsSubmitterException
         ? ApiProblems.Conflict(ProblemCodes.excuse_reviewer_is_submitter)
         : ApiProblems.Conflict(ProblemCodes.excuse_not_pending);
 
-    private static async Task NotifyAsync(LmsDbContext db, AbsenceExcuse excuse, Func<StudentProfile, AbsenceExcuse, Task> send, CancellationToken ct)
+    internal static async Task NotifyAsync(LmsDbContext db, AbsenceExcuse excuse, Func<StudentProfile, AbsenceExcuse, Task> send, CancellationToken ct)
     {
         var student = await db.Set<StudentProfile>().FirstOrDefaultAsync(s => s.Id == excuse.StudentProfileId, ct);
         if (student is not null)
