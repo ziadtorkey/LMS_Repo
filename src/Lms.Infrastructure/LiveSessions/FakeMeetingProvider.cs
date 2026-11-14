@@ -11,6 +11,7 @@ namespace Lms.Infrastructure.LiveSessions;
 public sealed class FakeMeetingProvider : IMeetingProvider
 {
     private readonly ConcurrentDictionary<string, MeetingRequest> _meetings = new();
+    private readonly ConcurrentQueue<MeetingFailure?> _script = new();
     private int _failures;
     private int _failureKind;
     private int _next;
@@ -31,16 +32,39 @@ public sealed class FakeMeetingProvider : IMeetingProvider
         Interlocked.Exchange(ref _failures, count);
     }
 
+    /// <summary>
+    /// Scripts the next create calls: <c>null</c> = the call succeeds, a kind = it throws that failure; once the script is used up
+    /// calls succeed again. Lets a test fail a later occurrence of a series after earlier ones were created.
+    /// </summary>
+    public void ScriptCreates(params MeetingFailure?[] outcomes)
+    {
+        _script.Clear();
+        foreach (var outcome in outcomes)
+        {
+            _script.Enqueue(outcome);
+        }
+    }
+
+    /// <summary>The next call throws this exception as it is (what a timeout or a network error of a real provider looks like).</summary>
+    public Exception? NextException { get; set; }
+
     public void Reset()
     {
         _meetings.Clear();
         Deleted.Clear();
         Updated.Clear();
+        _script.Clear();
+        NextException = null;
         Interlocked.Exchange(ref _failures, 0);
     }
 
     public Task<MeetingResult> CreateMeetingAsync(MeetingRequest request, CancellationToken ct = default)
     {
+        if (_script.TryDequeue(out var scripted) && scripted is { } kind)
+        {
+            throw new MeetingProviderException(kind, "The fake provider was told to fail.", 30);
+        }
+
         ThrowIfFailing();
         var id = "fake-" + Interlocked.Increment(ref _next) + "-" + Guid.NewGuid().ToString("N")[..8];
         _meetings[id] = request;
@@ -73,6 +97,12 @@ public sealed class FakeMeetingProvider : IMeetingProvider
 
     private void ThrowIfFailing()
     {
+        if (NextException is { } unexpected)
+        {
+            NextException = null;
+            throw unexpected;
+        }
+
         if (Interlocked.Decrement(ref _failures) >= 0)
         {
             throw new MeetingProviderException((MeetingFailure)_failureKind, "The fake provider was told to fail.", 30);

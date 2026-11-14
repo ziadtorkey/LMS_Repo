@@ -1487,6 +1487,65 @@
   <data name="Error_package_not_ready" xml:space="preserve"><value>الحزمة ليست جاهزة بعد. انتظر حتى ينتهي الفحص.</value></data>
   <data name="Error_package_not_attached" xml:space="preserve"><value>الحزمة غير مضافة إلى درس بعد، لذا لا يمكن تغيير طريقة احتساب الدرجة.</value></data>
   <data name="Error_package_commit_rejected" xml:space="preserve"><value>تعذّر حفظ تقدّمك لأن المحاولة مغلقة أو لم تُقبل البيانات.</value></data>
+  <data name="Assignment_AllowFiles" xml:space="preserve"><value>السماح برفع ملفات</value></data>
+  <data name="Assignment_AllowText" xml:space="preserve"><value>السماح بنص مكتوب</value></data>
+  <data name="Assignment_Attachments" xml:space="preserve"><value>المرفقات</value></data>
+  <data name="Assignment_BlockNeedsDue" xml:space="preserve"><value>حدد موعد التسليم عند رفض التسليم المتأخر.</value></data>
+  <data name="Assignment_Due" xml:space="preserve"><value>موعد التسليم</value></data>
+  <data name="Assignment_Edit" xml:space="preserve"><value>تعديل الواجب</value></data>
+  <data name="Assignment_InstructionsAr" xml:space="preserve"><value>التعليمات (بالعربية)</value></data>
+  <data name="Assignment_InstructionsEn" xml:space="preserve"><value>التعليمات (بالإنجليزية)</value></data>
+  <data name="Assignment_LatePolicy" xml:space="preserve"><value>التسليم المتأخر</value></data>
+  <data name="Assignment_Lesson" xml:space="preserve"><value>الدرس</value></data>
+  <data name="Assignment_MaxGrade" xml:space="preserve"><value>الدرجة العظمى</value></data>
+  <data name="Assignment_MaxGradeInvalid" xml:space="preserve"><value>الدرجة العظمى بين 0.01 و1000.</value></data>
+  <data name="Assignment_MinScore" xml:space="preserve"><value>الحد الأدنى للدرجة (٪)</value></data>
+  <data name="Assignment_NeedSubmitType" xml:space="preserve"><value>اسمح بنص أو بملفات أو بكليهما.</value></data>
+  <data name="Assignment_PenaltyPercent" xml:space="preserve"><value>نسبة الخصم (٪)</value></data>
+  <data name="Assignment_PenaltyRequired" xml:space="preserve"><value>أدخل نسبة خصم من 1 إلى 100.</value></data>
+  <data name="Assignment_RemoveAttachment" xml:space="preserve"><value>إزالة المرفق</value></data>
+  <data name="Assignment_Resubmission" xml:space="preserve"><value>إعادة التسليم</value></data>
+  <data name="Assignments_Counts" xml:space="preserve"><value>{0} مسلَّم · {1} مصحَّح</value></data>
+  <data name="Assignments_Handed" xml:space="preserve"><value>التسليمات</value></data>
+  <data name="Assignments_Name" xml:space="preserve"><value>الواجب</value></data>
+  <data name="Assignments_New" xml:space="preserve"><value>واجب جديد</value></data>
+  <data name="Assignments_Submissions" xml:space="preserve"><value>التسليمات</value></data>
+  <data name="CompletionRule_Score" xml:space="preserve"><value>عند بلوغ درجة محددة</value></data>
+  <data name="CompletionRule_Submit" xml:space="preserve"><value>عند التسليم</value></data>
+  <data name="Grade_AboveMax" xml:space="preserve"><value>يجب ألا تتجاوز الدرجة {0}.</value></data>
+  <data name="Grade_Annotated" xml:space="preserve"><value>ملف مصحَّح بالملاحظات</value></data>
+  <data name="Grade_Feedback" xml:space="preserve"><value>الملاحظات</value></data>
+  <data name="Grade_NoWork" xml:space="preserve"><value>لا يوجد نص أو ملفات.</value></data>
+  <data name="Grade_Out" xml:space="preserve"><value>الدرجة (من {0})</value></data>
+  <data name="Grade_Penalty" xml:space="preserve"><value>خصم التأخير {0}٪: الدرجة النهائية {1}</value></data>
+  <data name="Grade_RemoveAnnotated" xml:space="preserve"><value>إزالة الملف المصحَّح</value></data>
+  <data name="Grade_Returned" xml:space="preserve"><value>تم حفظ الدرجة وإعادة العمل للطالب.</value></data>
+  <data name="Grade_Save" xml:space="preserve"><value>حفظ الدرجة</value></data>
+  <data name="Grade_SaveReturn" xml:space="preserve"><value>حفظ وإعادة للطالب</value></data>
+  <data name="Grade_Saved" xml:space="preserve"><value>تم حفظ الدرجة.</value></data>
+  <data name="Grade_Title" xml:space="preserve"><value>تصحيح التسليم</value></data>
+  <data name="Grade_Work" xml:space="preserve"><value>عمل الطالب</value></data>
+  <data name="LatePolicy_Allow" xml:space="preserve"><value>مقبول ويُعلَّم متأخراً</value></data>
+  <data name="LatePolicy_Block" xml:space="preserve"><value>غير مقبول</value></data>
+  <data name="LatePolicy_Penalty" xml:space="preserve"><value>مقبول مع خصم نسبة</value></data>
+  <data name="ResubmissionRule_None" xml:space="preserve"><value>غير مسموح</value></data>
+  <data name="ResubmissionRule_UntilDue" xml:space="preserve"><value>حتى موعد التسليم</value></data>
+  <data name="ResubmissionRule_UntilGraded" xml:space="preserve"><value>حتى التصحيح</value></data>
+  <data name="SubmissionStatus_Draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="SubmissionStatus_Graded" xml:space="preserve"><value>مصحَّح</value></data>
+  <data name="SubmissionStatus_Late" xml:space="preserve"><value>متأخر</value></data>
+  <data name="SubmissionStatus_None" xml:space="preserve"><value>لم يسلّم</value></data>
+  <data name="SubmissionStatus_Returned" xml:space="preserve"><value>أُعيد للطالب</value></data>
+  <data name="SubmissionStatus_Submitted" xml:space="preserve"><value>مسلَّم</value></data>
+  <data name="Submissions_At" xml:space="preserve"><value>وقت التسليم</value></data>
+  <data name="Submissions_Grade" xml:space="preserve"><value>الدرجة</value></data>
+  <data name="Submissions_GradeAction" xml:space="preserve"><value>تصحيح</value></data>
+  <data name="Submissions_Late" xml:space="preserve"><value>متأخر</value></data>
+  <data name="Submissions_OnlyLate" xml:space="preserve"><value>المتأخرة فقط</value></data>
+  <data name="Submissions_Status" xml:space="preserve"><value>الحالة</value></data>
+  <data name="Submissions_Student" xml:space="preserve"><value>الطالب</value></data>
+  <data name="Submissions_Title" xml:space="preserve"><value>تسليمات الواجب</value></data>
+  <data name="Assignment_MinScoreUnknown" xml:space="preserve"><value>تعذّر قراءة الحد الأدنى للدرجة. أغلق النافذة وحاول مجدداً.</value></data>
   <data name="Nav_Eligibility" xml:space="preserve"><value>أهلية المعلمين</value></data>
   <data name="Eligibility_Title" xml:space="preserve"><value>أهلية المعلمين</value></data>
   <data name="Eligibility_Help" xml:space="preserve"><value>حدّد أي المعلمين يجوز لهم تدريس أي المقررات في وحدة. لا يمكن تعيين إلا المعلمين المؤهلين على مقرر فصل.</value></data>
