@@ -45,8 +45,12 @@ public static class AttendanceSessionEndpoints
         var taught = db.Set<ClassCourseTeacher>().Where(t => t.UserId == me && t.From <= date && (t.To == null || t.To >= date)).Select(t => t.ClassCourseId);
         var substituteSlots = db.Set<TimetableException>()
             .Where(e => e.Date == date && e.Kind == TimetableException.SubstituteKind && e.SubstituteUserId == me).Select(e => e.SlotId);
+        // A teacher substituted away for the date does not keep the session: the substitute is the teacher of record for that one session (L15).
+        var substitutedAway = db.Set<TimetableException>()
+            .Where(e => e.Date == date && e.Kind == TimetableException.SubstituteKind && e.SubstituteUserId != me).Select(e => e.SlotId);
         var sessions = await db.Set<AttendanceSession>()
-            .Where(s => s.Date == date && (taught.Contains(s.ClassCourseId) || (s.SlotId != null && substituteSlots.Contains(s.SlotId.Value))))
+            .Where(s => s.Date == date && ((taught.Contains(s.ClassCourseId) && !(s.SlotId != null && substitutedAway.Contains(s.SlotId.Value)))
+                                           || (s.SlotId != null && substituteSlots.Contains(s.SlotId.Value))))
             .OrderBy(s => s.PeriodId).ThenBy(s => s.Id).ToListAsync(ct);
         return Results.Ok(await mapper.ToDtosAsync(sessions, me, today, ct));
     }
@@ -72,6 +76,13 @@ public static class AttendanceSessionEndpoints
             return ApiProblems.Conflict(ProblemCodes.attendance_session_future);
         }
 
+        // A school day (working, not a holiday) no further back than the report window: not three years ago, not on a holiday.
+        if (body.Date < today.AddDays(-AttendanceLimits.SearchMaxDays)
+            || !await calendar.IsWorkingDayAsync(classCourse.OrgUnitId, body.Date, ct) || await calendar.IsHolidayAsync(classCourse.OrgUnitId, body.Date, ct))
+        {
+            return ApiProblems.BadRequest(ProblemCodes.validation_failed, "date: not_a_school_day_in_range");
+        }
+
         var cls = await db.Set<Class>().SingleAsync(c => c.Id == classCourse.ClassId, ct);
         try
         {
@@ -92,19 +103,38 @@ public static class AttendanceSessionEndpoints
             }
         }
 
-        // One ad hoc session per class course, date and period: asking again returns it.
-        var existing = await db.Set<AttendanceSession>().FirstOrDefaultAsync(
-            s => s.ClassCourseId == id && s.Date == body.Date && s.PeriodId == body.PeriodId && s.Source == AttendanceSession.AdHocSource, ct);
+        // One session per class course, date and period: a timetable session already there is returned (no second roster), and so is an ad hoc one
+        // (the unique key also answers a double click: the second request finds the first).
+        var existing = await FindAsync(db, id, body, ct);
         var session = existing ?? new AttendanceSession(classCourse, body.Date, null, body.PeriodId, AttendanceSession.AdHocSource);
         if (existing is null)
         {
             db.Add(session);
-            await db.SaveChangesAsync(ct);
+            try
+            {
+                await db.SaveChangesAsync(ct);
+            }
+            catch (DbUpdateException ex) when (AttendanceSessionGenerator.IsDuplicate(ex))
+            {
+                db.ChangeTracker.Clear();
+                existing = await FindAsync(db, id, body, ct);
+                if (existing is null)
+                {
+                    throw;
+                }
+
+                session = existing;
+            }
         }
 
         var dto = (await mapper.ToDtosAsync([session], me, today, ct))[0];
         return existing is null ? Results.Created($"/api/attendance-sessions/{session.Id}/records", dto) : Results.Ok(dto);
     }
+
+    private static Task<AttendanceSession?> FindAsync(LmsDbContext db, Guid classCourseId, CreateAdHocAttendanceSessionRequest body, CancellationToken ct) =>
+        db.Set<AttendanceSession>().FirstOrDefaultAsync(
+            s => s.ClassCourseId == classCourseId && s.Date == body.Date && s.PeriodId == body.PeriodId
+                 && (s.Source == AttendanceSession.AdHocSource || s.Source == AttendanceSession.TimetableSource), ct);
 }
 
 /// <summary>Builds <see cref="AttendanceSessionListItemDto"/> rows: names, period times, counts, the edit window end and the substitute flag.</summary>

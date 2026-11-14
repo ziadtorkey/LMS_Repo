@@ -905,8 +905,8 @@ namespace Lms.Infrastructure.Persistence.Migrations
                         .HasColumnType("char(36)");
 
                     b.Property<string>("SessionKey")
-                        .HasMaxLength(60)
-                        .HasColumnType("varchar(60)");
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
 
                     b.Property<Guid?>("SlotId")
                         .HasColumnType("char(36)");

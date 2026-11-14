@@ -11,6 +11,7 @@ using Lms.Infrastructure.Persistence;
 using Lms.Shared.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Lms.Infrastructure.Attendance;
 
@@ -21,7 +22,7 @@ namespace Lms.Infrastructure.Attendance;
 /// <c>Attendance.GenerateDaysAhead</c> days, from the client-local today forward (never in the past): only on the slot weekday, inside its term, on a working
 /// day that is not a holiday, with the dated exceptions applied (cancelled: none; moved: the new period). Idempotent through the unique (slot, date) key.
 /// </summary>
-public sealed class AttendanceSessionGenerator(IConfiguration configuration, IClock clock)
+public sealed class AttendanceSessionGenerator(IConfiguration configuration, IClock clock, ILogger<AttendanceSessionGenerator> logger)
 {
     private sealed class ClientContext(Guid organizationId, string scopePath) : ICurrentContext
     {
@@ -55,7 +56,15 @@ public sealed class AttendanceSessionGenerator(IConfiguration configuration, ICl
         var created = 0;
         foreach (var organizationId in organizations)
         {
-            created += await GenerateForOrganizationAsync(organizationId, null, null, ct);
+            try
+            {
+                created += await GenerateForOrganizationAsync(organizationId, null, null, ct);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                // One client failing must not stop the others; the next run retries it (generation is idempotent).
+                logger.LogError(ex, "Attendance generation failed for client {OrganizationId}", organizationId);
+            }
         }
 
         return created;
@@ -108,7 +117,9 @@ public sealed class AttendanceSessionGenerator(IConfiguration configuration, ICl
                 .Select(a => new { SlotId = a.SlotId!.Value, a.Date }).ToListAsync(ct))
             .Select(a => (a.SlotId, a.Date)).ToHashSet();
 
-        var created = 0;
+        var pending = new List<(ClassCourse ClassCourse, DateOnly Date, Guid SlotId, Guid? PeriodId)>();
+        var workingDays = new Dictionary<(Guid, DateOnly), bool>();
+        var holidays = new Dictionary<(Guid, DateOnly), bool>();
         foreach (var slot in slots)
         {
             if (!activeClasses.Contains(slot.ClassId) || !terms.TryGetValue(slot.TermId, out var term) || !classCourses.TryGetValue(slot.ClassCourseId, out var classCourse))
@@ -119,8 +130,28 @@ public sealed class AttendanceSessionGenerator(IConfiguration configuration, ICl
             var daysAhead = (await settings.ResolveAsync(SettingKeys.AttendanceGenerateDaysAhead, slot.OrgUnitPath, ct)).Value;
             for (var date = today; date <= today.AddDays(daysAhead); date = date.AddDays(1))
             {
-                if (date.DayOfWeek != slot.Day || date < term.StartDate || date > term.EndDate || existing.Contains((slot.Id, date))
-                    || !await calendar.IsWorkingDayAsync(slot.OrgUnitId, date, ct) || await calendar.IsHolidayAsync(slot.OrgUnitId, date, ct))
+                if (date.DayOfWeek != slot.Day || date < term.StartDate || date > term.EndDate || existing.Contains((slot.Id, date)))
+                {
+                    continue;
+                }
+
+                // The calendar answers per unit and date: ask once and remember (a school has many slots on the same days).
+                if (!workingDays.TryGetValue((slot.OrgUnitId, date), out var working))
+                {
+                    workingDays[(slot.OrgUnitId, date)] = working = await calendar.IsWorkingDayAsync(slot.OrgUnitId, date, ct);
+                }
+
+                if (!working)
+                {
+                    continue;
+                }
+
+                if (!holidays.TryGetValue((slot.OrgUnitId, date), out var holiday))
+                {
+                    holidays[(slot.OrgUnitId, date)] = holiday = await calendar.IsHolidayAsync(slot.OrgUnitId, date, ct);
+                }
+
+                if (holiday)
                 {
                     continue;
                 }
@@ -139,17 +170,69 @@ public sealed class AttendanceSessionGenerator(IConfiguration configuration, ICl
                     }
                 }
 
-                db.Add(new AttendanceSession(classCourse, date, slot.Id, periodId, AttendanceSession.TimetableSource));
+                pending.Add((classCourse, date, slot.Id, periodId));
                 existing.Add((slot.Id, date));
-                created++;
             }
         }
 
-        if (created > 0)
+        return await SaveAsync(db, pending, ct);
+    }
+
+    /// <summary>
+    /// Saves the sessions in one batch. Two runs can overlap (the daily job and the run after a publish): when the unique (slot, date) key refuses the batch
+    /// because the other run got there first, the rows that are still missing are inserted one by one and the duplicates are ignored, so neither run fails.
+    /// </summary>
+    private static async Task<int> SaveAsync(LmsDbContext db, List<(ClassCourse ClassCourse, DateOnly Date, Guid SlotId, Guid? PeriodId)> pending, CancellationToken ct)
+    {
+        if (pending.Count == 0)
+        {
+            return 0;
+        }
+
+        foreach (var p in pending)
+        {
+            db.Add(new AttendanceSession(p.ClassCourse, p.Date, p.SlotId, p.PeriodId, AttendanceSession.TimetableSource));
+        }
+
+        try
         {
             await db.SaveChangesAsync(ct);
+            return pending.Count;
+        }
+        catch (DbUpdateException ex) when (IsDuplicate(ex))
+        {
+            db.ChangeTracker.Clear();
+        }
+
+        var created = 0;
+        foreach (var p in pending)
+        {
+            db.Add(new AttendanceSession(p.ClassCourse, p.Date, p.SlotId, p.PeriodId, AttendanceSession.TimetableSource));
+            try
+            {
+                await db.SaveChangesAsync(ct);
+                created++;
+            }
+            catch (DbUpdateException ex) when (IsDuplicate(ex))
+            {
+                db.ChangeTracker.Clear(); // the other run created this one
+            }
         }
 
         return created;
+    }
+
+    /// <summary>True when the database refused the row because of a unique key (MySQL error 1062).</summary>
+    public static bool IsDuplicate(DbUpdateException ex)
+    {
+        for (Exception? e = ex; e is not null; e = e.InnerException)
+        {
+            if (e.Message.Contains("Duplicate entry", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

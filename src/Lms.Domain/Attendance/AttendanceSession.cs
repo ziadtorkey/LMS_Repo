@@ -33,7 +33,12 @@ public sealed class AttendanceSession : UnitOwnedEntity, ILiveKeyed
         Source = source;
         State = OpenState;
         Version = 1;
-        SessionKey = slotId is { } slot && source == TimetableSource ? $"{slot:N}:{date:yyyyMMdd}" : null;
+        SessionKey = source switch
+        {
+            TimetableSource when slotId is { } slot => $"{slot:N}:{date:yyyyMMdd}",
+            AdHocSource => AdHocKey(classCourse.Id, date, periodId),
+            _ => null,
+        };
     }
 
     public Guid ClassCourseId { get; private set; }
@@ -62,8 +67,11 @@ public sealed class AttendanceSession : UnitOwnedEntity, ILiveKeyed
 
     public int Version { get; private set; }
 
-    /// <summary>"slotId:yyyyMMdd" while live and generated from a slot; unique, so a second live session for the same slot and date is refused by the database.</summary>
+    /// <summary>"slotId:yyyyMMdd" for a timetable session, "a:classCourse:yyyyMMdd:period" for an ad hoc one, while live; unique, so a second live session at the same place is refused by the database.</summary>
     public string? SessionKey { get; private set; }
+
+    /// <summary>The key of an ad hoc session: one per class course, date and period (a null period is its own token), so a double click creates one.</summary>
+    public static string AdHocKey(Guid classCourseId, DateOnly date, Guid? periodId) => $"a:{classCourseId:N}:{date:yyyyMMdd}:{periodId?.ToString("N") ?? "-"}";
 
     public void ClearLiveKeys() => SessionKey = null;
 }
