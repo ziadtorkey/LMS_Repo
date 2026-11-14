@@ -55,6 +55,13 @@ public sealed class GradebookProbeRows : IProbeRowModule
                 return new ProbeRequest(Routes.ClassCourseGradebookItem(cc, item));
             },
             Expect(NoContent, NoContent, NotFound, NotFound, NotFound, NoContent)),
+        new("gradebook publish", HttpMethod.Post, Routes.ClassCourseGradebookPublishPattern,
+            async (w, _) =>
+            {
+                var (cc, item, _) = await NewItemAsync(w);
+                return new ProbeRequest(Routes.ClassCourseGradebookPublish(cc), new PublishItemsRequest([item], PublishModes.Now, null, false));
+            },
+            Expect(Ok, Ok, NotFound, NotFound, NotFound, Ok)),
         new("gradebook entries", HttpMethod.Put, Routes.ClassCourseGradebookEntriesPattern,
             async (w, _) =>
             {

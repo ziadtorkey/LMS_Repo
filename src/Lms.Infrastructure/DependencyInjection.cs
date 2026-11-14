@@ -49,6 +49,9 @@ public static class DependencyInjection
         services.AddScoped<Lms.Infrastructure.Grading.Gradebooks.GradebookBackfill>();
         services.AddScoped<Lms.Infrastructure.Grading.Gradebooks.GradebookReader>();
         services.AddScoped<Lms.Infrastructure.Grading.Gradebooks.GradebookEditor>();
+        services.AddScoped<Lms.Infrastructure.Grading.Publishing.GradePublishedNotifier>();
+        services.AddScoped<Lms.Infrastructure.Grading.Publishing.GradePublisher>();
+        services.AddScoped<Lms.Infrastructure.Grading.Publishing.ScheduledPublishJob>();
         services.AddScoped<Lms.Infrastructure.AcademicYears.ITermDependants, Lms.Infrastructure.Grading.Gradebooks.GradebookTermDependants>();
         Lms.Infrastructure.Grading.Scales.GradingScalesServiceCollectionExtensions.AddGradingScales(services);
         services.AddScoped<Lms.Domain.Grading.IScaleUsage, Lms.Infrastructure.Grading.Gradebooks.GradebookScaleUsage>(); // replaces the TryAdd default
