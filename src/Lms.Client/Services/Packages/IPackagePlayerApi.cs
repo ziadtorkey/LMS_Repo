@@ -16,6 +16,12 @@ public interface IPackagePlayerApi
     /// <summary>POST /api/package-attempts/{id}/commit — 204. The page, never the frame, makes this call.</summary>
     Task CommitAsync(Guid attemptId, PackageCommitRequest request, CancellationToken ct = default);
 
+    /// <summary>
+    /// GET /api/packages/{id}/my-state — what the viewer needs before launch to pick its button (D57): the grading method, the latest
+    /// attempt, whether one is completed and the score the gradebook holds. Students only (staff get 404).
+    /// </summary>
+    Task<PackageStudentStateDto> GetMyStateAsync(Guid packageId, CancellationToken ct = default);
+
     /// <summary>POST /api/package-attempts/{id}/finish — flushes and closes the attempt; returns it as the server judged it.</summary>
     Task<PackageAttemptDto> FinishAsync(Guid attemptId, PackageFinishRequest request, CancellationToken ct = default);
 }
@@ -27,6 +33,9 @@ public sealed class PackagePlayerApi(ApiHttp http) : IPackagePlayerApi
 
     public async Task<PackagePreviewDto> PreviewAsync(Guid packageId, CancellationToken ct = default) =>
         (await http.SendAsync<PackagePreviewDto>(HttpMethod.Post, Routes.PackagePreview(packageId), null, ct))!;
+
+    public Task<PackageStudentStateDto> GetMyStateAsync(Guid packageId, CancellationToken ct = default) =>
+        http.GetAsync<PackageStudentStateDto>(Routes.PackageMyState(packageId), ct);
 
     public Task CommitAsync(Guid attemptId, PackageCommitRequest request, CancellationToken ct = default) =>
         http.SendAsync(HttpMethod.Post, Routes.PackageAttemptCommit(attemptId), request, ct);
@@ -72,6 +81,17 @@ public sealed class FakePackagePlayerApi : IPackagePlayerApi
         var now = ServerNow();
         return Task.FromResult(new PackageLaunchDto($"https://content.example.test/p/{Guid.NewGuid():N}/index.html", AttemptOf(packageId),
             now + TokenLifetime, now, Resumed || Launches.Count > 1));
+    }
+
+    /// <summary>What the my-state read answers (default: Highest, nothing completed yet).</summary>
+    public PackageStudentStateDto MyState { get; set; } = new(PackageGradingMethods.Highest, null, false, null);
+    public Exception? MyStateFailure { get; set; }
+    public int MyStateReads { get; private set; }
+
+    public Task<PackageStudentStateDto> GetMyStateAsync(Guid packageId, CancellationToken ct = default)
+    {
+        MyStateReads++;
+        return MyStateFailure is not null ? Task.FromException<PackageStudentStateDto>(MyStateFailure) : Task.FromResult(MyState);
     }
 
     public Task<PackagePreviewDto> PreviewAsync(Guid packageId, CancellationToken ct = default)

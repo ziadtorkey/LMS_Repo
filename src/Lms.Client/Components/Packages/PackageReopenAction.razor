@@ -1,0 +1,32 @@
+@using Lms.Shared.Packages
+
+@* Opening a completed package again (D57, design spec §5.1): the wording follows the module's grading method. It always launches, which
+   opens a new attempt; only Last asks first, because the new score replaces the current one even if it is lower. *@
+<MudStack Spacing="1" AlignItems="AlignItems.Start" data-testid="package-reopen">
+    <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@(Method == PackageGradingMethods.First ? Icons.Material.Rounded.Visibility : Icons.Material.Rounded.Replay)"
+               OnClick="ReopenAsync" data-testid="package-reopen-button" data-method="@Method">@L[Method == PackageGradingMethods.First ? "Package_ReviewNotGraded" : "Package_TryAgain"]</MudButton>
+    <MudText Typo="Typo.caption" Class="lms-muted" data-testid="package-reopen-caption">@L["Package_Caption_" + Method]</MudText>
+</MudStack>
+
+@code {
+    [Inject] private IDialogService Dialogs { get; set; } = default!;
+
+    /// <summary>A <see cref="PackageGradingMethods"/> value; an unknown one reads as Highest (so does a module with no score).</summary>
+    [Parameter] public string Method { get; set; } = PackageGradingMethods.Highest;
+    /// <summary>The graded score as text ("85 / 100"), quoted by the Last confirm.</summary>
+    [Parameter] public string? GradedScore { get; set; }
+    [Parameter] public EventCallback OnReopen { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (!PackageGradingMethods.All.Contains(Method)) Method = PackageGradingMethods.Highest;
+    }
+
+    private async Task ReopenAsync()
+    {
+        if (Method == PackageGradingMethods.Last
+            && !await ConfirmDialog.AskAsync(Dialogs, L["Package_TryAgain"], L["Package_ConfirmLast", GradedScore ?? "—"], L["Package_TryAgain"]))
+            return;
+        await OnReopen.InvokeAsync();
+    }
+}

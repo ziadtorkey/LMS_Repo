@@ -8,12 +8,16 @@
             <MudStack Spacing="0">
                 <MudText Typo="Typo.subtitle1" data-testid="package-start-title">@Title</MudText>
                 <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
-                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@ChipColor()" data-testid="package-state-chip" data-state="@(State ?? CompletionStates.NotStarted)">@L["Package_State_" + (State ?? CompletionStates.NotStarted)]</MudChip>
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@ChipColor()" data-testid="package-state-chip" data-state="@ShownState">@L["Package_State_" + ShownState]</MudChip>
                     @if (Score is { } score)
                     {
-                        <MudText Typo="Typo.caption" Class="lms-muted" data-testid="package-start-score">@score</MudText>
+                        <MudText Typo="Typo.caption" data-testid="package-start-score">@L["Package_Score", score]</MudText>
                     }
                 </MudStack>
+                @if (LatestScore is { } latest)
+                {
+                    <MudText Typo="Typo.caption" Class="lms-muted" data-testid="package-latest-score">@L["Package_LatestAttempt", latest]</MudText>
+                }
             </MudStack>
         </MudStack>
         <MudText Typo="Typo.caption" Class="lms-muted" data-testid="package-third-party">
@@ -23,7 +27,11 @@
             <MudText Typo="Typo.caption" Class="lms-muted" data-testid="package-phone-hint">@L["Package_PhoneHint"]</MudText>
         </MudHidden>
         <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
-            @if (CanStart)
+            @if (CanStart && Reopen)
+            {
+                <PackageReopenAction Method="@Method" GradedScore="@Score" OnReopen="OnStart" />
+            }
+            else if (CanStart)
             {
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.PlayArrow" OnClick="OnStart" data-testid="package-start">
                     @L[State == CompletionStates.InProgress ? "Package_Resume" : "Package_Start"]
@@ -41,7 +49,13 @@
     [Parameter] public string Title { get; set; } = "";
     /// <summary>The module's completion state for the caller (<see cref="CompletionStates"/>); null before the first visit.</summary>
     [Parameter] public string? State { get; set; }
+    /// <summary>The score that counts, as text ("85 / 100"): the server's <c>GradedScore</c>.</summary>
     [Parameter] public string? Score { get; set; }
+    /// <summary>The latest attempt's score when it differs from the graded one.</summary>
+    [Parameter] public string? LatestScore { get; set; }
+    /// <summary>A completed attempt exists and none is in progress: the re-open action (by grading method) replaces Start.</summary>
+    [Parameter] public bool Reopen { get; set; }
+    [Parameter] public string Method { get; set; } = "Highest";
     /// <summary>A learner: Start / Resume.</summary>
     [Parameter] public bool CanStart { get; set; }
     /// <summary>Staff with Packages.View: Preview (nothing is recorded).</summary>
@@ -49,7 +63,9 @@
     [Parameter] public EventCallback OnStart { get; set; }
     [Parameter] public EventCallback OnPreview { get; set; }
 
-    private Color ChipColor() => State switch
+    private string ShownState => Reopen ? CompletionStates.Completed : State ?? CompletionStates.NotStarted;
+
+    private Color ChipColor() => ShownState switch
     {
         CompletionStates.Completed => Color.Success,
         CompletionStates.InProgress => Color.Info,

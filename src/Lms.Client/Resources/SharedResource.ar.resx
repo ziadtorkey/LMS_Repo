@@ -1510,6 +1510,16 @@
   <data name="Package_FrameTitle" xml:space="preserve"><value>{0} (نشاط تفاعلي)</value></data>
   <data name="Module_NotAvailableTitle" xml:space="preserve"><value>هذا النشاط غير متاح</value></data>
   <data name="Module_NotAvailableText" xml:space="preserve"><value>ربما أُخفي أو حُذف. ارجع إلى المقرر لترى المتاح لك.</value></data>
+  <data name="Package_TryAgain" xml:space="preserve"><value>حاول مرة أخرى</value></data>
+  <data name="Package_ReviewNotGraded" xml:space="preserve"><value>مراجعة (غير محتسبة)</value></data>
+  <data name="Package_Caption_Highest" xml:space="preserve"><value>لن تنخفض درجتك.</value></data>
+  <data name="Package_Caption_Last" xml:space="preserve"><value>ستحلّ درجتك الجديدة محلّ هذه الدرجة.</value></data>
+  <data name="Package_Caption_First" xml:space="preserve"><value>تبقى درجتك الأولى، وهذه المحاولة للتدريب.</value></data>
+  <data name="Package_ConfirmLast" xml:space="preserve"><value>المحاولة مجددًا؟ ستحلّ درجتك الجديدة محلّ درجتك الحالية {0} حتى لو كانت أقل.</value></data>
+  <data name="Package_Practice" xml:space="preserve"><value>تدريب</value></data>
+  <data name="Package_PracticeFinished" xml:space="preserve"><value>انتهى التدريب. ما زالت درجتك المحتسبة {0}.</value></data>
+  <data name="Package_Score" xml:space="preserve"><value>الدرجة {0}</value></data>
+  <data name="Package_LatestAttempt" xml:space="preserve"><value>آخر محاولة: {0}</value></data>
   <data name="Assignment_AllowFiles" xml:space="preserve"><value>السماح برفع ملفات</value></data>
   <data name="Assignment_AllowText" xml:space="preserve"><value>السماح بنص مكتوب</value></data>
   <data name="Assignment_Attachments" xml:space="preserve"><value>المرفقات</value></data>
