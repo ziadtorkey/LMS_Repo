@@ -158,7 +158,7 @@ public sealed class PackageShimRuntimeTests
         Assert.Equal("[\"pause\"]", engine.Evaluate("JSON.stringify(__controls)").AsString()); // only a string control message reaches the content
         // The only things the shim registered or exposed.
         Assert.Equal(1, (int)engine.Evaluate("__listeners.length").AsNumber());
-        Assert.Equal("[\"commit\",\"finish\",\"onControl\"]", engine.Evaluate("JSON.stringify(Object.keys(window.lmsPort).sort())").AsString());
+        Assert.Equal("[\"commit\",\"finish\",\"onControl\",\"resume\"]", engine.Evaluate("JSON.stringify(Object.keys(window.lmsPort).sort())").AsString());
         Assert.True(engine.Evaluate("Object.isFrozen(window.lmsPort)").AsBoolean());
         // Nothing in the messages carries anything but what the content passed in.
         Assert.DoesNotContain("parent", engine.Evaluate("JSON.stringify(__sent)").AsString());
