@@ -12,13 +12,22 @@ public static class TimetableServiceCollectionExtensions
     {
         services.AddScoped<IClientCalendar, ClientCalendar>();
         services.AddScoped<PeriodService>();
-        services.TryAddScoped<IPeriodUsage, NoPeriodUsage>(); // Task 14 registers the slot-backed check before this one
+        services.AddScoped<TimetableService>();
+        services.AddScoped<IPeriodUsage, SlotPeriodUsage>();
+        services.TryAddScoped<IAttendanceGenerationQueue, NoAttendanceGeneration>(); // Task 16 registers the real queue
         return services;
     }
 
-    /// <summary>No slot table exists yet (Task 14): no period is in use.</summary>
-    private sealed class NoPeriodUsage : IPeriodUsage
+    /// <summary>A period is in use when a live slot of the client takes it.</summary>
+    private sealed class SlotPeriodUsage(Lms.Infrastructure.Persistence.LmsDbContext db) : IPeriodUsage
     {
-        public Task<bool> IsUsedAsync(Guid periodId, CancellationToken cancellationToken) => Task.FromResult(false);
+        public Task<bool> IsUsedAsync(Guid periodId, CancellationToken cancellationToken) =>
+            Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.AnyAsync(db.Set<TimetableSlot>(), s => s.PeriodId == periodId, cancellationToken);
+    }
+
+    /// <summary>Until Task 16 nothing generates attendance sessions.</summary>
+    private sealed class NoAttendanceGeneration : IAttendanceGenerationQueue
+    {
+        public Task<bool> QueueAsync(Guid organizationId, Guid classId, Guid termId, CancellationToken cancellationToken) => Task.FromResult(false);
     }
 }
