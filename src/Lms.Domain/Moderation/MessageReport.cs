@@ -103,6 +103,12 @@ public sealed class MessageReport : AuditableEntity, ITenantOwned, ILiveKeyed
 
     public void ClearLiveKeys() => ReportKey = null;
 
+    /// <summary>The value of <see cref="ContextJson"/> once the retention job cleared it (D71).</summary>
+    public const string PurgedContext = "[]";
+
+    /// <summary>The retention job clears the frozen context after its window; the report and its action stay.</summary>
+    public void PurgeContext() => ContextJson = PurgedContext;
+
     private void Close(string status, string action, Guid moderatorUserId, DateTime nowUtc)
     {
         if (!IsPending)
