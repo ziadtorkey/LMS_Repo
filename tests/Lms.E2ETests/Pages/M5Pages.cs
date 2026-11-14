@@ -9,17 +9,16 @@ namespace Lms.E2ETests.Pages;
 /// </summary>
 public sealed class TimetableSetupPage(IPage page)
 {
-    public ILocator Title => page.GetByTestId("tt-setup-title"); // proposed
-    public ILocator AddPeriod => page.GetByTestId("tt-add-period"); // proposed
-    public ILocator PeriodRows => page.Locator("[data-testid^='tt-period-']"); // proposed
-    public ILocator WorkingDay(DayOfWeek day) => page.GetByTestId($"tt-day-{day}"); // proposed, a toggle chip with aria-pressed
-    public ILocator ConflictBlock => page.GetByTestId("tt-mode-block"); // proposed
-    public ILocator ConflictWarn => page.GetByTestId("tt-mode-warn"); // proposed
-    public ILocator Save => page.GetByTestId("tt-setup-save"); // proposed
+    public ILocator Title => page.GetByTestId("setup-title"); // #654
+    public ILocator AddPeriod => page.GetByTestId("period-new"); // #654
+    public ILocator PeriodRows => page.Locator("[data-testid^='period-row-']"); // #654
+    public ILocator WorkingDay(DayOfWeek day) => page.GetByTestId($"wd-{day}"); // #654, a toggle chip with aria-pressed
+    public ILocator Save => page.GetByTestId("wd-save"); // #654 (working days)
+    public ILocator Saved => page.GetByTestId("wd-saved"); // #654
 
     public async Task OpenAsync(Guid unitId)
     {
-        await page.GotoAsync($"/org-units/{unitId}/timetable-setup"); // route proposed
+        await page.GotoAsync($"/org-units/{unitId}/timetable-setup"); // #654
         await Title.WaitForAsync();
     }
 
@@ -39,32 +38,38 @@ public sealed class TimetableSetupPage(IPage page)
 /// <summary>The weekly timetable builder and read-only views (<c>lms-tt</c>, <c>lms-slot</c>; spec section 4).</summary>
 public sealed class TimetableBuilderPage(IPage page)
 {
-    public ILocator Grid => page.GetByTestId("tt-grid"); // #654
+    public ILocator Grid => page.Locator("table.lms-tt"); // #654 (the grid has no test id; the table has the class and role=grid)
     public ILocator Slots => page.Locator("[data-testid^='tt-slot-']"); // #654 (tt-slot-{id})
-    public ILocator EmptyCells => page.Locator(".lms-slot.empty"); // spec classes: "Add a lesson"
-    public ILocator ConflictSlots => page.Locator(".lms-slot.conflict"); // spec class
-    public ILocator StateChip => page.GetByTestId("tt-state"); // proposed: Draft / Published
-    public ILocator Publish => page.GetByTestId("tt-publish"); // proposed
-    public ILocator PublishConfirm => page.GetByTestId("tt-publish-confirm"); // proposed
-    public ILocator ConflictsPanel => page.GetByTestId("tt-conflicts"); // proposed ("Conflicts (n)" in warn mode)
-    public ILocator Error => page.GetByTestId("tt-error"); // proposed: the server's refusal text in block mode
+    public ILocator EmptyCells => page.Locator("[data-testid^='tt-cell-']:not(:has([data-testid^='tt-slot-']))");
+    public ILocator StateChip => page.GetByTestId("tt-state"); // #654: "Published" or "n drafts"
+    public ILocator Publish => page.GetByTestId("tt-publish"); // #654 (disabled when there are no drafts)
+    public ILocator PublishConfirm => page.GetByTestId("publish-confirm"); // #654
+    public ILocator ConflictsPanel => page.GetByTestId("tt-conflicts"); // #654 ConflictsPanel
+    public ILocator Error => page.GetByTestId("slot-error"); // #654: the server's refusal text inside the slot dialog (block mode)
     public ILocator SubstituteBadges => page.Locator("[data-testid^='tt-badge-substitute']"); // proposed
     public ILocator CancelledBadges => page.Locator("[data-testid^='tt-badge-cancelled']"); // proposed
 
     // The slot dialog (course, teacher, room as plain text).
-    public ILocator DialogCourse => page.GetByTestId("slot-course"); // proposed
-    public ILocator DialogTeacher => page.GetByTestId("slot-teacher"); // proposed
-    public ILocator DialogRoom => page.GetByTestId("slot-room"); // proposed
-    public ILocator DialogSave => page.GetByTestId("slot-save"); // proposed
+    public ILocator DialogCourse => page.GetByTestId("slot-course"); // #654 (a MudSelect: use SelectAsync)
+    public ILocator DialogTeacher => page.GetByTestId("slot-teacher"); // #654 (a MudSelect)
+    public ILocator DialogRoom => page.GetByTestId("slot-room"); // #654
+    public ILocator DialogSave => page.GetByTestId("slot-save"); // #654
 
     public async Task OpenAsync(Guid classId)
     {
-        await page.GotoAsync($"/classes/{classId}/timetable"); // route proposed
+        await page.GotoAsync($"/classes/{classId}/timetable"); // #654
         await Grid.WaitForAsync();
     }
 
     /// <summary>The cell of a period row and a day column (periods are rows, working days are columns in reading order).</summary>
     public ILocator Cell(int periodOrder, DayOfWeek day) => page.GetByTestId($"tt-cell-{(int)day}-{periodOrder}"); // #654: day 0 = Sunday
+
+    /// <summary>Picks an option of a MudSelect by its visible text.</summary>
+    private async Task SelectAsync(ILocator select, string text)
+    {
+        await select.ClickAsync();
+        await page.GetByRole(AriaRole.Option, new() { Name = text }).First.ClickAsync();
+    }
 
     /// <summary>The polite live region that announces moves (#654).</summary>
     public ILocator Live => page.GetByTestId("tt-live");
@@ -86,10 +91,10 @@ public sealed class TimetableBuilderPage(IPage page)
     /// <summary>Adds a lesson in a cell through the slot dialog (the "+" of an empty cell).</summary>
     public async Task AddLessonAsync(int periodIndex, DayOfWeek day, string course, string teacher, string room)
     {
-        await Cell(periodIndex, day).Locator(".lms-slot.empty").ClickAsync();
-        await DialogCourse.FillAsync(course);
-        await DialogTeacher.FillAsync(teacher);
-        await DialogRoom.FillAsync(room);
+        await Cell(periodIndex, day).GetByRole(AriaRole.Button).First.ClickAsync(); // the "+" of an empty cell
+        await SelectAsync(DialogCourse, course);
+        await SelectAsync(DialogTeacher, teacher);
+        await DialogRoom.Locator("input").FillAsync(room);
         await DialogSave.ClickAsync();
     }
 }

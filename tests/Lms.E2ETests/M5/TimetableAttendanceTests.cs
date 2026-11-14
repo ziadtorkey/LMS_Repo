@@ -34,9 +34,9 @@ public sealed class TimetableAttendanceTests(E2EFixture fixture) : E2ETestBase(f
         var setup = new TimetableSetupPage(Page);
         await setup.OpenAsync(world.SchoolId);
         await setup.SetWorkingDaysAsync(DayOfWeek.Sunday, DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday);
-        await setup.AddPeriod.ClickAsync(); // period name and LTR times through the dialog (to be driven when the dialog's ids exist)
         await setup.Save.ClickAsync();
-        await Expect(setup.PeriodRows.First).ToBeVisibleAsync();
+        await Expect(setup.Saved).ToBeVisibleAsync();
+        await Expect(setup.PeriodRows.First).ToBeVisibleAsync(); // the periods come from the world (M5Kit); the dialog is a MudTimePicker, covered by bUnit
         Assert.Equal(culture == "ar" ? "rtl" : "ltr", await new ShellPage(Page).HtmlDirAsync());
     }
 
@@ -125,10 +125,11 @@ public sealed class TimetableAttendanceTests(E2EFixture fixture) : E2ETestBase(f
 
         var builder = new TimetableBuilderPage(Page);
         await builder.OpenAsync(world.ClassAId);
-        await Expect(builder.StateChip).ToHaveAttributeAsync("data-state", "Draft");
+        await Expect(builder.Publish).ToBeEnabledAsync(); // drafts exist
         await builder.Publish.ClickAsync();
         await builder.PublishConfirm.ClickAsync(); // the dialog says sessions will be generated for the coming days
-        await Expect(builder.StateChip).ToHaveAttributeAsync("data-state", "Published");
+        await Expect(builder.Publish).ToBeDisabledAsync(); // no drafts left
+        await Expect(builder.StateChip).ToContainTextAsync(Resx.In(culture, "Tt_State_Published"));
 
         await M5Kit.SignOutAsync(Page);
         await M5Kit.SignInAsync(Page, world.TeacherEmail, Settings.Password, culture);
