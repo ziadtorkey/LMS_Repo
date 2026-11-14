@@ -228,6 +228,46 @@ public static class ProblemCodes
     /// <summary>The substitute of an exception is not a teacher of the client, is the teacher of record, or is already teaching in that period on that date (400).</summary>
     public const string exception_substitute_invalid = nameof(exception_substitute_invalid);
 
+    // M6 wave 1: messaging, announcements, moderation and delivery (#613). A block is never revealed: a message to someone who blocked the sender is messaging_not_allowed.
+    /// <summary>The rules matrix, a restriction or a block does not let the sender write to this person (403).</summary>
+    public const string messaging_not_allowed = nameof(messaging_not_allowed);
+
+    /// <summary>A moderator locked the conversation (409).</summary>
+    public const string conversation_closed = nameof(conversation_closed);
+
+    /// <summary>The message is longer than the limit or empty (400).</summary>
+    public const string message_too_long = nameof(message_too_long);
+
+    /// <summary>The message can no longer be deleted for everyone: the 15-minute window passed (409).</summary>
+    public const string message_delete_window_closed = nameof(message_delete_window_closed);
+
+    /// <summary>The user already reported this message (409).</summary>
+    public const string report_duplicate = nameof(report_duplicate);
+
+    /// <summary>A cap or rate limit was reached: messages a minute, new conversations or announcements a day, searches, test emails (429).</summary>
+    public const string rate_limited = nameof(rate_limited);
+
+    /// <summary>The caller cannot post now (403): the conversation is read-only for them, see <c>ConversationReadOnlyReasons</c> (the <c>reason</c> field); history stays readable.</summary>
+    public const string conversation_read_only = nameof(conversation_read_only);
+
+    /// <summary>A cap was raised above the platform ceiling (422).</summary>
+    public const string comms_cap_above_ceiling = nameof(comms_cap_above_ceiling);
+
+    /// <summary>A message attachment is not allowed: type, content, size or count (422).</summary>
+    public const string attachment_invalid = nameof(attachment_invalid);
+
+    /// <summary>A mandatory notification cannot be switched off (409).</summary>
+    public const string notification_mandatory = nameof(notification_mandatory);
+
+    /// <summary>The announcement targets are not valid together, or a required target is missing (400).</summary>
+    public const string announcement_target_invalid = nameof(announcement_target_invalid);
+
+    /// <summary>A published announcement allows only its expiry, pin and withdrawal to change (409).</summary>
+    public const string announcement_not_editable = nameof(announcement_not_editable);
+
+    /// <summary>A client may only narrow the D69 messaging rules; this cell is looser than its default (400).</summary>
+    public const string rules_looser_than_default = nameof(rules_looser_than_default);
+
     // M5 wave 1: grading (M5 plan Task 1).
     /// <summary>The gradebook is locked: writes are refused and reads serve the lock snapshot (409, L5).</summary>
     public const string gradebook_locked = nameof(gradebook_locked);

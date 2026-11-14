@@ -76,7 +76,10 @@ public static class BuiltInRoles
              Permissions.Timetable.View, Permissions.Timetable.Manage, Permissions.Timetable.Configure,
              // M5 wave 3 (D58, D61, plan role matrix): every attendance and excuse permission except the own-data ones; Take for an admin is intended (an admin can take a session when no teacher can).
              Permissions.Attendance.Take, Permissions.Attendance.Edit, Permissions.Attendance.View,
-             Permissions.Excuses.Review, Permissions.Excuses.Escalate]),
+             Permissions.Excuses.Review, Permissions.Excuses.Escalate,
+             // M6 wave 1: everything of the Manager, plus moderation and the communication settings (client root).
+             Permissions.Messaging.View, Permissions.Messaging.Send, Permissions.Messaging.Moderate,
+             Permissions.Announcements.View, Permissions.Announcements.Manage, Permissions.Comms.Manage]),
         new(Manager, RoleBaseKinds.Staff,
             new("مدير المدرسة", "School Manager"),
             new("العميد", "Dean"),
@@ -119,7 +122,10 @@ public static class BuiltInRoles
              Permissions.Timetable.View, Permissions.Timetable.Manage, Permissions.Timetable.Configure,
              // M5 wave 3 (D58, D61): every attendance and excuse permission except the own-data ones.
              Permissions.Attendance.Take, Permissions.Attendance.Edit, Permissions.Attendance.View,
-             Permissions.Excuses.Review, Permissions.Excuses.Escalate]),
+             Permissions.Excuses.Review, Permissions.Excuses.Escalate,
+             // M6 wave 1 (D69): the Manager messages under the rules and announces; moderation and the communication settings are the Org Admin's.
+             Permissions.Messaging.View, Permissions.Messaging.Send,
+             Permissions.Announcements.View, Permissions.Announcements.Manage]),
         new(Supervisor, RoleBaseKinds.Staff,
             new("المشرف الأكاديمي", "Academic Supervisor"),
             new("رئيس القسم", "Head of Department"),
@@ -149,7 +155,9 @@ public static class BuiltInRoles
              // M5 wave 2: the timetable of supervised courses (RelationshipRules).
              Permissions.Timetable.View,
              // M5 wave 3: attendance of supervised courses (RelationshipRules).
-             Permissions.Attendance.View]),
+             Permissions.Attendance.View,
+             // M6 wave 1: messages under the rules and announces to the units it supervises.
+             Permissions.Messaging.View, Permissions.Messaging.Send, Permissions.Announcements.View, Permissions.Announcements.Manage]),
         new(Counselor, RoleBaseKinds.Staff,
             new("الأخصائي الاجتماعي", "Social Worker"),
             new("شؤون الطلاب", "Student Affairs"),
@@ -162,7 +170,9 @@ public static class BuiltInRoles
              // M5 wave 2: the timetable of the unit (the counselor does not build it).
              Permissions.Timetable.View,
              // M5 wave 3 (L14, L16): attendance of the unit subtree, edits after the window, the excuse queue; no Grades.*.
-             Permissions.Attendance.View, Permissions.Attendance.Edit, Permissions.Excuses.Review, Permissions.Excuses.Escalate]),
+             Permissions.Attendance.View, Permissions.Attendance.Edit, Permissions.Excuses.Review, Permissions.Excuses.Escalate,
+             // M6 wave 1: the Counselor messages students and guardians in scope (rules matrix); announcements are read only.
+             Permissions.Messaging.View, Permissions.Messaging.Send, Permissions.Announcements.View]),
         new(Teacher, RoleBaseKinds.Staff,
             new("المعلم", "Teacher"),
             new("عضو هيئة التدريس", "Instructor"),
@@ -188,7 +198,9 @@ public static class BuiltInRoles
              // M5 wave 2: read the timetable of the unit and own slots; building it is the Manager's.
              Permissions.Timetable.View, Permissions.Timetable.ViewOwn,
              // M5 wave 3: attendance of own ClassCourses, or the session one substitutes on (L15).
-             Permissions.Attendance.Take]),
+             Permissions.Attendance.Take,
+             // M6 wave 1: messages under the rules; announces only to own ClassCourses and their groups (RelationshipRules).
+             Permissions.Messaging.View, Permissions.Messaging.Send, Permissions.Announcements.View, Permissions.Announcements.Manage]),
         new(Student, RoleBaseKinds.Student,
             new("الطالب", "Student"),
             new("الطالب", "Student"),
@@ -207,7 +219,9 @@ public static class BuiltInRoles
              // M5 wave 1: the student's own published grades (SelfService); wave 2: the own class timetable (SelfService).
              Permissions.Grades.ViewOwn, Permissions.Timetable.ViewOwn,
              // M5 wave 3: the student's own attendance; submitting an excuse is effective only under GuardiansAndStudents (D61).
-             Permissions.Attendance.ViewOwn, Permissions.Excuses.Submit]),
+             Permissions.Attendance.ViewOwn, Permissions.Excuses.Submit,
+             // M6 wave 1 (D69): a student writes only to their own teachers and counselor (the rules matrix, never another student).
+             Permissions.Messaging.View, Permissions.Messaging.Send, Permissions.Announcements.View]),
         new(Guardian, RoleBaseKinds.Guardian,
             new("ولي الأمر", "Parent"),
             new("ولي الأمر", "Parent"),
@@ -215,7 +229,9 @@ public static class BuiltInRoles
              // M5 wave 1: the children's published grades (an active guardian link); wave 2: the children's timetable.
              Permissions.Grades.ViewOwn, Permissions.Timetable.ViewOwn,
              // M5 wave 3: the children's attendance and excuses (an active guardian link).
-             Permissions.Attendance.ViewOwn, Permissions.Excuses.Submit]),
+             Permissions.Attendance.ViewOwn, Permissions.Excuses.Submit,
+             // M6 wave 1 (D69): a guardian writes only to the teachers and counselor of their own children, never to another guardian.
+             Permissions.Messaging.View, Permissions.Messaging.Send, Permissions.Announcements.View]),
     ];
 
     public static BuiltInRoleDefinition Get(string key) =>

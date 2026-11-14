@@ -68,9 +68,9 @@ public sealed class AttendanceContractTests
     }
 
     [Fact]
-    public void Defaults_version_is_10()
+    public void Attendance_permissions_came_in_defaults_version_10_and_the_current_version_is_11()
     {
-        Assert.Equal(10, BuiltInRoleDefaults.CurrentVersion);
+        Assert.Equal(11, BuiltInRoleDefaults.CurrentVersion);
         Assert.All(AttendancePermissions, p => Assert.Equal(10, BuiltInRoleDefaults.IntroducedIn(p)));
         Assert.Contains("Excuses.Submit", BuiltInRoleDefaults.IntroducedInVersion10);
         Assert.Equal(7, BuiltInRoleDefaults.IntroducedInVersion10.Count);

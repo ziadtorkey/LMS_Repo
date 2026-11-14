@@ -27,7 +27,7 @@ public class ConfigurationContractTests
     [Fact]
     public void Declared_keys_are_found()
     {
-        Assert.Equal(47, DeclaredKeys().Count());
+        Assert.Equal(63, DeclaredKeys().Count());
     }
 
     [Theory]
@@ -68,6 +68,10 @@ public class ConfigurationContractTests
             "Packages.CommitMinIntervalSeconds",
             "Live.JoinWindowMinutes", "Live.ReminderMinutes", "Live.MaxCreatesPerDay", "Live.CloudRecordingEnabled",
             "Org.TimeZone", "Grades.MissingPolicy", "Grades.CategoryMethod", "Grades.DecimalPlaces", "AcademicYears.TermsPerYear",
+            "Comms.EmailEnabled", "Comms.PushEnabled", "Comms.MaxEmailPerDay", "Comms.MaxPushPerDay",
+            "Comms.MaxEmailPerUserPerDay", "Comms.MaxPushPerUserPerDay", "Comms.QuietHours.Enabled",
+            "Comms.QuietHours.Start", "Comms.QuietHours.End", "Comms.DeliveryRetentionDays", "Messaging.ReadReceipts", "Messaging.MaxPerMinute",
+            "Messaging.MaxNewConversationsPerDay", "Messaging.MaxGroupSize", "Messaging.UploadsPerMinute", "Announcements.MaxPerAuthorPerDay",
             "Timetable.WorkingDays", "Timetable.ConflictMode",
             "Attendance.GenerateDaysAhead", "Attendance.EditWindowHours", "Attendance.LiveMinPercent", "Attendance.LateAfterMinutes",
             "Attendance.AbsentThreshold", "Attendance.ThresholdWindowDays", "Attendance.LateWeightPercent",

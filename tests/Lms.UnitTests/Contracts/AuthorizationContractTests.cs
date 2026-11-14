@@ -21,7 +21,7 @@ public partial class AuthorizationContractTests
     }
 
     [Fact]
-    public void Permission_catalog_contains_exactly_the_M0_to_M5_wave_3_set()
+    public void Permission_catalog_contains_exactly_the_M0_to_M6_wave_1_set()
     {
         string[] expected =
         [
@@ -58,6 +58,7 @@ public partial class AuthorizationContractTests
             "Timetable.View", "Timetable.Manage", "Timetable.Configure", "Timetable.ViewOwn",
             "Attendance.Take", "Attendance.Edit", "Attendance.View", "Attendance.ViewOwn",
             "Excuses.Submit", "Excuses.Review", "Excuses.Escalate",
+            "Messaging.View", "Messaging.Send", "Messaging.Moderate", "Announcements.View", "Announcements.Manage", "Comms.Manage",
         ];
         Assert.Equal(expected.Order(StringComparer.Ordinal), Permissions.All.Order(StringComparer.Ordinal));
     }
@@ -141,6 +142,10 @@ public partial class AuthorizationContractTests
             "attendance_edit_window_closed", "attendance_session_future", "attendance_unmarked_rows", "attendance_reason_required",
             "attendance_not_a_proposal", "excuse_out_of_policy", "excuse_submitter_not_allowed", "excuse_reviewer_is_submitter",
             "excuse_comment_required", "excuse_attachment_invalid", "excuse_not_pending",
+            // M6 wave 1 (messaging, announcements, delivery)
+            "messaging_not_allowed", "conversation_closed", "message_too_long", "message_delete_window_closed", "report_duplicate", "rate_limited",
+            "notification_mandatory", "announcement_target_invalid", "announcement_not_editable", "rules_looser_than_default",
+            "conversation_read_only", "comms_cap_above_ceiling", "attachment_invalid",
         ];
 
         Assert.All(fields, f => Assert.Equal(f.Name, (string)f.GetRawConstantValue()!));

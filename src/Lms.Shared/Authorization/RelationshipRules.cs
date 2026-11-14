@@ -44,7 +44,9 @@ public static class RelationshipRules
             // M5 wave 1: grades of own ClassCourses with an assignment active today (L15).
             Permissions.Grades.View, Permissions.Grades.Manage, Permissions.Grades.Publish,
             // M5 wave 3: attendance of own ClassCourses with an assignment active today; a substitute only for that session and date (IsSubstituteOn, L15).
-            Permissions.Attendance.Take)),
+            Permissions.Attendance.Take,
+            // M6 wave 1: announcements only to own ClassCourses and their groups.
+            Permissions.Announcements.Manage)),
         new(BuiltInRoles.Supervisor, Relationships.SupervisedCourses, ImmutableArray.Create(
             Permissions.Courses.Update, Permissions.Courses.Delete, Permissions.Courses.Allocate,
             Permissions.Blueprints.Edit, Permissions.Blueprints.Publish, Permissions.TeacherAssignments.Manage,

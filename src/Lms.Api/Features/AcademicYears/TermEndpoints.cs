@@ -1,6 +1,7 @@
 using Lms.Api.Infrastructure;
 using Lms.Domain.AcademicYears;
 using Lms.Domain.Abstractions;
+using Lms.Infrastructure.AcademicYears;
 using Lms.Infrastructure.Persistence;
 using Lms.Shared;
 using Lms.Shared.AcademicYears;
@@ -19,7 +20,42 @@ public static class TermEndpoints
             .RequirePermission(Permissions.AcademicYears.Update);
         app.MapDelete(Routes.TermPattern, DeleteAsync).RequireAuthorization()
             .RequirePermission(Permissions.AcademicYears.Update);
+        app.MapGet(Routes.AcademicYearTermStructurePattern, GetStructureAsync).RequireAuthorization()
+            .RequirePermission(Permissions.AcademicYears.View);
+        app.MapPut(Routes.AcademicYearTermStructurePattern, ApplyStructureAsync).RequireAuthorization()
+            .RequirePermission(Permissions.AcademicYears.Update);
         return app;
+    }
+
+    private static async Task<IResult> GetStructureAsync(
+        Guid id, HttpContext http, LmsDbContext db, TermStructureService structure, CancellationToken ct)
+    {
+        var (year, problem) = await AcademicYearEndpoints.LoadForAsync(Permissions.AcademicYears.View, id, http, db, ct);
+        return year is null ? problem! : Results.Ok(await structure.GetAsync(year, ct));
+    }
+
+    private static async Task<IResult> ApplyStructureAsync(
+        Guid id, TermStructureDto? request, HttpContext http, LmsDbContext db, TermStructureService structure, CancellationToken ct)
+    {
+        var (year, problem) = await AcademicYearEndpoints.LoadForAsync(Permissions.AcademicYears.Update, id, http, db, ct);
+        if (year is null)
+        {
+            return problem!;
+        }
+
+        if (request is null || !TermTemplate.IsValid(request.TermsPerYear))
+        {
+            return ApiProblems.BadRequest(ProblemCodes.validation_failed, "TermsPerYear must be 2 or 3.");
+        }
+
+        return await structure.ApplyAsync(year, request.TermsPerYear, ct) switch
+        {
+            TermStructureOutcome.Closed => ApiProblems.Conflict(ProblemCodes.year_closed, "A closed academic year is read-only."),
+            TermStructureOutcome.NotPlanned => ApiProblems.Conflict(ProblemCodes.year_active, "Only a planned year can change its term structure."),
+            TermStructureOutcome.HasDependants => ApiProblems.Conflict(ProblemCodes.terms_have_dependants, "A term already has a gradebook, timetable slot or attendance session."),
+            TermStructureOutcome.NoRoom => ApiProblems.Conflict(ProblemCodes.term_outside_year, "The year has no room left for the missing terms."),
+            _ => Results.Ok(new TermStructureDto(request.TermsPerYear, TermTemplate.NamesFor(request.TermsPerYear))),
+        };
     }
 
     private static async Task<IResult> CreateAsync(
@@ -51,7 +87,8 @@ public static class TermEndpoints
     }
 
     private static async Task<IResult> UpdateAsync(
-        Guid id, SaveTermRequest request, HttpContext http, LmsDbContext db, IClock clock, CancellationToken ct)
+        Guid id, SaveTermRequest request, HttpContext http, LmsDbContext db, IClock clock, IEnumerable<ITermDependants> dependants,
+        CancellationToken ct)
     {
         if (AcademicYearValidators.Validate(request) is { } invalid)
         {
@@ -70,13 +107,20 @@ public static class TermEndpoints
             return conflict;
         }
 
+        // A rename is harmless; moving the dates could leave a gradebook, slot or session outside its term (L8).
+        if ((term.StartDate != request.StartDate || term.EndDate != request.EndDate) && await HasDependantsAsync(dependants, term.Id, ct))
+        {
+            return TermHasDependants();
+        }
+
         term.Update(request.NameAr.Trim(), request.NameEn.Trim(), request.StartDate, request.EndDate);
         Reorder(terms);
         await db.SaveChangesAsync(ct);
         return Results.Ok(AcademicYearMapper.ToDto(term, AcademicYearEndpoints.Today(clock)));
     }
 
-    private static async Task<IResult> DeleteAsync(Guid id, HttpContext http, LmsDbContext db, CancellationToken ct)
+    private static async Task<IResult> DeleteAsync(
+        Guid id, HttpContext http, LmsDbContext db, IEnumerable<ITermDependants> dependants, CancellationToken ct)
     {
         var (term, year, problem) = await LoadAsync(id, http, db, ct);
         if (term is null || year is null)
@@ -89,12 +133,33 @@ public static class TermEndpoints
             return ApiProblems.Conflict(ProblemCodes.year_closed, "A closed academic year is read-only.");
         }
 
+        if (await HasDependantsAsync(dependants, term.Id, ct))
+        {
+            return TermHasDependants();
+        }
+
         var remaining = await db.Set<Term>().Where(t => t.AcademicYearId == year.Id && t.Id != term.Id).ToListAsync(ct);
         db.Set<Term>().Remove(term);
         Reorder(remaining);
         await db.SaveChangesAsync(ct);
         return Results.NoContent();
     }
+
+    private static async Task<bool> HasDependantsAsync(IEnumerable<ITermDependants> dependants, Guid termId, CancellationToken ct)
+    {
+        foreach (var dependant in dependants)
+        {
+            if (await dependant.AnyAsync([termId], ct))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static IResult TermHasDependants() =>
+        ApiProblems.Conflict(ProblemCodes.terms_have_dependants, "The term already has a gradebook, timetable slot or attendance session.");
 
     private static async Task<(Term? Term, AcademicYear? Year, IResult? Problem)> LoadAsync(
         Guid termId, HttpContext http, LmsDbContext db, CancellationToken ct)
