@@ -45,7 +45,7 @@ public static class LiveProposalEndpoints
         var session = access.Session;
         if (!access.CanTake)
         {
-            return ApiProblems.Forbidden(); // a view or edit hit is not the right to take this session
+            return ApiProblems.NotFound(); // a view or edit hit is not the right to take this session; the same answer as mapping, so no other teacher session is revealed
         }
 
         if (!session.IsProposal)
