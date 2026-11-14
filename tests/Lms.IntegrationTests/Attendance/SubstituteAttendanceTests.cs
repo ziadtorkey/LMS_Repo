@@ -16,7 +16,10 @@ using Lms.Shared.Attendance;
 using Lms.Shared.Authorization;
 using Lms.Shared.Timetable;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Lms.Domain.Abstractions;
 using static Lms.IntegrationTests.AcademicYears.YearTestKit;
 using static Lms.IntegrationTests.Timetable.TimetableKit;
 
@@ -137,6 +140,46 @@ public sealed class SubstituteAttendanceTests(LmsApiFactory factory)
         _ = status; // the covered session itself may still be outside the sibling's filtered scope; the guard here is that the lookup does not depend on it
         await using var db = factory.CreateDbContext(TestCurrentContext.For(s.Tree.Org.Id, s.Tree.School2.Path));
         Assert.False(await db.Set<TimetableException>().AnyAsync()); // the filtered set shows the sibling nothing: the bypass is what finds it
+    }
+
+    private sealed class FixedClock(DateTime utcNow) : IClock
+    {
+        public DateTime UtcNow => utcNow;
+    }
+
+    [Fact]
+    public async Task Just_after_midnight_in_riyadh_the_local_date_decides_not_the_utc_date()
+    {
+        // 21:30 UTC on 2027-01-05 is already 00:30 on 2027-01-06 in Riyadh (D64): a session dated 01-06 is today and takeable, one dated 01-07 is the future.
+        var s = await SetUpAsync("SB4");
+        Guid today, future;
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            var a = new AttendanceSession(s.World.Math, new DateOnly(2027, 1, 6), null, s.World.First.Id, AttendanceSession.AdHocSource);
+            var b = new AttendanceSession(s.World.Math, new DateOnly(2027, 1, 7), null, s.World.First.Id, AttendanceSession.AdHocSource);
+            db.AddRange(a, b);
+            await db.SaveChangesAsync();
+            (today, future) = (a.Id, b.Id);
+        }
+
+        var manager = await AccessTestData.AssignAsync(factory, s.Tree, s.Tree.School1, BuiltInRoles.Manager, Guid.NewGuid());
+        using var fixedFactory = factory.WithWebHostBuilder(b => b.ConfigureServices(services =>
+        {
+            services.RemoveAll<IClock>();
+            services.AddSingleton<IClock>(new FixedClock(new DateTime(2027, 1, 5, 21, 30, 0, DateTimeKind.Utc)));
+        }));
+
+        async Task<HttpResponseMessage> PutAsync(Guid id)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Put, Routes.AttendanceSessionRecords(id));
+            request.Headers.Add(TestAuthHandler.UserHeader, manager.UserId.ToString());
+            request.Headers.Add(ContextHeader.Name, manager.Id.ToString());
+            request.Content = JsonContent.Create(new TakeAttendanceRequest(AttendanceStatuses.Present, [], null, 1), options: Web);
+            return await fixedFactory.CreateClient().SendAsync(request);
+        }
+
+        Assert.Equal(HttpStatusCode.OK, (await PutAsync(today)).StatusCode);
+        Assert.Equal(HttpStatusCode.Conflict, (await PutAsync(future)).StatusCode);
     }
 
     [Fact]
