@@ -25,7 +25,7 @@ public sealed record PublishOutcome(int ItemsChanged, int AffectedStudents, int 
 /// <see cref="GradeSnapshot"/> per affected student and sends one <c>Grades.Published</c> notification per student: course name only, no value, no title.
 /// </summary>
 public sealed class GradePublisher(
-    LmsDbContext db, IGradebookWriter writer, GradebookReader reader, IScaleResolver scales, GradePublishedNotifier notifier,
+    LmsDbContext db, GradebookReader reader, IScaleResolver scales, GradePublishedNotifier notifier,
     IAuditWriter audit, IClock clock)
 {
     public const int MaxItems = 500;
@@ -54,8 +54,8 @@ public sealed class GradePublisher(
             throw new GradebookRuleException(ProblemCodes.validation_failed, 400);
         }
 
+        // Publishing is visibility, not a grade write: a locked gradebook or a closed class or year can still be published (lock, then release is the year-end flow).
         var gradebook = await db.Set<Gradebook>().SingleAsync(g => g.Id == gradebookId[0], ct);
-        await writer.EnsureWritableAsync(gradebook, ct);
 
         var now = clock.UtcNow;
         if (request.Mode == PublishModes.Schedule && (request.AtUtc is not { } at || at <= now))

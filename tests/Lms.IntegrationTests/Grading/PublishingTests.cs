@@ -261,7 +261,7 @@ public sealed class PublishingTests(LmsApiFactory factory)
     }
 
     [Fact]
-    public async Task Publishing_follows_the_permission_the_relationship_and_the_lock()
+    public async Task Publishing_follows_the_permission_and_the_relationship_and_is_allowed_on_a_locked_gradebook()
     {
         var s = await SetupAsync("PB10");
         using var _h = s.Host;
@@ -278,8 +278,9 @@ public sealed class PublishingTests(LmsApiFactory factory)
             await db.SaveChangesAsync();
         }
 
-        var locked = await PublishAsync(s, Now(s.B.Id));
-        Assert.Equal((HttpStatusCode.Conflict, "gradebook_locked"), (locked.StatusCode, await CodeAsync(locked)));
+        // publishing is visibility, not a grade write: a locked gradebook can still be published (lock, then release is the year-end flow)
+        Assert.Equal(HttpStatusCode.OK, (await PublishAsync(s, Now(s.B.Id))).StatusCode);
+        Assert.Equal(GradeItem.PublishedState, Assert.Single(await ItemsAsync(s.B.Id)).PublishState);
     }
 
     [Fact]

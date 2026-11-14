@@ -10,7 +10,7 @@ namespace Lms.Api.Features.Gradebook;
 
 /// <summary>
 /// <c>POST …/gradebook/items/publish</c> (<c>Grades.Publish</c>; a teacher's own class courses, 404 otherwise): publish now, on a schedule or hide again.
-/// 409 <c>scale_provisional</c> without the acknowledgement, 400 for a schedule that is not after the server clock, 409 <c>gradebook_locked</c>.
+/// 409 <c>scale_provisional</c> without the acknowledgement, 400 for a schedule that is not after the server clock.
 /// </summary>
 public static class PublishEndpoints
 {
