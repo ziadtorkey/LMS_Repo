@@ -1,0 +1,124 @@
+@using Lms.Client.Components.Messaging
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.Messaging
+@using Lms.Shared.Messaging
+@inject IMessagingApi Api
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+@* Start a conversation. The recipient list is only the people the caller may message under the client rules (D69); a group needs the right to create
+   groups and stays inside the group size limit. The server checks every participant again (403 messaging_not_allowed). *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="3">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="newconv-error">@_error</MudAlert>
+            }
+            @if (_loading)
+            {
+                <LoadingState Lines="3" TestId="newconv-loading" />
+            }
+            else if (_recipients.Count == 0 && string.IsNullOrWhiteSpace(_search))
+            {
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" data-testid="newconv-none">@L["MsgNew_None"]</MudAlert>
+            }
+            else
+            {
+                <MudTextField T="string" Value="_search" ValueChanged="SearchAsync" Immediate="false" Label="@L["MsgNew_Search"]" Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Rounded.Search" data-testid="newconv-search" />
+                <div role="listbox" aria-multiselectable="true" aria-label="@L["MsgNew_Recipients"]" data-testid="newconv-list">
+                    <ListGroupLabel Text="@L["Msg_Picker_People"]" />
+                    @if (NoStudents)
+                    {
+                        <SafeguardingOption /> @* D69: a manager or an org admin does not reach students privately; say why instead of showing nothing *@
+                    }
+                    @foreach (var r in _recipients)
+                    {
+                        var recipient = r;
+                        <div @onclick="() => Toggle(recipient.UserId)" data-testid="@($"newconv-pick-{recipient.UserId}")">
+                            <RecipientOption Name="@Culture.Pick(recipient.NameAr, recipient.NameEn)" Caption="@(Culture.Pick(recipient.UnitNameAr ?? string.Empty, recipient.UnitNameEn ?? string.Empty))"
+                                             Selected="_picked.Contains(recipient.UserId)" />
+                        </div>
+                    }
+                    @if (_recipients.Count == 0)
+                    {
+                        <MudText Typo="Typo.body2" Class="lms-muted pa-2" data-testid="newconv-nomatch">@L["MsgNew_NoMatch"]</MudText>
+                    }
+                </div>
+
+                @if (_picked.Count > 1)
+                {
+                    @if (_summary?.CanCreateGroups == true)
+                    {
+                        <MudTextField T="string" @bind-Value="_title" Label="@L["MsgNew_GroupTitle"]" MaxLength="MessagingLimits.MaxConversationTitleLength" data-testid="newconv-title" />
+                        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">@L["Msg_Group_Note"]</MudAlert>
+                    }
+                    else
+                    {
+                        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" data-testid="newconv-nogroups">@L["MsgNew_NoGroups"]</MudAlert>
+                    }
+                }
+
+                <MudTextField T="string" @bind-Value="_first" Label="@L["Msg_Composer_Placeholder"]" Lines="3" MaxLength="_limits?.MaxBodyLength ?? MessagingLimits.MaxBodyLength"
+                              data-testid="newconv-first" />
+            }
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="newconv-cancel">@L["Common_Cancel"]</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="StartAsync" Disabled="!CanStart" data-testid="newconv-start">@L["Msg_Send"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private readonly HashSet<Guid> _picked = [];
+    private IReadOnlyList<RecipientDto> _recipients = [];
+    private MessagingRulesSummaryDto? _summary;
+    private MessagingLimitsDto? _limits;
+    private string? _search, _title, _first, _error;
+    private bool _loading = true, _saving;
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    private bool IsGroup => _picked.Count > 1;
+
+    private bool NoStudents => _summary is { CanCreateGroups: true } && !_summary.ReachableRoleKeys.Contains(Lms.Shared.Authorization.BuiltInRoles.Student);
+
+    private bool CanStart => !_saving && _picked.Count > 0 && !string.IsNullOrWhiteSpace(_first) && (!IsGroup || (_summary?.CanCreateGroups == true && _picked.Count + 1 <= (_limits?.MaxGroupSize ?? int.MaxValue)));
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ApiCalls.RunAsync(async () =>
+        {
+            _summary = await Api.GetRulesSummaryAsync();
+            _limits = await Api.GetLimitsAsync();
+            _recipients = await Api.GetRecipientsAsync();
+        }, Navigation, L, m => _error = m);
+        _loading = false;
+    }
+
+    private async Task SearchAsync(string value)
+    {
+        _search = value;
+        await ApiCalls.RunAsync(async () => _recipients = await Api.GetRecipientsAsync(value), Navigation, L, m => _error = m);
+    }
+
+    private void Toggle(Guid id)
+    {
+        if (!_picked.Remove(id)) _picked.Add(id);
+        _error = IsGroup && _picked.Count + 1 > (_limits?.MaxGroupSize ?? int.MaxValue) ? string.Format(L["MsgNew_GroupTooBig"].Value, _limits?.MaxGroupSize) : null;
+    }
+
+    private async Task StartAsync()
+    {
+        _saving = true;
+        var request = new CreateConversationRequest(IsGroup ? ConversationKinds.Group : ConversationKinds.Direct, [.. _picked], IsGroup ? _title : null, _first!.Trim());
+        ConversationDto? created = null;
+        var ok = await ApiCalls.RunAsync(async () => created = await Api.CreateConversationAsync(request), Navigation, L, m => _error = m);
+        _saving = false;
+        if (!ok) return; // the refusal (rules, limits) is shown and nothing is lost
+        MudDialog.Close(DialogResult.Ok(true));
+        Navigation.NavigateTo($"messages/{created!.Id}");
+    }
+}

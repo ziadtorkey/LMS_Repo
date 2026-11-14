@@ -391,6 +391,7 @@
   <data name="Notif_Preferences" xml:space="preserve"><value>تفضيلات الإشعارات</value></data>
   <data name="Channel_InApp" xml:space="preserve"><value>داخل المنصة</value></data>
   <data name="Channel_Email" xml:space="preserve"><value>البريد الإلكتروني</value></data>
+  <data name="Channel_Sms" xml:space="preserve"><value>رسائل نصية</value></data>
   <data name="Channel_Push" xml:space="preserve"><value>إشعارات فورية</value></data>
   <data name="Notif_Access_RoleAssigned" xml:space="preserve"><value>تم منحك دور {RoleName} في {OrgUnitName}.</value></data>
   <data name="Notif_Access_RoleRemoved" xml:space="preserve"><value>تمت إزالة دورك {RoleName} في {OrgUnitName}.</value></data>
@@ -1789,10 +1790,13 @@
   <data name="PermModule_Announcements" xml:space="preserve"><value>الإعلانات</value></data>
   <data name="PermModule_Comms" xml:space="preserve"><value>التواصل</value></data>
   <data name="Setting_Comms_EmailEnabled" xml:space="preserve"><value>السماح بإشعارات البريد الإلكتروني</value></data>
+  <data name="Setting_Comms_SmsEnabled" xml:space="preserve"><value>السماح بالرسائل النصية القصيرة</value></data>
   <data name="Setting_Comms_PushEnabled" xml:space="preserve"><value>السماح بالإشعارات الفورية</value></data>
   <data name="Setting_Comms_MaxEmailPerDay" xml:space="preserve"><value>عدد رسائل البريد يوميًا (العميل)</value></data>
+  <data name="Setting_Comms_MaxSmsPerDay" xml:space="preserve"><value>عدد الرسائل النصية يوميًا (العميل)</value></data>
   <data name="Setting_Comms_MaxPushPerDay" xml:space="preserve"><value>عدد الإشعارات الفورية يوميًا (العميل)</value></data>
   <data name="Setting_Comms_MaxEmailPerUserPerDay" xml:space="preserve"><value>عدد رسائل البريد لكل شخص يوميًا</value></data>
+  <data name="Setting_Comms_MaxSmsPerUserPerDay" xml:space="preserve"><value>عدد الرسائل النصية لكل شخص يوميًا</value></data>
   <data name="Setting_Comms_MaxPushPerUserPerDay" xml:space="preserve"><value>عدد الإشعارات الفورية لكل شخص يوميًا</value></data>
   <data name="Setting_Comms_QuietHours_Enabled" xml:space="preserve"><value>ساعات الهدوء</value></data>
   <data name="Setting_Comms_QuietHours_Start" xml:space="preserve"><value>بداية ساعات الهدوء</value></data>
@@ -1951,6 +1955,7 @@
   <data name="Prefs_Event" xml:space="preserve"><value>الحدث</value></data>
   <data name="Prefs_Channel_InApp" xml:space="preserve"><value>داخل المنصة</value></data>
   <data name="Prefs_Channel_Email" xml:space="preserve"><value>البريد الإلكتروني</value></data>
+  <data name="Prefs_Channel_Sms" xml:space="preserve"><value>الرسائل النصية</value></data>
   <data name="Prefs_Channel_Push" xml:space="preserve"><value>الإشعارات الفورية</value></data>
   <data name="Prefs_Fix" xml:space="preserve"><value>أضفه في ملفك الشخصي</value></data>
   <data name="Prefs_Locked" xml:space="preserve"><value>تحدده مدرستك: لا يمكن إيقافه.</value></data>
@@ -1981,6 +1986,28 @@
   <data name="Mod_Status_InReview" xml:space="preserve"><value>قيد المراجعة</value></data>
   <data name="Mod_Status_Removed" xml:space="preserve"><value>أُزيلت</value></data>
   <data name="Mod_Status_Kept" xml:space="preserve"><value>أُبقيت</value></data>
+  <data name="MsgPage_Title" xml:space="preserve"><value>الرسائل</value></data>
+  <data name="MsgPage_Subtitle" xml:space="preserve"><value>محادثاتك. لا يقرأ المحادثة إلا المشاركون فيها.</value></data>
+  <data name="MsgPage_New" xml:space="preserve"><value>رسالة جديدة</value></data>
+  <data name="MsgPage_EmptyTitle" xml:space="preserve"><value>لا توجد محادثات بعد</value></data>
+  <data name="MsgPage_EmptyText" xml:space="preserve"><value>ابدأ رسالة جديدة إلى شخص يُسمح لك بمراسلته.</value></data>
+  <data name="MsgPage_PickTitle" xml:space="preserve"><value>اختر محادثة</value></data>
+  <data name="MsgPage_PickText" xml:space="preserve"><value>اختر محادثة من القائمة لقراءتها.</value></data>
+  <data name="MsgPage_NotFoundTitle" xml:space="preserve"><value>المحادثة غير موجودة</value></data>
+  <data name="MsgPage_NotFoundText" xml:space="preserve"><value>إما أنها غير موجودة أو أنك لست مشاركًا فيها.</value></data>
+  <data name="MsgPage_Older" xml:space="preserve"><value>عرض الرسائل الأقدم</value></data>
+  <data name="MsgPage_Delete" xml:space="preserve"><value>حذف الرسالة</value></data>
+  <data name="MsgPage_DeleteHint" xml:space="preserve"><value>حذف للجميع. ممكن خلال {0} دقيقة من الإرسال.</value></data>
+  <data name="MsgPage_Locked" xml:space="preserve"><value>أُغلقت هذه المحادثة. يمكنك قراءتها فقط.</value></data>
+  <data name="MsgPage_ReadOnly" xml:space="preserve"><value>يمكنك قراءة هذه المحادثة دون الرد.</value></data>
+  <data name="MsgNew_None" xml:space="preserve"><value>لا تسمح قواعد مدرستك لك ببدء محادثة مع أحد.</value></data>
+  <data name="MsgNew_Search" xml:space="preserve"><value>ابحث عن أشخاص</value></data>
+  <data name="MsgNew_Recipients" xml:space="preserve"><value>المستلمون</value></data>
+  <data name="MsgNew_NoMatch" xml:space="preserve"><value>لا أحد ممن يُسمح لك بمراسلتهم يطابق هذا البحث.</value></data>
+  <data name="MsgNew_GroupTitle" xml:space="preserve"><value>اسم المجموعة</value></data>
+  <data name="MsgNew_NoGroups" xml:space="preserve"><value>لا تسمح قواعد مدرستك لك بإنشاء محادثات جماعية. اختر شخصًا واحدًا.</value></data>
+  <data name="MsgNew_GroupTooBig" xml:space="preserve"><value>أقصى عدد للمجموعة {0} شخصًا.</value></data>
+  <data name="Nav_Messages" xml:space="preserve"><value>الرسائل</value></data>
   <data name="Error_timetable_conflict" xml:space="preserve"><value>تتعارض هذه الحصة مع حصة أخرى: المعلم أو الفصل محجوز في الوقت نفسه.</value></data>
   <data name="Error_period_overlap" xml:space="preserve"><value>تتداخل الفترة مع فترة أخرى في هذه المدرسة، أو لا تبدأ قبل نهايتها.</value></data>
   <data name="Error_period_in_use" xml:space="preserve"><value>تستخدم إحدى حصص الجدول هذه الفترة، لذا لا يمكن حذفها.</value></data>
@@ -2104,6 +2131,14 @@
   <data name="Error_channel_not_allowed" xml:space="preserve"><value>لا تُستخدم هذه القناة لهذا الحساب.</value></data>
   <data name="Comms_ChannelState_NotAllowed" xml:space="preserve"><value>غير متاحة لهذا الحساب</value></data>
   <data name="Comms_PrefSource_Policy" xml:space="preserve"><value>حسب سياسة المنصة</value></data>
+  <data name="MsgPage_Mute" xml:space="preserve"><value>كتم</value></data>
+  <data name="MsgPage_Unmute" xml:space="preserve"><value>إلغاء الكتم</value></data>
+  <data name="MsgPage_Leave" xml:space="preserve"><value>مغادرة المجموعة</value></data>
+  <data name="MsgPage_Members" xml:space="preserve"><value>الأعضاء</value></data>
+  <data name="MsgPage_Owner" xml:space="preserve"><value>المالك</value></data>
+  <data name="MsgPage_Left" xml:space="preserve"><value>غادر</value></data>
+  <data name="MsgPage_GroupReadOnly" xml:space="preserve"><value>يمكنك قراءة هذه المجموعة. لتسأل المعلم عن شيء أرسل له رسالة خاصة.</value></data>
+  <data name="MsgPage_DeleteClosed" xml:space="preserve"><value>انتهت مهلة حذف هذه الرسالة.</value></data>
   <data name="Package_Start" xml:space="preserve"><value>ابدأ</value></data>
   <data name="Package_Resume" xml:space="preserve"><value>استئناف</value></data>
   <data name="Package_Preview" xml:space="preserve"><value>معاينة</value></data>
@@ -2151,4 +2186,5 @@
   <data name="Error_conversation_read_only" xml:space="preserve"><value>لا يمكنك الكتابة في هذه المحادثة.</value></data>
   <data name="Error_comms_cap_above_ceiling" xml:space="preserve"><value>هذا الحد أعلى من الحد الأقصى الذي تسمح به المنصة.</value></data>
   <data name="Error_attachment_invalid" xml:space="preserve"><value>المرفق غير مسموح به: تحقق من نوعه وحجمه وعدد المرفقات.</value></data>
+  <data name="NavSection_Communication" xml:space="preserve"><value>التواصل</value></data>
 </root>

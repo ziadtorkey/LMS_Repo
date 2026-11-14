@@ -391,6 +391,7 @@
   <data name="Notif_Preferences" xml:space="preserve"><value>Notification preferences</value></data>
   <data name="Channel_InApp" xml:space="preserve"><value>In-app</value></data>
   <data name="Channel_Email" xml:space="preserve"><value>Email</value></data>
+  <data name="Channel_Sms" xml:space="preserve"><value>SMS</value></data>
   <data name="Channel_Push" xml:space="preserve"><value>Push</value></data>
   <data name="Notif_Access_RoleAssigned" xml:space="preserve"><value>You were given the role {RoleName} at {OrgUnitName}.</value></data>
   <data name="Notif_Access_RoleRemoved" xml:space="preserve"><value>Your role {RoleName} at {OrgUnitName} was removed.</value></data>
@@ -1789,10 +1790,13 @@
   <data name="PermModule_Announcements" xml:space="preserve"><value>Announcements</value></data>
   <data name="PermModule_Comms" xml:space="preserve"><value>Communication</value></data>
   <data name="Setting_Comms_EmailEnabled" xml:space="preserve"><value>Allow email notices</value></data>
+  <data name="Setting_Comms_SmsEnabled" xml:space="preserve"><value>Allow SMS notices</value></data>
   <data name="Setting_Comms_PushEnabled" xml:space="preserve"><value>Allow push notices</value></data>
   <data name="Setting_Comms_MaxEmailPerDay" xml:space="preserve"><value>Emails per day (client)</value></data>
+  <data name="Setting_Comms_MaxSmsPerDay" xml:space="preserve"><value>SMS per day (client)</value></data>
   <data name="Setting_Comms_MaxPushPerDay" xml:space="preserve"><value>Push notices per day (client)</value></data>
   <data name="Setting_Comms_MaxEmailPerUserPerDay" xml:space="preserve"><value>Emails per person per day</value></data>
+  <data name="Setting_Comms_MaxSmsPerUserPerDay" xml:space="preserve"><value>SMS per person per day</value></data>
   <data name="Setting_Comms_MaxPushPerUserPerDay" xml:space="preserve"><value>Push notices per person per day</value></data>
   <data name="Setting_Comms_QuietHours_Enabled" xml:space="preserve"><value>Quiet hours</value></data>
   <data name="Setting_Comms_QuietHours_Start" xml:space="preserve"><value>Quiet hours start</value></data>
@@ -1951,6 +1955,7 @@
   <data name="Prefs_Event" xml:space="preserve"><value>Event</value></data>
   <data name="Prefs_Channel_InApp" xml:space="preserve"><value>In-app</value></data>
   <data name="Prefs_Channel_Email" xml:space="preserve"><value>Email</value></data>
+  <data name="Prefs_Channel_Sms" xml:space="preserve"><value>SMS</value></data>
   <data name="Prefs_Channel_Push" xml:space="preserve"><value>Push</value></data>
   <data name="Prefs_Fix" xml:space="preserve"><value>Add it in your profile</value></data>
   <data name="Prefs_Locked" xml:space="preserve"><value>Set by your school: can’t be turned off.</value></data>
@@ -1981,6 +1986,28 @@
   <data name="Mod_Status_InReview" xml:space="preserve"><value>In review</value></data>
   <data name="Mod_Status_Removed" xml:space="preserve"><value>Removed</value></data>
   <data name="Mod_Status_Kept" xml:space="preserve"><value>Kept</value></data>
+  <data name="MsgPage_Title" xml:space="preserve"><value>Messages</value></data>
+  <data name="MsgPage_Subtitle" xml:space="preserve"><value>Your conversations. Only the people in a conversation can read it.</value></data>
+  <data name="MsgPage_New" xml:space="preserve"><value>New message</value></data>
+  <data name="MsgPage_EmptyTitle" xml:space="preserve"><value>No conversations yet</value></data>
+  <data name="MsgPage_EmptyText" xml:space="preserve"><value>Start a new message to someone you are allowed to write to.</value></data>
+  <data name="MsgPage_PickTitle" xml:space="preserve"><value>Choose a conversation</value></data>
+  <data name="MsgPage_PickText" xml:space="preserve"><value>Pick a conversation from the list to read it.</value></data>
+  <data name="MsgPage_NotFoundTitle" xml:space="preserve"><value>Conversation not found</value></data>
+  <data name="MsgPage_NotFoundText" xml:space="preserve"><value>It does not exist, or you are not part of it.</value></data>
+  <data name="MsgPage_Older" xml:space="preserve"><value>Show older messages</value></data>
+  <data name="MsgPage_Delete" xml:space="preserve"><value>Delete message</value></data>
+  <data name="MsgPage_DeleteHint" xml:space="preserve"><value>Delete for everyone. Possible for {0} minutes after sending.</value></data>
+  <data name="MsgPage_Locked" xml:space="preserve"><value>This conversation was closed. You can only read it.</value></data>
+  <data name="MsgPage_ReadOnly" xml:space="preserve"><value>You can read this conversation but not reply.</value></data>
+  <data name="MsgNew_None" xml:space="preserve"><value>Your school rules do not let you start a conversation with anyone.</value></data>
+  <data name="MsgNew_Search" xml:space="preserve"><value>Search people</value></data>
+  <data name="MsgNew_Recipients" xml:space="preserve"><value>Recipients</value></data>
+  <data name="MsgNew_NoMatch" xml:space="preserve"><value>Nobody you may write to matches this search.</value></data>
+  <data name="MsgNew_GroupTitle" xml:space="preserve"><value>Group name</value></data>
+  <data name="MsgNew_NoGroups" xml:space="preserve"><value>Your school rules do not let you create group conversations. Pick one person.</value></data>
+  <data name="MsgNew_GroupTooBig" xml:space="preserve"><value>A group can have {0} people at most.</value></data>
+  <data name="Nav_Messages" xml:space="preserve"><value>Messages</value></data>
   <data name="Error_timetable_conflict" xml:space="preserve"><value>This slot clashes with another one: the teacher or the class is already booked at that time.</value></data>
   <data name="Error_period_overlap" xml:space="preserve"><value>The period overlaps another period of this school, or it does not start before it ends.</value></data>
   <data name="Error_period_in_use" xml:space="preserve"><value>A timetable slot uses this period, so it cannot be deleted.</value></data>
@@ -2104,6 +2131,14 @@
   <data name="Error_channel_not_allowed" xml:space="preserve"><value>This channel is not used for this account.</value></data>
   <data name="Comms_ChannelState_NotAllowed" xml:space="preserve"><value>Not available for this account</value></data>
   <data name="Comms_PrefSource_Policy" xml:space="preserve"><value>Set by the platform</value></data>
+  <data name="MsgPage_Mute" xml:space="preserve"><value>Mute</value></data>
+  <data name="MsgPage_Unmute" xml:space="preserve"><value>Unmute</value></data>
+  <data name="MsgPage_Leave" xml:space="preserve"><value>Leave group</value></data>
+  <data name="MsgPage_Members" xml:space="preserve"><value>Members</value></data>
+  <data name="MsgPage_Owner" xml:space="preserve"><value>Owner</value></data>
+  <data name="MsgPage_Left" xml:space="preserve"><value>left</value></data>
+  <data name="MsgPage_GroupReadOnly" xml:space="preserve"><value>You can read this group. To ask the teacher something, send a private message.</value></data>
+  <data name="MsgPage_DeleteClosed" xml:space="preserve"><value>The time to delete this message has passed.</value></data>
   <data name="Package_Start" xml:space="preserve"><value>Start</value></data>
   <data name="Package_Resume" xml:space="preserve"><value>Resume</value></data>
   <data name="Package_Preview" xml:space="preserve"><value>Preview</value></data>
@@ -2151,4 +2186,5 @@
   <data name="Error_conversation_read_only" xml:space="preserve"><value>You cannot post in this conversation.</value></data>
   <data name="Error_comms_cap_above_ceiling" xml:space="preserve"><value>This limit is above the maximum the platform allows.</value></data>
   <data name="Error_attachment_invalid" xml:space="preserve"><value>The attachment is not allowed: check its type and size, and the number of attachments.</value></data>
+  <data name="NavSection_Communication" xml:space="preserve"><value>Communication</value></data>
 </root>
