@@ -16,6 +16,14 @@ public sealed class GradebookItemsObserver(LmsDbContext db, EventTermResolver te
 {
     public async Task OnRecordedAsync(GradeEvent gradeEvent, ClassCourse classCourse, CancellationToken ct)
     {
+        // A source belongs to the gradebook of its first attempt for good: a regrade scored in another term updates that item (and its maximum)
+        // instead of creating a second item that would count the score twice.
+        if (await FindExistingAsync(classCourse, gradeEvent.SourceKind, gradeEvent.SourceId, ct) is { } existing)
+        {
+            existing.SetMaxPoints(gradeEvent.MaxPoints);
+            return;
+        }
+
         var term = await terms.ResolveAsync(classCourse, gradeEvent.ScoredAtUtc, ct);
         if (term is null)
         {
@@ -23,6 +31,24 @@ public sealed class GradebookItemsObserver(LmsDbContext db, EventTermResolver te
         }
 
         await EnsureItemAsync(classCourse, term.Id, gradeEvent.SourceKind, gradeEvent.SourceId, gradeEvent.MaxPoints, ct);
+    }
+
+    /// <summary>The live item of a source in any gradebook of the class course (pending rows of this unit of work included).</summary>
+    public async Task<GradeItem?> FindExistingAsync(ClassCourse classCourse, GradeSourceKind kind, Guid sourceId, CancellationToken ct)
+    {
+        var kindValue = (int)kind;
+        var pending = db.Set<GradeItem>().Local.FirstOrDefault(i =>
+            i.SourceKind == kindValue && i.SourceId == sourceId
+            && db.Set<Gradebook>().Local.Any(g => g.Id == i.GradebookId && g.ClassCourseId == classCourse.Id));
+        if (pending is not null)
+        {
+            return pending;
+        }
+
+        return await (from i in db.Set<GradeItem>()
+                      join g in db.Set<Gradebook>() on i.GradebookId equals g.Id
+                      where g.ClassCourseId == classCourse.Id && i.SourceKind == kindValue && i.SourceId == sourceId
+                      select i).FirstOrDefaultAsync(ct);
     }
 
     /// <summary>The gradebook, its category and the item of one source (shared with the backfill).</summary>

@@ -31,16 +31,22 @@ public sealed class GradebookBackfill(LmsDbContext db, GradebookItemsObserver it
             return 0; // a closed class or year never gets rows from a read
         }
 
-        // The latest event of each source decides its term and its maximum (a source never changes class course).
+        // The first attempt of a source decides its term (the observer does the same); the latest revision decides its maximum.
         var sources = await db.Set<GradeEvent>().Where(e => e.ClassCourseId == classCourse.Id)
             .GroupBy(e => new { e.SourceKind, e.SourceId })
-            .Select(g => new { g.Key.SourceKind, g.Key.SourceId, ScoredAtUtc = g.Max(e => e.ScoredAtUtc), MaxPoints = g.OrderByDescending(e => e.Revision).Select(e => e.MaxPoints).First() })
+            .Select(g => new { g.Key.SourceKind, g.Key.SourceId, FirstScoredAtUtc = g.Min(e => e.ScoredAtUtc), MaxPoints = g.OrderByDescending(e => e.Revision).Select(e => e.MaxPoints).First() })
             .ToListAsync(ct);
 
         var created = 0;
         foreach (var source in sources)
         {
-            var term = await terms.ResolveAsync(classCourse, source.ScoredAtUtc, ct);
+            if (await items.FindExistingAsync(classCourse, source.SourceKind, source.SourceId, ct) is { } existing)
+            {
+                existing.SetMaxPoints(source.MaxPoints);
+                continue;
+            }
+
+            var term = await terms.ResolveAsync(classCourse, source.FirstScoredAtUtc, ct);
             if (term is null)
             {
                 continue;
