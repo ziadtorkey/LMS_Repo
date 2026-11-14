@@ -18,19 +18,28 @@ public sealed record M5World(
 
 /// <summary>
 /// Set-up for the M5 demos through the API (nothing the scenarios are not testing is clicked). Like <c>M4Kit</c> (#435) for the sign-in
-/// helpers; the world needs the M5 contract routes, so the builder is a documented stub until Tasks 13 to 17 are on main.
+/// helpers (kept apart until #435 puts <c>M4Kit</c> on main: then <c>SignInAsync</c>/<c>SignOutAsync</c> are deleted here and the M4 ones called); the world needs the M5 contract routes, so the builder is a documented stub until Tasks 13 to 17 are on main.
 /// </summary>
 public static class M5Kit
 {
     /// <summary>
     /// To build, in order, as the signed-in org admin: the year and two classes (M3 routes), a course with a class course in each class and a
     /// teacher for both (the clash), a second teacher as the substitute and a counselor, three or more enrolled students, a guardian linked to
-    /// the first student, periods and the working days of the school, the timetable conflict mode, and, by flags: slots in each class
-    /// (<paramref name="withSlots"/>), the timetable published so sessions exist (<paramref name="published"/>), an exception that makes the
-    /// substitute teach today's session (<paramref name="substituteToday"/>), a taken session whose edit window has closed
-    /// (<paramref name="takenAndWindowClosed"/>, set through the server clock the E2E stack exposes) and a taken session with one absence
-    /// (<paramref name="takenWithAbsence"/>). The routes are the contract wave 2 and 3 constants of plan #621 (periods, working days, timetable,
-    /// exceptions, attendance); use <c>Routes.*</c> when they exist.
+    /// the first student (with <c>Features.GuardianPortal</c> enabled and the account activated, as the M3 demo does), periods, the timetable
+    /// conflict mode, and, by flags: slots (<paramref name="withSlots"/>), the timetable published so sessions exist (<paramref name="published"/>),
+    /// an exception that makes the substitute teach the test date (<paramref name="substituteToday"/>), a taken session whose edit window has
+    /// closed (<paramref name="takenAndWindowClosed"/>) and a taken session with one absence (<paramref name="takenWithAbsence"/>).
+    /// <para>
+    /// <b>Never depend on the runner's day.</b> Set <b>all seven weekdays</b> as working days (Saudi Sunday to Thursday would make a Friday or
+    /// Saturday run generate nothing) and derive "today" from the server's own time in the client zone (<c>serverNowUtc</c> of a list response,
+    /// Asia/Riyadh, D64), never from <c>DateTime.Today</c>; put the slot on that weekday and the exception on that date.
+    /// </para>
+    /// <para>
+    /// <b>Edit window:</b> set the setting <c>Attendance.EditWindowHours</c> (L14) to its minimum through the settings API before the take, so the
+    /// window is closed when the scenario looks at it; there is no server clock offset in the E2E stack.
+    /// </para>
+    /// The routes are the wave 2 and 3 constants of plan #621 (periods, working days, timetable, exceptions, attendance); use <c>Routes.*</c>
+    /// once they are on main.
     /// </summary>
     public static Task<M5World> BuildWorldAsync(
         ApiSetup api, string suffix, string conflictMode, bool withSlots, bool published, bool substituteToday, bool takenAndWindowClosed,

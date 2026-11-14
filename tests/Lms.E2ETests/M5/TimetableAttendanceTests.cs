@@ -16,11 +16,11 @@ namespace Lms.E2ETests.M5;
 public sealed class TimetableAttendanceTests(E2EFixture fixture) : E2ETestBase(fixture)
 {
     // One reason per dependency so un-skipping is a search and replace as the tasks land (plan Task 43 "Depends on").
-    private const string NeedsTimetable = "Needs the timetable API (Tasks 13 to 15) and the set-up and builder pages (Task 31) on main";
-    private const string NeedsSessions = "Needs session generation on publish (Task 16) and the today and take pages (Tasks 33, 34) on main";
-    private const string NeedsExceptions = "Needs timetable exceptions with a substitute (Tasks 15, 32) and attendance (Tasks 17, 33)";
-    private const string NeedsWindow = "Needs the edit window and Attendance.Edit with a reason (Task 17, L14) and the take page (Task 34)";
-    private const string NeedsGuardian = "Needs the excuse and absence notification path (Tasks 18, 19) and ChildAttendancePage (Task 36)";
+    private const string NeedsTimetable = "Needs #639 (periods), #643 (slots, publish) and the builder pages #654 on main";
+    private const string NeedsSessions = "Needs #657 (session generation on publish) and the today and take pages #636, #637 on main";
+    private const string NeedsExceptions = "Needs timetable exceptions with a substitute (the T15 branch, views #655), #657 and the take page #637 on main";
+    private const string NeedsWindow = "Needs attendance taking with the edit window and Attendance.Edit (Task 17, PR not opened) and the take page #637 on main";
+    private const string NeedsGuardian = "Needs the absence notification (Task 17, AbsenceNotifier, PR not opened) and ChildAttendancePage (Task 36, PR not opened); Features.GuardianPortal enabled and the guardian activated";
 
     [Theory(Skip = NeedsTimetable)]
     [InlineData("ar")]
@@ -185,7 +185,10 @@ public sealed class TimetableAttendanceTests(E2EFixture fixture) : E2ETestBase(f
         await take.MarkAllPresent.ClickAsync();
         await take.Status(world.StudentIds[0], "Absent").ClickAsync();
         await take.Status(world.StudentIds[1], "Late").ClickAsync();
-        await Expect(take.Summary).ToContainTextAsync("1"); // counts: the polite status line
+        // Exact counts from the summary bar chips (#637): the roster minus the two exceptions is present, one absent, one late.
+        await Expect(take.Count("Absent")).ToContainTextAsync("1");
+        await Expect(take.Count("Late")).ToContainTextAsync("1");
+        await Expect(take.Count("Present")).ToContainTextAsync((world.StudentIds.Length - 2).ToString());
         await take.Save.ClickAsync();
         await Expect(take.Error).ToHaveCountAsync(0);
         clock.Stop();

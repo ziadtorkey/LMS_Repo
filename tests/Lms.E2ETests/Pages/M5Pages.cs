@@ -3,9 +3,8 @@ using Microsoft.Playwright;
 namespace Lms.E2ETests.Pages;
 
 /// <summary>
-/// M5 timetable and attendance page objects (plan Task 43, #621). DRAFT: the pages do not exist yet (Tasks 31 to 34). Locators use the
-/// CSS classes of the design spec (<c>docs/design/m5-assessment-timetable-attendance.md</c> section 9, which the FE must use) where the
-/// spec fixes them, and <c>data-testid</c>s that are proposed here and must be confirmed with FE2 in Task 39 (marked "proposed").
+/// M5 timetable and attendance page objects (plan Task 43, #621). Every locator is a <c>data-testid</c> from the FE map
+/// (<c>docs/m5-e2e-testids.md</c>, #710); CSS classes are not used, so a style refactor cannot break the demo.
 /// </summary>
 public sealed class TimetableSetupPage(IPage page)
 {
@@ -120,11 +119,12 @@ public sealed class AttendanceTodayPage(IPage page)
 /// <summary>Taking attendance (<c>/attendance/sessions/{id}</c>; rows <c>lms-att-row</c>, four labelled buttons, sticky bar; spec section 5.2).</summary>
 public sealed class AttendanceTakePage(IPage page)
 {
-    public ILocator Rows => page.Locator(".lms-att-row"); // spec class
+    public ILocator Rows => page.Locator("[data-testid^='att-row-']"); // #637
     public ILocator MarkAllPresent => page.GetByTestId("att-mark-all"); // #637
     public ILocator NextUnmarked => page.GetByTestId("att-next"); // #637
     public ILocator Search => page.GetByTestId("att-search"); // #637
-    public ILocator Bar => page.Locator(".lms-att-bar"); // spec class
+    /// <summary>The count chip of a status in the summary bar (#637: att-count-{Present|Absent|Late|Excused}).</summary>
+    public ILocator Count(string status) => page.GetByTestId($"att-count-{status}");
     public ILocator Summary => page.GetByTestId("att-summary"); // #637 summary bar
     public ILocator Save => page.GetByTestId("att-save"); // #637
     public ILocator Reason => page.GetByTestId("att-reason"); // #637 required after the edit window
