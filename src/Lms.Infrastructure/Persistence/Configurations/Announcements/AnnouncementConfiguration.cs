@@ -13,7 +13,8 @@ internal sealed class AnnouncementConfiguration : IEntityTypeConfiguration<Annou
         builder.Property(x => x.TitleEn).HasMaxLength(200).IsRequired();
         builder.Property(x => x.BodyAr).HasColumnType("longtext");
         builder.Property(x => x.BodyEn).HasColumnType("longtext");
-        builder.Property(x => x.Status).HasMaxLength(20).IsRequired();
+        // The status is the concurrency token: Draft to Published (or Scheduled, Withdrawn, Expired) is a conditional update, so of two concurrent transitions one wins.
+        builder.Property(x => x.Status).HasMaxLength(20).IsRequired().IsConcurrencyToken();
         builder.Property(x => x.RoleFiltersCsv).HasMaxLength(60).IsRequired();
         builder.Ignore(x => x.RoleFilters);
         builder.Ignore(x => x.IsEditable);

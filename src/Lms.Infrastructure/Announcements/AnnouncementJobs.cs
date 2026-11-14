@@ -16,7 +16,14 @@ public sealed class AnnouncementJobs(LmsDbContext db, AnnouncementService servic
         var row = await db.Set<Announcement>().FirstOrDefaultAsync(a => a.Id == announcementId, ct);
         if (row is { Status: AnnouncementStates.Scheduled })
         {
-            await service.PublishNowAsync(row, ct);
+            try
+            {
+                await service.PublishNowAsync(row, ct);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                // A withdraw (or another run) changed the status first: it wins, and nothing is published.
+            }
         }
     }
 

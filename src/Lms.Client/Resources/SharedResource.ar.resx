@@ -2039,6 +2039,7 @@
   <data name="Comms_Suppression_Complaint" xml:space="preserve"><value>تم الإبلاغ عنه كغير مرغوب</value></data>
   <data name="Comms_Suppression_UserOptOut" xml:space="preserve"><value>ألغى الاشتراك</value></data>
   <data name="Comms_ChannelState_Off" xml:space="preserve"><value>متوقفة</value></data>
+  <data name="Error_channel_not_offered" xml:space="preserve"><value>لا يُرسل هذا الإشعار عبر هذه القناة.</value></data>
   <data name="Error_channel_not_allowed" xml:space="preserve"><value>أوقفت مدرستك هذه القناة.</value></data>
   <data name="Error_comms_cap_above_ceiling" xml:space="preserve"><value>هذا الحد اليومي أعلى من الحد الأقصى للمنصة.</value></data>
   <data name="AuditEntity_ChannelConsent" xml:space="preserve"><value>موافقة القناة</value></data>

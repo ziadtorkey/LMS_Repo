@@ -261,6 +261,7 @@ public static class ProblemCodes
 
     /// <summary>A channel the client switched off cannot be switched on by a user (409).</summary>
     public const string channel_not_allowed = nameof(channel_not_allowed);
+    public const string channel_not_offered = nameof(channel_not_offered);
 
     /// <summary>The announcement targets are not valid together, or a required target is missing (400).</summary>
     public const string announcement_target_invalid = nameof(announcement_target_invalid);

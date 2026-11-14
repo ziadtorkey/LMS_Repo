@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Lms.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(LmsDbContext))]
-    [Migration("20261114130245_AddAnnouncements")]
+    [Migration("20261114141143_AddAnnouncements")]
     partial class AddAnnouncements
     {
         /// <inheritdoc />
@@ -430,6 +430,7 @@ namespace Lms.Infrastructure.Persistence.Migrations
                         .HasColumnType("varchar(60)");
 
                     b.Property<string>("Status")
+                        .IsConcurrencyToken()
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("varchar(20)");

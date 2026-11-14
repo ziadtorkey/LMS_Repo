@@ -427,6 +427,7 @@ namespace Lms.Infrastructure.Persistence.Migrations
                         .HasColumnType("varchar(60)");
 
                     b.Property<string>("Status")
+                        .IsConcurrencyToken()
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("varchar(20)");
