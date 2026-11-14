@@ -1,4 +1,6 @@
+@using Lms.Client.Services.Api
 @using Lms.Client.Services.Messaging
+@using Lms.Shared
 @using Lms.Shared.Messaging
 @inject IMessagingApi Messaging
 @inject NavigationManager Navigation
@@ -24,7 +26,7 @@
     </DialogContent>
     <DialogActions>
         <MudButton Variant="Variant.Text" OnClick="() => MudDialog.Cancel()" data-testid="report-cancel">@L["Common_Cancel"]</MudButton>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_sending" OnClick="SubmitAsync" data-testid="report-submit">@L["Msg_Report_Submit"]</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_sending || _reason is null" OnClick="SubmitAsync" data-testid="report-submit">@L["Msg_Report_Submit"]</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -35,7 +37,8 @@
     /// <summary>Safety concern first: it is the one a moderator reads first.</summary>
     public static IReadOnlyList<string> Reasons { get; } = [ReportReasons.Safety, .. ReportReasons.All.Where(r => r != ReportReasons.Safety)];
 
-    private string _reason = ReportReasons.Safety;
+    /// <summary>No reason is preselected: a quick Submit must not file the highest-severity reason by accident.</summary>
+    private string? _reason;
     private string? _note, _error;
     private bool _sending;
 
@@ -43,10 +46,16 @@
 
     private async Task SubmitAsync()
     {
-        if (_sending) return;
+        if (_sending || _reason is null) return;
         _sending = true; _error = null;
         var note = string.IsNullOrWhiteSpace(_note) ? null : _note.Trim();
-        var ok = await ApiCalls.RunAsync(() => Messaging.ReportAsync(MessageId, new ReportMessageRequest(_reason, note)), Navigation, L, e => _error = e);
+        var reason = _reason;
+        // Already reported (409) is the state the reporter wants: the message counts as reported, not an error.
+        var ok = await ApiCalls.RunAsync(async () =>
+        {
+            try { await Messaging.ReportAsync(MessageId, new ReportMessageRequest(reason, note)); }
+            catch (ApiProblemException ex) when (ex.Code == ProblemCodes.report_duplicate) { }
+        }, Navigation, L, e => _error = e);
         _sending = false;
         if (ok) MudDialog.Close(DialogResult.Ok(true));
     }

@@ -8,6 +8,10 @@
 @if (_blocks.Count > 0)
 {
     <SectionCard Title="@L["Msg_Blocked_Title"]" TestId="blocked-card">
+        @if (_error is not null)
+        {
+            <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Dense="true" Class="mb-2" data-testid="blocked-error">@_error</MudAlert>
+        }
         <ul class="lms-members" data-testid="blocked-list">
             @foreach (var b in _blocks)
             {
@@ -26,6 +30,7 @@
     [Parameter] public EventCallback OnChanged { get; set; }
 
     private IReadOnlyList<BlockDto> _blocks = [];
+    private string? _error;
 
     protected override Task OnInitializedAsync() => RefreshAsync();
 
@@ -38,7 +43,8 @@
 
     private async Task UnblockAsync(BlockDto block)
     {
-        await ApiCalls.RunAsync(() => Messaging.UnblockAsync(block.UserId), Navigation, L, _ => { });
+        _error = null;
+        await ApiCalls.RunAsync(() => Messaging.UnblockAsync(block.UserId), Navigation, L, e => _error = e);
         await RefreshAsync();
         await OnChanged.InvokeAsync();
     }
