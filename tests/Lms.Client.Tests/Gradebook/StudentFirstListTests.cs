@@ -15,11 +15,13 @@ public sealed class StudentFirstListTests : ClientTestContext
 {
     private static readonly TimeSpan Wait = TimeSpan.FromSeconds(5);
     private readonly FakeGradebookApi _api = new();
+    private readonly FakeGradebookUnit _unit = new();
 
     public StudentFirstListTests()
     {
         Culture.Current = new CultureInfo("en");
         Services.AddSingleton<IGradebookApi>(_api);
+        Services.AddSingleton<IGradebookUnit>(_unit);
         Services.AddSingleton<IViewport>(new FakeViewport { IsPhone = true });
     }
 
@@ -124,5 +126,17 @@ public sealed class StudentFirstListTests : ClientTestContext
         Assert.Equal("سارة أحمد", page.Find("[data-testid=student-name]").TextContent.Trim());
         Assert.Contains("1 من 3", page.Find("[data-testid=student-position]").TextContent);
         Assert.DoesNotContain("Grd_", page.Markup);
+    }
+
+    [Fact]
+    public async Task A_withdrawn_student_is_marked_in_the_phone_list_too()
+    {
+        _api.Withdraw(FakeGradebookApi.StudentIds[1], new DateOnly(2027, 1, 12));
+        var page = await OpenAsync();
+        Assert.Empty(page.FindAll("[data-testid=phone-withdrawn]")); // the first student is active
+
+        page.Find("[data-testid=student-next]").Click();
+
+        Assert.Equal("Withdrew on 2027-01-12", page.Find("[data-testid=phone-withdrawn]").TextContent.Trim());
     }
 }

@@ -12,6 +12,7 @@
 @inject PermissionState PermState
 @inject ICultureService Culture
 @inject IViewport Viewport
+@inject IGradebookUnit UnitOf
 @inject NavigationManager Navigation
 
 @* The gradebook of a class course, read and render (M5 Task 24): the desktop grid, or on a phone the student-first list (ONE layout, L19). Every number
@@ -72,7 +73,7 @@ else
         }
         <SectionCard Flush="true" TestId="gradebook-card">
             <div class="lms-gb-toolbar" role="toolbar" aria-label="@L["Grd_Toolbar"]">
-                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" data-testid="term-chip">@Culture.Pick(_book.TermNameAr, _book.TermNameEn)</MudChip>
+                <TermPicker Terms="_terms" Current="_book.TermId" CurrentName="@Culture.Pick(_book.TermNameAr, _book.TermNameEn)" OnPick="PickTermAsync" />
                 <WeightsChip Total="_book.WeightsTotal" />
             </div>
             @if (_book.Rows.Total == 0)
@@ -114,6 +115,8 @@ else
     [SupplyParameterFromQuery(Name = "termId")] public Guid? TermId { get; set; }
 
     private GradebookDto? _book;
+    private IReadOnlyList<Lms.Shared.AcademicYears.TermDto> _terms = [];
+    private Guid? _loadedTerm;
     private IReadOnlyList<CategoryGroup> _groups = [];
     private string? _error;
     private int _pageNo = 1;
@@ -146,6 +149,8 @@ else
     {
         Viewport.Changed += OnViewportChanged;
         await Viewport.EnsureAsync();
+        _terms = await UnitOf.TermsAsync(Id);
+        _loadedTerm = TermId;
         await LoadAsync(1);
     }
 
@@ -164,6 +169,19 @@ else
         _book = _book with { Rows = _book.Rows with { Items = items } };
         InvokeAsync(StateHasChanged);
     }
+
+    /// <summary>Another term in the address: a different gradebook, so its own page of students and a new edit session.</summary>
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_book is null || TermId == _loadedTerm) return;
+        _loadedTerm = TermId;
+        if (_session is not null) _session.RowReplaced -= OnRowReplaced;
+        _session = null; // unsaved edits belong to the term they were typed in
+        _settingsOpen = false;
+        await LoadAsync(1);
+    }
+
+    private void PickTermAsync(Guid term) => Navigation.NavigateTo($"class-courses/{Id}/gradebook?termId={term}");
 
     private void OnViewportChanged() => InvokeAsync(StateHasChanged);
 

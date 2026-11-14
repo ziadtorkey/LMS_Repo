@@ -1,0 +1,27 @@
+@using Lms.Shared.AcademicYears
+@inject ICultureService Culture
+
+@* The terms of the class's year (two or three, D62) as a segmented control; one term is just a label. Choosing a term reloads the gradebook of that term. *@
+@if (Terms.Count > 1)
+{
+    <MudToggleGroup T="Guid" Value="Current" ValueChanged="v => OnPick.InvokeAsync(v)" Size="Size.Small" Color="Color.Primary" aria-label="@L["Grd_Term_Label"]" data-testid="term-picker">
+        @foreach (var term in Terms)
+        {
+            <MudToggleItem T="Guid" Value="@term.Id" data-testid="@($"term-{term.Id}")">@Culture.Pick(term.NameAr, term.NameEn)</MudToggleItem>
+        }
+    </MudToggleGroup>
+}
+else
+{
+    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" data-testid="term-chip">@CurrentName</MudChip>
+}
+
+@code {
+    [Parameter] public IReadOnlyList<TermDto> Terms { get; set; } = [];
+    [Parameter] public Guid Current { get; set; }
+
+    /// <summary>The name to show when there is no list to choose from.</summary>
+    [Parameter] public string CurrentName { get; set; } = "";
+
+    [Parameter] public EventCallback<Guid> OnPick { get; set; }
+}

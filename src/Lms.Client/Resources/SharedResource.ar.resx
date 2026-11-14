@@ -1811,4 +1811,7 @@
   <data name="Grd_Uncategorised_Text" xml:space="preserve"><value>{0} بنود بلا فئة، لذلك لا تدخل في أي وزن.</value></data>
   <data name="Grd_Uncategorised_MoveTo" xml:space="preserve"><value>نقل إلى</value></data>
   <data name="Grd_Uncategorised_Move" xml:space="preserve"><value>نقلها</value></data>
+  <data name="Grd_Term_Label" xml:space="preserve"><value>الفصل</value></data>
+  <data name="Grd_Withdrew_On" xml:space="preserve"><value>انسحب في {0}</value></data>
+  <data name="Grd_Withdrawn" xml:space="preserve"><value>منسحب</value></data>
 </root>

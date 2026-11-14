@@ -1811,4 +1811,7 @@
   <data name="Grd_Uncategorised_Text" xml:space="preserve"><value>{0} items are in no category, so they count toward no weight.</value></data>
   <data name="Grd_Uncategorised_MoveTo" xml:space="preserve"><value>Move to</value></data>
   <data name="Grd_Uncategorised_Move" xml:space="preserve"><value>Move them</value></data>
+  <data name="Grd_Term_Label" xml:space="preserve"><value>Term</value></data>
+  <data name="Grd_Withdrew_On" xml:space="preserve"><value>Withdrew on {0}</value></data>
+  <data name="Grd_Withdrawn" xml:space="preserve"><value>Withdrawn</value></data>
 </root>
