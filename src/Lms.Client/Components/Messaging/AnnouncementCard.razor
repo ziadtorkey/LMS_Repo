@@ -1,0 +1,74 @@
+@* One announcement (spec #615 §4.3, classes lms-ann, lms-ann-meta, lms-ann-text, lms-audience): a section icon, the title as h2 and the status chips,
+   the meta line, the body clamped to four lines with Read more, the audience chips and, for authors and managers, the read count. *@
+<article class="@($"lms-section lms-ann{(Pinned ? " pinned" : "")}")" aria-labelledby="@_headingId" data-testid="@TestId">
+    <div class="lms-ann-top">
+        <span class="lms-section-icon" aria-hidden="true"><MudIcon Icon="@SectionIcon" /></span>
+        <div class="lms-ann-head">
+            <h2 class="lms-ann-title" id="@_headingId"><bdi>@Title</bdi></h2>
+            @if (Details is not null)
+            {
+                <div class="lms-ann-meta">@Details</div>
+            }
+        </div>
+        <div class="lms-ann-chips">
+            @if (Pinned)
+            {
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Success" Class="lms-status-chip" data-testid="ann-pinned">@L["Ann_Pinned"]</MudChip>
+            }
+            @if (Scheduled)
+            {
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Info" Class="lms-status-chip" data-testid="ann-scheduled">@L["Ann_Scheduled"]</MudChip>
+            }
+            @Actions
+        </div>
+    </div>
+    <div class="@($"lms-ann-text{(Clamped ? " lms-ann-clamp" : "")}")" dir="auto" id="@_bodyId">@Body</div>
+    @if (Long)
+    {
+        <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="() => _expanded = !_expanded" aria-expanded="@(_expanded ? "true" : "false")"
+                   aria-controls="@_bodyId" data-testid="ann-more">@(_expanded ? L["Ann_ReadLess"] : L["Ann_ReadMore"])</MudButton>
+    }
+    @if (Audience is not null || ReadCount is not null)
+    {
+        <div class="lms-ann-foot">
+            @if (Audience is not null)
+            {
+                <div class="lms-audience" role="group" aria-label="@L["Ann_Audience"]">@Audience</div>
+            }
+            @if (ReadCount is not null)
+            {
+                <span class="lms-ann-reads" data-testid="ann-reads">@ReadCount</span>
+            }
+        </div>
+    }
+</article>
+
+@code {
+    private readonly string _headingId = "ann-" + Guid.NewGuid().ToString("N")[..8];
+    private readonly string _bodyId = "annb-" + Guid.NewGuid().ToString("N")[..8];
+    private bool _expanded;
+
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+    [Parameter] public string Body { get; set; } = "";
+    [Parameter] public bool Pinned { get; set; }
+    [Parameter] public bool Scheduled { get; set; }
+
+    /// <summary>Author or office, date and "Until yyyy-MM-dd" (dates inside dir="ltr" spans).</summary>
+    [Parameter] public RenderFragment? Details { get; set; }
+
+    /// <summary>Target and role chips (#613 rev 3 AnnouncementTargetKinds and RoleFilter).</summary>
+    [Parameter] public RenderFragment? Audience { get; set; }
+
+    /// <summary>"Read by 412 of 590": only for the author and managers.</summary>
+    [Parameter] public string? ReadCount { get; set; }
+
+    /// <summary>The More actions menu (Edit, then Withdraw last in the error colour).</summary>
+    [Parameter] public RenderFragment? Actions { get; set; }
+    [Parameter] public string? TestId { get; set; }
+
+    /// <summary>Long enough to need Read more (about four lines on a phone).</summary>
+    private bool Long => Body.Length > 280 || Body.Count(c => c == '\n') >= 4;
+    private bool Clamped => Long && !_expanded;
+
+    private string SectionIcon => Pinned ? Icons.Material.Rounded.PushPin : Scheduled ? Icons.Material.Rounded.Schedule : Icons.Material.Rounded.Campaign;
+}

@@ -1,0 +1,78 @@
+@* One message (spec #615 §2.6, classes lms-msg, lms-bubble): the user's own at the inline end, other people's at the inline start. The text keeps its
+   own direction (dir=auto); a removed message shows only who removed it, never the text. A failed send says "Not sent" with Try again. *@
+<div class="@MsgClass" data-testid="@TestId">
+    @if (!Mine && !string.IsNullOrEmpty(From))
+    {
+        <span class="lms-msg-from"><bdi>@From</bdi></span>
+    }
+    <div class="lms-msg-row">
+        @if (Removal != MessageRemoval.None)
+        {
+            <div class="lms-bubble">
+                <MudIcon Icon="@(Removal == MessageRemoval.ByModerator ? Icons.Material.Rounded.RemoveModerator : Icons.Material.Rounded.Delete)" Size="Size.Small" aria-hidden="true" />
+                @RemovedText
+            </div>
+        }
+        else
+        {
+            <div class="lms-bubble" dir="auto"><span class="lms-msg-text">@Text</span>@Attachments</div>
+            @if (Actions is not null)
+            {
+                <span class="lms-msg-actions">@Actions</span>
+            }
+        }
+    </div>
+    @if (!string.IsNullOrEmpty(TimeText) || Status != MessageStatus.None)
+    {
+        <span class="lms-msg-meta">
+            @if (!string.IsNullOrEmpty(TimeText))
+            {
+                <span dir="ltr">@TimeText</span>
+            }
+            @switch (Status)
+            {
+                case MessageStatus.Sending:
+                    <span>· @L["Msg_Status_Sending"]</span>
+                    break;
+                case MessageStatus.Sent:
+                    <span>· @L["Msg_Status_Sent"]</span>
+                    break;
+                case MessageStatus.Seen:
+                    <span>· <MudIcon Icon="@Icons.Material.Rounded.DoneAll" Size="Size.Small" aria-hidden="true" /> @L["Msg_Status_Seen"]</span>
+                    break;
+                case MessageStatus.Failed:
+                    <span class="lms-msg-failed">· @L["Msg_Status_Failed"]</span>
+                    <MudButton Variant="Variant.Text" Color="Color.Error" Size="Size.Small" OnClick="OnRetry" data-testid="msg-retry">@L["Common_Retry"]</MudButton>
+                    break;
+            }
+        </span>
+    }
+</div>
+
+@code {
+    [Parameter] public bool Mine { get; set; }
+
+    /// <summary>The sender's name above the first bubble of a run in a group; empty for one-to-one conversations.</summary>
+    [Parameter] public string? From { get; set; }
+    [Parameter] public string Text { get; set; } = "";
+    [Parameter] public string? TimeText { get; set; }
+    [Parameter] public MessageStatus Status { get; set; }
+    [Parameter] public MessageRemoval Removal { get; set; }
+
+    /// <summary>Attachment rows inside the bubble (lms-attach).</summary>
+    [Parameter] public RenderFragment? Attachments { get; set; }
+
+    /// <summary>The message menu button: it must stay visible on focus and on touch (spec #615 §2.7).</summary>
+    [Parameter] public RenderFragment? Actions { get; set; }
+    [Parameter] public EventCallback OnRetry { get; set; }
+    [Parameter] public string? TestId { get; set; }
+
+    private string MsgClass => "lms-msg " + (Mine ? "lms-msg-me" : "lms-msg-them") + (Removal != MessageRemoval.None ? " lms-msg-removed" : "");
+
+    private string RemovedText => Removal switch
+    {
+        MessageRemoval.ByModerator => L["Msg_Removed_ByModerator"],
+        _ when Mine => L["Msg_Removed_ByMe"],
+        _ => L["Msg_Removed_BySender"],
+    };
+}

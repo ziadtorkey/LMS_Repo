@@ -223,6 +223,19 @@ The full spec is `docs/design/m4b-live-and-packages.md`. Mockups are in `docs/de
   - The staff preview has an Info strip: "Preview: nothing is recorded."
   - A timed-out token shows an overlay with Reload.
 
+## 7b. M6 communication components (`Components/Messaging/`)
+
+The M6 spec (PR 615) draws the pages; these presentational components and the `lms-stitch.css` M6 block give FE the parts. They take formatted text and render fragments; they never call an API.
+
+- **`InboxLayout`** (`lms-inbox`): the 360 px list and the thread side by side from 900 px; one pane below that, picked by `ShowThread`.
+- **`ConversationRow`** (`lms-conv`): one link per conversation. Its accessible name is "name, n unread, time, preview". The unread count badge is primary, and the current row has `aria-current` and a 3 px bar at the inline start.
+- **`ThreadPane`** (`lms-thread`): a header, a focusable `role="log"` body that isn't live, and one polite status the page fills with other people's new messages ("name: text"), so the user's own messages aren't read back.
+- **`MessageBubble`** (`lms-msg`, `lms-bubble`): own messages at the inline end, others at the inline start, with the text in `dir="auto"`. A removal shows only its own words (by a moderator / deleted / you deleted), and a failed send shows "Not sent" with Try again.
+- **`DaySeparator`** (`lms-day`), **`MessageComposer`** (`lms-composer`: Enter is a new line, Ctrl+Enter or Cmd+Enter sends, and there's always a visible 44 px Send) and **`ComposerOff`** (`lms-composer-off`: the reason in words).
+- **`AnnouncementCard`** (`lms-ann`): a section icon, the h2 title, the Pinned and Scheduled status chips, a details line, the body clamped to four lines with Read more, the audience chips and the read count.
+- The classes for the picker, notification items and moderation (`lms-picker-*`, `lms-notif`, `lms-kind`, `lms-mod`, `lms-flagged`) are in the same block.
+- **Gallery:** `/dev/messaging-gallery` on the standalone dev server only (it's the not-found page against a real API). Screenshots: `docs/screenshots/ux-m6-components/`.
+
 ## 8. Phase 2 status (page-by-page passes)
 
 This list was last updated on 2026-11-12. "Waiting" means an open feature PR touches the page; it gets its pass after that PR merges.

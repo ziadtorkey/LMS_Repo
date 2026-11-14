@@ -1681,4 +1681,22 @@
   <data name="AuditEntity_GradeEntry" xml:space="preserve"><value>Grade entry</value></data>
   <data name="AuditEntity_GradeSnapshot" xml:space="preserve"><value>Grade snapshot</value></data>
   <data name="PermModule_Grades" xml:space="preserve"><value>Grades</value></data>
+  <data name="Msg_Conv_Unread" xml:space="preserve"><value>{0} unread</value></data>
+  <data name="Msg_Status_Sending" xml:space="preserve"><value>Sending…</value></data>
+  <data name="Msg_Status_Sent" xml:space="preserve"><value>Sent</value></data>
+  <data name="Msg_Status_Seen" xml:space="preserve"><value>Seen</value></data>
+  <data name="Msg_Status_Failed" xml:space="preserve"><value>Not sent</value></data>
+  <data name="Msg_Removed_ByModerator" xml:space="preserve"><value>This message was removed by a moderator.</value></data>
+  <data name="Msg_Removed_BySender" xml:space="preserve"><value>Message deleted</value></data>
+  <data name="Msg_Removed_ByMe" xml:space="preserve"><value>You deleted this message.</value></data>
+  <data name="Msg_Attach" xml:space="preserve"><value>Attach a file</value></data>
+  <data name="Msg_Composer_Placeholder" xml:space="preserve"><value>Write a message</value></data>
+  <data name="Msg_Composer_Hint" xml:space="preserve"><value>Ctrl+Enter to send</value></data>
+  <data name="Msg_Send" xml:space="preserve"><value>Send</value></data>
+  <data name="Msg_Thread_Log" xml:space="preserve"><value>Messages</value></data>
+  <data name="Ann_Pinned" xml:space="preserve"><value>Pinned</value></data>
+  <data name="Ann_Scheduled" xml:space="preserve"><value>Scheduled</value></data>
+  <data name="Ann_ReadMore" xml:space="preserve"><value>Read more</value></data>
+  <data name="Ann_ReadLess" xml:space="preserve"><value>Show less</value></data>
+  <data name="Ann_Audience" xml:space="preserve"><value>Audience</value></data>
 </root>
