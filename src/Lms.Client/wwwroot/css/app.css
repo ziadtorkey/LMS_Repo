@@ -89,3 +89,6 @@ html:lang(ar), html:lang(ar) body { font-family: Cairo, "Segoe UI", Tahoma, Aria
 
 /* Class course tabs: wrap instead of overflowing at 360 px when more tabs join (M5 Task 22). */
 .lms-course-tabs { flex-wrap: wrap; }
+.lms-grades-list { display: grid; gap: 16px; }
+.lms-band-legend { margin-block-start: 12px; }
+.lms-band-legend > summary { cursor: pointer; font-size: .875rem; color: var(--mud-palette-text-secondary); min-block-size: 44px; display: flex; align-items: center; }

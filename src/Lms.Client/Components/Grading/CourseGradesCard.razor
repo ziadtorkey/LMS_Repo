@@ -1,0 +1,79 @@
+@using Lms.Shared.Grading
+@inject ICultureService Culture
+
+@* One course of a student: the PUBLISHED items only (the server never sends a hidden one, and nothing here asks for it), the categories with the server's
+   percentages and the course total, always labelled as based on published grades. The total, its band and its points belong to this course: there is no
+   result across courses (L18). Every number is the server's; nothing is summed or weighted in the client. *@
+<SectionCard Title="@Culture.Pick(Course.CourseNameAr, Course.CourseNameEn)" TestId="@($"grades-course-{Course.ClassCourseId}")">
+    <MudText Typo="Typo.body2" Class="lms-muted mb-2">@Culture.Pick(Course.TermNameAr, Course.TermNameEn)</MudText>
+
+    <div class="lms-stats lms-stats-compact" data-testid="@($"grades-total-{Course.ClassCourseId}")">
+        <div class="lms-stat"><div>
+            <div class="lms-stat-label">@L["StGrades_CourseTotal"]</div>
+            <div class="lms-stat-value" data-testid="@($"grades-percent-{Course.ClassCourseId}")">@(Course.FinalPercent is { } p ? Fmt(p) + "%" : "\u2013")</div>
+            <div class="lms-muted" data-testid="@($"grades-basis-{Course.ClassCourseId}")">@L["StGrades_PublishedOnly"]</div>
+        </div></div>
+        @if (Course.BandCode is not null)
+        {
+            <div class="lms-stat"><div>
+                <div class="lms-stat-label">@L["StGrades_Band"]</div>
+                <div class="lms-stat-value" data-testid="@($"grades-band-{Course.ClassCourseId}")">@BandName</div>
+                @if (Course.BandPoints is { } points)
+                {
+                    <div class="lms-muted" data-testid="@($"grades-band-points-{Course.ClassCourseId}")">@string.Format(L["StGrades_BandPoints"], Fmt(points))</div>
+                }
+            </div></div>
+        }
+    </div>
+
+    @if (Course.Items.Count == 0)
+    {
+        <EmptyState Title="@L["StGrades_EmptyTitle"]" Text="@L["StGrades_EmptyText"]" Icon="@Icons.Material.Rounded.Grading" TestId="@($"grades-empty-{Course.ClassCourseId}")" />
+    }
+    else
+    {
+        @if (Course.Categories.Count > 0)
+        {
+            <MudSimpleTable Elevation="0" Class="lms-simple-table lms-stack-table mb-3" Dense="true" data-testid="@($"grades-categories-{Course.ClassCourseId}")">
+                <thead><tr><th>@L["StGrades_Category"]</th><th>@L["StGrades_Weight"]</th><th>@L["StGrades_Result"]</th></tr></thead>
+                <tbody>
+                    @foreach (var c in Course.Categories)
+                    {
+                        <tr>
+                            <td data-label="@L["StGrades_Category"]">@Culture.Pick(c.NameAr, c.NameEn)</td>
+                            <td data-label="@L["StGrades_Weight"]"><span dir="ltr">@Fmt(c.Weight)%</span></td>
+                            <td data-label="@L["StGrades_Result"]"><span dir="ltr">@(c.Percent is { } cp ? Fmt(cp) + "%" : "\u2013")</span></td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        }
+
+        <MudSimpleTable Elevation="0" Class="lms-simple-table lms-stack-table" Dense="true" data-testid="@($"grades-items-{Course.ClassCourseId}")">
+            <thead><tr><th>@L["StGrades_Item"]</th><th>@L["StGrades_Score"]</th></tr></thead>
+            <tbody>
+                @foreach (var item in Course.Items)
+                {
+                    <tr data-testid="@($"grades-item-{item.ItemId}")">
+                        <td data-label="@L["StGrades_Item"]">@Culture.Pick(item.TitleAr, item.TitleEn)</td>
+                        <td data-label="@L["StGrades_Score"]">
+                            @if (item.Excused) { <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Info">@L["StGrades_Excused"]</MudChip> }
+                            else if (item.Points is { } pts) { <span dir="ltr">@Fmt(pts)/@Fmt(item.MaxPoints)</span> }
+                            else { <span class="lms-muted">@L["StGrades_NotGraded"]</span> }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </MudSimpleTable>
+    }
+
+    <BandLegend Legend="Course.Legend" TestId="@($"grades-legend-{Course.ClassCourseId}")" />
+</SectionCard>
+
+@code {
+    [Parameter, EditorRequired] public StudentCourseGradesDto Course { get; set; } = default!;
+
+    private string BandName => Course.BandLabelAr is not null && Course.BandLabelEn is not null ? Culture.Pick(Course.BandLabelAr, Course.BandLabelEn) : Course.BandCode ?? "";
+
+    private string Fmt(decimal value) => value.ToString("F" + Math.Clamp(Course.DecimalPlaces, 0, 4), System.Globalization.CultureInfo.InvariantCulture);
+}

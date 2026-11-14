@@ -292,7 +292,16 @@ public sealed class FakeGradebookApi : IGradebookApi
             GradingLimits.DecimalPlacesDefault, items, categories, f.Percent, f.Code, f.LabelAr, f.LabelEn, f.Points, legend);
     }
 
+    /// <summary>Lets a test reshape what the student and guardian reads answer (for example several courses).</summary>
+    public Func<StudentGradesDto, StudentGradesDto>? ShapeStudentGrades { get; set; }
+
     private StudentGradesDto Grades(Guid student)
+    {
+        var built = BuildGrades(student);
+        return ShapeStudentGrades is { } shape ? shape(built) : built;
+    }
+
+    private StudentGradesDto BuildGrades(Guid student)
     {
         var names = _names[student].Split('|');
         var now = DateTime.UtcNow;

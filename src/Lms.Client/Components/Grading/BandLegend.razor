@@ -1,0 +1,39 @@
+@using Lms.Shared.Grading
+@inject ICultureService Culture
+
+@* The scale a course is graded on, in the user's language: each band's label and descriptor, the range and the points. It is the server's legend for that
+   course (the Saudi bands are data, D59); nothing here is typed in the client, and there is no "provisional" marker for a student (L23). *@
+<details class="lms-band-legend" data-testid="@TestId">
+    <summary>@string.Format(L["StGrades_Legend"], Culture.Pick(Legend.ScaleNameAr, Legend.ScaleNameEn))</summary>
+    <MudSimpleTable Elevation="0" Class="lms-simple-table lms-stack-table" Dense="true">
+        <thead>
+            <tr><th>@L["StGrades_Band"]</th><th>@L["StGrades_Range"]</th>@if (HasPoints) { <th>@L["StGrades_Points"]</th> }</tr>
+        </thead>
+        <tbody>
+            @foreach (var band in Legend.Bands)
+            {
+                <tr data-testid="@($"{TestId}-band-{band.Code}")">
+                    <td data-label="@L["StGrades_Band"]">
+                        <span class="lms-cell-strong">@BandName(band)</span>
+                        @if (Descriptor(band) is { Length: > 0 } d) { <span class="lms-muted"> · @d</span> }
+                    </td>
+                    <td data-label="@L["StGrades_Range"]"><span dir="ltr">@Fmt(band.MinPercent)–@Fmt(band.MaxPercent)%</span></td>
+                    @if (HasPoints) { <td data-label="@L["StGrades_Points"]"><span dir="ltr">@(band.Points is { } p ? Fmt(p) : "\u2013")</span></td> }
+                </tr>
+            }
+        </tbody>
+    </MudSimpleTable>
+</details>
+
+@code {
+    [Parameter, EditorRequired] public BandLegendDto Legend { get; set; } = default!;
+    [Parameter] public string TestId { get; set; } = "band-legend";
+
+    private bool HasPoints => Legend.Bands.Any(b => b.Points is not null);
+
+    private string BandName(BandLegendEntryDto band) => band.LabelAr is not null && band.LabelEn is not null ? Culture.Pick(band.LabelAr, band.LabelEn) : band.Code;
+
+    private string? Descriptor(BandLegendEntryDto band) => band.DescriptorAr is not null && band.DescriptorEn is not null ? Culture.Pick(band.DescriptorAr, band.DescriptorEn) : null;
+
+    private static string Fmt(decimal value) => value.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+}
