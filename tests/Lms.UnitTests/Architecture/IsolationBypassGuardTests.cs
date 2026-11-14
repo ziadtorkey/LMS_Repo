@@ -51,6 +51,8 @@ public sealed class IsolationBypassGuardTests
             "system context: seeds one client's presets at its root unit; root unit and scales read by the client id parameter, soft-deleted plain default included so it is not re-created (M5 Task 4, site 9)",
         ["src/Lms.Infrastructure/Access/BuiltInRoleStartupReconciler.cs"] =
             "platform startup lists the live clients' ids only, to seed their grading presets (M5 Task 4, site 9)",
+        ["src/Lms.Api/Features/Me/ClientTimeZoneReader.cs"] =
+            "GET /api/me runs before a client is chosen: the Org.TimeZone rows of the clients of the caller's valid assignments, bound to that client and the units' ancestor paths, the zone id only (M5 wave 1, D64)",
         ["src/Lms.Api/Features/Blueprints/BlueprintReader.cs"] =
             "blueprints of an inherited course sit at an ancestor unit above the caller; client-limited, live rows, courses already found visible (M3 Task 16)",
         ["src/Lms.Api/Features/Classes/ClassLookups.cs"] =
