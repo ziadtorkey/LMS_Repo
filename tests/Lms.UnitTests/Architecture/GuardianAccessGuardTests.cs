@@ -18,6 +18,10 @@ public sealed partial class GuardianAccessGuardTests
         ["src/Lms.Infrastructure/People/PersonDuplicateFinder.cs"] =
             "client-wide match by national id or mobile (guardians may already exist through a sibling subtree); returns the entity to "
             + "Infrastructure callers only, the M3 match endpoint projects name and masked mobile (M2 Task 5, #157)",
+        ["src/Lms.Api/Features/Attendance/AttendanceReadEndpoints.cs"] =
+            "a guardian reads their own children's attendance: the signed-in user's own guardian profile (by user id) and a live StudentGuardian link; another child is 404 (M5 Task 17)",
+        ["src/Lms.Infrastructure/Attendance/AbsenceNotifier.cs"] =
+            "the guardian users of a student marked Absent or Late are the recipients of Attendance.Absent; only user ids leave, through the notification publisher (M5 Task 17)",
         ["src/Lms.Api/Features/Guardians/GuardianPortalEndpoints.cs"] =
             "my children: the signed-in user's own guardian profile (by their user id, client filter of the table); children come from StudentGuardian in the caller's scope (M3 Task 25, #233)",
         ["src/Lms.Infrastructure/Enrollment/TransferNotifier.cs"] =
