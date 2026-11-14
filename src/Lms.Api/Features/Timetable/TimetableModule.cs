@@ -13,5 +13,6 @@ public sealed class TimetableModule : ILmsModule
     {
         PeriodEndpoints.Map(app);
         app.MapTimetable();
+        app.MapTimetableCopyExport();
     }
 }
