@@ -25,4 +25,10 @@ public interface IAttendanceApi
     Task<AttendanceRecordsDto> ConfirmAsync(Guid sessionId, ConfirmAttendanceRequest request, CancellationToken ct = default);
 
     Task<AttendanceRecordsDto> SaveLiveMappingsAsync(Guid sessionId, LiveMappingRequest request, CancellationToken ct = default);
+
+    /// <summary>The signed-in student's own attendance (counts and a page of sessions).</summary>
+    Task<OwnAttendanceDto> GetMyAttendanceAsync(OwnAttendanceQuery query, CancellationToken ct = default);
+
+    /// <summary>A child's attendance for a guardian (an active link; another child is 404).</summary>
+    Task<OwnAttendanceDto> GetStudentAttendanceAsync(Guid studentId, OwnAttendanceQuery query, CancellationToken ct = default);
 }

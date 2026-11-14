@@ -1,0 +1,199 @@
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.Excuses
+@using Lms.Shared.Excuses
+@inject IExcusesApi Api
+@inject NavigationManager Navigation
+
+@* Submit an absence excuse for a child (or for oneself when the client allows it). The policy comes from the server: how many days after the
+   absence, which reasons, whether an attachment is needed and its types and size. The sessions the excuse covers are the ones the server
+   lists for the chosen dates. On a phone the dialog is a full-screen sheet with the sections one under the other. *@
+<MudDialog Class="lms-dialog-sheet">
+    <DialogContent>
+        @if (_policy is null)
+        {
+            <LoadingState Lines="4" TestId="excuse-loading" />
+        }
+        else
+        {
+            <MudStack Spacing="3" Class="lms-form">
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" data-testid="excuse-policy-hint">
+                    @string.Format(L["Exc_Policy_Hint"], _policy.MaxDaysAfterAbsence)
+                </MudAlert>
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="dialog-error">@_error</MudAlert>
+                }
+
+                <fieldset class="lms-fieldset">
+                    <legend>@L["Exc_Section_When"]</legend>
+                    <div class="lms-form-grid">
+                        <MudDatePicker Date="_from?.ToDateTime(TimeOnly.MinValue)" DateChanged="d => OnDate(d, true)" Label="@L["Exc_From"]" Variant="Variant.Outlined" DateFormat="yyyy-MM-dd"
+                                       Error="@(Error("DatesInvalid", "TooLate") is not null)" ErrorText="@Error("DatesInvalid", "TooLate")" data-testid="excuse-from" />
+                        <MudDatePicker Date="_to?.ToDateTime(TimeOnly.MinValue)" DateChanged="d => OnDate(d, false)" Label="@L["Exc_To"]" Variant="Variant.Outlined" DateFormat="yyyy-MM-dd"
+                                       data-testid="excuse-to" />
+                    </div>
+                    @if (_sessionsLoaded)
+                    {
+                        <ExcuseSessionsChecklist Sessions="_sessions" Selected="_selected" OnChanged="StateHasChanged" />
+                    }
+                    @if (Error("NothingToExcuse") is { } nothing)
+                    {
+                        <MudText Typo="Typo.caption" Color="Color.Error" data-testid="excuse-error-NothingToExcuse">@nothing</MudText>
+                    }
+                </fieldset>
+
+                <fieldset class="lms-fieldset">
+                    <legend>@L["Exc_Section_Why"]</legend>
+                    <MudSelect T="string" @bind-Value="_reason" Label="@L["Exc_Reason"]" Variant="Variant.Outlined" Required="true"
+                               Error="@(Error("ReasonNotAllowed") is not null)" ErrorText="@Error("ReasonNotAllowed")" data-testid="excuse-reason">
+                        @foreach (var reason in _policy.AllowedReasons)
+                        {
+                            <MudSelectItem T="string" Value="@reason">@L[$"Exc_Reason_{reason}"]</MudSelectItem>
+                        }
+                    </MudSelect>
+                    <MudTextField T="string" @bind-Value="_text" Label="@L["Exc_Details"]" Lines="3" MaxLength="ExcuseLimits.ReasonTextMaxLength" Variant="Variant.Outlined" data-testid="excuse-text" />
+                </fieldset>
+
+                <fieldset class="lms-fieldset">
+                    <legend>@L["Exc_Section_Attachment"]</legend>
+                    <MudText Typo="Typo.body2" Class="lms-muted">@string.Format(L["Exc_Attachment_Help"], _policy.MaxAttachmentMb, string.Join(", ", _policy.AttachmentContentTypes.Select(Short)))</MudText>
+                    <InputFile OnChange="OnFile" accept="@string.Join(",", _policy.AttachmentContentTypes)" data-testid="excuse-file" />
+                    @if (_file is not null)
+                    {
+                        <MudText Typo="Typo.body2" data-testid="excuse-file-name"><span dir="ltr">@_file.Name</span></MudText>
+                    }
+                    @if (_fileError is not null || Error("AttachmentRequired") is not null)
+                    {
+                        <MudText Typo="Typo.caption" Color="Color.Error" data-testid="excuse-file-error">@(_fileError ?? Error("AttachmentRequired"))</MudText>
+                    }
+                    else if (AttachmentRequired)
+                    {
+                        <MudText Typo="Typo.caption" Class="lms-muted">@L["Exc_Attachment_Required"]</MudText>
+                    }
+                </fieldset>
+            </MudStack>
+        }
+    </DialogContent>
+    <DialogActions>
+        <div class="lms-dialog-actions">
+            <MudButton Variant="Variant.Text" OnClick="() => MudDialog.Cancel()" data-testid="excuse-cancel">@L["Common_Cancel"]</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SubmitAsync" Disabled="@(_policy is null || _saving)" data-testid="excuse-submit">
+                @if (_saving) { <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="me-2" /> }
+                @L["Exc_Submit"]
+            </MudButton>
+        </div>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired] public Guid StudentId { get; set; }
+
+    /// <summary>The absence the user pressed "Explain this absence" on: its session is ticked first and its day fills the dates.</summary>
+    [Parameter] public Guid? SessionId { get; set; }
+    [Parameter] public DateOnly? Date { get; set; }
+
+    private ExcusePolicyDto? _policy;
+    private IReadOnlyList<ExcusableSessionDto> _sessions = [];
+    private readonly HashSet<Guid> _selected = [];
+    private DateOnly? _from, _to;
+    private string? _reason, _text, _error, _fileError;
+    private IBrowserFile? _file;
+    private Dictionary<string, string> _violations = [];
+    private bool _sessionsLoaded, _saving;
+
+    private bool AttachmentRequired => _policy is not null && _reason is not null && _policy.AttachmentRequiredReasons.Contains(_reason);
+
+    protected override async Task OnInitializedAsync()
+    {
+        var (policy, failed) = await ApiCalls.RunAsync(() => Api.GetPolicyAsync(StudentId), Navigation);
+        if (failed || policy is null) { MudDialog.Cancel(); return; }
+        _policy = policy;
+        _from = Date;
+        _to = Date;
+        if (SessionId is { } id) _selected.Add(id);
+        if (_from is not null) await ReloadSessionsAsync();
+    }
+
+    private string? Error(params string[] violations) => violations.Select(v => _violations.GetValueOrDefault(v)).FirstOrDefault(m => m is not null);
+
+    private async Task OnDate(DateTime? date, bool from)
+    {
+        if (from) _from = date is { } d ? DateOnly.FromDateTime(d) : null; else _to = date is { } t ? DateOnly.FromDateTime(t) : null;
+        if (_from is not null && _to is null) _to = _from;
+        _violations = [];
+        await ReloadSessionsAsync();
+    }
+
+    private async Task ReloadSessionsAsync()
+    {
+        if (_from is not { } from || _to is not { } to) return;
+        if (to < from)
+        {
+            _violations["DatesInvalid"] = L["Exc_Violation_DatesInvalid"];
+            return;
+        }
+
+        var (sessions, failed) = await ApiCalls.RunAsync(() => Api.GetExcusableSessionsAsync(StudentId, from, to), Navigation);
+        if (failed) return;
+        _sessions = sessions ?? [];
+        _selected.IntersectWith(_sessions.Select(s => s.SessionId)); // what is no longer in the range is no longer ticked
+        _sessionsLoaded = true;
+    }
+
+    private static string Short(string contentType) => contentType.Split('/').Last().ToUpperInvariant();
+
+    private void OnFile(InputFileChangeEventArgs e)
+    {
+        _fileError = null;
+        _file = null;
+        var file = e.File;
+        // Checked here first so a wrong file never leaves the device; the server still checks the type by its content.
+        if (_policy is null) return;
+        if (!_policy.AttachmentContentTypes.Contains(file.ContentType)) { _fileError = L["Exc_Attachment_Type"]; return; }
+        if (file.Size > _policy.MaxAttachmentMb * 1024L * 1024L) { _fileError = string.Format(L["Exc_Attachment_Size"], _policy.MaxAttachmentMb); return; }
+        _file = file;
+    }
+
+    private async Task SubmitAsync()
+    {
+        if (_policy is null) return;
+        _error = null;
+        _violations = [];
+        if (string.IsNullOrWhiteSpace(_reason)) { _violations["ReasonNotAllowed"] = L["Exc_Reason_Required"]; return; }
+        if (_selected.Count == 0) { _violations["NothingToExcuse"] = L["Exc_Sessions_Required"]; return; }
+        if (AttachmentRequired && _file is null) { _violations["AttachmentRequired"] = L["Exc_Violation_AttachmentRequired"]; return; }
+
+        _saving = true;
+        try
+        {
+            Guid? attachmentId = null;
+            if (_file is not null)
+            {
+                await using var stream = _file.OpenReadStream(_policy.MaxAttachmentMb * 1024L * 1024L);
+                attachmentId = (await Api.UploadAttachmentAsync(_file.Name, _file.ContentType, stream)).FileId;
+            }
+
+            var excuse = await Api.SubmitAsync(new SubmitExcuseRequest(StudentId, _reason, string.IsNullOrWhiteSpace(_text) ? null : _text.Trim(), _from, _to, _selected.ToList(), attachmentId));
+            MudDialog.Close(DialogResult.Ok(excuse));
+        }
+        catch (ApiProblemException ex) when (ex.Code == "excuse_out_of_policy" && ex.Reason is { } reason)
+        {
+            _violations[reason] = L[$"Exc_Violation_{reason}"]; // the sentence sits next to the field it is about
+            _error = L["Error_excuse_out_of_policy"];
+        }
+        catch (ApiProblemException ex) when (ex.Code is "excuse_submitter_not_allowed" or "excuse_attachment_invalid")
+        {
+            _error = L[$"Error_{ex.Code}"];
+        }
+        catch (Exception ex) when (ex is ApiProblemException or HttpRequestException)
+        {
+            _error = L["Api_Error"];
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+}

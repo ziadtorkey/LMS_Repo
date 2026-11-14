@@ -138,6 +138,44 @@ public sealed class FakeAttendanceApi : IAttendanceApi
         return Task.FromResult(Records(row));
     }
 
+    /// <summary>Set to false to see a student under GuardiansOnly (no excuse action, the guardian sentence instead).</summary>
+    public bool CanSubmitExcuse { get; set; } = true;
+
+    public Task<OwnAttendanceDto> GetMyAttendanceAsync(OwnAttendanceQuery query, CancellationToken ct = default) => Task.FromResult(Own(_roster[0].Id, query));
+
+    public Task<OwnAttendanceDto> GetStudentAttendanceAsync(Guid studentId, OwnAttendanceQuery query, CancellationToken ct = default)
+    {
+        if (_roster.All(r => r.Id != studentId)) throw Problem(404, "student_not_found");
+        return Task.FromResult(Own(studentId, query));
+    }
+
+    public static readonly Guid AbsentSession = Guid.Parse("a0000000-0000-0000-0000-000000000011");
+    public static readonly Guid LateSession = Guid.Parse("a0000000-0000-0000-0000-000000000012");
+    public static readonly Guid ExcusedSession = Guid.Parse("a0000000-0000-0000-0000-000000000013");
+    public static readonly Guid PendingSession = Guid.Parse("a0000000-0000-0000-0000-000000000014");
+
+    private OwnAttendanceDto Own(Guid studentId, OwnAttendanceQuery query)
+    {
+        var now = _clock.GetUtcNow().UtcDateTime;
+        var today = LocalToday();
+        var student = _roster.First(r => r.Id == studentId);
+        OwnAttendanceItemDto Item(Guid id, int daysAgo, string en, string ar, string status, bool excusable, Guid? excuse = null, string? excuseStatus = null) =>
+            new(id, today.AddDays(-daysAgo), ar, en, new TimeOnly(7, 30), new TimeOnly(8, 15), status, null, excusable && CanSubmitExcuseFlag, excuse, excuseStatus);
+        List<OwnAttendanceItemDto> items =
+        [
+            Item(AbsentSession, 1, "Mathematics", "الرياضيات", AttendanceStatuses.Absent, true),
+            Item(LateSession, 2, "Science", "العلوم", AttendanceStatuses.Late, true),
+            Item(PendingSession, 3, "Arabic", "اللغة العربية", AttendanceStatuses.Absent, false, Guid.NewGuid(), "Submitted"),
+            Item(ExcusedSession, 5, "English", "اللغة الإنجليزية", AttendanceStatuses.Excused, false, Guid.NewGuid(), "Approved"),
+            Item(Guid.NewGuid(), 6, "Mathematics", "الرياضيات", AttendanceStatuses.Present, false),
+        ];
+        var summary = new AttendanceSummaryDto(1, 2, 1, 1, 5, 80m);
+        return new OwnAttendanceDto(studentId, student.Ar, student.En, query.From ?? today.AddDays(-30), query.To ?? today, summary,
+            new PagedResult<OwnAttendanceItemDto>(items, items.Count, query.Page, query.PageSize), CanSubmitExcuse, now);
+    }
+
+    private bool CanSubmitExcuseFlag => CanSubmitExcuse;
+
     /// <summary>The client's local day by the server clock.</summary>
     private DateOnly LocalToday() => ClientCalendar.Today(_clock.GetUtcNow().UtcDateTime, _zone);
 

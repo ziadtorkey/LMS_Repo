@@ -1,0 +1,34 @@
+@using Lms.Shared.Excuses
+@inject ICultureService Culture
+
+@* The child's sessions the excuse can cover (Absent or Late right now); the list follows the date range, so the server decides what is excusable. *@
+@if (Sessions.Count == 0)
+{
+    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" data-testid="excuse-nothing">@L["Exc_Violation_NothingToExcuse"]</MudAlert>
+}
+else
+{
+    <ul class="lms-excuse-sessions" data-testid="excuse-sessions">
+        @foreach (var session in Sessions)
+        {
+            var id = session.SessionId;
+            <li>
+                <MudCheckBox T="bool" Value="@Selected.Contains(id)" ValueChanged="c => Toggle(id, c)" Color="Color.Primary" data-testid="@($"excuse-session-{id}")">
+                    <span dir="ltr">@session.Date.ToString("yyyy-MM-dd")</span> · @Culture.Pick(session.CourseNameAr, session.CourseNameEn) · @L[$"Att_Status_{session.Status}"]
+                </MudCheckBox>
+            </li>
+        }
+    </ul>
+}
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<ExcusableSessionDto> Sessions { get; set; } = [];
+    [Parameter, EditorRequired] public ISet<Guid> Selected { get; set; } = new HashSet<Guid>();
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private async Task Toggle(Guid id, bool on)
+    {
+        if (on) Selected.Add(id); else Selected.Remove(id);
+        await OnChanged.InvokeAsync();
+    }
+}

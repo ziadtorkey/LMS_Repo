@@ -365,5 +365,7 @@ public sealed class AttendanceTakePageTests : StaffTestContext
         public Task<IReadOnlyList<AttendanceChangeDto>> GetHistoryAsync(Guid sessionId, CancellationToken ct = default) => inner.GetHistoryAsync(sessionId, ct);
         public Task<AttendanceRecordsDto> ConfirmAsync(Guid sessionId, ConfirmAttendanceRequest request, CancellationToken ct = default) => inner.ConfirmAsync(sessionId, request, ct);
         public Task<AttendanceRecordsDto> SaveLiveMappingsAsync(Guid sessionId, LiveMappingRequest request, CancellationToken ct = default) => inner.SaveLiveMappingsAsync(sessionId, request, ct);
+        public Task<OwnAttendanceDto> GetMyAttendanceAsync(OwnAttendanceQuery query, CancellationToken ct = default) => inner.GetMyAttendanceAsync(query, ct);
+        public Task<OwnAttendanceDto> GetStudentAttendanceAsync(Guid studentId, OwnAttendanceQuery query, CancellationToken ct = default) => inner.GetStudentAttendanceAsync(studentId, query, ct);
     }
 }

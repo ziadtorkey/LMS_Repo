@@ -1,0 +1,100 @@
+@page "/me/excuses"
+@attribute [Authorize]
+@using Lms.Client.Services.Excuses
+@using Lms.Shared.Excuses
+@inject IExcusesApi Api
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+@inject ICultureService Culture
+
+<PageTitle>@L["Exc_My_Title"]</PageTitle>
+<PageHeader Title="@L["Exc_My_Title"]" Subtitle="@L["Exc_My_Subtitle"]" TitleTestId="excuses-title" />
+
+@if (_loading)
+{
+    <LoadingState Lines="4" TestId="excuses-loading" />
+}
+else if (_failed)
+{
+    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="api-error">
+        @L["Api_Error"]
+        <MudButton Variant="Variant.Text" OnClick="LoadAsync">@L["Common_Retry"]</MudButton>
+    </MudAlert>
+}
+else if (_excuses.Count == 0)
+{
+    <SectionCard><EmptyState Title="@L["Exc_My_EmptyTitle"]" Text="@L["Exc_My_EmptyText"]" Icon="@Icons.Material.Rounded.Receipt" TestId="excuses-empty" /></SectionCard>
+}
+else
+{
+    <div class="lms-excuse-list" data-testid="excuses-list">
+        @foreach (var excuse in _excuses)
+        {
+            <SectionCard TestId="@($"excuse-{excuse.Id}")">
+                <div class="lms-excuse-head">
+                    <div>
+                        <MudText Typo="Typo.subtitle1">@Culture.Pick(excuse.StudentNameAr, excuse.StudentNameEn)</MudText>
+                        <MudText Typo="Typo.body2" Class="lms-muted">@L[$"Exc_Reason_{excuse.Reason}"] · <LocalTime Utc="excuse.SubmittedAtUtc" Format="yyyy-MM-dd" /></MudText>
+                    </div>
+                    <ExcuseStatusChip Status="@excuse.Status" TestId="@($"excuse-status-{excuse.Id}")" />
+                </div>
+                <ul class="lms-excuse-covered">
+                    @foreach (var session in excuse.Sessions)
+                    {
+                        <li><span dir="ltr">@session.Date.ToString("yyyy-MM-dd")</span> · @Culture.Pick(session.CourseNameAr, session.CourseNameEn) · @L[$"Att_Status_{session.RecordStatus}"]</li>
+                    }
+                </ul>
+                @if (!string.IsNullOrWhiteSpace(excuse.DecisionComment))
+                {
+                    <MudText Typo="Typo.body2" data-testid="@($"excuse-comment-{excuse.Id}")"><strong>@L["Exc_Decision"]:</strong> @excuse.DecisionComment</MudText>
+                }
+
+                <details class="mt-2">
+                    <summary>@L["Exc_History"]</summary>
+                    <ul class="lms-excuse-covered" data-testid="@($"excuse-history-{excuse.Id}")">
+                        @foreach (var step in excuse.History)
+                        {
+                            <li>@L[$"Exc_Status_{step.Status}"] · @Culture.Pick(step.ByNameAr, step.ByNameEn) · <LocalTime Utc="step.AtUtc" />@(string.IsNullOrWhiteSpace(step.Comment) ? "" : " · " + step.Comment)</li>
+                        }
+                    </ul>
+                </details>
+
+                @if (excuse.CanWithdraw && excuse.Status == ExcuseStatuses.Submitted)
+                {
+                    <div class="mt-2">
+                        <MudButton Variant="Variant.Text" Color="Color.Warning" OnClick="() => WithdrawAsync(excuse)" data-testid="@($"excuse-withdraw-{excuse.Id}")">@L["Exc_Withdraw"]</MudButton>
+                    </div>
+                }
+            </SectionCard>
+        }
+    </div>
+}
+
+@code {
+    private IReadOnlyList<ExcuseDto> _excuses = [];
+    private bool _loading = true, _failed;
+
+    [SupplyParameterFromQuery(Name = "studentId")] public Guid? StudentId { get; set; }
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _failed = false;
+        var (page, failed) = await ApiCalls.RunAsync(() => Api.GetMineAsync(new MyExcusesQuery(StudentId, PageSize: 50)), Navigation);
+        _excuses = page?.Items ?? [];
+        _failed = failed;
+        _loading = false;
+    }
+
+    private async Task WithdrawAsync(ExcuseDto excuse)
+    {
+        var ok = await ApiCalls.RunAsync(() => Api.WithdrawAsync(excuse.Id), Navigation, L, message => Snackbar.Add(message, Severity.Error));
+        if (ok)
+        {
+            Snackbar.Add(L["Exc_Withdrawn"], Severity.Success);
+            await LoadAsync();
+        }
+    }
+}

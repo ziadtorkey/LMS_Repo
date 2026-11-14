@@ -34,7 +34,12 @@ public sealed class FakeExcusesApi : IExcusesApi
         studentId, "GuardiansOnly", !CurrentUserIsStudent, 5, ["Illness", "Family", "Official", "Other"], ["Illness"], 5, ["image/jpeg", "image/png", "application/pdf"], Now));
 
     public Task<IReadOnlyList<ExcusableSessionDto>> GetExcusableSessionsAsync(Guid studentId, DateOnly from, DateOnly to, CancellationToken ct = default) =>
-        Task.FromResult<IReadOnlyList<ExcusableSessionDto>>([new ExcusableSessionDto(Session, from, "الرياضيات", "Mathematics", new TimeOnly(7, 30), new TimeOnly(8, 15), "Absent")]);
+        Task.FromResult<IReadOnlyList<ExcusableSessionDto>>(
+        [
+            // the same sessions the fake attendance lists as excusable, on the first day of the range
+            new ExcusableSessionDto(Guid.Parse("a0000000-0000-0000-0000-000000000011"), from, "الرياضيات", "Mathematics", new TimeOnly(7, 30), new TimeOnly(8, 15), "Absent"),
+            new ExcusableSessionDto(Guid.Parse("a0000000-0000-0000-0000-000000000012"), from, "العلوم", "Science", new TimeOnly(8, 20), new TimeOnly(9, 5), "Late"),
+        ]);
 
     public Task<ExcuseAttachmentDto> UploadAttachmentAsync(string fileName, string contentType, Stream content, CancellationToken ct = default) =>
         Task.FromResult(new ExcuseAttachmentDto(Guid.NewGuid(), fileName, contentType, content.CanSeek ? content.Length : 0));
@@ -83,7 +88,7 @@ public sealed class FakeExcusesApi : IExcusesApi
     {
         var excuse = Find(excuseId);
         if (excuse.Status != ExcuseStatuses.Submitted) throw Problem(409, "excuse_not_pending");
-        return Task.FromResult(Update(excuse, ExcuseStatuses.Escalated, request.Comment) with { EscalatedToUserId = request.TargetUserId });
+        return Task.FromResult(Update(excuse, ExcuseStatuses.Escalated, request.Comment, e => e with { EscalatedToUserId = request.TargetUserId }));
     }
 
     public Task<IReadOnlyList<EscalationTargetDto>> GetEscalationTargetsAsync(Guid excuseId, CancellationToken ct = default) =>
@@ -101,10 +106,10 @@ public sealed class FakeExcusesApi : IExcusesApi
         var excuse = Find(id);
         if (excuse.SubmittedByUserId == CurrentUser) throw Problem(409, "excuse_reviewer_is_submitter");
         if (excuse.Status is not (ExcuseStatuses.Submitted or ExcuseStatuses.Escalated)) throw Problem(409, "excuse_not_pending");
-        return Update(excuse, status, comment) with { DecisionComment = comment, ReviewerUserId = CurrentUser, DecidedAtUtc = Now };
+        return Update(excuse, status, comment, e => e with { DecisionComment = comment, ReviewerUserId = CurrentUser, DecidedAtUtc = Now });
     }
 
-    private ExcuseDto Update(ExcuseDto excuse, string status, string? comment)
+    private ExcuseDto Update(ExcuseDto excuse, string status, string? comment, Func<ExcuseDto, ExcuseDto>? more = null)
     {
         var updated = excuse with
         {
@@ -112,6 +117,7 @@ public sealed class FakeExcusesApi : IExcusesApi
             CanWithdraw = false,
             History = [.. excuse.History, new ExcuseHistoryDto(status, CurrentUser, "المستخدم", "User", comment, Now)],
         };
+        if (more is not null) updated = more(updated);
         _excuses[_excuses.IndexOf(excuse)] = updated;
         return updated;
     }

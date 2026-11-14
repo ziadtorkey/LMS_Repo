@@ -1,0 +1,18 @@
+@using Lms.Shared.Excuses
+
+@* An excuse's status as a chip with a text label (never colour alone). *@
+<MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@ColorOf" Class="lms-status-chip" data-testid="@TestId">@L[$"Exc_Status_{Status}"]</MudChip>
+
+@code {
+    [Parameter, EditorRequired] public string Status { get; set; } = "";
+    [Parameter] public string? TestId { get; set; } = "excuse-status";
+
+    private Color ColorOf => Status switch
+    {
+        ExcuseStatuses.Approved => Color.Success,
+        ExcuseStatuses.Rejected => Color.Error,
+        ExcuseStatuses.Escalated => Color.Info,
+        ExcuseStatuses.Submitted => Color.Warning,
+        _ => Color.Default,
+    };
+}

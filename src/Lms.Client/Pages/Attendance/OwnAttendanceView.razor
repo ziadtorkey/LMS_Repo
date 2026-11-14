@@ -1,0 +1,147 @@
+@using Lms.Client.Pages.Excuses
+@using Lms.Client.Services.Attendance
+@using Lms.Shared.Attendance
+@inject IAttendanceApi Api
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+@inject ICultureService Culture
+
+@* A student's own attendance, or a child's for a guardian: counts, the sessions and, where the server allows it (CanSubmitExcuse, D61: guardians
+   only by default), the way to explain an absence. The percentage and the counts are the server's, never summed here. *@
+@if (_loading)
+{
+    <LoadingState Lines="5" TestId="own-loading" />
+}
+else if (_failed || _data is null)
+{
+    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="api-error">
+        @L["Api_Error"]
+        <MudButton Variant="Variant.Text" OnClick="LoadAsync">@L["Common_Retry"]</MudButton>
+    </MudAlert>
+}
+else
+{
+    <PageHeader Title="@L["OwnAtt_Title"]" Subtitle="@Culture.Pick(_data.StudentNameAr, _data.StudentNameEn)" TitleTestId="own-title">
+        <Actions>
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Href="@ExcusesHref" StartIcon="@Icons.Material.Rounded.Receipt" data-testid="own-excuses-link">@L["Exc_My_Title"]</MudButton>
+            @if (_data.CanSubmitExcuse)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Add" OnClick="() => SubmitAsync(null, null)" data-testid="own-submit-excuse">@L["Exc_Submit_Open"]</MudButton>
+            }
+        </Actions>
+    </PageHeader>
+
+    <div class="lms-stats lms-stats-compact" data-testid="own-stats">
+        <div class="lms-stat"><div><div class="lms-stat-label">@L["OwnAtt_Percent"]</div>
+            <div class="lms-stat-value" data-testid="own-percent">@(_data.Summary.AttendancePercent is { } p ? p.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) + "%" : "–")</div></div></div>
+        @foreach (var status in AttendanceStatuses.All)
+        {
+            <div class="lms-stat"><div><div class="lms-stat-label">@L[$"Att_Status_{status}"]</div>
+                <div class="lms-stat-value" data-testid="@($"own-count-{status}")">@Count(status)</div></div></div>
+        }
+    </div>
+
+    @if (!_data.CanSubmitExcuse && _data.Items.Items.Any(i => i.Status is AttendanceStatuses.Absent or AttendanceStatuses.Late && i.ExcuseId is null) && Self)
+    {
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-3" data-testid="own-guardian-sentence">@L["Exc_Guardian_Sentence"]</MudAlert>
+    }
+
+    <SectionCard Flush="true" Title="@L["OwnAtt_Sessions"]">
+        @if (_data.Items.Items.Count == 0)
+        {
+            <EmptyState Title="@L["OwnAtt_EmptyTitle"]" Text="@L["OwnAtt_EmptyText"]" Icon="@Icons.Material.Rounded.EventAvailable" />
+        }
+        else
+        {
+            <MudSimpleTable Elevation="0" Class="lms-simple-table lms-stack-table" data-testid="own-table">
+                <thead>
+                    <tr>
+                        <th>@L["Common_Date"]</th>
+                        <th>@L["OwnAtt_Course"]</th>
+                        <th>@L["Common_Status"]</th>
+                        <th>@L["Exc_Column"]</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in _data.Items.Items)
+                    {
+                        <tr data-testid="@($"own-row-{item.SessionId}")">
+                            <td data-label="@L["Common_Date"]"><span dir="ltr" class="lms-date-cell">@item.Date.ToString("yyyy-MM-dd")</span></td>
+                            <td data-label="@L["OwnAtt_Course"]">@Culture.Pick(item.CourseNameAr, item.CourseNameEn)</td>
+                            <td data-label="@L["Common_Status"]">
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@ColorOf(item.Status)" Class="lms-status-chip"
+                                         data-testid="@($"own-status-{item.SessionId}")">@L[$"Att_Status_{item.Status}"]</MudChip>
+                            </td>
+                            <td data-label="@L["Exc_Column"]">
+                                @if (item.ExcuseStatus is { } es)
+                                {
+                                    <ExcuseStatusChip Status="@es" TestId="@($"own-excuse-{item.SessionId}")" />
+                                }
+                                else if (item.Excusable && _data.CanSubmitExcuse)
+                                {
+                                    <MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" OnClick="() => SubmitAsync(item.SessionId, item.Date)"
+                                               data-testid="@($"own-explain-{item.SessionId}")">@L["Exc_Explain"]</MudButton>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+            <p class="lms-muted pa-3 ma-0" data-testid="own-range">@($"{_data.From:yyyy-MM-dd} – {_data.To:yyyy-MM-dd}") · @string.Format(L["OwnAtt_Shown"], _data.Items.Items.Count, _data.Items.Total)</p>
+        }
+    </SectionCard>
+}
+
+@code {
+    private OwnAttendanceDto? _data;
+    private bool _loading = true, _failed;
+
+    /// <summary>Empty for the signed-in student's own attendance; a child's id for a guardian.</summary>
+    [Parameter] public Guid? StudentId { get; set; }
+
+    private bool Self => StudentId is null;
+    private string ExcusesHref => StudentId is { } id ? $"me/excuses?studentId={id}" : "me/excuses";
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _failed = false;
+        var query = new OwnAttendanceQuery(PageSize: 50);
+        var (value, failed) = await ApiCalls.RunAsync(() => StudentId is { } id ? Api.GetStudentAttendanceAsync(id, query) : Api.GetMyAttendanceAsync(query), Navigation);
+        _data = value;
+        _failed = failed;
+        _loading = false;
+    }
+
+    private int Count(string status) => status switch
+    {
+        AttendanceStatuses.Present => _data!.Summary.Present,
+        AttendanceStatuses.Absent => _data!.Summary.Absent,
+        AttendanceStatuses.Late => _data!.Summary.Late,
+        _ => _data!.Summary.Excused,
+    };
+
+    private static Color ColorOf(string status) => status switch
+    {
+        AttendanceStatuses.Present => Color.Success,
+        AttendanceStatuses.Absent => Color.Error,
+        AttendanceStatuses.Late => Color.Warning,
+        _ => Color.Info,
+    };
+
+    private async Task SubmitAsync(Guid? sessionId, DateOnly? date)
+    {
+        var studentId = _data!.StudentId;
+        var dialog = await Dialogs.ShowAsync<ExcuseSubmitDialog>(L["Exc_Submit_Open"],
+            new DialogParameters<ExcuseSubmitDialog> { { x => x.StudentId, studentId }, { x => x.SessionId, sessionId }, { x => x.Date, date } },
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        if (await dialog.Result is { Canceled: false })
+        {
+            Snackbar.Add(L["Exc_Submitted"], Severity.Success);
+            await LoadAsync();
+        }
+    }
+}

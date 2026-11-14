@@ -1,0 +1,10 @@
+@page "/me/children/{StudentId:guid}/attendance"
+@attribute [Authorize]
+@using Lms.Client.Pages.Attendance
+
+<PageTitle>@L["OwnAtt_Title"]</PageTitle>
+<OwnAttendanceView StudentId="StudentId" />
+
+@code {
+    [Parameter] public Guid StudentId { get; set; }
+}

@@ -29,4 +29,12 @@ public sealed class AttendanceApi(Api.ApiHttp http) : IAttendanceApi
 
     public async Task<AttendanceRecordsDto> SaveLiveMappingsAsync(Guid sessionId, LiveMappingRequest request, CancellationToken ct = default) =>
         (await http.SendAsync<AttendanceRecordsDto>(HttpMethod.Put, Routes.AttendanceSessionLiveMappings(sessionId), request, ct))!;
+
+    public Task<OwnAttendanceDto> GetMyAttendanceAsync(OwnAttendanceQuery query, CancellationToken ct = default) =>
+        http.GetAsync<OwnAttendanceDto>(Routes.MyAttendance(query.From, query.To) + PageQuery(Routes.MyAttendance(query.From, query.To), query), ct);
+
+    public Task<OwnAttendanceDto> GetStudentAttendanceAsync(Guid studentId, OwnAttendanceQuery query, CancellationToken ct = default) =>
+        http.GetAsync<OwnAttendanceDto>(Routes.StudentAttendance(studentId, query.From, query.To) + PageQuery(Routes.StudentAttendance(studentId, query.From, query.To), query), ct);
+
+    private static string PageQuery(string route, OwnAttendanceQuery query) => (route.Contains('?') ? "&" : "?") + $"page={query.Page}&pageSize={query.PageSize}";
 }
