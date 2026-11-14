@@ -9,6 +9,7 @@
 @inject PermissionState PermState
 @inject ICultureService Culture
 @inject ClientTimeZone Zone
+@inject TimeProvider Clock
 @inject ISnackbar Snackbar
 @inject IJSRuntime Js
 @inject Lms.Client.Services.Api.IClassesApi Classes
@@ -106,7 +107,7 @@ else
                 </tbody>
             </MudSimpleTable>
             <p class="lms-muted pa-3 ma-0" data-testid="reports-asof">
-                @string.Format(L["AttReports_AsOf"], _report.ComputedAtUtc.ToString("yyyy-MM-dd HH:mm")) · <span dir="ltr">@($"{_report.From:yyyy-MM-dd} \u2013 {_report.To:yyyy-MM-dd}")</span>
+                @string.Format(L["AttReports_AsOf"], ClientCalendar.ToLocal(_report.ComputedAtUtc, _zone).ToString("yyyy-MM-dd HH:mm")) · <span dir="ltr">@($"{_report.From:yyyy-MM-dd} \u2013 {_report.To:yyyy-MM-dd}")</span>
             </p>
         </SectionCard>
     }
@@ -117,6 +118,7 @@ else
     private string _kind = AttendanceReportKinds.Student;
     private DateOnly? _from, _to;
     private Guid? _classId;
+    private TimeZoneInfo _zone = ClientCalendar.Zone();
     private IReadOnlyList<Lms.Shared.Classes.ClassSummaryDto> _classes = [];
     private bool _loading = true, _failed;
 
@@ -124,7 +126,8 @@ else
     {
         if (!PermState.Loaded) await PermState.RefreshAsync();
         if (!PermState.Has(Permissions.Attendance.View)) return;
-        var today = await Zone.TodayAsync(DateTime.UtcNow); // the range starts as the last 30 days of the client's calendar
+        _zone = await Zone.GetAsync();
+        var today = ClientCalendar.Today(Clock.GetUtcNow().UtcDateTime, _zone); // the range starts as the last 30 days of the client's calendar
         _to = today;
         _from = today.AddDays(-30);
         await LoadAsync();
