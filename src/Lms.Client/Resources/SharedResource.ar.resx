@@ -1719,4 +1719,23 @@
   <data name="Att_Today_EmptyTitle" xml:space="preserve"><value>لا توجد حصص في هذا اليوم</value></data>
   <data name="Att_Today_EmptyText" xml:space="preserve"><value>تظهر الحصص هنا عند نشر الجدول الدراسي. اختر يومًا آخر لرؤية الأيام السابقة.</value></data>
   <data name="Att_Date" xml:space="preserve"><value>التاريخ</value></data>
+  <data name="Nav_Attendance" xml:space="preserve"><value>الحضور</value></data>
+  <data name="Att_Take_Title" xml:space="preserve"><value>تسجيل الحضور</value></data>
+  <data name="Att_Mark_All" xml:space="preserve"><value>تحديد الكل حاضرًا</value></data>
+  <data name="Att_Future_Disabled" xml:space="preserve"><value>لم تبدأ هذه الحصة بعد، لذلك لا يمكن تسجيل الحضور.</value></data>
+  <data name="Att_Window_Closed_Readonly" xml:space="preserve"><value>انتهت مهلة تعديل هذه الحصة. اطلب ممن يملك صلاحية تعديل الحضور إجراء التغيير.</value></data>
+  <data name="Att_Draft_Banner" xml:space="preserve"><value>لديك علامات غير محفوظة لهذه الحصة من وقت سابق على هذا الجهاز.</value></data>
+  <data name="Att_Draft_Restore" xml:space="preserve"><value>استعادة</value></data>
+  <data name="Att_Draft_Discard" xml:space="preserve"><value>تجاهل</value></data>
+  <data name="Att_Saved" xml:space="preserve"><value>تم حفظ الحضور.</value></data>
+  <data name="Att_Next_Unmarked" xml:space="preserve"><value>التالي غير المسجّل</value></data>
+  <data name="Att_Late_Rule_Half" xml:space="preserve"><value>يُحتسب التأخر نصف غياب عند تنبيه الغياب.</value></data>
+  <data name="Att_Late_Rule_Percent" xml:space="preserve"><value>يُحتسب التأخر {0}% من غياب عند تنبيه الغياب.</value></data>
+  <data name="Att_Unmarked" xml:space="preserve"><value>غير مسجّل</value></data>
+  <data name="Att_Note" xml:space="preserve"><value>ملاحظة</value></data>
+  <data name="Att_Reason" xml:space="preserve"><value>سبب التغيير</value></data>
+  <data name="Att_Reason_Help" xml:space="preserve"><value>مطلوب: هذا التعديل بعد مهلة التعديل وسيُسجَّل.</value></data>
+  <data name="Att_Summary" xml:space="preserve"><value>ملخص الحضور</value></data>
+  <data name="Att_Save" xml:space="preserve"><value>حفظ الحضور</value></data>
+  <data name="Att_Save_Changes" xml:space="preserve"><value>حفظ التغييرات</value></data>
 </root>

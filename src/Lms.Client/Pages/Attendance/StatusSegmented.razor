@@ -1,0 +1,41 @@
+@using Lms.Shared.Attendance
+
+@* The four attendance buttons of one student: a radio group with the status in words, an icon and the digit that sets it from the keyboard.
+   Targets are 44 px; selecting the chosen one again does nothing (clearing is not an action here: an unmarked row stays visible as unmarked). *@
+<div class="lms-att-seg" role="radiogroup" aria-label="@StudentName" aria-disabled="@(Disabled ? "true" : null)">
+    @for (var i = 0; i < Statuses.Count; i++)
+    {
+        var status = Statuses[i];
+        var selected = Value == status;
+        <button type="button" role="radio" class="@ButtonClass(status, selected)" aria-checked="@(selected ? "true" : "false")" tabindex="@(selected || (Value is null && i == 0) ? 0 : -1)"
+                disabled="@Disabled" @onclick="() => Choose(status)" data-testid="@($"att-{TestId}-{status}")" data-status="@status">
+            <MudIcon Icon="@IconOf(status)" Size="Size.Small" />
+            <span class="lms-att-label">@L[$"Att_Status_{status}"]</span>
+            <kbd class="lms-att-key" aria-hidden="true">@(i + 1)</kbd>
+        </button>
+    }
+</div>
+
+@code {
+    private static readonly IReadOnlyList<string> Statuses =
+        [AttendanceStatuses.Present, AttendanceStatuses.Absent, AttendanceStatuses.Late, AttendanceStatuses.Excused];
+
+    [Parameter] public string? Value { get; set; }
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+    [Parameter] public string StudentName { get; set; } = "";
+    [Parameter] public string TestId { get; set; } = "";
+    [Parameter] public bool Disabled { get; set; }
+
+    private Task Choose(string status) => Value == status ? Task.CompletedTask : ValueChanged.InvokeAsync(status);
+
+    private static string ButtonClass(string status, bool selected) =>
+        "lms-att-btn" + (selected ? $" lms-att-selected lms-att-{status.ToLowerInvariant()}" : "");
+
+    private static string IconOf(string status) => status switch
+    {
+        AttendanceStatuses.Present => Icons.Material.Rounded.Check,
+        AttendanceStatuses.Absent => Icons.Material.Rounded.Close,
+        AttendanceStatuses.Late => Icons.Material.Rounded.Schedule,
+        _ => Icons.Material.Rounded.Description,
+    };
+}

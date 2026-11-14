@@ -1,0 +1,28 @@
+@using Lms.Shared.Attendance
+
+@* Sticky bar at the bottom of the take page: counts per status, how many are still unmarked, and the one filled Save action. It stays
+   above the phone's safe area and keyboard. *@
+<div class="lms-att-summary" role="region" aria-label="@L["Att_Summary"]" data-testid="att-summary">
+    <div class="lms-att-counts" aria-live="polite">
+        @foreach (var status in AttendanceStatuses.All)
+        {
+            <span class="lms-att-count" data-testid="@($"att-count-{status}")">@L[$"Att_Status_{status}"] <strong>@Count(status)</strong></span>
+        }
+        <span class="lms-att-count" data-testid="att-count-unmarked">@L["Att_Unmarked"] <strong>@Unmarked</strong></span>
+    </div>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="OnSave" Disabled="@(!CanSave || Saving)" data-testid="att-save">
+        @if (Saving) { <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="me-2" /> }
+        @L[SaveKey]
+    </MudButton>
+</div>
+
+@code {
+    [Parameter] public IReadOnlyDictionary<string, int> Counts { get; set; } = new Dictionary<string, int>();
+    [Parameter] public int Unmarked { get; set; }
+    [Parameter] public bool CanSave { get; set; }
+    [Parameter] public bool Saving { get; set; }
+    [Parameter] public string SaveKey { get; set; } = "Common_Save";
+    [Parameter] public EventCallback OnSave { get; set; }
+
+    private int Count(string status) => Counts.GetValueOrDefault(status);
+}
