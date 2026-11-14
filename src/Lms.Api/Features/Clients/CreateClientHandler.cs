@@ -19,6 +19,7 @@ public sealed class CreateClientHandler(
     LmsDbContext db,
     UserManager<User> users,
     IDefaultRoleProvisioner roles,
+    Lms.Domain.Grading.IPresetReconciler presets,
     IAccountEmails emails,
     ILogger<CreateClientHandler> logger)
 {
@@ -80,6 +81,7 @@ public sealed class CreateClientHandler(
             }
 
             await roles.ProvisionAsync(organization.Id, type, ct);
+            await presets.ReconcileAsync(organization.Id, ct);
 
             admin = (await users.FindByEmailAsync(email))!;
             newUser = admin is null;

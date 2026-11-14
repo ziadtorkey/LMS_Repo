@@ -1,0 +1,58 @@
+@using Lms.Shared.Content
+
+@* Before launch: nothing loads in a frame until the learner presses Start (design spec §5.1). *@
+<SectionCard TestId="package-start-card">
+    <MudStack Spacing="2">
+        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+            <span class="lms-kind-tile" aria-hidden="true"><MudIcon Icon="@Icons.Material.Rounded.Inventory2" /></span>
+            <MudStack Spacing="0">
+                <MudText Typo="Typo.subtitle1" data-testid="package-start-title">@Title</MudText>
+                <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@ChipColor()" data-testid="package-state-chip" data-state="@(State ?? CompletionStates.NotStarted)">@L["Package_State_" + (State ?? CompletionStates.NotStarted)]</MudChip>
+                    @if (Score is { } score)
+                    {
+                        <MudText Typo="Typo.caption" Class="lms-muted" data-testid="package-start-score">@score</MudText>
+                    }
+                </MudStack>
+            </MudStack>
+        </MudStack>
+        <MudText Typo="Typo.caption" Class="lms-muted" data-testid="package-third-party">
+            <MudIcon Icon="@Icons.Material.Rounded.Info" Size="Size.Small" aria-hidden="true" /> @L["Package_ThirdParty"]
+        </MudText>
+        <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert="false">
+            <MudText Typo="Typo.caption" Class="lms-muted" data-testid="package-phone-hint">@L["Package_PhoneHint"]</MudText>
+        </MudHidden>
+        <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+            @if (CanStart)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.PlayArrow" OnClick="OnStart" data-testid="package-start">
+                    @L[State == CompletionStates.InProgress ? "Package_Resume" : "Package_Start"]
+                </MudButton>
+            }
+            @if (CanPreview)
+            {
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Visibility" OnClick="OnPreview" data-testid="package-preview">@L["Package_Preview"]</MudButton>
+            }
+        </MudStack>
+    </MudStack>
+</SectionCard>
+
+@code {
+    [Parameter] public string Title { get; set; } = "";
+    /// <summary>The module's completion state for the caller (<see cref="CompletionStates"/>); null before the first visit.</summary>
+    [Parameter] public string? State { get; set; }
+    [Parameter] public string? Score { get; set; }
+    /// <summary>A learner: Start / Resume.</summary>
+    [Parameter] public bool CanStart { get; set; }
+    /// <summary>Staff with Packages.View: Preview (nothing is recorded).</summary>
+    [Parameter] public bool CanPreview { get; set; }
+    [Parameter] public EventCallback OnStart { get; set; }
+    [Parameter] public EventCallback OnPreview { get; set; }
+
+    private Color ChipColor() => State switch
+    {
+        CompletionStates.Completed => Color.Success,
+        CompletionStates.InProgress => Color.Info,
+        _ => Color.Default,
+    };
+}
