@@ -372,6 +372,40 @@ public sealed class BuiltInRoleReconcilerTests(LmsApiFactory factory)
     }
 
     [Fact]
+    public async Task Reconcile_adds_only_the_M5_wave_1_grading_defaults_to_a_version_7_client()
+    {
+        // A client on defaults version 7: no grading permissions yet, and an admin removed Library.Manage from the Teacher role
+        // (an older default, which must stay removed).
+        var tree = await AccessTestData.SeedAsync(factory, "RCG");
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            var teacher = tree.Roles[BuiltInRoles.Teacher].Id;
+            var rows = await db.RolePermissions.Where(p => p.OrganizationId == tree.Org.Id).ToListAsync();
+            db.RolePermissions.RemoveRange(rows.Where(p => p.Permission.StartsWith("Grades.", StringComparison.Ordinal)
+                || (p.RoleId == teacher && p.Permission == Permissions.Library.Manage)));
+            foreach (var role in await db.Roles.Where(r => r.OrganizationId == tree.Org.Id).ToListAsync())
+            {
+                db.Entry(role).Property(nameof(Role.DefaultsVersion)).CurrentValue = 7;
+            }
+
+            await db.SaveChangesAsync();
+        }
+
+        await ReconcileAsync();
+
+        var teacherPermissions = await PermissionsOfAsync(tree, BuiltInRoles.Teacher);
+        Assert.Equal(["Grades.Manage", "Grades.Publish", "Grades.View"], teacherPermissions.Where(p => p.StartsWith("Grades.", StringComparison.Ordinal)).Order(StringComparer.Ordinal));
+        Assert.DoesNotContain(Permissions.Library.Manage, teacherPermissions);
+        Assert.Contains(Permissions.Grades.ConfigureScales, await PermissionsOfAsync(tree, BuiltInRoles.OrgAdmin));
+        Assert.Contains(Permissions.Grades.ConfigureScales, await PermissionsOfAsync(tree, BuiltInRoles.Manager));
+        Assert.Equal(["Grades.View", "Grades.ViewReports"],
+            (await PermissionsOfAsync(tree, BuiltInRoles.Supervisor)).Where(p => p.StartsWith("Grades.", StringComparison.Ordinal)).Order(StringComparer.Ordinal));
+        Assert.Equal(["Grades.ViewOwn"], (await PermissionsOfAsync(tree, BuiltInRoles.Student)).Where(p => p.StartsWith("Grades.", StringComparison.Ordinal)));
+        Assert.Equal(["Grades.ViewOwn"], (await PermissionsOfAsync(tree, BuiltInRoles.Guardian)).Where(p => p.StartsWith("Grades.", StringComparison.Ordinal)));
+        Assert.DoesNotContain(await PermissionsOfAsync(tree, BuiltInRoles.Counselor), p => p.StartsWith("Grades.", StringComparison.Ordinal)); // L16
+    }
+
+    [Fact]
     public async Task Newly_provisioned_roles_are_already_at_the_current_defaults_version()
     {
         var tree = await AccessTestData.SeedAsync(factory, "RC4");

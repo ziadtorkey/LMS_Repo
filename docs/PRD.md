@@ -371,6 +371,28 @@ All tenant-owned tables: `OrganizationId`; unit-scoped tables: `OrgUnitId`, `Org
 | D63 | University GPA default | The pilot university uses the 5.00-point GPA scale by default; the 4.00-point scale ships as an alternative preset. Owner decision 2026-11-14. |
 | D64 | Time zone | Clients default to Asia/Riyadh, with a per-client time-zone setting (`Org.TimeZone`) for clients outside Saudi Arabia. Owner decision 2026-11-14. |
 | D65 | Antivirus | v1 keeps the upload scanner hook (packages, attachments) off, with strict validation and sandboxing; a real scanner (for example ClamAV) is wired before production go-live. Owner decision 2026-11-14. |
+| D66 | M6 defaults | Owner accepted all proposed defaults of the consolidated M6 question list (29 items, PR #613 comment by QA2) other than D67-D69: no student data or message text in SMS/push; quiet hours per client, off by default (21:00-07:00 when on, SMS/push only); guardians own their preferences; imported contacts trusted in v1 (no OTP); mandatory events not disableable; daily caps 5,000 email / 500 SMS / 20,000 push per client; messages in the user's language; groups up to 50; read receipts off; delete own message within 15 min, no edit; one announcements store with ar+en titles; retention as listed pending legal advice. Owner decision 2026-11-14. |
+| D67 | Email provider | Build email behind a provider interface with a development fake; the concrete relay (SES, SendGrid, Mailgun or client SMTP) is chosen before go-live. Owner decision 2026-11-14. |
+| D68 | SMS provider | Build SMS behind `ISmsProvider` with a development fake; the owner picks a Saudi-licensed gateway (e.g. Unifonic, Taqnyat) and registers the sender ID before go-live. Owner decision 2026-11-14. |
+| D69 | Messaging safeguarding | Safeguarding-first rules: students message only their own teachers and counselor, never other students; guardians message only their children's teachers and counselor; managers and org admins reach students only via groups or announcements (no private 1:1 with students); the Org Admin may tighten per client. Owner decision 2026-11-14. |
+| D70 | Moderation access | Only the Org Admin (Messaging.Moderate) sees the moderation queue; Managers get no read-only view. Owner decision 2026-11-14 (M6 plan O1). |
+| D71 | Communication retention | Plan defaults accepted, pending legal advice: deliveries 90 days; messages the school year + 1 year; report context and removed originals 180 days; each client may shorten. Owner decision 2026-11-14 (M6 plan O2). |
+| D72 | SMS and minors | No SMS about minors: SMS goes only to adults about themselves; guardians receive news about their children by email and push. Consent wording (ar/en) drafted by the Lead for owner review before go-live. Owner decision 2026-11-14 (M6 plan O3). |
+| D73 | Provider data region | Prefer in-Kingdom or GCC processing for the email relay, SMS gateway and push services where offered; otherwise any region, since bodies hold no student data (D66). Owner decision 2026-11-14 (M6 plan O5). |
+| D74 | Class groups read-only for students | In class-course groups only the teacher (and staff) post; students read and reply privately to the teacher. D69 "never message other students" means never, including group posts. Owner decision 2026-11-14. |
+| D75 | No SMS to guardians | Guardians never receive SMS, not even urgent school-wide announcements; they get email and push. SMS is only for adult accounts about themselves (D72). Owner decision 2026-11-14. |
+| D76 | No SMS in v1 | No SMS anywhere in v1: no SMS channel, preferences, caps, consent or gateway. Email and push only. SMS may come in a later version. Supersedes D68 and the SMS parts of D66, D72, D73 and D75. Owner decision 2026-11-14. |
+| D77 | Guardians may post in groups | In teacher-run groups that include guardians, guardians may post (other guardians read it). Students stay read-only (D74). Owner decision 2026-11-14. |
+| D78 | Who runs promotion | Org Admin anywhere, and a Manager inside their own units. Owner decision 2026-11-14 (M7). |
+| D79 | Close before promote | A year must be Closed before promotion runs; no reopen in v1 (late fixes go through grade-change approval). Closing warns, but does not block, when grades are unpublished. Owner decision 2026-11-14. |
+| D80 | Grade-change approval | After close, a Manager or the Org Admin approves a grade change, never the requester (FR-GRD-06). Owner decision 2026-11-14. |
+| D81 | After leaving | After withdrawal or graduation the guardian keeps read access to the child's closed years; the withdrawal reason is staff-only. Owner decision 2026-11-14. |
+| D82 | Who withdraws | Org Admin, Manager and Counselor may withdraw a student; the reason comes from a client-managed list plus "Other" with a note. Owner decision 2026-11-14. |
+| D83 | Promotion outcome | Promotion suggests the next level from the level mapping only (no grade pass/fail rule in v1); every row stays editable. Owner decision 2026-11-14. |
+| D84 | Promotion blockers and failures | Open grade-change and excuse requests show as warnings, not blocks. A run succeeds per student with a failure list to fix and re-run; undo restores the successful ones. No bulk withdrawal in v1. Owner decision 2026-11-14. |
+| D85 | SAML and LDAP scope | v1: SP-initiated SAML only; LDAP search-bind over LDAPS or StartTLS only; no group-to-role mapping (roles are assigned in the LMS). Owner decision 2026-11-14. |
+| D86 | Year-end checklist | Shown on the home pages from 60 days before the year end. Owner decision 2026-11-14. |
+| D87 | Accessibility target | WCAG 2.1 AA (X-10); no AAA requirement. Owner decision 2026-11-14. |
 
 ---
 

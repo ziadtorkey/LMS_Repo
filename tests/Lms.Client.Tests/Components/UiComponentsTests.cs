@@ -81,4 +81,24 @@ public sealed class UiComponentsTests : ClientTestContext
 
         Assert.Equal("ltr", cut.Find("dd span").GetAttribute("dir"));
     }
+
+    [Fact]
+    public void SectionCard_can_show_a_decorative_icon_tile_and_a_subtitle()
+    {
+        var cut = Render<SectionCard>(p => p.Add(x => x.Title, "Identity").Add(x => x.Subtitle, "Names and code").Add(x => x.Icon, MudBlazor.Icons.Material.Rounded.Badge));
+
+        var tile = cut.Find(".lms-section-head .lms-section-icon");
+        Assert.Equal("true", tile.GetAttribute("aria-hidden"));
+        Assert.Equal("Names and code", cut.Find(".lms-section-subtitle").TextContent.Trim());
+        Assert.Equal("Identity", cut.Find("h2").TextContent.Trim());
+    }
+
+    [Fact]
+    public void SectionCard_without_icon_or_subtitle_renders_neither()
+    {
+        var cut = Render<SectionCard>(p => p.Add(x => x.Title, "Roles"));
+
+        Assert.Empty(cut.FindAll(".lms-section-icon"));
+        Assert.Empty(cut.FindAll(".lms-section-subtitle"));
+    }
 }

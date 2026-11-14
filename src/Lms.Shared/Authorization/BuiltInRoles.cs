@@ -68,7 +68,10 @@ public static class BuiltInRoles
              // M4b wave 3b (D51): the staff side of SCORM and H5P packages (own class courses for the Teacher).
              Permissions.Packages.Upload, Permissions.Packages.View,
              // M4b wave 3a (D52 pattern): live sessions.
-             Permissions.LiveSessions.View, Permissions.LiveSessions.Manage]),
+             Permissions.LiveSessions.View, Permissions.LiveSessions.Manage,
+             // M5 wave 1 (D58): every grading permission except ViewOwn (they have no grades of their own).
+             Permissions.Grades.View, Permissions.Grades.Manage, Permissions.Grades.Publish,
+             Permissions.Grades.ConfigureScales, Permissions.Grades.ViewReports]),
         new(Manager, RoleBaseKinds.Staff,
             new("مدير المدرسة", "School Manager"),
             new("العميد", "Dean"),
@@ -103,7 +106,10 @@ public static class BuiltInRoles
              // M4b wave 3b (D51): the staff side of SCORM and H5P packages (own class courses for the Teacher).
              Permissions.Packages.Upload, Permissions.Packages.View,
              // M4b wave 3a (D52 pattern): live sessions.
-             Permissions.LiveSessions.View, Permissions.LiveSessions.Manage]),
+             Permissions.LiveSessions.View, Permissions.LiveSessions.Manage,
+             // M5 wave 1 (D58): every grading permission except ViewOwn (they have no grades of their own).
+             Permissions.Grades.View, Permissions.Grades.Manage, Permissions.Grades.Publish,
+             Permissions.Grades.ConfigureScales, Permissions.Grades.ViewReports]),
         new(Supervisor, RoleBaseKinds.Staff,
             new("المشرف الأكاديمي", "Academic Supervisor"),
             new("رئيس القسم", "Head of Department"),
@@ -127,7 +133,9 @@ public static class BuiltInRoles
              // M4b wave 3b: a Supervisor previews packages.
              Permissions.Packages.View,
              // M4b wave 3a: see sessions of the unit (join link only, never the start link).
-             Permissions.LiveSessions.View]),
+             Permissions.LiveSessions.View,
+             // M5 wave 1: read grades and reports of supervised courses (RelationshipRules).
+             Permissions.Grades.View, Permissions.Grades.ViewReports]),
         new(Counselor, RoleBaseKinds.Staff,
             new("الأخصائي الاجتماعي", "Social Worker"),
             new("شؤون الطلاب", "Student Affairs"),
@@ -156,7 +164,9 @@ public static class BuiltInRoles
              // M4b wave 3b (D51): the staff side of SCORM and H5P packages (own class courses for the Teacher).
              Permissions.Packages.Upload, Permissions.Packages.View,
              // M4b wave 3a: live sessions of own ClassCourses (RelationshipRules).
-             Permissions.LiveSessions.View, Permissions.LiveSessions.Manage]),
+             Permissions.LiveSessions.View, Permissions.LiveSessions.Manage,
+             // M5 wave 1: grades of own ClassCourses (RelationshipRules); scales and reports are not the Teacher's.
+             Permissions.Grades.View, Permissions.Grades.Manage, Permissions.Grades.Publish]),
         new(Student, RoleBaseKinds.Student,
             new("الطالب", "Student"),
             new("الطالب", "Student"),
@@ -171,11 +181,15 @@ public static class BuiltInRoles
              // M4b wave 3b: own enrollments only (RelationshipRules).
              Permissions.Packages.View,
              // M4b wave 3a: sessions of own enrollments (RelationshipRules + IModuleAccess).
-             Permissions.LiveSessions.View]),
+             Permissions.LiveSessions.View,
+             // M5 wave 1: the student's own published grades (SelfService).
+             Permissions.Grades.ViewOwn]),
         new(Guardian, RoleBaseKinds.Guardian,
             new("ولي الأمر", "Parent"),
             new("ولي الأمر", "Parent"),
-            [Permissions.Files.Download, Permissions.AcademicYears.View, Permissions.Students.ViewChildren]),
+            [Permissions.Files.Download, Permissions.AcademicYears.View, Permissions.Students.ViewChildren,
+             // M5 wave 1: the children's published grades (an active guardian link).
+             Permissions.Grades.ViewOwn]),
     ];
 
     public static BuiltInRoleDefinition Get(string key) =>

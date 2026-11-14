@@ -16,13 +16,15 @@ using OpenIddict.Validation.AspNetCore;
 namespace Lms.IntegrationTests.Auth;
 
 /// <summary>Drives the browser-style login flow against the in-memory API: cookies on, redirects off.</summary>
-internal sealed class AuthTestHost
+internal sealed class AuthTestHost : IDisposable
 {
     public const string Password = "Passw0rd1";
     public const string RemoteIp = "203.0.113.9";
     public const string RedirectUri = "http://localhost/authentication/login-callback";
 
     private readonly WebApplicationFactory<Program> _host;
+
+    public void Dispose() => _host.Dispose();
 
     /// <param name="permitLimit">Requests per minute the auth rate limiter allows (high by default so flows can repeat).</param>
     /// <param name="remoteIp">Address the in-memory server reports; rate limit tests use their own to stay isolated.</param>
