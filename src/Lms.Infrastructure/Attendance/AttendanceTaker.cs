@@ -43,6 +43,11 @@ public static class AttendanceTaker
             return TakePlan.Refused("validation_failed", 400);
         }
 
+        if (reason is { } text && text.Trim().Length > 500)
+        {
+            return TakePlan.Refused("validation_failed", 400);
+        }
+
         if (sessionTaken && !inWindow)
         {
             if (!canEditAfterWindow)
@@ -50,7 +55,7 @@ public static class AttendanceTaker
                 return TakePlan.Refused("attendance_edit_window_closed", 409);
             }
 
-            if (string.IsNullOrWhiteSpace(reason) || reason.Trim().Length > 500)
+            if (string.IsNullOrWhiteSpace(reason))
             {
                 return TakePlan.Refused("attendance_reason_required", 422);
             }

@@ -75,7 +75,8 @@ public sealed class AttendanceTakerTests
     {
         Assert.Equal(("attendance_reason_required", 422), (Plan("Present", [], taken: true, inWindow: false, canEdit: true, reason: " ").ProblemCode, 422));
         Assert.True(Plan("Present", [], taken: true, inWindow: false, canEdit: true, reason: "wrong student").Ok);
-        Assert.Equal(422, Plan("Present", [], taken: true, inWindow: false, canEdit: true, reason: new string('x', 501)).ProblemStatus);
+        Assert.Equal(400, Plan("Present", [], taken: true, inWindow: false, canEdit: true, reason: new string('x', 501)).ProblemStatus); // too long: validation, in or out of the window
+        Assert.Equal(400, Plan("Present", [], taken: false, inWindow: true, reason: new string('x', 501)).ProblemStatus);
     }
 
     [Fact]

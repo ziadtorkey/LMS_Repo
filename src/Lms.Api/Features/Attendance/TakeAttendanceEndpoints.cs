@@ -43,13 +43,23 @@ public static class TakeAttendanceEndpoints
 
         var today = await calendar.LocalTodayAsync(session.OrganizationId, ct);
         var teaches = (await http.CheckClassCourseAsync(Permissions.Attendance.Take, session.ClassCourseId, ct)).Problem is null;
-        var substitutes = !teaches && session.SlotId is { } slotId
-            && (await db.Set<TimetableException>().Where(e => e.SlotId == slotId && e.Date == session.Date).ToListAsync(ct))
-                .Any(e => SubstituteRule.IsSubstituteOn(e.Kind, e.SubstituteUserId, me, e.Date, today));
+        // The covering teacher may be assigned in another class or school, so the exception is read outside the caller's subtree: a yes/no for exactly this slot, date
+        // and caller. The relationship ends with the local date (SubstituteRule), so a substitute edits a taken session only until local midnight.
+        var substitutes = !teaches && session.SlotId is { } slotId && await IsSubstituteAsync(db, session, slotId, me, today, ct);
         var canEdit = (await evaluator.EvaluateAsync(Permissions.Attendance.Edit, session.OrgUnitPath, ct)).Allowed;
         var canView = (await evaluator.EvaluateAsync(Permissions.Attendance.View, session.OrgUnitPath, ct)).Allowed;
         var access = new Access(session, teaches || substitutes, canEdit, canView);
         return access.CanTake || access.CanEdit || access.CanView ? (access, null) : (null, ApiProblems.NotFound());
+    }
+
+    private static async Task<bool> IsSubstituteAsync(LmsDbContext db, AttendanceSession session, Guid slotId, Guid me, DateOnly today, CancellationToken ct)
+    {
+        // ISOLATION-BYPASS: a covering teacher is assigned outside the unit of the slot, so the exception lies outside their scope; limited to the session's client, live rows,
+        // this slot, this date and the caller's own user id; only a yes/no leaves.
+        var exceptions = await db.Set<TimetableException>().IgnoreQueryFilters()
+            .Where(e => !e.IsDeleted && e.OrganizationId == session.OrganizationId && e.SlotId == slotId && e.Date == session.Date && e.SubstituteUserId == me)
+            .Select(e => new { e.Kind, e.SubstituteUserId, e.Date }).ToListAsync(ct);
+        return exceptions.Any(e => SubstituteRule.IsSubstituteOn(e.Kind, e.SubstituteUserId, me, e.Date, today));
     }
 
     private static async Task<IResult> GetRecordsAsync(

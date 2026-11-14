@@ -41,6 +41,10 @@ public sealed class TakeAttendanceProbeRows : IProbeRowModule
     {
         var world = await TimetableKit.NewWorldAsync(w.Callers.Factory, w.Callers.A.School1);
         var today = DateOnly.FromDateTime(DateTime.UtcNow.AddHours(3)); // Asia/Riyadh (D64)
+        while (today.DayOfWeek is DayOfWeek.Friday or DayOfWeek.Saturday)
+        {
+            today = today.AddDays(-1); // ad hoc sessions are for school days
+        }
         var created = await w.Callers.SendOkAsync(RootAdmin, HttpMethod.Post, Routes.ClassCourseAttendanceSessionsPattern.Replace("{id:guid}", world.Math.Id.ToString()),
             new CreateAdHocAttendanceSessionRequest(today, world.First.Id));
         return created.GetProperty("id").GetGuid();

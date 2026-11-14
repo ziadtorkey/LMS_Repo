@@ -79,6 +79,8 @@ public sealed class IsolationBypassGuardTests
             "delete also removes calendar events at descendant units, restricted to the year's client (M1 Task 22, #57)",
         ["src/Lms.Api/Features/AcademicYears/CalendarEndpoints.cs"] =
             "events and names inherited from ancestor units, restricted to the unit's client (M1 Task 22, #57)",
+        ["src/Lms.Api/Features/Attendance/TakeAttendanceEndpoints.cs"] =
+            "the substitute exception of a session may lie outside the covering teacher scope; client matched, deleted rows excluded, exactly this slot, date and caller, only a yes/no leaves (M5 Task 17)",
         ["src/Lms.Infrastructure/Attendance/AbsenceNotifier.cs"] =
             "the course of a class course is owned above the caller scope; only its names go into the absence notice; client matched, deleted rows excluded (M5 Task 17)",
         ["src/Lms.Infrastructure/Timetable/PeriodService.cs"] =

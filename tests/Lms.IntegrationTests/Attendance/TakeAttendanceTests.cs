@@ -28,7 +28,20 @@ public sealed class TakeAttendanceTests(LmsApiFactory factory)
         AccessTree Tree, TimetableWorld World, RoleAssignment Teacher, RoleAssignment OtherTeacher, RoleAssignment Counselor, RoleAssignment Student,
         Guid SessionId, Guid[] Students);
 
-    private static DateOnly Today => DateOnly.FromDateTime(DateTime.UtcNow.AddHours(3)); // Asia/Riyadh (D64)
+    /// <summary>The latest school day (Sunday to Thursday) on or before the Riyadh date: ad hoc sessions are for school days.</summary>
+    private static DateOnly Today
+    {
+        get
+        {
+            var d = DateOnly.FromDateTime(DateTime.UtcNow.AddHours(3)); // Asia/Riyadh (D64)
+            while (d.DayOfWeek is DayOfWeek.Friday or DayOfWeek.Saturday)
+            {
+                d = d.AddDays(-1);
+            }
+
+            return d;
+        }
+    }
 
     private async Task<Setup> SetUpAsync(string name)
     {
