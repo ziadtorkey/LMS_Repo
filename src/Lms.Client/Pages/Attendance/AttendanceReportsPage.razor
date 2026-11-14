@@ -11,6 +11,7 @@
 @inject ClientTimeZone Zone
 @inject ISnackbar Snackbar
 @inject IJSRuntime Js
+@inject Lms.Client.Services.Api.IClassesApi Classes
 
 <PageTitle>@L["AttReports_Title"]</PageTitle>
 @if (!PermState.Loaded)
@@ -36,6 +37,17 @@ else
                 <MudToggleItem Value="@AttendanceReportKinds.Class" data-testid="reports-kind-class">@L["AttReports_Class"]</MudToggleItem>
             </MudToggleGroup>
         </div>
+        @if (_kind == AttendanceReportKinds.Class)
+        {
+            <div class="lms-filter">
+                <MudSelect T="Guid?" Value="_classId" ValueChanged="OnClassChanged" Label="@L["AttReports_ClassFilter"]" Variant="Variant.Outlined" Clearable="true" data-testid="reports-class">
+                    @foreach (var c in _classes)
+                    {
+                        <MudSelectItem T="Guid?" Value="@((Guid?)c.Id)">@Culture.Pick(c.NameAr, c.NameEn)</MudSelectItem>
+                    }
+                </MudSelect>
+            </div>
+        }
         <div class="lms-filter lms-date-filter">
             <MudDatePicker Date="_from?.ToDateTime(TimeOnly.MinValue)" DateChanged="d => OnDate(d, true)" Label="@L["Exc_From"]" Variant="Variant.Outlined" DateFormat="yyyy-MM-dd" Clearable="false" data-testid="reports-from" />
         </div>
@@ -104,6 +116,8 @@ else
     private AttendanceReportDto? _report;
     private string _kind = AttendanceReportKinds.Student;
     private DateOnly? _from, _to;
+    private Guid? _classId;
+    private IReadOnlyList<Lms.Shared.Classes.ClassSummaryDto> _classes = [];
     private bool _loading = true, _failed;
 
     protected override async Task OnInitializedAsync()
@@ -126,12 +140,29 @@ else
         _loading = false;
     }
 
-    private AttendanceReportQuery Query() => new(From: _from, To: _to, PageSize: 100);
+    private AttendanceReportQuery Query() => new(ClassId: _kind == AttendanceReportKinds.Class ? _classId : null, From: _from, To: _to, PageSize: 100);
 
     private Task OnKindChanged(string? kind)
     {
         if (kind is null) return Task.CompletedTask;
         _kind = kind;
+        return LoadClassesThenReportAsync();
+    }
+
+    private async Task LoadClassesThenReportAsync()
+    {
+        if (_kind == AttendanceReportKinds.Class && _classes.Count == 0)
+        {
+            var (page, _) = await ApiCalls.RunAsync(() => Classes.ListAsync(new Lms.Shared.Classes.ClassQuery(null, PageSize: 100)), Navigation);
+            _classes = page?.Items ?? [];
+        }
+
+        await LoadAsync();
+    }
+
+    private Task OnClassChanged(Guid? id)
+    {
+        _classId = id;
         return LoadAsync();
     }
 

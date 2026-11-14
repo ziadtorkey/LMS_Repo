@@ -1835,4 +1835,5 @@
   <data name="AttReports_Student" xml:space="preserve"><value>حسب الطالب</value></data>
   <data name="AttReports_Class" xml:space="preserve"><value>حسب الفصل</value></data>
   <data name="AttReports_AsOf" xml:space="preserve"><value>حُسب في {0}</value></data>
+  <data name="AttReports_ClassFilter" xml:space="preserve"><value>الفصل</value></data>
 </root>
