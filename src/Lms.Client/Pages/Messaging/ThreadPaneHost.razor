@@ -128,6 +128,11 @@ else
     /// <summary>Raised after the conversation was marked read or a message was sent, so the inbox and the badge ask the server again.</summary>
     [Parameter] public EventCallback OnChanged { get; set; }
 
+    /// <summary>Raised by the page whenever the blocked-people card changed, so an open thread offers (or hides) the composer to match.</summary>
+    [Parameter] public int BlockVersion { get; set; }
+
+    private int _seenBlockVersion;
+
     private ConversationDto? _conversation;
     private readonly List<MessageDto> _messages = [];
     private Guid? _nextBefore, _dividerBefore;
@@ -229,6 +234,13 @@ else
         var i = _messages.FindIndex(m => m.Id == message.Id);
         if (i >= 0) _messages[i] = message with { State = MessageStates.Deleted, Body = null, CanDelete = false };
         await OnChanged.InvokeAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_seenBlockVersion == BlockVersion) return;
+        _seenBlockVersion = BlockVersion;
+        if (_conversation is not null) await LoadBlockAsync();
     }
 
     private async Task LoadBlockAsync()

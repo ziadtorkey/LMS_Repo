@@ -197,4 +197,19 @@ public sealed class ReportBlockTests : ClientTestContext
         Assert.DoesNotContain("restrict", _dialogs.Markup, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("restrict", text, StringComparison.OrdinalIgnoreCase);
     }
+
+    [Fact]
+    public async Task Unblocking_from_the_card_gives_the_open_thread_its_composer_back()
+    {
+        await SignInAsync(Sara);
+        var (c, _) = await HudaWritesToSaraAsync();
+        await MessagingApi.BlockAsync(Huda.Id);
+        var cut = RenderThread(c.Id);
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("[data-testid=composer-unblock]")));
+
+        cut.Find($"[data-testid=unblock-{Huda.Id}]").Click();
+
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("[data-testid=composer]")));
+        Assert.Empty(cut.FindAll("[data-testid=composer-off]"));
+    }
 }
