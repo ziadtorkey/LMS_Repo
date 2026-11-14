@@ -2,6 +2,7 @@ using Lms.Domain.Abstractions;
 using Lms.Infrastructure.Access;
 using Lms.Infrastructure.AcademicYears;
 using Lms.Infrastructure.Auditing;
+using Lms.Infrastructure.Packages;
 using Lms.Infrastructure.Content;
 using Lms.Infrastructure.Enrollment;
 using Lms.Infrastructure.Files;
@@ -43,6 +44,7 @@ public static class DependencyInjection
         services.AddScoped<Lms.Domain.Grading.IGradeEvents, Lms.Infrastructure.Grading.GradeEventWriter>();
         services.AddAcademic();
         services.AddContent();
+        services.AddPackages(configuration);
         services.AddExternalIdentity(configuration, environment);
         return services;
     }

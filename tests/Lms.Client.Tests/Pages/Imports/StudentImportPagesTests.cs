@@ -204,10 +204,12 @@ public sealed class StudentImportPagesTests : StudentsTestContext
         await GrantAsync(Permissions.Students.Import, Permissions.Enrollment.Import);
         RenderProviders();
         var students = Render<MudRTLProvider>(p => p.Add(r => r.RightToLeft, true).AddChildContent<StudentImportPage>());
-        Assert.Contains("استيراد الطلاب", students.WaitForElement("[data-testid=import-wizard]").TextContent);
+        students.WaitForElement("[data-testid=import-wizard]");
+        Assert.Contains("استيراد الطلاب", students.Find("[data-testid=student-import-title]").TextContent); // the page header carries the title
         Assert.Contains("ClassCode", students.Find("[data-testid=student-import-help]").TextContent);
 
         var classes = Render<MudRTLProvider>(p => p.Add(r => r.RightToLeft, true).AddChildContent<ClassImportPage>());
-        Assert.Contains("إضافة طلاب إلى فصول", classes.WaitForElement("[data-testid=import-wizard]").TextContent);
+        classes.WaitForElement("[data-testid=import-wizard]");
+        Assert.Contains("إضافة طلاب إلى فصول", classes.Find("[data-testid=class-import-title]").TextContent);
     }
 }

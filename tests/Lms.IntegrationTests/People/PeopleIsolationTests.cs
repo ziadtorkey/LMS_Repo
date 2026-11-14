@@ -44,6 +44,35 @@ public sealed class PeopleIsolationTests(LmsApiFactory factory)
     }
 
     [Fact]
+    public async Task Student_change_requests_are_isolated_by_client_and_subtree()
+    {
+        var a = await AccessTestData.SeedAsync(factory, "PI4A");
+        var b = await AccessTestData.SeedAsync(factory, "PI4B");
+        var student = await PeopleTestKit.AddStudentAsync(factory, a.School2, PeopleTestKit.NewCode());
+        Guid requestId;
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            var request = new StudentChangeRequest(student, Guid.NewGuid(), "[]", null);
+            db.Add(request);
+            await db.SaveChangesAsync();
+            requestId = request.Id;
+        }
+
+        foreach (var (context, expected) in new[]
+        {
+            (TestCurrentContext.For(a.Org.Id, a.Root.Path), true),
+            (TestCurrentContext.For(a.Org.Id, a.School2.Path), true),
+            (TestCurrentContext.For(a.Org.Id, a.School1.Path), false),
+            (TestCurrentContext.For(b.Org.Id, b.Root.Path), false),
+            (TestCurrentContext.PlatformAdmin(), true),
+        })
+        {
+            await using var db = factory.CreateDbContext(context);
+            Assert.Equal(expected, await db.Set<StudentChangeRequest>().AnyAsync(x => x.Id == requestId));
+        }
+    }
+
+    [Fact]
     public async Task Guardian_rows_are_isolated_by_client()
     {
         var a = await AccessTestData.SeedAsync(factory, "PI2A");
@@ -91,5 +120,6 @@ public sealed class PeopleIsolationTests(LmsApiFactory factory)
         Assert.Contains(typeof(StudentProfile), covered);
         Assert.Contains(typeof(StudentGuardian), covered);
         Assert.Contains(typeof(PersonStatusChange), covered);
+        Assert.Contains(typeof(StudentChangeRequest), covered);
     }
 }

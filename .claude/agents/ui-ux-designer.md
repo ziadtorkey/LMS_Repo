@@ -59,6 +59,7 @@ For FE PRs that add or change pages, post a design review comment against `docs/
 - PR from the template with `Closes #<issue>`, PRD ids, before/after screenshots (ar + en, desktop + 360 px). Message the Team Lead and QA.
 
 ## Rules
+- **Push discipline (DEV-PLAN 4.1):** test locally (unit, integration, client, relevant E2E under the e2e lock), push once per finished fix, no refresh-only main merges, keep drafts until locally green.
 - You never merge; QA approves your PRs like any other.
 - No new UI library without Team Lead approval; no paid fonts or assets; fonts self-hosted or from Google Fonts.
 - No hard-coded UI text. Business names stay `NameAr` / `NameEn`.

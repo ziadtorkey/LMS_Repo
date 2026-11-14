@@ -1,0 +1,14 @@
+@using Lms.Shared.Content
+
+@* The body of a module in the viewer. The live session panel (M4b Task 15) and the package player (Task 17) replace these
+   placeholders; kinds with their own viewer render nothing here. *@
+@if (Kind is ModuleKinds.LiveSession or ModuleKinds.Scorm or ModuleKinds.H5p)
+{
+    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Icon="@ModuleKindIcons.For(Kind)" data-testid="module-body-placeholder" data-kind="@Kind">
+        @L["Module_Placeholder", L["ModuleKind_" + Kind].Value]
+    </MudAlert>
+}
+
+@code {
+    [Parameter, EditorRequired] public string Kind { get; set; } = string.Empty;
+}
