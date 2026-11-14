@@ -1,0 +1,16 @@
+@using Lms.Shared.LiveSessions
+
+@* The platform's Zoom app (design spec M4b §2.1): not configured → ask the platform administrator (no Settings link: a client
+   admin cannot fix it); configured but not answering → a warning, scheduling stays possible. *@
+@if (Status is { Configured: false })
+{
+    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" Class="mb-4" data-testid="live-provider-not-configured">@L["Live_ProviderNotConfigured"]</MudAlert>
+}
+else if (Status is { Healthy: false })
+{
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Dense="true" Class="mb-4" data-testid="live-provider-unhealthy">@L["Live_ProviderUnhealthy"]</MudAlert>
+}
+
+@code {
+    [Parameter] public ProviderStatusDto? Status { get; set; }
+}
