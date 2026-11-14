@@ -15,9 +15,6 @@ public sealed class LiveSessionStatusProbeRows : IProbeRowModule
 
     private static IEnumerable<ProbeRow> Build() =>
     [
-        new("live sessions upcoming", HttpMethod.Get, Routes.LiveSessionsUpcoming,
-            (_, _) => Task.FromResult(new ProbeRequest(Routes.LiveSessionsUpcoming)),
-            Expect(Ok, Ok, Ok, Ok, Ok, Ok)),
         new("live sessions provider status", HttpMethod.Get, Routes.LiveSessionsProviderStatus,
             (_, _) => Task.FromResult(new ProbeRequest(Routes.LiveSessionsProviderStatus)),
             Expect(Ok, Ok, Ok, Ok, Ok, Ok)),
