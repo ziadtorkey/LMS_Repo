@@ -91,7 +91,7 @@ public static class SettingCatalog
         new(SettingKeys.AcademicYearsTermsPerYear.Name, SettingValueKinds.Int, SettingCategories.Academic, "2", Min: 2, Max: 3, ClientLevelOnly: true),
         // M6 wave 1: communication settings (client level, Org Admin at the client root; D66 defaults).
         new(SettingKeys.CommsEmailEnabled.Name, SettingValueKinds.Bool, SettingCategories.Features, "true", ClientLevelOnly: true),
-        new(SettingKeys.CommsPushEnabled.Name, SettingValueKinds.Bool, SettingCategories.Features, "false", ClientLevelOnly: true),
+        new(SettingKeys.CommsPushEnabled.Name, SettingValueKinds.Bool, SettingCategories.Features, "true", ClientLevelOnly: true),
         new(SettingKeys.CommsMaxEmailPerDay.Name, SettingValueKinds.Int, SettingCategories.Features, "5000", Min: 0, Max: 100_000, ClientLevelOnly: true),
         new(SettingKeys.CommsMaxPushPerDay.Name, SettingValueKinds.Int, SettingCategories.Features, "20000", Min: 0, Max: 200_000, ClientLevelOnly: true),
         new(SettingKeys.CommsMaxEmailPerUserPerDay.Name, SettingValueKinds.Int, SettingCategories.Features, "20", Min: 1, Max: 200, ClientLevelOnly: true),
