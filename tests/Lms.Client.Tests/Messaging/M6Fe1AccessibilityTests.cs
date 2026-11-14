@@ -198,4 +198,55 @@ public sealed class M6Fe1AccessibilityTests : ClientTestContext
             }
         }
     }
+
+    /// <summary>Controls whose only accessible name is a <c>title</c> (not announced reliably): none may exist.</summary>
+    private static List<string> TitleOnly(IRenderedComponent<IComponent> tree) =>
+        [.. tree.FindAll("button, a[href], [role=button], [role=menuitem]")
+            .Where(b => string.IsNullOrWhiteSpace(b.GetAttribute("aria-label")) && string.IsNullOrWhiteSpace(b.GetAttribute("aria-labelledby"))
+                && string.IsNullOrWhiteSpace(b.TextContent) && b.QuerySelector("[aria-label]") is null && !string.IsNullOrWhiteSpace(b.GetAttribute("title")))
+            .Select(b => b.OuterHtml[..Math.Min(100, b.OuterHtml.Length)])];
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("ar")]
+    public async Task Members_dialog_and_the_actions_menu_have_no_unnamed_controls(string culture)
+    {
+        await PrepareAsync(culture, Huda);
+        MessagingApi.Related.Add((Huda.Id, FakeMessagingApi.Omar.Id));
+        var group = await MessagingApi.CreateConversationAsync(new CreateConversationRequest(ConversationKinds.Group, [Sara.Id, FakeMessagingApi.Omar.Id], "10-A", "Welcome"));
+        var cut = Render<MessagesPage>(p => p.Add(x => x.Id, group.Id));
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("[data-testid=thread-members]")));
+
+        cut.Find("[data-testid=thread-members]").Click();
+        _dialogs.WaitForAssertion(() => Assert.NotEmpty(_dialogs.FindAll("[data-testid=members-readonly]")));
+
+        Assert.Empty(Problems(_dialogs)); // the owner's view: icon-only remove buttons, the read-only switch and the add picker
+        Assert.Empty(TitleOnly(_dialogs));
+        Assert.NotEmpty(_dialogs.FindAll("[data-testid^=member-remove-]"));
+        Assert.False(string.IsNullOrWhiteSpace(Name(_dialogs.Find("[data-testid=members-readonly]"))) && _dialogs.Find("[data-testid=members-readonly]").Closest("label") is null);
+        _dialogs.Find("[data-testid=members-close]").Click();
+
+        // The actions menu of a one-to-one thread.
+        MessagingApi.Me = Huda;
+        var direct = await MessagingApi.CreateConversationAsync(new CreateConversationRequest(ConversationKinds.Direct, [Sara.Id], null, "hi"));
+        var thread = Render<MessagesPage>(p => p.Add(x => x.Id, direct.Id));
+        thread.WaitForAssertion(() => Assert.NotEmpty(thread.FindAll("[data-testid=thread-more]")));
+        thread.Find("[data-testid=thread-more] button, button[data-testid=thread-more]").Click();
+        _popovers.WaitForAssertion(() => Assert.NotEmpty(_popovers.FindAll("[data-testid=thread-block]")));
+
+        Assert.Empty(Problems(_popovers));
+        Assert.Empty(TitleOnly(_popovers));
+        Assert.Empty(TitleOnly(thread));
+    }
+
+    [Fact]
+    public async Task No_button_of_the_inbox_or_thread_is_named_only_by_a_title()
+    {
+        await PrepareAsync("en", Sara);
+        var c = await HudaWritesToSaraAsync("one");
+        var cut = Render<MessagesPage>(p => p.Add(x => x.Id, c.Id));
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("[data-testid=thread]")));
+
+        Assert.Empty(TitleOnly(cut));
+    }
 }
