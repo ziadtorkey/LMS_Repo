@@ -155,10 +155,8 @@ public sealed class MessagingTests(E2EFixture fixture) : E2ETestBase(fixture)
         Assert.True(await student.Messages.HasNoComposerAsync()); // D74: students read, they never post in a group
         Assert.Equal(0, await student.Messages.ComposerSend.CountAsync());
 
-        // The server says it too: a forced post is 403 group_read_only.
-        var (status, problem) = await student.ForcePostAsync(group, "forced from the console");
-        Assert.Equal(403, status);
-        Assert.Contains("group_read_only", problem?.ToString());
+        // The server says it too (D74): CanPost is false with ReadOnlyReason group_students_read_only, and a forced post is 403 conversation_read_only.
+        await AssertReadOnlyAsync(student, group, "group_students_read_only", "forced from the console");
         await student.AssertDirectionAsync(culture);
     }
 
@@ -195,8 +193,21 @@ public sealed class MessagingTests(E2EFixture fixture) : E2ETestBase(fixture)
 
         await student.Messages.OpenAsync(group);
         Assert.True(await student.Messages.HasNoComposerAsync());
-        var (status, _) = await student.ForcePostAsync(group, "forced");
-        Assert.Equal(403, status);
+        await AssertReadOnlyAsync(student, group, "group_students_read_only", "forced");
+    }
+
+    [Theory(Skip = Groups)]
+    [InlineData("ar")]
+    [InlineData("en")]
+    public async Task Guardian_cannot_post_in_a_manager_run_group(string culture)
+    {
+        await using var manager = await UserSession.OpenAsync(Fixture, MessagingWorld.Manager, culture, test: nameof(Guardian_cannot_post_in_a_manager_run_group));
+        await using var guardian = await UserSession.OpenAsync(Fixture, MessagingWorld.Guardian1, culture, test: nameof(Guardian_cannot_post_in_a_manager_run_group));
+        var group = await TeacherGroupAsync(manager, [await guardian.UserIdAsync(), await UserIdOfAsync(culture, MessagingWorld.Teacher)]);
+
+        await guardian.Messages.OpenAsync(group);
+        Assert.True(await guardian.Messages.HasNoComposerAsync()); // D77: guardians post only in teacher-run groups
+        await AssertReadOnlyAsync(guardian, group, "group_guardians_read_only", "forced");
     }
 
     [Theory(Skip = Groups)]
@@ -413,6 +424,17 @@ public sealed class MessagingTests(E2EFixture fixture) : E2ETestBase(fixture)
     }
 
     // ---- helpers (their bodies create the data through the real screens and API; written with the first live scenario) ----
+
+    /// <summary>The server is the authority on who may post: the conversation says CanPost=false with the reason, and a forced post is 403 conversation_read_only (L25, D74, D77).</summary>
+    private static async Task AssertReadOnlyAsync(UserSession session, Guid conversation, string reason, string forcedText)
+    {
+        var dto = await session.Api.JsonAsync(await session.Api.SendAsync("GET", $"/api/conversations/{conversation}"));
+        Assert.False(dto.GetProperty("canPost").GetBoolean());
+        Assert.Equal(reason, dto.GetProperty("readOnlyReason").GetString());
+        var (status, problem) = await session.ForcePostAsync(conversation, forcedText);
+        Assert.Equal(403, status);
+        Assert.Contains("conversation_read_only", problem?.ToString());
+    }
 
     /// <summary>No sideways scroll at 360 px (the page is never wider than the viewport).</summary>
     private static async Task AssertNoSidewaysScrollAsync(UserSession session)
