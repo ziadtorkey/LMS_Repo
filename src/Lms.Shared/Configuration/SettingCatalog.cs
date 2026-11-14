@@ -26,7 +26,8 @@ public static class SettingCategories
 
 /// <summary>
 /// Describes one editable setting. <c>DefaultJson</c> is the JSON form of the key's default
-/// (e.g. <c>"ar"</c> with quotes, <c>false</c>, <c>200</c>).
+/// (e.g. <c>"ar"</c> with quotes, <c>false</c>, <c>200</c>). <c>ClientLevelOnly</c> settings are read and written only at the client root and are
+/// never overridden by a unit (M5: <c>Org.TimeZone</c>, <c>AcademicYears.TermsPerYear</c>); the settings endpoint enforces it.
 /// </summary>
 public sealed record SettingDefinition(
     string Name,
@@ -35,7 +36,8 @@ public sealed record SettingDefinition(
     string DefaultJson,
     IReadOnlyList<string>? AllowedValues = null,
     int? Min = null,
-    int? Max = null);
+    int? Max = null,
+    bool ClientLevelOnly = false);
 
 /// <summary>Every setting the settings panel can show and edit (FR-ORG-11, §4.3, §4.4).</summary>
 public static class SettingCatalog
@@ -79,6 +81,14 @@ public static class SettingCatalog
         new(SettingKeys.LiveMaxCreatesPerDay.Name, SettingValueKinds.Int, SettingCategories.Academic, "500",
             Min: 1, Max: 10_000),
         new(SettingKeys.LiveCloudRecordingEnabled.Name, SettingValueKinds.Bool, SettingCategories.Academic, "false"),
+        // M5 wave 1: the client time zone (a free IANA id, validated by the server), grading and term structure.
+        new(SettingKeys.OrgTimeZone.Name, SettingValueKinds.String, SettingCategories.General, "\"Asia/Riyadh\"", ClientLevelOnly: true),
+        new(SettingKeys.GradesMissingPolicy.Name, SettingValueKinds.Enum, SettingCategories.Academic, "\"Normalise\"",
+            AllowedValues: ["Normalise", "Zero", "HideUntilComplete"]),
+        new(SettingKeys.GradesCategoryMethod.Name, SettingValueKinds.Enum, SettingCategories.Academic, "\"PointsWeighted\"",
+            AllowedValues: ["PointsWeighted", "PercentAverage"]),
+        new(SettingKeys.GradesDecimalPlaces.Name, SettingValueKinds.Int, SettingCategories.Academic, "2", Min: 0, Max: 4),
+        new(SettingKeys.AcademicYearsTermsPerYear.Name, SettingValueKinds.Int, SettingCategories.Academic, "2", Min: 2, Max: 3, ClientLevelOnly: true),
     ];
 
     /// <summary>The definition with this exact (case-sensitive) name, or null.</summary>

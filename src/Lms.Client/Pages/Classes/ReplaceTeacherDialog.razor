@@ -1,0 +1,64 @@
+@using Lms.Client.Services.Api
+@using Lms.Shared.Teaching
+@inject ITeachingApi Api
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+@* Replaces a teacher: the current assignment ends the day before the effective date and the new teacher starts on it. *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="2">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" data-testid="dialog-error">@_error</MudAlert>
+            }
+            <MudText data-testid="replace-current">@L["Teacher_Replacing", Culture.Pick(Current.NameAr, Current.NameEn)]</MudText>
+            <MudSelect T="Guid?" @bind-Value="_userId" Label="@L["Teacher_NewTeacher"]" Required="true" RequiredError="@L["Common_Required"]" data-testid="replace-teacher">
+                @foreach (var teacher in _eligible)
+                {
+                    <MudSelectItem T="Guid?" Value="@((Guid?)teacher.UserId)">@Culture.Pick(teacher.TeacherNameAr, teacher.TeacherNameEn)</MudSelectItem>
+                }
+            </MudSelect>
+            <MudDatePicker Date="_on" DateChanged="d => _on = d" Label="@L["Teacher_EffectiveOn"]" Required="true" data-testid="replace-date" />
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="@(_saving || _userId is null || _on is null)"
+                   data-testid="dialog-save">@L["Teacher_Replace"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired] public Guid ClassCourseId { get; set; }
+    [Parameter, EditorRequired] public Guid CourseId { get; set; }
+    [Parameter, EditorRequired] public Guid OrgUnitId { get; set; }
+    [Parameter, EditorRequired] public ClassCourseTeacherDto Current { get; set; } = default!;
+
+    private IReadOnlyList<TeacherEligibilityDto> _eligible = [];
+    private Guid? _userId;
+    private DateTime? _on = DateTime.Today;
+    private string? _error;
+    private bool _saving;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ApiCalls.RunAsync(async () =>
+            _eligible = (await Api.ListEligibilityAsync(new EligibilityQuery(OrgUnitId, null, CourseId, 1, 200, IncludeAncestors: true))).Items
+                .Where(e => e.UserId != Current.UserId).GroupBy(e => e.UserId).Select(g => g.First()).ToList(),
+            Navigation, L, message => _error = message);
+    }
+
+    private async Task SaveAsync()
+    {
+        _error = null;
+        _saving = true;
+        var saved = await ApiCalls.RunAsync(
+            () => Api.ReplaceAsync(ClassCourseId, Current.Id, new ReplaceTeacherRequest(_userId!.Value, DateOnly.FromDateTime(_on!.Value))),
+            Navigation, L, message => _error = message);
+        _saving = false;
+        if (saved) MudDialog.Close(DialogResult.Ok(true));
+    }
+}

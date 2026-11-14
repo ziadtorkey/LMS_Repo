@@ -53,10 +53,13 @@ public static class ClientServices
             services.AddSingleton<IGuardiansApi, FakeGuardiansApi>();
             services.AddSingleton<IClassesApi, FakeClassesApi>();
             services.AddSingleton<IClassCoursesApi, FakeClassCoursesApi>();
+            services.AddSingleton<ITeachingApi>(_ => FakeTeachingApi.WithDemoData());
             services.AddSingleton<IIdentityProvidersApi, FakeIdentityProvidersApi>();
             services.AddSingleton<ICoursesApi, FakeCoursesApi>();
             services.AddSingleton<IBlueprintsApi>(new FakeBlueprintsApi { AutoSeed = true });
             services.AddSingleton<ILessonPlansApi, FakeLessonPlansApi>();
+            services.AddSingleton<ICourseAssignmentsApi, FakeCourseAssignmentsApi>();
+            services.AddSingleton<IClassCourseGroupsApi, FakeClassCourseGroupsApi>();
             services.AddSingleton<IFileUploadApi, FakeFileUploadApi>();
             services.AddSingleton<ILibraryApi, FakeLibraryApi>();
             services.AddSingleton<IForumsApi, FakeForumsApi>();
@@ -105,10 +108,13 @@ public static class ClientServices
         services.AddScoped<IGuardiansApi, GuardiansApi>();
         services.AddScoped<IClassesApi, ClassesApi>();
         services.AddScoped<IClassCoursesApi, ClassCoursesApi>();
+        services.AddScoped<ITeachingApi, TeachingApi>();
         services.AddScoped<IIdentityProvidersApi, IdentityProvidersApi>();
         services.AddScoped<ICoursesApi, CoursesApi>();
         services.AddScoped<IBlueprintsApi, BlueprintsApi>();
         services.AddScoped<ILessonPlansApi, LessonPlansApi>();
+        services.AddScoped<ICourseAssignmentsApi, CourseAssignmentsApi>();
+        services.AddScoped<IClassCourseGroupsApi, ClassCourseGroupsApi>();
         services.AddScoped<IFileUploadApi, FileUploadApi>();
         services.AddScoped<ILibraryApi, LibraryApi>();
         services.AddScoped<IForumsApi, ForumsApi>();
