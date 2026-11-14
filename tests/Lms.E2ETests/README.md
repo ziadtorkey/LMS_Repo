@@ -151,6 +151,20 @@ Run as the seeded school group's Org Admin with unique names per test (`M3Names`
 | `Root_admin_allocates_a_new_course_below_the_school` | FR-CRS-02 | runs |
 | supervisor assigned; blueprint builder and publish v1; classes bulk create and matrix; teacher assignment; teacher sees only own class-course; publish v2 with push (polled up to 30 s); copy classes to next year | FR-CRS-04, FR-LP-*, FR-CLS-*, FR-TCH-* | to write as the FE pages (#238, #239, #240 to #243) and BE (#217, #221 to #225) land |
 
+## Scenarios (M5, plan #621 Task 42: `M5/GradebookTests`) - scaffold, skipped
+Exit demo 1 of M5 (FR-GRD-01..05), ar (RTL) and en. Every scenario is `Skip`-marked (`M5TestBase.NeedsGradebook`) until the gradebook contract (#625), engine, publishing and FE pages land; each body lists the steps to implement. Page objects `GradebookPage`, `PublishItemsDialog`, `MyGradesPage`, `ChildGradesPage` hold the expected test ids; align them with the FE pages when those merge.
+
+| Scenario | Checks |
+|---|---|
+| `Teacher_sets_weights_enters_a_manual_score_and_publishes` | weights chip 100, manual score, publish now |
+| `Student_sees_the_published_item_and_total` | published item, category/final/band over published items only, no rank or statistics |
+| `Guardian_sees_the_same_published_grade` | same data as the student; a foreign child id answers like an unknown id |
+| `Unpublished_item_is_invisible_to_student_and_guardian` | marker title and score absent in UI and API; total unchanged |
+| `Quiz_score_appears_as_a_hidden_auto_item` | auto item starts Hidden (L3), visible after publish |
+| `Scheduled_item_appears_after_the_time` | invisible before, visible once after the scheduled job, no fixed sleep |
+| `Grid_is_operable_by_keyboard_only` | arrows, Enter/F2, Tab, Esc, Shift+F10, focus never obscured, accessible names and states (L24) |
+
+The leak checks follow `docs/security/m5-review.md` section 1.
 ## Scenarios (M4a exit demo 2, plan Task 32: `M4/AssignmentTests`, `M4/QuizTests`)
 A student submits an assignment and takes a quiz; the grader scores both. `M4/AssessmentKit` builds the world through the API (a school, a published blueprint and class lesson plan, a class course, an enrolled student); assignments, quizzes and questions are created through the API and everything the scenario tests is driven through the UI, in Arabic (RTL) and English. All scenarios are **Skip-marked** until the M4a PRs land; they ran green on a local integration of main with those PRs (8 of 10; see below).
 
@@ -163,3 +177,9 @@ A student submits an assignment and takes a quiz; the grader scores both. `M4/As
 | The grader scores an essay and the student sees the result per the review policy | skipped until the M4a PRs land |
 
 Known limits: the grader signs in as the Org Admin (same grading permissions) because the shared E2E academic year starts on 2027-09-01 and a teacher assignment cannot start before its year, so the seeded Teacher is not current yet; switch `OpenTeacherAsync` to the seeded teacher once the year contains today (#455). The checked radio after a quiz reload is not asserted (MudBlazor's state is not exposed reliably); the saved answers are proved by the score. Students' API payloads (attempt, result) are checked for answer-key leaks: no non-null `*correct*` property, and `score` / `questions` withheld while an essay is pending or under ScoreOnly.
+
+### M5 demo 1 additions (flows against #630 gradebook tab, #641 scales, #638 model)
+`M5/GradebookShellTests` (skipped with `NeedsShellAndScales` until #630 and #641 are on main): `Teacher_reaches_the_gradebook_from_the_plan_tab_and_a_student_is_refused` (tab, page, forbidden notice for a student, no grid; ar and en) and `Provisioned_client_has_a_plain_default_scale_and_provisional_saudi_templates` (API: one plain default "Percentage", three provisional templates, none the default). `M5TestBase` now derives from `M4TestBase` and reuses `AssessmentKit`; `M5Kit` reads the scales; `GradebookPage` has the shell locators of #630 (`tab-gradebook`, `gradebook-title`, `gradebook-soon`, `gradebook-forbidden`). The branch is stacked on the M4a demo 2 branch (#457, which carries `M3Kit`).
+
+### M5 demo 1: flows written (not yet run), per-scenario skip reasons
+The seven scenarios are now real flows against #647, #650, #656, #660, #662, #663, #664 and FE1's id map (`docs/m5-e2e-testids.md`, #710), all `Skip`-marked with the PRs each one waits for (`M5TestBase.NeedsGradebookGrid`, `NeedsPublishing`, `NeedsShellAndScales`). `GradebookTests`: weights, manual score and publish (the publish step calls the API until the publish dialog of Task 27 lands); the student's and the guardian's published grade; the unpublished item (whole-page `LeakProbe`: HTML with attributes, API bodies and headers, console); the scheduled item (relies on the real per-minute job, polls up to 3 minutes, no fixed sleep); the quiz auto item still fails with "not implemented" so un-skipping it cannot pass by accident. `GradebookKeyboardTests`: bounding-box assertions against the sticky header and student column after every key in both directions, Enter on the student button, forced-colors outline. The guardian scenarios switch the guardian portal on for the school before the student is created (the invitation) and put it back in `finally`.

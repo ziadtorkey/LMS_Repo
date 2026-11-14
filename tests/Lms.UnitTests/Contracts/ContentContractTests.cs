@@ -138,6 +138,8 @@ public sealed class ContentContractTests
             ModuleTargets.ClassCourse, null, CompletionRules.View, null, new ModuleContentInput(Url: "https://example.org"));
 
         Assert.Equal(node, RoundTrip(node));
+        Assert.False(node.RefRemoved);
+        Assert.True(RoundTrip(node with { RefRemoved = true }).RefRemoved);
         Assert.Equal(group, RoundTrip(detail).Node.GroupId);
         Assert.Equal(95, RoundTrip(detail).Content.Asset!.DurationSeconds);
         Assert.Equal("https://example.org", RoundTrip(create).Content.Url);
