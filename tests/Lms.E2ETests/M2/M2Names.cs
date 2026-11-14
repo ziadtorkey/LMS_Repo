@@ -17,6 +17,12 @@ public sealed record M2Names(string Suffix)
     /// <summary>A mobile number that matches <c>^\+?[0-9]{8,15}$</c>, unique per run.</summary>
     public string Mobile => "+9665" + Convert.ToUInt32(Suffix[..7], 16).ToString("D9")[..8];
 
+    /// <summary>A mobile number for the <paramref name="slot"/>th person of a run (<see cref="Mobile"/> is slot 0).</summary>
+    public string MobileFor(int slot) => "+9665" + (Convert.ToUInt32(Suffix[..7], 16) % 9_000_000 + 1_000_000).ToString("D7") + slot.ToString("D1")[..1];
+
+    /// <summary>A 14-digit national id that is unique per run and <paramref name="slot"/> (a run may need several people).</summary>
+    public string NationalId(int slot) => "3" + Convert.ToUInt32(Suffix[..7], 16).ToString("D10") + slot.ToString("D3");
+
     /// <summary>A password that satisfies the policy (8+, upper, lower, digit) and is unique per run.</summary>
     public string NewPassword => $"E2e-Pass-{Suffix}1A";
 }

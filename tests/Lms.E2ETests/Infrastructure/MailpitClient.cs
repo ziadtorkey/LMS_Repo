@@ -29,8 +29,9 @@ public sealed partial class MailpitClient(Uri? baseUrl = null) : IDisposable
         var deadline = DateTime.UtcNow + Timeout;
         while (true)
         {
-            var id = await NewestMessageIdAsync(email);
-            if (id is not null)
+            // Newest first; a person can get several emails (a student's guardian gets the credentials email and the portal
+            // invitation), so look for the first one that carries an account link.
+            foreach (var id in await MessageIdsAsync(email))
             {
                 var message = await _http.GetFromJsonAsync<JsonElement>($"/api/v1/message/{id}");
                 var text = message.GetProperty("Text").GetString() ?? string.Empty;
@@ -59,13 +60,13 @@ public sealed partial class MailpitClient(Uri? baseUrl = null) : IDisposable
         return result.TryGetProperty("messages", out var messages) ? messages.GetArrayLength() : 0;
     }
 
-    private async Task<string?> NewestMessageIdAsync(string email)
+    private async Task<IReadOnlyList<string>> MessageIdsAsync(string email)
     {
         var query = Uri.EscapeDataString($"to:\"{email}\"");
         var result = await _http.GetFromJsonAsync<JsonElement>($"/api/v1/search?query={query}");
-        return result.TryGetProperty("messages", out var messages) && messages.GetArrayLength() > 0
-            ? messages[0].GetProperty("ID").GetString()
-            : null;
+        return result.TryGetProperty("messages", out var messages)
+            ? messages.EnumerateArray().Select(m => m.GetProperty("ID").GetString()!).ToList()
+            : [];
     }
 
     [GeneratedRegex(@"https?://[^\s""<>]+/Account/ResetPassword\?[^\s""<>]+")]
