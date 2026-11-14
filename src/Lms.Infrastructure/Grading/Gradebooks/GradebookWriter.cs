@@ -92,7 +92,7 @@ public sealed class GradebookWriter(LmsDbContext db, ISettingsResolver settings,
     }
 
     /// <summary>Locked gradebook, closed class or closed year: 409.</summary>
-    private async Task EnsureWritableAsync(Gradebook gradebook, CancellationToken ct)
+    public async Task EnsureWritableAsync(Gradebook gradebook, CancellationToken ct)
     {
         if (gradebook.IsLocked)
         {
