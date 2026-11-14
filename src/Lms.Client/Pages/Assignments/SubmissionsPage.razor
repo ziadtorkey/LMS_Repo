@@ -1,0 +1,159 @@
+@page "/course-assignments/{Id:guid}/submissions"
+@attribute [Authorize]
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Shared
+@using Lms.Shared.Assignments
+@using Lms.Shared.Authorization
+@inject ICourseAssignmentsApi Api
+@inject IClassCourseGroupsApi GroupsApi
+@inject IDialogService Dialogs
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<PageTitle>@L["Submissions_Title"]</PageTitle>
+@if (!PermState.Loaded || _loading)
+{
+    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+}
+else if (!PermState.Has(Permissions.CourseAssignments.View))
+{
+    <MudAlert Severity="Severity.Warning" data-testid="submissions-forbidden">@L["Forbidden_Title"]</MudAlert>
+}
+else if (_assignment is null)
+{
+    <MudAlert Severity="Severity.Error" data-testid="submissions-error">@(_error ?? L["Api_Error"].Value)</MudAlert>
+}
+else
+{
+    <MudStack Spacing="1" Class="mb-4" data-testid="submissions-header">
+        <MudText Typo="Typo.h4">@Culture.Pick(_assignment.Module.TitleAr, _assignment.Module.TitleEn)</MudText>
+        <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap" AlignItems="AlignItems.Center">
+            <MudText Typo="Typo.body2" Class="mud-text-secondary">@L["Assignment_Due"]: <span dir="ltr">@(IsoDates.Format(_assignment.DueAtUtc) ?? "—")</span></MudText>
+            <MudText Typo="Typo.body2" Class="mud-text-secondary">@L["Assignment_MaxGrade"]: @_assignment.MaxGrade.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)</MudText>
+            @if (PermState.Has(Permissions.CourseAssignments.Manage))
+            {
+                <MudButton Size="Size.Small" Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.Edit" OnClick="EditAsync"
+                           data-testid="assignment-edit">@L["Assignment_Edit"]</MudButton>
+            }
+        </MudStack>
+    </MudStack>
+
+    <MudStack Row="true" Spacing="2" Class="mb-3" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+        <MudSelect T="string" Value="_status" ValueChanged="OnStatusAsync" Label="@L["Submissions_Status"]" Clearable="true" Style="min-width:12rem"
+                   data-testid="submissions-status-filter">
+            @foreach (var s in StatusFilter)
+            {
+                <MudSelectItem T="string" Value="@s">@L["SubmissionStatus_" + s]</MudSelectItem>
+            }
+        </MudSelect>
+        <MudCheckBox T="bool" Value="_onlyLate" ValueChanged="OnLateAsync" Label="@L["Submissions_OnlyLate"]" data-testid="submissions-late-filter" />
+        <MudTextField T="string" @bind-Value="_searchText" Label="@L["Common_Search"]" Immediate="true" Clearable="true" OnKeyDown="OnSearchKey"
+                      data-testid="submissions-search" />
+    </MudStack>
+
+    <ServerTable @ref="_table" T="SubmissionListItemDto" ServerData="LoadAsync">
+        <HeaderContent>
+            <MudTh>@L["Submissions_Student"]</MudTh>
+            <MudTh>@L["Submissions_Status"]</MudTh>
+            <MudTh>@L["Submissions_At"]</MudTh>
+            <MudTh>@L["Submissions_Grade"]</MudTh>
+            <MudTh>@L["Common_Actions"]</MudTh>
+        </HeaderContent>
+        <RowTemplate Context="row">
+            <MudTd DataLabel="@L["Submissions_Student"]">@Culture.Pick(row.StudentNameAr, row.StudentNameEn)</MudTd>
+            <MudTd DataLabel="@L["Submissions_Status"]">
+                @if (row.Status is null)
+                {
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" data-testid="@($"status-{row.StudentId}")">@L["SubmissionStatus_None"]</MudChip>
+                }
+                else
+                {
+                    <MudChip T="string" Size="Size.Small" Color="@StatusColor(row.Status)" data-testid="@($"status-{row.StudentId}")">@L["SubmissionStatus_" + row.Status]</MudChip>
+                }
+                @if (row.IsLate)
+                {
+                    <MudChip T="string" Size="Size.Small" Color="Color.Warning" data-testid="@($"late-{row.StudentId}")">@L["Submissions_Late"]</MudChip>
+                }
+            </MudTd>
+            <MudTd DataLabel="@L["Submissions_At"]"><span dir="ltr">@(IsoDates.Format(row.SubmittedAtUtc) ?? "—")</span></MudTd>
+            <MudTd DataLabel="@L["Submissions_Grade"]">
+                @(row.FinalGrade is { } g ? g.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) : "—")
+            </MudTd>
+            <MudTd DataLabel="@L["Common_Actions"]">
+                @if (row.SubmissionId is { } sid && PermState.Has(Permissions.CourseAssignments.Grade))
+                {
+                    <MudButton Size="Size.Small" Variant="Variant.Text" Href="@($"/submissions/{sid}/grade")"
+                               data-testid="@($"grade-{sid}")">@L["Submissions_GradeAction"]</MudButton>
+                }
+            </MudTd>
+        </RowTemplate>
+    </ServerTable>
+}
+
+@code {
+    private static readonly string[] StatusFilter = [.. SubmissionStatuses.HandedIn, "None"];
+
+    [Parameter] public Guid Id { get; set; }
+
+    private ServerTable<SubmissionListItemDto> _table = default!;
+    private CourseAssignmentDto? _assignment;
+    private string? _error, _status, _searchText, _search;
+    private bool _loading = true, _onlyLate;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        PermState.Changed -= OnPermissionsChanged;
+        PermState.Changed += OnPermissionsChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        _loading = true; _error = null; _assignment = null;
+        if (PermState.Has(Permissions.CourseAssignments.View))
+            await ApiCalls.RunAsync(async () => _assignment = await Api.GetAsync(Id), Navigation, L, m => _error = m);
+        _loading = false;
+    }
+
+    private async Task<TableData<SubmissionListItemDto>> LoadAsync(TableState state, CancellationToken ct)
+    {
+        var query = new SubmissionQuery(_status, _onlyLate ? true : null, string.IsNullOrWhiteSpace(_search) ? null : _search, state.Page + 1, state.PageSize);
+        var page = await Api.ListSubmissionsAsync(Id, query, ct);
+        return new TableData<SubmissionListItemDto> { Items = page.Items, TotalItems = page.Total };
+    }
+
+    private async Task OnStatusAsync(string? status) { _status = status; await _table.ReloadAsync(); }
+    private async Task OnLateAsync(bool value) { _onlyLate = value; await _table.ReloadAsync(); }
+
+    private async Task OnSearchKey(KeyboardEventArgs e)
+    {
+        if (e.Key != "Enter") return;
+        _search = _searchText;
+        await _table.ReloadAsync();
+    }
+
+    private static Color StatusColor(string status) => status switch
+    {
+        SubmissionStatuses.Late => Color.Warning,
+        SubmissionStatuses.Graded => Color.Info,
+        SubmissionStatuses.Returned => Color.Success,
+        _ => Color.Default,
+    };
+
+    private async Task EditAsync()
+    {
+        if (_assignment is null) return;
+        var groups = await ModuleGroups.LoadAsync(GroupsApi, _assignment.ClassCourseId);
+        var dialog = await Dialogs.ShowAsync<AssignmentDialog>(L["Assignment_Edit"], new DialogParameters<AssignmentDialog>
+        {
+            { x => x.ClassCourseId, _assignment.ClassCourseId },
+            { x => x.Existing, _assignment },
+            { x => x.Groups, groups },
+        }, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: CourseAssignmentDto saved }) _assignment = saved;
+    }
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => PermState.Changed -= OnPermissionsChanged;
+}
