@@ -30,9 +30,15 @@ public sealed class ModerationQueuePage(IPage page)
     public Task OpenReportAsync(Guid id) => page.GetByTestId($"mod-open-{id}").ClickAsync();
 
     /// <summary>Picks the decision (<c>mod-{Action}</c>, e.g. RemoveAndRestrict), writes the note to the people and applies it.</summary>
-    public async Task DecideAsync(string action, string noteToPeople)
+    public async Task DecideAsync(string action, string noteToPeople, int? days = null)
     {
         await page.GetByTestId($"mod-{action}").ClickAsync();
+        if (days is not null)
+        {
+            await page.GetByTestId("mod-days").ClickAsync();
+            await page.GetByRole(AriaRole.Option, new PageGetByRoleOptions { Name = days.Value.ToString() }).First.ClickAsync();
+        }
+
         await page.Locator("[data-testid='mod-note-to-people'] textarea, [data-testid='mod-note-to-people'] input").Locator("visible=true").First.FillAsync(noteToPeople);
         await page.GetByTestId("mod-apply").ClickAsync();
     }
