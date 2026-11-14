@@ -16,7 +16,7 @@ public sealed class GradebookTests(E2EFixture fixture) : M5TestBase(fixture)
 {
     private const string NotImplemented = "scenario not implemented yet: see the steps in the body";
 
-    [Theory(Skip = NeedsGradebookGrid + "; the publish step uses the API until the publish dialog (Task 27) lands")]
+    [Theory(Skip = NeedsGradebookGrid + " and the publish dialog (#721) on main")]
     [InlineData("ar")]
     [InlineData("en")]
     public async Task Teacher_sets_weights_enters_a_manual_score_and_publishes(string culture)
@@ -54,8 +54,19 @@ public sealed class GradebookTests(E2EFixture fixture) : M5TestBase(fixture)
         await Expect(gradebook.Final(world.Student.Id)).ToContainTextAsync("80");
         await Expect(gradebook.ItemState(item)).ToBeVisibleAsync();
 
-        // Publish: TODO(Task 27) drive PublishItemsDialog; until then the API publishes.
-        await M5Kit.PublishAsync(admin, world.ClassCourseId, [item]);
+        // Publish through the dialog (Task 27, #721). Closing it, by Esc or by Done, must return the focus to the Publish button (WCAG 2.4.3): asserted
+        // for real here because the bUnit test of #721 can only check the static markup.
+        var dialog = new PublishItemsDialog(teacher.Page);
+        await gradebook.PublishButton.FocusAsync();
+        await gradebook.PublishButton.ClickAsync();
+        await Expect(dialog.Submit).ToBeVisibleAsync();
+        await teacher.Page.Keyboard.PressAsync("Escape");
+        await Expect(dialog.Submit).ToHaveCountAsync(0);
+        await Expect(gradebook.PublishButton).ToBeFocusedAsync();
+
+        await gradebook.PublishButton.ClickAsync();
+        await dialog.PublishNowAsync(item);
+        await Expect(gradebook.PublishButton).ToBeFocusedAsync();
         var book = await M5Kit.GradebookAsync(admin, world.ClassCourseId);
         Assert.Equal("Published", book.GetProperty("items").EnumerateArray().Single(i => i.GetProperty("id").GetGuid() == item).GetProperty("publishState").GetString());
     }

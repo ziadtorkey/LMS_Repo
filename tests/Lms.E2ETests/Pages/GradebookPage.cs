@@ -23,6 +23,8 @@ public sealed class GradebookPage(IPage page)
 
     public ILocator WeightsChip => page.GetByTestId("weights-chip");
 
+    public ILocator PublishButton => page.GetByTestId("gradebook-publish");
+
     public ILocator Hint => page.GetByTestId("gradebook-hint");
 
     public ILocator LivePolite => page.GetByTestId("grid-live-polite");
