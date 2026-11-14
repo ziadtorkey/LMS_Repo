@@ -26,7 +26,8 @@ public sealed class SessionGenerationTests(LmsApiFactory factory)
     private sealed record Setup(TimetableWorld World, TimetableSlot Slot, DateOnly FirstSunday, AttendanceSessionGenerator Generator);
 
     private AttendanceSessionGenerator GeneratorAt(DateOnly localDay) =>
-        new(factory.Services.GetRequiredService<IConfiguration>(), new FixedClock(localDay.ToDateTime(new TimeOnly(9, 0), DateTimeKind.Utc)));
+        new(factory.Services.GetRequiredService<IConfiguration>(), new FixedClock(localDay.ToDateTime(new TimeOnly(9, 0), DateTimeKind.Utc)),
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<AttendanceSessionGenerator>.Instance);
 
     /// <summary>A Sunday first-period slot, published; "today" is the first Sunday of the term (the default 7 days ahead reach the next Sunday).</summary>
     private async Task<Setup> SetUpAsync(string name, DayOfWeek day = DayOfWeek.Sunday, bool publish = true)
@@ -75,6 +76,34 @@ public sealed class SessionGenerationTests(LmsApiFactory factory)
         Assert.Equal([s.FirstSunday, s.FirstSunday.AddDays(7)], sessions.Select(x => x.Date)); // today and the Sunday inside the 7 days; none before or after
         Assert.All(sessions, x => Assert.Equal((AttendanceSession.TimetableSource, AttendanceSession.OpenState, s.World.First.Id), (x.Source, x.State, x.PeriodId)));
         Assert.All(sessions, x => Assert.Equal((s.World.Math.Id, s.World.Class.Id, s.World.Unit.Id), (x.ClassCourseId, x.ClassId, x.OrgUnitId)));
+    }
+
+    [Fact]
+    public async Task Two_generators_at_once_create_each_session_once_and_neither_fails()
+    {
+        var s = await SetUpAsync("AG9");
+        var first = GeneratorAt(s.FirstSunday);
+        var second = GeneratorAt(s.FirstSunday);
+
+        var counts = await Task.WhenAll(Enumerable.Range(0, 4).Select(i =>
+            (i % 2 == 0 ? first : second).GenerateForOrganizationAsync(s.World.Unit.OrganizationId, null, null, default)));
+
+        Assert.Equal(2, counts.Sum()); // each session is created by exactly one of the runs
+        Assert.Equal([s.FirstSunday, s.FirstSunday.AddDays(7)], (await SessionsAsync(s.Slot.Id)).Select(x => x.Date));
+    }
+
+    [Fact]
+    public async Task Generator_uses_the_client_local_date_around_midnight_utc()
+    {
+        var s = await SetUpAsync("AG10");
+        // 21:30 UTC on the Saturday before the first Sunday is already Sunday 00:30 in Riyadh (UTC+3): the Sunday is today and is generated.
+        var saturday = s.FirstSunday.AddDays(-1);
+        var generator = new AttendanceSessionGenerator(factory.Services.GetRequiredService<IConfiguration>(),
+            new FixedClock(saturday.ToDateTime(new TimeOnly(21, 30), DateTimeKind.Utc)), Microsoft.Extensions.Logging.Abstractions.NullLogger<AttendanceSessionGenerator>.Instance);
+
+        await generator.GenerateForOrganizationAsync(s.World.Unit.OrganizationId, null, null, default);
+
+        Assert.Equal(s.FirstSunday, (await SessionsAsync(s.Slot.Id)).First().Date);
     }
 
     [Fact]

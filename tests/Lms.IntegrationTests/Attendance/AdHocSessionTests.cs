@@ -36,7 +36,22 @@ public sealed class AdHocSessionTests(LmsApiFactory factory)
     private static async Task<string?> CodeAsync(HttpResponseMessage response) =>
         (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("code").GetString();
 
-    private static DateOnly Today => DateOnly.FromDateTime(DateTime.UtcNow.AddHours(3)); // the client time zone is Asia/Riyadh (D64)
+    private static DateOnly LocalToday => DateOnly.FromDateTime(DateTime.UtcNow.AddHours(3)); // the client time zone is Asia/Riyadh (D64)
+
+    /// <summary>The latest school day (Sunday to Thursday, no holiday in the test data) on or before the local today: ad hoc sessions are for school days.</summary>
+    private static DateOnly Today
+    {
+        get
+        {
+            var d = LocalToday;
+            while (d.DayOfWeek is DayOfWeek.Friday or DayOfWeek.Saturday)
+            {
+                d = d.AddDays(-1);
+            }
+
+            return d;
+        }
+    }
 
     /// <summary>The Math class course is taught by a teacher whose assignment is active today; the Science one by another.</summary>
     private async Task<Setup> SetUpAsync(string name)
@@ -69,7 +84,7 @@ public sealed class AdHocSessionTests(LmsApiFactory factory)
 
         var created = await CreateAsync(s.Teacher, s.World.Math.Id, Today, s.World.First.Id);
         var again = await CreateAsync(s.Teacher, s.World.Math.Id, Today, s.World.First.Id);
-        var future = await CreateAsync(s.Teacher, s.World.Math.Id, Today.AddDays(1));
+        var future = await CreateAsync(s.Teacher, s.World.Math.Id, LocalToday.AddDays(1));
 
         Assert.Equal(HttpStatusCode.Created, created.StatusCode);
         var dto = (await created.Content.ReadFromJsonAsync<AttendanceSessionListItemDto>(Web))!;
@@ -78,6 +93,54 @@ public sealed class AdHocSessionTests(LmsApiFactory factory)
         Assert.Equal(HttpStatusCode.OK, again.StatusCode);
         Assert.Equal(dto.Id, (await again.Content.ReadFromJsonAsync<AttendanceSessionListItemDto>(Web))!.Id);
         Assert.Equal((HttpStatusCode.Conflict, ProblemCodes.attendance_session_future), (future.StatusCode, await CodeAsync(future)));
+
+        var tooOld = await CreateAsync(s.Teacher, s.World.Math.Id, LocalToday.AddDays(-AttendanceLimits.SearchMaxDays - 3));
+        var weekend = await CreateAsync(s.Teacher, s.World.Math.Id, FridayOnOrBefore(LocalToday));
+        Assert.Equal((HttpStatusCode.BadRequest, HttpStatusCode.BadRequest), (tooOld.StatusCode, weekend.StatusCode)); // not a school day in range
+    }
+
+    private static DateOnly FridayOnOrBefore(DateOnly day)
+    {
+        while (day.DayOfWeek != DayOfWeek.Friday)
+        {
+            day = day.AddDays(-1);
+        }
+
+        return day;
+    }
+
+    [Fact]
+    public async Task Two_identical_requests_at_once_create_one_session()
+    {
+        var s = await SetUpAsync("AH5");
+
+        var responses = await Task.WhenAll(Enumerable.Range(0, 4).Select(_ => CreateAsync(s.Teacher, s.World.Math.Id, Today, s.World.Second.Id)));
+
+        Assert.All(responses, r => Assert.True(r.StatusCode is HttpStatusCode.Created or HttpStatusCode.OK, r.StatusCode.ToString()));
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        Assert.Equal(1, await db.Set<AttendanceSession>().CountAsync(x => x.ClassCourseId == s.World.Math.Id && x.Date == Today && x.PeriodId == s.World.Second.Id));
+    }
+
+    [Fact]
+    public async Task A_timetable_session_at_the_same_place_is_returned_instead_of_a_second_one()
+    {
+        var s = await SetUpAsync("AH6");
+        Guid existing;
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            var slot = new TimetableSlot(s.World.Class, s.World.Math.Id, s.World.Term.Id, s.World.MathTeacher, Today.DayOfWeek, s.World.First.Id, null);
+            slot.Publish();
+            db.Add(slot);
+            var session = new AttendanceSession(s.World.Math, Today, slot.Id, s.World.First.Id, AttendanceSession.TimetableSource);
+            db.Add(session);
+            await db.SaveChangesAsync();
+            existing = session.Id;
+        }
+
+        var response = await CreateAsync(s.Teacher, s.World.Math.Id, Today, s.World.First.Id);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(existing, (await response.Content.ReadFromJsonAsync<AttendanceSessionListItemDto>(Web))!.Id);
     }
 
     [Fact]
@@ -134,7 +197,8 @@ public sealed class AdHocSessionTests(LmsApiFactory factory)
             await db.SaveChangesAsync();
         }
 
-        var generator = new AttendanceSessionGenerator(factory.Services.GetRequiredService<IConfiguration>(), new FixedClock(date.ToDateTime(new TimeOnly(9, 0), DateTimeKind.Utc)));
+        var generator = new AttendanceSessionGenerator(factory.Services.GetRequiredService<IConfiguration>(), new FixedClock(date.ToDateTime(new TimeOnly(9, 0), DateTimeKind.Utc)),
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<AttendanceSessionGenerator>.Instance);
         await generator.GenerateForOrganizationAsync(s.World.Unit.OrganizationId, null, null, default);
 
         async Task<List<AttendanceSessionListItemDto>> ListAsync(RoleAssignment who) =>
@@ -145,10 +209,10 @@ public sealed class AdHocSessionTests(LmsApiFactory factory)
         var asSubstitute = await ListAsync(substitute);
         var other = await ListAsync(s.OtherTeacher);
 
-        Assert.Equal(slot.Id, (await SessionOfAsync(owner.Single().Id)).SlotId);
-        Assert.False(owner.Single().IsSubstitute);
         Assert.True(asSubstitute.Single(x => x.ClassCourseId == s.World.Math.Id).IsSubstitute); // the substitute sees it, flagged by the server
         Assert.DoesNotContain(other, x => x.ClassCourseId == s.World.Math.Id); // another teacher does not
+        // The teacher of record is substituted away for that date: the substitute is the teacher of record for that one session, so it leaves their list (L15).
+        Assert.DoesNotContain(owner, x => x.ClassCourseId == s.World.Math.Id);
         Assert.Equal(HttpStatusCode.Forbidden, (await SendAsync(factory, HttpMethod.Get, Routes.AttendanceSessionsPattern, s.Counselor)).StatusCode);
     }
 

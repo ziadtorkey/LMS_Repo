@@ -20,7 +20,7 @@ internal sealed class AttendanceSessionConfiguration : IEntityTypeConfiguration<
         builder.Property(x => x.OrgUnitPath).HasColumnType(AttendanceColumns.AsciiPath).IsRequired();
         builder.Property(x => x.Source).HasMaxLength(20).IsRequired();
         builder.Property(x => x.State).HasMaxLength(20).IsRequired();
-        builder.Property(x => x.SessionKey).HasMaxLength(60);
+        builder.Property(x => x.SessionKey).HasMaxLength(100);
         builder.Property(x => x.Version).IsConcurrencyToken();
         builder.HasIndex(x => x.SessionKey).IsUnique();
         builder.HasIndex(x => new { x.OrganizationId, x.OrgUnitPath });

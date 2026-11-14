@@ -27,7 +27,7 @@ namespace Lms.Infrastructure.Persistence.Migrations
                     TakenAtUtc = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     LiveSessionId = table.Column<Guid>(type: "char(36)", nullable: true),
                     Version = table.Column<int>(type: "int", nullable: false),
-                    SessionKey = table.Column<string>(type: "varchar(60)", maxLength: 60, nullable: true),
+                    SessionKey = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     CreatedBy = table.Column<Guid>(type: "char(36)", nullable: true),
                     UpdatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: true),

@@ -34,8 +34,11 @@ public sealed class M3EndpointMatrixTests(LmsApiFactory factory, ITestOutputHelp
         Routes.ClassCourseQuizzesPattern,
     ];
 
-    // Own-data reads: a student or guardian holds the permission and reaches only their own child, so another id is 404, never data (M5 Task 17).
-    private static readonly HashSet<string> OwnDataReadable = [Routes.StudentAttendancePattern];
+    /// <summary>
+    /// Own-data routes of M5 under an M3 prefix: students and guardians are meant to reach them (a guardian reads own children only; the rule is in TimetableViewTests,
+    /// the probe row covers the staff callers).
+    /// </summary>
+    private static readonly HashSet<string> M5OwnData = [Routes.StudentTimetablePattern, Routes.StudentAttendancePattern];
 
     private static IEnumerable<ProbeRow> M3Rows => M1ProbeRows.All.Where(r => IsM3(r.Pattern));
 
@@ -79,8 +82,7 @@ public sealed class M3EndpointMatrixTests(LmsApiFactory factory, ITestOutputHelp
         var body = await response.Content.ReadAsStringAsync();
         // A route a student may read (M4a: the plan tree, the modules of a lesson, their own progress) holds the permission for the
         // Student role; the unenrolled student of this world reaches no class course, so it is 404, never data.
-        var expected = (caller == M3Caller.Student1 && row.Method == HttpMethod.Get && StudentReadable.Contains(row.Pattern))
-            || (caller is M3Caller.Student1 or M3Caller.Guardian1 && row.Method == HttpMethod.Get && OwnDataReadable.Contains(row.Pattern))
+        var expected = caller == M3Caller.Student1 && row.Method == HttpMethod.Get && StudentReadable.Contains(row.Pattern)
             ? System.Net.HttpStatusCode.NotFound
             : System.Net.HttpStatusCode.Forbidden;
         Assert.True(response.StatusCode == expected,
@@ -135,6 +137,7 @@ public sealed class M3EndpointMatrixTests(LmsApiFactory factory, ITestOutputHelp
     private static bool IsM3(string pattern) =>
         !M4aRoutes.Is(pattern)
         && !M4bRoutes.Is(pattern)
+        && !M5OwnData.Contains(pattern)
         && M3Prefixes.Any(p => pattern.Equals(p, StringComparison.OrdinalIgnoreCase)
                                || pattern.StartsWith(p + "/", StringComparison.OrdinalIgnoreCase));
 
