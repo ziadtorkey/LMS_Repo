@@ -2198,4 +2198,16 @@
   <data name="Error_comms_cap_above_ceiling" xml:space="preserve"><value>هذا الحد أعلى من الحد الأقصى الذي تسمح به المنصة.</value></data>
   <data name="Error_attachment_invalid" xml:space="preserve"><value>المرفق غير مسموح به: تحقق من نوعه وحجمه وعدد المرفقات.</value></data>
   <data name="NavSection_Communication" xml:space="preserve"><value>التواصل</value></data>
+  <data name="Msg_Picker_To" xml:space="preserve"><value>إلى</value></data>
+  <data name="Msg_Picker_RemoveOne" xml:space="preserve"><value>إزالة {0}</value></data>
+  <data name="Msg_RoleOne_Student" xml:space="preserve"><value>طالب</value></data>
+  <data name="Msg_RoleOne_Guardian" xml:space="preserve"><value>ولي أمر</value></data>
+  <data name="Msg_RoleOne_Teacher" xml:space="preserve"><value>معلم</value></data>
+  <data name="Msg_RoleOne_Counselor" xml:space="preserve"><value>مرشد</value></data>
+  <data name="Msg_RoleOne_Supervisor" xml:space="preserve"><value>مشرف</value></data>
+  <data name="Msg_RoleOne_Manager" xml:space="preserve"><value>مدير</value></data>
+  <data name="Msg_RoleOne_OrgAdmin" xml:space="preserve"><value>مدير المنظمة</value></data>
+  <data name="Msg_Member_Owner" xml:space="preserve"><value>المالك</value></data>
+  <data name="Msg_Member_You" xml:space="preserve"><value>أنت</value></data>
+  <data name="MudInput_Clear" xml:space="preserve"><value>مسح</value></data>
 </root>

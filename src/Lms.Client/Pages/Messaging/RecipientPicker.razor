@@ -9,6 +9,21 @@
    person never appears, with or without a search; the hint line says in words which roles the rules reach. Managers and org admins get the one D69 row
    in place of any student. *@
 <div class="lms-picker" data-testid="picker">
+    @if (_selected.Count > 0)
+    {
+        <div class="lms-picker-to" role="group" aria-labelledby="@_toId" data-testid="picker-to">
+            <span class="lms-field-label" id="@_toId">@L["Msg_Picker_To"]</span>
+            @foreach (var person in _selected.Values)
+            {
+                var chosen = person;
+                <span class="lms-picker-chip" data-testid="@($"picker-chip-{chosen.UserId}")">
+                    <bdi>@CultureText.Pick(chosen.NameAr, chosen.NameEn)</bdi>
+                    <button type="button" class="lms-picker-chip-x lms-touch" aria-label="@string.Format(L["Msg_Picker_RemoveOne"].Value, CultureText.Pick(chosen.NameAr, chosen.NameEn))"
+                            @onclick="() => RemoveAsync(chosen)" data-testid="@($"picker-chip-remove-{chosen.UserId}")"><MudIcon Icon="@Icons.Material.Rounded.Close" Size="Size.Small" /></button>
+                </span>
+            }
+        </div>
+    }
     <MudTextField T="string" Value="_search" ValueChanged="SearchAsync" Immediate="false" Variant="Variant.Outlined" Margin="Margin.Dense"
                   Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Rounded.Search" Placeholder="@L["Msg_Picker_Search"]" aria-label="@L["Msg_Picker_Search"]"
                   Clearable="true" data-testid="picker-search" />
@@ -55,6 +70,7 @@
     [Parameter] public RecipientDto? Preselected { get; set; }
     [Parameter] public EventCallback<IReadOnlyList<RecipientDto>> SelectedChanged { get; set; }
 
+    private readonly string _toId = "to-" + Guid.NewGuid().ToString("N")[..8];
     private readonly Dictionary<Guid, RecipientDto> _selected = [];
     private IReadOnlyList<RecipientDto> _results = [];
     private MessagingRulesSummaryDto? _summary;
@@ -67,7 +83,7 @@
         ? L["Msg_Picker_HintNone"]
         : string.Format(L["Msg_Picker_Hint"].Value, string.Join(", ", _summary.ReachableRoleKeys.Select(k => L[$"Msg_Role_{k}"].Value)));
 
-    private string? Caption(RecipientDto r) => string.Join(" · ", new[] { L[$"Msg_Role_{r.RoleKey}"].Value, CultureText.Pick(r.UnitNameAr ?? "", r.UnitNameEn ?? "") }.Where(s => !string.IsNullOrWhiteSpace(s)));
+    private string? Caption(RecipientDto r) => string.Join(" · ", new[] { L[$"Msg_RoleOne_{r.RoleKey}"].Value, CultureText.Pick(r.UnitNameAr ?? "", r.UnitNameEn ?? "") }.Where(s => !string.IsNullOrWhiteSpace(s)));
 
     protected override async Task OnInitializedAsync()
     {
@@ -92,6 +108,12 @@
         if (mine != _request) return; // a newer search was started: this answer is stale
         _results = [.. (people ?? []).Where(p => !Exclude.Contains(p.UserId))];
         _loaded = true;
+    }
+
+    private async Task RemoveAsync(RecipientDto person)
+    {
+        _limitHit = false;
+        if (_selected.Remove(person.UserId)) await SelectedChanged.InvokeAsync([.. _selected.Values]);
     }
 
     private async Task ToggleAsync(RecipientDto person)

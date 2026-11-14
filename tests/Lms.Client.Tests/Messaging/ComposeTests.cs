@@ -283,4 +283,73 @@ public sealed class ComposeTests : ClientTestContext
         OpenNew();
         _dialogs.WaitForAssertion(() => Assert.NotEmpty(_dialogs.FindAll("[data-testid=picker-d69]")));
     }
+
+    [Fact]
+    public async Task What_you_picked_stays_visible_as_chips_and_can_be_removed()
+    {
+        await SignInAsync(Sara);
+        OpenNew();
+
+        _dialogs.Find($"[data-testid=picker-{Huda.Id}]").Click();
+
+        _dialogs.WaitForAssertion(() => Assert.NotEmpty(_dialogs.FindAll($"[data-testid=picker-chip-{Huda.Id}]")));
+        Assert.False(string.IsNullOrWhiteSpace(_dialogs.Find($"[data-testid=picker-chip-remove-{Huda.Id}]").GetAttribute("aria-label")));
+        _dialogs.Find("input[data-testid=picker-search]").Change("zzz"); // a new search does not hide the pick
+        Assert.NotEmpty(_dialogs.FindAll($"[data-testid=picker-chip-{Huda.Id}]"));
+
+        _dialogs.Find($"[data-testid=picker-chip-remove-{Huda.Id}]").Click();
+
+        _dialogs.WaitForAssertion(() => Assert.Empty(_dialogs.FindAll($"[data-testid=picker-chip-{Huda.Id}]")));
+    }
+
+    [Fact]
+    public async Task Role_captions_name_one_role_in_the_singular()
+    {
+        Culture.Current = new System.Globalization.CultureInfo("en");
+        await SignInAsync(Sara);
+        OpenNew();
+        _dialogs.WaitForAssertion(() => Assert.NotEmpty(_dialogs.FindAll($"[data-testid=picker-{Huda.Id}]")));
+
+        var caption = _dialogs.Find($"[data-testid=picker-{Huda.Id}] .lms-picker-caption").TextContent;
+
+        Assert.Equal("Teacher", caption);
+        Assert.DoesNotContain("organisation", _dialogs.Markup, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task Members_mark_the_owner_and_you()
+    {
+        await SignInAsync(Huda);
+        MessagingApi.Related.Add((Huda.Id, Omar.Id));
+        var g = await MessagingApi.CreateConversationAsync(new CreateConversationRequest(ConversationKinds.Group, [Sara.Id, Omar.Id], "10-A", "Welcome"));
+        var cut = RenderPage(g.Id);
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("[data-testid=thread-members]")));
+
+        cut.Find("[data-testid=thread-members]").Click();
+
+        _dialogs.WaitForAssertion(() => Assert.NotEmpty(_dialogs.FindAll($"[data-testid=member-owner-{Huda.Id}]")));
+        Assert.NotEmpty(_dialogs.FindAll($"[data-testid=member-you-{Huda.Id}]"));
+        Assert.Empty(_dialogs.FindAll($"[data-testid=member-owner-{Sara.Id}]"));
+        Assert.Contains("lms-touch", _dialogs.Find($"[data-testid=member-remove-{Sara.Id}]").ClassName);
+    }
+
+    [Fact]
+    public async Task The_compose_and_members_dialogs_go_full_screen_on_phones()
+    {
+        await SignInAsync(Sara);
+        OpenNew();
+        Assert.NotEmpty(_dialogs.FindAll(".lms-dialog-fs"));
+
+        var dir = AppContext.BaseDirectory;
+        while (dir is not null && !Directory.Exists(Path.Combine(dir, "src", "Lms.Client"))) dir = Path.GetDirectoryName(dir);
+        var css = File.ReadAllText(Path.Combine(dir!, "src", "Lms.Client", "wwwroot", "css", "app.css"));
+        Assert.Contains("@media (max-width: 599px) { .lms-dialog-fs.mud-dialog", css);
+    }
+
+    [Fact]
+    public void The_search_clear_button_is_labelled_in_both_languages()
+    {
+        var l = Services.GetRequiredService<Microsoft.Extensions.Localization.IStringLocalizer<Lms.Client.Resources.SharedResource>>();
+        Assert.False(l["MudInput_Clear"].ResourceNotFound);
+    }
 }

@@ -6,7 +6,7 @@
 
 @* New message (spec #615 §3): pick one person, or, for staff, several for a group (students are never offered "New group", L5), then write the first
    message. A rule or limit error keeps the draft and the picked people, so the user can change something and try again. *@
-<MudDialog>
+<MudDialog Class="lms-dialog-fs">
     <DialogContent>
         <div class="lms-form" data-testid="compose">
             @if (_error is not null)
