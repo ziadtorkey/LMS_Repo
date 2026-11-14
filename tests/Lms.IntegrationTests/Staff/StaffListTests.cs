@@ -13,10 +13,12 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Lms.IntegrationTests.Staff;
 
 [Collection(ApiCollection.Name)]
-public sealed class StaffListTests
+public sealed class StaffListTests : IDisposable
 {
     private readonly LmsApiFactory _factory;
     private readonly WebApplicationFactory<Program> _host;
+
+    public void Dispose() => _host.Dispose();
 
     public StaffListTests(LmsApiFactory factory)
     {

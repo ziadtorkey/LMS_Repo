@@ -89,7 +89,7 @@ public sealed class FakeMessagingApi : IMessagingApi
     private ParticipantDto ToParticipant(Conversation c, Guid id) => new(id, User(id).NameAr, User(id).NameEn, User(id).RoleKey, c.Left.Contains(id));
 
     /// <summary>D74, D77: students read a group and never post in it (they reply privately to the teacher); guardians may post in a teacher-run group that includes them.</summary>
-    private bool ReadOnlyForMe(Conversation c) => c.Kind == ConversationKinds.Group && Me.RoleKey == BuiltInRoles.Student;
+    private bool ReadOnlyForMe(Conversation c) => c.Kind == ConversationKinds.Group && (Me.RoleKey == BuiltInRoles.Student || (Me.RoleKey == BuiltInRoles.Guardian && User(c.OwnerId).RoleKey != BuiltInRoles.Teacher));
 
     /// <summary>A conversation the caller takes part in; anyone else gets 404, as the server answers (an Org Admin included).</summary>
     private Conversation Mine(Guid id) =>
@@ -113,8 +113,20 @@ public sealed class FakeMessagingApi : IMessagingApi
             m.Deleted ? MessageStates.Deleted : MessageStates.Normal, [], m.CreatedAtUtc, m.Deleted ? Now() : null, canDelete);
     }
 
-    private ConversationDto ToDto(Conversation c) =>
-        new(c.Id, c.Kind, c.Title, [.. c.Participants.Select(id => ToParticipant(c, id))], c.Locked, c.Muted.ContainsKey(Me.Id), c.CreatedAtUtc, ReadOnlyForMe(c), c.OwnerId, c.ClassCourseId);
+    /// <summary>L25: why the caller cannot post, or null. A block either way, a rule tightened since, or an ended relationship are one generic reason (L18).</summary>
+    private string? ReadOnlyReasonFor(Conversation c)
+    {
+        if (c.Locked) return ConversationReadOnlyReasons.Locked;
+        if (c.Kind == ConversationKinds.Group) return !ReadOnlyForMe(c) ? null : Me.RoleKey == BuiltInRoles.Student ? ConversationReadOnlyReasons.GroupStudentsReadOnly : ConversationReadOnlyReasons.GroupGuardiansReadOnly;
+        var other = User(c.Participants.First(p => p != Me.Id));
+        return _blocks.Contains((Me.Id, other.Id)) || _blocks.Contains((other.Id, Me.Id)) || !Allowed(Me, other) ? ConversationReadOnlyReasons.BlockedOrRule : null;
+    }
+
+    private ConversationDto ToDto(Conversation c)
+    {
+        var reason = ReadOnlyReasonFor(c);
+        return new(c.Id, c.Kind, c.Title, [.. c.Participants.Select(id => ToParticipant(c, id))], c.Locked, c.Muted.ContainsKey(Me.Id), c.CreatedAtUtc, ReadOnlyForMe(c), c.OwnerId, c.ClassCourseId, reason is null, reason);
+    }
 
     public Task<PagedResult<ConversationListItemDto>> ListConversationsAsync(int page = 1, int pageSize = Paging.DefaultPageSize, CancellationToken ct = default)
     {
@@ -185,7 +197,7 @@ public sealed class FakeMessagingApi : IMessagingApi
     {
         var c = Mine(conversationId);
         if (c.Locked) throw Problem(409, ProblemCodes.conversation_closed);
-        if (ReadOnlyForMe(c)) throw Problem(403, ProblemCodes.group_read_only);
+        if (ReadOnlyForMe(c)) throw new ApiProblemException(403, ProblemCodes.conversation_read_only, null, null, reason: ConversationReadOnlyReasons.GroupStudentsReadOnly); // L25: the reason says why the caller cannot post
         if (string.IsNullOrWhiteSpace(request.Body)) throw Problem(400, ProblemCodes.validation_failed);
         if (request.Body.Length > Limits.MaxBodyLength) throw Problem(400, ProblemCodes.message_too_long);
         if ((request.AttachmentFileIds?.Count ?? 0) > Limits.MaxAttachments) throw Problem(400, ProblemCodes.validation_failed);
@@ -309,6 +321,9 @@ public sealed class FakeMessagingApi : IMessagingApi
         var page = ListConversationsAsync(1, 200, ct).GetAwaiter().GetResult();
         return Task.FromResult(new UnreadTotalDto(page.Items.Count(i => i.UnreadCount > 0)));
     }
+
+    /// <summary>Test and demo helper: the caller has read up to and including <paramref name="messageId"/> (the rest stays unread).</summary>
+    public void MarkReadUpTo(Guid conversationId, Guid messageId) => Mine(conversationId).LastRead[Me.Id] = messageId;
 
     /// <summary>A moderator locked the conversation: sending is 409 <c>conversation_closed</c> from now on.</summary>
     public void Lock(Guid conversationId) => _conversations.First(c => c.Id == conversationId).Locked = true;

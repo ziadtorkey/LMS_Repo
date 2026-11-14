@@ -86,3 +86,11 @@ html:lang(ar), html:lang(ar) body { font-family: Cairo, "Segoe UI", Tahoma, Aria
 /* Lesson plan: a module with its authoring buttons, and the add-module menu under a lesson. */
 .lms-module-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px 8px; min-width: 0; }
 .lms-plan-add { margin-block-start: 4px; }
+
+/* ---------- Messages page (M6 Task 21): search head, load earlier, unread divider, empty thread pane ---------- */
+.lms-convs-head { padding: 12px; border-block-end: 1px solid var(--mud-palette-lines-default); }
+.lms-convs-empty { margin: 0; padding: 16px; font-size: .875rem; color: var(--mud-palette-text-secondary); }
+.lms-load-earlier { display: flex; justify-content: center; padding-block: 8px; }
+.lms-unread-divider span { color: var(--mud-palette-primary); font-weight: 600; }
+.lms-thread-empty { margin: auto; }
+.lms-convs mark { background: color-mix(in srgb, var(--mud-palette-primary) 22%, transparent); color: inherit; border-radius: 2px; }

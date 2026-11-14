@@ -1,0 +1,225 @@
+@using Lms.Client.Components.Messaging
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.Messaging
+@using Lms.Shared
+@using Lms.Shared.Messaging
+@implements IAsyncDisposable
+@inject IMessagingApi Messaging
+@inject PermissionState PermState
+@inject NavigationManager Navigation
+@inject TimeProvider Clock
+@inject IJSRuntime Js
+
+@* One open conversation (spec #615 §2.5-§2.9): the header, the messages with day separators and one "new messages" divider, Load earlier, the composer or
+   the reason there is none. Message text is written as text, so nothing in it is markup. The server decides who may post, delete or read; this only shows it. *@
+@if (_loading)
+{
+    <LoadingState Lines="6" TestId="thread-loading" />
+}
+else if (_conversation is null)
+{
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="m-3" data-testid="thread-error">@L["Msg_Thread_Missing"]</MudAlert>
+}
+else
+{
+    var conversation = _conversation;
+    <ThreadPane Label="@Name">
+        <Header>
+            <ThreadHeader Name="@Name" IsGroup="conversation.Kind == ConversationKinds.Group" MemberCount="Members" OnBack="BackAsync" />
+        </Header>
+        <ChildContent>
+            @if (_nextBefore is not null)
+            {
+                <div class="lms-load-earlier">
+                    <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="LoadEarlierAsync" Disabled="_loadingEarlier" data-testid="thread-earlier">@L["Msg_Load_Earlier"]</MudButton>
+                </div>
+            }
+            @{ DateTime? lastDay = null; }
+            @foreach (var m in _messages)
+            {
+                var message = m;
+                var day = DayOf(message);
+                @if (lastDay != day)
+                {
+                    lastDay = day;
+                    <DaySeparator Text="@MessageTimes.Day(message.CreatedAtUtc, Clock.GetUtcNow().UtcDateTime, Clock.LocalTimeZone, L)" />
+                }
+                @if (message.Id == _dividerBefore)
+                {
+                    <div class="lms-day lms-unread-divider" role="separator" data-testid="thread-divider"><span>@L["Msg_Unread_Divider"]</span></div>
+                }
+                <MessageBubble @key="message.Id" Mine="IsMine(message)" From="@(conversation.Kind == ConversationKinds.Group ? SenderName(message) : null)"
+                               Text="@(message.Body ?? string.Empty)" TimeText="@MessageTimes.Clock(message.CreatedAtUtc, Clock.LocalTimeZone)" Removal="RemovalOf(message)"
+                               TestId="@($"msg-{message.Id}")">
+                    <Actions>
+                        @if (message.CanDelete && CanSend)
+                        {
+                            <MudIconButton Icon="@Icons.Material.Rounded.DeleteOutline" Size="Size.Small" aria-label="@L["Msg_Delete"]" OnClick="() => DeleteAsync(message)"
+                                           data-testid="@($"msg-delete-{message.Id}")" />
+                        }
+                    </Actions>
+                </MessageBubble>
+            }
+        </ChildContent>
+        <Footer>
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Dense="true" data-testid="thread-send-error">@_error</MudAlert>
+            }
+            @if (!conversation.CanPost || conversation.IsLocked || conversation.IsReadOnly)
+            {
+                <ComposerOff Reason="@ReasonText(conversation)">
+                    @if (conversation.ReadOnlyReason == ConversationReadOnlyReasons.GroupStudentsReadOnly && PrivateReplyTo is { } owner)
+                    {
+                        <MudButton Variant="Variant.Text" Size="Size.Small" Href="@($"messages/new?to={owner}")" data-testid="thread-reply-privately">@L["Msg_Reply_Privately"]</MudButton>
+                    }
+                </ComposerOff>
+            }
+            else if (CanSend)
+            {
+                <MessageComposer @bind-Value="_draft" OnSend="SendAsync" Sending="_sending" />
+            }
+        </Footer>
+    </ThreadPane>
+}
+
+@code {
+    [Parameter, EditorRequired] public Guid ConversationId { get; set; }
+
+    /// <summary>The unread count the inbox showed when the conversation was opened: it places the "new messages" divider.</summary>
+    [Parameter] public int UnreadCount { get; set; }
+
+    /// <summary>Raised after the conversation was marked read or a message was sent, so the inbox and the badge ask the server again.</summary>
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private ConversationDto? _conversation;
+    private readonly List<MessageDto> _messages = [];
+    private Guid? _nextBefore, _dividerBefore;
+    private bool _loading = true, _loadingEarlier, _sending, _scrollDown;
+    private string? _draft, _error;
+    private IJSObjectReference? _module;
+
+    private string Name => _conversation is null ? "" : !string.IsNullOrWhiteSpace(_conversation.Title)
+        ? _conversation.Title
+        : string.Join(", ", _conversation.Participants.Where(p => p.UserId != PermState.UserId).Select(p => CultureText.Pick(p.NameAr, p.NameEn)));
+
+    /// <summary>The reason the composer is off, in plain words. A block and a rule are one sentence on purpose (L18): it never says which, or why.</summary>
+    private string ReasonText(ConversationDto c)
+    {
+        var reason = c.ReadOnlyReason ?? (c.IsLocked ? ConversationReadOnlyReasons.Locked : null);
+        return reason is not null && ConversationReadOnlyReasons.All.Contains(reason) ? L[$"Msg_ReadOnly_{reason}"] : L["Msg_ReadOnly"];
+    }
+
+    private bool CanSend => PermState.Has(Lms.Shared.Authorization.Permissions.Messaging.Send);
+
+    private int Members => _conversation?.Participants.Count(p => !p.Left) ?? 0;
+
+    /// <summary>A student in a group reads it and answers the teacher privately (D74).</summary>
+    private Guid? PrivateReplyTo => _conversation is { Kind: ConversationKinds.Group, OwnerUserId: { } o } ? o : null;
+
+    private bool IsMine(MessageDto m) => m.SenderUserId is { } s && s == PermState.UserId;
+
+    private string SenderName(MessageDto m) => m.SenderUserId is null ? L["Msg_Former_User"] : CultureText.Pick(m.SenderNameAr, m.SenderNameEn);
+
+    private MessageRemoval RemovalOf(MessageDto m) => m.State switch
+    {
+        MessageStates.Removed => MessageRemoval.ByModerator,
+        MessageStates.Deleted => MessageRemoval.BySender,
+        _ => MessageRemoval.None,
+    };
+
+    private DateTime DayOf(MessageDto m) => MessageTimes.DayOf(m.CreatedAtUtc, Clock.LocalTimeZone);
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        var (loaded, failed) = await ApiCalls.RunAsync(async () =>
+        {
+            var c = await Messaging.GetConversationAsync(ConversationId);
+            var page = await Messaging.GetMessagesAsync(ConversationId, new MessageQuery());
+            return (c, page);
+        }, Navigation);
+        _loading = false;
+        if (failed || loaded.c is null) return;
+
+        _conversation = loaded.c;
+        _messages.AddRange(loaded.page.Items.Reverse());
+        _nextBefore = loaded.page.NextBeforeId;
+        _dividerBefore = DividerFor(UnreadCount);
+        _scrollDown = true;
+
+        await ApiCalls.RunAsync(() => Messaging.MarkReadAsync(ConversationId), Navigation, L, _ => { }); // a failed mark-read stays silent: the next visit marks it
+        await OnChanged.InvokeAsync();
+    }
+
+    /// <summary>The oldest of the last <paramref name="unread"/> messages written by other people: the divider goes above it, once.</summary>
+    private Guid? DividerFor(int unread)
+    {
+        if (unread <= 0) return null;
+        var theirs = _messages.Where(m => !IsMine(m)).ToList();
+        return theirs.Count == 0 ? null : theirs[Math.Max(0, theirs.Count - unread)].Id;
+    }
+
+    private async Task LoadEarlierAsync()
+    {
+        if (_nextBefore is null) return;
+        _loadingEarlier = true;
+        var (page, _) = await ApiCalls.RunAsync(() => Messaging.GetMessagesAsync(ConversationId, new MessageQuery(_nextBefore)), Navigation);
+        _loadingEarlier = false;
+        if (page is null) return;
+        _messages.InsertRange(0, page.Items.Reverse());
+        _nextBefore = page.NextBeforeId;
+    }
+
+    private async Task SendAsync()
+    {
+        var text = _draft?.Trim();
+        if (string.IsNullOrEmpty(text) || _sending) return;
+        _sending = true; _error = null;
+        MessageDto? sent = null;
+        var ok = await ApiCalls.RunAsync(async () => sent = await Messaging.SendAsync(ConversationId, new SendMessageRequest(text, null)), Navigation, L, e => _error = e);
+        _sending = false;
+        if (!ok || sent is null) return; // the text stays in the composer
+        _draft = null;
+        _messages.Add(sent);
+        _scrollDown = true;
+        await OnChanged.InvokeAsync();
+    }
+
+    private async Task DeleteAsync(MessageDto message)
+    {
+        _error = null;
+        var ok = await ApiCalls.RunAsync(() => Messaging.DeleteMessageAsync(ConversationId, message.Id), Navigation, L, e => _error = e);
+        if (!ok) return;
+        var i = _messages.FindIndex(m => m.Id == message.Id);
+        if (i >= 0) _messages[i] = message with { State = MessageStates.Deleted, Body = null, CanDelete = false };
+        await OnChanged.InvokeAsync();
+    }
+
+    private Task BackAsync()
+    {
+        Navigation.NavigateTo("messages");
+        return Task.CompletedTask;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!_scrollDown) return;
+        _scrollDown = false;
+        try
+        {
+            _module ??= await Js.InvokeAsync<IJSObjectReference>("import", "./js/thread.js");
+            await _module.InvokeVoidAsync("scrollToEnd", "[data-testid=thread-body]");
+        }
+        catch (JSException) { }
+        catch (InvalidOperationException) { }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_module is not null)
+        {
+            try { await _module.DisposeAsync(); } catch (JSDisconnectedException) { }
+        }
+    }
+}

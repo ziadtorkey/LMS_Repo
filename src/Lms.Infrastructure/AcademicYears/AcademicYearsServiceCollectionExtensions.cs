@@ -9,6 +9,8 @@ public static class AcademicYearsServiceCollectionExtensions
     {
         services.AddScoped<IAcademicYearResolver, AcademicYearResolver>();
         services.AddScoped<IAcademicCalendar, AcademicCalendar>();
+        services.AddScoped<TermStructureService>();
+        services.AddScoped<ITermDependants, NoTermDependants>(); // each module that hangs data on terms registers its own (M5 L8)
         return services;
     }
 }
