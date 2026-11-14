@@ -230,6 +230,31 @@ html[data-theme="dark"] .mud-button-outlined { border-color: #334155; }
 .lms-ann-scopes { flex-wrap: wrap; }
 .lms-reach { margin: 0; }
 @media (max-width: 599.98px) { .lms-notif-panel { inline-size: 100%; } .lms-role-chip { min-block-size: 44px; } }
+.lms-prefs th:not(:first-child), .lms-prefs td { text-align: center; }
+.lms-prefs .lms-prefs-event { text-align: start; font-weight: 500; }
+.lms-chan-head { display: inline-flex; flex-direction: column; align-items: center; gap: 2px; }
+.lms-chan-caption { font-size: .75rem; font-weight: 400; color: var(--mud-palette-text-secondary); }
+.lms-chan-link { font-size: .75rem; font-weight: 500; color: var(--mud-palette-primary); }
+.lms-prefs-cell { display: inline-flex; align-items: center; gap: 4px; }
+.lms-prefs-lock { color: var(--mud-palette-text-secondary); }
+.lms-prefs-channels { display: none; margin: 0; padding: 12px 16px; list-style: none; flex-direction: column; gap: 6px; border-block-end: 1px solid var(--mud-palette-lines-default); }
+.lms-prefs-channels li { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; font-size: .875rem; }
+.lms-prefs-channel-name { font-weight: 500; }
+.lms-prefs-note { display: flex; align-items: center; gap: 6px; margin: 0; padding: 10px 16px; font-size: .8125rem; color: var(--mud-palette-text-secondary); border-block-start: 1px solid var(--mud-palette-lines-default); }
+.lms-push-alert-body { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 16px; }
+.lms-push-alert-text { flex: 1 1 240px; display: flex; flex-direction: column; gap: 2px; }
+.lms-mod-decision [role="radiogroup"] { display: flex; flex-direction: column; gap: 8px; }
+.lms-mod-option { align-items: flex-start; cursor: pointer; border: 2px solid transparent; }
+.lms-mod-option.selected { border-color: var(--mud-palette-primary); }
+.lms-mod-radio { margin-block-start: 4px; inline-size: 18px; block-size: 18px; accent-color: var(--mud-palette-primary); flex: none; }
+.lms-mod-severe { color: var(--mud-palette-error); }
+.lms-mod-days { max-inline-size: 180px; margin-block-start: 6px; }
+.lms-flagged { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+@media (max-width: 599.98px) {
+    .lms-prefs-channels { display: flex; }
+    .lms-prefs td { justify-content: space-between; }
+    .lms-prefs .lms-prefs-event { display: block; padding-block-end: 4px; }
+}
 @media (max-width: 1099.98px) { .lms-mod { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 899.98px) {
     .lms-inbox { grid-template-columns: minmax(0, 1fr); block-size: auto; min-block-size: 0; overflow: visible; }
