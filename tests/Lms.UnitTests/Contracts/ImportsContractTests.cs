@@ -41,7 +41,7 @@ public partial class ImportsContractTests
     [Fact]
     public void Identity_provider_kinds_and_match_values_are_unique()
     {
-        Assert.Equal(["Oidc", "AzureAd"], IdentityProviderKinds.All);
+        Assert.Equal(["Oidc", "AzureAd", "Saml", "Ldap"], IdentityProviderKinds.All);
         Assert.Equal(["Email", "NationalId"], ExternalMatchBy.All);
         Assert.Equal(IdentityProviderKinds.All.Count, IdentityProviderKinds.All.Distinct(StringComparer.Ordinal).Count());
         Assert.Equal(ExternalMatchBy.All.Count, ExternalMatchBy.All.Distinct(StringComparer.Ordinal).Count());

@@ -33,6 +33,10 @@ public static class ProblemCodes
     public const string placeholder_unknown = nameof(placeholder_unknown);
     public const string export_too_large = nameof(export_too_large);
     public const string year_overlap = nameof(year_overlap);
+    /// <summary>
+    /// The academic year is Closed (409). Since M7 (owner decision D88) a closed year locks not only grades and attendance but also <b>forums and messaging</b> of its class courses:
+    /// every write there answers <c>year_closed</c>, and a conversation of a closed year reads as read-only with the reason <c>YearClosed</c> (<c>ConversationReadOnlyReasons</c>, added when this wave is rebased on the M6 contract, #724).
+    /// </summary>
     public const string year_closed = nameof(year_closed);
     public const string year_active = nameof(year_active);
     public const string active_year_exists = nameof(active_year_exists);

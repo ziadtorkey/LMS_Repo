@@ -13,7 +13,7 @@ public static class BuiltInRoleDefaults
     /// version 7 = the M4b wave 3b defaults (Packages.*); version 8 = the M5 wave 1 defaults (Grades.*). Bump (and add the new permissions to an
     /// <see cref="IntroducedInVersion8"/>-style set) when a later milestone adds defaults.
     /// </summary>
-    public const int CurrentVersion = 8;
+    public const int CurrentVersion = 12;
 
     /// <summary>The 19 permissions that existed when clients were provisioned under M0 (defaults version 0).</summary>
     public static readonly IReadOnlySet<string> M0Baseline = new HashSet<string>
@@ -98,13 +98,15 @@ public static class BuiltInRoleDefaults
     };
 
     /// <summary>
-    /// Permissions introduced by defaults version 12 (M7 wave 1: year close, grade-change approval, promotion, withdrawal). <see cref="CurrentVersion"/> is set to 12 by the Lead after
-    /// M6 (version 11) lands; this wave only defines the set and its <see cref="IntroducedIn"/> mapping.
+    /// Permissions introduced by defaults version 12 (M7 waves 1 and 2: year close, grade-change approval, promotion, withdrawal, the withdrawal-reason list). Version 12 follows M6 (version 11).
+    /// <para><b>D16 / D28 escalation guard (M7 L20).</b> A user may only create, edit or assign a role whose permissions they hold themselves (<c>RolePermissionRules</c>, <c>permission_escalation</c>).
+    /// The Manager holds the year-end permissions of wave 1 except <see cref="Permissions.AcademicYears"/> <c>Close</c> and <see cref="Permissions.Students"/> <c>ManageWithdrawalReasons</c>: those two stay with the Org Admin
+    /// (D17, D82), so a Manager can never assign (or build) a role that closes a year or edits the reasons list. Giving the Manager either permission would let them hand it on; do not, without a decision.</para>
     /// </summary>
     public static readonly IReadOnlySet<string> IntroducedInVersion12 = new HashSet<string>
     {
         Permissions.AcademicYears.Close, Permissions.Grades.ChangeRequest, Permissions.Grades.ChangeApprove, Permissions.Promotion.Run,
-        Permissions.Students.Withdraw, Permissions.Students.Readmit, Permissions.Students.ViewArchive,
+        Permissions.Students.Withdraw, Permissions.Students.Readmit, Permissions.Students.ViewArchive, Permissions.Students.ManageWithdrawalReasons,
     };
 
     /// <summary>Permissions introduced by defaults version 8 (M5 wave 1: grading).</summary>

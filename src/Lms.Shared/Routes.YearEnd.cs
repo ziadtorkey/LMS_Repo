@@ -82,8 +82,17 @@ public static partial class Routes
     /// <summary>GET <c>ArchiveQuery</c> → <c>PagedResult&lt;ArchivedStudentDto&gt;</c> — <c>Students.ViewArchive</c>; unit scope, server-paged, read only.</summary>
     public const string StudentsArchive = Students + "/archive";
 
-    /// <summary>GET (<c>Students.Withdraw</c>) → <c>IReadOnlyList&lt;WithdrawalReasonDto&gt;</c> and PUT (<c>SaveWithdrawalReasonsRequest</c>) — the client-root admin (D18, D82).</summary>
+    /// <summary>
+    /// GET (<c>Students.Withdraw</c>) → <c>IReadOnlyList&lt;WithdrawalReasonDto&gt;</c> (every reason, active or not, sorted) and PUT (<c>SaveWithdrawalReasonsRequest</c> → the saved list) —
+    /// <b><c>Students.ManageWithdrawalReasons</c></b> (Org Admin only, D18/D82) at the client root (403 below it). The whole list is replaced; a key kept in history is never removed (omit it and it turns inactive);
+    /// <c>Other</c> is built in and not part of the list (400 <c>validation_failed</c> when sent); keys are unique, 1-50 characters of letters, digits and <c>-_</c>, at most <see cref="Lms.Shared.YearEnd.WithdrawalReasonLimits.MaxReasons"/> reasons; audited (<c>WithdrawalReason</c>).
+    /// </summary>
     public const string WithdrawalReasons = "/api/withdrawal-reasons";
+
+    // --- year-end checklist (D86; M7 wave 2)
+
+    /// <summary>GET (<c>AcademicYears.View</c>) → <c>YearEndChecklistDto</c>: the steps of every year the caller manages that ends within <c>Years.EndChecklistDays</c> (or is already closed with steps left); computed on the fly, nothing stored; empty for a caller with no year to act on.</summary>
+    public const string MeYearEndChecklist = "/api/me/year-end-checklist";
 
     // --- helpers
     public static string AcademicYearClosePreview(Guid yearId) => $"{AcademicYear(yearId)}/close-preview";

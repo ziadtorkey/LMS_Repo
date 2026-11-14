@@ -394,7 +394,7 @@ public sealed class BuiltInRoleReconcilerTests(LmsApiFactory factory)
         await ReconcileAsync();
 
         var teacherPermissions = await PermissionsOfAsync(tree, BuiltInRoles.Teacher);
-        Assert.Equal(["Grades.Manage", "Grades.Publish", "Grades.View"], teacherPermissions.Where(p => p.StartsWith("Grades.", StringComparison.Ordinal)).Order(StringComparer.Ordinal));
+        Assert.Equal(["Grades.ChangeRequest", "Grades.Manage", "Grades.Publish", "Grades.View"], teacherPermissions.Where(p => p.StartsWith("Grades.", StringComparison.Ordinal)).Order(StringComparer.Ordinal));
         Assert.DoesNotContain(Permissions.Library.Manage, teacherPermissions);
         Assert.Contains(Permissions.Grades.ConfigureScales, await PermissionsOfAsync(tree, BuiltInRoles.OrgAdmin));
         Assert.Contains(Permissions.Grades.ConfigureScales, await PermissionsOfAsync(tree, BuiltInRoles.Manager));
@@ -444,5 +444,34 @@ public sealed class BuiltInRoleReconcilerTests(LmsApiFactory factory)
             .RunAsync();
 
         Assert.Contains(Permissions.LevelTypes.View, await PermissionsOfAsync(tree, BuiltInRoles.OrgAdmin));
+    }
+
+    [Fact]
+    public async Task Reconcile_adds_the_M7_year_end_defaults_to_a_version_11_client_and_the_Manager_never_gets_Close_or_the_reasons_permission()
+    {
+        var tree = await AccessTestData.SeedAsync(factory, "RCM7");
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            var rows = await db.RolePermissions.Where(p => p.OrganizationId == tree.Org.Id).ToListAsync();
+            db.RolePermissions.RemoveRange(rows.Where(p => BuiltInRoleDefaults.IntroducedInVersion12.Contains(p.Permission)));
+            foreach (var role in await db.Roles.Where(r => r.OrganizationId == tree.Org.Id).ToListAsync())
+            {
+                db.Entry(role).Property(nameof(Role.DefaultsVersion)).CurrentValue = 11;
+            }
+
+            await db.SaveChangesAsync();
+        }
+
+        await ReconcileAsync();
+
+        var admin = await PermissionsOfAsync(tree, BuiltInRoles.OrgAdmin);
+        var manager = await PermissionsOfAsync(tree, BuiltInRoles.Manager);
+        Assert.All(BuiltInRoleDefaults.IntroducedInVersion12, p => Assert.Contains(p, admin));
+        Assert.Contains(Permissions.Grades.ChangeApprove, manager);
+        Assert.Contains(Permissions.Promotion.Run, manager);
+        Assert.DoesNotContain(Permissions.AcademicYears.Close, manager);
+        Assert.DoesNotContain(Permissions.Students.ManageWithdrawalReasons, manager);
+        Assert.Contains(Permissions.Students.Withdraw, await PermissionsOfAsync(tree, BuiltInRoles.Counselor));
+        Assert.DoesNotContain(Permissions.Students.Readmit, await PermissionsOfAsync(tree, BuiltInRoles.Counselor));
     }
 }

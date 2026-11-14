@@ -29,7 +29,7 @@ public class AccessContractTests
             "PackageUpload", "ScormPackage", "H5pContent",
             "LiveSessionSeries", "LiveSession",
             "GradingScale", "WeightTemplate", "Gradebook", "GradeCategory", "GradeItem", "GradeEntry", "GradeSnapshot",
-            "GradeChangeRequest", "PromotionRun", "StudentExit",
+            "GradeChangeRequest", "PromotionRun", "StudentExit", "WithdrawalReason", "YearOpenRun",
         ], AuditCatalog.EntityTypes);
     }
 

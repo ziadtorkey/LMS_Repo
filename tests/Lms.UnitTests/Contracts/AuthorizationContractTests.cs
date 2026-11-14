@@ -56,6 +56,7 @@ public partial class AuthorizationContractTests
             "Grades.View", "Grades.Manage", "Grades.Publish", "Grades.ConfigureScales", "Grades.ViewReports", "Grades.ViewOwn",
             // M7 wave 1 (year end)
             "AcademicYears.Close", "Grades.ChangeRequest", "Grades.ChangeApprove", "Promotion.Run", "Students.Withdraw", "Students.Readmit", "Students.ViewArchive",
+            "Students.ManageWithdrawalReasons",
         ];
         Assert.Equal(expected.Order(StringComparer.Ordinal), Permissions.All.Order(StringComparer.Ordinal));
     }

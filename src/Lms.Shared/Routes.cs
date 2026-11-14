@@ -128,6 +128,10 @@ public static partial class Routes
     public const string IdentityProviderPattern = IdentityProviders + "/{id:guid}";
     public const string IdentityProviderTestPattern = IdentityProviderPattern + "/test";
 
+    /// <summary>GET (<c>IdentityProviders.View</c>) → <c>SamlSpMetadataDto</c>: the SP entity id, ACS URL and metadata XML of a Saml provider (404 for another kind), M7 wave 2.</summary>
+    public const string IdentityProviderSamlMetadataPattern = IdentityProviderPattern + "/saml/metadata";
+
     public static string IdentityProvider(Guid id) => $"{IdentityProviders}/{id}";
     public static string IdentityProviderTest(Guid id) => $"{IdentityProvider(id)}/test";
+    public static string IdentityProviderSamlMetadata(Guid id) => $"{IdentityProvider(id)}/saml/metadata";
 }

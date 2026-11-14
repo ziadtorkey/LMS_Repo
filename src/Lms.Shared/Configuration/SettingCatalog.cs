@@ -89,6 +89,8 @@ public static class SettingCatalog
             AllowedValues: ["PointsWeighted", "PercentAverage"]),
         new(SettingKeys.GradesDecimalPlaces.Name, SettingValueKinds.Int, SettingCategories.Academic, "2", Min: 0, Max: 4),
         new(SettingKeys.AcademicYearsTermsPerYear.Name, SettingValueKinds.Int, SettingCategories.Academic, "2", Min: 2, Max: 3, ClientLevelOnly: true),
+        new(SettingKeys.YearsPromotionUndoWindowMinutes.Name, SettingValueKinds.Int, SettingCategories.Academic, "10", Min: 1, Max: 60, ClientLevelOnly: true),
+        new(SettingKeys.YearsEndChecklistDays.Name, SettingValueKinds.Int, SettingCategories.Academic, "60", Min: 7, Max: 180, ClientLevelOnly: true),
     ];
 
     /// <summary>The definition with this exact (case-sensitive) name, or null.</summary>

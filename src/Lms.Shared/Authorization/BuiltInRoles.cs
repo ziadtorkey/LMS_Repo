@@ -74,11 +74,14 @@ public static class BuiltInRoles
              Permissions.Grades.ConfigureScales, Permissions.Grades.ViewReports,
              // M7 wave 1 (D78-D82, D17): close year (Org Admin only), approve grade changes, run the promotion, withdraw, re-admit, read the archive.
              Permissions.AcademicYears.Close, Permissions.Grades.ChangeRequest, Permissions.Grades.ChangeApprove, Permissions.Promotion.Run,
-             Permissions.Students.Withdraw, Permissions.Students.Readmit, Permissions.Students.ViewArchive]),
+             Permissions.Students.Withdraw, Permissions.Students.Readmit, Permissions.Students.ViewArchive,
+             // M7 wave 2 (D82, D18): the withdrawal-reason list is edited by the Org Admin only (never the Manager).
+             Permissions.Students.ManageWithdrawalReasons]),
         new(Manager, RoleBaseKinds.Staff,
             new("مدير المدرسة", "School Manager"),
             new("العميد", "Dean"),
-            // D16: a Manager may assign roles; which roles is limited by the escalation guard (M1 Task 21).
+            // D16: a Manager may assign roles; which roles is limited by the escalation guard (M1 Task 21). The M7 year-end block below deliberately omits AcademicYears.Close
+            // and Students.ManageWithdrawalReasons (Org Admin only, D17/D82): a Manager must never be able to hand those on (tested in YearEndWave2ContractTests).
             [Permissions.OrgUnits.View, Permissions.Roles.View,
              Permissions.Assignments.View, Permissions.Assignments.Create, Permissions.Assignments.Delete,
              Permissions.Settings.View, Permissions.Policies.View, Permissions.Audit.View,
