@@ -131,6 +131,18 @@ public sealed class AttendanceTakePage(IPage page)
     public ILocator DraftBanner => page.GetByTestId("att-draft-banner"); // #637
     public ILocator Error => page.GetByTestId("att-save-error"); // #637
 
+    /// <summary>The student ids of the roster rows, read from <c>att-row-{studentId}</c> (for the seeded demo, whose ids the scenario does not know).</summary>
+    public async Task<IReadOnlyList<Guid>> StudentIdsAsync()
+    {
+        var ids = new List<Guid>();
+        foreach (var row in await Rows.AllAsync())
+        {
+            ids.Add(Guid.Parse((await row.GetAttributeAsync("data-testid"))!["att-row-".Length..]));
+        }
+
+        return ids;
+    }
+
     /// <summary>The row of a student (test id proposed: att-row-{studentId}).</summary>
     public ILocator Row(Guid studentId) => page.GetByTestId($"att-row-{studentId}");
 
@@ -146,4 +158,24 @@ public sealed class AttendanceTakePage(IPage page)
     /// <summary>True when the page does not scroll sideways (the 360 px rule of the design spec).</summary>
     public async Task<bool> NoHorizontalScrollAsync() =>
         await page.EvaluateAsync<bool>("() => document.documentElement.scrollWidth <= document.documentElement.clientWidth");
+}
+
+
+/// <summary>The attendance alerts (<c>/attendance/alerts</c>) and the excuse review queue (<c>/excuses/review</c>), ids from the FE map.</summary>
+public sealed class AttendanceFollowUpPages(IPage page)
+{
+    public ILocator AlertRows => page.Locator("[data-testid^='alert-formula-']");
+    public ILocator ReviewRows => page.Locator("[data-testid^='review-open-']");
+
+    public async Task OpenAlertsAsync()
+    {
+        await page.GotoAsync("/attendance/alerts");
+        await page.GetByTestId("alerts-title").WaitForAsync();
+    }
+
+    public async Task OpenReviewAsync()
+    {
+        await page.GotoAsync("/excuses/review");
+        await page.GetByTestId("review-page-title").WaitForAsync();
+    }
 }
