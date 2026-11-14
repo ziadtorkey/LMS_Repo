@@ -4740,6 +4740,82 @@ namespace Lms.Infrastructure.Persistence.Migrations
                     b.ToTable("Periods", (string)null);
                 });
 
+            modelBuilder.Entity("Lms.Domain.Timetable.TimetableException", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("ExceptionKey")
+                        .HasMaxLength(60)
+                        .HasColumnType("varchar(60)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<Guid?>("NewPeriodId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<Guid>("OrgUnitId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("OrgUnitPath")
+                        .IsRequired()
+                        .HasColumnType("varchar(400) CHARACTER SET ascii COLLATE ascii_general_ci");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("SlotId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid?>("SubstituteUserId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExceptionKey")
+                        .IsUnique();
+
+                    b.HasIndex("NewPeriodId");
+
+                    b.HasIndex("OrgUnitId");
+
+                    b.HasIndex("OrganizationId", "OrgUnitPath");
+
+                    b.HasIndex("SlotId", "Date");
+
+                    b.HasIndex("SubstituteUserId", "Date");
+
+                    b.ToTable("TimetableExceptions", (string)null);
+                });
+
             modelBuilder.Entity("Lms.Domain.Timetable.TimetableSlot", b =>
                 {
                     b.Property<Guid>("Id")
@@ -6188,6 +6264,26 @@ namespace Lms.Infrastructure.Persistence.Migrations
                     b.HasOne("Lms.Domain.Organizations.OrgUnit", null)
                         .WithMany()
                         .HasForeignKey("OrgUnitId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Lms.Domain.Timetable.TimetableException", b =>
+                {
+                    b.HasOne("Lms.Domain.Timetable.Period", null)
+                        .WithMany()
+                        .HasForeignKey("NewPeriodId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Lms.Domain.Organizations.OrgUnit", null)
+                        .WithMany()
+                        .HasForeignKey("OrgUnitId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Lms.Domain.Timetable.TimetableSlot", null)
+                        .WithMany()
+                        .HasForeignKey("SlotId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
