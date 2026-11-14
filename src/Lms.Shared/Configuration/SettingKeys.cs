@@ -95,4 +95,11 @@ public static class SettingKeys
 
     /// <summary>Terms per academic year, 2 or 3 (client level, D62).</summary>
     public static readonly SettingKey<int> AcademicYearsTermsPerYear = new("AcademicYears.TermsPerYear", 2);
+
+    // M5 wave 2 (M5 plan Task 2).
+    /// <summary>The school week as a JSON array of <c>WorkingDayNames</c>, Sunday to Thursday by default (D58); read through the unit hierarchy.</summary>
+    public static readonly SettingKey<IReadOnlyList<string>> TimetableWorkingDays = new("Timetable.WorkingDays", ["Sun", "Mon", "Tue", "Wed", "Thu"]);
+
+    /// <summary>What a slot save does with a clash: <c>Block</c> (default) or <c>Warn</c> (FR-TT-03).</summary>
+    public static readonly SettingKey<string> TimetableConflictMode = new("Timetable.ConflictMode", "Block");
 }

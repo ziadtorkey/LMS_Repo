@@ -258,6 +258,24 @@ public static class Permissions
         public const string View = "Packages.View";
     }
 
+    // M5 wave 2 (M5 plan Task 2): periods, timetable and exceptions (FR-TT-01..05, D60). Unit scope; a supervisor reads only supervised courses (L16);
+    // Timetable.ViewOwn is a SelfService permission (a teacher's own slots, a student's class, a guardian's children).
+    /// <summary>Timetable: periods, the weekly grid of a class, slots, publishing, exceptions and views.</summary>
+    public static class Timetable
+    {
+        /// <summary>Read periods and the published timetable of a class (drafts only with Manage).</summary>
+        public const string View = "Timetable.View";
+
+        /// <summary>Build the weekly grid: save, move, delete, validate, publish and copy slots, export, and edit exceptions and substitutes.</summary>
+        public const string Manage = "Timetable.Manage";
+
+        /// <summary>Define the periods of a unit (working days and conflict mode are settings).</summary>
+        public const string Configure = "Timetable.Configure";
+
+        /// <summary>Own timetable: a teacher's slots, a student's class, a guardian's children (published slots only).</summary>
+        public const string ViewOwn = "Timetable.ViewOwn";
+    }
+
     // M5 wave 1 (M5 plan Task 1). Teacher: own ClassCourses with an assignment active today (L15); Supervisor: supervised courses;
     // Student and Guardian: only their own data (ViewOwn is a SelfService permission), published items only (L6).
     /// <summary>Grading: scales, weight templates, the gradebook, publishing, grade reads and reports (FR-GRD-01..05, D58, D59).</summary>
@@ -320,7 +338,7 @@ public static class Permissions
     /// them out grants no power over others.
     /// </summary>
     public static IReadOnlyList<string> SelfService { get; } =
-        ImmutableArray.Create(Students.SelfEdit, Students.ViewChildren, CourseAssignments.Submit, Quizzes.Attempt, Grades.ViewOwn);
+        ImmutableArray.Create(Students.SelfEdit, Students.ViewChildren, CourseAssignments.Submit, Quizzes.Attempt, Grades.ViewOwn, Timetable.ViewOwn);
 
     /// <summary>The caller's permissions plus <see cref="SelfService"/>, for the escalation guards.</summary>
     public static IReadOnlySet<string> WithSelfService(IEnumerable<string> callerPermissions) =>
