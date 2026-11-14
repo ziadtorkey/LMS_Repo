@@ -33,7 +33,7 @@ public sealed partial class AcademicCatalogContractTests
             Rule(BuiltInRoles.Teacher).Permissions.Order(StringComparer.Ordinal));
         Assert.Equal(
             ["Attendance.View", "Blueprints.Edit", "Blueprints.Publish", "Courses.Allocate", "Courses.Delete", "Courses.Update",
-             "Enrollment.ApproveException", "Grades.View", "Grades.ViewReports", "Students.View", "TeacherAssignments.Manage"],
+             "Enrollment.ApproveException", "Grades.View", "Grades.ViewReports", "Students.View", "TeacherAssignments.Manage", "Timetable.View"],
             Rule(BuiltInRoles.Supervisor).Permissions.Order(StringComparer.Ordinal));
         Assert.Equal(
             ["CourseAssignments.Submit", "CourseAssignments.View", "Forums.Post", "Forums.View", "LessonPlans.View",
