@@ -27,6 +27,7 @@ public abstract class ClientTestContext : BunitContext, IAsyncLifetime
     protected FakeStaffApi Staff { get; } = new();
     protected FakeYearsApi YearsApi { get; } = new();
     protected FakeNotificationsApi NotificationsApi { get; } = new();
+    protected Lms.Client.Services.Messaging.FakeMessagingApi MessagingApi { get; } = new();
     protected FakeNotificationConnection NotificationConnection { get; } = new();
 
     /// <summary>Grants the active context these permissions (and selects a context).</summary>
@@ -57,6 +58,8 @@ public abstract class ClientTestContext : BunitContext, IAsyncLifetime
         Services.AddSingleton<INotificationsApi>(NotificationsApi);
         Services.AddSingleton<INotificationConnection>(NotificationConnection);
         Services.AddScoped<INotificationFeed, NotificationFeed>();
+        Services.AddSingleton<Lms.Client.Services.Messaging.IMessagingApi>(MessagingApi);
+        Services.AddScoped<Lms.Client.Services.Messaging.IMessagingState, Lms.Client.Services.Messaging.MessagingState>();
         AddAuthorization().SetAuthorized("tester");
     }
 }

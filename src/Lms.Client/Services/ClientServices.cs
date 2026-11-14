@@ -29,6 +29,7 @@ public static class ClientServices
         services.AddScoped<PermissionState>();
         services.AddScoped<IYearStore, YearStore>();
         services.AddScoped<INotificationFeed, NotificationFeed>();
+        services.AddScoped<Lms.Client.Services.Messaging.IMessagingState, Lms.Client.Services.Messaging.MessagingState>();
         services.AddSingleton<Lms.Client.Services.Packages.PackagePollOptions>();
 
         if (configuration.GetValue<bool>("Lms:UseFakeApi"))

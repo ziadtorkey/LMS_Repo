@@ -2109,4 +2109,6 @@
   <data name="Error_channel_not_allowed" xml:space="preserve"><value>This channel is not used for this account.</value></data>
   <data name="Comms_ChannelState_NotAllowed" xml:space="preserve"><value>Not available for this account</value></data>
   <data name="Comms_PrefSource_Policy" xml:space="preserve"><value>Set by the platform</value></data>
+  <data name="Nav_Messages" xml:space="preserve"><value>Messages</value></data>
+  <data name="Msg_Nav_Unread" xml:space="preserve"><value>{0} unread conversations</value></data>
 </root>
