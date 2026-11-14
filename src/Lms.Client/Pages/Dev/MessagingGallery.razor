@@ -50,7 +50,9 @@ else
                 <Footer>
                     @if (_readOnly)
                     {
-                        <ComposerOff Reason="@T("يمكنك قراءة هذه المحادثة فقط. لا تسمح قواعد المراسلة في مدرستك للطلاب بمراسلة طلاب آخرين.", "You can only read this conversation. Messaging rules at your school don't allow students to message other students.")" />
+                        <ComposerOff Reason="@L["Msg_ReadOnly_ClassGroup"]">
+                            <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="lms-touch mt-2" StartIcon="@Icons.Material.Rounded.Edit">@L["Msg_MessageTeacher"]</MudButton>
+                        </ComposerOff>
                     }
                     else
                     {
@@ -169,23 +171,45 @@ else
         </div>
         <ModerationDecision SenderName="Yousef" @bind-Value="_decision" @bind-Days="_days" />
     </SectionCard>
+
+    <SectionCard Title="@T("رسالة جديدة (مدير)", "New message (manager)")" TestId="gallery-compose">
+        <ComposeMessageForm Draft="_message" SearchFunc="SearchRecipientsAsync" OnAttach="() => { }" />
+    </SectionCard>
+
+    <SectionCard Title="@T("قواعد المراسلة", "Messaging rules")" Flush="true" TestId="gallery-rules-matrix">
+        <div class="pa-3"><MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" Icon="@Icons.Material.Rounded.Lock">@L["Rules_Locked"]</MudAlert></div>
+        <MessagingRulesMatrix Cells="_rules" />
+    </SectionCard>
 }
 
 @code {
+    private readonly MessageDraft _message = new();
+    private readonly Dictionary<(MessagingRole From, MessagingRole To), RuleCellValue> _rules = MessagingRulesMatrix.D69Defaults();
+
+    // The gallery's stand-in for the server's rules-filtered recipients read, as a manager sees it (D69: the safeguarding row, never a student).
+    private Task<IEnumerable<RecipientChoice>> SearchRecipientsAsync(string text, CancellationToken token) => Task.FromResult<IEnumerable<RecipientChoice>>(
+    [
+        new("l1", RecipientKind.GroupLabel, L["Msg_Picker_People"]),
+        new("d69", RecipientKind.Safeguarding, L["Msg_D69_Title"]),
+        new("u1", RecipientKind.Person, "Huda Al-Harbi", T("ولية أمر عمر صالح · 10-أ", "Guardian of Omar Saleh · 10-A")),
+        new("u2", RecipientKind.Person, "Omar Saleh", T("معلم · فيزياء 1", "Teacher · Physics 1")),
+        new("l2", RecipientKind.GroupLabel, L["Msg_Picker_Classes"]),
+        new("g1", RecipientKind.Group, T("الصف العاشر — الطلاب وأولياء الأمور", "Grade 10 — students and guardians"), SizeText: T("52 شخصًا", "52 people")),
+        new("g2", RecipientKind.Group, T("فيزياء 1 · 10-ب — أولياء الأمور", "Physics 1 · 10-B — guardians"), DisabledReason: T("غير مسموح: لا تدرّس 10-ب", "Not allowed: you don’t teach 10-B")),
+    ]);
     private ModerationAction? _decision = ModerationAction.RemoveAndRestrict;
     private int _days = 7;
     private readonly List<PreferenceRow> _prefRows =
     [
         new() { Key = "msg", Label = "New message", On = { [NotificationChannel.Email] = true, [NotificationChannel.Push] = true } },
         new() { Key = "ann-pin", Label = "Pinned announcement", On = { [NotificationChannel.Email] = true }, Locked = { NotificationChannel.Email } },
-        new() { Key = "abs", Label = "Absence of my child", On = { [NotificationChannel.Email] = true, [NotificationChannel.Sms] = true }, Locked = { NotificationChannel.Email, NotificationChannel.Sms } },
+        new() { Key = "abs", Label = "Absence of my child", On = { [NotificationChannel.Email] = true, [NotificationChannel.Push] = true }, Locked = { NotificationChannel.Email } },
     ];
 
     private IReadOnlyList<ChannelColumn> PrefColumns =>
     [
         new(NotificationChannel.InApp, T("تعمل دائمًا", "Always on")),
         new(NotificationChannel.Email, "huda@…"),
-        new(NotificationChannel.Sms, "+966 5…"),
         new(NotificationChannel.Push, T("هذا الجهاز: متوقفة", "This device: off")),
     ];
     private bool _showThread = true, _readOnly;
