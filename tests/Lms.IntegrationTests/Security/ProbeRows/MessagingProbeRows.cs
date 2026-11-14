@@ -30,7 +30,7 @@ public sealed class MessagingProbeRows : IProbeRowModule
         new("conversation send", HttpMethod.Post, Routes.ConversationMessagesPattern,
             (_, _) => Task.FromResult(new ProbeRequest(Routes.ConversationMessages(Unknown), new SendMessageRequest("hi", null))),
             Expect(Forbidden, Forbidden, Forbidden, Forbidden, Forbidden, NotFound)),
-        new("conversation read mark", HttpMethod.Put, Routes.ConversationReadPattern,
+        new("conversation read mark", HttpMethod.Post, Routes.ConversationReadPattern,
             (_, _) => Task.FromResult(new ProbeRequest(Routes.ConversationRead(Unknown))),
             Expect(Forbidden, Forbidden, Forbidden, Forbidden, Forbidden, NotFound)),
         new("message delete", HttpMethod.Delete, Routes.MessagePattern,

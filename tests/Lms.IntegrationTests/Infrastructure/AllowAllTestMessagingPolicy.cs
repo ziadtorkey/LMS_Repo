@@ -1,9 +1,9 @@
 using Lms.Domain.Messaging;
 
-namespace Lms.Infrastructure.Messaging;
+namespace Lms.IntegrationTests.Infrastructure;
 
-/// <summary>Allows everything until Task 11 registers the D69 policy (this default is registered with <c>TryAdd</c>, so the real one replaces it).</summary>
-public sealed class AllowAllMessagingPolicy : IMessagingPolicy
+/// <summary>Test double: allows every pair and every post, so the messaging kernel tests do not depend on the D69 matrix (Task 11). The product default fails closed.</summary>
+public sealed class AllowAllTestMessagingPolicy : IMessagingPolicy
 {
     public Task<MessagingDecision> CanStartAsync(Guid initiatorUserId, Guid otherUserId, CancellationToken cancellationToken) => Task.FromResult(MessagingDecision.Allow);
 

@@ -21,7 +21,7 @@ public sealed record AttachmentResult(MessageAttachment? Attachment, string? Pro
 /// allow-list that leaves out every active type (HTML, SVG, XML, JS, archives and macro-enabled Office formats), checks at <b>attach time</b> (the uploader is a participant who may
 /// post right now), pending rows bound to their uploader and one conversation, and an hourly upload cap.
 /// </summary>
-public sealed class MessageAttachmentGuard(LmsDbContext db, IFileStorage storage, ICurrentContext context, IClock clock, IMessagingPolicy policy)
+public sealed class MessageAttachmentGuard(LmsDbContext db, IFileStorage storage, ICurrentContext context, IClock clock, IMessagingPolicy policy, IFileScanner scanner)
 {
     public const int UploadsPerHour = 30;
 
@@ -81,6 +81,17 @@ public sealed class MessageAttachmentGuard(LmsDbContext db, IFileStorage storage
             if (name.Length > 255)
             {
                 name = name[^255..];
+            }
+
+            // D65: the scanner runs before anything is stored; a failed scan stores nothing. The content type is decided by the storage layer from the extension, never by the client.
+            if (!await scanner.IsCleanAsync(name, content, ct))
+            {
+                return AttachmentResult.Refused(ProblemCodes.validation_failed, 400);
+            }
+
+            if (content.CanSeek)
+            {
+                content.Position = 0;
             }
 
             var stored = await storage.UploadAsync(new FileUploadRequest(name, string.Empty, length, unitId.Value), content, ct);

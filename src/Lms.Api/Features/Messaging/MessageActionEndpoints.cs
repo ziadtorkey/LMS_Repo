@@ -25,9 +25,9 @@ public static class MessageActionEndpoints
     public static IEndpointRouteBuilder MapMessageActions(this IEndpointRouteBuilder app)
     {
         app.MapDelete(Routes.MessagePattern, DeleteAsync).RequirePermission(Permissions.Messaging.Send);
-        app.MapPut(Routes.ConversationMutePattern, MuteAsync).RequirePermission(Permissions.Messaging.View);
-        app.MapDelete(Routes.ConversationMutePattern, UnmuteAsync).RequirePermission(Permissions.Messaging.View);
-        app.MapPost(Routes.ConversationLeavePattern, LeaveAsync).RequirePermission(Permissions.Messaging.View);
+        app.MapPut(Routes.ConversationMutePattern, MuteAsync).RequirePermission(Permissions.Messaging.Send);
+        app.MapDelete(Routes.ConversationMutePattern, UnmuteAsync).RequirePermission(Permissions.Messaging.Send);
+        app.MapPost(Routes.ConversationLeavePattern, LeaveAsync).RequirePermission(Permissions.Messaging.Send);
         app.MapPost(AttachmentsPattern, UploadAsync).RequirePermission(Permissions.Messaging.Send);
         app.MapGet(AttachmentUrlPattern, UrlAsync).RequirePermission(Permissions.Messaging.View);
         return app;
@@ -51,7 +51,7 @@ public static class MessageActionEndpoints
     }
 
     private static async Task<IResult> MuteAsync(
-        Guid id, MuteConversationRequest? body, HttpContext http, LmsDbContext db, ICurrentContext context, ISettingsResolver settings, ConversationAccess access, IClock clock, CancellationToken ct)
+        Guid id, MuteConversationRequest? body, HttpContext http, LmsDbContext db, ICurrentContext context, ISettingsResolver settings, ConversationAccess access, ConversationMapper mapper, IClock clock, CancellationToken ct)
     {
         if (await ConversationEndpoints.GateAsync(http, context, settings, ct) is { } gated)
         {
@@ -70,11 +70,11 @@ public static class MessageActionEndpoints
 
         opened.Me.Mute(true, body?.UntilUtc);
         await db.SaveChangesAsync(ct);
-        return Results.NoContent();
+        return Results.Ok(await mapper.ToDtoAsync(opened, ct));
     }
 
     private static async Task<IResult> UnmuteAsync(
-        Guid id, HttpContext http, LmsDbContext db, ICurrentContext context, ISettingsResolver settings, ConversationAccess access, CancellationToken ct)
+        Guid id, HttpContext http, LmsDbContext db, ICurrentContext context, ISettingsResolver settings, ConversationAccess access, ConversationMapper mapper, CancellationToken ct)
     {
         if (await ConversationEndpoints.GateAsync(http, context, settings, ct) is { } gated)
         {
@@ -88,7 +88,7 @@ public static class MessageActionEndpoints
 
         opened.Me.Mute(false, null);
         await db.SaveChangesAsync(ct);
-        return Results.NoContent();
+        return Results.Ok(await mapper.ToDtoAsync(opened, ct));
     }
 
     private static async Task<IResult> LeaveAsync(
@@ -107,7 +107,7 @@ public static class MessageActionEndpoints
         // Only a group can be left; a direct conversation stays (mute it instead). A member who already left has nothing more to leave.
         if (opened.Conversation.Kind != ConversationKinds.Group || opened.Me.HasLeft)
         {
-            return ApiProblems.BadRequest(ProblemCodes.validation_failed, "Only a group you are still in can be left.");
+            return ApiProblems.Conflict(ProblemCodes.conversation_closed); // the contract: a direct conversation cannot be left (409 conversation_closed); nor can a group twice
         }
 
         opened.Me.Leave(clock.UtcNow);

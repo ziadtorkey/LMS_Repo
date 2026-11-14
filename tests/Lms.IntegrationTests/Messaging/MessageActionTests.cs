@@ -13,6 +13,7 @@ using Lms.Shared.Authorization;
 using Lms.Shared.Configuration;
 using Lms.Shared.Messaging;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using static Lms.IntegrationTests.AcademicYears.YearTestKit;
 
 namespace Lms.IntegrationTests.Messaging;
@@ -102,14 +103,14 @@ public sealed class MessageActionTests(LmsApiFactory factory)
         var s = await SetUpAsync("MA2");
 
         Assert.Equal(HttpStatusCode.BadRequest, (await SendAsync(factory, HttpMethod.Put, Routes.ConversationMute(s.ConversationId), s.B, new MuteConversationRequest(DateTime.UtcNow.AddMinutes(-1)))).StatusCode);
-        Assert.Equal(HttpStatusCode.NoContent, (await SendAsync(factory, HttpMethod.Put, Routes.ConversationMute(s.ConversationId), s.B, new MuteConversationRequest(null))).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await SendAsync(factory, HttpMethod.Put, Routes.ConversationMute(s.ConversationId), s.B, new MuteConversationRequest(null))).StatusCode);
         var inbox = (await (await SendAsync(factory, HttpMethod.Get, Routes.Conversations, s.B)).Content.ReadFromJsonAsync<List<ConversationListItemDto>>(Web))!;
         Assert.True(inbox.Single(c => c.Id == s.ConversationId).Muted);
-        Assert.Equal(HttpStatusCode.NoContent, (await SendAsync(factory, HttpMethod.Delete, Routes.ConversationMute(s.ConversationId), s.B)).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await SendAsync(factory, HttpMethod.Delete, Routes.ConversationMute(s.ConversationId), s.B)).StatusCode);
         Assert.False((await (await SendAsync(factory, HttpMethod.Get, Routes.Conversations, s.B)).Content.ReadFromJsonAsync<List<ConversationListItemDto>>(Web))!.Single(c => c.Id == s.ConversationId).Muted);
         Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(factory, HttpMethod.Put, Routes.ConversationMute(s.ConversationId), s.Outsider, new MuteConversationRequest(null))).StatusCode);
 
-        Assert.Equal(HttpStatusCode.BadRequest, (await SendAsync(factory, HttpMethod.Post, Routes.ConversationLeave(s.ConversationId), s.B)).StatusCode); // a direct conversation is muted, not left
+        Assert.Equal(HttpStatusCode.Conflict, (await SendAsync(factory, HttpMethod.Post, Routes.ConversationLeave(s.ConversationId), s.B)).StatusCode); // a direct conversation is muted, not left (409 conversation_closed)
 
         Guid group;
         await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
@@ -124,7 +125,7 @@ public sealed class MessageActionTests(LmsApiFactory factory)
 
         await SendTextAsync(s.A, group, "before");
         Assert.Equal(HttpStatusCode.NoContent, (await SendAsync(factory, HttpMethod.Post, Routes.ConversationLeave(group), s.B)).StatusCode);
-        Assert.Equal(HttpStatusCode.BadRequest, (await SendAsync(factory, HttpMethod.Post, Routes.ConversationLeave(group), s.B)).StatusCode);
+        Assert.Equal(HttpStatusCode.Conflict, (await SendAsync(factory, HttpMethod.Post, Routes.ConversationLeave(group), s.B)).StatusCode); // twice
         Assert.Equal(HttpStatusCode.Forbidden, (await SendAsync(factory, HttpMethod.Post, Routes.ConversationMessages(group), s.B, new SendMessageRequest("after leaving", null))).StatusCode);
     }
 
@@ -150,6 +151,34 @@ public sealed class MessageActionTests(LmsApiFactory factory)
         // Deleted for everyone: the files are no longer served.
         Assert.Equal(HttpStatusCode.NoContent, (await SendAsync(factory, HttpMethod.Delete, Routes.Message(s.ConversationId, sent.Id), s.A)).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(factory, HttpMethod.Get, MessageActionEndpointsRoutes.AttachmentUrl(s.ConversationId, sent.Id, file.FileId), s.B)).StatusCode);
+    }
+
+    private sealed class RefusingScanner : Lms.Domain.Files.IFileScanner
+    {
+        public Task<bool> IsCleanAsync(string fileName, Stream content, CancellationToken cancellationToken) => Task.FromResult(false);
+    }
+
+    [Fact]
+    public async Task A_failed_scan_is_400_and_nothing_is_stored()
+    {
+        var s = await SetUpAsync("MA5");
+        using var scanning = factory.WithWebHostBuilder(b => b.ConfigureServices(services =>
+        {
+            services.Replace(Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Singleton<Lms.Domain.Files.IFileScanner>(new RefusingScanner()));
+        }));
+        var form = new MultipartFormDataContent();
+        var file = new ByteArrayContent(Pdf);
+        file.Headers.ContentType = new MediaTypeHeaderValue("application/pdf");
+        form.Add(file, "file", "virus.pdf");
+        var request = new HttpRequestMessage(HttpMethod.Post, MessageActionEndpointsRoutes.Attachments(s.ConversationId)) { Content = form };
+        request.Headers.Add(TestAuthHandler.UserHeader, s.A.UserId.ToString());
+        request.Headers.Add(ContextHeader.Name, s.A.Id.ToString());
+
+        var response = await scanning.CreateClient().SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        Assert.False(await db.Set<MessageAttachment>().AnyAsync(a => a.ConversationId == s.ConversationId && a.FileName == "virus.pdf"));
     }
 
     [Fact]

@@ -25,7 +25,7 @@ public static class ConversationEndpoints
         app.MapGet(Routes.ConversationPattern, GetAsync).RequirePermission(Permissions.Messaging.View);
         app.MapPost(Routes.ConversationMessagesPattern, SendAsync).RequirePermission(Permissions.Messaging.Send);
         app.MapGet(Routes.ConversationMessagesPattern, MessagesAsync).RequirePermission(Permissions.Messaging.View);
-        app.MapPut(Routes.ConversationReadPattern, ReadAsync).RequirePermission(Permissions.Messaging.View);
+        app.MapPost(Routes.ConversationReadPattern, ReadAsync).RequirePermission(Permissions.Messaging.Send); // the contract: POST, Messaging.Send (it writes)
         app.MapGet(Routes.MyUnreadTotal, UnreadTotalAsync).RequirePermission(Permissions.Messaging.View);
         app.MapMessageActions();
         return app;

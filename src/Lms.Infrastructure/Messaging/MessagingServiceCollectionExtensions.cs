@@ -13,7 +13,8 @@ public static class MessagingServiceCollectionExtensions
         services.AddScoped<MessageService>();
         services.AddScoped<ReadStateService>();
         services.AddScoped<MessageAttachmentGuard>();
-        services.TryAddScoped<IMessagingPolicy, AllowAllMessagingPolicy>(); // Task 11 registers the D69 policy
+        services.TryAddScoped<IMessagingPolicy, DenyAllMessagingPolicy>(); // fails closed until Task 11 registers the D69 policy
+        services.TryAddSingleton<Lms.Domain.Files.IFileScanner, Lms.Domain.Files.NoOpFileScanner>(); // D65: off in v1
         return services;
     }
 }
