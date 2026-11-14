@@ -40,11 +40,17 @@ public static class RelationshipRules
             // M4b wave 3b: packages of own class courses.
             Permissions.Packages.Upload, Permissions.Packages.View,
             // M4b wave 3a: live sessions of own ClassCourses.
-            Permissions.LiveSessions.View, Permissions.LiveSessions.Manage)),
+            Permissions.LiveSessions.View, Permissions.LiveSessions.Manage,
+            // M5 wave 1: grades of own ClassCourses with an assignment active today (L15).
+            Permissions.Grades.View, Permissions.Grades.Manage, Permissions.Grades.Publish)),
         new(BuiltInRoles.Supervisor, Relationships.SupervisedCourses, ImmutableArray.Create(
             Permissions.Courses.Update, Permissions.Courses.Delete, Permissions.Courses.Allocate,
             Permissions.Blueprints.Edit, Permissions.Blueprints.Publish, Permissions.TeacherAssignments.Manage,
-            Permissions.Enrollment.ApproveException, Permissions.Students.View)),
+            Permissions.Enrollment.ApproveException, Permissions.Students.View,
+            // M5 wave 1: grades and reports of supervised courses only (L16).
+            Permissions.Grades.View, Permissions.Grades.ViewReports,
+            // M5 wave 2: the timetable of supervised courses only (L16).
+            Permissions.Timetable.View)),
         new(BuiltInRoles.Student, Relationships.OwnEnrollments, ImmutableArray.Create(
             Permissions.LessonPlans.View, Permissions.Modules.View,
             Permissions.CourseAssignments.View, Permissions.CourseAssignments.Submit,
@@ -59,4 +65,15 @@ public static class RelationshipRules
     public static string? For(string roleKey, string permission) =>
         All.FirstOrDefault(r => string.Equals(r.RoleKey, roleKey, StringComparison.Ordinal)
             && r.Permissions.Contains(permission, StringComparer.Ordinal))?.Relationship;
+}
+
+/// <summary>
+/// The substitute rule of the timetable (M5 plan L15): a substitute is the teacher of record for <b>one session on one date</b> and only for
+/// <c>Attendance.Take</c> on that session. It holds exactly when the exception is of kind <c>Substitute</c> naming the caller and the date is
+/// today (the local date of the client time zone); any other session, date or permission is a relationship miss (404).
+/// </summary>
+public static class SubstituteRule
+{
+    public static bool IsSubstituteOn(string exceptionKind, Guid? substituteUserId, Guid callerUserId, DateOnly exceptionDate, DateOnly today) =>
+        exceptionKind == "Substitute" && substituteUserId == callerUserId && exceptionDate == today;
 }

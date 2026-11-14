@@ -67,6 +67,10 @@ public static class NotificationEvents
     // M4b live sessions (M4b plan Task 1). Named recipients: the students the session module targets.
     public const string LiveReminder = "Live.Reminder";
 
+    // M5 wave 1 (M5 plan Task 1, L26). Named recipients: the student and the linked guardians whose visible grades changed, one per student per publish
+    // batch. No grade value and no item title in any notification, log or error.
+    public const string GradesPublished = "Grades.Published";
+
     public static IReadOnlyList<NotificationEventDefinition> All { get; } =
     [
         new(AccessRoleAssigned, [], ["RoleNameAr", "RoleNameEn", "OrgUnitNameAr", "OrgUnitNameEn"]),
@@ -108,6 +112,8 @@ public static class NotificationEvents
         new(ForumsAnnouncement, [], ["Title", "CourseNameAr", "CourseNameEn"]),
         // Named recipients: targeted students who can see the session module, once, Live.ReminderMinutes before start.
         new(LiveReminder, [], ["TitleAr", "TitleEn", "CourseNameAr", "CourseNameEn", "StartsAtUtc"]),
+        // Named recipients: the student and the linked guardians, once per publish batch. Course name only: never a score or an item title.
+        new(GradesPublished, [], ["CourseNameAr", "CourseNameEn"]),
     ];
 
     /// <summary>The definition with this exact (case-sensitive) key, or null.</summary>

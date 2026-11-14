@@ -28,6 +28,8 @@ public class AccessContractTests
             "CourseAnnouncement", "GradeEvent",
             "PackageUpload", "ScormPackage", "H5pContent",
             "LiveSessionSeries", "LiveSession",
+            "GradingScale", "WeightTemplate", "Gradebook", "GradeCategory", "GradeItem", "GradeEntry", "GradeSnapshot",
+            "Period", "TimetableSlot", "TimetableException",
         ], AuditCatalog.EntityTypes);
     }
 

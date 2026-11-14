@@ -52,7 +52,7 @@ public sealed class RoleAssignmentRulesTests
 
     [Fact]
     public void Self_service_permissions_are_only_the_own_data_ones() =>
-        Assert.Equal(["CourseAssignments.Submit", "Quizzes.Attempt", "Students.SelfEdit", "Students.ViewChildren"],
+        Assert.Equal(["CourseAssignments.Submit", "Grades.ViewOwn", "Quizzes.Attempt", "Students.SelfEdit", "Students.ViewChildren", "Timetable.ViewOwn"],
             Permissions.SelfService.Order(StringComparer.Ordinal));
 
     [Theory]

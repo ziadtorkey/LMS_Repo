@@ -208,4 +208,57 @@ public static class ProblemCodes
     /// unknown time zone, or an end before the start.
     /// </summary>
     public const string recurrence_invalid = nameof(recurrence_invalid);
+
+    // M5 wave 2: timetable (M5 plan Task 2).
+    /// <summary>A slot clashes with another one of the term in <c>Block</c> mode (409); the answer lists the clashes, with details only for slots inside the caller's unit subtree (see <c>SlotConflictDto</c>).</summary>
+    public const string timetable_conflict = nameof(timetable_conflict);
+
+    /// <summary>A period overlaps another period of the same unit, or its start is not before its end (400).</summary>
+    public const string period_overlap = nameof(period_overlap);
+
+    /// <summary>A slot is used by a period that cannot be deleted (409).</summary>
+    public const string period_in_use = nameof(period_in_use);
+
+    /// <summary>The action needs a published slot: an exception on a draft slot (409).</summary>
+    public const string timetable_not_published = nameof(timetable_not_published);
+
+    /// <summary>An exception date is off the slot's weekday, outside the term, or two exceptions share a date (400).</summary>
+    public const string exception_date_invalid = nameof(exception_date_invalid);
+
+    /// <summary>The substitute of an exception is not a teacher of the client, is the teacher of record, or is already teaching in that period on that date (400).</summary>
+    public const string exception_substitute_invalid = nameof(exception_substitute_invalid);
+
+    // M5 wave 1: grading (M5 plan Task 1).
+    /// <summary>The gradebook is locked: writes are refused and reads serve the lock snapshot (409, L5).</summary>
+    public const string gradebook_locked = nameof(gradebook_locked);
+
+    /// <summary>Publishing under a provisional scale needs <c>AcknowledgeProvisionalScale = true</c> (409, L7).</summary>
+    public const string scale_provisional = nameof(scale_provisional);
+
+    /// <summary>The bands of a scale leave a gap or overlap, or there are too many (400).</summary>
+    public const string scale_bands_invalid = nameof(scale_bands_invalid);
+
+    /// <summary>A gradebook uses this scale: it cannot be deleted (409).</summary>
+    public const string scale_in_use = nameof(scale_in_use);
+
+    /// <summary>A category or template weight is outside 0-100 (400).</summary>
+    public const string weights_invalid = nameof(weights_invalid);
+
+    /// <summary>A score is below 0 or above the item's maximum points (422).</summary>
+    public const string grade_out_of_range = nameof(grade_out_of_range);
+
+    /// <summary>An override needs a reason of 1-500 characters (422).</summary>
+    public const string grade_override_reason_required = nameof(grade_override_reason_required);
+
+    /// <summary>The grade import file is not an accepted <c>.xlsx</c> or exceeds the limits (400, L9).</summary>
+    public const string grade_import_invalid = nameof(grade_import_invalid);
+
+    /// <summary>The import preview token expired or does not belong to this caller, gradebook, item and file (400, L9).</summary>
+    public const string grade_import_expired = nameof(grade_import_expired);
+
+    /// <summary>A term of the year already has a gradebook, slot or attendance session: the term structure cannot change (409, L8).</summary>
+    public const string terms_have_dependants = nameof(terms_have_dependants);
+
+    /// <summary>The row changed since it was loaded (a stale <c>Version</c>); the answer carries the current value (409, L12).</summary>
+    public const string concurrency_conflict = nameof(concurrency_conflict);
 }
