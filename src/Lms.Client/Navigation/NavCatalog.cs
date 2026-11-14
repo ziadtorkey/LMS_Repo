@@ -39,10 +39,13 @@ public static class NavCatalog
         new("Nav_Announcements", "announcements", Icons.Material.Rounded.Campaign, Permissions.Announcements.View, Section: Communication),
         new("Nav_MessagingRules", "settings/messaging-rules", Icons.Material.Rounded.Rule, Permissions.Comms.Manage, Section: Security),
         new("Nav_CommunicationSettings", "settings/communication", Icons.Material.Rounded.Tune, Permissions.Comms.Manage, Section: Security),
+        new("Nav_Moderation", "moderation/messages", Icons.Material.Rounded.Shield, Permissions.Messaging.Moderate, Section: Communication),
         new("Nav_Roles", "roles", Icons.Material.Rounded.AdminPanelSettings, Permissions.Roles.View, Section: Security),
         new("Nav_Assignments", "assignments", Icons.Material.Rounded.GroupAdd, Permissions.Assignments.View, Section: Security),
         new("Nav_IdentityProviders", "identity-providers", Icons.Material.Rounded.Login, Permissions.IdentityProviders.View, Section: Security),
         new("Nav_Settings", "settings", Icons.Material.Rounded.Settings, Permissions.Settings.View, Section: Security),
+        new("Nav_MessagingRules", "settings/messaging-rules", Icons.Material.Rounded.Rule, Permissions.Comms.Manage, Section: Security),
+        new("Nav_CommunicationSettings", "settings/communication", Icons.Material.Rounded.Tune, Permissions.Comms.Manage, Section: Security),
         new("Nav_Audit", "audit", Icons.Material.Rounded.History, Permissions.Audit.View, Section: Security),
         new("Nav_Clients", "clients", Icons.Material.Rounded.Business, null, PlatformAdminOnly: true, Section: Security),
     ];

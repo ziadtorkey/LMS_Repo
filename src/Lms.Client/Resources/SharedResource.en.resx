@@ -2265,15 +2265,66 @@
   <data name="NavSection_Security" xml:space="preserve"><value>Security and settings</value></data>
   <data name="App_Subtitle" xml:space="preserve"><value>Academic platform</value></data>
   <data name="Nav_Main" xml:space="preserve"><value>Main navigation</value></data>
+  <data name="Msg_Reason_SafetyConcern" xml:space="preserve"><value>Safety concern</value></data>
+  <data name="Msg_ReportStatus_InReview" xml:space="preserve"><value>In review</value></data>
+  <data name="Msg_ReportStatus_ActionTaken" xml:space="preserve"><value>Action taken</value></data>
+  <data name="Msg_MyReport_Pending" xml:space="preserve"><value>Your report is pending</value></data>
+  <data name="Msg_MyReport_Reviewed" xml:space="preserve"><value>Your report was reviewed</value></data>
+  <data name="Msg_RestrictDays_1" xml:space="preserve"><value>1 day</value></data>
+  <data name="Msg_RestrictDays_7" xml:space="preserve"><value>7 days</value></data>
+  <data name="Msg_RestrictDays_30" xml:space="preserve"><value>30 days</value></data>
+  <data name="NotifEvent_Moderation_ReportReceived" xml:space="preserve"><value>Message reported</value></data>
+  <data name="Notif_Moderation_ReportReceived" xml:space="preserve"><value>A message was reported ({Reason}). Open the moderation queue to review it.</value></data>
+  <data name="NotifEvent_Moderation_SafetyReportReceived" xml:space="preserve"><value>Safety concern reported</value></data>
+  <data name="Notif_Moderation_SafetyReportReceived" xml:space="preserve"><value>A safety concern was reported. Please review it as soon as you can.</value></data>
+  <data name="Setting_Moderation_ReportContextRetentionDays" xml:space="preserve"><value>Days to keep a resolved report and its context</value></data>
+  <data name="Setting_Moderation_MaxReportsPerUserPerDay" xml:space="preserve"><value>Reports one person can file per day</value></data>
+  <data name="Setting_Moderation_SafetyReviewHours" xml:space="preserve"><value>Hours to review a safety concern</value></data>
+  <data name="AuditEntity_ModerationRead" xml:space="preserve"><value>Moderator read of a reported message</value></data>
+  <data name="NavSection_Communication" xml:space="preserve"><value>Communication</value></data>
+  <data name="ModQueue_Title" xml:space="preserve"><value>Message reports</value></data>
+  <data name="ModQueue_Subtitle" xml:space="preserve"><value>Reported messages with the messages around them. You never see the rest of the conversation.</value></data>
+  <data name="ModQueue_Open" xml:space="preserve"><value>Waiting</value></data>
+  <data name="ModQueue_NewToday" xml:space="preserve"><value>New today</value></data>
+  <data name="ModQueue_Restricted" xml:space="preserve"><value>Restricted now</value></data>
+  <data name="ModQueue_Status" xml:space="preserve"><value>Status</value></data>
+  <data name="ModQueue_Reason" xml:space="preserve"><value>Reason</value></data>
+  <data name="ModQueue_Sender" xml:space="preserve"><value>Sender</value></data>
+  <data name="ModQueue_Message" xml:space="preserve"><value>Message</value></data>
+  <data name="ModQueue_Age" xml:space="preserve"><value>Age</value></data>
+  <data name="ModQueue_Hours" xml:space="preserve"><value>{0} h</value></data>
+  <data name="ModQueue_Review" xml:space="preserve"><value>Review</value></data>
+  <data name="ModQueue_Select" xml:space="preserve"><value>Select this report</value></data>
+  <data name="ModQueue_KeepSelected" xml:space="preserve"><value>Keep selected ({0})</value></data>
+  <data name="ModQueue_EmptyTitle" xml:space="preserve"><value>Nothing to review</value></data>
+  <data name="ModQueue_EmptyText" xml:space="preserve"><value>Reports appear here when someone reports a message.</value></data>
+  <data name="ModQueue_Report" xml:space="preserve"><value>Report</value></data>
+  <data name="ModQueue_ReviewDue" xml:space="preserve"><value>Review by</value></data>
+  <data name="ModQueue_ReporterNote" xml:space="preserve"><value>Note from the reporter</value></data>
+  <data name="ModQueue_Prior" xml:space="preserve"><value>{0} earlier reports, {1} removals</value></data>
+  <data name="ModQueue_Context" xml:space="preserve"><value>The reported message and the messages around it</value></data>
+  <data name="ModQueue_FrozenNote" xml:space="preserve"><value>This is the conversation as it was when the report was made. The rest of the conversation is not available.</value></data>
+  <data name="ModQueue_Resolved" xml:space="preserve"><value>Decided: {0}.</value></data>
+  <data name="ModQueue_NoteToPeople" xml:space="preserve"><value>Note for the sender (optional)</value></data>
+  <data name="ModQueue_NoteToPeopleHelp" xml:space="preserve"><value>The sender reads this in their notice. Your own notes never leave this page.</value></data>
+  <data name="ModQueue_Apply" xml:space="preserve"><value>Apply decision</value></data>
+  <data name="ModQueue_Restrictions" xml:space="preserve"><value>Active restrictions</value></data>
+  <data name="ModQueue_NoRestrictions" xml:space="preserve"><value>Nobody is restricted.</value></data>
+  <data name="ModQueue_Until" xml:space="preserve"><value>until</value></data>
+  <data name="ModQueue_Lift" xml:space="preserve"><value>Lift restriction</value></data>
+  <data name="Nav_Moderation" xml:space="preserve"><value>Message reports</value></data>
+  <data name="ModQueue_AuditNotice" xml:space="preserve"><value>Every report you open and every file you view is recorded in the audit log.</value></data>
+  <data name="ModQueue_AuditDetail" xml:space="preserve"><value>Opening this report was recorded in the audit log.</value></data>
+  <data name="ModQueue_BulkLimit" xml:space="preserve"><value>You can keep up to {0} reports at once.</value></data>
+  <data name="ModQueue_Paging" xml:space="preserve"><value>Pages of reports</value></data>
   <data name="Setting_Messaging_UploadsPerMinute" xml:space="preserve"><value>Attachment uploads per minute</value></data>
   <data name="Msg_ReadOnly_group_students_read_only" xml:space="preserve"><value>Only the teacher and staff post in this group. You can reply to the teacher privately.</value></data>
   <data name="Msg_ReadOnly_group_guardians_read_only" xml:space="preserve"><value>Only staff post in this group.</value></data>
-  <data name="Msg_ReadOnly_rule" xml:space="preserve"><value>This conversation is read-only because messaging rules changed.</value></data>
   <data name="Msg_ReadOnly_blocked_or_rule" xml:space="preserve"><value>You cannot send messages in this conversation.</value></data>
   <data name="Msg_ReadOnly_restricted" xml:space="preserve"><value>Your messaging is restricted for now.</value></data>
   <data name="Msg_ReadOnly_locked" xml:space="preserve"><value>A moderator locked this conversation.</value></data>
   <data name="Msg_Denied_rule" xml:space="preserve"><value>You cannot send messages to this person.</value></data>
-  <data name="Msg_Denied_relationship" xml:space="preserve"><value>You can only message people you share a class with.</value></data>
+  <data name="Msg_Denied_relationship" xml:space="preserve"><value>You can only message people you work with in school.</value></data>
   <data name="Msg_Denied_restricted" xml:space="preserve"><value>Your messaging is restricted for now.</value></data>
   <data name="Msg_Denied_blocked_or_rule" xml:space="preserve"><value>You cannot send messages to this person.</value></data>
   <data name="Msg_Denied_private_group_with_student" xml:space="preserve"><value>A group with a student needs at least three members.</value></data>
@@ -2283,5 +2334,5 @@
   <data name="Error_conversation_read_only" xml:space="preserve"><value>You cannot post in this conversation.</value></data>
   <data name="Error_comms_cap_above_ceiling" xml:space="preserve"><value>This limit is above the maximum the platform allows.</value></data>
   <data name="Error_attachment_invalid" xml:space="preserve"><value>The attachment is not allowed: check its type and size, and the number of attachments.</value></data>
-  <data name="NavSection_Communication" xml:space="preserve"><value>Communication</value></data>
+  <data name="Msg_ReadOnly_rule" xml:space="preserve"><value>This conversation is read-only because messaging rules changed.</value></data>
 </root>

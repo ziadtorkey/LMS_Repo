@@ -36,13 +36,6 @@ public interface ICommsApi
     Task<CommsSettingsDto> GetSettingsAsync(CancellationToken ct = default);
     Task<CommsSettingsDto> SaveSettingsAsync(SaveCommsSettingsRequest request, CancellationToken ct = default);
     Task<IReadOnlyList<ProviderStatusDto>> GetProviderStatusAsync(CancellationToken ct = default);
-
-    // ---- moderation
-
-    Task<PagedResult<MessageReportDto>> ListReportsAsync(ReportQuery query, CancellationToken ct = default);
-    Task<MessageReportDto> GetReportAsync(Guid id, CancellationToken ct = default);
-    Task<MessageReportDto> ResolveReportAsync(Guid id, ResolveReportRequest request, CancellationToken ct = default);
-    Task<ModerationStatsDto> GetModerationStatsAsync(CancellationToken ct = default);
 }
 
 public sealed class CommsApi(Api.ApiHttp http) : ICommsApi
@@ -80,15 +73,4 @@ public sealed class CommsApi(Api.ApiHttp http) : ICommsApi
 
     public async Task<IReadOnlyList<ProviderStatusDto>> GetProviderStatusAsync(CancellationToken ct = default) =>
         await http.GetAsync<List<ProviderStatusDto>>(Routes.CommsProviderStatus, ct);
-
-    public Task<PagedResult<MessageReportDto>> ListReportsAsync(ReportQuery query, CancellationToken ct = default) =>
-        http.GetAsync<PagedResult<MessageReportDto>>(
-            $"{Routes.ModerationReports}?page={query.Page}&pageSize={query.PageSize}{(string.IsNullOrWhiteSpace(query.Status) ? string.Empty : $"&status={Uri.EscapeDataString(query.Status)}")}", ct);
-
-    public Task<MessageReportDto> GetReportAsync(Guid id, CancellationToken ct = default) => http.GetAsync<MessageReportDto>(Routes.ModerationReport(id), ct);
-
-    public async Task<MessageReportDto> ResolveReportAsync(Guid id, ResolveReportRequest request, CancellationToken ct = default) =>
-        (await http.SendAsync<MessageReportDto>(HttpMethod.Post, Routes.ModerationReportResolve(id), request, ct))!;
-
-    public Task<ModerationStatsDto> GetModerationStatsAsync(CancellationToken ct = default) => http.GetAsync<ModerationStatsDto>(Routes.ModerationStats, ct);
 }

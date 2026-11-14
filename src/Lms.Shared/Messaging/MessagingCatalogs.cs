@@ -47,23 +47,69 @@ public static class MessagingRuleModes
 
 public static class ReportReasons
 {
+    /// <summary>Sorts first in the queue; its notice to the moderators is mandatory and urgent; the review target is <c>Moderation.SafetyReviewHours</c> (24).</summary>
+    public const string SafetyConcern = "SafetyConcern";
+
     public const string Harassment = "Harassment";
-    public const string Inappropriate = "Inappropriate";
     public const string Spam = "Spam";
-    public const string Safety = "Safety";
     public const string Other = "Other";
 
-    public static IReadOnlyList<string> All { get; } = [Harassment, Inappropriate, Spam, Safety, Other];
+    /// <summary>The fixed reasons (L16; #612's "Inappropriate" is dropped). The order is the sort order of the queue.</summary>
+    public static IReadOnlyList<string> All { get; } = [SafetyConcern, Harassment, Spam, Other];
 }
 
 /// <summary>One list of report states.</summary>
 public static class ReportStatuses
 {
     public const string Open = "Open";
-    public const string Dismissed = "Dismissed";
-    public const string Actioned = "Actioned";
 
-    public static IReadOnlyList<string> All { get; } = [Open, Dismissed, Actioned];
+    /// <summary>A moderator opened it (the first read of the detail moves an Open report here; every read is audited).</summary>
+    public const string InReview = "InReview";
+
+    public const string Dismissed = "Dismissed";
+
+    /// <summary>Remove, Warn, Restrict, RemoveAndRestrict or LockConversation was applied.</summary>
+    public const string ActionTaken = "ActionTaken";
+
+    public static IReadOnlyList<string> All { get; } = [Open, InReview, Dismissed, ActionTaken];
+
+    /// <summary>The statuses still waiting for a decision.</summary>
+    public static IReadOnlyList<string> Pending { get; } = [Open, InReview];
+}
+
+/// <summary>The restriction lengths a moderator can choose, in days (L16): 1, 7 or 30. A restriction is the moderator's tool; a block is the person's own and is never touched.</summary>
+public static class RestrictionDurations
+{
+    public static IReadOnlyList<int> Days { get; } = [1, 7, 30];
+
+    public static bool IsValid(int days) => Days.Contains(days);
+}
+
+/// <summary>What the person who reported a message can learn about it, on <c>MessageDto.MyReportStatus</c>: pending or reviewed, never the action (L16).</summary>
+public static class MyReportStatuses
+{
+    public const string Pending = "Pending";
+    public const string Reviewed = "Reviewed";
+
+    public static IReadOnlyList<string> All { get; } = [Pending, Reviewed];
+}
+
+/// <summary>The outcome code of the <c>Messaging.ReportResolved</c> notice to the reporter: <c>Reviewed</c> only, no action and no note.</summary>
+public static class ReportOutcomes
+{
+    public const string Reviewed = "Reviewed";
+
+    public static IReadOnlyList<string> All { get; } = [Reviewed];
+}
+
+/// <summary>Limits of the moderation tools.</summary>
+public static class ModerationLimits
+{
+    /// <summary>The most reports one bulk dismissal takes (the queue page size).</summary>
+    public const int BulkDismissMax = 50;
+
+    /// <summary>The longest note a moderator can add to a warning or a restriction notice to the sender.</summary>
+    public const int NoteToPeopleMaxLength = 300;
 }
 
 /// <summary>The one moderation action set (#613 section 16). Moderators act on messages and on a user's messaging right, never on a user's blocks.</summary>
@@ -78,7 +124,7 @@ public static class ModerationActions
 
     public static IReadOnlyList<string> All { get; } = [Dismiss, Remove, Warn, Restrict, RemoveAndRestrict, LockConversation];
 
-    /// <summary>The actions that need <c>RestrictUntilUtc</c>.</summary>
+    /// <summary>The actions that need <c>DurationDays</c> (one of <see cref="RestrictionDurations"/>).</summary>
     public static IReadOnlyList<string> Restricting { get; } = [Restrict, RemoveAndRestrict];
 }
 
@@ -183,8 +229,10 @@ public static class MessagingLimits
     public const int MessagePageSizeMax = 100;
     public const int ReportNoteMaxLength = 500;
 
-    /// <summary>A report carries the reported message and this many messages around it.</summary>
+    /// <summary>A report carries the reported message and this many messages around it: <see cref="ReportContextEachSide"/> before and as many after.</summary>
     public const int ReportContextMessages = 10;
+
+    public const int ReportContextEachSide = 5;
 
     public const int MaxAnnouncementAttachments = 5;
     public const int MaxAnnouncementTitleLength = 200;
