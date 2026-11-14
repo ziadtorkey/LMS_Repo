@@ -32,9 +32,14 @@ internal static class ModerationEndpoints
         app.MapDelete(Routes.ModerationRestrictionPattern, LiftAsync).RequireAuthorization().RequirePermission(Permissions.Messaging.Moderate);
     }
 
-    private static async Task<IResult> ReportAsync(Guid id, ReportMessageRequest? body, ReportService reports, CancellationToken ct)
+    private static async Task<IResult> ReportAsync(Guid id, ReportMessageRequest? body, ReportService reports, HttpContext http, CancellationToken ct)
     {
         var result = await reports.CreateAsync(id, body?.Reason, body?.Note, ct);
+        if (result.Outcome == ReportOutcome.RateLimited)
+        {
+            http.Response.Headers.RetryAfter = (result.RetryAfterSeconds ?? 60).ToString(System.Globalization.CultureInfo.InvariantCulture); // L18
+        }
+
         return result.Outcome switch
         {
             ReportOutcome.Created => Results.NoContent(),
@@ -94,7 +99,7 @@ internal static class ModerationEndpoints
         return Results.NoContent();
     }
 
-    private static async Task<IResult> AttachmentAsync(Guid id, Guid fileId, LmsDbContext db, ModerationQueue queue, IFileStorage storage, CancellationToken ct)
+    private static async Task<IResult> AttachmentAsync(Guid id, Guid fileId, LmsDbContext db, ModerationQueue queue, IFileStorage storage, HttpContext http, CancellationToken ct)
     {
         var report = await queue.Visible().FirstOrDefaultAsync(r => r.Id == id, ct);
         // Only an attachment of the reported message: any other file of the conversation is 404.
@@ -116,6 +121,7 @@ internal static class ModerationEndpoints
 
         queue.WriteRead(report, "Attachment", fileId);
         await db.SaveChangesAsync(ct);
+        http.Response.Headers.CacheControl = "private, no-store"; // the signed url is never cached (checklist #762)
         var inline = ExcuseLimits.InlinePreviewContentTypes.Contains(attachment.ContentType);
         return Results.Ok(new ModerationAttachmentUrlDto(url.ToString(), DateTime.UtcNow.AddMinutes(ExcuseLimits.AttachmentUrlMinutes), attachment.FileName, attachment.ContentType, inline));
     }

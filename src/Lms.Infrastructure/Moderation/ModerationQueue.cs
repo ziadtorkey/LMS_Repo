@@ -41,6 +41,16 @@ public sealed class ModerationQueue(LmsDbContext db, ICurrentContext context, IC
         var page = await rows.OrderBy(r => r.Reason == ReportReasons.SafetyConcern ? 0 : 1).ThenBy(r => r.CreatedAt).ThenBy(r => r.Id)
             .Skip((Math.Max(query.Page, 1) - 1) * size).Take(size).ToListAsync(ct);
         var now = clock.UtcNow;
+        if (page.Count > 0)
+        {
+            // Every list read is audited like a detail read (D70): the filter, the page and the ids returned; never the snippets themselves.
+            db.Add(new AuditEntry(
+                page[0].OrganizationId, context.UserId, context.AssignmentId, AuditAction.Created, "ModerationRead", page[0].Id, null,
+                JsonSerializer.Serialize(new { kind = "List", status = query.Status, reason = query.Reason, page = Math.Max(query.Page, 1), pageSize = size, count = page.Count, reportIds = page.Select(r => r.Id) }, Json),
+                now, null, context.ScopePath));
+            await db.SaveChangesAsync(ct);
+        }
+
         var users = await NamesAsync(page.Select(r => r.ReportedUserId), ct);
         return (page.Select(r =>
         {
@@ -74,12 +84,12 @@ public sealed class ModerationQueue(LmsDbContext db, ICurrentContext context, IC
             report.ReviewDueUtc, report.Action, null, report.ResolvedAtUtc, clock.UtcNow);
     }
 
-    /// <summary>Who sent the reported message in numbers: their role, and how many times this client has had them reported or had a message of theirs removed.</summary>
+    /// <summary>Who sent the reported message in numbers: their role, and how many times they were reported or had a message removed, counted only through the reports the moderator may see (never another unit).</summary>
     private async Task<SenderSummaryDto> SenderSummaryAsync(MessageReport report, CancellationToken ct)
     {
         var names = await NamesAsync([report.ReportedUserId], ct);
         names.TryGetValue(report.ReportedUserId, out var user);
-        var prior = db.Set<MessageReport>().Where(r => r.OrganizationId == report.OrganizationId && r.ReportedUserId == report.ReportedUserId && r.Id != report.Id);
+        var prior = Visible().Where(r => r.OrganizationId == report.OrganizationId && r.ReportedUserId == report.ReportedUserId && r.Id != report.Id);
         var priorReports = await prior.CountAsync(ct);
         var priorRemovals = await prior.CountAsync(r => r.Action == ModerationActions.Remove || r.Action == ModerationActions.RemoveAndRestrict, ct);
         var today = DateOnly.FromDateTime(clock.UtcNow);

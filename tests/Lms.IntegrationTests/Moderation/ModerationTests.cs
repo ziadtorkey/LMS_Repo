@@ -182,6 +182,8 @@ public sealed class ModerationTests(LmsApiFactory factory)
 
         var capped = await ReportAsync(w, 4);
         Assert.Equal(HttpStatusCode.TooManyRequests, capped.StatusCode); // one a day under the client setting
+        var retry = Assert.Single(capped.Headers.GetValues("Retry-After")); // L18: seconds until the first report of the day ages out
+        Assert.InRange(int.Parse(retry, System.Globalization.CultureInfo.InvariantCulture), 1, 24 * 3600);
     }
 
     [Fact]
@@ -285,10 +287,31 @@ public sealed class ModerationTests(LmsApiFactory factory)
         Assert.All(detail.Context.Where(c => !c.IsReported), c => Assert.Null(c.Attachments)); // context messages keep names only
         Assert.Contains("other.pdf", detail.Context.Single(c => c.MessageId == w.MessageIds[5]).AttachmentNames);
 
-        Assert.Equal(HttpStatusCode.OK, (await SendAsync(factory, HttpMethod.Get, Routes.ModerationReportAttachment(id, reportedFile), w.RootAdmin)).StatusCode);
+        var opened = await SendAsync(factory, HttpMethod.Get, Routes.ModerationReportAttachment(id, reportedFile), w.RootAdmin);
+        Assert.Equal(HttpStatusCode.OK, opened.StatusCode);
+        Assert.Contains("no-store", string.Join(",", opened.Headers.CacheControl?.ToString() ?? string.Empty)); // the signed url is never cached
         Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(factory, HttpMethod.Get, Routes.ModerationReportAttachment(id, contextFile), w.RootAdmin)).StatusCode); // a context message's file
         await using var check = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
         Assert.Equal(1, await check.Set<AuditEntry>().CountAsync(a => a.EntityType == "ModerationRead" && a.EntityId == id && a.AfterJson!.Contains("Attachment"))); // only the allowed read is audited
+    }
+
+    [Fact]
+    public async Task Every_queue_read_is_audited_with_the_filter_and_the_ids_and_never_the_snippets()
+    {
+        var w = await SetUpAsync("MD15");
+        await ReportAsync(w, 6, note: "private words");
+        var id = await ReportIdAsync(w, 6);
+
+        var queue = await QueueAsync(w.RootAdmin);
+        Assert.Single(queue);
+        Assert.Empty(await QueueAsync(w.School2Admin)); // nothing in scope, nothing read, no row
+
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        var reads = await db.Set<AuditEntry>().Where(a => a.EntityType == "ModerationRead" && a.EntityId == id).ToListAsync();
+        var row = Assert.Single(reads);
+        Assert.Contains("\"kind\":\"List\"", row.AfterJson);
+        Assert.Contains(id.ToString(), row.AfterJson);
+        Assert.DoesNotContain("message 6", row.AfterJson); // no text in the audit log
     }
 
     [Fact]

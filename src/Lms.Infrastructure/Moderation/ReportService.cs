@@ -27,7 +27,7 @@ public enum ReportOutcome
     RateLimited,
 }
 
-public sealed record ReportResult(ReportOutcome Outcome, Guid? ReportId = null);
+public sealed record ReportResult(ReportOutcome Outcome, Guid? ReportId = null, int? RetryAfterSeconds = null);
 
 /// <summary>One message of the frozen context, stored in the report as JSON (names and text at the time of the report).</summary>
 public sealed record ReportContextItem(Guid MessageId, string SenderNameAr, string SenderNameEn, string? Body, List<string> AttachmentNames, DateTime CreatedAtUtc, bool IsReported, List<ReportAttachmentRefDto>? Attachments = null);
@@ -90,9 +90,12 @@ public sealed class ReportService(
         var path = context.ScopePath ?? string.Empty;
         var cap = (await settings.ResolveAsync(SettingKeys.ModerationMaxReportsPerUserPerDay, path, ct)).Value;
         var since = now.AddHours(-24);
-        if (await db.Set<MessageReport>().CountAsync(r => r.ReporterUserId == me && r.CreatedAt >= since, ct) >= cap)
+        var recent = await db.Set<MessageReport>().Where(r => r.ReporterUserId == me && r.CreatedAt >= since).OrderBy(r => r.CreatedAt).Select(r => r.CreatedAt).ToListAsync(ct);
+        if (recent.Count >= cap)
         {
-            return new ReportResult(ReportOutcome.RateLimited);
+            // L18: the slot that frees first is the one that ages out of the last 24 hours after the others still count against the cap.
+            var frees = recent[recent.Count - cap].AddHours(24);
+            return new ReportResult(ReportOutcome.RateLimited, RetryAfterSeconds: Math.Max(1, (int)Math.Ceiling((frees - now).TotalSeconds)));
         }
 
         var conversation = await db.Set<Conversation>().FirstAsync(c => c.Id == message.ConversationId, ct);
