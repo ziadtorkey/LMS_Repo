@@ -90,7 +90,7 @@ public sealed class MessagingFakesTests
         var conversation = await _api.CreateConversationAsync(Direct(FakeMessagingApi.Huda.Id));
         var theirs = _api.Receive(conversation.Id, FakeMessagingApi.Huda, "hello");
 
-        Assert.Equal(403, (await Refused(() => _api.DeleteMessageAsync(conversation.Id, theirs.Id))).Status);
+        Assert.Equal(404, (await Refused(() => _api.DeleteMessageAsync(conversation.Id, theirs.Id))).Status); // sender only
     }
 
     [Fact]

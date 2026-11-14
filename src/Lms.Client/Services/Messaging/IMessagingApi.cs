@@ -26,6 +26,19 @@ public interface IMessagingApi
 
     Task MarkReadAsync(Guid conversationId, CancellationToken ct = default);
 
+    /// <summary>Mutes for the caller: no new-message notice, the unread count still counts. <c>UntilUtc</c> null = until unmuted.</summary>
+    Task<ConversationDto> MuteAsync(Guid conversationId, MuteConversationRequest request, CancellationToken ct = default);
+
+    Task UnmuteAsync(Guid conversationId, CancellationToken ct = default);
+
+    /// <summary>The caller leaves a group (the history stays for the others); a direct conversation cannot be left (409 <c>conversation_closed</c>).</summary>
+    Task LeaveAsync(Guid conversationId, CancellationToken ct = default);
+
+    /// <summary>The group owner adds members; the rules are checked owner to member, a group never drops below three and stays within the size limit.</summary>
+    Task<ConversationDto> AddParticipantsAsync(Guid conversationId, AddParticipantsRequest request, CancellationToken ct = default);
+
+    Task RemoveParticipantAsync(Guid conversationId, Guid userId, CancellationToken ct = default);
+
     Task<IReadOnlyList<MessageSearchResultDto>> SearchAsync(string query, Guid? conversationId = null, int page = 1, CancellationToken ct = default);
 
     Task ReportAsync(Guid messageId, ReportMessageRequest request, CancellationToken ct = default);
@@ -66,6 +79,19 @@ public sealed class MessagingApi(Api.ApiHttp http) : IMessagingApi
 
     public Task MarkReadAsync(Guid conversationId, CancellationToken ct = default) =>
         http.SendAsync(HttpMethod.Post, Routes.ConversationRead(conversationId), null, ct);
+
+    public async Task<ConversationDto> MuteAsync(Guid conversationId, MuteConversationRequest request, CancellationToken ct = default) =>
+        (await http.SendAsync<ConversationDto>(HttpMethod.Put, Routes.ConversationMute(conversationId), request, ct))!;
+
+    public Task UnmuteAsync(Guid conversationId, CancellationToken ct = default) => http.SendAsync(HttpMethod.Delete, Routes.ConversationMute(conversationId), null, ct);
+
+    public Task LeaveAsync(Guid conversationId, CancellationToken ct = default) => http.SendAsync(HttpMethod.Post, Routes.ConversationLeave(conversationId), null, ct);
+
+    public async Task<ConversationDto> AddParticipantsAsync(Guid conversationId, AddParticipantsRequest request, CancellationToken ct = default) =>
+        (await http.SendAsync<ConversationDto>(HttpMethod.Post, Routes.ConversationParticipants(conversationId), request, ct))!;
+
+    public Task RemoveParticipantAsync(Guid conversationId, Guid userId, CancellationToken ct = default) =>
+        http.SendAsync(HttpMethod.Delete, Routes.ConversationParticipant(conversationId, userId), null, ct);
 
     public async Task<IReadOnlyList<MessageSearchResultDto>> SearchAsync(string query, Guid? conversationId = null, int page = 1, CancellationToken ct = default) =>
         await http.GetAsync<List<MessageSearchResultDto>>(Routes.MessageSearchUrl(query, conversationId, page), ct);

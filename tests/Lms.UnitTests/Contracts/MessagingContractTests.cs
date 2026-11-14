@@ -45,11 +45,11 @@ public sealed class MessagingContractTests
     }
 
     [Fact]
-    public void Defaults_version_10_introduces_exactly_the_six_permissions()
+    public void Defaults_version_11_introduces_exactly_the_six_permissions()
     {
-        Assert.Equal(10, BuiltInRoleDefaults.CurrentVersion);
-        Assert.Equal(6, BuiltInRoleDefaults.IntroducedInVersion10.Count);
-        Assert.All(BuiltInRoleDefaults.IntroducedInVersion10, p => Assert.Equal(10, BuiltInRoleDefaults.IntroducedIn(p)));
+        Assert.Equal(11, BuiltInRoleDefaults.CurrentVersion);
+        Assert.Equal(6, BuiltInRoleDefaults.IntroducedInVersion11.Count);
+        Assert.All(BuiltInRoleDefaults.IntroducedInVersion11, p => Assert.Equal(11, BuiltInRoleDefaults.IntroducedIn(p)));
     }
 
     // --- the D69 rules matrix
@@ -137,7 +137,7 @@ public sealed class MessagingContractTests
         Assert.Equal(["Organization", "Unit", "Level", "Class", "ClassCourse", "Group"], AnnouncementTargetKinds.All);
         Assert.Equal(["Draft", "Scheduled", "Published", "Withdrawn", "Expired"], AnnouncementStatuses.All);
         Assert.Equal(["Staff", "Students", "Guardians"], AnnouncementRoleFilters.All);
-        Assert.Equal(["Active", "NeedsSetup", "Blocked", "Bounced"], ChannelStates.All);
+        Assert.Equal(["Active", "NeedsSetup", "Blocked", "Bounced", "NotAllowed"], ChannelStates.All);
         Assert.Equal(["Pending", "Sending", "Sent", "Failed", "Skipped", "Expired"], DeliveryStatuses.All);
         Assert.Equal((15, 5, 10, 50, 2, 50, 200), (MessagingLimits.DeleteWindowMinutes, MessagingLimits.MaxAttachmentsPerMessage, MessagingLimits.MaxAttachmentMb,
             MessagingLimits.DefaultMaxGroupSize, MessagingLimits.SearchMinLength, MessagingLimits.SearchMaxResults, MessagingLimits.SearchWindow));
@@ -195,6 +195,37 @@ public sealed class MessagingContractTests
     }
 
     [Fact]
+    public void The_group_contract_has_a_read_only_switch_owner_member_changes_and_a_class_course_input()
+    {
+        var group = new ConversationDto(Id, ConversationKinds.Group, "فصل", [], false, false, DateTime.UtcNow, IsReadOnly: true, OwnerUserId: Id, ClassCourseId: Id);
+
+        Assert.True(Round(group).IsReadOnly);
+        Assert.False(Round(group).IsLocked); // read-only is not the moderator's lock
+        Assert.Equal(Id, Round(group).ClassCourseId);
+        Assert.Equal(Id, Round(new CreateConversationRequest(ConversationKinds.Group, [Id, Id], "فصل", null, Id)).ClassCourseId);
+        Assert.Equal([Id], Round(new AddParticipantsRequest([Id])).UserIds);
+        Assert.False(new ConversationDto(Id, ConversationKinds.Direct, null, [], false, false, DateTime.UtcNow).IsReadOnly); // older shapes default to writable
+        Assert.Equal("group_read_only", ProblemCodes.group_read_only); // D74: students never post in a group
+    }
+
+    [Fact]
+    public void Sms_is_never_for_guardians_or_students_and_the_contract_says_so()
+    {
+        // D72 and D75: SMS only to adults about themselves; guardians get email and push, even for urgent announcements
+        Assert.Contains(ChannelStates.NotAllowed, ChannelStates.All);
+        Assert.Contains(PreferenceSources.Policy, PreferenceSources.All);
+        var cell = new EffectivePreferenceDto(NotificationEvents.AnnouncementsPublished, NotificationChannels.Sms, false, PreferenceSources.Policy, false);
+        Assert.False(Round(cell).Enabled);
+        Assert.Equal(PreferenceSources.Policy, Round(cell).Source);
+        Assert.Equal(ChannelStates.NotAllowed, Round(new ContactChannelDto(NotificationChannels.Sms, ChannelStates.NotAllowed, null, false)).State);
+        Assert.Equal("channel_not_allowed", ProblemCodes.channel_not_allowed);
+        // no built-in default channel list of the M6 events includes SMS
+        Assert.All(new[] { NotificationEvents.MessagesNewMessage, NotificationEvents.AnnouncementsPublished, NotificationEvents.MessagingWarning,
+                           NotificationEvents.MessagingRestricted, NotificationEvents.MessagingReportResolved, NotificationEvents.CommsCapReached },
+            k => Assert.DoesNotContain(NotificationChannels.Sms, NotificationEvents.Find(k)!.DefaultChannels ?? []));
+    }
+
+    [Fact]
     public void Dtos_round_trip_with_arabic_text()
     {
         var participant = new ParticipantDto(Id, "سارة", "Sara", BuiltInRoles.Teacher, false);
@@ -227,7 +258,7 @@ public sealed class MessagingContractTests
         var patterns = typeof(Routes).GetFields().Where(f => f.IsLiteral && f.FieldType == typeof(string)).Select(f => (string)f.GetRawConstantValue()!).ToList();
         var messaging = new[]
         {
-            Routes.Conversations, Routes.ConversationPattern, Routes.ConversationMessagesPattern, Routes.MessagePattern, Routes.ConversationReadPattern, Routes.MessageSearch,
+            Routes.Conversations, Routes.ConversationPattern, Routes.ConversationMessagesPattern, Routes.MessagePattern, Routes.ConversationReadPattern, Routes.ConversationMutePattern, Routes.ConversationLeavePattern, Routes.ConversationParticipantsPattern, Routes.ConversationParticipantPattern, Routes.ConversationReadOnlyPattern, Routes.MessageSearch,
             Routes.MessageReportPattern, Routes.MyBlocks, Routes.MyBlockPattern, Routes.MessagingRecipients, Routes.MessagingRulesSummary, Routes.MessagingLimits,
             Routes.MyUnreadTotal, Routes.ModerationReports, Routes.ModerationReportPattern, Routes.ModerationReportResolvePattern, Routes.ModerationStats,
             Routes.OrgAnnouncements, Routes.OrgAnnouncementPattern, Routes.OrgAnnouncementPublishPattern, Routes.OrgAnnouncementWithdrawPattern,
@@ -245,6 +276,11 @@ public sealed class MessagingContractTests
         Assert.Equal($"/api/conversations/{c}/messages/{m}", Routes.Message(c, m));
         Assert.Equal($"/api/conversations/{c}/messages?pageSize=50", Routes.ConversationMessages(c, null));
         Assert.Equal($"/api/conversations/{c}/messages?beforeId={m}&pageSize=20", Routes.ConversationMessages(c, m, 20));
+        Assert.Equal($"/api/conversations/{c}/mute", Routes.ConversationMute(c));
+        Assert.Equal($"/api/conversations/{c}/leave", Routes.ConversationLeave(c));
+        Assert.Equal($"/api/conversations/{c}/participants/{m}", Routes.ConversationParticipant(c, m));
+        Assert.Equal($"/api/conversations/{c}/read-only", Routes.ConversationReadOnly(c));
+        Assert.Equal(new MuteConversationRequest(null), Round(new MuteConversationRequest(null)));
         Assert.Equal($"/api/messages/{m}/report", Routes.MessageReport(m));
         Assert.Equal($"/api/comms/announcements/{c}/publish", Routes.OrgAnnouncementPublish(c));
         Assert.Equal($"/api/moderation/reports/{c}/resolve", Routes.ModerationReportResolve(c));
@@ -259,7 +295,7 @@ public sealed class MessagingContractTests
         var matches = Regex.Matches(text, @"((?:\s*///[^\n]*\n)+)\s*public const string (\w+) =");
         var routes = matches.Select(m => (Name: m.Groups[2].Value, Doc: m.Groups[1].Value)).ToList();
 
-        Assert.True(routes.Count >= 34, $"found {routes.Count} documented route constants");
+        Assert.True(routes.Count >= 39, $"found {routes.Count} documented route constants");
         Assert.All(routes, r => Assert.Matches(@"Messaging\.\w+|Announcements\.\w+|Comms\.\w+|authenticated|anonymous|Development only|participant", r.Doc));
         Assert.Equal(Regex.Matches(text, @"public const string \w+ =").Count, routes.Count);
     }

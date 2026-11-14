@@ -46,7 +46,6 @@ public sealed class FakeCommsApi(FakeMessagingRules rules) : ICommsApi
     [
         new(NotificationChannels.InApp, ChannelStates.Active, null, true),
         new(NotificationChannels.Email, ChannelStates.Active, "s***@example.com", true),
-        new(NotificationChannels.Sms, ChannelStates.NeedsSetup, null, false),
         new(NotificationChannels.Push, ChannelStates.NeedsSetup, null, false),
     ];
 
@@ -55,9 +54,11 @@ public sealed class FakeCommsApi(FakeMessagingRules rules) : ICommsApi
     public List<ProviderStatusDto> Providers { get; } =
     [
         new(NotificationChannels.Email, true, true, null, null),
-        new(NotificationChannels.Sms, false, true, null, null),
         new(NotificationChannels.Push, true, true, null, null),
     ];
+
+    /// <summary>D76: no SMS in v1. Email, push and the in-app inbox are the only channels a user sees or sets.</summary>
+    public static IReadOnlyList<string> Offered { get; } = [.. NotificationChannels.All.Where(c => c != NotificationChannels.Sms)];
 
     private static ApiProblemException Problem(int status, string code) => new(status, code, null, null);
 
@@ -66,7 +67,7 @@ public sealed class FakeCommsApi(FakeMessagingRules rules) : ICommsApi
         var rows = new List<EffectivePreferenceDto>();
         foreach (var e in NotificationEvents.All)
         {
-            foreach (var channel in NotificationChannels.All)
+            foreach (var channel in Offered)
             {
                 var isDefault = (e.DefaultChannels ?? [NotificationChannels.InApp]).Contains(channel);
                 if (e.Mandatory && isDefault) rows.Add(new(e.Key, channel, true, PreferenceSources.Mandatory, true));
@@ -84,6 +85,7 @@ public sealed class FakeCommsApi(FakeMessagingRules rules) : ICommsApi
         foreach (var p in request.Preferences)
         {
             var def = NotificationEvents.Find(p.EventKey) ?? throw Problem(400, ProblemCodes.validation_failed);
+            if (p.Channel == NotificationChannels.Sms) throw Problem(409, ProblemCodes.channel_not_allowed); // D76: SMS is not offered at all
             if (!NotificationChannels.All.Contains(p.Channel)) throw Problem(400, ProblemCodes.validation_failed);
             if (def.Mandatory && !p.Enabled && (def.DefaultChannels ?? []).Contains(p.Channel)) throw Problem(409, ProblemCodes.notification_mandatory);
         }
