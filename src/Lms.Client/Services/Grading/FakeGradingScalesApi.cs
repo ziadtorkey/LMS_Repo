@@ -37,6 +37,13 @@ public sealed class FakeGradingScalesApi : IGradingScalesApi
 
     private static ApiProblemException Problem(int status, string code) => new(status, code, null, null);
 
+    /// <summary>Flags the unedited copies of a preset as having an update (the server does this when the preset data changes).</summary>
+    public void MarkUpdateAvailable(string seedKey)
+    {
+        for (var i = 0; i < _scales.Count; i++)
+            if (!_scales[i].IsTemplate && _scales[i].SeedKey == seedKey) _scales[i] = _scales[i] with { UpdateAvailable = true };
+    }
+
     /// <summary>Marks a scale as used by a gradebook (so it cannot be deleted).</summary>
     public void MarkInUse(Guid scaleId) => ScalesInUse.Add(scaleId);
 
@@ -127,6 +134,15 @@ public sealed class FakeGradingScalesApi : IGradingScalesApi
     public Task<GradingScaleDto> CopyPresetAsync(Guid unitId, CopyScalePresetRequest request, CancellationToken ct = default)
     {
         var preset = _scales.FirstOrDefault(s => s.IsTemplate && s.SeedKey == request.SeedKey) ?? throw Problem(404, ProblemCodes.not_found);
+        // An unedited copy flagged UpdateAvailable is updated in place from the preset instead of copied again.
+        var stale = _scales.FirstOrDefault(s => !s.IsTemplate && s.OrgUnitId == unitId && s.SeedKey == request.SeedKey && s.UpdateAvailable);
+        if (stale is not null)
+        {
+            var refreshed = stale with { Bands = [.. preset.Bands.Select(x => x with { Id = Guid.NewGuid() })], SeedVersion = preset.SeedVersion, UpdateAvailable = false, Provisional = true };
+            _scales[_scales.IndexOf(stale)] = refreshed;
+            return Task.FromResult(refreshed);
+        }
+
         var copy = preset with { Id = Guid.NewGuid(), OrgUnitId = unitId, IsTemplate = false, IsDefault = false, Provisional = true, UpdateAvailable = false,
             Bands = [.. preset.Bands.Select(b => b with { Id = Guid.NewGuid() })] };
         _scales.Add(copy);

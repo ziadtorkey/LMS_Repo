@@ -1626,4 +1626,75 @@
   <data name="Grd_Title" xml:space="preserve"><value>دفتر الدرجات</value></data>
   <data name="Grd_GridSoonTitle" xml:space="preserve"><value>جدول الدرجات قادم قريبا</value></data>
   <data name="Grd_GridSoonText" xml:space="preserve"><value>ستظهر هنا فئات الدرجات وبنودها ودرجات هذا المقرر الدراسي.</value></data>
+  <data name="Nav_GradingScales" xml:space="preserve"><value>مقاييس التقدير</value></data>
+  <data name="Grading_Sections" xml:space="preserve"><value>إعدادات التقدير</value></data>
+  <data name="Grd_TabScales" xml:space="preserve"><value>المقاييس</value></data>
+  <data name="Grd_TabTemplates" xml:space="preserve"><value>قوالب الأوزان</value></data>
+  <data name="Common_Saving" xml:space="preserve"><value>جار الحفظ</value></data>
+  <data name="Common_RequiredFields" xml:space="preserve"><value>املأ كل الحقول المطلوبة.</value></data>
+  <data name="Scales_Title" xml:space="preserve"><value>مقاييس التقدير</value></data>
+  <data name="Scales_Subtitle" xml:space="preserve"><value>كيف تتحول النسب المئوية إلى فئات أو حروف أو نقاط في هذه الوحدة وما دونها.</value></data>
+  <data name="Scales_Unit" xml:space="preserve"><value>الوحدة</value></data>
+  <data name="Scales_New" xml:space="preserve"><value>مقياس جديد</value></data>
+  <data name="Scales_AddPreset" xml:space="preserve"><value>إضافة من نموذج جاهز</value></data>
+  <data name="Scales_Kind" xml:space="preserve"><value>النوع</value></data>
+  <data name="Scales_Bands" xml:space="preserve"><value>الفئات</value></data>
+  <data name="Scales_Default" xml:space="preserve"><value>الافتراضي</value></data>
+  <data name="Scales_Provisional" xml:space="preserve"><value>مؤقت</value></data>
+  <data name="Scales_UpdateAvailable" xml:space="preserve"><value>يتوفر تحديث</value></data>
+  <data name="Scales_Inherited" xml:space="preserve"><value>موروث</value></data>
+  <data name="Scales_InUse" xml:space="preserve"><value>قيد الاستخدام</value></data>
+  <data name="Scales_View" xml:space="preserve"><value>عرض</value></data>
+  <data name="Scales_Confirm" xml:space="preserve"><value>اعتماد المقياس</value></data>
+  <data name="Scales_UpdatePreset" xml:space="preserve"><value>تحديث من النموذج</value></data>
+  <data name="Scales_MakeDefault" xml:space="preserve"><value>جعله افتراضيا</value></data>
+  <data name="Scales_MakeDefaultConfirm" xml:space="preserve"><value>هل تريد جعل {0} المقياس الافتراضي لهذه الوحدة؟</value></data>
+  <data name="Scales_DeleteConfirm" xml:space="preserve"><value>هل تريد حذف المقياس {0}؟ لا يمكن حذف مقياس يستخدمه دفتر درجات.</value></data>
+  <data name="Scales_Saved" xml:space="preserve"><value>تم حفظ المقياس.</value></data>
+  <data name="Scales_PresetAdded" xml:space="preserve"><value>تمت إضافة النموذج. يبقى مؤقتا حتى تعتمده.</value></data>
+  <data name="Scales_Confirmed" xml:space="preserve"><value>تم اعتماد المقياس.</value></data>
+  <data name="Scales_EmptyTitle" xml:space="preserve"><value>لا توجد مقاييس تقدير بعد</value></data>
+  <data name="Scales_EmptyText" xml:space="preserve"><value>أضف مقياسا من نموذج جاهز أو أنشئ مقياسك.</value></data>
+  <data name="ScaleDialog_NewTitle" xml:space="preserve"><value>مقياس تقدير جديد</value></data>
+  <data name="ScaleDialog_EditTitle" xml:space="preserve"><value>تعديل مقياس التقدير</value></data>
+  <data name="ScaleDialog_ViewTitle" xml:space="preserve"><value>مقياس التقدير</value></data>
+  <data name="ScaleDialog_General" xml:space="preserve"><value>عام</value></data>
+  <data name="ScaleDialog_ReadOnly" xml:space="preserve"><value>هذا المقياس من وحدة أعلى أو نموذج جاهز ولا يمكن تغييره هنا.</value></data>
+  <data name="Band_Number" xml:space="preserve"><value>الفئة {0}</value></data>
+  <data name="Band_Code" xml:space="preserve"><value>الرمز</value></data>
+  <data name="Band_Min" xml:space="preserve"><value>من (%)</value></data>
+  <data name="Band_Max" xml:space="preserve"><value>إلى (%)</value></data>
+  <data name="Band_Points" xml:space="preserve"><value>النقاط</value></data>
+  <data name="Band_LabelAr" xml:space="preserve"><value>المسمى (عربي)</value></data>
+  <data name="Band_LabelEn" xml:space="preserve"><value>المسمى (إنجليزي)</value></data>
+  <data name="Band_DescriptorAr" xml:space="preserve"><value>الوصف (عربي)</value></data>
+  <data name="Band_DescriptorEn" xml:space="preserve"><value>الوصف (إنجليزي)</value></data>
+  <data name="Band_Add" xml:space="preserve"><value>إضافة فئة</value></data>
+  <data name="Band_Remove" xml:space="preserve"><value>حذف الفئة</value></data>
+  <data name="Band_Strip" xml:space="preserve"><value>الفئات على مدى 0 إلى 100 بالمئة</value></data>
+  <data name="Band_CoverageOk" xml:space="preserve"><value>تغطي الفئات من 0 إلى 100 دون فجوات أو تداخل.</value></data>
+  <data name="Band_CoverageStart" xml:space="preserve"><value>لا توجد فئة تغطي من {0} إلى {1}.</value></data>
+  <data name="Band_CoverageEnd" xml:space="preserve"><value>لا توجد فئة تغطي من {0} إلى {1}.</value></data>
+  <data name="Band_CoverageGap" xml:space="preserve"><value>فجوة بين {0} و{1}.</value></data>
+  <data name="Band_CoverageOverlap" xml:space="preserve"><value>تداخل بين الفئات من {0} إلى {1}.</value></data>
+  <data name="Band_CoverageInverted" xml:space="preserve"><value>فئة تبدأ عند {0} وتنتهي عند {1}.</value></data>
+  <data name="WTemplates_New" xml:space="preserve"><value>قالب جديد</value></data>
+  <data name="WTemplates_Items" xml:space="preserve"><value>الفئات</value></data>
+  <data name="WTemplates_TotalColumn" xml:space="preserve"><value>مجموع الأوزان</value></data>
+  <data name="WTemplates_Saved" xml:space="preserve"><value>تم حفظ القالب.</value></data>
+  <data name="TemplateDialog_NewTitle" xml:space="preserve"><value>قالب أوزان جديد</value></data>
+  <data name="TemplateDialog_EditTitle" xml:space="preserve"><value>تعديل قالب الأوزان</value></data>
+  <data name="TemplateDialog_ViewTitle" xml:space="preserve"><value>قالب الأوزان</value></data>
+  <data name="Template_ItemNameAr" xml:space="preserve"><value>الفئة (عربي)</value></data>
+  <data name="Template_ItemNameEn" xml:space="preserve"><value>الفئة (إنجليزي)</value></data>
+  <data name="Template_Weight" xml:space="preserve"><value>الوزن (%)</value></data>
+  <data name="Template_AddItem" xml:space="preserve"><value>إضافة فئة</value></data>
+  <data name="Template_RemoveItem" xml:space="preserve"><value>حذف الفئة</value></data>
+  <data name="Template_Total" xml:space="preserve"><value>المجموع: {0}</value></data>
+  <data name="Template_TotalHint" xml:space="preserve"><value>عادة يكون مجموع الأوزان 100.</value></data>
+  <data name="WTemplates_Title" xml:space="preserve"><value>قوالب الأوزان</value></data>
+  <data name="WTemplates_Subtitle" xml:space="preserve"><value>قوائم مسماة بالفئات وأوزانها يبدأ منها المعلم دفتر الدرجات.</value></data>
+  <data name="WTemplates_EmptyTitle" xml:space="preserve"><value>لا توجد قوالب أوزان بعد</value></data>
+  <data name="WTemplates_EmptyText" xml:space="preserve"><value>أنشئ قالبا، مثل أعمال الفصل والاختبارات.</value></data>
+  <data name="WTemplates_DeleteConfirm" xml:space="preserve"><value>هل تريد حذف القالب {0}؟</value></data>
 </root>

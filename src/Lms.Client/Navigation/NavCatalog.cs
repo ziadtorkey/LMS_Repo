@@ -26,6 +26,7 @@ public static class NavCatalog
         new("Nav_Library", "library", Icons.Material.Filled.LocalLibrary, Permissions.Library.View),
         new("Nav_Roles", "roles", Icons.Material.Filled.AdminPanelSettings, Permissions.Roles.View),
         new("Nav_Assignments", "assignments", Icons.Material.Filled.GroupAdd, Permissions.Assignments.View),
+        new("Nav_GradingScales", "grading/scales", Icons.Material.Filled.Grading, Permissions.Grades.ConfigureScales),
         new("Nav_AcademicYears", "academic-years", Icons.Material.Filled.CalendarMonth, Permissions.AcademicYears.View),
         new("Nav_Templates", "templates", Icons.Material.Filled.ContentCopy, Permissions.Templates.View),
         new("Nav_IdentityProviders", "identity-providers", Icons.Material.Filled.Login, Permissions.IdentityProviders.View),

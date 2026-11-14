@@ -1,0 +1,91 @@
+@using Lms.Client.Components
+@using Lms.Client.Components.Grading
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.Grading
+@using Lms.Shared.Grading
+@inject IGradingScalesApi Api
+@inject NavigationManager Navigation
+
+@* Create or edit a weight template of a unit (a named list of categories and weights a teacher can apply to a gradebook). *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="3">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" role="alert" data-testid="template-error">@_error</MudAlert>
+            }
+            @if (ReadOnly)
+            {
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" data-testid="template-readonly">@L["ScaleDialog_ReadOnly"]</MudAlert>
+            }
+            <BilingualNameFields @bind-NameAr="_nameAr" @bind-NameEn="_nameEn" IdPrefix="template-name" />
+            <MudText Typo="Typo.subtitle1" Class="lms-section-title">@L["WTemplates_Items"]</MudText>
+            <CategoryWeightsEditor Items="_items" ReadOnly="ReadOnly" />
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@(ReadOnly ? L["Common_Close"] : L["Common_Cancel"])</MudButton>
+        @if (!ReadOnly)
+        {
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="_saving" data-testid="dialog-save">@L["Common_Save"]</MudButton>
+        }
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired] public Guid UnitId { get; set; }
+    [Parameter] public WeightTemplateDto? Existing { get; set; }
+    [Parameter] public bool ReadOnly { get; set; }
+
+    private readonly List<CategoryWeightsEditor.WeightRow> _items = [];
+    private string _nameAr = "", _nameEn = "";
+    private string? _error;
+    private bool _saving;
+
+    protected override void OnInitialized()
+    {
+        if (Existing is null)
+        {
+            _items.Add(new CategoryWeightsEditor.WeightRow());
+            return;
+        }
+
+        _nameAr = Existing.NameAr;
+        _nameEn = Existing.NameEn;
+        _items.AddRange(Existing.Items.OrderBy(i => i.Order).Select(i => new CategoryWeightsEditor.WeightRow { Id = i.Id, NameAr = i.NameAr, NameEn = i.NameEn, Weight = i.Weight }));
+    }
+
+    private async Task SaveAsync()
+    {
+        _error = null;
+        if (string.IsNullOrWhiteSpace(_nameAr) || string.IsNullOrWhiteSpace(_nameEn)
+            || _items.Any(i => string.IsNullOrWhiteSpace(i.NameAr) || string.IsNullOrWhiteSpace(i.NameEn)))
+        {
+            _error = L["Common_RequiredFields"];
+            return;
+        }
+
+        _saving = true;
+        try
+        {
+            var request = new SaveWeightTemplateRequest(_nameAr.Trim(), _nameEn.Trim(),
+                [.. _items.Select((i, n) => new WeightTemplateItemDto(i.Id, i.NameAr.Trim(), i.NameEn.Trim(), i.Weight, n + 1))]);
+            var saved = Existing is null ? await Api.CreateTemplateAsync(UnitId, request) : await Api.UpdateTemplateAsync(UnitId, Existing.Id, request);
+            MudDialog.Close(DialogResult.Ok(saved));
+        }
+        catch (ApiProblemException ex)
+        {
+            _error = ProblemText.For(ex, L);
+        }
+        catch (Exception ex) when (ApiCalls.TryRedirect(ex, Navigation))
+        {
+            // The page is navigating away.
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+}

@@ -1,0 +1,18 @@
+@using Lms.Shared.Grading
+
+@* The Saudi presets offered by the server (templates of the scales list). Nothing about a preset is known to the client: names, kinds and bands all come from the data. *@
+<MudMenu Label="@L["Scales_AddPreset"]" StartIcon="@Icons.Material.Rounded.AutoAwesome" EndIcon="@Icons.Material.Rounded.ArrowDropDown" Variant="Variant.Outlined"
+         Disabled="Presets.Count == 0" data-testid="preset-menu">
+    @foreach (var preset in Presets)
+    {
+        var p = preset;
+        <MudMenuItem OnClick="() => OnPick.InvokeAsync(p)" data-testid="@($"preset-{p.SeedKey}")">
+            @CultureText.Pick(p.NameAr, p.NameEn) <span class="lms-muted"> · @L[$"Grd_ScaleKind_{p.Kind}"]</span>
+        </MudMenuItem>
+    }
+</MudMenu>
+
+@code {
+    [Parameter] public IReadOnlyList<GradingScaleDto> Presets { get; set; } = [];
+    [Parameter] public EventCallback<GradingScaleDto> OnPick { get; set; }
+}

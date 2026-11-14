@@ -1,0 +1,113 @@
+@using Lms.Client.Components
+@using Lms.Client.Components.Grading
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.Grading
+@using Lms.Shared.Grading
+@inject IGradingScalesApi Api
+@inject NavigationManager Navigation
+
+@* Create or edit a grading scale of a unit; read only for an inherited scale or a preset (the bands come from the server, never from the client). *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="3">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" role="alert" data-testid="scale-error">@_error</MudAlert>
+            }
+            @if (ReadOnly)
+            {
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" data-testid="scale-readonly">@L["ScaleDialog_ReadOnly"]</MudAlert>
+            }
+            <fieldset class="lms-fieldset">
+                <legend>@L["ScaleDialog_General"]</legend>
+                <MudStack Spacing="3">
+                    <BilingualNameFields @bind-NameAr="_nameAr" @bind-NameEn="_nameEn" IdPrefix="scale-name" />
+                    <MudSelect T="string" @bind-Value="_kind" Label="@L["Scales_Kind"]" ReadOnly="ReadOnly" data-testid="scale-kind">
+                        @foreach (var kind in ScaleKinds.All)
+                        {
+                            <MudSelectItem T="string" Value="@kind">@L[$"Grd_ScaleKind_{kind}"]</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudStack>
+            </fieldset>
+            <MudText Typo="Typo.subtitle1" Class="lms-section-title">@L["Scales_Bands"]</MudText>
+            <BandCoverageStrip Bands="_bands" />
+            <BandEditor Bands="_bands" ReadOnly="ReadOnly" BandsChanged="StateHasChanged" />
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@(ReadOnly ? L["Common_Close"] : L["Common_Cancel"])</MudButton>
+        @if (!ReadOnly)
+        {
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="_saving" data-testid="dialog-save">
+                @if (_saving)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="me-2" aria-label="@L["Common_Saving"]" />
+                }
+                @L["Common_Save"]
+            </MudButton>
+        }
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired] public Guid UnitId { get; set; }
+
+    /// <summary>The scale to edit or view; null creates a new one.</summary>
+    [Parameter] public GradingScaleDto? Existing { get; set; }
+
+    /// <summary>An inherited scale or a preset template: shown, not edited.</summary>
+    [Parameter] public bool ReadOnly { get; set; }
+
+    private readonly List<BandRow> _bands = [];
+    private string _nameAr = "", _nameEn = "", _kind = ScaleKinds.Percentage;
+    private string? _error;
+    private bool _saving;
+
+    protected override void OnInitialized()
+    {
+        if (Existing is null)
+        {
+            _bands.Add(new BandRow { MinPercent = 0m, MaxPercent = 100m });
+            return;
+        }
+
+        _nameAr = Existing.NameAr;
+        _nameEn = Existing.NameEn;
+        _kind = Existing.Kind;
+        _bands.AddRange(Existing.Bands.OrderBy(b => b.Order).Select(BandRow.From));
+    }
+
+    private async Task SaveAsync()
+    {
+        _error = null;
+        if (string.IsNullOrWhiteSpace(_nameAr) || string.IsNullOrWhiteSpace(_nameEn)
+            || _bands.Any(b => string.IsNullOrWhiteSpace(b.Code) || b.MinPercent is null || b.MaxPercent is null))
+        {
+            _error = L["Common_RequiredFields"];
+            return;
+        }
+
+        _saving = true;
+        try
+        {
+            var request = new SaveGradingScaleRequest(_nameAr.Trim(), _nameEn.Trim(), _kind, [.. _bands.Select((b, i) => b.ToRequest(i + 1))]);
+            var saved = Existing is null ? await Api.CreateScaleAsync(UnitId, request) : await Api.UpdateScaleAsync(UnitId, Existing.Id, request);
+            MudDialog.Close(DialogResult.Ok(saved));
+        }
+        catch (ApiProblemException ex)
+        {
+            _error = ProblemText.For(ex, L);
+        }
+        catch (Exception ex) when (ApiCalls.TryRedirect(ex, Navigation))
+        {
+            // The page is navigating away.
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+}

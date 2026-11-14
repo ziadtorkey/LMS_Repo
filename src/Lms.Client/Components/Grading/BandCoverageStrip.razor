@@ -1,0 +1,51 @@
+@using System.Globalization
+@using Lms.Shared.Grading
+
+@* A strip of the bands over 0 to 100 and, as text, every gap and overlap (colour is never the only signal). A hint: the server has the last word. *@
+<div class="lms-band-strip-wrap" data-testid="band-coverage">
+    <div class="lms-band-strip" role="img" aria-label="@L["Band_Strip"]">
+        @foreach (var b in Segments)
+        {
+            <span class="lms-band-seg @(b.Valid ? null : "lms-band-seg-bad")" style="inline-size: @(b.Width.ToString("0.##", CultureInfo.InvariantCulture))%" title="@b.Code"></span>
+        }
+    </div>
+    <div class="lms-band-scale" dir="ltr" aria-hidden="true"><span>0</span><span>100</span></div>
+    @if (Issues.Count == 0)
+    {
+        <MudText Typo="Typo.body2" Color="Color.Success" role="status" data-testid="band-coverage-ok">@L["Band_CoverageOk"]</MudText>
+    }
+    else
+    {
+        <ul class="lms-band-issues" role="status" data-testid="band-coverage-issues">
+            @foreach (var issue in Issues)
+            {
+                <li data-testid="@($"band-issue-{issue.Kind}")">@Text(issue)</li>
+            }
+        </ul>
+    }
+</div>
+
+@code {
+    [Parameter] public IReadOnlyList<BandRow> Bands { get; set; } = [];
+
+    private IReadOnlyList<CoverageIssue> Issues => BandCoverage.Analyse(Filled.Select(b => (b.MinPercent!.Value, b.MaxPercent!.Value)));
+
+    private IEnumerable<BandRow> Filled => Bands.Where(b => b.MinPercent is not null && b.MaxPercent is not null);
+
+    private IEnumerable<(string Code, decimal Width, bool Valid)> Segments =>
+        Filled.OrderBy(b => b.MinPercent).Select(b => (b.Code, Math.Max(0m, Math.Min(100m, b.MaxPercent!.Value) - Math.Max(0m, b.MinPercent!.Value)), b.MaxPercent >= b.MinPercent));
+
+    private string Text(CoverageIssue issue)
+    {
+        var from = issue.From.ToString("0.##", CultureInfo.InvariantCulture);
+        var to = issue.To.ToString("0.##", CultureInfo.InvariantCulture);
+        return issue.Kind switch
+        {
+            CoverageIssueKind.StartsAbove => string.Format(CultureInfo.CurrentCulture, L["Band_CoverageStart"].Value, from, to),
+            CoverageIssueKind.EndsBelow => string.Format(CultureInfo.CurrentCulture, L["Band_CoverageEnd"].Value, from, to),
+            CoverageIssueKind.Gap => string.Format(CultureInfo.CurrentCulture, L["Band_CoverageGap"].Value, from, to),
+            CoverageIssueKind.Overlap => string.Format(CultureInfo.CurrentCulture, L["Band_CoverageOverlap"].Value, from, to),
+            _ => string.Format(CultureInfo.CurrentCulture, L["Band_CoverageInverted"].Value, from, to),
+        };
+    }
+}

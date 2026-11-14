@@ -86,3 +86,15 @@ html:lang(ar), html:lang(ar) body { font-family: Cairo, "Segoe UI", Tahoma, Aria
 /* Lesson plan: a module with its authoring buttons, and the add-module menu under a lesson. */
 .lms-module-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px 8px; min-width: 0; }
 .lms-plan-add { margin-block-start: 4px; }
+
+/* ---------- Grading scales and weight templates (M5 T23) ---------- */
+.lms-band-strip { display: flex; block-size: 14px; border-radius: 7px; overflow: hidden; background: var(--mud-palette-background-gray); border: 1px solid var(--mud-palette-lines-default); }
+.lms-band-seg { display: block; block-size: 100%; background: var(--mud-palette-primary); border-inline-end: 2px solid var(--mud-palette-surface); }
+.lms-band-seg:nth-child(even) { background: var(--mud-palette-primary-darken); }
+.lms-band-seg-bad { background: var(--mud-palette-error); }
+.lms-band-scale { display: flex; justify-content: space-between; font-size: .75rem; margin-block: 2px 8px; color: var(--mud-palette-text-secondary); }
+.lms-band-issues { margin: 0; padding-inline-start: 18px; color: var(--mud-palette-error); }
+.lms-band-list { display: flex; flex-direction: column; gap: 12px; }
+.lms-weight-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 120px auto; gap: 12px; align-items: center; margin-block-end: 8px; }
+.lms-weights-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-block: 8px; }
+@media (max-width: 599px) { .lms-weight-row { grid-template-columns: minmax(0, 1fr) auto; } .lms-weight-row > :nth-child(1), .lms-weight-row > :nth-child(2) { grid-column: 1 / -1; } }

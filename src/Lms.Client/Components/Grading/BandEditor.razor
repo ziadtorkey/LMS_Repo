@@ -1,0 +1,59 @@
+@using System.Globalization
+@using Lms.Shared.Grading
+
+@* The bands of a scale, one card per band (a table of nine columns does not fit a phone). Read only for an inherited scale or a preset. *@
+<div class="lms-band-list" data-testid="band-editor">
+    @for (var i = 0; i < Bands.Count; i++)
+    {
+        var band = Bands[i];
+        var n = i;
+        <fieldset class="lms-fieldset lms-band" data-testid="@($"band-{n}")">
+            <legend>@string.Format(CultureInfo.CurrentCulture, L["Band_Number"].Value, n + 1)</legend>
+            <div class="lms-form-grid">
+                <MudTextField T="string" @bind-Value="band.Code" @bind-Value:after="Changed" Label="@L["Band_Code"]" MaxLength="20" ReadOnly="ReadOnly" Immediate="true" dir="ltr"
+                              data-testid="@($"band-code-{n}")" />
+                <MudNumericField T="decimal?" @bind-Value="band.MinPercent" @bind-Value:after="Changed" Label="@L["Band_Min"]" Min="0m" Max="100m" Step="0.01m" ReadOnly="ReadOnly" Immediate="true"
+                                 HideSpinButtons="true" dir="ltr" data-testid="@($"band-min-{n}")" />
+                <MudNumericField T="decimal?" @bind-Value="band.MaxPercent" @bind-Value:after="Changed" Label="@L["Band_Max"]" Min="0m" Max="100m" Step="0.01m" ReadOnly="ReadOnly" Immediate="true"
+                                 HideSpinButtons="true" dir="ltr" data-testid="@($"band-max-{n}")" />
+                <MudNumericField T="decimal?" @bind-Value="band.Points" Label="@L["Band_Points"]" Min="0m" Step="0.01m" ReadOnly="ReadOnly" HideSpinButtons="true" dir="ltr"
+                                 data-testid="@($"band-points-{n}")" />
+                <MudTextField T="string" @bind-Value="band.LabelAr" Label="@L["Band_LabelAr"]" MaxLength="100" ReadOnly="ReadOnly" data-testid="@($"band-label-ar-{n}")" />
+                <MudTextField T="string" @bind-Value="band.LabelEn" Label="@L["Band_LabelEn"]" MaxLength="100" ReadOnly="ReadOnly" dir="ltr" data-testid="@($"band-label-en-{n}")" />
+                <MudTextField T="string" @bind-Value="band.DescriptorAr" Label="@L["Band_DescriptorAr"]" MaxLength="300" ReadOnly="ReadOnly" data-testid="@($"band-desc-ar-{n}")" />
+                <MudTextField T="string" @bind-Value="band.DescriptorEn" Label="@L["Band_DescriptorEn"]" MaxLength="300" ReadOnly="ReadOnly" dir="ltr" data-testid="@($"band-desc-en-{n}")" />
+            </div>
+            @if (!ReadOnly && Bands.Count > 1)
+            {
+                <div class="lms-dialog-actions">
+                    <MudButton Variant="Variant.Text" Color="Color.Error" StartIcon="@Icons.Material.Rounded.Delete" OnClick="() => Remove(band)"
+                               data-testid="@($"band-remove-{n}")">@L["Band_Remove"]</MudButton>
+                </div>
+            }
+        </fieldset>
+    }
+    @if (!ReadOnly && Bands.Count < GradingLimits.MaxBands)
+    {
+        <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.Add" OnClick="Add" data-testid="band-add">@L["Band_Add"]</MudButton>
+    }
+</div>
+
+@code {
+    [Parameter] public List<BandRow> Bands { get; set; } = [];
+    [Parameter] public bool ReadOnly { get; set; }
+    [Parameter] public EventCallback BandsChanged { get; set; }
+
+    private Task Changed() => BandsChanged.InvokeAsync();
+
+    private async Task Add()
+    {
+        Bands.Add(new BandRow());
+        await BandsChanged.InvokeAsync();
+    }
+
+    private async Task Remove(BandRow band)
+    {
+        Bands.Remove(band);
+        await BandsChanged.InvokeAsync();
+    }
+}
