@@ -15,6 +15,11 @@ public sealed class AttendanceAlertsPageTests : StaffTestContext
 
     public AttendanceAlertsPageTests() => Services.AddSingleton<IAttendanceApi>(_api);
 
+    private sealed class FixedClock(DateTimeOffset now) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => now;
+    }
+
     private async Task<IRenderedComponent<AttendanceAlertsPage>> RenderAsync(string culture = "en", params string[] permissions)
     {
         Culture.Current = new CultureInfo(culture);
@@ -35,6 +40,23 @@ public sealed class AttendanceAlertsPageTests : StaffTestContext
         Assert.Contains("5 absences + 1 lates = 5.5 (threshold 5, last 30 days)", formulas); // the server's counts and score, not summed here
         Assert.Contains("4 absences + 3 lates = 5.5 (threshold 5, last 30 days)", formulas);
         Assert.Equal(2, formulas.Count); // active only by default
+    }
+
+    [Fact]
+    public async Task The_since_date_is_shown_in_the_clients_zone_not_raw_UTC()
+    {
+        var clock = new FixedClock(new DateTimeOffset(2026, 11, 18, 20, 0, 0, TimeSpan.Zero));
+        Services.AddSingleton<IAttendanceApi>(new FakeAttendanceApi(clock));
+        Culture.Current = new CultureInfo("en");
+        await GrantAsync(Permissions.Excuses.Review);
+        Api.Me = Api.Me with { Contexts = [new Lms.Shared.Me.UserContextDto(Context.ActiveAssignmentId!.Value, Guid.NewGuid(), "م", "School", Guid.NewGuid(), "ص", "Grade", "م", "Teacher", "Asia/Tokyo")] };
+        RenderProviders();
+
+        var page = Render<AttendanceAlertsPage>();
+        page.WaitForElement("[data-testid^=alert-since-]");
+
+        // the second alert was raised 24 h before 20:00 UTC on the 18th = 17 Nov 20:00 UTC = 18 Nov 05:00 in Tokyo
+        page.WaitForAssertion(() => Assert.Contains("2026-11-18", page.FindAll("[data-testid^=alert-since-]").Select(e => e.TextContent.Trim())));
     }
 
     [Fact]
@@ -105,6 +127,34 @@ public sealed class AttendanceReportsPageTests : StaffTestContext
     }
 
     [Fact]
+    public async Task The_as_of_time_and_the_30_day_default_follow_the_clients_calendar()
+    {
+        // 20:00 UTC on 18 Nov is already 05:00 on the 19th in Tokyo: the range ends on the 19th and starts 30 days earlier.
+        var clock = new FixedClock(new DateTimeOffset(2026, 11, 18, 20, 0, 0, TimeSpan.Zero));
+        var fake = new FakeAttendanceApi(clock);
+        Services.AddSingleton<IAttendanceApi>(fake);
+        Services.AddSingleton<TimeProvider>(clock);
+        Culture.Current = new CultureInfo("en");
+        await GrantAsync(Permissions.Attendance.View);
+        Api.Me = Api.Me with { Contexts = [new Lms.Shared.Me.UserContextDto(Context.ActiveAssignmentId!.Value, Guid.NewGuid(), "م", "School", Guid.NewGuid(), "ص", "Grade", "م", "Teacher", "Asia/Tokyo")] };
+        RenderProviders();
+
+        var page = Render<AttendanceReportsPage>();
+        page.WaitForElement("[data-testid=reports-table]");
+
+        Assert.Equal(new DateOnly(2026, 11, 19), fake.LastReportQuery!.To);
+        Assert.Equal(new DateOnly(2026, 10, 20), fake.LastReportQuery.From);
+        var asOf = page.Find("[data-testid=reports-asof]").TextContent;
+        Assert.Contains("2026-11-19 04:57", asOf); // computed 3 min before, shown in Tokyo time (UTC 19:57 on the 18th)
+        Assert.Contains("2026-10-20", asOf);
+    }
+
+    private sealed class FixedClock(DateTimeOffset now) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => now;
+    }
+
+    [Fact]
     public async Task Export_downloads_the_file_the_server_made()
     {
         var page = await RenderAsync();
@@ -139,7 +189,9 @@ public sealed class AttendanceReportsPageTests : StaffTestContext
         var select = page.FindComponents<MudSelect<Guid?>>().Single();
         var firstClass = Lms.Client.Services.Api.FakeClasses.All[0].Id;
         await page.InvokeAsync(() => select.Instance.ValueChanged.InvokeAsync(firstClass));
-        page.WaitForAssertion(() => Assert.NotNull(page.Find("[data-testid=reports-table]"))); // the report reloads for that class
+        page.WaitForAssertion(() => Assert.Equal(firstClass, _api.LastReportQuery!.ClassId)); // the chosen class reaches the API
+        await page.InvokeAsync(() => select.Instance.ValueChanged.InvokeAsync(null));
+        page.WaitForAssertion(() => Assert.Null(_api.LastReportQuery!.ClassId));
     }
 
     [Fact]

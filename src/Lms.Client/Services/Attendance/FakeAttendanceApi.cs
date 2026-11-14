@@ -161,8 +161,12 @@ public sealed class FakeAttendanceApi : IAttendanceApi
         return Task.FromResult(new PagedResult<AttendanceAlertDto>(rows.Skip((query.Page - 1) * query.PageSize).Take(query.PageSize).ToList(), rows.Count, query.Page, query.PageSize));
     }
 
+    /// <summary>The last report query, so tests can see what the page asked for.</summary>
+    public AttendanceReportQuery? LastReportQuery { get; private set; }
+
     public Task<AttendanceReportDto> GetReportAsync(string kind, AttendanceReportQuery query, CancellationToken ct = default)
     {
+        LastReportQuery = query;
         var now = _clock.GetUtcNow().UtcDateTime;
         var today = LocalToday();
         var rows = _roster.Select((r, i) => new AttendanceReportRowDto(r.Id, r.Ar, r.En, r.Number, null, null, null,

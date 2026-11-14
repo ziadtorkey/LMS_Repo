@@ -49,7 +49,7 @@
                         }
                         <div class="lms-muted">
                             @Culture.Pick(change.ChangedByNameAr, change.ChangedByNameEn) ·
-                            <span dir="ltr">@change.ChangedAtUtc.ToString("yyyy-MM-dd HH:mm")</span>
+                            <LocalTime Utc="change.ChangedAtUtc" />
                         </div>
                     </li>
                 }

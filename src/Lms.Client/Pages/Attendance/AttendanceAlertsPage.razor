@@ -48,7 +48,7 @@ else
                     @* the inputs of the rule, as the server counted them: absences + lates at the late weight = score against the threshold (D61) *@
                     <span data-testid="@($"alert-formula-{alert.Id}")">@string.Format(L["Alerts_FormulaText"], alert.Absences, alert.Lates, Fmt(alert.Score), Fmt(alert.Threshold), alert.WindowDays)</span>
                 </MudTd>
-                <MudTd DataLabel="@L["Alerts_Since"]"><span dir="ltr" class="lms-date-cell">@alert.AlertedAtUtc.ToString("yyyy-MM-dd")</span></MudTd>
+                <MudTd DataLabel="@L["Alerts_Since"]"><LocalTime Utc="alert.AlertedAtUtc" Format="yyyy-MM-dd" Class="lms-date-cell" TestId="@($"alert-since-{alert.Id}")" /></MudTd>
                 <MudTd DataLabel="@L["Common_Status"]">
                     <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@(alert.ClearedAtUtc is null ? Color.Warning : Color.Default)" Class="lms-status-chip"
                              data-testid="@($"alert-status-{alert.Id}")">@L[alert.ClearedAtUtc is null ? "Alerts_Active" : "Alerts_Cleared"]</MudChip>
