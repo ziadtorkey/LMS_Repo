@@ -1,0 +1,56 @@
+@page "/timetable"
+@attribute [Authorize]
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Shared.Authorization
+@using Lms.Shared.Classes
+@inject IClassesApi Api
+@inject IYearStore Years
+@inject PermissionState PermState
+@inject ICultureService Culture
+
+<PageTitle>@L["Tt_Classes_Title"]</PageTitle>
+@if (!PermState.Loaded)
+{
+    <LoadingState Lines="4" TestId="tt-classes-loading" />
+}
+else if (!PermState.Has(Permissions.Timetable.Manage))
+{
+    <Forbidden />
+}
+else
+{
+    <PageHeader Title="@L["Tt_Classes_Title"]" Subtitle="@L["Tt_Classes_Subtitle"]" TitleTestId="tt-classes-title" />
+
+    <SectionCard Flush="true">
+        <ServerTable T="ClassSummaryDto" ServerData="LoadAsync" EmptyTitle="@L["Tt_Classes_EmptyTitle"]" EmptyText="@L["Tt_Classes_EmptyText"]" EmptyIcon="@Icons.Material.Rounded.Groups">
+            <HeaderContent>
+                <MudTh>@L["Common_Name"]</MudTh>
+                <MudTh>@L["Staff_HomeUnit"]</MudTh>
+                <MudTh><span class="lms-visually-hidden">@L["Common_Actions"]</span></MudTh>
+            </HeaderContent>
+            <RowTemplate Context="c">
+                <MudTd DataLabel="@L["Common_Name"]"><span class="lms-cell-strong">@Culture.Pick(c.NameAr, c.NameEn)</span> <span class="lms-muted" dir="ltr">@c.Code</span></MudTd>
+                <MudTd DataLabel="@L["Staff_HomeUnit"]">@Culture.Pick(c.OrgUnitNameAr, c.OrgUnitNameEn)</MudTd>
+                <MudTd DataLabel="@L["Common_Actions"]" Class="lms-cell-actions">
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" Href="@($"classes/{c.Id}/timetable")" data-testid="@($"tt-class-{c.Id}")">@L["Tt_Open_Builder"]</MudButton>
+                </MudTd>
+            </RowTemplate>
+        </ServerTable>
+    </SectionCard>
+}
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        if (Years.Selected is null) await Years.LoadAsync();
+    }
+
+    /// <summary>The classes of the selected academic year, whose current term the builder opens on.</summary>
+    private async Task<TableData<ClassSummaryDto>> LoadAsync(TableState state, CancellationToken ct)
+    {
+        var page = await Api.ListAsync(new ClassQuery(null, true, Years.SelectedYearId, null, null, null, state.Page + 1, state.PageSize), ct);
+        return new TableData<ClassSummaryDto> { Items = page.Items, TotalItems = page.Total };
+    }
+}

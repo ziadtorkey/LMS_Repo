@@ -22,6 +22,7 @@
     <div class="d-flex flex-wrap gap-2 mt-3">
         <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="lms-touch" OnClick="MoveAsync" data-testid="tt-move-confirm">@L["Tt_Move_Confirm"]</MudButton>
         <MudButton Variant="Variant.Outlined" Class="lms-touch" OnClick="OnEdit" data-testid="tt-edit">@L["Common_Edit"]</MudButton>
+        <MudButton Variant="Variant.Outlined" Class="lms-touch" OnClick="OnException" data-testid="tt-exceptions">@L["Tt_Exceptions_Open"]</MudButton>
         <MudButton Variant="Variant.Text" Color="Color.Error" Class="lms-touch" OnClick="OnDelete" data-testid="tt-delete">@L["Common_Delete"]</MudButton>
         <MudButton Variant="Variant.Text" Class="lms-touch" OnClick="OnClose" data-testid="tt-move-cancel">@L["Common_Cancel"]</MudButton>
     </div>
@@ -37,6 +38,7 @@
     [Parameter] public Func<(DayOfWeek, Guid), Task>? OnMove { get; set; }
     [Parameter] public EventCallback OnEdit { get; set; }
     [Parameter] public EventCallback OnDelete { get; set; }
+    [Parameter] public EventCallback OnException { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
 
     protected override void OnParametersSet()

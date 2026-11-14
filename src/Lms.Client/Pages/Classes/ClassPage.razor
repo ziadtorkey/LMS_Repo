@@ -44,7 +44,6 @@ else
         }
     </MudStack>
 
-    @* No Timetable tab: it arrives with the scheduling milestone. *@
     <MudTabs Elevation="0" Rounded="true" data-testid="class-tabs">
         <MudTabPanel Text="@L["ClassPage_Students"]" data-testid="tab-students">
             <MudButton Href="@($"classes/{_class.Id}/students")" Variant="Variant.Outlined" data-testid="open-students">@L["ClassPage_OpenStudents"]</MudButton>
@@ -52,6 +51,12 @@ else
         <MudTabPanel Text="@L["ClassPage_Courses"]" data-testid="tab-courses">
             <ClassCoursesTab Class="_class" CanManage="PermState.Has(Permissions.Classes.ManageCourses)" />
         </MudTabPanel>
+        @if (PermState.Has(Permissions.Timetable.View))
+        {
+            <MudTabPanel Text="@L["ClassPage_Timetable"]" data-testid="tab-timetable">
+                <ClassTimetableTab ClassId="_class.Id" />
+            </MudTabPanel>
+        }
         @if (PermState.Has(Permissions.TeacherAssignments.View))
         {
             <MudTabPanel Text="@L["ClassPage_Teachers"]" data-testid="tab-teachers">

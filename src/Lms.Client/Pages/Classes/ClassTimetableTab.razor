@@ -1,0 +1,64 @@
+@using Lms.Client.Components.Timetable
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.Timetable
+@using Lms.Shared.Authorization
+@using Lms.Shared.Timetable
+@inject ITimetableApi Api
+@inject IYearStore Years
+@inject NavigationManager Navigation
+@inject PermissionState PermState
+@inject ICultureService Culture
+
+@* The week of a class, read-only, for the current term. Managers get a link to the builder; nobody edits here. *@
+@if (_loading)
+{
+    <LoadingState Lines="4" TestId="class-tt-loading" />
+}
+else if (_failed || _timetable is null)
+{
+    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="api-error">
+        @L["Api_Error"]
+        <MudButton Variant="Variant.Text" OnClick="LoadAsync">@L["Common_Retry"]</MudButton>
+    </MudAlert>
+}
+else
+{
+    @if (PermState.Has(Permissions.Timetable.Manage))
+    {
+        <div class="mb-3"><MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Edit" Href="@($"classes/{ClassId}/timetable")" Class="lms-touch" data-testid="class-tt-edit">@L["Tt_Edit_In_Builder"]</MudButton></div>
+    }
+
+    @if (_timetable.Slots.Count == 0)
+    {
+        <EmptyState Title="@L["Tt_Class_EmptyTitle"]" Text="@L["Tt_Class_EmptyText"]" Icon="@Icons.Material.Rounded.EventBusy" TestId="class-tt-empty" />
+    }
+    else
+    {
+        <TimetableGrid Timetable="_timetable" CanManage="false" />
+    }
+}
+
+@code {
+    private ClassTimetableDto? _timetable;
+    private bool _loading = true, _failed;
+
+    [Parameter, EditorRequired] public Guid ClassId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Years.Selected is null) await Years.LoadAsync();
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _failed = false;
+        var term = Years.Selected?.Terms.FirstOrDefault(t => t.IsCurrent) ?? Years.Selected?.Terms.OrderBy(t => t.Order).FirstOrDefault();
+        if (term is null) { _failed = true; _loading = false; return; }
+        var (value, failed) = await ApiCalls.RunAsync(() => Api.GetClassTimetableAsync(ClassId, term.Id), Navigation);
+        _timetable = value;
+        _failed = failed;
+        _loading = false;
+    }
+}

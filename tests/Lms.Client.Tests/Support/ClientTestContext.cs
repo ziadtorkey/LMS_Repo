@@ -51,6 +51,8 @@ public abstract class ClientTestContext : BunitContext, IAsyncLifetime
         Services.AddSingleton<IOrgApi>(Org);
         Services.AddSingleton<ITemplatesApi>(Templates);
         Services.AddSingleton<IConfigApi>(Config);
+        Services.AddScoped<Lms.Client.Services.ClientTimeZone>();
+        Services.AddSingleton<TimeProvider>(TimeProvider.System);
         Services.AddSingleton<IStaffApi>(Staff);
         Services.AddSingleton<IYearsApi>(YearsApi);
         Services.AddScoped<IYearStore, YearStore>();

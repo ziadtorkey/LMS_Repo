@@ -1,0 +1,67 @@
+@using Lms.Shared.Timetable
+@using Lms.Client.Services.LiveSessions
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.Browser
+@inject ICultureService Culture
+@inject ILiveSessionsApi LiveApi
+@inject IExternalLinkOpener Opener
+@inject TimeProvider Time
+@inject IStringLocalizer<SharedResource> L
+
+@* One lesson on one date. A cancelled lesson stays visible with the word; a substitute shows the name. *@
+<div class="@("lms-tt-card" + (Card.ExceptionKind == ExceptionKinds.Cancelled ? " lms-tt-cancelled" : ""))" data-testid="@($"tt-card-{Card.SlotId}-{Card.Date:yyyy-MM-dd}")">
+    <span class="lms-tt-course">@Culture.Pick(Card.CourseNameAr, Card.CourseNameEn)</span>
+    <span class="lms-tt-meta">@(Card.ExceptionKind == ExceptionKinds.Substitute && Card.SubstituteName is not null ? Card.SubstituteName : Card.TeacherName)</span>
+    @if (ShowClass)
+    {
+        <span class="lms-tt-meta" data-testid="@($"tt-class-{Card.SlotId}")">@Culture.Pick(Card.ClassNameAr, Card.ClassNameEn)</span>
+    }
+    @if (!string.IsNullOrWhiteSpace(Card.RoomName))
+    {
+        <span class="lms-tt-meta">@Card.RoomName</span>
+    }
+    <ExceptionBadge Kind="@Card.ExceptionKind" Substitute="@Card.SubstituteName" TestId="@($"tt-ex-{Card.SlotId}-{Card.Date:yyyy-MM-dd}")" />
+    @if (Card.LiveSessionId is { } sessionId && Card.ExceptionKind != ExceptionKinds.Cancelled)
+    {
+        var open = Card.JoinOpensAtUtc is null || Time.GetUtcNow().UtcDateTime >= Card.JoinOpensAtUtc;
+        <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Primary" Disabled="@(!open || _joining)"
+                   StartIcon="@Icons.Material.Rounded.Videocam" OnClick="() => JoinAsync(sessionId)"
+                   data-testid="@($"tt-join-{Card.SlotId}-{Card.Date:yyyy-MM-dd}")">@L["Timetable_Join"]</MudButton>
+        @if (_joinError is not null)
+        {
+            <span class="lms-tt-meta" role="alert" data-testid="@($"tt-join-error-{Card.SlotId}-{Card.Date:yyyy-MM-dd}")">@_joinError</span>
+        }
+        @if (!open)
+        {
+            <span class="lms-tt-meta" data-testid="@($"tt-join-hint-{Card.SlotId}-{Card.Date:yyyy-MM-dd}")">@L["Timetable_JoinOpensAt"] <LocalTime Utc="@Card.JoinOpensAtUtc!.Value" Format="HH:mm" /></span>
+        }
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public TimetableCardDto Card { get; set; } = default!;
+    [Parameter] public bool ShowClass { get; set; }
+
+    private bool _joining;
+    private string? _joinError;
+
+    // The server decides who may join and hands out the link; it is opened once and never kept.
+    private async Task JoinAsync(Guid sessionId)
+    {
+        _joining = true;
+        _joinError = null;
+        try
+        {
+            var join = await LiveApi.JoinAsync(sessionId);
+            await Opener.OpenAsync(join.Url);
+        }
+        catch (ApiProblemException ex)
+        {
+            _joinError = string.IsNullOrWhiteSpace(ex.Detail) ? L["Timetable_JoinFailed"].Value : ex.Detail; // the server's own words (not open yet, ended)
+        }
+        finally
+        {
+            _joining = false;
+        }
+    }
+}

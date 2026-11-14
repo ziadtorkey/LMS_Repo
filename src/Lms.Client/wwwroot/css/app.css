@@ -115,6 +115,23 @@ html:lang(ar), html:lang(ar) body { font-family: Cairo, "Segoe UI", Tahoma, Aria
 .lms-tt-dragging { user-select: none; touch-action: none; }
 .lms-tt-move-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-block-start: 8px; }
 @media (max-width: 599px) { .lms-tt-wrap { margin-inline: -4px; } }
+.lms-tt-week-nav { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; margin-block-end: 12px; }
+.lms-tt-week-range { font-variant-numeric: tabular-nums; font-weight: 600; min-inline-size: 11rem; text-align: center; }
+.lms-tt-card { display: flex; flex-direction: column; gap: 2px; padding: 6px 8px; border-radius: 6px; background: var(--mud-palette-surface); border: 1px solid var(--mud-palette-lines-default); }
+.lms-tt-card + .lms-tt-card { margin-block-start: 4px; }
+.lms-tt-cancelled { opacity: .7; }
+.lms-tt-cancelled .lms-tt-course { text-decoration: line-through; }
+.lms-tt-days { display: none; }
+.lms-tt-daylist { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 8px; }
+.lms-tt-dayrow { display: grid; gap: 4px; padding-block: 6px; border-block-end: 1px solid var(--mud-palette-table-lines); }
+@media (max-width: 599px) { .lms-tt-weekgrid { display: none; } .lms-tt-days { display: block; } }
+@media print {
+    /* My timetable on paper: the week grid alone, whatever the screen width. */
+    .mud-appbar, .mud-drawer, .lms-no-print, .lms-tt-week-nav { display: none !important; }
+    .lms-tt-weekgrid { display: block !important; }
+    .lms-tt-days { display: none !important; }
+    .lms-tt { min-inline-size: 0; }
+}
 @media (forced-colors: active) {
     .lms-tt-cell:focus-visible, .lms-tt-cell.lms-tt-target, .lms-tt-cell.lms-tt-drop { outline: 2px solid Highlight; outline-offset: 1px; }
     .lms-tt-cell.lms-tt-clash { border-color: Mark; }

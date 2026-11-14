@@ -1647,8 +1647,8 @@
   <data name="Error_period_overlap" xml:space="preserve"><value>تتداخل الحصة مع حصة أخرى أو لا تنتهي بعد بدايتها.</value></data>
   <data name="Error_period_in_use" xml:space="preserve"><value>توجد حصة تستخدم هذه الحصة لذلك لا يمكن حذفها.</value></data>
   <data name="Error_timetable_not_published" xml:space="preserve"><value>هذه الحصة ما زالت مسودة. انشر الجدول أولاً.</value></data>
-  <data name="Error_exception_date_invalid" xml:space="preserve"><value>يجب أن يكون التاريخ يوم دراسة لهذه الحصة داخل الفصل، وللحصة استثناء واحد فقط في اليوم الواحد.</value></data>
-  <data name="Error_exception_substitute_invalid" xml:space="preserve"><value>يجب أن يكون البديل معلماً آخر في مجموعة المدارس ولا يكون مشغولاً في هذه الفترة في ذلك التاريخ.</value></data>
+  <data name="Error_exception_date_invalid" xml:space="preserve"><value>يجب أن يكون التاريخ يومًا تُعقد فيه هذه الحصة وضمن الفصل الدراسي.</value></data>
+  <data name="Error_exception_substitute_invalid" xml:space="preserve"><value>اختر معلمًا يمكنه الاستبدال.</value></data>
   <data name="Setting_Timetable_WorkingDays" xml:space="preserve"><value>أيام الدراسة في الأسبوع</value></data>
   <data name="SettingValue_Timetable_WorkingDays_Sun" xml:space="preserve"><value>الأحد</value></data>
   <data name="SettingValue_Timetable_WorkingDays_Mon" xml:space="preserve"><value>الاثنين</value></data>
@@ -1665,8 +1665,8 @@
   <data name="Tt_ConflictKind_TeacherDoubleBooked" xml:space="preserve"><value>المعلم محجوز في هذا الوقت</value></data>
   <data name="Tt_ConflictKind_ClassDoubleBooked" xml:space="preserve"><value>الفصل محجوز في هذا الوقت</value></data>
   <data name="Tt_ExceptionKind_Substitute" xml:space="preserve"><value>معلم بديل</value></data>
-  <data name="Tt_ExceptionKind_Cancelled" xml:space="preserve"><value>ملغاة</value></data>
-  <data name="Tt_ExceptionKind_Moved" xml:space="preserve"><value>منقولة إلى فترة أخرى</value></data>
+  <data name="Tt_ExceptionKind_Cancelled" xml:space="preserve"><value>إلغاء</value></data>
+  <data name="Tt_ExceptionKind_Moved" xml:space="preserve"><value>نقل إلى حصة أخرى</value></data>
   <data name="Tt_SlotBadge_Conflict" xml:space="preserve"><value>تعارض</value></data>
   <data name="Tt_SlotBadge_HasException" xml:space="preserve"><value>فيها تغيير</value></data>
   <data name="Tt_SlotBadge_DraftChange" xml:space="preserve"><value>غير منشورة بعد التعديل</value></data>
@@ -1727,9 +1727,45 @@
   <data name="Tt_Period_End" xml:space="preserve"><value>تنتهي</value></data>
   <data name="Tt_Period_Order" xml:space="preserve"><value>الترتيب</value></data>
   <data name="Tt_Period_Required" xml:space="preserve"><value>أعطِ الحصة اسمًا بالعربية والإنجليزية ووقتي بداية ونهاية.</value></data>
+  <data name="Nav_Timetable" xml:space="preserve"><value>الجدول الدراسي</value></data>
+  <data name="Nav_MyTimetable" xml:space="preserve"><value>جدولي</value></data>
+  <data name="ClassPage_Timetable" xml:space="preserve"><value>الجدول الدراسي</value></data>
+  <data name="Tt_Week" xml:space="preserve"><value>الأسبوع</value></data>
+  <data name="Tt_Week_Prev" xml:space="preserve"><value>الأسبوع السابق</value></data>
+  <data name="Tt_Week_Next" xml:space="preserve"><value>الأسبوع التالي</value></data>
+  <data name="Tt_Week_Today" xml:space="preserve"><value>هذا الأسبوع</value></data>
+  <data name="Tt_Exception_Substitute" xml:space="preserve"><value>بديل: {0}</value></data>
+  <data name="Tt_Exception_Cancelled" xml:space="preserve"><value>ملغاة</value></data>
+  <data name="Tt_Exception_Moved" xml:space="preserve"><value>منقولة</value></data>
+  <data name="Tt_My_Title" xml:space="preserve"><value>جدولي</value></data>
+  <data name="Tt_My_Subtitle" xml:space="preserve"><value>حصصك هذا الأسبوع. الجداول المنشورة فقط.</value></data>
+  <data name="Tt_My_EmptyTitle" xml:space="preserve"><value>لا توجد حصص هذا الأسبوع</value></data>
+  <data name="Tt_My_EmptyText" xml:space="preserve"><value>تظهر الحصص هنا بعد نشر الجدول.</value></data>
+  <data name="Tt_Edit_In_Builder" xml:space="preserve"><value>تعديل في المنشئ</value></data>
+  <data name="Tt_Class_EmptyTitle" xml:space="preserve"><value>لا يوجد جدول بعد</value></data>
+  <data name="Tt_Class_EmptyText" xml:space="preserve"><value>لا توجد حصص منشورة لهذا الفصل في الفصل الدراسي الحالي.</value></data>
+  <data name="Tt_Classes_Title" xml:space="preserve"><value>الجدول الدراسي</value></data>
+  <data name="Tt_Classes_Subtitle" xml:space="preserve"><value>اختر فصلًا لبناء جدوله أو تعديله في الفصل الدراسي الحالي.</value></data>
+  <data name="Tt_Classes_EmptyTitle" xml:space="preserve"><value>لا توجد فصول</value></data>
+  <data name="Tt_Classes_EmptyText" xml:space="preserve"><value>تظهر هنا فصول العام الدراسي المحدد.</value></data>
+  <data name="Tt_Open_Builder" xml:space="preserve"><value>فتح المنشئ</value></data>
+  <data name="Tt_Exceptions_Open" xml:space="preserve"><value>تغييرات في تاريخ</value></data>
+  <data name="Tt_Exception_Date" xml:space="preserve"><value>التاريخ</value></data>
+  <data name="Tt_Exception_DateHelp" xml:space="preserve"><value>يوم {0}، وهو يوم هذه الحصة.</value></data>
+  <data name="Tt_Exception_Kind" xml:space="preserve"><value>التغيير</value></data>
+  <data name="Tt_Exception_Substitute_Pick" xml:space="preserve"><value>المعلم البديل</value></data>
+  <data name="Tt_Exception_NewPeriod" xml:space="preserve"><value>تنتقل إلى</value></data>
+  <data name="Tt_Exception_Note" xml:space="preserve"><value>ملاحظة (اختياري)</value></data>
+  <data name="Tt_Exception_Add" xml:space="preserve"><value>إضافة التغيير</value></data>
+  <data name="Tt_Exception_DateRequired" xml:space="preserve"><value>اختر التاريخ.</value></data>
   <data name="Tt_Publish_Refused" xml:space="preserve"><value>لم يُنشر شيء: في الجدول تعارضات. تظهر أدناه؛ عالجها ثم انشر من جديد.</value></data>
   <data name="Tt_WorkingDays" xml:space="preserve"><value>أيام العمل</value></data>
   <data name="Tt_WorkingDays_None" xml:space="preserve"><value>اختر يوم عمل واحدًا على الأقل.</value></data>
   <data name="Tt_WorkingDays_Saved" xml:space="preserve"><value>تم حفظ أيام العمل.</value></data>
   <data name="Tt_WorkingDays_Forbidden" xml:space="preserve"><value>لا يمكنك تغيير أيام العمل لهذه الوحدة.</value></data>
+  <data name="Tt_Child_Link" xml:space="preserve"><value>الجدول الدراسي</value></data>
+  <data name="Tt_Print" xml:space="preserve"><value>طباعة</value></data>
+  <data name="Timetable_Join" xml:space="preserve"><value>انضمام</value></data>
+  <data name="Timetable_JoinOpensAt" xml:space="preserve"><value>يفتح الانضمام في</value></data>
+  <data name="Timetable_JoinFailed" xml:space="preserve"><value>تعذّر الانضمام إلى هذه الجلسة.</value></data>
 </root>

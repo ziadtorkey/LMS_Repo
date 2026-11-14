@@ -1,0 +1,74 @@
+@using Lms.Shared.Timetable
+@inject ICultureService Culture
+
+@* The read-only timetable of a week (a teacher's, a student's or a child's): the week grid on 600 px and wider, the day list below it. Both draw the same
+   cards from the same answer; a dated change (substitute, cancelled, moved) shows on the card and never alters the base lesson. *@
+<div data-testid="tt-view">
+    <div class="lms-tt-weekgrid lms-tt-wrap">
+        <table class="lms-tt" role="table" dir="@(Culture.IsRightToLeft ? "rtl" : "ltr")" aria-label="@L["Tt_Grid_Label"]" data-testid="tt-week">
+            <thead>
+                <tr>
+                    <th scope="col" class="lms-tt-corner"><span class="lms-visually-hidden">@L["Tt_Period_Header"]</span></th>
+                    @foreach (var date in Dates)
+                    {
+                        <th scope="col" data-testid="@($"tt-col-{date:yyyy-MM-dd}")">@Culture.Current.DateTimeFormat.GetDayName(date.DayOfWeek) <span dir="ltr" class="lms-muted">@date.ToString("MM-dd")</span></th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var period in Periods)
+                {
+                    <tr>
+                        <th scope="row" class="lms-tt-period">
+                            <span class="lms-tt-period-name">@Culture.Pick(period.NameAr, period.NameEn)</span>
+                            <span class="lms-tt-time" dir="ltr">@period.StartTime.ToString("HH:mm")–@period.EndTime.ToString("HH:mm")</span>
+                        </th>
+                        @foreach (var date in Dates)
+                        {
+                            <td class="lms-tt-cell">
+                                @foreach (var card in View.Cards.Where(c => c.Date == date && c.PeriodId == period.Id))
+                                {
+                                    <TimetableCard Card="card" ShowClass="ShowClass" />
+                                }
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <DayList Dates="Dates" Periods="Periods" Cards="View.Cards" ShowClass="ShowClass" Today="Today" />
+</div>
+
+@code {
+    [Parameter, EditorRequired] public TimetableViewDto View { get; set; } = default!;
+
+    /// <summary>A teacher sees the class on each card, since the lessons span classes.</summary>
+    [Parameter] public bool ShowClass { get; set; }
+
+    [Parameter] public DateOnly? Today { get; set; }
+
+    private IReadOnlyList<PeriodDto> Periods => View.Periods.OrderBy(p => p.Order).ToList();
+
+    /// <summary>The working days of the range, in order, as dates.</summary>
+    private IReadOnlyList<DateOnly> Dates
+    {
+        get
+        {
+            var names = View.Days;
+            var list = new List<DateOnly>();
+            for (var d = View.From; d <= View.To; d = d.AddDays(1))
+            {
+                if (names.Contains(ShortName(d.DayOfWeek))) list.Add(d);
+            }
+
+            return list;
+        }
+    }
+
+    private static string ShortName(DayOfWeek day) => day switch
+    {
+        DayOfWeek.Sunday => WorkingDayNames.Sunday, DayOfWeek.Monday => WorkingDayNames.Monday, DayOfWeek.Tuesday => WorkingDayNames.Tuesday,
+        DayOfWeek.Wednesday => WorkingDayNames.Wednesday, DayOfWeek.Thursday => WorkingDayNames.Thursday, DayOfWeek.Friday => WorkingDayNames.Friday, _ => WorkingDayNames.Saturday,
+    };
+}

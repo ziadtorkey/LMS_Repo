@@ -72,7 +72,7 @@ else
 
     <SectionCard Title="@L["Tt_Grid_Label"]">
         <TimetableGrid Timetable="_timetable" CanManage="CanManage" ClashSlotIds="_clashIds" ClashText="@_clashText" Announcement="@_announcement"
-                       OnMove="MoveAsync" OnAdd="AddAsync" OnEdit="EditAsync" OnDelete="DeleteAsync" />
+                       OnMove="MoveAsync" OnAdd="AddAsync" OnEdit="EditAsync" OnDelete="DeleteAsync" OnException="ExceptionsAsync" />
     </SectionCard>
 }
 
@@ -187,6 +187,15 @@ else
             await ShowWarningsAsync(saved);
             await LoadAsync();
         }
+    }
+
+    private async Task ExceptionsAsync(SlotDto slot)
+    {
+        var teachers = _courses.SelectMany(c => c.CurrentTeachers).Where(t => t.IsCurrent).DistinctBy(t => t.UserId).ToList(); // who can substitute: the class's current teachers
+        var dialog = await Dialogs.ShowAsync<TimetableExceptionDialog>(L["Tt_Exceptions_Open"],
+            new DialogParameters<TimetableExceptionDialog> { { x => x.Slot, slot }, { x => x.Teachers, teachers }, { x => x.Periods, _timetable!.Periods } },
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        if (await dialog.Result is { Canceled: false, Data: true }) await LoadAsync();
     }
 
     private async Task DeleteAsync(SlotDto slot)

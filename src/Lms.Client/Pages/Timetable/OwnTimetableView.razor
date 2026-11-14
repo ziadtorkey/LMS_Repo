@@ -1,0 +1,93 @@
+@using Lms.Client.Components.Timetable
+@using Lms.Client.Services.Timetable
+@using Lms.Shared.Timetable
+@inject ITimetableApi Api
+@inject NavigationManager Navigation
+@inject ClientTimeZone Zone
+@inject TimeProvider Clock
+@inject IJSRuntime Js
+
+@* A teacher's own timetable (their lessons across classes, substitutions included), a student's class or, with StudentId, a child's for a guardian. Weeks of
+   Sunday to Saturday by the client's calendar; published lessons only. *@
+<PageHeader Title="@L["Tt_My_Title"]" Subtitle="@L["Tt_My_Subtitle"]" TitleTestId="my-tt-title">
+    <Actions>
+        <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.Print" Class="lms-touch lms-no-print" OnClick="PrintAsync" data-testid="my-tt-print">@L["Tt_Print"]</MudButton>
+    </Actions>
+</PageHeader>
+
+@if (_from is { } from && _to is { } to)
+{
+    <WeekNavigator From="from" To="to" OnShift="ShiftAsync" OnToday="TodayAsync" />
+}
+
+@if (_loading)
+{
+    <LoadingState Lines="5" TestId="my-tt-loading" />
+}
+else if (_failed || _view is null)
+{
+    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="api-error">
+        @L["Api_Error"]
+        <MudButton Variant="Variant.Text" OnClick="LoadAsync">@L["Common_Retry"]</MudButton>
+    </MudAlert>
+}
+else if (_view.Cards.Count == 0)
+{
+    <SectionCard><EmptyState Title="@L["Tt_My_EmptyTitle"]" Text="@L["Tt_My_EmptyText"]" Icon="@Icons.Material.Rounded.EventBusy" TestId="my-tt-empty" /></SectionCard>
+}
+else
+{
+    <SectionCard Flush="true"><TimetableView View="_view" ShowClass="@(StudentId is null)" Today="_today" /></SectionCard>
+}
+
+@code {
+    private TimetableViewDto? _view;
+    private DateOnly? _from, _to, _today;
+    private bool _loading = true, _failed;
+
+    /// <summary>Empty for the signed-in teacher or student; a child's id for a guardian.</summary>
+    [Parameter] public Guid? StudentId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _today = await Zone.TodayAsync(Clock.GetUtcNow().UtcDateTime);
+        SetWeek(_today.Value);
+        await LoadAsync();
+    }
+
+    private void SetWeek(DateOnly day)
+    {
+        _from = day.AddDays(-(int)day.DayOfWeek); // the week starts on Sunday
+        _to = _from.Value.AddDays(6);
+    }
+
+    private async Task LoadAsync()
+    {
+        if (_from is not { } from || _to is not { } to) return;
+        _loading = true;
+        _failed = false;
+        var (value, failed) = await ApiCalls.RunAsync(() => StudentId is { } id ? Api.GetStudentTimetableAsync(id, from, to) : Api.GetMyTimetableAsync(from, to), Navigation);
+        _view = value;
+        _failed = failed;
+        _loading = false;
+    }
+
+    private Task ShiftAsync(int weeks)
+    {
+        SetWeek(_from!.Value.AddDays(7 * weeks));
+        return LoadAsync();
+    }
+
+    /// <summary>The browser's print dialog; the print styles show the week grid alone (no personal-view export in v1).</summary>
+    private async Task PrintAsync()
+    {
+        try { await Js.InvokeVoidAsync("print"); }
+        catch (JSDisconnectedException) { }
+    }
+
+    private Task TodayAsync()
+    {
+        SetWeek(_today!.Value);
+        return LoadAsync();
+    }
+}

@@ -41,4 +41,19 @@ public sealed class TimetableApi(ApiHttp http) : ITimetableApi
 
     public Task<(Stream Content, string FileName)> ExportAsync(Guid classId, Guid termId, CancellationToken ct = default) =>
         http.DownloadAsync(Routes.ClassTimetableExport(classId, termId), ct);
+
+    public async Task<IReadOnlyList<TimetableExceptionDto>> GetExceptionsAsync(Guid slotId, CancellationToken ct = default) =>
+        await http.GetAsync<List<TimetableExceptionDto>>(Routes.TimetableSlotExceptions(slotId), ct);
+
+    public async Task<TimetableExceptionDto> CreateExceptionAsync(Guid slotId, SaveTimetableExceptionRequest request, CancellationToken ct = default) =>
+        (await http.SendAsync<TimetableExceptionDto>(HttpMethod.Post, Routes.TimetableSlotExceptions(slotId), request, ct))!;
+
+    public Task DeleteExceptionAsync(Guid slotId, Guid exceptionId, CancellationToken ct = default) =>
+        http.SendAsync(HttpMethod.Delete, Routes.TimetableSlotException(slotId, exceptionId), null, ct);
+
+    public Task<TimetableViewDto> GetMyTimetableAsync(DateOnly from, DateOnly to, CancellationToken ct = default) =>
+        http.GetAsync<TimetableViewDto>(Routes.MyTimetable(from, to), ct);
+
+    public Task<TimetableViewDto> GetStudentTimetableAsync(Guid studentId, DateOnly from, DateOnly to, CancellationToken ct = default) =>
+        http.GetAsync<TimetableViewDto>(Routes.StudentTimetable(studentId, from, to), ct);
 }

@@ -1,0 +1,47 @@
+@using Lms.Shared.Timetable
+@inject ICultureService Culture
+
+@* The phone layout of the timetable: a day selector and that day's lessons as a vertical list, one card per period. *@
+<div class="lms-tt-days" data-testid="tt-days">
+    <div class="lms-chip-row" role="tablist" aria-label="@L["Tt_Day"]">
+        @foreach (var date in Dates)
+        {
+            var d = date;
+            <button type="button" role="tab" class="@("lms-tt-daychip lms-touch" + (d == _selected ? " lms-tt-daychip-on" : ""))" aria-selected="@(d == _selected ? "true" : "false")"
+                    @onclick="() => _selected = d" data-testid="@($"tt-daychip-{d:yyyy-MM-dd}")">
+                <span>@Culture.Current.DateTimeFormat.GetAbbreviatedDayName(d.DayOfWeek)</span>
+                <span dir="ltr" class="lms-muted">@d.ToString("MM-dd")</span>
+            </button>
+        }
+    </div>
+    <ul class="lms-tt-daylist" data-testid="tt-daylist">
+        @foreach (var period in Periods)
+        {
+            var cards = Cards.Where(c => c.Date == _selected && c.PeriodId == period.Id).ToList();
+            <li class="lms-tt-dayrow">
+                <div class="lms-tt-dayperiod"><span class="lms-cell-strong">@Culture.Pick(period.NameAr, period.NameEn)</span> <span dir="ltr" class="lms-muted">@period.StartTime.ToString("HH:mm")–@period.EndTime.ToString("HH:mm")</span></div>
+                @foreach (var card in cards)
+                {
+                    <TimetableCard Card="card" ShowClass="ShowClass" />
+                }
+            </li>
+        }
+    </ul>
+</div>
+
+@code {
+    private DateOnly _selected;
+
+    [Parameter, EditorRequired] public IReadOnlyList<DateOnly> Dates { get; set; } = [];
+    [Parameter, EditorRequired] public IReadOnlyList<PeriodDto> Periods { get; set; } = [];
+    [Parameter, EditorRequired] public IReadOnlyList<TimetableCardDto> Cards { get; set; } = [];
+    [Parameter] public bool ShowClass { get; set; }
+
+    /// <summary>The day to open on (today when the week contains it).</summary>
+    [Parameter] public DateOnly? Today { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (!Dates.Contains(_selected)) _selected = Today is { } t && Dates.Contains(t) ? t : Dates.FirstOrDefault();
+    }
+}

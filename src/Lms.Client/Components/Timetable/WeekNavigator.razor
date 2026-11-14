@@ -1,0 +1,14 @@
+@* Previous / next week and back to this week. The range is shown as ISO dates, left to right; the arrows mirror in Arabic. *@
+<div class="lms-tt-week-nav" role="group" aria-label="@L["Tt_Week"]" data-testid="week-nav">
+    <MudIconButton Icon="@Icons.Material.Rounded.ChevronLeft" Class="lms-icon-flip lms-touch" aria-label="@L["Tt_Week_Prev"]" OnClick="() => OnShift.InvokeAsync(-1)" data-testid="week-prev" />
+    <span class="lms-tt-week-range" dir="ltr" data-testid="week-range">@From.ToString("yyyy-MM-dd") – @To.ToString("yyyy-MM-dd")</span>
+    <MudIconButton Icon="@Icons.Material.Rounded.ChevronRight" Class="lms-icon-flip lms-touch" aria-label="@L["Tt_Week_Next"]" OnClick="() => OnShift.InvokeAsync(1)" data-testid="week-next" />
+    <MudButton Variant="Variant.Text" Class="lms-touch" OnClick="OnToday" data-testid="week-today">@L["Tt_Week_Today"]</MudButton>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public DateOnly From { get; set; }
+    [Parameter, EditorRequired] public DateOnly To { get; set; }
+    [Parameter] public EventCallback<int> OnShift { get; set; }
+    [Parameter] public EventCallback OnToday { get; set; }
+}
