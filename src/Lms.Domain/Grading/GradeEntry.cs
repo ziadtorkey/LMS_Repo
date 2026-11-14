@@ -84,6 +84,9 @@ public sealed class GradeEntry : UnitOwnedEntity, ILiveKeyed
         Touch(byUserId, nowUtc);
     }
 
+    /// <summary>The teacher looked at a newer event score and keeps the override: it is dated now, so the "newer score" marker goes.</summary>
+    public void Acknowledge(Guid? byUserId, DateTime nowUtc) => Touch(byUserId, nowUtc);
+
     private void Touch(Guid? byUserId, DateTime nowUtc)
     {
         ByUserId = byUserId;

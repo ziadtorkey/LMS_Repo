@@ -20,7 +20,11 @@ public sealed class GradebookItemsObserver(LmsDbContext db, EventTermResolver te
         // instead of creating a second item that would count the score twice.
         if (await FindExistingAsync(classCourse, gradeEvent.SourceKind, gradeEvent.SourceId, ct) is { } existing)
         {
-            existing.SetMaxPoints(gradeEvent.MaxPoints);
+            if (!await IsLockedAsync(existing.GradebookId, ct))
+            {
+                existing.SetMaxPoints(gradeEvent.MaxPoints); // a locked gradebook keeps its items as they were (L5)
+            }
+
             return;
         }
 
@@ -32,6 +36,10 @@ public sealed class GradebookItemsObserver(LmsDbContext db, EventTermResolver te
 
         await EnsureItemAsync(classCourse, term.Id, gradeEvent.SourceKind, gradeEvent.SourceId, gradeEvent.MaxPoints, ct);
     }
+
+    private async Task<bool> IsLockedAsync(Guid gradebookId, CancellationToken ct) =>
+        db.Set<Gradebook>().Local.Any(g => g.Id == gradebookId && g.IsLocked)
+        || await db.Set<Gradebook>().AnyAsync(g => g.Id == gradebookId && g.State == Gradebook.LockedState, ct);
 
     /// <summary>The live item of a source in any gradebook of the class course (pending rows of this unit of work included).</summary>
     public async Task<GradeItem?> FindExistingAsync(ClassCourse classCourse, GradeSourceKind kind, Guid sourceId, CancellationToken ct)
@@ -52,9 +60,14 @@ public sealed class GradebookItemsObserver(LmsDbContext db, EventTermResolver te
     }
 
     /// <summary>The gradebook, its category and the item of one source (shared with the backfill).</summary>
-    public async Task<GradeItem> EnsureItemAsync(ClassCourse classCourse, Guid termId, GradeSourceKind kind, Guid sourceId, decimal maxPoints, CancellationToken ct)
+    public async Task<GradeItem?> EnsureItemAsync(ClassCourse classCourse, Guid termId, GradeSourceKind kind, Guid sourceId, decimal maxPoints, CancellationToken ct)
     {
         var gradebook = await writer.EnsureGradebookAsync(classCourse, termId, ct);
+        if (gradebook.IsLocked)
+        {
+            return null; // L5: no new item appears in a locked gradebook; the event is still recorded
+        }
+
         var (titleAr, titleEn) = await TitleAsync(kind, sourceId, ct);
         return await writer.EnsureSourceItemAsync(gradebook, (int)kind, sourceId, titleAr, titleEn, maxPoints, ct);
     }
