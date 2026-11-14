@@ -45,6 +45,8 @@ public static class AuditCatalog
         "LiveSessionSeries", "LiveSession",
         // M5 wave 1: grading (overrides, publish changes and scale acknowledgements are the audited changes).
         "GradingScale", "WeightTemplate", "Gradebook", "GradeCategory", "GradeItem", "GradeEntry", "GradeSnapshot",
+        // M6 wave 1: moderation, rules and announcements (messages themselves are not audited row by row: volume and privacy; moderation actions are).
+        "Conversation", "MessageReport", "MessagingRestriction", "MessagingRule", "Announcement",
     ];
 
     public static IReadOnlyList<string> SecurityEvents { get; } =

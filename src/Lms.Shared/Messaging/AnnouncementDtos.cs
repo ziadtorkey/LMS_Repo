@@ -1,0 +1,106 @@
+namespace Lms.Shared.Messaging;
+
+/// <summary>One target of an announcement. <c>TargetId</c> is null for <c>Organization</c>; <c>IncludeSubtree</c> applies to <c>Unit</c> (and <c>Organization</c>).</summary>
+public sealed record AnnouncementTargetDto(string Kind, Guid? TargetId, bool IncludeSubtree);
+
+public sealed record AnnouncementAttachmentDto(Guid FileId, string FileName, string ContentType, long SizeBytes);
+
+/// <summary>
+/// An announcement as its authors and admins see it (<c>Announcements.Manage</c> at the authoring unit; a Teacher only for own ClassCourses and their groups).
+/// Bilingual: both titles are required, the body is Arabic and/or English. <c>AudienceCount</c> is the size of the recipient snapshot made at publish time
+/// (null until published). <c>EditedAtUtc</c> marks a body edited after publishing.
+/// </summary>
+public sealed record AnnouncementDto(
+    Guid Id,
+    Guid AuthoringUnitId,
+    string TitleAr,
+    string TitleEn,
+    string? BodyAr,
+    string? BodyEn,
+    string Status,
+    IReadOnlyList<AnnouncementTargetDto> Targets,
+    IReadOnlyList<string> RoleFilters,
+    DateTime? PublishAtUtc,
+    DateTime? PublishedAtUtc,
+    DateTime? ExpiresAtUtc,
+    bool IsPinned,
+    bool Notify,
+    IReadOnlyList<AnnouncementAttachmentDto> Attachments,
+    Guid AuthorUserId,
+    string AuthorNameAr,
+    string AuthorNameEn,
+    int? AudienceCount,
+    DateTime? EditedAtUtc,
+    DateTime CreatedAtUtc);
+
+public sealed record AnnouncementListItemDto(
+    Guid Id,
+    string TitleAr,
+    string TitleEn,
+    string Status,
+    bool IsPinned,
+    DateTime? PublishAtUtc,
+    DateTime? PublishedAtUtc,
+    DateTime? ExpiresAtUtc,
+    int? AudienceCount,
+    string AuthorNameAr,
+    string AuthorNameEn);
+
+/// <summary>
+/// POST <c>/api/announcements</c>. <c>Publish</c> false saves a <c>Draft</c>; true publishes now (or schedules when <c>PublishAtUtc</c> is in the future).
+/// A target the author may not reach is 404 (never 403, existence is not revealed); an invalid combination is 400 <c>announcement_target_invalid</c>.
+/// </summary>
+public sealed record CreateAnnouncementRequest(
+    Guid AuthoringUnitId,
+    string TitleAr,
+    string TitleEn,
+    string? BodyAr,
+    string? BodyEn,
+    IReadOnlyList<AnnouncementTargetDto> Targets,
+    IReadOnlyList<string>? RoleFilters,
+    DateTime? PublishAtUtc,
+    DateTime? ExpiresAtUtc,
+    bool IsPinned,
+    bool Notify,
+    IReadOnlyList<Guid>? AttachmentFileIds,
+    bool Publish);
+
+/// <summary>
+/// PUT <c>/api/announcements/{id}</c>: everything while <c>Draft</c> or <c>Scheduled</c>; once <c>Published</c> only the expiry and the pin change and a body edit
+/// leaves the visible "edited" marker (409 <c>announcement_not_editable</c> for the rest).
+/// </summary>
+public sealed record UpdateAnnouncementRequest(
+    string TitleAr,
+    string TitleEn,
+    string? BodyAr,
+    string? BodyEn,
+    IReadOnlyList<AnnouncementTargetDto> Targets,
+    IReadOnlyList<string>? RoleFilters,
+    DateTime? PublishAtUtc,
+    DateTime? ExpiresAtUtc,
+    bool IsPinned,
+    bool Notify,
+    IReadOnlyList<Guid>? AttachmentFileIds);
+
+public sealed record AnnouncementQuery(string? Status = null, int Page = 1, int PageSize = Paging.DefaultPageSize);
+
+/// <summary>POST <c>/api/announcements/audience-preview</c>: the count (and a capped sample of names inside the author's own scope) before publishing.</summary>
+public sealed record AudiencePreviewRequest(
+    Guid AuthoringUnitId, IReadOnlyList<AnnouncementTargetDto> Targets, IReadOnlyList<string>? RoleFilters);
+
+public sealed record AudiencePreviewDto(int Count, IReadOnlyList<string> SampleNames);
+
+/// <summary>What a recipient sees (<c>Announcements.View</c>, own <c>AnnouncementRecipient</c> row): active ones, pinned first.</summary>
+public sealed record MyAnnouncementDto(
+    Guid Id,
+    string TitleAr,
+    string TitleEn,
+    string? BodyAr,
+    string? BodyEn,
+    IReadOnlyList<AnnouncementAttachmentDto> Attachments,
+    string AuthorNameAr,
+    string AuthorNameEn,
+    DateTime PublishedAtUtc,
+    bool IsPinned,
+    bool IsRead,
+    DateTime? EditedAtUtc);

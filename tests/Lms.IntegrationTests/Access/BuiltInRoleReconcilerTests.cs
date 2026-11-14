@@ -406,6 +406,41 @@ public sealed class BuiltInRoleReconcilerTests(LmsApiFactory factory)
     }
 
     [Fact]
+    public async Task Reconcile_adds_only_the_M6_wave_1_messaging_defaults_to_a_version_8_client()
+    {
+        // A client on defaults version 8: no messaging permissions yet, and an admin removed Library.Manage from the Teacher role (an older default).
+        var tree = await AccessTestData.SeedAsync(factory, "RCM");
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            var teacher = tree.Roles[BuiltInRoles.Teacher].Id;
+            var rows = await db.RolePermissions.Where(p => p.OrganizationId == tree.Org.Id).ToListAsync();
+            db.RolePermissions.RemoveRange(rows.Where(p => p.Permission.StartsWith("Messaging.", StringComparison.Ordinal)
+                || p.Permission.StartsWith("Announcements.", StringComparison.Ordinal) || p.Permission.StartsWith("Comms.", StringComparison.Ordinal)
+                || (p.RoleId == teacher && p.Permission == Permissions.Library.Manage)));
+            foreach (var role in await db.Roles.Where(r => r.OrganizationId == tree.Org.Id).ToListAsync())
+            {
+                db.Entry(role).Property(nameof(Role.DefaultsVersion)).CurrentValue = 8;
+            }
+
+            await db.SaveChangesAsync();
+        }
+
+        await ReconcileAsync();
+
+        static IEnumerable<string> Comms(IEnumerable<string> p) =>
+            p.Where(x => x.StartsWith("Messaging.", StringComparison.Ordinal) || x.StartsWith("Announcements.", StringComparison.Ordinal) || x.StartsWith("Comms.", StringComparison.Ordinal)).Order(StringComparer.Ordinal);
+
+        Assert.Equal(["Announcements.Manage", "Announcements.View", "Comms.Manage", "Messaging.Moderate", "Messaging.Send", "Messaging.View"],
+            Comms(await PermissionsOfAsync(tree, BuiltInRoles.OrgAdmin)));
+        Assert.Equal(["Announcements.Manage", "Announcements.View", "Messaging.Send", "Messaging.View"], Comms(await PermissionsOfAsync(tree, BuiltInRoles.Manager)));
+        Assert.Equal(["Announcements.Manage", "Announcements.View", "Messaging.Send", "Messaging.View"], Comms(await PermissionsOfAsync(tree, BuiltInRoles.Teacher)));
+        Assert.Equal(["Announcements.View", "Messaging.Send", "Messaging.View"], Comms(await PermissionsOfAsync(tree, BuiltInRoles.Counselor)));
+        Assert.Equal(["Announcements.View", "Messaging.Send", "Messaging.View"], Comms(await PermissionsOfAsync(tree, BuiltInRoles.Student)));
+        Assert.Equal(["Announcements.View", "Messaging.Send", "Messaging.View"], Comms(await PermissionsOfAsync(tree, BuiltInRoles.Guardian)));
+        Assert.DoesNotContain(Permissions.Library.Manage, await PermissionsOfAsync(tree, BuiltInRoles.Teacher)); // an older removed default stays removed
+    }
+
+    [Fact]
     public async Task Newly_provisioned_roles_are_already_at_the_current_defaults_version()
     {
         var tree = await AccessTestData.SeedAsync(factory, "RC4");

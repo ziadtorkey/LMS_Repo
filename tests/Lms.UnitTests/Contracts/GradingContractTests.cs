@@ -64,9 +64,9 @@ public sealed class GradingContractTests
     }
 
     [Fact]
-    public void Defaults_version_is_8()
+    public void Defaults_version_is_10_and_the_grading_permissions_came_in_8()
     {
-        Assert.Equal(8, BuiltInRoleDefaults.CurrentVersion);
+        Assert.Equal(10, BuiltInRoleDefaults.CurrentVersion);
         Assert.All(GradePermissions, p => Assert.Equal(8, BuiltInRoleDefaults.IntroducedIn(p)));
         Assert.Equal(GradePermissions.Order(StringComparer.Ordinal), BuiltInRoleDefaults.IntroducedInVersion8.Order(StringComparer.Ordinal));
     }

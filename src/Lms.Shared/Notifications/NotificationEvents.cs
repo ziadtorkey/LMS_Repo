@@ -34,7 +34,9 @@ public sealed record NotificationEventDefinition(
     string Key,
     IReadOnlyList<string> DefaultRecipientRoles,
     IReadOnlyList<string> Parameters,
-    string RecipientScope = RecipientScopes.Subtree);
+    string RecipientScope = RecipientScopes.Subtree,
+    IReadOnlyList<string>? DefaultChannels = null,
+    bool Mandatory = false);
 
 /// <summary>Notification event catalog ("Module.Event" keys). Later milestones append; never rename a key.</summary>
 public static class NotificationEvents
@@ -70,6 +72,14 @@ public static class NotificationEvents
     // M5 wave 1 (M5 plan Task 1, L26). Named recipients: the student and the linked guardians whose visible grades changed, one per student per publish
     // batch. No grade value and no item title in any notification, log or error.
     public const string GradesPublished = "Grades.Published";
+
+    // M6 wave 1 (#613 section 16: one catalog, keys never renamed). No message text and no grade value in any notice.
+    public const string MessagesNewMessage = "Messages.NewMessage";
+    public const string AnnouncementsPublished = "Announcements.Published";
+    public const string MessagingWarning = "Messaging.Warning";
+    public const string MessagingRestricted = "Messaging.Restricted";
+    public const string MessagingReportResolved = "Messaging.ReportResolved";
+    public const string CommsCapReached = "Comms.CapReached";
 
     public static IReadOnlyList<NotificationEventDefinition> All { get; } =
     [
@@ -114,6 +124,18 @@ public static class NotificationEvents
         new(LiveReminder, [], ["TitleAr", "TitleEn", "CourseNameAr", "CourseNameEn", "StartsAtUtc"]),
         // Named recipients: the student and the linked guardians, once per publish batch. Course name only: never a score or an item title.
         new(GradesPublished, [], ["CourseNameAr", "CourseNameEn"]),
+        // Named recipients: a participant who has no unread notice of the conversation (throttled: one unread notice per conversation). The sender's name only.
+        new(MessagesNewMessage, [], ["SenderNameAr", "SenderNameEn"]),
+        // Named recipients: the snapshot of the audience, one event per batch; when the author asked to notify. Title only, never the body.
+        new(AnnouncementsPublished, [], ["TitleAr", "TitleEn"]),
+        // Named recipient: the sender of a reported message when a moderator warns them. Mandatory (moderation outcomes cannot be switched off).
+        new(MessagingWarning, [], [], DefaultChannels: [NotificationChannels.InApp, NotificationChannels.Email], Mandatory: true),
+        // Named recipient: a user whose messaging right was restricted until the date. Mandatory.
+        new(MessagingRestricted, [], ["UntilUtc"], DefaultChannels: [NotificationChannels.InApp, NotificationChannels.Email], Mandatory: true),
+        // Named recipient: the reporter, with the outcome (Dismissed or Actioned) and no detail about the other person. Mandatory.
+        new(MessagingReportResolved, [], ["Outcome"], DefaultChannels: [NotificationChannels.InApp], Mandatory: true),
+        // Org Admins of the client when a daily cap of a channel is reached.
+        new(CommsCapReached, [BuiltInRoles.OrgAdmin], ["Channel"], DefaultChannels: [NotificationChannels.InApp, NotificationChannels.Email]),
     ];
 
     /// <summary>The definition with this exact (case-sensitive) key, or null.</summary>

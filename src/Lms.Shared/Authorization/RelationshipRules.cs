@@ -42,7 +42,9 @@ public static class RelationshipRules
             // M4b wave 3a: live sessions of own ClassCourses.
             Permissions.LiveSessions.View, Permissions.LiveSessions.Manage,
             // M5 wave 1: grades of own ClassCourses with an assignment active today (L15).
-            Permissions.Grades.View, Permissions.Grades.Manage, Permissions.Grades.Publish)),
+            Permissions.Grades.View, Permissions.Grades.Manage, Permissions.Grades.Publish,
+            // M6 wave 1: announcements only to own ClassCourses and their groups.
+            Permissions.Announcements.Manage)),
         new(BuiltInRoles.Supervisor, Relationships.SupervisedCourses, ImmutableArray.Create(
             Permissions.Courses.Update, Permissions.Courses.Delete, Permissions.Courses.Allocate,
             Permissions.Blueprints.Edit, Permissions.Blueprints.Publish, Permissions.TeacherAssignments.Manage,

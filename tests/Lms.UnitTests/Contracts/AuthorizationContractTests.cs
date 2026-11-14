@@ -21,7 +21,7 @@ public partial class AuthorizationContractTests
     }
 
     [Fact]
-    public void Permission_catalog_contains_exactly_the_M0_to_M5_wave_1_set()
+    public void Permission_catalog_contains_exactly_the_M0_to_M6_wave_1_set()
     {
         string[] expected =
         [
@@ -54,6 +54,7 @@ public partial class AuthorizationContractTests
             "LiveSessions.View", "LiveSessions.Manage",
             "Packages.Upload", "Packages.View",
             "Grades.View", "Grades.Manage", "Grades.Publish", "Grades.ConfigureScales", "Grades.ViewReports", "Grades.ViewOwn",
+            "Messaging.View", "Messaging.Send", "Messaging.Moderate", "Announcements.View", "Announcements.Manage", "Comms.Manage",
         ];
         Assert.Equal(expected.Order(StringComparer.Ordinal), Permissions.All.Order(StringComparer.Ordinal));
     }
@@ -131,6 +132,9 @@ public partial class AuthorizationContractTests
             "gradebook_locked", "scale_provisional", "scale_bands_invalid", "scale_in_use", "weights_invalid", "grade_out_of_range",
             "grade_override_reason_required", "grade_import_invalid", "grade_import_expired", "terms_have_dependants",
             "concurrency_conflict",
+            // M6 wave 1 (messaging, announcements, delivery)
+            "messaging_not_allowed", "conversation_closed", "message_too_long", "message_delete_window_closed", "report_duplicate", "rate_limited",
+            "notification_mandatory", "announcement_target_invalid", "announcement_not_editable", "rules_looser_than_default",
         ];
 
         Assert.All(fields, f => Assert.Equal(f.Name, (string)f.GetRawConstantValue()!));

@@ -95,4 +95,45 @@ public static class SettingKeys
 
     /// <summary>Terms per academic year, 2 or 3 (client level, D62).</summary>
     public static readonly SettingKey<int> AcademicYearsTermsPerYear = new("AcademicYears.TermsPerYear", 2);
+
+    // M6 wave 1 (D66 defaults; every Comms.* and Messaging.* setting is client level, edited by the Org Admin at the client root).
+    /// <summary>Whether the client's notices may use email at all.</summary>
+    public static readonly SettingKey<bool> CommsEmailEnabled = new("Comms.EmailEnabled", true);
+
+    /// <summary>Whether the client's notices may use SMS (needs a provider and an opt-in sentence).</summary>
+    public static readonly SettingKey<bool> CommsSmsEnabled = new("Comms.SmsEnabled", false);
+
+    /// <summary>Whether the client's notices may use Web Push.</summary>
+    public static readonly SettingKey<bool> CommsPushEnabled = new("Comms.PushEnabled", false);
+
+    /// <summary>Daily caps per client (D66: 5,000 email, 500 SMS, 20,000 push), counted in the client's day; the admin may raise them up to a platform ceiling.</summary>
+    public static readonly SettingKey<int> CommsMaxEmailPerDay = new("Comms.MaxEmailPerDay", 5000);
+
+    public static readonly SettingKey<int> CommsMaxSmsPerDay = new("Comms.MaxSmsPerDay", 500);
+    public static readonly SettingKey<int> CommsMaxPushPerDay = new("Comms.MaxPushPerDay", 20000);
+
+    /// <summary>Daily caps per recipient and channel.</summary>
+    public static readonly SettingKey<int> CommsMaxEmailPerUserPerDay = new("Comms.MaxEmailPerUserPerDay", 20);
+
+    public static readonly SettingKey<int> CommsMaxSmsPerUserPerDay = new("Comms.MaxSmsPerUserPerDay", 5);
+    public static readonly SettingKey<int> CommsMaxPushPerUserPerDay = new("Comms.MaxPushPerUserPerDay", 50);
+
+    /// <summary>Quiet hours hold SMS and push (never email, in-app, mandatory or urgent events); off by default, 21:00-07:00 in the client time zone when on.</summary>
+    public static readonly SettingKey<bool> CommsQuietHoursEnabled = new("Comms.QuietHours.Enabled", false);
+
+    public static readonly SettingKey<string> CommsQuietHoursStart = new("Comms.QuietHours.Start", "21:00");
+    public static readonly SettingKey<string> CommsQuietHoursEnd = new("Comms.QuietHours.End", "07:00");
+
+    /// <summary>Days delivery rows are kept (D66: 90).</summary>
+    public static readonly SettingKey<int> CommsDeliveryRetentionDays = new("Comms.DeliveryRetentionDays", 90);
+
+    /// <summary>Whether participants see "seen by" (off by default; staff only in groups, students never see staff read state).</summary>
+    public static readonly SettingKey<bool> MessagingReadReceipts = new("Messaging.ReadReceipts", false);
+
+    public static readonly SettingKey<int> MessagingMaxPerMinute = new("Messaging.MaxPerMinute", 30);
+    public static readonly SettingKey<int> MessagingMaxNewConversationsPerDay = new("Messaging.MaxNewConversationsPerDay", 20);
+    public static readonly SettingKey<int> MessagingMaxGroupSize = new("Messaging.MaxGroupSize", 50);
+
+    /// <summary>Per-author cap of announcements a day.</summary>
+    public static readonly SettingKey<int> AnnouncementsMaxPerAuthorPerDay = new("Announcements.MaxPerAuthorPerDay", 10);
 }

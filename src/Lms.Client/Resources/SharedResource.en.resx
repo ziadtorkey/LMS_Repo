@@ -1770,4 +1770,108 @@
   <data name="AuditEntity_GradeEntry" xml:space="preserve"><value>Grade entry</value></data>
   <data name="AuditEntity_GradeSnapshot" xml:space="preserve"><value>Grade snapshot</value></data>
   <data name="PermModule_Grades" xml:space="preserve"><value>Grades</value></data>
+  <data name="Error_messaging_not_allowed" xml:space="preserve"><value>You cannot send messages to this person.</value></data>
+  <data name="Error_conversation_closed" xml:space="preserve"><value>This conversation was locked by a moderator.</value></data>
+  <data name="Error_message_too_long" xml:space="preserve"><value>The message is empty or longer than the limit.</value></data>
+  <data name="Error_message_delete_window_closed" xml:space="preserve"><value>A message can be deleted for everyone only within 15 minutes of sending.</value></data>
+  <data name="Error_report_duplicate" xml:space="preserve"><value>You already reported this message.</value></data>
+  <data name="Error_rate_limited" xml:space="preserve"><value>Too many requests. Try again later.</value></data>
+  <data name="Error_notification_mandatory" xml:space="preserve"><value>This notification cannot be switched off.</value></data>
+  <data name="Error_announcement_target_invalid" xml:space="preserve"><value>The announcement audience is not valid.</value></data>
+  <data name="Error_announcement_not_editable" xml:space="preserve"><value>A published announcement allows only its expiry, pin and withdrawal to change.</value></data>
+  <data name="Error_rules_looser_than_default" xml:space="preserve"><value>A client may only narrow the messaging rules, not widen them.</value></data>
+  <data name="Perm_Messaging_View" xml:space="preserve"><value>Open the messaging inbox</value></data>
+  <data name="Perm_Messaging_Send" xml:space="preserve"><value>Send messages</value></data>
+  <data name="Perm_Messaging_Moderate" xml:space="preserve"><value>Moderate reported messages</value></data>
+  <data name="Perm_Announcements_View" xml:space="preserve"><value>View announcements</value></data>
+  <data name="Perm_Announcements_Manage" xml:space="preserve"><value>Manage announcements</value></data>
+  <data name="Perm_Comms_Manage" xml:space="preserve"><value>Manage communication settings</value></data>
+  <data name="PermModule_Messaging" xml:space="preserve"><value>Messaging</value></data>
+  <data name="PermModule_Announcements" xml:space="preserve"><value>Announcements</value></data>
+  <data name="PermModule_Comms" xml:space="preserve"><value>Communication</value></data>
+  <data name="Setting_Comms_EmailEnabled" xml:space="preserve"><value>Allow email notices</value></data>
+  <data name="Setting_Comms_SmsEnabled" xml:space="preserve"><value>Allow SMS notices</value></data>
+  <data name="Setting_Comms_PushEnabled" xml:space="preserve"><value>Allow push notices</value></data>
+  <data name="Setting_Comms_MaxEmailPerDay" xml:space="preserve"><value>Emails per day (client)</value></data>
+  <data name="Setting_Comms_MaxSmsPerDay" xml:space="preserve"><value>SMS per day (client)</value></data>
+  <data name="Setting_Comms_MaxPushPerDay" xml:space="preserve"><value>Push notices per day (client)</value></data>
+  <data name="Setting_Comms_MaxEmailPerUserPerDay" xml:space="preserve"><value>Emails per person per day</value></data>
+  <data name="Setting_Comms_MaxSmsPerUserPerDay" xml:space="preserve"><value>SMS per person per day</value></data>
+  <data name="Setting_Comms_MaxPushPerUserPerDay" xml:space="preserve"><value>Push notices per person per day</value></data>
+  <data name="Setting_Comms_QuietHours_Enabled" xml:space="preserve"><value>Quiet hours</value></data>
+  <data name="Setting_Comms_QuietHours_Start" xml:space="preserve"><value>Quiet hours start</value></data>
+  <data name="Setting_Comms_QuietHours_End" xml:space="preserve"><value>Quiet hours end</value></data>
+  <data name="Setting_Comms_DeliveryRetentionDays" xml:space="preserve"><value>Days to keep delivery records</value></data>
+  <data name="Setting_Messaging_ReadReceipts" xml:space="preserve"><value>Show who has seen a message</value></data>
+  <data name="Setting_Messaging_MaxPerMinute" xml:space="preserve"><value>Messages per minute</value></data>
+  <data name="Setting_Messaging_MaxNewConversationsPerDay" xml:space="preserve"><value>New conversations per day</value></data>
+  <data name="Setting_Messaging_MaxGroupSize" xml:space="preserve"><value>Largest group conversation</value></data>
+  <data name="Setting_Announcements_MaxPerAuthorPerDay" xml:space="preserve"><value>Announcements per author per day</value></data>
+  <data name="NotifEvent_Messages_NewMessage" xml:space="preserve"><value>New message</value></data>
+  <data name="Notif_Messages_NewMessage" xml:space="preserve"><value>{SenderName} sent you a message.</value></data>
+  <data name="NotifEvent_Announcements_Published" xml:space="preserve"><value>New announcement</value></data>
+  <data name="Notif_Announcements_Published" xml:space="preserve"><value>New announcement: {Title}</value></data>
+  <data name="NotifEvent_Messaging_Warning" xml:space="preserve"><value>Messaging warning</value></data>
+  <data name="Notif_Messaging_Warning" xml:space="preserve"><value>A moderator warned you about a message you sent.</value></data>
+  <data name="NotifEvent_Messaging_Restricted" xml:space="preserve"><value>Messaging restricted</value></data>
+  <data name="Notif_Messaging_Restricted" xml:space="preserve"><value>Your messaging is restricted until {UntilUtc}.</value></data>
+  <data name="NotifEvent_Messaging_ReportResolved" xml:space="preserve"><value>Report reviewed</value></data>
+  <data name="Notif_Messaging_ReportResolved" xml:space="preserve"><value>Your report was reviewed: {Outcome}.</value></data>
+  <data name="NotifEvent_Comms_CapReached" xml:space="preserve"><value>Daily sending limit reached</value></data>
+  <data name="Notif_Comms_CapReached" xml:space="preserve"><value>The daily limit for {Channel} notices was reached.</value></data>
+  <data name="AuditEntity_Conversation" xml:space="preserve"><value>Conversation</value></data>
+  <data name="AuditEntity_MessageReport" xml:space="preserve"><value>Message report</value></data>
+  <data name="AuditEntity_MessagingRestriction" xml:space="preserve"><value>Messaging restriction</value></data>
+  <data name="AuditEntity_MessagingRule" xml:space="preserve"><value>Messaging rule</value></data>
+  <data name="AuditEntity_Announcement" xml:space="preserve"><value>Announcement</value></data>
+  <data name="Msg_Kind_Direct" xml:space="preserve"><value>Direct message</value></data>
+  <data name="Msg_Kind_Group" xml:space="preserve"><value>Group</value></data>
+  <data name="Msg_State_Normal" xml:space="preserve"><value>Message</value></data>
+  <data name="Msg_State_Deleted" xml:space="preserve"><value>Message deleted</value></data>
+  <data name="Msg_State_Removed" xml:space="preserve"><value>Message removed by a moderator</value></data>
+  <data name="Msg_Rule_Allow" xml:space="preserve"><value>Allowed</value></data>
+  <data name="Msg_Rule_Relationship" xml:space="preserve"><value>Only with a relationship</value></data>
+  <data name="Msg_Rule_Deny" xml:space="preserve"><value>Not allowed</value></data>
+  <data name="Msg_Reason_Harassment" xml:space="preserve"><value>Harassment</value></data>
+  <data name="Msg_Reason_Inappropriate" xml:space="preserve"><value>Inappropriate content</value></data>
+  <data name="Msg_Reason_Spam" xml:space="preserve"><value>Spam</value></data>
+  <data name="Msg_Reason_Safety" xml:space="preserve"><value>Safety concern</value></data>
+  <data name="Msg_Reason_Other" xml:space="preserve"><value>Other</value></data>
+  <data name="Msg_ReportStatus_Open" xml:space="preserve"><value>Open</value></data>
+  <data name="Msg_ReportStatus_Dismissed" xml:space="preserve"><value>Dismissed</value></data>
+  <data name="Msg_ReportStatus_Actioned" xml:space="preserve"><value>Action taken</value></data>
+  <data name="Msg_Action_Dismiss" xml:space="preserve"><value>Dismiss the report</value></data>
+  <data name="Msg_Action_Remove" xml:space="preserve"><value>Remove the message</value></data>
+  <data name="Msg_Action_Warn" xml:space="preserve"><value>Warn the sender</value></data>
+  <data name="Msg_Action_Restrict" xml:space="preserve"><value>Restrict messaging</value></data>
+  <data name="Msg_Action_RemoveAndRestrict" xml:space="preserve"><value>Remove and restrict</value></data>
+  <data name="Msg_Action_LockConversation" xml:space="preserve"><value>Lock the conversation</value></data>
+  <data name="Ann_TargetKind_Organization" xml:space="preserve"><value>Whole organization</value></data>
+  <data name="Ann_TargetKind_Unit" xml:space="preserve"><value>Unit</value></data>
+  <data name="Ann_TargetKind_Level" xml:space="preserve"><value>Level</value></data>
+  <data name="Ann_TargetKind_Class" xml:space="preserve"><value>Class</value></data>
+  <data name="Ann_TargetKind_ClassCourse" xml:space="preserve"><value>Course of a class</value></data>
+  <data name="Ann_TargetKind_Group" xml:space="preserve"><value>Group</value></data>
+  <data name="Ann_Status_Draft" xml:space="preserve"><value>Draft</value></data>
+  <data name="Ann_Status_Scheduled" xml:space="preserve"><value>Scheduled</value></data>
+  <data name="Ann_Status_Published" xml:space="preserve"><value>Published</value></data>
+  <data name="Ann_Status_Withdrawn" xml:space="preserve"><value>Withdrawn</value></data>
+  <data name="Ann_Status_Expired" xml:space="preserve"><value>Expired</value></data>
+  <data name="Ann_Role_Staff" xml:space="preserve"><value>Staff</value></data>
+  <data name="Ann_Role_Students" xml:space="preserve"><value>Students</value></data>
+  <data name="Ann_Role_Guardians" xml:space="preserve"><value>Guardians</value></data>
+  <data name="Comms_Delivery_Pending" xml:space="preserve"><value>Waiting</value></data>
+  <data name="Comms_Delivery_Sending" xml:space="preserve"><value>Sending</value></data>
+  <data name="Comms_Delivery_Sent" xml:space="preserve"><value>Sent</value></data>
+  <data name="Comms_Delivery_Failed" xml:space="preserve"><value>Failed</value></data>
+  <data name="Comms_Delivery_Skipped" xml:space="preserve"><value>Skipped</value></data>
+  <data name="Comms_Delivery_Expired" xml:space="preserve"><value>Expired</value></data>
+  <data name="Comms_ChannelState_Active" xml:space="preserve"><value>Active</value></data>
+  <data name="Comms_ChannelState_NeedsSetup" xml:space="preserve"><value>Needs setup</value></data>
+  <data name="Comms_ChannelState_Blocked" xml:space="preserve"><value>Blocked</value></data>
+  <data name="Comms_ChannelState_Bounced" xml:space="preserve"><value>Bounced</value></data>
+  <data name="Comms_PrefSource_Default" xml:space="preserve"><value>Default</value></data>
+  <data name="Comms_PrefSource_User" xml:space="preserve"><value>Your choice</value></data>
+  <data name="Comms_PrefSource_Mandatory" xml:space="preserve"><value>Required</value></data>
+  <data name="Msg_Rule_SameUnit" xml:space="preserve"><value>Anyone in the same unit</value></data>
 </root>

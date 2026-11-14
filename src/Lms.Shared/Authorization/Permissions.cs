@@ -282,6 +282,37 @@ public static class Permissions
         public const string ViewOwn = "Grades.ViewOwn";
     }
 
+    // M6 wave 1 (#613): messaging, announcements and the communication settings. Messaging is relationship-based (the rules matrix, D69); only a
+    // conversation's participants read it, whatever the role. A Teacher announces only to own ClassCourses and their groups (RelationshipRules).
+    /// <summary>Conversations and messages between people (FR-MSG-01/02), under the client's rules matrix.</summary>
+    public static class Messaging
+    {
+        /// <summary>The inbox reads: recipient search, rules summary, limits and the unread total.</summary>
+        public const string View = "Messaging.View";
+
+        /// <summary>Start conversations, send, delete own message, search own messages, block and report (the rules matrix decides whom).</summary>
+        public const string Send = "Messaging.Send";
+
+        /// <summary>See reported messages with their bounded context and act on them (Org Admin, unit-scoped); never reads conversations.</summary>
+        public const string Moderate = "Messaging.Moderate";
+    }
+
+    /// <summary>Targeted announcements (FR-MSG-03).</summary>
+    public static class Announcements
+    {
+        /// <summary>Read the announcements addressed to the caller (and, for authors and admins, those in their scope).</summary>
+        public const string View = "Announcements.View";
+
+        /// <summary>Create, edit, publish, schedule and withdraw announcements at the authoring unit.</summary>
+        public const string Manage = "Announcements.Manage";
+    }
+
+    /// <summary>The communication settings of a client: the rules matrix, caps, quiet hours and provider status (Org Admin at the client root).</summary>
+    public static class Comms
+    {
+        public const string Manage = "Comms.Manage";
+    }
+
     // M4b Live sessions, wave 3a (M4b plan Task 1). Teacher: own ClassCourses; Student: own enrollments, and only the
     // sessions whose module the student can see (IModuleAccess). The Zoom webhook is anonymous and needs none.
     /// <summary>Live (Zoom) sessions of a ClassCourse (FR-VC-01).</summary>

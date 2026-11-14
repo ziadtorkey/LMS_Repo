@@ -71,7 +71,10 @@ public static class BuiltInRoles
              Permissions.LiveSessions.View, Permissions.LiveSessions.Manage,
              // M5 wave 1 (D58): every grading permission except ViewOwn (they have no grades of their own).
              Permissions.Grades.View, Permissions.Grades.Manage, Permissions.Grades.Publish,
-             Permissions.Grades.ConfigureScales, Permissions.Grades.ViewReports]),
+             Permissions.Grades.ConfigureScales, Permissions.Grades.ViewReports,
+             // M6 wave 1: everything of the Manager, plus moderation and the communication settings (client root).
+             Permissions.Messaging.View, Permissions.Messaging.Send, Permissions.Messaging.Moderate,
+             Permissions.Announcements.View, Permissions.Announcements.Manage, Permissions.Comms.Manage]),
         new(Manager, RoleBaseKinds.Staff,
             new("مدير المدرسة", "School Manager"),
             new("العميد", "Dean"),
@@ -109,7 +112,10 @@ public static class BuiltInRoles
              Permissions.LiveSessions.View, Permissions.LiveSessions.Manage,
              // M5 wave 1 (D58): every grading permission except ViewOwn (they have no grades of their own).
              Permissions.Grades.View, Permissions.Grades.Manage, Permissions.Grades.Publish,
-             Permissions.Grades.ConfigureScales, Permissions.Grades.ViewReports]),
+             Permissions.Grades.ConfigureScales, Permissions.Grades.ViewReports,
+             // M6 wave 1 (D69): the Manager messages under the rules and announces; moderation and the communication settings are the Org Admin's.
+             Permissions.Messaging.View, Permissions.Messaging.Send,
+             Permissions.Announcements.View, Permissions.Announcements.Manage]),
         new(Supervisor, RoleBaseKinds.Staff,
             new("المشرف الأكاديمي", "Academic Supervisor"),
             new("رئيس القسم", "Head of Department"),
@@ -135,7 +141,9 @@ public static class BuiltInRoles
              // M4b wave 3a: see sessions of the unit (join link only, never the start link).
              Permissions.LiveSessions.View,
              // M5 wave 1: read grades and reports of supervised courses (RelationshipRules).
-             Permissions.Grades.View, Permissions.Grades.ViewReports]),
+             Permissions.Grades.View, Permissions.Grades.ViewReports,
+             // M6 wave 1: messages under the rules and announces to the units it supervises.
+             Permissions.Messaging.View, Permissions.Messaging.Send, Permissions.Announcements.View, Permissions.Announcements.Manage]),
         new(Counselor, RoleBaseKinds.Staff,
             new("الأخصائي الاجتماعي", "Social Worker"),
             new("شؤون الطلاب", "Student Affairs"),
@@ -144,7 +152,9 @@ public static class BuiltInRoles
              Permissions.Classes.View, Permissions.Enrollment.View, Permissions.Enrollment.RequestException,
              Permissions.Groups.View,
              // M4a wave 2: every staff role reads the library.
-             Permissions.Library.View]),
+             Permissions.Library.View,
+             // M6 wave 1: the Counselor messages students and guardians in scope (rules matrix); announcements are read only.
+             Permissions.Messaging.View, Permissions.Messaging.Send, Permissions.Announcements.View]),
         new(Teacher, RoleBaseKinds.Staff,
             new("المعلم", "Teacher"),
             new("عضو هيئة التدريس", "Instructor"),
@@ -166,7 +176,9 @@ public static class BuiltInRoles
              // M4b wave 3a: live sessions of own ClassCourses (RelationshipRules).
              Permissions.LiveSessions.View, Permissions.LiveSessions.Manage,
              // M5 wave 1: grades of own ClassCourses (RelationshipRules); scales and reports are not the Teacher's.
-             Permissions.Grades.View, Permissions.Grades.Manage, Permissions.Grades.Publish]),
+             Permissions.Grades.View, Permissions.Grades.Manage, Permissions.Grades.Publish,
+             // M6 wave 1: messages under the rules; announces only to own ClassCourses and their groups (RelationshipRules).
+             Permissions.Messaging.View, Permissions.Messaging.Send, Permissions.Announcements.View, Permissions.Announcements.Manage]),
         new(Student, RoleBaseKinds.Student,
             new("الطالب", "Student"),
             new("الطالب", "Student"),
@@ -183,13 +195,17 @@ public static class BuiltInRoles
              // M4b wave 3a: sessions of own enrollments (RelationshipRules + IModuleAccess).
              Permissions.LiveSessions.View,
              // M5 wave 1: the student's own published grades (SelfService).
-             Permissions.Grades.ViewOwn]),
+             Permissions.Grades.ViewOwn,
+             // M6 wave 1 (D69): a student writes only to their own teachers and counselor (the rules matrix, never another student).
+             Permissions.Messaging.View, Permissions.Messaging.Send, Permissions.Announcements.View]),
         new(Guardian, RoleBaseKinds.Guardian,
             new("ولي الأمر", "Parent"),
             new("ولي الأمر", "Parent"),
             [Permissions.Files.Download, Permissions.AcademicYears.View, Permissions.Students.ViewChildren,
              // M5 wave 1: the children's published grades (an active guardian link).
-             Permissions.Grades.ViewOwn]),
+             Permissions.Grades.ViewOwn,
+             // M6 wave 1 (D69): a guardian writes only to the teachers and counselor of their own children, never to another guardian.
+             Permissions.Messaging.View, Permissions.Messaging.Send, Permissions.Announcements.View]),
     ];
 
     public static BuiltInRoleDefinition Get(string key) =>
