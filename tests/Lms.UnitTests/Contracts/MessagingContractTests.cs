@@ -137,8 +137,8 @@ public sealed class MessagingContractTests
         Assert.Equal(["Organization", "Unit", "Level", "Class", "ClassCourse", "Group"], AnnouncementTargetKinds.All);
         Assert.Equal(["Draft", "Scheduled", "Published", "Withdrawn", "Expired"], AnnouncementStatuses.All);
         Assert.Equal(["Staff", "Students", "Guardians"], AnnouncementRoleFilters.All);
-        Assert.Equal(["Active", "NeedsSetup", "Blocked", "Bounced"], ChannelStates.All);
-        Assert.Equal(["Pending", "Sending", "Sent", "Failed", "Skipped", "Expired"], DeliveryStatuses.All);
+        Assert.Equal(["Active", "NeedsSetup", "Blocked", "Bounced", "Off"], ChannelStates.All);
+        Assert.Equal(["Pending", "Sending", "Sent", "Failed", "Suppressed", "Held", "Skipped"], DeliveryStatuses.All);
         Assert.Equal((15, 5, 10, 50, 2, 50, 200), (MessagingLimits.DeleteWindowMinutes, MessagingLimits.MaxAttachmentsPerMessage, MessagingLimits.MaxAttachmentMb,
             MessagingLimits.DefaultMaxGroupSize, MessagingLimits.SearchMinLength, MessagingLimits.SearchMaxResults, MessagingLimits.SearchWindow));
     }
@@ -146,7 +146,7 @@ public sealed class MessagingContractTests
     [Fact]
     public void Settings_carry_the_d66_defaults_and_stay_client_level()
     {
-        Assert.Equal((true, false), (SettingKeys.CommsEmailEnabled.Default, SettingKeys.CommsPushEnabled.Default));
+        Assert.Equal((true, true), (SettingKeys.CommsEmailEnabled.Default, SettingKeys.CommsPushEnabled.Default));
         Assert.Equal((5000, 20000), (SettingKeys.CommsMaxEmailPerDay.Default, SettingKeys.CommsMaxPushPerDay.Default));
         Assert.Equal((20, 50), (SettingKeys.CommsMaxEmailPerUserPerDay.Default, SettingKeys.CommsMaxPushPerUserPerDay.Default));
         Assert.Equal((false, "21:00", "07:00"), (SettingKeys.CommsQuietHoursEnabled.Default, SettingKeys.CommsQuietHoursStart.Default, SettingKeys.CommsQuietHoursEnd.Default));
