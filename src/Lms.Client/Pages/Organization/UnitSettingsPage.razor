@@ -33,30 +33,31 @@ else
         </Badges>
     </PageHeader>
 
-    <SectionCard Flush="true">
-        <MudTabs Class="lms-tabs" Elevation="0" Rounded="false" ApplyEffectsToContainer="true" MinimumTabWidth="80px" TabPanelsClass="pa-4" data-testid="unit-tabs">
-            <MudTabPanel Text="@L["UnitSettings_General"]">
-                <dl class="lms-details" data-testid="tab-general">
-                    <DetailItem Label="@L["Common_NameAr"]" Value="@_unit.NameAr" />
-                    <DetailItem Label="@L["Common_NameEn"]" Value="@_unit.NameEn" Ltr="true" />
-                    <DetailItem Label="@L["Common_Code"]" Value="@_unit.Code" Ltr="true" />
-                    <DetailItem Label="@L["Common_Status"]" Value="@(_unit.Status == OrgUnitStatuses.Inactive ? L["OrgTree_Inactive"].Value : L["ClientStatus_Active"].Value)" />
-                </dl>
+    @* Stitch unit settings: a segmented tab track on the canvas, each tab's content in its own cards. *@
+    <MudTabs Class="lms-tabs lms-tabs-standalone" Elevation="0" Rounded="false" MinimumTabWidth="80px" TabPanelsClass="lms-tab-panels" data-testid="unit-tabs">
+            <MudTabPanel Text="@L["UnitSettings_General"]" Icon="@Icons.Material.Rounded.Tune">
+                <SectionCard Title="@L["UnitSettings_Identity"]" Subtitle="@L["UnitSettings_IdentityHelp"]" Icon="@Icons.Material.Rounded.Badge" Class="lms-narrow-card">
+                    <dl class="lms-details" data-testid="tab-general">
+                        <DetailItem Label="@L["Common_NameAr"]" Value="@_unit.NameAr" />
+                        <DetailItem Label="@L["Common_NameEn"]" Value="@_unit.NameEn" Ltr="true" />
+                        <DetailItem Label="@L["Common_Code"]" Value="@_unit.Code" Ltr="true" />
+                        <DetailItem Label="@L["Common_Status"]" Value="@(_unit.Status == OrgUnitStatuses.Inactive ? L["OrgTree_Inactive"].Value : L["ClientStatus_Active"].Value)" />
+                    </dl>
+                </SectionCard>
             </MudTabPanel>
-            <MudTabPanel Text="@L["UnitSettings_Academic"]">
+            <MudTabPanel Text="@L["UnitSettings_Academic"]" Icon="@Icons.Material.Rounded.School">
                 <AcademicFlagsTab Unit="_unit" AllUnits="_all" CanEdit="PermState.Has(Permissions.OrgUnits.Update)" OnSaved="LoadAsync" />
             </MudTabPanel>
-            <MudTabPanel Text="@L["UnitSettings_Settings"]" Visible="PermState.Has(Permissions.Settings.View)" data-testid="tab-settings">
+            <MudTabPanel Text="@L["UnitSettings_Settings"]" Icon="@Icons.Material.Rounded.ToggleOn" Visible="PermState.Has(Permissions.Settings.View)" data-testid="tab-settings">
                 <SettingsTab UnitId="_unit.Id" CanEdit="PermState.Has(Permissions.Settings.Update)" />
             </MudTabPanel>
-            <MudTabPanel Text="@L["UnitSettings_Courses"]" Visible="PermState.Has(Permissions.Courses.View)" data-testid="tab-courses">
+            <MudTabPanel Text="@L["UnitSettings_Courses"]" Icon="@Icons.Material.Rounded.MenuBook" Visible="PermState.Has(Permissions.Courses.View)" data-testid="tab-courses">
                 <UnitCoursesTab UnitId="_unit.Id" />
             </MudTabPanel>
-            <MudTabPanel Text="@L["UnitSettings_Policies"]" Visible="PermState.Has(Permissions.Policies.View)" data-testid="tab-policies">
+            <MudTabPanel Text="@L["UnitSettings_Policies"]" Icon="@Icons.Material.Rounded.Policy" Visible="PermState.Has(Permissions.Policies.View)" data-testid="tab-policies">
                 <PoliciesTab UnitId="_unit.Id" CanEdit="PermState.Has(Permissions.Policies.Update)" />
             </MudTabPanel>
-        </MudTabs>
-    </SectionCard>
+    </MudTabs>
 }
 
 @code {

@@ -1494,6 +1494,35 @@
   <data name="Error_package_reason_compression_ratio" xml:space="preserve"><value>The package is compressed in an unsafe way. Export it again.</value></data>
   <data name="Error_package_reason_symlink" xml:space="preserve"><value>The package contains links to other files, which aren't allowed.</value></data>
   <data name="Error_package_reason_duplicate_name" xml:space="preserve"><value>Two files in the package have the same name.</value></data>
+  <data name="Blueprint_VersionsSubtitle" xml:space="preserve"><value>Complete audit trail of revisions and published versions.</value></data>
+  <data name="Blueprint_Overview" xml:space="preserve"><value>Blueprint overview</value></data>
+  <data name="Blueprint_StatSections" xml:space="preserve"><value>Sections</value></data>
+  <data name="Blueprint_StatLessons" xml:space="preserve"><value>Lessons</value></data>
+  <data name="Blueprint_StatPeriods" xml:space="preserve"><value>Periods per week</value></data>
+  <data name="Blueprint_StatVersion" xml:space="preserve"><value>Version</value></data>
+  <data name="Blueprint_LessonsCount" xml:space="preserve"><value>Lessons: {0}</value></data>
+  <data name="MyCourses_StatSupervised" xml:space="preserve"><value>Supervised courses</value></data>
+  <data name="MyCourses_StatAllocations" xml:space="preserve"><value>Class allocations</value></data>
+  <data name="MyCourses_StatPublished" xml:space="preserve"><value>Published blueprints</value></data>
+  <data name="MyCourses_StatPending" xml:space="preserve"><value>Without a blueprint</value></data>
+  <data name="MyCourses_Filter" xml:space="preserve"><value>Filter by name or code</value></data>
+  <data name="MyCourses_FilterUnit" xml:space="preserve"><value>Unit</value></data>
+  <data name="MyCourses_AllUnits" xml:space="preserve"><value>All units</value></data>
+  <data name="MyCourses_FilterBlueprint" xml:space="preserve"><value>Blueprint</value></data>
+  <data name="MyCourses_AllBlueprints" xml:space="preserve"><value>All blueprints</value></data>
+  <data name="MyCourses_View" xml:space="preserve"><value>View</value></data>
+  <data name="MyCourses_ViewGrid" xml:space="preserve"><value>Grid view</value></data>
+  <data name="MyCourses_ViewList" xml:space="preserve"><value>List view</value></data>
+  <data name="MyCourses_NoMatch" xml:space="preserve"><value>No course matches</value></data>
+  <data name="MyCourses_NoMatchText" xml:space="preserve"><value>Change or clear the filters.</value></data>
+  <data name="MyCourses_Periods" xml:space="preserve"><value>Periods per week: {0}</value></data>
+  <data name="MyCourses_AssignTitle" xml:space="preserve"><value>Assign or link a course</value></data>
+  <data name="MyCourses_AssignText" xml:space="preserve"><value>Ask an administrator to make you a course supervisor, or start from a template.</value></data>
+  <data name="MyCourses_ExploreTemplates" xml:space="preserve"><value>Explore templates</value></data>
+  <data name="MyCourses_ColCourse" xml:space="preserve"><value>Course</value></data>
+  <data name="MyCourses_ColUnit" xml:space="preserve"><value>Unit</value></data>
+  <data name="MyCourses_ColBlueprint" xml:space="preserve"><value>Blueprint</value></data>
+  <data name="MyCourses_ColPeriods" xml:space="preserve"><value>Periods per week</value></data>
   <data name="Package_Start" xml:space="preserve"><value>Start</value></data>
   <data name="Package_Resume" xml:space="preserve"><value>Resume</value></data>
   <data name="Package_Preview" xml:space="preserve"><value>Preview</value></data>
@@ -1793,10 +1822,24 @@
   <data name="AuditEntity_GradeEntry" xml:space="preserve"><value>Grade entry</value></data>
   <data name="AuditEntity_GradeSnapshot" xml:space="preserve"><value>Grade snapshot</value></data>
   <data name="PermModule_Grades" xml:space="preserve"><value>Grades</value></data>
+  <data name="ClassCourse_TabGradebook" xml:space="preserve"><value>Gradebook</value></data>
+  <data name="Grd_Title" xml:space="preserve"><value>Gradebook</value></data>
+  <data name="Grd_GridSoonTitle" xml:space="preserve"><value>The gradebook grid is on its way</value></data>
+  <data name="Grd_GridSoonText" xml:space="preserve"><value>Categories, items and scores for this class course will appear here.</value></data>
   <data name="NavSection_Structure" xml:space="preserve"><value>Structure</value></data>
   <data name="NavSection_People" xml:space="preserve"><value>People</value></data>
   <data name="NavSection_Academic" xml:space="preserve"><value>Academic</value></data>
   <data name="NavSection_Security" xml:space="preserve"><value>Security and settings</value></data>
   <data name="App_Subtitle" xml:space="preserve"><value>Academic platform</value></data>
   <data name="Nav_Main" xml:space="preserve"><value>Main navigation</value></data>
+  <data name="UnitSettings_Identity" xml:space="preserve"><value>Identity</value></data>
+  <data name="UnitSettings_IdentityHelp" xml:space="preserve"><value>The names and code used everywhere in the LMS.</value></data>
+  <data name="Academic_SectionLevelHelp" xml:space="preserve"><value>How students move up to the next level.</value></data>
+  <data name="Academic_LevelTransferHelp" xml:space="preserve"><value>Students who finish this unit move to the next level you choose.</value></data>
+  <data name="Academic_SectionCoursesHelp" xml:space="preserve"><value>Where courses are defined and owned.</value></data>
+  <data name="Academic_CourseManagementHelp" xml:space="preserve"><value>This unit can create and own courses for the units below it.</value></data>
+  <data name="Academic_SaveHint" xml:space="preserve"><value>Changes apply to this unit after you save.</value></data>
+  <data name="Policies_CascadeNote" xml:space="preserve"><value>Policies you turn on here apply to this unit and every unit below it. A policy set higher up shows who set it and can only be changed there.</value></data>
+  <data name="Policies_CardTitle" xml:space="preserve"><value>Delegation barriers</value></data>
+  <data name="Policies_CardHelp" xml:space="preserve"><value>Block actions for this unit and the units below it.</value></data>
 </root>
