@@ -16,7 +16,7 @@ namespace Lms.Infrastructure.Seeding;
 /// </summary>
 public sealed class DevSeeder(string connectionString, IHostEnvironment environment, SeedOptions? options = null)
 {
-    private sealed class SeedContext : ICurrentContext
+    internal sealed class SeedContext : ICurrentContext
     {
         public Guid? UserId => null;
         public Guid? OrganizationId => null;
@@ -42,14 +42,20 @@ public sealed class DevSeeder(string connectionString, IHostEnvironment environm
         if (!string.IsNullOrWhiteSpace(options?.DefaultPassword))
         {
             await SeedUsersAsync(db, school, university, options!, cancellationToken);
+
+            // The large performance client (X-09), only when asked for: Seed:Perf:Students.
+            if (options!.PerfStudents > 0)
+            {
+                await PerfSeeder.SeedAsync(db, options.PerfStudents, options.DefaultPassword!, cancellationToken);
+            }
         }
 
         return true;
     }
 
-    private sealed record SeededClient(Organization Organization, Dictionary<string, OrgUnit> Units);
+    internal sealed record SeededClient(Organization Organization, Dictionary<string, OrgUnit> Units);
 
-    private static async Task<SeededClient> SeedTreeAsync(LmsDbContext db, DevSeedData.ClientSeed seed, CancellationToken ct)
+    internal static async Task<SeededClient> SeedTreeAsync(LmsDbContext db, DevSeedData.ClientSeed seed, CancellationToken ct)
     {
         var organization = await db.Organizations.FirstOrDefaultAsync(o => o.Id == seed.OrganizationId, ct);
         if (organization is null)
@@ -180,7 +186,7 @@ public sealed class DevSeeder(string connectionString, IHostEnvironment environm
         }
     }
 
-    private static async Task<User> EnsureUserAsync(
+    internal static async Task<User> EnsureUserAsync(
         LmsDbContext db, string email, string nameAr, string nameEn, string password, bool isPlatformAdmin, CancellationToken ct)
     {
         var normalized = email.ToUpperInvariant();

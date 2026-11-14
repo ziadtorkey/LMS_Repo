@@ -26,6 +26,9 @@ public sealed partial class EnrollmentWriterGuardTests
         var offenders = Sources()
             .Where(f => !f.RelativePath.StartsWith(EngineFolder, StringComparison.Ordinal))
             .Where(f => !f.RelativePath.StartsWith("src/Lms.Domain/", StringComparison.Ordinal)) // the entities' own constructors
+            // Development-only performance seed (50,000 students, X-09): it creates placements and enrollments in bulk on purpose, without the engine's
+            // restriction checks, because it generates data and has no request context.
+            .Where(f => f.RelativePath != "src/Lms.Infrastructure/Seeding/PerfSeeder.cs")
             .Where(f => Write().IsMatch(File.ReadAllText(f.FullPath)))
             .Select(f => f.RelativePath)
             .ToList();
