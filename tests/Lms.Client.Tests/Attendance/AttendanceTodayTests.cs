@@ -91,11 +91,62 @@ public sealed class AttendanceTodayTests : StaffTestContext
 
         var teacher = await RenderPageAsync(Permissions.Attendance.Take);
         Assert.Contains("Edit window closed", teacher.Find($"[data-testid=session-locked-{closed}]").TextContent);
-        Assert.Empty(teacher.FindAll($"[data-testid=session-primary-{closed}]")); // no Attendance.Edit: nothing to press
+        Assert.Contains("Review", teacher.Find($"[data-testid=session-primary-{closed}]").TextContent); // no Attendance.Edit: the lock is for editing, reading stays
         await DisposeComponentsAsync();
 
         var counselor = await RenderPageAsync(Permissions.Attendance.Take, Permissions.Attendance.Edit);
         Assert.Contains("Edit attendance", counselor.Find($"[data-testid=session-primary-{closed}]").TextContent);
+    }
+
+    [Fact]
+    public async Task The_date_field_shows_the_day_and_a_day_without_sessions_has_an_empty_state()
+    {
+        Culture.Current = new CultureInfo("en");
+        var page = await RenderPageAsync();
+
+        Assert.Contains("-", page.Find("input[data-testid=attendance-date]").GetAttribute("value")); // an ISO date, never blank
+
+        var picker = page.FindComponent<MudBlazor.MudDatePicker>();
+        await page.InvokeAsync(() => picker.Instance.DateChanged.InvokeAsync(new DateTime(2026, 1, 5)));
+
+        page.WaitForAssertion(() => Assert.Contains("No sessions on this day", page.Markup));
+        Assert.Empty(page.FindAll("[data-testid=attendance-sessions]"));
+    }
+
+    [Fact]
+    public async Task History_reloads_on_every_open_and_Escape_closes_the_drawer()
+    {
+        Culture.Current = new CultureInfo("en");
+        var page = await RenderPageAsync();
+        var taken = FakeAttendanceApi.SessionTaken;
+
+        page.Find($"[data-testid=session-history-{taken}]").Click();
+        page.WaitForAssertion(() => Assert.Equal(2, page.FindAll("[data-testid=history-item]").Count));
+
+        // an edit is made while the drawer is closed
+        page.Find("[data-testid=history-close]").Click();
+        await _api.TakeAsync(taken, new TakeAttendanceRequest(null, [new TakeAttendanceRecord(Guid.Parse("50000000-0000-0000-0000-000000000003"), AttendanceStatuses.Late)], null, 1));
+
+        page.Find($"[data-testid=session-history-{taken}]").Click();
+        page.WaitForAssertion(() => Assert.Equal(3, page.FindAll("[data-testid=history-item]").Count)); // the new change shows
+
+        page.Find("[data-testid=history-drawer] .pa-4").KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Escape" });
+        page.WaitForAssertion(() => Assert.Contains("mud-drawer--closed", page.Find("[data-testid=history-drawer]").ClassName));
+    }
+
+    [Fact]
+    public async Task The_fake_judges_today_by_the_client_zone_not_UTC()
+    {
+        _clock.Advance(TimeSpan.FromHours(13)); // 22:00 UTC: already the next day in Riyadh (UTC+3)
+        var riyadh = new FakeAttendanceApi(_clock);
+        var utcDay = DateOnly.FromDateTime(_clock.GetUtcNow().UtcDateTime);
+
+        var sessions = await riyadh.GetSessionsAsync();
+
+        Assert.NotEmpty(sessions);
+        Assert.All(sessions, s => Assert.Equal(utcDay.AddDays(1), s.Date)); // the client day, one ahead of the UTC day
+        var tomorrowUtc = utcDay.AddDays(1);
+        await riyadh.CreateAdHocAsync(Guid.NewGuid(), new CreateAdHocAttendanceSessionRequest(tomorrowUtc)); // not "future" in Riyadh
     }
 
     [Fact]

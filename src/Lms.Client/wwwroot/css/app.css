@@ -95,3 +95,6 @@ html:lang(ar), html:lang(ar) body { font-family: Cairo, "Segoe UI", Tahoma, Aria
 .lms-history-list { list-style: none; margin: 0; padding: 0; display: grid; }
 .lms-history-item { display: grid; gap: 4px; padding-block: 12px; font-size: .875rem; }
 .lms-history-item + .lms-history-item { border-block-start: 1px solid var(--mud-palette-table-lines); }
+.lms-touch.mud-button-root, .lms-touch.mud-icon-button { min-block-size: 44px; min-inline-size: 44px; }
+.lms-date-filter { max-inline-size: 220px; }
+.lms-session-grid > .lms-section + .lms-section { margin-block-start: 0; }
