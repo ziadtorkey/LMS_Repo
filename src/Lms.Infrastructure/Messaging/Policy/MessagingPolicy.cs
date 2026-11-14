@@ -17,7 +17,7 @@ public sealed class MessagingPolicy(LmsDbContext db, RelationshipLookup relation
 {
     private Guid Organization => context.OrganizationId ?? throw new InvalidOperationException("The messaging policy needs a client context.");
 
-    public async Task<MessagingDecision> CanStartAsync(Guid initiatorUserId, Guid otherUserId, CancellationToken cancellationToken)
+    public async Task<MessagingDecision> CanStartAsync(Guid initiatorUserId, Guid otherUserId, CancellationToken cancellationToken = default)
     {
         if (initiatorUserId == otherUserId || await IsBlockedBetweenAsync(initiatorUserId, otherUserId, cancellationToken))
         {
@@ -28,7 +28,7 @@ public sealed class MessagingPolicy(LmsDbContext db, RelationshipLookup relation
         return rule.Allowed ? rule : MessagingDecision.Deny(MessagingReasons.BlockedOrRule);
     }
 
-    public async Task<MessagingDecision> CanAddToGroupAsync(Guid ownerUserId, Guid memberUserId, CancellationToken cancellationToken)
+    public async Task<MessagingDecision> CanAddToGroupAsync(Guid ownerUserId, Guid memberUserId, CancellationToken cancellationToken = default)
     {
         // Owner to member, never pairwise. A block does not matter here: blocks stop direct messages only, groups are unchanged (D66).
         if (ownerUserId == memberUserId)
@@ -40,7 +40,7 @@ public sealed class MessagingPolicy(LmsDbContext db, RelationshipLookup relation
         return rule.Allowed ? rule : MessagingDecision.Deny(MessagingReasons.BlockedOrRule);
     }
 
-    public async Task<MessagingDecision> CanPostAsync(Guid senderUserId, Conversation conversation, CancellationToken cancellationToken)
+    public async Task<MessagingDecision> CanPostAsync(Guid senderUserId, Conversation conversation, CancellationToken cancellationToken = default)
     {
         if (await IsRestrictedAsync(senderUserId, cancellationToken))
         {
@@ -91,7 +91,7 @@ public sealed class MessagingPolicy(LmsDbContext db, RelationshipLookup relation
         return await CreatingRuleHoldsAsync(owner, senderUserId, cancellationToken); // in a group: from the owner to the sender
     }
 
-    public async Task<MessagingDecision> CreatingRuleHoldsAsync(Guid fromUserId, Guid toUserId, CancellationToken cancellationToken)
+    public async Task<MessagingDecision> CreatingRuleHoldsAsync(Guid fromUserId, Guid toUserId, CancellationToken cancellationToken = default)
     {
         var organizationId = Organization;
         var today = Today();
@@ -119,14 +119,14 @@ public sealed class MessagingPolicy(LmsDbContext db, RelationshipLookup relation
         return MessagingDecision.Deny(MessagingReasons.Rule);
     }
 
-    public async Task<bool> IsBlockedBetweenAsync(Guid userA, Guid userB, CancellationToken cancellationToken)
+    public async Task<bool> IsBlockedBetweenAsync(Guid userA, Guid userB, CancellationToken cancellationToken = default)
     {
         var organizationId = Organization;
         return await db.Set<UserBlock>().AnyAsync(
             b => b.OrganizationId == organizationId && (b.BlockerUserId == userA && b.BlockedUserId == userB || b.BlockerUserId == userB && b.BlockedUserId == userA), cancellationToken);
     }
 
-    public async Task<bool> IsRestrictedAsync(Guid userId, CancellationToken cancellationToken)
+    public async Task<bool> IsRestrictedAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         var organizationId = Organization;
         var now = clock.UtcNow;

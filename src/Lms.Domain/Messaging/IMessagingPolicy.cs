@@ -36,20 +36,20 @@ public sealed record MessagingDecision(bool Allowed, string? Reason = null)
 public interface IMessagingPolicy
 {
     /// <summary>A direct conversation: the initiator may write to the other (rules, relationship, no block either way). A refusal is always <see cref="MessagingReasons.BlockedOrRule"/>.</summary>
-    Task<MessagingDecision> CanStartAsync(Guid initiatorUserId, Guid otherUserId, CancellationToken cancellationToken);
+    Task<MessagingDecision> CanStartAsync(Guid initiatorUserId, Guid otherUserId, CancellationToken cancellationToken = default);
 
     /// <summary>A group: the owner may add the member (owner to member rule; a block does not matter in groups).</summary>
-    Task<MessagingDecision> CanAddToGroupAsync(Guid ownerUserId, Guid memberUserId, CancellationToken cancellationToken);
+    Task<MessagingDecision> CanAddToGroupAsync(Guid ownerUserId, Guid memberUserId, CancellationToken cancellationToken = default);
 
     /// <summary>May this person post in the conversation now (L25). The reason of a refusal is one of <see cref="MessagingReasons"/>.</summary>
-    Task<MessagingDecision> CanPostAsync(Guid senderUserId, Conversation conversation, CancellationToken cancellationToken);
+    Task<MessagingDecision> CanPostAsync(Guid senderUserId, Conversation conversation, CancellationToken cancellationToken = default);
 
     /// <summary>The creating rule holds from <paramref name="fromUserId"/> to <paramref name="toUserId"/> (no block check): the rule part of every post.</summary>
-    Task<MessagingDecision> CreatingRuleHoldsAsync(Guid fromUserId, Guid toUserId, CancellationToken cancellationToken);
+    Task<MessagingDecision> CreatingRuleHoldsAsync(Guid fromUserId, Guid toUserId, CancellationToken cancellationToken = default);
 
     /// <summary>True when either user blocked the other (direct conversations only; groups are not affected).</summary>
-    Task<bool> IsBlockedBetweenAsync(Guid userA, Guid userB, CancellationToken cancellationToken);
+    Task<bool> IsBlockedBetweenAsync(Guid userA, Guid userB, CancellationToken cancellationToken = default);
 
     /// <summary>True when the user is under an active restriction (cannot send).</summary>
-    Task<bool> IsRestrictedAsync(Guid userId, CancellationToken cancellationToken);
+    Task<bool> IsRestrictedAsync(Guid userId, CancellationToken cancellationToken = default);
 }
