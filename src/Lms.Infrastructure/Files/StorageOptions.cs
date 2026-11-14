@@ -15,6 +15,16 @@ public sealed class StorageOptions
     public string SecretKey { get; set; } = string.Empty;
     public string Region { get; set; } = "us-east-1";
 
+    /// <summary>
+    /// Objects up to this size are read into memory by <c>OpenReadAsync</c>; larger ones (package archives, up to
+    /// <c>Files.MaxUploadMb</c>) are streamed from storage into a temporary file that is deleted when the returned stream is disposed,
+    /// so a validation job never holds a whole archive on the heap. Default 4 MiB.
+    /// </summary>
+    public long InMemoryReadLimitBytes { get; set; } = 4L * 1024 * 1024;
+
+    /// <summary>Directory for those temporary files; null uses the system temp directory. Size and place it as described in docs/runbook-storage.md.</summary>
+    public string? SpoolDirectory { get; set; }
+
     /// <summary>Comma separated, with the leading dot.</summary>
     public string AllowedExtensions { get; set; } = DefaultAllowedExtensions;
 

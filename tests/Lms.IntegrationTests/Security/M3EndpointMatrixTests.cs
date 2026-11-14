@@ -29,7 +29,9 @@ public sealed class M3EndpointMatrixTests(LmsApiFactory factory, ITestOutputHelp
     /// <summary>GET routes under an M3 prefix that the Student role may read through a relationship (own enrollment).</summary>
     private static readonly HashSet<string> StudentReadable =
     [
-        Routes.ClassCourseLessonPlanPattern, Routes.ClassCourseLessonModulesPattern, Routes.ClassCourseProgressPattern,
+        Routes.ClassCourseLessonPlanPattern, Routes.ClassCourseLessonModulesPattern, Routes.ClassCourseProgressPattern, Routes.ClassCourseLiveSessionsPattern,
+        Routes.LiveSessionPattern, Routes.ClassCourseAssignmentsPattern,
+        Routes.ClassCourseQuizzesPattern,
     ];
 
     private static IEnumerable<ProbeRow> M3Rows => M1ProbeRows.All.Where(r => IsM3(r.Pattern));
@@ -122,10 +124,13 @@ public sealed class M3EndpointMatrixTests(LmsApiFactory factory, ITestOutputHelp
     [InlineData("/api/studentsx", false)]
     [InlineData("/api/class-courses/{id:guid}/lessons/{lessonKey:guid}/modules", false)] // M4a: a Student reads modules
     [InlineData("/api/class-courses/{id:guid}/progress", false)]
+    [InlineData("/api/class-courses/{id:guid}/live-sessions", false)] // M4b: a Student reads sessions
+    [InlineData("/api/class-courses/{id:guid}/packages", false)]
     public void Only_m3_routes_are_in_scope(string pattern, bool m3) => Assert.Equal(m3, IsM3(pattern));
 
     private static bool IsM3(string pattern) =>
         !M4aRoutes.Is(pattern)
+        && !M4bRoutes.Is(pattern)
         && M3Prefixes.Any(p => pattern.Equals(p, StringComparison.OrdinalIgnoreCase)
                                || pattern.StartsWith(p + "/", StringComparison.OrdinalIgnoreCase));
 

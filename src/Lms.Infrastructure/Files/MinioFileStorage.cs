@@ -105,15 +105,34 @@ public sealed class MinioFileStorage(
         var file = await db.Set<StoredFile>().SingleOrDefaultAsync(x => x.Id == fileId, cancellationToken)
             ?? throw new StoredFileNotFoundException(fileId);
 
-        var buffer = new MemoryStream();
-        await clients.Client.GetObjectAsync(
-            new GetObjectArgs()
-                .WithBucket(BucketFor(file.OrganizationId))
-                .WithObject(file.ObjectKey)
-                .WithCallbackStream(stream => stream.CopyTo(buffer)),
-            cancellationToken);
-        buffer.Position = 0;
-        return buffer;
+        // Small objects stay in memory; large ones are streamed to a temp file (never a whole archive on the heap).
+        Stream target = file.SizeBytes <= options.Value.InMemoryReadLimitBytes ? new MemoryStream() : CreateSpoolFile();
+        try
+        {
+            await clients.Client.GetObjectAsync(
+                new GetObjectArgs()
+                    .WithBucket(BucketFor(file.OrganizationId))
+                    .WithObject(file.ObjectKey)
+                    .WithCallbackStream((stream, ct) => stream.CopyToAsync(target, ct)),
+                cancellationToken);
+            target.Position = 0;
+            return target;
+        }
+        catch
+        {
+            await target.DisposeAsync(); // a spool file goes with it (DeleteOnClose)
+            throw;
+        }
+    }
+
+    /// <summary>A temp file that is removed when the stream is closed, read back sequentially after the download.</summary>
+    private FileStream CreateSpoolFile()
+    {
+        var directory = options.Value.SpoolDirectory ?? Path.GetTempPath();
+        Directory.CreateDirectory(directory);
+        return new FileStream(
+            Path.Combine(directory, $"lms-read-{Guid.NewGuid():N}.tmp"), FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None, 81920,
+            FileOptions.Asynchronous | FileOptions.DeleteOnClose | FileOptions.SequentialScan);
     }
 
     public async Task DeleteAsync(Guid fileId, CancellationToken cancellationToken = default)
