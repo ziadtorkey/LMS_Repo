@@ -1765,4 +1765,6 @@
   <data name="Tt_WorkingDays_Forbidden" xml:space="preserve"><value>لا يمكنك تغيير أيام العمل لهذه الوحدة.</value></data>
   <data name="Tt_Child_Link" xml:space="preserve"><value>الجدول الدراسي</value></data>
   <data name="Tt_Print" xml:space="preserve"><value>طباعة</value></data>
+  <data name="Timetable_Join" xml:space="preserve"><value>انضمام</value></data>
+  <data name="Timetable_JoinOpensAt" xml:space="preserve"><value>يفتح الانضمام في</value></data>
 </root>

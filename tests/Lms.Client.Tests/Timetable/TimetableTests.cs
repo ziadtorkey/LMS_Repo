@@ -37,10 +37,12 @@ public sealed class TermsYearStore : IYearStore
 public abstract class TimetableTestContext : StaffTestContext
 {
     protected FakeTimetableApi Api2 { get; } = new();
+    protected Lms.Client.Services.LiveSessions.FakeLiveSessionsApi LiveApi { get; } = new();
 
     protected TimetableTestContext()
     {
         Services.AddSingleton<ITimetableApi>(Api2);
+        Services.AddSingleton<Lms.Client.Services.LiveSessions.ILiveSessionsApi>(LiveApi);
         Services.AddSingleton<IYearStore, TermsYearStore>();
         Services.AddSingleton<IClassCoursesApi>(new FakeCourses());
     }
