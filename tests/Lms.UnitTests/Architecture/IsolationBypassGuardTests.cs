@@ -47,6 +47,8 @@ public sealed class IsolationBypassGuardTests
             "policies set on ancestors above the caller's scope, to show blocked permissions in the org tree (M1 Task 9, #99)",
         ["src/Lms.Infrastructure/Grading/Scales/ScaleResolver.cs"] =
             "scales and weight templates of ancestor units sit above the caller scope; client-limited, live rows, bound to the unit's exact ancestor-or-self paths, names, kinds, bands and weights only (M5 Task 4, site 1)",
+        ["src/Lms.Infrastructure/Grading/Reads/GradeLookups.cs"] =
+            "the course and the term of a class course are defined above a student, guardian or teacher scope; client-limited, live rows, one id each, names and dates only (M5 Task 9)",
         ["src/Lms.Infrastructure/Grading/Scales/PresetReconciler.cs"] =
             "system context: seeds one client's presets at its root unit; root unit and scales read by the client id parameter, soft-deleted plain default included so it is not re-created (M5 Task 4, site 9)",
         ["src/Lms.Infrastructure/Access/BuiltInRoleStartupReconciler.cs"] =
