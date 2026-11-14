@@ -2131,4 +2131,5 @@
   <data name="Msg_ReadOnly" xml:space="preserve"><value>لا يمكنك الرد على هذه المحادثة.</value></data>
   <data name="Msg_Reply_Privately" xml:space="preserve"><value>الرد على انفراد</value></data>
   <data name="Msg_Thread_Missing" xml:space="preserve"><value>هذه المحادثة غير متاحة.</value></data>
+  <data name="Msg_Inbox_Capped" xml:space="preserve"><value>يظهر آخر {0} محادثة لديك.</value></data>
 </root>

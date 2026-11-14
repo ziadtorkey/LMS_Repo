@@ -15,7 +15,11 @@
 @if (_hits is not null)
 {
     <div class="lms-convs" role="list" aria-label="@L["Msg_Search_Results"]" data-testid="inbox-hits">
-        @if (_hits.Count == 0)
+        @if (_searchFailed)
+        {
+            <p class="lms-convs-empty" role="alert" data-testid="inbox-search-error">@L["Error_Generic"]</p>
+        }
+        else if (_hits.Count == 0)
         {
             <p class="lms-convs-empty" data-testid="inbox-hits-empty">@L["Msg_Search_None"]</p>
         }
@@ -40,8 +44,12 @@ else
         @foreach (var c in Sorted)
         {
             <ConversationRow Href="@($"messages/{c.Id}")" Name="@NameOf(c)" Preview="@(c.LastMessagePreview ?? string.Empty)"
-                             TimeText="@(c.LastMessageAtUtc is { } t ? MessageTimes.Row(t, Clock.GetUtcNow().UtcDateTime, L) : string.Empty)"
+                             TimeText="@(c.LastMessageAtUtc is { } t ? MessageTimes.Row(t, Clock.GetUtcNow().UtcDateTime, Clock.LocalTimeZone, L) : string.Empty)"
                              UnreadCount="c.UnreadCount" IsGroup="c.Kind == ConversationKinds.Group" Current="c.Id == CurrentId" TestId="@($"conv-{c.Id}")" />
+        }
+        @if (Total > Items.Count)
+        {
+            <p class="lms-convs-empty" data-testid="inbox-capped">@string.Format(L["Msg_Inbox_Capped"].Value, Items.Count)</p>
         }
     </nav>
 }
@@ -50,8 +58,12 @@ else
     [Parameter, EditorRequired] public IReadOnlyList<ConversationListItemDto> Items { get; set; } = [];
     [Parameter] public Guid? CurrentId { get; set; }
 
+    /// <summary>How many conversations the caller has in all; more than <see cref="Items"/> shows the "latest" note (the list is not paged yet).</summary>
+    [Parameter] public int Total { get; set; }
+
     private string _query = "";
     private IReadOnlyList<MessageSearchResultDto>? _hits;
+    private bool _searchFailed;
 
     private IEnumerable<ConversationListItemDto> Sorted => Items
         .OrderByDescending(c => c.UnreadCount > 0).ThenByDescending(c => c.LastMessageAtUtc ?? DateTime.MinValue);
@@ -65,6 +77,7 @@ else
         _query = value?.Trim() ?? "";
         if (_query.Length < MessagingLimits.SearchMinLength) { _hits = null; return; }
         var (hits, failed) = await ApiCalls.RunAsync(() => Messaging.SearchAsync(_query), Navigation);
+        _searchFailed = failed;
         _hits = failed || hits is null ? [] : hits;
     }
 

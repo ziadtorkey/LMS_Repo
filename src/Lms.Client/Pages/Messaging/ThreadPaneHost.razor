@@ -42,17 +42,17 @@ else
                 @if (lastDay != day)
                 {
                     lastDay = day;
-                    <DaySeparator Text="@MessageTimes.Day(message.CreatedAtUtc, Clock.GetUtcNow().UtcDateTime, L)" />
+                    <DaySeparator Text="@MessageTimes.Day(message.CreatedAtUtc, Clock.GetUtcNow().UtcDateTime, Clock.LocalTimeZone, L)" />
                 }
                 @if (message.Id == _dividerBefore)
                 {
                     <div class="lms-day lms-unread-divider" role="separator" data-testid="thread-divider"><span>@L["Msg_Unread_Divider"]</span></div>
                 }
                 <MessageBubble @key="message.Id" Mine="IsMine(message)" From="@(conversation.Kind == ConversationKinds.Group ? SenderName(message) : null)"
-                               Text="@(message.Body ?? string.Empty)" TimeText="@MessageTimes.Clock(message.CreatedAtUtc)" Removal="RemovalOf(message)"
+                               Text="@(message.Body ?? string.Empty)" TimeText="@MessageTimes.Clock(message.CreatedAtUtc, Clock.LocalTimeZone)" Removal="RemovalOf(message)"
                                TestId="@($"msg-{message.Id}")">
                     <Actions>
-                        @if (message.CanDelete)
+                        @if (message.CanDelete && CanSend)
                         {
                             <MudIconButton Icon="@Icons.Material.Rounded.DeleteOutline" Size="Size.Small" aria-label="@L["Msg_Delete"]" OnClick="() => DeleteAsync(message)"
                                            data-testid="@($"msg-delete-{message.Id}")" />
@@ -79,7 +79,7 @@ else
                     }
                 </ComposerOff>
             }
-            else
+            else if (CanSend)
             {
                 <MessageComposer @bind-Value="_draft" OnSend="SendAsync" Sending="_sending" />
             }
@@ -107,6 +107,8 @@ else
         ? _conversation.Title
         : string.Join(", ", _conversation.Participants.Where(p => p.UserId != PermState.UserId).Select(p => CultureText.Pick(p.NameAr, p.NameEn)));
 
+    private bool CanSend => PermState.Has(Lms.Shared.Authorization.Permissions.Messaging.Send);
+
     private int Members => _conversation?.Participants.Count(p => !p.Left) ?? 0;
 
     /// <summary>A student in a group reads it and answers the teacher privately (D74).</summary>
@@ -123,7 +125,7 @@ else
         _ => MessageRemoval.None,
     };
 
-    private static DateTime DayOf(MessageDto m) => DateTime.SpecifyKind(m.CreatedAtUtc, DateTimeKind.Utc).ToLocalTime().Date;
+    private DateTime DayOf(MessageDto m) => MessageTimes.DayOf(m.CreatedAtUtc, Clock.LocalTimeZone);
 
     protected override async Task OnInitializedAsync()
     {
@@ -143,7 +145,7 @@ else
         _dividerBefore = DividerFor(UnreadCount);
         _scrollDown = true;
 
-        await ApiCalls.RunAsync(() => Messaging.MarkReadAsync(ConversationId), Navigation, L, e => _error = e);
+        await ApiCalls.RunAsync(() => Messaging.MarkReadAsync(ConversationId), Navigation, L, _ => { }); // a failed mark-read stays silent: the next visit marks it
         await OnChanged.InvokeAsync();
     }
 

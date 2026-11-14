@@ -2131,4 +2131,5 @@
   <data name="Msg_ReadOnly" xml:space="preserve"><value>You cannot reply to this conversation.</value></data>
   <data name="Msg_Reply_Privately" xml:space="preserve"><value>Reply privately</value></data>
   <data name="Msg_Thread_Missing" xml:space="preserve"><value>This conversation is not available.</value></data>
+  <data name="Msg_Inbox_Capped" xml:space="preserve"><value>Showing your latest {0} conversations.</value></data>
 </root>

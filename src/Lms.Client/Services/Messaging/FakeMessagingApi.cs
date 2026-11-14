@@ -310,10 +310,10 @@ public sealed class FakeMessagingApi : IMessagingApi
         return Task.FromResult(new UnreadTotalDto(page.Items.Count(i => i.UnreadCount > 0)));
     }
 
-    /// <summary>A moderator locked the conversation: sending is 409 <c>conversation_closed</c> from now on.</summary>
     /// <summary>Test and demo helper: the caller has read up to and including <paramref name="messageId"/> (the rest stays unread).</summary>
     public void MarkReadUpTo(Guid conversationId, Guid messageId) => Mine(conversationId).LastRead[Me.Id] = messageId;
 
+    /// <summary>A moderator locked the conversation: sending is 409 <c>conversation_closed</c> from now on.</summary>
     public void Lock(Guid conversationId) => _conversations.First(c => c.Id == conversationId).Locked = true;
 
     /// <summary>Test and demo helper: a message from <paramref name="sender"/> arrives in a conversation the caller is in.</summary>
