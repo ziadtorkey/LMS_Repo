@@ -1,0 +1,6 @@
+@* A small group label inside a list or a picker popover ("Earlier", "Classes and courses", "People"; class lms-picker-group). *@
+<div class="lms-picker-group" role="presentation"><span dir="auto">@Text</span></div>
+
+@code {
+    [Parameter, EditorRequired] public string Text { get; set; } = "";
+}

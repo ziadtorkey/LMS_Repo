@@ -1874,4 +1874,116 @@
   <data name="Comms_PrefSource_User" xml:space="preserve"><value>اختيارك</value></data>
   <data name="Comms_PrefSource_Mandatory" xml:space="preserve"><value>إلزامي</value></data>
   <data name="Msg_Rule_SameUnit" xml:space="preserve"><value>أي شخص في نفس الوحدة</value></data>
+  <data name="Msg_Conv_Unread" xml:space="preserve"><value>{0} غير مقروءة</value></data>
+  <data name="Msg_Status_Sending" xml:space="preserve"><value>جارٍ الإرسال…</value></data>
+  <data name="Msg_Status_Sent" xml:space="preserve"><value>أُرسلت</value></data>
+  <data name="Msg_Status_Seen" xml:space="preserve"><value>شوهدت</value></data>
+  <data name="Msg_Status_Failed" xml:space="preserve"><value>لم تُرسل</value></data>
+  <data name="Msg_Removed_ByModerator" xml:space="preserve"><value>أزال المشرف هذه الرسالة.</value></data>
+  <data name="Msg_Removed_BySender" xml:space="preserve"><value>رسالة محذوفة</value></data>
+  <data name="Msg_Removed_ByMe" xml:space="preserve"><value>حذفت هذه الرسالة.</value></data>
+  <data name="Msg_Attach" xml:space="preserve"><value>إرفاق ملف</value></data>
+  <data name="Msg_Composer_Placeholder" xml:space="preserve"><value>اكتب رسالة</value></data>
+  <data name="Msg_Composer_Hint" xml:space="preserve"><value>Ctrl+Enter للإرسال</value></data>
+  <data name="Msg_Send" xml:space="preserve"><value>إرسال</value></data>
+  <data name="Msg_Thread_Log" xml:space="preserve"><value>الرسائل</value></data>
+  <data name="Ann_Pinned" xml:space="preserve"><value>مثبّت</value></data>
+  <data name="Ann_Scheduled" xml:space="preserve"><value>مجدول</value></data>
+  <data name="Ann_ReadMore" xml:space="preserve"><value>اقرأ المزيد</value></data>
+  <data name="Ann_ReadLess" xml:space="preserve"><value>عرض أقل</value></data>
+  <data name="Ann_Audience" xml:space="preserve"><value>الجمهور</value></data>
+  <data name="Notif_Unread_Name" xml:space="preserve"><value>غير مقروء: {0}</value></data>
+  <data name="Notif_MarkAll" xml:space="preserve"><value>تعليم الكل كمقروء</value></data>
+  <data name="Notif_Settings" xml:space="preserve"><value>إعدادات الإشعارات</value></data>
+  <data name="Notif_EmptyText" xml:space="preserve"><value>تظهر هنا الرسائل والدرجات والإعلانات الجديدة.</value></data>
+  <data name="Notif_SeeAll" xml:space="preserve"><value>عرض كل الإشعارات</value></data>
+  <data name="Notif_Earlier" xml:space="preserve"><value>سابقًا</value></data>
+  <data name="Msg_D69_Title" xml:space="preserve"><value>لا يظهر الطلاب هنا</value></data>
+  <data name="Msg_D69_Text" xml:space="preserve"><value>يتواصل المديرون ومسؤولو المؤسسة مع الطلاب عبر محادثة فصل أو مجموعة، أو عبر إعلان، لا برسالة خاصة. تحدد ذلك قواعد الحماية في مدرستك.</value></data>
+  <data name="Msg_Back" xml:space="preserve"><value>العودة إلى الرسائل</value></data>
+  <data name="Msg_Group_Members" xml:space="preserve"><value>مجموعة · الأعضاء: {0}</value></data>
+  <data name="Msg_Group_Note" xml:space="preserve"><value>تصل الردود إلى كل أفراد المجموعة. للرد على انفراد يبدأ الشخص رسالة جديدة.</value></data>
+  <data name="Msg_Picker_Classes" xml:space="preserve"><value>الفصول والمقررات</value></data>
+  <data name="Msg_Picker_People" xml:space="preserve"><value>الأشخاص</value></data>
+  <data name="Rules_Locked" xml:space="preserve"><value>تحدده المنصة (الحماية): لا يمكن تخفيفه</value></data>
+  <data name="Rules_Via_Anywhere" xml:space="preserve"><value>أي شخص</value></data>
+  <data name="Rules_Via_SameUnit" xml:space="preserve"><value>نفس الوحدة</value></data>
+  <data name="Rules_Via_Relationship" xml:space="preserve"><value>فصوله فقط</value></data>
+  <data name="Rules_Via_NotAllowed" xml:space="preserve"><value>غير مسموح</value></data>
+  <data name="Rules_Via_GroupsOnly" xml:space="preserve"><value>عبر المجموعات فقط</value></data>
+  <data name="Ann_Roles" xml:space="preserve"><value>من يراه داخل هذه الأهداف</value></data>
+  <data name="Ann_Reach_Counting" xml:space="preserve"><value>جارٍ حساب من سيراه…</value></data>
+  <data name="Ann_Reach_None" xml:space="preserve"><value>لا أحد ضمن نطاقك يطابق هذه الاختيارات بعد.</value></data>
+  <data name="Ann_Reach_Exact" xml:space="preserve"><value>عدد من سيرونه: {0}.</value></data>
+  <data name="Ann_Reach_About" xml:space="preserve"><value>عدد من سيرونه نحو {0} (العدّ داخل الوحدات التي تراها فقط).</value></data>
+  <data name="Ann_TitleAr" xml:space="preserve"><value>العنوان (بالعربية)</value></data>
+  <data name="Ann_TitleEn" xml:space="preserve"><value>العنوان (بالإنجليزية)</value></data>
+  <data name="Ann_BodyAr" xml:space="preserve"><value>النص (بالعربية)</value></data>
+  <data name="Ann_BodyEn" xml:space="preserve"><value>النص (بالإنجليزية)</value></data>
+  <data name="Ann_Error_TitleAr" xml:space="preserve"><value>أدخل العنوان بالعربية أيضًا. يرى كل قارئ العنوان بلغته.</value></data>
+  <data name="Ann_Error_TitleEn" xml:space="preserve"><value>أدخل العنوان بالإنجليزية أيضًا. يرى كل قارئ العنوان بلغته.</value></data>
+  <data name="Ann_Error_Body" xml:space="preserve"><value>اكتب النص بلغة واحدة على الأقل.</value></data>
+  <data name="Ann_Who" xml:space="preserve"><value>من يرى الإعلان</value></data>
+  <data name="Ann_Scope_Organization" xml:space="preserve"><value>المؤسسة</value></data>
+  <data name="Ann_Scope_Unit" xml:space="preserve"><value>الوحدة</value></data>
+  <data name="Ann_Scope_Level" xml:space="preserve"><value>المستوى</value></data>
+  <data name="Ann_Scope_Class" xml:space="preserve"><value>الفصل</value></data>
+  <data name="Ann_Scope_ClassCourse" xml:space="preserve"><value>المقرر</value></data>
+  <data name="Ann_Scope_Group" xml:space="preserve"><value>المجموعة</value></data>
+  <data name="Ann_Error_Targets" xml:space="preserve"><value>اختر هدفًا واحدًا على الأقل.</value></data>
+  <data name="Ann_IncludeSubtree" xml:space="preserve"><value>تضمين الوحدات التابعة</value></data>
+  <data name="Ann_IncludeSubtreeHelp" xml:space="preserve"><value>تراه أيضًا الوحدات التابعة للوحدات المختارة.</value></data>
+  <data name="Ann_Error_Roles" xml:space="preserve"><value>اختر من يراه: الموظفون أو الطلاب أو أولياء الأمور.</value></data>
+  <data name="Ann_Publishing" xml:space="preserve"><value>النشر</value></data>
+  <data name="Ann_Mode_Now" xml:space="preserve"><value>الآن</value></data>
+  <data name="Ann_Mode_Schedule" xml:space="preserve"><value>جدولة</value></data>
+  <data name="Ann_Date" xml:space="preserve"><value>التاريخ</value></data>
+  <data name="Ann_Time" xml:space="preserve"><value>الوقت</value></data>
+  <data name="Ann_Error_When" xml:space="preserve"><value>اختر تاريخًا ووقتًا في المستقبل.</value></data>
+  <data name="Ann_TimeZone" xml:space="preserve"><value>الأوقات بتوقيتك: {0}</value></data>
+  <data name="Ann_Pin" xml:space="preserve"><value>تثبيت في الأعلى</value></data>
+  <data name="Ann_PinHelp" xml:space="preserve"><value>تبقى الإعلانات المثبّتة أولًا حتى ينتهي موعدها.</value></data>
+  <data name="Ann_Notify" xml:space="preserve"><value>إشعار الجمهور</value></data>
+  <data name="Ann_NotifyHelp" xml:space="preserve"><value>يصل الإشعار إلى كل شخص عبر القنوات التي اختارها.</value></data>
+  <data name="Ann_Attachments" xml:space="preserve"><value>المرفقات</value></data>
+  <data name="Ann_AttachmentsHelp" xml:space="preserve"><value>حتى 5 ملفات، كما في الرسائل.</value></data>
+  <data name="Ann_Expires" xml:space="preserve"><value>ينتهي في</value></data>
+  <data name="Ann_ExpiresHelp" xml:space="preserve"><value>بعد هذا التاريخ ينتقل إلى المنتهية. اتركه فارغًا لإبقائه.</value></data>
+  <data name="Ann_SaveDraft" xml:space="preserve"><value>حفظ كمسودة</value></data>
+  <data name="Ann_Schedule" xml:space="preserve"><value>جدولة</value></data>
+  <data name="Ann_Publish" xml:space="preserve"><value>نشر</value></data>
+  <data name="Prefs_Event" xml:space="preserve"><value>الحدث</value></data>
+  <data name="Prefs_Channel_InApp" xml:space="preserve"><value>داخل المنصة</value></data>
+  <data name="Prefs_Channel_Email" xml:space="preserve"><value>البريد الإلكتروني</value></data>
+  <data name="Prefs_Channel_Sms" xml:space="preserve"><value>الرسائل النصية</value></data>
+  <data name="Prefs_Channel_Push" xml:space="preserve"><value>الإشعارات الفورية</value></data>
+  <data name="Prefs_Fix" xml:space="preserve"><value>أضفه في ملفك الشخصي</value></data>
+  <data name="Prefs_Locked" xml:space="preserve"><value>تحدده مدرستك: لا يمكن إيقافه.</value></data>
+  <data name="Prefs_NoPhone" xml:space="preserve"><value>أضف رقم جوال في ملفك الشخصي</value></data>
+  <data name="Prefs_PushUnsupported" xml:space="preserve"><value>غير متاحة في هذا المتصفح</value></data>
+  <data name="Prefs_PushOff" xml:space="preserve"><value>الإشعارات الفورية متوقفة على هذا الجهاز.</value></data>
+  <data name="Prefs_PushOffHelp" xml:space="preserve"><value>سيطلب المتصفح إذنك. يمكنك إيقافها مرة أخرى من هنا أو من إعدادات المتصفح.</value></data>
+  <data name="Prefs_PushTurnOn" xml:space="preserve"><value>تفعيلها لهذا المتصفح</value></data>
+  <data name="Prefs_PushDenied" xml:space="preserve"><value>يمنع متصفحك الإشعارات من هذا الموقع.</value></data>
+  <data name="Prefs_PushDeniedHelp" xml:space="preserve"><value>للسماح بها افتح إعدادات الموقع في المتصفح (الرمز بجوار العنوان) واسمح بالإشعارات، ثم عُد إلى هذه الصفحة.</value></data>
+  <data name="Mod_Decision" xml:space="preserve"><value>القرار</value></data>
+  <data name="Mod_Action_Dismiss" xml:space="preserve"><value>إبقاء الرسالة</value></data>
+  <data name="Mod_Action_Dismiss_Help" xml:space="preserve"><value>إغلاق البلاغ وتبقى الرسالة، ويُبلَّغ المُبلِغ بأنه رُوجع.</value></data>
+  <data name="Mod_Action_Remove" xml:space="preserve"><value>إزالة الرسالة</value></data>
+  <data name="Mod_Action_Remove_Help" xml:space="preserve"><value>يرى كل من في المحادثة «أزالها المشرف». يحتفظ المشرفون بالنص الأصلي.</value></data>
+  <data name="Mod_Action_Warn" xml:space="preserve"><value>تحذير المُرسِل</value></data>
+  <data name="Mod_Action_Warn_Help" xml:space="preserve"><value>يصل إلى {0} إشعار تحذير، وتبقى الرسالة.</value></data>
+  <data name="Mod_Action_Restrict" xml:space="preserve"><value>منع المُرسِل من المراسلة</value></data>
+  <data name="Mod_Action_Restrict_Help" xml:space="preserve"><value>يستطيع {0} القراءة دون الإرسال حتى تاريخ الانتهاء. هذا منع من المشرف، وليس حظرًا بين شخصين.</value></data>
+  <data name="Mod_Action_RemoveAndRestrict" xml:space="preserve"><value>الإزالة ومنع المُرسِل</value></data>
+  <data name="Mod_Action_RemoveAndRestrict_Help" xml:space="preserve"><value>تُزال الرسالة، ويستطيع {0} القراءة دون الإرسال حتى تاريخ الانتهاء.</value></data>
+  <data name="Mod_Action_LockConversation" xml:space="preserve"><value>قفل المحادثة</value></data>
+  <data name="Mod_Action_LockConversation_Help" xml:space="preserve"><value>لا يستطيع أحد الإرسال فيها بعد الآن. لمحادثة جماعية خرجت عن مسارها.</value></data>
+  <data name="Mod_For" xml:space="preserve"><value>لمدة</value></data>
+  <data name="Mod_Days" xml:space="preserve"><value>عدد الأيام: {0}</value></data>
+  <data name="Mod_Reported" xml:space="preserve"><value>الرسالة المُبلَّغ عنها</value></data>
+  <data name="Mod_Status_New" xml:space="preserve"><value>جديد</value></data>
+  <data name="Mod_Status_InReview" xml:space="preserve"><value>قيد المراجعة</value></data>
+  <data name="Mod_Status_Removed" xml:space="preserve"><value>أُزيلت</value></data>
+  <data name="Mod_Status_Kept" xml:space="preserve"><value>أُبقيت</value></data>
 </root>

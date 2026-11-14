@@ -1,0 +1,31 @@
+@* The bell's popover card (spec #615 §5.1, class lms-notif-panel): the title (h2), Mark all as read, a link to the preferences, the items (newest first,
+   with an "Earlier" group label after today's) and See all notifications. 400 px wide, full width below 600 px. It extends the existing bell. *@
+<section class="lms-notif-panel" aria-labelledby="@_headingId" data-testid="notif-panel">
+    <header class="lms-notif-panel-head">
+        <h2 class="lms-notif-panel-title" id="@_headingId">@L["Notif_Title"]</h2>
+        <MudButton Variant="Variant.Text" Size="Size.Small" Disabled="!HasUnread" OnClick="OnMarkAllRead" data-testid="notif-mark-all">@L["Notif_MarkAll"]</MudButton>
+        <MudIconButton Icon="@Icons.Material.Rounded.Settings" Href="@SettingsHref" Class="lms-touch" aria-label="@L["Notif_Settings"]" data-testid="notif-settings" />
+    </header>
+    @if (IsEmpty)
+    {
+        <EmptyState Title="@L["Notif_EmptyTitle"]" Text="@L["Notif_EmptyText"]" Icon="@Icons.Material.Rounded.NotificationsNone" TestId="notif-empty" />
+    }
+    else
+    {
+        <div class="lms-notif-list">@ChildContent</div>
+    }
+    <footer class="lms-notif-panel-foot">
+        <MudButton Variant="Variant.Text" Href="@AllHref" data-testid="notif-all">@L["Notif_SeeAll"]</MudButton>
+    </footer>
+</section>
+
+@code {
+    private readonly string _headingId = "notif-" + Guid.NewGuid().ToString("N")[..8];
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public bool IsEmpty { get; set; }
+    [Parameter] public bool HasUnread { get; set; }
+    [Parameter] public EventCallback OnMarkAllRead { get; set; }
+    [Parameter] public string SettingsHref { get; set; } = "notifications/preferences";
+    [Parameter] public string AllHref { get; set; } = "notifications";
+}
