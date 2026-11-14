@@ -70,6 +70,10 @@ public static class ClientServices
             services.AddSingleton<IModulesApi, FakeModulesApi>();
             services.AddSingleton<ILiveSessionsApi, FakeLiveSessionsApi>();
             services.AddSingleton<IActivityOverviewApi, FakeActivityOverviewApi>();
+            services.AddSingleton<Lms.Client.Services.Messaging.FakeMessagingRules>();
+            services.AddSingleton<Lms.Client.Services.Messaging.IMessagingApi, Lms.Client.Services.Messaging.FakeMessagingApi>();
+            services.AddSingleton<Lms.Client.Services.Messaging.IAnnouncementsApi, Lms.Client.Services.Messaging.FakeAnnouncementsApi>();
+            services.AddSingleton<Lms.Client.Services.Messaging.ICommsApi, Lms.Client.Services.Messaging.FakeCommsApi>();
             services.AddScoped<AuthenticationStateProvider, FakeAuthenticationStateProvider>();
             services.AddAuthorizationCore();
             return;
@@ -126,5 +130,8 @@ public static class ClientServices
         services.AddScoped<IModulesApi, ModulesApi>();
         services.AddScoped<ILiveSessionsApi, LiveSessionsApi>();
         services.AddScoped<IActivityOverviewApi, ActivityOverviewApi>();
+        services.AddScoped<Lms.Client.Services.Messaging.IMessagingApi, Lms.Client.Services.Messaging.MessagingApi>();
+        services.AddScoped<Lms.Client.Services.Messaging.IAnnouncementsApi, Lms.Client.Services.Messaging.AnnouncementsApi>();
+        services.AddScoped<Lms.Client.Services.Messaging.ICommsApi, Lms.Client.Services.Messaging.CommsApi>();
     }
 }

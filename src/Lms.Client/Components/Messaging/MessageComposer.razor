@@ -1,0 +1,49 @@
+@* The composer under a thread (spec #615 §2.8, class lms-composer). Enter adds a new line and Ctrl+Enter (Cmd+Enter) sends, because Arabic input methods
+   confirm with Enter; the Send button with its label is always there, so the shortcut is never the only way. Nothing is sent empty or twice. *@
+<div class="lms-composer" data-testid="composer">
+    @if (OnAttach.HasDelegate)
+    {
+        <MudIconButton Icon="@Icons.Material.Rounded.AttachFile" Class="lms-touch" aria-label="@L["Msg_Attach"]" OnClick="OnAttach" Disabled="Disabled" data-testid="composer-attach" />
+    }
+    <div class="lms-composer-field">
+        <MudTextField T="string" Value="Value" ValueChanged="ChangedAsync" Lines="1" Sizing="InputSizing.Auto" MaxLines="6" Immediate="true" Variant="Variant.Outlined"
+                      Placeholder="@L["Msg_Composer_Placeholder"]" aria-label="@L["Msg_Composer_Placeholder"]" Disabled="Disabled" OnKeyDown="KeyAsync"
+                      aria-describedby="composer-hint" data-testid="composer-text" />
+        <span id="composer-hint" class="lms-composer-hint" data-testid="composer-hint">@L["Msg_Composer_Hint"]</span>
+    </div>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="lms-touch" Disabled="!CanSend" OnClick="SendAsync" data-testid="composer-send"
+               StartIcon="@Icons.Material.Rounded.Send" IconClass="lms-icon-flip">@L["Msg_Send"]</MudButton>
+</div>
+
+@code {
+    [Parameter] public string? Value { get; set; }
+    [Parameter] public EventCallback<string?> ValueChanged { get; set; }
+    [Parameter] public EventCallback OnSend { get; set; }
+
+    /// <summary>Shows the attach button when set.</summary>
+    [Parameter] public EventCallback OnAttach { get; set; }
+
+    /// <summary>A send is in flight: the button is disabled so a message is never sent twice.</summary>
+    [Parameter] public bool Sending { get; set; }
+
+    /// <summary>The rate limit (429) keeps the text but disables sending; the page shows the countdown status (spec #615 §1).</summary>
+    [Parameter] public bool Disabled { get; set; }
+
+    private bool CanSend => !Sending && !Disabled && !string.IsNullOrWhiteSpace(Value);
+
+    private async Task ChangedAsync(string? value)
+    {
+        Value = value;
+        await ValueChanged.InvokeAsync(value);
+    }
+
+    private async Task KeyAsync(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && (e.CtrlKey || e.MetaKey)) await SendAsync();
+    }
+
+    private async Task SendAsync()
+    {
+        if (CanSend) await OnSend.InvokeAsync();
+    }
+}

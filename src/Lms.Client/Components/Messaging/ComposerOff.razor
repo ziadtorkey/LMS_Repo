@@ -1,0 +1,13 @@
+@* Replaces the composer when the user can't send (spec #615 §1, §2.9, class lms-composer-off): the reason in plain words, and an action when there is
+   one (Unblock for the person who blocked). A blocked person only ever sees the generic sentence. *@
+<div class="lms-composer-off" data-testid="composer-off">
+    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+        <span class="lms-composer-off-text">@Reason</span>
+        @ChildContent
+    </MudAlert>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Reason { get; set; } = "";
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

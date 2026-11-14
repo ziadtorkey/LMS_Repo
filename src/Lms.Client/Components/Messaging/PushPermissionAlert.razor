@@ -1,0 +1,24 @@
+@* Push on this device (spec #615 §6.3). Off: a warning that offers Turn on for this browser and says the browser will ask. Denied: the same warning with how
+   to allow it in the browser settings, and no button (a button would do nothing). On or unsupported: nothing here; an unsupported browser is said in the
+   Push column instead. *@
+@if (State is PushState.Off or PushState.Denied)
+{
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Icon="@Icons.Material.Rounded.NotificationsOff" Class="lms-push-alert" data-testid="push-alert">
+        <div class="lms-push-alert-body">
+            <span class="lms-push-alert-text">
+                <b>@(State == PushState.Off ? L["Prefs_PushOff"] : L["Prefs_PushDenied"])</b>
+                <span class="lms-field-help">@(State == PushState.Off ? L["Prefs_PushOffHelp"] : L["Prefs_PushDeniedHelp"])</span>
+            </span>
+            @if (State == PushState.Off)
+            {
+                <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="lms-touch" OnClick="OnTurnOn" Disabled="Busy" data-testid="push-on">@L["Prefs_PushTurnOn"]</MudButton>
+            }
+        </div>
+    </MudAlert>
+}
+
+@code {
+    [Parameter, EditorRequired] public PushState State { get; set; }
+    [Parameter] public EventCallback OnTurnOn { get; set; }
+    [Parameter] public bool Busy { get; set; }
+}

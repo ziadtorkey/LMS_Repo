@@ -1,0 +1,95 @@
+@* The channel preferences table (spec #615 §6): events as rows, In-app, Email, SMS and Push as columns. Each column header has its icon, name and the address
+   in use. In-app is always on (locked). A cell the school made mandatory is a locked switch with the Lock icon before it, explained once in the footer.
+   An unavailable channel (no mobile number, no push in this browser) disables its switches and says why. Below 600 px each event is a block with one
+   labelled row per channel (lms-stack-table), so the switches line up. The page keeps the save bar. *@
+<div class="lms-prefs-wrap" data-testid="prefs">
+    @* Below 600 px the header row is hidden by the stacked table, so the addresses and the reasons a channel is off are listed here instead. *@
+    <ul class="lms-prefs-channels" data-testid="prefs-channels">
+        @foreach (var col in Columns)
+        {
+            <li>
+                <MudIcon Icon="@IconOf(col.Channel)" Size="Size.Small" aria-hidden="true" />
+                <span class="lms-prefs-channel-name">@L[$"Prefs_Channel_{col.Channel}"]</span>
+                <span class="lms-chan-caption" dir="@CaptionDir(col)">@(col.Available ? col.Caption : col.UnavailableText)</span>
+                @if (!col.Available && col.UnavailableHref is not null)
+                {
+                    <a href="@col.UnavailableHref" class="lms-chan-link">@L["Prefs_Fix"]</a>
+                }
+            </li>
+        }
+    </ul>
+    <MudSimpleTable Elevation="0" Class="lms-simple-table lms-stack-table lms-prefs">
+        <thead>
+            <tr>
+                <th><span class="lms-visually-hidden">@L["Prefs_Event"]</span></th>
+                @foreach (var col in Columns)
+                {
+                    <th scope="col" data-testid="@($"prefs-col-{col.Channel}")">
+                        <span class="lms-chan-head">
+                            <MudIcon Icon="@IconOf(col.Channel)" Size="Size.Small" aria-hidden="true" />
+                            <span>@L[$"Prefs_Channel_{col.Channel}"]</span>
+                            <span class="lms-chan-caption" dir="@CaptionDir(col)">@(col.Available ? col.Caption : col.UnavailableText)</span>
+                            @if (!col.Available && col.UnavailableHref is not null)
+                            {
+                                <a href="@col.UnavailableHref" class="lms-chan-link">@L["Prefs_Fix"]</a>
+                            }
+                        </span>
+                    </th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in Rows)
+            {
+                var r = row;
+                <tr data-testid="@($"prefs-row-{r.Key}")">
+                    <th scope="row" class="lms-prefs-event">@r.Label</th>
+                    @foreach (var col in Columns)
+                    {
+                        var c = col.Channel;
+                        var locked = c == NotificationChannel.InApp || r.Locked.Contains(c);
+                        var on = c == NotificationChannel.InApp || r.On.GetValueOrDefault(c);
+                        <td data-label="@L[$"Prefs_Channel_{c}"]" data-testid="@($"prefs-{r.Key}-{c}")">
+                            <span class="lms-prefs-cell">
+                                @if (locked)
+                                {
+                                    <MudIcon Icon="@Icons.Material.Rounded.Lock" Size="Size.Small" Class="lms-prefs-lock" aria-hidden="true" />
+                                }
+                                <MudSwitch T="bool" Value="on" ValueChanged="v => SetAsync(r, c, v)" Color="Color.Primary" Disabled="@(locked || !col.Available || Disabled)"
+                                           aria-label="@($"{r.Label}: {L[$"Prefs_Channel_{c}"]}{(locked ? " — " + L["Prefs_Locked"] : "")}")" />
+                            </span>
+                        </td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </MudSimpleTable>
+    <p class="lms-prefs-note"><MudIcon Icon="@Icons.Material.Rounded.Lock" Size="Size.Small" aria-hidden="true" /> @L["Prefs_Locked"]</p>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<ChannelColumn> Columns { get; set; } = [];
+    [Parameter, EditorRequired] public IReadOnlyList<PreferenceRow> Rows { get; set; } = [];
+    [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>Raised after a switch changed (the page shows its save bar).</summary>
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    // Addresses (a masked email or phone number) are always LTR; a sentence follows its own text.
+    private static string CaptionDir(ChannelColumn col) => col.Available && col.Channel is NotificationChannel.Email or NotificationChannel.Sms ? "ltr" : "auto";
+
+    private static string IconOf(NotificationChannel channel) => channel switch
+    {
+        NotificationChannel.InApp => Icons.Material.Rounded.Notifications,
+        NotificationChannel.Email => Icons.Material.Rounded.Mail,
+        NotificationChannel.Sms => Icons.Material.Rounded.Sms,
+        _ => Icons.Material.Rounded.PhoneIphone,
+    };
+
+    private async Task SetAsync(PreferenceRow row, NotificationChannel channel, bool on)
+    {
+        if (channel == NotificationChannel.InApp || row.Locked.Contains(channel)) return;
+        row.On[channel] = on;
+        await OnChanged.InvokeAsync();
+    }
+}

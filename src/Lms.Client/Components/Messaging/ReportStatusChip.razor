@@ -1,0 +1,16 @@
+@* A report's status in the moderation queue (spec #615 §7.3): a soft status chip with its word. New is info, In review warning, Removed and Kept neutral.
+   A new "Safety concern" report is in the error colour, and the page sorts it first. *@
+<MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@ChipColor" Class="lms-status-chip" data-testid="@TestId">@L[$"Mod_Status_{Status}"]</MudChip>
+
+@code {
+    [Parameter, EditorRequired] public ReportStatus Status { get; set; }
+    [Parameter] public bool SafetyConcern { get; set; }
+    [Parameter] public string? TestId { get; set; }
+
+    private Color ChipColor => Status switch
+    {
+        ReportStatus.New => SafetyConcern ? Color.Error : Color.Info,
+        ReportStatus.InReview => Color.Warning,
+        _ => Color.Default,
+    };
+}

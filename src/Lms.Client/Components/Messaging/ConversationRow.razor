@@ -1,0 +1,65 @@
+@* One conversation in the inbox list (spec #615 §2.4, class lms-conv): one link whose accessible name says the name, the unread count, the time and
+   the preview, so the unread state is never only bold text. The current conversation has aria-current and the 3 px bar. Presentational only. *@
+<a class="@($"lms-conv{(UnreadCount > 0 ? " unread" : "")}")" href="@Href" aria-current="@(Current ? "true" : null)" aria-label="@Label" data-testid="@TestId">
+    <MudAvatar Size="Size.Medium" Class="lms-conv-avatar" aria-hidden="true">
+        @if (IsGroup)
+        {
+            <MudIcon Icon="@Icons.Material.Rounded.Groups" />
+        }
+        else
+        {
+            @Initials
+        }
+    </MudAvatar>
+    <span class="lms-conv-main">
+        <span class="lms-conv-top">
+            <span class="lms-conv-name"><bdi>@Name</bdi></span>
+            <span class="lms-conv-time" dir="ltr">@TimeText</span>
+        </span>
+        <span class="lms-conv-bottom">
+            <span class="lms-conv-preview" dir="auto">@PreviewText</span>
+            @if (UnreadCount > 0)
+            {
+                <span class="lms-conv-count" aria-hidden="true">@(UnreadCount > 99 ? "99+" : UnreadCount.ToString(System.Globalization.CultureInfo.InvariantCulture))</span>
+            }
+        </span>
+    </span>
+</a>
+
+@code {
+    [Parameter, EditorRequired] public string Href { get; set; } = "";
+    [Parameter, EditorRequired] public string Name { get; set; } = "";
+    [Parameter] public string Preview { get; set; } = "";
+
+    /// <summary>In a group, who wrote the preview ("Sara", or the localized "You"); shown as "Sara: …".</summary>
+    [Parameter] public string? PreviewAuthor { get; set; }
+
+    /// <summary>Already formatted: the time today, "Yesterday", a weekday or yyyy-MM-dd (spec #615 §1).</summary>
+    [Parameter] public string TimeText { get; set; } = "";
+    [Parameter] public int UnreadCount { get; set; }
+    [Parameter] public bool IsGroup { get; set; }
+    [Parameter] public bool Current { get; set; }
+    [Parameter] public string? TestId { get; set; }
+
+    private string PreviewText => string.IsNullOrEmpty(PreviewAuthor) ? Preview : $"{PreviewAuthor}: {Preview}";
+
+    // Two Latin initials ("HA"); one letter for Arabic script, where two letters would join into one glyph.
+    private string Initials
+    {
+        get
+        {
+            var words = Name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            if (words.Length == 0) return "";
+            var first = words[0][0];
+            return first is >= '؀' and <= 'ۿ' ? first.ToString() : string.Concat(words.Take(2).Select(w => char.ToUpperInvariant(w[0])));
+        }
+    }
+
+    private string Label => string.Join(", ", new[]
+    {
+        Name,
+        UnreadCount > 0 ? string.Format(System.Globalization.CultureInfo.CurrentCulture, L["Msg_Conv_Unread"].Value, UnreadCount) : null,
+        TimeText,
+        PreviewText,
+    }.Where(s => !string.IsNullOrWhiteSpace(s)));
+}

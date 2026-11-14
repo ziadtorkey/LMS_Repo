@@ -1486,29 +1486,6 @@
   <data name="Error_package_not_ready" xml:space="preserve"><value>الحزمة ليست جاهزة بعد. انتظر حتى ينتهي الفحص.</value></data>
   <data name="Error_package_not_attached" xml:space="preserve"><value>الحزمة غير مضافة إلى درس بعد، لذا لا يمكن تغيير طريقة احتساب الدرجة.</value></data>
   <data name="Error_package_commit_rejected" xml:space="preserve"><value>تعذّر حفظ تقدّمك لأن المحاولة مغلقة أو لم تُقبل البيانات.</value></data>
-  <data name="Package_Start" xml:space="preserve"><value>ابدأ</value></data>
-  <data name="Package_Resume" xml:space="preserve"><value>استئناف</value></data>
-  <data name="Package_Preview" xml:space="preserve"><value>معاينة</value></data>
-  <data name="Package_PreviewBanner" xml:space="preserve"><value>معاينة: لا يُسجَّل أي شيء.</value></data>
-  <data name="Package_ThirdParty" xml:space="preserve"><value>يأتي هذا النشاط من جهة أخرى. قد لا تعمل بعض أجزائه مع لوحة المفاتيح أو قارئ الشاشة.</value></data>
-  <data name="Package_PhoneHint" xml:space="preserve"><value>يعمل بشكل أفضل على شاشة أكبر.</value></data>
-  <data name="Package_State_NotStarted" xml:space="preserve"><value>لم يبدأ</value></data>
-  <data name="Package_State_InProgress" xml:space="preserve"><value>قيد التنفيذ</value></data>
-  <data name="Package_State_Completed" xml:space="preserve"><value>مكتمل</value></data>
-  <data name="Package_Exit" xml:space="preserve"><value>خروج</value></data>
-  <data name="Package_Fullscreen" xml:space="preserve"><value>ملء الشاشة</value></data>
-  <data name="Package_ExitFullscreen" xml:space="preserve"><value>إنهاء ملء الشاشة</value></data>
-  <data name="Package_Saving" xml:space="preserve"><value>جارٍ الحفظ…</value></data>
-  <data name="Package_Saved" xml:space="preserve"><value>تم الحفظ</value></data>
-  <data name="Package_SaveFailed" xml:space="preserve"><value>تعذّر الحفظ. جارٍ إعادة المحاولة…</value></data>
-  <data name="Package_Retry" xml:space="preserve"><value>أعد المحاولة</value></data>
-  <data name="Package_Expired" xml:space="preserve"><value>انتهت مهلة النشاط. أعد التحميل لتكمل من حيث توقفت.</value></data>
-  <data name="Package_Reload" xml:space="preserve"><value>إعادة التحميل</value></data>
-  <data name="Package_OpenAgain" xml:space="preserve"><value>افتح مرة أخرى</value></data>
-  <data name="Package_NotReady" xml:space="preserve"><value>هذا النشاط غير جاهز بعد. حاول لاحقاً.</value></data>
-  <data name="Package_FrameTitle" xml:space="preserve"><value>{0} (نشاط تفاعلي)</value></data>
-  <data name="Module_NotAvailableTitle" xml:space="preserve"><value>هذا النشاط غير متاح</value></data>
-  <data name="Module_NotAvailableText" xml:space="preserve"><value>ربما أُخفي أو حُذف. ارجع إلى المقرر لترى المتاح لك.</value></data>
   <data name="Assignment_AllowFiles" xml:space="preserve"><value>السماح برفع ملفات</value></data>
   <data name="Assignment_AllowText" xml:space="preserve"><value>السماح بنص مكتوب</value></data>
   <data name="Assignment_Attachments" xml:space="preserve"><value>المرفقات</value></data>
@@ -1792,12 +1769,218 @@
   <data name="AuditEntity_GradeEntry" xml:space="preserve"><value>درجة</value></data>
   <data name="AuditEntity_GradeSnapshot" xml:space="preserve"><value>لقطة الدرجات</value></data>
   <data name="PermModule_Grades" xml:space="preserve"><value>الدرجات</value></data>
-  <data name="NavSection_Structure" xml:space="preserve"><value>الهيكل</value></data>
-  <data name="NavSection_People" xml:space="preserve"><value>الأشخاص</value></data>
-  <data name="NavSection_Academic" xml:space="preserve"><value>الأكاديمي</value></data>
-  <data name="NavSection_Security" xml:space="preserve"><value>الأمان والإعدادات</value></data>
-  <data name="App_Subtitle" xml:space="preserve"><value>المنصة الأكاديمية</value></data>
-  <data name="Nav_Main" xml:space="preserve"><value>التنقل الرئيسي</value></data>
+  <data name="Error_messaging_not_allowed" xml:space="preserve"><value>لا يمكنك إرسال رسائل إلى هذا الشخص.</value></data>
+  <data name="Error_conversation_closed" xml:space="preserve"><value>تم قفل هذه المحادثة من قبل المشرف.</value></data>
+  <data name="Error_message_too_long" xml:space="preserve"><value>الرسالة فارغة أو أطول من الحد المسموح.</value></data>
+  <data name="Error_message_delete_window_closed" xml:space="preserve"><value>يمكن حذف الرسالة للجميع خلال 15 دقيقة فقط من إرسالها.</value></data>
+  <data name="Error_report_duplicate" xml:space="preserve"><value>سبق أن أبلغت عن هذه الرسالة.</value></data>
+  <data name="Error_rate_limited" xml:space="preserve"><value>طلبات كثيرة جدًا. حاول لاحقًا.</value></data>
+  <data name="Error_notification_mandatory" xml:space="preserve"><value>لا يمكن إيقاف هذا الإشعار.</value></data>
+  <data name="Error_announcement_target_invalid" xml:space="preserve"><value>جمهور الإعلان غير صالح.</value></data>
+  <data name="Error_announcement_not_editable" xml:space="preserve"><value>الإعلان المنشور يسمح بتغيير انتهائه وتثبيته وسحبه فقط.</value></data>
+  <data name="Error_rules_looser_than_default" xml:space="preserve"><value>يمكن للعميل تضييق قواعد المراسلة فقط وليس توسيعها.</value></data>
+  <data name="Perm_Messaging_View" xml:space="preserve"><value>فتح صندوق الرسائل</value></data>
+  <data name="Perm_Messaging_Send" xml:space="preserve"><value>إرسال الرسائل</value></data>
+  <data name="Perm_Messaging_Moderate" xml:space="preserve"><value>مراجعة الرسائل المبلغ عنها</value></data>
+  <data name="Perm_Announcements_View" xml:space="preserve"><value>عرض الإعلانات</value></data>
+  <data name="Perm_Announcements_Manage" xml:space="preserve"><value>إدارة الإعلانات</value></data>
+  <data name="Perm_Comms_Manage" xml:space="preserve"><value>إدارة إعدادات التواصل</value></data>
+  <data name="PermModule_Messaging" xml:space="preserve"><value>المراسلة</value></data>
+  <data name="PermModule_Announcements" xml:space="preserve"><value>الإعلانات</value></data>
+  <data name="PermModule_Comms" xml:space="preserve"><value>التواصل</value></data>
+  <data name="Setting_Comms_EmailEnabled" xml:space="preserve"><value>السماح بإشعارات البريد الإلكتروني</value></data>
+  <data name="Setting_Comms_PushEnabled" xml:space="preserve"><value>السماح بالإشعارات الفورية</value></data>
+  <data name="Setting_Comms_MaxEmailPerDay" xml:space="preserve"><value>عدد رسائل البريد يوميًا (العميل)</value></data>
+  <data name="Setting_Comms_MaxPushPerDay" xml:space="preserve"><value>عدد الإشعارات الفورية يوميًا (العميل)</value></data>
+  <data name="Setting_Comms_MaxEmailPerUserPerDay" xml:space="preserve"><value>عدد رسائل البريد لكل شخص يوميًا</value></data>
+  <data name="Setting_Comms_MaxPushPerUserPerDay" xml:space="preserve"><value>عدد الإشعارات الفورية لكل شخص يوميًا</value></data>
+  <data name="Setting_Comms_QuietHours_Enabled" xml:space="preserve"><value>ساعات الهدوء</value></data>
+  <data name="Setting_Comms_QuietHours_Start" xml:space="preserve"><value>بداية ساعات الهدوء</value></data>
+  <data name="Setting_Comms_QuietHours_End" xml:space="preserve"><value>نهاية ساعات الهدوء</value></data>
+  <data name="Setting_Comms_DeliveryRetentionDays" xml:space="preserve"><value>أيام الاحتفاظ بسجلات الإرسال</value></data>
+  <data name="Setting_Messaging_ReadReceipts" xml:space="preserve"><value>إظهار من اطلع على الرسالة</value></data>
+  <data name="Setting_Messaging_MaxPerMinute" xml:space="preserve"><value>عدد الرسائل في الدقيقة</value></data>
+  <data name="Setting_Messaging_MaxNewConversationsPerDay" xml:space="preserve"><value>عدد المحادثات الجديدة يوميًا</value></data>
+  <data name="Setting_Messaging_MaxGroupSize" xml:space="preserve"><value>أكبر حجم لمحادثة جماعية</value></data>
+  <data name="Setting_Announcements_MaxPerAuthorPerDay" xml:space="preserve"><value>عدد الإعلانات لكل كاتب يوميًا</value></data>
+  <data name="NotifEvent_Messages_NewMessage" xml:space="preserve"><value>رسالة جديدة</value></data>
+  <data name="Notif_Messages_NewMessage" xml:space="preserve"><value>أرسل لك {SenderName} رسالة.</value></data>
+  <data name="NotifEvent_Announcements_Published" xml:space="preserve"><value>إعلان جديد</value></data>
+  <data name="Notif_Announcements_Published" xml:space="preserve"><value>إعلان جديد: {Title}</value></data>
+  <data name="NotifEvent_Messaging_Warning" xml:space="preserve"><value>تحذير بشأن المراسلة</value></data>
+  <data name="Notif_Messaging_Warning" xml:space="preserve"><value>حذّرك مشرف بشأن رسالة أرسلتها.</value></data>
+  <data name="NotifEvent_Messaging_Restricted" xml:space="preserve"><value>تقييد المراسلة</value></data>
+  <data name="Notif_Messaging_Restricted" xml:space="preserve"><value>تم تقييد المراسلة لديك حتى {UntilUtc}.</value></data>
+  <data name="NotifEvent_Messaging_ReportResolved" xml:space="preserve"><value>تمت مراجعة البلاغ</value></data>
+  <data name="Notif_Messaging_ReportResolved" xml:space="preserve"><value>تمت مراجعة بلاغك: {Outcome}.</value></data>
+  <data name="NotifEvent_Comms_CapReached" xml:space="preserve"><value>تم بلوغ حد الإرسال اليومي</value></data>
+  <data name="Notif_Comms_CapReached" xml:space="preserve"><value>تم بلوغ الحد اليومي لإشعارات {Channel}.</value></data>
+  <data name="AuditEntity_Conversation" xml:space="preserve"><value>محادثة</value></data>
+  <data name="AuditEntity_MessageReport" xml:space="preserve"><value>بلاغ عن رسالة</value></data>
+  <data name="AuditEntity_MessagingRestriction" xml:space="preserve"><value>تقييد المراسلة</value></data>
+  <data name="AuditEntity_MessagingRule" xml:space="preserve"><value>قاعدة مراسلة</value></data>
+  <data name="AuditEntity_Announcement" xml:space="preserve"><value>إعلان</value></data>
+  <data name="Msg_Kind_Direct" xml:space="preserve"><value>رسالة مباشرة</value></data>
+  <data name="Msg_Kind_Group" xml:space="preserve"><value>مجموعة</value></data>
+  <data name="Msg_State_Normal" xml:space="preserve"><value>رسالة</value></data>
+  <data name="Msg_State_Deleted" xml:space="preserve"><value>تم حذف الرسالة</value></data>
+  <data name="Msg_State_Removed" xml:space="preserve"><value>أزال المشرف الرسالة</value></data>
+  <data name="Msg_Rule_Allow" xml:space="preserve"><value>مسموح</value></data>
+  <data name="Msg_Rule_Relationship" xml:space="preserve"><value>فقط مع وجود علاقة</value></data>
+  <data name="Msg_Rule_Deny" xml:space="preserve"><value>غير مسموح</value></data>
+  <data name="Msg_Reason_Harassment" xml:space="preserve"><value>مضايقة</value></data>
+  <data name="Msg_Reason_Inappropriate" xml:space="preserve"><value>محتوى غير لائق</value></data>
+  <data name="Msg_Reason_Spam" xml:space="preserve"><value>رسائل مزعجة</value></data>
+  <data name="Msg_Reason_Safety" xml:space="preserve"><value>مخاوف تتعلق بالسلامة</value></data>
+  <data name="Msg_Reason_Other" xml:space="preserve"><value>أخرى</value></data>
+  <data name="Msg_ReportStatus_Open" xml:space="preserve"><value>مفتوح</value></data>
+  <data name="Msg_ReportStatus_Dismissed" xml:space="preserve"><value>تم الرفض</value></data>
+  <data name="Msg_ReportStatus_Actioned" xml:space="preserve"><value>تم اتخاذ إجراء</value></data>
+  <data name="Msg_Action_Dismiss" xml:space="preserve"><value>رفض البلاغ</value></data>
+  <data name="Msg_Action_Remove" xml:space="preserve"><value>إزالة الرسالة</value></data>
+  <data name="Msg_Action_Warn" xml:space="preserve"><value>تحذير المرسل</value></data>
+  <data name="Msg_Action_Restrict" xml:space="preserve"><value>تقييد المراسلة</value></data>
+  <data name="Msg_Action_RemoveAndRestrict" xml:space="preserve"><value>إزالة وتقييد</value></data>
+  <data name="Msg_Action_LockConversation" xml:space="preserve"><value>قفل المحادثة</value></data>
+  <data name="Ann_TargetKind_Organization" xml:space="preserve"><value>المؤسسة كاملة</value></data>
+  <data name="Ann_TargetKind_Unit" xml:space="preserve"><value>وحدة</value></data>
+  <data name="Ann_TargetKind_Level" xml:space="preserve"><value>مستوى</value></data>
+  <data name="Ann_TargetKind_Class" xml:space="preserve"><value>فصل</value></data>
+  <data name="Ann_TargetKind_ClassCourse" xml:space="preserve"><value>مقرر فصل</value></data>
+  <data name="Ann_TargetKind_Group" xml:space="preserve"><value>مجموعة</value></data>
+  <data name="Ann_Status_Draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="Ann_Status_Scheduled" xml:space="preserve"><value>مجدول</value></data>
+  <data name="Ann_Status_Published" xml:space="preserve"><value>منشور</value></data>
+  <data name="Ann_Status_Withdrawn" xml:space="preserve"><value>مسحوب</value></data>
+  <data name="Ann_Status_Expired" xml:space="preserve"><value>منتهي</value></data>
+  <data name="Ann_Role_Staff" xml:space="preserve"><value>الموظفون</value></data>
+  <data name="Ann_Role_Students" xml:space="preserve"><value>الطلاب</value></data>
+  <data name="Ann_Role_Guardians" xml:space="preserve"><value>أولياء الأمور</value></data>
+  <data name="Comms_Delivery_Pending" xml:space="preserve"><value>في الانتظار</value></data>
+  <data name="Comms_Delivery_Sending" xml:space="preserve"><value>جارٍ الإرسال</value></data>
+  <data name="Comms_Delivery_Sent" xml:space="preserve"><value>تم الإرسال</value></data>
+  <data name="Comms_Delivery_Failed" xml:space="preserve"><value>فشل</value></data>
+  <data name="Comms_Delivery_Skipped" xml:space="preserve"><value>تم التخطي</value></data>
+  <data name="Comms_Delivery_Expired" xml:space="preserve"><value>انتهت صلاحيته</value></data>
+  <data name="Comms_ChannelState_Active" xml:space="preserve"><value>نشط</value></data>
+  <data name="Comms_ChannelState_NeedsSetup" xml:space="preserve"><value>يحتاج إلى إعداد</value></data>
+  <data name="Comms_ChannelState_Blocked" xml:space="preserve"><value>محظور</value></data>
+  <data name="Comms_ChannelState_Bounced" xml:space="preserve"><value>مرتد</value></data>
+  <data name="Comms_PrefSource_Default" xml:space="preserve"><value>افتراضي</value></data>
+  <data name="Comms_PrefSource_User" xml:space="preserve"><value>اختيارك</value></data>
+  <data name="Comms_PrefSource_Mandatory" xml:space="preserve"><value>إلزامي</value></data>
+  <data name="Msg_Rule_SameUnit" xml:space="preserve"><value>أي شخص في نفس الوحدة</value></data>
+  <data name="Msg_Conv_Unread" xml:space="preserve"><value>{0} غير مقروءة</value></data>
+  <data name="Msg_Status_Sending" xml:space="preserve"><value>جارٍ الإرسال…</value></data>
+  <data name="Msg_Status_Sent" xml:space="preserve"><value>أُرسلت</value></data>
+  <data name="Msg_Status_Seen" xml:space="preserve"><value>شوهدت</value></data>
+  <data name="Msg_Status_Failed" xml:space="preserve"><value>لم تُرسل</value></data>
+  <data name="Msg_Removed_ByModerator" xml:space="preserve"><value>أزال المشرف هذه الرسالة.</value></data>
+  <data name="Msg_Removed_BySender" xml:space="preserve"><value>رسالة محذوفة</value></data>
+  <data name="Msg_Removed_ByMe" xml:space="preserve"><value>حذفت هذه الرسالة.</value></data>
+  <data name="Msg_Attach" xml:space="preserve"><value>إرفاق ملف</value></data>
+  <data name="Msg_Composer_Placeholder" xml:space="preserve"><value>اكتب رسالة</value></data>
+  <data name="Msg_Composer_Hint" xml:space="preserve"><value>Ctrl+Enter للإرسال</value></data>
+  <data name="Msg_Send" xml:space="preserve"><value>إرسال</value></data>
+  <data name="Msg_Thread_Log" xml:space="preserve"><value>الرسائل</value></data>
+  <data name="Ann_Pinned" xml:space="preserve"><value>مثبّت</value></data>
+  <data name="Ann_Scheduled" xml:space="preserve"><value>مجدول</value></data>
+  <data name="Ann_ReadMore" xml:space="preserve"><value>اقرأ المزيد</value></data>
+  <data name="Ann_ReadLess" xml:space="preserve"><value>عرض أقل</value></data>
+  <data name="Ann_Audience" xml:space="preserve"><value>الجمهور</value></data>
+  <data name="Notif_Unread_Name" xml:space="preserve"><value>غير مقروء: {0}</value></data>
+  <data name="Notif_MarkAll" xml:space="preserve"><value>تعليم الكل كمقروء</value></data>
+  <data name="Notif_Settings" xml:space="preserve"><value>إعدادات الإشعارات</value></data>
+  <data name="Notif_EmptyText" xml:space="preserve"><value>تظهر هنا الرسائل والدرجات والإعلانات الجديدة.</value></data>
+  <data name="Notif_SeeAll" xml:space="preserve"><value>عرض كل الإشعارات</value></data>
+  <data name="Notif_Earlier" xml:space="preserve"><value>سابقًا</value></data>
+  <data name="Msg_D69_Title" xml:space="preserve"><value>لا يظهر الطلاب هنا</value></data>
+  <data name="Msg_D69_Text" xml:space="preserve"><value>يتواصل المديرون ومسؤولو المؤسسة مع الطلاب عبر محادثة فصل أو مجموعة، أو عبر إعلان، لا برسالة خاصة. تحدد ذلك قواعد الحماية في مدرستك.</value></data>
+  <data name="Msg_Back" xml:space="preserve"><value>العودة إلى الرسائل</value></data>
+  <data name="Msg_Group_Members" xml:space="preserve"><value>مجموعة · الأعضاء: {0}</value></data>
+  <data name="Msg_Group_Note" xml:space="preserve"><value>تصل الردود إلى كل أفراد المجموعة. للرد على انفراد يبدأ الشخص رسالة جديدة.</value></data>
+  <data name="Msg_Picker_Classes" xml:space="preserve"><value>الفصول والمقررات</value></data>
+  <data name="Msg_Picker_People" xml:space="preserve"><value>الأشخاص</value></data>
+  <data name="Rules_Locked" xml:space="preserve"><value>تحدده المنصة (الحماية): لا يمكن تخفيفه</value></data>
+  <data name="Rules_Via_Anywhere" xml:space="preserve"><value>أي شخص</value></data>
+  <data name="Rules_Via_SameUnit" xml:space="preserve"><value>نفس الوحدة</value></data>
+  <data name="Rules_Via_Relationship" xml:space="preserve"><value>فصوله فقط</value></data>
+  <data name="Rules_Via_NotAllowed" xml:space="preserve"><value>غير مسموح</value></data>
+  <data name="Rules_Via_GroupsOnly" xml:space="preserve"><value>عبر المجموعات فقط</value></data>
+  <data name="Ann_Roles" xml:space="preserve"><value>من يراه داخل هذه الأهداف</value></data>
+  <data name="Ann_Reach_Counting" xml:space="preserve"><value>جارٍ حساب من سيراه…</value></data>
+  <data name="Ann_Reach_None" xml:space="preserve"><value>لا أحد ضمن نطاقك يطابق هذه الاختيارات بعد.</value></data>
+  <data name="Ann_Reach_Exact" xml:space="preserve"><value>عدد من سيرونه: {0}.</value></data>
+  <data name="Ann_Reach_About" xml:space="preserve"><value>عدد من سيرونه نحو {0} (العدّ داخل الوحدات التي تراها فقط).</value></data>
+  <data name="Ann_TitleAr" xml:space="preserve"><value>العنوان (بالعربية)</value></data>
+  <data name="Ann_TitleEn" xml:space="preserve"><value>العنوان (بالإنجليزية)</value></data>
+  <data name="Ann_BodyAr" xml:space="preserve"><value>النص (بالعربية)</value></data>
+  <data name="Ann_BodyEn" xml:space="preserve"><value>النص (بالإنجليزية)</value></data>
+  <data name="Ann_Error_TitleAr" xml:space="preserve"><value>أدخل العنوان بالعربية أيضًا. يرى كل قارئ العنوان بلغته.</value></data>
+  <data name="Ann_Error_TitleEn" xml:space="preserve"><value>أدخل العنوان بالإنجليزية أيضًا. يرى كل قارئ العنوان بلغته.</value></data>
+  <data name="Ann_Error_Body" xml:space="preserve"><value>اكتب النص بلغة واحدة على الأقل.</value></data>
+  <data name="Ann_Who" xml:space="preserve"><value>من يرى الإعلان</value></data>
+  <data name="Ann_Scope_Organization" xml:space="preserve"><value>المؤسسة</value></data>
+  <data name="Ann_Scope_Unit" xml:space="preserve"><value>الوحدة</value></data>
+  <data name="Ann_Scope_Level" xml:space="preserve"><value>المستوى</value></data>
+  <data name="Ann_Scope_Class" xml:space="preserve"><value>الفصل</value></data>
+  <data name="Ann_Scope_ClassCourse" xml:space="preserve"><value>المقرر</value></data>
+  <data name="Ann_Scope_Group" xml:space="preserve"><value>المجموعة</value></data>
+  <data name="Ann_Error_Targets" xml:space="preserve"><value>اختر هدفًا واحدًا على الأقل.</value></data>
+  <data name="Ann_IncludeSubtree" xml:space="preserve"><value>تضمين الوحدات التابعة</value></data>
+  <data name="Ann_IncludeSubtreeHelp" xml:space="preserve"><value>تراه أيضًا الوحدات التابعة للوحدات المختارة.</value></data>
+  <data name="Ann_Error_Roles" xml:space="preserve"><value>اختر من يراه: الموظفون أو الطلاب أو أولياء الأمور.</value></data>
+  <data name="Ann_Publishing" xml:space="preserve"><value>النشر</value></data>
+  <data name="Ann_Mode_Now" xml:space="preserve"><value>الآن</value></data>
+  <data name="Ann_Mode_Schedule" xml:space="preserve"><value>جدولة</value></data>
+  <data name="Ann_Date" xml:space="preserve"><value>التاريخ</value></data>
+  <data name="Ann_Time" xml:space="preserve"><value>الوقت</value></data>
+  <data name="Ann_Error_When" xml:space="preserve"><value>اختر تاريخًا ووقتًا في المستقبل.</value></data>
+  <data name="Ann_TimeZone" xml:space="preserve"><value>الأوقات بتوقيتك: {0}</value></data>
+  <data name="Ann_Pin" xml:space="preserve"><value>تثبيت في الأعلى</value></data>
+  <data name="Ann_PinHelp" xml:space="preserve"><value>تبقى الإعلانات المثبّتة أولًا حتى ينتهي موعدها.</value></data>
+  <data name="Ann_Notify" xml:space="preserve"><value>إشعار الجمهور</value></data>
+  <data name="Ann_NotifyHelp" xml:space="preserve"><value>يصل الإشعار إلى كل شخص عبر القنوات التي اختارها.</value></data>
+  <data name="Ann_Attachments" xml:space="preserve"><value>المرفقات</value></data>
+  <data name="Ann_AttachmentsHelp" xml:space="preserve"><value>حتى 5 ملفات، كما في الرسائل.</value></data>
+  <data name="Ann_Expires" xml:space="preserve"><value>ينتهي في</value></data>
+  <data name="Ann_ExpiresHelp" xml:space="preserve"><value>بعد هذا التاريخ ينتقل إلى المنتهية. اتركه فارغًا لإبقائه.</value></data>
+  <data name="Ann_SaveDraft" xml:space="preserve"><value>حفظ كمسودة</value></data>
+  <data name="Ann_Schedule" xml:space="preserve"><value>جدولة</value></data>
+  <data name="Ann_Publish" xml:space="preserve"><value>نشر</value></data>
+  <data name="Prefs_Event" xml:space="preserve"><value>الحدث</value></data>
+  <data name="Prefs_Channel_InApp" xml:space="preserve"><value>داخل المنصة</value></data>
+  <data name="Prefs_Channel_Email" xml:space="preserve"><value>البريد الإلكتروني</value></data>
+  <data name="Prefs_Channel_Push" xml:space="preserve"><value>الإشعارات الفورية</value></data>
+  <data name="Prefs_Fix" xml:space="preserve"><value>أضفه في ملفك الشخصي</value></data>
+  <data name="Prefs_Locked" xml:space="preserve"><value>تحدده مدرستك: لا يمكن إيقافه.</value></data>
+  <data name="Prefs_NoPhone" xml:space="preserve"><value>أضف رقم جوال في ملفك الشخصي</value></data>
+  <data name="Prefs_PushUnsupported" xml:space="preserve"><value>غير متاحة في هذا المتصفح</value></data>
+  <data name="Prefs_PushOff" xml:space="preserve"><value>الإشعارات الفورية متوقفة على هذا الجهاز.</value></data>
+  <data name="Prefs_PushOffHelp" xml:space="preserve"><value>سيطلب المتصفح إذنك. يمكنك إيقافها مرة أخرى من هنا أو من إعدادات المتصفح.</value></data>
+  <data name="Prefs_PushTurnOn" xml:space="preserve"><value>تفعيلها لهذا المتصفح</value></data>
+  <data name="Prefs_PushDenied" xml:space="preserve"><value>يمنع متصفحك الإشعارات من هذا الموقع.</value></data>
+  <data name="Prefs_PushDeniedHelp" xml:space="preserve"><value>للسماح بها افتح إعدادات الموقع في المتصفح (الرمز بجوار العنوان) واسمح بالإشعارات، ثم عُد إلى هذه الصفحة.</value></data>
+  <data name="Mod_Decision" xml:space="preserve"><value>القرار</value></data>
+  <data name="Mod_Action_Dismiss" xml:space="preserve"><value>إبقاء الرسالة</value></data>
+  <data name="Mod_Action_Dismiss_Help" xml:space="preserve"><value>إغلاق البلاغ وتبقى الرسالة، ويُبلَّغ المُبلِغ بأنه رُوجع.</value></data>
+  <data name="Mod_Action_Remove" xml:space="preserve"><value>إزالة الرسالة</value></data>
+  <data name="Mod_Action_Remove_Help" xml:space="preserve"><value>يرى كل من في المحادثة «أزالها المشرف». يحتفظ المشرفون بالنص الأصلي.</value></data>
+  <data name="Mod_Action_Warn" xml:space="preserve"><value>تحذير المُرسِل</value></data>
+  <data name="Mod_Action_Warn_Help" xml:space="preserve"><value>يصل إلى {0} إشعار تحذير، وتبقى الرسالة.</value></data>
+  <data name="Mod_Action_Restrict" xml:space="preserve"><value>منع المُرسِل من المراسلة</value></data>
+  <data name="Mod_Action_Restrict_Help" xml:space="preserve"><value>يستطيع {0} القراءة دون الإرسال حتى تاريخ الانتهاء. هذا منع من المشرف، وليس حظرًا بين شخصين.</value></data>
+  <data name="Mod_Action_RemoveAndRestrict" xml:space="preserve"><value>الإزالة ومنع المُرسِل</value></data>
+  <data name="Mod_Action_RemoveAndRestrict_Help" xml:space="preserve"><value>تُزال الرسالة، ويستطيع {0} القراءة دون الإرسال حتى تاريخ الانتهاء.</value></data>
+  <data name="Mod_Action_LockConversation" xml:space="preserve"><value>قفل المحادثة</value></data>
+  <data name="Mod_Action_LockConversation_Help" xml:space="preserve"><value>لا يستطيع أحد الإرسال فيها بعد الآن. لمحادثة جماعية خرجت عن مسارها.</value></data>
+  <data name="Mod_For" xml:space="preserve"><value>لمدة</value></data>
+  <data name="Mod_Days" xml:space="preserve"><value>عدد الأيام: {0}</value></data>
+  <data name="Mod_Reported" xml:space="preserve"><value>الرسالة المُبلَّغ عنها</value></data>
+  <data name="Mod_Status_New" xml:space="preserve"><value>جديد</value></data>
+  <data name="Mod_Status_InReview" xml:space="preserve"><value>قيد المراجعة</value></data>
+  <data name="Mod_Status_Removed" xml:space="preserve"><value>أُزيلت</value></data>
+  <data name="Mod_Status_Kept" xml:space="preserve"><value>أُبقيت</value></data>
   <data name="Error_timetable_conflict" xml:space="preserve"><value>تتعارض هذه الحصة مع حصة أخرى: المعلم أو الفصل محجوز في الوقت نفسه.</value></data>
   <data name="Error_period_overlap" xml:space="preserve"><value>تتداخل الفترة مع فترة أخرى في هذه المدرسة، أو لا تبدأ قبل نهايتها.</value></data>
   <data name="Error_period_in_use" xml:space="preserve"><value>تستخدم إحدى حصص الجدول هذه الفترة، لذا لا يمكن حذفها.</value></data>
@@ -1917,121 +2100,54 @@
   <data name="PermModule_Excuses" xml:space="preserve"><value>الأعذار</value></data>
   <data name="AuditEntity_AttendanceRecordChange" xml:space="preserve"><value>تعديل حضور</value></data>
   <data name="AuditEntity_AbsenceExcuse" xml:space="preserve"><value>عذر غياب</value></data>
-  <data name="Error_messaging_not_allowed" xml:space="preserve"><value>لا يمكنك إرسال رسائل إلى هذا الشخص.</value></data>
-  <data name="Error_conversation_closed" xml:space="preserve"><value>تم قفل هذه المحادثة من قبل المشرف.</value></data>
-  <data name="Error_message_too_long" xml:space="preserve"><value>الرسالة فارغة أو أطول من الحد المسموح.</value></data>
-  <data name="Error_message_delete_window_closed" xml:space="preserve"><value>يمكن حذف الرسالة للجميع خلال 15 دقيقة فقط من إرسالها.</value></data>
-  <data name="Error_report_duplicate" xml:space="preserve"><value>سبق أن أبلغت عن هذه الرسالة.</value></data>
-  <data name="Error_rate_limited" xml:space="preserve"><value>طلبات كثيرة جدًا. حاول لاحقًا.</value></data>
-  <data name="Error_notification_mandatory" xml:space="preserve"><value>لا يمكن إيقاف هذا الإشعار.</value></data>
-  <data name="Error_announcement_target_invalid" xml:space="preserve"><value>جمهور الإعلان غير صالح.</value></data>
-  <data name="Error_announcement_not_editable" xml:space="preserve"><value>الإعلان المنشور يسمح بتغيير انتهائه وتثبيته وسحبه فقط.</value></data>
-  <data name="Error_rules_looser_than_default" xml:space="preserve"><value>يمكن للعميل تضييق قواعد المراسلة فقط وليس توسيعها.</value></data>
-  <data name="Perm_Messaging_View" xml:space="preserve"><value>فتح صندوق الرسائل</value></data>
-  <data name="Perm_Messaging_Send" xml:space="preserve"><value>إرسال الرسائل</value></data>
-  <data name="Perm_Messaging_Moderate" xml:space="preserve"><value>مراجعة الرسائل المبلغ عنها</value></data>
-  <data name="Perm_Announcements_View" xml:space="preserve"><value>عرض الإعلانات</value></data>
-  <data name="Perm_Announcements_Manage" xml:space="preserve"><value>إدارة الإعلانات</value></data>
-  <data name="Perm_Comms_Manage" xml:space="preserve"><value>إدارة إعدادات التواصل</value></data>
-  <data name="PermModule_Messaging" xml:space="preserve"><value>المراسلة</value></data>
-  <data name="PermModule_Announcements" xml:space="preserve"><value>الإعلانات</value></data>
-  <data name="PermModule_Comms" xml:space="preserve"><value>التواصل</value></data>
-  <data name="Setting_Comms_EmailEnabled" xml:space="preserve"><value>السماح بإشعارات البريد الإلكتروني</value></data>
-  <data name="Setting_Comms_PushEnabled" xml:space="preserve"><value>السماح بالإشعارات الفورية</value></data>
-  <data name="Setting_Comms_MaxEmailPerDay" xml:space="preserve"><value>عدد رسائل البريد يوميًا (العميل)</value></data>
-  <data name="Setting_Comms_MaxPushPerDay" xml:space="preserve"><value>عدد الإشعارات الفورية يوميًا (العميل)</value></data>
-  <data name="Setting_Comms_MaxEmailPerUserPerDay" xml:space="preserve"><value>عدد رسائل البريد لكل شخص يوميًا</value></data>
-  <data name="Setting_Comms_MaxPushPerUserPerDay" xml:space="preserve"><value>عدد الإشعارات الفورية لكل شخص يوميًا</value></data>
-  <data name="Setting_Comms_QuietHours_Enabled" xml:space="preserve"><value>ساعات الهدوء</value></data>
-  <data name="Setting_Comms_QuietHours_Start" xml:space="preserve"><value>بداية ساعات الهدوء</value></data>
-  <data name="Setting_Comms_QuietHours_End" xml:space="preserve"><value>نهاية ساعات الهدوء</value></data>
-  <data name="Setting_Comms_DeliveryRetentionDays" xml:space="preserve"><value>أيام الاحتفاظ بسجلات الإرسال</value></data>
-  <data name="Setting_Messaging_ReadReceipts" xml:space="preserve"><value>إظهار من اطلع على الرسالة</value></data>
-  <data name="Setting_Messaging_MaxPerMinute" xml:space="preserve"><value>عدد الرسائل في الدقيقة</value></data>
-  <data name="Setting_Messaging_MaxNewConversationsPerDay" xml:space="preserve"><value>عدد المحادثات الجديدة يوميًا</value></data>
-  <data name="Setting_Messaging_MaxGroupSize" xml:space="preserve"><value>أكبر حجم لمحادثة جماعية</value></data>
+  <data name="Error_group_read_only" xml:space="preserve"><value>المراسلة في هذه المجموعة للموظفين فقط.</value></data>
+  <data name="Error_channel_not_allowed" xml:space="preserve"><value>لا تُستخدم هذه القناة لهذا الحساب.</value></data>
+  <data name="Comms_ChannelState_NotAllowed" xml:space="preserve"><value>غير متاحة لهذا الحساب</value></data>
+  <data name="Comms_PrefSource_Policy" xml:space="preserve"><value>حسب سياسة المنصة</value></data>
+  <data name="Package_Start" xml:space="preserve"><value>ابدأ</value></data>
+  <data name="Package_Resume" xml:space="preserve"><value>استئناف</value></data>
+  <data name="Package_Preview" xml:space="preserve"><value>معاينة</value></data>
+  <data name="Package_PreviewBanner" xml:space="preserve"><value>معاينة: لا يُسجَّل أي شيء.</value></data>
+  <data name="Package_ThirdParty" xml:space="preserve"><value>يأتي هذا النشاط من جهة أخرى. قد لا تعمل بعض أجزائه مع لوحة المفاتيح أو قارئ الشاشة.</value></data>
+  <data name="Package_PhoneHint" xml:space="preserve"><value>يعمل بشكل أفضل على شاشة أكبر.</value></data>
+  <data name="Package_State_NotStarted" xml:space="preserve"><value>لم يبدأ</value></data>
+  <data name="Package_State_InProgress" xml:space="preserve"><value>قيد التنفيذ</value></data>
+  <data name="Package_State_Completed" xml:space="preserve"><value>مكتمل</value></data>
+  <data name="Package_Exit" xml:space="preserve"><value>خروج</value></data>
+  <data name="Package_Fullscreen" xml:space="preserve"><value>ملء الشاشة</value></data>
+  <data name="Package_ExitFullscreen" xml:space="preserve"><value>إنهاء ملء الشاشة</value></data>
+  <data name="Package_Saving" xml:space="preserve"><value>جارٍ الحفظ…</value></data>
+  <data name="Package_Saved" xml:space="preserve"><value>تم الحفظ</value></data>
+  <data name="Package_SaveFailed" xml:space="preserve"><value>تعذّر الحفظ. جارٍ إعادة المحاولة…</value></data>
+  <data name="Package_Retry" xml:space="preserve"><value>أعد المحاولة</value></data>
+  <data name="Package_Expired" xml:space="preserve"><value>انتهت مهلة النشاط. أعد التحميل لتكمل من حيث توقفت.</value></data>
+  <data name="Package_Reload" xml:space="preserve"><value>إعادة التحميل</value></data>
+  <data name="Package_OpenAgain" xml:space="preserve"><value>افتح مرة أخرى</value></data>
+  <data name="Package_NotReady" xml:space="preserve"><value>هذا النشاط غير جاهز بعد. حاول لاحقاً.</value></data>
+  <data name="Package_FrameTitle" xml:space="preserve"><value>{0} (نشاط تفاعلي)</value></data>
+  <data name="Module_NotAvailableTitle" xml:space="preserve"><value>هذا النشاط غير متاح</value></data>
+  <data name="Module_NotAvailableText" xml:space="preserve"><value>ربما أُخفي أو حُذف. ارجع إلى المقرر لترى المتاح لك.</value></data>
+  <data name="NavSection_Structure" xml:space="preserve"><value>الهيكل</value></data>
+  <data name="NavSection_People" xml:space="preserve"><value>الأشخاص</value></data>
+  <data name="NavSection_Academic" xml:space="preserve"><value>الأكاديمي</value></data>
+  <data name="NavSection_Security" xml:space="preserve"><value>الأمان والإعدادات</value></data>
+  <data name="App_Subtitle" xml:space="preserve"><value>المنصة الأكاديمية</value></data>
+  <data name="Nav_Main" xml:space="preserve"><value>التنقل الرئيسي</value></data>
   <data name="Setting_Messaging_UploadsPerMinute" xml:space="preserve"><value>عدد رفع المرفقات في الدقيقة</value></data>
-  <data name="Setting_Announcements_MaxPerAuthorPerDay" xml:space="preserve"><value>عدد الإعلانات لكل كاتب يوميًا</value></data>
-  <data name="NotifEvent_Messages_NewMessage" xml:space="preserve"><value>رسالة جديدة</value></data>
-  <data name="Notif_Messages_NewMessage" xml:space="preserve"><value>أرسل لك {SenderName} رسالة.</value></data>
-  <data name="NotifEvent_Announcements_Published" xml:space="preserve"><value>إعلان جديد</value></data>
-  <data name="Notif_Announcements_Published" xml:space="preserve"><value>إعلان جديد: {Title}</value></data>
-  <data name="NotifEvent_Messaging_Warning" xml:space="preserve"><value>تحذير بشأن المراسلة</value></data>
-  <data name="Notif_Messaging_Warning" xml:space="preserve"><value>حذّرك مشرف بشأن رسالة أرسلتها.</value></data>
-  <data name="NotifEvent_Messaging_Restricted" xml:space="preserve"><value>تقييد المراسلة</value></data>
-  <data name="Notif_Messaging_Restricted" xml:space="preserve"><value>تم تقييد المراسلة لديك حتى {UntilUtc}.</value></data>
-  <data name="NotifEvent_Messaging_ReportResolved" xml:space="preserve"><value>تمت مراجعة البلاغ</value></data>
-  <data name="Notif_Messaging_ReportResolved" xml:space="preserve"><value>تمت مراجعة بلاغك: {Outcome}.</value></data>
-  <data name="NotifEvent_Comms_CapReached" xml:space="preserve"><value>تم بلوغ حد الإرسال اليومي</value></data>
-  <data name="Notif_Comms_CapReached" xml:space="preserve"><value>تم بلوغ الحد اليومي لإشعارات {Channel}.</value></data>
-  <data name="AuditEntity_Conversation" xml:space="preserve"><value>محادثة</value></data>
-  <data name="AuditEntity_MessageReport" xml:space="preserve"><value>بلاغ عن رسالة</value></data>
-  <data name="AuditEntity_MessagingRestriction" xml:space="preserve"><value>تقييد المراسلة</value></data>
-  <data name="AuditEntity_MessagingRule" xml:space="preserve"><value>قاعدة مراسلة</value></data>
-  <data name="AuditEntity_Announcement" xml:space="preserve"><value>إعلان</value></data>
-  <data name="Msg_Kind_Direct" xml:space="preserve"><value>رسالة مباشرة</value></data>
-  <data name="Msg_Kind_Group" xml:space="preserve"><value>مجموعة</value></data>
-  <data name="Msg_State_Normal" xml:space="preserve"><value>رسالة</value></data>
-  <data name="Msg_State_Deleted" xml:space="preserve"><value>تم حذف الرسالة</value></data>
-  <data name="Msg_State_Removed" xml:space="preserve"><value>أزال المشرف الرسالة</value></data>
-  <data name="Msg_Rule_Allow" xml:space="preserve"><value>مسموح</value></data>
-  <data name="Msg_Rule_Relationship" xml:space="preserve"><value>فقط مع وجود علاقة</value></data>
-  <data name="Msg_Rule_Deny" xml:space="preserve"><value>غير مسموح</value></data>
-  <data name="Msg_Reason_Harassment" xml:space="preserve"><value>مضايقة</value></data>
-  <data name="Msg_Reason_Inappropriate" xml:space="preserve"><value>محتوى غير لائق</value></data>
-  <data name="Msg_Reason_Spam" xml:space="preserve"><value>رسائل مزعجة</value></data>
-  <data name="Msg_Reason_Safety" xml:space="preserve"><value>مخاوف تتعلق بالسلامة</value></data>
-  <data name="Msg_Reason_Other" xml:space="preserve"><value>أخرى</value></data>
   <data name="Msg_ReadOnly_group_students_read_only" xml:space="preserve"><value>المعلم والموظفون فقط يكتبون في هذه المجموعة. يمكنك مراسلة المعلم بشكل خاص.</value></data>
   <data name="Msg_ReadOnly_group_guardians_read_only" xml:space="preserve"><value>الموظفون فقط يكتبون في هذه المجموعة.</value></data>
+  <data name="Msg_ReadOnly_rule" xml:space="preserve"><value>هذه المحادثة للقراءة فقط بسبب تغيّر قواعد المراسلة.</value></data>
   <data name="Msg_ReadOnly_blocked_or_rule" xml:space="preserve"><value>لا يمكنك إرسال رسائل في هذه المحادثة.</value></data>
   <data name="Msg_ReadOnly_restricted" xml:space="preserve"><value>المراسلة مقيّدة لحسابك حاليًا.</value></data>
   <data name="Msg_ReadOnly_locked" xml:space="preserve"><value>قام مشرف بإغلاق هذه المحادثة.</value></data>
   <data name="Msg_Denied_rule" xml:space="preserve"><value>لا يمكنك إرسال رسائل إلى هذا الشخص.</value></data>
-  <data name="Msg_Denied_relationship" xml:space="preserve"><value>يمكنك مراسلة الأشخاص الذين تتعامل معهم في المدرسة فقط.</value></data>
+  <data name="Msg_Denied_relationship" xml:space="preserve"><value>يمكنك مراسلة من تشاركهم فصلًا دراسيًا فقط.</value></data>
   <data name="Msg_Denied_restricted" xml:space="preserve"><value>المراسلة مقيّدة لحسابك حاليًا.</value></data>
   <data name="Msg_Denied_blocked_or_rule" xml:space="preserve"><value>لا يمكنك إرسال رسائل إلى هذا الشخص.</value></data>
   <data name="Msg_Denied_private_group_with_student" xml:space="preserve"><value>المجموعة التي تضم طالبًا تحتاج إلى ثلاثة أعضاء على الأقل.</value></data>
   <data name="Msg_Denied_group_full" xml:space="preserve"><value>بلغت هذه المجموعة الحد الأقصى لعدد الأعضاء.</value></data>
-  <data name="Msg_ReportStatus_Open" xml:space="preserve"><value>مفتوح</value></data>
-  <data name="Msg_ReportStatus_Dismissed" xml:space="preserve"><value>تم الرفض</value></data>
-  <data name="Msg_ReportStatus_Actioned" xml:space="preserve"><value>تم اتخاذ إجراء</value></data>
-  <data name="Msg_Action_Dismiss" xml:space="preserve"><value>رفض البلاغ</value></data>
-  <data name="Msg_Action_Remove" xml:space="preserve"><value>إزالة الرسالة</value></data>
-  <data name="Msg_Action_Warn" xml:space="preserve"><value>تحذير المرسل</value></data>
-  <data name="Msg_Action_Restrict" xml:space="preserve"><value>تقييد المراسلة</value></data>
-  <data name="Msg_Action_RemoveAndRestrict" xml:space="preserve"><value>إزالة وتقييد</value></data>
-  <data name="Msg_Action_LockConversation" xml:space="preserve"><value>قفل المحادثة</value></data>
-  <data name="Ann_TargetKind_Organization" xml:space="preserve"><value>المؤسسة كاملة</value></data>
-  <data name="Ann_TargetKind_Unit" xml:space="preserve"><value>وحدة</value></data>
-  <data name="Ann_TargetKind_Level" xml:space="preserve"><value>مستوى</value></data>
-  <data name="Ann_TargetKind_Class" xml:space="preserve"><value>فصل</value></data>
-  <data name="Ann_TargetKind_ClassCourse" xml:space="preserve"><value>مقرر فصل</value></data>
-  <data name="Ann_TargetKind_Group" xml:space="preserve"><value>مجموعة</value></data>
   <data name="Ann_Source_CourseBoard" xml:space="preserve"><value>مجلس المقرر</value></data>
   <data name="Ann_Source_School" xml:space="preserve"><value>المدرسة</value></data>
-  <data name="Ann_Status_Draft" xml:space="preserve"><value>مسودة</value></data>
-  <data name="Ann_Status_Scheduled" xml:space="preserve"><value>مجدول</value></data>
-  <data name="Ann_Status_Published" xml:space="preserve"><value>منشور</value></data>
-  <data name="Ann_Status_Withdrawn" xml:space="preserve"><value>مسحوب</value></data>
-  <data name="Ann_Status_Expired" xml:space="preserve"><value>منتهي</value></data>
-  <data name="Ann_Role_Staff" xml:space="preserve"><value>الموظفون</value></data>
-  <data name="Ann_Role_Students" xml:space="preserve"><value>الطلاب</value></data>
-  <data name="Ann_Role_Guardians" xml:space="preserve"><value>أولياء الأمور</value></data>
-  <data name="Comms_Delivery_Pending" xml:space="preserve"><value>في الانتظار</value></data>
-  <data name="Comms_Delivery_Sending" xml:space="preserve"><value>جارٍ الإرسال</value></data>
-  <data name="Comms_Delivery_Sent" xml:space="preserve"><value>تم الإرسال</value></data>
-  <data name="Comms_Delivery_Failed" xml:space="preserve"><value>فشل</value></data>
-  <data name="Comms_Delivery_Skipped" xml:space="preserve"><value>تم التخطي</value></data>
-  <data name="Comms_Delivery_Expired" xml:space="preserve"><value>انتهت صلاحيته</value></data>
-  <data name="Comms_ChannelState_Active" xml:space="preserve"><value>نشط</value></data>
-  <data name="Comms_ChannelState_NeedsSetup" xml:space="preserve"><value>يحتاج إلى إعداد</value></data>
-  <data name="Comms_ChannelState_Blocked" xml:space="preserve"><value>محظور</value></data>
-  <data name="Comms_ChannelState_Bounced" xml:space="preserve"><value>مرتد</value></data>
-  <data name="Comms_PrefSource_Default" xml:space="preserve"><value>افتراضي</value></data>
-  <data name="Comms_PrefSource_User" xml:space="preserve"><value>اختيارك</value></data>
-  <data name="Comms_PrefSource_Mandatory" xml:space="preserve"><value>إلزامي</value></data>
-  <data name="Msg_Rule_SameUnit" xml:space="preserve"><value>أي شخص في نفس الوحدة</value></data>
   <data name="Error_conversation_read_only" xml:space="preserve"><value>لا يمكنك الكتابة في هذه المحادثة.</value></data>
   <data name="Error_comms_cap_above_ceiling" xml:space="preserve"><value>هذا الحد أعلى من الحد الأقصى الذي تسمح به المنصة.</value></data>
   <data name="Error_attachment_invalid" xml:space="preserve"><value>المرفق غير مسموح به: تحقق من نوعه وحجمه وعدد المرفقات.</value></data>

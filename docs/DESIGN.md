@@ -223,6 +223,23 @@ The full spec is `docs/design/m4b-live-and-packages.md`. Mockups are in `docs/de
   - The staff preview has an Info strip: "Preview: nothing is recorded."
   - A timed-out token shows an overlay with Reload.
 
+## 7b. M6 communication components (`Components/Messaging/`)
+
+The M6 spec (PR 615) draws the pages; these presentational components and the `lms-stitch.css` M6 block give FE the parts. They take formatted text and render fragments; they never call an API.
+
+- **`InboxLayout`** (`lms-inbox`): the 360 px list and the thread side by side from 900 px; one pane below that, picked by `ShowThread`.
+- **`ConversationRow`** (`lms-conv`): one link per conversation. Its accessible name is "name, n unread, time, preview". The unread count badge is primary, and the current row has `aria-current` and a 3 px bar at the inline start.
+- **`ThreadPane`** (`lms-thread`): a header, a focusable `role="log"` body that isn't live, and one polite status the page fills with other people's new messages ("name: text"), so the user's own messages aren't read back.
+- **`MessageBubble`** (`lms-msg`, `lms-bubble`): own messages at the inline end, others at the inline start, with the text in `dir="auto"`. A removal shows only its own words (by a moderator / deleted / you deleted), and a failed send shows "Not sent" with Try again.
+- **`DaySeparator`** (`lms-day`), **`MessageComposer`** (`lms-composer`: Enter is a new line, Ctrl+Enter or Cmd+Enter sends, and there's always a visible 44 px Send) and **`ComposerOff`** (`lms-composer-off`: the reason in words).
+- **`AnnouncementCard`** (`lms-ann`): a section icon, the h2 title, the Pinned and Scheduled status chips, a details line, the body clamped to four lines with Read more, the audience chips and the read count.
+- The classes for the picker, notification items and moderation (`lms-picker-*`, `lms-notif`, `lms-kind`, `lms-mod`, `lms-flagged`) are in the same block.
+- **Notification centre:** `NotificationPanel` (the bell's card: h2, Mark all as read, a settings link, See all) and `NotificationItem` (one link whose accessible name starts "Unread:"; the actor in a bdi; a quote and the time). `ListGroupLabel` gives "Earlier" and the picker groups.
+- **Recipients and safeguarding (D69):** `RecipientOption` (a person with initials and a caption, or a group with its size; a near-miss is disabled with its reason in its name and never shows a size) and `SafeguardingOption`, the one disabled "No students here" row managers and org admins see instead of students. `ThreadHeader` shows a person's role and context, or "Group · n people" that opens Members, so everyone can see who can read the conversation. `MessagingRuleCell` draws a rules-matrix cell; a D69 cell is a locked chip with the safeguarding reason, never a select.
+- **Announcement composer:** `AnnouncementComposerForm` edits an `AnnouncementDraft` (a UI model the page maps to the contract): both titles required with the reason at the field, the bodies, the allowed scope kinds, the page's target picker, Include the units below, `RoleFilterChips` (aria-pressed with a check), `ReachEstimate` (role="status", rounded above 100), Now or Schedule with the time-zone caption, `ToggleRow` for Pin and Notify, attachments, the expiry, then Cancel, Save as draft and Publish or Schedule. A draft needs only both titles.
+- **Preferences and moderation:** `ChannelPreferences` (events by In-app, Email, SMS and Push; In-app and school-mandatory cells are locked switches with the Lock icon before them, explained once; an unavailable channel is disabled with its reason and a fix link; below 600 px a channel summary keeps the addresses and reasons, and each event becomes labelled rows) and `PushPermissionAlert` (Off offers Turn on; Denied explains the browser setting with no button). `ModerationDecision` is a fieldset radio group mapped to #613 `ModerationActions`, each with what happens, the three that act on the sender or conversation last in the error colour, and a 1/7/30-day duration for restrict. `ReportStatusChip` (a safety concern is error) and `ReportedMessage` (the outlined bubble with a Reported message chip).
+- **Gallery:** `/dev/messaging-gallery` on the standalone dev server only (it's the not-found page against a real API). Screenshots: `docs/screenshots/ux-m6-components/`.
+
 ## 8. Phase 2 status (page-by-page passes)
 
 This list was last updated on 2026-11-12. "Waiting" means an open feature PR touches the page; it gets its pass after that PR merges.

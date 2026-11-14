@@ -1,0 +1,57 @@
+@* The moderator's decision (spec #615 §7.4): a fieldset with a legend and a radio group of soft rows mapped one-to-one to #613 rev 3 ModerationActions.
+   Each option says what happens. The three that act on the sender or the conversation come last with their labels in the error colour, so colour is
+   never the only signal. The two restrict options carry a duration (1, 7 or 30 days). "Restrict" is the moderator's tool; "block" is a person's own. *@
+<fieldset class="lms-fieldset lms-mod-decision" data-testid="mod-decision">
+    <legend class="lms-fieldset-legend">@L["Mod_Decision"]</legend>
+    <div role="radiogroup" aria-label="@L["Mod_Decision"]">
+        @foreach (var action in Actions)
+        {
+            var a = action;
+            var on = Value == a;
+            <label class="@($"lms-toggle-row lms-mod-option{(on ? " selected" : "")}")" data-testid="@($"mod-{a}")">
+                <input type="radio" name="@_name" class="lms-mod-radio" checked="@on" @onchange="() => SelectAsync(a)" />
+                <span class="lms-toggle-text">
+                    <span class="@($"lms-toggle-title{(Severe(a) ? " lms-mod-severe" : "")}")">@L[$"Mod_Action_{a}"]</span>
+                    <span class="lms-toggle-help">@string.Format(System.Globalization.CultureInfo.CurrentCulture, L[$"Mod_Action_{a}_Help"].Value, SenderName)</span>
+                    @if (on && a is ModerationAction.Restrict or ModerationAction.RemoveAndRestrict)
+                    {
+                        <MudSelect T="int" Value="Days" ValueChanged="DaysChangedAsync" Label="@L["Mod_For"]" Dense="true" Class="lms-mod-days" data-testid="mod-days">
+                            @foreach (var d in DayOptions)
+                            {
+                                <MudSelectItem T="int" Value="d">@string.Format(System.Globalization.CultureInfo.CurrentCulture, L["Mod_Days"].Value, d)</MudSelectItem>
+                            }
+                        </MudSelect>
+                    }
+                </span>
+            </label>
+        }
+    </div>
+</fieldset>
+
+@code {
+    private static readonly ModerationAction[] Actions = Enum.GetValues<ModerationAction>();
+    private static readonly int[] DayOptions = [1, 7, 30];
+    private readonly string _name = "mod-" + Guid.NewGuid().ToString("N")[..8];
+
+    [Parameter] public ModerationAction? Value { get; set; }
+    [Parameter] public EventCallback<ModerationAction?> ValueChanged { get; set; }
+    [Parameter] public int Days { get; set; } = 7;
+    [Parameter] public EventCallback<int> DaysChanged { get; set; }
+
+    /// <summary>The sender's name, used in the help texts ("Yousef gets a warning notice").</summary>
+    [Parameter, EditorRequired] public string SenderName { get; set; } = "";
+
+    public static bool Severe(ModerationAction action) => action is ModerationAction.Restrict or ModerationAction.RemoveAndRestrict or ModerationAction.LockConversation;
+
+    private async Task SelectAsync(ModerationAction action)
+    {
+        Value = action;
+        await ValueChanged.InvokeAsync(action);
+    }
+
+    private async Task DaysChangedAsync(int days)
+    {
+        Days = days;
+        await DaysChanged.InvokeAsync(days);
+    }
+}
