@@ -31,6 +31,7 @@ else
     {
         <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-3" data-testid="mod-error">@_error</MudAlert>
     }
+    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" Class="mb-3" data-testid="mod-audit">@L["ModQueue_AuditNotice"]</MudAlert>
     @if (_stats is { } stats)
     {
         <div class="lms-stats lms-stats-compact mb-3" data-testid="mod-stats">
@@ -40,6 +41,8 @@ else
         </div>
     }
 
+    <div class="lms-mod">
+    <div>
     <SectionCard Flush="true" TestId="mod-queue">
         <div class="lms-filters" role="search" aria-label="@L["Common_Filters"]">
             <div class="lms-filter">
@@ -80,7 +83,8 @@ else
                         var row = r;
                         <tr class="@(row.Id == _current?.Id ? "lms-row-current" : null)" data-testid="@($"mod-row-{row.Id}")" data-safety="@row.IsSafety">
                             <td data-label="@L["ModQueue_Select"]">
-                                <MudCheckBox T="bool" Value="_picked.Contains(row.Id)" ValueChanged="v => Pick(row.Id, v)" aria-label="@L["ModQueue_Select"]" data-testid="@($"mod-pick-{row.Id}")" />
+                                <MudCheckBox T="bool" Value="_picked.Contains(row.Id)" ValueChanged="v => Pick(row.Id, v)" Disabled="@(!_picked.Contains(row.Id) && _picked.Count >= ModerationLimits.BulkDismissMax)"
+                                             aria-label="@L["ModQueue_Select"]" data-testid="@($"mod-pick-{row.Id}")" />
                             </td>
                             <td data-label="@L["ModQueue_Status"]"><ReportStatusChip Status="StatusOf(row.Status)" SafetyConcern="row.IsSafety" TestId="@($"mod-status-{row.Id}")" /></td>
                             <td data-label="@L["ModQueue_Reason"]">@L[$"Msg_Reason_{row.Reason}"]</td>
@@ -92,12 +96,26 @@ else
                     }
                 </tbody>
             </MudSimpleTable>
+            @if (_picked.Count >= ModerationLimits.BulkDismissMax)
+            {
+                <MudText Typo="Typo.caption" Class="lms-muted pa-3 d-block" data-testid="mod-bulk-hint">@string.Format(Culture.Current, L["ModQueue_BulkLimit"].Value, ModerationLimits.BulkDismissMax)</MudText>
+            }
+            @if (_total > _pageSize)
+            {
+                <div class="d-flex justify-center pa-3" data-testid="mod-paging">
+                    <MudPagination Count="(int)Math.Ceiling(_total / (double)_pageSize)" Selected="_page" SelectedChanged="PageAsync" aria-label="@L["ModQueue_Paging"]" />
+                </div>
+            }
         }
     </SectionCard>
+    </div>
 
     @if (_current is { } report)
     {
+        <div class="lms-mod-panel" data-testid="mod-panel">
         <SectionCard Title="@L["ModQueue_Report"]" TestId="mod-detail">
+            <MudIconButton Icon="@Icons.Material.Rounded.Close" Class="lms-mod-panel-close" aria-label="@L["Common_Close"]" OnClick="() => _current = null" data-testid="mod-close" />
+            <MudText Typo="Typo.caption" Class="lms-muted d-block mb-2" data-testid="mod-audit-detail">@L["ModQueue_AuditDetail"]</MudText>
             <div class="d-flex flex-wrap gap-2 mb-2">
                 <ReportStatusChip Status="StatusOf(report.Status)" SafetyConcern="report.Reason == ReportReasons.SafetyConcern" />
                 <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@L[$"Msg_Reason_{report.Reason}"]</MudChip>
@@ -150,7 +168,9 @@ else
                 </div>
             }
         </SectionCard>
+        </div>
     }
+    </div>
 
     <SectionCard Title="@L["ModQueue_Restrictions"]" TestId="mod-restrictions">
         @if (_restrictions.Count == 0)
@@ -170,6 +190,12 @@ else
                     </li>
                 }
             </ul>
+            @if (_restrictionTotal > _restrictions.Count || _restrictionPage > 1)
+            {
+                <div class="d-flex justify-center pa-3" data-testid="mod-restrictions-paging">
+                    <MudPagination Count="Math.Max(1, (int)Math.Ceiling(_restrictionTotal / (double)Math.Max(1, _restrictionSize)))" Selected="_restrictionPage" SelectedChanged="RestrictionPageAsync" aria-label="@L["ModQueue_Paging"]" />
+                </div>
+            }
         }
     </SectionCard>
 }
@@ -184,6 +210,7 @@ else
     private int _days = 7;
     private string? _status, _reason, _noteToPeople, _error;
     private bool _loading = true, _busy;
+    private int _page = 1, _total, _pageSize = 20, _restrictionPage = 1, _restrictionTotal, _restrictionSize = Paging.DefaultPageSize;
 
     protected override async Task OnInitializedAsync()
     {
@@ -197,9 +224,11 @@ else
         _error = null;
         await ApiCalls.RunAsync(async () =>
         {
-            _rows = (await Api.ListReportsAsync(new MessageReportQuery(_status, _reason))).Items;
+            var reports = await Api.ListReportsAsync(new MessageReportQuery(_status, _reason, _page, _pageSize)); // filters and paging are the server's
+            (_rows, _total) = (reports.Items, reports.Total);
             _stats = await Api.GetStatsAsync();
-            _restrictions = (await Api.ListRestrictionsAsync()).Items;
+            var restrictions = await Api.ListRestrictionsAsync(_restrictionPage);
+            (_restrictions, _restrictionTotal, _restrictionSize) = (restrictions.Items, restrictions.Total, restrictions.PageSize);
         }, Navigation, L, m => _error = m);
         _loading = false;
     }
@@ -208,7 +237,20 @@ else
     {
         _status = status;
         _reason = reason;
+        _page = 1;
         _picked.Clear();
+        await LoadAsync();
+    }
+
+    private async Task PageAsync(int page)
+    {
+        _page = page;
+        await LoadAsync();
+    }
+
+    private async Task RestrictionPageAsync(int page)
+    {
+        _restrictionPage = page;
         await LoadAsync();
     }
 
@@ -222,7 +264,8 @@ else
 
     private void Pick(Guid id, bool on)
     {
-        if (on) _picked.Add(id); else _picked.Remove(id);
+        if (on && _picked.Count < ModerationLimits.BulkDismissMax) _picked.Add(id); // at most the bulk limit: the server would skip the rest without a word
+        else if (!on) _picked.Remove(id);
     }
 
     private string Time(DateTime utc) => utc.ToString("HH:mm", System.Globalization.CultureInfo.InvariantCulture);
@@ -242,7 +285,7 @@ else
         _noteToPeople = null;
         _days = 7;
         await ApiCalls.RunAsync(async () => _current = await Api.GetReportAsync(id), Navigation, L, m => _error = m);
-        _rows = (await Api.ListReportsAsync(new MessageReportQuery(_status, _reason))).Items; // the first read moved it to in review
+        _rows = (await Api.ListReportsAsync(new MessageReportQuery(_status, _reason, _page, _pageSize))).Items; // the first read moved it to in review
     }
 
     private static string ActionOf(ModerationAction action) => action.ToString();

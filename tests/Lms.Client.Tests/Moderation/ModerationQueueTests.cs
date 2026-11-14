@@ -245,4 +245,143 @@ public sealed class ModerationQueueTests : ClientTestContext
 
         Assert.Equal("بلاغات الرسائل", page.Find("[data-testid=mod-title]").TextContent.Trim());
     }
+
+    private async Task<IRenderedComponent<ModerationQueuePage>> OpenReportAsync(Guid id)
+    {
+        var page = await OpenAsync();
+        await page.Find($"[data-testid=mod-open-{id}]").ClickAsync(new());
+        page.WaitForElement("[data-testid=mod-decision]");
+        return page;
+    }
+
+    [Fact]
+    public async Task Decision_options_match_the_contract_one_to_one()
+    {
+        var page = await OpenReportAsync(_api.AddReport());
+
+        var shown = page.FindAll("[data-testid=mod-decision] [data-testid^=mod-]").Select(e => e.GetAttribute("data-testid")!["mod-".Length..]).Where(n => Enum.TryParse<ModerationAction>(n, out _)).ToList();
+
+        Assert.Equal([.. ModerationActions.All.Order()], [.. shown.Order()]); // every contract action, nothing else
+        Assert.Equal(ModerationActions.All.Count, shown.Count);
+        Assert.Equal([.. ModerationActions.All.Order()], [.. Enum.GetNames<ModerationAction>().Order()]);
+    }
+
+    [Fact]
+    public async Task Restrict_needs_a_duration()
+    {
+        var page = await OpenReportAsync(_api.AddReport());
+
+        await page.InvokeAsync(() => page.FindComponent<ModerationDecision>().Instance.ValueChanged.InvokeAsync(ModerationAction.Restrict));
+
+        var days = page.WaitForElement("[data-testid=mod-days]"); // the choice of 1, 7 or 30 days appears with the restricting actions
+        Assert.NotNull(days);
+        Assert.Equal(RestrictionDurations.Days, page.FindComponent<MudSelect<int>>().FindComponents<MudSelectItem<int>>().Select(i => i.Instance.Value).ToList());
+        await page.Find("[data-testid=mod-apply]").ClickAsync(new());
+        Assert.Equal(7, _api.LastResolve!.DurationDays); // the default is a valid length, never missing
+    }
+
+    [Fact]
+    public async Task Audit_notice_is_visible()
+    {
+        var id = _api.AddReport();
+        var page = await OpenAsync();
+        Assert.Contains("recorded in the audit log", page.Find("[data-testid=mod-audit]").TextContent);
+
+        await page.Find($"[data-testid=mod-open-{id}]").ClickAsync(new());
+
+        Assert.Contains("recorded in the audit log", page.WaitForElement("[data-testid=mod-audit-detail]").TextContent);
+    }
+
+    [Fact]
+    public async Task No_user_block_appears_anywhere()
+    {
+        var id = _api.AddReport();
+        var page = await OpenReportAsync(id);
+        await page.InvokeAsync(() => page.FindComponent<ModerationDecision>().Instance.ValueChanged.InvokeAsync(ModerationAction.Restrict));
+
+        // the designer help says a restriction is "not a block between people": that is an explanation. No control, option or link offers or lists a block.
+        var controls = page.FindAll("button, a, .lms-toggle-title").Select(e => (e.GetAttribute("aria-label") + " " + e.TextContent + " " + e.GetAttribute("data-testid")).ToLowerInvariant()).ToList();
+        Assert.DoesNotContain(controls, c => c.Contains("block") || c.Contains("حظر"));
+        Assert.DoesNotContain("/blocks", page.Markup);
+    }
+
+    [Fact]
+    public async Task Filters_and_paging_use_the_server()
+    {
+        for (var i = 0; i < 25; i++) _api.AddReport(ReportReasons.Spam, hoursAgo: i + 1);
+        _api.AddReport(ReportReasons.Harassment);
+        var page = await OpenAsync();
+        Assert.Equal(20, page.FindAll("[data-testid^=mod-row-]").Count); // one page of the server
+        Assert.Equal(1, _api.LastQuery!.Page);
+
+        await page.InvokeAsync(() => page.FindComponent<MudPagination>().Instance.SelectedChanged.InvokeAsync(2));
+
+        page.WaitForAssertion(() => Assert.Equal(2, _api.LastQuery!.Page));
+        Assert.Equal(6, page.FindAll("[data-testid^=mod-row-]").Count);
+        await page.InvokeAsync(() => page.FindComponents<MudSelect<string>>().First(f => f.Instance.Label == "Reason").Instance.ValueChanged.InvokeAsync(ReportReasons.Harassment));
+        page.WaitForAssertion(() => Assert.Equal(ReportReasons.Harassment, _api.LastQuery!.Reason)); // the filter is sent, not applied here
+        Assert.Equal(1, _api.LastQuery!.Page); // and the page starts again
+        Assert.Single(page.FindAll("[data-testid^=mod-row-]"));
+    }
+
+    [Fact]
+    public async Task Panel_becomes_a_dialog_below_1100px()
+    {
+        var page = await OpenReportAsync(_api.AddReport());
+        Assert.NotNull(page.Find("[data-testid=mod-panel].lms-mod-panel"));
+        Assert.NotNull(page.Find("[data-testid=mod-close]")); // the close button the dialog layout shows
+
+        var css = File.ReadAllText(Path.Combine(CssDir(), "app.css"));
+        Assert.Contains("@media (max-width: 1099.98px)", css);
+        Assert.Contains("position: fixed", css[css.IndexOf(".lms-mod-panel {", StringComparison.Ordinal)..]);
+        await page.Find("[data-testid=mod-close]").ClickAsync(new());
+        page.WaitForAssertion(() => Assert.Empty(page.FindAll("[data-testid=mod-panel]")));
+    }
+
+    [Fact]
+    public async Task Bulk_keep_is_capped_at_the_limit_with_a_hint()
+    {
+        for (var i = 0; i < 60; i++) _api.AddReport(hoursAgo: i + 1);
+        var page = await OpenAsync();
+
+        async Task TickAsync(int count)
+        {
+            var boxes = page.FindComponents<MudCheckBox<bool>>().Take(count).ToList();
+            foreach (var box in boxes) await page.InvokeAsync(() => box.Instance.ValueChanged.InvokeAsync(true));
+        }
+
+        await TickAsync(20); // page 1
+        await page.InvokeAsync(() => page.FindComponent<MudPagination>().Instance.SelectedChanged.InvokeAsync(2));
+        page.WaitForAssertion(() => Assert.Equal(20, page.FindAll("[data-testid^=mod-row-]").Count));
+        await TickAsync(20); // page 2
+        await page.InvokeAsync(() => page.FindComponent<MudPagination>().Instance.SelectedChanged.InvokeAsync(3));
+        page.WaitForAssertion(() => Assert.Equal(20, page.FindAll("[data-testid^=mod-row-]").Count));
+        await TickAsync(10); // page 3: 50 in all
+
+        Assert.Contains("(50)", page.Find("[data-testid=mod-keep-selected]").TextContent);
+        Assert.Contains("up to 50", page.Find("[data-testid=mod-bulk-hint]").TextContent);
+        Assert.Contains(page.FindAll("[data-testid^=mod-pick-]"), e => e.HasAttribute("disabled")); // the boxes that are not ticked are disabled: no further ticks
+        await page.Find("[data-testid=mod-keep-selected]").ClickAsync(new());
+        page.WaitForAssertion(() => Assert.Equal(10, _api.ListReportsAsync(new MessageReportQuery(null, null, 1, 100)).GetAwaiter().GetResult().Total)); // exactly 50 were dismissed
+    }
+
+    [Fact]
+    public async Task Restrictions_are_paged_by_the_server()
+    {
+        _api.RestrictionPageSize = 2;
+        for (var i = 0; i < 3; i++) await _api.ResolveReportAsync(_api.AddReport(sender: "User" + i), new ResolveReportRequest(ModerationActions.Restrict, 7, null));
+        var page = await OpenAsync();
+        Assert.Equal(2, page.FindAll("[data-testid^=mod-restriction-]").Count);
+
+        await page.InvokeAsync(() => page.FindComponents<MudPagination>().Last().Instance.SelectedChanged.InvokeAsync(2));
+
+        page.WaitForAssertion(() => Assert.Single(page.FindAll("[data-testid^=mod-restriction-]")));
+    }
+
+    private static string CssDir()
+    {
+        var dir = AppContext.BaseDirectory;
+        while (dir is not null && !Directory.Exists(Path.Combine(dir, "src", "Lms.Client"))) dir = Path.GetDirectoryName(dir);
+        return Path.Combine(dir!, "src", "Lms.Client", "wwwroot", "css");
+    }
 }
