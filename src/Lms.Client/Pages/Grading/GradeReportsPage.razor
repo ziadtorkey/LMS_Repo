@@ -1,0 +1,210 @@
+@page "/grade-reports"
+@attribute [Authorize]
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.Grading
+@using Lms.Shared
+@using Lms.Shared.Authorization
+@using Lms.Shared.Classes
+@using Lms.Shared.Grading
+@inject IGradebookApi Api
+@inject IClassesApi Classes
+@inject IClassCoursesApi ClassCourses
+@inject IYearStore Years
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject IJSRuntime Js
+@inject NavigationManager Navigation
+
+<PageTitle>@L["GradeReports_Title"]</PageTitle>
+@if (!PermState.Loaded)
+{
+    <LoadingState Lines="4" TestId="reports-loading" />
+}
+else if (!PermState.Has(Permissions.Grades.ViewReports))
+{
+    <Forbidden />
+}
+else
+{
+    <PageHeader Title="@L["GradeReports_Title"]" Subtitle="@L["GradeReports_Subtitle"]" TitleTestId="reports-title">
+        <Actions>
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Download" OnClick="ExportAsync"
+                       Disabled="@(!Ready || _exporting)" data-testid="reports-export">@L["GradeReports_Export"]</MudButton>
+        </Actions>
+    </PageHeader>
+
+    <SectionCard>
+        <div class="lms-filters" role="search" aria-label="@L["Common_Filters"]">
+            <div class="lms-filter">
+                <MudSelect T="string" Value="Kind" ValueChanged="KindChangedAsync" Label="@L["GradeReports_Kind"]" data-testid="reports-kind">
+                    <MudSelectItem T="string" Value="@GradeReportKinds.Class">@L["GradeReports_Kind_class"]</MudSelectItem>
+                    <MudSelectItem T="string" Value="@GradeReportKinds.Course">@L["GradeReports_Kind_course"]</MudSelectItem>
+                    @if (StudentId is not null)
+                    {
+                        <MudSelectItem T="string" Value="@GradeReportKinds.Student">@L["GradeReports_Kind_student"]</MudSelectItem>
+                    }
+                </MudSelect>
+            </div>
+            @if (Kind != GradeReportKinds.Student)
+            {
+                <div class="lms-filter">
+                    <MudSelect T="Guid?" Value="ClassId" ValueChanged="ClassChangedAsync" Label="@L["GradeReports_Class"]" data-testid="reports-class">
+                        @foreach (var c in _classes)
+                        {
+                            <MudSelectItem T="Guid?" Value="@((Guid?)c.Id)">@Culture.Pick(c.NameAr, c.NameEn)</MudSelectItem>
+                        }
+                    </MudSelect>
+                </div>
+            }
+            @if (Kind == GradeReportKinds.Course)
+            {
+                <div class="lms-filter">
+                    <MudSelect T="Guid?" Value="ClassCourseId" ValueChanged="CourseChangedAsync" Label="@L["GradeReports_Course"]" Disabled="_courses.Count == 0"
+                               data-testid="reports-course">
+                        @foreach (var c in _courses)
+                        {
+                            <MudSelectItem T="Guid?" Value="@((Guid?)c.Id)">@Culture.Pick(c.CourseNameAr, c.CourseNameEn)</MudSelectItem>
+                        }
+                    </MudSelect>
+                </div>
+            }
+        </div>
+
+        @if (_error is not null)
+        {
+            <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-3" data-testid="reports-error">@_error</MudAlert>
+        }
+
+        @if (!Ready)
+        {
+            <EmptyState Title="@L["GradeReports_PickTitle"]" Text="@L["GradeReports_PickText"]" TestId="reports-pick" />
+        }
+        else
+        {
+            @if (_asOf is { } asOf)
+            {
+                <MudText Typo="Typo.caption" Class="lms-muted mb-2" data-testid="reports-as-of">@L["GradeReports_AsOf"] <LocalTime Utc="asOf" /></MudText>
+            }
+            <ServerTable @ref="_table" T="GradeReportRowDto" ServerData="LoadAsync" EmptyTitle="@L["GradeReports_EmptyTitle"]" EmptyText="@L["GradeReports_EmptyText"]">
+                <HeaderContent>
+                    <MudTh>@L["Common_Name"]</MudTh>
+                    <MudTh>@L["GradeReports_Col_Course"]</MudTh>
+                    <MudTh>@L["GradeReports_Col_Total"]</MudTh>
+                    <MudTh>@L["GradeReports_Col_Band"]</MudTh>
+                </HeaderContent>
+                <RowTemplate Context="r">
+                    <MudTd DataLabel="@L["Common_Name"]">
+                        <span class="lms-cell-strong">@Culture.Pick(r.StudentNameAr, r.StudentNameEn)</span> <span class="lms-muted" dir="ltr">@r.StudentNumber</span>
+                    </MudTd>
+                    <MudTd DataLabel="@L["GradeReports_Col_Course"]">@Culture.Pick(r.CourseNameAr, r.CourseNameEn)</MudTd>
+                    <MudTd DataLabel="@L["GradeReports_Col_Total"]"><span dir="ltr">@(r.FinalPercent is { } p ? $"{p:0.##}%" : "—")</span></MudTd>
+                    <MudTd DataLabel="@L["GradeReports_Col_Band"]">@(r.BandCode is null ? "—" : Culture.Pick(r.BandLabelAr ?? r.BandCode, r.BandLabelEn ?? r.BandCode))</MudTd>
+                </RowTemplate>
+            </ServerTable>
+        }
+    </SectionCard>
+}
+
+@code {
+    private ServerTable<GradeReportRowDto>? _table;
+    private IReadOnlyList<ClassSummaryDto> _classes = [];
+    private IReadOnlyList<ClassCourseDto> _courses = [];
+    private DateTime? _asOf;
+    private string? _error;
+    private bool _exporting;
+
+    [Parameter, SupplyParameterFromQuery(Name = "kind")] public string? KindQuery { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "classId")] public Guid? ClassId { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "classCourseId")] public Guid? ClassCourseId { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "studentId")] public Guid? StudentId { get; set; }
+
+    private string Kind { get; set; } = GradeReportKinds.Class;
+
+    private bool Ready => Kind switch
+    {
+        GradeReportKinds.Student => StudentId is not null,
+        GradeReportKinds.Course => ClassCourseId is not null,
+        _ => ClassId is not null,
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        if (!PermState.Has(Permissions.Grades.ViewReports)) return;
+        Kind = KindQuery is { } k && GradeReportKinds.All.Contains(k) ? k : GradeReportKinds.Class;
+        if (Years.Selected is null) await Years.LoadAsync();
+        await ApiCalls.RunAsync(async () =>
+        {
+            _classes = (await Classes.ListAsync(new ClassQuery(null, true, Years.SelectedYearId, null, null, null, 1, 100))).Items;
+            if (ClassId is { } id) _courses = await ClassCourses.ListForClassAsync(id);
+        }, Navigation, L, m => _error = m);
+    }
+
+    private GradeReportQuery Query(int page, int size) => new(
+        Kind == GradeReportKinds.Student ? StudentId : null,
+        Kind == GradeReportKinds.Class ? ClassId : null,
+        Kind == GradeReportKinds.Course ? ClassCourseId : null,
+        null, page, size);
+
+    private Task ReloadAsync() => _table is null ? Task.CompletedTask : _table.ReloadAsync();
+
+    private async Task KindChangedAsync(string kind)
+    {
+        Kind = kind;
+        _asOf = null;
+        await ReloadAsync();
+    }
+
+    private async Task ClassChangedAsync(Guid? id)
+    {
+        ClassId = id;
+        ClassCourseId = null;
+        _courses = [];
+        _asOf = null;
+        if (id is { } classId)
+        {
+            await ApiCalls.RunAsync(async () => _courses = await ClassCourses.ListForClassAsync(classId), Navigation, L, m => _error = m);
+        }
+
+        await ReloadAsync();
+    }
+
+    private async Task CourseChangedAsync(Guid? id)
+    {
+        ClassCourseId = id;
+        _asOf = null;
+        await ReloadAsync();
+    }
+
+    private async Task<TableData<GradeReportRowDto>> LoadAsync(TableState state, CancellationToken ct)
+    {
+        _error = null;
+        try
+        {
+            var report = await Api.GetReportAsync(Kind, Query(state.Page + 1, state.PageSize), ct);
+            _asOf = report.ComputedAtUtc; // the numbers are as of this moment, not now
+            await InvokeAsync(StateHasChanged); // the table loads on its own; the header line has to follow
+            return new TableData<GradeReportRowDto> { Items = report.Rows.Items, TotalItems = report.Rows.Total };
+        }
+        catch (ApiProblemException ex)
+        {
+            _error = ProblemText.For(ex, L);
+            await InvokeAsync(StateHasChanged);
+            return new TableData<GradeReportRowDto> { Items = [], TotalItems = 0 };
+        }
+    }
+
+    private async Task ExportAsync()
+    {
+        _exporting = true;
+        _error = null;
+        await ApiCalls.RunAsync(async () =>
+        {
+            var (content, fileName) = await Api.ExportReportAsync(Kind, Query(1, Paging.DefaultPageSize));
+            using var reference = new DotNetStreamReference(content);
+            await Js.InvokeVoidAsync("lmsDownloadFile", fileName, reference);
+        }, Navigation, L, m => _error = m);
+        _exporting = false;
+    }
+}

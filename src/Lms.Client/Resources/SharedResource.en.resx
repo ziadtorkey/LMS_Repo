@@ -1685,4 +1685,31 @@
   <data name="Grd_Title" xml:space="preserve"><value>Gradebook</value></data>
   <data name="Grd_GridSoonTitle" xml:space="preserve"><value>The gradebook grid is on its way</value></data>
   <data name="Grd_GridSoonText" xml:space="preserve"><value>Categories, items and scores for this class course will appear here.</value></data>
+  <data name="Years_TermsPerYear" xml:space="preserve"><value>Terms per year</value></data>
+  <data name="Years_TermsPerYearHelp" xml:space="preserve"><value>Two or three terms. Existing terms are kept; you can edit them afterwards.</value></data>
+  <data name="Years_TermNamesPreview" xml:space="preserve"><value>Term names</value></data>
+  <data name="Years_TermNumber" xml:space="preserve"><value>Term {0}</value></data>
+  <data name="GradeSettings_Title" xml:space="preserve"><value>Grading</value></data>
+  <data name="TimeZone_Help" xml:space="preserve"><value>An IANA time zone, for example Asia/Riyadh. Dates and times follow it.</value></data>
+  <data name="Common_UnsavedChanges" xml:space="preserve"><value>You have unsaved changes</value></data>
+  <data name="Common_Discard" xml:space="preserve"><value>Discard</value></data>
+  <data name="GradeReports_Title" xml:space="preserve"><value>Grade reports</value></data>
+  <data name="GradeReports_Subtitle" xml:space="preserve"><value>Totals per student and course, as of the time shown.</value></data>
+  <data name="GradeReports_Export" xml:space="preserve"><value>Export to Excel</value></data>
+  <data name="GradeReports_Kind" xml:space="preserve"><value>Report</value></data>
+  <data name="GradeReports_Kind_class" xml:space="preserve"><value>By class</value></data>
+  <data name="GradeReports_Kind_course" xml:space="preserve"><value>By course</value></data>
+  <data name="GradeReports_Kind_student" xml:space="preserve"><value>By student</value></data>
+  <data name="GradeReports_Class" xml:space="preserve"><value>Class</value></data>
+  <data name="GradeReports_Course" xml:space="preserve"><value>Course</value></data>
+  <data name="GradeReports_PickTitle" xml:space="preserve"><value>Choose what to report on</value></data>
+  <data name="GradeReports_PickText" xml:space="preserve"><value>Pick a class or a course to see its grades.</value></data>
+  <data name="GradeReports_AsOf" xml:space="preserve"><value>Calculated at</value></data>
+  <data name="GradeReports_EmptyTitle" xml:space="preserve"><value>No grades yet</value></data>
+  <data name="GradeReports_EmptyText" xml:space="preserve"><value>Nothing has been graded for this selection.</value></data>
+  <data name="GradeReports_Col_Course" xml:space="preserve"><value>Course</value></data>
+  <data name="GradeReports_Col_Total" xml:space="preserve"><value>Total</value></data>
+  <data name="GradeReports_Col_Band" xml:space="preserve"><value>Band</value></data>
+  <data name="Nav_GradeReports" xml:space="preserve"><value>Grade reports</value></data>
+  <data name="Years_SavedTermsKept" xml:space="preserve"><value>The year was saved, but the number of terms was not changed.</value></data>
 </root>
