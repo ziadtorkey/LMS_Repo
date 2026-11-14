@@ -1785,4 +1785,5 @@
   <data name="GradeImport_Row" xml:space="preserve"><value>row {0}</value></data>
   <data name="GradeImport_Done" xml:space="preserve"><value>{0} scores written, {1} skipped.</value></data>
   <data name="Publish_TimeMissing" xml:space="preserve"><value>That time does not exist in your time zone (the clocks skip it). Pick another time.</value></data>
+  <data name="GradeImport_TooLarge" xml:space="preserve"><value>The file is too large (10 MB at most).</value></data>
 </root>

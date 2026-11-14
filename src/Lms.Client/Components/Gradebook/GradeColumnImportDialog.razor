@@ -111,9 +111,26 @@
             return;
         }
 
+        if (file.Size > MaxBytes)
+        {
+            _error = L["GradeImport_TooLarge"]; // refused here: reading it would throw, and the server caps it too
+            return;
+        }
+
         _busy = true;
         var buffer = new MemoryStream();
-        await using (var input = file.OpenReadStream(MaxBytes)) await input.CopyToAsync(buffer);
+        try
+        {
+            await using var input = file.OpenReadStream(MaxBytes);
+            await input.CopyToAsync(buffer);
+        }
+        catch (IOException)
+        {
+            _error = L["GradeImport_TooLarge"];
+            _busy = false;
+            return;
+        }
+
         buffer.Position = 0;
         await ApiCalls.RunAsync(async () => _preview = await Api.PreviewImportAsync(ClassCourseId, _itemId, file.Name, buffer), Navigation, L, m => _error = m);
         _busy = false;

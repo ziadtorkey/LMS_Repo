@@ -65,7 +65,7 @@ else
             <div class="lms-gb-toolbar" role="toolbar" aria-label="@L["Grd_Toolbar"]">
                 <TermPicker Terms="_terms" Current="_book.TermId" CurrentName="@Culture.Pick(_book.TermNameAr, _book.TermNameEn)" OnPick="PickTermAsync" />
                 <WeightsChip Total="_book.WeightsTotal" />
-                @if (_book.CanManage && _book.Items.Count > 0)
+                @if (_book.CanManage && _book.Items.Any(i => i.IsManual))
                 {
                     <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.UploadFile" OnClick="OpenImportAsync"
                                data-testid="gradebook-import">@L["GradeImport_Open"]</MudButton>
@@ -120,14 +120,15 @@ else
     private string _drawerName = "";
     private StudentCourseGradesDto? _preview;
 
-    /// <summary>Publish, schedule or hide items. Allowed on a locked gradebook too (Lead ruling): the server only refuses entering grades there.</summary>
+    /// <summary>Import or export a grade column. Only manual items: the server rejects an import into an event item (its score comes from the assignment or quiz).</summary>
     private Task OpenImportAsync() =>
         DialogFlow.ShowAsync(Dialogs, L["GradeImport_Title"], new DialogParameters<GradeColumnImportDialog>
         {
             { x => x.ClassCourseId, Id },
-            { x => x.Items, _book!.Items },
+            { x => x.Items, _book!.Items.Where(i => i.IsManual).ToList() },
         }, () => InvokeAsync(async () => { await LoadAsync(_pageNo); StateHasChanged(); }));
 
+    /// <summary>Publish, schedule or hide items. Allowed on a locked gradebook too (Lead ruling): the server only refuses entering grades there.</summary>
     private Task OpenPublishAsync() =>
         DialogFlow.ShowAsync(Dialogs, L["Publish_Title"], new DialogParameters<PublishItemsDialog>
         {

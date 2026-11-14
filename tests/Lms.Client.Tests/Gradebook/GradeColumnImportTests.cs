@@ -1,6 +1,7 @@
 using System.Globalization;
 using Bunit;
 using Lms.Client.Pages.Gradebook;
+using Lms.Client.Components.Gradebook;
 using Lms.Client.Services;
 using Lms.Client.Services.Grading;
 using Lms.Client.Tests.Support;
@@ -57,6 +58,28 @@ public sealed class GradeColumnImportTests : ClientTestContext
 
         Assert.Contains("Only Excel files", _dialogs.WaitForElement("[data-testid=import-error]").TextContent);
         Assert.Empty(_dialogs.FindAll("[data-testid=import-preview]")); // refused on the device, nothing reached the server
+    }
+
+    [Fact]
+    public async Task A_file_over_the_size_cap_shows_the_message_and_uploads_nothing()
+    {
+        await OpenDialogAsync();
+        var upload = _dialogs.FindComponent<InputFile>();
+
+        await _dialogs.InvokeAsync(() => upload.UploadFiles(InputFileContent.CreateFromBinary(new byte[11 * 1024 * 1024], "big.xlsx")));
+
+        Assert.Contains("too large", _dialogs.WaitForElement("[data-testid=import-error]").TextContent);
+        Assert.Empty(_dialogs.FindAll("[data-testid=import-preview]"));
+    }
+
+    [Fact]
+    public async Task Only_manual_items_can_be_picked()
+    {
+        await OpenDialogAsync();
+
+        var items = _dialogs.FindComponent<GradeColumnImportDialog>().Instance.Items;
+
+        Assert.Equal([FakeGradebookApi.ManualItemId], items.Select(i => i.Id)); // the assignment item is event-derived and left out
     }
 
     [Fact]

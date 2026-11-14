@@ -1785,4 +1785,5 @@
   <data name="GradeImport_Row" xml:space="preserve"><value>الصف {0}</value></data>
   <data name="GradeImport_Done" xml:space="preserve"><value>تمت كتابة {0} درجات وتخطي {1}.</value></data>
   <data name="Publish_TimeMissing" xml:space="preserve"><value>هذا الوقت غير موجود في منطقتك الزمنية (تتخطاه الساعة). اختر وقتًا آخر.</value></data>
+  <data name="GradeImport_TooLarge" xml:space="preserve"><value>الملف كبير جدًا (الحد الأقصى 10 ميجابايت).</value></data>
 </root>
