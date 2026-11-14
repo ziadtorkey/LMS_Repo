@@ -1,0 +1,2 @@
+# Vendored third-party files are byte-exact: their SHA-256 are recorded (ADR 0005 section 9).
+src/Lms.Api/PackageHost/vendor/** -text
