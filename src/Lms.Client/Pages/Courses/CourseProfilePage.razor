@@ -28,8 +28,12 @@ else if (_detail is null)
 else
 {
     var s = _detail.Summary;
-    <PageHeader Title="@Culture.Pick(s.NameAr, s.NameEn)" TitleTestId="course-profile-name" Class="lms-profile-header">
+    <PageHeader Title="@Culture.Pick(s.NameAr, s.NameEn)" Subtitle="@Culture.Pick(s.OwnerOrgUnitNameAr, s.OwnerOrgUnitNameEn)" TitleTestId="course-profile-name" Class="lms-profile-header">
+        <Leading>
+            <span class="lms-kind-tile" aria-hidden="true"><MudIcon Icon="@Icons.Material.Rounded.MenuBook" /></span>
+        </Leading>
         <Badges>
+            <span class="lms-code-chip" dir="ltr" data-testid="course-profile-code-chip">@s.Code</span>
             @if (s.IsInherited)
             {
                 <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Info" data-testid="course-profile-inherited">@L["Course_Inherited"]</MudChip>
@@ -46,7 +50,12 @@ else
     </PageHeader>
 
     <div class="lms-profile-grid">
-        <SectionCard Title="@L["CourseProfile_Details"]" Class="lms-profile-details" TestId="course-profile-details">
+        <SectionCard Class="lms-profile-details" TestId="course-profile-details">
+            @* The icon tile sits at the start, before the title (Stitch cards). *@
+            <div class="lms-card-title-row">
+                <span class="lms-section-icon" aria-hidden="true"><MudIcon Icon="@Icons.Material.Rounded.Info" Size="Size.Small" /></span>
+                <MudText Typo="Typo.h6" HtmlTag="h2" Class="lms-section-title">@L["CourseProfile_Details"]</MudText>
+            </div>
             <dl class="lms-details">
                 <DetailItem Label="@L["Course_Code"]" Value="@s.Code" Ltr="true" TestId="course-profile-code" />
                 <DetailItem Label="@L["Course_Owner"]" Value="@Culture.Pick(s.OwnerOrgUnitNameAr, s.OwnerOrgUnitNameEn)" TestId="course-profile-owner" />
@@ -62,11 +71,17 @@ else
                     <MudTabPanel Text="@L["CourseProfile_Allocations"]" Visible="PermState.Has(Permissions.Courses.Allocate)" data-testid="tab-allocations">
                         <AllocationsTab Course="s" CanEdit="CanAllocate" OnChanged="ReloadAsync" />
                     </MudTabPanel>
-                    <MudTabPanel Text="@L["CourseProfile_Restrictions"]" data-testid="tab-restrictions">
+                    <MudTabPanel data-testid="tab-restrictions">
+                        <TabContent>@TabLabel(L["CourseProfile_Restrictions"].Value, _detail.Restrictions.Count)</TabContent>
+                        <ChildContent>
                         <RestrictionsTab Course="_detail" CanEdit="CanUpdate" OnChanged="ReloadAsync" />
+                        </ChildContent>
                     </MudTabPanel>
-                    <MudTabPanel Text="@L["CourseProfile_Supervisors"]" data-testid="tab-supervisors">
+                    <MudTabPanel data-testid="tab-supervisors">
+                        <TabContent>@TabLabel(L["CourseProfile_Supervisors"].Value, _detail.Supervisors.Count)</TabContent>
+                        <ChildContent>
                         <SupervisorsTab Course="_detail" CanEdit="CanManageSupervisors" OnChanged="ReloadAsync" />
+                        </ChildContent>
                     </MudTabPanel>
                     <MudTabPanel Text="@L["CourseProfile_Blueprint"]" Visible="PermState.Has(Permissions.Blueprints.View)" data-testid="tab-blueprint">
                         <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
@@ -85,6 +100,20 @@ else
 }
 
 @code {
+    /// <summary>A tab label with its row count after it, only when there is something to count (an empty tab shows no zero).</summary>
+    private static RenderFragment TabLabel(string text, int count) => builder =>
+    {
+        builder.AddContent(0, text);
+        if (count > 0)
+        {
+            // Inside the label (not a floating badge), so it can never overlap the next tab at phone width.
+            builder.OpenElement(1, "span");
+            builder.AddAttribute(2, "class", "lms-tab-count");
+            builder.AddContent(3, count.ToString());
+            builder.CloseElement();
+        }
+    };
+
     private CourseDetailDto? _detail;
     private string? _error;
 
