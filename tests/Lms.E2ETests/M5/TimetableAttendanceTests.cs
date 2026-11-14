@@ -100,7 +100,7 @@ public sealed class TimetableAttendanceTests(E2EFixture fixture) : E2ETestBase(f
         await M5Kit.SignInAsync(Page, world.SubstituteEmail, Settings.Password, culture);
         var today = new AttendanceTodayPage(Page);
         await today.OpenAsync();
-        await Expect(today.SubstituteBanner.First).ToBeVisibleAsync();
+        await Expect(today.SubstituteChip(world.SessionId)).ToBeVisibleAsync();
         await today.Take(world.SessionId).ClickAsync();
         var take = new AttendanceTakePage(Page);
         await take.MarkAllPresent.ClickAsync();
@@ -132,8 +132,8 @@ public sealed class TimetableAttendanceTests(E2EFixture fixture) : E2ETestBase(f
 
         var clock = Stopwatch.StartNew();
         await take.MarkAllPresent.ClickAsync();
-        await take.Status(world.StudentIds[0], Resx.In(culture, "Attendance_Absent")).ClickAsync();
-        await take.Status(world.StudentIds[1], Resx.In(culture, "Attendance_Late")).ClickAsync();
+        await take.Status(world.StudentIds[0], "Absent").ClickAsync();
+        await take.Status(world.StudentIds[1], "Late").ClickAsync();
         await Expect(take.Summary).ToContainTextAsync("1"); // counts: the polite status line
         await take.Save.ClickAsync();
         await Expect(take.Error).ToHaveCountAsync(0);
@@ -160,13 +160,13 @@ public sealed class TimetableAttendanceTests(E2EFixture fixture) : E2ETestBase(f
         await M5Kit.SignInAsync(Page, world.TeacherEmail, Settings.Password, culture);
         var today = new AttendanceTodayPage(Page);
         await today.OpenAsync();
-        await Expect(today.EditWindowClosed.First).ToBeVisibleAsync();
+        await Expect(today.EditWindowClosed(world.SessionId)).ToBeVisibleAsync();
 
         await M5Kit.SignOutAsync(Page);
         await M5Kit.SignInAsync(Page, world.CounselorEmail, Settings.Password, culture);
         var take = new AttendanceTakePage(Page);
         await take.OpenAsync(world.SessionId);
-        await take.Status(world.StudentIds[0], Resx.In(culture, "Attendance_Excused")).ClickAsync();
+        await take.Status(world.StudentIds[0], "Excused").ClickAsync();
         await take.Save.ClickAsync();
         await Expect(take.Error).ToBeVisibleAsync(); // a reason is required
         await take.Reason.FillAsync("Doctor's note seen");

@@ -80,18 +80,18 @@ public sealed class TimetableBuilderPage(IPage page)
 /// <summary>Today's sessions (<c>/attendance</c>, <c>lms-session</c> cards; spec section 5.1).</summary>
 public sealed class AttendanceTodayPage(IPage page)
 {
-    public ILocator Sessions => page.Locator(".lms-session"); // spec class
-    public ILocator Date => page.GetByTestId("att-date"); // proposed
+    public ILocator Sessions => page.Locator(".lms-session-card"); // #636
+    public ILocator Date => page.GetByTestId("attendance-date"); // #636
     public ILocator Empty => page.GetByTestId("att-empty"); // proposed
-    public ILocator SubstituteBanner => page.GetByTestId("att-substitute"); // proposed: "You are the substitute"
-    public ILocator EditWindowClosed => page.GetByTestId("att-window-closed"); // proposed
-    public ILocator Take(Guid sessionId) => page.GetByTestId($"att-take-{sessionId}"); // proposed (Take attendance / Review)
-    public ILocator Card(Guid sessionId) => page.GetByTestId($"att-session-{sessionId}"); // proposed
+    public ILocator SubstituteChip(Guid sessionId) => page.GetByTestId($"session-substitute-{sessionId}"); // #636 chip
+    public ILocator EditWindowClosed(Guid sessionId) => page.GetByTestId($"session-locked-{sessionId}"); // #636 chip
+    public ILocator Take(Guid sessionId) => page.GetByTestId($"session-primary-{sessionId}"); // #636 (Take attendance / Review)
+    public ILocator Card(Guid sessionId) => page.GetByTestId($"session-state-{sessionId}"); // #636 state chip of the card
 
     public async Task OpenAsync()
     {
         await page.GotoAsync("/attendance");
-        await page.Locator(".lms-session").Or(Empty).First.WaitForAsync();
+        await page.Locator(".lms-session-card").Or(Empty).First.WaitForAsync();
     }
 }
 
@@ -99,21 +99,21 @@ public sealed class AttendanceTodayPage(IPage page)
 public sealed class AttendanceTakePage(IPage page)
 {
     public ILocator Rows => page.Locator(".lms-att-row"); // spec class
-    public ILocator MarkAllPresent => page.GetByTestId("att-mark-all"); // proposed
-    public ILocator NextUnmarked => page.GetByTestId("att-next-unmarked"); // proposed
-    public ILocator Search => page.GetByTestId("att-search"); // proposed
+    public ILocator MarkAllPresent => page.GetByTestId("att-mark-all"); // #637
+    public ILocator NextUnmarked => page.GetByTestId("att-next"); // #637
+    public ILocator Search => page.GetByTestId("att-search"); // #637
     public ILocator Bar => page.Locator(".lms-att-bar"); // spec class
-    public ILocator Summary => page.GetByTestId("att-summary"); // proposed: role=status with the counts
-    public ILocator Save => page.GetByTestId("att-save"); // proposed
-    public ILocator Reason => page.GetByTestId("att-reason"); // proposed: required after the edit window
-    public ILocator DraftBanner => page.GetByTestId("att-draft"); // proposed
-    public ILocator Error => page.GetByTestId("att-error"); // proposed
+    public ILocator Summary => page.GetByTestId("att-summary"); // #637 summary bar
+    public ILocator Save => page.GetByTestId("att-save"); // #637
+    public ILocator Reason => page.GetByTestId("att-reason"); // #637 required after the edit window
+    public ILocator DraftBanner => page.GetByTestId("att-draft-banner"); // #637
+    public ILocator Error => page.GetByTestId("att-save-error"); // #637
 
     /// <summary>The row of a student (test id proposed: att-row-{studentId}).</summary>
     public ILocator Row(Guid studentId) => page.GetByTestId($"att-row-{studentId}");
 
-    /// <summary>One of the four labelled buttons of a row: Present, Absent, Late, Excused (radio buttons inside a radiogroup named by the student).</summary>
-    public ILocator Status(Guid studentId, string status) => Row(studentId).GetByRole(AriaRole.Radio, new() { Name = status });
+    /// <summary>One of the four status buttons of a row (#637: att-{studentId}-{Present|Absent|Late|Excused}).</summary>
+    public ILocator Status(Guid studentId, string status) => page.GetByTestId($"att-{studentId}-{status}");
 
     public async Task OpenAsync(Guid sessionId)
     {
