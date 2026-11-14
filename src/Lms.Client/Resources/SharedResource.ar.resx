@@ -1685,4 +1685,29 @@
   <data name="Grd_Title" xml:space="preserve"><value>دفتر الدرجات</value></data>
   <data name="Grd_GridSoonTitle" xml:space="preserve"><value>جدول الدرجات قادم قريبًا</value></data>
   <data name="Grd_GridSoonText" xml:space="preserve"><value>ستظهر هنا فئات الدرجات وبنودها ودرجات هذا المقرر الدراسي.</value></data>
+  <data name="Nav_MyGrades" xml:space="preserve"><value>درجاتي</value></data>
+  <data name="StGrades_Title" xml:space="preserve"><value>الدرجات</value></data>
+  <data name="StGrades_Subtitle" xml:space="preserve"><value>درجاتك المنشورة، مقررًا مقررًا.</value></data>
+  <data name="StGrades_ChildSubtitle" xml:space="preserve"><value>درجات ابنك المنشورة، مقررًا مقررًا.</value></data>
+  <data name="StGrades_Link" xml:space="preserve"><value>الدرجات</value></data>
+  <data name="StGrades_CourseTotal" xml:space="preserve"><value>مجموع المقرر</value></data>
+  <data name="StGrades_PublishedOnly" xml:space="preserve"><value>بناءً على الدرجات المنشورة</value></data>
+  <data name="StGrades_Band" xml:space="preserve"><value>التقدير</value></data>
+  <data name="StGrades_BandPoints" xml:space="preserve"><value>{0} نقطة لهذا المقرر</value></data>
+  <data name="StGrades_EmptyTitle" xml:space="preserve"><value>لا توجد درجات منشورة بعد</value></data>
+  <data name="StGrades_EmptyText" xml:space="preserve"><value>تظهر الدرجات هنا عندما ينشرها معلمك.</value></data>
+  <data name="StGrades_NoCoursesTitle" xml:space="preserve"><value>لا توجد مقررات بعد</value></data>
+  <data name="StGrades_NoCoursesText" xml:space="preserve"><value>تظهر هنا المقررات التي نُشرت درجاتها.</value></data>
+  <data name="StGrades_Category" xml:space="preserve"><value>الفئة</value></data>
+  <data name="StGrades_Weight" xml:space="preserve"><value>الوزن</value></data>
+  <data name="StGrades_Result" xml:space="preserve"><value>النتيجة</value></data>
+  <data name="StGrades_Item" xml:space="preserve"><value>الدرجة</value></data>
+  <data name="StGrades_Score" xml:space="preserve"><value>العلامة</value></data>
+  <data name="StGrades_Excused" xml:space="preserve"><value>معفى</value></data>
+  <data name="StGrades_NotGraded" xml:space="preserve"><value>لم تُرصد</value></data>
+  <data name="StGrades_Legend" xml:space="preserve"><value>كيف تُصنَّف الدرجات: {0}</value></data>
+  <data name="StGrades_Range" xml:space="preserve"><value>النطاق</value></data>
+  <data name="StGrades_Points" xml:space="preserve"><value>النقاط</value></data>
+  <data name="StGrades_TotalWaits" xml:space="preserve"><value>يظهر المجموع عند رصد جميع الدرجات المنشورة.</value></data>
+  <data name="StGrades_Children" xml:space="preserve"><value>الابن/الابنة</value></data>
 </root>

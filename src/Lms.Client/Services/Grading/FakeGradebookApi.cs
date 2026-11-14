@@ -278,12 +278,21 @@ public sealed class FakeGradebookApi : IGradebookApi
             return new PublishedGradeItemDto(i.Id, i.TitleAr, i.TitleEn, i.CategoryId, cell.Points, i.MaxPoints, cell.State == GradeCellStates.Excused, i.PublishedAtUtc ?? DateTime.UtcNow);
         }).ToList();
         var scored = items.Where(i => i.Points is not null).Select(i => (i.CategoryId!.Value, i.Points!.Value, i.MaxPoints)).ToList();
-        var categories = _categories.Select(c =>
+        // As the server does (#625): a category with no published item is left out and the weights are renormalised over the listed ones.
+        var listed = _categories.Where(c => items.Any(i => i.CategoryId == c.Id)).ToList();
+        var weightSum = listed.Sum(c => c.Weight);
+        var categories = listed.Select(c =>
         {
             var inCat = scored.Where(s => s.Item1 == c.Id).ToList();
             var max = inCat.Sum(s => s.MaxPoints);
-            return new StudentGradeCategoryDto(c.Id, c.NameAr, c.NameEn, c.Weight, max == 0m ? null : Math.Round(inCat.Sum(s => s.Item2) / max * 100m, 2));
+            var weight = weightSum == 0m ? 0m : Math.Round(c.Weight / weightSum * 100m, 2);
+            return new StudentGradeCategoryDto(c.Id, c.NameAr, c.NameEn, weight, max == 0m ? null : Math.Round(inCat.Sum(s => s.Item2) / max * 100m, 2));
         }).ToList();
+        if (categories.Count > 0 && categories.Sum(c => c.Weight) != 100m)
+        {
+            categories[^1] = categories[^1] with { Weight = categories[^1].Weight + 100m - categories.Sum(c => c.Weight) };
+        }
+
         var f = Final(scored);
         var scale = Scale;
         var legend = new BandLegendDto(scale.NameAr, scale.NameEn, scale.Kind,
@@ -292,7 +301,45 @@ public sealed class FakeGradebookApi : IGradebookApi
             GradingLimits.DecimalPlacesDefault, items, categories, f.Percent, f.Code, f.LabelAr, f.LabelEn, f.Points, legend);
     }
 
+    /// <summary>
+    /// Demo data for the standalone dev server: when nothing is published yet, the student reads show a scored item, an excused one and one not graded yet,
+    /// with the course total and its band. Set as <see cref="ShapeStudentGrades"/> by the fake registration; tests do not use it.
+    /// </summary>
+    public static StudentGradesDto DemoPublished(StudentGradesDto data)
+    {
+        var course = data.Courses[0];
+        if (course.Items.Count > 0) return data;
+        var published = DateTime.UtcNow.AddDays(-2);
+        var cat1 = Guid.Parse("00000000-0000-0000-0000-0000000f0001");
+        var cat2 = Guid.Parse("00000000-0000-0000-0000-0000000f0002");
+        var items = new List<PublishedGradeItemDto>
+        {
+            new(Guid.Parse("00000000-0000-0000-0000-0000000f1001"), "اختبار قصير ١", "Quiz 1", cat1, 8m, 10m, false, published),
+            new(Guid.Parse("00000000-0000-0000-0000-0000000f1002"), "مشروع", "Project", cat1, null, 20m, true, published),
+            new(Guid.Parse("00000000-0000-0000-0000-0000000f1003"), "مقال", "Essay", cat2, null, 10m, false, published),
+        };
+        var band = course.Legend.Bands.FirstOrDefault(b => 80m >= b.MinPercent && 80m <= b.MaxPercent) ?? course.Legend.Bands[0];
+        return data with
+        {
+            Courses = [course with
+            {
+                Items = items,
+                Categories = [new(cat1, "الواجبات", "Homework", 60m, 80m), new(cat2, "المقالات", "Essays", 40m, null)],
+                FinalPercent = 80m, BandCode = band.Code, BandLabelAr = band.LabelAr, BandLabelEn = band.LabelEn, BandPoints = band.Points,
+            }],
+        };
+    }
+
+    /// <summary>Lets a test reshape what the student and guardian reads answer (for example several courses).</summary>
+    public Func<StudentGradesDto, StudentGradesDto>? ShapeStudentGrades { get; set; }
+
     private StudentGradesDto Grades(Guid student)
+    {
+        var built = BuildGrades(student);
+        return ShapeStudentGrades is { } shape ? shape(built) : built;
+    }
+
+    private StudentGradesDto BuildGrades(Guid student)
     {
         var names = _names[student].Split('|');
         var now = DateTime.UtcNow;
