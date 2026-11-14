@@ -9,9 +9,13 @@
 @inject IMessagingState State
 @inject PermissionState PermState
 @inject NavigationManager Navigation
+@inject MessagingRealtime Realtime
+@implements IDisposable
 
 <PageTitle>@L["Msg_Page_Title"]</PageTitle>
 <PageHeader Title="@L["Msg_Page_Title"]" Subtitle="@L["Msg_Page_Subtitle"]" TitleTestId="messages-title" />
+<RealtimeBanner />
+<div class="lms-visually-hidden" role="status" aria-live="polite" data-testid="messages-announcer">@_announcement</div>
 
 @if (!PermState.Loaded || _loading)
 {
@@ -24,7 +28,7 @@ else if (!PermState.Has(Permissions.Messaging.View))
 else if (_failed)
 {
     <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="messages-error">
-        @L["Error_Generic"] <MudButton Variant="Variant.Text" OnClick="LoadAsync">@L["Common_Retry"]</MudButton>
+        @L["Error_Generic"] <MudButton Variant="Variant.Text" OnClick="() => LoadAsync()">@L["Common_Retry"]</MudButton>
     </MudAlert>
 }
 else
@@ -55,8 +59,13 @@ else
     private Guid? _unreadFor;
     private int _unreadAtOpen;
 
+    private string? _announcement;
+
     protected override async Task OnInitializedAsync()
     {
+        Realtime.OtherThreadMessage += OnOtherThread;
+        Realtime.ContextReset += OnContextReset;
+        Realtime.Resynced += OnResynced;
         if (!PermState.Loaded) await PermState.RefreshAsync();
         await LoadAsync();
     }
@@ -72,9 +81,10 @@ else
         return _unreadAtOpen;
     }
 
-    private async Task LoadAsync()
+    private async Task LoadAsync(bool quiet = false)
     {
-        _loading = true; _failed = false;
+        if (!quiet) _loading = true;
+        _failed = false;
         if (PermState.Has(Permissions.Messaging.View))
         {
             var (page, failed) = await ApiCalls.RunAsync(() => Messaging.ListConversationsAsync(1, 100), Navigation);
@@ -82,6 +92,37 @@ else
             if (page is not null) { _inbox = page.Items; _total = page.Total; }
         }
         _loading = false;
+    }
+
+    /// <summary>A message in a conversation that is not open: the list and the badge ask the server again, and a polite announcement says so once (no text of the message).</summary>
+    private void OnOtherThread(Guid conversationId, bool announce) => _ = InvokeAsync(async () =>
+    {
+        if (announce) _announcement = L["Msg_Announce_New"];
+        await ChangedAsync();
+    });
+
+    /// <summary>The context changed: what is shown belongs to the old one.</summary>
+    private void OnContextReset() => _ = InvokeAsync(async () =>
+    {
+        _announcement = null;
+        await LoadAsync();
+        await State.RefreshAsync();
+        StateHasChanged();
+    });
+
+    /// <summary>After a reconnect the list and the badge ask the server again: what arrived while offline is counted.</summary>
+    private void OnResynced(Guid? conversationId, IReadOnlyList<MessageDto> latest) => _ = InvokeAsync(async () =>
+    {
+        await LoadAsync(quiet: true); // the list stays on screen while it is read again
+        await State.RefreshAsync();
+        StateHasChanged();
+    });
+
+    public void Dispose()
+    {
+        Realtime.OtherThreadMessage -= OnOtherThread;
+        Realtime.ContextReset -= OnContextReset;
+        Realtime.Resynced -= OnResynced;
     }
 
     private async Task ChangedAsync()

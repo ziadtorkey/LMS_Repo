@@ -19,6 +19,7 @@ public static class ClientServices
     {
         services.AddLocalization();
         services.AddMudServices();
+        services.AddScoped<Lms.Client.Services.Messaging.MessagingRealtime>();
         services.AddTransient<MudBlazor.MudLocalizer, LmsMudLocalizer>();
         services.AddScoped<ICultureService, CultureService>();
         // Singleton on purpose: IHttpClientFactory builds its message handlers in their own DI scope, and the
@@ -43,6 +44,7 @@ public static class ClientServices
             services.AddScoped<INotificationsApi, FakeNotificationsApi>();
             services.AddSingleton<IImportsApi, FakeImportsApi>();
             services.AddScoped<INotificationConnection, FakeNotificationConnection>();
+            services.AddSingleton<Lms.Client.Services.Messaging.IMessagingHub, Lms.Client.Services.Messaging.FakeMessagingHub>();
             services.AddSingleton<IClientsApi, FakeClientsApi>();
             services.AddSingleton<IOrgApi, FakeOrgApi>();
             services.AddSingleton<ITemplatesApi, FakeTemplatesApi>();
@@ -94,7 +96,9 @@ public static class ClientServices
         services.AddScoped<IYearsApi, YearsApi>();
         services.AddScoped<INotificationsApi, NotificationsApi>();
         services.AddScoped<IImportsApi, ImportsApi>();
-        services.AddScoped<INotificationConnection, NotificationConnection>();
+        services.AddScoped<NotificationConnection>();
+        services.AddScoped<INotificationConnection>(sp => sp.GetRequiredService<NotificationConnection>());
+        services.AddScoped<Lms.Client.Services.Messaging.IMessagingHub>(sp => sp.GetRequiredService<NotificationConnection>()); // one socket for notifications and messaging
         services.AddHttpClient<ILmsApi, LmsApiClient>(c => c.BaseAddress = new Uri(baseAddress))
             .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>()
             .AddHttpMessageHandler<ForbiddenRedirectHandler>();
