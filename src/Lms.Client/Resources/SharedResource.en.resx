@@ -1770,4 +1770,5 @@
   <data name="Publish_SubmitHide" xml:space="preserve"><value>Hide</value></data>
   <data name="Publish_Result" xml:space="preserve"><value>{0} items changed. {1} students affected.</value></data>
   <data name="Publish_Notified" xml:space="preserve"><value>{0} notifications queued.</value></data>
+  <data name="Publish_TimeMissing" xml:space="preserve"><value>That time does not exist in your time zone (the clocks skip it). Pick another time.</value></data>
 </root>

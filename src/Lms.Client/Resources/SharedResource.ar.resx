@@ -1770,4 +1770,5 @@
   <data name="Publish_SubmitHide" xml:space="preserve"><value>إخفاء</value></data>
   <data name="Publish_Result" xml:space="preserve"><value>تم تغيير {0} بنود. تأثر {1} طلاب.</value></data>
   <data name="Publish_Notified" xml:space="preserve"><value>تمت جدولة {0} إشعارات.</value></data>
+  <data name="Publish_TimeMissing" xml:space="preserve"><value>هذا الوقت غير موجود في منطقتك الزمنية (تتخطاه الساعة). اختر وقتًا آخر.</value></data>
 </root>

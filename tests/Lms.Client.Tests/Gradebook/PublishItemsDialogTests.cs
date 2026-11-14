@@ -1,6 +1,7 @@
 using System.Globalization;
 using Bunit;
 using Lms.Client.Pages.Gradebook;
+using Lms.Client.Components.Gradebook;
 using Lms.Client.Services;
 using Lms.Client.Services.Grading;
 using Lms.Client.Tests.Support;
@@ -198,4 +199,84 @@ public sealed class PublishItemsDialogTests : ClientTestContext
 
         Assert.Contains("نشر", page.Find("[data-testid=gradebook-publish]").TextContent);
     }
+
+    [Theory]
+    [InlineData("Asia/Riyadh", "2026-11-18", "00:30", "2026-11-17T21:30:00")] // just after local midnight: the UTC day is the day before
+    [InlineData("Asia/Riyadh", "2026-11-17", "23:30", "2026-11-17T20:30:00")] // just before local midnight: same UTC day
+    [InlineData("America/Los_Angeles", "2026-11-17", "20:30", "2026-11-18T04:30:00")] // west of UTC the UTC day is the next one
+    public void Schedule_time_converts_the_client_zone_wall_clock_across_the_day_boundary(string zoneId, string date, string time, string expectedUtc)
+    {
+        var ok = ScheduleTime.TryToUtc(DateTime.Parse(date, CultureInfo.InvariantCulture), TimeSpan.Parse(time, CultureInfo.InvariantCulture), TimeZoneInfo.FindSystemTimeZoneById(zoneId), out var utc);
+
+        Assert.True(ok);
+        Assert.Equal(DateTime.Parse(expectedUtc, CultureInfo.InvariantCulture), utc);
+    }
+
+    [Fact]
+    public void A_time_skipped_by_a_clock_change_does_not_exist()
+    {
+        var newYork = TimeZoneInfo.FindSystemTimeZoneById("America/New_York");
+
+        Assert.False(ScheduleTime.TryToUtc(new DateTime(2026, 3, 8), new TimeSpan(2, 30, 0), newYork, out _)); // 2:00 jumps to 3:00
+        Assert.True(ScheduleTime.TryToUtc(new DateTime(2026, 3, 8), new TimeSpan(3, 30, 0), newYork, out _));
+    }
+
+    [Fact]
+    public async Task A_schedule_time_that_does_not_exist_in_the_client_zone_is_refused_before_sending()
+    {
+        var page = await OpenAsync();
+        Api.Me = Api.Me with { Contexts = [Ctx(Context.ActiveAssignmentId!.Value, "America/New_York")] };
+        await OpenDialogAsync(page);
+        await _dialogs.Find("[data-testid=publish-mode-schedule]").ClickAsync(new());
+        await _dialogs.InvokeAsync(() => _dialogs.FindComponent<MudDatePicker>().Instance.DateChanged.InvokeAsync(new DateTime(2026, 3, 8)));
+        await _dialogs.InvokeAsync(() => _dialogs.FindComponent<MudTimePicker>().Instance.TimeChanged.InvokeAsync(new TimeSpan(2, 30, 0)));
+
+        await SubmitAsync();
+
+        Assert.Contains("does not exist in your time zone", _dialogs.WaitForElement("[data-testid=publish-error]").TextContent);
+        Assert.Null(_api.LastPublish); // nothing reached the server
+    }
+
+    [Fact]
+    public async Task The_schedule_is_sent_in_utc_for_the_zone_of_the_active_context()
+    {
+        var page = await OpenAsync();
+        Api.Me = Api.Me with { Contexts = [Ctx(Context.ActiveAssignmentId!.Value, "Asia/Riyadh")] };
+        await OpenDialogAsync(page);
+        await _dialogs.Find("[data-testid=publish-mode-schedule]").ClickAsync(new());
+        var day = DateTime.UtcNow.Date.AddDays(10);
+        await _dialogs.InvokeAsync(() => _dialogs.FindComponent<MudDatePicker>().Instance.DateChanged.InvokeAsync(day));
+        await _dialogs.InvokeAsync(() => _dialogs.FindComponent<MudTimePicker>().Instance.TimeChanged.InvokeAsync(new TimeSpan(0, 30, 0)));
+
+        await SubmitAsync();
+
+        _dialogs.WaitForElement("[data-testid=publish-result]");
+        Assert.Equal(day.AddHours(-3).AddMinutes(30), _api.LastPublish!.AtUtc); // 00:30 in Riyadh is 21:30 UTC the day before
+    }
+
+    [Fact]
+    public async Task Focus_returns_to_the_publish_button()
+    {
+        // The app-wide script restores focus to the element that had it before a MudBlazor dialog opened. The trigger must be a real
+        // focusable button, and the dialog must be a .mud-dialog, which is what the script watches.
+        var page = await OpenAsync();
+        var trigger = page.Find("[data-testid=gradebook-publish]");
+        Assert.Equal("button", trigger.TagName.ToLowerInvariant());
+        await OpenDialogAsync(page);
+
+        Assert.Contains("mud-dialog", _dialogs.Markup);
+        var script = File.ReadAllText(Path.Combine(Wwwroot(), "js", "dialog-focus.js"));
+        Assert.Contains(".mud-dialog", script);
+        Assert.Contains(".focus()", script);
+    }
+
+    private static string Wwwroot()
+    {
+        var dir = AppContext.BaseDirectory;
+        while (dir is not null && !Directory.Exists(Path.Combine(dir, "src", "Lms.Client"))) dir = Path.GetDirectoryName(dir);
+        return Path.Combine(dir!, "src", "Lms.Client", "wwwroot");
+    }
+
+    private static Lms.Shared.Me.UserContextDto Ctx(Guid assignment, string zone) =>
+        new(assignment, Guid.NewGuid(), "م", "Org", Guid.NewGuid(), "و", "Unit", "معلم", "Teacher", zone);
 }

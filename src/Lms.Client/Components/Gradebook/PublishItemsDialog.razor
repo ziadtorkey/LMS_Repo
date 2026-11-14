@@ -134,8 +134,13 @@
                 return;
             }
 
-            var local = DateTime.SpecifyKind(_date.Value.Date + _time.Value, DateTimeKind.Unspecified);
-            atUtc = TimeZoneInfo.ConvertTimeToUtc(local, await Zone.GetAsync()); // the server decides whether it is in the future, by its own clock
+            if (!ScheduleTime.TryToUtc(_date.Value, _time.Value, await Zone.GetAsync(), out var utc))
+            {
+                _error = L["Publish_TimeMissing"]; // the clocks skip this time in the client zone: ask for another, send nothing
+                return;
+            }
+
+            atUtc = utc; // the server decides whether it is in the future, by its own clock
         }
 
         _saving = true;
