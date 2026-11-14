@@ -1,6 +1,7 @@
 @using Lms.Client.Components.People
 @using Lms.Client.Services.Api
 @inject IGuardiansApi Api
+@inject Microsoft.JSInterop.IJSRuntime Js
 @inject NavigationManager Navigation
 
 @* Links one guardian to a student: a registered guardian found by national id or mobile, or a new one. *@
@@ -9,15 +10,18 @@
         <MudStack Spacing="3">
             @if (_error is not null)
             {
-                <MudAlert Severity="Severity.Error" data-testid="dialog-error">@_error</MudAlert>
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="dialog-error">@_error</MudAlert>
             }
             <GuardianInputRows Rows="_rows" />
         </MudStack>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
-        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="_saving"
-                   data-testid="dialog-save">@L["Common_Save"]</MudButton>
+        <div class="lms-dialog-actions">
+            <MudButton Variant="Variant.Text" OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="_saving"
+                       data-testid="dialog-save">@L["Common_Save"]</MudButton>
+    
+        </div>
     </DialogActions>
 </MudDialog>
 
@@ -33,6 +37,7 @@
     private async Task SaveAsync()
     {
         _error = null;
+        await FormFlush.CommitPendingAsync(Js);
         var rows = _rows.Where(r => !r.IsEmpty).ToList();
         if (rows.Count == 0 || !GuardianRow.ValidateAll(_rows)) return;
 

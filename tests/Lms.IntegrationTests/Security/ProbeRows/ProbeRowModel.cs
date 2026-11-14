@@ -64,4 +64,7 @@ public static class ProbeMilestones
 
     /// <summary>M4a (teaching and learning). Every probe row of an M4a route sets it (<see cref="M4aEndpointMatrixTests"/> checks).</summary>
     public const int M4a = 4;
+
+    /// <summary>M4b (live sessions, SCORM and H5P packages). Rows of M4b routes set it; like M4a it is not a closed milestone yet.</summary>
+    public const int M4b = 5;
 }

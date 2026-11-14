@@ -81,7 +81,7 @@ public sealed class FakeClassCoursesApi : IClassCoursesApi
 
     public ClassCourseDto Add(ClassSummaryDto cls, CourseSummaryDto course, bool optional, int enrolled)
     {
-        var item = new ClassCourseDto(Guid.NewGuid(), cls.Id, cls.NameAr, cls.NameEn, course.Id, course.Code, course.NameAr, course.NameEn, optional, enrolled, [], null);
+        var item = new ClassCourseDto(FakeCourseIds.For($"{cls.Code}:{course.Code}"), cls.Id, cls.NameAr, cls.NameEn, course.Id, course.Code, course.NameAr, course.NameEn, optional, enrolled, [], null);
         _classCourses.Add(item);
         return item;
     }

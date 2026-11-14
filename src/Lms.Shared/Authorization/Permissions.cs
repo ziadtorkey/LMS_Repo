@@ -258,6 +258,30 @@ public static class Permissions
         public const string View = "Packages.View";
     }
 
+    // M5 wave 1 (M5 plan Task 1). Teacher: own ClassCourses with an assignment active today (L15); Supervisor: supervised courses;
+    // Student and Guardian: only their own data (ViewOwn is a SelfService permission), published items only (L6).
+    /// <summary>Grading: scales, weight templates, the gradebook, publishing, grade reads and reports (FR-GRD-01..05, D58, D59).</summary>
+    public static class Grades
+    {
+        /// <summary>Read scales, weight templates and gradebooks (staff).</summary>
+        public const string View = "Grades.View";
+
+        /// <summary>Configure a gradebook, edit categories, items and entries, import and export columns, preview what a student sees.</summary>
+        public const string Manage = "Grades.Manage";
+
+        /// <summary>Publish, schedule and hide grade items for students and guardians.</summary>
+        public const string Publish = "Grades.Publish";
+
+        /// <summary>Create and edit grading scales and weight templates of a unit (Org Admin and Manager).</summary>
+        public const string ConfigureScales = "Grades.ConfigureScales";
+
+        /// <summary>Student, class and course grade reports and their Excel export.</summary>
+        public const string ViewReports = "Grades.ViewReports";
+
+        /// <summary>A student's own published grades, a guardian's children's published grades.</summary>
+        public const string ViewOwn = "Grades.ViewOwn";
+    }
+
     // M4b Live sessions, wave 3a (M4b plan Task 1). Teacher: own ClassCourses; Student: own enrollments, and only the
     // sessions whose module the student can see (IModuleAccess). The Zoom webhook is anonymous and needs none.
     /// <summary>Live (Zoom) sessions of a ClassCourse (FR-VC-01).</summary>
@@ -296,7 +320,7 @@ public static class Permissions
     /// them out grants no power over others.
     /// </summary>
     public static IReadOnlyList<string> SelfService { get; } =
-        ImmutableArray.Create(Students.SelfEdit, Students.ViewChildren, CourseAssignments.Submit, Quizzes.Attempt);
+        ImmutableArray.Create(Students.SelfEdit, Students.ViewChildren, CourseAssignments.Submit, Quizzes.Attempt, Grades.ViewOwn);
 
     /// <summary>The caller's permissions plus <see cref="SelfService"/>, for the escalation guards.</summary>
     public static IReadOnlySet<string> WithSelfService(IEnumerable<string> callerPermissions) =>

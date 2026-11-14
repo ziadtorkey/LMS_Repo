@@ -1,0 +1,32 @@
+{
+ "unit-settings-ar-light-desktop": {
+  "url": "/org-units/fdcca09c-1925-451b-804a-da575a6cd469",
+  "overflow": false,
+  "h1": 1
+ },
+ "unit-settings-en-dark-desktop": {
+  "url": "/org-units/f53ba453-7a2b-41d5-8c70-ac996fc66ce1",
+  "overflow": false,
+  "h1": 1
+ },
+ "unit-settings-ar-light-mobile": {
+  "url": "/org-units/93f95104-a399-43ea-86bb-7a23fea81ac3",
+  "overflow": false,
+  "h1": 1
+ },
+ "course-profile-ar-light-desktop": {
+  "url": "/courses/4854414d-3031-0031-0000-000000000000",
+  "overflow": false,
+  "h1": 1
+ },
+ "course-profile-en-dark-desktop": {
+  "url": "/courses/4854414d-3031-0031-0000-000000000000",
+  "overflow": false,
+  "h1": 1
+ },
+ "course-profile-ar-light-mobile": {
+  "url": "/courses/4854414d-3031-0031-0000-000000000000",
+  "overflow": false,
+  "h1": 1
+ }
+}
