@@ -406,20 +406,21 @@ public sealed class BuiltInRoleReconcilerTests(LmsApiFactory factory)
     }
 
     [Fact]
-    public async Task Reconcile_adds_only_the_M6_wave_1_messaging_defaults_to_a_version_8_client()
+    public async Task Reconcile_adds_only_the_M5_wave_3_attendance_and_excuse_defaults_to_a_version_9_client()
     {
-        // A client on defaults version 8: no messaging permissions yet, and an admin removed Library.Manage from the Teacher role (an older default).
-        var tree = await AccessTestData.SeedAsync(factory, "RCM");
+        // A client on defaults version 9: no attendance or excuse permissions yet, and an admin removed Grades.Publish from the Teacher
+        // role (an older default, which must stay removed).
+        var tree = await AccessTestData.SeedAsync(factory, "RCA");
         await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
         {
             var teacher = tree.Roles[BuiltInRoles.Teacher].Id;
             var rows = await db.RolePermissions.Where(p => p.OrganizationId == tree.Org.Id).ToListAsync();
-            db.RolePermissions.RemoveRange(rows.Where(p => p.Permission.StartsWith("Messaging.", StringComparison.Ordinal)
-                || p.Permission.StartsWith("Announcements.", StringComparison.Ordinal) || p.Permission.StartsWith("Comms.", StringComparison.Ordinal)
-                || (p.RoleId == teacher && p.Permission == Permissions.Library.Manage)));
+            db.RolePermissions.RemoveRange(rows.Where(p => p.Permission.StartsWith("Attendance.", StringComparison.Ordinal)
+                || p.Permission.StartsWith("Excuses.", StringComparison.Ordinal)
+                || (p.RoleId == teacher && p.Permission == Permissions.Grades.Publish)));
             foreach (var role in await db.Roles.Where(r => r.OrganizationId == tree.Org.Id).ToListAsync())
             {
-                db.Entry(role).Property(nameof(Role.DefaultsVersion)).CurrentValue = 8;
+                db.Entry(role).Property(nameof(Role.DefaultsVersion)).CurrentValue = 9;
             }
 
             await db.SaveChangesAsync();
@@ -427,17 +428,20 @@ public sealed class BuiltInRoleReconcilerTests(LmsApiFactory factory)
 
         await ReconcileAsync();
 
-        static IEnumerable<string> Comms(IEnumerable<string> p) =>
-            p.Where(x => x.StartsWith("Messaging.", StringComparison.Ordinal) || x.StartsWith("Announcements.", StringComparison.Ordinal) || x.StartsWith("Comms.", StringComparison.Ordinal)).Order(StringComparer.Ordinal);
+        async Task<string[]> Of(string role) => (await PermissionsOfAsync(tree, role))
+            .Where(p => p.StartsWith("Attendance.", StringComparison.Ordinal) || p.StartsWith("Excuses.", StringComparison.Ordinal))
+            .Order(StringComparer.Ordinal).ToArray();
 
-        Assert.Equal(["Announcements.Manage", "Announcements.View", "Comms.Manage", "Messaging.Moderate", "Messaging.Send", "Messaging.View"],
-            Comms(await PermissionsOfAsync(tree, BuiltInRoles.OrgAdmin)));
-        Assert.Equal(["Announcements.Manage", "Announcements.View", "Messaging.Send", "Messaging.View"], Comms(await PermissionsOfAsync(tree, BuiltInRoles.Manager)));
-        Assert.Equal(["Announcements.Manage", "Announcements.View", "Messaging.Send", "Messaging.View"], Comms(await PermissionsOfAsync(tree, BuiltInRoles.Teacher)));
-        Assert.Equal(["Announcements.View", "Messaging.Send", "Messaging.View"], Comms(await PermissionsOfAsync(tree, BuiltInRoles.Counselor)));
-        Assert.Equal(["Announcements.View", "Messaging.Send", "Messaging.View"], Comms(await PermissionsOfAsync(tree, BuiltInRoles.Student)));
-        Assert.Equal(["Announcements.View", "Messaging.Send", "Messaging.View"], Comms(await PermissionsOfAsync(tree, BuiltInRoles.Guardian)));
-        Assert.DoesNotContain(Permissions.Library.Manage, await PermissionsOfAsync(tree, BuiltInRoles.Teacher)); // an older removed default stays removed
+        string[] admin = ["Attendance.Edit", "Attendance.Take", "Attendance.View", "Excuses.Escalate", "Excuses.Review"];
+        Assert.Equal(admin, await Of(BuiltInRoles.OrgAdmin));
+        Assert.Equal(admin, await Of(BuiltInRoles.Manager));
+        Assert.Equal(["Attendance.Take"], await Of(BuiltInRoles.Teacher));
+        Assert.Equal(["Attendance.View"], await Of(BuiltInRoles.Supervisor));
+        Assert.Equal(["Attendance.Edit", "Attendance.View", "Excuses.Escalate", "Excuses.Review"], await Of(BuiltInRoles.Counselor));
+        Assert.Equal(["Attendance.ViewOwn", "Excuses.Submit"], await Of(BuiltInRoles.Student));
+        Assert.Equal(["Attendance.ViewOwn", "Excuses.Submit"], await Of(BuiltInRoles.Guardian));
+        Assert.DoesNotContain(Permissions.Grades.Publish, await PermissionsOfAsync(tree, BuiltInRoles.Teacher));
+        Assert.DoesNotContain(await PermissionsOfAsync(tree, BuiltInRoles.Counselor), p => p.StartsWith("Grades.", StringComparison.Ordinal)); // L16
     }
 
     [Fact]

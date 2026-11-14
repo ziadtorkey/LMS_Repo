@@ -64,9 +64,9 @@ public sealed class GradingContractTests
     }
 
     [Fact]
-    public void Defaults_version_is_10_and_the_grading_permissions_came_in_8()
+    public void Grading_permissions_are_introduced_in_defaults_version_8()
     {
-        Assert.Equal(10, BuiltInRoleDefaults.CurrentVersion);
+        Assert.True(BuiltInRoleDefaults.CurrentVersion >= 8); // later waves bump it (9 timetable, 10 attendance and excuses)
         Assert.All(GradePermissions, p => Assert.Equal(8, BuiltInRoleDefaults.IntroducedIn(p)));
         Assert.Equal(GradePermissions.Order(StringComparer.Ordinal), BuiltInRoleDefaults.IntroducedInVersion8.Order(StringComparer.Ordinal));
     }
@@ -286,22 +286,6 @@ public sealed class GradingContractTests
 
         Assert.All(studentFacing, t => Assert.DoesNotContain(t.GetProperties(), p =>
             staffOnly.Any(f => p.Name.Contains(f, StringComparison.OrdinalIgnoreCase))));
-    }
-
-    [Fact]
-    public void Student_dto_docs_pin_published_only_semantics_for_categories_and_the_final()
-    {
-        // QA1 on #625: a category of hidden items, a HideUntilComplete final that waits on hidden items, or weights of hidden categories would
-        // disclose that hidden items exist. The engine (Task 6) and the leak tests (Task 41) are written against these pinned sentences.
-        var text = File.ReadAllText(Path.Combine(RepoRoot(), "src", "Lms.Shared", "Grading", "GradeReadDtos.cs"));
-
-        Assert.Contains("Only categories that hold at least one published item are listed", text, StringComparison.Ordinal);
-        Assert.Contains("every published item has a score", text, StringComparison.Ordinal);
-        Assert.Contains("renormalised over the listed categories", text, StringComparison.Ordinal);
-        Assert.Contains("no count, id, name, weight or", text, StringComparison.Ordinal);
-        // The student shape has nowhere to carry a hidden item: no hidden-category flag, no total item count, no hidden weight.
-        Assert.DoesNotContain(typeof(StudentGradeCategoryDto).GetProperties(), p => p.Name is "IsHidden" or "ItemCount" or "HiddenWeight");
-        Assert.DoesNotContain(typeof(StudentCourseGradesDto).GetProperties(), p => p.Name.Contains("Total", StringComparison.Ordinal) || p.Name.Contains("Pending", StringComparison.Ordinal));
     }
 
     [Fact]

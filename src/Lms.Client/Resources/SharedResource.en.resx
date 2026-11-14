@@ -1494,65 +1494,6 @@
   <data name="Error_package_reason_compression_ratio" xml:space="preserve"><value>The package is compressed in an unsafe way. Export it again.</value></data>
   <data name="Error_package_reason_symlink" xml:space="preserve"><value>The package contains links to other files, which aren't allowed.</value></data>
   <data name="Error_package_reason_duplicate_name" xml:space="preserve"><value>Two files in the package have the same name.</value></data>
-  <data name="Assignment_AllowFiles" xml:space="preserve"><value>Allow file uploads</value></data>
-  <data name="Assignment_AllowText" xml:space="preserve"><value>Allow written text</value></data>
-  <data name="Assignment_Attachments" xml:space="preserve"><value>Attachments</value></data>
-  <data name="Assignment_BlockNeedsDue" xml:space="preserve"><value>Set a due date when late hand-ins are not accepted.</value></data>
-  <data name="Assignment_Due" xml:space="preserve"><value>Due</value></data>
-  <data name="Assignment_Edit" xml:space="preserve"><value>Edit assignment</value></data>
-  <data name="Assignment_InstructionsAr" xml:space="preserve"><value>Instructions (Arabic)</value></data>
-  <data name="Assignment_InstructionsEn" xml:space="preserve"><value>Instructions (English)</value></data>
-  <data name="Assignment_LatePolicy" xml:space="preserve"><value>Late hand-ins</value></data>
-  <data name="Assignment_Lesson" xml:space="preserve"><value>Lesson</value></data>
-  <data name="Assignment_MaxGrade" xml:space="preserve"><value>Maximum grade</value></data>
-  <data name="Assignment_MaxGradeInvalid" xml:space="preserve"><value>The maximum grade must be between 0.01 and 1000.</value></data>
-  <data name="Assignment_MinScore" xml:space="preserve"><value>Minimum score (%)</value></data>
-  <data name="Assignment_NeedSubmitType" xml:space="preserve"><value>Allow text, files or both.</value></data>
-  <data name="Assignment_PenaltyPercent" xml:space="preserve"><value>Penalty (%)</value></data>
-  <data name="Assignment_PenaltyRequired" xml:space="preserve"><value>Enter a penalty from 1 to 100.</value></data>
-  <data name="Assignment_RemoveAttachment" xml:space="preserve"><value>Remove attachment</value></data>
-  <data name="Assignment_Resubmission" xml:space="preserve"><value>Resubmission</value></data>
-  <data name="Assignments_Counts" xml:space="preserve"><value>{0} submitted · {1} graded</value></data>
-  <data name="Assignments_Handed" xml:space="preserve"><value>Hand-ins</value></data>
-  <data name="Assignments_Name" xml:space="preserve"><value>Assignment</value></data>
-  <data name="Assignments_New" xml:space="preserve"><value>New assignment</value></data>
-  <data name="Assignments_Submissions" xml:space="preserve"><value>Submissions</value></data>
-  <data name="CompletionRule_Score" xml:space="preserve"><value>When a minimum score is reached</value></data>
-  <data name="CompletionRule_Submit" xml:space="preserve"><value>When submitted</value></data>
-  <data name="Grade_AboveMax" xml:space="preserve"><value>The grade cannot be above {0}.</value></data>
-  <data name="Grade_Annotated" xml:space="preserve"><value>Annotated file</value></data>
-  <data name="Grade_Feedback" xml:space="preserve"><value>Feedback</value></data>
-  <data name="Grade_NoWork" xml:space="preserve"><value>No text or files.</value></data>
-  <data name="Grade_Out" xml:space="preserve"><value>Grade (out of {0})</value></data>
-  <data name="Grade_Penalty" xml:space="preserve"><value>Late penalty {0}%: final grade {1}</value></data>
-  <data name="Grade_RemoveAnnotated" xml:space="preserve"><value>Remove annotated file</value></data>
-  <data name="Grade_Returned" xml:space="preserve"><value>Grade saved and returned to the student.</value></data>
-  <data name="Grade_Save" xml:space="preserve"><value>Save grade</value></data>
-  <data name="Grade_SaveReturn" xml:space="preserve"><value>Save and return to student</value></data>
-  <data name="Grade_Saved" xml:space="preserve"><value>Grade saved.</value></data>
-  <data name="Grade_Title" xml:space="preserve"><value>Grade submission</value></data>
-  <data name="Grade_Work" xml:space="preserve"><value>Student's work</value></data>
-  <data name="LatePolicy_Allow" xml:space="preserve"><value>Accepted, marked late</value></data>
-  <data name="LatePolicy_Block" xml:space="preserve"><value>Not accepted</value></data>
-  <data name="LatePolicy_Penalty" xml:space="preserve"><value>Accepted with a penalty</value></data>
-  <data name="ResubmissionRule_None" xml:space="preserve"><value>Not allowed</value></data>
-  <data name="ResubmissionRule_UntilDue" xml:space="preserve"><value>Until the due date</value></data>
-  <data name="ResubmissionRule_UntilGraded" xml:space="preserve"><value>Until graded</value></data>
-  <data name="SubmissionStatus_Draft" xml:space="preserve"><value>Draft</value></data>
-  <data name="SubmissionStatus_Graded" xml:space="preserve"><value>Graded</value></data>
-  <data name="SubmissionStatus_Late" xml:space="preserve"><value>Late</value></data>
-  <data name="SubmissionStatus_None" xml:space="preserve"><value>Not handed in</value></data>
-  <data name="SubmissionStatus_Returned" xml:space="preserve"><value>Returned</value></data>
-  <data name="SubmissionStatus_Submitted" xml:space="preserve"><value>Submitted</value></data>
-  <data name="Submissions_At" xml:space="preserve"><value>Handed in</value></data>
-  <data name="Submissions_Grade" xml:space="preserve"><value>Grade</value></data>
-  <data name="Submissions_GradeAction" xml:space="preserve"><value>Grade</value></data>
-  <data name="Submissions_Late" xml:space="preserve"><value>Late</value></data>
-  <data name="Submissions_OnlyLate" xml:space="preserve"><value>Late only</value></data>
-  <data name="Submissions_Status" xml:space="preserve"><value>Status</value></data>
-  <data name="Submissions_Student" xml:space="preserve"><value>Student</value></data>
-  <data name="Submissions_Title" xml:space="preserve"><value>Assignment submissions</value></data>
-  <data name="Assignment_MinScoreUnknown" xml:space="preserve"><value>The minimum score could not be read. Close the dialog and try again.</value></data>
   <data name="Nav_Eligibility" xml:space="preserve"><value>Teacher eligibility</value></data>
   <data name="Eligibility_Title" xml:space="preserve"><value>Teacher eligibility</value></data>
   <data name="Eligibility_Help" xml:space="preserve"><value>Say which teachers may teach which courses at a unit. Only eligible teachers can be assigned to a class course.</value></data>
@@ -1602,95 +1543,6 @@
   <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>The package didn't pass the security check.</value></data>
   <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>The file isn't a valid .zip archive. Export the package again.</value></data>
   <data name="Error_package_reason_bad_name" xml:space="preserve"><value>Some file names in the package are too long, nested too deep or reserved. Rename them and export again.</value></data>
-  <data name="ClassCourse_TabLive" xml:space="preserve"><value>Live sessions</value></data>
-  <data name="Live_Title" xml:space="preserve"><value>Live sessions</value></data>
-  <data name="Live_Subtitle" xml:space="preserve"><value>Online classes for this course. Students join from the lesson.</value></data>
-  <data name="Live_Schedule" xml:space="preserve"><value>Schedule a session</value></data>
-  <data name="Live_ScheduleAction" xml:space="preserve"><value>Schedule</value></data>
-  <data name="Live_Filter" xml:space="preserve"><value>Which sessions</value></data>
-  <data name="Live_Upcoming" xml:space="preserve"><value>Upcoming</value></data>
-  <data name="Live_Past" xml:space="preserve"><value>Past</value></data>
-  <data name="Live_Col_When" xml:space="preserve"><value>When</value></data>
-  <data name="Live_Col_Session" xml:space="preserve"><value>Session</value></data>
-  <data name="Live_Col_Lesson" xml:space="preserve"><value>Lesson</value></data>
-  <data name="Live_Col_Status" xml:space="preserve"><value>Status</value></data>
-  <data name="Live_Col_Recording" xml:space="preserve"><value>Recording</value></data>
-  <data name="Live_Col_Actions" xml:space="preserve"><value>Actions</value></data>
-  <data name="Live_Edit" xml:space="preserve"><value>Edit session</value></data>
-  <data name="Live_RecordingLink" xml:space="preserve"><value>Recording link</value></data>
-  <data name="Live_CancelSession" xml:space="preserve"><value>Cancel session</value></data>
-  <data name="Live_CancelConfirm" xml:space="preserve"><value>Cancel this session? Students will no longer see it.</value></data>
-  <data name="Live_Recording" xml:space="preserve"><value>Recording</value></data>
-  <data name="Live_Empty_Upcoming_Title" xml:space="preserve"><value>No upcoming sessions</value></data>
-  <data name="Live_Empty_Upcoming_Staff" xml:space="preserve"><value>Schedule a session so students can join from the lesson.</value></data>
-  <data name="Live_Empty_Upcoming_Student" xml:space="preserve"><value>Your teacher hasn't scheduled any yet.</value></data>
-  <data name="Live_Empty_Past_Title" xml:space="preserve"><value>No past sessions</value></data>
-  <data name="Live_Empty_Past_Text" xml:space="preserve"><value>Sessions appear here after they end.</value></data>
-  <data name="Live_SeriesCaption" xml:space="preserve"><value>Weekly · {0} of {1}</value></data>
-  <data name="Live_SeriesCaptionShort" xml:space="preserve"><value>Weekly</value></data>
-  <data name="Live_ProviderNotConfigured" xml:space="preserve"><value>Live sessions aren't set up yet. Ask your platform administrator.</value></data>
-  <data name="Live_ProviderUnhealthy" xml:space="preserve"><value>Zoom isn't responding right now. New sessions may fail; existing ones keep working.</value></data>
-  <data name="Live_FeatureOff" xml:space="preserve"><value>Live sessions are turned off for this school.</value></data>
-  <data name="Live_Error_Busy" xml:space="preserve"><value>Zoom is busy. Try again in about {0}.</value></data>
-  <data name="Live_Error_BusyShort" xml:space="preserve"><value>Zoom is busy. Try again in a minute.</value></data>
-  <data name="Live_DialogTitleNew" xml:space="preserve"><value>Schedule a live session</value></data>
-  <data name="Live_DialogTitleEdit" xml:space="preserve"><value>Edit live session</value></data>
-  <data name="Live_SectionSession" xml:space="preserve"><value>Session</value></data>
-  <data name="Live_SectionTime" xml:space="preserve"><value>Time</value></data>
-  <data name="Live_SectionRepeat" xml:space="preserve"><value>Repeat</value></data>
-  <data name="Live_SectionModule" xml:space="preserve"><value>In the lesson</value></data>
-  <data name="Live_TitleHelp" xml:space="preserve"><value>Participants see this title in Zoom.</value></data>
-  <data name="Live_Lesson" xml:space="preserve"><value>Lesson</value></data>
-  <data name="Live_Date" xml:space="preserve"><value>Date</value></data>
-  <data name="Live_StartTime" xml:space="preserve"><value>Start time</value></data>
-  <data name="Live_Duration" xml:space="preserve"><value>Duration</value></data>
-  <data name="Live_TimeZone" xml:space="preserve"><value>Times are in your time zone:</value></data>
-  <data name="Live_Repeat_Once" xml:space="preserve"><value>Once</value></data>
-  <data name="Live_Repeat_Weekly" xml:space="preserve"><value>Weekly</value></data>
-  <data name="Live_Every" xml:space="preserve"><value>Repeats</value></data>
-  <data name="Live_Days" xml:space="preserve"><value>On these days</value></data>
-  <data name="Live_Ends" xml:space="preserve"><value>Ends</value></data>
-  <data name="Live_EndsOn" xml:space="preserve"><value>On date</value></data>
-  <data name="Live_EndsAfter" xml:space="preserve"><value>After</value></data>
-  <data name="Live_EndsAfterSuffix" xml:space="preserve"><value>sessions</value></data>
-  <data name="Live_EndsRequired" xml:space="preserve"><value>Choose an end date or a number of sessions.</value></data>
-  <data name="Live_TooMany" xml:space="preserve"><value>A series can have at most {0} sessions. Choose an earlier end date or fewer sessions.</value></data>
-  <data name="Live_EditSeriesTitle" xml:space="preserve"><value>Edit a repeating session</value></data>
-  <data name="Live_CancelSeriesTitle" xml:space="preserve"><value>Cancel a repeating session</value></data>
-  <data name="Live_ScopeLabel" xml:space="preserve"><value>Which sessions</value></data>
-  <data name="Live_Continue" xml:space="preserve"><value>Continue</value></data>
-  <data name="Live_CancelSessions" xml:space="preserve"><value>Cancel sessions</value></data>
-  <data name="Live_RecordingTitle" xml:space="preserve"><value>Recording link</value></data>
-  <data name="Live_RecordingUrl" xml:space="preserve"><value>Link</value></data>
-  <data name="Live_RecordingHelp" xml:space="preserve"><value>Paste a link that starts with https://.</value></data>
-  <data name="Live_RecordingOpensOn" xml:space="preserve"><value>Opens on</value></data>
-  <data name="Live_RecordingInvalid" xml:space="preserve"><value>Use a link that starts with https:// or http://.</value></data>
-  <data name="Live_RecordingBy_Provider" xml:space="preserve"><value>Added by Zoom</value></data>
-  <data name="Live_RecordingBy_Manual" xml:space="preserve"><value>Added by a teacher</value></data>
-  <data name="Live_Unit_Minute_One" xml:space="preserve"><value>1 min</value></data>
-  <data name="Live_Unit_Minute_Two" xml:space="preserve"><value>2 min</value></data>
-  <data name="Live_Unit_Minute_Few" xml:space="preserve"><value>{0} min</value></data>
-  <data name="Live_Unit_Minute_Many" xml:space="preserve"><value>{0} min</value></data>
-  <data name="Live_Duration_Minute_One" xml:space="preserve"><value>1 min</value></data>
-  <data name="Live_Duration_Minute_Two" xml:space="preserve"><value>2 min</value></data>
-  <data name="Live_Duration_Minute_Few" xml:space="preserve"><value>{0} min</value></data>
-  <data name="Live_Duration_Minute_Many" xml:space="preserve"><value>{0} min</value></data>
-  <data name="Live_Unit_Session_One" xml:space="preserve"><value>1 session</value></data>
-  <data name="Live_Unit_Session_Two" xml:space="preserve"><value>2 sessions</value></data>
-  <data name="Live_Unit_Session_Few" xml:space="preserve"><value>{0} sessions</value></data>
-  <data name="Live_Unit_Session_Many" xml:space="preserve"><value>{0} sessions</value></data>
-  <data name="Live_MoreSessions_One" xml:space="preserve"><value>and 1 more</value></data>
-  <data name="Live_MoreSessions_Two" xml:space="preserve"><value>and 2 more</value></data>
-  <data name="Live_MoreSessions_Few" xml:space="preserve"><value>and {0} more</value></data>
-  <data name="Live_MoreSessions_Many" xml:space="preserve"><value>and {0} more</value></data>
-  <data name="Live_LaterSessions_One" xml:space="preserve"><value>and 1 later session</value></data>
-  <data name="Live_LaterSessions_Two" xml:space="preserve"><value>and 2 later sessions</value></data>
-  <data name="Live_LaterSessions_Few" xml:space="preserve"><value>and {0} later sessions</value></data>
-  <data name="Live_LaterSessions_Many" xml:space="preserve"><value>and {0} later sessions</value></data>
-  <data name="Live_EveryWeeks_One" xml:space="preserve"><value>Every week</value></data>
-  <data name="Live_EveryWeeks_Two" xml:space="preserve"><value>Every 2 weeks</value></data>
-  <data name="Live_EveryWeeks_Few" xml:space="preserve"><value>Every {0} weeks</value></data>
-  <data name="Live_EveryWeeks_Many" xml:space="preserve"><value>Every {0} weeks</value></data>
   <data name="Students_Subtitle" xml:space="preserve"><value>Students of your organization, their class and guardians.</value></data>
   <data name="Students_EmptyTitle" xml:space="preserve"><value>No matching students</value></data>
   <data name="Students_EmptyText" xml:space="preserve"><value>Change the filters or add a new student.</value></data>
@@ -1770,6 +1622,125 @@
   <data name="AuditEntity_GradeEntry" xml:space="preserve"><value>Grade entry</value></data>
   <data name="AuditEntity_GradeSnapshot" xml:space="preserve"><value>Grade snapshot</value></data>
   <data name="PermModule_Grades" xml:space="preserve"><value>Grades</value></data>
+  <data name="Error_timetable_conflict" xml:space="preserve"><value>This slot clashes with another one: the teacher or the class is already booked at that time.</value></data>
+  <data name="Error_period_overlap" xml:space="preserve"><value>The period overlaps another period of this school, or it does not start before it ends.</value></data>
+  <data name="Error_period_in_use" xml:space="preserve"><value>A timetable slot uses this period, so it cannot be deleted.</value></data>
+  <data name="Error_timetable_not_published" xml:space="preserve"><value>This slot is still a draft. Publish the timetable first.</value></data>
+  <data name="Error_exception_date_invalid" xml:space="preserve"><value>The date must be a school day of this slot inside the term, and the slot can have only one exception per date.</value></data>
+  <data name="Error_exception_substitute_invalid" xml:space="preserve"><value>The substitute must be another teacher of this school group who is free in that period on that date.</value></data>
+  <data name="Setting_Timetable_WorkingDays" xml:space="preserve"><value>School days of the week</value></data>
+  <data name="SettingValue_Timetable_WorkingDays_Sun" xml:space="preserve"><value>Sunday</value></data>
+  <data name="SettingValue_Timetable_WorkingDays_Mon" xml:space="preserve"><value>Monday</value></data>
+  <data name="SettingValue_Timetable_WorkingDays_Tue" xml:space="preserve"><value>Tuesday</value></data>
+  <data name="SettingValue_Timetable_WorkingDays_Wed" xml:space="preserve"><value>Wednesday</value></data>
+  <data name="SettingValue_Timetable_WorkingDays_Thu" xml:space="preserve"><value>Thursday</value></data>
+  <data name="SettingValue_Timetable_WorkingDays_Fri" xml:space="preserve"><value>Friday</value></data>
+  <data name="SettingValue_Timetable_WorkingDays_Sat" xml:space="preserve"><value>Saturday</value></data>
+  <data name="Setting_Timetable_ConflictMode" xml:space="preserve"><value>Timetable clashes</value></data>
+  <data name="SettingValue_Timetable_ConflictMode_Block" xml:space="preserve"><value>Block the save</value></data>
+  <data name="SettingValue_Timetable_ConflictMode_Warn" xml:space="preserve"><value>Save and warn</value></data>
+  <data name="Tt_SlotState_Draft" xml:space="preserve"><value>Draft</value></data>
+  <data name="Tt_SlotState_Published" xml:space="preserve"><value>Published</value></data>
+  <data name="Tt_ConflictKind_TeacherDoubleBooked" xml:space="preserve"><value>The teacher is already booked then</value></data>
+  <data name="Tt_ConflictKind_ClassDoubleBooked" xml:space="preserve"><value>The class is already booked then</value></data>
+  <data name="Tt_ExceptionKind_Substitute" xml:space="preserve"><value>Substitute teacher</value></data>
+  <data name="Tt_ExceptionKind_Cancelled" xml:space="preserve"><value>Cancelled</value></data>
+  <data name="Tt_ExceptionKind_Moved" xml:space="preserve"><value>Moved to another period</value></data>
+  <data name="Tt_SlotBadge_Conflict" xml:space="preserve"><value>Clash</value></data>
+  <data name="Tt_SlotBadge_HasException" xml:space="preserve"><value>Has a change</value></data>
+  <data name="Tt_SlotBadge_DraftChange" xml:space="preserve"><value>Not republished</value></data>
+  <data name="Tt_CopySkip_ClassCourseMissing" xml:space="preserve"><value>The course is not taught in this term</value></data>
+  <data name="Tt_CopySkip_TeacherMissing" xml:space="preserve"><value>The teacher is no longer assigned</value></data>
+  <data name="Tt_CopySkip_PeriodMissing" xml:space="preserve"><value>The period no longer exists</value></data>
+  <data name="Tt_CopySkip_SlotExists" xml:space="preserve"><value>The target term already has a slot there</value></data>
+  <data name="Perm_Timetable_View" xml:space="preserve"><value>View timetables and periods</value></data>
+  <data name="Perm_Timetable_Manage" xml:space="preserve"><value>Build and publish timetables</value></data>
+  <data name="Perm_Timetable_Configure" xml:space="preserve"><value>Configure periods</value></data>
+  <data name="Perm_Timetable_ViewOwn" xml:space="preserve"><value>View own timetable</value></data>
+  <data name="AuditEntity_Period" xml:space="preserve"><value>Period</value></data>
+  <data name="AuditEntity_TimetableSlot" xml:space="preserve"><value>Timetable slot</value></data>
+  <data name="AuditEntity_TimetableException" xml:space="preserve"><value>Timetable exception</value></data>
+  <data name="PermModule_Timetable" xml:space="preserve"><value>Timetable</value></data>
+  <data name="Error_attendance_edit_window_closed" xml:space="preserve"><value>The edit window of this attendance has closed. Ask a manager or counselor to correct it.</value></data>
+  <data name="Error_attendance_session_future" xml:space="preserve"><value>This session is on a future date. Attendance can only be taken for today or earlier.</value></data>
+  <data name="Error_attendance_unmarked_rows" xml:space="preserve"><value>Mark every student before saving.</value></data>
+  <data name="Error_attendance_reason_required" xml:space="preserve"><value>Give a reason (up to 500 characters) to edit attendance after the edit window.</value></data>
+  <data name="Error_attendance_not_a_proposal" xml:space="preserve"><value>Only attendance proposed from a live session can be confirmed.</value></data>
+  <data name="Error_excuse_out_of_policy" xml:space="preserve"><value>This excuse is outside the school policy.</value></data>
+  <data name="Error_excuse_submitter_not_allowed" xml:space="preserve"><value>Only a guardian can submit an excuse for this student.</value></data>
+  <data name="Error_excuse_reviewer_is_submitter" xml:space="preserve"><value>You cannot review an excuse you submitted.</value></data>
+  <data name="Error_excuse_comment_required" xml:space="preserve"><value>Write a comment (up to 500 characters) to reject an excuse.</value></data>
+  <data name="Error_excuse_attachment_invalid" xml:space="preserve"><value>The attachment must be a JPEG, PNG, WebP or PDF file within the size limit.</value></data>
+  <data name="Error_excuse_not_pending" xml:space="preserve"><value>This excuse has already been decided or withdrawn.</value></data>
+  <data name="Exc_Violation_TooLate" xml:space="preserve"><value>The absence is older than the period allowed for excuses.</value></data>
+  <data name="Exc_Violation_ReasonNotAllowed" xml:space="preserve"><value>This reason is not accepted by the school.</value></data>
+  <data name="Exc_Violation_AttachmentRequired" xml:space="preserve"><value>This reason needs an attachment.</value></data>
+  <data name="Exc_Violation_NothingToExcuse" xml:space="preserve"><value>None of the chosen days has an absence or a late arrival to excuse.</value></data>
+  <data name="Exc_Violation_DatesInvalid" xml:space="preserve"><value>The dates are in the future or reversed.</value></data>
+  <data name="Setting_Attendance_GenerateDaysAhead" xml:space="preserve"><value>Days of sessions created ahead from the timetable</value></data>
+  <data name="Setting_Attendance_EditWindowHours" xml:space="preserve"><value>Hours a teacher can edit attendance after taking it</value></data>
+  <data name="Setting_Attendance_LiveMinPercent" xml:space="preserve"><value>Share of a live session that counts as present (%)</value></data>
+  <data name="Setting_Attendance_LateAfterMinutes" xml:space="preserve"><value>Minutes after the start that count as late</value></data>
+  <data name="Setting_Attendance_AbsentThreshold" xml:space="preserve"><value>Absences that trigger an alert</value></data>
+  <data name="Setting_Attendance_ThresholdWindowDays" xml:space="preserve"><value>Days counted for the absence alert</value></data>
+  <data name="Setting_Attendance_LateWeightPercent" xml:space="preserve"><value>A late arrival counts as this share of an absence (%)</value></data>
+  <data name="Setting_Excuses_Submitters" xml:space="preserve"><value>Who can submit an excuse</value></data>
+  <data name="SettingValue_Excuses_Submitters_GuardiansOnly" xml:space="preserve"><value>Guardians only</value></data>
+  <data name="SettingValue_Excuses_Submitters_GuardiansAndStudents" xml:space="preserve"><value>Guardians and students</value></data>
+  <data name="Setting_Excuses_MaxDaysAfterAbsence" xml:space="preserve"><value>School days allowed to submit an excuse after an absence</value></data>
+  <data name="Setting_Excuses_AllowedReasons" xml:space="preserve"><value>Accepted excuse reasons</value></data>
+  <data name="Setting_Excuses_AttachmentRequiredReasons" xml:space="preserve"><value>Reasons that need an attachment</value></data>
+  <data name="SettingValue_Excuses_AllowedReasons_Illness" xml:space="preserve"><value>Illness</value></data>
+  <data name="SettingValue_Excuses_AttachmentRequiredReasons_Illness" xml:space="preserve"><value>Illness</value></data>
+  <data name="Exc_Reason_Illness" xml:space="preserve"><value>Illness</value></data>
+  <data name="SettingValue_Excuses_AllowedReasons_Family" xml:space="preserve"><value>Family circumstances</value></data>
+  <data name="SettingValue_Excuses_AttachmentRequiredReasons_Family" xml:space="preserve"><value>Family circumstances</value></data>
+  <data name="Exc_Reason_Family" xml:space="preserve"><value>Family circumstances</value></data>
+  <data name="SettingValue_Excuses_AllowedReasons_Official" xml:space="preserve"><value>Official obligation</value></data>
+  <data name="SettingValue_Excuses_AttachmentRequiredReasons_Official" xml:space="preserve"><value>Official obligation</value></data>
+  <data name="Exc_Reason_Official" xml:space="preserve"><value>Official obligation</value></data>
+  <data name="SettingValue_Excuses_AllowedReasons_Other" xml:space="preserve"><value>Other</value></data>
+  <data name="SettingValue_Excuses_AttachmentRequiredReasons_Other" xml:space="preserve"><value>Other</value></data>
+  <data name="Exc_Reason_Other" xml:space="preserve"><value>Other</value></data>
+  <data name="Setting_Excuses_MaxAttachmentMb" xml:space="preserve"><value>Largest excuse attachment (MB)</value></data>
+  <data name="Setting_Excuses_AttachmentRetentionDays" xml:space="preserve"><value>Days to keep attachments of rejected or withdrawn excuses</value></data>
+  <data name="NotifEvent_Attendance_Absent" xml:space="preserve"><value>Absence or late arrival recorded</value></data>
+  <data name="Notif_Attendance_Absent" xml:space="preserve"><value>{StudentName} was marked {Status} in {CourseName} on {Date}.</value></data>
+  <data name="NotifEvent_Excuses_Decided" xml:space="preserve"><value>Excuse decided</value></data>
+  <data name="Notif_Excuses_Decided" xml:space="preserve"><value>The excuse for {StudentName} was {Decision}.</value></data>
+  <data name="NotifEvent_Excuses_Escalated" xml:space="preserve"><value>Excuse escalated to you</value></data>
+  <data name="Notif_Excuses_Escalated" xml:space="preserve"><value>An excuse for {StudentName} was escalated to you.</value></data>
+  <data name="NotifEvent_Attendance_ThresholdCrossed" xml:space="preserve"><value>Absence threshold reached</value></data>
+  <data name="Notif_Attendance_ThresholdCrossed" xml:space="preserve"><value>{StudentName} reached {Absences} absences in the last {WindowDays} days.</value></data>
+  <data name="Att_Status_Present" xml:space="preserve"><value>Present</value></data>
+  <data name="Att_Status_Absent" xml:space="preserve"><value>Absent</value></data>
+  <data name="Att_Status_Late" xml:space="preserve"><value>Late</value></data>
+  <data name="Att_Status_Excused" xml:space="preserve"><value>Excused</value></data>
+  <data name="Att_Source_Timetable" xml:space="preserve"><value>From the timetable</value></data>
+  <data name="Att_Source_AdHoc" xml:space="preserve"><value>Added by the teacher</value></data>
+  <data name="Att_Source_Live" xml:space="preserve"><value>Proposed from a live session</value></data>
+  <data name="Att_State_Open" xml:space="preserve"><value>Open</value></data>
+  <data name="Att_State_Taken" xml:space="preserve"><value>Taken</value></data>
+  <data name="Att_ChangeKind_Taken" xml:space="preserve"><value>Taken</value></data>
+  <data name="Att_ChangeKind_Edited" xml:space="preserve"><value>Edited</value></data>
+  <data name="Att_ChangeKind_EditedAfterWindow" xml:space="preserve"><value>Edited after the window</value></data>
+  <data name="Att_ChangeKind_ExcuseApproved" xml:space="preserve"><value>Excuse approved</value></data>
+  <data name="Exc_Status_Submitted" xml:space="preserve"><value>Submitted</value></data>
+  <data name="Exc_Status_Approved" xml:space="preserve"><value>Approved</value></data>
+  <data name="Exc_Status_Rejected" xml:space="preserve"><value>Rejected</value></data>
+  <data name="Exc_Status_Escalated" xml:space="preserve"><value>Escalated</value></data>
+  <data name="Exc_Status_Withdrawn" xml:space="preserve"><value>Withdrawn</value></data>
+  <data name="Perm_Attendance_Take" xml:space="preserve"><value>Take attendance</value></data>
+  <data name="Perm_Attendance_Edit" xml:space="preserve"><value>Edit attendance after the edit window</value></data>
+  <data name="Perm_Attendance_View" xml:space="preserve"><value>View attendance, reports and alerts</value></data>
+  <data name="Perm_Attendance_ViewOwn" xml:space="preserve"><value>View own attendance</value></data>
+  <data name="Perm_Excuses_Submit" xml:space="preserve"><value>Submit and track absence excuses</value></data>
+  <data name="Perm_Excuses_Review" xml:space="preserve"><value>Review absence excuses</value></data>
+  <data name="Perm_Excuses_Escalate" xml:space="preserve"><value>Escalate absence excuses</value></data>
+  <data name="PermModule_Attendance" xml:space="preserve"><value>Attendance</value></data>
+  <data name="PermModule_Excuses" xml:space="preserve"><value>Excuses</value></data>
+  <data name="AuditEntity_AttendanceRecordChange" xml:space="preserve"><value>Attendance change</value></data>
+  <data name="AuditEntity_AbsenceExcuse" xml:space="preserve"><value>Absence excuse</value></data>
   <data name="Error_messaging_not_allowed" xml:space="preserve"><value>You cannot send messages to this person.</value></data>
   <data name="Error_conversation_closed" xml:space="preserve"><value>This conversation was locked by a moderator.</value></data>
   <data name="Error_message_too_long" xml:space="preserve"><value>The message is empty or longer than the limit.</value></data>

@@ -45,11 +45,11 @@ public sealed class MessagingContractTests
     }
 
     [Fact]
-    public void Defaults_version_10_introduces_exactly_the_six_permissions()
+    public void Defaults_version_11_introduces_exactly_the_six_permissions()
     {
-        Assert.Equal(10, BuiltInRoleDefaults.CurrentVersion);
-        Assert.Equal(6, BuiltInRoleDefaults.IntroducedInVersion10.Count);
-        Assert.All(BuiltInRoleDefaults.IntroducedInVersion10, p => Assert.Equal(10, BuiltInRoleDefaults.IntroducedIn(p)));
+        Assert.Equal(11, BuiltInRoleDefaults.CurrentVersion);
+        Assert.Equal(6, BuiltInRoleDefaults.IntroducedInVersion11.Count);
+        Assert.All(BuiltInRoleDefaults.IntroducedInVersion11, p => Assert.Equal(11, BuiltInRoleDefaults.IntroducedIn(p)));
     }
 
     // --- the D69 rules matrix

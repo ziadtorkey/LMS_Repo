@@ -81,6 +81,12 @@ public static class NotificationEvents
     public const string MessagingReportResolved = "Messaging.ReportResolved";
     public const string CommsCapReached = "Comms.CapReached";
 
+    // M5 wave 3 (M5 plan Task 3, L26, L11 item 10). Named recipients unless a default role is given. No grade value anywhere; attendance texts name the student, the course and the date only.
+    public const string AttendanceAbsent = "Attendance.Absent";
+    public const string ExcusesDecided = "Excuses.Decided";
+    public const string ExcusesEscalated = "Excuses.Escalated";
+    public const string AttendanceThresholdCrossed = "Attendance.ThresholdCrossed";
+
     public static IReadOnlyList<NotificationEventDefinition> All { get; } =
     [
         new(AccessRoleAssigned, [], ["RoleNameAr", "RoleNameEn", "OrgUnitNameAr", "OrgUnitNameEn"]),
@@ -136,6 +142,14 @@ public static class NotificationEvents
         new(MessagingReportResolved, [], ["Outcome"], DefaultChannels: [NotificationChannels.InApp], Mandatory: true),
         // Org Admins of the client when a daily cap of a channel is reached.
         new(CommsCapReached, [BuiltInRoles.OrgAdmin], ["Channel"], DefaultChannels: [NotificationChannels.InApp, NotificationChannels.Email]),
+        // Named recipients: the student's linked guardians (and the student), one per guardian per session, only when attendance is Taken or a live proposal is confirmed, never on the proposal.
+        new(AttendanceAbsent, [], ["StudentNameAr", "StudentNameEn", "CourseNameAr", "CourseNameEn", "Date", "Status"]),
+        // Named recipient: the submitter. Decision is Approved or Rejected.
+        new(ExcusesDecided, [], ["StudentNameAr", "StudentNameEn", "Decision"]),
+        // Named recipient: the staff member the excuse was escalated to.
+        new(ExcusesEscalated, [], ["StudentNameAr", "StudentNameEn"]),
+        // Default recipient: the Counselors of the student's unit, once per crossing.
+        new(AttendanceThresholdCrossed, [BuiltInRoles.Counselor], ["StudentNameAr", "StudentNameEn", "Absences", "WindowDays"]),
     ];
 
     /// <summary>The definition with this exact (case-sensitive) key, or null.</summary>

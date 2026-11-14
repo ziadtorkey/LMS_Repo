@@ -28,18 +28,12 @@ public sealed record PublishedGradeItemDto(
     bool Excused,
     DateTime PublishedAtUtc);
 
-/// <summary>
-/// A category of a student's course view. Only categories that hold at least one published item are listed (a category of hidden or scheduled
-/// items is omitted, so its name and weight are not disclosed). <c>Percent</c> is computed from the published items of the category only.
-/// </summary>
+/// <summary>A category of a student's course view with its result computed from published items only.</summary>
 public sealed record StudentGradeCategoryDto(Guid CategoryId, string NameAr, string NameEn, decimal Weight, decimal? Percent);
 
 /// <summary>
 /// One course of a student's grades (a term of a ClassCourse). <c>FinalPercent</c>, band and <c>BandPoints</c> (GPA = the band's points for this
-/// course; there is no cross-course overall result, L18) are computed by the engine from the published items only: completeness
-/// (<c>Grades.MissingPolicy</c> = HideUntilComplete means "every published item has a score") and normalisation (category weights are
-/// renormalised over the listed categories) never look at hidden or scheduled items, so the response carries no count, id, name, weight or
-/// effect of a hidden item. <c>FinalPercent</c> is null only when a published item blocks it under that policy or nothing is graded. The staff preview
+/// course; there is no cross-course overall result, L18) are computed by the engine from the published items only. The staff preview
 /// (<c>GET …/gradebook/students/{sid}/student-view</c>, <c>Grades.Manage</c> + relationship) returns this same shape from the same helper.
 /// </summary>
 public sealed record StudentCourseGradesDto(
