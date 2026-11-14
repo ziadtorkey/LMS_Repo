@@ -73,6 +73,9 @@ public sealed class PackageUpload : UnitOwnedEntity
     /// <summary>The prefix of the extracted files in the package store (<c>{orgId}/{id}/</c>), empty until extracted.</summary>
     public string StorePrefix { get; private set; }
 
+    /// <summary>The real uncompressed size of the extracted files; the client's package storage quota adds these up.</summary>
+    public long ExtractedBytes { get; private set; }
+
     /// <summary>The module that uses the package, set when it is attached to its lesson.</summary>
     public Guid? ModuleId { get; private set; }
 
@@ -84,8 +87,9 @@ public sealed class PackageUpload : UnitOwnedEntity
         RejectReason = reason;
     }
 
-    public void MarkReady(string title, string? version, string? mainLibrary, string storePrefix)
+    public void MarkReady(string title, string? version, string? mainLibrary, string storePrefix, long extractedBytes = 0)
     {
+        ExtractedBytes = extractedBytes;
         Status = ReadyStatus;
         RejectReason = null;
         Title = title;
