@@ -191,6 +191,8 @@ public static class ConversationEndpoints
         400 => ApiProblems.BadRequest(sent.ProblemCode!),
         404 => ApiProblems.NotFound(),
         409 => ApiProblems.Conflict(sent.ProblemCode!),
-        _ => Results.Problem(statusCode: sent.Status, title: "Not allowed", extensions: new Dictionary<string, object?> { ["code"] = sent.ProblemCode }),
+        _ => Results.Problem(statusCode: sent.Status, title: "Not allowed", extensions: sent.Reason is null
+            ? new Dictionary<string, object?> { ["code"] = sent.ProblemCode }
+            : new Dictionary<string, object?> { ["code"] = sent.ProblemCode, ["reason"] = sent.Reason }),
     };
 }

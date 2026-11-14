@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Lms.Infrastructure.Messaging;
 
 /// <summary>The outcome of sending: the message, or the problem code and HTTP status that refuses it.</summary>
-public sealed record SendResult(Message? Message, string? ProblemCode, int Status, int? RetryAfterSeconds = null)
+public sealed record SendResult(Message? Message, string? ProblemCode, int Status, int? RetryAfterSeconds = null, string? Reason = null)
 {
     public static SendResult Sent(Message message) => new(message, null, 201);
 
@@ -44,7 +44,7 @@ public sealed class MessageService(LmsDbContext db, ICurrentContext context, ICl
 
         if (conversation.IsReadOnly)
         {
-            return SendResult.Refused(ProblemCodes.group_read_only, 403);
+            return new SendResult(null, ProblemCodes.conversation_read_only, 403, null, ConversationReadOnlyReasons.GroupStudentsReadOnly);
         }
 
         if (!(await policy.CanPostAsync(me.UserId, conversation, ct)).Allowed)

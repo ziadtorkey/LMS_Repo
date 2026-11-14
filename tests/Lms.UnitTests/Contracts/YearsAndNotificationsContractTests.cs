@@ -85,9 +85,9 @@ public partial class YearsAndNotificationsContractTests
         Assert.Equal(("Planned", "Active", "Closed"),
             (AcademicYearStatuses.Planned, AcademicYearStatuses.Active, AcademicYearStatuses.Closed));
         Assert.Equal(("Holiday", "Event"), (CalendarEventKinds.Holiday, CalendarEventKinds.Event));
-        Assert.Equal(["InApp", "Email", "Sms", "Push"], NotificationChannels.All);
-        Assert.Equal(("InApp", "Email", "Sms", "Push"),
-            (NotificationChannels.InApp, NotificationChannels.Email, NotificationChannels.Sms, NotificationChannels.Push));
+        Assert.Equal(["InApp", "Email", "Push"], NotificationChannels.All);
+        Assert.Equal(("InApp", "Email", "Push"),
+            (NotificationChannels.InApp, NotificationChannels.Email, NotificationChannels.Push));
         Assert.Equal("/hubs/notifications", NotificationHub.Path);
         Assert.Equal("notification", NotificationHub.ReceiveMethod);
     }

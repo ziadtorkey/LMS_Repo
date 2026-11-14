@@ -136,7 +136,7 @@ public sealed class MessageActionTests(LmsApiFactory factory)
 
         var upload = await UploadAsync(s.A, s.ConversationId, "notes.pdf", Pdf);
         Assert.Equal(HttpStatusCode.Created, upload.StatusCode);
-        var file = (await upload.Content.ReadFromJsonAsync<MessageAttachmentDto>(Web))!;
+        var file = (await upload.Content.ReadFromJsonAsync<PendingAttachmentDto>(Web))!;
         var sent = await SendTextAsync(s.A, s.ConversationId, "see attached", [file.FileId]);
         Assert.Equal(file.FileId, sent.Attachments.Single().FileId);
 
@@ -157,6 +157,24 @@ public sealed class MessageActionTests(LmsApiFactory factory)
         Assert.False(await db.Set<MessageAttachment>().AnyAsync(a => a.FileId == file.FileId));
         using var scope = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.CreateScope(factory.Services);
         await Assert.ThrowsAnyAsync<Exception>(() => Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<Lms.Domain.Files.IFileStorage>(scope.ServiceProvider).OpenReadAsync(file.FileId));
+    }
+
+    [Fact]
+    public async Task The_uploader_removes_their_own_pending_attachment_and_nobody_else_can()
+    {
+        var s = await SetUpAsync("MA6");
+        var file = (await (await UploadAsync(s.A, s.ConversationId, "draft.pdf", Pdf)).Content.ReadFromJsonAsync<PendingAttachmentDto>(Web))!;
+        Guid rowId;
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            rowId = (await db.Set<MessageAttachment>().SingleAsync(a => a.FileId == file.FileId)).Id;
+        }
+
+        var url = Routes.Conversation(s.ConversationId) + "/attachments/" + rowId;
+        Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(factory, HttpMethod.Delete, url, s.B)).StatusCode); // another participant
+        Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(factory, HttpMethod.Delete, url, s.Outsider)).StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, (await SendAsync(factory, HttpMethod.Delete, url, s.A)).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(factory, HttpMethod.Delete, url, s.A)).StatusCode); // already gone
     }
 
     private sealed class RefusingScanner : Lms.Domain.Files.IFileScanner
@@ -182,7 +200,7 @@ public sealed class MessageActionTests(LmsApiFactory factory)
 
         var response = await scanning.CreateClient().SendAsync(request);
 
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
         await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
         Assert.False(await db.Set<MessageAttachment>().AnyAsync(a => a.ConversationId == s.ConversationId && a.FileName == "virus.pdf"));
     }
@@ -192,13 +210,13 @@ public sealed class MessageActionTests(LmsApiFactory factory)
     {
         var s = await SetUpAsync("MA4");
 
-        Assert.Equal(HttpStatusCode.BadRequest, (await UploadAsync(s.A, s.ConversationId, "page.html", "<html></html>"u8.ToArray())).StatusCode);
-        Assert.Equal(HttpStatusCode.BadRequest, (await UploadAsync(s.A, s.ConversationId, "image.svg", "<svg/>"u8.ToArray())).StatusCode);
-        Assert.Equal(HttpStatusCode.BadRequest, (await UploadAsync(s.A, s.ConversationId, "bundle.zip", [0x50, 0x4B, 3, 4])).StatusCode);
-        Assert.Equal(HttpStatusCode.BadRequest, (await UploadAsync(s.A, s.ConversationId, "macro.xlsm", Pdf)).StatusCode);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, (await UploadAsync(s.A, s.ConversationId, "page.html", "<html></html>"u8.ToArray())).StatusCode);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, (await UploadAsync(s.A, s.ConversationId, "image.svg", "<svg/>"u8.ToArray())).StatusCode);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, (await UploadAsync(s.A, s.ConversationId, "bundle.zip", [0x50, 0x4B, 3, 4])).StatusCode);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, (await UploadAsync(s.A, s.ConversationId, "macro.xlsm", Pdf)).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await UploadAsync(s.Outsider, s.ConversationId, "notes.pdf", Pdf)).StatusCode);
 
-        var mine = (await (await UploadAsync(s.A, s.ConversationId, "mine.pdf", Pdf)).Content.ReadFromJsonAsync<MessageAttachmentDto>(Web))!;
+        var mine = (await (await UploadAsync(s.A, s.ConversationId, "mine.pdf", Pdf)).Content.ReadFromJsonAsync<PendingAttachmentDto>(Web))!;
         // Another participant cannot attach the file of A, and a file of another conversation is not found either.
         Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(factory, HttpMethod.Post, Routes.ConversationMessages(s.ConversationId), s.B, new SendMessageRequest("steal", [mine.FileId]))).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(factory, HttpMethod.Post, Routes.ConversationMessages(s.ConversationId), s.A, new SendMessageRequest("ghost", [Guid.NewGuid()]))).StatusCode);

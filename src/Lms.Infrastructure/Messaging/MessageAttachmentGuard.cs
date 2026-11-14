@@ -25,6 +25,9 @@ public sealed class MessageAttachmentGuard(LmsDbContext db, IFileStorage storage
 {
     public const int UploadsPerHour = 30;
 
+    /// <summary>A pending upload nobody attaches is purged after this long.</summary>
+    public static readonly TimeSpan PendingLifetime = TimeSpan.FromHours(24);
+
     /// <summary>The M4a asset allow-list minus the active types and archives (L12).</summary>
     public static readonly IReadOnlySet<string> AllowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
     {
@@ -55,12 +58,12 @@ public sealed class MessageAttachmentGuard(LmsDbContext db, IFileStorage storage
         var name = Path.GetFileName(fileName);
         if (name.Length == 0 || length <= 0 || !AllowedExtensions.Contains(Path.GetExtension(name)))
         {
-            return AttachmentResult.Refused(ProblemCodes.validation_failed, 400);
+            return AttachmentResult.Refused(ProblemCodes.attachment_invalid, 422);
         }
 
         if (length > MessagingLimits.MaxAttachmentMb * 1024L * 1024L)
         {
-            return AttachmentResult.Refused(ProblemCodes.validation_failed, 413);
+            return AttachmentResult.Refused(ProblemCodes.attachment_invalid, 413);
         }
 
         var now = clock.UtcNow;
@@ -86,7 +89,7 @@ public sealed class MessageAttachmentGuard(LmsDbContext db, IFileStorage storage
             // D65: the scanner runs before anything is stored; a failed scan stores nothing. The content type is decided by the storage layer from the extension, never by the client.
             if (!await scanner.IsCleanAsync(name, content, ct))
             {
-                return AttachmentResult.Refused(ProblemCodes.validation_failed, 400);
+                return AttachmentResult.Refused(ProblemCodes.attachment_invalid, 422);
             }
 
             if (content.CanSeek)
@@ -102,11 +105,11 @@ public sealed class MessageAttachmentGuard(LmsDbContext db, IFileStorage storage
         }
         catch (FileTypeNotAllowedException)
         {
-            return AttachmentResult.Refused(ProblemCodes.validation_failed, 400);
+            return AttachmentResult.Refused(ProblemCodes.attachment_invalid, 422);
         }
         catch (FileTooLargeException)
         {
-            return AttachmentResult.Refused(ProblemCodes.validation_failed, 413);
+            return AttachmentResult.Refused(ProblemCodes.attachment_invalid, 413);
         }
     }
 

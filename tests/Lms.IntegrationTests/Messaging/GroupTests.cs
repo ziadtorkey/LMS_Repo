@@ -93,7 +93,7 @@ public sealed class GroupTests(LmsApiFactory factory)
         Assert.True((await ReadAsync<ConversationDto>(locked)).IsReadOnly);
         var refused = await SendAsync(factory, HttpMethod.Post, Routes.ConversationMessages(group.Id), s.B, new SendMessageRequest("hi", null));
         Assert.Equal(HttpStatusCode.Forbidden, refused.StatusCode);
-        Assert.Equal(ProblemCodes.group_read_only, (await refused.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("code").GetString());
+        Assert.Equal(ProblemCodes.conversation_read_only, (await refused.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("code").GetString());
 
         Assert.False((await ReadAsync<ConversationDto>(await SendAsync(factory, HttpMethod.Delete, Routes.ConversationReadOnly(group.Id), s.Owner))).IsReadOnly);
         Assert.Equal(HttpStatusCode.Created, (await SendAsync(factory, HttpMethod.Post, Routes.ConversationMessages(group.Id), s.B, new SendMessageRequest("hi", null))).StatusCode);
