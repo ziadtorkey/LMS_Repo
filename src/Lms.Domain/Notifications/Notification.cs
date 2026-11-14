@@ -14,7 +14,7 @@ public sealed class Notification : Entity, IOptionalTenantOwned
     }
 
     public Notification(
-        Guid? organizationId, Guid userId, string eventKey, string parametersJson, string? deepLink, DateTime createdAt)
+        Guid? organizationId, Guid userId, string eventKey, string parametersJson, string? deepLink, DateTime createdAt, Guid? sourceId = null)
     {
         OrganizationId = organizationId;
         UserId = userId;
@@ -22,6 +22,7 @@ public sealed class Notification : Entity, IOptionalTenantOwned
         ParametersJson = parametersJson;
         DeepLink = deepLink;
         CreatedAt = createdAt;
+        SourceId = sourceId;
     }
 
     public Guid? OrganizationId { get; private set; }
@@ -31,6 +32,9 @@ public sealed class Notification : Entity, IOptionalTenantOwned
     public string? DeepLink { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime? ReadAt { get; private set; }
+
+    /// <summary>The thing the notice is about (an announcement id), for delivery counts; null for most events.</summary>
+    public Guid? SourceId { get; private set; }
 
     public void MarkRead(DateTime utcNow) => ReadAt ??= utcNow;
 }

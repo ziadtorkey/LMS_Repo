@@ -214,7 +214,7 @@ internal static class AnnouncementEndpoints
             return ApiProblems.BadRequest(ProblemCodes.announcement_target_invalid);
         }
 
-        var (_, unitProblem) = await guard.AuthoringUnitAsync(http, request.AuthoringUnitId, ct);
+        var (previewUnit, unitProblem) = await guard.AuthoringUnitAsync(http, request.AuthoringUnitId, ct);
         if (unitProblem is not null)
         {
             return unitProblem;
@@ -227,11 +227,12 @@ internal static class AnnouncementEndpoints
 
         var chips = await ChipsAsync(request.RoleFilters, guard, ct);
         var audience = await resolver.ResolveAsync(
-            [.. request.Targets.Select(t => new AudienceTarget(t.Kind, t.TargetId, t.IncludeSubtree))], chips, context.UserId, DateOnly.FromDateTime(clock.UtcNow), ct);
+            previewUnit!.OrganizationId, [.. request.Targets.Select(t => new AudienceTarget(t.Kind, t.TargetId, t.IncludeSubtree))], chips, context.UserId, DateOnly.FromDateTime(clock.UtcNow), ct);
         var sampleIds = audience.Users.Keys.Take(10).ToList();
         var names = await db.Set<Lms.Domain.Identity.User>().AsNoTracking().Where(u => sampleIds.Contains(u.Id))
             .Select(u => string.IsNullOrEmpty(u.DisplayNameEn) ? u.DisplayNameAr : u.DisplayNameEn).ToListAsync(ct);
-        return Results.Ok(new AudiencePreviewDto(audience.Count, names));
+        var byChip = AnnouncementRoleFilters.All.Where(chips.Contains).ToDictionary(c => c, c => audience.Users.Count(u => u.Value == c));
+        return Results.Ok(new AudiencePreviewDto(audience.Count, byChip, names));
     }
 
     private static async Task<IReadOnlyList<string>> ChipsAsync(IReadOnlyList<string>? chosen, TargetScopeGuard guard, CancellationToken ct) =>

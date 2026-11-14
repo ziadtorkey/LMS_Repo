@@ -4061,12 +4061,17 @@ namespace Lms.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("ReadAt")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<Guid?>("SourceId")
+                        .HasColumnType("char(36)");
+
                     b.Property<Guid>("UserId")
                         .HasColumnType("char(36)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("OrganizationId");
+
+                    b.HasIndex("SourceId");
 
                     b.HasIndex("UserId", "ReadAt", "CreatedAt");
 

@@ -17,11 +17,11 @@ public sealed class MessagingWave1AddendumTests
     [Fact]
     public void The_course_board_item_defaults_to_the_board_and_a_school_entry_is_marked()
     {
-        Assert.Equal(["CourseBoard", "School"], AnnouncementSources.All);
+        Assert.Equal(["Announcement", "CourseBoard"], AnnouncementSources.All);
         var board = new CourseAnnouncementDto(Guid.NewGuid(), Guid.NewGuid(), "t", "<p>b</p>", false, Guid.NewGuid(), "م", "A", DateTime.UtcNow, null);
-        var school = board with { Source = AnnouncementSources.School };
+        var school = board with { Source = AnnouncementSources.Announcement };
 
         Assert.Equal(AnnouncementSources.CourseBoard, board.Source);
-        Assert.Equal("School", school.Source);
+        Assert.Equal("Announcement", school.Source);
     }
 }

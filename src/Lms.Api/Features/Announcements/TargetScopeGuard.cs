@@ -52,7 +52,13 @@ public sealed class TargetScopeGuard(LmsDbContext db, IRelationshipScope relatio
         switch (target.Kind)
         {
             case AnnouncementTargetKinds.Organization when unrestricted:
-                var root = await orgTree.GetRootAsync(http.RequestServices.GetRequiredService<Lms.Domain.Abstractions.ICurrentContext>().OrganizationId ?? Guid.Empty, ct);
+                // The whole client needs a client context (a platform admin without one has no client to address): 404 like any unreachable target.
+                if (http.RequestServices.GetRequiredService<Lms.Domain.Abstractions.ICurrentContext>().OrganizationId is not { } organizationId)
+                {
+                    return ApiProblems.NotFound();
+                }
+
+                var root = await orgTree.GetRootAsync(organizationId, ct);
                 return (await http.CheckUnitAsync(Permission, root.Id, ct)).Problem;
             case AnnouncementTargetKinds.Unit when unrestricted && id is { } unitId:
                 return (await http.CheckUnitAsync(Permission, unitId, ct)).Problem;

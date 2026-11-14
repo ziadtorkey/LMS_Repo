@@ -2,9 +2,10 @@ namespace Lms.Shared.Messaging;
 
 /// <summary>
 /// One cell of the user's effective notification preferences: whether the event reaches the user on the channel, and why. A mandatory event cannot be switched
-/// off (409 <c>notification_mandatory</c>); there is no SMS in v1 (D76): the channels are in-app, email and push. A client admin sets which channels may be used at all; a user can only narrow.
+/// off (409 <c>notification_mandatory</c>); a channel the client switched off cannot be switched on (409 <c>channel_not_allowed</c>); a user can only narrow what the client allows.
+/// <c>DisabledReason</c> is set when <c>Enabled</c> is false because of a rule, not a choice: <c>channel_off</c> or <c>no_contact</c> (<see cref="DeliverySkipReasons"/>).
 /// </summary>
-public sealed record EffectivePreferenceDto(string EventKey, string Channel, bool Enabled, string Source, bool Mandatory);
+public sealed record EffectivePreferenceDto(string EventKey, string Channel, bool Enabled, string Source, bool Mandatory, string? DisabledReason = null);
 
 /// <summary>PUT <c>/api/me/notification-preferences</c>: the cells the user changed.</summary>
 public sealed record SavePreferenceRequest(string EventKey, string Channel, bool Enabled);
@@ -12,7 +13,22 @@ public sealed record SavePreferenceRequest(string EventKey, string Channel, bool
 public sealed record SavePreferencesRequest(IReadOnlyList<SavePreferenceRequest> Preferences);
 
 /// <summary>GET <c>/api/me/channels</c>: where the user's notices go. The address is masked (<c>m***@example.com</c>, <c>+966 5** *** *12</c>); no code is verified in v1 (D66), the flag shows "unverified".</summary>
-public sealed record ContactChannelDto(string Channel, string State, string? MaskedAddress, bool Verified);
+public sealed record ContactChannelDto(string Channel, string State, string? MaskedAddress, bool Verified, string? LastErrorCode = null, DateTime? ConsentAtUtc = null);
+
+/// <summary>POST <c>/api/me/channels/{channel}/consent</c>: the user agreed to the channel under this version of the consent text (stored with the time; audited as <c>ChannelConsent</c>).</summary>
+public sealed record ChannelConsentRequest(string TextVersion);
+
+/// <summary>GET <c>/api/me/push/vapid-public-key</c>: the application server key the browser subscribes with. A public key only (the private key never leaves the server).</summary>
+public sealed record VapidPublicKeyDto(string PublicKey);
+
+/// <summary>The deliveries of one channel in one status for the client's current day.</summary>
+public sealed record DeliveryCountDto(string Channel, string Status, int Count);
+
+/// <summary>GET <c>/api/comms/delivery-summary</c> (<c>Comms.Manage</c>, client root): counts per channel and status for the client day, with no recipient, address or text.</summary>
+public sealed record DeliverySummaryDto(DateOnly ClientDay, IReadOnlyList<DeliveryCountDto> Counts, DateTime ServerNowUtc);
+
+/// <summary>The platform ceilings the daily caps cannot exceed (read only; 400 <c>comms_cap_above_ceiling</c> above them).</summary>
+public sealed record CommsCeilingsDto(int MaxEmailPerDay, int MaxPushPerDay);
 
 /// <summary>POST <c>/api/me/channels/email/test</c> (3 a day): <c>Accepted</c> = the relay took it (nothing is promised about delivery).</summary>
 public sealed record TestEmailResultDto(bool Accepted, string? Code);
@@ -44,7 +60,8 @@ public sealed record CommsSettingsDto(
     int MaxMessagesPerMinute,
     int MaxNewConversationsPerDay,
     int MaxGroupSize,
-    int MaxAnnouncementsPerAuthorPerDay);
+    int MaxAnnouncementsPerAuthorPerDay,
+    CommsCeilingsDto? Ceilings = null);
 
 /// <summary>PUT <c>/api/comms/settings</c>: the whole document; a value outside its catalog range, a cap above the platform ceiling or a malformed time is 400 <c>validation_failed</c>.</summary>
 public sealed record SaveCommsSettingsRequest(CommsSettingsDto Settings);

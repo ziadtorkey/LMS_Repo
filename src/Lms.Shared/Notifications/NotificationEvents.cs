@@ -143,7 +143,8 @@ public static class NotificationEvents
         // Org Admins of the client when a daily cap of a channel is reached.
         new(CommsCapReached, [BuiltInRoles.OrgAdmin], ["Channel"], DefaultChannels: [NotificationChannels.InApp, NotificationChannels.Email]),
         // Named recipients: the student's linked guardians (and the student), one per guardian per session, only when attendance is Taken or a live proposal is confirmed, never on the proposal.
-        new(AttendanceAbsent, [], ["StudentNameAr", "StudentNameEn", "CourseNameAr", "CourseNameEn", "Date", "Status"]),
+        new(AttendanceAbsent, [], ["StudentNameAr", "StudentNameEn", "CourseNameAr", "CourseNameEn", "Date", "Status"],
+            DefaultChannels: [NotificationChannels.InApp, NotificationChannels.Email, NotificationChannels.Push], Mandatory: true), // D66: absence notices to guardians cannot be switched off
         // Named recipient: the submitter. Decision is Approved or Rejected.
         new(ExcusesDecided, [], ["StudentNameAr", "StudentNameEn", "Decision"]),
         // Named recipient: the staff member the excuse was escalated to.
