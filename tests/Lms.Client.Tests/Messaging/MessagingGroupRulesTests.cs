@@ -146,13 +146,13 @@ public sealed class MessagingGroupRulesTests
     [Fact]
     public async Task There_is_no_sms_channel_preference_or_provider_and_saving_one_is_refused()
     {
-        Assert.DoesNotContain(NotificationChannels.Sms, (await _comms.GetChannelsAsync()).Select(c => c.Channel));
-        Assert.DoesNotContain(NotificationChannels.Sms, (await _comms.GetEffectivePreferencesAsync()).Select(p => p.Channel));
-        Assert.DoesNotContain(NotificationChannels.Sms, (await _comms.GetProviderStatusAsync()).Select(p => p.Channel));
+        Assert.DoesNotContain("Sms", (await _comms.GetChannelsAsync()).Select(c => c.Channel));
+        Assert.DoesNotContain("Sms", (await _comms.GetEffectivePreferencesAsync()).Select(p => p.Channel));
+        Assert.DoesNotContain("Sms", (await _comms.GetProviderStatusAsync()).Select(p => p.Channel));
 
-        var refused = await Refused(() => _comms.SavePreferencesAsync(new SavePreferencesRequest([new SavePreferenceRequest(NotificationEvents.All[0].Key, NotificationChannels.Sms, true)])));
+        var refused = await Refused(() => _comms.SavePreferencesAsync(new SavePreferencesRequest([new SavePreferenceRequest(NotificationEvents.All[0].Key, "Sms", true)])));
 
-        Assert.Equal(ProblemCodes.channel_not_allowed, refused.Code);
+        Assert.Equal(400, refused.Status); // D76: the channel does not exist
         Assert.Equal([NotificationChannels.InApp, NotificationChannels.Email, NotificationChannels.Push], FakeCommsApi.Offered);
     }
 }

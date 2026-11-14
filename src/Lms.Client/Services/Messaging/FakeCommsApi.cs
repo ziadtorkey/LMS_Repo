@@ -33,7 +33,6 @@ public sealed class FakeCommsApi(FakeMessagingRules rules) : ICommsApi
 {
     private readonly Dictionary<(string Event, string Channel), bool> _user = [];
     private readonly List<PushSubscriptionDto> _push = [];
-    private readonly List<MessageReportDto> _reports = [];
     private int _emailTests;
 
     public FakeCommsApi() : this(new FakeMessagingRules()) { }
@@ -49,7 +48,7 @@ public sealed class FakeCommsApi(FakeMessagingRules rules) : ICommsApi
         new(NotificationChannels.Push, ChannelStates.NeedsSetup, null, false),
     ];
 
-    public CommsSettingsDto Settings { get; set; } = new(true, false, true, 2000, 0, 5000, 10, 0, 20, true, "21:00", "07:00", 90, false, 20, 20, 50, 20);
+    public CommsSettingsDto Settings { get; set; } = new(true, true, 2000, 5000, 10, 20, true, "21:00", "07:00", 90, false, 20, 20, 50, 20);
 
     public List<ProviderStatusDto> Providers { get; } =
     [
@@ -58,7 +57,7 @@ public sealed class FakeCommsApi(FakeMessagingRules rules) : ICommsApi
     ];
 
     /// <summary>D76: no SMS in v1. Email, push and the in-app inbox are the only channels a user sees or sets.</summary>
-    public static IReadOnlyList<string> Offered { get; } = [.. NotificationChannels.All.Where(c => c != NotificationChannels.Sms)];
+    public static IReadOnlyList<string> Offered { get; } = NotificationChannels.All;
 
     private static ApiProblemException Problem(int status, string code) => new(status, code, null, null);
 
@@ -85,7 +84,6 @@ public sealed class FakeCommsApi(FakeMessagingRules rules) : ICommsApi
         foreach (var p in request.Preferences)
         {
             var def = NotificationEvents.Find(p.EventKey) ?? throw Problem(400, ProblemCodes.validation_failed);
-            if (p.Channel == NotificationChannels.Sms) throw Problem(409, ProblemCodes.channel_not_allowed); // D76: SMS is not offered at all
             if (!NotificationChannels.All.Contains(p.Channel)) throw Problem(400, ProblemCodes.validation_failed);
             if (def.Mandatory && !p.Enabled && (def.DefaultChannels ?? []).Contains(p.Channel)) throw Problem(409, ProblemCodes.notification_mandatory);
         }
@@ -163,40 +161,4 @@ public sealed class FakeCommsApi(FakeMessagingRules rules) : ICommsApi
     }
 
     public Task<IReadOnlyList<ProviderStatusDto>> GetProviderStatusAsync(CancellationToken ct = default) => Task.FromResult<IReadOnlyList<ProviderStatusDto>>([.. Providers]);
-
-    /// <summary>Test and demo helper: an open report appears in the moderation queue.</summary>
-    public MessageReportDto AddReport(Guid messageId, Guid conversationId, string body) =>
-        Add(new MessageReportDto(Guid.NewGuid(), messageId, conversationId, ReportReasons.Harassment, null, ReportStatuses.Open, Guid.NewGuid(), Guid.NewGuid(),
-            "مستخدم", "A user", body, [], Now(), null, null, null));
-
-    private MessageReportDto Add(MessageReportDto report)
-    {
-        _reports.Add(report);
-        return report;
-    }
-
-    public Task<PagedResult<MessageReportDto>> ListReportsAsync(ReportQuery query, CancellationToken ct = default)
-    {
-        var rows = _reports.Where(r => query.Status is null || r.Status == query.Status).ToList();
-        return Task.FromResult(new PagedResult<MessageReportDto>([.. rows.Skip((query.Page - 1) * query.PageSize).Take(query.PageSize)], rows.Count, query.Page, query.PageSize));
-    }
-
-    public Task<MessageReportDto> GetReportAsync(Guid id, CancellationToken ct = default) =>
-        Task.FromResult(_reports.FirstOrDefault(r => r.Id == id) ?? throw Problem(404, ProblemCodes.not_found));
-
-    public Task<MessageReportDto> ResolveReportAsync(Guid id, ResolveReportRequest request, CancellationToken ct = default)
-    {
-        var r = _reports.FirstOrDefault(x => x.Id == id) ?? throw Problem(404, ProblemCodes.not_found);
-        if (r.Status != ReportStatuses.Open) throw Problem(409, ProblemCodes.validation_failed);
-        var resolved = r with
-        {
-            Status = request.Action == ModerationActions.Dismiss ? ReportStatuses.Dismissed : ReportStatuses.Actioned,
-            Action = request.Action, ResolutionNote = request.Note, ResolvedAtUtc = Now(),
-        };
-        _reports[_reports.IndexOf(r)] = resolved;
-        return Task.FromResult(resolved);
-    }
-
-    public Task<ModerationStatsDto> GetModerationStatsAsync(CancellationToken ct = default) =>
-        Task.FromResult(new ModerationStatsDto(_reports.Count(r => r.Status == ReportStatuses.Open), _reports.Count(r => r.Status != ReportStatuses.Open), 0));
 }

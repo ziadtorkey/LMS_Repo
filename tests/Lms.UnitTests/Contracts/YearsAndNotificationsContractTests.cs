@@ -26,7 +26,7 @@ public partial class YearsAndNotificationsContractTests
              "Enrollment.ExceptionRequested", "Enrollment.ExceptionDecided", "Enrollment.StudentTransferred",
              "Assignments.Published", "Assignments.DueSoon", "Assignments.Graded", "Quizzes.Opened",
              "Forums.Announcement", "Live.Reminder", "Grades.Published",
-             "Messages.NewMessage", "Announcements.Published", "Messaging.Warning", "Messaging.Restricted", "Messaging.ReportResolved", "Comms.CapReached",
+             "Messages.NewMessage", "Announcements.Published", "Messaging.Warning", "Messaging.Restricted", "Messaging.ReportResolved", "Moderation.ReportReceived", "Moderation.SafetyReportReceived", "Comms.CapReached",
              "Attendance.Absent", "Excuses.Decided", "Excuses.Escalated", "Attendance.ThresholdCrossed"], keys);
         Assert.All(keys, k => Assert.Matches(ModuleEventFormat(), k));
         Assert.Equal(keys.Count, keys.Distinct(StringComparer.Ordinal).Count());
@@ -85,9 +85,9 @@ public partial class YearsAndNotificationsContractTests
         Assert.Equal(("Planned", "Active", "Closed"),
             (AcademicYearStatuses.Planned, AcademicYearStatuses.Active, AcademicYearStatuses.Closed));
         Assert.Equal(("Holiday", "Event"), (CalendarEventKinds.Holiday, CalendarEventKinds.Event));
-        Assert.Equal(["InApp", "Email", "Sms", "Push"], NotificationChannels.All);
-        Assert.Equal(("InApp", "Email", "Sms", "Push"),
-            (NotificationChannels.InApp, NotificationChannels.Email, NotificationChannels.Sms, NotificationChannels.Push));
+        Assert.Equal(["InApp", "Email", "Push"], NotificationChannels.All);
+        Assert.Equal(("InApp", "Email", "Push"),
+            (NotificationChannels.InApp, NotificationChannels.Email, NotificationChannels.Push));
         Assert.Equal("/hubs/notifications", NotificationHub.Path);
         Assert.Equal("notification", NotificationHub.ReceiveMethod);
     }

@@ -2241,4 +2241,50 @@
   <data name="CommsSet_Fake" xml:space="preserve"><value>مزوّد تجريبي</value></data>
   <data name="CommsSet_LastSuccess" xml:space="preserve"><value>آخر نجاح</value></data>
   <data name="Nav_CommunicationSettings" xml:space="preserve"><value>إعدادات التواصل</value></data>
+  <data name="Package_Start" xml:space="preserve"><value>ابدأ</value></data>
+  <data name="Package_Resume" xml:space="preserve"><value>استئناف</value></data>
+  <data name="Package_Preview" xml:space="preserve"><value>معاينة</value></data>
+  <data name="Package_PreviewBanner" xml:space="preserve"><value>معاينة: لا يُسجَّل أي شيء.</value></data>
+  <data name="Package_ThirdParty" xml:space="preserve"><value>يأتي هذا النشاط من جهة أخرى. قد لا تعمل بعض أجزائه مع لوحة المفاتيح أو قارئ الشاشة.</value></data>
+  <data name="Package_PhoneHint" xml:space="preserve"><value>يعمل بشكل أفضل على شاشة أكبر.</value></data>
+  <data name="Package_State_NotStarted" xml:space="preserve"><value>لم يبدأ</value></data>
+  <data name="Package_State_InProgress" xml:space="preserve"><value>قيد التنفيذ</value></data>
+  <data name="Package_State_Completed" xml:space="preserve"><value>مكتمل</value></data>
+  <data name="Package_Exit" xml:space="preserve"><value>خروج</value></data>
+  <data name="Package_Fullscreen" xml:space="preserve"><value>ملء الشاشة</value></data>
+  <data name="Package_ExitFullscreen" xml:space="preserve"><value>إنهاء ملء الشاشة</value></data>
+  <data name="Package_Saving" xml:space="preserve"><value>جارٍ الحفظ…</value></data>
+  <data name="Package_Saved" xml:space="preserve"><value>تم الحفظ</value></data>
+  <data name="Package_SaveFailed" xml:space="preserve"><value>تعذّر الحفظ. جارٍ إعادة المحاولة…</value></data>
+  <data name="Package_Retry" xml:space="preserve"><value>أعد المحاولة</value></data>
+  <data name="Package_Expired" xml:space="preserve"><value>انتهت مهلة النشاط. أعد التحميل لتكمل من حيث توقفت.</value></data>
+  <data name="Package_Reload" xml:space="preserve"><value>إعادة التحميل</value></data>
+  <data name="Package_OpenAgain" xml:space="preserve"><value>افتح مرة أخرى</value></data>
+  <data name="Package_NotReady" xml:space="preserve"><value>هذا النشاط غير جاهز بعد. حاول لاحقاً.</value></data>
+  <data name="Package_FrameTitle" xml:space="preserve"><value>{0} (نشاط تفاعلي)</value></data>
+  <data name="Module_NotAvailableTitle" xml:space="preserve"><value>هذا النشاط غير متاح</value></data>
+  <data name="Module_NotAvailableText" xml:space="preserve"><value>ربما أُخفي أو حُذف. ارجع إلى المقرر لترى المتاح لك.</value></data>
+  <data name="NavSection_Structure" xml:space="preserve"><value>الهيكل</value></data>
+  <data name="NavSection_People" xml:space="preserve"><value>الأشخاص</value></data>
+  <data name="NavSection_Academic" xml:space="preserve"><value>الأكاديمي</value></data>
+  <data name="NavSection_Security" xml:space="preserve"><value>الأمان والإعدادات</value></data>
+  <data name="App_Subtitle" xml:space="preserve"><value>المنصة الأكاديمية</value></data>
+  <data name="Nav_Main" xml:space="preserve"><value>التنقل الرئيسي</value></data>
+  <data name="Msg_Reason_SafetyConcern" xml:space="preserve"><value>مخاوف تتعلق بالسلامة</value></data>
+  <data name="Msg_ReportStatus_InReview" xml:space="preserve"><value>قيد المراجعة</value></data>
+  <data name="Msg_ReportStatus_ActionTaken" xml:space="preserve"><value>تم اتخاذ إجراء</value></data>
+  <data name="Msg_MyReport_Pending" xml:space="preserve"><value>بلاغك قيد الانتظار</value></data>
+  <data name="Msg_MyReport_Reviewed" xml:space="preserve"><value>تمت مراجعة بلاغك</value></data>
+  <data name="Msg_RestrictDays_1" xml:space="preserve"><value>يوم واحد</value></data>
+  <data name="Msg_RestrictDays_7" xml:space="preserve"><value>٧ أيام</value></data>
+  <data name="Msg_RestrictDays_30" xml:space="preserve"><value>٣٠ يومًا</value></data>
+  <data name="NotifEvent_Moderation_ReportReceived" xml:space="preserve"><value>تم الإبلاغ عن رسالة</value></data>
+  <data name="Notif_Moderation_ReportReceived" xml:space="preserve"><value>تم الإبلاغ عن رسالة ({Reason}). افتح قائمة الإشراف لمراجعتها.</value></data>
+  <data name="NotifEvent_Moderation_SafetyReportReceived" xml:space="preserve"><value>بلاغ عن مخاوف تتعلق بالسلامة</value></data>
+  <data name="Notif_Moderation_SafetyReportReceived" xml:space="preserve"><value>تم الإبلاغ عن مخاوف تتعلق بالسلامة. يرجى المراجعة في أقرب وقت.</value></data>
+  <data name="Setting_Moderation_ReportContextRetentionDays" xml:space="preserve"><value>عدد أيام الاحتفاظ بالبلاغ المنتهي وسياقه</value></data>
+  <data name="Setting_Moderation_MaxReportsPerUserPerDay" xml:space="preserve"><value>عدد البلاغات التي يمكن للشخص تقديمها يوميًا</value></data>
+  <data name="Setting_Moderation_SafetyReviewHours" xml:space="preserve"><value>عدد ساعات مراجعة بلاغ السلامة</value></data>
+  <data name="AuditEntity_ModerationRead" xml:space="preserve"><value>اطلاع المشرف على رسالة مُبلَّغ عنها</value></data>
+  <data name="NavSection_Communication" xml:space="preserve"><value>التواصل</value></data>
 </root>

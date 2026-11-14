@@ -102,8 +102,6 @@ public sealed class MessagingHttpClientsTests
         await Ignore(api.RemovePushSubscriptionAsync(Id));
         await Ignore(api.GetMessagingRulesAsync());
         await Ignore(api.SaveMessagingRulesAsync(new SaveMessagingRulesRequest([])));
-        await Ignore(api.ListReportsAsync(new ReportQuery(ReportStatuses.Open)));
-        await Ignore(api.ResolveReportAsync(Id, new ResolveReportRequest(ModerationActions.Dismiss, null, null)));
 
         Assert.Contains((HttpMethod.Get, Routes.MyEffectivePreferences), recorder.Requests);
         Assert.Contains((HttpMethod.Put, Routes.MyNotificationPreferences), recorder.Requests);
@@ -111,8 +109,6 @@ public sealed class MessagingHttpClientsTests
         Assert.Contains((HttpMethod.Delete, Routes.MyPushSubscription(Id)), recorder.Requests);
         Assert.Contains((HttpMethod.Get, Routes.CommsMessagingRules), recorder.Requests);
         Assert.Contains((HttpMethod.Put, Routes.CommsMessagingRules), recorder.Requests);
-        Assert.Contains((HttpMethod.Get, $"{Routes.ModerationReports}?page=1&pageSize={Paging.DefaultPageSize}&status=Open"), recorder.Requests);
-        Assert.Contains((HttpMethod.Post, Routes.ModerationReportResolve(Id)), recorder.Requests);
     }
 
     [Fact]

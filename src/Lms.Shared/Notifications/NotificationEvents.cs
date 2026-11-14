@@ -3,14 +3,14 @@ using Lms.Shared.Authorization;
 namespace Lms.Shared.Notifications;
 
 /// <summary>Delivery channels (FR-NOT-01). M1 delivers InApp only; the others are stored preferences for M6.</summary>
+// D76: no SMS in v1; the channels are in-app, email and Web Push.
 public static class NotificationChannels
 {
     public const string InApp = "InApp";
     public const string Email = "Email";
-    public const string Sms = "Sms";
     public const string Push = "Push";
 
-    public static IReadOnlyList<string> All { get; } = [InApp, Email, Sms, Push];
+    public static IReadOnlyList<string> All { get; } = [InApp, Email, Push];
 }
 
 /// <summary>Where the default recipient roles of an event are looked up, relative to the event's unit.</summary>
@@ -36,7 +36,8 @@ public sealed record NotificationEventDefinition(
     IReadOnlyList<string> Parameters,
     string RecipientScope = RecipientScopes.Subtree,
     IReadOnlyList<string>? DefaultChannels = null,
-    bool Mandatory = false);
+    bool Mandatory = false,
+    bool Urgent = false);
 
 /// <summary>Notification event catalog ("Module.Event" keys). Later milestones append; never rename a key.</summary>
 public static class NotificationEvents
@@ -79,6 +80,10 @@ public static class NotificationEvents
     public const string MessagingWarning = "Messaging.Warning";
     public const string MessagingRestricted = "Messaging.Restricted";
     public const string MessagingReportResolved = "Messaging.ReportResolved";
+
+    // M6 wave 4: moderation. Two keys so only a safety concern is mandatory: an ordinary report notice can be switched off, a safety one cannot.
+    public const string ModerationReportReceived = "Moderation.ReportReceived";
+    public const string ModerationSafetyReportReceived = "Moderation.SafetyReportReceived";
     public const string CommsCapReached = "Comms.CapReached";
 
     // M5 wave 3 (M5 plan Task 3, L26, L11 item 10). Named recipients unless a default role is given. No grade value anywhere; attendance texts name the student, the course and the date only.
@@ -138,8 +143,13 @@ public static class NotificationEvents
         new(MessagingWarning, [], [], DefaultChannels: [NotificationChannels.InApp, NotificationChannels.Email], Mandatory: true),
         // Named recipient: a user whose messaging right was restricted until the date. Mandatory.
         new(MessagingRestricted, [], ["UntilUtc"], DefaultChannels: [NotificationChannels.InApp, NotificationChannels.Email], Mandatory: true),
-        // Named recipient: the reporter, with the outcome (Dismissed or Actioned) and no detail about the other person. Mandatory.
+        // Named recipient: the reporter, with the outcome code Reviewed only (never the action or a note) and nothing about the other person. Mandatory.
         new(MessagingReportResolved, [], ["Outcome"], DefaultChannels: [NotificationChannels.InApp], Mandatory: true),
+        // The Org Admins at or above the report's unit when a message is reported. The reason code only: never the message text or a name.
+        new(ModerationReportReceived, [BuiltInRoles.OrgAdmin], ["Reason"], RecipientScopes.AncestorsAndSelf, [NotificationChannels.InApp, NotificationChannels.Email]),
+        // The same for a safety concern: mandatory and urgent (sent at once, ignoring quiet hours), on in-app, email and push.
+        new(ModerationSafetyReportReceived, [BuiltInRoles.OrgAdmin], ["Reason"], RecipientScopes.AncestorsAndSelf,
+            [NotificationChannels.InApp, NotificationChannels.Email, NotificationChannels.Push], Mandatory: true, Urgent: true),
         // Org Admins of the client when a daily cap of a channel is reached.
         new(CommsCapReached, [BuiltInRoles.OrgAdmin], ["Channel"], DefaultChannels: [NotificationChannels.InApp, NotificationChannels.Email]),
         // Named recipients: the student's linked guardians (and the student), one per guardian per session, only when attendance is Taken or a live proposal is confirmed, never on the proposal.

@@ -37,7 +37,8 @@ public sealed record MessageAttachmentDto(Guid FileId, string FileName, string C
 /// <summary>
 /// One message. <c>Body</c> is null for a tombstone (<see cref="MessageStates.Deleted"/>) and for a removed one (<see cref="MessageStates.Removed"/>); only
 /// moderators read the original of a removed message, through the report. <c>CanDelete</c> = the caller sent it and is inside the delete window.
-/// A user whose account was deleted or expired shows a neutral name ("Former user") and <c>SenderUserId</c> null.
+/// A user whose account was deleted or expired shows a neutral name ("Former user") and <c>SenderUserId</c> null. <c>MyReportStatus</c> (<see cref="MyReportStatuses"/>) is set only for
+/// the caller's own report of this message: pending or reviewed, never the action, and null for the sender and every other participant (L16).
 /// </summary>
 public sealed record MessageDto(
     Guid Id,
@@ -50,9 +51,10 @@ public sealed record MessageDto(
     IReadOnlyList<MessageAttachmentDto> Attachments,
     DateTime CreatedAtUtc,
     DateTime? DeletedAtUtc,
-    bool CanDelete);
+    bool CanDelete,
+    string? MyReportStatus = null);
 
-/// <summary>POST <c>/api/conversations</c>: a direct one (one other user) or a group (two or more others, at most <c>Messaging.MaxGroupSize</c>); only staff create groups. <c>ClassCourseId</c> makes it a class or course group a teacher of that class course created (own ClassCourses only); <b>students never post in a group</b> (D74): they read it and reply privately to the teacher. The rules matrix is checked for every participant (403 <c>messaging_not_allowed</c>).</summary>
+/// <summary>POST <c>/api/conversations</c>: a direct one (one other user) or a group (two or more others, at most <c>Messaging.MaxGroupSize</c>); only staff create groups. <c>ClassCourseId</c> makes it a class or course group a teacher of that class course created (own ClassCourses only); <b>students never post in a group</b> (D74): they read it and reply privately to the teacher; <b>guardians may post in a teacher-run group that includes guardians</b> (D77). The rules matrix is checked for every participant (403 <c>messaging_not_allowed</c>).</summary>
 public sealed record CreateConversationRequest(string Kind, IReadOnlyList<Guid> ParticipantUserIds, string? Title, string? FirstMessage, Guid? ClassCourseId = null);
 
 /// <summary>POST <c>…/participants</c>: members to add to a group (owner to member check for each).</summary>
@@ -106,14 +108,48 @@ public sealed record MessagingRulesDto(IReadOnlyList<MessagingRuleCellDto> Cells
 /// <summary>PUT <c>/api/comms/messaging-rules</c>: the whole matrix. A cell looser than its default is 400 <c>rules_looser_than_default</c> (D69).</summary>
 public sealed record SaveMessagingRulesRequest(IReadOnlyList<MessagingRuleCellDto> Cells);
 
-// --- moderation (FR-MSG-04)
+// --- moderation (FR-MSG-04, D66, D70, L16)
 
-/// <summary>POST <c>/api/messages/{id}/report</c> (a participant who is not the sender; 409 <c>report_duplicate</c> for the same reporter and message).</summary>
+/// <summary>POST <c>/api/messages/{id}/report</c> (a participant who is not the sender; 409 <c>report_duplicate</c> for the same reporter and message). <c>Note</c> is at most <see cref="MessagingLimits.ReportNoteMaxLength"/> characters.</summary>
 public sealed record ReportMessageRequest(string Reason, string? Note);
 
+/// <summary>One message of the frozen context of a report: text and attachment <b>names</b> only (a moderator opens an attachment of the reported message through its own audited route). No user id, no file id.</summary>
+public sealed record ReportContextMessageDto(
+    Guid MessageId,
+    string SenderNameAr,
+    string SenderNameEn,
+    string? Body,
+    IReadOnlyList<string> AttachmentNames,
+    DateTime CreatedAtUtc,
+    bool IsReported);
+
+/// <summary>Who sent the reported message, in numbers: the class is the sender's own class when they are a student; prior reports and removals count this client only.</summary>
+public sealed record SenderSummaryDto(
+    string NameAr,
+    string NameEn,
+    string RoleKey,
+    string? ClassNameAr,
+    string? ClassNameEn,
+    int PriorReports,
+    int PriorRemovals);
+
+/// <summary>A row of the moderation queue (<c>Messaging.Moderate</c>; the Org Admin only, D70). <c>AgeHours</c> since the report; <c>IsSafety</c> = a safety concern, sorted first.</summary>
+public sealed record MessageReportListItemDto(
+    Guid Id,
+    string Reason,
+    string Status,
+    string ReportedUserNameAr,
+    string ReportedUserNameEn,
+    string Snippet,
+    DateTime CreatedAtUtc,
+    int AgeHours,
+    bool IsSafety);
+
 /// <summary>
-/// A report as a moderator sees it (<c>Messaging.Moderate</c>, scoped by the report's units): the reported message with its original text and a bounded
-/// context window (<see cref="MessagingLimits.ReportContextMessages"/>); a moderator never reads the rest of the conversation.
+/// A report as a moderator sees it (<c>Messaging.Moderate</c>, scoped by the report's units): the <b>frozen</b> context (the reported message with
+/// <see cref="MessagingLimits.ReportContextEachSide"/> messages before and as many after, text and attachment names), the reason and note, a summary of the sender and the status. A moderator never
+/// reads the rest of the conversation and the report never names the reporter (D66). <c>ReviewDueUtc</c> = the safety review target (null for other reasons); <c>Action</c> and
+/// <c>ResolutionNote</c> are set once resolved (the note is the moderator's own and never reaches the participants).
 /// </summary>
 public sealed record MessageReportDto(
     Guid Id,
@@ -122,24 +158,32 @@ public sealed record MessageReportDto(
     string Reason,
     string? Note,
     string Status,
-    Guid ReporterUserId,
-    Guid ReportedUserId,
-    string ReportedUserNameAr,
-    string ReportedUserNameEn,
-    string? ReportedMessageOriginalBody,
-    IReadOnlyList<MessageDto> Context,
-    DateTime CreatedAtUtc,
+    IReadOnlyList<ReportContextMessageDto> Context,
+    SenderSummaryDto SenderSummary,
+    DateTime? ReviewDueUtc,
     string? Action,
     string? ResolutionNote,
-    DateTime? ResolvedAtUtc);
+    DateTime? ResolvedAtUtc,
+    DateTime ServerNowUtc);
 
-public sealed record ReportQuery(string? Status = null, int Page = 1, int PageSize = Paging.DefaultPageSize);
+/// <summary>GET <c>/api/moderation/reports?status=&amp;reason=&amp;page=</c>: <c>Status</c> null = the pending ones (<see cref="ReportStatuses.Pending"/>); safety concerns first, then the oldest.</summary>
+public sealed record MessageReportQuery(string? Status = null, string? Reason = null, int Page = 1, int PageSize = Paging.DefaultPageSize);
 
-/// <summary>POST <c>/api/moderation/reports/{id}/resolve</c>: <c>RestrictUntilUtc</c> is required for the restricting actions and must lie in the future.</summary>
-public sealed record ResolveReportRequest(string Action, string? Note, DateTime? RestrictUntilUtc);
+/// <summary>
+/// POST <c>/api/moderation/reports/{id}/resolve</c>: <c>DurationDays</c> (one of <see cref="RestrictionDurations"/>) is required for the restricting actions. <c>NoteToPeople</c> is the optional note the
+/// sender reads in the warning or restriction notice (at most <see cref="ModerationLimits.NoteToPeopleMaxLength"/> characters); the moderator's private note is not a field: it
+/// stays out of every notice.
+/// </summary>
+public sealed record ResolveReportRequest(string Action, int? DurationDays, string? NoteToPeople);
 
-/// <summary>A user's messaging right taken away until a date (never a block: blocks belong to their owners).</summary>
+/// <summary>POST <c>/api/moderation/reports/bulk-dismiss</c>: dismiss up to <see cref="ModerationLimits.BulkDismissMax"/> reports at once (the UI says "Keep").</summary>
+public sealed record BulkDismissRequest(IReadOnlyList<Guid> ReportIds, string? NoteToPeople);
+
+/// <summary>A user whose messaging right is taken away until a date (never a block: blocks belong to their owners).</summary>
 public sealed record RestrictionDto(Guid UserId, string NameAr, string NameEn, DateTime UntilUtc, string? Reason, DateTime CreatedAtUtc);
 
-/// <summary>GET <c>/api/moderation/stats</c>: outside the caller's scope the numbers are zero, never 404.</summary>
-public sealed record ModerationStatsDto(int OpenReports, int ResolvedLast30Days, int ActiveRestrictions);
+/// <summary>GET <c>/api/moderation/stats</c>: outside the caller's scope the numbers are zero, never 404. <c>MedianHoursToDecide</c> over the reports decided in the last 30 days.</summary>
+public sealed record ModerationStatsDto(int Open, int NewToday, int Restricted, double MedianHoursToDecide);
+
+/// <summary>GET <c>/api/moderation/reports/{id}/attachments/{fileId}</c>: a signed URL valid a few minutes for an attachment of the <b>reported</b> message only; every issue is audited.</summary>
+public sealed record ModerationAttachmentUrlDto(string Url, DateTime ExpiresAtUtc, string FileName, string ContentType, bool InlinePreview);

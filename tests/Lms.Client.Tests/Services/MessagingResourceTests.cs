@@ -17,7 +17,7 @@ public sealed class MessagingResourceTests : ClientTestContext
     [
         ProblemCodes.messaging_not_allowed, ProblemCodes.conversation_closed, ProblemCodes.message_too_long, ProblemCodes.message_delete_window_closed,
         ProblemCodes.report_duplicate, ProblemCodes.rate_limited, ProblemCodes.notification_mandatory, ProblemCodes.announcement_target_invalid,
-        ProblemCodes.announcement_not_editable, ProblemCodes.rules_looser_than_default, ProblemCodes.group_read_only, ProblemCodes.channel_not_allowed,
+        ProblemCodes.announcement_not_editable, ProblemCodes.rules_looser_than_default, ProblemCodes.group_read_only,
     ];
 
     private static IEnumerable<string> Keys()
@@ -27,7 +27,7 @@ public sealed class MessagingResourceTests : ClientTestContext
             yield return "Error_" + code;
         }
 
-        foreach (var d in SettingCatalog.All.Where(d => d.Name.StartsWith("Comms.") || d.Name.StartsWith("Messaging.") || d.Name.StartsWith("Announcements.")))
+        foreach (var d in SettingCatalog.All.Where(d => d.Name.StartsWith("Comms.") || d.Name.StartsWith("Messaging.") || d.Name.StartsWith("Moderation.") || d.Name.StartsWith("Announcements.")))
         {
             yield return "Setting_" + d.Name.Replace('.', '_');
         }
@@ -36,6 +36,7 @@ public sealed class MessagingResourceTests : ClientTestContext
                  {
                      NotificationEvents.MessagesNewMessage, NotificationEvents.AnnouncementsPublished, NotificationEvents.MessagingWarning,
                      NotificationEvents.MessagingRestricted, NotificationEvents.MessagingReportResolved, NotificationEvents.CommsCapReached,
+                     NotificationEvents.ModerationReportReceived, NotificationEvents.ModerationSafetyReportReceived,
                  })
         {
             yield return "NotifEvent_" + key.Replace('.', '_');
@@ -45,7 +46,7 @@ public sealed class MessagingResourceTests : ClientTestContext
         foreach (var (prefix, values) in new (string, IReadOnlyList<string>)[]
                  {
                      ("Msg_Kind_", ConversationKinds.All), ("Msg_State_", MessageStates.All), ("Msg_Rule_", MessagingRuleModes.All),
-                     ("Msg_Reason_", ReportReasons.All), ("Msg_ReportStatus_", ReportStatuses.All), ("Msg_Action_", ModerationActions.All),
+                     ("Msg_Reason_", ReportReasons.All), ("Msg_ReportStatus_", ReportStatuses.All), ("Msg_Action_", ModerationActions.All), ("Msg_MyReport_", MyReportStatuses.All),
                      ("Ann_TargetKind_", AnnouncementTargetKinds.All), ("Ann_Status_", AnnouncementStatuses.All), ("Ann_Role_", AnnouncementRoleFilters.All),
                      ("Comms_Delivery_", DeliveryStatuses.All), ("Comms_ChannelState_", ChannelStates.All), ("Comms_PrefSource_", PreferenceSources.All),
                  })
@@ -61,7 +62,12 @@ public sealed class MessagingResourceTests : ClientTestContext
             yield return "Perm_" + p;
         }
 
-        foreach (var e in new[] { "Conversation", "MessageReport", "MessagingRestriction", "MessagingRule", "Announcement" })
+        foreach (var days in RestrictionDurations.Days)
+        {
+            yield return "Msg_RestrictDays_" + days;
+        }
+
+        foreach (var e in new[] { "Conversation", "MessageReport", "MessagingRestriction", "MessagingRule", "Announcement", "ModerationRead" })
         {
             yield return "AuditEntity_" + e;
         }
