@@ -20,6 +20,7 @@ internal sealed class GradebookConfiguration : IEntityTypeConfiguration<Gradeboo
         builder.Property(x => x.LockedAtUtc).HasPrecision(6);
         builder.HasOne<ClassCourse>().WithMany().HasForeignKey(x => x.ClassCourseId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<Term>().WithMany().HasForeignKey(x => x.TermId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<GradingScale>().WithMany().HasForeignKey(x => x.GradingScaleId).OnDelete(DeleteBehavior.Restrict);
         builder.HasIndex(x => new { x.ClassCourseKey, x.TermId }).IsUnique();
         builder.HasIndex(x => x.TermId);
         builder.HasIndex(x => new { x.OrganizationId, x.OrgUnitPath });

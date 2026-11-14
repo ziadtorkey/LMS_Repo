@@ -19,7 +19,7 @@ namespace Lms.Infrastructure.Persistence.Migrations
                     ClassCourseId = table.Column<Guid>(type: "char(36)", nullable: false),
                     ClassCourseKey = table.Column<Guid>(type: "char(36)", nullable: true),
                     TermId = table.Column<Guid>(type: "char(36)", nullable: false),
-                    ScaleId = table.Column<Guid>(type: "char(36)", nullable: true),
+                    GradingScaleId = table.Column<Guid>(type: "char(36)", nullable: true),
                     DecimalPlaces = table.Column<int>(type: "int", nullable: false),
                     CategoryMethod = table.Column<string>(type: "varchar(20)", maxLength: 20, nullable: false),
                     MissingPolicy = table.Column<string>(type: "varchar(20)", maxLength: 20, nullable: false),
@@ -43,6 +43,12 @@ namespace Lms.Infrastructure.Persistence.Migrations
                         name: "FK_Gradebooks_ClassCourses_ClassCourseId",
                         column: x => x.ClassCourseId,
                         principalTable: "ClassCourses",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Gradebooks_GradingScales_GradingScaleId",
+                        column: x => x.GradingScaleId,
+                        principalTable: "GradingScales",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
@@ -217,6 +223,11 @@ namespace Lms.Infrastructure.Persistence.Migrations
                 table: "Gradebooks",
                 columns: new[] { "ClassCourseKey", "TermId" },
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Gradebooks_GradingScaleId",
+                table: "Gradebooks",
+                column: "GradingScaleId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Gradebooks_OrganizationId_OrgUnitPath",

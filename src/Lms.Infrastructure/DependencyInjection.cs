@@ -48,6 +48,8 @@ public static class DependencyInjection
         services.AddScoped<Lms.Domain.Grading.IGradeEventObserver>(sp => sp.GetRequiredService<Lms.Infrastructure.Grading.Gradebooks.GradebookItemsObserver>());
         services.AddScoped<Lms.Infrastructure.Grading.Gradebooks.GradebookBackfill>();
         services.AddScoped<Lms.Infrastructure.AcademicYears.ITermDependants, Lms.Infrastructure.Grading.Gradebooks.GradebookTermDependants>();
+        Lms.Infrastructure.Grading.Scales.GradingScalesServiceCollectionExtensions.AddGradingScales(services);
+        services.AddScoped<Lms.Domain.Grading.IScaleUsage, Lms.Infrastructure.Grading.Gradebooks.GradebookScaleUsage>(); // replaces the TryAdd default
         services.AddAcademic();
         services.AddContent();
         services.AddPackages(configuration);
