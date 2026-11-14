@@ -5,6 +5,7 @@ using Lms.Client.Layout;
 using Lms.Client.Tests.Support;
 using Lms.Shared.Authorization;
 using Lms.Shared.Me;
+using Microsoft.Extensions.DependencyInjection;
 using MudBlazor;
 
 namespace Lms.Client.Tests.Layout;
@@ -55,6 +56,23 @@ public sealed class SidebarRailTests : ClientTestContext
         {
             Assert.Contains("lms-rail", cut.Find("[data-testid=app-root]").ClassList);
             Assert.Equal("توسيع القائمة الجانبية", cut.Find("[data-testid=rail-toggle]").GetAttribute("aria-label"));
+        });
+    }
+
+    [Theory]
+    [InlineData(Breakpoint.Sm, false)]
+    [InlineData(Breakpoint.Lg, true)]
+    public void A_stored_rail_reaches_the_nav_only_from_960_px_so_the_phone_drawer_has_no_tooltips(Breakpoint viewport, bool rail)
+    {
+        Services.AddSingleton<IBrowserViewportService>(new FixedViewport(viewport));
+        JSInterop.Setup<bool>("lmsNav.isRailCollapsed").SetResult(true);
+        var cut = RenderLayout();
+
+        // Below md (960 px) the drawer is the temporary one with full labels, so the nav gets no rail tooltips.
+        cut.WaitForAssertion(() =>
+        {
+            Assert.Contains("lms-rail", cut.Find("[data-testid=app-root]").ClassList);
+            Assert.Equal(rail, cut.FindComponent<NavMenu>().Instance.Collapsed);
         });
     }
 

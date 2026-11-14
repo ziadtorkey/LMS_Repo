@@ -70,7 +70,9 @@
                                 <MudText Typo="Typo.caption" Class="lms-brand-sub">@L["App_Subtitle"]</MudText>
                             </span>
                         </MudDrawerHeader>
-                        <NavMenu Collapsed="_railCollapsed" />
+                        @* Hidden="true" from md (960 px): that is where the rail applies; below it the drawer keeps full labels and no tooltips. *@
+                        <MudHidden Breakpoint="Breakpoint.MdAndUp" @bind-Hidden="_isWide" />
+                        <NavMenu Collapsed="@(_railCollapsed && _isWide)" />
                         @* Desktop only: below 960 px the drawer is the temporary one, opened from the app bar. *@
                         <div class="lms-rail-toggle d-none d-md-flex">
                             <MudTooltip Text="@RailLabel" Placement="Placement.End">
@@ -97,6 +99,7 @@
     private bool _drawerOpen = true;
     private bool _isDark;
     private bool _railCollapsed;
+    private bool _isWide;
 
     private string RailLabel => _railCollapsed ? L["Nav_ExpandSidebar"] : L["Nav_CollapseSidebar"];
     private string ThemeLabel => _isDark ? L["Theme_Light"] : L["Theme_Dark"];
