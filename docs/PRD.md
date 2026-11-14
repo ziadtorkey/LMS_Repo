@@ -393,6 +393,10 @@ All tenant-owned tables: `OrganizationId`; unit-scoped tables: `OrgUnitId`, `Org
 | D85 | SAML and LDAP scope | v1: SP-initiated SAML only; LDAP search-bind over LDAPS or StartTLS only; no group-to-role mapping (roles are assigned in the LMS). Owner decision 2026-11-14. |
 | D86 | Year-end checklist | Shown on the home pages from 60 days before the year end. Owner decision 2026-11-14. |
 | D87 | Accessibility target | WCAG 2.1 AA (X-10); no AAA requirement. Owner decision 2026-11-14. |
+| D88 | Closed year is read-only | Closing a year locks grades, attendance, assignments and quizzes, and also its forums and messaging (conversations and groups scoped to that year's classes become read-only). Owner decision 2026-11-14. |
+| D89 | Promotion target class | Suggested by matching section code; "Repeat" keeps the same level and section; every row stays editable. Owner decision 2026-11-14. |
+| D90 | Next year copy | Opening a new year copies structure, courses and settings, but neither students nor teacher allocations. Owner decision 2026-11-14. |
+| D91 | Who re-admits | Only Org Admin and Manager re-admit a withdrawn student (the Counselor may withdraw but not re-admit, D82). Owner decision 2026-11-14. |
 
 ---
 
