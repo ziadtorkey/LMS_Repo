@@ -195,6 +195,24 @@ public sealed class PackageAccessibilityTests : ClientTestContext
     }
 
     [Fact]
+    public async Task The_same_message_twice_in_a_row_changes_the_region_so_it_is_read_again()
+    {
+        var player = await StartedAsync();
+        var first = player.Find("[data-testid=package-announce]").TextContent;
+        _api.LaunchFailure = new HttpRequestException("offline");
+        _clock.Advance(TimeSpan.FromMinutes(121));
+        player.WaitForElement("[data-testid=package-expired]", Wait);
+        _api.LaunchFailure = null;
+
+        player.Find("[data-testid=package-reload]").Click();
+
+        player.WaitForAssertion(() => Assert.Empty(player.FindAll("[data-testid=package-expired]")), Wait);
+        var second = player.Find("[data-testid=package-announce]").TextContent;
+        Assert.Equal(first.Trim(' '), second.Trim(' ')); // the same words ...
+        Assert.NotEqual(first, second); // ... in different text, so assistive technology announces them again
+    }
+
+    [Fact]
     public async Task A_preview_announces_that_nothing_is_recorded()
     {
         var player = await RenderAsync(staff: true);
