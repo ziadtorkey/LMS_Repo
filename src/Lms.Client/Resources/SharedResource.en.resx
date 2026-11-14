@@ -1627,6 +1627,7 @@
   <data name="Error_period_in_use" xml:space="preserve"><value>A timetable slot uses this period, so it cannot be deleted.</value></data>
   <data name="Error_timetable_not_published" xml:space="preserve"><value>This slot is still a draft. Publish the timetable first.</value></data>
   <data name="Error_exception_date_invalid" xml:space="preserve"><value>The date must be a school day of this slot inside the term, and the slot can have only one exception per date.</value></data>
+  <data name="Error_exception_substitute_invalid" xml:space="preserve"><value>The substitute must be another teacher of this school group who is free in that period on that date.</value></data>
   <data name="Setting_Timetable_WorkingDays" xml:space="preserve"><value>School days of the week</value></data>
   <data name="SettingValue_Timetable_WorkingDays_Sun" xml:space="preserve"><value>Sunday</value></data>
   <data name="SettingValue_Timetable_WorkingDays_Mon" xml:space="preserve"><value>Monday</value></data>

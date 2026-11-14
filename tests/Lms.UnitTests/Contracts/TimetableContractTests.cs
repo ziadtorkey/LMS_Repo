@@ -111,6 +111,7 @@ public sealed class TimetableContractTests
         Assert.Equal("period_in_use", ProblemCodes.period_in_use);
         Assert.Equal("timetable_not_published", ProblemCodes.timetable_not_published);
         Assert.Equal("exception_date_invalid", ProblemCodes.exception_date_invalid);
+        Assert.Equal("exception_substitute_invalid", ProblemCodes.exception_substitute_invalid);
     }
 
     [Fact]
@@ -165,6 +166,25 @@ public sealed class TimetableContractTests
     }
 
     [Fact]
+    public void A_conflict_discloses_details_only_for_slots_the_caller_may_see()
+    {
+        // Conflicts are computed across the client; a slot outside the caller's unit subtree is reported by kind only (QA review of wave 2).
+        var context = new System.Reflection.NullabilityInfoContext();
+        var props = typeof(SlotConflictDto).GetProperties().ToDictionary(p => p.Name, p => context.Create(p).WriteState);
+        Assert.Equal(System.Reflection.NullabilityState.NotNull, props["Kind"]);
+        Assert.All(new[] { "SlotId", "CourseNameAr", "CourseNameEn", "TeacherName" },
+            name => Assert.Equal(System.Reflection.NullabilityState.Nullable, props[name]));
+
+        var hidden = RoundTrip(new SlotConflictDto(ConflictKinds.TeacherDoubleBooked, null, null, null, null));
+        Assert.Null(hidden.SlotId);
+        Assert.Null(hidden.TeacherName);
+        Assert.Equal(ConflictKinds.TeacherDoubleBooked, hidden.Kind);
+
+        var text = File.ReadAllText(Path.Combine(RepoRoot(), "src", "Lms.Shared", "Timetable", "TimetableDtos.cs"));
+        Assert.Contains("details are disclosed only for slots inside the caller's unit subtree", text, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Timetable_dtos_round_trip()
     {
         var period = new PeriodDto(Id, Other, "الأولى", "First", new TimeOnly(7, 30), new TimeOnly(8, 15), 1, null);
@@ -192,6 +212,11 @@ public sealed class TimetableContractTests
         Assert.Equal(new DateOnly(2027, 2, 7), RoundTrip(exception).Date);
         Assert.Equal(Other, RoundTrip(saveException).NewPeriodId);
         Assert.Equal(ExceptionKinds.Cancelled, RoundTrip(card).ExceptionKind);
+        Assert.Null(RoundTrip(card).LiveSessionId); // no live session scheduled: both are null
+        Assert.Null(RoundTrip(card).JoinOpensAtUtc);
+        var opens = new DateTime(2027, 2, 7, 5, 25, 0, DateTimeKind.Utc);
+        var live = RoundTrip(card with { LiveSessionId = Other, JoinOpensAtUtc = opens });
+        Assert.Equal((Other, opens), (live.LiveSessionId, live.JoinOpensAtUtc));
         Assert.Equal(new DateOnly(2027, 2, 7), RoundTrip(view).To);
     }
 

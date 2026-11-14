@@ -134,7 +134,7 @@ public partial class AuthorizationContractTests
             "grade_override_reason_required", "grade_import_invalid", "grade_import_expired", "terms_have_dependants",
             "concurrency_conflict",
             // M5 wave 2 (timetable)
-            "timetable_conflict", "period_overlap", "period_in_use", "timetable_not_published", "exception_date_invalid",
+            "timetable_conflict", "period_overlap", "period_in_use", "timetable_not_published", "exception_date_invalid", "exception_substitute_invalid",
         ];
 
         Assert.All(fields, f => Assert.Equal(f.Name, (string)f.GetRawConstantValue()!));

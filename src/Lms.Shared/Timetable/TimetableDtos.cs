@@ -20,7 +20,7 @@ public sealed record SlotDto(
     int Version,
     IReadOnlyList<string> Badges);
 
-/// <summary>PUT of a slot (create when <c>SlotId</c> is not in the route, move or edit otherwise). <c>Version</c> is required on edit.</summary>
+/// <summary>Body of POST (create a slot) and PUT (edit or move it) of a class timetable. <c>Version</c> is required on PUT and ignored on POST.</summary>
 public sealed record SaveSlotRequest(
     Guid ClassCourseId,
     Guid TermId,
@@ -30,13 +30,18 @@ public sealed record SaveSlotRequest(
     string? RoomName,
     int? Version);
 
-/// <summary>A clash of a saved or validated slot with another slot of the term (the other slot is named so the builder can show it).</summary>
+/// <summary>
+/// A clash of a saved or validated slot with another slot of the term. Clashes are <b>computed across the whole client</b> (a teacher can teach in two schools, so
+/// being busy there is a clash), but the <b>details are disclosed only for slots inside the caller's unit subtree</b> (<c>Timetable.Manage</c> is unit-scoped): for a
+/// slot outside it the entry carries <c>Kind</c> only and <c>SlotId</c>, <c>CourseNameAr</c>, <c>CourseNameEn</c> and <c>TeacherName</c> are null, so an admin of one
+/// school never reads another school's course, class or timetable through a warning, the 409 <c>timetable_conflict</c> body or <c>GET .../validate</c>.
+/// </summary>
 public sealed record SlotConflictDto(
     string Kind,
-    Guid SlotId,
-    string CourseNameAr,
-    string CourseNameEn,
-    string TeacherName);
+    Guid? SlotId,
+    string? CourseNameAr,
+    string? CourseNameEn,
+    string? TeacherName);
 
 /// <summary>The answer of a slot save: the slot and, in <c>Warn</c> mode, the clashes it was saved with (empty in <c>Block</c> mode, where a clash is 409).</summary>
 public sealed record SaveSlotResultDto(SlotDto Slot, IReadOnlyList<SlotConflictDto> Warnings);
@@ -89,7 +94,11 @@ public sealed record SaveTimetableExceptionRequest(
     Guid? NewPeriodId,
     string? Note);
 
-/// <summary>One lesson of a view on one date, with its exception applied (a cancelled lesson is kept so the view can strike it through).</summary>
+/// <summary>
+/// One lesson of a view on one date, with its exception applied (a cancelled lesson is kept so the view can strike it through). <c>LiveSessionId</c> and
+/// <c>JoinOpensAtUtc</c> are null unless a live session is scheduled for this lesson; the server fills them from the live sessions of the class course on the date,
+/// so the card can show Join (the join window opens at <c>JoinOpensAtUtc</c>; joining itself goes through the live-session routes and their own checks).
+/// </summary>
 public sealed record TimetableCardDto(
     Guid SlotId,
     DateOnly Date,
@@ -101,7 +110,9 @@ public sealed record TimetableCardDto(
     string? ExceptionKind,
     string? SubstituteName,
     string ClassNameAr,
-    string ClassNameEn);
+    string ClassNameEn,
+    Guid? LiveSessionId = null,
+    DateTime? JoinOpensAtUtc = null);
 
 /// <summary>
 /// The answer of every timetable view (class, teacher, student, guardian): published slots only for a student or guardian, a range of at most 31 days,
