@@ -1,0 +1,9 @@
+@page "/me/children/{StudentId:guid}/timetable"
+@attribute [Authorize]
+
+<PageTitle>@L["Tt_My_Title"]</PageTitle>
+<OwnTimetableView StudentId="StudentId" />
+
+@code {
+    [Parameter] public Guid StudentId { get; set; }
+}

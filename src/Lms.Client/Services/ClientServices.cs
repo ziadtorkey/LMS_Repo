@@ -26,6 +26,7 @@ public static class ClientServices
         services.AddSingleton<ContextStore>();
         services.AddSingleton<IContextStore>(sp => sp.GetRequiredService<ContextStore>());
         services.TryAddSingleton(TimeProvider.System);
+        services.AddScoped<ClientTimeZone>();
         services.AddScoped<PermissionState>();
         services.AddScoped<IYearStore, YearStore>();
         services.AddScoped<INotificationFeed, NotificationFeed>();

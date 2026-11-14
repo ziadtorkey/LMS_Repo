@@ -1,0 +1,15 @@
+@using Lms.Shared.Timetable
+
+@* The dated change of a lesson, in words: a substitute (with the name), a cancellation or a move. It is shown on the card; the base lesson is never altered. *@
+@if (Kind is not null)
+{
+    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@(Kind == ExceptionKinds.Cancelled ? Color.Warning : Color.Info)" Class="lms-status-chip" data-testid="@TestId">
+        @(Kind == ExceptionKinds.Substitute ? string.Format(L["Tt_Exception_Substitute"], Substitute) : L[$"Tt_Exception_{Kind}"].Value)
+    </MudChip>
+}
+
+@code {
+    [Parameter] public string? Kind { get; set; }
+    [Parameter] public string? Substitute { get; set; }
+    [Parameter] public string? TestId { get; set; }
+}

@@ -1,0 +1,22 @@
+@using Lms.Shared.Timetable
+@inject ICultureService Culture
+
+@* One lesson on one date. A cancelled lesson stays visible with the word; a substitute shows the name. *@
+<div class="@("lms-tt-card" + (Card.ExceptionKind == ExceptionKinds.Cancelled ? " lms-tt-cancelled" : ""))" data-testid="@($"tt-card-{Card.SlotId}-{Card.Date:yyyy-MM-dd}")">
+    <span class="lms-tt-course">@Culture.Pick(Card.CourseNameAr, Card.CourseNameEn)</span>
+    <span class="lms-tt-meta">@(Card.ExceptionKind == ExceptionKinds.Substitute && Card.SubstituteName is not null ? Card.SubstituteName : Card.TeacherName)</span>
+    @if (ShowClass)
+    {
+        <span class="lms-tt-meta" data-testid="@($"tt-class-{Card.SlotId}")">@Culture.Pick(Card.ClassNameAr, Card.ClassNameEn)</span>
+    }
+    @if (!string.IsNullOrWhiteSpace(Card.RoomName))
+    {
+        <span class="lms-tt-meta">@Card.RoomName</span>
+    }
+    <ExceptionBadge Kind="@Card.ExceptionKind" Substitute="@Card.SubstituteName" TestId="@($"tt-ex-{Card.SlotId}-{Card.Date:yyyy-MM-dd}")" />
+</div>
+
+@code {
+    [Parameter, EditorRequired] public TimetableCardDto Card { get; set; } = default!;
+    [Parameter] public bool ShowClass { get; set; }
+}

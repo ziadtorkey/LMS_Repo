@@ -1647,8 +1647,8 @@
   <data name="Error_period_overlap" xml:space="preserve"><value>The period overlaps another one, or it does not end after it starts.</value></data>
   <data name="Error_period_in_use" xml:space="preserve"><value>A lesson uses this period, so it cannot be deleted.</value></data>
   <data name="Error_timetable_not_published" xml:space="preserve"><value>This slot is still a draft. Publish the timetable first.</value></data>
-  <data name="Error_exception_date_invalid" xml:space="preserve"><value>The date must be a school day of this slot inside the term, and the slot can have only one exception per date.</value></data>
-  <data name="Error_exception_substitute_invalid" xml:space="preserve"><value>The substitute must be another teacher of this school group who is free in that period on that date.</value></data>
+  <data name="Error_exception_date_invalid" xml:space="preserve"><value>The date must be a day this lesson is held, inside the term.</value></data>
+  <data name="Error_exception_substitute_invalid" xml:space="preserve"><value>Choose a teacher who can substitute.</value></data>
   <data name="Setting_Timetable_WorkingDays" xml:space="preserve"><value>School days of the week</value></data>
   <data name="SettingValue_Timetable_WorkingDays_Sun" xml:space="preserve"><value>Sunday</value></data>
   <data name="SettingValue_Timetable_WorkingDays_Mon" xml:space="preserve"><value>Monday</value></data>
@@ -1727,4 +1727,35 @@
   <data name="Tt_Period_End" xml:space="preserve"><value>Ends</value></data>
   <data name="Tt_Period_Order" xml:space="preserve"><value>Order</value></data>
   <data name="Tt_Period_Required" xml:space="preserve"><value>Give the period a name in both languages and a start and end time.</value></data>
+  <data name="Nav_Timetable" xml:space="preserve"><value>Timetable</value></data>
+  <data name="Nav_MyTimetable" xml:space="preserve"><value>My timetable</value></data>
+  <data name="ClassPage_Timetable" xml:space="preserve"><value>Timetable</value></data>
+  <data name="Tt_Week" xml:space="preserve"><value>Week</value></data>
+  <data name="Tt_Week_Prev" xml:space="preserve"><value>Previous week</value></data>
+  <data name="Tt_Week_Next" xml:space="preserve"><value>Next week</value></data>
+  <data name="Tt_Week_Today" xml:space="preserve"><value>This week</value></data>
+  <data name="Tt_Exception_Substitute" xml:space="preserve"><value>Substitute: {0}</value></data>
+  <data name="Tt_Exception_Cancelled" xml:space="preserve"><value>Cancelled</value></data>
+  <data name="Tt_Exception_Moved" xml:space="preserve"><value>Moved</value></data>
+  <data name="Tt_My_Title" xml:space="preserve"><value>My timetable</value></data>
+  <data name="Tt_My_Subtitle" xml:space="preserve"><value>Your lessons this week. Published timetables only.</value></data>
+  <data name="Tt_My_EmptyTitle" xml:space="preserve"><value>No lessons this week</value></data>
+  <data name="Tt_My_EmptyText" xml:space="preserve"><value>Lessons appear here once the timetable is published.</value></data>
+  <data name="Tt_Edit_In_Builder" xml:space="preserve"><value>Edit in the builder</value></data>
+  <data name="Tt_Class_EmptyTitle" xml:space="preserve"><value>No timetable yet</value></data>
+  <data name="Tt_Class_EmptyText" xml:space="preserve"><value>No lessons are published for this class in the current term.</value></data>
+  <data name="Tt_Classes_Title" xml:space="preserve"><value>Timetable</value></data>
+  <data name="Tt_Classes_Subtitle" xml:space="preserve"><value>Choose a class to build or change its timetable for the current term.</value></data>
+  <data name="Tt_Classes_EmptyTitle" xml:space="preserve"><value>No classes</value></data>
+  <data name="Tt_Classes_EmptyText" xml:space="preserve"><value>Classes of the selected academic year appear here.</value></data>
+  <data name="Tt_Open_Builder" xml:space="preserve"><value>Open the builder</value></data>
+  <data name="Tt_Exceptions_Open" xml:space="preserve"><value>Changes on a date</value></data>
+  <data name="Tt_Exception_Date" xml:space="preserve"><value>Date</value></data>
+  <data name="Tt_Exception_DateHelp" xml:space="preserve"><value>A {0}, the day of this lesson.</value></data>
+  <data name="Tt_Exception_Kind" xml:space="preserve"><value>Change</value></data>
+  <data name="Tt_Exception_Substitute_Pick" xml:space="preserve"><value>Substitute teacher</value></data>
+  <data name="Tt_Exception_NewPeriod" xml:space="preserve"><value>Moves to</value></data>
+  <data name="Tt_Exception_Note" xml:space="preserve"><value>Note (optional)</value></data>
+  <data name="Tt_Exception_Add" xml:space="preserve"><value>Add the change</value></data>
+  <data name="Tt_Exception_DateRequired" xml:space="preserve"><value>Choose the date.</value></data>
 </root>

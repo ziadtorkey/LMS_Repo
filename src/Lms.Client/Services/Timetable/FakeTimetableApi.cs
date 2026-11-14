@@ -118,6 +118,58 @@ public sealed class FakeTimetableApi : ITimetableApi
         return Task.FromResult(new CopyTermResultDto(2, [new CopySkippedDto(Guid.NewGuid(), CopySkipReasons.TeacherMissing, "العلوم", "Science")]));
     }
 
+    private readonly Dictionary<Guid, List<TimetableExceptionDto>> _exceptions = [];
+
+    public Task<IReadOnlyList<TimetableExceptionDto>> GetExceptionsAsync(Guid slotId, CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyList<TimetableExceptionDto>>(_exceptions.GetValueOrDefault(slotId)?.OrderBy(e => e.Date).ToList() ?? []);
+
+    public Task<TimetableExceptionDto> CreateExceptionAsync(Guid slotId, SaveTimetableExceptionRequest request, CancellationToken ct = default)
+    {
+        var slot = _slots.FirstOrDefault(s => s.Id == slotId) ?? throw Problem(404, "slot_not_found");
+        if (request.Date.DayOfWeek != slot.DayOfWeek) throw Problem(400, "exception_date_invalid"); // a date off the lesson's weekday
+        if (request.Kind == ExceptionKinds.Substitute && request.SubstituteUserId is null) throw Problem(400, "exception_substitute_invalid");
+        var substitute = request.SubstituteUserId is { } id ? TeacherName(id) : null;
+        var exception = new TimetableExceptionDto(Guid.NewGuid(), slotId, request.Date, request.Kind, request.SubstituteUserId, substitute, request.NewPeriodId, request.Note);
+        if (!_exceptions.TryGetValue(slotId, out var list)) _exceptions[slotId] = list = [];
+        list.Add(exception);
+        var i = _slots.FindIndex(s => s.Id == slotId);
+        if (!slot.Badges.Contains(SlotBadges.HasException)) _slots[i] = slot with { Badges = [.. slot.Badges, SlotBadges.HasException] }; // the base lesson itself is never changed
+        return Task.FromResult(exception);
+    }
+
+    public Task DeleteExceptionAsync(Guid slotId, Guid exceptionId, CancellationToken ct = default)
+    {
+        if (_exceptions.TryGetValue(slotId, out var list)) list.RemoveAll(e => e.Id == exceptionId);
+        if (_exceptions.GetValueOrDefault(slotId)?.Count is null or 0)
+        {
+            var i = _slots.FindIndex(s => s.Id == slotId);
+            if (i >= 0) _slots[i] = _slots[i] with { Badges = _slots[i].Badges.Where(b => b != SlotBadges.HasException).ToList() };
+        }
+
+        return Task.CompletedTask;
+    }
+
+    /// <summary>The signed-in teacher or student: the published lessons of the range, with the dated changes applied.</summary>
+    public Task<TimetableViewDto> GetMyTimetableAsync(DateOnly from, DateOnly to, CancellationToken ct = default) => Task.FromResult(ViewOf(from, to));
+
+    public Task<TimetableViewDto> GetStudentTimetableAsync(Guid studentId, DateOnly from, DateOnly to, CancellationToken ct = default) => Task.FromResult(ViewOf(from, to));
+
+    private TimetableViewDto ViewOf(DateOnly from, DateOnly to)
+    {
+        var cards = new List<TimetableCardDto>();
+        for (var date = from; date <= to; date = date.AddDays(1))
+        {
+            foreach (var slot in _slots.Where(s => s.State == SlotStates.Published && s.DayOfWeek == date.DayOfWeek))
+            {
+                var exception = _exceptions.GetValueOrDefault(slot.Id)?.FirstOrDefault(e => e.Date == date);
+                cards.Add(new TimetableCardDto(slot.Id, date, exception?.NewPeriodId ?? slot.PeriodId, slot.CourseNameAr, slot.CourseNameEn, slot.TeacherName, slot.RoomName,
+                    exception?.Kind, exception?.SubstituteName, "5أ", "5A"));
+            }
+        }
+
+        return new TimetableViewDto(from, to, WorkingDays, _periods.OrderBy(p => p.Order).ToList(), cards, DateTime.UtcNow);
+    }
+
     public Task<(Stream Content, string FileName)> ExportAsync(Guid classId, Guid termId, CancellationToken ct = default) =>
         Task.FromResult<(Stream, string)>((new MemoryStream([0x50, 0x4B, 0x03, 0x04]), "timetable.xlsx"));
 

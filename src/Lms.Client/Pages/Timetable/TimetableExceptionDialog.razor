@@ -1,0 +1,126 @@
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.Timetable
+@using Lms.Client.Components.Timetable
+@using Lms.Shared.Teaching
+@using Lms.Shared.Timetable
+@inject ITimetableApi Api
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+@* A dated change to one lesson: a substitute teacher, a cancellation or a move to another period, for one date. The base lesson is never altered. *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="3" Class="lms-form">
+            <MudText Typo="Typo.subtitle2">@Culture.Pick(Slot.CourseNameAr, Slot.CourseNameEn)</MudText>
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="exception-error">@_error</MudAlert>
+            }
+
+            @if (_existing.Count > 0)
+            {
+                <ul class="lms-excuse-covered" data-testid="exception-list">
+                    @foreach (var e in _existing)
+                    {
+                        <li class="d-flex align-center gap-2">
+                            <span dir="ltr">@e.Date.ToString("yyyy-MM-dd")</span> · <ExceptionBadge Kind="@e.Kind" Substitute="@e.SubstituteName" />
+                            @if (!string.IsNullOrWhiteSpace(e.Note)) { <span class="lms-muted">· @e.Note</span> }
+                            <MudIconButton Icon="@Icons.Material.Rounded.Delete" Color="Color.Error" Class="lms-touch" aria-label="@L["Common_Delete"]" OnClick="() => DeleteAsync(e)" data-testid="@($"exception-delete-{e.Id}")" />
+                        </li>
+                    }
+                </ul>
+            }
+
+            <MudDatePicker Date="_date?.ToDateTime(TimeOnly.MinValue)" DateChanged="d => _date = d is { } x ? DateOnly.FromDateTime(x) : null" Label="@L["Tt_Exception_Date"]"
+                           HelperText="@string.Format(L["Tt_Exception_DateHelp"], Culture.Current.DateTimeFormat.GetDayName(Slot.DayOfWeek))" Variant="Variant.Outlined" DateFormat="yyyy-MM-dd" data-testid="exception-date" />
+            <MudSelect T="string" @bind-Value="_kind" Label="@L["Tt_Exception_Kind"]" Variant="Variant.Outlined" data-testid="exception-kind">
+                @foreach (var k in ExceptionKinds.All)
+                {
+                    <MudSelectItem T="string" Value="@k">@L[$"Tt_ExceptionKind_{k}"]</MudSelectItem>
+                }
+            </MudSelect>
+            @if (_kind == ExceptionKinds.Substitute)
+            {
+                <MudSelect T="Guid?" @bind-Value="_substitute" Label="@L["Tt_Exception_Substitute_Pick"]" Variant="Variant.Outlined" data-testid="exception-substitute">
+                    @foreach (var t in Teachers)
+                    {
+                        <MudSelectItem T="Guid?" Value="@((Guid?)t.UserId)">@Culture.Pick(t.NameAr, t.NameEn)</MudSelectItem>
+                    }
+                </MudSelect>
+            }
+            @if (_kind == ExceptionKinds.Moved)
+            {
+                <MudSelect T="Guid?" @bind-Value="_period" Label="@L["Tt_Exception_NewPeriod"]" Variant="Variant.Outlined" data-testid="exception-period">
+                    @foreach (var p in Periods)
+                    {
+                        <MudSelectItem T="Guid?" Value="@((Guid?)p.Id)">@Culture.Pick(p.NameAr, p.NameEn)</MudSelectItem>
+                    }
+                </MudSelect>
+            }
+            <MudTextField T="string" @bind-Value="_note" Label="@L["Tt_Exception_Note"]" MaxLength="TimetableLimits.MaxNoteLength" Variant="Variant.Outlined" data-testid="exception-note" />
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <div class="lms-dialog-actions">
+            <MudButton Variant="Variant.Text" OnClick="() => MudDialog.Close(DialogResult.Ok(_changed))" data-testid="exception-close">@L["Common_Close"]</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddAsync" Disabled="@_saving" data-testid="exception-save">@L["Tt_Exception_Add"]</MudButton>
+        </div>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired] public SlotDto Slot { get; set; } = default!;
+    [Parameter, EditorRequired] public IReadOnlyList<ClassCourseTeacherDto> Teachers { get; set; } = [];
+    [Parameter, EditorRequired] public IReadOnlyList<PeriodDto> Periods { get; set; } = [];
+
+    private IReadOnlyList<TimetableExceptionDto> _existing = [];
+    private DateOnly? _date;
+    private string _kind = ExceptionKinds.Substitute;
+    private Guid? _substitute, _period;
+    private string? _note, _error;
+    private bool _saving, _changed;
+
+    protected override async Task OnInitializedAsync() => await ReloadAsync();
+
+    private async Task ReloadAsync()
+    {
+        var (list, _) = await ApiCalls.RunAsync(() => Api.GetExceptionsAsync(Slot.Id), Navigation);
+        _existing = list ?? [];
+    }
+
+    private async Task AddAsync()
+    {
+        _error = null;
+        if (_date is not { } date) { _error = L["Tt_Exception_DateRequired"]; return; }
+        _saving = true;
+        try
+        {
+            await Api.CreateExceptionAsync(Slot.Id, new SaveTimetableExceptionRequest(date, _kind, _kind == ExceptionKinds.Substitute ? _substitute : null,
+                _kind == ExceptionKinds.Moved ? _period : null, string.IsNullOrWhiteSpace(_note) ? null : _note.Trim()));
+            _changed = true;
+            _date = null;
+            _note = null;
+            await ReloadAsync();
+        }
+        catch (ApiProblemException ex) when (ex.Code is "exception_date_invalid" or "exception_substitute_invalid")
+        {
+            _error = L[$"Error_{ex.Code}"];
+        }
+        catch (Exception ex) when (ex is ApiProblemException or HttpRequestException)
+        {
+            _error = L["Api_Error"];
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private async Task DeleteAsync(TimetableExceptionDto e)
+    {
+        var ok = await ApiCalls.RunAsync(() => Api.DeleteExceptionAsync(Slot.Id, e.Id), Navigation, L, message => _error = message);
+        if (ok) { _changed = true; await ReloadAsync(); }
+    }
+}

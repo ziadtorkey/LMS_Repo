@@ -114,3 +114,15 @@ html:lang(ar), html:lang(ar) body { font-family: Cairo, "Segoe UI", Tahoma, Aria
 .lms-tt-add:hover, .lms-tt-add:focus-visible { background: color-mix(in srgb, var(--mud-palette-primary) 8%, transparent); color: var(--mud-palette-primary); }
 .lms-tt-badges { display: flex; flex-wrap: wrap; gap: 4px; }
 .lms-tt-slot { padding-inline-end: 48px; }
+.lms-tt-week-nav { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; margin-block-end: 12px; }
+.lms-tt-week-range { font-variant-numeric: tabular-nums; font-weight: 600; min-inline-size: 11rem; text-align: center; }
+.lms-tt-card { display: flex; flex-direction: column; gap: 2px; padding: 6px 8px; border-radius: 6px; background: var(--mud-palette-surface); border: 1px solid var(--mud-palette-lines-default); }
+.lms-tt-card + .lms-tt-card { margin-block-start: 4px; }
+.lms-tt-cancelled { opacity: .7; }
+.lms-tt-cancelled .lms-tt-course { text-decoration: line-through; }
+.lms-tt-days { display: none; }
+.lms-tt-daychip { display: inline-flex; flex-direction: column; align-items: center; min-inline-size: 56px; padding: 4px 10px; border: 1px solid var(--mud-palette-lines-inputs); border-radius: 10px; background: var(--mud-palette-surface); color: inherit; font: inherit; cursor: pointer; }
+.lms-tt-daychip-on { border-color: var(--mud-palette-primary); border-width: 2px; font-weight: 600; }
+.lms-tt-daylist { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 8px; }
+.lms-tt-dayrow { display: grid; gap: 4px; padding-block: 6px; border-block-end: 1px solid var(--mud-palette-table-lines); }
+@media (max-width: 599px) { .lms-tt-weekgrid { display: none; } .lms-tt-days { display: block; } }

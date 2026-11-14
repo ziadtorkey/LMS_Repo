@@ -92,7 +92,7 @@
 
     @if (_menuFor is not null)
     {
-        <MoveToMenu Slot="_menuFor" Days="Days" Periods="Periods" OnMove="MoveFromMenuAsync" OnEdit="EditAsync" OnDelete="DeleteAsync" OnClose="CloseMenu" />
+        <MoveToMenu Slot="_menuFor" Days="Days" Periods="Periods" OnMove="MoveFromMenuAsync" OnEdit="EditAsync" OnDelete="DeleteAsync" OnException="ExceptionAsync" OnClose="CloseMenu" />
     }
 </div>
 
@@ -122,6 +122,7 @@
     [Parameter] public EventCallback<(DayOfWeek Day, Guid PeriodId)> OnAdd { get; set; }
     [Parameter] public EventCallback<SlotDto> OnEdit { get; set; }
     [Parameter] public EventCallback<SlotDto> OnDelete { get; set; }
+    [Parameter] public EventCallback<SlotDto> OnException { get; set; }
 
     private IReadOnlyList<DayOfWeek> Days => Timetable.WorkingDays.Select(ToDay).Where(d => d is not null).Select(d => d!.Value).ToList();
     private IReadOnlyList<PeriodDto> Periods => Timetable.Periods.OrderBy(p => p.Order).ToList();
@@ -260,6 +261,11 @@
     private async Task EditAsync()
     {
         if (_menuFor is { } slot) { _menuFor = null; await OnEdit.InvokeAsync(slot); }
+    }
+
+    private async Task ExceptionAsync()
+    {
+        if (_menuFor is { } slot) { _menuFor = null; await OnException.InvokeAsync(slot); }
     }
 
     private async Task DeleteAsync()
