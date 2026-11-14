@@ -1357,6 +1357,118 @@ namespace Lms.Infrastructure.Persistence.Migrations
                     b.ToTable("ClassStudents", (string)null);
                 });
 
+            modelBuilder.Entity("Lms.Domain.Comms.ContactSuppression", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("AddressHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("varchar(64)");
+
+                    b.Property<string>("Channel")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrganizationId", "Channel", "AddressHash")
+                        .IsUnique();
+
+                    b.ToTable("ContactSuppressions", (string)null);
+                });
+
+            modelBuilder.Entity("Lms.Domain.Comms.DeliveryOutbox", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("char(36)");
+
+                    b.Property<int>("Attempts")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Channel")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("ExpiresAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("HeldUntilUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<bool>("IsPriority")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("LastErrorCode")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<DateTime?>("LeaseUntilUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("NextAttemptAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("NotificationId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Provider")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<string>("ProviderMessageId")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<DateTime?>("SentAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<string>("TemplateKey")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAtUtc");
+
+                    b.HasIndex("NotificationId", "Channel")
+                        .IsUnique();
+
+                    b.HasIndex("OrganizationId", "Channel", "Status", "NextAttemptAtUtc");
+
+                    b.HasIndex("OrganizationId", "UserId", "Channel", "SentAtUtc");
+
+                    b.ToTable("DeliveryOutbox", (string)null);
+                });
+
             modelBuilder.Entity("Lms.Domain.Configuration.OrgUnitPolicy", b =>
                 {
                     b.Property<Guid>("Id")

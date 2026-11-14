@@ -162,6 +162,8 @@ public sealed class LmsApiFactory : WebApplicationFactory<Program>, IAsyncLifeti
     {
         // The host runs as Development (auth config expects it); keep the dev seeder out of the shared test database.
         builder.UseSetting("Seed:RunOnStartup", "false");
+        builder.UseSetting("Comms:FakeChannels", "true"); // the delivery kernel sends through the in-memory fakes
+        builder.UseSetting("Comms:DispatcherEnabled", "false"); // tests run the dispatcher themselves, at a time they choose
         builder.UseSetting("Jobs:SchedulePollIntervalSeconds", "1"); // scheduled jobs are picked up within a second in tests
         builder.UseSetting("ConnectionStrings:Lms", _mysql.GetConnectionString());
         builder.UseSetting("Storage:Endpoint", _minio.GetConnectionString());

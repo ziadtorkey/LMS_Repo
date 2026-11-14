@@ -1,5 +1,6 @@
 using Lms.Domain.Abstractions;
 using Lms.Domain.Notifications;
+using Lms.Infrastructure.Comms;
 using Lms.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,7 +20,8 @@ public static class NotificationsServiceCollectionExtensions
             sp.GetRequiredService<ICurrentContext>(),
             sp.GetRequiredService<INotificationRecipientResolver>(),
             sp.GetRequiredService<INotificationPusher>(),
-            sp.GetRequiredService<IClock>()));
+            sp.GetRequiredService<IClock>(),
+            sp.GetRequiredService<DeliveryPlanner>()));
         return services;
     }
 }
