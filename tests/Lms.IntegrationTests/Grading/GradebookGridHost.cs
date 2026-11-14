@@ -22,11 +22,11 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Lms.IntegrationTests.Grading;
 
 /// <summary>A class course with enrolled students, its teacher, another teacher, a supervisor and an admin, and helpers for the gradebook endpoints (M5 Task 8).</summary>
-internal sealed class GradebookGridHost(LmsApiFactory factory) : IDisposable
+internal sealed class GradebookGridHost(LmsApiFactory factory, Action<IServiceCollection>? configure = null) : IDisposable
 {
     private static readonly DateOnly Past = new(2020, 1, 1);
 
-    public OrgUnitTestHost Host { get; } = new(factory);
+    public OrgUnitTestHost Host { get; } = new(factory, configure);
 
     public void Dispose() => Host.Dispose();
 

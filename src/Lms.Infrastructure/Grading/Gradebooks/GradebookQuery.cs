@@ -109,6 +109,16 @@ public sealed class GradebookReader(
         return GradeRowBuilder.Build(data, data.Calculate()).Single();
     }
 
+    /// <summary>The data of every active student of the class course (not paged): what publishing computes snapshots and notices from.</summary>
+    public async Task<GradebookData> LoadActiveAsync(ClassCourse classCourse, Gradebook gradebook, CancellationToken ct)
+    {
+        var active = db.Set<CourseEnrollment>()
+            .Where(e => e.ClassCourseId == classCourse.Id && e.Status == CourseEnrollment.ActiveStatus).Select(e => e.StudentId);
+        var students = await db.Set<StudentProfile>().Where(s => active.Contains(s.Id)).OrderBy(s => s.Id)
+            .Select(s => new GridStudent(s.Id, s.StudentCode, s.NameAr, s.NameEn)).ToListAsync(ct);
+        return await LoadAsync(classCourse, gradebook, students, ct);
+    }
+
     public static GradeItemDto ToDto(GradeItem i) =>
         new(i.Id, i.CategoryId, i.TitleAr, i.TitleEn, i.SourceKind is { } k ? ((GradeSourceKind)k).ToString() : null, i.SourceId, i.IsManual,
             i.MaxPoints, i.PublishState, i.PublishAtUtc, i.PublishedAtUtc, i.Order);

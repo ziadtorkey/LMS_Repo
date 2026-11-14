@@ -34,13 +34,15 @@ public sealed class GradebookData
     public IReadOnlyDictionary<(int Kind, Guid Source), GradeItem> BySource =>
         Items.Where(i => i.SourceKind is not null && i.SourceId is not null).ToDictionary(i => (i.SourceKind!.Value, i.SourceId!.Value));
 
-    public CalculationResult Calculate()
+    /// <summary>Runs the engine. <paramref name="publishedOnly"/> drops hidden and scheduled items first: exactly what a student sees (L6).</summary>
+    public CalculationResult Calculate(bool publishedOnly = false)
     {
         var bySource = BySource;
         var rules = new CalcRules(
             Enum.TryParse<MissingPolicy>(Gradebook.MissingPolicy, out var missing) ? missing : MissingPolicy.Normalise,
             Enum.TryParse<CategoryMethod>(Gradebook.CategoryMethod, out var method) ? method : CategoryMethod.PointsWeighted,
-            Gradebook.DecimalPlaces);
+            Gradebook.DecimalPlaces,
+            publishedOnly);
         var events = Events
             .Where(e => bySource.ContainsKey(((int)e.SourceKind, e.SourceId)))
             .Select(e => new CalcEvent(bySource[((int)e.SourceKind, e.SourceId)].Id, e.StudentProfileId, e.Revision, e.Points))

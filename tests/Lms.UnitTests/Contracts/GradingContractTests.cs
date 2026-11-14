@@ -282,7 +282,7 @@ public sealed class GradingContractTests
             typeof(StudentGradesDto), typeof(StudentCourseGradesDto), typeof(PublishedGradeItemDto), typeof(StudentGradeCategoryDto),
             typeof(BandLegendDto), typeof(BandLegendEntryDto),
         ];
-        string[] staffOnly = ["PublishState", "PublishAt", "Newer", "Rank", "Average", "Minimum", "Maximum", "Median", "Hidden", "Override", "Reason", "EventsAfterLock", "Provisional", "SourceKind", "SourceId", "Version", "Count"];
+        string[] staffOnly = ["PublishState", "PublishAt", "Newer", "Rank", "Average", "Minimum", "Maximum", "Median", "Hidden", "Override", "Reason", "EventsAfterLock", "Provisional", "SourceKind", "SourceId", "Version", "Count", "Withdrawn"];
 
         Assert.All(studentFacing, t => Assert.DoesNotContain(t.GetProperties(), p =>
             staffOnly.Any(f => p.Name.Contains(f, StringComparison.OrdinalIgnoreCase))));
