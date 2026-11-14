@@ -14,7 +14,8 @@ public static class SeedingServiceCollectionExtensions
             sp.GetRequiredService<IHostEnvironment>(),
             new SeedOptions(
                 sp.GetRequiredService<IConfiguration>()["Seed:PlatformAdminEmail"],
-                sp.GetRequiredService<IConfiguration>()["Seed:DefaultPassword"])));
+                sp.GetRequiredService<IConfiguration>()["Seed:DefaultPassword"],
+                int.TryParse(sp.GetRequiredService<IConfiguration>()["Seed:Perf:Students"], out var perf) ? perf : 0)));
         return services;
     }
 }
