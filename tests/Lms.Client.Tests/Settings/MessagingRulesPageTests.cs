@@ -83,7 +83,7 @@ public sealed class MessagingRulesPageTests : ClientTestContext
         var page = await OpenAsync();
         var matrix = page.FindComponent<MessagingRulesMatrix>().Instance;
         await page.InvokeAsync(() => matrix.SetAsync(Cell(page, MessagingRole.Teacher, MessagingRole.Student), MessagingVia.NotAllowed));
-        await page.InvokeAsync(() => matrix.SetAsync(Cell(page, MessagingRole.Teacher, MessagingRole.Counselor), MessagingVia.SameUnit));
+        await page.InvokeAsync(() => matrix.SetAsync(Cell(page, MessagingRole.Teacher, MessagingRole.Counselor), MessagingVia.NotAllowed));
 
         await page.Find("[data-testid=rules-save]").ClickAsync(new());
 
@@ -91,7 +91,7 @@ public sealed class MessagingRulesPageTests : ClientTestContext
         var sent = _comms.LastRules!.Cells;
         Assert.Equal(2, sent.Count);
         Assert.Contains(sent, c => (c.FromRole, c.ToRole, c.Mode) == (BuiltInRoles.Teacher, BuiltInRoles.Student, MessagingRuleModes.Deny));
-        Assert.Contains(sent, c => (c.FromRole, c.ToRole, c.Mode) == (BuiltInRoles.Teacher, BuiltInRoles.Counselor, MessagingRuleModes.SameUnit));
+        Assert.Contains(sent, c => (c.FromRole, c.ToRole, c.Mode) == (BuiltInRoles.Teacher, BuiltInRoles.Counselor, MessagingRuleModes.Deny));
     }
 
     [Fact]
