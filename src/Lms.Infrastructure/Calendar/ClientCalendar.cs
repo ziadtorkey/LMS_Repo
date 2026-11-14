@@ -10,8 +10,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Lms.Infrastructure.Calendar;
 
-internal sealed class ClientCalendar(LmsDbContext db, ISettingsResolver settings, IAcademicCalendar holidays, IClock clock) : IClientCalendar
+public sealed class ClientCalendar(LmsDbContext db, ISettingsResolver settings, IAcademicCalendar holidays, IClock clock) : IClientCalendar
 {
+    /// <summary>The widest span counted in one call (and per holiday query); a wider request is an <see cref="ArgumentOutOfRangeException"/>, mapped to 400 by the endpoints.</summary>
+    public const int MaxSpanDays = 400;
+
     private const int LookAheadDays = 366;
 
     public async Task<TimeZoneInfo> GetTimeZoneAsync(Guid organizationId, CancellationToken cancellationToken)
@@ -62,6 +65,8 @@ internal sealed class ClientCalendar(LmsDbContext db, ISettingsResolver settings
         var remaining = Math.Abs(schoolDays);
         var date = from;
         var scanned = 0;
+        IReadOnlySet<DateOnly> holidaySet = new HashSet<DateOnly>();
+        var windowEnd = step > 0 ? from.AddDays(-1) : from.AddDays(1); // nothing loaded yet
         while (remaining > 0)
         {
             if (++scanned > LookAheadDays * Math.Max(1, Math.Abs(schoolDays)))
@@ -70,7 +75,16 @@ internal sealed class ClientCalendar(LmsDbContext db, ISettingsResolver settings
             }
 
             date = date.AddDays(step);
-            if (working.Contains(WorkingDayName(date.DayOfWeek)) && !await holidays.IsNonWorkingDayAsync(unit.Path, date, cancellationToken))
+            if (step > 0 ? date > windowEnd : date < windowEnd)
+            {
+                // One query per window of at most MaxSpanDays days, in the direction of travel.
+                var start = date;
+                var end = date.AddDays(step * (MaxSpanDays - 1));
+                holidaySet = await holidays.HolidayDatesAsync(unit.Path, step > 0 ? start : end, step > 0 ? end : start, cancellationToken);
+                windowEnd = end;
+            }
+
+            if (working.Contains(WorkingDayName(date.DayOfWeek)) && !holidaySet.Contains(date))
             {
                 remaining--;
             }
@@ -86,12 +100,18 @@ internal sealed class ClientCalendar(LmsDbContext db, ISettingsResolver settings
             return 0;
         }
 
+        if (through.DayNumber - after.DayNumber > MaxSpanDays)
+        {
+            throw new ArgumentOutOfRangeException(nameof(through), $"At most {MaxSpanDays} days can be counted at once.");
+        }
+
         var unit = await FindUnitAsync(orgUnitId, cancellationToken);
         var working = await WorkingDaysAsync(orgUnitId, cancellationToken);
+        var holidaySet = await holidays.HolidayDatesAsync(unit.Path, after.AddDays(1), through, cancellationToken); // one query for the range
         var count = 0;
         for (var date = after.AddDays(1); date <= through; date = date.AddDays(1))
         {
-            if (working.Contains(WorkingDayName(date.DayOfWeek)) && !await holidays.IsNonWorkingDayAsync(unit.Path, date, cancellationToken))
+            if (working.Contains(WorkingDayName(date.DayOfWeek)) && !holidaySet.Contains(date))
             {
                 count++;
             }
