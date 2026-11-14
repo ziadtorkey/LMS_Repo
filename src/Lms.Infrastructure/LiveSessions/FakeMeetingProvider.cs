@@ -21,6 +21,9 @@ public sealed class FakeMeetingProvider : IMeetingProvider
     /// <summary>The requests of every meeting that exists (created and not deleted), by external id.</summary>
     public IReadOnlyDictionary<string, MeetingRequest> Meetings => _meetings;
 
+    /// <summary>What <see cref="GetParticipantsAsync"/> reports, by external meeting id (tests fill it).</summary>
+    public ConcurrentDictionary<string, List<MeetingParticipant>> ParticipantsOf { get; } = new();
+
     public ConcurrentQueue<string> Deleted { get; } = new();
 
     public ConcurrentQueue<string> Updated { get; } = new();
@@ -53,6 +56,7 @@ public sealed class FakeMeetingProvider : IMeetingProvider
         _meetings.Clear();
         Deleted.Clear();
         Updated.Clear();
+        ParticipantsOf.Clear();
         _script.Clear();
         NextException = null;
         Interlocked.Exchange(ref _failures, 0);
@@ -87,8 +91,11 @@ public sealed class FakeMeetingProvider : IMeetingProvider
         return Task.CompletedTask;
     }
 
-    public Task<IReadOnlyList<MeetingParticipant>> GetParticipantsAsync(string externalMeetingId, CancellationToken ct = default) =>
-        Task.FromResult<IReadOnlyList<MeetingParticipant>>([]);
+    public Task<IReadOnlyList<MeetingParticipant>> GetParticipantsAsync(string externalMeetingId, CancellationToken ct = default)
+    {
+        ThrowIfFailing();
+        return Task.FromResult<IReadOnlyList<MeetingParticipant>>(ParticipantsOf.TryGetValue(externalMeetingId, out var list) ? [.. list] : []);
+    }
 
     public Task<IReadOnlyList<MeetingRecording>> GetRecordingsAsync(string externalMeetingId, CancellationToken ct = default) =>
         Task.FromResult<IReadOnlyList<MeetingRecording>>([]);

@@ -3293,6 +3293,10 @@ namespace Lms.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("OrganizationId")
                         .HasColumnType("char(36)");
 
+                    b.Property<DateTime?>("ParticipantsImportedAtUtc")
+                        .HasPrecision(6)
+                        .HasColumnType("datetime(6)");
+
                     b.Property<string>("Provider")
                         .IsRequired()
                         .HasMaxLength(20)
