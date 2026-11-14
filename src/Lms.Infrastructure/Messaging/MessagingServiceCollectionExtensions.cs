@@ -12,6 +12,7 @@ public static class MessagingServiceCollectionExtensions
         services.AddScoped<ConversationService>();
         services.AddScoped<MessageService>();
         services.AddScoped<ReadStateService>();
+        services.AddScoped<MessageAttachmentGuard>();
         services.TryAddScoped<IMessagingPolicy, AllowAllMessagingPolicy>(); // Task 11 registers the D69 policy
         return services;
     }

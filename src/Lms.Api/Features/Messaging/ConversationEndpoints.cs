@@ -27,11 +27,12 @@ public static class ConversationEndpoints
         app.MapGet(Routes.ConversationMessagesPattern, MessagesAsync).RequirePermission(Permissions.Messaging.View);
         app.MapPut(Routes.ConversationReadPattern, ReadAsync).RequirePermission(Permissions.Messaging.View);
         app.MapGet(Routes.MyUnreadTotal, UnreadTotalAsync).RequirePermission(Permissions.Messaging.View);
+        app.MapMessageActions();
         return app;
     }
 
     /// <summary>The flag at the caller scope; the answer is private and never cached.</summary>
-    private static async Task<IResult?> GateAsync(HttpContext http, ICurrentContext context, ISettingsResolver settings, CancellationToken ct)
+    internal static async Task<IResult?> GateAsync(HttpContext http, ICurrentContext context, ISettingsResolver settings, CancellationToken ct)
     {
         http.Response.Headers.CacheControl = "private, no-store";
         if (context.UserId is null || context.OrganizationId is null || context.ScopePath is not { } path)
@@ -123,7 +124,7 @@ public static class ConversationEndpoints
             return ApiProblems.NotFound();
         }
 
-        var sent = await messages.SendAsync(opened, body?.Body, ct);
+        var sent = await messages.SendAsync(opened, body?.Body, body?.AttachmentFileIds, ct);
         return sent.Message is null ? Problem(sent) : Results.Created(Routes.Message(id, sent.Message.Id), (await messages.ToDtosAsync([sent.Message], ct))[0]);
     }
 
@@ -168,9 +169,10 @@ public static class ConversationEndpoints
         return Results.Ok(new UnreadTotalDto(unread.Count(kv => kv.Value > 0)));
     }
 
-    private static IResult Problem(SendResult sent) => sent.Status switch
+    internal static IResult Problem(SendResult sent) => sent.Status switch
     {
         400 => ApiProblems.BadRequest(sent.ProblemCode!),
+        404 => ApiProblems.NotFound(),
         409 => ApiProblems.Conflict(sent.ProblemCode!),
         _ => Results.Problem(statusCode: sent.Status, title: "Not allowed", extensions: new Dictionary<string, object?> { ["code"] = sent.ProblemCode }),
     };

@@ -33,6 +33,8 @@ public sealed class Message : AuditableEntity, ITenantOwned
     public DateTime SentAtUtc { get; private set; }
     public DateTime? DeletedAtUtc { get; private set; }
 
+    public bool InDeleteWindow(DateTime nowUtc, int windowMinutes) => nowUtc <= SentAtUtc.AddMinutes(windowMinutes);
+
     /// <summary>Deletes for everyone: clears the text and keeps the row as a tombstone.</summary>
     public void DeleteForEveryone(DateTime atUtc)
     {

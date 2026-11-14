@@ -40,3 +40,17 @@ internal sealed class MessageConfiguration : IEntityTypeConfiguration<Message>
         builder.HasOne<Conversation>().WithMany().HasForeignKey(x => x.ConversationId).OnDelete(DeleteBehavior.Restrict);
     }
 }
+
+internal sealed class MessageAttachmentConfiguration : IEntityTypeConfiguration<MessageAttachment>
+{
+    public void Configure(EntityTypeBuilder<MessageAttachment> builder)
+    {
+        builder.ToTable("MessageAttachments");
+        builder.Property(x => x.FileName).HasMaxLength(255).IsRequired();
+        builder.Property(x => x.ContentType).HasMaxLength(150).IsRequired();
+        builder.HasIndex(x => x.FileId).IsUnique();
+        builder.HasIndex(x => x.MessageId);
+        builder.HasIndex(x => new { x.UploaderUserId, x.CreatedAtUtc });
+        builder.HasOne<Conversation>().WithMany().HasForeignKey(x => x.ConversationId).OnDelete(DeleteBehavior.Restrict);
+    }
+}

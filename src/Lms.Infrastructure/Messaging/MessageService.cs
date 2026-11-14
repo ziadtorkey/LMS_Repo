@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Lms.Infrastructure.Messaging;
 
 /// <summary>The outcome of sending: the message, or the problem code and HTTP status that refuses it.</summary>
-public sealed record SendResult(Message? Message, string? ProblemCode, int Status)
+public sealed record SendResult(Message? Message, string? ProblemCode, int Status, int? RetryAfterSeconds = null)
 {
     public static SendResult Sent(Message message) => new(message, null, 201);
 
@@ -16,12 +16,14 @@ public sealed record SendResult(Message? Message, string? ProblemCode, int Statu
 }
 
 /// <summary>Sending, paging and mapping messages (FR-MSG-01, L6, L20): keyset pages newest first, a neutral name for a former user, a left member reads up to leaving.</summary>
-public sealed class MessageService(LmsDbContext db, ICurrentContext context, IClock clock, IMessagingPolicy policy)
+public sealed class MessageService(LmsDbContext db, ICurrentContext context, IClock clock, IMessagingPolicy policy, MessageAttachmentGuard attachments)
 {
     public const string FormerUserAr = "مستخدم سابق";
     public const string FormerUserEn = "Former user";
 
-    public async Task<SendResult> SendAsync(ConversationAccessResult access, string? body, CancellationToken ct)
+    public async Task<SendResult> SendAsync(ConversationAccessResult access, string? body, CancellationToken ct) => await SendAsync(access, body, null, ct);
+
+    public async Task<SendResult> SendAsync(ConversationAccessResult access, string? body, IReadOnlyList<Guid>? attachmentFileIds, CancellationToken ct)
     {
         var text = body?.Trim() ?? string.Empty;
         if (text.Length == 0 || text.Length > MessagingLimits.MaxBodyLength)
@@ -50,11 +52,42 @@ public sealed class MessageService(LmsDbContext db, ICurrentContext context, ICl
             return SendResult.Refused(ProblemCodes.messaging_not_allowed, 403);
         }
 
+        // Attach time (L12): the files must be the caller own pending uploads of this conversation, and the caller may post right now (checked above).
+        var (pending, refused) = await attachments.ResolvePendingAsync(access, attachmentFileIds, ct);
+        if (pending is null)
+        {
+            return SendResult.Refused(refused!.ProblemCode == "not_found" ? "not_found" : refused.ProblemCode!, refused.Status);
+        }
+
         var now = clock.UtcNow;
         var message = new Message(conversation, me.UserId, text, now);
         db.Add(message);
+        foreach (var attachment in pending)
+        {
+            attachment.AttachTo(message);
+        }
+
         conversation.NoteMessage(now);
         me.MarkRead(message.Id); // the sender has read their own message
+        await db.SaveChangesAsync(ct);
+        return SendResult.Sent(message);
+    }
+
+    /// <summary>Deletes for everyone inside <c>Messaging.DeleteWindowMinutes</c> by the server clock (L20); the row stays as a tombstone, the text and the files are no longer served.</summary>
+    public async Task<SendResult> DeleteAsync(ConversationAccessResult access, Guid messageId, CancellationToken ct)
+    {
+        var message = await db.Set<Message>().SingleOrDefaultAsync(m => m.Id == messageId && m.ConversationId == access.Conversation.Id, ct);
+        if (message is null || message.SenderUserId != access.Me.UserId || message.State != Message.NormalState)
+        {
+            return SendResult.Refused("not_found", 404); // another person message is not yours to delete, and is not revealed either
+        }
+
+        if (!message.InDeleteWindow(clock.UtcNow, MessagingLimits.DeleteWindowMinutes))
+        {
+            return SendResult.Refused(ProblemCodes.message_delete_window_closed, 409);
+        }
+
+        message.DeleteForEveryone(clock.UtcNow);
         await db.SaveChangesAsync(ct);
         return SendResult.Sent(message);
     }
@@ -86,6 +119,9 @@ public sealed class MessageService(LmsDbContext db, ICurrentContext context, ICl
         var senderIds = messages.Select(m => m.SenderUserId).Distinct().ToList();
         var users = await db.Users.Where(u => senderIds.Contains(u.Id)).Select(u => new { u.Id, u.DisplayNameAr, u.DisplayNameEn }).ToDictionaryAsync(u => u.Id, ct);
         var now = clock.UtcNow;
+        var messageIds = messages.Where(m => m.State == Message.NormalState).Select(m => m.Id).ToList();
+        var files = (await db.Set<MessageAttachment>().Where(a => a.MessageId != null && messageIds.Contains(a.MessageId.Value)).ToListAsync(ct))
+            .GroupBy(a => a.MessageId!.Value).ToDictionary(g => g.Key, g => (IReadOnlyList<MessageAttachmentDto>)g.Select(a => new MessageAttachmentDto(a.FileId, a.FileName, a.ContentType, a.SizeBytes)).ToList());
         return messages.Select(m =>
         {
             users.TryGetValue(m.SenderUserId, out var user);
@@ -93,7 +129,7 @@ public sealed class MessageService(LmsDbContext db, ICurrentContext context, ICl
             var body = m.State == Message.NormalState ? m.Body : null;
             var canDelete = m.SenderUserId == me && m.State == Message.NormalState && now <= m.SentAtUtc.AddMinutes(MessagingLimits.DeleteWindowMinutes);
             return new MessageDto(m.Id, m.ConversationId, known ? m.SenderUserId : null, known ? user!.DisplayNameAr : FormerUserAr, known ? user!.DisplayNameEn : FormerUserEn,
-                body, m.State, [], m.SentAtUtc, m.DeletedAtUtc, canDelete);
+                body, m.State, files.GetValueOrDefault(m.Id) ?? [], m.SentAtUtc, m.DeletedAtUtc, canDelete);
         }).ToList();
     }
 }
