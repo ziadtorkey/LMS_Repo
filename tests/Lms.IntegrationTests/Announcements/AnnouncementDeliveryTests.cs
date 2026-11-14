@@ -172,17 +172,15 @@ public sealed class AnnouncementDeliveryTests(LmsApiFactory factory)
     }
 
     [Fact]
-    public async Task An_urgent_announcement_ignores_its_schedule_and_goes_out_now()
+    public async Task An_urgent_announcement_cannot_carry_a_schedule()
     {
         using var w = await ForumTestWorld.CreateAsync(factory, "AD5");
         var request = Request(w.World.Tree.Root.Id, [Cc(w.ClassCourseA)], urgent: true) with { PublishAtUtc = DateTime.UtcNow.AddHours(5) };
 
-        var made = await CreateOkAsync(w, w.Admin, request);
+        var response = await w.SendAsync(w.Admin, HttpMethod.Post, Routes.OrgAnnouncements, request);
 
-        Assert.Equal(AnnouncementStatuses.Published, made.Status);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
-
-    // --- reader feed
 
     [Fact]
     public async Task My_feed_is_pinned_first_and_hides_expired_and_withdrawn()
