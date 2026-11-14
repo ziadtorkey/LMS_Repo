@@ -1821,4 +1821,14 @@
   <data name="NavSection_Security" xml:space="preserve"><value>Security and settings</value></data>
   <data name="App_Subtitle" xml:space="preserve"><value>Academic platform</value></data>
   <data name="Nav_Main" xml:space="preserve"><value>Main navigation</value></data>
+  <data name="UnitSettings_Identity" xml:space="preserve"><value>Identity</value></data>
+  <data name="UnitSettings_IdentityHelp" xml:space="preserve"><value>The names and code used everywhere in the LMS.</value></data>
+  <data name="Academic_SectionLevelHelp" xml:space="preserve"><value>How students move up to the next level.</value></data>
+  <data name="Academic_LevelTransferHelp" xml:space="preserve"><value>Students who finish this unit move to the next level you choose.</value></data>
+  <data name="Academic_SectionCoursesHelp" xml:space="preserve"><value>Where courses are defined and owned.</value></data>
+  <data name="Academic_CourseManagementHelp" xml:space="preserve"><value>This unit can create and own courses for the units below it.</value></data>
+  <data name="Academic_SaveHint" xml:space="preserve"><value>Changes apply to this unit after you save.</value></data>
+  <data name="Policies_CascadeNote" xml:space="preserve"><value>Policies you turn on here apply to this unit and every unit below it. A policy set higher up shows who set it and can only be changed there.</value></data>
+  <data name="Policies_CardTitle" xml:space="preserve"><value>Delegation barriers</value></data>
+  <data name="Policies_CardHelp" xml:space="preserve"><value>Block actions for this unit and the units below it.</value></data>
 </root>
