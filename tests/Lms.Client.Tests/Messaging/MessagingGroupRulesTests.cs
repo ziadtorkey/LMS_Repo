@@ -55,7 +55,10 @@ public sealed class MessagingGroupRulesTests
 
         _api.Me = FakeMessagingApi.Sara;
         Assert.True((await _api.GetConversationAsync(group.Id)).IsReadOnly); // read-only for the student
-        Assert.Equal(ProblemCodes.group_read_only, (await Refused(() => _api.SendAsync(group.Id, new SendMessageRequest("hi all", null)))).Code);
+        var refused = await Refused(() => _api.SendAsync(group.Id, new SendMessageRequest("hi all", null)));
+        Assert.Equal(ProblemCodes.conversation_read_only, refused.Code);
+        Assert.Equal(ConversationReadOnlyReasons.GroupStudentsReadOnly, refused.Reason); // L25: the reason is named
+        Assert.False((await _api.GetConversationAsync(group.Id)).CanPost);
         Assert.Equal(403, (await Refused(() => _api.SendAsync(group.Id, new SendMessageRequest("hi all", null)))).Status);
         Assert.Contains(group.Id, (await _api.ListConversationsAsync()).Items.Where(i => i.IsReadOnly).Select(i => i.Id)); // and she still reads it
 
