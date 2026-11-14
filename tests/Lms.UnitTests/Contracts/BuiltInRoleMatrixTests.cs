@@ -45,6 +45,7 @@ public class BuiltInRoleMatrixTests
                 "Forums.View", "Forums.Post", "Forums.Moderate",
                 "LiveSessions.View", "LiveSessions.Manage",
                 "Packages.Upload", "Packages.View",
+                "Grades.View", "Grades.Manage", "Grades.Publish", "Grades.ConfigureScales", "Grades.ViewReports",
             ]
         },
         {
@@ -71,6 +72,7 @@ public class BuiltInRoleMatrixTests
                 "Forums.View", "Forums.Post", "Forums.Moderate",
                 "LiveSessions.View", "LiveSessions.Manage",
                 "Packages.Upload", "Packages.View",
+                "Grades.View", "Grades.Manage", "Grades.Publish", "Grades.ConfigureScales", "Grades.ViewReports",
             ]
         },
         {
@@ -86,6 +88,7 @@ public class BuiltInRoleMatrixTests
                 "Modules.View",
                 "CourseAssignments.View", "Quizzes.View", "Library.View", "Library.Manage", "Forums.View",
                 "LiveSessions.View", "Packages.View",
+                "Grades.View", "Grades.ViewReports",
             ]
         },
         {
@@ -110,17 +113,18 @@ public class BuiltInRoleMatrixTests
                 "Forums.View", "Forums.Post", "Forums.Moderate",
                 "LiveSessions.View", "LiveSessions.Manage",
                 "Packages.Upload", "Packages.View",
+                "Grades.View", "Grades.Manage", "Grades.Publish",
             ]
         },
         { "Student", ["Files.Upload", "Files.Download", "AcademicYears.View", "Students.SelfEdit", "LessonPlans.View",
             "Modules.View", "CourseAssignments.View", "CourseAssignments.Submit", "Quizzes.View", "Quizzes.Attempt",
-            "Library.View", "Forums.View", "Forums.Post", "LiveSessions.View", "Packages.View"] },
-        { "Guardian", ["Files.Download", "AcademicYears.View", "Students.ViewChildren"] },
+            "Library.View", "Forums.View", "Forums.Post", "LiveSessions.View", "Packages.View", "Grades.ViewOwn"] },
+        { "Guardian", ["Files.Download", "AcademicYears.View", "Students.ViewChildren", "Grades.ViewOwn"] },
     };
 
     [Theory]
     [MemberData(nameof(Matrix))]
-    public void Built_in_roles_match_the_M4b_matrix_exactly(string roleKey, string[] expected)
+    public void Built_in_roles_match_the_M5_matrix_exactly(string roleKey, string[] expected)
     {
         var actual = BuiltInRoles.Get(roleKey).DefaultPermissions;
 

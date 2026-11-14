@@ -22,6 +22,7 @@ public sealed class PackageContractTests
         Assert.Equal(["Uploaded", "Validating", "Ready", "Rejected"], PackageUploadStatuses.All);
         Assert.Equal(["Scorm12", "Scorm2004"], ScormVersions.All);
         Assert.Equal(["InProgress", "Completed"], PackageAttemptStatuses.All);
+        Assert.Equal(["Highest", "Last", "First"], PackageGradingMethods.All);
         Assert.Equal(["Scorm", "Xapi"], PackageCommitFormats.All);
         Assert.Equal(ModuleKinds.Scorm, PackageKinds.Scorm);
         Assert.Equal(ModuleKinds.H5p, PackageKinds.H5p);
@@ -87,6 +88,8 @@ public sealed class PackageContractTests
         Assert.Equal("/api/packages/{id:guid}/module", Routes.PackageModulePattern);
         Assert.Equal("/api/packages/{id:guid}/launch", Routes.PackageLaunchPattern);
         Assert.Equal("/api/packages/{id:guid}/preview", Routes.PackagePreviewPattern);
+        Assert.Equal("/api/packages/{id:guid}/my-state", Routes.PackageMyStatePattern);
+        Assert.Equal("/api/packages/{id:guid}/grading-method", Routes.PackageGradingMethodPattern);
         Assert.Equal("/api/package-attempts/{id:guid}/commit", Routes.PackageAttemptCommitPattern);
         Assert.Equal("/api/package-attempts/{id:guid}/finish", Routes.PackageAttemptFinishPattern);
         Assert.Equal($"/api/class-courses/{Id}/packages", Routes.ClassCoursePackages(Id));
@@ -95,6 +98,8 @@ public sealed class PackageContractTests
         Assert.Equal($"/api/packages/{Id}/module", Routes.PackageModule(Id));
         Assert.Equal($"/api/packages/{Id}/launch", Routes.PackageLaunch(Id));
         Assert.Equal($"/api/packages/{Id}/preview", Routes.PackagePreview(Id));
+        Assert.Equal($"/api/packages/{Id}/my-state", Routes.PackageMyState(Id));
+        Assert.Equal($"/api/packages/{Id}/grading-method", Routes.PackageGradingMethod(Id));
         Assert.Equal($"/api/package-attempts/{Id}/commit", Routes.PackageAttemptCommit(Id));
         Assert.Equal($"/api/package-attempts/{Id}/finish", Routes.PackageAttemptFinish(Id));
     }
@@ -143,11 +148,16 @@ public sealed class PackageContractTests
         RoundTrip(new PackageUploadDto(Id, Other, Id, "quiz.h5p", PackageKinds.H5p, PackageUploadStatuses.Rejected, PackageRejectReasons.invalid_archive, null, null, "H5P.Foo", Other, now));
         RoundTrip(new PackageListQuery(Id, PackageUploadStatuses.Validating));
         RoundTrip(new AttachPackageModuleRequest(module));
+        RoundTrip(new AttachPackageModuleRequest(module, PackageGradingMethods.First));
+        Assert.Equal(PackageGradingMethods.Highest, new AttachPackageModuleRequest(module).GradingMethod);
         RoundTrip(new PackageLaunchDto("https://content.example/p/token/index.html", Id, now, now, true));
         RoundTrip(new PackagePreviewDto("https://content.example/p/token/index.html", now, now));
         RoundTrip(new PackageCommitRequest(7, PackageCommitFormats.Scorm, new Dictionary<string, string> { ["cmi.core.lesson_status"] = "completed" }));
         RoundTrip(new PackageFinishRequest(7));
         RoundTrip(new PackageAttemptDto(Id, PackageAttemptStatuses.Completed, true, 80m, 0m, 100m, 7, now));
+        RoundTrip(new PackageStudentStateDto(PackageGradingMethods.Last, new PackageAttemptDto(Id, PackageAttemptStatuses.Completed, true, 80m, 0m, 100m, 7, now), true, 80m));
+        RoundTrip(new PackageStudentStateDto(PackageGradingMethods.Highest, null, false, null));
+        RoundTrip(new UpdatePackageGradingMethodRequest(PackageGradingMethods.First));
     }
 
     private static void RoundTrip<T>(T value)

@@ -66,12 +66,7 @@ public sealed class JobsModule : ILmsModule
             .UseRecommendedSerializerSettings()
             .UseActivator(new LmsJobActivator(provider.GetRequiredService<IServiceScopeFactory>()))
             .UseFilter(new CaptureJobContextFilter())
-            .UseStorage(new MySqlStorage(connectionString, new MySqlStorageOptions
-            {
-                TablesPrefix = "Hangfire",
-                PrepareSchemaIfNecessary = true,
-                QueuePollInterval = TimeSpan.FromSeconds(pollSeconds),
-            })));
+            .UseStorage(CreateStorage(connectionString, pollSeconds)));
 
         if (configuration.GetValue("Jobs:ServerEnabled", true))
         {
@@ -87,6 +82,19 @@ public sealed class JobsModule : ILmsModule
         services.AddSingleton(JobSettings.Parse(configuration[JobSettings.TimeZoneKey]));
         services.AddSingleton<IJobKeyLock>(new MySqlJobKeyLock(connectionString));
         services.AddScoped<IBackgroundJobs, BackgroundJobs>();
+    }
+
+    /// <summary>The Hangfire storage; its schema is prepared by the constructor, then the <c>Score</c> column is widened (see <see cref="HangfireSchema"/>).</summary>
+    private static MySqlStorage CreateStorage(string connectionString, int pollSeconds)
+    {
+        var storage = new MySqlStorage(connectionString, new MySqlStorageOptions
+        {
+            TablesPrefix = "Hangfire",
+            PrepareSchemaIfNecessary = true,
+            QueuePollInterval = TimeSpan.FromSeconds(pollSeconds),
+        });
+        HangfireSchema.EnsureScoreIsDouble(connectionString);
+        return storage;
     }
 
     public void MapEndpoints(IEndpointRouteBuilder app)
