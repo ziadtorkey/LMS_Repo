@@ -81,6 +81,8 @@ public sealed class IsolationBypassGuardTests
             "events and names inherited from ancestor units, restricted to the unit's client (M1 Task 22, #57)",
         ["src/Lms.Infrastructure/Timetable/PeriodService.cs"] =
             "periods of ancestor units apply to descendants, restricted to the client and the exact ancestor paths; only the deepest defining unit rows leave (M5 Task 13)",
+        ["src/Lms.Infrastructure/Timetable/TimetableService.cs"] =
+            "terms of the class year and courses sit above the caller scope (names only); clash candidates are slots of the same teacher or class in sibling schools; client matched, deleted rows excluded (M5 Task 14, bypass site 3)",
         ["src/Lms.Infrastructure/Calendar/ClientCalendar.cs"] =
             "the client root path (above a school admin scope) is read only to resolve the client-level Org.TimeZone setting (M5 Task 13, L2)",
         ["src/Lms.Infrastructure/AcademicYears/AcademicCalendar.cs"] =
