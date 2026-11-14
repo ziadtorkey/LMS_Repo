@@ -350,7 +350,8 @@ public sealed class FakeGradebookApi : IGradebookApi
 
     public Task<PublishResultDto> PublishAsync(Guid classCourseId, PublishItemsRequest request, CancellationToken ct = default)
     {
-        EnsureWritable(classCourseId);
+        EnsureCourse(classCourseId); // publishing is allowed on a locked gradebook (Lead ruling); only entering grades is blocked
+        if (!CanManage) throw Problem(403, "MissingPermission");
         LastPublish = request;
         if (!PublishModes.All.Contains(request.Mode) || request.ItemIds.Count == 0) throw Problem(400, ProblemCodes.validation_failed);
         if (request.Mode != PublishModes.Hide && Scale.Provisional && !request.AcknowledgeProvisionalScale) throw Problem(409, ProblemCodes.scale_provisional);
@@ -428,14 +429,25 @@ public sealed class FakeGradebookApi : IGradebookApi
     {
         EnsureWritable(classCourseId);
         if (!fileName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase)) throw Problem(400, ProblemCodes.grade_import_invalid);
-        return Task.FromResult(new GradeImportPreviewDto(Guid.NewGuid().ToString("N"), DateTime.UtcNow.AddMinutes(GradingLimits.ImportTokenMinutes), 0, 0, [], [], [], []));
+        var preview = new GradeImportPreviewDto(Guid.NewGuid().ToString("N"), DateTime.UtcNow.AddMinutes(GradingLimits.ImportTokenMinutes), StudentIds.Length, 1, [], [], [], []);
+        return Task.FromResult(ShapeImportPreview is { } shape ? shape(preview) : preview);
     }
+
+    /// <summary>Lets a test reshape what the import preview answers (unknown codes, out-of-range rows, overwrites).</summary>
+    public Func<GradeImportPreviewDto, GradeImportPreviewDto>? ShapeImportPreview { get; set; }
+
+    /// <summary>When true the next apply answers 400 grade_import_expired, as the server does after the token lifetime.</summary>
+    public bool ExpireImportToken { get; set; }
+
+    public GradeImportResultDto? LastImportResult { get; private set; }
+    public string? LastAppliedToken { get; private set; }
 
     public Task<GradeImportResultDto> ApplyImportAsync(Guid classCourseId, Guid itemId, ApplyGradeImportRequest request, CancellationToken ct = default)
     {
         EnsureWritable(classCourseId);
-        if (string.IsNullOrWhiteSpace(request.Token)) throw Problem(400, ProblemCodes.grade_import_expired);
-        return Task.FromResult(new GradeImportResultDto(0, []));
+        if (string.IsNullOrWhiteSpace(request.Token) || ExpireImportToken) throw Problem(400, ProblemCodes.grade_import_expired);
+        LastAppliedToken = request.Token;
+        return Task.FromResult(LastImportResult = new GradeImportResultDto(StudentIds.Length, []));
     }
 
     public Task<GradeReportDto> GetReportAsync(string kind, GradeReportQuery query, CancellationToken ct = default)

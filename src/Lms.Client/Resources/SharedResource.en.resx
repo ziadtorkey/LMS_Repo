@@ -1814,4 +1814,38 @@
   <data name="Grd_Term_Label" xml:space="preserve"><value>Term</value></data>
   <data name="Grd_Withdrew_On" xml:space="preserve"><value>Withdrew on {0}</value></data>
   <data name="Grd_Withdrawn" xml:space="preserve"><value>Withdrawn</value></data>
+  <data name="Publish_Open" xml:space="preserve"><value>Publish grades</value></data>
+  <data name="Publish_Title" xml:space="preserve"><value>Publish grades</value></data>
+  <data name="Publish_Items" xml:space="preserve"><value>Items</value></data>
+  <data name="Publish_Mode" xml:space="preserve"><value>What to do</value></data>
+  <data name="Publish_Now" xml:space="preserve"><value>Publish now</value></data>
+  <data name="Publish_Schedule" xml:space="preserve"><value>Schedule</value></data>
+  <data name="Publish_Hide" xml:space="preserve"><value>Hide again (un-publish)</value></data>
+  <data name="Publish_Date" xml:space="preserve"><value>Date</value></data>
+  <data name="Publish_Time" xml:space="preserve"><value>Time</value></data>
+  <data name="Publish_Confirm" xml:space="preserve"><value>Published grades become visible to the students of this course and to their guardians, who are notified. Hidden items stay staff-only.</value></data>
+  <data name="Publish_HideNote" xml:space="preserve"><value>The items go back to staff-only. Students and guardians stop seeing them. This is recorded in the audit log.</value></data>
+  <data name="Publish_ProvisionalWarning" xml:space="preserve"><value>This grading scale has not been confirmed yet. Students will see bands from an unconfirmed scale.</value></data>
+  <data name="Publish_ProvisionalAck" xml:space="preserve"><value>I understand, publish under an unconfirmed scale</value></data>
+  <data name="Publish_SubmitNow" xml:space="preserve"><value>Publish now</value></data>
+  <data name="Publish_SubmitSchedule" xml:space="preserve"><value>Schedule</value></data>
+  <data name="Publish_SubmitHide" xml:space="preserve"><value>Hide</value></data>
+  <data name="Publish_Result" xml:space="preserve"><value>{0} items changed. {1} students affected.</value></data>
+  <data name="Publish_Notified" xml:space="preserve"><value>{0} notifications queued.</value></data>
+  <data name="GradeImport_Open" xml:space="preserve"><value>Import or export a column</value></data>
+  <data name="GradeImport_Title" xml:space="preserve"><value>Grade column import and export</value></data>
+  <data name="GradeImport_Item" xml:space="preserve"><value>Item</value></data>
+  <data name="GradeImport_Export" xml:space="preserve"><value>Export to Excel</value></data>
+  <data name="GradeImport_Choose" xml:space="preserve"><value>Choose an Excel file</value></data>
+  <data name="GradeImport_XlsxOnly" xml:space="preserve"><value>Only Excel files (.xlsx) are accepted.</value></data>
+  <data name="GradeImport_Apply" xml:space="preserve"><value>Apply</value></data>
+  <data name="GradeImport_Counts" xml:space="preserve"><value>{0} rows in the file. {1} would replace an existing score.</value></data>
+  <data name="GradeImport_EventNote" xml:space="preserve"><value>Scores that come from assignments and quizzes are not changed by an import.</value></data>
+  <data name="GradeImport_Unknown" xml:space="preserve"><value>These student numbers match nobody in this course</value></data>
+  <data name="GradeImport_OutOfRange" xml:space="preserve"><value>These scores are above the maximum or below zero</value></data>
+  <data name="GradeImport_Errors" xml:space="preserve"><value>These rows have errors</value></data>
+  <data name="GradeImport_Row" xml:space="preserve"><value>row {0}</value></data>
+  <data name="GradeImport_Done" xml:space="preserve"><value>{0} scores written, {1} skipped.</value></data>
+  <data name="Publish_TimeMissing" xml:space="preserve"><value>That time does not exist in your time zone (the clocks skip it). Pick another time.</value></data>
+  <data name="GradeImport_TooLarge" xml:space="preserve"><value>The file is too large (10 MB at most).</value></data>
 </root>

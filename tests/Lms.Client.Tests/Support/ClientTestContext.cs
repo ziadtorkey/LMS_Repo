@@ -41,6 +41,7 @@ public abstract class ClientTestContext : BunitContext, IAsyncLifetime
         FakeCultureService.ApplyDefaults(Culture.Current); // Arabic by default, independent of the machine culture
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddMudServices();
+        Services.AddScoped<Lms.Client.Services.ClientTimeZone>();
         Services.AddTransient<MudBlazor.MudLocalizer, LmsMudLocalizer>();
         Services.AddLocalization();
         Services.AddSingleton<ICultureService>(Culture);
