@@ -45,6 +45,34 @@ public sealed class StudentGradesTests : StaffTestContext
         Assert.Contains("Assignment 1", page.Markup);
         Assert.DoesNotContain("Quiz 1", page.Markup); // a hidden item has no row, no title, no placeholder
         Assert.Empty(page.FindAll($"[data-testid=grades-item-{FakeGradebookApi.ManualItemId}]"));
+
+        // the category that holds only the hidden item is not listed either, and the listed weights are renormalised to 100 (#625)
+        var data = await _api.GetMyGradesAsync();
+        var categories = data.Courses[0].Categories;
+        Assert.Single(categories);
+        Assert.Equal(100m, categories.Sum(c => c.Weight));
+        Assert.Single(page.FindAll($"[data-testid=grades-categories-{Course}] tbody tr"));
+    }
+
+    [Fact]
+    public async Task Total_that_waits_for_ungraded_items_says_so_and_computes_nothing()
+    {
+        await PublishAsync(FakeGradebookApi.AutoItemId);
+        _api.ShapeStudentGrades = data => data with
+        {
+            Courses = [data.Courses[0] with
+            {
+                FinalPercent = null, BandCode = null, BandLabelAr = null, BandLabelEn = null, BandPoints = null,
+                Items = [data.Courses[0].Items[0] with { Points = null, Excused = false }],
+            }],
+        };
+        var page = await RenderAsync<MyGradesPage>();
+        page.WaitForElement($"[data-testid=grades-hint-{Course}]");
+
+        Assert.Contains("The total appears when all published grades are in", page.Find($"[data-testid=grades-hint-{Course}]").TextContent);
+        Assert.DoesNotContain("%", page.Find($"[data-testid=grades-percent-{Course}]").TextContent);
+        Assert.Empty(page.FindAll($"[data-testid=grades-band-{Course}]"));
+        Assert.Empty(page.FindAll($"[data-testid=grades-band-points-{Course}]"));
     }
 
     [Fact]

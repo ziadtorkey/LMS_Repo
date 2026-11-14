@@ -1649,4 +1649,5 @@
   <data name="StGrades_Legend" xml:space="preserve"><value>كيف تُصنَّف الدرجات: {0}</value></data>
   <data name="StGrades_Range" xml:space="preserve"><value>النطاق</value></data>
   <data name="StGrades_Points" xml:space="preserve"><value>النقاط</value></data>
+  <data name="StGrades_TotalWaits" xml:space="preserve"><value>يظهر المجموع عند رصد جميع الدرجات المنشورة.</value></data>
 </root>

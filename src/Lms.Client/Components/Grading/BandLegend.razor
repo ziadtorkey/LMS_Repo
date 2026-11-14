@@ -4,7 +4,7 @@
 @* The scale a course is graded on, in the user's language: each band's label and descriptor, the range and the points. It is the server's legend for that
    course (the Saudi bands are data, D59); nothing here is typed in the client, and there is no "provisional" marker for a student (L23). *@
 <details class="lms-band-legend" data-testid="@TestId">
-    <summary>@string.Format(L["StGrades_Legend"], Culture.Pick(Legend.ScaleNameAr, Legend.ScaleNameEn))</summary>
+    <summary><MudIcon Icon="@Icons.Material.Rounded.ExpandMore" Size="Size.Small" Class="lms-band-chevron" />@string.Format(L["StGrades_Legend"], Culture.Pick(Legend.ScaleNameAr, Legend.ScaleNameEn))</summary>
     <MudSimpleTable Elevation="0" Class="lms-simple-table lms-stack-table" Dense="true">
         <thead>
             <tr><th>@L["StGrades_Band"]</th><th>@L["StGrades_Range"]</th>@if (HasPoints) { <th>@L["StGrades_Points"]</th> }</tr>

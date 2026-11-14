@@ -278,12 +278,21 @@ public sealed class FakeGradebookApi : IGradebookApi
             return new PublishedGradeItemDto(i.Id, i.TitleAr, i.TitleEn, i.CategoryId, cell.Points, i.MaxPoints, cell.State == GradeCellStates.Excused, i.PublishedAtUtc ?? DateTime.UtcNow);
         }).ToList();
         var scored = items.Where(i => i.Points is not null).Select(i => (i.CategoryId!.Value, i.Points!.Value, i.MaxPoints)).ToList();
-        var categories = _categories.Select(c =>
+        // As the server does (#625): a category with no published item is left out and the weights are renormalised over the listed ones.
+        var listed = _categories.Where(c => items.Any(i => i.CategoryId == c.Id)).ToList();
+        var weightSum = listed.Sum(c => c.Weight);
+        var categories = listed.Select(c =>
         {
             var inCat = scored.Where(s => s.Item1 == c.Id).ToList();
             var max = inCat.Sum(s => s.MaxPoints);
-            return new StudentGradeCategoryDto(c.Id, c.NameAr, c.NameEn, c.Weight, max == 0m ? null : Math.Round(inCat.Sum(s => s.Item2) / max * 100m, 2));
+            var weight = weightSum == 0m ? 0m : Math.Round(c.Weight / weightSum * 100m, 2);
+            return new StudentGradeCategoryDto(c.Id, c.NameAr, c.NameEn, weight, max == 0m ? null : Math.Round(inCat.Sum(s => s.Item2) / max * 100m, 2));
         }).ToList();
+        if (categories.Count > 0 && categories.Sum(c => c.Weight) != 100m)
+        {
+            categories[^1] = categories[^1] with { Weight = categories[^1].Weight + 100m - categories.Sum(c => c.Weight) };
+        }
+
         var f = Final(scored);
         var scale = Scale;
         var legend = new BandLegendDto(scale.NameAr, scale.NameEn, scale.Kind,
