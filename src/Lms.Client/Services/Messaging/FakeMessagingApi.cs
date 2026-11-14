@@ -89,7 +89,7 @@ public sealed class FakeMessagingApi : IMessagingApi
     private ParticipantDto ToParticipant(Conversation c, Guid id) => new(id, User(id).NameAr, User(id).NameEn, User(id).RoleKey, c.Left.Contains(id));
 
     /// <summary>D74, D77: students read a group and never post in it (they reply privately to the teacher); guardians may post in a teacher-run group that includes them.</summary>
-    private bool ReadOnlyForMe(Conversation c) => c.Kind == ConversationKinds.Group && Me.RoleKey == BuiltInRoles.Student;
+    private bool ReadOnlyForMe(Conversation c) => c.Kind == ConversationKinds.Group && (Me.RoleKey == BuiltInRoles.Student || (Me.RoleKey == BuiltInRoles.Guardian && User(c.OwnerId).RoleKey != BuiltInRoles.Teacher));
 
     /// <summary>A conversation the caller takes part in; anyone else gets 404, as the server answers (an Org Admin included).</summary>
     private Conversation Mine(Guid id) =>
@@ -113,8 +113,20 @@ public sealed class FakeMessagingApi : IMessagingApi
             m.Deleted ? MessageStates.Deleted : MessageStates.Normal, [], m.CreatedAtUtc, m.Deleted ? Now() : null, canDelete);
     }
 
-    private ConversationDto ToDto(Conversation c) =>
-        new(c.Id, c.Kind, c.Title, [.. c.Participants.Select(id => ToParticipant(c, id))], c.Locked, c.Muted.ContainsKey(Me.Id), c.CreatedAtUtc, ReadOnlyForMe(c), c.OwnerId, c.ClassCourseId, !c.Locked && !ReadOnlyForMe(c), c.Locked ? ConversationReadOnlyReasons.Locked : ReadOnlyForMe(c) ? ConversationReadOnlyReasons.GroupStudentsReadOnly : null);
+    /// <summary>L25: why the caller cannot post, or null. A block either way, a rule tightened since, or an ended relationship are one generic reason (L18).</summary>
+    private string? ReadOnlyReasonFor(Conversation c)
+    {
+        if (c.Locked) return ConversationReadOnlyReasons.Locked;
+        if (c.Kind == ConversationKinds.Group) return !ReadOnlyForMe(c) ? null : Me.RoleKey == BuiltInRoles.Student ? ConversationReadOnlyReasons.GroupStudentsReadOnly : ConversationReadOnlyReasons.GroupGuardiansReadOnly;
+        var other = User(c.Participants.First(p => p != Me.Id));
+        return _blocks.Contains((Me.Id, other.Id)) || _blocks.Contains((other.Id, Me.Id)) || !Allowed(Me, other) ? ConversationReadOnlyReasons.BlockedOrRule : null;
+    }
+
+    private ConversationDto ToDto(Conversation c)
+    {
+        var reason = ReadOnlyReasonFor(c);
+        return new(c.Id, c.Kind, c.Title, [.. c.Participants.Select(id => ToParticipant(c, id))], c.Locked, c.Muted.ContainsKey(Me.Id), c.CreatedAtUtc, ReadOnlyForMe(c), c.OwnerId, c.ClassCourseId, reason is null, reason);
+    }
 
     public Task<PagedResult<ConversationListItemDto>> ListConversationsAsync(int page = 1, int pageSize = Paging.DefaultPageSize, CancellationToken ct = default)
     {

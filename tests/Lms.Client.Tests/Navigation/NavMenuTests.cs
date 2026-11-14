@@ -123,7 +123,9 @@ public sealed class NavMenuTests : ClientTestContext
         var nav = cut.Find("[data-testid=nav-main]");
         Assert.Equal("NAV", nav.TagName);
         Assert.False(string.IsNullOrWhiteSpace(nav.GetAttribute("aria-label")));
+    }
 
+    [Fact]
     public async Task Messages_entry_needs_messaging_view()
     {
         var without = await RenderNavAsync([Permissions.Roles.View]);

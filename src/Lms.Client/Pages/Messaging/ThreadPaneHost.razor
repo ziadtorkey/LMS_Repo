@@ -66,14 +66,10 @@ else
             {
                 <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Dense="true" data-testid="thread-send-error">@_error</MudAlert>
             }
-            @if (conversation.IsLocked)
+            @if (!conversation.CanPost || conversation.IsLocked || conversation.IsReadOnly)
             {
-                <ComposerOff Reason="@L["Msg_Locked"]" />
-            }
-            else if (conversation.IsReadOnly)
-            {
-                <ComposerOff Reason="@L["Msg_ReadOnly"]">
-                    @if (PrivateReplyTo is { } owner)
+                <ComposerOff Reason="@ReasonText(conversation)">
+                    @if (conversation.ReadOnlyReason == ConversationReadOnlyReasons.GroupStudentsReadOnly && PrivateReplyTo is { } owner)
                     {
                         <MudButton Variant="Variant.Text" Size="Size.Small" Href="@($"messages/new?to={owner}")" data-testid="thread-reply-privately">@L["Msg_Reply_Privately"]</MudButton>
                     }
@@ -106,6 +102,17 @@ else
     private string Name => _conversation is null ? "" : !string.IsNullOrWhiteSpace(_conversation.Title)
         ? _conversation.Title
         : string.Join(", ", _conversation.Participants.Where(p => p.UserId != PermState.UserId).Select(p => CultureText.Pick(p.NameAr, p.NameEn)));
+
+    /// <summary>The reason the composer is off, in plain words. A block and a rule are one sentence on purpose (L18): it never says which, or why.</summary>
+    private string ReasonText(ConversationDto c) => (c.ReadOnlyReason ?? (c.IsLocked ? ConversationReadOnlyReasons.Locked : null)) switch
+    {
+        ConversationReadOnlyReasons.Locked => L["Msg_Locked"],
+        ConversationReadOnlyReasons.GroupStudentsReadOnly => L["Msg_ReadOnly_GroupStudents"],
+        ConversationReadOnlyReasons.GroupGuardiansReadOnly => L["Msg_ReadOnly_GroupGuardians"],
+        ConversationReadOnlyReasons.BlockedOrRule => L["Msg_ReadOnly_BlockedOrRule"],
+        ConversationReadOnlyReasons.Restricted => L["Msg_ReadOnly_Restricted"],
+        _ => L["Msg_ReadOnly"],
+    };
 
     private bool CanSend => PermState.Has(Lms.Shared.Authorization.Permissions.Messaging.Send);
 
