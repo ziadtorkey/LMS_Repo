@@ -124,6 +124,11 @@ html[data-theme="dark"] .mud-button-outlined { border-color: #334155; }
     display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 16px 20px; min-inline-size: 0;
     background: var(--mud-palette-surface); border: 1px solid var(--mud-palette-lines-default); border-radius: var(--lms-radius-surface); box-shadow: var(--lms-shadow-1);
 }
+/* Pages with one to three stats (a course total, a report summary): fixed-width tiles from 600 px up, so two tiles don't stretch to half the page.
+   Below 600 px the page's own phone grid (e.g. .lms-stats-compact) applies. Two classes, so it beats .lms-stats whatever the file order. */
+@media (min-width: 600px) {
+    .lms-stats.lms-stats-fixed { grid-template-columns: repeat(auto-fill, minmax(200px, 280px)); }
+}
 .lms-stat-label { font-size: .8125rem; font-weight: 500; color: var(--mud-palette-text-secondary); }
 .lms-stat-value { font-size: 1.75rem; font-weight: 700; line-height: 1.2; font-variant-numeric: tabular-nums; }
 .lms-stat-icon {
