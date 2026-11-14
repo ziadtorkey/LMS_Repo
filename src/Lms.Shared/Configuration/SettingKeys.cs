@@ -129,6 +129,16 @@ public static class SettingKeys
     public static readonly SettingKey<int> MessagingMaxNewConversationsPerDay = new("Messaging.MaxNewConversationsPerDay", 20);
     public static readonly SettingKey<int> MessagingMaxGroupSize = new("Messaging.MaxGroupSize", 50);
 
+    // M6 wave 4: moderation (client level, Org Admin at the root).
+    /// <summary>Days a report keeps its frozen context after it is resolved (D71: 180; each client may shorten, legal advice pending).</summary>
+    public static readonly SettingKey<int> ModerationReportContextRetentionDays = new("Moderation.ReportContextRetentionDays", 180);
+
+    /// <summary>Reports one user can file per day.</summary>
+    public static readonly SettingKey<int> ModerationMaxReportsPerUserPerDay = new("Moderation.MaxReportsPerUserPerDay", 20);
+
+    /// <summary>The review target of a safety concern in hours (the queue marks it overdue after this).</summary>
+    public static readonly SettingKey<int> ModerationSafetyReviewHours = new("Moderation.SafetyReviewHours", 24);
+
     /// <summary>Per-author cap of announcements a day.</summary>
     public static readonly SettingKey<int> AnnouncementsMaxPerAuthorPerDay = new("Announcements.MaxPerAuthorPerDay", 10);
 

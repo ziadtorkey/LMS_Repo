@@ -1977,13 +1977,26 @@
   <data name="Msg_Rule_Relationship" xml:space="preserve"><value>Only with a relationship</value></data>
   <data name="Msg_Rule_Deny" xml:space="preserve"><value>Not allowed</value></data>
   <data name="Msg_Reason_Harassment" xml:space="preserve"><value>Harassment</value></data>
-  <data name="Msg_Reason_Inappropriate" xml:space="preserve"><value>Inappropriate content</value></data>
+  <data name="Msg_Reason_SafetyConcern" xml:space="preserve"><value>Safety concern</value></data>
   <data name="Msg_Reason_Spam" xml:space="preserve"><value>Spam</value></data>
-  <data name="Msg_Reason_Safety" xml:space="preserve"><value>Safety concern</value></data>
   <data name="Msg_Reason_Other" xml:space="preserve"><value>Other</value></data>
   <data name="Msg_ReportStatus_Open" xml:space="preserve"><value>Open</value></data>
   <data name="Msg_ReportStatus_Dismissed" xml:space="preserve"><value>Dismissed</value></data>
-  <data name="Msg_ReportStatus_Actioned" xml:space="preserve"><value>Action taken</value></data>
+  <data name="Msg_ReportStatus_InReview" xml:space="preserve"><value>In review</value></data>
+  <data name="Msg_ReportStatus_ActionTaken" xml:space="preserve"><value>Action taken</value></data>
+  <data name="Msg_MyReport_Pending" xml:space="preserve"><value>Your report is pending</value></data>
+  <data name="Msg_MyReport_Reviewed" xml:space="preserve"><value>Your report was reviewed</value></data>
+  <data name="Msg_RestrictDays_1" xml:space="preserve"><value>1 day</value></data>
+  <data name="Msg_RestrictDays_7" xml:space="preserve"><value>7 days</value></data>
+  <data name="Msg_RestrictDays_30" xml:space="preserve"><value>30 days</value></data>
+  <data name="NotifEvent_Moderation_ReportReceived" xml:space="preserve"><value>Message reported</value></data>
+  <data name="Notif_Moderation_ReportReceived" xml:space="preserve"><value>A message was reported ({Reason}). Open the moderation queue to review it.</value></data>
+  <data name="NotifEvent_Moderation_SafetyReportReceived" xml:space="preserve"><value>Safety concern reported</value></data>
+  <data name="Notif_Moderation_SafetyReportReceived" xml:space="preserve"><value>A safety concern was reported. Please review it as soon as you can.</value></data>
+  <data name="Setting_Moderation_ReportContextRetentionDays" xml:space="preserve"><value>Days to keep a resolved report and its context</value></data>
+  <data name="Setting_Moderation_MaxReportsPerUserPerDay" xml:space="preserve"><value>Reports one person can file per day</value></data>
+  <data name="Setting_Moderation_SafetyReviewHours" xml:space="preserve"><value>Hours to review a safety concern</value></data>
+  <data name="AuditEntity_ModerationRead" xml:space="preserve"><value>Moderator read of a reported message</value></data>
   <data name="Msg_Action_Dismiss" xml:space="preserve"><value>Dismiss the report</value></data>
   <data name="Msg_Action_Remove" xml:space="preserve"><value>Remove the message</value></data>
   <data name="Msg_Action_Warn" xml:space="preserve"><value>Warn the sender</value></data>

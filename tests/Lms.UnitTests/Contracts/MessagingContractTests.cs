@@ -133,7 +133,7 @@ public sealed class MessagingContractTests
         Assert.Equal(["Normal", "Deleted", "Removed"], MessageStates.All);
         Assert.Equal(["Dismiss", "Remove", "Warn", "Restrict", "RemoveAndRestrict", "LockConversation"], ModerationActions.All);
         Assert.Equal(["Restrict", "RemoveAndRestrict"], ModerationActions.Restricting);
-        Assert.Equal(["Open", "Dismissed", "Actioned"], ReportStatuses.All);
+        Assert.Equal(["Open", "InReview", "Dismissed", "ActionTaken"], ReportStatuses.All);
         Assert.Equal(["Organization", "Unit", "Level", "Class", "ClassCourse", "Group"], AnnouncementTargetKinds.All);
         Assert.Equal(["Draft", "Scheduled", "Published", "Withdrawn", "Expired"], AnnouncementStatuses.All);
         Assert.Equal(["Staff", "Students", "Guardians"], AnnouncementRoleFilters.All);
@@ -261,7 +261,7 @@ public sealed class MessagingContractTests
         var create = new CreateConversationRequest(ConversationKinds.Direct, [Id], null, "أهلا");
         var announcement = new CreateAnnouncementRequest(Id, "عنوان", "Title", "نص", null, [new AnnouncementTargetDto(AnnouncementTargetKinds.Unit, Id, true)],
             [AnnouncementRoleFilters.Guardians], DateTime.UtcNow.AddDays(1), null, true, true, [Id], true);
-        var report = new MessageReportDto(Id, Id, Id, ReportReasons.Harassment, "ملاحظة", ReportStatuses.Open, Id, Id, "س", "S", "أصل", [message], DateTime.UtcNow, null, null, null);
+        var report = new MessageReportDto(Id, Id, Id, ReportReasons.Harassment, "ملاحظة", ReportStatuses.Open, [new ReportContextMessageDto(Id, "س", "S", "أصل", [], DateTime.UtcNow, true)], new SenderSummaryDto("س", "S", BuiltInRoles.Student, null, null, 0, 0), null, null, null, null, DateTime.UtcNow);
         var rules = new MessagingRulesDto(MessagingRuleDefaults.Matrix(), MessagingRuleDefaults.Matrix());
         var settings = new CommsSettingsDto(true, false, 5000, 20000, 20, 50, false, "21:00", "07:00", 90, false, 30, 20, 50, 10);
         var preference = new EffectivePreferenceDto(NotificationEvents.GradesPublished, NotificationChannels.Email, true, PreferenceSources.Default, false);
@@ -270,7 +270,7 @@ public sealed class MessagingContractTests
         Assert.Equal("مجموعة", Round(conversation).Title);
         Assert.Equal(create.ParticipantUserIds, Round(create).ParticipantUserIds);
         Assert.Equal(AnnouncementTargetKinds.Unit, Round(announcement).Targets.Single().Kind);
-        Assert.Equal("أصل", Round(report).ReportedMessageOriginalBody);
+        Assert.Equal("أصل", Round(report).Context.Single().Body);
         Assert.Equal(49, Round(rules).Cells.Count);
         Assert.Equal(("21:00", 5000), (Round(settings).QuietHoursStart, Round(settings).MaxEmailPerDay));
         Assert.Equal(PreferenceSources.Default, Round(preference).Source);
@@ -288,6 +288,7 @@ public sealed class MessagingContractTests
             Routes.Conversations, Routes.ConversationPattern, Routes.ConversationMessagesPattern, Routes.MessagePattern, Routes.ConversationReadPattern, Routes.ConversationMutePattern, Routes.ConversationLeavePattern, Routes.ConversationParticipantsPattern, Routes.ConversationParticipantPattern, Routes.ConversationReadOnlyPattern, Routes.MessageSearch,
             Routes.MessageReportPattern, Routes.MyBlocks, Routes.MyBlockPattern, Routes.MessagingRecipients, Routes.MessagingRulesSummary, Routes.MessagingLimits,
             Routes.MyUnreadTotal, Routes.ModerationReports, Routes.ModerationReportPattern, Routes.ModerationReportResolvePattern, Routes.ModerationStats,
+            Routes.ModerationReportsBulkDismiss, Routes.ModerationReportAttachmentPattern, Routes.ModerationRestrictions, Routes.ModerationRestrictionPattern,
             Routes.OrgAnnouncements, Routes.OrgAnnouncementPattern, Routes.OrgAnnouncementPublishPattern, Routes.OrgAnnouncementWithdrawPattern,
             Routes.OrgAnnouncementAudiencePreview, Routes.OrgAnnouncementCapabilities, Routes.MyAnnouncements, Routes.MyAnnouncementReadPattern, Routes.MyPushSubscriptions, Routes.MyPushSubscriptionPattern,
             Routes.MyEffectivePreferences, Routes.MyChannels, Routes.MyEmailTest, Routes.CommsMessagingRules, Routes.CommsProviderStatus, Routes.CommsSettings,

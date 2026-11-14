@@ -64,7 +64,7 @@ public static partial class Routes
     /// <summary>GET → <c>UnreadTotalDto</c> — <c>Messaging.View</c>: unread conversations (the badge).</summary>
     public const string MyUnreadTotal = "/api/me/messaging/unread-total";
 
-    /// <summary>GET <c>?status=&amp;page=</c> → <c>MessageReportDto</c> page — <c>Messaging.Moderate</c>; <c>UnitAccess</c> at any unit of the report; outside the scope 404; a Teacher or Student 403.</summary>
+    /// <summary>GET <c>?status=&amp;reason=&amp;page=</c> (<c>MessageReportQuery</c>) → <c>MessageReportListItemDto</c> page — <c>Messaging.Moderate</c>; <c>UnitAccess</c> at any unit of the report; outside the scope 404; a Teacher or Student 403.</summary>
     public const string ModerationReports = "/api/moderation/reports";
 
     /// <summary>GET → <c>MessageReportDto</c> — <c>Messaging.Moderate</c>; scope as above.</summary>
@@ -75,6 +75,18 @@ public static partial class Routes
 
     /// <summary>GET → <c>ModerationStatsDto</c> — <c>Messaging.Moderate</c>; outside the scope the numbers are zero.</summary>
     public const string ModerationStats = "/api/moderation/stats";
+
+    /// <summary>POST (<c>BulkDismissRequest</c> → 204) — <c>Messaging.Moderate</c>; dismisses up to <c>ModerationLimits.BulkDismissMax</c> reports in scope (the others are skipped, never an error); audited; the reporters are told "Reviewed" only.</summary>
+    public const string ModerationReportsBulkDismiss = ModerationReports + "/bulk-dismiss";
+
+    /// <summary>GET → <c>ModerationAttachmentUrlDto</c> — <c>Messaging.Moderate</c>; <c>UnitAccess</c> at any unit of the report; only an attachment of the <b>reported</b> message (404 for any other file); a signed URL valid minutes, <c>Content-Disposition: attachment</c>; every issue audited as <c>ModerationRead</c>.</summary>
+    public const string ModerationReportAttachmentPattern = ModerationReportPattern + "/attachments/{fileId:guid}";
+
+    /// <summary>GET <c>?page=</c> → <c>RestrictionDto</c> page — <c>Messaging.Moderate</c>; the active restrictions in scope, soonest end first (the moderation page lists and lifts them; they are never called blocks).</summary>
+    public const string ModerationRestrictions = "/api/moderation/restrictions";
+
+    /// <summary>DELETE — <c>Messaging.Moderate</c>; <c>UnitAccess</c> at the restricted user's unit: lifts the restriction at once (404 outside the scope); audited; never touches a block.</summary>
+    public const string ModerationRestrictionPattern = ModerationRestrictions + "/{userId:guid}";
 
     /// <summary>GET <c>?status=</c> → <c>AnnouncementListItemDto</c> page and POST (<c>CreateAnnouncementRequest</c> → <c>AnnouncementDto</c>) — <c>Announcements.Manage</c>; <c>UnitAccess</c> at the authoring unit and the targets inside the author's scope (a Teacher: own ClassCourses and their groups); an unreachable target 404; 400 <c>announcement_target_invalid</c>; 429 <c>rate_limited</c> (per-author daily cap).</summary>
     public const string OrgAnnouncements = "/api/comms/announcements";
@@ -152,6 +164,8 @@ public static partial class Routes
     public static string MessagingRecipientsSearch(string search) => $"{MessagingRecipients}?search={Uri.EscapeDataString(search)}";
     public static string ModerationReport(Guid id) => $"{ModerationReports}/{id}";
     public static string ModerationReportResolve(Guid id) => $"{ModerationReport(id)}/resolve";
+    public static string ModerationReportAttachment(Guid reportId, Guid fileId) => $"{ModerationReport(reportId)}/attachments/{fileId}";
+    public static string ModerationRestriction(Guid userId) => $"{ModerationRestrictions}/{userId}";
     public static string OrgAnnouncement(Guid id) => $"{OrgAnnouncements}/{id}";
     public static string OrgAnnouncementPublish(Guid id) => $"{OrgAnnouncement(id)}/publish";
     public static string OrgAnnouncementWithdraw(Guid id) => $"{OrgAnnouncement(id)}/withdraw";
