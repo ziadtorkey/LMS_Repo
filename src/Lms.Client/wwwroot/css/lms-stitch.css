@@ -203,8 +203,22 @@ html[data-theme="dark"] .mud-button-outlined { border-color: #334155; }
 
 /* ---------- M7 year-end components (spec PR 814, section 11) ---------- */
 .lms-year-lock { margin-inline-end: 2px; }
-.lms-status-chip[data-status="Closed"]::before { content: none; } /* the lock says it; no dot as well */
-.lms-yearend-dialog { display: flex; flex-direction: column; gap: 16px; }
+/* YearChip: the year's name, then its status chip; a closed year shows the lock instead of the dot. */
+.lms-year-chip { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; }
+.lms-year-chip[data-status="Closed"] .lms-status-chip::before { content: none; }
+/* ConfirmEffectDialog: the pattern for actions with consequences; full screen below 600 px. */
+.lms-confirm-effect { display: flex; flex-direction: column; gap: 16px; }
+.lms-confirm-heading { margin: 0 0 8px; font-size: .8125rem; font-weight: 600; }
+@media (max-width: 599.98px) {
+    .mud-dialog.lms-dialog-sheet { margin: 0; inline-size: 100%; max-inline-size: none; min-block-size: 100dvh; max-block-size: 100dvh; border-radius: 0; }
+    .mud-dialog.lms-dialog-sheet .mud-dialog-actions { position: sticky; inset-block-end: 0; background: var(--mud-palette-surface); border-block-start: 1px solid var(--mud-palette-lines-default); }
+    .mud-dialog.lms-dialog-sheet .mud-dialog-actions .mud-button-root { flex: 1 1 auto; min-block-size: 44px; }
+}
+/* JobProgressPanel: an 8 px rounded bar under a bold title; the line under it says how far it is. */
+.lms-job { display: flex; flex-direction: column; gap: 6px; }
+.lms-job-title { margin: 0; font-weight: 600; }
+.lms-job .mud-progress-linear { block-size: 8px; border-radius: 4px; }
+.lms-job .mud-progress-linear .mud-progress-linear-bar { border-radius: 4px; }
 /* "What will happen": one effect per recessed row (icon, words, an optional Review link); warning rows use the warning icon colour. */
 .lms-effects, .lms-issue-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
 .lms-effects li { display: flex; gap: 12px; align-items: flex-start; padding: 10px 12px; border-radius: var(--lms-radius-control); background: var(--lms-recessed); }

@@ -71,6 +71,11 @@ public static class ClientServices
             services.AddSingleton<ILiveSessionsApi, FakeLiveSessionsApi>();
             services.AddSingleton<Lms.Client.Services.Grading.IGradingScalesApi, Lms.Client.Services.Grading.FakeGradingScalesApi>();
             services.AddSingleton<Lms.Client.Services.Grading.IGradebookApi>(sp => new Lms.Client.Services.Grading.FakeGradebookApi((Lms.Client.Services.Grading.FakeGradingScalesApi)sp.GetRequiredService<Lms.Client.Services.Grading.IGradingScalesApi>()));
+            services.AddSingleton<Lms.Client.Services.YearEnd.IYearCloseApi, Lms.Client.Services.YearEnd.FakeYearCloseApi>();
+            services.AddSingleton<Lms.Client.Services.YearEnd.IGradeChangesApi, Lms.Client.Services.YearEnd.FakeGradeChangesApi>();
+            services.AddSingleton<Lms.Client.Services.YearEnd.IPromotionApi, Lms.Client.Services.YearEnd.FakePromotionApi>();
+            services.AddSingleton<Lms.Client.Services.YearEnd.ILifecycleApi, Lms.Client.Services.YearEnd.FakeLifecycleApi>();
+            services.AddSingleton<Lms.Client.Services.YearEnd.INewYearApi, Lms.Client.Services.YearEnd.FakeNewYearApi>();
             services.AddSingleton<IActivityOverviewApi, FakeActivityOverviewApi>();
             services.AddScoped<AuthenticationStateProvider, FakeAuthenticationStateProvider>();
             services.AddAuthorizationCore();
@@ -129,6 +134,11 @@ public static class ClientServices
         services.AddScoped<ILiveSessionsApi, LiveSessionsApi>();
         services.AddScoped<Lms.Client.Services.Grading.IGradingScalesApi, Lms.Client.Services.Grading.GradingScalesApi>();
         services.AddScoped<Lms.Client.Services.Grading.IGradebookApi, Lms.Client.Services.Grading.GradebookApi>();
+        services.AddScoped<Lms.Client.Services.YearEnd.IYearCloseApi, Lms.Client.Services.YearEnd.YearCloseApi>();
+        services.AddScoped<Lms.Client.Services.YearEnd.IGradeChangesApi, Lms.Client.Services.YearEnd.GradeChangesApi>();
+        services.AddScoped<Lms.Client.Services.YearEnd.IPromotionApi, Lms.Client.Services.YearEnd.PromotionApi>();
+        services.AddScoped<Lms.Client.Services.YearEnd.ILifecycleApi, Lms.Client.Services.YearEnd.LifecycleApi>();
+        services.AddScoped<Lms.Client.Services.YearEnd.INewYearApi, Lms.Client.Services.YearEnd.NewYearApi>();
         services.AddScoped<IActivityOverviewApi, ActivityOverviewApi>();
     }
 }

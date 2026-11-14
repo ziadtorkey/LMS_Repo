@@ -2,7 +2,6 @@ using System.Globalization;
 using Bunit;
 using Lms.Client.Components.YearEnd;
 using Lms.Client.Tests.Support;
-using Lms.Shared.AcademicYears;
 using Lms.Shared.YearEnd;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -17,79 +16,52 @@ public sealed class YearEndComponentsTests : ClientTestContext
 
     private static void English() => FakeCultureService.Apply(new CultureInfo("en"));
 
-    private static YearClosePreviewDto Preview(IReadOnlyList<YearEndIssueDto>? blocking = null, IReadOnlyList<YearEndIssueDto>? warnings = null) =>
-        new(Guid.NewGuid(), "2026/2027", "2026/2027", 184, 6240, blocking ?? [], warnings ?? [new(YearEndIssueCodes.UnpublishedGradeItems, 12, null)]);
+    // --- the confirm-effect dialog (FE2's, restyled to spec PR 814 §1 and §4)
 
-    // --- year status chip
-
-    [Theory]
-    [InlineData(AcademicYearStatuses.Planned, "Planned", "mud-chip-color-info", false)]
-    [InlineData(AcademicYearStatuses.Active, "Active", "mud-chip-color-success", false)]
-    [InlineData(AcademicYearStatuses.Closed, "Closed", "mud-chip-color-default", true)]
-    public void Year_status_chip_says_the_status_in_words_and_a_closed_year_has_a_lock(string status, string text, string color, bool locked)
+    private async Task<(IRenderedComponent<MudBlazor.MudDialogProvider> Provider, Task<bool> Answer)> AskCloseAsync(IReadOnlyList<string>? blocking = null)
     {
         English();
-        var cut = Render<YearStatusChip>(p => p.Add(c => c.Status, status));
-
-        var chip = cut.Find(".lms-status-chip");
-        Assert.Contains(text, chip.TextContent);
-        Assert.Contains(color, chip.ClassList);
-        Assert.Equal(status, chip.GetAttribute("data-status"));
-        Assert.Equal(locked, cut.FindAll(".lms-year-lock").Count == 1);
-    }
-
-    // --- close-year confirmation
-
-    [Fact]
-    public void Close_confirmation_lists_what_closing_locks_and_warnings_that_do_not_block()
-    {
-        English();
-        var cut = Render<CloseYearConfirmation>(p => p.Add(c => c.Preview, Preview()).Add(c => c.IssueHref, i => $"fix/{i.Code}"));
-
-        var effects = cut.Find("[data-testid=year-close-effects]").TextContent;
-        Assert.Contains("184 gradebooks are locked", effects);
-        Assert.Contains("6240 attendance sessions are locked", effects.Replace(",", ""));
-        var warning = cut.Find("[data-testid=year-close-warning-UnpublishedGradeItems]");
-        Assert.Contains("Some grade items are not published.", warning.TextContent);
-        Assert.Contains("12", warning.TextContent);
-        Assert.Equal("fix/UnpublishedGradeItems", warning.QuerySelector("a")!.GetAttribute("href"));
-        Assert.Empty(cut.FindAll("[data-testid=year-close-blocking]"));
-        Assert.True(cut.Find("[data-testid=year-close-confirm]").HasAttribute("disabled")); // nothing typed yet
-    }
-
-    [Theory]
-    [InlineData("2026/2027", true)]
-    [InlineData("  2026/2027 ", true)]
-    [InlineData("2026/27", false)]
-    public void Typing_the_year_name_enables_close_and_passes_the_typed_name(string typed, bool enabled)
-    {
-        English();
-        string? confirmed = null;
-        var cut = Render<CloseYearConfirmation>(p => p.Add(c => c.Preview, Preview()).Add(c => c.OnConfirm, s => confirmed = s));
-
-        cut.Find("[data-testid=year-close-confirm-input] input").Input(typed);
-
-        var button = cut.Find("[data-testid=year-close-confirm]");
-        Assert.Equal(enabled, !button.HasAttribute("disabled"));
-        if (enabled)
-        {
-            button.Click();
-            Assert.Equal("2026/2027", confirmed);
-        }
+        var provider = Render<MudBlazor.MudDialogProvider>();
+        var answer = ConfirmEffectDialog.AskAsync(Services.GetRequiredService<MudBlazor.IDialogService>(), "Close 2026/2027", "Closing locks this year for everyone.",
+            expected: "2026/2027", confirmText: "Close the year", danger: true,
+            effects: ["184 gradebooks are locked.", "6,240 attendance sessions are locked."],
+            warnings: [new("Some grade items are not published. (12)", "grades/unpublished"), new("Some assignments are still open. (5)")],
+            blocking: blocking);
+        provider.WaitForElement("[data-testid=confirm-effect]");
+        await Task.CompletedTask;
+        return (provider, answer);
     }
 
     [Fact]
-    public void A_blocking_issue_keeps_close_disabled_and_says_why()
+    public async Task Confirm_effect_lists_what_will_happen_and_warnings_that_do_not_block()
     {
-        English();
-        var cut = Render<CloseYearConfirmation>(p => p.Add(c => c.Preview, Preview(blocking: [new(YearEndIssueCodes.OpenTerms, 1, null)])));
+        var (provider, answer) = await AskCloseAsync();
 
-        cut.Find("[data-testid=year-close-confirm-input] input").Input("2026/2027");
+        Assert.Contains("What will happen", provider.Markup);
+        Assert.Equal(2, provider.FindAll("[data-testid=confirm-effect-effects] li").Count);
+        var warnings = provider.FindAll("[data-testid=confirm-effect-warnings] li");
+        Assert.Equal(2, warnings.Count);
+        Assert.Equal("grades/unpublished", warnings[0].QuerySelector("a")!.GetAttribute("href"));
+        Assert.Null(warnings[1].QuerySelector("a"));
+        Assert.True(provider.Find("[data-testid=confirm-effect-yes]").HasAttribute("disabled")); // the year name isn't typed yet
 
-        Assert.Contains("Some terms are still open.", cut.Find("[data-testid=year-close-blocking]").TextContent);
-        var button = cut.Find("[data-testid=year-close-confirm]");
-        Assert.True(button.HasAttribute("disabled"));
-        Assert.Equal("year-close-why", button.GetAttribute("aria-describedby"));
+        provider.Find("input[data-testid=confirm-effect-input], [data-testid=confirm-effect-input] input").Input(" 2026/2027 ");
+        await provider.Find("[data-testid=confirm-effect-yes]").ClickAsync(new());
+        Assert.True(await answer);
+    }
+
+    [Fact]
+    public async Task A_blocking_problem_keeps_confirm_disabled_and_says_why()
+    {
+        var (provider, _) = await AskCloseAsync(blocking: ["Some terms are still open."]);
+
+        provider.Find("input[data-testid=confirm-effect-input], [data-testid=confirm-effect-input] input").Input("2026/2027");
+
+        var blocking = provider.Find("[data-testid=confirm-effect-blocking]");
+        Assert.Contains("Some terms are still open.", blocking.TextContent);
+        var yes = provider.Find("[data-testid=confirm-effect-yes]");
+        Assert.True(yes.HasAttribute("disabled"));
+        Assert.Equal(blocking.QuerySelector("span[id]")!.Id, yes.GetAttribute("aria-describedby"));
     }
 
     // --- promotion preview row
@@ -269,12 +241,11 @@ public sealed class YearEndComponentsTests : ClientTestContext
     [Fact]
     public void Components_render_in_arabic_without_raw_keys()
     {
-        var close = Render<CloseYearConfirmation>(p => p.Add(c => c.Preview, Preview()));
         var undo = RenderUndo(_clock.GetUtcNow().UtcDateTime.AddMinutes(9));
         var row = RenderRow(Row(target: ClassA));
         var picker = Render<WithdrawalReasonPicker>(p => p.Add(c => c.Reasons, Reasons));
 
-        foreach (var markup in new[] { close.Markup, undo.Markup, row.Markup, picker.Markup })
+        foreach (var markup in new[] { undo.Markup, row.Markup, picker.Markup })
             Assert.DoesNotMatch(@"\b(YearEnd|Promo|Lifecycle|YearIssue)_\w+", markup);
         Assert.Contains("عمر صالح", row.Markup);
         Assert.Contains("9 دقائق", undo.Markup);

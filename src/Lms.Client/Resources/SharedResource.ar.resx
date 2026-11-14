@@ -1887,8 +1887,6 @@
   <data name="AuditEntity_PromotionRun" xml:space="preserve"><value>تشغيل ترقية</value></data>
   <data name="AuditEntity_StudentExit" xml:space="preserve"><value>مغادرة طالب</value></data>
   <data name="YearEnd_Close_Lead" xml:space="preserve"><value>الإغلاق يقفل هذا العام للجميع ولا يمكن إعادة فتحه. أي درجة يلزم تعديلها لاحقًا تمر بموافقة المدير.</value></data>
-  <data name="YearEnd_Close_Blocking" xml:space="preserve"><value>أصلح ما يلي قبل الإغلاق:</value></data>
-  <data name="YearEnd_Close_Will" xml:space="preserve"><value>ما الذي سيحدث</value></data>
   <data name="YearEnd_Close_Gradebooks_One" xml:space="preserve"><value>يُقفل سجل درجات واحد. يستطيع المعلمون طلب تعديل فقط.</value></data>
   <data name="YearEnd_Close_Gradebooks_Two" xml:space="preserve"><value>يُقفل سجلّا درجات. يستطيع المعلمون طلب تعديل فقط.</value></data>
   <data name="YearEnd_Close_Gradebooks_Few" xml:space="preserve"><value>تُقفل {0} سجلات درجات. يستطيع المعلمون طلب تعديل فقط.</value></data>
@@ -1898,10 +1896,7 @@
   <data name="YearEnd_Close_Sessions_Few" xml:space="preserve"><value>تُقفل {0} جلسات حضور.</value></data>
   <data name="YearEnd_Close_Sessions_Many" xml:space="preserve"><value>تُقفل {0} جلسة حضور.</value></data>
   <data name="YearEnd_Close_Promotion" xml:space="preserve"><value>يُفتح الترفيع لهذا العام (لمسؤول المؤسسة في كل مكان، وللمديرين في وحداتهم).</value></data>
-  <data name="YearEnd_Close_Check" xml:space="preserve"><value>يحسن التحقق منه أولًا (لا يمنع الإغلاق)</value></data>
-  <data name="YearEnd_Close_Type" xml:space="preserve"><value>للتأكيد، اكتب اسم العام: {0}</value></data>
   <data name="YearEnd_Close_Confirm" xml:space="preserve"><value>إغلاق العام</value></data>
-  <data name="YearEnd_Review" xml:space="preserve"><value>مراجعة</value></data>
   <data name="Promo_SelectRow" xml:space="preserve"><value>تحديد {0}</value></data>
   <data name="Promo_SelectPage" xml:space="preserve"><value>تحديد كل الطلاب في هذه الصفحة</value></data>
   <data name="Promo_Col_Student" xml:space="preserve"><value>الطالب</value></data>
@@ -1955,4 +1950,13 @@
   <data name="YearEnd_Step_Attention" xml:space="preserve"><value>تحتاج إلى انتباه</value></data>
   <data name="YearEnd_Step_NotYet" xml:space="preserve"><value>غير متاحة بعد</value></data>
   <data name="YearEnd_Step_Done" xml:space="preserve"><value>تمت</value></data>
+  <data name="Job_Progress" xml:space="preserve"><value>تمت معالجة {0} من {1}</value></data>
+  <data name="Job_Done" xml:space="preserve"><value>اكتملت العملية.</value></data>
+  <data name="Job_Failed" xml:space="preserve"><value>لم تكتمل العملية. راجع النتيجة أدناه.</value></data>
+  <data name="Job_PollFailed" xml:space="preserve"><value>تعذرت قراءة التقدم الآن. ستتم المحاولة مرة أخرى.</value></data>
+  <data name="Confirm_TypeToConfirm" xml:space="preserve"><value>اكتب {0} للتأكيد</value></data>
+  <data name="Confirm_WillHappen" xml:space="preserve"><value>ما الذي سيحدث</value></data>
+  <data name="Confirm_CheckFirst" xml:space="preserve"><value>يحسن التحقق منه أولًا (لا يمنع المتابعة)</value></data>
+  <data name="Confirm_Blocking" xml:space="preserve"><value>أصلح ما يلي أولًا:</value></data>
+  <data name="Confirm_Review" xml:space="preserve"><value>مراجعة</value></data>
 </root>

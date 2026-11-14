@@ -5,6 +5,7 @@
 @using Lms.Shared.YearEnd
 @inject Microsoft.Extensions.Configuration.IConfiguration Configuration
 @inject ICultureService Culture
+@inject IDialogService Dialogs
 
 @* The M7 components with sample data (spec PR 814), for the designer and FE to see them in both languages and themes before the M7 pages exist. It exists
    only on the standalone dev server (Lms:UseFakeApi=true); against a real API it is the not-found page. Sample text is gallery-only, so it isn't in resources. *@
@@ -21,20 +22,22 @@ else
 
     <SectionCard Title="@T("حالة العام", "Year status")" Icon="@Icons.Material.Rounded.CalendarMonth" TestId="gallery-year-status">
         <div class="d-flex flex-wrap gap-3">
-            <YearStatusChip Status="@AcademicYearStatuses.Planned" />
-            <YearStatusChip Status="@AcademicYearStatuses.Active" />
-            <YearStatusChip Status="@AcademicYearStatuses.Closed" />
+            <YearChip NameAr="2027/2028" NameEn="2027/2028" Status="@AcademicYearStatuses.Planned" />
+            <YearChip NameAr="2026/2027" NameEn="2026/2027" Status="@AcademicYearStatuses.Active" />
+            <YearChip NameAr="2025/2026" NameEn="2025/2026" Status="@AcademicYearStatuses.Closed" />
         </div>
     </SectionCard>
 
     <SectionCard Title="@T("إغلاق 2026/2027", "Close 2026/2027")" Icon="@Icons.Material.Rounded.Lock" TestId="gallery-close">
-        <div style="max-inline-size:640px">
-            <CloseYearConfirmation Preview="_preview" IssueHref="@(i => "dev/year-end-gallery")" OnConfirm="@(n => _closed = n)" />
-        </div>
+        <MudText Typo="Typo.body2" Class="lms-muted mb-3">@T("حوار التأكيد المشترك لإجراءات نهاية العام (ConfirmEffectDialog).", "The shared confirm dialog for year-end actions (ConfirmEffectDialog).")</MudText>
+        <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.Lock" OnClick="AskCloseAsync" data-testid="gallery-close-open">@T("إغلاق 2026/2027…", "Close 2026/2027…")</MudButton>
         @if (_closed is not null)
         {
-            <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Class="mt-3">@T("سيُرسل:", "Would send:") <span dir="ltr">CloseYearRequest("@_closed")</span></MudAlert>
+            <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Class="mt-3">@_closed</MudAlert>
         }
+        <div class="mt-4" style="max-inline-size:640px">
+            <JobProgressPanel Title="@T("جارٍ ترفيع 124 طالبًا", "Promoting 124 students")" Poll="PollAsync" Interval="TimeSpan.FromSeconds(1)" TestId="gallery-job" />
+        </div>
     </SectionCard>
 
     <SectionCard Title="@T("مراجعة الترفيع", "Promotion review")" Icon="@Icons.Material.Rounded.TrendingUp" Flush="true" TestId="gallery-promo">
@@ -88,8 +91,23 @@ else
     private static readonly Guid A11 = Guid.Parse("00000000-0000-0000-0000-00000000a011"), B11 = Guid.Parse("00000000-0000-0000-0000-00000000b011"), B10 = Guid.Parse("00000000-0000-0000-0000-00000000b010");
     private readonly IReadOnlyList<PromotionTargetClass> _targets = [new(A11, "11-أ", "11-A"), new(B11, "11-ب", "11-B"), new(B10, "10-ب", "10-B")];
 
-    private readonly YearClosePreviewDto _preview = new(Guid.NewGuid(), "2026/2027", "2026/2027", 184, 6240, [],
-        [new(YearEndIssueCodes.UnpublishedGradeItems, 12, null), new(YearEndIssueCodes.OpenAssignments, 5, null), new(YearEndIssueCodes.PendingExcuseRequests, 4, null)]);
+    private int _processed = 20;
+
+    private Task<JobSnapshot> PollAsync()
+    {
+        _processed = Math.Min(_processed + 6, 46); // stops at 46 of 124 so the panel stays mid-run in the gallery
+        return Task.FromResult(new JobSnapshot(_processed, 124, false));
+    }
+
+    private async Task AskCloseAsync()
+    {
+        static string Issue(string text, int n) => $"{text} ({n})";
+        var ok = await ConfirmEffectDialog.AskAsync(Dialogs, T("إغلاق 2026/2027", "Close 2026/2027"), L["YearEnd_Close_Lead"], expected: "2026/2027", confirmText: L["YearEnd_Close_Confirm"], danger: true,
+            effects: [L.Count("YearEnd_Close_Gradebooks", 184, Culture.IsRightToLeft), L.Count("YearEnd_Close_Sessions", 6240, Culture.IsRightToLeft), L["YearEnd_Close_Promotion"]],
+            warnings: [new(Issue(L["YearIssue_UnpublishedGradeItems"], 12), "dev/year-end-gallery"), new(Issue(L["YearIssue_OpenAssignments"], 5), "dev/year-end-gallery"),
+                new(Issue(L["YearIssue_PendingExcuseRequests"], 4), "dev/year-end-gallery")]);
+        _closed = ok ? T("سيُرسل CloseYearRequest(\"2026/2027\").", "Would send CloseYearRequest(\"2026/2027\").") : null;
+    }
 
     private readonly IReadOnlyList<WithdrawalReasonDto> _reasons =
         [new("Move", "الانتقال إلى مدرسة أخرى", "Moving to another school", true), new("Abroad", "الانتقال إلى الخارج", "Moving abroad", true), new("Health", "أسباب صحية", "Health", true)];

@@ -14,3 +14,6 @@ public enum YearEndStepState
 
 /// <summary>One step of the year-end checklist. <see cref="Href"/> null = no link (a step that can't start yet).</summary>
 public sealed record YearEndStep(string Title, string Detail, YearEndStepState State, string? ActionText = null, string? Href = null);
+
+/// <summary>A "worth checking first" line of <see cref="ConfirmEffectDialog"/>: already-localized text and an optional Review link.</summary>
+public sealed record ConfirmIssue(string Text, string? Href = null);

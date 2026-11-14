@@ -227,15 +227,16 @@ The full spec is `docs/design/m4b-live-and-packages.md`. Mockups are in `docs/de
 
 Reusable parts for the year-end pages (H2–H6). Seen together, with sample data, at `/dev/year-end-gallery` (standalone only).
 
-- **Year status:** `YearStatusChip` is a status chip in words. Planned is info, Active is success, and Closed is neutral with a lock icon and no dot.
-- **Closing a year:** `CloseYearConfirmation` is the body and actions of the Close year dialog (D79). It has:
-  - the lead sentence;
-  - **What will happen** (`lms-effects`, counted text from the plural helper);
-  - **Worth checking first** warning rows with Review links (they never block);
-  - the server's blocking issues, which disable the button with the reason in `aria-describedby`;
-  - a **typed confirmation** of the year name (`lms-confirm-type`).
+- **Year status:** `YearChip` (from #815) shows the year's name, then its status chip in words. Planned is info, Active is success, and Closed is neutral with a lock icon and no dot (`lms-year-chip`).
+- **Actions with consequences:** `ConfirmEffectDialog` (from #815) is one dialog for close, promotion and new-year actions, styled per spec PR 814 §1 and §4. It shows:
+  - the effect sentence and the count;
+  - optional **What will happen** (`Effects`, `lms-effects`);
+  - optional **Worth checking first** (`Warnings` with Review links; they never block, D79 and D84);
+  - optional **Blocking** problems (the confirm button stays disabled and `aria-describedby` points at them);
+  - the typed confirmation in its own tinted block (`lms-confirm-type`), used only where nothing can undo the action.
 
-  Typing is used only where nothing can undo the action.
+  It is full screen below 600 px (`lms-dialog-sheet`), with the actions sticky at the bottom.
+- **Jobs:** `JobProgressPanel` (from #815) has a bold title, an 8 px rounded bar, and the "Processed x of y" line. One polite announcement is made per 10 % and interval, and the result is kept.
 - **Promotion review:** `PromotionPreviewHead` with one `PromotionPreviewRow` per student (D83, D84), inside `lms-stack-table`.
   - **Controls:** the outcome and the target class are **native selects** named for the student ("Outcome for Omar Saleh"). Graduate and Transfer out need no class.
   - **Notes:** a missing class is an error chip in words; open requests are warning chips.
