@@ -16,10 +16,13 @@ public sealed class AttendanceModule : ILmsModule
         services.AddScoped<AttendanceListMapper>();
         services.AddScoped<AttendanceRecordsMapper>();
         services.AddScoped<AbsenceNotifier>();
+        services.AddScoped<AttendanceThresholdRunner>();
+        services.AddScoped<AttendanceThresholdJob>();
         services.Replace(ServiceDescriptor.Scoped<IAttendanceGenerationQueue, AttendanceGenerationQueue>()); // replaces the no-op of Task 14
         if (configuration.GetValue("Jobs:ServerEnabled", true))
         {
             services.AddHostedService<AttendanceGenerationRegistration>();
+            services.AddHostedService<AttendanceThresholdRegistration>();
         }
     }
 
@@ -28,5 +31,6 @@ public sealed class AttendanceModule : ILmsModule
         app.MapAttendanceSessions();
         app.MapTakeAttendance();
         app.MapAttendanceReads();
+        app.MapAttendanceAlerts();
     }
 }
