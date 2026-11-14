@@ -155,4 +155,17 @@ public sealed class M6Fe2AccessibilityTests : ClientTestContext
         Assert.Empty(Problems(prefs));
         StackedTablesAreLabelled(prefs);
     }
+
+    [Fact]
+    public void The_audience_options_wrap_below_600px_so_no_label_is_cut_off()
+    {
+        var dir = AppContext.BaseDirectory;
+        while (dir is not null && !Directory.Exists(Path.Combine(dir, "src", "Lms.Client"))) dir = Path.GetDirectoryName(dir);
+        var css = File.ReadAllText(Path.Combine(dir!, "src", "Lms.Client", "wwwroot", "css", "app.css"));
+
+        var rule = css[css.IndexOf("@media (max-width: 599.98px) {
+    .lms-ann-scopes", StringComparison.Ordinal)..];
+        Assert.Contains("flex-direction: column", rule);
+        Assert.Contains("white-space: normal", rule);
+    }
 }

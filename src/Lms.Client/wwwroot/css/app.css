@@ -93,3 +93,9 @@ html:lang(ar), html:lang(ar) body { font-family: Cairo, "Segoe UI", Tahoma, Aria
     .lms-mod-panel { position: fixed; inset: 0; z-index: 1300; overflow: auto; background: var(--mud-palette-background); padding: 12px; }
     .lms-mod-panel .lms-mod-panel-close { display: inline-flex; }
 }
+
+/* Announcement composer: below 600 px the audience scope options stack and wrap, so a long English label is never cut off. */
+@media (max-width: 599.98px) {
+    .lms-ann-scopes { flex-direction: column; align-items: stretch; }
+    .lms-ann-scopes .mud-toggle-item { white-space: normal; text-align: start; justify-content: flex-start; min-inline-size: 0; }
+}
