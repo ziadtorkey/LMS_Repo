@@ -154,7 +154,14 @@ public sealed class FakeTimetableApi : ITimetableApi
     /// <summary>The signed-in teacher or student: the published lessons of the range, with the dated changes applied.</summary>
     public Task<TimetableViewDto> GetMyTimetableAsync(DateOnly from, DateOnly to, CancellationToken ct = default) => Task.FromResult(ViewOf(from, to));
 
-    public Task<TimetableViewDto> GetStudentTimetableAsync(Guid studentId, DateOnly from, DateOnly to, CancellationToken ct = default) => Task.FromResult(ViewOf(from, to));
+    public Task<TimetableViewDto> GetStudentTimetableAsync(Guid studentId, DateOnly from, DateOnly to, CancellationToken ct = default) =>
+        StudentFailure is { } failure ? Task.FromException<TimetableViewDto>(failure) : Task.FromResult(ViewOf(from, to));
+
+    /// <summary>The signed-in teacher: the personal view lists only the lessons they teach that date (a substitute only on the dates they substitute). Empty means a student's class (everything).</summary>
+    public Guid? CurrentTeacher { get; set; }
+
+    /// <summary>Makes the child view fail the way the server does for a child who is not the caller's (404).</summary>
+    public ApiProblemException? StudentFailure { get; set; }
 
     private TimetableViewDto ViewOf(DateOnly from, DateOnly to)
     {
@@ -164,6 +171,8 @@ public sealed class FakeTimetableApi : ITimetableApi
             foreach (var slot in _slots.Where(s => s.State == SlotStates.Published && s.DayOfWeek == date.DayOfWeek))
             {
                 var exception = _exceptions.GetValueOrDefault(slot.Id)?.FirstOrDefault(e => e.Date == date);
+                var teacher = exception?.Kind == ExceptionKinds.Substitute && exception.SubstituteUserId is { } sub ? sub : slot.TeacherUserId;
+                if (CurrentTeacher is { } me && teacher != me) continue; // not theirs on that date
                 cards.Add(new TimetableCardDto(slot.Id, date, exception?.NewPeriodId ?? slot.PeriodId, slot.CourseNameAr, slot.CourseNameEn, slot.TeacherName, slot.RoomName,
                     exception?.Kind, exception?.SubstituteName, "5أ", "5A"));
             }

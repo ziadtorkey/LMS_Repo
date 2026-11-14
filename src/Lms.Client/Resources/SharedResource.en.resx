@@ -1763,4 +1763,6 @@
   <data name="Tt_WorkingDays_None" xml:space="preserve"><value>Choose at least one working day.</value></data>
   <data name="Tt_WorkingDays_Saved" xml:space="preserve"><value>Working days saved.</value></data>
   <data name="Tt_WorkingDays_Forbidden" xml:space="preserve"><value>You may not change the working days of this unit.</value></data>
+  <data name="Tt_Child_Link" xml:space="preserve"><value>Timetable</value></data>
+  <data name="Tt_Print" xml:space="preserve"><value>Print</value></data>
 </root>

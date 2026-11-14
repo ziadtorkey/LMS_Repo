@@ -1,9 +1,27 @@
 @page "/me/children/{StudentId:guid}/timetable"
 @attribute [Authorize]
+@using Lms.Shared.Authorization
+@inject PermissionState PermState
 
 <PageTitle>@L["Tt_My_Title"]</PageTitle>
-<OwnTimetableView StudentId="StudentId" />
+@if (!PermState.Loaded)
+{
+    <LoadingState Lines="4" TestId="child-tt-loading" />
+}
+else if (!PermState.Has(Permissions.Students.ViewChildren))
+{
+    <Forbidden /> @* not a guardian: the page is off limits; the server still decides which child (another family's child is 404) *@
+}
+else
+{
+    <OwnTimetableView StudentId="StudentId" />
+}
 
 @code {
     [Parameter] public Guid StudentId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+    }
 }

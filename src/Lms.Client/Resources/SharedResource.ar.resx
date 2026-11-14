@@ -1763,4 +1763,6 @@
   <data name="Tt_WorkingDays_None" xml:space="preserve"><value>اختر يوم عمل واحدًا على الأقل.</value></data>
   <data name="Tt_WorkingDays_Saved" xml:space="preserve"><value>تم حفظ أيام العمل.</value></data>
   <data name="Tt_WorkingDays_Forbidden" xml:space="preserve"><value>لا يمكنك تغيير أيام العمل لهذه الوحدة.</value></data>
+  <data name="Tt_Child_Link" xml:space="preserve"><value>الجدول الدراسي</value></data>
+  <data name="Tt_Print" xml:space="preserve"><value>طباعة</value></data>
 </root>

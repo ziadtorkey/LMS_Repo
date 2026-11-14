@@ -53,6 +53,7 @@ else
                                     <MudText Typo="Typo.body2" Class="lms-muted"><span dir="ltr">@child.StudentCode</span></MudText>
                                     <MudText Typo="Typo.body2">@Culture.Pick(child.HomeOrgUnitNameAr, child.HomeOrgUnitNameEn)</MudText>
                                     <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Class="lms-role-chip mt-1">@L[$"Relation_{child.Relation}"]</MudChip>
+                                    <div class="mt-2"><MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" Href="@($"me/children/{child.StudentId}/timetable")" data-testid="@($"child-timetable-{child.StudentId}")">@L["Tt_Child_Link"]</MudButton></div>
                                 </div>
                             </div>
                         </SectionCard>

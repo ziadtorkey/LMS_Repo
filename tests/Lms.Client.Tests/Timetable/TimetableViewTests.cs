@@ -46,7 +46,7 @@ public sealed class TimetableViewTests : TimetableTestContext
         Assert.NotNull(teacher.Find("[data-testid=tt-week]"));
         await DisposeComponentsAsync();
 
-        var child = await RenderAsync<ChildTimetablePage>(p => p.Add(x => x.StudentId, Student));
+        var child = await RenderAsync<ChildTimetablePage>(p => p.Add(x => x.StudentId, Student), "en", Permissions.Timetable.ViewOwn, Permissions.Students.ViewChildren);
         child.WaitForElement("[data-testid=tt-view]");
         Assert.NotNull(child.Find("[data-testid=tt-week]")); // a guardian's view of a child: the same week grid
         await DisposeComponentsAsync();
@@ -141,9 +141,48 @@ public sealed class TimetableViewTests : TimetableTestContext
         Assert.NotEmpty(teacher.FindAll("[data-testid^=tt-class-]"));
         await DisposeComponentsAsync();
 
-        var child = await RenderAsync<ChildTimetablePage>(p => p.Add(x => x.StudentId, Student));
+        var child = await RenderAsync<ChildTimetablePage>(p => p.Add(x => x.StudentId, Student), "en", Permissions.Timetable.ViewOwn, Permissions.Students.ViewChildren);
         child.WaitForElement("[data-testid=tt-view]");
         Assert.Empty(child.FindAll("[data-testid^=tt-class-]"));
+    }
+
+    [Fact]
+    public async Task The_child_timetable_needs_the_guardian_permission()
+    {
+        var page = await RenderAsync<ChildTimetablePage>(p => p.Add(x => x.StudentId, Student), "en", Permissions.Timetable.ViewOwn); // a teacher or student, not a guardian
+
+        page.WaitForAssertion(() => Assert.Empty(page.FindAll("[data-testid=tt-view], [data-testid=my-tt-title]")));
+    }
+
+    [Fact]
+    public async Task A_child_who_is_not_theirs_shows_the_servers_answer_not_the_timetable()
+    {
+        Api2.StudentFailure = new ApiProblemException(404, "student_not_found", null, null); // what the server says for another family's child
+
+        var page = await RenderAsync<ChildTimetablePage>(p => p.Add(x => x.StudentId, Guid.NewGuid()), "en", Permissions.Timetable.ViewOwn, Permissions.Students.ViewChildren);
+
+        page.WaitForElement("[data-testid=api-error]");
+        Assert.Empty(page.FindAll("[data-testid=tt-view]")); // nothing of another child is drawn
+    }
+
+    [Fact]
+    public async Task Substitute_sees_the_slot_on_that_date_only()
+    {
+        var maths = Api2.Slots.First(s => s.ClassCourseId == FakeTimetableApi.Maths); // A. Saleh, Sundays
+        var substitutionDay = Sunday.AddDays(7);
+        await Api2.CreateExceptionAsync(maths.Id, new SaveTimetableExceptionRequest(substitutionDay, ExceptionKinds.Substitute, FakeTimetableApi.Nasser, null, null));
+
+        Api2.CurrentTeacher = FakeTimetableApi.Nasser; // the substitute
+        var week1 = await Api2.GetMyTimetableAsync(Sunday, Sunday.AddDays(6));
+        var week2 = await Api2.GetMyTimetableAsync(substitutionDay, substitutionDay.AddDays(6));
+        var week3 = await Api2.GetMyTimetableAsync(Sunday.AddDays(14), Sunday.AddDays(20));
+        Assert.DoesNotContain(week1.Cards, c => c.SlotId == maths.Id); // not their lesson before
+        Assert.Contains(week2.Cards, c => c.SlotId == maths.Id && c.Date == substitutionDay && c.SubstituteName == "M. Nasser"); // theirs on that date
+        Assert.DoesNotContain(week3.Cards, c => c.SlotId == maths.Id); // and not after
+
+        Api2.CurrentTeacher = FakeTimetableApi.Saleh; // the teacher of record loses that one date only
+        Assert.DoesNotContain((await Api2.GetMyTimetableAsync(substitutionDay, substitutionDay.AddDays(6))).Cards, c => c.SlotId == maths.Id);
+        Assert.Contains((await Api2.GetMyTimetableAsync(Sunday.AddDays(14), Sunday.AddDays(20))).Cards, c => c.SlotId == maths.Id);
     }
 
     [Fact]
@@ -263,5 +302,52 @@ public sealed class TimetableNavigationTests : TimetableTestContext
 
         Assert.Equal(Permissions.Timetable.Manage, items.Single(i => i.ResourceKey == "Nav_Timetable").RequiredPermission);
         Assert.Equal(Permissions.Timetable.ViewOwn, items.Single(i => i.ResourceKey == "Nav_MyTimetable").RequiredPermission);
+    }
+}
+
+
+/// <summary>The week a personal timetable opens on is the client's, not the UTC one (D64).</summary>
+public sealed class TimetableDayBoundaryTests : TimetableTestContext
+{
+    private readonly MutableClock _clock = new();
+
+    public TimetableDayBoundaryTests() => Services.AddSingleton<TimeProvider>(_clock);
+
+    private sealed class MutableClock : TimeProvider
+    {
+        public DateTimeOffset Now { get; set; }
+        public override DateTimeOffset GetUtcNow() => Now;
+    }
+
+    private async Task<string> WeekRangeAsync(DateTimeOffset nowUtc, string? zone)
+    {
+        _clock.Now = nowUtc;
+        Culture.Current = new CultureInfo("en");
+        await GrantAsync(Permissions.Timetable.ViewOwn);
+        if (zone is not null) Api.Me = Api.Me with { Contexts = [new Lms.Shared.Me.UserContextDto(Context.ActiveAssignmentId!.Value, Guid.NewGuid(), "م", "School", Guid.NewGuid(), "ص", "Grade", "م", "Teacher", zone)] };
+        RenderProviders();
+        var page = Render<MyTimetablePage>();
+        page.WaitForElement("[data-testid=week-range]");
+        return page.Find("[data-testid=week-range]").TextContent.Trim();
+    }
+
+    [Fact]
+    public async Task Just_after_local_midnight_on_Sunday_the_week_is_the_new_one_not_the_UTC_one()
+    {
+        // 22:00 UTC on Saturday 14 Nov is 01:00 on Sunday 15 Nov in Riyadh (the default zone): the week starts on the 15th, not the 8th.
+        Assert.Equal("2026-11-15 – 2026-11-21", await WeekRangeAsync(new DateTimeOffset(2026, 11, 14, 22, 0, 0, TimeSpan.Zero), null));
+    }
+
+    [Fact]
+    public async Task The_same_instant_is_still_Saturday_in_Riyadh_so_the_week_is_the_previous_one()
+    {
+        Assert.Equal("2026-11-08 – 2026-11-14", await WeekRangeAsync(new DateTimeOffset(2026, 11, 14, 16, 0, 0, TimeSpan.Zero), null));
+    }
+
+    [Fact]
+    public async Task A_client_in_another_zone_gets_its_own_day()
+    {
+        // 16:00 UTC on Saturday 14 Nov: still Saturday in Riyadh (19:00), already Sunday in Tokyo (01:00).
+        Assert.Equal("2026-11-15 – 2026-11-21", await WeekRangeAsync(new DateTimeOffset(2026, 11, 14, 16, 0, 0, TimeSpan.Zero), "Asia/Tokyo"));
     }
 }

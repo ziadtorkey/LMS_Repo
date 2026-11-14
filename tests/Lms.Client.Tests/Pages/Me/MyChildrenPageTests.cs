@@ -33,6 +33,20 @@ public sealed class MyChildrenPageTests : StudentsTestContext
     }
 
     [Fact]
+    public async Task Each_card_links_to_the_childs_timetable()
+    {
+        Culture.Current = new CultureInfo("en");
+        var cut = await RenderPageAsync(Permissions.Students.ViewChildren);
+
+        cut.WaitForElement("[data-testid=children-grid]");
+
+        foreach (var child in GuardiansApi.MyChildren)
+        {
+            Assert.EndsWith($"me/children/{child.StudentId}/timetable", cut.Find($"[data-testid=child-timetable-{child.StudentId}]").GetAttribute("href"));
+        }
+    }
+
+    [Fact]
     public async Task Empty_state_and_context_hint()
     {
         Culture.Current = new CultureInfo("en");

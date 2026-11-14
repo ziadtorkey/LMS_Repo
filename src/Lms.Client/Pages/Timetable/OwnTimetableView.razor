@@ -5,10 +5,15 @@
 @inject NavigationManager Navigation
 @inject ClientTimeZone Zone
 @inject TimeProvider Clock
+@inject IJSRuntime Js
 
 @* A teacher's own timetable (their lessons across classes, substitutions included), a student's class or, with StudentId, a child's for a guardian. Weeks of
    Sunday to Saturday by the client's calendar; published lessons only. *@
-<PageHeader Title="@L["Tt_My_Title"]" Subtitle="@L["Tt_My_Subtitle"]" TitleTestId="my-tt-title" />
+<PageHeader Title="@L["Tt_My_Title"]" Subtitle="@L["Tt_My_Subtitle"]" TitleTestId="my-tt-title">
+    <Actions>
+        <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.Print" Class="lms-touch lms-no-print" OnClick="PrintAsync" data-testid="my-tt-print">@L["Tt_Print"]</MudButton>
+    </Actions>
+</PageHeader>
 
 @if (_from is { } from && _to is { } to)
 {
@@ -71,6 +76,13 @@ else
     {
         SetWeek(_from!.Value.AddDays(7 * weeks));
         return LoadAsync();
+    }
+
+    /// <summary>The browser's print dialog; the print styles show the week grid alone (no personal-view export in v1).</summary>
+    private async Task PrintAsync()
+    {
+        try { await Js.InvokeVoidAsync("print"); }
+        catch (JSDisconnectedException) { }
     }
 
     private Task TodayAsync()
