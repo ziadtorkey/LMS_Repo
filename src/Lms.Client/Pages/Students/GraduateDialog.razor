@@ -1,0 +1,52 @@
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.YearEnd
+@using Lms.Shared.YearEnd
+@inject ILifecycleApi Api
+@inject NavigationManager Navigation
+@inject TimeProvider Clock
+
+@* Graduate a student (FR-STU-08): the same effect as a withdrawal, with the exit kind Graduated, a graduation date and no reason. *@
+<MudDialog Class="lms-dialog-fs">
+    <DialogContent>
+        <div class="lms-form" data-testid="graduate-dialog">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-3" data-testid="graduate-error">@_error</MudAlert>
+            }
+            <p data-testid="graduate-effect">@string.Format(L["Lifecycle_GraduateEffect"].Value, Name)</p>
+            <MudDatePicker Date="_date" DateChanged="d => _date = d" Label="@L["Lifecycle_GraduationDate"]" Variant="Variant.Outlined" Margin="Margin.Dense" Editable="true" Required="true"
+                           data-testid="graduate-date" />
+            @if (_date is { } d && d.Date > Clock.GetLocalNow().DateTime.Date)
+            {
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" Class="mt-2" data-testid="graduate-future">
+                    @string.Format(L["Lifecycle_FutureHint"].Value, "⁦" + d.ToString("yyyy-MM-dd") + "⁩")
+                </MudAlert>
+            }
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" OnClick="() => MudDialog.Cancel()" data-testid="graduate-cancel">@L["Common_Cancel"]</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(_busy || _date is null)" OnClick="SubmitAsync" data-testid="graduate-confirm">@L["Lifecycle_Graduate"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter, EditorRequired] public Guid StudentId { get; set; }
+    [Parameter, EditorRequired] public string Name { get; set; } = "";
+
+    private DateTime? _date;
+    private string? _error;
+    private bool _busy;
+
+    protected override void OnInitialized() => _date = Clock.GetLocalNow().DateTime.Date;
+
+    private async Task SubmitAsync()
+    {
+        if (_date is null || _busy) return;
+        _busy = true; _error = null;
+        var ok = await ApiCalls.RunAsync(() => Api.GraduateAsync(StudentId, new GraduateStudentRequest(DateOnly.FromDateTime(_date.Value))), Navigation, L, e => _error = e);
+        _busy = false;
+        if (ok) MudDialog.Close(DialogResult.Ok(true));
+    }
+}

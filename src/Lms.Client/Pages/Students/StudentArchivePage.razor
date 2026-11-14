@@ -1,0 +1,111 @@
+@page "/students/archive"
+@attribute [Authorize]
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.YearEnd
+@using Lms.Shared.Authorization
+@using Lms.Shared.YearEnd
+@inject ILifecycleApi Api
+@inject PermissionState PermState
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+@* The archive (FR-STU-08; spec m7-year-end): students who left, read only. Search by name or code, filter by how they left. Re-admit is offered only to those who may.
+   The reason of a withdrawal is for staff (D81) and is shown as its key text; a national id is never listed. *@
+<PageTitle>@L["Archive_Title"]</PageTitle>
+<PageHeader Title="@L["Archive_Title"]" Subtitle="@L["Archive_Subtitle"]" TitleTestId="archive-title" />
+
+@if (!PermState.Loaded)
+{
+    <LoadingState Lines="5" TestId="archive-loading" />
+}
+else if (!PermState.Has(Permissions.Students.ViewArchive))
+{
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" data-testid="archive-forbidden">@L["Forbidden_Title"]</MudAlert>
+}
+else
+{
+    <SectionCard Flush="true">
+        <div class="lms-filters" role="search" aria-label="@L["Common_Filters"]" data-testid="archive-readonly">
+            <div class="lms-filter lms-filter-search">
+                <MudTextField T="string" Value="_search" ValueChanged="OnSearchChanged" Label="@L["Common_Search"]" Immediate="true" DebounceInterval="300" Clearable="true"
+                              Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Rounded.Search" data-testid="archive-search" />
+            </div>
+            <div class="lms-filter">
+                <MudSelect T="string" Value="_exit" ValueChanged="OnExitChanged" Label="@L["Archive_ExitKind"]" Clearable="true" data-testid="archive-filter-kind">
+                    @foreach (var k in StudentExitKinds.All)
+                    {
+                        <MudSelectItem Value="@k">@L[$"Archive_Exit_{k}"]</MudSelectItem>
+                    }
+                </MudSelect>
+            </div>
+        </div>
+        <ServerTable @ref="_table" T="ArchivedStudentDto" ServerData="LoadAsync" EmptyTitle="@L["Archive_EmptyTitle"]" EmptyText="@L["Archive_EmptyText"]" EmptyIcon="@Icons.Material.Rounded.Inventory2">
+            <HeaderContent>
+                <MudTh>@L["Common_Name"]</MudTh>
+                <MudTh>@L["Student_Code"]</MudTh>
+                <MudTh>@L["Archive_ExitKind"]</MudTh>
+                <MudTh>@L["Archive_Date"]</MudTh>
+                <MudTh>@L["Archive_LastClass"]</MudTh>
+                <MudTh>@L["Archive_Reason"]</MudTh>
+                <MudTh></MudTh>
+            </HeaderContent>
+            <RowTemplate Context="row">
+                <MudTd DataLabel="@L["Common_Name"]"><bdi data-testid="@($"archive-row-{row.StudentId}")">@CultureText.Pick(row.NameAr, row.NameEn)</bdi></MudTd>
+                <MudTd DataLabel="@L["Student_Code"]"><span dir="ltr">@row.StudentCode</span></MudTd>
+                <MudTd DataLabel="@L["Archive_ExitKind"]">@L[$"Archive_Exit_{row.ExitKind}"]</MudTd>
+                <MudTd DataLabel="@L["Archive_Date"]"><span dir="ltr">@row.EffectiveDate.ToString("yyyy-MM-dd")</span></MudTd>
+                <MudTd DataLabel="@L["Archive_LastClass"]">@(row.LastClassNameEn is null ? "—" : $"{CultureText.Pick(row.LastClassNameAr ?? "", row.LastClassNameEn)} · {CultureText.Pick(row.LastYearNameAr ?? "", row.LastYearNameEn ?? "")}")</MudTd>
+                <MudTd DataLabel="@L["Archive_Reason"]">@ReasonText(row)</MudTd>
+                <MudTd DataLabel="">
+                    @if (row.CanReadmit && PermState.Has(Permissions.Students.Readmit))
+                    {
+                        <MudButton Size="Size.Small" Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.Replay" OnClick="() => ReadmitAsync(row)"
+                                   data-testid="@($"archive-readmit-{row.StudentId}")">@L["Lifecycle_Readmit"]</MudButton>
+                    }
+                </MudTd>
+            </RowTemplate>
+        </ServerTable>
+    </SectionCard>
+}
+
+@code {
+    private ServerTable<ArchivedStudentDto> _table = default!;
+    private string? _search, _exit;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        var (reasons, _) = await ApiCalls.RunAsync(() => Api.GetReasonsAsync(), Navigation);
+        _reasons = reasons ?? [];
+    }
+
+    private IReadOnlyList<WithdrawalReasonDto> _reasons = [];
+
+    /// <summary>The reason in the client's own words (staff only, D81); "Other" and a reason that was removed from the list fall back to plain text.</summary>
+    private string ReasonText(ArchivedStudentDto row) => string.IsNullOrEmpty(row.ReasonKey) ? "—"
+        : row.ReasonKey == WithdrawalReasons.Other ? L["Lifecycle_ReasonOther"].Value
+        : _reasons.FirstOrDefault(r => r.Key == row.ReasonKey) is { } r ? CultureText.Pick(r.NameAr, r.NameEn) : row.ReasonKey;
+
+    private async Task<TableData<ArchivedStudentDto>> LoadAsync(TableState state, CancellationToken ct)
+    {
+        var result = await Api.GetArchiveAsync(new ArchiveQuery(string.IsNullOrWhiteSpace(_search) ? null : _search.Trim(), _exit, null, null, state.Page + 1, state.PageSize), ct);
+        return new TableData<ArchivedStudentDto> { Items = result.Items, TotalItems = result.Total };
+    }
+
+    private Task OnSearchChanged(string? text) { _search = text; return _table.ReloadAsync(); }
+    private Task OnExitChanged(string? kind) { _exit = kind; return _table.ReloadAsync(); }
+
+    private async Task ReadmitAsync(ArchivedStudentDto row)
+    {
+        var dialog = await Dialogs.ShowAsync<Lms.Client.Pages.Students.ReadmitDialog>(L["Lifecycle_Readmit"],
+            new DialogParameters<Lms.Client.Pages.Students.ReadmitDialog> { { x => x.StudentId, row.StudentId }, { x => x.Name, CultureText.Pick(row.NameAr, row.NameEn) } },
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        if (await dialog.Result is { Canceled: false })
+        {
+            Snackbar.Add(string.Format(L["Lifecycle_Readmitted"].Value, CultureText.Pick(row.NameAr, row.NameEn)), Severity.Success);
+            await _table.ReloadAsync();
+        }
+    }
+}

@@ -1941,4 +1941,37 @@
   <data name="GradeChange_Send" xml:space="preserve"><value>Send request</value></data>
   <data name="GradeChange_Locked" xml:space="preserve"><value>This year is closed. A grade can change only with a manager's approval.</value></data>
   <data name="GradeChange_Request" xml:space="preserve"><value>Request a change</value></data>
+  <data name="Nav_StudentArchive" xml:space="preserve"><value>Student archive</value></data>
+  <data name="Lifecycle_Record" xml:space="preserve"><value>Student record</value></data>
+  <data name="Lifecycle_Withdraw" xml:space="preserve"><value>Withdraw</value></data>
+  <data name="Lifecycle_Graduate" xml:space="preserve"><value>Graduate</value></data>
+  <data name="Lifecycle_Readmit" xml:space="preserve"><value>Re-admit</value></data>
+  <data name="Lifecycle_Withdrawn" xml:space="preserve"><value>{0} was withdrawn.</value></data>
+  <data name="Lifecycle_Graduated" xml:space="preserve"><value>{0} graduated.</value></data>
+  <data name="Lifecycle_Readmitted" xml:space="preserve"><value>{0} was re-admitted.</value></data>
+  <data name="Lifecycle_WithdrawEffect" xml:space="preserve"><value>Withdrawing {0} signs them out and blocks sign-in, removes them from active lists and class rosters. Their history and grades stay readable by staff.</value></data>
+  <data name="Lifecycle_GraduateEffect" xml:space="preserve"><value>Graduating {0} has the same effect as a withdrawal: sign-in stops and they leave the active lists. History stays readable.</value></data>
+  <data name="Lifecycle_ReadmitEffect" xml:space="preserve"><value>Re-admitting {0} keeps their student code, restores sign-in and brings back the guardian links.</value></data>
+  <data name="Lifecycle_Reason" xml:space="preserve"><value>Reason</value></data>
+  <data name="Lifecycle_ReasonOther" xml:space="preserve"><value>Other</value></data>
+  <data name="Lifecycle_Note" xml:space="preserve"><value>Note</value></data>
+  <data name="Lifecycle_NoteHelp" xml:space="preserve"><value>Needed for Other. Only staff see it.</value></data>
+  <data name="Lifecycle_EffectiveDate" xml:space="preserve"><value>Effective date</value></data>
+  <data name="Lifecycle_GraduationDate" xml:space="preserve"><value>Graduation date</value></data>
+  <data name="Lifecycle_FutureHint" xml:space="preserve"><value>Sign-in stops on {0}.</value></data>
+  <data name="Lifecycle_Class" xml:space="preserve"><value>Class</value></data>
+  <data name="Lifecycle_ClassHelp" xml:space="preserve"><value>Only classes with room are listed.</value></data>
+  <data name="Lifecycle_NoClass" xml:space="preserve"><value>No class with room is open now.</value></data>
+  <data name="Lifecycle_ReadmitReason" xml:space="preserve"><value>Reason (optional)</value></data>
+  <data name="Archive_Title" xml:space="preserve"><value>Student archive</value></data>
+  <data name="Archive_Subtitle" xml:space="preserve"><value>Students who left: withdrawn, graduated or transferred out. Read only.</value></data>
+  <data name="Archive_ExitKind" xml:space="preserve"><value>How they left</value></data>
+  <data name="Archive_Exit_Withdrawn" xml:space="preserve"><value>Withdrawn</value></data>
+  <data name="Archive_Exit_Graduated" xml:space="preserve"><value>Graduated</value></data>
+  <data name="Archive_Exit_TransferredOut" xml:space="preserve"><value>Transferred out</value></data>
+  <data name="Archive_Date" xml:space="preserve"><value>Date</value></data>
+  <data name="Archive_LastClass" xml:space="preserve"><value>Last class</value></data>
+  <data name="Archive_Reason" xml:space="preserve"><value>Reason</value></data>
+  <data name="Archive_EmptyTitle" xml:space="preserve"><value>The archive is empty</value></data>
+  <data name="Archive_EmptyText" xml:space="preserve"><value>Students who are withdrawn or graduate appear here.</value></data>
 </root>
