@@ -186,7 +186,7 @@ public sealed class TimetableAttendanceTests(E2EFixture fixture) : E2ETestBase(f
 
         await M5Kit.SignOutAsync(Page);
         await M5Kit.SignInAsync(Page, world.GuardianUserName, world.GuardianPassword, culture);
-        await Page.GotoAsync($"/children/{world.StudentIds[0]}/attendance"); // route proposed (ChildAttendancePage, Task 36)
+        await Page.GotoAsync($"/me/children/{world.StudentIds[0]}/attendance"); // route per the design spec §5a (ChildAttendancePage, Task 36)
         await Expect(Page.GetByText(Resx.In(culture, "Attendance_Absent")).First).ToBeVisibleAsync();
         await Page.GotoAsync("/notifications");
         await Expect(Page.GetByText(Resx.In(culture, "Notif_Attendance_Absent")).First).ToBeVisibleAsync(); // key proposed: no grade or name beyond the label
