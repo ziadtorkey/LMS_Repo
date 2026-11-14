@@ -2,7 +2,7 @@ namespace Lms.Shared.Messaging;
 
 /// <summary>
 /// One cell of the user's effective notification preferences: whether the event reaches the user on the channel, and why. A mandatory event cannot be switched
-/// off (409 <c>notification_mandatory</c>); a user can still opt out of SMS by number. A client admin sets which channels may be used at all; a user can only narrow.
+/// off (409 <c>notification_mandatory</c>); a user can still opt out of SMS by number. SMS cells of a guardian or a student are <c>Enabled</c> false with source <c>Policy</c> and cannot be switched on (409 <c>channel_not_allowed</c>, D72/D75): guardians get email and push, even for urgent announcements. A client admin sets which channels may be used at all; a user can only narrow.
 /// </summary>
 public sealed record EffectivePreferenceDto(string EventKey, string Channel, bool Enabled, string Source, bool Mandatory);
 

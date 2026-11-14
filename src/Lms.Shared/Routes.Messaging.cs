@@ -7,30 +7,46 @@ namespace Lms.Shared;
 public static partial class Routes
 {
     /// <summary>
-    /// GET (the inbox) and POST (<c>CreateConversationRequest</c> → <c>ConversationDto</c>; a direct conversation between the same pair answers 200 with the existing one,
-    /// a new one 201) — <c>Messaging.Send</c>; the <c>Messaging</c> feature flag; the rules matrix per participant: 403 <c>messaging_not_allowed</c>.
+    /// GET (the inbox) — <c>Messaging.View</c>; POST (<c>CreateConversationRequest</c> → <c>ConversationDto</c>; a direct conversation between the same pair answers 200 with the existing one,
+    /// a new one 201) — <c>Messaging.Send</c>; the <c>Messaging</c> feature flag; the rules matrix per participant (owner to member, never pairwise): 403 <c>messaging_not_allowed</c>;
+    /// only staff create a group (403 for a student or a guardian).
     /// </summary>
     public const string Conversations = "/api/conversations";
 
-    /// <summary>GET → <c>ConversationDto</c> — <c>Messaging.Send</c>; participant only (404 otherwise); PUT/DELETE of own mute and leaving are by the participant.</summary>
+    /// <summary>GET → <c>ConversationDto</c> — <c>Messaging.View</c>; participant only (404 otherwise); muting and leaving are their own routes below.</summary>
     public const string ConversationPattern = Conversations + "/{id:guid}";
 
-    /// <summary>GET <c>?beforeId=&amp;pageSize=</c> → <c>MessagePageDto</c> and POST (<c>SendMessageRequest</c> → <c>MessageDto</c>) — <c>Messaging.Send</c>; participant who has not left; 403 restricted; 409 <c>conversation_closed</c>; 400 <c>message_too_long</c>; 429 <c>rate_limited</c>.</summary>
+    /// <summary>GET <c>?beforeId=&amp;pageSize=</c> → <c>MessagePageDto</c> — <c>Messaging.View</c>; POST (<c>SendMessageRequest</c> → <c>MessageDto</c>) — <c>Messaging.Send</c>; participant who has not left; 403 restricted; 403 <c>group_read_only</c> for a student in any group (D74) and for anyone when the group is read-only; 409 <c>conversation_closed</c>; 400 <c>message_too_long</c>; 429 <c>rate_limited</c>.</summary>
     public const string ConversationMessagesPattern = ConversationPattern + "/messages";
 
     /// <summary>DELETE — <c>Messaging.Send</c>: the sender deletes their own message for everyone within <c>MessagingLimits.DeleteWindowMinutes</c> (409 <c>message_delete_window_closed</c> after); there is no edit.</summary>
     public const string MessagePattern = ConversationMessagesPattern + "/{mid:guid}";
 
+    /// <summary>PUT (<c>MuteConversationRequest</c> → <c>ConversationDto</c>) and DELETE — <c>Messaging.Send</c>; participant only (404 otherwise): mutes or unmutes the conversation for the caller (no new-message notice; the unread count still counts).</summary>
+    public const string ConversationMutePattern = ConversationPattern + "/mute";
+
+    /// <summary>POST (no body) — <c>Messaging.Send</c>; participant only: the caller leaves a group (history stays visible to the others); a direct conversation cannot be left (409 <c>conversation_closed</c>), it can be muted or blocked.</summary>
+    public const string ConversationLeavePattern = ConversationPattern + "/leave";
+
+    /// <summary>POST (<c>AddParticipantsRequest</c> → <c>ConversationDto</c>) — <c>Messaging.Send</c>; the group's owner only (404 for another participant); the rules matrix is checked <b>owner to member</b>, never pairwise; 403 <c>messaging_not_allowed</c>; a group never drops below three members (an admin or manager cannot make a private group of two with a student); at most <c>Messaging.MaxGroupSize</c>.</summary>
+    public const string ConversationParticipantsPattern = ConversationPattern + "/participants";
+
+    /// <summary>DELETE — <c>Messaging.Send</c>; the group's owner removes a member (the owner leaves with <c>…/leave</c>); 404 for another participant.</summary>
+    public const string ConversationParticipantPattern = ConversationParticipantsPattern + "/{userId:guid}";
+
+    /// <summary>PUT (no body → <c>ConversationDto</c>) and DELETE — <c>Messaging.Send</c> for the group's owner (a teacher), or <c>Messaging.Moderate</c> with <c>UnitAccess</c> at the conversation's unit for a moderator: sets or clears <c>IsReadOnly</c>, which is distinct from the moderator's lock (<c>IsLocked</c>, 409 <c>conversation_closed</c>). Only staff can post in a read-only group (D74: students never post in a group).</summary>
+    public const string ConversationReadOnlyPattern = ConversationPattern + "/read-only";
+
     /// <summary>POST (no body) — <c>Messaging.Send</c>: marks the conversation read up to its last message (<c>LastReadMessageId</c>).</summary>
     public const string ConversationReadPattern = ConversationPattern + "/read";
 
-    /// <summary>GET <c>?q=&amp;conversationId=&amp;page=</c> → <c>MessageSearchResultDto[]</c> — <c>Messaging.Send</c>; only the caller's conversations; minimum 2 characters, 50 results, a 200-hit window, rate limited.</summary>
+    /// <summary>GET <c>?q=&amp;conversationId=&amp;page=</c> → <c>MessageSearchResultDto[]</c> — <c>Messaging.View</c>; only the caller's conversations; minimum 2 characters, 50 results, a 200-hit window, rate limited.</summary>
     public const string MessageSearch = "/api/messages/search";
 
     /// <summary>POST (<c>ReportMessageRequest</c>) — <c>Messaging.Send</c>; a participant who is not the sender; 404 others; 409 <c>report_duplicate</c>.</summary>
     public const string MessageReportPattern = "/api/messages/{id:guid}/report";
 
-    /// <summary>GET → <c>BlockDto[]</c> — <c>Messaging.Send</c>; the caller's own blocks (no moderation route reaches them).</summary>
+    /// <summary>GET → <c>BlockDto[]</c> — <c>Messaging.View</c>; the caller's own blocks (no moderation route reaches them).</summary>
     public const string MyBlocks = "/api/me/blocks";
 
     /// <summary>PUT and DELETE — <c>Messaging.Send</c>: block or unblock a user (direct messages stop both ways; groups are unchanged; the blocked person is never told).</summary>
@@ -119,6 +135,11 @@ public static partial class Routes
 
     public static string Message(Guid conversationId, Guid messageId) => $"{ConversationMessages(conversationId)}/{messageId}";
     public static string ConversationRead(Guid id) => $"{Conversation(id)}/read";
+    public static string ConversationMute(Guid id) => $"{Conversation(id)}/mute";
+    public static string ConversationLeave(Guid id) => $"{Conversation(id)}/leave";
+    public static string ConversationParticipants(Guid id) => $"{Conversation(id)}/participants";
+    public static string ConversationParticipant(Guid id, Guid userId) => $"{ConversationParticipants(id)}/{userId}";
+    public static string ConversationReadOnly(Guid id) => $"{Conversation(id)}/read-only";
 
     public static string MessageSearchUrl(string query, Guid? conversationId = null, int page = 1) =>
         $"{MessageSearch}?q={Uri.EscapeDataString(query)}{(conversationId is { } c ? $"&conversationId={c}" : string.Empty)}&page={page}";

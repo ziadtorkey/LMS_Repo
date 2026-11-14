@@ -29,6 +29,10 @@
                               AdornmentIcon="@Icons.Material.Rounded.Search" data-testid="newconv-search" />
                 <div role="listbox" aria-multiselectable="true" aria-label="@L["MsgNew_Recipients"]" data-testid="newconv-list">
                     <ListGroupLabel Text="@L["Msg_Picker_People"]" />
+                    @if (NoStudents)
+                    {
+                        <SafeguardingOption /> @* D69: a manager or an org admin does not reach students privately; say why instead of showing nothing *@
+                    }
                     @foreach (var r in _recipients)
                     {
                         var recipient = r;
@@ -78,6 +82,8 @@
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
 
     private bool IsGroup => _picked.Count > 1;
+
+    private bool NoStudents => _summary is { CanCreateGroups: true } && !_summary.ReachableRoleKeys.Contains(Lms.Shared.Authorization.BuiltInRoles.Student);
 
     private bool CanStart => !_saving && _picked.Count > 0 && !string.IsNullOrWhiteSpace(_first) && (!IsGroup || (_summary?.CanCreateGroups == true && _picked.Count + 1 <= (_limits?.MaxGroupSize ?? int.MaxValue)));
 

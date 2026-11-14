@@ -203,4 +203,103 @@ public sealed class MessagesPageTests : ClientTestContext
 
         Assert.Equal("الرسائل", page.WaitForElement("[data-testid=msg-title]").TextContent.Trim());
     }
+
+    private async Task<ConversationDto> GroupAsync()
+    {
+        var teacher = _messaging.Me;
+        _messaging.Me = FakeMessagingApi.Huda;
+        var group = await _messaging.CreateConversationAsync(new CreateConversationRequest(ConversationKinds.Group,
+            [FakeMessagingApi.Sara.Id, FakeMessagingApi.Khaled.Id], "Class 10-A", "Welcome"));
+        _messaging.Me = teacher;
+        return group;
+    }
+
+    [Fact]
+    public async Task A_student_reads_a_group_without_a_composer_and_a_guardian_may_post()
+    {
+        var group = await GroupAsync();
+
+        var student = await OpenAsync(group.Id);
+        student.WaitForElement("[data-testid^=msg-bubble-]");
+        Assert.Contains("send a private message", student.Markup);
+        Assert.Empty(student.FindAll("textarea"));
+        await DisposeComponentsAsync();
+
+        _messaging.Me = FakeMessagingApi.Khaled;
+        Api.Me = Api.Me with { UserId = FakeMessagingApi.Khaled.Id };
+        var guardian = await OpenAsync(group.Id);
+        guardian.WaitForElement("[data-testid^=msg-bubble-]");
+        Assert.NotEmpty(guardian.FindAll("textarea"));
+    }
+
+    [Fact]
+    public async Task Mute_toggles_and_leaving_a_group_returns_to_the_inbox()
+    {
+        var group = await GroupAsync();
+        var page = await OpenAsync(group.Id);
+        page.WaitForElement("[data-testid^=msg-bubble-]");
+
+        await page.Find("[data-testid=msg-mute]").ClickAsync(new());
+        page.WaitForAssertion(() => Assert.Contains("Unmute", page.Find("[data-testid=msg-mute]").TextContent));
+        Assert.True((await _messaging.GetConversationAsync(group.Id)).Muted);
+
+        await page.Find("[data-testid=msg-leave]").ClickAsync(new());
+
+        Assert.EndsWith("messages", Services.GetRequiredService<Microsoft.AspNetCore.Components.NavigationManager>().Uri);
+        Assert.Empty((await _messaging.ListConversationsAsync()).Items);
+    }
+
+    [Fact]
+    public async Task A_direct_conversation_has_no_leave()
+    {
+        var conversation = await SeedAsync();
+        var page = await OpenAsync(conversation.Id);
+        page.WaitForElement("[data-testid^=msg-bubble-]");
+
+        Assert.NotEmpty(page.FindAll("[data-testid=msg-mute]"));
+        Assert.Empty(page.FindAll("[data-testid=msg-leave]"));
+    }
+
+    [Fact]
+    public async Task The_delete_window_closing_while_the_page_is_open_removes_the_button_and_says_why()
+    {
+        var conversation = await SeedAsync();
+        var page = await OpenAsync(conversation.Id);
+        page.WaitForElement("[data-testid^=msg-delete-]");
+        _now = T0.AddMinutes(MessagingLimits.DeleteWindowMinutes + 1); // the server clock moves on
+
+        await page.Find("[data-testid^=msg-delete-]").ClickAsync(new());
+
+        Assert.Contains("passed", page.WaitForElement("[data-testid=msg-error]").TextContent);
+        Assert.Empty(page.FindAll("[data-testid^=msg-delete-]"));
+    }
+
+    [Fact]
+    public async Task A_404_on_send_shows_the_not_found_state()
+    {
+        var group = await GroupAsync();
+        _messaging.Me = FakeMessagingApi.Khaled;
+        Api.Me = Api.Me with { UserId = FakeMessagingApi.Khaled.Id };
+        var page = await OpenAsync(group.Id);
+        page.WaitForElement("[data-testid^=msg-bubble-]");
+        await _messaging.LeaveAsync(group.Id); // removed from the group meanwhile
+
+        await page.InvokeAsync(() => page.FindComponent<Lms.Client.Components.Messaging.MessageComposer>().Instance.ValueChanged.InvokeAsync("hello"));
+        await page.InvokeAsync(() => page.FindComponent<Lms.Client.Components.Messaging.MessageComposer>().Instance.OnSend.InvokeAsync());
+
+        page.WaitForElement("[data-testid=msg-notfound]");
+    }
+
+    [Fact]
+    public async Task An_org_admin_sees_the_safeguarding_row_instead_of_students()
+    {
+        _messaging.Me = FakeMessagingApi.Admin;
+        Api.Me = Api.Me with { UserId = FakeMessagingApi.Admin.Id };
+        var page = await OpenAsync();
+
+        await page.Find("[data-testid=msg-new]").ClickAsync(new());
+        _dialogs.WaitForElement("[data-testid=newconv-list]");
+
+        Assert.Contains("No students here", _dialogs.Find("[data-testid=picker-d69]").TextContent);
+    }
 }

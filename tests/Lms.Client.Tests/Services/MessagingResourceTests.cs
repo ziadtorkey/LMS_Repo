@@ -17,7 +17,7 @@ public sealed class MessagingResourceTests : ClientTestContext
     [
         ProblemCodes.messaging_not_allowed, ProblemCodes.conversation_closed, ProblemCodes.message_too_long, ProblemCodes.message_delete_window_closed,
         ProblemCodes.report_duplicate, ProblemCodes.rate_limited, ProblemCodes.notification_mandatory, ProblemCodes.announcement_target_invalid,
-        ProblemCodes.announcement_not_editable, ProblemCodes.rules_looser_than_default,
+        ProblemCodes.announcement_not_editable, ProblemCodes.rules_looser_than_default, ProblemCodes.group_read_only, ProblemCodes.channel_not_allowed,
     ];
 
     private static IEnumerable<string> Keys()

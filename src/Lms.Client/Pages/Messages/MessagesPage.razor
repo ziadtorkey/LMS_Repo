@@ -4,6 +4,7 @@
 @using Lms.Client.Components.Messaging
 @using Lms.Client.Services.Api
 @using Lms.Client.Services.Messaging
+@using Lms.Shared
 @using Lms.Shared.Authorization
 @using Lms.Shared.Messaging
 @inject IMessagingApi Api
@@ -74,8 +75,19 @@ else
             {
                 <ThreadPane Label="@NameOf(_conversation)">
                     <Header>
-                        <ThreadHeader Name="@NameOf(_conversation)" IsGroup="_conversation.Kind == ConversationKinds.Group" MemberCount="_conversation.Participants.Count"
-                                      OnBack="BackAsync" />
+                        <ThreadHeader Name="@NameOf(_conversation)" IsGroup="_conversation.Kind == ConversationKinds.Group" MemberCount="_conversation.Participants.Count(p => !p.Left)"
+                                      OnBack="BackAsync" OnMembers="MembersAsync">
+                            <Actions>
+                                @if (PermState.Has(Permissions.Messaging.Send))
+                                {
+                                    <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="ToggleMuteAsync" data-testid="msg-mute">@(_conversation.Muted ? L["MsgPage_Unmute"] : L["MsgPage_Mute"])</MudButton>
+                                    @if (_conversation.Kind == ConversationKinds.Group)
+                                    {
+                                        <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Warning" OnClick="LeaveAsync" data-testid="msg-leave">@L["MsgPage_Leave"]</MudButton>
+                                    }
+                                }
+                            </Actions>
+                        </ThreadHeader>
                     </Header>
                     <ChildContent>
                         @if (_older is not null)
@@ -109,6 +121,10 @@ else
                         @if (_conversation.IsLocked)
                         {
                             <ComposerOff Reason="@L["MsgPage_Locked"]" />
+                        }
+                        else if (_conversation.IsReadOnly)
+                        {
+                            <ComposerOff Reason="@L["MsgPage_GroupReadOnly"]" /> @* D74: students read a group; they reply privately to the teacher *@
                         }
                         else if (!PermState.Has(Permissions.Messaging.Send))
                         {
@@ -216,11 +232,21 @@ else
     {
         if (_conversation is null || string.IsNullOrWhiteSpace(_draft)) return;
         _sending = true;
-        var sent = await ApiCalls.RunAsync(async () =>
+        var sent = false;
+        try
         {
             var message = await Api.SendAsync(_conversation.Id, new SendMessageRequest(_draft!, null));
             _messages.Add(message);
-        }, Navigation, L, m => _error = m);
+            sent = true;
+        }
+        catch (ApiProblemException ex) when (ex.Status == 404)
+        {
+            _notFound = true;
+        }
+        catch (Exception ex) when (ex is ApiProblemException or HttpRequestException)
+        {
+            _error = ex is ApiProblemException problem ? ProblemText.For(problem, L) : L["Error_Generic"].Value;
+        }
         _sending = false;
         if (!sent) return; // the draft stays so nothing typed is lost
         _draft = null;
@@ -230,12 +256,51 @@ else
 
     private async Task DeleteAsync(MessageDto message)
     {
-        await Run(async () =>
+        _error = null;
+        try
         {
             await Api.DeleteMessageAsync(message.ConversationId, message.Id);
             _messages[_messages.FindIndex(m => m.Id == message.Id)] = message with { Body = null, State = MessageStates.Deleted, CanDelete = false };
+        }
+        catch (ApiProblemException ex) when (ex.Code == ProblemCodes.message_delete_window_closed)
+        {
+            _messages[_messages.FindIndex(m => m.Id == message.Id)] = message with { CanDelete = false }; // the window closed while the page was open: stop offering it
+            _error = L["MsgPage_DeleteClosed"];
+        }
+        catch (ApiProblemException ex) when (ex.Status == 404)
+        {
+            _notFound = true; // the conversation is gone for this user
+        }
+        catch (Exception ex) when (ex is ApiProblemException or HttpRequestException)
+        {
+            _error = ex is ApiProblemException problem ? ProblemText.For(problem, L) : L["Error_Generic"].Value;
+        }
+    }
+
+    private async Task ToggleMuteAsync()
+    {
+        if (_conversation is null) return;
+        await Run(async () =>
+        {
+            if (_conversation.Muted) await Api.UnmuteAsync(_conversation.Id);
+            else await Api.MuteAsync(_conversation.Id, new MuteConversationRequest(null));
+            _conversation = await Api.GetConversationAsync(_conversation.Id);
         });
     }
+
+    private async Task LeaveAsync()
+    {
+        if (_conversation is null) return;
+        var left = await ApiCalls.RunAsync(() => Api.LeaveAsync(_conversation.Id), Navigation, L, m => _error = m);
+        if (left) Navigation.NavigateTo("messages");
+    }
+
+    private Task MembersAsync() =>
+        _conversation is null ? Task.CompletedTask : Dialogs.ShowAsync<GroupMembersDialog>(L["MsgPage_Members"], new DialogParameters<GroupMembersDialog>
+        {
+            { x => x.Participants, _conversation.Participants },
+            { x => x.OwnerUserId, _conversation.OwnerUserId },
+        });
 
     private Task NewAsync() =>
         DialogFlow.ShowAsync(Dialogs, L["MsgPage_New"], new DialogParameters<NewConversationDialog>(), () => InvokeAsync(async () =>

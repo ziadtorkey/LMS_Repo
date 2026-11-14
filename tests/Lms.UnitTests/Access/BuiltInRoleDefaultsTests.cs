@@ -7,9 +7,9 @@ namespace Lms.UnitTests.Access;
 public class BuiltInRoleDefaultsTests
 {
     [Fact]
-    public void Current_version_is_10_for_the_M6_wave_1_defaults()
+    public void Current_version_is_11_for_the_M6_wave_1_defaults()
     {
-        Assert.Equal(10, BuiltInRoleDefaults.CurrentVersion);
+        Assert.Equal(11, BuiltInRoleDefaults.CurrentVersion);
     }
 
     [Theory]
@@ -36,9 +36,13 @@ public class BuiltInRoleDefaultsTests
     [InlineData(Permissions.Grades.View, 8)]
     [InlineData(Permissions.Grades.ConfigureScales, 8)]
     [InlineData(Permissions.Grades.ViewOwn, 8)]
-    [InlineData(Permissions.Messaging.View, 10)]
-    [InlineData(Permissions.Messaging.Moderate, 10)]
-    [InlineData(Permissions.Comms.Manage, 10)]
+    [InlineData(Permissions.Attendance.Take, 10)]
+    [InlineData(Permissions.Attendance.ViewOwn, 10)]
+    [InlineData(Permissions.Excuses.Submit, 10)]
+    [InlineData(Permissions.Excuses.Escalate, 10)]
+    [InlineData(Permissions.Messaging.View, 11)]
+    [InlineData(Permissions.Messaging.Moderate, 11)]
+    [InlineData(Permissions.Comms.Manage, 11)]
     public void Each_permission_has_the_version_that_introduced_it(string permission, int version)
     {
         Assert.Equal(version, BuiltInRoleDefaults.IntroducedIn(permission));
@@ -52,8 +56,8 @@ public class BuiltInRoleDefaultsTests
             .Order(StringComparer.Ordinal);
 
         Assert.Equal(
-            ["Announcements.View", "Classes.View", "Enrollment.RequestException", "Enrollment.View", "Groups.View", "Library.View",
-             "Messaging.Send", "Messaging.View", "Staff.View", "Students.ApproveChanges", "Students.Update", "Students.View"],
+            ["Announcements.View", "Attendance.Edit", "Attendance.View", "Classes.View", "Enrollment.RequestException", "Enrollment.View", "Excuses.Escalate",
+             "Excuses.Review", "Groups.View", "Library.View", "Messaging.Send", "Messaging.View", "Staff.View", "Students.ApproveChanges", "Students.Update", "Students.View", "Timetable.View"],
             added);
     }
 
@@ -67,14 +71,16 @@ public class BuiltInRoleDefaultsTests
             .Where(p => BuiltInRoleDefaults.IntroducedIn(p) > 2)
             .ToList();
 
-        Assert.Equal(["Students.ViewChildren", "Grades.ViewOwn", "Messaging.View", "Messaging.Send", "Announcements.View"], added);
-        Assert.Equal(61, orgAdmin.Count);
+        Assert.Equal(["Students.ViewChildren", "Grades.ViewOwn", "Timetable.ViewOwn", "Attendance.ViewOwn", "Excuses.Submit", "Messaging.View", "Messaging.Send", "Announcements.View"], added);
+        Assert.Equal(69, orgAdmin.Count);
         Assert.Equal(33, orgAdmin.Count(p => BuiltInRoleDefaults.IntroducedIn(p) == 3));
         Assert.Equal(11, orgAdmin.Count(p => BuiltInRoleDefaults.IntroducedIn(p) == 5));
         Assert.Equal(2, orgAdmin.Count(p => BuiltInRoleDefaults.IntroducedIn(p) == 6));
         Assert.Equal(2, orgAdmin.Count(p => BuiltInRoleDefaults.IntroducedIn(p) == 7));
         Assert.Equal(5, orgAdmin.Count(p => BuiltInRoleDefaults.IntroducedIn(p) == 8));
-        Assert.Equal(6, orgAdmin.Count(p => BuiltInRoleDefaults.IntroducedIn(p) == 10));
+        Assert.Equal(3, orgAdmin.Count(p => BuiltInRoleDefaults.IntroducedIn(p) == 9));
+        Assert.Equal(5, orgAdmin.Count(p => BuiltInRoleDefaults.IntroducedIn(p) == 10));
+        Assert.Equal(6, orgAdmin.Count(p => BuiltInRoleDefaults.IntroducedIn(p) == 11));
         Assert.DoesNotContain(orgAdmin, p => p.StartsWith("Staff.", StringComparison.Ordinal));
     }
 
@@ -94,7 +100,7 @@ public class BuiltInRoleDefaultsTests
         Assert.Equal(["Modules.View"], Added(BuiltInRoles.Student));
         Assert.Empty(Added(BuiltInRoles.Counselor));
         Assert.Empty(Added(BuiltInRoles.Guardian));
-        Assert.Equal(24, BuiltInRoles.Get(BuiltInRoles.Teacher).DefaultPermissions.Count(p => BuiltInRoleDefaults.IntroducedIn(p) > 3));
+        Assert.Equal(27, BuiltInRoles.Get(BuiltInRoles.Teacher).DefaultPermissions.Count(p => BuiltInRoleDefaults.IntroducedIn(p) > 3));
     }
 
     [Fact]

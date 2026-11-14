@@ -29,6 +29,10 @@ public sealed class FakeMessagingApi : IMessagingApi
     private sealed class Conversation
     {
         public Guid Id = Guid.NewGuid();
+        public Guid OwnerId;
+        public Guid? ClassCourseId;
+        public HashSet<Guid> Left = [];
+        public Dictionary<Guid, DateTime?> Muted = [];
         public string Kind = ConversationKinds.Direct;
         public string? Title;
         public List<Guid> Participants = [];
@@ -81,11 +85,16 @@ public sealed class FakeMessagingApi : IMessagingApi
 
     private FakeMessagingUser User(Guid id) => Users.First(u => u.Id == id);
 
-    private ParticipantDto ToParticipant(Guid id) => new(id, User(id).NameAr, User(id).NameEn, User(id).RoleKey, false);
+    private static readonly string[] StaffRoles = [BuiltInRoles.Teacher, BuiltInRoles.Counselor, BuiltInRoles.Supervisor, BuiltInRoles.Manager, BuiltInRoles.OrgAdmin];
+
+    private ParticipantDto ToParticipant(Conversation c, Guid id) => new(id, User(id).NameAr, User(id).NameEn, User(id).RoleKey, c.Left.Contains(id));
+
+    /// <summary>D74, D77: students read a group and never post in it (they reply privately to the teacher); guardians may post in a teacher-run group that includes them.</summary>
+    private bool ReadOnlyForMe(Conversation c) => c.Kind == ConversationKinds.Group && Me.RoleKey == BuiltInRoles.Student;
 
     /// <summary>A conversation the caller takes part in; anyone else gets 404, as the server answers (an Org Admin included).</summary>
     private Conversation Mine(Guid id) =>
-        _conversations.FirstOrDefault(c => c.Id == id && c.Participants.Contains(Me.Id)) ?? throw Problem(404, ProblemCodes.not_found);
+        _conversations.FirstOrDefault(c => c.Id == id && c.Participants.Contains(Me.Id) && !c.Left.Contains(Me.Id)) ?? throw Problem(404, ProblemCodes.not_found); // a participant who left gets 404 too
 
     private IEnumerable<Message> Visible(Conversation c) => c.Messages.Where(m => !m.HiddenFrom.Contains(Me.Id));
 
@@ -106,11 +115,11 @@ public sealed class FakeMessagingApi : IMessagingApi
     }
 
     private ConversationDto ToDto(Conversation c) =>
-        new(c.Id, c.Kind, c.Title, [.. c.Participants.Select(ToParticipant)], c.Locked, false, c.CreatedAtUtc);
+        new(c.Id, c.Kind, c.Title, [.. c.Participants.Select(id => ToParticipant(c, id))], c.Locked, c.Muted.ContainsKey(Me.Id), c.CreatedAtUtc, ReadOnlyForMe(c), c.OwnerId, c.ClassCourseId);
 
     public Task<PagedResult<ConversationListItemDto>> ListConversationsAsync(int page = 1, int pageSize = Paging.DefaultPageSize, CancellationToken ct = default)
     {
-        var mine = _conversations.Where(c => c.Participants.Contains(Me.Id)).ToList();
+        var mine = _conversations.Where(c => c.Participants.Contains(Me.Id) && !c.Left.Contains(Me.Id)).ToList();
         var items = mine.Select(c =>
         {
             var visible = Visible(c).ToList();
@@ -118,8 +127,8 @@ public sealed class FakeMessagingApi : IMessagingApi
             var unreadFrom = lastRead is null ? 0 : visible.FindIndex(m => m.Id == lastRead) + 1;
             var unread = visible.Skip(unreadFrom).Count(m => m.SenderId != Me.Id && !m.Deleted);
             var last = visible.LastOrDefault();
-            return new ConversationListItemDto(c.Id, c.Kind, c.Title, [.. c.Participants.Select(ToParticipant)], unread,
-                last is null || last.Deleted ? null : last.Body, last?.CreatedAtUtc, false, c.Locked);
+            return new ConversationListItemDto(c.Id, c.Kind, c.Title, [.. c.Participants.Select(id => ToParticipant(c, id))], unread,
+                last is null || last.Deleted ? null : last.Body, last?.CreatedAtUtc, c.Muted.ContainsKey(Me.Id), c.Locked, ReadOnlyForMe(c)); // a muted conversation still counts its unread
         }).OrderByDescending(i => i.LastMessageAtUtc ?? DateTime.MinValue).ToList();
         return Task.FromResult(new PagedResult<ConversationListItemDto>([.. items.Skip((page - 1) * pageSize).Take(pageSize)], items.Count, page, pageSize));
     }
@@ -130,6 +139,7 @@ public sealed class FakeMessagingApi : IMessagingApi
         if (others.Count == 0 || others.Any(id => Users.All(u => u.Id != id))) throw Problem(400, ProblemCodes.validation_failed);
         if (request.Kind == ConversationKinds.Direct && others.Count != 1) throw Problem(400, ProblemCodes.validation_failed);
         if (request.Kind == ConversationKinds.Group && others.Count + 1 > Limits.MaxGroupSize) throw Problem(400, ProblemCodes.validation_failed);
+        if (request.Kind == ConversationKinds.Group && !StaffRoles.Contains(Me.RoleKey)) throw Problem(403, ProblemCodes.messaging_not_allowed); // only staff create groups (D69)
         if (others.Any(id => !Allowed(Me, User(id)))) throw Problem(403, ProblemCodes.messaging_not_allowed); // the rules matrix, per participant
 
         if (request.Kind == ConversationKinds.Direct)
@@ -138,7 +148,7 @@ public sealed class FakeMessagingApi : IMessagingApi
             if (existing is not null) return Task.FromResult(ToDto(existing)); // the same pair: the existing conversation (200)
         }
 
-        var conversation = new Conversation { Kind = request.Kind, Title = request.Title, Participants = [Me.Id, .. others], CreatedAtUtc = Now() };
+        var conversation = new Conversation { Kind = request.Kind, Title = request.Title, Participants = [Me.Id, .. others], CreatedAtUtc = Now(), OwnerId = Me.Id, ClassCourseId = request.ClassCourseId };
         _conversations.Add(conversation);
         if (!string.IsNullOrWhiteSpace(request.FirstMessage)) AddMessage(conversation, request.FirstMessage);
         return Task.FromResult(ToDto(conversation));
@@ -176,6 +186,7 @@ public sealed class FakeMessagingApi : IMessagingApi
     {
         var c = Mine(conversationId);
         if (c.Locked) throw Problem(409, ProblemCodes.conversation_closed);
+        if (ReadOnlyForMe(c)) throw Problem(403, ProblemCodes.group_read_only);
         if (string.IsNullOrWhiteSpace(request.Body)) throw Problem(400, ProblemCodes.validation_failed);
         if (request.Body.Length > Limits.MaxBodyLength) throw Problem(400, ProblemCodes.message_too_long);
         if ((request.AttachmentFileIds?.Count ?? 0) > Limits.MaxAttachments) throw Problem(400, ProblemCodes.validation_failed);
@@ -186,7 +197,7 @@ public sealed class FakeMessagingApi : IMessagingApi
     {
         var c = Mine(conversationId);
         var m = c.Messages.FirstOrDefault(x => x.Id == messageId) ?? throw Problem(404, ProblemCodes.not_found);
-        if (m.SenderId != Me.Id) throw Problem(403, "MissingPermission");
+        if (m.SenderId != Me.Id) throw Problem(404, ProblemCodes.not_found); // sender only: for anyone else the message is not theirs to touch
         if (Now() > m.CreatedAtUtc.AddMinutes(Limits.DeleteWindowMinutes)) throw Problem(409, ProblemCodes.message_delete_window_closed);
         m.Deleted = true;
         return Task.CompletedTask;
@@ -196,6 +207,55 @@ public sealed class FakeMessagingApi : IMessagingApi
     {
         var c = Mine(conversationId);
         c.LastRead[Me.Id] = Visible(c).LastOrDefault()?.Id;
+        return Task.CompletedTask;
+    }
+
+    public Task<ConversationDto> MuteAsync(Guid conversationId, MuteConversationRequest request, CancellationToken ct = default)
+    {
+        var c = Mine(conversationId);
+        if (request.UntilUtc is { } until && until <= Now()) throw Problem(400, ProblemCodes.validation_failed); // a date must lie in the future
+        c.Muted[Me.Id] = request.UntilUtc;
+        return Task.FromResult(ToDto(c));
+    }
+
+    public Task UnmuteAsync(Guid conversationId, CancellationToken ct = default)
+    {
+        Mine(conversationId).Muted.Remove(Me.Id);
+        return Task.CompletedTask;
+    }
+
+    public Task LeaveAsync(Guid conversationId, CancellationToken ct = default)
+    {
+        var c = Mine(conversationId);
+        if (c.Kind == ConversationKinds.Direct) throw Problem(409, ProblemCodes.conversation_closed); // a direct conversation is muted or blocked, not left
+        c.Left.Add(Me.Id);
+        return Task.CompletedTask;
+    }
+
+    public Task<ConversationDto> AddParticipantsAsync(Guid conversationId, AddParticipantsRequest request, CancellationToken ct = default)
+    {
+        var c = Mine(conversationId);
+        if (c.Kind != ConversationKinds.Group || c.OwnerId != Me.Id) throw Problem(404, ProblemCodes.not_found); // the owner only; another participant gets 404
+        var add = request.UserIds.Distinct().Where(id => !c.Participants.Contains(id) || c.Left.Contains(id)).ToList();
+        if (add.Any(id => Users.All(u => u.Id != id))) throw Problem(400, ProblemCodes.validation_failed);
+        if (add.Any(id => !Allowed(Me, User(id)))) throw Problem(403, ProblemCodes.messaging_not_allowed); // owner to member, never pairwise
+        if (c.Participants.Count(p => !c.Left.Contains(p)) + add.Count > Limits.MaxGroupSize) throw Problem(400, ProblemCodes.validation_failed);
+        foreach (var id in add)
+        {
+            c.Left.Remove(id);
+            if (!c.Participants.Contains(id)) c.Participants.Add(id);
+        }
+
+        return Task.FromResult(ToDto(c));
+    }
+
+    public Task RemoveParticipantAsync(Guid conversationId, Guid userId, CancellationToken ct = default)
+    {
+        var c = Mine(conversationId);
+        if (c.Kind != ConversationKinds.Group || c.OwnerId != Me.Id) throw Problem(404, ProblemCodes.not_found);
+        if (userId == Me.Id || !c.Participants.Contains(userId)) throw Problem(400, ProblemCodes.validation_failed); // the owner leaves with Leave
+        if (c.Participants.Count(p => !c.Left.Contains(p)) <= 3) throw Problem(400, ProblemCodes.validation_failed); // a group never drops below three
+        c.Left.Add(userId);
         return Task.CompletedTask;
     }
 
@@ -241,7 +301,7 @@ public sealed class FakeMessagingApi : IMessagingApi
     public Task<MessagingRulesSummaryDto> GetRulesSummaryAsync(CancellationToken ct = default) =>
         Task.FromResult(new MessagingRulesSummaryDto(
             [.. MessagingRuleDefaults.Roles.Where(r => Rules.Mode(Me.RoleKey, r) != MessagingRuleModes.Deny)],
-            Rules.Mode(Me.RoleKey, BuiltInRoles.Student) != MessagingRuleModes.Deny || Rules.Mode(Me.RoleKey, BuiltInRoles.Teacher) != MessagingRuleModes.Deny));
+            StaffRoles.Contains(Me.RoleKey) && MessagingRuleDefaults.Roles.Count(r => Rules.Mode(Me.RoleKey, r) != MessagingRuleModes.Deny) >= 2)); // only staff create groups (D69)
 
     public Task<MessagingLimitsDto> GetLimitsAsync(CancellationToken ct = default) => Task.FromResult(Limits);
 

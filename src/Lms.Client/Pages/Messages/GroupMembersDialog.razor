@@ -1,0 +1,33 @@
+@using Lms.Shared.Messaging
+@inject ICultureService Culture
+
+@* Who is in a group (members who left are marked): the people who can read it. *@
+<MudDialog>
+    <DialogContent>
+        <ul class="lms-item-list" aria-label="@L["MsgPage_Members"]" data-testid="members-list">
+            @foreach (var p in Participants)
+            {
+                <li class="lms-item" data-testid="@($"member-{p.UserId}")">
+                    <span class="lms-cell-strong">@Culture.Pick(p.NameAr, p.NameEn)</span>
+                    @if (p.UserId == OwnerUserId)
+                    {
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@L["MsgPage_Owner"]</MudChip>
+                    }
+                    @if (p.Left)
+                    {
+                        <span class="lms-muted">@L["MsgPage_Left"]</span>
+                    }
+                </li>
+            }
+        </ul>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Close()" data-testid="members-close">@L["Common_Close"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter, EditorRequired] public IReadOnlyList<ParticipantDto> Participants { get; set; } = [];
+    [Parameter] public Guid? OwnerUserId { get; set; }
+}
