@@ -1,10 +1,15 @@
 @using Lms.Shared.Grading
+@implements IAsyncDisposable
 @inject ICultureService Culture
+@inject IJSRuntime Js
+@inject IDialogService Dialogs
 
 @* The desktop grid: a real table with role=grid, category groups over their items, a result column per category, then Final and Band. The server
-   computed every number; this component only lays them out (L18). Sticky edges and scroll-padding come from lms-gb-wrap (spec 2.1). *@
+   computed every number; this component lays them out and runs the key map (L24, GridKeyboard.cs). Sticky edges and scroll-padding come from
+   lms-gb-wrap (spec 2.1). *@
 <div class="lms-gb-wrap" data-testid="gradebook-grid-wrap">
-    <table class="lms-gb" role="grid" aria-label="@L["Grd_Grid_Label"]" aria-describedby="gb-legend" data-testid="gradebook-grid">
+    <table @ref="_table" class="lms-gb" role="grid" aria-label="@L["Grd_Grid_Label"]" aria-describedby="gb-hint" aria-rowcount="@(Rows.Count + 2)" data-mode="@(Editing ? "edit" : "nav")"
+           data-testid="gradebook-grid">
         <colgroup>
             <col />
         </colgroup>
@@ -39,12 +44,16 @@
         <tbody>
             @for (var i = 0; i < Rows.Count; i++)
             {
-                <GradeRow @key="Rows[i].StudentId" Row="Rows[i]" Groups="Groups" Places="Places" FirstRow="i == 0" OnStudent="OnStudent" />
+                var r = i;
+                <GradeRow @key="Rows[i].StudentId" Row="Rows[i]" Groups="Groups" Places="Places" RowIndex="i" FocusCol="@(_row == i ? _col : -1)"
+                          EditingItem="@(Session?.Editing is { } e && e.Student == Rows[i].StudentId ? e.Item : null)" MenuCol="@(_menuRow == i ? _col : -1)"
+                          Session="Session" OnStudent="OnStudent" OnKey="OnCellKeyAsync" OnFocusCell="OnFocusCell" OnBlur="OnBlurAsync" OnMenu="OnMenuAsync" />
             }
         </tbody>
     </table>
 </div>
 <div id="gb-legend" class="lms-gb-legend" data-testid="gradebook-legend">
+    <span class="lms-gb-hint" id="gb-hint" data-testid="gradebook-hint">@(Editing ? L["Grd_Hint_Editing"] : L["Grd_Hint"])</span>
     <span><MudIcon Icon="@Icons.Material.Rounded.Assignment" Size="Size.Small" aria-hidden="true" />@L["Grd_Legend_Event"]</span>
     <span><span class="lms-gb-swatch" aria-hidden="true"></span>@L["Grd_Legend_Override"]</span>
     <span><span class="mini mini-warn">@L["Grd_Cell_NewerChip"]</span>@L["Grd_Legend_Newer"]</span>
@@ -57,4 +66,213 @@
     [Parameter, EditorRequired] public IReadOnlyList<GradeRowDto> Rows { get; set; } = [];
     [Parameter] public int Places { get; set; } = 2;
     [Parameter] public EventCallback<GradeRowDto> OnStudent { get; set; }
+
+    /// <summary>The edits of the page. Null makes the grid read only (a viewer without Grades.Manage).</summary>
+    [Parameter] public GradebookEditSession? Session { get; set; }
+
+    /// <summary>False when the gradebook is locked or the caller may not manage it: nothing can be edited.</summary>
+    [Parameter] public bool CanEdit { get; set; }
+
+    private ElementReference _table;
+    private IJSObjectReference? _module;
+    private int _row, _col, _menuRow = -1;
+    private bool _focusPending, _attached, _focusEdit, _menuFocusPending;
+
+    private bool Editing => Session?.Editing is not null;
+
+    /// <summary>The columns in order: each category's items then its result, then Final and Band (the flat index the key map moves over).</summary>
+    private List<GridColumn> Columns { get; set; } = [];
+
+    private sealed record GridColumn(GradeItemDto? Item);
+
+    protected override void OnParametersSet()
+    {
+        Columns = [.. Groups.SelectMany(g => g.Items.Select(i => new GridColumn(i)).Append(new GridColumn(null))), new GridColumn(null), new GridColumn(null)];
+        // A draft that survived a breakpoint change reopens in its cell.
+        if (Session?.Editing is { } e)
+        {
+            var r = Rows.ToList().FindIndex(x => x.StudentId == e.Student);
+            var c = Columns.FindIndex(x => x.Item?.Id == e.Item);
+            if (r >= 0 && c >= 0 && (r != _row || c != _col)) (_row, _col, _focusPending, _focusEdit) = (r, c, true, true);
+        }
+
+        _row = Math.Clamp(_row, 0, Math.Max(0, Rows.Count - 1));
+        _col = Math.Clamp(_col, 0, Math.Max(0, Columns.Count - 1));
+    }
+
+    private GradeRowDto RowAt(int r) => Rows[r];
+
+    private GradeItemDto? ItemAt(int c) => c >= 0 && c < Columns.Count ? Columns[c].Item : null;
+
+    private GradeCellDto CellOf(GradeRowDto row, GradeItemDto item) =>
+        row.Cells.FirstOrDefault(x => x.ItemId == item.Id) ?? new GradeCellDto(item.Id, null, GradeCellStates.Empty, null);
+
+    /// <summary>A manual score and an overridden score are typed in place; an event score is changed through the menu (an override needs a reason).</summary>
+    private bool IsEditable(int r, int c)
+    {
+        if (!CanEdit || Session is null || ItemAt(c) is not { } item) return false;
+        var state = CellOf(RowAt(r), item).State;
+        return item.IsManual ? state is not GradeCellStates.Excused : state is GradeCellStates.Override or GradeCellStates.NewerScoreExists;
+    }
+
+    private string Name(GradeRowDto row) => Culture.Pick(row.StudentNameAr, row.StudentNameEn);
+
+    private string Title(GradeItemDto item) => Culture.Pick(item.TitleAr, item.TitleEn);
+
+    private void OnFocusCell((int Row, int Col) at)
+    {
+        if (Editing) return;
+        (_row, _col, _menuRow) = (at.Row, at.Col, -1);
+    }
+
+    private async Task OnCellKeyAsync((int Row, int Col, KeyboardEventArgs Args) k)
+    {
+        if (Rows.Count == 0) return;
+        var a = k.Args;
+        var rtl = Culture.IsRightToLeft;
+        var result = GridKeyboard.Handle(a.Key, a.ShiftKey, a.CtrlKey, a.AltKey, k.Row, k.Col, Rows.Count, Columns.Count, rtl, Editing, IsEditable(k.Row, k.Col));
+        switch (result.Action)
+        {
+            case GridAction.Move:
+                (_row, _col, _menuRow) = (result.Row, result.Col, -1);
+                _focusPending = true;
+                break;
+            case GridAction.StartEdit:
+                await StartEditAsync(k.Row, k.Col);
+                break;
+            case GridAction.CommitStay:
+            case GridAction.CommitMoveNext:
+            case GridAction.CommitMovePrevious:
+                await CommitAsync(k.Row, k.Col, result);
+                break;
+            case GridAction.CancelEdit:
+                Session?.EndEdit();
+                Session?.Say(L["Grd_Edit_Cancelled"].Value);
+                (_row, _col, _focusPending, _focusEdit) = (k.Row, k.Col, true, false);
+                break;
+            case GridAction.OpenMenu:
+                if (CanEdit && ItemAt(k.Col) is not null)
+                {
+                    (_row, _col, _menuRow) = (k.Row, k.Col, k.Row);
+                    _menuFocusPending = true;
+                }
+
+                break;
+        }
+    }
+
+    /// <summary>
+    /// The input lost the focus (a click elsewhere, or the page is being left): what was typed is saved, as Enter would. A rejected value is announced and dropped;
+    /// the focus is left where the user put it.
+    /// </summary>
+    private async Task OnBlurAsync((int Row, int Col) at)
+    {
+        if (Session?.Editing is not { } e || ItemAt(at.Col) is not { } item || RowAt(at.Row).StudentId != e.Student || item.Id != e.Item) return;
+        var outcome = await Session.SetScoreAsync(RowAt(at.Row), item, Session.Draft);
+        Session.EndEdit();
+        if (outcome == SaveResult.Saved) Session.Dismiss(e.Student, e.Item);
+    }
+
+    private async Task StartEditAsync(int r, int c)
+    {
+        if (Session is null || ItemAt(c) is not { } item) return;
+        var row = RowAt(r);
+        if (Session.CanRetry(row.StudentId, item.Id))
+        {
+            await Session.RetryAsync(row.StudentId, item.Id); // Enter on a "not saved" cell tries again
+            return;
+        }
+
+        var cell = CellOf(row, item);
+        Session.BeginEdit(row.StudentId, item.Id, cell.Points is { } p ? GradeFormat.Points(p) : "");
+        Session.Say(string.Format(Culture.Current, L["Grd_Editing_Announce"].Value, Title(item), Name(row)));
+        (_row, _col, _focusPending, _focusEdit) = (r, c, true, true);
+    }
+
+    private async Task CommitAsync(int r, int c, GridKeyResult result)
+    {
+        if (Session is null || ItemAt(c) is not { } item) return;
+        var row = RowAt(r);
+        var outcome = await Session.SetScoreAsync(row, item, Session.Draft);
+        if (outcome == SaveResult.Invalid)
+        {
+            (_row, _col, _focusPending, _focusEdit) = (r, c, true, true); // stay in the cell: the reason was announced
+            return;
+        }
+
+        Session.EndEdit();
+        Dismiss(row, item, outcome);
+        var moved = result.Action != GridAction.CommitStay;
+        (_row, _col, _focusPending, _focusEdit) = (moved ? result.Row : r, moved ? result.Col : c, true, false);
+    }
+
+    /// <summary>A failed save leaves the cell as "not saved"; the grid keeps it there until Enter retries or the cell is saved again.</summary>
+    private void Dismiss(GradeRowDto row, GradeItemDto item, SaveResult outcome)
+    {
+        if (outcome == SaveResult.Saved) Session?.Dismiss(row.StudentId, item.Id);
+    }
+
+    private async Task OnMenuAsync((int Row, int Col, string Action) m)
+    {
+        _menuRow = -1;
+        _focusPending = true;
+        if (Session is null || ItemAt(m.Col) is not { } item || m.Action == "close") return;
+        var row = RowAt(m.Row);
+        switch (m.Action)
+        {
+            case "keep": await Session.KeepOverrideAsync(row, item); break;
+            case "drop": await Session.DropOverrideAsync(row, item); break;
+            case "excuse": await Session.ExcuseAsync(row, item); break;
+            case "clear": await Session.ClearAsync(row, item); break;
+            case "override": await OverrideAsync(row, item); break;
+        }
+    }
+
+    private async Task OverrideAsync(GradeRowDto row, GradeItemDto item)
+    {
+        if (Session is not null) await OverrideFlow.RunAsync(Dialogs, L, Session, row, item, Name(row), Title(item));
+        _focusPending = true; // focus returns to the cell
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        try
+        {
+            _module ??= await Js.InvokeAsync<IJSObjectReference>("import", "./js/gradebook-grid.js");
+            if (!_attached)
+            {
+                _attached = true;
+                await _module.InvokeVoidAsync("attach", _table);
+            }
+
+            if (_menuFocusPending)
+            {
+                _menuFocusPending = false;
+                await Task.Delay(50); // the popover renders its content a moment after it opens
+                await _module.InvokeVoidAsync("focusMenu");
+            }
+
+            if (_focusPending)
+            {
+                _focusPending = false;
+                await _module.InvokeVoidAsync("focusCell", _table, _row, _col, _focusEdit);
+            }
+        }
+        catch (JSException)
+        {
+            // Without the module the grid still works with the mouse; keys fall back to the browser's own behaviour.
+        }
+        catch (JSDisconnectedException)
+        {
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_module is not null)
+        {
+            try { await _module.DisposeAsync(); }
+            catch (JSDisconnectedException) { }
+        }
+    }
 }

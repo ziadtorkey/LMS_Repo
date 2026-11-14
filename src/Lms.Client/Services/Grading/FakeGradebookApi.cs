@@ -53,6 +53,12 @@ public sealed class FakeGradebookApi : IGradebookApi
     /// <summary>The caller can manage / publish (a teacher). False models a read-only viewer.</summary>
     public bool CanManage { get; set; } = true;
 
+    /// <summary>The term the last write (config, categories, new item or entries) was sent for; null when none was.</summary>
+    public Guid? LastWriteTermId { get; private set; }
+
+    /// <summary>When true the second demo term has the demo's items too (by default it has none yet).</summary>
+    public bool Term2HasItems { get; set; }
+
     /// <summary>The last grid query the page sent (term and paging), for tests.</summary>
     public GradebookQuery? LastQuery { get; private set; }
 
@@ -63,6 +69,15 @@ public sealed class FakeGradebookApi : IGradebookApi
     public bool NoStudents { get; set; }
 
     public bool NoItems { get; set; }
+
+    /// <summary>When set, the next <see cref="UpsertEntriesAsync"/> fails once with it (a failed save: revert, text, retry).</summary>
+    public Exception? NextUpsertFailure { get; set; }
+
+    /// <summary>When true, the next <see cref="UpsertEntriesAsync"/> answers 409 <c>concurrency_conflict</c> as if someone else saved the row first.</summary>
+    public bool ConflictOnce { get; set; }
+
+    /// <summary>How many save calls reached the fake (a test asserts that an unchanged cell sends nothing).</summary>
+    public int UpsertCalls { get; private set; }
 
     /// <summary>When set, the next <see cref="GetAsync"/> fails once (a load failure with Try again).</summary>
     public Exception? NextFailure { get; set; }
@@ -177,12 +192,13 @@ public sealed class FakeGradebookApi : IGradebookApi
             [.. _categories], NoItems ? [] : [.. _items.OrderBy(i => i.Order)], rows, total == 100m, total, Locked ? GradebookStates.Locked : GradebookStates.Open,
             Locked ? now : null, 0, CanManage, CanManage, now, now);
         // The second term of the demo year has no grade items yet.
-        if (query.TermId == Term2Id) book = book with { TermId = Term2Id, TermNameAr = "الفصل الثاني", TermNameEn = "Term 2", Items = [] };
+        if (query.TermId == Term2Id) book = book with { TermId = Term2Id, TermNameAr = "الفصل الثاني", TermNameEn = "Term 2", Items = Term2HasItems ? book.Items : [] };
         return Task.FromResult(Transform is null ? book : Transform(book, query));
     }
 
-    public Task<GradebookConfigDto> SaveConfigAsync(Guid classCourseId, SaveGradebookConfigRequest request, CancellationToken ct = default)
+    public Task<GradebookConfigDto> SaveConfigAsync(Guid classCourseId, SaveGradebookConfigRequest request, Guid? termId = null, CancellationToken ct = default)
     {
+        LastWriteTermId = termId;
         EnsureWritable(classCourseId);
         if (request.DecimalPlaces is < GradingLimits.DecimalPlacesMin or > GradingLimits.DecimalPlacesMax
             || !CategoryMethods.All.Contains(request.CategoryMethod) || !MissingPolicies.All.Contains(request.MissingPolicy))
@@ -191,8 +207,9 @@ public sealed class FakeGradebookApi : IGradebookApi
             request.CategoryMethod, request.MissingPolicy, RoundingModes.HalfUp));
     }
 
-    public Task<IReadOnlyList<GradeCategoryDto>> SaveCategoriesAsync(Guid classCourseId, SaveGradeCategoriesRequest request, CancellationToken ct = default)
+    public Task<IReadOnlyList<GradeCategoryDto>> SaveCategoriesAsync(Guid classCourseId, SaveGradeCategoriesRequest request, Guid? termId = null, CancellationToken ct = default)
     {
+        LastWriteTermId = termId;
         EnsureWritable(classCourseId);
         if (request.Categories.Any(c => c.Weight is < GradingLimits.WeightMin or > GradingLimits.WeightMax)) throw Problem(400, ProblemCodes.weights_invalid);
         _categories.Clear();
@@ -207,8 +224,9 @@ public sealed class FakeGradebookApi : IGradebookApi
             throw Problem(400, ProblemCodes.validation_failed);
     }
 
-    public Task<GradeItemDto> CreateItemAsync(Guid classCourseId, CreateGradeItemRequest request, CancellationToken ct = default)
+    public Task<GradeItemDto> CreateItemAsync(Guid classCourseId, CreateGradeItemRequest request, Guid? termId = null, CancellationToken ct = default)
     {
+        LastWriteTermId = termId;
         EnsureWritable(classCourseId);
         ValidateItem(request.CategoryId, request.TitleAr, request.TitleEn, request.MaxPoints);
         var item = new GradeItemDto(Guid.NewGuid(), request.CategoryId, request.TitleAr, request.TitleEn, null, null, true, request.MaxPoints,
@@ -237,10 +255,25 @@ public sealed class FakeGradebookApi : IGradebookApi
         return Task.CompletedTask;
     }
 
-    public Task<GradeRowDto> UpsertEntriesAsync(Guid classCourseId, UpsertEntriesRequest request, CancellationToken ct = default)
+    public Task<GradeRowDto> UpsertEntriesAsync(Guid classCourseId, UpsertEntriesRequest request, Guid? termId = null, CancellationToken ct = default)
     {
+        LastWriteTermId = termId;
         EnsureWritable(classCourseId);
         LastEntries = request;
+        UpsertCalls++;
+        if (NextUpsertFailure is { } fail)
+        {
+            NextUpsertFailure = null;
+            throw fail;
+        }
+
+        if (ConflictOnce)
+        {
+            ConflictOnce = false;
+            _versions[request.StudentId] = _versions.GetValueOrDefault(request.StudentId) + 1; // someone else saved first
+            throw Problem(409, ProblemCodes.concurrency_conflict);
+        }
+
         if (!_versions.TryGetValue(request.StudentId, out var version)) throw Problem(404, ProblemCodes.not_found);
         if (request.Version != version) throw Problem(409, ProblemCodes.concurrency_conflict);
         // Validate everything first so a bad change leaves the row untouched.
@@ -274,6 +307,12 @@ public sealed class FakeGradebookApi : IGradebookApi
                 break;
             case GradeEntryActions.Override:
                 _cells[key] = new GradeCellDto(change.ItemId, change.Points, GradeCellStates.Override, change.Reason);
+                break;
+            case GradeEntryActions.KeepOverride:
+                _cells[key] = Cell(student, change.ItemId) with { State = GradeCellStates.Override };
+                break;
+            case GradeEntryActions.DropOverride:
+                _cells[key] = Cell(student, change.ItemId) with { State = GradeCellStates.Event, Reason = null };
                 break;
             case GradeEntryActions.Excuse:
                 _cells[key] = new GradeCellDto(change.ItemId, null, GradeCellStates.Excused, change.Reason);

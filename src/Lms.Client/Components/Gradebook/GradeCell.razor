@@ -1,27 +1,66 @@
 @using Lms.Shared.Grading
 @inject ICultureService Culture
 
-@* One score cell. Every state has a text form (the aria-label) as well as a look, so nothing relies on colour alone (spec 2.2). Read only here; editing is Task 25. *@
-<td class="cell @StateClass" role="gridcell" tabindex="@(Focusable ? 0 : -1)" aria-label="@Label" data-state="@Cell.State" data-testid="@($"cell-{StudentId}-{Item.Id}")">
-    @switch (Cell.State)
+@* One score cell. Every state has a text form (the aria-label) as well as a look, so nothing relies on colour alone (spec 2.2). The grid owns the key
+   handling and the focus; the cell only shows its state and reports keys, clicks, typing and menu choices. *@
+<td class="cell @StateClass" role="gridcell" tabindex="@(Focused ? 0 : -1)" aria-label="@Label" data-state="@Cell.State" data-r="@RowIndex" data-c="@ColIndex"
+    data-testid="@($"cell-{StudentId}-{Item.Id}")" @onkeydown="e => OnKey.InvokeAsync(e)" @onclick="() => OnFocusCell.InvokeAsync()">
+    @if (Editing)
     {
-        case GradeCellStates.Excused:
-            <span class="mini mini-muted">@L["Grd_Cell_ExcusedChip"]</span>
-            break;
-        case GradeCellStates.Empty:
-            <span aria-hidden="true">–</span>
-            break;
-        default:
-            <span dir="ltr">@GradeFormat.Points(Cell.Points)</span>
-            @if (Cell.State == GradeCellStates.Event)
-            {
-                <MudIcon Icon="@Icons.Material.Rounded.Assignment" Size="Size.Small" Class="src" aria-hidden="true" />
-            }
-            @if (Cell.State == GradeCellStates.NewerScoreExists)
-            {
-                <span class="mini mini-warn">@L["Grd_Cell_NewerChip"]</span>
-            }
-            break;
+        <input class="lms-gb-input" type="text" inputmode="decimal" dir="ltr" autocomplete="off" value="@Draft" @oninput="e => OnDraft.InvokeAsync(e.Value?.ToString() ?? string.Empty)"
+               aria-label="@string.Format(Culture.Current, L["Grd_Edit_Label"].Value, StudentName, Culture.Pick(Item.TitleAr, Item.TitleEn))"
+               @onfocusout="() => OnBlur.InvokeAsync()" data-testid="@($"edit-{StudentId}-{Item.Id}")" />
+    }
+    else if (Ui is { Status: CellStatus.Saving })
+    {
+        <span class="lms-muted" dir="ltr">@GradeFormat.Points(Ui.Value)</span>
+        <MudProgressCircular Size="Size.Small" Indeterminate="true" aria-hidden="true" />
+        <span class="lms-visually-hidden">@L["Grd_Saving"]</span>
+    }
+    else if (Ui is { Status: CellStatus.Failed })
+    {
+        <span dir="ltr">@GradeFormat.Points(Ui.Value)</span>
+        <MudIcon Icon="@Icons.Material.Rounded.ErrorOutline" Size="Size.Small" aria-hidden="true" />
+        <span class="mini mini-warn">@L["Grd_NotSavedChip"]</span>
+    }
+    else
+    {
+        @switch (Cell.State)
+        {
+            case GradeCellStates.Excused:
+                <span class="mini mini-muted">@L["Grd_Cell_ExcusedChip"]</span>
+                break;
+            case GradeCellStates.Empty:
+                <span aria-hidden="true">–</span>
+                break;
+            default:
+                <span dir="ltr">@GradeFormat.Points(Cell.Points)</span>
+                @if (Cell.State == GradeCellStates.Event)
+                {
+                    <MudIcon Icon="@Icons.Material.Rounded.Assignment" Size="Size.Small" Class="src" aria-hidden="true" />
+                }
+                @if (Cell.State == GradeCellStates.NewerScoreExists)
+                {
+                    <span class="mini mini-warn">@L["Grd_Cell_NewerChip"]</span>
+                }
+                break;
+        }
+    }
+    @if (MenuOpen)
+    {
+        <MudOverlay Visible="true" DarkBackground="false" LockScroll="false" OnClick='() => OnMenu.InvokeAsync("close")' />
+        <MudPopover Open="true" Fixed="false" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" Class="lms-gb-menu" data-testid="cell-menu">
+            <div role="menu" aria-label="@L["Grd_Menu_Label"]" @onkeydown="OnMenuKey">
+                @if (Cell.State == GradeCellStates.NewerScoreExists)
+                {
+                    <MudButton Variant="Variant.Text" Size="Size.Small" OnClick='() => OnMenu.InvokeAsync("keep")' role="menuitem" data-testid="menu-keep">@L["Grd_Menu_Keep"]</MudButton>
+                    <MudButton Variant="Variant.Text" Size="Size.Small" OnClick='() => OnMenu.InvokeAsync("drop")' role="menuitem" data-testid="menu-drop">@L["Grd_Menu_Drop"]</MudButton>
+                }
+                <MudButton Variant="Variant.Text" Size="Size.Small" OnClick='() => OnMenu.InvokeAsync("override")' role="menuitem" data-testid="menu-override">@L["Grd_Menu_Override"]</MudButton>
+                <MudButton Variant="Variant.Text" Size="Size.Small" OnClick='() => OnMenu.InvokeAsync("excuse")' role="menuitem" data-testid="menu-excuse">@L["Grd_Menu_Excuse"]</MudButton>
+                <MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Error" OnClick='() => OnMenu.InvokeAsync("clear")' role="menuitem" data-testid="menu-clear">@L["Grd_Menu_Clear"]</MudButton>
+            </div>
+        </MudPopover>
     }
 </td>
 
@@ -29,14 +68,39 @@
     [Parameter, EditorRequired] public GradeCellDto Cell { get; set; } = default!;
     [Parameter, EditorRequired] public GradeItemDto Item { get; set; } = default!;
     [Parameter] public Guid StudentId { get; set; }
+    [Parameter] public string StudentName { get; set; } = "";
+    [Parameter] public int RowIndex { get; set; }
+    [Parameter] public int ColIndex { get; set; }
 
-    /// <summary>The one cell with tabindex 0 (the roving tabindex of the grid; the key model is Task 25).</summary>
-    [Parameter] public bool Focusable { get; set; }
+    /// <summary>The one cell with tabindex 0: the roving tab stop of the grid.</summary>
+    [Parameter] public bool Focused { get; set; }
 
-    private string StateClass => Cell.State switch
+    [Parameter] public bool Editing { get; set; }
+    [Parameter] public string Draft { get; set; } = "";
+    [Parameter] public bool MenuOpen { get; set; }
+
+    /// <summary>The unsaved or failed state of this cell, from the edit session.</summary>
+    [Parameter] public CellUi? Ui { get; set; }
+
+    [Parameter] public EventCallback<KeyboardEventArgs> OnKey { get; set; }
+    [Parameter] public EventCallback OnFocusCell { get; set; }
+
+    /// <summary>The input lost the focus while editing (a click elsewhere): the grid saves what was typed instead of dropping it.</summary>
+    [Parameter] public EventCallback OnBlur { get; set; }
+    [Parameter] public EventCallback<string> OnDraft { get; set; }
+    [Parameter] public EventCallback<string> OnMenu { get; set; }
+
+    private Task OnMenuKey(KeyboardEventArgs e) => e.Key == "Escape" ? OnMenu.InvokeAsync("close") : Task.CompletedTask;
+
+    private string StateClass => (Cell.State switch
     {
         GradeCellStates.Override or GradeCellStates.NewerScoreExists => "override",
         GradeCellStates.Excused => "excused",
+        _ => "",
+    }) + (Focused ? " focus-cell" : "") + (Editing ? " editing" : "") + Ui?.Status switch
+    {
+        CellStatus.Saving => " saving",
+        CellStatus.Failed => " error",
         _ => "",
     };
 
@@ -47,6 +111,8 @@
             var points = GradeFormat.Points(Cell.Points);
             var max = GradeFormat.Points(Item.MaxPoints);
             var title = Culture.Pick(Item.TitleAr, Item.TitleEn);
+            if (Ui is { Status: CellStatus.Failed } failed) return string.Format(Culture.Current, L["Grd_Cell_NotSaved"].Value, failed.Error);
+            if (Ui is { Status: CellStatus.Saving }) return L["Grd_Saving"].Value;
             return Cell.State switch
             {
                 GradeCellStates.Event => string.Format(Culture.Current, L["Grd_Cell_FromEvent"].Value, points, max, title),

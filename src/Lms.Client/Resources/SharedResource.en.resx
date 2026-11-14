@@ -1749,6 +1749,34 @@
   <data name="Band_Problem_Marked" xml:space="preserve"><value>This band is part of a problem the server found. See the list above.</value></data>
   <data name="ScaleDialog_ReadOnlyFrom" xml:space="preserve"><value>This comes from {0}. Change it there; here it can only be read.</value></data>
   <data name="ScaleDialog_ReadOnlyPreset" xml:space="preserve"><value>This is a preset. Add it to your unit from the preset menu to use it or change it.</value></data>
+  <data name="Grd_Hint" xml:space="preserve"><value>Enter or F2 edits, Enter again saves. Arrow keys move, Shift+F10 opens the cell menu.</value></data>
+  <data name="Grd_Hint_Editing" xml:space="preserve"><value>Editing: Enter saves and stays, Tab saves and moves on, Esc cancels.</value></data>
+  <data name="Grd_Edit_Label" xml:space="preserve"><value>{0}, {1}</value></data>
+  <data name="Grd_Editing_Announce" xml:space="preserve"><value>Editing {0} for {1}</value></data>
+  <data name="Grd_Edit_Cancelled" xml:space="preserve"><value>Edit cancelled</value></data>
+  <data name="Grd_Saving" xml:space="preserve"><value>Saving</value></data>
+  <data name="Grd_Saved" xml:space="preserve"><value>Saved</value></data>
+  <data name="Grd_NotSavedChip" xml:space="preserve"><value>Not saved</value></data>
+  <data name="Grd_Not_Saved" xml:space="preserve"><value>Not saved: {0}</value></data>
+  <data name="Grd_Cell_NotSaved" xml:space="preserve"><value>Not saved: {0}. Press Enter to try again.</value></data>
+  <data name="Grd_Retry" xml:space="preserve"><value>Try again</value></data>
+  <data name="Grd_Reject_NotANumber" xml:space="preserve"><value>Enter a number.</value></data>
+  <data name="Grd_Reject_OutOfRange" xml:space="preserve"><value>Out of range: use a score from 0 to {0}.</value></data>
+  <data name="Grd_Conflict_Reloaded" xml:space="preserve"><value>This row was changed by someone else. It has been reloaded; check it and try again.</value></data>
+  <data name="Grd_Menu_Label" xml:space="preserve"><value>Cell actions</value></data>
+  <data name="Grd_Menu_Override" xml:space="preserve"><value>Override score…</value></data>
+  <data name="Grd_Menu_Excuse" xml:space="preserve"><value>Excuse from this item</value></data>
+  <data name="Grd_Menu_Clear" xml:space="preserve"><value>Clear score</value></data>
+  <data name="Grd_Menu_Keep" xml:space="preserve"><value>Keep my override</value></data>
+  <data name="Grd_Menu_Drop" xml:space="preserve"><value>Use the newer score</value></data>
+  <data name="Grd_Override_Title" xml:space="preserve"><value>Override a score</value></data>
+  <data name="Grd_Override_About" xml:space="preserve"><value>{0}, {1} (out of {2})</value></data>
+  <data name="Grd_Override_Points" xml:space="preserve"><value>New score</value></data>
+  <data name="Grd_Override_Reason" xml:space="preserve"><value>Reason</value></data>
+  <data name="Grd_Override_ReasonHelp" xml:space="preserve"><value>Required. It is kept with the score and shown to staff.</value></data>
+  <data name="Grd_Override_ReasonRequired" xml:space="preserve"><value>Give a reason for the override.</value></data>
+  <data name="Grd_Override_Apply" xml:space="preserve"><value>Override</value></data>
+  <data name="Grd_Override_Short" xml:space="preserve"><value>Override</value></data>
   <data name="Grd_Term_Label" xml:space="preserve"><value>Term</value></data>
   <data name="Grd_Withdrew_On" xml:space="preserve"><value>Withdrew on {0}</value></data>
   <data name="Grd_Withdrawn" xml:space="preserve"><value>Withdrawn</value></data>

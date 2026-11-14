@@ -11,14 +11,14 @@ public sealed class GradebookApi(ApiHttp http) : IGradebookApi
     public Task<GradebookDto> GetAsync(Guid classCourseId, GradebookQuery query, CancellationToken ct = default) =>
         http.GetAsync<GradebookDto>(Routes.ClassCourseGradebook(classCourseId, query.TermId, query.Page, query.PageSize), ct);
 
-    public async Task<GradebookConfigDto> SaveConfigAsync(Guid classCourseId, SaveGradebookConfigRequest request, CancellationToken ct = default) =>
-        (await http.SendAsync<GradebookConfigDto>(HttpMethod.Put, Routes.ClassCourseGradebookConfig(classCourseId), request, ct))!;
+    public async Task<GradebookConfigDto> SaveConfigAsync(Guid classCourseId, SaveGradebookConfigRequest request, Guid? termId = null, CancellationToken ct = default) =>
+        (await http.SendAsync<GradebookConfigDto>(HttpMethod.Put, Routes.ClassCourseGradebookConfig(classCourseId, termId), request, ct))!;
 
-    public async Task<IReadOnlyList<GradeCategoryDto>> SaveCategoriesAsync(Guid classCourseId, SaveGradeCategoriesRequest request, CancellationToken ct = default) =>
-        (await http.SendAsync<List<GradeCategoryDto>>(HttpMethod.Put, Routes.ClassCourseGradebookCategories(classCourseId), request, ct))!;
+    public async Task<IReadOnlyList<GradeCategoryDto>> SaveCategoriesAsync(Guid classCourseId, SaveGradeCategoriesRequest request, Guid? termId = null, CancellationToken ct = default) =>
+        (await http.SendAsync<List<GradeCategoryDto>>(HttpMethod.Put, Routes.ClassCourseGradebookCategories(classCourseId, termId), request, ct))!;
 
-    public async Task<GradeItemDto> CreateItemAsync(Guid classCourseId, CreateGradeItemRequest request, CancellationToken ct = default) =>
-        (await http.SendAsync<GradeItemDto>(HttpMethod.Post, Routes.ClassCourseGradebookItems(classCourseId), request, ct))!;
+    public async Task<GradeItemDto> CreateItemAsync(Guid classCourseId, CreateGradeItemRequest request, Guid? termId = null, CancellationToken ct = default) =>
+        (await http.SendAsync<GradeItemDto>(HttpMethod.Post, Routes.ClassCourseGradebookItems(classCourseId, termId), request, ct))!;
 
     public async Task<GradeItemDto> UpdateItemAsync(Guid classCourseId, Guid itemId, UpdateGradeItemRequest request, CancellationToken ct = default) =>
         (await http.SendAsync<GradeItemDto>(HttpMethod.Put, Routes.ClassCourseGradebookItem(classCourseId, itemId), request, ct))!;
@@ -26,8 +26,8 @@ public sealed class GradebookApi(ApiHttp http) : IGradebookApi
     public Task DeleteItemAsync(Guid classCourseId, Guid itemId, CancellationToken ct = default) =>
         http.SendAsync(HttpMethod.Delete, Routes.ClassCourseGradebookItem(classCourseId, itemId), null, ct);
 
-    public async Task<GradeRowDto> UpsertEntriesAsync(Guid classCourseId, UpsertEntriesRequest request, CancellationToken ct = default) =>
-        (await http.SendAsync<GradeRowDto>(HttpMethod.Put, Routes.ClassCourseGradebookEntries(classCourseId), request, ct))!;
+    public async Task<GradeRowDto> UpsertEntriesAsync(Guid classCourseId, UpsertEntriesRequest request, Guid? termId = null, CancellationToken ct = default) =>
+        (await http.SendAsync<GradeRowDto>(HttpMethod.Put, Routes.ClassCourseGradebookEntries(classCourseId, termId), request, ct))!;
 
     public async Task<PublishResultDto> PublishAsync(Guid classCourseId, PublishItemsRequest request, CancellationToken ct = default) =>
         (await http.SendAsync<PublishResultDto>(HttpMethod.Post, Routes.ClassCourseGradebookPublish(classCourseId), request, ct))!;

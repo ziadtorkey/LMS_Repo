@@ -1,11 +1,12 @@
 @using Lms.Shared.Grading
 @inject ICultureService Culture
 
-@* One student row. It renders again only when its own row, the layout or the focusable flag changed, so one edit never re-renders sixty rows (spike S1). *@
+@* One student row. It renders again only when its own row, the layout, the focus or the edit state of one of its cells changed, so one edit never
+   re-renders sixty rows (spike S1). *@
 <tr data-testid="@($"grade-row-{Row.StudentId}")">
     <th scope="row" class="lms-gb-student">
         <MudButton Variant="Variant.Text" Size="Size.Small" Class="lms-gb-name" OnClick="() => OnStudent.InvokeAsync(Row)"
-                   data-testid="@($"student-{Row.StudentId}")">@Culture.Pick(Row.StudentNameAr, Row.StudentNameEn)</MudButton>
+                   data-testid="@($"student-{Row.StudentId}")">@Name</MudButton>
         <span class="lms-muted" dir="ltr">@Row.StudentNumber</span>
         @if (Row.IsWithdrawn)
         {
@@ -13,21 +14,34 @@
         }
     </th>
     @{
-        var first = true;
+        var col = 0;
     }
     @foreach (var group in Groups)
     {
         @foreach (var item in group.Items)
         {
-            var cell = Row.Cells.FirstOrDefault(c => c.ItemId == item.Id) ?? new GradeCellDto(item.Id, null, GradeCellStates.Empty, null);
-            <GradeCell Cell="cell" Item="item" StudentId="Row.StudentId" Focusable="FirstRow && first" />
-            first = false;
+            var c = col++;
+            var cell = Row.Cells.FirstOrDefault(x => x.ItemId == item.Id) ?? new GradeCellDto(item.Id, null, GradeCellStates.Empty, null);
+            var editing = EditingItem == item.Id;
+            <GradeCell Cell="cell" Item="item" StudentId="Row.StudentId" StudentName="@Name" RowIndex="RowIndex" ColIndex="c" Focused="FocusCol == c"
+                       Editing="editing" Draft="@(editing ? Session?.Draft ?? "" : "")" MenuOpen="MenuCol == c" Ui="Session?.Cell(Row.StudentId, item.Id)"
+                       OnKey="e => OnKey.InvokeAsync((RowIndex, c, e))" OnFocusCell="() => OnFocusCell.InvokeAsync((RowIndex, c))" OnBlur="() => OnBlur.InvokeAsync((RowIndex, c))"
+                       OnDraft="v => Session?.SetDraft(v)" OnMenu="a => OnMenu.InvokeAsync((RowIndex, c, a))" />
         }
+        var rc = col++;
         var result = Row.CategoryResults.FirstOrDefault(r => r.CategoryId == group.Category.Id);
-        <td class="lms-gb-catres" data-testid="@($"catres-{Row.StudentId}-{group.Category.Id}")" dir="ltr">@GradeFormat.Percent(result?.Percent, Places)</td>
+        <td class="lms-gb-catres @(FocusCol == rc ? "focus-cell" : null)" role="gridcell" tabindex="@(FocusCol == rc ? 0 : -1)" data-r="@RowIndex" data-c="@rc" dir="ltr"
+            data-testid="@($"catres-{Row.StudentId}-{group.Category.Id}")" @onkeydown="e => OnKey.InvokeAsync((RowIndex, rc, e))" @onclick="() => OnFocusCell.InvokeAsync((RowIndex, rc))">@GradeFormat.Percent(result?.Percent, Places)</td>
     }
-    <td class="lms-gb-final" data-testid="@($"final-{Row.StudentId}")" dir="ltr" title="@L["Grd_Final_Title"]">@GradeFormat.Percent(Row.FinalPercent, Places)</td>
-    <td data-testid="@($"band-{Row.StudentId}")">
+    @{
+        var fc = col++;
+        var bc = col++;
+    }
+    <td class="lms-gb-final @(FocusCol == fc ? "focus-cell" : null)" role="gridcell" tabindex="@(FocusCol == fc ? 0 : -1)" data-r="@RowIndex" data-c="@fc" dir="ltr"
+        data-testid="@($"final-{Row.StudentId}")" title="@L["Grd_Final_Title"]" @onkeydown="e => OnKey.InvokeAsync((RowIndex, fc, e))"
+        @onclick="() => OnFocusCell.InvokeAsync((RowIndex, fc))">@GradeFormat.Percent(Row.FinalPercent, Places)</td>
+    <td role="gridcell" class="@(FocusCol == bc ? "focus-cell" : null)" tabindex="@(FocusCol == bc ? 0 : -1)" data-r="@RowIndex" data-c="@bc" data-testid="@($"band-{Row.StudentId}")"
+        @onkeydown="e => OnKey.InvokeAsync((RowIndex, bc, e))" @onclick="() => OnFocusCell.InvokeAsync((RowIndex, bc))">
         @if (Row.BandCode is not null)
         {
             <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@Culture.Pick(Row.BandLabelAr ?? Row.BandCode, Row.BandLabelEn ?? Row.BandCode)</MudChip>
@@ -43,13 +57,30 @@
     [Parameter, EditorRequired] public GradeRowDto Row { get; set; } = default!;
     [Parameter, EditorRequired] public IReadOnlyList<CategoryGroup> Groups { get; set; } = [];
     [Parameter] public int Places { get; set; } = 2;
-    [Parameter] public bool FirstRow { get; set; }
+    [Parameter] public int RowIndex { get; set; }
+
+    /// <summary>The column of the one tab stop when it is in this row; -1 when it is elsewhere.</summary>
+    [Parameter] public int FocusCol { get; set; } = -1;
+
+    /// <summary>The item being edited in this row, if any.</summary>
+    [Parameter] public Guid? EditingItem { get; set; }
+
+    /// <summary>The column whose cell menu is open, or -1.</summary>
+    [Parameter] public int MenuCol { get; set; } = -1;
+
+    [Parameter] public GradebookEditSession? Session { get; set; }
     [Parameter] public EventCallback<GradeRowDto> OnStudent { get; set; }
+    [Parameter] public EventCallback<(int Row, int Col, KeyboardEventArgs Args)> OnKey { get; set; }
+    [Parameter] public EventCallback<(int Row, int Col)> OnFocusCell { get; set; }
+    [Parameter] public EventCallback<(int Row, int Col)> OnBlur { get; set; }
+    [Parameter] public EventCallback<(int Row, int Col, string Action)> OnMenu { get; set; }
+
+    private string Name => Culture.Pick(Row.StudentNameAr, Row.StudentNameEn);
 
     private GradeRowDto? _row;
     private IReadOnlyList<CategoryGroup>? _groups;
-    private int _places;
-    private bool _firstRow;
+    private int _places, _rowIndex, _focusCol, _menuCol, _stamp;
+    private Guid? _editing;
 
     /// <summary>What the first render showed (the parameters are already set here), so the next parameter update compares against it.</summary>
     protected override void OnInitialized() => Remember();
@@ -59,13 +90,18 @@
         _row = Row;
         _groups = Groups;
         _places = Places;
-        _firstRow = FirstRow;
+        _rowIndex = RowIndex;
+        _focusCol = FocusCol;
+        _menuCol = MenuCol;
+        _editing = EditingItem;
+        _stamp = Session?.Stamp(Row.StudentId) ?? 0;
     }
 
     /// <summary>Skips the render when nothing this row shows has changed (the grid hands every row the same stable objects).</summary>
     protected override bool ShouldRender()
     {
-        var changed = !ReferenceEquals(_row, Row) || !ReferenceEquals(_groups, Groups) || _places != Places || _firstRow != FirstRow;
+        var changed = !ReferenceEquals(_row, Row) || !ReferenceEquals(_groups, Groups) || _places != Places || _rowIndex != RowIndex || _focusCol != FocusCol
+                      || _menuCol != MenuCol || _editing != EditingItem || _stamp != (Session?.Stamp(Row.StudentId) ?? 0);
         Remember();
         return changed;
     }

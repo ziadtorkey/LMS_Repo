@@ -141,3 +141,11 @@ html:lang(ar), html:lang(ar) body { font-family: Cairo, "Segoe UI", Tahoma, Aria
 [dir=rtl] .lms-gb-swatch { clip-path:polygon(0 0,0 100%,100% 0); }
 .lms-gb-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; padding: 12px 16px; }
 .lms-band-bad { border-color: var(--mud-palette-error); }
+.lms-gb-input { inline-size: 100%; min-block-size: 28px; padding: 2px 8px; text-align: center; font: inherit; border: 1px solid var(--mud-palette-primary); border-radius: 6px; background: var(--mud-palette-background-gray); color: var(--mud-palette-text-primary); }
+.lms-gb-input:focus { outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--mud-palette-primary) 25%, transparent); }
+.lms-gb-score { text-align: center; padding: 6px 8px; border: 1px solid var(--mud-palette-lines-default); border-radius: 8px; background: var(--mud-palette-background-gray); color: inherit; font: inherit; }
+.lms-gb td:focus-visible, .lms-gb td.focus-cell { outline: 2px solid var(--mud-palette-primary); outline-offset: -2px; }
+@media (forced-colors: active) { .lms-gb td:focus-visible, .lms-gb td.focus-cell { outline: 2px solid Highlight; } }
+.lms-gb-menu { padding: 4px; min-inline-size: 200px; }
+.lms-gb-menu [role=menu] { display: flex; flex-direction: column; align-items: stretch; }
+.lms-gb-menu .mud-button-root { justify-content: flex-start; text-transform: none; }
