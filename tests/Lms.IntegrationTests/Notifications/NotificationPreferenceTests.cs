@@ -56,7 +56,6 @@ public sealed class NotificationPreferenceTests(LmsApiFactory factory)
             Assert.True(forEvent[NotificationChannels.InApp].Enabled);
             Assert.True(forEvent[NotificationChannels.InApp].Locked);
             Assert.True(forEvent[NotificationChannels.Email].Enabled);
-            Assert.False(forEvent[NotificationChannels.Sms].Enabled);
             Assert.False(forEvent[NotificationChannels.Push].Enabled);
             Assert.All(forEvent.Where(x => x.Key != NotificationChannels.InApp), x => Assert.False(x.Value.Locked));
         }
@@ -69,14 +68,13 @@ public sealed class NotificationPreferenceTests(LmsApiFactory factory)
 
         var put = await PutAsync(user,
             Pref(NotificationChannels.Email, false),
-            Pref(NotificationChannels.Sms, true),
+            Pref(NotificationChannels.Push, true),
             Pref(NotificationChannels.InApp, true));
 
         Assert.Equal(HttpStatusCode.NoContent, put.StatusCode);
         var all = (await GetAsync(user)).Where(x => x.EventKey == Event).ToDictionary(x => x.Channel);
         Assert.False(all[NotificationChannels.Email].Enabled);
-        Assert.True(all[NotificationChannels.Sms].Enabled);
-        Assert.False(all[NotificationChannels.Push].Enabled); // untouched: default
+        Assert.True(all[NotificationChannels.Push].Enabled);
         Assert.True(all[NotificationChannels.InApp].Enabled);
         // Other events keep their defaults.
         var other = (await GetAsync(user)).Where(x => x.EventKey == NotificationEvents.AccessRoleAssigned).ToDictionary(x => x.Channel);
@@ -89,16 +87,16 @@ public sealed class NotificationPreferenceTests(LmsApiFactory factory)
         var user = Guid.NewGuid();
         await PutAsync(user, Pref(NotificationChannels.Email, false), Pref(NotificationChannels.Push, true));
 
-        await PutAsync(user, Pref(NotificationChannels.Sms, true));
+        await PutAsync(user, Pref(NotificationChannels.InApp, true));
 
         var all = (await GetAsync(user)).Where(x => x.EventKey == Event).ToDictionary(x => x.Channel);
         Assert.True(all[NotificationChannels.Email].Enabled);  // back to the default
         Assert.False(all[NotificationChannels.Push].Enabled);  // back to the default
-        Assert.True(all[NotificationChannels.Sms].Enabled);
+        Assert.True(all[NotificationChannels.InApp].Enabled);
 
         // An empty list resets everything.
         Assert.Equal(HttpStatusCode.NoContent, (await PutAsync(user)).StatusCode);
-        Assert.False((await GetAsync(user)).Single(x => x.EventKey == Event && x.Channel == NotificationChannels.Sms).Enabled);
+        Assert.False((await GetAsync(user)).Single(x => x.EventKey == Event && x.Channel == NotificationChannels.Push).Enabled);
     }
 
     [Fact]
@@ -117,7 +115,7 @@ public sealed class NotificationPreferenceTests(LmsApiFactory factory)
     public async Task Unknown_event_channel_and_duplicates_are_400_and_change_nothing()
     {
         var user = Guid.NewGuid();
-        await PutAsync(user, Pref(NotificationChannels.Sms, true));
+        await PutAsync(user, Pref(NotificationChannels.Push, true));
 
         var bad = new[]
         {
@@ -134,7 +132,7 @@ public sealed class NotificationPreferenceTests(LmsApiFactory factory)
         }
 
         // The earlier saved state is intact after the refused requests.
-        Assert.True((await GetAsync(user)).Single(x => x.EventKey == Event && x.Channel == NotificationChannels.Sms).Enabled);
+        Assert.True((await GetAsync(user)).Single(x => x.EventKey == Event && x.Channel == NotificationChannels.Push).Enabled);
         // A JSON request with an empty body is refused too (no preferences at all is not "nothing to change").
         var emptyRequest = Request(HttpMethod.Put, user);
         emptyRequest.Content = new StringContent(string.Empty, System.Text.Encoding.UTF8, "application/json");
@@ -165,12 +163,11 @@ public sealed class NotificationPreferenceTests(LmsApiFactory factory)
         var bobSees = (await GetAsync(bob)).Where(x => x.EventKey == Event).ToDictionary(x => x.Channel);
         Assert.True(bobSees[NotificationChannels.Email].Enabled);
         Assert.False(bobSees[NotificationChannels.Push].Enabled);
-        await PutAsync(bob, Pref(NotificationChannels.Sms, true));
+        await PutAsync(bob, Pref(NotificationChannels.Push, true));
 
         var aliceSees = (await GetAsync(alice)).Where(x => x.EventKey == Event).ToDictionary(x => x.Channel);
         Assert.False(aliceSees[NotificationChannels.Email].Enabled);
         Assert.True(aliceSees[NotificationChannels.Push].Enabled);
-        Assert.False(aliceSees[NotificationChannels.Sms].Enabled);
 
         await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
         Assert.Equal(2, await db.Set<NotificationPreference>().CountAsync(x => x.UserId == alice));
@@ -189,16 +186,15 @@ public sealed class NotificationPreferenceTests(LmsApiFactory factory)
     public async Task IsEnabled_reflects_saved_value()
     {
         var user = Guid.NewGuid();
-        await PutAsync(user, Pref(NotificationChannels.Email, false), Pref(NotificationChannels.Sms, true));
+        await PutAsync(user, Pref(NotificationChannels.Email, false), Pref(NotificationChannels.Push, true));
 
         await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
         var preferences = new NotificationPreferences(db);
 
         Assert.False(await preferences.IsEnabledAsync(user, Event, NotificationChannels.Email));
-        Assert.True(await preferences.IsEnabledAsync(user, Event, NotificationChannels.Sms));
+        Assert.True(await preferences.IsEnabledAsync(user, Event, NotificationChannels.Push));
         // Defaults for what was never saved, per user and per event.
         Assert.True(await preferences.IsEnabledAsync(user, Event, NotificationChannels.InApp));
-        Assert.False(await preferences.IsEnabledAsync(user, Event, NotificationChannels.Push));
         Assert.True(await preferences.IsEnabledAsync(user, NotificationEvents.AccessRoleAssigned, NotificationChannels.Email));
         Assert.True(await preferences.IsEnabledAsync(Guid.NewGuid(), Event, NotificationChannels.Email));
     }

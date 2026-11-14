@@ -209,6 +209,65 @@ public static class ProblemCodes
     /// </summary>
     public const string recurrence_invalid = nameof(recurrence_invalid);
 
+    // M5 wave 2: timetable (M5 plan Task 2).
+    /// <summary>A slot clashes with another one of the term in <c>Block</c> mode (409); the answer lists the clashes, with details only for slots inside the caller's unit subtree (see <c>SlotConflictDto</c>).</summary>
+    public const string timetable_conflict = nameof(timetable_conflict);
+
+    /// <summary>A period overlaps another period of the same unit, or its start is not before its end (400).</summary>
+    public const string period_overlap = nameof(period_overlap);
+
+    /// <summary>A slot is used by a period that cannot be deleted (409).</summary>
+    public const string period_in_use = nameof(period_in_use);
+
+    /// <summary>The action needs a published slot: an exception on a draft slot (409).</summary>
+    public const string timetable_not_published = nameof(timetable_not_published);
+
+    /// <summary>An exception date is off the slot's weekday, outside the term, or two exceptions share a date (400).</summary>
+    public const string exception_date_invalid = nameof(exception_date_invalid);
+
+    /// <summary>The substitute of an exception is not a teacher of the client, is the teacher of record, or is already teaching in that period on that date (400).</summary>
+    public const string exception_substitute_invalid = nameof(exception_substitute_invalid);
+
+    // M6 wave 1: messaging, announcements, moderation and delivery (#613). A block is never revealed: a message to someone who blocked the sender is messaging_not_allowed.
+    /// <summary>The rules matrix, a restriction or a block does not let the sender write to this person (403).</summary>
+    public const string messaging_not_allowed = nameof(messaging_not_allowed);
+
+    /// <summary>A moderator locked the conversation (409).</summary>
+    public const string conversation_closed = nameof(conversation_closed);
+
+    /// <summary>The message is longer than the limit or empty (400).</summary>
+    public const string message_too_long = nameof(message_too_long);
+
+    /// <summary>The message can no longer be deleted for everyone: the 15-minute window passed (409).</summary>
+    public const string message_delete_window_closed = nameof(message_delete_window_closed);
+
+    /// <summary>The user already reported this message (409).</summary>
+    public const string report_duplicate = nameof(report_duplicate);
+
+    /// <summary>A cap or rate limit was reached: messages a minute, new conversations or announcements a day, searches, test emails (429).</summary>
+    public const string rate_limited = nameof(rate_limited);
+
+    /// <summary>A student cannot post in a group (D74), or the group was set read-only; guardians may post only in teacher-run groups that include guardians (D77), staff always (403).</summary>
+    public const string group_read_only = nameof(group_read_only);
+
+    /// <summary>A mandatory notification cannot be switched off (409).</summary>
+    public const string notification_mandatory = nameof(notification_mandatory);
+
+    /// <summary>A channel the client switched off cannot be switched on by a user (409).</summary>
+    public const string channel_not_allowed = nameof(channel_not_allowed);
+
+    /// <summary>A daily cap above the platform ceiling (400).</summary>
+    public const string comms_cap_above_ceiling = nameof(comms_cap_above_ceiling);
+
+    /// <summary>The announcement targets are not valid together, or a required target is missing (400).</summary>
+    public const string announcement_target_invalid = nameof(announcement_target_invalid);
+
+    /// <summary>A published announcement allows only its expiry, pin and withdrawal to change (409).</summary>
+    public const string announcement_not_editable = nameof(announcement_not_editable);
+
+    /// <summary>A client may only narrow the D69 messaging rules; this cell is looser than its default (400).</summary>
+    public const string rules_looser_than_default = nameof(rules_looser_than_default);
+
     // M5 wave 1: grading (M5 plan Task 1).
     /// <summary>The gradebook is locked: writes are refused and reads serve the lock snapshot (409, L5).</summary>
     public const string gradebook_locked = nameof(gradebook_locked);
@@ -242,4 +301,38 @@ public static class ProblemCodes
 
     /// <summary>The row changed since it was loaded (a stale <c>Version</c>); the answer carries the current value (409, L12).</summary>
     public const string concurrency_conflict = nameof(concurrency_conflict);
+
+    // M5 wave 3: attendance and excuses (M5 plan Task 3).
+    /// <summary>The edit window of a taken session is over; a teacher cannot edit, a user with <c>Attendance.Edit</c> can, with a reason (409, L14).</summary>
+    public const string attendance_edit_window_closed = nameof(attendance_edit_window_closed);
+
+    /// <summary>The session date is after the client's local today: it cannot be taken or created yet (409).</summary>
+    public const string attendance_session_future = nameof(attendance_session_future);
+
+    /// <summary>A Taken session has roster students without a status (422).</summary>
+    public const string attendance_unmarked_rows = nameof(attendance_unmarked_rows);
+
+    /// <summary>An edit after the window needs a reason of 1-500 characters (422, L14).</summary>
+    public const string attendance_reason_required = nameof(attendance_reason_required);
+
+    /// <summary>Confirm and live mappings apply only to a session proposed from a live session (409).</summary>
+    public const string attendance_not_a_proposal = nameof(attendance_not_a_proposal);
+
+    /// <summary>The excuse is outside the policy; the <c>reason</c> extension is one of <c>ExcusePolicyViolations</c> (409, L13).</summary>
+    public const string excuse_out_of_policy = nameof(excuse_out_of_policy);
+
+    /// <summary>The caller may not submit for this student under <c>Excuses.Submitters</c> (403, D61).</summary>
+    public const string excuse_submitter_not_allowed = nameof(excuse_submitter_not_allowed);
+
+    /// <summary>The reviewer is the submitter of the excuse (409, L14).</summary>
+    public const string excuse_reviewer_is_submitter = nameof(excuse_reviewer_is_submitter);
+
+    /// <summary>A rejection needs a comment of 1-500 characters (400).</summary>
+    public const string excuse_comment_required = nameof(excuse_comment_required);
+
+    /// <summary>The attachment type, size or content is not accepted (400, L10).</summary>
+    public const string excuse_attachment_invalid = nameof(excuse_attachment_invalid);
+
+    /// <summary>The excuse is no longer <c>Submitted</c> or <c>Escalated</c>: it cannot be decided, escalated or withdrawn (409).</summary>
+    public const string excuse_not_pending = nameof(excuse_not_pending);
 }

@@ -391,7 +391,6 @@
   <data name="Notif_Preferences" xml:space="preserve"><value>تفضيلات الإشعارات</value></data>
   <data name="Channel_InApp" xml:space="preserve"><value>داخل المنصة</value></data>
   <data name="Channel_Email" xml:space="preserve"><value>البريد الإلكتروني</value></data>
-  <data name="Channel_Sms" xml:space="preserve"><value>رسائل نصية</value></data>
   <data name="Channel_Push" xml:space="preserve"><value>إشعارات فورية</value></data>
   <data name="Notif_Access_RoleAssigned" xml:space="preserve"><value>تم منحك دور {RoleName} في {OrgUnitName}.</value></data>
   <data name="Notif_Access_RoleRemoved" xml:space="preserve"><value>تمت إزالة دورك {RoleName} في {OrgUnitName}.</value></data>
@@ -1821,4 +1820,238 @@
   <data name="NavSection_Security" xml:space="preserve"><value>الأمان والإعدادات</value></data>
   <data name="App_Subtitle" xml:space="preserve"><value>المنصة الأكاديمية</value></data>
   <data name="Nav_Main" xml:space="preserve"><value>التنقل الرئيسي</value></data>
+  <data name="Error_timetable_conflict" xml:space="preserve"><value>تتعارض هذه الحصة مع حصة أخرى: المعلم أو الفصل محجوز في الوقت نفسه.</value></data>
+  <data name="Error_period_overlap" xml:space="preserve"><value>تتداخل الفترة مع فترة أخرى في هذه المدرسة، أو لا تبدأ قبل نهايتها.</value></data>
+  <data name="Error_period_in_use" xml:space="preserve"><value>تستخدم إحدى حصص الجدول هذه الفترة، لذا لا يمكن حذفها.</value></data>
+  <data name="Error_timetable_not_published" xml:space="preserve"><value>هذه الحصة ما زالت مسودة. انشر الجدول أولاً.</value></data>
+  <data name="Error_exception_date_invalid" xml:space="preserve"><value>يجب أن يكون التاريخ يوم دراسة لهذه الحصة داخل الفصل، وللحصة استثناء واحد فقط في اليوم الواحد.</value></data>
+  <data name="Error_exception_substitute_invalid" xml:space="preserve"><value>يجب أن يكون البديل معلماً آخر في مجموعة المدارس ولا يكون مشغولاً في هذه الفترة في ذلك التاريخ.</value></data>
+  <data name="Setting_Timetable_WorkingDays" xml:space="preserve"><value>أيام الدراسة في الأسبوع</value></data>
+  <data name="SettingValue_Timetable_WorkingDays_Sun" xml:space="preserve"><value>الأحد</value></data>
+  <data name="SettingValue_Timetable_WorkingDays_Mon" xml:space="preserve"><value>الاثنين</value></data>
+  <data name="SettingValue_Timetable_WorkingDays_Tue" xml:space="preserve"><value>الثلاثاء</value></data>
+  <data name="SettingValue_Timetable_WorkingDays_Wed" xml:space="preserve"><value>الأربعاء</value></data>
+  <data name="SettingValue_Timetable_WorkingDays_Thu" xml:space="preserve"><value>الخميس</value></data>
+  <data name="SettingValue_Timetable_WorkingDays_Fri" xml:space="preserve"><value>الجمعة</value></data>
+  <data name="SettingValue_Timetable_WorkingDays_Sat" xml:space="preserve"><value>السبت</value></data>
+  <data name="Setting_Timetable_ConflictMode" xml:space="preserve"><value>تعارضات الجدول</value></data>
+  <data name="SettingValue_Timetable_ConflictMode_Block" xml:space="preserve"><value>منع الحفظ</value></data>
+  <data name="SettingValue_Timetable_ConflictMode_Warn" xml:space="preserve"><value>الحفظ مع تنبيه</value></data>
+  <data name="Tt_SlotState_Draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="Tt_SlotState_Published" xml:space="preserve"><value>منشور</value></data>
+  <data name="Tt_ConflictKind_TeacherDoubleBooked" xml:space="preserve"><value>المعلم محجوز في هذا الوقت</value></data>
+  <data name="Tt_ConflictKind_ClassDoubleBooked" xml:space="preserve"><value>الفصل محجوز في هذا الوقت</value></data>
+  <data name="Tt_ExceptionKind_Substitute" xml:space="preserve"><value>معلم بديل</value></data>
+  <data name="Tt_ExceptionKind_Cancelled" xml:space="preserve"><value>ملغاة</value></data>
+  <data name="Tt_ExceptionKind_Moved" xml:space="preserve"><value>منقولة إلى فترة أخرى</value></data>
+  <data name="Tt_SlotBadge_Conflict" xml:space="preserve"><value>تعارض</value></data>
+  <data name="Tt_SlotBadge_HasException" xml:space="preserve"><value>فيها تغيير</value></data>
+  <data name="Tt_SlotBadge_DraftChange" xml:space="preserve"><value>غير منشورة بعد التعديل</value></data>
+  <data name="Tt_CopySkip_ClassCourseMissing" xml:space="preserve"><value>المقرر غير مدرَّس في هذا الفصل الدراسي</value></data>
+  <data name="Tt_CopySkip_TeacherMissing" xml:space="preserve"><value>المعلم لم يعد مكلفاً</value></data>
+  <data name="Tt_CopySkip_PeriodMissing" xml:space="preserve"><value>الفترة لم تعد موجودة</value></data>
+  <data name="Tt_CopySkip_SlotExists" xml:space="preserve"><value>في الفصل الدراسي الهدف حصة في هذا الموضع</value></data>
+  <data name="Perm_Timetable_View" xml:space="preserve"><value>عرض الجداول والفترات</value></data>
+  <data name="Perm_Timetable_Manage" xml:space="preserve"><value>بناء الجداول ونشرها</value></data>
+  <data name="Perm_Timetable_Configure" xml:space="preserve"><value>ضبط الفترات</value></data>
+  <data name="Perm_Timetable_ViewOwn" xml:space="preserve"><value>عرض الجدول الخاص</value></data>
+  <data name="AuditEntity_Period" xml:space="preserve"><value>الفترة</value></data>
+  <data name="AuditEntity_TimetableSlot" xml:space="preserve"><value>حصة الجدول</value></data>
+  <data name="AuditEntity_TimetableException" xml:space="preserve"><value>استثناء الجدول</value></data>
+  <data name="PermModule_Timetable" xml:space="preserve"><value>الجدول الدراسي</value></data>
+  <data name="Error_attendance_edit_window_closed" xml:space="preserve"><value>انتهت مهلة تعديل هذا التحضير. اطلب من المدير أو الأخصائي تصحيحه.</value></data>
+  <data name="Error_attendance_session_future" xml:space="preserve"><value>هذه الحصة في تاريخ لاحق. يمكن تسجيل الحضور لليوم أو لما قبله فقط.</value></data>
+  <data name="Error_attendance_unmarked_rows" xml:space="preserve"><value>سجّل حالة كل طالب قبل الحفظ.</value></data>
+  <data name="Error_attendance_reason_required" xml:space="preserve"><value>اكتب سببًا (حتى 500 حرف) لتعديل الحضور بعد انتهاء المهلة.</value></data>
+  <data name="Error_attendance_not_a_proposal" xml:space="preserve"><value>يمكن اعتماد الحضور المقترح من الحصة المباشرة فقط.</value></data>
+  <data name="Error_excuse_out_of_policy" xml:space="preserve"><value>هذا العذر خارج سياسة المدرسة.</value></data>
+  <data name="Error_excuse_submitter_not_allowed" xml:space="preserve"><value>يمكن لولي الأمر فقط تقديم عذر لهذا الطالب.</value></data>
+  <data name="Error_excuse_reviewer_is_submitter" xml:space="preserve"><value>لا يمكنك مراجعة عذر قدّمته بنفسك.</value></data>
+  <data name="Error_excuse_comment_required" xml:space="preserve"><value>اكتب تعليقًا (حتى 500 حرف) لرفض العذر.</value></data>
+  <data name="Error_excuse_attachment_invalid" xml:space="preserve"><value>يجب أن يكون المرفق ملف JPEG أو PNG أو WebP أو PDF ضمن الحجم المسموح.</value></data>
+  <data name="Error_excuse_not_pending" xml:space="preserve"><value>تم البتّ في هذا العذر أو سحبه بالفعل.</value></data>
+  <data name="Exc_Violation_TooLate" xml:space="preserve"><value>مضت على الغياب مدة أطول من المسموح لتقديم العذر.</value></data>
+  <data name="Exc_Violation_ReasonNotAllowed" xml:space="preserve"><value>هذا السبب غير مقبول لدى المدرسة.</value></data>
+  <data name="Exc_Violation_AttachmentRequired" xml:space="preserve"><value>هذا السبب يتطلب مرفقًا.</value></data>
+  <data name="Exc_Violation_NothingToExcuse" xml:space="preserve"><value>لا يوجد في الأيام المختارة غياب أو تأخر لتقديم عذر عنه.</value></data>
+  <data name="Exc_Violation_DatesInvalid" xml:space="preserve"><value>التواريخ في المستقبل أو معكوسة.</value></data>
+  <data name="Setting_Attendance_GenerateDaysAhead" xml:space="preserve"><value>عدد الأيام التي تُنشأ حصصها مسبقًا من الجدول</value></data>
+  <data name="Setting_Attendance_EditWindowHours" xml:space="preserve"><value>عدد الساعات التي يمكن للمعلم فيها تعديل الحضور بعد تسجيله</value></data>
+  <data name="Setting_Attendance_LiveMinPercent" xml:space="preserve"><value>نسبة الحضور في الحصة المباشرة التي تُعدّ حضورًا (%)</value></data>
+  <data name="Setting_Attendance_LateAfterMinutes" xml:space="preserve"><value>الدقائق بعد البدء التي تُعدّ تأخرًا</value></data>
+  <data name="Setting_Attendance_AbsentThreshold" xml:space="preserve"><value>عدد الغيابات الذي يطلق التنبيه</value></data>
+  <data name="Setting_Attendance_ThresholdWindowDays" xml:space="preserve"><value>عدد الأيام المحتسبة في تنبيه الغياب</value></data>
+  <data name="Setting_Attendance_LateWeightPercent" xml:space="preserve"><value>يُحتسب التأخر بهذه النسبة من الغياب (%)</value></data>
+  <data name="Setting_Excuses_Submitters" xml:space="preserve"><value>من يمكنه تقديم عذر</value></data>
+  <data name="SettingValue_Excuses_Submitters_GuardiansOnly" xml:space="preserve"><value>أولياء الأمور فقط</value></data>
+  <data name="SettingValue_Excuses_Submitters_GuardiansAndStudents" xml:space="preserve"><value>أولياء الأمور والطلاب</value></data>
+  <data name="Setting_Excuses_MaxDaysAfterAbsence" xml:space="preserve"><value>عدد أيام الدراسة المسموحة لتقديم العذر بعد الغياب</value></data>
+  <data name="Setting_Excuses_AllowedReasons" xml:space="preserve"><value>أسباب الأعذار المقبولة</value></data>
+  <data name="Setting_Excuses_AttachmentRequiredReasons" xml:space="preserve"><value>الأسباب التي تتطلب مرفقًا</value></data>
+  <data name="SettingValue_Excuses_AllowedReasons_Illness" xml:space="preserve"><value>مرض</value></data>
+  <data name="SettingValue_Excuses_AttachmentRequiredReasons_Illness" xml:space="preserve"><value>مرض</value></data>
+  <data name="Exc_Reason_Illness" xml:space="preserve"><value>مرض</value></data>
+  <data name="SettingValue_Excuses_AllowedReasons_Family" xml:space="preserve"><value>ظروف أسرية</value></data>
+  <data name="SettingValue_Excuses_AttachmentRequiredReasons_Family" xml:space="preserve"><value>ظروف أسرية</value></data>
+  <data name="Exc_Reason_Family" xml:space="preserve"><value>ظروف أسرية</value></data>
+  <data name="SettingValue_Excuses_AllowedReasons_Official" xml:space="preserve"><value>التزام رسمي</value></data>
+  <data name="SettingValue_Excuses_AttachmentRequiredReasons_Official" xml:space="preserve"><value>التزام رسمي</value></data>
+  <data name="Exc_Reason_Official" xml:space="preserve"><value>التزام رسمي</value></data>
+  <data name="SettingValue_Excuses_AllowedReasons_Other" xml:space="preserve"><value>أخرى</value></data>
+  <data name="SettingValue_Excuses_AttachmentRequiredReasons_Other" xml:space="preserve"><value>أخرى</value></data>
+  <data name="Exc_Reason_Other" xml:space="preserve"><value>أخرى</value></data>
+  <data name="Setting_Excuses_MaxAttachmentMb" xml:space="preserve"><value>أكبر حجم لمرفق العذر (ميغابايت)</value></data>
+  <data name="Setting_Excuses_AttachmentRetentionDays" xml:space="preserve"><value>عدد أيام الاحتفاظ بمرفقات الأعذار المرفوضة أو المسحوبة</value></data>
+  <data name="NotifEvent_Attendance_Absent" xml:space="preserve"><value>تسجيل غياب أو تأخر</value></data>
+  <data name="Notif_Attendance_Absent" xml:space="preserve"><value>سُجّلت حالة {Status} للطالب {StudentName} في {CourseName} بتاريخ {Date}.</value></data>
+  <data name="NotifEvent_Excuses_Decided" xml:space="preserve"><value>البتّ في العذر</value></data>
+  <data name="Notif_Excuses_Decided" xml:space="preserve"><value>تم البتّ في عذر {StudentName}: {Decision}.</value></data>
+  <data name="NotifEvent_Excuses_Escalated" xml:space="preserve"><value>عذر محوَّل إليك</value></data>
+  <data name="Notif_Excuses_Escalated" xml:space="preserve"><value>حُوِّل إليك عذر خاص بالطالب {StudentName}.</value></data>
+  <data name="NotifEvent_Attendance_ThresholdCrossed" xml:space="preserve"><value>بلوغ حدّ الغياب</value></data>
+  <data name="Notif_Attendance_ThresholdCrossed" xml:space="preserve"><value>بلغ الطالب {StudentName} عدد {Absences} غيابات خلال آخر {WindowDays} يومًا.</value></data>
+  <data name="Att_Status_Present" xml:space="preserve"><value>حاضر</value></data>
+  <data name="Att_Status_Absent" xml:space="preserve"><value>غائب</value></data>
+  <data name="Att_Status_Late" xml:space="preserve"><value>متأخر</value></data>
+  <data name="Att_Status_Excused" xml:space="preserve"><value>غياب بعذر</value></data>
+  <data name="Att_Source_Timetable" xml:space="preserve"><value>من الجدول</value></data>
+  <data name="Att_Source_AdHoc" xml:space="preserve"><value>أضافها المعلم</value></data>
+  <data name="Att_Source_Live" xml:space="preserve"><value>مقترحة من حصة مباشرة</value></data>
+  <data name="Att_State_Open" xml:space="preserve"><value>مفتوحة</value></data>
+  <data name="Att_State_Taken" xml:space="preserve"><value>مسجَّلة</value></data>
+  <data name="Att_ChangeKind_Taken" xml:space="preserve"><value>تسجيل</value></data>
+  <data name="Att_ChangeKind_Edited" xml:space="preserve"><value>تعديل</value></data>
+  <data name="Att_ChangeKind_EditedAfterWindow" xml:space="preserve"><value>تعديل بعد المهلة</value></data>
+  <data name="Att_ChangeKind_ExcuseApproved" xml:space="preserve"><value>قبول عذر</value></data>
+  <data name="Exc_Status_Submitted" xml:space="preserve"><value>مقدَّم</value></data>
+  <data name="Exc_Status_Approved" xml:space="preserve"><value>مقبول</value></data>
+  <data name="Exc_Status_Rejected" xml:space="preserve"><value>مرفوض</value></data>
+  <data name="Exc_Status_Escalated" xml:space="preserve"><value>محوَّل</value></data>
+  <data name="Exc_Status_Withdrawn" xml:space="preserve"><value>مسحوب</value></data>
+  <data name="Perm_Attendance_Take" xml:space="preserve"><value>تسجيل الحضور</value></data>
+  <data name="Perm_Attendance_Edit" xml:space="preserve"><value>تعديل الحضور بعد انتهاء المهلة</value></data>
+  <data name="Perm_Attendance_View" xml:space="preserve"><value>عرض الحضور والتقارير والتنبيهات</value></data>
+  <data name="Perm_Attendance_ViewOwn" xml:space="preserve"><value>عرض الحضور الخاص</value></data>
+  <data name="Perm_Excuses_Submit" xml:space="preserve"><value>تقديم أعذار الغياب ومتابعتها</value></data>
+  <data name="Perm_Excuses_Review" xml:space="preserve"><value>مراجعة أعذار الغياب</value></data>
+  <data name="Perm_Excuses_Escalate" xml:space="preserve"><value>تحويل أعذار الغياب</value></data>
+  <data name="PermModule_Attendance" xml:space="preserve"><value>الحضور</value></data>
+  <data name="PermModule_Excuses" xml:space="preserve"><value>الأعذار</value></data>
+  <data name="AuditEntity_AttendanceRecordChange" xml:space="preserve"><value>تعديل حضور</value></data>
+  <data name="AuditEntity_AbsenceExcuse" xml:space="preserve"><value>عذر غياب</value></data>
+  <data name="Error_messaging_not_allowed" xml:space="preserve"><value>لا يمكنك إرسال رسائل إلى هذا الشخص.</value></data>
+  <data name="Error_conversation_closed" xml:space="preserve"><value>تم قفل هذه المحادثة من قبل المشرف.</value></data>
+  <data name="Error_message_too_long" xml:space="preserve"><value>الرسالة فارغة أو أطول من الحد المسموح.</value></data>
+  <data name="Error_message_delete_window_closed" xml:space="preserve"><value>يمكن حذف الرسالة للجميع خلال 15 دقيقة فقط من إرسالها.</value></data>
+  <data name="Error_report_duplicate" xml:space="preserve"><value>سبق أن أبلغت عن هذه الرسالة.</value></data>
+  <data name="Error_rate_limited" xml:space="preserve"><value>طلبات كثيرة جدًا. حاول لاحقًا.</value></data>
+  <data name="Error_notification_mandatory" xml:space="preserve"><value>لا يمكن إيقاف هذا الإشعار.</value></data>
+  <data name="Error_announcement_target_invalid" xml:space="preserve"><value>جمهور الإعلان غير صالح.</value></data>
+  <data name="Error_announcement_not_editable" xml:space="preserve"><value>الإعلان المنشور يسمح بتغيير انتهائه وتثبيته وسحبه فقط.</value></data>
+  <data name="Error_rules_looser_than_default" xml:space="preserve"><value>يمكن للعميل تضييق قواعد المراسلة فقط وليس توسيعها.</value></data>
+  <data name="Perm_Messaging_View" xml:space="preserve"><value>فتح صندوق الرسائل</value></data>
+  <data name="Perm_Messaging_Send" xml:space="preserve"><value>إرسال الرسائل</value></data>
+  <data name="Perm_Messaging_Moderate" xml:space="preserve"><value>مراجعة الرسائل المبلغ عنها</value></data>
+  <data name="Perm_Announcements_View" xml:space="preserve"><value>عرض الإعلانات</value></data>
+  <data name="Perm_Announcements_Manage" xml:space="preserve"><value>إدارة الإعلانات</value></data>
+  <data name="Perm_Comms_Manage" xml:space="preserve"><value>إدارة إعدادات التواصل</value></data>
+  <data name="PermModule_Messaging" xml:space="preserve"><value>المراسلة</value></data>
+  <data name="PermModule_Announcements" xml:space="preserve"><value>الإعلانات</value></data>
+  <data name="PermModule_Comms" xml:space="preserve"><value>التواصل</value></data>
+  <data name="Setting_Comms_EmailEnabled" xml:space="preserve"><value>السماح بإشعارات البريد الإلكتروني</value></data>
+  <data name="Setting_Comms_PushEnabled" xml:space="preserve"><value>السماح بالإشعارات الفورية</value></data>
+  <data name="Setting_Comms_MaxEmailPerDay" xml:space="preserve"><value>عدد رسائل البريد يوميًا (العميل)</value></data>
+  <data name="Setting_Comms_MaxPushPerDay" xml:space="preserve"><value>عدد الإشعارات الفورية يوميًا (العميل)</value></data>
+  <data name="Setting_Comms_MaxEmailPerUserPerDay" xml:space="preserve"><value>عدد رسائل البريد لكل شخص يوميًا</value></data>
+  <data name="Setting_Comms_MaxPushPerUserPerDay" xml:space="preserve"><value>عدد الإشعارات الفورية لكل شخص يوميًا</value></data>
+  <data name="Setting_Comms_QuietHours_Enabled" xml:space="preserve"><value>ساعات الهدوء</value></data>
+  <data name="Setting_Comms_QuietHours_Start" xml:space="preserve"><value>بداية ساعات الهدوء</value></data>
+  <data name="Setting_Comms_QuietHours_End" xml:space="preserve"><value>نهاية ساعات الهدوء</value></data>
+  <data name="Setting_Comms_DeliveryRetentionDays" xml:space="preserve"><value>أيام الاحتفاظ بسجلات الإرسال</value></data>
+  <data name="Setting_Messaging_ReadReceipts" xml:space="preserve"><value>إظهار من اطلع على الرسالة</value></data>
+  <data name="Setting_Messaging_MaxPerMinute" xml:space="preserve"><value>عدد الرسائل في الدقيقة</value></data>
+  <data name="Setting_Messaging_MaxNewConversationsPerDay" xml:space="preserve"><value>عدد المحادثات الجديدة يوميًا</value></data>
+  <data name="Setting_Messaging_MaxGroupSize" xml:space="preserve"><value>أكبر حجم لمحادثة جماعية</value></data>
+  <data name="Setting_Announcements_MaxPerAuthorPerDay" xml:space="preserve"><value>عدد الإعلانات لكل كاتب يوميًا</value></data>
+  <data name="NotifEvent_Messages_NewMessage" xml:space="preserve"><value>رسالة جديدة</value></data>
+  <data name="Notif_Messages_NewMessage" xml:space="preserve"><value>أرسل لك {SenderName} رسالة.</value></data>
+  <data name="NotifEvent_Announcements_Published" xml:space="preserve"><value>إعلان جديد</value></data>
+  <data name="Notif_Announcements_Published" xml:space="preserve"><value>إعلان جديد: {Title}</value></data>
+  <data name="NotifEvent_Messaging_Warning" xml:space="preserve"><value>تحذير بشأن المراسلة</value></data>
+  <data name="Notif_Messaging_Warning" xml:space="preserve"><value>حذّرك مشرف بشأن رسالة أرسلتها.</value></data>
+  <data name="NotifEvent_Messaging_Restricted" xml:space="preserve"><value>تقييد المراسلة</value></data>
+  <data name="Notif_Messaging_Restricted" xml:space="preserve"><value>تم تقييد المراسلة لديك حتى {UntilUtc}.</value></data>
+  <data name="NotifEvent_Messaging_ReportResolved" xml:space="preserve"><value>تمت مراجعة البلاغ</value></data>
+  <data name="Notif_Messaging_ReportResolved" xml:space="preserve"><value>تمت مراجعة بلاغك: {Outcome}.</value></data>
+  <data name="NotifEvent_Comms_CapReached" xml:space="preserve"><value>تم بلوغ حد الإرسال اليومي</value></data>
+  <data name="Notif_Comms_CapReached" xml:space="preserve"><value>تم بلوغ الحد اليومي لإشعارات {Channel}.</value></data>
+  <data name="AuditEntity_Conversation" xml:space="preserve"><value>محادثة</value></data>
+  <data name="AuditEntity_MessageReport" xml:space="preserve"><value>بلاغ عن رسالة</value></data>
+  <data name="AuditEntity_MessagingRestriction" xml:space="preserve"><value>تقييد المراسلة</value></data>
+  <data name="AuditEntity_MessagingRule" xml:space="preserve"><value>قاعدة مراسلة</value></data>
+  <data name="AuditEntity_Announcement" xml:space="preserve"><value>إعلان</value></data>
+  <data name="Msg_Kind_Direct" xml:space="preserve"><value>رسالة مباشرة</value></data>
+  <data name="Msg_Kind_Group" xml:space="preserve"><value>مجموعة</value></data>
+  <data name="Msg_State_Normal" xml:space="preserve"><value>رسالة</value></data>
+  <data name="Msg_State_Deleted" xml:space="preserve"><value>تم حذف الرسالة</value></data>
+  <data name="Msg_State_Removed" xml:space="preserve"><value>أزال المشرف الرسالة</value></data>
+  <data name="Msg_Rule_Allow" xml:space="preserve"><value>مسموح</value></data>
+  <data name="Msg_Rule_Relationship" xml:space="preserve"><value>فقط مع وجود علاقة</value></data>
+  <data name="Msg_Rule_Deny" xml:space="preserve"><value>غير مسموح</value></data>
+  <data name="Msg_Reason_Harassment" xml:space="preserve"><value>مضايقة</value></data>
+  <data name="Msg_Reason_Inappropriate" xml:space="preserve"><value>محتوى غير لائق</value></data>
+  <data name="Msg_Reason_Spam" xml:space="preserve"><value>رسائل مزعجة</value></data>
+  <data name="Msg_Reason_Safety" xml:space="preserve"><value>مخاوف تتعلق بالسلامة</value></data>
+  <data name="Msg_Reason_Other" xml:space="preserve"><value>أخرى</value></data>
+  <data name="Msg_ReportStatus_Open" xml:space="preserve"><value>مفتوح</value></data>
+  <data name="Msg_ReportStatus_Dismissed" xml:space="preserve"><value>تم الرفض</value></data>
+  <data name="Msg_ReportStatus_Actioned" xml:space="preserve"><value>تم اتخاذ إجراء</value></data>
+  <data name="Msg_Action_Dismiss" xml:space="preserve"><value>رفض البلاغ</value></data>
+  <data name="Msg_Action_Remove" xml:space="preserve"><value>إزالة الرسالة</value></data>
+  <data name="Msg_Action_Warn" xml:space="preserve"><value>تحذير المرسل</value></data>
+  <data name="Msg_Action_Restrict" xml:space="preserve"><value>تقييد المراسلة</value></data>
+  <data name="Msg_Action_RemoveAndRestrict" xml:space="preserve"><value>إزالة وتقييد</value></data>
+  <data name="Msg_Action_LockConversation" xml:space="preserve"><value>قفل المحادثة</value></data>
+  <data name="Ann_TargetKind_Organization" xml:space="preserve"><value>المؤسسة كاملة</value></data>
+  <data name="Ann_TargetKind_Unit" xml:space="preserve"><value>وحدة</value></data>
+  <data name="Ann_TargetKind_Level" xml:space="preserve"><value>مستوى</value></data>
+  <data name="Ann_TargetKind_Class" xml:space="preserve"><value>فصل</value></data>
+  <data name="Ann_TargetKind_ClassCourse" xml:space="preserve"><value>مقرر فصل</value></data>
+  <data name="Ann_TargetKind_Group" xml:space="preserve"><value>مجموعة</value></data>
+  <data name="Ann_Status_Draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="Ann_Status_Scheduled" xml:space="preserve"><value>مجدول</value></data>
+  <data name="Ann_Status_Published" xml:space="preserve"><value>منشور</value></data>
+  <data name="Ann_Status_Withdrawn" xml:space="preserve"><value>مسحوب</value></data>
+  <data name="Ann_Status_Expired" xml:space="preserve"><value>منتهي</value></data>
+  <data name="Ann_Role_Staff" xml:space="preserve"><value>الموظفون</value></data>
+  <data name="Ann_Role_Students" xml:space="preserve"><value>الطلاب</value></data>
+  <data name="Ann_Role_Guardians" xml:space="preserve"><value>أولياء الأمور</value></data>
+  <data name="Comms_Delivery_Pending" xml:space="preserve"><value>في الانتظار</value></data>
+  <data name="Comms_Delivery_Sending" xml:space="preserve"><value>جارٍ الإرسال</value></data>
+  <data name="Comms_Delivery_Sent" xml:space="preserve"><value>تم الإرسال</value></data>
+  <data name="Comms_Delivery_Failed" xml:space="preserve"><value>فشل</value></data>
+  <data name="Comms_Delivery_Skipped" xml:space="preserve"><value>تم التخطي</value></data>
+  <data name="Comms_ChannelState_Active" xml:space="preserve"><value>نشط</value></data>
+  <data name="Comms_ChannelState_NeedsSetup" xml:space="preserve"><value>يحتاج إلى إعداد</value></data>
+  <data name="Comms_ChannelState_Blocked" xml:space="preserve"><value>محظور</value></data>
+  <data name="Comms_ChannelState_Bounced" xml:space="preserve"><value>مرتد</value></data>
+  <data name="Comms_Delivery_Suppressed" xml:space="preserve"><value>لم يُرسل (العنوان محظور)</value></data>
+  <data name="Comms_Delivery_Held" xml:space="preserve"><value>مؤجل</value></data>
+  <data name="Comms_DeliverySkip_expired_while_held" xml:space="preserve"><value>انتهت صلاحيته أثناء التأجيل</value></data>
+  <data name="Comms_DeliverySkip_recipient_cap" xml:space="preserve"><value>بلغ المستلم حدّه اليومي</value></data>
+  <data name="Comms_DeliverySkip_no_contact" xml:space="preserve"><value>لا يوجد عنوان تواصل</value></data>
+  <data name="Comms_DeliverySkip_channel_off" xml:space="preserve"><value>القناة متوقفة</value></data>
+  <data name="Comms_Suppression_HardBounce" xml:space="preserve"><value>العنوان غير موجود</value></data>
+  <data name="Comms_Suppression_Complaint" xml:space="preserve"><value>تم الإبلاغ عنه كغير مرغوب</value></data>
+  <data name="Comms_Suppression_UserOptOut" xml:space="preserve"><value>ألغى الاشتراك</value></data>
+  <data name="Comms_ChannelState_Off" xml:space="preserve"><value>متوقفة</value></data>
+  <data name="Error_channel_not_allowed" xml:space="preserve"><value>أوقفت مدرستك هذه القناة.</value></data>
+  <data name="Error_comms_cap_above_ceiling" xml:space="preserve"><value>هذا الحد اليومي أعلى من الحد الأقصى للمنصة.</value></data>
+  <data name="AuditEntity_ChannelConsent" xml:space="preserve"><value>موافقة القناة</value></data>
+  <data name="AuditEntity_CommsSettings" xml:space="preserve"><value>إعدادات التواصل</value></data>
+  <data name="Comms_PrefSource_Default" xml:space="preserve"><value>افتراضي</value></data>
+  <data name="Comms_PrefSource_User" xml:space="preserve"><value>اختيارك</value></data>
+  <data name="Comms_PrefSource_Mandatory" xml:space="preserve"><value>إلزامي</value></data>
+  <data name="Msg_Rule_SameUnit" xml:space="preserve"><value>أي شخص في نفس الوحدة</value></data>
+  <data name="Error_group_read_only" xml:space="preserve"><value>المراسلة في هذه المجموعة للموظفين فقط.</value></data>
 </root>
