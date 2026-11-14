@@ -15,6 +15,9 @@ public sealed partial class GuardianAccessGuardTests
     /// <summary>Repository-relative files that may read the guardian table directly, with the reason.</summary>
     private static readonly IReadOnlyDictionary<string, string> AllowList = new Dictionary<string, string>
     {
+        ["src/Lms.Infrastructure/Announcements/AudienceResolver.cs"] =
+            "announcement audience: portal user ids of guardians linked, through StudentGuardian rows in the author's scope, to the students a target reaches (D30: accounts only); "
+            + "only user ids leave, never guardian data (M6 Task 13)",
         ["src/Lms.Infrastructure/People/PersonDuplicateFinder.cs"] =
             "client-wide match by national id or mobile (guardians may already exist through a sibling subtree); returns the entity to "
             + "Infrastructure callers only, the M3 match endpoint projects name and masked mobile (M2 Task 5, #157)",

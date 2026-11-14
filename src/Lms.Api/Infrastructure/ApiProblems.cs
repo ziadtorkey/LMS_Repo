@@ -9,6 +9,9 @@ public static class ApiProblems
     public static IResult Conflict(string code, string? detail = null, object? extra = null) =>
         Problem(StatusCodes.Status409Conflict, "Conflict", code, detail, extra);
 
+    public static IResult TooManyRequests(string code, string? detail = null) =>
+        Problem(StatusCodes.Status429TooManyRequests, "Too many requests", code, detail, null);
+
     public static IResult BadRequest(string code, string? detail = null) =>
         Problem(StatusCodes.Status400BadRequest, "Bad request", code, detail, null);
 

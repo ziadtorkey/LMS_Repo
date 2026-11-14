@@ -36,7 +36,7 @@ public static class MessagingRuleModes
     /// <summary>Never allowed.</summary>
     public const string Deny = "Deny";
 
-    /// <summary>Allowed to anyone in the same unit (looser than a relationship; no D69 default uses it, so a client can never choose it).</summary>
+    /// <summary>Allowed to anyone in the same unit (looser than a relationship): the D69 default among staff and from a manager or Org Admin to guardians; a client may only narrow it.</summary>
     public const string SameUnit = "SameUnit";
 
     public static IReadOnlyList<string> All { get; } = [Deny, Relationship, SameUnit, Allow];
@@ -94,13 +94,13 @@ public static class AnnouncementTargetKinds
     public static IReadOnlyList<string> All { get; } = [Organization, Unit, Level, Class, ClassCourse, Group];
 }
 
-/// <summary>Where an entry of a course page's announcement list came from: the course board (M4a) or a school-level announcement that reaches the course (M6).</summary>
+/// <summary>Where an entry of an announcement list came from: the M6 announcement store or the M4a course board (L15; wave 3 renamed the school value <c>School</c> to <c>Announcement</c>).</summary>
 public static class AnnouncementSources
 {
+    public const string Announcement = "Announcement";
     public const string CourseBoard = "CourseBoard";
-    public const string School = "School";
 
-    public static IReadOnlyList<string> All { get; } = [CourseBoard, School];
+    public static IReadOnlyList<string> All { get; } = [Announcement, CourseBoard];
 }
 
 public static class AnnouncementStatuses
@@ -235,4 +235,45 @@ public static class MessagingLimits
     public const int AudiencePreviewSampleMax = 10;
     public const int PushEndpointMaxLength = 1000;
     public const int EmailTestsPerDay = 3;
+}
+
+/// <summary>
+/// <c>ConversationDto.ReadOnlyReason</c> (L25, D74, D77): why the caller cannot post. A block and a rule are indistinguishable to the sender (L18):
+/// a block, a rule tightened by the Org Admin, an ended relationship and a block on the other side all give <see cref="BlockedOrRule"/>.
+/// Cause to value: student in a group (D74) -> <see cref="GroupStudentsReadOnly"/>; guardian outside a teacher-run group (D77) -> <see cref="GroupGuardiansReadOnly"/>;
+/// block / rule change / relationship end -> <see cref="BlockedOrRule"/>; moderator restriction -> <see cref="Restricted"/>; moderator lock -> <see cref="Locked"/>.
+/// There is deliberately no separate "rule" value.
+/// </summary>
+public static class ConversationReadOnlyReasons
+{
+    public const string GroupStudentsReadOnly = "group_students_read_only";
+    public const string GroupGuardiansReadOnly = "group_guardians_read_only";
+    public const string BlockedOrRule = "blocked_or_rule";
+    public const string Restricted = "restricted";
+    public const string Locked = "locked";
+
+    public static IReadOnlyList<string> All { get; } = [GroupStudentsReadOnly, GroupGuardiansReadOnly, BlockedOrRule, Restricted, Locked];
+}
+
+/// <summary>
+/// The <c>reason</c> of a <c>messaging_not_allowed</c> problem (L18). <b>Starting a conversation and posting always answer <see cref="BlockedOrRule"/></b>
+/// (a block and a rule are one reason to the sender; a restricted sender gets <see cref="Restricted"/>). <see cref="Rule"/> and <see cref="Relationship"/> come back only from
+/// owner/admin flows: adding a member to a group (owner to member), the group-size and student checks at group create or add, and the rules summary; they never come
+/// from <c>POST /api/conversations</c> for a direct conversation or from <c>POST .../messages</c>.
+/// Cause to value: block either way or rule or ended relationship, direct start or post -> <see cref="BlockedOrRule"/>; owner adding a member the rules do not allow -> <see cref="Rule"/>
+/// or <see cref="Relationship"/>; moderator restriction -> <see cref="Restricted"/>; group with a student and an admin under three members -> <see cref="PrivateGroupWithStudent"/>; group at its size limit -> <see cref="GroupFull"/>.
+/// </summary>
+public static class MessagingNotAllowedReasons
+{
+    public const string Rule = "rule";
+    public const string Relationship = "relationship";
+    public const string Restricted = "restricted";
+    public const string BlockedOrRule = "blocked_or_rule";
+    public const string PrivateGroupWithStudent = "private_group_with_student";
+    public const string GroupFull = "group_full";
+
+    public static IReadOnlyList<string> All { get; } = [Rule, Relationship, Restricted, BlockedOrRule, PrivateGroupWithStudent, GroupFull];
+
+    /// <summary>The values only an owner/admin flow may return; a direct start or a post never does.</summary>
+    public static IReadOnlyList<string> OwnerFlowOnly { get; } = [Rule, Relationship];
 }
