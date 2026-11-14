@@ -1487,6 +1487,29 @@
   <data name="Error_package_not_ready" xml:space="preserve"><value>الحزمة ليست جاهزة بعد. انتظر حتى ينتهي الفحص.</value></data>
   <data name="Error_package_not_attached" xml:space="preserve"><value>الحزمة غير مضافة إلى درس بعد، لذا لا يمكن تغيير طريقة احتساب الدرجة.</value></data>
   <data name="Error_package_commit_rejected" xml:space="preserve"><value>تعذّر حفظ تقدّمك لأن المحاولة مغلقة أو لم تُقبل البيانات.</value></data>
+  <data name="Package_Start" xml:space="preserve"><value>ابدأ</value></data>
+  <data name="Package_Resume" xml:space="preserve"><value>استئناف</value></data>
+  <data name="Package_Preview" xml:space="preserve"><value>معاينة</value></data>
+  <data name="Package_PreviewBanner" xml:space="preserve"><value>معاينة: لا يُسجَّل أي شيء.</value></data>
+  <data name="Package_ThirdParty" xml:space="preserve"><value>يأتي هذا النشاط من جهة أخرى. قد لا تعمل بعض أجزائه مع لوحة المفاتيح أو قارئ الشاشة.</value></data>
+  <data name="Package_PhoneHint" xml:space="preserve"><value>يعمل بشكل أفضل على شاشة أكبر.</value></data>
+  <data name="Package_State_NotStarted" xml:space="preserve"><value>لم يبدأ</value></data>
+  <data name="Package_State_InProgress" xml:space="preserve"><value>قيد التنفيذ</value></data>
+  <data name="Package_State_Completed" xml:space="preserve"><value>مكتمل</value></data>
+  <data name="Package_Exit" xml:space="preserve"><value>خروج</value></data>
+  <data name="Package_Fullscreen" xml:space="preserve"><value>ملء الشاشة</value></data>
+  <data name="Package_ExitFullscreen" xml:space="preserve"><value>إنهاء ملء الشاشة</value></data>
+  <data name="Package_Saving" xml:space="preserve"><value>جارٍ الحفظ…</value></data>
+  <data name="Package_Saved" xml:space="preserve"><value>تم الحفظ</value></data>
+  <data name="Package_SaveFailed" xml:space="preserve"><value>تعذّر الحفظ. جارٍ إعادة المحاولة…</value></data>
+  <data name="Package_Retry" xml:space="preserve"><value>أعد المحاولة</value></data>
+  <data name="Package_Expired" xml:space="preserve"><value>انتهت مهلة النشاط. أعد التحميل لتكمل من حيث توقفت.</value></data>
+  <data name="Package_Reload" xml:space="preserve"><value>إعادة التحميل</value></data>
+  <data name="Package_OpenAgain" xml:space="preserve"><value>افتح مرة أخرى</value></data>
+  <data name="Package_NotReady" xml:space="preserve"><value>هذا النشاط غير جاهز بعد. حاول لاحقاً.</value></data>
+  <data name="Package_FrameTitle" xml:space="preserve"><value>{0} (نشاط تفاعلي)</value></data>
+  <data name="Module_NotAvailableTitle" xml:space="preserve"><value>هذا النشاط غير متاح</value></data>
+  <data name="Module_NotAvailableText" xml:space="preserve"><value>ربما أُخفي أو حُذف. ارجع إلى المقرر لترى المتاح لك.</value></data>
   <data name="Assignment_AllowFiles" xml:space="preserve"><value>السماح برفع ملفات</value></data>
   <data name="Assignment_AllowText" xml:space="preserve"><value>السماح بنص مكتوب</value></data>
   <data name="Assignment_Attachments" xml:space="preserve"><value>المرفقات</value></data>
@@ -1770,6 +1793,12 @@
   <data name="AuditEntity_GradeEntry" xml:space="preserve"><value>درجة</value></data>
   <data name="AuditEntity_GradeSnapshot" xml:space="preserve"><value>لقطة الدرجات</value></data>
   <data name="PermModule_Grades" xml:space="preserve"><value>الدرجات</value></data>
+  <data name="NavSection_Structure" xml:space="preserve"><value>الهيكل</value></data>
+  <data name="NavSection_People" xml:space="preserve"><value>الأشخاص</value></data>
+  <data name="NavSection_Academic" xml:space="preserve"><value>الأكاديمي</value></data>
+  <data name="NavSection_Security" xml:space="preserve"><value>الأمان والإعدادات</value></data>
+  <data name="App_Subtitle" xml:space="preserve"><value>المنصة الأكاديمية</value></data>
+  <data name="Nav_Main" xml:space="preserve"><value>التنقل الرئيسي</value></data>
   <data name="Roles_Summary" xml:space="preserve"><value>ملخص الدور</value></data>
   <data name="Roles_StatGranted" xml:space="preserve"><value>الصلاحيات الممنوحة</value></data>
   <data name="Roles_StatModules" xml:space="preserve"><value>الوحدات الممنوحة بالكامل</value></data>

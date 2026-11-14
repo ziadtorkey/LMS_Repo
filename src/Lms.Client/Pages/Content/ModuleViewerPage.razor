@@ -31,7 +31,7 @@ else
             <MudText Typo="Typo.h4" data-testid="module-title">@Culture.Pick(_detail.Node.TitleAr, _detail.Node.TitleEn)</MudText>
         </MudStack>
 
-        <ModuleBody Detail="_detail" />
+        <ModuleBody Detail="_detail" OnChanged="RefreshCompletionAsync" />
 
         @if (_error is not null)
         {
@@ -106,6 +106,13 @@ else
                 await ApiCalls.RunAsync(async () => _completion = await Modules.GetCompletionAsync(ModuleId), Navigation, L, _ => { });
         }
         _loading = false;
+    }
+
+    /// <summary>A package attempt finished on the server: read the module's completion again (the page itself stays as it is).</summary>
+    private async Task RefreshCompletionAsync()
+    {
+        if (_detail is { CanEdit: false })
+            await ApiCalls.RunAsync(async () => _completion = await Modules.GetCompletionAsync(ModuleId), Navigation, L, _ => { });
     }
 
     private async Task MarkCompleteAsync()

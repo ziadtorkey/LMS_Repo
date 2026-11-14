@@ -67,4 +67,7 @@ public static class ProbeMilestones
 
     /// <summary>M4b (live sessions, SCORM and H5P packages). Rows of M4b routes set it; like M4a it is not a closed milestone yet.</summary>
     public const int M4b = 5;
+
+    /// <summary>M5 (assessment, timetable and attendance). Rows of M5 routes set it; not a closed milestone yet.</summary>
+    public const int M5 = 6;
 }
