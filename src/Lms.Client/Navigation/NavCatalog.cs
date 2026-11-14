@@ -26,6 +26,8 @@ public static class NavCatalog
         new("Nav_Attendance", "attendance", Icons.Material.Filled.EventAvailable, Permissions.Attendance.Take, AlsoPermission: Permissions.Attendance.View),
         new("Nav_MyAttendance", "me/attendance", Icons.Material.Filled.EventNote, Permissions.Attendance.ViewOwn),
         new("Nav_ExcuseReview", "excuses/review", Icons.Material.Filled.FactCheck, Permissions.Excuses.Review),
+        new("Nav_AttendanceAlerts", "attendance/alerts", Icons.Material.Filled.NotificationImportant, Permissions.Excuses.Review, AlsoPermission: Permissions.Attendance.View),
+        new("Nav_AttendanceReports", "attendance/reports", Icons.Material.Filled.Assessment, Permissions.Attendance.View),
         new("Nav_Library", "library", Icons.Material.Filled.LocalLibrary, Permissions.Library.View),
         new("Nav_Roles", "roles", Icons.Material.Filled.AdminPanelSettings, Permissions.Roles.View),
         new("Nav_Assignments", "assignments", Icons.Material.Filled.GroupAdd, Permissions.Assignments.View),

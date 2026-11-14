@@ -1816,4 +1816,23 @@
   <data name="Att_Mark_All_Done" xml:space="preserve"><value>تم تحديد {0} طالبًا حاضرين. بقيت حالة من سبق تسجيلهم كما هي.</value></data>
   <data name="Att_Note_Add" xml:space="preserve"><value>إضافة ملاحظة</value></data>
   <data name="Att_Read_Only" xml:space="preserve"><value>يمكنك مراجعة هذه الحصة. يسجّل الحضور معلم الصف (أو، بعد المهلة، من يملك صلاحية تعديل الحضور).</value></data>
+  <data name="Nav_AttendanceAlerts" xml:space="preserve"><value>تنبيهات الغياب</value></data>
+  <data name="Nav_AttendanceReports" xml:space="preserve"><value>تقارير الحضور</value></data>
+  <data name="Alerts_Title" xml:space="preserve"><value>تنبيهات الغياب</value></data>
+  <data name="Alerts_Subtitle" xml:space="preserve"><value>الطلاب الذين بلغوا حد الغياب. يُحتسب التأخر جزءًا من غياب (الوزن إعداد).</value></data>
+  <data name="Alerts_ActiveOnly" xml:space="preserve"><value>النشطة فقط</value></data>
+  <data name="Alerts_EmptyTitle" xml:space="preserve"><value>لا توجد تنبيهات</value></data>
+  <data name="Alerts_EmptyText" xml:space="preserve"><value>يظهر الطلاب هنا عندما يبلغ الغياب مضافًا إليه التأخر الموزون حد التنبيه.</value></data>
+  <data name="Alerts_Formula" xml:space="preserve"><value>الغياب والتأخر</value></data>
+  <data name="Alerts_FormulaText" xml:space="preserve"><value>{0} غياب + {1} تأخر = {2} (الحد {3}، آخر {4} يومًا)</value></data>
+  <data name="Alerts_Since" xml:space="preserve"><value>منذ</value></data>
+  <data name="Alerts_Active" xml:space="preserve"><value>نشط</value></data>
+  <data name="Alerts_Cleared" xml:space="preserve"><value>مُغلق</value></data>
+  <data name="Alerts_OpenStudent" xml:space="preserve"><value>فتح الطالب</value></data>
+  <data name="AttReports_Title" xml:space="preserve"><value>تقارير الحضور</value></data>
+  <data name="AttReports_Subtitle" xml:space="preserve"><value>الأعداد والنسب لكل طالب أو فصل، حتى الوقت المعروض. يعطي التصدير الأرقام نفسها في جدول بيانات.</value></data>
+  <data name="AttReports_Export" xml:space="preserve"><value>تصدير إلى Excel</value></data>
+  <data name="AttReports_Student" xml:space="preserve"><value>حسب الطالب</value></data>
+  <data name="AttReports_Class" xml:space="preserve"><value>حسب الفصل</value></data>
+  <data name="AttReports_AsOf" xml:space="preserve"><value>حُسب في {0}</value></data>
 </root>

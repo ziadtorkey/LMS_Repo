@@ -1816,4 +1816,23 @@
   <data name="Att_Mark_All_Done" xml:space="preserve"><value>{0} students marked present. Rows you had marked kept their status.</value></data>
   <data name="Att_Note_Add" xml:space="preserve"><value>Add note</value></data>
   <data name="Att_Read_Only" xml:space="preserve"><value>You can review this session. Marking is done by the teacher of the class (or, after the window, by someone who can edit attendance).</value></data>
+  <data name="Nav_AttendanceAlerts" xml:space="preserve"><value>Absence alerts</value></data>
+  <data name="Nav_AttendanceReports" xml:space="preserve"><value>Attendance reports</value></data>
+  <data name="Alerts_Title" xml:space="preserve"><value>Absence alerts</value></data>
+  <data name="Alerts_Subtitle" xml:space="preserve"><value>Students who reached the absence threshold. A late counts as part of an absence (the weight is a setting).</value></data>
+  <data name="Alerts_ActiveOnly" xml:space="preserve"><value>Active only</value></data>
+  <data name="Alerts_EmptyTitle" xml:space="preserve"><value>No alerts</value></data>
+  <data name="Alerts_EmptyText" xml:space="preserve"><value>Students appear here when absences plus the weighted lates reach the threshold.</value></data>
+  <data name="Alerts_Formula" xml:space="preserve"><value>Absences and lates</value></data>
+  <data name="Alerts_FormulaText" xml:space="preserve"><value>{0} absences + {1} lates = {2} (threshold {3}, last {4} days)</value></data>
+  <data name="Alerts_Since" xml:space="preserve"><value>Since</value></data>
+  <data name="Alerts_Active" xml:space="preserve"><value>Active</value></data>
+  <data name="Alerts_Cleared" xml:space="preserve"><value>Cleared</value></data>
+  <data name="Alerts_OpenStudent" xml:space="preserve"><value>Open student</value></data>
+  <data name="AttReports_Title" xml:space="preserve"><value>Attendance reports</value></data>
+  <data name="AttReports_Subtitle" xml:space="preserve"><value>Counts and rates per student or class, as of the time shown. Export gives the same figures as a spreadsheet.</value></data>
+  <data name="AttReports_Export" xml:space="preserve"><value>Export to Excel</value></data>
+  <data name="AttReports_Student" xml:space="preserve"><value>By student</value></data>
+  <data name="AttReports_Class" xml:space="preserve"><value>By class</value></data>
+  <data name="AttReports_AsOf" xml:space="preserve"><value>Computed {0}</value></data>
 </root>

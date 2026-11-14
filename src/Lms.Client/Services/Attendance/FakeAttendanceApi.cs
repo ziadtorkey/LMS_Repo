@@ -141,6 +141,31 @@ public sealed class FakeAttendanceApi : IAttendanceApi
     /// <summary>Set to false to see a student under GuardiansOnly (no excuse action, the guardian sentence instead).</summary>
     public bool CanSubmitExcuse { get; set; } = true;
 
+    public Task<PagedResult<AttendanceAlertDto>> GetAlertsAsync(AttendanceAlertsQuery query, CancellationToken ct = default)
+    {
+        var now = _clock.GetUtcNow().UtcDateTime;
+        var unit = Guid.Parse("00000000-0000-0000-0000-0000000000a1");
+        AttendanceAlertDto Alert(int i, int absences, int lates, DateTime? cleared) =>
+            new(Guid.NewGuid(), _roster[i].Id, _roster[i].Ar, _roster[i].En, _roster[i].Number, unit, absences, lates, 30, absences + lates * 0.5m, 5m, now.AddDays(-i), cleared);
+        List<AttendanceAlertDto> all = [Alert(1, 5, 1, null), Alert(2, 4, 3, null), Alert(0, 6, 0, now.AddDays(-1))];
+        var rows = all.Where(a => !query.ActiveOnly || a.ClearedAtUtc is null).ToList();
+        return Task.FromResult(new PagedResult<AttendanceAlertDto>(rows.Skip((query.Page - 1) * query.PageSize).Take(query.PageSize).ToList(), rows.Count, query.Page, query.PageSize));
+    }
+
+    public Task<AttendanceReportDto> GetReportAsync(string kind, AttendanceReportQuery query, CancellationToken ct = default)
+    {
+        var now = _clock.GetUtcNow().UtcDateTime;
+        var today = LocalToday();
+        var rows = _roster.Select((r, i) => new AttendanceReportRowDto(r.Id, r.Ar, r.En, r.Number, null, null, null,
+            new AttendanceSummaryDto(18 - i, i, i % 2, 0, 19 + (i % 2), 90m - (i * 5)))).ToList();
+        var total = new AttendanceSummaryDto(rows.Sum(r => r.Summary.Present), rows.Sum(r => r.Summary.Absent), rows.Sum(r => r.Summary.Late), 0, rows.Sum(r => r.Summary.Total), 84.5m);
+        return Task.FromResult(new AttendanceReportDto(kind, query.From ?? today.AddDays(-30), query.To ?? today, total,
+            new PagedResult<AttendanceReportRowDto>(rows, rows.Count, query.Page, query.PageSize), now.AddMinutes(-3), now));
+    }
+
+    public Task<(Stream Content, string FileName)> ExportReportAsync(string kind, AttendanceReportQuery query, CancellationToken ct = default) =>
+        Task.FromResult<(Stream, string)>((new MemoryStream([0x50, 0x4B, 0x03, 0x04]), $"attendance-{kind}.xlsx"));
+
     public Task<OwnAttendanceDto> GetMyAttendanceAsync(OwnAttendanceQuery query, CancellationToken ct = default) => Task.FromResult(Own(_roster[0].Id, query));
 
     public Task<OwnAttendanceDto> GetStudentAttendanceAsync(Guid studentId, OwnAttendanceQuery query, CancellationToken ct = default)
