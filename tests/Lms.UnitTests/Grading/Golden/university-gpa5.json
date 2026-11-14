@@ -1,0 +1,34 @@
+{
+  "name": "University 5-point GPA, zero policy, percent average, 1 place",
+  "rules": { "missing": "Zero", "method": "PercentAverage", "decimalPlaces": 1, "publishedOnly": false },
+  "bands": [
+    { "min": 0, "en": "F", "ar": "هـ", "gpa": 1.00 }, { "min": 60, "en": "D", "ar": "د", "gpa": 2.00 }, { "min": 65, "en": "D+", "ar": "د+", "gpa": 2.50 },
+    { "min": 70, "en": "C", "ar": "ج", "gpa": 3.00 }, { "min": 75, "en": "C+", "ar": "ج+", "gpa": 3.50 }, { "min": 80, "en": "B", "ar": "ب", "gpa": 4.00 },
+    { "min": 85, "en": "B+", "ar": "ب+", "gpa": 4.50 }, { "min": 90, "en": "A", "ar": "أ", "gpa": 4.75 }, { "min": 95, "en": "A+", "ar": "أ+", "gpa": 5.00 }
+  ],
+  "categories": [ { "id": "mid", "weight": 30 }, { "id": "final", "weight": 40 }, { "id": "labs", "weight": 30 } ],
+  "items": [
+    { "id": "m", "category": "mid", "max": 30 }, { "id": "f", "category": "final", "max": 50 },
+    { "id": "la", "category": "labs", "max": 10 }, { "id": "lb", "category": "labs", "max": 20 }
+  ],
+  "events": [
+    { "item": "m", "student": "u1", "revision": 1, "points": 27 }, { "item": "f", "student": "u1", "revision": 1, "points": 44 },
+    { "item": "la", "student": "u1", "revision": 1, "points": 10 }, { "item": "lb", "student": "u1", "revision": 1, "points": 10 },
+
+    { "item": "m", "student": "u2", "revision": 1, "points": 30 }, { "item": "la", "student": "u2", "revision": 1, "points": 9 },
+
+    { "item": "m", "student": "u3", "revision": 1, "points": 15 }, { "item": "f", "student": "u3", "revision": 1, "points": 47.5 },
+    { "item": "la", "student": "u3", "revision": 1, "points": 10 }, { "item": "lb", "student": "u3", "revision": 1, "points": 20 },
+
+    { "item": "m", "student": "u4", "revision": 1, "points": 22 }, { "item": "f", "student": "u4", "revision": 1, "points": 40 },
+    { "item": "la", "student": "u4", "revision": 1, "points": 7 }, { "item": "lb", "student": "u4", "revision": 1, "points": 14 }
+  ],
+  "entries": [],
+  "expected": [
+    { "student": "u1", "final": 84.7, "band": "B", "gpa": 4.00, "complete": true },
+    { "student": "u2", "final": 43.5, "band": "F", "gpa": 1.00, "complete": false },
+    { "student": "u3", "final": 83, "band": "B", "gpa": 4.00, "complete": true },
+    { "student": "u4", "final": 75, "band": "C+", "gpa": 3.50, "complete": true }
+  ],
+  "handComputation": "u1: mid 27/30=90, final 44/50=88, labs mean(100, 50)=75 -> 27+35.2+22.5 = 84.7. u2: mid 100, final missing counts 0, labs mean(90, 0)=45 -> 30+0+13.5 = 43.5. u3: mid 50, final 95, labs 100 -> 15+38+30 = 83. u4: mid 22/30=73.333.., final 80, labs mean(70,70)=70 -> 22+32+21 = 75.0, which is exactly the lower bound of C+ (inclusive). In decimal arithmetic 73.333.. x 0.3 is 21.99999.. and the sum is 74.99999.., so this case is C+ only because the final is rounded half-up to one place before the band lookup (the band follows the rounded percentage); it pins that rule."
+}

@@ -16,12 +16,14 @@ namespace Lms.IntegrationTests.People;
 
 /// <summary>D24, D45: the student's account, default password, delivery after commit, and no clear password anywhere else.</summary>
 [Collection(ApiCollection.Name)]
-public sealed class StudentCredentialsTests
+public sealed class StudentCredentialsTests : IDisposable
 {
     private readonly LmsApiFactory _factory;
     private readonly FakeEmailSender _emails = new();
     private readonly CapturingLogs _logs = new();
     private readonly WebApplicationFactory<Program> _host;
+
+    public void Dispose() => _host.Dispose();
 
     public StudentCredentialsTests(LmsApiFactory factory)
     {

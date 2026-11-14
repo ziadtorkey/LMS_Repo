@@ -1807,4 +1807,10 @@
   <data name="AuditEntity_GradeEntry" xml:space="preserve"><value>Grade entry</value></data>
   <data name="AuditEntity_GradeSnapshot" xml:space="preserve"><value>Grade snapshot</value></data>
   <data name="PermModule_Grades" xml:space="preserve"><value>Grades</value></data>
+  <data name="NavSection_Structure" xml:space="preserve"><value>Structure</value></data>
+  <data name="NavSection_People" xml:space="preserve"><value>People</value></data>
+  <data name="NavSection_Academic" xml:space="preserve"><value>Academic</value></data>
+  <data name="NavSection_Security" xml:space="preserve"><value>Security and settings</value></data>
+  <data name="App_Subtitle" xml:space="preserve"><value>Academic platform</value></data>
+  <data name="Nav_Main" xml:space="preserve"><value>Main navigation</value></data>
 </root>

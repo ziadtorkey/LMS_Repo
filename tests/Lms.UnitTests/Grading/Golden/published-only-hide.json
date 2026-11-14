@@ -1,0 +1,27 @@
+{
+  "name": "Published only with hide-until-complete, 0 places, one category",
+  "rules": { "missing": "HideUntilComplete", "method": "PointsWeighted", "decimalPlaces": 0, "publishedOnly": true },
+  "bands": [
+    { "min": 0, "en": "Fail", "ar": "راسب" }, { "min": 60, "en": "Acceptable", "ar": "مقبول" }, { "min": 70, "en": "Good", "ar": "جيد" },
+    { "min": 80, "en": "Very Good", "ar": "جيد جدا" }, { "min": 90, "en": "Excellent", "ar": "ممتاز" }
+  ],
+  "categories": [ { "id": "work", "weight": 100 } ],
+  "items": [
+    { "id": "p1", "category": "work", "max": 10, "published": true }, { "id": "p2", "category": "work", "max": 10, "published": true },
+    { "id": "x", "category": "work", "max": 10, "published": false, "sourceKind": 7777 }
+  ],
+  "events": [
+    { "item": "p1", "student": "a", "revision": 1, "points": 8 }, { "item": "p2", "student": "a", "revision": 1, "points": 6 },
+    { "item": "x", "student": "a", "revision": 1, "points": 0 },
+    { "item": "p1", "student": "b", "revision": 1, "points": 9 },
+    { "item": "p1", "student": "c", "revision": 1, "points": 5 }, { "item": "p2", "student": "c", "revision": 1, "points": 5 },
+    { "item": "x", "student": "c", "revision": 1, "points": 10 }
+  ],
+  "entries": [],
+  "expected": [
+    { "student": "a", "final": 70, "band": "Good", "complete": true },
+    { "student": "b", "final": null, "band": null, "complete": false },
+    { "student": "c", "final": 50, "band": "Fail", "complete": true }
+  ],
+  "handComputation": "The unpublished item x is dropped before anything is computed, whatever its score. a: (8+6)/20 = 70. b has only p1: with hide-until-complete there is no final until p2 is scored. c: (5+5)/20 = 50; the 10/10 on the hidden item does not help."
+}
