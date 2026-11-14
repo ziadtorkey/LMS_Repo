@@ -127,3 +127,5 @@ html:lang(ar), html:lang(ar) body { font-family: Cairo, "Segoe UI", Tahoma, Aria
 .lms-session-grid > .lms-section + .lms-section { margin-block-start: 0; }
 .lms-att-save.mud-button-root { min-block-size: 44px; }
 @media (max-width: 599px) { .lms-att-save.mud-button-root { inline-size: 100%; } }
+/* The warning colour is 4.2:1 on the 8% tint in light mode: a darker mix for the selected Late text (dark mode is 10:1 already). */
+:root:not([data-theme="dark"]) .lms-att-late { color: color-mix(in srgb, var(--mud-palette-warning) 78%, black); }
