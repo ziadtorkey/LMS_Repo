@@ -114,7 +114,13 @@ public static class PackagesServiceCollectionExtensions
 {
     public static IServiceCollection AddPackages(this IServiceCollection services, IConfiguration configuration)
     {
-        services.Configure<PackageHostOptions>(o => o.Origin = configuration[$"{PackageHostOptions.Section}:Origin"]);
+        services.Configure<PackageHostOptions>(o =>
+        {
+            o.Origin = configuration[$"{PackageHostOptions.Section}:Origin"];
+            o.AppOrigin = configuration[$"{PackageHostOptions.Section}:AppOrigin"] ?? configuration["App:PublicBaseUrl"];
+            o.RevocationCacheSeconds = configuration.GetValue($"{PackageHostOptions.Section}:RevocationCacheSeconds", 30);
+        });
+        services.AddScoped<IPackageRevocations, PackageRevocationWriter>();
         services.AddScoped<IPackageStore, MinioPackageStore>();
         services.Configure<PackageValidationOptions>(o =>
         {

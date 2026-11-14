@@ -171,6 +171,8 @@ public sealed partial class EnrollmentEngine(
         {
             enrollment.Drop(on, reason);
         }
+
+        await Packages.PackageRevocationHooks.EnrollmentsDroppedAsync(db, enrollments, clock.UtcNow, ct); // package tokens of the student stop working
     }
 
     private async Task<Class> ClassOfAsync(Guid classStudentId, CancellationToken ct)
