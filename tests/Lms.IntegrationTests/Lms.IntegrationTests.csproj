@@ -23,6 +23,7 @@
   <ItemGroup>
     <!-- The crafted hostile package corpus (M4b Task 3): committed archives plus manifest.json, read by the corpus tests and by the package kernel tests. -->
     <None Include="Packages/Corpus/files/**" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Packages/Demo/files/**" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
