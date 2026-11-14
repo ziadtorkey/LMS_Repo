@@ -1602,6 +1602,8 @@
   <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>لم تجتز الحزمة الفحص الأمني.</value></data>
   <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>الملف ليس أرشيف zip صالحًا. صدّر الحزمة من جديد.</value></data>
   <data name="Error_package_reason_bad_name" xml:space="preserve"><value>بعض أسماء الملفات في الحزمة طويلة جدًا أو متداخلة بعمق أو محجوزة. أعد تسميتها وصدّر الحزمة من جديد.</value></data>
+  <data name="Learn_NotStarted" xml:space="preserve"><value>لم يبدأ بعد</value></data>
+  <data name="Home_Overdue" xml:space="preserve"><value>متأخر</value></data>
   <data name="ClassCourse_TabLive" xml:space="preserve"><value>الجلسات المباشرة</value></data>
   <data name="Live_Title" xml:space="preserve"><value>الجلسات المباشرة</value></data>
   <data name="Live_Subtitle" xml:space="preserve"><value>حصص عبر الإنترنت لهذا المقرر. ينضم الطلاب من الدرس.</value></data>

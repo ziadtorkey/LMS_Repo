@@ -40,4 +40,15 @@ public sealed class ClientServicesTests : BunitContext
         Assert.IsType<FakeLmsApi>(provider.GetRequiredService<ILmsApi>());
         Assert.IsType<FakeAuthenticationStateProvider>(provider.GetRequiredService<AuthenticationStateProvider>());
     }
+
+    [Fact]
+    public void Fake_api_registers_the_demo_modules_once_so_the_dev_server_shows_them()
+    {
+        using var provider = Build(Config(("Lms:UseFakeApi", "true")));
+
+        var modules = Assert.IsType<Lms.Client.Services.Api.FakeModulesApi>(provider.GetRequiredService<Lms.Client.Services.Api.IModulesApi>());
+        var lesson = Guid.Parse("00000000-0000-0000-0000-0000000000b1");
+
+        Assert.NotEmpty(modules.NodesFor(Lms.Client.Services.Api.FakeLessonPlansApi.ArabicClassCourseId, lesson));
+    }
 }

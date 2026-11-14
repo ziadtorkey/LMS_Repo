@@ -1602,6 +1602,8 @@
   <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>The package didn't pass the security check.</value></data>
   <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>The file isn't a valid .zip archive. Export the package again.</value></data>
   <data name="Error_package_reason_bad_name" xml:space="preserve"><value>Some file names in the package are too long, nested too deep or reserved. Rename them and export again.</value></data>
+  <data name="Learn_NotStarted" xml:space="preserve"><value>Not started yet</value></data>
+  <data name="Home_Overdue" xml:space="preserve"><value>Overdue</value></data>
   <data name="ClassCourse_TabLive" xml:space="preserve"><value>Live sessions</value></data>
   <data name="Live_Title" xml:space="preserve"><value>Live sessions</value></data>
   <data name="Live_Subtitle" xml:space="preserve"><value>Online classes for this course. Students join from the lesson.</value></data>

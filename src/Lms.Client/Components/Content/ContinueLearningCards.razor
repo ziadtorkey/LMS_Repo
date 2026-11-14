@@ -9,36 +9,38 @@
 @* Home cards for a student: one per class course (at most three) with the progress and a continue button. *@
 @if (_cards.Count > 0)
 {
-    <MudStack Spacing="2" Class="mt-4" data-testid="home-continue-learning">
-        <MudText Typo="Typo.h6">@L["Home_ContinueLearning"]</MudText>
+    <section class="mb-4" aria-labelledby="home-learn-heading" data-testid="home-continue-learning">
+        <MudText Typo="Typo.h6" HtmlTag="h2" id="home-learn-heading" Class="mb-3">@L["Home_ContinueLearning"]</MudText>
         <MudGrid Spacing="2">
-            @foreach (var card in _cards)
+            @foreach (var (card, index) in _cards.Select((card, index) => (card, index)))
             {
                 var c = card;
                 <MudItem xs="12" sm="6" md="4">
-                    <MudCard Class="h-100" data-testid="@($"home-learn-{c.Course.Id}")">
-                        <MudCardContent>
-                            <MudText Typo="Typo.subtitle1">@Culture.Pick(c.Course.CourseNameAr, c.Course.CourseNameEn)</MudText>
-                            <MudText Typo="Typo.body2" Class="mud-text-secondary">@L["Learn_Progress", c.Progress.Course.Completed, c.Progress.Course.Total]</MudText>
-                        </MudCardContent>
-                        <MudCardActions>
+                    <SectionCard Class="h-100" TestId="@($"home-learn-{c.Course.Id}")">
+                        <MudText Typo="Typo.subtitle1">@Culture.Pick(c.Course.CourseNameAr, c.Course.CourseNameEn)</MudText>
+                        <MudText Typo="Typo.body2" Class="lms-muted mb-2">@(c.Progress.Course.Total == 0 ? L["Learn_NotStarted"].Value : L["Learn_Progress", c.Progress.Course.Completed, c.Progress.Course.Total].Value)</MudText>
+                        <MudProgressLinear Value="@Percent(c.Progress.Course)" Color="Color.Primary" Class="mb-3" aria-hidden="true" />
+                        <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
                             @if (c.Progress.NextModuleId is { } next)
                             {
-                                <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="@($"class-courses/{c.Course.Id}/modules/{next}")"
+                                @* Home keeps one filled action: the first course's Continue; the others are outlined. *@
+                                <MudButton Variant="@(index == 0 ? Variant.Filled : Variant.Outlined)" Color="Color.Primary" Size="Size.Small" Href="@($"class-courses/{c.Course.Id}/modules/{next}")"
                                            data-testid="@($"home-learn-continue-{c.Course.Id}")">@L["Learn_ContinueOpen"]</MudButton>
                             }
-                            <MudButton Variant="Variant.Text" Href="@($"class-courses/{c.Course.Id}/learn")"
+                            <MudButton Variant="Variant.Text" Size="Size.Small" Href="@($"class-courses/{c.Course.Id}/learn")"
                                        data-testid="@($"home-learn-open-{c.Course.Id}")">@L["MyClassCourses_OpenCourse"]</MudButton>
-                        </MudCardActions>
-                    </MudCard>
+                        </MudStack>
+                    </SectionCard>
                 </MudItem>
             }
         </MudGrid>
-    </MudStack>
+    </section>
 }
 
 @code {
     private const int MaxCards = 3;
+
+    private static double Percent(ProgressDto p) => p.Total == 0 ? 0 : 100d * p.Completed / p.Total;
 
     private sealed record Card(ClassCourseDto Course, CourseProgressDto Progress);
 

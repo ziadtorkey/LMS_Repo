@@ -65,9 +65,9 @@ public static class ClientServices
             services.AddSingleton<IForumsApi, FakeForumsApi>();
             services.AddSingleton<IAssetsApi, FakeAssetsApi>();
             services.AddSingleton<Lms.Client.Services.Packages.IPackagesApi, Lms.Client.Services.Packages.FakePackagesApi>();
-            services.AddSingleton<IModulesApi, FakeModulesApi>();
             services.AddSingleton<ILiveSessionsApi, FakeLiveSessionsApi>();
-            services.AddSingleton<IActivityOverviewApi, FakeActivityOverviewApi>();
+            services.AddSingleton<IActivityOverviewApi>(_ => new FakeActivityOverviewApi().WithDemoData());
+            services.AddSingleton<IModulesApi>(_ => new FakeModulesApi().WithDemoData());
             services.AddScoped<AuthenticationStateProvider, FakeAuthenticationStateProvider>();
             services.AddAuthorizationCore();
             return;
