@@ -70,14 +70,36 @@ public sealed class MessagingWave1AmendmentTests
         Assert.False(closed.CanPost);
         Assert.Equal("group_students_read_only", closed.ReadOnlyReason);
         Assert.Equal(
-            ["group_students_read_only", "group_guardians_read_only", "rule", "blocked_or_rule", "restricted", "locked"],
+            ["group_students_read_only", "group_guardians_read_only", "blocked_or_rule", "restricted", "locked"],
             ConversationReadOnlyReasons.All);
     }
 
     [Fact]
-    public void Messaging_not_allowed_reasons_are_the_l18_set()
+    public void Messaging_not_allowed_reasons_are_the_l18_set_and_rule_and_relationship_are_owner_flow_only()
     {
         Assert.Equal(["rule", "relationship", "restricted", "blocked_or_rule", "private_group_with_student", "group_full"], MessagingNotAllowedReasons.All);
+        Assert.Equal(["rule", "relationship"], MessagingNotAllowedReasons.OwnerFlowOnly);
+        // a block and a rule change are one value to the sender: the read-only reasons never name a "rule"
+        Assert.DoesNotContain("rule", ConversationReadOnlyReasons.All);
+        Assert.Contains(ConversationReadOnlyReasons.BlockedOrRule, ConversationReadOnlyReasons.All);
+    }
+
+    [Fact]
+    public void No_group_read_only_problem_code_or_resource_key_exists()
+    {
+        Assert.DoesNotContain(typeof(ProblemCodes).GetFields(), f => f.Name == "group_read_only");
+        foreach (var lang in new[] { "ar", "en" })
+        {
+            var dir = AppContext.BaseDirectory;
+            while (dir is not null && !File.Exists(Path.Combine(dir, "LMS.slnx")))
+            {
+                dir = Path.GetDirectoryName(dir);
+            }
+
+            var resx = File.ReadAllText(Path.Combine(dir!, "src", "Lms.Client", "Resources", $"SharedResource.{lang}.resx"));
+            Assert.DoesNotContain("group_read_only", resx, StringComparison.Ordinal);
+            Assert.DoesNotContain("Msg_ReadOnly_rule\"", resx, StringComparison.Ordinal);
+        }
     }
 
     [Fact]
