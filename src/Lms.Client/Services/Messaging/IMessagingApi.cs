@@ -39,6 +39,9 @@ public interface IMessagingApi
 
     Task RemoveParticipantAsync(Guid conversationId, Guid userId, CancellationToken ct = default);
 
+    /// <summary>The group owner (or a moderator) sets or clears read-only: then only staff post (D74). Distinct from the moderator's lock.</summary>
+    Task<ConversationDto> SetReadOnlyAsync(Guid conversationId, bool readOnly, CancellationToken ct = default);
+
     Task<IReadOnlyList<MessageSearchResultDto>> SearchAsync(string query, Guid? conversationId = null, int page = 1, CancellationToken ct = default);
 
     Task ReportAsync(Guid messageId, ReportMessageRequest request, CancellationToken ct = default);
@@ -92,6 +95,9 @@ public sealed class MessagingApi(Api.ApiHttp http) : IMessagingApi
 
     public Task RemoveParticipantAsync(Guid conversationId, Guid userId, CancellationToken ct = default) =>
         http.SendAsync(HttpMethod.Delete, Routes.ConversationParticipant(conversationId, userId), null, ct);
+
+    public async Task<ConversationDto> SetReadOnlyAsync(Guid conversationId, bool readOnly, CancellationToken ct = default) =>
+        (await http.SendAsync<ConversationDto>(readOnly ? HttpMethod.Put : HttpMethod.Delete, Routes.ConversationReadOnly(conversationId), null, ct))!;
 
     public async Task<IReadOnlyList<MessageSearchResultDto>> SearchAsync(string query, Guid? conversationId = null, int page = 1, CancellationToken ct = default) =>
         await http.GetAsync<List<MessageSearchResultDto>>(Routes.MessageSearchUrl(query, conversationId, page), ct);

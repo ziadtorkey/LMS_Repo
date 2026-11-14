@@ -94,3 +94,17 @@ html:lang(ar), html:lang(ar) body { font-family: Cairo, "Segoe UI", Tahoma, Aria
 .lms-unread-divider span { color: var(--mud-palette-primary); font-weight: 600; }
 .lms-thread-empty { margin: auto; }
 .lms-convs mark { background: color-mix(in srgb, var(--mud-palette-primary) 22%, transparent); color: inherit; border-radius: 2px; }
+
+/* ---------- Compose and group members (M6 Task 22) ---------- */
+.lms-picker-pick { display: block; inline-size: 100%; background: none; border: 0; padding: 0; text-align: start; cursor: pointer; font: inherit; color: inherit; }
+.lms-picker-pick:focus-visible { outline: 2px solid var(--mud-palette-primary); outline-offset: -2px; }
+.lms-picker-hint, .lms-picker-none { margin: 8px 0; font-size: .8125rem; color: var(--mud-palette-text-secondary); }
+.lms-members { list-style: none; margin: 0 0 12px; padding: 0; }
+.lms-member { display: flex; align-items: center; gap: 8px; padding-block: 6px; border-block-end: 1px solid var(--mud-palette-lines-default); min-width: 0; }
+.lms-member-name { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+.lms-member-role, .lms-member-left { font-size: .8125rem; color: var(--mud-palette-text-secondary); }
+.lms-picker-to { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin-block-end: 8px; }
+.lms-picker-chip { display: inline-flex; align-items: center; gap: 2px; padding-inline: 12px 2px; min-block-size: 32px; border-radius: 16px; background: var(--mud-palette-background-gray); font-size: .875rem; }
+.lms-picker-chip-x { display: inline-grid; place-items: center; background: none; border: 0; cursor: pointer; color: inherit; min-inline-size: 32px; min-block-size: 32px; border-radius: 50%; }
+.lms-picker-chip-x:focus-visible { outline: 2px solid var(--mud-palette-primary); }
+@media (max-width: 599px) { .lms-dialog-fs.mud-dialog { inline-size: 100vw; max-inline-size: 100vw; block-size: 100dvh; max-block-size: 100dvh; margin: 0; border-radius: 0; } }

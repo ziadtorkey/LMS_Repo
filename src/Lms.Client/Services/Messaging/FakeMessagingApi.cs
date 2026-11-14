@@ -36,6 +36,7 @@ public sealed class FakeMessagingApi : IMessagingApi
         public string? Title;
         public List<Guid> Participants = [];
         public bool Locked;
+        public bool ReadOnly;
         public DateTime CreatedAtUtc;
         public Dictionary<Guid, Guid?> LastRead = [];
         public List<Message> Messages = [];
@@ -69,6 +70,9 @@ public sealed class FakeMessagingApi : IMessagingApi
     /// <summary>The caller of the fake (change it to read the same data as another participant).</summary>
     public FakeMessagingUser Me { get; set; }
 
+    /// <summary>Test and demo switch: sending and creating answer 429 <c>rate_limited</c> while it is on.</summary>
+    public bool RateLimited { get; set; }
+
     /// <summary>Pairs that satisfy the Relationship rule (teaches, is guardian of) in either direction.</summary>
     public HashSet<(Guid, Guid)> Related { get; } = [];
 
@@ -89,7 +93,8 @@ public sealed class FakeMessagingApi : IMessagingApi
     private ParticipantDto ToParticipant(Conversation c, Guid id) => new(id, User(id).NameAr, User(id).NameEn, User(id).RoleKey, c.Left.Contains(id));
 
     /// <summary>D74, D77: students read a group and never post in it (they reply privately to the teacher); guardians may post in a teacher-run group that includes them.</summary>
-    private bool ReadOnlyForMe(Conversation c) => c.Kind == ConversationKinds.Group && (Me.RoleKey == BuiltInRoles.Student || (Me.RoleKey == BuiltInRoles.Guardian && User(c.OwnerId).RoleKey != BuiltInRoles.Teacher));
+    private bool ReadOnlyForMe(Conversation c) => c.Kind == ConversationKinds.Group
+        && (Me.RoleKey == BuiltInRoles.Student || (Me.RoleKey == BuiltInRoles.Guardian && User(c.OwnerId).RoleKey != BuiltInRoles.Teacher) || (c.ReadOnly && !StaffRoles.Contains(Me.RoleKey)));
 
     /// <summary>A conversation the caller takes part in; anyone else gets 404, as the server answers (an Org Admin included).</summary>
     private Conversation Mine(Guid id) =>
@@ -146,6 +151,7 @@ public sealed class FakeMessagingApi : IMessagingApi
 
     public Task<ConversationDto> CreateConversationAsync(CreateConversationRequest request, CancellationToken ct = default)
     {
+        if (RateLimited) throw Problem(429, ProblemCodes.rate_limited);
         var others = request.ParticipantUserIds.Distinct().Where(id => id != Me.Id).ToList();
         if (others.Count == 0 || others.Any(id => Users.All(u => u.Id != id))) throw Problem(400, ProblemCodes.validation_failed);
         if (request.Kind == ConversationKinds.Direct && others.Count != 1) throw Problem(400, ProblemCodes.validation_failed);
@@ -196,6 +202,7 @@ public sealed class FakeMessagingApi : IMessagingApi
     public Task<MessageDto> SendAsync(Guid conversationId, SendMessageRequest request, CancellationToken ct = default)
     {
         var c = Mine(conversationId);
+        if (RateLimited) throw Problem(429, ProblemCodes.rate_limited);
         if (c.Locked) throw Problem(409, ProblemCodes.conversation_closed);
         if (ReadOnlyForMe(c)) throw new ApiProblemException(403, ProblemCodes.conversation_read_only, null, null, reason: ConversationReadOnlyReasons.GroupStudentsReadOnly); // L25: the reason says why the caller cannot post
         if (string.IsNullOrWhiteSpace(request.Body)) throw Problem(400, ProblemCodes.validation_failed);
@@ -268,6 +275,14 @@ public sealed class FakeMessagingApi : IMessagingApi
         if (c.Participants.Count(p => !c.Left.Contains(p)) <= 3) throw Problem(400, ProblemCodes.validation_failed); // a group never drops below three
         c.Left.Add(userId);
         return Task.CompletedTask;
+    }
+
+    public Task<ConversationDto> SetReadOnlyAsync(Guid conversationId, bool readOnly, CancellationToken ct = default)
+    {
+        var c = Mine(conversationId);
+        if (c.Kind != ConversationKinds.Group || c.OwnerId != Me.Id) throw Problem(404, ProblemCodes.not_found); // the owner only
+        c.ReadOnly = readOnly;
+        return Task.FromResult(ToDto(c));
     }
 
     public Task<IReadOnlyList<MessageSearchResultDto>> SearchAsync(string query, Guid? conversationId = null, int page = 1, CancellationToken ct = default)

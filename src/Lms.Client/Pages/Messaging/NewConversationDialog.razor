@@ -1,0 +1,95 @@
+@using Lms.Client.Components.Messaging
+@using Lms.Client.Services.Messaging
+@using Lms.Shared.Messaging
+@inject IMessagingApi Messaging
+@inject NavigationManager Navigation
+
+@* New message (spec #615 §3): pick one person, or, for staff, several for a group (students are never offered "New group", L5), then write the first
+   message. A rule or limit error keeps the draft and the picked people, so the user can change something and try again. *@
+<MudDialog Class="lms-dialog-fs">
+    <DialogContent>
+        <div class="lms-form" data-testid="compose">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-3" data-testid="compose-error">@_error</MudAlert>
+            }
+            @if (_summary is { CanCreateGroups: true })
+            {
+                <MudRadioGroup T="bool" Value="_group" ValueChanged="SetGroup" Class="mb-2" data-testid="compose-kind">
+                    <MudRadio T="bool" Value="false" data-testid="compose-direct">@L["Msg_Kind_Direct"]</MudRadio>
+                    <MudRadio T="bool" Value="true" data-testid="compose-group">@L["Msg_New_Group"]</MudRadio>
+                </MudRadioGroup>
+            }
+            @if (_group)
+            {
+                <MudTextField T="string" @bind-Value="_title" Label="@L["Msg_Group_Title"]" MaxLength="100" Class="mb-2" data-testid="compose-title" />
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" Class="mb-2">@L["Msg_Group_Note"]</MudAlert>
+            }
+            @if (_ready)
+            {
+                <RecipientPicker @key="_group" Multiple="_group" MaxPeople="_max" GroupLimit="_max + 1" Preselected="Preselected" SelectedChanged="OnPicked" />
+            }
+            <div class="mt-3">
+                <MessageComposer @bind-Value="_draft" OnSend="CreateAsync" Sending="_sending" Disabled="!CanWrite" />
+            </div>
+            @if (_group && _picked.Count < 2)
+            {
+                <span class="lms-field-error" data-testid="compose-min">@L["Msg_Group_Min"]</span>
+            }
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" OnClick="() => MudDialog.Cancel()" data-testid="compose-cancel">@L["Common_Cancel"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    /// <summary>A person opened from a link (?to=): already picked.</summary>
+    [Parameter] public RecipientDto? Preselected { get; set; }
+
+    private MessagingRulesSummaryDto? _summary;
+    private IReadOnlyList<RecipientDto> _picked = [];
+    private string? _draft, _title, _error;
+    private bool _group, _sending, _ready;
+    private int _max;
+
+    private bool CanWrite => _group ? _picked.Count >= 2 : _picked.Count == 1;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Preselected is not null) _picked = [Preselected];
+        var (summary, _) = await ApiCalls.RunAsync(() => Messaging.GetRulesSummaryAsync(), Navigation);
+        var (limits, _) = await ApiCalls.RunAsync(() => Messaging.GetLimitsAsync(), Navigation);
+        _summary = summary;
+        _max = (limits?.MaxGroupSize ?? MessagingLimits.DefaultMaxGroupSize) - 1; // when the limits cannot be read, the default still applies: never an unlimited group
+        _ready = true;
+    }
+
+    private void SetGroup(bool group)
+    {
+        _group = group;
+        _picked = [];
+        _error = null;
+    }
+
+    private void OnPicked(IReadOnlyList<RecipientDto> picked)
+    {
+        _picked = picked;
+        _error = null;
+    }
+
+    private async Task CreateAsync()
+    {
+        var text = _draft?.Trim();
+        if (string.IsNullOrEmpty(text) || !CanWrite || _sending) return;
+        _sending = true; _error = null;
+        ConversationDto? created = null;
+        var request = new CreateConversationRequest(_group ? ConversationKinds.Group : ConversationKinds.Direct, [.. _picked.Select(p => p.UserId)],
+            _group ? _title?.Trim() : null, text);
+        var ok = await ApiCalls.RunAsync(async () => created = await Messaging.CreateConversationAsync(request), Navigation, L, e => _error = e);
+        _sending = false;
+        if (ok && created is not null) MudDialog.Close(DialogResult.Ok(created.Id));
+    }
+}

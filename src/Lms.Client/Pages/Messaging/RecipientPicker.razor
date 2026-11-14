@@ -1,0 +1,130 @@
+@using Lms.Client.Components.Messaging
+@using Lms.Client.Services.Messaging
+@using Lms.Shared.Authorization
+@using Lms.Shared.Messaging
+@inject IMessagingApi Messaging
+@inject NavigationManager Navigation
+
+@* The recipient picker (spec #615 §3.2): a search field and a list of the people the server allows. The server returns only allowed people, so a forbidden
+   person never appears, with or without a search; the hint line says in words which roles the rules reach. Managers and org admins get the one D69 row
+   in place of any student. *@
+<div class="lms-picker" data-testid="picker">
+    @if (_selected.Count > 0)
+    {
+        <div class="lms-picker-to" role="group" aria-labelledby="@_toId" data-testid="picker-to">
+            <span class="lms-field-label" id="@_toId">@L["Msg_Picker_To"]</span>
+            @foreach (var person in _selected.Values)
+            {
+                var chosen = person;
+                <span class="lms-picker-chip" data-testid="@($"picker-chip-{chosen.UserId}")">
+                    <bdi>@CultureText.Pick(chosen.NameAr, chosen.NameEn)</bdi>
+                    <button type="button" class="lms-picker-chip-x lms-touch" aria-label="@string.Format(L["Msg_Picker_RemoveOne"].Value, CultureText.Pick(chosen.NameAr, chosen.NameEn))"
+                            @onclick="() => RemoveAsync(chosen)" data-testid="@($"picker-chip-remove-{chosen.UserId}")"><MudIcon Icon="@Icons.Material.Rounded.Close" Size="Size.Small" /></button>
+                </span>
+            }
+        </div>
+    }
+    <MudTextField T="string" Value="_search" ValueChanged="SearchAsync" Immediate="false" Variant="Variant.Outlined" Margin="Margin.Dense"
+                  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Rounded.Search" Placeholder="@L["Msg_Picker_Search"]" aria-label="@L["Msg_Picker_Search"]"
+                  Clearable="true" data-testid="picker-search" />
+    @if (_summary is not null)
+    {
+        <p class="lms-picker-hint" data-testid="picker-hint">@Hint</p>
+    }
+    <div role="group" aria-label="@L["Msg_Picker_People"]" data-testid="picker-list">
+        @if (ShowSafeguardingRow)
+        {
+            <SafeguardingOption />
+        }
+        @foreach (var r in _results)
+        {
+            var person = r;
+            <button type="button" class="lms-picker-pick" aria-pressed="@(_selected.ContainsKey(person.UserId) ? "true" : "false")" @onclick="() => ToggleAsync(person)" data-testid="@($"picker-{person.UserId}")">
+                <RecipientOption Name="@CultureText.Pick(person.NameAr, person.NameEn)" Caption="@Caption(person)" Selected="_selected.ContainsKey(person.UserId)" />
+            </button>
+        }
+        @if (_loaded && _results.Count == 0 && !ShowSafeguardingRow)
+        {
+            <p class="lms-picker-none" data-testid="picker-none">@L["Msg_Picker_None"]</p>
+        }
+    </div>
+    @if (_limitHit)
+    {
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" data-testid="picker-limit">@string.Format(L["Msg_Group_Max"].Value, GroupLimit)</MudAlert>
+    }
+</div>
+
+@code {
+    /// <summary>Several people (a group) instead of one.</summary>
+    [Parameter] public bool Multiple { get; set; }
+
+    /// <summary>The most people that may be picked (the group limit without the caller); 0 = no limit.</summary>
+    [Parameter] public int MaxPeople { get; set; }
+
+    /// <summary>The group size the limit message names (people including the caller).</summary>
+    [Parameter] public int GroupLimit { get; set; }
+
+    /// <summary>People who must not be offered (already members).</summary>
+    [Parameter] public IReadOnlyCollection<Guid> Exclude { get; set; } = [];
+
+    [Parameter] public RecipientDto? Preselected { get; set; }
+    [Parameter] public EventCallback<IReadOnlyList<RecipientDto>> SelectedChanged { get; set; }
+
+    private readonly string _toId = "to-" + Guid.NewGuid().ToString("N")[..8];
+    private readonly Dictionary<Guid, RecipientDto> _selected = [];
+    private IReadOnlyList<RecipientDto> _results = [];
+    private MessagingRulesSummaryDto? _summary;
+    private string _search = "";
+    private bool _loaded, _limitHit;
+
+    private bool ShowSafeguardingRow => _summary is { CanCreateGroups: true } s && !s.ReachableRoleKeys.Contains(BuiltInRoles.Student);
+
+    private string Hint => _summary!.ReachableRoleKeys.Count == 0
+        ? L["Msg_Picker_HintNone"]
+        : string.Format(L["Msg_Picker_Hint"].Value, string.Join(", ", _summary.ReachableRoleKeys.Select(k => L[$"Msg_Role_{k}"].Value)));
+
+    private string? Caption(RecipientDto r) => string.Join(" · ", new[] { L[$"Msg_RoleOne_{r.RoleKey}"].Value, CultureText.Pick(r.UnitNameAr ?? "", r.UnitNameEn ?? "") }.Where(s => !string.IsNullOrWhiteSpace(s)));
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Preselected is not null) _selected[Preselected.UserId] = Preselected;
+        var (summary, _) = await ApiCalls.RunAsync(() => Messaging.GetRulesSummaryAsync(), Navigation);
+        _summary = summary;
+        await LoadAsync();
+    }
+
+    private async Task SearchAsync(string? value)
+    {
+        _search = value?.Trim() ?? "";
+        await LoadAsync();
+    }
+
+    private int _request;
+
+    private async Task LoadAsync()
+    {
+        var mine = ++_request;
+        var (people, _) = await ApiCalls.RunAsync(() => Messaging.GetRecipientsAsync(string.IsNullOrEmpty(_search) ? null : _search), Navigation);
+        if (mine != _request) return; // a newer search was started: this answer is stale
+        _results = [.. (people ?? []).Where(p => !Exclude.Contains(p.UserId))];
+        _loaded = true;
+    }
+
+    private async Task RemoveAsync(RecipientDto person)
+    {
+        _limitHit = false;
+        if (_selected.Remove(person.UserId)) await SelectedChanged.InvokeAsync([.. _selected.Values]);
+    }
+
+    private async Task ToggleAsync(RecipientDto person)
+    {
+        _limitHit = false;
+        if (!_selected.Remove(person.UserId))
+        {
+            if (!Multiple) _selected.Clear();
+            else if (MaxPeople > 0 && _selected.Count >= MaxPeople) { _limitHit = true; return; }
+            _selected[person.UserId] = person;
+        }
+        await SelectedChanged.InvokeAsync([.. _selected.Values]);
+    }
+}

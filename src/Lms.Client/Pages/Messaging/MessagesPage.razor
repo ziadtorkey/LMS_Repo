@@ -1,5 +1,6 @@
 @page "/messages"
 @page "/messages/{Id:guid}"
+@page "/messages/new"
 @attribute [Authorize]
 @using Lms.Client.Components.Messaging
 @using Lms.Client.Services.Messaging
@@ -9,9 +10,27 @@
 @inject IMessagingState State
 @inject PermissionState PermState
 @inject NavigationManager Navigation
+@inject IDialogService Dialogs
+@inject MessagingRealtime Realtime
+@implements IDisposable
+
 
 <PageTitle>@L["Msg_Page_Title"]</PageTitle>
-<PageHeader Title="@L["Msg_Page_Title"]" Subtitle="@L["Msg_Page_Subtitle"]" TitleTestId="messages-title" />
+<PageHeader Title="@L["Msg_Page_Title"]" Subtitle="@L["Msg_Page_Subtitle"]" TitleTestId="messages-title">
+    <Actions>
+        @if (PermState.Has(Permissions.Messaging.Send))
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Edit" OnClick="() => NewAsync(null)" data-testid="messages-new">@L["Msg_New_Message"]</MudButton>
+        }
+    </Actions>
+</PageHeader>
+@if (_unavailable)
+{
+    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-3" data-testid="messages-unavailable">@L["Msg_Recipient_Unavailable"]</MudAlert>
+}
+<RealtimeBanner />
+<div class="lms-visually-hidden" role="status" aria-live="polite" data-testid="messages-announcer">@_announcement</div>
+
 
 @if (!PermState.Loaded || _loading)
 {
@@ -24,7 +43,7 @@ else if (!PermState.Has(Permissions.Messaging.View))
 else if (_failed)
 {
     <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="messages-error">
-        @L["Error_Generic"] <MudButton Variant="Variant.Text" OnClick="LoadAsync">@L["Common_Retry"]</MudButton>
+        @L["Error_Generic"] <MudButton Variant="Variant.Text" OnClick="() => LoadAsync()">@L["Common_Retry"]</MudButton>
     </MudAlert>
 }
 else
@@ -49,16 +68,55 @@ else
 @code {
     [Parameter] public Guid? Id { get; set; }
 
+    /// <summary>/messages/new?to=: the person to write to. The deep link opens the form with them picked, or says, without a name, that they cannot be reached.</summary>
+    [SupplyParameterFromQuery(Name = "to")] public Guid? To { get; set; }
+
     private IReadOnlyList<ConversationListItemDto> _inbox = [];
     private int _total;
     private bool _loading = true, _failed;
     private Guid? _unreadFor;
     private int _unreadAtOpen;
+    private bool _unavailable, _newOpened;
+
+    private string? _announcement;
 
     protected override async Task OnInitializedAsync()
     {
+        Realtime.OtherThreadMessage += OnOtherThread;
+        Realtime.ContextReset += OnContextReset;
+        Realtime.Resynced += OnResynced;
         if (!PermState.Loaded) await PermState.RefreshAsync();
         await LoadAsync();
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (!IsNewRoute) _newOpened = false; // leaving /messages/new and coming back (a link from a profile) opens the form again
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_newOpened || _loading || !PermState.Loaded || !IsNewRoute) return;
+        _newOpened = true;
+        RecipientDto? person = null;
+        if (To is { } to)
+        {
+            var (people, _) = await ApiCalls.RunAsync(() => Messaging.GetRecipientsAsync(), Navigation);
+            person = people?.FirstOrDefault(p => p.UserId == to);
+            if (person is null) { _unavailable = true; StateHasChanged(); return; } // no name, no reason: the same words for every refusal
+        }
+        await NewAsync(person);
+    }
+
+    private bool IsNewRoute => new Uri(Navigation.Uri).AbsolutePath.EndsWith("/messages/new", StringComparison.OrdinalIgnoreCase);
+
+    private async Task NewAsync(RecipientDto? person)
+    {
+        var dialog = await Dialogs.ShowAsync<NewConversationDialog>(L["Msg_New_Message"],
+            new DialogParameters<NewConversationDialog> { { x => x.Preselected, person } }, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: Guid created }) Navigation.NavigateTo($"messages/{created}");
+        else if (Id is null && IsNewRoute) Navigation.NavigateTo("messages");
     }
 
     /// <summary>The unread count of the conversation as the list showed it when it was opened; later refreshes (after it was marked read) do not move the divider.</summary>
@@ -72,9 +130,10 @@ else
         return _unreadAtOpen;
     }
 
-    private async Task LoadAsync()
+    private async Task LoadAsync(bool quiet = false)
     {
-        _loading = true; _failed = false;
+        if (!quiet) _loading = true;
+        _failed = false;
         if (PermState.Has(Permissions.Messaging.View))
         {
             var (page, failed) = await ApiCalls.RunAsync(() => Messaging.ListConversationsAsync(1, 100), Navigation);
@@ -82,6 +141,37 @@ else
             if (page is not null) { _inbox = page.Items; _total = page.Total; }
         }
         _loading = false;
+    }
+
+    /// <summary>A message in a conversation that is not open: the list and the badge ask the server again, and a polite announcement says so once (no text of the message).</summary>
+    private void OnOtherThread(Guid conversationId, bool announce) => _ = InvokeAsync(async () =>
+    {
+        if (announce) _announcement = L["Msg_Announce_New"];
+        await ChangedAsync();
+    });
+
+    /// <summary>The context changed: what is shown belongs to the old one.</summary>
+    private void OnContextReset() => _ = InvokeAsync(async () =>
+    {
+        _announcement = null;
+        await LoadAsync();
+        await State.RefreshAsync();
+        StateHasChanged();
+    });
+
+    /// <summary>After a reconnect the list and the badge ask the server again: what arrived while offline is counted.</summary>
+    private void OnResynced(Guid? conversationId, IReadOnlyList<MessageDto> latest) => _ = InvokeAsync(async () =>
+    {
+        await LoadAsync(quiet: true); // the list stays on screen while it is read again
+        await State.RefreshAsync();
+        StateHasChanged();
+    });
+
+    public void Dispose()
+    {
+        Realtime.OtherThreadMessage -= OnOtherThread;
+        Realtime.ContextReset -= OnContextReset;
+        Realtime.Resynced -= OnResynced;
     }
 
     private async Task ChangedAsync()

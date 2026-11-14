@@ -2126,7 +2126,33 @@
   <data name="Msg_ReadOnly" xml:space="preserve"><value>You cannot reply to this conversation.</value></data>
   <data name="Msg_Reply_Privately" xml:space="preserve"><value>Reply privately</value></data>
   <data name="Msg_Thread_Missing" xml:space="preserve"><value>This conversation is not available.</value></data>
+  <data name="Msg_Picker_Search" xml:space="preserve"><value>Search people</value></data>
+  <data name="Msg_Picker_Hint" xml:space="preserve"><value>You can message: {0}.</value></data>
+  <data name="Msg_Picker_HintNone" xml:space="preserve"><value>Your school's rules do not let you start a message.</value></data>
+  <data name="Msg_Picker_None" xml:space="preserve"><value>No one matches.</value></data>
+  <data name="Msg_Role_Student" xml:space="preserve"><value>students</value></data>
+  <data name="Msg_Role_Guardian" xml:space="preserve"><value>guardians</value></data>
+  <data name="Msg_Role_Teacher" xml:space="preserve"><value>teachers</value></data>
+  <data name="Msg_Role_Counselor" xml:space="preserve"><value>counselors</value></data>
+  <data name="Msg_Role_Supervisor" xml:space="preserve"><value>supervisors</value></data>
+  <data name="Msg_Role_Manager" xml:space="preserve"><value>managers</value></data>
+  <data name="Msg_Role_OrgAdmin" xml:space="preserve"><value>organization admins</value></data>
+  <data name="Msg_New_Message" xml:space="preserve"><value>New message</value></data>
+  <data name="Msg_New_Group" xml:space="preserve"><value>New group</value></data>
+  <data name="Msg_Group_Title" xml:space="preserve"><value>Group name</value></data>
+  <data name="Msg_Group_Min" xml:space="preserve"><value>Pick at least two people for a group.</value></data>
+  <data name="Msg_Group_Max" xml:space="preserve"><value>A group has at most {0} people.</value></data>
+  <data name="Msg_Member_Left" xml:space="preserve"><value>Left</value></data>
+  <data name="Msg_Member_Remove" xml:space="preserve"><value>Remove from the group</value></data>
+  <data name="Msg_Member_Add" xml:space="preserve"><value>Add to the group</value></data>
+  <data name="Msg_Group_ReadOnly" xml:space="preserve"><value>Read-only group</value></data>
+  <data name="Msg_Group_ReadOnlyHelp" xml:space="preserve"><value>Only staff can post in a read-only group.</value></data>
+  <data name="Msg_Recipient_Unavailable" xml:space="preserve"><value>You cannot message this person.</value></data>
+  <data name="Msg_Group_Members_Title" xml:space="preserve"><value>Group members</value></data>
   <data name="Msg_Inbox_Capped" xml:space="preserve"><value>Showing your latest {0} conversations.</value></data>
+  <data name="Realtime_Offline" xml:space="preserve"><value>Live updates are paused. Reconnecting; new messages will appear when it is back.</value></data>
+  <data name="Msg_Jump_New" xml:space="preserve"><value>{0} new messages</value></data>
+  <data name="Msg_Announce_New" xml:space="preserve"><value>New message in another conversation.</value></data>
   <data name="Package_Start" xml:space="preserve"><value>Start</value></data>
   <data name="Package_Resume" xml:space="preserve"><value>Resume</value></data>
   <data name="Package_Preview" xml:space="preserve"><value>Preview</value></data>
@@ -2175,4 +2201,16 @@
   <data name="Error_comms_cap_above_ceiling" xml:space="preserve"><value>This limit is above the maximum the platform allows.</value></data>
   <data name="Error_attachment_invalid" xml:space="preserve"><value>The attachment is not allowed: check its type and size, and the number of attachments.</value></data>
   <data name="NavSection_Communication" xml:space="preserve"><value>Communication</value></data>
+  <data name="Msg_Picker_To" xml:space="preserve"><value>To</value></data>
+  <data name="Msg_Picker_RemoveOne" xml:space="preserve"><value>Remove {0}</value></data>
+  <data name="Msg_RoleOne_Student" xml:space="preserve"><value>Student</value></data>
+  <data name="Msg_RoleOne_Guardian" xml:space="preserve"><value>Guardian</value></data>
+  <data name="Msg_RoleOne_Teacher" xml:space="preserve"><value>Teacher</value></data>
+  <data name="Msg_RoleOne_Counselor" xml:space="preserve"><value>Counselor</value></data>
+  <data name="Msg_RoleOne_Supervisor" xml:space="preserve"><value>Supervisor</value></data>
+  <data name="Msg_RoleOne_Manager" xml:space="preserve"><value>Manager</value></data>
+  <data name="Msg_RoleOne_OrgAdmin" xml:space="preserve"><value>Organization admin</value></data>
+  <data name="Msg_Member_Owner" xml:space="preserve"><value>Owner</value></data>
+  <data name="Msg_Member_You" xml:space="preserve"><value>You</value></data>
+  <data name="MudInput_Clear" xml:space="preserve"><value>Clear</value></data>
 </root>

@@ -1,0 +1,30 @@
+@using Lms.Client.Services.Messaging
+@implements IDisposable
+@inject MessagingRealtime Realtime
+
+@* Shown while the live connection is down: messages still send, new ones arrive when the connection returns (X-07). It is a polite status, not an alert. *@
+@if (!_connected)
+{
+    <div class="lms-realtime-banner" role="status" aria-live="polite" data-testid="realtime-offline">
+        <MudIcon Icon="@Icons.Material.Rounded.CloudOff" Size="Size.Small" aria-hidden="true" />
+        <span>@L["Realtime_Offline"]</span>
+    </div>
+}
+
+@code {
+    private bool _connected = true;
+
+    protected override void OnInitialized()
+    {
+        _connected = Realtime.IsConnected;
+        Realtime.ConnectionChanged += OnConnectionChanged;
+    }
+
+    private void OnConnectionChanged(bool connected) => _ = InvokeAsync(() =>
+    {
+        _connected = connected;
+        StateHasChanged();
+    });
+
+    public void Dispose() => Realtime.ConnectionChanged -= OnConnectionChanged;
+}
