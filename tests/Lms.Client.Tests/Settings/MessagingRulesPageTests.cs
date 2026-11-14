@@ -45,7 +45,11 @@ public sealed class MessagingRulesPageTests : ClientTestContext
     {
         var page = await OpenAsync("en", Permissions.Courses.View);
 
-        page.WaitForAssertion(() => Assert.Empty(page.FindAll("[data-testid=rules-title]")));
+        page.WaitForElement("[data-testid=forbidden-page]"); // the not-allowed state
+        Assert.Empty(page.FindAll("[data-testid=rules-title]"));
+        Assert.Empty(page.FindAll("[data-testid=rules-matrix]")); // no matrix
+        Assert.Empty(page.FindAll("[data-testid=rules-save], [data-testid=rules-bar]")); // and nothing to save
+        Assert.Null(_comms.LastRules);
     }
 
     [Fact]
@@ -101,8 +105,28 @@ public sealed class MessagingRulesPageTests : ClientTestContext
         await page.Find("[data-testid=rules-save]").ClickAsync(new());
 
         Assert.Contains("only narrow", page.WaitForElement("[data-testid=rules-error]").TextContent);
-        Assert.NotNull(page.Find("[data-testid=rules-refused-Student-Teacher]")); // the cell the server named
+        Assert.NotNull(page.Find("[data-testid=rules-refused-Student-Teacher]")); // the cell the server named, listed
+        Assert.Contains("only narrow", page.Find("[data-testid=rules-cell-error-Student-Teacher]").TextContent); // and marked on the cell itself
+        Assert.Empty(page.FindAll("[data-testid=rules-cell-error-Teacher-Student]")); // no other cell is blamed
         Assert.NotEmpty(page.FindAll("[data-testid=rules-bar]")); // nothing is lost
+    }
+
+    [Fact]
+    public async Task Mobile_layout_is_one_block_per_sender_role()
+    {
+        var page = await OpenAsync();
+
+        // below 600 px the stacked table shows each sender role as one block and each recipient as a labelled row (the CSS reads data-label)
+        Assert.NotEmpty(page.FindAll(".lms-stack-table"));
+        var rows = page.FindAll("[data-testid=rules-matrix] tbody tr");
+        Assert.Equal(Enum.GetValues<MessagingRole>().Length, rows.Count); // one block per sender role
+        Assert.All(rows, row =>
+        {
+            Assert.Single(row.QuerySelectorAll("th[scope=row]"));
+            var cells = row.QuerySelectorAll("td");
+            Assert.Equal(Enum.GetValues<MessagingRole>().Length, cells.Length);
+            Assert.All(cells, td => Assert.False(string.IsNullOrWhiteSpace(td.GetAttribute("data-label")))); // every recipient row is labelled
+        });
     }
 
     [Fact]

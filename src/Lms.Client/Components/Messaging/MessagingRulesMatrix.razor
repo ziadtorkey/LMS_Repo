@@ -40,6 +40,10 @@
                                     }
                                 </MudSelect>
                             </MessagingRuleCell>
+                            @if (cell.Error is not null)
+                            {
+                                <span class="lms-field-error" role="alert" data-testid="@($"rules-cell-error-{f}-{t}")">@cell.Error</span>
+                            }
                         </td>
                     }
                 </tr>

@@ -120,7 +120,12 @@ else
         _loading = false;
     }
 
-    private void Changed() => _dirty = _cells.Any(c => _saved.GetValueOrDefault(c.Key) != c.Value.Via);
+    private void Changed()
+    {
+        foreach (var cell in _cells.Values) cell.Error = null; // a new choice clears the old refusal
+        _dirty = _cells.Any(c => _saved.GetValueOrDefault(c.Key) != c.Value.Via);
+    }
+
 
     private async Task SaveAsync()
     {
@@ -139,7 +144,11 @@ else
         {
             _error = L["Error_rules_looser_than_default"];
             var parts = (ex.Field ?? string.Empty).Split('>');
-            if (parts.Length == 2 && Enum.TryParse<MessagingRole>(parts[0], out var f) && Enum.TryParse<MessagingRole>(parts[1], out var t)) _refused.Add((f, t));
+            if (parts.Length == 2 && Enum.TryParse<MessagingRole>(parts[0], out var f) && Enum.TryParse<MessagingRole>(parts[1], out var t))
+            {
+                _refused.Add((f, t));
+                if (_cells.TryGetValue((f, t), out var cell)) cell.Error = L["Error_rules_looser_than_default"]; // on the cell itself, not only in the alert
+            }
         }
         catch (Exception ex) when (ex is ApiProblemException or HttpRequestException)
         {

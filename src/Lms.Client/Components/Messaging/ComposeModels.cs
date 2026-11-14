@@ -53,6 +53,9 @@ public sealed class RuleCellValue
     public MessagingVia? Ceiling { get; init; }
     public bool Locked { get; init; }
 
+    /// <summary>Set by the page when the server refused this cell (400 rules_looser_than_default): shown on the cell, in text.</summary>
+    public string? Error { get; set; }
+
     public MessagingVia Max => Ceiling ?? Via;
 
     /// <summary>Narrow to wide: Not allowed, Own classes, Same unit, Anyone. Groups only is a locked D69 value.</summary>
