@@ -28,7 +28,7 @@ else if (!PermState.Has(Permissions.Messaging.View))
 else if (_failed)
 {
     <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="messages-error">
-        @L["Error_Generic"] <MudButton Variant="Variant.Text" OnClick="LoadAsync">@L["Common_Retry"]</MudButton>
+        @L["Error_Generic"] <MudButton Variant="Variant.Text" OnClick="() => LoadAsync()">@L["Common_Retry"]</MudButton>
     </MudAlert>
 }
 else
@@ -65,6 +65,7 @@ else
     {
         Realtime.OtherThreadMessage += OnOtherThread;
         Realtime.ContextReset += OnContextReset;
+        Realtime.Resynced += OnResynced;
         if (!PermState.Loaded) await PermState.RefreshAsync();
         await LoadAsync();
     }
@@ -80,9 +81,10 @@ else
         return _unreadAtOpen;
     }
 
-    private async Task LoadAsync()
+    private async Task LoadAsync(bool quiet = false)
     {
-        _loading = true; _failed = false;
+        if (!quiet) _loading = true;
+        _failed = false;
         if (PermState.Has(Permissions.Messaging.View))
         {
             var (page, failed) = await ApiCalls.RunAsync(() => Messaging.ListConversationsAsync(1, 100), Navigation);
@@ -108,10 +110,19 @@ else
         StateHasChanged();
     });
 
+    /// <summary>After a reconnect the list and the badge ask the server again: what arrived while offline is counted.</summary>
+    private void OnResynced(Guid? conversationId, IReadOnlyList<MessageDto> latest) => _ = InvokeAsync(async () =>
+    {
+        await LoadAsync(quiet: true); // the list stays on screen while it is read again
+        await State.RefreshAsync();
+        StateHasChanged();
+    });
+
     public void Dispose()
     {
         Realtime.OtherThreadMessage -= OnOtherThread;
         Realtime.ContextReset -= OnContextReset;
+        Realtime.Resynced -= OnResynced;
     }
 
     private async Task ChangedAsync()

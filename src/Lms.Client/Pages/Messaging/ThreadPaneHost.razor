@@ -114,15 +114,11 @@ else
         : string.Join(", ", _conversation.Participants.Where(p => p.UserId != PermState.UserId).Select(p => CultureText.Pick(p.NameAr, p.NameEn)));
 
     /// <summary>The reason the composer is off, in plain words. A block and a rule are one sentence on purpose (L18): it never says which, or why.</summary>
-    private string ReasonText(ConversationDto c) => (c.ReadOnlyReason ?? (c.IsLocked ? ConversationReadOnlyReasons.Locked : null)) switch
+    private string ReasonText(ConversationDto c)
     {
-        ConversationReadOnlyReasons.Locked => L["Msg_Locked"],
-        ConversationReadOnlyReasons.GroupStudentsReadOnly => L["Msg_ReadOnly_GroupStudents"],
-        ConversationReadOnlyReasons.GroupGuardiansReadOnly => L["Msg_ReadOnly_GroupGuardians"],
-        ConversationReadOnlyReasons.BlockedOrRule => L["Msg_ReadOnly_BlockedOrRule"],
-        ConversationReadOnlyReasons.Restricted => L["Msg_ReadOnly_Restricted"],
-        _ => L["Msg_ReadOnly"],
-    };
+        var reason = c.ReadOnlyReason ?? (c.IsLocked ? ConversationReadOnlyReasons.Locked : null);
+        return reason is not null && ConversationReadOnlyReasons.All.Contains(reason) ? L[$"Msg_ReadOnly_{reason}"] : L["Msg_ReadOnly"];
+    }
 
     private bool CanSend => PermState.Has(Lms.Shared.Authorization.Permissions.Messaging.Send);
 

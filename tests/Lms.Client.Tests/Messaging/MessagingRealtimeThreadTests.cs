@@ -145,4 +145,20 @@ public sealed class MessagingRealtimeThreadTests : ClientTestContext
 
         cut.WaitForAssertion(() => Assert.Empty(cut.FindAll("textarea"))); // the state came from the server again: no composer
     }
+
+    [Fact]
+    public async Task Reconnect_reloads_the_inbox_list_and_the_badge()
+    {
+        var c = await SignInAndConversationAsync();
+        JSInterop.SetupModule("./js/thread.js").SetupVoid("scrollToEnd", _ => true).SetVoidResult();
+        var cut = Open(null);
+        Assert.DoesNotContain("sent while offline", cut.Find("[data-testid=inbox-list]").TextContent);
+        MessagingHub.Drop();
+
+        HudaSays(c.Id, "sent while offline"); // no event reached the client
+        MessagingHub.Reconnect();
+
+        cut.WaitForAssertion(() => Assert.Contains("sent while offline", cut.Find("[data-testid=inbox-list]").TextContent)); // the list was read again
+        Assert.Contains("2", cut.Find("[data-testid=inbox-list] .lms-conv-count").TextContent); // and so was the unread count
+    }
 }
