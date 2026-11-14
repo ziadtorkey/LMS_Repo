@@ -1749,4 +1749,7 @@
   <data name="Band_Problem_Marked" xml:space="preserve"><value>This band is part of a problem the server found. See the list above.</value></data>
   <data name="ScaleDialog_ReadOnlyFrom" xml:space="preserve"><value>This comes from {0}. Change it there; here it can only be read.</value></data>
   <data name="ScaleDialog_ReadOnlyPreset" xml:space="preserve"><value>This is a preset. Add it to your unit from the preset menu to use it or change it.</value></data>
+  <data name="Grd_Term_Label" xml:space="preserve"><value>Term</value></data>
+  <data name="Grd_Withdrew_On" xml:space="preserve"><value>Withdrew on {0}</value></data>
+  <data name="Grd_Withdrawn" xml:space="preserve"><value>Withdrawn</value></data>
 </root>

@@ -18,6 +18,7 @@ public sealed class FakeGradebookApi : IGradebookApi
 
     public static readonly Guid DemoClassCourseId = Lms.Client.Services.Api.FakeLessonPlansApi.ArabicClassCourseId;
     public static readonly Guid DemoTermId = Guid.Parse("00000000-0000-0000-0000-0000000e0010");
+    public static readonly Guid Term2Id = Guid.Parse("00000000-0000-0000-0000-0000000e0011");
     public static readonly Guid HomeworkCategoryId = Guid.Parse("00000000-0000-0000-0000-0000000e0021");
     public static readonly Guid ExamsCategoryId = Guid.Parse("00000000-0000-0000-0000-0000000e0022");
     public static readonly Guid ManualItemId = Guid.Parse("00000000-0000-0000-0000-0000000e0031");
@@ -68,6 +69,11 @@ public sealed class FakeGradebookApi : IGradebookApi
 
     /// <summary>Lets a test reshape the answer of <see cref="GetAsync"/> (a different total, a locked state, values the page must show as given).</summary>
     public Func<GradebookDto, GradebookQuery, GradebookDto>? Transform { get; set; }
+
+    private readonly Dictionary<Guid, DateOnly> _withdrawn = [];
+
+    /// <summary>Marks a student as having left the course on a day (the staff row stays, with <c>IsWithdrawn</c>).</summary>
+    public void Withdraw(Guid studentId, DateOnly on) => _withdrawn[studentId] = on;
 
     /// <summary>Sets one cell directly, in any state (the demo cannot reach every state through the rules).</summary>
     public void SetCell(Guid studentId, GradeCellDto cell) => _cells[(studentId, cell.ItemId)] = cell;
@@ -145,7 +151,8 @@ public sealed class FakeGradebookApi : IGradebookApi
         }).ToList();
         var f = Final(scored);
         var names = _names[student].Split('|');
-        return new GradeRowDto(student, names[0], names[1], "S-" + (Array.IndexOf(StudentIds, student) + 1).ToString("D4"), cells, results, f.Percent, f.Code, f.LabelAr, f.LabelEn, f.Points, _versions[student]);
+        return new GradeRowDto(student, names[0], names[1], "S-" + (Array.IndexOf(StudentIds, student) + 1).ToString("D4"), cells, results, f.Percent, f.Code, f.LabelAr, f.LabelEn, f.Points, _versions[student],
+            _withdrawn.ContainsKey(student), _withdrawn.TryGetValue(student, out var on) ? on : null);
     }
 
     public Task<GradebookDto> GetAsync(Guid classCourseId, GradebookQuery query, CancellationToken ct = default)
@@ -169,6 +176,8 @@ public sealed class FakeGradebookApi : IGradebookApi
         var book = new GradebookDto(Guid.Parse("00000000-0000-0000-0000-0000000e0061"), classCourseId, DemoTermId, "الفصل الأول", "Term 1", config,
             [.. _categories], NoItems ? [] : [.. _items.OrderBy(i => i.Order)], rows, total == 100m, total, Locked ? GradebookStates.Locked : GradebookStates.Open,
             Locked ? now : null, 0, CanManage, CanManage, now, now);
+        // The second term of the demo year has no grade items yet.
+        if (query.TermId == Term2Id) book = book with { TermId = Term2Id, TermNameAr = "الفصل الثاني", TermNameEn = "Term 2", Items = [] };
         return Task.FromResult(Transform is null ? book : Transform(book, query));
     }
 

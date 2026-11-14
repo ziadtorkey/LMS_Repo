@@ -67,6 +67,7 @@ public static class ClientServices
             services.AddSingleton<IModulesApi, FakeModulesApi>();
             services.AddSingleton<ILiveSessionsApi, FakeLiveSessionsApi>();
             services.AddSingleton<Lms.Client.Services.Grading.IGradingScalesApi, Lms.Client.Services.Grading.FakeGradingScalesApi>();
+            services.AddSingleton<Lms.Client.Services.Grading.IGradebookUnit, Lms.Client.Services.Grading.FakeGradebookUnit>();
             services.AddSingleton<Lms.Client.Services.Grading.IGradebookApi>(sp => new Lms.Client.Services.Grading.FakeGradebookApi((Lms.Client.Services.Grading.FakeGradingScalesApi)sp.GetRequiredService<Lms.Client.Services.Grading.IGradingScalesApi>()));
             services.AddSingleton<IActivityOverviewApi, FakeActivityOverviewApi>();
             services.AddScoped<AuthenticationStateProvider, FakeAuthenticationStateProvider>();
@@ -123,6 +124,7 @@ public static class ClientServices
         services.AddScoped<ILiveSessionsApi, LiveSessionsApi>();
         services.AddScoped<Lms.Client.Services.Grading.IGradingScalesApi, Lms.Client.Services.Grading.GradingScalesApi>();
         services.AddScoped<Lms.Client.Services.Grading.IGradebookApi, Lms.Client.Services.Grading.GradebookApi>();
+        services.AddScoped<Lms.Client.Services.Grading.IGradebookUnit, Lms.Client.Services.Grading.GradebookUnit>();
         services.AddScoped<IActivityOverviewApi, ActivityOverviewApi>();
     }
 }

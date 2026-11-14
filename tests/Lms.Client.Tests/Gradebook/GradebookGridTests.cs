@@ -31,12 +31,14 @@ public sealed class GradebookGridTests : ClientTestContext
     private static readonly Guid S0 = FakeGradebookApi.StudentIds[0];
     private static readonly Guid S1 = FakeGradebookApi.StudentIds[1];
     private readonly FakeGradebookApi _api = new();
+    private readonly FakeGradebookUnit _unit = new();
     private readonly FakeViewport _viewport = new();
 
     public GradebookGridTests()
     {
         Culture.Current = new CultureInfo("en");
         Services.AddSingleton<IGradebookApi>(_api);
+        Services.AddSingleton<IGradebookUnit>(_unit);
         Services.AddSingleton<IViewport>(_viewport);
     }
 
@@ -292,7 +294,7 @@ public sealed class GradebookGridTests : ClientTestContext
 
         Assert.Contains("Term 1", page.Markup);
         Assert.Contains("Term 1 · ", page.Markup);
-        Assert.Equal("Term 1", Text(page.Find("[data-testid=term-chip]")));
+        Assert.Equal("Term 1", Text(page.Find($"[data-testid=term-{FakeGradebookApi.DemoTermId}]")));
     }
 
     [Fact]
@@ -340,5 +342,85 @@ public sealed class GradebookGridTests : ClientTestContext
         Assert.DoesNotContain("Grd_", page.Markup); // a missing key would show its name
         // Numbers stay left to right inside the Arabic page.
         Assert.Equal("ltr", page.Find($"[data-testid=final-{S0}]").GetAttribute("dir"));
+    }
+
+    // ---- the term picker (D62: two or three terms per year) ----
+
+    [Fact]
+    public async Task The_term_picker_lists_the_terms_of_the_year_with_the_current_one_selected()
+    {
+        var page = await OpenAsync();
+
+        Assert.NotNull(page.Find("[data-testid=term-picker]"));
+        Assert.Equal("Term 1", Text(page.Find($"[data-testid=term-{FakeGradebookApi.DemoTermId}]")));
+        Assert.Equal("Term 2", Text(page.Find($"[data-testid=term-{FakeGradebookApi.Term2Id}]")));
+    }
+
+    [Fact]
+    public async Task Choosing_a_term_goes_to_its_address_and_loads_that_terms_gradebook()
+    {
+        var page = await OpenAsync();
+
+        page.Find($"[data-testid=term-{FakeGradebookApi.Term2Id}]").Click();
+
+        page.WaitForAssertion(() => Assert.EndsWith($"gradebook?termId={FakeGradebookApi.Term2Id}", Services.GetRequiredService<Microsoft.AspNetCore.Components.NavigationManager>().Uri), Wait);
+        page.WaitForAssertion(() => Assert.Equal(FakeGradebookApi.Term2Id, _api.LastQuery!.TermId), Wait);
+        page.WaitForElement("[data-testid=gradebook-no-items]", Wait); // the second term has no items yet
+    }
+
+    [Fact]
+    public async Task One_term_is_just_a_label()
+    {
+        _unit.Terms.RemoveAt(1);
+
+        var page = await OpenAsync();
+
+        Assert.Empty(page.FindAll("[data-testid=term-picker]"));
+        Assert.Equal("Term 1", Text(page.Find("[data-testid=term-chip]")));
+    }
+
+    [Fact]
+    public async Task Without_a_resolvable_year_the_term_is_a_label_too()
+    {
+        _unit.Terms.Clear();
+
+        var page = await OpenAsync();
+
+        Assert.Equal("Term 1", Text(page.Find("[data-testid=term-chip]")));
+    }
+
+    // ---- a withdrawn student stays visible to staff, marked in words ----
+
+    [Fact]
+    public async Task A_withdrawn_student_is_marked_with_the_date_in_the_grid()
+    {
+        _api.Withdraw(S1, new DateOnly(2027, 1, 12));
+
+        var page = await OpenAsync();
+
+        Assert.Equal("Withdrew on 2027-01-12", Text(page.Find($"[data-testid=withdrawn-{S1}]")));
+        Assert.Empty(page.FindAll($"[data-testid=withdrawn-{S0}]")); // active students carry no marker
+        Assert.NotEmpty(page.FindAll($"[data-testid=cell-{S1}-{FakeGradebookApi.AutoItemId}]")); // the stored grades are still there
+    }
+
+    [Fact]
+    public async Task The_withdrawn_marker_is_in_arabic_and_keeps_the_date_left_to_right()
+    {
+        Culture.Current = new CultureInfo("ar");
+        _api.Withdraw(S1, new DateOnly(2027, 1, 12));
+
+        var page = await OpenAsync();
+
+        Assert.Equal("انسحب في 2027-01-12", Text(page.Find($"[data-testid=withdrawn-{S1}]")));
+    }
+
+    [Fact]
+    public async Task A_withdrawn_student_without_a_known_day_says_withdrawn()
+    {
+        _api.Transform = (book, _) => book with { Rows = book.Rows with { Items = [.. book.Rows.Items.Select(r => r.StudentId == S1 ? r with { IsWithdrawn = true, WithdrawnOn = null } : r)] } };
+
+        var page = await OpenAsync();
+
+        Assert.Equal("Withdrawn", Text(page.Find($"[data-testid=withdrawn-{S1}]")));
     }
 }

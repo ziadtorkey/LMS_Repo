@@ -19,6 +19,10 @@
                            OnClick="() => Move(-1)" data-testid="student-prev" />
             <div class="who">
                 <b data-testid="student-name">@Culture.Pick(row.StudentNameAr, row.StudentNameEn)</b>
+                @if (row.IsWithdrawn)
+                {
+                    <div><span class="mini mini-warn" data-testid="phone-withdrawn">@GradeFormat.Withdrawn(L, Culture.Current, row.WithdrawnOn)</span></div>
+                }
                 <div class="lms-muted" data-testid="student-position">@string.Format(Culture.Current, L["Grd_StudentPosition"].Value, _index + 1, Matches.Count)</div>
             </div>
             <MudIconButton Icon="@Icons.Material.Rounded.ChevronRight" Class="lms-icon-flip" aria-label="@L["Grd_Next_Student"]" Disabled="_index >= Matches.Count - 1"

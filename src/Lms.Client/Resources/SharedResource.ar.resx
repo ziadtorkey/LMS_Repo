@@ -1749,4 +1749,7 @@
   <data name="Band_Problem_Marked" xml:space="preserve"><value>هذه الفئة جزء من مشكلة وجدها الخادم. راجع القائمة أعلاه.</value></data>
   <data name="ScaleDialog_ReadOnlyFrom" xml:space="preserve"><value>هذا من {0}. غيّره هناك؛ يمكنك هنا قراءته فقط.</value></data>
   <data name="ScaleDialog_ReadOnlyPreset" xml:space="preserve"><value>هذا نموذج جاهز. أضفه إلى وحدتك من قائمة النماذج لاستخدامه أو تعديله.</value></data>
+  <data name="Grd_Term_Label" xml:space="preserve"><value>الفصل</value></data>
+  <data name="Grd_Withdrew_On" xml:space="preserve"><value>انسحب في {0}</value></data>
+  <data name="Grd_Withdrawn" xml:space="preserve"><value>منسحب</value></data>
 </root>

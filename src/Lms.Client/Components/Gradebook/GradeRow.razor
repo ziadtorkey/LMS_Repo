@@ -7,6 +7,10 @@
         <MudButton Variant="Variant.Text" Size="Size.Small" Class="lms-gb-name" OnClick="() => OnStudent.InvokeAsync(Row)"
                    data-testid="@($"student-{Row.StudentId}")">@Culture.Pick(Row.StudentNameAr, Row.StudentNameEn)</MudButton>
         <span class="lms-muted" dir="ltr">@Row.StudentNumber</span>
+        @if (Row.IsWithdrawn)
+        {
+            <span class="mini mini-warn" data-testid="@($"withdrawn-{Row.StudentId}")">@GradeFormat.Withdrawn(L, Culture.Current, Row.WithdrawnOn)</span>
+        }
     </th>
     @{
         var first = true;
