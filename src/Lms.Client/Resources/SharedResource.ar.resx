@@ -1822,6 +1822,10 @@
   <data name="AuditEntity_GradeEntry" xml:space="preserve"><value>درجة</value></data>
   <data name="AuditEntity_GradeSnapshot" xml:space="preserve"><value>لقطة الدرجات</value></data>
   <data name="PermModule_Grades" xml:space="preserve"><value>الدرجات</value></data>
+  <data name="ClassCourse_TabGradebook" xml:space="preserve"><value>دفتر الدرجات</value></data>
+  <data name="Grd_Title" xml:space="preserve"><value>دفتر الدرجات</value></data>
+  <data name="Grd_GridSoonTitle" xml:space="preserve"><value>جدول الدرجات قادم قريبًا</value></data>
+  <data name="Grd_GridSoonText" xml:space="preserve"><value>ستظهر هنا فئات الدرجات وبنودها ودرجات هذا المقرر الدراسي.</value></data>
   <data name="NavSection_Structure" xml:space="preserve"><value>الهيكل</value></data>
   <data name="NavSection_People" xml:space="preserve"><value>الأشخاص</value></data>
   <data name="NavSection_Academic" xml:space="preserve"><value>الأكاديمي</value></data>
