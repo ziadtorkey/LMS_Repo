@@ -55,6 +55,28 @@ public sealed class GradebookProbeRows : IProbeRowModule
                 return new ProbeRequest(Routes.ClassCourseGradebookItem(cc, item));
             },
             Expect(NoContent, NoContent, NotFound, NotFound, NotFound, NoContent)),
+        new("gradebook item export", HttpMethod.Get, Routes.ClassCourseGradebookItemExportPattern,
+            async (w, _) =>
+            {
+                var (cc, item, _) = await NewItemAsync(w);
+                return new ProbeRequest(Routes.ClassCourseGradebookItemExport(cc, item));
+            },
+            Expect(Ok, Ok, NotFound, NotFound, NotFound, Ok)),
+        // the matrix cannot send multipart: a caller that passes every check reaches the form check and answers 400 grade_import_invalid
+        new("gradebook item import preview", HttpMethod.Post, Routes.ClassCourseGradebookItemImportPreviewPattern,
+            async (w, _) =>
+            {
+                var (cc, item, _) = await NewItemAsync(w);
+                return new ProbeRequest(Routes.ClassCourseGradebookItemImportPreview(cc, item), new { });
+            },
+            Expect(BadRequest, BadRequest, NotFound, NotFound, NotFound, BadRequest)),
+        new("gradebook item import apply", HttpMethod.Post, Routes.ClassCourseGradebookItemImportApplyPattern,
+            async (w, _) =>
+            {
+                var (cc, item, _) = await NewItemAsync(w);
+                return new ProbeRequest(Routes.ClassCourseGradebookItemImportApply(cc, item), new ApplyGradeImportRequest("not-a-token"));
+            },
+            Expect(BadRequest, BadRequest, NotFound, NotFound, NotFound, BadRequest)),
         new("gradebook entries", HttpMethod.Put, Routes.ClassCourseGradebookEntriesPattern,
             async (w, _) =>
             {
