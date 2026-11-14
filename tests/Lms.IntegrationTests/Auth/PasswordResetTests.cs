@@ -37,7 +37,7 @@ public sealed class PasswordResetTests(LmsApiFactory factory)
     [Fact]
     public async Task Forgot_password_for_known_email_sends_one_reset_mail()
     {
-        var host = new AuthTestHost(factory);
+        using var host = new AuthTestHost(factory);
         var user = await host.CreateUserAsync();
         using var browser = English(host.NewBrowser());
 
@@ -54,7 +54,7 @@ public sealed class PasswordResetTests(LmsApiFactory factory)
     [Fact]
     public async Task Forgot_password_for_unknown_email_shows_same_confirmation_and_sends_nothing()
     {
-        var host = new AuthTestHost(factory);
+        using var host = new AuthTestHost(factory);
         using var browser = English(host.NewBrowser());
 
         var response = await RequestReset(browser, "nobody-here@lms.test");
@@ -67,7 +67,7 @@ public sealed class PasswordResetTests(LmsApiFactory factory)
     [Fact]
     public async Task Reset_with_valid_token_changes_password_and_link_cannot_be_reused()
     {
-        var host = new AuthTestHost(factory);
+        using var host = new AuthTestHost(factory);
         var user = await host.CreateUserAsync();
         using var browser = English(host.NewBrowser());
         await RequestReset(browser, user.Email!);
@@ -100,7 +100,7 @@ public sealed class PasswordResetTests(LmsApiFactory factory)
     [Fact]
     public async Task Reset_with_expired_token_shows_LinkInvalid()
     {
-        var host = new AuthTestHost(factory, resetLifespan: TimeSpan.FromSeconds(1));
+        using var host = new AuthTestHost(factory, resetLifespan: TimeSpan.FromSeconds(1));
         var user = await host.CreateUserAsync();
         using var browser = English(host.NewBrowser());
         await RequestReset(browser, user.Email!);
@@ -117,7 +117,7 @@ public sealed class PasswordResetTests(LmsApiFactory factory)
     [Fact]
     public async Task Reset_clears_lockout()
     {
-        var host = new AuthTestHost(factory);
+        using var host = new AuthTestHost(factory);
         var user = await host.CreateUserAsync();
         using var browser = English(host.NewBrowser());
         for (var i = 0; i < 5; i++)
@@ -137,7 +137,7 @@ public sealed class PasswordResetTests(LmsApiFactory factory)
     [Fact]
     public async Task Invitation_link_sets_first_password_and_user_can_log_in()
     {
-        var host = new AuthTestHost(factory);
+        using var host = new AuthTestHost(factory);
         var email = $"invited-{Guid.NewGuid():N}@lms.test";
         User user;
         using (var scope = host.Services.CreateScope())
@@ -169,7 +169,7 @@ public sealed class PasswordResetTests(LmsApiFactory factory)
     [Fact]
     public async Task Invitation_token_cannot_be_used_on_the_reset_flow()
     {
-        var host = new AuthTestHost(factory);
+        using var host = new AuthTestHost(factory);
         var email = $"invited-{Guid.NewGuid():N}@lms.test";
         using (var scope = host.Services.CreateScope())
         {
@@ -189,7 +189,7 @@ public sealed class PasswordResetTests(LmsApiFactory factory)
     [Fact]
     public async Task Token_does_not_work_for_another_user()
     {
-        var host = new AuthTestHost(factory);
+        using var host = new AuthTestHost(factory);
         var user = await host.CreateUserAsync();
         var other = await host.CreateUserAsync();
         using var browser = English(host.NewBrowser());
@@ -204,7 +204,7 @@ public sealed class PasswordResetTests(LmsApiFactory factory)
     [Fact]
     public async Task Mismatched_or_weak_passwords_are_refused_without_consuming_the_link()
     {
-        var host = new AuthTestHost(factory);
+        using var host = new AuthTestHost(factory);
         var user = await host.CreateUserAsync();
         using var browser = English(host.NewBrowser());
         await RequestReset(browser, user.Email!);
@@ -224,7 +224,7 @@ public sealed class PasswordResetTests(LmsApiFactory factory)
     [Fact]
     public async Task Reset_writes_PasswordReset_security_event()
     {
-        var host = new AuthTestHost(factory);
+        using var host = new AuthTestHost(factory);
         var user = await host.CreateUserAsync();
         using var browser = English(host.NewBrowser());
         await RequestReset(browser, user.Email!);
@@ -241,7 +241,7 @@ public sealed class PasswordResetTests(LmsApiFactory factory)
     [Fact]
     public async Task Forgot_password_during_a_mail_outage_still_shows_the_same_confirmation()
     {
-        var host = new AuthTestHost(factory);
+        using var host = new AuthTestHost(factory);
         var user = await host.CreateUserAsync();
         host.Emails.Fail = true;
         using var browser = English(host.NewBrowser());
@@ -255,7 +255,7 @@ public sealed class PasswordResetTests(LmsApiFactory factory)
     [Fact]
     public async Task Unknown_email_writes_no_PasswordResetRequested_event()
     {
-        var host = new AuthTestHost(factory);
+        using var host = new AuthTestHost(factory);
         using var browser = English(host.NewBrowser());
         await RequestReset(browser, "ghost-account@lms.test");
 
@@ -268,7 +268,7 @@ public sealed class PasswordResetTests(LmsApiFactory factory)
     [Fact]
     public async Task Sixth_forgot_password_post_in_a_minute_gets_429()
     {
-        var host = new AuthTestHost(factory, permitLimit: 5, remoteIp: "198.51.100.77");
+        using var host = new AuthTestHost(factory, permitLimit: 5, remoteIp: "198.51.100.77");
         using var browser = English(host.NewBrowser());
 
         for (var i = 0; i < 5; i++)
@@ -285,7 +285,7 @@ public sealed class PasswordResetTests(LmsApiFactory factory)
     [Fact]
     public async Task Login_posts_are_rate_limited_too()
     {
-        var host = new AuthTestHost(factory, permitLimit: 5, remoteIp: "198.51.100.78");
+        using var host = new AuthTestHost(factory, permitLimit: 5, remoteIp: "198.51.100.78");
         using var browser = English(host.NewBrowser());
 
         for (var i = 0; i < 5; i++)
@@ -300,7 +300,7 @@ public sealed class PasswordResetTests(LmsApiFactory factory)
     [Fact]
     public async Task Reset_page_renders_rtl_in_arabic()
     {
-        var host = new AuthTestHost(factory);
+        using var host = new AuthTestHost(factory);
         var user = await host.CreateUserAsync();
         using var browser = host.NewBrowser();
         await RequestReset(browser, user.Email!);
@@ -318,7 +318,7 @@ public sealed class PasswordResetTests(LmsApiFactory factory)
     [Fact]
     public async Task Login_page_links_to_forgot_password()
     {
-        var host = new AuthTestHost(factory);
+        using var host = new AuthTestHost(factory);
         using var browser = English(host.NewBrowser());
 
         var html = await (await browser.GetAsync("/Account/Login")).Content.ReadAsStringAsync();
