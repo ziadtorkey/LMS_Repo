@@ -1,0 +1,37 @@
+{
+  "name": "Saudi school, percentage bands, normalise, points-weighted, 2 places",
+  "rules": { "missing": "Normalise", "method": "PointsWeighted", "decimalPlaces": 2, "publishedOnly": false },
+  "bands": [
+    { "min": 0, "en": "Fail", "ar": "راسب" }, { "min": 60, "en": "Acceptable", "ar": "مقبول" }, { "min": 70, "en": "Good", "ar": "جيد" },
+    { "min": 80, "en": "Very Good", "ar": "جيد جدا" }, { "min": 90, "en": "Excellent", "ar": "ممتاز" }
+  ],
+  "categories": [ { "id": "tests", "weight": 50 }, { "id": "quizzes", "weight": 30 }, { "id": "homework", "weight": 20 } ],
+  "items": [
+    { "id": "t1", "category": "tests", "max": 50 }, { "id": "t2", "category": "tests", "max": 50 },
+    { "id": "q1", "category": "quizzes", "max": 10 }, { "id": "q2", "category": "quizzes", "max": 10 }, { "id": "q3", "category": "quizzes", "max": 10 },
+    { "id": "h1", "category": "homework", "max": 20 }
+  ],
+  "events": [
+    { "item": "t1", "student": "s1", "revision": 1, "points": 40 }, { "item": "t2", "student": "s1", "revision": 1, "points": 45 },
+    { "item": "q1", "student": "s1", "revision": 1, "points": 8 }, { "item": "q2", "student": "s1", "revision": 1, "points": 9 },
+    { "item": "q3", "student": "s1", "revision": 1, "points": 10 }, { "item": "h1", "student": "s1", "revision": 1, "points": 18 },
+
+    { "item": "t1", "student": "s2", "revision": 1, "points": 30 }, { "item": "t2", "student": "s2", "revision": 1, "points": 35 },
+    { "item": "q1", "student": "s2", "revision": 1, "points": 5 }, { "item": "q2", "student": "s2", "revision": 1, "points": 6 },
+
+    { "item": "t1", "student": "s3", "revision": 1, "points": 20 }, { "item": "t1", "student": "s3", "revision": 2, "points": 30 },
+    { "item": "t2", "student": "s3", "revision": 1, "points": 10 },
+    { "item": "q1", "student": "s3", "revision": 1, "points": 10 }, { "item": "q2", "student": "s3", "revision": 1, "points": 10 },
+    { "item": "q3", "student": "s3", "revision": 1, "points": 10 }, { "item": "h1", "student": "s3", "revision": 1, "points": 12 }
+  ],
+  "entries": [
+    { "item": "h1", "student": "s2", "excused": true },
+    { "item": "t2", "student": "s3", "points": 50, "override": true }
+  ],
+  "expected": [
+    { "student": "s1", "final": 87.5, "band": "Very Good", "complete": true },
+    { "student": "s2", "final": 61.25, "band": "Acceptable", "complete": false },
+    { "student": "s3", "final": 82, "band": "Very Good", "complete": true }
+  ],
+  "handComputation": "s1: tests (40+45)/100=85, quizzes 27/30=90, homework 18/20=90 -> .5*85+.3*90+.2*90 = 87.5. s2: tests 65, quizzes (5+6)/20=55 over the scored items, homework excused so it does not take part -> (.5*65+.3*55)/.8 = 61.25; q3 is missing so the student is not complete. s3: t1 uses revision 2 (30), t2 uses the override (50): tests 80; quizzes 100; homework 60 -> 40+30+12 = 82."
+}
