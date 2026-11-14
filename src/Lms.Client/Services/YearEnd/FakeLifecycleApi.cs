@@ -34,6 +34,14 @@ public sealed class FakeLifecycleApi : ILifecycleApi
 
     public Func<DateTime> Now { get; set; } = () => DateTime.UtcNow;
 
+    /// <summary>The built-in role of the caller (D82): the fake holds what that role holds, as the server does. Org Admin by default.</summary>
+    public string Role { get; set; } = Lms.Shared.Authorization.BuiltInRoles.OrgAdmin;
+
+    private void Require(string permission)
+    {
+        if (!Lms.Shared.Authorization.BuiltInRoles.Get(Role).DefaultPermissions.Contains(permission)) throw FakeProblems.Of(403, null);
+    }
+
     public IEnumerable<Guid> ActiveStudents => _active;
 
     public bool IsActive(Guid studentId) => _active.Contains(studentId);
@@ -51,6 +59,7 @@ public sealed class FakeLifecycleApi : ILifecycleApi
 
     public Task WithdrawAsync(Guid studentId, WithdrawStudentRequest request, CancellationToken ct = default)
     {
+        Require(Lms.Shared.Authorization.Permissions.Students.Withdraw);
         var reason = request.ReasonKey;
         if (reason != WithdrawalReasons.Other && !_reasons.Any(r => r.Key == reason && r.IsActive))
             throw FakeProblems.Of(400, ProblemCodes.validation_failed, nameof(WithdrawStudentRequest.ReasonKey));
@@ -60,8 +69,11 @@ public sealed class FakeLifecycleApi : ILifecycleApi
         return Leave(studentId, StudentExitKinds.Withdrawn, reason, request.EffectiveDate);
     }
 
-    public Task GraduateAsync(Guid studentId, GraduateStudentRequest request, CancellationToken ct = default) =>
-        Leave(studentId, StudentExitKinds.Graduated, null, request.EffectiveDate);
+    public Task GraduateAsync(Guid studentId, GraduateStudentRequest request, CancellationToken ct = default)
+    {
+        Require(Lms.Shared.Authorization.Permissions.Students.Withdraw);
+        return Leave(studentId, StudentExitKinds.Graduated, null, request.EffectiveDate);
+    }
 
     private Task Leave(Guid studentId, string kind, string? reason, DateOnly effective)
     {
@@ -76,6 +88,7 @@ public sealed class FakeLifecycleApi : ILifecycleApi
 
     public Task ReadmitAsync(Guid studentId, ReadmitStudentRequest request, CancellationToken ct = default)
     {
+        Require(Lms.Shared.Authorization.Permissions.Students.Readmit);
         var entry = _archive.FirstOrDefault(a => a.StudentId == studentId) ?? throw FakeProblems.Of(404, ProblemCodes.not_found);
         if (request.ClassId == ClosedYearClassId) throw FakeProblems.Of(409, ProblemCodes.readmit_year_closed);
         if (request.ClassId == FullClassId) throw FakeProblems.Of(409, ProblemCodes.readmit_class_full);
@@ -86,6 +99,7 @@ public sealed class FakeLifecycleApi : ILifecycleApi
 
     public Task<PagedResult<ArchivedStudentDto>> GetArchiveAsync(ArchiveQuery query, CancellationToken ct = default)
     {
+        Require(Lms.Shared.Authorization.Permissions.Students.ViewArchive);
         var rows = _archive.Where(a => (query.ExitKind is null || a.ExitKind == query.ExitKind)
             && (string.IsNullOrWhiteSpace(query.Search) || a.NameEn.Contains(query.Search, StringComparison.OrdinalIgnoreCase) || a.StudentCode.Contains(query.Search, StringComparison.OrdinalIgnoreCase)))
             .OrderByDescending(a => a.EffectiveDate);

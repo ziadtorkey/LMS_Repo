@@ -292,6 +292,24 @@ public sealed class FakeYearEndApiTests
         Assert.Equal(ProblemCodes.promotion_conflict, (await Fails(() => api.SaveDecisionsAsync(run.Id, new SavePromotionDecisionsRequest([])))).Code);
     }
 
+    [Fact]
+    public async Task Undo_puts_back_only_the_students_that_were_moved_and_keeps_the_failures_D84()
+    {
+        var api = new FakePromotionApi(10) { Now = () => T0 };
+        api.FailStudents.Add(3);
+        api.FailStudents.Add(7);
+        var run = await api.CreateRunAsync(Create());
+        await api.ExecuteAsync(run.Id, new ExecutePromotionRequest(10));
+
+        var undone = await api.UndoAsync(run.Id);
+
+        Assert.Equal(PromotionRunStates.Undone, undone.State);
+        Assert.Equal(8, api.RestoredCount(run.Id)); // the eight that moved are back
+        Assert.Equal(2, undone.Failed); // the two that never moved stay listed for a fix and a new run
+        var failures = await api.GetFailuresAsync(run.Id);
+        Assert.Equal(["S00003", "S00007"], failures.Items.Select(f => f.StudentCode).Order());
+    }
+
     // --- lifecycle
 
     private static WithdrawStudentRequest Withdraw(string reason = "MovedAway", string? note = null, DateOnly? on = null) =>
@@ -366,6 +384,37 @@ public sealed class FakeYearEndApiTests
         await api.SaveReasonsAsync(new SaveWithdrawalReasonsRequest([new WithdrawalReasonDto("Health", "ظروف صحية", "Health reasons", true)]));
         Assert.Equal(["Health"], (await api.GetReasonsAsync()).Select(r => r.Key));
         Assert.Equal(400, (await Fails(() => api.SaveReasonsAsync(new SaveWithdrawalReasonsRequest([new WithdrawalReasonDto(WithdrawalReasons.Other, "أخرى", "Other", true)])))).Status);
+    }
+
+    // --- roles (D82)
+
+    [Theory]
+    [InlineData("OrgAdmin", true, true, true)]
+    [InlineData("Manager", true, true, true)]
+    [InlineData("Counselor", true, false, true)] // a Counselor may withdraw and read the archive, never re-admit
+    [InlineData("Supervisor", false, false, true)]
+    [InlineData("Teacher", false, false, false)]
+    [InlineData("Student", false, false, false)]
+    public async Task The_fake_holds_what_the_role_holds(string role, bool withdraw, bool readmit, bool archive)
+    {
+        var api = new FakeLifecycleApi { Now = () => T0, Role = role };
+        var other = api.ActiveStudents.First(i => i != FakeLifecycleApi.ActiveStudentId);
+
+        async Task<int?> Status(Func<Task> call)
+        {
+            try { await call(); return null; }
+            catch (ApiProblemException ex) { return ex.Status; }
+        }
+
+        Assert.Equal(withdraw ? null : 403, await Status(() => api.WithdrawAsync(FakeLifecycleApi.ActiveStudentId, Withdraw())));
+        Assert.Equal(withdraw ? null : 403, await Status(() => api.GraduateAsync(other, new GraduateStudentRequest(DateOnly.FromDateTime(T0)))));
+        Assert.Equal(archive ? null : 403, await Status(() => api.GetArchiveAsync(new ArchiveQuery())));
+
+        var admin = new FakeLifecycleApi { Now = () => T0 }; // somebody left, so there is something to re-admit
+        await admin.WithdrawAsync(FakeLifecycleApi.ActiveStudentId, Withdraw());
+        admin.Role = role;
+        var result = await Status(() => admin.ReadmitAsync(FakeLifecycleApi.ActiveStudentId, new ReadmitStudentRequest(FakeLifecycleApi.OpenClassId, DateOnly.FromDateTime(T0), null)));
+        Assert.Equal(readmit ? null : 403, result);
     }
 
     // --- open the next year
