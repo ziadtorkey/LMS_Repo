@@ -40,7 +40,7 @@ public sealed class ConversationMapper(LmsDbContext db, ReadStateService readSta
                 c.IsReadOnly || p.HasLeft));
         }
 
-        return items.OrderByDescending(i => i.LastMessageAtUtc ?? DateTime.MinValue).ToList();
+        return items; // the caller passes the rows already ordered (newest activity first)
     }
 
     private async Task<Dictionary<Guid, IReadOnlyList<ParticipantDto>>> ParticipantsAsync(IReadOnlyCollection<Guid> conversationIds, CancellationToken ct)

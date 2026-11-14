@@ -16,7 +16,7 @@ public sealed record SendResult(Message? Message, string? ProblemCode, int Statu
 }
 
 /// <summary>Sending, paging and mapping messages (FR-MSG-01, L6, L20): keyset pages newest first, a neutral name for a former user, a left member reads up to leaving.</summary>
-public sealed class MessageService(LmsDbContext db, ICurrentContext context, IClock clock, IMessagingPolicy policy, MessageAttachmentGuard attachments)
+public sealed class MessageService(LmsDbContext db, ICurrentContext context, IClock clock, IMessagingPolicy policy, MessageAttachmentGuard attachments, Lms.Domain.Files.IFileStorage storage)
 {
     public const string FormerUserAr = "مستخدم سابق";
     public const string FormerUserEn = "Former user";
@@ -88,7 +88,15 @@ public sealed class MessageService(LmsDbContext db, ICurrentContext context, ICl
         }
 
         message.DeleteForEveryone(clock.UtcNow);
+        // The files go with the text: the rows first (nobody can be served them), then the stored blobs.
+        var files = await db.Set<MessageAttachment>().Where(a => a.MessageId == message.Id).ToListAsync(ct);
+        db.RemoveRange(files);
         await db.SaveChangesAsync(ct);
+        foreach (var file in files)
+        {
+            await storage.DeleteAsync(file.FileId, ct);
+        }
+
         return SendResult.Sent(message);
     }
 

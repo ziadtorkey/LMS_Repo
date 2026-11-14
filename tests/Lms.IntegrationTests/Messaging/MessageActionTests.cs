@@ -151,6 +151,12 @@ public sealed class MessageActionTests(LmsApiFactory factory)
         // Deleted for everyone: the files are no longer served.
         Assert.Equal(HttpStatusCode.NoContent, (await SendAsync(factory, HttpMethod.Delete, Routes.Message(s.ConversationId, sent.Id), s.A)).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(factory, HttpMethod.Get, MessageActionEndpointsRoutes.AttachmentUrl(s.ConversationId, sent.Id, file.FileId), s.B)).StatusCode);
+
+        // ...and the stored file is purged with the text: no attachment row is left, and the blob cannot be opened any more.
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        Assert.False(await db.Set<MessageAttachment>().AnyAsync(a => a.FileId == file.FileId));
+        using var scope = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.CreateScope(factory.Services);
+        await Assert.ThrowsAnyAsync<Exception>(() => Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<Lms.Domain.Files.IFileStorage>(scope.ServiceProvider).OpenReadAsync(file.FileId));
     }
 
     private sealed class RefusingScanner : Lms.Domain.Files.IFileScanner
