@@ -4,6 +4,8 @@ namespace Lms.Shared.Messaging;
 public sealed record ParticipantDto(Guid UserId, string NameAr, string NameEn, string? RoleKey, bool Left);
 
 /// <summary>
+/// <c>CanPost</c> = the caller may post now (L25: <c>CanPostAsync</c>); when false <c>ReadOnlyReason</c> is one of <see cref="ConversationReadOnlyReasons"/>
+/// (a student in a group <c>group_students_read_only</c> (D74), a guardian outside a teacher-run group <c>group_guardians_read_only</c> (D77)); history stays readable.
 /// A conversation (<c>Messaging.View</c>; only a participant reads it, an Org Admin who is not a participant gets 404). <c>IsLocked</c> = a moderator locked it
 /// (409 <c>conversation_closed</c> on send). A direct conversation between the same two people is returned by <c>POST</c>, not duplicated (200 with the existing one).
 /// </summary>
@@ -17,7 +19,9 @@ public sealed record ConversationDto(
     DateTime CreatedAtUtc,
     bool IsReadOnly = false,
     Guid? OwnerUserId = null,
-    Guid? ClassCourseId = null);
+    Guid? ClassCourseId = null,
+    bool CanPost = true,
+    string? ReadOnlyReason = null);
 
 /// <summary>A row of the inbox: the unread count and the last message (text is cut, never a tombstone's original).</summary>
 public sealed record ConversationListItemDto(
@@ -33,6 +37,12 @@ public sealed record ConversationListItemDto(
     bool IsReadOnly = false);
 
 public sealed record MessageAttachmentDto(Guid FileId, string FileName, string ContentType, long SizeBytes);
+
+/// <summary>
+/// The answer of <c>POST /api/conversations/{id}/attachments</c> (multipart, one file): a stored private file, pending until a <c>SendMessageRequest</c> of the same uploader and
+/// conversation names its <c>FileId</c> within <c>ExpiresAtUtc</c> (1 hour; never-attached rows are purged after 24 hours). 413 oversize, 422 <c>attachment_invalid</c>, 429 <c>rate_limited</c>.
+/// </summary>
+public sealed record PendingAttachmentDto(Guid FileId, string FileName, string ContentType, long SizeBytes, DateTime ExpiresAtUtc);
 
 /// <summary>
 /// One message. <c>Body</c> is null for a tombstone (<see cref="MessageStates.Deleted"/>) and for a removed one (<see cref="MessageStates.Removed"/>); only
@@ -99,6 +109,12 @@ public sealed record UnreadTotalDto(int Conversations);
 /// <summary>The realtime event after a new message: <b>ids only, never text</b> (the client fetches the message through the participant-checked route).</summary>
 public sealed record MessageReceivedEvent(Guid ConversationId, Guid MessageId);
 
+/// <summary>The realtime event for the caller's other tabs after reading: ids only (<see cref="Lms.Shared.Notifications.NotificationHub.ConversationReadMethod"/>).</summary>
+public sealed record ConversationReadEvent(Guid ConversationId, Guid LastReadMessageId);
+
+/// <summary>The realtime event after the members, the lock or the read-only state changed: ids only; the client refetches (<see cref="Lms.Shared.Notifications.NotificationHub.ConversationChangedMethod"/>).</summary>
+public sealed record ConversationChangedEvent(Guid ConversationId);
+
 /// <summary>One cell of the rules matrix: may a user with <c>FromRole</c> write to a user with <c>ToRole</c> (<see cref="MessagingRuleModes"/>).</summary>
 public sealed record MessagingRuleCellDto(string FromRole, string ToRole, string Mode);
 
@@ -113,7 +129,7 @@ public sealed record SaveMessagingRulesRequest(IReadOnlyList<MessagingRuleCellDt
 /// <summary>POST <c>/api/messages/{id}/report</c> (a participant who is not the sender; 409 <c>report_duplicate</c> for the same reporter and message). <c>Note</c> is at most <see cref="MessagingLimits.ReportNoteMaxLength"/> characters.</summary>
 public sealed record ReportMessageRequest(string Reason, string? Note);
 
-/// <summary>One message of the frozen context of a report: text and attachment <b>names</b> only (a moderator opens an attachment of the reported message through its own audited route). No user id, no file id.</summary>
+/// <summary>One message of the frozen context of a report: text and attachment <b>names</b> only. Only the <b>reported</b> message (<c>IsReported</c>) also carries <see cref="Attachments"/>, the refs a moderator opens through <c>GET /api/moderation/reports/{id}/attachments/{fileId}</c>; any other file id is 404. No user id, no url.</summary>
 public sealed record ReportContextMessageDto(
     Guid MessageId,
     string SenderNameAr,
@@ -121,7 +137,11 @@ public sealed record ReportContextMessageDto(
     string? Body,
     IReadOnlyList<string> AttachmentNames,
     DateTime CreatedAtUtc,
-    bool IsReported);
+    bool IsReported,
+    IReadOnlyList<ReportAttachmentRefDto>? Attachments = null);
+
+/// <summary>An attachment of the reported message: the id the audited attachment route takes, with what the viewer needs before opening it.</summary>
+public sealed record ReportAttachmentRefDto(Guid FileId, string Name, string ContentType, long SizeBytes);
 
 /// <summary>Who sent the reported message, in numbers: the class is the sender's own class when they are a student; prior reports and removals count this client only.</summary>
 public sealed record SenderSummaryDto(

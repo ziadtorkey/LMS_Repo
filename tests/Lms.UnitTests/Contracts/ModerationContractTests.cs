@@ -85,9 +85,12 @@ public sealed class ModerationContractTests
         Assert.Contains(nameof(MessageReportDto.Context), detail);
         Assert.Contains(nameof(MessageReportDto.SenderSummary), detail);
         Assert.Contains(nameof(MessageReportDto.ServerNowUtc), detail);
-        // the frozen context is text and attachment names only: no file id, no user id, no url
+        // the frozen context has no user id and no url; file ids appear only as the refs of the reported message
         Assert.DoesNotContain(typeof(ReportContextMessageDto).GetProperties(), p => p.PropertyType == typeof(Guid) && p.Name is not "MessageId" || p.Name.Contains("Url", StringComparison.OrdinalIgnoreCase));
         Assert.Contains(typeof(ReportContextMessageDto).GetProperties(), p => p.Name == nameof(ReportContextMessageDto.AttachmentNames));
+        var refs = typeof(ReportContextMessageDto).GetProperty(nameof(ReportContextMessageDto.Attachments))!;
+        Assert.Equal(typeof(IReadOnlyList<ReportAttachmentRefDto>), refs.PropertyType);
+        Assert.Equal(["FileId", "Name", "ContentType", "SizeBytes"], typeof(ReportAttachmentRefDto).GetProperties().Select(p => p.Name).ToArray());
         Assert.Equal(("PriorReports", "PriorRemovals"), (nameof(SenderSummaryDto.PriorReports), nameof(SenderSummaryDto.PriorRemovals)));
     }
 
@@ -126,7 +129,7 @@ public sealed class ModerationContractTests
     [Fact]
     public void Moderation_dtos_round_trip_with_arabic_text()
     {
-        var context = new ReportContextMessageDto(Id, "س", "S", "نص الرسالة", ["ملف.pdf"], DateTime.UtcNow, true);
+        var context = new ReportContextMessageDto(Id, "س", "S", "نص الرسالة", ["ملف.pdf"], DateTime.UtcNow, true, [new ReportAttachmentRefDto(Id, "ملف.pdf", "application/pdf", 1234)]);
         var summary = new SenderSummaryDto("س", "S", BuiltInRoles.Student, "الصف الأول", "Grade 1", 3, 1);
         var report = new MessageReportDto(Id, Id, Id, ReportReasons.SafetyConcern, "ملاحظة", ReportStatuses.Open, [context], summary, DateTime.UtcNow.AddHours(24), null, null, null, DateTime.UtcNow);
         var item = new MessageReportListItemDto(Id, ReportReasons.Harassment, ReportStatuses.InReview, "س", "S", "ملخص", DateTime.UtcNow, 5, true);
@@ -134,6 +137,7 @@ public sealed class ModerationContractTests
         var restriction = new RestrictionDto(Id, "س", "S", DateTime.UtcNow.AddDays(7), null, DateTime.UtcNow);
 
         Assert.Equal("نص الرسالة", Round(report).Context.Single().Body);
+        Assert.Equal(("ملف.pdf", 1234L), (Round(report).Context.Single().Attachments!.Single().Name, Round(report).Context.Single().Attachments!.Single().SizeBytes));
         Assert.Equal("الصف الأول", Round(report).SenderSummary.ClassNameAr);
         Assert.Equal(("ملخص", true), (Round(item).Snippet, Round(item).IsSafety));
         Assert.Equal((4, 2, 1, 6.5), (Round(stats).Open, Round(stats).NewToday, Round(stats).Restricted, Round(stats).MedianHoursToDecide));
