@@ -110,6 +110,9 @@ public sealed class EffectivePreferencesTests
         Assert.Null(EffectivePreferences.CheckChange(normal, Email, enabled: true, clientChannelEnabled: true));
         Assert.Equal(ProblemCodes.in_app_required, EffectivePreferences.CheckChange(normal, InApp, enabled: false, clientChannelEnabled: true));
         Assert.Equal(ProblemCodes.channel_not_allowed, EffectivePreferences.CheckChange(normal, Push, enabled: true, clientChannelEnabled: false));
+        Assert.Equal(ProblemCodes.channel_not_offered, EffectivePreferences.CheckChange(Event([InApp]), Email, enabled: true, clientChannelEnabled: true));
+        Assert.Null(EffectivePreferences.CheckChange(Event([InApp]), Email, enabled: false, clientChannelEnabled: true));
+        Assert.Null(EffectivePreferences.CheckChange(Event(null), Email, enabled: false, clientChannelEnabled: true));
         Assert.Null(EffectivePreferences.CheckChange(normal, Push, enabled: false, clientChannelEnabled: false)); // narrowing is always fine
         Assert.Equal(ProblemCodes.validation_failed, EffectivePreferences.CheckChange(normal, "Sms", enabled: true, clientChannelEnabled: true));
         Assert.Equal(ProblemCodes.validation_failed, EffectivePreferences.CheckChange(null, Email, enabled: true, clientChannelEnabled: true));

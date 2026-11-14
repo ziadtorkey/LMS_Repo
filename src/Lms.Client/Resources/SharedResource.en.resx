@@ -2023,6 +2023,7 @@
   <data name="Comms_Suppression_Complaint" xml:space="preserve"><value>Marked as unwanted</value></data>
   <data name="Comms_Suppression_UserOptOut" xml:space="preserve"><value>Opted out</value></data>
   <data name="Comms_ChannelState_Off" xml:space="preserve"><value>Off</value></data>
+  <data name="Error_channel_not_offered" xml:space="preserve"><value>This notification is not sent on that channel.</value></data>
   <data name="Error_channel_not_allowed" xml:space="preserve"><value>Your school has switched this channel off.</value></data>
   <data name="Error_comms_cap_above_ceiling" xml:space="preserve"><value>This daily limit is above the platform maximum.</value></data>
   <data name="AuditEntity_ChannelConsent" xml:space="preserve"><value>Channel consent</value></data>

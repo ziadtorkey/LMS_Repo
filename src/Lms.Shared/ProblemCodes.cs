@@ -255,6 +255,7 @@ public static class ProblemCodes
 
     /// <summary>A channel the client switched off cannot be switched on by a user (409).</summary>
     public const string channel_not_allowed = nameof(channel_not_allowed);
+    public const string channel_not_offered = nameof(channel_not_offered);
 
     /// <summary>A daily cap above the platform ceiling (400).</summary>
     public const string comms_cap_above_ceiling = nameof(comms_cap_above_ceiling);

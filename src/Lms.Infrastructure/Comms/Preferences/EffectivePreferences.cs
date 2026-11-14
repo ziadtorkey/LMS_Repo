@@ -65,7 +65,7 @@ public static class EffectivePreferences
     /// <summary>
     /// The problem code of a change a user asked for, or null when it is allowed: in-app cannot be switched off (<c>in_app_required</c>), a mandatory
     /// event cannot be switched off on a channel it offers (<c>notification_mandatory</c>), a channel the client switched off cannot be switched on
-    /// (<c>channel_not_allowed</c>), and an unknown event or channel is a validation error.
+    /// (<c>channel_not_allowed</c>), a channel the event does not offer cannot be switched on (<c>channel_not_offered</c>), and an unknown event or channel is a validation error.
     /// </summary>
     public static string? CheckChange(NotificationEventDefinition? definition, string channel, bool enabled, bool clientChannelEnabled)
     {
@@ -82,6 +82,11 @@ public static class EffectivePreferences
         if (!enabled)
         {
             return definition.Mandatory && DefaultChannelsOf(definition).Contains(channel, StringComparer.Ordinal) ? ProblemCodes.notification_mandatory : null;
+        }
+
+        if (!DefaultChannelsOf(definition).Contains(channel, StringComparer.Ordinal))
+        {
+            return ProblemCodes.channel_not_offered; // a user can only narrow: the page would show it off, so the change is refused
         }
 
         return clientChannelEnabled ? null : ProblemCodes.channel_not_allowed;
