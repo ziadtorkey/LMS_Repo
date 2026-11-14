@@ -18,6 +18,9 @@ namespace Lms.Api.Features.GradeReads;
 /// </summary>
 public static class GradeReportEndpoints
 {
+    /// <summary>A report computes every row before paging, so one request covers a bounded number of class courses (a class or a student, not a unit).</summary>
+    public const int MaxClassCourses = 60;
+
     public static void Map(IEndpointRouteBuilder app) =>
         app.MapGet(Routes.GradeReportPattern, ReportAsync).RequirePermission(Permissions.Grades.ViewReports);
 
@@ -70,6 +73,11 @@ public static class GradeReportEndpoints
                 break;
             default:
                 return ApiProblems.BadRequest(ProblemCodes.validation_failed, kind);
+        }
+
+        if (classCourses.Count > MaxClassCourses)
+        {
+            return ApiProblems.BadRequest(ProblemCodes.validation_failed, "too_many_class_courses");
         }
 
         return Results.Ok(await reports.BuildAsync(kind, classCourses, onlyStudent, query.TermId, query.Page, query.PageSize, ct));

@@ -175,6 +175,46 @@ public sealed class PublishedGradeReadsTests(LmsApiFactory factory) : IDisposabl
     }
 
     [Fact]
+    public async Task Category_weights_are_the_effective_share_of_the_listed_categories()
+    {
+        var g = await NewAsync("PG13");
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            // Visible category at 60 and a category of only scheduled items at 40: the student must not see a total of 60.
+            (await db.Set<GradeCategory>().SingleAsync(c => c.Id == g.Tests.Id)).Update(g.Tests.NameAr, g.Tests.NameEn, 60m, 1);
+            (await db.Set<GradeCategory>().SingleAsync(c => c.Id == g.SecretCategory.Id)).Update(g.SecretCategory.NameAr, g.SecretCategory.NameEn, 40m, 2);
+            await db.SaveChangesAsync();
+        }
+
+        var course = (await ReadAsync(await _t.SendAsync(g.W.Student, HttpMethod.Get, Routes.MeGrades))).Courses.Single();
+
+        Assert.Equal(100m, course.Categories.Sum(c => c.Weight));
+        Assert.Equal(80m, course.FinalPercent);
+    }
+
+    [Fact]
+    public async Task A_withdrawn_enrollment_shows_no_marker_to_the_student()
+    {
+        var g = await NewAsync("PG14");
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            (await db.Set<Lms.Domain.Enrollment.CourseEnrollment>().SingleAsync(e => e.StudentId == g.W.StudentProfileId && e.ClassCourseId == g.W.ClassCourse.Id))
+                .Drop(DateOnly.FromDateTime(DateTime.UtcNow), "left");
+            await db.SaveChangesAsync();
+        }
+
+        var response = await _t.SendAsync(g.W.Student, HttpMethod.Get, Routes.MeGrades);
+        var body = await response.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(g.Published.Id, Assert.Single(System.Text.Json.JsonSerializer.Deserialize<StudentGradesDto>(
+            body, new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web))!.Courses.Single().Items).ItemId);
+        Assert.DoesNotContain("withdrawn", body, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("dropped", body, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("enrollment", body, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public async Task Read_never_writes_rows()
     {
         var g = await NewAsync("PG12");

@@ -71,8 +71,13 @@ public sealed class PublishedGradeReads(
                 r?.Points, item.MaxPoints, r?.Source == ItemSource.Excused, item.PublishedAtUtc ?? DateTime.MinValue);
         }).ToList();
 
-        var categories = loaded.Categories.Where(c => !c.IsUncategorised).Select(c => new StudentGradeCategoryDto(
-            c.Id, c.NameAr, c.NameEn, c.Weight, result?.Categories.FirstOrDefault(x => x.CategoryId == c.Id)?.Percent)).ToList();
+        // Weights are the effective share among the listed categories (the ones with a published item): the declared weights of categories that
+        // are not listed would otherwise show as a total below 100 and reveal that something unpublished exists.
+        var listed = loaded.Categories.Where(c => !c.IsUncategorised).ToList();
+        var total = listed.Sum(c => c.Weight);
+        var categories = listed.Select(c => new StudentGradeCategoryDto(
+            c.Id, c.NameAr, c.NameEn, total <= 0 ? 0m : decimal.Round(c.Weight * 100m / total, 2, MidpointRounding.AwayFromZero),
+            result?.Categories.FirstOrDefault(x => x.CategoryId == c.Id)?.Percent)).ToList();
 
         return new StudentCourseGradesDto(
             classCourse.Id, book.Id, courseAr, courseEn, term, termRow.NameAr, termRow.NameEn, book.DecimalPlaces, items, categories,
