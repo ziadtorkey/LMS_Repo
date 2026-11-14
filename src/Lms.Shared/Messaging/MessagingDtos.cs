@@ -113,7 +113,7 @@ public sealed record SaveMessagingRulesRequest(IReadOnlyList<MessagingRuleCellDt
 /// <summary>POST <c>/api/messages/{id}/report</c> (a participant who is not the sender; 409 <c>report_duplicate</c> for the same reporter and message). <c>Note</c> is at most <see cref="MessagingLimits.ReportNoteMaxLength"/> characters.</summary>
 public sealed record ReportMessageRequest(string Reason, string? Note);
 
-/// <summary>One message of the frozen context of a report: text and attachment <b>names</b> only (a moderator opens an attachment of the reported message through its own audited route). No user id, no file id.</summary>
+/// <summary>One message of the frozen context of a report: text and attachment <b>names</b> only. Only the <b>reported</b> message (<c>IsReported</c>) also carries <see cref="Attachments"/>, the refs a moderator opens through <c>GET /api/moderation/reports/{id}/attachments/{fileId}</c>; any other file id is 404. No user id, no url.</summary>
 public sealed record ReportContextMessageDto(
     Guid MessageId,
     string SenderNameAr,
@@ -121,7 +121,11 @@ public sealed record ReportContextMessageDto(
     string? Body,
     IReadOnlyList<string> AttachmentNames,
     DateTime CreatedAtUtc,
-    bool IsReported);
+    bool IsReported,
+    IReadOnlyList<ReportAttachmentRefDto>? Attachments = null);
+
+/// <summary>An attachment of the reported message: the id the audited attachment route takes, with what the viewer needs before opening it.</summary>
+public sealed record ReportAttachmentRefDto(Guid FileId, string Name, string ContentType, long SizeBytes);
 
 /// <summary>Who sent the reported message, in numbers: the class is the sender's own class when they are a student; prior reports and removals count this client only.</summary>
 public sealed record SenderSummaryDto(
