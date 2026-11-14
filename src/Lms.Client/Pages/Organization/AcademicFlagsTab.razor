@@ -11,10 +11,13 @@
         <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-4" data-testid="academic-error">@_error</MudAlert>
     }
 
-    <fieldset class="lms-fieldset">
-        <legend class="lms-fieldset-legend">@L["Academic_SectionLevel"]</legend>
-        <MudSwitch T="bool" Value="_isTransfer" ValueChanged="OnTransferChanged" Disabled="!CanEdit" Color="Color.Primary"
-                   Label="@L["Academic_LevelTransfer"]" data-testid="flag-transfer" />
+    <div class="lms-card-grid">
+    <SectionCard Title="@L["Academic_SectionLevel"]" Subtitle="@L["Academic_SectionLevelHelp"]" Icon="@Icons.Material.Rounded.TrendingUp">
+        <div class="lms-toggle-row">
+            <MudSwitch T="bool" Value="_isTransfer" ValueChanged="OnTransferChanged" Disabled="!CanEdit" Color="Color.Primary"
+                       Label="@L["Academic_LevelTransfer"]" LabelPlacement="Placement.Start" data-testid="flag-transfer" />
+            <MudText Typo="Typo.caption" Class="lms-toggle-help">@L["Academic_LevelTransferHelp"]</MudText>
+        </div>
 
         @if (_isTransfer)
         {
@@ -30,17 +33,21 @@
                 <MudText data-testid="transfer-path">@TransferPath()</MudText>
             </div>
         }
-    </fieldset>
+    </SectionCard>
 
-    <fieldset class="lms-fieldset">
-        <legend class="lms-fieldset-legend">@L["Academic_SectionCourses"]</legend>
-        <MudSwitch T="bool" @bind-Value="_isCourse" Disabled="!CanEdit" Color="Color.Primary"
-                   Label="@L["Academic_CourseManagement"]" data-testid="flag-course" />
-    </fieldset>
+    <SectionCard Title="@L["Academic_SectionCourses"]" Subtitle="@L["Academic_SectionCoursesHelp"]" Icon="@Icons.Material.Rounded.MenuBook">
+        <div class="lms-toggle-row">
+            <MudSwitch T="bool" @bind-Value="_isCourse" Disabled="!CanEdit" Color="Color.Primary"
+                       Label="@L["Academic_CourseManagement"]" LabelPlacement="Placement.Start" data-testid="flag-course" />
+            <MudText Typo="Typo.caption" Class="lms-toggle-help">@L["Academic_CourseManagementHelp"]</MudText>
+        </div>
+    </SectionCard>
+    </div>
 
     @if (CanEdit)
     {
-        <div class="lms-dialog-actions">
+        <div class="lms-save-bar" data-testid="academic-save-bar">
+            <span class="lms-save-bar-text lms-save-bar-info">@L["Academic_SaveHint"]</span>
             <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_saving"
                        StartIcon="@(_saving ? null : Icons.Material.Rounded.Check)" data-testid="academic-save">
                 @if (_saving)

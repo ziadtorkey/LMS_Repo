@@ -9,6 +9,15 @@ public sealed class PackageHostOptions
 
     /// <summary>The origin of the content host, for example <c>https://lms-content.example</c>; empty = not configured (every package route fails closed).</summary>
     public string? Origin { get; set; }
+
+    /// <summary>The origin of the app (<c>frame-ancestors</c> of the content host); defaults to <c>App:PublicBaseUrl</c>.</summary>
+    public string? AppOrigin { get; set; }
+
+    /// <summary>How long a revocation lookup is cached per instance, in seconds (ADR 0005: the revocation bound is 30 s per node).</summary>
+    public int RevocationCacheSeconds { get; set; } = 30;
+
+    /// <summary>True when the content host is a separate registrable domain from the app (D56); every package route and the host pipeline fail closed otherwise.</summary>
+    public bool IsConfigured => PackageHostOriginCheck.IsSeparate(Origin, AppOrigin ?? string.Empty);
 }
 
 /// <summary>

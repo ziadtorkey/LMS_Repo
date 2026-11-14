@@ -5,6 +5,7 @@ using Lms.Api.Features.Account;
 using Lms.Api.Features.Auth;
 using Lms.Api.Features.Me;
 using Lms.Api.Infrastructure;
+using Lms.Api.PackageHost;
 using Lms.Infrastructure;
 using Lms.Infrastructure.Access;
 using Lms.Infrastructure.Seeding;
@@ -15,6 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSerilog((context, services, configuration) => configuration
     .ReadFrom.Configuration(context.Configuration)
     .Enrich.FromLogContext()
+    .Enrich.With<TokenScrubbingEnricher>() // package tokens never reach a log (ADR 0005)
     .WriteTo.Console(outputTemplate:
         "[{Timestamp:HH:mm:ss} {Level:u3}] {CorrelationId} {Message:lj}{NewLine}{Exception}"));
 
@@ -48,6 +50,7 @@ await app.Services.GetRequiredService<BuiltInRoleStartupReconciler>().RunAsync()
 // First: everything after it (HTTPS redirection, rate limits, audit IPs) sees the real client address and scheme.
 app.UseLmsForwardedHeaders();
 app.UseMiddleware<CorrelationIdMiddleware>();
+app.UsePackageHost(); // the content host's own pipeline; before the app's headers, cookies and routes
 app.UseMiddleware<SecurityHeadersMiddleware>();
 if (!app.Environment.IsDevelopment())
 {

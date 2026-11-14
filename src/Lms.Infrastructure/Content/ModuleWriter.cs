@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Lms.Infrastructure.Content;
 
 /// <summary><see cref="IModuleWriter"/> on the scoped context (M4a Task 3).</summary>
-public sealed class ModuleWriter(LmsDbContext db, PlacementGuard guard) : IModuleWriter
+public sealed class ModuleWriter(LmsDbContext db, PlacementGuard guard, IClock clock) : IModuleWriter
 {
     public async Task<Guid> CreateForRefAsync(
         Guid classCourseId, Guid lessonKey, string kind, Guid refId, ModuleMetadata metadata, CancellationToken ct = default)
@@ -47,6 +47,7 @@ public sealed class ModuleWriter(LmsDbContext db, PlacementGuard guard) : IModul
         await EnsureWritableAsync(classCourse, ct);
         await CheckAsync(classCourse, metadata, ct);
         Apply(module, metadata);
+        await Packages.PackageRevocationHooks.ModuleChangedAsync(db, module, clock.UtcNow, ct); // a hidden package module revokes its tokens
         await db.SaveChangesAsync(ct);
     }
 
