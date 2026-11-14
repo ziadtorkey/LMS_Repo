@@ -575,10 +575,9 @@
 - DEV-PLAN says M6 depends only on M1/M2; in practice the contracts merge after M5 wave 3 (defaults version, L2) and quiet hours use M5's `IClientCalendar`.
 - #613 rev 5 and #724 use defaults "version 10", `Jobs:TimeZone`, a "next UTC day" and an `Allowed` column; this plan corrects them (L2, L4, L7).
 
-## Remaining owner questions (not covered by D66–D69; defaults in force until answered)
-- **O1 Managers and moderation:** D66 accepted "Managers read-only if the owner agrees". May Managers read the moderation queue (no actions)? Default: **no**; only Org Admin holds `Messaging.Moderate` (L16).
-- **O2 Statutory retention (PDPL, minors):** D66 accepted the listed periods "pending legal advice". Default: deliveries 90 days, messages the school year + 1 year, report context and removed originals 180 days, all settings (L23).
-- **O3 Consent sentence for SMS and push:** the exact Arabic and English wording shown at opt-in, and whether a guardian's consent covers SMS sent on behalf of a minor. Default: a Lead-drafted sentence (versioned, L11), owner review before go-live; guardian consent covers on-behalf SMS.
+## Remaining owner questions (not covered by D66–D73; defaults in force until answered)
+Answered 2026-11-14: O1 → **D70** (only the Org Admin sees the moderation queue; no Manager view), O2 → **D71** (plan retention defaults, client may shorten), O3 → **D72** (no SMS about minors: SMS only to adults about themselves; guardians get news about their children by email and push; consent wording drafted by the Lead for owner review before go-live), O5 → **D73** (prefer in-Kingdom or GCC processing).
 - **O4 Platform ceilings for caps:** how far may an Org Admin raise the daily caps? Default: 20,000 email / 2,000 SMS / 100,000 push per client per day (`Comms:PlatformMax*`, L8).
-- **O5 Allowed provider regions (D66 data location):** which regions may the email relay, SMS gateway and push services process data in? Needed before the D67/D68 choices. Default: no student data in bodies (L9); prefer in-Kingdom or GCC processing where offered.
+
+**D72 impact on tasks:** the SMS channel resolver must refuse any SMS whose subject is a minor or whose recipient is a student (problem code `sms_not_allowed_for_minor`), and guardian-facing events about a child default to email + push only. The comms BE task adds `Sms_is_never_sent_about_a_minor` and `Guardian_child_events_have_no_sms_channel` tests; QA's security task adds a probe for it.
 - **Go-live prerequisites (already decided, tracked in the runbook, not questions):** D65 real scanner, D67 relay, D68 gateway and sender ID.
