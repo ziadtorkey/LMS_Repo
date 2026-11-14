@@ -156,7 +156,13 @@ public sealed record PromotionRunDto(
     DateTime CreatedAtUtc,
     DateTime? ExecutedAtUtc,
     Guid CreatedByUserId,
-    DateTime ServerNowUtc);
+    DateTime ServerNowUtc,
+    string SourceYearNameAr = "",
+    string SourceYearNameEn = "",
+    string TargetYearNameAr = "",
+    string TargetYearNameEn = "",
+    string SourceUnitNameAr = "",
+    string SourceUnitNameEn = "");
 
 /// <summary>One student of the preview (GET <c>…/rows</c>, server-paged). <c>SuggestedOutcome</c> comes from the level mapping only (D83); every row stays editable. <c>FailureCode</c> is set after an execution that failed for this student (D84).</summary>
 public sealed record PromotionRowDto(

@@ -157,4 +157,19 @@ public sealed class YearEndWave2ContractTests
         Assert.Null(Lms.Infrastructure.Access.RolePermissionRules.Validate([Permissions.AcademicYears.Close], [], admin, false, null));
     }
 
+
+    [Fact]
+    public void A_promotion_run_carries_the_display_names_of_its_years_and_unit_for_the_history()
+    {
+        var names = typeof(PromotionRunDto).GetProperties().Select(p => p.Name).ToList();
+
+        foreach (var expected in new[] { "SourceYearNameAr", "SourceYearNameEn", "TargetYearNameAr", "TargetYearNameEn", "SourceUnitNameAr", "SourceUnitNameEn" })
+        {
+            Assert.Contains(expected, names);
+        }
+
+        var run = new PromotionRunDto(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), false, PromotionRunStates.Draft, 0, 0, 0,
+            new PromotionCountsDto(0, 0, 0, 0, 0), [], [], null, DateTime.UtcNow, null, Guid.NewGuid(), DateTime.UtcNow);
+        Assert.Equal(string.Empty, run.SourceYearNameEn); // optional trailing fields: older callers compile
+    }
 }
