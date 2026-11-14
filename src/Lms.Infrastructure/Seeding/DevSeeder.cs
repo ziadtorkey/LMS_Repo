@@ -76,6 +76,7 @@ public sealed class DevSeeder(string connectionString, IHostEnvironment environm
         await AddUnitsAsync(db, organization, levels, units, seed.Root, parent: null, ct);
 
         await new DefaultRoleProvisioner(db).ProvisionAsync(organization.Id, seed.Type, ct);
+        await new Lms.Infrastructure.Grading.Scales.PresetReconciler(db, new Lms.Infrastructure.Grading.Scales.SaudiPresetCatalog()).ReconcileAsync(organization.Id, ct);
         return new SeededClient(organization, units);
     }
 

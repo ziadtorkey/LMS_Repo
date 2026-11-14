@@ -11,9 +11,11 @@ namespace Lms.IntegrationTests.Auth;
 
 /// <summary>The Identity cookie is rebuilt every 30 minutes; the client binding of an external session must survive that.</summary>
 [Collection(ApiCollection.Name)]
-public sealed class ExternalSessionRefreshTests(LmsApiFactory factory)
+public sealed class ExternalSessionRefreshTests(LmsApiFactory factory) : IDisposable
 {
     private readonly AuthTestHost _host = new(factory);
+
+    public void Dispose() => _host.Dispose();
 
     private async Task<ClaimsPrincipal> RefreshedAsync(User user, params Claim[] extra)
     {

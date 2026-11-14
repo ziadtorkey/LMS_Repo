@@ -391,7 +391,6 @@
   <data name="Notif_Preferences" xml:space="preserve"><value>تفضيلات الإشعارات</value></data>
   <data name="Channel_InApp" xml:space="preserve"><value>داخل المنصة</value></data>
   <data name="Channel_Email" xml:space="preserve"><value>البريد الإلكتروني</value></data>
-  <data name="Channel_Sms" xml:space="preserve"><value>رسائل نصية</value></data>
   <data name="Channel_Push" xml:space="preserve"><value>إشعارات فورية</value></data>
   <data name="Notif_Access_RoleAssigned" xml:space="preserve"><value>تم منحك دور {RoleName} في {OrgUnitName}.</value></data>
   <data name="Notif_Access_RoleRemoved" xml:space="preserve"><value>تمت إزالة دورك {RoleName} في {OrgUnitName}.</value></data>
@@ -1790,13 +1789,10 @@
   <data name="PermModule_Announcements" xml:space="preserve"><value>الإعلانات</value></data>
   <data name="PermModule_Comms" xml:space="preserve"><value>التواصل</value></data>
   <data name="Setting_Comms_EmailEnabled" xml:space="preserve"><value>السماح بإشعارات البريد الإلكتروني</value></data>
-  <data name="Setting_Comms_SmsEnabled" xml:space="preserve"><value>السماح بالرسائل النصية القصيرة</value></data>
   <data name="Setting_Comms_PushEnabled" xml:space="preserve"><value>السماح بالإشعارات الفورية</value></data>
   <data name="Setting_Comms_MaxEmailPerDay" xml:space="preserve"><value>عدد رسائل البريد يوميًا (العميل)</value></data>
-  <data name="Setting_Comms_MaxSmsPerDay" xml:space="preserve"><value>عدد الرسائل النصية يوميًا (العميل)</value></data>
   <data name="Setting_Comms_MaxPushPerDay" xml:space="preserve"><value>عدد الإشعارات الفورية يوميًا (العميل)</value></data>
   <data name="Setting_Comms_MaxEmailPerUserPerDay" xml:space="preserve"><value>عدد رسائل البريد لكل شخص يوميًا</value></data>
-  <data name="Setting_Comms_MaxSmsPerUserPerDay" xml:space="preserve"><value>عدد الرسائل النصية لكل شخص يوميًا</value></data>
   <data name="Setting_Comms_MaxPushPerUserPerDay" xml:space="preserve"><value>عدد الإشعارات الفورية لكل شخص يوميًا</value></data>
   <data name="Setting_Comms_QuietHours_Enabled" xml:space="preserve"><value>ساعات الهدوء</value></data>
   <data name="Setting_Comms_QuietHours_Start" xml:space="preserve"><value>بداية ساعات الهدوء</value></data>
@@ -1955,7 +1951,6 @@
   <data name="Prefs_Event" xml:space="preserve"><value>الحدث</value></data>
   <data name="Prefs_Channel_InApp" xml:space="preserve"><value>داخل المنصة</value></data>
   <data name="Prefs_Channel_Email" xml:space="preserve"><value>البريد الإلكتروني</value></data>
-  <data name="Prefs_Channel_Sms" xml:space="preserve"><value>الرسائل النصية</value></data>
   <data name="Prefs_Channel_Push" xml:space="preserve"><value>الإشعارات الفورية</value></data>
   <data name="Prefs_Fix" xml:space="preserve"><value>أضفه في ملفك الشخصي</value></data>
   <data name="Prefs_Locked" xml:space="preserve"><value>تحدده مدرستك: لا يمكن إيقافه.</value></data>
@@ -2132,4 +2127,52 @@
   <data name="Msg_Reply_Privately" xml:space="preserve"><value>الرد على انفراد</value></data>
   <data name="Msg_Thread_Missing" xml:space="preserve"><value>هذه المحادثة غير متاحة.</value></data>
   <data name="Msg_Inbox_Capped" xml:space="preserve"><value>يظهر آخر {0} محادثة لديك.</value></data>
+  <data name="Package_Start" xml:space="preserve"><value>ابدأ</value></data>
+  <data name="Package_Resume" xml:space="preserve"><value>استئناف</value></data>
+  <data name="Package_Preview" xml:space="preserve"><value>معاينة</value></data>
+  <data name="Package_PreviewBanner" xml:space="preserve"><value>معاينة: لا يُسجَّل أي شيء.</value></data>
+  <data name="Package_ThirdParty" xml:space="preserve"><value>يأتي هذا النشاط من جهة أخرى. قد لا تعمل بعض أجزائه مع لوحة المفاتيح أو قارئ الشاشة.</value></data>
+  <data name="Package_PhoneHint" xml:space="preserve"><value>يعمل بشكل أفضل على شاشة أكبر.</value></data>
+  <data name="Package_State_NotStarted" xml:space="preserve"><value>لم يبدأ</value></data>
+  <data name="Package_State_InProgress" xml:space="preserve"><value>قيد التنفيذ</value></data>
+  <data name="Package_State_Completed" xml:space="preserve"><value>مكتمل</value></data>
+  <data name="Package_Exit" xml:space="preserve"><value>خروج</value></data>
+  <data name="Package_Fullscreen" xml:space="preserve"><value>ملء الشاشة</value></data>
+  <data name="Package_ExitFullscreen" xml:space="preserve"><value>إنهاء ملء الشاشة</value></data>
+  <data name="Package_Saving" xml:space="preserve"><value>جارٍ الحفظ…</value></data>
+  <data name="Package_Saved" xml:space="preserve"><value>تم الحفظ</value></data>
+  <data name="Package_SaveFailed" xml:space="preserve"><value>تعذّر الحفظ. جارٍ إعادة المحاولة…</value></data>
+  <data name="Package_Retry" xml:space="preserve"><value>أعد المحاولة</value></data>
+  <data name="Package_Expired" xml:space="preserve"><value>انتهت مهلة النشاط. أعد التحميل لتكمل من حيث توقفت.</value></data>
+  <data name="Package_Reload" xml:space="preserve"><value>إعادة التحميل</value></data>
+  <data name="Package_OpenAgain" xml:space="preserve"><value>افتح مرة أخرى</value></data>
+  <data name="Package_NotReady" xml:space="preserve"><value>هذا النشاط غير جاهز بعد. حاول لاحقاً.</value></data>
+  <data name="Package_FrameTitle" xml:space="preserve"><value>{0} (نشاط تفاعلي)</value></data>
+  <data name="Module_NotAvailableTitle" xml:space="preserve"><value>هذا النشاط غير متاح</value></data>
+  <data name="Module_NotAvailableText" xml:space="preserve"><value>ربما أُخفي أو حُذف. ارجع إلى المقرر لترى المتاح لك.</value></data>
+  <data name="NavSection_Structure" xml:space="preserve"><value>الهيكل</value></data>
+  <data name="NavSection_People" xml:space="preserve"><value>الأشخاص</value></data>
+  <data name="NavSection_Academic" xml:space="preserve"><value>الأكاديمي</value></data>
+  <data name="NavSection_Security" xml:space="preserve"><value>الأمان والإعدادات</value></data>
+  <data name="App_Subtitle" xml:space="preserve"><value>المنصة الأكاديمية</value></data>
+  <data name="Nav_Main" xml:space="preserve"><value>التنقل الرئيسي</value></data>
+  <data name="Setting_Messaging_UploadsPerMinute" xml:space="preserve"><value>عدد رفع المرفقات في الدقيقة</value></data>
+  <data name="Msg_ReadOnly_group_students_read_only" xml:space="preserve"><value>المعلم والموظفون فقط يكتبون في هذه المجموعة. يمكنك مراسلة المعلم بشكل خاص.</value></data>
+  <data name="Msg_ReadOnly_group_guardians_read_only" xml:space="preserve"><value>الموظفون فقط يكتبون في هذه المجموعة.</value></data>
+  <data name="Msg_ReadOnly_rule" xml:space="preserve"><value>هذه المحادثة للقراءة فقط بسبب تغيّر قواعد المراسلة.</value></data>
+  <data name="Msg_ReadOnly_blocked_or_rule" xml:space="preserve"><value>لا يمكنك إرسال رسائل في هذه المحادثة.</value></data>
+  <data name="Msg_ReadOnly_restricted" xml:space="preserve"><value>المراسلة مقيّدة لحسابك حاليًا.</value></data>
+  <data name="Msg_ReadOnly_locked" xml:space="preserve"><value>قام مشرف بإغلاق هذه المحادثة.</value></data>
+  <data name="Msg_Denied_rule" xml:space="preserve"><value>لا يمكنك إرسال رسائل إلى هذا الشخص.</value></data>
+  <data name="Msg_Denied_relationship" xml:space="preserve"><value>يمكنك مراسلة من تشاركهم فصلًا دراسيًا فقط.</value></data>
+  <data name="Msg_Denied_restricted" xml:space="preserve"><value>المراسلة مقيّدة لحسابك حاليًا.</value></data>
+  <data name="Msg_Denied_blocked_or_rule" xml:space="preserve"><value>لا يمكنك إرسال رسائل إلى هذا الشخص.</value></data>
+  <data name="Msg_Denied_private_group_with_student" xml:space="preserve"><value>المجموعة التي تضم طالبًا تحتاج إلى ثلاثة أعضاء على الأقل.</value></data>
+  <data name="Msg_Denied_group_full" xml:space="preserve"><value>بلغت هذه المجموعة الحد الأقصى لعدد الأعضاء.</value></data>
+  <data name="Ann_Source_CourseBoard" xml:space="preserve"><value>مجلس المقرر</value></data>
+  <data name="Ann_Source_School" xml:space="preserve"><value>المدرسة</value></data>
+  <data name="Error_conversation_read_only" xml:space="preserve"><value>لا يمكنك الكتابة في هذه المحادثة.</value></data>
+  <data name="Error_comms_cap_above_ceiling" xml:space="preserve"><value>هذا الحد أعلى من الحد الأقصى الذي تسمح به المنصة.</value></data>
+  <data name="Error_attachment_invalid" xml:space="preserve"><value>المرفق غير مسموح به: تحقق من نوعه وحجمه وعدد المرفقات.</value></data>
+  <data name="NavSection_Communication" xml:space="preserve"><value>التواصل</value></data>
 </root>

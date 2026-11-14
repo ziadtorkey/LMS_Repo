@@ -114,7 +114,7 @@ public sealed class FakeMessagingApi : IMessagingApi
     }
 
     private ConversationDto ToDto(Conversation c) =>
-        new(c.Id, c.Kind, c.Title, [.. c.Participants.Select(id => ToParticipant(c, id))], c.Locked, c.Muted.ContainsKey(Me.Id), c.CreatedAtUtc, ReadOnlyForMe(c), c.OwnerId, c.ClassCourseId);
+        new(c.Id, c.Kind, c.Title, [.. c.Participants.Select(id => ToParticipant(c, id))], c.Locked, c.Muted.ContainsKey(Me.Id), c.CreatedAtUtc, ReadOnlyForMe(c), c.OwnerId, c.ClassCourseId, !c.Locked && !ReadOnlyForMe(c), c.Locked ? ConversationReadOnlyReasons.Locked : ReadOnlyForMe(c) ? ConversationReadOnlyReasons.GroupStudentsReadOnly : null);
 
     public Task<PagedResult<ConversationListItemDto>> ListConversationsAsync(int page = 1, int pageSize = Paging.DefaultPageSize, CancellationToken ct = default)
     {
@@ -185,7 +185,7 @@ public sealed class FakeMessagingApi : IMessagingApi
     {
         var c = Mine(conversationId);
         if (c.Locked) throw Problem(409, ProblemCodes.conversation_closed);
-        if (ReadOnlyForMe(c)) throw Problem(403, ProblemCodes.group_read_only);
+        if (ReadOnlyForMe(c)) throw new ApiProblemException(403, ProblemCodes.conversation_read_only, null, null, reason: ConversationReadOnlyReasons.GroupStudentsReadOnly); // L25: the reason says why the caller cannot post
         if (string.IsNullOrWhiteSpace(request.Body)) throw Problem(400, ProblemCodes.validation_failed);
         if (request.Body.Length > Limits.MaxBodyLength) throw Problem(400, ProblemCodes.message_too_long);
         if ((request.AttachmentFileIds?.Count ?? 0) > Limits.MaxAttachments) throw Problem(400, ProblemCodes.validation_failed);
