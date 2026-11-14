@@ -1,4 +1,4 @@
-using Lms.Domain.Abstractions;
+using Lms.Domain.Calendar;
 
 namespace Lms.Domain.Excuses;
 
@@ -28,9 +28,9 @@ public sealed record ExcusePolicyResult(string? Violation, IReadOnlyList<DateOnl
 /// </summary>
 public static class ExcusePolicy
 {
-    public static ExcusePolicyResult Evaluate(
+    public static async Task<ExcusePolicyResult> EvaluateAsync(
         ExcuseRules rules, string reason, bool hasAttachment, DateOnly from, DateOnly to, DateOnly today,
-        IReadOnlyCollection<DateOnly> absenceDates, IClientCalendar calendar)
+        IReadOnlyCollection<DateOnly> absenceDates, Guid orgUnitId, IClientCalendar calendar, CancellationToken ct = default)
     {
         if (from > to || to > today)
         {
@@ -53,7 +53,15 @@ public static class ExcusePolicy
             return Refuse(ExcuseViolation.NothingToExcuse);
         }
 
-        var inTime = inRange.Where(d => calendar.SchoolDaysSince(d, today) <= rules.MaxDaysAfterAbsence).ToList();
+        var inTime = new List<DateOnly>();
+        foreach (var date in inRange)
+        {
+            if (await calendar.SchoolDaysBetweenAsync(orgUnitId, date, today, ct) <= rules.MaxDaysAfterAbsence)
+            {
+                inTime.Add(date);
+            }
+        }
+
         return inTime.Count == 0 ? Refuse(ExcuseViolation.TooLate) : new ExcusePolicyResult(null, inTime);
     }
 
