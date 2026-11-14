@@ -137,7 +137,7 @@ else
         _error = null;
         var ok = await ApiCalls.RunAsync(async () =>
         {
-            _original = [.. (await Api.GetEffectivePreferencesAsync()).Where(p => p.Channel != NotificationChannels.Sms)];
+            _original = [.. (await Api.GetEffectivePreferencesAsync()).Where(p => NotificationChannels.All.Contains(p.Channel))];
             _channels = await Api.GetChannelsAsync();
             _devices = await Api.GetPushSubscriptionsAsync();
             _push = await Push.GetStateAsync();
@@ -158,7 +158,7 @@ else
             {
                 if (!Enum.TryParse<NotificationChannel>(p.Channel, out var channel) || !Shown.Contains(channel)) continue;
                 row.On[channel] = p.Enabled;
-                if (p.Mandatory || p.Source == PreferenceSources.Policy) row.Locked.Add(channel);
+                if (p.Mandatory) row.Locked.Add(channel);
             }
 
             _rows.Add(row);
