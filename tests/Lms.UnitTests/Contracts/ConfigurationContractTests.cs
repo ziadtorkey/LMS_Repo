@@ -27,7 +27,7 @@ public class ConfigurationContractTests
     [Fact]
     public void Declared_keys_are_found()
     {
-        Assert.Equal(27, DeclaredKeys().Count());
+        Assert.Equal(32, DeclaredKeys().Count());
     }
 
     [Theory]
@@ -67,6 +67,7 @@ public class ConfigurationContractTests
             "Packages.MaxEntries", "Packages.MaxUncompressedMb", "Packages.MaxClientStorageMb", "Packages.TokenMinutes",
             "Packages.CommitMinIntervalSeconds",
             "Live.JoinWindowMinutes", "Live.ReminderMinutes", "Live.MaxCreatesPerDay", "Live.CloudRecordingEnabled",
+            "Org.TimeZone", "Grades.MissingPolicy", "Grades.CategoryMethod", "Grades.DecimalPlaces", "AcademicYears.TermsPerYear",
         ], SettingCatalog.All.Select(d => d.Name));
 
         var culture = SettingCatalog.Find("Ui.DefaultCulture")!;

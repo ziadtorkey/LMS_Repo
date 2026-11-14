@@ -13,7 +13,7 @@
         <MudStack Spacing="2">
             @if (_error is not null)
             {
-                <MudAlert Severity="Severity.Error" data-testid="dialog-error">@_error</MudAlert>
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="dialog-error">@_error</MudAlert>
             }
             <MudTextField T="string" Value="_search" ValueChanged="OnSearchChanged" Label="@L["Common_Search"]" Immediate="true" DebounceInterval="300"
                           Clearable="true" data-testid="add-search" />
@@ -39,9 +39,12 @@
         </MudStack>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
-        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="() => SaveAsync(false)" Disabled="@(_saving || _selected.Count == 0)"
-                   data-testid="dialog-save">@L["ClassStudents_Add"]</MudButton>
+        <div class="lms-dialog-actions">
+            <MudButton Variant="Variant.Text" OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="() => SaveAsync(false)" Disabled="@(_saving || _selected.Count == 0)"
+                       data-testid="dialog-save">@L["ClassStudents_Add"]</MudButton>
+    
+        </div>
     </DialogActions>
 </MudDialog>
 

@@ -38,15 +38,15 @@
 
     @if (_failed)
     {
-        <MudAlert Severity="Severity.Error" data-testid="api-error">@L["Api_Error"]</MudAlert>
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="api-error">@L["Api_Error"]</MudAlert>
     }
     else if (_enrollments.Count == 0)
     {
-        <MudText data-testid="enrollments-empty">@L["Common_Empty"]</MudText>
+        <EmptyState Title="@L["Common_Empty"]" Icon="@Icons.Material.Rounded.School" TestId="enrollments-empty" />
     }
     else
     {
-        <MudTable Items="_enrollments" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" data-testid="classcourse-enrollments-table">
+        <MudTable Items="_enrollments" Dense="true" Elevation="0" HeaderClass="lms-table-head" Class="lms-table" Hover="true" Breakpoint="Breakpoint.Sm" data-testid="classcourse-enrollments-table">
             <HeaderContent>
                 <MudTh>@L["Student_Code"]</MudTh>
                 <MudTh>@L["Common_Name"]</MudTh>

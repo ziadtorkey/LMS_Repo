@@ -1094,6 +1094,30 @@
   <data name="Flag_Inherit" xml:space="preserve"><value>وراثة ({0})</value></data>
   <data name="Flag_On" xml:space="preserve"><value>تشغيل</value></data>
   <data name="Flag_Off" xml:space="preserve"><value>إيقاف</value></data>
+  <data name="Nav_Exceptions" xml:space="preserve"><value>استثناءات التسجيل</value></data>
+  <data name="Exception_Title" xml:space="preserve"><value>استثناءات التسجيل</value></data>
+  <data name="Exception_Help" xml:space="preserve"><value>الطالب الذي لا يستوفي قيود المقرر لا يُسجَّل فيه إلا بعد الموافقة على استثناء.</value></data>
+  <data name="Exception_Request" xml:space="preserve"><value>طلب استثناء</value></data>
+  <data name="Exception_Reason" xml:space="preserve"><value>لماذا يجب تسجيل هذا الطالب؟</value></data>
+  <data name="Exception_Sent" xml:space="preserve"><value>تم إرسال طلب الاستثناء للموافقة.</value></data>
+  <data name="Exception_Send" xml:space="preserve"><value>إرسال الطلب</value></data>
+  <data name="Exception_ReasonRequired" xml:space="preserve"><value>أدخل سبب الاستثناء.</value></data>
+  <data name="Exception_Student" xml:space="preserve"><value>الطالب</value></data>
+  <data name="Exception_Course" xml:space="preserve"><value>المقرر</value></data>
+  <data name="Exception_Failed" xml:space="preserve"><value>القيود غير المستوفاة</value></data>
+  <data name="Exception_RequestedBy" xml:space="preserve"><value>مقدم الطلب</value></data>
+  <data name="Exception_Review" xml:space="preserve"><value>مراجعة</value></data>
+  <data name="Exception_Approve" xml:space="preserve"><value>موافقة</value></data>
+  <data name="Exception_Reject" xml:space="preserve"><value>رفض</value></data>
+  <data name="Exception_Comment" xml:space="preserve"><value>تعليق</value></data>
+  <data name="Exception_CommentRequired" xml:space="preserve"><value>أدخل سبب الرفض.</value></data>
+  <data name="Exception_Cancel" xml:space="preserve"><value>إلغاء الطلب</value></data>
+  <data name="Exception_Decision" xml:space="preserve"><value>القرار</value></data>
+  <data name="Exception_YourReason" xml:space="preserve"><value>السبب</value></data>
+  <data name="ExceptionStatus_Pending" xml:space="preserve"><value>قيد الانتظار</value></data>
+  <data name="ExceptionStatus_Approved" xml:space="preserve"><value>تمت الموافقة</value></data>
+  <data name="ExceptionStatus_Rejected" xml:space="preserve"><value>مرفوض</value></data>
+  <data name="ExceptionStatus_Cancelled" xml:space="preserve"><value>ملغي</value></data>
   <data name="TransferReject_not_placed" xml:space="preserve"><value>الطالب غير موضوع في فصل، فلا يوجد ما يُنقل منه.</value></data>
   <data name="TransferReject_different_year" xml:space="preserve"><value>الفصل الجديد تابع لعام دراسي مختلف.</value></data>
   <data name="TransferReject_same_class" xml:space="preserve"><value>الطالب موجود بالفعل في هذا الفصل.</value></data>
@@ -1461,7 +1485,101 @@
   <data name="Error_package_invalid" xml:space="preserve"><value>لا يمكن استخدام هذه الحزمة. تأكّد أنها مُصدَّرة بصيغة SCORM أو H5P.</value></data>
   <data name="Error_package_too_large" xml:space="preserve"><value>الحزمة كبيرة جدًا للرفع أو ستتجاوز مساحة التخزين المتاحة.</value></data>
   <data name="Error_package_not_ready" xml:space="preserve"><value>الحزمة ليست جاهزة بعد. انتظر حتى ينتهي الفحص.</value></data>
+  <data name="Error_package_not_attached" xml:space="preserve"><value>الحزمة غير مضافة إلى درس بعد، لذا لا يمكن تغيير طريقة احتساب الدرجة.</value></data>
   <data name="Error_package_commit_rejected" xml:space="preserve"><value>تعذّر حفظ تقدّمك لأن المحاولة مغلقة أو لم تُقبل البيانات.</value></data>
+  <data name="Assignment_AllowFiles" xml:space="preserve"><value>السماح برفع ملفات</value></data>
+  <data name="Assignment_AllowText" xml:space="preserve"><value>السماح بنص مكتوب</value></data>
+  <data name="Assignment_Attachments" xml:space="preserve"><value>المرفقات</value></data>
+  <data name="Assignment_BlockNeedsDue" xml:space="preserve"><value>حدد موعد التسليم عند رفض التسليم المتأخر.</value></data>
+  <data name="Assignment_Due" xml:space="preserve"><value>موعد التسليم</value></data>
+  <data name="Assignment_Edit" xml:space="preserve"><value>تعديل الواجب</value></data>
+  <data name="Assignment_InstructionsAr" xml:space="preserve"><value>التعليمات (بالعربية)</value></data>
+  <data name="Assignment_InstructionsEn" xml:space="preserve"><value>التعليمات (بالإنجليزية)</value></data>
+  <data name="Assignment_LatePolicy" xml:space="preserve"><value>التسليم المتأخر</value></data>
+  <data name="Assignment_Lesson" xml:space="preserve"><value>الدرس</value></data>
+  <data name="Assignment_MaxGrade" xml:space="preserve"><value>الدرجة العظمى</value></data>
+  <data name="Assignment_MaxGradeInvalid" xml:space="preserve"><value>الدرجة العظمى بين 0.01 و1000.</value></data>
+  <data name="Assignment_MinScore" xml:space="preserve"><value>الحد الأدنى للدرجة (٪)</value></data>
+  <data name="Assignment_NeedSubmitType" xml:space="preserve"><value>اسمح بنص أو بملفات أو بكليهما.</value></data>
+  <data name="Assignment_PenaltyPercent" xml:space="preserve"><value>نسبة الخصم (٪)</value></data>
+  <data name="Assignment_PenaltyRequired" xml:space="preserve"><value>أدخل نسبة خصم من 1 إلى 100.</value></data>
+  <data name="Assignment_RemoveAttachment" xml:space="preserve"><value>إزالة المرفق</value></data>
+  <data name="Assignment_Resubmission" xml:space="preserve"><value>إعادة التسليم</value></data>
+  <data name="Assignments_Counts" xml:space="preserve"><value>{0} مسلَّم · {1} مصحَّح</value></data>
+  <data name="Assignments_Handed" xml:space="preserve"><value>التسليمات</value></data>
+  <data name="Assignments_Name" xml:space="preserve"><value>الواجب</value></data>
+  <data name="Assignments_New" xml:space="preserve"><value>واجب جديد</value></data>
+  <data name="Assignments_Submissions" xml:space="preserve"><value>التسليمات</value></data>
+  <data name="CompletionRule_Score" xml:space="preserve"><value>عند بلوغ درجة محددة</value></data>
+  <data name="CompletionRule_Submit" xml:space="preserve"><value>عند التسليم</value></data>
+  <data name="Grade_AboveMax" xml:space="preserve"><value>يجب ألا تتجاوز الدرجة {0}.</value></data>
+  <data name="Grade_Annotated" xml:space="preserve"><value>ملف مصحَّح بالملاحظات</value></data>
+  <data name="Grade_Feedback" xml:space="preserve"><value>الملاحظات</value></data>
+  <data name="Grade_NoWork" xml:space="preserve"><value>لا يوجد نص أو ملفات.</value></data>
+  <data name="Grade_Out" xml:space="preserve"><value>الدرجة (من {0})</value></data>
+  <data name="Grade_Penalty" xml:space="preserve"><value>خصم التأخير {0}٪: الدرجة النهائية {1}</value></data>
+  <data name="Grade_RemoveAnnotated" xml:space="preserve"><value>إزالة الملف المصحَّح</value></data>
+  <data name="Grade_Returned" xml:space="preserve"><value>تم حفظ الدرجة وإعادة العمل للطالب.</value></data>
+  <data name="Grade_Save" xml:space="preserve"><value>حفظ الدرجة</value></data>
+  <data name="Grade_SaveReturn" xml:space="preserve"><value>حفظ وإعادة للطالب</value></data>
+  <data name="Grade_Saved" xml:space="preserve"><value>تم حفظ الدرجة.</value></data>
+  <data name="Grade_Title" xml:space="preserve"><value>تصحيح التسليم</value></data>
+  <data name="Grade_Work" xml:space="preserve"><value>عمل الطالب</value></data>
+  <data name="LatePolicy_Allow" xml:space="preserve"><value>مقبول ويُعلَّم متأخراً</value></data>
+  <data name="LatePolicy_Block" xml:space="preserve"><value>غير مقبول</value></data>
+  <data name="LatePolicy_Penalty" xml:space="preserve"><value>مقبول مع خصم نسبة</value></data>
+  <data name="ResubmissionRule_None" xml:space="preserve"><value>غير مسموح</value></data>
+  <data name="ResubmissionRule_UntilDue" xml:space="preserve"><value>حتى موعد التسليم</value></data>
+  <data name="ResubmissionRule_UntilGraded" xml:space="preserve"><value>حتى التصحيح</value></data>
+  <data name="SubmissionStatus_Draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="SubmissionStatus_Graded" xml:space="preserve"><value>مصحَّح</value></data>
+  <data name="SubmissionStatus_Late" xml:space="preserve"><value>متأخر</value></data>
+  <data name="SubmissionStatus_None" xml:space="preserve"><value>لم يسلّم</value></data>
+  <data name="SubmissionStatus_Returned" xml:space="preserve"><value>أُعيد للطالب</value></data>
+  <data name="SubmissionStatus_Submitted" xml:space="preserve"><value>مسلَّم</value></data>
+  <data name="Submissions_At" xml:space="preserve"><value>وقت التسليم</value></data>
+  <data name="Submissions_Grade" xml:space="preserve"><value>الدرجة</value></data>
+  <data name="Submissions_GradeAction" xml:space="preserve"><value>تصحيح</value></data>
+  <data name="Submissions_Late" xml:space="preserve"><value>متأخر</value></data>
+  <data name="Submissions_OnlyLate" xml:space="preserve"><value>المتأخرة فقط</value></data>
+  <data name="Submissions_Status" xml:space="preserve"><value>الحالة</value></data>
+  <data name="Submissions_Student" xml:space="preserve"><value>الطالب</value></data>
+  <data name="Submissions_Title" xml:space="preserve"><value>تسليمات الواجب</value></data>
+  <data name="Assignment_MinScoreUnknown" xml:space="preserve"><value>تعذّر قراءة الحد الأدنى للدرجة. أغلق النافذة وحاول مجدداً.</value></data>
+  <data name="Nav_Eligibility" xml:space="preserve"><value>أهلية المعلمين</value></data>
+  <data name="Eligibility_Title" xml:space="preserve"><value>أهلية المعلمين</value></data>
+  <data name="Eligibility_Help" xml:space="preserve"><value>حدّد أي المعلمين يجوز لهم تدريس أي المقررات في وحدة. لا يمكن تعيين إلا المعلمين المؤهلين على مقرر فصل.</value></data>
+  <data name="Eligibility_Grant" xml:space="preserve"><value>منح الأهلية</value></data>
+  <data name="Eligibility_Revoke" xml:space="preserve"><value>سحب</value></data>
+  <data name="Eligibility_RevokeConfirm" xml:space="preserve"><value>سحب أهلية {0} لمقرر {1}؟</value></data>
+  <data name="Eligibility_Unit" xml:space="preserve"><value>الوحدة</value></data>
+  <data name="Eligibility_Teacher" xml:space="preserve"><value>المعلم</value></data>
+  <data name="Eligibility_Course" xml:space="preserve"><value>المقرر</value></data>
+  <data name="Eligibility_Teachers" xml:space="preserve"><value>المعلمون</value></data>
+  <data name="Eligibility_Courses" xml:space="preserve"><value>المقررات</value></data>
+  <data name="Eligibility_Pairs" xml:space="preserve"><value>{0} زوج معلم-مقرر (الحد الأقصى {1})</value></data>
+  <data name="Teacher_Teacher" xml:space="preserve"><value>المعلم</value></data>
+  <data name="Teacher_NewTeacher" xml:space="preserve"><value>المعلم الجديد</value></data>
+  <data name="Teacher_Role" xml:space="preserve"><value>الدور</value></data>
+  <data name="Teacher_From" xml:space="preserve"><value>من</value></data>
+  <data name="Teacher_To" xml:space="preserve"><value>إلى</value></data>
+  <data name="Teacher_Assign" xml:space="preserve"><value>تعيين معلم</value></data>
+  <data name="Teacher_Replace" xml:space="preserve"><value>استبدال</value></data>
+  <data name="Teacher_End" xml:space="preserve"><value>إنهاء</value></data>
+  <data name="Teacher_LastDay" xml:space="preserve"><value>آخر يوم</value></data>
+  <data name="Teacher_EffectiveOn" xml:space="preserve"><value>تاريخ السريان</value></data>
+  <data name="Teacher_Replacing" xml:space="preserve"><value>استبدال {0}. يدرّس حتى اليوم السابق لتاريخ السريان.</value></data>
+  <data name="Teacher_EndConfirm" xml:space="preserve"><value>إنهاء تعيين {0}؟</value></data>
+  <data name="Teacher_ShowHistory" xml:space="preserve"><value>عرض السجل</value></data>
+  <data name="Teacher_None" xml:space="preserve"><value>لم يُعيَّن معلم بعد.</value></data>
+  <data name="Teacher_NoneEligible" xml:space="preserve"><value>لا يوجد معلم مؤهل لتدريس هذا المقرر هنا. امنح الأهلية أولًا.</value></data>
+  <data name="Teacher_ReplaceHint" xml:space="preserve"><value>لهذا المقرر معلم أساسي بالفعل. استخدم «استبدال» على المعلم الأساسي الحالي، أو عيّن هذا المعلم كمساعد.</value></data>
+  <data name="Teacher_BulkAssign" xml:space="preserve"><value>تعيين في فصول</value></data>
+  <data name="Teacher_PickClassCourses" xml:space="preserve"><value>مقررات الفصول المؤهل لها المعلم</value></data>
+  <data name="Teacher_NoClassCourses" xml:space="preserve"><value>لا يوجد مقرر فصل في العام المحدد يطابق مقررات المعلم المؤهل لها.</value></data>
+  <data name="Teacher_BulkResult" xml:space="preserve"><value>تم إنشاء {0} تعيينًا، وتخطي {1} (معيَّن بالفعل).</value></data>
+  <data name="TeacherRole_Primary" xml:space="preserve"><value>أساسي</value></data>
+  <data name="TeacherRole_Assistant" xml:space="preserve"><value>مساعد</value></data>
   <data name="Error_package_host_not_configured" xml:space="preserve"><value>لم تُفعَّل الحزم على هذه المنصة بعد. تواصل مع مسؤول المنصة.</value></data>
   <data name="Error_package_reason_unsafe_path" xml:space="preserve"><value>بعض الملفات في الحزمة تشير إلى خارجها. صدّر الحزمة من جديد.</value></data>
   <data name="Error_package_reason_too_many_entries" xml:space="preserve"><value>تحتوي الحزمة على عدد كبير جدًا من الملفات.</value></data>
@@ -1629,4 +1747,83 @@
   <data name="Live_Announce_SeriesScheduled_Two" xml:space="preserve"><value>تمت جدولة جلستين</value></data>
   <data name="Live_Announce_SeriesScheduled_Few" xml:space="preserve"><value>تمت جدولة {0} جلسات</value></data>
   <data name="Live_Announce_SeriesScheduled_Many" xml:space="preserve"><value>تمت جدولة {0} جلسة</value></data>
+  <data name="Students_Subtitle" xml:space="preserve"><value>طلاب جهتك وفصولهم وأولياء أمورهم.</value></data>
+  <data name="Students_EmptyTitle" xml:space="preserve"><value>لا يوجد طلاب مطابقون</value></data>
+  <data name="Students_EmptyText" xml:space="preserve"><value>غيّر عوامل التصفية أو أضف طالبًا جديدًا.</value></data>
+  <data name="Student_BackToList" xml:space="preserve"><value>العودة إلى الطلاب</value></data>
+  <data name="Student_CreateSubtitle" xml:space="preserve"><value>أضف طالبًا واربطه بفصل وبأولياء أمره.</value></data>
+  <data name="Student_SectionStudent" xml:space="preserve"><value>الطالب</value></data>
+  <data name="Student_SectionPlacement" xml:space="preserve"><value>الفصل</value></data>
+  <data name="Student_SectionAccount" xml:space="preserve"><value>الحساب</value></data>
+  <data name="Guardians_Subtitle" xml:space="preserve"><value>أولياء أمور طلابك وبيانات التواصل معهم وحالة دخولهم إلى البوابة.</value></data>
+  <data name="Guardians_EmptyTitle" xml:space="preserve"><value>لا يوجد أولياء أمور مطابقون</value></data>
+  <data name="Guardians_EmptyText" xml:space="preserve"><value>غيّر البحث، أو أضف أولياء الأمور عند إنشاء طالب.</value></data>
+  <data name="Guardian_BackToList" xml:space="preserve"><value>العودة إلى أولياء الأمور</value></data>
+  <data name="Guardian_Details" xml:space="preserve"><value>التفاصيل</value></data>
+  <data name="MyChildren_Subtitle" xml:space="preserve"><value>أبناؤك في هذه الجهة وفصولهم.</value></data>
+  <data name="MyProfile_Subtitle" xml:space="preserve"><value>حدّث بيانات التواصل الخاصة بك. التغييرات الأخرى تُرسل إلى مدرستك للموافقة.</value></data>
+  <data name="MyProfile_Details" xml:space="preserve"><value>بياناتك</value></data>
+  <data name="MyProfile_RequestsEmptyText" xml:space="preserve"><value>الطلبات التي ترسلها إلى مدرستك تظهر هنا.</value></data>
+  <data name="ChangeRequests_Subtitle" xml:space="preserve"><value>تغييرات طلب الطلاب إجراءها على بياناتهم. راجع كل طلب ووافق عليه أو ارفضه.</value></data>
+  <data name="ChangeRequests_EmptyTitle" xml:space="preserve"><value>لا توجد طلبات تغيير</value></data>
+  <data name="ChangeRequests_EmptyText" xml:space="preserve"><value>غيّر عوامل التصفية لعرض الطلبات في حالات أخرى.</value></data>
+  <data name="Import_HistoryEmptyTitle" xml:space="preserve"><value>لا توجد عمليات استيراد بعد</value></data>
+  <data name="Import_HistoryEmptyText" xml:space="preserve"><value>عمليات الاستيراد التي تجريها تظهر هنا مع نتيجتها.</value></data>
+  <data name="StudentImport_Subtitle" xml:space="preserve"><value>أضف عددًا كبيرًا من الطلاب دفعة واحدة من ملف إكسل.</value></data>
+  <data name="ClassImport_Subtitle" xml:space="preserve"><value>وزّع الطلاب على الفصول من ملف إكسل.</value></data>
+  <data name="Group_Subtitle" xml:space="preserve"><value>قسّم طلاب مقرر الفصل هذا إلى مجموعات.</value></data>
+  <data name="Error_gradebook_locked" xml:space="preserve"><value>دفتر الدرجات مقفل ولا يمكن تغيير الدرجات بعد الآن.</value></data>
+  <data name="Error_scale_provisional" xml:space="preserve"><value>لم يتم تأكيد سلّم التقدير بعد. أكّده أو أقرّ بأنك تنشر بسلّم غير مؤكَّد.</value></data>
+  <data name="Error_scale_bands_invalid" xml:space="preserve"><value>يجب أن تغطي المستويات من 0 إلى 100 دون فجوات أو تداخل.</value></data>
+  <data name="Error_scale_in_use" xml:space="preserve"><value>يستخدم دفتر درجات هذا السلّم، لذا لا يمكن حذفه.</value></data>
+  <data name="Error_weights_invalid" xml:space="preserve"><value>يجب أن يكون الوزن بين 0 و100.</value></data>
+  <data name="Error_grade_out_of_range" xml:space="preserve"><value>يجب أن تكون الدرجة بين 0 والدرجة العظمى للبند.</value></data>
+  <data name="Error_grade_override_reason_required" xml:space="preserve"><value>اكتب سببًا (حتى 500 حرف) لاستبدال الدرجة.</value></data>
+  <data name="Error_grade_import_invalid" xml:space="preserve"><value>الملف ليس ملف إكسل (.xlsx) صالحًا أو أنه كبير جدًا.</value></data>
+  <data name="Error_grade_import_expired" xml:space="preserve"><value>انتهت صلاحية معاينة الاستيراد. ارفع الملف مرة أخرى.</value></data>
+  <data name="Error_terms_have_dependants" xml:space="preserve"><value>لدى أحد الفصول دفتر درجات أو جدول أو حضور، لذا لا يمكن تغيير فصول هذا العام.</value></data>
+  <data name="Error_concurrency_conflict" xml:space="preserve"><value>غيّر شخص آخر هذا الصف. تمت إعادة تحميله بالقيم الحالية.</value></data>
+  <data name="Setting_Org_TimeZone" xml:space="preserve"><value>المنطقة الزمنية للمجموعة التعليمية</value></data>
+  <data name="Setting_Grades_MissingPolicy" xml:space="preserve"><value>عند غياب الدرجة</value></data>
+  <data name="SettingValue_Grades_MissingPolicy_Normalise" xml:space="preserve"><value>الحساب من الفئات المقيَّمة</value></data>
+  <data name="SettingValue_Grades_MissingPolicy_Zero" xml:space="preserve"><value>احتساب صفر</value></data>
+  <data name="SettingValue_Grades_MissingPolicy_HideUntilComplete" xml:space="preserve"><value>إخفاء المجموع حتى اكتمال التقييم</value></data>
+  <data name="Setting_Grades_CategoryMethod" xml:space="preserve"><value>طريقة حساب الفئة</value></data>
+  <data name="SettingValue_Grades_CategoryMethod_PointsWeighted" xml:space="preserve"><value>مجموع الدرجات على مجموع الدرجات العظمى</value></data>
+  <data name="SettingValue_Grades_CategoryMethod_PercentAverage" xml:space="preserve"><value>متوسط نسب البنود</value></data>
+  <data name="Setting_Grades_DecimalPlaces" xml:space="preserve"><value>المنازل العشرية للدرجات</value></data>
+  <data name="Setting_AcademicYears_TermsPerYear" xml:space="preserve"><value>عدد الفصول في العام الدراسي</value></data>
+  <data name="NotifEvent_Grades_Published" xml:space="preserve"><value>نشر الدرجات</value></data>
+  <data name="Notif_Grades_Published" xml:space="preserve"><value>توجد درجات جديدة في {CourseName}.</value></data>
+  <data name="Grd_ScaleKind_Percentage" xml:space="preserve"><value>نسبة مئوية</value></data>
+  <data name="Grd_ScaleKind_Letter" xml:space="preserve"><value>حروف</value></data>
+  <data name="Grd_ScaleKind_Gpa" xml:space="preserve"><value>المعدل التراكمي</value></data>
+  <data name="Grd_PublishState_Hidden" xml:space="preserve"><value>مخفي</value></data>
+  <data name="Grd_PublishState_Published" xml:space="preserve"><value>منشور</value></data>
+  <data name="Grd_PublishState_Scheduled" xml:space="preserve"><value>مجدول</value></data>
+  <data name="Grd_CellState_Event" xml:space="preserve"><value>من نشاط</value></data>
+  <data name="Grd_CellState_Manual" xml:space="preserve"><value>مُدخَل يدويًا</value></data>
+  <data name="Grd_CellState_Override" xml:space="preserve"><value>مُستبدَل</value></data>
+  <data name="Grd_CellState_NewerScoreExists" xml:space="preserve"><value>توجد درجة أحدث</value></data>
+  <data name="Grd_CellState_Excused" xml:space="preserve"><value>معفى</value></data>
+  <data name="Grd_CellState_Empty" xml:space="preserve"><value>غير مقيَّم</value></data>
+  <data name="Grd_GradebookState_Open" xml:space="preserve"><value>مفتوح</value></data>
+  <data name="Grd_GradebookState_Locked" xml:space="preserve"><value>مقفل</value></data>
+  <data name="Grd_PublishMode_Now" xml:space="preserve"><value>نشر الآن</value></data>
+  <data name="Grd_PublishMode_Schedule" xml:space="preserve"><value>جدولة</value></data>
+  <data name="Grd_PublishMode_Hide" xml:space="preserve"><value>إخفاء</value></data>
+  <data name="Perm_Grades_View" xml:space="preserve"><value>عرض سلالم التقدير ودفاتر الدرجات</value></data>
+  <data name="Perm_Grades_Manage" xml:space="preserve"><value>إدارة دفاتر الدرجات وإدخال الدرجات</value></data>
+  <data name="Perm_Grades_Publish" xml:space="preserve"><value>نشر الدرجات للطلاب وأولياء الأمور</value></data>
+  <data name="Perm_Grades_ConfigureScales" xml:space="preserve"><value>ضبط سلالم التقدير وقوالب الأوزان</value></data>
+  <data name="Perm_Grades_ViewReports" xml:space="preserve"><value>عرض تقارير الدرجات</value></data>
+  <data name="Perm_Grades_ViewOwn" xml:space="preserve"><value>عرض الدرجات المنشورة الخاصة</value></data>
+  <data name="AuditEntity_GradingScale" xml:space="preserve"><value>سلّم التقدير</value></data>
+  <data name="AuditEntity_WeightTemplate" xml:space="preserve"><value>قالب الأوزان</value></data>
+  <data name="AuditEntity_Gradebook" xml:space="preserve"><value>دفتر الدرجات</value></data>
+  <data name="AuditEntity_GradeCategory" xml:space="preserve"><value>فئة الدرجات</value></data>
+  <data name="AuditEntity_GradeItem" xml:space="preserve"><value>بند الدرجات</value></data>
+  <data name="AuditEntity_GradeEntry" xml:space="preserve"><value>درجة</value></data>
+  <data name="AuditEntity_GradeSnapshot" xml:space="preserve"><value>لقطة الدرجات</value></data>
+  <data name="PermModule_Grades" xml:space="preserve"><value>الدرجات</value></data>
 </root>
