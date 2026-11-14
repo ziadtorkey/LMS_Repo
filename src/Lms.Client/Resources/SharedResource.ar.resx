@@ -1543,6 +1543,95 @@
   <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>لم تجتز الحزمة الفحص الأمني.</value></data>
   <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>الملف ليس أرشيف zip صالحًا. صدّر الحزمة من جديد.</value></data>
   <data name="Error_package_reason_bad_name" xml:space="preserve"><value>بعض أسماء الملفات في الحزمة طويلة جدًا أو متداخلة بعمق أو محجوزة. أعد تسميتها وصدّر الحزمة من جديد.</value></data>
+  <data name="ClassCourse_TabLive" xml:space="preserve"><value>الجلسات المباشرة</value></data>
+  <data name="Live_Title" xml:space="preserve"><value>الجلسات المباشرة</value></data>
+  <data name="Live_Subtitle" xml:space="preserve"><value>حصص عبر الإنترنت لهذا المقرر. ينضم الطلاب من الدرس.</value></data>
+  <data name="Live_Schedule" xml:space="preserve"><value>جدولة جلسة</value></data>
+  <data name="Live_ScheduleAction" xml:space="preserve"><value>جدولة</value></data>
+  <data name="Live_Filter" xml:space="preserve"><value>أي الجلسات</value></data>
+  <data name="Live_Upcoming" xml:space="preserve"><value>القادمة</value></data>
+  <data name="Live_Past" xml:space="preserve"><value>السابقة</value></data>
+  <data name="Live_Col_When" xml:space="preserve"><value>الموعد</value></data>
+  <data name="Live_Col_Session" xml:space="preserve"><value>الجلسة</value></data>
+  <data name="Live_Col_Lesson" xml:space="preserve"><value>الدرس</value></data>
+  <data name="Live_Col_Status" xml:space="preserve"><value>الحالة</value></data>
+  <data name="Live_Col_Recording" xml:space="preserve"><value>التسجيل</value></data>
+  <data name="Live_Col_Actions" xml:space="preserve"><value>إجراءات</value></data>
+  <data name="Live_Edit" xml:space="preserve"><value>تعديل الجلسة</value></data>
+  <data name="Live_RecordingLink" xml:space="preserve"><value>رابط التسجيل</value></data>
+  <data name="Live_CancelSession" xml:space="preserve"><value>إلغاء الجلسة</value></data>
+  <data name="Live_CancelConfirm" xml:space="preserve"><value>إلغاء هذه الجلسة؟ لن يراها الطلاب بعد الآن.</value></data>
+  <data name="Live_Recording" xml:space="preserve"><value>تسجيل</value></data>
+  <data name="Live_Empty_Upcoming_Title" xml:space="preserve"><value>لا توجد جلسات قادمة</value></data>
+  <data name="Live_Empty_Upcoming_Staff" xml:space="preserve"><value>جدول جلسة ليتمكن الطلاب من الانضمام من الدرس.</value></data>
+  <data name="Live_Empty_Upcoming_Student" xml:space="preserve"><value>لم يجدول معلمك أي جلسة بعد.</value></data>
+  <data name="Live_Empty_Past_Title" xml:space="preserve"><value>لا توجد جلسات سابقة</value></data>
+  <data name="Live_Empty_Past_Text" xml:space="preserve"><value>تظهر الجلسات هنا بعد انتهائها.</value></data>
+  <data name="Live_SeriesCaption" xml:space="preserve"><value>أسبوعياً · {0} من {1}</value></data>
+  <data name="Live_SeriesCaptionShort" xml:space="preserve"><value>أسبوعياً</value></data>
+  <data name="Live_ProviderNotConfigured" xml:space="preserve"><value>الجلسات المباشرة غير مُعدّة بعد. اطلب من مسؤول المنصة إعدادها.</value></data>
+  <data name="Live_ProviderUnhealthy" xml:space="preserve"><value>لا يستجيب Zoom حالياً. قد تفشل الجلسات الجديدة، أما الحالية فتعمل كالمعتاد.</value></data>
+  <data name="Live_FeatureOff" xml:space="preserve"><value>الجلسات المباشرة متوقفة في هذه المدرسة.</value></data>
+  <data name="Live_Error_Busy" xml:space="preserve"><value>Zoom مشغول. أعد المحاولة بعد حوالي {0}.</value></data>
+  <data name="Live_Error_BusyShort" xml:space="preserve"><value>Zoom مشغول. أعد المحاولة بعد دقيقة.</value></data>
+  <data name="Live_DialogTitleNew" xml:space="preserve"><value>جدولة جلسة مباشرة</value></data>
+  <data name="Live_DialogTitleEdit" xml:space="preserve"><value>تعديل جلسة مباشرة</value></data>
+  <data name="Live_SectionSession" xml:space="preserve"><value>الجلسة</value></data>
+  <data name="Live_SectionTime" xml:space="preserve"><value>الوقت</value></data>
+  <data name="Live_SectionRepeat" xml:space="preserve"><value>التكرار</value></data>
+  <data name="Live_SectionModule" xml:space="preserve"><value>في الدرس</value></data>
+  <data name="Live_TitleHelp" xml:space="preserve"><value>يرى المشاركون هذا العنوان في Zoom.</value></data>
+  <data name="Live_Lesson" xml:space="preserve"><value>الدرس</value></data>
+  <data name="Live_Date" xml:space="preserve"><value>التاريخ</value></data>
+  <data name="Live_StartTime" xml:space="preserve"><value>وقت البدء</value></data>
+  <data name="Live_Duration" xml:space="preserve"><value>المدة</value></data>
+  <data name="Live_TimeZone" xml:space="preserve"><value>الأوقات بتوقيتك المحلي:</value></data>
+  <data name="Live_Repeat_Once" xml:space="preserve"><value>مرة واحدة</value></data>
+  <data name="Live_Repeat_Weekly" xml:space="preserve"><value>أسبوعياً</value></data>
+  <data name="Live_Every" xml:space="preserve"><value>التكرار كل</value></data>
+  <data name="Live_Days" xml:space="preserve"><value>في هذه الأيام</value></data>
+  <data name="Live_Ends" xml:space="preserve"><value>ينتهي</value></data>
+  <data name="Live_EndsOn" xml:space="preserve"><value>في تاريخ</value></data>
+  <data name="Live_EndsAfter" xml:space="preserve"><value>بعد</value></data>
+  <data name="Live_EndsAfterSuffix" xml:space="preserve"><value>جلسات</value></data>
+  <data name="Live_EndsRequired" xml:space="preserve"><value>اختر تاريخ الانتهاء أو عدد الجلسات.</value></data>
+  <data name="Live_TooMany" xml:space="preserve"><value>يمكن أن تضم السلسلة {0} جلسة على الأكثر. اختر تاريخ انتهاء أبكر أو عدداً أقل.</value></data>
+  <data name="Live_EditSeriesTitle" xml:space="preserve"><value>تعديل جلسة متكررة</value></data>
+  <data name="Live_CancelSeriesTitle" xml:space="preserve"><value>إلغاء جلسة متكررة</value></data>
+  <data name="Live_ScopeLabel" xml:space="preserve"><value>أي الجلسات</value></data>
+  <data name="Live_Continue" xml:space="preserve"><value>متابعة</value></data>
+  <data name="Live_CancelSessions" xml:space="preserve"><value>إلغاء الجلسات</value></data>
+  <data name="Live_RecordingTitle" xml:space="preserve"><value>رابط التسجيل</value></data>
+  <data name="Live_RecordingUrl" xml:space="preserve"><value>الرابط</value></data>
+  <data name="Live_RecordingHelp" xml:space="preserve"><value>ألصق رابطاً يبدأ بـ https://.</value></data>
+  <data name="Live_RecordingOpensOn" xml:space="preserve"><value>يُفتح على</value></data>
+  <data name="Live_RecordingInvalid" xml:space="preserve"><value>استخدم رابطاً يبدأ بـ https:// أو http://.</value></data>
+  <data name="Live_RecordingBy_Provider" xml:space="preserve"><value>أضافه Zoom</value></data>
+  <data name="Live_RecordingBy_Manual" xml:space="preserve"><value>أضافه معلم</value></data>
+  <data name="Live_Unit_Minute_One" xml:space="preserve"><value>دقيقة</value></data>
+  <data name="Live_Unit_Minute_Two" xml:space="preserve"><value>دقيقتين</value></data>
+  <data name="Live_Unit_Minute_Few" xml:space="preserve"><value>{0} دقائق</value></data>
+  <data name="Live_Unit_Minute_Many" xml:space="preserve"><value>{0} دقيقة</value></data>
+  <data name="Live_Duration_Minute_One" xml:space="preserve"><value>دقيقة واحدة</value></data>
+  <data name="Live_Duration_Minute_Two" xml:space="preserve"><value>دقيقتان</value></data>
+  <data name="Live_Duration_Minute_Few" xml:space="preserve"><value>{0} دقائق</value></data>
+  <data name="Live_Duration_Minute_Many" xml:space="preserve"><value>{0} دقيقة</value></data>
+  <data name="Live_Unit_Session_One" xml:space="preserve"><value>جلسة واحدة</value></data>
+  <data name="Live_Unit_Session_Two" xml:space="preserve"><value>جلستان</value></data>
+  <data name="Live_Unit_Session_Few" xml:space="preserve"><value>{0} جلسات</value></data>
+  <data name="Live_Unit_Session_Many" xml:space="preserve"><value>{0} جلسة</value></data>
+  <data name="Live_MoreSessions_One" xml:space="preserve"><value>وجلسة أخرى</value></data>
+  <data name="Live_MoreSessions_Two" xml:space="preserve"><value>وجلستان أخريان</value></data>
+  <data name="Live_MoreSessions_Few" xml:space="preserve"><value>و{0} جلسات أخرى</value></data>
+  <data name="Live_MoreSessions_Many" xml:space="preserve"><value>و{0} جلسة أخرى</value></data>
+  <data name="Live_LaterSessions_One" xml:space="preserve"><value>وجلسة لاحقة</value></data>
+  <data name="Live_LaterSessions_Two" xml:space="preserve"><value>وجلستان لاحقتان</value></data>
+  <data name="Live_LaterSessions_Few" xml:space="preserve"><value>و{0} جلسات لاحقة</value></data>
+  <data name="Live_LaterSessions_Many" xml:space="preserve"><value>و{0} جلسة لاحقة</value></data>
+  <data name="Live_EveryWeeks_One" xml:space="preserve"><value>كل أسبوع</value></data>
+  <data name="Live_EveryWeeks_Two" xml:space="preserve"><value>كل أسبوعين</value></data>
+  <data name="Live_EveryWeeks_Few" xml:space="preserve"><value>كل {0} أسابيع</value></data>
+  <data name="Live_EveryWeeks_Many" xml:space="preserve"><value>كل {0} أسبوعاً</value></data>
   <data name="Students_Subtitle" xml:space="preserve"><value>طلاب جهتك وفصولهم وأولياء أمورهم.</value></data>
   <data name="Students_EmptyTitle" xml:space="preserve"><value>لا يوجد طلاب مطابقون</value></data>
   <data name="Students_EmptyText" xml:space="preserve"><value>غيّر عوامل التصفية أو أضف طالبًا جديدًا.</value></data>
@@ -1845,4 +1934,5 @@
   <data name="Att_Unmatched_This" xml:space="preserve"><value>هذا هو</value></data>
   <data name="Att_Unmatched_Save" xml:space="preserve"><value>حفظ المطابقات</value></data>
   <data name="AttReports_ClassFilter" xml:space="preserve"><value>الفصل</value></data>
+  <data name="Live_TakeAttendance" xml:space="preserve"><value>تسجيل الحضور</value></data>
 </root>

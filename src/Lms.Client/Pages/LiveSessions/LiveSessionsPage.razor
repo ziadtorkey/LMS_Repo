@@ -1,0 +1,268 @@
+@page "/class-courses/{Id:guid}/live-sessions"
+@attribute [Authorize]
+@using Lms.Client.Components
+@using Lms.Client.Components.Content
+@using Lms.Client.Components.Ui
+@using Lms.Client.Pages.Forums
+@using Lms.Client.Services
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.LiveSessions
+@using Lms.Shared.Authorization
+@using Lms.Shared.Classes
+@using Lms.Shared.LiveSessions
+@inject ILiveSessionsApi Live
+@inject ILessonPlansApi Plans
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject IDialogService Dialogs
+@inject NavigationManager Navigation
+@inject TimeProvider Clock
+@implements IDisposable
+
+<PageTitle>@L["Live_Title"]</PageTitle>
+<ClassCourseTabs ClassCourseId="Id" Active="live-sessions" />
+
+@if (!PermState.Loaded)
+{
+    <LoadingState TestId="live-loading" />
+}
+else if (!PermState.Has(Permissions.LiveSessions.View) && !Staff)
+{
+    <MudAlert Severity="Severity.Warning" data-testid="live-forbidden">@L["Forbidden_Title"]</MudAlert>
+}
+else
+{
+    <PageHeader Title="@L["Live_Title"]" Subtitle="@L["Live_Subtitle"]" TitleTestId="live-title">
+        <Actions>
+            @if (Staff)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.VideoCall" OnClick="ScheduleAsync"
+                           Disabled="@(_provider is { Configured: false })" data-testid="live-schedule">@L["Live_Schedule"]</MudButton>
+            }
+        </Actions>
+    </PageHeader>
+
+    @if (Staff)
+    {
+        <ProviderStatusBanner Status="_provider" />
+    }
+
+    @if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" role="alert" Class="mb-4" data-testid="live-error">@_error</MudAlert>
+    }
+
+    <SectionCard Flush="true" TestId="live-card">
+        <div class="lms-filters-inline">
+            <MudToggleGroup T="bool" Value="_upcoming" ValueChanged="OnTabChangedAsync" Color="Color.Primary" Size="Size.Small" aria-label="@L["Live_Filter"]" data-testid="live-filter">
+                <MudToggleItem T="bool" Value="true" data-testid="live-filter-upcoming">@L["Live_Upcoming"]</MudToggleItem>
+                <MudToggleItem T="bool" Value="false" data-testid="live-filter-past">@L["Live_Past"]</MudToggleItem>
+            </MudToggleGroup>
+        </div>
+        @if (_loading)
+        {
+            <LoadingState TestId="live-loading" />
+        }
+        else if (_items.Count == 0)
+        {
+            <EmptyState Icon="@Icons.Material.Rounded.VideoCall" TestId="live-empty"
+                        Title="@L[_upcoming ? "Live_Empty_Upcoming_Title" : "Live_Empty_Past_Title"]"
+                        Text="@L[_upcoming ? (Staff ? "Live_Empty_Upcoming_Staff" : "Live_Empty_Upcoming_Student") : "Live_Empty_Past_Text"]" />
+        }
+        else
+        {
+            <LiveSessionsList Items="_items" Staff="Staff" LessonOfModule="_lessonOfModule" SeriesSizes="_seriesSizes" RecordingUrls="_recordingUrls"
+                              AttendanceEnabled="PermState.Has(Permissions.Attendance.Take)" OnAttendance="Attendance"
+                              OnEdit="EditAsync" OnRecording="RecordingAsync" OnCancel="CancelAsync" />
+        }
+    </SectionCard>
+}
+
+@code {
+    private IReadOnlyList<LiveSessionListItemDto> _items = [];
+    private IReadOnlyList<LiveLessonOption> _lessons = [];
+    private IReadOnlyDictionary<Guid, string> _lessonOfModule = new Dictionary<Guid, string>();
+    private Dictionary<Guid, int> _seriesSizes = [];
+    private Dictionary<Guid, string> _recordingUrls = [];
+    private ProviderStatusDto? _provider;
+    private string? _error;
+    private bool _loading = true, _upcoming = true;
+
+    [Parameter] public Guid Id { get; set; }
+
+    private bool Staff => PermState.Has(Permissions.LiveSessions.Manage);
+
+    protected override async Task OnParametersSetAsync()
+    {
+        PermState.Changed -= OnPermissionsChanged;
+        PermState.Changed += OnPermissionsChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        await LoadPlanAsync();
+        if (Staff) await LoadProviderAsync();
+        await LoadAsync();
+    }
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => PermState.Changed -= OnPermissionsChanged;
+
+    private async Task LoadPlanAsync()
+    {
+        var (plan, _) = await ApiCalls.RunAsync(() => Plans.GetPlanAsync(Id), Navigation);
+        if (plan is null) return;
+        var lessons = new List<LiveLessonOption>();
+        var byModule = new Dictionary<Guid, string>();
+        foreach (var section in plan.Sections.Where(s => !s.IsHidden).OrderBy(s => s.Order))
+            foreach (var lesson in section.Lessons.Where(l => !l.IsHidden).OrderBy(l => l.Order))
+            {
+                var title = Culture.Pick(lesson.TitleAr, lesson.TitleEn);
+                lessons.Add(new LiveLessonOption(lesson.Key, Culture.Pick(section.TitleAr, section.TitleEn) + " · " + title));
+                foreach (var module in lesson.Modules ?? []) byModule[module.Id] = title;
+            }
+        _lessons = lessons;
+        _lessonOfModule = byModule;
+    }
+
+    private async Task LoadProviderAsync()
+    {
+        // A failed status read only hides the banner; scheduling reports its own errors.
+        var (status, _) = await ApiCalls.RunAsync(() => Live.GetProviderStatusAsync(), Navigation);
+        _provider = status;
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _error = null;
+        var now = Clock.GetUtcNow().UtcDateTime;
+        // The server range is generous (a session that has started is still upcoming until it ends); the exact split uses the server clock.
+        var query = _upcoming ? new LiveSessionQuery(FromUtc: now.AddMinutes(-LiveSessionLimits.DurationMaxMinutes), PageSize: 100)
+                              : new LiveSessionQuery(ToUtc: now, PageSize: 100);
+        var ok = await LiveErrorText.RunAsync(async () =>
+        {
+            var page = await Live.ListAsync(Id, query);
+            var rows = page.Items.Where(s => (s.EndsAtUtc > s.ServerNowUtc) == _upcoming).ToList();
+            _items = _upcoming ? rows.OrderBy(s => s.StartsAtUtc).ToList() : rows.OrderByDescending(s => s.StartsAtUtc).ToList();
+            await LoadSeriesSizesAsync();
+            await LoadRecordingUrlsAsync();
+        }, Navigation, L, Culture.IsRightToLeft, message => _error = message);
+        if (!ok) _items = [];
+        _loading = false;
+    }
+
+    /// <summary>The list rows only say that a recording exists; the link itself is read per row (few sessions have one).</summary>
+    private async Task LoadRecordingUrlsAsync()
+    {
+        _recordingUrls = [];
+        foreach (var row in _items.Where(s => s.HasRecording))
+        {
+            try
+            {
+                if ((await Live.GetAsync(row.Id)).RecordingUrl is { Length: > 0 } url) _recordingUrls[row.Id] = url;
+            }
+            catch (ApiProblemException) { }
+        }
+    }
+
+    /// <summary>"3 of 12": the list rows carry only the position, so one read per series gives its size.</summary>
+    private async Task LoadSeriesSizesAsync()
+    {
+        foreach (var row in _items.Where(s => s.SeriesId is not null && !_seriesSizes.ContainsKey(s.SeriesId.Value)).GroupBy(s => s.SeriesId!.Value).Select(g => g.First()))
+        {
+            try
+            {
+                var full = await Live.GetAsync(row.Id);
+                if (full.OccurrenceCount is { } n) _seriesSizes[row.SeriesId!.Value] = n;
+            }
+            catch (ApiProblemException) { }
+        }
+    }
+
+    private async Task OnTabChangedAsync(bool upcoming)
+    {
+        _upcoming = upcoming;
+        await LoadAsync();
+    }
+
+    private async Task ScheduleAsync()
+    {
+        var dialog = await Dialogs.ShowAsync<LiveSessionDialog>(L["Live_DialogTitleNew"],
+            new DialogParameters<LiveSessionDialog> { { x => x.ClassCourseId, Id }, { x => x.Lessons, _lessons } },
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        if (await dialog.Result is { Canceled: false })
+        {
+            await LoadPlanAsync();
+            await LoadAsync();
+        }
+    }
+
+    private async Task<LiveSessionDto?> ReadAsync(LiveSessionListItemDto row)
+    {
+        LiveSessionDto? full = null;
+        var ok = await LiveErrorText.RunAsync(async () => full = await Live.GetAsync(row.Id), Navigation, L, Culture.IsRightToLeft, m => _error = m);
+        return ok ? full : null;
+    }
+
+    private async Task EditAsync(LiveSessionListItemDto row)
+    {
+        if (await ReadAsync(row) is not { } full) return;
+        var scope = SeriesEditScopes.This;
+        if (full.SeriesId is not null)
+        {
+            if (await AskScopeAsync(full, cancelling: false) is not { } chosen) return;
+            scope = chosen;
+        }
+        var dialog = await Dialogs.ShowAsync<LiveSessionDialog>(L["Live_DialogTitleEdit"],
+            new DialogParameters<LiveSessionDialog> { { x => x.ClassCourseId, Id }, { x => x.Existing, full }, { x => x.Scope, scope }, { x => x.Lessons, _lessons } },
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        if (await dialog.Result is { Canceled: false }) await LoadAsync();
+    }
+
+    private async Task CancelAsync(LiveSessionListItemDto row)
+    {
+        if (await ReadAsync(row) is not { } full) return;
+        var scope = SeriesEditScopes.This;
+        if (full.SeriesId is not null)
+        {
+            if (await AskScopeAsync(full, cancelling: true) is not { } chosen) return;
+            scope = chosen;
+        }
+        else if (!await ConfirmDialog.AskAsync(Dialogs, L["Live_CancelSession"], L["Live_CancelConfirm"], L["Live_CancelSession"]))
+        {
+            return;
+        }
+        if (await LiveErrorText.RunAsync(() => Live.DeleteAsync(full.Id, scope), Navigation, L, Culture.IsRightToLeft, m => _error = m)) await LoadAsync();
+    }
+
+    private async Task<string?> AskScopeAsync(LiveSessionDto session, bool cancelling)
+    {
+        var local = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(session.StartsAtUtc, DateTimeKind.Utc), Clock.LocalTimeZone);
+        var later = Math.Max(0, (session.OccurrenceCount ?? 0) - (session.OccurrenceIndex ?? 0));
+        var dialog = await Dialogs.ShowAsync<SeriesScopeDialog>(L[cancelling ? "Live_CancelSeriesTitle" : "Live_EditSeriesTitle"],
+            new DialogParameters<SeriesScopeDialog>
+            {
+                { x => x.Cancelling, cancelling },
+                { x => x.When, local.ToString("yyyy-MM-dd HH:mm", System.Globalization.CultureInfo.InvariantCulture) },
+                { x => x.Date, local.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture) },
+                { x => x.LaterCount, later },
+            },
+            new DialogOptions { MaxWidth = MaxWidth.ExtraSmall, FullWidth = true });
+        var result = await dialog.Result;
+        return result is { Canceled: false, Data: string scope } ? scope : null;
+    }
+
+    /// <summary>Opens the take-attendance page of this live session's proposal (the list item carries its id once the participants were imported).</summary>
+    private void Attendance(LiveSessionListItemDto row)
+    {
+        if (row.AttendanceSessionId is { } id) Navigation.NavigateTo($"attendance/sessions/{id}");
+    }
+
+    private async Task RecordingAsync(LiveSessionListItemDto row)
+    {
+        if (await ReadAsync(row) is not { } full) return;
+        var dialog = await Dialogs.ShowAsync<RecordingLinkDialog>(L["Live_RecordingTitle"],
+            new DialogParameters<RecordingLinkDialog> { { x => x.Session, full } },
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        if (await dialog.Result is { Canceled: false }) await LoadAsync();
+    }
+}

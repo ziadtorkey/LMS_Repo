@@ -15,9 +15,9 @@ namespace Lms.Client.Services.LiveSessions;
 /// </summary>
 public sealed class FakeLiveSessionsApi : ILiveSessionsApi
 {
-    /// <summary>The class course the demo data belongs to.</summary>
-    public static readonly Guid DemoClassCourseId = Guid.Parse("00000000-0000-0000-0000-0000000d0001");
-    private static readonly Guid DemoLessonKey = Guid.Parse("00000000-0000-0000-0000-0000000d0002");
+    /// <summary>The class course the demo data belongs to: the lesson-plan fake's Arabic course, so the page finds its lessons.</summary>
+    public static readonly Guid DemoClassCourseId = FakeLessonPlansApi.ArabicClassCourseId;
+    private static readonly Guid DemoLessonKey = Guid.Parse("00000000-0000-0000-0000-0000000000b1");
     private const int JoinWindowMinutes = 10;
 
     private readonly List<LiveSessionDto> _sessions = [];
@@ -38,6 +38,8 @@ public sealed class FakeLiveSessionsApi : ILiveSessionsApi
     public bool ProviderConfigured { get; set; } = true;
     public bool ProviderHealthy { get; set; } = true;
     public bool FeatureEnabled { get; set; } = true;
+    /// <summary>The <c>Retry-After</c> the fake sends with <c>provider_unavailable</c> (the real server always does).</summary>
+    public int ProviderRetryAfterSeconds { get; set; } = 300;
     public Exception? Failure { get; set; }
     public List<string> Calls { get; } = [];
 
@@ -69,6 +71,9 @@ public sealed class FakeLiveSessionsApi : ILiveSessionsApi
     }
 
     private void Replace(LiveSessionDto s) => _sessions[_sessions.FindIndex(x => x.Id == s.Id)] = s;
+
+    /// <summary>The attendance session proposed from a live session (M5 wave 3: <c>AttendanceSessionId</c> of the list item), when the demo has one.</summary>
+    public Dictionary<Guid, Guid> AttendanceSessions { get; } = [];
 
     private static ApiProblemException Problem(int status, string code) => new(status, code, null, null);
 
@@ -108,7 +113,8 @@ public sealed class FakeLiveSessionsApi : ILiveSessionsApi
         var size = Math.Clamp(query.PageSize, 1, Paging.MaxPageSize);
         var items = rows.Skip((page - 1) * size).Take(size)
             .Select(s => new LiveSessionListItemDto(s.Id, s.Module.Id, s.SeriesId, s.OccurrenceIndex, s.Module.TitleAr, s.Module.TitleEn,
-                s.StartsAtUtc, s.EndsAtUtc, s.Status, s.RecordingUrl is not null, now)).ToList();
+                s.StartsAtUtc, s.EndsAtUtc, s.Status, s.RecordingUrl is not null, now,
+                AttendanceSessions.TryGetValue(s.Id, out var attendance) ? attendance : null)).ToList();
         return Task.FromResult(new PagedResult<LiveSessionListItemDto>(items, rows.Count, page, size));
     }
 
@@ -118,7 +124,7 @@ public sealed class FakeLiveSessionsApi : ILiveSessionsApi
         RequireStaff();
         if (!FeatureEnabled) throw Problem(403, ProblemCodes.feature_disabled);
         if (!ProviderConfigured) throw Problem(409, ProblemCodes.provider_not_configured);
-        if (!ProviderHealthy) throw Problem(409, ProblemCodes.provider_unavailable);
+        if (!ProviderHealthy) throw new ApiProblemException(409, ProblemCodes.provider_unavailable, null, null, retryAfterSeconds: ProviderRetryAfterSeconds);
         ValidateTitle(request.Module);
         ValidateDuration(request.DurationMinutes);
 

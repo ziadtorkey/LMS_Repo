@@ -1,0 +1,134 @@
+@using System.Globalization
+@using Lms.Client.Components.Content
+@using Lms.Client.Components.LiveSessions
+@using Lms.Client.Services
+@using Lms.Shared.LiveSessions
+@inject ICultureService Culture
+@inject TimeProvider Clock
+
+@* The sessions of one class course as a labelled table (cards at 360 px): when, session, lesson, status, recording, actions
+   (design spec M4b §2.1). Times are shown in the browser's time zone. *@
+<MudSimpleTable Class="lms-simple-table lms-stack-table" Dense="true" data-testid="live-table">
+    <thead>
+        <tr>
+            <th>@L["Live_Col_When"]</th>
+            <th>@L["Live_Col_Session"]</th>
+            <th>@L["Live_Col_Lesson"]</th>
+            <th>@L["Live_Col_Status"]</th>
+            <th>@L["Live_Col_Recording"]</th>
+            @if (Staff)
+            {
+                <th><span class="lms-visually-hidden">@L["Live_Col_Actions"]</span></th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var s in Items)
+        {
+            var cancelled = s.Status == LiveSessionStatuses.Cancelled;
+            var finished = cancelled || s.Status == LiveSessionStatuses.Ended;
+            <tr class="@(cancelled ? "lms-muted" : null)" data-testid="@($"live-row-{s.Id}")">
+                <td data-label="@L["Live_Col_When"]">
+                    <div class="lms-when">
+                        <span class="lms-when-date lms-cell-strong">@Local(s.StartsAtUtc).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)</span>
+                        <span class="lms-when-time">@Local(s.StartsAtUtc).ToString("HH:mm", CultureInfo.InvariantCulture)–@Local(s.EndsAtUtc).ToString("HH:mm", CultureInfo.InvariantCulture)</span>
+                    </div>
+                </td>
+                <td data-label="@L["Live_Col_Session"]">
+                    <span class="lms-cell-strong">@Culture.Pick(s.TitleAr, s.TitleEn)</span>
+                    @if (s.SeriesId is not null)
+                    {
+                        <div class="lms-muted lms-series-caption" data-testid="@($"live-series-{s.Id}")">
+                            <MudIcon Icon="@Icons.Material.Rounded.Repeat" Size="Size.Small" aria-hidden="true" />
+                            @SeriesText(s)
+                        </div>
+                    }
+                </td>
+                <td data-label="@L["Live_Col_Lesson"]" class="lms-muted">@LessonTitle(s.ModuleId)</td>
+                <td data-label="@L["Live_Col_Status"]">
+                    <LiveSessionStatusChip Status="@s.Status" ShowHint="true" />
+                </td>
+                <td data-label="@L["Live_Col_Recording"]">
+                    @if (s.HasRecording)
+                    {
+                        @if (RecordingUrls.TryGetValue(s.Id, out var url) && ModuleLinks.IsAllowed(url))
+                        {
+                            <a href="@url" target="_blank" rel="noopener noreferrer nofollow" data-testid="live-recording-open">
+                                <MudIcon Icon="@Icons.Material.Rounded.PlayCircle" Size="Size.Small" aria-hidden="true" /> @L["Live_Recording"]
+                            </a>
+                            <div><span class="lms-host-hint" dir="ltr">@(new Uri(url).Host)</span></div>
+                        }
+                        else
+                        {
+                            <MudIcon Icon="@Icons.Material.Rounded.PlayCircle" Size="Size.Small" aria-hidden="true" /> @L["Live_Recording"]
+                        }
+                    }
+                    else
+                    {
+                        <span class="lms-muted">—</span>
+                    }
+                </td>
+                @if (Staff)
+                {
+                    <td data-label="@L["Live_Col_Actions"]">
+                        <div class="lms-row-actions">
+                        @if (!finished)
+                        {
+                            <MudTooltip Text="@L["Live_Edit"]">
+                                <MudIconButton Icon="@Icons.Material.Rounded.Edit" Size="Size.Small" aria-label="@L["Live_Edit"]"
+                                               OnClick="() => OnEdit.InvokeAsync(s)" data-testid="@($"live-edit-{s.Id}")" />
+                            </MudTooltip>
+                        }
+                        @if (AttendanceEnabled && s.AttendanceSessionId is not null)
+                        {
+                            <MudTooltip Text="@L["Live_TakeAttendance"]">
+                                <MudIconButton Icon="@Icons.Material.Rounded.FactCheck" Size="Size.Small" aria-label="@L["Live_TakeAttendance"]"
+                                               OnClick="() => OnAttendance.InvokeAsync(s)" data-testid="@($"live-attendance-{s.Id}")" />
+                            </MudTooltip>
+                        }
+                        <MudTooltip Text="@L["Live_RecordingLink"]">
+                            <MudIconButton Icon="@Icons.Material.Rounded.Link" Size="Size.Small" aria-label="@L["Live_RecordingLink"]"
+                                           OnClick="() => OnRecording.InvokeAsync(s)" data-testid="@($"live-recording-{s.Id}")" />
+                        </MudTooltip>
+                        @if (!finished)
+                        {
+                            <span class="lms-row-actions-sep" aria-hidden="true"></span>
+                            <MudTooltip Text="@L["Live_CancelSession"]">
+                                <MudIconButton Icon="@Icons.Material.Rounded.EventBusy" Size="Size.Small" Color="Color.Error" aria-label="@L["Live_CancelSession"]"
+                                               OnClick="() => OnCancel.InvokeAsync(s)" data-testid="@($"live-cancel-{s.Id}")" />
+                            </MudTooltip>
+                        }
+                        </div>
+                    </td>
+                }
+            </tr>
+        }
+    </tbody>
+</MudSimpleTable>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<LiveSessionListItemDto> Items { get; set; } = [];
+    /// <summary>The caller can manage sessions (LiveSessions.Manage): the actions column exists only then.</summary>
+    [Parameter] public bool Staff { get; set; }
+    /// <summary>Lesson title by module id (from the plan).</summary>
+    [Parameter] public IReadOnlyDictionary<Guid, string> LessonOfModule { get; set; } = new Dictionary<Guid, string>();
+    /// <summary>The number of occurrences of each series, by series id (for "3 of 12").</summary>
+    [Parameter] public IReadOnlyDictionary<Guid, int> SeriesSizes { get; set; } = new Dictionary<Guid, int>();
+    /// <summary>The recording link by session id (read by the page for rows that have one).</summary>
+    [Parameter] public IReadOnlyDictionary<Guid, string> RecordingUrls { get; set; } = new Dictionary<Guid, string>();
+    /// <summary>Shows "Take attendance" on a session that has an attendance proposal (<c>AttendanceSessionId</c> set; the caller holds Attendance.Take).</summary>
+    [Parameter] public bool AttendanceEnabled { get; set; }
+    [Parameter] public EventCallback<LiveSessionListItemDto> OnAttendance { get; set; }
+    [Parameter] public EventCallback<LiveSessionListItemDto> OnEdit { get; set; }
+    [Parameter] public EventCallback<LiveSessionListItemDto> OnRecording { get; set; }
+    [Parameter] public EventCallback<LiveSessionListItemDto> OnCancel { get; set; }
+
+    private DateTime Local(DateTime utc) => TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(utc, DateTimeKind.Utc), Clock.LocalTimeZone);
+
+    private string LessonTitle(Guid moduleId) => LessonOfModule.GetValueOrDefault(moduleId) ?? "—";
+
+    private string SeriesText(LiveSessionListItemDto s) =>
+        s.OccurrenceIndex is { } i && SeriesSizes.TryGetValue(s.SeriesId!.Value, out var n)
+            ? L["Live_SeriesCaption", i, n].Value
+            : L["Live_SeriesCaptionShort"].Value;
+}
