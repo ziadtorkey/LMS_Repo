@@ -64,7 +64,9 @@ public sealed record ModerateForumThreadRequest(bool IsPinned, bool IsLocked);
 
 /// <summary>
 /// A course announcement (FR-FOR-01): written by Forums.Moderate holders of the ClassCourse, read by everyone with
-/// Forums.View on it; pinned first, then newest. <c>BodyHtml</c> sanitised on write.
+/// Forums.View on it; pinned first, then newest. <c>BodyHtml</c> sanitised on write. <c>Source</c> (M6): <c>CourseBoard</c> (default) for an
+/// entry written on the board, <c>School</c> for a school-level announcement merged into the same list by GET <c>/api/class-courses/{id}/announcements</c>
+/// (Task 14); a School entry is read-only on the course page.
 /// </summary>
 public sealed record CourseAnnouncementDto(
     Guid Id,
@@ -76,7 +78,8 @@ public sealed record CourseAnnouncementDto(
     string AuthorNameAr,
     string AuthorNameEn,
     DateTime CreatedAtUtc,
-    DateTime? UpdatedAtUtc);
+    DateTime? UpdatedAtUtc,
+    string Source = Lms.Shared.Messaging.AnnouncementSources.CourseBoard);
 
 /// <summary>
 /// POST /api/class-courses/{id}/announcements. Title 1–200, body max 200 000. <c>Notify</c> sends

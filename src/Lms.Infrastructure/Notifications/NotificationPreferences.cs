@@ -7,7 +7,7 @@ namespace Lms.Infrastructure.Notifications;
 
 public sealed class NotificationPreferences(LmsDbContext db) : INotificationPreferences
 {
-    /// <summary>Default when the user saved nothing: in-app is on and locked, email on, SMS and push off.</summary>
+    /// <summary>Default when the user saved nothing: in-app is on and locked, email on, push off.</summary>
     public static bool DefaultFor(string channel) =>
         channel is NotificationChannels.InApp or NotificationChannels.Email;
 
