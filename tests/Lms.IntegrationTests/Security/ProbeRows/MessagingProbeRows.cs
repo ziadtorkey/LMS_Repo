@@ -62,6 +62,7 @@ public sealed class MessagingProbeRows : IProbeRowModule
             Expect(Forbidden, Forbidden, Forbidden, Forbidden, Forbidden, NotFound)),
         new("group clear read-only", HttpMethod.Delete, Routes.ConversationReadOnlyPattern,
             (_, _) => Task.FromResult(new ProbeRequest(Routes.ConversationReadOnly(Unknown))),
+            Expect(Forbidden, Forbidden, Forbidden, Forbidden, Forbidden, NotFound)),
         new("message attachment remove pending", HttpMethod.Delete, Routes.ConversationAttachmentPattern,
             (_, _) => Task.FromResult(new ProbeRequest(Routes.Conversation(Unknown) + "/attachments/" + Unknown)),
             Expect(Forbidden, Forbidden, Forbidden, Forbidden, Forbidden, NotFound)),
