@@ -391,7 +391,6 @@
   <data name="Notif_Preferences" xml:space="preserve"><value>Notification preferences</value></data>
   <data name="Channel_InApp" xml:space="preserve"><value>In-app</value></data>
   <data name="Channel_Email" xml:space="preserve"><value>Email</value></data>
-  <data name="Channel_Sms" xml:space="preserve"><value>SMS</value></data>
   <data name="Channel_Push" xml:space="preserve"><value>Push</value></data>
   <data name="Notif_Access_RoleAssigned" xml:space="preserve"><value>You were given the role {RoleName} at {OrgUnitName}.</value></data>
   <data name="Notif_Access_RoleRemoved" xml:space="preserve"><value>Your role {RoleName} at {OrgUnitName} was removed.</value></data>
@@ -1765,11 +1764,9 @@
   <data name="Prefs_Event" xml:space="preserve"><value>Event</value></data>
   <data name="Prefs_Channel_InApp" xml:space="preserve"><value>In-app</value></data>
   <data name="Prefs_Channel_Email" xml:space="preserve"><value>Email</value></data>
-  <data name="Prefs_Channel_Sms" xml:space="preserve"><value>SMS</value></data>
   <data name="Prefs_Channel_Push" xml:space="preserve"><value>Push</value></data>
   <data name="Prefs_Fix" xml:space="preserve"><value>Add it in your profile</value></data>
   <data name="Prefs_Locked" xml:space="preserve"><value>Set by your school: can’t be turned off.</value></data>
-  <data name="Prefs_NoPhone" xml:space="preserve"><value>Add a mobile number in your profile</value></data>
   <data name="Prefs_PushUnsupported" xml:space="preserve"><value>Not available on this browser</value></data>
   <data name="Prefs_PushOff" xml:space="preserve"><value>Push notifications are off on this device.</value></data>
   <data name="Prefs_PushOffHelp" xml:space="preserve"><value>Your browser will ask for permission. You can turn it off again here or in the browser settings.</value></data>

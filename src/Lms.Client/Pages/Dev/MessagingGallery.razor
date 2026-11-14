@@ -178,14 +178,13 @@ else
     [
         new() { Key = "msg", Label = "New message", On = { [NotificationChannel.Email] = true, [NotificationChannel.Push] = true } },
         new() { Key = "ann-pin", Label = "Pinned announcement", On = { [NotificationChannel.Email] = true }, Locked = { NotificationChannel.Email } },
-        new() { Key = "abs", Label = "Absence of my child", On = { [NotificationChannel.Email] = true, [NotificationChannel.Sms] = true }, Locked = { NotificationChannel.Email, NotificationChannel.Sms } },
+        new() { Key = "abs", Label = "Absence of my child", On = { [NotificationChannel.Email] = true, [NotificationChannel.Push] = true }, Locked = { NotificationChannel.Email } },
     ];
 
     private IReadOnlyList<ChannelColumn> PrefColumns =>
     [
         new(NotificationChannel.InApp, T("تعمل دائمًا", "Always on")),
         new(NotificationChannel.Email, "huda@…"),
-        new(NotificationChannel.Sms, "+966 5…"),
         new(NotificationChannel.Push, T("هذا الجهاز: متوقفة", "This device: off")),
     ];
     private bool _showThread = true, _readOnly;
