@@ -43,17 +43,17 @@ else
                 @if (lastDay != day)
                 {
                     lastDay = day;
-                    <DaySeparator Text="@MessageTimes.Day(message.CreatedAtUtc, Clock.GetUtcNow().UtcDateTime, L)" />
+                    <DaySeparator Text="@MessageTimes.Day(message.CreatedAtUtc, Clock.GetUtcNow().UtcDateTime, Clock.LocalTimeZone, L)" />
                 }
                 @if (message.Id == _dividerBefore)
                 {
                     <div class="lms-day lms-unread-divider" role="separator" data-testid="thread-divider"><span>@L["Msg_Unread_Divider"]</span></div>
                 }
                 <MessageBubble @key="message.Id" Mine="IsMine(message)" From="@(conversation.Kind == ConversationKinds.Group ? SenderName(message) : null)"
-                               Text="@(message.Body ?? string.Empty)" TimeText="@MessageTimes.Clock(message.CreatedAtUtc)" Removal="RemovalOf(message)"
+                               Text="@(message.Body ?? string.Empty)" TimeText="@MessageTimes.Clock(message.CreatedAtUtc, Clock.LocalTimeZone)" Removal="RemovalOf(message)"
                                TestId="@($"msg-{message.Id}")">
                     <Actions>
-                        @if (message.CanDelete)
+                        @if (message.CanDelete && CanSend)
                         {
                             <MudIconButton Icon="@Icons.Material.Rounded.DeleteOutline" Size="Size.Small" aria-label="@L["Msg_Delete"]" OnClick="() => DeleteAsync(message)"
                                            data-testid="@($"msg-delete-{message.Id}")" />
@@ -67,20 +67,16 @@ else
             {
                 <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Dense="true" data-testid="thread-send-error">@_error</MudAlert>
             }
-            @if (conversation.IsLocked)
+            @if (!conversation.CanPost || conversation.IsLocked || conversation.IsReadOnly)
             {
-                <ComposerOff Reason="@L["Msg_Locked"]" />
-            }
-            else if (conversation.IsReadOnly)
-            {
-                <ComposerOff Reason="@L["Msg_ReadOnly"]">
-                    @if (PrivateReplyTo is { } owner)
+                <ComposerOff Reason="@ReasonText(conversation)">
+                    @if (conversation.ReadOnlyReason == ConversationReadOnlyReasons.GroupStudentsReadOnly && PrivateReplyTo is { } owner)
                     {
                         <MudButton Variant="Variant.Text" Size="Size.Small" Href="@($"messages/new?to={owner}")" data-testid="thread-reply-privately">@L["Msg_Reply_Privately"]</MudButton>
                     }
                 </ComposerOff>
             }
-            else
+            else if (CanSend)
             {
                 <MessageComposer @bind-Value="_draft" OnSend="SendAsync" Sending="_sending" />
             }
@@ -108,6 +104,19 @@ else
         ? _conversation.Title
         : string.Join(", ", _conversation.Participants.Where(p => p.UserId != PermState.UserId).Select(p => CultureText.Pick(p.NameAr, p.NameEn)));
 
+    /// <summary>The reason the composer is off, in plain words. A block and a rule are one sentence on purpose (L18): it never says which, or why.</summary>
+    private string ReasonText(ConversationDto c) => (c.ReadOnlyReason ?? (c.IsLocked ? ConversationReadOnlyReasons.Locked : null)) switch
+    {
+        ConversationReadOnlyReasons.Locked => L["Msg_Locked"],
+        ConversationReadOnlyReasons.GroupStudentsReadOnly => L["Msg_ReadOnly_GroupStudents"],
+        ConversationReadOnlyReasons.GroupGuardiansReadOnly => L["Msg_ReadOnly_GroupGuardians"],
+        ConversationReadOnlyReasons.BlockedOrRule => L["Msg_ReadOnly_BlockedOrRule"],
+        ConversationReadOnlyReasons.Restricted => L["Msg_ReadOnly_Restricted"],
+        _ => L["Msg_ReadOnly"],
+    };
+
+    private bool CanSend => PermState.Has(Lms.Shared.Authorization.Permissions.Messaging.Send);
+
     private int Members => _conversation?.Participants.Count(p => !p.Left) ?? 0;
 
     /// <summary>A student in a group reads it and answers the teacher privately (D74).</summary>
@@ -124,7 +133,7 @@ else
         _ => MessageRemoval.None,
     };
 
-    private static DateTime DayOf(MessageDto m) => DateTime.SpecifyKind(m.CreatedAtUtc, DateTimeKind.Utc).ToLocalTime().Date;
+    private DateTime DayOf(MessageDto m) => MessageTimes.DayOf(m.CreatedAtUtc, Clock.LocalTimeZone);
 
     protected override async Task OnInitializedAsync()
     {
@@ -144,7 +153,7 @@ else
         _dividerBefore = DividerFor(UnreadCount);
         _scrollDown = true;
 
-        await ApiCalls.RunAsync(() => Messaging.MarkReadAsync(ConversationId), Navigation, L, e => _error = e);
+        await ApiCalls.RunAsync(() => Messaging.MarkReadAsync(ConversationId), Navigation, L, _ => { }); // a failed mark-read stays silent: the next visit marks it
         await OnChanged.InvokeAsync();
     }
 

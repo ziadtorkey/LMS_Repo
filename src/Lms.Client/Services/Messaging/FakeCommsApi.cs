@@ -49,7 +49,7 @@ public sealed class FakeCommsApi(FakeMessagingRules rules) : ICommsApi
         new(NotificationChannels.Push, ChannelStates.NeedsSetup, null, false),
     ];
 
-    public CommsSettingsDto Settings { get; set; } = new(true, false, true, 2000, 0, 5000, 10, 0, 20, true, "21:00", "07:00", 90, false, 20, 20, 50, 20);
+    public CommsSettingsDto Settings { get; set; } = new(true, true, 2000, 5000, 10, 20, true, "21:00", "07:00", 90, false, 20, 20, 50, 20);
 
     public List<ProviderStatusDto> Providers { get; } =
     [
@@ -58,7 +58,7 @@ public sealed class FakeCommsApi(FakeMessagingRules rules) : ICommsApi
     ];
 
     /// <summary>D76: no SMS in v1. Email, push and the in-app inbox are the only channels a user sees or sets.</summary>
-    public static IReadOnlyList<string> Offered { get; } = [.. NotificationChannels.All.Where(c => c != NotificationChannels.Sms)];
+    public static IReadOnlyList<string> Offered { get; } = NotificationChannels.All;
 
     private static ApiProblemException Problem(int status, string code) => new(status, code, null, null);
 
@@ -85,7 +85,6 @@ public sealed class FakeCommsApi(FakeMessagingRules rules) : ICommsApi
         foreach (var p in request.Preferences)
         {
             var def = NotificationEvents.Find(p.EventKey) ?? throw Problem(400, ProblemCodes.validation_failed);
-            if (p.Channel == NotificationChannels.Sms) throw Problem(409, ProblemCodes.channel_not_allowed); // D76: SMS is not offered at all
             if (!NotificationChannels.All.Contains(p.Channel)) throw Problem(400, ProblemCodes.validation_failed);
             if (def.Mandatory && !p.Enabled && (def.DefaultChannels ?? []).Contains(p.Channel)) throw Problem(409, ProblemCodes.notification_mandatory);
         }

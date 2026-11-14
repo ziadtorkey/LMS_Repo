@@ -247,11 +247,14 @@ public static class ProblemCodes
     /// <summary>A cap or rate limit was reached: messages a minute, new conversations or announcements a day, searches, test emails (429).</summary>
     public const string rate_limited = nameof(rate_limited);
 
-    /// <summary>A student cannot post in a group (D74), or the group was set read-only: only staff can post (403).</summary>
-    public const string group_read_only = nameof(group_read_only);
+    /// <summary>The caller cannot post now (403): the conversation is read-only for them, see <c>ConversationReadOnlyReasons</c> (the <c>reason</c> field); history stays readable.</summary>
+    public const string conversation_read_only = nameof(conversation_read_only);
 
-    /// <summary>This channel is never used for this account: SMS for a guardian or a student (D72, D75) (409).</summary>
-    public const string channel_not_allowed = nameof(channel_not_allowed);
+    /// <summary>A cap was raised above the platform ceiling (422).</summary>
+    public const string comms_cap_above_ceiling = nameof(comms_cap_above_ceiling);
+
+    /// <summary>A message attachment is not allowed: type, content, size or count (422).</summary>
+    public const string attachment_invalid = nameof(attachment_invalid);
 
     /// <summary>A mandatory notification cannot be switched off (409).</summary>
     public const string notification_mandatory = nameof(notification_mandatory);

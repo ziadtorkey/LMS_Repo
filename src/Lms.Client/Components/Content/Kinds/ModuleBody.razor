@@ -1,6 +1,7 @@
 @using Lms.Client.Components.Assets
 @using Lms.Client.Components.Content
 @using Lms.Client.Components.Editors
+@using Lms.Client.Components.Packages
 @using Lms.Shared.Content
 @inject ICultureService Culture
 
@@ -43,6 +44,10 @@
     case ModuleKinds.LibraryResource:
         <LibraryResourceBody ResourceId="Detail.Content.RefId" />
         break;
+    case ModuleKinds.Scorm or ModuleKinds.H5p:
+        <PackagePlayer PackageId="Detail.Content.RefId" ClassCourseId="Detail.ClassCourseId" Title="@Culture.Pick(Detail.Node.TitleAr, Detail.Node.TitleEn)"
+                       State="@Detail.Node.CompletionState" OnFinished="OnChanged" />
+        break;
     default:
         <MudText Typo="Typo.body2" data-testid="module-unsupported">@L["Module_Unsupported"]</MudText>
         break;
@@ -50,6 +55,8 @@
 
 @code {
     [Parameter, EditorRequired] public ModuleDetailDto Detail { get; set; } = default!;
+    /// <summary>A package finished: the viewer refreshes the module's completion.</summary>
+    [Parameter] public EventCallback OnChanged { get; set; }
 
     private string? PageHtml()
     {

@@ -309,4 +309,152 @@ public sealed class MessagesPageTests : ClientTestContext
         Assert.Contains("الرسائل", cut.Find("[data-testid=messages-title]").TextContent);
         Assert.Equal("auto", cut.Find($"[data-testid^=msg-] .lms-bubble").GetAttribute("dir"));
     }
+
+    [Fact]
+    public async Task My_message_is_on_my_side_and_theirs_is_not()
+    {
+        await SignInAsync(Sara);
+        var c = await DirectFromHudaAsync("from Huda");
+        var mine = await MessagingApi.SendAsync(c.Id, new SendMessageRequest("from Sara", null));
+        var theirs = (await MessagingApi.GetMessagesAsync(c.Id, new MessageQuery())).Items.Single(m => m.Body == "from Huda");
+
+        var cut = RenderPage(c.Id);
+        WaitForThread(cut);
+
+        Assert.Contains("lms-msg-me", cut.Find($"[data-testid=msg-{mine.Id}]").ClassName);
+        Assert.Contains("lms-msg-them", cut.Find($"[data-testid=msg-{theirs.Id}]").ClassName);
+        Assert.DoesNotContain("lms-msg-me", cut.Find($"[data-testid=msg-{theirs.Id}]").ClassName);
+    }
+
+    [Fact]
+    public async Task In_a_group_the_sender_name_is_shown_for_others_and_never_for_me()
+    {
+        await SignInAsync(Huda);
+        MessagingApi.Related.Add((Huda.Id, FakeMessagingApi.Omar.Id));
+        var g = await MessagingApi.CreateConversationAsync(new CreateConversationRequest(ConversationKinds.Group, [Sara.Id, FakeMessagingApi.Omar.Id], "10-A", "from Huda"));
+        MessagingApi.Receive(g.Id, Sara, "from Sara");
+        var mine = (await MessagingApi.GetMessagesAsync(g.Id, new MessageQuery())).Items.Single(m => m.Body == "from Huda");
+        var theirs = (await MessagingApi.GetMessagesAsync(g.Id, new MessageQuery())).Items.Single(m => m.Body == "from Sara");
+
+        var cut = RenderPage(g.Id);
+        WaitForThread(cut);
+
+        Assert.Empty(cut.FindAll($"[data-testid=msg-{mine.Id}] .lms-msg-from"));
+        Assert.Contains("Sara", cut.Find($"[data-testid=msg-{theirs.Id}] .lms-msg-from").TextContent.Replace("سارة", "Sara"));
+        Assert.Single(cut.FindAll(".lms-msg-from"));
+    }
+
+    [Fact]
+    public async Task The_unread_divider_ignores_my_own_messages_when_it_counts_back()
+    {
+        await SignInAsync(Sara);
+        var c = await DirectFromHudaAsync("msgH0", "msgH1");
+        await MessagingApi.SendAsync(c.Id, new SendMessageRequest("msgMine", null));
+        MessagingApi.Receive(c.Id, Huda, "msgH2");
+        var h0 = (await MessagingApi.GetMessagesAsync(c.Id, new MessageQuery())).Items.Single(m => m.Body == "msgH0");
+        MessagingApi.MarkReadUpTo(c.Id, h0.Id); // unread: msgH1 and msgH2 (my own message never counts)
+
+        var cut = RenderPage(c.Id);
+        WaitForThread(cut);
+
+        var html = cut.Markup;
+        var divider = html.IndexOf("thread-divider", StringComparison.Ordinal);
+        Assert.True(html.IndexOf("msgH0", StringComparison.Ordinal) < divider);
+        Assert.True(divider < html.IndexOf("msgH1", StringComparison.Ordinal)); // above the first unread, not above my message
+        Assert.True(html.IndexOf("msgH1", StringComparison.Ordinal) < html.IndexOf("msgMine", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task Without_Messaging_Send_there_is_no_composer_and_no_delete()
+    {
+        await SignInAsync(Sara, Permissions.Messaging.View);
+        var c = await MessagingApi.CreateConversationAsync(new CreateConversationRequest(ConversationKinds.Direct, [Huda.Id], null, "mine"));
+
+        var cut = RenderPage(c.Id);
+        WaitForThread(cut);
+
+        Assert.Empty(cut.FindAll("[data-testid=composer]"));
+        Assert.Empty(cut.FindAll("[data-testid^=msg-delete-]"));
+    }
+
+    [Fact]
+    public async Task A_long_inbox_says_it_shows_the_latest()
+    {
+        await SignInAsync(Sara);
+        await DirectFromHudaAsync("one");
+        var cut = RenderPage();
+        Assert.Empty(cut.FindAll("[data-testid=inbox-capped]"));
+    }
+
+    [Fact]
+    public void Day_labels_follow_the_zone_they_are_given()
+    {
+        var late = new DateTime(2026, 11, 14, 22, 30, 0, DateTimeKind.Utc); // 01:30 next day in Riyadh, same day in UTC
+        var riyadh = TimeZoneInfo.FindSystemTimeZoneById("Asia/Riyadh");
+        Assert.Equal(new DateTime(2026, 11, 15), Lms.Client.Pages.Messaging.MessageTimes.DayOf(late, riyadh));
+        Assert.Equal(new DateTime(2026, 11, 14), Lms.Client.Pages.Messaging.MessageTimes.DayOf(late, TimeZoneInfo.Utc));
+        Assert.Equal("01:30", Lms.Client.Pages.Messaging.MessageTimes.Clock(late, riyadh));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Blocked_side_sees_the_generic_read_only_reason(bool blockerIsMe)
+    {
+        await SignInAsync(Sara);
+        var c = await DirectFromHudaAsync("hi");
+        MessagingApi.Me = blockerIsMe ? Sara : Huda;
+        await MessagingApi.BlockAsync(blockerIsMe ? Huda.Id : Sara.Id);
+        MessagingApi.Me = Sara;
+
+        var cut = RenderPage(c.Id);
+        WaitForThread(cut);
+
+        Assert.Empty(cut.FindAll("[data-testid=composer]"));
+        var reason = cut.Find("[data-testid=composer-off]").TextContent;
+        Assert.Contains("لا يمكنك الكتابة في هذه المحادثة", reason); // one sentence for a block either way: it never says which
+        Assert.DoesNotContain("حظر", reason);
+    }
+
+    [Fact]
+    public async Task Read_only_conversation_after_a_rule_change_explains_it_in_the_same_generic_words()
+    {
+        await SignInAsync(Sara);
+        var c = await DirectFromHudaAsync("hi");
+        MessagingApi.Rules.Save([new MessagingRuleCellDto(BuiltInRoles.Student, BuiltInRoles.Teacher, MessagingRuleModes.Deny)]); // the Org Admin narrowed the rule
+
+        var cut = RenderPage(c.Id);
+        WaitForThread(cut);
+
+        Assert.Empty(cut.FindAll("[data-testid=composer]"));
+        Assert.Contains("لا يمكنك الكتابة في هذه المحادثة", cut.Find("[data-testid=composer-off]").TextContent);
+        Assert.Contains("hi", cut.Find("[data-testid=thread-body]").TextContent); // the history stays readable
+    }
+
+    [Fact]
+    public async Task A_guardian_outside_a_teacher_run_group_reads_and_is_told_why()
+    {
+        await SignInAsync(FakeMessagingApi.Admin);
+        var g = await MessagingApi.CreateConversationAsync(new CreateConversationRequest(ConversationKinds.Group, [FakeMessagingApi.Khaled.Id, Huda.Id], "Parents", "Welcome"));
+        await SignInAsync(FakeMessagingApi.Khaled);
+
+        var cut = RenderPage(g.Id);
+        WaitForThread(cut);
+
+        Assert.Empty(cut.FindAll("[data-testid=composer]"));
+        Assert.Contains("مجموعة المعلم", cut.Find("[data-testid=composer-off]").TextContent);
+    }
+
+    [Fact]
+    public async Task A_locked_conversation_gives_the_locked_reason()
+    {
+        await SignInAsync(Sara);
+        var c = await DirectFromHudaAsync("hi");
+        MessagingApi.Lock(c.Id);
+
+        var cut = RenderPage(c.Id);
+        WaitForThread(cut);
+
+        Assert.Contains("أُغلقت", cut.Find("[data-testid=composer-off]").TextContent);
+    }
 }
