@@ -71,6 +71,29 @@ public sealed class GradebookLockSeamTests(LmsApiFactory factory) : IDisposable
         }
     }
 
+    /// <summary>
+    /// Lead ruling on #656: publishing is visibility, not a grade write, so it stays allowed on a locked gradebook (lock, then release is the
+    /// year-end flow). The import is a grade write and is refused (<c>A_gradebook_locked_after_the_preview_refuses_the_apply</c> in GradeExchangeTests, Task 10).
+    /// This replaces the plan test Import_and_publish_refuse_when_locked for its publish half.
+    /// </summary>
+    [Fact]
+    public async Task Publish_is_allowed_on_a_locked_gradebook_while_grade_writes_stay_refused()
+    {
+        var g = await GradeReadsTestKit.NewAsync(factory, _t, "LK2");
+        await TestLock.LockAsync(factory, g.Book.Id);
+
+        var publish = await _t.SendAsync(g.W.Teacher, HttpMethod.Post, Routes.ClassCourseGradebookPublish(g.W.ClassCourse.Id),
+            new PublishItemsRequest([g.Hidden.Id], PublishModes.Now, null, false));
+        var entry = await _t.SendAsync(g.W.Teacher, HttpMethod.Put, Routes.ClassCourseGradebookEntries(g.W.ClassCourse.Id, g.Term.Id),
+            new UpsertEntriesRequest(g.W.StudentProfileId, 0, [new GradeEntryChange(g.Published.Id, GradeEntryActions.Set, 5m, null)]));
+
+        Assert.Equal(HttpStatusCode.OK, publish.StatusCode);
+        Assert.Equal(HttpStatusCode.Conflict, entry.StatusCode);
+        Assert.Equal(ProblemCodes.gradebook_locked, await ContentTestHost.CodeAsync(entry));
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        Assert.Equal(GradeItem.PublishedState, (await db.Set<GradeItem>().SingleAsync(i => i.Id == g.Hidden.Id)).PublishState);
+    }
+
     [Fact]
     public async Task Event_recorded_after_lock_does_not_change_locked_results()
     {
