@@ -1527,6 +1527,9 @@
   <data name="Package_PracticeFinished" xml:space="preserve"><value>Practice finished. Your graded score is still {0}.</value></data>
   <data name="Package_Score" xml:space="preserve"><value>Score {0}</value></data>
   <data name="Package_LatestAttempt" xml:space="preserve"><value>Latest attempt: {0}</value></data>
+  <data name="Package_Announce_Opened" xml:space="preserve"><value>The activity opened.</value></data>
+  <data name="Package_Announce_Exit" xml:space="preserve"><value>Back at the start of the activity.</value></data>
+  <data name="Package_Announce_Finished" xml:space="preserve"><value>The activity finished.</value></data>
   <data name="Assignment_AllowFiles" xml:space="preserve"><value>Allow file uploads</value></data>
   <data name="Assignment_AllowText" xml:space="preserve"><value>Allow written text</value></data>
   <data name="Assignment_Attachments" xml:space="preserve"><value>Attachments</value></data>
