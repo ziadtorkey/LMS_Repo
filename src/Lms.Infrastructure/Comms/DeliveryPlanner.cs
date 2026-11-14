@@ -1,5 +1,6 @@
 using Lms.Domain.Comms;
 using Lms.Domain.Notifications;
+using Lms.Infrastructure.Comms.Preferences;
 using Lms.Infrastructure.Persistence;
 using Lms.Shared.Notifications;
 using Microsoft.EntityFrameworkCore;
@@ -39,19 +40,16 @@ public sealed class DeliveryPlanner(LmsDbContext db, CommsClientSettings setting
                 continue;
             }
 
-            var wanted = targets.Where(t => Wants(definition, saved, t.UserId, channel)).ToList();
-            if (wanted.Count == 0)
-            {
-                continue;
-            }
-
-            var addresses = await contacts.ResolveAsync(wanted.Select(t => t.UserId).Distinct().ToList(), channel, ct);
+            var addresses = await contacts.ResolveAsync(targets.Select(t => t.UserId).Distinct().ToList(), channel, ct);
             var suppressed = await SuppressedAsync(organizationId, channel, addresses.Values, ct);
-            foreach (var (userId, notificationId) in wanted)
+            foreach (var (userId, notificationId) in targets)
             {
-                if (!addresses.TryGetValue(userId, out var address))
+                // The same function as the preferences page (L10): event default and user choice and client switch and a usable contact.
+                var choice = saved.TryGetValue((userId, channel), out var enabled) ? enabled : (bool?)null;
+                var effective = EffectivePreferences.Resolve(new PreferenceInputs(definition, channel, choice, true, addresses.ContainsKey(userId)));
+                if (!effective.Enabled || !addresses.TryGetValue(userId, out var address))
                 {
-                    continue; // no contact: no row (a metric, not a log line)
+                    continue; // switched off, or no contact: no row
                 }
 
                 var row = new DeliveryOutbox(
@@ -66,20 +64,6 @@ public sealed class DeliveryPlanner(LmsDbContext db, CommsClientSettings setting
         }
 
         return rows;
-    }
-
-    private static bool IsDefault(NotificationEventDefinition definition, string channel) => definition.DefaultChannels?.Contains(channel) == true;
-
-    private static bool Wants(
-        NotificationEventDefinition definition, IReadOnlyDictionary<(Guid, string), bool> saved, Guid userId, string channel)
-    {
-        var catalog = IsDefault(definition, channel);
-        if (definition.Mandatory)
-        {
-            return catalog; // moderation outcomes cannot be switched off
-        }
-
-        return saved.TryGetValue((userId, channel), out var choice) ? choice : catalog;
     }
 
     private async Task<HashSet<string>> SuppressedAsync(Guid organizationId, string channel, IEnumerable<string> addresses, CancellationToken ct)

@@ -1,6 +1,8 @@
 using Lms.Domain.Abstractions;
 using Lms.Domain.Comms;
 using Lms.Domain.Notifications;
+using Lms.Infrastructure.Comms.Preferences;
+using Lms.Shared.Notifications;
 using Lms.Domain.Organizations;
 using Lms.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -70,6 +72,14 @@ public sealed class DeliveryDispatchJob(
                 .SetProperty(r => r.Status, DeliveryStates.Expired)
                 .SetProperty(r => r.LastErrorCode, DeliveryCodes.Expired), ct);
 
+        // Rows for a channel with no registered provider would wait and expire unseen: say so (the provider status page shows the same).
+        var unserved = await rows.Where(r => r.Status == DeliveryStates.Pending && r.NextAttemptAtUtc <= now && !_channels.Keys.Contains(r.Channel))
+            .GroupBy(r => r.Channel).Select(g => new { Channel = g.Key, Count = g.Count() }).ToListAsync(ct);
+        foreach (var gap in unserved)
+        {
+            logger.LogWarning("Client {OrganizationId} has {Count} due {Channel} deliveries and no provider is registered for the channel", organizationId, gap.Count, gap.Channel);
+        }
+
         CommsSettings? client = null;
         var processed = 0;
         foreach (var channel in _channels.Keys)
@@ -137,6 +147,20 @@ public sealed class DeliveryDispatchJob(
 
     private async Task DecideAsync(DeliveryOutbox row, Guid organizationId, CommsSettings client, DateTime now, CancellationToken ct)
     {
+        // Switches changed after publish are honoured at send time: the client's channel switch ends every row (urgent and mandatory too); the user's own
+        // choice ends a non-priority row (a mandatory or urgent row keeps its rule). Nothing is sent after an opt-out.
+        if (!client.IsEnabled(row.Channel))
+        {
+            row.Skip(DeliveryCodes.ChannelDisabled);
+            return;
+        }
+
+        if (!row.IsPriority && await UserOptedOutAsync(row, ct))
+        {
+            row.Skip(DeliveryCodes.PreferenceOff);
+            return;
+        }
+
         var addresses = await contacts.ResolveAsync([row.UserId], row.Channel, ct);
         if (!addresses.TryGetValue(row.UserId, out var address))
         {
@@ -210,6 +234,24 @@ public sealed class DeliveryDispatchJob(
         }
     }
 
+    private async Task<bool> UserOptedOutAsync(DeliveryOutbox row, CancellationToken ct)
+    {
+        if (row.NotificationId is not { } notificationId)
+        {
+            return false; // a transactional email (account, reset) has no event and no preference
+        }
+
+        var eventKey = await db.Set<Notification>().AsNoTracking().Where(n => n.Id == notificationId).Select(n => n.EventKey).FirstOrDefaultAsync(ct);
+        if (eventKey is null || NotificationEvents.Find(eventKey) is not { } definition)
+        {
+            return false;
+        }
+
+        var choice = await db.Set<NotificationPreference>().AsNoTracking()
+            .Where(p => p.UserId == row.UserId && p.EventKey == eventKey && p.Channel == row.Channel).Select(p => (bool?)p.Enabled).FirstOrDefaultAsync(ct);
+        return !EffectivePreferences.Resolve(new PreferenceInputs(definition, row.Channel, choice, true, true)).Enabled;
+    }
+
     private static void Retry(DeliveryOutbox row, DateTime now, string code, TimeSpan? retryAfter)
     {
         if (row.Attempts >= DeliveryPolicy.MaxAttempts(row.Channel))
@@ -231,6 +273,7 @@ public sealed class DeliveryDispatchJob(
         }
 
         var (dayStart, nextDay) = DeliveryPolicy.ClientDay(now, client.Zone);
+        // Caps count Sent rows, so two dispatchers on two nodes can overshoot a cap by a few rows; acceptable for a daily cap.
         var sent = db.Set<DeliveryOutbox>()
             .Where(r => r.OrganizationId == organizationId && r.Channel == row.Channel && r.Status == DeliveryStates.Sent && r.SentAtUtc >= dayStart);
         if (await sent.CountAsync(ct) >= client.ClientCap(row.Channel))
