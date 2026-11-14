@@ -75,11 +75,11 @@ else
             }
             else if (Viewport.IsPhone)
             {
-                <StudentFirstList Groups="_groups" Rows="_book.Rows.Items" Places="_book.Config.DecimalPlaces" OnStudent="OpenStudentAsync" />
+                <StudentFirstList Groups="_groups" Rows="_book.Rows.Items" Places="_book.Config.DecimalPlaces" OnStudent="OpenStudentAsync" Session="_session" CanEdit="CanEdit" />
             }
             else
             {
-                <GradebookGrid Groups="_groups" Rows="_book.Rows.Items" Places="_book.Config.DecimalPlaces" OnStudent="OpenStudentAsync" />
+                <GradebookGrid Groups="_groups" Rows="_book.Rows.Items" Places="_book.Config.DecimalPlaces" OnStudent="OpenStudentAsync" Session="_session" CanEdit="CanEdit" />
             }
             @if (_book.Rows.Total > _book.Rows.PageSize)
             {
@@ -88,6 +88,10 @@ else
                 </div>
             }
         </SectionCard>
+    }
+    @if (_session is not null)
+    {
+        <GridLiveRegion Session="_session" />
     }
     <StudentDetailDrawer Open="_drawerOpen" OpenChanged="v => _drawerOpen = v" StudentName="@_drawerName" Data="_preview" Loading="_previewLoading" Failed="_previewFailed" />
 }
@@ -104,6 +108,10 @@ else
     private bool _drawerOpen, _previewLoading, _previewFailed;
     private string _drawerName = "";
     private StudentCourseGradesDto? _preview;
+    private GradebookEditSession? _session;
+
+    /// <summary>Scores can be changed by someone who may manage the gradebook, while it is open.</summary>
+    private bool CanEdit => _book is { CanManage: true, State: not GradebookStates.Locked };
 
     private int PageCount => _book is null ? 1 : (int)Math.Ceiling(_book.Rows.Total / (double)Math.Max(1, _book.Rows.PageSize));
 
@@ -125,6 +133,22 @@ else
         await LoadAsync(1);
     }
 
+    private GradebookEditSession CreateSession()
+    {
+        var session = new GradebookEditSession(Api, Id, L, () => LoadAsync(_pageNo));
+        session.RowReplaced += OnRowReplaced;
+        return session;
+    }
+
+    /// <summary>The server row replaces the optimistic one: a new list with only that row changed, so only its component renders again.</summary>
+    private void OnRowReplaced(GradeRowDto row)
+    {
+        if (_book is null) return;
+        var items = _book.Rows.Items.Select(r => r.StudentId == row.StudentId ? row : r).ToList();
+        _book = _book with { Rows = _book.Rows with { Items = items } };
+        InvokeAsync(StateHasChanged);
+    }
+
     private void OnViewportChanged() => InvokeAsync(StateHasChanged);
 
     private async Task LoadAsync(int page)
@@ -135,6 +159,7 @@ else
         {
             var book = await Api.GetAsync(Id, new GradebookQuery(TermId, page, GradingLimits.GridPageSize));
             _book = book;
+            _session ??= CreateSession();
             // One stable list per loaded gradebook: the rows compare it by reference to skip re-rendering.
             _groups = CategoryGroup.From(book.Categories, book.Items);
         }
@@ -146,6 +171,9 @@ else
         {
             _error = L["Api_Error"];
         }
+
+        // A reload can be asked for by an edit deep in the grid, whose event handler does not render this page.
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task OpenStudentAsync(GradeRowDto row)
@@ -173,5 +201,9 @@ else
         }
     }
 
-    public void Dispose() => Viewport.Changed -= OnViewportChanged;
+    public void Dispose()
+    {
+        Viewport.Changed -= OnViewportChanged;
+        if (_session is not null) _session.RowReplaced -= OnRowReplaced;
+    }
 }

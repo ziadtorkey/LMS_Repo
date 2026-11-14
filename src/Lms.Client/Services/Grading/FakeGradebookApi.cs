@@ -63,6 +63,15 @@ public sealed class FakeGradebookApi : IGradebookApi
 
     public bool NoItems { get; set; }
 
+    /// <summary>When set, the next <see cref="UpsertEntriesAsync"/> fails once with it (a failed save: revert, text, retry).</summary>
+    public Exception? NextUpsertFailure { get; set; }
+
+    /// <summary>When true, the next <see cref="UpsertEntriesAsync"/> answers 409 <c>concurrency_conflict</c> as if someone else saved the row first.</summary>
+    public bool ConflictOnce { get; set; }
+
+    /// <summary>How many save calls reached the fake (a test asserts that an unchanged cell sends nothing).</summary>
+    public int UpsertCalls { get; private set; }
+
     /// <summary>When set, the next <see cref="GetAsync"/> fails once (a load failure with Try again).</summary>
     public Exception? NextFailure { get; set; }
 
@@ -232,6 +241,20 @@ public sealed class FakeGradebookApi : IGradebookApi
     {
         EnsureWritable(classCourseId);
         LastEntries = request;
+        UpsertCalls++;
+        if (NextUpsertFailure is { } fail)
+        {
+            NextUpsertFailure = null;
+            throw fail;
+        }
+
+        if (ConflictOnce)
+        {
+            ConflictOnce = false;
+            _versions[request.StudentId] = _versions.GetValueOrDefault(request.StudentId) + 1; // someone else saved first
+            throw Problem(409, ProblemCodes.concurrency_conflict);
+        }
+
         if (!_versions.TryGetValue(request.StudentId, out var version)) throw Problem(404, ProblemCodes.not_found);
         if (request.Version != version) throw Problem(409, ProblemCodes.concurrency_conflict);
         // Validate everything first so a bad change leaves the row untouched.
@@ -265,6 +288,12 @@ public sealed class FakeGradebookApi : IGradebookApi
                 break;
             case GradeEntryActions.Override:
                 _cells[key] = new GradeCellDto(change.ItemId, change.Points, GradeCellStates.Override, change.Reason);
+                break;
+            case GradeEntryActions.KeepOverride:
+                _cells[key] = Cell(student, change.ItemId) with { State = GradeCellStates.Override };
+                break;
+            case GradeEntryActions.DropOverride:
+                _cells[key] = Cell(student, change.ItemId) with { State = GradeCellStates.Event, Reason = null };
                 break;
             case GradeEntryActions.Excuse:
                 _cells[key] = new GradeCellDto(change.ItemId, null, GradeCellStates.Excused, change.Reason);

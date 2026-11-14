@@ -1749,4 +1749,32 @@
   <data name="Band_Problem_Marked" xml:space="preserve"><value>هذه الفئة جزء من مشكلة وجدها الخادم. راجع القائمة أعلاه.</value></data>
   <data name="ScaleDialog_ReadOnlyFrom" xml:space="preserve"><value>هذا من {0}. غيّره هناك؛ يمكنك هنا قراءته فقط.</value></data>
   <data name="ScaleDialog_ReadOnlyPreset" xml:space="preserve"><value>هذا نموذج جاهز. أضفه إلى وحدتك من قائمة النماذج لاستخدامه أو تعديله.</value></data>
+  <data name="Grd_Hint" xml:space="preserve"><value>Enter أو F2 للتعديل، وEnter مرة أخرى للحفظ. مفاتيح الأسهم للتنقل، وShift+F10 لفتح قائمة الخلية.</value></data>
+  <data name="Grd_Hint_Editing" xml:space="preserve"><value>أثناء التعديل: Enter يحفظ ويبقى، وTab يحفظ وينتقل، وEsc يلغي.</value></data>
+  <data name="Grd_Edit_Label" xml:space="preserve"><value>{0}، {1}</value></data>
+  <data name="Grd_Editing_Announce" xml:space="preserve"><value>تعديل {0} للطالب {1}</value></data>
+  <data name="Grd_Edit_Cancelled" xml:space="preserve"><value>أُلغي التعديل</value></data>
+  <data name="Grd_Saving" xml:space="preserve"><value>جار الحفظ</value></data>
+  <data name="Grd_Saved" xml:space="preserve"><value>تم الحفظ</value></data>
+  <data name="Grd_NotSavedChip" xml:space="preserve"><value>لم يُحفظ</value></data>
+  <data name="Grd_Not_Saved" xml:space="preserve"><value>لم يُحفظ: {0}</value></data>
+  <data name="Grd_Cell_NotSaved" xml:space="preserve"><value>لم يُحفظ: {0}. اضغط Enter للمحاولة مرة أخرى.</value></data>
+  <data name="Grd_Retry" xml:space="preserve"><value>حاول مرة أخرى</value></data>
+  <data name="Grd_Reject_NotANumber" xml:space="preserve"><value>أدخل رقما.</value></data>
+  <data name="Grd_Reject_OutOfRange" xml:space="preserve"><value>خارج النطاق: استخدم درجة من 0 إلى {0}.</value></data>
+  <data name="Grd_Conflict_Reloaded" xml:space="preserve"><value>غيّر شخص آخر هذا الصف. أُعيد تحميله؛ راجعه وحاول مرة أخرى.</value></data>
+  <data name="Grd_Menu_Label" xml:space="preserve"><value>إجراءات الخلية</value></data>
+  <data name="Grd_Menu_Override" xml:space="preserve"><value>تعديل الدرجة يدويا…</value></data>
+  <data name="Grd_Menu_Excuse" xml:space="preserve"><value>إعفاء من هذا البند</value></data>
+  <data name="Grd_Menu_Clear" xml:space="preserve"><value>مسح الدرجة</value></data>
+  <data name="Grd_Menu_Keep" xml:space="preserve"><value>الإبقاء على تعديلي</value></data>
+  <data name="Grd_Menu_Drop" xml:space="preserve"><value>استخدام الدرجة الأحدث</value></data>
+  <data name="Grd_Override_Title" xml:space="preserve"><value>تعديل درجة يدويا</value></data>
+  <data name="Grd_Override_About" xml:space="preserve"><value>{0}، {1} (من {2})</value></data>
+  <data name="Grd_Override_Points" xml:space="preserve"><value>الدرجة الجديدة</value></data>
+  <data name="Grd_Override_Reason" xml:space="preserve"><value>السبب</value></data>
+  <data name="Grd_Override_ReasonHelp" xml:space="preserve"><value>مطلوب. يُحفظ مع الدرجة ويظهر للموظفين.</value></data>
+  <data name="Grd_Override_ReasonRequired" xml:space="preserve"><value>اكتب سبب التعديل.</value></data>
+  <data name="Grd_Override_Apply" xml:space="preserve"><value>تعديل</value></data>
+  <data name="Grd_Override_Short" xml:space="preserve"><value>تعديل</value></data>
 </root>

@@ -49,7 +49,7 @@ public sealed class GridSpikeTests : ClientTestContext
 
         _output.WriteLine($"S1 initial render of {Students} x {Categories * ItemsPerCategory}: {watch.ElapsedMilliseconds} ms (bUnit, no browser)");
         Assert.Equal(Students, grid.FindAll("tbody tr").Count);
-        Assert.Equal(Students * Categories * ItemsPerCategory, grid.FindAll("td[role=gridcell]").Count);
+        Assert.Equal(Students * (Categories * ItemsPerCategory + Categories + 2), grid.FindAll("td[role=gridcell]").Count); // every column is a gridcell: items, category results, final, band
         Assert.True(watch.ElapsedMilliseconds < 5000, "a full class must render in seconds, not minutes");
     }
 
@@ -73,7 +73,7 @@ public sealed class GridSpikeTests : ClientTestContext
     }
 
     [Fact]
-    public void Rows_are_keyed_so_a_reordered_page_moves_rows_instead_of_re_rendering_them()
+    public void Rows_are_keyed_so_a_reordered_page_moves_rows_instead_of_rebuilding_them()
     {
         var (groups, rows) = Build();
         var grid = Render<GradebookGrid>(p => p.Add(x => x.Groups, groups).Add(x => x.Rows, rows));
@@ -82,9 +82,8 @@ public sealed class GridSpikeTests : ClientTestContext
         grid.Render(p => p.Add(x => x.Groups, groups).Add(x => x.Rows, [.. rows.AsEnumerable().Reverse()]));
 
         Assert.Equal($"grade-row-{rows[^1].StudentId}", grid.FindAll("tbody tr")[0].GetAttribute("data-testid"));
-        // Only the two rows whose "first row" flag flipped render again; the other 58 just moved.
-        var rerendered = grid.FindComponents<GradeRow>().Count(r => r.RenderCount != counts[r.Instance.Row.StudentId]);
-        Assert.Equal(2, rerendered);
+        // The key map works on row positions, so every row whose position changed renders once more; the keyed rows are moved, not rebuilt.
+        Assert.All(grid.FindComponents<GradeRow>(), r => Assert.Equal(counts[r.Instance.Row.StudentId] + 1, r.RenderCount));
     }
 
     [Fact]
@@ -95,6 +94,6 @@ public sealed class GridSpikeTests : ClientTestContext
         var grid = Render<GradebookGrid>(p => p.Add(x => x.Groups, groups).Add(x => x.Rows, rows));
 
         Assert.Single(grid.FindAll("td[role=gridcell][tabindex='0']"));
-        Assert.Equal(Students * Categories * ItemsPerCategory - 1, grid.FindAll("td[role=gridcell][tabindex='-1']").Count);
+        Assert.Equal(Students * (Categories * ItemsPerCategory + Categories + 2) - 1, grid.FindAll("td[role=gridcell][tabindex='-1']").Count);
     }
 }

@@ -1,5 +1,6 @@
 @using Lms.Shared.Grading
 @inject ICultureService Culture
+@inject IDialogService Dialogs
 
 @* The phone gradebook (L19): one student at a time, items as rows grouped by category, Final and Band in the footer. The desktop grid is not rendered
    at all on a phone, so nothing is hidden with CSS. Scores are shown as text here; correcting one is Task 25. *@
@@ -35,6 +36,31 @@
                         @Culture.Pick(item.TitleAr, item.TitleEn)
                         <small>@string.Format(Culture.Current, L["Grd_OutOf"].Value, GradeFormat.Points(item.MaxPoints)) · @StateText(item)</small>
                     </div>
+                    @if (Session?.Cell(row.StudentId, item.Id) is { } ui)
+                    {
+                        @if (ui.Status == CellStatus.Saving)
+                        {
+                            <span class="lms-muted" dir="ltr">@GradeFormat.Points(ui.Value)</span>
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" aria-hidden="true" />
+                            <span class="lms-visually-hidden">@L["Grd_Saving"]</span>
+                        }
+                        else
+                        {
+                            <span class="score error" dir="ltr" aria-label="@string.Format(Culture.Current, L["Grd_Cell_NotSaved"].Value, ui.Error)">@GradeFormat.Points(ui.Value)</span>
+                            <span class="mini mini-warn">@L["Grd_NotSavedChip"]</span>
+                            <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="() => Session!.RetryAsync(row.StudentId, item.Id)" data-testid="@($"phone-retry-{item.Id}")">@L["Grd_Retry"]</MudButton>
+                        }
+                    }
+                    else if (Editable(cell, item))
+                    {
+                        var editing = Session!.Editing is { } e && e.Student == row.StudentId && e.Item == item.Id;
+                        <input class="score lms-gb-score" type="text" inputmode="decimal" dir="ltr" autocomplete="off" onfocusin="this.select()" value="@(editing ? Session.Draft : Plain(cell.Points))"
+                               aria-label="@string.Format(Culture.Current, L["Grd_Edit_Label"].Value, Culture.Pick(row.StudentNameAr, row.StudentNameEn), Culture.Pick(item.TitleAr, item.TitleEn))"
+                               @onfocus="() => Session.BeginEdit(row.StudentId, item.Id, Plain(cell.Points))" @oninput="e2 => Session.SetDraft(e2.Value?.ToString() ?? string.Empty)"
+                               @onchange="() => CommitAsync(row, item)" data-testid="@($"phone-edit-{item.Id}")" />
+                    }
+                    else
+                    {
                     @switch (cell.State)
                     {
                         case GradeCellStates.Excused:
@@ -54,6 +80,12 @@
                                 <span class="mini mini-warn">@L["Grd_Cell_NewerChip"]</span>
                             }
                             break;
+                    }
+                    @if (CanEdit && Session is not null && !item.IsManual && cell.State is GradeCellStates.Event)
+                    {
+                        <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="() => OverrideFlow.RunAsync(Dialogs, L, Session, row, item, Culture.Pick(row.StudentNameAr, row.StudentNameEn), Culture.Pick(item.TitleAr, item.TitleEn))"
+                                   data-testid="@($"phone-override-{item.Id}")">@L["Grd_Override_Short"]</MudButton>
+                    }
                     }
                 </div>
             }
@@ -77,6 +109,25 @@
     [Parameter, EditorRequired] public IReadOnlyList<GradeRowDto> Rows { get; set; } = [];
     [Parameter] public int Places { get; set; } = 2;
     [Parameter] public EventCallback<GradeRowDto> OnStudent { get; set; }
+
+    /// <summary>The edits of the page (shared with the grid, so a half-typed score survives a breakpoint change). Null: read only.</summary>
+    [Parameter] public GradebookEditSession? Session { get; set; }
+
+    [Parameter] public bool CanEdit { get; set; }
+
+    /// <summary>A manual score and an overridden score are typed in place; an event score is changed through an override.</summary>
+    private bool Editable(GradeCellDto cell, GradeItemDto item) =>
+        CanEdit && Session is not null && (item.IsManual ? cell.State is not GradeCellStates.Excused : cell.State is GradeCellStates.Override or GradeCellStates.NewerScoreExists);
+
+    private static string Plain(decimal? points) => points is { } p ? GradeFormat.Points(p) : string.Empty;
+
+    private async Task CommitAsync(GradeRowDto row, GradeItemDto item)
+    {
+        if (Session is null) return;
+        var outcome = await Session.SetScoreAsync(row, item, Session.Draft);
+        if (outcome != SaveResult.Invalid) Session.EndEdit(); // a rejected value stays in the field with its reason announced
+        if (outcome == SaveResult.Saved) Session.Dismiss(row.StudentId, item.Id);
+    }
 
     private string _search = "";
     private int _index;

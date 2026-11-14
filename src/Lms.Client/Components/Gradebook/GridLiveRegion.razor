@@ -1,0 +1,18 @@
+@implements IDisposable
+
+@* One polite region for saves and edit-mode changes, one assertive region for a rejected value (announced once). Both are visually hidden. *@
+<div class="lms-visually-hidden" role="status" aria-live="polite" aria-atomic="true" data-testid="grid-live-polite">@Session.Polite@Nudge</div>
+<div class="lms-visually-hidden" role="alert" aria-live="assertive" aria-atomic="true" data-testid="grid-live-assertive">@Session.Assertive@Nudge</div>
+
+@code {
+    [Parameter, EditorRequired] public GradebookEditSession Session { get; set; } = default!;
+
+    /// <summary>Alternates an invisible character so a message equal to the last one is announced again.</summary>
+    private string Nudge => Session.Announcement % 2 == 0 ? "" : "​";
+
+    protected override void OnInitialized() => Session.Changed += OnChanged;
+
+    private void OnChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Session.Changed -= OnChanged;
+}

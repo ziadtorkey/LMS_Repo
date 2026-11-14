@@ -113,7 +113,7 @@ public sealed class GradebookGridTests : ClientTestContext
 
         var grid = page.Find("[data-testid=gradebook-grid]");
         Assert.Equal("grid", grid.GetAttribute("role"));
-        Assert.Equal("gb-legend", grid.GetAttribute("aria-describedby"));
+        Assert.Equal("gb-hint", grid.GetAttribute("aria-describedby")); // the key hint under the grid
         // One category header per category, spanning its items and its result column.
         var groups = page.FindAll("th[scope=colgroup]");
         Assert.Equal(2, groups.Count);

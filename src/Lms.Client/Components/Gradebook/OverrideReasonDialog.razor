@@ -1,0 +1,56 @@
+@using System.Globalization
+@using Lms.Shared.Grading
+@inject ICultureService Culture
+
+@* Overriding a score: the new points and a reason, which is required (1 to 500 characters) and is kept with the override (spec 2.3). *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="3">
+            <MudText Typo="Typo.body2" data-testid="override-about">@string.Format(Culture.Current, L["Grd_Override_About"].Value, StudentName, ItemTitle, GradeFormat.Points(Max))</MudText>
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" role="alert" data-testid="override-error">@_error</MudAlert>
+            }
+            <MudTextField T="string" @bind-Value="_points" Label="@L["Grd_Override_Points"]" Immediate="true" dir="ltr" data-testid="override-points" />
+            <MudTextField T="string" @bind-Value="_reason" Label="@L["Grd_Override_Reason"]" Immediate="true" Lines="3" MaxLength="@GradingLimits.ReasonMaxLength"
+                          HelperText="@L["Grd_Override_ReasonHelp"]" data-testid="override-reason" />
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Apply" data-testid="dialog-save">@L["Grd_Override_Apply"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public string StudentName { get; set; } = "";
+    [Parameter] public string ItemTitle { get; set; } = "";
+    [Parameter] public decimal Max { get; set; }
+    [Parameter] public decimal? Current { get; set; }
+
+    private string _points = "", _reason = "";
+    private string? _error;
+
+    protected override void OnInitialized() => _points = Current is { } c ? GradeFormat.Points(c) : "";
+
+    private void Apply()
+    {
+        _error = null;
+        if (!GradebookEditSession.TryParse(_points, out var points) || points < 0m || points > Max)
+        {
+            _error = string.Format(CultureInfo.CurrentCulture, L["Grd_Reject_OutOfRange"].Value, GradeFormat.Points(Max));
+            return;
+        }
+
+        var reason = _reason.Trim();
+        if (reason.Length < GradingLimits.ReasonMinLength)
+        {
+            _error = L["Grd_Override_ReasonRequired"];
+            return;
+        }
+
+        MudDialog.Close(DialogResult.Ok((points, reason)));
+    }
+}
