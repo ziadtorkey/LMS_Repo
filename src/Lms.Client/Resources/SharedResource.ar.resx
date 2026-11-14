@@ -1978,9 +1978,8 @@
   <data name="Msg_Rule_Relationship" xml:space="preserve"><value>فقط مع وجود علاقة</value></data>
   <data name="Msg_Rule_Deny" xml:space="preserve"><value>غير مسموح</value></data>
   <data name="Msg_Reason_Harassment" xml:space="preserve"><value>مضايقة</value></data>
-  <data name="Msg_Reason_Inappropriate" xml:space="preserve"><value>محتوى غير لائق</value></data>
+  <data name="Msg_Reason_SafetyConcern" xml:space="preserve"><value>مخاوف تتعلق بالسلامة</value></data>
   <data name="Msg_Reason_Spam" xml:space="preserve"><value>رسائل مزعجة</value></data>
-  <data name="Msg_Reason_Safety" xml:space="preserve"><value>مخاوف تتعلق بالسلامة</value></data>
   <data name="Msg_Reason_Other" xml:space="preserve"><value>أخرى</value></data>
   <data name="Msg_ReadOnly_group_students_read_only" xml:space="preserve"><value>المعلم والموظفون فقط يكتبون في هذه المجموعة. يمكنك مراسلة المعلم بشكل خاص.</value></data>
   <data name="Msg_ReadOnly_group_guardians_read_only" xml:space="preserve"><value>الموظفون فقط يكتبون في هذه المجموعة.</value></data>
@@ -1995,7 +1994,21 @@
   <data name="Msg_Denied_group_full" xml:space="preserve"><value>بلغت هذه المجموعة الحد الأقصى لعدد الأعضاء.</value></data>
   <data name="Msg_ReportStatus_Open" xml:space="preserve"><value>مفتوح</value></data>
   <data name="Msg_ReportStatus_Dismissed" xml:space="preserve"><value>تم الرفض</value></data>
-  <data name="Msg_ReportStatus_Actioned" xml:space="preserve"><value>تم اتخاذ إجراء</value></data>
+  <data name="Msg_ReportStatus_InReview" xml:space="preserve"><value>قيد المراجعة</value></data>
+  <data name="Msg_ReportStatus_ActionTaken" xml:space="preserve"><value>تم اتخاذ إجراء</value></data>
+  <data name="Msg_MyReport_Pending" xml:space="preserve"><value>بلاغك قيد الانتظار</value></data>
+  <data name="Msg_MyReport_Reviewed" xml:space="preserve"><value>تمت مراجعة بلاغك</value></data>
+  <data name="Msg_RestrictDays_1" xml:space="preserve"><value>يوم واحد</value></data>
+  <data name="Msg_RestrictDays_7" xml:space="preserve"><value>٧ أيام</value></data>
+  <data name="Msg_RestrictDays_30" xml:space="preserve"><value>٣٠ يومًا</value></data>
+  <data name="NotifEvent_Moderation_ReportReceived" xml:space="preserve"><value>تم الإبلاغ عن رسالة</value></data>
+  <data name="Notif_Moderation_ReportReceived" xml:space="preserve"><value>تم الإبلاغ عن رسالة ({Reason}). افتح قائمة الإشراف لمراجعتها.</value></data>
+  <data name="NotifEvent_Moderation_SafetyReportReceived" xml:space="preserve"><value>بلاغ عن مخاوف تتعلق بالسلامة</value></data>
+  <data name="Notif_Moderation_SafetyReportReceived" xml:space="preserve"><value>تم الإبلاغ عن مخاوف تتعلق بالسلامة. يرجى المراجعة في أقرب وقت.</value></data>
+  <data name="Setting_Moderation_ReportContextRetentionDays" xml:space="preserve"><value>عدد أيام الاحتفاظ بالبلاغ المنتهي وسياقه</value></data>
+  <data name="Setting_Moderation_MaxReportsPerUserPerDay" xml:space="preserve"><value>عدد البلاغات التي يمكن للشخص تقديمها يوميًا</value></data>
+  <data name="Setting_Moderation_SafetyReviewHours" xml:space="preserve"><value>عدد ساعات مراجعة بلاغ السلامة</value></data>
+  <data name="AuditEntity_ModerationRead" xml:space="preserve"><value>اطلاع المشرف على رسالة مُبلَّغ عنها</value></data>
   <data name="Msg_Action_Dismiss" xml:space="preserve"><value>رفض البلاغ</value></data>
   <data name="Msg_Action_Remove" xml:space="preserve"><value>إزالة الرسالة</value></data>
   <data name="Msg_Action_Warn" xml:space="preserve"><value>تحذير المرسل</value></data>

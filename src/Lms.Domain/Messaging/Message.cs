@@ -35,6 +35,9 @@ public sealed class Message : AuditableEntity, ITenantOwned
 
     public bool InDeleteWindow(DateTime nowUtc, int windowMinutes) => nowUtc <= SentAtUtc.AddMinutes(windowMinutes);
 
+    /// <summary>A moderator removed it (M6 Task 15): participants see a tombstone (no text); the original stays in the row for moderators until the retention job purges it.</summary>
+    public void RemoveByModerator() => State = RemovedState;
+
     /// <summary>Deletes for everyone: clears the text and keeps the row as a tombstone.</summary>
     public void DeleteForEveryone(DateTime atUtc)
     {
