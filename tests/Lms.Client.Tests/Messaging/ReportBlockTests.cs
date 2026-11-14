@@ -235,7 +235,7 @@ public sealed class ReportBlockTests : ClientTestContext
         Assert.Empty(cut.FindAll("[data-testid=composer-unblock]")); // no Unblock: it is not their block
         Assert.Empty(cut.FindAll("[data-testid=blocked-card]"));
         var reason = cut.Find("[data-testid=composer-off]").TextContent; // L18: one generic sentence for a block and a rule
-        Assert.Contains("لا يمكنك الكتابة في هذه المحادثة", reason);
+        Assert.Contains("لا يمكنك إرسال رسائل في هذه المحادثة", reason);
         Assert.DoesNotContain("حظر", cut.Find("[data-testid=thread]").TextContent);
     }
 

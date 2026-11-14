@@ -418,7 +418,7 @@ public sealed class MessagesPageTests : ClientTestContext
         }
         else
         {
-            Assert.Contains("لا يمكنك الكتابة في هذه المحادثة", reason); // theirs: one sentence for a block or a rule, it never says which
+            Assert.Contains("لا يمكنك إرسال رسائل في هذه المحادثة", reason); // theirs: one sentence for a block or a rule, it never says which
             Assert.DoesNotContain("حظر", reason);
         }
     }
@@ -434,7 +434,7 @@ public sealed class MessagesPageTests : ClientTestContext
         WaitForThread(cut);
 
         Assert.Empty(cut.FindAll("[data-testid=composer]"));
-        Assert.Contains("لا يمكنك الكتابة في هذه المحادثة", cut.Find("[data-testid=composer-off]").TextContent);
+        Assert.Contains("لا يمكنك إرسال رسائل في هذه المحادثة", cut.Find("[data-testid=composer-off]").TextContent);
         Assert.Contains("hi", cut.Find("[data-testid=thread-body]").TextContent); // the history stays readable
     }
 
@@ -449,7 +449,7 @@ public sealed class MessagesPageTests : ClientTestContext
         WaitForThread(cut);
 
         Assert.Empty(cut.FindAll("[data-testid=composer]"));
-        Assert.Contains("مجموعة المعلم", cut.Find("[data-testid=composer-off]").TextContent);
+        Assert.Contains("الموظفون فقط يكتبون", cut.Find("[data-testid=composer-off]").TextContent);
     }
 
     [Fact]
@@ -462,6 +462,6 @@ public sealed class MessagesPageTests : ClientTestContext
         var cut = RenderPage(c.Id);
         WaitForThread(cut);
 
-        Assert.Contains("أُغلقت", cut.Find("[data-testid=composer-off]").TextContent);
+        Assert.Contains("بإغلاق", cut.Find("[data-testid=composer-off]").TextContent);
     }
 }
