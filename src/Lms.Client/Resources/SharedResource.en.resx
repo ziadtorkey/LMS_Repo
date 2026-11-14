@@ -391,7 +391,6 @@
   <data name="Notif_Preferences" xml:space="preserve"><value>Notification preferences</value></data>
   <data name="Channel_InApp" xml:space="preserve"><value>In-app</value></data>
   <data name="Channel_Email" xml:space="preserve"><value>Email</value></data>
-  <data name="Channel_Sms" xml:space="preserve"><value>SMS</value></data>
   <data name="Channel_Push" xml:space="preserve"><value>Push</value></data>
   <data name="Notif_Access_RoleAssigned" xml:space="preserve"><value>You were given the role {RoleName} at {OrgUnitName}.</value></data>
   <data name="Notif_Access_RoleRemoved" xml:space="preserve"><value>Your role {RoleName} at {OrgUnitName} was removed.</value></data>
@@ -1494,28 +1493,6 @@
   <data name="Error_package_reason_compression_ratio" xml:space="preserve"><value>The package is compressed in an unsafe way. Export it again.</value></data>
   <data name="Error_package_reason_symlink" xml:space="preserve"><value>The package contains links to other files, which aren't allowed.</value></data>
   <data name="Error_package_reason_duplicate_name" xml:space="preserve"><value>Two files in the package have the same name.</value></data>
-  <data name="MyCourses_StatSupervised" xml:space="preserve"><value>Supervised courses</value></data>
-  <data name="MyCourses_StatAllocations" xml:space="preserve"><value>Class allocations</value></data>
-  <data name="MyCourses_StatPublished" xml:space="preserve"><value>Published blueprints</value></data>
-  <data name="MyCourses_StatPending" xml:space="preserve"><value>Without a blueprint</value></data>
-  <data name="MyCourses_Filter" xml:space="preserve"><value>Filter by name or code</value></data>
-  <data name="MyCourses_FilterUnit" xml:space="preserve"><value>Unit</value></data>
-  <data name="MyCourses_AllUnits" xml:space="preserve"><value>All units</value></data>
-  <data name="MyCourses_FilterBlueprint" xml:space="preserve"><value>Blueprint</value></data>
-  <data name="MyCourses_AllBlueprints" xml:space="preserve"><value>All blueprints</value></data>
-  <data name="MyCourses_View" xml:space="preserve"><value>View</value></data>
-  <data name="MyCourses_ViewGrid" xml:space="preserve"><value>Grid view</value></data>
-  <data name="MyCourses_ViewList" xml:space="preserve"><value>List view</value></data>
-  <data name="MyCourses_NoMatch" xml:space="preserve"><value>No course matches</value></data>
-  <data name="MyCourses_NoMatchText" xml:space="preserve"><value>Change or clear the filters.</value></data>
-  <data name="MyCourses_Periods" xml:space="preserve"><value>Periods per week: {0}</value></data>
-  <data name="MyCourses_AssignTitle" xml:space="preserve"><value>Assign or link a course</value></data>
-  <data name="MyCourses_AssignText" xml:space="preserve"><value>Ask an administrator to make you a course supervisor, or start from a template.</value></data>
-  <data name="MyCourses_ExploreTemplates" xml:space="preserve"><value>Explore templates</value></data>
-  <data name="MyCourses_ColCourse" xml:space="preserve"><value>Course</value></data>
-  <data name="MyCourses_ColUnit" xml:space="preserve"><value>Unit</value></data>
-  <data name="MyCourses_ColBlueprint" xml:space="preserve"><value>Blueprint</value></data>
-  <data name="MyCourses_ColPeriods" xml:space="preserve"><value>Periods per week</value></data>
   <data name="Package_Start" xml:space="preserve"><value>Start</value></data>
   <data name="Package_Resume" xml:space="preserve"><value>Resume</value></data>
   <data name="Package_Preview" xml:space="preserve"><value>Preview</value></data>
@@ -1647,6 +1624,95 @@
   <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>The package didn't pass the security check.</value></data>
   <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>The file isn't a valid .zip archive. Export the package again.</value></data>
   <data name="Error_package_reason_bad_name" xml:space="preserve"><value>Some file names in the package are too long, nested too deep or reserved. Rename them and export again.</value></data>
+  <data name="ClassCourse_TabLive" xml:space="preserve"><value>Live sessions</value></data>
+  <data name="Live_Title" xml:space="preserve"><value>Live sessions</value></data>
+  <data name="Live_Subtitle" xml:space="preserve"><value>Online classes for this course. Students join from the lesson.</value></data>
+  <data name="Live_Schedule" xml:space="preserve"><value>Schedule a session</value></data>
+  <data name="Live_ScheduleAction" xml:space="preserve"><value>Schedule</value></data>
+  <data name="Live_Filter" xml:space="preserve"><value>Which sessions</value></data>
+  <data name="Live_Upcoming" xml:space="preserve"><value>Upcoming</value></data>
+  <data name="Live_Past" xml:space="preserve"><value>Past</value></data>
+  <data name="Live_Col_When" xml:space="preserve"><value>When</value></data>
+  <data name="Live_Col_Session" xml:space="preserve"><value>Session</value></data>
+  <data name="Live_Col_Lesson" xml:space="preserve"><value>Lesson</value></data>
+  <data name="Live_Col_Status" xml:space="preserve"><value>Status</value></data>
+  <data name="Live_Col_Recording" xml:space="preserve"><value>Recording</value></data>
+  <data name="Live_Col_Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="Live_Edit" xml:space="preserve"><value>Edit session</value></data>
+  <data name="Live_RecordingLink" xml:space="preserve"><value>Recording link</value></data>
+  <data name="Live_CancelSession" xml:space="preserve"><value>Cancel session</value></data>
+  <data name="Live_CancelConfirm" xml:space="preserve"><value>Cancel this session? Students will no longer see it.</value></data>
+  <data name="Live_Recording" xml:space="preserve"><value>Recording</value></data>
+  <data name="Live_Empty_Upcoming_Title" xml:space="preserve"><value>No upcoming sessions</value></data>
+  <data name="Live_Empty_Upcoming_Staff" xml:space="preserve"><value>Schedule a session so students can join from the lesson.</value></data>
+  <data name="Live_Empty_Upcoming_Student" xml:space="preserve"><value>Your teacher hasn't scheduled any yet.</value></data>
+  <data name="Live_Empty_Past_Title" xml:space="preserve"><value>No past sessions</value></data>
+  <data name="Live_Empty_Past_Text" xml:space="preserve"><value>Sessions appear here after they end.</value></data>
+  <data name="Live_SeriesCaption" xml:space="preserve"><value>Weekly · {0} of {1}</value></data>
+  <data name="Live_SeriesCaptionShort" xml:space="preserve"><value>Weekly</value></data>
+  <data name="Live_ProviderNotConfigured" xml:space="preserve"><value>Live sessions aren't set up yet. Ask your platform administrator.</value></data>
+  <data name="Live_ProviderUnhealthy" xml:space="preserve"><value>Zoom isn't responding right now. New sessions may fail; existing ones keep working.</value></data>
+  <data name="Live_FeatureOff" xml:space="preserve"><value>Live sessions are turned off for this school.</value></data>
+  <data name="Live_Error_Busy" xml:space="preserve"><value>Zoom is busy. Try again in about {0}.</value></data>
+  <data name="Live_Error_BusyShort" xml:space="preserve"><value>Zoom is busy. Try again in a minute.</value></data>
+  <data name="Live_DialogTitleNew" xml:space="preserve"><value>Schedule a live session</value></data>
+  <data name="Live_DialogTitleEdit" xml:space="preserve"><value>Edit live session</value></data>
+  <data name="Live_SectionSession" xml:space="preserve"><value>Session</value></data>
+  <data name="Live_SectionTime" xml:space="preserve"><value>Time</value></data>
+  <data name="Live_SectionRepeat" xml:space="preserve"><value>Repeat</value></data>
+  <data name="Live_SectionModule" xml:space="preserve"><value>In the lesson</value></data>
+  <data name="Live_TitleHelp" xml:space="preserve"><value>Participants see this title in Zoom.</value></data>
+  <data name="Live_Lesson" xml:space="preserve"><value>Lesson</value></data>
+  <data name="Live_Date" xml:space="preserve"><value>Date</value></data>
+  <data name="Live_StartTime" xml:space="preserve"><value>Start time</value></data>
+  <data name="Live_Duration" xml:space="preserve"><value>Duration</value></data>
+  <data name="Live_TimeZone" xml:space="preserve"><value>Times are in your time zone:</value></data>
+  <data name="Live_Repeat_Once" xml:space="preserve"><value>Once</value></data>
+  <data name="Live_Repeat_Weekly" xml:space="preserve"><value>Weekly</value></data>
+  <data name="Live_Every" xml:space="preserve"><value>Repeats</value></data>
+  <data name="Live_Days" xml:space="preserve"><value>On these days</value></data>
+  <data name="Live_Ends" xml:space="preserve"><value>Ends</value></data>
+  <data name="Live_EndsOn" xml:space="preserve"><value>On date</value></data>
+  <data name="Live_EndsAfter" xml:space="preserve"><value>After</value></data>
+  <data name="Live_EndsAfterSuffix" xml:space="preserve"><value>sessions</value></data>
+  <data name="Live_EndsRequired" xml:space="preserve"><value>Choose an end date or a number of sessions.</value></data>
+  <data name="Live_TooMany" xml:space="preserve"><value>A series can have at most {0} sessions. Choose an earlier end date or fewer sessions.</value></data>
+  <data name="Live_EditSeriesTitle" xml:space="preserve"><value>Edit a repeating session</value></data>
+  <data name="Live_CancelSeriesTitle" xml:space="preserve"><value>Cancel a repeating session</value></data>
+  <data name="Live_ScopeLabel" xml:space="preserve"><value>Which sessions</value></data>
+  <data name="Live_Continue" xml:space="preserve"><value>Continue</value></data>
+  <data name="Live_CancelSessions" xml:space="preserve"><value>Cancel sessions</value></data>
+  <data name="Live_RecordingTitle" xml:space="preserve"><value>Recording link</value></data>
+  <data name="Live_RecordingUrl" xml:space="preserve"><value>Link</value></data>
+  <data name="Live_RecordingHelp" xml:space="preserve"><value>Paste a link that starts with https://.</value></data>
+  <data name="Live_RecordingOpensOn" xml:space="preserve"><value>Opens on</value></data>
+  <data name="Live_RecordingInvalid" xml:space="preserve"><value>Use a link that starts with https:// or http://.</value></data>
+  <data name="Live_RecordingBy_Provider" xml:space="preserve"><value>Added by Zoom</value></data>
+  <data name="Live_RecordingBy_Manual" xml:space="preserve"><value>Added by a teacher</value></data>
+  <data name="Live_Unit_Minute_One" xml:space="preserve"><value>1 min</value></data>
+  <data name="Live_Unit_Minute_Two" xml:space="preserve"><value>2 min</value></data>
+  <data name="Live_Unit_Minute_Few" xml:space="preserve"><value>{0} min</value></data>
+  <data name="Live_Unit_Minute_Many" xml:space="preserve"><value>{0} min</value></data>
+  <data name="Live_Duration_Minute_One" xml:space="preserve"><value>1 min</value></data>
+  <data name="Live_Duration_Minute_Two" xml:space="preserve"><value>2 min</value></data>
+  <data name="Live_Duration_Minute_Few" xml:space="preserve"><value>{0} min</value></data>
+  <data name="Live_Duration_Minute_Many" xml:space="preserve"><value>{0} min</value></data>
+  <data name="Live_Unit_Session_One" xml:space="preserve"><value>1 session</value></data>
+  <data name="Live_Unit_Session_Two" xml:space="preserve"><value>2 sessions</value></data>
+  <data name="Live_Unit_Session_Few" xml:space="preserve"><value>{0} sessions</value></data>
+  <data name="Live_Unit_Session_Many" xml:space="preserve"><value>{0} sessions</value></data>
+  <data name="Live_MoreSessions_One" xml:space="preserve"><value>and 1 more</value></data>
+  <data name="Live_MoreSessions_Two" xml:space="preserve"><value>and 2 more</value></data>
+  <data name="Live_MoreSessions_Few" xml:space="preserve"><value>and {0} more</value></data>
+  <data name="Live_MoreSessions_Many" xml:space="preserve"><value>and {0} more</value></data>
+  <data name="Live_LaterSessions_One" xml:space="preserve"><value>and 1 later session</value></data>
+  <data name="Live_LaterSessions_Two" xml:space="preserve"><value>and 2 later sessions</value></data>
+  <data name="Live_LaterSessions_Few" xml:space="preserve"><value>and {0} later sessions</value></data>
+  <data name="Live_LaterSessions_Many" xml:space="preserve"><value>and {0} later sessions</value></data>
+  <data name="Live_EveryWeeks_One" xml:space="preserve"><value>Every week</value></data>
+  <data name="Live_EveryWeeks_Two" xml:space="preserve"><value>Every 2 weeks</value></data>
+  <data name="Live_EveryWeeks_Few" xml:space="preserve"><value>Every {0} weeks</value></data>
+  <data name="Live_EveryWeeks_Many" xml:space="preserve"><value>Every {0} weeks</value></data>
   <data name="Students_Subtitle" xml:space="preserve"><value>Students of your organization, their class and guardians.</value></data>
   <data name="Students_EmptyTitle" xml:space="preserve"><value>No matching students</value></data>
   <data name="Students_EmptyText" xml:space="preserve"><value>Change the filters or add a new student.</value></data>
@@ -1726,6 +1792,12 @@
   <data name="AuditEntity_GradeEntry" xml:space="preserve"><value>Grade entry</value></data>
   <data name="AuditEntity_GradeSnapshot" xml:space="preserve"><value>Grade snapshot</value></data>
   <data name="PermModule_Grades" xml:space="preserve"><value>Grades</value></data>
+  <data name="NavSection_Structure" xml:space="preserve"><value>Structure</value></data>
+  <data name="NavSection_People" xml:space="preserve"><value>People</value></data>
+  <data name="NavSection_Academic" xml:space="preserve"><value>Academic</value></data>
+  <data name="NavSection_Security" xml:space="preserve"><value>Security and settings</value></data>
+  <data name="App_Subtitle" xml:space="preserve"><value>Academic platform</value></data>
+  <data name="Nav_Main" xml:space="preserve"><value>Main navigation</value></data>
   <data name="Error_timetable_conflict" xml:space="preserve"><value>This slot clashes with another one: the teacher or the class is already booked at that time.</value></data>
   <data name="Error_period_overlap" xml:space="preserve"><value>The period overlaps another period of this school, or it does not start before it ends.</value></data>
   <data name="Error_period_in_use" xml:space="preserve"><value>A timetable slot uses this period, so it cannot be deleted.</value></data>
@@ -1865,13 +1937,10 @@
   <data name="PermModule_Announcements" xml:space="preserve"><value>Announcements</value></data>
   <data name="PermModule_Comms" xml:space="preserve"><value>Communication</value></data>
   <data name="Setting_Comms_EmailEnabled" xml:space="preserve"><value>Allow email notices</value></data>
-  <data name="Setting_Comms_SmsEnabled" xml:space="preserve"><value>Allow SMS notices</value></data>
   <data name="Setting_Comms_PushEnabled" xml:space="preserve"><value>Allow push notices</value></data>
   <data name="Setting_Comms_MaxEmailPerDay" xml:space="preserve"><value>Emails per day (client)</value></data>
-  <data name="Setting_Comms_MaxSmsPerDay" xml:space="preserve"><value>SMS per day (client)</value></data>
   <data name="Setting_Comms_MaxPushPerDay" xml:space="preserve"><value>Push notices per day (client)</value></data>
   <data name="Setting_Comms_MaxEmailPerUserPerDay" xml:space="preserve"><value>Emails per person per day</value></data>
-  <data name="Setting_Comms_MaxSmsPerUserPerDay" xml:space="preserve"><value>SMS per person per day</value></data>
   <data name="Setting_Comms_MaxPushPerUserPerDay" xml:space="preserve"><value>Push notices per person per day</value></data>
   <data name="Setting_Comms_QuietHours_Enabled" xml:space="preserve"><value>Quiet hours</value></data>
   <data name="Setting_Comms_QuietHours_Start" xml:space="preserve"><value>Quiet hours start</value></data>
@@ -1950,13 +2019,27 @@
   <data name="Comms_PrefSource_Mandatory" xml:space="preserve"><value>Required</value></data>
   <data name="Msg_Rule_SameUnit" xml:space="preserve"><value>Anyone in the same unit</value></data>
   <data name="Error_group_read_only" xml:space="preserve"><value>Only staff can post in this group.</value></data>
-  <data name="Error_channel_not_allowed" xml:space="preserve"><value>This channel is not used for this account.</value></data>
-  <data name="Comms_ChannelState_NotAllowed" xml:space="preserve"><value>Not available for this account</value></data>
-  <data name="Comms_PrefSource_Policy" xml:space="preserve"><value>Set by the platform</value></data>
-  <data name="NavSection_Structure" xml:space="preserve"><value>Structure</value></data>
-  <data name="NavSection_People" xml:space="preserve"><value>People</value></data>
-  <data name="NavSection_Academic" xml:space="preserve"><value>Academic</value></data>
-  <data name="NavSection_Security" xml:space="preserve"><value>Security and settings</value></data>
-  <data name="App_Subtitle" xml:space="preserve"><value>Academic platform</value></data>
-  <data name="Nav_Main" xml:space="preserve"><value>Main navigation</value></data>
+  <data name="Channel_Sms" xml:space="preserve"><value>SMS</value></data>
+  <data name="MyCourses_StatSupervised" xml:space="preserve"><value>Supervised courses</value></data>
+  <data name="MyCourses_StatAllocations" xml:space="preserve"><value>Class allocations</value></data>
+  <data name="MyCourses_StatPublished" xml:space="preserve"><value>Published blueprints</value></data>
+  <data name="MyCourses_StatPending" xml:space="preserve"><value>Without a blueprint</value></data>
+  <data name="MyCourses_Filter" xml:space="preserve"><value>Filter by name or code</value></data>
+  <data name="MyCourses_FilterUnit" xml:space="preserve"><value>Unit</value></data>
+  <data name="MyCourses_AllUnits" xml:space="preserve"><value>All units</value></data>
+  <data name="MyCourses_FilterBlueprint" xml:space="preserve"><value>Blueprint</value></data>
+  <data name="MyCourses_AllBlueprints" xml:space="preserve"><value>All blueprints</value></data>
+  <data name="MyCourses_View" xml:space="preserve"><value>View</value></data>
+  <data name="MyCourses_ViewGrid" xml:space="preserve"><value>Grid view</value></data>
+  <data name="MyCourses_ViewList" xml:space="preserve"><value>List view</value></data>
+  <data name="MyCourses_NoMatch" xml:space="preserve"><value>No course matches</value></data>
+  <data name="MyCourses_NoMatchText" xml:space="preserve"><value>Change or clear the filters.</value></data>
+  <data name="MyCourses_Periods" xml:space="preserve"><value>Periods per week: {0}</value></data>
+  <data name="MyCourses_AssignTitle" xml:space="preserve"><value>Assign or link a course</value></data>
+  <data name="MyCourses_AssignText" xml:space="preserve"><value>Ask an administrator to make you a course supervisor, or start from a template.</value></data>
+  <data name="MyCourses_ExploreTemplates" xml:space="preserve"><value>Explore templates</value></data>
+  <data name="MyCourses_ColCourse" xml:space="preserve"><value>Course</value></data>
+  <data name="MyCourses_ColUnit" xml:space="preserve"><value>Unit</value></data>
+  <data name="MyCourses_ColBlueprint" xml:space="preserve"><value>Blueprint</value></data>
+  <data name="MyCourses_ColPeriods" xml:space="preserve"><value>Periods per week</value></data>
 </root>
