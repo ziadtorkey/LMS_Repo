@@ -162,6 +162,13 @@ public sealed class AttendanceReadTests(LmsApiFactory factory)
             .Content.ReadFromJsonAsync<AttendanceReportDto>(Web))!;
         Assert.Equal(1, byStudent.Total.Absent);
 
+        var export = await SendAsync(factory, HttpMethod.Get, $"{Routes.AttendanceReportExport(AttendanceReportKinds.Class)}?classId={s.World.Class.Id}", s.Counselor);
+        Assert.Equal(HttpStatusCode.OK, export.StatusCode);
+        Assert.Equal("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", export.Content.Headers.ContentType?.MediaType);
+        using var workbook = new ClosedXML.Excel.XLWorkbook(await export.Content.ReadAsStreamAsync());
+        Assert.Equal(3, workbook.Worksheet("Attendance").LastRowUsed()!.RowNumber() - 3); // three students under the header rows
+        Assert.Equal(HttpStatusCode.Forbidden, (await SendAsync(factory, HttpMethod.Get, $"{Routes.AttendanceReportExport(AttendanceReportKinds.Class)}?classId={s.World.Class.Id}", s.Teacher)).StatusCode);
+
         var found = await SendAsync(factory, HttpMethod.Get, Routes.OrgUnitAttendanceSessions(s.Tree.School1.Id, Today.AddDays(-1), Today), s.Counselor);
         Assert.Equal(HttpStatusCode.OK, found.StatusCode);
         var page = (await found.Content.ReadFromJsonAsync<PagedResult<AttendanceSessionListItemDto>>(Web))!;
