@@ -2,6 +2,7 @@ using Lms.Domain.AcademicYears;
 using Lms.Domain.Calendar;
 using Lms.Domain.Classes;
 using Lms.Domain.Identity;
+using Lms.Domain.Teaching;
 using Lms.Domain.Timetable;
 using Lms.Infrastructure.Persistence;
 using Lms.Shared;

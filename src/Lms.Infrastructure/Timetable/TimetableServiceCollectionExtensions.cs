@@ -13,6 +13,8 @@ public static class TimetableServiceCollectionExtensions
         services.AddScoped<IClientCalendar, ClientCalendar>();
         services.AddScoped<PeriodService>();
         services.AddScoped<TimetableService>();
+        services.AddScoped<ExceptionService>();
+        services.AddScoped<Lms.Infrastructure.Access.SubstituteRelationship>();
         services.AddScoped<IPeriodUsage, SlotPeriodUsage>();
         services.TryAddScoped<IAttendanceGenerationQueue, NoAttendanceGeneration>(); // Task 16 registers the real queue
         return services;

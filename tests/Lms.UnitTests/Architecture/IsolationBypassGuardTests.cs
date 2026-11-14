@@ -99,6 +99,8 @@ public sealed class IsolationBypassGuardTests
             "the course and its supervisors of an exceptional-enrollment request are owned above the class, out of an approver's scope; client matched, deleted rows excluded, only names and user ids leave (M3 Task 11, #219)",
         ["src/Lms.Api/Features/Forums/AnnouncementNotifier.cs"] =
             "the course of a class course is owned above the caller's scope; only its names go into the notification; client matched, deleted rows excluded (M4a Task 13, #363)",
+        ["src/Lms.Api/Features/Timetable/ExceptionEndpoints.cs"] =
+            "the term of a slot belongs to the class academic year, defined at an ancestor unit above the caller; limited to the slot client and term id, live rows only; only the term dates are read (M5 Task 15)",
         ["src/Lms.Api/Features/Library/LibraryQueries.cs"] =
             "library resources, their tags, levels, owner unit names and unit-owned assets sit at ancestors of the browsed unit, above the caller's scope (D13: visible below the owner, read-only); client matched, deleted rows excluded, ancestor chain of the browsed unit only (M4a Task 12, #362)",
         ["src/Lms.Infrastructure/Enrollment/PlacementGuard.cs"] =
