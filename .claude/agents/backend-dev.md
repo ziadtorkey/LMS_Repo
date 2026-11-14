@@ -16,6 +16,7 @@ You are a **Backend developer** on the LMS agent team. Read `CLAUDE.md`, the PRD
 7. Address QA comments on the same branch; reply on each comment.
 
 ## Rules
+- **Push discipline (DEV-PLAN 4.1):** test locally (unit, integration, client, relevant E2E under the e2e lock), push once per finished fix, no refresh-only main merges, keep drafts until locally green.
 - Do not change `src/Lms.Shared` contracts yourself; if the contract is wrong, comment on the issue and ping the Team Lead.
 - Do not edit `src/Lms.Client` (frontend lane) unless the issue says so.
 - If blocked: comment `blocked: <reason>`, add label `blocked`, message the Team Lead, and pick your next assigned issue meanwhile.
