@@ -4,31 +4,63 @@ using static Microsoft.Playwright.Assertions;
 namespace Lms.E2ETests.Pages;
 
 /// <summary>
-/// The gradebook of a class course (M5 plan Tasks 22-26). The shell and the tab exist in #630 (<c>gradebook-title</c>, <c>gradebook-soon</c>,
-/// <c>gradebook-forbidden</c>, <c>tab-gradebook</c> of <c>class-course-tabs</c>); the grid ids below are expectations to align with Tasks 24-26 when
-/// those pages land.
+/// The gradebook of a class course (M5 plan Tasks 22-26). Test ids follow FE1's section of docs/m5-e2e-testids.md (#710): shell (#630), grid (#660, #663),
+/// settings panel (#664).
 /// </summary>
 public sealed class GradebookPage(IPage page)
 {
-    // Shell (#630)
-    public ILocator Tabs => page.GetByTestId("class-course-tabs");
-
+    // Shell
     public ILocator Tab => page.GetByTestId("tab-gradebook");
 
     public ILocator Title => page.GetByTestId("gradebook-title");
 
-    public ILocator GridSoon => page.GetByTestId("gradebook-soon");
-
     public ILocator Forbidden => page.GetByTestId("gradebook-forbidden");
 
-    // Grid (Tasks 24-26): to be aligned
+    // Grid
     public ILocator Grid => page.GetByTestId("gradebook-grid");
 
-    public ILocator WeightsChip => page.GetByTestId("gradebook-weights");
+    public ILocator GridWrap => page.GetByTestId("gradebook-grid-wrap");
 
-    public ILocator PublishButton => page.GetByTestId("gradebook-publish");
+    public ILocator WeightsChip => page.GetByTestId("weights-chip");
 
-    public ILocator Cell(Guid studentId, Guid itemId) => page.GetByTestId($"grade-cell-{studentId}-{itemId}");
+    public ILocator Hint => page.GetByTestId("gradebook-hint");
+
+    public ILocator LivePolite => page.GetByTestId("grid-live-polite");
+
+    public ILocator LiveAssertive => page.GetByTestId("grid-live-assertive");
+
+    public ILocator ItemHeader(Guid itemId) => page.GetByTestId($"item-{itemId}");
+
+    public ILocator ItemState(Guid itemId) => page.GetByTestId($"item-state-{itemId}");
+
+    public ILocator Cell(Guid studentId, Guid itemId) => page.GetByTestId($"cell-{studentId}-{itemId}");
+
+    public ILocator CellInput(Guid studentId, Guid itemId) => page.GetByTestId($"edit-{studentId}-{itemId}");
+
+    public ILocator Final(Guid studentId) => page.GetByTestId($"final-{studentId}");
+
+    public ILocator Band(Guid studentId) => page.GetByTestId($"band-{studentId}");
+
+    public ILocator StudentButton(Guid studentId) => page.GetByTestId($"student-{studentId}");
+
+    // Settings panel (the gear in the header)
+    public ILocator SettingsButton => page.GetByTestId("gradebook-settings");
+
+    public ILocator Config => page.GetByTestId("gradebook-config");
+
+    public ILocator CategoryName(int n, string language) => page.GetByTestId($"cat-name-{language}-{n}");
+
+    public ILocator CategoryWeight(int n) => page.GetByTestId($"cat-weight-{n}");
+
+    public ILocator AddCategory => page.GetByTestId("cat-add");
+
+    public ILocator SaveCategories => page.GetByTestId("cat-save");
+
+    public ILocator AddItem => page.GetByTestId("item-add");
+
+    public ILocator ItemTitle(string language) => page.GetByTestId($"item-title-{language}");
+
+    public ILocator ItemMax => page.GetByTestId("item-max");
 
     /// <summary>Opens the gradebook by URL and waits for either the page title or the forbidden notice (a student has no Grades.View).</summary>
     public async Task OpenAsync(Guid classCourseId)
@@ -42,5 +74,23 @@ public sealed class GradebookPage(IPage page)
     {
         await Tab.ClickAsync();
         await Expect(Title).ToBeVisibleAsync();
+    }
+
+    /// <summary>Opens the settings panel (categories, items, scale) and waits for it.</summary>
+    public async Task OpenSettingsAsync()
+    {
+        await SettingsButton.ClickAsync();
+        await Expect(Config).ToBeVisibleAsync();
+    }
+
+    /// <summary>Types a score into a manual cell: Enter starts the edit, the value is typed, Enter saves and stays; waits for the polite save announcement.</summary>
+    public async Task TypeScoreAsync(Guid studentId, Guid itemId, string text)
+    {
+        var cell = Cell(studentId, itemId);
+        await cell.FocusAsync();
+        await page.Keyboard.PressAsync("Enter");
+        await CellInput(studentId, itemId).FillAsync(text);
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(cell).ToContainTextAsync(text.Replace(',', '.'));
     }
 }
