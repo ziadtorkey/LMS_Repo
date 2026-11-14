@@ -2009,11 +2009,24 @@
   <data name="Comms_Delivery_Sent" xml:space="preserve"><value>Sent</value></data>
   <data name="Comms_Delivery_Failed" xml:space="preserve"><value>Failed</value></data>
   <data name="Comms_Delivery_Skipped" xml:space="preserve"><value>Skipped</value></data>
-  <data name="Comms_Delivery_Expired" xml:space="preserve"><value>Expired</value></data>
   <data name="Comms_ChannelState_Active" xml:space="preserve"><value>Active</value></data>
   <data name="Comms_ChannelState_NeedsSetup" xml:space="preserve"><value>Needs setup</value></data>
   <data name="Comms_ChannelState_Blocked" xml:space="preserve"><value>Blocked</value></data>
   <data name="Comms_ChannelState_Bounced" xml:space="preserve"><value>Bounced</value></data>
+  <data name="Comms_Delivery_Suppressed" xml:space="preserve"><value>Not sent (address suppressed)</value></data>
+  <data name="Comms_Delivery_Held" xml:space="preserve"><value>Held</value></data>
+  <data name="Comms_DeliverySkip_expired_while_held" xml:space="preserve"><value>Expired while held</value></data>
+  <data name="Comms_DeliverySkip_recipient_cap" xml:space="preserve"><value>Daily limit of this recipient reached</value></data>
+  <data name="Comms_DeliverySkip_no_contact" xml:space="preserve"><value>No contact address</value></data>
+  <data name="Comms_DeliverySkip_channel_off" xml:space="preserve"><value>Channel is off</value></data>
+  <data name="Comms_Suppression_HardBounce" xml:space="preserve"><value>Address does not exist</value></data>
+  <data name="Comms_Suppression_Complaint" xml:space="preserve"><value>Marked as unwanted</value></data>
+  <data name="Comms_Suppression_UserOptOut" xml:space="preserve"><value>Opted out</value></data>
+  <data name="Comms_ChannelState_Off" xml:space="preserve"><value>Off</value></data>
+  <data name="Error_channel_not_allowed" xml:space="preserve"><value>Your school has switched this channel off.</value></data>
+  <data name="Error_comms_cap_above_ceiling" xml:space="preserve"><value>This daily limit is above the platform maximum.</value></data>
+  <data name="AuditEntity_ChannelConsent" xml:space="preserve"><value>Channel consent</value></data>
+  <data name="AuditEntity_CommsSettings" xml:space="preserve"><value>Communication settings</value></data>
   <data name="Comms_PrefSource_Default" xml:space="preserve"><value>Default</value></data>
   <data name="Comms_PrefSource_User" xml:space="preserve"><value>Your choice</value></data>
   <data name="Comms_PrefSource_Mandatory" xml:space="preserve"><value>Required</value></data>

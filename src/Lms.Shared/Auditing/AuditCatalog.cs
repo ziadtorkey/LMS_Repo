@@ -47,6 +47,8 @@ public static class AuditCatalog
         "GradingScale", "WeightTemplate", "Gradebook", "GradeCategory", "GradeItem", "GradeEntry", "GradeSnapshot",
         // M6 wave 1: moderation, rules and announcements (messages themselves are not audited row by row: volume and privacy; moderation actions are).
         "Conversation", "MessageReport", "MessagingRestriction", "MessagingRule", "Announcement",
+        // M6 wave 2: a user channel consent and the client communication settings (blocks are the owner and are not audited).
+        "ChannelConsent", "CommsSettings",
         // M5 wave 2: periods, timetable slots and their exceptions (publish, move, substitute are the audited changes).
         "Period", "TimetableSlot", "TimetableException",
         // M5 wave 3: attendance edits and excuse decisions (the change history and the decisions are the audited changes).

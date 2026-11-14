@@ -253,6 +253,12 @@ public static class ProblemCodes
     /// <summary>A mandatory notification cannot be switched off (409).</summary>
     public const string notification_mandatory = nameof(notification_mandatory);
 
+    /// <summary>A channel the client switched off cannot be switched on by a user (409).</summary>
+    public const string channel_not_allowed = nameof(channel_not_allowed);
+
+    /// <summary>A daily cap above the platform ceiling (400).</summary>
+    public const string comms_cap_above_ceiling = nameof(comms_cap_above_ceiling);
+
     /// <summary>The announcement targets are not valid together, or a required target is missing (400).</summary>
     public const string announcement_target_invalid = nameof(announcement_target_invalid);
 

@@ -101,7 +101,7 @@ public static class SettingKeys
     public static readonly SettingKey<bool> CommsEmailEnabled = new("Comms.EmailEnabled", true);
 
     /// <summary>Whether the client's notices may use Web Push.</summary>
-    public static readonly SettingKey<bool> CommsPushEnabled = new("Comms.PushEnabled", false);
+    public static readonly SettingKey<bool> CommsPushEnabled = new("Comms.PushEnabled", true);
 
     /// <summary>Daily caps per client (D66: 5,000 email, 20,000 push; D76: no SMS), counted in the client's day; the admin may raise them up to a platform ceiling.</summary>
     public static readonly SettingKey<int> CommsMaxEmailPerDay = new("Comms.MaxEmailPerDay", 5000);

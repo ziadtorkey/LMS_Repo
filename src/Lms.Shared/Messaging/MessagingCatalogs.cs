@@ -115,7 +115,7 @@ public static class AnnouncementRoleFilters
     public static IReadOnlyList<string> All { get; } = [Staff, Students, Guardians];
 }
 
-/// <summary>The state of one outbound delivery (email, push) in the outbox.</summary>
+/// <summary>The state of one outbound delivery (email, push) in the outbox (M6 wave 2).</summary>
 public static class DeliveryStatuses
 {
     public const string Pending = "Pending";
@@ -123,13 +123,54 @@ public static class DeliveryStatuses
     public const string Sent = "Sent";
     public const string Failed = "Failed";
 
-    /// <summary>Not sent by rule: opt-out, suppression, per-recipient cap, no contact.</summary>
+    /// <summary>The address is on the suppression list (hard bounce, complaint or an opt-out): never sent, never retried.</summary>
+    public const string Suppressed = "Suppressed";
+
+    /// <summary>Held by quiet hours or a cap until <c>HeldUntilUtc</c>; the time to live of a held push starts when the hold ends.</summary>
+    public const string Held = "Held";
+
+    /// <summary>Not sent by rule; <see cref="DeliverySkipReasons"/> says which.</summary>
     public const string Skipped = "Skipped";
 
-    /// <summary>Held past its time to live (a held push starts its clock when the hold ends).</summary>
-    public const string Expired = "Expired";
+    public static IReadOnlyList<string> All { get; } = [Pending, Sending, Sent, Failed, Suppressed, Held, Skipped];
+}
 
-    public static IReadOnlyList<string> All { get; } = [Pending, Sending, Sent, Failed, Skipped, Expired];
+/// <summary>Why a delivery was skipped (stored as the row code, never a body or an address).</summary>
+public static class DeliverySkipReasons
+{
+    /// <summary>A held row outlived its time to live while it waited.</summary>
+    public const string ExpiredWhileHeld = "expired_while_held";
+
+    /// <summary>The per-recipient daily cap held it past its time to live.</summary>
+    public const string RecipientCap = "recipient_cap";
+
+    /// <summary>The user has no contact point for the channel.</summary>
+    public const string NoContact = "no_contact";
+
+    /// <summary>The channel is off for the client or the user.</summary>
+    public const string ChannelOff = "channel_off";
+
+    public static IReadOnlyList<string> All { get; } = [ExpiredWhileHeld, RecipientCap, NoContact, ChannelOff];
+}
+
+/// <summary>Why an address or endpoint is on the suppression list.</summary>
+public static class SuppressionReasons
+{
+    public const string HardBounce = "HardBounce";
+    public const string Complaint = "Complaint";
+    public const string UserOptOut = "UserOptOut";
+
+    public static IReadOnlyList<string> All { get; } = [HardBounce, Complaint, UserOptOut];
+}
+
+/// <summary>Limits of the delivery channels that are fixed by the contract (the daily caps are settings).</summary>
+public static class CommsLimits
+{
+    /// <summary>"Send me a test email" a user may press a day (429 <c>rate_limited</c> after it).</summary>
+    public const int TestSendsPerDay = 3;
+
+    /// <summary>The longest consent text version accepted.</summary>
+    public const int ConsentTextVersionMaxLength = 40;
 }
 
 /// <summary>The state of one channel of a user as <c>GET /api/me/channels</c> shows it.</summary>
@@ -140,8 +181,10 @@ public static class ChannelStates
     public const string Blocked = "Blocked";
     public const string Bounced = "Bounced";
 
+    /// <summary>The client switched the channel off, or the user withdrew consent.</summary>
+    public const string Off = "Off";
 
-    public static IReadOnlyList<string> All { get; } = [Active, NeedsSetup, Blocked, Bounced];
+    public static IReadOnlyList<string> All { get; } = [Active, NeedsSetup, Blocked, Bounced, Off];
 }
 
 /// <summary>Where an effective notification preference comes from.</summary>
