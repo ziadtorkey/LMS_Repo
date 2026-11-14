@@ -4098,6 +4098,142 @@ namespace Lms.Infrastructure.Persistence.Migrations
                     b.ToTable("UserBlocks", (string)null);
                 });
 
+            modelBuilder.Entity("Lms.Domain.Moderation.MessageReport", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Action")
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)");
+
+                    b.Property<string>("ContextJson")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<Guid>("ConversationId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<Guid>("MessageId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<string>("ReportKey")
+                        .HasMaxLength(70)
+                        .HasColumnType("varchar(70)");
+
+                    b.Property<Guid>("ReportedUserId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("ReporterUserId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime?>("ResolvedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("ResolvedByUserId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime?>("ReviewDueUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MessageId");
+
+                    b.HasIndex("ReportKey")
+                        .IsUnique();
+
+                    b.HasIndex("OrganizationId", "ReportedUserId");
+
+                    b.HasIndex("ReporterUserId", "CreatedAt");
+
+                    b.HasIndex("OrganizationId", "Status", "CreatedAt");
+
+                    b.ToTable("MessageReports", (string)null);
+                });
+
+            modelBuilder.Entity("Lms.Domain.Moderation.MessageReportUnit", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<Guid>("OrgUnitId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("OrgUnitPath")
+                        .IsRequired()
+                        .HasColumnType("varchar(400) CHARACTER SET ascii COLLATE ascii_general_ci");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("ReportId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrgUnitId");
+
+                    b.HasIndex("ReportId");
+
+                    b.HasIndex("OrganizationId", "OrgUnitPath");
+
+                    b.ToTable("MessageReportUnits", (string)null);
+                });
+
             modelBuilder.Entity("Lms.Domain.Notifications.Notification", b =>
                 {
                     b.Property<Guid>("Id")
@@ -6761,6 +6897,21 @@ namespace Lms.Infrastructure.Persistence.Migrations
                     b.HasOne("Lms.Domain.Messaging.Conversation", null)
                         .WithMany()
                         .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Lms.Domain.Moderation.MessageReportUnit", b =>
+                {
+                    b.HasOne("Lms.Domain.Organizations.OrgUnit", null)
+                        .WithMany()
+                        .HasForeignKey("OrgUnitId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Lms.Domain.Moderation.MessageReport", null)
+                        .WithMany()
+                        .HasForeignKey("ReportId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

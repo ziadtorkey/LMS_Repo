@@ -70,4 +70,7 @@ public sealed class Conversation : AuditableEntity, ITenantOwned
     }
 
     public void NoteMessage(DateTime atUtc) => LastMessageAtUtc = atUtc;
+
+    /// <summary>A moderator locks it (M6 Task 15): nobody can send until it is unlocked.</summary>
+    public void Lock() => IsLocked = true;
 }

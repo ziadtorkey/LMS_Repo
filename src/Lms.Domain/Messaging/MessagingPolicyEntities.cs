@@ -92,4 +92,10 @@ public sealed class MessagingRestriction : AuditableEntity, ITenantOwned
     public DateTime? UntilUtc { get; private set; }
 
     public bool IsActive(DateTime nowUtc) => UntilUtc is null || UntilUtc > nowUtc;
+
+    /// <summary>A new restriction of the same user extends or replaces this one.</summary>
+    public void RestrictUntil(DateTime? untilUtc) => UntilUtc = untilUtc;
+
+    /// <summary>A moderator lifts it: it ends now.</summary>
+    public void Lift(DateTime nowUtc) => UntilUtc = nowUtc;
 }

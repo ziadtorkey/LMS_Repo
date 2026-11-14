@@ -122,6 +122,12 @@ public sealed class MessageService(LmsDbContext db, ICurrentContext context, ICl
         var messageIds = messages.Where(m => m.State == Message.NormalState).Select(m => m.Id).ToList();
         var files = (await db.Set<MessageAttachment>().Where(a => a.MessageId != null && messageIds.Contains(a.MessageId.Value)).ToListAsync(ct))
             .GroupBy(a => a.MessageId!.Value).ToDictionary(g => g.Key, g => (IReadOnlyList<MessageAttachmentDto>)g.Select(a => new MessageAttachmentDto(a.FileId, a.FileName, a.ContentType, a.SizeBytes)).ToList());
+        // The caller's own report of each message (L16): pending or reviewed, never the action; null for every other caller and message.
+        var reportIds = messages.Select(m => m.Id).ToList();
+        var mine = me is { } reporter
+            ? (await db.Set<Lms.Domain.Moderation.MessageReport>().Where(r => r.ReporterUserId == reporter && reportIds.Contains(r.MessageId)).Select(r => new { r.MessageId, r.Status }).ToListAsync(ct))
+                .ToDictionary(r => r.MessageId, r => r.Status is Lms.Domain.Moderation.MessageReport.OpenStatus or Lms.Domain.Moderation.MessageReport.InReviewStatus ? MyReportStatuses.Pending : MyReportStatuses.Reviewed)
+            : [];
         return messages.Select(m =>
         {
             users.TryGetValue(m.SenderUserId, out var user);
@@ -129,7 +135,7 @@ public sealed class MessageService(LmsDbContext db, ICurrentContext context, ICl
             var body = m.State == Message.NormalState ? m.Body : null;
             var canDelete = m.SenderUserId == me && m.State == Message.NormalState && now <= m.SentAtUtc.AddMinutes(MessagingLimits.DeleteWindowMinutes);
             return new MessageDto(m.Id, m.ConversationId, known ? m.SenderUserId : null, known ? user!.DisplayNameAr : FormerUserAr, known ? user!.DisplayNameEn : FormerUserEn,
-                body, m.State, files.GetValueOrDefault(m.Id) ?? [], m.SentAtUtc, m.DeletedAtUtc, canDelete);
+                body, m.State, files.GetValueOrDefault(m.Id) ?? [], m.SentAtUtc, m.DeletedAtUtc, canDelete, mine.GetValueOrDefault(m.Id));
         }).ToList();
     }
 }
