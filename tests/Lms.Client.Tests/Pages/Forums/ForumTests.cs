@@ -19,6 +19,7 @@ public sealed class ForumTests : LessonPlansTestContext
     public ForumTests()
     {
         Services.AddSingleton<IForumsApi>(_forum);
+        Services.AddSingleton<Lms.Client.Services.Messaging.IAnnouncementsApi>(new Lms.Client.Services.Messaging.FakeAnnouncementsApi());
         Services.AddSingleton<IAssetsApi, FakeAssetsApi>();
         Culture.Current = new CultureInfo("en");
     }

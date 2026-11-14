@@ -2165,4 +2165,6 @@
   <data name="Announce_Targets" xml:space="preserve"><value>Choose</value></data>
   <data name="Announce_TimeMissing" xml:space="preserve"><value>That time does not exist in your time zone (the clocks skip it). Pick another time.</value></data>
   <data name="Nav_Announcements" xml:space="preserve"><value>Announcements</value></data>
+  <data name="Announce_SourceCourse" xml:space="preserve"><value>Course board</value></data>
+  <data name="Announce_SourceSchool" xml:space="preserve"><value>School announcement</value></data>
 </root>

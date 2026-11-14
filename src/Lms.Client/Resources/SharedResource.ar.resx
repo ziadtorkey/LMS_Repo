@@ -2165,4 +2165,6 @@
   <data name="Announce_Targets" xml:space="preserve"><value>اختر</value></data>
   <data name="Announce_TimeMissing" xml:space="preserve"><value>هذا الوقت غير موجود في منطقتك الزمنية (تتخطاه الساعة). اختر وقتًا آخر.</value></data>
   <data name="Nav_Announcements" xml:space="preserve"><value>الإعلانات</value></data>
+  <data name="Announce_SourceCourse" xml:space="preserve"><value>لوحة المقرر</value></data>
+  <data name="Announce_SourceSchool" xml:space="preserve"><value>إعلان المدرسة</value></data>
 </root>
