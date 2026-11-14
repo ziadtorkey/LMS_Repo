@@ -26,6 +26,15 @@ public interface IAttendanceApi
 
     Task<AttendanceRecordsDto> SaveLiveMappingsAsync(Guid sessionId, LiveMappingRequest request, CancellationToken ct = default);
 
+    /// <summary>Students over the absence threshold (D61: absences plus half of the lates in the window), for counselors and managers.</summary>
+    Task<PagedResult<AttendanceAlertDto>> GetAlertsAsync(AttendanceAlertsQuery query, CancellationToken ct = default);
+
+    /// <summary>Counts and rates per student or per class over a date range, as the server computed them (never summed here).</summary>
+    Task<AttendanceReportDto> GetReportAsync(string kind, AttendanceReportQuery query, CancellationToken ct = default);
+
+    /// <summary>The same report as an .xlsx file (audited server side).</summary>
+    Task<(Stream Content, string FileName)> ExportReportAsync(string kind, AttendanceReportQuery query, CancellationToken ct = default);
+
     /// <summary>The signed-in student's own attendance (counts and a page of sessions).</summary>
     Task<OwnAttendanceDto> GetMyAttendanceAsync(OwnAttendanceQuery query, CancellationToken ct = default);
 

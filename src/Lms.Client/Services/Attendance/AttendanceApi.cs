@@ -30,6 +30,25 @@ public sealed class AttendanceApi(Api.ApiHttp http) : IAttendanceApi
     public async Task<AttendanceRecordsDto> SaveLiveMappingsAsync(Guid sessionId, LiveMappingRequest request, CancellationToken ct = default) =>
         (await http.SendAsync<AttendanceRecordsDto>(HttpMethod.Put, Routes.AttendanceSessionLiveMappings(sessionId), request, ct))!;
 
+    public Task<PagedResult<AttendanceAlertDto>> GetAlertsAsync(AttendanceAlertsQuery query, CancellationToken ct = default) =>
+        http.GetAsync<PagedResult<AttendanceAlertDto>>(Routes.AttendanceAlertsPattern + Query(("unitId", query.UnitId), ("activeOnly", query.ActiveOnly), ("page", query.Page), ("pageSize", query.PageSize)), ct);
+
+    public Task<AttendanceReportDto> GetReportAsync(string kind, AttendanceReportQuery query, CancellationToken ct = default) =>
+        http.GetAsync<AttendanceReportDto>(Routes.AttendanceReport(kind) + ReportQuery(query), ct);
+
+    public Task<(Stream Content, string FileName)> ExportReportAsync(string kind, AttendanceReportQuery query, CancellationToken ct = default) =>
+        http.DownloadAsync(Routes.AttendanceReportExport(kind) + ReportQuery(query), ct);
+
+    private static string ReportQuery(AttendanceReportQuery q) => Query(("studentId", q.StudentId), ("classId", q.ClassId), ("classCourseId", q.ClassCourseId),
+        ("from", q.From is { } f ? f.ToString("yyyy-MM-dd") : null), ("to", q.To is { } t ? t.ToString("yyyy-MM-dd") : null), ("page", q.Page), ("pageSize", q.PageSize));
+
+    private static string Query(params (string Key, object? Value)[] parts)
+    {
+        var query = string.Join('&', parts.Where(p => p.Value is not null)
+            .Select(p => $"{p.Key}={Uri.EscapeDataString(p.Value is bool b ? (b ? "true" : "false") : Convert.ToString(p.Value, System.Globalization.CultureInfo.InvariantCulture)!)}"));
+        return query.Length == 0 ? "" : "?" + query;
+    }
+
     public Task<OwnAttendanceDto> GetMyAttendanceAsync(OwnAttendanceQuery query, CancellationToken ct = default) =>
         http.GetAsync<OwnAttendanceDto>(Routes.MyAttendance(query.From, query.To) + PageQuery(Routes.MyAttendance(query.From, query.To), query), ct);
 

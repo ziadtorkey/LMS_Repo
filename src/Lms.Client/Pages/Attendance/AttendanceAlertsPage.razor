@@ -1,0 +1,85 @@
+@page "/attendance/alerts"
+@attribute [Authorize]
+@using Lms.Client.Components
+@using Lms.Client.Components.People
+@using Lms.Client.Services.Attendance
+@using Lms.Shared.Attendance
+@using Lms.Shared.Authorization
+@inject IAttendanceApi Api
+@inject PermissionState PermState
+@inject ICultureService Culture
+
+<PageTitle>@L["Alerts_Title"]</PageTitle>
+@if (!PermState.Loaded)
+{
+    <LoadingState Lines="4" TestId="alerts-loading" />
+}
+else if (!PermState.Has(Permissions.Excuses.Review) && !PermState.Has(Permissions.Attendance.View))
+{
+    <Forbidden />
+}
+else
+{
+    <PageHeader Title="@L["Alerts_Title"]" Subtitle="@L["Alerts_Subtitle"]" TitleTestId="alerts-title" />
+
+    <SectionCard Flush="true">
+        <div class="lms-filters" role="search" aria-label="@L["Common_Filters"]">
+            <div class="lms-filter">
+                <UnitPicker Value="_unitId" ValueChanged="OnUnitChanged" Label="@L["Staff_HomeUnit"]" Clearable="true" TestId="alerts-filter-unit" />
+            </div>
+            <div class="lms-filter">
+                <MudSwitch T="bool" Value="_activeOnly" ValueChanged="OnActiveChanged" Color="Color.Primary" Label="@L["Alerts_ActiveOnly"]" data-testid="alerts-active-only" />
+            </div>
+        </div>
+        <ServerTable @ref="_table" T="AttendanceAlertDto" ServerData="LoadAsync" EmptyTitle="@L["Alerts_EmptyTitle"]" EmptyText="@L["Alerts_EmptyText"]" EmptyIcon="@Icons.Material.Rounded.NotificationsNone">
+            <HeaderContent>
+                <MudTh>@L["Common_Name"]</MudTh>
+                <MudTh>@L["Alerts_Formula"]</MudTh>
+                <MudTh>@L["Alerts_Since"]</MudTh>
+                <MudTh>@L["Common_Status"]</MudTh>
+                <MudTh><span class="lms-visually-hidden">@L["Common_Actions"]</span></MudTh>
+            </HeaderContent>
+            <RowTemplate Context="alert">
+                <MudTd DataLabel="@L["Common_Name"]">
+                    <span class="lms-cell-strong">@Culture.Pick(alert.StudentNameAr, alert.StudentNameEn)</span>
+                    <span class="lms-muted" dir="ltr">@alert.StudentNumber</span>
+                </MudTd>
+                <MudTd DataLabel="@L["Alerts_Formula"]">
+                    @* the inputs of the rule, as the server counted them: absences + lates at the late weight = score against the threshold (D61) *@
+                    <span data-testid="@($"alert-formula-{alert.Id}")">@string.Format(L["Alerts_FormulaText"], alert.Absences, alert.Lates, Fmt(alert.Score), Fmt(alert.Threshold), alert.WindowDays)</span>
+                </MudTd>
+                <MudTd DataLabel="@L["Alerts_Since"]"><LocalTime Utc="alert.AlertedAtUtc" Format="yyyy-MM-dd" Class="lms-date-cell" TestId="@($"alert-since-{alert.Id}")" /></MudTd>
+                <MudTd DataLabel="@L["Common_Status"]">
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@(alert.ClearedAtUtc is null ? Color.Warning : Color.Default)" Class="lms-status-chip"
+                             data-testid="@($"alert-status-{alert.Id}")">@L[alert.ClearedAtUtc is null ? "Alerts_Active" : "Alerts_Cleared"]</MudChip>
+                </MudTd>
+                <MudTd DataLabel="@L["Common_Actions"]" Class="lms-cell-actions">
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" Href="@($"students/{alert.StudentId}")" data-testid="@($"alert-student-{alert.Id}")">@L["Alerts_OpenStudent"]</MudButton>
+                </MudTd>
+            </RowTemplate>
+        </ServerTable>
+    </SectionCard>
+}
+
+@code {
+    private ServerTable<AttendanceAlertDto> _table = default!;
+    private Guid? _unitId;
+    private bool _activeOnly = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+    }
+
+    private async Task<TableData<AttendanceAlertDto>> LoadAsync(TableState state, CancellationToken ct)
+    {
+        var page = await Api.GetAlertsAsync(new AttendanceAlertsQuery(_unitId, _activeOnly, state.Page + 1, state.PageSize), ct);
+        return new TableData<AttendanceAlertDto> { Items = page.Items, TotalItems = page.Total };
+    }
+
+    private Task OnUnitChanged(Guid? unit) { _unitId = unit; return _table.ReloadAsync(); }
+
+    private Task OnActiveChanged(bool on) { _activeOnly = on; return _table.ReloadAsync(); }
+
+    private static string Fmt(decimal value) => value.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+}

@@ -1,0 +1,198 @@
+@page "/attendance/reports"
+@attribute [Authorize]
+@implements IDisposable
+@using Lms.Client.Services.Attendance
+@using Lms.Shared.Attendance
+@using Lms.Shared.Authorization
+@inject IAttendanceApi Api
+@inject NavigationManager Navigation
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject ClientTimeZone Zone
+@inject TimeProvider Clock
+@inject ISnackbar Snackbar
+@inject IJSRuntime Js
+@inject Lms.Client.Services.Api.IClassesApi Classes
+
+<PageTitle>@L["AttReports_Title"]</PageTitle>
+@if (!PermState.Loaded)
+{
+    <LoadingState Lines="4" TestId="reports-loading" />
+}
+else if (!PermState.Has(Permissions.Attendance.View))
+{
+    <Forbidden />
+}
+else
+{
+    <PageHeader Title="@L["AttReports_Title"]" Subtitle="@L["AttReports_Subtitle"]" TitleTestId="reports-title">
+        <Actions>
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Download" OnClick="ExportAsync" Disabled="@(_report is null)" data-testid="reports-export">@L["AttReports_Export"]</MudButton>
+        </Actions>
+    </PageHeader>
+
+    <div class="lms-filters mb-4" role="search" aria-label="@L["Common_Filters"]">
+        <div class="lms-filter">
+            <MudToggleGroup T="string" Value="_kind" ValueChanged="OnKindChanged" SelectionMode="SelectionMode.SingleSelection" Color="Color.Primary" data-testid="reports-kind">
+                <MudToggleItem Value="@AttendanceReportKinds.Student" data-testid="reports-kind-student">@L["AttReports_Student"]</MudToggleItem>
+                <MudToggleItem Value="@AttendanceReportKinds.Class" data-testid="reports-kind-class">@L["AttReports_Class"]</MudToggleItem>
+            </MudToggleGroup>
+        </div>
+        @if (_kind == AttendanceReportKinds.Class)
+        {
+            <div class="lms-filter">
+                <MudSelect T="Guid?" Value="_classId" ValueChanged="OnClassChanged" Label="@L["AttReports_ClassFilter"]" Variant="Variant.Outlined" Clearable="true" data-testid="reports-class">
+                    @foreach (var c in _classes)
+                    {
+                        <MudSelectItem T="Guid?" Value="@((Guid?)c.Id)">@Culture.Pick(c.NameAr, c.NameEn)</MudSelectItem>
+                    }
+                </MudSelect>
+            </div>
+        }
+        <div class="lms-filter lms-date-filter">
+            <MudDatePicker Date="_from?.ToDateTime(TimeOnly.MinValue)" DateChanged="d => OnDate(d, true)" Label="@L["Exc_From"]" Variant="Variant.Outlined" DateFormat="yyyy-MM-dd" Clearable="false" data-testid="reports-from" />
+        </div>
+        <div class="lms-filter lms-date-filter">
+            <MudDatePicker Date="_to?.ToDateTime(TimeOnly.MinValue)" DateChanged="d => OnDate(d, false)" Label="@L["Exc_To"]" Variant="Variant.Outlined" DateFormat="yyyy-MM-dd" Clearable="false" data-testid="reports-to" />
+        </div>
+    </div>
+
+    @if (_loading)
+    {
+        <LoadingState Lines="5" TestId="reports-loading" />
+    }
+    else if (_failed || _report is null)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="api-error">
+            @L["Api_Error"]
+            <MudButton Variant="Variant.Text" OnClick="LoadAsync">@L["Common_Retry"]</MudButton>
+        </MudAlert>
+    }
+    else
+    {
+        <div class="lms-stats lms-stats-compact" data-testid="reports-stats">
+            <div class="lms-stat"><div><div class="lms-stat-label">@L["OwnAtt_Percent"]</div>
+                <div class="lms-stat-value" data-testid="reports-percent">@(_report.Total.AttendancePercent is { } p ? p.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) + "%" : "\u2013")</div></div></div>
+            @foreach (var status in AttendanceStatuses.All)
+            {
+                <div class="lms-stat"><div><div class="lms-stat-label">@L[$"Att_Status_{status}"]</div>
+                    <div class="lms-stat-value" data-testid="@($"reports-count-{status}")">@Count(status)</div></div></div>
+            }
+        </div>
+
+        <SectionCard Flush="true">
+            <MudSimpleTable Elevation="0" Class="lms-simple-table lms-stack-table" data-testid="reports-table">
+                <thead>
+                    <tr>
+                        <th>@L["Common_Name"]</th>
+                        <th>@L["Att_Status_Present"]</th>
+                        <th>@L["Att_Status_Absent"]</th>
+                        <th>@L["Att_Status_Late"]</th>
+                        <th>@L["Att_Status_Excused"]</th>
+                        <th>@L["OwnAtt_Percent"]</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in _report.Rows.Items)
+                    {
+                        <tr data-testid="@($"reports-row-{row.StudentId}")">
+                            <td data-label="@L["Common_Name"]"><span class="lms-cell-strong">@Culture.Pick(row.StudentNameAr, row.StudentNameEn)</span> <span class="lms-muted" dir="ltr">@row.StudentNumber</span></td>
+                            <td data-label="@L["Att_Status_Present"]">@row.Summary.Present</td>
+                            <td data-label="@L["Att_Status_Absent"]">@row.Summary.Absent</td>
+                            <td data-label="@L["Att_Status_Late"]">@row.Summary.Late</td>
+                            <td data-label="@L["Att_Status_Excused"]">@row.Summary.Excused</td>
+                            <td data-label="@L["OwnAtt_Percent"]">@(row.Summary.AttendancePercent is { } rp ? rp.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) + "%" : "\u2013")</td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+            <p class="lms-muted pa-3 ma-0" data-testid="reports-asof">
+                @string.Format(L["AttReports_AsOf"], ClientCalendar.ToLocal(_report.ComputedAtUtc, _zone).ToString("yyyy-MM-dd HH:mm")) · <span dir="ltr">@($"{_report.From:yyyy-MM-dd} \u2013 {_report.To:yyyy-MM-dd}")</span>
+            </p>
+        </SectionCard>
+    }
+}
+
+@code {
+    private AttendanceReportDto? _report;
+    private string _kind = AttendanceReportKinds.Student;
+    private DateOnly? _from, _to;
+    private Guid? _classId;
+    private TimeZoneInfo _zone = ClientCalendar.Zone();
+    private IReadOnlyList<Lms.Shared.Classes.ClassSummaryDto> _classes = [];
+    private bool _loading = true, _failed;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        if (!PermState.Has(Permissions.Attendance.View)) return;
+        _zone = await Zone.GetAsync();
+        var today = ClientCalendar.Today(Clock.GetUtcNow().UtcDateTime, _zone); // the range starts as the last 30 days of the client's calendar
+        _to = today;
+        _from = today.AddDays(-30);
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _failed = false;
+        var (value, failed) = await ApiCalls.RunAsync(() => Api.GetReportAsync(_kind, Query()), Navigation);
+        _report = value;
+        _failed = failed;
+        _loading = false;
+    }
+
+    private AttendanceReportQuery Query() => new(ClassId: _kind == AttendanceReportKinds.Class ? _classId : null, From: _from, To: _to, PageSize: 100);
+
+    private Task OnKindChanged(string? kind)
+    {
+        if (kind is null) return Task.CompletedTask;
+        _kind = kind;
+        return LoadClassesThenReportAsync();
+    }
+
+    private async Task LoadClassesThenReportAsync()
+    {
+        if (_kind == AttendanceReportKinds.Class && _classes.Count == 0)
+        {
+            var (page, _) = await ApiCalls.RunAsync(() => Classes.ListAsync(new Lms.Shared.Classes.ClassQuery(null, PageSize: 100)), Navigation);
+            _classes = page?.Items ?? [];
+        }
+
+        await LoadAsync();
+    }
+
+    private Task OnClassChanged(Guid? id)
+    {
+        _classId = id;
+        return LoadAsync();
+    }
+
+    private Task OnDate(DateTime? date, bool from)
+    {
+        if (date is not { } d) return Task.CompletedTask;
+        if (from) _from = DateOnly.FromDateTime(d); else _to = DateOnly.FromDateTime(d);
+        return LoadAsync();
+    }
+
+    private int Count(string status) => status switch
+    {
+        AttendanceStatuses.Present => _report!.Total.Present,
+        AttendanceStatuses.Absent => _report!.Total.Absent,
+        AttendanceStatuses.Late => _report!.Total.Late,
+        _ => _report!.Total.Excused,
+    };
+
+    private async Task ExportAsync()
+    {
+        await ApiCalls.RunAsync(async () =>
+        {
+            var (content, fileName) = await Api.ExportReportAsync(_kind, Query());
+            using var reference = new DotNetStreamReference(content);
+            await Js.InvokeVoidAsync("lmsDownloadFile", fileName, reference);
+        }, Navigation, L, message => Snackbar.Add(message, Severity.Error));
+    }
+
+    public void Dispose() { }
+}

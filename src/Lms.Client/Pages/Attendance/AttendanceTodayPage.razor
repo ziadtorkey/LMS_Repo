@@ -9,6 +9,7 @@
 @inject NavigationManager Navigation
 @inject PermissionState PermState
 @inject ClientTimeZone Zone
+@inject TimeProvider Clock
 
 <PageTitle>@L["Att_Today_Title"]</PageTitle>
 @if (!PermState.Loaded)
@@ -99,7 +100,7 @@ else
         {
             if (_unitId is { } unit)
             {
-                var day = _date ?? await Zone.TodayAsync(DateTime.UtcNow);
+                var day = _date ?? await Zone.TodayAsync(Clock.GetUtcNow().UtcDateTime);
                 (var page, failed) = await ApiCalls.RunAsync(() => Api.SearchSessionsAsync(unit, new AttendanceSessionSearchQuery(day, day, PageSize: 100)), Navigation);
                 value = page?.Items;
             }
