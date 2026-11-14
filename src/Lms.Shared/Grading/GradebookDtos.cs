@@ -58,7 +58,9 @@ public sealed record GradeCategoryResultDto(Guid CategoryId, decimal? Percent, d
 
 /// <summary>
 /// A student's row. <c>Final</c> and <c>BandCode</c> are null when the missing-score policy hides the total or nothing is graded;
-/// <c>Version</c> is the row version a write sends back (stale = 409 <c>concurrency_conflict</c>).
+/// <c>Version</c> is the row version a write sends back (stale = 409 <c>concurrency_conflict</c>). A student who left the course mid-term stays in the
+/// grid for staff with the stored grades, marked <c>IsWithdrawn</c> (<c>WithdrawnOn</c> = the day the enrollment ended): withdrawn students are
+/// left out of class statistics and are never part of what other students or guardians see.
 /// </summary>
 public sealed record GradeRowDto(
     Guid StudentId,
@@ -72,7 +74,9 @@ public sealed record GradeRowDto(
     string? BandLabelAr,
     string? BandLabelEn,
     decimal? BandPoints,
-    long Version);
+    long Version,
+    bool IsWithdrawn = false,
+    DateOnly? WithdrawnOn = null);
 
 /// <summary>Query of <c>GET /api/class-courses/{id}/gradebook</c>. <c>TermId</c> null = the current term of the class (L17: 50 students per page, at most 100).</summary>
 public sealed record GradebookQuery(Guid? TermId = null, int Page = 1, int PageSize = GradingLimits.GridPageSize);

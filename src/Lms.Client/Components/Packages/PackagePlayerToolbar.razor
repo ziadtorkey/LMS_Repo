@@ -1,0 +1,26 @@
+@using Lms.Client.Services.Packages
+
+@* The toolbar sits OUTSIDE the frame, in the app's own DOM, so Exit and Full screen are always reachable (and still are when the
+   container goes full screen). Nothing here comes from the package. *@
+<div class="lms-player-bar" data-testid="package-toolbar">
+    <span class="lms-player-title" data-testid="package-toolbar-title">@Title</span>
+    @if (!Preview)
+    {
+        <PackageSaveState Status="Status" OnRetry="OnRetry" />
+    }
+    <MudSpacer />
+    <MudIconButton Icon="@(Fullscreen ? Icons.Material.Rounded.FullscreenExit : Icons.Material.Rounded.Fullscreen)" Size="Size.Small"
+                   aria-label="@L[Fullscreen ? "Package_ExitFullscreen" : "Package_Fullscreen"]" title="@L[Fullscreen ? "Package_ExitFullscreen" : "Package_Fullscreen"]"
+                   OnClick="OnFullscreen" data-testid="package-fullscreen" />
+    <MudButton Variant="Variant.Text" Size="Size.Small" StartIcon="@Icons.Material.Rounded.Close" OnClick="OnExit" data-testid="package-exit">@L["Package_Exit"]</MudButton>
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public bool Preview { get; set; }
+    [Parameter] public PackageSaveStatus Status { get; set; }
+    [Parameter] public bool Fullscreen { get; set; }
+    [Parameter] public EventCallback OnFullscreen { get; set; }
+    [Parameter] public EventCallback OnExit { get; set; }
+    [Parameter] public EventCallback OnRetry { get; set; }
+}

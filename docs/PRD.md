@@ -375,6 +375,10 @@ All tenant-owned tables: `OrganizationId`; unit-scoped tables: `OrgUnitId`, `Org
 | D67 | Email provider | Build email behind a provider interface with a development fake; the concrete relay (SES, SendGrid, Mailgun or client SMTP) is chosen before go-live. Owner decision 2026-11-14. |
 | D68 | SMS provider | Build SMS behind `ISmsProvider` with a development fake; the owner picks a Saudi-licensed gateway (e.g. Unifonic, Taqnyat) and registers the sender ID before go-live. Owner decision 2026-11-14. |
 | D69 | Messaging safeguarding | Safeguarding-first rules: students message only their own teachers and counselor, never other students; guardians message only their children's teachers and counselor; managers and org admins reach students only via groups or announcements (no private 1:1 with students); the Org Admin may tighten per client. Owner decision 2026-11-14. |
+| D70 | Moderation access | Only the Org Admin (Messaging.Moderate) sees the moderation queue; Managers get no read-only view. Owner decision 2026-11-14 (M6 plan O1). |
+| D71 | Communication retention | Plan defaults accepted, pending legal advice: deliveries 90 days; messages the school year + 1 year; report context and removed originals 180 days; each client may shorten. Owner decision 2026-11-14 (M6 plan O2). |
+| D72 | SMS and minors | No SMS about minors: SMS goes only to adults about themselves; guardians receive news about their children by email and push. Consent wording (ar/en) drafted by the Lead for owner review before go-live. Owner decision 2026-11-14 (M6 plan O3). |
+| D73 | Provider data region | Prefer in-Kingdom or GCC processing for the email relay, SMS gateway and push services where offered; otherwise any region, since bodies hold no student data (D66). Owner decision 2026-11-14 (M6 plan O5). |
 
 ---
 
