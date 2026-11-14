@@ -2334,4 +2334,5 @@
   <data name="Error_conversation_read_only" xml:space="preserve"><value>لا يمكنك الكتابة في هذه المحادثة.</value></data>
   <data name="Error_comms_cap_above_ceiling" xml:space="preserve"><value>هذا الحد أعلى من الحد الأقصى الذي تسمح به المنصة.</value></data>
   <data name="Error_attachment_invalid" xml:space="preserve"><value>المرفق غير مسموح به: تحقق من نوعه وحجمه وعدد المرفقات.</value></data>
+  <data name="Msg_ReadOnly_rule" xml:space="preserve"><value>هذه المحادثة للقراءة فقط بسبب تغيّر قواعد المراسلة.</value></data>
 </root>
