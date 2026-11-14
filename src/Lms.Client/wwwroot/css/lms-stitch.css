@@ -88,6 +88,10 @@ html[data-theme="dark"], html[data-theme="dark"] body { background: #090D10; }
 .mud-dialog .mud-input-label-text { z-index: 1; }
 .lms-app .mud-input-control > .mud-input-control-input-container > .mud-input-label-text.mud-shrink,
 .mud-dialog .mud-input-control > .mud-input-control-input-container > .mud-input-label-text.mud-shrink { inset-inline-start: 0; }
+/* Field labels clip to their 1.15 line height (overflow: hidden, kept for the ellipsis), which cut the dots and tails of Arabic letters in Cairo
+   (6 px) and English descenders (1 px). Room below the line, inside the clip; the label is positioned from its top, so nothing moves.
+   MudBlazor resets this padding with a (0,3,0) selector, hence the html prefix. */
+html .mud-input-control > .mud-input-control-input-container > .mud-input-label-inputcontrol { padding-block-end: 6px; }
 .lms-app .mud-input-control-helper-container,
 .mud-dialog .mud-input-control-helper-container { padding-inline: 2px; }
 

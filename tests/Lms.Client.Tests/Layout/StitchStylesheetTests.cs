@@ -48,6 +48,14 @@ public sealed partial class StitchStylesheetTests
     }
 
     [Fact]
+    public void Field_labels_have_room_below_the_line_so_letters_are_not_cut_off()
+    {
+        // MudBlazor clips a label to its 1.15 line height (overflow: hidden, for the ellipsis), which cuts the dots and tails of Arabic letters in Cairo (6 px) and English descenders (1 px).
+        // Its own reset is (0,3,0), so the rule must be at least as specific to win.
+        Assert.Matches(new Regex(@"html \.mud-input-control > \.mud-input-control-input-container > \.mud-input-label-inputcontrol\s*\{[^}]*padding-block-end:\s*\d+px"), Css());
+    }
+
+    [Fact]
     public void Focus_is_a_visible_ring_not_only_a_glow() =>
         Assert.Matches(new Regex(@"--lms-focus-ring:\s*0 0 0 2px var\(--mud-palette-surface\), 0 0 0 4px var\(--mud-palette-primary\)"), Css());
 
