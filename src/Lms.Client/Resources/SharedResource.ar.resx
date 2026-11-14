@@ -2198,8 +2198,4 @@
   <data name="Error_comms_cap_above_ceiling" xml:space="preserve"><value>هذا الحد أعلى من الحد الأقصى الذي تسمح به المنصة.</value></data>
   <data name="Error_attachment_invalid" xml:space="preserve"><value>المرفق غير مسموح به: تحقق من نوعه وحجمه وعدد المرفقات.</value></data>
   <data name="NavSection_Communication" xml:space="preserve"><value>التواصل</value></data>
-  <data name="Msg_ReadOnly_GroupStudents" xml:space="preserve"><value>يقرأ الطلاب هذه المجموعة. للرد، راسل المعلم على انفراد.</value></data>
-  <data name="Msg_ReadOnly_GroupGuardians" xml:space="preserve"><value>تتيح مجموعة المعلم وحدها لأولياء الأمور الكتابة. يمكنك قراءة هذه المجموعة فقط.</value></data>
-  <data name="Msg_ReadOnly_BlockedOrRule" xml:space="preserve"><value>لا يمكنك الكتابة في هذه المحادثة.</value></data>
-  <data name="Msg_ReadOnly_Restricted" xml:space="preserve"><value>مراسلتك مقيدة حاليا. يمكنك القراءة فقط.</value></data>
 </root>
