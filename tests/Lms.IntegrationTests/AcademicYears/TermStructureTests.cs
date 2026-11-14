@@ -133,6 +133,28 @@ public sealed class TermStructureTests(LmsApiFactory factory) : IDisposable
         Assert.Single(await TermsAsync(year.Id));
     }
 
+    [Fact]
+    public async Task Deleting_or_moving_a_term_with_dependants_is_409_but_renaming_is_allowed()
+    {
+        var host = new OrgUnitTestHost(factory, services => services.AddScoped<ITermDependants>(_ => new AlwaysDependants()));
+        _hosts.Add(host);
+        var (_, admin, year) = await SetupAsync("TS5");
+        var created = await host.SendAsync(HttpMethod.Post, Routes.AcademicYearTerms(year.Id), admin, new SaveTermRequest("فصل", "One", Start, Start.AddMonths(3)));
+        var term = (await created.Content.ReadFromJsonAsync<TermDto>())!;
+
+        var delete = await host.SendAsync(HttpMethod.Delete, Routes.Term(term.Id), admin);
+        var move = await host.SendAsync(HttpMethod.Put, Routes.Term(term.Id), admin, new SaveTermRequest("فصل", "One", Start, Start.AddMonths(2)));
+        var rename = await host.SendAsync(HttpMethod.Put, Routes.Term(term.Id), admin, new SaveTermRequest("فصل ١", "One renamed", Start, Start.AddMonths(3)));
+
+        Assert.Equal(HttpStatusCode.Conflict, delete.StatusCode);
+        Assert.Equal("terms_have_dependants", await CodeAsync(delete));
+        Assert.Equal(HttpStatusCode.Conflict, move.StatusCode);
+        Assert.Equal("terms_have_dependants", await CodeAsync(move));
+        Assert.Equal(HttpStatusCode.OK, rename.StatusCode);
+        var stored = Assert.Single(await TermsAsync(year.Id));
+        Assert.Equal((Start, Start.AddMonths(3)), (stored.StartDate, stored.EndDate));
+    }
+
     private sealed class AlwaysDependants : ITermDependants
     {
         public Task<bool> AnyAsync(IReadOnlyCollection<Guid> termIds, CancellationToken ct) => Task.FromResult(true);

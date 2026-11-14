@@ -87,7 +87,8 @@ public static class TermEndpoints
     }
 
     private static async Task<IResult> UpdateAsync(
-        Guid id, SaveTermRequest request, HttpContext http, LmsDbContext db, IClock clock, CancellationToken ct)
+        Guid id, SaveTermRequest request, HttpContext http, LmsDbContext db, IClock clock, IEnumerable<ITermDependants> dependants,
+        CancellationToken ct)
     {
         if (AcademicYearValidators.Validate(request) is { } invalid)
         {
@@ -106,13 +107,20 @@ public static class TermEndpoints
             return conflict;
         }
 
+        // A rename is harmless; moving the dates could leave a gradebook, slot or session outside its term (L8).
+        if ((term.StartDate != request.StartDate || term.EndDate != request.EndDate) && await HasDependantsAsync(dependants, term.Id, ct))
+        {
+            return TermHasDependants();
+        }
+
         term.Update(request.NameAr.Trim(), request.NameEn.Trim(), request.StartDate, request.EndDate);
         Reorder(terms);
         await db.SaveChangesAsync(ct);
         return Results.Ok(AcademicYearMapper.ToDto(term, AcademicYearEndpoints.Today(clock)));
     }
 
-    private static async Task<IResult> DeleteAsync(Guid id, HttpContext http, LmsDbContext db, CancellationToken ct)
+    private static async Task<IResult> DeleteAsync(
+        Guid id, HttpContext http, LmsDbContext db, IEnumerable<ITermDependants> dependants, CancellationToken ct)
     {
         var (term, year, problem) = await LoadAsync(id, http, db, ct);
         if (term is null || year is null)
@@ -125,12 +133,33 @@ public static class TermEndpoints
             return ApiProblems.Conflict(ProblemCodes.year_closed, "A closed academic year is read-only.");
         }
 
+        if (await HasDependantsAsync(dependants, term.Id, ct))
+        {
+            return TermHasDependants();
+        }
+
         var remaining = await db.Set<Term>().Where(t => t.AcademicYearId == year.Id && t.Id != term.Id).ToListAsync(ct);
         db.Set<Term>().Remove(term);
         Reorder(remaining);
         await db.SaveChangesAsync(ct);
         return Results.NoContent();
     }
+
+    private static async Task<bool> HasDependantsAsync(IEnumerable<ITermDependants> dependants, Guid termId, CancellationToken ct)
+    {
+        foreach (var dependant in dependants)
+        {
+            if (await dependant.AnyAsync([termId], ct))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static IResult TermHasDependants() =>
+        ApiProblems.Conflict(ProblemCodes.terms_have_dependants, "The term already has a gradebook, timetable slot or attendance session.");
 
     private static async Task<(Term? Term, AcademicYear? Year, IResult? Problem)> LoadAsync(
         Guid termId, HttpContext http, LmsDbContext db, CancellationToken ct)
