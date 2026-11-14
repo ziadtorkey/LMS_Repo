@@ -1,0 +1,292 @@
+@page "/academic-years/{YearId:guid}/open-next"
+@attribute [Authorize]
+@using Lms.Client.Components
+@using Lms.Client.Components.People
+@using Lms.Client.Components.YearEnd
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.YearEnd
+@using Lms.Shared
+@using Lms.Shared.AcademicYears
+@using Lms.Shared.Authorization
+@using Lms.Shared.Organizations
+@using Lms.Shared.YearEnd
+@inject PermissionState PermState
+@inject IYearsApi Years
+@inject ITemplatesApi Templates
+@inject INewYearApi NewYear
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<PageTitle>@L["NewYear_Title"]</PageTitle>
+<PageHeader Title="@L["NewYear_Title"]" Subtitle="@L["NewYear_Subtitle"]" TitleTestId="newyear-title" />
+
+@if (!PermState.Loaded || _loading)
+{
+    <LoadingState Lines="5" TestId="newyear-loading" />
+}
+else if (!PermState.Has(Permissions.AcademicYears.Create))
+{
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" data-testid="newyear-forbidden">@L["Forbidden_Title"]</MudAlert>
+}
+else if (_from is null)
+{
+    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="newyear-load-error">@L["Error_Generic"]</MudAlert>
+}
+else
+{
+    <ol class="lms-steps" aria-label="@L["NewYear_Steps"]" data-testid="newyear-steps">
+        @for (var i = 0; i < StepKeys.Length; i++)
+        {
+            var n = i + 1;
+            <li class="@(i < _step ? "lms-step-done" : "")" aria-current="@(i == _step ? "step" : null)" data-testid="@($"newyear-step-{i}")">
+                <span class="lms-step-number" aria-hidden="true">@n</span><span class="lms-step-label">@L[StepKeys[i]]</span>
+            </li>
+        }
+    </ol>
+
+    @if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-3" data-testid="newyear-error">@_error</MudAlert>
+    }
+
+    @if (_step == 0)
+    {
+        <SectionCard Title="@L["NewYear_Step_Dates"]" TestId="newyear-dates">
+            <div class="lms-form">
+                <p class="lms-muted">@string.Format(L["NewYear_From"].Value, CultureText.Pick(_from.NameAr, _from.NameEn))</p>
+                <BilingualNameFields @bind-NameAr="_nameAr" @bind-NameEn="_nameEn" />
+                <div class="lms-form-grid">
+                    <MudDatePicker Date="_start" DateChanged="OnStartChanged" Label="@L["Years_Start"]" data-testid="newyear-start" />
+                    <MudDatePicker Date="_end" DateChanged="d => _end = d" Label="@L["Years_End"]" data-testid="newyear-end" />
+                </div>
+                @if (_from.Terms.Count > 0 && _start is not null)
+                {
+                    <p class="lms-picker-hint">@L["NewYear_Terms_Shifted"]</p>
+                    <ul class="lms-members" data-testid="newyear-terms">
+                        @foreach (var term in _from.Terms)
+                        {
+                            <li class="lms-member">
+                                <span class="lms-member-name"><bdi>@CultureText.Pick(term.NameAr, term.NameEn)</bdi></span>
+                                <span dir="ltr" class="lms-muted">@Shift(term.StartDate) – @Shift(term.EndDate)</span>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        </SectionCard>
+    }
+    else if (_step == 1)
+    {
+        <SectionCard Title="@L["NewYear_Step_Structure"]" TestId="newyear-structure">
+            <div class="lms-form">
+                <MudRadioGroup T="string" Value="_mode" ValueChanged="v => _mode = v" aria-label="@L["NewYear_Step_Structure"]" data-testid="newyear-mode">
+                    <MudRadio T="string" Value="@ModeCopy" data-testid="newyear-mode-copy">@L["NewYear_Mode_Copy"]</MudRadio>
+                    <MudRadio T="string" Value="@ModeTemplate" data-testid="newyear-mode-template">@L["NewYear_Mode_Template"]</MudRadio>
+                    <MudRadio T="string" Value="@ModeBoth" data-testid="newyear-mode-both">@L["NewYear_Mode_Both"]</MudRadio>
+                </MudRadioGroup>
+                @if (_mode != ModeTemplate)
+                {
+                    <fieldset class="lms-fieldset" data-testid="newyear-parts">
+                        <legend>@L["NewYear_Parts"]</legend>
+                        @foreach (var part in YearCopyParts.All)
+                        {
+                            var p = part;
+                            <MudCheckBox T="bool" Value="_parts.Contains(p)" ValueChanged="on => TogglePart(p, on)" Label="@L[$"NewYear_Part_{p}"]" data-testid="@($"newyear-part-{p}")" />
+                        }
+                    </fieldset>
+                    <p class="lms-picker-hint" data-testid="newyear-never-students">@L["NewYear_Never_Students"]</p>
+                }
+                @if (_mode != ModeCopy)
+                {
+                    <MudSelect T="Guid?" Value="_templateId" ValueChanged="v => _templateId = v" Label="@L["NewYear_Template"]" data-testid="newyear-template">
+                        @foreach (var t in _templates)
+                        {
+                            <MudSelectItem T="Guid?" Value="@((Guid?)t.Id)">@CultureText.Pick(t.NameAr, t.NameEn)</MudSelectItem>
+                        }
+                    </MudSelect>
+                    <UnitPicker Value="_templateParent" ValueChanged="v => _templateParent = v" Label="@L["NewYear_Template_Parent"]" Required="true" TestId="newyear-template-parent" />
+                }
+            </div>
+        </SectionCard>
+    }
+    else if (_step == 2 && _preview is { } preview)
+    {
+        <SectionCard Title="@L["NewYear_Step_Review"]" TestId="newyear-review">
+            <ul class="lms-members" data-testid="newyear-counts">
+                <li class="lms-member"><span class="lms-member-name">@L["NewYear_Count_Classes"]</span><span>@preview.Classes</span></li>
+                <li class="lms-member"><span class="lms-member-name">@L["NewYear_Count_ClassCourses"]</span><span>@preview.ClassCourses</span></li>
+                <li class="lms-member"><span class="lms-member-name">@L["NewYear_Count_Periods"]</span><span>@preview.Periods</span></li>
+                <li class="lms-member"><span class="lms-member-name">@L["NewYear_Count_Units"]</span><span>@preview.UnitsFromTemplate</span></li>
+            </ul>
+            @if (preview.Skipped.Count > 0)
+            {
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" Class="mt-3" data-testid="newyear-skipped">
+                    <p class="mb-1">@L["NewYear_Skipped"]</p>
+                    <ul class="mb-0">@foreach (var s in preview.Skipped) { <li>@string.Format(L["NewYear_Skipped_Item"].Value, s.Count, s.Kind, s.Reason)</li> }</ul>
+                </MudAlert>
+            }
+            @if (preview.Blocking.Count > 0)
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Dense="true" Class="mt-3" data-testid="newyear-blocking">@L["NewYear_Blocking"]</MudAlert>
+            }
+        </SectionCard>
+    }
+    else if (_step == 3 && _run is not null)
+    {
+        <SectionCard Title="@L["NewYear_Step_Create"]" TestId="newyear-create-card">
+            <JobProgressPanel Poll="PollAsync" Interval="PollEvery" AnnounceEvery="AnnounceEvery" TestId="newyear-progress" OnFinished="OnFinishedAsync">
+                <Result Context="done">
+                    <p data-testid="newyear-result">@L[done.Failed ? "NewYear_Failed" : "NewYear_Done"]</p>
+                    @if (!done.Failed)
+                    {
+                        <div class="lms-dialog-actions">
+                            <MudButton Variant="Variant.Text" Href="academic-years" data-testid="newyear-open-years">@L["NewYear_Open_Years"]</MudButton>
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="promotion" data-testid="newyear-start-promotion">@L["NewYear_Start_Promotion"]</MudButton>
+                        </div>
+                    }
+                </Result>
+            </JobProgressPanel>
+        </SectionCard>
+    }
+
+    @if (_step < 3)
+    {
+        <div class="lms-dialog-actions mt-3">
+            @if (_step > 0)
+            {
+                <MudButton Variant="Variant.Text" OnClick="BackAsync" data-testid="newyear-back">@L["NewYear_Back"]</MudButton>
+            }
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_busy || !CanNext" OnClick="NextAsync" data-testid="newyear-next">@L[_step == 2 ? "NewYear_Create" : "NewYear_Next"]</MudButton>
+        </div>
+    }
+}
+
+@code {
+    private const string ModeCopy = "copy", ModeTemplate = "template", ModeBoth = "both";
+    private static readonly string[] StepKeys = ["NewYear_Step_Dates", "NewYear_Step_Structure", "NewYear_Step_Review", "NewYear_Step_Create"];
+
+    [Parameter] public Guid YearId { get; set; }
+    [Parameter] public TimeSpan PollEvery { get; set; } = TimeSpan.FromSeconds(2);
+    [Parameter] public TimeSpan AnnounceEvery { get; set; } = TimeSpan.FromSeconds(10);
+
+    private AcademicYearDto? _from;
+    private IReadOnlyList<OrgTemplateSummaryDto> _templates = [];
+    private NewYearRunDto? _run;
+    private OpenNextYearPreviewDto? _preview;
+    private string _nameAr = "", _nameEn = "", _mode = ModeCopy;
+    private string? _error;
+    private DateTime? _start, _end;
+    private readonly HashSet<string> _parts = [YearCopyParts.Classes, YearCopyParts.ClassCourses];
+    private Guid? _templateId, _templateParent;
+    private int _step;
+    private bool _loading = true, _busy;
+
+    private bool CanNext => _step switch
+    {
+        0 => !string.IsNullOrWhiteSpace(_nameAr) && !string.IsNullOrWhiteSpace(_nameEn) && _start is not null && _end is not null,
+        1 => (_mode == ModeTemplate || _parts.Count > 0) && (_mode == ModeCopy || _templateId is not null && _templateParent is not null),
+        2 => _preview is { Blocking.Count: 0 },
+        _ => false,
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        PermState.Changed += OnPermissionsChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        var (context, _) = await ApiCalls.RunAsync(() => Years.GetEffectiveAsync(null), Navigation);
+        _from = context?.Years.FirstOrDefault(y => y.Id == YearId);
+        var (templates, _) = await ApiCalls.RunAsync(() => Templates.ListAsync(), Navigation);
+        _templates = templates ?? [];
+        if (_from is not null) Suggest(_from);
+        _loading = false;
+    }
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    /// <summary>The next year's name and dates, one year on; the person changes what is wrong.</summary>
+    private void Suggest(AcademicYearDto from)
+    {
+        _nameEn = NextName(from.NameEn);
+        _nameAr = NextName(from.NameAr);
+        _start = from.StartDate.AddYears(1).ToDateTime(TimeOnly.MinValue);
+        _end = from.EndDate.AddYears(1).ToDateTime(TimeOnly.MinValue);
+    }
+
+    /// <summary>"2026/2027" becomes "2027/2028" (Latin or Arabic-Indic digits); any other name stays for the person to edit.</summary>
+    public static string NextName(string name) =>
+        System.Text.RegularExpressions.Regex.Replace(name, @"[0-9٠-٩]{4}", m =>
+        {
+            var arabic = m.Value[0] >= '٠';
+            var digits = new string([.. m.Value.Select(c => arabic ? (char)(c - '٠' + '0') : c)]);
+            var next = (int.Parse(digits, System.Globalization.CultureInfo.InvariantCulture) + 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
+            return arabic ? new string([.. next.Select(c => (char)(c - '0' + '٠'))]) : next;
+        });
+
+    private void OnStartChanged(DateTime? start)
+    {
+        if (_start is { } old && start is { } now && _end is { } end) _end = end + (now - old); // the end moves with the start; both stay editable
+        _start = start;
+    }
+
+    private string Shift(DateOnly date) =>
+        (_start is { } s && _from is { } f ? date.AddDays((DateOnly.FromDateTime(s).DayNumber - f.StartDate.DayNumber)) : date).ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+
+    private void TogglePart(string part, bool on) { if (on) _parts.Add(part); else _parts.Remove(part); }
+
+    private OpenNextYearRequest Request() => new(_nameAr.Trim(), _nameEn.Trim(), DateOnly.FromDateTime(_start!.Value), DateOnly.FromDateTime(_end!.Value),
+        _mode == ModeTemplate ? null : YearId, _mode == ModeTemplate ? [] : [.. YearCopyParts.All.Where(_parts.Contains)], [], _mode == ModeCopy ? null : _templateId, _mode == ModeCopy ? null : _templateParent);
+
+    private void BackAsync()
+    {
+        _error = null;
+        _preview = null;
+        _step = Math.Max(0, _step - 1);
+    }
+
+    private async Task NextAsync()
+    {
+        _error = null;
+        if (_step == 0)
+        {
+            if (_end < _start) { _error = L["Years_DateOrder"]; return; }
+            _step = 1;
+        }
+        else if (_step == 1) await PreviewAsync();
+        else await CreateAsync();
+    }
+
+    /// <summary>Counts and skipped items, nothing written. A date problem sends the person back to the dates; a missing choice stays on this step.</summary>
+    private async Task PreviewAsync()
+    {
+        _busy = true;
+        OpenNextYearPreviewDto? preview = null;
+        string? code = null;
+        var ok = await ApiCalls.RunAsync(async () =>
+        {
+            try { preview = await NewYear.PreviewAsync(YearId, Request()); }
+            catch (ApiProblemException ex) { code = ex.Code; throw; }
+        }, Navigation, L, e => _error = e);
+        _busy = false;
+        if (ok && preview is not null) { _preview = preview; _step = 2; }
+        else if (code is ProblemCodes.year_overlap or ProblemCodes.validation_failed) _step = 0;
+    }
+
+    private async Task CreateAsync()
+    {
+        _busy = true;
+        NewYearRunDto? run = null;
+        var ok = await ApiCalls.RunAsync(async () => run = await NewYear.StartAsync(YearId, Request()), Navigation, L, e => _error = e);
+        _busy = false;
+        if (ok && run is not null) { _run = run; _step = 3; }
+    }
+
+    private async Task<JobSnapshot> PollAsync()
+    {
+        var run = await NewYear.GetRunAsync(YearId, _run!.Id);
+        return new JobSnapshot(run.Processed, run.Total, run.State != NewYearRunStates.Running, run.State == NewYearRunStates.Failed);
+    }
+
+    private Task OnFinishedAsync(JobSnapshot snapshot) => Task.CompletedTask;
+
+    public void Dispose() => PermState.Changed -= OnPermissionsChanged;
+}
