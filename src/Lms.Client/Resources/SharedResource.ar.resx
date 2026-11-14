@@ -1891,4 +1891,39 @@
   <data name="Job_Failed" xml:space="preserve"><value>لم تكتمل العملية. راجع النتيجة أدناه.</value></data>
   <data name="Job_PollFailed" xml:space="preserve"><value>تعذرت قراءة التقدم الآن. ستتم المحاولة مرة أخرى.</value></data>
   <data name="Confirm_TypeToConfirm" xml:space="preserve"><value>اكتب {0} للتأكيد</value></data>
+  <data name="NewYear_Open" xml:space="preserve"><value>فتح العام التالي</value></data>
+  <data name="NewYear_Title" xml:space="preserve"><value>فتح العام التالي</value></data>
+  <data name="NewYear_Subtitle" xml:space="preserve"><value>أنشئ العام الدراسي التالي من العام الحالي أو من قالب.</value></data>
+  <data name="NewYear_Steps" xml:space="preserve"><value>الخطوات</value></data>
+  <data name="NewYear_Step_Dates" xml:space="preserve"><value>التواريخ</value></data>
+  <data name="NewYear_Step_Structure" xml:space="preserve"><value>ما سيتم جلبه</value></data>
+  <data name="NewYear_Step_Review" xml:space="preserve"><value>المراجعة</value></data>
+  <data name="NewYear_Step_Create" xml:space="preserve"><value>الإنشاء</value></data>
+  <data name="NewYear_From" xml:space="preserve"><value>البداية من {0}.</value></data>
+  <data name="NewYear_Terms_Shifted" xml:space="preserve"><value>تُنسخ الفصول الدراسية مع نقل تواريخها إلى العام الجديد.</value></data>
+  <data name="NewYear_Mode_Copy" xml:space="preserve"><value>نسخ هيكل الفصول من هذا العام</value></data>
+  <data name="NewYear_Mode_Template" xml:space="preserve"><value>تطبيق قالب</value></data>
+  <data name="NewYear_Mode_Both" xml:space="preserve"><value>النسخ وتطبيق قالب</value></data>
+  <data name="NewYear_Parts" xml:space="preserve"><value>ما سيتم نسخه</value></data>
+  <data name="NewYear_Part_Classes" xml:space="preserve"><value>الفصول</value></data>
+  <data name="NewYear_Part_ClassCourses" xml:space="preserve"><value>مقررات الفصول</value></data>
+  <data name="NewYear_Part_Blueprints" xml:space="preserve"><value>نماذج المقررات</value></data>
+  <data name="NewYear_Part_TimetablePeriods" xml:space="preserve"><value>حصص الجدول</value></data>
+  <data name="NewYear_Never_Students" xml:space="preserve"><value>لا يُنسخ الطلاب أبدا. وينتقلون إلى العام الجديد من خلال الترقية.</value></data>
+  <data name="NewYear_Template" xml:space="preserve"><value>القالب</value></data>
+  <data name="NewYear_Template_Parent" xml:space="preserve"><value>إنشاؤه تحت</value></data>
+  <data name="NewYear_Count_Classes" xml:space="preserve"><value>الفصول التي ستُنشأ</value></data>
+  <data name="NewYear_Count_ClassCourses" xml:space="preserve"><value>مقررات الفصول التي ستُنشأ</value></data>
+  <data name="NewYear_Count_Periods" xml:space="preserve"><value>حصص الجدول التي ستُنشأ</value></data>
+  <data name="NewYear_Count_Units" xml:space="preserve"><value>وحدات من القالب</value></data>
+  <data name="NewYear_Skipped" xml:space="preserve"><value>تم استثناء بعض العناصر:</value></data>
+  <data name="NewYear_Skipped_Item" xml:space="preserve"><value>{0} {1}: {2}</value></data>
+  <data name="NewYear_Blocking" xml:space="preserve"><value>عالج المشكلات قبل إنشاء العام.</value></data>
+  <data name="NewYear_Back" xml:space="preserve"><value>رجوع</value></data>
+  <data name="NewYear_Next" xml:space="preserve"><value>التالي</value></data>
+  <data name="NewYear_Create" xml:space="preserve"><value>إنشاء العام</value></data>
+  <data name="NewYear_Done" xml:space="preserve"><value>تم إنشاء العام التالي بحالة مخطط. يمكنك تفعيله من قائمة الأعوام.</value></data>
+  <data name="NewYear_Failed" xml:space="preserve"><value>تعذر إنشاء العام بالكامل. لم يتم تفعيل أي شيء.</value></data>
+  <data name="NewYear_Open_Years" xml:space="preserve"><value>الانتقال إلى الأعوام</value></data>
+  <data name="NewYear_Start_Promotion" xml:space="preserve"><value>بدء الترقية</value></data>
 </root>

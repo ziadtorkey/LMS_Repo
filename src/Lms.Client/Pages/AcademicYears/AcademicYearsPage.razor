@@ -104,6 +104,13 @@ else
                                 @y.StartDate.ToString("yyyy-MM-dd") – @y.EndDate.ToString("yyyy-MM-dd")
                             </span>
                         </div>
+                        @if (!y.IsInherited && y.Status != AcademicYearStatuses.Planned && Perms.Has(Permissions.AcademicYears.Create))
+                        {
+                            <div class="lms-row-actions">
+                                <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.EventRepeat" Href="@($"academic-years/{y.Id}/open-next")"
+                                           data-testid="@($"year-open-next-{y.Id}")">@L["NewYear_Open"]</MudButton>
+                            </div>
+                        }
                         @if (editable)
                         {
                             <div class="lms-row-actions">

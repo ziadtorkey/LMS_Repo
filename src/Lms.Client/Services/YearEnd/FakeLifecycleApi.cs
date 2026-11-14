@@ -134,6 +134,9 @@ public sealed class FakeNewYearApi : INewYearApi
 
     public bool Slow { get; set; }
 
+    /// <summary>The id of the run started last (a test advances a slow one by it).</summary>
+    public Guid? LastRunId { get; private set; }
+
     private OpenNextYearPreviewDto Preview(OpenNextYearRequest r)
     {
         if (r.CopyFromYearId is null && r.TemplateId is null || r.CopyFromYearId is not null && r.CopyParts.Count == 0 && r.TemplateId is null)
@@ -160,6 +163,7 @@ public sealed class FakeNewYearApi : INewYearApi
         var total = preview.Classes + preview.ClassCourses + preview.Periods + preview.UnitsFromTemplate;
         var run = new NewYearRunDto(Guid.NewGuid(), null, NewYearRunStates.Running, total, 0, preview, Now());
         _runs[run.Id] = run;
+        LastRunId = run.Id;
         if (!Slow) Advance(run.Id, total);
         return Task.FromResult(_runs[run.Id]);
     }

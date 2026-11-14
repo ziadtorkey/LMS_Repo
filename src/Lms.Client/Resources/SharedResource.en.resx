@@ -1891,4 +1891,39 @@
   <data name="Job_Failed" xml:space="preserve"><value>The job did not finish. Check the result below.</value></data>
   <data name="Job_PollFailed" xml:space="preserve"><value>Could not read the progress just now. Trying again.</value></data>
   <data name="Confirm_TypeToConfirm" xml:space="preserve"><value>Type {0} to confirm</value></data>
+  <data name="NewYear_Open" xml:space="preserve"><value>Open next year</value></data>
+  <data name="NewYear_Title" xml:space="preserve"><value>Open the next year</value></data>
+  <data name="NewYear_Subtitle" xml:space="preserve"><value>Create the next academic year from the one you have, or from a template.</value></data>
+  <data name="NewYear_Steps" xml:space="preserve"><value>Steps</value></data>
+  <data name="NewYear_Step_Dates" xml:space="preserve"><value>Dates</value></data>
+  <data name="NewYear_Step_Structure" xml:space="preserve"><value>What to bring</value></data>
+  <data name="NewYear_Step_Review" xml:space="preserve"><value>Review</value></data>
+  <data name="NewYear_Step_Create" xml:space="preserve"><value>Create</value></data>
+  <data name="NewYear_From" xml:space="preserve"><value>Starting from {0}.</value></data>
+  <data name="NewYear_Terms_Shifted" xml:space="preserve"><value>The terms are copied with their dates moved to the new year.</value></data>
+  <data name="NewYear_Mode_Copy" xml:space="preserve"><value>Copy the class structure of this year</value></data>
+  <data name="NewYear_Mode_Template" xml:space="preserve"><value>Apply a template</value></data>
+  <data name="NewYear_Mode_Both" xml:space="preserve"><value>Copy and apply a template</value></data>
+  <data name="NewYear_Parts" xml:space="preserve"><value>What to copy</value></data>
+  <data name="NewYear_Part_Classes" xml:space="preserve"><value>Classes</value></data>
+  <data name="NewYear_Part_ClassCourses" xml:space="preserve"><value>Class courses</value></data>
+  <data name="NewYear_Part_Blueprints" xml:space="preserve"><value>Course blueprints</value></data>
+  <data name="NewYear_Part_TimetablePeriods" xml:space="preserve"><value>Timetable periods</value></data>
+  <data name="NewYear_Never_Students" xml:space="preserve"><value>Students are never copied. They move to the new year through the promotion.</value></data>
+  <data name="NewYear_Template" xml:space="preserve"><value>Template</value></data>
+  <data name="NewYear_Template_Parent" xml:space="preserve"><value>Create it under</value></data>
+  <data name="NewYear_Count_Classes" xml:space="preserve"><value>Classes to create</value></data>
+  <data name="NewYear_Count_ClassCourses" xml:space="preserve"><value>Class courses to create</value></data>
+  <data name="NewYear_Count_Periods" xml:space="preserve"><value>Timetable periods to create</value></data>
+  <data name="NewYear_Count_Units" xml:space="preserve"><value>Units from the template</value></data>
+  <data name="NewYear_Skipped" xml:space="preserve"><value>Some items are left out:</value></data>
+  <data name="NewYear_Skipped_Item" xml:space="preserve"><value>{0} {1}: {2}</value></data>
+  <data name="NewYear_Blocking" xml:space="preserve"><value>Fix the problems before the year can be created.</value></data>
+  <data name="NewYear_Back" xml:space="preserve"><value>Back</value></data>
+  <data name="NewYear_Next" xml:space="preserve"><value>Next</value></data>
+  <data name="NewYear_Create" xml:space="preserve"><value>Create the year</value></data>
+  <data name="NewYear_Done" xml:space="preserve"><value>The next year was created as planned. You can activate it from the list of years.</value></data>
+  <data name="NewYear_Failed" xml:space="preserve"><value>The year could not be created completely. Nothing was activated.</value></data>
+  <data name="NewYear_Open_Years" xml:space="preserve"><value>Go to the years</value></data>
+  <data name="NewYear_Start_Promotion" xml:space="preserve"><value>Start the promotion</value></data>
 </root>
