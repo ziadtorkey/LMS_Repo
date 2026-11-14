@@ -1,0 +1,74 @@
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.YearEnd
+@using Lms.Shared.Classes
+@using Lms.Shared.YearEnd
+@inject ILifecycleApi Api
+@inject IClassesApi Classes
+@inject NavigationManager Navigation
+@inject TimeProvider Clock
+
+@* Re-admit a student (FR-STU-08, D25): pick a class with room, the date and a reason. The student code is kept, sign-in is restored and the guardian links return.
+   Only classes that are active and have room are offered; the server still answers 409 readmit_class_full or readmit_year_closed. *@
+<MudDialog Class="lms-dialog-fs">
+    <DialogContent>
+        <div class="lms-form" data-testid="readmit-dialog">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-3" data-testid="readmit-error">@_error</MudAlert>
+            }
+            <p data-testid="readmit-effect">@string.Format(L["Lifecycle_ReadmitEffect"].Value, Name)</p>
+            <MudSelect T="Guid?" @bind-Value="_classId" Label="@L["Lifecycle_Class"]" Variant="Variant.Outlined" Margin="Margin.Dense" Required="true" HelperText="@L["Lifecycle_ClassHelp"]"
+                       data-testid="readmit-class">
+                @foreach (var c in _classes)
+                {
+                    <MudSelectItem T="Guid?" Value="@c.Id"><bdi>@CultureText.Pick(c.NameAr, c.NameEn)</bdi> · <bdi>@CultureText.Pick(c.YearNameAr, c.YearNameEn)</bdi></MudSelectItem>
+                }
+            </MudSelect>
+            @if (_loaded && _classes.Count == 0)
+            {
+                <p class="lms-muted" data-testid="readmit-no-class">@L["Lifecycle_NoClass"]</p>
+            }
+            <MudDatePicker Date="_date" DateChanged="d => _date = d" Label="@L["Lifecycle_EffectiveDate"]" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-2" Editable="true" Required="true"
+                           data-testid="readmit-date" />
+            <MudTextField T="string" @bind-Value="_reason" Label="@L["Lifecycle_ReadmitReason"]" Lines="2" MaxLength="LifecycleLimits.NoteMaxLength" Immediate="true" Variant="Variant.Outlined" Class="mt-2"
+                          data-testid="readmit-reason" />
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" OnClick="() => MudDialog.Cancel()" data-testid="readmit-cancel">@L["Common_Cancel"]</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(_busy || _classId is null || _date is null)" OnClick="SubmitAsync" data-testid="readmit-confirm">@L["Lifecycle_Readmit"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter, EditorRequired] public Guid StudentId { get; set; }
+    [Parameter, EditorRequired] public string Name { get; set; } = "";
+
+    /// <summary>Where the student belonged: the classes of the unit are listed from there (null = the caller's unit).</summary>
+    [Parameter] public Guid? UnitId { get; set; }
+
+    private IReadOnlyList<ClassSummaryDto> _classes = [];
+    private Guid? _classId;
+    private DateTime? _date;
+    private string? _reason, _error;
+    private bool _busy, _loaded;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _date = Clock.GetLocalNow().DateTime.Date;
+        var (page, _) = await ApiCalls.RunAsync(() => Classes.ListAsync(new ClassQuery(UnitId, true, null, ClassStatuses.Active, null, null, 1, 200)), Navigation);
+        _classes = [.. (page?.Items ?? []).Where(c => !c.IsReadOnly && (c.Capacity is null || c.StudentCount < c.Capacity))];
+        _loaded = true;
+    }
+
+    private async Task SubmitAsync()
+    {
+        if (_classId is null || _date is null || _busy) return;
+        _busy = true; _error = null;
+        var reason = string.IsNullOrWhiteSpace(_reason) ? null : _reason.Trim();
+        var ok = await ApiCalls.RunAsync(() => Api.ReadmitAsync(StudentId, new ReadmitStudentRequest(_classId.Value, DateOnly.FromDateTime(_date.Value), reason)), Navigation, L, e => _error = e);
+        _busy = false;
+        if (ok) MudDialog.Close(DialogResult.Ok(true));
+    }
+}

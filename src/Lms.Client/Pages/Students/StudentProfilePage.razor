@@ -55,6 +55,20 @@ else
                                StartIcon="@(s.Status == PersonStatuses.Active ? Icons.Material.Rounded.PersonOff : Icons.Material.Rounded.HowToReg)"
                                data-testid="action-status">@(s.Status == PersonStatuses.Active ? L["Staff_Deactivate"] : L["Staff_Reactivate"])</MudButton>
                 }
+                @if ((s.Status == PersonStatuses.Active && PermState.Has(Permissions.Students.Withdraw)) || (s.Status != PersonStatuses.Active && PermState.Has(Permissions.Students.Readmit)))
+                {
+                    <MudMenu Label="@L["Lifecycle_Record"]" Variant="Variant.Outlined" EndIcon="@Icons.Material.Rounded.ArrowDropDown" AriaLabel="@L["Lifecycle_Record"]" data-testid="student-record-menu">
+                        @if (s.Status == PersonStatuses.Active)
+                        {
+                            <MudMenuItem OnClick="WithdrawAsync" data-testid="withdraw-open">@L["Lifecycle_Withdraw"]</MudMenuItem>
+                            <MudMenuItem OnClick="GraduateAsync" data-testid="graduate-open">@L["Lifecycle_Graduate"]</MudMenuItem>
+                        }
+                        else
+                        {
+                            <MudMenuItem OnClick="ReadmitAsync" data-testid="readmit-open">@L["Lifecycle_Readmit"]</MudMenuItem>
+                        }
+                    </MudMenu>
+                }
                 @if (PermState.Has(Permissions.Students.Delete))
                 {
                     <MudButton Variant="Variant.Text" Color="Color.Error" StartIcon="@Icons.Material.Rounded.DeleteOutline" OnClick="DeleteAsync"
@@ -167,6 +181,27 @@ else
         if (!ok) return;
         Snackbar.Add(done, Severity.Success);
         await LoadAsync();
+    }
+
+    private async Task WithdrawAsync()
+    {
+        var dialog = await Dialogs.ShowAsync<WithdrawDialog>(L["Lifecycle_Withdraw"],
+            new DialogParameters<WithdrawDialog> { { x => x.StudentId, Id }, { x => x.Name, DisplayName } }, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        if (await dialog.Result is { Canceled: false }) { Snackbar.Add(string.Format(L["Lifecycle_Withdrawn"].Value, DisplayName), Severity.Success); await LoadAsync(); }
+    }
+
+    private async Task GraduateAsync()
+    {
+        var dialog = await Dialogs.ShowAsync<GraduateDialog>(L["Lifecycle_Graduate"],
+            new DialogParameters<GraduateDialog> { { x => x.StudentId, Id }, { x => x.Name, DisplayName } }, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        if (await dialog.Result is { Canceled: false }) { Snackbar.Add(string.Format(L["Lifecycle_Graduated"].Value, DisplayName), Severity.Success); await LoadAsync(); }
+    }
+
+    private async Task ReadmitAsync()
+    {
+        var dialog = await Dialogs.ShowAsync<ReadmitDialog>(L["Lifecycle_Readmit"],
+            new DialogParameters<ReadmitDialog> { { x => x.StudentId, Id }, { x => x.Name, DisplayName } }, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        if (await dialog.Result is { Canceled: false }) { Snackbar.Add(string.Format(L["Lifecycle_Readmitted"].Value, DisplayName), Severity.Success); await LoadAsync(); }
     }
 
     private async Task EditAsync()

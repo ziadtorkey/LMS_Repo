@@ -1941,4 +1941,37 @@
   <data name="GradeChange_Send" xml:space="preserve"><value>إرسال الطلب</value></data>
   <data name="GradeChange_Locked" xml:space="preserve"><value>هذه السنة مغلقة. لا تتغير الدرجة إلا بموافقة مدير.</value></data>
   <data name="GradeChange_Request" xml:space="preserve"><value>طلب تعديل</value></data>
+  <data name="Nav_StudentArchive" xml:space="preserve"><value>أرشيف الطلاب</value></data>
+  <data name="Lifecycle_Record" xml:space="preserve"><value>سجل الطالب</value></data>
+  <data name="Lifecycle_Withdraw" xml:space="preserve"><value>سحب الملف</value></data>
+  <data name="Lifecycle_Graduate" xml:space="preserve"><value>تخريج</value></data>
+  <data name="Lifecycle_Readmit" xml:space="preserve"><value>إعادة قبول</value></data>
+  <data name="Lifecycle_Withdrawn" xml:space="preserve"><value>تم سحب ملف {0}.</value></data>
+  <data name="Lifecycle_Graduated" xml:space="preserve"><value>تم تخريج {0}.</value></data>
+  <data name="Lifecycle_Readmitted" xml:space="preserve"><value>أُعيد قبول {0}.</value></data>
+  <data name="Lifecycle_WithdrawEffect" xml:space="preserve"><value>سحب ملف {0} يسجّل خروجه ويمنع دخوله ويزيله من القوائم النشطة وقوائم الفصول. يبقى سجله ودرجاته مقروءة للموظفين.</value></data>
+  <data name="Lifecycle_GraduateEffect" xml:space="preserve"><value>تخريج {0} له نفس أثر السحب: يتوقف الدخول ويغادر القوائم النشطة، ويبقى السجل مقروءا.</value></data>
+  <data name="Lifecycle_ReadmitEffect" xml:space="preserve"><value>إعادة قبول {0} تُبقي رقمه الدراسي وتعيد الدخول وروابط أولياء الأمور.</value></data>
+  <data name="Lifecycle_Reason" xml:space="preserve"><value>السبب</value></data>
+  <data name="Lifecycle_ReasonOther" xml:space="preserve"><value>أخرى</value></data>
+  <data name="Lifecycle_Note" xml:space="preserve"><value>ملاحظة</value></data>
+  <data name="Lifecycle_NoteHelp" xml:space="preserve"><value>مطلوبة عند اختيار أخرى. يراها الموظفون فقط.</value></data>
+  <data name="Lifecycle_EffectiveDate" xml:space="preserve"><value>تاريخ السريان</value></data>
+  <data name="Lifecycle_GraduationDate" xml:space="preserve"><value>تاريخ التخرج</value></data>
+  <data name="Lifecycle_FutureHint" xml:space="preserve"><value>يتوقف الدخول في {0}.</value></data>
+  <data name="Lifecycle_Class" xml:space="preserve"><value>الفصل</value></data>
+  <data name="Lifecycle_ClassHelp" xml:space="preserve"><value>تُعرض الفصول التي بها مقاعد فقط.</value></data>
+  <data name="Lifecycle_NoClass" xml:space="preserve"><value>لا يوجد فصل متاح به مقاعد الآن.</value></data>
+  <data name="Lifecycle_ReadmitReason" xml:space="preserve"><value>السبب (اختياري)</value></data>
+  <data name="Archive_Title" xml:space="preserve"><value>أرشيف الطلاب</value></data>
+  <data name="Archive_Subtitle" xml:space="preserve"><value>الطلاب الذين غادروا: المسحوبة ملفاتهم والخريجون والمنقولون. للقراءة فقط.</value></data>
+  <data name="Archive_ExitKind" xml:space="preserve"><value>سبب المغادرة</value></data>
+  <data name="Archive_Exit_Withdrawn" xml:space="preserve"><value>سُحب ملفه</value></data>
+  <data name="Archive_Exit_Graduated" xml:space="preserve"><value>تخرج</value></data>
+  <data name="Archive_Exit_TransferredOut" xml:space="preserve"><value>منقول</value></data>
+  <data name="Archive_Date" xml:space="preserve"><value>التاريخ</value></data>
+  <data name="Archive_LastClass" xml:space="preserve"><value>آخر فصل</value></data>
+  <data name="Archive_Reason" xml:space="preserve"><value>السبب</value></data>
+  <data name="Archive_EmptyTitle" xml:space="preserve"><value>الأرشيف فارغ</value></data>
+  <data name="Archive_EmptyText" xml:space="preserve"><value>يظهر هنا الطلاب الذين سُحبت ملفاتهم أو تخرجوا.</value></data>
 </root>

@@ -23,6 +23,7 @@ public static class NavCatalog
         new("Nav_Templates", "templates", Icons.Material.Rounded.ContentCopy, Permissions.Templates.View, Section: Structure),
         new("Nav_Staff", "staff", Icons.Material.Rounded.Badge, Permissions.Staff.View, Section: People),
         new("Nav_Students", "students", Icons.Material.Rounded.School, Permissions.Students.View, Section: People),
+        new("Nav_StudentArchive", "students/archive", Icons.Material.Rounded.Inventory2, Permissions.Students.ViewArchive, Section: People),
         new("Nav_Guardians", "guardians", Icons.Material.Rounded.FamilyRestroom, Permissions.Students.View, Section: People),
         new("Nav_MyChildren", "me/children", Icons.Material.Rounded.FamilyRestroom, Permissions.Students.ViewChildren, Section: People),
         new("Nav_ChangeRequests", "student-change-requests", Icons.Material.Rounded.RuleFolder, Permissions.Students.ApproveChanges, Section: People),
