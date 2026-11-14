@@ -12,7 +12,12 @@ public sealed class AnnouncementsModule : ILmsModule
         services.AddScoped<Lms.Infrastructure.Announcements.AudienceResolver>();
         services.AddScoped<Lms.Infrastructure.Announcements.AnnouncementService>();
         services.AddScoped<Lms.Infrastructure.Announcements.AnnouncementJobs>();
+        services.AddScoped<Lms.Infrastructure.Announcements.MyAnnouncementsQuery>();
     }
 
-    public void MapEndpoints(IEndpointRouteBuilder app) => AnnouncementEndpoints.Map(app);
+    public void MapEndpoints(IEndpointRouteBuilder app)
+    {
+        AnnouncementEndpoints.Map(app);
+        MyAnnouncementEndpoints.Map(app);
+    }
 }

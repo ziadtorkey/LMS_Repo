@@ -59,7 +59,7 @@ public sealed class Announcement : UnitOwnedEntity
         RoleFiltersCsv = string.Join(',', roleFilters.Distinct());
         PublishAtUtc = publishAtUtc;
         ExpiresAtUtc = expiresAtUtc;
-        IsPinned = pinned;
+        IsPinned = pinned || urgent; // an urgent announcement is always pinned
         Notify = notify;
         IsUrgent = urgent;
     }

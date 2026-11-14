@@ -27,7 +27,8 @@ public static class AnnouncementEndpoints
     }
 
     private static async Task<IResult> ListAsync(
-        Guid id, int? page, int? pageSize, HttpContext http, LmsDbContext db, ForumMapper mapper, CancellationToken ct)
+        Guid id, int? page, int? pageSize, HttpContext http, LmsDbContext db, ForumMapper mapper, Lms.Infrastructure.Announcements.MyAnnouncementsQuery mine,
+        CancellationToken ct)
     {
         var (p, size, invalid) = ForumSupport.Paging(page, pageSize);
         if (invalid is not null)
@@ -35,7 +36,7 @@ public static class AnnouncementEndpoints
             return invalid;
         }
 
-        var (_, problem) = await http.CheckClassCourseAsync(Permissions.Forums.View, id, ct);
+        var (classCourse, problem) = await http.CheckClassCourseAsync(Permissions.Forums.View, id, ct);
         if (problem is not null)
         {
             return problem;
@@ -43,9 +44,34 @@ public static class AnnouncementEndpoints
 
         var query = db.Set<CourseAnnouncement>().Where(a => a.ClassCourseId == id)
             .OrderByDescending(a => a.IsPinned).ThenByDescending(a => a.CreatedAt).ThenBy(a => a.Id);
-        var total = await query.CountAsync(ct);
-        var rows = await query.Skip((p - 1) * size).Take(size).ToListAsync(ct);
-        return Results.Ok(new PagedResult<CourseAnnouncementDto>(await mapper.AnnouncementsAsync(rows, ct), total, p, size));
+        var take = p * size;
+        var boardTotal = await query.CountAsync(ct);
+        var board = await mapper.AnnouncementsAsync(await query.Take(take).ToListAsync(ct), ct);
+
+        // M6 (Task 14, L15): the course page merges the board with the school-level announcements that reach this course, once each, marked by Source.
+        var (school, schoolTotal) = await mine.ForClassCourseAsync(id, classCourse!.ClassId, take, ct);
+        var merged = board.Concat(await SchoolAsync(school, id, db, ct))
+            .OrderByDescending(a => a.IsPinned).ThenByDescending(a => a.CreatedAtUtc).ThenBy(a => a.Id)
+            .Skip((p - 1) * size).Take(size).ToList();
+        return Results.Ok(new PagedResult<CourseAnnouncementDto>(merged, boardTotal + schoolTotal, p, size));
+    }
+
+    /// <summary>A comms announcement as a course-page entry: the title and body in the reader's language (Arabic, else English), <c>Source</c> School.</summary>
+    private static async Task<IReadOnlyList<CourseAnnouncementDto>> SchoolAsync(
+        IReadOnlyList<Lms.Domain.Announcements.Announcement> rows, Guid classCourseId, LmsDbContext db, CancellationToken ct)
+    {
+        var arabic = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "ar";
+        var ids = rows.Select(r => r.AuthorUserId).Distinct().ToList();
+        var names = (await db.Set<Lms.Domain.Identity.User>().AsNoTracking().Where(u => ids.Contains(u.Id)).Select(u => new { u.Id, u.DisplayNameAr, u.DisplayNameEn }).ToListAsync(ct))
+            .ToDictionary(u => u.Id, u => (u.DisplayNameAr, u.DisplayNameEn));
+        return [.. rows.Select(a =>
+        {
+            var (ar, en) = names.GetValueOrDefault(a.AuthorUserId, (string.Empty, string.Empty));
+            var body = arabic ? a.BodyAr ?? a.BodyEn : a.BodyEn ?? a.BodyAr;
+            return new CourseAnnouncementDto(
+                a.Id, classCourseId, arabic ? a.TitleAr : a.TitleEn, body ?? string.Empty, a.IsPinned, a.AuthorUserId, ar, en,
+                DateTime.SpecifyKind(a.PublishedAtUtc ?? a.CreatedAt, DateTimeKind.Utc), a.EditedAtUtc, Lms.Shared.Messaging.AnnouncementSources.School);
+        })];
     }
 
     private static async Task<IResult> CreateAsync(

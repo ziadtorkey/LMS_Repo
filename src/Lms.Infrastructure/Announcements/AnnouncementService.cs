@@ -1,5 +1,8 @@
 using Lms.Domain.Abstractions;
 using Lms.Domain.Announcements;
+using Lms.Domain.Notifications;
+using Lms.Shared.Notifications;
+using Microsoft.Extensions.Logging;
 using Lms.Infrastructure.Comms;
 using Lms.Infrastructure.Configuration;
 using Lms.Infrastructure.Jobs;
@@ -16,7 +19,8 @@ namespace Lms.Infrastructure.Announcements;
 /// a keyed job that moves when the schedule is edited and is cancelled on withdraw. Delivery to channels is Task 14 (the fan-out hooks in after the snapshot).
 /// </summary>
 public sealed class AnnouncementService(
-    LmsDbContext db, AudienceResolver resolver, IBackgroundJobs jobs, IClock clock, ISettingsResolver settings, CommsClientSettings comms)
+    LmsDbContext db, AudienceResolver resolver, IBackgroundJobs jobs, IClock clock, ISettingsResolver settings, CommsClientSettings comms,
+    INotificationPublisher publisher, ILogger<AnnouncementService> logger)
 {
     public static string PublishKey(Guid id) => $"announcement-publish:{id:N}";
 
@@ -50,7 +54,8 @@ public sealed class AnnouncementService(
     public async Task PublishAsync(Announcement announcement, CancellationToken ct)
     {
         var now = clock.UtcNow;
-        if (announcement.PublishAtUtc is { } at && at > now)
+        // An urgent announcement ignores its schedule: it goes out now.
+        if (!announcement.IsUrgent && announcement.PublishAtUtc is { } at && at > now)
         {
             announcement.Schedule(at);
             await db.SaveChangesAsync(ct);
@@ -70,9 +75,36 @@ public sealed class AnnouncementService(
             audience.Users.Select(u => new AnnouncementRecipient(announcement.OrganizationId, announcement.Id, u.Key, u.Value, now)));
         announcement.MarkPublished(now, audience.Count);
         await db.SaveChangesAsync(ct);
+        if (announcement.Notify)
+        {
+            await FanOutAsync(announcement, audience, ct);
+        }
+
         if (announcement.ExpiresAtUtc is { } expires)
         {
             jobs.Schedule<AnnouncementJobs>(ExpireKey(announcement.Id), new DateTimeOffset(DateTime.SpecifyKind(expires, DateTimeKind.Utc)), j => j.ExpireAsync(announcement.Id, null, CancellationToken.None));
+        }
+    }
+
+    /// <summary>
+    /// One <c>Announcements.Published</c> per batch of 500 recipients through the publisher, so preferences, quiet hours and caps apply as for any event
+    /// (urgent: email and push, no quiet hours, no caps). Title only, never the body. A failed notice never un-publishes the announcement; it is logged.
+    /// </summary>
+    private async Task FanOutAsync(Announcement announcement, Audience audience, CancellationToken ct)
+    {
+        var parameters = new Dictionary<string, string> { ["TitleAr"] = announcement.TitleAr, ["TitleEn"] = announcement.TitleEn };
+        foreach (var batch in audience.Users.Keys.Chunk(500))
+        {
+            try
+            {
+                await publisher.PublishAsync(
+                    new NotificationRequest(
+                        NotificationEvents.AnnouncementsPublished, announcement.OrganizationId, batch, parameters, "/announcements", Urgent: announcement.IsUrgent), ct);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                logger.LogError(ex, "Notifying a batch of announcement {AnnouncementId} failed", announcement.Id);
+            }
         }
     }
 

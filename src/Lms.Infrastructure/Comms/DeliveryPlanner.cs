@@ -39,7 +39,7 @@ public sealed class DeliveryPlanner(LmsDbContext db, CommsClientSettings setting
                 continue;
             }
 
-            var wanted = targets.Where(t => Wants(definition, saved, t.UserId, channel)).ToList();
+            var wanted = targets.Where(t => Wants(definition, saved, t.UserId, channel, urgent)).ToList();
             if (wanted.Count == 0)
             {
                 continue;
@@ -71,8 +71,13 @@ public sealed class DeliveryPlanner(LmsDbContext db, CommsClientSettings setting
     private static bool IsDefault(NotificationEventDefinition definition, string channel) => definition.DefaultChannels?.Contains(channel) == true;
 
     private static bool Wants(
-        NotificationEventDefinition definition, IReadOnlyDictionary<(Guid, string), bool> saved, Guid userId, string channel)
+        NotificationEventDefinition definition, IReadOnlyDictionary<(Guid, string), bool> saved, Guid userId, string channel, bool urgent)
     {
+        if (urgent)
+        {
+            return true; // an urgent announcement reaches people on email and push whatever they chose (the client's channel switch still applies)
+        }
+
         var catalog = IsDefault(definition, channel);
         if (definition.Mandatory)
         {
