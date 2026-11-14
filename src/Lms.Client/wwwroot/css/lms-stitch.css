@@ -150,3 +150,29 @@ html[data-theme="dark"] .mud-button-outlined { border-color: #334155; }
     flex: none; inline-size: 36px; block-size: 36px; border-radius: 10px; display: grid; place-items: center;
     color: var(--mud-palette-primary); background: color-mix(in srgb, var(--mud-palette-primary) 10%, transparent);
 }
+
+/* ---------- Shell details (issue 561) ---------- */
+.lms-brand.mud-drawer-header { border-bottom: 0; padding: 20px 20px 12px; }
+.lms-brand-mark { inline-size: 40px; block-size: 40px; border-radius: 10px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .15); }
+.lms-brand-text { display: flex; flex-direction: column; min-inline-size: 0; }
+.lms-brand-name.mud-typography { line-height: 1.25; }
+.lms-brand-sub.mud-typography { color: var(--mud-palette-text-secondary); line-height: 1.3; }
+.lms-drawer .mud-navmenu { padding: 4px 12px 16px; }
+.lms-nav-group + .lms-nav-group { margin-block-start: 4px; }
+.lms-nav-section { padding: 14px 12px 4px; }
+/* App bar controls as quiet pills (context and academic year), like the Stitch top bar. */
+.lms-appbar .lms-context-label.mud-button-root {
+    background: var(--lms-recessed); border-radius: var(--lms-radius-control); padding-inline: 12px; min-block-size: 36px;
+    max-inline-size: 42vw; font-weight: 500;
+}
+.lms-appbar .lms-context-label .mud-button-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
+.lms-appbar .lms-year-select .mud-input.mud-input-outlined { background: var(--lms-recessed); border-radius: 9999px; }
+.lms-appbar .lms-year-select .mud-input-outlined-border { border-radius: 9999px; border-color: transparent !important; }
+.lms-appbar-tools > .mud-tooltip-root:has(.lms-context-label) { min-inline-size: 0; flex: 0 1 auto; display: flex; }
+.lms-appbar .lms-context-label.mud-button-root { overflow: hidden; min-inline-size: 0; max-inline-size: 100%; }
+.lms-appbar .lms-year-selector, .lms-appbar-tools > :not(.mud-tooltip-root) { flex-shrink: 0; }
+@media (max-width: 599.98px) {
+    .lms-appbar .lms-appbar-tools { gap: 6px; }
+    .lms-appbar-tools > .mud-tooltip-root:has(.lms-context-label) { max-inline-size: 26vw; }
+    .lms-appbar .lms-context-label.mud-button-root { padding-inline: 8px; }
+}
