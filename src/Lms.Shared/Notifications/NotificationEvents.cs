@@ -3,14 +3,14 @@ using Lms.Shared.Authorization;
 namespace Lms.Shared.Notifications;
 
 /// <summary>Delivery channels (FR-NOT-01). M1 delivers InApp only; the others are stored preferences for M6.</summary>
+// D76: no SMS in v1; the channels are in-app, email and Web Push.
 public static class NotificationChannels
 {
     public const string InApp = "InApp";
     public const string Email = "Email";
-    public const string Sms = "Sms";
     public const string Push = "Push";
 
-    public static IReadOnlyList<string> All { get; } = [InApp, Email, Sms, Push];
+    public static IReadOnlyList<string> All { get; } = [InApp, Email, Push];
 }
 
 /// <summary>Where the default recipient roles of an event are looked up, relative to the event's unit.</summary>

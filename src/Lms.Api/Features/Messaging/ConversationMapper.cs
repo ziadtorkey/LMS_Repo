@@ -14,8 +14,12 @@ public sealed class ConversationMapper(LmsDbContext db, ReadStateService readSta
     {
         var participants = await ParticipantsAsync([access.Conversation.Id], ct);
         var c = access.Conversation;
+        var reason = c.IsLocked ? ConversationReadOnlyReasons.Locked
+            : c.IsReadOnly ? ConversationReadOnlyReasons.GroupStudentsReadOnly
+            : access.Me.HasLeft ? ConversationReadOnlyReasons.BlockedOrRule
+            : null; // the D69 policy (Task 11) refines the reason; until then these are the causes this kernel knows
         return new ConversationDto(c.Id, c.Kind, c.Title, participants[c.Id], c.IsLocked, IsMuted(access.Me), c.CreatedAtUtc,
-            IsReadOnly: c.IsReadOnly || access.Me.HasLeft, OwnerUserId: c.OwnerUserId, ClassCourseId: c.ClassCourseId);
+            IsReadOnly: c.IsReadOnly || access.Me.HasLeft, OwnerUserId: c.OwnerUserId, ClassCourseId: c.ClassCourseId, CanPost: reason is null, ReadOnlyReason: reason);
     }
 
     public async Task<IReadOnlyList<ConversationListItemDto>> ToListAsync(IReadOnlyList<ConversationParticipant> mine, CancellationToken ct)

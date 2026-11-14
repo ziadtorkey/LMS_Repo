@@ -70,14 +70,14 @@ public sealed class MessagingContractTests
         Assert.Equal(MessagingRuleModes.Deny, D(BuiltInRoles.Guardian, BuiltInRoles.OrgAdmin));
         Assert.Equal(MessagingRuleModes.Relationship, D(BuiltInRoles.Teacher, BuiltInRoles.Student)); // their own students
         Assert.Equal(MessagingRuleModes.Relationship, D(BuiltInRoles.Teacher, BuiltInRoles.Guardian));
-        Assert.Equal(MessagingRuleModes.Allow, D(BuiltInRoles.Teacher, BuiltInRoles.Teacher));
+        Assert.Equal(MessagingRuleModes.SameUnit, D(BuiltInRoles.Teacher, BuiltInRoles.Teacher));
         Assert.Equal(MessagingRuleModes.Relationship, D(BuiltInRoles.Counselor, BuiltInRoles.Student));
         Assert.Equal(MessagingRuleModes.Relationship, D(BuiltInRoles.Supervisor, BuiltInRoles.Guardian));
         // managers and Org Admins: no private one-to-one with a student (groups and announcements only)
         Assert.Equal(MessagingRuleModes.Deny, D(BuiltInRoles.Manager, BuiltInRoles.Student));
         Assert.Equal(MessagingRuleModes.Deny, D(BuiltInRoles.OrgAdmin, BuiltInRoles.Student));
-        Assert.Equal(MessagingRuleModes.Allow, D(BuiltInRoles.Manager, BuiltInRoles.Guardian));
-        Assert.Equal(MessagingRuleModes.Allow, D(BuiltInRoles.OrgAdmin, BuiltInRoles.Teacher));
+        Assert.Equal(MessagingRuleModes.SameUnit, D(BuiltInRoles.Manager, BuiltInRoles.Guardian));
+        Assert.Equal(MessagingRuleModes.SameUnit, D(BuiltInRoles.OrgAdmin, BuiltInRoles.Teacher));
         Assert.Equal(MessagingRuleModes.Deny, D("Custom", BuiltInRoles.Teacher)); // an unknown role is denied
     }
 
@@ -87,7 +87,7 @@ public sealed class MessagingContractTests
         var matrix = MessagingRuleDefaults.Matrix();
 
         Assert.Equal(49, matrix.Count);
-        Assert.DoesNotContain(matrix, c => c.Mode == MessagingRuleModes.SameUnit); // no default uses SameUnit
+        Assert.DoesNotContain(matrix, c => c.Mode == MessagingRuleModes.Allow); // no default is Anywhere: staff reach staff in the same unit
         Assert.Equal(49, matrix.Select(c => (c.FromRole, c.ToRole)).Distinct().Count());
         Assert.Empty(MessagingRuleDefaults.Loosened(matrix)); // the defaults themselves are valid
     }
@@ -114,6 +114,7 @@ public sealed class MessagingContractTests
         Assert.Single(MessagingRuleDefaults.Loosened([new(BuiltInRoles.Guardian, BuiltInRoles.OrgAdmin, MessagingRuleModes.Allow)]));
         // narrowing and restoring are accepted; an unknown role or mode is refused
         Assert.Empty(MessagingRuleDefaults.Loosened([new(BuiltInRoles.Teacher, BuiltInRoles.Teacher, MessagingRuleModes.Deny)]));
+        Assert.Single(MessagingRuleDefaults.Loosened([new(BuiltInRoles.Teacher, BuiltInRoles.Teacher, MessagingRuleModes.Allow)]));
         Assert.Empty(MessagingRuleDefaults.Loosened([new(BuiltInRoles.Teacher, BuiltInRoles.Student, MessagingRuleModes.Relationship)]));
         Assert.Single(MessagingRuleDefaults.Loosened([new("Hacker", BuiltInRoles.Teacher, MessagingRuleModes.Deny)]));
         Assert.Single(MessagingRuleDefaults.Loosened([new(BuiltInRoles.Teacher, BuiltInRoles.Teacher, "Maybe")]));
@@ -137,7 +138,7 @@ public sealed class MessagingContractTests
         Assert.Equal(["Organization", "Unit", "Level", "Class", "ClassCourse", "Group"], AnnouncementTargetKinds.All);
         Assert.Equal(["Draft", "Scheduled", "Published", "Withdrawn", "Expired"], AnnouncementStatuses.All);
         Assert.Equal(["Staff", "Students", "Guardians"], AnnouncementRoleFilters.All);
-        Assert.Equal(["Active", "NeedsSetup", "Blocked", "Bounced", "NotAllowed"], ChannelStates.All);
+        Assert.Equal(["Active", "NeedsSetup", "Blocked", "Bounced"], ChannelStates.All);
         Assert.Equal(["Pending", "Sending", "Sent", "Failed", "Skipped", "Expired"], DeliveryStatuses.All);
         Assert.Equal((15, 5, 10, 50, 2, 50, 200), (MessagingLimits.DeleteWindowMinutes, MessagingLimits.MaxAttachmentsPerMessage, MessagingLimits.MaxAttachmentMb,
             MessagingLimits.DefaultMaxGroupSize, MessagingLimits.SearchMinLength, MessagingLimits.SearchMaxResults, MessagingLimits.SearchWindow));
@@ -146,14 +147,14 @@ public sealed class MessagingContractTests
     [Fact]
     public void Settings_carry_the_d66_defaults_and_stay_client_level()
     {
-        Assert.Equal((true, false, false), (SettingKeys.CommsEmailEnabled.Default, SettingKeys.CommsSmsEnabled.Default, SettingKeys.CommsPushEnabled.Default));
-        Assert.Equal((5000, 500, 20000), (SettingKeys.CommsMaxEmailPerDay.Default, SettingKeys.CommsMaxSmsPerDay.Default, SettingKeys.CommsMaxPushPerDay.Default));
-        Assert.Equal((20, 5, 50), (SettingKeys.CommsMaxEmailPerUserPerDay.Default, SettingKeys.CommsMaxSmsPerUserPerDay.Default, SettingKeys.CommsMaxPushPerUserPerDay.Default));
+        Assert.Equal((true, false), (SettingKeys.CommsEmailEnabled.Default, SettingKeys.CommsPushEnabled.Default));
+        Assert.Equal((5000, 20000), (SettingKeys.CommsMaxEmailPerDay.Default, SettingKeys.CommsMaxPushPerDay.Default));
+        Assert.Equal((20, 50), (SettingKeys.CommsMaxEmailPerUserPerDay.Default, SettingKeys.CommsMaxPushPerUserPerDay.Default));
         Assert.Equal((false, "21:00", "07:00"), (SettingKeys.CommsQuietHoursEnabled.Default, SettingKeys.CommsQuietHoursStart.Default, SettingKeys.CommsQuietHoursEnd.Default));
         Assert.Equal((90, false, 50, 10), (SettingKeys.CommsDeliveryRetentionDays.Default, SettingKeys.MessagingReadReceipts.Default,
             SettingKeys.MessagingMaxGroupSize.Default, SettingKeys.AnnouncementsMaxPerAuthorPerDay.Default));
         var commsSettings = SettingCatalog.All.Where(d => d.Name.StartsWith("Comms.") || d.Name.StartsWith("Messaging.") || d.Name.StartsWith("Announcements.")).ToList();
-        Assert.Equal(18, commsSettings.Count);
+        Assert.Equal(16, commsSettings.Count);
         Assert.All(commsSettings, d => Assert.True(d.ClientLevelOnly, d.Name)); // only the Org Admin at the client root edits them
         Assert.All(SettingCatalog.All.Where(d => d.Kind == SettingValueKinds.Int), d => Assert.True(d.Min is not null && d.Max is not null, d.Name));
     }
@@ -205,24 +206,49 @@ public sealed class MessagingContractTests
         Assert.Equal(Id, Round(new CreateConversationRequest(ConversationKinds.Group, [Id, Id], "فصل", null, Id)).ClassCourseId);
         Assert.Equal([Id], Round(new AddParticipantsRequest([Id])).UserIds);
         Assert.False(new ConversationDto(Id, ConversationKinds.Direct, null, [], false, false, DateTime.UtcNow).IsReadOnly); // older shapes default to writable
-        Assert.Equal("group_read_only", ProblemCodes.group_read_only); // D74: students never post in a group
     }
 
     [Fact]
-    public void Sms_is_never_for_guardians_or_students_and_the_contract_says_so()
+    public void There_is_no_sms_in_v1_anywhere_in_the_contract()
     {
-        // D72 and D75: SMS only to adults about themselves; guardians get email and push, even for urgent announcements
-        Assert.Contains(ChannelStates.NotAllowed, ChannelStates.All);
-        Assert.Contains(PreferenceSources.Policy, PreferenceSources.All);
-        var cell = new EffectivePreferenceDto(NotificationEvents.AnnouncementsPublished, NotificationChannels.Sms, false, PreferenceSources.Policy, false);
-        Assert.False(Round(cell).Enabled);
-        Assert.Equal(PreferenceSources.Policy, Round(cell).Source);
-        Assert.Equal(ChannelStates.NotAllowed, Round(new ContactChannelDto(NotificationChannels.Sms, ChannelStates.NotAllowed, null, false)).State);
-        Assert.Equal("channel_not_allowed", ProblemCodes.channel_not_allowed);
-        // no built-in default channel list of the M6 events includes SMS
-        Assert.All(new[] { NotificationEvents.MessagesNewMessage, NotificationEvents.AnnouncementsPublished, NotificationEvents.MessagingWarning,
-                           NotificationEvents.MessagingRestricted, NotificationEvents.MessagingReportResolved, NotificationEvents.CommsCapReached },
-            k => Assert.DoesNotContain(NotificationChannels.Sms, NotificationEvents.Find(k)!.DefaultChannels ?? []));
+        // D76: the channels are in-app, email and push; no SMS setting, cap, DTO field or event default remains (this also settles D72 and D75)
+        Assert.Equal(["InApp", "Email", "Push"], NotificationChannels.All);
+        Assert.DoesNotContain(SettingCatalog.All, d => d.Name.Contains("Sms", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(typeof(CommsSettingsDto).GetProperties(), p => p.Name.Contains("Sms", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(NotificationEvents.All.SelectMany(e => e.DefaultChannels ?? []), c => c.Contains("Sms", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(typeof(ProblemCodes).GetFields().Select(f => f.Name), n => n.Contains("sms", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(typeof(NotificationChannels).GetFields().Select(f => f.Name), n => n == "Sms");
+    }
+
+    [Fact]
+    public void Groups_are_read_only_for_students_and_open_to_guardians_of_teacher_run_groups()
+    {
+        // D74 (students never post in a group) and D77 (guardians may post in teacher-run groups that include guardians) live in one code and the route docs
+        var text = File.ReadAllText(Path.Combine(RepoRoot(), "src", "Lms.Shared", "Routes.Messaging.cs"));
+
+        Assert.Contains("D74", text, StringComparison.Ordinal);
+        Assert.Contains("D77", text, StringComparison.Ordinal);
+        Assert.Contains("guardian", text, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void Announcements_carry_an_urgent_flag_and_a_capability_dto_and_urgent_means_no_sms()
+    {
+        var create = new CreateAnnouncementRequest(Id, "عاجل", "Urgent", "نص", null, [new AnnouncementTargetDto(AnnouncementTargetKinds.Organization, null, true)],
+            [AnnouncementRoleFilters.Guardians], null, null, true, true, null, true, IsUrgent: true);
+        var update = new UpdateAnnouncementRequest("عاجل", "Urgent", null, null, [], null, null, null, true, true, null, IsUrgent: true);
+
+        Assert.True(Round(create).IsUrgent);
+        Assert.True(Round(update).IsUrgent);
+        Assert.False(new MyAnnouncementDto(Id, "ع", "E", null, null, [], "م", "A", DateTime.UtcNow, false, false, null).IsUrgent); // older shapes default to not urgent
+        Assert.Equal((true, false, true), (Round(new AnnouncementCapabilitiesDto(true, false, true)).CanAuthorUnitAnnouncements,
+            Round(new AnnouncementCapabilitiesDto(true, false, true)).CanAuthorClassCourseAnnouncements, Round(new AnnouncementCapabilitiesDto(true, false, true)).CanMarkUrgent));
+        Assert.StartsWith("/api/", Routes.OrgAnnouncementCapabilities, StringComparison.Ordinal);
+        // D76: urgent is push and email, immediately; the doc says so and no SMS channel exists to fall back on
+        var text = File.ReadAllText(Path.Combine(RepoRoot(), "src", "Lms.Shared", "Messaging", "AnnouncementDtos.cs"));
+        Assert.Contains("IsUrgent", text, StringComparison.Ordinal);
+        Assert.Contains("push", text, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain(NotificationChannels.All, c => c.Equals("Sms", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -236,7 +262,7 @@ public sealed class MessagingContractTests
             [AnnouncementRoleFilters.Guardians], DateTime.UtcNow.AddDays(1), null, true, true, [Id], true);
         var report = new MessageReportDto(Id, Id, Id, ReportReasons.Harassment, "ملاحظة", ReportStatuses.Open, Id, Id, "س", "S", "أصل", [message], DateTime.UtcNow, null, null, null);
         var rules = new MessagingRulesDto(MessagingRuleDefaults.Matrix(), MessagingRuleDefaults.Matrix());
-        var settings = new CommsSettingsDto(true, false, false, 5000, 500, 20000, 20, 5, 50, false, "21:00", "07:00", 90, false, 30, 20, 50, 10);
+        var settings = new CommsSettingsDto(true, false, 5000, 20000, 20, 50, false, "21:00", "07:00", 90, false, 30, 20, 50, 10);
         var preference = new EffectivePreferenceDto(NotificationEvents.GradesPublished, NotificationChannels.Email, true, PreferenceSources.Default, false);
 
         Assert.Equal("مرحبا", Round(message).Body);
@@ -262,7 +288,7 @@ public sealed class MessagingContractTests
             Routes.MessageReportPattern, Routes.MyBlocks, Routes.MyBlockPattern, Routes.MessagingRecipients, Routes.MessagingRulesSummary, Routes.MessagingLimits,
             Routes.MyUnreadTotal, Routes.ModerationReports, Routes.ModerationReportPattern, Routes.ModerationReportResolvePattern, Routes.ModerationStats,
             Routes.OrgAnnouncements, Routes.OrgAnnouncementPattern, Routes.OrgAnnouncementPublishPattern, Routes.OrgAnnouncementWithdrawPattern,
-            Routes.OrgAnnouncementAudiencePreview, Routes.MyAnnouncements, Routes.MyAnnouncementReadPattern, Routes.MyPushSubscriptions, Routes.MyPushSubscriptionPattern,
+            Routes.OrgAnnouncementAudiencePreview, Routes.OrgAnnouncementCapabilities, Routes.MyAnnouncements, Routes.MyAnnouncementReadPattern, Routes.MyPushSubscriptions, Routes.MyPushSubscriptionPattern,
             Routes.MyEffectivePreferences, Routes.MyChannels, Routes.MyEmailTest, Routes.CommsMessagingRules, Routes.CommsProviderStatus, Routes.CommsSettings,
             Routes.EmailEventsWebhook, Routes.DevCommsOutbox,
         };
@@ -295,7 +321,7 @@ public sealed class MessagingContractTests
         var matches = Regex.Matches(text, @"((?:\s*///[^\n]*\n)+)\s*public const string (\w+) =");
         var routes = matches.Select(m => (Name: m.Groups[2].Value, Doc: m.Groups[1].Value)).ToList();
 
-        Assert.True(routes.Count >= 39, $"found {routes.Count} documented route constants");
+        Assert.True(routes.Count >= 40, $"found {routes.Count} documented route constants");
         Assert.All(routes, r => Assert.Matches(@"Messaging\.\w+|Announcements\.\w+|Comms\.\w+|authenticated|anonymous|Development only|participant", r.Doc));
         Assert.Equal(Regex.Matches(text, @"public const string \w+ =").Count, routes.Count);
     }

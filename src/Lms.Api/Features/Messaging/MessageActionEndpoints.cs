@@ -13,13 +13,11 @@ using Microsoft.EntityFrameworkCore;
 namespace Lms.Api.Features.Messaging;
 
 /// <summary>
-/// Delete for everyone, mute, leave and attachments (FR-MSG-01, L12, L20). Participant-only (L6) and behind the Messaging flag, like every conversation route. The attachment
-/// routes and the unmute route are not in the wave 1 contract yet: their patterns live here until the Lead adds them to <c>Routes.Messaging</c>.
+/// Delete for everyone, mute, leave and attachments (FR-MSG-01, L12, L20). Participant-only (L6) and behind the Messaging flag, like every conversation route. The routes use the shared
+/// <c>Routes.Messaging</c> patterns.
 /// </summary>
 public static class MessageActionEndpoints
 {
-    public const string AttachmentsPattern = Routes.ConversationPattern + "/attachments";
-    public const string AttachmentUrlPattern = Routes.MessagePattern + "/attachments/{fid:guid}/url";
     private static readonly TimeSpan UrlLifetime = TimeSpan.FromMinutes(5);
 
     public static IEndpointRouteBuilder MapMessageActions(this IEndpointRouteBuilder app)
@@ -28,8 +26,9 @@ public static class MessageActionEndpoints
         app.MapPut(Routes.ConversationMutePattern, MuteAsync).RequirePermission(Permissions.Messaging.Send);
         app.MapDelete(Routes.ConversationMutePattern, UnmuteAsync).RequirePermission(Permissions.Messaging.Send);
         app.MapPost(Routes.ConversationLeavePattern, LeaveAsync).RequirePermission(Permissions.Messaging.Send);
-        app.MapPost(AttachmentsPattern, UploadAsync).RequirePermission(Permissions.Messaging.Send);
-        app.MapGet(AttachmentUrlPattern, UrlAsync).RequirePermission(Permissions.Messaging.View);
+        app.MapPost(Routes.ConversationAttachmentsPattern, UploadAsync).RequirePermission(Permissions.Messaging.Send);
+        app.MapDelete(Routes.ConversationAttachmentPattern, RemovePendingAsync).RequirePermission(Permissions.Messaging.Send);
+        app.MapGet(Routes.MessageAttachmentUrlPattern, UrlAsync).RequirePermission(Permissions.Messaging.View);
         return app;
     }
 
@@ -145,7 +144,7 @@ public static class MessageActionEndpoints
         var result = await guard.UploadAsync(opened, file.FileName, file.Length, stream, ct);
         if (result.Attachment is { } attachment)
         {
-            return Results.Created($"{Routes.Conversation(id)}/attachments/{attachment.FileId}", new MessageAttachmentDto(attachment.FileId, attachment.FileName, attachment.ContentType, attachment.SizeBytes));
+            return Results.Created($"{Routes.Conversation(id)}/attachments/{attachment.Id}", new PendingAttachmentDto(attachment.FileId, attachment.FileName, attachment.ContentType, attachment.SizeBytes, attachment.CreatedAtUtc.Add(MessageAttachmentGuard.PendingLifetime)));
         }
 
         if (result.Status == 429)
@@ -155,6 +154,32 @@ public static class MessageActionEndpoints
         }
 
         return ConversationEndpoints.Problem(new SendResult(null, result.ProblemCode, result.Status));
+    }
+
+    /// <summary>The uploader removes their own pending attachment; another person, an attached file and a non-participant all get 404.</summary>
+    private static async Task<IResult> RemovePendingAsync(
+        Guid id, Guid aid, HttpContext http, LmsDbContext db, ICurrentContext context, ISettingsResolver settings, ConversationAccess access, IFileStorage storage, CancellationToken ct)
+    {
+        if (await ConversationEndpoints.GateAsync(http, context, settings, ct) is { } gated)
+        {
+            return gated;
+        }
+
+        if (await access.OpenAsync(id, ct) is not { } opened)
+        {
+            return ApiProblems.NotFound();
+        }
+
+        var pending = await db.Set<MessageAttachment>().SingleOrDefaultAsync(a => a.Id == aid && a.ConversationId == id && a.UploaderUserId == opened.Me.UserId && a.MessageId == null, ct);
+        if (pending is null)
+        {
+            return ApiProblems.NotFound();
+        }
+
+        db.Remove(pending);
+        await db.SaveChangesAsync(ct);
+        await storage.DeleteAsync(pending.FileId, ct);
+        return Results.NoContent();
     }
 
     private static async Task<IResult> UrlAsync(
