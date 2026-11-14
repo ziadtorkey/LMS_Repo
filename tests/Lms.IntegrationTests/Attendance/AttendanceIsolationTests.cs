@@ -9,11 +9,11 @@ using static Lms.IntegrationTests.Timetable.TimetableKit;
 
 namespace Lms.IntegrationTests.Attendance;
 
-/// <summary>The attendance tables are isolated by client and by org-unit subtree (rule 1, M5 Task 16): sessions, records and the change history.</summary>
+/// <summary>The attendance tables are isolated by client and by org-unit subtree (rule 1, M5 Tasks 16 and 20): sessions, records, the change history and the alerts.</summary>
 [Collection(ApiCollection.Name)]
 public sealed class AttendanceIsolationTests(LmsApiFactory factory)
 {
-    private sealed record Rows(Guid Session, Guid Record, Guid Change);
+    private sealed record Rows(Guid Session, Guid Record, Guid Change, Guid Alert);
 
     [Fact]
     public async Task Attendance_rows_are_isolated_per_client_and_subtree()
@@ -56,8 +56,10 @@ public sealed class AttendanceIsolationTests(LmsApiFactory factory)
         db.Add(record);
         var change = new AttendanceRecordChange(record, null, AttendanceStatuses.Present, AttendanceChangeKinds.Taken, Guid.NewGuid(), null, DateTime.UtcNow);
         db.Add(change);
+        var alert = new AttendanceAlert(student, 5, 0, 30, 5m, 5m, DateTime.UtcNow);
+        db.Add(alert);
         await db.SaveChangesAsync();
-        return new Rows(session.Id, record.Id, change.Id);
+        return new Rows(session.Id, record.Id, change.Id, alert.Id);
     }
 
     private async Task AssertAsync(TestCurrentContext who, Rows[] visible, Rows[] hidden, Rows[] all)
@@ -66,8 +68,9 @@ public sealed class AttendanceIsolationTests(LmsApiFactory factory)
         var sessions = (await db.Set<AttendanceSession>().Select(x => x.Id).ToListAsync()).ToHashSet();
         var records = (await db.Set<AttendanceRecord>().Select(x => x.Id).ToListAsync()).ToHashSet();
         var changes = (await db.Set<AttendanceRecordChange>().Select(x => x.Id).ToListAsync()).ToHashSet();
-        Assert.All(visible, r => Assert.True(sessions.Contains(r.Session) && records.Contains(r.Record) && changes.Contains(r.Change)));
-        Assert.All(hidden, r => Assert.False(sessions.Contains(r.Session) || records.Contains(r.Record) || changes.Contains(r.Change)));
+        var alerts = (await db.Set<AttendanceAlert>().Select(x => x.Id).ToListAsync()).ToHashSet(); // the counselor alert list: a sibling school and another client never show
+        Assert.All(visible, r => Assert.True(sessions.Contains(r.Session) && records.Contains(r.Record) && changes.Contains(r.Change) && alerts.Contains(r.Alert)));
+        Assert.All(hidden, r => Assert.False(sessions.Contains(r.Session) || records.Contains(r.Record) || changes.Contains(r.Change) || alerts.Contains(r.Alert)));
         Assert.Equal(all.Length, visible.Length + hidden.Length); // every row of the test is either visible or hidden to this caller
     }
 }
