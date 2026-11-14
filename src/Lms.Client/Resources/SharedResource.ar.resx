@@ -1752,4 +1752,22 @@
   <data name="Grd_Term_Label" xml:space="preserve"><value>الفصل</value></data>
   <data name="Grd_Withdrew_On" xml:space="preserve"><value>انسحب في {0}</value></data>
   <data name="Grd_Withdrawn" xml:space="preserve"><value>منسحب</value></data>
+  <data name="Publish_Open" xml:space="preserve"><value>نشر الدرجات</value></data>
+  <data name="Publish_Title" xml:space="preserve"><value>نشر الدرجات</value></data>
+  <data name="Publish_Items" xml:space="preserve"><value>البنود</value></data>
+  <data name="Publish_Mode" xml:space="preserve"><value>ما المطلوب</value></data>
+  <data name="Publish_Now" xml:space="preserve"><value>نشر الآن</value></data>
+  <data name="Publish_Schedule" xml:space="preserve"><value>جدولة</value></data>
+  <data name="Publish_Hide" xml:space="preserve"><value>إخفاء من جديد (إلغاء النشر)</value></data>
+  <data name="Publish_Date" xml:space="preserve"><value>التاريخ</value></data>
+  <data name="Publish_Time" xml:space="preserve"><value>الوقت</value></data>
+  <data name="Publish_Confirm" xml:space="preserve"><value>تصبح الدرجات المنشورة مرئية لطلاب هذا المقرر ولأولياء أمورهم، وسيصلهم إشعار. تبقى البنود المخفية للمعلمين فقط.</value></data>
+  <data name="Publish_HideNote" xml:space="preserve"><value>تعود البنود للمعلمين فقط ويتوقف الطلاب وأولياء الأمور عن رؤيتها. يُسجَّل ذلك في سجل التدقيق.</value></data>
+  <data name="Publish_ProvisionalWarning" xml:space="preserve"><value>لم يتم اعتماد مقياس الدرجات بعد. سيرى الطلاب تقديرات من مقياس غير معتمد.</value></data>
+  <data name="Publish_ProvisionalAck" xml:space="preserve"><value>أفهم ذلك، انشر وفق مقياس غير معتمد</value></data>
+  <data name="Publish_SubmitNow" xml:space="preserve"><value>نشر الآن</value></data>
+  <data name="Publish_SubmitSchedule" xml:space="preserve"><value>جدولة</value></data>
+  <data name="Publish_SubmitHide" xml:space="preserve"><value>إخفاء</value></data>
+  <data name="Publish_Result" xml:space="preserve"><value>تم تغيير {0} بنود. تأثر {1} طلاب.</value></data>
+  <data name="Publish_Notified" xml:space="preserve"><value>تمت جدولة {0} إشعارات.</value></data>
 </root>

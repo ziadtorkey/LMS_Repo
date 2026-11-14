@@ -286,7 +286,8 @@ public sealed class FakeGradebookApi : IGradebookApi
 
     public Task<PublishResultDto> PublishAsync(Guid classCourseId, PublishItemsRequest request, CancellationToken ct = default)
     {
-        EnsureWritable(classCourseId);
+        EnsureCourse(classCourseId); // publishing is allowed on a locked gradebook (Lead ruling); only entering grades is blocked
+        if (!CanManage) throw Problem(403, "MissingPermission");
         LastPublish = request;
         if (!PublishModes.All.Contains(request.Mode) || request.ItemIds.Count == 0) throw Problem(400, ProblemCodes.validation_failed);
         if (request.Mode != PublishModes.Hide && Scale.Provisional && !request.AcknowledgeProvisionalScale) throw Problem(409, ProblemCodes.scale_provisional);

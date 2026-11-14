@@ -1,0 +1,24 @@
+@using Lms.Shared.Grading
+@inject ICultureService Culture
+
+@* The publish state of an item in words (staff pages only; a student never sees these words, L18). *@
+<MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="@ChipColor" data-testid="@TestId">@Text</MudChip>
+
+@code {
+    [Parameter, EditorRequired] public GradeItemDto Item { get; set; } = default!;
+    [Parameter] public string? TestId { get; set; }
+
+    private Color ChipColor => Item.PublishState switch
+    {
+        PublishStates.Published => Color.Success,
+        PublishStates.Scheduled => Color.Info,
+        _ => Color.Default,
+    };
+
+    private string Text => Item.PublishState switch
+    {
+        PublishStates.Published => L["Grd_PublishState_Published"].Value,
+        PublishStates.Scheduled => L["Grd_PublishState_Scheduled"].Value,
+        _ => Item.IsManual ? L["Grd_PublishState_Hidden"].Value : L["Grd_Item_AutoHidden"].Value,
+    };
+}
