@@ -1094,6 +1094,30 @@
   <data name="Flag_Inherit" xml:space="preserve"><value>Inherit ({0})</value></data>
   <data name="Flag_On" xml:space="preserve"><value>On</value></data>
   <data name="Flag_Off" xml:space="preserve"><value>Off</value></data>
+  <data name="Nav_Exceptions" xml:space="preserve"><value>Enrollment exceptions</value></data>
+  <data name="Exception_Title" xml:space="preserve"><value>Enrollment exceptions</value></data>
+  <data name="Exception_Help" xml:space="preserve"><value>A student who does not meet a course's restrictions can be enrolled only if an exception is approved.</value></data>
+  <data name="Exception_Request" xml:space="preserve"><value>Request an exception</value></data>
+  <data name="Exception_Reason" xml:space="preserve"><value>Why should this student be enrolled?</value></data>
+  <data name="Exception_Sent" xml:space="preserve"><value>The exception request was sent for approval.</value></data>
+  <data name="Exception_Send" xml:space="preserve"><value>Send request</value></data>
+  <data name="Exception_ReasonRequired" xml:space="preserve"><value>Enter the reason for the exception.</value></data>
+  <data name="Exception_Student" xml:space="preserve"><value>Student</value></data>
+  <data name="Exception_Course" xml:space="preserve"><value>Course</value></data>
+  <data name="Exception_Failed" xml:space="preserve"><value>Restrictions not met</value></data>
+  <data name="Exception_RequestedBy" xml:space="preserve"><value>Requested by</value></data>
+  <data name="Exception_Review" xml:space="preserve"><value>Review</value></data>
+  <data name="Exception_Approve" xml:space="preserve"><value>Approve</value></data>
+  <data name="Exception_Reject" xml:space="preserve"><value>Reject</value></data>
+  <data name="Exception_Comment" xml:space="preserve"><value>Comment</value></data>
+  <data name="Exception_CommentRequired" xml:space="preserve"><value>Enter a reason for rejecting.</value></data>
+  <data name="Exception_Cancel" xml:space="preserve"><value>Cancel request</value></data>
+  <data name="Exception_Decision" xml:space="preserve"><value>Decision</value></data>
+  <data name="Exception_YourReason" xml:space="preserve"><value>Reason</value></data>
+  <data name="ExceptionStatus_Pending" xml:space="preserve"><value>Pending</value></data>
+  <data name="ExceptionStatus_Approved" xml:space="preserve"><value>Approved</value></data>
+  <data name="ExceptionStatus_Rejected" xml:space="preserve"><value>Rejected</value></data>
+  <data name="ExceptionStatus_Cancelled" xml:space="preserve"><value>Cancelled</value></data>
   <data name="TransferReject_not_placed" xml:space="preserve"><value>The student is not placed in a class, so there is nothing to transfer from.</value></data>
   <data name="TransferReject_different_year" xml:space="preserve"><value>The new class belongs to a different academic year.</value></data>
   <data name="TransferReject_same_class" xml:space="preserve"><value>The student is already in this class.</value></data>
@@ -1461,6 +1485,7 @@
   <data name="Error_package_invalid" xml:space="preserve"><value>This package can't be used. Check that it's a SCORM or H5P export.</value></data>
   <data name="Error_package_too_large" xml:space="preserve"><value>The package is too large to upload or would exceed your storage.</value></data>
   <data name="Error_package_not_ready" xml:space="preserve"><value>The package is not ready yet. Wait for the check to finish.</value></data>
+  <data name="Error_package_not_attached" xml:space="preserve"><value>The package is not attached to a lesson yet, so its grading method cannot be changed.</value></data>
   <data name="Error_package_commit_rejected" xml:space="preserve"><value>Your progress could not be saved because the attempt is closed or the data was not accepted.</value></data>
   <data name="Error_package_host_not_configured" xml:space="preserve"><value>Packages aren't set up on this platform yet. Ask your platform administrator.</value></data>
   <data name="Error_package_reason_unsafe_path" xml:space="preserve"><value>Some files in the package point outside it. Export the package again.</value></data>
@@ -1476,6 +1501,65 @@
   <data name="Blueprint_StatPeriods" xml:space="preserve"><value>Periods per week</value></data>
   <data name="Blueprint_StatVersion" xml:space="preserve"><value>Version</value></data>
   <data name="Blueprint_LessonsCount" xml:space="preserve"><value>Lessons: {0}</value></data>
+  <data name="Assignment_AllowFiles" xml:space="preserve"><value>Allow file uploads</value></data>
+  <data name="Assignment_AllowText" xml:space="preserve"><value>Allow written text</value></data>
+  <data name="Assignment_Attachments" xml:space="preserve"><value>Attachments</value></data>
+  <data name="Assignment_BlockNeedsDue" xml:space="preserve"><value>Set a due date when late hand-ins are not accepted.</value></data>
+  <data name="Assignment_Due" xml:space="preserve"><value>Due</value></data>
+  <data name="Assignment_Edit" xml:space="preserve"><value>Edit assignment</value></data>
+  <data name="Assignment_InstructionsAr" xml:space="preserve"><value>Instructions (Arabic)</value></data>
+  <data name="Assignment_InstructionsEn" xml:space="preserve"><value>Instructions (English)</value></data>
+  <data name="Assignment_LatePolicy" xml:space="preserve"><value>Late hand-ins</value></data>
+  <data name="Assignment_Lesson" xml:space="preserve"><value>Lesson</value></data>
+  <data name="Assignment_MaxGrade" xml:space="preserve"><value>Maximum grade</value></data>
+  <data name="Assignment_MaxGradeInvalid" xml:space="preserve"><value>The maximum grade must be between 0.01 and 1000.</value></data>
+  <data name="Assignment_MinScore" xml:space="preserve"><value>Minimum score (%)</value></data>
+  <data name="Assignment_NeedSubmitType" xml:space="preserve"><value>Allow text, files or both.</value></data>
+  <data name="Assignment_PenaltyPercent" xml:space="preserve"><value>Penalty (%)</value></data>
+  <data name="Assignment_PenaltyRequired" xml:space="preserve"><value>Enter a penalty from 1 to 100.</value></data>
+  <data name="Assignment_RemoveAttachment" xml:space="preserve"><value>Remove attachment</value></data>
+  <data name="Assignment_Resubmission" xml:space="preserve"><value>Resubmission</value></data>
+  <data name="Assignments_Counts" xml:space="preserve"><value>{0} submitted · {1} graded</value></data>
+  <data name="Assignments_Handed" xml:space="preserve"><value>Hand-ins</value></data>
+  <data name="Assignments_Name" xml:space="preserve"><value>Assignment</value></data>
+  <data name="Assignments_New" xml:space="preserve"><value>New assignment</value></data>
+  <data name="Assignments_Submissions" xml:space="preserve"><value>Submissions</value></data>
+  <data name="CompletionRule_Score" xml:space="preserve"><value>When a minimum score is reached</value></data>
+  <data name="CompletionRule_Submit" xml:space="preserve"><value>When submitted</value></data>
+  <data name="Grade_AboveMax" xml:space="preserve"><value>The grade cannot be above {0}.</value></data>
+  <data name="Grade_Annotated" xml:space="preserve"><value>Annotated file</value></data>
+  <data name="Grade_Feedback" xml:space="preserve"><value>Feedback</value></data>
+  <data name="Grade_NoWork" xml:space="preserve"><value>No text or files.</value></data>
+  <data name="Grade_Out" xml:space="preserve"><value>Grade (out of {0})</value></data>
+  <data name="Grade_Penalty" xml:space="preserve"><value>Late penalty {0}%: final grade {1}</value></data>
+  <data name="Grade_RemoveAnnotated" xml:space="preserve"><value>Remove annotated file</value></data>
+  <data name="Grade_Returned" xml:space="preserve"><value>Grade saved and returned to the student.</value></data>
+  <data name="Grade_Save" xml:space="preserve"><value>Save grade</value></data>
+  <data name="Grade_SaveReturn" xml:space="preserve"><value>Save and return to student</value></data>
+  <data name="Grade_Saved" xml:space="preserve"><value>Grade saved.</value></data>
+  <data name="Grade_Title" xml:space="preserve"><value>Grade submission</value></data>
+  <data name="Grade_Work" xml:space="preserve"><value>Student's work</value></data>
+  <data name="LatePolicy_Allow" xml:space="preserve"><value>Accepted, marked late</value></data>
+  <data name="LatePolicy_Block" xml:space="preserve"><value>Not accepted</value></data>
+  <data name="LatePolicy_Penalty" xml:space="preserve"><value>Accepted with a penalty</value></data>
+  <data name="ResubmissionRule_None" xml:space="preserve"><value>Not allowed</value></data>
+  <data name="ResubmissionRule_UntilDue" xml:space="preserve"><value>Until the due date</value></data>
+  <data name="ResubmissionRule_UntilGraded" xml:space="preserve"><value>Until graded</value></data>
+  <data name="SubmissionStatus_Draft" xml:space="preserve"><value>Draft</value></data>
+  <data name="SubmissionStatus_Graded" xml:space="preserve"><value>Graded</value></data>
+  <data name="SubmissionStatus_Late" xml:space="preserve"><value>Late</value></data>
+  <data name="SubmissionStatus_None" xml:space="preserve"><value>Not handed in</value></data>
+  <data name="SubmissionStatus_Returned" xml:space="preserve"><value>Returned</value></data>
+  <data name="SubmissionStatus_Submitted" xml:space="preserve"><value>Submitted</value></data>
+  <data name="Submissions_At" xml:space="preserve"><value>Handed in</value></data>
+  <data name="Submissions_Grade" xml:space="preserve"><value>Grade</value></data>
+  <data name="Submissions_GradeAction" xml:space="preserve"><value>Grade</value></data>
+  <data name="Submissions_Late" xml:space="preserve"><value>Late</value></data>
+  <data name="Submissions_OnlyLate" xml:space="preserve"><value>Late only</value></data>
+  <data name="Submissions_Status" xml:space="preserve"><value>Status</value></data>
+  <data name="Submissions_Student" xml:space="preserve"><value>Student</value></data>
+  <data name="Submissions_Title" xml:space="preserve"><value>Assignment submissions</value></data>
+  <data name="Assignment_MinScoreUnknown" xml:space="preserve"><value>The minimum score could not be read. Close the dialog and try again.</value></data>
   <data name="Nav_Eligibility" xml:space="preserve"><value>Teacher eligibility</value></data>
   <data name="Eligibility_Title" xml:space="preserve"><value>Teacher eligibility</value></data>
   <data name="Eligibility_Help" xml:space="preserve"><value>Say which teachers may teach which courses at a unit. Only eligible teachers can be assigned to a class course.</value></data>
@@ -1525,4 +1609,172 @@
   <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>The package didn't pass the security check.</value></data>
   <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>The file isn't a valid .zip archive. Export the package again.</value></data>
   <data name="Error_package_reason_bad_name" xml:space="preserve"><value>Some file names in the package are too long, nested too deep or reserved. Rename them and export again.</value></data>
+  <data name="ClassCourse_TabLive" xml:space="preserve"><value>Live sessions</value></data>
+  <data name="Live_Title" xml:space="preserve"><value>Live sessions</value></data>
+  <data name="Live_Subtitle" xml:space="preserve"><value>Online classes for this course. Students join from the lesson.</value></data>
+  <data name="Live_Schedule" xml:space="preserve"><value>Schedule a session</value></data>
+  <data name="Live_ScheduleAction" xml:space="preserve"><value>Schedule</value></data>
+  <data name="Live_Filter" xml:space="preserve"><value>Which sessions</value></data>
+  <data name="Live_Upcoming" xml:space="preserve"><value>Upcoming</value></data>
+  <data name="Live_Past" xml:space="preserve"><value>Past</value></data>
+  <data name="Live_Col_When" xml:space="preserve"><value>When</value></data>
+  <data name="Live_Col_Session" xml:space="preserve"><value>Session</value></data>
+  <data name="Live_Col_Lesson" xml:space="preserve"><value>Lesson</value></data>
+  <data name="Live_Col_Status" xml:space="preserve"><value>Status</value></data>
+  <data name="Live_Col_Recording" xml:space="preserve"><value>Recording</value></data>
+  <data name="Live_Col_Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="Live_Edit" xml:space="preserve"><value>Edit session</value></data>
+  <data name="Live_RecordingLink" xml:space="preserve"><value>Recording link</value></data>
+  <data name="Live_CancelSession" xml:space="preserve"><value>Cancel session</value></data>
+  <data name="Live_CancelConfirm" xml:space="preserve"><value>Cancel this session? Students will no longer see it.</value></data>
+  <data name="Live_Recording" xml:space="preserve"><value>Recording</value></data>
+  <data name="Live_Empty_Upcoming_Title" xml:space="preserve"><value>No upcoming sessions</value></data>
+  <data name="Live_Empty_Upcoming_Staff" xml:space="preserve"><value>Schedule a session so students can join from the lesson.</value></data>
+  <data name="Live_Empty_Upcoming_Student" xml:space="preserve"><value>Your teacher hasn't scheduled any yet.</value></data>
+  <data name="Live_Empty_Past_Title" xml:space="preserve"><value>No past sessions</value></data>
+  <data name="Live_Empty_Past_Text" xml:space="preserve"><value>Sessions appear here after they end.</value></data>
+  <data name="Live_SeriesCaption" xml:space="preserve"><value>Weekly · {0} of {1}</value></data>
+  <data name="Live_SeriesCaptionShort" xml:space="preserve"><value>Weekly</value></data>
+  <data name="Live_ProviderNotConfigured" xml:space="preserve"><value>Live sessions aren't set up yet. Ask your platform administrator.</value></data>
+  <data name="Live_ProviderUnhealthy" xml:space="preserve"><value>Zoom isn't responding right now. New sessions may fail; existing ones keep working.</value></data>
+  <data name="Live_FeatureOff" xml:space="preserve"><value>Live sessions are turned off for this school.</value></data>
+  <data name="Live_Error_Busy" xml:space="preserve"><value>Zoom is busy. Try again in about {0}.</value></data>
+  <data name="Live_Error_BusyShort" xml:space="preserve"><value>Zoom is busy. Try again in a minute.</value></data>
+  <data name="Live_DialogTitleNew" xml:space="preserve"><value>Schedule a live session</value></data>
+  <data name="Live_DialogTitleEdit" xml:space="preserve"><value>Edit live session</value></data>
+  <data name="Live_SectionSession" xml:space="preserve"><value>Session</value></data>
+  <data name="Live_SectionTime" xml:space="preserve"><value>Time</value></data>
+  <data name="Live_SectionRepeat" xml:space="preserve"><value>Repeat</value></data>
+  <data name="Live_SectionModule" xml:space="preserve"><value>In the lesson</value></data>
+  <data name="Live_TitleHelp" xml:space="preserve"><value>Participants see this title in Zoom.</value></data>
+  <data name="Live_Lesson" xml:space="preserve"><value>Lesson</value></data>
+  <data name="Live_Date" xml:space="preserve"><value>Date</value></data>
+  <data name="Live_StartTime" xml:space="preserve"><value>Start time</value></data>
+  <data name="Live_Duration" xml:space="preserve"><value>Duration</value></data>
+  <data name="Live_TimeZone" xml:space="preserve"><value>Times are in your time zone:</value></data>
+  <data name="Live_Repeat_Once" xml:space="preserve"><value>Once</value></data>
+  <data name="Live_Repeat_Weekly" xml:space="preserve"><value>Weekly</value></data>
+  <data name="Live_Every" xml:space="preserve"><value>Repeats</value></data>
+  <data name="Live_Days" xml:space="preserve"><value>On these days</value></data>
+  <data name="Live_Ends" xml:space="preserve"><value>Ends</value></data>
+  <data name="Live_EndsOn" xml:space="preserve"><value>On date</value></data>
+  <data name="Live_EndsAfter" xml:space="preserve"><value>After</value></data>
+  <data name="Live_EndsAfterSuffix" xml:space="preserve"><value>sessions</value></data>
+  <data name="Live_EndsRequired" xml:space="preserve"><value>Choose an end date or a number of sessions.</value></data>
+  <data name="Live_TooMany" xml:space="preserve"><value>A series can have at most {0} sessions. Choose an earlier end date or fewer sessions.</value></data>
+  <data name="Live_EditSeriesTitle" xml:space="preserve"><value>Edit a repeating session</value></data>
+  <data name="Live_CancelSeriesTitle" xml:space="preserve"><value>Cancel a repeating session</value></data>
+  <data name="Live_ScopeLabel" xml:space="preserve"><value>Which sessions</value></data>
+  <data name="Live_Continue" xml:space="preserve"><value>Continue</value></data>
+  <data name="Live_CancelSessions" xml:space="preserve"><value>Cancel sessions</value></data>
+  <data name="Live_RecordingTitle" xml:space="preserve"><value>Recording link</value></data>
+  <data name="Live_RecordingUrl" xml:space="preserve"><value>Link</value></data>
+  <data name="Live_RecordingHelp" xml:space="preserve"><value>Paste a link that starts with https://.</value></data>
+  <data name="Live_RecordingOpensOn" xml:space="preserve"><value>Opens on</value></data>
+  <data name="Live_RecordingInvalid" xml:space="preserve"><value>Use a link that starts with https:// or http://.</value></data>
+  <data name="Live_RecordingBy_Provider" xml:space="preserve"><value>Added by Zoom</value></data>
+  <data name="Live_RecordingBy_Manual" xml:space="preserve"><value>Added by a teacher</value></data>
+  <data name="Live_Unit_Minute_One" xml:space="preserve"><value>1 min</value></data>
+  <data name="Live_Unit_Minute_Two" xml:space="preserve"><value>2 min</value></data>
+  <data name="Live_Unit_Minute_Few" xml:space="preserve"><value>{0} min</value></data>
+  <data name="Live_Unit_Minute_Many" xml:space="preserve"><value>{0} min</value></data>
+  <data name="Live_Duration_Minute_One" xml:space="preserve"><value>1 min</value></data>
+  <data name="Live_Duration_Minute_Two" xml:space="preserve"><value>2 min</value></data>
+  <data name="Live_Duration_Minute_Few" xml:space="preserve"><value>{0} min</value></data>
+  <data name="Live_Duration_Minute_Many" xml:space="preserve"><value>{0} min</value></data>
+  <data name="Live_Unit_Session_One" xml:space="preserve"><value>1 session</value></data>
+  <data name="Live_Unit_Session_Two" xml:space="preserve"><value>2 sessions</value></data>
+  <data name="Live_Unit_Session_Few" xml:space="preserve"><value>{0} sessions</value></data>
+  <data name="Live_Unit_Session_Many" xml:space="preserve"><value>{0} sessions</value></data>
+  <data name="Live_MoreSessions_One" xml:space="preserve"><value>and 1 more</value></data>
+  <data name="Live_MoreSessions_Two" xml:space="preserve"><value>and 2 more</value></data>
+  <data name="Live_MoreSessions_Few" xml:space="preserve"><value>and {0} more</value></data>
+  <data name="Live_MoreSessions_Many" xml:space="preserve"><value>and {0} more</value></data>
+  <data name="Live_LaterSessions_One" xml:space="preserve"><value>and 1 later session</value></data>
+  <data name="Live_LaterSessions_Two" xml:space="preserve"><value>and 2 later sessions</value></data>
+  <data name="Live_LaterSessions_Few" xml:space="preserve"><value>and {0} later sessions</value></data>
+  <data name="Live_LaterSessions_Many" xml:space="preserve"><value>and {0} later sessions</value></data>
+  <data name="Live_EveryWeeks_One" xml:space="preserve"><value>Every week</value></data>
+  <data name="Live_EveryWeeks_Two" xml:space="preserve"><value>Every 2 weeks</value></data>
+  <data name="Live_EveryWeeks_Few" xml:space="preserve"><value>Every {0} weeks</value></data>
+  <data name="Live_EveryWeeks_Many" xml:space="preserve"><value>Every {0} weeks</value></data>
+  <data name="Students_Subtitle" xml:space="preserve"><value>Students of your organization, their class and guardians.</value></data>
+  <data name="Students_EmptyTitle" xml:space="preserve"><value>No matching students</value></data>
+  <data name="Students_EmptyText" xml:space="preserve"><value>Change the filters or add a new student.</value></data>
+  <data name="Student_BackToList" xml:space="preserve"><value>Back to students</value></data>
+  <data name="Student_CreateSubtitle" xml:space="preserve"><value>Add a student, place them in a class and link their guardians.</value></data>
+  <data name="Student_SectionStudent" xml:space="preserve"><value>Student</value></data>
+  <data name="Student_SectionPlacement" xml:space="preserve"><value>Class</value></data>
+  <data name="Student_SectionAccount" xml:space="preserve"><value>Account</value></data>
+  <data name="Guardians_Subtitle" xml:space="preserve"><value>Parents and guardians of your students, their contact details and portal access.</value></data>
+  <data name="Guardians_EmptyTitle" xml:space="preserve"><value>No matching guardians</value></data>
+  <data name="Guardians_EmptyText" xml:space="preserve"><value>Change the search, or add guardians when you create a student.</value></data>
+  <data name="Guardian_BackToList" xml:space="preserve"><value>Back to guardians</value></data>
+  <data name="Guardian_Details" xml:space="preserve"><value>Details</value></data>
+  <data name="MyChildren_Subtitle" xml:space="preserve"><value>Your children in this school group and their class.</value></data>
+  <data name="MyProfile_Subtitle" xml:space="preserve"><value>Keep your contact details up to date. Other changes go to your school for approval.</value></data>
+  <data name="MyProfile_Details" xml:space="preserve"><value>Your details</value></data>
+  <data name="MyProfile_RequestsEmptyText" xml:space="preserve"><value>Requests you send to your school appear here.</value></data>
+  <data name="ChangeRequests_Subtitle" xml:space="preserve"><value>Changes students asked to make to their own details. Review each one and approve or reject it.</value></data>
+  <data name="ChangeRequests_EmptyTitle" xml:space="preserve"><value>No change requests</value></data>
+  <data name="ChangeRequests_EmptyText" xml:space="preserve"><value>Change the filters to see requests in other states.</value></data>
+  <data name="Import_HistoryEmptyTitle" xml:space="preserve"><value>No imports yet</value></data>
+  <data name="Import_HistoryEmptyText" xml:space="preserve"><value>Imports you run appear here with their result.</value></data>
+  <data name="StudentImport_Subtitle" xml:space="preserve"><value>Add many students at once from an Excel file.</value></data>
+  <data name="ClassImport_Subtitle" xml:space="preserve"><value>Place students in classes from an Excel file.</value></data>
+  <data name="Group_Subtitle" xml:space="preserve"><value>Split the students of this class course into groups.</value></data>
+  <data name="Error_gradebook_locked" xml:space="preserve"><value>This gradebook is locked: grades can no longer be changed.</value></data>
+  <data name="Error_scale_provisional" xml:space="preserve"><value>This grading scale has not been confirmed yet. Confirm it, or acknowledge that you publish under an unconfirmed scale.</value></data>
+  <data name="Error_scale_bands_invalid" xml:space="preserve"><value>The bands must cover 0 to 100 without gaps or overlaps.</value></data>
+  <data name="Error_scale_in_use" xml:space="preserve"><value>A gradebook uses this scale, so it cannot be deleted.</value></data>
+  <data name="Error_weights_invalid" xml:space="preserve"><value>A weight must be between 0 and 100.</value></data>
+  <data name="Error_grade_out_of_range" xml:space="preserve"><value>The score must be between 0 and the maximum points of the item.</value></data>
+  <data name="Error_grade_override_reason_required" xml:space="preserve"><value>Give a reason (up to 500 characters) to replace a score.</value></data>
+  <data name="Error_grade_import_invalid" xml:space="preserve"><value>The file is not a valid Excel file (.xlsx) or it is too large.</value></data>
+  <data name="Error_grade_import_expired" xml:space="preserve"><value>The import preview expired. Upload the file again.</value></data>
+  <data name="Error_terms_have_dependants" xml:space="preserve"><value>A term already has a gradebook, timetable or attendance, so the terms of this year cannot be changed.</value></data>
+  <data name="Error_concurrency_conflict" xml:space="preserve"><value>Someone else changed this row. It was reloaded with the current values.</value></data>
+  <data name="Setting_Org_TimeZone" xml:space="preserve"><value>Time zone of the school group</value></data>
+  <data name="Setting_Grades_MissingPolicy" xml:space="preserve"><value>When a score is missing</value></data>
+  <data name="SettingValue_Grades_MissingPolicy_Normalise" xml:space="preserve"><value>Calculate from the graded categories</value></data>
+  <data name="SettingValue_Grades_MissingPolicy_Zero" xml:space="preserve"><value>Count as zero</value></data>
+  <data name="SettingValue_Grades_MissingPolicy_HideUntilComplete" xml:space="preserve"><value>Hide the total until everything is graded</value></data>
+  <data name="Setting_Grades_CategoryMethod" xml:space="preserve"><value>How a category is calculated</value></data>
+  <data name="SettingValue_Grades_CategoryMethod_PointsWeighted" xml:space="preserve"><value>Total points over total maximum points</value></data>
+  <data name="SettingValue_Grades_CategoryMethod_PercentAverage" xml:space="preserve"><value>Average of the item percentages</value></data>
+  <data name="Setting_Grades_DecimalPlaces" xml:space="preserve"><value>Decimal places of grades</value></data>
+  <data name="Setting_AcademicYears_TermsPerYear" xml:space="preserve"><value>Terms per academic year</value></data>
+  <data name="NotifEvent_Grades_Published" xml:space="preserve"><value>Grades published</value></data>
+  <data name="Notif_Grades_Published" xml:space="preserve"><value>New grades are available in {CourseName}.</value></data>
+  <data name="Grd_ScaleKind_Percentage" xml:space="preserve"><value>Percentage</value></data>
+  <data name="Grd_ScaleKind_Letter" xml:space="preserve"><value>Letters</value></data>
+  <data name="Grd_ScaleKind_Gpa" xml:space="preserve"><value>GPA</value></data>
+  <data name="Grd_PublishState_Hidden" xml:space="preserve"><value>Hidden</value></data>
+  <data name="Grd_PublishState_Published" xml:space="preserve"><value>Published</value></data>
+  <data name="Grd_PublishState_Scheduled" xml:space="preserve"><value>Scheduled</value></data>
+  <data name="Grd_CellState_Event" xml:space="preserve"><value>From an activity</value></data>
+  <data name="Grd_CellState_Manual" xml:space="preserve"><value>Entered by hand</value></data>
+  <data name="Grd_CellState_Override" xml:space="preserve"><value>Replaced</value></data>
+  <data name="Grd_CellState_NewerScoreExists" xml:space="preserve"><value>Newer score available</value></data>
+  <data name="Grd_CellState_Excused" xml:space="preserve"><value>Excused</value></data>
+  <data name="Grd_CellState_Empty" xml:space="preserve"><value>Not graded</value></data>
+  <data name="Grd_GradebookState_Open" xml:space="preserve"><value>Open</value></data>
+  <data name="Grd_GradebookState_Locked" xml:space="preserve"><value>Locked</value></data>
+  <data name="Grd_PublishMode_Now" xml:space="preserve"><value>Publish now</value></data>
+  <data name="Grd_PublishMode_Schedule" xml:space="preserve"><value>Schedule</value></data>
+  <data name="Grd_PublishMode_Hide" xml:space="preserve"><value>Hide</value></data>
+  <data name="Perm_Grades_View" xml:space="preserve"><value>View grading scales and gradebooks</value></data>
+  <data name="Perm_Grades_Manage" xml:space="preserve"><value>Manage gradebooks and enter grades</value></data>
+  <data name="Perm_Grades_Publish" xml:space="preserve"><value>Publish grades to students and guardians</value></data>
+  <data name="Perm_Grades_ConfigureScales" xml:space="preserve"><value>Configure grading scales and weight templates</value></data>
+  <data name="Perm_Grades_ViewReports" xml:space="preserve"><value>View grade reports</value></data>
+  <data name="Perm_Grades_ViewOwn" xml:space="preserve"><value>View own published grades</value></data>
+  <data name="AuditEntity_GradingScale" xml:space="preserve"><value>Grading scale</value></data>
+  <data name="AuditEntity_WeightTemplate" xml:space="preserve"><value>Weight template</value></data>
+  <data name="AuditEntity_Gradebook" xml:space="preserve"><value>Gradebook</value></data>
+  <data name="AuditEntity_GradeCategory" xml:space="preserve"><value>Grade category</value></data>
+  <data name="AuditEntity_GradeItem" xml:space="preserve"><value>Grade item</value></data>
+  <data name="AuditEntity_GradeEntry" xml:space="preserve"><value>Grade entry</value></data>
+  <data name="AuditEntity_GradeSnapshot" xml:space="preserve"><value>Grade snapshot</value></data>
+  <data name="PermModule_Grades" xml:space="preserve"><value>Grades</value></data>
 </root>
