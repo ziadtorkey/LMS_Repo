@@ -300,6 +300,26 @@ public sealed class TimetableBuilderPageTests : TimetableTestContext
     }
 
     [Fact]
+    public async Task A_publish_refused_in_Block_mode_shows_the_clashes_and_keeps_the_timetable_unpublished()
+    {
+        Api2.ConflictMode = ConflictModes.Warn; // build a clash in Warn mode, then the school switches to Block
+        var page = await RenderAsync();
+        await page.InvokeAsync(() => page.FindComponent<TimetableGrid>().Instance.DropAsync(Maths, DayOfWeek.Sunday, FakeTimetableApi.PeriodId(2)));
+        page.WaitForAssertion(() => Assert.Equal(2, page.FindAll("[data-testid^=tt-warn-]").Count));
+        Api2.ConflictMode = ConflictModes.Block;
+
+        page.Find("[data-testid=tt-publish]").Click();
+        Dialogs.WaitForElement("[data-testid=publish-confirm]").Click();
+
+        page.WaitForElement("[data-testid=tt-conflicts-list]"); // the server's clashes, one sentence each
+        Assert.Contains("Arabic", page.Find("[data-testid=tt-conflicts-list]").TextContent);
+        Assert.Contains("Nothing was published", page.Find("[data-testid=tt-conflict]").TextContent);
+        Assert.Contains(Api2.Slots, s => s.State == SlotStates.Draft); // the drafts are still drafts
+        Assert.Contains("draft", page.Find("[data-testid=tt-state]").TextContent);
+        Assert.False(page.Find("[data-testid=tt-publish]").HasAttribute("disabled")); // and can be published once fixed
+    }
+
+    [Fact]
     public async Task Copy_term_lists_skipped_rows()
     {
         var page = await RenderAsync();
@@ -393,7 +413,7 @@ public sealed class TimetableSetupPageTests : TimetableTestContext
 
         Assert.Equal(7, page.FindAll("[data-testid^=period-row-]").Count);
         Assert.All(page.FindAll("td[data-label] span[dir=ltr]"), s => Assert.Matches(@"^\d\d:\d\d$", s.TextContent.Trim()));
-        Assert.Contains("unit settings", page.Find("[data-testid=setup-settings-note]").TextContent);
+        Assert.Contains("unit setting", page.Find("[data-testid=setup-settings-note]").TextContent);
     }
 
     [Fact]
@@ -418,6 +438,33 @@ public sealed class TimetableSetupPageTests : TimetableTestContext
 
         page.WaitForAssertion(() => Assert.Equal(7, page.FindAll("[data-testid^=period-row-]").Count));
         Assert.Contains(await Api2.GetPeriodsAsync(FakeTimetableApi.UnitId), p => p.Id == FakeTimetableApi.PeriodId(1));
+    }
+
+    [Fact]
+    public async Task Working_days_are_toggled_by_buttons_and_saved_in_week_order()
+    {
+        var page = await RenderAsync();
+        Assert.Equal("true", page.Find("[data-testid=wd-Sun]").GetAttribute("aria-pressed")); // the default Sunday to Thursday
+        Assert.Equal("false", page.Find("[data-testid=wd-Fri]").GetAttribute("aria-pressed"));
+
+        page.Find("[data-testid=wd-Sat]").Click();
+        page.Find("[data-testid=wd-Mon]").Click(); // switch Monday off
+        page.Find("[data-testid=wd-save]").Click();
+
+        page.WaitForElement("[data-testid=wd-saved]");
+        var saved = Config.SettingCalls.Last();
+        Assert.Equal("Timetable.WorkingDays", saved.Name);
+        Assert.Equal("[\"Sun\",\"Tue\",\"Wed\",\"Thu\",\"Sat\"]", saved.Request.ValueJson); // in week order, not the order ticked
+    }
+
+    [Fact]
+    public async Task Working_days_cannot_be_saved_empty()
+    {
+        var page = await RenderAsync();
+        foreach (var d in new[] { "Sun", "Mon", "Tue", "Wed", "Thu" }) page.Find($"[data-testid=wd-{d}]").Click();
+
+        Assert.NotNull(page.Find("[data-testid=wd-empty]"));
+        Assert.True(page.Find("[data-testid=wd-save]").HasAttribute("disabled"));
     }
 
     [Fact]

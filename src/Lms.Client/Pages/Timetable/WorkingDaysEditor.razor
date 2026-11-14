@@ -1,0 +1,97 @@
+@using System.Text.Json
+@using Lms.Client.Services.Api
+@using Lms.Shared.Configuration
+@using Lms.Shared.Timetable
+@inject IConfigApi Config
+@inject NavigationManager Navigation
+@inject ICultureService Culture
+
+@* The working days of a unit (the setting Timetable.WorkingDays): seven toggle buttons in week order, each a real button with the day in words and its state
+   announced, saved with one button. Saving needs the permission to update unit settings; a refusal is shown, never hidden. *@
+<SectionCard Title="@L["Tt_WorkingDays"]" TestId="working-days">
+    @if (_loaded)
+    {
+        <div class="lms-chip-row" role="group" aria-label="@L["Tt_WorkingDays"]">
+            @foreach (var day in WorkingDayNames.All)
+            {
+                var d = day;
+                var on = _days.Contains(d);
+                <button type="button" class="@("lms-tt-daychip lms-touch" + (on ? " lms-tt-daychip-on" : ""))" aria-pressed="@(on ? "true" : "false")" @onclick="() => Toggle(d)" data-testid="@($"wd-{d}")">
+                    @Culture.Current.DateTimeFormat.GetDayName(ToDay(d))
+                </button>
+            }
+        </div>
+        @if (_days.Count == 0)
+        {
+            <MudText Typo="Typo.caption" Color="Color.Error" Class="mt-1" data-testid="wd-empty">@L["Tt_WorkingDays_None"]</MudText>
+        }
+
+        @if (_error is not null)
+        {
+            <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mt-2" data-testid="wd-error">@_error</MudAlert>
+        }
+
+        <div class="mt-3">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="lms-touch" OnClick="SaveAsync" Disabled="@(_days.Count == 0 || _saving)" data-testid="wd-save">@L["Common_Save"]</MudButton>
+            @if (_saved) { <MudText Typo="Typo.body2" Class="d-inline ms-2" role="status" data-testid="wd-saved">@L["Tt_WorkingDays_Saved"]</MudText> }
+        </div>
+    }
+</SectionCard>
+
+@code {
+    private HashSet<string> _days = [];
+    private bool _loaded, _saving, _saved;
+    private string? _error;
+
+    [Parameter, EditorRequired] public Guid UnitId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var current = WorkingDayNames.Default.ToList();
+        try
+        {
+            var settings = await Config.GetSettingsIfAllowedAsync(UnitId);
+            if (settings.FirstOrDefault(s => s.Name == SettingKeys.TimetableWorkingDays.Name) is { } s) current = JsonSerializer.Deserialize<List<string>>(s.ValueJson) ?? current;
+        }
+        catch (Exception ex) when (ex is ApiProblemException or HttpRequestException or JsonException) { }
+
+        _days = current.ToHashSet();
+        _loaded = true;
+    }
+
+    private static DayOfWeek ToDay(string name) => name switch
+    {
+        WorkingDayNames.Sunday => DayOfWeek.Sunday, WorkingDayNames.Monday => DayOfWeek.Monday, WorkingDayNames.Tuesday => DayOfWeek.Tuesday,
+        WorkingDayNames.Wednesday => DayOfWeek.Wednesday, WorkingDayNames.Thursday => DayOfWeek.Thursday, WorkingDayNames.Friday => DayOfWeek.Friday, _ => DayOfWeek.Saturday,
+    };
+
+    private void Toggle(string day)
+    {
+        if (!_days.Remove(day)) _days.Add(day);
+        _saved = false;
+    }
+
+    private async Task SaveAsync()
+    {
+        _error = null;
+        _saving = true;
+        try
+        {
+            var ordered = WorkingDayNames.All.Where(_days.Contains).ToList(); // in week order, whatever order they were ticked
+            await Config.SetSettingAsync(UnitId, SettingKeys.TimetableWorkingDays.Name, new SetSettingRequest(JsonSerializer.Serialize(ordered), false));
+            _saved = true;
+        }
+        catch (ApiProblemException ex) when (ex.Status == 403)
+        {
+            _error = L["Tt_WorkingDays_Forbidden"];
+        }
+        catch (Exception ex) when (ex is ApiProblemException or HttpRequestException)
+        {
+            _error = L["Api_Error"];
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+}

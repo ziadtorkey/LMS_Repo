@@ -87,33 +87,34 @@ html:lang(ar), html:lang(ar) body { font-family: Cairo, "Segoe UI", Tahoma, Aria
 .lms-module-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px 8px; min-width: 0; }
 .lms-plan-add { margin-block-start: 4px; }
 
-/* ---------- Timetable grid (M5 spike S3): periods are rows, working days columns; the table takes dir from the culture ---------- */
+/* ---------- Timetable (M5 Tasks 31 and 32): periods are rows, working days columns; the table takes dir from the culture ---------- */
 .lms-tt-wrap { min-width: 0; overflow-x: auto; }
 .lms-tt { inline-size: 100%; min-inline-size: 640px; border-collapse: separate; border-spacing: 4px; table-layout: fixed; }
 .lms-tt th { font-weight: 600; font-size: .8125rem; color: var(--mud-palette-text-secondary); padding: 6px; text-align: center; }
 .lms-tt .lms-tt-period { text-align: start; white-space: nowrap; inline-size: 96px; }
 .lms-tt-period-name { display: block; color: var(--mud-palette-text-primary); }
 .lms-tt-time { display: block; font-variant-numeric: tabular-nums; unicode-bidi: isolate; }
-.lms-tt-cell { block-size: 76px; vertical-align: top; padding: 4px; border: 1px dashed var(--mud-palette-lines-default); border-radius: 8px; background: var(--mud-palette-background-gray); }
+.lms-tt-cell { block-size: 76px; vertical-align: top; padding: 4px; border: 1px dashed var(--mud-palette-lines-default); border-radius: var(--lms-radius-control); background: var(--mud-palette-background-gray); }
 .lms-tt-cell:focus-visible { outline: 2px solid var(--mud-palette-primary); outline-offset: 1px; }
 .lms-tt-cell.lms-tt-target, .lms-tt-cell.lms-tt-drop { border-style: solid; border-color: var(--mud-palette-primary); background: color-mix(in srgb, var(--mud-palette-primary) 10%, transparent); }
 .lms-tt-cell.lms-tt-clash { border-style: solid; border-color: var(--mud-palette-warning); }
-.lms-tt-slot { position: relative; display: flex; flex-direction: column; gap: 2px; min-block-size: 100%; padding: 6px; padding-inline-end: 32px; border-radius: 6px; cursor: grab; touch-action: pan-y;
+.lms-tt-slot { position: relative; display: flex; flex-direction: column; gap: 2px; min-block-size: 100%; padding: 6px; padding-inline-end: 48px; border-radius: 6px; cursor: grab; touch-action: pan-y;
     background: var(--mud-palette-surface); border: 1px solid var(--mud-palette-lines-default); box-shadow: var(--lms-shadow-1); }
 .lms-tt-slot.lms-tt-held { border-color: var(--mud-palette-primary); box-shadow: var(--lms-shadow-2); opacity: .85; }
 .lms-tt-course { font-weight: 600; font-size: .8125rem; overflow-wrap: anywhere; }
 .lms-tt-meta { font-size: .75rem; color: var(--mud-palette-text-secondary); overflow-wrap: anywhere; }
-.lms-tt-menu-btn { position: absolute; inset-block-start: 2px; inset-inline-end: 2px; display: grid; place-items: center; min-inline-size: 28px; min-block-size: 28px; border: 0; border-radius: 6px; background: transparent; color: var(--mud-palette-text-secondary); cursor: pointer; }
+.lms-tt-badges { display: flex; flex-wrap: wrap; gap: 4px; }
+.lms-tt-daychip { display: inline-flex; flex-direction: column; align-items: center; min-inline-size: 56px; padding: 4px 10px; border: 1px solid var(--mud-palette-lines-inputs); border-radius: 10px; background: var(--mud-palette-surface); color: inherit; font: inherit; cursor: pointer; }
+.lms-tt-daychip-on { border-color: var(--mud-palette-primary); border-width: 2px; font-weight: 600; }
+.lms-tt-menu-btn { position: absolute; inset-block-start: 0; inset-inline-end: 0; display: grid; place-items: center; border: 0; border-radius: 6px; background: transparent; color: var(--mud-palette-text-secondary); cursor: pointer; }
 .lms-tt-menu-btn:hover, .lms-tt-menu-btn:focus-visible { background: var(--mud-palette-background-gray); color: var(--mud-palette-text-primary); }
+.lms-tt-add { display: grid; place-items: center; inline-size: 100%; block-size: 100%; border: 0; background: transparent; color: var(--mud-palette-text-secondary); border-radius: 6px; cursor: pointer; }
+.lms-tt-add:hover, .lms-tt-add:focus-visible { background: color-mix(in srgb, var(--mud-palette-primary) 8%, transparent); color: var(--mud-palette-primary); }
+.lms-touch.mud-button-root, .lms-touch.mud-icon-button { min-block-size: 44px; min-inline-size: 44px; }
+.lms-touch.lms-tt-menu-btn, .lms-touch.lms-tt-add { min-block-size: 44px; min-inline-size: 44px; } /* 44 px targets for the move and add controls */
 .lms-tt-dragging { user-select: none; touch-action: none; }
 .lms-tt-move-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-block-start: 8px; }
 @media (max-width: 599px) { .lms-tt-wrap { margin-inline: -4px; } }
-.lms-touch.mud-button-root, .lms-touch.mud-icon-button, .lms-touch { min-block-size: 44px; min-inline-size: 44px; }
-.lms-tt-menu-btn.lms-touch { min-block-size: 44px; min-inline-size: 44px; inset-block-start: 0; inset-inline-end: 0; }
-.lms-tt-add { display: grid; place-items: center; inline-size: 100%; block-size: 100%; min-block-size: 44px; border: 0; background: transparent; color: var(--mud-palette-text-secondary); border-radius: 6px; cursor: pointer; }
-.lms-tt-add:hover, .lms-tt-add:focus-visible { background: color-mix(in srgb, var(--mud-palette-primary) 8%, transparent); color: var(--mud-palette-primary); }
-.lms-tt-badges { display: flex; flex-wrap: wrap; gap: 4px; }
-.lms-tt-slot { padding-inline-end: 48px; }
 .lms-tt-week-nav { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; margin-block-end: 12px; }
 .lms-tt-week-range { font-variant-numeric: tabular-nums; font-weight: 600; min-inline-size: 11rem; text-align: center; }
 .lms-tt-card { display: flex; flex-direction: column; gap: 2px; padding: 6px 8px; border-radius: 6px; background: var(--mud-palette-surface); border: 1px solid var(--mud-palette-lines-default); }
@@ -121,8 +122,10 @@ html:lang(ar), html:lang(ar) body { font-family: Cairo, "Segoe UI", Tahoma, Aria
 .lms-tt-cancelled { opacity: .7; }
 .lms-tt-cancelled .lms-tt-course { text-decoration: line-through; }
 .lms-tt-days { display: none; }
-.lms-tt-daychip { display: inline-flex; flex-direction: column; align-items: center; min-inline-size: 56px; padding: 4px 10px; border: 1px solid var(--mud-palette-lines-inputs); border-radius: 10px; background: var(--mud-palette-surface); color: inherit; font: inherit; cursor: pointer; }
-.lms-tt-daychip-on { border-color: var(--mud-palette-primary); border-width: 2px; font-weight: 600; }
 .lms-tt-daylist { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 8px; }
 .lms-tt-dayrow { display: grid; gap: 4px; padding-block: 6px; border-block-end: 1px solid var(--mud-palette-table-lines); }
 @media (max-width: 599px) { .lms-tt-weekgrid { display: none; } .lms-tt-days { display: block; } }
+@media (forced-colors: active) {
+    .lms-tt-cell:focus-visible, .lms-tt-cell.lms-tt-target, .lms-tt-cell.lms-tt-drop { outline: 2px solid Highlight; outline-offset: 1px; }
+    .lms-tt-cell.lms-tt-clash { border-color: Mark; }
+}

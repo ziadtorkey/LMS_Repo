@@ -1,0 +1,23 @@
+@using Lms.Shared.Timetable
+@inject ICultureService Culture
+
+@* The clashes the server named for a term (from "Check for conflicts" or a refused publish), one sentence each; or that there are none. *@
+<SectionCard Title="@L["Tt_Conflicts_Title"]" TestId="tt-conflicts" Class="mb-3">
+    @if (Conflicts.Count == 0)
+    {
+        <MudText Typo="Typo.body2" data-testid="tt-conflicts-none">@L["Tt_Conflicts_None"]</MudText>
+    }
+    else
+    {
+        <ul class="lms-excuse-covered" data-testid="tt-conflicts-list">
+            @foreach (var c in Conflicts)
+            {
+                <li>@TimetableConflictText.Describe([c], L, Culture)</li>
+            }
+        </ul>
+    }
+</SectionCard>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<SlotConflictDto> Conflicts { get; set; } = [];
+}

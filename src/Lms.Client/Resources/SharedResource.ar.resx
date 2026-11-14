@@ -1714,7 +1714,7 @@
   <data name="Tt_Delete_Confirm" xml:space="preserve"><value>حذف {0} من الجدول؟</value></data>
   <data name="Tt_Setup_Title" xml:space="preserve"><value>إعداد الجدول الدراسي</value></data>
   <data name="Tt_Setup_Subtitle" xml:space="preserve"><value>حصص اليوم الدراسي.</value></data>
-  <data name="Tt_Setup_SettingsNote" xml:space="preserve"><value>أيام العمل وما يُفعل عند التعارض (منع أو تنبيه) من إعدادات الوحدة: غيّرها من تبويب الإعدادات في الوحدة.</value></data>
+  <data name="Tt_Setup_SettingsNote" xml:space="preserve"><value>ما يُفعل عند التعارض (منع أو تنبيه) إعداد للوحدة: غيّره من تبويب الإعدادات في الوحدة.</value></data>
   <data name="Tt_Periods" xml:space="preserve"><value>الحصص</value></data>
   <data name="Tt_Periods_EmptyTitle" xml:space="preserve"><value>لا توجد حصص بعد</value></data>
   <data name="Tt_Periods_EmptyText" xml:space="preserve"><value>أضف حصص اليوم (اسم ووقت بداية ونهاية) قبل بناء الجدول.</value></data>
@@ -1758,4 +1758,9 @@
   <data name="Tt_Exception_Note" xml:space="preserve"><value>ملاحظة (اختياري)</value></data>
   <data name="Tt_Exception_Add" xml:space="preserve"><value>إضافة التغيير</value></data>
   <data name="Tt_Exception_DateRequired" xml:space="preserve"><value>اختر التاريخ.</value></data>
+  <data name="Tt_Publish_Refused" xml:space="preserve"><value>لم يُنشر شيء: في الجدول تعارضات. تظهر أدناه؛ عالجها ثم انشر من جديد.</value></data>
+  <data name="Tt_WorkingDays" xml:space="preserve"><value>أيام العمل</value></data>
+  <data name="Tt_WorkingDays_None" xml:space="preserve"><value>اختر يوم عمل واحدًا على الأقل.</value></data>
+  <data name="Tt_WorkingDays_Saved" xml:space="preserve"><value>تم حفظ أيام العمل.</value></data>
+  <data name="Tt_WorkingDays_Forbidden" xml:space="preserve"><value>لا يمكنك تغيير أيام العمل لهذه الوحدة.</value></data>
 </root>
