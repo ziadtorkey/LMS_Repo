@@ -1,0 +1,23 @@
+@using Lms.Shared.Organizations
+
+@* Summary tiles above the organization tree (Stitch organization_tree screen, issue 562): counted from the units already loaded,
+   so they need no extra request. Hidden by the page while a search filters the list. *@
+<div class="lms-stats" role="list" aria-label="@L["OrgTree_Summary"]" data-testid="org-stats">
+    @Tile("units", L["OrgTree_StatUnits"], Units.Count, Icons.Material.Rounded.AccountTree)
+    @Tile("active", L["OrgTree_StatActive"], Units.Count(u => u.Status != OrgUnitStatuses.Inactive), Icons.Material.Rounded.CheckCircle)
+    @Tile("depth", L["OrgTree_StatDepth"], Units.Count == 0 ? 0 : Units.Max(u => u.Depth) + 1, Icons.Material.Rounded.Layers)
+    @Tile("levels", L["OrgTree_StatLevels"], Units.Select(u => u.LevelTypeId).Distinct().Count(), Icons.Material.Rounded.Category)
+</div>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<OrgUnitNodeDto> Units { get; set; } = [];
+
+    private static RenderFragment Tile(string key, string label, int value, string icon) =>
+        @<div class="lms-stat" role="listitem" data-testid="@($"org-stat-{key}")">
+            <div>
+                <div class="lms-stat-label">@label</div>
+                <div class="lms-stat-value">@value.ToString(System.Globalization.CultureInfo.InvariantCulture)</div>
+            </div>
+            <span class="lms-stat-icon" aria-hidden="true"><MudIcon Icon="@icon" /></span>
+        </div>;
+}
