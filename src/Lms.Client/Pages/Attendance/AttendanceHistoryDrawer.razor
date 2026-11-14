@@ -7,10 +7,10 @@
 @* Who changed which mark, when and why (AttendanceRecordChange), in a side drawer that opens from the end edge (the left edge in Arabic). *@
 <MudDrawer Open="@Open" OpenChanged="OpenChanged" Anchor="Anchor.End" Variant="DrawerVariant.Temporary" Elevation="2" Width="min(420px, 100vw)"
            Class="lms-history-drawer" data-testid="history-drawer">
-    <div class="pa-4">
+    <div class="pa-4" @onkeydown="OnKeyDown">
         <div class="d-flex align-center justify-space-between mb-3">
             <MudText Typo="Typo.h6" HtmlTag="h2">@L["Att_History_Title"]</MudText>
-            <MudIconButton Icon="@Icons.Material.Rounded.Close" aria-label="@L["Common_Close"]" OnClick="CloseAsync" data-testid="history-close" />
+            <MudIconButton @ref="_close" Icon="@Icons.Material.Rounded.Close" Class="lms-touch" aria-label="@L["Common_Close"]" OnClick="CloseAsync" data-testid="history-close" />
         </div>
         @if (_loading)
         {
@@ -61,7 +61,8 @@
 @code {
     private IReadOnlyList<AttendanceChangeDto> _changes = [];
     private bool _loading, _failed;
-    private Guid? _loadedFor;
+    private MudIconButton? _close;
+    private bool _wasOpen, _focusClose;
 
     [Parameter] public bool Open { get; set; }
     [Parameter] public EventCallback<bool> OpenChanged { get; set; }
@@ -69,13 +70,34 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        if (Open && SessionId is { } id && _loadedFor != id) await LoadAsync();
+        // Every opening reads the list again: an edit made since the last time must show (and a failed read can simply be reopened).
+        var opening = Open && !_wasOpen;
+        _wasOpen = Open;
+        if (opening)
+        {
+            _focusClose = true;
+            await LoadAsync();
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Focus moves into the drawer when it opens; the app's focus helper gives it back to the History button when it closes (L24).
+        if (_focusClose && Open && _close is not null)
+        {
+            _focusClose = false;
+            await _close.FocusAsync();
+        }
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape") await CloseAsync();
     }
 
     private async Task LoadAsync()
     {
         if (SessionId is not { } id) return;
-        _loadedFor = id;
         _loading = true;
         _failed = false;
         var (value, failed) = await ApiCalls.RunAsync(() => Api.GetHistoryAsync(id), Navigation);

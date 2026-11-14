@@ -121,3 +121,6 @@ html:lang(ar), html:lang(ar) body { font-family: Cairo, "Segoe UI", Tahoma, Aria
 .lms-att-counts { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: .8125rem; min-width: 0; }
 .lms-att-count strong { font-variant-numeric: tabular-nums; margin-inline-start: 2px; }
 @media (max-width: 599px) { .lms-att-btn { flex-direction: column; gap: 2px; font-size: .75rem; padding-block: 4px; } .lms-att-key { display: none; } }
+.lms-touch.mud-button-root, .lms-touch.mud-icon-button { min-block-size: 44px; min-inline-size: 44px; }
+.lms-date-filter { max-inline-size: 220px; }
+.lms-session-grid > .lms-section + .lms-section { margin-block-start: 0; }

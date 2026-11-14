@@ -18,7 +18,7 @@
     </div>
 
     <div class="lms-chip-row mt-2">
-        <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@(Taken ? Color.Success : Color.Warning)" Class="lms-status-chip"
+        <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@(Taken ? Color.Success : Color.Info)" Class="lms-status-chip"
                  data-testid="@($"session-state-{Session.Id}")">@L[Taken ? "Att_State_Taken" : "Att_State_Open"]</MudChip>
         @if (Session.IsProposal)
         {
@@ -28,6 +28,10 @@
         {
             <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@L["Att_Source_AdHoc"]</MudChip>
         }
+        @if (Session.IsSubstitute)
+        {
+            <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Info" Icon="@Icons.Material.Rounded.SwapHoriz" data-testid="@($"session-substitute-{Session.Id}")">@L["Att_Substitute_Banner"]</MudChip>
+        }
         @if (Locked)
         {
             <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Default" data-testid="@($"session-locked-{Session.Id}")"
@@ -35,20 +39,16 @@
         }
     </div>
 
-    @if (Session.IsSubstitute)
-    {
-        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" Class="mt-2" data-testid="@($"session-substitute-{Session.Id}")">@L["Att_Substitute_Banner"]</MudAlert>
-    }
 
     <MudText Typo="Typo.body2" Class="lms-muted mt-2" data-testid="@($"session-progress-{Session.Id}")">@string.Format(L["Att_Progress"], Session.MarkedCount, Session.RosterCount)</MudText>
 
     <div class="lms-session-actions mt-3">
         @if (PrimaryKey is not null)
         {
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="@($"attendance/sessions/{Session.Id}")"
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="lms-touch" Href="@($"attendance/sessions/{Session.Id}")"
                        data-testid="@($"session-primary-{Session.Id}")">@L[PrimaryKey]</MudButton>
         }
-        <MudIconButton Icon="@Icons.Material.Rounded.History" aria-label="@L["Att_History_Open"]"
+        <MudIconButton Icon="@Icons.Material.Rounded.History" Class="lms-touch" aria-label="@L["Att_History_Open"]"
                        OnClick="() => OnHistory.InvokeAsync(Session)" data-testid="@($"session-history-{Session.Id}")" />
     </div>
 </SectionCard>
@@ -65,9 +65,9 @@
     private bool CanEdit => PermState.Has(Permissions.Attendance.Edit);
 
     /// <summary>One primary action: Take (open), Confirm (a proposal), Review (taken), Edit (taken after the window, with permission only).</summary>
-    private string? PrimaryKey =>
+    private string PrimaryKey =>
         Session.IsProposal ? "Att_Action_Confirm"
         : !Taken ? "Att_Action_Take"
-        : Locked ? (CanEdit ? "Att_Action_Edit" : null)
+        : Locked && CanEdit ? "Att_Action_Edit" // the lock is for editing: without Attendance.Edit the session can still be read
         : "Att_Action_Review";
 }
