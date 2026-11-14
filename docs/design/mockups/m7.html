@@ -1,0 +1,611 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LMS M7 mockups</title>
+<!-- Design reference only (docs/design/m7-year-end.md). Not served by the app.
+     Open with ?screen=home|years|close|gradebook|grade-request|grade-changes|promo-preview|promo-run|promo-result|withdraw|archive|readmit|new-year|idp-saml|idp-ldap|login-ldap&lang=ar|en&theme=light|dark (promo-result also &undo=over) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<style>
+/* ---------- Stitch tokens as LmsTheme.cs and lms-stitch.css set them (main after #560) ---------- */
+:root {
+  --mud-palette-primary:#00663D; --mud-palette-primary-text:#FFFFFF; --mud-palette-info:#1E40AF; --mud-palette-success:#1D7344;
+  --mud-palette-warning:#B45309; --mud-palette-error:#B42318; --mud-palette-background:#F8FAFC; --mud-palette-background-gray:#F1F5F9;
+  --mud-palette-surface:#FFFFFF; --mud-palette-text-primary:#0B1C30; --mud-palette-text-secondary:#475569;
+  --mud-palette-action-default:#475569; --mud-palette-action-disabled:rgba(11,28,48,.32); --mud-palette-action-disabled-background:rgba(11,28,48,.08);
+  --mud-palette-lines-default:#E2E8F0; --mud-palette-lines-inputs:#7A8793; --mud-palette-table-lines:#F1F5F9; --mud-palette-overlay-dark:rgba(11,28,48,.45);
+  --lms-accent:#10B981; --lms-recessed:#EFF4FF; --lms-radius-control:8px; --lms-radius-surface:12px;
+  --lms-shadow-1:0 1px 3px 0 rgba(0,0,0,.04), 0 1px 2px -1px rgba(0,0,0,.02); --lms-shadow-2:0 10px 25px -5px rgba(0,0,0,.08), 0 8px 10px -6px rgba(0,0,0,.04);
+  --lms-focus-ring:0 0 0 2px var(--mud-palette-surface), 0 0 0 4px var(--mud-palette-primary);
+}
+:root[data-theme=dark] {
+  --mud-palette-primary:#4CC38A; --mud-palette-primary-text:#032013; --mud-palette-info:#60A5FA; --mud-palette-success:#34D399;
+  --mud-palette-warning:#FBBF24; --mud-palette-error:#F87171; --mud-palette-background:#090D10; --mud-palette-background-gray:#16202A;
+  --mud-palette-surface:#121A20; --mud-palette-text-primary:#E2E8F0; --mud-palette-text-secondary:#94A3B8;
+  --mud-palette-action-default:#94A3B8; --mud-palette-action-disabled:rgba(226,232,240,.3); --mud-palette-action-disabled-background:rgba(226,232,240,.1);
+  --mud-palette-lines-default:#1E293B; --mud-palette-lines-inputs:#6A7B85; --mud-palette-table-lines:#1E293B; --mud-palette-overlay-dark:rgba(0,0,0,.6);
+  --lms-recessed:#16202A; --lms-shadow-1:0 1px 3px 0 rgba(0,0,0,.35), 0 1px 2px -1px rgba(0,0,0,.25); --lms-shadow-2:0 10px 25px -5px rgba(0,0,0,.55), 0 8px 10px -6px rgba(0,0,0,.35);
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--mud-palette-background); color:var(--mud-palette-text-primary); font-family:Inter, Cairo, system-ui, sans-serif; font-size:15px; line-height:1.55; -webkit-font-smoothing:antialiased; }
+:root[lang=ar] body { font-family:Cairo, Inter, system-ui, sans-serif; }
+.ms { font-family:'Material Symbols Rounded'; font-weight:normal; font-style:normal; font-size:20px; line-height:1; display:inline-block; vertical-align:middle; user-select:none; }
+.ms-sm { font-size:18px; }
+[dir=rtl] .flip { transform:scaleX(-1); }
+h1,h2,h3,p { margin:0; }
+.ltr { direction:ltr; unicode-bidi:isolate; }
+.muted { color:var(--mud-palette-text-secondary); }
+.caption { font-size:12.5px; }
+.vh { position:absolute; inline-size:1px; block-size:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+
+/* ---------- shell: sidebar (Stitch groups), glass app bar ---------- */
+.shell { display:grid; grid-template-columns:260px minmax(0,1fr); min-height:100vh; }
+.side { background:var(--mud-palette-surface); border-inline-end:1px solid var(--mud-palette-lines-default); padding:20px 12px; }
+.brand { display:flex; align-items:center; gap:10px; padding:0 8px 16px; font-weight:700; }
+.brand-mark { inline-size:36px; block-size:36px; border-radius:10px; background:var(--mud-palette-primary); color:var(--mud-palette-primary-text); display:grid; place-items:center; }
+.nav-sec { font-size:12px; font-weight:600; color:var(--mud-palette-text-secondary); padding:14px 12px 4px; }
+.nav { display:flex; align-items:center; gap:12px; padding:9px 12px; border-radius:var(--lms-radius-control); font-size:14px; }
+.nav[aria-current] { background:var(--mud-palette-primary); color:var(--mud-palette-primary-text); font-weight:600; }
+.nav .badge { margin-inline-start:auto; }
+.appbar { height:64px; display:flex; align-items:center; gap:12px; padding-inline:24px; }
+.appbar .spacer { flex:1; }
+.pill { display:inline-flex; align-items:center; gap:6px; height:36px; padding-inline:12px; border-radius:999px; background:var(--lms-recessed); font-size:13.5px; font-weight:500; }
+.page { padding:8px 32px 32px; }
+.icon-btn { inline-size:40px; block-size:40px; border-radius:50%; display:inline-grid; place-items:center; color:var(--mud-palette-action-default); position:relative; border:0; background:none; }
+.icon-btn.sm { inline-size:32px; block-size:32px; }
+.badge { min-inline-size:18px; height:18px; padding-inline:5px; border-radius:9px; background:var(--mud-palette-error); color:#fff; font-size:11px; font-weight:700; display:inline-grid; place-items:center; }
+:root[data-theme=dark] .badge { color:#2A0603; }
+.icon-btn .badge { position:absolute; inset-block-start:2px; inset-inline-end:0; }
+.menu-btn { display:none; }
+
+/* ---------- Stitch building blocks (lms-stitch.css) ---------- */
+.ph { display:flex; flex-wrap:wrap; align-items:flex-end; gap:12px 20px; margin-block:8px 24px; }
+.ph-text { flex:1 1 260px; min-inline-size:0; }
+.h4 { font-family:Cairo, Inter, sans-serif; font-size:32px; font-weight:700; line-height:1.25; letter-spacing:-.01em; }
+.h6 { font-family:Cairo, Inter, sans-serif; font-size:18px; font-weight:600; line-height:1.4; }
+.sub { color:var(--mud-palette-text-secondary); font-size:14.5px; margin-block-start:4px; }
+.card { background:var(--mud-palette-surface); border:1px solid var(--mud-palette-lines-default); border-radius:var(--lms-radius-surface); box-shadow:var(--lms-shadow-1); }
+.card-head { display:flex; align-items:center; gap:12px; padding:16px 20px; border-block-end:1px solid var(--mud-palette-lines-default); }
+.card-body { padding:16px 20px 20px; }
+.sec-icon { inline-size:40px; block-size:40px; border-radius:10px; display:grid; place-items:center; flex:none; color:var(--mud-palette-primary); background:color-mix(in srgb, var(--mud-palette-primary) 10%, transparent); }
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:6px; height:40px; padding-inline:16px; border-radius:var(--lms-radius-control); font:inherit; font-size:14px; font-weight:600; border:1px solid transparent; background:none; color:var(--mud-palette-primary); white-space:nowrap; }
+.btn-filled { background:var(--mud-palette-primary); color:var(--mud-palette-primary-text); }
+.btn-outlined { border-color:var(--mud-palette-lines-default); background:var(--mud-palette-surface); color:var(--mud-palette-text-primary); }
+.btn-error { color:var(--mud-palette-error); }
+.btn-sm { height:32px; padding-inline:12px; font-size:13px; }
+.btn[disabled] { background:var(--mud-palette-action-disabled-background); color:var(--mud-palette-action-disabled); border-color:transparent; }
+.focus { box-shadow:var(--lms-focus-ring); }
+.field { display:flex; flex-direction:column; gap:6px; min-inline-size:0; }
+.label { font-size:13px; font-weight:500; }
+.input { min-height:40px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:6px 12px; border-radius:var(--lms-radius-control); background:var(--lms-recessed); border:1px solid var(--mud-palette-lines-inputs); font-size:14px; color:var(--mud-palette-text-primary); }
+.input.focused { border-color:var(--mud-palette-primary); box-shadow:0 0 0 3px color-mix(in srgb, var(--mud-palette-primary) 25%, transparent); }
+.input .ph-text { color:var(--mud-palette-text-secondary); flex:1; }
+.help { font-size:12.5px; color:var(--mud-palette-text-secondary); }
+.chip { display:inline-flex; align-items:center; gap:5px; height:26px; padding-inline:10px; border-radius:999px; font-size:12.5px; font-weight:500; white-space:nowrap; background:var(--mud-palette-background-gray); color:var(--mud-palette-text-primary); }
+.chip .ms { font-size:16px; }
+.chip-dot::before { content:''; inline-size:6px; block-size:6px; border-radius:50%; background:currentColor; }
+.chip-success { color:var(--mud-palette-success); background:color-mix(in srgb, var(--mud-palette-success) 12%, transparent); }
+.chip-info { color:var(--mud-palette-info); background:color-mix(in srgb, var(--mud-palette-info) 12%, transparent); }
+.chip-warning { color:var(--mud-palette-warning); background:color-mix(in srgb, var(--mud-palette-warning) 14%, transparent); }
+.chip-error { color:var(--mud-palette-error); background:color-mix(in srgb, var(--mud-palette-error) 12%, transparent); }
+.chip-input { background:var(--mud-palette-surface); border:1px solid var(--mud-palette-lines-default); }
+.seg { display:flex; inline-size:fit-content; max-inline-size:100%; overflow-x:auto; gap:4px; padding:4px; border-radius:10px; background:var(--lms-recessed); }
+.seg span { white-space:nowrap; padding:6px 14px; border-radius:var(--lms-radius-control); font-size:13.5px; font-weight:500; color:var(--mud-palette-text-secondary); }
+.seg span[aria-selected] { background:var(--mud-palette-surface); color:var(--mud-palette-text-primary); box-shadow:var(--lms-shadow-1); }
+.toggle-row { display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:var(--lms-radius-control); background:var(--lms-recessed); }
+.toggle-row + .toggle-row { margin-block-start:12px; }
+.toggle-row .t { flex:1; min-inline-size:0; } .toggle-row .t b { font-weight:500; display:block; }
+.switch { inline-size:36px; block-size:20px; border-radius:10px; background:var(--mud-palette-lines-inputs); position:relative; flex:none; }
+.switch::after { content:''; position:absolute; inset-block-start:2px; inset-inline-start:2px; inline-size:16px; block-size:16px; border-radius:50%; background:#fff; }
+.switch.on { background:var(--mud-palette-primary); } .switch.on::after { inset-inline-start:18px; }
+:root[data-theme=dark] .switch.on::after { background:var(--mud-palette-primary-text); }
+.switch.locked { opacity:.55; }
+.avatar { inline-size:40px; block-size:40px; border-radius:50%; display:grid; place-items:center; flex:none; font-size:14px; font-weight:600; background:color-mix(in srgb, var(--mud-palette-primary) 14%, transparent); color:var(--mud-palette-primary); }
+.avatar.sm { inline-size:32px; block-size:32px; font-size:12px; }
+.avatar.grp { background:color-mix(in srgb, var(--mud-palette-info) 14%, transparent); color:var(--mud-palette-info); }
+.dot { inline-size:8px; block-size:8px; border-radius:50%; background:var(--lms-accent); flex:none; }
+table { inline-size:100%; border-collapse:collapse; font-size:14px; }
+th, td { overflow-wrap:anywhere; }
+th { text-align:start; font-size:13px; font-weight:600; color:var(--mud-palette-text-secondary); background:var(--mud-palette-background-gray); padding:12px 16px; }
+td .ltr { white-space:nowrap; }
+td { padding:12px 16px; border-block-start:1px solid var(--mud-palette-table-lines); vertical-align:middle; }
+tr.sel td { background:color-mix(in srgb, var(--mud-palette-primary) 6%, transparent); }
+.alert { display:flex; gap:10px; align-items:flex-start; padding:12px 14px; border-radius:var(--lms-radius-control); font-size:14px; border:1px solid currentColor; }
+.alert-info { color:var(--mud-palette-info); background:color-mix(in srgb, var(--mud-palette-info) 6%, transparent); }
+.alert-warning { color:var(--mud-palette-warning); background:color-mix(in srgb, var(--mud-palette-warning) 7%, transparent); }
+.alert .t { color:var(--mud-palette-text-primary); }
+
+.lms-menu { position:absolute; z-index:5; min-inline-size:220px; padding:6px; border-radius:var(--lms-radius-surface); background:var(--mud-palette-surface); border:1px solid var(--mud-palette-lines-default); box-shadow:var(--lms-shadow-2); }
+.lms-menu div { display:flex; gap:10px; align-items:center; padding:9px 10px; border-radius:var(--lms-radius-control); font-size:14px; }
+.lms-menu .err { color:var(--mud-palette-error); }
+.lms-menu hr { border:0; border-block-start:1px solid var(--mud-palette-lines-default); margin:4px 0; }
+.dialog-wrap { position:relative; min-block-size:100vh; background:var(--mud-palette-overlay-dark); display:grid; place-items:start center; padding:48px 16px; }
+.dialog { inline-size:min(640px, 100%); background:var(--mud-palette-surface); border-radius:var(--lms-radius-surface); box-shadow:var(--lms-shadow-2); }
+.dialog-head { display:flex; align-items:center; gap:12px; padding:18px 24px 8px; }
+.dialog-body { padding:8px 24px 16px; display:flex; flex-direction:column; gap:18px; }
+.dialog-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:8px; padding:12px 24px 20px; }
+.lms-stats { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:16px; margin-block-end:20px; }
+.lms-stat { display:flex; justify-content:space-between; gap:12px; padding:16px 20px; }
+.lms-stat-label { font-size:13px; font-weight:500; color:var(--mud-palette-text-secondary); }
+.lms-stat-value { font-size:28px; font-weight:700; line-height:1.2; }
+.mobile-only { display:none; }
+
+/* ---------- M7 additions (proposed lms-stitch.css block; see the spec, section 11) ---------- */
+.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.stack-v { display:flex; flex-direction:column; gap:16px; }
+.row { display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; }
+.spacer { flex:1; }
+.mono { font-family:ui-monospace, 'Cascadia Mono', Consolas, monospace; font-size:13px; overflow-wrap:anywhere; min-inline-size:0; }
+.input > span { min-inline-size:0; overflow-wrap:anywhere; }
+textarea.input, .input.area { min-height:88px; align-items:flex-start; }
+.radio { inline-size:18px; block-size:18px; border-radius:50%; border:2px solid var(--mud-palette-lines-inputs); flex:none; display:inline-grid; place-items:center; }
+.radio.on { border-color:var(--mud-palette-primary); } .radio.on::after { content:''; inline-size:8px; block-size:8px; border-radius:50%; background:var(--mud-palette-primary); }
+.check { inline-size:18px; block-size:18px; border-radius:4px; border:2px solid var(--mud-palette-lines-inputs); flex:none; display:inline-grid; place-items:center; color:var(--mud-palette-primary-text); }
+.check.on { background:var(--mud-palette-primary); border-color:var(--mud-palette-primary); } .check.on::after { content:'✓'; font-size:12px; font-weight:700; line-height:1; }
+.alert-error { color:var(--mud-palette-error); background:color-mix(in srgb, var(--mud-palette-error) 6%, transparent); }
+.alert-success { color:var(--mud-palette-success); background:color-mix(in srgb, var(--mud-palette-success) 6%, transparent); }
+.btn-danger { background:var(--mud-palette-error); color:#fff; } :root[data-theme=dark] .btn-danger { color:#2A0603; }
+.btn-text { background:none; color:var(--mud-palette-primary); padding-inline:8px; }
+.link { color:var(--mud-palette-primary); font-weight:600; text-decoration:underline; text-underline-offset:2px; }
+
+/* Wizard steps: number, label; done steps show a check. The order follows the document direction. */
+.lms-steps { display:flex; flex-wrap:wrap; gap:8px 24px; list-style:none; margin:0 0 20px; padding:0; counter-reset:s; }
+.lms-steps li { display:flex; align-items:center; gap:8px; font-size:14px; font-weight:500; color:var(--mud-palette-text-secondary); }
+.lms-steps .n { inline-size:28px; block-size:28px; border-radius:50%; display:grid; place-items:center; font-size:13px; font-weight:700; background:var(--mud-palette-background-gray); color:var(--mud-palette-text-secondary); }
+.lms-steps li[aria-current] { color:var(--mud-palette-text-primary); font-weight:600; }
+.lms-steps li[aria-current] .n { background:var(--mud-palette-primary); color:var(--mud-palette-primary-text); }
+.lms-steps li.done .n { background:color-mix(in srgb, var(--mud-palette-primary) 14%, transparent); color:var(--mud-palette-primary); }
+.lms-steps li + li::before { content:''; inline-size:24px; block-size:2px; background:var(--mud-palette-lines-default); margin-inline-end:16px; }
+
+/* "What will happen": one row per effect, icon, count, words, optional link. */
+.lms-effects { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:2px; }
+.lms-effects li { display:flex; gap:12px; align-items:flex-start; padding:10px 12px; border-radius:var(--lms-radius-control); background:var(--lms-recessed); }
+.lms-effects .ms { color:var(--mud-palette-primary); margin-block-start:1px; }
+.lms-effects li.warn .ms { color:var(--mud-palette-warning); }
+.lms-effects .t { flex:1; min-inline-size:0; } .lms-effects b { font-weight:600; }
+
+/* Typed confirmation for an action the UI cannot undo. */
+.lms-confirm-type { display:flex; flex-direction:column; gap:6px; padding:14px; border-radius:var(--lms-radius-control); border:1px solid color-mix(in srgb, var(--mud-palette-error) 40%, transparent); background:color-mix(in srgb, var(--mud-palette-error) 4%, transparent); }
+
+/* Job progress: a bar with a polite status line; the result card replaces it. */
+.lms-job { display:flex; flex-direction:column; gap:10px; }
+.lms-bar { block-size:8px; border-radius:4px; background:var(--mud-palette-background-gray); overflow:hidden; }
+.lms-bar > span { display:block; block-size:100%; border-radius:4px; background:var(--mud-palette-primary); }
+
+/* Undo window: the clock time in words, a countdown beside it, the action at the end. */
+.lms-undo { display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px; padding:14px 16px; border-radius:var(--lms-radius-surface); background:color-mix(in srgb, var(--mud-palette-info) 8%, var(--mud-palette-surface)); border:1px solid color-mix(in srgb, var(--mud-palette-info) 35%, transparent); }
+.lms-undo > .ms { color:var(--mud-palette-info); }
+.lms-undo .t { flex:1 1 280px; min-inline-size:0; }
+.lms-undo.over { background:var(--mud-palette-background-gray); border-color:var(--mud-palette-lines-default); }
+.lms-undo.over > .ms { color:var(--mud-palette-text-secondary); }
+
+/* Locked year notice on grade and attendance pages. */
+.lms-locked { display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; padding:12px 16px; border-radius:var(--lms-radius-control); background:var(--lms-recessed); margin-block-end:16px; }
+.lms-locked .t { flex:1 1 260px; }
+.lms-cell-state { display:flex; flex-direction:column; align-items:flex-start; gap:4px; }
+.lms-diff { display:inline-flex; align-items:center; gap:6px; direction:ltr; unicode-bidi:isolate; font-variant-numeric:tabular-nums; }
+
+/* Year-end checklist on the home page. */
+.lms-checklist { list-style:none; margin:0; padding:0; }
+.lms-checklist li { display:flex; gap:14px; align-items:flex-start; padding:14px 0; border-block-start:1px solid var(--mud-palette-table-lines); }
+.lms-checklist li:first-child { border-block-start:0; padding-block-start:0; }
+.lms-checklist .st { inline-size:28px; block-size:28px; border-radius:50%; display:grid; place-items:center; flex:none; background:var(--mud-palette-background-gray); color:var(--mud-palette-text-secondary); font-weight:700; font-size:13px; }
+.lms-checklist .st.done { background:color-mix(in srgb, var(--mud-palette-success) 14%, transparent); color:var(--mud-palette-success); }
+.lms-checklist .st.warn { background:color-mix(in srgb, var(--mud-palette-warning) 14%, transparent); color:var(--mud-palette-warning); }
+.lms-checklist .t { flex:1; min-inline-size:0; } .lms-checklist b { font-weight:600; display:block; }
+
+/* Read-only values the school gives its identity team, each with Copy. */
+.lms-copy-row { display:flex; align-items:center; gap:8px; padding:8px 8px 8px 12px; border-radius:var(--lms-radius-control); background:var(--lms-recessed); }
+[dir=rtl] .lms-copy-row { padding:8px 12px 8px 8px; }
+.lms-copy-row .v { flex:1; min-inline-size:0; overflow-wrap:anywhere; }
+.lms-checks { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px; }
+.lms-checks li { display:flex; gap:10px; align-items:flex-start; font-size:14px; }
+.lms-checks .ok { color:var(--mud-palette-success); } .lms-checks .bad { color:var(--mud-palette-error); }
+
+/* Option cards (radio) for a choice that needs a sentence each. */
+.lms-option { display:flex; gap:12px; align-items:flex-start; padding:14px; border-radius:var(--lms-radius-control); border:1px solid var(--mud-palette-lines-default); }
+.lms-option.on { border-color:var(--mud-palette-primary); background:color-mix(in srgb, var(--mud-palette-primary) 5%, transparent); }
+.lms-option .t { flex:1; } .lms-option b { font-weight:600; display:block; }
+
+.lms-sel { display:inline-flex; align-items:center; gap:4px; min-block-size:34px; padding:4px 6px 4px 10px; border-radius:var(--lms-radius-control); background:var(--lms-recessed); border:1px solid var(--mud-palette-lines-inputs); font-size:13.5px; white-space:nowrap; }
+[dir=rtl] .lms-sel { padding:4px 10px 4px 6px; }
+.lms-bulk { display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; padding:10px 16px; background:color-mix(in srgb, var(--mud-palette-primary) 7%, transparent); border-block-end:1px solid var(--mud-palette-lines-default); font-size:14px; }
+.lms-wizard-foot { display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; padding:16px 20px; border-block-start:1px solid var(--mud-palette-lines-default); }
+.lms-mod { display:grid; grid-template-columns:minmax(0,1.4fr) minmax(0,1fr); gap:16px; align-items:start; }
+.lms-timeline { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:10px; font-size:13.5px; }
+.lms-timeline li { display:flex; gap:10px; } .lms-timeline .ms { color:var(--mud-palette-text-secondary); }
+.login { min-block-size:100vh; display:grid; place-items:center; padding:24px 16px; }
+.login .card { inline-size:min(440px, 100%); }
+.divider { display:flex; align-items:center; gap:12px; color:var(--mud-palette-text-secondary); font-size:13px; } .divider::before, .divider::after { content:''; flex:1; border-block-start:1px solid var(--mud-palette-lines-default); }
+.mobile-only { display:none; }
+
+/* ---------- 360 px ---------- */
+@media (max-width: 899.98px) {
+  .shell { grid-template-columns:minmax(0,1fr); } .side { display:none; } .menu-btn { display:inline-grid; }
+  .appbar { padding-inline:8px; gap:4px; } .appbar .ctx { display:none; }
+  .page { padding:4px 16px 24px; }
+  .h4 { font-size:26px; }
+  .mobile-only { display:inline-grid; }
+  .grid2, .lms-mod { grid-template-columns:1fr; }
+  .dialog-wrap { padding:0; place-items:stretch; } .dialog { border-radius:0; min-block-size:100vh; inline-size:100% !important; }
+  .dialog-actions { position:sticky; inset-block-end:0; background:var(--mud-palette-surface); border-block-start:1px solid var(--mud-palette-lines-default); }
+  .dialog-actions .btn { flex:1 1 auto; }
+  .lms-stats { grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px; }
+  .lms-stat { flex-direction:column-reverse; padding:12px 14px; } .lms-stat-value { font-size:22px; }
+  .lms-steps { gap:6px 10px; } .lms-steps li + li::before { inline-size:10px; margin-inline-end:4px; }
+  .lms-steps li:not([aria-current]) .lbl { position:absolute; inline-size:1px; block-size:1px; overflow:hidden; clip-path:inset(50%); }
+  .btn, .lms-sel { min-block-size:44px; }
+  table.stack thead { display:none; } table.stack tr { display:block; padding:12px 16px; border-block-start:1px solid var(--mud-palette-table-lines); }
+  table.stack td { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:4px 0; border:0; }
+  table.stack td::before { content:attr(data-label); font-size:12.5px; color:var(--mud-palette-text-secondary); flex:none; }
+  table.stack td.lead { font-weight:600; justify-content:flex-start; padding-block-end:6px; } table.stack td.lead::before { content:none; }
+  table.stack td.nolabel::before { content:none; }
+  .lms-wizard-foot .btn { flex:1 1 auto; }
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const qs = new URLSearchParams(location.search);
+const lang = qs.get('lang') === 'ar' ? 'ar' : 'en';
+const theme = qs.get('theme') === 'dark' ? 'dark' : 'light';
+const screen = qs.get('screen') || 'home';
+document.documentElement.lang = lang; document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr'; document.documentElement.dataset.theme = theme;
+
+const S = {
+  en: {
+    app:'Learning Management System', ctx:'Al Noor Schools — Main School (Org Admin)', ctxT:'Al Noor Schools — North Branch (Teacher)', ctxM:'Al Noor Schools — North Branch (Manager)', year:'2026/2027', other:'العربية',
+    secHome:'Home', secStruct:'Structure', navYears:'Academic years', secPeople:'People', navStudents:'Students', secYear:'Year end', navGc:'Grade changes', navPromo:'Promotion', navArchive:'Student archive',
+    secAcad:'Academic', navGrades:'My class courses', secSec:'Security and settings', navIdp:'Sign-in providers',
+    // home
+    hello:'Good morning, Ahmed', helloSub:'Al Noor Schools at a glance.',
+    ckTitle:'Year end: 2026/2027', ckSub:'The year ends on <span class="ltr">2027-06-24</span>, in 42 days. Each step is a link; nothing here blocks you.',
+    ck1:'Publish the term grades', ck1s:'12 grade items in 4 class courses aren’t published yet.', ck1a:'Review',
+    ck2:'Close the year', ck2s:'Locks grades and attendance. A closed year can’t be reopened; later fixes go through grade-change approval.', ck2a:'Close 2026/2027',
+    ck3:'Run the promotion', ck3s:'Available after the year is closed.', ck4:'Open 2027/2028', ck4s:'Done on <span class="ltr">2026-11-02</span>: the year is Planned with 48 classes.', ck4a:'View',
+    stStudents:'Active students', stClasses:'Classes', stOpenGc:'Grade changes waiting', stUnpub:'Unpublished grade items',
+    // years
+    yrTitle:'Academic years', yrSub:'Close a year at its end, run the promotion, then open the next one.', yrNew:'Open next year',
+    colYear:'Year', colDates:'Dates', colTerms:'Terms', colStatus:'Status', colActions:'Actions',
+    y1:'2027/2028', y1d:'2027-08-29 – 2028-06-22', y2:'2026/2027', y2d:'2026-08-30 – 2027-06-24', y3:'2025/2026', y3d:'2025-08-31 – 2026-06-25',
+    stPlanned:'Planned', stActive:'Active', stClosed:'Closed', actClose:'Close year', actPromo:'Promotion', actReport:'Closing report', actActivate:'Activate', actEdit:'Edit',
+    // close
+    clTitle:'Close 2026/2027', clLead:'Closing locks this year for everyone. It can’t be reopened; a grade that must change later goes through a manager’s approval.',
+    clWill:'What will happen', cl1:'<b>184 gradebooks</b> are locked. Teachers can only ask for a change.', cl2:'<b>6,240 attendance sessions</b> are locked.', cl3:'<b>The promotion opens</b> for 2026/2027 (Org Admin anywhere, managers in their own units).',
+    clCheck:'Worth checking first (doesn’t block closing)', clw1:'<b>12 grade items</b> aren’t published in 4 class courses.', clw2:'<b>5 assignments</b> are still open for submissions.', clw3:'<b>4 excuse requests</b> are waiting for a decision.', clReview:'Review',
+    clType:'To confirm, type the year name: <b class="ltr">2026/2027</b>', clBtn:'Close the year', cancel:'Cancel',
+    // gradebook locked
+    gbTitle:'Physics 1 · 10-A', gbSub:'Grades', gbYear:'2025/2026 · Closed', gbLocked:'This year is closed. A grade can change only with a manager’s approval.', gbHow:'How it works',
+    colStudent:'Student', colQuiz:'Quiz 1 <span class="ltr">/10</span>', colMid:'Mid-term <span class="ltr">/20</span>', colProj:'Project <span class="ltr">/30</span>', colTotal:'Total',
+    pending:'Change pending', changed:'Changed after close', reqChange:'Request a change', rejected:'Change rejected',
+    // grade request
+    grTitle:'Request a grade change', grStudent:'Student', grItem:'Item', grItemV:'Mid-term exam · Physics 1 · 10-A', grCur:'Current grade', grNew:'New grade', grReason:'Reason', grReasonV:'The second page of Omar’s paper was scanned after the marks were entered; question 4 (3 marks) was never marked.',
+    grReasonH:'Between 20 and 500 characters. The approver and the audit log see it; the student doesn’t.', grWho:'A manager or the org admin decides. You can’t approve your own request, and you can have one open request per grade.', grSend:'Send request',
+    // grade changes queue
+    gcTitle:'Grade changes', gcSub:'Requests to change a grade after the year was closed. Each decision is recorded.', fWaiting:'Waiting', fApproved:'Approved', fRejected:'Rejected',
+    colItem:'Item', colChange:'Change', colBy:'Requested by', colAge:'Waiting', mine:'Your request',
+    gcDetail:'Request details', gcFrom:'From', gcTo:'to', gcOutOf:'out of 20', gcReasonL:'Reason', gcAudit:'History', gcA1:'Requested by Mr. Faisal Al-Qahtani', gcA2:'Grade entered by Mr. Faisal Al-Qahtani', gcNote:'Note (needed to reject)', gcNoteH:'The teacher sees it with the decision.',
+    approve:'Approve', reject:'Reject', gcMineH:'Your own requests show “Your request”; another manager or the org admin decides them.',
+    // promotion preview
+    prTitle:'Promotion', prSub:'Move students to their next class. The suggestion comes from the level mapping; every row can be changed.', prHist:'Past runs',
+    s1:'Choose', s2:'Review', s3:'Run', prScope:'North Branch · Grade 10 · 2026/2027 → 2027/2028',
+    oPromote:'Promote', oRepeat:'Repeat', oGraduate:'Graduate', oTransfer:'Transfer out', noTarget:'No target class',
+    prWarn:'<b>5 students</b> have an open grade-change or excuse request. They’re flagged, not blocked.', prShow:'Show them',
+    prBlock:'<b>3 students</b> have no target class: 11-C doesn’t exist in 2027/2028 yet.', prFix:'Create the class',
+    prSearch:'Search students', prAllClasses:'All classes', prAllOutcomes:'All outcomes', prProblems:'Only rows with a note',
+    bulkSel:'2 selected', bulkSet:'Set outcome', bulkReset:'Reset to suggested',
+    colFrom:'From class', colOutcome:'Outcome', colTarget:'Target class', colNote:'Note', nOpenEx:'Open excuse request', nOpenGc:'Open grade change',
+    back:'Back', cont:'Continue', contWhy:'Fix the 3 rows without a target class to continue.', saved:'Changes are saved as you go.',
+    // run
+    runTitle:'Promoting 124 students', runLead:'120 promote · 4 repeat. New placements are created in 2027/2028, the old ones are closed, and history stays readable.',
+    runStatus:'Processed 46 of 124 students.', runLeave:'You can leave this page. The run continues, and its result is kept on this page’s link.',
+    // result
+    reTitle:'Promotion finished with 2 problems', reSub:'North Branch · Grade 10 · run by Ahmed Al-Mansour on <span class="ltr">2027-06-28 14:22</span>',
+    undoT:'You can undo this promotion until <b class="ltr">14:32</b> (9 minutes left), and only until someone does something in 2027/2028.', undoBtn:'Undo promotion',
+    undoOver:'Undo is no longer possible: attendance was recorded in 2027/2028 on <span class="ltr">2027-08-29</span>.',
+    rPromoted:'Promoted', rRepeat:'Repeating', rFailed:'Not changed', rTotal:'Students',
+    failTitle:'Not changed (2)', failSub:'Nothing was changed for these students. Fix the cause, then run the promotion again for them.', colReason:'Reason',
+    f1:'Already placed in 11-A for 2027/2028.', f2:'11-B is full (30 of 30).', download:'Download the list', rerun:'Run again for these 2',
+    // withdraw
+    wdTitle:'Withdraw Omar Saleh', wdLead:'Omar leaves the school. You can re-admit him later; his student code stays the same.',
+    wdReason:'Reason', wdReasonV:'Other', wdNote:'Note', wdNoteV:'The family is moving to Jeddah in December.', wdNoteH:'Needed for “Other”. Staff only: the student and guardians never see the reason.',
+    wdDate:'Effective date', wdDateH:'Sign-in stops on <span class="ltr">2026-11-20</span>.',
+    wdWill:'What will happen', wd1:'Omar is signed out and can’t sign in from the effective date.', wd2:'He leaves the class rosters and the active student lists.', wd3:'His grades, attendance and history stay, read-only for staff, in the student archive.', wd4:'His guardians keep read access to his closed years.',
+    wdBtn:'Withdraw student', profTitle:'Omar Saleh', profSub:'Student · 10-A · North Branch',
+    // archive
+    arTitle:'Student archive', arSub:'Students who left: withdrawn, graduated or transferred out. Read-only; re-admitting brings a student back.',
+    arSearch:'Search by name, code or national ID', fAll:'All', fWithdrawn:'Withdrawn', fGraduated:'Graduated', fTransfer:'Transferred out', arYear:'Year left: all',
+    colLeft:'Left', colLast:'Last class', readmit:'Re-admit', stWithdrawn:'Withdrawn', stGraduated:'Graduated', stTransfer:'Transferred out',
+    rsMove:'Moving to another school', rsHealth:'Health', rsOther:'Other',
+    arNote:'The reason is visible to staff only.',
+    // readmit
+    raTitle:'Re-admit Lina Haddad', raCode:'Her student code <b class="ltr">ST-2024-0118</b> stays the same.', raYear:'Year', raClass:'Class', raClassV:'10-B · 24 of 30', raDate:'Effective date', raReason:'Reason', raReasonV:'Returned after the family’s year abroad.',
+    raWill:'Sign-in is restored, her guardian links return, and her placement history shows “Re-admitted”.', raBtn:'Re-admit',
+    // new year
+    nyTitle:'Open 2027/2028', n1:'Dates', n2:'Structure', n3:'Review', n4:'Create',
+    nyHow:'How should the new year start?', nyCopy:'Copy the class structure from 2026/2027', nyCopyH:'The same classes and class courses, with the new year’s name.', nyTpl:'Apply a template', nyTplH:'Build the structure from a saved template.', nyBoth:'Both', nyBothH:'Copy, then add what the template has that the copy doesn’t.',
+    nyUnits:'Units to copy', nyWhat:'What to copy', nyClasses:'Classes', nyCC:'Class courses', nyBp:'Course blueprints', nyPeriods:'Timetable periods',
+    nyNever:'Students are never copied. Place them with the promotion run after this year is closed.', nyLater:'The new year is created as Planned; you activate it when it starts.',
+    // saml
+    spTitle:'Add a sign-in provider', spKind:'Provider type', spKindV:'SAML 2.0', spNameAr:'Name shown in Arabic', spNameArV:'دخول مدارس النور', spNameEn:'Name shown in English', spNameEnV:'Al Noor sign-in',
+    spMeta:'Identity provider metadata', spUrl:'Metadata URL', spUpload:'Upload XML', spCert:'Signing certificate', spCertExp:'Expires on <span class="ltr">2026-12-01</span> (17 days). Upload the new metadata before then.',
+    spOurs:'Give these to your identity team', spAcs:'Reply (ACS) URL', spEntity:'Entity ID', spMetaUrl:'Our metadata URL', copy:'Copy',
+    spMap:'Match people by', spEmailAttr:'Email attribute', spNidAttr:'National ID attribute', spSp:'Sign-in starts from the LMS (SP-initiated). Starting from the identity provider’s portal isn’t supported in v1.',
+    test:'Test connection', save:'Save',
+    // ldap
+    ldTitle:'LDAP / Active Directory', ldHost:'Server', ldPort:'Port', ldTransport:'Secure connection', ldNoPlain:'Unencrypted LDAP isn’t offered.', ldBind:'Service account (bind DN)', ldPw:'Service account password', ldPwV:'Stored. Leave empty to keep it.', ldBase:'Search base', ldFilter:'User filter',
+    ldRoles:'Roles are assigned in the LMS. Directory groups aren’t mapped to roles in v1.', ldResult:'Test result', ld1:'Connected over LDAPS to ldap.alnoor.edu.sa:636', ld2:'The server certificate is trusted', ld3:'Signed in with the service account', ld4:'The search found no user for “faisal.q”. Check the search base.',
+    // login
+    lgTitle:'Sign in to Al Noor Schools', lgMs:'Sign in with Microsoft', lgSaml:'Al Noor sign-in', lgOr:'or with your school account', lgUser:'Username', lgPw:'Password', lgBtn:'Sign in', lgErr:'Sign-in failed. Check your username and password and try again.', lgHelp:'Trouble signing in? Contact your school.'
+  },
+  ar: {
+    app:'نظام إدارة التعلم', ctx:'مدارس النور — المدرسة الرئيسية (مسؤول المؤسسة)', ctxT:'مدارس النور — فرع الشمال (معلم)', ctxM:'مدارس النور — فرع الشمال (مدير)', year:'2026/2027', other:'English',
+    secHome:'الرئيسية', secStruct:'الهيكل', navYears:'الأعوام الدراسية', secPeople:'الأشخاص', navStudents:'الطلاب', secYear:'نهاية العام', navGc:'تعديلات الدرجات', navPromo:'الترفيع', navArchive:'أرشيف الطلاب',
+    secAcad:'الأكاديمي', navGrades:'مقرراتي الصفية', secSec:'الأمان والإعدادات', navIdp:'جهات تسجيل الدخول',
+    hello:'صباح الخير يا أحمد', helloSub:'نظرة عامة على مدارس النور.',
+    ckTitle:'نهاية العام: 2026/2027', ckSub:'ينتهي العام في <span class="ltr">2027-06-24</span>، بعد 42 يومًا. كل خطوة رابط، ولا شيء هنا يمنعك من المتابعة.',
+    ck1:'نشر درجات الفصل الدراسي', ck1s:'لم تُنشر بعد 12 من بنود الدرجات في 4 مقررات صفية.', ck1a:'مراجعة',
+    ck2:'إغلاق العام', ck2s:'يقفل الدرجات والحضور. لا يمكن إعادة فتح عام مغلق، وأي تصحيح لاحق يمر بموافقة على تعديل الدرجة.', ck2a:'إغلاق 2026/2027',
+    ck3:'تشغيل الترفيع', ck3s:'متاح بعد إغلاق العام.', ck4:'فتح 2027/2028', ck4s:'تم في <span class="ltr">2026-11-02</span>: العام مخطط وفيه 48 فصلًا.', ck4a:'عرض',
+    stStudents:'الطلاب النشطون', stClasses:'الفصول', stOpenGc:'تعديلات درجات بانتظار القرار', stUnpub:'بنود درجات غير منشورة',
+    yrTitle:'الأعوام الدراسية', yrSub:'أغلق العام عند نهايته، وشغّل الترفيع، ثم افتح العام التالي.', yrNew:'فتح العام التالي',
+    colYear:'العام', colDates:'التواريخ', colTerms:'الفصول الدراسية', colStatus:'الحالة', colActions:'الإجراءات',
+    y1:'2027/2028', y1d:'2027-08-29 – 2028-06-22', y2:'2026/2027', y2d:'2026-08-30 – 2027-06-24', y3:'2025/2026', y3d:'2025-08-31 – 2026-06-25',
+    stPlanned:'مخطط', stActive:'نشط', stClosed:'مغلق', actClose:'إغلاق العام', actPromo:'الترفيع', actReport:'تقرير الإغلاق', actActivate:'تفعيل', actEdit:'تعديل',
+    clTitle:'إغلاق 2026/2027', clLead:'الإغلاق يقفل هذا العام للجميع ولا يمكن إعادة فتحه. أي درجة يلزم تعديلها لاحقًا تمر بموافقة المدير.',
+    clWill:'ما الذي سيحدث', cl1:'<b>تُقفل 184 سجل درجات.</b> يستطيع المعلمون طلب تعديل فقط.', cl2:'<b>تُقفل 6,240 جلسة حضور.</b>', cl3:'<b>يُفتح الترفيع</b> لعام 2026/2027 (لمسؤول المؤسسة في كل مكان، وللمديرين في وحداتهم).',
+    clCheck:'يحسن التحقق منه أولًا (لا يمنع الإغلاق)', clw1:'<b>12 بند درجات</b> غير منشورة في 4 مقررات صفية.', clw2:'<b>5 واجبات</b> ما زالت مفتوحة للتسليم.', clw3:'<b>4 طلبات أعذار</b> بانتظار القرار.', clReview:'مراجعة',
+    clType:'للتأكيد، اكتب اسم العام: <b class="ltr">2026/2027</b>', clBtn:'إغلاق العام', cancel:'إلغاء',
+    gbTitle:'الفيزياء 1 · 10-أ', gbSub:'الدرجات', gbYear:'2025/2026 · مغلق', gbLocked:'هذا العام مغلق. لا تتغير الدرجة إلا بموافقة المدير.', gbHow:'كيف يعمل ذلك',
+    colStudent:'الطالب', colQuiz:'الاختبار القصير 1 <span class="ltr">/10</span>', colMid:'منتصف الفصل <span class="ltr">/20</span>', colProj:'المشروع <span class="ltr">/30</span>', colTotal:'المجموع',
+    pending:'تعديل بانتظار القرار', changed:'عُدّلت بعد الإغلاق', reqChange:'طلب تعديل', rejected:'رُفض التعديل',
+    grTitle:'طلب تعديل درجة', grStudent:'الطالب', grItem:'البند', grItemV:'اختبار منتصف الفصل · الفيزياء 1 · 10-أ', grCur:'الدرجة الحالية', grNew:'الدرجة الجديدة', grReason:'السبب', grReasonV:'مُسحت الصفحة الثانية من ورقة عمر بعد إدخال الدرجات، ولم يُصحَّح السؤال 4 (3 درجات).',
+    grReasonH:'بين 20 و500 حرف. يراه صاحب القرار وسجل التدقيق، ولا يراه الطالب.', grWho:'يقرر المدير أو مسؤول المؤسسة. لا يمكنك الموافقة على طلبك، ولكل درجة طلب مفتوح واحد.', grSend:'إرسال الطلب',
+    gcTitle:'تعديلات الدرجات', gcSub:'طلبات تعديل درجة بعد إغلاق العام. يُسجَّل كل قرار.', fWaiting:'بانتظار القرار', fApproved:'المقبولة', fRejected:'المرفوضة',
+    colItem:'البند', colChange:'التعديل', colBy:'مقدّم الطلب', colAge:'مدة الانتظار', mine:'طلبك',
+    gcDetail:'تفاصيل الطلب', gcFrom:'من', gcTo:'إلى', gcOutOf:'من 20', gcReasonL:'السبب', gcAudit:'السجل', gcA1:'قدّم الطلب أ. فيصل القحطاني', gcA2:'أدخل الدرجة أ. فيصل القحطاني', gcNote:'ملاحظة (مطلوبة للرفض)', gcNoteH:'يراها المعلم مع القرار.',
+    approve:'موافقة', reject:'رفض', gcMineH:'تظهر طلباتك بعبارة «طلبك»، ويقرر فيها مدير آخر أو مسؤول المؤسسة.',
+    prTitle:'الترفيع', prSub:'انقل الطلاب إلى فصولهم التالية. الاقتراح يأتي من ربط المستويات، ويمكن تغيير كل صف.', prHist:'العمليات السابقة',
+    s1:'الاختيار', s2:'المراجعة', s3:'التشغيل', prScope:'فرع الشمال · الصف العاشر · 2026/2027 ← 2027/2028',
+    oPromote:'ترفيع', oRepeat:'إعادة الصف', oGraduate:'تخرج', oTransfer:'نقل خارج المدرسة', noTarget:'لا يوجد فصل',
+    prWarn:'<b>5 طلاب</b> لديهم طلب تعديل درجة أو عذر مفتوح. يظهرون بتنبيه ولا يُمنعون.', prShow:'عرضهم',
+    prBlock:'<b>3 طلاب</b> بلا فصل في العام الجديد: لا يوجد الفصل 11-ج في 2027/2028 بعد.', prFix:'إنشاء الفصل',
+    prSearch:'ابحث عن طالب', prAllClasses:'كل الفصول', prAllOutcomes:'كل النتائج', prProblems:'الصفوف التي عليها ملاحظة فقط',
+    bulkSel:'تم اختيار 2', bulkSet:'تحديد النتيجة', bulkReset:'العودة إلى المقترح',
+    colFrom:'الفصل الحالي', colOutcome:'النتيجة', colTarget:'الفصل الجديد', colNote:'ملاحظة', nOpenEx:'طلب عذر مفتوح', nOpenGc:'تعديل درجة مفتوح',
+    back:'رجوع', cont:'متابعة', contWhy:'أصلح الصفوف الثلاثة التي بلا فصل جديد لتتابع.', saved:'تُحفظ التغييرات أولًا بأول.',
+    runTitle:'جارٍ ترفيع 124 طالبًا', runLead:'120 ترفيع · 4 إعادة الصف. تُنشأ التسكينات الجديدة في 2027/2028 وتُغلق القديمة، ويبقى السجل متاحًا للقراءة.',
+    runStatus:'تمت معالجة 46 من 124 طالبًا.', runLeave:'يمكنك مغادرة هذه الصفحة. يستمر التشغيل، وتبقى نتيجته على رابط هذه الصفحة.',
+    reTitle:'انتهى الترفيع مع مشكلتين', reSub:'فرع الشمال · الصف العاشر · شغّله أحمد المنصور في <span class="ltr">2027-06-28 14:22</span>',
+    undoT:'يمكنك التراجع عن هذا الترفيع حتى الساعة <b class="ltr">14:32</b> (بقيت 9 دقائق)، وما دام لم يُسجَّل أي نشاط في 2027/2028.', undoBtn:'التراجع عن الترفيع',
+    undoOver:'لم يعد التراجع ممكنًا: سُجّل حضور في 2027/2028 بتاريخ <span class="ltr">2027-08-29</span>.',
+    rPromoted:'رُفّعوا', rRepeat:'يعيدون الصف', rFailed:'لم يتغيروا', rTotal:'الطلاب',
+    failTitle:'لم يتغيروا (2)', failSub:'لم يتغير شيء لهؤلاء الطلاب. أصلح السبب ثم شغّل الترفيع لهم مرة أخرى.', colReason:'السبب',
+    f1:'مسكَّن مسبقًا في 11-أ لعام 2027/2028.', f2:'الفصل 11-ب ممتلئ (30 من 30).', download:'تنزيل القائمة', rerun:'التشغيل مرة أخرى لهذين الطالبين',
+    wdTitle:'سحب عمر صالح', wdLead:'يغادر عمر المدرسة. يمكنك إعادة قبوله لاحقًا ويبقى رقمه الطلابي كما هو.',
+    wdReason:'السبب', wdReasonV:'أخرى', wdNote:'ملاحظة', wdNoteV:'تنتقل الأسرة إلى جدة في ديسمبر.', wdNoteH:'مطلوبة عند اختيار «أخرى». للموظفين فقط: لا يرى الطالب ولا أولياء الأمور السبب.',
+    wdDate:'تاريخ السريان', wdDateH:'يتوقف تسجيل الدخول في <span class="ltr">2026-11-20</span>.',
+    wdWill:'ما الذي سيحدث', wd1:'يُسجَّل خروج عمر ولا يستطيع الدخول من تاريخ السريان.', wd2:'يخرج من قوائم الفصول وقوائم الطلاب النشطين.', wd3:'تبقى درجاته وحضوره وسجله للقراءة فقط لدى الموظفين في أرشيف الطلاب.', wd4:'يحتفظ أولياء أمره بإمكانية قراءة أعوامه المغلقة.',
+    wdBtn:'سحب الطالب', profTitle:'عمر صالح', profSub:'طالب · 10-أ · فرع الشمال',
+    arTitle:'أرشيف الطلاب', arSub:'الطلاب الذين غادروا: سُحبوا أو تخرجوا أو نُقلوا. للقراءة فقط، وإعادة القبول تعيد الطالب.',
+    arSearch:'ابحث بالاسم أو الرقم الطلابي أو رقم الهوية', fAll:'الكل', fWithdrawn:'المسحوبون', fGraduated:'المتخرجون', fTransfer:'المنقولون', arYear:'عام المغادرة: الكل',
+    colLeft:'المغادرة', colLast:'آخر فصل', readmit:'إعادة القبول', stWithdrawn:'مسحوب', stGraduated:'متخرج', stTransfer:'منقول',
+    rsMove:'الانتقال إلى مدرسة أخرى', rsHealth:'أسباب صحية', rsOther:'أخرى',
+    arNote:'السبب يظهر للموظفين فقط.',
+    raTitle:'إعادة قبول لينا حداد', raCode:'يبقى رقمها الطلابي <b class="ltr">ST-2024-0118</b> كما هو.', raYear:'العام', raClass:'الفصل', raClassV:'10-ب · 24 من 30', raDate:'تاريخ السريان', raReason:'السبب', raReasonV:'عادت بعد عام قضته الأسرة في الخارج.',
+    raWill:'تعود إمكانية تسجيل الدخول وروابط ولي الأمر، ويظهر «أُعيد قبولها» في سجل التسكين.', raBtn:'إعادة القبول',
+    nyTitle:'فتح 2027/2028', n1:'التواريخ', n2:'الهيكل', n3:'المراجعة', n4:'الإنشاء',
+    nyHow:'كيف يبدأ العام الجديد؟', nyCopy:'نسخ هيكل الفصول من 2026/2027', nyCopyH:'الفصول والمقررات الصفية نفسها باسم العام الجديد.', nyTpl:'تطبيق قالب', nyTplH:'بناء الهيكل من قالب محفوظ.', nyBoth:'الاثنان', nyBothH:'النسخ أولًا، ثم إضافة ما في القالب وليس في النسخة.',
+    nyUnits:'الوحدات المنسوخة', nyWhat:'ما الذي يُنسخ', nyClasses:'الفصول', nyCC:'المقررات الصفية', nyBp:'نماذج المقررات', nyPeriods:'فترات الجدول',
+    nyNever:'لا يُنسخ الطلاب أبدًا. سكّنهم بتشغيل الترفيع بعد إغلاق هذا العام.', nyLater:'يُنشأ العام الجديد مخططًا، وتفعّله عند بدايته.',
+    spTitle:'إضافة جهة تسجيل دخول', spKind:'نوع الجهة', spKindV:'SAML 2.0', spNameAr:'الاسم الظاهر بالعربية', spNameArV:'دخول مدارس النور', spNameEn:'الاسم الظاهر بالإنجليزية', spNameEnV:'Al Noor sign-in',
+    spMeta:'بيانات تعريف جهة الهوية', spUrl:'رابط بيانات التعريف', spUpload:'رفع ملف XML', spCert:'شهادة التوقيع', spCertExp:'تنتهي في <span class="ltr">2026-12-01</span> (بعد 17 يومًا). ارفع بيانات التعريف الجديدة قبل ذلك.',
+    spOurs:'أعطِ هذه القيم لفريق الهوية لديكم', spAcs:'رابط الاستجابة (ACS)', spEntity:'معرّف الكيان', spMetaUrl:'رابط بيانات التعريف لدينا', copy:'نسخ',
+    spMap:'مطابقة الأشخاص حسب', spEmailAttr:'سمة البريد الإلكتروني', spNidAttr:'سمة رقم الهوية', spSp:'يبدأ الدخول من نظام إدارة التعلم (من جهة الخدمة). البدء من بوابة جهة الهوية غير مدعوم في الإصدار الأول.',
+    test:'اختبار الاتصال', save:'حفظ',
+    ldTitle:'LDAP / Active Directory', ldHost:'الخادم', ldPort:'المنفذ', ldTransport:'اتصال آمن', ldNoPlain:'لا يتوفر LDAP غير المشفّر.', ldBind:'حساب الخدمة (bind DN)', ldPw:'كلمة مرور حساب الخدمة', ldPwV:'محفوظة. اتركها فارغة للإبقاء عليها.', ldBase:'قاعدة البحث', ldFilter:'مرشح المستخدمين',
+    ldRoles:'تُسند الأدوار داخل نظام إدارة التعلم. لا تُربط مجموعات الدليل بالأدوار في الإصدار الأول.', ldResult:'نتيجة الاختبار', ld1:'تم الاتصال عبر LDAPS بالخادم ldap.alnoor.edu.sa:636', ld2:'شهادة الخادم موثوقة', ld3:'تم الدخول بحساب الخدمة', ld4:'لم يجد البحث مستخدمًا باسم «faisal.q». تحقق من قاعدة البحث.',
+    lgTitle:'تسجيل الدخول إلى مدارس النور', lgMs:'الدخول عبر Microsoft', lgSaml:'دخول مدارس النور', lgOr:'أو بحساب المدرسة', lgUser:'اسم المستخدم', lgPw:'كلمة المرور', lgBtn:'دخول', lgErr:'تعذّر تسجيل الدخول. تحقق من اسم المستخدم وكلمة المرور وحاول مرة أخرى.', lgHelp:'تواجه مشكلة في الدخول؟ تواصل مع مدرستك.'
+  }
+}[lang];
+
+const I = (n, cls='') => `<span class="ms ${cls}" aria-hidden="true">${n}</span>`;
+const nav = (cur, role) => `
+  <aside class="side"><div class="brand"><span class="brand-mark">${I('school')}</span>${S.app}</div>
+    <div class="nav" ${cur==='home'?'aria-current="page"':''}>${I('home')}${S.secHome}</div>
+    ${role==='teacher' ? `<div class="nav-sec">${S.secAcad}</div><div class="nav" aria-current="page">${I('auto_stories')}${S.navGrades}</div>` : `
+    <div class="nav-sec">${S.secStruct}</div><div class="nav" ${cur==='years'?'aria-current="page"':''}>${I('calendar_month')}${S.navYears}</div>
+    <div class="nav-sec">${S.secPeople}</div><div class="nav" ${cur==='students'?'aria-current="page"':''}>${I('school')}${S.navStudents}</div>
+    <div class="nav-sec">${S.secYear}</div>
+    <div class="nav" ${cur==='gc'?'aria-current="page"':''}>${I('rule')}${S.navGc}<span class="badge">3</span></div>
+    <div class="nav" ${cur==='promo'?'aria-current="page"':''}>${I('trending_up')}${S.navPromo}</div>
+    <div class="nav" ${cur==='archive'?'aria-current="page"':''}>${I('inventory_2')}${S.navArchive}</div>
+    <div class="nav-sec">${S.secSec}</div><div class="nav" ${cur==='idp'?'aria-current="page"':''}>${I('key')}${S.navIdp}</div>`}
+  </aside>`;
+const bar = ctx => `<header class="appbar"><button class="icon-btn menu-btn" aria-label="Menu">${I('menu')}</button><span class="pill ctx">${ctx||S.ctx}</span><span class="pill ctx">${I('calendar_month','ms-sm')}${S.year}</span><span class="spacer"></span>
+  <button class="icon-btn" aria-label="Notifications">${I('notifications')}<span class="badge">2</span></button><button class="icon-btn" aria-label="Theme">${I(theme==='dark'?'light_mode':'dark_mode')}</button><span class="pill" style="background:none">${S.other}</span><button class="icon-btn" aria-label="Account">${I('account_circle')}</button></header>`;
+const shell = (cur, body, opts={}) => `<div class="shell">${nav(cur, opts.role)}<div style="position:relative">${bar(opts.ctx)}<main class="page">${body}</main></div></div>`;
+const header = (title, sub, actions='') => `<div class="ph"><div class="ph-text"><h1 class="h4">${title}</h1><p class="sub">${sub}</p></div>${actions}</div>`;
+const card = (icon, title, body, sub='', actions='') => `<section class="card"><div class="card-head">${icon?`<span class="sec-icon">${I(icon)}</span>`:''}<div style="flex:1;min-inline-size:0"><h2 class="h6">${title}</h2>${sub?`<p class="caption muted">${sub}</p>`:''}</div>${actions}</div><div class="card-body">${body}</div></section>`;
+const chip = (t, kind='', dot=true) => `<span class="chip ${kind?'chip-'+kind:''} ${dot?'chip-dot':''}">${t}</span>`;
+const stat = (label, value, icon, err=false) => `<div class="card lms-stat"><div><div class="lms-stat-label">${label}</div><div class="lms-stat-value ltr">${value}</div></div><span class="sec-icon" ${err?'style="color:var(--mud-palette-error);background:color-mix(in srgb, var(--mud-palette-error) 10%, transparent)"':''}>${I(icon)}</span></div>`;
+const field = (label, value, opts={}) => `<div class="field"><span class="label">${label}</span><div class="input ${opts.area?'area':''} ${opts.focus?'focused':''}" ${opts.ltr?'dir="ltr"':''}>${opts.icon?I(opts.icon):''}<span style="flex:1;min-inline-size:0">${value}</span>${opts.end||''}</div>${opts.help?`<span class="help">${opts.help}</span>`:''}</div>`;
+const sel = (value, ltr=false) => `<span class="lms-sel" ${ltr?'dir="ltr"':''}>${value}${I('arrow_drop_down')}</span>`;
+const steps = (labels, cur) => `<ol class="lms-steps">${labels.map((l, i) => `<li ${i===cur?'aria-current="step"':''} class="${i<cur?'done':''}"><span class="n">${i<cur?I('check','ms-sm'):i+1}</span><span class="lbl">${l}</span></li>`).join('')}</ol>`;
+const dialog = (behind, title, body, actions, width=640) => `${behind}<div class="dialog-wrap" style="position:absolute;inset:0"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dt" style="inline-size:min(${width}px,100%)"><div class="dialog-head"><h2 class="h6" id="dt" style="flex:1">${title}</h2><button class="icon-btn sm" aria-label="Close">${I('close')}</button></div><div class="dialog-body">${body}</div><div class="dialog-actions">${actions}</div></div></div>`;
+const wrapDialog = (cur, page, title, body, actions, width, opts) => `<div style="position:relative;min-block-size:100vh">${shell(cur, page, opts)}${dialog('', title, body, actions, width).replace('position:absolute;inset:0','position:fixed;inset:0;overflow:auto')}</div>`;
+const yearsPage = () => header(S.yrTitle, S.yrSub, `<button class="btn btn-filled">${I('add')}${S.yrNew}</button>`) + `<div class="card"><table class="stack"><thead><tr><th>${S.colYear}</th><th>${S.colDates}</th><th>${S.colTerms}</th><th>${S.colStatus}</th><th>${S.colActions}</th></tr></thead><tbody>
+  <tr><td class="lead"><span class="ltr">${S.y1}</span></td><td data-label="${S.colDates}"><span class="ltr">${S.y1d}</span></td><td data-label="${S.colTerms}">3</td><td data-label="${S.colStatus}">${chip(S.stPlanned,'info')}</td><td class="nolabel"><span class="row"><button class="btn btn-sm btn-outlined">${S.actActivate}</button><button class="btn btn-sm btn-text">${S.actEdit}</button></span></td></tr>
+  <tr><td class="lead"><span class="ltr">${S.y2}</span></td><td data-label="${S.colDates}"><span class="ltr">${S.y2d}</span></td><td data-label="${S.colTerms}">3</td><td data-label="${S.colStatus}">${chip(S.stActive,'success')}</td><td class="nolabel"><span class="row"><button class="btn btn-sm btn-outlined" data-testid="year-close-2">${I('lock','ms-sm')}${S.actClose}</button><button class="btn btn-sm btn-text">${S.actEdit}</button></span></td></tr>
+  <tr><td class="lead"><span class="ltr">${S.y3}</span></td><td data-label="${S.colDates}"><span class="ltr">${S.y3d}</span></td><td data-label="${S.colTerms}">3</td><td data-label="${S.colStatus}"><span class="chip">${I('lock','ms-sm')}${S.stClosed}</span></td><td class="nolabel"><span class="row"><button class="btn btn-sm btn-outlined">${I('trending_up','ms-sm')}${S.actPromo}</button><button class="btn btn-sm btn-text">${S.actReport}</button></span></td></tr>
+  </tbody></table></div>`;
+
+function home() {
+  const st = (state, n) => state==='done' ? `<span class="st done">${I('check','ms-sm')}</span>` : state==='warn' ? `<span class="st warn">${I('priority_high','ms-sm')}</span>` : `<span class="st">${n}</span>`;
+  const ck = `<ol class="lms-checklist" data-testid="yearend-checklist">
+    <li>${st('warn')}<div class="t"><b>${S.ck1}</b><span class="caption muted">${S.ck1s}</span></div><a class="link">${S.ck1a}</a></li>
+    <li>${st('todo',2)}<div class="t"><b>${S.ck2}</b><span class="caption muted">${S.ck2s}</span></div><button class="btn btn-sm btn-outlined">${S.ck2a}</button></li>
+    <li>${st('todo',3)}<div class="t"><b class="muted">${S.ck3}</b><span class="caption muted">${S.ck3s}</span></div></li>
+    <li>${st('done')}<div class="t"><b>${S.ck4}</b><span class="caption muted">${S.ck4s}</span></div><a class="link">${S.ck4a}</a></li></ol>`;
+  return shell('home', header(S.hello, S.helloSub) + `<div class="lms-stats">${stat(S.stStudents,'1,208','school')}${stat(S.stClasses,'48','groups')}${stat(S.stOpenGc,'3','rule')}${stat(S.stUnpub,'12','unpublished')}</div>` + card('event_available', S.ckTitle, ck, S.ckSub));
+}
+function years() { return shell('years', yearsPage()); }
+function close() {
+  const body = `<p>${S.clLead}</p>
+    <div class="stack-v" style="gap:8px"><h3 class="label">${S.clWill}</h3><ul class="lms-effects"><li>${I('lock')}<span class="t">${S.cl1}</span></li><li>${I('event_busy')}<span class="t">${S.cl2}</span></li><li>${I('trending_up')}<span class="t">${S.cl3}</span></li></ul></div>
+    <div class="stack-v" style="gap:8px"><h3 class="label">${S.clCheck}</h3><ul class="lms-effects"><li class="warn">${I('warning')}<span class="t">${S.clw1}</span><a class="link">${S.clReview}</a></li><li class="warn">${I('warning')}<span class="t">${S.clw2}</span><a class="link">${S.clReview}</a></li><li class="warn">${I('warning')}<span class="t">${S.clw3}</span><a class="link">${S.clReview}</a></li></ul></div>
+    <div class="lms-confirm-type"><span class="label">${S.clType}</span><div class="input focused" dir="ltr" data-testid="year-close-confirm-input">2026/2027</div></div>`;
+  return wrapDialog('years', yearsPage(), S.clTitle, body, `<button class="btn btn-outlined">${S.cancel}</button><button class="btn btn-danger" data-testid="year-close-confirm">${I('lock','ms-sm')}${S.clBtn}</button>`, 640);
+}
+const gbRows = () => [
+  ['Omar Saleh','8','14', `<span class="lms-cell-state"><span class="ltr">14</span>${chip(S.pending,'warning')}</span>`,'24','46'],
+  ['Lina Haddad','9','18','','27','54', `<span class="lms-cell-state"><span class="ltr">27</span><span class="chip chip-info">${I('history','ms-sm')}${S.changed}</span></span>`],
+  ['Yousef Majid','7','12','','21','40'],
+  ['Sara Al-Otaibi','10','19','','28','57']];
+const gradebookPage = () => {
+  const rows = gbRows().map((r, i) => `<tr><td class="lead"><bdi>${r[0]}</bdi></td><td data-label="${S.colQuiz.replace(/<[^>]+>/g,'')}"><span class="ltr">${r[1]}</span></td>
+    <td data-label="${S.colMid.replace(/<[^>]+>/g,'')}">${r[3] || (i===2 ? `<span class="row"><span class="ltr">${r[2]}</span><button class="btn btn-sm btn-text focus" data-testid="grade-request-1">${I('edit_note','ms-sm')}${S.reqChange}</button></span>` : `<span class="ltr">${r[2]}</span>`)}</td>
+    <td data-label="${S.colProj.replace(/<[^>]+>/g,'')}">${r[6] || `<span class="ltr">${r[4]}</span>`}</td><td data-label="${S.colTotal}"><b class="ltr">${r[5]}</b></td></tr>`).join('');
+  return header(`${S.gbTitle}`, S.gbSub, `<span class="chip">${I('lock','ms-sm')}<span class="ltr">${S.gbYear.split(' · ')[0]}</span> · ${S.gbYear.split(' · ')[1]}</span>`) +
+    `<div class="lms-locked" role="status">${I('lock')}<span class="t">${S.gbLocked}</span><a class="link">${S.gbHow}</a></div>
+    <div class="card"><table class="stack"><thead><tr><th>${S.colStudent}</th><th>${S.colQuiz}</th><th>${S.colMid}</th><th>${S.colProj}</th><th>${S.colTotal}</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+};
+function gradebook() { return shell('grades', gradebookPage(), {role:'teacher', ctx:S.ctxT}); }
+function gradeRequest() {
+  const body = `<div class="grid2">${field(S.grStudent, '<bdi>Yousef Majid</bdi> · 10-A')}${field(S.grItem, S.grItemV)}</div>
+    <div class="grid2">${field(S.grCur, '<span class="ltr">12 / 20</span>')}${field(S.grNew, '15', {focus:true, ltr:true, end:'<span class="muted ltr">/ 20</span>'})}</div>
+    ${field(S.grReason, S.grReasonV, {area:true, help:`${S.grReasonH} <span class="ltr" style="float:inline-end">121 / 500</span>`})}
+    <div class="alert alert-info">${I('info')}<span class="t">${S.grWho}</span></div>`;
+  return wrapDialog('grades', gradebookPage(), S.grTitle, body, `<button class="btn btn-outlined">${S.cancel}</button><button class="btn btn-filled" data-testid="grade-request-submit">${S.grSend}</button>`, 600, {role:'teacher', ctx:S.ctxT});
+}
+function gradeChanges() {
+  const rows = [
+    ['Yousef Majid','Mid-term · Physics 1 · 10-A','12','15','Faisal Al-Qahtani','2 d', true],
+    ['Huda Al-Harbi','Project · Chemistry · 11-B','22','26','Mona Saad','1 d'],
+    ['Khalid Nasser','Quiz 3 · Math 2 · 12-A','6','8','<b>'+S.mine+'</b>','5 h', false, true]];
+  const tr = rows.map(r => `<tr ${r[6]?'class="sel"':''}><td class="lead"><bdi>${r[0]}</bdi></td><td data-label="${S.colItem}">${r[1]}</td><td data-label="${S.colChange}"><span class="lms-diff">${r[2]} ${I('arrow_forward','ms-sm')} <b>${r[3]}</b></span></td><td data-label="${S.colBy}"><bdi>${r[4]}</bdi></td><td data-label="${S.colAge}"><span class="ltr">${r[5]}</span></td></tr>`).join('');
+  const detail = `<section class="card"><div class="card-head"><h2 class="h6" style="flex:1">${S.gcDetail}</h2></div><div class="card-body stack-v">
+    <div><b><bdi>Yousef Majid</bdi></b> · 10-A<br><span class="caption muted">${S.grItemV}</span></div>
+    <div class="row"><span class="muted">${S.gcFrom}</span><span class="lms-diff" style="font-size:20px;font-weight:700">12 ${I('arrow_forward')} 15</span><span class="muted ltr">/ 20</span></div>
+    <div class="field"><span class="label">${S.gcReasonL}</span><p style="padding:10px 12px;border-radius:8px;background:var(--lms-recessed)">“${S.grReasonV}”</p></div>
+    <div class="field"><span class="label">${S.gcAudit}</span><ul class="lms-timeline"><li>${I('edit_note','ms-sm')}<span>${S.gcA1} · <span class="ltr">2027-07-02 09:14</span></span></li><li>${I('grading','ms-sm')}<span>${S.gcA2} · <span class="ltr">2027-05-18 11:02</span></span></li></ul></div>
+    ${field(S.gcNote, `<span class="ph-text muted">…</span>`, {area:true, help:S.gcNoteH})}
+    <div class="row" style="justify-content:flex-end"><button class="btn btn-outlined btn-error">${S.reject}</button><button class="btn btn-filled">${I('check','ms-sm')}${S.approve}</button></div>
+    <p class="caption muted">${I('info','ms-sm')} ${S.gcMineH}</p></div></section>`;
+  return shell('gc', header(S.gcTitle, S.gcSub) + `<div class="seg" role="tablist" style="margin-block-end:16px"><span aria-selected="true">${S.fWaiting} <span class="ltr">(3)</span></span><span>${S.fApproved}</span><span>${S.fRejected}</span></div>
+    <div class="lms-mod"><div class="card"><table class="stack"><thead><tr><th>${S.colStudent}</th><th>${S.colItem}</th><th>${S.colChange}</th><th>${S.colBy}</th><th>${S.colAge}</th></tr></thead><tbody>${tr}</tbody></table></div>${detail}</div>`, {ctx:S.ctxM});
+}
+function promoPreview() {
+  const rows = [
+    ['Omar Saleh','ST-2024-0091','10-A', S.oPromote, '11-A', ''],
+    ['Lina Haddad','ST-2024-0118','10-A', S.oPromote, '11-A', chip(S.nOpenEx,'warning')],
+    ['Yousef Majid','ST-2024-0107','10-B', S.oRepeat, '10-B', chip(S.nOpenGc,'warning')],
+    ['Sara Al-Otaibi','ST-2024-0122','10-C', S.oPromote, null, ''],
+    ['Huda Al-Harbi','ST-2024-0130','10-C', S.oPromote, null, '']];
+  const tr = rows.map((r, i) => `<tr ${i<2?'class="sel"':''}><td class="nolabel" style="inline-size:40px"><span class="check ${i<2?'on':''}" role="checkbox" aria-checked="${i<2}" aria-label="${r[0]}"></span></td>
+    <td class="lead"><bdi>${r[0]}</bdi><br><span class="caption muted ltr">${r[1]}</span></td><td data-label="${S.colFrom}"><span class="ltr">${r[2]}</span></td>
+    <td data-label="${S.colOutcome}">${sel(r[3])}</td><td data-label="${S.colTarget}">${r[4] ? sel(`<span class="ltr">${r[4]}</span>`) : `<span class="chip chip-error">${I('error','ms-sm')}${S.noTarget}</span>`}</td><td data-label="${S.colNote}">${r[5] || '<span class="muted">—</span>'}</td></tr>`).join('');
+  return shell('promo', header(S.prTitle, S.prSub, `<button class="btn btn-outlined">${I('history','ms-sm')}${S.prHist}</button>`) + steps([S.s1, S.s2, S.s3], 1) +
+    `<p class="label" style="margin-block-end:12px">${S.prScope}</p>
+    <div class="lms-stats">${stat(S.oPromote,'118','trending_up')}${stat(S.oRepeat,'4','replay')}${stat(S.oTransfer,'2','logout')}${stat(S.noTarget,'3','error',true)}</div>
+    <div class="stack-v" style="gap:10px;margin-block-end:16px"><div class="alert alert-error" data-testid="promo-blocking">${I('error')}<span class="t">${S.prBlock}</span><a class="link">${S.prFix}</a></div>
+    <div class="alert alert-warning">${I('warning')}<span class="t">${S.prWarn}</span><a class="link">${S.prShow}</a></div></div>
+    <div class="card"><div class="card-body row" style="padding-block:12px"><div class="input" style="flex:1 1 220px">${I('search')}<span class="ph-text">${S.prSearch}</span></div>${sel(S.prAllClasses)}${sel(S.prAllOutcomes)}</div>
+    <div class="lms-bulk" role="toolbar"><b>${S.bulkSel}</b>${sel(S.bulkSet)}<button class="btn btn-sm btn-text">${S.bulkReset}</button></div>
+    <table class="stack" data-testid="promo-preview-table"><thead><tr><th></th><th>${S.colStudent}</th><th>${S.colFrom}</th><th>${S.colOutcome}</th><th>${S.colTarget}</th><th>${S.colNote}</th></tr></thead><tbody>${tr}</tbody></table>
+    <div class="lms-wizard-foot"><span class="caption muted">${I('cloud_done','ms-sm')} ${S.saved}</span><span class="spacer"></span><span class="caption muted" id="why">${S.contWhy}</span><button class="btn btn-outlined">${I('arrow_back','flip')}${S.back}</button><button class="btn btn-filled" disabled aria-describedby="why" data-testid="promo-continue">${S.cont}${I('arrow_forward','flip')}</button></div></div>`);
+}
+function promoRun() {
+  return shell('promo', header(S.prTitle, S.prSub) + steps([S.s1, S.s2, S.s3], 2) + card('sync', S.runTitle, `<div class="lms-job" data-testid="promo-progress"><p>${S.runLead}</p>
+    <div class="lms-bar" role="progressbar" aria-valuemin="0" aria-valuemax="124" aria-valuenow="46" aria-label="${S.runTitle}"><span style="inline-size:37%"></span></div>
+    <p role="status"><b>${S.runStatus}</b></p><p class="caption muted">${S.runLeave}</p></div>`, S.prScope));
+}
+function promoResult() {
+  const over = qs.get('undo') === 'over';
+  const undo = over ? `<div class="lms-undo over" data-testid="promo-undo-banner">${I('history')}<span class="t">${S.undoOver}</span><button class="btn btn-outlined" disabled>${S.undoBtn}</button></div>`
+    : `<div class="lms-undo" data-testid="promo-undo-banner" data-until="2027-06-28T11:32:00Z">${I('history')}<span class="t">${S.undoT}</span><button class="btn btn-outlined" data-testid="promo-undo">${I('undo','ms-sm flip')}${S.undoBtn}</button></div>`;
+  const fails = `<table class="stack"><thead><tr><th>${S.colStudent}</th><th>${S.colTarget}</th><th>${S.colReason}</th></tr></thead><tbody>
+    <tr><td class="lead"><bdi>Sara Al-Otaibi</bdi><br><span class="caption muted ltr">ST-2024-0122</span></td><td data-label="${S.colTarget}"><span class="ltr">11-A</span></td><td data-label="${S.colReason}">${S.f1}</td></tr>
+    <tr><td class="lead"><bdi>Huda Al-Harbi</bdi><br><span class="caption muted ltr">ST-2024-0130</span></td><td data-label="${S.colTarget}"><span class="ltr">11-B</span></td><td data-label="${S.colReason}">${S.f2}</td></tr></tbody></table>
+    <div class="row" style="margin-block-start:12px"><button class="btn btn-outlined">${I('download','ms-sm')}${S.download}</button><button class="btn btn-filled">${S.rerun}</button></div>`;
+  return shell('promo', header(S.reTitle, S.reSub) + `<div class="stack-v">${undo}
+    <div class="lms-stats" style="margin:0">${stat(S.rTotal,'124','groups')}${stat(S.rPromoted,'118','trending_up')}${stat(S.rRepeat,'4','replay')}${stat(S.rFailed,'2','error',true)}</div>
+    ${card('error', S.failTitle, fails, S.failSub)}</div>`);
+}
+const profilePage = () => header(S.profTitle, S.profSub, `<button class="btn btn-outlined" data-testid="student-record-menu">${S.navStudents}${I('arrow_drop_down')}</button>`) + card('person', S.profTitle, '<p class="muted">…</p>');
+function withdraw() {
+  const body = `<p>${S.wdLead}</p>
+    <div class="grid2"><div class="field"><span class="label">${S.wdReason}</span>${sel(S.wdReasonV).replace('lms-sel','lms-sel input')}</div>${field(S.wdDate, '2026-11-20', {ltr:true, icon:'event', help:S.wdDateH})}</div>
+    ${field(S.wdNote, S.wdNoteV, {area:true, focus:true, help:S.wdNoteH})}
+    <div class="stack-v" style="gap:8px"><h3 class="label">${S.wdWill}</h3><ul class="lms-effects"><li>${I('lock_person')}<span class="t">${S.wd1}</span></li><li>${I('group_remove')}<span class="t">${S.wd2}</span></li><li>${I('inventory_2')}<span class="t">${S.wd3}</span></li><li>${I('family_restroom')}<span class="t">${S.wd4}</span></li></ul></div>`;
+  return wrapDialog('students', profilePage(), S.wdTitle, body, `<button class="btn btn-outlined">${S.cancel}</button><button class="btn btn-danger" data-testid="withdraw-confirm">${S.wdBtn}</button>`, 640);
+}
+const archivePage = () => {
+  const rows = [
+    ['Lina Haddad','ST-2024-0118', S.stWithdrawn, '2026-01-15', '9-B', S.rsOther],
+    ['Ahmad Yousef','ST-2019-0042', S.stGraduated, '2026-06-25', '12-A', '—'],
+    ['Reem Al-Saeed','ST-2023-0077', S.stTransfer, '2026-06-25', '11-C', S.rsMove],
+    ['Faris Al-Amri','ST-2022-0015', S.stWithdrawn, '2025-11-03', '10-A', S.rsHealth]];
+  const tr = rows.map(r => `<tr><td class="lead"><bdi>${r[0]}</bdi><br><span class="caption muted ltr">${r[1]}</span></td><td data-label="${S.colLeft}"><span class="row">${chip(r[2])}<span class="ltr caption">${r[3]}</span></span></td><td data-label="${S.colLast}"><span class="ltr">${r[4]}</span></td><td data-label="${S.colReason}">${r[5]}</td><td class="nolabel"><button class="btn btn-sm btn-text">${I('person_add','ms-sm')}${S.readmit}</button></td></tr>`).join('');
+  return header(S.arTitle, S.arSub) + `<div class="card"><div class="card-body stack-v" style="padding-block:14px"><div class="input">${I('search')}<span class="ph-text">${S.arSearch}</span></div><div class="row"><div class="seg" role="tablist"><span aria-selected="true">${S.fAll}</span><span>${S.fWithdrawn}</span><span>${S.fGraduated}</span><span>${S.fTransfer}</span></div>${sel(S.arYear)}</div></div>
+    <table class="stack" data-testid="archive-list"><thead><tr><th>${S.colStudent}</th><th>${S.colLeft}</th><th>${S.colLast}</th><th>${S.colReason} ${I('visibility_lock','ms-sm')}</th><th></th></tr></thead><tbody>${tr}</tbody></table>
+    <div class="card-body caption muted" style="padding-block:10px">${I('visibility_lock','ms-sm')} ${S.arNote}</div></div>`;
+};
+function archive() { return shell('archive', archivePage()); }
+function readmit() {
+  const body = `<p>${S.raCode}</p><div class="grid2"><div class="field"><span class="label">${S.raYear}</span>${sel(`<span class="ltr">2026/2027</span> · ${S.stActive}`).replace('lms-sel','lms-sel input')}</div><div class="field"><span class="label">${S.raClass}</span>${sel(S.raClassV).replace('lms-sel','lms-sel input')}</div></div>
+    ${field(S.raDate, '2026-11-16', {ltr:true, icon:'event'})}${field(S.raReason, S.raReasonV, {area:true})}<div class="alert alert-info">${I('info')}<span class="t">${S.raWill}</span></div>`;
+  return wrapDialog('archive', archivePage(), S.raTitle, body, `<button class="btn btn-outlined">${S.cancel}</button><button class="btn btn-filled" data-testid="readmit-confirm">${I('person_add','ms-sm')}${S.raBtn}</button>`, 600);
+}
+function newYear() {
+  const opt = (on, t, h) => `<div class="lms-option ${on?'on':''}"><span class="radio ${on?'on':''}" role="radio" aria-checked="${on}"></span><span class="t"><b>${t}</b><span class="caption muted">${h}</span></span></div>`;
+  const ck = (on, t, n) => `<label class="row" style="gap:10px"><span class="check ${on?'on':''}" role="checkbox" aria-checked="${on}"></span><span style="flex:1">${t}</span><span class="caption muted ltr">${n}</span></label>`;
+  const body = steps([S.n1, S.n2, S.n3, S.n4], 1) + `<h3 class="label">${S.nyHow}</h3><div class="stack-v" style="gap:8px" role="radiogroup">${opt(true, S.nyCopy, S.nyCopyH)}${opt(false, S.nyTpl, S.nyTplH)}${opt(false, S.nyBoth, S.nyBothH)}</div>
+    <div class="grid2"><div class="field"><span class="label">${S.nyUnits}</span><div class="input"><span class="chip chip-input">${lang==='ar'?'فرع الشمال':'North Branch'} ${I('close','ms-sm')}</span><span class="chip chip-input">${lang==='ar'?'فرع الجنوب':'South Branch'} ${I('close','ms-sm')}</span></div></div>
+    <div class="field"><span class="label">${S.nyWhat}</span><div class="stack-v" style="gap:8px">${ck(true,S.nyClasses,'48')}${ck(true,S.nyCC,'312')}${ck(true,S.nyBp,'96')}${ck(false,S.nyPeriods,'8')}</div></div></div>
+    <div class="alert alert-info">${I('info')}<span class="t"><b>${S.nyNever}</b><br>${S.nyLater}</span></div>`;
+  return wrapDialog('years', yearsPage(), S.nyTitle, body, `<button class="btn btn-outlined">${I('arrow_back','flip')}${S.back}</button><button class="btn btn-filled" data-testid="newyear-next">${S.cont}${I('arrow_forward','flip')}</button>`, 760);
+}
+const idpPage = () => header(S.navIdp, '') + card('key', S.navIdp, '<p class="muted">…</p>');
+const copyRow = (label, v) => `<div class="field"><span class="label">${label}</span><div class="lms-copy-row"><span class="v mono ltr">${v}</span><button class="btn btn-sm btn-text">${I('content_copy','ms-sm')}${S.copy}</button></div></div>`;
+function idpSaml() {
+  const body = `<div class="field"><span class="label">${S.spKind}</span>${sel(S.spKindV).replace('lms-sel','lms-sel input')}</div>
+    <div class="grid2">${field(S.spNameAr, '<bdi>'+S.spNameArV+'</bdi>')}${field(S.spNameEn, '<bdi>'+S.spNameEnV+'</bdi>')}</div>
+    <div class="field"><span class="label">${S.spMeta}</span><div class="seg" role="tablist"><span aria-selected="true">${S.spUrl}</span><span>${S.spUpload}</span></div><div class="input" dir="ltr"><span class="mono">https://sso.alnoor.edu.sa/saml/metadata</span></div></div>
+    <div class="field"><span class="label">${S.spCert}</span><div class="lms-copy-row"><span class="v mono ltr">SHA-256 3F:9A:21:C4:7B:…:0E:55</span><span class="chip chip-warning chip-dot">17 ${lang==='ar'?'يومًا':'days'}</span></div><span class="help">${S.spCertExp}</span></div>
+    <h3 class="label">${S.spOurs}</h3>${copyRow(S.spAcs, 'https://lms.alnoor.edu.sa/signin-saml/alnoor')}${copyRow(S.spEntity, 'https://lms.alnoor.edu.sa/saml/alnoor')}${copyRow(S.spMetaUrl, 'https://lms.alnoor.edu.sa/saml/alnoor/metadata')}
+    <div class="grid2">${field(S.spEmailAttr, '<span class="mono">mail</span>', {ltr:true})}${field(S.spNidAttr, '<span class="mono">nationalId</span>', {ltr:true})}</div>
+    <div class="alert alert-info">${I('info')}<span class="t">${S.spSp}</span></div>`;
+  return wrapDialog('idp', idpPage(), S.spTitle, body, `<button class="btn btn-outlined" style="margin-inline-end:auto">${I('network_check','ms-sm')}${S.test}</button><button class="btn btn-outlined">${S.cancel}</button><button class="btn btn-filled">${S.save}</button>`, 720);
+}
+function idpLdap() {
+  const body = `<div class="field"><span class="label">${S.spKind}</span>${sel(S.ldTitle).replace('lms-sel','lms-sel input')}</div>
+    <div class="grid2">${field(S.ldHost, '<span class="mono">ldap.alnoor.edu.sa</span>', {ltr:true})}${field(S.ldPort, '<span class="mono">636</span>', {ltr:true})}</div>
+    <div class="field"><span class="label">${S.ldTransport}</span><div class="seg" role="radiogroup"><span aria-selected="true">LDAPS</span><span>StartTLS</span></div><span class="help">${S.ldNoPlain}</span></div>
+    ${field(S.ldBind, '<span class="mono">CN=lms-svc,OU=Service,DC=alnoor,DC=edu,DC=sa</span>', {ltr:true})}
+    ${field(S.ldPw, `<span class="muted">${S.ldPwV}</span>`, {icon:'lock'})}
+    <div class="grid2">${field(S.ldBase, '<span class="mono">OU=Staff,DC=alnoor,DC=edu,DC=sa</span>', {ltr:true})}${field(S.ldFilter, '<span class="mono">(sAMAccountName={username})</span>', {ltr:true})}</div>
+    <div class="alert alert-info">${I('info')}<span class="t">${S.ldRoles}</span></div>
+    <div class="field" role="status" data-testid="idp-test-result"><span class="label">${S.ldResult}</span><ul class="lms-checks"><li>${I('check_circle','ok')}<span>${S.ld1}</span></li><li>${I('check_circle','ok')}<span>${S.ld2}</span></li><li>${I('check_circle','ok')}<span>${S.ld3}</span></li><li>${I('cancel','bad')}<span>${S.ld4}</span></li></ul></div>`;
+  return wrapDialog('idp', idpPage(), S.spTitle, body, `<button class="btn btn-outlined" style="margin-inline-end:auto">${I('network_check','ms-sm')}${S.test}</button><button class="btn btn-outlined">${S.cancel}</button><button class="btn btn-filled">${S.save}</button>`, 720);
+}
+function loginLdap() {
+  return `<div class="login"><div class="card"><div class="card-body stack-v" style="padding:28px">
+    <div class="row" style="justify-content:space-between"><span class="brand-mark">${I('school')}</span><span class="pill" style="background:none">${S.other}</span></div>
+    <h1 class="h6" style="font-size:22px">${S.lgTitle}</h1>
+    <button class="btn btn-outlined" style="inline-size:100%" data-testid="login-provider-microsoft">${I('window')}${S.lgMs}</button>
+    <button class="btn btn-outlined" style="inline-size:100%" data-testid="login-provider-alnoor">${I('key')}<bdi>${S.lgSaml}</bdi></button>
+    <div class="divider">${S.lgOr}</div>
+    <div class="alert alert-error" role="alert" data-testid="login-ldap-error">${I('error')}<span class="t">${S.lgErr}</span></div>
+    ${field(S.lgUser, 'faisal.q', {ltr:true})}${field(S.lgPw, '••••••••', {ltr:true, focus:true})}
+    <button class="btn btn-filled" style="inline-size:100%" data-testid="login-ldap-submit">${S.lgBtn}</button>
+    <p class="caption muted" style="text-align:center">${S.lgHelp}</p></div></div></div>`;
+}
+document.getElementById('app').innerHTML = ({home, years, close, gradebook, 'grade-request':gradeRequest, 'grade-changes':gradeChanges, 'promo-preview':promoPreview, 'promo-run':promoRun, 'promo-result':promoResult, withdraw, archive, readmit, 'new-year':newYear, 'idp-saml':idpSaml, 'idp-ldap':idpLdap, 'login-ldap':loginLdap}[screen] || home)();
+</script>
+</body>
+</html>
