@@ -2109,4 +2109,6 @@
   <data name="Error_channel_not_allowed" xml:space="preserve"><value>لا تُستخدم هذه القناة لهذا الحساب.</value></data>
   <data name="Comms_ChannelState_NotAllowed" xml:space="preserve"><value>غير متاحة لهذا الحساب</value></data>
   <data name="Comms_PrefSource_Policy" xml:space="preserve"><value>حسب سياسة المنصة</value></data>
+  <data name="Nav_Messages" xml:space="preserve"><value>الرسائل</value></data>
+  <data name="Msg_Nav_Unread" xml:space="preserve"><value>{0} محادثات غير مقروءة</value></data>
 </root>

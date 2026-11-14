@@ -1,12 +1,18 @@
 @using Lms.Client.Navigation
 @inject PermissionState Permissions
+@inject IMessagingState Messaging
+@using Lms.Client.Services.Messaging
 @implements IDisposable
 
 <MudNavMenu>
     @foreach (var item in Visible)
     {
         <MudNavLink Href="@item.Href" Match="@(item.Href == "" ? NavLinkMatch.All : NavLinkMatch.Prefix)"
-                    Icon="@item.Icon" data-testid="@($"nav-{item.Key}")">@L[item.ResourceKey]</MudNavLink>
+                    Icon="@item.Icon" data-testid="@($"nav-{item.Key}")">@L[item.ResourceKey]@if (item.Key == "messages" && Messaging.UnreadConversations > 0)
+            {
+                <MudBadge Content="@Messaging.UnreadConversations" Color="Color.Primary" Overlap="false" Class="ms-3" data-testid="nav-messages-badge"
+                          aria-label="@string.Format(L["Msg_Nav_Unread"], Messaging.UnreadConversations)" />
+            }</MudNavLink>
     }
 </MudNavMenu>
 
@@ -18,10 +24,12 @@
     protected override async Task OnInitializedAsync()
     {
         Permissions.Changed += OnChanged;
+        Messaging.Changed += OnChanged;
         await Permissions.RefreshAsync();
+        if (Permissions.Has(Lms.Shared.Authorization.Permissions.Messaging.View)) await Messaging.RefreshAsync();
     }
 
     private void OnChanged() => _ = InvokeAsync(StateHasChanged);
 
-    public void Dispose() => Permissions.Changed -= OnChanged;
+    public void Dispose() { Permissions.Changed -= OnChanged; Messaging.Changed -= OnChanged; }
 }

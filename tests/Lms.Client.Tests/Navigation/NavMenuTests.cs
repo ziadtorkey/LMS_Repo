@@ -55,4 +55,37 @@ public sealed class NavMenuTests : ClientTestContext
 
         Assert.False(state!.Has(Permissions.Roles.View));
     }
+
+    [Fact]
+    public async Task Messages_entry_needs_messaging_view()
+    {
+        var without = await RenderNavAsync([Permissions.Roles.View]);
+        Assert.Empty(without.FindAll("[data-testid=nav-messages]"));
+
+        var with = await RenderNavAsync([Permissions.Messaging.View]);
+        Assert.NotEmpty(with.FindAll("[data-testid=nav-messages]"));
+    }
+
+    [Fact]
+    public async Task Unread_badge_counts_conversations_and_its_name_says_so()
+    {
+        MessagingApi.Me = Lms.Client.Services.Messaging.FakeMessagingApi.Huda;
+        await MessagingApi.CreateConversationAsync(new Lms.Shared.Messaging.CreateConversationRequest(
+            Lms.Shared.Messaging.ConversationKinds.Direct, [Lms.Client.Services.Messaging.FakeMessagingApi.Sara.Id], null, "hi"));
+        MessagingApi.Me = Lms.Client.Services.Messaging.FakeMessagingApi.Sara;
+
+        var cut = await RenderNavAsync([Permissions.Messaging.View]);
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("[data-testid=nav-messages-badge]")));
+
+        var badge = cut.Find("[data-testid=nav-messages-badge]");
+        Assert.Contains("1", badge.TextContent);
+        Assert.Contains("1", badge.GetAttribute("aria-label"));
+    }
+
+    [Fact]
+    public async Task No_badge_when_nothing_is_unread()
+    {
+        var cut = await RenderNavAsync([Permissions.Messaging.View]);
+        Assert.Empty(cut.FindAll("[data-testid=nav-messages-badge]"));
+    }
 }
