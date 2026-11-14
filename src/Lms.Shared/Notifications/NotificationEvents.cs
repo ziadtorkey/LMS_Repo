@@ -71,6 +71,12 @@ public static class NotificationEvents
     // batch. No grade value and no item title in any notification, log or error.
     public const string GradesPublished = "Grades.Published";
 
+    // M5 wave 3 (M5 plan Task 3, L26, L11 item 10). Named recipients unless a default role is given. No grade value anywhere; attendance texts name the student, the course and the date only.
+    public const string AttendanceAbsent = "Attendance.Absent";
+    public const string ExcusesDecided = "Excuses.Decided";
+    public const string ExcusesEscalated = "Excuses.Escalated";
+    public const string AttendanceThresholdCrossed = "Attendance.ThresholdCrossed";
+
     public static IReadOnlyList<NotificationEventDefinition> All { get; } =
     [
         new(AccessRoleAssigned, [], ["RoleNameAr", "RoleNameEn", "OrgUnitNameAr", "OrgUnitNameEn"]),
@@ -114,6 +120,14 @@ public static class NotificationEvents
         new(LiveReminder, [], ["TitleAr", "TitleEn", "CourseNameAr", "CourseNameEn", "StartsAtUtc"]),
         // Named recipients: the student and the linked guardians, once per publish batch. Course name only: never a score or an item title.
         new(GradesPublished, [], ["CourseNameAr", "CourseNameEn"]),
+        // Named recipients: the student's linked guardians (and the student), one per guardian per session, only when attendance is Taken or a live proposal is confirmed, never on the proposal.
+        new(AttendanceAbsent, [], ["StudentNameAr", "StudentNameEn", "CourseNameAr", "CourseNameEn", "Date", "Status"]),
+        // Named recipient: the submitter. Decision is Approved or Rejected.
+        new(ExcusesDecided, [], ["StudentNameAr", "StudentNameEn", "Decision"]),
+        // Named recipient: the staff member the excuse was escalated to.
+        new(ExcusesEscalated, [], ["StudentNameAr", "StudentNameEn"]),
+        // Default recipient: the Counselors of the student's unit, once per crossing.
+        new(AttendanceThresholdCrossed, [BuiltInRoles.Counselor], ["StudentNameAr", "StudentNameEn", "Absences", "WindowDays"]),
     ];
 
     /// <summary>The definition with this exact (case-sensitive) key, or null.</summary>

@@ -46,6 +46,7 @@ public class BuiltInRoleMatrixTests
                 "LiveSessions.View", "LiveSessions.Manage",
                 "Packages.Upload", "Packages.View",
                 "Grades.View", "Grades.Manage", "Grades.Publish", "Grades.ConfigureScales", "Grades.ViewReports",
+                "Attendance.Take", "Attendance.Edit", "Attendance.View", "Excuses.Review", "Excuses.Escalate",
                 "Timetable.View", "Timetable.Manage", "Timetable.Configure",
             ]
         },
@@ -74,6 +75,7 @@ public class BuiltInRoleMatrixTests
                 "LiveSessions.View", "LiveSessions.Manage",
                 "Packages.Upload", "Packages.View",
                 "Grades.View", "Grades.Manage", "Grades.Publish", "Grades.ConfigureScales", "Grades.ViewReports",
+                "Attendance.Take", "Attendance.Edit", "Attendance.View", "Excuses.Review", "Excuses.Escalate",
                 "Timetable.View", "Timetable.Manage", "Timetable.Configure",
             ]
         },
@@ -90,7 +92,7 @@ public class BuiltInRoleMatrixTests
                 "Modules.View",
                 "CourseAssignments.View", "Quizzes.View", "Library.View", "Library.Manage", "Forums.View",
                 "LiveSessions.View", "Packages.View",
-                "Grades.View", "Grades.ViewReports", "Timetable.View",
+                "Grades.View", "Grades.ViewReports", "Attendance.View", "Timetable.View",
             ]
         },
         {
@@ -99,7 +101,8 @@ public class BuiltInRoleMatrixTests
                 "Files.Upload", "Files.Download", "AcademicYears.View", "Staff.View",
                 "Students.View", "Students.Update", "Students.ApproveChanges", "Classes.View",
                 "Enrollment.View", "Enrollment.RequestException", "Groups.View",
-                "Library.View", "Timetable.View",
+                "Library.View",
+                "Attendance.View", "Attendance.Edit", "Excuses.Review", "Excuses.Escalate", "Timetable.View",
             ]
         },
         {
@@ -115,18 +118,18 @@ public class BuiltInRoleMatrixTests
                 "Forums.View", "Forums.Post", "Forums.Moderate",
                 "LiveSessions.View", "LiveSessions.Manage",
                 "Packages.Upload", "Packages.View",
-                "Grades.View", "Grades.Manage", "Grades.Publish", "Timetable.View", "Timetable.ViewOwn",
+                "Grades.View", "Grades.Manage", "Grades.Publish", "Attendance.Take", "Timetable.View", "Timetable.ViewOwn",
             ]
         },
         { "Student", ["Files.Upload", "Files.Download", "AcademicYears.View", "Students.SelfEdit", "LessonPlans.View",
             "Modules.View", "CourseAssignments.View", "CourseAssignments.Submit", "Quizzes.View", "Quizzes.Attempt",
-            "Library.View", "Forums.View", "Forums.Post", "LiveSessions.View", "Packages.View", "Grades.ViewOwn", "Timetable.ViewOwn"] },
-        { "Guardian", ["Files.Download", "AcademicYears.View", "Students.ViewChildren", "Grades.ViewOwn", "Timetable.ViewOwn"] },
+            "Library.View", "Forums.View", "Forums.Post", "LiveSessions.View", "Packages.View", "Grades.ViewOwn", "Timetable.ViewOwn", "Attendance.ViewOwn", "Excuses.Submit"] },
+        { "Guardian", ["Files.Download", "AcademicYears.View", "Students.ViewChildren", "Grades.ViewOwn", "Timetable.ViewOwn", "Attendance.ViewOwn", "Excuses.Submit"] },
     };
 
     [Theory]
     [MemberData(nameof(Matrix))]
-    public void Built_in_roles_match_the_M5_matrix_exactly(string roleKey, string[] expected)
+    public void Built_in_roles_match_the_M5_wave_3_matrix_exactly(string roleKey, string[] expected)
     {
         var actual = BuiltInRoles.Get(roleKey).DefaultPermissions;
 

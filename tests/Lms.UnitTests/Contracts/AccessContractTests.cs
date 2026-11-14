@@ -30,6 +30,7 @@ public class AccessContractTests
             "LiveSessionSeries", "LiveSession",
             "GradingScale", "WeightTemplate", "Gradebook", "GradeCategory", "GradeItem", "GradeEntry", "GradeSnapshot",
             "Period", "TimetableSlot", "TimetableException",
+            "AttendanceRecordChange", "AbsenceExcuse",
         ], AuditCatalog.EntityTypes);
     }
 

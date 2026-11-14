@@ -42,7 +42,9 @@ public static class RelationshipRules
             // M4b wave 3a: live sessions of own ClassCourses.
             Permissions.LiveSessions.View, Permissions.LiveSessions.Manage,
             // M5 wave 1: grades of own ClassCourses with an assignment active today (L15).
-            Permissions.Grades.View, Permissions.Grades.Manage, Permissions.Grades.Publish)),
+            Permissions.Grades.View, Permissions.Grades.Manage, Permissions.Grades.Publish,
+            // M5 wave 3: attendance of own ClassCourses with an assignment active today; a substitute only for that session and date (IsSubstituteOn, L15).
+            Permissions.Attendance.Take)),
         new(BuiltInRoles.Supervisor, Relationships.SupervisedCourses, ImmutableArray.Create(
             Permissions.Courses.Update, Permissions.Courses.Delete, Permissions.Courses.Allocate,
             Permissions.Blueprints.Edit, Permissions.Blueprints.Publish, Permissions.TeacherAssignments.Manage,
@@ -50,7 +52,9 @@ public static class RelationshipRules
             // M5 wave 1: grades and reports of supervised courses only (L16).
             Permissions.Grades.View, Permissions.Grades.ViewReports,
             // M5 wave 2: the timetable of supervised courses only (L16).
-            Permissions.Timetable.View)),
+            Permissions.Timetable.View,
+            // M5 wave 3: attendance of supervised courses only (L16).
+            Permissions.Attendance.View)),
         new(BuiltInRoles.Student, Relationships.OwnEnrollments, ImmutableArray.Create(
             Permissions.LessonPlans.View, Permissions.Modules.View,
             Permissions.CourseAssignments.View, Permissions.CourseAssignments.Submit,

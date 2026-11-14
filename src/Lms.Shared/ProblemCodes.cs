@@ -261,4 +261,38 @@ public static class ProblemCodes
 
     /// <summary>The row changed since it was loaded (a stale <c>Version</c>); the answer carries the current value (409, L12).</summary>
     public const string concurrency_conflict = nameof(concurrency_conflict);
+
+    // M5 wave 3: attendance and excuses (M5 plan Task 3).
+    /// <summary>The edit window of a taken session is over; a teacher cannot edit, a user with <c>Attendance.Edit</c> can, with a reason (409, L14).</summary>
+    public const string attendance_edit_window_closed = nameof(attendance_edit_window_closed);
+
+    /// <summary>The session date is after the client's local today: it cannot be taken or created yet (409).</summary>
+    public const string attendance_session_future = nameof(attendance_session_future);
+
+    /// <summary>A Taken session has roster students without a status (422).</summary>
+    public const string attendance_unmarked_rows = nameof(attendance_unmarked_rows);
+
+    /// <summary>An edit after the window needs a reason of 1-500 characters (422, L14).</summary>
+    public const string attendance_reason_required = nameof(attendance_reason_required);
+
+    /// <summary>Confirm and live mappings apply only to a session proposed from a live session (409).</summary>
+    public const string attendance_not_a_proposal = nameof(attendance_not_a_proposal);
+
+    /// <summary>The excuse is outside the policy; the <c>reason</c> extension is one of <c>ExcusePolicyViolations</c> (409, L13).</summary>
+    public const string excuse_out_of_policy = nameof(excuse_out_of_policy);
+
+    /// <summary>The caller may not submit for this student under <c>Excuses.Submitters</c> (403, D61).</summary>
+    public const string excuse_submitter_not_allowed = nameof(excuse_submitter_not_allowed);
+
+    /// <summary>The reviewer is the submitter of the excuse (409, L14).</summary>
+    public const string excuse_reviewer_is_submitter = nameof(excuse_reviewer_is_submitter);
+
+    /// <summary>A rejection needs a comment of 1-500 characters (400).</summary>
+    public const string excuse_comment_required = nameof(excuse_comment_required);
+
+    /// <summary>The attachment type, size or content is not accepted (400, L10).</summary>
+    public const string excuse_attachment_invalid = nameof(excuse_attachment_invalid);
+
+    /// <summary>The excuse is no longer <c>Submitted</c> or <c>Escalated</c>: it cannot be decided, escalated or withdrawn (409).</summary>
+    public const string excuse_not_pending = nameof(excuse_not_pending);
 }
