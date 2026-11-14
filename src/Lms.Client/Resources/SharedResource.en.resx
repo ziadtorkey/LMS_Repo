@@ -2209,4 +2209,36 @@
   <data name="RulesPage_Subtitle" xml:space="preserve"><value>Who may message whom at your school. A rule can only be made narrower than the platform default.</value></data>
   <data name="RulesPage_Refused" xml:space="preserve"><value>These rules are wider than the platform allows:</value></data>
   <data name="Nav_MessagingRules" xml:space="preserve"><value>Messaging rules</value></data>
+  <data name="CommsSet_Title" xml:space="preserve"><value>Communication settings</value></data>
+  <data name="CommsSet_Subtitle" xml:space="preserve"><value>Which channels are on, how much may be sent, and when. Applies to your whole school group.</value></data>
+  <data name="CommsSet_Channels" xml:space="preserve"><value>Channels and daily limits</value></data>
+  <data name="CommsSet_Email" xml:space="preserve"><value>Email</value></data>
+  <data name="CommsSet_Push" xml:space="preserve"><value>Push notifications</value></data>
+  <data name="CommsSet_MaxEmailPerDay" xml:space="preserve"><value>Emails per day (all)</value></data>
+  <data name="CommsSet_MaxPushPerDay" xml:space="preserve"><value>Push notifications per day (all)</value></data>
+  <data name="CommsSet_MaxEmailPerUserPerDay" xml:space="preserve"><value>Emails per person per day</value></data>
+  <data name="CommsSet_MaxPushPerUserPerDay" xml:space="preserve"><value>Push notifications per person per day</value></data>
+  <data name="CommsSet_Retention" xml:space="preserve"><value>Keep delivery records (days)</value></data>
+  <data name="CommsSet_Ceiling" xml:space="preserve"><value>Between {0} and {1}.</value></data>
+  <data name="CommsSet_Negative" xml:space="preserve"><value>A limit cannot be negative.</value></data>
+  <data name="CommsSet_OutOfRange" xml:space="preserve"><value>Enter a number from {0} to {1}.</value></data>
+  <data name="CommsSet_QuietHours" xml:space="preserve"><value>Quiet hours</value></data>
+  <data name="CommsSet_QuietEnabled" xml:space="preserve"><value>Hold non-urgent notifications at night</value></data>
+  <data name="CommsSet_QuietHelp" xml:space="preserve"><value>Urgent announcements are sent at once.</value></data>
+  <data name="CommsSet_QuietStart" xml:space="preserve"><value>From (HH:mm)</value></data>
+  <data name="CommsSet_QuietEnd" xml:space="preserve"><value>Until (HH:mm)</value></data>
+  <data name="CommsSet_QuietNeeded" xml:space="preserve"><value>Enter a time such as 21:00.</value></data>
+  <data name="CommsSet_QuietZone" xml:space="preserve"><value>Times are in the school time zone: {0}</value></data>
+  <data name="CommsSet_Messaging" xml:space="preserve"><value>Messaging and announcements</value></data>
+  <data name="CommsSet_ReadReceipts" xml:space="preserve"><value>Show read receipts in conversations</value></data>
+  <data name="CommsSet_MaxPerMinute" xml:space="preserve"><value>Messages per person per minute</value></data>
+  <data name="CommsSet_MaxNewConversations" xml:space="preserve"><value>New conversations per person per day</value></data>
+  <data name="CommsSet_MaxGroupSize" xml:space="preserve"><value>Largest group</value></data>
+  <data name="CommsSet_MaxAnnouncements" xml:space="preserve"><value>Announcements per author per day</value></data>
+  <data name="CommsSet_Providers" xml:space="preserve"><value>Providers</value></data>
+  <data name="CommsSet_Configured" xml:space="preserve"><value>Configured</value></data>
+  <data name="CommsSet_NotConfigured" xml:space="preserve"><value>Not configured</value></data>
+  <data name="CommsSet_Fake" xml:space="preserve"><value>Test provider</value></data>
+  <data name="CommsSet_LastSuccess" xml:space="preserve"><value>Last success</value></data>
+  <data name="Nav_CommunicationSettings" xml:space="preserve"><value>Communication settings</value></data>
 </root>

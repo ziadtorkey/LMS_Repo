@@ -33,6 +33,7 @@ public static class NavCatalog
         new("Nav_IdentityProviders", "identity-providers", Icons.Material.Filled.Login, Permissions.IdentityProviders.View),
         new("Nav_Settings", "settings", Icons.Material.Filled.Settings, Permissions.Settings.View),
         new("Nav_MessagingRules", "settings/messaging-rules", Icons.Material.Filled.Rule, Permissions.Comms.Manage),
+        new("Nav_CommunicationSettings", "settings/communication", Icons.Material.Filled.Tune, Permissions.Comms.Manage),
         new("Nav_Audit", "audit", Icons.Material.Filled.History, Permissions.Audit.View),
         new("Nav_Clients", "clients", Icons.Material.Filled.Business, null, PlatformAdminOnly: true),
     ];
