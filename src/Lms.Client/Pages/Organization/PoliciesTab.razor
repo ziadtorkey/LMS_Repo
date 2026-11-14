@@ -17,14 +17,18 @@
     }
     else
     {
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Icon="@Icons.Material.Rounded.Shield" Class="mb-4" data-testid="policies-cascade-note">
+            @L["Policies_CascadeNote"]
+        </MudAlert>
+        <SectionCard Title="@L["Policies_CardTitle"]" Subtitle="@L["Policies_CardHelp"]" Icon="@Icons.Material.Rounded.Policy" TestId="policies-card">
         @foreach (var definition in _catalog)
         {
             var key = definition.Key;
             var state = _states.GetValueOrDefault(key);
             var inherited = state?.State == PolicyStates.Inherited;
             var on = state is not null && state.State != PolicyStates.Off;
-            <div class="lms-setting-row" data-testid="@($"policy-row-{key}")">
-                <MudSwitch T="bool" Value="on" ValueChanged="@(v => ToggleAsync(key, v))" Color="Color.Primary"
+            <div class="lms-toggle-row" data-testid="@($"policy-row-{key}")">
+                <MudSwitch T="bool" Value="on" ValueChanged="@(v => ToggleAsync(key, v))" Color="Color.Primary" LabelPlacement="Placement.Start"
                            Disabled="@(!CanEdit || inherited)" Label="@L[$"Policy_{key}"]" data-testid="@($"policy-switch-{key}")" />
                 @if (inherited)
                 {
@@ -32,11 +36,16 @@
                         @string.Format(L["Policies_SetBy"].Value, Culture.Pick(state!.SourceNameAr ?? "", state.SourceNameEn ?? ""))
                     </MudText>
                 }
-                <MudText Typo="Typo.caption" Class="d-block lms-muted" data-testid="@($"policy-blocks-{key}")">
-                    @L["Policies_Blocks"] @string.Join(Culture.IsRightToLeft ? "، " : ", ", definition.BlockedPermissions.Select(PermissionLabel))
-                </MudText>
+                @* A policy that blocks role assignments rather than permissions has no permission list: say nothing rather than "Blocks:". *@
+                @if (definition.BlockedPermissions.Count > 0)
+                {
+                    <MudText Typo="Typo.caption" Class="lms-toggle-help" data-testid="@($"policy-blocks-{key}")">
+                        @L["Policies_Blocks"] @string.Join(Culture.IsRightToLeft ? "، " : ", ", definition.BlockedPermissions.Select(PermissionLabel))
+                    </MudText>
+                }
             </div>
         }
+        </SectionCard>
     }
 </div>
 
