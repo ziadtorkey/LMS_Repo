@@ -1848,4 +1848,31 @@
   <data name="GradeImport_Done" xml:space="preserve"><value>{0} scores written, {1} skipped.</value></data>
   <data name="Publish_TimeMissing" xml:space="preserve"><value>That time does not exist in your time zone (the clocks skip it). Pick another time.</value></data>
   <data name="GradeImport_TooLarge" xml:space="preserve"><value>The file is too large (10 MB at most).</value></data>
+  <data name="Grd_GridSoonTitle" xml:space="preserve"><value>The gradebook grid is on its way</value></data>
+  <data name="Grd_GridSoonText" xml:space="preserve"><value>Categories, items and scores for this class course will appear here.</value></data>
+  <data name="Nav_MyGrades" xml:space="preserve"><value>My grades</value></data>
+  <data name="StGrades_Title" xml:space="preserve"><value>Grades</value></data>
+  <data name="StGrades_Subtitle" xml:space="preserve"><value>Your published grades, course by course.</value></data>
+  <data name="StGrades_ChildSubtitle" xml:space="preserve"><value>Your child's published grades, course by course.</value></data>
+  <data name="StGrades_Link" xml:space="preserve"><value>Grades</value></data>
+  <data name="StGrades_CourseTotal" xml:space="preserve"><value>Course total</value></data>
+  <data name="StGrades_PublishedOnly" xml:space="preserve"><value>Based on published grades</value></data>
+  <data name="StGrades_Band" xml:space="preserve"><value>Band</value></data>
+  <data name="StGrades_BandPoints" xml:space="preserve"><value>{0} points for this course</value></data>
+  <data name="StGrades_EmptyTitle" xml:space="preserve"><value>No published grades yet</value></data>
+  <data name="StGrades_EmptyText" xml:space="preserve"><value>Grades appear here when your teacher publishes them.</value></data>
+  <data name="StGrades_NoCoursesTitle" xml:space="preserve"><value>No courses yet</value></data>
+  <data name="StGrades_NoCoursesText" xml:space="preserve"><value>Courses with published grades appear here.</value></data>
+  <data name="StGrades_Category" xml:space="preserve"><value>Category</value></data>
+  <data name="StGrades_Weight" xml:space="preserve"><value>Weight</value></data>
+  <data name="StGrades_Result" xml:space="preserve"><value>Result</value></data>
+  <data name="StGrades_Item" xml:space="preserve"><value>Grade</value></data>
+  <data name="StGrades_Score" xml:space="preserve"><value>Score</value></data>
+  <data name="StGrades_Excused" xml:space="preserve"><value>Excused</value></data>
+  <data name="StGrades_NotGraded" xml:space="preserve"><value>Not graded</value></data>
+  <data name="StGrades_Legend" xml:space="preserve"><value>How grades are banded: {0}</value></data>
+  <data name="StGrades_Range" xml:space="preserve"><value>Range</value></data>
+  <data name="StGrades_Points" xml:space="preserve"><value>Points</value></data>
+  <data name="StGrades_TotalWaits" xml:space="preserve"><value>The total appears when all published grades are in.</value></data>
+  <data name="StGrades_Children" xml:space="preserve"><value>Child</value></data>
 </root>

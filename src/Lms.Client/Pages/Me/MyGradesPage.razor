@@ -1,0 +1,26 @@
+@page "/me/grades"
+@attribute [Authorize]
+@using Lms.Client.Components.Grading
+@using Lms.Shared.Authorization
+@inject PermissionState PermState
+
+<PageTitle>@L["StGrades_Title"]</PageTitle>
+@if (!PermState.Loaded)
+{
+    <LoadingState Lines="4" TestId="grades-loading" />
+}
+else if (!PermState.Has(Permissions.Grades.ViewOwn))
+{
+    <Forbidden />
+}
+else
+{
+    <StudentGradesView />
+}
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+    }
+}

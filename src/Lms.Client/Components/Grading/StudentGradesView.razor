@@ -1,0 +1,58 @@
+@using Lms.Client.Services.Grading
+@using Lms.Shared.Grading
+@inject IGradebookApi Api
+@inject NavigationManager Navigation
+@inject ICultureService Culture
+
+@* A student's published grades, or a child's for a guardian: one card per course. There is no overall result across courses (L18), and a course shows
+   only what the server published. *@
+<PageHeader Title="@Title" Subtitle="@Subtitle" TitleTestId="grades-title" />
+
+@if (_loading)
+{
+    <LoadingState Lines="5" TestId="grades-loading" />
+}
+else if (_failed || _data is null)
+{
+    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="api-error">
+        @L["Api_Error"]
+        <MudButton Variant="Variant.Text" OnClick="LoadAsync">@L["Common_Retry"]</MudButton>
+    </MudAlert>
+}
+else if (_data.Courses.Count == 0)
+{
+    <SectionCard><EmptyState Title="@L["StGrades_NoCoursesTitle"]" Text="@L["StGrades_NoCoursesText"]" Icon="@Icons.Material.Rounded.Grading" TestId="grades-no-courses" /></SectionCard>
+}
+else
+{
+    <MudText Typo="Typo.subtitle1" Class="mb-3" data-testid="grades-student">@Culture.Pick(_data.StudentNameAr, _data.StudentNameEn)</MudText>
+    <div class="lms-grades-list" data-testid="grades-courses">
+        @foreach (var course in _data.Courses)
+        {
+            <CourseGradesCard Course="course" />
+        }
+    </div>
+}
+
+@code {
+    private StudentGradesDto? _data;
+    private bool _loading = true, _failed;
+
+    /// <summary>Empty for the signed-in student; a child's id for a guardian.</summary>
+    [Parameter] public Guid? StudentId { get; set; }
+
+    private string Title => L["StGrades_Title"];
+    private string Subtitle => L[StudentId is null ? "StGrades_Subtitle" : "StGrades_ChildSubtitle"];
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _failed = false;
+        var (value, failed) = await ApiCalls.RunAsync(() => StudentId is { } id ? Api.GetStudentGradesAsync(id) : Api.GetMyGradesAsync(), Navigation);
+        _data = value;
+        _failed = failed;
+        _loading = false;
+    }
+}
