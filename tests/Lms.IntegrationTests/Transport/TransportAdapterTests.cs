@@ -137,7 +137,7 @@ public sealed class TransportAdapterTests(LmsApiFactory factory)
         using var scope = factory.Services.CreateScope();
 
         Assert.IsType<GuardedEmailSender>(scope.ServiceProvider.GetRequiredService<IEmailSender>());
-        Assert.IsType<FakeSmsProvider>(scope.ServiceProvider.GetRequiredService<ISmsProvider>());
+        Assert.IsType<GuardedSmsProvider>(scope.ServiceProvider.GetRequiredService<ISmsProvider>());
     }
 
     [Fact]

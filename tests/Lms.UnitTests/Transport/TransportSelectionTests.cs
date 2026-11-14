@@ -53,15 +53,14 @@ public sealed class TransportSelectionTests
     }
 
     [Fact]
-    public async Task Sms_provider_fake_is_the_default_and_the_same_instance_serves_both_registrations()
+    public async Task Sms_provider_fake_is_the_default_behind_the_minor_guard()
     {
         using var sp = Build((s, c) => s.AddSms(c));
 
         var provider = sp.GetRequiredService<ISmsProvider>();
         await provider.SendAsync(new SmsMessage("+966501234567", SmsTemplates.GenericNotice, new Dictionary<string, string> { ["AppName"] = "LMS" }));
 
-        Assert.IsType<FakeSmsProvider>(provider);
-        Assert.Same(provider, sp.GetRequiredService<FakeSmsProvider>());
+        Assert.IsType<GuardedSmsProvider>(provider); // D72 backstop in front of the fake
         Assert.Single(sp.GetRequiredService<FakeSmsProvider>().Sent);
     }
 

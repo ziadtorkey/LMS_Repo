@@ -158,4 +158,22 @@ public sealed class OutboundTransportTests
     [InlineData("123", "***")]
     [InlineData(null, "***")]
     public void Phone_numbers_are_masked_for_logs(string? number, string expected) => Assert.Equal(expected, Masking.Phone(number));
+
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task No_sms_to_a_minor_or_about_another_person_and_the_provider_is_never_called(bool recipientIsMinor, bool concernsAnotherPerson)
+    {
+        var inner = new FakeSmsProvider(new ListLogger<FakeSmsProvider>(), new FixedClock());
+        var guarded = new GuardedSmsProvider(inner);
+
+        var refused = await Assert.ThrowsAsync<SmsRefusedException>(() => guarded.SendAsync(Sms() with { RecipientIsMinor = recipientIsMinor, ConcernsAnotherPerson = concernsAnotherPerson }));
+
+        Assert.Equal("sms_not_allowed_for_minor", refused.Code);
+        Assert.Equal(SmsRefusal.NotAllowedForMinor, refused.Code);
+        Assert.Empty(inner.Sent);
+        await guarded.SendAsync(Sms()); // an adult, about themselves
+        Assert.Single(inner.Sent);
+    }
 }
