@@ -149,9 +149,45 @@ else
             <Attachments><MudButton Variant="Variant.Outlined" Size="Size.Small" StartIcon="@Icons.Material.Rounded.AttachFile">@T("إضافة ملف", "Add a file")</MudButton></Attachments>
         </AnnouncementComposerForm>
     </SectionCard>
+
+    <SectionCard Title="@T("تفضيلات الإشعارات", "Notification preferences")" Flush="true" TestId="gallery-prefs">
+        <div class="pa-3"><PushPermissionAlert State="PushState.Off" /></div>
+        <ChannelPreferences Columns="PrefColumns" Rows="_prefRows" />
+    </SectionCard>
+
+    <SectionCard Title="@T("مراجعة بلاغ", "Review a report")" TestId="gallery-moderation">
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            <ReportStatusChip Status="ReportStatus.New" SafetyConcern="true" />
+            <ReportStatusChip Status="ReportStatus.New" />
+            <ReportStatusChip Status="ReportStatus.InReview" />
+            <ReportStatusChip Status="ReportStatus.Kept" />
+        </div>
+        <div class="lms-thread-body mb-3" style="max-block-size:none">
+            <MessageBubble From="Yousef" Text="@T("أين واجب الفيزياء؟", "Where is the physics homework?")" TimeText="19:02" />
+            <ReportedMessage><MessageBubble From="Yousef" Text="@T("رسالة مُبلَّغ عنها للمراجعة.", "A reported message for review.")" TimeText="19:03" /></ReportedMessage>
+            <MessageBubble From="Sara" Text="@T("سأرسله الآن.", "I'll send it now.")" TimeText="19:05" />
+        </div>
+        <ModerationDecision SenderName="Yousef" @bind-Value="_decision" @bind-Days="_days" />
+    </SectionCard>
 }
 
 @code {
+    private ModerationAction? _decision = ModerationAction.RemoveAndRestrict;
+    private int _days = 7;
+    private readonly List<PreferenceRow> _prefRows =
+    [
+        new() { Key = "msg", Label = "New message", On = { [NotificationChannel.Email] = true, [NotificationChannel.Push] = true } },
+        new() { Key = "ann-pin", Label = "Pinned announcement", On = { [NotificationChannel.Email] = true }, Locked = { NotificationChannel.Email } },
+        new() { Key = "abs", Label = "Absence of my child", On = { [NotificationChannel.Email] = true, [NotificationChannel.Sms] = true }, Locked = { NotificationChannel.Email, NotificationChannel.Sms } },
+    ];
+
+    private IReadOnlyList<ChannelColumn> PrefColumns =>
+    [
+        new(NotificationChannel.InApp, T("تعمل دائمًا", "Always on")),
+        new(NotificationChannel.Email, "huda@…"),
+        new(NotificationChannel.Sms, "+966 5…"),
+        new(NotificationChannel.Push, T("هذا الجهاز: متوقفة", "This device: off")),
+    ];
     private bool _showThread = true, _readOnly;
     private string? _draft, _announce;
     private readonly AnnouncementDraft _annDraft = new() { TitleAr = "لقاءات أولياء الأمور والمعلمين", Scope = AudienceScopeKind.Unit, Mode = PublishMode.Schedule,

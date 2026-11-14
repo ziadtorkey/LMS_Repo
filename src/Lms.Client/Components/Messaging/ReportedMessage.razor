@@ -1,0 +1,10 @@
+@* The reported message inside its context (spec #615 §7.4, class lms-flagged): the message (a MessageBubble from the page) outlined in the warning colour
+   with a "Reported message" chip, so the outline is never the only signal. The messages before and after it are plain bubbles, read-only. *@
+<div class="lms-flagged" data-testid="reported-message">
+    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Warning" Icon="@Icons.Material.Rounded.Flag" Class="lms-status-chip">@L["Mod_Reported"]</MudChip>
+    @ChildContent
+</div>
+
+@code {
+    [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
+}

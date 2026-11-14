@@ -1762,4 +1762,38 @@
   <data name="Ann_SaveDraft" xml:space="preserve"><value>Save as draft</value></data>
   <data name="Ann_Schedule" xml:space="preserve"><value>Schedule</value></data>
   <data name="Ann_Publish" xml:space="preserve"><value>Publish</value></data>
+  <data name="Prefs_Event" xml:space="preserve"><value>Event</value></data>
+  <data name="Prefs_Channel_InApp" xml:space="preserve"><value>In-app</value></data>
+  <data name="Prefs_Channel_Email" xml:space="preserve"><value>Email</value></data>
+  <data name="Prefs_Channel_Sms" xml:space="preserve"><value>SMS</value></data>
+  <data name="Prefs_Channel_Push" xml:space="preserve"><value>Push</value></data>
+  <data name="Prefs_Fix" xml:space="preserve"><value>Add it in your profile</value></data>
+  <data name="Prefs_Locked" xml:space="preserve"><value>Set by your school: can’t be turned off.</value></data>
+  <data name="Prefs_NoPhone" xml:space="preserve"><value>Add a mobile number in your profile</value></data>
+  <data name="Prefs_PushUnsupported" xml:space="preserve"><value>Not available on this browser</value></data>
+  <data name="Prefs_PushOff" xml:space="preserve"><value>Push notifications are off on this device.</value></data>
+  <data name="Prefs_PushOffHelp" xml:space="preserve"><value>Your browser will ask for permission. You can turn it off again here or in the browser settings.</value></data>
+  <data name="Prefs_PushTurnOn" xml:space="preserve"><value>Turn on for this browser</value></data>
+  <data name="Prefs_PushDenied" xml:space="preserve"><value>Your browser blocks notifications from this site.</value></data>
+  <data name="Prefs_PushDeniedHelp" xml:space="preserve"><value>To allow them, open the site settings in your browser (the icon next to the address) and allow Notifications, then come back to this page.</value></data>
+  <data name="Mod_Decision" xml:space="preserve"><value>Decision</value></data>
+  <data name="Mod_Action_Dismiss" xml:space="preserve"><value>Keep the message</value></data>
+  <data name="Mod_Action_Dismiss_Help" xml:space="preserve"><value>Close the report. The message stays; the reporter is told it was reviewed.</value></data>
+  <data name="Mod_Action_Remove" xml:space="preserve"><value>Remove the message</value></data>
+  <data name="Mod_Action_Remove_Help" xml:space="preserve"><value>Everyone in the conversation sees “removed by a moderator”. Moderators keep the original text.</value></data>
+  <data name="Mod_Action_Warn" xml:space="preserve"><value>Warn the sender</value></data>
+  <data name="Mod_Action_Warn_Help" xml:space="preserve"><value>{0} gets a warning notice. The message stays.</value></data>
+  <data name="Mod_Action_Restrict" xml:space="preserve"><value>Restrict the sender</value></data>
+  <data name="Mod_Action_Restrict_Help" xml:space="preserve"><value>{0} can read but can’t send until the end date. This is a moderator restriction, not a block between people.</value></data>
+  <data name="Mod_Action_RemoveAndRestrict" xml:space="preserve"><value>Remove and restrict the sender</value></data>
+  <data name="Mod_Action_RemoveAndRestrict_Help" xml:space="preserve"><value>Removes the message, and {0} can read but not send until the end date.</value></data>
+  <data name="Mod_Action_LockConversation" xml:space="preserve"><value>Lock the conversation</value></data>
+  <data name="Mod_Action_LockConversation_Help" xml:space="preserve"><value>Nobody can send in it any more. For a group conversation that has gone wrong.</value></data>
+  <data name="Mod_For" xml:space="preserve"><value>For</value></data>
+  <data name="Mod_Days" xml:space="preserve"><value>{0} days</value></data>
+  <data name="Mod_Reported" xml:space="preserve"><value>Reported message</value></data>
+  <data name="Mod_Status_New" xml:space="preserve"><value>New</value></data>
+  <data name="Mod_Status_InReview" xml:space="preserve"><value>In review</value></data>
+  <data name="Mod_Status_Removed" xml:space="preserve"><value>Removed</value></data>
+  <data name="Mod_Status_Kept" xml:space="preserve"><value>Kept</value></data>
 </root>
