@@ -172,3 +172,11 @@ Agent definitions: `.claude/agents/*.md`. Shared rules: `CLAUDE.md`.
 - Branch names: `be/`, `fe/`, `qa/`, `lead/` + `<issue#>-slug`. Conventional commits (`feat:`, `fix:`, `test:`, `docs:`, `chore:`).
 - CI (`.github/workflows/ci.yml`): restore → build (warnings as errors) → unit → integration (Testcontainers MySQL + MinIO) → bUnit → E2E (docker compose up, Playwright). Required for merge.
 - Local dev: `docker compose up -d` (mysql, minio, mailpit) then `dotnet run --project src/Lms.Api`.
+
+### 4.1 Push discipline (owner decision 2026-11-14)
+CI is the bottleneck: a full run takes hours to go green, and with `cancel-in-progress` every extra push cancels the PR's run and starts it over.
+- **Test locally before you push:** the affected unit, integration (Testcontainers) and client (bUnit) tests, plus the relevant E2E scenarios (take the e2e lock in the shared notes first).
+- **One push per finished fix:** batch review fixes into a single push, not one push per small change.
+- **Don't push "merge main" only to refresh a branch.** Merge main only for a real conflict, or when the Lead says the PR is about to merge.
+- **Keep the PR a draft until it is locally green.** Mark it ready only then.
+- **The Lead treats CI as the final gate** at merge time, not as the place to find failures.

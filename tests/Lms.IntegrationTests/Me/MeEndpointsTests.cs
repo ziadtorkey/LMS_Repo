@@ -37,6 +37,40 @@ public sealed class MeEndpointsTests(LmsApiFactory factory)
     }
 
     [Fact]
+    public async Task A_teacher_without_settings_view_sees_the_clients_time_zone_in_me()
+    {
+        var tree = await AccessTestData.SeedAsync(factory, "METZ");
+        var teacher = Guid.NewGuid();
+        var other = await AccessTestData.SeedAsync(factory, "METZ2");
+        var otherTeacher = Guid.NewGuid();
+        var assignment = await AccessTestData.AssignAsync(factory, tree, tree.School1, BuiltInRoles.Teacher, teacher);
+        await AccessTestData.AssignAsync(factory, other, other.School1, BuiltInRoles.Teacher, otherTeacher);
+        var admin = TestCurrentContext.PlatformAdmin();
+        await using (var db = factory.CreateDbContext(admin))
+        {
+            await new Lms.Infrastructure.Configuration.SettingsResolver(db, admin).SetAsync(
+                Lms.Shared.Configuration.SettingKeys.OrgTimeZone, tree.Root.Id, "Africa/Cairo", isLocked: false);
+        }
+
+        // the teacher has no Settings.View, so only /api/me can tell the client the zone
+        var perms = await (await GetAsync(Routes.MyPermissions, teacher, assignment.Id)).Content.ReadFromJsonAsync<EffectivePermissionsDto>();
+        Assert.DoesNotContain(Permissions.Settings.View, perms!.Permissions);
+        var me = (await (await GetAsync(Routes.Me, teacher)).Content.ReadFromJsonAsync<MeDto>())!;
+        Assert.Equal("Africa/Cairo", Assert.Single(me.Contexts).TimeZone);
+
+        // a client that never set it, and a stored value the server cannot resolve, both show the default
+        var otherMe = (await (await GetAsync(Routes.Me, otherTeacher)).Content.ReadFromJsonAsync<MeDto>())!;
+        Assert.Equal("Asia/Riyadh", Assert.Single(otherMe.Contexts).TimeZone);
+        await using (var db = factory.CreateDbContext(admin))
+        {
+            await new Lms.Infrastructure.Configuration.SettingsResolver(db, admin).SetAsync(
+                Lms.Shared.Configuration.SettingKeys.OrgTimeZone, other.Root.Id, "Mars/Olympus", isLocked: false);
+        }
+
+        Assert.Equal("Asia/Riyadh", Assert.Single((await (await GetAsync(Routes.Me, otherTeacher)).Content.ReadFromJsonAsync<MeDto>())!.Contexts).TimeZone);
+    }
+
+    [Fact]
     public async Task Me_lists_only_valid_assignments_of_caller()
     {
         var tree = await AccessTestData.SeedAsync(factory, "ME1");
