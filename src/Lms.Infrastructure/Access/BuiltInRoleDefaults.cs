@@ -98,6 +98,7 @@ public static class BuiltInRoleDefaults
         Permissions.LiveSessions.View, Permissions.LiveSessions.Manage,
     };
 
+    // Merge order: wave 2 (version 9, Timetable.*) must reach main before wave 3 (version 10): the reconciler adds only permissions introduced after a role version.
     /// <summary>Permissions introduced by defaults version 10 (M5 wave 3: attendance and excuses). Version 9 belongs to wave 2 (Timetable.*).</summary>
     public static readonly IReadOnlySet<string> IntroducedInVersion10 = new HashSet<string>
     {

@@ -13,11 +13,11 @@ public static partial class Routes
 
     /// <summary>
     /// POST (<c>SubmitExcuseRequest</c> → <c>ExcuseDto</c>) — Excuses.Submit; guardian link or self; a student under GuardiansOnly 403 <c>excuse_submitter_not_allowed</c>, another guardian 404;
-    /// outside the policy 409 <c>excuse_out_of_policy</c> with the violation as <c>reason</c>; PlacementGuard.
+    /// outside the policy 409 <c>excuse_out_of_policy</c> with the violation as <c>reason</c>; PlacementGuard; <c>AttachmentFileId</c> must be a file uploaded by the same caller and not yet attached to another excuse (otherwise 400 <c>excuse_attachment_invalid</c>), so a file id learned elsewhere cannot be attached and read back.
     /// </summary>
     public const string ExcusesPattern = "/api/excuses";
 
-    /// <summary>POST (multipart, one file → <c>ExcuseAttachmentDto</c>) — Excuses.Submit; allow-list jpeg, png, webp, pdf, <c>Excuses.MaxAttachmentMb</c>, content sniffed, stored privately; 400 <c>excuse_attachment_invalid</c>.</summary>
+    /// <summary>POST (multipart, one file → <c>ExcuseAttachmentDto</c>) — Excuses.Submit; allow-list jpeg, png, webp, pdf, <c>Excuses.MaxAttachmentMb</c>, content sniffed, stored privately; 400 <c>excuse_attachment_invalid</c>. The file is owned by the uploader and unattached; at most 20 uploads per user per hour (429), and an upload not attached within 24 hours is purged by a job. Tests: <c>Cannot_attach_a_file_uploaded_by_someone_else</c>, <c>A_file_attaches_to_one_excuse_only</c>, <c>An_unattached_upload_is_purged</c>.</summary>
     public const string ExcuseAttachmentsPattern = ExcusesPattern + "/attachments";
 
     /// <summary>GET (<c>MyExcusesQuery</c> → <c>PagedResult&lt;ExcuseDto&gt;</c>) — Excuses.Submit; the caller's own submissions (a student also the ones for them); a child that is not the caller's is 404.</summary>

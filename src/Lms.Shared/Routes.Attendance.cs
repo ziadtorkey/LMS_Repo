@@ -43,7 +43,7 @@ public static partial class Routes
     /// <summary>GET (<c>OwnAttendanceQuery</c> → <c>OwnAttendanceDto</c>) — Attendance.ViewOwn; an active guardian link (another guardian's child is 404, one child never reads under another's id).</summary>
     public const string StudentAttendancePattern = StudentPattern + "/attendance";
 
-    /// <summary>GET (<c>AttendanceAlertsQuery</c> → <c>PagedResult&lt;AttendanceAlertDto&gt;</c>) — Excuses.Review or Attendance.View (Counselor, Manager); unit subtree; teacher 403.</summary>
+    /// <summary>GET (<c>AttendanceAlertsQuery</c> → <c>PagedResult&lt;AttendanceAlertDto&gt;</c>) — Excuses.Review or Attendance.View (Counselor, Manager); unit subtree; a Supervisor (Attendance.View) sees only students of the supervised courses; teacher 403.</summary>
     public const string AttendanceAlertsPattern = "/api/attendance/alerts";
 
     /// <summary>

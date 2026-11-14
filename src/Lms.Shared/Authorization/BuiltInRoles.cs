@@ -72,7 +72,7 @@ public static class BuiltInRoles
              // M5 wave 1 (D58): every grading permission except ViewOwn (they have no grades of their own).
              Permissions.Grades.View, Permissions.Grades.Manage, Permissions.Grades.Publish,
              Permissions.Grades.ConfigureScales, Permissions.Grades.ViewReports,
-             // M5 wave 3 (D58, D61): every attendance and excuse permission except the own-data ones.
+             // M5 wave 3 (D58, D61, plan role matrix): every attendance and excuse permission except the own-data ones; Take for an admin is intended (an admin can take a session when no teacher can).
              Permissions.Attendance.Take, Permissions.Attendance.Edit, Permissions.Attendance.View,
              Permissions.Excuses.Review, Permissions.Excuses.Escalate]),
         new(Manager, RoleBaseKinds.Staff,

@@ -133,6 +133,6 @@ public static class SettingKeys
     /// <summary>Largest excuse attachment in MB (L10).</summary>
     public static readonly SettingKey<int> ExcusesMaxAttachmentMb = new("Excuses.MaxAttachmentMb", 5);
 
-    /// <summary>Days after which the attachments of rejected or withdrawn excuses are purged (L10).</summary>
+    /// <summary>Days after which the attachments of rejected or withdrawn excuses are purged by the retention job (L10, Task 19); the excuse stays readable.</summary>
     public static readonly SettingKey<int> ExcusesAttachmentRetentionDays = new("Excuses.AttachmentRetentionDays", 365);
 }
