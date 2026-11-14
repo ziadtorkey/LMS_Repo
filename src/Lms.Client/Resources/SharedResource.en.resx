@@ -2032,6 +2032,29 @@
   <data name="Comms_PrefSource_User" xml:space="preserve"><value>Your choice</value></data>
   <data name="Comms_PrefSource_Mandatory" xml:space="preserve"><value>Required</value></data>
   <data name="Msg_Rule_SameUnit" xml:space="preserve"><value>Anyone in the same unit</value></data>
+  <data name="Channel_Sms" xml:space="preserve"><value>SMS</value></data>
+  <data name="MyCourses_StatSupervised" xml:space="preserve"><value>Supervised courses</value></data>
+  <data name="MyCourses_StatAllocations" xml:space="preserve"><value>Class allocations</value></data>
+  <data name="MyCourses_StatPublished" xml:space="preserve"><value>Published blueprints</value></data>
+  <data name="MyCourses_StatPending" xml:space="preserve"><value>Without a blueprint</value></data>
+  <data name="MyCourses_Filter" xml:space="preserve"><value>Filter by name or code</value></data>
+  <data name="MyCourses_FilterUnit" xml:space="preserve"><value>Unit</value></data>
+  <data name="MyCourses_AllUnits" xml:space="preserve"><value>All units</value></data>
+  <data name="MyCourses_FilterBlueprint" xml:space="preserve"><value>Blueprint</value></data>
+  <data name="MyCourses_AllBlueprints" xml:space="preserve"><value>All blueprints</value></data>
+  <data name="MyCourses_View" xml:space="preserve"><value>View</value></data>
+  <data name="MyCourses_ViewGrid" xml:space="preserve"><value>Grid view</value></data>
+  <data name="MyCourses_ViewList" xml:space="preserve"><value>List view</value></data>
+  <data name="MyCourses_NoMatch" xml:space="preserve"><value>No course matches</value></data>
+  <data name="MyCourses_NoMatchText" xml:space="preserve"><value>Change or clear the filters.</value></data>
+  <data name="MyCourses_Periods" xml:space="preserve"><value>Periods per week: {0}</value></data>
+  <data name="MyCourses_AssignTitle" xml:space="preserve"><value>Assign or link a course</value></data>
+  <data name="MyCourses_AssignText" xml:space="preserve"><value>Ask an administrator to make you a course supervisor, or start from a template.</value></data>
+  <data name="MyCourses_ExploreTemplates" xml:space="preserve"><value>Explore templates</value></data>
+  <data name="MyCourses_ColCourse" xml:space="preserve"><value>Course</value></data>
+  <data name="MyCourses_ColUnit" xml:space="preserve"><value>Unit</value></data>
+  <data name="MyCourses_ColBlueprint" xml:space="preserve"><value>Blueprint</value></data>
+  <data name="MyCourses_ColPeriods" xml:space="preserve"><value>Periods per week</value></data>
   <data name="Error_conversation_read_only" xml:space="preserve"><value>You cannot post in this conversation.</value></data>
   <data name="Error_comms_cap_above_ceiling" xml:space="preserve"><value>This limit is above the maximum the platform allows.</value></data>
   <data name="Error_attachment_invalid" xml:space="preserve"><value>The attachment is not allowed: check its type and size, and the number of attachments.</value></data>

@@ -176,6 +176,8 @@ public sealed class LmsApiFactory : WebApplicationFactory<Program>, IAsyncLifeti
             services.AddSingleton<Lms.Infrastructure.LiveSessions.FakeMeetingProvider>();
             services.AddSingleton<Lms.Domain.LiveSessions.IMeetingProvider>(sp => sp.GetRequiredService<Lms.Infrastructure.LiveSessions.FakeMeetingProvider>());
             services.AddSingleton<IEndpointModule, TestEndpoints>();
+            // The real D69 policy is Task 11 (BE4); the default fails closed, so the messaging tests use an allow-all fake until it lands.
+            services.AddScoped<Lms.Domain.Messaging.IMessagingPolicy, AllowAllTestMessagingPolicy>();
             services.AddSingleton<TestPolicyEvaluator>();
             services.AddScoped<IPolicyEvaluator>(sp => sp.GetRequiredService<TestPolicyEvaluator>());
         });

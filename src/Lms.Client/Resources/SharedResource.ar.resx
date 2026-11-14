@@ -2032,6 +2032,29 @@
   <data name="Comms_PrefSource_User" xml:space="preserve"><value>اختيارك</value></data>
   <data name="Comms_PrefSource_Mandatory" xml:space="preserve"><value>إلزامي</value></data>
   <data name="Msg_Rule_SameUnit" xml:space="preserve"><value>أي شخص في نفس الوحدة</value></data>
+  <data name="Channel_Sms" xml:space="preserve"><value>رسائل نصية</value></data>
+  <data name="MyCourses_StatSupervised" xml:space="preserve"><value>مقررات تشرف عليها</value></data>
+  <data name="MyCourses_StatAllocations" xml:space="preserve"><value>تخصيصات الفصول</value></data>
+  <data name="MyCourses_StatPublished" xml:space="preserve"><value>مخططات منشورة</value></data>
+  <data name="MyCourses_StatPending" xml:space="preserve"><value>بدون مخطط منشور</value></data>
+  <data name="MyCourses_Filter" xml:space="preserve"><value>تصفية بالاسم أو الرمز</value></data>
+  <data name="MyCourses_FilterUnit" xml:space="preserve"><value>الوحدة</value></data>
+  <data name="MyCourses_AllUnits" xml:space="preserve"><value>كل الوحدات</value></data>
+  <data name="MyCourses_FilterBlueprint" xml:space="preserve"><value>المخطط</value></data>
+  <data name="MyCourses_AllBlueprints" xml:space="preserve"><value>كل المخططات</value></data>
+  <data name="MyCourses_View" xml:space="preserve"><value>طريقة العرض</value></data>
+  <data name="MyCourses_ViewGrid" xml:space="preserve"><value>عرض شبكي</value></data>
+  <data name="MyCourses_ViewList" xml:space="preserve"><value>عرض قائمة</value></data>
+  <data name="MyCourses_NoMatch" xml:space="preserve"><value>لا يوجد مقرر مطابق</value></data>
+  <data name="MyCourses_NoMatchText" xml:space="preserve"><value>غيّر عوامل التصفية أو امسحها.</value></data>
+  <data name="MyCourses_Periods" xml:space="preserve"><value>الحصص أسبوعيًا: {0}</value></data>
+  <data name="MyCourses_AssignTitle" xml:space="preserve"><value>إسناد مقرر أو ربطه</value></data>
+  <data name="MyCourses_AssignText" xml:space="preserve"><value>اطلب من المسؤول تعيينك مشرفًا على مقرر، أو ابدأ من قالب.</value></data>
+  <data name="MyCourses_ExploreTemplates" xml:space="preserve"><value>استعرض القوالب</value></data>
+  <data name="MyCourses_ColCourse" xml:space="preserve"><value>المقرر</value></data>
+  <data name="MyCourses_ColUnit" xml:space="preserve"><value>الوحدة</value></data>
+  <data name="MyCourses_ColBlueprint" xml:space="preserve"><value>المخطط</value></data>
+  <data name="MyCourses_ColPeriods" xml:space="preserve"><value>الحصص أسبوعيًا</value></data>
   <data name="Error_conversation_read_only" xml:space="preserve"><value>لا يمكنك الكتابة في هذه المحادثة.</value></data>
   <data name="Error_comms_cap_above_ceiling" xml:space="preserve"><value>هذا الحد أعلى من الحد الأقصى الذي تسمح به المنصة.</value></data>
   <data name="Error_attachment_invalid" xml:space="preserve"><value>المرفق غير مسموح به: تحقق من نوعه وحجمه وعدد المرفقات.</value></data>
