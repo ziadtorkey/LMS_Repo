@@ -1,0 +1,102 @@
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.Packages
+@using Lms.Shared.Classes
+@using Lms.Shared.Content
+@using Lms.Shared.Packages
+@inject ILessonPlansApi Plans
+@inject IModulesApi Modules
+@inject IPackagePlayerApi Player
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+@* Package states on Home and the course home (T18, same card layout as the live session cards): the SCORM / H5P activities a student has
+   started or finished, each with a link into the module viewer. In progress: Resume. Completed: the re-open wording of the module's grading
+   method (D57): Try again for Highest and Last, Review (not graded) for First. The viewer asks the confirm for Last, so the link is plain. *@
+@if (!_loading && _rows.Count > 0)
+{
+    <SectionCard Title="@L["Home_PackageStates"]" TestId="home-packages" Class="mt-4">
+        <ul class="lms-item-list">
+            @foreach (var row in _rows)
+            {
+                var href = $"class-courses/{row.ClassCourseId}/modules/{row.Node.Id}";
+                var completed = row.Node.CompletionState == CompletionStates.Completed;
+                <li class="lms-item" data-testid="@($"home-package-row-{row.Node.Id}")">
+                    <div class="lms-item-main">
+                        <span class="lms-kind-tile" aria-hidden="true"><MudIcon Icon="@Icons.Material.Rounded.Inventory2" /></span>
+                        <div>
+                            <a class="lms-cell-strong" href="@href">@Culture.Pick(row.Node.TitleAr, row.Node.TitleEn)</a>
+                            @if (ClassCourseId is null && Culture.Pick(row.CourseNameAr, row.CourseNameEn) is { Length: > 0 } courseName)
+                            {
+                                <div class="lms-muted lms-item-caption">@courseName</div>
+                            }
+                        </div>
+                    </div>
+                    <div class="lms-item-actions">
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@(completed ? Color.Success : Color.Info)" data-testid="@($"home-package-state-{row.Node.Id}")"
+                                 data-state="@row.Node.CompletionState">@L["Package_State_" + row.Node.CompletionState]</MudChip>
+                        <MudButton Variant="Variant.Text" Size="Size.Small" Href="@href" data-testid="@($"home-package-action-{row.Node.Id}")" data-method="@row.Method">@ActionText(row, completed)</MudButton>
+                    </div>
+                </li>
+            }
+        </ul>
+    </SectionCard>
+}
+
+@code {
+    private const int MaxRows = 4, MaxCourses = 3;
+
+    private sealed record CourseRef(Guid Id, string Ar, string En);
+
+    private sealed record Row(Guid ClassCourseId, string CourseNameAr, string CourseNameEn, ModuleNodeDto Node, string Method);
+
+    private readonly List<Row> _rows = [];
+    private bool _loading = true;
+
+    /// <summary>The course home passes its class course; Home leaves it null and the card looks across the student's first courses.</summary>
+    [Parameter] public Guid? ClassCourseId { get; set; }
+
+    private string ActionText(Row row, bool completed) => !completed
+        ? L["Package_Resume"].Value
+        : L[row.Method == PackageGradingMethods.First ? "Package_ReviewNotGraded" : "Package_TryAgain"].Value;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ApiCalls.RunAsync(LoadAsync, Navigation, L, _ => { });
+        _loading = false;
+    }
+
+    private async Task LoadAsync()
+    {
+        List<CourseRef> courses = ClassCourseId is { } id
+            ? [new CourseRef(id, "", "")]
+            : (await Plans.GetMyClassCoursesIfAllowedAsync()).Take(MaxCourses).Select(c => new CourseRef(c.Id, c.CourseNameAr, c.CourseNameEn)).ToList();
+        var found = new List<(Guid Cc, string Ar, string En, ModuleNodeDto Node)>();
+        foreach (var course in courses)
+        {
+            var plan = await Plans.GetPlanAsync(course.Id);
+            foreach (var node in plan.Sections.SelectMany(s => s.Lessons).SelectMany(l => l.Modules ?? []))
+                if (node.Kind is ModuleKinds.Scorm or ModuleKinds.H5p && node.IsVisibleNow
+                    && node.CompletionState is CompletionStates.InProgress or CompletionStates.Completed)
+                    found.Add((course.Id, course.Ar, course.En, node));
+        }
+
+        // Unfinished first (they are what to go back to), then the finished ones.
+        foreach (var f in found.OrderBy(f => f.Node.CompletionState == CompletionStates.Completed).Take(MaxRows))
+            _rows.Add(new Row(f.Cc, f.Ar, f.En, f.Node, f.Node.CompletionState == CompletionStates.Completed ? await MethodOfAsync(f.Node.Id) : PackageGradingMethods.Highest));
+    }
+
+    /// <summary>The grading method of a package module: the module's package id, then that package's my-state. A convenience: any failure reads as Highest.</summary>
+    private async Task<string> MethodOfAsync(Guid moduleId)
+    {
+        try
+        {
+            var detail = await Modules.GetAsync(moduleId);
+            if (detail.Content.RefId is not { } packageId) return PackageGradingMethods.Highest;
+            return (await Player.GetMyStateAsync(packageId)).GradingMethod;
+        }
+        catch (Exception ex) when (ex is ApiProblemException or HttpRequestException)
+        {
+            return PackageGradingMethods.Highest;
+        }
+    }
+}

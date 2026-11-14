@@ -29,6 +29,7 @@ else if (_name is not null)
     @if (PermState.Has(Permissions.Modules.View) && !PermState.Has(Permissions.Modules.Manage))
     {
         <ContinueLearningCards />
+        <Lms.Client.Components.Packages.PackageStatesCard />
     }
     @if (PermState.Has(Lms.Shared.Authorization.Permissions.Students.ViewChildren))
     {
