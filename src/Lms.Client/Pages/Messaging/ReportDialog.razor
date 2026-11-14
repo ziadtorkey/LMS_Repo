@@ -17,7 +17,7 @@
             <MudRadioGroup T="string" @bind-Value="_reason" Class="lms-radio-stack" aria-label="@L["Msg_Report_Reason"]" data-testid="report-reasons">
                 @foreach (var r in Reasons)
                 {
-                    <MudRadio T="string" Value="r" data-testid="@($"report-reason-{r}")">@L[$"Msg_Reason_{ReasonKey(r)}"]</MudRadio>
+                    <MudRadio T="string" Value="r" data-testid="@($"report-reason-{r}")">@L[$"Msg_Reason_{r}"]</MudRadio>
                 }
             </MudRadioGroup>
             <MudTextField T="string" @bind-Value="_note" Label="@L["Msg_Report_Note"]" Lines="3" MaxLength="MessagingLimits.ReportNoteMaxLength" Counter="MessagingLimits.ReportNoteMaxLength"
@@ -41,8 +41,6 @@
     private string? _reason;
     private string? _note, _error;
     private bool _sending;
-
-    private static string ReasonKey(string reason) => reason; // Msg_Reason_{Harassment|Inappropriate|Spam|Safety|Other}
 
     private async Task SubmitAsync()
     {

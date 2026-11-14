@@ -31,7 +31,7 @@
     {
         <p class="lms-picker-hint" data-testid="picker-hint">@Hint</p>
     }
-    <div role="listbox" aria-multiselectable="@(Multiple ? "true" : "false")" aria-label="@L["Msg_Picker_People"]" data-testid="picker-list">
+    <div role="group" aria-label="@L["Msg_Picker_People"]" data-testid="picker-list">
         @if (ShowSafeguardingRow)
         {
             <SafeguardingOption />
@@ -39,7 +39,7 @@
         @foreach (var r in _results)
         {
             var person = r;
-            <button type="button" class="lms-picker-pick" @onclick="() => ToggleAsync(person)" data-testid="@($"picker-{person.UserId}")">
+            <button type="button" class="lms-picker-pick" aria-pressed="@(_selected.ContainsKey(person.UserId) ? "true" : "false")" @onclick="() => ToggleAsync(person)" data-testid="@($"picker-{person.UserId}")">
                 <RecipientOption Name="@CultureText.Pick(person.NameAr, person.NameEn)" Caption="@Caption(person)" Selected="_selected.ContainsKey(person.UserId)" />
             </button>
         }
@@ -119,10 +119,12 @@
     private async Task ToggleAsync(RecipientDto person)
     {
         _limitHit = false;
-        if (_selected.Remove(person.UserId)) { }
-        else if (!Multiple) { _selected.Clear(); _selected[person.UserId] = person; }
-        else if (MaxPeople > 0 && _selected.Count >= MaxPeople) { _limitHit = true; return; }
-        else _selected[person.UserId] = person;
+        if (!_selected.Remove(person.UserId))
+        {
+            if (!Multiple) _selected.Clear();
+            else if (MaxPeople > 0 && _selected.Count >= MaxPeople) { _limitHit = true; return; }
+            _selected[person.UserId] = person;
+        }
         await SelectedChanged.InvokeAsync([.. _selected.Values]);
     }
 }

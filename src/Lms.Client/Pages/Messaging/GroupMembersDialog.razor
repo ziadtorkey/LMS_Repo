@@ -55,7 +55,7 @@
                 }
                 else
                 {
-                    <RecipientListPicker Multiple="true" MaxPeople="_max - Active.Count()" GroupLimit="_max" Exclude="Active.Select(p => p.UserId).ToList()" SelectedChanged="p => _toAdd = p" />
+                    <RecipientListPicker @key="_pickerKey" Multiple="true" MaxPeople="_max - Active.Count()" GroupLimit="_max" Exclude="Active.Select(p => p.UserId).ToList()" SelectedChanged="p => _toAdd = p" />
                     <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-2" Disabled="_toAdd.Count == 0 || _busy" OnClick="AddAsync" data-testid="members-add">@L["Msg_Member_Add"]</MudButton>
                 }
             }
@@ -72,6 +72,7 @@
 
     private ConversationDto _conversation = default!;
     private IReadOnlyList<RecipientDto> _toAdd = [];
+    private int _pickerKey;
     private string? _error;
     private bool _busy, _changed;
     private int _max = MessagingLimits.DefaultMaxGroupSize;
@@ -91,13 +92,19 @@
         _error = null; _busy = true;
         ConversationDto? next = null;
         var ok = await ApiCalls.RunAsync(async () => next = await action(), Navigation, L, e => _error = e);
+        if (ok)
+        {
+            _changed = true;
+            // The conversation is read again inside the same error handling: it may have been removed meanwhile (404/403).
+            if (next is null) await ApiCalls.RunAsync(async () => next = await Messaging.GetConversationAsync(_conversation.Id), Navigation, L, e => _error = e);
+            if (next is not null) _conversation = next;
+            _toAdd = [];
+            _pickerKey++; // a fresh picker: the chips of the people just added are gone and the list is filtered again
+        }
         _busy = false;
-        if (!ok) return;
-        _changed = true;
-        _conversation = next ?? await Messaging.GetConversationAsync(_conversation.Id);
     }
 
-    private Task AddAsync() => Run(async () => { var c = await Messaging.AddParticipantsAsync(_conversation.Id, new AddParticipantsRequest([.. _toAdd.Select(p => p.UserId)])); _toAdd = []; return c; });
+    private Task AddAsync() => Run(async () => { return await Messaging.AddParticipantsAsync(_conversation.Id, new AddParticipantsRequest([.. _toAdd.Select(p => p.UserId)])); });
 
     private Task RemoveAsync(ParticipantDto person) => Run(async () => { await Messaging.RemoveParticipantAsync(_conversation.Id, person.UserId); return null; });
 

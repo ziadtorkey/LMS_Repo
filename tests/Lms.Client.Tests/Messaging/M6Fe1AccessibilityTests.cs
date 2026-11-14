@@ -130,7 +130,7 @@ public sealed class M6Fe1AccessibilityTests : ClientTestContext
         _dialogs.WaitForAssertion(() => Assert.NotEmpty(_dialogs.FindAll("[data-testid^=picker-0]")));
 
         Assert.Empty(Problems(_dialogs));
-        Assert.Equal("listbox", _dialogs.Find("[data-testid=picker-list]").GetAttribute("role"));
+        Assert.Equal("group", _dialogs.Find("[data-testid=picker-list]").GetAttribute("role"));
         Assert.False(string.IsNullOrWhiteSpace(_dialogs.Find("[data-testid=picker-list]").GetAttribute("aria-label")));
         Assert.NotEmpty(_dialogs.FindAll("[data-testid=composer-send]")); // Send is always visible, Ctrl+Enter is only a shortcut
     }

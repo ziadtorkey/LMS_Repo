@@ -272,4 +272,49 @@ public sealed class ReportBlockTests : ClientTestContext
         cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("[data-testid=composer]")));
         Assert.Empty(cut.FindAll("[data-testid=composer-off]"));
     }
+
+    [Fact]
+    public async Task The_reported_mark_survives_reopening_the_thread()
+    {
+        await SignInAsync(Sara);
+        var (c, m) = await HudaWritesToSaraAsync();
+        var cut = RenderThread(c.Id);
+        OpenReport(cut, m);
+        PickReason();
+        _dialogs.Find("[data-testid=report-submit]").Click();
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll($"[data-testid=msg-reported-{m.Id}]")));
+
+        var again = Render<MessagesPage>(p => p.Add(x => x.Id, c.Id)); // the thread is opened again: a new host component
+        again.WaitForAssertion(() => Assert.NotEmpty(again.FindAll("[data-testid=thread]")));
+
+        Assert.NotEmpty(again.FindAll($"[data-testid=msg-reported-{m.Id}]"));
+        Assert.Empty(again.FindAll($"[data-testid=msg-report-{m.Id}]"));
+    }
+
+    [Fact]
+    public async Task The_report_button_is_a_touch_target_and_the_reasons_group_is_named()
+    {
+        await SignInAsync(Sara);
+        var (c, m) = await HudaWritesToSaraAsync();
+        var cut = RenderThread(c.Id);
+        Assert.Contains("lms-touch", cut.Find($"[data-testid=msg-report-{m.Id}]").ClassName);
+
+        OpenReport(cut, m);
+
+        var group = _dialogs.Find("[role=radiogroup]"); // the name must sit on the element with the radiogroup role
+        Assert.False(string.IsNullOrWhiteSpace(group.GetAttribute("aria-label")));
+    }
+
+    [Fact]
+    public async Task A_person_who_can_only_read_can_still_block()
+    {
+        Api.Me = Api.Me with { UserId = Sara.Id };
+        await GrantAsync(Permissions.Messaging.View); // no Messaging.Send
+        MessagingApi.Me = Sara;
+        var (c, _) = await HudaWritesToSaraAsync();
+
+        var cut = RenderThread(c.Id);
+
+        Assert.NotEmpty(cut.FindAll("[data-testid=thread-more]"));
+    }
 }

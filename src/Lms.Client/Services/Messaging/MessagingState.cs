@@ -14,10 +14,19 @@ public interface IMessagingState
     Task RefreshAsync();
     /// <summary>Takes a total the caller already knows (a hub event carrying it).</summary>
     void Apply(int unreadConversations);
+
+    /// <summary>Messages the caller reported in this session: the Reported mark survives leaving and reopening a thread (the contract has no reported-by-me flag on a message yet).</summary>
+    bool IsReported(Guid messageId);
+    void MarkReported(Guid messageId);
 }
 
 public sealed class MessagingState(IMessagingApi api, IContextStore context, NavigationManager navigation) : IMessagingState
 {
+    private readonly HashSet<Guid> _reported = [];
+
+    public bool IsReported(Guid messageId) => _reported.Contains(messageId);
+    public void MarkReported(Guid messageId) => _reported.Add(messageId);
+
     public int UnreadConversations { get; private set; }
     public event Action? Changed;
 
