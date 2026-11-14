@@ -46,6 +46,8 @@ public sealed class ReportBlockTests : ClientTestContext
         return cut;
     }
 
+    private void PickReason() => _dialogs.Find($"[data-testid=report-reason-{ReportReasons.Safety}]").Click();
+
     private void OpenReport(IRenderedComponent<MessagesPage> cut, MessageDto m)
     {
         cut.Find($"[data-testid=msg-report-{m.Id}]").Click();
@@ -86,6 +88,7 @@ public sealed class ReportBlockTests : ClientTestContext
         var cut = RenderThread(c.Id);
         OpenReport(cut, m);
 
+        PickReason();
         _dialogs.Find("[data-testid=report-submit]").Click();
 
         cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll($"[data-testid=msg-reported-{m.Id}]")));
@@ -96,18 +99,73 @@ public sealed class ReportBlockTests : ClientTestContext
     }
 
     [Fact]
-    public async Task Duplicate_report_shows_already_reported()
+    public async Task Duplicate_report_counts_as_reported()
     {
         await SignInAsync(Sara);
         var (c, m) = await HudaWritesToSaraAsync();
-        await MessagingApi.ReportAsync(m.Id, new ReportMessageRequest(ReportReasons.Spam, null));
+        await MessagingApi.ReportAsync(m.Id, new ReportMessageRequest(ReportReasons.Spam, null)); // reported earlier, the page does not know
         var cut = RenderThread(c.Id);
         OpenReport(cut, m);
 
+        PickReason();
         _dialogs.Find("[data-testid=report-submit]").Click();
 
-        _dialogs.WaitForAssertion(() => Assert.NotEmpty(_dialogs.FindAll("[data-testid=report-error]")));
-        Assert.Contains("سبق أن أبلغت", _dialogs.Find("[data-testid=report-error]").TextContent);
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll($"[data-testid=msg-reported-{m.Id}]")));
+        Assert.Empty(_dialogs.FindAll("[data-testid=report]"));
+    }
+
+    [Fact]
+    public async Task Submit_stays_off_until_a_reason_is_picked()
+    {
+        await SignInAsync(Sara);
+        var (c, m) = await HudaWritesToSaraAsync();
+        var cut = RenderThread(c.Id);
+        OpenReport(cut, m);
+
+        Assert.True(_dialogs.Find("[data-testid=report-submit]").HasAttribute("disabled"));
+        PickReason();
+        _dialogs.WaitForAssertion(() => Assert.False(_dialogs.Find("[data-testid=report-submit]").HasAttribute("disabled")));
+    }
+
+    [Fact]
+    public async Task There_is_no_report_on_my_own_message()
+    {
+        await SignInAsync(Sara);
+        var c = await MessagingApi.CreateConversationAsync(new CreateConversationRequest(ConversationKinds.Direct, [Huda.Id], null, "mine"));
+        var mine = (await MessagingApi.GetMessagesAsync(c.Id, new MessageQuery())).Items.Single();
+
+        var cut = RenderThread(c.Id);
+
+        Assert.Empty(cut.FindAll($"[data-testid=msg-report-{mine.Id}]"));
+    }
+
+    [Fact]
+    public async Task There_is_no_report_on_a_deleted_message()
+    {
+        await SignInAsync(Sara);
+        var (c, m) = await HudaWritesToSaraAsync();
+        MessagingApi.Me = Huda;
+        await MessagingApi.DeleteMessageAsync(c.Id, m.Id);
+        MessagingApi.Me = Sara;
+
+        var cut = RenderThread(c.Id);
+
+        Assert.Empty(cut.FindAll($"[data-testid=msg-report-{m.Id}]"));
+        Assert.Contains("lms-msg-removed", cut.Find($"[data-testid=msg-{m.Id}]").ClassName);
+    }
+
+    [Fact]
+    public async Task There_is_no_block_menu_in_a_group()
+    {
+        await SignInAsync(Huda);
+        MessagingApi.Related.Add((Huda.Id, FakeMessagingApi.Omar.Id));
+        var g = await MessagingApi.CreateConversationAsync(new CreateConversationRequest(ConversationKinds.Group, [Sara.Id, FakeMessagingApi.Omar.Id], "10-A", "Welcome"));
+        await SignInAsync(Sara);
+
+        var cut = RenderThread(g.Id);
+
+        Assert.Empty(cut.FindAll("[data-testid=thread-more]"));
+        Assert.NotEmpty(cut.FindAll("[data-testid=thread-members]"));
     }
 
     [Fact]
@@ -120,6 +178,7 @@ public sealed class ReportBlockTests : ClientTestContext
         _dialogs.Find("textarea").Input("they keep writing to me");
         MessagingApi.RateLimited = true;
 
+        PickReason();
         _dialogs.Find("[data-testid=report-submit]").Click();
 
         _dialogs.WaitForAssertion(() => Assert.NotEmpty(_dialogs.FindAll("[data-testid=report-error]")));
