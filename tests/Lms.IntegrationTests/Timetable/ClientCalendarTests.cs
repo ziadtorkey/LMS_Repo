@@ -137,6 +137,53 @@ public sealed class ClientCalendarTests(LmsApiFactory factory)
         Assert.Equal(2, await calendar.SchoolDaysBetweenAsync(tree.School1.Id, Thursday, Thursday.AddDays(5), default)); // Tuesday
     }
 
+    [Fact]
+    public async Task School_days_between_a_huge_span_is_refused()
+    {
+        var tree = await AccessTestData.SeedAsync(factory, "CC9");
+        using var scope = new EngineScope(factory.Services);
+        var calendar = scope.Services.GetRequiredService<IClientCalendar>();
+
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+            calendar.SchoolDaysBetweenAsync(tree.School1.Id, Thursday, Thursday.AddDays(Lms.Infrastructure.Calendar.ClientCalendar.MaxSpanDays + 1), default));
+        Assert.Equal(0, await calendar.SchoolDaysBetweenAsync(tree.School1.Id, Thursday, Thursday.AddDays(2), default));
+    }
+
+    [Fact]
+    public async Task Counting_school_days_reads_the_holidays_once_per_range()
+    {
+        var tree = await AccessTestData.SeedAsync(factory, "CC10");
+        await SeedHolidayAsync(tree, tree.Root, new DateOnly(2027, 1, 11));
+        using var scope = new EngineScope(factory.Services);
+        var counting = new CountingCalendar(scope.Services.GetRequiredService<IAcademicCalendar>());
+        var calendar = new Lms.Infrastructure.Calendar.ClientCalendar(scope.Db, scope.Settings, counting, scope.Services.GetRequiredService<Lms.Domain.Abstractions.IClock>());
+
+        Assert.Equal(19, await calendar.SchoolDaysBetweenAsync(tree.School1.Id, Thursday, Thursday.AddDays(30), default));
+        Assert.Equal(1, counting.RangeCalls);
+        Assert.Equal(0, counting.DayCalls);
+        Assert.Equal(new DateOnly(2027, 1, 12), await calendar.AddSchoolDaysAsync(tree.School1.Id, Thursday, 2, default));
+        Assert.Equal(2, counting.RangeCalls); // one window query, not one per day
+        Assert.Equal(0, counting.DayCalls);
+    }
+
+    private sealed class CountingCalendar(IAcademicCalendar inner) : IAcademicCalendar
+    {
+        public int RangeCalls { get; private set; }
+        public int DayCalls { get; private set; }
+
+        public Task<bool> IsNonWorkingDayAsync(string orgUnitPath, DateOnly date, CancellationToken cancellationToken)
+        {
+            DayCalls++;
+            return inner.IsNonWorkingDayAsync(orgUnitPath, date, cancellationToken);
+        }
+
+        public Task<IReadOnlySet<DateOnly>> HolidayDatesAsync(string orgUnitPath, DateOnly from, DateOnly to, CancellationToken cancellationToken)
+        {
+            RangeCalls++;
+            return inner.HolidayDatesAsync(orgUnitPath, from, to, cancellationToken);
+        }
+    }
+
     private async Task SeedHolidayAsync(AccessTree tree, Lms.Domain.Organizations.OrgUnit unit, DateOnly date)
     {
         var year = await SeedYearAsync(factory, tree.Root, new DateOnly(2026, 9, 1), new DateOnly(2027, 6, 30), AcademicYearStatus.Active);
