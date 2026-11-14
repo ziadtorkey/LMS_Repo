@@ -1,0 +1,107 @@
+@using System.Globalization
+@using Lms.Client.Services
+@using Lms.Client.Services.LiveSessions
+@using Lms.Shared.LiveSessions
+@inject ICultureService Culture
+
+@* Once / Weekly with its rule and the preview (design spec M4b §2.3). The model is edited in place; the dialog reads it on save. *@
+<MudStack Spacing="2">
+    <MudRadioGroup T="bool" Value="Model.Weekly" ValueChanged="OnWeeklyChanged" data-testid="repeat-group">
+        <MudRadio T="bool" Value="false" Color="Color.Primary" data-testid="repeat-once">@L["Live_Repeat_Once"]</MudRadio>
+        <MudRadio T="bool" Value="true" Color="Color.Primary" data-testid="repeat-weekly">@L["Live_Repeat_Weekly"]</MudRadio>
+    </MudRadioGroup>
+
+    @if (Model.Weekly)
+    {
+        <MudSelect T="int" Value="Model.IntervalWeeks" ValueChanged="v => SetAsync(() => Model.IntervalWeeks = v)" Label="@L["Live_Every"]" data-testid="repeat-interval">
+            @foreach (var n in Enumerable.Range(1, 4))
+            {
+                <MudSelectItem T="int" Value="n">@L.Count("Live_EveryWeeks", n, Culture.IsRightToLeft)</MudSelectItem>
+            }
+        </MudSelect>
+
+        <div>
+            <MudText Typo="Typo.caption" Class="lms-muted">@L["Live_Days"]</MudText>
+            <div class="lms-day-toggles" role="group" aria-label="@L["Live_Days"]" data-testid="repeat-days">
+                @foreach (var day in OrderedDays)
+                {
+                    var on = Model.Days.Contains(day);
+                    <MudButton Size="Size.Small" Variant="@(on ? Variant.Filled : Variant.Outlined)" Color="@(on ? Color.Primary : Color.Default)"
+                               aria-pressed="@(on ? "true" : "false")" OnClick="() => ToggleDay(day)" data-testid="@($"repeat-day-{day}")">@Abbreviated(day)</MudButton>
+                }
+            </div>
+        </div>
+
+        <div role="group" aria-label="@L["Live_Ends"]">
+            <MudRadioGroup T="bool" Value="Model.EndsOnDate" ValueChanged="v => SetAsync(() => Model.EndsOnDate = v)" data-testid="ends-group">
+                <MudRadio T="bool" Value="true" Color="Color.Primary" data-testid="ends-on-date">@L["Live_EndsOn"]</MudRadio>
+                <MudRadio T="bool" Value="false" Color="Color.Primary" data-testid="ends-after">@L["Live_EndsAfter"]</MudRadio>
+            </MudRadioGroup>
+            @if (Model.EndsOnDate)
+            {
+                <MudDatePicker Date="Model.UntilDate" DateChanged="d => SetAsync(() => Model.UntilDate = d)" Label="@L["Live_EndsOn"]" DateFormat="yyyy-MM-dd"
+                               Error="@(EndsError is not null)" ErrorText="@EndsError" data-testid="ends-date" />
+            }
+            else
+            {
+                <MudNumericField T="int?" Value="Model.Count" ValueChanged="v => SetAsync(() => Model.Count = v)" Label="@L["Live_EndsAfterSuffix"]" Min="1" Immediate="true"
+                                 Error="@(EndsError is not null)" ErrorText="@EndsError" data-testid="ends-count" />
+            }
+        </div>
+
+        @if (ComputePreview() is { } p)
+        {
+            <RecurrencePreview Count="@Math.Min(p.Count, LiveSessionLimits.MaxOccurrences + 1)" Dates="p.Local" TooMany="@(p.Count > LiveSessionLimits.MaxOccurrences)" />
+        }
+    }
+</MudStack>
+
+@code {
+    [Parameter, EditorRequired] public LiveSessionFormModel Model { get; set; } = default!;
+    [Parameter, EditorRequired] public TimeZoneInfo Zone { get; set; } = TimeZoneInfo.Utc;
+    /// <summary>Raised when the rule changed, so the dialog can re-check what it can save.</summary>
+    [Parameter] public EventCallback Changed { get; set; }
+    /// <summary>The "recurrence_invalid" message, shown on the Ends field.</summary>
+    [Parameter] public string? EndsError { get; set; }
+
+    /// <summary>True when a valid weekly rule is set and it stays within the limit.</summary>
+    public bool IsValidRule => !Model.Weekly || ComputePreview() is { } p && p.Count <= LiveSessionLimits.MaxOccurrences;
+
+    private (int Count, IReadOnlyList<DateTime> Local)? ComputePreview()
+    {
+        if (!Model.Weekly || Model.StartsUtc(Zone) is not { } start || Model.Recurrence(Zone) is not { } rule) return null;
+        if (RecurrenceExpander.Preview(start, rule) is not { } r) return null;
+        return (r.Count, (IReadOnlyList<DateTime>)r.Dates.Select(d => TimeZoneInfo.ConvertTimeFromUtc(d, Zone)).ToList());
+    }
+
+    private async Task SetAsync(Action change)
+    {
+        change();
+        await Changed.InvokeAsync();
+    }
+
+    private async Task OnWeeklyChanged(bool weekly)
+    {
+        Model.Weekly = weekly;
+        if (weekly && Model.Days.Count == 0 && Model.Date is { } d) Model.Days.Add(d.DayOfWeek); // the start date's day is pre-selected
+        await Changed.InvokeAsync();
+    }
+
+    private async Task ToggleDay(DayOfWeek day)
+    {
+        if (!Model.Days.Remove(day)) Model.Days.Add(day);
+        await Changed.InvokeAsync();
+    }
+
+    /// <summary>The culture's week order (Arabic starts on Saturday in the calendar).</summary>
+    private IEnumerable<DayOfWeek> OrderedDays
+    {
+        get
+        {
+            var first = (int)Culture.Current.DateTimeFormat.FirstDayOfWeek;
+            return Enumerable.Range(0, 7).Select(i => (DayOfWeek)((first + i) % 7));
+        }
+    }
+
+    private string Abbreviated(DayOfWeek day) => Culture.Current.DateTimeFormat.GetAbbreviatedDayName(day);
+}
