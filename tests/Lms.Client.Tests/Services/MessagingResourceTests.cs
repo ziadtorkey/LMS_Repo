@@ -46,7 +46,7 @@ public sealed class MessagingResourceTests : ClientTestContext
                  {
                      ("Msg_Kind_", ConversationKinds.All), ("Msg_State_", MessageStates.All), ("Msg_Rule_", MessagingRuleModes.All),
                      ("Msg_Reason_", ReportReasons.All), ("Msg_ReportStatus_", ReportStatuses.All), ("Msg_Action_", ModerationActions.All),
-                     ("Ann_TargetKind_", AnnouncementTargetKinds.All), ("Ann_Status_", AnnouncementStatuses.All), ("Ann_Role_", AnnouncementRoleFilters.All),
+                     ("Ann_TargetKind_", AnnouncementTargetKinds.All), ("Ann_Status_", AnnouncementStatuses.All), ("Ann_Source_", AnnouncementSources.All), ("Ann_Role_", AnnouncementRoleFilters.All),
                      ("Comms_Delivery_", DeliveryStatuses.All), ("Comms_ChannelState_", ChannelStates.All), ("Comms_PrefSource_", PreferenceSources.All),
                  })
         {
