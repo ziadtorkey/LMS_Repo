@@ -1,0 +1,167 @@
+@page "/promotion/{RunId:guid}/run"
+@attribute [Authorize]
+@using Lms.Client.Components.YearEnd
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.YearEnd
+@using Lms.Shared
+@using Lms.Shared.Authorization
+@using Lms.Shared.YearEnd
+@inject PermissionState PermState
+@inject IPromotionApi Promotion
+@inject IDialogService Dialogs
+@inject NavigationManager Navigation
+@inject TimeProvider Clock
+@implements IDisposable
+
+<PageTitle>@L["Promo_Title"]</PageTitle>
+<PageHeader Title="@L["Promo_Title"]" Subtitle="@L["Promo_Run_Subtitle"]" TitleTestId="promo-title" />
+
+@if (!PermState.Loaded)
+{
+    <LoadingState Lines="4" TestId="promo-loading" />
+}
+else if (!PermState.Has(Permissions.Promotion.Run))
+{
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" data-testid="promo-forbidden">@L["Forbidden_Title"]</MudAlert>
+}
+else if (_run is null)
+{
+    @if (_failed)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="promo-load-error">@L["Error_Generic"]</MudAlert>
+    }
+    else
+    {
+        <LoadingState Lines="4" TestId="promo-run-loading" />
+    }
+}
+else
+{
+    <ol class="lms-steps" aria-label="@L["Promo_Steps"]" data-testid="promo-steps">
+        <li class="lms-step-done"><span class="lms-step-number" aria-hidden="true">1</span><span class="lms-step-label">@L["Promo_Step_Choose"]</span></li>
+        <li class="lms-step-done"><span class="lms-step-number" aria-hidden="true">2</span><span class="lms-step-label">@L["Promo_Step_Preview"]</span></li>
+        <li aria-current="step" data-testid="promo-step-run"><span class="lms-step-number" aria-hidden="true">3</span><span class="lms-step-label">@L["Promo_Step_Run"]</span></li>
+    </ol>
+
+    @if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-3" data-testid="promo-error">@_error</MudAlert>
+    }
+
+    @if (_run.State == PromotionRunStates.Draft)
+    {
+        <PromotionSummary Run="_run" />
+        <SectionCard Title="@L["Promo_Execute_Title"]" TestId="promo-execute-card">
+            <p data-testid="promo-execute-effect">@L["Promo_Execute_Effect"]</p>
+            <p class="lms-muted">@string.Format(L["Promo_Count_Students"].Value, _run.Total)</p>
+            <div class="lms-dialog-actions">
+                <MudButton Variant="Variant.Text" Href="@($"promotion/{_run.Id}")" data-testid="promo-back">@L["Promo_Back"]</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_run.Blocking.Count > 0 || _busy" OnClick="ExecuteAsync" data-testid="promo-execute">@L["Promo_Execute"]</MudButton>
+            </div>
+        </SectionCard>
+    }
+    else
+    {
+        @if (_run.State == PromotionRunStates.Running)
+        {
+            <SectionCard Title="@L["Promo_Running"]" TestId="promo-running">
+                <JobProgressPanel Poll="PollAsync" Interval="PollEvery" AnnounceEvery="AnnounceEvery" OnFinished="OnFinishedAsync" TestId="promo-progress" />
+            </SectionCard>
+        }
+        else
+        {
+            @if (_run is { UndoUntilUtc: { } until, State: PromotionRunStates.Done or PromotionRunStates.PartiallyFailed })
+            {
+                <PromotionUndoBanner UntilUtc="until" ServerOffset="_offset" Refused="@_refused" Busy="_busy" OnUndo="UndoAsync" />
+            }
+            <PromotionResultCard Run="_run" />
+            <div class="lms-dialog-actions mt-3">
+                <MudButton Variant="Variant.Text" Href="promotion/runs" data-testid="promo-history-link">@L["Promo_History"]</MudButton>
+            </div>
+        }
+    }
+}
+
+@code {
+    [Parameter] public Guid RunId { get; set; }
+
+    /// <summary>How often a running job is read (tests shorten it).</summary>
+    [Parameter] public TimeSpan PollEvery { get; set; } = TimeSpan.FromSeconds(2);
+
+    [Parameter] public TimeSpan AnnounceEvery { get; set; } = TimeSpan.FromSeconds(10);
+
+    private PromotionRunDto? _run;
+    private TimeSpan _offset;
+    private string? _error, _refused;
+    private bool _failed, _busy;
+
+    protected override async Task OnInitializedAsync()
+    {
+        PermState.Changed += OnPermissionsChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        if (PermState.Has(Permissions.Promotion.Run)) await LoadAsync();
+    }
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    private async Task LoadAsync()
+    {
+        var (run, failed) = await ApiCalls.RunAsync(() => Promotion.GetRunAsync(RunId), Navigation);
+        Take(run);
+        _failed = failed || run is null;
+    }
+
+    private void Take(PromotionRunDto? run)
+    {
+        if (run is null) return;
+        _run = run;
+        _offset = run.ServerNowUtc - Clock.GetUtcNow().UtcDateTime; // the server clock decides every window
+    }
+
+    private async Task ExecuteAsync()
+    {
+        if (_run is null) return;
+        var count = _run.Total;
+        var confirmed = await ConfirmEffectDialog.AskAsync(Dialogs, L["Promo_Execute_Title"], L["Promo_Execute_Effect"].Value, string.Format(L["Promo_Count_Students"].Value, count),
+            expected: count.ToString(System.Globalization.CultureInfo.InvariantCulture), confirmText: L["Promo_Execute"].Value);
+        if (!confirmed) return;
+        _busy = true;
+        _error = null;
+        PromotionRunDto? started = null;
+        var ok = await ApiCalls.RunAsync(async () => started = await Promotion.ExecuteAsync(RunId, new ExecutePromotionRequest(count)), Navigation, L, e => _error = e);
+        _busy = false;
+        if (ok) Take(started);
+        else await LoadAsync(); // the server may have changed the run (a blocker, a second run)
+    }
+
+    private async Task<JobSnapshot> PollAsync()
+    {
+        var run = await Promotion.GetRunAsync(RunId);
+        return new JobSnapshot(run.Processed, run.Total, run.State != PromotionRunStates.Running, run.State == PromotionRunStates.Failed);
+    }
+
+    private async Task OnFinishedAsync(JobSnapshot snapshot) => await LoadAsync();
+
+    private async Task UndoAsync()
+    {
+        var confirmed = await ConfirmEffectDialog.AskAsync(Dialogs, L["Promo_Undo"], L["Promo_Undo_Effect"].Value, danger: true, confirmText: L["Promo_Undo"].Value);
+        if (!confirmed) return;
+        _busy = true;
+        _error = null;
+        PromotionRunDto? undone = null;
+        var ok = await ApiCalls.RunAsync(async () =>
+        {
+            try { undone = await Promotion.UndoAsync(RunId); }
+            catch (ApiProblemException ex) when (ex.Code is ProblemCodes.promotion_undo_window_over or ProblemCodes.promotion_undo_activity_exists)
+            {
+                // The button stays off and says which rule ended the window (D12); the answer text is shown as well.
+                _refused = ex.Code == ProblemCodes.promotion_undo_activity_exists ? "Promo_Undo_Activity" : "Promo_Undo_WindowOver";
+                throw;
+            }
+        }, Navigation, L, e => _error = e);
+        _busy = false;
+        if (ok) Take(undone);
+    }
+
+    public void Dispose() => PermState.Changed -= OnPermissionsChanged;
+}

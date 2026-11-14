@@ -6,7 +6,11 @@
 @implements IDisposable
 
 <PageTitle>@L["Promo_Title"]</PageTitle>
-<PageHeader Title="@L["Promo_Title"]" Subtitle="@L["Promo_Subtitle"]" TitleTestId="promo-title" />
+<PageHeader Title="@L["Promo_Title"]" Subtitle="@L["Promo_Subtitle"]" TitleTestId="promo-title">
+    <Actions>
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.History" Href="promotion/runs" data-testid="promo-history-open">@L["Promo_History"]</MudButton>
+    </Actions>
+</PageHeader>
 
 @if (!PermState.Loaded)
 {
