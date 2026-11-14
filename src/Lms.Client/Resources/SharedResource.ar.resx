@@ -1935,5 +1935,4 @@
   <data name="Att_Unmatched_Save" xml:space="preserve"><value>حفظ المطابقات</value></data>
   <data name="AttReports_ClassFilter" xml:space="preserve"><value>الفصل</value></data>
   <data name="Live_TakeAttendance" xml:space="preserve"><value>تسجيل الحضور</value></data>
-  <data name="Live_AttendanceNone" xml:space="preserve"><value>لا يوجد اقتراح حضور لهذه الجلسة بعد. يظهر بعد استيراد المشاركين.</value></data>
 </root>

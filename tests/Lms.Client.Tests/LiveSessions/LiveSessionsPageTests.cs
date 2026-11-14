@@ -2,9 +2,7 @@ using System.Globalization;
 using Bunit;
 using Lms.Client.Layout;
 using Lms.Client.Pages.LiveSessions;
-using Lms.Client.Services;
 using Lms.Client.Services.Api;
-using Lms.Client.Services.Attendance;
 using Lms.Client.Services.LiveSessions;
 using Lms.Client.Tests.Support;
 using Lms.Shared;
@@ -38,7 +36,6 @@ public sealed class LiveSessionsPageTests : LessonPlansTestContext
     {
         Services.AddSingleton<ILiveSessionsApi>(_live);
         Services.AddSingleton<TimeProvider>(new FixedTime(Now));
-        Services.AddSingleton<IAttendanceApi>(new FakeAttendanceApi(new FixedTime(Now), ClientCalendar.Zone()));
         Culture.Current = new CultureInfo("en");
     }
 
@@ -452,8 +449,13 @@ public sealed class LiveSessionsPageTests : LessonPlansTestContext
         Assert.Contains("الجلسات المباشرة", layout.Find("[data-testid=live-title]").TextContent);
     }
 
-    /// <summary>A session that started three hours ago and has ended, on the same client day as the fake attendance proposal.</summary>
-    private LiveSessionDto SeedEndedToday() => _live.Seed(Cc, Lesson, Now.AddHours(-3), 60, LiveSessionStatuses.Ended, "Today review", null, null, null);
+    /// <summary>A session that started three hours ago and has ended; with <paramref name="proposal"/> the server has proposed an attendance session for it.</summary>
+    private LiveSessionDto SeedEnded(Guid? proposal = null, string title = "Today review")
+    {
+        var session = _live.Seed(Cc, Lesson, Now.AddHours(-3), 60, LiveSessionStatuses.Ended, title, null, null, null);
+        if (proposal is { } id) _live.AttendanceSessions[session.Id] = id;
+        return session;
+    }
 
     private async Task<IRenderedComponent<LiveSessionsPage>> OpenPastAsync(params string[] permissions)
     {
@@ -463,52 +465,42 @@ public sealed class LiveSessionsPageTests : LessonPlansTestContext
         return page;
     }
 
-    // ---- M5 Task 35 follow-up (#649): a row action opens the attendance proposal of an ended live session ----
+    private static readonly string[] AttendanceStaff =
+        [Permissions.LiveSessions.View, Permissions.LiveSessions.Manage, Permissions.LessonPlans.View, Permissions.Attendance.Take];
+
+    // ---- M5 Task 35 follow-up (#649): a row action opens the attendance proposal of a live session ----
 
     [Fact]
     public async Task Row_action_opens_attendance_from_the_live_session()
     {
-        var ended = SeedEndedToday();
-        var page = await OpenPastAsync(Permissions.LiveSessions.View, Permissions.LiveSessions.Manage, Permissions.LessonPlans.View, Permissions.Attendance.Take);
+        var proposal = Guid.NewGuid();
+        var ended = SeedEnded(proposal);
+        var page = await OpenPastAsync(AttendanceStaff);
 
         page.WaitForElement($"[data-testid=live-attendance-{ended.Id}]", Wait).Click();
 
-        page.WaitForAssertion(() => Assert.EndsWith($"attendance/sessions/{FakeAttendanceApi.SessionProposal}", Services.GetRequiredService<NavigationManager>().Uri), Wait);
+        page.WaitForAssertion(() => Assert.EndsWith($"attendance/sessions/{proposal}", Services.GetRequiredService<NavigationManager>().Uri), Wait);
     }
 
     [Fact]
-    public async Task The_attendance_action_needs_Attendance_Take()
+    public async Task The_attendance_action_is_hidden_while_the_session_has_no_proposal()
     {
-        var ended = SeedEndedToday();
+        var ended = SeedEnded(proposal: null);
 
-        var page = await OpenPastAsync();
+        var page = await OpenPastAsync(AttendanceStaff);
 
         Assert.NotEmpty(page.FindAll($"[data-testid=live-recording-{ended.Id}]")); // the row is there
         Assert.Empty(page.FindAll($"[data-testid=live-attendance-{ended.Id}]"));
     }
 
     [Fact]
-    public async Task The_attendance_action_is_for_ended_sessions_only()
+    public async Task The_attendance_action_needs_Attendance_Take()
     {
-        var ended = SeedEndedToday();
-        var scheduled = Seed(LiveSessionStatuses.Scheduled, "Next week", daysFromNow: 5);
+        var ended = SeedEnded(Guid.NewGuid());
 
-        var page = await OpenAsync(Permissions.LiveSessions.View, Permissions.LiveSessions.Manage, Permissions.LessonPlans.View, Permissions.Attendance.Take);
-        Assert.Empty(page.FindAll($"[data-testid=live-attendance-{scheduled.Id}]")); // upcoming tab
-        page.Find("[data-testid=live-filter-past]").Click();
-        page.WaitForElement($"[data-testid=live-attendance-{ended.Id}]", Wait);
-    }
+        var page = await OpenPastAsync();
 
-    [Fact]
-    public async Task Without_a_proposal_yet_the_action_says_so_in_words_and_stays_on_the_page()
-    {
-        var earlier = Seed(LiveSessionStatuses.Ended, "Last week", daysFromNow: -7); // no attendance session exists on that day
-        var page = await OpenPastAsync(Permissions.LiveSessions.View, Permissions.LiveSessions.Manage, Permissions.LessonPlans.View, Permissions.Attendance.Take);
-        var before = Services.GetRequiredService<NavigationManager>().Uri;
-
-        page.WaitForElement($"[data-testid=live-attendance-{earlier.Id}]", Wait).Click();
-
-        page.WaitForAssertion(() => Assert.Contains(Services.GetRequiredService<ISnackbar>().ShownSnackbars, x => (x.Message ?? "").Contains("No attendance proposal")), Wait);
-        Assert.Equal(before, Services.GetRequiredService<NavigationManager>().Uri);
+        Assert.NotEmpty(page.FindAll($"[data-testid=live-recording-{ended.Id}]"));
+        Assert.Empty(page.FindAll($"[data-testid=live-attendance-{ended.Id}]"));
     }
 }

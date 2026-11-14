@@ -72,6 +72,9 @@ public sealed class FakeLiveSessionsApi : ILiveSessionsApi
 
     private void Replace(LiveSessionDto s) => _sessions[_sessions.FindIndex(x => x.Id == s.Id)] = s;
 
+    /// <summary>The attendance session proposed from a live session (M5 wave 3: <c>AttendanceSessionId</c> of the list item), when the demo has one.</summary>
+    public Dictionary<Guid, Guid> AttendanceSessions { get; } = [];
+
     private static ApiProblemException Problem(int status, string code) => new(status, code, null, null);
 
     private void RequireStaff()
@@ -110,7 +113,8 @@ public sealed class FakeLiveSessionsApi : ILiveSessionsApi
         var size = Math.Clamp(query.PageSize, 1, Paging.MaxPageSize);
         var items = rows.Skip((page - 1) * size).Take(size)
             .Select(s => new LiveSessionListItemDto(s.Id, s.Module.Id, s.SeriesId, s.OccurrenceIndex, s.Module.TitleAr, s.Module.TitleEn,
-                s.StartsAtUtc, s.EndsAtUtc, s.Status, s.RecordingUrl is not null, now)).ToList();
+                s.StartsAtUtc, s.EndsAtUtc, s.Status, s.RecordingUrl is not null, now,
+                AttendanceSessions.TryGetValue(s.Id, out var attendance) ? attendance : null)).ToList();
         return Task.FromResult(new PagedResult<LiveSessionListItemDto>(items, rows.Count, page, size));
     }
 

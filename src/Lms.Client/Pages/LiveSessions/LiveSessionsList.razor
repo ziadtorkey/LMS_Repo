@@ -79,7 +79,7 @@
                                                OnClick="() => OnEdit.InvokeAsync(s)" data-testid="@($"live-edit-{s.Id}")" />
                             </MudTooltip>
                         }
-                        @if (AttendanceEnabled && s.Status == LiveSessionStatuses.Ended)
+                        @if (AttendanceEnabled && s.AttendanceSessionId is not null)
                         {
                             <MudTooltip Text="@L["Live_TakeAttendance"]">
                                 <MudIconButton Icon="@Icons.Material.Rounded.FactCheck" Size="Size.Small" aria-label="@L["Live_TakeAttendance"]"
@@ -116,7 +116,7 @@
     [Parameter] public IReadOnlyDictionary<Guid, int> SeriesSizes { get; set; } = new Dictionary<Guid, int>();
     /// <summary>The recording link by session id (read by the page for rows that have one).</summary>
     [Parameter] public IReadOnlyDictionary<Guid, string> RecordingUrls { get; set; } = new Dictionary<Guid, string>();
-    /// <summary>Shows "Take attendance" on an ended session (the caller holds Attendance.Take).</summary>
+    /// <summary>Shows "Take attendance" on a session that has an attendance proposal (<c>AttendanceSessionId</c> set; the caller holds Attendance.Take).</summary>
     [Parameter] public bool AttendanceEnabled { get; set; }
     [Parameter] public EventCallback<LiveSessionListItemDto> OnAttendance { get; set; }
     [Parameter] public EventCallback<LiveSessionListItemDto> OnEdit { get; set; }

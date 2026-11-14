@@ -16,8 +16,7 @@ public sealed class FakeAttendanceApi : IAttendanceApi
     public static readonly Guid SessionClosed = Guid.Parse("a0000000-0000-0000-0000-000000000003");
     public static readonly Guid SessionProposal = Guid.Parse("a0000000-0000-0000-0000-000000000004");
     public static readonly Guid SessionSubstitute = Guid.Parse("a0000000-0000-0000-0000-000000000005");
-    /// <summary>The demo class course: the lesson plan fake's Arabic course, so the live sessions of that course find their attendance proposal.</summary>
-    private static readonly Guid ClassCourse = Lms.Client.Services.Api.FakeLessonPlansApi.ArabicClassCourseId;
+    private static readonly Guid ClassCourse = Guid.Parse("c0000000-0000-0000-0000-000000000001");
     private static readonly Guid Teacher = Guid.Parse("e0000000-0000-0000-0000-000000000001");
 
     private readonly TimeProvider _clock;
@@ -162,8 +161,12 @@ public sealed class FakeAttendanceApi : IAttendanceApi
         return Task.FromResult(new PagedResult<AttendanceAlertDto>(rows.Skip((query.Page - 1) * query.PageSize).Take(query.PageSize).ToList(), rows.Count, query.Page, query.PageSize));
     }
 
+    /// <summary>The last report query, so tests can see what the page asked for.</summary>
+    public AttendanceReportQuery? LastReportQuery { get; private set; }
+
     public Task<AttendanceReportDto> GetReportAsync(string kind, AttendanceReportQuery query, CancellationToken ct = default)
     {
+        LastReportQuery = query;
         var now = _clock.GetUtcNow().UtcDateTime;
         var today = LocalToday();
         var rows = _roster.Select((r, i) => new AttendanceReportRowDto(r.Id, r.Ar, r.En, r.Number, null, null, null,
