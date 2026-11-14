@@ -67,7 +67,7 @@ internal static class AnnouncementEndpoints
         return row is null ? ApiProblems.NotFound() : Results.Ok((await mapper.ToDtosAsync([row], ct))[0]);
     }
 
-    private static async Task<IResult> CreateAsync(
+    private static async Task<IResult> CreateAsyncCore(
         CreateAnnouncementRequest? request, HttpContext http, ICurrentContext context, LmsDbContext db, TargetScopeGuard guard, IRichTextSanitizer sanitizer,
         AnnouncementMapper mapper, AnnouncementService service, CancellationToken ct)
     {
@@ -110,7 +110,7 @@ internal static class AnnouncementEndpoints
         return Results.Created(Routes.OrgAnnouncement(row.Id), (await mapper.ToDtosAsync([row], ct))[0]);
     }
 
-    private static async Task<IResult> UpdateAsync(
+    private static async Task<IResult> UpdateAsyncCore(
         Guid id, UpdateAnnouncementRequest? request, HttpContext http, ICurrentContext context, LmsDbContext db, TargetScopeGuard guard,
         IRichTextSanitizer sanitizer, IClock clock, AnnouncementMapper mapper, AnnouncementService service, CancellationToken ct)
     {
@@ -164,7 +164,7 @@ internal static class AnnouncementEndpoints
         return Results.Ok((await mapper.ToDtosAsync([row], ct))[0]);
     }
 
-    private static async Task<IResult> PublishAsync(
+    private static async Task<IResult> PublishAsyncCore(
         Guid id, ICurrentContext context, LmsDbContext db, TargetScopeGuard guard, AnnouncementService service, AnnouncementMapper mapper, CancellationToken ct)
     {
         var row = await (await VisibleAsync(db, context, guard, ct)).FirstOrDefaultAsync(a => a.Id == id, ct);
@@ -187,7 +187,7 @@ internal static class AnnouncementEndpoints
         return Results.Ok((await mapper.ToDtosAsync([row], ct))[0]);
     }
 
-    private static async Task<IResult> WithdrawAsync(
+    private static async Task<IResult> WithdrawAsyncCore(
         Guid id, ICurrentContext context, LmsDbContext db, TargetScopeGuard guard, AnnouncementService service, AnnouncementMapper mapper, CancellationToken ct)
     {
         var row = await (await VisibleAsync(db, context, guard, ct)).FirstOrDefaultAsync(a => a.Id == id, ct);
@@ -238,7 +238,7 @@ internal static class AnnouncementEndpoints
     private static async Task<IReadOnlyList<string>> ChipsAsync(IReadOnlyList<string>? chosen, TargetScopeGuard guard, CancellationToken ct) =>
         AnnouncementService.EffectiveChips(chosen, await guard.IsUnrestrictedAsync(ct));
 
-    private static async Task<IResult> DeleteAsync(Guid id, ICurrentContext context, LmsDbContext db, TargetScopeGuard guard, CancellationToken ct)
+    private static async Task<IResult> DeleteAsyncCore(Guid id, ICurrentContext context, LmsDbContext db, TargetScopeGuard guard, CancellationToken ct)
     {
         var row = await (await VisibleAsync(db, context, guard, ct)).FirstOrDefaultAsync(a => a.Id == id, ct);
         if (row is null)
@@ -255,6 +255,40 @@ internal static class AnnouncementEndpoints
         db.Set<Announcement>().Remove(row);
         await db.SaveChangesAsync(ct);
         return Results.NoContent();
+    }
+
+    // A transition that loses a race (another request changed the status first, or the unique audience snapshot fired) answers 409 concurrency_conflict, never 500.
+    private static Task<IResult> CreateAsync(
+        CreateAnnouncementRequest? request, HttpContext http, ICurrentContext context, LmsDbContext db, TargetScopeGuard guard, IRichTextSanitizer sanitizer,
+        AnnouncementMapper mapper, AnnouncementService service, CancellationToken ct) =>
+        Guarded(() => CreateAsyncCore(request, http, context, db, guard, sanitizer, mapper, service, ct));
+
+    private static Task<IResult> UpdateAsync(
+        Guid id, UpdateAnnouncementRequest? request, HttpContext http, ICurrentContext context, LmsDbContext db, TargetScopeGuard guard,
+        IRichTextSanitizer sanitizer, IClock clock, AnnouncementMapper mapper, AnnouncementService service, CancellationToken ct) =>
+        Guarded(() => UpdateAsyncCore(id, request, http, context, db, guard, sanitizer, clock, mapper, service, ct));
+
+    private static Task<IResult> PublishAsync(
+        Guid id, ICurrentContext context, LmsDbContext db, TargetScopeGuard guard, AnnouncementService service, AnnouncementMapper mapper, CancellationToken ct) =>
+        Guarded(() => PublishAsyncCore(id, context, db, guard, service, mapper, ct));
+
+    private static Task<IResult> WithdrawAsync(
+        Guid id, ICurrentContext context, LmsDbContext db, TargetScopeGuard guard, AnnouncementService service, AnnouncementMapper mapper, CancellationToken ct) =>
+        Guarded(() => WithdrawAsyncCore(id, context, db, guard, service, mapper, ct));
+
+    private static Task<IResult> DeleteAsync(Guid id, ICurrentContext context, LmsDbContext db, TargetScopeGuard guard, CancellationToken ct) =>
+        Guarded(() => DeleteAsyncCore(id, context, db, guard, ct));
+
+    private static async Task<IResult> Guarded(Func<Task<IResult>> run)
+    {
+        try
+        {
+            return await run();
+        }
+        catch (Exception ex) when (ex is DbUpdateConcurrencyException || (ex is DbUpdateException update && DbErrors.IsConcurrentKeyConflict(update)))
+        {
+            return ApiProblems.Conflict(ProblemCodes.concurrency_conflict);
+        }
     }
 
     /// <summary>The announcements the caller may see here: all in scope for an unrestricted grant, otherwise only their own.</summary>
@@ -307,6 +341,11 @@ internal static class AnnouncementEndpoints
         if (expiresAt is { } e && (e <= DateTime.UtcNow || (publishAt is { } p && e <= p)))
         {
             return (null, ForumSupport.Invalid("expiresAtUtc", "must_be_later"));
+        }
+
+        if (urgent && publishAt is { } scheduled && scheduled > DateTime.UtcNow)
+        {
+            return (null, ForumSupport.Invalid("publishAtUtc", "urgent_cannot_be_scheduled")); // an urgent announcement goes out at once
         }
 
         if (!TargetScopeGuard.IsWellFormed(targets))

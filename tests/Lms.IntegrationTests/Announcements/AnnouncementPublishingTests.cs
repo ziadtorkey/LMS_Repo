@@ -259,6 +259,50 @@ public sealed class AnnouncementPublishingTests(LmsApiFactory factory)
         Assert.DoesNotContain(b.Admin.UserId, users);
     }
 
+    [Fact]
+    public async Task Concurrent_publishes_of_one_draft_give_one_winner_and_409_for_the_rest()
+    {
+        using var w = await ForumTestWorld.CreateAsync(factory, "AP17");
+        var draft = await CreateOkAsync(w, w.Admin, Request(Root(w), [Cc(w.ClassCourseA)], [AnnouncementRoleFilters.Students], publish: false));
+
+        var responses = await Task.WhenAll(Enumerable.Range(0, 6).Select(_ => w.SendAsync(w.Admin, HttpMethod.Post, Routes.OrgAnnouncementPublish(draft.Id))));
+
+        Assert.Equal(1, responses.Count(r => r.StatusCode == HttpStatusCode.OK));
+        var losers = responses.Where(r => r.StatusCode != HttpStatusCode.OK).ToList();
+        Assert.All(losers, r => Assert.Equal(HttpStatusCode.Conflict, r.StatusCode));
+        Assert.All(losers, r => Assert.Equal(ProblemCodes.concurrency_conflict, ForumTestWorld.CodeAsync(r).Result));
+        Assert.Equal(2, (await RecipientsAsync(draft.Id)).Count); // exactly one snapshot
+        Assert.Equal(AnnouncementStates.Published, (await RowAsync(draft.Id)).Status);
+    }
+
+    [Fact]
+    public async Task An_urgent_announcement_cannot_be_scheduled()
+    {
+        using var w = await ForumTestWorld.CreateAsync(factory, "AP18");
+        var request = Request(Root(w), [Cc(w.ClassCourseA)], publishAt: DateTime.UtcNow.AddDays(2)) with { IsUrgent = true };
+
+        var response = await w.SendAsync(w.Admin, HttpMethod.Post, Routes.OrgAnnouncements, request);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task The_author_is_never_in_their_own_audience_even_as_staff_of_their_own_target()
+    {
+        using var w = await ForumTestWorld.CreateAsync(factory, "AP19");
+        var unit = new AnnouncementTargetDto(AnnouncementTargetKinds.Unit, School(w), true);
+
+        var made = await CreateOkAsync(w, w.TeacherA, Request(School(w), [Cc(w.ClassCourseA)], [AnnouncementRoleFilters.Staff, AnnouncementRoleFilters.Students]));
+        var users = (await RecipientsAsync(made.Id)).Select(r => r.UserId).ToList();
+        Assert.DoesNotContain(w.TeacherA.UserId, users); // teacher A teaches this class course, so they are staff of the target
+        Assert.Equal(2, users.Count); // the two students only
+
+        // the preview applies the same rule
+        var preview = await w.ReadAsync<AudiencePreviewDto>(await w.SendAsync(w.Admin, HttpMethod.Post, Routes.OrgAnnouncementAudiencePreview,
+            new AudiencePreviewRequest(Root(w), [unit], [AnnouncementRoleFilters.Staff])));
+        Assert.Equal(2, preview.Count); // teachers A and B; the admin, at the root, is not staff of the school
+    }
+
     // --- publish, schedule, withdraw, expire
 
     [Fact]
