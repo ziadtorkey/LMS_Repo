@@ -94,7 +94,11 @@ public sealed record SaveTimetableExceptionRequest(
     Guid? NewPeriodId,
     string? Note);
 
-/// <summary>One lesson of a view on one date, with its exception applied (a cancelled lesson is kept so the view can strike it through).</summary>
+/// <summary>
+/// One lesson of a view on one date, with its exception applied (a cancelled lesson is kept so the view can strike it through). <c>LiveSessionId</c> and
+/// <c>JoinOpensAtUtc</c> are null unless a live session is scheduled for this lesson; the server fills them from the live sessions of the class course on the date,
+/// so the card can show Join (the join window opens at <c>JoinOpensAtUtc</c>; joining itself goes through the live-session routes and their own checks).
+/// </summary>
 public sealed record TimetableCardDto(
     Guid SlotId,
     DateOnly Date,
@@ -106,7 +110,9 @@ public sealed record TimetableCardDto(
     string? ExceptionKind,
     string? SubstituteName,
     string ClassNameAr,
-    string ClassNameEn);
+    string ClassNameEn,
+    Guid? LiveSessionId = null,
+    DateTime? JoinOpensAtUtc = null);
 
 /// <summary>
 /// The answer of every timetable view (class, teacher, student, guardian): published slots only for a student or guardian, a range of at most 31 days,
