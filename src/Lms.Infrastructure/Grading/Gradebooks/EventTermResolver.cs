@@ -13,6 +13,15 @@ namespace Lms.Infrastructure.Grading.Gradebooks;
 /// </summary>
 public sealed class EventTermResolver(LmsDbContext db, IClock clock)
 {
+    /// <summary>A term by id when it belongs to the class course's year in its client; null otherwise (a term of another year or client never resolves).</summary>
+    public async Task<Term?> FindAsync(ClassCourse classCourse, Guid termId, CancellationToken ct)
+    {
+        var yearId = await db.Set<Class>().Where(c => c.Id == classCourse.ClassId).Select(c => c.AcademicYearId).SingleAsync(ct);
+        // ISOLATION-BYPASS: the term sits at an ancestor unit above the caller scope; matched by id, the class year and the client, live rows only.
+        return await db.Set<Term>().IgnoreQueryFilters()
+            .FirstOrDefaultAsync(t => t.Id == termId && !t.IsDeleted && t.OrganizationId == classCourse.OrganizationId && t.AcademicYearId == yearId, ct);
+    }
+
     public async Task<Term?> ResolveAsync(ClassCourse classCourse, DateTime scoredAtUtc, CancellationToken ct)
     {
         var yearId = await db.Set<Class>().Where(c => c.Id == classCourse.ClassId).Select(c => c.AcademicYearId).SingleAsync(ct);
