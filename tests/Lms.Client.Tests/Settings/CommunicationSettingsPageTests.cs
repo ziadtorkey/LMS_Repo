@@ -94,6 +94,26 @@ public sealed class CommunicationSettingsPageTests : ClientTestContext
     }
 
     [Fact]
+    public async Task Quiet_hours_that_span_midnight_save_and_show_both_ends()
+    {
+        _comms.Settings = _comms.Settings with { QuietHoursEnabled = true, QuietHoursStart = "20:00", QuietHoursEnd = "06:00" };
+        var page = await OpenAsync();
+        Assert.Equal("20:00", page.Find("[data-testid=comms-quiet-start]").GetAttribute("value"));
+
+        // 21:00 to 07:00: the end is earlier than the start because the window runs through midnight, which is valid (not an error)
+        await page.InvokeAsync(() => page.FindComponents<MudTextField<string>>().First(f => f.Instance.Label == "From (HH:mm)").Instance.ValueChanged.InvokeAsync("21:00"));
+        await page.InvokeAsync(() => page.FindComponents<MudTextField<string>>().First(f => f.Instance.Label == "Until (HH:mm)").Instance.ValueChanged.InvokeAsync("07:00"));
+        await page.Find("[data-testid=comms-save]").ClickAsync(new());
+
+        page.WaitForAssertion(() => Assert.Empty(page.FindAll("[data-testid=comms-bar]")));
+        var saved = await _comms.GetSettingsAsync();
+        Assert.Equal(("21:00", "07:00"), (saved.QuietHoursStart, saved.QuietHoursEnd));
+        Assert.Equal("21:00", page.Find("[data-testid=comms-quiet-start]").GetAttribute("value")); // both ends are shown after the reload
+        Assert.Equal("07:00", page.Find("[data-testid=comms-quiet-end]").GetAttribute("value"));
+        Assert.Contains("Asia/Riyadh", page.Find("[data-testid=comms-quiet-zone]").TextContent);
+    }
+
+    [Fact]
     public async Task Page_has_no_sms_switch_or_cap()
     {
         var page = await OpenAsync();
