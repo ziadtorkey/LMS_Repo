@@ -83,19 +83,29 @@ public sealed class AnnouncementDeliveryTests(LmsApiFactory factory)
     // --- delivery
 
     [Fact]
-    public async Task Fan_out_goes_through_the_publisher_and_honours_preferences()
+    public async Task Fan_out_goes_through_the_publisher_in_app_by_default_and_by_email_only_when_urgent()
     {
         using var w = await ForumTestWorld.CreateAsync(factory, "AD1");
-        await PreferEmailAsync(w.StudentA.UserId); // student A opts in to email for announcements; A2 keeps the in-app default
+        await PreferEmailAsync(w.StudentA.UserId); // a user can only narrow: this opt-in cannot switch on a channel the event does not offer
 
-        await CreateOkAsync(w, w.Admin, Request(w.World.Tree.Root.Id, [Cc(w.ClassCourseA)]));
+        var normal = await CreateOkAsync(w, w.Admin, Request(w.World.Tree.Root.Id, [Cc(w.ClassCourseA)]));
 
         Assert.Single(await NoticesAsync(w.StudentA.UserId));
         Assert.Single(await NoticesAsync(w.StudentA2.UserId));
-        Assert.Single(await OutboxAsync(w.StudentA.UserId));
-        Assert.Empty(await OutboxAsync(w.StudentA2.UserId));
         Assert.Empty(await NoticesAsync(w.StudentB.UserId)); // not a recipient
+        Assert.Empty(await OutboxAsync(w.StudentA.UserId));
+        Assert.All(await NoticesAsync(w.StudentA.UserId), n => Assert.Equal(normal.Id, n.SourceId));
+        Assert.Equal([("InApp", "Sent", 2)], (await ReadAsync(w, normal.Id)).DeliverySummary!.Counts.Select(c => (c.Channel, c.Status, c.Count)));
+
+        var urgent = await CreateOkAsync(w, w.Admin, Request(w.World.Tree.Root.Id, [Cc(w.ClassCourseA)], urgent: true));
+
+        Assert.Single(await OutboxAsync(w.StudentA.UserId));
+        Assert.Single(await OutboxAsync(w.StudentA2.UserId));
+        Assert.Contains(("Email", "Pending", 2), (await ReadAsync(w, urgent.Id)).DeliverySummary!.Counts.Select(c => (c.Channel, c.Status, c.Count)));
     }
+
+    private async Task<AnnouncementDto> ReadAsync(ForumTestWorld w, Guid id) =>
+        await w.ReadAsync<AnnouncementDto>(await w.SendAsync(w.Admin, HttpMethod.Get, Routes.OrgAnnouncement(id)));
 
     [Fact]
     public async Task A_silent_post_sends_no_notification()
@@ -152,27 +162,6 @@ public sealed class AnnouncementDeliveryTests(LmsApiFactory factory)
         var made = await CreateOkAsync(w, w.Admin, request);
 
         Assert.Equal(AnnouncementStatuses.Published, made.Status);
-    }
-
-    [Fact]
-    public async Task Email_overflow_is_held_to_the_next_client_day()
-    {
-        using var w = await ForumTestWorld.CreateAsync(factory, "AD6");
-        await PreferEmailAsync(w.StudentA.UserId);
-        await PreferEmailAsync(w.StudentA2.UserId);
-        await SetAsync(w, SettingKeys.CommsMaxEmailPerDay, 1);
-        await CreateOkAsync(w, w.Admin, Request(w.World.Tree.Root.Id, [Cc(w.ClassCourseA)]));
-        var now = DateTime.UtcNow.AddMinutes(1);
-
-        using (var scope = factory.Services.CreateScope())
-        {
-            scope.ServiceProvider.GetRequiredService<HttpCurrentContext>().SetUser(Guid.Empty, true);
-            await scope.ServiceProvider.GetRequiredService<DeliveryDispatchJob>().RunAtAsync(now, w.World.Tree.Org.Id, default);
-        }
-
-        var all = (await OutboxAsync(w.StudentA.UserId)).Concat(await OutboxAsync(w.StudentA2.UserId)).ToList();
-        Assert.Equal(1, all.Count(r => r.Status == DeliveryStates.Sent));
-        Assert.Equal(DeliveryPolicy.ClientDay(now, Riyadh).NextStartUtc, Assert.Single(all, r => r.Status == DeliveryStates.Pending).HeldUntilUtc);
     }
 
     // --- reader feed
@@ -241,7 +230,7 @@ public sealed class AnnouncementDeliveryTests(LmsApiFactory factory)
 
         Assert.Equal(2, list.Total);
         Assert.Single(list.Items, i => i.Source == AnnouncementSources.CourseBoard && i.Title == "Board post");
-        Assert.Single(list.Items, i => i.Source == AnnouncementSources.School && i.Id == school.Id); // two targets reach the course, listed once
+        Assert.Single(list.Items, i => i.Source == AnnouncementSources.Announcement && i.Id == school.Id); // two targets reach the course, listed once
     }
 
     [Fact]

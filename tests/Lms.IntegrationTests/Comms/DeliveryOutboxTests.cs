@@ -126,7 +126,7 @@ public sealed class DeliveryOutboxTests(LmsApiFactory factory)
         await PublishAsync(tree, NotificationEvents.MessagesNewMessage, [user]);
         Assert.Empty(await RowsAsync(tree, user));
 
-        // A saved user choice turns the email on for it.
+        // A user can only narrow: a saved opt-in cannot switch on a channel the event does not offer (L10).
         await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
         {
             db.Add(new NotificationPreference(user, NotificationEvents.MessagesNewMessage, NotificationChannels.Email, true));
@@ -135,16 +135,17 @@ public sealed class DeliveryOutboxTests(LmsApiFactory factory)
         }
 
         await PublishAsync(tree, NotificationEvents.MessagesNewMessage, [user]);
-        Assert.Single(await RowsAsync(tree, user));
+        Assert.Empty(await RowsAsync(tree, user));
 
         // A user who opted out gets none even where the catalog says email.
         await PublishAsync(tree, NotificationEvents.CommsCapReached, [user]);
-        Assert.Single(await RowsAsync(tree, user));
+        Assert.Empty(await RowsAsync(tree, user));
 
         // The client switch beats everything.
         await SetAsync(tree, SettingKeys.CommsEmailEnabled, false);
-        await PublishAsync(tree, NotificationEvents.MessagesNewMessage, [user]);
-        Assert.Single(await RowsAsync(tree, user));
+        var other = await NewUserAsync();
+        await PublishAsync(tree, NotificationEvents.CommsCapReached, [other]);
+        Assert.Empty(await RowsAsync(tree, other));
     }
 
     [Fact]
@@ -470,6 +471,45 @@ public sealed class DeliveryOutboxTests(LmsApiFactory factory)
         var chattyRows = await RowsAsync(tree, chatty);
         Assert.Equal(1, chattyRows.Count(r => r.Status == DeliveryStates.Sent));
         Assert.Equal(DeliveryPolicy.ClientDay(now, Riyadh).NextStartUtc, Assert.Single(chattyRows, r => r.Status == DeliveryStates.Pending).HeldUntilUtc);
+    }
+
+    // --- switches changed after publish
+
+    [Fact]
+    public async Task A_client_switch_turned_off_after_publish_skips_the_row_even_when_urgent()
+    {
+        var tree = await NewClientAsync("DO24");
+        var user = await NewUserAsync();
+        await PublishAsync(tree, NotificationEvents.CommsCapReached, [user]);
+        await PublishAsync(tree, NotificationEvents.MessagingWarning, [user]); // mandatory
+
+        await SetAsync(tree, SettingKeys.CommsEmailEnabled, false);
+        await DispatchAsync(DateTime.UtcNow.AddMinutes(1), tree.Org.Id);
+
+        Assert.Empty(Fakes.Email.Sent);
+        Assert.All(await RowsAsync(tree, user), r => Assert.Equal((DeliveryStates.Skipped, DeliveryCodes.ChannelDisabled), (r.Status, r.LastErrorCode)));
+    }
+
+    [Fact]
+    public async Task A_user_who_opts_out_after_publish_gets_nothing_more_but_a_mandatory_event_still_goes()
+    {
+        var tree = await NewClientAsync("DO25");
+        var user = await NewUserAsync();
+        await PublishAsync(tree, NotificationEvents.CommsCapReached, [user]);
+        await PublishAsync(tree, NotificationEvents.MessagingWarning, [user]);
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            db.Add(new NotificationPreference(user, NotificationEvents.CommsCapReached, NotificationChannels.Email, false));
+            db.Add(new NotificationPreference(user, NotificationEvents.MessagingWarning, NotificationChannels.Email, false));
+            await db.SaveChangesAsync();
+        }
+
+        await DispatchAsync(DateTime.UtcNow.AddMinutes(1), tree.Org.Id);
+
+        var sent = Assert.Single(Fakes.Email.Sent);
+        Assert.Equal(NotificationEvents.MessagingWarning, sent.EventKey);
+        var skipped = Assert.Single(await RowsAsync(tree, user), r => r.Status == DeliveryStates.Skipped);
+        Assert.Equal(DeliveryCodes.PreferenceOff, skipped.LastErrorCode);
     }
 
     // --- retention and registration

@@ -17,7 +17,8 @@ public sealed class MessagingResourceTests : ClientTestContext
     [
         ProblemCodes.messaging_not_allowed, ProblemCodes.conversation_closed, ProblemCodes.message_too_long, ProblemCodes.message_delete_window_closed,
         ProblemCodes.report_duplicate, ProblemCodes.rate_limited, ProblemCodes.notification_mandatory, ProblemCodes.announcement_target_invalid,
-        ProblemCodes.announcement_not_editable, ProblemCodes.rules_looser_than_default, ProblemCodes.group_read_only,
+        ProblemCodes.announcement_not_editable, ProblemCodes.rules_looser_than_default,
+        ProblemCodes.conversation_read_only, ProblemCodes.comms_cap_above_ceiling, ProblemCodes.attachment_invalid, ProblemCodes.channel_not_allowed,
     ];
 
     private static IEnumerable<string> Keys()
@@ -47,7 +48,8 @@ public sealed class MessagingResourceTests : ClientTestContext
                      ("Msg_Kind_", ConversationKinds.All), ("Msg_State_", MessageStates.All), ("Msg_Rule_", MessagingRuleModes.All),
                      ("Msg_Reason_", ReportReasons.All), ("Msg_ReportStatus_", ReportStatuses.All), ("Msg_Action_", ModerationActions.All),
                      ("Ann_TargetKind_", AnnouncementTargetKinds.All), ("Ann_Status_", AnnouncementStatuses.All), ("Ann_Source_", AnnouncementSources.All), ("Ann_Role_", AnnouncementRoleFilters.All),
-                     ("Comms_Delivery_", DeliveryStatuses.All), ("Comms_ChannelState_", ChannelStates.All), ("Comms_PrefSource_", PreferenceSources.All),
+                     ("Msg_ReadOnly_", ConversationReadOnlyReasons.All), ("Msg_Denied_", MessagingNotAllowedReasons.All), ("Comms_Delivery_", DeliveryStatuses.All), ("Comms_ChannelState_", ChannelStates.All), ("Comms_PrefSource_", PreferenceSources.All),
+                     ("Comms_DeliverySkip_", DeliverySkipReasons.All), ("Comms_Suppression_", SuppressionReasons.All),
                  })
         {
             foreach (var v in values)
@@ -61,7 +63,7 @@ public sealed class MessagingResourceTests : ClientTestContext
             yield return "Perm_" + p;
         }
 
-        foreach (var e in new[] { "Conversation", "MessageReport", "MessagingRestriction", "MessagingRule", "Announcement" })
+        foreach (var e in new[] { "Conversation", "MessageReport", "MessagingRestriction", "MessagingRule", "Announcement", "ChannelConsent", "CommsSettings" })
         {
             yield return "AuditEntity_" + e;
         }

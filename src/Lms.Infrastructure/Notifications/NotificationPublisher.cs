@@ -53,7 +53,7 @@ public sealed class NotificationPublisher(
             .ToDictionary(p => p.Key, p => p.Value);
         var parametersJson = JsonSerializer.Serialize(parameters);
         var rows = userIds
-            .Select(id => new Notification(request.OrganizationId, id, request.EventKey, parametersJson, request.DeepLink, now))
+            .Select(id => new Notification(request.OrganizationId, id, request.EventKey, parametersJson, request.DeepLink, now, request.SourceId))
             .ToList();
 
         // M6: the in-app rows and the email/push outbox rows are one transaction, so a crash loses no delivery and sends none for a rolled-back notice.

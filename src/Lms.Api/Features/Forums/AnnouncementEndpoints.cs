@@ -70,7 +70,7 @@ public static class AnnouncementEndpoints
             var body = arabic ? a.BodyAr ?? a.BodyEn : a.BodyEn ?? a.BodyAr;
             return new CourseAnnouncementDto(
                 a.Id, classCourseId, arabic ? a.TitleAr : a.TitleEn, body ?? string.Empty, a.IsPinned, a.AuthorUserId, ar, en,
-                DateTime.SpecifyKind(a.PublishedAtUtc ?? a.CreatedAt, DateTimeKind.Utc), a.EditedAtUtc, Lms.Shared.Messaging.AnnouncementSources.School);
+                DateTime.SpecifyKind(a.PublishedAtUtc ?? a.CreatedAt, DateTimeKind.Utc), a.EditedAtUtc, Lms.Shared.Messaging.AnnouncementSources.Announcement);
         })];
     }
 

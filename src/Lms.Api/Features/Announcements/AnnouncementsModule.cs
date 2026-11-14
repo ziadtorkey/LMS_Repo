@@ -9,6 +9,7 @@ public sealed class AnnouncementsModule : ILmsModule
     {
         services.AddScoped<TargetScopeGuard>();
         services.AddScoped<AnnouncementMapper>();
+        services.AddScoped<Lms.Infrastructure.Announcements.DeliverySummaryReader>();
         services.AddScoped<Lms.Infrastructure.Announcements.AudienceResolver>();
         services.AddScoped<Lms.Infrastructure.Announcements.AnnouncementService>();
         services.AddScoped<Lms.Infrastructure.Announcements.AnnouncementJobs>();

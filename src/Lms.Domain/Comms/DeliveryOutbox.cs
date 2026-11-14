@@ -140,4 +140,6 @@ public static class DeliveryCodes
     public const string Expired = "expired";
     public const string AttemptsExhausted = "attempts_exhausted";
     public const string NoChannel = "no_channel";
+    public const string ChannelDisabled = "channel_disabled";
+    public const string PreferenceOff = "preference_off";
 }

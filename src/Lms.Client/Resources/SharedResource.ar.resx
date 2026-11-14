@@ -1950,7 +1950,10 @@
   <data name="Setting_Messaging_MaxPerMinute" xml:space="preserve"><value>عدد الرسائل في الدقيقة</value></data>
   <data name="Setting_Messaging_MaxNewConversationsPerDay" xml:space="preserve"><value>عدد المحادثات الجديدة يوميًا</value></data>
   <data name="Setting_Messaging_MaxGroupSize" xml:space="preserve"><value>أكبر حجم لمحادثة جماعية</value></data>
+  <data name="Setting_Messaging_UploadsPerMinute" xml:space="preserve"><value>عدد رفع المرفقات في الدقيقة</value></data>
   <data name="Setting_Announcements_MaxPerAuthorPerDay" xml:space="preserve"><value>عدد الإعلانات لكل كاتب يوميًا</value></data>
+  <data name="Setting_Announcements_MaxAttachments" xml:space="preserve"><value>عدد المرفقات لكل إعلان</value></data>
+  <data name="Setting_Announcements_UploadsPerMinute" xml:space="preserve"><value>رفع مرفقات الإعلانات في الدقيقة</value></data>
   <data name="NotifEvent_Messages_NewMessage" xml:space="preserve"><value>رسالة جديدة</value></data>
   <data name="Notif_Messages_NewMessage" xml:space="preserve"><value>أرسل لك {SenderName} رسالة.</value></data>
   <data name="NotifEvent_Announcements_Published" xml:space="preserve"><value>إعلان جديد</value></data>
@@ -1981,6 +1984,17 @@
   <data name="Msg_Reason_Spam" xml:space="preserve"><value>رسائل مزعجة</value></data>
   <data name="Msg_Reason_Safety" xml:space="preserve"><value>مخاوف تتعلق بالسلامة</value></data>
   <data name="Msg_Reason_Other" xml:space="preserve"><value>أخرى</value></data>
+  <data name="Msg_ReadOnly_group_students_read_only" xml:space="preserve"><value>المعلم والموظفون فقط يكتبون في هذه المجموعة. يمكنك مراسلة المعلم بشكل خاص.</value></data>
+  <data name="Msg_ReadOnly_group_guardians_read_only" xml:space="preserve"><value>الموظفون فقط يكتبون في هذه المجموعة.</value></data>
+  <data name="Msg_ReadOnly_blocked_or_rule" xml:space="preserve"><value>لا يمكنك إرسال رسائل في هذه المحادثة.</value></data>
+  <data name="Msg_ReadOnly_restricted" xml:space="preserve"><value>المراسلة مقيّدة لحسابك حاليًا.</value></data>
+  <data name="Msg_ReadOnly_locked" xml:space="preserve"><value>قام مشرف بإغلاق هذه المحادثة.</value></data>
+  <data name="Msg_Denied_rule" xml:space="preserve"><value>لا يمكنك إرسال رسائل إلى هذا الشخص.</value></data>
+  <data name="Msg_Denied_relationship" xml:space="preserve"><value>يمكنك مراسلة الأشخاص الذين تتعامل معهم في المدرسة فقط.</value></data>
+  <data name="Msg_Denied_restricted" xml:space="preserve"><value>المراسلة مقيّدة لحسابك حاليًا.</value></data>
+  <data name="Msg_Denied_blocked_or_rule" xml:space="preserve"><value>لا يمكنك إرسال رسائل إلى هذا الشخص.</value></data>
+  <data name="Msg_Denied_private_group_with_student" xml:space="preserve"><value>المجموعة التي تضم طالبًا تحتاج إلى ثلاثة أعضاء على الأقل.</value></data>
+  <data name="Msg_Denied_group_full" xml:space="preserve"><value>بلغت هذه المجموعة الحد الأقصى لعدد الأعضاء.</value></data>
   <data name="Msg_ReportStatus_Open" xml:space="preserve"><value>مفتوح</value></data>
   <data name="Msg_ReportStatus_Dismissed" xml:space="preserve"><value>تم الرفض</value></data>
   <data name="Msg_ReportStatus_Actioned" xml:space="preserve"><value>تم اتخاذ إجراء</value></data>
@@ -1997,7 +2011,7 @@
   <data name="Ann_TargetKind_ClassCourse" xml:space="preserve"><value>مقرر فصل</value></data>
   <data name="Ann_TargetKind_Group" xml:space="preserve"><value>مجموعة</value></data>
   <data name="Ann_Source_CourseBoard" xml:space="preserve"><value>مجلس المقرر</value></data>
-  <data name="Ann_Source_School" xml:space="preserve"><value>المدرسة</value></data>
+  <data name="Ann_Source_Announcement" xml:space="preserve"><value>إعلان</value></data>
   <data name="Ann_Status_Draft" xml:space="preserve"><value>مسودة</value></data>
   <data name="Ann_Status_Scheduled" xml:space="preserve"><value>مجدول</value></data>
   <data name="Ann_Status_Published" xml:space="preserve"><value>منشور</value></data>
@@ -2011,14 +2025,28 @@
   <data name="Comms_Delivery_Sent" xml:space="preserve"><value>تم الإرسال</value></data>
   <data name="Comms_Delivery_Failed" xml:space="preserve"><value>فشل</value></data>
   <data name="Comms_Delivery_Skipped" xml:space="preserve"><value>تم التخطي</value></data>
-  <data name="Comms_Delivery_Expired" xml:space="preserve"><value>انتهت صلاحيته</value></data>
   <data name="Comms_ChannelState_Active" xml:space="preserve"><value>نشط</value></data>
   <data name="Comms_ChannelState_NeedsSetup" xml:space="preserve"><value>يحتاج إلى إعداد</value></data>
   <data name="Comms_ChannelState_Blocked" xml:space="preserve"><value>محظور</value></data>
   <data name="Comms_ChannelState_Bounced" xml:space="preserve"><value>مرتد</value></data>
+  <data name="Comms_Delivery_Suppressed" xml:space="preserve"><value>لم يُرسل (العنوان محظور)</value></data>
+  <data name="Comms_Delivery_Held" xml:space="preserve"><value>مؤجل</value></data>
+  <data name="Comms_DeliverySkip_expired_while_held" xml:space="preserve"><value>انتهت صلاحيته أثناء التأجيل</value></data>
+  <data name="Comms_DeliverySkip_recipient_cap" xml:space="preserve"><value>بلغ المستلم حدّه اليومي</value></data>
+  <data name="Comms_DeliverySkip_no_contact" xml:space="preserve"><value>لا يوجد عنوان تواصل</value></data>
+  <data name="Comms_DeliverySkip_channel_off" xml:space="preserve"><value>القناة متوقفة</value></data>
+  <data name="Comms_Suppression_HardBounce" xml:space="preserve"><value>العنوان غير موجود</value></data>
+  <data name="Comms_Suppression_Complaint" xml:space="preserve"><value>تم الإبلاغ عنه كغير مرغوب</value></data>
+  <data name="Comms_Suppression_UserOptOut" xml:space="preserve"><value>ألغى الاشتراك</value></data>
+  <data name="Comms_ChannelState_Off" xml:space="preserve"><value>متوقفة</value></data>
+  <data name="Error_channel_not_allowed" xml:space="preserve"><value>أوقفت مدرستك هذه القناة.</value></data>
+  <data name="Error_comms_cap_above_ceiling" xml:space="preserve"><value>هذا الحد اليومي أعلى من الحد الأقصى للمنصة.</value></data>
+  <data name="AuditEntity_ChannelConsent" xml:space="preserve"><value>موافقة القناة</value></data>
+  <data name="AuditEntity_CommsSettings" xml:space="preserve"><value>إعدادات التواصل</value></data>
   <data name="Comms_PrefSource_Default" xml:space="preserve"><value>افتراضي</value></data>
   <data name="Comms_PrefSource_User" xml:space="preserve"><value>اختيارك</value></data>
   <data name="Comms_PrefSource_Mandatory" xml:space="preserve"><value>إلزامي</value></data>
   <data name="Msg_Rule_SameUnit" xml:space="preserve"><value>أي شخص في نفس الوحدة</value></data>
-  <data name="Error_group_read_only" xml:space="preserve"><value>المراسلة في هذه المجموعة للموظفين فقط.</value></data>
+  <data name="Error_conversation_read_only" xml:space="preserve"><value>لا يمكنك الكتابة في هذه المحادثة.</value></data>
+  <data name="Error_attachment_invalid" xml:space="preserve"><value>المرفق غير مسموح به: تحقق من نوعه وحجمه وعدد المرفقات.</value></data>
 </root>

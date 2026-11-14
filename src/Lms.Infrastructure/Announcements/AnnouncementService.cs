@@ -36,7 +36,7 @@ public sealed class AnnouncementService(
     {
         var targets = await db.Set<AnnouncementTarget>().AsNoTracking().Where(t => t.AnnouncementId == announcement.Id)
             .Select(t => new AudienceTarget(t.Kind, t.TargetId, t.IncludeSubtree)).ToListAsync(ct);
-        return await resolver.ResolveAsync(targets, announcement.RoleFilters, announcement.AuthorUserId, DateOnly.FromDateTime(clock.UtcNow), ct);
+        return await resolver.ResolveAsync(announcement.OrganizationId, targets, announcement.RoleFilters, announcement.AuthorUserId, DateOnly.FromDateTime(clock.UtcNow), ct);
     }
 
     /// <summary>The per-author daily cap (<c>Announcements.MaxPerAuthorPerDay</c>), counted in the client's day: false when the author is at it.</summary>
@@ -99,7 +99,7 @@ public sealed class AnnouncementService(
             {
                 await publisher.PublishAsync(
                     new NotificationRequest(
-                        NotificationEvents.AnnouncementsPublished, announcement.OrganizationId, batch, parameters, "/announcements", Urgent: announcement.IsUrgent), ct);
+                        NotificationEvents.AnnouncementsPublished, announcement.OrganizationId, batch, parameters, "/announcements", Urgent: announcement.IsUrgent, SourceId: announcement.Id), ct);
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {

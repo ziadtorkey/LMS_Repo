@@ -91,7 +91,7 @@ public static class SettingCatalog
         new(SettingKeys.AcademicYearsTermsPerYear.Name, SettingValueKinds.Int, SettingCategories.Academic, "2", Min: 2, Max: 3, ClientLevelOnly: true),
         // M6 wave 1: communication settings (client level, Org Admin at the client root; D66 defaults).
         new(SettingKeys.CommsEmailEnabled.Name, SettingValueKinds.Bool, SettingCategories.Features, "true", ClientLevelOnly: true),
-        new(SettingKeys.CommsPushEnabled.Name, SettingValueKinds.Bool, SettingCategories.Features, "false", ClientLevelOnly: true),
+        new(SettingKeys.CommsPushEnabled.Name, SettingValueKinds.Bool, SettingCategories.Features, "true", ClientLevelOnly: true),
         new(SettingKeys.CommsMaxEmailPerDay.Name, SettingValueKinds.Int, SettingCategories.Features, "5000", Min: 0, Max: 100_000, ClientLevelOnly: true),
         new(SettingKeys.CommsMaxPushPerDay.Name, SettingValueKinds.Int, SettingCategories.Features, "20000", Min: 0, Max: 200_000, ClientLevelOnly: true),
         new(SettingKeys.CommsMaxEmailPerUserPerDay.Name, SettingValueKinds.Int, SettingCategories.Features, "20", Min: 1, Max: 200, ClientLevelOnly: true),
@@ -104,7 +104,10 @@ public static class SettingCatalog
         new(SettingKeys.MessagingMaxPerMinute.Name, SettingValueKinds.Int, SettingCategories.Features, "30", Min: 1, Max: 120, ClientLevelOnly: true),
         new(SettingKeys.MessagingMaxNewConversationsPerDay.Name, SettingValueKinds.Int, SettingCategories.Features, "20", Min: 1, Max: 200, ClientLevelOnly: true),
         new(SettingKeys.MessagingMaxGroupSize.Name, SettingValueKinds.Int, SettingCategories.Features, "50", Min: 3, Max: 200, ClientLevelOnly: true),
+        new(SettingKeys.MessagingUploadsPerMinute.Name, SettingValueKinds.Int, SettingCategories.Features, "10", Min: 1, Max: 60, ClientLevelOnly: true),
         new(SettingKeys.AnnouncementsMaxPerAuthorPerDay.Name, SettingValueKinds.Int, SettingCategories.Features, "10", Min: 1, Max: 100, ClientLevelOnly: true),
+        new(SettingKeys.AnnouncementsMaxAttachments.Name, SettingValueKinds.Int, SettingCategories.Features, "5", Min: 1, Max: 10, ClientLevelOnly: true),
+        new(SettingKeys.AnnouncementsUploadsPerMinute.Name, SettingValueKinds.Int, SettingCategories.Features, "10", Min: 1, Max: 60, ClientLevelOnly: true),
         // M5 wave 2: the school week and the conflict mode of the timetable builder.
         new(SettingKeys.TimetableWorkingDays.Name, SettingValueKinds.StringSet, SettingCategories.Academic,
             "[\"Sun\",\"Mon\",\"Tue\",\"Wed\",\"Thu\"]", AllowedValues: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]),

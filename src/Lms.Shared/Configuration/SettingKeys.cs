@@ -101,7 +101,7 @@ public static class SettingKeys
     public static readonly SettingKey<bool> CommsEmailEnabled = new("Comms.EmailEnabled", true);
 
     /// <summary>Whether the client's notices may use Web Push.</summary>
-    public static readonly SettingKey<bool> CommsPushEnabled = new("Comms.PushEnabled", false);
+    public static readonly SettingKey<bool> CommsPushEnabled = new("Comms.PushEnabled", true);
 
     /// <summary>Daily caps per client (D66: 5,000 email, 20,000 push; D76: no SMS), counted in the client's day; the admin may raise them up to a platform ceiling.</summary>
     public static readonly SettingKey<int> CommsMaxEmailPerDay = new("Comms.MaxEmailPerDay", 5000);
@@ -129,8 +129,17 @@ public static class SettingKeys
     public static readonly SettingKey<int> MessagingMaxNewConversationsPerDay = new("Messaging.MaxNewConversationsPerDay", 20);
     public static readonly SettingKey<int> MessagingMaxGroupSize = new("Messaging.MaxGroupSize", 50);
 
+    /// <summary>Per-user cap of message attachment uploads a minute (429 <c>rate_limited</c> over it).</summary>
+    public static readonly SettingKey<int> MessagingUploadsPerMinute = new("Messaging.UploadsPerMinute", 10);
+
     /// <summary>Per-author cap of announcements a day.</summary>
     public static readonly SettingKey<int> AnnouncementsMaxPerAuthorPerDay = new("Announcements.MaxPerAuthorPerDay", 10);
+
+    /// <summary>Attachments on one announcement.</summary>
+    public static readonly SettingKey<int> AnnouncementsMaxAttachments = new("Announcements.MaxAttachments", 5);
+
+    /// <summary>Announcement attachment uploads a minute per author.</summary>
+    public static readonly SettingKey<int> AnnouncementsUploadsPerMinute = new("Announcements.UploadsPerMinute", 10);
 
     // M5 wave 2 (M5 plan Task 2).
     /// <summary>The school week as a JSON array of <c>WorkingDayNames</c>, Sunday to Thursday by default (D58); read through the unit hierarchy.</summary>
