@@ -23,7 +23,7 @@ else
     <div class="lms-filters mb-4" role="search" aria-label="@L["Common_Filters"]">
         <div class="lms-filter">
             <MudDatePicker Date="_date?.ToDateTime(TimeOnly.MinValue)" DateChanged="OnDateChanged" Label="@L["Att_Date"]" Variant="Variant.Outlined"
-                           DateFormat="yyyy-MM-dd" Clearable="false" data-testid="attendance-date" />
+                           DateFormat="yyyy-MM-dd" Clearable="false" Class="lms-date-filter" data-testid="attendance-date" />
         </div>
     </div>
 
@@ -73,6 +73,8 @@ else
         _failed = false;
         var (value, failed) = await ApiCalls.RunAsync(() => Api.GetSessionsAsync(_date), Navigation);
         _sessions = value ?? [];
+        // The server answered for its (client time zone) day when none was chosen: show that day so the control is never blank.
+        _date ??= _sessions.Count > 0 ? _sessions[0].Date : DateOnly.FromDateTime(DateTime.Now);
         _failed = failed;
         _loading = false;
     }

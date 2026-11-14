@@ -18,7 +18,9 @@ public sealed class FakeAttendanceApi : IAttendanceApi
     private static readonly Guid ClassCourse = Guid.Parse("c0000000-0000-0000-0000-000000000001");
     private static readonly Guid Teacher = Guid.Parse("e0000000-0000-0000-0000-000000000001");
 
+    private static readonly TimeZoneInfo Riyadh = TimeZoneInfo.CreateCustomTimeZone("Asia/Riyadh", TimeSpan.FromHours(3), "Riyadh", "Riyadh");
     private readonly TimeProvider _clock;
+    private readonly TimeZoneInfo _zone;
     private readonly List<Row> _sessions = [];
     private readonly List<AttendanceChangeDto> _changes = [];
     private readonly (Guid Id, string Ar, string En, string Number)[] _roster =
@@ -31,11 +33,14 @@ public sealed class FakeAttendanceApi : IAttendanceApi
 
     public FakeAttendanceApi() : this(TimeProvider.System) { }
 
-    public FakeAttendanceApi(TimeProvider clock)
+    /// <param name="clock">The server clock.</param>
+    /// <param name="zone">The client time zone setting (D64: Asia/Riyadh by default); the server judges "today" by the client day, not the UTC day.</param>
+    public FakeAttendanceApi(TimeProvider clock, TimeZoneInfo? zone = null)
     {
         _clock = clock;
+        _zone = zone ?? Riyadh;
         var now = clock.GetUtcNow().UtcDateTime;
-        var today = DateOnly.FromDateTime(now);
+        var today = LocalToday();
         Add(SessionOpen, 1, AttendanceSources.Timetable, AttendanceSessionStates.Open, 0, now.AddHours(48), today);
         Add(SessionTaken, 2, AttendanceSources.Timetable, AttendanceSessionStates.Taken, 4, now.AddHours(24), today);
         Add(SessionClosed, 3, AttendanceSources.Timetable, AttendanceSessionStates.Taken, 4, now.AddHours(-1), today);
@@ -54,13 +59,13 @@ public sealed class FakeAttendanceApi : IAttendanceApi
 
     public Task<IReadOnlyList<AttendanceSessionListItemDto>> GetSessionsAsync(DateOnly? date = null, CancellationToken ct = default)
     {
-        var day = date ?? DateOnly.FromDateTime(_clock.GetUtcNow().UtcDateTime);
+        var day = date ?? LocalToday();
         return Task.FromResult<IReadOnlyList<AttendanceSessionListItemDto>>(_sessions.Where(s => s.Date == day).Select(s => s.Dto(_clock)).ToList());
     }
 
     public Task<AttendanceSessionListItemDto> CreateAdHocAsync(Guid classCourseId, CreateAdHocAttendanceSessionRequest request, CancellationToken ct = default)
     {
-        var today = DateOnly.FromDateTime(_clock.GetUtcNow().UtcDateTime);
+        var today = LocalToday();
         if (request.Date > today) throw Problem(409, "attendance_session_future");
         var row = Add(Guid.NewGuid(), 6, AttendanceSources.AdHoc, AttendanceSessionStates.Open, 0, _clock.GetUtcNow().UtcDateTime.AddHours(48), request.Date);
         return Task.FromResult(row.Dto(_clock));
@@ -72,7 +77,7 @@ public sealed class FakeAttendanceApi : IAttendanceApi
     {
         var row = Find(sessionId);
         var now = _clock.GetUtcNow().UtcDateTime;
-        if (row.Date > DateOnly.FromDateTime(now)) throw Problem(409, "attendance_session_future");
+        if (row.Date > LocalToday()) throw Problem(409, "attendance_session_future");
         if (request.Version != row.Version) throw Problem(409, "concurrency_conflict");
         var afterWindow = row.State == AttendanceSessionStates.Taken && now > row.EditableUntilUtc;
         if (afterWindow && !CanEditAfterWindow) throw Problem(409, "attendance_edit_window_closed");
@@ -146,7 +151,7 @@ public sealed class FakeAttendanceApi : IAttendanceApi
     private OwnAttendanceDto Own(Guid studentId, OwnAttendanceQuery query)
     {
         var now = _clock.GetUtcNow().UtcDateTime;
-        var today = DateOnly.FromDateTime(now);
+        var today = LocalToday();
         var student = _roster.First(r => r.Id == studentId);
         OwnAttendanceItemDto Item(Guid id, int daysAgo, string en, string ar, string status, bool excusable, Guid? excuse = null, string? excuseStatus = null) =>
             new(id, today.AddDays(-daysAgo), ar, en, new TimeOnly(7, 30), new TimeOnly(8, 15), status, null, excusable && CanSubmitExcuseFlag, excuse, excuseStatus);
@@ -164,6 +169,9 @@ public sealed class FakeAttendanceApi : IAttendanceApi
     }
 
     private bool CanSubmitExcuseFlag => CanSubmitExcuse;
+
+    /// <summary>The client's local day by the server clock.</summary>
+    private DateOnly LocalToday() => DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(_clock.GetUtcNow(), _zone).DateTime);
 
     private Row Add(Guid id, int period, string source, string state, int marked, DateTime editableUntil, DateOnly date, bool proposal = false, bool substitute = false)
     {

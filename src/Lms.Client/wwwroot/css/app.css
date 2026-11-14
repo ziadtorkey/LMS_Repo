@@ -137,3 +137,7 @@ html:lang(ar), html:lang(ar) body { font-family: Cairo, "Segoe UI", Tahoma, Aria
     .lms-stats.lms-stats-compact .lms-stat { padding: 10px 12px; }
     .lms-stats.lms-stats-compact .lms-stat-value { font-size: 1.375rem; }
 }
+
+.lms-touch.mud-button-root, .lms-touch.mud-icon-button { min-block-size: 44px; min-inline-size: 44px; }
+.lms-date-filter { max-inline-size: 220px; }
+.lms-session-grid > .lms-section + .lms-section { margin-block-start: 0; }
