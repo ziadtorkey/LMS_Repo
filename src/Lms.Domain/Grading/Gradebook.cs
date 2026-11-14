@@ -53,6 +53,12 @@ public sealed class Gradebook : UnitOwnedEntity, ILiveKeyed
 
     public bool IsLocked => State == LockedState;
 
+    /// <summary>
+    /// A grade event recorded after the lock is ignored by every calculation and only counted for staff (L5): the locked results stay what they
+    /// were at the lock. Compared by the time the event row was recorded, not by the day it was scored.
+    /// </summary>
+    public bool IgnoresEventRecordedAt(DateTime recordedAtUtc) => IsLocked && LockedAtUtc is { } at && recordedAtUtc > at;
+
     public void Configure(Guid? scaleId, int decimalPlaces, string categoryMethod, string missingPolicy)
     {
         GradingScaleId = scaleId;

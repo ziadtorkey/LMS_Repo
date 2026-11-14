@@ -42,7 +42,11 @@ public sealed class GradebookBackfill(LmsDbContext db, GradebookItemsObserver it
         {
             if (await items.FindExistingAsync(classCourse, source.SourceKind, source.SourceId, ct) is { } existing)
             {
-                existing.SetMaxPoints(source.MaxPoints);
+                if (!await db.Set<Gradebook>().AnyAsync(g => g.Id == existing.GradebookId && g.State == Gradebook.LockedState, ct))
+                {
+                    existing.SetMaxPoints(source.MaxPoints);
+                }
+
                 continue;
             }
 

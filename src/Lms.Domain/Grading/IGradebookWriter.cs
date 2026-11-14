@@ -20,6 +20,9 @@ public interface IGradebookWriter
     Task<GradeItem> AddManualItemAsync(
         Gradebook gradebook, Guid categoryId, string titleAr, string titleEn, decimal maxPoints, CancellationToken ct);
 
+    /// <summary>The write guard on its own (locked gradebook, closed class or year): 409 as a <see cref="GradebookRuleException"/>. Editors that change rows other than scores call it first.</summary>
+    Task EnsureWritableAsync(Gradebook gradebook, CancellationToken ct);
+
     /// <summary>Sets a manual score. <paramref name="expectedVersion"/> is the version the caller read (null for a new entry).</summary>
     Task<GradeEntry> SetPointsAsync(
         GradeItem item, Guid studentProfileId, decimal? points, int? expectedVersion, Guid? byUserId, CancellationToken ct);

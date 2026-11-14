@@ -282,10 +282,42 @@ public sealed class GradingContractTests
             typeof(StudentGradesDto), typeof(StudentCourseGradesDto), typeof(PublishedGradeItemDto), typeof(StudentGradeCategoryDto),
             typeof(BandLegendDto), typeof(BandLegendEntryDto),
         ];
-        string[] staffOnly = ["PublishState", "PublishAt", "Newer", "Rank", "Average", "Minimum", "Maximum", "Median", "Hidden", "Override", "Reason", "EventsAfterLock", "Provisional", "SourceKind", "SourceId", "Version", "Count"];
+        string[] staffOnly = ["PublishState", "PublishAt", "Newer", "Rank", "Average", "Minimum", "Maximum", "Median", "Hidden", "Override", "Reason", "EventsAfterLock", "Provisional", "SourceKind", "SourceId", "Version", "Count", "Withdrawn"];
 
         Assert.All(studentFacing, t => Assert.DoesNotContain(t.GetProperties(), p =>
             staffOnly.Any(f => p.Name.Contains(f, StringComparison.OrdinalIgnoreCase))));
+    }
+
+    [Fact]
+    public void Write_route_builders_take_an_optional_term_and_never_need_a_hand_built_query()
+    {
+        var cc = Guid.NewGuid();
+        var term = Guid.NewGuid();
+
+        Assert.Equal($"/api/class-courses/{cc}/gradebook/config", Routes.ClassCourseGradebookConfig(cc));
+        Assert.Equal($"/api/class-courses/{cc}/gradebook/config?termId={term}", Routes.ClassCourseGradebookConfig(cc, term));
+        Assert.Equal($"/api/class-courses/{cc}/gradebook/categories?termId={term}", Routes.ClassCourseGradebookCategories(cc, term));
+        Assert.Equal($"/api/class-courses/{cc}/gradebook/items?termId={term}", Routes.ClassCourseGradebookItems(cc, term));
+        Assert.Equal($"/api/class-courses/{cc}/gradebook/entries?termId={term}", Routes.ClassCourseGradebookEntries(cc, term));
+        // an item names its gradebook, so its routes need no term and the item builder stays on the plain items route
+        var item = Guid.NewGuid();
+        Assert.Equal($"/api/class-courses/{cc}/gradebook/items/{item}", Routes.ClassCourseGradebookItem(cc, item));
+        Assert.Equal($"/api/class-courses/{cc}/gradebook/items/publish", Routes.ClassCourseGradebookPublish(cc));
+    }
+
+    [Fact]
+    public void A_withdrawn_student_stays_in_the_staff_row_with_a_flag_and_defaults_to_enrolled()
+    {
+        var row = new GradeRowDto(Guid.NewGuid(), "ع", "A", "1", [], [], null, null, null, null, null, 0);
+        Assert.False(row.IsWithdrawn);
+        Assert.Null(row.WithdrawnOn);
+
+        var left = RoundTrip(row with { IsWithdrawn = true, WithdrawnOn = new DateOnly(2026, 11, 1) });
+
+        Assert.True(left.IsWithdrawn);
+        Assert.Equal(new DateOnly(2026, 11, 1), left.WithdrawnOn);
+        // the student-facing shapes have no withdrawn marker: other students and guardians never see a classmate's row
+        Assert.DoesNotContain(typeof(StudentCourseGradesDto).GetProperties(), p => p.Name.Contains("Withdrawn", StringComparison.Ordinal));
     }
 
     [Fact]

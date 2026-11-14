@@ -38,6 +38,7 @@ public sealed class GradebookCalculation(LmsDbContext db, BandLegendReader legen
             .Where(e => e.GradebookId == book.Id && itemIds.Contains(e.GradeItemId) && students.Contains(e.StudentProfileId)).ToListAsync(ct);
         var events = await db.Set<GradeEvent>()
             .Where(e => e.ClassCourseId == book.ClassCourseId && students.Contains(e.StudentProfileId)).ToListAsync(ct);
+        events = events.Where(e => !book.IgnoresEventRecordedAt(e.CreatedAt)).ToList(); // L5: nothing recorded after a lock changes it
 
         var byItem = items.Where(i => i.SourceId is not null)
             .GroupBy(i => (Kind: i.SourceKind, Source: i.SourceId)).ToDictionary(g => g.Key, g => g.First().Id);

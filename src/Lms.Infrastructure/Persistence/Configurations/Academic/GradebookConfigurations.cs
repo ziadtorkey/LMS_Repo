@@ -52,7 +52,8 @@ internal sealed class GradeItemConfiguration : IEntityTypeConfiguration<GradeIte
         builder.Property(x => x.TitleAr).HasMaxLength(200).IsRequired();
         builder.Property(x => x.TitleEn).HasMaxLength(200).IsRequired();
         builder.Property(x => x.MaxPoints).HasPrecision(9, 2);
-        builder.Property(x => x.PublishState).HasMaxLength(10).IsRequired();
+        // A concurrency token: two runners publishing the same item (the job on two servers, or the job and a publish-now) cannot both win, so a batch is announced once.
+        builder.Property(x => x.PublishState).HasMaxLength(10).IsRequired().IsConcurrencyToken();
         builder.Property(x => x.PublishAtUtc).HasPrecision(6);
         builder.Property(x => x.PublishedAtUtc).HasPrecision(6);
         builder.HasOne<Gradebook>().WithMany().HasForeignKey(x => x.GradebookId).OnDelete(DeleteBehavior.Restrict);
