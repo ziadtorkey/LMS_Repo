@@ -1,0 +1,34 @@
+@using Lms.Shared.LiveSessions
+@using Lms.Client.Services
+@inject ICultureService Culture
+
+@* The count and the first dates of a weekly series (design spec M4b §2.3). Above the limit the count turns into a red message. *@
+<div class="lms-recurrence-preview" data-testid="recurrence-preview">
+    @if (TooMany)
+    {
+        <div class="lms-recurrence-preview-count lms-invalid" role="status" data-testid="recurrence-too-many">@L["Live_TooMany", LiveSessionLimits.MaxOccurrences]</div>
+    }
+    else
+    {
+        <div class="lms-recurrence-preview-count" role="status" data-testid="recurrence-count">@L.Count("Live_Unit_Session", Count, Culture.IsRightToLeft)</div>
+        <ul class="lms-recurrence-dates" data-testid="recurrence-dates">
+            @foreach (var d in Dates.Take(Shown))
+            {
+                <li dir="ltr">@d.ToString("yyyy-MM-dd HH:mm", System.Globalization.CultureInfo.InvariantCulture)</li>
+            }
+        </ul>
+        @if (Count > Shown)
+        {
+            <div class="lms-muted" data-testid="recurrence-more">@L.Count("Live_MoreSessions", Count - Shown, Culture.IsRightToLeft)</div>
+        }
+    }
+</div>
+
+@code {
+    private const int Shown = 6;
+
+    [Parameter] public int Count { get; set; }
+    /// <summary>The occurrences in the teacher's local time.</summary>
+    [Parameter] public IReadOnlyList<DateTime> Dates { get; set; } = [];
+    [Parameter] public bool TooMany { get; set; }
+}

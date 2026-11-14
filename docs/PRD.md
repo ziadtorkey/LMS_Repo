@@ -371,6 +371,10 @@ All tenant-owned tables: `OrganizationId`; unit-scoped tables: `OrgUnitId`, `Org
 | D63 | University GPA default | The pilot university uses the 5.00-point GPA scale by default; the 4.00-point scale ships as an alternative preset. Owner decision 2026-11-14. |
 | D64 | Time zone | Clients default to Asia/Riyadh, with a per-client time-zone setting (`Org.TimeZone`) for clients outside Saudi Arabia. Owner decision 2026-11-14. |
 | D65 | Antivirus | v1 keeps the upload scanner hook (packages, attachments) off, with strict validation and sandboxing; a real scanner (for example ClamAV) is wired before production go-live. Owner decision 2026-11-14. |
+| D66 | M6 defaults | Owner accepted all proposed defaults of the consolidated M6 question list (29 items, PR #613 comment by QA2) other than D67-D69: no student data or message text in SMS/push; quiet hours per client, off by default (21:00-07:00 when on, SMS/push only); guardians own their preferences; imported contacts trusted in v1 (no OTP); mandatory events not disableable; daily caps 5,000 email / 500 SMS / 20,000 push per client; messages in the user's language; groups up to 50; read receipts off; delete own message within 15 min, no edit; one announcements store with ar+en titles; retention as listed pending legal advice. Owner decision 2026-11-14. |
+| D67 | Email provider | Build email behind a provider interface with a development fake; the concrete relay (SES, SendGrid, Mailgun or client SMTP) is chosen before go-live. Owner decision 2026-11-14. |
+| D68 | SMS provider | Build SMS behind `ISmsProvider` with a development fake; the owner picks a Saudi-licensed gateway (e.g. Unifonic, Taqnyat) and registers the sender ID before go-live. Owner decision 2026-11-14. |
+| D69 | Messaging safeguarding | Safeguarding-first rules: students message only their own teachers and counselor, never other students; guardians message only their children's teachers and counselor; managers and org admins reach students only via groups or announcements (no private 1:1 with students); the Org Admin may tighten per client. Owner decision 2026-11-14. |
 
 ---
 
