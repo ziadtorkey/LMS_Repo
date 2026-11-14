@@ -367,13 +367,13 @@ Legend: **OK** = verified, evidence named; **OK\*** = holds by code or by anothe
 
 | Id | Sev | Finding |
 |---|---|---|
-| F1 | medium | No `Cache-Control: private, no-store` on authenticated API responses (grade reads, exports, attachment URLs). Add one middleware for `/api` (rows 1.5.1, 2.15) |
-| F2 | high | Excuse `attachment-url` endpoint and the attachment retention job are not implemented (rows 3.3 to 3.8, 6.4); the counselor UI (#644) runs on a fake |
-| F3 | medium | #718 apply writes `GradeEntry` rows directly instead of through `IGradebookWriter`; add the architecture test (row 1.6.1) |
-| F4 | low | Three copies of the spreadsheet formula-escape rule; use `SpreadsheetCell.Safe` everywhere and add an architecture test (row 2.2) |
-| F5 | low | A refused grade import (bad type, bomb) is not audited (row 2.13) |
-| F6 | medium | #635: approve reads covered records through the reviewer's own scope (count check missing); check the stored file size before downloading it; keep the sniffed content type with the excuse |
-| F7 | medium | #644: the signed attachment URL expires after 5 minutes and the drawer never refreshes it; the content security policy has no `img-src` for the storage origin |
-| F8 | low | Task 41 test debt (QA3): `GradeLeakAttackTests` (query-parameter widening, response-length side channel, error bodies, headers), `SpreadsheetAttackTests`, `ExcuseAttachmentAttackTests`, log-capture and notification-resource placeholder tests, and the guard's file list for new student-facing grade routes |
-| F9 | low | #661: a teacher's take accepts `Excused` directly (bypasses the excuse flow); decide with Task 19 |
-| F10 | low | #656: guardian recipients when `Features.GuardianPortal` is turned off after activation; `Org.TimeZone` unknown-id write validation (row 8.5) |
+| F1 (#736) | medium | No `Cache-Control: private, no-store` on authenticated API responses (grade reads, exports, attachment URLs). Add one middleware for `/api` (rows 1.5.1, 2.15) |
+| F2 (#737) | high | Excuse `attachment-url` endpoint and the attachment retention job are not implemented (rows 3.3 to 3.8, 6.4); the counselor UI (#644) runs on a fake |
+| F3 (#738) | medium | #718 apply writes `GradeEntry` rows directly instead of through `IGradebookWriter`; add the architecture test (row 1.6.1) |
+| F4 (#739) | low | Three copies of the spreadsheet formula-escape rule; use `SpreadsheetCell.Safe` everywhere and add an architecture test (row 2.2) |
+| F5 (#740) | low | A refused grade import (bad type, bomb) is not audited (row 2.13) |
+| F6 (#741) | medium | #635: approve reads covered records through the reviewer's own scope (count check missing); check the stored file size before downloading it; keep the sniffed content type with the excuse |
+| F7 (#742) | medium | #644: the signed attachment URL expires after 5 minutes and the drawer never refreshes it; the content security policy has no `img-src` for the storage origin |
+| F8 (#743) | low | Task 41 test debt (QA3): `GradeLeakAttackTests` (query-parameter widening, response-length side channel, error bodies, headers), `SpreadsheetAttackTests`, `ExcuseAttachmentAttackTests`, log-capture and notification-resource placeholder tests, and the guard's file list for new student-facing grade routes |
+| F9 (#744) | low | #661: a teacher's take accepts `Excused` directly (bypasses the excuse flow); decide with Task 19 |
+| F10 (#745) | low | #656: guardian recipients when `Features.GuardianPortal` is turned off after activation; `Org.TimeZone` unknown-id write validation (row 8.5) |
