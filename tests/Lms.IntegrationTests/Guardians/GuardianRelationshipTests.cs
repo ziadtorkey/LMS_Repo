@@ -21,10 +21,12 @@ namespace Lms.IntegrationTests.Guardians;
 /// enrollments) or homeroom class, so the guardian routes show them only the guardians of those students.
 /// </summary>
 [Collection(ApiCollection.Name)]
-public sealed class GuardianRelationshipTests
+public sealed class GuardianRelationshipTests : IDisposable
 {
     private readonly LmsApiFactory _factory;
     private readonly GuardianTestKit _kit;
+
+    public void Dispose() => _kit.Dispose();
 
     public GuardianRelationshipTests(LmsApiFactory factory)
     {
