@@ -130,6 +130,55 @@ public sealed class GradebookAutoItemTests(LmsApiFactory factory)
     }
 
     [Fact]
+    public async Task Regrade_in_another_term_updates_the_existing_item_instead_of_adding_one()
+    {
+        var (w, student) = await SetupAsync("GBA7");
+        var source = Guid.NewGuid();
+        await RecordAsync(Input(w, student, source, At(YearStart.AddDays(10))));
+        // Regraded in the second term with a new maximum: same source, same item, same gradebook.
+        await RecordAsync(new GradeEventInput(GradeSourceKind.Assignment, source, w.ClassCourse.Id, student, 15, 20, At(YearStart.AddMonths(6)), 2));
+
+        var item = Assert.Single(await ItemsAsync(w.ClassCourse.Id));
+        Assert.Equal(20, item.MaxPoints);
+        Assert.Equal(w.First.Id, await TermOfAsync(item));
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        Assert.Equal(1, await db.Set<Gradebook>().CountAsync(g => g.ClassCourseId == w.ClassCourse.Id));
+    }
+
+    [Fact]
+    public async Task Regrade_with_a_new_maximum_in_the_same_term_updates_the_item()
+    {
+        var (w, student) = await SetupAsync("GBA8");
+        var source = Guid.NewGuid();
+        await RecordAsync(Input(w, student, source, At(YearStart.AddDays(10))));
+        await RecordAsync(new GradeEventInput(GradeSourceKind.Assignment, source, w.ClassCourse.Id, student, 9, 12, At(YearStart.AddDays(12)), 2));
+
+        Assert.Equal(12, Assert.Single(await ItemsAsync(w.ClassCourse.Id)).MaxPoints);
+    }
+
+    [Fact]
+    public async Task Backfill_keeps_a_cross_term_regrade_in_the_term_of_the_first_attempt()
+    {
+        var (w, student) = await SetupAsync("GBB5");
+        var source = Guid.NewGuid();
+        await AddLegacyEventAsync(w, student, source, At(YearStart.AddDays(10)));
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            var cc = await db.Set<ClassCourse>().SingleAsync(c => c.Id == w.ClassCourse.Id);
+            db.Add(new GradeEvent(cc, new GradeEventInput(GradeSourceKind.Assignment, source, w.ClassCourse.Id, student, 15, 20, At(YearStart.AddMonths(6)), 2)));
+            await db.SaveChangesAsync();
+        }
+
+        using var scope = new EngineScope(factory.Services);
+        var classCourse = await scope.Db.Set<ClassCourse>().SingleAsync(c => c.Id == w.ClassCourse.Id);
+        Assert.Equal(1, await scope.Services.GetRequiredService<GradebookBackfill>().RunAsync(classCourse, default));
+
+        var item = Assert.Single(await ItemsAsync(w.ClassCourse.Id));
+        Assert.Equal(w.First.Id, await TermOfAsync(item));
+        Assert.Equal(20, item.MaxPoints);
+    }
+
+    [Fact]
     public async Task Term_lookup_never_crosses_clients()
     {
         var (a, _) = await SetupAsync("GBT1A");
