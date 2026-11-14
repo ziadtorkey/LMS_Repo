@@ -1,3 +1,4 @@
+using Lms.Domain.Attendance;
 using Lms.Api.Features.Classes;
 using Lms.Api.Features.Content;
 using Lms.Api.Features.Enrollment.Groups;
@@ -39,7 +40,8 @@ public sealed class LiveSessionHandlers(
 
         var now = clock.UtcNow;
         IQueryable<LessonModule> modules;
-        if (await access.IsStudentAsync(ct))
+        var isStudent = await access.IsStudentAsync(ct);
+        if (isStudent)
         {
             if (await access.StudentIdAsync(ct) is not { } studentId)
             {
@@ -77,9 +79,15 @@ public sealed class LiveSessionHandlers(
         var size = Math.Clamp(query.PageSize, 1, Paging.MaxPageSize);
         var number = Math.Max(query.Page, 1);
         var page = await rows.OrderBy(r => r.S.StartsAtUtc).ThenBy(r => r.S.Id).Skip((number - 1) * size).Take(size).ToListAsync(ct);
+        // The attendance proposal of a session (M5 Task 18) is for staff: a student never learns whether one exists. The caller scope still applies to the attendance rows.
+        var pageIds = page.Select(r => (Guid?)r.S.Id).ToList();
+        var proposals = isStudent
+            ? []
+            : (await db.Set<AttendanceSession>().Where(a => pageIds.Contains(a.LiveSessionId)).Select(a => new { LiveId = a.LiveSessionId!.Value, a.Id }).ToListAsync(ct))
+                .ToDictionary(a => a.LiveId, a => a.Id);
         var items = page.Select(r => new LiveSessionListItemDto(
             r.S.Id, r.M.Id, r.S.SeriesId, r.S.OccurrenceIndex, r.M.TitleAr, r.M.TitleEn, LiveSessionMapper.Utc(r.S.StartsAtUtc),
-            LiveSessionMapper.Utc(r.S.EndsAtUtc), r.S.Status, r.S.RecordingUrl is not null, now)).ToList();
+            LiveSessionMapper.Utc(r.S.EndsAtUtc), r.S.Status, r.S.RecordingUrl is not null, now, proposals.GetValueOrDefault(r.S.Id) is var proposal && proposal != Guid.Empty ? proposal : null)).ToList();
         return Results.Ok(new PagedResult<LiveSessionListItemDto>(items, total, number, size));
     }
 

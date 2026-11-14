@@ -51,7 +51,8 @@ public static class TimetableViewEndpoints
         var ownProfile = await db.Set<StudentProfile>().Where(p => p.UserId == me).Select(p => (Guid?)p.Id).FirstOrDefaultAsync(ct);
         var studentSlots = ownProfile is { } profile ? await ClassSlotsAsync(db, profile, from!.Value, ct) : [];
         var slots = teacherSlots.Concat(studentSlots).DistinctBy(s => s.Id).ToList();
-        return Results.Ok(await views.BuildAsync(slots, from!.Value, to!.Value, organizationId, onlyDates, ct));
+        var staffSlots = teacherSlots.Select(s => s.Id).ToHashSet();
+        return Results.Ok(await views.BuildAsync(slots, from!.Value, to!.Value, organizationId, onlyDates, ct, ownProfile, staffSlots));
     }
 
     private static async Task<IResult> StudentAsync(
@@ -77,7 +78,7 @@ public static class TimetableViewEndpoints
         }
 
         var slots = await ClassSlotsAsync(db, id, from!.Value, ct);
-        return Results.Ok(await views.BuildAsync(slots, from.Value, to!.Value, organizationId, null, ct));
+        return Results.Ok(await views.BuildAsync(slots, from.Value, to!.Value, organizationId, null, ct, id));
     }
 
     /// <summary>The published slots of the class the student is placed in on the first date of the range.</summary>

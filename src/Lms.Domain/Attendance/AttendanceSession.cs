@@ -41,6 +41,24 @@ public sealed class AttendanceSession : UnitOwnedEntity, ILiveKeyed
         };
     }
 
+    /// <summary>A proposal from a live session (L11): one per live session, by <see cref="LiveKey"/>. The records are the server proposal until the teacher confirms.</summary>
+    public static AttendanceSession ForLive(ClassCourse classCourse, DateOnly date, Guid liveSessionId)
+    {
+        var session = new AttendanceSession(classCourse, date, null, null, LiveSource);
+        session.LiveSessionId = liveSessionId;
+        session.SessionKey = LiveKey(liveSessionId);
+        return session;
+    }
+
+    /// <summary>The unique key of the proposal of a live session, so a second run (the job and the reconcile sweep) cannot create a second one.</summary>
+    public static string LiveKey(Guid liveSessionId) => $"l:{liveSessionId:N}";
+
+    /// <summary>A live proposal nobody confirmed yet: its records are the server's proposal, no guardian was told.</summary>
+    public bool IsProposal => Source == LiveSource && State == OpenState;
+
+    /// <summary>Saves edits to a proposal without taking it (L11 item 10): only the version moves; confirming takes it.</summary>
+    public void RecordProposalEdit() => Version++;
+
     public Guid ClassCourseId { get; private set; }
 
     public Guid ClassId { get; private set; }

@@ -955,6 +955,62 @@ namespace Lms.Infrastructure.Persistence.Migrations
                     b.ToTable("AttendanceSessions", (string)null);
                 });
 
+            modelBuilder.Entity("Lms.Domain.Attendance.LiveAttendanceMapping", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("AttendanceSessionId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<Guid>("OrgUnitId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("OrgUnitPath")
+                        .IsRequired()
+                        .HasColumnType("varchar(400) CHARACTER SET ascii COLLATE ascii_general_ci");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("ParticipantId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid?>("StudentProfileId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrgUnitId");
+
+                    b.HasIndex("StudentProfileId");
+
+                    b.HasIndex("AttendanceSessionId", "ParticipantId")
+                        .IsUnique();
+
+                    b.HasIndex("OrganizationId", "OrgUnitPath");
+
+                    b.ToTable("LiveAttendanceMappings", (string)null);
+                });
+
             modelBuilder.Entity("Lms.Domain.Auditing.AuditEntry", b =>
                 {
                     b.Property<Guid>("Id")
@@ -5886,6 +5942,26 @@ namespace Lms.Infrastructure.Persistence.Migrations
                         .HasForeignKey("OrgUnitId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Lms.Domain.Attendance.LiveAttendanceMapping", b =>
+                {
+                    b.HasOne("Lms.Domain.Attendance.AttendanceSession", null)
+                        .WithMany()
+                        .HasForeignKey("AttendanceSessionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Lms.Domain.Organizations.OrgUnit", null)
+                        .WithMany()
+                        .HasForeignKey("OrgUnitId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Lms.Domain.People.StudentProfile", null)
+                        .WithMany()
+                        .HasForeignKey("StudentProfileId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Lms.Domain.Blueprints.Blueprint", b =>

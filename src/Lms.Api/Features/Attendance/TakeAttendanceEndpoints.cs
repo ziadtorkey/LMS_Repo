@@ -6,6 +6,7 @@ using Lms.Domain.Calendar;
 using Lms.Domain.People;
 using Lms.Domain.Timetable;
 using Lms.Infrastructure.Attendance;
+using Lms.Infrastructure.Attendance.Live;
 using Lms.Infrastructure.Configuration;
 using Lms.Infrastructure.Persistence;
 using Lms.Shared;
@@ -30,9 +31,9 @@ public static class TakeAttendanceEndpoints
         return app;
     }
 
-    private sealed record Access(AttendanceSession Session, bool CanTake, bool CanEdit, bool CanView);
+    internal sealed record Access(AttendanceSession Session, bool CanTake, bool CanEdit, bool CanView);
 
-    private static async Task<(Access? Access, IResult? Problem)> OpenAsync(
+    internal static async Task<(Access? Access, IResult? Problem)> OpenAsync(
         Guid id, HttpContext http, LmsDbContext db, ICurrentContext current, IClientCalendar calendar, IAccessEvaluator evaluator, CancellationToken ct)
     {
         var session = await db.Set<AttendanceSession>().SingleOrDefaultAsync(s => s.Id == id, ct);
@@ -116,6 +117,7 @@ public static class TakeAttendanceEndpoints
         }
 
         var byStudent = records.ToDictionary(r => r.StudentProfileId);
+        var proposal = session.IsProposal; // a live proposal: edits are saved, but the session is taken (and the family told) only on confirmation (L11 item 10)
         var kind = AttendanceTaker.ChangeKind(taken, inWindow);
         var changes = new List<AttendanceRecordChange>();
         var studentOf = new Dictionary<Guid, Guid>();
@@ -127,12 +129,16 @@ public static class TakeAttendanceEndpoints
                 record = new AttendanceRecord(session, student, status, cleanNote);
                 db.Add(record);
                 studentOf[record.Id] = student;
-                changes.Add(new AttendanceRecordChange(record, null, status, kind, current.UserId!.Value, body.Reason?.Trim(), now));
+                if (!proposal)
+                {
+                    changes.Add(new AttendanceRecordChange(record, null, status, kind, current.UserId!.Value, body.Reason?.Trim(), now));
+                }
+
                 continue;
             }
 
             studentOf[record.Id] = student;
-            if (record.Status != status)
+            if (record.Status != status && !proposal)
             {
                 changes.Add(new AttendanceRecordChange(record, record.Status, status, kind, current.UserId!.Value, body.Reason?.Trim(), now));
             }
@@ -140,7 +146,15 @@ public static class TakeAttendanceEndpoints
             record.Set(status, cleanNote);
         }
 
-        session.RecordSave(current.UserId!.Value, now);
+        if (proposal)
+        {
+            session.RecordProposalEdit();
+        }
+        else
+        {
+            session.RecordSave(current.UserId!.Value, now);
+        }
+
         db.AddRange(changes);
         try
         {
@@ -182,8 +196,8 @@ public static class TakeAttendanceEndpoints
     }
 }
 
-/// <summary>Builds <see cref="AttendanceRecordsDto"/>: the session row, one row per roster student with the mark, and (Live, Task 18) the unmatched participants.</summary>
-public sealed class AttendanceRecordsMapper(LmsDbContext db, AttendanceRoster roster, AttendanceListMapper listMapper, IClientCalendar calendar)
+/// <summary>Builds <see cref="AttendanceRecordsDto"/>: the session row, one row per roster student with the mark, and for a Live session the minutes in the room, the proposal flag and the unmatched guests (Task 18).</summary>
+public sealed class AttendanceRecordsMapper(LmsDbContext db, AttendanceRoster roster, AttendanceListMapper listMapper, IClientCalendar calendar, LiveProposalService liveProposals)
 {
     public async Task<AttendanceRecordsDto> ToDtoAsync(AttendanceSession session, Guid callerUserId, CancellationToken ct)
     {
@@ -192,11 +206,13 @@ public sealed class AttendanceRecordsMapper(LmsDbContext db, AttendanceRoster ro
         var studentIds = await roster.StudentIdsAsync(session.ClassCourseId, session.Date, ct);
         var students = await db.Set<StudentProfile>().Where(s => studentIds.Contains(s.Id)).OrderBy(s => s.StudentCode).ToListAsync(ct);
         var records = await db.Set<AttendanceRecord>().Where(r => r.AttendanceSessionId == session.Id).ToDictionaryAsync(r => r.StudentProfileId, ct);
+        var live = session.Source == AttendanceSession.LiveSource ? await liveProposals.ViewAsync(session, students.Select(s => s.Id).ToList(), ct) : null;
         var rows = students.Select(s =>
         {
             records.TryGetValue(s.Id, out var r);
-            return new AttendanceRecordDto(s.Id, s.NameAr, s.NameEn, s.StudentCode, r?.Status, r?.Note, null, null, false);
+            var presence = live?.Presence.GetValueOrDefault(s.Id);
+            return new AttendanceRecordDto(s.Id, s.NameAr, s.NameEn, s.StudentCode, r?.Status, r?.Note, presence?.Minutes, presence?.FirstJoinedAtUtc, session.IsProposal);
         }).ToList();
-        return new AttendanceRecordsDto(item, rows, [], session.Source != AttendanceSession.LiveSource);
+        return new AttendanceRecordsDto(item, rows, live?.Unmatched ?? [], live?.ParticipantsAvailable ?? true);
     }
 }

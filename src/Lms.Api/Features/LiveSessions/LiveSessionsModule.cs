@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Lms.Api.Infrastructure;
 using Lms.Domain.LiveSessions;
 using Lms.Infrastructure.LiveSessions;
@@ -15,7 +16,7 @@ public sealed class LiveSessionsModule : ILmsModule
         // No provider until the Zoom provider (Task 5) is registered when Zoom is configured: a create answers 409
         // provider_not_configured. The integration test host registers the fake provider instead.
         services.AddSingleton<IMeetingProvider, NotConfiguredMeetingProvider>();
-        services.AddSingleton<ILiveSessionAttendanceSink, NoOpAttendanceSink>();
+        services.TryAddSingleton<ILiveSessionAttendanceSink, NoOpAttendanceSink>(); // M5 attendance registers the real sink first (module order)
         services.AddScoped<LiveSessionService>();
         services.AddScoped<LiveSessionHandlers>();
         services.AddScoped<LiveSessionJoinHandlers>();
