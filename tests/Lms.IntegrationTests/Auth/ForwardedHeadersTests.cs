@@ -35,7 +35,7 @@ public sealed class ForwardedHeadersTests(LmsApiFactory factory)
     [Fact]
     public async Task Rate_limit_uses_forwarded_ip_from_known_proxy()
     {
-        var host = new AuthTestHost(factory, permitLimit: 5, remoteIp: ProxyIp, knownProxies: [ProxyIp]);
+        using var host = new AuthTestHost(factory, permitLimit: 5, remoteIp: ProxyIp, knownProxies: [ProxyIp]);
         using var browser = host.NewBrowser();
 
         // Five requests of client A use up A's budget; the sixth from A is limited...
@@ -53,7 +53,7 @@ public sealed class ForwardedHeadersTests(LmsApiFactory factory)
     [Fact]
     public async Task Forwarded_header_from_unknown_proxy_is_ignored()
     {
-        var host = new AuthTestHost(factory, permitLimit: 5, remoteIp: "198.51.100.201");
+        using var host = new AuthTestHost(factory, permitLimit: 5, remoteIp: "198.51.100.201");
         using var browser = host.NewBrowser();
 
         // Every request claims a different client, but they all come from the same untrusted peer: one budget.
@@ -68,7 +68,7 @@ public sealed class ForwardedHeadersTests(LmsApiFactory factory)
     [Fact]
     public async Task Forwarded_ip_from_a_known_proxy_is_what_security_events_record()
     {
-        var host = new AuthTestHost(factory, remoteIp: "198.51.100.202", knownProxies: ["198.51.100.202"]);
+        using var host = new AuthTestHost(factory, remoteIp: "198.51.100.202", knownProxies: ["198.51.100.202"]);
         var user = await host.CreateUserAsync();
         using var browser = host.NewBrowser();
         var request = new HttpRequestMessage(HttpMethod.Get, "/Account/Login");
@@ -97,7 +97,7 @@ public sealed class ForwardedHeadersTests(LmsApiFactory factory)
     [Fact]
     public async Task Forwarded_proto_from_unknown_proxy_does_not_change_the_scheme()
     {
-        var host = new AuthTestHost(factory, remoteIp: "198.51.100.203");
+        using var host = new AuthTestHost(factory, remoteIp: "198.51.100.203");
         using var browser = host.NewBrowser();
         var request = new HttpRequestMessage(HttpMethod.Get, "/health");
         request.Headers.Add("X-Forwarded-Proto", "https");
@@ -113,7 +113,7 @@ public sealed class ForwardedHeadersTests(LmsApiFactory factory)
     {
         // The client sent "X-Forwarded-For: 203.0.113.1" itself; the trusted proxy appended the address it really saw.
         // Only the entry added by the proxy counts, so rotating the spoofed part must not give a fresh rate-limit bucket.
-        var host = new AuthTestHost(factory, permitLimit: 5, remoteIp: "198.51.100.210", knownProxies: ["198.51.100.210"]);
+        using var host = new AuthTestHost(factory, permitLimit: 5, remoteIp: "198.51.100.210", knownProxies: ["198.51.100.210"]);
         using var browser = host.NewBrowser();
 
         for (var i = 0; i < 5; i++)

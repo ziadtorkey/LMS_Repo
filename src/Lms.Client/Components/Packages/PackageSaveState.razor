@@ -1,0 +1,26 @@
+@using Lms.Client.Services.Packages
+
+@* The quiet save state next to the title (design spec §5.2): nothing when idle, never colour alone, a polite status for assistive technology. *@
+<span class="lms-save-state @(Status == PackageSaveStatus.Failed ? "lms-save-failed" : null)" role="status" aria-live="polite" data-testid="package-save-state" data-status="@Status">
+    @switch (Status)
+    {
+        case PackageSaveStatus.Saving:
+            <MudProgressCircular Size="Size.Small" Indeterminate="true" aria-hidden="true" />
+            @L["Package_Saving"]
+            break;
+        case PackageSaveStatus.Saved:
+            <MudIcon Icon="@Icons.Material.Rounded.CloudDone" Size="Size.Small" aria-hidden="true" />
+            @L["Package_Saved"]
+            break;
+        case PackageSaveStatus.Failed:
+            <MudIcon Icon="@Icons.Material.Rounded.CloudOff" Size="Size.Small" aria-hidden="true" />
+            @L["Package_SaveFailed"]
+            <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="OnRetry" data-testid="package-save-retry">@L["Package_Retry"]</MudButton>
+            break;
+    }
+</span>
+
+@code {
+    [Parameter] public PackageSaveStatus Status { get; set; }
+    [Parameter] public EventCallback OnRetry { get; set; }
+}

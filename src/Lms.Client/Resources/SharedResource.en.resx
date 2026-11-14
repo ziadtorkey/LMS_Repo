@@ -391,7 +391,6 @@
   <data name="Notif_Preferences" xml:space="preserve"><value>Notification preferences</value></data>
   <data name="Channel_InApp" xml:space="preserve"><value>In-app</value></data>
   <data name="Channel_Email" xml:space="preserve"><value>Email</value></data>
-  <data name="Channel_Sms" xml:space="preserve"><value>SMS</value></data>
   <data name="Channel_Push" xml:space="preserve"><value>Push</value></data>
   <data name="Notif_Access_RoleAssigned" xml:space="preserve"><value>You were given the role {RoleName} at {OrgUnitName}.</value></data>
   <data name="Notif_Access_RoleRemoved" xml:space="preserve"><value>Your role {RoleName} at {OrgUnitName} was removed.</value></data>
@@ -1494,6 +1493,88 @@
   <data name="Error_package_reason_compression_ratio" xml:space="preserve"><value>The package is compressed in an unsafe way. Export it again.</value></data>
   <data name="Error_package_reason_symlink" xml:space="preserve"><value>The package contains links to other files, which aren't allowed.</value></data>
   <data name="Error_package_reason_duplicate_name" xml:space="preserve"><value>Two files in the package have the same name.</value></data>
+  <data name="Package_Start" xml:space="preserve"><value>Start</value></data>
+  <data name="Package_Resume" xml:space="preserve"><value>Resume</value></data>
+  <data name="Package_Preview" xml:space="preserve"><value>Preview</value></data>
+  <data name="Package_PreviewBanner" xml:space="preserve"><value>Preview: nothing is recorded.</value></data>
+  <data name="Package_ThirdParty" xml:space="preserve"><value>This activity comes from another provider. Some parts may not work with a keyboard or screen reader.</value></data>
+  <data name="Package_PhoneHint" xml:space="preserve"><value>Works best on a larger screen.</value></data>
+  <data name="Package_State_NotStarted" xml:space="preserve"><value>Not started</value></data>
+  <data name="Package_State_InProgress" xml:space="preserve"><value>In progress</value></data>
+  <data name="Package_State_Completed" xml:space="preserve"><value>Completed</value></data>
+  <data name="Package_Exit" xml:space="preserve"><value>Exit</value></data>
+  <data name="Package_Fullscreen" xml:space="preserve"><value>Full screen</value></data>
+  <data name="Package_ExitFullscreen" xml:space="preserve"><value>Exit full screen</value></data>
+  <data name="Package_Saving" xml:space="preserve"><value>Saving…</value></data>
+  <data name="Package_Saved" xml:space="preserve"><value>Saved</value></data>
+  <data name="Package_SaveFailed" xml:space="preserve"><value>Couldn't save. Retrying…</value></data>
+  <data name="Package_Retry" xml:space="preserve"><value>Retry</value></data>
+  <data name="Package_Expired" xml:space="preserve"><value>This activity timed out. Reload to continue where you left off.</value></data>
+  <data name="Package_Reload" xml:space="preserve"><value>Reload</value></data>
+  <data name="Package_OpenAgain" xml:space="preserve"><value>Open again</value></data>
+  <data name="Package_NotReady" xml:space="preserve"><value>This activity isn't ready yet. Try again later.</value></data>
+  <data name="Package_FrameTitle" xml:space="preserve"><value>{0} (interactive activity)</value></data>
+  <data name="Module_NotAvailableTitle" xml:space="preserve"><value>This activity isn't available</value></data>
+  <data name="Module_NotAvailableText" xml:space="preserve"><value>It may have been hidden or removed. Go back to the course to see what's open to you.</value></data>
+  <data name="Assignment_AllowFiles" xml:space="preserve"><value>Allow file uploads</value></data>
+  <data name="Assignment_AllowText" xml:space="preserve"><value>Allow written text</value></data>
+  <data name="Assignment_Attachments" xml:space="preserve"><value>Attachments</value></data>
+  <data name="Assignment_BlockNeedsDue" xml:space="preserve"><value>Set a due date when late hand-ins are not accepted.</value></data>
+  <data name="Assignment_Due" xml:space="preserve"><value>Due</value></data>
+  <data name="Assignment_Edit" xml:space="preserve"><value>Edit assignment</value></data>
+  <data name="Assignment_InstructionsAr" xml:space="preserve"><value>Instructions (Arabic)</value></data>
+  <data name="Assignment_InstructionsEn" xml:space="preserve"><value>Instructions (English)</value></data>
+  <data name="Assignment_LatePolicy" xml:space="preserve"><value>Late hand-ins</value></data>
+  <data name="Assignment_Lesson" xml:space="preserve"><value>Lesson</value></data>
+  <data name="Assignment_MaxGrade" xml:space="preserve"><value>Maximum grade</value></data>
+  <data name="Assignment_MaxGradeInvalid" xml:space="preserve"><value>The maximum grade must be between 0.01 and 1000.</value></data>
+  <data name="Assignment_MinScore" xml:space="preserve"><value>Minimum score (%)</value></data>
+  <data name="Assignment_NeedSubmitType" xml:space="preserve"><value>Allow text, files or both.</value></data>
+  <data name="Assignment_PenaltyPercent" xml:space="preserve"><value>Penalty (%)</value></data>
+  <data name="Assignment_PenaltyRequired" xml:space="preserve"><value>Enter a penalty from 1 to 100.</value></data>
+  <data name="Assignment_RemoveAttachment" xml:space="preserve"><value>Remove attachment</value></data>
+  <data name="Assignment_Resubmission" xml:space="preserve"><value>Resubmission</value></data>
+  <data name="Assignments_Counts" xml:space="preserve"><value>{0} submitted · {1} graded</value></data>
+  <data name="Assignments_Handed" xml:space="preserve"><value>Hand-ins</value></data>
+  <data name="Assignments_Name" xml:space="preserve"><value>Assignment</value></data>
+  <data name="Assignments_New" xml:space="preserve"><value>New assignment</value></data>
+  <data name="Assignments_Submissions" xml:space="preserve"><value>Submissions</value></data>
+  <data name="CompletionRule_Score" xml:space="preserve"><value>When a minimum score is reached</value></data>
+  <data name="CompletionRule_Submit" xml:space="preserve"><value>When submitted</value></data>
+  <data name="Grade_AboveMax" xml:space="preserve"><value>The grade cannot be above {0}.</value></data>
+  <data name="Grade_Annotated" xml:space="preserve"><value>Annotated file</value></data>
+  <data name="Grade_Feedback" xml:space="preserve"><value>Feedback</value></data>
+  <data name="Grade_NoWork" xml:space="preserve"><value>No text or files.</value></data>
+  <data name="Grade_Out" xml:space="preserve"><value>Grade (out of {0})</value></data>
+  <data name="Grade_Penalty" xml:space="preserve"><value>Late penalty {0}%: final grade {1}</value></data>
+  <data name="Grade_RemoveAnnotated" xml:space="preserve"><value>Remove annotated file</value></data>
+  <data name="Grade_Returned" xml:space="preserve"><value>Grade saved and returned to the student.</value></data>
+  <data name="Grade_Save" xml:space="preserve"><value>Save grade</value></data>
+  <data name="Grade_SaveReturn" xml:space="preserve"><value>Save and return to student</value></data>
+  <data name="Grade_Saved" xml:space="preserve"><value>Grade saved.</value></data>
+  <data name="Grade_Title" xml:space="preserve"><value>Grade submission</value></data>
+  <data name="Grade_Work" xml:space="preserve"><value>Student's work</value></data>
+  <data name="LatePolicy_Allow" xml:space="preserve"><value>Accepted, marked late</value></data>
+  <data name="LatePolicy_Block" xml:space="preserve"><value>Not accepted</value></data>
+  <data name="LatePolicy_Penalty" xml:space="preserve"><value>Accepted with a penalty</value></data>
+  <data name="ResubmissionRule_None" xml:space="preserve"><value>Not allowed</value></data>
+  <data name="ResubmissionRule_UntilDue" xml:space="preserve"><value>Until the due date</value></data>
+  <data name="ResubmissionRule_UntilGraded" xml:space="preserve"><value>Until graded</value></data>
+  <data name="SubmissionStatus_Draft" xml:space="preserve"><value>Draft</value></data>
+  <data name="SubmissionStatus_Graded" xml:space="preserve"><value>Graded</value></data>
+  <data name="SubmissionStatus_Late" xml:space="preserve"><value>Late</value></data>
+  <data name="SubmissionStatus_None" xml:space="preserve"><value>Not handed in</value></data>
+  <data name="SubmissionStatus_Returned" xml:space="preserve"><value>Returned</value></data>
+  <data name="SubmissionStatus_Submitted" xml:space="preserve"><value>Submitted</value></data>
+  <data name="Submissions_At" xml:space="preserve"><value>Handed in</value></data>
+  <data name="Submissions_Grade" xml:space="preserve"><value>Grade</value></data>
+  <data name="Submissions_GradeAction" xml:space="preserve"><value>Grade</value></data>
+  <data name="Submissions_Late" xml:space="preserve"><value>Late</value></data>
+  <data name="Submissions_OnlyLate" xml:space="preserve"><value>Late only</value></data>
+  <data name="Submissions_Status" xml:space="preserve"><value>Status</value></data>
+  <data name="Submissions_Student" xml:space="preserve"><value>Student</value></data>
+  <data name="Submissions_Title" xml:space="preserve"><value>Assignment submissions</value></data>
+  <data name="Assignment_MinScoreUnknown" xml:space="preserve"><value>The minimum score could not be read. Close the dialog and try again.</value></data>
   <data name="Nav_Eligibility" xml:space="preserve"><value>Teacher eligibility</value></data>
   <data name="Eligibility_Title" xml:space="preserve"><value>Teacher eligibility</value></data>
   <data name="Eligibility_Help" xml:space="preserve"><value>Say which teachers may teach which courses at a unit. Only eligible teachers can be assigned to a class course.</value></data>
@@ -1543,6 +1624,95 @@
   <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>The package didn't pass the security check.</value></data>
   <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>The file isn't a valid .zip archive. Export the package again.</value></data>
   <data name="Error_package_reason_bad_name" xml:space="preserve"><value>Some file names in the package are too long, nested too deep or reserved. Rename them and export again.</value></data>
+  <data name="ClassCourse_TabLive" xml:space="preserve"><value>Live sessions</value></data>
+  <data name="Live_Title" xml:space="preserve"><value>Live sessions</value></data>
+  <data name="Live_Subtitle" xml:space="preserve"><value>Online classes for this course. Students join from the lesson.</value></data>
+  <data name="Live_Schedule" xml:space="preserve"><value>Schedule a session</value></data>
+  <data name="Live_ScheduleAction" xml:space="preserve"><value>Schedule</value></data>
+  <data name="Live_Filter" xml:space="preserve"><value>Which sessions</value></data>
+  <data name="Live_Upcoming" xml:space="preserve"><value>Upcoming</value></data>
+  <data name="Live_Past" xml:space="preserve"><value>Past</value></data>
+  <data name="Live_Col_When" xml:space="preserve"><value>When</value></data>
+  <data name="Live_Col_Session" xml:space="preserve"><value>Session</value></data>
+  <data name="Live_Col_Lesson" xml:space="preserve"><value>Lesson</value></data>
+  <data name="Live_Col_Status" xml:space="preserve"><value>Status</value></data>
+  <data name="Live_Col_Recording" xml:space="preserve"><value>Recording</value></data>
+  <data name="Live_Col_Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="Live_Edit" xml:space="preserve"><value>Edit session</value></data>
+  <data name="Live_RecordingLink" xml:space="preserve"><value>Recording link</value></data>
+  <data name="Live_CancelSession" xml:space="preserve"><value>Cancel session</value></data>
+  <data name="Live_CancelConfirm" xml:space="preserve"><value>Cancel this session? Students will no longer see it.</value></data>
+  <data name="Live_Recording" xml:space="preserve"><value>Recording</value></data>
+  <data name="Live_Empty_Upcoming_Title" xml:space="preserve"><value>No upcoming sessions</value></data>
+  <data name="Live_Empty_Upcoming_Staff" xml:space="preserve"><value>Schedule a session so students can join from the lesson.</value></data>
+  <data name="Live_Empty_Upcoming_Student" xml:space="preserve"><value>Your teacher hasn't scheduled any yet.</value></data>
+  <data name="Live_Empty_Past_Title" xml:space="preserve"><value>No past sessions</value></data>
+  <data name="Live_Empty_Past_Text" xml:space="preserve"><value>Sessions appear here after they end.</value></data>
+  <data name="Live_SeriesCaption" xml:space="preserve"><value>Weekly · {0} of {1}</value></data>
+  <data name="Live_SeriesCaptionShort" xml:space="preserve"><value>Weekly</value></data>
+  <data name="Live_ProviderNotConfigured" xml:space="preserve"><value>Live sessions aren't set up yet. Ask your platform administrator.</value></data>
+  <data name="Live_ProviderUnhealthy" xml:space="preserve"><value>Zoom isn't responding right now. New sessions may fail; existing ones keep working.</value></data>
+  <data name="Live_FeatureOff" xml:space="preserve"><value>Live sessions are turned off for this school.</value></data>
+  <data name="Live_Error_Busy" xml:space="preserve"><value>Zoom is busy. Try again in about {0}.</value></data>
+  <data name="Live_Error_BusyShort" xml:space="preserve"><value>Zoom is busy. Try again in a minute.</value></data>
+  <data name="Live_DialogTitleNew" xml:space="preserve"><value>Schedule a live session</value></data>
+  <data name="Live_DialogTitleEdit" xml:space="preserve"><value>Edit live session</value></data>
+  <data name="Live_SectionSession" xml:space="preserve"><value>Session</value></data>
+  <data name="Live_SectionTime" xml:space="preserve"><value>Time</value></data>
+  <data name="Live_SectionRepeat" xml:space="preserve"><value>Repeat</value></data>
+  <data name="Live_SectionModule" xml:space="preserve"><value>In the lesson</value></data>
+  <data name="Live_TitleHelp" xml:space="preserve"><value>Participants see this title in Zoom.</value></data>
+  <data name="Live_Lesson" xml:space="preserve"><value>Lesson</value></data>
+  <data name="Live_Date" xml:space="preserve"><value>Date</value></data>
+  <data name="Live_StartTime" xml:space="preserve"><value>Start time</value></data>
+  <data name="Live_Duration" xml:space="preserve"><value>Duration</value></data>
+  <data name="Live_TimeZone" xml:space="preserve"><value>Times are in your time zone:</value></data>
+  <data name="Live_Repeat_Once" xml:space="preserve"><value>Once</value></data>
+  <data name="Live_Repeat_Weekly" xml:space="preserve"><value>Weekly</value></data>
+  <data name="Live_Every" xml:space="preserve"><value>Repeats</value></data>
+  <data name="Live_Days" xml:space="preserve"><value>On these days</value></data>
+  <data name="Live_Ends" xml:space="preserve"><value>Ends</value></data>
+  <data name="Live_EndsOn" xml:space="preserve"><value>On date</value></data>
+  <data name="Live_EndsAfter" xml:space="preserve"><value>After</value></data>
+  <data name="Live_EndsAfterSuffix" xml:space="preserve"><value>sessions</value></data>
+  <data name="Live_EndsRequired" xml:space="preserve"><value>Choose an end date or a number of sessions.</value></data>
+  <data name="Live_TooMany" xml:space="preserve"><value>A series can have at most {0} sessions. Choose an earlier end date or fewer sessions.</value></data>
+  <data name="Live_EditSeriesTitle" xml:space="preserve"><value>Edit a repeating session</value></data>
+  <data name="Live_CancelSeriesTitle" xml:space="preserve"><value>Cancel a repeating session</value></data>
+  <data name="Live_ScopeLabel" xml:space="preserve"><value>Which sessions</value></data>
+  <data name="Live_Continue" xml:space="preserve"><value>Continue</value></data>
+  <data name="Live_CancelSessions" xml:space="preserve"><value>Cancel sessions</value></data>
+  <data name="Live_RecordingTitle" xml:space="preserve"><value>Recording link</value></data>
+  <data name="Live_RecordingUrl" xml:space="preserve"><value>Link</value></data>
+  <data name="Live_RecordingHelp" xml:space="preserve"><value>Paste a link that starts with https://.</value></data>
+  <data name="Live_RecordingOpensOn" xml:space="preserve"><value>Opens on</value></data>
+  <data name="Live_RecordingInvalid" xml:space="preserve"><value>Use a link that starts with https:// or http://.</value></data>
+  <data name="Live_RecordingBy_Provider" xml:space="preserve"><value>Added by Zoom</value></data>
+  <data name="Live_RecordingBy_Manual" xml:space="preserve"><value>Added by a teacher</value></data>
+  <data name="Live_Unit_Minute_One" xml:space="preserve"><value>1 min</value></data>
+  <data name="Live_Unit_Minute_Two" xml:space="preserve"><value>2 min</value></data>
+  <data name="Live_Unit_Minute_Few" xml:space="preserve"><value>{0} min</value></data>
+  <data name="Live_Unit_Minute_Many" xml:space="preserve"><value>{0} min</value></data>
+  <data name="Live_Duration_Minute_One" xml:space="preserve"><value>1 min</value></data>
+  <data name="Live_Duration_Minute_Two" xml:space="preserve"><value>2 min</value></data>
+  <data name="Live_Duration_Minute_Few" xml:space="preserve"><value>{0} min</value></data>
+  <data name="Live_Duration_Minute_Many" xml:space="preserve"><value>{0} min</value></data>
+  <data name="Live_Unit_Session_One" xml:space="preserve"><value>1 session</value></data>
+  <data name="Live_Unit_Session_Two" xml:space="preserve"><value>2 sessions</value></data>
+  <data name="Live_Unit_Session_Few" xml:space="preserve"><value>{0} sessions</value></data>
+  <data name="Live_Unit_Session_Many" xml:space="preserve"><value>{0} sessions</value></data>
+  <data name="Live_MoreSessions_One" xml:space="preserve"><value>and 1 more</value></data>
+  <data name="Live_MoreSessions_Two" xml:space="preserve"><value>and 2 more</value></data>
+  <data name="Live_MoreSessions_Few" xml:space="preserve"><value>and {0} more</value></data>
+  <data name="Live_MoreSessions_Many" xml:space="preserve"><value>and {0} more</value></data>
+  <data name="Live_LaterSessions_One" xml:space="preserve"><value>and 1 later session</value></data>
+  <data name="Live_LaterSessions_Two" xml:space="preserve"><value>and 2 later sessions</value></data>
+  <data name="Live_LaterSessions_Few" xml:space="preserve"><value>and {0} later sessions</value></data>
+  <data name="Live_LaterSessions_Many" xml:space="preserve"><value>and {0} later sessions</value></data>
+  <data name="Live_EveryWeeks_One" xml:space="preserve"><value>Every week</value></data>
+  <data name="Live_EveryWeeks_Two" xml:space="preserve"><value>Every 2 weeks</value></data>
+  <data name="Live_EveryWeeks_Few" xml:space="preserve"><value>Every {0} weeks</value></data>
+  <data name="Live_EveryWeeks_Many" xml:space="preserve"><value>Every {0} weeks</value></data>
   <data name="Students_Subtitle" xml:space="preserve"><value>Students of your organization, their class and guardians.</value></data>
   <data name="Students_EmptyTitle" xml:space="preserve"><value>No matching students</value></data>
   <data name="Students_EmptyText" xml:space="preserve"><value>Change the filters or add a new student.</value></data>
@@ -1622,6 +1792,12 @@
   <data name="AuditEntity_GradeEntry" xml:space="preserve"><value>Grade entry</value></data>
   <data name="AuditEntity_GradeSnapshot" xml:space="preserve"><value>Grade snapshot</value></data>
   <data name="PermModule_Grades" xml:space="preserve"><value>Grades</value></data>
+  <data name="NavSection_Structure" xml:space="preserve"><value>Structure</value></data>
+  <data name="NavSection_People" xml:space="preserve"><value>People</value></data>
+  <data name="NavSection_Academic" xml:space="preserve"><value>Academic</value></data>
+  <data name="NavSection_Security" xml:space="preserve"><value>Security and settings</value></data>
+  <data name="App_Subtitle" xml:space="preserve"><value>Academic platform</value></data>
+  <data name="Nav_Main" xml:space="preserve"><value>Main navigation</value></data>
   <data name="Error_timetable_conflict" xml:space="preserve"><value>This slot clashes with another one: the teacher or the class is already booked at that time.</value></data>
   <data name="Error_period_overlap" xml:space="preserve"><value>The period overlaps another period of this school, or it does not start before it ends.</value></data>
   <data name="Error_period_in_use" xml:space="preserve"><value>A timetable slot uses this period, so it cannot be deleted.</value></data>
@@ -1761,13 +1937,10 @@
   <data name="PermModule_Announcements" xml:space="preserve"><value>Announcements</value></data>
   <data name="PermModule_Comms" xml:space="preserve"><value>Communication</value></data>
   <data name="Setting_Comms_EmailEnabled" xml:space="preserve"><value>Allow email notices</value></data>
-  <data name="Setting_Comms_SmsEnabled" xml:space="preserve"><value>Allow SMS notices</value></data>
   <data name="Setting_Comms_PushEnabled" xml:space="preserve"><value>Allow push notices</value></data>
   <data name="Setting_Comms_MaxEmailPerDay" xml:space="preserve"><value>Emails per day (client)</value></data>
-  <data name="Setting_Comms_MaxSmsPerDay" xml:space="preserve"><value>SMS per day (client)</value></data>
   <data name="Setting_Comms_MaxPushPerDay" xml:space="preserve"><value>Push notices per day (client)</value></data>
   <data name="Setting_Comms_MaxEmailPerUserPerDay" xml:space="preserve"><value>Emails per person per day</value></data>
-  <data name="Setting_Comms_MaxSmsPerUserPerDay" xml:space="preserve"><value>SMS per person per day</value></data>
   <data name="Setting_Comms_MaxPushPerUserPerDay" xml:space="preserve"><value>Push notices per person per day</value></data>
   <data name="Setting_Comms_QuietHours_Enabled" xml:space="preserve"><value>Quiet hours</value></data>
   <data name="Setting_Comms_QuietHours_Start" xml:space="preserve"><value>Quiet hours start</value></data>
@@ -1777,6 +1950,7 @@
   <data name="Setting_Messaging_MaxPerMinute" xml:space="preserve"><value>Messages per minute</value></data>
   <data name="Setting_Messaging_MaxNewConversationsPerDay" xml:space="preserve"><value>New conversations per day</value></data>
   <data name="Setting_Messaging_MaxGroupSize" xml:space="preserve"><value>Largest group conversation</value></data>
+  <data name="Setting_Messaging_UploadsPerMinute" xml:space="preserve"><value>Attachment uploads per minute</value></data>
   <data name="Setting_Announcements_MaxPerAuthorPerDay" xml:space="preserve"><value>Announcements per author per day</value></data>
   <data name="NotifEvent_Messages_NewMessage" xml:space="preserve"><value>New message</value></data>
   <data name="Notif_Messages_NewMessage" xml:space="preserve"><value>{SenderName} sent you a message.</value></data>
@@ -1808,6 +1982,18 @@
   <data name="Msg_Reason_Spam" xml:space="preserve"><value>Spam</value></data>
   <data name="Msg_Reason_Safety" xml:space="preserve"><value>Safety concern</value></data>
   <data name="Msg_Reason_Other" xml:space="preserve"><value>Other</value></data>
+  <data name="Msg_ReadOnly_group_students_read_only" xml:space="preserve"><value>Only the teacher and staff post in this group. You can reply to the teacher privately.</value></data>
+  <data name="Msg_ReadOnly_group_guardians_read_only" xml:space="preserve"><value>Only staff post in this group.</value></data>
+  <data name="Msg_ReadOnly_rule" xml:space="preserve"><value>This conversation is read-only because messaging rules changed.</value></data>
+  <data name="Msg_ReadOnly_blocked_or_rule" xml:space="preserve"><value>You cannot send messages in this conversation.</value></data>
+  <data name="Msg_ReadOnly_restricted" xml:space="preserve"><value>Your messaging is restricted for now.</value></data>
+  <data name="Msg_ReadOnly_locked" xml:space="preserve"><value>A moderator locked this conversation.</value></data>
+  <data name="Msg_Denied_rule" xml:space="preserve"><value>You cannot send messages to this person.</value></data>
+  <data name="Msg_Denied_relationship" xml:space="preserve"><value>You can only message people you share a class with.</value></data>
+  <data name="Msg_Denied_restricted" xml:space="preserve"><value>Your messaging is restricted for now.</value></data>
+  <data name="Msg_Denied_blocked_or_rule" xml:space="preserve"><value>You cannot send messages to this person.</value></data>
+  <data name="Msg_Denied_private_group_with_student" xml:space="preserve"><value>A group with a student needs at least three members.</value></data>
+  <data name="Msg_Denied_group_full" xml:space="preserve"><value>This group has reached its size limit.</value></data>
   <data name="Msg_ReportStatus_Open" xml:space="preserve"><value>Open</value></data>
   <data name="Msg_ReportStatus_Dismissed" xml:space="preserve"><value>Dismissed</value></data>
   <data name="Msg_ReportStatus_Actioned" xml:space="preserve"><value>Action taken</value></data>
@@ -1823,6 +2009,8 @@
   <data name="Ann_TargetKind_Class" xml:space="preserve"><value>Class</value></data>
   <data name="Ann_TargetKind_ClassCourse" xml:space="preserve"><value>Course of a class</value></data>
   <data name="Ann_TargetKind_Group" xml:space="preserve"><value>Group</value></data>
+  <data name="Ann_Source_CourseBoard" xml:space="preserve"><value>Course board</value></data>
+  <data name="Ann_Source_School" xml:space="preserve"><value>School</value></data>
   <data name="Ann_Status_Draft" xml:space="preserve"><value>Draft</value></data>
   <data name="Ann_Status_Scheduled" xml:space="preserve"><value>Scheduled</value></data>
   <data name="Ann_Status_Published" xml:space="preserve"><value>Published</value></data>
@@ -1846,7 +2034,7 @@
   <data name="Comms_PrefSource_Mandatory" xml:space="preserve"><value>Required</value></data>
   <data name="Msg_Rule_SameUnit" xml:space="preserve"><value>Anyone in the same unit</value></data>
   <data name="Error_group_read_only" xml:space="preserve"><value>Only staff can post in this group.</value></data>
-  <data name="Error_channel_not_allowed" xml:space="preserve"><value>This channel is not used for this account.</value></data>
-  <data name="Comms_ChannelState_NotAllowed" xml:space="preserve"><value>Not available for this account</value></data>
-  <data name="Comms_PrefSource_Policy" xml:space="preserve"><value>Set by the platform</value></data>
+  <data name="Error_conversation_read_only" xml:space="preserve"><value>You cannot post in this conversation.</value></data>
+  <data name="Error_comms_cap_above_ceiling" xml:space="preserve"><value>This limit is above the maximum the platform allows.</value></data>
+  <data name="Error_attachment_invalid" xml:space="preserve"><value>The attachment is not allowed: check its type and size, and the number of attachments.</value></data>
 </root>

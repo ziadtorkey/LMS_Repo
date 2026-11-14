@@ -31,8 +31,8 @@ public sealed class GuardianLinkTests(LmsApiFactory factory)
     public async Task Observer_is_called_after_commit_on_link_and_unlink()
     {
         var observer = new RecordingObserver(factory);
-        var host = factory.WithWebHostBuilder(b => b.ConfigureServices(s => s.AddSingleton<IGuardianLinkObserver>(observer)));
-        var kit = new GuardianTestKit(factory, host);
+        using var host = factory.WithWebHostBuilder(b => b.ConfigureServices(s => s.AddSingleton<IGuardianLinkObserver>(observer)));
+        using var kit = new GuardianTestKit(factory, host);
         var (tree, admin) = await kit.SetUpAsync("GL1");
         var student = await kit.StudentAsync(tree.School1);
 
@@ -50,8 +50,8 @@ public sealed class GuardianLinkTests(LmsApiFactory factory)
     public async Task Observer_is_also_told_about_primary_changes_and_guardian_edits()
     {
         var observer = new RecordingObserver(factory);
-        var host = factory.WithWebHostBuilder(b => b.ConfigureServices(s => s.AddSingleton<IGuardianLinkObserver>(observer)));
-        var kit = new GuardianTestKit(factory, host);
+        using var host = factory.WithWebHostBuilder(b => b.ConfigureServices(s => s.AddSingleton<IGuardianLinkObserver>(observer)));
+        using var kit = new GuardianTestKit(factory, host);
         var (tree, admin) = await kit.SetUpAsync("GL2");
         var student = await kit.StudentAsync(tree.School1);
         var first = await kit.LinkOkAsync(admin, student.Id, NewGuardian(primary: true));

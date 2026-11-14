@@ -71,8 +71,6 @@
     [Parameter] public IReadOnlyList<string>? Rules { get; set; }
     [Parameter] public string? VisibilityError { get; set; }
     [Parameter] public string? TargetError { get; set; }
-    /// <summary>The completion rules the module kind allows; null = the content rules (<c>CompletionRules.ForContent</c>).</summary>
-    [Parameter] public IReadOnlyList<string>? Rules { get; set; }
     /// <summary>False when the host form asks for the title itself (a live session's title is also the Zoom topic).</summary>
     [Parameter] public bool ShowTitles { get; set; } = true;
 

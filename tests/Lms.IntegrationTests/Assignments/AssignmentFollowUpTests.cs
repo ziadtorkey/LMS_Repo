@@ -16,10 +16,12 @@ namespace Lms.IntegrationTests.Assignments;
 
 /// <summary>QA 3's two Lows on #107: no 500 for an assignment whose user row is gone; invitations in the unit's culture.</summary>
 [Collection(ApiCollection.Name)]
-public sealed class AssignmentFollowUpTests
+public sealed class AssignmentFollowUpTests : IDisposable
 {
     private readonly LmsApiFactory _factory;
     private readonly WebApplicationFactory<Program> _host;
+
+    public void Dispose() => _host.Dispose();
     private readonly FakeEmailSender _emails = new();
 
     public AssignmentFollowUpTests(LmsApiFactory factory)
