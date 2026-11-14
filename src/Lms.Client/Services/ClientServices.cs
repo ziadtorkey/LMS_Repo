@@ -30,6 +30,7 @@ public static class ClientServices
         services.AddScoped<IYearStore, YearStore>();
         services.AddScoped<INotificationFeed, NotificationFeed>();
         services.AddSingleton<Lms.Client.Services.Packages.PackagePollOptions>();
+        services.AddScoped<ClientTimeZone>();
         services.AddScoped(sp => new Lms.Client.Services.Attendance.AttendanceDraftStore(sp.GetRequiredService<Microsoft.JSInterop.IJSRuntime>(), TimeProvider.System));
 
         if (configuration.GetValue<bool>("Lms:UseFakeApi"))

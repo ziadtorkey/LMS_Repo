@@ -9,6 +9,9 @@ public interface IAttendanceApi
     /// <summary>The caller's own sessions of a local day (today when null), substitute sessions included.</summary>
     Task<IReadOnlyList<AttendanceSessionListItemDto>> GetSessionsAsync(DateOnly? date = null, CancellationToken ct = default);
 
+    /// <summary>Sessions of a unit (and its subtree) in a date range, closed ones included, for Attendance.View holders (counselor, manager, supervisor).</summary>
+    Task<PagedResult<AttendanceSessionListItemDto>> SearchSessionsAsync(Guid unitId, AttendanceSessionSearchQuery query, CancellationToken ct = default);
+
     Task<AttendanceSessionListItemDto> CreateAdHocAsync(Guid classCourseId, CreateAdHocAttendanceSessionRequest request, CancellationToken ct = default);
 
     Task<AttendanceRecordsDto> GetRecordsAsync(Guid sessionId, CancellationToken ct = default);

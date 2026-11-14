@@ -11,6 +11,7 @@
 @inject PermissionState PermState
 @inject ICultureService Culture
 @inject IJSRuntime Js
+@inject ClientTimeZone Zone
 
 <PageTitle>@L["Att_Take_Title"]</PageTitle>
 <div @ref="_root" class="lms-att-page">
@@ -18,7 +19,7 @@
     {
         <LoadingState Lines="6" TestId="take-loading" />
     }
-    else if (!PermState.Has(Permissions.Attendance.Take) && !PermState.Has(Permissions.Attendance.Edit))
+    else if (!CanTake && !CanEditAfterWindow && !PermState.Has(Permissions.Attendance.View))
     {
         <Forbidden />
     }
@@ -36,10 +37,18 @@
         <PageHeader Title="@Culture.Pick(session.CourseNameAr, session.CourseNameEn)" TitleTestId="take-title"
                     Subtitle="@($"{Culture.Pick(session.ClassNameAr, session.ClassNameEn)} · ⁦{session.Date:yyyy-MM-dd}⁩")">
             <Actions>
-                <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.DoneAll" OnClick="MarkAllPresent" Disabled="@(!Editable)"
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="lms-touch" StartIcon="@Icons.Material.Rounded.DoneAll" OnClick="MarkAllPresent" Disabled="@(!Editable)"
                            data-testid="att-mark-all">@L["Att_Mark_All"]</MudButton>
             </Actions>
         </PageHeader>
+
+        @if (_markAllMessage is not null)
+        {
+            <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Class="mb-3" data-testid="att-mark-all-message" role="status">
+                @_markAllMessage
+                <MudButton Variant="Variant.Text" OnClick="UndoMarkAll" data-testid="att-mark-all-undo">@L["Att_Undo"]</MudButton>
+            </MudAlert>
+        }
 
         @if (Future)
         {
@@ -49,10 +58,14 @@
         {
             <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-3" data-testid="att-window-closed">@L["Att_Window_Closed_Readonly"]</MudAlert>
         }
+        else if (!Editable)
+        {
+            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-3" data-testid="att-read-only">@L["Att_Read_Only"]</MudAlert>
+        }
 
         @if (_draftOffer is not null)
         {
-            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-3" data-testid="att-draft-banner">
+            <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mb-3" data-testid="att-draft-banner">
                 @L["Att_Draft_Banner"]
                 <MudButton Variant="Variant.Text" OnClick="RestoreDraft" data-testid="att-draft-restore">@L["Att_Draft_Restore"]</MudButton>
                 <MudButton Variant="Variant.Text" OnClick="DiscardDraft" data-testid="att-draft-discard">@L["Att_Draft_Discard"]</MudButton>
@@ -104,9 +117,17 @@
                         <StatusSegmented Value="@status" ValueChanged="s => SetStatus(record.StudentId, s)" StudentName="@name" TestId="@record.StudentId.ToString()" Disabled="@(!Editable)" />
                         @if (status is AttendanceStatuses.Absent or AttendanceStatuses.Late)
                         {
+                            @if (!_notes.ContainsKey(record.StudentId) && !_notesOpen.Contains(record.StudentId))
+                            {
+                                <div><MudButton Variant="Variant.Text" Size="Size.Small" StartIcon="@Icons.Material.Rounded.NoteAdd" OnClick="() => _notesOpen.Add(record.StudentId)" Disabled="@(!Editable)"
+                                                data-testid="@($"att-note-add-{record.StudentId}")">@L["Att_Note_Add"]</MudButton></div>
+                            }
+                            else
+                            {
                             <MudTextField T="string" Value="@_notes.GetValueOrDefault(record.StudentId)" ValueChanged="n => SetNote(record.StudentId, n)" Label="@L["Att_Note"]"
                                           MaxLength="AttendanceLimits.NoteMaxLength" Variant="Variant.Outlined" Margin="Margin.Dense" Disabled="@(!Editable)"
                                           Class="lms-att-note" data-testid="@($"att-note-{record.StudentId}")" />
+                            }
                         }
                     </li>
                 }
@@ -137,13 +158,20 @@
     private string? _default, _search, _reason, _saveError;
     private bool _loading = true, _failed, _saving, _saved, _conflict, _reasonMissing;
     private Guid? _focusNext;
+    private string? _previousDefault;
+    private readonly HashSet<Guid> _notesOpen = [];
+    private string? _markAllMessage;
+    private TimeZoneInfo _zone = ClientCalendar.Zone();
 
     [Parameter] public Guid Id { get; set; }
 
-    private bool Future => _data is { } d && d.Session.Date > ClientCalendar.Today(d.Session.ServerNowUtc); // the session day is a client-zone day (D64), so is "today"
+    private bool Future => _data is { } d && d.Session.Date > ClientCalendar.Today(d.Session.ServerNowUtc, _zone); // the session day is a client-zone day (D64), so is "today"
     private bool AfterWindow => _data is { } d && d.Session.State == AttendanceSessionStates.Taken && d.Session.EditableUntilUtc is { } until && until < d.Session.ServerNowUtc;
+    private bool CanTake => PermState.Has(Permissions.Attendance.Take);
     private bool CanEditAfterWindow => PermState.Has(Permissions.Attendance.Edit);
-    private bool Editable => !Future && (!AfterWindow || CanEditAfterWindow);
+
+    /// <summary>Inside the window only Attendance.Take marks; after it only Attendance.Edit does (the server enforces both).</summary>
+    private bool Editable => !Future && (AfterWindow ? CanEditAfterWindow : CanTake);
     private bool CanSave => _data is not null && Editable && Unmarked == 0 && !_saving;
     private int Unmarked => _data?.Records.Count(r => Effective(r.StudentId) is null) ?? 0;
 
@@ -187,6 +215,7 @@
     {
         _loading = true;
         _failed = false;
+        _zone = await Zone.GetAsync();
         var (value, failed) = await ApiCalls.RunAsync(() => Api.GetRecordsAsync(Id), Navigation);
         _failed = failed;
         if (value is not null) await ApplyServerAsync(value, offerDraft: true);
@@ -236,8 +265,18 @@
     private async Task MarkAllPresent()
     {
         if (!Editable) return;
+        var newly = _data?.Records.Count(r => Effective(r.StudentId) is null) ?? 0;
+        _previousDefault = _default;
         _default = AttendanceStatuses.Present; // rows nobody has marked yet are Present; the teacher taps the exceptions
         await Changed();
+        _markAllMessage = string.Format(L["Att_Mark_All_Done"], newly);
+    }
+
+    private async Task UndoMarkAll()
+    {
+        _default = _previousDefault;
+        await Changed();
+        _markAllMessage = null;
     }
 
     private async Task Changed()
@@ -245,6 +284,7 @@
         _saved = false;
         _saveError = null;
         _conflict = false;
+        _markAllMessage = null; // any other change ends the undo
         Recount();
         if (_data is { } d)
         {

@@ -9,6 +9,7 @@
         var selected = Value == status;
         <button type="button" role="radio" class="@ButtonClass(status, selected)" aria-checked="@(selected ? "true" : "false")" tabindex="@(selected || (Value is null && i == 0) ? 0 : -1)"
                 disabled="@Disabled" @onclick="() => Choose(status)" data-testid="@($"att-{TestId}-{status}")" data-status="@status">
+            @if (selected) { <MudIcon Icon="@Icons.Material.Rounded.Check" Size="Size.Small" Class="lms-att-tick" data-testid="@($"att-tick-{TestId}-{status}")" /> }
             <MudIcon Icon="@IconOf(status)" Size="Size.Small" />
             <span class="lms-att-label">@L[$"Att_Status_{status}"]</span>
             <kbd class="lms-att-key" aria-hidden="true">@(i + 1)</kbd>
@@ -33,9 +34,9 @@
 
     private static string IconOf(string status) => status switch
     {
-        AttendanceStatuses.Present => Icons.Material.Rounded.Check,
-        AttendanceStatuses.Absent => Icons.Material.Rounded.Close,
+        AttendanceStatuses.Present => Icons.Material.Rounded.CheckCircle,
+        AttendanceStatuses.Absent => Icons.Material.Rounded.Cancel,
         AttendanceStatuses.Late => Icons.Material.Rounded.Schedule,
-        _ => Icons.Material.Rounded.Description,
+        _ => Icons.Material.Rounded.Verified,
     };
 }

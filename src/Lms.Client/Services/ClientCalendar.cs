@@ -17,7 +17,7 @@ public static class ClientCalendar
         try { return TimeZoneInfo.FindSystemTimeZoneById(id); }
         catch (Exception ex) when (ex is TimeZoneNotFoundException or InvalidTimeZoneException)
         {
-            return id == DefaultZoneId ? FixedRiyadh : TimeZoneInfo.Utc;
+            return id == DefaultZoneId ? FixedRiyadh : Zone(DefaultZoneId); // an unknown id is the default, never UTC
         }
     }
 

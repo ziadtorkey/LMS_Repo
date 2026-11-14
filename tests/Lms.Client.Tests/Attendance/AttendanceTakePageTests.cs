@@ -4,6 +4,7 @@ using Lms.Client.Pages.Attendance;
 using Lms.Client.Services.Api;
 using Lms.Client.Services.Attendance;
 using Lms.Client.Tests.Support;
+using Lms.Shared;
 using Lms.Shared.Attendance;
 using Lms.Shared.Authorization;
 using Microsoft.Extensions.DependencyInjection;
@@ -134,6 +135,95 @@ public sealed class AttendanceTakePageTests : StaffTestContext
     }
 
     [Fact]
+    public async Task The_selected_status_has_a_check_mark_and_a_selected_class_not_colour_alone()
+    {
+        var page = await RenderPageAsync(FakeAttendanceApi.SessionOpen);
+
+        page.Find(Status(Mona, "Late")).Click();
+
+        Assert.NotNull(page.Find($"[data-testid=att-tick-{Mona}-Late]")); // the check mark appears on the chosen one only
+        Assert.Contains("lms-att-selected", page.Find(Status(Mona, "Late")).ClassName); // a 2 px border in the status colour (CSS)
+        Assert.Empty(page.FindAll($"[data-testid=att-tick-{Mona}-Present]"));
+        Assert.Empty(page.FindAll($"[data-testid=att-tick-{Ahmed}-Late]"));
+    }
+
+    [Fact]
+    public async Task Mark_all_present_is_filled_says_how_many_and_can_be_undone()
+    {
+        var page = await RenderPageAsync(FakeAttendanceApi.SessionOpen);
+        page.Find(Status(Ahmed, "Absent")).Click(); // one row already marked
+
+        Assert.Contains("mud-button-filled", page.Find("[data-testid=att-mark-all]").ClassName);
+        page.Find("[data-testid=att-mark-all]").Click();
+
+        var message = page.Find("[data-testid=att-mark-all-message]").TextContent;
+        Assert.Contains("3 students marked present", message); // only the unmarked ones
+        Assert.Contains("kept their status", message);
+        Assert.Equal("true", page.Find(Status(Ahmed, "Absent")).GetAttribute("aria-checked"));
+        Assert.Equal("0", page.Find("[data-testid=att-count-unmarked] strong").TextContent.Trim());
+
+        page.Find("[data-testid=att-mark-all-undo]").Click();
+
+        Assert.Equal("3", page.Find("[data-testid=att-count-unmarked] strong").TextContent.Trim()); // back to before
+        Assert.Empty(page.FindAll("[data-testid=att-mark-all-message]"));
+    }
+
+    [Fact]
+    public async Task Notes_are_collapsed_behind_Add_note()
+    {
+        var page = await RenderPageAsync(FakeAttendanceApi.SessionOpen);
+
+        page.Find(Status(Mona, "Absent")).Click();
+        Assert.Empty(page.FindAll($"[data-testid=att-note-{Mona}]")); // no full-width field on a phone roster
+        page.Find($"[data-testid=att-note-add-{Mona}]").Click();
+
+        Assert.NotNull(page.Find($"[data-testid=att-note-{Mona}]"));
+        Assert.Empty(page.FindAll($"[data-testid=att-note-add-{Mona}]"));
+    }
+
+    [Fact]
+    public async Task The_draft_banner_is_a_warning_because_it_is_unsaved_work()
+    {
+        var store = new AttendanceDraftStore(_js, TimeProvider.System);
+        var version = (await _fake.GetRecordsAsync(FakeAttendanceApi.SessionOpen)).Session.Version;
+        await store.SaveAsync(FakeAttendanceApi.SessionOpen, version, new Dictionary<Guid, string> { [Ahmed] = "Absent" });
+
+        var page = await RenderPageAsync(FakeAttendanceApi.SessionOpen);
+
+        Assert.Contains("mud-alert-outlined-warning", page.Find("[data-testid=att-draft-banner]").ClassName);
+    }
+
+    [Fact]
+    public async Task A_View_holder_reads_the_session_but_cannot_mark_inside_the_window()
+    {
+        var page = await RenderPageAsync(FakeAttendanceApi.SessionOpen, Permissions.Attendance.View);
+
+        Assert.NotNull(page.Find("[data-testid=att-read-only]"));
+        Assert.True(page.Find(Status(Ahmed, "Present")).HasAttribute("disabled"));
+        Assert.True(page.Find("[data-testid=att-mark-all]").HasAttribute("disabled"));
+    }
+
+    [Fact]
+    public async Task The_clients_Org_TimeZone_decides_what_is_future()
+    {
+        // 01:00 on 15 Nov in Riyadh is 22:00 UTC on the 14th; for a client in UTC the 15th is still tomorrow.
+        var nowUtc = new DateTime(2026, 11, 14, 22, 0, 0, DateTimeKind.Utc);
+        _api.Mutate = data => data with { Session = data.Session with { Date = new DateOnly(2026, 11, 15), ServerNowUtc = nowUtc } };
+        Culture.Current = new CultureInfo("en");
+        await GrantAsync(Permissions.Attendance.Take);
+        var active = Context.ActiveAssignmentId!.Value;
+        Api.Me = Api.Me with { Contexts = [new Lms.Shared.Me.UserContextDto(active, Guid.NewGuid(), "م", "School", Guid.NewGuid(), "ص", "Grade", "م", "Teacher")] };
+        Config.Settings.RemoveAll(c => c.Name == Lms.Shared.Configuration.SettingKeys.OrgTimeZone.Name);
+        Config.Settings.Add(new Lms.Shared.Configuration.EffectiveSettingDto(Lms.Shared.Configuration.SettingKeys.OrgTimeZone.Name, "\"Etc/UTC\"", false, false, false, null, null, null));
+        RenderProviders();
+
+        var page = Render<AttendanceTakePage>(p => p.Add(x => x.Id, FakeAttendanceApi.SessionOpen));
+        page.WaitForElement("[data-testid=att-roster]");
+
+        Assert.NotNull(page.Find("[data-testid=att-future]"));
+    }
+
+    [Fact]
     public async Task Reason_required_after_the_window()
     {
         var page = await RenderPageAsync(FakeAttendanceApi.SessionClosed, Permissions.Attendance.Take, Permissions.Attendance.Edit);
@@ -253,6 +343,7 @@ public sealed class AttendanceTakePageTests : StaffTestContext
         public Func<AttendanceRecordsDto, AttendanceRecordsDto>? Mutate { get; set; }
 
         public Task<IReadOnlyList<AttendanceSessionListItemDto>> GetSessionsAsync(DateOnly? date = null, CancellationToken ct = default) => inner.GetSessionsAsync(date, ct);
+        public Task<PagedResult<AttendanceSessionListItemDto>> SearchSessionsAsync(Guid unitId, AttendanceSessionSearchQuery query, CancellationToken ct = default) => inner.SearchSessionsAsync(unitId, query, ct);
         public Task<AttendanceSessionListItemDto> CreateAdHocAsync(Guid classCourseId, CreateAdHocAttendanceSessionRequest request, CancellationToken ct = default) => inner.CreateAdHocAsync(classCourseId, request, ct);
 
         public async Task<AttendanceRecordsDto> GetRecordsAsync(Guid sessionId, CancellationToken ct = default)
