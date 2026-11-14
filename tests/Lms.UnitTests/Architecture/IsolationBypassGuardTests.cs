@@ -75,6 +75,8 @@ public sealed class IsolationBypassGuardTests
             "live course codes of the client outside the caller subtree, only the code keys (course code is unique per client, M3 Task 6, #214)",
         ["src/Lms.Infrastructure/LiveSessions/LiveSessionService.cs"] =
             "the daily live-session create cap counts the meetings the whole client created today, in every unit and including rows deleted since; client-limited, count only (M4b Task 4, #471)",
+        ["src/Lms.Infrastructure/Zoom/EfHostSlotStore.cs"] =
+            "the Zoom host pool is shared by every client, so a host booked by another client is busy for this one; live-session slot columns only (host, client id, start, duration), projected, soft delete re-applied (M4b Task 5, #472)",
         ["src/Lms.Infrastructure/Courses/CourseCatalog.cs"] =
             "courses and allocations owned by ancestors of the caller scope, restricted to the client (M3 Task 5, #213)",
         ["src/Lms.Infrastructure/Notifications/NotificationRecipientResolver.cs"] =
