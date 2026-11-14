@@ -35,6 +35,8 @@ internal sealed class ContentTestHost(LmsApiFactory factory, Action<IServiceColl
 
     public IServiceProvider Services => _host.Services;
 
+    public HttpClient CreateClient() => _host.CreateClient();
+
     public void Dispose() => _host.Dispose();
 
     public Task<HttpResponseMessage> SendAsync(RoleAssignment caller, HttpMethod method, string url, object? body = null) =>

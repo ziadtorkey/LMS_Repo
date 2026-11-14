@@ -22,10 +22,13 @@ public sealed class LiveSessionsModule : ILmsModule
         services.AddScoped<LiveSessionReadHandlers>();
         services.AddScoped<LiveSessionLifecycle>();
         services.AddScoped<LiveReminderJob>();
+        services.AddHttpClient(DevZoomEvents.LoopbackClient);
+        services.Configure<DevZoomOptions>(o => o.WebhookSecretToken = configuration["Zoom:WebhookSecretToken"]);
     }
 
     public void MapEndpoints(IEndpointRouteBuilder app)
     {
+        MapDevEndpoints(app);
         app.MapGet(Routes.ClassCourseLiveSessionsPattern,
                 (Guid id, [AsParameters] LiveSessionQuery query, HttpContext http, LiveSessionHandlers h, CancellationToken ct) =>
                     h.ListAsync(id, query, http, ct))
@@ -54,5 +57,19 @@ public sealed class LiveSessionsModule : ILmsModule
             .RequireAuthorization().RequirePermission(Permissions.LiveSessions.Manage);
         app.MapGet(Routes.LiveSessionsUpcoming, (LiveSessionReadHandlers h, CancellationToken ct) => h.UpcomingAsync(ct))
             .RequireAuthorization().RequirePermission(Permissions.LiveSessions.View);
+    }
+
+    /// <summary>
+    /// Development only (the route does not exist elsewhere): sign and send a fake Zoom event to the webhook, for the E2E demo. Platform
+    /// admins only (Clients.Update is a platform-only permission). Not part of Lms.Shared on purpose.
+    /// </summary>
+    public static void MapDevEndpoints(IEndpointRouteBuilder app)
+    {
+        if (!app.ServiceProvider.GetRequiredService<IHostEnvironment>().IsDevelopment())
+        {
+            return;
+        }
+
+        app.MapPost(Routes.DevZoomEvents, DevZoomEvents.HandleAsync).RequireAuthorization().RequirePermission(Permissions.Clients.Update);
     }
 }

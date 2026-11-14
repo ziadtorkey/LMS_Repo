@@ -32,6 +32,9 @@ public sealed class OrgUnitTestHost : IDisposable
 
     public IServiceProvider Services => _host.Services;
 
+    /// <summary>A raw client of the host (requests carry the headers the caller adds).</summary>
+    public HttpClient CreateClient() => _host.CreateClient();
+
     public void Dispose() => _host.Dispose();
 
     public Task<HttpResponseMessage> SendAsync(
