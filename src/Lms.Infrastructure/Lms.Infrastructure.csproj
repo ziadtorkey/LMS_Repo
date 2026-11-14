@@ -17,6 +17,7 @@
     <PackageReference Include="ClosedXML" />
     <PackageReference Include="HtmlSanitizer" />
     <PackageReference Include="MailKit" />
+    <PackageReference Include="Lib.Net.Http.WebPush" />
     <PackageReference Include="Minio" />
     <PackageReference Include="MySqlConnector" />
   </ItemGroup>
