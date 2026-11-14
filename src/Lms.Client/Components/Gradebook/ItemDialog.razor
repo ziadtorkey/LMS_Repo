@@ -1,0 +1,97 @@
+@using System.Globalization
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.Grading
+@using Lms.Shared.Grading
+@inject IGradebookApi Api
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+@* Add or edit a manual grade item: titles in both languages, its category and the maximum points. Items that come from an assignment or a quiz are not
+   edited here (their title and maximum come from the activity). *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="3">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" role="alert" data-testid="item-error">@_error</MudAlert>
+            }
+            <BilingualNameFields @bind-NameAr="_titleAr" @bind-NameEn="_titleEn" IdPrefix="item-title" />
+            <MudSelect T="Guid" @bind-Value="_categoryId" Label="@L["Grd_Item_Category"]" data-testid="item-category">
+                @foreach (var c in Categories)
+                {
+                    <MudSelectItem T="Guid" Value="@c.Id">@Culture.Pick(c.NameAr, c.NameEn)</MudSelectItem>
+                }
+            </MudSelect>
+            <MudTextField T="string" @bind-Value="_max" Label="@L["Grd_Item_Max"]" Immediate="true" dir="ltr" HelperText="@string.Format(CultureInfo.CurrentCulture, L["Grd_Item_MaxHelp"].Value, GradeFormat.Points(GradingLimits.MaxPointsMin), GradeFormat.Points(GradingLimits.MaxPointsMax))"
+                          data-testid="item-max" />
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="_saving" data-testid="dialog-save">@L["Common_Save"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired] public Guid ClassCourseId { get; set; }
+
+    /// <summary>The categories a manual item can sit in (the uncategorised bucket is not one of them).</summary>
+    [Parameter, EditorRequired] public IReadOnlyList<GradeCategoryDto> Categories { get; set; } = [];
+
+    /// <summary>The item to edit; null adds a new one.</summary>
+    [Parameter] public GradeItemDto? Existing { get; set; }
+
+    private string _titleAr = "", _titleEn = "", _max = "";
+    private Guid _categoryId;
+    private string? _error;
+    private bool _saving;
+
+    protected override void OnInitialized()
+    {
+        _categoryId = Existing?.CategoryId ?? Categories.FirstOrDefault()?.Id ?? Guid.Empty;
+        if (Existing is null) return;
+        _titleAr = Existing.TitleAr;
+        _titleEn = Existing.TitleEn;
+        _max = GradeFormat.Points(Existing.MaxPoints);
+    }
+
+    private async Task SaveAsync()
+    {
+        _error = null;
+        if (string.IsNullOrWhiteSpace(_titleAr) || string.IsNullOrWhiteSpace(_titleEn) || _categoryId == Guid.Empty)
+        {
+            _error = L["Common_RequiredFields"];
+            return;
+        }
+
+        if (!GradebookEditSession.TryParse(_max, out var max) || max < GradingLimits.MaxPointsMin || max > GradingLimits.MaxPointsMax)
+        {
+            _error = string.Format(CultureInfo.CurrentCulture, L["Grd_Item_MaxHelp"].Value, GradeFormat.Points(GradingLimits.MaxPointsMin), GradeFormat.Points(GradingLimits.MaxPointsMax));
+            return;
+        }
+
+        _saving = true;
+        try
+        {
+            var saved = Existing is null
+                ? await Api.CreateItemAsync(ClassCourseId, new CreateGradeItemRequest(_categoryId, _titleAr.Trim(), _titleEn.Trim(), max))
+                : await Api.UpdateItemAsync(ClassCourseId, Existing.Id, new UpdateGradeItemRequest(_categoryId, _titleAr.Trim(), _titleEn.Trim(), max, Existing.Order));
+            MudDialog.Close(DialogResult.Ok(saved));
+        }
+        catch (ApiProblemException ex)
+        {
+            _error = ProblemText.For(ex, L);
+        }
+        catch (Exception ex) when (ApiCalls.TryRedirect(ex, Navigation))
+        {
+            // Navigating away.
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+}

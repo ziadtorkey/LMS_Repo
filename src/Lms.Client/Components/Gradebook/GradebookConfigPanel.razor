@@ -1,0 +1,291 @@
+@using System.Globalization
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.Grading
+@using Lms.Shared.Grading
+@inject IGradebookApi Api
+@inject IGradebookUnit UnitOf
+@inject IGradingScalesApi Scales
+@inject ICultureService Culture
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+@* The gradebook's settings for the teacher: categories and weights (with a live total), the scale, decimal places and how a missing score counts, and the
+   manual items. Nothing here calculates a grade: it sends what was typed and the page reloads the server's answer (L18). *@
+<SectionCard Title="@L["Grd_Config_Title"]" TestId="gradebook-config">
+    <MudStack Spacing="4">
+        <UncategorisedAlert Items="UncategorisedItems" Categories="RealCategories" Busy="_busy" OnMove="MoveUncategorisedAsync" />
+        @if (_error is not null)
+        {
+            <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" role="alert" data-testid="config-error">@_error</MudAlert>
+        }
+
+        <fieldset class="lms-fieldset" data-testid="config-categories">
+            <legend>@L["Grd_Config_Categories"]</legend>
+            <div role="list" aria-label="@L["Grd_Config_Categories"]">
+                @for (var i = 0; i < _rows.Count; i++)
+                {
+                    var row = _rows[i];
+                    var n = i;
+                    <div class="lms-weight-row" role="listitem" draggable="true" data-testid="@($"cat-row-{n}")"
+                         @ondragstart="() => _dragFrom = n" @ondragover:preventDefault @ondrop="() => DropAsync(n)">
+                        <MudTextField T="string" @bind-Value="row.NameAr" Label="@L["Grd_Cat_NameAr"]" MaxLength="200" Immediate="true" dir="rtl" data-testid="@($"cat-name-ar-{n}")" />
+                        <MudTextField T="string" @bind-Value="row.NameEn" Label="@L["Grd_Cat_NameEn"]" MaxLength="200" Immediate="true" dir="ltr" data-testid="@($"cat-name-en-{n}")" />
+                        <MudNumericField T="decimal" @bind-Value="row.Weight" Label="@L["Template_Weight"]" Min="0m" Max="100m" Step="0.5m" Immediate="true" HideSpinButtons="true" dir="ltr"
+                                         data-testid="@($"cat-weight-{n}")" />
+                        <div class="lms-row-actions">
+                            <MudIconButton Icon="@Icons.Material.Rounded.ArrowUpward" Size="Size.Small" Disabled="n == 0" aria-label="@L["Grd_Cat_MoveUp"]" OnClick="() => Move(n, -1)"
+                                           data-testid="@($"cat-up-{n}")" />
+                            <MudIconButton Icon="@Icons.Material.Rounded.ArrowDownward" Size="Size.Small" Disabled="n == _rows.Count - 1" aria-label="@L["Grd_Cat_MoveDown"]" OnClick="() => Move(n, 1)"
+                                           data-testid="@($"cat-down-{n}")" />
+                            <MudIconButton Icon="@Icons.Material.Rounded.Delete" Size="Size.Small" Color="Color.Error" Disabled="_rows.Count <= 1" aria-label="@L["Grd_Cat_Remove"]"
+                                           OnClick="() => _rows.Remove(row)" data-testid="@($"cat-remove-{n}")" />
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="lms-weights-footer">
+                <div class="d-flex gap-2 flex-wrap">
+                    <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.Add" OnClick="() => _rows.Add(new CategoryRow())" data-testid="cat-add">@L["Grd_Cat_Add"]</MudButton>
+                    <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.Balance" OnClick="ApplyTemplateAsync" Disabled="_unit is null" data-testid="cat-template">@L["Grd_Template_Open"]</MudButton>
+                </div>
+                <WeightsChip Total="DraftTotal" />
+            </div>
+            <div class="lms-dialog-actions">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveCategoriesAsync" Disabled="_busy" data-testid="cat-save">@L["Grd_Cat_Save"]</MudButton>
+            </div>
+        </fieldset>
+
+        <fieldset class="lms-fieldset" data-testid="config-settings">
+            <legend>@L["Grd_Config_Settings"]</legend>
+            <div class="lms-form-grid">
+                <MudSelect T="Guid?" @bind-Value="_scaleId" Label="@L["Grd_Config_Scale"]" Disabled="_unit is null" HelperText="@(_unit is null ? L["Grd_Config_NoUnit"].Value : null)" data-testid="config-scale">
+                    @foreach (var s in _scaleOptions)
+                    {
+                        <MudSelectItem T="Guid?" Value="@((Guid?)s.Id)">@Culture.Pick(s.NameAr, s.NameEn)</MudSelectItem>
+                    }
+                </MudSelect>
+                <MudNumericField T="int" @bind-Value="_places" Label="@L["Grd_Config_Places"]" Min="GradingLimits.DecimalPlacesMin" Max="GradingLimits.DecimalPlacesMax" data-testid="config-places" />
+                <MudSelect T="string" @bind-Value="_method" Label="@L["Grd_Config_Method"]" data-testid="config-method">
+                    @foreach (var m in CategoryMethods.All)
+                    {
+                        <MudSelectItem T="string" Value="@m">@L[$"SettingValue_Grades_CategoryMethod_{m}"]</MudSelectItem>
+                    }
+                </MudSelect>
+                <MudSelect T="string" @bind-Value="_missing" Label="@L["Grd_Config_Missing"]" data-testid="config-missing">
+                    @foreach (var m in MissingPolicies.All)
+                    {
+                        <MudSelectItem T="string" Value="@m">@L[$"SettingValue_Grades_MissingPolicy_{m}"]</MudSelectItem>
+                    }
+                </MudSelect>
+            </div>
+            <div class="lms-dialog-actions">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveSettingsAsync" Disabled="_busy" data-testid="config-save">@L["Common_Save"]</MudButton>
+            </div>
+        </fieldset>
+
+        <fieldset class="lms-fieldset" data-testid="config-items">
+            <legend>@L["Grd_Config_Items"]</legend>
+            <MudSimpleTable Dense="true" Elevation="0" Class="lms-simple-table lms-stack-table">
+                <thead><tr><th>@L["Grd_Item"]</th><th>@L["Grd_Item_Category"]</th><th>@L["Grd_Item_Max"]</th><th>@L["Common_Actions"]</th></tr></thead>
+                <tbody>
+                    @foreach (var item in Book.Items.OrderBy(i => i.Order))
+                    {
+                        var it = item;
+                        <tr data-testid="@($"config-item-{it.Id}")">
+                            <td data-label="@L["Grd_Item"]" class="lms-cell-strong">@Culture.Pick(it.TitleAr, it.TitleEn)</td>
+                            <td data-label="@L["Grd_Item_Category"]">@CategoryName(it.CategoryId)</td>
+                            <td data-label="@L["Grd_Item_Max"]" dir="ltr">@GradeFormat.Points(it.MaxPoints)</td>
+                            <td data-label="@L["Common_Actions"]">
+                                <div class="lms-row-actions">
+                                    @if (it.IsManual)
+                                    {
+                                        <MudIconButton Icon="@Icons.Material.Rounded.Edit" Size="Size.Small" aria-label="@L["Common_Edit"]" OnClick="() => OpenItemAsync(it)" data-testid="@($"item-edit-{it.Id}")" />
+                                        <MudIconButton Icon="@Icons.Material.Rounded.Delete" Size="Size.Small" Color="Color.Error" aria-label="@L["Common_Delete"]" OnClick="() => DeleteItemAsync(it)"
+                                                       data-testid="@($"item-delete-{it.Id}")" />
+                                    }
+                                    else
+                                    {
+                                        <span class="lms-muted" data-testid="@($"item-auto-{it.Id}")">@L["Grd_Item_FromActivity"]</span>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+            <div class="lms-dialog-actions">
+                <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.Add" OnClick="() => OpenItemAsync(null)" Disabled="RealCategories.Count == 0" data-testid="item-add">@L["Grd_Item_Add"]</MudButton>
+            </div>
+        </fieldset>
+    </MudStack>
+</SectionCard>
+
+@code {
+    [Parameter, EditorRequired] public GradebookDto Book { get; set; } = default!;
+    [Parameter, EditorRequired] public Guid ClassCourseId { get; set; }
+
+    /// <summary>Raised after anything was saved: the page loads the gradebook again, so every number on screen is the server's.</summary>
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private sealed class CategoryRow
+    {
+        public Guid? Id { get; set; }
+        public string NameAr { get; set; } = "";
+        public string NameEn { get; set; } = "";
+        public decimal Weight { get; set; }
+    }
+
+    private readonly List<CategoryRow> _rows = [];
+    private IReadOnlyList<GradingScaleDto> _scaleOptions = [];
+    private Guid? _unit;
+    private Guid? _scaleId;
+    private int _places;
+    private string _method = CategoryMethods.PointsWeighted, _missing = MissingPolicies.Normalise;
+    private string? _error;
+    private bool _busy;
+    private int _dragFrom = -1;
+    private GradebookDto? _loadedFor;
+
+    private IReadOnlyList<GradeCategoryDto> RealCategories => [.. Book.Categories.Where(c => !c.IsUncategorised).OrderBy(c => c.Order)];
+
+    private IReadOnlyList<GradeItemDto> UncategorisedItems =>
+        [.. Book.Items.Where(i => Book.Categories.Any(c => c.IsUncategorised && c.Id == i.CategoryId))];
+
+    /// <summary>The total of what is typed (a preview); after a save the page's chip shows the server's answer.</summary>
+    private decimal DraftTotal => _rows.Sum(r => r.Weight);
+
+    private string CategoryName(Guid id) => Book.Categories.FirstOrDefault(c => c.Id == id) is { } c ? Culture.Pick(c.NameAr, c.NameEn) : "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        _unit = await UnitOf.UnitOfAsync(ClassCourseId);
+        if (_unit is { } unit)
+        {
+            var (list, _) = await ApiCalls.RunAsync(() => Scales.ListScalesAsync(unit), Navigation);
+            _scaleOptions = [.. (list ?? []).Where(s => !s.IsTemplate)];
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        // Take the server's values again whenever a new gradebook arrived (after a save), never while the user is typing into the same one.
+        if (ReferenceEquals(_loadedFor, Book)) return;
+        _loadedFor = Book;
+        _rows.Clear();
+        _rows.AddRange(RealCategories.Select(c => new CategoryRow { Id = c.Id, NameAr = c.NameAr, NameEn = c.NameEn, Weight = c.Weight }));
+        _scaleId = Book.Config.ScaleId;
+        _places = Book.Config.DecimalPlaces;
+        _method = Book.Config.CategoryMethod;
+        _missing = Book.Config.MissingPolicy;
+    }
+
+    private void Move(int index, int by)
+    {
+        var to = index + by;
+        if (to < 0 || to >= _rows.Count) return;
+        (_rows[index], _rows[to]) = (_rows[to], _rows[index]);
+    }
+
+    /// <summary>Drag and drop is the pointer way to reorder; the buttons are the keyboard way and do the same.</summary>
+    private Task DropAsync(int to)
+    {
+        if (_dragFrom >= 0 && _dragFrom != to && _dragFrom < _rows.Count)
+        {
+            var row = _rows[_dragFrom];
+            _rows.RemoveAt(_dragFrom);
+            _rows.Insert(to, row);
+        }
+
+        _dragFrom = -1;
+        return Task.CompletedTask;
+    }
+
+    private async Task<bool> RunAsync(Func<Task> call)
+    {
+        _error = null;
+        _busy = true;
+        try
+        {
+            await call();
+            return true;
+        }
+        catch (ApiProblemException ex)
+        {
+            _error = ProblemText.For(ex, L);
+            return false;
+        }
+        catch (Exception ex) when (ApiCalls.TryRedirect(ex, Navigation))
+        {
+            return false;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task SaveCategoriesAsync()
+    {
+        if (_rows.Any(r => string.IsNullOrWhiteSpace(r.NameAr) || string.IsNullOrWhiteSpace(r.NameEn)))
+        {
+            _error = L["Common_RequiredFields"];
+            return;
+        }
+
+        var request = new SaveGradeCategoriesRequest([.. _rows.Select((r, i) => new SaveGradeCategoryRequest(r.Id, r.NameAr.Trim(), r.NameEn.Trim(), r.Weight, i + 1))]);
+        if (await RunAsync(() => Api.SaveCategoriesAsync(ClassCourseId, request)))
+        {
+            Snackbar.Add(L["Grd_Config_Saved"], Severity.Success);
+            await OnChanged.InvokeAsync();
+        }
+    }
+
+    private async Task SaveSettingsAsync()
+    {
+        if (await RunAsync(() => Api.SaveConfigAsync(ClassCourseId, new SaveGradebookConfigRequest(_scaleId, _places, _method, _missing))))
+        {
+            Snackbar.Add(L["Grd_Config_Saved"], Severity.Success);
+            await OnChanged.InvokeAsync();
+        }
+    }
+
+    private async Task ApplyTemplateAsync()
+    {
+        if (_unit is not { } unit) return;
+        var dialog = await Dialogs.ShowAsync<ApplyTemplateDialog>(L["Grd_Template_Title"], new DialogParameters<ApplyTemplateDialog> { { x => x.UnitId, unit } },
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, CloseOnEscapeKey = true });
+        if (await dialog.Result is not { Canceled: false, Data: WeightTemplateDto template }) return;
+        // The values are copied into the rows (existing categories keep their ids by position so their items stay); saving is a separate, explicit step.
+        var ids = _rows.Select(r => r.Id).ToList();
+        _rows.Clear();
+        _rows.AddRange(template.Items.OrderBy(i => i.Order).Select((i, n) => new CategoryRow { Id = n < ids.Count ? ids[n] : null, NameAr = i.NameAr, NameEn = i.NameEn, Weight = i.Weight }));
+        Snackbar.Add(L["Grd_Template_Copied"], Severity.Info);
+    }
+
+    private async Task OpenItemAsync(GradeItemDto? item)
+    {
+        var dialog = await Dialogs.ShowAsync<ItemDialog>(L[item is null ? "Grd_Item_AddTitle" : "Grd_Item_EditTitle"], new DialogParameters<ItemDialog>
+        {
+            { x => x.ClassCourseId, ClassCourseId }, { x => x.Categories, RealCategories }, { x => x.Existing, item },
+        }, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, CloseOnEscapeKey = true });
+        if (await dialog.Result is { Canceled: false }) await OnChanged.InvokeAsync();
+    }
+
+    private async Task DeleteItemAsync(GradeItemDto item)
+    {
+        if (!await ConfirmDialog.AskAsync(Dialogs, L["Confirm_DeleteTitle"], string.Format(CultureInfo.CurrentCulture, L["Grd_Item_DeleteConfirm"].Value, Culture.Pick(item.TitleAr, item.TitleEn)))) return;
+        if (await RunAsync(() => Api.DeleteItemAsync(ClassCourseId, item.Id))) await OnChanged.InvokeAsync();
+    }
+
+    private async Task MoveUncategorisedAsync(Guid categoryId)
+    {
+        var ok = await RunAsync(async () =>
+        {
+            foreach (var item in UncategorisedItems)
+                await Api.UpdateItemAsync(ClassCourseId, item.Id, new UpdateGradeItemRequest(categoryId, item.TitleAr, item.TitleEn, item.MaxPoints, item.Order));
+        });
+        if (ok) await OnChanged.InvokeAsync();
+    }
+}

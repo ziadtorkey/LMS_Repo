@@ -1,0 +1,66 @@
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.Grading
+@using Lms.Shared.Grading
+@inject IGradingScalesApi Scales
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+@* Pick a weight template of the unit and copy its names and weights into the gradebook's categories. A copy: changing the template later does not change
+   this gradebook, and the dialog says so before it applies (spec 2.5). *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="3">
+            @if (_loading)
+            {
+                <LoadingState Lines="3" TestId="templates-loading" />
+            }
+            else if (_failed)
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="templates-error">@L["Api_Error"]</MudAlert>
+            }
+            else if (_templates.Count == 0)
+            {
+                <EmptyState Title="@L["WTemplates_EmptyTitle"]" Icon="@Icons.Material.Rounded.Balance" TestId="templates-none" />
+            }
+            else
+            {
+                <MudRadioGroup T="Guid" @bind-Value="_chosen" data-testid="template-choice">
+                    @foreach (var t in _templates)
+                    {
+                        <MudRadio T="Guid" Value="@t.Id" data-testid="@($"template-option-{t.Id}")">
+                            @Culture.Pick(t.NameAr, t.NameEn) <span class="lms-muted">· @string.Join(" · ", t.Items.OrderBy(i => i.Order).Select(i => Culture.Pick(i.NameAr, i.NameEn) + " " + GradeFormat.Points(i.Weight)))</span>
+                        </MudRadio>
+                    }
+                </MudRadioGroup>
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" data-testid="template-copy-note">@L["Grd_Template_CopyNote"]</MudAlert>
+            }
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()" data-testid="dialog-cancel">@L["Common_Cancel"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Apply" Disabled="_chosen == Guid.Empty" data-testid="dialog-save">@L["Grd_Template_Apply"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired] public Guid UnitId { get; set; }
+
+    private IReadOnlyList<WeightTemplateDto> _templates = [];
+    private Guid _chosen;
+    private bool _loading = true, _failed;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var (list, failed) = await ApiCalls.RunAsync(() => Scales.ListTemplatesAsync(UnitId), Navigation);
+        _templates = list ?? [];
+        _failed = failed;
+        _loading = false;
+    }
+
+    private void Apply()
+    {
+        if (_templates.FirstOrDefault(t => t.Id == _chosen) is { } template) MudDialog.Close(DialogResult.Ok(template));
+    }
+}

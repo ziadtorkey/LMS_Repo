@@ -1777,4 +1777,38 @@
   <data name="Grd_Override_ReasonRequired" xml:space="preserve"><value>Give a reason for the override.</value></data>
   <data name="Grd_Override_Apply" xml:space="preserve"><value>Override</value></data>
   <data name="Grd_Override_Short" xml:space="preserve"><value>Override</value></data>
+  <data name="Grd_Config_Title" xml:space="preserve"><value>Gradebook settings</value></data>
+  <data name="Grd_Config_Open" xml:space="preserve"><value>Gradebook settings</value></data>
+  <data name="Grd_Config_Categories" xml:space="preserve"><value>Categories and weights</value></data>
+  <data name="Grd_Config_Settings" xml:space="preserve"><value>Scale and calculation</value></data>
+  <data name="Grd_Config_Items" xml:space="preserve"><value>Grade items</value></data>
+  <data name="Grd_Config_Scale" xml:space="preserve"><value>Grading scale</value></data>
+  <data name="Grd_Config_NoUnit" xml:space="preserve"><value>The scale list is not available for this course here.</value></data>
+  <data name="Grd_Config_Places" xml:space="preserve"><value>Decimal places</value></data>
+  <data name="Grd_Config_Method" xml:space="preserve"><value>How a category combines its items</value></data>
+  <data name="Grd_Config_Missing" xml:space="preserve"><value>A score that is missing</value></data>
+  <data name="Grd_Config_Saved" xml:space="preserve"><value>Saved.</value></data>
+  <data name="Grd_Cat_NameAr" xml:space="preserve"><value>Category (Arabic)</value></data>
+  <data name="Grd_Cat_NameEn" xml:space="preserve"><value>Category (English)</value></data>
+  <data name="Grd_Cat_MoveUp" xml:space="preserve"><value>Move up</value></data>
+  <data name="Grd_Cat_MoveDown" xml:space="preserve"><value>Move down</value></data>
+  <data name="Grd_Cat_Remove" xml:space="preserve"><value>Remove category</value></data>
+  <data name="Grd_Cat_Add" xml:space="preserve"><value>Add a category</value></data>
+  <data name="Grd_Cat_Save" xml:space="preserve"><value>Save categories</value></data>
+  <data name="Grd_Template_Open" xml:space="preserve"><value>Apply a weight template</value></data>
+  <data name="Grd_Template_Title" xml:space="preserve"><value>Apply a weight template</value></data>
+  <data name="Grd_Template_Apply" xml:space="preserve"><value>Copy into the categories</value></data>
+  <data name="Grd_Template_CopyNote" xml:space="preserve"><value>The names and weights are copied into the categories below. Changing the template later does not change this gradebook, and nothing is saved until you save the categories.</value></data>
+  <data name="Grd_Template_Copied" xml:space="preserve"><value>Template copied. Save the categories to keep it.</value></data>
+  <data name="Grd_Item_Category" xml:space="preserve"><value>Category</value></data>
+  <data name="Grd_Item_Max" xml:space="preserve"><value>Maximum points</value></data>
+  <data name="Grd_Item_MaxHelp" xml:space="preserve"><value>A number from {0} to {1}.</value></data>
+  <data name="Grd_Item_Add" xml:space="preserve"><value>Add an item</value></data>
+  <data name="Grd_Item_AddTitle" xml:space="preserve"><value>Add a grade item</value></data>
+  <data name="Grd_Item_EditTitle" xml:space="preserve"><value>Edit the grade item</value></data>
+  <data name="Grd_Item_DeleteConfirm" xml:space="preserve"><value>Delete the item {0} and the scores entered for it?</value></data>
+  <data name="Grd_Item_FromActivity" xml:space="preserve"><value>From an assignment or quiz</value></data>
+  <data name="Grd_Uncategorised_Text" xml:space="preserve"><value>{0} items are in no category, so they count toward no weight.</value></data>
+  <data name="Grd_Uncategorised_MoveTo" xml:space="preserve"><value>Move to</value></data>
+  <data name="Grd_Uncategorised_Move" xml:space="preserve"><value>Move them</value></data>
 </root>
