@@ -55,9 +55,16 @@ public sealed class M6Fe2AccessibilityTests : ClientTestContext
         await _announcements.CreateAsync(new(FakeMessagingApi.UnitA, "إعلان", "Announcement", "نص", "Body", [new(Lms.Shared.Messaging.AnnouncementTargetKinds.Organization, null, true)], null, null, null, true, true, null, true));
     }
 
-    private static string Name(IElement e) =>
-        FirstNonBlank(e.GetAttribute("aria-label"), e.GetAttribute("title"), e.GetAttribute("aria-labelledby") is { Length: > 0 } ? "labelled" : null, e.TextContent.Trim(),
+    /// <summary>The accessible name of a control; an aria-labelledby only counts when it points at an element that exists and has text.</summary>
+    private static string Name(IElement e)
+    {
+        var labelledBy = e.GetAttribute("aria-labelledby");
+        var fromReference = labelledBy is { Length: > 0 }
+            ? string.Join(" ", labelledBy.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(id => e.Owner?.GetElementById(id)?.TextContent.Trim()).Where(t => !string.IsNullOrWhiteSpace(t)))
+            : null;
+        return FirstNonBlank(e.GetAttribute("aria-label"), fromReference, e.GetAttribute("title"), e.TextContent.Trim(),
             e.QuerySelector("[aria-label]")?.GetAttribute("aria-label"), e.QuerySelector("img[alt]")?.GetAttribute("alt")) ?? string.Empty;
+    }
 
     private static string? FirstNonBlank(params string?[] values) => values.FirstOrDefault(v => !string.IsNullOrWhiteSpace(v));
 
@@ -73,9 +80,12 @@ public sealed class M6Fe2AccessibilityTests : ClientTestContext
         foreach (var i in page.FindAll("input:not([type=hidden]), textarea, select"))
         {
             var id = i.GetAttribute("id");
-            var labelled = !string.IsNullOrWhiteSpace(i.GetAttribute("aria-label")) || !string.IsNullOrWhiteSpace(i.GetAttribute("aria-labelledby"))
-                || (id is { Length: > 0 } && page.FindAll($"label[for=\"{id}\"]").Count > 0) || i.Closest("label") is not null
-                || i.Closest(".mud-input-control, .mud-checkbox, .mud-switch, .mud-radio")?.QuerySelector("label, .mud-input-label, .mud-typography") is not null;
+            var labelledBy = i.GetAttribute("aria-labelledby");
+            var byReference = labelledBy is { Length: > 0 }
+                && labelledBy.Split(' ', StringSplitOptions.RemoveEmptyEntries).Any(r => page.FindAll($"[id=\"{r}\"]").Any(t => !string.IsNullOrWhiteSpace(t.TextContent))); // it must point at an element that exists and has text
+            var labelled = !string.IsNullOrWhiteSpace(i.GetAttribute("aria-label")) || byReference
+                || (id is { Length: > 0 } && page.FindAll($"label[for=\"{id}\"]").Any(l => !string.IsNullOrWhiteSpace(l.TextContent)))
+                || (i.Closest("label") is { } wrapping && !string.IsNullOrWhiteSpace(wrapping.TextContent));
             if (!labelled) problems.Add("no label: " + i.OuterHtml[..Math.Min(120, i.OuterHtml.Length)]);
         }
 
