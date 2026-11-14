@@ -1627,6 +1627,7 @@
   <data name="Error_period_in_use" xml:space="preserve"><value>تستخدم إحدى حصص الجدول هذه الفترة، لذا لا يمكن حذفها.</value></data>
   <data name="Error_timetable_not_published" xml:space="preserve"><value>هذه الحصة ما زالت مسودة. انشر الجدول أولاً.</value></data>
   <data name="Error_exception_date_invalid" xml:space="preserve"><value>يجب أن يكون التاريخ يوم دراسة لهذه الحصة داخل الفصل، وللحصة استثناء واحد فقط في اليوم الواحد.</value></data>
+  <data name="Error_exception_substitute_invalid" xml:space="preserve"><value>يجب أن يكون البديل معلماً آخر في مجموعة المدارس ولا يكون مشغولاً في هذه الفترة في ذلك التاريخ.</value></data>
   <data name="Setting_Timetable_WorkingDays" xml:space="preserve"><value>أيام الدراسة في الأسبوع</value></data>
   <data name="SettingValue_Timetable_WorkingDays_Sun" xml:space="preserve"><value>الأحد</value></data>
   <data name="SettingValue_Timetable_WorkingDays_Mon" xml:space="preserve"><value>الاثنين</value></data>

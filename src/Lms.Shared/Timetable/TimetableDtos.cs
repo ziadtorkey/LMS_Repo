@@ -20,7 +20,7 @@ public sealed record SlotDto(
     int Version,
     IReadOnlyList<string> Badges);
 
-/// <summary>PUT of a slot (create when <c>SlotId</c> is not in the route, move or edit otherwise). <c>Version</c> is required on edit.</summary>
+/// <summary>Body of POST (create a slot) and PUT (edit or move it) of a class timetable. <c>Version</c> is required on PUT and ignored on POST.</summary>
 public sealed record SaveSlotRequest(
     Guid ClassCourseId,
     Guid TermId,
@@ -30,13 +30,18 @@ public sealed record SaveSlotRequest(
     string? RoomName,
     int? Version);
 
-/// <summary>A clash of a saved or validated slot with another slot of the term (the other slot is named so the builder can show it).</summary>
+/// <summary>
+/// A clash of a saved or validated slot with another slot of the term. Clashes are <b>computed across the whole client</b> (a teacher can teach in two schools, so
+/// being busy there is a clash), but the <b>details are disclosed only for slots inside the caller's unit subtree</b> (<c>Timetable.Manage</c> is unit-scoped): for a
+/// slot outside it the entry carries <c>Kind</c> only and <c>SlotId</c>, <c>CourseNameAr</c>, <c>CourseNameEn</c> and <c>TeacherName</c> are null, so an admin of one
+/// school never reads another school's course, class or timetable through a warning, the 409 <c>timetable_conflict</c> body or <c>GET .../validate</c>.
+/// </summary>
 public sealed record SlotConflictDto(
     string Kind,
-    Guid SlotId,
-    string CourseNameAr,
-    string CourseNameEn,
-    string TeacherName);
+    Guid? SlotId,
+    string? CourseNameAr,
+    string? CourseNameEn,
+    string? TeacherName);
 
 /// <summary>The answer of a slot save: the slot and, in <c>Warn</c> mode, the clashes it was saved with (empty in <c>Block</c> mode, where a clash is 409).</summary>
 public sealed record SaveSlotResultDto(SlotDto Slot, IReadOnlyList<SlotConflictDto> Warnings);

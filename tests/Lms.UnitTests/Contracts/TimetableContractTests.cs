@@ -111,6 +111,7 @@ public sealed class TimetableContractTests
         Assert.Equal("period_in_use", ProblemCodes.period_in_use);
         Assert.Equal("timetable_not_published", ProblemCodes.timetable_not_published);
         Assert.Equal("exception_date_invalid", ProblemCodes.exception_date_invalid);
+        Assert.Equal("exception_substitute_invalid", ProblemCodes.exception_substitute_invalid);
     }
 
     [Fact]
@@ -162,6 +163,25 @@ public sealed class TimetableContractTests
         Assert.True(routes.Count >= 13, $"found {routes.Count} documented route constants");
         Assert.All(routes, r => Assert.Matches(@"Timetable\.\w+", r.Doc));
         Assert.Equal(Regex.Matches(text, @"public const string \w+Pattern =").Count + 1, routes.Count); // + MeTimetable
+    }
+
+    [Fact]
+    public void A_conflict_discloses_details_only_for_slots_the_caller_may_see()
+    {
+        // Conflicts are computed across the client; a slot outside the caller's unit subtree is reported by kind only (QA review of wave 2).
+        var context = new System.Reflection.NullabilityInfoContext();
+        var props = typeof(SlotConflictDto).GetProperties().ToDictionary(p => p.Name, p => context.Create(p).WriteState);
+        Assert.Equal(System.Reflection.NullabilityState.NotNull, props["Kind"]);
+        Assert.All(new[] { "SlotId", "CourseNameAr", "CourseNameEn", "TeacherName" },
+            name => Assert.Equal(System.Reflection.NullabilityState.Nullable, props[name]));
+
+        var hidden = RoundTrip(new SlotConflictDto(ConflictKinds.TeacherDoubleBooked, null, null, null, null));
+        Assert.Null(hidden.SlotId);
+        Assert.Null(hidden.TeacherName);
+        Assert.Equal(ConflictKinds.TeacherDoubleBooked, hidden.Kind);
+
+        var text = File.ReadAllText(Path.Combine(RepoRoot(), "src", "Lms.Shared", "Timetable", "TimetableDtos.cs"));
+        Assert.Contains("details are disclosed only for slots inside the caller's unit subtree", text, StringComparison.Ordinal);
     }
 
     [Fact]
