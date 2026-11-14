@@ -28,6 +28,10 @@ public sealed partial class StitchStylesheetTests
     }
 
     [Fact]
+    public void Fixed_stat_tiles_cap_their_width_from_600px_and_beat_the_stretching_default() =>
+        Assert.Matches(new Regex(@"@media \(min-width:\s*600px\)\s*\{\s*\.lms-stats\.lms-stats-fixed\s*\{\s*grid-template-columns:\s*repeat\(auto-fill,\s*minmax\(200px,\s*280px\)\)"), Css());
+
+    [Fact]
     public void Uses_logical_properties_only() =>
         Assert.Empty(PhysicalProperty().Matches(Css()).Select(m => m.Value));
 
