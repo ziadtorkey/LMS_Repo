@@ -14,7 +14,7 @@
             {
                 <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-3" data-testid="report-error">@_error</MudAlert>
             }
-            <MudRadioGroup T="string" @bind-Value="_reason" aria-label="@L["Msg_Report_Reason"]" data-testid="report-reasons">
+            <MudRadioGroup T="string" @bind-Value="_reason" Class="lms-radio-stack" aria-label="@L["Msg_Report_Reason"]" data-testid="report-reasons">
                 @foreach (var r in Reasons)
                 {
                     <MudRadio T="string" Value="r" data-testid="@($"report-reason-{r}")">@L[$"Msg_Reason_{r}"]</MudRadio>

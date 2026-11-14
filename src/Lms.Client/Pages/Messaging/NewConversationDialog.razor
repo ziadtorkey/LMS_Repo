@@ -27,7 +27,7 @@
             }
             @if (_ready)
             {
-                <RecipientPicker @key="_group" Multiple="_group" MaxPeople="_max" GroupLimit="_max + 1" Preselected="Preselected" SelectedChanged="OnPicked" />
+                <RecipientListPicker @key="_group" Multiple="_group" MaxPeople="_max" GroupLimit="_max + 1" Preselected="Preselected" SelectedChanged="OnPicked" />
             }
             <div class="mt-3">
                 <MessageComposer @bind-Value="_draft" OnSend="CreateAsync" Sending="_sending" Disabled="!CanWrite" />

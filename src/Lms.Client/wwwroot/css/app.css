@@ -103,6 +103,7 @@ html:lang(ar), html:lang(ar) body { font-family: Cairo, "Segoe UI", Tahoma, Aria
 .lms-member { display: flex; align-items: center; gap: 8px; padding-block: 6px; border-block-end: 1px solid var(--mud-palette-lines-default); min-width: 0; }
 .lms-member-name { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
 .lms-member-role, .lms-member-left { font-size: .8125rem; color: var(--mud-palette-text-secondary); }
+.lms-radio-stack { display: flex; flex-direction: column; align-items: flex-start; }
 .lms-picker-to { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin-block-end: 8px; }
 .lms-picker-chip { display: inline-flex; align-items: center; gap: 2px; padding-inline: 12px 2px; min-block-size: 32px; border-radius: 16px; background: var(--mud-palette-background-gray); font-size: .875rem; }
 .lms-picker-chip-x { display: inline-grid; place-items: center; background: none; border: 0; cursor: pointer; color: inherit; min-inline-size: 32px; min-block-size: 32px; border-radius: 50%; }

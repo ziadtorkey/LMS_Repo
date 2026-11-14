@@ -1,6 +1,6 @@
-@* The channel preferences table (spec #615 §6): events as rows, In-app, Email, SMS and Push as columns. Each column header has its icon, name and the address
+@* The channel preferences table (spec #615 §6): events as rows, In-app, Email and Push as columns (no SMS in v1, D76). Each column header has its icon, name and the address
    in use. In-app is always on (locked). A cell the school made mandatory is a locked switch with the Lock icon before it, explained once in the footer.
-   An unavailable channel (no mobile number, no push in this browser) disables its switches and says why. Below 600 px each event is a block with one
+   An unavailable channel (no push in this browser) disables its switches and says why. Below 600 px each event is a block with one
    labelled row per channel (lms-stack-table), so the switches line up. The page keeps the save bar. *@
 <div class="lms-prefs-wrap" data-testid="prefs">
     @* Below 600 px the header row is hidden by the stacked table, so the addresses and the reasons a channel is off are listed here instead. *@
@@ -75,14 +75,13 @@
     /// <summary>Raised after a switch changed (the page shows its save bar).</summary>
     [Parameter] public EventCallback OnChanged { get; set; }
 
-    // Addresses (a masked email or phone number) are always LTR; a sentence follows its own text.
-    private static string CaptionDir(ChannelColumn col) => col.Available && col.Channel is NotificationChannel.Email or NotificationChannel.Sms ? "ltr" : "auto";
+    // Addresses (a masked email) are always LTR; a sentence follows its own text.
+    private static string CaptionDir(ChannelColumn col) => col.Available && col.Channel is NotificationChannel.Email ? "ltr" : "auto";
 
     private static string IconOf(NotificationChannel channel) => channel switch
     {
         NotificationChannel.InApp => Icons.Material.Rounded.Notifications,
         NotificationChannel.Email => Icons.Material.Rounded.Mail,
-        NotificationChannel.Sms => Icons.Material.Rounded.Sms,
         _ => Icons.Material.Rounded.PhoneIphone,
     };
 

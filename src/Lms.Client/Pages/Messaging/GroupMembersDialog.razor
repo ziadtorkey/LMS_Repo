@@ -55,7 +55,7 @@
                 }
                 else
                 {
-                    <RecipientPicker @key="_pickerKey" Multiple="true" MaxPeople="_max - Active.Count()" GroupLimit="_max" Exclude="Active.Select(p => p.UserId).ToList()" SelectedChanged="p => _toAdd = p" />
+                    <RecipientListPicker @key="_pickerKey" Multiple="true" MaxPeople="_max - Active.Count()" GroupLimit="_max" Exclude="Active.Select(p => p.UserId).ToList()" SelectedChanged="p => _toAdd = p" />
                     <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-2" Disabled="_toAdd.Count == 0 || _busy" OnClick="AddAsync" data-testid="members-add">@L["Msg_Member_Add"]</MudButton>
                 }
             }
