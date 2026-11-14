@@ -33,8 +33,8 @@ public interface IAnnouncementsApi
     Task MarkReadAsync(Guid id, CancellationToken ct = default);
 
     /// <summary>
-    /// The comms announcements addressed to the caller that target this class course, for the merged course page (L15). The route is BE1 Task 14 and is not in the
-    /// wave-1 contract yet: the HTTP client asks <c>/api/me/announcements?classCourseId=</c> and the fake filters by the ClassCourse target.
+    /// The comms announcements addressed to the caller that target this class course, for the merged course page (L15). The dedicated route is BE1 Task 14 and is
+    /// not in the contract yet: the HTTP client answers an empty list (course board only) and never calls <c>/api/me/announcements</c>; the fake filters by the ClassCourse target.
     /// </summary>
     Task<IReadOnlyList<MyAnnouncementDto>> ListForCourseAsync(Guid classCourseId, CancellationToken ct = default);
 }
@@ -69,6 +69,9 @@ public sealed class AnnouncementsApi(Api.ApiHttp http) : IAnnouncementsApi
 
     public Task MarkReadAsync(Guid id, CancellationToken ct = default) => http.SendAsync(HttpMethod.Post, Routes.MyAnnouncementRead(id), null, ct);
 
-    public async Task<IReadOnlyList<MyAnnouncementDto>> ListForCourseAsync(Guid classCourseId, CancellationToken ct = default) =>
-        (await http.GetAsync<PagedResult<MyAnnouncementDto>>($"{Routes.MyAnnouncements}?classCourseId={classCourseId}&page=1&pageSize={Paging.DefaultPageSize}", ct)).Items;
+    // TODO(BE1 Task 14, #724): read the course announcements from the dedicated GET /api/class-courses/{id}/announcements (the merged read) once its route constant
+    // and DTO exist. Until then the course page shows the course board only: /api/me/announcements has no course filter, so asking it would put all of the
+    // caller's announcements on every course page.
+    public Task<IReadOnlyList<MyAnnouncementDto>> ListForCourseAsync(Guid classCourseId, CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyList<MyAnnouncementDto>>([]);
 }

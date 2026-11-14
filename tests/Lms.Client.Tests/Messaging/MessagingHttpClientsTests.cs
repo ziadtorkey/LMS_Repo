@@ -114,4 +114,16 @@ public sealed class MessagingHttpClientsTests
         Assert.Contains((HttpMethod.Get, $"{Routes.ModerationReports}?page=1&pageSize={Paging.DefaultPageSize}&status=Open"), recorder.Requests);
         Assert.Contains((HttpMethod.Post, Routes.ModerationReportResolve(Id)), recorder.Requests);
     }
+
+    [Fact]
+    public async Task The_course_page_never_asks_the_personal_announcement_feed()
+    {
+        var (http, recorder) = Make();
+        var api = new AnnouncementsApi(http);
+
+        var items = await api.ListForCourseAsync(Id);
+
+        Assert.Empty(items); // course board only until the dedicated route exists
+        Assert.DoesNotContain(recorder.Requests, r => r.Path.StartsWith("/api/me/announcements", StringComparison.Ordinal)); // it has no course filter: it would list everything
+    }
 }
