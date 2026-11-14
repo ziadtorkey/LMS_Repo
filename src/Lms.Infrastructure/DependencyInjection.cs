@@ -14,6 +14,7 @@ using Lms.Infrastructure.Organizations;
 using Lms.Infrastructure.Notifications;
 using Lms.Infrastructure.Courses;
 using Lms.Infrastructure.People;
+using Lms.Infrastructure.Messaging;
 using Lms.Infrastructure.Persistence;
 using Lms.Infrastructure.Seeding;
 using Microsoft.Extensions.Configuration;
@@ -46,6 +47,7 @@ public static class DependencyInjection
         services.AddAcademic();
         services.AddContent();
         services.AddPackages(configuration);
+        services.AddMessaging();
         services.AddExternalIdentity(configuration, environment);
         return services;
     }
