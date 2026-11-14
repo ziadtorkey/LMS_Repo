@@ -139,6 +139,8 @@ public sealed class LmsApiFactory : WebApplicationFactory<Program>, IAsyncLifeti
         {
             services.AddAuthentication(TestAuthHandler.SchemeName)
                 .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(TestAuthHandler.SchemeName, _ => { });
+            services.AddSingleton<Lms.Infrastructure.LiveSessions.FakeMeetingProvider>();
+            services.AddSingleton<Lms.Domain.LiveSessions.IMeetingProvider>(sp => sp.GetRequiredService<Lms.Infrastructure.LiveSessions.FakeMeetingProvider>());
             services.AddSingleton<IEndpointModule, TestEndpoints>();
             services.AddSingleton<TestPolicyEvaluator>();
             services.AddScoped<IPolicyEvaluator>(sp => sp.GetRequiredService<TestPolicyEvaluator>());
