@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Lms.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(LmsDbContext))]
-    [Migration("20261114005912_AddAbsenceExcuses")]
+    [Migration("20261114010315_AddAbsenceExcuses")]
     partial class AddAbsenceExcuses
     {
         /// <inheritdoc />
