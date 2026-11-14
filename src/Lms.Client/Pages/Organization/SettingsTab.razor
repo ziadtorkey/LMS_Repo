@@ -19,8 +19,7 @@
     {
         @foreach (var category in Categories)
         {
-            <section class="mb-6" data-testid="@($"settings-group-{category}")" aria-labelledby="@($"settings-heading-{category}")">
-                <MudText Typo="Typo.subtitle1" HtmlTag="h3" Class="mb-2" id="@($"settings-heading-{category}")">@L[$"SettingCategory_{category}"]</MudText>
+            <SectionCard Title="@L[$"SettingCategory_{category}"]" Icon="@Icons.Material.Rounded.Tune" TestId="@($"settings-group-{category}")">
                 @foreach (var definition in _catalog.Where(d => d.Category == category))
                 {
                     var name = definition.Name;
@@ -52,7 +51,7 @@
                         </div>
                     </div>
                 }
-            </section>
+            </SectionCard>
         }
     }
 </div>

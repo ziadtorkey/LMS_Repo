@@ -220,4 +220,19 @@ public sealed class SettingsTabTests : ClientTestContext
         Assert.Contains("الإعدادات", tabs);
         Assert.Contains("السياسات", tabs);
     }
+
+    [Fact]
+    public void Each_setting_category_is_a_card_with_an_h2_heading()
+    {
+        var cut = RenderTab();
+
+        var groups = cut.FindAll("[data-testid^=settings-group-]");
+        Assert.NotEmpty(groups);
+        Assert.All(groups, g =>
+        {
+            Assert.Contains("lms-section", g.ClassName);
+            Assert.NotNull(g.QuerySelector("h2"));
+            Assert.Null(g.QuerySelector("h3"));
+        });
+    }
 }
