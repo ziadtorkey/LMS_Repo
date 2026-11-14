@@ -40,6 +40,15 @@ public static partial class Routes
     /// <summary>POST (no body) — <c>Messaging.Send</c>: marks the conversation read up to its last message (<c>LastReadMessageId</c>).</summary>
     public const string ConversationReadPattern = ConversationPattern + "/read";
 
+    /// <summary>POST (multipart, one file → <c>PendingAttachmentDto</c>, 201) — <c>Messaging.Send</c>; at attach time the caller is a participant who may post (404 non-participant; 403 left, restricted or read-only for them); <c>Messaging.MaxAttachmentMb</c> per file (413), the asset allow-list (422 <c>attachment_invalid</c>), at most <c>MessagingLimits.MaxAttachmentsPerMessage</c> pending, <c>Messaging.UploadsPerMinute</c> (429 <c>rate_limited</c>).</summary>
+    public const string ConversationAttachmentsPattern = ConversationPattern + "/attachments";
+
+    /// <summary>DELETE — <c>Messaging.Send</c>: the uploader removes their own pending attachment (404 for another user's or an attached one).</summary>
+    public const string ConversationAttachmentPattern = ConversationAttachmentsPattern + "/{aid:guid}";
+
+    /// <summary>GET → a signed, short-lived URL — <c>Messaging.View</c>; participants only (404 otherwise).</summary>
+    public const string MessageAttachmentUrlPattern = MessagePattern + "/attachments/{fid:guid}/url";
+
     /// <summary>GET <c>?q=&amp;conversationId=&amp;page=</c> → <c>MessageSearchResultDto[]</c> — <c>Messaging.View</c>; only the caller's conversations; minimum 2 characters, 50 results, a 200-hit window, rate limited.</summary>
     public const string MessageSearch = "/api/messages/search";
 
@@ -91,7 +100,7 @@ public static partial class Routes
     /// <summary>POST (<c>AudiencePreviewRequest</c> → <c>AudiencePreviewDto</c>) — <c>Announcements.Manage</c>: the count before publishing.</summary>
     public const string OrgAnnouncementAudiencePreview = OrgAnnouncements + "/audience-preview";
 
-    /// <summary>POST (multipart, one file → <c>AnnouncementAttachmentUploadDto</c>) — <c>Announcements.Manage</c>: uploads a pending attachment for a draft; the asset file rules, up to <c>Announcements.MaxAttachments</c>; 429 <c>rate_limited</c> (<c>Announcements.UploadsPerMinute</c>); 400 <c>attachment_invalid</c>.</summary>
+    /// <summary>POST (multipart, one file → <c>AnnouncementAttachmentUploadDto</c>) — <c>Announcements.Manage</c>: uploads a pending attachment for a draft; the asset file rules, up to <c>Announcements.MaxAttachments</c>; 429 <c>rate_limited</c> (<c>Announcements.UploadsPerMinute</c>); 422 <c>attachment_invalid</c>.</summary>
     public const string OrgAnnouncementAttachments = OrgAnnouncements + "/attachments";
 
     /// <summary>DELETE — <c>Announcements.Manage</c>: removes a pending attachment the caller uploaded and no saved announcement uses yet (404 otherwise).</summary>
@@ -146,6 +155,9 @@ public static partial class Routes
     public static string ConversationRead(Guid id) => $"{Conversation(id)}/read";
     public static string ConversationMute(Guid id) => $"{Conversation(id)}/mute";
     public static string ConversationLeave(Guid id) => $"{Conversation(id)}/leave";
+    public static string ConversationAttachments(Guid id) => $"{Conversation(id)}/attachments";
+    public static string ConversationAttachment(Guid id, Guid attachmentId) => $"{ConversationAttachments(id)}/{attachmentId}";
+    public static string MessageAttachmentUrl(Guid id, Guid messageId, Guid fileId) => $"{Message(id, messageId)}/attachments/{fileId}/url";
     public static string ConversationParticipants(Guid id) => $"{Conversation(id)}/participants";
     public static string ConversationParticipant(Guid id, Guid userId) => $"{ConversationParticipants(id)}/{userId}";
     public static string ConversationReadOnly(Guid id) => $"{Conversation(id)}/read-only";

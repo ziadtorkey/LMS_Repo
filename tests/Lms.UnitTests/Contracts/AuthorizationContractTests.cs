@@ -144,7 +144,8 @@ public partial class AuthorizationContractTests
             "excuse_comment_required", "excuse_attachment_invalid", "excuse_not_pending",
             // M6 wave 1 (messaging, announcements, delivery)
             "messaging_not_allowed", "conversation_closed", "message_too_long", "message_delete_window_closed", "report_duplicate", "rate_limited",
-            "notification_mandatory", "group_read_only", "announcement_target_invalid", "attachment_invalid", "announcement_not_editable", "rules_looser_than_default",
+            "notification_mandatory", "group_read_only", "announcement_target_invalid", "announcement_not_editable", "rules_looser_than_default",
+            "conversation_read_only", "comms_cap_above_ceiling", "attachment_invalid",
         ];
 
         Assert.All(fields, f => Assert.Equal(f.Name, (string)f.GetRawConstantValue()!));

@@ -13,7 +13,7 @@ public sealed record AnnouncementDeliverySummaryDto(IReadOnlyList<AnnouncementDe
 
 /// <summary>
 /// POST <c>/api/comms/announcements/attachments</c> (multipart, <c>Announcements.Manage</c>): a file uploaded for a draft that is not saved yet; its <c>FileId</c> goes into <c>AttachmentFileIds</c>.
-/// Same file rules as the assets, up to <c>Announcements.MaxAttachments</c> per announcement; 400 <c>attachment_invalid</c> otherwise.
+/// Same file rules as the assets, up to <c>Announcements.MaxAttachments</c> per announcement; 422 <c>attachment_invalid</c> otherwise.
 /// A pending upload that no saved announcement uses within 24 hours is orphaned: the retention job of the announcement store (M6 Task 13) deletes the file and its row.
 /// </summary>
 public sealed record AnnouncementAttachmentUploadDto(Guid FileId, string FileName, string ContentType, long SizeBytes);

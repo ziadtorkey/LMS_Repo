@@ -70,14 +70,14 @@ public sealed class MessagingContractTests
         Assert.Equal(MessagingRuleModes.Deny, D(BuiltInRoles.Guardian, BuiltInRoles.OrgAdmin));
         Assert.Equal(MessagingRuleModes.Relationship, D(BuiltInRoles.Teacher, BuiltInRoles.Student)); // their own students
         Assert.Equal(MessagingRuleModes.Relationship, D(BuiltInRoles.Teacher, BuiltInRoles.Guardian));
-        Assert.Equal(MessagingRuleModes.Allow, D(BuiltInRoles.Teacher, BuiltInRoles.Teacher));
+        Assert.Equal(MessagingRuleModes.SameUnit, D(BuiltInRoles.Teacher, BuiltInRoles.Teacher));
         Assert.Equal(MessagingRuleModes.Relationship, D(BuiltInRoles.Counselor, BuiltInRoles.Student));
         Assert.Equal(MessagingRuleModes.Relationship, D(BuiltInRoles.Supervisor, BuiltInRoles.Guardian));
         // managers and Org Admins: no private one-to-one with a student (groups and announcements only)
         Assert.Equal(MessagingRuleModes.Deny, D(BuiltInRoles.Manager, BuiltInRoles.Student));
         Assert.Equal(MessagingRuleModes.Deny, D(BuiltInRoles.OrgAdmin, BuiltInRoles.Student));
-        Assert.Equal(MessagingRuleModes.Allow, D(BuiltInRoles.Manager, BuiltInRoles.Guardian));
-        Assert.Equal(MessagingRuleModes.Allow, D(BuiltInRoles.OrgAdmin, BuiltInRoles.Teacher));
+        Assert.Equal(MessagingRuleModes.SameUnit, D(BuiltInRoles.Manager, BuiltInRoles.Guardian));
+        Assert.Equal(MessagingRuleModes.SameUnit, D(BuiltInRoles.OrgAdmin, BuiltInRoles.Teacher));
         Assert.Equal(MessagingRuleModes.Deny, D("Custom", BuiltInRoles.Teacher)); // an unknown role is denied
     }
 
@@ -87,7 +87,7 @@ public sealed class MessagingContractTests
         var matrix = MessagingRuleDefaults.Matrix();
 
         Assert.Equal(49, matrix.Count);
-        Assert.DoesNotContain(matrix, c => c.Mode == MessagingRuleModes.SameUnit); // no default uses SameUnit
+        Assert.DoesNotContain(matrix, c => c.Mode == MessagingRuleModes.Allow); // no default is Anywhere: staff reach staff in the same unit
         Assert.Equal(49, matrix.Select(c => (c.FromRole, c.ToRole)).Distinct().Count());
         Assert.Empty(MessagingRuleDefaults.Loosened(matrix)); // the defaults themselves are valid
     }
@@ -114,6 +114,7 @@ public sealed class MessagingContractTests
         Assert.Single(MessagingRuleDefaults.Loosened([new(BuiltInRoles.Guardian, BuiltInRoles.OrgAdmin, MessagingRuleModes.Allow)]));
         // narrowing and restoring are accepted; an unknown role or mode is refused
         Assert.Empty(MessagingRuleDefaults.Loosened([new(BuiltInRoles.Teacher, BuiltInRoles.Teacher, MessagingRuleModes.Deny)]));
+        Assert.Single(MessagingRuleDefaults.Loosened([new(BuiltInRoles.Teacher, BuiltInRoles.Teacher, MessagingRuleModes.Allow)]));
         Assert.Empty(MessagingRuleDefaults.Loosened([new(BuiltInRoles.Teacher, BuiltInRoles.Student, MessagingRuleModes.Relationship)]));
         Assert.Single(MessagingRuleDefaults.Loosened([new("Hacker", BuiltInRoles.Teacher, MessagingRuleModes.Deny)]));
         Assert.Single(MessagingRuleDefaults.Loosened([new(BuiltInRoles.Teacher, BuiltInRoles.Teacher, "Maybe")]));
@@ -153,7 +154,7 @@ public sealed class MessagingContractTests
         Assert.Equal((90, false, 50, 10), (SettingKeys.CommsDeliveryRetentionDays.Default, SettingKeys.MessagingReadReceipts.Default,
             SettingKeys.MessagingMaxGroupSize.Default, SettingKeys.AnnouncementsMaxPerAuthorPerDay.Default));
         var commsSettings = SettingCatalog.All.Where(d => d.Name.StartsWith("Comms.") || d.Name.StartsWith("Messaging.") || d.Name.StartsWith("Announcements.")).ToList();
-        Assert.Equal(17, commsSettings.Count);
+        Assert.Equal(18, commsSettings.Count);
         Assert.All(commsSettings, d => Assert.True(d.ClientLevelOnly, d.Name)); // only the Org Admin at the client root edits them
         Assert.All(SettingCatalog.All.Where(d => d.Kind == SettingValueKinds.Int), d => Assert.True(d.Min is not null && d.Max is not null, d.Name));
     }

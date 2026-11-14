@@ -250,14 +250,20 @@ public static class ProblemCodes
     /// <summary>A student cannot post in a group (D74), or the group was set read-only; guardians may post only in teacher-run groups that include guardians (D77), staff always (403).</summary>
     public const string group_read_only = nameof(group_read_only);
 
+    /// <summary>The caller cannot post now (403): the conversation is read-only for them, see <c>ConversationReadOnlyReasons</c> (the <c>reason</c> field); history stays readable.</summary>
+    public const string conversation_read_only = nameof(conversation_read_only);
+
+    /// <summary>A cap was raised above the platform ceiling (422).</summary>
+    public const string comms_cap_above_ceiling = nameof(comms_cap_above_ceiling);
+
+    /// <summary>A message attachment is not allowed: type, content, size or count (422).</summary>
+    public const string attachment_invalid = nameof(attachment_invalid);
+
     /// <summary>A mandatory notification cannot be switched off (409).</summary>
     public const string notification_mandatory = nameof(notification_mandatory);
 
     /// <summary>The announcement targets are not valid together, or a required target is missing (400).</summary>
     public const string announcement_target_invalid = nameof(announcement_target_invalid);
-
-    /// <summary>An uploaded attachment is refused: a type outside the asset allow-list, a size over the limit, a content sniff mismatch, or more than <c>Announcements.MaxAttachments</c> (400).</summary>
-    public const string attachment_invalid = nameof(attachment_invalid);
 
     /// <summary>A published announcement allows only its expiry, pin and withdrawal to change (409).</summary>
     public const string announcement_not_editable = nameof(announcement_not_editable);

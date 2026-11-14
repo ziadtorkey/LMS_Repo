@@ -1924,7 +1924,6 @@
   <data name="Error_report_duplicate" xml:space="preserve"><value>You already reported this message.</value></data>
   <data name="Error_rate_limited" xml:space="preserve"><value>Too many requests. Try again later.</value></data>
   <data name="Error_notification_mandatory" xml:space="preserve"><value>This notification cannot be switched off.</value></data>
-  <data name="Error_attachment_invalid" xml:space="preserve"><value>The attachment is not allowed: check its type and size, and the number of attachments.</value></data>
   <data name="Error_announcement_target_invalid" xml:space="preserve"><value>The announcement audience is not valid.</value></data>
   <data name="Error_announcement_not_editable" xml:space="preserve"><value>A published announcement allows only its expiry, pin and withdrawal to change.</value></data>
   <data name="Error_rules_looser_than_default" xml:space="preserve"><value>A client may only narrow the messaging rules, not widen them.</value></data>
@@ -1951,6 +1950,7 @@
   <data name="Setting_Messaging_MaxPerMinute" xml:space="preserve"><value>Messages per minute</value></data>
   <data name="Setting_Messaging_MaxNewConversationsPerDay" xml:space="preserve"><value>New conversations per day</value></data>
   <data name="Setting_Messaging_MaxGroupSize" xml:space="preserve"><value>Largest group conversation</value></data>
+  <data name="Setting_Messaging_UploadsPerMinute" xml:space="preserve"><value>Attachment uploads per minute</value></data>
   <data name="Setting_Announcements_MaxPerAuthorPerDay" xml:space="preserve"><value>Announcements per author per day</value></data>
   <data name="Setting_Announcements_MaxAttachments" xml:space="preserve"><value>Attachments per announcement</value></data>
   <data name="Setting_Announcements_UploadsPerMinute" xml:space="preserve"><value>Announcement uploads per minute</value></data>
@@ -1984,6 +1984,18 @@
   <data name="Msg_Reason_Spam" xml:space="preserve"><value>Spam</value></data>
   <data name="Msg_Reason_Safety" xml:space="preserve"><value>Safety concern</value></data>
   <data name="Msg_Reason_Other" xml:space="preserve"><value>Other</value></data>
+  <data name="Msg_ReadOnly_group_students_read_only" xml:space="preserve"><value>Only the teacher and staff post in this group. You can reply to the teacher privately.</value></data>
+  <data name="Msg_ReadOnly_group_guardians_read_only" xml:space="preserve"><value>Only staff post in this group.</value></data>
+  <data name="Msg_ReadOnly_rule" xml:space="preserve"><value>This conversation is read-only because messaging rules changed.</value></data>
+  <data name="Msg_ReadOnly_blocked_or_rule" xml:space="preserve"><value>You cannot send messages in this conversation.</value></data>
+  <data name="Msg_ReadOnly_restricted" xml:space="preserve"><value>Your messaging is restricted for now.</value></data>
+  <data name="Msg_ReadOnly_locked" xml:space="preserve"><value>A moderator locked this conversation.</value></data>
+  <data name="Msg_Denied_rule" xml:space="preserve"><value>You cannot send messages to this person.</value></data>
+  <data name="Msg_Denied_relationship" xml:space="preserve"><value>You can only message people you share a class with.</value></data>
+  <data name="Msg_Denied_restricted" xml:space="preserve"><value>Your messaging is restricted for now.</value></data>
+  <data name="Msg_Denied_blocked_or_rule" xml:space="preserve"><value>You cannot send messages to this person.</value></data>
+  <data name="Msg_Denied_private_group_with_student" xml:space="preserve"><value>A group with a student needs at least three members.</value></data>
+  <data name="Msg_Denied_group_full" xml:space="preserve"><value>This group has reached its size limit.</value></data>
   <data name="Msg_ReportStatus_Open" xml:space="preserve"><value>Open</value></data>
   <data name="Msg_ReportStatus_Dismissed" xml:space="preserve"><value>Dismissed</value></data>
   <data name="Msg_ReportStatus_Actioned" xml:space="preserve"><value>Action taken</value></data>
@@ -2024,4 +2036,7 @@
   <data name="Comms_PrefSource_Mandatory" xml:space="preserve"><value>Required</value></data>
   <data name="Msg_Rule_SameUnit" xml:space="preserve"><value>Anyone in the same unit</value></data>
   <data name="Error_group_read_only" xml:space="preserve"><value>Only staff can post in this group.</value></data>
+  <data name="Error_conversation_read_only" xml:space="preserve"><value>You cannot post in this conversation.</value></data>
+  <data name="Error_comms_cap_above_ceiling" xml:space="preserve"><value>This limit is above the maximum the platform allows.</value></data>
+  <data name="Error_attachment_invalid" xml:space="preserve"><value>The attachment is not allowed: check its type and size, and the number of attachments.</value></data>
 </root>

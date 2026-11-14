@@ -129,6 +129,9 @@ public static class SettingKeys
     public static readonly SettingKey<int> MessagingMaxNewConversationsPerDay = new("Messaging.MaxNewConversationsPerDay", 20);
     public static readonly SettingKey<int> MessagingMaxGroupSize = new("Messaging.MaxGroupSize", 50);
 
+    /// <summary>Per-user cap of message attachment uploads a minute (429 <c>rate_limited</c> over it).</summary>
+    public static readonly SettingKey<int> MessagingUploadsPerMinute = new("Messaging.UploadsPerMinute", 10);
+
     /// <summary>Per-author cap of announcements a day.</summary>
     public static readonly SettingKey<int> AnnouncementsMaxPerAuthorPerDay = new("Announcements.MaxPerAuthorPerDay", 10);
 
