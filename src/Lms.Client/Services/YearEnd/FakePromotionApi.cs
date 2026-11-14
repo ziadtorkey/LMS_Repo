@@ -32,6 +32,7 @@ public sealed class FakePromotionApi : IPromotionApi
         public string Outcome { get; set; } = classId == FinalClassId ? PromotionOutcomes.Graduate : PromotionOutcomes.Promote;
         public Guid? TargetClassId { get; set; }
         public string? Failure { get; set; }
+        public bool Restored { get; set; }
     }
 
     private sealed class Run
@@ -54,6 +55,9 @@ public sealed class FakePromotionApi : IPromotionApi
     }
 
     public int Students { get; }
+
+    /// <summary>How many students of a run were put back by an undo (the successful ones only, D84).</summary>
+    public int RestoredCount(Guid runId) => Find(runId).Rows.Count(r => r.Restored);
 
     public Func<DateTime> Now { get; set; } = () => DateTime.UtcNow;
     public Guid Me { get; set; } = Guid.Parse("00000000-0000-0000-0000-0000000f0a02");
@@ -166,7 +170,8 @@ public sealed class FakePromotionApi : IPromotionApi
         if (ActivityInNewYear) throw FakeProblems.Of(409, ProblemCodes.promotion_undo_activity_exists);
         run.State = PromotionRunStates.Undone;
         run.UndoUntil = null;
-        foreach (var row in run.Rows) row.Failure = null;
+        // D84: only the students that were moved are put back; the ones that failed were never moved and stay listed for a fix and a new run.
+        foreach (var row in run.Rows.Where(r => r.Failure is null)) row.Restored = true;
         return Task.FromResult(Dto(run));
     }
 
