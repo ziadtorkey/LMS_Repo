@@ -29,10 +29,9 @@ else
         <Thread>
             <ThreadPane Label="@T("هدى الحربي", "Huda Al-Harbi")" Announcement="@_announce">
                 <Header>
-                    <MudIconButton Icon="@Icons.Material.Rounded.ArrowBack" Class="lms-icon-flip lms-touch lms-thread-back" aria-label="@T("العودة إلى الرسائل", "Back to messages")" OnClick="() => _showThread = false" />
-                    <MudAvatar Size="Size.Medium" Class="lms-conv-avatar" aria-hidden="true">HA</MudAvatar>
-                    <div class="flex-grow-1" style="min-inline-size:0"><b><bdi>@T("هدى الحربي", "Huda Al-Harbi")</bdi></b><div class="lms-muted" style="font-size:.8125rem">@T("ولية أمر عمر صالح · 10-أ", "Guardian of Omar Saleh · 10-A")</div></div>
-                    <MudIconButton Icon="@Icons.Material.Rounded.MoreVert" Class="lms-touch" aria-label="@T("مزيد من الإجراءات", "More actions")" />
+                    <ThreadHeader Name="@T("هدى الحربي", "Huda Al-Harbi")" Caption="@T("ولية أمر عمر صالح · 10-أ", "Guardian of Omar Saleh · 10-A")" OnBack="() => _showThread = false">
+                        <Actions><MudIconButton Icon="@Icons.Material.Rounded.MoreVert" Class="lms-touch" aria-label="@T("مزيد من الإجراءات", "More actions")" /></Actions>
+                    </ThreadHeader>
                 </Header>
                 <ChildContent>
                     <DaySeparator Text="@T("أمس", "Yesterday")" />
@@ -81,11 +80,83 @@ else
             <Audience><MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Icon="@Icons.Material.Rounded.MenuBook">@T("فيزياء 1 · 10-أ", "Physics 1 · 10-A")</MudChip></Audience>
         </AnnouncementCard>
     </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,400px),1fr));gap:16px;margin-block:16px">
+        <SectionCard Title="@T("لوحة الإشعارات", "Notification panel")" Flush="true" TestId="gallery-notifs">
+            <NotificationPanel HasUnread="true">
+                <NotificationItem Href="dev/messaging-gallery" Icon="@Icons.Material.Rounded.Forum" Unread="true" TimeText="@T("قبل دقيقتين", "2 min")"
+                                  Quote="@T("«شكرًا لك، سيُحضر النموذج غدًا.»", "“Thank you, he will bring the form tomorrow.”")"
+                                  Text="@T("أرسلت إليك هدى الحربي رسالة", "Huda Al-Harbi sent you a message")" TestId="notif-1">
+                    @if (Culture.IsRightToLeft)
+                    {
+                        <text>أرسلت إليك <b><bdi>هدى الحربي</bdi></b> رسالة</text>
+                    }
+                    else
+                    {
+                        <text><b><bdi>Huda Al-Harbi</bdi></b> sent you a message</text>
+                    }
+                </NotificationItem>
+                <NotificationItem Href="dev/messaging-gallery" Icon="@Icons.Material.Rounded.Groups" Unread="true" TimeText="@T("قبل 20 دقيقة", "20 min")"
+                                  Text="@T("3 رسائل جديدة في فيزياء 1 · 10-أ — أولياء الأمور", "3 new messages in Physics 1 · 10-A — guardians")">
+                    @T("3 رسائل جديدة في", "3 new messages in") <b><bdi>@T("فيزياء 1 · 10-أ — أولياء الأمور", "Physics 1 · 10-A — guardians")</bdi></b>
+                </NotificationItem>
+                <ListGroupLabel Text="@L["Notif_Earlier"]" />
+                <NotificationItem Href="dev/messaging-gallery" Icon="@Icons.Material.Rounded.Campaign" TimeText="@T("أمس", "Yesterday")"
+                                  Text="@T("إعلان جديد: أمسية أولياء الأمور", "New announcement: Parents' evening")">
+                    @T("إعلان جديد:", "New announcement:") <b><bdi>@T("أمسية أولياء الأمور", "Parents' evening")</bdi></b>
+                </NotificationItem>
+            </NotificationPanel>
+        </SectionCard>
+
+        <SectionCard Title="@T("اختيار المستلمين (مدير)", "Recipient picker (manager)")" Flush="true" TestId="gallery-picker">
+            <div role="listbox" aria-label="@T("المستلمون", "Recipients")">
+                <ListGroupLabel Text="@L["Msg_Picker_People"]" />
+                <SafeguardingOption />
+                <RecipientOption Name="Huda Al-Harbi" Caption="@T("ولية أمر عمر صالح · 10-أ", "Guardian of Omar Saleh · 10-A")" Selected="true" />
+                <ListGroupLabel Text="@L["Msg_Picker_Classes"]" />
+                <RecipientOption Name="@T("الصف العاشر — الطلاب وأولياء الأمور", "Grade 10 — students and guardians")" Icon="@Icons.Material.Rounded.Groups" SizeText="@T("52 شخصًا", "52 people")" />
+                <RecipientOption Name="@T("فيزياء 1 · 10-ب — أولياء الأمور", "Physics 1 · 10-B — guardians")" Icon="@Icons.Material.Rounded.Block" SizeText="31"
+                                 Disabled="true" DisabledReason="@T("غير مسموح: لا تدرّس 10-ب", "Not allowed: you don’t teach 10-B")" />
+            </div>
+            <div class="pa-3"><MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">@L["Msg_Group_Note"]</MudAlert></div>
+        </SectionCard>
+    </div>
+
+    <SectionCard Title="@T("رأس محادثة جماعية وقواعد المراسلة", "Group thread header and messaging rules")" TestId="gallery-rules">
+        <ThreadHeader Name="@T("فيزياء 1 · 10-أ — أولياء الأمور", "Physics 1 · 10-A — guardians")" IsGroup="true" MemberCount="24" />
+        <MudSimpleTable Dense="true" Elevation="0" Class="lms-simple-table lms-stack-table mt-3">
+            <thead><tr><th>@T("من", "From")</th><th>@T("طالب", "Student")</th><th>@T("ولي أمر", "Guardian")</th><th>@T("معلم", "Teacher")</th></tr></thead>
+            <tbody>
+                <tr><td data-label="@T("من", "From")">@T("مدير", "Manager")</td>
+                    <td data-label="@T("طالب", "Student")"><MessagingRuleCell Via="MessagingVia.GroupsOnly" Locked="true" /></td>
+                    <td data-label="@T("ولي أمر", "Guardian")"><MessagingRuleCell Via="MessagingVia.Anywhere" /></td>
+                    <td data-label="@T("معلم", "Teacher")"><MessagingRuleCell Via="MessagingVia.Anywhere" /></td></tr>
+                <tr><td data-label="@T("من", "From")">@T("طالب", "Student")</td>
+                    <td data-label="@T("طالب", "Student")"><MessagingRuleCell Via="MessagingVia.NotAllowed" Locked="true" /></td>
+                    <td data-label="@T("ولي أمر", "Guardian")"><MessagingRuleCell Via="MessagingVia.NotAllowed" Locked="true" /></td>
+                    <td data-label="@T("معلم", "Teacher")"><MessagingRuleCell Via="MessagingVia.Relationship" /></td></tr>
+            </tbody>
+        </MudSimpleTable>
+    </SectionCard>
+
+    <SectionCard Title="@T("إعلان جديد", "New announcement")" TestId="gallery-ann-compose">
+        <AnnouncementComposerForm Draft="_annDraft" AllowedScopes="_scopes" ReachCount="590" NowLocal="@(new DateTime(2026, 11, 14, 9, 0, 0))">
+            <Targets>
+                <MudSelect T="string" Label="@T("الوحدات", "Units")" Value="@T("فرع الشمال", "North Branch")" Variant="Variant.Outlined">
+                    <MudSelectItem T="string" Value="@T("فرع الشمال", "North Branch")">@T("فرع الشمال", "North Branch")</MudSelectItem>
+                </MudSelect>
+            </Targets>
+            <Attachments><MudButton Variant="Variant.Outlined" Size="Size.Small" StartIcon="@Icons.Material.Rounded.AttachFile">@T("إضافة ملف", "Add a file")</MudButton></Attachments>
+        </AnnouncementComposerForm>
+    </SectionCard>
 }
 
 @code {
     private bool _showThread = true, _readOnly;
     private string? _draft, _announce;
+    private readonly AnnouncementDraft _annDraft = new() { TitleAr = "لقاءات أولياء الأمور والمعلمين", Scope = AudienceScopeKind.Unit, Mode = PublishMode.Schedule,
+        PublishAtLocal = new DateTime(2026, 11, 15, 7, 0, 0), Pin = true };
+    private readonly AudienceScopeKind[] _scopes = Enum.GetValues<AudienceScopeKind>();
 
     private string T(string ar, string en) => Culture.IsRightToLeft ? ar : en;
 

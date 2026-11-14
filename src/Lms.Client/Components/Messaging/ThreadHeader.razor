@@ -1,0 +1,51 @@
+@* The thread header (spec #615 §2.5): Back (below 900 px only, mirrored in RTL), the avatar, the name and a caption. For a person the caption is their role
+   and context ("Guardian of Omar Saleh · 10-A"); for a group it is "Group · 24 people" and opens Members, so everyone can see exactly who can read
+   the conversation. Nobody outside the participants can read it, and there is no "shared with guardians" state (#613, D69). *@
+<div class="lms-thread-header" data-testid="thread-header">
+    @if (OnBack.HasDelegate)
+    {
+        <MudIconButton Icon="@Icons.Material.Rounded.ArrowBack" Class="lms-icon-flip lms-touch lms-thread-back" aria-label="@L["Msg_Back"]" OnClick="OnBack" data-testid="thread-back" />
+    }
+    <MudAvatar Size="Size.Medium" Class="lms-conv-avatar" aria-hidden="true">
+        @if (IsGroup)
+        {
+            <MudIcon Icon="@Icons.Material.Rounded.Groups" />
+        }
+        else
+        {
+            @Initials
+        }
+    </MudAvatar>
+    <div class="lms-thread-title">
+        <h2 class="lms-thread-name"><bdi>@Name</bdi></h2>
+        @if (IsGroup)
+        {
+            <MudButton Variant="Variant.Text" Size="Size.Small" Class="lms-thread-members" OnClick="OnMembers" data-testid="thread-members">
+                @string.Format(System.Globalization.CultureInfo.CurrentCulture, L["Msg_Group_Members"].Value, MemberCount)
+            </MudButton>
+        }
+        else if (!string.IsNullOrEmpty(Caption))
+        {
+            <span class="lms-thread-caption" dir="auto">@Caption</span>
+        }
+    </div>
+    @Actions
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Name { get; set; } = "";
+
+    /// <summary>A person's role and context; ignored for a group.</summary>
+    [Parameter] public string? Caption { get; set; }
+    [Parameter] public bool IsGroup { get; set; }
+    [Parameter] public int MemberCount { get; set; }
+    [Parameter] public EventCallback OnMembers { get; set; }
+
+    /// <summary>Set on narrow screens: shows Back to messages.</summary>
+    [Parameter] public EventCallback OnBack { get; set; }
+
+    /// <summary>The More actions menu (Mute, Members, Leave group).</summary>
+    [Parameter] public RenderFragment? Actions { get; set; }
+
+    private string Initials => string.Concat(Name.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(w => char.ToUpperInvariant(w[0])));
+}

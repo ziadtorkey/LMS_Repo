@@ -1699,4 +1699,67 @@
   <data name="Ann_ReadMore" xml:space="preserve"><value>Read more</value></data>
   <data name="Ann_ReadLess" xml:space="preserve"><value>Show less</value></data>
   <data name="Ann_Audience" xml:space="preserve"><value>Audience</value></data>
+  <data name="Notif_Unread_Name" xml:space="preserve"><value>Unread: {0}</value></data>
+  <data name="Notif_MarkAll" xml:space="preserve"><value>Mark all as read</value></data>
+  <data name="Notif_Settings" xml:space="preserve"><value>Notification settings</value></data>
+  <data name="Notif_EmptyText" xml:space="preserve"><value>New messages, grades and announcements appear here.</value></data>
+  <data name="Notif_SeeAll" xml:space="preserve"><value>See all notifications</value></data>
+  <data name="Notif_Earlier" xml:space="preserve"><value>Earlier</value></data>
+  <data name="Msg_D69_Title" xml:space="preserve"><value>No students here</value></data>
+  <data name="Msg_D69_Text" xml:space="preserve"><value>Managers and org admins reach students through a class or group conversation, or an announcement, not a private message. Your school’s safeguarding rules set this.</value></data>
+  <data name="Msg_Back" xml:space="preserve"><value>Back to messages</value></data>
+  <data name="Msg_Group_Members" xml:space="preserve"><value>Group · {0} people</value></data>
+  <data name="Msg_Group_Note" xml:space="preserve"><value>Replies go to everyone in the group. To reply privately, people start a new message.</value></data>
+  <data name="Msg_Picker_Classes" xml:space="preserve"><value>Classes and courses</value></data>
+  <data name="Msg_Picker_People" xml:space="preserve"><value>People</value></data>
+  <data name="Rules_Locked" xml:space="preserve"><value>Set by the platform (safeguarding): can’t be loosened</value></data>
+  <data name="Rules_Via_Anywhere" xml:space="preserve"><value>Anyone</value></data>
+  <data name="Rules_Via_SameUnit" xml:space="preserve"><value>Same unit</value></data>
+  <data name="Rules_Via_Relationship" xml:space="preserve"><value>Own classes</value></data>
+  <data name="Rules_Via_NotAllowed" xml:space="preserve"><value>Not allowed</value></data>
+  <data name="Rules_Via_GroupsOnly" xml:space="preserve"><value>Groups only</value></data>
+  <data name="Ann_Roles" xml:space="preserve"><value>Who in these targets</value></data>
+  <data name="Ann_Role_Staff" xml:space="preserve"><value>Staff</value></data>
+  <data name="Ann_Role_Students" xml:space="preserve"><value>Students</value></data>
+  <data name="Ann_Role_Guardians" xml:space="preserve"><value>Guardians</value></data>
+  <data name="Ann_Reach_Counting" xml:space="preserve"><value>Counting who will see it…</value></data>
+  <data name="Ann_Reach_None" xml:space="preserve"><value>Nobody in your scope matches these choices yet.</value></data>
+  <data name="Ann_Reach_Exact" xml:space="preserve"><value>People who will see it: {0}.</value></data>
+  <data name="Ann_Reach_About" xml:space="preserve"><value>About {0} people will see it (counted only in the units you can see).</value></data>
+  <data name="Ann_TitleAr" xml:space="preserve"><value>Title (Arabic)</value></data>
+  <data name="Ann_TitleEn" xml:space="preserve"><value>Title (English)</value></data>
+  <data name="Ann_BodyAr" xml:space="preserve"><value>Text (Arabic)</value></data>
+  <data name="Ann_BodyEn" xml:space="preserve"><value>Text (English)</value></data>
+  <data name="Ann_Error_TitleAr" xml:space="preserve"><value>Enter the title in Arabic too. Each reader sees the title in their language.</value></data>
+  <data name="Ann_Error_TitleEn" xml:space="preserve"><value>Enter the title in English too. Each reader sees the title in their language.</value></data>
+  <data name="Ann_Error_Body" xml:space="preserve"><value>Write the text in at least one language.</value></data>
+  <data name="Ann_Who" xml:space="preserve"><value>Who should see it</value></data>
+  <data name="Ann_Scope_Organization" xml:space="preserve"><value>Organization</value></data>
+  <data name="Ann_Scope_Unit" xml:space="preserve"><value>Unit</value></data>
+  <data name="Ann_Scope_Level" xml:space="preserve"><value>Level</value></data>
+  <data name="Ann_Scope_Class" xml:space="preserve"><value>Class</value></data>
+  <data name="Ann_Scope_ClassCourse" xml:space="preserve"><value>Course</value></data>
+  <data name="Ann_Scope_Group" xml:space="preserve"><value>Group</value></data>
+  <data name="Ann_Error_Targets" xml:space="preserve"><value>Choose at least one.</value></data>
+  <data name="Ann_IncludeSubtree" xml:space="preserve"><value>Include the units below</value></data>
+  <data name="Ann_IncludeSubtreeHelp" xml:space="preserve"><value>The units under the chosen units see it too.</value></data>
+  <data name="Ann_Error_Roles" xml:space="preserve"><value>Choose who should see it: staff, students or guardians.</value></data>
+  <data name="Ann_Publishing" xml:space="preserve"><value>Publishing</value></data>
+  <data name="Ann_Mode_Now" xml:space="preserve"><value>Now</value></data>
+  <data name="Ann_Mode_Schedule" xml:space="preserve"><value>Schedule</value></data>
+  <data name="Ann_Date" xml:space="preserve"><value>Date</value></data>
+  <data name="Ann_Time" xml:space="preserve"><value>Time</value></data>
+  <data name="Ann_Error_When" xml:space="preserve"><value>Choose a date and time in the future.</value></data>
+  <data name="Ann_TimeZone" xml:space="preserve"><value>Times are in your time zone: {0}</value></data>
+  <data name="Ann_Pin" xml:space="preserve"><value>Pin to the top</value></data>
+  <data name="Ann_PinHelp" xml:space="preserve"><value>Pinned announcements stay first until they expire.</value></data>
+  <data name="Ann_Notify" xml:space="preserve"><value>Notify the audience</value></data>
+  <data name="Ann_NotifyHelp" xml:space="preserve"><value>Each person gets it through the channels they chose.</value></data>
+  <data name="Ann_Attachments" xml:space="preserve"><value>Attachments</value></data>
+  <data name="Ann_AttachmentsHelp" xml:space="preserve"><value>Up to 5 files, as in messages.</value></data>
+  <data name="Ann_Expires" xml:space="preserve"><value>Expires on</value></data>
+  <data name="Ann_ExpiresHelp" xml:space="preserve"><value>After this date it moves to Expired. Leave empty to keep it.</value></data>
+  <data name="Ann_SaveDraft" xml:space="preserve"><value>Save as draft</value></data>
+  <data name="Ann_Schedule" xml:space="preserve"><value>Schedule</value></data>
+  <data name="Ann_Publish" xml:space="preserve"><value>Publish</value></data>
 </root>

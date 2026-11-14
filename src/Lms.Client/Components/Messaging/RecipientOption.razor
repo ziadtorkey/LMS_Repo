@@ -1,0 +1,50 @@
+@* One choice in the recipient picker (spec #615 §3.2, class lms-picker-opt), for a MudAutocomplete item template. A person has initials, a name and a caption
+   ("Teacher · Physics 1 · 10-A"); a class or course group has the Groups icon and its size at the end. A near-miss is disabled with its reason in its
+   accessible name; it is offered only for a class in the sender's own scope, never for a person and never with a size (the server decides). *@
+<div class="lms-picker-opt" role="option" aria-selected="@(Selected ? "true" : "false")" aria-disabled="@(Disabled ? "true" : null)" aria-label="@Label"
+     data-testid="@TestId">
+    <span class="lms-picker-check" aria-hidden="true">
+        @if (Selected)
+        {
+            <MudIcon Icon="@Icons.Material.Rounded.Check" Size="Size.Small" />
+        }
+    </span>
+    @if (Icon is not null)
+    {
+        <span class="lms-picker-icon" aria-hidden="true"><MudIcon Icon="@Icon" Size="Size.Small" /></span>
+    }
+    else
+    {
+        <MudAvatar Size="Size.Small" Class="lms-conv-avatar" aria-hidden="true">@Initials</MudAvatar>
+    }
+    <span class="lms-picker-text">
+        <span class="lms-picker-name"><bdi>@Name</bdi></span>
+        @if (!string.IsNullOrEmpty(Disabled ? DisabledReason : Caption))
+        {
+            <span class="lms-picker-caption" dir="auto">@(Disabled ? DisabledReason : Caption)</span>
+        }
+    </span>
+    @if (!Disabled && !string.IsNullOrEmpty(SizeText))
+    {
+        <span class="lms-picker-size" dir="auto">@SizeText</span>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Name { get; set; } = "";
+    [Parameter] public string? Caption { get; set; }
+
+    /// <summary>A group's size ("24 people"); never shown for a disabled option.</summary>
+    [Parameter] public string? SizeText { get; set; }
+
+    /// <summary>An icon instead of initials (Groups for a class or course group, ShieldPerson for the safeguarding row).</summary>
+    [Parameter] public string? Icon { get; set; }
+    [Parameter] public bool Selected { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public string? DisabledReason { get; set; }
+    [Parameter] public string? TestId { get; set; }
+
+    private string Initials => string.Concat(Name.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(w => char.ToUpperInvariant(w[0])));
+
+    private string Label => string.Join(", ", new[] { Name, Disabled ? DisabledReason : Caption, Disabled ? null : SizeText }.Where(s => !string.IsNullOrWhiteSpace(s)));
+}

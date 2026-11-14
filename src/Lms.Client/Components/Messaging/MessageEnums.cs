@@ -17,3 +17,13 @@ public enum MessageRemoval
     ByModerator,
     BySender,
 }
+
+/// <summary>A messaging-rules cell (#613 <c>MessagingRule.Via</c>); GroupsOnly is the D69 floor for managers and org admins to students.</summary>
+public enum MessagingVia
+{
+    Anywhere,
+    SameUnit,
+    Relationship,
+    NotAllowed,
+    GroupsOnly,
+}

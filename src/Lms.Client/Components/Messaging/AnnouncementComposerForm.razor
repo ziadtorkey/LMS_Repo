@@ -1,0 +1,148 @@
+@* The announcement composer (spec #615 §4.4) as a form the page puts in its dialog (full screen below 600 px). Titles in Arabic and English side by side,
+   both required with the reason at the empty field; the bodies; "Who should see it" (the scope kinds the author may use, the page's own target picker,
+   Include the units below for units, the role chips and the reach); Now or Schedule with the time-zone caption; Pin and Notify; attachments; the expiry;
+   then Cancel, Save as draft and Publish or Schedule. It validates what the client can know and sends the draft; the server has the last word. *@
+<div class="lms-form lms-ann-compose" data-testid="ann-compose">
+    <div class="lms-form-grid">
+        <MudTextField T="string" @bind-Value="Draft.TitleAr" Label="@L["Ann_TitleAr"]" dir="rtl" MaxLength="200" Immediate="true" Required="true"
+                      Error="@(_errors.Contains("titleAr"))" ErrorText="@L["Ann_Error_TitleAr"]" data-testid="ann-title-ar" />
+        <MudTextField T="string" @bind-Value="Draft.TitleEn" Label="@L["Ann_TitleEn"]" dir="ltr" MaxLength="200" Immediate="true" Required="true"
+                      Error="@(_errors.Contains("titleEn"))" ErrorText="@L["Ann_Error_TitleEn"]" data-testid="ann-title-en" />
+        <MudTextField T="string" @bind-Value="Draft.BodyAr" Label="@L["Ann_BodyAr"]" dir="rtl" Lines="4" Immediate="true"
+                      Error="@(_errors.Contains("body"))" ErrorText="@L["Ann_Error_Body"]" data-testid="ann-body-ar" />
+        <MudTextField T="string" @bind-Value="Draft.BodyEn" Label="@L["Ann_BodyEn"]" dir="ltr" Lines="4" Immediate="true"
+                      Error="@(_errors.Contains("body"))" data-testid="ann-body-en" />
+    </div>
+
+    <fieldset class="lms-fieldset" data-testid="ann-audience">
+        <legend class="lms-fieldset-legend">@L["Ann_Who"]</legend>
+        <MudToggleGroup T="AudienceScopeKind" Value="Draft.Scope" ValueChanged="ScopeChangedAsync" SelectionMode="SelectionMode.SingleSelection" Color="Color.Primary"
+                        Class="lms-ann-scopes" data-testid="ann-scope">
+            @foreach (var kind in AllowedScopes)
+            {
+                <MudToggleItem Value="@kind" data-testid="@($"ann-scope-{kind}")">@L[$"Ann_Scope_{kind}"]</MudToggleItem>
+            }
+        </MudToggleGroup>
+        @if (Draft.Scope != AudienceScopeKind.Organization)
+        {
+            <div class="lms-ann-targets">@Targets</div>
+            @if (_errors.Contains("targets"))
+            {
+                <span class="lms-field-error" role="alert" data-testid="ann-targets-error">@L["Ann_Error_Targets"]</span>
+            }
+        }
+        @if (Draft.Scope == AudienceScopeKind.Unit)
+        {
+            <ToggleRow Title="@L["Ann_IncludeSubtree"]" Help="@L["Ann_IncludeSubtreeHelp"]" @bind-Value="Draft.IncludeSubtree" TestId="ann-subtree" />
+        }
+        <RoleFilterChips Selected="Draft.Roles" SelectedChanged="StateHasChanged" Error="@(_errors.Contains("roles") ? L["Ann_Error_Roles"].Value : null)" />
+        <ReachEstimate Count="ReachCount" />
+    </fieldset>
+
+    <fieldset class="lms-fieldset" data-testid="ann-publishing">
+        <legend class="lms-fieldset-legend">@L["Ann_Publishing"]</legend>
+        <MudToggleGroup T="PublishMode" @bind-Value="Draft.Mode" SelectionMode="SelectionMode.SingleSelection" Color="Color.Primary" data-testid="ann-mode">
+            <MudToggleItem Value="PublishMode.Now" data-testid="ann-mode-now">@L["Ann_Mode_Now"]</MudToggleItem>
+            <MudToggleItem Value="PublishMode.Schedule" data-testid="ann-mode-schedule">@L["Ann_Mode_Schedule"]</MudToggleItem>
+        </MudToggleGroup>
+        @if (Draft.Mode == PublishMode.Schedule)
+        {
+            <div class="lms-form-grid">
+                <MudDatePicker Date="Draft.PublishAtLocal?.Date" DateChanged="d => SetPublish(d, ScheduleTime)" Label="@L["Ann_Date"]" DateFormat="yyyy-MM-dd"
+                               Error="@(_errors.Contains("when"))" ErrorText="@L["Ann_Error_When"]" data-testid="ann-date" />
+                <MudTimePicker Time="ScheduleTime" TimeChanged="t => SetPublish(Draft.PublishAtLocal?.Date, t)" Label="@L["Ann_Time"]" AmPm="false"
+                               data-testid="ann-time" />
+            </div>
+            <span class="lms-field-help" data-testid="ann-tz">@string.Format(System.Globalization.CultureInfo.CurrentCulture, L["Ann_TimeZone"].Value, TimeZoneId)</span>
+        }
+    </fieldset>
+
+    <div class="lms-ann-toggles">
+        <ToggleRow Title="@L["Ann_Pin"]" Help="@L["Ann_PinHelp"]" @bind-Value="Draft.Pin" TestId="ann-pin" />
+        <ToggleRow Title="@L["Ann_Notify"]" Help="@L["Ann_NotifyHelp"]" @bind-Value="Draft.Notify" TestId="ann-notify" />
+    </div>
+
+    @if (Attachments is not null)
+    {
+        <div class="lms-ann-attach">
+            <span class="lms-field-label">@L["Ann_Attachments"]</span>
+            @Attachments
+            <span class="lms-field-help">@L["Ann_AttachmentsHelp"]</span>
+        </div>
+    }
+
+    <MudDatePicker Date="@(Draft.ExpiresOn?.ToDateTime(TimeOnly.MinValue))" DateChanged="d => Draft.ExpiresOn = d is { } x ? DateOnly.FromDateTime(x) : null"
+                   Label="@L["Ann_Expires"]" HelperText="@L["Ann_ExpiresHelp"]" DateFormat="yyyy-MM-dd" Clearable="true" data-testid="ann-expires" />
+
+    <div class="lms-dialog-actions">
+        <MudButton Variant="Variant.Text" OnClick="OnCancel" Disabled="Busy" data-testid="ann-cancel">@L["Common_Cancel"]</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="SaveDraftAsync" Disabled="Busy" data-testid="ann-save-draft">@L["Ann_SaveDraft"]</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="PublishAsync" Disabled="Busy" data-testid="ann-publish"
+                   StartIcon="@(Draft.Mode == PublishMode.Schedule ? Icons.Material.Rounded.ScheduleSend : Icons.Material.Rounded.Send)" IconClass="lms-icon-flip">
+            @(Draft.Mode == PublishMode.Schedule ? L["Ann_Schedule"] : L["Ann_Publish"])
+        </MudButton>
+    </div>
+</div>
+
+@code {
+    private readonly HashSet<string> _errors = [];
+
+    [Parameter, EditorRequired] public AnnouncementDraft Draft { get; set; } = default!;
+
+    /// <summary>The scope kinds this author may use (a teacher: Course and Group only).</summary>
+    [Parameter, EditorRequired] public IReadOnlyList<AudienceScopeKind> AllowedScopes { get; set; } = [];
+
+    /// <summary>The page's multi-select of targets of the current kind (it knows the author's scope).</summary>
+    [Parameter] public RenderFragment? Targets { get; set; }
+    [Parameter] public RenderFragment? Attachments { get; set; }
+    [Parameter] public int? ReachCount { get; set; }
+    [Parameter] public string TimeZoneId { get; set; } = "Asia/Riyadh";
+
+    /// <summary>The client's "now" in its time zone (D64), so a schedule in the past is caught before the call.</summary>
+    [Parameter] public DateTime NowLocal { get; set; } = DateTime.Now;
+    [Parameter] public bool Busy { get; set; }
+    [Parameter] public EventCallback<AudienceScopeKind> OnScopeChanged { get; set; }
+    [Parameter] public EventCallback<AnnouncementDraft> OnSaveDraft { get; set; }
+    [Parameter] public EventCallback<AnnouncementDraft> OnPublish { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private TimeSpan? ScheduleTime => Draft.PublishAtLocal?.TimeOfDay;
+
+    private void SetPublish(DateTime? date, TimeSpan? time) =>
+        Draft.PublishAtLocal = date is { } d ? d.Date + (time ?? TimeSpan.Zero) : null;
+
+    private async Task ScopeChangedAsync(AudienceScopeKind kind)
+    {
+        Draft.Scope = kind;
+        Draft.TargetIds.Clear(); // targets of another kind no longer apply
+        await OnScopeChanged.InvokeAsync(kind);
+    }
+
+    /// <summary>Checks what the client can know. A draft only needs both titles; publishing needs everything.</summary>
+    public bool Validate(bool publishing)
+    {
+        _errors.Clear();
+        if (string.IsNullOrWhiteSpace(Draft.TitleAr)) _errors.Add("titleAr");
+        if (string.IsNullOrWhiteSpace(Draft.TitleEn)) _errors.Add("titleEn");
+        if (publishing)
+        {
+            if (string.IsNullOrWhiteSpace(Draft.BodyAr) && string.IsNullOrWhiteSpace(Draft.BodyEn)) _errors.Add("body");
+            if (Draft.Scope != AudienceScopeKind.Organization && Draft.TargetIds.Count == 0) _errors.Add("targets");
+            if (Draft.Roles.Count == 0) _errors.Add("roles");
+            if (Draft.Mode == PublishMode.Schedule && (Draft.PublishAtLocal is not { } at || at <= NowLocal)) _errors.Add("when");
+        }
+
+        StateHasChanged();
+        return _errors.Count == 0;
+    }
+
+    private async Task SaveDraftAsync()
+    {
+        if (Validate(publishing: false)) await OnSaveDraft.InvokeAsync(Draft);
+    }
+
+    private async Task PublishAsync()
+    {
+        if (Validate(publishing: true)) await OnPublish.InvokeAsync(Draft);
+    }
+}

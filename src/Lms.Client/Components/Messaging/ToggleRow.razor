@@ -1,0 +1,25 @@
+@* A soft settings row with a switch (spec #615 §4.4, §7a; class lms-toggle-row): the label, a one-line help text and the switch at the end. The whole row
+   is the label, so a tap anywhere toggles it, and the help is the switch's description. *@
+<div class="lms-toggle-row" data-testid="@TestId">
+    <span class="lms-toggle-text">
+        <span class="lms-toggle-title" id="@_titleId">@Title</span>
+        @if (!string.IsNullOrEmpty(Help))
+        {
+            <span class="lms-toggle-help" id="@_helpId">@Help</span>
+        }
+    </span>
+    <MudSwitch T="bool" Value="Value" ValueChanged="ValueChanged" Color="Color.Primary" Disabled="Disabled"
+               aria-labelledby="@_titleId" aria-describedby="@(string.IsNullOrEmpty(Help) ? null : _helpId)" />
+</div>
+
+@code {
+    private readonly string _titleId = "tr-" + Guid.NewGuid().ToString("N")[..8];
+    private readonly string _helpId = "trh-" + Guid.NewGuid().ToString("N")[..8];
+
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+    [Parameter] public string? Help { get; set; }
+    [Parameter] public bool Value { get; set; }
+    [Parameter] public EventCallback<bool> ValueChanged { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public string? TestId { get; set; }
+}

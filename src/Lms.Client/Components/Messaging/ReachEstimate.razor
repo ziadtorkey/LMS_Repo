@@ -1,0 +1,21 @@
+@* The audience reach (spec #615 §4.4): an info line with role="status", counted by the server only inside the author's own scope. Above 100 it is rounded
+   ("About 600 people"), so it can't be used to measure a part of the school the author can't see. The page debounces the request (500 ms). *@
+<MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" Icon="@Icons.Material.Rounded.Groups" Class="lms-reach" data-testid="reach">
+    <span role="status">@Text</span>
+</MudAlert>
+
+@code {
+    /// <summary>The server's count inside the author's scope; null while it is being counted.</summary>
+    [Parameter] public int? Count { get; set; }
+
+    /// <summary>Rounds above 100: to 50 under 1,000 and to 100 above, so a small slice can't be measured.</summary>
+    public static int Rounded(int count) => count <= 100 ? count : count < 1000 ? (int)(Math.Round(count / 50.0) * 50) : (int)(Math.Round(count / 100.0) * 100);
+
+    private string Text => Count switch
+    {
+        null => L["Ann_Reach_Counting"],
+        0 => L["Ann_Reach_None"],
+        <= 100 and var n => string.Format(System.Globalization.CultureInfo.CurrentCulture, L["Ann_Reach_Exact"].Value, n),
+        var n => string.Format(System.Globalization.CultureInfo.CurrentCulture, L["Ann_Reach_About"].Value, Rounded(n.Value)),
+    };
+}
