@@ -381,6 +381,8 @@ All tenant-owned tables: `OrganizationId`; unit-scoped tables: `OrgUnitId`, `Org
 | D73 | Provider data region | Prefer in-Kingdom or GCC processing for the email relay, SMS gateway and push services where offered; otherwise any region, since bodies hold no student data (D66). Owner decision 2026-11-14 (M6 plan O5). |
 | D74 | Class groups read-only for students | In class-course groups only the teacher (and staff) post; students read and reply privately to the teacher. D69 "never message other students" means never, including group posts. Owner decision 2026-11-14. |
 | D75 | No SMS to guardians | Guardians never receive SMS, not even urgent school-wide announcements; they get email and push. SMS is only for adult accounts about themselves (D72). Owner decision 2026-11-14. |
+| D76 | No SMS in v1 | No SMS anywhere in v1: no SMS channel, preferences, caps, consent or gateway. Email and push only. SMS may come in a later version. Supersedes D68 and the SMS parts of D66, D72, D73 and D75. Owner decision 2026-11-14. |
+| D77 | Guardians may post in groups | In teacher-run groups that include guardians, guardians may post (other guardians read it). Students stay read-only (D74). Owner decision 2026-11-14. |
 
 ---
 
