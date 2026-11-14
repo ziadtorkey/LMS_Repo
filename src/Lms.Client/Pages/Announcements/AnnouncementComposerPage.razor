@@ -178,18 +178,7 @@ else
         await ApiCalls.RunAsync(async () => _reach = (await Api.PreviewAudienceAsync(new AudiencePreviewRequest(_unitId, Targets(), Roles()))).Count, Navigation, L, m => _error = m);
     }
 
-    private bool TryUtc(DateTime local, out DateTime utc)
-    {
-        var unspecified = DateTime.SpecifyKind(local, DateTimeKind.Unspecified);
-        if (_zone.IsInvalidTime(unspecified))
-        {
-            utc = default;
-            return false;
-        }
-
-        utc = TimeZoneInfo.ConvertTimeToUtc(unspecified, _zone);
-        return true;
-    }
+    private bool TryUtc(DateTime local, out DateTime utc) => AnnouncementTime.TryToUtc(local, _zone, out utc);
 
     private async Task SaveAsync(AnnouncementDraft d, bool publish)
     {

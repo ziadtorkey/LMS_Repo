@@ -2184,4 +2184,6 @@
   <data name="PrefsPage_EmailBlocked" xml:space="preserve"><value>البريد محظور لهذا العنوان</value></data>
   <data name="PrefsPage_PushOnHere" xml:space="preserve"><value>هذا المتصفح: مفعّل</value></data>
   <data name="PrefsPage_PushOffHere" xml:space="preserve"><value>فعّل الإشعارات لهذا المتصفح أولًا</value></data>
+  <data name="Announce_SourceCourse" xml:space="preserve"><value>لوحة المقرر</value></data>
+  <data name="Announce_SourceSchool" xml:space="preserve"><value>إعلان المدرسة</value></data>
 </root>

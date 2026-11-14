@@ -3,9 +3,12 @@
 @using Lms.Client.Components
 @using Lms.Client.Components.Editors
 @using Lms.Client.Services.Api
+@using Lms.Client.Services.Messaging
+@using Lms.Shared.Messaging
 @using Lms.Shared.Authorization
 @using Lms.Shared.Forums
 @inject IForumsApi Forum
+@inject IAnnouncementsApi OrgAnnouncements
 @inject PermissionState PermState
 @inject ICultureService Culture
 @inject IDialogService Dialogs
@@ -52,34 +55,42 @@ else
     {
         <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
     }
-    else if (_items.Count == 0)
+    else if (_rows.Count == 0)
     {
         <MudAlert Severity="Severity.Info" data-testid="announcements-empty">@L["Announcements_Empty"]</MudAlert>
     }
     else
     {
         <MudStack Spacing="2" data-testid="announcements-list">
-            @foreach (var a in _items)
+            @foreach (var a in _rows)
             {
-                <MudPaper Outlined="true" Class="pa-3" data-testid="@($"announcement-{a.Id}")">
+                <MudPaper Outlined="true" Class="pa-3" data-testid="@($"announcement-{a.Id}")" data-source="@a.Source">
                     <MudStack Spacing="1">
                         <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
                             <MudText Typo="Typo.subtitle1">@a.Title</MudText>
+                            <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" data-testid="@($"announcement-source-{a.Id}")">@L[a.Source == RowSource.Course ? "Announce_SourceCourse" : "Announce_SourceSchool"]</MudChip>
                             @if (a.IsPinned)
                             {
                                 <MudChip T="string" Size="Size.Small" Color="Color.Primary" data-testid="@($"announcement-pinned-{a.Id}")">@L["Forum_Pinned"]</MudChip>
                             }
                             <MudSpacer />
                             <MudText Typo="Typo.caption" Class="mud-text-secondary">
-                                @Culture.Pick(a.AuthorNameAr, a.AuthorNameEn) · <span dir="ltr">@a.CreatedAtUtc.ToLocalTime().ToString("d", System.Globalization.CultureInfo.CurrentCulture)</span>
+                                @Culture.Pick(a.AuthorAr, a.AuthorEn) · <span dir="ltr">@a.CreatedAtUtc.ToLocalTime().ToString("d", System.Globalization.CultureInfo.CurrentCulture)</span>
                             </MudText>
-                            @if (PermState.Has(Permissions.Forums.Moderate))
+                            @if (PermState.Has(Permissions.Forums.Moderate) && a.Source == RowSource.Course)
                             {
                                 <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" aria-label="@L["Common_Delete"]"
-                                               OnClick="() => DeleteAsync(a)" data-testid="@($"announcement-delete-{a.Id}")" />
+                                               OnClick="() => DeleteAsync(a.Course!)" data-testid="@($"announcement-delete-{a.Id}")" />
                             }
                         </MudStack>
-                        <SanitizedHtml Html="@a.BodyHtml" TestId="@($"announcement-body-{a.Id}")" />
+                        @if (a.Source == RowSource.Course)
+                        {
+                            <SanitizedHtml Html="@a.Body" TestId="@($"announcement-body-{a.Id}")" />
+                        }
+                        else
+                        {
+                            <div class="lms-ann-body" data-testid="@($"announcement-body-{a.Id}")">@a.Body</div> @* a school announcement is plain text, never markup *@
+                        }
                     </MudStack>
                 </MudPaper>
             }
@@ -90,7 +101,12 @@ else
 @code {
     [Parameter] public Guid Id { get; set; }
 
-    private IReadOnlyList<CourseAnnouncementDto> _items = [];
+    private enum RowSource { Course, School }
+
+    /// <summary>One line of the merged list (L15): an old course-board post or a comms announcement, each with its source.</summary>
+    private sealed record Row(Guid Id, string Title, string Body, bool IsPinned, string AuthorAr, string AuthorEn, DateTime CreatedAtUtc, RowSource Source, CourseAnnouncementDto? Course);
+
+    private IReadOnlyList<Row> _rows = [];
     private string? _error, _formError, _title, _html;
     private bool _loading = true, _pinned, _notify;
     private int _version;
@@ -107,8 +123,26 @@ else
     {
         _loading = true; _error = null;
         if (PermState.Has(Permissions.Forums.View))
-            await ApiCalls.RunAsync(async () => _items = (await Forum.ListAnnouncementsAsync(Id)).Items
-                .OrderByDescending(a => a.IsPinned).ThenByDescending(a => a.CreatedAtUtc).ToList(), Navigation, L, m => _error = m);
+        {
+            await ApiCalls.RunAsync(async () =>
+            {
+                var board = (await Forum.ListAnnouncementsAsync(Id)).Items
+                    .Select(a => new Row(a.Id, a.Title, a.BodyHtml, a.IsPinned, a.AuthorNameAr, a.AuthorNameEn, a.CreatedAtUtc, RowSource.Course, a));
+                var school = new List<Row>();
+                try
+                {
+                    school = [.. (await OrgAnnouncements.ListForCourseAsync(Id)).Select(a => new Row(a.Id,
+                        Culture.Pick(a.TitleAr, a.TitleEn), Culture.Pick(a.BodyAr ?? a.BodyEn ?? string.Empty, a.BodyEn ?? a.BodyAr ?? string.Empty), a.IsPinned,
+                        a.AuthorNameAr, a.AuthorNameEn, a.PublishedAtUtc, RowSource.School, null))];
+                }
+                catch (Exception ex) when (ex is ApiProblemException or HttpRequestException)
+                {
+                    // the school announcements are an addition: the course board still shows when they cannot be read
+                }
+
+                _rows = [.. board.Concat(school).OrderByDescending(r => r.IsPinned).ThenByDescending(r => r.CreatedAtUtc)];
+            }, Navigation, L, m => _error = m);
+        }
         _loading = false;
     }
 

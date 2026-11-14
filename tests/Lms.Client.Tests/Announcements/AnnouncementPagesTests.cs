@@ -263,4 +263,78 @@ public sealed class AnnouncementPagesTests : ClientTestContext
 
         Assert.Equal("الإعلانات", page.WaitForElement("[data-testid=anns-title]").TextContent.Trim());
     }
+
+    [Theory]
+    [InlineData("2026-11-17T23:59:00", "2026-11-17T20:59:00")] // 23:59 in Riyadh (UTC+3): the same UTC day
+    [InlineData("2026-11-18T00:00:00", "2026-11-17T21:00:00")] // one minute later it is the next local day but still the 17th in UTC
+    [InlineData("2026-11-18T00:30:00", "2026-11-17T21:30:00")]
+    public void Expiry_end_of_day_converts_across_midnight_in_riyadh(string local, string expectedUtc)
+    {
+        var ok = AnnouncementTime.TryToUtc(DateTime.Parse(local, CultureInfo.InvariantCulture), TimeZoneInfo.FindSystemTimeZoneById("Asia/Riyadh"), out var utc);
+
+        Assert.True(ok);
+        Assert.Equal(DateTime.Parse(expectedUtc, CultureInfo.InvariantCulture), utc);
+    }
+
+    [Fact]
+    public void A_time_skipped_by_a_clock_change_is_refused()
+    {
+        var newYork = TimeZoneInfo.FindSystemTimeZoneById("America/New_York");
+
+        Assert.False(AnnouncementTime.TryToUtc(new DateTime(2026, 3, 8, 2, 30, 0), newYork, out _));
+        Assert.True(AnnouncementTime.TryToUtc(new DateTime(2026, 3, 8, 23, 59, 0), newYork, out _));
+    }
+
+    [Fact]
+    public async Task The_expiry_is_sent_as_the_end_of_the_local_day_in_utc()
+    {
+        var page = await ComposerAsync(Manager);
+        var form = page.FindComponent<AnnouncementComposerForm>().Instance;
+        form.Draft.TitleAr = "ع";
+        form.Draft.TitleEn = "T";
+        form.Draft.BodyEn = "Body";
+        form.Draft.Scope = AudienceScopeKind.Organization;
+        form.Draft.ExpiresOn = DateOnly.FromDateTime(Now.AddDays(3)); // 2026-11-17
+
+        await page.InvokeAsync(() => form.OnPublish.InvokeAsync(form.Draft));
+
+        page.WaitForAssertion(() => Assert.NotEmpty(_api.ListAsync(new AnnouncementQuery()).GetAwaiter().GetResult().Items));
+        var created = await _api.GetAsync((await _api.ListAsync(new AnnouncementQuery())).Items[0].Id);
+        Assert.Equal(new DateTime(2026, 11, 17, 20, 59, 0, DateTimeKind.Utc), created.ExpiresAtUtc); // 23:59 in Riyadh
+    }
+
+    [Fact]
+    public async Task The_audience_picker_shows_the_servers_403_when_the_author_targets_beyond_their_scope()
+    {
+        var unit = FakeUnits.All[0].Id;
+        _api.OutOfScope.Add(unit);
+        var page = await ComposerAsync(Manager);
+        var picker = page.FindComponent<AudiencePicker>();
+
+        await page.InvokeAsync(() => picker.Instance.SelectedChanged.InvokeAsync([unit]));
+
+        page.WaitForElement("[data-testid=annc-error]"); // the server refused the preview: nothing was counted
+        Assert.DoesNotContain("people will see it", page.Find("[data-testid=reach]").TextContent); // no count is shown
+    }
+
+    [Fact]
+    public async Task Course_page_marks_the_source_of_each_post()
+    {
+        var classCourse = FakeLessonPlansApi.ArabicClassCourseId;
+        await _api.CreateAsync(new CreateAnnouncementRequest(FakeMessagingApi.UnitA, "إعلان", "School notice", "Text", "Text",
+            [new AnnouncementTargetDto(AnnouncementTargetKinds.ClassCourse, classCourse, false)], null, null, null, false, true, null, true));
+        var forum = new FakeForumsApi();
+        forum.Announcements.Add(new(Guid.NewGuid(), classCourse, "Board post", "<p>Hi</p>", false, Guid.NewGuid(), "م", "Teacher", Now.AddDays(-1), null));
+        Services.AddSingleton<IForumsApi>(forum);
+        await PrepareAsync([Permissions.Forums.View]);
+
+        var page = Render<Lms.Client.Pages.Forums.AnnouncementsPage>(p => p.Add(x => x.Id, classCourse));
+        page.WaitForElement("[data-testid=announcements-list]");
+
+        var sources = page.FindAll("[data-source]").Select(e => e.GetAttribute("data-source")).ToList();
+        Assert.Contains("Course", sources);
+        Assert.Contains("School", sources);
+        Assert.Contains("Course board", page.Markup);
+        Assert.Contains("School announcement", page.Markup);
+    }
 }
