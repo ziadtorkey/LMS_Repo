@@ -4083,6 +4083,29 @@ namespace Lms.Infrastructure.Persistence.Migrations
                     b.ToTable("LiveSessionSeries", (string)null);
                 });
 
+            modelBuilder.Entity("Lms.Domain.LiveSessions.ZoomWebhookReceipt", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("EventId")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<DateTime>("ReceivedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventId")
+                        .IsUnique();
+
+                    b.HasIndex("ReceivedAtUtc");
+
+                    b.ToTable("ZoomWebhookReceipts", (string)null);
+                });
+
             modelBuilder.Entity("Lms.Domain.Notifications.Notification", b =>
                 {
                     b.Property<Guid>("Id")

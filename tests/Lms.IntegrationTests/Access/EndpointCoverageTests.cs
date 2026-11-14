@@ -19,6 +19,7 @@ public sealed class EndpointCoverageTests(LmsApiFactory factory)
         ["/api/me/notifications/read-all"] = "self-scoped: marks only the caller's own notifications read",
         ["/api/auth/whoami"] = "identity only: reports who the bearer token belongs to, grants no data",
         ["/api/me"] = "authentication only: the caller lists their own contexts before choosing one",
+        ["/api/integrations/zoom/webhook"] = "anonymous by design (Zoom calls it, D54): authenticated by the HMAC signature over the raw body and a 5 minute window instead",
         ["/api/me/permissions"] = "authentication + valid context; returns the caller's own permissions",
     };
 

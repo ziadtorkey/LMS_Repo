@@ -61,6 +61,9 @@ public sealed class OrgUnitTestHost : IDisposable
         return _host.CreateClient().SendAsync(request);
     }
 
+    /// <summary>Sends a prepared request with no caller at all (an anonymous route such as the Zoom webhook).</summary>
+    public Task<HttpResponseMessage> SendAnonymousAsync(HttpRequestMessage request) => _host.CreateClient().SendAsync(request);
+
     public Task<HttpResponseMessage> SendAsPlatformAdminAsync(HttpMethod method, string url, object? body = null)
     {
         var request = new HttpRequestMessage(method, url);

@@ -91,4 +91,35 @@ public sealed class LiveSession : UnitOwnedEntity
     public void SyncFailed() => Status = LiveSessionRules.SyncFailed;
 
     public void Cancel() => Status = LiveSessionRules.Cancelled;
+
+    /// <summary>A recording link, from the provider or pasted by the teacher.</summary>
+    public void SetRecording(string url, string source)
+    {
+        RecordingUrl = url;
+        RecordingSource = source;
+    }
+
+    /// <summary>The session has started (provider event or polling). False when it already left <c>Scheduled</c>.</summary>
+    public bool MarkLive()
+    {
+        if (Status != LiveSessionRules.Scheduled)
+        {
+            return false;
+        }
+
+        Status = LiveSessionRules.Live;
+        return true;
+    }
+
+    /// <summary>The session has ended. False when it already had (the caller then does nothing more, so the sink runs once).</summary>
+    public bool MarkEnded()
+    {
+        if (Status is not (LiveSessionRules.Scheduled or LiveSessionRules.Live))
+        {
+            return false;
+        }
+
+        Status = LiveSessionRules.Ended;
+        return true;
+    }
 }

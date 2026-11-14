@@ -3,6 +3,7 @@ using Lms.Domain.Classes;
 using Lms.Domain.Content;
 using Lms.Domain.LiveSessions;
 using Lms.Infrastructure.Configuration;
+using Lms.Infrastructure.Jobs;
 using Lms.Infrastructure.Persistence;
 using Lms.Shared.Configuration;
 using Lms.Shared.Content;
@@ -35,7 +36,7 @@ public sealed class LiveSessionProviderException(MeetingFailure failure, int? re
 /// </summary>
 public sealed class LiveSessionService(
     LmsDbContext db, IMeetingProvider provider, IModuleWriter writer, IDataProtectionProvider protection, IClock clock,
-    ISettingsResolver settings, ILogger<LiveSessionService> logger)
+    ISettingsResolver settings, IBackgroundJobs jobs, ILogger<LiveSessionService> logger)
 {
     private const string ProtectorPurpose = "Lms.LiveSessions.Urls";
 
@@ -69,6 +70,7 @@ public sealed class LiveSessionService(
         }
 
         await SyncNewAsync(classCourse, metadata, sessions, rule?.TimeZoneId ?? "UTC", strict: true, ct);
+        await ScheduleRemindersAsync(classCourse, sessions, ct);
         return sessions;
     }
 
@@ -224,7 +226,13 @@ public sealed class LiveSessionService(
         }
 
         await DeleteMeetingsAsync(removedMeetings, ct);
+        foreach (var old in following.Where(_ => created.Count > 0 || rule is not null))
+        {
+            CancelReminder(old.Id);
+        }
+
         await SyncNewAsync(classCourse, metadata, [.. touched, .. created], series?.TimeZoneId ?? "UTC", strict: false, ct);
+        await ScheduleRemindersAsync(classCourse, [.. touched, .. created], ct);
     }
 
     public async Task DeleteAsync(LiveSession session, string scope, CancellationToken ct)
@@ -259,6 +267,67 @@ public sealed class LiveSessionService(
         }
 
         await DeleteMeetingsAsync(meetings, ct);
+        foreach (var target in targets)
+        {
+            CancelReminder(target.Id);
+        }
+    }
+
+    /// <summary>The join URL, or the host start URL, of a session (decrypted); null when the provider never confirmed the meeting.</summary>
+    public string? UrlOf(LiveSession session, bool host)
+    {
+        var protectedUrl = host ? session.StartUrlProtected : session.JoinUrlProtected;
+        return string.IsNullOrEmpty(protectedUrl) ? null : Protector.Unprotect(protectedUrl);
+    }
+
+    private static string ReminderKey(Guid sessionId) => "live-reminder:" + sessionId;
+
+    /// <summary>
+    /// One reminder job per scheduled session, <c>Live.ReminderMinutes</c> before the start (at once when that moment has passed
+    /// and the session is still ahead); the key makes scheduling again move the same job. A Hangfire failure never undoes the change.
+    /// </summary>
+    private async Task ScheduleRemindersAsync(ClassCourse classCourse, IEnumerable<LiveSession> sessions, CancellationToken ct)
+    {
+        var minutes = (await settings.ResolveAsync(SettingKeys.LiveReminderMinutes, classCourse.OrgUnitPath, ct)).Value;
+        var now = clock.UtcNow;
+        foreach (var session in sessions)
+        {
+            try
+            {
+                if (session.Status != LiveSessionRules.Scheduled || session.StartsAtUtc <= now)
+                {
+                    jobs.Cancel(ReminderKey(session.Id));
+                    continue;
+                }
+
+                var runAt = session.StartsAtUtc.AddMinutes(-minutes);
+                if (runAt < now)
+                {
+                    runAt = now.AddSeconds(5);
+                }
+
+                var id = session.Id;
+                var organizationId = session.OrganizationId;
+                jobs.ScheduleAsSystem<LiveReminderJob>(
+                    ReminderKey(id), new DateTimeOffset(DateTime.SpecifyKind(runAt, DateTimeKind.Utc)), j => j.RunAsync(id, organizationId));
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                logger.LogWarning(ex, "The reminder of live session {SessionId} could not be scheduled", session.Id);
+            }
+        }
+    }
+
+    private void CancelReminder(Guid sessionId)
+    {
+        try
+        {
+            jobs.Cancel(ReminderKey(sessionId));
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            logger.LogWarning(ex, "The reminder of live session {SessionId} could not be removed", sessionId);
+        }
     }
 
     private async Task AddModulesAsync(
