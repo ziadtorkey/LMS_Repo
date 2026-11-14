@@ -19,6 +19,8 @@ public static class ClientServices
     {
         services.AddLocalization();
         services.AddMudServices();
+        services.TryAddSingleton(TimeProvider.System);
+        services.AddScoped<ClientTimeZone>();
         services.AddTransient<MudBlazor.MudLocalizer, LmsMudLocalizer>();
         services.AddScoped<ICultureService, CultureService>();
         // Singleton on purpose: IHttpClientFactory builds its message handlers in their own DI scope, and the
@@ -69,6 +71,7 @@ public static class ClientServices
             services.AddSingleton<Lms.Client.Services.Grading.IGradingScalesApi, Lms.Client.Services.Grading.FakeGradingScalesApi>();
             services.AddSingleton<Lms.Client.Services.Grading.IGradebookUnit, Lms.Client.Services.Grading.FakeGradebookUnit>();
             services.AddSingleton<Lms.Client.Services.Grading.IGradebookApi>(sp => new Lms.Client.Services.Grading.FakeGradebookApi((Lms.Client.Services.Grading.FakeGradingScalesApi)sp.GetRequiredService<Lms.Client.Services.Grading.IGradingScalesApi>()));
+            services.AddSingleton<Lms.Client.Services.Grading.IGradebookApi>(sp => new Lms.Client.Services.Grading.FakeGradebookApi((Lms.Client.Services.Grading.FakeGradingScalesApi)sp.GetRequiredService<Lms.Client.Services.Grading.IGradingScalesApi>()) { ShapeStudentGrades = Lms.Client.Services.Grading.FakeGradebookApi.DemoPublished });
             services.AddSingleton<IActivityOverviewApi, FakeActivityOverviewApi>();
             services.AddScoped<AuthenticationStateProvider, FakeAuthenticationStateProvider>();
             services.AddAuthorizationCore();

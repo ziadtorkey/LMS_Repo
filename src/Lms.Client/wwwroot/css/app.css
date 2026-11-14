@@ -150,3 +150,11 @@ html:lang(ar), html:lang(ar) body { font-family: Cairo, "Segoe UI", Tahoma, Aria
 .lms-gb-menu [role=menu] { display: flex; flex-direction: column; align-items: stretch; }
 .lms-gb-menu .mud-button-root { justify-content: flex-start; text-transform: none; }
 .lms-gb-move { min-inline-size: 180px; flex: 0 1 220px; }
+.lms-grades-list { display: grid; gap: 16px; }
+.lms-band-legend { margin-block-start: 12px; }
+.lms-grades-tiles { grid-template-columns: repeat(auto-fill, minmax(200px, 280px)); }
+.lms-band-legend > summary { cursor: pointer; font-size: .875rem; color: var(--mud-palette-text-secondary); min-block-size: 44px; display: flex; align-items: center; gap: 8px; list-style: none; }
+.lms-band-legend > summary::-webkit-details-marker { display: none; }
+.lms-band-legend > summary .lms-band-chevron { transition: transform .15s; }
+.lms-band-legend[open] > summary .lms-band-chevron { transform: rotate(180deg); }
+@media (prefers-reduced-motion: reduce) { .lms-band-legend > summary .lms-band-chevron { transition: none; } }

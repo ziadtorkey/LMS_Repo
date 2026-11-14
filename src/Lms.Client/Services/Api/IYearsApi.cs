@@ -18,6 +18,12 @@ public interface IYearsApi
     Task<CalendarEventDto> CreateEventAsync(SaveCalendarEventRequest request, CancellationToken ct = default);
     Task<CalendarEventDto> UpdateEventAsync(Guid id, SaveCalendarEventRequest request, CancellationToken ct = default);
     Task DeleteEventAsync(Guid id, CancellationToken ct = default);
+
+    /// <summary>The term structure the year would use (M5 L8, D62): the count and the name per order.</summary>
+    Task<TermStructureDto> GetTermStructureAsync(Guid yearId, CancellationToken ct = default);
+
+    /// <summary>Switches the count of terms; Planned years only, 409 <c>terms_have_dependants</c> when a term has a gradebook, slot or attendance session.</summary>
+    Task SetTermStructureAsync(Guid yearId, TermStructureDto structure, CancellationToken ct = default);
 }
 
 public sealed class YearsApi(ApiHttp http) : IYearsApi
@@ -59,4 +65,10 @@ public sealed class YearsApi(ApiHttp http) : IYearsApi
 
     public Task DeleteEventAsync(Guid id, CancellationToken ct = default) =>
         http.SendAsync(HttpMethod.Delete, Routes.CalendarEvent(id), null, ct);
+
+    public async Task<TermStructureDto> GetTermStructureAsync(Guid yearId, CancellationToken ct = default) =>
+        await http.GetAsync<TermStructureDto>(Routes.AcademicYearTermStructure(yearId), ct);
+
+    public Task SetTermStructureAsync(Guid yearId, TermStructureDto structure, CancellationToken ct = default) =>
+        http.SendAsync(HttpMethod.Put, Routes.AcademicYearTermStructure(yearId), structure, ct);
 }
