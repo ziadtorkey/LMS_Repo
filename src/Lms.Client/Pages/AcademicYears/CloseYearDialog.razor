@@ -1,0 +1,108 @@
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.YearEnd
+@using Lms.Shared
+@using Lms.Shared.YearEnd
+@inject IYearCloseApi Api
+@inject NavigationManager Navigation
+
+@* Close a year (FR-YEAR-04, D79; spec m7-year-end §4): says what closing locks, lists what is worth checking first (it never blocks) and any real blocker, and asks for the
+   year's name typed, because closing cannot be undone from the UI. The server stays the authority: it checks the name again and refuses while a blocker exists. *@
+<MudDialog Class="lms-dialog-fs">
+    <DialogContent>
+        <div class="lms-form" data-testid="year-close-dialog">
+            @if (_loading)
+            {
+                <LoadingState Lines="4" TestId="year-close-loading" />
+            }
+            else if (_preview is null)
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="year-close-error">@(_error ?? L["Error_Generic"].Value)</MudAlert>
+            }
+            else
+            {
+                <p data-testid="year-close-lead">@L["YearClose_Lead"]</p>
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-3" data-testid="year-close-error">@_error</MudAlert>
+                }
+
+                @if (_preview.Blocking.Count > 0)
+                {
+                    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-3" data-testid="year-close-blocking">
+                        <strong>@L["YearClose_Blocking"]</strong>
+                        <ul class="lms-issue-list">
+                            @foreach (var b in _preview.Blocking)
+                            {
+                                <li>@Issue(b)</li>
+                            }
+                        </ul>
+                    </MudAlert>
+                }
+
+                <h3 class="lms-dialog-h">@L["YearClose_WhatHappens"]</h3>
+                <ul class="lms-issue-list" data-testid="year-close-effects">
+                    <li><MudIcon Icon="@Icons.Material.Rounded.Lock" Size="Size.Small" aria-hidden="true" /> @string.Format(L["YearClose_Gradebooks"].Value, _preview.GradebooksToLock)</li>
+                    <li><MudIcon Icon="@Icons.Material.Rounded.Lock" Size="Size.Small" aria-hidden="true" /> @string.Format(L["YearClose_Sessions"].Value, _preview.AttendanceSessionsToLock)</li>
+                    <li><MudIcon Icon="@Icons.Material.Rounded.TrendingUp" Size="Size.Small" aria-hidden="true" /> @L["YearClose_PromotionOpens"]</li>
+                </ul>
+
+                @if (_preview.Warnings.Count > 0)
+                {
+                    <h3 class="lms-dialog-h">@L["YearClose_Check"]</h3>
+                    <ul class="lms-issue-list" data-testid="year-close-warnings">
+                        @foreach (var w in _preview.Warnings)
+                        {
+                            <li><MudIcon Icon="@Icons.Material.Rounded.ErrorOutline" Size="Size.Small" aria-hidden="true" /> @Issue(w)</li>
+                        }
+                    </ul>
+                }
+
+                <MudTextField T="string" @bind-Value="_typed" Immediate="true" Variant="Variant.Outlined" Margin="Margin.Dense" dir="auto" Class="mt-3"
+                              Label="@string.Format(L["Confirm_TypeToConfirm"].Value, Name)" data-testid="year-close-confirm-input" />
+            }
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" OnClick="() => MudDialog.Cancel()" data-testid="year-close-cancel">@L["Common_Cancel"]</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Rounded.Lock" Disabled="!CanClose" OnClick="CloseAsync" data-testid="year-close-confirm">@L["YearClose_Confirm"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter, EditorRequired] public Guid YearId { get; set; }
+    [Parameter, EditorRequired] public string NameAr { get; set; } = "";
+    [Parameter, EditorRequired] public string NameEn { get; set; } = "";
+
+    private YearClosePreviewDto? _preview;
+    private string? _typed, _error;
+    private bool _loading = true, _busy;
+
+    private string Name => CultureText.Pick(NameAr, NameEn);
+
+    /// <summary>The name is matched after trimming, in either language; the server checks it again.</summary>
+    private bool Matches => _typed?.Trim() is { Length: > 0 } t && (string.Equals(t, NameEn.Trim(), StringComparison.OrdinalIgnoreCase) || t == NameAr.Trim());
+
+    private bool CanClose => _preview is { Blocking.Count: 0 } && Matches && !_busy;
+
+    /// <summary>The issue in plain words; a count, when the server sends one, follows in brackets.</summary>
+    private string Issue(YearEndIssueDto i) => i.Count is { } n ? $"{L[$"YearIssue_{i.Code}"].Value} ({n})" : L[$"YearIssue_{i.Code}"].Value;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var (preview, failed) = await ApiCalls.RunAsync(() => Api.GetPreviewAsync(YearId), Navigation);
+        _preview = failed ? null : preview;
+        _loading = false;
+    }
+
+    private async Task CloseAsync()
+    {
+        if (!CanClose) return;
+        _busy = true; _error = null;
+        YearClosedDto? closed = null;
+        var ok = await ApiCalls.RunAsync(async () => closed = await Api.CloseAsync(YearId, new CloseYearRequest(_typed!.Trim())), Navigation, L, e => _error = e);
+        _busy = false;
+        if (ok && closed is not null) MudDialog.Close(DialogResult.Ok(closed));
+    }
+}

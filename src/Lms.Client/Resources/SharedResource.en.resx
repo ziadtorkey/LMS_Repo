@@ -1891,4 +1891,54 @@
   <data name="Job_Failed" xml:space="preserve"><value>The job did not finish. Check the result below.</value></data>
   <data name="Job_PollFailed" xml:space="preserve"><value>Could not read the progress just now. Trying again.</value></data>
   <data name="Confirm_TypeToConfirm" xml:space="preserve"><value>Type {0} to confirm</value></data>
+  <data name="Nav_GradeChanges" xml:space="preserve"><value>Grade changes</value></data>
+  <data name="YearClose_Open" xml:space="preserve"><value>Close year</value></data>
+  <data name="YearClose_Title" xml:space="preserve"><value>Close {0}</value></data>
+  <data name="YearClose_Lead" xml:space="preserve"><value>Closing locks this year for everyone. It cannot be reopened; a grade that must change later goes through a manager's approval.</value></data>
+  <data name="YearClose_WhatHappens" xml:space="preserve"><value>What will happen</value></data>
+  <data name="YearClose_Gradebooks" xml:space="preserve"><value>{0} gradebooks become read-only.</value></data>
+  <data name="YearClose_Sessions" xml:space="preserve"><value>{0} attendance sessions become read-only.</value></data>
+  <data name="YearClose_PromotionOpens" xml:space="preserve"><value>The promotion opens for this year (org admin anywhere, managers in their own units).</value></data>
+  <data name="YearClose_Check" xml:space="preserve"><value>Worth checking first (does not block closing)</value></data>
+  <data name="YearClose_Blocking" xml:space="preserve"><value>This year cannot be closed yet</value></data>
+  <data name="YearClose_Confirm" xml:space="preserve"><value>Close the year</value></data>
+  <data name="YearClose_Closed" xml:space="preserve"><value>{0} is closed.</value></data>
+  <data name="YearClose_Report" xml:space="preserve"><value>Closing report</value></data>
+  <data name="YearClose_ReportTitle" xml:space="preserve"><value>Closing report of {0}</value></data>
+  <data name="YearClose_ClosedAt" xml:space="preserve"><value>Closed on {0}</value></data>
+  <data name="YearClose_Class" xml:space="preserve"><value>Class</value></data>
+  <data name="YearClose_Students" xml:space="preserve"><value>Students</value></data>
+  <data name="YearClose_GradebooksCol" xml:space="preserve"><value>Gradebooks</value></data>
+  <data name="YearClose_Published" xml:space="preserve"><value>Published</value></data>
+  <data name="YearClose_SessionsCol" xml:space="preserve"><value>Attendance sessions</value></data>
+  <data name="GradeChange_Title" xml:space="preserve"><value>Grade changes</value></data>
+  <data name="GradeChange_Subtitle" xml:space="preserve"><value>Requests to change a grade after the year was closed.</value></data>
+  <data name="GradeChange_Filter" xml:space="preserve"><value>Filter by state</value></data>
+  <data name="GradeChange_State_Pending" xml:space="preserve"><value>Waiting</value></data>
+  <data name="GradeChange_State_Approved" xml:space="preserve"><value>Approved</value></data>
+  <data name="GradeChange_State_Rejected" xml:space="preserve"><value>Rejected</value></data>
+  <data name="GradeChange_EmptyTitle" xml:space="preserve"><value>No requests here</value></data>
+  <data name="GradeChange_EmptyText" xml:space="preserve"><value>When a teacher asks to change a grade of a closed year, it appears here.</value></data>
+  <data name="GradeChange_YourRequest" xml:space="preserve"><value>Your request</value></data>
+  <data name="GradeChange_Detail" xml:space="preserve"><value>Request details</value></data>
+  <data name="GradeChange_History" xml:space="preserve"><value>History</value></data>
+  <data name="GradeChange_Requested" xml:space="preserve"><value>Requested by {0} on {1}</value></data>
+  <data name="GradeChange_Decided_Approved" xml:space="preserve"><value>Approved on {0}</value></data>
+  <data name="GradeChange_Decided_Rejected" xml:space="preserve"><value>Rejected on {0}</value></data>
+  <data name="GradeChange_Note" xml:space="preserve"><value>Note</value></data>
+  <data name="GradeChange_NoteHelp" xml:space="preserve"><value>A note is needed to reject; the teacher sees it.</value></data>
+  <data name="GradeChange_OwnRequest" xml:space="preserve"><value>Your own requests show Your request; another manager or the org admin decides them.</value></data>
+  <data name="GradeChange_Approve" xml:space="preserve"><value>Approve</value></data>
+  <data name="GradeChange_Reject" xml:space="preserve"><value>Reject</value></data>
+  <data name="GradeChange_Student" xml:space="preserve"><value>Student</value></data>
+  <data name="GradeChange_Item" xml:space="preserve"><value>Item</value></data>
+  <data name="GradeChange_Current" xml:space="preserve"><value>Current grade</value></data>
+  <data name="GradeChange_New" xml:space="preserve"><value>New grade</value></data>
+  <data name="GradeChange_Reason" xml:space="preserve"><value>Reason</value></data>
+  <data name="GradeChange_ReasonHelp" xml:space="preserve"><value>The approver and the audit log see it; the student does not.</value></data>
+  <data name="GradeChange_ReasonMin" xml:space="preserve"><value>At least {0} characters.</value></data>
+  <data name="GradeChange_Rules" xml:space="preserve"><value>A manager or the org admin decides. You cannot approve your own request, and you can have one open request per grade.</value></data>
+  <data name="GradeChange_Send" xml:space="preserve"><value>Send request</value></data>
+  <data name="GradeChange_Locked" xml:space="preserve"><value>This year is closed. A grade can change only with a manager's approval.</value></data>
+  <data name="GradeChange_Request" xml:space="preserve"><value>Request a change</value></data>
 </root>

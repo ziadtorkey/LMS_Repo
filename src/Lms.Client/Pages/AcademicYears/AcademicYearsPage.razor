@@ -121,6 +121,18 @@ else
                                 }
                             </div>
                         }
+                        <div class="lms-row-actions">
+                            @if (y.Status == AcademicYearStatuses.Active && !y.IsInherited && Perms.Has(Permissions.AcademicYears.Close))
+                            {
+                                <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Rounded.Lock"
+                                           OnClick="() => CloseYearAsync(y)" data-testid="@($"year-close-{y.Id}")">@L["YearClose_Open"]</MudButton>
+                            }
+                            @if (closed && Perms.Has(Permissions.AcademicYears.View))
+                            {
+                                <MudButton Size="Size.Small" Variant="Variant.Text" StartIcon="@Icons.Material.Rounded.Summarize"
+                                           OnClick="() => ShowReportAsync(y)" data-testid="@($"year-closing-report-{y.Id}")">@L["YearClose_Report"]</MudButton>
+                            }
+                        </div>
                     </div>
                     <div class="lms-year-body">
                         <TermsPanel Year="y" CanEdit="editable" OnChanged="LoadAsync" />
@@ -180,6 +192,23 @@ else
         DialogFlow.ShowAsync(Dialogs, year is null ? L["Years_New"] : L["Common_Edit"],
             new DialogParameters<YearDialog> { { x => x.UnitId, _unitId }, { x => x.Existing, year } },
             () => { Snackbar.Add(L["Common_Saved"], Severity.Success); return LoadAsync(); });
+
+    private async Task CloseYearAsync(AcademicYearDto year)
+    {
+        var dialog = await Dialogs.ShowAsync<CloseYearDialog>(string.Format(L["YearClose_Title"].Value, CultureText.Pick(year.NameAr, year.NameEn)),
+            new DialogParameters<CloseYearDialog> { { x => x.YearId, year.Id }, { x => x.NameAr, year.NameAr }, { x => x.NameEn, year.NameEn } },
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            Snackbar.Add(string.Format(L["YearClose_Closed"].Value, CultureText.Pick(year.NameAr, year.NameEn)), Severity.Success);
+            await LoadAsync();
+        }
+    }
+
+    private async Task ShowReportAsync(AcademicYearDto year) =>
+        await Dialogs.ShowAsync<ClosingReportDialog>(string.Format(L["YearClose_ReportTitle"].Value, CultureText.Pick(year.NameAr, year.NameEn)),
+            new DialogParameters<ClosingReportDialog> { { x => x.YearId, year.Id } }, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
 
     private async Task ActivateAsync(AcademicYearDto year)
     {

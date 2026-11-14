@@ -17,6 +17,8 @@ public sealed class PermissionState : IDisposable
     }
 
     public bool IsPlatformAdmin { get; private set; }
+    /// <summary>The signed-in user (from <c>/api/me</c>); null until loaded. Pages that tell "mine" from "theirs" (messages) compare against it.</summary>
+    public Guid? UserId { get; private set; }
     public bool Loaded { get; private set; }
     public event Action? Changed;
 
@@ -26,6 +28,7 @@ public sealed class PermissionState : IDisposable
     {
         var (me, _) = await ApiCalls.RunAsync(() => _api.GetMeAsync(), _navigation);
         IsPlatformAdmin = me?.IsPlatformAdmin ?? false;
+        UserId = me?.UserId;
 
         _permissions = [];
         if (_store.ActiveAssignmentId is not null)
@@ -41,6 +44,7 @@ public sealed class PermissionState : IDisposable
     {
         _permissions = [];
         IsPlatformAdmin = false;
+        UserId = null;
         Loaded = false;
         Changed?.Invoke();
     }
