@@ -66,6 +66,7 @@ else
         Realtime.OtherThreadMessage += OnOtherThread;
         Realtime.ContextReset += OnContextReset;
         Realtime.Resynced += OnResynced;
+        Realtime.ConversationRead += OnReadElsewhere;
         if (!PermState.Loaded) await PermState.RefreshAsync();
         await LoadAsync();
     }
@@ -118,11 +119,19 @@ else
         StateHasChanged();
     });
 
+    /// <summary>Read in another tab: the list asks the server again (its count there is already zero).</summary>
+    private void OnReadElsewhere(Guid conversationId) => _ = InvokeAsync(async () =>
+    {
+        await LoadAsync(quiet: true); // the nav menu asks for the badge itself
+        StateHasChanged();
+    });
+
     public void Dispose()
     {
         Realtime.OtherThreadMessage -= OnOtherThread;
         Realtime.ContextReset -= OnContextReset;
         Realtime.Resynced -= OnResynced;
+        Realtime.ConversationRead -= OnReadElsewhere;
     }
 
     private async Task ChangedAsync()

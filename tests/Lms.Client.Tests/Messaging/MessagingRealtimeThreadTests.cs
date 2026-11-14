@@ -161,4 +161,23 @@ public sealed class MessagingRealtimeThreadTests : ClientTestContext
         cut.WaitForAssertion(() => Assert.Contains("sent while offline", cut.Find("[data-testid=inbox-list]").TextContent)); // the list was read again
         Assert.Contains("2", cut.Find("[data-testid=inbox-list] .lms-conv-count").TextContent); // and so was the unread count
     }
+
+    [Fact]
+    public async Task Read_in_another_tab_clears_the_unread_count_in_the_list_and_the_nav_badge()
+    {
+        var c = await SignInAndConversationAsync();
+        JSInterop.SetupModule("./js/thread.js").SetupVoid("scrollToEnd", _ => true).SetVoidResult();
+        var state = Services.GetRequiredService<IMessagingState>();
+        await state.RefreshAsync();
+        Assert.True(state.UnreadConversations > 0);
+        var nav = Render<Lms.Client.Layout.NavMenu>();
+        var cut = Open(null);
+        Assert.NotEmpty(cut.FindAll("[data-testid^=conv-] .lms-conv-count"));
+
+        await MessagingApi.MarkReadAsync(c.Id); // the other tab read it
+        MessagingHub.Read(c.Id);
+
+        cut.WaitForAssertion(() => Assert.Empty(cut.FindAll("[data-testid^=conv-] .lms-conv-count")));
+        nav.WaitForAssertion(() => Assert.Equal(0, state.UnreadConversations));
+    }
 }
