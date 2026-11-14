@@ -39,35 +39,7 @@
                             aria-label="@CellLabel(day, p, cellSlots.FirstOrDefault())">
                             @foreach (var slot in cellSlots) // two lessons share a cell only in Warn mode, after a saved clash: both stay visible
                             {
-                                <div class="@SlotClass(slot)" data-slot="@slot.Id" data-testid="@($"tt-slot-{slot.Id}")">
-                                    <span class="lms-tt-course">@Culture.Pick(slot.CourseNameAr, slot.CourseNameEn)</span>
-                                    <span class="lms-tt-meta">@slot.TeacherName</span>
-                                    @if (!string.IsNullOrWhiteSpace(slot.RoomName))
-                                    {
-                                        <span class="lms-tt-meta" data-testid="@($"tt-room-{slot.Id}")">@slot.RoomName</span>
-                                    }
-                                    <span class="lms-tt-badges">
-                                        @if (slot.State == SlotStates.Draft)
-                                        {
-                                            <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" data-testid="@($"tt-draft-{slot.Id}")">@L["Tt_State_Draft"]</MudChip>
-                                        }
-                                        @if (slot.Badges.Contains(SlotBadges.Conflict))
-                                        {
-                                            <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Warning" Class="lms-status-chip" data-testid="@($"tt-warn-{slot.Id}")">@L["Tt_Warn_Chip"]</MudChip>
-                                        }
-                                        @if (slot.Badges.Contains(SlotBadges.HasException))
-                                        {
-                                            <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Info" data-testid="@($"tt-exception-{slot.Id}")">@L["Tt_Has_Exception"]</MudChip>
-                                        }
-                                    </span>
-                                    @if (CanManage)
-                                    {
-                                        <button type="button" class="lms-tt-menu-btn lms-touch" data-menu @onclick="() => OpenMenu(slot)"
-                                                aria-label="@string.Format(L["Tt_Slot_Move"], Culture.Pick(slot.CourseNameAr, slot.CourseNameEn))" data-testid="@($"tt-menu-{slot.Id}")">
-                                            <MudIcon Icon="@Icons.Material.Rounded.OpenWith" Size="Size.Small" />
-                                        </button>
-                                    }
-                                </div>
+                                <SlotCard Slot="slot" Held="@(_held?.Id == slot.Id)" CanManage="CanManage" OnMenu="OpenMenu" />
                             }
                             @if (cellSlots.Count == 0 && CanManage)
                             {
@@ -173,8 +145,6 @@
 
     private string CellClass(int day, Guid period, List<SlotDto> slots) =>
         "lms-tt-cell" + (IsFocus(day, period) && _held is not null ? " lms-tt-target" : "") + (slots.Any(s => ClashSlotIds.Contains(s.Id)) ? " lms-tt-clash" : "");
-
-    private string SlotClass(SlotDto slot) => "lms-tt-slot" + (_held?.Id == slot.Id ? " lms-tt-held" : "");
 
     private void Step(int dx, int dy)
     {

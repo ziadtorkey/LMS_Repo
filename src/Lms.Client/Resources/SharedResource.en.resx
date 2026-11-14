@@ -1714,7 +1714,7 @@
   <data name="Tt_Delete_Confirm" xml:space="preserve"><value>Delete {0} from the timetable?</value></data>
   <data name="Tt_Setup_Title" xml:space="preserve"><value>Timetable set-up</value></data>
   <data name="Tt_Setup_Subtitle" xml:space="preserve"><value>The periods of the school day.</value></data>
-  <data name="Tt_Setup_SettingsNote" xml:space="preserve"><value>Working days and what to do about clashes (block or warn) are unit settings: change them in the Settings tab of the unit.</value></data>
+  <data name="Tt_Setup_SettingsNote" xml:space="preserve"><value>What to do about clashes (block or warn) is a unit setting: change it in the Settings tab of the unit.</value></data>
   <data name="Tt_Periods" xml:space="preserve"><value>Periods</value></data>
   <data name="Tt_Periods_EmptyTitle" xml:space="preserve"><value>No periods yet</value></data>
   <data name="Tt_Periods_EmptyText" xml:space="preserve"><value>Add the periods of the day (a name, a start and an end time) before building a timetable.</value></data>
@@ -1727,4 +1727,9 @@
   <data name="Tt_Period_End" xml:space="preserve"><value>Ends</value></data>
   <data name="Tt_Period_Order" xml:space="preserve"><value>Order</value></data>
   <data name="Tt_Period_Required" xml:space="preserve"><value>Give the period a name in both languages and a start and end time.</value></data>
+  <data name="Tt_Publish_Refused" xml:space="preserve"><value>Nothing was published: the timetable has clashes. They are listed below; fix them and publish again.</value></data>
+  <data name="Tt_WorkingDays" xml:space="preserve"><value>Working days</value></data>
+  <data name="Tt_WorkingDays_None" xml:space="preserve"><value>Choose at least one working day.</value></data>
+  <data name="Tt_WorkingDays_Saved" xml:space="preserve"><value>Working days saved.</value></data>
+  <data name="Tt_WorkingDays_Forbidden" xml:space="preserve"><value>You may not change the working days of this unit.</value></data>
 </root>

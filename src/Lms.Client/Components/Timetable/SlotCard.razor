@@ -1,0 +1,41 @@
+@using Lms.Shared.Timetable
+@inject ICultureService Culture
+
+@* One lesson inside a grid cell: course, teacher, room (plain text, D60), the words Draft / Clash / Changed on a date, and the 44 px menu button. The
+   data attributes are what the grid's script reads for the keyboard and the drag. *@
+<div class="@("lms-tt-slot" + (Held ? " lms-tt-held" : ""))" data-slot="@Slot.Id" data-testid="@($"tt-slot-{Slot.Id}")">
+    <span class="lms-tt-course">@Culture.Pick(Slot.CourseNameAr, Slot.CourseNameEn)</span>
+    <span class="lms-tt-meta">@Slot.TeacherName</span>
+    @if (!string.IsNullOrWhiteSpace(Slot.RoomName))
+    {
+        <span class="lms-tt-meta" data-testid="@($"tt-room-{Slot.Id}")">@Slot.RoomName</span>
+    }
+    <span class="lms-tt-badges">
+        @if (Slot.State == SlotStates.Draft)
+        {
+            <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" data-testid="@($"tt-draft-{Slot.Id}")">@L["Tt_State_Draft"]</MudChip>
+        }
+        @if (Slot.Badges.Contains(SlotBadges.Conflict))
+        {
+            <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Warning" Class="lms-status-chip" data-testid="@($"tt-warn-{Slot.Id}")">@L["Tt_Warn_Chip"]</MudChip>
+        }
+        @if (Slot.Badges.Contains(SlotBadges.HasException))
+        {
+            <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Info" data-testid="@($"tt-exception-{Slot.Id}")">@L["Tt_Has_Exception"]</MudChip>
+        }
+    </span>
+    @if (CanManage)
+    {
+        <button type="button" class="lms-tt-menu-btn lms-touch" data-menu @onclick="() => OnMenu.InvokeAsync(Slot)"
+                aria-label="@string.Format(L["Tt_Slot_Move"], Culture.Pick(Slot.CourseNameAr, Slot.CourseNameEn))" data-testid="@($"tt-menu-{Slot.Id}")">
+            <MudIcon Icon="@Icons.Material.Rounded.OpenWith" Size="Size.Small" />
+        </button>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public SlotDto Slot { get; set; } = default!;
+    [Parameter] public bool Held { get; set; }
+    [Parameter] public bool CanManage { get; set; }
+    [Parameter] public EventCallback<SlotDto> OnMenu { get; set; }
+}

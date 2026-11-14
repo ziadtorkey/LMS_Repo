@@ -29,7 +29,9 @@ else
         </Actions>
     </PageHeader>
 
-    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-3" data-testid="setup-settings-note">@L["Tt_Setup_SettingsNote"]</MudAlert>
+    <WorkingDaysEditor UnitId="UnitId" />
+
+    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="my-3" data-testid="setup-settings-note">@L["Tt_Setup_SettingsNote"]</MudAlert>
 
     <SectionCard Flush="true" Title="@L["Tt_Periods"]">
         @if (_loading)

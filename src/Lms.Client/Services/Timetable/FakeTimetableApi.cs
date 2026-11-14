@@ -107,6 +107,8 @@ public sealed class FakeTimetableApi : ITimetableApi
     public Task<PublishTimetableResultDto> PublishAsync(Guid classId, PublishTimetableRequest request, CancellationToken ct = default)
     {
         PublishCalls++;
+        var clashes = _slots.SelectMany(s => ConflictsOf(s, s.Id)).ToList();
+        if (clashes.Count > 0 && ConflictMode == ConflictModes.Block) throw new ApiProblemException(409, "timetable_conflict", null, null, conflicts: clashes); // Block mode never publishes a clashing timetable
         var drafts = _slots.Count(s => s.State == SlotStates.Draft);
         for (var i = 0; i < _slots.Count; i++) _slots[i] = _slots[i] with { State = SlotStates.Published, Badges = _slots[i].Badges.Where(b => b != SlotBadges.DraftChange).ToList() };
         return Task.FromResult(new PublishTimetableResultDto(drafts, drafts > 0));
