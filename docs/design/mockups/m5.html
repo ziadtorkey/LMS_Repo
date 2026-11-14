@@ -1,0 +1,666 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LMS M5 mockups</title>
+<!-- Design reference only (docs/design/m5-assessment-timetable-attendance.md, plan Task 21). Not served by the app.
+     Open with ?screen=gradebook|publish|scales|scale-edit|weights|my-grades|timetable|attendance-today|attendance-take|attendance-live|my-attendance|excuse-submit|excuse-review|alerts|states&lang=ar|en&theme=light|dark -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<style>
+/* ---------- Stitch tokens as LmsTheme.cs and lms-stitch.css set them (main after #560) ---------- */
+:root {
+  --mud-palette-primary:#00663D; --mud-palette-primary-text:#FFFFFF; --mud-palette-info:#1E40AF; --mud-palette-success:#1D7344;
+  --mud-palette-warning:#B45309; --mud-palette-error:#B42318; --mud-palette-background:#F8FAFC; --mud-palette-background-gray:#F1F5F9;
+  --mud-palette-surface:#FFFFFF; --mud-palette-text-primary:#0B1C30; --mud-palette-text-secondary:#475569;
+  --mud-palette-action-default:#475569; --mud-palette-action-disabled:rgba(11,28,48,.32); --mud-palette-action-disabled-background:rgba(11,28,48,.08);
+  --mud-palette-lines-default:#E2E8F0; --mud-palette-lines-inputs:#7A8793; --mud-palette-table-lines:#F1F5F9; --mud-palette-overlay-dark:rgba(11,28,48,.45);
+  --lms-accent:#10B981; --lms-recessed:#EFF4FF; --lms-radius-control:8px; --lms-radius-surface:12px;
+  --lms-shadow-1:0 1px 3px 0 rgba(0,0,0,.04), 0 1px 2px -1px rgba(0,0,0,.02); --lms-shadow-2:0 10px 25px -5px rgba(0,0,0,.08), 0 8px 10px -6px rgba(0,0,0,.04);
+  --lms-focus-ring:0 0 0 2px var(--mud-palette-surface), 0 0 0 4px var(--mud-palette-primary);
+}
+:root[data-theme=dark] {
+  --mud-palette-primary:#4CC38A; --mud-palette-primary-text:#032013; --mud-palette-info:#60A5FA; --mud-palette-success:#34D399;
+  --mud-palette-warning:#FBBF24; --mud-palette-error:#F87171; --mud-palette-background:#090D10; --mud-palette-background-gray:#16202A;
+  --mud-palette-surface:#121A20; --mud-palette-text-primary:#E2E8F0; --mud-palette-text-secondary:#94A3B8;
+  --mud-palette-action-default:#94A3B8; --mud-palette-action-disabled:rgba(226,232,240,.3); --mud-palette-action-disabled-background:rgba(226,232,240,.1);
+  --mud-palette-lines-default:#1E293B; --mud-palette-lines-inputs:#6A7B85; --mud-palette-table-lines:#1E293B; --mud-palette-overlay-dark:rgba(0,0,0,.6);
+  --lms-recessed:#16202A; --lms-shadow-1:0 1px 3px 0 rgba(0,0,0,.35), 0 1px 2px -1px rgba(0,0,0,.25); --lms-shadow-2:0 10px 25px -5px rgba(0,0,0,.55), 0 8px 10px -6px rgba(0,0,0,.35);
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--mud-palette-background); color:var(--mud-palette-text-primary); font-family:Inter, Cairo, system-ui, sans-serif; font-size:15px; line-height:1.55; -webkit-font-smoothing:antialiased; }
+:root[lang=ar] body { font-family:Cairo, Inter, system-ui, sans-serif; }
+.ms { font-family:'Material Symbols Rounded'; font-weight:normal; font-style:normal; font-size:20px; line-height:1; display:inline-block; vertical-align:middle; user-select:none; }
+.ms-sm { font-size:18px; }
+[dir=rtl] .flip { transform:scaleX(-1); }
+h1,h2,h3,p { margin:0; }
+.ltr { direction:ltr; unicode-bidi:isolate; }
+.muted { color:var(--mud-palette-text-secondary); }
+.caption { font-size:12.5px; }
+.vh { position:absolute; inline-size:1px; block-size:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+
+/* ---------- shell: sidebar (Stitch groups), glass app bar ---------- */
+.shell { display:grid; grid-template-columns:260px minmax(0,1fr); min-height:100vh; }
+.side { background:var(--mud-palette-surface); border-inline-end:1px solid var(--mud-palette-lines-default); padding:20px 12px; }
+.brand { display:flex; align-items:center; gap:10px; padding:0 8px 16px; font-weight:700; }
+.brand-mark { inline-size:36px; block-size:36px; border-radius:10px; background:var(--mud-palette-primary); color:var(--mud-palette-primary-text); display:grid; place-items:center; }
+.nav-sec { font-size:12px; font-weight:600; color:var(--mud-palette-text-secondary); padding:14px 12px 4px; }
+.nav { display:flex; align-items:center; gap:12px; padding:9px 12px; border-radius:var(--lms-radius-control); font-size:14px; }
+.nav[aria-current] { background:var(--mud-palette-primary); color:var(--mud-palette-primary-text); font-weight:600; }
+.nav .badge { margin-inline-start:auto; }
+.appbar { height:64px; display:flex; align-items:center; gap:12px; padding-inline:24px; }
+.appbar .spacer { flex:1; }
+.pill { display:inline-flex; align-items:center; gap:6px; height:36px; padding-inline:12px; border-radius:999px; background:var(--lms-recessed); font-size:13.5px; font-weight:500; }
+.page { padding:8px 32px 32px; }
+.icon-btn { inline-size:40px; block-size:40px; border-radius:50%; display:inline-grid; place-items:center; color:var(--mud-palette-action-default); position:relative; border:0; background:none; }
+.icon-btn.sm { inline-size:32px; block-size:32px; }
+.badge { min-inline-size:18px; height:18px; padding-inline:5px; border-radius:9px; background:var(--mud-palette-error); color:#fff; font-size:11px; font-weight:700; display:inline-grid; place-items:center; }
+:root[data-theme=dark] .badge { color:#2A0603; }
+.icon-btn .badge { position:absolute; inset-block-start:2px; inset-inline-end:0; }
+.menu-btn { display:none; }
+
+/* ---------- Stitch building blocks (lms-stitch.css) ---------- */
+.ph { display:flex; flex-wrap:wrap; align-items:flex-end; gap:12px 20px; margin-block:8px 24px; }
+.ph-text { flex:1 1 260px; min-inline-size:0; }
+.h4 { font-family:Cairo, Inter, sans-serif; font-size:32px; font-weight:700; line-height:1.25; letter-spacing:-.01em; }
+.h6 { font-family:Cairo, Inter, sans-serif; font-size:18px; font-weight:600; line-height:1.4; }
+.sub { color:var(--mud-palette-text-secondary); font-size:14.5px; margin-block-start:4px; }
+.card { background:var(--mud-palette-surface); border:1px solid var(--mud-palette-lines-default); border-radius:var(--lms-radius-surface); box-shadow:var(--lms-shadow-1); }
+.card-head { display:flex; align-items:center; gap:12px; padding:16px 20px; border-block-end:1px solid var(--mud-palette-lines-default); }
+.card-body { padding:16px 20px 20px; }
+.sec-icon { inline-size:40px; block-size:40px; border-radius:10px; display:grid; place-items:center; flex:none; color:var(--mud-palette-primary); background:color-mix(in srgb, var(--mud-palette-primary) 10%, transparent); }
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:6px; height:40px; padding-inline:16px; border-radius:var(--lms-radius-control); font:inherit; font-size:14px; font-weight:600; border:1px solid transparent; background:none; color:var(--mud-palette-primary); white-space:nowrap; }
+.btn-filled { background:var(--mud-palette-primary); color:var(--mud-palette-primary-text); }
+.btn-outlined { border-color:var(--mud-palette-lines-default); background:var(--mud-palette-surface); color:var(--mud-palette-text-primary); }
+.btn-error { color:var(--mud-palette-error); }
+.btn-sm { height:32px; padding-inline:12px; font-size:13px; }
+.btn[disabled] { background:var(--mud-palette-action-disabled-background); color:var(--mud-palette-action-disabled); border-color:transparent; }
+.focus { box-shadow:var(--lms-focus-ring); }
+.field { display:flex; flex-direction:column; gap:6px; min-inline-size:0; }
+.label { font-size:13px; font-weight:500; }
+.input { min-height:40px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:6px 12px; border-radius:var(--lms-radius-control); background:var(--lms-recessed); border:1px solid var(--mud-palette-lines-inputs); font-size:14px; color:var(--mud-palette-text-primary); }
+.input.focused { border-color:var(--mud-palette-primary); box-shadow:0 0 0 3px color-mix(in srgb, var(--mud-palette-primary) 25%, transparent); }
+.input .ph-text { color:var(--mud-palette-text-secondary); flex:1; }
+.help { font-size:12.5px; color:var(--mud-palette-text-secondary); }
+.chip { display:inline-flex; align-items:center; gap:5px; height:26px; padding-inline:10px; border-radius:999px; font-size:12.5px; font-weight:500; white-space:nowrap; background:var(--mud-palette-background-gray); color:var(--mud-palette-text-primary); }
+.chip .ms { font-size:16px; }
+.chip-dot::before { content:''; inline-size:6px; block-size:6px; border-radius:50%; background:currentColor; }
+.chip-success { color:var(--mud-palette-success); background:color-mix(in srgb, var(--mud-palette-success) 12%, transparent); }
+.chip-info { color:var(--mud-palette-info); background:color-mix(in srgb, var(--mud-palette-info) 12%, transparent); }
+.chip-warning { color:var(--mud-palette-warning); background:color-mix(in srgb, var(--mud-palette-warning) 14%, transparent); }
+.chip-error { color:var(--mud-palette-error); background:color-mix(in srgb, var(--mud-palette-error) 12%, transparent); }
+.chip-input { background:var(--mud-palette-surface); border:1px solid var(--mud-palette-lines-default); }
+.seg { display:flex; inline-size:fit-content; max-inline-size:100%; overflow-x:auto; gap:4px; padding:4px; border-radius:10px; background:var(--lms-recessed); }
+.seg span { white-space:nowrap; padding:6px 14px; border-radius:var(--lms-radius-control); font-size:13.5px; font-weight:500; color:var(--mud-palette-text-secondary); }
+.seg span[aria-selected] { background:var(--mud-palette-surface); color:var(--mud-palette-text-primary); box-shadow:var(--lms-shadow-1); }
+.toggle-row { display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:var(--lms-radius-control); background:var(--lms-recessed); }
+.toggle-row + .toggle-row { margin-block-start:12px; }
+.toggle-row .t { flex:1; min-inline-size:0; } .toggle-row .t b { font-weight:500; display:block; }
+.switch { inline-size:36px; block-size:20px; border-radius:10px; background:var(--mud-palette-lines-inputs); position:relative; flex:none; }
+.switch::after { content:''; position:absolute; inset-block-start:2px; inset-inline-start:2px; inline-size:16px; block-size:16px; border-radius:50%; background:#fff; }
+.switch.on { background:var(--mud-palette-primary); } .switch.on::after { inset-inline-start:18px; }
+:root[data-theme=dark] .switch.on::after { background:var(--mud-palette-primary-text); }
+.switch.locked { opacity:.55; }
+.avatar { inline-size:40px; block-size:40px; border-radius:50%; display:grid; place-items:center; flex:none; font-size:14px; font-weight:600; background:color-mix(in srgb, var(--mud-palette-primary) 14%, transparent); color:var(--mud-palette-primary); }
+.avatar.sm { inline-size:32px; block-size:32px; font-size:12px; }
+.avatar.grp { background:color-mix(in srgb, var(--mud-palette-info) 14%, transparent); color:var(--mud-palette-info); }
+.dot { inline-size:8px; block-size:8px; border-radius:50%; background:var(--lms-accent); flex:none; }
+table { inline-size:100%; border-collapse:collapse; font-size:14px; }
+th, td { overflow-wrap:anywhere; }
+th { text-align:start; font-size:13px; font-weight:600; color:var(--mud-palette-text-secondary); background:var(--mud-palette-background-gray); padding:12px 16px; }
+td .ltr { white-space:nowrap; }
+td { padding:12px 16px; border-block-start:1px solid var(--mud-palette-table-lines); vertical-align:middle; }
+tr.sel td { background:color-mix(in srgb, var(--mud-palette-primary) 6%, transparent); }
+.alert { display:flex; gap:10px; align-items:flex-start; padding:12px 14px; border-radius:var(--lms-radius-control); font-size:14px; border:1px solid currentColor; }
+.alert-info { color:var(--mud-palette-info); background:color-mix(in srgb, var(--mud-palette-info) 6%, transparent); }
+.alert-warning { color:var(--mud-palette-warning); background:color-mix(in srgb, var(--mud-palette-warning) 7%, transparent); }
+.alert .t { color:var(--mud-palette-text-primary); }
+.alert-error { color:var(--mud-palette-error); background:color-mix(in srgb, var(--mud-palette-error) 6%, transparent); }
+.alert-success { color:var(--mud-palette-success); background:color-mix(in srgb, var(--mud-palette-success) 7%, transparent); }
+.lms-stats { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:16px; margin-block-end:20px; }
+.lms-stat { display:flex; justify-content:space-between; gap:12px; padding:16px 20px; }
+.lms-stat-label { font-size:13px; font-weight:500; color:var(--mud-palette-text-secondary); }
+.lms-stat-value { font-size:28px; font-weight:700; line-height:1.2; font-variant-numeric:tabular-nums; }
+.dialog-wrap { position:relative; min-block-size:100vh; background:var(--mud-palette-overlay-dark); display:grid; place-items:start center; padding:48px 16px; }
+.dialog { inline-size:min(720px, 100%); background:var(--mud-palette-surface); border-radius:var(--lms-radius-surface); box-shadow:var(--lms-shadow-2); }
+.dialog-head { display:flex; align-items:center; gap:12px; padding:18px 24px 8px; }
+.dialog-body { padding:8px 24px 16px; display:flex; flex-direction:column; gap:18px; }
+.dialog-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:8px; padding:12px 24px 20px; }
+.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.num { font-variant-numeric:tabular-nums; direction:ltr; unicode-bidi:isolate; }
+.tabs { display:flex; gap:4px; border-block-end:1px solid var(--mud-palette-lines-default); margin-block-end:20px; overflow-x:auto; }
+.tab { padding:10px 14px; font-size:14px; font-weight:500; color:var(--mud-palette-text-secondary); border-block-end:2px solid transparent; white-space:nowrap; }
+.tab[aria-current] { color:var(--mud-palette-primary); border-color:var(--mud-palette-primary); }
+.row-actions { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+
+/* Chips use the palette hover tint, as MudBlazor's Text chips do (HoverOpacity 0.06 light / 0.08 dark): status text stays >= 4.5:1. */
+.chip-success { background:color-mix(in srgb, var(--mud-palette-success) 6%, var(--mud-palette-surface)); }
+.chip-info { background:color-mix(in srgb, var(--mud-palette-info) 6%, var(--mud-palette-surface)); }
+.chip-warning { background:color-mix(in srgb, var(--mud-palette-warning) 6%, var(--mud-palette-surface)); }
+.chip-error { background:color-mix(in srgb, var(--mud-palette-error) 6%, var(--mud-palette-surface)); }
+:root[data-theme=dark] .chip-success { background:color-mix(in srgb, var(--mud-palette-success) 8%, var(--mud-palette-surface)); }
+:root[data-theme=dark] .chip-info { background:color-mix(in srgb, var(--mud-palette-info) 8%, var(--mud-palette-surface)); }
+:root[data-theme=dark] .chip-warning { background:color-mix(in srgb, var(--mud-palette-warning) 8%, var(--mud-palette-surface)); }
+:root[data-theme=dark] .chip-error { background:color-mix(in srgb, var(--mud-palette-error) 8%, var(--mud-palette-surface)); }
+
+/* ---------- M5 additions (proposed lms-stitch.css block; see the spec, section 9) ---------- */
+/* Gradebook grid */
+.lms-gb-wrap { overflow:auto; max-block-size:560px; scroll-padding-block-start:76px; scroll-padding-inline-start:220px; border-radius:0 0 var(--lms-radius-surface) var(--lms-radius-surface); }
+.lms-gb { border-collapse:separate; border-spacing:0; font-size:13.5px; min-inline-size:100%; }
+.lms-gb th, .lms-gb td { padding:0 8px; block-size:36px; border-block-end:1px solid var(--mud-palette-table-lines); border-inline-end:1px solid var(--mud-palette-table-lines); white-space:nowrap; text-align:center; background:var(--mud-palette-surface); }
+.lms-gb thead th { position:sticky; z-index:2; background:var(--mud-palette-background-gray); font-weight:600; font-size:12.5px; color:var(--mud-palette-text-secondary); }
+.lms-gb thead tr:first-child th { inset-block-start:0; block-size:34px; }
+.lms-gb thead tr:nth-child(2) th { inset-block-start:34px; block-size:42px; line-height:1.25; }
+.lms-gb .lms-gb-student { position:sticky; inset-inline-start:0; z-index:1; text-align:start; min-inline-size:180px; font-weight:500; }
+.lms-gb thead .lms-gb-student { z-index:3; }
+.lms-gb .lms-gb-cat { color:var(--mud-palette-text-primary); text-align:start; }
+.lms-gb .lms-gb-catres, .lms-gb .lms-gb-final { background:color-mix(in srgb, var(--mud-palette-primary) 5%, var(--mud-palette-surface)); font-weight:600; }
+.lms-gb .lms-gb-final { border-inline-start:2px solid var(--mud-palette-lines-default); }
+.lms-gb td.cell { position:relative; font-variant-numeric:tabular-nums; }
+.lms-gb td.cell .src { font-size:14px; color:var(--mud-palette-text-secondary); margin-inline-start:4px; }
+.lms-gb td.override::after { content:''; position:absolute; inset-block-start:0; inset-inline-end:0; border-style:solid; border-width:0 10px 10px 0; border-color:transparent var(--mud-palette-warning) transparent transparent; }
+[dir=rtl] .lms-gb td.override::after { border-width:0 0 10px 10px; border-color:transparent transparent transparent var(--mud-palette-warning); }
+.lms-gb td.focus-cell { outline:2px solid var(--mud-palette-primary); outline-offset:-2px; box-shadow:inset 0 0 0 4px var(--mud-palette-surface); z-index:1; }
+.lms-gb td.editing { padding:3px; }
+.lms-gb td.editing .input { min-height:28px; padding:2px 8px; justify-content:center; border-color:var(--mud-palette-primary); box-shadow:0 0 0 3px color-mix(in srgb, var(--mud-palette-primary) 25%, transparent); }
+.lms-gb td.saving { color:var(--mud-palette-text-secondary); }
+.lms-gb td.error { color:var(--mud-palette-error); font-weight:600; }
+.lms-gb .mini { font-size:11px; font-weight:600; padding:1px 6px; border-radius:999px; }
+.lms-gb .mini-warn { color:var(--mud-palette-warning); background:color-mix(in srgb, var(--mud-palette-warning) 14%, transparent); }
+.lms-gb .mini-muted { color:var(--mud-palette-text-secondary); background:var(--mud-palette-background-gray); }
+.lms-gb-hdr { display:flex; flex-direction:column; align-items:center; gap:2px; }
+.lms-gb-hdr span { white-space:normal; max-inline-size:110px; }
+.lms-gb-hdr small { font-weight:500; color:var(--mud-palette-text-secondary); font-size:11.5px; }
+.lms-gb-legend { display:flex; flex-wrap:wrap; gap:8px 18px; padding:10px 16px; font-size:12.5px; color:var(--mud-palette-text-secondary); border-block-start:1px solid var(--mud-palette-lines-default); }
+.lms-gb-legend span { display:inline-flex; gap:6px; align-items:center; }
+.lms-weights-chip { font-variant-numeric:tabular-nums; }
+/* Student-first list (under 600 px) */
+.lms-gb-picker { display:flex; align-items:center; gap:8px; padding:12px; border-block-end:1px solid var(--mud-palette-lines-default); }
+.lms-gb-picker .who { flex:1; min-inline-size:0; text-align:center; }
+.lms-gb-item { display:flex; align-items:center; gap:10px; padding:10px 14px; border-block-end:1px solid var(--mud-palette-table-lines); min-block-size:52px; }
+.lms-gb-item .t { flex:1; min-inline-size:0; } .lms-gb-item .t small { display:block; color:var(--mud-palette-text-secondary); font-size:12px; }
+.lms-gb-item .score { inline-size:84px; }
+/* Scales */
+.lms-coverage { display:flex; block-size:36px; border-radius:var(--lms-radius-control); overflow:hidden; border:1px solid var(--mud-palette-lines-default); }
+.lms-coverage span { display:grid; place-items:center; font-size:12px; font-weight:600; color:var(--mud-palette-text-primary); border-inline-end:1px solid var(--mud-palette-surface); min-inline-size:0; overflow:hidden; white-space:nowrap; }
+.lms-coverage .gap { background:repeating-linear-gradient(45deg, color-mix(in srgb, var(--mud-palette-error) 25%, transparent) 0 6px, transparent 6px 12px); color:var(--mud-palette-error); }
+.lms-coverage-axis { display:flex; justify-content:space-between; font-size:11.5px; color:var(--mud-palette-text-secondary); direction:ltr; }
+/* Timetable */
+.lms-tt { display:grid; gap:6px; }
+.lms-tt-h { font-size:12.5px; font-weight:600; color:var(--mud-palette-text-secondary); text-align:center; padding:6px 0; }
+.lms-tt-p { font-size:12.5px; color:var(--mud-palette-text-secondary); display:flex; flex-direction:column; justify-content:center; padding-inline:6px; }
+.lms-tt-p b { color:var(--mud-palette-text-primary); font-weight:600; }
+.lms-slot { min-block-size:76px; border-radius:var(--lms-radius-control); padding:8px 10px; background:var(--mud-palette-surface); border:1px solid var(--mud-palette-lines-default); border-inline-start:3px solid var(--mud-palette-primary); font-size:12.5px; display:flex; flex-direction:column; gap:2px; min-inline-size:0; }
+.lms-slot b { font-size:13.5px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.lms-slot .muted { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.lms-slot.empty { border:1px dashed var(--mud-palette-lines-default); background:transparent; display:grid; place-items:center; color:var(--mud-palette-text-secondary); }
+.lms-slot.conflict { border-inline-start-color:var(--mud-palette-warning); }
+.lms-slot.selected { outline:2px solid var(--mud-palette-primary); outline-offset:2px; }
+.lms-slot.drop { border:2px dashed var(--mud-palette-primary); background:color-mix(in srgb, var(--mud-palette-primary) 6%, transparent); display:grid; place-items:center; color:var(--mud-palette-primary); font-weight:600; }
+.lms-slot .chip { height:20px; font-size:11.5px; padding-inline:7px; align-self:flex-start; margin-block-start:2px; }
+/* Attendance */
+.lms-att-row { display:flex; align-items:center; gap:12px; padding:10px 16px; border-block-end:1px solid var(--mud-palette-table-lines); flex-wrap:wrap; }
+.lms-att-row.focused { background:color-mix(in srgb, var(--mud-palette-primary) 5%, transparent); box-shadow:inset 3px 0 0 var(--mud-palette-primary); }
+[dir=rtl] .lms-att-row.focused { box-shadow:inset -3px 0 0 var(--mud-palette-primary); }
+.lms-att-who { display:flex; gap:10px; align-items:center; flex:1 1 180px; min-inline-size:0; }
+.lms-att-who .n { font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.lms-att-opts { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:6px; flex:1 1 420px; }
+.lms-att-opt { min-block-size:44px; border-radius:var(--lms-radius-control); border:1px solid var(--mud-palette-lines-default); background:var(--mud-palette-surface); display:flex; align-items:center; justify-content:center; gap:6px; font-size:13.5px; font-weight:500; position:relative; color:var(--mud-palette-text-primary); }
+.lms-att-opt kbd { font:inherit; font-size:11px; color:var(--mud-palette-text-secondary); border:1px solid var(--mud-palette-lines-default); border-radius:4px; padding:0 4px; }
+.lms-att-opt[aria-checked=true] { border-width:2px; font-weight:700; }
+.lms-att-opt.p[aria-checked=true] { color:var(--mud-palette-success); border-color:var(--mud-palette-success); background:color-mix(in srgb, var(--mud-palette-success) 8%, var(--mud-palette-surface)); }
+.lms-att-opt.a[aria-checked=true] { color:var(--mud-palette-error); border-color:var(--mud-palette-error); background:color-mix(in srgb, var(--mud-palette-error) 8%, var(--mud-palette-surface)); }
+.lms-att-opt.l[aria-checked=true] { color:var(--mud-palette-warning); border-color:var(--mud-palette-warning); background:color-mix(in srgb, var(--mud-palette-warning) 8%, var(--mud-palette-surface)); }
+.lms-att-opt.e[aria-checked=true] { color:var(--mud-palette-info); border-color:var(--mud-palette-info); background:color-mix(in srgb, var(--mud-palette-info) 8%, var(--mud-palette-surface)); }
+.lms-att-opt[aria-checked=true]::before { content:'check'; font-family:'Material Symbols Rounded'; font-size:18px; }
+.lms-att-bar { position:sticky; inset-block-end:0; z-index:4; display:flex; flex-wrap:wrap; align-items:center; gap:8px 16px; padding:12px 16px calc(12px + env(safe-area-inset-bottom)); background:var(--mud-palette-surface); border-block-start:1px solid var(--mud-palette-lines-default); box-shadow:0 -6px 16px -8px rgba(0,0,0,.18); }
+.lms-att-bar .counts { display:flex; flex-wrap:wrap; gap:6px; flex:1; }
+.lms-session { padding:16px; display:flex; flex-direction:column; gap:10px; }
+.lms-session-top { display:flex; gap:12px; align-items:flex-start; }
+/* Undo toast after Mark all present */
+.lms-toast { position:sticky; inset-block-end:84px; z-index:5; margin:0 16px 8px; display:flex; align-items:center; gap:12px; padding:10px 14px; border-radius:var(--lms-radius-control); background:var(--mud-palette-text-primary); color:var(--mud-palette-surface); box-shadow:var(--lms-shadow-2); font-size:14px; }
+.lms-toast .btn { color:var(--mud-palette-surface); height:32px; }
+/* Child selector and absence list */
+.lms-absence { display:flex; align-items:center; gap:12px; padding:12px 16px; border-block-end:1px solid var(--mud-palette-table-lines); flex-wrap:wrap; }
+.lms-absence .t { flex:1 1 220px; min-inline-size:0; }
+.lms-state { padding:20px; display:flex; flex-direction:column; align-items:center; text-align:center; gap:8px; }
+.lms-state .sec-icon { inline-size:48px; block-size:48px; }
+/* Excuses */
+.lms-steps { display:flex; gap:8px; align-items:center; }
+.lms-steps span { display:flex; align-items:center; gap:6px; font-size:13px; color:var(--mud-palette-text-secondary); }
+.lms-steps b { inline-size:24px; block-size:24px; border-radius:50%; display:grid; place-items:center; font-size:12px; border:1px solid var(--mud-palette-lines-inputs); }
+.lms-steps .on { color:var(--mud-palette-text-primary); font-weight:600; } .lms-steps .on b { background:var(--mud-palette-primary); color:var(--mud-palette-primary-text); border-color:transparent; }
+.lms-steps .done b { background:color-mix(in srgb, var(--mud-palette-primary) 15%, transparent); color:var(--mud-palette-primary); border-color:transparent; }
+.lms-steps i { flex:1; min-inline-size:12px; block-size:1px; background:var(--mud-palette-lines-default); }
+.lms-check { display:flex; gap:10px; align-items:center; padding:10px 12px; border-radius:var(--lms-radius-control); background:var(--lms-recessed); font-size:14px; }
+.lms-check + .lms-check { margin-block-start:8px; }
+.box { inline-size:20px; block-size:20px; border-radius:5px; border:2px solid var(--mud-palette-lines-inputs); display:grid; place-items:center; flex:none; }
+.box.on { background:var(--mud-palette-primary); border-color:var(--mud-palette-primary); color:var(--mud-palette-primary-text); }
+.lms-review { display:grid; grid-template-columns:minmax(0,1fr) 420px; gap:20px; align-items:start; }
+.lms-history { display:flex; gap:4px; flex-wrap:wrap; }
+.lms-history span { inline-size:24px; block-size:24px; border:1px solid currentColor; border-radius:5px; display:grid; place-items:center; font-size:11px; font-weight:700; }
+.h-p { background:color-mix(in srgb, var(--mud-palette-success) 14%, transparent); color:var(--mud-palette-success); }
+.h-a { background:color-mix(in srgb, var(--mud-palette-error) 14%, transparent); color:var(--mud-palette-error); }
+.h-l { background:color-mix(in srgb, var(--mud-palette-warning) 16%, transparent); color:var(--mud-palette-warning); }
+.h-e { background:color-mix(in srgb, var(--mud-palette-info) 14%, transparent); color:var(--mud-palette-info); }
+.phone-only { display:none; }
+
+@media (max-width: 899.98px) {
+  .shell { grid-template-columns:minmax(0,1fr); } .side { display:none; } .menu-btn { display:inline-grid; }
+  .appbar { padding-inline:8px; gap:4px; } .appbar .ctx { display:none; }
+  .page { padding:4px 16px 24px; } .h4 { font-size:26px; }
+  .grid2 { grid-template-columns:1fr; }
+  .dialog-wrap { padding:0; place-items:stretch; } .dialog { border-radius:0; min-block-size:100vh; }
+  .lms-review { grid-template-columns:minmax(0,1fr); }
+  .dialog-head, .card-head { flex-wrap:wrap; }
+  .chip { white-space:normal; height:auto; min-block-size:26px; padding-block:3px; }
+  .lms-stats { grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px; }
+  .lms-stat { flex-direction:column-reverse; padding:12px 14px; } .lms-stat-value { font-size:22px; }
+  table.stack thead { display:none; } table.stack tr { display:block; padding:12px 16px; border-block-start:1px solid var(--mud-palette-table-lines); }
+  table.stack td { display:flex; justify-content:space-between; gap:12px; padding:4px 0; border:0; text-align:end; }
+  table.stack td::before { content:attr(data-label); font-size:12.5px; color:var(--mud-palette-text-secondary); text-align:start; }
+  .lms-att-opts { flex-basis:100%; }
+  .lms-att-bar .counts { flex:1 1 100%; flex-wrap:nowrap; overflow-x:auto; } .lms-att-bar .counts .chip { white-space:nowrap; height:26px; }
+  .lms-att-bar > .btn { flex:1 1 100%; }
+  .lms-att-opt { font-size:13px; gap:4px; } .lms-att-opt kbd { display:none; }
+  .alert:has(> .btn) { flex-wrap:wrap; }
+  .phone-only { display:inline-flex; } .desk-only { display:none !important; }
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const qs = new URLSearchParams(location.search);
+const lang = qs.get('lang') === 'ar' ? 'ar' : 'en';
+const theme = qs.get('theme') === 'dark' ? 'dark' : 'light';
+const screen = qs.get('screen') || 'gradebook';
+const narrow = window.innerWidth < 600, tablet = window.innerWidth < 900;
+document.documentElement.lang = lang; document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr'; document.documentElement.dataset.theme = theme;
+
+const S = {
+  en: {
+    app:'Learning Management System', ctx:'Al Noor Schools — North Branch (Teacher)', year:'2026/2027', other:'العربية',
+    home:'Home', secAcad:'Academic', navClasses:'My class courses', navTimetable:'My timetable', navAtt:'Attendance', navExc:'Excuse review', navAlerts:'Absence alerts', secSet:'Security and settings', navScales:'Grading scales',
+    course:'Physics 1 · 10-A', tPlan:'Plan', tGb:'Gradebook', tAtt:'Attendance', tForum:'Forum',
+    gbTitle:'Gradebook', gbSub:'Term 1 · scale: School percentage bands', term:'Term 1', publish:'Publish', import:'Import', exportB:'Export', settings:'Settings',
+    weightsOk:'Weights total 100', weightsBad:'Weights total 90: 10 missing. Grading still works; the gradebook is marked incomplete.',
+    student:'Student', catHw:'Homework', catQz:'Quizzes', catEx:'Exams', w30:'30 %', w20:'20 %', w50:'50 %', catResult:'Category', final:'Final', band:'Band',
+    i1:'Forces worksheet', i2:'Lab report', i3:'Quiz 1', i4:'Quiz 2', i5:'Mid-term exam', outOf:'out of {0}',
+    pub:'Published', hid:'Hidden', sch:'Scheduled 11-20',
+    s1:'Ahmed Saeed', s2:'Laila Hassan', s3:'Omar Khaled', s4:'Sara Ali', s5:'Yousef Majid', s6:'Mona Fahad', s7:'Huda Nasser', s8:'Khalid Omar',
+    excused:'excused', newer:'newer score', saving:'saving…', notSaved:'not saved',
+    lgEvent:'From an assignment or quiz (read-only; override from the cell menu)', lgOverride:'Overridden (reason required)', lgNewer:'A newer score exists', lgExcused:'Excused from this item', lgEmpty:'– No score (final uses graded items only)',
+    kbHint:'Arrow keys move · Enter or F2 edits · Shift+F10 opens the cell menu · Esc cancels',
+    cellMenu:'Cell menu', mOverride:'Override score…', mExcuse:'Excuse from this item', mClear:'Clear score', mKeep:'Keep my override', mDrop:'Use the newer score',
+    prevS:'Previous student', nextS:'Next student', nOf:'3 of 26', searchS:'Find a student', phoneNote:'On a phone you can correct one score at a time. Enter a whole class on a larger screen.',
+    finalL:'Final', bandL:'Band', pubDlg:'Publish grades', pubIntro:'Choose which items students and guardians can see.', colItem:'Item', colState:'Now', colMode:'Change to',
+    modeNow:'Publish now', modeSch:'Schedule', modeHide:'Keep hidden', pubWarn:'Totals that students see include published items only.',
+    provWarn:'This gradebook uses a provisional scale. Ask a unit admin to confirm the scale before you publish.', provTitle:'Publishing is blocked', confirmScale:'Open grading scales',
+    pubWhat:'26 students and their guardians will see “Mid-term exam” and the totals it affects.', cancel:'Cancel', pubBtn:'Publish 1 item',
+    scTitle:'Grading scales', scSub:'Scales that gradebooks in this unit can use. Presets are templates: copy one, check it, then confirm it.', newScale:'New scale', fromPreset:'From a Saudi preset', blank:'Blank scale',
+    colName:'Name', colKind:'Kind', colBands:'Bands', colUsed:'Used by', colStatus:'Status',
+    kPct:'Percentage', kLetter:'Letter', kGpa5:'GPA 5.00', kGpa4:'GPA 4.00', defaultC:'Default', templateC:'Template', provisional:'Provisional, needs verification', confirmed:'Confirmed', inherited:'From Al Noor Schools',
+    sc1:'Percentage', sc2:'School percentage bands', sc3:'University 5-point (copy)', sc4:'Saudi school bands', sc5:'Saudi university 5-point', sc6:'Saudi university 4-point',
+    gb12:'12 gradebooks', gb0:'None', confirm:'Confirm', makeDefault:'Make default', updAvail:'Update available',
+    edTitle:'Edit scale: School percentage bands', nameAr:'Name (Arabic)', nameEn:'Name (English)', kind:'Kind', bandsL:'Bands', colMin:'From %', colLabelAr:'Label (Arabic)', colLabelEn:'Label (English)', colPts:'Points', addBand:'Add band',
+    covTitle:'Coverage of 0–100 %', covGap:'Gap: 60 to under 65 % has no band.', covFix:'Bands must cover 0 to 100 % with no gap and no overlap.',
+    usedNote:'12 gradebooks use this scale. They keep their copy; new gradebooks use the changes.', provNote:'Seeded from the Saudi preset (needs verification). Saving an edit, or Confirm, removes the provisional state.', save:'Save', confirmB:'Confirm scale',
+    wtTitle:'Weight templates', wtSub:'Category weights a teacher can copy into a gradebook. Later edits don’t change gradebooks that already used them.', newWt:'New template', wtName:'Template', wtCats:'Categories', wtEditor:'Science (secondary)', catName:'Category', weight:'Weight', addCat:'Add category', moveUp:'Move up', moveDown:'Move down',
+    mgTitle:'My grades', mgSub:'Grades your teachers have published. Totals are based on published grades only.', perCourse:'points for this course', legend:'Scale: Saudi school bands', basedOn:'based on published grades',
+    c1:'Physics 1', c2:'Mathematics', c3:'Arabic language', pubItems:'Published items', bandLegend:'Band legend',
+    ttTitle:'Timetable · 10-A', ttSub:'Term 1 · week of 2026-11-15', draft:'Draft', pubTt:'Publish timetable', copyTerm:'Copy from previous term', thisWeek:'This week',
+    days:['Sun','Mon','Tue','Wed','Thu'], daysLong:['Sunday','Monday','Tuesday','Wednesday','Thursday'],
+    p1:'Period 1', p2:'Period 2', p3:'Period 3', p4:'Period 4',
+    cPhy:'Physics 1', cMath:'Mathematics', cAr:'Arabic', cEng:'English', cChem:'Chemistry', tNasser:'Mr. Khalid Nasser', tFaisal:'Mr. Faisal', tSara:'Ms. Sara', tHuda:'Ms. Huda', room:'Lab B', room2:'Room 204',
+    subst:'Substitute: Ms. Huda', cancelledC:'Cancelled', conflictC:'Teacher double-booked', conflicts:'Conflicts (1)', conflictTxt:'Mr. Khalid Nasser also teaches 10-B in Period 2 on Monday. The slot was saved (Warn mode).',
+    moving:'Moving “Mathematics”: use the arrow keys, Enter to drop, Esc to cancel.', dropHere:'Drop here', addSlot:'Add a lesson', today:'Today',
+    atTitle:'Attendance', atSub:'Today’s sessions, including those where you are the substitute.', open:'Open', taken:'Taken', take:'Take attendance', review:'Review', marked:'28 of 30 marked', lockC:'Edit window closed', liveC:'Proposed from the live session', substC:'You are the substitute',
+    pickDay:'Date',
+    takeTitle:'Physics 1 · 10-A · Period 2', takeSub:'2026-11-15 · 09:00–09:45 · Lab B', markAll:'Mark all present', nextUn:'Next unmarked', search:'Find a student',
+    stP:'Present', stA:'Absent', stL:'Late', stE:'Excused', unmarked:'Unmarked', note:'Add note', noteLate:'Arrived at 09:12',
+    sumP:'Present 24', sumA:'Absent 2', sumL:'Late 1', sumE:'Excused 1', sumU:'Unmarked 2', saveAtt:'Save attendance', confirmAtt:'Confirm attendance',
+    draftBanner:'You have unsaved marks from 08:58 on this device.', restore:'Restore', discard:'Discard', online:'Online · draft saved on this device',
+    liveBanner:'These marks were proposed from the Zoom participants list. Check them, then confirm.', liveSrc:'Joined for 44 min', liveLate:'Joined late at 09:14', unmatchedT:'Zoom participants not matched', guest:'“iPad Air” (guest)', thisIs:'This is…', skip:'Skip',
+    exTitle:'Explain an absence', exStep1:'Sessions', exStep2:'Reason', exStep3:'Details', policy:'You can submit within 5 school days of the absence. Your school decides which reasons need a document.',
+    exFor:'For Ahmed Saeed', from:'From', to:'To', covered:'Sessions this excuse covers', cov1:'2026-11-12 · Physics 1 · Period 2 · Absent', cov2:'2026-11-12 · Mathematics · Period 3 · Absent', cov3:'2026-11-13 · Arabic · Period 1 · Late',
+    onlyNow:'An excuse covers only sessions that are absent or late now. Later absences need a new excuse.', reason:'Reason', rIll:'Illness', rFam:'Family', rOff:'Official', rOth:'Other', details:'Details (optional)', attach:'Document', attachH:'JPEG, PNG, WebP or PDF, up to 5 MB. Required for Official.', choose:'Choose a file',
+    back:'Back', next:'Next', submit:'Submit excuse',
+    rvTitle:'Excuse review', rvSub:'Excuses submitted for students in your units. Decide, or escalate to a manager.', stSub:'Submitted', stApp:'Approved', stRej:'Rejected', stEsc:'Escalated',
+    colStudent:'Student', colSubmitter:'Submitted by', colReason:'Reason', colSessions:'Sessions', colDate:'Submitted', colAge:'Waiting',
+    r1s:'Ahmed Saeed · 10-A', r1b:'Mona Fahad (guardian)', r2s:'Laila Hassan · 10-A', r2b:'Laila Hassan', r3s:'Omar Khaled · 9-B', r3b:'Huda Nasser (guardian)',
+    d1:'2 days', d2:'5 h', d3:'1 day', drawerT:'Excuse · Ahmed Saeed', hist:'Last 30 days', histKey:'P present · A absent · L late · E excused',
+    docT:'medical-note.jpg · 380 KB', docH:'Images open here; PDFs download.', approve:'Approve', reject:'Reject', escalate:'Escalate', rejComment:'Comment (required to reject)', approveNote:'Approving makes 3 records Excused.',
+    alTitle:'Absence alerts', alSub:'Students who crossed the threshold: 5 absences in 30 days, a late counts as half.', formula:'4 absences + 3 lates × ½ = 5.5', open2:'Open attendance', alDate:'Alert on 2026-11-14'
+    , hP:'P', hA:'A', hL:'L', hE:'E', histKey:'P present · A absent · L late · E excused',
+    kbHint:'Arrow keys move · Enter or F2 edits, Enter again saves · Tab saves and moves right · Shift+F10 opens the cell menu · Esc cancels', kbHelp:'Keyboard shortcuts',
+    undoT:'26 students marked present. Rows you had marked kept their status.', undo:'Undo',
+    maTitle:'Attendance · Ahmed Saeed', maSub:'10-A · Term 1. Absences and lates your child’s teachers recorded.', child:'Child', range:'Dates', rangeV:'2026-11-01 – 2026-11-15',
+    stAbs:'Absences', stLate:'Lates', stExc:'Excused', explain:'Explain this absence', exSubmitted:'Excuse submitted', exApproved:'Excuse approved', exRejected:'Excuse rejected',
+    a1:'2026-11-12 · Physics 1 · Period 2', a2:'2026-11-12 · Mathematics · Period 3', a3:'2026-11-13 · Arabic · Period 1', a4:'2026-11-05 · English · Period 4', a5:'2026-11-03 · Chemistry · Period 1',
+    lateTxt:'Late', absTxt:'Absent', excTxt:'Excused', windowClosed:'The time to explain this absence has passed.', guardianOnly:'Your guardian can submit an excuse.',
+    statesTitle:'Empty, loading and error states', stNoPeriods:'No periods yet', stNoPeriodsT:'Add the school day’s periods before you build a timetable.', addPeriods:'Set up periods',
+    stNotPub:'This timetable isn’t published yet', stNotPubT:'Students and teachers see it after it’s published.',
+    stNoSess:'No sessions on this day', stNoSessT:'2026-11-23 is a holiday (National Day). Pick another date.', stNoStu:'No students in this class course', stNoStuT:'Enroll students before you take attendance.',
+    stConflict:'Someone else saved this session at 09:21. We loaded their marks; your unsaved changes are kept below each row.', stQueue:'No excuses to review', stQueueT:'New excuses for students in your units appear here.',
+    stAlerts:'No students over the threshold', stAlertsT:'Students appear here after 5 absences in 30 days (a late counts as half).', stLoading:'Loading', stError:'Couldn’t load today’s sessions.', retry:'Try again'
+  },
+  ar: {
+    app:'نظام إدارة التعلم', ctx:'مدارس النور — فرع الشمال (معلم)', year:'2026/2027', other:'English',
+    home:'الرئيسية', secAcad:'الأكاديمي', navClasses:'مقرراتي الفصلية', navTimetable:'جدولي', navAtt:'الحضور', navExc:'مراجعة الأعذار', navAlerts:'تنبيهات الغياب', secSet:'الأمان والإعدادات', navScales:'سلالم التقدير',
+    course:'الفيزياء 1 · 10-أ', tPlan:'الخطة', tGb:'سجل الدرجات', tAtt:'الحضور', tForum:'المنتدى',
+    gbTitle:'سجل الدرجات', gbSub:'الفصل الأول · السلّم: نطاقات المدرسة بالنسبة المئوية', term:'الفصل الأول', publish:'نشر', import:'استيراد', exportB:'تصدير', settings:'الإعدادات',
+    weightsOk:'مجموع الأوزان 100', weightsBad:'مجموع الأوزان 90: ينقص 10. يستمر التقدير، لكن السجل يُعلَّم بأنه غير مكتمل.',
+    student:'الطالب', catHw:'الواجبات', catQz:'الاختبارات القصيرة', catEx:'الاختبارات', w30:'30 %', w20:'20 %', w50:'50 %', catResult:'الفئة', final:'النهائي', band:'التقدير',
+    i1:'ورقة عمل القوى', i2:'تقرير المختبر', i3:'اختبار قصير 1', i4:'اختبار قصير 2', i5:'اختبار منتصف الفصل', outOf:'من {0}',
+    pub:'منشور', hid:'مخفي', sch:'مجدول 11-20',
+    s1:'أحمد سعيد', s2:'ليلى حسن', s3:'عمر خالد', s4:'سارة علي', s5:'يوسف ماجد', s6:'منى فهد', s7:'هدى ناصر', s8:'خالد عمر',
+    excused:'معذور', newer:'درجة أحدث', saving:'جارٍ الحفظ…', notSaved:'لم تُحفظ',
+    lgEvent:'من واجب أو اختبار (للقراءة فقط؛ التعديل من قائمة الخلية)', lgOverride:'درجة معدّلة (يلزم سبب)', lgNewer:'توجد درجة أحدث', lgExcused:'معذور من هذا البند', lgEmpty:'– لا درجة (يُحسب النهائي من البنود المقيّمة فقط)',
+    kbHint:'الأسهم للتنقل · Enter أو F2 للتعديل · Shift+F10 لقائمة الخلية · Esc للإلغاء',
+    cellMenu:'قائمة الخلية', mOverride:'تعديل الدرجة…', mExcuse:'إعفاء من هذا البند', mClear:'مسح الدرجة', mKeep:'الإبقاء على تعديلي', mDrop:'استخدام الدرجة الأحدث',
+    prevS:'الطالب السابق', nextS:'الطالب التالي', nOf:'3 من 26', searchS:'ابحث عن طالب', phoneNote:'يمكنك على الهاتف تصحيح درجة واحدة في كل مرة. أدخل درجات الفصل كاملًا على شاشة أكبر.',
+    finalL:'النهائي', bandL:'التقدير', pubDlg:'نشر الدرجات', pubIntro:'اختر البنود التي يراها الطلاب وأولياء الأمور.', colItem:'البند', colState:'الآن', colMode:'تغيير إلى',
+    modeNow:'نشر الآن', modeSch:'جدولة', modeHide:'إبقاء مخفيًا', pubWarn:'المجاميع التي يراها الطلاب تشمل البنود المنشورة فقط.',
+    provWarn:'يستخدم هذا السجل سلّمًا مؤقتًا. اطلب من مسؤول الوحدة تأكيد السلّم قبل النشر.', provTitle:'النشر موقوف', confirmScale:'فتح سلالم التقدير',
+    pubWhat:'سيرى 26 طالبًا وأولياء أمورهم «اختبار منتصف الفصل» والمجاميع التي يؤثر فيها.', cancel:'إلغاء', pubBtn:'نشر بند واحد',
+    scTitle:'سلالم التقدير', scSub:'السلالم التي يمكن لسجلات الدرجات في هذه الوحدة استخدامها. القوالب الجاهزة نماذج: انسخ واحدًا وراجعه ثم أكّده.', newScale:'سلّم جديد', fromPreset:'من قالب سعودي', blank:'سلّم فارغ',
+    colName:'الاسم', colKind:'النوع', colBands:'النطاقات', colUsed:'مستخدم في', colStatus:'الحالة',
+    kPct:'نسبة مئوية', kLetter:'حروف', kGpa5:'معدل 5.00', kGpa4:'معدل 4.00', defaultC:'افتراضي', templateC:'قالب', provisional:'مؤقت، يحتاج إلى تحقق', confirmed:'مؤكَّد', inherited:'من مدارس النور',
+    sc1:'نسبة مئوية', sc2:'نطاقات المدرسة بالنسبة المئوية', sc3:'جامعي من 5 نقاط (نسخة)', sc4:'نطاقات المدارس السعودية', sc5:'جامعي سعودي من 5 نقاط', sc6:'جامعي سعودي من 4 نقاط',
+    gb12:'12 سجلًا', gb0:'لا شيء', confirm:'تأكيد', makeDefault:'جعله افتراضيًا', updAvail:'يتوفر تحديث',
+    edTitle:'تعديل السلّم: نطاقات المدرسة بالنسبة المئوية', nameAr:'الاسم (بالعربية)', nameEn:'الاسم (بالإنجليزية)', kind:'النوع', bandsL:'النطاقات', colMin:'من %', colLabelAr:'التسمية (بالعربية)', colLabelEn:'التسمية (بالإنجليزية)', colPts:'النقاط', addBand:'إضافة نطاق',
+    covTitle:'تغطية النسب من 0 إلى 100 %', covGap:'فجوة: من 60 إلى أقل من 65 % بلا نطاق.', covFix:'يجب أن تغطي النطاقات من 0 إلى 100 % دون فجوات أو تداخل.',
+    usedNote:'يستخدم 12 سجلًا هذا السلّم. تحتفظ بنسختها، وتستخدم السجلات الجديدة التغييرات.', provNote:'مأخوذ من القالب السعودي (يحتاج إلى تحقق). حفظ أي تعديل أو التأكيد يزيل الحالة المؤقتة.', save:'حفظ', confirmB:'تأكيد السلّم',
+    wtTitle:'قوالب الأوزان', wtSub:'أوزان الفئات التي ينسخها المعلم إلى سجل الدرجات. التعديلات اللاحقة لا تغيّر السجلات التي استخدمتها.', newWt:'قالب جديد', wtName:'القالب', wtCats:'الفئات', wtEditor:'العلوم (ثانوي)', catName:'الفئة', weight:'الوزن', addCat:'إضافة فئة', moveUp:'نقل لأعلى', moveDown:'نقل لأسفل',
+    mgTitle:'درجاتي', mgSub:'الدرجات التي نشرها معلموك. المجاميع مبنية على الدرجات المنشورة فقط.', perCourse:'نقاط هذا المقرر', legend:'السلّم: نطاقات المدارس السعودية', basedOn:'مبني على الدرجات المنشورة',
+    c1:'الفيزياء 1', c2:'الرياضيات', c3:'اللغة العربية', pubItems:'البنود المنشورة', bandLegend:'دليل التقديرات',
+    ttTitle:'الجدول الدراسي · 10-أ', ttSub:'الفصل الأول · أسبوع 2026-11-15', draft:'مسودة', pubTt:'نشر الجدول', copyTerm:'نسخ من الفصل السابق', thisWeek:'هذا الأسبوع',
+    days:['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس'], daysLong:['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس'],
+    p1:'الحصة 1', p2:'الحصة 2', p3:'الحصة 3', p4:'الحصة 4',
+    cPhy:'الفيزياء 1', cMath:'الرياضيات', cAr:'العربية', cEng:'الإنجليزية', cChem:'الكيمياء', tNasser:'أ. خالد ناصر', tFaisal:'أ. فيصل', tSara:'أ. سارة', tHuda:'أ. هدى', room:'مختبر ب', room2:'قاعة 204',
+    subst:'بديل: أ. هدى', cancelledC:'ملغاة', conflictC:'تعارض في جدول المعلم', conflicts:'التعارضات (1)', conflictTxt:'يدرّس أ. خالد ناصر أيضًا 10-ب في الحصة 2 يوم الاثنين. حُفظت الحصة (وضع التنبيه).',
+    moving:'نقل «الرياضيات»: استخدم الأسهم، ثم مفتاح Enter للإفلات أو Esc للإلغاء.', dropHere:'أفلت هنا', addSlot:'إضافة حصة', today:'اليوم',
+    atTitle:'الحضور', atSub:'حصص اليوم، ومنها الحصص التي أنت بديل فيها.', open:'مفتوحة', taken:'مسجّلة', take:'تسجيل الحضور', review:'مراجعة', marked:'سُجّل 28 من 30', lockC:'انتهت مهلة التعديل', liveC:'مقترح من الحصة المباشرة', substC:'أنت المعلم البديل',
+    pickDay:'التاريخ',
+    takeTitle:'الفيزياء 1 · 10-أ · الحصة 2', takeSub:'2026-11-15 · 09:00–09:45 · مختبر ب', markAll:'تسجيل الجميع حاضرين', nextUn:'التالي غير المسجّل', search:'ابحث عن طالب',
+    stP:'حاضر', stA:'غائب', stL:'متأخر', stE:'معذور', unmarked:'غير مسجّل', note:'إضافة ملاحظة', noteLate:'وصل الساعة 09:12',
+    sumP:'حاضر 24', sumA:'غائب 2', sumL:'متأخر 1', sumE:'معذور 1', sumU:'غير مسجّل 2', saveAtt:'حفظ الحضور', confirmAtt:'تأكيد الحضور',
+    draftBanner:'لديك تسجيلات غير محفوظة من الساعة 08:58 على هذا الجهاز.', restore:'استعادة', discard:'تجاهل', online:'متصل · المسودة محفوظة على هذا الجهاز',
+    liveBanner:'اقتُرحت هذه التسجيلات من قائمة المشاركين في Zoom. راجعها ثم أكّدها.', liveSrc:'انضم لمدة 44 دقيقة', liveLate:'انضم متأخرًا الساعة 09:14', unmatchedT:'مشاركون في Zoom لم تتم مطابقتهم', guest:'«iPad Air» (ضيف)', thisIs:'هذا هو…', skip:'تخطٍّ',
+    exTitle:'شرح غياب', exStep1:'الحصص', exStep2:'السبب', exStep3:'التفاصيل', policy:'يمكنك التقديم خلال 5 أيام دراسية من الغياب. تحدد مدرستك الأسباب التي تحتاج إلى مستند.',
+    exFor:'للطالب أحمد سعيد', from:'من', to:'إلى', covered:'الحصص التي يشملها العذر', cov1:'2026-11-12 · الفيزياء 1 · الحصة 2 · غائب', cov2:'2026-11-12 · الرياضيات · الحصة 3 · غائب', cov3:'2026-11-13 · العربية · الحصة 1 · متأخر',
+    onlyNow:'يشمل العذر الحصص المسجّلة غيابًا أو تأخرًا الآن فقط. الغياب اللاحق يحتاج إلى عذر جديد.', reason:'السبب', rIll:'مرض', rFam:'ظرف عائلي', rOff:'مهمة رسمية', rOth:'أخرى', details:'التفاصيل (اختيارية)', attach:'المستند', attachH:'JPEG أو PNG أو WebP أو PDF، حتى 5 م.ب. مطلوب للمهمة الرسمية.', choose:'اختيار ملف',
+    back:'رجوع', next:'التالي', submit:'إرسال العذر',
+    rvTitle:'مراجعة الأعذار', rvSub:'الأعذار المقدّمة لطلاب وحداتك. اتخذ القرار أو صعّده إلى المدير.', stSub:'مقدَّم', stApp:'مقبول', stRej:'مرفوض', stEsc:'مُصعَّد',
+    colStudent:'الطالب', colSubmitter:'مقدّم العذر', colReason:'السبب', colSessions:'الحصص', colDate:'تاريخ التقديم', colAge:'الانتظار',
+    r1s:'أحمد سعيد · 10-أ', r1b:'منى فهد (ولية أمر)', r2s:'ليلى حسن · 10-أ', r2b:'ليلى حسن', r3s:'عمر خالد · 9-ب', r3b:'هدى ناصر (ولية أمر)',
+    d1:'يومان', d2:'5 ساعات', d3:'يوم', drawerT:'عذر · أحمد سعيد', hist:'آخر 30 يومًا', histKey:'P حاضر · A غائب · L متأخر · E معذور',
+    docT:'medical-note.jpg · 380 ك.ب', docH:'تُعرض الصور هنا؛ ملفات PDF تُنزَّل.', approve:'قبول', reject:'رفض', escalate:'تصعيد', rejComment:'تعليق (مطلوب للرفض)', approveNote:'القبول يجعل 3 سجلات «معذور».',
+    alTitle:'تنبيهات الغياب', alSub:'الطلاب الذين تجاوزوا الحد: 5 غيابات في 30 يومًا، والتأخر يُحسب نصف غياب.', formula:'4 غيابات + 3 تأخيرات × ½ = 5.5', open2:'فتح الحضور', alDate:'تنبيه في 2026-11-14'
+    , hP:'ح', hA:'غ', hL:'ت', hE:'ع', histKey:'ح حاضر · غ غائب · ت متأخر · ع معذور',
+    kbHint:'الأسهم للتنقل · Enter أو F2 للتعديل وEnter مرة أخرى للحفظ · Tab للحفظ والانتقال · Shift+F10 لقائمة الخلية · Esc للإلغاء', kbHelp:'اختصارات لوحة المفاتيح',
+    undoT:'سُجّل 26 طالبًا حاضرين. احتفظت الصفوف المسجّلة سابقًا بحالتها.', undo:'تراجع',
+    maTitle:'الحضور · أحمد سعيد', maSub:'10-أ · الفصل الأول. الغياب والتأخر الذي سجّله معلمو ابنك.', child:'الابن', range:'التواريخ', rangeV:'2026-11-01 – 2026-11-15',
+    stAbs:'غيابات', stLate:'تأخيرات', stExc:'معذور', explain:'شرح هذا الغياب', exSubmitted:'تم تقديم العذر', exApproved:'قُبل العذر', exRejected:'رُفض العذر',
+    a1:'2026-11-12 · الفيزياء 1 · الحصة 2', a2:'2026-11-12 · الرياضيات · الحصة 3', a3:'2026-11-13 · العربية · الحصة 1', a4:'2026-11-05 · الإنجليزية · الحصة 4', a5:'2026-11-03 · الكيمياء · الحصة 1',
+    lateTxt:'متأخر', absTxt:'غائب', excTxt:'معذور', windowClosed:'انتهت مهلة شرح هذا الغياب.', guardianOnly:'يمكن لولي أمرك تقديم العذر.',
+    statesTitle:'حالات الفراغ والتحميل والأخطاء', stNoPeriods:'لا توجد حصص بعد', stNoPeriodsT:'أضف حصص اليوم الدراسي قبل بناء الجدول.', addPeriods:'إعداد الحصص',
+    stNotPub:'هذا الجدول غير منشور بعد', stNotPubT:'يراه الطلاب والمعلمون بعد نشره.',
+    stNoSess:'لا حصص في هذا اليوم', stNoSessT:'2026-11-23 إجازة (اليوم الوطني). اختر تاريخًا آخر.', stNoStu:'لا طلاب في هذا المقرر الفصلي', stNoStuT:'سجّل الطلاب قبل تسجيل الحضور.',
+    stConflict:'حفظ شخص آخر هذه الحصة الساعة 09:21. حمّلنا تسجيلاته، واحتفظنا بتغييراتك غير المحفوظة تحت كل صف.', stQueue:'لا أعذار للمراجعة', stQueueT:'تظهر هنا الأعذار الجديدة لطلاب وحداتك.',
+    stAlerts:'لا طلاب فوق الحد', stAlertsT:'يظهر الطلاب هنا بعد 5 غيابات في 30 يومًا (التأخر يُحسب نصف غياب).', stLoading:'جارٍ التحميل', stError:'تعذّر تحميل حصص اليوم.', retry:'إعادة المحاولة'
+  }
+}[lang];
+const F = (t, ...a) => a.reduce((s, v, i) => s.replace(`{${i}}`, v), t);
+const I = (n, cls='') => `<span class="ms ${cls}" aria-hidden="true">${n}</span>`;
+const nav = cur => `<aside class="side"><div class="brand"><span class="brand-mark">${I('school')}</span>${S.app}</div>
+  <div class="nav">${I('home')}${S.home}</div><div class="nav-sec">${S.secAcad}</div>
+  <div class="nav" ${cur==='cc'?'aria-current="page"':''}>${I('auto_stories')}${S.navClasses}</div>
+  <div class="nav" ${cur==='tt'?'aria-current="page"':''}>${I('calendar_view_week')}${S.navTimetable}</div>
+  <div class="nav" ${cur==='att'?'aria-current="page"':''}>${I('how_to_reg')}${S.navAtt}</div>
+  <div class="nav" ${cur==='exc'?'aria-current="page"':''}>${I('assignment_late')}${S.navExc}<span class="badge">3</span></div>
+  <div class="nav" ${cur==='al'?'aria-current="page"':''}>${I('notification_important')}${S.navAlerts}</div>
+  <div class="nav-sec">${S.secSet}</div><div class="nav" ${cur==='sc'?'aria-current="page"':''}>${I('grading')}${S.navScales}</div></aside>`;
+const bar = () => `<header class="appbar"><button class="icon-btn menu-btn">${I('menu')}</button><span class="pill ctx">${S.ctx}</span><span class="pill ctx">${I('calendar_month','ms-sm')}${S.year}</span><span class="spacer"></span><button class="icon-btn">${I('notifications')}<span class="badge">2</span></button><button class="icon-btn">${I('dark_mode')}</button><span class="pill" style="background:none">${S.other}</span><button class="icon-btn">${I('account_circle')}</button></header>`;
+const shell = (cur, body) => `<div class="shell">${nav(cur)}<div style="position:relative;min-inline-size:0">${bar()}<main class="page">${body}</main></div></div>`;
+const header = (title, sub, actions='', badges='') => `<div class="ph"><div class="ph-text"><div style="display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center"><h1 class="h4">${title}</h1>${badges}</div><p class="sub">${sub}</p></div>${actions?`<div class="row-actions">${actions}</div>`:''}</div>`;
+const ccTabs = cur => `<nav class="tabs" aria-label="${S.course}"><span class="tab">${S.tPlan}</span><span class="tab" ${cur==='gb'?'aria-current="page"':''}>${S.tGb}</span><span class="tab" ${cur==='att'?'aria-current="page"':''}>${S.tAtt}</span><span class="tab">${S.tForum}</span></nav>`;
+const chip = (t, cls='', icon='') => `<span class="chip ${cls}">${icon?I(icon):''}${t}</span>`;
+
+/* ---------- Gradebook ---------- */
+const students = ['s1','s2','s3','s4','s5','s6','s7','s8'];
+const rows = [
+  // hw1, hw2, hwRes, q1, q2, qRes, ex, final, band
+  [['9','ev'],['18'],'90.0',['8','ev'],['9','ev'],'85.0',['41'],'85.6','A'],
+  [['10','ev'],['17','ov'],'90.0',['7','ev'],['6','ev'],'65.0',['38'],'80.0','B'],
+  [['7','ev'],['edit'],'70.0',['excused'],['8','ev'],'80.0',['44'],'82.0','B'],
+  [['–'],['16'],'80.0',['9','ev'],['10','ev'],'95.0',['47'],'88.0','A'],
+  [['6','ev'],['12'],'60.0',['5','newer'],['7','ev'],'60.0',['30'],'60.0','D'],
+  [['10','ev'],['19'],'96.7',['10','ev'],['9','ev'],'95.0',['49'],'97.0','A'],
+  [['8','ev'],['saving'],'80.0',['8','ev'],['8','ev'],'80.0',['40'],'80.0','B'],
+  [['9','ev'],['err'],'75.0',['6','ev'],['7','ev'],'65.0',['35'],'71.5','C'],
+];
+const bandName = b => ({A:lang==='ar'?'ممتاز':'Excellent', B:lang==='ar'?'جيد جدًا':'Very good', C:lang==='ar'?'جيد':'Good', D:lang==='ar'?'مقبول':'Acceptable'})[b];
+function cell(c, focus) {
+  const [v, k] = c; let cls = 'cell', inner = `<span class="num">${v}</span>`, label = v;
+  if (k === 'ev') inner += I('assignment','src');
+  if (k === 'ov') { cls += ' override'; label = v + ', overridden'; }
+  if (k === 'newer') { cls += ' override'; inner = `<span class="num">${v}</span> <span class="mini mini-warn">${S.newer}</span>`; }
+  if (v === 'excused') inner = `<span class="mini mini-muted">${S.excused}</span>`;
+  if (v === 'edit') { cls += ' editing focus-cell'; inner = `<div class="input"><span class="num">15</span></div>`; }
+  if (v === 'saving') { cls += ' saving'; inner = `<span class="num">14</span> ${I('progress_activity','ms-sm')}<span class="vh">${S.saving}</span>`; }
+  if (v === 'err') { cls += ' error'; inner = `<span class="num">21</span> ${I('error','ms-sm')} <span class="mini" style="color:var(--mud-palette-error)">${S.notSaved}</span>`; }
+  return `<td class="${cls}" role="gridcell" aria-label="${label}">${inner}</td>`;
+}
+function gradebookGrid() {
+  const hdr = (t, max, st, src) => `<th scope="col"><div class="lms-gb-hdr"><span>${src?I('assignment','ms-sm'):''} ${t}</span><small>${F(S.outOf, `<span class="num">${max}</span>`)} · ${st}</small></div></th>`;
+  return `<div class="card" style="overflow:hidden">
+    <div class="lms-filters" style="display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;padding:12px 16px;border-block-end:1px solid var(--mud-palette-lines-default)">
+      <div class="seg"><span aria-selected="true">${S.term}</span><span>${lang==='ar'?'الفصل الثاني':'Term 2'}</span></div>
+      ${chip(S.weightsOk,'chip-success lms-weights-chip','check_circle')}<span class="spacer" style="flex:1"></span><span class="caption muted">${S.kbHint}</span><button class="icon-btn sm" aria-label="${S.kbHelp}">${I('keyboard')}</button></div>
+    <div class="lms-gb-wrap" tabindex="-1"><table class="lms-gb" role="grid" aria-label="${S.gbTitle}" aria-describedby="gbhint">
+      <colgroup><col><col span="3"><col span="3"><col span="2"><col span="2"></colgroup>
+      <thead><tr><th class="lms-gb-student" rowspan="2" scope="col">${S.student}</th>
+        <th colspan="3" scope="colgroup" class="lms-gb-cat">${S.catHw} · <span class="num">${S.w30}</span></th><th colspan="3" scope="colgroup" class="lms-gb-cat">${S.catQz} · <span class="num">${S.w20}</span></th><th colspan="1" scope="colgroup" class="lms-gb-cat">${S.catEx} · <span class="num">${S.w50}</span></th><th colspan="2" scope="colgroup"></th></tr>
+        <tr>${hdr(S.i1,10,S.pub,1)}${hdr(S.i2,20,S.pub)}<th class="lms-gb-catres">${S.catResult}</th>${hdr(S.i3,10,S.pub,1)}${hdr(S.i4,10,S.sch,1)}<th class="lms-gb-catres">${S.catResult}</th>${hdr(S.i5,50,S.hid)}<th class="lms-gb-final">${S.final}</th><th>${S.band}</th></tr></thead>
+      <tbody>${rows.map((r,i) => `<tr><th scope="row" class="lms-gb-student"><span style="display:inline-flex;gap:8px;align-items:center"><span class="avatar sm">${S[students[i]].split(' ').map(w=>w[0]).join('').slice(0,2)}</span>${S[students[i]]}</span></th>
+        ${cell(r[0])}${cell(r[1])}<td class="lms-gb-catres num">${r[2]}</td>${cell(r[3])}${cell(r[4])}<td class="lms-gb-catres num">${r[5]}</td>${cell(r[6])}<td class="lms-gb-final num">${r[7]}</td><td>${chip(bandName(r[8]),'')}</td></tr>`).join('')}</tbody></table></div>
+    <div id="gbhint" class="lms-gb-legend"><span>${I('assignment','ms-sm')}${S.lgEvent}</span><span><span style="inline-size:10px;block-size:10px;background:var(--mud-palette-warning);clip-path:polygon(0 0,100% 0,100% 100%)"></span>${S.lgOverride}</span><span><span class="chip chip-warning" style="height:18px;font-size:11px">${S.newer}</span>${S.lgNewer}</span><span><span class="chip" style="height:18px;font-size:11px">${S.excused}</span>${S.lgExcused}</span><span>${S.lgEmpty}</span></div></div>`;
+}
+function gradebookPhone() {
+  const it = (t, sub, v, k) => `<div class="lms-gb-item"><div class="t">${t}<small>${sub}</small></div>${k==='ev'?`${I('assignment','ms-sm muted')}<span class="score num" style="text-align:center;font-weight:600">${v}</span>`:`<div class="input score ${k==='edit'?'focused':''}" style="justify-content:center"><span class="num">${v}</span></div>`}</div>`;
+  return `<div class="alert alert-info" style="margin-block-end:12px">${I('smartphone')}<span class="t">${S.phoneNote}</span></div>
+  <div class="card" style="overflow:hidden"><div class="lms-gb-picker"><button class="icon-btn sm" aria-label="${S.prevS}">${I('chevron_left','flip')}</button><div class="who"><b>${S.s3}</b><div class="caption muted"><span class="num">${S.nOf}</span></div></div><button class="icon-btn sm" aria-label="${S.nextS}">${I('chevron_right','flip')}</button></div>
+  <div style="padding:10px 12px;border-block-end:1px solid var(--mud-palette-lines-default)"><div class="input">${I('search')}<span class="ph-text">${S.searchS}</span></div></div>
+  <div class="lms-picker-group" style="padding:12px 14px 4px;font-size:12px;font-weight:600;color:var(--mud-palette-text-secondary)">${S.catHw} · ${S.w30}</div>
+  ${it(S.i1, F(S.outOf,'10')+' · '+S.pub, '7', 'ev')}${it(S.i2, F(S.outOf,'20')+' · '+S.pub, '15', 'edit')}
+  <div class="lms-picker-group" style="padding:12px 14px 4px;font-size:12px;font-weight:600;color:var(--mud-palette-text-secondary)">${S.catQz} · ${S.w20}</div>
+  <div class="lms-gb-item"><div class="t">${S.i3}<small>${F(S.outOf,'10')}</small></div><span class="chip">${S.excused}</span></div>${it(S.i4, F(S.outOf,'10')+' · '+S.sch, '8', 'ev')}
+  <div style="display:flex;justify-content:space-between;gap:12px;padding:14px;background:color-mix(in srgb, var(--mud-palette-primary) 5%, var(--mud-palette-surface))"><b>${S.finalL} <span class="num">82.0</span></b>${chip(bandName('B'))}</div></div>`;
+}
+function gradebook() {
+  return shell('cc', `<div class="caption muted" style="margin-block-end:4px">${S.course}</div>` + ccTabs('gb') +
+    header(S.gbTitle, S.gbSub, `<button class="btn btn-outlined desk-only">${I('upload')}${S.import}</button><button class="btn btn-outlined desk-only">${I('download')}${S.exportB}</button><button class="icon-btn" aria-label="${S.settings}">${I('tune')}</button><button class="btn btn-filled">${I('publish')}${S.publish}</button>`) +
+    (narrow ? gradebookPhone() : gradebookGrid()) +
+    (narrow ? '' : `<div class="lms-menu" role="menu" aria-label="${S.cellMenu}" style="position:absolute;inset-block-start:590px;inset-inline-start:${tablet?'300px':(lang==='ar'?'560px':'720px')};min-inline-size:230px;padding:6px;border-radius:12px;background:var(--mud-palette-surface);border:1px solid var(--mud-palette-lines-default);box-shadow:var(--lms-shadow-2);font-size:14px">
+      <div style="padding:8px 10px;display:flex;gap:10px">${I('edit')}${S.mKeep}</div><div style="padding:8px 10px;display:flex;gap:10px">${I('history')}${S.mDrop}</div><hr style="border:0;border-block-start:1px solid var(--mud-palette-lines-default)"><div style="padding:8px 10px;display:flex;gap:10px">${I('do_not_disturb_on')}${S.mExcuse}</div><div style="padding:8px 10px;display:flex;gap:10px;color:var(--mud-palette-error)">${I('backspace')}${S.mClear}</div></div>`));
+}
+function publish() {
+  const r = (t, st, mode) => `<tr><td data-label="${S.colItem}"><span style="display:inline-flex;gap:8px;align-items:center"><span class="box ${mode?'on':''}">${mode?I('check','ms-sm'):''}</span>${t}</span></td><td data-label="${S.colState}">${st}</td><td data-label="${S.colMode}">${mode?`<div class="seg"><span ${mode==='now'?'aria-selected="true"':''}>${S.modeNow}</span><span ${mode==='sch'?'aria-selected="true"':''}>${S.modeSch}</span></div>`:'<span class="muted">—</span>'}</td></tr>`;
+  return `<div class="dialog-wrap"><div class="dialog" role="dialog" aria-labelledby="pd"><div class="dialog-head"><span class="sec-icon">${I('publish')}</span><h2 class="h6" id="pd" style="flex:1">${S.pubDlg}</h2><button class="icon-btn">${I('close')}</button></div>
+  <div class="dialog-body"><div class="alert alert-error" role="alert">${I('gpp_maybe')}<span class="t"><b>${S.provTitle}.</b> ${S.provWarn}</span><button class="btn btn-sm btn-outlined" style="margin-inline-start:auto">${S.confirmScale}</button></div>
+  <p class="muted">${S.pubIntro}</p>
+  <div class="card" style="box-shadow:none"><table class="stack"><thead><tr><th>${S.colItem}</th><th>${S.colState}</th><th>${S.colMode}</th></tr></thead><tbody>
+  ${r(S.i5, chip(S.hid,'','visibility_off'), 'now')}${r(S.i4, chip(S.sch,'chip-info chip-dot'), '')}${r(S.i1, chip(S.pub,'chip-success chip-dot'), '')}</tbody></table></div>
+  <div class="alert alert-info">${I('info')}<span class="t">${S.pubWhat} ${S.pubWarn}</span></div></div>
+  <div class="dialog-actions"><button class="btn">${S.cancel}</button><button class="btn btn-filled" disabled>${I('publish')}${S.pubBtn}</button></div></div></div>`;
+}
+/* ---------- Scales ---------- */
+function scales() {
+  const r = (n, k, bands, used, status, extra='') => `<tr><td data-label="${S.colName}"><b>${n}</b>${extra}</td><td data-label="${S.colKind}">${k}</td><td data-label="${S.colBands}" class="num">${bands}</td><td data-label="${S.colUsed}">${used}</td><td data-label="${S.colStatus}"><div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end">${status}</div></td><td data-label=""><button class="icon-btn sm">${I('more_vert')}</button></td></tr>`;
+  return shell('sc', header(S.scTitle, S.scSub, `<button class="btn btn-outlined">${I('library_add')}${S.fromPreset}</button><button class="btn btn-filled">${I('add')}${S.newScale}</button>`) +
+    `<div class="card"><table class="stack"><thead><tr><th>${S.colName}</th><th>${S.colKind}</th><th>${S.colBands}</th><th>${S.colUsed}</th><th>${S.colStatus}</th><th><span class="vh">…</span></th></tr></thead><tbody>
+    ${r(S.sc1, S.kPct, '—', S.gb0, chip(S.defaultC,'chip-success chip-dot'), `<div class="caption muted">${S.inherited}</div>`)}
+    ${r(S.sc2, S.kPct, '5', S.gb12, chip(S.provisional,'chip-warning','pending') + `<button class="btn btn-sm btn-outlined">${S.confirm}</button>`)}
+    ${r(S.sc3, S.kGpa5, '9', S.gb0, chip(S.confirmed,'chip-success chip-dot'))}
+    ${r(S.sc4, S.kPct, '5', '—', chip(S.templateC,'','content_copy') + chip(S.provisional,'chip-warning','pending'))}
+    ${r(S.sc5, S.kGpa5, '9', '—', chip(S.templateC,'','content_copy') + chip(S.provisional,'chip-warning','pending') + chip(S.updAvail,'chip-info','update'))}
+    ${r(S.sc6, S.kGpa4, '9', '—', chip(S.templateC,'','content_copy') + chip(S.provisional,'chip-warning','pending'))}</tbody></table></div>`);
+}
+function scaleEdit() {
+  const bands = lang==='ar' ? [['90','ممتاز','Excellent'],['80','جيد جدًا','Very good'],['70','جيد','Good'],['65','مقبول','Acceptable'],['0','راسب','Fail']] : [['90','ممتاز','Excellent'],['80','جيد جدًا','Very good'],['70','جيد','Good'],['65','مقبول','Acceptable'],['0','راسب','Fail']];
+  const cov = [['F',60,'',lang==='ar'?'راسب':'Fail'],['gap',5,'gap',''],['D',5,'',lang==='ar'?'مقبول':'Acceptable'],['C',10,'',lang==='ar'?'جيد':'Good'],['B',10,'',lang==='ar'?'جيد جدًا':'Very good'],['A',10,'',lang==='ar'?'ممتاز':'Excellent']];
+  const col = ['var(--mud-palette-background-gray)','','color-mix(in srgb, var(--mud-palette-warning) 18%, transparent)','color-mix(in srgb, var(--mud-palette-info) 16%, transparent)','color-mix(in srgb, var(--mud-palette-success) 16%, transparent)','color-mix(in srgb, var(--mud-palette-primary) 22%, transparent)'];
+  return `<div class="dialog-wrap"><div class="dialog" role="dialog" style="inline-size:min(820px,100%)"><div class="dialog-head"><span class="sec-icon">${I('grading')}</span><h2 class="h6" style="flex:1">${S.edTitle}</h2>${chip(S.provisional,'chip-warning','pending')}<button class="icon-btn">${I('close')}</button></div>
+  <div class="dialog-body"><div class="alert alert-info">${I('info')}<span class="t">${S.provNote}</span></div>
+  <div class="grid2"><div class="field"><span class="label">${S.nameAr}</span><div class="input" dir="rtl">نطاقات المدرسة بالنسبة المئوية</div></div><div class="field"><span class="label">${S.nameEn}</span><div class="input" dir="ltr">School percentage bands</div></div></div>
+  <fieldset style="border:0;padding:0;margin:0"><legend class="label" style="margin-block-end:8px">${S.bandsL}</legend>
+  <div class="card" style="box-shadow:none"><table class="stack"><thead><tr><th>${S.colMin}</th><th>${S.colLabelAr}</th><th>${S.colLabelEn}</th><th><span class="vh">…</span></th></tr></thead><tbody>
+  ${bands.map((b,i) => `<tr><td data-label="${S.colMin}"><div class="input" style="inline-size:90px;${i===3?'border:2px solid var(--mud-palette-error)':''}"><span class="num">${b[0]}</span></div></td><td data-label="${S.colLabelAr}"><div class="input" dir="rtl">${b[1]}</div></td><td data-label="${S.colLabelEn}"><div class="input" dir="ltr">${b[2]}</div></td><td><button class="icon-btn sm" aria-label="Remove">${I('delete')}</button></td></tr>`).join('')}</tbody></table></div>
+  <button class="btn btn-sm" style="margin-block-start:8px">${I('add')}${S.addBand}</button></fieldset>
+  <div class="field"><span class="label">${S.covTitle}</span><div class="lms-coverage" role="img" aria-label="${S.covGap}" dir="ltr">${cov.map((c,i) => `<span class="${c[2]}" title="${c[3]||''}" style="flex:${c[1]};background:${c[2]?'':col[i]}">${c[2]?'!':(c[1]>=10?c[3]:'')}</span>`).join('')}</div>
+  <div class="lms-coverage-axis" style="position:relative;block-size:16px">${[0,60,65,70,80,90,100].map(v => `<span style="position:absolute;inset-inline-start:${v}%;transform:translateX(${v===0?'0':v===100?'-100%':'-50%'})">${v}</span>`).join('')}</div>
+  <div class="alert alert-error" role="status">${I('error')}<span class="t"><b>${S.covGap}</b> ${S.covFix}</span></div></div>
+  <div class="alert alert-warning">${I('warning')}<span class="t">${S.usedNote}</span></div></div>
+  <div class="dialog-actions"><button class="btn">${S.cancel}</button><button class="btn btn-outlined" disabled>${S.confirmB}</button><button class="btn btn-filled" disabled>${S.save}</button></div></div></div>`;
+}
+function weights() {
+  const r = (n, w) => `<tr><td data-label="${S.catName}"><div class="input">${n}</div></td><td data-label="${S.weight}"><div class="input" style="inline-size:100px"><span class="num">${w}</span><span class="ph-text"></span>%</div></td><td><div class="row-actions" style="flex-wrap:nowrap"><button class="icon-btn sm" aria-label="${S.moveUp}">${I('arrow_upward')}</button><button class="icon-btn sm" aria-label="${S.moveDown}">${I('arrow_downward')}</button><button class="icon-btn sm" aria-label="Remove">${I('delete')}</button></div></td></tr>`;
+  return shell('sc', header(S.wtTitle, S.wtSub, `<button class="btn btn-filled">${I('add')}${S.newWt}</button>`) +
+    `<div class="card"><div class="card-head"><span class="sec-icon">${I('balance')}</span><h2 class="h6" style="flex:1">${S.wtEditor}</h2>${chip(lang==='ar'?'مجموع الأوزان 90: ينقص 10':'Weights total 90: 10 missing','chip-warning lms-weights-chip','warning')}</div>
+    <div class="card-body"><table class="stack"><thead><tr><th>${S.catName}</th><th>${S.weight}</th><th><span class="vh">…</span></th></tr></thead><tbody>${r(S.catHw,30)}${r(S.catQz,10)}${r(S.catEx,50)}</tbody></table>
+    <button class="btn btn-sm" style="margin-block-start:8px">${I('add')}${S.addCat}</button>
+    <div class="alert alert-warning" style="margin-block-start:12px" role="status">${I('warning')}<span class="t">${S.weightsBad}</span></div></div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;padding:12px 20px;border-block-start:1px solid var(--mud-palette-lines-default)"><button class="btn">${S.cancel}</button><button class="btn btn-filled">${S.save}</button></div></div>`);
+}
+function myGrades() {
+  const course = (n, final, b, pts, items) => `<section class="card" style="margin-block-end:16px"><div class="card-head"><span class="sec-icon">${I('menu_book')}</span><h2 class="h6" style="flex:1">${n}</h2><div style="text-align:end"><div><b class="num" style="font-size:20px">${final}</b> ${chip(bandName(b),'chip-success')}</div><div class="caption muted">${S.basedOn} · <span class="num">${pts}</span> ${S.perCourse}</div></div></div>
+    <table class="stack"><thead><tr><th>${S.colItem}</th><th>${S.catResult}</th><th>${lang==='ar'?'الدرجة':'Score'}</th><th>${lang==='ar'?'التاريخ':'Date'}</th></tr></thead><tbody>${items.map(i => `<tr><td data-label="${S.colItem}">${i[0]}</td><td data-label="${S.catResult}">${i[1]}</td><td data-label="${lang==='ar'?'الدرجة':'Score'}" class="num">${i[2]}</td><td data-label="${lang==='ar'?'التاريخ':'Date'}" class="num">${i[3]}</td></tr>`).join('')}</tbody></table></section>`;
+  return shell('cc', header(S.mgTitle, S.mgSub, `<div class="seg"><span aria-selected="true">${S.term}</span><span>${lang==='ar'?'الفصل الثاني':'Term 2'}</span></div>`) +
+    course(S.c1, '85.6', 'A', '5', [[S.i1,S.catHw,'9 / 10','2026-11-05'],[S.i2,S.catHw,'18 / 20','2026-11-09'],[S.i3,S.catQz,'8 / 10','2026-11-10']]) +
+    course(S.c2, '78.0', 'B', '4', [[lang==='ar'?'واجب الكسور':'Fractions homework',S.catHw,'16 / 20','2026-11-06']]) +
+    `<details class="card" open><summary style="padding:14px 20px;font-weight:600;cursor:pointer">${S.bandLegend} · ${S.legend}</summary><table style="margin:0 0 8px"><tbody>${[['90–100','ممتاز','Excellent'],['80–89','جيد جدًا','Very good'],['70–79','جيد','Good'],['60–69','مقبول','Acceptable'],['0–59','راسب','Fail']].map(b => `<tr><td class="num" style="inline-size:120px">${b[0]} %</td><td>${lang==='ar'?b[1]:b[2]}</td></tr>`).join('')}</tbody></table></details>`);
+}
+/* ---------- Timetable ---------- */
+function timetable() {
+  const slot = (c, t, r, extra='', cls='') => `<div class="lms-slot ${cls}" tabindex="0"><b>${c}</b><span class="muted">${t}</span><span class="muted">${r}</span>${extra}</div>`;
+  const empty = () => `<div class="lms-slot empty" tabindex="0" aria-label="${S.addSlot}">${I('add')}</div>`;
+  const grid = [
+    [slot(S.cPhy,S.tNasser,S.room), slot(S.cMath,S.tFaisal,S.room2,'','selected'), slot(S.cAr,S.tSara,S.room2), slot(S.cPhy,S.tNasser,S.room), slot(S.cEng,S.tHuda,S.room2)],
+    [slot(S.cChem,S.tHuda,S.room), slot(S.cPhy,S.tNasser,S.room, chip(S.conflictC,'chip-warning','warning'),'conflict'), `<div class="lms-slot drop">${S.dropHere}</div>`, slot(S.cMath,S.tFaisal,S.room2, chip(S.subst,'chip-info','swap_horiz')), slot(S.cAr,S.tSara,S.room2)],
+    [slot(S.cAr,S.tSara,S.room2), empty(), slot(S.cEng,S.tHuda,S.room2), slot(S.cChem,S.tHuda,S.room, chip(S.cancelledC,'chip-error','event_busy')), empty()],
+    [slot(S.cEng,S.tHuda,S.room2), slot(S.cAr,S.tSara,S.room2), slot(S.cPhy,S.tNasser,S.room), empty(), slot(S.cMath,S.tFaisal,S.room2)],
+  ];
+  const periods = [[S.p1,'07:30–08:15'],[S.p2,'08:20–09:05'],[S.p3,'09:15–10:00'],[S.p4,'10:05–10:50']];
+  const actions = `<button class="btn btn-outlined desk-only">${I('content_copy')}${S.copyTerm}</button><button class="btn btn-filled">${I('publish')}${S.pubTt}</button>`;
+  const weekNav = `<div class="row-actions" style="margin-block-end:12px"><button class="icon-btn sm">${I('chevron_left','flip')}</button><span class="pill">${I('date_range','ms-sm')}<span class="num">2026-11-15 – 2026-11-19</span></span><button class="icon-btn sm">${I('chevron_right','flip')}</button><button class="btn btn-sm">${S.thisWeek}</button></div>`;
+  if (tablet) {
+    return shell('tt', header(S.ttTitle, S.ttSub, actions, chip(S.draft,'chip-warning chip-dot')) + weekNav +
+      `<div class="seg" style="margin-block-end:12px">${S.days.map((d,i) => `<span ${i===1?'aria-selected="true"':''}>${d}</span>`).join('')}</div>
+      <div style="display:flex;flex-direction:column;gap:8px">${periods.map((p,i) => `<div style="display:grid;grid-template-columns:86px minmax(0,1fr);gap:8px;align-items:stretch"><div class="lms-tt-p"><b>${p[0]}</b><span class="num">${p[1]}</span></div>${grid[i][1].replace('selected','')}</div>`).join('')}</div>
+      <div class="alert alert-warning" style="margin-block-start:16px">${I('warning')}<span class="t"><b>${S.conflicts}.</b> ${S.conflictTxt}</span></div>`);
+  }
+  return shell('tt', header(S.ttTitle, S.ttSub, actions, chip(S.draft,'chip-warning chip-dot')) + weekNav +
+    `<div class="alert alert-info" role="status" style="margin-block-end:12px">${I('open_with')}<span class="t">${S.moving}</span></div>
+    <div class="card" style="padding:12px"><div class="lms-tt" role="grid" style="grid-template-columns:110px repeat(5, minmax(0,1fr))"><div></div>${S.days.map((d,i) => `<div class="lms-tt-h" role="columnheader">${d}${i===0?` · <span class="chip chip-success" style="height:18px;font-size:11px">${S.today}</span>`:''}</div>`).join('')}
+    ${periods.map((p,i) => `<div class="lms-tt-p" role="rowheader"><b>${p[0]}</b><span class="num">${p[1]}</span></div>${grid[i].join('')}`).join('')}</div></div>
+    <div class="alert alert-warning" style="margin-block-start:16px">${I('warning')}<span class="t"><b>${S.conflicts}.</b> ${S.conflictTxt}</span></div>`);
+}
+/* ---------- Attendance ---------- */
+function attendanceToday() {
+  const card = (t, sub, state, extra, action, filled) => `<article class="card lms-session"><div class="lms-session-top"><span class="sec-icon">${I('how_to_reg')}</span><div style="flex:1;min-inline-size:0"><b>${t}</b><div class="caption muted num" style="direction:inherit">${sub}</div></div>${state}</div>${extra}<button class="btn ${filled?'btn-filled':'btn-outlined'}" style="align-self:flex-start;min-block-size:44px">${action}</button></article>`;
+  return shell('att', header(S.atTitle, S.atSub, `<div class="field"><span class="label">${S.pickDay}</span><div class="input" style="inline-size:180px"><span class="num">2026-11-15</span><span class="ph-text"></span>${I('event')}</div></div>`) +
+    `<div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(300px,1fr));gap:16px">
+    ${card(S.course+' · '+S.p1, '07:30–08:15 · '+S.room, chip(S.taken,'chip-success chip-dot'), '', S.review)}
+    ${card(S.course+' · '+S.p2, '09:00–09:45 · '+S.room, chip(S.open,'chip-info chip-dot'), `<div class="caption muted">${S.marked}</div>`, S.take, 1)}
+    ${card((lang==='ar'?'الرياضيات · 10-ب':'Mathematics · 10-B')+' · '+S.p3, '09:15–10:00 · '+S.room2, chip(S.open,'chip-info chip-dot'), chip(S.substC,'chip-info','swap_horiz'), S.take, 1)}
+    ${card(S.course+' · '+(lang==='ar'?'مباشرة':'Live'), '11:00–11:45 · Zoom', chip(S.open,'chip-info chip-dot'), chip(S.liveC,'','videocam'), S.review, 1)}
+    ${card((lang==='ar'?'الفيزياء 1 · 10-أ · أمس':'Physics 1 · 10-A · yesterday'), '2026-11-12 · 07:30–08:15', chip(S.taken,'chip-success chip-dot'), chip(S.lockC,'','lock'), S.review)}
+    </div>`);
+}
+function attendanceTake(live) {
+  const opt = (k, label, n, on) => `<span class="lms-att-opt ${k}" role="radio" aria-checked="${on?'true':'false'}" tabindex="${on?0:-1}">${on?'':I({p:'check_circle',a:'cancel',l:'schedule',e:'verified'}[k],'ms-sm')}<span>${label}</span><kbd>${n}</kbd></span>`;
+  const row = (i, st, extra='', focused=false) => `<div class="lms-att-row ${focused?'focused':''}"><div class="lms-att-who"><span class="avatar sm">${S[students[i]].split(' ').map(w=>w[0]).join('').slice(0,2)}</span><div style="min-inline-size:0"><div class="n">${S[students[i]]}</div><div class="caption muted">${extra}</div></div></div>
+    <div class="lms-att-opts" role="radiogroup" aria-label="${S[students[i]]}">${opt('p',S.stP,1,st==='p')}${opt('a',S.stA,2,st==='a')}${opt('l',S.stL,3,st==='l')}${opt('e',S.stE,4,st==='e')}</div></div>`;
+  const banner = live ? `<div class="alert alert-info" style="margin-block-end:12px">${I('videocam')}<span class="t">${S.liveBanner}</span></div>`
+    : `<div class="alert alert-warning" style="margin-block-end:12px;align-items:center">${I('restore')}<span class="t" style="flex:1">${S.draftBanner}</span><button class="btn btn-sm">${S.discard}</button><button class="btn btn-sm btn-outlined">${S.restore}</button></div>`;
+  return shell('att', `<div class="caption muted" style="margin-block-end:4px">${S.course}</div>` + ccTabs('att') +
+    header(S.takeTitle, S.takeSub, `<button class="btn btn-filled" style="min-block-size:44px">${I('done_all')}${S.markAll}</button>`, live ? chip(S.liveC,'','videocam') : chip(S.open,'chip-info chip-dot')) + banner +
+    `<div class="card" style="overflow:visible"><div style="display:flex;flex-wrap:wrap;gap:8px 12px;padding:12px 16px;border-block-end:1px solid var(--mud-palette-lines-default)"><div class="input" style="flex:1 1 220px">${I('search')}<span class="ph-text">${S.search}</span></div><button class="btn btn-outlined" style="min-block-size:44px">${I('skip_next','flip')}${S.nextUn}</button></div>
+    ${row(0,'p', live?I('videocam','ms-sm')+' '+S.liveSrc:'')}${row(1,'l', live?I('videocam','ms-sm')+' '+S.liveLate:`${I('sticky_note_2','ms-sm')} ${S.noteLate}`)}${row(2,'a','',true)}${row(3,'p', live?I('videocam','ms-sm')+' '+S.liveSrc:'')}${row(4,'', `<span style="color:var(--mud-palette-warning)">${I('radio_button_unchecked','ms-sm')} ${S.unmarked}</span>`)}${row(5,'e')}
+    ${live ? `<div style="padding:14px 16px;border-block-start:1px solid var(--mud-palette-lines-default)"><div class="label" style="margin-block-end:8px">${S.unmatchedT}</div><div class="lms-check" style="flex-wrap:wrap">${I('person_off')}<span style="flex:1">${S.guest}</span><div class="input" style="inline-size:200px"><span class="ph-text">${S.thisIs}</span>${I('arrow_drop_down')}</div><button class="btn btn-sm">${S.skip}</button></div></div>` : ''}
+    ${live ? '' : `<div class="lms-toast" role="status">${I('done_all')}<span style="flex:1">${S.undoT}</span><button class="btn btn-sm">${S.undo}</button></div>`}
+    <div class="lms-att-bar" role="region" aria-label="Summary"><div class="counts" role="status">${chip(S.sumP,'chip-success')}${chip(S.sumA,'chip-error')}${chip(S.sumL,'chip-warning')}${chip(S.sumE,'chip-info')}${chip(S.sumU,'','radio_button_unchecked')}</div><span class="caption muted desk-only">${I('cloud_done','ms-sm')} ${S.online}</span><button class="btn btn-filled" style="min-block-size:44px">${live?S.confirmAtt:S.saveAtt}</button></div></div>`);
+}
+/* ---------- Excuses ---------- */
+function excuseSubmit() {
+  const steps = `<div class="lms-steps" aria-label="Steps"><span class="done"><b>${I('check','ms-sm')}</b>${S.exStep1}</span><i></i><span class="on" aria-current="step"><b>2</b>${S.exStep2}</span><i></i><span><b>3</b>${S.exStep3}</span></div>`;
+  return `<div class="dialog-wrap"><div class="dialog" role="dialog"><div class="dialog-head"><span class="sec-icon">${I('assignment_late')}</span><div style="flex:1"><h2 class="h6">${S.exTitle}</h2><div class="caption muted">${S.exFor}</div></div><button class="icon-btn">${I('close')}</button></div>
+  <div class="dialog-body">${steps}<div class="alert alert-info">${I('info')}<span class="t">${S.policy}</span></div>
+  <fieldset style="border:0;padding:0;margin:0"><legend class="label" style="margin-block-end:8px">${S.covered}</legend>
+  <div class="lms-check"><span class="box on">${I('check','ms-sm')}</span><span class="num" style="direction:inherit">${S.cov1}</span></div><div class="lms-check"><span class="box on">${I('check','ms-sm')}</span>${S.cov2}</div><div class="lms-check"><span class="box on">${I('check','ms-sm')}</span>${S.cov3}</div>
+  <p class="help" style="margin-block-start:8px">${S.onlyNow}</p></fieldset>
+  <fieldset style="border:0;padding:0;margin:0"><legend class="label" style="margin-block-end:8px">${S.reason}</legend><div class="seg" style="flex-wrap:wrap"><span aria-selected="true">${S.rIll}</span><span>${S.rFam}</span><span>${S.rOff}</span><span>${S.rOth}</span></div></fieldset>
+  <div class="field"><span class="label">${S.details}</span><div class="input" style="min-height:72px"></div></div>
+  <div class="field"><span class="label">${S.attach}</span><div><button class="btn btn-outlined btn-sm">${I('attach_file')}${S.choose}</button></div><span class="help">${S.attachH}</span></div></div>
+  <div class="dialog-actions"><button class="btn" style="margin-inline-end:auto">${I('arrow_back','flip')}${S.back}</button><button class="btn">${S.cancel}</button><button class="btn btn-filled">${S.submit}</button></div></div></div>`;
+}
+function excuseReview() {
+  const r = (s, b, rs, n, d, age, att, sel) => `<tr ${sel?'style="background:color-mix(in srgb, var(--mud-palette-primary) 6%, transparent)"':''}><td data-label="${S.colStudent}"><b>${s}</b></td><td data-label="${S.colSubmitter}">${b}</td><td data-label="${S.colReason}">${rs} ${att?I('attach_file','ms-sm muted'):''}</td><td data-label="${S.colSessions}" class="num">${n}</td><td data-label="${S.colDate}" class="num">${d}</td><td data-label="${S.colAge}">${age}</td></tr>`;
+  const hist = 'PPAPPLPPPPPAPPPPEPPPPAPPLPPPPA'.split('').map(c => `<span class="h-${c.toLowerCase()}" title="${S['h'+c]}">${S['h'+c]}</span>`).join('');
+  const drawer = `<aside class="card" aria-labelledby="dr"><div class="card-head"><span class="sec-icon">${I('assignment_late')}</span><div style="flex:1"><h2 class="h6" id="dr">${S.drawerT}</h2><div class="caption muted">${S.r1b} · ${S.rIll}</div></div>${chip(S.stSub,'chip-info chip-dot')}</div>
+    <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
+    <div><div class="label" style="margin-block-end:6px">${S.covered}</div><div class="lms-check">${I('event_busy','ms-sm')}${S.cov1}</div><div class="lms-check">${I('event_busy','ms-sm')}${S.cov2}</div><div class="lms-check">${I('schedule','ms-sm')}${S.cov3}</div></div>
+    <div><div class="label" style="margin-block-end:6px">${S.attach}</div><div class="lms-check" style="flex-wrap:wrap"><span style="inline-size:64px;block-size:48px;border-radius:6px;background:linear-gradient(135deg,var(--mud-palette-background-gray),var(--lms-recessed));display:grid;place-items:center">${I('image')}</span><span style="flex:1"><span class="num" style="direction:ltr">${S.docT}</span><div class="help">${S.docH}</div></span><button class="icon-btn sm" aria-label="Download">${I('download')}</button></div></div>
+    <div><div class="label" style="margin-block-end:6px">${S.hist}</div><div class="lms-history" dir="ltr" role="img" aria-label="${S.hist}: ${S.stAbs} 4, ${S.stLate} 2, ${S.stExc} 1">${hist}</div><div class="help" style="margin-block-start:4px">${S.histKey}</div></div>
+    <div class="field"><span class="label">${S.rejComment}</span><div class="input" style="min-height:60px"></div></div>
+    <div class="alert alert-success">${I('verified')}<span class="t">${S.approveNote}</span></div>
+    <div class="row-actions" style="justify-content:flex-end"><button class="btn btn-outlined">${I('trending_up')}${S.escalate}</button><button class="btn btn-outlined btn-error">${S.reject}</button><button class="btn btn-filled">${S.approve}</button></div></div></aside>`;
+  return shell('exc', header(S.rvTitle, S.rvSub) + `<div class="lms-review"><div class="card"><div style="padding:12px 16px;border-block-end:1px solid var(--mud-palette-lines-default)"><div class="seg"><span aria-selected="true">${S.stSub}</span><span>${S.stEsc}</span><span>${S.stApp}</span><span>${S.stRej}</span></div></div>
+    <table class="stack"><thead><tr><th>${S.colStudent}</th><th>${S.colSubmitter}</th><th>${S.colReason}</th><th>${S.colSessions}</th><th>${S.colDate}</th><th>${S.colAge}</th></tr></thead><tbody>
+    ${r(S.r1s,S.r1b,S.rIll,'3','2026-11-13',S.d1,1,1)}${r(S.r2s,S.r2b,S.rFam,'1','2026-11-15',S.d2,0)}${r(S.r3s,S.r3b,S.rOff,'2','2026-11-14',S.d3,1)}</tbody></table></div>${drawer}</div>`);
+}
+function alerts() {
+  const r = (s, f, d) => `<tr><td data-label="${S.colStudent}"><b>${s}</b></td><td data-label="${lang==='ar'?'الحساب':'Count'}"><span class="num" style="direction:inherit">${f}</span></td><td data-label="${lang==='ar'?'التاريخ':'Date'}">${d}</td><td><button class="btn btn-sm">${S.open2}</button></td></tr>`;
+  return shell('al', header(S.alTitle, S.alSub) + `<div class="lms-stats"><div class="card lms-stat"><div><div class="lms-stat-label">${lang==='ar'?'طلاب فوق الحد':'Students over the threshold'}</div><div class="lms-stat-value">3</div></div><span class="sec-icon">${I('notification_important')}</span></div><div class="card lms-stat"><div><div class="lms-stat-label">${lang==='ar'?'جديدة هذا الأسبوع':'New this week'}</div><div class="lms-stat-value">1</div></div><span class="sec-icon">${I('today')}</span></div></div>
+    <div class="card"><table class="stack"><thead><tr><th>${S.colStudent}</th><th>${lang==='ar'?'الحساب':'Count'}</th><th>${lang==='ar'?'التاريخ':'Date'}</th><th><span class="vh">…</span></th></tr></thead><tbody>
+    ${r(S.r1s, S.formula, S.alDate)}${r(S.r3s, lang==='ar'?'5 غيابات + 0 تأخير = 5':'5 absences + 0 lates = 5', S.alDate)}${r(S.s5+' · 10-A', lang==='ar'?'3 غيابات + 4 تأخيرات × ½ = 5':'3 absences + 4 lates × ½ = 5', S.alDate)}</tbody></table></div>`);
+}
+
+function myAttendance() {
+  const row = (d, st, ex) => `<div class="lms-absence"><div class="t"><span class="num" style="direction:inherit">${d}</span></div>${chip(st[0], st[1], st[2])}${ex}</div>`;
+  const absent = [S.absTxt,'chip-error','cancel'], late = [S.lateTxt,'chip-warning','schedule'], exc = [S.excTxt,'chip-info','verified'];
+  return shell('att', header(S.maTitle, S.maSub) +
+    `<div class="row-actions" style="margin-block-end:16px;align-items:flex-end"><div class="field"><span class="label">${S.child}</span><div class="seg"><span aria-selected="true">${S.s1}</span><span>${S.s2}</span></div></div>
+      <div class="field"><span class="label">${S.range}</span><div class="input" style="min-inline-size:240px"><span class="num">${S.rangeV}</span><span class="ph-text"></span>${I('date_range')}</div></div></div>
+    <div class="lms-stats"><div class="card lms-stat"><div><div class="lms-stat-label">${S.stAbs}</div><div class="lms-stat-value">3</div></div><span class="sec-icon">${I('cancel')}</span></div><div class="card lms-stat"><div><div class="lms-stat-label">${S.stLate}</div><div class="lms-stat-value">1</div></div><span class="sec-icon">${I('schedule')}</span></div><div class="card lms-stat"><div><div class="lms-stat-label">${S.stExc}</div><div class="lms-stat-value">1</div></div><span class="sec-icon">${I('verified')}</span></div></div>
+    <div class="card">
+    ${row(S.a1, absent, `<button class="btn btn-outlined btn-sm" style="min-block-size:44px">${S.explain}</button>`)}
+    ${row(S.a2, absent, chip(S.exSubmitted,'chip-info chip-dot'))}
+    ${row(S.a3, late, `<button class="btn btn-outlined btn-sm" style="min-block-size:44px">${S.explain}</button>`)}
+    ${row(S.a4, exc, chip(S.exApproved,'chip-success chip-dot'))}
+    ${row(S.a5, absent, `<span class="caption muted">${I('lock','ms-sm')} ${S.windowClosed}</span>`)}
+    </div>`);
+}
+function states() {
+  const st = (icon, t, d, action='', cls='') => `<div class="card lms-state ${cls}"><span class="sec-icon">${I(icon)}</span><b>${t}</b><p class="muted" style="max-inline-size:360px">${d}</p>${action}</div>`;
+  return shell('att', header(S.statesTitle, '') + `<div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(300px,1fr));gap:16px">
+    ${st('schedule', S.stNoPeriods, S.stNoPeriodsT, `<button class="btn btn-filled">${S.addPeriods}</button>`)}
+    ${st('unpublished', S.stNotPub, S.stNotPubT)}
+    ${st('event_busy', S.stNoSess, S.stNoSessT)}
+    ${st('group_off', S.stNoStu, S.stNoStuT)}
+    ${st('inbox', S.stQueue, S.stQueueT)}
+    ${st('notifications_none', S.stAlerts, S.stAlertsT)}
+    <div class="card" style="padding:16px;display:flex;flex-direction:column;gap:10px"><div class="caption muted">${S.stLoading}</div>${[1,2,3].map(() => `<div style="block-size:64px;border-radius:12px;background:var(--mud-palette-background-gray)"></div>`).join('')}</div>
+    <div class="card" style="padding:16px"><div class="alert alert-error" role="alert">${I('error')}<span class="t" style="flex:1">${S.stError}</span><button class="btn btn-sm btn-outlined">${S.retry}</button></div></div>
+    <div class="card" style="padding:16px"><div class="alert alert-warning" role="alert">${I('sync_problem')}<span class="t">${S.stConflict}</span></div></div>
+    </div>`);
+}
+const screens = { gradebook, publish, scales, 'scale-edit':scaleEdit, weights, 'my-grades':myGrades, timetable, 'attendance-today':attendanceToday, 'attendance-take':() => attendanceTake(false), 'attendance-live':() => attendanceTake(true), 'excuse-submit':excuseSubmit, 'excuse-review':excuseReview, alerts, 'my-attendance':myAttendance, states };
+document.getElementById('app').innerHTML = (screens[screen] || gradebook)();
+</script>
+</body>
+</html>

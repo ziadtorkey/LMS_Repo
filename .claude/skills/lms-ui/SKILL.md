@@ -40,6 +40,14 @@ Follow `docs/design/m4b-live-and-packages.md`:
 
 The mockups in `docs/design/mockups/m4b.html` are the reference.
 
+## M5 surfaces (gradebook, scales, timetable, attendance, excuses)
+
+Follow `docs/design/m5-assessment-timetable-attendance.md` (mockups `docs/design/mockups/m5.html`):
+- The gradebook is a real `role="grid"` table (`lms-gb`) with the L24 keyboard model, and text forms for every cell state. Below 600 px it becomes one student-first list; never render both layouts.
+- Never compute a grade in the client. Band numbers and descriptors come from the server only.
+- Attendance rows have four labelled 44 px buttons in a radiogroup, plus a sticky summary bar. Timetable moves work by keyboard, menu and drag.
+- Western digits everywhere (L20). The days mirror in RTL; times and percentage axes don't.
+
 ## Skeleton
 
 ```razor
