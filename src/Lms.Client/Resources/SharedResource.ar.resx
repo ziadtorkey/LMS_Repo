@@ -1835,5 +1835,14 @@
   <data name="AttReports_Student" xml:space="preserve"><value>حسب الطالب</value></data>
   <data name="AttReports_Class" xml:space="preserve"><value>حسب الفصل</value></data>
   <data name="AttReports_AsOf" xml:space="preserve"><value>حُسب في {0}</value></data>
+  <data name="Att_Proposal_Banner" xml:space="preserve"><value>اقتُرحت هذه العلامات من قائمة المشاركين في Zoom. راجعها ثم أكّد. لا شيء نهائي قبل تأكيدك.</value></data>
+  <data name="Att_Proposal_Unavailable" xml:space="preserve"><value>لم تصل قائمة المشاركين من Zoom بعد، لذلك لا يوجد اقتراح. سجّل الحضور يدويًا أو عُد لاحقًا.</value></data>
+  <data name="Att_Proposal_Joined" xml:space="preserve"><value>في Zoom {0} دقيقة، انضم {1}</value></data>
+  <data name="Att_Proposal_Minutes" xml:space="preserve"><value>في Zoom {0} دقيقة</value></data>
+  <data name="Att_Proposal_NotSeen" xml:space="preserve"><value>لم يظهر في Zoom</value></data>
+  <data name="Att_Unmatched_Title" xml:space="preserve"><value>مشاركون في Zoom لم تتم مطابقتهم</value></data>
+  <data name="Att_Unmatched_Help" xml:space="preserve"><value>طابق كل مشارك مع طالب، أو اتركه فارغًا لتخطيه.</value></data>
+  <data name="Att_Unmatched_This" xml:space="preserve"><value>هذا هو</value></data>
+  <data name="Att_Unmatched_Save" xml:space="preserve"><value>حفظ المطابقات</value></data>
   <data name="AttReports_ClassFilter" xml:space="preserve"><value>الفصل</value></data>
 </root>

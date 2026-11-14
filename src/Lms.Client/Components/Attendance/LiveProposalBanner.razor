@@ -1,0 +1,14 @@
+@* Shown on a session whose marks were proposed from the Zoom participants list (D58: Zoom proposes, the teacher confirms; nothing is final before). *@
+@if (!ParticipantsAvailable)
+{
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mb-3" data-testid="proposal-unavailable">@L["Att_Proposal_Unavailable"]</MudAlert>
+}
+else
+{
+    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-3" data-testid="proposal-banner">@L["Att_Proposal_Banner"]</MudAlert>
+}
+
+@code {
+    /// <summary>False while the participant list has not been imported: nobody is proposed Absent, every row is blank to mark by hand.</summary>
+    [Parameter] public bool ParticipantsAvailable { get; set; } = true;
+}

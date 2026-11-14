@@ -1,6 +1,7 @@
 @page "/attendance/sessions/{Id:guid}"
 @attribute [Authorize]
 @implements IAsyncDisposable
+@using Lms.Client.Components.Attendance
 @using Lms.Client.Services.Api
 @using Lms.Client.Services.Attendance
 @using Lms.Shared.Attendance
@@ -41,6 +42,11 @@
                            data-testid="att-mark-all">@L["Att_Mark_All"]</MudButton>
             </Actions>
         </PageHeader>
+
+        @if (session.IsProposal || (session.Source == AttendanceSources.Live && session.State == AttendanceSessionStates.Open))
+        {
+            <LiveProposalBanner ParticipantsAvailable="_data.ParticipantsAvailable" />
+        }
 
         @if (_markAllMessage is not null)
         {
@@ -109,6 +115,7 @@
                         <div class="lms-att-who">
                             <span class="lms-cell-strong">@name</span>
                             <span class="lms-muted" dir="ltr">@record.StudentNumber</span>
+                            <ProposalSourceHint Record="record" />
                             @if (status is null)
                             {
                                 <span class="lms-att-unmarked" data-testid="@($"att-unmarked-{record.StudentId}")">@L["Att_Unmarked"]</span>
@@ -134,13 +141,18 @@
             </ul>
         </SectionCard>
 
+        @if (session.IsProposal && _data.Unmatched.Count > 0)
+        {
+            <UnmatchedParticipants Participants="_data.Unmatched" Students="_data.Records" Disabled="@(!Editable)" OnSave="SaveMappingsAsync" />
+        }
+
         @if (AfterWindow && CanEditAfterWindow)
         {
             <MudTextField T="string" @bind-Value="_reason" Label="@L["Att_Reason"]" HelperText="@L["Att_Reason_Help"]" Required="true" Variant="Variant.Outlined"
                           Error="@_reasonMissing" ErrorText="@L["Error_attendance_reason_required"]" MaxLength="AttendanceLimits.ReasonMaxLength" Class="mt-3" data-testid="att-reason" />
         }
 
-        <AttendanceSummaryBar Counts="_counts" Unmarked="Unmarked" CanSave="@CanSave" Saving="_saving" OnSave="SaveAsync" SaveKey="@(session.State == AttendanceSessionStates.Taken ? "Att_Save_Changes" : "Att_Save")" />
+        <AttendanceSummaryBar Counts="_counts" Unmarked="Unmarked" CanSave="@CanSave" Saving="_saving" OnSave="SaveAsync" SaveKey="@(session.IsProposal ? "Att_Action_Confirm" : session.State == AttendanceSessionStates.Taken ? "Att_Save_Changes" : "Att_Save")" />
     }
 </div>
 
@@ -304,6 +316,20 @@
         }
     }
 
+    private async Task SaveMappingsAsync(IReadOnlyList<LiveMappingEntry> mappings)
+    {
+        if (_data is not { } d) return;
+        _saveError = null;
+        try
+        {
+            await ApplyServerAsync(await Api.SaveLiveMappingsAsync(d.Session.Id, new LiveMappingRequest(mappings, d.Session.Version)), offerDraft: false);
+        }
+        catch (Exception ex) when (ex is ApiProblemException or HttpRequestException)
+        {
+            _saveError = L["Api_Error"];
+        }
+    }
+
     private Task NextUnmarkedAsync()
     {
         _focusNext = _data?.Records.FirstOrDefault(r => Effective(r.StudentId) is null)?.StudentId;
@@ -333,6 +359,35 @@
         _saving = true;
         _saveError = null;
         _conflict = false;
+        // A proposal nobody changed is confirmed as it is; an edited one is taken (the teacher's marks), which settles it as well.
+        var unchanged = d.Session.IsProposal && _default is null && d.Records.All(r => _explicit.TryGetValue(r.StudentId, out var s) && s == r.Status);
+        if (unchanged)
+        {
+            try
+            {
+                var confirmed = await Api.ConfirmAsync(d.Session.Id, new ConfirmAttendanceRequest(d.Session.Version));
+                await Drafts.ClearAsync(d.Session.Id);
+                await ApplyServerAsync(confirmed, offerDraft: false);
+                _saved = true;
+            }
+            catch (ApiProblemException ex) when (ex.Code == "concurrency_conflict")
+            {
+                _conflict = true;
+                var (fresh, _) = await ApiCalls.RunAsync(() => Api.GetRecordsAsync(Id), Navigation);
+                if (fresh is not null) await ApplyServerAsync(fresh, offerDraft: false);
+            }
+            catch (Exception ex) when (ex is ApiProblemException or HttpRequestException)
+            {
+                _saveError = L["Api_Error"];
+            }
+            finally
+            {
+                _saving = false;
+            }
+
+            return;
+        }
+
         // The default plus the exceptions (a mark that differs from it); without a default every mark is sent.
         var records = _explicit.Where(m => _default is null || m.Value != _default)
             .Select(m => new TakeAttendanceRecord(m.Key, m.Value, _notes.GetValueOrDefault(m.Key))).ToList();

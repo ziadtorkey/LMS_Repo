@@ -110,6 +110,7 @@ public sealed class FakeAttendanceApi : IAttendanceApi
         row.Marks = marks;
         if (row.State == AttendanceSessionStates.Open) row.EditableUntilUtc = now.AddHours(48);
         row.State = AttendanceSessionStates.Taken;
+        row.Proposal = false; // taking a proposed session by hand also settles it
         row.Version++;
         return Task.FromResult(Records(row));
     }
@@ -135,6 +136,14 @@ public sealed class FakeAttendanceApi : IAttendanceApi
     {
         var row = Find(sessionId);
         if (row.Source != AttendanceSources.Live) throw Problem(409, "attendance_not_a_proposal");
+        if (request.Version != row.Version) throw Problem(409, "concurrency_conflict");
+        foreach (var m in request.Mappings)
+        {
+            row.Mappings[m.ParticipantId] = m.StudentId;
+            if (m.StudentId is { } student) row.Marks[student] = AttendanceStatuses.Present; // a mapped participant was there
+        }
+
+        row.Version++;
         return Task.FromResult(Records(row));
     }
 
@@ -224,8 +233,20 @@ public sealed class FakeAttendanceApi : IAttendanceApi
         row.Dto(_clock),
         _roster.Select(r => new AttendanceRecordDto(r.Id, r.Ar, r.En, r.Number, row.Marks.GetValueOrDefault(r.Id), null,
             row.Proposal ? 42 : null, row.Proposal ? _clock.GetUtcNow().UtcDateTime.AddHours(-1) : null, row.Proposal)).ToList(),
-        [],
-        true);
+        row.Proposal ? UnmatchedOf(row) : [],
+        !ParticipantsMissing);
+
+    /// <summary>Set to true to see a live session whose participant list has not been imported yet.</summary>
+    public bool ParticipantsMissing { get; set; }
+
+    private static readonly Guid GuestA = Guid.Parse("b0000000-0000-0000-0000-00000000000a");
+    private static readonly Guid GuestB = Guid.Parse("b0000000-0000-0000-0000-00000000000b");
+
+    private static IReadOnlyList<UnmatchedParticipantDto> UnmatchedOf(Row row) =>
+    [
+        new(GuestA, "iPhone 12", 38, DateTime.UtcNow.AddHours(-1), row.Mappings.GetValueOrDefault(GuestA)),
+        new(GuestB, "Mona's mum", 12, DateTime.UtcNow.AddHours(-1), row.Mappings.GetValueOrDefault(GuestB)),
+    ];
 
     private static ApiProblemException Problem(int status, string code) => new(status, code, null, null);
 
@@ -241,6 +262,7 @@ public sealed class FakeAttendanceApi : IAttendanceApi
         public bool Substitute { get; } = substitute;
         public int Version { get; set; } = 1;
         public Dictionary<Guid, string> Marks { get; set; } = [];
+        public Dictionary<Guid, Guid?> Mappings { get; } = [];
 
         public AttendanceSessionListItemDto Dto(TimeProvider clock) => new(
             Id, ClassCourse, "الرياضيات", "Mathematics", "الصف 5أ", "Class 5A", Date, null,

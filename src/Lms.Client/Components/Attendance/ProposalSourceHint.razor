@@ -1,0 +1,22 @@
+@using Lms.Shared.Attendance
+@inject ClientTimeZone Zone
+
+@* Why a mark was proposed: the minutes the student was in the Zoom session, or when they joined. It is words on the row (and a title), not only an icon. *@
+@if (Record.Proposed && (Record.JoinedMinutes is not null || Record.JoinedAtUtc is not null))
+{
+    <span class="lms-att-source" title="@Text" data-testid="@($"proposal-hint-{Record.StudentId}")">
+        <MudIcon Icon="@Icons.Material.Rounded.VideoCall" Size="Size.Small" aria-hidden="true" /> @Text
+    </span>
+}
+
+@code {
+    private TimeZoneInfo _zone = ClientCalendar.Zone();
+
+    [Parameter, EditorRequired] public AttendanceRecordDto Record { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync() => _zone = await Zone.GetAsync();
+
+    private string Text => Record.JoinedMinutes is { } m && Record.JoinedAtUtc is { } at
+        ? string.Format(L["Att_Proposal_Joined"], m, ClientCalendar.ToLocal(at, _zone).ToString("HH:mm")) // the client's clock, not UTC
+        : Record.JoinedMinutes is { } minutes ? string.Format(L["Att_Proposal_Minutes"], minutes) : L["Att_Proposal_NotSeen"].Value;
+}
