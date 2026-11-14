@@ -86,3 +86,10 @@ html:lang(ar), html:lang(ar) body { font-family: Cairo, "Segoe UI", Tahoma, Aria
 /* Lesson plan: a module with its authoring buttons, and the add-module menu under a lesson. */
 .lms-module-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px 8px; min-width: 0; }
 .lms-plan-add { margin-block-start: 4px; }
+
+/* Moderation: the report panel sits beside the queue from 1100 px; below it the panel becomes a full-screen dialog with its own close button. */
+.lms-mod-panel-close { display: none; position: absolute; inset-block-start: 8px; inset-inline-end: 8px; z-index: 1; }
+@media (max-width: 1099.98px) {
+    .lms-mod-panel { position: fixed; inset: 0; z-index: 1300; overflow: auto; background: var(--mud-palette-background); padding: 12px; }
+    .lms-mod-panel .lms-mod-panel-close { display: inline-flex; }
+}

@@ -391,7 +391,6 @@
   <data name="Notif_Preferences" xml:space="preserve"><value>تفضيلات الإشعارات</value></data>
   <data name="Channel_InApp" xml:space="preserve"><value>داخل المنصة</value></data>
   <data name="Channel_Email" xml:space="preserve"><value>البريد الإلكتروني</value></data>
-  <data name="Channel_Sms" xml:space="preserve"><value>رسائل نصية</value></data>
   <data name="Channel_Push" xml:space="preserve"><value>إشعارات فورية</value></data>
   <data name="Notif_Access_RoleAssigned" xml:space="preserve"><value>تم منحك دور {RoleName} في {OrgUnitName}.</value></data>
   <data name="Notif_Access_RoleRemoved" xml:space="preserve"><value>تمت إزالة دورك {RoleName} في {OrgUnitName}.</value></data>
@@ -1790,13 +1789,10 @@
   <data name="PermModule_Announcements" xml:space="preserve"><value>الإعلانات</value></data>
   <data name="PermModule_Comms" xml:space="preserve"><value>التواصل</value></data>
   <data name="Setting_Comms_EmailEnabled" xml:space="preserve"><value>السماح بإشعارات البريد الإلكتروني</value></data>
-  <data name="Setting_Comms_SmsEnabled" xml:space="preserve"><value>السماح بالرسائل النصية القصيرة</value></data>
   <data name="Setting_Comms_PushEnabled" xml:space="preserve"><value>السماح بالإشعارات الفورية</value></data>
   <data name="Setting_Comms_MaxEmailPerDay" xml:space="preserve"><value>عدد رسائل البريد يوميًا (العميل)</value></data>
-  <data name="Setting_Comms_MaxSmsPerDay" xml:space="preserve"><value>عدد الرسائل النصية يوميًا (العميل)</value></data>
   <data name="Setting_Comms_MaxPushPerDay" xml:space="preserve"><value>عدد الإشعارات الفورية يوميًا (العميل)</value></data>
   <data name="Setting_Comms_MaxEmailPerUserPerDay" xml:space="preserve"><value>عدد رسائل البريد لكل شخص يوميًا</value></data>
-  <data name="Setting_Comms_MaxSmsPerUserPerDay" xml:space="preserve"><value>عدد الرسائل النصية لكل شخص يوميًا</value></data>
   <data name="Setting_Comms_MaxPushPerUserPerDay" xml:space="preserve"><value>عدد الإشعارات الفورية لكل شخص يوميًا</value></data>
   <data name="Setting_Comms_QuietHours_Enabled" xml:space="preserve"><value>ساعات الهدوء</value></data>
   <data name="Setting_Comms_QuietHours_Start" xml:space="preserve"><value>بداية ساعات الهدوء</value></data>
@@ -1955,7 +1951,6 @@
   <data name="Prefs_Event" xml:space="preserve"><value>الحدث</value></data>
   <data name="Prefs_Channel_InApp" xml:space="preserve"><value>داخل المنصة</value></data>
   <data name="Prefs_Channel_Email" xml:space="preserve"><value>البريد الإلكتروني</value></data>
-  <data name="Prefs_Channel_Sms" xml:space="preserve"><value>الرسائل النصية</value></data>
   <data name="Prefs_Channel_Push" xml:space="preserve"><value>الإشعارات الفورية</value></data>
   <data name="Prefs_Fix" xml:space="preserve"><value>أضفه في ملفك الشخصي</value></data>
   <data name="Prefs_Locked" xml:space="preserve"><value>تحدده مدرستك: لا يمكن إيقافه.</value></data>
@@ -2318,4 +2313,8 @@
   <data name="ModQueue_Until" xml:space="preserve"><value>حتى</value></data>
   <data name="ModQueue_Lift" xml:space="preserve"><value>رفع القيد</value></data>
   <data name="Nav_Moderation" xml:space="preserve"><value>بلاغات الرسائل</value></data>
+  <data name="ModQueue_AuditNotice" xml:space="preserve"><value>كل بلاغ تفتحه وكل ملف تعرضه يُسجَّل في سجل التدقيق.</value></data>
+  <data name="ModQueue_AuditDetail" xml:space="preserve"><value>سُجّل فتح هذا البلاغ في سجل التدقيق.</value></data>
+  <data name="ModQueue_BulkLimit" xml:space="preserve"><value>يمكنك إبقاء {0} بلاغًا كحد أقصى دفعة واحدة.</value></data>
+  <data name="ModQueue_Paging" xml:space="preserve"><value>صفحات البلاغات</value></data>
 </root>

@@ -33,6 +33,9 @@ public sealed class FakeModerationApi : IModerationApi
 
     public Func<DateTime> Now { get; set; } = () => DateTime.UtcNow;
 
+    /// <summary>The page size of the restrictions list (the server default is 50; tests lower it).</summary>
+    public int RestrictionPageSize { get; set; } = Paging.DefaultPageSize;
+
     /// <summary>D70: only the Org Admin moderates; a teacher, a manager or a student gets 403.</summary>
     public bool IsOrgAdmin { get; set; } = true;
 
@@ -40,6 +43,7 @@ public sealed class FakeModerationApi : IModerationApi
     public int AuditedReads { get; private set; }
 
     public ResolveReportRequest? LastResolve { get; private set; }
+    public MessageReportQuery? LastQuery { get; private set; }
     public List<Guid> Skipped { get; } = [];
 
     private static ApiProblemException Problem(int status, string code) => new(status, code, null, null);
@@ -83,6 +87,7 @@ public sealed class FakeModerationApi : IModerationApi
     public Task<PagedResult<MessageReportListItemDto>> ListReportsAsync(MessageReportQuery query, CancellationToken ct = default)
     {
         Require();
+        LastQuery = query;
         var now = Now();
         var rows = _reports.Where(r => (query.Status is null ? ReportStatuses.Pending.Contains(r.Status) : r.Status == query.Status) && (query.Reason is null || r.Reason == query.Reason))
             .OrderBy(r => Rank(r.Reason)).ThenBy(r => r.CreatedAtUtc) // safety concerns first, then the oldest
@@ -161,7 +166,7 @@ public sealed class FakeModerationApi : IModerationApi
     {
         Require();
         var rows = _restrictions.Where(x => x.UntilUtc > Now()).OrderBy(x => x.UntilUtc).ToList();
-        return Task.FromResult(new PagedResult<RestrictionDto>(rows, rows.Count, page, Paging.DefaultPageSize));
+        return Task.FromResult(new PagedResult<RestrictionDto>([.. rows.Skip((page - 1) * RestrictionPageSize).Take(RestrictionPageSize)], rows.Count, page, RestrictionPageSize));
     }
 
     public Task LiftRestrictionAsync(Guid userId, CancellationToken ct = default)
