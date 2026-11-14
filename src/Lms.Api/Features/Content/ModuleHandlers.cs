@@ -58,7 +58,8 @@ public sealed class ModuleHandlers(
         }
 
         var groups = await ModuleMapper.GroupsAsync(db, modules, ct);
-        return Results.Ok(modules.Select(m => ModuleMapper.Node(m, now, groups, states)).ToList());
+        var removed = await ModuleRefState.RemovedAsync(db, modules, ct);
+        return Results.Ok(modules.Select(m => ModuleMapper.Node(m, now, groups, states, removed)).ToList());
     }
 
     public async Task<IResult> CreateAsync(Guid classCourseId, Guid lessonKey, CreateModuleRequest? request, HttpContext http, CancellationToken ct)

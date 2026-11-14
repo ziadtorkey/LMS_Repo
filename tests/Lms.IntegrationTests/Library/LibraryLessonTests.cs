@@ -87,22 +87,43 @@ public sealed class LibraryLessonTests(LmsApiFactory factory) : IDisposable
     }
 
     [Fact]
-    public async Task Closed_class_refuses_and_deleting_the_resource_removes_its_modules()
+    public async Task Closed_class_refuses_adds()
     {
         var w = await _t.SetUpAsync("LL4");
-        var resource = await ResourceAsync(w.Tree.School1);
-        var added = (await (await AddAsync(w, w.Teacher, resource)).Content.ReadFromJsonAsync<ModuleNodeDto>())!;
-
-        Assert.Equal(HttpStatusCode.NoContent, (await _t.SendAsync(w.Admin, HttpMethod.Delete, Routes.LibraryResource(resource))).StatusCode);
         await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
         {
-            Assert.False(await db.Set<Lms.Domain.Content.LessonModule>().AnyAsync(m => m.Id == added.Id));
             (await db.Set<Lms.Domain.Classes.Class>().SingleAsync(c => c.Id == w.Class.Id)).SetStatus(Lms.Domain.Classes.Class.ClosedStatus);
             await db.SaveChangesAsync();
         }
 
-        var other = await ResourceAsync(w.Tree.School1);
-        var closed = await AddAsync(w, w.Teacher, other);
+        var closed = await AddAsync(w, w.Teacher, await ResourceAsync(w.Tree.School1));
         Assert.Equal((HttpStatusCode.Conflict, "class_closed"), (closed.StatusCode, await LibraryTestWorld.CodeAsync(closed)));
+    }
+
+    [Fact]
+    public async Task Deleting_a_resource_removes_its_modules_from_open_classes_and_keeps_them_in_closed_ones()
+    {
+        var w = await _t.SetUpAsync("LL5");
+        var resource = await ResourceAsync(w.Tree.School1);
+        var inOpen = (await (await AddAsync(w, w.Teacher, resource)).Content.ReadFromJsonAsync<ModuleNodeDto>())!;
+        var inClosed = (await (await AddAsync(w, w.Admin, resource, classCourse: w.OtherClassCourse.Id)).Content.ReadFromJsonAsync<ModuleNodeDto>())!;
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            (await db.Set<Lms.Domain.Classes.Class>().SingleAsync(c => c.Id == w.OtherClassCourse.ClassId)).SetStatus(Lms.Domain.Classes.Class.ClosedStatus);
+            await db.SaveChangesAsync();
+        }
+
+        Assert.Equal(HttpStatusCode.NoContent, (await _t.SendAsync(w.Admin, HttpMethod.Delete, Routes.LibraryResource(resource))).StatusCode);
+
+        await using var check = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        Assert.False(await check.Set<Lms.Domain.Content.LessonModule>().AnyAsync(m => m.Id == inOpen.Id));
+        var kept = await check.Set<Lms.Domain.Content.LessonModule>().SingleAsync(m => m.Id == inClosed.Id);
+        Assert.Equal(resource, kept.RefId);
+        Assert.False(await check.Set<LibraryResource>().AnyAsync(r => r.Id == resource)); // the resource itself is gone (soft-deleted)
+        Assert.Equal(HttpStatusCode.NotFound, (await _t.SendAsync(w.Admin, HttpMethod.Get, Routes.LibraryResource(resource))).StatusCode);
+
+        // The kept module of the closed class reads as "resource removed"; a module whose resource still exists does not.
+        var list = await _t.SendAsync(w.Admin, HttpMethod.Get, Routes.ClassCourseLessonModules(w.OtherClassCourse.Id, Lesson1));
+        Assert.True((await list.Content.ReadFromJsonAsync<List<ModuleNodeDto>>())!.Single(n => n.Id == inClosed.Id).RefRemoved);
     }
 }

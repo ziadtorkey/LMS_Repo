@@ -23,13 +23,15 @@ internal static class ModuleMapper
 
     /// <summary><paramref name="states"/> = the student states by module id (a student reader), null for staff.</summary>
     public static ModuleNodeDto Node(
-        LessonModule m, DateTime nowUtc, IReadOnlyDictionary<Guid, StudentGroup> groups, IReadOnlyDictionary<Guid, string>? states)
+        LessonModule m, DateTime nowUtc, IReadOnlyDictionary<Guid, StudentGroup> groups, IReadOnlyDictionary<Guid, string>? states,
+        IReadOnlySet<Guid>? removedRefs = null)
     {
         var group = m.GroupId is { } id && groups.TryGetValue(id, out var g) ? g : null;
         return new ModuleNodeDto(
             m.Id, m.Kind, m.Order, m.TitleAr, m.TitleEn, m.Visibility, Utc(m.VisibleFromUtc), Utc(m.VisibleToUtc), m.Target, m.GroupId,
             group?.NameAr, group?.NameEn, m.CompletionRule, m.IsVisibleNow(nowUtc),
-            states is null ? null : states.GetValueOrDefault(m.Id, CompletionStates.NotStarted));
+            states is null ? null : states.GetValueOrDefault(m.Id, CompletionStates.NotStarted),
+            m.RefId is { } refId && removedRefs?.Contains(refId) == true);
     }
 
     public static ModuleContentDto Content(LessonModule m, ModuleContent? content, Asset? asset) =>

@@ -35,6 +35,9 @@ public interface IModuleWriter
 
     Task UpdateMetadataAsync(Guid moduleId, ModuleMetadata metadata, CancellationToken ct = default);
 
-    /// <summary>Soft-deletes the module that points at the activity (no-op when there is none).</summary>
+    /// <summary>
+    /// Soft-deletes the modules that point at the activity in open classes (no-op when there is none). Modules of closed classes and
+    /// years are kept as history: they keep their reference to the now deleted activity, which readers show as removed.
+    /// </summary>
     Task DeleteForRefAsync(string kind, Guid refId, CancellationToken ct = default);
 }
