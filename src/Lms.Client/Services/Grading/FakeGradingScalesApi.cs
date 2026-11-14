@@ -46,6 +46,22 @@ public sealed class FakeGradingScalesApi : IGradingScalesApi
 
     private static ApiProblemException Problem(int status, string code) => new(status, code, null, null);
 
+    /// <summary>Flags the unedited copies of a preset as having an update (the server does this when the preset data changes).</summary>
+    public void MarkUpdateAvailable(string seedKey)
+    {
+        for (var i = 0; i < _scales.Count; i++)
+            if (!_scales[i].IsTemplate && _scales[i].SeedKey == seedKey) _scales[i] = _scales[i] with { UpdateAvailable = true };
+    }
+
+    /// <summary>Adds a scale the unit sees from a higher unit (read only here, <c>InheritedFromUnitId</c> set).</summary>
+    public GradingScaleDto SeedInherited(Guid unitId, Guid sourceUnitId, string nameEn)
+    {
+        var scale = new GradingScaleDto(Guid.NewGuid(), unitId, "موروث", nameEn, ScaleKinds.Percentage, false, false, false, null, null, false, sourceUnitId, false,
+            [new GradingScaleBandDto(Guid.NewGuid(), 1, 0m, 100m, "X", null, null, null, null, null)]);
+        _scales.Add(scale);
+        return scale;
+    }
+
     /// <summary>Marks a scale as used by a gradebook (so it cannot be deleted).</summary>
     public void MarkInUse(Guid scaleId) => ScalesInUse.Add(scaleId);
 
@@ -59,17 +75,40 @@ public sealed class FakeGradingScalesApi : IGradingScalesApi
 
     private GradingScaleDto WithUse(GradingScaleDto s) => s with { InUse = ScalesInUse.Contains(s.Id) };
 
-    /// <summary>The bands must be 1 to <see cref="GradingLimits.MaxBands"/>, start at 0, end at 100 and neither leave a gap nor overlap.</summary>
+    /// <summary>
+    /// The bands must be 1 to <see cref="GradingLimits.MaxBands"/>, start at 0, end at 100 and neither leave a gap nor overlap. Like the server
+    /// (<c>scale_bands_invalid</c>), a refusal carries <c>problems[{kind, from, to}]</c>: each Gap, Overlap, Range or Count with its range.
+    /// </summary>
     public static void ValidateBands(IReadOnlyList<SaveGradingScaleBandRequest> bands)
     {
-        if (bands.Count is 0 or > GradingLimits.MaxBands) throw Problem(400, ProblemCodes.scale_bands_invalid);
+        var problems = new List<ApiProblemItem>();
+        if (bands.Count is 0 or > GradingLimits.MaxBands) problems.Add(new ApiProblemItem("Count", null, null));
         var sorted = bands.OrderBy(b => b.MinPercent).ToList();
-        if (sorted[0].MinPercent != 0m || sorted[^1].MaxPercent != 100m) throw Problem(400, ProblemCodes.scale_bands_invalid);
-        for (var i = 0; i < sorted.Count; i++)
+        if (sorted.Count > 0)
         {
-            if (sorted[i].MaxPercent < sorted[i].MinPercent) throw Problem(400, ProblemCodes.scale_bands_invalid);
-            if (i > 0 && sorted[i].MinPercent - sorted[i - 1].MaxPercent is not (0m or 0.01m)) throw Problem(400, ProblemCodes.scale_bands_invalid);
+            if (sorted[0].MinPercent > 0m) problems.Add(new ApiProblemItem("Gap", 0m, sorted[0].MinPercent));
+            foreach (var b in sorted.Where(b => b.MaxPercent < b.MinPercent)) problems.Add(new ApiProblemItem("Range", b.MinPercent, b.MaxPercent));
+            for (var i = 1; i < sorted.Count; i++)
+            {
+                var gap = sorted[i].MinPercent - sorted[i - 1].MaxPercent;
+                if (gap > 0.01m) problems.Add(new ApiProblemItem("Gap", sorted[i - 1].MaxPercent, sorted[i].MinPercent));
+                else if (gap < 0m) problems.Add(new ApiProblemItem("Overlap", sorted[i].MinPercent, sorted[i - 1].MaxPercent));
+            }
+
+            if (sorted[^1].MaxPercent < 100m) problems.Add(new ApiProblemItem("Gap", sorted[^1].MaxPercent, 100m));
         }
+
+        if (problems.Count > 0) throw new ApiProblemException(400, ProblemCodes.scale_bands_invalid, null, null, problems: problems);
+    }
+
+    /// <summary>When set, the next create or update is refused with these band problems (the server found what the client hint did not).</summary>
+    public IReadOnlyList<ApiProblemItem>? NextBandProblems { get; set; }
+
+    private void ThrowIfForced()
+    {
+        if (NextBandProblems is not { } forced) return;
+        NextBandProblems = null;
+        throw new ApiProblemException(400, ProblemCodes.scale_bands_invalid, null, null, problems: forced);
     }
 
     private static List<GradingScaleBandDto> ToBands(SaveGradingScaleRequest r) =>
@@ -86,6 +125,7 @@ public sealed class FakeGradingScalesApi : IGradingScalesApi
     public Task<GradingScaleDto> CreateScaleAsync(Guid unitId, SaveGradingScaleRequest request, CancellationToken ct = default)
     {
         ValidateNames(request);
+        ThrowIfForced();
         ValidateBands(request.Bands);
         var scale = new GradingScaleDto(Guid.NewGuid(), unitId, request.NameAr, request.NameEn, request.Kind, false,
             false, false, null, null, false, null, false, ToBands(request));
@@ -98,6 +138,7 @@ public sealed class FakeGradingScalesApi : IGradingScalesApi
         var current = Find(scaleId);
         if (current.IsTemplate || current.InheritedFromUnitId is not null || current.OrgUnitId != unitId) throw Problem(404, ProblemCodes.not_found);
         ValidateNames(request);
+        ThrowIfForced();
         ValidateBands(request.Bands);
         // An edited copy no longer follows its preset.
         var updated = current with { NameAr = request.NameAr, NameEn = request.NameEn, Kind = request.Kind, Bands = ToBands(request), SeedKey = null, SeedVersion = null, UpdateAvailable = false };
@@ -136,6 +177,15 @@ public sealed class FakeGradingScalesApi : IGradingScalesApi
     public Task<GradingScaleDto> CopyPresetAsync(Guid unitId, CopyScalePresetRequest request, CancellationToken ct = default)
     {
         var preset = _scales.FirstOrDefault(s => s.IsTemplate && s.SeedKey == request.SeedKey) ?? throw Problem(404, ProblemCodes.not_found);
+        // An unedited copy flagged UpdateAvailable is updated in place from the preset instead of copied again.
+        var stale = _scales.FirstOrDefault(s => !s.IsTemplate && s.OrgUnitId == unitId && s.SeedKey == request.SeedKey && s.UpdateAvailable);
+        if (stale is not null)
+        {
+            var refreshed = stale with { Bands = [.. preset.Bands.Select(x => x with { Id = Guid.NewGuid() })], SeedVersion = preset.SeedVersion, UpdateAvailable = false, Provisional = true };
+            _scales[_scales.IndexOf(stale)] = refreshed;
+            return Task.FromResult(refreshed);
+        }
+
         var copy = preset with { Id = Guid.NewGuid(), OrgUnitId = unitId, IsTemplate = false, IsDefault = false, Provisional = true, UpdateAvailable = false,
             Bands = [.. preset.Bands.Select(b => b with { Id = Guid.NewGuid() })] };
         _scales.Add(copy);

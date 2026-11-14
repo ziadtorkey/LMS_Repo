@@ -33,6 +33,7 @@ public static class NavCatalog
         new("Nav_Classes", "classes", Icons.Material.Rounded.Groups, Permissions.Classes.View, Section: Academic),
         new("Nav_Eligibility", "teaching/eligibility", Icons.Material.Rounded.HowToReg, Permissions.TeacherAssignments.View, Section: Academic),
         new("Nav_MyClassCourses", "me/class-courses", Icons.Material.Rounded.AutoStories, Permissions.LessonPlans.View, Section: Academic),
+        new("Nav_GradingScales", "grading/scales", Icons.Material.Rounded.Grading, Permissions.Grades.ConfigureScales, Section: Academic),
         new("Nav_Library", "library", Icons.Material.Rounded.LocalLibrary, Permissions.Library.View, Section: Academic),
         new("Nav_Roles", "roles", Icons.Material.Rounded.AdminPanelSettings, Permissions.Roles.View, Section: Security),
         new("Nav_Assignments", "assignments", Icons.Material.Rounded.GroupAdd, Permissions.Assignments.View, Section: Security),

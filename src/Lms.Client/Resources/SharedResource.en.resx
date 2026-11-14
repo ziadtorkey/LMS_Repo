@@ -1826,6 +1826,85 @@
   <data name="Grd_Title" xml:space="preserve"><value>Gradebook</value></data>
   <data name="Grd_GridSoonTitle" xml:space="preserve"><value>The gradebook grid is on its way</value></data>
   <data name="Grd_GridSoonText" xml:space="preserve"><value>Categories, items and scores for this class course will appear here.</value></data>
+  <data name="Nav_GradingScales" xml:space="preserve"><value>Grading scales</value></data>
+  <data name="Grading_Sections" xml:space="preserve"><value>Grading settings</value></data>
+  <data name="Grd_TabScales" xml:space="preserve"><value>Scales</value></data>
+  <data name="Grd_TabTemplates" xml:space="preserve"><value>Weight templates</value></data>
+  <data name="Common_Saving" xml:space="preserve"><value>Saving</value></data>
+  <data name="Common_RequiredFields" xml:space="preserve"><value>Fill in every required field.</value></data>
+  <data name="Scales_Title" xml:space="preserve"><value>Grading scales</value></data>
+  <data name="Scales_Subtitle" xml:space="preserve"><value>How percentages become bands, letters or points at this unit and below.</value></data>
+  <data name="Scales_Unit" xml:space="preserve"><value>Unit</value></data>
+  <data name="Scales_New" xml:space="preserve"><value>New scale</value></data>
+  <data name="Scales_AddPreset" xml:space="preserve"><value>Add from a preset</value></data>
+  <data name="Scales_Kind" xml:space="preserve"><value>Type</value></data>
+  <data name="Scales_Bands" xml:space="preserve"><value>Bands</value></data>
+  <data name="Scales_Default" xml:space="preserve"><value>Default</value></data>
+  <data name="Scales_Provisional" xml:space="preserve"><value>Provisional</value></data>
+  <data name="Scales_UpdateAvailable" xml:space="preserve"><value>Update available</value></data>
+  <data name="Scales_Inherited" xml:space="preserve"><value>Inherited</value></data>
+  <data name="Scales_InUse" xml:space="preserve"><value>In use</value></data>
+  <data name="Scales_View" xml:space="preserve"><value>View</value></data>
+  <data name="Scales_Confirm" xml:space="preserve"><value>Confirm scale</value></data>
+  <data name="Scales_UpdatePreset" xml:space="preserve"><value>Update from preset</value></data>
+  <data name="Scales_MakeDefault" xml:space="preserve"><value>Make default</value></data>
+  <data name="Scales_MakeDefaultConfirm" xml:space="preserve"><value>Make {0} the default scale of this unit?</value></data>
+  <data name="Scales_DeleteConfirm" xml:space="preserve"><value>Delete the scale {0}? A scale a gradebook uses cannot be deleted.</value></data>
+  <data name="Scales_Saved" xml:space="preserve"><value>Scale saved.</value></data>
+  <data name="Scales_PresetAdded" xml:space="preserve"><value>Preset added. It stays provisional until you confirm it.</value></data>
+  <data name="Scales_Confirmed" xml:space="preserve"><value>Scale confirmed.</value></data>
+  <data name="Scales_EmptyTitle" xml:space="preserve"><value>No grading scales yet</value></data>
+  <data name="Scales_EmptyText" xml:space="preserve"><value>Add one from a preset or create your own.</value></data>
+  <data name="ScaleDialog_NewTitle" xml:space="preserve"><value>New grading scale</value></data>
+  <data name="ScaleDialog_EditTitle" xml:space="preserve"><value>Edit grading scale</value></data>
+  <data name="ScaleDialog_ViewTitle" xml:space="preserve"><value>Grading scale</value></data>
+  <data name="ScaleDialog_General" xml:space="preserve"><value>General</value></data>
+  <data name="ScaleDialog_ReadOnly" xml:space="preserve"><value>This scale comes from a higher unit or a preset and cannot be changed here.</value></data>
+  <data name="Band_Number" xml:space="preserve"><value>Band {0}</value></data>
+  <data name="Band_Code" xml:space="preserve"><value>Code</value></data>
+  <data name="Band_Min" xml:space="preserve"><value>From (%)</value></data>
+  <data name="Band_Max" xml:space="preserve"><value>To (%)</value></data>
+  <data name="Band_Points" xml:space="preserve"><value>Points</value></data>
+  <data name="Band_LabelAr" xml:space="preserve"><value>Label (Arabic)</value></data>
+  <data name="Band_LabelEn" xml:space="preserve"><value>Label (English)</value></data>
+  <data name="Band_DescriptorAr" xml:space="preserve"><value>Description (Arabic)</value></data>
+  <data name="Band_DescriptorEn" xml:space="preserve"><value>Description (English)</value></data>
+  <data name="Band_Add" xml:space="preserve"><value>Add a band</value></data>
+  <data name="Band_Remove" xml:space="preserve"><value>Remove band</value></data>
+  <data name="Band_Strip" xml:space="preserve"><value>The bands over 0 to 100 percent</value></data>
+  <data name="Band_CoverageOk" xml:space="preserve"><value>The bands cover 0 to 100 with no gaps or overlaps.</value></data>
+  <data name="Band_CoverageStart" xml:space="preserve"><value>Nothing covers {0} to {1}.</value></data>
+  <data name="Band_CoverageEnd" xml:space="preserve"><value>Nothing covers {0} to {1}.</value></data>
+  <data name="Band_CoverageGap" xml:space="preserve"><value>A gap between {0} and {1}.</value></data>
+  <data name="Band_CoverageOverlap" xml:space="preserve"><value>Bands overlap between {0} and {1}.</value></data>
+  <data name="Band_CoverageInverted" xml:space="preserve"><value>A band starts at {0} and ends at {1}.</value></data>
+  <data name="WTemplates_New" xml:space="preserve"><value>New template</value></data>
+  <data name="WTemplates_Items" xml:space="preserve"><value>Categories</value></data>
+  <data name="WTemplates_TotalColumn" xml:space="preserve"><value>Total weight</value></data>
+  <data name="WTemplates_Saved" xml:space="preserve"><value>Template saved.</value></data>
+  <data name="TemplateDialog_NewTitle" xml:space="preserve"><value>New weight template</value></data>
+  <data name="TemplateDialog_EditTitle" xml:space="preserve"><value>Edit weight template</value></data>
+  <data name="TemplateDialog_ViewTitle" xml:space="preserve"><value>Weight template</value></data>
+  <data name="Template_ItemNameAr" xml:space="preserve"><value>Category (Arabic)</value></data>
+  <data name="Template_ItemNameEn" xml:space="preserve"><value>Category (English)</value></data>
+  <data name="Template_Weight" xml:space="preserve"><value>Weight (%)</value></data>
+  <data name="Template_AddItem" xml:space="preserve"><value>Add a category</value></data>
+  <data name="Template_RemoveItem" xml:space="preserve"><value>Remove category</value></data>
+  <data name="Template_Total" xml:space="preserve"><value>Total: {0}</value></data>
+  <data name="Template_TotalHint" xml:space="preserve"><value>The weights usually add up to 100.</value></data>
+  <data name="WTemplates_Title" xml:space="preserve"><value>Weight templates</value></data>
+  <data name="WTemplates_Subtitle" xml:space="preserve"><value>Named lists of categories and weights a teacher can start a gradebook from.</value></data>
+  <data name="WTemplates_EmptyTitle" xml:space="preserve"><value>No weight templates yet</value></data>
+  <data name="WTemplates_EmptyText" xml:space="preserve"><value>Create one, for example coursework and exams.</value></data>
+  <data name="WTemplates_DeleteConfirm" xml:space="preserve"><value>Delete the template {0}?</value></data>
+  <data name="Band_ServerGap" xml:space="preserve"><value>The server found a gap between {0} and {1}. Close it by changing the neighbouring bands.</value></data>
+  <data name="Band_ServerOverlap" xml:space="preserve"><value>The server found bands that overlap between {0} and {1}.</value></data>
+  <data name="Band_ServerRange" xml:space="preserve"><value>The server found a band that starts at {0} and ends at {1}. It must end after it starts.</value></data>
+  <data name="Band_ServerCount" xml:space="preserve"><value>The scale needs between 1 and 20 bands.</value></data>
+  <data name="Band_ServerOther" xml:space="preserve"><value>The server refused these bands. Check the codes and points.</value></data>
+  <data name="Band_Problem_Marked" xml:space="preserve"><value>This band is part of a problem the server found. See the list above.</value></data>
+  <data name="ScaleDialog_ReadOnlyFrom" xml:space="preserve"><value>This comes from {0}. Change it there; here it can only be read.</value></data>
+  <data name="ScaleDialog_ReadOnlyPreset" xml:space="preserve"><value>This is a preset. Add it to your unit from the preset menu to use it or change it.</value></data>
   <data name="NavSection_Structure" xml:space="preserve"><value>Structure</value></data>
   <data name="NavSection_People" xml:space="preserve"><value>People</value></data>
   <data name="NavSection_Academic" xml:space="preserve"><value>Academic</value></data>

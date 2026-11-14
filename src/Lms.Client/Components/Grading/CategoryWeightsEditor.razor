@@ -1,0 +1,55 @@
+@using System.Globalization
+@using Lms.Shared.Grading
+
+@* The category names and weights of a weight template, with a live total. A weight outside 0-100 is refused by the server (weights_invalid); the total is a preview and not a rule. *@
+<div class="lms-weights" data-testid="weights-editor">
+    @for (var i = 0; i < Items.Count; i++)
+    {
+        var item = Items[i];
+        var n = i;
+        <div class="lms-weight-row" data-testid="@($"weight-row-{n}")">
+            <MudTextField T="string" @bind-Value="item.NameAr" Label="@L["Template_ItemNameAr"]" MaxLength="200" ReadOnly="ReadOnly" data-testid="@($"weight-name-ar-{n}")" />
+            <MudTextField T="string" @bind-Value="item.NameEn" Label="@L["Template_ItemNameEn"]" MaxLength="200" ReadOnly="ReadOnly" dir="ltr" data-testid="@($"weight-name-en-{n}")" />
+            <MudNumericField T="decimal" @bind-Value="item.Weight" Label="@L["Template_Weight"]" Min="0m" Max="100m" Step="0.5m" ReadOnly="ReadOnly" Immediate="true"
+                             HideSpinButtons="true" dir="ltr" data-testid="@($"weight-value-{n}")" />
+            @if (!ReadOnly && Items.Count > 1)
+            {
+                <MudIconButton Icon="@Icons.Material.Rounded.Delete" Size="Size.Small" Color="Color.Error" aria-label="@L["Template_RemoveItem"]"
+                               OnClick="() => Remove(item)" data-testid="@($"weight-remove-{n}")" />
+            }
+        </div>
+    }
+    <div class="lms-weights-footer">
+        @if (!ReadOnly)
+        {
+            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.Add" OnClick="Add" data-testid="weight-add">@L["Template_AddItem"]</MudButton>
+        }
+        <MudChip T="string" Size="Size.Small" Color="@(Total == 100m ? Color.Success : Color.Warning)" role="status" data-testid="weights-total">
+            @string.Format(CultureInfo.CurrentCulture, L["Template_Total"].Value, Total.ToString("0.##", CultureInfo.InvariantCulture))
+        </MudChip>
+    </div>
+    @if (Total != 100m)
+    {
+        <MudText Typo="Typo.body2" class="lms-muted" data-testid="weights-hint">@L["Template_TotalHint"]</MudText>
+    }
+</div>
+
+@code {
+    [Parameter] public List<WeightRow> Items { get; set; } = [];
+    [Parameter] public bool ReadOnly { get; set; }
+
+    private decimal Total => Items.Sum(i => i.Weight);
+
+    private void Add() => Items.Add(new WeightRow());
+
+    private void Remove(WeightRow row) => Items.Remove(row);
+
+    /// <summary>One editable category of a template.</summary>
+    public sealed class WeightRow
+    {
+        public Guid? Id { get; set; }
+        public string NameAr { get; set; } = "";
+        public string NameEn { get; set; } = "";
+        public decimal Weight { get; set; }
+    }
+}

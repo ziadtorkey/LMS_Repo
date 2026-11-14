@@ -1,0 +1,12 @@
+@* Scales and weight templates: the two admin pages of grading. *@
+<MudStack Row="true" Spacing="1" Class="mb-3" role="navigation" aria-label="@L["Grading_Sections"]" data-testid="grading-admin-tabs">
+    <MudButton Href="grading/scales" Variant="@VariantOf("scales")" data-testid="tab-scales">@L["Grd_TabScales"]</MudButton>
+    <MudButton Href="grading/weight-templates" Variant="@VariantOf("templates")" data-testid="tab-templates">@L["Grd_TabTemplates"]</MudButton>
+</MudStack>
+
+@code {
+    /// <summary>"scales" or "templates".</summary>
+    [Parameter, EditorRequired] public string Active { get; set; } = "scales";
+
+    private Variant VariantOf(string tab) => tab == Active ? Variant.Filled : Variant.Text;
+}

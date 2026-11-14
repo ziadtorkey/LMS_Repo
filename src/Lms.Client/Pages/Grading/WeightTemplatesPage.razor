@@ -1,0 +1,169 @@
+@page "/grading/weight-templates"
+@attribute [Authorize]
+@using System.Globalization
+@using Lms.Client.Components
+@using Lms.Client.Components.Grading
+@using Lms.Client.Components.People
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.Grading
+@using Lms.Shared.Authorization
+@using Lms.Shared.Grading
+@inject IGradingScalesApi Api
+@inject IUnitLookupApi UnitsApi
+@inject PermissionState Perms
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<PageTitle>@L["WTemplates_Title"]</PageTitle>
+<GradingAdminTabs Active="templates" />
+<PageHeader Title="@L["WTemplates_Title"]" Subtitle="@L["WTemplates_Subtitle"]" TitleTestId="templates-title">
+    <Actions>
+        @if (CanConfigure && _unitId is not null)
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Add" OnClick="() => OpenAsync(null)"
+                       data-testid="template-new">@L["WTemplates_New"]</MudButton>
+        }
+    </Actions>
+</PageHeader>
+
+@if (!Perms.Loaded)
+{
+    <LoadingState Lines="4" />
+}
+else if (!Perms.Has(Permissions.Grades.View))
+{
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" data-testid="templates-forbidden">@L["Forbidden_Title"]</MudAlert>
+}
+else
+{
+    <SectionCard Flush="true">
+        <div class="lms-filters" role="search" aria-label="@L["Common_Filters"]">
+            <div class="lms-filter">
+                <UnitPicker Value="_unitId" ValueChanged="OnUnitChangedAsync" Label="@L["Scales_Unit"]" Required="true" TestId="templates-unit" />
+            </div>
+        </div>
+        @if (_loading)
+        {
+            <LoadingState Lines="4" />
+        }
+        else if (_failed)
+        {
+            <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="api-error">
+                <div class="d-flex align-center flex-wrap gap-2">
+                    <span>@L["Api_Error"]</span>
+                    <MudButton Variant="Variant.Outlined" Size="Size.Small" Color="Color.Error" OnClick="LoadAsync">@L["Common_Retry"]</MudButton>
+                </div>
+            </MudAlert>
+        }
+        else if (_templates.Count == 0)
+        {
+            <EmptyState Title="@L["WTemplates_EmptyTitle"]" Text="@L["WTemplates_EmptyText"]" Icon="@Icons.Material.Rounded.Balance" TestId="templates-empty" />
+        }
+        else
+        {
+            <MudSimpleTable Dense="true" Elevation="0" Class="lms-simple-table lms-stack-table" data-testid="templates-table">
+                <thead>
+                    <tr>
+                        <th>@L["Common_Name"]</th>
+                        <th>@L["WTemplates_Items"]</th>
+                        <th>@L["WTemplates_TotalColumn"]</th>
+                        <th>@L["Common_Actions"]</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var template in _templates)
+                    {
+                        var t = template;
+                        <tr data-testid="@($"template-{t.Id}")">
+                            <td data-label="@L["Common_Name"]" class="lms-cell-strong">@CultureText.Pick(t.NameAr, t.NameEn)</td>
+                            <td data-label="@L["WTemplates_Items"]">@string.Join(" · ", t.Items.OrderBy(i => i.Order).Select(i => CultureText.Pick(i.NameAr, i.NameEn)))</td>
+                            <td data-label="@L["WTemplates_TotalColumn"]">
+                                <MudChip T="string" Size="Size.Small" Color="@(t.WeightsTotal == 100m ? Color.Success : Color.Warning)" data-testid="@($"template-total-{t.Id}")">
+                                    <span dir="ltr">@t.WeightsTotal.ToString("0.##", CultureInfo.InvariantCulture)</span>
+                                </MudChip>
+                            </td>
+                            <td data-label="@L["Common_Actions"]">
+                                <div class="lms-row-actions">
+                                    <MudIconButton Icon="@(Editable(t) ? Icons.Material.Rounded.Edit : Icons.Material.Rounded.Visibility)" Size="Size.Small"
+                                                   aria-label="@(Editable(t) ? L["Common_Edit"] : L["Scales_View"])" OnClick="() => OpenAsync(t)" data-testid="@($"template-edit-{t.Id}")" />
+                                    @if (Editable(t))
+                                    {
+                                        <MudIconButton Icon="@Icons.Material.Rounded.Delete" Size="Size.Small" Color="Color.Error" aria-label="@L["Common_Delete"]"
+                                                       OnClick="() => DeleteAsync(t)" data-testid="@($"template-delete-{t.Id}")" />
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        }
+    </SectionCard>
+}
+
+@code {
+    private IReadOnlyList<WeightTemplateDto> _templates = [];
+    private Guid? _unitId;
+    private Dictionary<Guid, string> _unitNames = [];
+    private bool _loading = true, _failed;
+
+    private bool CanConfigure => Perms.Has(Permissions.Grades.ConfigureScales);
+
+    private bool Editable(WeightTemplateDto t) => CanConfigure && t.InheritedFromUnitId is null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var (units, failed) = await ApiCalls.RunAsync(() => UnitsApi.GetUnitsAsync(), Navigation);
+        _unitId = units is { Count: > 0 } ? UnitTree.Order(units)[0].Id : null;
+        _unitNames = (units ?? []).ToDictionary(u => u.Id, u => CultureText.Pick(u.NameAr, u.NameEn));
+        _failed = failed;
+        _loading = false;
+        if (_unitId is not null) await LoadAsync();
+    }
+
+    private Task OnUnitChangedAsync(Guid? id)
+    {
+        // The select can report its current value again after a re-render: only a real change reloads (a reload per report would loop).
+        if (id is null || id == _unitId) return Task.CompletedTask;
+        _unitId = id;
+        return LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        if (_unitId is not { } unit) return;
+        _loading = true;
+        _failed = false;
+        var (list, failed) = await ApiCalls.RunAsync(() => Api.ListTemplatesAsync(unit), Navigation);
+        _templates = list ?? [];
+        _failed = failed;
+        _loading = false;
+    }
+
+    private async Task OpenAsync(WeightTemplateDto? template)
+    {
+        if (_unitId is not { } unit) return;
+        var readOnly = template is not null && !Editable(template);
+        var title = template is null ? L["TemplateDialog_NewTitle"] : readOnly ? L["TemplateDialog_ViewTitle"] : L["TemplateDialog_EditTitle"];
+        var dialog = await Dialogs.ShowAsync<WeightTemplateDialog>(title, new DialogParameters<WeightTemplateDialog>
+        {
+            { x => x.UnitId, unit }, { x => x.Existing, template }, { x => x.ReadOnly, readOnly },
+            { x => x.SourceUnitName, template?.InheritedFromUnitId is { } from && _unitNames.TryGetValue(from, out var name) ? name : null },
+        }, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseOnEscapeKey = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            Snackbar.Add(L["WTemplates_Saved"], Severity.Success);
+            await LoadAsync();
+        }
+    }
+
+    private async Task DeleteAsync(WeightTemplateDto template)
+    {
+        if (_unitId is not { } unit) return;
+        if (!await ConfirmDialog.AskAsync(Dialogs, L["Confirm_DeleteTitle"], string.Format(L["WTemplates_DeleteConfirm"], CultureText.Pick(template.NameAr, template.NameEn)))) return;
+        if (await ApiCalls.RunAsync(() => Api.DeleteTemplateAsync(unit, template.Id), Navigation, L, m => Snackbar.Add(m, Severity.Error)))
+            await LoadAsync();
+    }
+}

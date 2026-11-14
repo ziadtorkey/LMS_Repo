@@ -8,7 +8,7 @@ namespace Lms.Client.Services.Api;
 /// An RFC 7807 error answered by the API. <see cref="Code"/> is the ProblemCodes value
 /// (or the access-denial reason, e.g. BlockedByPolicy); <see cref="Detail"/> is server-localized text.
 /// </summary>
-public sealed class ApiProblemException(int status, string? code, string? detail, IReadOnlyDictionary<string, string[]>? errors, string? field = null, int? count = null, string? reason = null, IReadOnlyList<string>? codes = null, int? retryAfterSeconds = null)
+public sealed class ApiProblemException(int status, string? code, string? detail, IReadOnlyDictionary<string, string[]>? errors, string? field = null, int? count = null, string? reason = null, IReadOnlyList<string>? codes = null, IReadOnlyList<ApiProblemItem>? problems = null, int? retryAfterSeconds = null)
     : HttpRequestException($"API error {status} {code}", null, (HttpStatusCode)status)
 {
     public const string InvalidContext = "invalid_context";
@@ -36,6 +36,9 @@ public sealed class ApiProblemException(int status, string? code, string? detail
     /// <summary>The problem's <c>codes</c> extension (e.g. which class codes collide in a bulk create), when present.</summary>
     public IReadOnlyList<string> Codes { get; } = codes ?? [];
 
+    /// <summary>The problem's <c>problems</c> extension: what exactly is wrong, item by item (a scale's bands: each gap or overlap with its range).</summary>
+    public IReadOnlyList<ApiProblemItem> Problems { get; } = problems ?? [];
+
     /// <summary>True when the API says the active context is missing, expired, deleted or deactivated (bug #84, D15).</summary>
     public bool IsContextProblem => Status == 403 && Code is InvalidContext or ContextRequired;
 
@@ -45,6 +48,7 @@ public sealed class ApiProblemException(int status, string? code, string? detail
         string? code = null, detail = null, field = null, reason = null;
         int? count = null;
         List<string>? codes = null;
+        List<ApiProblemItem>? problems = null;
         Dictionary<string, string[]>? errors = null;
         try
         {
@@ -61,6 +65,9 @@ public sealed class ApiProblemException(int status, string? code, string? detail
                 reason = Text(json, "reason");
                 if (json.TryGetProperty("codes", out var cs) && cs.ValueKind == JsonValueKind.Array)
                     codes = cs.EnumerateArray().Where(x => x.ValueKind == JsonValueKind.String).Select(x => x.GetString()!).ToList();
+                if (json.TryGetProperty("problems", out var ps) && ps.ValueKind == JsonValueKind.Array)
+                    problems = [.. ps.EnumerateArray().Where(x => x.ValueKind == JsonValueKind.Object).Select(x => new ApiProblemItem(
+                        Text(x, "kind") ?? "", Number(x, "from"), Number(x, "to")))];
                 if (json.TryGetProperty("count", out var c) && c.ValueKind == JsonValueKind.Number && c.TryGetInt32(out var n)) count = n;
                 if (json.TryGetProperty("errors", out var e) && e.ValueKind == JsonValueKind.Object)
                     errors = e.EnumerateObject().ToDictionary(
@@ -73,7 +80,7 @@ public sealed class ApiProblemException(int status, string? code, string? detail
         catch (JsonException) { }
         catch (NotSupportedException) { }
         catch (InvalidOperationException) { }
-        return new ApiProblemException((int)response.StatusCode, code, detail, errors, field, count, reason, codes, RetryAfterOf(response));
+        return new ApiProblemException((int)response.StatusCode, code, detail, errors, field, count, reason, codes, problems, RetryAfterOf(response));
     }
 
     /// <summary>
@@ -90,7 +97,13 @@ public sealed class ApiProblemException(int status, string? code, string? detail
 
     private static string? Text(JsonElement json, string name) =>
         json.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() : null;
+
+    private static decimal? Number(JsonElement json, string name) =>
+        json.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.Number && v.TryGetDecimal(out var d) ? d : null;
 }
+
+/// <summary>One entry of a problem's <c>problems</c> list: a <c>Kind</c> (for scale bands Gap, Overlap, Range, Code, Points, Count) and the range it concerns, when it has one.</summary>
+public sealed record ApiProblemItem(string Kind, decimal? From, decimal? To);
 
 /// <summary>The active context is missing or no longer valid: the user must pick a context again, not see Forbidden.</summary>
 public sealed class ApiContextException(string code) : HttpRequestException($"Context problem: {code}", null, HttpStatusCode.Forbidden)

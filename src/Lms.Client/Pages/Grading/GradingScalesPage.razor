@@ -1,0 +1,240 @@
+@page "/grading/scales"
+@attribute [Authorize]
+@using Lms.Client.Components
+@using Lms.Client.Components.Grading
+@using Lms.Client.Components.People
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.Grading
+@using Lms.Shared.Authorization
+@using Lms.Shared.Grading
+@inject IGradingScalesApi Api
+@inject IUnitLookupApi UnitsApi
+@inject PermissionState Perms
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<PageTitle>@L["Scales_Title"]</PageTitle>
+<GradingAdminTabs Active="scales" />
+<PageHeader Title="@L["Scales_Title"]" Subtitle="@L["Scales_Subtitle"]" TitleTestId="scales-title">
+    <Actions>
+        @if (CanConfigure && _unitId is not null)
+        {
+            <PresetMenu Presets="Presets" OnPick="CopyPresetAsync" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Add" OnClick="() => OpenAsync(null)"
+                       data-testid="scale-new">@L["Scales_New"]</MudButton>
+        }
+    </Actions>
+</PageHeader>
+
+@if (!Perms.Loaded)
+{
+    <LoadingState Lines="4" />
+}
+else if (!Perms.Has(Permissions.Grades.View))
+{
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" data-testid="scales-forbidden">@L["Forbidden_Title"]</MudAlert>
+}
+else
+{
+    <SectionCard Flush="true">
+        <div class="lms-filters" role="search" aria-label="@L["Common_Filters"]">
+            <div class="lms-filter">
+                <UnitPicker Value="_unitId" ValueChanged="OnUnitChangedAsync" Label="@L["Scales_Unit"]" Required="true" TestId="scales-unit" />
+            </div>
+        </div>
+        @if (_loading)
+        {
+            <LoadingState Lines="4" />
+        }
+        else if (_failed)
+        {
+            <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="api-error">
+                <div class="d-flex align-center flex-wrap gap-2">
+                    <span>@L["Api_Error"]</span>
+                    <MudButton Variant="Variant.Outlined" Size="Size.Small" Color="Color.Error" OnClick="LoadAsync">@L["Common_Retry"]</MudButton>
+                </div>
+            </MudAlert>
+        }
+        else if (Scales.Count == 0)
+        {
+            <EmptyState Title="@L["Scales_EmptyTitle"]" Text="@L["Scales_EmptyText"]" Icon="@Icons.Material.Rounded.Grading" TestId="scales-empty" />
+        }
+        else
+        {
+            <MudSimpleTable Dense="true" Elevation="0" Class="lms-simple-table lms-stack-table" data-testid="scales-table">
+                <thead>
+                    <tr>
+                        <th>@L["Common_Name"]</th>
+                        <th>@L["Scales_Kind"]</th>
+                        <th>@L["Common_Status"]</th>
+                        <th>@L["Common_Actions"]</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var scale in Scales)
+                    {
+                        var s = scale;
+                        <tr data-testid="@($"scale-{s.Id}")">
+                            <td data-label="@L["Common_Name"]" class="lms-cell-strong">@CultureText.Pick(s.NameAr, s.NameEn)</td>
+                            <td data-label="@L["Scales_Kind"]">@L[$"Grd_ScaleKind_{s.Kind}"]</td>
+                            <td data-label="@L["Common_Status"]">
+                                <div class="lms-chips">
+                                    @if (s.IsDefault)
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Primary" data-testid="@($"scale-default-{s.Id}")">@L["Scales_Default"]</MudChip>
+                                    }
+                                    @if (s.Provisional)
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Warning" data-testid="@($"scale-provisional-{s.Id}")">@L["Scales_Provisional"]</MudChip>
+                                    }
+                                    @if (s.UpdateAvailable)
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Info" data-testid="@($"scale-update-{s.Id}")">@L["Scales_UpdateAvailable"]</MudChip>
+                                    }
+                                    @if (s.InheritedFromUnitId is not null)
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" data-testid="@($"scale-inherited-{s.Id}")">@L["Scales_Inherited"]</MudChip>
+                                    }
+                                    @if (s.InUse)
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" data-testid="@($"scale-inuse-{s.Id}")">@L["Scales_InUse"]</MudChip>
+                                    }
+                                </div>
+                            </td>
+                            <td data-label="@L["Common_Actions"]">
+                                <div class="lms-row-actions">
+                                    <MudIconButton Icon="@(Editable(s) ? Icons.Material.Rounded.Edit : Icons.Material.Rounded.Visibility)" Size="Size.Small"
+                                                   aria-label="@(Editable(s) ? L["Common_Edit"] : L["Scales_View"])" OnClick="() => OpenAsync(s)" data-testid="@($"scale-edit-{s.Id}")" />
+                                    @if (Editable(s))
+                                    {
+                                        @if (s.Provisional)
+                                        {
+                                            <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Primary" OnClick="() => ConfirmAsync(s)"
+                                                       data-testid="@($"scale-confirm-{s.Id}")">@L["Scales_Confirm"]</MudButton>
+                                        }
+                                        @if (s.UpdateAvailable)
+                                        {
+                                            <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="() => UpdateFromPresetAsync(s)"
+                                                       data-testid="@($"scale-update-action-{s.Id}")">@L["Scales_UpdatePreset"]</MudButton>
+                                        }
+                                        @if (!s.IsDefault)
+                                        {
+                                            <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="() => MakeDefaultAsync(s)"
+                                                       data-testid="@($"scale-makedefault-{s.Id}")">@L["Scales_MakeDefault"]</MudButton>
+                                        }
+                                        <MudIconButton Icon="@Icons.Material.Rounded.Delete" Size="Size.Small" Color="Color.Error" aria-label="@L["Common_Delete"]"
+                                                       OnClick="() => DeleteAsync(s)" data-testid="@($"scale-delete-{s.Id}")" />
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        }
+    </SectionCard>
+}
+
+@code {
+    private IReadOnlyList<GradingScaleDto> _all = [];
+    private Guid? _unitId;
+    private Dictionary<Guid, string> _unitNames = [];
+    private bool _loading = true, _failed;
+
+    private bool CanConfigure => Perms.Has(Permissions.Grades.ConfigureScales);
+
+    /// <summary>The unit's own scales (and the ancestors', read only); the presets are templates and have their own menu.</summary>
+    private IReadOnlyList<GradingScaleDto> Scales => [.. _all.Where(s => !s.IsTemplate)];
+
+    private IReadOnlyList<GradingScaleDto> Presets => [.. _all.Where(s => s.IsTemplate)];
+
+    private bool Editable(GradingScaleDto s) => CanConfigure && s.InheritedFromUnitId is null && !s.IsTemplate;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var (units, failed) = await ApiCalls.RunAsync(() => UnitsApi.GetUnitsAsync(), Navigation);
+        _unitId = units is { Count: > 0 } ? UnitTree.Order(units)[0].Id : null;
+        _unitNames = (units ?? []).ToDictionary(u => u.Id, u => CultureText.Pick(u.NameAr, u.NameEn));
+        _failed = failed;
+        _loading = false;
+        if (_unitId is not null) await LoadAsync();
+    }
+
+    private Task OnUnitChangedAsync(Guid? id)
+    {
+        // The select can report its current value again after a re-render: only a real change reloads (a reload per report would loop).
+        if (id is null || id == _unitId) return Task.CompletedTask;
+        _unitId = id;
+        return LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        if (_unitId is not { } unit) return;
+        _loading = true;
+        _failed = false;
+        var (list, failed) = await ApiCalls.RunAsync(() => Api.ListScalesAsync(unit), Navigation);
+        _all = list ?? [];
+        _failed = failed;
+        _loading = false;
+    }
+
+    private async Task OpenAsync(GradingScaleDto? scale)
+    {
+        if (_unitId is not { } unit) return;
+        var readOnly = scale is not null && !Editable(scale);
+        var title = scale is null ? L["ScaleDialog_NewTitle"] : readOnly ? L["ScaleDialog_ViewTitle"] : L["ScaleDialog_EditTitle"];
+        var dialog = await Dialogs.ShowAsync<GradingScaleDialog>(title, new DialogParameters<GradingScaleDialog>
+        {
+            { x => x.UnitId, unit }, { x => x.Existing, scale }, { x => x.ReadOnly, readOnly },
+            { x => x.SourceUnitName, scale?.InheritedFromUnitId is { } from && _unitNames.TryGetValue(from, out var name) ? name : null },
+        }, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseOnEscapeKey = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            Snackbar.Add(L["Scales_Saved"], Severity.Success);
+            await LoadAsync();
+        }
+    }
+
+    private async Task CopyPresetAsync(GradingScaleDto preset)
+    {
+        if (_unitId is not { } unit || preset.SeedKey is null) return;
+        if (await ApiCalls.RunAsync(() => Api.CopyPresetAsync(unit, new CopyScalePresetRequest(preset.SeedKey)), Navigation, L, m => Snackbar.Add(m, Severity.Error)))
+        {
+            Snackbar.Add(L["Scales_PresetAdded"], Severity.Success);
+            await LoadAsync();
+        }
+    }
+
+    /// <summary>The update of an unedited copy goes through the same presets route as a new copy.</summary>
+    private Task UpdateFromPresetAsync(GradingScaleDto scale) =>
+        scale.SeedKey is null ? Task.CompletedTask : CopyPresetAsync(scale);
+
+    private async Task ConfirmAsync(GradingScaleDto scale)
+    {
+        if (_unitId is not { } unit) return;
+        if (await ApiCalls.RunAsync(() => Api.ConfirmScaleAsync(unit, scale.Id), Navigation, L, m => Snackbar.Add(m, Severity.Error)))
+        {
+            Snackbar.Add(L["Scales_Confirmed"], Severity.Success);
+            await LoadAsync();
+        }
+    }
+
+    private async Task MakeDefaultAsync(GradingScaleDto scale)
+    {
+        if (_unitId is not { } unit) return;
+        if (!await ConfirmDialog.AskAsync(Dialogs, L["Scales_MakeDefault"], string.Format(L["Scales_MakeDefaultConfirm"], CultureText.Pick(scale.NameAr, scale.NameEn)), L["Common_Confirm"])) return;
+        if (await ApiCalls.RunAsync(() => Api.SetDefaultScaleAsync(unit, scale.Id), Navigation, L, m => Snackbar.Add(m, Severity.Error)))
+            await LoadAsync();
+    }
+
+    private async Task DeleteAsync(GradingScaleDto scale)
+    {
+        if (_unitId is not { } unit) return;
+        if (!await ConfirmDialog.AskAsync(Dialogs, L["Confirm_DeleteTitle"], string.Format(L["Scales_DeleteConfirm"], CultureText.Pick(scale.NameAr, scale.NameEn)))) return;
+        if (await ApiCalls.RunAsync(() => Api.DeleteScaleAsync(unit, scale.Id), Navigation, L, m => Snackbar.Add(m, Severity.Error)))
+            await LoadAsync();
+    }
+}
