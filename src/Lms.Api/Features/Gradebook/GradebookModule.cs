@@ -14,5 +14,6 @@ public sealed class GradebookModule : ILmsModule
         app.MapGradebookEndpoints();
         app.MapGradebookConfigEndpoints();
         app.MapGradeEntryEndpoints();
+        app.MapGradeExchangeEndpoints();
     }
 }

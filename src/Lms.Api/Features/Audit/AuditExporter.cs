@@ -65,9 +65,8 @@ public static class AuditExporter
         r.Action, r.EntityType, r.EntityId.ToString(), r.IpAddress ?? string.Empty,
     ];
 
-    /// <summary>Prefixes cells that start like a formula (CSV/Excel injection).</summary>
-    private static string Neutralize(string value) =>
-        value.Length > 0 && value[0] is '=' or '+' or '-' or '@' or '\t' or '\r' ? "'" + value : value;
+    /// <summary>Prefixes cells that start like a formula (CSV/Excel injection): the shared helper (moved to <c>SpreadsheetCell</c>, M5 L9).</summary>
+    private static string Neutralize(string value) => Lms.Infrastructure.Spreadsheets.SpreadsheetCell.Safe(value);
 
     private static string Quote(string value) => "\"" + Neutralize(value).Replace("\"", "\"\"") + "\"";
 }
