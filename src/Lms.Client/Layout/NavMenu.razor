@@ -4,15 +4,25 @@
 @using Lms.Client.Services.Messaging
 @implements IDisposable
 
-<MudNavMenu>
-    @foreach (var item in Visible)
+@* Home first, then the Stitch sidebar groups (Structure, People, Academic, Security) in catalog order; a group with no visible entry
+   is not rendered. Each group is a role="group" labelled by its heading, which is text, not an h2 (it sits before the page h1). *@
+<MudNavMenu aria-label="@L["Nav_Main"]" data-testid="nav-main">
+    @foreach (var item in Visible.Where(i => i.Section is null))
     {
-        <MudNavLink Href="@item.Href" Match="@(item.Href == "" ? NavLinkMatch.All : NavLinkMatch.Prefix)"
-                    Icon="@item.Icon" data-testid="@($"nav-{item.Key}")">@L[item.ResourceKey]@if (item.Key == "messages" && Messaging.UnreadConversations > 0)
+        @Link(item)
+    }
+    @foreach (var section in NavCatalog.Sections)
+    {
+        var items = Visible.Where(i => i.Section == section).ToList();
+        if (items.Count == 0) continue;
+        var id = $"navsec-{SectionKey(section)}";
+        <div role="group" aria-labelledby="@id" class="lms-nav-group" data-testid="@($"navsection-{SectionKey(section)}")">
+            <div id="@id" class="lms-nav-section">@L[section]</div>
+            @foreach (var item in items)
             {
-                <MudBadge Content="@Messaging.UnreadConversations" Color="Color.Primary" Overlap="false" Class="ms-3" data-testid="nav-messages-badge"
-                          aria-label="@string.Format(L["Msg_Nav_Unread"], Messaging.UnreadConversations)" />
-            }</MudNavLink>
+                @Link(item)
+            }
+        </div>
     }
 </MudNavMenu>
 
@@ -28,6 +38,16 @@
         await Permissions.RefreshAsync();
         if (Permissions.Has(Lms.Shared.Authorization.Permissions.Messaging.View)) await Messaging.RefreshAsync();
     }
+
+    private static string SectionKey(string section) => section["NavSection_".Length..].ToLowerInvariant();
+
+    private RenderFragment Link(NavItem item) =>
+        @<MudNavLink Href="@item.Href" Match="@(item.Href == "" ? NavLinkMatch.All : NavLinkMatch.Prefix)"
+                     Icon="@item.Icon" data-testid="@($"nav-{item.Key}")">@L[item.ResourceKey]@if (item.Key == "messages" && Messaging.UnreadConversations > 0)
+         {
+             <MudBadge Content="@Messaging.UnreadConversations" Color="Color.Primary" Overlap="false" Class="ms-3" data-testid="nav-messages-badge"
+                       aria-label="@string.Format(L["Msg_Nav_Unread"], Messaging.UnreadConversations)" />
+         }</MudNavLink>;
 
     private void OnChanged() => _ = InvokeAsync(StateHasChanged);
 

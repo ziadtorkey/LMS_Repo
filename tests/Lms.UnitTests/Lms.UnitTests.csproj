@@ -16,6 +16,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="Grading\Golden\*.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\Lms.Domain\Lms.Domain.csproj" />
     <ProjectReference Include="..\..\src\Lms.Infrastructure\Lms.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Lms.Shared\Lms.Shared.csproj" />

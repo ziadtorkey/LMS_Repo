@@ -92,23 +92,19 @@ else
             {
                 <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Dense="true" data-testid="thread-send-error">@_error</MudAlert>
             }
-            @if (conversation.IsLocked)
-            {
-                <ComposerOff Reason="@L["Msg_Locked"]" />
-            }
-            else if (conversation.IsReadOnly)
-            {
-                <ComposerOff Reason="@L["Msg_ReadOnly"]">
-                    @if (PrivateReplyTo is { } owner)
-                    {
-                        <MudButton Variant="Variant.Text" Size="Size.Small" Href="@($"messages/new?to={owner}")" data-testid="thread-reply-privately">@L["Msg_Reply_Privately"]</MudButton>
-                    }
-                </ComposerOff>
-            }
-            else if (_blockedByMe)
+            @if (_blockedByMe)
             {
                 <ComposerOff Reason="@L["Msg_Blocked_ByMe"]">
                     <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="UnblockAsync" data-testid="composer-unblock">@L["Msg_Unblock"]</MudButton>
+                </ComposerOff>
+            }
+            else if (!conversation.CanPost || conversation.IsLocked || conversation.IsReadOnly)
+            {
+                <ComposerOff Reason="@ReasonText(conversation)">
+                    @if (conversation.ReadOnlyReason == ConversationReadOnlyReasons.GroupStudentsReadOnly && PrivateReplyTo is { } owner)
+                    {
+                        <MudButton Variant="Variant.Text" Size="Size.Small" Href="@($"messages/new?to={owner}")" data-testid="thread-reply-privately">@L["Msg_Reply_Privately"]</MudButton>
+                    }
                 </ComposerOff>
             }
             else if (CanSend)
@@ -148,6 +144,17 @@ else
 
     /// <summary>The other person of a direct conversation (the one a block applies to).</summary>
     private ParticipantDto? Other => _conversation is { Kind: ConversationKinds.Direct } c ? c.Participants.FirstOrDefault(p => p.UserId != PermState.UserId) : null;
+
+    /// <summary>The reason the composer is off, in plain words. A block and a rule are one sentence on purpose (L18): it never says which, or why.</summary>
+    private string ReasonText(ConversationDto c) => (c.ReadOnlyReason ?? (c.IsLocked ? ConversationReadOnlyReasons.Locked : null)) switch
+    {
+        ConversationReadOnlyReasons.Locked => L["Msg_Locked"],
+        ConversationReadOnlyReasons.GroupStudentsReadOnly => L["Msg_ReadOnly_GroupStudents"],
+        ConversationReadOnlyReasons.GroupGuardiansReadOnly => L["Msg_ReadOnly_GroupGuardians"],
+        ConversationReadOnlyReasons.BlockedOrRule => L["Msg_ReadOnly_BlockedOrRule"],
+        ConversationReadOnlyReasons.Restricted => L["Msg_ReadOnly_Restricted"],
+        _ => L["Msg_ReadOnly"],
+    };
 
     private bool CanSend => PermState.Has(Lms.Shared.Authorization.Permissions.Messaging.Send);
 
@@ -240,7 +247,14 @@ else
     {
         if (_seenBlockVersion == BlockVersion) return;
         _seenBlockVersion = BlockVersion;
-        if (_conversation is not null) await LoadBlockAsync();
+        if (_conversation is not null) { await LoadBlockAsync(); await ReloadConversationAsync(); }
+    }
+
+    /// <summary>A block change moves CanPost and the read-only reason, which only the server knows: read the conversation again.</summary>
+    private async Task ReloadConversationAsync()
+    {
+        var (fresh, _) = await ApiCalls.RunAsync(() => Messaging.GetConversationAsync(ConversationId), Navigation);
+        if (fresh is not null) _conversation = fresh;
     }
 
     private async Task LoadBlockAsync()
@@ -265,14 +279,14 @@ else
             new DialogParameters<BlockUserDialog> { { x => x.UserId, other.UserId }, { x => x.Name, CultureText.Pick(other.NameAr, other.NameEn) } },
             new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
         var result = await dialog.Result;
-        if (result is { Canceled: false }) { _blockedByMe = true; await OnChanged.InvokeAsync(); }
+        if (result is { Canceled: false }) { _blockedByMe = true; await ReloadConversationAsync(); await OnChanged.InvokeAsync(); }
     }
 
     private async Task UnblockAsync()
     {
         if (Other is not { } other) return;
         var ok = await ApiCalls.RunAsync(() => Messaging.UnblockAsync(other.UserId), Navigation, L, e => _error = e);
-        if (ok) { _blockedByMe = false; await OnChanged.InvokeAsync(); }
+        if (ok) { _blockedByMe = false; await ReloadConversationAsync(); await OnChanged.InvokeAsync(); }
     }
 
     private async Task MembersAsync()

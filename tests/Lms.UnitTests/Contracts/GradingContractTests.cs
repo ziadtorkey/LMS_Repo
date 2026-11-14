@@ -64,9 +64,9 @@ public sealed class GradingContractTests
     }
 
     [Fact]
-    public void Grading_permissions_are_introduced_in_defaults_version_8()
+    public void Defaults_version_is_11_and_the_grading_permissions_came_in_8()
     {
-        Assert.True(BuiltInRoleDefaults.CurrentVersion >= 8); // later waves bump it (9 timetable, 10 attendance and excuses)
+        Assert.Equal(11, BuiltInRoleDefaults.CurrentVersion);
         Assert.All(GradePermissions, p => Assert.Equal(8, BuiltInRoleDefaults.IntroducedIn(p)));
         Assert.Equal(GradePermissions.Order(StringComparer.Ordinal), BuiltInRoleDefaults.IntroducedInVersion8.Order(StringComparer.Ordinal));
     }
@@ -282,10 +282,56 @@ public sealed class GradingContractTests
             typeof(StudentGradesDto), typeof(StudentCourseGradesDto), typeof(PublishedGradeItemDto), typeof(StudentGradeCategoryDto),
             typeof(BandLegendDto), typeof(BandLegendEntryDto),
         ];
-        string[] staffOnly = ["PublishState", "PublishAt", "Newer", "Rank", "Average", "Minimum", "Maximum", "Median", "Hidden", "Override", "Reason", "EventsAfterLock", "Provisional", "SourceKind", "SourceId", "Version", "Count"];
+        string[] staffOnly = ["PublishState", "PublishAt", "Newer", "Rank", "Average", "Minimum", "Maximum", "Median", "Hidden", "Override", "Reason", "EventsAfterLock", "Provisional", "SourceKind", "SourceId", "Version", "Count", "Withdrawn"];
 
         Assert.All(studentFacing, t => Assert.DoesNotContain(t.GetProperties(), p =>
             staffOnly.Any(f => p.Name.Contains(f, StringComparison.OrdinalIgnoreCase))));
+    }
+
+    [Fact]
+    public void Write_route_builders_take_an_optional_term_and_never_need_a_hand_built_query()
+    {
+        var cc = Guid.NewGuid();
+        var term = Guid.NewGuid();
+
+        Assert.Equal($"/api/class-courses/{cc}/gradebook/config", Routes.ClassCourseGradebookConfig(cc));
+        Assert.Equal($"/api/class-courses/{cc}/gradebook/config?termId={term}", Routes.ClassCourseGradebookConfig(cc, term));
+        Assert.Equal($"/api/class-courses/{cc}/gradebook/categories?termId={term}", Routes.ClassCourseGradebookCategories(cc, term));
+        Assert.Equal($"/api/class-courses/{cc}/gradebook/items?termId={term}", Routes.ClassCourseGradebookItems(cc, term));
+        Assert.Equal($"/api/class-courses/{cc}/gradebook/entries?termId={term}", Routes.ClassCourseGradebookEntries(cc, term));
+        var item = Guid.NewGuid();
+        Assert.Equal($"/api/class-courses/{cc}/gradebook/items/{item}", Routes.ClassCourseGradebookItem(cc, item));
+        Assert.Equal($"/api/class-courses/{cc}/gradebook/items/publish", Routes.ClassCourseGradebookPublish(cc));
+    }
+
+    [Fact]
+    public void A_withdrawn_student_stays_in_the_staff_row_with_a_flag_and_defaults_to_enrolled()
+    {
+        var row = new GradeRowDto(Guid.NewGuid(), "ع", "A", "1", [], [], null, null, null, null, null, 0);
+        Assert.False(row.IsWithdrawn);
+        Assert.Null(row.WithdrawnOn);
+
+        var left = RoundTrip(row with { IsWithdrawn = true, WithdrawnOn = new DateOnly(2026, 11, 1) });
+
+        Assert.True(left.IsWithdrawn);
+        Assert.Equal(new DateOnly(2026, 11, 1), left.WithdrawnOn);
+        Assert.DoesNotContain(typeof(StudentCourseGradesDto).GetProperties(), p => p.Name.Contains("Withdrawn", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Student_dto_docs_pin_published_only_semantics_for_categories_and_the_final()
+    {
+        // QA1 on #625: a category of hidden items, a HideUntilComplete final that waits on hidden items, or weights of hidden categories would
+        // disclose that hidden items exist. The engine (Task 6) and the leak tests (Task 41) are written against these pinned sentences.
+        var text = File.ReadAllText(Path.Combine(RepoRoot(), "src", "Lms.Shared", "Grading", "GradeReadDtos.cs"));
+
+        Assert.Contains("Only categories that hold at least one published item are listed", text, StringComparison.Ordinal);
+        Assert.Contains("every published item has a score", text, StringComparison.Ordinal);
+        Assert.Contains("renormalised over the listed categories", text, StringComparison.Ordinal);
+        Assert.Contains("no count, id, name, weight or", text, StringComparison.Ordinal);
+        // The student shape has nowhere to carry a hidden item: no hidden-category flag, no total item count, no hidden weight.
+        Assert.DoesNotContain(typeof(StudentGradeCategoryDto).GetProperties(), p => p.Name is "IsHidden" or "ItemCount" or "HiddenWeight");
+        Assert.DoesNotContain(typeof(StudentCourseGradesDto).GetProperties(), p => p.Name.Contains("Total", StringComparison.Ordinal) || p.Name.Contains("Pending", StringComparison.Ordinal));
     }
 
     [Fact]

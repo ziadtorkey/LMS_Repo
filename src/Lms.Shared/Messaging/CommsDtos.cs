@@ -2,7 +2,7 @@ namespace Lms.Shared.Messaging;
 
 /// <summary>
 /// One cell of the user's effective notification preferences: whether the event reaches the user on the channel, and why. A mandatory event cannot be switched
-/// off (409 <c>notification_mandatory</c>); a user can still opt out of SMS by number. SMS cells of a guardian or a student are <c>Enabled</c> false with source <c>Policy</c> and cannot be switched on (409 <c>channel_not_allowed</c>, D72/D75): guardians get email and push, even for urgent announcements. A client admin sets which channels may be used at all; a user can only narrow.
+/// off (409 <c>notification_mandatory</c>); there is no SMS in v1 (D76): the channels are in-app, email and push. A client admin sets which channels may be used at all; a user can only narrow.
 /// </summary>
 public sealed record EffectivePreferenceDto(string EventKey, string Channel, bool Enabled, string Source, bool Mandatory);
 
@@ -27,17 +27,14 @@ public sealed record ProviderStatusDto(string Channel, bool Configured, bool IsF
 
 /// <summary>
 /// The communication settings of a client (<c>Comms.Manage</c>, client root): which channels are on, the daily caps (client and per recipient, D66 defaults
-/// 5,000 email / 500 SMS / 20,000 push), quiet hours (SMS and push only, off by default), the delivery retention and the messaging limits.
+/// 5,000 email / 20,000 push), quiet hours (push only, off by default), the delivery retention and the messaging limits.
 /// </summary>
 public sealed record CommsSettingsDto(
     bool EmailEnabled,
-    bool SmsEnabled,
     bool PushEnabled,
     int MaxEmailPerDay,
-    int MaxSmsPerDay,
     int MaxPushPerDay,
     int MaxEmailPerUserPerDay,
-    int MaxSmsPerUserPerDay,
     int MaxPushPerUserPerDay,
     bool QuietHoursEnabled,
     string QuietHoursStart,

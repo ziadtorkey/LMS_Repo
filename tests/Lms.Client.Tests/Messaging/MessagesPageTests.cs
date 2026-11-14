@@ -395,4 +395,73 @@ public sealed class MessagesPageTests : ClientTestContext
         Assert.Equal(new DateTime(2026, 11, 14), Lms.Client.Pages.Messaging.MessageTimes.DayOf(late, TimeZoneInfo.Utc));
         Assert.Equal("01:30", Lms.Client.Pages.Messaging.MessageTimes.Clock(late, riyadh));
     }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Blocked_side_sees_the_generic_read_only_reason(bool blockerIsMe)
+    {
+        await SignInAsync(Sara);
+        var c = await DirectFromHudaAsync("hi");
+        MessagingApi.Me = blockerIsMe ? Sara : Huda;
+        await MessagingApi.BlockAsync(blockerIsMe ? Huda.Id : Sara.Id);
+        MessagingApi.Me = Sara;
+
+        var cut = RenderPage(c.Id);
+        WaitForThread(cut);
+
+        Assert.Empty(cut.FindAll("[data-testid=composer]"));
+        var reason = cut.Find("[data-testid=composer-off]").TextContent;
+        if (blockerIsMe)
+        {
+            Assert.Contains("حظرت", reason); // my own block: the thread says so and offers Unblock
+        }
+        else
+        {
+            Assert.Contains("لا يمكنك الكتابة في هذه المحادثة", reason); // theirs: one sentence for a block or a rule, it never says which
+            Assert.DoesNotContain("حظر", reason);
+        }
+    }
+
+    [Fact]
+    public async Task Read_only_conversation_after_a_rule_change_explains_it_in_the_same_generic_words()
+    {
+        await SignInAsync(Sara);
+        var c = await DirectFromHudaAsync("hi");
+        MessagingApi.Rules.Save([new MessagingRuleCellDto(BuiltInRoles.Student, BuiltInRoles.Teacher, MessagingRuleModes.Deny)]); // the Org Admin narrowed the rule
+
+        var cut = RenderPage(c.Id);
+        WaitForThread(cut);
+
+        Assert.Empty(cut.FindAll("[data-testid=composer]"));
+        Assert.Contains("لا يمكنك الكتابة في هذه المحادثة", cut.Find("[data-testid=composer-off]").TextContent);
+        Assert.Contains("hi", cut.Find("[data-testid=thread-body]").TextContent); // the history stays readable
+    }
+
+    [Fact]
+    public async Task A_guardian_outside_a_teacher_run_group_reads_and_is_told_why()
+    {
+        await SignInAsync(FakeMessagingApi.Admin);
+        var g = await MessagingApi.CreateConversationAsync(new CreateConversationRequest(ConversationKinds.Group, [FakeMessagingApi.Khaled.Id, Huda.Id], "Parents", "Welcome"));
+        await SignInAsync(FakeMessagingApi.Khaled);
+
+        var cut = RenderPage(g.Id);
+        WaitForThread(cut);
+
+        Assert.Empty(cut.FindAll("[data-testid=composer]"));
+        Assert.Contains("مجموعة المعلم", cut.Find("[data-testid=composer-off]").TextContent);
+    }
+
+    [Fact]
+    public async Task A_locked_conversation_gives_the_locked_reason()
+    {
+        await SignInAsync(Sara);
+        var c = await DirectFromHudaAsync("hi");
+        MessagingApi.Lock(c.Id);
+
+        var cut = RenderPage(c.Id);
+        WaitForThread(cut);
+
+        Assert.Contains("أُغلقت", cut.Find("[data-testid=composer-off]").TextContent);
+    }
 }
