@@ -102,12 +102,16 @@ public static partial class Routes
     public static string ClassCourseGradebook(Guid classCourseId, Guid? termId, int page = 1, int pageSize = Grading.GradingLimits.GridPageSize) =>
         $"{ClassCourseGradebook(classCourseId)}?{(termId is { } t ? $"termId={t}&" : string.Empty)}page={page}&pageSize={pageSize}";
 
-    public static string ClassCourseGradebookConfig(Guid classCourseId) => $"{ClassCourseGradebook(classCourseId)}/config";
-    public static string ClassCourseGradebookCategories(Guid classCourseId) => $"{ClassCourseGradebook(classCourseId)}/categories";
-    public static string ClassCourseGradebookItems(Guid classCourseId) => $"{ClassCourseGradebook(classCourseId)}/items";
+    // The write routes that act on "the gradebook of a term" take an optional ?termId= (the current term of the class when absent), so a client
+    // never builds the query by hand. Item routes with an {iid} need none: the item names its gradebook.
+    public static string ClassCourseGradebookConfig(Guid classCourseId, Guid? termId = null) => WithTerm($"{ClassCourseGradebook(classCourseId)}/config", termId);
+    public static string ClassCourseGradebookCategories(Guid classCourseId, Guid? termId = null) => WithTerm($"{ClassCourseGradebook(classCourseId)}/categories", termId);
+    public static string ClassCourseGradebookItems(Guid classCourseId, Guid? termId = null) => WithTerm($"{ClassCourseGradebook(classCourseId)}/items", termId);
     public static string ClassCourseGradebookItem(Guid classCourseId, Guid itemId) => $"{ClassCourseGradebookItems(classCourseId)}/{itemId}";
-    public static string ClassCourseGradebookEntries(Guid classCourseId) => $"{ClassCourseGradebook(classCourseId)}/entries";
+    public static string ClassCourseGradebookEntries(Guid classCourseId, Guid? termId = null) => WithTerm($"{ClassCourseGradebook(classCourseId)}/entries", termId);
     public static string ClassCourseGradebookPublish(Guid classCourseId) => $"{ClassCourseGradebookItems(classCourseId)}/publish";
+
+    private static string WithTerm(string url, Guid? termId) => termId is { } t ? $"{url}?termId={t}" : url;
     public static string ClassCourseGradebookStudentView(Guid classCourseId, Guid studentId) => $"{ClassCourseGradebook(classCourseId)}/students/{studentId}/student-view";
     public static string ClassCourseGradebookItemExport(Guid classCourseId, Guid itemId) => $"{ClassCourseGradebookItem(classCourseId, itemId)}/export";
     public static string ClassCourseGradebookItemImportPreview(Guid classCourseId, Guid itemId) => $"{ClassCourseGradebookItem(classCourseId, itemId)}/import/preview";

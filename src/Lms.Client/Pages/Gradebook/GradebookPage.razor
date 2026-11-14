@@ -1,0 +1,192 @@
+@page "/class-courses/{Id:guid}/gradebook"
+@attribute [Authorize]
+@implements IDisposable
+@using Lms.Client.Components
+@using Lms.Client.Components.Gradebook
+@using Lms.Client.Pages.Forums
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.Grading
+@using Lms.Shared.Authorization
+@using Lms.Shared.Grading
+@inject IGradebookApi Api
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject IViewport Viewport
+@inject IGradebookUnit UnitOf
+@inject NavigationManager Navigation
+
+@* The gradebook of a class course, read and render (M5 Task 24): the desktop grid, or on a phone the student-first list (ONE layout, L19). Every number
+   comes from the server (L18). Editing, publishing, import and export are Tasks 25 to 28. *@
+<PageTitle>@L["Grd_Title"]</PageTitle>
+<ClassCourseTabs ClassCourseId="Id" Active="gradebook" />
+@if (!PermState.Loaded)
+{
+    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+}
+else if (!PermState.Has(Permissions.Grades.View) && !PermState.Has(Permissions.Grades.Manage))
+{
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" data-testid="gradebook-forbidden">@L["Forbidden_Title"]</MudAlert>
+}
+else
+{
+    <PageHeader Title="@L["Grd_Title"]" Subtitle="@Subtitle" TitleTestId="gradebook-title" />
+    @if (_error is not null && _book is null)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="gradebook-error">
+            <div class="d-flex align-center flex-wrap gap-2">
+                <span>@_error</span>
+                <MudButton Variant="Variant.Outlined" Size="Size.Small" Color="Color.Error" StartIcon="@Icons.Material.Rounded.Refresh" OnClick="() => LoadAsync(_pageNo)"
+                           data-testid="gradebook-retry">@L["Common_Retry"]</MudButton>
+            </div>
+        </MudAlert>
+    }
+    else if (_book is null || !Viewport.Ready)
+    {
+        <LoadingState Lines="8" TestId="gradebook-loading" />
+    }
+    else
+    {
+        @if (_error is not null)
+        {
+            <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-3" data-testid="gradebook-error">
+                <div class="d-flex align-center flex-wrap gap-2">
+                    <span>@_error</span>
+                    <MudButton Variant="Variant.Outlined" Size="Size.Small" Color="Color.Error" OnClick="() => LoadAsync(_pageNo)" data-testid="gradebook-retry">@L["Common_Retry"]</MudButton>
+                </div>
+            </MudAlert>
+        }
+        @if (_book.State == GradebookStates.Locked)
+        {
+            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-3" data-testid="gradebook-locked">@L["Grd_Locked_Banner"]</MudAlert>
+        }
+        <SectionCard Flush="true" TestId="gradebook-card">
+            <div class="lms-gb-toolbar" role="toolbar" aria-label="@L["Grd_Toolbar"]">
+                <TermPicker Terms="_terms" Current="_book.TermId" CurrentName="@Culture.Pick(_book.TermNameAr, _book.TermNameEn)" OnPick="PickTermAsync" />
+                <WeightsChip Total="_book.WeightsTotal" />
+            </div>
+            @if (_book.Rows.Total == 0)
+            {
+                <EmptyState Title="@L["Grd_Empty_Students_Title"]" Text="@L["Grd_Empty_Students_Text"]" Icon="@Icons.Material.Rounded.GroupOff" TestId="gradebook-no-students">
+                    <MudButton Variant="Variant.Outlined" Href="@($"class-courses/{Id}/plan")" data-testid="gradebook-enrollment-link">@L["Grd_Empty_Students_Action"]</MudButton>
+                </EmptyState>
+            }
+            else if (_groups.Count == 0)
+            {
+                <EmptyState Title="@L["Grd_Empty_Items_Title"]" Text="@L["Grd_Empty_Items_Text"]" Icon="@Icons.Material.Rounded.PlaylistAdd" TestId="gradebook-no-items" />
+            }
+            else if (Viewport.IsPhone)
+            {
+                <StudentFirstList Groups="_groups" Rows="_book.Rows.Items" Places="_book.Config.DecimalPlaces" OnStudent="OpenStudentAsync" />
+            }
+            else
+            {
+                <GradebookGrid Groups="_groups" Rows="_book.Rows.Items" Places="_book.Config.DecimalPlaces" OnStudent="OpenStudentAsync" />
+            }
+            @if (_book.Rows.Total > _book.Rows.PageSize)
+            {
+                <div class="d-flex justify-center pa-3" data-testid="gradebook-paging">
+                    <MudPagination Count="PageCount" Selected="_pageNo" SelectedChanged="LoadAsync" aria-label="@L["Grd_Paging"]" />
+                </div>
+            }
+        </SectionCard>
+    }
+    <StudentDetailDrawer Open="_drawerOpen" OpenChanged="v => _drawerOpen = v" StudentName="@_drawerName" Data="_preview" Loading="_previewLoading" Failed="_previewFailed" />
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    [SupplyParameterFromQuery(Name = "termId")] public Guid? TermId { get; set; }
+
+    private GradebookDto? _book;
+    private IReadOnlyList<Lms.Shared.AcademicYears.TermDto> _terms = [];
+    private Guid? _loadedTerm;
+    private IReadOnlyList<CategoryGroup> _groups = [];
+    private string? _error;
+    private int _pageNo = 1;
+    private bool _drawerOpen, _previewLoading, _previewFailed;
+    private string _drawerName = "";
+    private StudentCourseGradesDto? _preview;
+
+    private int PageCount => _book is null ? 1 : (int)Math.Ceiling(_book.Rows.Total / (double)Math.Max(1, _book.Rows.PageSize));
+
+    private string? Subtitle
+    {
+        get
+        {
+            if (_book is null) return null;
+            var term = Culture.Pick(_book.TermNameAr, _book.TermNameEn);
+            var scale = _book.Config.ScaleNameAr is null && _book.Config.ScaleNameEn is null ? null : Culture.Pick(_book.Config.ScaleNameAr ?? "", _book.Config.ScaleNameEn ?? "");
+            return string.IsNullOrEmpty(scale) ? term : string.Format(Culture.Current, L["Grd_TermScale"].Value, term, scale);
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Viewport.Changed += OnViewportChanged;
+        await Viewport.EnsureAsync();
+        _terms = await UnitOf.TermsAsync(Id);
+        _loadedTerm = TermId;
+        await LoadAsync(1);
+    }
+
+    /// <summary>Another term in the address: a different gradebook, so its own page of students and a new edit session.</summary>
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_book is null || TermId == _loadedTerm) return;
+        _loadedTerm = TermId;
+        await LoadAsync(1);
+    }
+
+    private void PickTermAsync(Guid term) => Navigation.NavigateTo($"class-courses/{Id}/gradebook?termId={term}");
+
+    private void OnViewportChanged() => InvokeAsync(StateHasChanged);
+
+    private async Task LoadAsync(int page)
+    {
+        _pageNo = page;
+        _error = null;
+        try
+        {
+            var book = await Api.GetAsync(Id, new GradebookQuery(TermId, page, GradingLimits.GridPageSize));
+            _book = book;
+            // One stable list per loaded gradebook: the rows compare it by reference to skip re-rendering.
+            _groups = CategoryGroup.From(book.Categories, book.Items);
+        }
+        catch (Exception ex) when (ApiCalls.TryRedirect(ex, Navigation))
+        {
+            // The page is navigating away.
+        }
+        catch (Exception ex) when (ex is ApiProblemException or HttpRequestException)
+        {
+            _error = L["Api_Error"];
+        }
+    }
+
+    private async Task OpenStudentAsync(GradeRowDto row)
+    {
+        _drawerName = Culture.Pick(row.StudentNameAr, row.StudentNameEn);
+        _drawerOpen = true;
+        _preview = null;
+        _previewFailed = false;
+        _previewLoading = true;
+        try
+        {
+            _preview = await Api.GetStudentViewAsync(Id, row.StudentId, _book?.TermId);
+        }
+        catch (Exception ex) when (ApiCalls.TryRedirect(ex, Navigation))
+        {
+            // Navigating away.
+        }
+        catch (Exception ex) when (ex is ApiProblemException or HttpRequestException)
+        {
+            _previewFailed = true;
+        }
+        finally
+        {
+            _previewLoading = false;
+        }
+    }
+
+    public void Dispose() => Viewport.Changed -= OnViewportChanged;
+}

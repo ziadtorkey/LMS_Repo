@@ -1,0 +1,61 @@
+@using Lms.Shared.Grading
+@inject ICultureService Culture
+
+@* One score cell. Every state has a text form (the aria-label) as well as a look, so nothing relies on colour alone (spec 2.2). Read only here; editing is Task 25. *@
+<td class="cell @StateClass" role="gridcell" tabindex="@(Focusable ? 0 : -1)" aria-label="@Label" data-state="@Cell.State" data-testid="@($"cell-{StudentId}-{Item.Id}")">
+    @switch (Cell.State)
+    {
+        case GradeCellStates.Excused:
+            <span class="mini mini-muted">@L["Grd_Cell_ExcusedChip"]</span>
+            break;
+        case GradeCellStates.Empty:
+            <span aria-hidden="true">–</span>
+            break;
+        default:
+            <span dir="ltr">@GradeFormat.Points(Cell.Points)</span>
+            @if (Cell.State == GradeCellStates.Event)
+            {
+                <MudIcon Icon="@Icons.Material.Rounded.Assignment" Size="Size.Small" Class="src" aria-hidden="true" />
+            }
+            @if (Cell.State == GradeCellStates.NewerScoreExists)
+            {
+                <span class="mini mini-warn">@L["Grd_Cell_NewerChip"]</span>
+            }
+            break;
+    }
+</td>
+
+@code {
+    [Parameter, EditorRequired] public GradeCellDto Cell { get; set; } = default!;
+    [Parameter, EditorRequired] public GradeItemDto Item { get; set; } = default!;
+    [Parameter] public Guid StudentId { get; set; }
+
+    /// <summary>The one cell with tabindex 0 (the roving tabindex of the grid; the key model is Task 25).</summary>
+    [Parameter] public bool Focusable { get; set; }
+
+    private string StateClass => Cell.State switch
+    {
+        GradeCellStates.Override or GradeCellStates.NewerScoreExists => "override",
+        GradeCellStates.Excused => "excused",
+        _ => "",
+    };
+
+    private string Label
+    {
+        get
+        {
+            var points = GradeFormat.Points(Cell.Points);
+            var max = GradeFormat.Points(Item.MaxPoints);
+            var title = Culture.Pick(Item.TitleAr, Item.TitleEn);
+            return Cell.State switch
+            {
+                GradeCellStates.Event => string.Format(Culture.Current, L["Grd_Cell_FromEvent"].Value, points, max, title),
+                GradeCellStates.Override => string.Format(Culture.Current, L["Grd_Cell_Override"].Value, points, max, Cell.Reason),
+                GradeCellStates.NewerScoreExists => string.Format(Culture.Current, L["Grd_Cell_NewerScore"].Value, points, max),
+                GradeCellStates.Excused => L["Grd_Cell_Excused"].Value,
+                GradeCellStates.Empty => L["Grd_Cell_None"].Value,
+                _ => string.Format(Culture.Current, L["Grd_Cell_Manual"].Value, points, max),
+            };
+        }
+    }
+}

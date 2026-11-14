@@ -1,0 +1,72 @@
+@using Lms.Shared.Grading
+@inject ICultureService Culture
+
+@* One student row. It renders again only when its own row, the layout or the focusable flag changed, so one edit never re-renders sixty rows (spike S1). *@
+<tr data-testid="@($"grade-row-{Row.StudentId}")">
+    <th scope="row" class="lms-gb-student">
+        <MudButton Variant="Variant.Text" Size="Size.Small" Class="lms-gb-name" OnClick="() => OnStudent.InvokeAsync(Row)"
+                   data-testid="@($"student-{Row.StudentId}")">@Culture.Pick(Row.StudentNameAr, Row.StudentNameEn)</MudButton>
+        <span class="lms-muted" dir="ltr">@Row.StudentNumber</span>
+        @if (Row.IsWithdrawn)
+        {
+            <span class="mini mini-warn" data-testid="@($"withdrawn-{Row.StudentId}")">@GradeFormat.Withdrawn(L, Culture.Current, Row.WithdrawnOn)</span>
+        }
+    </th>
+    @{
+        var first = true;
+    }
+    @foreach (var group in Groups)
+    {
+        @foreach (var item in group.Items)
+        {
+            var cell = Row.Cells.FirstOrDefault(c => c.ItemId == item.Id) ?? new GradeCellDto(item.Id, null, GradeCellStates.Empty, null);
+            <GradeCell Cell="cell" Item="item" StudentId="Row.StudentId" Focusable="FirstRow && first" />
+            first = false;
+        }
+        var result = Row.CategoryResults.FirstOrDefault(r => r.CategoryId == group.Category.Id);
+        <td class="lms-gb-catres" data-testid="@($"catres-{Row.StudentId}-{group.Category.Id}")" dir="ltr">@GradeFormat.Percent(result?.Percent, Places)</td>
+    }
+    <td class="lms-gb-final" data-testid="@($"final-{Row.StudentId}")" dir="ltr" title="@L["Grd_Final_Title"]">@GradeFormat.Percent(Row.FinalPercent, Places)</td>
+    <td data-testid="@($"band-{Row.StudentId}")">
+        @if (Row.BandCode is not null)
+        {
+            <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@Culture.Pick(Row.BandLabelAr ?? Row.BandCode, Row.BandLabelEn ?? Row.BandCode)</MudChip>
+        }
+        else
+        {
+            <span aria-hidden="true">–</span>
+        }
+    </td>
+</tr>
+
+@code {
+    [Parameter, EditorRequired] public GradeRowDto Row { get; set; } = default!;
+    [Parameter, EditorRequired] public IReadOnlyList<CategoryGroup> Groups { get; set; } = [];
+    [Parameter] public int Places { get; set; } = 2;
+    [Parameter] public bool FirstRow { get; set; }
+    [Parameter] public EventCallback<GradeRowDto> OnStudent { get; set; }
+
+    private GradeRowDto? _row;
+    private IReadOnlyList<CategoryGroup>? _groups;
+    private int _places;
+    private bool _firstRow;
+
+    /// <summary>What the first render showed (the parameters are already set here), so the next parameter update compares against it.</summary>
+    protected override void OnInitialized() => Remember();
+
+    private void Remember()
+    {
+        _row = Row;
+        _groups = Groups;
+        _places = Places;
+        _firstRow = FirstRow;
+    }
+
+    /// <summary>Skips the render when nothing this row shows has changed (the grid hands every row the same stable objects).</summary>
+    protected override bool ShouldRender()
+    {
+        var changed = !ReferenceEquals(_row, Row) || !ReferenceEquals(_groups, Groups) || _places != Places || _firstRow != FirstRow;
+        Remember();
+        return changed;
+    }
+}
