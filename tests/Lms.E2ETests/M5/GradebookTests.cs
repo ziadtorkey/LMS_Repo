@@ -19,8 +19,12 @@ public sealed class GradebookTests(E2EFixture fixture) : M5TestBase(fixture)
         // UI (teacher): open the class course Gradebook tab; set category weights (Homework 40, Exams 60; the weights chip shows 100 and the
         // grid is valid); add a manual item "Quiz 1" (max 10) to Homework; enter 8 for student 1; open Publish, choose Now, confirm.
         // Assert: the cell shows 8; the publish result names 1 affected student; the item state is Published; direction is rtl/ltr per culture.
-        await Task.CompletedTask;
-        Assert.NotNull(culture);
+        var (world, _, names) = await StartWorldAsync(culture);
+        await using var teacher = await OpenTeacherAsync(culture);
+        await using var student = await OpenStudentAsync(world, names, culture);
+        // TODO(Task 42): the steps above, driven through GradebookPage / PublishItemsDialog / MyGradesPage / ChildGradesPage.
+        Assert.NotNull(teacher.Page);
+        Assert.NotNull(student.Page);
     }
 
     [Theory(Skip = NeedsGradebook)]
@@ -31,8 +35,12 @@ public sealed class GradebookTests(E2EFixture fixture) : M5TestBase(fixture)
         // Precondition: the item above is published. UI (student, second browser context): open My grades.
         // Assert: the course lists "Quiz 1" 8/10; the category and final percent equal the engine result over published items only;
         // the band and the band legend show as configured; no rank or class statistics anywhere; direction per culture.
-        await Task.CompletedTask;
-        Assert.NotNull(culture);
+        var (world, _, names) = await StartWorldAsync(culture);
+        await using var teacher = await OpenTeacherAsync(culture);
+        await using var student = await OpenStudentAsync(world, names, culture);
+        // TODO(Task 42): the steps above, driven through GradebookPage / PublishItemsDialog / MyGradesPage / ChildGradesPage.
+        Assert.NotNull(teacher.Page);
+        Assert.NotNull(student.Page);
     }
 
     [Theory(Skip = NeedsGradebook)]
@@ -42,8 +50,12 @@ public sealed class GradebookTests(E2EFixture fixture) : M5TestBase(fixture)
     {
         // UI (guardian): open the child's grades. Assert: the same item, points, category, final and band as the student sees;
         // the second guardian-less child's id in the URL answers the same not-found page as an unknown id.
-        await Task.CompletedTask;
-        Assert.NotNull(culture);
+        var (world, _, names) = await StartWorldAsync(culture);
+        await using var teacher = await OpenTeacherAsync(culture);
+        await using var student = await OpenStudentAsync(world, names, culture);
+        // TODO(Task 42): the steps above, driven through GradebookPage / PublishItemsDialog / MyGradesPage / ChildGradesPage.
+        Assert.NotNull(teacher.Page);
+        Assert.NotNull(student.Page);
     }
 
     [Theory(Skip = NeedsGradebook)]
@@ -55,8 +67,12 @@ public sealed class GradebookTests(E2EFixture fixture) : M5TestBase(fixture)
         // Assert as student and as guardian: the title marker and its score appear nowhere on the page (text search of the whole body);
         // the total is unchanged; the item count equals the published count; an API read (E2EApi GET /api/me/grades) holds no marker and no
         // hidden count; the staff "student view" preview shows exactly what the student sees. Mirrors docs/security/m5-review.md section 1.
-        await Task.CompletedTask;
-        Assert.NotNull(culture);
+        var (world, _, names) = await StartWorldAsync(culture);
+        await using var teacher = await OpenTeacherAsync(culture);
+        await using var student = await OpenStudentAsync(world, names, culture);
+        // TODO(Task 42): the steps above, driven through GradebookPage / PublishItemsDialog / MyGradesPage / ChildGradesPage.
+        Assert.NotNull(teacher.Page);
+        Assert.NotNull(student.Page);
     }
 
     [Theory(Skip = NeedsGradebook)]
@@ -67,8 +83,12 @@ public sealed class GradebookTests(E2EFixture fixture) : M5TestBase(fixture)
         // Set-up (API): a published quiz in the class course; the student takes and submits it (API or UI of the M4a demo).
         // UI (teacher): the gradebook shows an auto item for the quiz in state Hidden with the chip "stays hidden until you publish" (L3);
         // the student sees nothing yet; the teacher publishes it; the student then sees the quiz item and the updated total.
-        await Task.CompletedTask;
-        Assert.NotNull(culture);
+        var (world, _, names) = await StartWorldAsync(culture);
+        await using var teacher = await OpenTeacherAsync(culture);
+        await using var student = await OpenStudentAsync(world, names, culture);
+        // TODO(Task 42): the steps above, driven through GradebookPage / PublishItemsDialog / MyGradesPage / ChildGradesPage.
+        Assert.NotNull(teacher.Page);
+        Assert.NotNull(student.Page);
     }
 
     [Theory(Skip = NeedsGradebook)]
@@ -79,8 +99,12 @@ public sealed class GradebookTests(E2EFixture fixture) : M5TestBase(fixture)
         // Teacher schedules an item for a moment about 60 s ahead by the server clock (serverNowUtc). Before it: the student sees nothing.
         // Trigger the scheduled-publish job (dev trigger, as the quiz-close job in M4a) once the time has passed; poll the student page until the
         // item shows (no fixed sleep). Assert it appears exactly once and the guardian sees it too.
-        await Task.CompletedTask;
-        Assert.NotNull(culture);
+        var (world, _, names) = await StartWorldAsync(culture);
+        await using var teacher = await OpenTeacherAsync(culture);
+        await using var student = await OpenStudentAsync(world, names, culture);
+        // TODO(Task 42): the steps above, driven through GradebookPage / PublishItemsDialog / MyGradesPage / ChildGradesPage.
+        Assert.NotNull(teacher.Page);
+        Assert.NotNull(student.Page);
     }
 
     [Theory(Skip = NeedsGradebook)]
@@ -92,7 +116,11 @@ public sealed class GradebookTests(E2EFixture fixture) : M5TestBase(fixture)
         // editing; Esc cancels; Shift+F10 opens the cell menu; the focused cell is never under the sticky header/column (scroll-padding);
         // accessibility tree: each cell has a name (student, item) and state (Event, Manual, Override, Excused, Empty); saves announce in one polite
         // live region and a rejected value once, assertively. Direction per culture.
-        await Task.CompletedTask;
-        Assert.NotNull(culture);
+        var (world, _, names) = await StartWorldAsync(culture);
+        await using var teacher = await OpenTeacherAsync(culture);
+        await using var student = await OpenStudentAsync(world, names, culture);
+        // TODO(Task 42): the steps above, driven through GradebookPage / PublishItemsDialog / MyGradesPage / ChildGradesPage.
+        Assert.NotNull(teacher.Page);
+        Assert.NotNull(student.Page);
     }
 }

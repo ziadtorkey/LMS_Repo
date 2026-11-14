@@ -1,26 +1,19 @@
 using Lms.E2ETests.Infrastructure;
-using Microsoft.Playwright;
-using static Microsoft.Playwright.Assertions;
+using Lms.E2ETests.M4;
 
 namespace Lms.E2ETests.M5;
 
 /// <summary>
-/// Shared set-up of the M5 exit demos (plan #621 Tasks 42-44). Scaffold: the world builder (school, class course with a published
-/// blueprint, a teacher assigned and current, an enrolled student with a linked guardian, a quiz that produces a grade event) is added
-/// when the gradebook API and pages land; it goes through the API, like <c>M3Kit</c>/<c>M4Kit</c> do, and everything the demo asserts is
-/// driven through the UI.
+/// Shared set-up of the M5 exit demos (plan #621 Tasks 42-44). It reuses the M4a world (<see cref="AssessmentKit"/>: school, class course with a
+/// published lesson plan, the seeded teacher assigned, an enrolled student) and the session helpers of <see cref="M4TestBase"/> (a second browser
+/// context per role, the Org Admin acting as the grader until the E2E year is current for the seeded teacher, #455); M5 adds <see cref="M5Kit"/>.
 /// </summary>
-public abstract class M5TestBase : E2ETestBase
+public abstract class M5TestBase(E2EFixture fixture) : M4TestBase(fixture)
 {
-    /// <summary>Why the scenarios are skipped; update it (and remove it) as the features land.</summary>
+    /// <summary>Skip reason of the scenarios that need the whole gradebook (grid, entries, publishing, reads).</summary>
     protected const string NeedsGradebook =
-        "Needs the M5 gradebook: wave 1 contract (#625), engine and writer (Tasks 4-9), publishing (Task 11) and the FE pages (Tasks 22-27, 29, 39) on main";
+        "Needs the M5 gradebook: contract (#625), scales (#641), model and writer (#638), grid and publishing (Tasks 8, 11) and the FE pages (Tasks 24-27, 29, 39) on main";
 
-    protected M5TestBase(E2EFixture fixture) : base(fixture)
-    {
-        Assertions.SetDefaultExpectTimeout(30_000); // the WASM app takes ~11 s to boot on a cold page
-    }
-
-    protected async Task AssertDirectionAsync(IPage page, string culture) =>
-        Assert.Equal(culture == "ar" ? "rtl" : "ltr", await page.EvaluateAsync<string>("() => document.documentElement.dir"));
+    /// <summary>Skip reason of the scenarios that need only the gradebook tab shell and the grading scales.</summary>
+    protected const string NeedsShellAndScales = "Needs the gradebook tab (#630) and the grading scales API (#641, #625) on main";
 }
