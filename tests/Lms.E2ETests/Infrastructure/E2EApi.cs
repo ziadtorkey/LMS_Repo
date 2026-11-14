@@ -23,6 +23,32 @@ public sealed class E2EApi(IPage page, Uri baseUrl)
     /// <summary>The active assignment (context) id the app stored for this session, if any.</summary>
     public Task<string?> ActiveContextAsync() => page.EvaluateAsync<string?>("() => localStorage.getItem('lms.context')");
 
+    /// <summary>Sends a multipart form (file uploads) as the signed-in session.</summary>
+    public async Task<IAPIResponse> SendFormAsync(string method, string path, IReadOnlyDictionary<string, string> fields, string fileField, FilePayload file)
+    {
+        var form = page.Context.APIRequest.CreateFormData();
+        foreach (var (key, value) in fields)
+        {
+            form.Set(key, value);
+        }
+
+        form.Set(fileField, file);
+        var headers = new Dictionary<string, string> { ["Authorization"] = "Bearer " + await TokenAsync() };
+        var context = await ActiveContextAsync() ?? await SoleContextAsync(headers);
+        if (!string.IsNullOrEmpty(context))
+        {
+            headers["X-Lms-Context"] = context;
+        }
+
+        return await page.Context.APIRequest.FetchAsync(new Uri(baseUrl, path).ToString(), new APIRequestContextOptions
+        {
+            Method = method,
+            Headers = headers,
+            Multipart = form,
+            IgnoreHTTPSErrors = true,
+        });
+    }
+
     /// <param name="contextId">Context header to send: null = the page's active context, Guid.Empty = none.</param>
     public async Task<IAPIResponse> SendAsync(string method, string path, object? body = null, Guid? contextId = null)
     {
