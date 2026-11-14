@@ -1,0 +1,27 @@
+@using Lms.Shared.AcademicYears
+
+@* A year as a name and its status, with a lock for a closed one (M7 H1). The status is words and an icon, never a colour alone. *@
+<span class="lms-year-chip" data-testid="@TestId" data-status="@Status">
+    <bdi>@CultureText.Pick(NameAr, NameEn)</bdi>
+    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@ColorOf" Class="lms-status-chip">
+        @if (Status == AcademicYearStatuses.Closed)
+        {
+            <MudIcon Icon="@Icons.Material.Rounded.Lock" Size="Size.Small" Class="me-1" aria-hidden="true" />
+        }
+        @L[$"YearStatus_{Status}"]
+    </MudChip>
+</span>
+
+@code {
+    [Parameter, EditorRequired] public string NameAr { get; set; } = "";
+    [Parameter, EditorRequired] public string NameEn { get; set; } = "";
+    [Parameter, EditorRequired] public string Status { get; set; } = AcademicYearStatuses.Planned;
+    [Parameter] public string? TestId { get; set; }
+
+    private Color ColorOf => Status switch
+    {
+        AcademicYearStatuses.Active => Color.Success,
+        AcademicYearStatuses.Closed => Color.Default,
+        _ => Color.Info,
+    };
+}
