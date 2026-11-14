@@ -43,6 +43,12 @@ public sealed class ExceptionService(LmsDbContext db, IClientCalendar calendar, 
             return ExceptionCheck.Invalid(ProblemCodes.validation_failed);
         }
 
+        var today = await calendar.LocalTodayAsync(slot.OrganizationId, ct);
+        if (input.Date < today) // a lesson that already took place cannot be cancelled, moved or covered afterwards
+        {
+            return ExceptionCheck.Invalid(ProblemCodes.exception_date_invalid);
+        }
+
         if (input.Date.DayOfWeek != slot.Day || input.Date < term.StartDate || input.Date > term.EndDate
             || !await calendar.IsWorkingDayAsync(slot.OrgUnitId, input.Date, ct) || await calendar.IsHolidayAsync(slot.OrgUnitId, input.Date, ct)
             || await db.Set<TimetableException>().AnyAsync(e => e.SlotId == slot.Id && e.Date == input.Date && e.Id != existingId, ct))
@@ -72,13 +78,19 @@ public sealed class ExceptionService(LmsDbContext db, IClientCalendar calendar, 
             return ExceptionCheck.Invalid(ProblemCodes.exception_substitute_invalid);
         }
 
-        // Free in that period that day: no slot of theirs (not itself cancelled or moved away that date) and no other substitution in the same period.
-        var ownSlots = await db.Set<TimetableSlot>()
-            .Where(s => s.TeacherUserId == substitute && s.TermId == slot.TermId && s.Day == slot.Day && s.State == TimetableSlot.PublishedState)
+        // Free in that period that day, anywhere in the client (a teacher can also teach in a sibling school): no slot of theirs (not itself cancelled or moved away that
+        // date) and no other substitution in the same period.
+        // ISOLATION-BYPASS: the busy check must see slots in classes of sibling schools outside the caller scope; limited to the client, live published slots of one
+        // teacher in one term and weekday; only a yes or no (busy or not) leaves.
+        var ownSlots = await db.Set<TimetableSlot>().IgnoreQueryFilters()
+            .Where(s => !s.IsDeleted && s.OrganizationId == slot.OrganizationId && s.TeacherUserId == substitute && s.TermId == slot.TermId && s.Day == slot.Day
+                        && s.State == TimetableSlot.PublishedState)
             .Select(s => new { s.Id, s.PeriodId }).ToListAsync(ct);
         foreach (var own in ownSlots)
         {
-            var moved = await db.Set<TimetableException>().FirstOrDefaultAsync(e => e.SlotId == own.Id && e.Date == input.Date, ct);
+            // ISOLATION-BYPASS: the exception of one of those slots, same limits (client, live, one slot and date).
+            var moved = await db.Set<TimetableException>().IgnoreQueryFilters()
+                .FirstOrDefaultAsync(e => !e.IsDeleted && e.OrganizationId == slot.OrganizationId && e.SlotId == own.Id && e.Date == input.Date, ct);
             var period = moved?.Kind == TimetableException.MovedKind && moved.NewPeriodId is { } p ? p : own.PeriodId;
             if (moved?.Kind != TimetableException.CancelledKind && period == slot.PeriodId)
             {
@@ -86,10 +98,11 @@ public sealed class ExceptionService(LmsDbContext db, IClientCalendar calendar, 
             }
         }
 
+        // ISOLATION-BYPASS: another substitution of the same teacher in a sibling school, same limits; only a yes or no leaves.
         var busyAsSubstitute = await (
-            from e in db.Set<TimetableException>()
-            join s in db.Set<TimetableSlot>() on e.SlotId equals s.Id
-            where e.SubstituteUserId == substitute && e.Date == input.Date && s.PeriodId == slot.PeriodId && e.Id != existingId && e.SlotId != slot.Id
+            from e in db.Set<TimetableException>().IgnoreQueryFilters()
+            join s in db.Set<TimetableSlot>().IgnoreQueryFilters() on e.SlotId equals s.Id
+            where !e.IsDeleted && !s.IsDeleted && e.OrganizationId == slot.OrganizationId && e.SubstituteUserId == substitute && e.Date == input.Date && s.PeriodId == slot.PeriodId && e.Id != existingId && e.SlotId != slot.Id
             select e.Id).AnyAsync(ct);
         return busyAsSubstitute ? ExceptionCheck.Invalid(ProblemCodes.exception_substitute_invalid) : ExceptionCheck.Ok;
     }

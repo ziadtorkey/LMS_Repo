@@ -202,6 +202,61 @@ public sealed class ExceptionTests(LmsApiFactory factory)
     }
 
     [Fact]
+    public async Task A_substitute_assigned_in_a_sibling_school_still_sees_the_lesson_on_that_date()
+    {
+        var s = await SetUpAsync("TX11");
+        var other = await NewWorldAsync(factory, s.Tree.School2);
+        var covering = other.MathTeacher; // a teacher of the sibling school
+        var admin = s.Admin; // client root admin: sees both schools
+        var created = await PostAsync(s, new SaveTimetableExceptionRequest(s.Date, ExceptionKinds.Substitute, covering, null, null), admin);
+        Assert.Equal(HttpStatusCode.Created, created.StatusCode);
+        var inSchool2 = await AccessTestData.AssignAsync(factory, s.Tree, s.Tree.School2, BuiltInRoles.Teacher, covering);
+
+        var response = await SendAsync(factory, HttpMethod.Get, Routes.MyTimetable(s.Date.AddDays(-7), s.Date.AddDays(14)), inSchool2);
+        var view = (await response.Content.ReadFromJsonAsync<TimetableViewDto>(Web))!;
+
+        var card = Assert.Single(view.Cards, c => c.SlotId == s.Slot.Id); // the lesson of the other school, on the date only
+        Assert.Equal((s.Date, ExceptionKinds.Substitute), (card.Date, card.ExceptionKind));
+        await using var db = factory.CreateDbContext(TestCurrentContext.For(s.Tree.Org.Id, s.Tree.School2.Path)); // the scope of the covering teacher excludes the slot
+        Assert.False(await db.Set<TimetableSlot>().AnyAsync(x => x.Id == s.Slot.Id));
+        Assert.True(await new SubstituteRelationship(db).IsSubstituteOnAsync(s.Tree.Org.Id, s.Slot.Id, covering, s.Date, CancellationToken.None));
+        Assert.False(await new SubstituteRelationship(db).IsSubstituteOnAsync(s.Tree.Org.Id, s.Slot.Id, covering, s.Date.AddDays(7), CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task A_teacher_busy_in_a_sibling_school_cannot_be_the_substitute()
+    {
+        var s = await SetUpAsync("TX12");
+        var other = await NewWorldAsync(factory, s.Tree.School2);
+        var school1Admin = await AccessTestData.AssignAsync(factory, s.Tree, s.Tree.School1, BuiltInRoles.OrgAdmin, Guid.NewGuid());
+        var (_, busy) = await AddCourseWithTeacherAsync(factory, s.World.Unit, s.World.Class); // teaches in School1 too, so a School1 admin may pick them
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            // The same period (a period defined above both schools has one id) on the same Sunday in the sibling school.
+            var clash = new TimetableSlot(other.Class, other.Math.Id, s.World.Term.Id, busy, DayOfWeek.Sunday, s.World.First.Id, null); // one shared term (a year defined above both schools)
+            clash.Publish();
+            db.Add(clash);
+            await db.SaveChangesAsync();
+        }
+
+        var refused = await PostAsync(s, new SaveTimetableExceptionRequest(s.Date, ExceptionKinds.Substitute, busy, null, null), school1Admin);
+
+        Assert.True(refused.StatusCode == HttpStatusCode.BadRequest, refused.StatusCode + " " + await refused.Content.ReadAsStringAsync());
+        Assert.Equal((HttpStatusCode.BadRequest, ProblemCodes.exception_substitute_invalid), (refused.StatusCode, await CodeAsync(refused)));
+    }
+
+    [Fact]
+    public async Task A_past_date_takes_no_exception()
+    {
+        var s = await SetUpAsync("TX13");
+        var past = new DateOnly(2020, 1, 5); // a Sunday long gone; the slot weekday matches but the lesson already took place
+
+        var refused = await PostAsync(s, Cancel(past));
+
+        Assert.Equal((HttpStatusCode.BadRequest, ProblemCodes.exception_date_invalid), (refused.StatusCode, await CodeAsync(refused)));
+    }
+
+    [Fact]
     public async Task Substitute_rule_holds_only_on_the_exception_date_and_for_that_slot()
     {
         var s = await SetUpAsync("TX10");
@@ -212,9 +267,9 @@ public sealed class ExceptionTests(LmsApiFactory factory)
         await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
         var relationship = new SubstituteRelationship(db);
 
-        Assert.True(await relationship.IsSubstituteOnAsync(s.Slot.Id, free, s.Date, CancellationToken.None));
-        Assert.False(await relationship.IsSubstituteOnAsync(s.Slot.Id, free, s.Date.AddDays(7), CancellationToken.None)); // another date
-        Assert.False(await relationship.IsSubstituteOnAsync(s.Slot.Id, s.World.ScienceTeacher, s.Date, CancellationToken.None)); // another user
-        Assert.False(await relationship.IsSubstituteOnAsync(otherSlot.Id, free, s.Date, CancellationToken.None)); // another slot of the class
+        Assert.True(await relationship.IsSubstituteOnAsync(s.World.Unit.OrganizationId, s.Slot.Id, free, s.Date, CancellationToken.None));
+        Assert.False(await relationship.IsSubstituteOnAsync(s.World.Unit.OrganizationId, s.Slot.Id, free, s.Date.AddDays(7), CancellationToken.None)); // another date
+        Assert.False(await relationship.IsSubstituteOnAsync(s.World.Unit.OrganizationId, s.Slot.Id, s.World.ScienceTeacher, s.Date, CancellationToken.None)); // another user
+        Assert.False(await relationship.IsSubstituteOnAsync(s.World.Unit.OrganizationId, otherSlot.Id, free, s.Date, CancellationToken.None)); // another slot of the class
     }
 }

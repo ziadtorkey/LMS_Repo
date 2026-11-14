@@ -3,6 +3,7 @@ using Lms.Domain.Abstractions;
 using Lms.Domain.Classes;
 using Lms.Domain.People;
 using Lms.Domain.Timetable;
+using Lms.Infrastructure.Access;
 using Lms.Infrastructure.Persistence;
 using Lms.Infrastructure.Timetable;
 using Lms.Shared;
@@ -26,7 +27,7 @@ public static class TimetableViewEndpoints
     }
 
     private static async Task<IResult> MeAsync(
-        DateOnly? from, DateOnly? to, LmsDbContext db, ICurrentContext current, TimetableViewService views, CancellationToken ct)
+        DateOnly? from, DateOnly? to, LmsDbContext db, ICurrentContext current, TimetableViewService views, SubstituteRelationship substitutes, CancellationToken ct)
     {
         if (current.UserId is not { } me || current.OrganizationId is not { } organizationId)
         {
@@ -39,11 +40,12 @@ public static class TimetableViewEndpoints
         }
 
         var published = db.Set<TimetableSlot>().Where(s => s.State == TimetableSlot.PublishedState);
-        var substitutions = await db.Set<TimetableException>()
-            .Where(e => e.Kind == TimetableException.SubstituteKind && e.SubstituteUserId == me && e.Date >= from && e.Date <= to)
-            .Select(e => new { e.SlotId, e.Date }).ToListAsync(ct);
+        // The lessons one covers can be in another class or school of the client: read across the client, for the caller's own substitutions only.
+        var substitutions = await substitutes.SubstitutionsAsync(organizationId, me, from!.Value, to!.Value, ct);
         var substituteSlotIds = substitutions.Select(x => x.SlotId).Distinct().ToList();
-        var teacherSlots = await published.Where(s => s.TeacherUserId == me || substituteSlotIds.Contains(s.Id)).ToListAsync(ct);
+        var own = await published.Where(s => s.TeacherUserId == me).ToListAsync(ct);
+        var covered = await views.SubstitutedSlotsAsync(organizationId, substituteSlotIds, ct);
+        var teacherSlots = own.Concat(covered).DistinctBy(s => s.Id).ToList();
         // A lesson of someone else appears only on the date one substitutes on (L15): never on the other weeks of the slot.
         var onlyDates = teacherSlots.Where(s => s.TeacherUserId != me).ToDictionary(
             s => s.Id, s => (IReadOnlySet<DateOnly>)substitutions.Where(x => x.SlotId == s.Id).Select(x => x.Date).ToHashSet());
@@ -80,7 +82,7 @@ public static class TimetableViewEndpoints
         return Results.Ok(await views.BuildAsync(slots, from.Value, to!.Value, organizationId, null, ct));
     }
 
-    /// <summary>The published slots of the class the student is placed in on the first date of the range.</summary>
+    /// <summary>The published slots of the class the student is placed in on the first date of the range (a transfer inside the range shows the class of the first day for the whole range).</summary>
     private static async Task<List<TimetableSlot>> ClassSlotsAsync(LmsDbContext db, Guid studentId, DateOnly on, CancellationToken ct)
     {
         var classIds = db.Set<ClassStudent>()

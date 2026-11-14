@@ -59,7 +59,15 @@ public static class ExceptionEndpoints
 
         var exception = new TimetableException(slot, body.Date, body.Kind, body.SubstituteUserId, body.NewPeriodId, Note(body.Note));
         db.Add(exception);
-        await db.SaveChangesAsync(ct);
+        try
+        {
+            await db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException ex) when (ex.ToString().Contains("Duplicate entry", StringComparison.OrdinalIgnoreCase))
+        {
+            return ApiProblems.BadRequest(ProblemCodes.exception_date_invalid); // another request created the exception for this date first
+        }
+
         return Results.Created(Routes.TimetableSlotException(id, exception.Id), (await ToDtosAsync(db, [exception], ct))[0]);
     }
 

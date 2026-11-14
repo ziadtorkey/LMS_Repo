@@ -1,4 +1,5 @@
 using Lms.Domain.Abstractions;
+using Lms.Infrastructure.Access;
 using Lms.Domain.Classes;
 using Lms.Domain.Timetable;
 using Lms.Infrastructure.Configuration;
@@ -23,11 +24,17 @@ public sealed class TimetableViewService(LmsDbContext db, TimetableService timet
         IReadOnlyList<TimetableSlot> slots, DateOnly from, DateOnly to, Guid organizationId, IReadOnlyDictionary<Guid, IReadOnlySet<DateOnly>>? onlyDates, CancellationToken ct)
     {
         var slotIds = slots.Select(s => s.Id).ToList();
-        var exceptions = (await db.Set<TimetableException>().Where(e => slotIds.Contains(e.SlotId) && e.Date >= from && e.Date <= to).ToListAsync(ct))
+        // ISOLATION-BYPASS: the exceptions of a lesson one substitutes on sit in another school of the client; limited to the slots passed in (already the caller's own),
+        // the client, live rows and the date range.
+        var exceptions = (await db.Set<TimetableException>().IgnoreQueryFilters()
+                .Where(e => !e.IsDeleted && e.OrganizationId == organizationId && slotIds.Contains(e.SlotId) && e.Date >= from && e.Date <= to).ToListAsync(ct))
             .ToDictionary(e => (e.SlotId, e.Date));
         var dtos = (await timetable.ToDtosAsync(organizationId, slots, null, ct)).ToDictionary(d => d.Id);
         var classIds = slots.Select(s => s.ClassId).Distinct().ToList();
-        var classes = await db.Set<Class>().Where(c => classIds.Contains(c.Id)).ToDictionaryAsync(c => c.Id, ct);
+        // ISOLATION-BYPASS: a lesson one substitutes on sits in a class of another school of the client; the slots passed in are already limited to the caller (own,
+        // own class, own child or own substitution), so only the class names and ids of those slots are read, limited to the client and live rows.
+        var classes = await db.Set<Class>().IgnoreQueryFilters()
+            .Where(c => !c.IsDeleted && c.OrganizationId == organizationId && classIds.Contains(c.Id)).ToDictionaryAsync(c => c.Id, ct);
         var substituteIds = exceptions.Values.Where(e => e.SubstituteUserId != null).Select(e => e.SubstituteUserId!.Value).Distinct().ToList();
         var substituteNames = substituteIds.Count == 0
             ? []
@@ -78,12 +85,20 @@ public sealed class TimetableViewService(LmsDbContext db, TimetableService timet
         return new TimetableViewDto(from, to, days, periodRows, cards.OrderBy(c => c.Date).ThenBy(c => c.PeriodId).ToList(), clock.UtcNow);
     }
 
+    /// <summary>The published slots with these ids across the client: the lessons of the caller's own substitutions (see <see cref="Access.SubstituteRelationship"/>).</summary>
+    public async Task<List<TimetableSlot>> SubstitutedSlotsAsync(Guid organizationId, IReadOnlyCollection<Guid> slotIds, CancellationToken ct) =>
+        // ISOLATION-BYPASS: the slot a teacher covers is in another class or school of the client; limited to the ids of the caller's own substitutions, published and live.
+        await db.Set<TimetableSlot>().IgnoreQueryFilters()
+            .Where(s => !s.IsDeleted && s.OrganizationId == organizationId && s.State == TimetableSlot.PublishedState && slotIds.Contains(s.Id)).ToListAsync(ct);
+
     private async Task<IReadOnlyList<PeriodDto>> PeriodsAsync(IReadOnlyList<TimetableSlot> slots, List<TimetableCardDto> cards, CancellationToken ct)
     {
         var result = new Dictionary<Guid, PeriodDto>();
         foreach (var unitId in slots.Select(s => s.OrgUnitId).Distinct())
         {
-            var unit = await db.OrgUnits.SingleAsync(u => u.Id == unitId, ct);
+            // ISOLATION-BYPASS: the unit of a substituted lesson can be outside the caller's scope; only its periods are read, limited to the unit of a slot already
+            // passed in (the caller's own), live rows.
+            var unit = await db.OrgUnits.IgnoreQueryFilters().SingleAsync(u => !u.IsDeleted && u.Id == unitId, ct);
             var (rows, inheritedFrom) = await periods.EffectiveAsync(unit, ct);
             foreach (var p in rows)
             {
