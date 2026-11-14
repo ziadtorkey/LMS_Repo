@@ -5,8 +5,8 @@ using Microsoft.AspNetCore.DataProtection;
 
 namespace Lms.Infrastructure.Grading.Exchange;
 
-/// <summary>One row a preview accepted: the student and the points to write (rows with an error or no points are not in the token).</summary>
-public sealed record TokenRow(Guid StudentId, decimal Points);
+/// <summary>One row a preview accepted: the student, the points to write and the version of the entry the preview saw (null = no entry yet). An apply skips a row whose entry changed since, which also makes a replayed token harmless (rows already written no longer match).</summary>
+public sealed record TokenRow(Guid StudentId, decimal Points, int? EntryVersion);
 
 /// <summary>What a preview token carries: who may apply it, to which gradebook and item, for which file (SHA-256), and the accepted rows.</summary>
 public sealed record ImportTokenPayload(Guid UploaderUserId, Guid GradebookId, Guid ItemId, string FileSha256, IReadOnlyList<TokenRow> Rows);

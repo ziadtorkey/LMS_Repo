@@ -48,6 +48,8 @@ public sealed class GradeColumnExchange(
         var students = await ActiveStudentsAsync(classCourse, ct);
         var byCode = students.GroupBy(s => s.StudentCode, StringComparer.OrdinalIgnoreCase).ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
         var current = await PointsAsync(classCourse, item, students.Select(s => s.Id).ToList(), ct);
+        var versions = (await db.Set<GradeEntry>().Where(e => e.GradeItemId == item.Id).Select(e => new { e.StudentProfileId, e.Version }).ToListAsync(ct))
+            .ToDictionary(e => e.StudentProfileId, e => e.Version);
         var excused = await ExcusedAsync(item, ct);
         var seen = new HashSet<Guid>();
         var rows = new List<GradeImportRowDto>();
@@ -56,7 +58,7 @@ public sealed class GradeColumnExchange(
         foreach (var row in parsed.Rows)
         {
             var (error, student) = Check(row, item, byCode, excused, seen);
-            if (error == "unknown_student")
+            if (error == "unknown_student" && row.StudentNumber.Length <= GradeColumnImporter.MaxStudentNumberLength)
             {
                 unknown.Add(row.StudentNumber);
             }
@@ -65,13 +67,13 @@ public sealed class GradeColumnExchange(
             rows.Add(new GradeImportRowDto(row.Row, row.StudentNumber, row.Points, overwrites, error));
             if (error is null && row.Points is { } points && student is not null)
             {
-                tokenRows.Add(new TokenRow(student.Id, points));
+                tokenRows.Add(new TokenRow(student.Id, points, versions.TryGetValue(student.Id, out var version) ? version : null));
             }
         }
 
         var (token, expires) = tokens.Issue(new ImportTokenPayload(byUserId, item.GradebookId, item.Id, ImportPreviewToken.Sha256(file), tokenRows));
         await audit.WriteSecurityEventAsync(
-            "Grades.ImportPreviewed", byUserId, $"gradebook={item.GradebookId}; item={item.Id}; rows={rows.Count}; accepted={tokenRows.Count}", cancellationToken: ct);
+            "Grades.ImportPreviewed", byUserId, $"gradebook={item.GradebookId}; item={item.Id}; file={ImportPreviewToken.Sha256(file)}; rows={rows.Count}; accepted={tokenRows.Count}", cancellationToken: ct);
         return new GradeImportPreviewDto(
             token, expires, rows.Count, rows.Count(r => r.Overwrites), unknown.Distinct().ToList(),
             rows.Where(r => r.ErrorCode == ProblemCodes.grade_out_of_range).ToList(),
@@ -121,6 +123,13 @@ public sealed class GradeColumnExchange(
             }
 
             var entry = await db.Set<GradeEntry>().FirstOrDefaultAsync(e => e.GradeItemId == item.Id && e.StudentProfileId == row.StudentId, ct);
+            if ((entry?.Version) != row.EntryVersion)
+            {
+                // someone (or an earlier apply of this same token) changed this cell since the preview: never overwritten silently (L12)
+                skipped.Add(new GradeImportRowDto(0, row.StudentId.ToString("N"), row.Points, false, "changed_since_preview"));
+                continue;
+            }
+
             if (entry is null)
             {
                 entry = new GradeEntry(item, row.StudentId, byUserId, now);
@@ -133,7 +142,7 @@ public sealed class GradeColumnExchange(
 
         await db.SaveChangesAsync(ct);
         await audit.WriteSecurityEventAsync(
-            "Grades.ImportApplied", byUserId, $"gradebook={item.GradebookId}; item={item.Id}; written={written}; skipped={skipped.Count}", cancellationToken: ct);
+            "Grades.ImportApplied", byUserId, $"gradebook={item.GradebookId}; item={item.Id}; file={payload.FileSha256}; written={written}; skipped={skipped.Count}", cancellationToken: ct);
         return new GradeImportResultDto(written, skipped);
     }
 

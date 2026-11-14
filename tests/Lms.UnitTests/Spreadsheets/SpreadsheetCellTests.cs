@@ -136,6 +136,69 @@ public sealed class SpreadsheetCellTests
     }
 
     [Fact]
+    public void A_small_file_that_expands_hugely_is_refused()
+    {
+        // ~30 MB of spaces deflate to a few tens of KB: the upload is small, the inflated parts are not
+        var bomb = ReplacePart(Workbook(s => s.Cell(2, 1).Value = "S1"), "xl/worksheets/sheet1.xml", new string(' ', 30 * 1024 * 1024));
+
+        Assert.True(bomb.Length < 200_000, $"the test file is {bomb.Length} bytes");
+        Assert.Equal("not_xlsx", Read(bomb, max: 5 * 1024 * 1024).FileError);
+    }
+
+    [Fact]
+    public void A_single_part_with_a_huge_ratio_is_refused_even_under_the_total_cap()
+    {
+        var ratio = ReplacePart(Workbook(s => s.Cell(2, 1).Value = "S1"), "xl/worksheets/sheet1.xml", new string(' ', 8 * 1024 * 1024));
+
+        Assert.Equal("not_xlsx", Read(ratio).FileError); // 8 MB inflated from a few KB: ratio far above 100:1
+    }
+
+    [Fact]
+    public void Too_many_zip_entries_are_refused()
+    {
+        var bytes = Workbook(s => s.Cell(2, 1).Value = "S1");
+        for (var i = 0; i < GradeColumnImporter.MaxEntries + 1; i++)
+        {
+            bytes = AddPart(bytes, $"docProps/extra{i}.txt", [65]);
+        }
+
+        Assert.Equal("not_xlsx", Read(bytes).FileError);
+    }
+
+    [Fact]
+    public void A_long_student_number_is_a_row_error_and_is_never_echoed_and_a_huge_number_is_a_row_error()
+    {
+        var file = Read(Workbook(s =>
+        {
+            s.Cell(2, 1).Value = new string('9', 32_000); s.Cell(2, 2).Value = 5;
+            s.Cell(3, 1).Value = "S1"; s.Cell(3, 2).Value = 1e30;
+            s.Cell(4, 1).Value = new string('7', GradeColumnImporter.MaxStudentNumberLength); s.Cell(4, 2).Value = 2;
+        }));
+
+        Assert.Null(file.FileError);
+        Assert.Equal(("student_number_invalid", string.Empty), (file.Rows[0].ErrorCode, file.Rows[0].StudentNumber));
+        Assert.Equal(("points_not_a_number", null), (file.Rows[1].ErrorCode, file.Rows[1].Points)); // not an unreadable file
+        Assert.Null(file.Rows[2].ErrorCode); // exactly at the limit is fine
+    }
+
+    [Fact]
+    public void A_hidden_first_sheet_is_never_read()
+    {
+        using var workbook = new XLWorkbook();
+        var hidden = workbook.Worksheets.Add("Secret");
+        hidden.Cell(1, 1).Value = "StudentNumber"; hidden.Cell(1, 2).Value = "Points"; hidden.Cell(2, 1).Value = "HIDDEN"; hidden.Cell(2, 2).Value = 1;
+        hidden.Visibility = XLWorksheetVisibility.Hidden;
+        var visible = workbook.Worksheets.Add("Grades");
+        visible.Cell(1, 1).Value = "StudentNumber"; visible.Cell(1, 2).Value = "Points"; visible.Cell(2, 1).Value = "S1"; visible.Cell(2, 2).Value = 2;
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+
+        var file = Read(stream.ToArray());
+
+        Assert.Equal("S1", Assert.Single(file.Rows).StudentNumber);
+    }
+
+    [Fact]
     public void A_formula_cell_is_an_error_and_is_never_evaluated()
     {
         var file = Read(Workbook(s =>
@@ -162,7 +225,7 @@ public sealed class SpreadsheetCellTests
     public void The_preview_token_is_bound_expires_and_cannot_be_forged()
     {
         var tokens = new ImportPreviewToken(Microsoft.AspNetCore.DataProtection.DataProtectionProvider.Create("t10"));
-        var payload = new ImportTokenPayload(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), ImportPreviewToken.Sha256([1, 2, 3]), [new TokenRow(Guid.NewGuid(), 5)]);
+        var payload = new ImportTokenPayload(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), ImportPreviewToken.Sha256([1, 2, 3]), [new TokenRow(Guid.NewGuid(), 5, null)]);
 
         var (token, expires) = tokens.Issue(payload);
 
@@ -192,6 +255,30 @@ public sealed class SpreadsheetCellTests
 
             using var extra = zip.CreateEntry(name).Open();
             extra.Write(content);
+        }
+
+        return output.ToArray();
+    }
+
+    private static byte[] ReplacePart(byte[] xlsx, string name, string newContent)
+    {
+        using var output = new MemoryStream();
+        using (var zip = new ZipArchive(output, ZipArchiveMode.Create, leaveOpen: true))
+        using (var source = new ZipArchive(new MemoryStream(xlsx), ZipArchiveMode.Read))
+        {
+            foreach (var entry in source.Entries)
+            {
+                using var from = entry.Open();
+                using var to = zip.CreateEntry(entry.FullName, System.IO.Compression.CompressionLevel.SmallestSize).Open();
+                if (entry.FullName == name)
+                {
+                    to.Write(System.Text.Encoding.UTF8.GetBytes("<?xml version=\"1.0\"?><worksheet><sheetData/><!--" + newContent + "--></worksheet>"));
+                }
+                else
+                {
+                    from.CopyTo(to);
+                }
+            }
         }
 
         return output.ToArray();

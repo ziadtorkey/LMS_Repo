@@ -232,6 +232,64 @@ public sealed class GradeExchangeTests(LmsApiFactory factory)
     }
 
     [Fact]
+    public async Task A_token_cannot_be_applied_twice()
+    {
+        using var host = new GradebookGridHost(factory);
+        var w = await host.SeedAsync("GX12");
+        var item = await host.AddItemAsync(w, "Paper", 20);
+        var preview = await PreviewOkAsync(await PreviewAsync(host, w, w.Admin, item.Id, Sheet((Code(w, 0), 7d), (Code(w, 1), 8d))));
+
+        var first = (await (await ApplyAsync(host, w, w.Admin, item.Id, preview.Token)).Content.ReadFromJsonAsync<GradeImportResultDto>())!;
+        // a teacher corrects a grade after the first apply
+        var row = (await host.GridAsync(w)).Rows.Items.Single(r => r.StudentId == w.Students[0].Id);
+        await host.EntriesAsync(w, w.Students[0].Id, row.Version, new GradeEntryChange(item.Id, GradeEntryActions.Set, 12, null));
+        var second = (await (await ApplyAsync(host, w, w.Admin, item.Id, preview.Token)).Content.ReadFromJsonAsync<GradeImportResultDto>())!;
+
+        Assert.Equal(2, first.Written);
+        Assert.Equal(0, second.Written); // the replay overwrites nothing
+        Assert.All(second.Skipped, s => Assert.Equal("changed_since_preview", s.ErrorCode));
+        Assert.Equal(12m, GradebookGridHost.Cell((await host.GridAsync(w)).Rows.Items.Single(r => r.StudentId == w.Students[0].Id), item.Id).Points);
+    }
+
+    [Fact]
+    public async Task A_grade_edited_after_the_preview_is_not_overwritten()
+    {
+        using var host = new GradebookGridHost(factory);
+        var w = await host.SeedAsync("GX13");
+        var item = await host.AddItemAsync(w, "Paper", 20);
+        await host.EntriesAsync(w, w.Students[0].Id, 0, new GradeEntryChange(item.Id, GradeEntryActions.Set, 5, null));
+        var preview = await PreviewOkAsync(await PreviewAsync(host, w, w.Admin, item.Id, Sheet((Code(w, 0), 15d), (Code(w, 1), 9d), (Code(w, 2), 3d))));
+
+        // after the preview: student 0's grade is edited, and student 2 gets a first grade (an entry appears where the preview saw none)
+        var row = (await host.GridAsync(w)).Rows.Items.Single(r => r.StudentId == w.Students[0].Id);
+        await host.EntriesAsync(w, w.Students[0].Id, row.Version, new GradeEntryChange(item.Id, GradeEntryActions.Set, 6, null));
+        await host.EntriesAsync(w, w.Students[2].Id, 0, new GradeEntryChange(item.Id, GradeEntryActions.Set, 1, null));
+
+        var result = (await (await ApplyAsync(host, w, w.Admin, item.Id, preview.Token)).Content.ReadFromJsonAsync<GradeImportResultDto>())!;
+
+        Assert.Equal(1, result.Written); // only student 1, whose cell did not change
+        Assert.Equal(2, result.Skipped.Count(s => s.ErrorCode == "changed_since_preview"));
+        var grid = await host.GridAsync(w);
+        Assert.Equal(6m, GradebookGridHost.Cell(grid.Rows.Items.Single(r => r.StudentId == w.Students[0].Id), item.Id).Points);
+        Assert.Equal(1m, GradebookGridHost.Cell(grid.Rows.Items.Single(r => r.StudentId == w.Students[2].Id), item.Id).Points);
+        Assert.Equal(9m, GradebookGridHost.Cell(grid.Rows.Items.Single(r => r.StudentId == w.Students[1].Id), item.Id).Points);
+    }
+
+    [Fact]
+    public async Task A_long_student_number_never_comes_back_in_the_preview()
+    {
+        using var host = new GradebookGridHost(factory);
+        var w = await host.SeedAsync("GX14");
+        var item = await host.AddItemAsync(w, "Paper", 20);
+
+        var preview = await PreviewOkAsync(await PreviewAsync(host, w, w.Admin, item.Id, Sheet((new string('9', 5000), 5d), (Code(w, 0), 1e30 > 0 ? "1E+30" : null))));
+
+        Assert.Empty(preview.UnknownCodes);
+        Assert.Contains(preview.Errors, e => e.ErrorCode == "student_number_invalid" && e.StudentNumber.Length == 0);
+        Assert.Contains(preview.Errors, e => e.ErrorCode == "points_not_a_number" || e.ErrorCode == "points_not_a_number");
+    }
+
+    [Fact]
     public async Task Apply_revalidates_against_current_data()
     {
         using var host = new GradebookGridHost(factory);

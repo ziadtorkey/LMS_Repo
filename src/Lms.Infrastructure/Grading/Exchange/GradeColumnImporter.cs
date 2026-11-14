@@ -20,6 +20,15 @@ public static class GradeColumnImporter
 {
     public static readonly TimeSpan Budget = TimeSpan.FromSeconds(30);
 
+    /// <summary>Zip-bomb defence: the package may hold at most this many parts and this many bytes once inflated, and no part may inflate more than <see cref="MaxRatio"/> to 1 (checked by actually inflating, not by the sizes a header claims).</summary>
+    public const int MaxEntries = 100;
+
+    public const long MaxUncompressedBytes = 20L * 1024 * 1024;
+    public const int MaxRatio = 100;
+
+    /// <summary>A student number is at most this long (the real code length is far shorter); a longer cell is a row error, never echoed.</summary>
+    public const int MaxStudentNumberLength = 50;
+
     private static readonly string[] ForbiddenParts = ["vbaProject.bin", "xl/embeddings/", "xl/activeX/", "xl/macrosheets/"];
 
     public static ParsedGradeFile Read(Stream file, long maxBytes, CancellationToken ct)
@@ -40,7 +49,9 @@ public static class GradeColumnImporter
 
             file.Position = 0;
             using var workbook = new XLWorkbook(file);
-            var sheet = workbook.Worksheets.FirstOrDefault();
+            // the sheet named "Grades" (what the export writes), else the first visible sheet: a hidden first sheet is never read
+            var sheet = workbook.Worksheets.FirstOrDefault(w => w.Name.Equals("Grades", StringComparison.OrdinalIgnoreCase) && w.Visibility == XLWorksheetVisibility.Visible)
+                        ?? workbook.Worksheets.FirstOrDefault(w => w.Visibility == XLWorksheetVisibility.Visible);
             if (sheet is null)
             {
                 return Fail("empty");
@@ -117,6 +128,11 @@ public static class GradeColumnImporter
             return new ParsedGradeRow(row, number, null, "student_number_required");
         }
 
+        if (number.Length > MaxStudentNumberLength)
+        {
+            return new ParsedGradeRow(row, string.Empty, null, "student_number_invalid"); // refused, and never echoed back
+        }
+
         if (points.IsEmpty())
         {
             return new ParsedGradeRow(row, number, null, null);
@@ -124,7 +140,10 @@ public static class GradeColumnImporter
 
         if (points.DataType == XLDataType.Number)
         {
-            return new ParsedGradeRow(row, number, Convert.ToDecimal(points.GetDouble(), CultureInfo.InvariantCulture), null);
+            var raw = points.GetDouble();
+            return double.IsFinite(raw) && Math.Abs(raw) < 1e9
+                ? new ParsedGradeRow(row, number, Convert.ToDecimal(raw, CultureInfo.InvariantCulture), null)
+                : new ParsedGradeRow(row, number, null, "points_not_a_number"); // 1E+30 or NaN: a row error, not an unreadable file
         }
 
         var text = points.GetString().Trim().Replace(',', '.');
@@ -166,8 +185,45 @@ public static class GradeColumnImporter
             return false;
         }
 
+        if (names.Count > MaxEntries || IsBomb(zip))
+        {
+            return false;
+        }
+
         using var types = new StreamReader(zip.GetEntry("[Content_Types].xml")!.Open());
         return !types.ReadToEnd().Contains("macroEnabled", StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Inflates every part into nothing, counting bytes: refused when the total passes <see cref="MaxUncompressedBytes"/> or a part inflates more than
+    /// <see cref="MaxRatio"/> to 1 (a 450 KB upload can inflate to 150 MB). The count is of bytes really produced, so a header that understates its size does not help.
+    /// </summary>
+    private static bool IsBomb(ZipArchive zip)
+    {
+        long total = 0;
+        var buffer = new byte[81920];
+        foreach (var entry in zip.Entries)
+        {
+            long size = 0;
+            using var stream = entry.Open();
+            int read;
+            while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
+            {
+                size += read;
+                total += read;
+                if (total > MaxUncompressedBytes)
+                {
+                    return true;
+                }
+            }
+
+            if (size > 1024 * 1024 && entry.CompressedLength > 0 && size / entry.CompressedLength > MaxRatio)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static ParsedGradeFile Fail(string code) => new([], code);
