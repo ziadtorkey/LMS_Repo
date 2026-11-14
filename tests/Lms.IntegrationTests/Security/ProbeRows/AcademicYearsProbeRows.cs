@@ -42,6 +42,14 @@ public sealed class AcademicYearsProbeRows : IProbeRowModule
         new("terms delete", HttpMethod.Delete, Routes.TermPattern,
             async (w, _) => new ProbeRequest(Routes.Term(await NewTermAsync(w))),
             Expect(NoContent, NoContent, NotFound, Forbidden, NotFound, NoContent)),
+
+        // The term structure of a year (M5 Task 5, L8): read with AcademicYears.View, applied with AcademicYears.Update.
+        new("term structure get", HttpMethod.Get, Routes.AcademicYearTermStructurePattern,
+            async (w, _) => new ProbeRequest(Routes.AcademicYearTermStructure((await NewYearAsync(w)).YearId)),
+            Expect(Ok, Ok, NotFound, Ok, NotFound, Ok)),
+        new("term structure apply", HttpMethod.Put, Routes.AcademicYearTermStructurePattern,
+            async (w, _) => new ProbeRequest(Routes.AcademicYearTermStructure((await NewYearAsync(w)).YearId), new TermStructureDto(2, [])),
+            Expect(Ok, Ok, NotFound, Forbidden, NotFound, Ok)),
     ];
 
     internal static readonly DateOnly YearStart = new(2040, 9, 1);

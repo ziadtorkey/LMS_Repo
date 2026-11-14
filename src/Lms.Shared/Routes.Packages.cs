@@ -9,6 +9,8 @@ namespace Lms.Shared;
 //   POST   packages/{id}/module             Packages.Upload and Modules.Manage; Ready only (409 package_not_ready)
 //   POST   packages/{id}/launch             Packages.View; a student enrolled in the ClassCourse and IModuleAccess; ScormContent; host configured; staff 404
 //   POST   packages/{id}/preview            Packages.View; staff relationship; Ready only; a student is 403
+//   GET    packages/{id}/my-state           Packages.View; an enrolled student, module visible; staff 404 (D57 button choice)
+//   PUT    packages/{id}/grading-method     Modules.Manage on the ClassCourse; PlacementGuard; attached only (409 package_not_attached) (D57)
 //   POST   package-attempts/{id}/commit     Packages.View; the attempt's own student; InProgress; module visible; preview tokens refused
 //   POST   package-attempts/{id}/finish     same as commit
 public static partial class Routes
@@ -20,6 +22,8 @@ public static partial class Routes
     public const string PackageModulePattern = PackagePattern + "/module";
     public const string PackageLaunchPattern = PackagePattern + "/launch";
     public const string PackagePreviewPattern = PackagePattern + "/preview";
+    public const string PackageMyStatePattern = PackagePattern + "/my-state";
+    public const string PackageGradingMethodPattern = PackagePattern + "/grading-method";
 
     public const string PackageAttempts = "/api/package-attempts";
     public const string PackageAttemptCommitPattern = PackageAttempts + "/{id:guid}/commit";
@@ -31,6 +35,8 @@ public static partial class Routes
     public static string PackageModule(Guid id) => $"{Package(id)}/module";
     public static string PackageLaunch(Guid id) => $"{Package(id)}/launch";
     public static string PackagePreview(Guid id) => $"{Package(id)}/preview";
+    public static string PackageMyState(Guid id) => $"{Package(id)}/my-state";
+    public static string PackageGradingMethod(Guid id) => $"{Package(id)}/grading-method";
     public static string PackageAttemptCommit(Guid id) => $"{PackageAttempts}/{id}/commit";
     public static string PackageAttemptFinish(Guid id) => $"{PackageAttempts}/{id}/finish";
 }

@@ -1,0 +1,314 @@
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.Packages
+@using Lms.Shared.Authorization
+@using Lms.Shared.Packages
+@using Microsoft.JSInterop
+@implements IAsyncDisposable
+@inject IPackagePlayerApi Api
+@inject PermissionState PermState
+@inject TimeProvider Clock
+@inject IJSRuntime Js
+@inject PackageBridgeOptions BridgeOptions
+@inject NavigationManager Navigation
+
+@* The sandboxed package player (M4b Task 17, ADR 0005). Rules, all asserted by tests:
+   - the iframe is sandbox="allow-scripts" and nothing else (never allow-same-origin, top navigation, popups or forms), has a title,
+     referrerpolicy="no-referrer" and allow="" (no features); its src is the launch URL on the content origin and nothing from the
+     package is ever put into this page's DOM;
+   - the frame talks to this page only over one MessagePort (PackageBridge); the toolbar (Exit, Full screen) is outside the frame;
+   - a token is re-launched at 80 % of its life, swapping the frame only after the pending progress was flushed. *@
+@switch (_phase)
+{
+    case Phase.NotAvailable:
+        <EmptyState Icon="@Icons.Material.Rounded.SearchOff" Title="@L["Module_NotAvailableTitle"]" Text="@L["Module_NotAvailableText"]" TestId="package-not-available">
+            <MudLink Href="@($"class-courses/{ClassCourseId}")" data-testid="package-back">@L["Module_Back"]</MudLink>
+        </EmptyState>
+        break;
+    case Phase.NotReady:
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" data-testid="package-not-ready">@L["Package_NotReady"]</MudAlert>
+        break;
+    case Phase.HostNotConfigured:
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" data-testid="package-host-not-configured">@L["Package_HostNotConfigured"]</MudAlert>
+        break;
+    case Phase.FeatureOff:
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" data-testid="package-feature-off">@L["Package_FeatureOff"]</MudAlert>
+        break;
+    case Phase.Launching:
+        <LoadingState Lines="3" TestId="package-launching" />
+        break;
+    case Phase.Finished:
+        <PackageResultCard Completed="_attempt?.Completed ?? false" Score="@ScoreText(_attempt)" OnOpenAgain="StartAsync" />
+        break;
+    case Phase.Start:
+        <PackageStartCard Title="@Title" State="@State" Score="@ScoreText(_attempt)" CanStart="@(!IsStaff)" CanPreview="@(IsStaff && PermState.Has(Permissions.Packages.View))"
+                          OnStart="StartAsync" OnPreview="PreviewAsync" />
+        @if (_error is not null)
+        {
+            <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" role="alert" Class="mt-2" data-testid="package-error">@_error</MudAlert>
+        }
+        break;
+    default:
+        <div class="lms-player" @ref="_container" tabindex="-1" data-testid="package-player">
+            @if (_preview)
+            {
+                <div class="lms-preview-strip" data-testid="package-preview-banner"><MudIcon Icon="@Icons.Material.Rounded.Visibility" Size="Size.Small" aria-hidden="true" /> @L["Package_PreviewBanner"]</div>
+            }
+            <PackagePlayerToolbar Title="@Title" Preview="_preview" Status="_saveStatus" Fullscreen="_fullscreen" OnFullscreen="ToggleFullscreenAsync"
+                                  OnExit="ExitAsync" OnRetry="RetrySaveAsync" />
+            <div class="lms-player-stage">
+                @* The sandbox is allow-scripts only: with no allow-same-origin the package gets an opaque origin, with no allow-forms,
+                   allow-popups or allow-top-navigation it can neither submit, open windows nor navigate this page. *@
+                <iframe @key="_frameKey" @ref="_frame" class="lms-player-frame" src="@_url" sandbox="allow-scripts" allow="" referrerpolicy="no-referrer"
+                        title="@L["Package_FrameTitle", Title]" data-testid="package-frame"></iframe>
+                @if (_phase == Phase.Expired)
+                {
+                    <div class="lms-player-overlay" role="alert" data-testid="package-expired">
+                        <div>
+                            <MudText Typo="Typo.body1">@L["Package_Expired"]</MudText>
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ReloadAsync" data-testid="package-reload">@L["Package_Reload"]</MudButton>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+        break;
+}
+
+@code {
+    private enum Phase { Start, Launching, Running, Expired, Finished, NotReady, HostNotConfigured, FeatureOff, NotAvailable }
+
+    private Phase _phase = Phase.Start;
+    private ElementReference _container, _frame;
+    private PackageBridge? _bridge;
+    private ITimer? _timer;
+    private string? _url, _error;
+    private Guid _attemptId;
+    private bool _preview, _fullscreen, _needsBridge, _relaunching;
+    private int _frameKey;
+    private PackageAttemptDto? _attempt;
+    private PackageSaveStatus _saveStatus = PackageSaveStatus.Idle;
+    private DateTime _tokenServerNow, _tokenExpires;
+    private DateTimeOffset _tokenLoadedAt, _nextRelaunchAt;
+    private static readonly TimeSpan RelaunchBackoff = TimeSpan.FromSeconds(20);
+
+    /// <summary>The package of the module (<c>Content.RefId</c>).</summary>
+    [Parameter, EditorRequired] public Guid? PackageId { get; set; }
+    [Parameter, EditorRequired] public Guid ClassCourseId { get; set; }
+    [Parameter] public string Title { get; set; } = "";
+    /// <summary>The caller's completion state of the module (<c>CompletionStates</c>); InProgress offers Resume.</summary>
+    [Parameter] public string? State { get; set; }
+    /// <summary>Raised after the server judged a finished attempt: the page refreshes the module's completion.</summary>
+    [Parameter] public EventCallback OnFinished { get; set; }
+
+    /// <summary>Staff (Modules.Manage) preview; they get a 404 on a student launch.</summary>
+    private bool IsStaff => PermState.Has(Permissions.Modules.Manage);
+
+    private static string? ScoreText(PackageAttemptDto? attempt) =>
+        attempt is { ScoreRaw: { } raw, ScoreMax: { } max } ? $"{raw:0.##} / {max:0.##}" : null;
+
+    protected override void OnInitialized()
+    {
+        if (PackageId is null) _phase = Phase.NotAvailable;
+    }
+
+    // ---- launch -------------------------------------------------------------------------------------------------------------
+
+    private Task StartAsync() => LaunchAsync(preview: false);
+
+    private Task PreviewAsync() => LaunchAsync(preview: true);
+
+    private async Task LaunchAsync(bool preview)
+    {
+        if (PackageId is not { } id) return;
+        _error = null;
+        _phase = Phase.Launching;
+        _preview = preview;
+        try
+        {
+            if (preview)
+            {
+                var p = await Api.PreviewAsync(id);
+                SetToken(p.LaunchUrl, p.ServerNowUtc, p.TokenExpiresAtUtc);
+                _attemptId = Guid.Empty;
+            }
+            else
+            {
+                var l = await Api.LaunchAsync(id);
+                SetToken(l.LaunchUrl, l.ServerNowUtc, l.TokenExpiresAtUtc);
+                _attemptId = l.AttemptId;
+            }
+            await EnterRunningAsync();
+        }
+        catch (Exception ex) when (ex is ApiProblemException or HttpRequestException || ApiCalls.TryRedirect(ex, Navigation))
+        {
+            _phase = Phase.Start;
+            HandleLaunchFailure(ex);
+        }
+    }
+
+    private void HandleLaunchFailure(Exception ex)
+    {
+        switch (ex)
+        {
+            case ApiProblemException { Status: 404 }: _phase = Phase.NotAvailable; break;
+            case ApiProblemException { Code: "package_not_ready" }: _phase = Phase.NotReady; break;
+            case ApiProblemException { Code: "package_host_not_configured" }: _phase = Phase.HostNotConfigured; break;
+            case ApiProblemException { Code: "feature_disabled" }: _phase = Phase.FeatureOff; break;
+            case ApiProblemException problem: _error = ProblemText.For(problem, L); break;
+            case HttpRequestException: _error = L["Error_Generic"].Value; break;
+        }
+    }
+
+    private void SetToken(string url, DateTime serverNow, DateTime expires)
+    {
+        _url = url;
+        _tokenServerNow = serverNow;
+        _tokenExpires = expires;
+        _tokenLoadedAt = Clock.GetUtcNow();
+        _frameKey++;
+        _needsBridge = true;
+    }
+
+    private async Task EnterRunningAsync()
+    {
+        _phase = Phase.Running;
+        _saveStatus = PackageSaveStatus.Idle;
+        _timer ??= Clock.CreateTimer(_ => _ = InvokeAsync(TickAsync), null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+        await Task.CompletedTask;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // One bridge per frame: created after the frame element exists, so its load event is the one that hands over the port.
+        if (_needsBridge && _phase is Phase.Running or Phase.Expired)
+        {
+            _needsBridge = false;
+            await StartBridgeAsync();
+        }
+    }
+
+    private async Task StartBridgeAsync()
+    {
+        var old = _bridge;
+        _bridge = new PackageBridge(Js, Api, _attemptId, _preview, BridgeOptions, Clock);
+        _bridge.StatusChanged += OnSaveStatusChanged;
+        _bridge.FinishRequested += FinishAsync;
+        await _bridge.StartAsync(_frame);
+        if (old is not null) await old.DisposeAsync();
+    }
+
+    private void OnSaveStatusChanged()
+    {
+        _saveStatus = _bridge?.Status ?? PackageSaveStatus.Idle;
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    // ---- token life ---------------------------------------------------------------------------------------------------------
+
+    /// <summary>The server's clock now: its time when the token was issued plus the time elapsed here since.</summary>
+    private DateTime ServerNow => _tokenServerNow + (Clock.GetUtcNow() - _tokenLoadedAt);
+
+    private async Task TickAsync()
+    {
+        if (_phase != Phase.Running || _relaunching) return;
+        var now = ServerNow;
+        if (now >= _tokenExpires) { _phase = Phase.Expired; StateHasChanged(); return; }
+        // Re-launch at 80 % of the token's life (the same attempt), swapping the frame only after a flush. A preview just runs out.
+        if (!_preview && now >= _tokenServerNow + (_tokenExpires - _tokenServerNow) * 0.8 && Clock.GetUtcNow() >= _nextRelaunchAt) await RelaunchAsync(visible: false);
+    }
+
+    private Task ReloadAsync() => RelaunchAsync(visible: true);
+
+    private async Task RelaunchAsync(bool visible)
+    {
+        if (PackageId is not { } id || _relaunching) return;
+        _relaunching = true;
+        try
+        {
+            if (_bridge is not null)
+            {
+                await _bridge.FlushAsync(); // drain the port and wait for the server's answer first
+                // Progress that could not be saved must not be lost with the old frame: keep it, keep the save state (Retry), try later.
+                if (_bridge.HasPending || _bridge.Status == PackageSaveStatus.Failed)
+                {
+                    _nextRelaunchAt = Clock.GetUtcNow() + RelaunchBackoff;
+                    return;
+                }
+            }
+            if (_preview)
+            {
+                var p = await Api.PreviewAsync(id);
+                SetToken(p.LaunchUrl, p.ServerNowUtc, p.TokenExpiresAtUtc);
+            }
+            else
+            {
+                var l = await Api.LaunchAsync(id);
+                SetToken(l.LaunchUrl, l.ServerNowUtc, l.TokenExpiresAtUtc);
+            }
+            _phase = Phase.Running;
+        }
+        catch (Exception ex) when (ex is ApiProblemException or HttpRequestException)
+        {
+            _phase = visible ? Phase.Expired : _phase; // a silent re-launch that failed keeps the frame until the token really runs out
+            _nextRelaunchAt = Clock.GetUtcNow() + RelaunchBackoff; // and is not retried every second
+        }
+        finally
+        {
+            _relaunching = false;
+            StateHasChanged();
+        }
+    }
+
+    // ---- finish, retry, exit ------------------------------------------------------------------------------------------------
+
+    private async Task FinishAsync()
+    {
+        if (_bridge is null) return;
+        if (_preview) { await ExitAsync(); return; }
+        try
+        {
+            await _bridge.FlushAsync();
+            _attempt = await Api.FinishAsync(_attemptId, new PackageFinishRequest(_bridge.LastSeq));
+            await CloseFrameAsync();
+            _phase = Phase.Finished;
+            await OnFinished.InvokeAsync();
+        }
+        catch (Exception ex) when (ex is ApiProblemException or HttpRequestException)
+        {
+            _saveStatus = PackageSaveStatus.Failed;
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private Task RetrySaveAsync() => _bridge?.RetryAsync() ?? Task.CompletedTask;
+
+    private async Task ExitAsync()
+    {
+        if (_bridge is not null && !_preview) await _bridge.FlushAsync();
+        await CloseFrameAsync();
+        _phase = Phase.Start;
+    }
+
+    private async Task CloseFrameAsync()
+    {
+        _timer?.Dispose();
+        _timer = null;
+        if (_bridge is not null) { await _bridge.DisposeAsync(); _bridge = null; }
+        _url = null;
+        if (_fullscreen) await ToggleFullscreenAsync();
+    }
+
+    private async Task ToggleFullscreenAsync() =>
+        _fullscreen = await Js.InvokeAsync<bool>("lmsPackageFullscreen.toggle", _container);
+
+    public async ValueTask DisposeAsync()
+    {
+        _timer?.Dispose();
+        if (_bridge is not null) await _bridge.DisposeAsync();
+        if (_fullscreen)
+        {
+            try { await Js.InvokeVoidAsync("lmsPackageFullscreen.exit"); }
+            catch (JSDisconnectedException) { }
+        }
+    }
+}

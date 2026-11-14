@@ -2,6 +2,7 @@ using Lms.Domain.Abstractions;
 using Lms.Infrastructure.Access;
 using Lms.Infrastructure.AcademicYears;
 using Lms.Infrastructure.Auditing;
+using Lms.Infrastructure.Packages;
 using Lms.Infrastructure.Content;
 using Lms.Infrastructure.Enrollment;
 using Lms.Infrastructure.Files;
@@ -41,8 +42,17 @@ public static class DependencyInjection
         services.AddPeople();
         services.AddEnrollment();
         services.AddScoped<Lms.Domain.Grading.IGradeEvents, Lms.Infrastructure.Grading.GradeEventWriter>();
+        services.AddScoped<Lms.Infrastructure.Grading.Gradebooks.EventTermResolver>();
+        services.AddScoped<Lms.Domain.Grading.IGradebookWriter, Lms.Infrastructure.Grading.Gradebooks.GradebookWriter>();
+        services.AddScoped<Lms.Infrastructure.Grading.Gradebooks.GradebookItemsObserver>();
+        services.AddScoped<Lms.Domain.Grading.IGradeEventObserver>(sp => sp.GetRequiredService<Lms.Infrastructure.Grading.Gradebooks.GradebookItemsObserver>());
+        services.AddScoped<Lms.Infrastructure.Grading.Gradebooks.GradebookBackfill>();
+        services.AddScoped<Lms.Infrastructure.AcademicYears.ITermDependants, Lms.Infrastructure.Grading.Gradebooks.GradebookTermDependants>();
+        Lms.Infrastructure.Grading.Scales.GradingScalesServiceCollectionExtensions.AddGradingScales(services);
+        services.AddScoped<Lms.Domain.Grading.IScaleUsage, Lms.Infrastructure.Grading.Gradebooks.GradebookScaleUsage>(); // replaces the TryAdd default
         services.AddAcademic();
         services.AddContent();
+        services.AddPackages(configuration);
         services.AddExternalIdentity(configuration, environment);
         return services;
     }

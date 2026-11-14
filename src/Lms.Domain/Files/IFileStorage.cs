@@ -17,7 +17,11 @@ public interface IFileStorage
     /// <exception cref="StoredFileNotFoundException"/>
     Task<Uri> GetViewUrlAsync(Guid fileId, TimeSpan? ttl = null, CancellationToken cancellationToken = default);
 
-    /// <summary>The stored bytes (the caller disposes the stream). Used by background jobs that process uploads.</summary>
+    /// <summary>
+    /// The stored bytes (the caller disposes the stream, which also deletes a temp file when the object was large). Small objects come
+    /// back as a <see cref="MemoryStream"/>; larger ones as a seekable temp-file stream, so callers never assume the type.
+    /// Used by background jobs that process uploads.
+    /// </summary>
     /// <exception cref="StoredFileNotFoundException"/>
     Task<Stream> OpenReadAsync(Guid fileId, CancellationToken cancellationToken = default);
 

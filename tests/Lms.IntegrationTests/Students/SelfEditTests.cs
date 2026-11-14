@@ -10,9 +10,11 @@ namespace Lms.IntegrationTests.Students;
 
 /// <summary>M3 Task 22 (#230), D27: a student edits non-critical fields directly; critical ones need a request.</summary>
 [Collection(ApiCollection.Name)]
-public sealed class SelfEditTests
+public sealed class SelfEditTests : IDisposable
 {
     private readonly SelfServiceKit _kit;
+
+    public void Dispose() => _kit.Dispose();
 
     public SelfEditTests(LmsApiFactory factory) => _kit = new SelfServiceKit(factory, factory.WithWebHostBuilder(_ => { }));
 

@@ -1,11 +1,11 @@
 ---
 name: lms-ui
-description: Build or restyle LMS Blazor pages in the approved LMS design (brand green, light sidebar, Cairo/Inter, dense tables, ar RTL + en, light + dark). Use whenever you create or change a page, dialog or component under src/Lms.Client, or review an FE PR for design.
+description: Build or restyle LMS Blazor pages in the Stitch design system "Serene Academic Emerald" (emerald on a slate canvas, white cards with micro-shadows, Cairo headings, relaxed tables, filled inputs, pill tabs; ar RTL + en, light + dark). Use whenever you create or change a page, dialog or component under src/Lms.Client, or review an FE PR for design.
 ---
 
 # LMS UI
 
-The source of truth is `docs/DESIGN.md`; read it once. The reference pages are `Pages/Staff/StaffListPage.razor`, `Pages/Staff/StaffProfilePage.razor` and `Pages/Staff/EditStaffDialog.razor`. Copy their structure.
+The source of truth is `docs/DESIGN.md`, which follows the Stitch design system in `docs/design/stitch/` (#553); read both once. For a page that has a Stitch screen (`docs/design/stitch/<screen>/screen.png`), match that screen's layout. For the structure of other pages, copy `Pages/Staff/StaffListPage.razor`, `Pages/Staff/StaffProfilePage.razor` and `Pages/Staff/EditStaffDialog.razor`.
 
 ## Building a page
 
@@ -21,13 +21,14 @@ The source of truth is `docs/DESIGN.md`; read it once. The reference pages are `
 
 ## Rules
 
-- **Colours:** use `Color.*` or `var(--mud-palette-*)` only, never hex. The brand is green `#00663D` (dark mode `#4CC38A`).
-- **Type:** use `MudText Typo=...` only, with no inline font sizes or families. Cairo (ar) and Inter (en) come from the theme.
+- **Colours:** use `Color.*` or `var(--mud-palette-*)` only, never hex. The brand is emerald `#00663D` (dark mode `#4CC38A`). Vivid `--lms-accent` (`#10B981`) is for dots and indicators only, never text.
+- **Type:** use `MudText Typo=...` only, with no inline font sizes or families. The theme gives headings Cairo in both languages, and body text Cairo (ar) or Inter (en). Use sentence case; never uppercase, even where a Stitch mock does.
 - **Icons:** use `Icons.Material.Rounded.*`. Icon-only buttons need an `aria-label`. Mirror direction arrows in RTL (`lms-icon-flip`).
 - **Actions:** risky actions use `Variant.Text` with `Color.Warning` or `Color.Error`, and come last. Permissions decide whether an action is shown, not looks.
-- **Surfaces:** keep them flat. Don't use `Elevation` on page surfaces, and don't add new CSS files or UI libraries.
+- **Surfaces:** use `SectionCard`, which gives a 1 px border and a micro-shadow. Don't set `Elevation` on page surfaces, and don't add CSS files or UI libraries. For KPI rows use `lms-stats` / `lms-stat` (add `lms-stats-fixed` when there are only one to three tiles, so they don't stretch); for long settings forms, the sticky `lms-save-bar`; for card headers with an icon, `lms-section-icon`.
+- **Tables and inputs** pick up the Stitch look (52 px rows, recessed 40 px fields) from CSS. Keep the standard MudBlazor variants; don't restyle per page.
 - **Spacing:** use the MudBlazor classes (`mb-4`, `gap-2`) and logical CSS (`ms-`/`me-`, `inset-inline-*`).
-- **Owned files:** don't edit `Theme/`, `lms-theme.css` or `Components/Ui/` outside a `lane:ux` PR. Propose the change instead.
+- **Owned files:** don't edit `Theme/`, `lms-theme.css`, `lms-stitch.css` or `Components/Ui/` outside a `lane:ux` PR. Propose the change instead.
 
 ## M4b surfaces (live sessions, packages)
 
