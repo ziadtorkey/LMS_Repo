@@ -102,6 +102,38 @@ public sealed class AttendanceTakePageTests : StaffTestContext
     }
 
     [Fact]
+    public async Task A_session_of_the_local_day_is_not_future_at_01_00_in_Riyadh()
+    {
+        // 01:00 on 15 Nov in Riyadh is 22:00 UTC on 14 Nov: the session day (15 Nov, a client-zone day) must not look like the future.
+        var nowUtc = new DateTime(2026, 11, 14, 22, 0, 0, DateTimeKind.Utc);
+        _api.Mutate = data => data with { Session = data.Session with { Date = new DateOnly(2026, 11, 15), ServerNowUtc = nowUtc } };
+        var page = await RenderPageAsync(FakeAttendanceApi.SessionOpen);
+
+        Assert.Empty(page.FindAll("[data-testid=att-future]"));
+        Assert.False(page.Find(Status(Ahmed, "Present")).HasAttribute("disabled"));
+        await DisposeComponentsAsync();
+
+        // the day after is still the future
+        _api.Mutate = data => data with { Session = data.Session with { Date = new DateOnly(2026, 11, 16), ServerNowUtc = nowUtc } };
+        var future = await RenderPageAsync(FakeAttendanceApi.SessionOpen);
+        Assert.NotNull(future.Find("[data-testid=att-future]"));
+    }
+
+    [Fact]
+    public async Task Next_unmarked_moves_focus_to_the_first_unmarked_row()
+    {
+        var module = JSInterop.SetupModule("./js/attendance-keys.js");
+        module.Mode = JSRuntimeMode.Loose;
+        var page = await RenderPageAsync(FakeAttendanceApi.SessionOpen);
+        await page.InvokeAsync(() => page.Instance.OnDigit(Ahmed.ToString(), 1)); // the first row is marked: the second is the first unmarked
+
+        page.Find("[data-testid=att-next]").Click();
+
+        var call = module.Invocations["focusRow"].Last();
+        Assert.Equal(Mona.ToString(), call.Arguments[1]?.ToString());
+    }
+
+    [Fact]
     public async Task Reason_required_after_the_window()
     {
         var page = await RenderPageAsync(FakeAttendanceApi.SessionClosed, Permissions.Attendance.Take, Permissions.Attendance.Edit);
