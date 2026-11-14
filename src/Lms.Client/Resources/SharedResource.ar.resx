@@ -1487,6 +1487,29 @@
   <data name="Error_package_not_ready" xml:space="preserve"><value>الحزمة ليست جاهزة بعد. انتظر حتى ينتهي الفحص.</value></data>
   <data name="Error_package_not_attached" xml:space="preserve"><value>الحزمة غير مضافة إلى درس بعد، لذا لا يمكن تغيير طريقة احتساب الدرجة.</value></data>
   <data name="Error_package_commit_rejected" xml:space="preserve"><value>تعذّر حفظ تقدّمك لأن المحاولة مغلقة أو لم تُقبل البيانات.</value></data>
+  <data name="Error_package_host_not_configured" xml:space="preserve"><value>لم تُفعَّل الحزم على هذه المنصة بعد. تواصل مع مسؤول المنصة.</value></data>
+  <data name="Error_package_reason_unsafe_path" xml:space="preserve"><value>بعض الملفات في الحزمة تشير إلى خارجها. صدّر الحزمة من جديد.</value></data>
+  <data name="Error_package_reason_too_many_entries" xml:space="preserve"><value>تحتوي الحزمة على عدد كبير جدًا من الملفات.</value></data>
+  <data name="Error_package_reason_too_large" xml:space="preserve"><value>حجم الحزمة بعد فكّ الضغط أكبر من المسموح.</value></data>
+  <data name="Error_package_reason_compression_ratio" xml:space="preserve"><value>طريقة ضغط الحزمة غير آمنة. صدّرها من جديد.</value></data>
+  <data name="Error_package_reason_symlink" xml:space="preserve"><value>تحتوي الحزمة على روابط لملفات أخرى، وهذا غير مسموح.</value></data>
+  <data name="Error_package_reason_duplicate_name" xml:space="preserve"><value>يوجد ملفان بالاسم نفسه في الحزمة.</value></data>
+  <data name="Error_package_reason_bad_name_encoding" xml:space="preserve"><value>تعذّرت قراءة بعض أسماء الملفات. أعد تسميتها بحروف وأرقام بسيطة.</value></data>
+  <data name="Error_package_reason_executable" xml:space="preserve"><value>تحتوي الحزمة على برامج أو ملفات إضافات قديمة (مثل Flash)، وهذا غير مسموح.</value></data>
+  <data name="Error_package_reason_encrypted" xml:space="preserve"><value>الحزمة محمية بكلمة مرور. ارفعها دون كلمة مرور.</value></data>
+  <data name="Error_package_reason_nested_archive" xml:space="preserve"><value>تحتوي الحزمة على ملف مضغوط آخر بداخلها. ارفع الحزمة الداخلية بدلًا منها.</value></data>
+  <data name="Error_package_reason_manifest_invalid" xml:space="preserve"><value>هذه ليست حزمة SCORM أو H5P صالحة: ملف الوصف أو صفحة البداية مفقود أو تالف.</value></data>
+  <data name="Error_package_reason_xml_unsafe" xml:space="preserve"><value>يستخدم ملف وصف الحزمة خصائص غير مسموحة. صدّرها من جديد.</value></data>
+  <data name="Error_package_reason_multi_sco" xml:space="preserve"><value>تحتوي الحزمة على أكثر من وحدة تعلّم. صدّر كل وحدة في حزمة مستقلة.</value></data>
+  <data name="Error_package_reason_needs_nested_frames" xml:space="preserve"><value>تعرض الحزمة محتواها داخل إطارات، ولا يمكن تشغيلها بأمان هنا. صدّرها بمشغّل من صفحة واحدة إن كانت أداتك توفّر ذلك.</value></data>
+  <data name="Error_package_reason_needs_relaxed_policy" xml:space="preserve"><value>تحتاج الحزمة إلى خصائص في المتصفح غير مسموحة لأسباب أمنية.</value></data>
+  <data name="Error_package_reason_h5p_invalid" xml:space="preserve"><value>ملف H5P غير مكتمل أو يستخدم نوع محتوى غير مدعوم.</value></data>
+  <data name="Error_package_reason_validation_timeout" xml:space="preserve"><value>استغرق فحص الحزمة وقتًا طويلًا. حاول مرة أخرى أو ارفع حزمة أصغر.</value></data>
+  <data name="Error_package_reason_quota_exceeded" xml:space="preserve"><value>استُهلكت مساحة التخزين المخصصة للحزم في مدرستك. احذف حزمًا لم تعد تحتاجها أو تواصل مع المسؤول.</value></data>
+  <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>لم تجتز الحزمة الفحص الأمني.</value></data>
+  <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>الملف ليس أرشيف zip صالحًا. صدّر الحزمة من جديد.</value></data>
+  <data name="Error_package_reason_bad_name" xml:space="preserve"><value>بعض أسماء الملفات في الحزمة طويلة جدًا أو متداخلة بعمق أو محجوزة. أعد تسميتها وصدّر الحزمة من جديد.</value></data>
+  <data name="ClassPage_Homeroom" xml:space="preserve"><value>معلم الفصل</value></data>
   <data name="Assignment_AllowFiles" xml:space="preserve"><value>السماح برفع ملفات</value></data>
   <data name="Assignment_AllowText" xml:space="preserve"><value>السماح بنص مكتوب</value></data>
   <data name="Assignment_Attachments" xml:space="preserve"><value>المرفقات</value></data>
@@ -1580,28 +1603,6 @@
   <data name="Teacher_BulkResult" xml:space="preserve"><value>تم إنشاء {0} تعيينًا، وتخطي {1} (معيَّن بالفعل).</value></data>
   <data name="TeacherRole_Primary" xml:space="preserve"><value>أساسي</value></data>
   <data name="TeacherRole_Assistant" xml:space="preserve"><value>مساعد</value></data>
-  <data name="Error_package_host_not_configured" xml:space="preserve"><value>لم تُفعَّل الحزم على هذه المنصة بعد. تواصل مع مسؤول المنصة.</value></data>
-  <data name="Error_package_reason_unsafe_path" xml:space="preserve"><value>بعض الملفات في الحزمة تشير إلى خارجها. صدّر الحزمة من جديد.</value></data>
-  <data name="Error_package_reason_too_many_entries" xml:space="preserve"><value>تحتوي الحزمة على عدد كبير جدًا من الملفات.</value></data>
-  <data name="Error_package_reason_too_large" xml:space="preserve"><value>حجم الحزمة بعد فكّ الضغط أكبر من المسموح.</value></data>
-  <data name="Error_package_reason_compression_ratio" xml:space="preserve"><value>طريقة ضغط الحزمة غير آمنة. صدّرها من جديد.</value></data>
-  <data name="Error_package_reason_symlink" xml:space="preserve"><value>تحتوي الحزمة على روابط لملفات أخرى، وهذا غير مسموح.</value></data>
-  <data name="Error_package_reason_duplicate_name" xml:space="preserve"><value>يوجد ملفان بالاسم نفسه في الحزمة.</value></data>
-  <data name="Error_package_reason_bad_name_encoding" xml:space="preserve"><value>تعذّرت قراءة بعض أسماء الملفات. أعد تسميتها بحروف وأرقام بسيطة.</value></data>
-  <data name="Error_package_reason_executable" xml:space="preserve"><value>تحتوي الحزمة على برامج أو ملفات إضافات قديمة (مثل Flash)، وهذا غير مسموح.</value></data>
-  <data name="Error_package_reason_encrypted" xml:space="preserve"><value>الحزمة محمية بكلمة مرور. ارفعها دون كلمة مرور.</value></data>
-  <data name="Error_package_reason_nested_archive" xml:space="preserve"><value>تحتوي الحزمة على ملف مضغوط آخر بداخلها. ارفع الحزمة الداخلية بدلًا منها.</value></data>
-  <data name="Error_package_reason_manifest_invalid" xml:space="preserve"><value>هذه ليست حزمة SCORM أو H5P صالحة: ملف الوصف أو صفحة البداية مفقود أو تالف.</value></data>
-  <data name="Error_package_reason_xml_unsafe" xml:space="preserve"><value>يستخدم ملف وصف الحزمة خصائص غير مسموحة. صدّرها من جديد.</value></data>
-  <data name="Error_package_reason_multi_sco" xml:space="preserve"><value>تحتوي الحزمة على أكثر من وحدة تعلّم. صدّر كل وحدة في حزمة مستقلة.</value></data>
-  <data name="Error_package_reason_needs_nested_frames" xml:space="preserve"><value>تعرض الحزمة محتواها داخل إطارات، ولا يمكن تشغيلها بأمان هنا. صدّرها بمشغّل من صفحة واحدة إن كانت أداتك توفّر ذلك.</value></data>
-  <data name="Error_package_reason_needs_relaxed_policy" xml:space="preserve"><value>تحتاج الحزمة إلى خصائص في المتصفح غير مسموحة لأسباب أمنية.</value></data>
-  <data name="Error_package_reason_h5p_invalid" xml:space="preserve"><value>ملف H5P غير مكتمل أو يستخدم نوع محتوى غير مدعوم.</value></data>
-  <data name="Error_package_reason_validation_timeout" xml:space="preserve"><value>استغرق فحص الحزمة وقتًا طويلًا. حاول مرة أخرى أو ارفع حزمة أصغر.</value></data>
-  <data name="Error_package_reason_quota_exceeded" xml:space="preserve"><value>استُهلكت مساحة التخزين المخصصة للحزم في مدرستك. احذف حزمًا لم تعد تحتاجها أو تواصل مع المسؤول.</value></data>
-  <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>لم تجتز الحزمة الفحص الأمني.</value></data>
-  <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>الملف ليس أرشيف zip صالحًا. صدّر الحزمة من جديد.</value></data>
-  <data name="Error_package_reason_bad_name" xml:space="preserve"><value>بعض أسماء الملفات في الحزمة طويلة جدًا أو متداخلة بعمق أو محجوزة. أعد تسميتها وصدّر الحزمة من جديد.</value></data>
   <data name="ClassCourse_TabLive" xml:space="preserve"><value>الجلسات المباشرة</value></data>
   <data name="Live_Title" xml:space="preserve"><value>الجلسات المباشرة</value></data>
   <data name="Live_Subtitle" xml:space="preserve"><value>حصص عبر الإنترنت لهذا المقرر. ينضم الطلاب من الدرس.</value></data>

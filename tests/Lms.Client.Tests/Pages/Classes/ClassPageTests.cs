@@ -44,6 +44,19 @@ public sealed class ClassPageTests : ClassesTestContext
     }
 
     [Fact]
+    public async Task The_header_is_the_one_h1_with_the_code_chip_and_stat_tiles_from_the_class_numbers()
+    {
+        var page = await RenderPageAsync();
+        page.WaitForElement("[data-testid=class-stats]");
+
+        Assert.Single(page.FindAll("h1"));
+        Assert.Equal(Class.Code, page.Find("[data-testid=class-code]").TextContent.Trim());
+        Assert.Contains(Class.StudentCount.ToString(), page.Find("[data-testid=class-count]").TextContent);
+        Assert.Equal(Class.CourseCount.ToString(), page.Find("[data-testid=class-course-count]").TextContent.Trim());
+        Assert.NotEmpty(page.Find("[data-testid=class-homeroom]").TextContent.Trim()); // a name, or a dash
+    }
+
+    [Fact]
     public async Task Page_shows_the_class_header_and_tabs_without_a_timetable()
     {
         var page = await RenderPageAsync(Permissions.Classes.View, Permissions.TeacherAssignments.View);

@@ -123,3 +123,6 @@
     .lms-player-bar { justify-content: flex-end; }
     .lms-player-bar .lms-save-state { margin-inline-end: auto; white-space: normal; min-inline-size: 0; font-size: .75rem; }
 }
+
+/* A stat tile whose value is a name rather than a number (class page: homeroom teacher). */
+.lms-stat-text { font-size: 1.125rem; font-weight: 600; line-height: 1.4; overflow-wrap: anywhere; }

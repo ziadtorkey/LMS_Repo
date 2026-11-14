@@ -67,8 +67,6 @@
     [Parameter, EditorRequired] public ModuleFormModel Model { get; set; } = default!;
     /// <summary>Only the groups of this ClassCourse: the server rejects any other group (module_target_invalid).</summary>
     [Parameter] public IReadOnlyList<ModuleGroupOption> Groups { get; set; } = [];
-    /// <summary>The completion rules offered (default: the content-kind rules); activities pass <c>CompletionRules.ForActivity(kind)</c>.</summary>
-    [Parameter] public IReadOnlyList<string>? Rules { get; set; }
     [Parameter] public string? VisibilityError { get; set; }
     [Parameter] public string? TargetError { get; set; }
     /// <summary>The completion rules the module kind allows; null = the content rules (<c>CompletionRules.ForContent</c>).</summary>

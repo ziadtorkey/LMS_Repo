@@ -1494,6 +1494,22 @@
   <data name="Error_package_reason_compression_ratio" xml:space="preserve"><value>The package is compressed in an unsafe way. Export it again.</value></data>
   <data name="Error_package_reason_symlink" xml:space="preserve"><value>The package contains links to other files, which aren't allowed.</value></data>
   <data name="Error_package_reason_duplicate_name" xml:space="preserve"><value>Two files in the package have the same name.</value></data>
+  <data name="Error_package_reason_bad_name_encoding" xml:space="preserve"><value>Some file names can't be read. Rename them with plain letters and digits.</value></data>
+  <data name="Error_package_reason_executable" xml:space="preserve"><value>The package contains programs or old plug-in files (such as Flash), which aren't allowed.</value></data>
+  <data name="Error_package_reason_encrypted" xml:space="preserve"><value>The package is password-protected. Upload it without a password.</value></data>
+  <data name="Error_package_reason_nested_archive" xml:space="preserve"><value>The package has another .zip file inside it. Upload the inner package instead.</value></data>
+  <data name="Error_package_reason_manifest_invalid" xml:space="preserve"><value>This isn't a valid SCORM or H5P package: its description file or start page is missing or broken.</value></data>
+  <data name="Error_package_reason_xml_unsafe" xml:space="preserve"><value>The package's description file uses features that aren't allowed. Export it again.</value></data>
+  <data name="Error_package_reason_multi_sco" xml:space="preserve"><value>The package has more than one learning object. Export each one as its own package.</value></data>
+  <data name="Error_package_reason_needs_nested_frames" xml:space="preserve"><value>The package shows its content inside frames, which can't run safely here. Export it with a single-page player if your tool offers one.</value></data>
+  <data name="Error_package_reason_needs_relaxed_policy" xml:space="preserve"><value>The package needs browser features that aren't allowed for security reasons.</value></data>
+  <data name="Error_package_reason_h5p_invalid" xml:space="preserve"><value>This H5P file is incomplete or uses a content type we don't support.</value></data>
+  <data name="Error_package_reason_validation_timeout" xml:space="preserve"><value>Checking the package took too long. Try again, or upload a smaller package.</value></data>
+  <data name="Error_package_reason_quota_exceeded" xml:space="preserve"><value>Your school has used all its storage for packages. Delete packages you no longer need, or ask your administrator.</value></data>
+  <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>The package didn't pass the security check.</value></data>
+  <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>The file isn't a valid .zip archive. Export the package again.</value></data>
+  <data name="Error_package_reason_bad_name" xml:space="preserve"><value>Some file names in the package are too long, nested too deep or reserved. Rename them and export again.</value></data>
+  <data name="ClassPage_Homeroom" xml:space="preserve"><value>Homeroom teacher</value></data>
   <data name="Assignment_AllowFiles" xml:space="preserve"><value>Allow file uploads</value></data>
   <data name="Assignment_AllowText" xml:space="preserve"><value>Allow written text</value></data>
   <data name="Assignment_Attachments" xml:space="preserve"><value>Attachments</value></data>
@@ -1587,21 +1603,6 @@
   <data name="Teacher_BulkResult" xml:space="preserve"><value>{0} assignments created, {1} skipped (already assigned).</value></data>
   <data name="TeacherRole_Primary" xml:space="preserve"><value>Primary</value></data>
   <data name="TeacherRole_Assistant" xml:space="preserve"><value>Assistant</value></data>
-  <data name="Error_package_reason_bad_name_encoding" xml:space="preserve"><value>Some file names can't be read. Rename them with plain letters and digits.</value></data>
-  <data name="Error_package_reason_executable" xml:space="preserve"><value>The package contains programs or old plug-in files (such as Flash), which aren't allowed.</value></data>
-  <data name="Error_package_reason_encrypted" xml:space="preserve"><value>The package is password-protected. Upload it without a password.</value></data>
-  <data name="Error_package_reason_nested_archive" xml:space="preserve"><value>The package has another .zip file inside it. Upload the inner package instead.</value></data>
-  <data name="Error_package_reason_manifest_invalid" xml:space="preserve"><value>This isn't a valid SCORM or H5P package: its description file or start page is missing or broken.</value></data>
-  <data name="Error_package_reason_xml_unsafe" xml:space="preserve"><value>The package's description file uses features that aren't allowed. Export it again.</value></data>
-  <data name="Error_package_reason_multi_sco" xml:space="preserve"><value>The package has more than one learning object. Export each one as its own package.</value></data>
-  <data name="Error_package_reason_needs_nested_frames" xml:space="preserve"><value>The package shows its content inside frames, which can't run safely here. Export it with a single-page player if your tool offers one.</value></data>
-  <data name="Error_package_reason_needs_relaxed_policy" xml:space="preserve"><value>The package needs browser features that aren't allowed for security reasons.</value></data>
-  <data name="Error_package_reason_h5p_invalid" xml:space="preserve"><value>This H5P file is incomplete or uses a content type we don't support.</value></data>
-  <data name="Error_package_reason_validation_timeout" xml:space="preserve"><value>Checking the package took too long. Try again, or upload a smaller package.</value></data>
-  <data name="Error_package_reason_quota_exceeded" xml:space="preserve"><value>Your school has used all its storage for packages. Delete packages you no longer need, or ask your administrator.</value></data>
-  <data name="Error_package_reason_scan_failed" xml:space="preserve"><value>The package didn't pass the security check.</value></data>
-  <data name="Error_package_reason_invalid_archive" xml:space="preserve"><value>The file isn't a valid .zip archive. Export the package again.</value></data>
-  <data name="Error_package_reason_bad_name" xml:space="preserve"><value>Some file names in the package are too long, nested too deep or reserved. Rename them and export again.</value></data>
   <data name="ClassCourse_TabLive" xml:space="preserve"><value>Live sessions</value></data>
   <data name="Live_Title" xml:space="preserve"><value>Live sessions</value></data>
   <data name="Live_Subtitle" xml:space="preserve"><value>Online classes for this course. Students join from the lesson.</value></data>
