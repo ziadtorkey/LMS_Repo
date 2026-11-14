@@ -11,6 +11,7 @@ public static class EmailServiceCollectionExtensions
         services.Configure<EmailOptions>(o =>
         {
             var section = configuration.GetSection("Email");
+            o.Provider = section["Provider"] ?? o.Provider;
             o.SmtpHost = section["SmtpHost"] ?? o.SmtpHost;
             o.SmtpPort = int.TryParse(section["SmtpPort"], out var port) ? port : o.SmtpPort;
             o.From = section["From"] ?? o.From;
@@ -19,7 +20,15 @@ public static class EmailServiceCollectionExtensions
             o.UserName = section["UserName"];
             o.Password = section["Password"];
         });
-        services.AddSingleton<IEmailSender, SmtpEmailSender>();
+        var provider = configuration.GetSection("Email")["Provider"] ?? "Smtp";
+        if (!provider.Equals("Smtp", StringComparison.OrdinalIgnoreCase) && !provider.Equals("Log", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException($"Email:Provider '{provider}' is not known. Use Smtp or Log; a production relay needs its own adapter (D67).");
+        }
+
+        services.AddSingleton<IEmailSender>(sp => new GuardedEmailSender(provider.Equals("Log", StringComparison.OrdinalIgnoreCase)
+            ? ActivatorUtilities.CreateInstance<LogEmailSender>(sp)
+            : ActivatorUtilities.CreateInstance<SmtpEmailSender>(sp)));
         return services;
     }
 }
