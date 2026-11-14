@@ -69,9 +69,9 @@ public sealed class TimetableContractTests
     }
 
     [Fact]
-    public void Defaults_version_is_9()
+    public void Timetable_defaults_were_introduced_in_version_9()
     {
-        Assert.Equal(9, BuiltInRoleDefaults.CurrentVersion);
+        Assert.True(BuiltInRoleDefaults.CurrentVersion >= 9); // wave 3 bumps it to 10
         Assert.All(TimetablePermissions, p => Assert.Equal(9, BuiltInRoleDefaults.IntroducedIn(p)));
         Assert.Equal(TimetablePermissions.Order(StringComparer.Ordinal), BuiltInRoleDefaults.IntroducedInVersion9.Order(StringComparer.Ordinal));
     }

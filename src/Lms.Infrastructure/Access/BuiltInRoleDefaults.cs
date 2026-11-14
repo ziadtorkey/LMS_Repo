@@ -10,10 +10,11 @@ public static class BuiltInRoleDefaults
     /// defaults (Students.*, Courses.*, Blueprints.*, Classes.*, TeacherAssignments.*, Enrollment.*, Groups.*,
     /// LessonPlans.*); version 4 = the M4a wave 1 defaults (Modules.*); version 5 = the M4a wave 2 defaults
     /// (CourseAssignments.*, Quizzes.*, Library.*, Forums.*); version 6 = the M4b wave 3a defaults (LiveSessions.*);
-    /// version 7 = the M4b wave 3b defaults (Packages.*); version 8 = the M5 wave 1 defaults (Grades.*); version 9 = the M5 wave 2 defaults (Timetable.*). Bump (and add the new permissions to an
-    /// <see cref="IntroducedInVersion9"/>-style set) when a later milestone adds defaults.
+    /// version 7 = the M4b wave 3b defaults (Packages.*); version 8 = the M5 wave 1 defaults (Grades.*); version 9 = the M5 wave 2 defaults (Timetable.*);
+    /// version 10 = the M5 wave 3 defaults (Attendance.*, Excuses.*). Bump (and add the new permissions to an
+    /// <see cref="IntroducedInVersion10"/>-style set) when a later milestone adds defaults.
     /// </summary>
-    public const int CurrentVersion = 9;
+    public const int CurrentVersion = 10;
 
     /// <summary>The 19 permissions that existed when clients were provisioned under M0 (defaults version 0).</summary>
     public static readonly IReadOnlySet<string> M0Baseline = new HashSet<string>
@@ -103,6 +104,14 @@ public static class BuiltInRoleDefaults
         Permissions.Timetable.View, Permissions.Timetable.Manage, Permissions.Timetable.Configure, Permissions.Timetable.ViewOwn,
     };
 
+    // Merge order: wave 2 (version 9, Timetable.*) must reach main before wave 3 (version 10): the reconciler adds only permissions introduced after a role version.
+    /// <summary>Permissions introduced by defaults version 10 (M5 wave 3: attendance and excuses). Version 9 belongs to wave 2 (Timetable.*).</summary>
+    public static readonly IReadOnlySet<string> IntroducedInVersion10 = new HashSet<string>
+    {
+        Permissions.Attendance.Take, Permissions.Attendance.Edit, Permissions.Attendance.View, Permissions.Attendance.ViewOwn,
+        Permissions.Excuses.Submit, Permissions.Excuses.Review, Permissions.Excuses.Escalate,
+    };
+
     /// <summary>Permissions introduced by defaults version 8 (M5 wave 1: grading).</summary>
     public static readonly IReadOnlySet<string> IntroducedInVersion8 = new HashSet<string>
     {
@@ -119,7 +128,7 @@ public static class BuiltInRoleDefaults
     /// <summary>
     /// The defaults version that introduced <paramref name="permission"/>: 0 for the M0 baseline, 2 for the M2 set,
     /// 3 for the M3 set, 4 for the M4a wave 1 set, 5 for the M4a wave 2 set, 6 for the M4b wave 3a set, 7 for the M4b
-    /// wave 3b set, 8 for the M5 wave 1 set, 9 for the M5 wave 2 set, otherwise 1. The reconciler adds to a role only the defaults introduced after the role's version.
+    /// wave 3b set, 8 for the M5 wave 1 set, 9 for the M5 wave 2 set, 10 for the M5 wave 3 set, otherwise 1. The reconciler adds to a role only the defaults introduced after the role's version.
     /// </summary>
     public static int IntroducedIn(string permission) =>
         M0Baseline.Contains(permission) ? 0
@@ -131,6 +140,7 @@ public static class BuiltInRoleDefaults
         : IntroducedInVersion7.Contains(permission) ? 7
         : IntroducedInVersion9.Contains(permission) ? 9
         : IntroducedInVersion8.Contains(permission) ? 8
+        : IntroducedInVersion10.Contains(permission) ? 10
         : 1;
 
     /// <summary>

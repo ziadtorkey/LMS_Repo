@@ -47,6 +47,8 @@ public static class AuditCatalog
         "GradingScale", "WeightTemplate", "Gradebook", "GradeCategory", "GradeItem", "GradeEntry", "GradeSnapshot",
         // M5 wave 2: periods, timetable slots and their exceptions (publish, move, substitute are the audited changes).
         "Period", "TimetableSlot", "TimetableException",
+        // M5 wave 3: attendance edits and excuse decisions (the change history and the decisions are the audited changes).
+        "AttendanceRecordChange", "AbsenceExcuse",
     ];
 
     public static IReadOnlyList<string> SecurityEvents { get; } =
