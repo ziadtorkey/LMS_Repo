@@ -62,8 +62,8 @@ public sealed class LiveSessionsPageTests : LessonPlansTestContext
     /// <summary>Fills the title, the lesson and the date of a new session (the start time defaults to 10:00).</summary>
     private async Task FillBasicsAsync(string title = "Revision")
     {
-        Dialogs.Find("input[data-testid=live-title-ar]").Change(title + " ar");
-        Dialogs.Find("input[data-testid=live-title-en]").Change(title);
+        Dialogs.Find("input[data-testid=module-title-ar]").Change(title + " ar");
+        Dialogs.Find("input[data-testid=module-title-en]").Change(title);
         await ChooseAsync(SelectWithTestId(Dialogs, "live-lesson"), (Guid?)Lesson);
         var date = Dialogs.FindComponent<MudDatePicker>();
         await Dialogs.InvokeAsync(() => date.Instance.DateChanged.InvokeAsync(Now.Date.AddDays(1))); // Tuesday
@@ -173,7 +173,7 @@ public sealed class LiveSessionsPageTests : LessonPlansTestContext
         Dialogs.Find("[data-testid=scope-following] input").Change(true);
         Dialogs.Find("[data-testid=scope-continue]").Click();
         Dialogs.WaitForElement("[data-testid=live-save]", Wait);
-        Dialogs.Find("input[data-testid=live-title-en]").Change("New title");
+        Dialogs.Find("input[data-testid=module-title-en]").Change("New title");
         SaveButton.Click();
 
         page.WaitForAssertion(() => Assert.Contains($"update {first.Id} {SeriesEditScopes.ThisAndFollowing}", _live.Calls), Wait);

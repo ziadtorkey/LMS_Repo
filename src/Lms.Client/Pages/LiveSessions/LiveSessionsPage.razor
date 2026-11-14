@@ -33,6 +33,8 @@ else if (!PermState.Has(Permissions.LiveSessions.View) && !Staff)
 }
 else
 {
+    @* The spoken counterpart of the visible results: a polite live region (QA hook: live-announce). *@
+    <span class="lms-visually-hidden" role="status" aria-live="polite" aria-atomic="true" data-testid="live-announce">@_announcement</span>
     <PageHeader Title="@L["Live_Title"]" Subtitle="@L["Live_Subtitle"]" TitleTestId="live-title">
         <Actions>
             @if (Staff)
@@ -85,7 +87,7 @@ else
     private Dictionary<Guid, int> _seriesSizes = [];
     private Dictionary<Guid, string> _recordingUrls = [];
     private ProviderStatusDto? _provider;
-    private string? _error;
+    private string? _error, _announcement;
     private bool _loading = true, _upcoming = true;
 
     [Parameter] public Guid Id { get; set; }
@@ -189,8 +191,9 @@ else
         var dialog = await Dialogs.ShowAsync<LiveSessionDialog>(L["Live_DialogTitleNew"],
             new DialogParameters<LiveSessionDialog> { { x => x.ClassCourseId, Id }, { x => x.Lessons, _lessons } },
             new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
-        if (await dialog.Result is { Canceled: false })
+        if (await dialog.Result is { Canceled: false, Data: IReadOnlyList<LiveSessionDto> created })
         {
+            _announcement = created.Count > 1 ? L.Count("Live_Announce_SeriesScheduled", created.Count, Culture.IsRightToLeft) : L["Live_Announce_Scheduled"].Value;
             await LoadPlanAsync();
             await LoadAsync();
         }
@@ -215,7 +218,11 @@ else
         var dialog = await Dialogs.ShowAsync<LiveSessionDialog>(L["Live_DialogTitleEdit"],
             new DialogParameters<LiveSessionDialog> { { x => x.ClassCourseId, Id }, { x => x.Existing, full }, { x => x.Scope, scope }, { x => x.Lessons, _lessons } },
             new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
-        if (await dialog.Result is { Canceled: false }) await LoadAsync();
+        if (await dialog.Result is { Canceled: false })
+        {
+            _announcement = L["Live_Announce_Saved"];
+            await LoadAsync();
+        }
     }
 
     private async Task CancelAsync(LiveSessionListItemDto row)
@@ -231,7 +238,11 @@ else
         {
             return;
         }
-        if (await LiveErrorText.RunAsync(() => Live.DeleteAsync(full.Id, scope), Navigation, L, Culture.IsRightToLeft, m => _error = m)) await LoadAsync();
+        if (await LiveErrorText.RunAsync(() => Live.DeleteAsync(full.Id, scope), Navigation, L, Culture.IsRightToLeft, m => _error = m))
+        {
+            _announcement = L["Live_Announce_Cancelled"];
+            await LoadAsync();
+        }
     }
 
     private async Task<string?> AskScopeAsync(LiveSessionDto session, bool cancelling)
@@ -260,6 +271,10 @@ else
         var dialog = await Dialogs.ShowAsync<RecordingLinkDialog>(L["Live_RecordingTitle"],
             new DialogParameters<RecordingLinkDialog> { { x => x.Session, full } },
             new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
-        if (await dialog.Result is { Canceled: false }) await LoadAsync();
+        if (await dialog.Result is { Canceled: false })
+        {
+            _announcement = L["Live_Announce_RecordingSaved"];
+            await LoadAsync();
+        }
     }
 }

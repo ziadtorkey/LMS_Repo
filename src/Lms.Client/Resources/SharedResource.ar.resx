@@ -1739,6 +1739,14 @@
   <data name="Home_Recordings" xml:space="preserve"><value>تسجيلات حديثة</value></data>
   <data name="Live_InShort" xml:space="preserve"><value>بعد {0}</value></data>
   <data name="Live_JoinNow" xml:space="preserve"><value>انضم الآن</value></data>
+  <data name="Live_Announce_Scheduled" xml:space="preserve"><value>تمت جدولة الجلسة المباشرة</value></data>
+  <data name="Live_Announce_Saved" xml:space="preserve"><value>تم حفظ الجلسة المباشرة</value></data>
+  <data name="Live_Announce_Cancelled" xml:space="preserve"><value>تم إلغاء الجلسة المباشرة</value></data>
+  <data name="Live_Announce_RecordingSaved" xml:space="preserve"><value>تم حفظ رابط التسجيل</value></data>
+  <data name="Live_Announce_SeriesScheduled_One" xml:space="preserve"><value>تمت جدولة جلسة واحدة</value></data>
+  <data name="Live_Announce_SeriesScheduled_Two" xml:space="preserve"><value>تمت جدولة جلستين</value></data>
+  <data name="Live_Announce_SeriesScheduled_Few" xml:space="preserve"><value>تمت جدولة {0} جلسات</value></data>
+  <data name="Live_Announce_SeriesScheduled_Many" xml:space="preserve"><value>تمت جدولة {0} جلسة</value></data>
   <data name="Students_Subtitle" xml:space="preserve"><value>طلاب جهتك وفصولهم وأولياء أمورهم.</value></data>
   <data name="Students_EmptyTitle" xml:space="preserve"><value>لا يوجد طلاب مطابقون</value></data>
   <data name="Students_EmptyText" xml:space="preserve"><value>غيّر عوامل التصفية أو أضف طالبًا جديدًا.</value></data>
