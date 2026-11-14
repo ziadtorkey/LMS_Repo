@@ -79,4 +79,20 @@ public static class SettingKeys
     /// the ClassCourse's unit; changed only with <c>Settings.Update</c>.
     /// </summary>
     public static readonly SettingKey<bool> LiveCloudRecordingEnabled = new("Live.CloudRecordingEnabled", false);
+
+    // M5 wave 1 (M5 plan Task 1: L2, L8, D58, D62, D64).
+    /// <summary>The client's IANA time zone (client level, never overridden by a unit); <c>Asia/Riyadh</c> also when the setting is missing (D64).</summary>
+    public static readonly SettingKey<string> OrgTimeZone = new("Org.TimeZone", "Asia/Riyadh");
+
+    /// <summary>What the engine does with a missing score: <c>Normalise</c>, <c>Zero</c> or <c>HideUntilComplete</c> (D58).</summary>
+    public static readonly SettingKey<string> GradesMissingPolicy = new("Grades.MissingPolicy", "Normalise");
+
+    /// <summary>How a category's items combine: <c>PointsWeighted</c> or <c>PercentAverage</c> (D58).</summary>
+    public static readonly SettingKey<string> GradesCategoryMethod = new("Grades.CategoryMethod", "PointsWeighted");
+
+    /// <summary>Decimal places of computed grades (0-4).</summary>
+    public static readonly SettingKey<int> GradesDecimalPlaces = new("Grades.DecimalPlaces", 2);
+
+    /// <summary>Terms per academic year, 2 or 3 (client level, D62).</summary>
+    public static readonly SettingKey<int> AcademicYearsTermsPerYear = new("AcademicYears.TermsPerYear", 2);
 }

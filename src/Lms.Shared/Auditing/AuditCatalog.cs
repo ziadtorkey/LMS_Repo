@@ -43,6 +43,8 @@ public static class AuditCatalog
         "PackageUpload", "ScormPackage", "H5pContent",
         // M4b wave 3a: live sessions (participants and webhook receipts are not audited row by row: volume).
         "LiveSessionSeries", "LiveSession",
+        // M5 wave 1: grading (overrides, publish changes and scale acknowledgements are the audited changes).
+        "GradingScale", "WeightTemplate", "Gradebook", "GradeCategory", "GradeItem", "GradeEntry", "GradeSnapshot",
     ];
 
     public static IReadOnlyList<string> SecurityEvents { get; } =
