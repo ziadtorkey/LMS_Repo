@@ -1,13 +1,12 @@
 using Lms.Domain.Abstractions;
 using Lms.Infrastructure.Email;
-using Lms.Infrastructure.Sms;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Lms.UnitTests.Transport;
 
-/// <summary>The email and SMS providers are chosen by configuration only (D67, D68).</summary>
+/// <summary>The email provider is chosen by configuration only (D67).</summary>
 public sealed class TransportSelectionTests
 {
     private sealed class FixedClock : IClock
@@ -50,30 +49,6 @@ public sealed class TransportSelectionTests
 
         Assert.Contains("Email:Provider", thrown.Message);
         Assert.Contains("D67", thrown.Message);
-    }
-
-    [Fact]
-    public async Task Sms_provider_fake_is_the_default_behind_the_minor_guard()
-    {
-        using var sp = Build((s, c) => s.AddSms(c));
-
-        var provider = sp.GetRequiredService<ISmsProvider>();
-        await provider.SendAsync(new SmsMessage("+966501234567", SmsTemplates.GenericNotice, new Dictionary<string, string> { ["AppName"] = "LMS" }));
-
-        Assert.IsType<GuardedSmsProvider>(provider); // D72 backstop in front of the fake
-        Assert.Single(sp.GetRequiredService<FakeSmsProvider>().Sent);
-    }
-
-    [Theory]
-    [InlineData("Unifonic")]
-    [InlineData("Taqnyat")]
-    [InlineData("")]
-    public void An_sms_gateway_that_has_no_adapter_yet_stops_the_startup(string provider)
-    {
-        var thrown = Assert.Throws<InvalidOperationException>(() => Build((s, c) => s.AddSms(c), ("Sms:Provider", provider)));
-
-        Assert.Contains("Sms:Provider", thrown.Message);
-        Assert.Contains("D68", thrown.Message);
     }
 
     [Fact]

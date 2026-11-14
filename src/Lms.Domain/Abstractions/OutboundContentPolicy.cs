@@ -6,7 +6,7 @@ namespace Lms.Domain.Abstractions;
 public sealed class SensitiveContentException(string reason) : InvalidOperationException(reason);
 
 /// <summary>
-/// Defense in depth for outbound messages (D66: no student data or message text in SMS or push; notification emails stay generic). The primary rule is that
+/// Defense in depth for outbound messages (D66: no student data or message text in push; notification emails stay generic; D76: there is no SMS in v1). The primary rule is that
 /// notification messages are built from generic templates; this check refuses a message whose text still mentions a grade, a score, an attendance status or a
 /// percentage, so a template mistake fails loudly in tests and never reaches a provider. It is a deny list in English and Arabic, not a classifier: it cannot prove a
 /// text is safe, only catch the obvious leaks.

@@ -3,7 +3,6 @@ using System.Net.Sockets;
 using System.Text;
 using Lms.Domain.Abstractions;
 using Lms.Infrastructure.Email;
-using Lms.Infrastructure.Sms;
 using Lms.IntegrationTests.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -11,8 +10,8 @@ using Microsoft.Extensions.Options;
 namespace Lms.IntegrationTests.Transport;
 
 /// <summary>
-/// The email and SMS adapters inside the real host (M6 head start, D66-D68): the provider follows the configuration, the SMTP adapter speaks to an SMTP server like
-/// Mailpit, and a notification message with sensitive data never reaches the wire.
+/// The email adapters inside the real host (M6 head start, D66, D67, D76): the provider follows the configuration, the SMTP adapter speaks to an SMTP server like
+/// Mailpit, and a notification email with sensitive data never reaches the wire.
 /// </summary>
 [Collection(ApiCollection.Name)]
 public sealed class TransportAdapterTests(LmsApiFactory factory)
@@ -132,12 +131,11 @@ public sealed class TransportAdapterTests(LmsApiFactory factory)
     }
 
     [Fact]
-    public void The_host_default_is_the_guarded_smtp_adapter_and_the_fake_sms_provider()
+    public void The_host_default_is_the_guarded_smtp_adapter()
     {
         using var scope = factory.Services.CreateScope();
 
         Assert.IsType<GuardedEmailSender>(scope.ServiceProvider.GetRequiredService<IEmailSender>());
-        Assert.IsType<GuardedSmsProvider>(scope.ServiceProvider.GetRequiredService<ISmsProvider>());
     }
 
     [Fact]
@@ -152,20 +150,6 @@ public sealed class TransportAdapterTests(LmsApiFactory factory)
 
         await scope.ServiceProvider.GetRequiredService<IEmailSender>().SendAsync(new EmailMessage("a@b.c", "Hello", "<p>Hello</p>"));
 
-        var sms = scope.ServiceProvider.GetRequiredService<ISmsProvider>();
-        await sms.SendAsync(new SmsMessage("+966501234567", SmsTemplates.GenericNotice, new Dictionary<string, string> { ["AppName"] = "LMS" }, "ar"));
-        var sent = Assert.Single(scope.ServiceProvider.GetRequiredService<FakeSmsProvider>().Sent);
-        Assert.DoesNotContain("501234567", sent.Text);
-        Assert.Contains("LMS", sent.Text);
     }
 
-    [Fact]
-    public void A_host_configured_with_an_unknown_sms_gateway_does_not_start()
-    {
-        using var host = factory.WithWebHostBuilder(b => b.UseSetting("Sms:Provider", "Unifonic"));
-
-        var thrown = Assert.ThrowsAny<Exception>(() => host.Services);
-
-        Assert.Contains("Sms:Provider", thrown.ToString());
-    }
 }

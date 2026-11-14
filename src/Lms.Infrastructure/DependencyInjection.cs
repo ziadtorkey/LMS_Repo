@@ -7,7 +7,6 @@ using Lms.Infrastructure.Content;
 using Lms.Infrastructure.Enrollment;
 using Lms.Infrastructure.Files;
 using Lms.Infrastructure.Email;
-using Lms.Infrastructure.Sms;
 using Lms.Infrastructure.Identity;
 using Lms.Infrastructure.Identity.External;
 using Lms.Infrastructure.Configuration;
@@ -38,7 +37,6 @@ public static class DependencyInjection
         services.AddFileStorage(configuration);
         services.AddLmsIdentityStores();
         services.AddEmail(configuration);
-        services.AddSms(configuration);
         services.AddSettingsAndPolicies();
         services.AddAcademicYears();
         services.AddPeople();
