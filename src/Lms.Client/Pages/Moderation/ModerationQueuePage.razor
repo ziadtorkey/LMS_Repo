@@ -1,0 +1,278 @@
+@page "/moderation/messages"
+@attribute [Authorize]
+@using Lms.Client.Components.Messaging
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.Messaging
+@using Lms.Shared
+@using Lms.Shared.Authorization
+@using Lms.Shared.Messaging
+@inject IModerationApi Api
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+@* The moderation queue (M6 Task 29, FR-MSG-04, D66, D70, L16). The Org Admin sees the reported message with its frozen context (the messages around it) and nothing else
+   of the conversation: there is no link to the conversation and no way to read on. A report never names the reporter. Reading a report and opening an attachment are
+   audited by the server. A decision says what it does; restricting is the moderator tool (never a block). *@
+<PageTitle>@L["ModQueue_Title"]</PageTitle>
+@if (!PermState.Loaded)
+{
+    <LoadingState Lines="4" TestId="mod-loading" />
+}
+else if (!PermState.Has(Permissions.Messaging.Moderate))
+{
+    <Forbidden />
+}
+else
+{
+    <PageHeader Title="@L["ModQueue_Title"]" Subtitle="@L["ModQueue_Subtitle"]" TitleTestId="mod-title" />
+    @if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-3" data-testid="mod-error">@_error</MudAlert>
+    }
+    @if (_stats is { } stats)
+    {
+        <div class="lms-stats lms-stats-compact mb-3" data-testid="mod-stats">
+            <div class="lms-stat"><div><div class="lms-stat-label">@L["ModQueue_Open"]</div><div class="lms-stat-value" data-testid="mod-stat-open">@stats.Open</div></div></div>
+            <div class="lms-stat"><div><div class="lms-stat-label">@L["ModQueue_NewToday"]</div><div class="lms-stat-value">@stats.NewToday</div></div></div>
+            <div class="lms-stat"><div><div class="lms-stat-label">@L["ModQueue_Restricted"]</div><div class="lms-stat-value">@stats.Restricted</div></div></div>
+        </div>
+    }
+
+    <SectionCard Flush="true" TestId="mod-queue">
+        <div class="lms-filters" role="search" aria-label="@L["Common_Filters"]">
+            <div class="lms-filter">
+                <MudSelect T="string" Value="_status" ValueChanged="v => FilterAsync(v, _reason)" Label="@L["ModQueue_Status"]" Clearable="true" data-testid="mod-filter-status">
+                    @foreach (var s in ReportStatuses.All)
+                    {
+                        <MudSelectItem T="string" Value="s">@L[$"Msg_ReportStatus_{s}"]</MudSelectItem>
+                    }
+                </MudSelect>
+            </div>
+            <div class="lms-filter">
+                <MudSelect T="string" Value="_reason" ValueChanged="v => FilterAsync(_status, v)" Label="@L["ModQueue_Reason"]" Clearable="true" data-testid="mod-filter-reason">
+                    @foreach (var r in ReportReasons.All)
+                    {
+                        <MudSelectItem T="string" Value="r">@L[$"Msg_Reason_{r}"]</MudSelectItem>
+                    }
+                </MudSelect>
+            </div>
+            <MudButton Variant="Variant.Outlined" Size="Size.Small" OnClick="KeepSelectedAsync" Disabled="_picked.Count == 0 || _busy" data-testid="mod-keep-selected">
+                @string.Format(Culture.Current, L["ModQueue_KeepSelected"].Value, _picked.Count)
+            </MudButton>
+        </div>
+        @if (_loading)
+        {
+            <LoadingState Lines="4" TestId="mod-rows-loading" />
+        }
+        else if (_rows.Count == 0)
+        {
+            <EmptyState Title="@L["ModQueue_EmptyTitle"]" Text="@L["ModQueue_EmptyText"]" Icon="@Icons.Material.Rounded.Shield" TestId="mod-empty" />
+        }
+        else
+        {
+            <MudSimpleTable Elevation="0" Class="lms-simple-table lms-stack-table" data-testid="mod-table">
+                <thead><tr><th><span class="lms-visually-hidden">@L["ModQueue_Select"]</span></th><th>@L["ModQueue_Status"]</th><th>@L["ModQueue_Reason"]</th><th>@L["ModQueue_Sender"]</th><th>@L["ModQueue_Message"]</th><th>@L["ModQueue_Age"]</th></tr></thead>
+                <tbody>
+                    @foreach (var r in _rows)
+                    {
+                        var row = r;
+                        <tr class="@(row.Id == _current?.Id ? "lms-row-current" : null)" data-testid="@($"mod-row-{row.Id}")" data-safety="@row.IsSafety">
+                            <td data-label="@L["ModQueue_Select"]">
+                                <MudCheckBox T="bool" Value="_picked.Contains(row.Id)" ValueChanged="v => Pick(row.Id, v)" aria-label="@L["ModQueue_Select"]" data-testid="@($"mod-pick-{row.Id}")" />
+                            </td>
+                            <td data-label="@L["ModQueue_Status"]"><ReportStatusChip Status="StatusOf(row.Status)" SafetyConcern="row.IsSafety" TestId="@($"mod-status-{row.Id}")" /></td>
+                            <td data-label="@L["ModQueue_Reason"]">@L[$"Msg_Reason_{row.Reason}"]</td>
+                            <td data-label="@L["ModQueue_Sender"]"><bdi>@Culture.Pick(row.ReportedUserNameAr, row.ReportedUserNameEn)</bdi></td>
+                            <td data-label="@L["ModQueue_Message"]"><span class="lms-clamp">@row.Snippet</span></td>
+                            <td data-label="@L["ModQueue_Age"]"><span dir="ltr">@string.Format(Culture.Current, L["ModQueue_Hours"].Value, row.AgeHours)</span>
+                                <MudButton Size="Size.Small" OnClick="() => OpenAsync(row.Id)" data-testid="@($"mod-open-{row.Id}")">@L["ModQueue_Review"]</MudButton></td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        }
+    </SectionCard>
+
+    @if (_current is { } report)
+    {
+        <SectionCard Title="@L["ModQueue_Report"]" TestId="mod-detail">
+            <div class="d-flex flex-wrap gap-2 mb-2">
+                <ReportStatusChip Status="StatusOf(report.Status)" SafetyConcern="report.Reason == ReportReasons.SafetyConcern" />
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@L[$"Msg_Reason_{report.Reason}"]</MudChip>
+                @if (report.ReviewDueUtc is { } due)
+                {
+                    <span class="lms-muted" data-testid="mod-due">@L["ModQueue_ReviewDue"] <LocalTime Utc="due" /></span>
+                }
+            </div>
+            @if (!string.IsNullOrWhiteSpace(report.Note))
+            {
+                <MudText Typo="Typo.body2" Class="mb-2" data-testid="mod-note"><b>@L["ModQueue_ReporterNote"]:</b> @report.Note</MudText>
+            }
+            <MudText Typo="Typo.caption" Class="lms-muted d-block mb-2" data-testid="mod-sender">
+                @Culture.Pick(report.SenderSummary.NameAr, report.SenderSummary.NameEn) · @L[$"Rules_Role_{report.SenderSummary.RoleKey}"]
+                @if (report.SenderSummary.ClassNameEn is not null) { <span> · @Culture.Pick(report.SenderSummary.ClassNameAr ?? string.Empty, report.SenderSummary.ClassNameEn)</span> }
+                · @string.Format(Culture.Current, L["ModQueue_Prior"].Value, report.SenderSummary.PriorReports, report.SenderSummary.PriorRemovals)
+            </MudText>
+
+            <div class="lms-thread-body mb-3" style="max-block-size:none" role="log" aria-label="@L["ModQueue_Context"]" data-testid="mod-context">
+                @foreach (var m in report.Context)
+                {
+                    var message = m;
+                    @if (message.IsReported)
+                    {
+                        <ReportedMessage>
+                            <MessageBubble From="@Culture.Pick(message.SenderNameAr, message.SenderNameEn)" Text="@(message.Body ?? string.Empty)" TimeText="@Time(message.CreatedAtUtc)" TestId="@($"mod-msg-{message.MessageId}")">
+                                <Attachments>@Files(report, message)</Attachments>
+                            </MessageBubble>
+                        </ReportedMessage>
+                    }
+                    else
+                    {
+                        <MessageBubble From="@Culture.Pick(message.SenderNameAr, message.SenderNameEn)" Text="@(message.Body ?? string.Empty)" TimeText="@Time(message.CreatedAtUtc)" TestId="@($"mod-msg-{message.MessageId}")" />
+                    }
+                }
+            </div>
+            <MudText Typo="Typo.caption" Class="lms-muted d-block mb-3" data-testid="mod-frozen">@L["ModQueue_FrozenNote"]</MudText>
+
+            @if (report.Status is ReportStatuses.Dismissed or ReportStatuses.ActionTaken)
+            {
+                <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" data-testid="mod-resolved">@string.Format(Culture.Current, L["ModQueue_Resolved"].Value, L[$"Msg_Action_{report.Action}"].Value)</MudAlert>
+            }
+            else
+            {
+                <ModerationDecision SenderName="@Culture.Pick(report.SenderSummary.NameAr, report.SenderSummary.NameEn)" @bind-Value="_decision" @bind-Days="_days" />
+                <MudTextField T="string" @bind-Value="_noteToPeople" Label="@L["ModQueue_NoteToPeople"]" HelperText="@L["ModQueue_NoteToPeopleHelp"]" Lines="2" Immediate="true"
+                              MaxLength="ModerationLimits.NoteToPeopleMaxLength" Class="mt-3" data-testid="mod-note-to-people" />
+                <div class="mt-3">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ResolveAsync" Disabled="_decision is null || _busy" data-testid="mod-apply">@L["ModQueue_Apply"]</MudButton>
+                </div>
+            }
+        </SectionCard>
+    }
+
+    <SectionCard Title="@L["ModQueue_Restrictions"]" TestId="mod-restrictions">
+        @if (_restrictions.Count == 0)
+        {
+            <MudText Typo="Typo.body2" Class="lms-muted" data-testid="mod-no-restrictions">@L["ModQueue_NoRestrictions"]</MudText>
+        }
+        else
+        {
+            <ul class="lms-item-list">
+                @foreach (var x in _restrictions)
+                {
+                    var restriction = x;
+                    <li class="lms-item" data-testid="@($"mod-restriction-{restriction.UserId}")">
+                        <span class="lms-cell-strong"><bdi>@Culture.Pick(restriction.NameAr, restriction.NameEn)</bdi></span>
+                        <span class="lms-muted">@L["ModQueue_Until"] <LocalTime Utc="restriction.UntilUtc" /></span>
+                        <MudButton Size="Size.Small" Color="Color.Warning" OnClick="() => LiftAsync(restriction.UserId)" data-testid="@($"mod-lift-{restriction.UserId}")">@L["ModQueue_Lift"]</MudButton>
+                    </li>
+                }
+            </ul>
+        }
+    </SectionCard>
+}
+
+@code {
+    private IReadOnlyList<MessageReportListItemDto> _rows = [];
+    private IReadOnlyList<RestrictionDto> _restrictions = [];
+    private ModerationStatsDto? _stats;
+    private MessageReportDto? _current;
+    private readonly HashSet<Guid> _picked = [];
+    private ModerationAction? _decision;
+    private int _days = 7;
+    private string? _status, _reason, _noteToPeople, _error;
+    private bool _loading = true, _busy;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        if (!PermState.Has(Permissions.Messaging.Moderate)) return;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _error = null;
+        await ApiCalls.RunAsync(async () =>
+        {
+            _rows = (await Api.ListReportsAsync(new MessageReportQuery(_status, _reason))).Items;
+            _stats = await Api.GetStatsAsync();
+            _restrictions = (await Api.ListRestrictionsAsync()).Items;
+        }, Navigation, L, m => _error = m);
+        _loading = false;
+    }
+
+    private async Task FilterAsync(string? status, string? reason)
+    {
+        _status = status;
+        _reason = reason;
+        _picked.Clear();
+        await LoadAsync();
+    }
+
+    private static ReportStatus StatusOf(string status) => status switch
+    {
+        ReportStatuses.InReview => ReportStatus.InReview,
+        ReportStatuses.Dismissed => ReportStatus.Kept,
+        ReportStatuses.ActionTaken => ReportStatus.Removed,
+        _ => ReportStatus.New,
+    };
+
+    private void Pick(Guid id, bool on)
+    {
+        if (on) _picked.Add(id); else _picked.Remove(id);
+    }
+
+    private string Time(DateTime utc) => utc.ToString("HH:mm", System.Globalization.CultureInfo.InvariantCulture);
+
+    // The context carries attachment names only (no file id), so the page lists the names; opening one waits for the contract to say how a moderator addresses it.
+    private RenderFragment Files(MessageReportDto report, ReportContextMessageDto message) => __builder =>
+    {
+        @foreach (var name in message.AttachmentNames)
+        {
+            <div class="lms-attach"><MudIcon Icon="@Icons.Material.Rounded.AttachFile" Size="Size.Small" aria-hidden="true" /><span dir="ltr">@name</span></div>
+        }
+    };
+
+    private async Task OpenAsync(Guid id)
+    {
+        _decision = null;
+        _noteToPeople = null;
+        _days = 7;
+        await ApiCalls.RunAsync(async () => _current = await Api.GetReportAsync(id), Navigation, L, m => _error = m);
+        _rows = (await Api.ListReportsAsync(new MessageReportQuery(_status, _reason))).Items; // the first read moved it to in review
+    }
+
+    private static string ActionOf(ModerationAction action) => action.ToString();
+
+    private async Task ResolveAsync()
+    {
+        if (_current is null || _decision is not { } action) return;
+        _busy = true;
+        var restricting = ModerationActions.Restricting.Contains(ActionOf(action));
+        var ok = await ApiCalls.RunAsync(async () => _current = await Api.ResolveReportAsync(_current.Id, new ResolveReportRequest(ActionOf(action), restricting ? _days : null, string.IsNullOrWhiteSpace(_noteToPeople) ? null : _noteToPeople.Trim())),
+            Navigation, L, m => _error = m);
+        _busy = false;
+        if (!ok) return;
+        Snackbar.Add(L["Common_Saved"], Severity.Success);
+        await LoadAsync();
+    }
+
+    private async Task KeepSelectedAsync()
+    {
+        _busy = true;
+        var ok = await ApiCalls.RunAsync(() => Api.BulkDismissAsync(new BulkDismissRequest([.. _picked], null)), Navigation, L, m => _error = m);
+        _busy = false;
+        if (!ok) return;
+        _picked.Clear();
+        await LoadAsync();
+    }
+
+    private async Task LiftAsync(Guid userId)
+    {
+        await ApiCalls.RunAsync(() => Api.LiftRestrictionAsync(userId), Navigation, L, m => _error = m);
+        await LoadAsync();
+    }
+}

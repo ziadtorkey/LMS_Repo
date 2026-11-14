@@ -75,6 +75,7 @@ public static class ClientServices
             services.AddSingleton<Lms.Client.Services.Messaging.IMessagingApi, Lms.Client.Services.Messaging.FakeMessagingApi>();
             services.AddSingleton<Lms.Client.Services.Messaging.IAnnouncementsApi, Lms.Client.Services.Messaging.FakeAnnouncementsApi>();
             services.AddSingleton<Lms.Client.Services.Messaging.ICommsApi, Lms.Client.Services.Messaging.FakeCommsApi>();
+            services.AddSingleton<Lms.Client.Services.Messaging.IModerationApi>(_ => { var m = new Lms.Client.Services.Messaging.FakeModerationApi(); m.AddReport(Lms.Shared.Messaging.ReportReasons.SafetyConcern, "A worrying message", "Omar", 5); m.AddReport(Lms.Shared.Messaging.ReportReasons.Spam, "Buy now", "Layla", 30, true); return m; });
             services.AddSingleton<Lms.Client.Services.Messaging.IPushDevice, Lms.Client.Services.Messaging.FakePushDevice>();
             services.AddScoped<AuthenticationStateProvider, FakeAuthenticationStateProvider>();
             services.AddAuthorizationCore();
@@ -135,6 +136,7 @@ public static class ClientServices
         services.AddScoped<Lms.Client.Services.Messaging.IMessagingApi, Lms.Client.Services.Messaging.MessagingApi>();
         services.AddScoped<Lms.Client.Services.Messaging.IAnnouncementsApi, Lms.Client.Services.Messaging.AnnouncementsApi>();
         services.AddScoped<Lms.Client.Services.Messaging.ICommsApi, Lms.Client.Services.Messaging.CommsApi>();
+        services.AddScoped<Lms.Client.Services.Messaging.IModerationApi, Lms.Client.Services.Messaging.ModerationApi>();
         services.AddScoped<Lms.Client.Services.Messaging.IPushDevice, Lms.Client.Services.Messaging.PushDevice>();
     }
 }
