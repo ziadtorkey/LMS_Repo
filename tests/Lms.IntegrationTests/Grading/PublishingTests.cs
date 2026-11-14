@@ -6,6 +6,7 @@ using Lms.Domain.Classes;
 using Lms.Domain.Grading;
 using Lms.Domain.Notifications;
 using Lms.Domain.People;
+using Lms.Infrastructure.Grading.Publishing;
 using Lms.IntegrationTests.Enrollment;
 using Lms.IntegrationTests.Infrastructure;
 using Lms.IntegrationTests.People;
@@ -26,9 +27,9 @@ public sealed class PublishingTests(LmsApiFactory factory)
         GradebookGridHost Host, GradebookGridHost.World W, GradeItemDto A, GradeItemDto B, Guid StudentUser, Guid GuardianUser);
 
     /// <summary>Three students (the first with an account and a guardian account), two manual items; student 0 graded on both, student 1 on A only.</summary>
-    private async Task<Setup> SetupAsync(string name)
+    private async Task<Setup> SetupAsync(string name, Action<IServiceCollection>? configure = null)
     {
-        var host = new GradebookGridHost(factory);
+        var host = new GradebookGridHost(factory, configure);
         var w = await host.SeedAsync(name);
         var studentUser = (await PeopleTestKit.AddUserAsync(factory)).Id;
         var guardianUser = (await PeopleTestKit.AddUserAsync(factory)).Id;
@@ -281,6 +282,173 @@ public sealed class PublishingTests(LmsApiFactory factory)
         // publishing is visibility, not a grade write: a locked gradebook can still be published (lock, then release is the year-end flow)
         Assert.Equal(HttpStatusCode.OK, (await PublishAsync(s, Now(s.B.Id))).StatusCode);
         Assert.Equal(GradeItem.PublishedState, Assert.Single(await ItemsAsync(s.B.Id)).PublishState);
+
+        // hide after the lock follows the same rule, while grades and items stay locked
+        Assert.Equal(HttpStatusCode.OK, (await PublishAsync(s, new(new[] { s.B.Id }, PublishModes.Hide, null, false))).StatusCode);
+        Assert.Equal(GradeItem.HiddenState, Assert.Single(await ItemsAsync(s.B.Id)).PublishState);
+        var entry = await s.Host.PutEntriesAsync(s.W, s.W.Admin, s.W.Students[0].Id, 0, new GradeEntryChange(s.A.Id, GradeEntryActions.Set, 1, null));
+        Assert.Equal((HttpStatusCode.Conflict, "gradebook_locked"), (entry.StatusCode, await CodeAsync(entry)));
+        Assert.Equal(HttpStatusCode.Conflict, (await s.Host.SendAsync(s.W.Admin, HttpMethod.Post, s.Host.Url(s.W, "/items", s.W.Gb.First.Id),
+            new CreateGradeItemRequest(grid.Categories[0].Id, "ا", "A", 5))).StatusCode);
+        await using var check = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        Assert.DoesNotContain(await check.Set<GradeSnapshot>().Where(x => x.GradebookId == grid.Id).ToListAsync(), x => x.Kind == GradeSnapshot.LockKind); // no lock snapshot is touched or made here
+    }
+
+    [Fact]
+    public async Task A_closed_class_and_a_closed_year_can_still_be_published()
+    {
+        var s = await SetupAsync("PB12");
+        using var _h = s.Host;
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            (await db.Set<Class>().SingleAsync(c => c.Id == s.W.Gb.Class.Id)).SetStatus(Class.ClosedStatus);
+            await db.SaveChangesAsync();
+        }
+
+        // visibility is not a grade write: grades are refused in a closed class, publishing is not
+        Assert.Equal(HttpStatusCode.Conflict, (await s.Host.PutEntriesAsync(s.W, s.W.Admin, s.W.Students[0].Id, 0, new GradeEntryChange(s.A.Id, GradeEntryActions.Set, 1, null))).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await PublishAsync(s, Now(s.A.Id))).StatusCode);
+        Assert.Equal(GradeItem.PublishedState, Assert.Single(await ItemsAsync(s.A.Id)).PublishState);
+
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            var year = await db.Set<Lms.Domain.AcademicYears.AcademicYear>().SingleAsync(y => y.Id == s.W.Gb.Year.Id);
+            year.Close();
+            await db.SaveChangesAsync();
+        }
+
+        Assert.Equal(HttpStatusCode.OK, (await PublishAsync(s, Now(s.B.Id))).StatusCode);
+        // the scheduled job publishes there too
+        Assert.Equal(HttpStatusCode.OK, (await PublishAsync(s, new(new[] { s.B.Id }, PublishModes.Hide, null, false))).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await PublishAsync(s, new(new[] { s.B.Id }, PublishModes.Schedule, DateTime.UtcNow.AddMinutes(10), false))).StatusCode);
+        using var scope = new EngineScope(s.Host.Host.Services);
+        Assert.Equal(1, await scope.Services.GetRequiredService<Lms.Infrastructure.Grading.Publishing.ScheduledPublishJob>()
+            .ProcessAsync(s.W.Tree.Org.Id, DateTime.UtcNow.AddHours(1), default));
+    }
+
+    [Fact]
+    public async Task Two_runners_publishing_the_same_items_at_once_announce_them_once()
+    {
+        var s = await SetupAsync("PB13");
+        using var _h = s.Host;
+        await PublishAsync(s, new(new[] { s.A.Id, s.B.Id }, PublishModes.Schedule, DateTime.UtcNow.AddMinutes(30), false));
+        var later = DateTime.UtcNow.AddHours(1);
+
+        async Task<int> RunAsync()
+        {
+            using var scope = new EngineScope(s.Host.Host.Services);
+            return await scope.Services.GetRequiredService<Lms.Infrastructure.Grading.Publishing.ScheduledPublishJob>().ProcessAsync(s.W.Tree.Org.Id, later, default);
+        }
+
+        var runs = await Task.WhenAll(RunAsync(), RunAsync(), RunAsync());
+
+        Assert.Equal(2, runs.Sum()); // each item is published by exactly one runner
+        Assert.All(await ItemsAsync(s.A.Id, s.B.Id), i => Assert.Equal(GradeItem.PublishedState, i.PublishState));
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        Assert.Equal(2, await db.Set<GradeSnapshot>().CountAsync(x => x.OrganizationId == s.W.Tree.Org.Id)); // one per affected student, not one per runner
+        Assert.Single(await NoticesAsync(s.StudentUser));
+        Assert.Single(await NoticesAsync(s.GuardianUser));
+    }
+
+    [Fact]
+    public async Task A_publish_and_the_job_at_once_do_not_double_announce()
+    {
+        var s = await SetupAsync("PB14");
+        using var _h = s.Host;
+        await PublishAsync(s, new(new[] { s.A.Id }, PublishModes.Schedule, DateTime.UtcNow.AddMinutes(30), false));
+
+        var job = Task.Run(async () =>
+        {
+            using var scope = new EngineScope(s.Host.Host.Services);
+            return await scope.Services.GetRequiredService<Lms.Infrastructure.Grading.Publishing.ScheduledPublishJob>()
+                .ProcessAsync(s.W.Tree.Org.Id, DateTime.UtcNow.AddHours(1), default);
+        });
+        var manual = PublishAsync(s, Now(s.A.Id));
+        await Task.WhenAll(job, manual);
+
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        Assert.Equal(2, await db.Set<GradeSnapshot>().CountAsync(x => x.OrganizationId == s.W.Tree.Org.Id));
+        Assert.Single(await NoticesAsync(s.StudentUser));
+    }
+
+    [Fact]
+    public async Task A_failing_notice_never_undoes_the_publish_and_the_snapshots_are_in_the_same_commit()
+    {
+        var s = await SetupAsync("PB15", services => services.AddScoped<GradePublishedNotifier, ThrowingNotifier>());
+        using var _h = s.Host;
+
+        var response = await PublishAsync(s, Now(s.A.Id, s.B.Id));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var result = (await response.Content.ReadFromJsonAsync<PublishResultDto>())!;
+        Assert.Equal((2, 2, 0), (result.ItemsChanged, result.AffectedStudents, result.NotificationsQueued)); // nobody was told, but the grades are out
+        Assert.All(await ItemsAsync(s.A.Id, s.B.Id), i => Assert.Equal(GradeItem.PublishedState, i.PublishState));
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        Assert.Equal(2, await db.Set<GradeSnapshot>().CountAsync(x => x.OrganizationId == s.W.Tree.Org.Id));
+        Assert.Empty(await NoticesAsync(s.StudentUser));
+    }
+
+    [Fact]
+    public async Task A_student_who_left_the_course_gets_no_snapshot_and_neither_notice_nor_guardian_notice()
+    {
+        var s = await SetupAsync("PB16");
+        using var _h = s.Host;
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            foreach (var e in db.Set<Lms.Domain.Enrollment.CourseEnrollment>().Where(e => e.StudentId == s.W.Students[0].Id))
+            {
+                e.Drop(new DateOnly(2026, 10, 5), "left");
+            }
+
+            await db.SaveChangesAsync();
+        }
+
+        var result = (await (await PublishAsync(s, Now(s.A.Id, s.B.Id))).Content.ReadFromJsonAsync<PublishResultDto>())!;
+
+        Assert.Equal((2, 1, 0), (result.ItemsChanged, result.AffectedStudents, result.NotificationsQueued)); // only student 1 (active, no account) is affected
+        Assert.Empty(await NoticesAsync(s.StudentUser));
+        Assert.Empty(await NoticesAsync(s.GuardianUser));
+        await using var check = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        Assert.DoesNotContain(await check.Set<GradeSnapshot>().ToListAsync(), x => x.StudentProfileId == s.W.Students[0].Id);
+    }
+
+    [Fact]
+    public async Task Hiding_is_audited_with_the_acting_user_and_no_values()
+    {
+        var s = await SetupAsync("PB17");
+        using var _h = s.Host;
+        await PublishAsync(s, Now(s.A.Id));
+
+        await PublishAsync(s, new(new[] { s.A.Id }, PublishModes.Hide, null, false));
+
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        var hidden = (await db.Set<AuditEntry>().Where(a => a.OrganizationId == s.W.Tree.Org.Id).ToListAsync())
+            .Where(a => (a.EntityType + a.BeforeJson + a.AfterJson).Contains("Grades.Hidden", StringComparison.Ordinal)).ToList();
+        var entry = Assert.Single(hidden);
+        Assert.Equal(s.W.Admin.UserId, entry.UserId);
+        Assert.DoesNotContain("points", (entry.AfterJson ?? string.Empty).ToLowerInvariant());
+    }
+
+    [Fact]
+    public async Task A_missing_body_is_400()
+    {
+        var s = await SetupAsync("PB18");
+        using var _h = s.Host;
+        using var request = new HttpRequestMessage(HttpMethod.Post, Routes.ClassCourseGradebookPublish(s.W.Gb.ClassCourse.Id))
+        {
+            Content = new StringContent(string.Empty, System.Text.Encoding.UTF8, "application/json"),
+        };
+
+        var response = await s.Host.Host.SendRawAsync(request, s.W.Admin);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    private sealed class ThrowingNotifier(Lms.Infrastructure.Persistence.LmsDbContext db, Lms.Domain.Notifications.INotificationPublisher publisher)
+        : GradePublishedNotifier(db, publisher)
+    {
+        public override Task<int> NotifyAsync(ClassCourse classCourse, IReadOnlyList<Guid> studentIds, CancellationToken ct) =>
+            throw new InvalidOperationException("the notification service is down");
     }
 
     [Fact]

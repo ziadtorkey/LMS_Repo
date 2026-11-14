@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Lms.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(LmsDbContext))]
-    [Migration("20261114013839_AddGradeSnapshots")]
+    [Migration("20261114023932_AddGradeSnapshots")]
     partial class AddGradeSnapshots
     {
         /// <inheritdoc />
@@ -2948,6 +2948,7 @@ namespace Lms.Infrastructure.Persistence.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("PublishState")
+                        .IsConcurrencyToken()
                         .IsRequired()
                         .HasMaxLength(10)
                         .HasColumnType("varchar(10)");

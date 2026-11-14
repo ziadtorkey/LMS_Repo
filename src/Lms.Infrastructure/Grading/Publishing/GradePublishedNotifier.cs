@@ -12,10 +12,10 @@ namespace Lms.Infrastructure.Grading.Publishing;
 /// One <c>Grades.Published</c> notification per student per publish batch (L26): the student and the guardians linked to them are the recipients.
 /// The text carries the course name only, never a grade value or an item title, so a hidden item is not revealed by its notice.
 /// </summary>
-public sealed class GradePublishedNotifier(LmsDbContext db, INotificationPublisher publisher)
+public class GradePublishedNotifier(LmsDbContext db, INotificationPublisher publisher)
 {
     /// <returns>The number of students told (a student without an account and without a guardian account is skipped).</returns>
-    public async Task<int> NotifyAsync(ClassCourse classCourse, IReadOnlyList<Guid> studentIds, CancellationToken ct)
+    public virtual async Task<int> NotifyAsync(ClassCourse classCourse, IReadOnlyList<Guid> studentIds, CancellationToken ct)
     {
         if (studentIds.Count == 0)
         {

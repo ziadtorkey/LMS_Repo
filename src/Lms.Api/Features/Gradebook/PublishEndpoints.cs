@@ -21,7 +21,7 @@ public static class PublishEndpoints
     }
 
     private static async Task<IResult> PublishAsync(
-        Guid id, PublishItemsRequest request, HttpContext http, GradePublisher publisher, ICurrentContext context, CancellationToken ct)
+        Guid id, PublishItemsRequest? request, HttpContext http, GradePublisher publisher, ICurrentContext context, CancellationToken ct)
     {
         if (request is null)
         {
@@ -36,7 +36,7 @@ public static class PublishEndpoints
 
         try
         {
-            var outcome = await publisher.PublishAsync(cc!, request, context.UserId, ct);
+            var outcome = await publisher.PublishAsync(cc!, request!, context.UserId, ct);
             return Results.Ok(new PublishResultDto(outcome.ItemsChanged, outcome.AffectedStudents, outcome.NotificationsQueued));
         }
         catch (GradebookRuleException rule)

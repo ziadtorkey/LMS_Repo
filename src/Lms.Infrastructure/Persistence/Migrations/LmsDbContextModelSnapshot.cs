@@ -2945,6 +2945,7 @@ namespace Lms.Infrastructure.Persistence.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("PublishState")
+                        .IsConcurrencyToken()
                         .IsRequired()
                         .HasMaxLength(10)
                         .HasColumnType("varchar(10)");
