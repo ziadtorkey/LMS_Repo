@@ -391,7 +391,6 @@
   <data name="Notif_Preferences" xml:space="preserve"><value>Notification preferences</value></data>
   <data name="Channel_InApp" xml:space="preserve"><value>In-app</value></data>
   <data name="Channel_Email" xml:space="preserve"><value>Email</value></data>
-  <data name="Channel_Sms" xml:space="preserve"><value>SMS</value></data>
   <data name="Channel_Push" xml:space="preserve"><value>Push</value></data>
   <data name="Notif_Access_RoleAssigned" xml:space="preserve"><value>You were given the role {RoleName} at {OrgUnitName}.</value></data>
   <data name="Notif_Access_RoleRemoved" xml:space="preserve"><value>Your role {RoleName} at {OrgUnitName} was removed.</value></data>
