@@ -1,0 +1,43 @@
+@implements IDisposable
+@inject TimeProvider Clock
+
+@* The undo window of a promotion (D12): the clock time it ends, not only a countdown, and the countdown counts from the server clock (the offset between the server's answer and this
+   browser), never from the browser clock alone. It ends at the window or at the first activity in the new year, whichever comes first; the server decides, so a refusal is shown in words. *@
+<MudAlert Severity="@(Open && Refused is null ? Severity.Info : Severity.Normal)" Variant="Variant.Outlined" Class="mb-3" data-testid="promo-undo-banner" data-until="@UntilUtc.ToString("O")">
+    @if (Open && Refused is null)
+    {
+        <p class="mb-1" data-testid="promo-undo-text">@string.Format(L["Promo_Undo_Until"].Value, UntilLocal.ToString("HH:mm", System.Globalization.CultureInfo.InvariantCulture), Minutes)</p>
+        <p class="mb-2 lms-muted">@L["Promo_Undo_Rule"]</p>
+    }
+    else
+    {
+        <p class="mb-2" data-testid="promo-undo-over">@L[Refused ?? "Promo_Undo_WindowOver"]</p>
+    }
+    <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="!Open || Busy || Refused is not null" OnClick="OnUndo" data-testid="promo-undo">@L["Promo_Undo"]</MudButton>
+</MudAlert>
+
+@code {
+    /// <summary>When the window ends, by the server clock.</summary>
+    [Parameter, EditorRequired] public DateTime UntilUtc { get; set; }
+
+    /// <summary>The server clock minus this browser's clock, taken when the answer arrived.</summary>
+    [Parameter] public TimeSpan ServerOffset { get; set; }
+
+    /// <summary>A resource key set after the server refused the undo (window over, activity in the new year): the button stays off and the words say why.</summary>
+    [Parameter] public string? Refused { get; set; }
+
+    [Parameter] public bool Busy { get; set; }
+    [Parameter] public EventCallback OnUndo { get; set; }
+
+    private ITimer? _timer;
+
+    private DateTime ServerNow => Clock.GetUtcNow().UtcDateTime + ServerOffset;
+    private bool Open => UntilUtc > ServerNow;
+    private DateTime UntilLocal => DateTime.SpecifyKind(UntilUtc, DateTimeKind.Utc).ToLocalTime();
+    private int Minutes => Math.Max(1, (int)Math.Ceiling((UntilUtc - ServerNow).TotalMinutes));
+
+    protected override void OnInitialized() =>
+        _timer = Clock.CreateTimer(_ => _ = InvokeAsync(StateHasChanged), null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+
+    public void Dispose() => _timer?.Dispose();
+}

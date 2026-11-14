@@ -1,0 +1,77 @@
+@page "/promotion/runs"
+@attribute [Authorize]
+@using Lms.Client.Components
+@using Lms.Client.Services.YearEnd
+@using Lms.Shared.Authorization
+@using Lms.Shared.YearEnd
+@inject PermissionState PermState
+@inject IPromotionApi Promotion
+@implements IDisposable
+
+<PageTitle>@L["Promo_History"]</PageTitle>
+<PageHeader Title="@L["Promo_History"]" Subtitle="@L["Promo_History_Subtitle"]" TitleTestId="promo-history-title">
+    <Actions>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Add" Href="promotion" data-testid="promo-new">@L["Promo_New"]</MudButton>
+    </Actions>
+</PageHeader>
+
+@if (!PermState.Loaded)
+{
+    <LoadingState Lines="4" TestId="promo-loading" />
+}
+else if (!PermState.Has(Permissions.Promotion.Run))
+{
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" data-testid="promo-forbidden">@L["Forbidden_Title"]</MudAlert>
+}
+else
+{
+    <SectionCard Flush="true" TestId="promo-history">
+        <ServerTable T="PromotionRunDto" ServerData="LoadAsync" EmptyTitle="@L["Promo_History_Empty"]" EmptyText="@L["Promo_History_Empty_Text"]">
+            <HeaderContent>
+                <MudTh>@L["Promo_Started"]</MudTh>
+                <MudTh>@L["Common_Status"]</MudTh>
+                <MudTh>@L["Promo_Students"]</MudTh>
+                <MudTh>@L["Promo_Failed"]</MudTh>
+                <MudTh></MudTh>
+            </HeaderContent>
+            <RowTemplate Context="run">
+                <MudTd DataLabel="@L["Promo_Started"]" data-testid="@($"promo-run-{run.Id}")"><span dir="ltr">@run.CreatedAtUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm", System.Globalization.CultureInfo.InvariantCulture)</span></MudTd>
+                <MudTd DataLabel="@L["Common_Status"]">
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@ColorOf(run.State)" Class="lms-status-chip" data-state="@run.State">@L[$"Promo_RunState_{run.State}"]</MudChip>
+                </MudTd>
+                <MudTd DataLabel="@L["Promo_Students"]">@run.Total</MudTd>
+                <MudTd DataLabel="@L["Promo_Failed"]">@run.Failed</MudTd>
+                <MudTd>
+                    <MudButton Variant="Variant.Text" Size="Size.Small" Href="@(run.State == PromotionRunStates.Draft ? $"promotion/{run.Id}" : $"promotion/{run.Id}/run")"
+                               data-testid="@($"promo-open-{run.Id}")">@L["Common_Open"]</MudButton>
+                </MudTd>
+            </RowTemplate>
+        </ServerTable>
+    </SectionCard>
+}
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        PermState.Changed += OnPermissionsChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+    }
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => PermState.Changed -= OnPermissionsChanged;
+
+    private async Task<TableData<PromotionRunDto>> LoadAsync(TableState state, CancellationToken ct)
+    {
+        var page = await Promotion.ListRunsAsync(state.Page + 1, state.PageSize, ct);
+        return new TableData<PromotionRunDto> { Items = page.Items, TotalItems = page.Total };
+    }
+
+    private static Color ColorOf(string state) => state switch
+    {
+        PromotionRunStates.Done => Color.Success,
+        PromotionRunStates.PartiallyFailed or PromotionRunStates.Failed => Color.Warning,
+        PromotionRunStates.Running => Color.Info,
+        _ => Color.Default,
+    };
+}

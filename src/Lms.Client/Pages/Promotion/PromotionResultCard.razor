@@ -1,0 +1,99 @@
+@using System.Text
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.YearEnd
+@using Lms.Shared
+@using Lms.Shared.YearEnd
+@inject IPromotionApi Promotion
+@inject IJSRuntime Js
+@inject NavigationManager Navigation
+
+@* The result of a promotion run: the counts, what failed (for a student, a stable code; the rest went through, D84) and a download of the failed list to fix and run again. *@
+<SectionCard Title="@L["Promo_Result"]" TestId="promo-result">
+    <div class="lms-stats" role="group" aria-label="@L["Promo_Summary"]">
+        @foreach (var (outcome, count) in Counts)
+        {
+            <div class="lms-stat" data-testid="@($"promo-result-{outcome}")">
+                <span class="lms-stat-value">@count</span>
+                <span class="lms-stat-label">@L[$"Promo_Outcome_{outcome}"]</span>
+            </div>
+        }
+    </div>
+    <p data-testid="promo-result-state">@L[$"Promo_State_{Run.State}"]</p>
+
+    @if (Run.Failed > 0)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="my-3" data-testid="promo-failures-note">
+            @string.Format(L["Promo_Failed_Note"].Value, Run.Failed)
+        </MudAlert>
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Download" Disabled="_busy" OnClick="DownloadAsync" data-testid="promo-failures-download">@L["Promo_Failed_Download"]</MudButton>
+        @if (_message is not null)
+        {
+            <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Dense="true" Class="mt-2" data-testid="promo-failures-error">@_message</MudAlert>
+        }
+        <ServerTable T="PromotionFailureDto" ServerData="LoadFailuresAsync" Class="mt-3" EmptyTitle="@L["Promo_Failed_Empty"]">
+            <HeaderContent>
+                <MudTh>@L["Promo_Student"]</MudTh>
+                <MudTh>@L["Promo_Failure_Code"]</MudTh>
+            </HeaderContent>
+            <RowTemplate Context="f">
+                <MudTd DataLabel="@L["Promo_Student"]" data-testid="@($"promo-failure-{f.StudentId}")"><bdi>@CultureText.Pick(f.NameAr, f.NameEn)</bdi> <span class="lms-muted" dir="ltr">@f.StudentCode</span></MudTd>
+                <MudTd DataLabel="@L["Promo_Failure_Code"]">@FailureText(f.FailureCode)</MudTd>
+            </RowTemplate>
+        </ServerTable>
+    }
+</SectionCard>
+
+@code {
+    [Parameter, EditorRequired] public PromotionRunDto Run { get; set; } = default!;
+
+    private bool _busy;
+    private string? _message;
+
+    private IEnumerable<(string Outcome, int Count)> Counts =>
+    [
+        (PromotionOutcomes.Promote, Run.Counts.Promote), (PromotionOutcomes.Repeat, Run.Counts.Repeat),
+        (PromotionOutcomes.Graduate, Run.Counts.Graduate), (PromotionOutcomes.TransferOut, Run.Counts.TransferOut),
+    ];
+
+    private string FailureText(string code) => L[$"PromoFailure_{code}"] is { ResourceNotFound: false } known ? known.Value : L["PromoFailure_Other"].Value;
+
+    private async Task<TableData<PromotionFailureDto>> LoadFailuresAsync(TableState state, CancellationToken ct)
+    {
+        var page = await Promotion.GetFailuresAsync(Run.Id, state.Page + 1, state.PageSize, ct);
+        return new TableData<PromotionFailureDto> { Items = page.Items, TotalItems = page.Total };
+    }
+
+    /// <summary>The whole failed list as a spreadsheet-friendly CSV (UTF-8 with a mark so Excel reads Arabic), fetched page by page.</summary>
+    private async Task DownloadAsync()
+    {
+        _busy = true;
+        _message = null;
+        var csv = new StringBuilder("﻿").Append(string.Join(',', L["Promo_Student_Code"].Value, L["Promo_Student"].Value, L["Promo_Failure_Code"].Value)).Append("\r\n");
+        var ok = await ApiCalls.RunAsync(async () =>
+        {
+            for (var page = 1; page <= 500; page++)
+            {
+                var result = await Promotion.GetFailuresAsync(Run.Id, page, Paging.MaxPageSize);
+                foreach (var f in result.Items)
+                    csv.Append(Cell(f.StudentCode)).Append(',').Append(Cell(CultureText.Pick(f.NameAr, f.NameEn))).Append(',').Append(Cell(FailureText(f.FailureCode))).Append("\r\n");
+                if (page * Paging.MaxPageSize >= result.Total) break;
+            }
+        }, Navigation, L, e => _message = e);
+        if (ok)
+        {
+            using var stream = new MemoryStream(Encoding.UTF8.GetBytes(csv.ToString()));
+            using var reference = new DotNetStreamReference(stream);
+            await Js.InvokeVoidAsync("lmsDownloadFile", $"promotion-failures-{Run.Id:N}.csv", reference);
+        }
+
+        _busy = false;
+    }
+
+    /// <summary>One CSV cell; a value that starts like a formula is prefixed so a spreadsheet never runs it.</summary>
+    public static string Cell(string value)
+    {
+        if (value.Length > 0 && value[0] is '=' or '+' or '-' or '@') value = "'" + value;
+        return '"' + value.Replace("\"", "\"\"") + '"';
+    }
+}

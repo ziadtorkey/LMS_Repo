@@ -1943,4 +1943,39 @@
   <data name="Promo_Blocking" xml:space="preserve"><value>Fix these before you continue</value></data>
   <data name="Promo_Warnings" xml:space="preserve"><value>Good to know</value></data>
   <data name="Promo_Fix_Level_Mapping" xml:space="preserve"><value>Set the next level</value></data>
+  <data name="Promo_Run_Subtitle" xml:space="preserve"><value>Check the numbers, then run the promotion.</value></data>
+  <data name="Promo_Execute_Title" xml:space="preserve"><value>Run the promotion</value></data>
+  <data name="Promo_Execute" xml:space="preserve"><value>Run promotion</value></data>
+  <data name="Promo_Back" xml:space="preserve"><value>Back to the preview</value></data>
+  <data name="Promo_Execute_Effect" xml:space="preserve"><value>New class placements are created for the students, their old placements are closed, and history stays readable. You can undo this for a short time, only before anyone does something in the new year.</value></data>
+  <data name="Promo_Running" xml:space="preserve"><value>Promotion in progress</value></data>
+  <data name="Promo_Result" xml:space="preserve"><value>Result</value></data>
+  <data name="Promo_Failed_Note" xml:space="preserve"><value>{0} students could not be moved. Everyone else was moved. Fix the problems and run the promotion again for them.</value></data>
+  <data name="Promo_Failed_Download" xml:space="preserve"><value>Download the list</value></data>
+  <data name="Promo_Failed_Empty" xml:space="preserve"><value>No failures</value></data>
+  <data name="Promo_Failure_Code" xml:space="preserve"><value>What went wrong</value></data>
+  <data name="Promo_Student_Code" xml:space="preserve"><value>Code</value></data>
+  <data name="PromoFailure_PlacementFailed" xml:space="preserve"><value>The new class could not be created for this student.</value></data>
+  <data name="PromoFailure_Other" xml:space="preserve"><value>This student could not be moved.</value></data>
+  <data name="Promo_Undo" xml:space="preserve"><value>Undo promotion</value></data>
+  <data name="Promo_Undo_Until" xml:space="preserve"><value>You can undo this promotion until {0} ({1} min left).</value></data>
+  <data name="Promo_Undo_Rule" xml:space="preserve"><value>Only before anyone does something in the new year.</value></data>
+  <data name="Promo_Undo_Effect" xml:space="preserve"><value>The students moved by this promotion go back to where they were. History stays readable.</value></data>
+  <data name="Promo_Undo_WindowOver" xml:space="preserve"><value>The time to undo this promotion has passed.</value></data>
+  <data name="Promo_Undo_Activity" xml:space="preserve"><value>This promotion cannot be undone because the new year already has activity.</value></data>
+  <data name="Promo_History" xml:space="preserve"><value>Promotion history</value></data>
+  <data name="Promo_History_Subtitle" xml:space="preserve"><value>Every promotion run of your units.</value></data>
+  <data name="Promo_New" xml:space="preserve"><value>New promotion</value></data>
+  <data name="Promo_History_Empty" xml:space="preserve"><value>No promotions yet</value></data>
+  <data name="Promo_History_Empty_Text" xml:space="preserve"><value>Start one from a closed year.</value></data>
+  <data name="Promo_Started" xml:space="preserve"><value>Started</value></data>
+  <data name="Promo_Students" xml:space="preserve"><value>Students</value></data>
+  <data name="Promo_Failed" xml:space="preserve"><value>Failed</value></data>
+  <data name="Promo_RunState_Draft" xml:space="preserve"><value>Draft</value></data>
+  <data name="Promo_RunState_Running" xml:space="preserve"><value>Running</value></data>
+  <data name="Promo_RunState_Done" xml:space="preserve"><value>Done</value></data>
+  <data name="Promo_RunState_PartiallyFailed" xml:space="preserve"><value>Partly failed</value></data>
+  <data name="Promo_RunState_Undone" xml:space="preserve"><value>Undone</value></data>
+  <data name="Promo_RunState_Failed" xml:space="preserve"><value>Failed</value></data>
+  <data name="Common_Open" xml:space="preserve"><value>Open</value></data>
 </root>
