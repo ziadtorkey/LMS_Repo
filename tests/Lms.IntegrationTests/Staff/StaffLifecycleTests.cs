@@ -23,11 +23,13 @@ namespace Lms.IntegrationTests.Staff;
 
 /// <summary>M2 Task 11 (#163): edit, deactivate/reactivate with reason, delete and resend invitation.</summary>
 [Collection(ApiCollection.Name)]
-public sealed class StaffLifecycleTests
+public sealed class StaffLifecycleTests : IDisposable
 {
     private static readonly JsonSerializerOptions Web = new(JsonSerializerDefaults.Web);
     private readonly LmsApiFactory _factory;
     private readonly WebApplicationFactory<Program> _host;
+
+    public void Dispose() => _host.Dispose();
     private readonly FakeEmailSender _emails = new();
 
     public StaffLifecycleTests(LmsApiFactory factory)

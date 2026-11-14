@@ -19,12 +19,14 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Lms.IntegrationTests.Assignments;
 
 [Collection(ApiCollection.Name)]
-public sealed class AssignmentEndpointsTests
+public sealed class AssignmentEndpointsTests : IDisposable
 {
     private static DateOnly Today => DateOnly.FromDateTime(DateTime.UtcNow);
 
     private readonly LmsApiFactory _factory;
     private readonly WebApplicationFactory<Program> _host;
+
+    public void Dispose() => _host.Dispose();
     private readonly FakeEmailSender _emails = new();
 
     public AssignmentEndpointsTests(LmsApiFactory factory)

@@ -85,14 +85,14 @@ public sealed class NotificationsPagesTests : ClientTestContext
     {
         await GrantAsync();
         var cut = Page<NotificationPreferencesPage>();
-        var sms = cut.WaitForElement($"[data-testid=\"pref-{NotificationEvents.AccessRoleAssigned}-Sms\"]");
-        await sms.ChangeAsync(new() { Value = true });
+        var push = cut.WaitForElement($"[data-testid=\"pref-{NotificationEvents.AccessRoleAssigned}-Push\"]");
+        await push.ChangeAsync(new() { Value = true });
 
         await cut.Find("[data-testid=prefs-save]").ClickAsync(new());
 
         cut.WaitForAssertion(() => Assert.NotNull(NotificationsApi.LastSaved));
         Assert.Contains(NotificationsApi.LastSaved!.Preferences,
-            p => p.EventKey == NotificationEvents.AccessRoleAssigned && p.Channel == "Sms" && p.Enabled);
+            p => p.EventKey == NotificationEvents.AccessRoleAssigned && p.Channel == "Push" && p.Enabled);
     }
 
     [Fact]

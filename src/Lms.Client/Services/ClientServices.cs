@@ -31,6 +31,7 @@ public static class ClientServices
         services.AddScoped<IYearStore, YearStore>();
         services.AddScoped<INotificationFeed, NotificationFeed>();
         services.AddSingleton<Lms.Client.Services.Packages.PackagePollOptions>();
+        services.AddSingleton<Lms.Client.Services.Packages.PackageBridgeOptions>();
 
         if (configuration.GetValue<bool>("Lms:UseFakeApi"))
         {
@@ -66,6 +67,7 @@ public static class ClientServices
             services.AddSingleton<IForumsApi, FakeForumsApi>();
             services.AddSingleton<IAssetsApi, FakeAssetsApi>();
             services.AddSingleton<Lms.Client.Services.Packages.IPackagesApi, Lms.Client.Services.Packages.FakePackagesApi>();
+            services.AddSingleton<Lms.Client.Services.Packages.IPackagePlayerApi, Lms.Client.Services.Packages.FakePackagePlayerApi>();
             services.AddSingleton<IModulesApi, FakeModulesApi>();
             services.AddSingleton<ILiveSessionsApi, FakeLiveSessionsApi>();
             services.AddSingleton<IActivityOverviewApi, FakeActivityOverviewApi>();
@@ -125,6 +127,7 @@ public static class ClientServices
         services.AddScoped<IForumsApi, ForumsApi>();
         services.AddScoped<IAssetsApi, AssetsApi>();
         services.AddScoped<Lms.Client.Services.Packages.IPackagesApi, Lms.Client.Services.Packages.PackagesApi>();
+        services.AddScoped<Lms.Client.Services.Packages.IPackagePlayerApi, Lms.Client.Services.Packages.PackagePlayerApi>();
         services.AddScoped<IModulesApi, ModulesApi>();
         services.AddScoped<ILiveSessionsApi, LiveSessionsApi>();
         services.AddScoped<IActivityOverviewApi, ActivityOverviewApi>();

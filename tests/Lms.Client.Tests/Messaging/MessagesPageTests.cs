@@ -170,12 +170,11 @@ public sealed class MessagesPageTests : ClientTestContext
     {
         _messaging.Me = FakeMessagingApi.Huda; // a teacher reaches several people
         Api.Me = Api.Me with { UserId = FakeMessagingApi.Huda.Id };
-        _rules.Save([new MessagingRuleCellDto(BuiltInRoles.Teacher, BuiltInRoles.Student, MessagingRuleModes.Deny), new MessagingRuleCellDto(BuiltInRoles.Teacher, BuiltInRoles.Guardian, MessagingRuleModes.Deny)]);
         var page = await OpenAsync();
         await page.Find("[data-testid=msg-new]").ClickAsync(new());
         _dialogs.WaitForElement("[data-testid=newconv-list]");
 
-        await _dialogs.Find($"[data-testid=newconv-pick-{FakeMessagingApi.Layla.Id}]").ClickAsync(new());
+        await _dialogs.Find($"[data-testid=newconv-pick-{FakeMessagingApi.Khaled.Id}]").ClickAsync(new());
         await _dialogs.Find($"[data-testid=newconv-pick-{FakeMessagingApi.Admin.Id}]").ClickAsync(new());
 
         // two people make a group: the summary says whether this role may create one; the dialog never offers a title otherwise
