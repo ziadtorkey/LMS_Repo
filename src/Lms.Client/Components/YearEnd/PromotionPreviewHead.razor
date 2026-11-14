@@ -1,0 +1,19 @@
+@* The header row of the promotion review table that holds PromotionPreviewRow rows (spec #814 §7.2). The select-all box acts on the visible page; selecting
+   everything that matches the filter is the page's "Select all n" link, which sends the filter, never ids (X-09). *@
+<thead>
+    <tr>
+        <th scope="col" class="lms-promo-select">
+            <input type="checkbox" class="lms-native-check" checked="@AllSelected" aria-label="@L["Promo_SelectPage"]" @onchange="e => AllSelectedChanged.InvokeAsync(e.Value is true)" />
+        </th>
+        <th scope="col">@L["Promo_Col_Student"]</th>
+        <th scope="col">@L["Promo_Col_From"]</th>
+        <th scope="col">@L["Promo_Col_Outcome"]</th>
+        <th scope="col">@L["Promo_Col_Target"]</th>
+        <th scope="col">@L["Promo_Col_Note"]</th>
+    </tr>
+</thead>
+
+@code {
+    [Parameter] public bool AllSelected { get; set; }
+    [Parameter] public EventCallback<bool> AllSelectedChanged { get; set; }
+}

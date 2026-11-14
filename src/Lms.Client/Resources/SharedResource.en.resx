@@ -1886,4 +1886,73 @@
   <data name="AuditEntity_GradeChangeRequest" xml:space="preserve"><value>Grade change request</value></data>
   <data name="AuditEntity_PromotionRun" xml:space="preserve"><value>Promotion run</value></data>
   <data name="AuditEntity_StudentExit" xml:space="preserve"><value>Student exit</value></data>
+  <data name="YearEnd_Close_Lead" xml:space="preserve"><value>Closing locks this year for everyone. It can’t be reopened; a grade that must change later goes through a manager’s approval.</value></data>
+  <data name="YearEnd_Close_Blocking" xml:space="preserve"><value>Fix these before closing:</value></data>
+  <data name="YearEnd_Close_Will" xml:space="preserve"><value>What will happen</value></data>
+  <data name="YearEnd_Close_Gradebooks_One" xml:space="preserve"><value>1 gradebook is locked. Teachers can only ask for a change.</value></data>
+  <data name="YearEnd_Close_Gradebooks_Two" xml:space="preserve"><value>2 gradebooks are locked. Teachers can only ask for a change.</value></data>
+  <data name="YearEnd_Close_Gradebooks_Few" xml:space="preserve"><value>{0} gradebooks are locked. Teachers can only ask for a change.</value></data>
+  <data name="YearEnd_Close_Gradebooks_Many" xml:space="preserve"><value>{0} gradebooks are locked. Teachers can only ask for a change.</value></data>
+  <data name="YearEnd_Close_Sessions_One" xml:space="preserve"><value>1 attendance session is locked.</value></data>
+  <data name="YearEnd_Close_Sessions_Two" xml:space="preserve"><value>2 attendance sessions are locked.</value></data>
+  <data name="YearEnd_Close_Sessions_Few" xml:space="preserve"><value>{0} attendance sessions are locked.</value></data>
+  <data name="YearEnd_Close_Sessions_Many" xml:space="preserve"><value>{0} attendance sessions are locked.</value></data>
+  <data name="YearEnd_Close_Promotion" xml:space="preserve"><value>The promotion opens for this year (Org Admin anywhere, managers in their own units).</value></data>
+  <data name="YearEnd_Close_Check" xml:space="preserve"><value>Worth checking first (doesn’t block closing)</value></data>
+  <data name="YearEnd_Close_Type" xml:space="preserve"><value>To confirm, type the year name: {0}</value></data>
+  <data name="YearEnd_Close_Confirm" xml:space="preserve"><value>Close the year</value></data>
+  <data name="YearEnd_Review" xml:space="preserve"><value>Review</value></data>
+  <data name="Promo_SelectRow" xml:space="preserve"><value>Select {0}</value></data>
+  <data name="Promo_SelectPage" xml:space="preserve"><value>Select every student on this page</value></data>
+  <data name="Promo_Col_Student" xml:space="preserve"><value>Student</value></data>
+  <data name="Promo_Col_From" xml:space="preserve"><value>From class</value></data>
+  <data name="Promo_Col_Outcome" xml:space="preserve"><value>Outcome</value></data>
+  <data name="Promo_Col_Target" xml:space="preserve"><value>Target class</value></data>
+  <data name="Promo_Col_Note" xml:space="preserve"><value>Note</value></data>
+  <data name="Promo_OutcomeFor" xml:space="preserve"><value>Outcome for {0}</value></data>
+  <data name="Promo_TargetFor" xml:space="preserve"><value>Target class for {0}</value></data>
+  <data name="Promo_Outcome_Promote" xml:space="preserve"><value>Promote</value></data>
+  <data name="Promo_Outcome_Repeat" xml:space="preserve"><value>Repeat</value></data>
+  <data name="Promo_Outcome_Graduate" xml:space="preserve"><value>Graduate</value></data>
+  <data name="Promo_Outcome_TransferOut" xml:space="preserve"><value>Transfer out</value></data>
+  <data name="Promo_ChooseClass" xml:space="preserve"><value>Choose a class</value></data>
+  <data name="Promo_NotNeeded" xml:space="preserve"><value>Not needed</value></data>
+  <data name="Promo_Problem_NoLevelMapping" xml:space="preserve"><value>No next level</value></data>
+  <data name="Promo_Problem_TargetClassMissing" xml:space="preserve"><value>No target class</value></data>
+  <data name="Promo_Problem_AlreadyPlacedInTargetYear" xml:space="preserve"><value>Already placed</value></data>
+  <data name="Promo_Problem_TargetYearClosed" xml:space="preserve"><value>Target year closed</value></data>
+  <data name="Promo_Problem_SourceYearNotClosed" xml:space="preserve"><value>Year not closed</value></data>
+  <data name="Promo_Warn_PendingGradeChangeRequests" xml:space="preserve"><value>Open grade change</value></data>
+  <data name="Promo_Warn_PendingExcuseRequests" xml:space="preserve"><value>Open excuse request</value></data>
+  <data name="Promo_Warn_OverCapacity" xml:space="preserve"><value>Class over capacity</value></data>
+  <data name="Promo_Warn_UnpublishedGradeItems" xml:space="preserve"><value>Unpublished grades</value></data>
+  <data name="Promo_Warn_OpenAssignments" xml:space="preserve"><value>Open assignment</value></data>
+  <data name="Promo_Warn_OpenTerms" xml:space="preserve"><value>Open term</value></data>
+  <data name="Promo_Changed" xml:space="preserve"><value>Changed</value></data>
+  <data name="Promo_Reset" xml:space="preserve"><value>Reset to suggested</value></data>
+  <data name="Promo_Undo" xml:space="preserve"><value>Undo promotion</value></data>
+  <data name="Promo_Undo_Until" xml:space="preserve"><value>You can undo this promotion until {0} ({1}), and only until someone does something in the new year.</value></data>
+  <data name="Promo_Undo_LessThanMinute" xml:space="preserve"><value>less than a minute left</value></data>
+  <data name="Promo_Undo_Left_One" xml:space="preserve"><value>1 minute left</value></data>
+  <data name="Promo_Undo_Left_Two" xml:space="preserve"><value>2 minutes left</value></data>
+  <data name="Promo_Undo_Left_Few" xml:space="preserve"><value>{0} minutes left</value></data>
+  <data name="Promo_Undo_Left_Many" xml:space="preserve"><value>{0} minutes left</value></data>
+  <data name="Lifecycle_Reason" xml:space="preserve"><value>Reason</value></data>
+  <data name="Lifecycle_Reason_Choose" xml:space="preserve"><value>Choose a reason</value></data>
+  <data name="Lifecycle_Reason_Other" xml:space="preserve"><value>Other</value></data>
+  <data name="Lifecycle_Reason_Required" xml:space="preserve"><value>Choose a reason.</value></data>
+  <data name="Lifecycle_Note" xml:space="preserve"><value>Note</value></data>
+  <data name="Lifecycle_Note_Required" xml:space="preserve"><value>Write a note for “Other”.</value></data>
+  <data name="Lifecycle_Note_Help" xml:space="preserve"><value>The student and guardians never see the reason or the note.</value></data>
+  <data name="Lifecycle_StaffOnly" xml:space="preserve"><value>Staff only.</value></data>
+  <data name="YearEnd_Checklist_Title" xml:space="preserve"><value>Year end: {0}</value></data>
+  <data name="YearEnd_Checklist_Sub" xml:space="preserve"><value>The year ends on {0}, in {1}. Each step is a link; nothing here blocks you.</value></data>
+  <data name="YearEnd_Days_One" xml:space="preserve"><value>1 day</value></data>
+  <data name="YearEnd_Days_Two" xml:space="preserve"><value>2 days</value></data>
+  <data name="YearEnd_Days_Few" xml:space="preserve"><value>{0} days</value></data>
+  <data name="YearEnd_Days_Many" xml:space="preserve"><value>{0} days</value></data>
+  <data name="YearEnd_Step_ToDo" xml:space="preserve"><value>To do</value></data>
+  <data name="YearEnd_Step_Attention" xml:space="preserve"><value>Needs attention</value></data>
+  <data name="YearEnd_Step_NotYet" xml:space="preserve"><value>Not available yet</value></data>
+  <data name="YearEnd_Step_Done" xml:space="preserve"><value>Done</value></data>
 </root>

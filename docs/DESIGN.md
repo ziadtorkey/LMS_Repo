@@ -223,6 +223,34 @@ The full spec is `docs/design/m4b-live-and-packages.md`. Mockups are in `docs/de
   - The staff preview has an Info strip: "Preview: nothing is recorded."
   - A timed-out token shows an overlay with Reload.
 
+## 7c. M7 patterns: year end (`Components/YearEnd/`, spec PR 814)
+
+Reusable parts for the year-end pages (H2–H6). Seen together, with sample data, at `/dev/year-end-gallery` (standalone only).
+
+- **Year status:** `YearStatusChip` is a status chip in words. Planned is info, Active is success, and Closed is neutral with a lock icon and no dot.
+- **Closing a year:** `CloseYearConfirmation` is the body and actions of the Close year dialog (D79). It has:
+  - the lead sentence;
+  - **What will happen** (`lms-effects`, counted text from the plural helper);
+  - **Worth checking first** warning rows with Review links (they never block);
+  - the server's blocking issues, which disable the button with the reason in `aria-describedby`;
+  - a **typed confirmation** of the year name (`lms-confirm-type`).
+
+  Typing is used only where nothing can undo the action.
+- **Promotion review:** `PromotionPreviewHead` with one `PromotionPreviewRow` per student (D83, D84), inside `lms-stack-table`.
+  - **Controls:** the outcome and the target class are **native selects** named for the student ("Outcome for Omar Saleh"). Graduate and Transfer out need no class.
+  - **Notes:** a missing class is an error chip in words; open requests are warning chips.
+  - **Changes:** an edited row shows "Changed" and **Reset to suggested**.
+  - **Saving:** the row raises a `PromotionDecisionDto`; the page saves it and announces it politely.
+- **Undo window:** `UndoWindowBanner` (`lms-undo`, D12, D84).
+  - **Countdown:** it shows the clock time and the minutes left (Arabic plurals), counted down from `ServerNowUtc` through `TimeProvider`, never the browser clock.
+  - **When it ends:** the banner announces once, turns neutral (`.over`) and keeps Undo visible but disabled. A server reason (`promotion_undo_activity_exists`) is said in words.
+  - **Tests:** `data-until` carries the end time.
+- **Withdrawal reason:** `WithdrawalReasonPicker` (D81, D82) lists the client's active reasons in a native select, with **Other** always last. A note is required for Other, and "Staff only" is said under it. `Validate()` shows the errors in place.
+- **Year-end checklist:** `YearEndChecklist` (D86) is a `SectionCard` with an ordered list (`lms-checklist`).
+  - **States:** each step has a state disc and its state in words for screen readers (To do, Needs attention, Not available yet, Done).
+  - **Actions:** one per step; a To do step gets an outlined button, the others a link.
+  - **Phones:** below 600 px the action moves under the text.
+
 ## 8. Phase 2 status (page-by-page passes)
 
 This list was last updated on 2026-11-12. "Waiting" means an open feature PR touches the page; it gets its pass after that PR merges.

@@ -1886,4 +1886,73 @@
   <data name="AuditEntity_GradeChangeRequest" xml:space="preserve"><value>طلب تعديل درجة</value></data>
   <data name="AuditEntity_PromotionRun" xml:space="preserve"><value>تشغيل ترقية</value></data>
   <data name="AuditEntity_StudentExit" xml:space="preserve"><value>مغادرة طالب</value></data>
+  <data name="YearEnd_Close_Lead" xml:space="preserve"><value>الإغلاق يقفل هذا العام للجميع ولا يمكن إعادة فتحه. أي درجة يلزم تعديلها لاحقًا تمر بموافقة المدير.</value></data>
+  <data name="YearEnd_Close_Blocking" xml:space="preserve"><value>أصلح ما يلي قبل الإغلاق:</value></data>
+  <data name="YearEnd_Close_Will" xml:space="preserve"><value>ما الذي سيحدث</value></data>
+  <data name="YearEnd_Close_Gradebooks_One" xml:space="preserve"><value>يُقفل سجل درجات واحد. يستطيع المعلمون طلب تعديل فقط.</value></data>
+  <data name="YearEnd_Close_Gradebooks_Two" xml:space="preserve"><value>يُقفل سجلّا درجات. يستطيع المعلمون طلب تعديل فقط.</value></data>
+  <data name="YearEnd_Close_Gradebooks_Few" xml:space="preserve"><value>تُقفل {0} سجلات درجات. يستطيع المعلمون طلب تعديل فقط.</value></data>
+  <data name="YearEnd_Close_Gradebooks_Many" xml:space="preserve"><value>يُقفل {0} سجل درجات. يستطيع المعلمون طلب تعديل فقط.</value></data>
+  <data name="YearEnd_Close_Sessions_One" xml:space="preserve"><value>تُقفل جلسة حضور واحدة.</value></data>
+  <data name="YearEnd_Close_Sessions_Two" xml:space="preserve"><value>تُقفل جلستا حضور.</value></data>
+  <data name="YearEnd_Close_Sessions_Few" xml:space="preserve"><value>تُقفل {0} جلسات حضور.</value></data>
+  <data name="YearEnd_Close_Sessions_Many" xml:space="preserve"><value>تُقفل {0} جلسة حضور.</value></data>
+  <data name="YearEnd_Close_Promotion" xml:space="preserve"><value>يُفتح الترفيع لهذا العام (لمسؤول المؤسسة في كل مكان، وللمديرين في وحداتهم).</value></data>
+  <data name="YearEnd_Close_Check" xml:space="preserve"><value>يحسن التحقق منه أولًا (لا يمنع الإغلاق)</value></data>
+  <data name="YearEnd_Close_Type" xml:space="preserve"><value>للتأكيد، اكتب اسم العام: {0}</value></data>
+  <data name="YearEnd_Close_Confirm" xml:space="preserve"><value>إغلاق العام</value></data>
+  <data name="YearEnd_Review" xml:space="preserve"><value>مراجعة</value></data>
+  <data name="Promo_SelectRow" xml:space="preserve"><value>تحديد {0}</value></data>
+  <data name="Promo_SelectPage" xml:space="preserve"><value>تحديد كل الطلاب في هذه الصفحة</value></data>
+  <data name="Promo_Col_Student" xml:space="preserve"><value>الطالب</value></data>
+  <data name="Promo_Col_From" xml:space="preserve"><value>الفصل الحالي</value></data>
+  <data name="Promo_Col_Outcome" xml:space="preserve"><value>النتيجة</value></data>
+  <data name="Promo_Col_Target" xml:space="preserve"><value>الفصل الجديد</value></data>
+  <data name="Promo_Col_Note" xml:space="preserve"><value>ملاحظة</value></data>
+  <data name="Promo_OutcomeFor" xml:space="preserve"><value>نتيجة {0}</value></data>
+  <data name="Promo_TargetFor" xml:space="preserve"><value>الفصل الجديد لـ {0}</value></data>
+  <data name="Promo_Outcome_Promote" xml:space="preserve"><value>ترفيع</value></data>
+  <data name="Promo_Outcome_Repeat" xml:space="preserve"><value>إعادة الصف</value></data>
+  <data name="Promo_Outcome_Graduate" xml:space="preserve"><value>تخرج</value></data>
+  <data name="Promo_Outcome_TransferOut" xml:space="preserve"><value>نقل خارج المدرسة</value></data>
+  <data name="Promo_ChooseClass" xml:space="preserve"><value>اختر فصلًا</value></data>
+  <data name="Promo_NotNeeded" xml:space="preserve"><value>غير مطلوب</value></data>
+  <data name="Promo_Problem_NoLevelMapping" xml:space="preserve"><value>لا يوجد مستوى تالٍ</value></data>
+  <data name="Promo_Problem_TargetClassMissing" xml:space="preserve"><value>لا يوجد فصل</value></data>
+  <data name="Promo_Problem_AlreadyPlacedInTargetYear" xml:space="preserve"><value>مسكَّن مسبقًا</value></data>
+  <data name="Promo_Problem_TargetYearClosed" xml:space="preserve"><value>العام الجديد مغلق</value></data>
+  <data name="Promo_Problem_SourceYearNotClosed" xml:space="preserve"><value>العام غير مغلق</value></data>
+  <data name="Promo_Warn_PendingGradeChangeRequests" xml:space="preserve"><value>تعديل درجة مفتوح</value></data>
+  <data name="Promo_Warn_PendingExcuseRequests" xml:space="preserve"><value>طلب عذر مفتوح</value></data>
+  <data name="Promo_Warn_OverCapacity" xml:space="preserve"><value>الفصل فوق السعة</value></data>
+  <data name="Promo_Warn_UnpublishedGradeItems" xml:space="preserve"><value>درجات غير منشورة</value></data>
+  <data name="Promo_Warn_OpenAssignments" xml:space="preserve"><value>واجب مفتوح</value></data>
+  <data name="Promo_Warn_OpenTerms" xml:space="preserve"><value>فصل دراسي مفتوح</value></data>
+  <data name="Promo_Changed" xml:space="preserve"><value>مُعدَّل</value></data>
+  <data name="Promo_Reset" xml:space="preserve"><value>العودة إلى المقترح</value></data>
+  <data name="Promo_Undo" xml:space="preserve"><value>التراجع عن الترفيع</value></data>
+  <data name="Promo_Undo_Until" xml:space="preserve"><value>يمكنك التراجع عن هذا الترفيع حتى الساعة {0} ({1})، وما دام لم يُسجَّل أي نشاط في العام الجديد.</value></data>
+  <data name="Promo_Undo_LessThanMinute" xml:space="preserve"><value>بقيت أقل من دقيقة</value></data>
+  <data name="Promo_Undo_Left_One" xml:space="preserve"><value>بقيت دقيقة واحدة</value></data>
+  <data name="Promo_Undo_Left_Two" xml:space="preserve"><value>بقيت دقيقتان</value></data>
+  <data name="Promo_Undo_Left_Few" xml:space="preserve"><value>بقيت {0} دقائق</value></data>
+  <data name="Promo_Undo_Left_Many" xml:space="preserve"><value>بقيت {0} دقيقة</value></data>
+  <data name="Lifecycle_Reason" xml:space="preserve"><value>السبب</value></data>
+  <data name="Lifecycle_Reason_Choose" xml:space="preserve"><value>اختر سببًا</value></data>
+  <data name="Lifecycle_Reason_Other" xml:space="preserve"><value>أخرى</value></data>
+  <data name="Lifecycle_Reason_Required" xml:space="preserve"><value>اختر سببًا.</value></data>
+  <data name="Lifecycle_Note" xml:space="preserve"><value>ملاحظة</value></data>
+  <data name="Lifecycle_Note_Required" xml:space="preserve"><value>اكتب ملاحظة عند اختيار «أخرى».</value></data>
+  <data name="Lifecycle_Note_Help" xml:space="preserve"><value>لا يرى الطالب ولا أولياء الأمور السبب ولا الملاحظة.</value></data>
+  <data name="Lifecycle_StaffOnly" xml:space="preserve"><value>للموظفين فقط.</value></data>
+  <data name="YearEnd_Checklist_Title" xml:space="preserve"><value>نهاية العام: {0}</value></data>
+  <data name="YearEnd_Checklist_Sub" xml:space="preserve"><value>ينتهي العام في {0}، بعد {1}. كل خطوة رابط، ولا شيء هنا يمنعك من المتابعة.</value></data>
+  <data name="YearEnd_Days_One" xml:space="preserve"><value>يوم واحد</value></data>
+  <data name="YearEnd_Days_Two" xml:space="preserve"><value>يومين</value></data>
+  <data name="YearEnd_Days_Few" xml:space="preserve"><value>{0} أيام</value></data>
+  <data name="YearEnd_Days_Many" xml:space="preserve"><value>{0} يومًا</value></data>
+  <data name="YearEnd_Step_ToDo" xml:space="preserve"><value>لم تُنجز بعد</value></data>
+  <data name="YearEnd_Step_Attention" xml:space="preserve"><value>تحتاج إلى انتباه</value></data>
+  <data name="YearEnd_Step_NotYet" xml:space="preserve"><value>غير متاحة بعد</value></data>
+  <data name="YearEnd_Step_Done" xml:space="preserve"><value>تمت</value></data>
 </root>

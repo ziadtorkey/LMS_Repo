@@ -1,0 +1,130 @@
+@page "/dev/year-end-gallery"
+@attribute [Authorize]
+@using Lms.Client.Components.YearEnd
+@using Lms.Shared.AcademicYears
+@using Lms.Shared.YearEnd
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@inject ICultureService Culture
+
+@* The M7 components with sample data (spec PR 814), for the designer and FE to see them in both languages and themes before the M7 pages exist. It exists
+   only on the standalone dev server (Lms:UseFakeApi=true); against a real API it is the not-found page. Sample text is gallery-only, so it isn't in resources. *@
+@if (!Configuration.GetValue<bool>("Lms:UseFakeApi"))
+{
+    <NotFound />
+}
+else
+{
+    <PageTitle>M7 components</PageTitle>
+    <PageHeader Title="M7 components" Subtitle="Year end: status chip, close year, promotion row, undo window, withdrawal reason, checklist (spec PR 814). Standalone only." TitleTestId="gallery-title" />
+
+    <YearEndChecklist YearName="2026/2027" EndDate="new DateOnly(2027, 6, 24)" DaysLeft="42" Steps="_steps" />
+
+    <SectionCard Title="@T("حالة العام", "Year status")" Icon="@Icons.Material.Rounded.CalendarMonth" TestId="gallery-year-status">
+        <div class="d-flex flex-wrap gap-3">
+            <YearStatusChip Status="@AcademicYearStatuses.Planned" />
+            <YearStatusChip Status="@AcademicYearStatuses.Active" />
+            <YearStatusChip Status="@AcademicYearStatuses.Closed" />
+        </div>
+    </SectionCard>
+
+    <SectionCard Title="@T("إغلاق 2026/2027", "Close 2026/2027")" Icon="@Icons.Material.Rounded.Lock" TestId="gallery-close">
+        <div style="max-inline-size:640px">
+            <CloseYearConfirmation Preview="_preview" IssueHref="@(i => "dev/year-end-gallery")" OnConfirm="@(n => _closed = n)" />
+        </div>
+        @if (_closed is not null)
+        {
+            <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Class="mt-3">@T("سيُرسل:", "Would send:") <span dir="ltr">CloseYearRequest("@_closed")</span></MudAlert>
+        }
+    </SectionCard>
+
+    <SectionCard Title="@T("مراجعة الترفيع", "Promotion review")" Icon="@Icons.Material.Rounded.TrendingUp" Flush="true" TestId="gallery-promo">
+        <MudSimpleTable Elevation="0" Class="lms-simple-table lms-stack-table lms-promo-table">
+            <PromotionPreviewHead AllSelected="@(_selected.Count == _rows.Count)" AllSelectedChanged="all => { _selected = all ? _rows.Select(r => r.StudentId).ToHashSet() : []; }" />
+            <tbody>
+                @foreach (var row in _rows)
+                {
+                    var r = row;
+                    <PromotionPreviewRow Row="r" TargetClasses="_targets" Selected="_selected.Contains(r.StudentId)"
+                                         SelectedChanged="on => { if (on) _selected.Add(r.StudentId); else _selected.Remove(r.StudentId); }" OnDecision="Decide" />
+                }
+            </tbody>
+        </MudSimpleTable>
+        <div class="lms-visually-hidden" role="status">@_announce</div>
+    </SectionCard>
+
+    <SectionCard Title="@T("نافذة التراجع", "Undo window")" Icon="@Icons.Material.Rounded.History" TestId="gallery-undo">
+        <div class="d-flex flex-column gap-3">
+            <UndoWindowBanner UndoUntilUtc="_now.AddMinutes(9)" ServerNowUtc="_now" OnUndo="@(() => _undone = true)" TestId="gallery-undo-open" />
+            <UndoWindowBanner UndoUntilUtc="null" ServerNowUtc="_now" OverReasonCode="promotion_undo_activity_exists" TestId="gallery-undo-over" />
+            @if (_undone)
+            {
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">@T("سيبدأ التراجع كعملية في الخلفية.", "Undo would start as a job.")</MudAlert>
+            }
+        </div>
+    </SectionCard>
+
+    <SectionCard Title="@T("سحب عمر صالح", "Withdraw Omar Saleh")" Icon="@Icons.Material.Rounded.PersonRemove" TestId="gallery-withdraw">
+        <div style="max-inline-size:640px">
+            <WithdrawalReasonPicker @ref="_picker" Reasons="_reasons" @bind-ReasonKey="_reason" @bind-Note="_note" />
+            <div class="lms-dialog-actions">
+                <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="@(() => _picker?.Validate())">@T("سحب الطالب", "Withdraw student")</MudButton>
+            </div>
+        </div>
+    </SectionCard>
+}
+
+@code {
+    private readonly DateTime _now = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Utc);
+    private string? _closed;
+    private string? _announce;
+    private bool _undone;
+    private string? _reason = WithdrawalReasons.Other;
+    private string? _note;
+    private WithdrawalReasonPicker? _picker;
+    private HashSet<Guid> _selected = [];
+
+    private string T(string ar, string en) => Culture.IsRightToLeft ? ar : en;
+
+    private static readonly Guid A11 = Guid.Parse("00000000-0000-0000-0000-00000000a011"), B11 = Guid.Parse("00000000-0000-0000-0000-00000000b011"), B10 = Guid.Parse("00000000-0000-0000-0000-00000000b010");
+    private readonly IReadOnlyList<PromotionTargetClass> _targets = [new(A11, "11-أ", "11-A"), new(B11, "11-ب", "11-B"), new(B10, "10-ب", "10-B")];
+
+    private readonly YearClosePreviewDto _preview = new(Guid.NewGuid(), "2026/2027", "2026/2027", 184, 6240, [],
+        [new(YearEndIssueCodes.UnpublishedGradeItems, 12, null), new(YearEndIssueCodes.OpenAssignments, 5, null), new(YearEndIssueCodes.PendingExcuseRequests, 4, null)]);
+
+    private readonly IReadOnlyList<WithdrawalReasonDto> _reasons =
+        [new("Move", "الانتقال إلى مدرسة أخرى", "Moving to another school", true), new("Abroad", "الانتقال إلى الخارج", "Moving abroad", true), new("Health", "أسباب صحية", "Health", true)];
+
+    private List<PromotionRowDto> _rows = [];
+    private IReadOnlyList<YearEndStep> _steps = [];
+
+    protected override void OnInitialized()
+    {
+        static PromotionRowDto R(int n, string ar, string en, string from, string outcome, Guid? target, string? targetName, string? problem = null, params string[] warnings) =>
+            new(Guid.Parse($"00000000-0000-0000-0000-0000000000{n:D2}"), $"ST-2024-01{n:D2}", ar, en, Guid.NewGuid(), from, from, outcome, PromotionOutcomes.Promote,
+                target, targetName, targetName, problem, warnings, null);
+        _rows =
+        [
+            R(1, "عمر صالح", "Omar Saleh", "10-A", PromotionOutcomes.Promote, A11, "11-A"),
+            R(2, "لينا حداد", "Lina Haddad", "10-A", PromotionOutcomes.Promote, A11, "11-A", null, YearEndIssueCodes.PendingExcuseRequests),
+            R(3, "يوسف ماجد", "Yousef Majid", "10-B", PromotionOutcomes.Repeat, B10, "10-B", null, YearEndIssueCodes.PendingGradeChangeRequests),
+            R(4, "سارة العتيبي", "Sara Al-Otaibi", "10-C", PromotionOutcomes.Promote, null, null, YearEndIssueCodes.TargetClassMissing),
+        ];
+        _steps =
+        [
+            new(T("نشر درجات الفصل الدراسي", "Publish the term grades"), T("لم تُنشر بعد 12 من بنود الدرجات في 4 مقررات صفية.", "12 grade items in 4 class courses aren’t published yet."), YearEndStepState.Attention, T("مراجعة", "Review"), "dev/year-end-gallery"),
+            new(T("إغلاق العام", "Close the year"), T("يقفل الدرجات والحضور، ولا يمكن إعادة فتحه.", "Locks grades and attendance; it can’t be reopened."), YearEndStepState.ToDo, T("إغلاق 2026/2027", "Close 2026/2027"), "dev/year-end-gallery"),
+            new(T("تشغيل الترفيع", "Run the promotion"), T("متاح بعد إغلاق العام.", "Available after the year is closed."), YearEndStepState.NotYet),
+            new(T("فتح 2027/2028", "Open 2027/2028"), T("العام مخطط وفيه 48 فصلًا.", "The year is Planned with 48 classes."), YearEndStepState.Done, T("عرض", "View"), "dev/year-end-gallery"),
+        ];
+    }
+
+    private void Decide(PromotionDecisionDto d)
+    {
+        var i = _rows.FindIndex(r => r.StudentId == d.StudentId);
+        var row = _rows[i];
+        var target = _targets.FirstOrDefault(t => t.Id == d.TargetClassId);
+        _rows[i] = row with { Outcome = d.Outcome, TargetClassId = d.TargetClassId, TargetClassNameAr = target?.NameAr, TargetClassNameEn = target?.NameEn,
+            ProblemCode = d.Outcome is PromotionOutcomes.Promote or PromotionOutcomes.Repeat && d.TargetClassId is null ? YearEndIssueCodes.TargetClassMissing : null };
+        _announce = $"{CultureText.Pick(row.NameAr, row.NameEn)}: {L[$"Promo_Outcome_{d.Outcome}"]}";
+    }
+}

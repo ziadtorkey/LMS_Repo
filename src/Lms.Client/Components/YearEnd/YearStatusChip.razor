@@ -1,0 +1,23 @@
+@using Lms.Shared.AcademicYears
+
+@* A year's status (spec #814 §3): a soft status chip with a dot; a Closed year is neutral and carries a lock icon, so the state is in the words and the icon,
+   never only in the colour. *@
+<MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@ColorFor(Status)" Class="lms-status-chip" data-status="@Status" data-testid="@TestId">
+    @if (Status == AcademicYearStatuses.Closed)
+    {
+        <MudIcon Icon="@Icons.Material.Rounded.Lock" Size="Size.Small" Class="lms-year-lock" aria-hidden="true" />
+    }
+    @L[$"YearStatus_{Status}"]
+</MudChip>
+
+@code {
+    [Parameter, EditorRequired] public string Status { get; set; } = AcademicYearStatuses.Active;
+    [Parameter] public string? TestId { get; set; }
+
+    private static Color ColorFor(string status) => status switch
+    {
+        AcademicYearStatuses.Active => Color.Success,
+        AcademicYearStatuses.Planned => Color.Info,
+        _ => Color.Default,
+    };
+}

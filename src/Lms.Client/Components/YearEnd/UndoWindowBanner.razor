@@ -1,0 +1,80 @@
+@using System.Globalization
+@implements IDisposable
+@inject TimeProvider Clock
+
+@* The promotion's undo window (spec #814 §7.4, D12, D84): the clock time in words with the minutes left in brackets, and Undo at the end. The countdown runs
+   from the server's time (ServerNowUtc), never the browser's clock; it isn't announced every minute, only once when the window ends. When the server says
+   the window is over (too late, or activity in the new year), the banner turns neutral and says why; Undo stays visible and disabled. *@
+<div class="@($"lms-undo{(Over ? " over" : "")}")" data-testid="@TestId" data-until="@UntilAttribute">
+    <MudIcon Icon="@Icons.Material.Rounded.History" aria-hidden="true" />
+    <span class="lms-undo-text">
+        @if (Over)
+        {
+            @OverText
+        }
+        else
+        {
+            @((MarkupString)UntilText)
+        }
+    </span>
+    @* Always present, so the one announcement (the window ending) is read when its text appears. *@
+    <span role="status" class="lms-visually-hidden">@(Over ? OverText : null)</span>
+    <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.Undo" IconClass="lms-icon-flip" Disabled="@(Over || Busy)" OnClick="OnUndo"
+               data-testid="promo-undo">@L["Promo_Undo"]</MudButton>
+</div>
+
+@code {
+    private ITimer? _timer;
+    private DateTimeOffset _clientAtRender;
+    private DateTime? _until;
+    private DateTime _serverNow;
+
+    /// <summary>Until when the run may be undone (UTC); null when the server says it can't be (see <see cref="OverReasonCode"/>).</summary>
+    [Parameter] public DateTime? UndoUntilUtc { get; set; }
+    /// <summary>The server's clock in the same response; the countdown runs from it.</summary>
+    [Parameter, EditorRequired] public DateTime ServerNowUtc { get; set; }
+    /// <summary>The server's reason the window is over (<c>promotion_undo_window_over</c>, <c>promotion_undo_activity_exists</c>), if it sent one.</summary>
+    [Parameter] public string? OverReasonCode { get; set; }
+    /// <summary>The zone the clock time is shown in; the client's zone (D64) when not set.</summary>
+    [Parameter] public TimeZoneInfo? TimeZone { get; set; }
+    [Parameter] public bool Busy { get; set; }
+    [Parameter] public EventCallback OnUndo { get; set; }
+    [Parameter] public string TestId { get; set; } = "promo-undo-banner";
+
+    private TimeSpan Left => _until is { } u ? u - _serverNow - (Clock.GetUtcNow() - _clientAtRender) : TimeSpan.Zero;
+    private bool Over => OverReasonCode is not null || _until is null || Left <= TimeSpan.Zero;
+    private string? UntilAttribute => _until?.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture);
+    private static bool Arabic => CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "ar";
+
+    private string UntilText
+    {
+        get
+        {
+            var local = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(_until!.Value, DateTimeKind.Utc), TimeZone ?? Clock.LocalTimeZone);
+            var minutes = (int)Math.Ceiling(Left.TotalMinutes);
+            var left = Left < TimeSpan.FromMinutes(1) ? L["Promo_Undo_LessThanMinute"].Value : L.Count("Promo_Undo_Left", minutes, Arabic);
+            var clock = $"<b dir=\"ltr\">{local.ToString("HH:mm", CultureInfo.InvariantCulture)}</b>";
+            return string.Format(CultureInfo.CurrentCulture, L["Promo_Undo_Until"].Value, clock, System.Net.WebUtility.HtmlEncode(left));
+        }
+    }
+
+    private string OverText => OverReasonCode is { } code ? L[$"Error_{code}"].Value : L["Error_promotion_undo_window_over"].Value;
+
+    protected override void OnParametersSet()
+    {
+        if (_timer is not null && _until == UndoUntilUtc && _serverNow == ServerNowUtc) return; // a parent re-render must not restart the countdown
+        _until = UndoUntilUtc;
+        _serverNow = ServerNowUtc;
+        _clientAtRender = Clock.GetUtcNow();
+        _timer?.Dispose();
+        _timer = Over ? null : Clock.CreateTimer(_ => InvokeAsync(Tick), null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+    }
+
+    private void Tick()
+    {
+        if (Over) { _timer?.Dispose(); _timer = null; }
+        StateHasChanged();
+    }
+
+    public void Dispose() => _timer?.Dispose();
+}

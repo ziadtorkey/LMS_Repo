@@ -1,0 +1,71 @@
+@using Lms.Shared.YearEnd
+
+@* The reason part of the Withdraw dialog (spec #814 §8.1, D81, D82): the client's active reasons, with "Other" always last; a note that "Other" requires;
+   both are staff-only, said once under the note. The reason is a native select (a short list, keyboard and screen-reader friendly on every device).
+   The page calls Validate() before it sends WithdrawStudentRequest. *@
+<div class="lms-form lms-withdraw-reason">
+    <div class="lms-native-field">
+        <label for="@_id" class="lms-native-label">@L["Lifecycle_Reason"]</label>
+        <select id="@_id" class="lms-native-select lms-native-select-block" aria-invalid="@(_reasonError ? "true" : null)" aria-describedby="@(_reasonError ? _id + "-err" : null)"
+                disabled="@Disabled" data-testid="withdraw-reason" @onchange="ReasonChangedAsync">
+            <option value="" selected="@(ReasonKey is null)" disabled>@L["Lifecycle_Reason_Choose"]</option>
+            @foreach (var r in Reasons.Where(r => r.IsActive && r.Key != WithdrawalReasons.Other))
+            {
+                <option value="@r.Key" selected="@(r.Key == ReasonKey)">@CultureText.Pick(r.NameAr, r.NameEn)</option>
+            }
+            <option value="@WithdrawalReasons.Other" selected="@(ReasonKey == WithdrawalReasons.Other)">@L["Lifecycle_Reason_Other"]</option>
+        </select>
+        @if (_reasonError)
+        {
+            <span id="@(_id + "-err")" class="lms-field-error" role="alert">@L["Lifecycle_Reason_Required"]</span>
+        }
+    </div>
+    <div data-testid="withdraw-note">
+        <MudTextField T="string" Value="Note" ValueChanged="NoteChangedAsync" Label="@L["Lifecycle_Note"]" Lines="3" Immediate="true" Disabled="Disabled"
+                      MaxLength="LifecycleLimits.NoteMaxLength" Counter="LifecycleLimits.NoteMaxLength" Error="_noteError" ErrorText="@L["Lifecycle_Note_Required"]"
+                      aria-required="@(NoteRequired ? "true" : "false")" />
+        <span class="lms-field-help">
+            <MudIcon Icon="@Icons.Material.Rounded.Lock" Size="Size.Small" aria-hidden="true" />
+            <b>@L["Lifecycle_StaffOnly"]</b> @L["Lifecycle_Note_Help"]
+        </span>
+    </div>
+</div>
+
+@code {
+    private readonly string _id = $"wr-{Guid.NewGuid():N}";
+    private bool _reasonError;
+    private bool _noteError;
+
+    /// <summary>The client's list (D82); inactive reasons are not offered. "Other" is always offered last.</summary>
+    [Parameter, EditorRequired] public IReadOnlyList<WithdrawalReasonDto> Reasons { get; set; } = [];
+    [Parameter] public string? ReasonKey { get; set; }
+    [Parameter] public EventCallback<string?> ReasonKeyChanged { get; set; }
+    [Parameter] public string? Note { get; set; }
+    [Parameter] public EventCallback<string?> NoteChanged { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+
+    private bool NoteRequired => ReasonKey == WithdrawalReasons.Other;
+
+    /// <summary>True when a reason is chosen and, for "Other", a note is written; otherwise shows the errors and returns false.</summary>
+    public bool Validate()
+    {
+        _reasonError = string.IsNullOrEmpty(ReasonKey);
+        _noteError = NoteRequired && string.IsNullOrWhiteSpace(Note);
+        StateHasChanged();
+        return !_reasonError && !_noteError;
+    }
+
+    private async Task ReasonChangedAsync(ChangeEventArgs e)
+    {
+        var key = e.Value as string;
+        _reasonError = false;
+        if (key != WithdrawalReasons.Other) _noteError = false;
+        await ReasonKeyChanged.InvokeAsync(string.IsNullOrEmpty(key) ? null : key);
+    }
+
+    private async Task NoteChangedAsync(string? note)
+    {
+        if (!string.IsNullOrWhiteSpace(note)) _noteError = false;
+        await NoteChanged.InvokeAsync(note);
+    }
+}
