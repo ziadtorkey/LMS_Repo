@@ -237,19 +237,19 @@ Legend: **OK** = verified, evidence named; **OK\*** = holds by code or by anothe
 | 1.1.3 route guard | OK\* | per-route `RequirePermission` is enforced by the M5 endpoint matrix of #624 (draft); until it merges the guard covers only the two files above |
 | 1.1.4 totals from published only | **OK** | `Hidden_item_never_changes_category_percent_final_or_counts`, `Student_sees_only_published_items_and_totals_from_them`; golden `published-only-hide.json` |
 | 1.2.1 list, 1.2.6 auto items, 1.2.7 scheduled | **OK** | `Student_response_never_carries_a_hidden_or_scheduled_item`, `Guardian_response_never_carries…`, `Scheduled_item_is_hidden_until_due`; #656 `Scheduled_item_is_published_by_the_job_once` |
-| 1.2.2 query parameters | GAP | the student routes accept only `termId` (code read); no test tries `include/expand/items/sort` |
+| 1.2.2 query parameters | **OK** | `GradeLeakAttackTests.No_query_parameter_widens_what_a_student_or_a_guardian_sees` (16 variants: include, expand, items, all, status, state, sort by a hidden title, fields, paging past the end, asStaff, preview, q) and `A_bad_term_never_turns_into_a_leak_or_a_server_error`; only the one published item ever comes back |
 | 1.2.3 hidden item by id | OK | no student route takes an item id (nothing to probe); staff item routes are relationship-scoped (#650 OK\*) |
 | 1.2.4 statistics fields | **OK** | contract test pins staff-only property names incl. `Withdrawn` (#651 `GradingContractTests`) |
 | 1.2.5 newer-score marker | **OK** | `Newer_score_marker_never_reaches_students` |
-| 1.2.8 un-publish | **OK** | #656 `Unpublish_hides_again_and_is_audited` (no cache exists to invalidate, see 1.5.1) |
+| 1.2.8 un-publish | **OK** | #656 `Unpublish_hides_again_and_is_audited` and `GradeLeakAttackTests.Hiding_a_published_item_takes_effect_on_the_next_read_and_publishing_again_brings_it_back` (student and guardian, the very next read) |
 | 1.2.9 provisional scale | **OK** | #656 `Publish_under_a_provisional_scale_is_409_without_acknowledgement_and_the_acknowledgement_is_audited` |
 | 1.2.10 lock reads | BLOCKED | Task 12 (lock) not built; #656 rules a manual publish on a locked gradebook is allowed and tests it |
 | 1.2.11 snapshots | **OK** | no route reads `GradeSnapshot` (nothing to leak); `ValuesJson` is `[AuditIgnore]` (#656 test) |
 | 1.2.12 guardian of two children, 1.2.13 link state | **OK** | `Guardian_of_two_children_cannot_read_one_under_the_other_id`, `Inactive_guardian_link_is_404`; #635/#653 re-check the live link on every read |
 | 1.2.14 former/substitute staff | OK\* | a substitute holds the attendance relationship only (#653/#661 tests); former teacher 404 relies on #650 |
 | 1.2.15 supervisor, counselor | OK\* | `BuiltInRoleMatrixTests` pins "Counselor has no Grades.*" |
-| 1.2.16 length/timing side channels | GAP | no test compares response sizes with and without a hidden item |
-| 1.3.1-1.3.3 error bodies and headers | GAP | student routes have no item id and answer generic 403/404 (code read); no test forces each error with a hidden item present; no ETag/Last-Modified comparison (F8) |
+| 1.2.16 side channels | **OK** | `Changing_only_hidden_data_changes_nothing_a_student_can_observe`: after changing a hidden score and adding four hidden items the student's courses are deep-equal and ETag, Last-Modified, Cache-Control, Retry-After, Link are unchanged. Timing is not measured |
+| 1.3.1-1.3.3 error bodies and headers | **OK** | `A_guardian_asking_for_another_childs_id_gets_the_answer_of_an_id_that_never_existed` (status, body and stable headers identical to an unknown or malformed id), `Staff_only_routes_answer_a_student_and_a_guardian_without_any_grade_data` (grid, preview, export, item, reports, as student, guardian and foreign guardian) |
 | 1.4.1 notification text | **OK** | #656 `Notification_contains_no_grade_value_or_item_title`; the event declares only `CourseNameAr/En` |
 | 1.4.2 resource placeholder test | GAP | no resource test over grade notification texts (F8) |
 | 1.4.3 scheduled/un-publish notices | **OK** | notices at publish time only; hide sends none (#656) |
@@ -260,7 +260,7 @@ Legend: **OK** = verified, evidence named; **OK\*** = holds by code or by anothe
 | 1.5.2 cache after un-publish | OK | no cache layer |
 | 1.5.3 reports | OK\* | #646 report tests (teacher/counselor 403, supervisor scope); 300 ms budget and row cap added by QA2's findings |
 | 1.5.4 Scale sheet | **OK** | `GradeReportExcel` (bands and descriptors only, escaped; #718 unit test) |
-| 1.5.5 student exports | GAP | none exist; no test asserts that a student route never returns a file (F8) |
+| 1.5.5 student exports | **OK** | `A_student_route_never_returns_a_file` (format=xlsx/csv, download, /export, /export.xlsx: JSON or 404, never a file type or an attachment) |
 | 1.5.6-1.5.8 search, print, publishAt | **OK** | no such routes; student DTOs carry no `publishAt` (contract test) |
 | 1.6.1 only `IGradebookWriter` writes entries | **BUG F3** | #718 `GradeColumnExchange.ApplyAsync` adds and sets `GradeEntry` rows directly (after `EnsureWritableAsync`); no architecture test enforces the rule |
 | 1.6.2 optimistic concurrency | **OK** | #650/#718 (version-bound apply, `changed_since_preview`); current value only to staff |
@@ -350,6 +350,21 @@ Legend: **OK** = verified, evidence named; **OK\*** = holds by code or by anothe
 | 8.5 settings | OPEN | `Org.TimeZone` unknown-id write validation (QA3 #639/#621 item) is not verified as done |
 | 8.6 idempotence | **OK** | double publish (#656), double approve/withdraw (#635), duplicate-key races mapped (#653) |
 
+### 9.8 Independent attack tests (QA3, written for this review)
+
+The tests were written by QA3, not by the authors of the code, and each file was checked by mutation (a guard in the code under test was removed or weakened and the file had to fail). They are on branches pushed to the repository and need the unmerged stack, so they join main when the chains do (not in this PR, which is documents only):
+
+| Branch (tip it builds on) | File | Tests | Covers | Mutation check |
+|---|---|---|---|---|
+| `qa/706-attack-sheet` (#718 b23fd0c5) | `tests/Lms.UnitTests/Spreadsheets/SpreadsheetAttackTests.cs` | 58 | 2.1-2.12: twelve formula and DDE strings through the column export (quote prefix, no `<f>`), refused uploads by content (html, csv, OLE, png, pdf, truncated zip), forbidden parts in six spellings, macro content types, zip bombs (total, ratio, part count, million-row range), DTD/XXE with a canary file and a URL, entity expansion, external links and defined names, formulas and text in number cells, absurd numbers, long student numbers never echoed, hidden first sheet | Safe disabled (11 fail), bomb check dropped (2), entry cap dropped (1), number length (1), forbidden parts (7) |
+| `qa/706-attack-att` (#635 25a28391) | `tests/Lms.UnitTests/Excuses/ExcuseAttachmentSniffAttackTests.cs` | 32 | 3.1-3.3, 3.12: 20 refused prefixes (WAVE/AVI RIFF, late or lower-case PDF, partial PNG/JPEG, GIF, SVG, HTML, XML with DTD, exe, ELF, zip, script), polyglot typed by its first bytes, hostile file names, exact cap, zero byte, scanner off or fail-closed, stream rewound | WEBP check weakened (2 fail), cap off by one (1) |
+| `qa/706-attack-att` | `tests/Lms.IntegrationTests/Excuses/ExcuseAttachmentAttackTests.cs` | 7 | 3.1, 3.2, 3.9: refused types and sizes at submit leave no excuse, another client's file with the same user id, reuse of a file, a stranger learns nothing from the answer, no URL, key or file id in any answer | validator call removed (2 fail) |
+| `qa/706-attack-att` | `tests/Lms.IntegrationTests/Security/SubstituteScopeAttackTests.cs` | 5 | 4.1-4.3, 4.7, 4.8: 18 routes closed while the cover is live (grading, ad hoc sessions, other sessions, history, reports, alerts, timetable publish), self-assignment, past-date cover, cover named for another user, foreign client's teacher | date check removed from the rule (1 fail); the user check is a second layer in the endpoint, so removing it from the rule alone does not fail |
+| `qa/706-attack-att` | `tests/Lms.IntegrationTests/Security/TimetableCrossClientAttackTests.cs` | 5 | 5.1-5.3, 5.6, 5.7, 5.9: ten routes of the other client closed in both directions, a real foreign id answers as an unknown id (status, body, headers), own timetable carries nothing of the other client, a foreign teacher's slot leaks no clash, validate and read describe only the own client | slot access check removed (4 fail) |
+| `qa/706-attack-grade` (#656 4f0d7149 + #646 e19704c8) | `tests/Lms.IntegrationTests/Security/GradeLeakAttackTests.cs` | 29 | 1.2.2, 1.2.8, 1.2.16, 1.3.1-1.3.3, 1.5.5: 16 query variants, bad terms, hidden-data changes invisible (courses deep-equal, stable headers), hide and re-publish take effect on the next read, foreign child's 404 identical to an unknown id, staff routes closed to student and guardians, never a file | published-only flag flipped in `PublishedGradeReads` (21 fail) |
+
+Findings from writing them: the substitute (any Teacher) can read the class timetable and the exception list, including the staff note (F11); everything else held.
+
 ### 9.7 Sign-off
 
 | Section | Reviewer | Sha | Evidence | Blocked rows |
@@ -374,6 +389,7 @@ Legend: **OK** = verified, evidence named; **OK\*** = holds by code or by anothe
 | F5 (#740) | low | A refused grade import (bad type, bomb) is not audited (row 2.13) |
 | F6 (#741) | medium | #635: approve reads covered records through the reviewer's own scope (count check missing); check the stored file size before downloading it; keep the sniffed content type with the excuse |
 | F7 (#742) | medium | #644: the signed attachment URL expires after 5 minutes and the drawer never refreshes it; the content security policy has no `img-src` for the storage origin |
-| F8 (#743) | low | Task 41 test debt (QA3): `GradeLeakAttackTests` (query-parameter widening, response-length side channel, error bodies, headers), `SpreadsheetAttackTests`, `ExcuseAttachmentAttackTests`, log-capture and notification-resource placeholder tests, and the guard's file list for new student-facing grade routes |
+| F8 (#743) | low | Task 41 test debt, mostly paid (9.8): remaining are log-capture assertions (1.4.4), the grade-notification resource placeholder test (1.4.2), mass-assignment bodies on the grade writes (1.6.4), the lock reads (Task 12) and the guard file list of `PublishedGradeReadsGuardTests` for new student-facing routes |
 | F9 (#744) | low | #661: a teacher's take accepts `Excused` directly (bypasses the excuse flow); decide with Task 19 |
 | F10 (#745) | low | #656: guardian recipients when `Features.GuardianPortal` is turned off after activation; `Org.TimeZone` unknown-id write validation (row 8.5) |
+| F11 (#755) | low | Every teacher of the school can read the staff `Note` of a timetable exception (`Timetable.View`); found by the substitute attack tests |
