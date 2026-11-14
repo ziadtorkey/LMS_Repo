@@ -2317,6 +2317,8 @@
   <data name="ModQueue_AuditDetail" xml:space="preserve"><value>سُجّل فتح هذا البلاغ في سجل التدقيق.</value></data>
   <data name="ModQueue_BulkLimit" xml:space="preserve"><value>يمكنك إبقاء {0} بلاغًا كحد أقصى دفعة واحدة.</value></data>
   <data name="ModQueue_Paging" xml:space="preserve"><value>صفحات البلاغات</value></data>
+  <data name="ModQueue_OpenFile" xml:space="preserve"><value>فتح الملف</value></data>
+  <data name="ModQueue_Download" xml:space="preserve"><value>تنزيل</value></data>
   <data name="Setting_Messaging_UploadsPerMinute" xml:space="preserve"><value>عدد رفع المرفقات في الدقيقة</value></data>
   <data name="Msg_ReadOnly_group_students_read_only" xml:space="preserve"><value>المعلم والموظفون فقط يكتبون في هذه المجموعة. يمكنك مراسلة المعلم بشكل خاص.</value></data>
   <data name="Msg_ReadOnly_group_guardians_read_only" xml:space="preserve"><value>الموظفون فقط يكتبون في هذه المجموعة.</value></data>

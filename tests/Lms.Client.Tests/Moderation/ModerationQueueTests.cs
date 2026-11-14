@@ -384,4 +384,21 @@ public sealed class ModerationQueueTests : ClientTestContext
         while (dir is not null && !Directory.Exists(Path.Combine(dir, "src", "Lms.Client"))) dir = Path.GetDirectoryName(dir);
         return Path.Combine(dir!, "src", "Lms.Client", "wwwroot", "css");
     }
+
+    [Fact]
+    public async Task Opening_an_attachment_of_the_reported_message_uses_the_audited_route_and_shows_a_link()
+    {
+        var id = _api.AddReport(withFile: true);
+        var page = await OpenReportAsync(id);
+        var reads = _api.AuditedReads;
+        var fileId = _api.FileOf(id);
+
+        await page.Find($"[data-testid=mod-file-open-{fileId}]").ClickAsync(new());
+
+        var link = page.WaitForElement($"[data-testid=mod-file-link-{fileId}]");
+        Assert.Contains("files.example", link.GetAttribute("href"));
+        Assert.Contains("noopener", link.GetAttribute("rel"));
+        Assert.Equal(reads + 1, _api.AuditedReads); // every issue of a link is audited
+        Assert.Single(page.FindAll("[data-testid^=mod-file-open-], [data-testid^=mod-file-link-]")); // only the reported message has an attachment to open
+    }
 }
