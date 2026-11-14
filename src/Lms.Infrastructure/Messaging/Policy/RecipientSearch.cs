@@ -13,9 +13,13 @@ namespace Lms.Infrastructure.Messaging.Policy;
 /// classmate's name or a guardian another guardian's gets exactly the answer of no match: the same shape, with nothing that tells a refusal from an absence. The search needs
 /// at least <see cref="MessagingLimits.SearchMinLength"/> characters and is paged; it never leaves the caller's client.
 /// </summary>
-public sealed class RecipientSearch(LmsDbContext db, IMessagingPolicy policy, IClock clock)
+public sealed class RecipientSearch(LmsDbContext db, IMessagingPolicy policy, IClock clock, RelationshipLookup relationships)
 {
-    private const int Candidates = 60;
+    /// <summary>Candidates read per round trip, in name order.</summary>
+    private const int Batch = 100;
+
+    /// <summary>The cap on <b>work</b>, never on results: the most distinct people the policy is asked about for one search.</summary>
+    private const int MaxEvaluated = 600;
 
     public async Task<IReadOnlyList<RecipientDto>> SearchAsync(Guid organizationId, Guid callerUserId, string? search, int page, int pageSize, CancellationToken ct)
     {
@@ -26,31 +30,55 @@ public sealed class RecipientSearch(LmsDbContext db, IMessagingPolicy policy, IC
         }
 
         var today = DateOnly.FromDateTime(clock.UtcNow); // the client calendar (M5) replaces this when it is on main
-        var roleKeys = MessagingRuleDefaults.Roles;
-        // ISOLATION-BYPASS: the people a caller may write to are in other units of the client; candidates are users with a valid built-in-role assignment in this client whose
-        // display name contains the text. Only the user id, names and role key are read, and a candidate is returned only after the messaging policy allows the caller to start a
-        // conversation with them. Client matched, live rows.
-        var candidates = await (from a in db.Set<RoleAssignment>().IgnoreQueryFilters()
-                                join r in db.Set<Role>().IgnoreQueryFilters() on a.RoleId equals r.Id
-                                join u in db.Users on a.UserId equals u.Id
-                                where !a.IsDeleted && !r.IsDeleted && a.OrganizationId == organizationId && r.OrganizationId == organizationId && r.BuiltInKey != null
-                                      && roleKeys.Contains(r.BuiltInKey) && a.UserId != callerUserId && (a.ValidFrom == null || a.ValidFrom <= today) && (a.ValidTo == null || a.ValidTo >= today)
-                                      && u.Status == Lms.Domain.Identity.UserStatus.Active
-                                      && (u.DisplayNameAr.Contains(text) || u.DisplayNameEn.Contains(text))
-                                select new { u.Id, u.DisplayNameAr, u.DisplayNameEn, RoleKey = r.BuiltInKey! })
-            .OrderBy(c => c.DisplayNameEn).ThenBy(c => c.Id).Take(Candidates * 3).ToListAsync(ct);
+        var size = Math.Clamp(pageSize, 1, MessagingLimits.SearchMaxResults);
+        var wanted = Math.Max(page, 1) * size;
+
+        // Pre-filter in SQL by role: only the roles the caller's own roles may reach at all (a student never lists classmates, so 200 of them cannot crowd out a teacher).
+        var callerRoles = (await relationships.RolesAsync(organizationId, callerUserId, today, [.. MessagingRuleDefaults.Roles], ct)).Keys.ToList();
+        var stored = (await db.Set<MessagingRule>().Where(r => r.OrganizationId == organizationId).Select(r => new { r.FromRole, r.ToRole, r.Mode }).ToListAsync(ct))
+            .ToDictionary(r => (r.FromRole, r.ToRole), r => r.Mode);
+        var reachableRoles = MessagingRuleDefaults.Roles
+            .Where(to => callerRoles.Any(from => MessagingPolicy.Effective(stored, from, to) != MessagingRuleModes.Deny)).ToList();
+        if (reachableRoles.Count == 0)
+        {
+            return [];
+        }
 
         var allowed = new List<RecipientDto>();
-        foreach (var group in candidates.GroupBy(c => c.Id).Take(Candidates))
+        var seen = new HashSet<Guid>();
+        for (var skip = 0; allowed.Count < wanted && seen.Count < MaxEvaluated; skip += Batch)
         {
-            if ((await policy.CanStartAsync(callerUserId, group.Key, ct)).Allowed)
+            // ISOLATION-BYPASS: the people a caller may write to are in other units of the client; candidates are users with a valid built-in-role assignment in this client whose
+            // display name contains the text. Only the user id, names and role key are read, and a candidate is returned only after the messaging policy allows the caller to start a
+            // conversation with them. Client matched, live rows.
+            var batch = await (from a in db.Set<RoleAssignment>().IgnoreQueryFilters()
+                               join r in db.Set<Role>().IgnoreQueryFilters() on a.RoleId equals r.Id
+                               join u in db.Users on a.UserId equals u.Id
+                               where !a.IsDeleted && !r.IsDeleted && a.OrganizationId == organizationId && r.OrganizationId == organizationId && r.BuiltInKey != null
+                                     && reachableRoles.Contains(r.BuiltInKey) && a.UserId != callerUserId && (a.ValidFrom == null || a.ValidFrom <= today) && (a.ValidTo == null || a.ValidTo >= today)
+                                     && u.Status == Lms.Domain.Identity.UserStatus.Active
+                                     && (u.DisplayNameAr.Contains(text) || u.DisplayNameEn.Contains(text))
+                               select new { u.Id, u.DisplayNameAr, u.DisplayNameEn, RoleKey = r.BuiltInKey! })
+                .OrderBy(c => c.DisplayNameEn).ThenBy(c => c.Id).ThenBy(c => c.RoleKey).Skip(skip).Take(Batch).ToListAsync(ct);
+            if (batch.Count == 0)
             {
-                var first = group.First();
-                allowed.Add(new RecipientDto(first.Id, first.DisplayNameAr, first.DisplayNameEn, first.RoleKey, null, null));
+                break;
+            }
+
+            foreach (var candidate in batch)
+            {
+                if (!seen.Add(candidate.Id))
+                {
+                    continue; // one row per person, whatever the number of roles
+                }
+
+                if ((await policy.CanStartAsync(callerUserId, candidate.Id, ct)).Allowed)
+                {
+                    allowed.Add(new RecipientDto(candidate.Id, candidate.DisplayNameAr, candidate.DisplayNameEn, candidate.RoleKey, null, null));
+                }
             }
         }
 
-        var size = Math.Clamp(pageSize, 1, MessagingLimits.SearchMaxResults);
         return [.. allowed.Skip((Math.Max(page, 1) - 1) * size).Take(size)];
     }
 }

@@ -236,7 +236,7 @@ public sealed class MessagingPolicyTests(LmsApiFactory factory)
             Assert.Equal(MessagingReasons.Rule, (await policy.CreatingRuleHoldsAsync(w.Manager, w.GuardianA)).Reason);
         }
 
-        var restore = await PutRulesAsync(w, new MessagingRuleCellDto(BuiltInRoles.Manager, BuiltInRoles.Guardian, MessagingRuleModes.Allow));
+        var restore = await PutRulesAsync(w, new MessagingRuleCellDto(BuiltInRoles.Manager, BuiltInRoles.Guardian, MessagingRuleModes.SameUnit));
         Assert.Equal(HttpStatusCode.OK, restore.StatusCode);
         var again = PolicyIn(w.Tree, factory, out var db2);
         await using (db2)
@@ -320,7 +320,7 @@ public sealed class MessagingPolicyTests(LmsApiFactory factory)
         var w = await FullWorldAsync("MP10");
 
         var below = await SendAsync(factory, HttpMethod.Get, Routes.CommsMessagingRules, w.SchoolAdminCaller);
-        var put = await PutRulesAsync(w, new MessagingRuleCellDto(BuiltInRoles.Manager, BuiltInRoles.Guardian, MessagingRuleModes.Allow));
+        var put = await PutRulesAsync(w, new MessagingRuleCellDto(BuiltInRoles.Manager, BuiltInRoles.Guardian, MessagingRuleModes.SameUnit));
         var asTeacher = await SendAsync(factory, HttpMethod.Get, Routes.CommsMessagingRules, w.TeacherCaller);
         var asStudent = await SendAsync(factory, HttpMethod.Put, Routes.CommsMessagingRules, w.StudentCaller, new SaveMessagingRulesRequest([]));
 
@@ -414,6 +414,39 @@ public sealed class MessagingPolicyTests(LmsApiFactory factory)
         Assert.Contains(w.MathTeacher, asManager.Select(r => r.UserId));
         Assert.DoesNotContain(w.StudentB, asManager.Select(r => r.UserId)); // an Org Admin never gets a private line to a student
         Assert.DoesNotContain(stranger, asManager.Select(r => r.UserId)); // never another client
+    }
+
+    [Fact]
+    public async Task Recipient_search_finds_the_allowed_user_behind_hundreds_of_refused_name_matches()
+    {
+        var w = await FullWorldAsync("MP14");
+        await SetNamesAsync(w.MathTeacher, "Zed Maths", "زيد الرياضيات");
+        var unrelated = new List<Guid>();
+        for (var i = 0; i < 190; i++)
+        {
+            var user = (await PeopleTestKit.AddUserAsync(factory)).Id;
+            await SetNamesAsync(user, $"Ahmed {i:D3}", $"أحمد {i}");
+            unrelated.Add(user);
+        }
+
+        // 190 teachers of another school who match "Ahmed" and sort first: a student may reach none of them (not their teachers), only Zed.
+        foreach (var user in unrelated.Take(95))
+        {
+            await AccessTestData.AssignAsync(factory, w.Tree, w.Tree.School2, BuiltInRoles.Teacher, user);
+        }
+
+        // 95 classmates matching the same text: refused by role, left out in SQL.
+        foreach (var user in unrelated.Skip(95))
+        {
+            await AccessTestData.AssignAsync(factory, w.Tree, w.Tree.School1, BuiltInRoles.Student, user);
+        }
+
+        await SetNamesAsync(w.MathTeacher, "Ahmed Zed Maths", "زيد الرياضيات أحمد");
+        var response = await SendAsync(factory, HttpMethod.Get, Routes.MessagingRecipientsSearch("Ahmed"), w.StudentCaller);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var found = (await response.Content.ReadFromJsonAsync<List<RecipientDto>>(Web))!;
+        Assert.Equal([w.MathTeacher], found.Select(r => r.UserId)); // the allowed user is last of 191 name matches and is still found
     }
 
     private async Task SetNamesAsync(Guid userId, string en, string ar)

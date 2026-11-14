@@ -138,6 +138,8 @@ public static class SettingKeys
 
     /// <summary>The review target of a safety concern in hours (the queue marks it overdue after this).</summary>
     public static readonly SettingKey<int> ModerationSafetyReviewHours = new("Moderation.SafetyReviewHours", 24);
+    /// <summary>Per-user cap of message attachment uploads a minute (429 <c>rate_limited</c> over it).</summary>
+    public static readonly SettingKey<int> MessagingUploadsPerMinute = new("Messaging.UploadsPerMinute", 10);
 
     /// <summary>Per-author cap of announcements a day.</summary>
     public static readonly SettingKey<int> AnnouncementsMaxPerAuthorPerDay = new("Announcements.MaxPerAuthorPerDay", 10);
