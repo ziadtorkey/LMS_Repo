@@ -1,0 +1,91 @@
+@page "/attendance"
+@attribute [Authorize]
+@using Lms.Client.Services.Attendance
+@using Lms.Shared.Attendance
+@using Lms.Shared.Authorization
+@inject IAttendanceApi Api
+@inject NavigationManager Navigation
+@inject PermissionState PermState
+
+<PageTitle>@L["Att_Today_Title"]</PageTitle>
+@if (!PermState.Loaded)
+{
+    <LoadingState Lines="4" TestId="attendance-loading" />
+}
+else if (!PermState.Has(Permissions.Attendance.Take))
+{
+    <Forbidden />
+}
+else
+{
+    <PageHeader Title="@L["Att_Today_Title"]" Subtitle="@L["Att_Today_Subtitle"]" TitleTestId="attendance-title" />
+
+    <div class="lms-filters mb-4" role="search" aria-label="@L["Common_Filters"]">
+        <div class="lms-filter">
+            <MudDatePicker Date="_date?.ToDateTime(TimeOnly.MinValue)" DateChanged="OnDateChanged" Label="@L["Att_Date"]" Variant="Variant.Outlined"
+                           DateFormat="yyyy-MM-dd" Clearable="false" data-testid="attendance-date" />
+        </div>
+    </div>
+
+    @if (_loading)
+    {
+        <LoadingState Lines="4" TestId="attendance-loading" />
+    }
+    else if (_failed)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="api-error">
+            @L["Api_Error"]
+            <MudButton Variant="Variant.Text" OnClick="LoadAsync">@L["Common_Retry"]</MudButton>
+        </MudAlert>
+    }
+    else if (_sessions.Count == 0)
+    {
+        <EmptyState Title="@L["Att_Today_EmptyTitle"]" Text="@L["Att_Today_EmptyText"]" Icon="@Icons.Material.Rounded.EventAvailable" />
+    }
+    else
+    {
+        <div class="lms-session-grid" data-testid="attendance-sessions">
+            @foreach (var session in _sessions)
+            {
+                <AttendanceSessionCard Session="session" OnHistory="OpenHistory" />
+            }
+        </div>
+    }
+
+    <AttendanceHistoryDrawer @bind-Open="_historyOpen" SessionId="_historyFor" />
+}
+
+@code {
+    private IReadOnlyList<AttendanceSessionListItemDto> _sessions = [];
+    private bool _loading = true, _failed, _historyOpen;
+    private DateOnly? _date;
+    private Guid? _historyFor;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        if (PermState.Has(Permissions.Attendance.Take)) await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _failed = false;
+        var (value, failed) = await ApiCalls.RunAsync(() => Api.GetSessionsAsync(_date), Navigation);
+        _sessions = value ?? [];
+        _failed = failed;
+        _loading = false;
+    }
+
+    private Task OnDateChanged(DateTime? date)
+    {
+        _date = date is { } d ? DateOnly.FromDateTime(d) : null;
+        return LoadAsync();
+    }
+
+    private void OpenHistory(AttendanceSessionListItemDto session)
+    {
+        _historyFor = session.Id;
+        _historyOpen = true;
+    }
+}

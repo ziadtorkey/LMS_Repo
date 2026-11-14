@@ -1,0 +1,88 @@
+@using Lms.Client.Services.Attendance
+@using Lms.Shared.Attendance
+@inject IAttendanceApi Api
+@inject NavigationManager Navigation
+@inject ICultureService Culture
+
+@* Who changed which mark, when and why (AttendanceRecordChange), in a side drawer that opens from the end edge (the left edge in Arabic). *@
+<MudDrawer Open="@Open" OpenChanged="OpenChanged" Anchor="Anchor.End" Variant="DrawerVariant.Temporary" Elevation="2" Width="min(420px, 100vw)"
+           Class="lms-history-drawer" data-testid="history-drawer">
+    <div class="pa-4">
+        <div class="d-flex align-center justify-space-between mb-3">
+            <MudText Typo="Typo.h6" HtmlTag="h2">@L["Att_History_Title"]</MudText>
+            <MudIconButton Icon="@Icons.Material.Rounded.Close" aria-label="@L["Common_Close"]" OnClick="CloseAsync" data-testid="history-close" />
+        </div>
+        @if (_loading)
+        {
+            <LoadingState Lines="3" TestId="history-loading" />
+        }
+        else if (_failed)
+        {
+            <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="history-error">
+                @L["Api_Error"]
+                <MudButton Variant="Variant.Text" OnClick="LoadAsync">@L["Common_Retry"]</MudButton>
+            </MudAlert>
+        }
+        else if (_changes.Count == 0)
+        {
+            <EmptyState Title="@L["Att_History_EmptyTitle"]" Text="@L["Att_History_EmptyText"]" Icon="@Icons.Material.Rounded.History" />
+        }
+        else
+        {
+            <ul class="lms-history-list" data-testid="history-list">
+                @foreach (var change in _changes)
+                {
+                    <li class="lms-history-item" data-testid="history-item">
+                        <div class="lms-cell-strong">@Culture.Pick(change.StudentNameAr, change.StudentNameEn)</div>
+                        <div>
+                            @if (change.FromStatus is not null)
+                            {
+                                <span>@L[$"Att_Status_{change.FromStatus}"]</span>
+                                <MudIcon Icon="@Icons.Material.Rounded.ArrowForward" Size="Size.Small" Class="lms-icon-flip" />
+                            }
+                            <span class="lms-cell-strong">@L[$"Att_Status_{change.ToStatus}"]</span>
+                            <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@L[$"Att_ChangeKind_{change.Kind}"]</MudChip>
+                        </div>
+                        @if (!string.IsNullOrWhiteSpace(change.Reason))
+                        {
+                            <div class="lms-muted">@change.Reason</div>
+                        }
+                        <div class="lms-muted">
+                            @Culture.Pick(change.ChangedByNameAr, change.ChangedByNameEn) ·
+                            <span dir="ltr">@change.ChangedAtUtc.ToString("yyyy-MM-dd HH:mm")</span>
+                        </div>
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+</MudDrawer>
+
+@code {
+    private IReadOnlyList<AttendanceChangeDto> _changes = [];
+    private bool _loading, _failed;
+    private Guid? _loadedFor;
+
+    [Parameter] public bool Open { get; set; }
+    [Parameter] public EventCallback<bool> OpenChanged { get; set; }
+    [Parameter] public Guid? SessionId { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Open && SessionId is { } id && _loadedFor != id) await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        if (SessionId is not { } id) return;
+        _loadedFor = id;
+        _loading = true;
+        _failed = false;
+        var (value, failed) = await ApiCalls.RunAsync(() => Api.GetHistoryAsync(id), Navigation);
+        _changes = value ?? [];
+        _failed = failed;
+        _loading = false;
+    }
+
+    private Task CloseAsync() => OpenChanged.InvokeAsync(false);
+}
