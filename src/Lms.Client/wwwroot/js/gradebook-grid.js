@@ -8,8 +8,10 @@ export function attach(table) {
     table.__lmsGrid = true;
     table.addEventListener('keydown', e => {
         const editing = table.dataset.mode === 'edit';
-        const inMenu = e.target.closest && e.target.closest('[role=menu]');
-        if (inMenu) return; // the cell menu keeps its own keys
+        // Only keys pressed in a grid cell (or the input of one) belong to the key map. The student button in a row header, the cell menu and anything else
+        // inside the table keep their own keys: an Enter on the student button must still activate it (WCAG 2.1.1).
+        const inCell = e.target.closest && e.target.closest('[role=gridcell]');
+        if (!inCell) return;
         const handled = editing ? EDITING.includes(e.key) : (NAVIGATION.includes(e.key) || (e.key === 'F10' && e.shiftKey));
         if (handled && !e.altKey) e.preventDefault();
     }, true);
@@ -25,6 +27,11 @@ document.addEventListener('keydown', e => {
     const next = items[(at + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length];
     if (next) { e.preventDefault(); next.focus(); }
 });
+
+// Focus helpers for the student preview drawer: into it when it opens, back to the student's button when it closes.
+export function focusTestId(testId) {
+    document.querySelector(`[data-testid="${testId}"]`)?.focus();
+}
 
 export function focusMenu() {
     document.querySelector('[role=menu] [role=menuitem]')?.focus();

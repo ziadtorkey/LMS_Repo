@@ -9,7 +9,7 @@
     {
         <input class="lms-gb-input" type="text" inputmode="decimal" dir="ltr" autocomplete="off" value="@Draft" @oninput="e => OnDraft.InvokeAsync(e.Value?.ToString() ?? string.Empty)"
                aria-label="@string.Format(Culture.Current, L["Grd_Edit_Label"].Value, StudentName, Culture.Pick(Item.TitleAr, Item.TitleEn))"
-               data-testid="@($"edit-{StudentId}-{Item.Id}")" />
+               @onfocusout="() => OnBlur.InvokeAsync()" data-testid="@($"edit-{StudentId}-{Item.Id}")" />
     }
     else if (Ui is { Status: CellStatus.Saving })
     {
@@ -84,6 +84,9 @@
 
     [Parameter] public EventCallback<KeyboardEventArgs> OnKey { get; set; }
     [Parameter] public EventCallback OnFocusCell { get; set; }
+
+    /// <summary>The input lost the focus while editing (a click elsewhere): the grid saves what was typed instead of dropping it.</summary>
+    [Parameter] public EventCallback OnBlur { get; set; }
     [Parameter] public EventCallback<string> OnDraft { get; set; }
     [Parameter] public EventCallback<string> OnMenu { get; set; }
 

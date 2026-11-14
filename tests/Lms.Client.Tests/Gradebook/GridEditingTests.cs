@@ -319,6 +319,96 @@ public sealed class GridEditingTests : ClientTestContext
         Assert.Equal(2, _api.LastEntries!.Version);
     }
 
+    // ---- the term a write is for, leaving the page, blur, and the student button ----
+
+    [Fact]
+    public async Task A_save_is_sent_for_the_term_the_grid_shows_not_the_current_one()
+    {
+        _api.Term2HasItems = true;
+        Services.GetRequiredService<Microsoft.AspNetCore.Components.NavigationManager>().NavigateTo($"class-courses/{Cc}/gradebook?termId={FakeGradebookApi.Term2Id}");
+        var page = await OpenAsync();
+        page.WaitForAssertion(() => Assert.Equal(FakeGradebookApi.Term2Id, _api.LastQuery!.TermId), Wait);
+
+        Type(page, S0, Manual, "15");
+
+        page.WaitForAssertion(() => Assert.Equal(FakeGradebookApi.Term2Id, _api.LastWriteTermId), Wait);
+    }
+
+    [Fact]
+    public async Task A_save_on_the_current_term_names_it_too()
+    {
+        var page = await OpenAsync();
+
+        Type(page, S0, Manual, "15");
+
+        page.WaitForAssertion(() => Assert.Equal(FakeGradebookApi.DemoTermId, _api.LastWriteTermId), Wait);
+    }
+
+    [Fact]
+    public async Task Clicking_away_from_the_input_saves_what_was_typed()
+    {
+        var page = await OpenAsync();
+        Press(Cell(page, S0, Manual), "Enter");
+        var input = page.WaitForElement($"[data-testid=edit-{S0}-{Manual}]", Wait);
+        input.Input("14");
+
+        input.TriggerEvent("onfocusout", new FocusEventArgs());
+
+        page.WaitForAssertion(() => Assert.Equal("14 of 20", Cell(page, S0, Manual).GetAttribute("aria-label")), Wait);
+        Assert.Empty(page.FindAll("input.lms-gb-input"));
+    }
+
+    [Fact]
+    public async Task A_rejected_value_on_blur_is_announced_and_dropped()
+    {
+        var page = await OpenAsync();
+        Press(Cell(page, S0, Manual), "Enter");
+        var input = page.WaitForElement($"[data-testid=edit-{S0}-{Manual}]", Wait);
+        input.Input("99");
+
+        input.TriggerEvent("onfocusout", new FocusEventArgs());
+
+        page.WaitForAssertion(() => Assert.Contains("Out of range", page.Find("[data-testid=grid-live-assertive]").TextContent), Wait);
+        Assert.Empty(page.FindAll("input.lms-gb-input"));
+        Assert.Equal(0, _api.UpsertCalls);
+    }
+
+    [Fact]
+    public async Task Leaving_the_page_with_a_half_typed_score_saves_it_first()
+    {
+        var page = await OpenAsync();
+        Press(Cell(page, S0, Manual), "Enter");
+        page.WaitForElement($"[data-testid=edit-{S0}-{Manual}]", Wait).Input("13");
+
+        Services.GetRequiredService<Microsoft.AspNetCore.Components.NavigationManager>().NavigateTo("somewhere-else");
+
+        page.WaitForAssertion(() => Assert.Equal(13m, _api.LastEntries!.Changes.Single().Points), Wait);
+    }
+
+    [Fact]
+    public async Task Enter_on_the_student_button_is_not_a_grid_key()
+    {
+        var page = await OpenAsync();
+
+        var button = page.Find($"[data-testid=student-{S0}]");
+
+        // No grid key handler is on the row header, so the browser's own Enter (a click) reaches the button; the click opens the preview.
+        Assert.ThrowsAny<Exception>(() => button.KeyDown(new KeyboardEventArgs { Key = "Enter" }));
+        button.Click();
+        page.WaitForElement("[data-testid=student-drawer]", Wait);
+    }
+
+    [Fact]
+    public void The_key_guard_only_stops_keys_inside_a_grid_cell()
+    {
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir is not null && !Directory.Exists(Path.Combine(dir.FullName, "src", "Lms.Client"))) dir = dir.Parent;
+        var js = File.ReadAllText(Path.Combine(dir!.FullName, "src", "Lms.Client", "wwwroot", "js", "gradebook-grid.js"));
+
+        Assert.Contains("closest('[role=gridcell]')", js);
+        Assert.Contains("if (!inCell) return;", js); // the student button, the menu and any other control keep their own keys (WCAG 2.1.1)
+    }
+
     // ---- the phone list and the breakpoint ----
 
     [Fact]

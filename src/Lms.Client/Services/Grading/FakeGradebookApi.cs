@@ -57,6 +57,12 @@ public sealed class FakeGradebookApi : IGradebookApi
     /// <summary>The caller can manage / publish (a teacher). False models a read-only viewer.</summary>
     public bool CanManage { get; set; } = true;
 
+    /// <summary>The term the last write (config, categories, new item or entries) was sent for; null when none was.</summary>
+    public Guid? LastWriteTermId { get; private set; }
+
+    /// <summary>When true the second demo term has the demo's items too (by default it has none yet).</summary>
+    public bool Term2HasItems { get; set; }
+
     /// <summary>The last grid query the page sent (term and paging), for tests.</summary>
     public GradebookQuery? LastQuery { get; private set; }
 
@@ -207,12 +213,13 @@ public sealed class FakeGradebookApi : IGradebookApi
             NoItems ? [] : [.. _items.OrderBy(i => i.Order)], rows, total == 100m, total, Locked ? GradebookStates.Locked : GradebookStates.Open,
             Locked ? now : null, 0, CanManage, CanManage, now, now);
         // The second term of the demo year has no grade items yet.
-        if (query.TermId == Term2Id) book = book with { TermId = Term2Id, TermNameAr = "الفصل الثاني", TermNameEn = "Term 2", Items = [] };
+        if (query.TermId == Term2Id) book = book with { TermId = Term2Id, TermNameAr = "الفصل الثاني", TermNameEn = "Term 2", Items = Term2HasItems ? book.Items : [] };
         return Task.FromResult(Transform is null ? book : Transform(book, query));
     }
 
-    public Task<GradebookConfigDto> SaveConfigAsync(Guid classCourseId, SaveGradebookConfigRequest request, CancellationToken ct = default)
+    public Task<GradebookConfigDto> SaveConfigAsync(Guid classCourseId, SaveGradebookConfigRequest request, Guid? termId = null, CancellationToken ct = default)
     {
+        LastWriteTermId = termId;
         EnsureWritable(classCourseId);
         if (request.DecimalPlaces is < GradingLimits.DecimalPlacesMin or > GradingLimits.DecimalPlacesMax
             || !CategoryMethods.All.Contains(request.CategoryMethod) || !MissingPolicies.All.Contains(request.MissingPolicy))
@@ -222,8 +229,9 @@ public sealed class FakeGradebookApi : IGradebookApi
         return Task.FromResult(new GradebookConfigDto(_scaleId, Scale.NameAr, Scale.NameEn, Scale.Provisional, _places, _method, _missing, RoundingModes.HalfUp));
     }
 
-    public Task<IReadOnlyList<GradeCategoryDto>> SaveCategoriesAsync(Guid classCourseId, SaveGradeCategoriesRequest request, CancellationToken ct = default)
+    public Task<IReadOnlyList<GradeCategoryDto>> SaveCategoriesAsync(Guid classCourseId, SaveGradeCategoriesRequest request, Guid? termId = null, CancellationToken ct = default)
     {
+        LastWriteTermId = termId;
         EnsureWritable(classCourseId);
         if (request.Categories.Any(c => c.Weight is < GradingLimits.WeightMin or > GradingLimits.WeightMax)) throw Problem(400, ProblemCodes.weights_invalid);
         _categories.Clear();
@@ -241,8 +249,9 @@ public sealed class FakeGradebookApi : IGradebookApi
             throw Problem(400, ProblemCodes.validation_failed);
     }
 
-    public Task<GradeItemDto> CreateItemAsync(Guid classCourseId, CreateGradeItemRequest request, CancellationToken ct = default)
+    public Task<GradeItemDto> CreateItemAsync(Guid classCourseId, CreateGradeItemRequest request, Guid? termId = null, CancellationToken ct = default)
     {
+        LastWriteTermId = termId;
         EnsureWritable(classCourseId);
         ValidateItem(request.CategoryId, request.TitleAr, request.TitleEn, request.MaxPoints);
         var item = new GradeItemDto(Guid.NewGuid(), request.CategoryId, request.TitleAr, request.TitleEn, null, null, true, request.MaxPoints,
@@ -271,8 +280,9 @@ public sealed class FakeGradebookApi : IGradebookApi
         return Task.CompletedTask;
     }
 
-    public Task<GradeRowDto> UpsertEntriesAsync(Guid classCourseId, UpsertEntriesRequest request, CancellationToken ct = default)
+    public Task<GradeRowDto> UpsertEntriesAsync(Guid classCourseId, UpsertEntriesRequest request, Guid? termId = null, CancellationToken ct = default)
     {
+        LastWriteTermId = termId;
         EnsureWritable(classCourseId);
         LastEntries = request;
         UpsertCalls++;

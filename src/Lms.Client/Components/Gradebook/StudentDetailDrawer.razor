@@ -3,7 +3,7 @@
 
 @* The staff preview of one student (L6): exactly what the student and their guardians see, read with the staff route so no rule is duplicated here. *@
 <MudDrawer Open="Open" OpenChanged="OpenChanged" Anchor="Anchor.End" Variant="DrawerVariant.Temporary" Overlay="true" Width="420px" Elevation="2"
-           aria-label="@L["Grd_Drawer_Title"]" data-testid="student-drawer">
+           aria-label="@L["Grd_Drawer_Title"]" data-testid="student-drawer" @onkeydown="OnKey">
     <MudDrawerHeader>
         <MudText Typo="Typo.h6" data-testid="drawer-title">@string.Format(Culture.Current, L["Grd_Drawer_Title"].Value, StudentName)</MudText>
         <MudSpacer />
@@ -68,4 +68,7 @@
     [Parameter] public StudentCourseGradesDto? Data { get; set; }
     [Parameter] public bool Loading { get; set; }
     [Parameter] public bool Failed { get; set; }
+
+    /// <summary>Esc closes the drawer, as it does every dialog.</summary>
+    private Task OnKey(KeyboardEventArgs e) => e.Key == "Escape" ? OpenChanged.InvokeAsync(false) : Task.CompletedTask;
 }
