@@ -2,6 +2,8 @@
 
 > **Status: DRAFT proposal for the Team Lead (no code).** Author: FE2. Frontend half of M7 (Year-End & Release, DEV-PLAN §2), written in the format of the M6 FE proposal (#612) and `2026-11-15-m4b-frontend-proposal.md`. The backend half does not exist yet, so every API name below is **proposed**; the Lead's M7 contract PRs decide the final names (section 4). No code was changed.
 >
+> **Revision 2 (2026-11-14):** the owner answered Q1 to Q12 with the proposed defaults; they are recorded as **PRD D78 to D87** and cited below. Section 9 is kept as the record of the questions and now shows each answer.
+>
 > **Sources read:** PRD FR-YEAR-01/04/05, FR-STU-07/08, FR-GRD-06, FR-SEC-07/08, FR-ORG-07/08/09, X-09, X-10, D12, D15, D17, D22, D23, D27, PRD §9; DEV-PLAN §2 M7; the merged client code this builds on (section 1, verified on `origin/main`, 2026-11-14); the M5 plan (grade lock seam, Task 12) and the M6 plan (moderation and rules patterns).
 
 ## 0. Scope and shape
@@ -207,28 +209,28 @@ Total: 2 S, 4 M, 3 L. A small UX task (M7 design spec on the Stitch system: wiza
 - **LDAP password handling** is the only place the app types an external password: no logging, no URL, generic error, no autocomplete off hack that breaks the password manager.
 - **Dependence on M5 and M6 merge order**: the M5 FE chains are still open (contracts 2 and 3); H2 and H9 touch M5 pages and cannot start before those reach `main`.
 
-## 9. Open questions for the product owner (the Team Lead asks)
+## 9. Questions for the product owner and their answers
 
-These are **decisions only the owner can make**; each has a proposed default so work can start.
+These were **decisions only the owner could make**; all were answered on 2026-11-14 with the proposed defaults (PRD D78 to D87).
 
-| # | Question | Proposed default |
+| # | Question | Answer |
 |---|---|---|
-| Q1 | Who may run the promotion: Org Admin only, or Manager inside their units too? | Org Admin and Manager (inside their units) |
-| Q2 | Must a year be **Closed before** the promotion can run, and can a Closed year be **reopened**? Does closing require every term's grades to be published? | Close first; no reopen in v1 (grade changes by approval instead); closing needs no published-grade rule, but warns |
-| Q3 | Who approves a grade change after close: Manager only (FR-GRD-06), or Org Admin too? May a Manager approve a change for a class course they teach? | Manager and Org Admin; never the requester |
-| Q4 | After withdrawal or graduation: may the **guardian** keep read access to the child's history? Is the withdrawal reason ever shown to the guardian or student? | Guardian keeps read access to history for the closed years; the reason is staff-only |
-| Q5 | Who may withdraw a student: Org Admin and Manager only, or Counselor too? Is a withdrawal reason from a fixed list or free text? | Org Admin, Manager and Counselor; a client-managed list plus "Other" with a note |
-| Q6 | Does the promotion suggest an outcome from **grades** (pass or fail rule) or only from the level mapping? | Level mapping only in v1; every row stays editable |
-| Q7 | Which blockers does the promotion flag per student (unpaid fees are out of scope; open excuse requests, incomplete grades)? | Open grade-change requests and open excuse requests, as warnings |
-| Q8 | If part of the run fails, may the run complete with the rest (partial success), or must it roll back entirely? | Per-student success with a failure list; undo restores the successful ones |
-| Q9 | Do we need bulk withdrawal (a whole class at once) in v1? | No; the promotion's "transfer out" and "graduate" cover year-end |
-| Q10 | SAML and LDAP scope for v1: SP-initiated SAML only; LDAP search-bind only with LDAPS or StartTLS; **no** group-to-role mapping; no signed-assertion toggle? | Yes to all of those limits |
-| Q11 | Should the year-end checklist appear on the home pages, and how many days before the year end? | Yes, 60 days |
-| Q12 | The accessibility pass target: WCAG 2.1 AA as in X-10, or also AAA contrast for the attendance and grade colours? | AA, as stated |
+| Q1 | Who may run the promotion: Org Admin only, or Manager inside their units too? | **Answered, D78:** Org Admin anywhere, Manager inside their own units |
+| Q2 | Must a year be **Closed before** the promotion can run, and can a Closed year be **reopened**? Does closing require every term's grades to be published? | **Answered, D79:** close first; no reopen in v1; unpublished grades warn but do not block |
+| Q3 | Who approves a grade change after close: Manager only (FR-GRD-06), or Org Admin too? May a Manager approve a change for a class course they teach? | **Answered, D80:** Manager or Org Admin, never the requester |
+| Q4 | After withdrawal or graduation: may the **guardian** keep read access to the child's history? Is the withdrawal reason ever shown to the guardian or student? | **Answered, D81:** guardian keeps read access to closed years; reason staff-only |
+| Q5 | Who may withdraw a student: Org Admin and Manager only, or Counselor too? Is a withdrawal reason from a fixed list or free text? | **Answered, D82:** Org Admin, Manager and Counselor; client list plus Other with a note |
+| Q6 | Does the promotion suggest an outcome from **grades** (pass or fail rule) or only from the level mapping? | **Answered, D83:** level mapping only; every row editable |
+| Q7 | Which blockers does the promotion flag per student (unpaid fees are out of scope; open excuse requests, incomplete grades)? | **Answered, D84:** open grade-change and excuse requests are warnings, not blocks |
+| Q8 | If part of the run fails, may the run complete with the rest (partial success), or must it roll back entirely? | **Answered, D84:** per-student success with a failure list to fix and re-run; undo restores the successful ones |
+| Q9 | Do we need bulk withdrawal (a whole class at once) in v1? | **Answered, D84:** no bulk withdrawal in v1 |
+| Q10 | SAML and LDAP scope for v1: SP-initiated SAML only; LDAP search-bind only with LDAPS or StartTLS; **no** group-to-role mapping; no signed-assertion toggle? | **Answered, D85:** SP-initiated SAML only; LDAP search-bind over LDAPS or StartTLS only; no group-to-role mapping |
+| Q11 | Should the year-end checklist appear on the home pages, and how many days before the year end? | **Answered, D86:** yes, from 60 days before the year end |
+| Q12 | The accessibility pass target: WCAG 2.1 AA as in X-10, or also AAA contrast for the attendance and grade colours? | **Answered, D87:** WCAG 2.1 AA, no AAA requirement |
 
 ## 10. What this proposal asks the Lead to do next
 
 1. Confirm the split (section 7) and the permission names (section 2).
 2. Open the M7 contract PRs for the sections 4.1 and 4.3 routes; the fakes follow them.
-3. Ask the owner the Q1 to Q12 list (by popup, as the project rule says) or confirm the defaults.
+3. ~~Ask the owner Q1 to Q12~~ done: D78 to D87.
 4. Ask the UX designer for the M7 design spec before H2, H3 and H6 page work.
