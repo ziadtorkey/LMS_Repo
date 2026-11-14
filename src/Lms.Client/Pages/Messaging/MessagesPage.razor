@@ -1,0 +1,93 @@
+@page "/messages"
+@page "/messages/{Id:guid}"
+@attribute [Authorize]
+@using Lms.Client.Components.Messaging
+@using Lms.Client.Services.Messaging
+@using Lms.Shared.Authorization
+@using Lms.Shared.Messaging
+@inject IMessagingApi Messaging
+@inject IMessagingState State
+@inject PermissionState PermState
+@inject NavigationManager Navigation
+
+<PageTitle>@L["Msg_Page_Title"]</PageTitle>
+<PageHeader Title="@L["Msg_Page_Title"]" Subtitle="@L["Msg_Page_Subtitle"]" TitleTestId="messages-title" />
+
+@if (!PermState.Loaded || _loading)
+{
+    <LoadingState Lines="6" TestId="messages-loading" />
+}
+else if (!PermState.Has(Permissions.Messaging.View))
+{
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" data-testid="messages-forbidden">@L["Forbidden_Title"]</MudAlert>
+}
+else if (_failed)
+{
+    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="messages-error">
+        @L["Error_Generic"] <MudButton Variant="Variant.Text" OnClick="LoadAsync">@L["Common_Retry"]</MudButton>
+    </MudAlert>
+}
+else
+{
+    <InboxLayout ShowThread="Id is not null">
+        <List>
+            <ConversationListPane Items="_inbox" CurrentId="Id" />
+        </List>
+        <Thread>
+            @if (Id is { } id)
+            {
+                <ThreadPaneHost @key="id" ConversationId="id" UnreadCount="UnreadOf(id)" OnChanged="ChangedAsync" />
+            }
+            else
+            {
+                <EmptyState Title="@L["Msg_Pick_Title"]" Text="@L["Msg_Pick_Text"]" Icon="@Icons.Material.Rounded.Forum" TestId="messages-pick" Class="lms-thread-empty" />
+            }
+        </Thread>
+    </InboxLayout>
+}
+
+@code {
+    [Parameter] public Guid? Id { get; set; }
+
+    private IReadOnlyList<ConversationListItemDto> _inbox = [];
+    private bool _loading = true, _failed;
+    private Guid? _unreadFor;
+    private int _unreadAtOpen;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        await LoadAsync();
+    }
+
+    /// <summary>The unread count of the conversation as the list showed it when it was opened; later refreshes (after it was marked read) do not move the divider.</summary>
+    private int UnreadOf(Guid id)
+    {
+        if (_unreadFor != id)
+        {
+            _unreadFor = id;
+            _unreadAtOpen = _inbox.FirstOrDefault(c => c.Id == id)?.UnreadCount ?? 0;
+        }
+        return _unreadAtOpen;
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true; _failed = false;
+        if (PermState.Has(Permissions.Messaging.View))
+        {
+            var (page, failed) = await ApiCalls.RunAsync(() => Messaging.ListConversationsAsync(1, 100), Navigation);
+            _failed = failed;
+            if (page is not null) _inbox = page.Items;
+        }
+        _loading = false;
+    }
+
+    private async Task ChangedAsync()
+    {
+        var (page, _) = await ApiCalls.RunAsync(() => Messaging.ListConversationsAsync(1, 100), Navigation);
+        if (page is not null) _inbox = page.Items;
+        await State.RefreshAsync();
+        StateHasChanged();
+    }
+}

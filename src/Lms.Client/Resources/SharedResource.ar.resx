@@ -2111,4 +2111,24 @@
   <data name="Comms_PrefSource_Policy" xml:space="preserve"><value>حسب سياسة المنصة</value></data>
   <data name="Nav_Messages" xml:space="preserve"><value>الرسائل</value></data>
   <data name="Msg_Nav_Unread" xml:space="preserve"><value>{0} محادثات غير مقروءة</value></data>
+  <data name="Msg_Page_Title" xml:space="preserve"><value>الرسائل</value></data>
+  <data name="Msg_Page_Subtitle" xml:space="preserve"><value>محادثاتك مع المعلمين وأولياء الأمور والموظفين.</value></data>
+  <data name="Msg_Inbox_List" xml:space="preserve"><value>المحادثات</value></data>
+  <data name="Msg_Inbox_EmptyTitle" xml:space="preserve"><value>لا توجد محادثات بعد</value></data>
+  <data name="Msg_Inbox_EmptyText" xml:space="preserve"><value>عندما يراسلك أحد أو تبدأ محادثة، ستظهر هنا.</value></data>
+  <data name="Msg_Pick_Title" xml:space="preserve"><value>اختر محادثة</value></data>
+  <data name="Msg_Pick_Text" xml:space="preserve"><value>اختر محادثة من القائمة لقراءتها.</value></data>
+  <data name="Msg_Search" xml:space="preserve"><value>البحث في الرسائل</value></data>
+  <data name="Msg_Search_Results" xml:space="preserve"><value>نتائج البحث</value></data>
+  <data name="Msg_Search_None" xml:space="preserve"><value>لا توجد رسائل مطابقة.</value></data>
+  <data name="Msg_Load_Earlier" xml:space="preserve"><value>تحميل رسائل أقدم</value></data>
+  <data name="Msg_Unread_Divider" xml:space="preserve"><value>رسائل جديدة</value></data>
+  <data name="Msg_Delete" xml:space="preserve"><value>حذف الرسالة</value></data>
+  <data name="Msg_Former_User" xml:space="preserve"><value>مستخدم سابق</value></data>
+  <data name="Msg_Day_Today" xml:space="preserve"><value>اليوم</value></data>
+  <data name="Msg_Day_Yesterday" xml:space="preserve"><value>أمس</value></data>
+  <data name="Msg_Locked" xml:space="preserve"><value>أُغلقت هذه المحادثة. يمكنك قراءتها فقط.</value></data>
+  <data name="Msg_ReadOnly" xml:space="preserve"><value>لا يمكنك الرد على هذه المحادثة.</value></data>
+  <data name="Msg_Reply_Privately" xml:space="preserve"><value>الرد على انفراد</value></data>
+  <data name="Msg_Thread_Missing" xml:space="preserve"><value>هذه المحادثة غير متاحة.</value></data>
 </root>

@@ -2111,4 +2111,24 @@
   <data name="Comms_PrefSource_Policy" xml:space="preserve"><value>Set by the platform</value></data>
   <data name="Nav_Messages" xml:space="preserve"><value>Messages</value></data>
   <data name="Msg_Nav_Unread" xml:space="preserve"><value>{0} unread conversations</value></data>
+  <data name="Msg_Page_Title" xml:space="preserve"><value>Messages</value></data>
+  <data name="Msg_Page_Subtitle" xml:space="preserve"><value>Your conversations with teachers, guardians and staff.</value></data>
+  <data name="Msg_Inbox_List" xml:space="preserve"><value>Conversations</value></data>
+  <data name="Msg_Inbox_EmptyTitle" xml:space="preserve"><value>No conversations yet</value></data>
+  <data name="Msg_Inbox_EmptyText" xml:space="preserve"><value>When someone writes to you, or you start a conversation, it appears here.</value></data>
+  <data name="Msg_Pick_Title" xml:space="preserve"><value>Pick a conversation</value></data>
+  <data name="Msg_Pick_Text" xml:space="preserve"><value>Choose one from the list to read it.</value></data>
+  <data name="Msg_Search" xml:space="preserve"><value>Search messages</value></data>
+  <data name="Msg_Search_Results" xml:space="preserve"><value>Search results</value></data>
+  <data name="Msg_Search_None" xml:space="preserve"><value>No messages match.</value></data>
+  <data name="Msg_Load_Earlier" xml:space="preserve"><value>Load earlier messages</value></data>
+  <data name="Msg_Unread_Divider" xml:space="preserve"><value>New messages</value></data>
+  <data name="Msg_Delete" xml:space="preserve"><value>Delete message</value></data>
+  <data name="Msg_Former_User" xml:space="preserve"><value>Former user</value></data>
+  <data name="Msg_Day_Today" xml:space="preserve"><value>Today</value></data>
+  <data name="Msg_Day_Yesterday" xml:space="preserve"><value>Yesterday</value></data>
+  <data name="Msg_Locked" xml:space="preserve"><value>This conversation was closed. You can only read it.</value></data>
+  <data name="Msg_ReadOnly" xml:space="preserve"><value>You cannot reply to this conversation.</value></data>
+  <data name="Msg_Reply_Privately" xml:space="preserve"><value>Reply privately</value></data>
+  <data name="Msg_Thread_Missing" xml:space="preserve"><value>This conversation is not available.</value></data>
 </root>

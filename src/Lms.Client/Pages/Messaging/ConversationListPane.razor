@@ -1,0 +1,85 @@
+@using Lms.Client.Components.Messaging
+@using Lms.Client.Services.Messaging
+@using Lms.Shared.Messaging
+@inject PermissionState PermState
+@inject IMessagingApi Messaging
+@inject TimeProvider Clock
+
+@* The inbox list (spec #615 §2.4): unread conversations first, then by the last message; one link per conversation. Search shows snippets, with the match
+   marked by splitting the text, never by writing HTML. *@
+<div class="lms-convs-head">
+    <MudTextField T="string" Value="_query" ValueChanged="SearchAsync" Immediate="false" Variant="Variant.Outlined" Margin="Margin.Dense"
+                  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Rounded.Search" Placeholder="@L["Msg_Search"]" aria-label="@L["Msg_Search"]"
+                  Clearable="true" data-testid="inbox-search" />
+</div>
+@if (_hits is not null)
+{
+    <div class="lms-convs" role="list" aria-label="@L["Msg_Search_Results"]" data-testid="inbox-hits">
+        @if (_hits.Count == 0)
+        {
+            <p class="lms-convs-empty" data-testid="inbox-hits-empty">@L["Msg_Search_None"]</p>
+        }
+        @foreach (var hit in _hits)
+        {
+            <a class="lms-conv" role="listitem" href="@($"messages/{hit.ConversationId}")" data-testid="@($"inbox-hit-{hit.MessageId}")">
+                <span class="lms-conv-main">
+                    <span class="lms-conv-top"><span class="lms-conv-name"><bdi>@CultureText.Pick(hit.SenderNameAr, hit.SenderNameEn)</bdi></span></span>
+                    <span class="lms-conv-preview" dir="auto">@foreach (var part in Pieces(hit.Snippet)) { if (part.Match) { <mark>@part.Text</mark> } else { @part.Text } }</span>
+                </span>
+            </a>
+        }
+    </div>
+}
+else if (Items.Count == 0)
+{
+    <EmptyState Title="@L["Msg_Inbox_EmptyTitle"]" Text="@L["Msg_Inbox_EmptyText"]" Icon="@Icons.Material.Rounded.ChatBubbleOutline" TestId="inbox-empty" />
+}
+else
+{
+    <nav class="lms-convs" aria-label="@L["Msg_Inbox_List"]" data-testid="inbox-list">
+        @foreach (var c in Sorted)
+        {
+            <ConversationRow Href="@($"messages/{c.Id}")" Name="@NameOf(c)" Preview="@(c.LastMessagePreview ?? string.Empty)"
+                             TimeText="@(c.LastMessageAtUtc is { } t ? MessageTimes.Row(t, Clock.GetUtcNow().UtcDateTime, L) : string.Empty)"
+                             UnreadCount="c.UnreadCount" IsGroup="c.Kind == ConversationKinds.Group" Current="c.Id == CurrentId" TestId="@($"conv-{c.Id}")" />
+        }
+    </nav>
+}
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<ConversationListItemDto> Items { get; set; } = [];
+    [Parameter] public Guid? CurrentId { get; set; }
+
+    private string _query = "";
+    private IReadOnlyList<MessageSearchResultDto>? _hits;
+
+    private IEnumerable<ConversationListItemDto> Sorted => Items
+        .OrderByDescending(c => c.UnreadCount > 0).ThenByDescending(c => c.LastMessageAtUtc ?? DateTime.MinValue);
+
+    private string NameOf(ConversationListItemDto c) => !string.IsNullOrWhiteSpace(c.Title)
+        ? c.Title
+        : string.Join(", ", c.Participants.Where(p => p.UserId != PermState.UserId).Select(p => CultureText.Pick(p.NameAr, p.NameEn)));
+
+    private async Task SearchAsync(string? value)
+    {
+        _query = value?.Trim() ?? "";
+        if (_query.Length < MessagingLimits.SearchMinLength) { _hits = null; return; }
+        var (hits, failed) = await ApiCalls.RunAsync(() => Messaging.SearchAsync(_query), Navigation);
+        _hits = failed || hits is null ? [] : hits;
+    }
+
+    private IEnumerable<(string Text, bool Match)> Pieces(string snippet)
+    {
+        var i = 0;
+        while (i < snippet.Length)
+        {
+            var at = snippet.IndexOf(_query, i, StringComparison.CurrentCultureIgnoreCase);
+            if (at < 0) { yield return (snippet[i..], false); yield break; }
+            if (at > i) yield return (snippet[i..at], false);
+            yield return (snippet.Substring(at, _query.Length), true);
+            i = at + _query.Length;
+        }
+    }
+
+    [Inject] private NavigationManager Navigation { get; set; } = default!;
+}
