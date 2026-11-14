@@ -1,0 +1,75 @@
+@* The To field of New message (spec #615 §3.2): the picked recipients as removable chips, then a search (from 2 characters, debounced 300 ms) whose results
+   come from the page's SearchFunc, i.e. the server's rules-filtered recipients read. Results are grouped (Classes and courses, People); a near-miss is
+   shown disabled with its reason; for managers and org admins the server returns the D69 safeguarding row instead of any student. The picker never
+   decides who may be messaged. *@
+<div class="lms-recipient-picker" data-testid="recipient-picker">
+    @if (Value.Count > 0)
+    {
+        <div class="lms-recipient-chips" role="list" aria-label="@L["Msg_To"]">
+            @foreach (var r in Value)
+            {
+                var pick = r;
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" role="listitem" OnClose="() => RemoveAsync(pick)"
+                         Icon="@(pick.Kind == RecipientKind.Group ? Icons.Material.Rounded.Groups : Icons.Material.Rounded.Person)" data-testid="@($"to-{pick.Id}")">
+                    <bdi>@pick.Name</bdi>
+                </MudChip>
+            }
+        </div>
+    }
+    <MudAutocomplete T="RecipientChoice" @ref="_search" Value="_pending" ValueChanged="PickAsync" SearchFunc="SearchAsync" ToStringFunc="@(r => r?.Name)"
+                     Label="@L["Msg_To"]" Placeholder="@L["Msg_To_Placeholder"]" HelperText="@L["Msg_To_Help"]" MinCharacters="2" DebounceInterval="300"
+                     MaxItems="30" ResetValueOnEmptyText="true" Clearable="false" CoerceText="false" ItemDisabledFunc="@(r => !r.Selectable)"
+                     Error="@(Error is not null)" ErrorText="@Error" data-testid="to-search">
+        <ItemTemplate Context="r">
+            @switch (r.Kind)
+            {
+                case RecipientKind.GroupLabel:
+                    <ListGroupLabel Text="@r.Name" />
+                    break;
+                case RecipientKind.Safeguarding:
+                    <SafeguardingOption />
+                    break;
+                default:
+                    <RecipientOption Name="@r.Name" Caption="@r.Caption" SizeText="@r.SizeText" Icon="@(r.Kind == RecipientKind.Group ? (r.DisabledReason is null ? Icons.Material.Rounded.Groups : Icons.Material.Rounded.Block) : null)"
+                                     Selected="@Value.Any(v => v.Id == r.Id)" Disabled="@(r.DisabledReason is not null)" DisabledReason="@r.DisabledReason" />
+                    break;
+            }
+        </ItemTemplate>
+    </MudAutocomplete>
+</div>
+
+@code {
+    private MudAutocomplete<RecipientChoice>? _search;
+    private RecipientChoice? _pending;
+
+    /// <summary>The picked recipients (the page owns the list).</summary>
+    [Parameter, EditorRequired] public List<RecipientChoice> Value { get; set; } = [];
+    [Parameter] public EventCallback ValueChanged { get; set; }
+
+    /// <summary>The server's rules-filtered search, in display order with group labels.</summary>
+    [Parameter, EditorRequired] public Func<string, CancellationToken, Task<IEnumerable<RecipientChoice>>> SearchFunc { get; set; } = default!;
+    [Parameter] public string? Error { get; set; }
+
+    private Task<IEnumerable<RecipientChoice>> SearchAsync(string text, CancellationToken token) => SearchFunc(text ?? "", token);
+
+    /// <summary>Adds a selectable choice once; labels, the safeguarding row and near-misses are never picked.</summary>
+    public async Task PickAsync(RecipientChoice? choice)
+    {
+        if (choice is { Selectable: true } && Value.All(v => v.Id != choice.Id))
+        {
+            Value.Add(choice);
+            await ValueChanged.InvokeAsync();
+        }
+
+        _pending = null;
+        StateHasChanged();
+        if (_search is not null) await _search.ClearAsync();
+    }
+
+    private async Task RemoveAsync(RecipientChoice choice)
+    {
+        Value.Remove(choice);
+        StateHasChanged();
+        await ValueChanged.InvokeAsync();
+    }
+}

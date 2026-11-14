@@ -1793,4 +1793,23 @@
   <data name="Mod_Status_InReview" xml:space="preserve"><value>قيد المراجعة</value></data>
   <data name="Mod_Status_Removed" xml:space="preserve"><value>أُزيلت</value></data>
   <data name="Mod_Status_Kept" xml:space="preserve"><value>أُبقيت</value></data>
+  <data name="Msg_To" xml:space="preserve"><value>إلى</value></data>
+  <data name="Msg_To_Placeholder" xml:space="preserve"><value>اكتب اسمًا أو فصلًا أو مقررًا</value></data>
+  <data name="Msg_To_Help" xml:space="preserve"><value>ابحث عن أشخاص أو عن مجموعة فصل أو مقرر. لا تظهر إلا الخيارات التي تسمح بها قواعد المراسلة.</value></data>
+  <data name="Msg_Error_To" xml:space="preserve"><value>اختر مستلمًا واحدًا على الأقل.</value></data>
+  <data name="Msg_Subject" xml:space="preserve"><value>الموضوع (اختياري)</value></data>
+  <data name="Msg_Subject_Help" xml:space="preserve"><value>عند تعدد المستلمين يصبح اسم المجموعة.</value></data>
+  <data name="Msg_Message" xml:space="preserve"><value>الرسالة</value></data>
+  <data name="Msg_Error_Body" xml:space="preserve"><value>اكتب رسالة.</value></data>
+  <data name="Rules_From" xml:space="preserve"><value>من</value></data>
+  <data name="Rules_Role_OrgAdmin" xml:space="preserve"><value>مسؤول المؤسسة</value></data>
+  <data name="Rules_Role_Manager" xml:space="preserve"><value>مدير</value></data>
+  <data name="Rules_Role_Supervisor" xml:space="preserve"><value>مشرف</value></data>
+  <data name="Rules_Role_Counselor" xml:space="preserve"><value>مرشد</value></data>
+  <data name="Rules_Role_Teacher" xml:space="preserve"><value>معلم</value></data>
+  <data name="Rules_Role_Student" xml:space="preserve"><value>طالب</value></data>
+  <data name="Rules_Role_Guardian" xml:space="preserve"><value>ولي أمر</value></data>
+  <data name="Rules_Wider" xml:space="preserve"><value>أوسع من الحد الافتراضي للحماية</value></data>
+  <data name="Msg_ReadOnly_ClassGroup" xml:space="preserve"><value>يكتب المعلم وحده في مجموعة الفصل. لتسأل عن شيء راسل المعلم على انفراد.</value></data>
+  <data name="Msg_MessageTeacher" xml:space="preserve"><value>مراسلة المعلم</value></data>
 </root>

@@ -227,6 +227,39 @@ public sealed class MessagingComponents2Tests : ClientTestContext
     }
 
     [Fact]
+    public async Task A_role_chip_change_raises_OnRolesChanged_with_the_chosen_roles()
+    {
+        English();
+        IReadOnlySet<AudienceRole>? seen = null;
+        var calls = 0;
+        var draft = new AnnouncementDraft();
+        var cut = Render<AnnouncementComposerForm>(p => p.Add(c => c.Draft, draft).Add(c => c.AllowedScopes, new[] { AudienceScopeKind.ClassCourse })
+            .Add(c => c.OnRolesChanged, EventCallback.Factory.Create<IReadOnlySet<AudienceRole>>(this, r => { seen = r; calls++; })));
+
+        await cut.Find("[data-testid=role-Staff]").ClickAsync(new MouseEventArgs());
+        Assert.Equal(1, calls);
+        Assert.Contains(AudienceRole.Staff, seen!);
+        await cut.Find("[data-testid=role-Guardians]").ClickAsync(new MouseEventArgs());
+        Assert.Equal(2, calls);
+        Assert.DoesNotContain(AudienceRole.Guardians, seen!);
+        Assert.Equal("true", cut.Find("[data-testid=role-Staff]").GetAttribute("aria-pressed"));
+    }
+
+    [Fact]
+    public async Task Include_the_units_below_raises_OnIncludeSubtreeChanged()
+    {
+        English();
+        bool? seen = null;
+        var draft = new AnnouncementDraft { Scope = AudienceScopeKind.Unit, IncludeSubtree = true };
+        var cut = Render<AnnouncementComposerForm>(p => p.Add(c => c.Draft, draft).Add(c => c.AllowedScopes, new[] { AudienceScopeKind.Unit })
+            .Add(c => c.OnIncludeSubtreeChanged, EventCallback.Factory.Create<bool>(this, v => seen = v)));
+
+        await cut.Find("[data-testid=ann-subtree] input").ChangeAsync(new ChangeEventArgs { Value = false });
+        Assert.False(seen);
+        Assert.False(draft.IncludeSubtree);
+    }
+
+    [Fact]
     public void Toggle_row_switch_is_labelled_and_described_by_its_text()
     {
         English();

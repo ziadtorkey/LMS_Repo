@@ -1793,4 +1793,23 @@
   <data name="Mod_Status_InReview" xml:space="preserve"><value>In review</value></data>
   <data name="Mod_Status_Removed" xml:space="preserve"><value>Removed</value></data>
   <data name="Mod_Status_Kept" xml:space="preserve"><value>Kept</value></data>
+  <data name="Msg_To" xml:space="preserve"><value>To</value></data>
+  <data name="Msg_To_Placeholder" xml:space="preserve"><value>Type a name, a class or a course</value></data>
+  <data name="Msg_To_Help" xml:space="preserve"><value>Search for people, or a class or course group. Only people the messaging rules allow appear as choices.</value></data>
+  <data name="Msg_Error_To" xml:space="preserve"><value>Choose at least one recipient.</value></data>
+  <data name="Msg_Subject" xml:space="preserve"><value>Subject (optional)</value></data>
+  <data name="Msg_Subject_Help" xml:space="preserve"><value>With several recipients it becomes the group name.</value></data>
+  <data name="Msg_Message" xml:space="preserve"><value>Message</value></data>
+  <data name="Msg_Error_Body" xml:space="preserve"><value>Write a message.</value></data>
+  <data name="Rules_From" xml:space="preserve"><value>From</value></data>
+  <data name="Rules_Role_OrgAdmin" xml:space="preserve"><value>Org admin</value></data>
+  <data name="Rules_Role_Manager" xml:space="preserve"><value>Manager</value></data>
+  <data name="Rules_Role_Supervisor" xml:space="preserve"><value>Supervisor</value></data>
+  <data name="Rules_Role_Counselor" xml:space="preserve"><value>Counselor</value></data>
+  <data name="Rules_Role_Teacher" xml:space="preserve"><value>Teacher</value></data>
+  <data name="Rules_Role_Student" xml:space="preserve"><value>Student</value></data>
+  <data name="Rules_Role_Guardian" xml:space="preserve"><value>Guardian</value></data>
+  <data name="Rules_Wider" xml:space="preserve"><value>wider than the safeguarding default</value></data>
+  <data name="Msg_ReadOnly_ClassGroup" xml:space="preserve"><value>Only the teacher posts in this class group. To ask something, message the teacher privately.</value></data>
+  <data name="Msg_MessageTeacher" xml:space="preserve"><value>Message the teacher</value></data>
 </root>

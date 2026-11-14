@@ -44,6 +44,15 @@ public sealed partial class StitchStylesheetTests
     }
 
     [Fact]
+    public void A_locked_switch_that_is_on_keeps_the_on_colour_so_it_never_reads_as_off()
+    {
+        // MudBlazor greys every disabled switch; a locked "on" preference (In-app, mandatory events) must still look on.
+        var css = Css();
+        Assert.Matches(new Regex(@"\.lms-prefs \.mud-switch-base\.mud-switch-disabled\.mud-checked\s*\{[^}]*color:\s*var\(--mud-palette-primary\)"), css);
+        Assert.Matches(new Regex(@"\.lms-prefs \.mud-switch-base\.mud-switch-disabled\.mud-checked\s*\+\s*\.mud-switch-track\s*\{[^}]*opacity"), css);
+    }
+
+    [Fact]
     public void Focus_is_a_visible_ring_not_only_a_glow() =>
         Assert.Matches(new Regex(@"--lms-focus-ring:\s*0 0 0 2px var\(--mud-palette-surface\), 0 0 0 4px var\(--mud-palette-primary\)"), Css());
 
