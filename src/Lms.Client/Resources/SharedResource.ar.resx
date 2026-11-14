@@ -1831,4 +1831,6 @@
   <data name="Policies_CascadeNote" xml:space="preserve"><value>تُطبَّق السياسات التي تفعّلها هنا على هذه الوحدة وكل الوحدات التابعة لها. السياسة المعيّنة في مستوى أعلى تُظهر من عيّنها، ولا تُغيَّر إلا هناك.</value></data>
   <data name="Policies_CardTitle" xml:space="preserve"><value>قيود التفويض</value></data>
   <data name="Policies_CardHelp" xml:space="preserve"><value>امنع إجراءات في هذه الوحدة والوحدات التابعة لها.</value></data>
+  <data name="Nav_CollapseSidebar" xml:space="preserve"><value>طيّ القائمة الجانبية</value></data>
+  <data name="Nav_ExpandSidebar" xml:space="preserve"><value>توسيع القائمة الجانبية</value></data>
 </root>

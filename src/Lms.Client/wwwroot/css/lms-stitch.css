@@ -200,3 +200,27 @@ html[data-theme="dark"] .mud-button-outlined { border-color: #334155; }
 .lms-section .lms-setting-row + .lms-setting-row { margin-block-start: 12px; }
 .lms-section .lms-setting-name.mud-typography { font-weight: 500; }
 .lms-save-bar-info::before { background: var(--mud-palette-primary); }
+
+/* ---------- Collapsible icon rail (issue 561): from 960 px the sidebar can shrink to the theme's 72 px mini width ---------- */
+.lms-drawer .mud-navmenu { flex: 1 1 auto; }
+.lms-drawer .lms-nav-tip { display: block; }
+/* Pinned to the drawer bottom so it stays reachable when the nav scrolls. */
+.lms-rail-toggle { position: sticky; inset-block-end: 0; z-index: 1; justify-content: flex-end; padding: 8px 12px; background: var(--mud-palette-drawer-background); border-block-start: 1px solid var(--mud-palette-lines-default); }
+@media (min-width: 960px) {
+    /* RTL anchors the drawer on the right, so both sides take the mini width. */
+    .lms-app.lms-rail { --mud-drawer-width-left: var(--mud-drawer-width-mini-left); --mud-drawer-width-right: var(--mud-drawer-width-mini-left); }
+    .lms-rail .lms-drawer { overflow-x: hidden; }
+    .lms-rail .lms-brand.mud-drawer-header { justify-content: center; padding-inline: 0; }
+    .lms-rail .lms-drawer .mud-navmenu { padding-inline: 12px; }
+    .lms-rail .lms-drawer .mud-nav-link { justify-content: center; padding-inline: 0; }
+    .lms-rail .lms-drawer .mud-nav-link .mud-nav-link-icon { margin: 0; }
+    /* Hidden visually, kept as the accessible name of the brand, the links and the group labels. */
+    .lms-rail .lms-brand-text, .lms-rail .lms-drawer .mud-nav-link-text, .lms-rail .lms-nav-section {
+        position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+    }
+    .lms-rail .lms-nav-group { margin-block-start: 8px; padding-block-start: 8px; border-block-start: 1px solid var(--mud-palette-lines-default); }
+    .lms-rail .lms-rail-toggle { justify-content: center; padding-inline: 0; }
+    /* The arrow points the way the sidebar will move: out when collapsed (mirrored in RTL). */
+    .lms-rail .lms-rail-toggle .mud-icon-button.lms-icon-flip { transform: scaleX(-1); }
+    [dir="rtl"] .lms-rail .lms-rail-toggle .mud-icon-button.lms-icon-flip { transform: none; }
+}

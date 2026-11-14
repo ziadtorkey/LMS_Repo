@@ -138,6 +138,7 @@ Stitch patterns (`lms-stitch.css`):
 - **Segmented tabs:** `MudTabs Class="lms-tabs"` and `ClassCourseTabs` render as a pill track with a raised active tab. `MudToggleGroup` gets the same look.
 - **Save bar** (`lms-save-bar` with `lms-save-bar-text`): a sticky bar at the bottom of long settings forms when there are unsaved changes. Discard (text) and Save (filled) go at its end.
 - **Active nav item:** filled emerald with white text. Group the sidebar under `lms-nav-section` headings.
+- **Icon rail:** from 960 px the sidebar collapses to a 72 px rail with the toggle pinned at its bottom (`aria-expanded`, remembered per device in `lms.nav.rail`). In the rail, link text stays as the accessible name (visually hidden) and a tooltip shows it. Below 960 px the sidebar is always the full temporary drawer.
 
 Other patterns:
 - **Chips:** `Size.Small` renders as a 24 px pill with 12 px padding. Roles use `Variant.Outlined` (`lms-role-chip`). States use `Variant.Text` with a colour, for a soft tint, plus `lms-status-chip`, which adds the 6 px dot. Status chips carry a text label, not only a colour.
