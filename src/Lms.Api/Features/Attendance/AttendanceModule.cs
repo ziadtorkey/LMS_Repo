@@ -14,6 +14,8 @@ public sealed class AttendanceModule : ILmsModule
         services.AddScoped<AttendanceGenerationJob>();
         services.AddScoped<AttendanceRoster>();
         services.AddScoped<AttendanceListMapper>();
+        services.AddScoped<AttendanceRecordsMapper>();
+        services.AddScoped<AbsenceNotifier>();
         services.Replace(ServiceDescriptor.Scoped<IAttendanceGenerationQueue, AttendanceGenerationQueue>()); // replaces the no-op of Task 14
         if (configuration.GetValue("Jobs:ServerEnabled", true))
         {
@@ -21,5 +23,10 @@ public sealed class AttendanceModule : ILmsModule
         }
     }
 
-    public void MapEndpoints(IEndpointRouteBuilder app) => app.MapAttendanceSessions();
+    public void MapEndpoints(IEndpointRouteBuilder app)
+    {
+        app.MapAttendanceSessions();
+        app.MapTakeAttendance();
+        app.MapAttendanceReads();
+    }
 }

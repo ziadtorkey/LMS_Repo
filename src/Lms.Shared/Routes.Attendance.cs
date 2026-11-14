@@ -18,7 +18,7 @@ public static partial class Routes
     /// GET → <c>AttendanceRecordsDto</c> (Attendance.Take, Attendance.Edit or Attendance.View; Rel, IsSubstituteOn or subtree); PUT (<c>TakeAttendanceRequest</c> → <c>AttendanceRecordsDto</c>) —
     /// Attendance.Take inside the edit window, Attendance.Edit after it (a reason is required: 422 <c>attendance_reason_required</c>); a future session 409 <c>attendance_session_future</c>, a
     /// Taken session with unmarked rows 422 <c>attendance_unmarked_rows</c>, after the window for a teacher 409 <c>attendance_edit_window_closed</c>, a stale <c>Version</c> 409
-    /// <c>concurrency_conflict</c>; PlacementGuard; a substitute for another session 404.
+    /// <c>concurrency_conflict</c>; PlacementGuard; a substitute for another session 404; a substitute reaches the session only on its date (until local midnight), so the UI offers no edit after it; a reason over 500 characters is 400 <c>validation_failed</c>.
     /// </summary>
     public const string AttendanceSessionRecordsPattern = "/api/attendance-sessions/{id:guid}/records";
 
