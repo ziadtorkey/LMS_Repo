@@ -147,6 +147,7 @@ public static class PackagesServiceCollectionExtensions
         services.AddScoped<PackageService>();
         services.AddScoped<Attempts.PackageAttemptService>();
         services.AddSingleton<IPackageTracker, Attempts.PlaceholderPackageTracker>();
+        services.AddSingleton<IPackageTracker, H5p.H5pTracker>(); // the last registration of a kind wins (M4b Task 11)
         return services;
     }
 }
