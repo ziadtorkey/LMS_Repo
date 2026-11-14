@@ -98,6 +98,13 @@ public static class BuiltInRoleDefaults
         Permissions.LiveSessions.View, Permissions.LiveSessions.Manage,
     };
 
+    /// <summary>Permissions introduced by defaults version 9 (M5 wave 2: timetable).</summary>
+    public static readonly IReadOnlySet<string> IntroducedInVersion9 = new HashSet<string>
+    {
+        Permissions.Timetable.View, Permissions.Timetable.Manage, Permissions.Timetable.Configure, Permissions.Timetable.ViewOwn,
+    };
+
+    // Merge order: wave 2 (version 9, Timetable.*) must reach main before wave 3 (version 10): the reconciler adds only permissions introduced after a role version.
     /// <summary>Permissions introduced by defaults version 10 (M5 wave 3: attendance and excuses). Version 9 belongs to wave 2 (Timetable.*).</summary>
     public static readonly IReadOnlySet<string> IntroducedInVersion10 = new HashSet<string>
     {
@@ -121,7 +128,7 @@ public static class BuiltInRoleDefaults
     /// <summary>
     /// The defaults version that introduced <paramref name="permission"/>: 0 for the M0 baseline, 2 for the M2 set,
     /// 3 for the M3 set, 4 for the M4a wave 1 set, 5 for the M4a wave 2 set, 6 for the M4b wave 3a set, 7 for the M4b
-    /// wave 3b set, 8 for the M5 wave 1 set, 10 for the M5 wave 3 set, otherwise 1. The reconciler adds to a role only the defaults introduced after the role's version.
+    /// wave 3b set, 8 for the M5 wave 1 set, 9 for the M5 wave 2 set, 10 for the M5 wave 3 set, otherwise 1. The reconciler adds to a role only the defaults introduced after the role's version.
     /// </summary>
     public static int IntroducedIn(string permission) =>
         M0Baseline.Contains(permission) ? 0
@@ -131,6 +138,7 @@ public static class BuiltInRoleDefaults
         : IntroducedInVersion5.Contains(permission) ? 5
         : IntroducedInVersion6.Contains(permission) ? 6
         : IntroducedInVersion7.Contains(permission) ? 7
+        : IntroducedInVersion9.Contains(permission) ? 9
         : IntroducedInVersion8.Contains(permission) ? 8
         : IntroducedInVersion10.Contains(permission) ? 10
         : 1;

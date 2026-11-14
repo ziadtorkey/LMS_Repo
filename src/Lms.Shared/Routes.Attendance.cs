@@ -43,8 +43,18 @@ public static partial class Routes
     /// <summary>GET (<c>OwnAttendanceQuery</c> → <c>OwnAttendanceDto</c>) — Attendance.ViewOwn; an active guardian link (another guardian's child is 404, one child never reads under another's id).</summary>
     public const string StudentAttendancePattern = StudentPattern + "/attendance";
 
-    /// <summary>GET (<c>AttendanceAlertsQuery</c> → <c>PagedResult&lt;AttendanceAlertDto&gt;</c>) — Excuses.Review or Attendance.View (Counselor, Manager); unit subtree; teacher 403.</summary>
+    /// <summary>GET (<c>AttendanceAlertsQuery</c> → <c>PagedResult&lt;AttendanceAlertDto&gt;</c>) — Excuses.Review or Attendance.View (Counselor, Manager); unit subtree; a Supervisor (Attendance.View) sees only students of the supervised courses; teacher 403.</summary>
     public const string AttendanceAlertsPattern = "/api/attendance/alerts";
+
+    /// <summary>
+    /// GET (<c>AttendanceSessionSearchQuery</c> → <c>PagedResult&lt;AttendanceSessionListItemDto&gt;</c>) — Attendance.View; <c>UnitAccess</c> at the unit and its subtree (Counselor, Manager) or the supervised courses
+    /// (Supervisor); finds taken and open sessions of a date range, closed ones included, so they can be corrected with Attendance.Edit; a range over 92 days is 400; another school 404, teacher and student 403.
+    /// </summary>
+    public const string OrgUnitAttendanceSessionsPattern = OrgUnitPattern + "/attendance-sessions";
+
+    public static string OrgUnitAttendanceSessions(Guid unitId, DateOnly from, DateOnly to, Guid? classId = null, Guid? classCourseId = null) =>
+        $"{OrgUnit(unitId)}/attendance-sessions?from={from:yyyy-MM-dd}&to={to:yyyy-MM-dd}"
+        + (classId is { } c ? $"&classId={c}" : string.Empty) + (classCourseId is { } cc ? $"&classCourseId={cc}" : string.Empty);
 
     public static string AttendanceSessions(DateOnly? date = null) =>
         date is { } d ? $"{AttendanceSessionsPattern}?date={d:yyyy-MM-dd}" : AttendanceSessionsPattern;

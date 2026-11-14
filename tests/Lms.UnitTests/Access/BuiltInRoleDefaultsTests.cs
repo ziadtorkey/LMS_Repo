@@ -54,7 +54,7 @@ public class BuiltInRoleDefaultsTests
 
         Assert.Equal(
             ["Attendance.Edit", "Attendance.View", "Classes.View", "Enrollment.RequestException", "Enrollment.View", "Excuses.Escalate",
-             "Excuses.Review", "Groups.View", "Library.View", "Staff.View", "Students.ApproveChanges", "Students.Update", "Students.View"],
+             "Excuses.Review", "Groups.View", "Library.View", "Staff.View", "Students.ApproveChanges", "Students.Update", "Students.View", "Timetable.View"],
             added);
     }
 
@@ -68,13 +68,14 @@ public class BuiltInRoleDefaultsTests
             .Where(p => BuiltInRoleDefaults.IntroducedIn(p) > 2)
             .ToList();
 
-        Assert.Equal(["Students.ViewChildren", "Grades.ViewOwn", "Attendance.ViewOwn", "Excuses.Submit"], added);
-        Assert.Equal(60, orgAdmin.Count);
+        Assert.Equal(["Students.ViewChildren", "Grades.ViewOwn", "Timetable.ViewOwn", "Attendance.ViewOwn", "Excuses.Submit"], added);
+        Assert.Equal(63, orgAdmin.Count);
         Assert.Equal(33, orgAdmin.Count(p => BuiltInRoleDefaults.IntroducedIn(p) == 3));
         Assert.Equal(11, orgAdmin.Count(p => BuiltInRoleDefaults.IntroducedIn(p) == 5));
         Assert.Equal(2, orgAdmin.Count(p => BuiltInRoleDefaults.IntroducedIn(p) == 6));
         Assert.Equal(2, orgAdmin.Count(p => BuiltInRoleDefaults.IntroducedIn(p) == 7));
         Assert.Equal(5, orgAdmin.Count(p => BuiltInRoleDefaults.IntroducedIn(p) == 8));
+        Assert.Equal(3, orgAdmin.Count(p => BuiltInRoleDefaults.IntroducedIn(p) == 9));
         Assert.Equal(5, orgAdmin.Count(p => BuiltInRoleDefaults.IntroducedIn(p) == 10));
         Assert.DoesNotContain(orgAdmin, p => p.StartsWith("Staff.", StringComparison.Ordinal));
     }
@@ -95,7 +96,7 @@ public class BuiltInRoleDefaultsTests
         Assert.Equal(["Modules.View"], Added(BuiltInRoles.Student));
         Assert.Empty(Added(BuiltInRoles.Counselor));
         Assert.Empty(Added(BuiltInRoles.Guardian));
-        Assert.Equal(21, BuiltInRoles.Get(BuiltInRoles.Teacher).DefaultPermissions.Count(p => BuiltInRoleDefaults.IntroducedIn(p) > 3));
+        Assert.Equal(23, BuiltInRoles.Get(BuiltInRoles.Teacher).DefaultPermissions.Count(p => BuiltInRoleDefaults.IntroducedIn(p) > 3));
     }
 
     [Fact]

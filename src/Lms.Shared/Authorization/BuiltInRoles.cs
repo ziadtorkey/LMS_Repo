@@ -72,7 +72,9 @@ public static class BuiltInRoles
              // M5 wave 1 (D58): every grading permission except ViewOwn (they have no grades of their own).
              Permissions.Grades.View, Permissions.Grades.Manage, Permissions.Grades.Publish,
              Permissions.Grades.ConfigureScales, Permissions.Grades.ViewReports,
-             // M5 wave 3 (D58, D61): every attendance and excuse permission except the own-data ones.
+             // M5 wave 2 (D58): every timetable permission except ViewOwn (they have no timetable of their own).
+             Permissions.Timetable.View, Permissions.Timetable.Manage, Permissions.Timetable.Configure,
+             // M5 wave 3 (D58, D61, plan role matrix): every attendance and excuse permission except the own-data ones; Take for an admin is intended (an admin can take a session when no teacher can).
              Permissions.Attendance.Take, Permissions.Attendance.Edit, Permissions.Attendance.View,
              Permissions.Excuses.Review, Permissions.Excuses.Escalate]),
         new(Manager, RoleBaseKinds.Staff,
@@ -113,6 +115,8 @@ public static class BuiltInRoles
              // M5 wave 1 (D58): every grading permission except ViewOwn (they have no grades of their own).
              Permissions.Grades.View, Permissions.Grades.Manage, Permissions.Grades.Publish,
              Permissions.Grades.ConfigureScales, Permissions.Grades.ViewReports,
+             // M5 wave 2 (D58): every timetable permission except ViewOwn (they have no timetable of their own).
+             Permissions.Timetable.View, Permissions.Timetable.Manage, Permissions.Timetable.Configure,
              // M5 wave 3 (D58, D61): every attendance and excuse permission except the own-data ones.
              Permissions.Attendance.Take, Permissions.Attendance.Edit, Permissions.Attendance.View,
              Permissions.Excuses.Review, Permissions.Excuses.Escalate]),
@@ -142,6 +146,8 @@ public static class BuiltInRoles
              Permissions.LiveSessions.View,
              // M5 wave 1: read grades and reports of supervised courses (RelationshipRules).
              Permissions.Grades.View, Permissions.Grades.ViewReports,
+             // M5 wave 2: the timetable of supervised courses (RelationshipRules).
+             Permissions.Timetable.View,
              // M5 wave 3: attendance of supervised courses (RelationshipRules).
              Permissions.Attendance.View]),
         new(Counselor, RoleBaseKinds.Staff,
@@ -153,6 +159,8 @@ public static class BuiltInRoles
              Permissions.Groups.View,
              // M4a wave 2: every staff role reads the library.
              Permissions.Library.View,
+             // M5 wave 2: the timetable of the unit (the counselor does not build it).
+             Permissions.Timetable.View,
              // M5 wave 3 (L14, L16): attendance of the unit subtree, edits after the window, the excuse queue; no Grades.*.
              Permissions.Attendance.View, Permissions.Attendance.Edit, Permissions.Excuses.Review, Permissions.Excuses.Escalate]),
         new(Teacher, RoleBaseKinds.Staff,
@@ -177,6 +185,8 @@ public static class BuiltInRoles
              Permissions.LiveSessions.View, Permissions.LiveSessions.Manage,
              // M5 wave 1: grades of own ClassCourses (RelationshipRules); scales and reports are not the Teacher's.
              Permissions.Grades.View, Permissions.Grades.Manage, Permissions.Grades.Publish,
+             // M5 wave 2: read the timetable of the unit and own slots; building it is the Manager's.
+             Permissions.Timetable.View, Permissions.Timetable.ViewOwn,
              // M5 wave 3: attendance of own ClassCourses, or the session one substitutes on (L15).
              Permissions.Attendance.Take]),
         new(Student, RoleBaseKinds.Student,
@@ -194,16 +204,16 @@ public static class BuiltInRoles
              Permissions.Packages.View,
              // M4b wave 3a: sessions of own enrollments (RelationshipRules + IModuleAccess).
              Permissions.LiveSessions.View,
-             // M5 wave 1: the student's own published grades (SelfService).
-             Permissions.Grades.ViewOwn,
+             // M5 wave 1: the student's own published grades (SelfService); wave 2: the own class timetable (SelfService).
+             Permissions.Grades.ViewOwn, Permissions.Timetable.ViewOwn,
              // M5 wave 3: the student's own attendance; submitting an excuse is effective only under GuardiansAndStudents (D61).
              Permissions.Attendance.ViewOwn, Permissions.Excuses.Submit]),
         new(Guardian, RoleBaseKinds.Guardian,
             new("ولي الأمر", "Parent"),
             new("ولي الأمر", "Parent"),
             [Permissions.Files.Download, Permissions.AcademicYears.View, Permissions.Students.ViewChildren,
-             // M5 wave 1: the children's published grades (an active guardian link).
-             Permissions.Grades.ViewOwn,
+             // M5 wave 1: the children's published grades (an active guardian link); wave 2: the children's timetable.
+             Permissions.Grades.ViewOwn, Permissions.Timetable.ViewOwn,
              // M5 wave 3: the children's attendance and excuses (an active guardian link).
              Permissions.Attendance.ViewOwn, Permissions.Excuses.Submit]),
     ];

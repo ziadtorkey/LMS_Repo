@@ -20,6 +20,8 @@ public sealed partial class GuardianAccessGuardTests
             + "Infrastructure callers only, the M3 match endpoint projects name and masked mobile (M2 Task 5, #157)",
         ["src/Lms.Api/Features/Guardians/GuardianPortalEndpoints.cs"] =
             "my children: the signed-in user's own guardian profile (by their user id, client filter of the table); children come from StudentGuardian in the caller's scope (M3 Task 25, #233)",
+        ["src/Lms.Api/Features/Timetable/TimetableViewEndpoints.cs"] =
+            "a guardian reads the timetable of their own children only: the signed-in user own guardian profile (by user id, client filter of the table) and an active StudentGuardian link to the requested student; no other guardian data leaves (M5 Task 15)",
         ["src/Lms.Infrastructure/Enrollment/TransferNotifier.cs"] =
             "portal user ids of the guardians linked to the transferred student (links in the caller's scope); only user ids leave (M3 Task 28, #236)",
         ["src/Lms.Infrastructure/People/PersonStatusService.cs"] =

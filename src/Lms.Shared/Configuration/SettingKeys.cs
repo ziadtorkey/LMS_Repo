@@ -96,6 +96,12 @@ public static class SettingKeys
     /// <summary>Terms per academic year, 2 or 3 (client level, D62).</summary>
     public static readonly SettingKey<int> AcademicYearsTermsPerYear = new("AcademicYears.TermsPerYear", 2);
 
+    // M5 wave 2 (M5 plan Task 2).
+    /// <summary>The school week as a JSON array of <c>WorkingDayNames</c>, Sunday to Thursday by default (D58); read through the unit hierarchy.</summary>
+    public static readonly SettingKey<IReadOnlyList<string>> TimetableWorkingDays = new("Timetable.WorkingDays", ["Sun", "Mon", "Tue", "Wed", "Thu"]);
+
+    /// <summary>What a slot save does with a clash: <c>Block</c> (default) or <c>Warn</c> (FR-TT-03).</summary>
+    public static readonly SettingKey<string> TimetableConflictMode = new("Timetable.ConflictMode", "Block");
     // M5 wave 3 (M5 plan Task 3: D58, D61, L11, L13, L14).
     /// <summary>Days of timetable sessions created ahead by the generator (1-30).</summary>
     public static readonly SettingKey<int> AttendanceGenerateDaysAhead = new("Attendance.GenerateDaysAhead", 7);
@@ -133,6 +139,6 @@ public static class SettingKeys
     /// <summary>Largest excuse attachment in MB (L10).</summary>
     public static readonly SettingKey<int> ExcusesMaxAttachmentMb = new("Excuses.MaxAttachmentMb", 5);
 
-    /// <summary>Days after which the attachments of rejected or withdrawn excuses are purged (L10).</summary>
+    /// <summary>Days after which the attachments of rejected or withdrawn excuses are purged by the retention job (L10, Task 19); the excuse stays readable.</summary>
     public static readonly SettingKey<int> ExcusesAttachmentRetentionDays = new("Excuses.AttachmentRetentionDays", 365);
 }

@@ -1,3 +1,4 @@
+using Lms.Domain.Attendance;
 using Lms.Domain.Excuses;
 using Lms.Domain.Files;
 using Lms.Domain.People;
@@ -34,8 +35,7 @@ internal sealed class AbsenceExcuseSessionConfiguration : IEntityTypeConfigurati
         AcademicColumns.Unit(builder);
         builder.HasOne<AbsenceExcuse>().WithMany().HasForeignKey(x => x.AbsenceExcuseId).OnDelete(DeleteBehavior.Restrict);
 
-        // TODO(M5 Task 16): AttendanceSessionId gets a foreign key to AttendanceSessions when that table exists (a follow-up migration of the
-        // attendance task); until then it is a plain column and the excuse service never writes it (submit waits for the attendance rows).
+        builder.HasOne<AttendanceSession>().WithMany().HasForeignKey(x => x.AttendanceSessionId).OnDelete(DeleteBehavior.Restrict);
         builder.HasIndex(x => x.AttendanceSessionId);
         builder.HasIndex(x => new { x.AbsenceExcuseId, x.AttendanceSessionId }).IsUnique();
     }

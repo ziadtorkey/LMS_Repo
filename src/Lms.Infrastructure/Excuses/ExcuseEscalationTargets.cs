@@ -1,4 +1,5 @@
 using Lms.Domain.Abstractions;
+using Lms.Domain.Calendar;
 using Lms.Domain.Identity;
 using Lms.Domain.Organizations;
 using Lms.Infrastructure.Persistence;
@@ -14,7 +15,7 @@ public sealed record EscalationCandidate(Guid UserId, string RoleKey, string Nam
 /// Who an excuse can be escalated to (plan L14): active users with a currently valid assignment, at or above the student's unit in the same client, of a
 /// built-in role that holds <c>Excuses.Review</c> or <c>Excuses.Escalate</c> (Org Admin, Manager, Counselor). Custom roles are not offered yet.
 /// </summary>
-public sealed class ExcuseEscalationTargets(LmsDbContext db, IClock clock)
+public sealed class ExcuseEscalationTargets(LmsDbContext db, IClientCalendar calendar)
 {
     private static readonly string[] EligibleRoleKeys =
         BuiltInRoles.All.Where(r => r.DefaultPermissions.Contains(Permissions.Excuses.Review) || r.DefaultPermissions.Contains(Permissions.Excuses.Escalate))
@@ -22,7 +23,7 @@ public sealed class ExcuseEscalationTargets(LmsDbContext db, IClock clock)
 
     public async Task<IReadOnlyList<EscalationCandidate>> ForAsync(Guid organizationId, string studentUnitPath, CancellationToken ct)
     {
-        var today = DateOnly.FromDateTime(clock.UtcNow);
+        var today = await calendar.LocalTodayAsync(organizationId, ct); // the client local date (D64)
         var ancestors = OrgUnitPath.AncestorsAndSelf(studentUnitPath);
 
         // ISOLATION-BYPASS: the reviewer who escalates holds a narrower scope than the managers above the student's school; assignments are read at the

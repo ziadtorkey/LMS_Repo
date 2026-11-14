@@ -53,7 +53,7 @@ public sealed record ExcuseSessionDto(Guid SessionId, DateOnly Date, string Cour
 public sealed record ExcuseHistoryDto(string Status, Guid ByUserId, string ByNameAr, string ByNameEn, string? Comment, DateTime AtUtc);
 
 /// <summary>
-/// An excuse as the submitter, the student's guardians and reviewers see it. <c>HasAttachment</c> only: the file is fetched through <c>GET /api/excuses/{id}/attachment-url</c>.
+/// An excuse as the submitter, the student's guardians and reviewers see it. <c>HasAttachment</c> only (false once the retention job purged the file of a rejected or withdrawn excuse; the excuse stays readable): the file is fetched through <c>GET /api/excuses/{id}/attachment-url</c>.
 /// <c>CanWithdraw</c> is true for the submitter while <c>Submitted</c>.
 /// </summary>
 public sealed record ExcuseDto(

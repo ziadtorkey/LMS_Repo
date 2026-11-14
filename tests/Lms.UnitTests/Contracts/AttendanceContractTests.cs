@@ -166,10 +166,13 @@ public sealed class AttendanceContractTests
         Assert.Equal("/api/me/attendance", Routes.MeAttendance);
         Assert.Equal("/api/students/{id:guid}/attendance", Routes.StudentAttendancePattern);
         Assert.Equal("/api/attendance/alerts", Routes.AttendanceAlertsPattern);
+        Assert.Equal("/api/org-units/{id:guid}/attendance-sessions", Routes.OrgUnitAttendanceSessionsPattern);
 
         Assert.Equal("/api/attendance/sessions", Routes.AttendanceSessions());
         Assert.Equal("/api/attendance/sessions?date=2027-01-05", Routes.AttendanceSessions(new DateOnly(2027, 1, 5)));
         Assert.Equal($"/api/class-courses/{Id}/attendance-sessions", Routes.ClassCourseAttendanceSessions(Id));
+        Assert.Equal($"/api/org-units/{Id}/attendance-sessions?from=2027-01-01&to=2027-01-31", Routes.OrgUnitAttendanceSessions(Id, new DateOnly(2027, 1, 1), new DateOnly(2027, 1, 31)));
+        Assert.Equal($"/api/org-units/{Id}/attendance-sessions?from=2027-01-01&to=2027-01-31&classId={Other}", Routes.OrgUnitAttendanceSessions(Id, new DateOnly(2027, 1, 1), new DateOnly(2027, 1, 31), classId: Other));
         Assert.Equal($"/api/attendance-sessions/{Id}/records", Routes.AttendanceSessionRecords(Id));
         Assert.Equal($"/api/attendance-sessions/{Id}/live-mappings", Routes.AttendanceSessionLiveMappings(Id));
         Assert.Equal("/api/attendance-reports/class/export", Routes.AttendanceReportExport(AttendanceReportKinds.Class));
@@ -188,7 +191,7 @@ public sealed class AttendanceContractTests
         var matches = Regex.Matches(text, @"((?:\s*///[^\n]*\n)+)\s*public const string (\w+Pattern|MeAttendance) =");
         var routes = matches.Select(m => (Name: m.Groups[2].Value, Doc: m.Groups[1].Value)).ToList();
 
-        Assert.True(routes.Count >= 11, $"found {routes.Count} documented route constants");
+        Assert.True(routes.Count >= 12, $"found {routes.Count} documented route constants");
         Assert.All(routes, r => Assert.Matches(@"Attendance\.\w+|Excuses\.\w+", r.Doc));
         Assert.Equal(Regex.Matches(text, @"public const string \w+Pattern =").Count + 1, routes.Count); // + MeAttendance
     }
@@ -238,6 +241,20 @@ public sealed class AttendanceContractTests
         Assert.Equal((1, Paging.DefaultPageSize), (new AttendanceReportQuery().Page, new AttendanceReportQuery().PageSize));
         Assert.True(new AttendanceAlertsQuery().ActiveOnly);
         Assert.Null(new AttendanceSessionsQuery().Date);
+        var search = new AttendanceSessionSearchQuery(new DateOnly(2027, 1, 1), new DateOnly(2027, 1, 31), Id, null, AttendanceSessionStates.Taken);
+        Assert.Equal(AttendanceSessionStates.Taken, RoundTrip(search).State);
+        Assert.Equal((1, Paging.DefaultPageSize, 92), (search.Page, search.PageSize, AttendanceLimits.SearchMaxDays));
+    }
+
+    [Fact]
+    public void A_live_session_list_item_links_to_its_attendance_session_when_it_exists()
+    {
+        var start = DateTime.UtcNow;
+        var without = new Lms.Shared.LiveSessions.LiveSessionListItemDto(Id, Other, null, null, "حصة", "Class", start, start.AddMinutes(45), "Ended", false, start);
+        var with = without with { AttendanceSessionId = Other };
+
+        Assert.Null(RoundTrip(without).AttendanceSessionId); // null until the attendance session exists
+        Assert.Equal(Other, RoundTrip(with).AttendanceSessionId);
     }
 
     [Fact]

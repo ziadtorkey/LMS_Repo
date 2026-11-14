@@ -1,3 +1,4 @@
+using Lms.Domain.Attendance;
 using Lms.Domain.Excuses;
 using Lms.Domain.Organizations;
 using Lms.IntegrationTests.Access;
@@ -57,9 +58,12 @@ public sealed class ExcuseIsolationTests(LmsApiFactory factory)
     private async Task<(Guid Excuse, Guid Link)> AddAsync(OrgUnit home, string studentCode)
     {
         var student = await PeopleTestKit.AddStudentAsync(factory, home, studentCode);
+        var world = await Timetable.TimetableKit.NewWorldAsync(factory, home);
         await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        var session = new AttendanceSession(world.Math, new DateOnly(2027, 2, 4), null, null, AttendanceSession.AdHocSource);
+        db.Add(session);
         var excuse = new AbsenceExcuse(student, Guid.NewGuid(), "Illness", null, new DateOnly(2027, 2, 4), new DateOnly(2027, 2, 4), null, DateTime.UtcNow);
-        var link = new AbsenceExcuseSession(excuse, Guid.NewGuid()); // the attendance session id has no foreign key until Task 16
+        var link = new AbsenceExcuseSession(excuse, session.Id);
         db.AddRange(excuse, link);
         await db.SaveChangesAsync();
         return (excuse.Id, link.Id);

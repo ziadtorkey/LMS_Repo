@@ -88,6 +88,12 @@ public static class ExcuseLimits
     /// <summary>The signed attachment URL is valid this long; it is served with <c>Content-Disposition: attachment</c> and <c>nosniff</c> (L10).</summary>
     public const int AttachmentUrlMinutes = 5;
 
+    /// <summary>An uploaded attachment that is not attached to an excuse within this many hours is purged by a job (L10).</summary>
+    public const int UnattachedUploadPurgeHours = 24;
+
+    /// <summary>Per-user rate limit of <c>POST /api/excuses/attachments</c>.</summary>
+    public const int UploadsPerUserPerHour = 20;
+
     /// <summary>The attachment allow-list. Only the raster types preview inline in the review drawer; a PDF downloads only.</summary>
     public static IReadOnlyList<string> AttachmentContentTypes { get; } = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
 
