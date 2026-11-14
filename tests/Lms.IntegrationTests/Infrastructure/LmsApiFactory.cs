@@ -134,10 +134,13 @@ public sealed class LmsApiFactory : WebApplicationFactory<Program>, IAsyncLifeti
         builder.UseSetting("Storage:AccessKey", MinioBuilder.DefaultUsername);
         builder.UseSetting("Storage:SecretKey", MinioBuilder.DefaultPassword);
         builder.UseSetting("Auth:WasmOrigins:0", "http://localhost");
+        builder.UseSetting("PackageHost:Origin", "http://127.0.0.1:5999"); // a content origin on another site than the test server (http://localhost)
         builder.ConfigureServices(services =>
         {
             services.AddAuthentication(TestAuthHandler.SchemeName)
                 .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(TestAuthHandler.SchemeName, _ => { });
+            services.AddSingleton<Lms.Infrastructure.LiveSessions.FakeMeetingProvider>();
+            services.AddSingleton<Lms.Domain.LiveSessions.IMeetingProvider>(sp => sp.GetRequiredService<Lms.Infrastructure.LiveSessions.FakeMeetingProvider>());
             services.AddSingleton<IEndpointModule, TestEndpoints>();
             services.AddSingleton<TestPolicyEvaluator>();
             services.AddScoped<IPolicyEvaluator>(sp => sp.GetRequiredService<TestPolicyEvaluator>());
