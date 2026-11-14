@@ -2317,4 +2317,6 @@
   <data name="ModQueue_AuditDetail" xml:space="preserve"><value>Opening this report was recorded in the audit log.</value></data>
   <data name="ModQueue_BulkLimit" xml:space="preserve"><value>You can keep up to {0} reports at once.</value></data>
   <data name="ModQueue_Paging" xml:space="preserve"><value>Pages of reports</value></data>
+  <data name="ModQueue_OpenFile" xml:space="preserve"><value>Open file</value></data>
+  <data name="ModQueue_Download" xml:space="preserve"><value>Download</value></data>
 </root>

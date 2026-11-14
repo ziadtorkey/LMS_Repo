@@ -61,11 +61,13 @@ public sealed class FakeModerationApi : IModerationApi
         var now = Now();
         var messageId = Guid.NewGuid();
         var context = new List<ReportContextMessageDto>();
+        var fileId = Guid.NewGuid();
         for (var i = -ReportCtx; i <= ReportCtx; i++)
         {
             var reportedOne = i == 0;
             context.Add(new ReportContextMessageDto(reportedOne ? messageId : Guid.NewGuid(), reportedOne ? sender : "Sara", reportedOne ? sender : "Sara",
-                reportedOne ? reported : "Message " + i, reportedOne && withFile ? ["homework.pdf"] : [], now.AddHours(-hoursAgo).AddMinutes(i), reportedOne));
+                reportedOne ? reported : "Message " + i, reportedOne && withFile ? ["homework.pdf"] : [], now.AddHours(-hoursAgo).AddMinutes(i), reportedOne,
+                reportedOne && withFile ? [new ReportAttachmentRefDto(fileId, "homework.pdf", "application/pdf", 1024)] : null)); // refs only on the reported message
         }
 
         var report = new Report
@@ -73,7 +75,7 @@ public sealed class FakeModerationApi : IModerationApi
             MessageId = messageId, ConversationId = Guid.NewGuid(), Reason = reason, Note = "Please review", Context = context, CreatedAtUtc = now.AddHours(-hoursAgo),
             Sender = new SenderSummaryDto(sender, sender, "Student", "10-A", "10-A", 2, 1), SenderId = Guid.NewGuid(),
         };
-        if (withFile) report.Files[Guid.NewGuid()] = "homework.pdf";
+        if (withFile) report.Files[fileId] = "homework.pdf";
         _reports.Add(report);
         return report.Id;
     }

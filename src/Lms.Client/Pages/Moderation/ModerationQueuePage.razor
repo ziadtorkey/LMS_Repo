@@ -206,6 +206,7 @@ else
     private ModerationStatsDto? _stats;
     private MessageReportDto? _current;
     private readonly HashSet<Guid> _picked = [];
+    private readonly Dictionary<Guid, ModerationAttachmentUrlDto> _urls = [];
     private ModerationAction? _decision;
     private int _days = 7;
     private string? _status, _reason, _noteToPeople, _error;
@@ -270,18 +271,40 @@ else
 
     private string Time(DateTime utc) => utc.ToString("HH:mm", System.Globalization.CultureInfo.InvariantCulture);
 
-    // The context carries attachment names only (no file id), so the page lists the names; opening one waits for the contract to say how a moderator addresses it.
+    // Only the reported message carries attachment refs: a moderator opens one through the audited route, which issues a short-lived link.
     private RenderFragment Files(MessageReportDto report, ReportContextMessageDto message) => __builder =>
     {
-        @foreach (var name in message.AttachmentNames)
+        @foreach (var file in message.Attachments ?? [])
         {
-            <div class="lms-attach"><MudIcon Icon="@Icons.Material.Rounded.AttachFile" Size="Size.Small" aria-hidden="true" /><span dir="ltr">@name</span></div>
+            var f = file;
+            <div class="lms-attach" data-testid="@($"mod-file-{f.FileId}")">
+                <MudIcon Icon="@Icons.Material.Rounded.AttachFile" Size="Size.Small" aria-hidden="true" />
+                <span dir="ltr">@f.Name</span>
+                <span class="lms-muted" dir="ltr">@FileSize(f.SizeBytes)</span>
+                @if (_urls.TryGetValue(f.FileId, out var link))
+                {
+                    <a href="@link.Url" target="_blank" rel="noopener noreferrer" download="@link.FileName" data-testid="@($"mod-file-link-{f.FileId}")">@L["ModQueue_Download"]</a>
+                }
+                else
+                {
+                    <MudButton Size="Size.Small" OnClick="() => OpenFileAsync(report.Id, f.FileId)" data-testid="@($"mod-file-open-{f.FileId}")">@L["ModQueue_OpenFile"]</MudButton>
+                }
+            </div>
         }
     };
+
+    private static string FileSize(long bytes) => bytes < 1024 * 1024 ? $"{Math.Max(1, bytes / 1024)} KB" : $"{bytes / (1024 * 1024.0):0.#} MB";
+
+    private async Task OpenFileAsync(Guid reportId, Guid fileId)
+    {
+        // the server issues a signed link valid for minutes, for an attachment of the reported message only, and audits it
+        await ApiCalls.RunAsync(async () => _urls[fileId] = await Api.GetAttachmentAsync(reportId, fileId), Navigation, L, m => _error = m);
+    }
 
     private async Task OpenAsync(Guid id)
     {
         _decision = null;
+        _urls.Clear();
         _noteToPeople = null;
         _days = 7;
         await ApiCalls.RunAsync(async () => _current = await Api.GetReportAsync(id), Navigation, L, m => _error = m);

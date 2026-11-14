@@ -2317,4 +2317,6 @@
   <data name="ModQueue_AuditDetail" xml:space="preserve"><value>سُجّل فتح هذا البلاغ في سجل التدقيق.</value></data>
   <data name="ModQueue_BulkLimit" xml:space="preserve"><value>يمكنك إبقاء {0} بلاغًا كحد أقصى دفعة واحدة.</value></data>
   <data name="ModQueue_Paging" xml:space="preserve"><value>صفحات البلاغات</value></data>
+  <data name="ModQueue_OpenFile" xml:space="preserve"><value>فتح الملف</value></data>
+  <data name="ModQueue_Download" xml:space="preserve"><value>تنزيل</value></data>
 </root>
