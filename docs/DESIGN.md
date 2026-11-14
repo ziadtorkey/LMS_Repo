@@ -133,7 +133,7 @@ Every text colour above reaches **WCAG AA (4.5:1)** on the surface and the canva
 | `StaffAvatar` | A person's photo, or initials when there is none | `PhotoFileId`, `Name`, `Size` |
 
 Stitch patterns (`lms-stitch.css`):
-- **Stat tiles** (`lms-stats` > `lms-stat`): a row of KPI cards at the top of dashboards and list pages. Each tile holds `lms-stat-label`, `lms-stat-value` and an `lms-stat-icon` tile.
+- **Stat tiles** (`lms-stats` > `lms-stat`): a row of KPI cards at the top of dashboards and list pages. Each tile holds `lms-stat-label`, `lms-stat-value` and an `lms-stat-icon` tile. On a page with only one to three stats, add `lms-stats-fixed`: from 600 px up the tiles keep a 200–280 px width instead of stretching across the page.
 - **Card header icon** (`lms-section-icon`): a 36 px tinted icon tile before a `SectionCard` title, as on the Stitch settings cards.
 - **Segmented tabs:** `MudTabs Class="lms-tabs"` and `ClassCourseTabs` render as a pill track with a raised active tab. `MudToggleGroup` gets the same look.
 - **Save bar** (`lms-save-bar` with `lms-save-bar-text`): a sticky bar at the bottom of long settings forms when there are unsaved changes. Discard (text) and Save (filled) go at its end.

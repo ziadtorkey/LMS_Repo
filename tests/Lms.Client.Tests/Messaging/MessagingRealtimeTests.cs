@@ -191,4 +191,29 @@ public sealed class MessagingRealtimeTests : ClientTestContext
     {
         Assert.Equal(TimeSpan.FromSeconds(expectedSeconds), RealtimeBackoff.Next(previous));
     }
+
+    [Fact]
+    public void Hub_binding_uses_the_contract_method_names_and_the_backoff_policy()
+    {
+        Assert.Equal("MessageReceived", Lms.Shared.Notifications.NotificationHub.MessageReceivedMethod);
+        Assert.Equal("ConversationChanged", Lms.Shared.Notifications.NotificationHub.ConversationChangedMethod);
+        var policy = new Lms.Client.Services.HubRetryPolicy();
+        Assert.Equal(TimeSpan.Zero, policy.NextRetryDelay(new Microsoft.AspNetCore.SignalR.Client.RetryContext { PreviousRetryCount = 0 }));
+        Assert.Equal(TimeSpan.FromMinutes(1), policy.NextRetryDelay(new Microsoft.AspNetCore.SignalR.Client.RetryContext { PreviousRetryCount = 9 }));
+    }
+
+    [Fact]
+    public async Task A_change_of_context_in_the_store_resets_the_realtime_state()
+    {
+        var store = Services.GetRequiredService<Lms.Client.Services.IContextStore>();
+        var realtime = new MessagingRealtime(_hub, _api, store);
+        realtime.OpenConversationId = Guid.NewGuid();
+        var reset = false;
+        realtime.ContextReset += () => reset = true;
+
+        await store.SetAsync(Guid.NewGuid());
+
+        Assert.True(reset);
+        Assert.Null(realtime.OpenConversationId);
+    }
 }

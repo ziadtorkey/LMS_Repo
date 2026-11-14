@@ -15,8 +15,10 @@ using Microsoft.EntityFrameworkCore;
 namespace Lms.IntegrationTests.Students;
 
 /// <summary>A client with one student who has a login, for the self-edit and change-request tests (M3 Task 22, #230).</summary>
-internal sealed class SelfServiceKit(LmsApiFactory factory, WebApplicationFactory<Program> host)
+internal sealed class SelfServiceKit(LmsApiFactory factory, WebApplicationFactory<Program> host) : IDisposable
 {
+    public void Dispose() => Kit.Dispose();
+
     public sealed record World(AccessTree Tree, RoleAssignment Admin, StudentProfile Student, RoleAssignment Me);
 
     public GuardianTestKit Kit { get; } = new(factory, host);

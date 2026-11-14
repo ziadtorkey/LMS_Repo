@@ -5,7 +5,7 @@ namespace Lms.Client.Services.Messaging;
 
 /// <summary>
 /// The hub of messaging events as the client sees it (M6 Task 23, FR-MSG-01, FR-NOT-02). An event carries ids only: the client reads the message through the API (the server checks
-/// that the caller is a participant) before anything is shown. The SignalR binding of this interface waits for the hub method names (L13) of the contract.
+/// that the caller is a participant) before anything is shown. The SignalR binding is <c>NotificationConnection</c> (method names: <c>NotificationHub</c> of the contract).
 /// </summary>
 public interface IMessagingHub
 {
@@ -22,21 +22,6 @@ public interface IMessagingHub
     Task StartAsync(Guid assignmentId);
     Task SwitchContextAsync(Guid assignmentId);
     Task StopAsync();
-}
-
-/// <summary>
-/// The hub method and event names of messaging, in one place. TODO(L13): these are placeholders until the contract names them; renaming is a change of these lines only.
-/// </summary>
-public static class MessagingHubMethods
-{
-    /// <summary>Server to client: a message arrived (<c>MessageReceivedEvent</c>: conversation id and message id).</summary>
-    public const string MessageReceived = "MessageReceived";
-
-    /// <summary>Server to client: the members or the state of a conversation changed (conversation id).</summary>
-    public const string ConversationChanged = "ConversationChanged";
-
-    /// <summary>Client to server: the active context changed.</summary>
-    public const string SwitchContext = "SwitchContext";
 }
 
 /// <summary>When to try again after the hub connection drops: at once, then 2, 5, 10 and 30 seconds, then every minute, never giving up while the page is open.</summary>
@@ -59,10 +44,14 @@ public sealed class MessagingRealtime : IAsyncDisposable
     private readonly HashSet<Guid> _announced = [];
     private readonly SemaphoreSlim _gate = new(1, 1);
 
-    public MessagingRealtime(IMessagingHub hub, IMessagingApi api)
+    private readonly IContextStore? _context;
+
+    public MessagingRealtime(IMessagingHub hub, IMessagingApi api, IContextStore? context = null)
     {
         _hub = hub;
         _api = api;
+        _context = context;
+        if (_context is not null) _context.Changed += OnContextChanged; // the notification feed moves the hub; this only forgets the old context
         _hub.MessageReceived += OnMessageReceived;
         _hub.ConversationChanged += OnConversationChanged;
         _hub.Disconnected += OnDisconnected;
@@ -95,10 +84,17 @@ public sealed class MessagingRealtime : IAsyncDisposable
 
     public async Task SwitchContextAsync(Guid assignmentId)
     {
+        await _hub.SwitchContextAsync(assignmentId);
+        ResetContext();
+    }
+
+    private void OnContextChanged() => ResetContext();
+
+    private void ResetContext()
+    {
         _seen.Clear();
         _announced.Clear();
         OpenConversationId = null;
-        await _hub.SwitchContextAsync(assignmentId);
         ContextReset?.Invoke();
     }
 
@@ -178,6 +174,7 @@ public sealed class MessagingRealtime : IAsyncDisposable
         _hub.MessageReceived -= OnMessageReceived;
         _hub.ConversationChanged -= OnConversationChanged;
         _hub.Disconnected -= OnDisconnected;
+        if (_context is not null) _context.Changed -= OnContextChanged;
         await _hub.StopAsync();
         _gate.Dispose();
     }
