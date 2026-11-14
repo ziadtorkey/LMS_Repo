@@ -10,6 +10,7 @@
 @inject TimeProvider Clock
 @inject IJSRuntime Js
 @inject IDialogService Dialogs
+@inject IMessagingState State
 @inject MessagingRealtime Realtime
 
 @* One open conversation (spec #615 §2.5-§2.9): the header, the messages with day separators and one "new messages" divider, Load earlier, the composer or
@@ -27,7 +28,23 @@ else
     var conversation = _conversation;
     <ThreadPane Label="@Name">
         <Header>
-            <ThreadHeader Name="@Name" IsGroup="conversation.Kind == ConversationKinds.Group" MemberCount="Members" OnMembers="MembersAsync" OnBack="BackAsync" />
+            <ThreadHeader Name="@Name" IsGroup="conversation.Kind == ConversationKinds.Group" MemberCount="Members" OnMembers="MembersAsync" OnBack="BackAsync">
+                <Actions>
+                    @if (Other is not null) // blocking is a safety action: View is enough
+                    {
+                        <MudMenu Icon="@Icons.Material.Rounded.MoreVert" AriaLabel="@L["Msg_More"]" Dense="true" data-testid="thread-more">
+                            @if (_blockedByMe)
+                            {
+                                <MudMenuItem OnClick="UnblockAsync" data-testid="thread-unblock">@L["Msg_Unblock"]</MudMenuItem>
+                            }
+                            else
+                            {
+                                <MudMenuItem OnClick="BlockAsync" data-testid="thread-block">@L["Msg_Block"]</MudMenuItem>
+                            }
+                        </MudMenu>
+                    }
+                </Actions>
+            </ThreadHeader>
         </Header>
         <ChildContent>
             @if (_nextBefore is not null)
@@ -54,6 +71,15 @@ else
                                Text="@(message.Body ?? string.Empty)" TimeText="@MessageTimes.Clock(message.CreatedAtUtc, Clock.LocalTimeZone)" Removal="RemovalOf(message)"
                                TestId="@($"msg-{message.Id}")">
                     <Actions>
+                        @if (State.IsReported(message.Id))
+                        {
+                            <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Icon="@Icons.Material.Rounded.Flag" data-testid="@($"msg-reported-{message.Id}")">@L["Msg_Reported"]</MudChip>
+                        }
+                        else if (!IsMine(message) && message.State == MessageStates.Normal && message.SenderUserId is not null)
+                        {
+                            <MudIconButton Icon="@Icons.Material.Rounded.OutlinedFlag" Size="Size.Small" Class="lms-touch" aria-label="@L["Msg_Report"]" OnClick="() => ReportAsync(message)"
+                                           data-testid="@($"msg-report-{message.Id}")" />
+                        }
                         @if (message.CanDelete && CanSend)
                         {
                             <MudIconButton Icon="@Icons.Material.Rounded.DeleteOutline" Size="Size.Small" aria-label="@L["Msg_Delete"]" OnClick="() => DeleteAsync(message)"
@@ -76,7 +102,13 @@ else
             {
                 <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Dense="true" data-testid="thread-send-error">@_error</MudAlert>
             }
-            @if (!conversation.CanPost || conversation.IsLocked || conversation.IsReadOnly)
+            @if (_blockedByMe)
+            {
+                <ComposerOff Reason="@L["Msg_Blocked_ByMe"]">
+                    <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="UnblockAsync" data-testid="composer-unblock">@L["Msg_Unblock"]</MudButton>
+                </ComposerOff>
+            }
+            else if (!conversation.CanPost || conversation.IsLocked || conversation.IsReadOnly)
             {
                 <ComposerOff Reason="@ReasonText(conversation)">
                     @if (conversation.ReadOnlyReason == ConversationReadOnlyReasons.GroupStudentsReadOnly && PrivateReplyTo is { } owner)
@@ -102,6 +134,11 @@ else
     /// <summary>Raised after the conversation was marked read or a message was sent, so the inbox and the badge ask the server again.</summary>
     [Parameter] public EventCallback OnChanged { get; set; }
 
+    /// <summary>Raised by the page whenever the blocked-people card changed, so an open thread offers (or hides) the composer to match.</summary>
+    [Parameter] public int BlockVersion { get; set; }
+
+    private int _seenBlockVersion;
+
     private ConversationDto? _conversation;
     private readonly List<MessageDto> _messages = [];
     private Guid? _nextBefore, _dividerBefore;
@@ -109,10 +146,14 @@ else
     private int _newBelow;
     private string? _draft, _error;
     private IJSObjectReference? _module;
+    private bool _blockedByMe;
 
     private string Name => _conversation is null ? "" : !string.IsNullOrWhiteSpace(_conversation.Title)
         ? _conversation.Title
         : string.Join(", ", _conversation.Participants.Where(p => p.UserId != PermState.UserId).Select(p => CultureText.Pick(p.NameAr, p.NameEn)));
+
+    /// <summary>The other person of a direct conversation (the one a block applies to).</summary>
+    private ParticipantDto? Other => _conversation is { Kind: ConversationKinds.Direct } c ? c.Participants.FirstOrDefault(p => p.UserId != PermState.UserId) : null;
 
     /// <summary>The reason the composer is off, in plain words. A block and a rule are one sentence on purpose (L18): it never says which, or why.</summary>
     private string ReasonText(ConversationDto c)
@@ -162,6 +203,7 @@ else
         _nextBefore = loaded.page.NextBeforeId;
         _dividerBefore = DividerFor(UnreadCount);
         _scrollDown = true;
+        await LoadBlockAsync();
 
         await ApiCalls.RunAsync(() => Messaging.MarkReadAsync(ConversationId), Navigation, L, _ => { }); // a failed mark-read stays silent: the next visit marks it
         await OnChanged.InvokeAsync();
@@ -209,6 +251,52 @@ else
         var i = _messages.FindIndex(m => m.Id == message.Id);
         if (i >= 0) _messages[i] = message with { State = MessageStates.Deleted, Body = null, CanDelete = false };
         await OnChanged.InvokeAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_seenBlockVersion == BlockVersion) return;
+        _seenBlockVersion = BlockVersion;
+        if (_conversation is not null) { await LoadBlockAsync(); await ReloadConversationAsync(); }
+    }
+
+    /// <summary>A block change moves CanPost and the read-only reason, which only the server knows: read the conversation again.</summary>
+    private async Task ReloadConversationAsync()
+    {
+        var (fresh, _) = await ApiCalls.RunAsync(() => Messaging.GetConversationAsync(ConversationId), Navigation);
+        if (fresh is not null) _conversation = fresh;
+    }
+
+    private async Task LoadBlockAsync()
+    {
+        if (Other is not { } other) return;
+        var (blocks, _) = await ApiCalls.RunAsync(() => Messaging.ListBlocksAsync(), Navigation);
+        _blockedByMe = blocks?.Any(b => b.UserId == other.UserId) ?? false;
+    }
+
+    private async Task ReportAsync(MessageDto message)
+    {
+        var dialog = await Dialogs.ShowAsync<ReportDialog>(L["Msg_Report_Title"], new DialogParameters<ReportDialog> { { x => x.MessageId, message.Id } },
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false }) State.MarkReported(message.Id);
+    }
+
+    private async Task BlockAsync()
+    {
+        if (Other is not { } other) return;
+        var dialog = await Dialogs.ShowAsync<BlockUserDialog>(L["Msg_Block"],
+            new DialogParameters<BlockUserDialog> { { x => x.UserId, other.UserId }, { x => x.Name, CultureText.Pick(other.NameAr, other.NameEn) } },
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false }) { _blockedByMe = true; await ReloadConversationAsync(); await OnChanged.InvokeAsync(); }
+    }
+
+    private async Task UnblockAsync()
+    {
+        if (Other is not { } other) return;
+        var ok = await ApiCalls.RunAsync(() => Messaging.UnblockAsync(other.UserId), Navigation, L, e => _error = e);
+        if (ok) { _blockedByMe = false; await ReloadConversationAsync(); await OnChanged.InvokeAsync(); }
     }
 
     private async Task MembersAsync()

@@ -1,0 +1,38 @@
+@using Lms.Client.Services.Messaging
+@inject IMessagingApi Messaging
+@inject NavigationManager Navigation
+
+@* Block a person (FR-MSG-04): says in plain words what it does. The other person is never told; a block stops direct messages both ways and keeps shared
+   groups. The words say "block", never "restrict" (that is what a moderator does, and is another dialog). *@
+<MudDialog>
+    <DialogContent>
+        <div class="lms-form" data-testid="block">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-3" data-testid="block-error">@_error</MudAlert>
+            }
+            <p>@string.Format(L["Msg_Block_Text"].Value, Name)</p>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" OnClick="() => MudDialog.Cancel()" data-testid="block-cancel">@L["Common_Cancel"]</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" Disabled="_busy" OnClick="BlockAsync" data-testid="block-confirm">@L["Msg_Block"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter, EditorRequired] public Guid UserId { get; set; }
+    [Parameter, EditorRequired] public string Name { get; set; } = "";
+
+    private string? _error;
+    private bool _busy;
+
+    private async Task BlockAsync()
+    {
+        _busy = true; _error = null;
+        var ok = await ApiCalls.RunAsync(() => Messaging.BlockAsync(UserId), Navigation, L, e => _error = e);
+        _busy = false;
+        if (ok) MudDialog.Close(DialogResult.Ok(true));
+    }
+}

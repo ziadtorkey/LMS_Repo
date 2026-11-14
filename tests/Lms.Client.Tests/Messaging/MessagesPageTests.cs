@@ -412,8 +412,15 @@ public sealed class MessagesPageTests : ClientTestContext
 
         Assert.Empty(cut.FindAll("[data-testid=composer]"));
         var reason = cut.Find("[data-testid=composer-off]").TextContent;
-        Assert.Contains("لا يمكنك إرسال رسائل في هذه المحادثة", reason); // one sentence for a block either way: it never says which
-        Assert.DoesNotContain("حظر", reason);
+        if (blockerIsMe)
+        {
+            Assert.Contains("حظرت", reason); // my own block: the thread says so and offers Unblock
+        }
+        else
+        {
+            Assert.Contains("لا يمكنك إرسال رسائل في هذه المحادثة", reason); // theirs: one sentence for a block or a rule, it never says which
+            Assert.DoesNotContain("حظر", reason);
+        }
     }
 
     [Fact]

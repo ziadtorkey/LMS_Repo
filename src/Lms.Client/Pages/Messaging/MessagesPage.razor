@@ -51,11 +51,12 @@ else
     <InboxLayout ShowThread="Id is not null">
         <List>
             <ConversationListPane Items="_inbox" CurrentId="Id" Total="_total" />
+            <BlockedPeopleCard @ref="_blocked" OnChanged="BlockChangedAsync" />
         </List>
         <Thread>
             @if (Id is { } id)
             {
-                <ThreadPaneHost @key="id" ConversationId="id" UnreadCount="UnreadOf(id)" OnChanged="ChangedAsync" />
+                <ThreadPaneHost @key="id" ConversationId="id" UnreadCount="UnreadOf(id)" BlockVersion="_blockVersion" OnChanged="ChangedAsync" />
             }
             else
             {
@@ -72,7 +73,8 @@ else
     [SupplyParameterFromQuery(Name = "to")] public Guid? To { get; set; }
 
     private IReadOnlyList<ConversationListItemDto> _inbox = [];
-    private int _total;
+    private BlockedPeopleCard? _blocked;
+    private int _total, _blockVersion;
     private bool _loading = true, _failed;
     private Guid? _unreadFor;
     private int _unreadAtOpen;
@@ -174,11 +176,18 @@ else
         Realtime.Resynced -= OnResynced;
     }
 
+    private async Task BlockChangedAsync()
+    {
+        _blockVersion++;
+        await ChangedAsync();
+    }
+
     private async Task ChangedAsync()
     {
         var (page, _) = await ApiCalls.RunAsync(() => Messaging.ListConversationsAsync(1, 100), Navigation);
         if (page is not null) { _inbox = page.Items; _total = page.Total; }
         await State.RefreshAsync();
+        if (_blocked is not null) await _blocked.RefreshAsync();
         StateHasChanged();
     }
 }

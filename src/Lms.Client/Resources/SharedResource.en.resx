@@ -2149,6 +2149,18 @@
   <data name="Msg_Group_ReadOnlyHelp" xml:space="preserve"><value>Only staff can post in a read-only group.</value></data>
   <data name="Msg_Recipient_Unavailable" xml:space="preserve"><value>You cannot message this person.</value></data>
   <data name="Msg_Group_Members_Title" xml:space="preserve"><value>Group members</value></data>
+  <data name="Msg_More" xml:space="preserve"><value>More actions</value></data>
+  <data name="Msg_Report" xml:space="preserve"><value>Report message</value></data>
+  <data name="Msg_Report_Title" xml:space="preserve"><value>Report a message</value></data>
+  <data name="Msg_Report_Reason" xml:space="preserve"><value>Why are you reporting it?</value></data>
+  <data name="Msg_Report_Note" xml:space="preserve"><value>Add a note (optional)</value></data>
+  <data name="Msg_Report_Submit" xml:space="preserve"><value>Send report</value></data>
+  <data name="Msg_Reported" xml:space="preserve"><value>Reported</value></data>
+  <data name="Msg_Block" xml:space="preserve"><value>Block</value></data>
+  <data name="Msg_Unblock" xml:space="preserve"><value>Unblock</value></data>
+  <data name="Msg_Block_Text" xml:space="preserve"><value>Block {0}? You will not receive direct messages from this person and they cannot write to you. They are not told. You stay together in any group.</value></data>
+  <data name="Msg_Blocked_ByMe" xml:space="preserve"><value>You blocked this person. Unblock to write again.</value></data>
+  <data name="Msg_Blocked_Title" xml:space="preserve"><value>Blocked people</value></data>
   <data name="Msg_Inbox_Capped" xml:space="preserve"><value>Showing your latest {0} conversations.</value></data>
   <data name="Realtime_Offline" xml:space="preserve"><value>Live updates are paused. Reconnecting; new messages will appear when it is back.</value></data>
   <data name="Msg_Jump_New" xml:space="preserve"><value>{0} new messages</value></data>

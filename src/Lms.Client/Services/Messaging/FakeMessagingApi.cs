@@ -70,7 +70,7 @@ public sealed class FakeMessagingApi : IMessagingApi
     /// <summary>The caller of the fake (change it to read the same data as another participant).</summary>
     public FakeMessagingUser Me { get; set; }
 
-    /// <summary>Test and demo switch: sending and creating answer 429 <c>rate_limited</c> while it is on.</summary>
+    /// <summary>Test and demo switch: sending, creating and reporting answer 429 <c>rate_limited</c> while it is on.</summary>
     public bool RateLimited { get; set; }
 
     /// <summary>Pairs that satisfy the Relationship rule (teaches, is guardian of) in either direction.</summary>
@@ -297,6 +297,7 @@ public sealed class FakeMessagingApi : IMessagingApi
 
     public Task ReportAsync(Guid messageId, ReportMessageRequest request, CancellationToken ct = default)
     {
+        if (RateLimited) throw Problem(429, ProblemCodes.rate_limited);
         var c = _conversations.FirstOrDefault(x => x.Participants.Contains(Me.Id) && x.Messages.Any(m => m.Id == messageId)) ?? throw Problem(404, ProblemCodes.not_found);
         if (c.Messages.First(m => m.Id == messageId).SenderId == Me.Id) throw Problem(404, ProblemCodes.not_found); // a participant who is not the sender
         if (_reports.Any(r => r.MessageId == messageId)) throw Problem(409, ProblemCodes.report_duplicate);

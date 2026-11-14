@@ -1,0 +1,60 @@
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.Messaging
+@using Lms.Shared
+@using Lms.Shared.Messaging
+@inject IMessagingApi Messaging
+@inject NavigationManager Navigation
+
+@* Report a message (FR-MSG-04): a reason, safety concern first, and an optional note of at most 500 characters. The reporter is told nothing about what a
+   moderator decides here beyond a "Reviewed" mark; an error (already reported, too many requests) keeps the note so nothing is typed twice. *@
+<MudDialog>
+    <DialogContent>
+        <div class="lms-form" data-testid="report">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-3" data-testid="report-error">@_error</MudAlert>
+            }
+            <MudRadioGroup T="string" @bind-Value="_reason" aria-label="@L["Msg_Report_Reason"]" data-testid="report-reasons">
+                @foreach (var r in Reasons)
+                {
+                    <MudRadio T="string" Value="r" data-testid="@($"report-reason-{r}")">@L[$"Msg_Reason_{r}"]</MudRadio>
+                }
+            </MudRadioGroup>
+            <MudTextField T="string" @bind-Value="_note" Label="@L["Msg_Report_Note"]" Lines="3" MaxLength="MessagingLimits.ReportNoteMaxLength" Counter="MessagingLimits.ReportNoteMaxLength"
+                          Immediate="true" Class="mt-3" data-testid="report-note" />
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" OnClick="() => MudDialog.Cancel()" data-testid="report-cancel">@L["Common_Cancel"]</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_sending || _reason is null" OnClick="SubmitAsync" data-testid="report-submit">@L["Msg_Report_Submit"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter, EditorRequired] public Guid MessageId { get; set; }
+
+    /// <summary>Safety concern first: it is the one a moderator reads first.</summary>
+    public static IReadOnlyList<string> Reasons { get; } = [ReportReasons.Safety, .. ReportReasons.All.Where(r => r != ReportReasons.Safety)];
+
+    /// <summary>No reason is preselected: a quick Submit must not file the highest-severity reason by accident.</summary>
+    private string? _reason;
+    private string? _note, _error;
+    private bool _sending;
+
+    private async Task SubmitAsync()
+    {
+        if (_sending || _reason is null) return;
+        _sending = true; _error = null;
+        var note = string.IsNullOrWhiteSpace(_note) ? null : _note.Trim();
+        var reason = _reason;
+        // Already reported (409) is the state the reporter wants: the message counts as reported, not an error.
+        var ok = await ApiCalls.RunAsync(async () =>
+        {
+            try { await Messaging.ReportAsync(MessageId, new ReportMessageRequest(reason, note)); }
+            catch (ApiProblemException ex) when (ex.Code == ProblemCodes.report_duplicate) { }
+        }, Navigation, L, e => _error = e);
+        _sending = false;
+        if (ok) MudDialog.Close(DialogResult.Ok(true));
+    }
+}
