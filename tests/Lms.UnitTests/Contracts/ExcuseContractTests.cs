@@ -72,6 +72,16 @@ public sealed class ExcuseContractTests
     }
 
     [Fact]
+    public void Excuse_attachment_uploads_are_owned_bounded_and_purged()
+    {
+        Assert.Equal((24, 20), (ExcuseLimits.UnattachedUploadPurgeHours, ExcuseLimits.UploadsPerUserPerHour));
+        var text = File.ReadAllText(Path.Combine(RepoRoot(), "src", "Lms.Shared", "Routes.Excuses.cs"));
+        Assert.Contains("uploaded by the same caller", text);
+        Assert.Contains("Cannot_attach_a_file_uploaded_by_someone_else", text);
+        Assert.Contains("A_file_attaches_to_one_excuse_only", text);
+    }
+
+    [Fact]
     public void Excuse_settings_match_the_plan_and_d61()
     {
         Assert.Equal("GuardiansOnly", SettingKeys.ExcusesSubmitters.Default);

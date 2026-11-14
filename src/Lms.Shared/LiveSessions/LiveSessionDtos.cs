@@ -100,7 +100,8 @@ public sealed record LiveSessionDto(
 
 /// <summary>
 /// One row of GET /api/class-courses/{id}/live-sessions (paged, ordered by start). Students get only sessions whose
-/// module is visible to them. No URL of any kind.
+/// module is visible to them. No URL of any kind. <c>AttendanceSessionId</c> (M5 wave 3) is the attendance session proposed from this live
+/// session, null until it exists (Task 18 fills it); the attendance row action links to it directly.
 /// </summary>
 public sealed record LiveSessionListItemDto(
     Guid Id,
@@ -113,7 +114,8 @@ public sealed record LiveSessionListItemDto(
     DateTime EndsAtUtc,
     string Status,
     bool HasRecording,
-    DateTime ServerNowUtc);
+    DateTime ServerNowUtc,
+    Guid? AttendanceSessionId = null);
 
 /// <summary>Query of GET /api/class-courses/{id}/live-sessions. <c>Status</c> from <see cref="LiveSessionStatuses"/>.</summary>
 public sealed record LiveSessionQuery(
