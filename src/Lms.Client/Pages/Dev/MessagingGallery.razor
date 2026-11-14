@@ -169,9 +169,32 @@ else
         </div>
         <ModerationDecision SenderName="Yousef" @bind-Value="_decision" @bind-Days="_days" />
     </SectionCard>
+
+    <SectionCard Title="@T("رسالة جديدة (مدير)", "New message (manager)")" TestId="gallery-compose">
+        <ComposeMessageForm Draft="_message" SearchFunc="SearchRecipientsAsync" OnAttach="() => { }" />
+    </SectionCard>
+
+    <SectionCard Title="@T("قواعد المراسلة", "Messaging rules")" Flush="true" TestId="gallery-rules-matrix">
+        <div class="pa-3"><MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" Icon="@Icons.Material.Rounded.Lock">@L["Rules_Locked"]</MudAlert></div>
+        <MessagingRulesMatrix Cells="_rules" />
+    </SectionCard>
 }
 
 @code {
+    private readonly MessageDraft _message = new();
+    private readonly Dictionary<(MessagingRole From, MessagingRole To), RuleCellValue> _rules = MessagingRulesMatrix.D69Defaults();
+
+    // The gallery's stand-in for the server's rules-filtered recipients read, as a manager sees it (D69: the safeguarding row, never a student).
+    private Task<IEnumerable<RecipientChoice>> SearchRecipientsAsync(string text, CancellationToken token) => Task.FromResult<IEnumerable<RecipientChoice>>(
+    [
+        new("l1", RecipientKind.GroupLabel, L["Msg_Picker_People"]),
+        new("d69", RecipientKind.Safeguarding, L["Msg_D69_Title"]),
+        new("u1", RecipientKind.Person, "Huda Al-Harbi", T("ولية أمر عمر صالح · 10-أ", "Guardian of Omar Saleh · 10-A")),
+        new("u2", RecipientKind.Person, "Omar Saleh", T("معلم · فيزياء 1", "Teacher · Physics 1")),
+        new("l2", RecipientKind.GroupLabel, L["Msg_Picker_Classes"]),
+        new("g1", RecipientKind.Group, T("الصف العاشر — الطلاب وأولياء الأمور", "Grade 10 — students and guardians"), SizeText: T("52 شخصًا", "52 people")),
+        new("g2", RecipientKind.Group, T("فيزياء 1 · 10-ب — أولياء الأمور", "Physics 1 · 10-B — guardians"), DisabledReason: T("غير مسموح: لا تدرّس 10-ب", "Not allowed: you don’t teach 10-B")),
+    ]);
     private ModerationAction? _decision = ModerationAction.RemoveAndRestrict;
     private int _days = 7;
     private readonly List<PreferenceRow> _prefRows =
