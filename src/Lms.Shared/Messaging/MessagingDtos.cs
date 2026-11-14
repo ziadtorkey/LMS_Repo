@@ -4,7 +4,7 @@ namespace Lms.Shared.Messaging;
 public sealed record ParticipantDto(Guid UserId, string NameAr, string NameEn, string? RoleKey, bool Left);
 
 /// <summary>
-/// A conversation (<c>Messaging.Send</c>; only a participant reads it, an Org Admin who is not a participant gets 404). <c>IsLocked</c> = a moderator locked it
+/// A conversation (<c>Messaging.View</c>; only a participant reads it, an Org Admin who is not a participant gets 404). <c>IsLocked</c> = a moderator locked it
 /// (409 <c>conversation_closed</c> on send). A direct conversation between the same two people is returned by <c>POST</c>, not duplicated (200 with the existing one).
 /// </summary>
 public sealed record ConversationDto(
@@ -14,7 +14,10 @@ public sealed record ConversationDto(
     IReadOnlyList<ParticipantDto> Participants,
     bool IsLocked,
     bool Muted,
-    DateTime CreatedAtUtc);
+    DateTime CreatedAtUtc,
+    bool IsReadOnly = false,
+    Guid? OwnerUserId = null,
+    Guid? ClassCourseId = null);
 
 /// <summary>A row of the inbox: the unread count and the last message (text is cut, never a tombstone's original).</summary>
 public sealed record ConversationListItemDto(
@@ -26,7 +29,8 @@ public sealed record ConversationListItemDto(
     string? LastMessagePreview,
     DateTime? LastMessageAtUtc,
     bool Muted,
-    bool IsLocked);
+    bool IsLocked,
+    bool IsReadOnly = false);
 
 public sealed record MessageAttachmentDto(Guid FileId, string FileName, string ContentType, long SizeBytes);
 
@@ -48,8 +52,11 @@ public sealed record MessageDto(
     DateTime? DeletedAtUtc,
     bool CanDelete);
 
-/// <summary>POST <c>/api/conversations</c>: a direct one (one other user) or a group (two or more others, at most <c>Messaging.MaxGroupSize</c>); staff create groups. The rules matrix is checked for every participant (403 <c>messaging_not_allowed</c>).</summary>
-public sealed record CreateConversationRequest(string Kind, IReadOnlyList<Guid> ParticipantUserIds, string? Title, string? FirstMessage);
+/// <summary>POST <c>/api/conversations</c>: a direct one (one other user) or a group (two or more others, at most <c>Messaging.MaxGroupSize</c>); only staff create groups. <c>ClassCourseId</c> makes it a class or course group a teacher of that class course created (own ClassCourses only); <b>students never post in a group</b> (D74): they read it and reply privately to the teacher. The rules matrix is checked for every participant (403 <c>messaging_not_allowed</c>).</summary>
+public sealed record CreateConversationRequest(string Kind, IReadOnlyList<Guid> ParticipantUserIds, string? Title, string? FirstMessage, Guid? ClassCourseId = null);
+
+/// <summary>POST <c>…/participants</c>: members to add to a group (owner to member check for each).</summary>
+public sealed record AddParticipantsRequest(IReadOnlyList<Guid> UserIds);
 
 /// <summary>POST <c>…/messages</c>: text (1-<see cref="MessagingLimits.MaxBodyLength"/>) and up to <see cref="MessagingLimits.MaxAttachmentsPerMessage"/> uploaded files (same file rules as the assets).</summary>
 public sealed record SendMessageRequest(string Body, IReadOnlyList<Guid>? AttachmentFileIds);

@@ -247,6 +247,12 @@ public static class ProblemCodes
     /// <summary>A cap or rate limit was reached: messages a minute, new conversations or announcements a day, searches, test emails (429).</summary>
     public const string rate_limited = nameof(rate_limited);
 
+    /// <summary>A student cannot post in a group (D74), or the group was set read-only: only staff can post (403).</summary>
+    public const string group_read_only = nameof(group_read_only);
+
+    /// <summary>This channel is never used for this account: SMS for a guardian or a student (D72, D75) (409).</summary>
+    public const string channel_not_allowed = nameof(channel_not_allowed);
+
     /// <summary>A mandatory notification cannot be switched off (409).</summary>
     public const string notification_mandatory = nameof(notification_mandatory);
 

@@ -140,7 +140,10 @@ public static class ChannelStates
     public const string Blocked = "Blocked";
     public const string Bounced = "Bounced";
 
-    public static IReadOnlyList<string> All { get; } = [Active, NeedsSetup, Blocked, Bounced];
+    /// <summary>The channel is never used for this account: SMS for a guardian or a student (D72, D75: SMS only to adults about themselves; guardians get email and push).</summary>
+    public const string NotAllowed = "NotAllowed";
+
+    public static IReadOnlyList<string> All { get; } = [Active, NeedsSetup, Blocked, Bounced, NotAllowed];
 }
 
 /// <summary>Where an effective notification preference comes from.</summary>
@@ -150,7 +153,10 @@ public static class PreferenceSources
     public const string User = "User";
     public const string Mandatory = "Mandatory";
 
-    public static IReadOnlyList<string> All { get; } = [Default, User, Mandatory];
+    /// <summary>A platform rule decides, not the user or the client: SMS is never sent to a guardian or about a minor (D72, D75).</summary>
+    public const string Policy = "Policy";
+
+    public static IReadOnlyList<string> All { get; } = [Default, User, Mandatory, Policy];
 }
 
 /// <summary>Limits of messaging and announcements (D66 defaults; the client settings narrow or raise within the settings catalog).</summary>

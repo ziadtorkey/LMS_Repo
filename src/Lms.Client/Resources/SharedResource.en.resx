@@ -1845,4 +1845,8 @@
   <data name="Comms_PrefSource_User" xml:space="preserve"><value>Your choice</value></data>
   <data name="Comms_PrefSource_Mandatory" xml:space="preserve"><value>Required</value></data>
   <data name="Msg_Rule_SameUnit" xml:space="preserve"><value>Anyone in the same unit</value></data>
+  <data name="Error_group_read_only" xml:space="preserve"><value>Only staff can post in this group.</value></data>
+  <data name="Error_channel_not_allowed" xml:space="preserve"><value>This channel is not used for this account.</value></data>
+  <data name="Comms_ChannelState_NotAllowed" xml:space="preserve"><value>Not available for this account</value></data>
+  <data name="Comms_PrefSource_Policy" xml:space="preserve"><value>Set by the platform</value></data>
 </root>
