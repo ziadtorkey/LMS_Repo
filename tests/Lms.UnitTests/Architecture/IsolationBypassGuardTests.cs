@@ -45,6 +45,8 @@ public sealed class IsolationBypassGuardTests
             "effective policies set on ancestors above the caller's scope (M1 Task 12, #94)",
         ["src/Lms.Infrastructure/Organizations/OrgPolicyReader.cs"] =
             "policies set on ancestors above the caller's scope, to show blocked permissions in the org tree (M1 Task 9, #99)",
+        ["src/Lms.Api/Features/Me/ClientTimeZoneReader.cs"] =
+            "GET /api/me runs before a client is chosen: the Org.TimeZone rows of the clients of the caller's valid assignments, bound to that client and the units' ancestor paths, the zone id only (M5 wave 1, D64)",
         ["src/Lms.Api/Features/Blueprints/BlueprintReader.cs"] =
             "blueprints of an inherited course sit at an ancestor unit above the caller; client-limited, live rows, courses already found visible (M3 Task 16)",
         ["src/Lms.Api/Features/Classes/ClassLookups.cs"] =
@@ -65,6 +67,8 @@ public sealed class IsolationBypassGuardTests
             "level types are client-wide, so the in-use count covers the whole client, not the caller subtree (M1 Task 8, #83)",
         ["src/Lms.Api/Features/Courses/Import/CourseImportDefinition.cs"] =
             "live course codes of the client outside the caller subtree, only the code keys (course code is unique per client, M3 Task 6, #214)",
+        ["src/Lms.Infrastructure/LiveSessions/LiveSessionService.cs"] =
+            "the daily live-session create cap counts the meetings the whole client created today, in every unit and including rows deleted since; client-limited, count only (M4b Task 4, #471)",
         ["src/Lms.Infrastructure/Courses/CourseCatalog.cs"] =
             "courses and allocations owned by ancestors of the caller scope, restricted to the client (M3 Task 5, #213)",
         ["src/Lms.Infrastructure/Notifications/NotificationRecipientResolver.cs"] =
@@ -79,6 +83,10 @@ public sealed class IsolationBypassGuardTests
             "delete also removes calendar events at descendant units, restricted to the year's client (M1 Task 22, #57)",
         ["src/Lms.Api/Features/AcademicYears/CalendarEndpoints.cs"] =
             "events and names inherited from ancestor units, restricted to the unit's client (M1 Task 22, #57)",
+        ["src/Lms.Api/Features/Attendance/TakeAttendanceEndpoints.cs"] =
+            "the substitute exception of a session may lie outside the covering teacher scope; client matched, deleted rows excluded, exactly this slot, date and caller, only a yes/no leaves (M5 Task 17)",
+        ["src/Lms.Infrastructure/Attendance/AbsenceNotifier.cs"] =
+            "the course of a class course is owned above the caller scope; only its names go into the absence notice; client matched, deleted rows excluded (M5 Task 17)",
         ["src/Lms.Infrastructure/Timetable/PeriodService.cs"] =
             "periods of ancestor units apply to descendants, restricted to the client and the exact ancestor paths; only the deepest defining unit rows leave (M5 Task 13)",
         ["src/Lms.Infrastructure/Timetable/TimetableService.cs"] =

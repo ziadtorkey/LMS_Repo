@@ -41,6 +41,24 @@ public sealed class AttendanceSession : UnitOwnedEntity, ILiveKeyed
         };
     }
 
+    /// <summary>A proposal from a live session (L11): one per live session, by <see cref="LiveKey"/>. The records are the server proposal until the teacher confirms.</summary>
+    public static AttendanceSession ForLive(ClassCourse classCourse, DateOnly date, Guid liveSessionId)
+    {
+        var session = new AttendanceSession(classCourse, date, null, null, LiveSource);
+        session.LiveSessionId = liveSessionId;
+        session.SessionKey = LiveKey(liveSessionId);
+        return session;
+    }
+
+    /// <summary>The unique key of the proposal of a live session, so a second run (the job and the reconcile sweep) cannot create a second one.</summary>
+    public static string LiveKey(Guid liveSessionId) => $"l:{liveSessionId:N}";
+
+    /// <summary>A live proposal nobody confirmed yet: its records are the server's proposal, no guardian was told.</summary>
+    public bool IsProposal => Source == LiveSource && State == OpenState;
+
+    /// <summary>Saves edits to a proposal without taking it (L11 item 10): only the version moves; confirming takes it.</summary>
+    public void RecordProposalEdit() => Version++;
+
     public Guid ClassCourseId { get; private set; }
 
     public Guid ClassId { get; private set; }
@@ -69,6 +87,19 @@ public sealed class AttendanceSession : UnitOwnedEntity, ILiveKeyed
 
     /// <summary>"slotId:yyyyMMdd" for a timetable session, "a:classCourse:yyyyMMdd:period" for an ad hoc one, while live; unique, so a second live session at the same place is refused by the database.</summary>
     public string? SessionKey { get; private set; }
+
+    /// <summary>Marks the session Taken the first time attendance is saved; later saves only advance the version.</summary>
+    public void RecordSave(Guid userId, DateTime atUtc)
+    {
+        if (State != TakenState)
+        {
+            State = TakenState;
+            TakenByUserId = userId;
+            TakenAtUtc = atUtc;
+        }
+
+        Version++;
+    }
 
     /// <summary>The key of an ad hoc session: one per class course, date and period (a null period is its own token), so a double click creates one.</summary>
     public static string AdHocKey(Guid classCourseId, DateOnly date, Guid? periodId) => $"a:{classCourseId:N}:{date:yyyyMMdd}:{periodId?.ToString("N") ?? "-"}";

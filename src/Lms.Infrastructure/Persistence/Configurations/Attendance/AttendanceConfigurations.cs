@@ -66,3 +66,17 @@ internal sealed class AttendanceRecordChangeConfiguration : IEntityTypeConfigura
         builder.HasOne<AttendanceRecord>().WithMany().HasForeignKey(x => x.AttendanceRecordId).OnDelete(DeleteBehavior.Restrict);
     }
 }
+
+internal sealed class LiveAttendanceMappingConfiguration : IEntityTypeConfiguration<LiveAttendanceMapping>
+{
+    public void Configure(EntityTypeBuilder<LiveAttendanceMapping> builder)
+    {
+        builder.ToTable("LiveAttendanceMappings");
+        builder.Property(x => x.OrgUnitPath).HasColumnType(AttendanceColumns.AsciiPath).IsRequired();
+        builder.HasIndex(x => new { x.AttendanceSessionId, x.ParticipantId }).IsUnique();
+        builder.HasIndex(x => new { x.OrganizationId, x.OrgUnitPath });
+        builder.HasOne<OrgUnit>().WithMany().HasForeignKey(x => x.OrgUnitId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<AttendanceSession>().WithMany().HasForeignKey(x => x.AttendanceSessionId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<StudentProfile>().WithMany().HasForeignKey(x => x.StudentProfileId).OnDelete(DeleteBehavior.Restrict);
+    }
+}

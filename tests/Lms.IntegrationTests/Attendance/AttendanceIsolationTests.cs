@@ -13,7 +13,7 @@ namespace Lms.IntegrationTests.Attendance;
 [Collection(ApiCollection.Name)]
 public sealed class AttendanceIsolationTests(LmsApiFactory factory)
 {
-    private sealed record Rows(Guid Session, Guid Record, Guid Change);
+    private sealed record Rows(Guid Session, Guid Record, Guid Change, Guid Mapping);
 
     [Fact]
     public async Task Attendance_rows_are_isolated_per_client_and_subtree()
@@ -56,8 +56,10 @@ public sealed class AttendanceIsolationTests(LmsApiFactory factory)
         db.Add(record);
         var change = new AttendanceRecordChange(record, null, AttendanceStatuses.Present, AttendanceChangeKinds.Taken, Guid.NewGuid(), null, DateTime.UtcNow);
         db.Add(change);
+        var mapping = new LiveAttendanceMapping(session, Guid.NewGuid(), student.Id);
+        db.Add(mapping);
         await db.SaveChangesAsync();
-        return new Rows(session.Id, record.Id, change.Id);
+        return new Rows(session.Id, record.Id, change.Id, mapping.Id);
     }
 
     private async Task AssertAsync(TestCurrentContext who, Rows[] visible, Rows[] hidden, Rows[] all)
@@ -66,8 +68,9 @@ public sealed class AttendanceIsolationTests(LmsApiFactory factory)
         var sessions = (await db.Set<AttendanceSession>().Select(x => x.Id).ToListAsync()).ToHashSet();
         var records = (await db.Set<AttendanceRecord>().Select(x => x.Id).ToListAsync()).ToHashSet();
         var changes = (await db.Set<AttendanceRecordChange>().Select(x => x.Id).ToListAsync()).ToHashSet();
-        Assert.All(visible, r => Assert.True(sessions.Contains(r.Session) && records.Contains(r.Record) && changes.Contains(r.Change)));
-        Assert.All(hidden, r => Assert.False(sessions.Contains(r.Session) || records.Contains(r.Record) || changes.Contains(r.Change)));
+        var mappings = (await db.Set<LiveAttendanceMapping>().Select(x => x.Id).ToListAsync()).ToHashSet();
+        Assert.All(visible, r => Assert.True(sessions.Contains(r.Session) && records.Contains(r.Record) && changes.Contains(r.Change) && mappings.Contains(r.Mapping)));
+        Assert.All(hidden, r => Assert.False(sessions.Contains(r.Session) || records.Contains(r.Record) || changes.Contains(r.Change) || mappings.Contains(r.Mapping)));
         Assert.Equal(all.Length, visible.Length + hidden.Length); // every row of the test is either visible or hidden to this caller
     }
 }
