@@ -91,7 +91,7 @@ public static class MessageActionEndpoints
     }
 
     private static async Task<IResult> LeaveAsync(
-        Guid id, HttpContext http, LmsDbContext db, ICurrentContext context, ISettingsResolver settings, ConversationAccess access, IClock clock, CancellationToken ct)
+        Guid id, HttpContext http, LmsDbContext db, ICurrentContext context, ISettingsResolver settings, ConversationAccess access, IClock clock, MessagingEvents events, CancellationToken ct)
     {
         if (await ConversationEndpoints.GateAsync(http, context, settings, ct) is { } gated)
         {
@@ -111,6 +111,7 @@ public static class MessageActionEndpoints
 
         opened.Me.Leave(clock.UtcNow);
         await db.SaveChangesAsync(ct);
+        await events.ChangedAsync(opened.Conversation, [opened.Me.UserId], ct);
         return Results.NoContent();
     }
 

@@ -21,7 +21,7 @@ public sealed record GroupResult(Conversation? Conversation, string? ProblemCode
 /// Group conversations (FR-MSG-01, D66, D74): only staff start one, the rules matrix is checked owner to member (never pairwise), a group has at least three members
 /// and at most <c>Messaging.MaxGroupSize</c>, and only its owner adds, removes or sets it read-only. A removed member keeps reading what was sent until the removal.
 /// </summary>
-public sealed class GroupService(LmsDbContext db, ICurrentContext context, IClock clock, IMessagingPolicy policy, ConversationService conversations, ISettingsResolver settings)
+public sealed class GroupService(LmsDbContext db, ICurrentContext context, IClock clock, IMessagingPolicy policy, ConversationService conversations, ISettingsResolver settings, MessagingEvents events)
 {
     public const int MinMembers = 3;
 
@@ -60,6 +60,7 @@ public sealed class GroupService(LmsDbContext db, ICurrentContext context, ICloc
         }
 
         await db.SaveChangesAsync(ct);
+        await events.ChangedAsync(group, null, ct);
         return GroupResult.Done(group);
     }
 
@@ -105,6 +106,7 @@ public sealed class GroupService(LmsDbContext db, ICurrentContext context, ICloc
         }
 
         await db.SaveChangesAsync(ct);
+        await events.ChangedAsync(access.Conversation, null, ct);
         return GroupResult.Done(access.Conversation);
     }
 
@@ -130,6 +132,7 @@ public sealed class GroupService(LmsDbContext db, ICurrentContext context, ICloc
 
         target.Leave(clock.UtcNow);
         await db.SaveChangesAsync(ct);
+        await events.ChangedAsync(access.Conversation, [userId], ct); // the removed member refetches too
         return GroupResult.Done(access.Conversation);
     }
 
@@ -142,6 +145,7 @@ public sealed class GroupService(LmsDbContext db, ICurrentContext context, ICloc
 
         access.Conversation.SetReadOnly(readOnly);
         await db.SaveChangesAsync(ct);
+        await events.ChangedAsync(access.Conversation, null, ct);
         return GroupResult.Done(access.Conversation);
     }
 

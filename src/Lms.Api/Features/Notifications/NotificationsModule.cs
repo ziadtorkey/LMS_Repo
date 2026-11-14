@@ -10,6 +10,7 @@ public static class NotificationsModule
     {
         services.AddSignalR();
         services.AddSingleton<INotificationPusher, SignalRNotificationPusher>();
+        services.AddSingleton<Lms.Infrastructure.Messaging.IMessagingRealtime, SignalRMessagingRealtime>();
         services.AddTransient<IStartupFilter, HubAccessTokenStartupFilter>();
         return services;
     }

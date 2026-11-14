@@ -13,6 +13,10 @@ public static class MessagingServiceCollectionExtensions
         services.AddScoped<MessageService>();
         services.AddScoped<ReadStateService>();
         services.AddScoped<GroupService>();
+        services.AddScoped<MessagingEvents>();
+        services.AddScoped<MessageSearch>();
+        services.AddSingleton<MessageSearchThrottle>();
+        services.TryAddSingleton<IMessagingRealtime, NoOpMessagingRealtime>(); // the API registers the SignalR transport
         services.AddScoped<MessageAttachmentGuard>();
         services.TryAddScoped<IMessagingPolicy, DenyAllMessagingPolicy>(); // fails closed until Task 11 registers the D69 policy
         services.TryAddSingleton<Lms.Domain.Files.IFileScanner, Lms.Domain.Files.NoOpFileScanner>(); // D65: off in v1

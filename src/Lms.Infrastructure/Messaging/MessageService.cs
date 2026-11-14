@@ -16,7 +16,7 @@ public sealed record SendResult(Message? Message, string? ProblemCode, int Statu
 }
 
 /// <summary>Sending, paging and mapping messages (FR-MSG-01, L6, L20): keyset pages newest first, a neutral name for a former user, a left member reads up to leaving.</summary>
-public sealed class MessageService(LmsDbContext db, ICurrentContext context, IClock clock, IMessagingPolicy policy, MessageAttachmentGuard attachments, Lms.Domain.Files.IFileStorage storage)
+public sealed class MessageService(LmsDbContext db, ICurrentContext context, IClock clock, IMessagingPolicy policy, MessageAttachmentGuard attachments, Lms.Domain.Files.IFileStorage storage, MessagingEvents events)
 {
     public const string FormerUserAr = "مستخدم سابق";
     public const string FormerUserEn = "Former user";
@@ -70,6 +70,7 @@ public sealed class MessageService(LmsDbContext db, ICurrentContext context, ICl
         conversation.NoteMessage(now);
         me.MarkRead(message.Id); // the sender has read their own message
         await db.SaveChangesAsync(ct);
+        await events.MessageSentAsync(conversation, message, ct); // after the commit: ids only, one unread notification, silent when muted
         return SendResult.Sent(message);
     }
 

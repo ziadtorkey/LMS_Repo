@@ -32,6 +32,7 @@ public static class ConversationEndpoints
         app.MapGet(Routes.MyUnreadTotal, UnreadTotalAsync).RequirePermission(Permissions.Messaging.View);
         app.MapMessageActions();
         app.MapGroupEndpoints();
+        app.MapMessageSearch();
         return app;
     }
 
