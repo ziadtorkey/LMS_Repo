@@ -13,23 +13,22 @@ using Microsoft.EntityFrameworkCore;
 namespace Lms.Api.Features.Messaging;
 
 /// <summary>
-/// Delete for everyone, mute, leave and attachments (FR-MSG-01, L12, L20). Participant-only (L6) and behind the Messaging flag, like every conversation route. The attachment
-/// routes and the unmute route are not in the wave 1 contract yet: their patterns live here until the Lead adds them to <c>Routes.Messaging</c>.
+/// Delete for everyone, mute, leave and attachments (FR-MSG-01, L12, L20). Participant-only (L6) and behind the Messaging flag, like every conversation route. The routes use the shared
+/// <c>Routes.Messaging</c> patterns.
 /// </summary>
 public static class MessageActionEndpoints
 {
-    public const string AttachmentsPattern = Routes.ConversationPattern + "/attachments";
-    public const string AttachmentUrlPattern = Routes.MessagePattern + "/attachments/{fid:guid}/url";
     private static readonly TimeSpan UrlLifetime = TimeSpan.FromMinutes(5);
 
     public static IEndpointRouteBuilder MapMessageActions(this IEndpointRouteBuilder app)
     {
         app.MapDelete(Routes.MessagePattern, DeleteAsync).RequirePermission(Permissions.Messaging.Send);
-        app.MapPut(Routes.ConversationMutePattern, MuteAsync).RequirePermission(Permissions.Messaging.View);
-        app.MapDelete(Routes.ConversationMutePattern, UnmuteAsync).RequirePermission(Permissions.Messaging.View);
-        app.MapPost(Routes.ConversationLeavePattern, LeaveAsync).RequirePermission(Permissions.Messaging.View);
-        app.MapPost(AttachmentsPattern, UploadAsync).RequirePermission(Permissions.Messaging.Send);
-        app.MapGet(AttachmentUrlPattern, UrlAsync).RequirePermission(Permissions.Messaging.View);
+        app.MapPut(Routes.ConversationMutePattern, MuteAsync).RequirePermission(Permissions.Messaging.Send);
+        app.MapDelete(Routes.ConversationMutePattern, UnmuteAsync).RequirePermission(Permissions.Messaging.Send);
+        app.MapPost(Routes.ConversationLeavePattern, LeaveAsync).RequirePermission(Permissions.Messaging.Send);
+        app.MapPost(Routes.ConversationAttachmentsPattern, UploadAsync).RequirePermission(Permissions.Messaging.Send);
+        app.MapDelete(Routes.ConversationAttachmentPattern, RemovePendingAsync).RequirePermission(Permissions.Messaging.Send);
+        app.MapGet(Routes.MessageAttachmentUrlPattern, UrlAsync).RequirePermission(Permissions.Messaging.View);
         return app;
     }
 
@@ -51,7 +50,7 @@ public static class MessageActionEndpoints
     }
 
     private static async Task<IResult> MuteAsync(
-        Guid id, MuteConversationRequest? body, HttpContext http, LmsDbContext db, ICurrentContext context, ISettingsResolver settings, ConversationAccess access, IClock clock, CancellationToken ct)
+        Guid id, MuteConversationRequest? body, HttpContext http, LmsDbContext db, ICurrentContext context, ISettingsResolver settings, ConversationAccess access, ConversationMapper mapper, IClock clock, CancellationToken ct)
     {
         if (await ConversationEndpoints.GateAsync(http, context, settings, ct) is { } gated)
         {
@@ -70,11 +69,11 @@ public static class MessageActionEndpoints
 
         opened.Me.Mute(true, body?.UntilUtc);
         await db.SaveChangesAsync(ct);
-        return Results.NoContent();
+        return Results.Ok(await mapper.ToDtoAsync(opened, ct));
     }
 
     private static async Task<IResult> UnmuteAsync(
-        Guid id, HttpContext http, LmsDbContext db, ICurrentContext context, ISettingsResolver settings, ConversationAccess access, CancellationToken ct)
+        Guid id, HttpContext http, LmsDbContext db, ICurrentContext context, ISettingsResolver settings, ConversationAccess access, ConversationMapper mapper, CancellationToken ct)
     {
         if (await ConversationEndpoints.GateAsync(http, context, settings, ct) is { } gated)
         {
@@ -88,11 +87,11 @@ public static class MessageActionEndpoints
 
         opened.Me.Mute(false, null);
         await db.SaveChangesAsync(ct);
-        return Results.NoContent();
+        return Results.Ok(await mapper.ToDtoAsync(opened, ct));
     }
 
     private static async Task<IResult> LeaveAsync(
-        Guid id, HttpContext http, LmsDbContext db, ICurrentContext context, ISettingsResolver settings, ConversationAccess access, IClock clock, CancellationToken ct)
+        Guid id, HttpContext http, LmsDbContext db, ICurrentContext context, ISettingsResolver settings, ConversationAccess access, IClock clock, MessagingEvents events, CancellationToken ct)
     {
         if (await ConversationEndpoints.GateAsync(http, context, settings, ct) is { } gated)
         {
@@ -107,11 +106,12 @@ public static class MessageActionEndpoints
         // Only a group can be left; a direct conversation stays (mute it instead). A member who already left has nothing more to leave.
         if (opened.Conversation.Kind != ConversationKinds.Group || opened.Me.HasLeft)
         {
-            return ApiProblems.BadRequest(ProblemCodes.validation_failed, "Only a group you are still in can be left.");
+            return ApiProblems.Conflict(ProblemCodes.conversation_closed); // the contract: a direct conversation cannot be left (409 conversation_closed); nor can a group twice
         }
 
         opened.Me.Leave(clock.UtcNow);
         await db.SaveChangesAsync(ct);
+        await events.ChangedAsync(opened.Conversation, [opened.Me.UserId], ct);
         return Results.NoContent();
     }
 
@@ -145,7 +145,7 @@ public static class MessageActionEndpoints
         var result = await guard.UploadAsync(opened, file.FileName, file.Length, stream, ct);
         if (result.Attachment is { } attachment)
         {
-            return Results.Created($"{Routes.Conversation(id)}/attachments/{attachment.FileId}", new MessageAttachmentDto(attachment.FileId, attachment.FileName, attachment.ContentType, attachment.SizeBytes));
+            return Results.Created($"{Routes.Conversation(id)}/attachments/{attachment.Id}", new PendingAttachmentDto(attachment.FileId, attachment.FileName, attachment.ContentType, attachment.SizeBytes, attachment.CreatedAtUtc.Add(MessageAttachmentGuard.PendingLifetime)));
         }
 
         if (result.Status == 429)
@@ -154,7 +154,33 @@ public static class MessageActionEndpoints
             return Results.Problem(statusCode: 429, title: "Too many requests", extensions: new Dictionary<string, object?> { ["code"] = ProblemCodes.rate_limited });
         }
 
-        return ConversationEndpoints.Problem(new SendResult(null, result.ProblemCode, result.Status));
+        return ConversationEndpoints.Problem(new SendResult(null, result.ProblemCode, result.Status, null, result.Reason));
+    }
+
+    /// <summary>The uploader removes their own pending attachment; another person, an attached file and a non-participant all get 404.</summary>
+    private static async Task<IResult> RemovePendingAsync(
+        Guid id, Guid aid, HttpContext http, LmsDbContext db, ICurrentContext context, ISettingsResolver settings, ConversationAccess access, IFileStorage storage, CancellationToken ct)
+    {
+        if (await ConversationEndpoints.GateAsync(http, context, settings, ct) is { } gated)
+        {
+            return gated;
+        }
+
+        if (await access.OpenAsync(id, ct) is not { } opened)
+        {
+            return ApiProblems.NotFound();
+        }
+
+        var pending = await db.Set<MessageAttachment>().SingleOrDefaultAsync(a => a.Id == aid && a.ConversationId == id && a.UploaderUserId == opened.Me.UserId && a.MessageId == null, ct);
+        if (pending is null)
+        {
+            return ApiProblems.NotFound();
+        }
+
+        db.Remove(pending);
+        await db.SaveChangesAsync(ct);
+        await storage.DeleteAsync(pending.FileId, ct);
+        return Results.NoContent();
     }
 
     private static async Task<IResult> UrlAsync(

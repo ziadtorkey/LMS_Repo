@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Lms.Infrastructure.Messaging;
 
 /// <summary>The outcome of an upload or a bind: the attachment, or the problem code and status.</summary>
-public sealed record AttachmentResult(MessageAttachment? Attachment, string? ProblemCode, int Status, int? RetryAfterSeconds = null)
+public sealed record AttachmentResult(MessageAttachment? Attachment, string? ProblemCode, int Status, int? RetryAfterSeconds = null, string? Reason = null)
 {
     public static AttachmentResult Ok(MessageAttachment attachment) => new(attachment, null, 201);
 
@@ -21,9 +21,12 @@ public sealed record AttachmentResult(MessageAttachment? Attachment, string? Pro
 /// allow-list that leaves out every active type (HTML, SVG, XML, JS, archives and macro-enabled Office formats), checks at <b>attach time</b> (the uploader is a participant who may
 /// post right now), pending rows bound to their uploader and one conversation, and an hourly upload cap.
 /// </summary>
-public sealed class MessageAttachmentGuard(LmsDbContext db, IFileStorage storage, ICurrentContext context, IClock clock, IMessagingPolicy policy)
+public sealed class MessageAttachmentGuard(LmsDbContext db, IFileStorage storage, ICurrentContext context, IClock clock, IMessagingPolicy policy, IFileScanner scanner, GroupPostingRules groupRules)
 {
     public const int UploadsPerHour = 30;
+
+    /// <summary>A pending upload nobody attaches is purged after this long.</summary>
+    public static readonly TimeSpan PendingLifetime = TimeSpan.FromHours(24);
 
     /// <summary>The M4a asset allow-list minus the active types and archives (L12).</summary>
     public static readonly IReadOnlySet<string> AllowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
@@ -47,7 +50,12 @@ public sealed class MessageAttachmentGuard(LmsDbContext db, IFileStorage storage
             return AttachmentResult.Refused(ProblemCodes.conversation_closed, 409);
         }
 
-        if (conversation.IsReadOnly || !(await policy.CanPostAsync(me.UserId, conversation, ct)).Allowed)
+        if (await groupRules.BlockReasonAsync(conversation, me.UserId, ct) is { } reason)
+        {
+            return new AttachmentResult(null, ProblemCodes.conversation_read_only, 403, null, reason);
+        }
+
+        if (!(await policy.CanPostAsync(me.UserId, conversation, ct)).Allowed)
         {
             return AttachmentResult.Refused(ProblemCodes.messaging_not_allowed, 403); // a person who may not post here may not upload here (checked now, not at create time)
         }
@@ -55,12 +63,12 @@ public sealed class MessageAttachmentGuard(LmsDbContext db, IFileStorage storage
         var name = Path.GetFileName(fileName);
         if (name.Length == 0 || length <= 0 || !AllowedExtensions.Contains(Path.GetExtension(name)))
         {
-            return AttachmentResult.Refused(ProblemCodes.validation_failed, 400);
+            return AttachmentResult.Refused(ProblemCodes.attachment_invalid, 422);
         }
 
         if (length > MessagingLimits.MaxAttachmentMb * 1024L * 1024L)
         {
-            return AttachmentResult.Refused(ProblemCodes.validation_failed, 413);
+            return AttachmentResult.Refused(ProblemCodes.attachment_invalid, 413);
         }
 
         var now = clock.UtcNow;
@@ -83,6 +91,17 @@ public sealed class MessageAttachmentGuard(LmsDbContext db, IFileStorage storage
                 name = name[^255..];
             }
 
+            // D65: the scanner runs before anything is stored; a failed scan stores nothing. The content type is decided by the storage layer from the extension, never by the client.
+            if (!await scanner.IsCleanAsync(name, content, ct))
+            {
+                return AttachmentResult.Refused(ProblemCodes.attachment_invalid, 422);
+            }
+
+            if (content.CanSeek)
+            {
+                content.Position = 0;
+            }
+
             var stored = await storage.UploadAsync(new FileUploadRequest(name, string.Empty, length, unitId.Value), content, ct);
             var attachment = new MessageAttachment(conversation, me.UserId, stored.Id, stored.FileName, stored.ContentType, stored.SizeBytes, now);
             db.Add(attachment);
@@ -91,11 +110,11 @@ public sealed class MessageAttachmentGuard(LmsDbContext db, IFileStorage storage
         }
         catch (FileTypeNotAllowedException)
         {
-            return AttachmentResult.Refused(ProblemCodes.validation_failed, 400);
+            return AttachmentResult.Refused(ProblemCodes.attachment_invalid, 422);
         }
         catch (FileTooLargeException)
         {
-            return AttachmentResult.Refused(ProblemCodes.validation_failed, 413);
+            return AttachmentResult.Refused(ProblemCodes.attachment_invalid, 413);
         }
     }
 

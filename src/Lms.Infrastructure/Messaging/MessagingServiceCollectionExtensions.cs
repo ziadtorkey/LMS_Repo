@@ -12,7 +12,18 @@ public static class MessagingServiceCollectionExtensions
         services.AddScoped<ConversationService>();
         services.AddScoped<MessageService>();
         services.AddScoped<ReadStateService>();
+        services.AddScoped<GroupService>();
+        services.AddScoped<MessagingEvents>();
+        services.AddScoped<GroupPostingRules>();
+        services.AddScoped<RetentionSupport>();
+        services.AddScoped<MessageRetentionJob>();
+        services.AddScoped<RemovedOriginalRetentionJob>();
+        services.AddScoped<Lms.Infrastructure.Moderation.ReportContextRetentionJob>();
+        services.AddScoped<MessageSearch>();
+        services.AddSingleton<MessageSearchThrottle>();
+        services.TryAddSingleton<IMessagingRealtime, NoOpMessagingRealtime>(); // the API registers the SignalR transport
         services.AddScoped<MessageAttachmentGuard>();
+        services.TryAddSingleton<Lms.Domain.Files.IFileScanner, Lms.Domain.Files.NoOpFileScanner>(); // D65: off in v1
         return services;
     }
 }

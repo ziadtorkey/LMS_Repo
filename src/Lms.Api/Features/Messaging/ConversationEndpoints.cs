@@ -18,6 +18,9 @@ namespace Lms.Api.Features.Messaging;
 /// </summary>
 public static class ConversationEndpoints
 {
+    private const int ListPageSize = 50;
+    private const int ListPageSizeMax = 100;
+
     public static IEndpointRouteBuilder MapConversations(this IEndpointRouteBuilder app)
     {
         app.MapPost(Routes.Conversations, CreateAsync).RequirePermission(Permissions.Messaging.Send);
@@ -25,9 +28,11 @@ public static class ConversationEndpoints
         app.MapGet(Routes.ConversationPattern, GetAsync).RequirePermission(Permissions.Messaging.View);
         app.MapPost(Routes.ConversationMessagesPattern, SendAsync).RequirePermission(Permissions.Messaging.Send);
         app.MapGet(Routes.ConversationMessagesPattern, MessagesAsync).RequirePermission(Permissions.Messaging.View);
-        app.MapPut(Routes.ConversationReadPattern, ReadAsync).RequirePermission(Permissions.Messaging.View);
+        app.MapPost(Routes.ConversationReadPattern, ReadAsync).RequirePermission(Permissions.Messaging.Send); // the contract: POST, Messaging.Send (it writes)
         app.MapGet(Routes.MyUnreadTotal, UnreadTotalAsync).RequirePermission(Permissions.Messaging.View);
         app.MapMessageActions();
+        app.MapGroupEndpoints();
+        app.MapMessageSearch();
         return app;
     }
 
@@ -50,11 +55,16 @@ public static class ConversationEndpoints
 
     private static async Task<IResult> CreateAsync(
         CreateConversationRequest? body, HttpContext http, ICurrentContext context, ISettingsResolver settings, ConversationService conversations, IMessagingPolicy policy,
-        MessageService messages, ConversationAccess access, ConversationMapper mapper, CancellationToken ct)
+        MessageService messages, ConversationAccess access, ConversationMapper mapper, GroupService groups, CancellationToken ct)
     {
         if (await GateAsync(http, context, settings, ct) is { } gated)
         {
             return gated;
+        }
+
+        if (body is { Kind: ConversationKinds.Group })
+        {
+            return await GroupEndpoints.CreateGroupAsync(body, groups, messages, access, mapper, ct);
         }
 
         if (body is null || body.Kind != ConversationKinds.Direct || body.ParticipantUserIds is not { Count: 1 } others || others[0] == context.UserId)
@@ -89,7 +99,8 @@ public static class ConversationEndpoints
         return created ? Results.Created(Routes.Conversation(conversation.Id), dto) : Results.Ok(dto); // an existing pair answers 200 with it
     }
 
-    private static async Task<IResult> ListAsync(HttpContext http, LmsDbContext db, ICurrentContext context, ISettingsResolver settings, ConversationMapper mapper, CancellationToken ct)
+    private static async Task<IResult> ListAsync(
+        HttpContext http, LmsDbContext db, ICurrentContext context, ISettingsResolver settings, ConversationMapper mapper, CancellationToken ct, int page = 1, int pageSize = ListPageSize)
     {
         if (await GateAsync(http, context, settings, ct) is { } gated)
         {
@@ -97,7 +108,14 @@ public static class ConversationEndpoints
         }
 
         var me = context.UserId!.Value;
-        var mine = await db.Set<ConversationParticipant>().Where(p => p.UserId == me).OrderByDescending(p => p.Id).Take(200).ToListAsync(ct);
+        var size = Math.Clamp(pageSize, 1, ListPageSizeMax);
+        var skip = (Math.Max(page, 1) - 1) * size;
+        // Newest activity first (a conversation with no message sorts by its creation), the id breaks ties so pages never overlap.
+        var mine = await (from p in db.Set<ConversationParticipant>()
+                          where p.UserId == me
+                          join c in db.Set<Conversation>() on p.ConversationId equals c.Id
+                          orderby (c.LastMessageAtUtc ?? c.CreatedAtUtc) descending, c.Id descending
+                          select p).Skip(skip).Take(size).ToListAsync(ct);
         return Results.Ok(await mapper.ToListAsync(mine, ct));
     }
 
@@ -174,6 +192,8 @@ public static class ConversationEndpoints
         400 => ApiProblems.BadRequest(sent.ProblemCode!),
         404 => ApiProblems.NotFound(),
         409 => ApiProblems.Conflict(sent.ProblemCode!),
-        _ => Results.Problem(statusCode: sent.Status, title: "Not allowed", extensions: new Dictionary<string, object?> { ["code"] = sent.ProblemCode }),
+        _ => Results.Problem(statusCode: sent.Status, title: "Not allowed", extensions: sent.Reason is null
+            ? new Dictionary<string, object?> { ["code"] = sent.ProblemCode }
+            : new Dictionary<string, object?> { ["code"] = sent.ProblemCode, ["reason"] = sent.Reason }),
     };
 }

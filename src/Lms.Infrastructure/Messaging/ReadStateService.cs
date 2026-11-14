@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Lms.Infrastructure.Messaging;
 
 /// <summary>Unread counts and read marks (D66): the caller's own state only; no route shows staff read state to students.</summary>
-public sealed class ReadStateService(LmsDbContext db, ICurrentContext context)
+public sealed class ReadStateService(LmsDbContext db, ICurrentContext context, MessagingEvents events)
 {
     /// <summary>Marks everything up to the newest message the caller may read as read.</summary>
     public async Task MarkReadAsync(ConversationAccessResult access, CancellationToken ct)
@@ -22,6 +22,7 @@ public sealed class ReadStateService(LmsDbContext db, ICurrentContext context)
         {
             access.Me.MarkRead(id);
             await db.SaveChangesAsync(ct);
+            await events.ReadAsync(access.Conversation, access.Me.UserId, id, ct);
         }
     }
 

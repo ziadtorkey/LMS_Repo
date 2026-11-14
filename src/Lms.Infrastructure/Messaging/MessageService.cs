@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Lms.Infrastructure.Messaging;
 
 /// <summary>The outcome of sending: the message, or the problem code and HTTP status that refuses it.</summary>
-public sealed record SendResult(Message? Message, string? ProblemCode, int Status, int? RetryAfterSeconds = null)
+public sealed record SendResult(Message? Message, string? ProblemCode, int Status, int? RetryAfterSeconds = null, string? Reason = null)
 {
     public static SendResult Sent(Message message) => new(message, null, 201);
 
@@ -16,7 +16,7 @@ public sealed record SendResult(Message? Message, string? ProblemCode, int Statu
 }
 
 /// <summary>Sending, paging and mapping messages (FR-MSG-01, L6, L20): keyset pages newest first, a neutral name for a former user, a left member reads up to leaving.</summary>
-public sealed class MessageService(LmsDbContext db, ICurrentContext context, IClock clock, IMessagingPolicy policy, MessageAttachmentGuard attachments)
+public sealed class MessageService(LmsDbContext db, ICurrentContext context, IClock clock, IMessagingPolicy policy, MessageAttachmentGuard attachments, Lms.Domain.Files.IFileStorage storage, MessagingEvents events, GroupPostingRules groupRules)
 {
     public const string FormerUserAr = "مستخدم سابق";
     public const string FormerUserEn = "Former user";
@@ -42,9 +42,9 @@ public sealed class MessageService(LmsDbContext db, ICurrentContext context, ICl
             return SendResult.Refused(ProblemCodes.conversation_closed, 409);
         }
 
-        if (conversation.IsReadOnly)
+        if (await groupRules.BlockReasonAsync(conversation, me.UserId, ct) is { } reason)
         {
-            return SendResult.Refused(ProblemCodes.conversation_read_only, 403);
+            return new SendResult(null, ProblemCodes.conversation_read_only, 403, null, reason); // D74, D77: students never post in a group, guardians only in a teacher-run one
         }
 
         if (!(await policy.CanPostAsync(me.UserId, conversation, ct)).Allowed)
@@ -70,6 +70,7 @@ public sealed class MessageService(LmsDbContext db, ICurrentContext context, ICl
         conversation.NoteMessage(now);
         me.MarkRead(message.Id); // the sender has read their own message
         await db.SaveChangesAsync(ct);
+        await events.MessageSentAsync(conversation, message, ct); // after the commit: ids only, one unread notification, silent when muted
         return SendResult.Sent(message);
     }
 
@@ -88,7 +89,15 @@ public sealed class MessageService(LmsDbContext db, ICurrentContext context, ICl
         }
 
         message.DeleteForEveryone(clock.UtcNow);
+        // The files go with the text: the rows first (nobody can be served them), then the stored blobs.
+        var files = await db.Set<MessageAttachment>().Where(a => a.MessageId == message.Id).ToListAsync(ct);
+        db.RemoveRange(files);
         await db.SaveChangesAsync(ct);
+        foreach (var file in files)
+        {
+            await storage.DeleteAsync(file.FileId, ct);
+        }
+
         return SendResult.Sent(message);
     }
 

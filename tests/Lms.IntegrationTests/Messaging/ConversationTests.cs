@@ -94,7 +94,7 @@ public sealed class ConversationTests(LmsApiFactory factory)
         Assert.Equal(0, (await ReadAsync<List<ConversationListItemDto>>(await SendAsync(factory, HttpMethod.Get, Routes.Conversations, s.Teacher))).Single(c => c.Id == conversation.Id).UnreadCount);
         Assert.Equal(1, (await ReadAsync<UnreadTotalDto>(await SendAsync(factory, HttpMethod.Get, Routes.MyUnreadTotal, s.Counselor))).Conversations);
 
-        Assert.Equal(HttpStatusCode.NoContent, (await SendAsync(factory, HttpMethod.Put, Routes.ConversationRead(conversation.Id), s.Counselor)).StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, (await SendAsync(factory, HttpMethod.Post, Routes.ConversationRead(conversation.Id), s.Counselor)).StatusCode);
         Assert.Equal(0, (await ReadAsync<List<ConversationListItemDto>>(await SendAsync(factory, HttpMethod.Get, Routes.Conversations, s.Counselor))).Single(c => c.Id == conversation.Id).UnreadCount);
         Assert.Equal(0, (await ReadAsync<UnreadTotalDto>(await SendAsync(factory, HttpMethod.Get, Routes.MyUnreadTotal, s.Counselor))).Conversations);
     }
@@ -110,7 +110,7 @@ public sealed class ConversationTests(LmsApiFactory factory)
             Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(factory, HttpMethod.Get, Routes.Conversation(conversation.Id), who)).StatusCode);
             Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(factory, HttpMethod.Get, Routes.ConversationMessages(conversation.Id), who)).StatusCode);
             Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(factory, HttpMethod.Post, Routes.ConversationMessages(conversation.Id), who, new SendMessageRequest("hi", null))).StatusCode);
-            Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(factory, HttpMethod.Put, Routes.ConversationRead(conversation.Id), who)).StatusCode);
+            Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(factory, HttpMethod.Post, Routes.ConversationRead(conversation.Id), who)).StatusCode);
             Assert.DoesNotContain(await ReadAsync<List<ConversationListItemDto>>(await SendAsync(factory, HttpMethod.Get, Routes.Conversations, who)), c => c.Id == conversation.Id);
         }
     }

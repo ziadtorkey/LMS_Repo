@@ -8,14 +8,17 @@ using Microsoft.EntityFrameworkCore;
 namespace Lms.Api.Features.Messaging;
 
 /// <summary>Builds the conversation DTOs: participants with names ("Former user" for a deleted account), the caller mute and read-only state.</summary>
-public sealed class ConversationMapper(LmsDbContext db, ReadStateService readState, IClock clock)
+public sealed class ConversationMapper(LmsDbContext db, ReadStateService readState, IClock clock, GroupPostingRules groupRules)
 {
     public async Task<ConversationDto> ToDtoAsync(ConversationAccessResult access, CancellationToken ct)
     {
         var participants = await ParticipantsAsync([access.Conversation.Id], ct);
         var c = access.Conversation;
+        var reason = c.IsLocked ? ConversationReadOnlyReasons.Locked
+            : access.Me.HasLeft ? ConversationReadOnlyReasons.BlockedOrRule
+            : await groupRules.BlockReasonAsync(c, access.Me.UserId, ct); // D74, D77; the D69 policy (Task 11) adds the block, rule and restriction reasons
         return new ConversationDto(c.Id, c.Kind, c.Title, participants[c.Id], c.IsLocked, IsMuted(access.Me), c.CreatedAtUtc,
-            IsReadOnly: c.IsReadOnly || access.Me.HasLeft, OwnerUserId: c.OwnerUserId, ClassCourseId: c.ClassCourseId);
+            IsReadOnly: c.IsReadOnly || access.Me.HasLeft, OwnerUserId: c.OwnerUserId, ClassCourseId: c.ClassCourseId, CanPost: reason is null, ReadOnlyReason: reason);
     }
 
     public async Task<IReadOnlyList<ConversationListItemDto>> ToListAsync(IReadOnlyList<ConversationParticipant> mine, CancellationToken ct)
@@ -40,7 +43,7 @@ public sealed class ConversationMapper(LmsDbContext db, ReadStateService readSta
                 c.IsReadOnly || p.HasLeft));
         }
 
-        return items.OrderByDescending(i => i.LastMessageAtUtc ?? DateTime.MinValue).ToList();
+        return items; // the caller passes the rows already ordered (newest activity first)
     }
 
     private async Task<Dictionary<Guid, IReadOnlyList<ParticipantDto>>> ParticipantsAsync(IReadOnlyCollection<Guid> conversationIds, CancellationToken ct)

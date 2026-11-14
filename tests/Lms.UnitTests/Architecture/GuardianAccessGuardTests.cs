@@ -20,6 +20,8 @@ public sealed partial class GuardianAccessGuardTests
             + "Infrastructure callers only, the M3 match endpoint projects name and masked mobile (M2 Task 5, #157)",
         ["src/Lms.Infrastructure/Messaging/ConversationService.cs"] =
             "existence check only: whether a user id has a guardian profile in the caller client (client filter of the table), to refuse a conversation with a stranger; no row leaves (M6 Task 10)",
+        ["src/Lms.Infrastructure/Messaging/GroupPostingRules.cs"] =
+            "existence check only: whether the poster user id has a guardian profile in the caller client, to apply the D77 group posting rule; no row leaves (M6 Task 10)",
         ["src/Lms.Api/Features/Guardians/GuardianPortalEndpoints.cs"] =
             "my children: the signed-in user's own guardian profile (by their user id, client filter of the table); children come from StudentGuardian in the caller's scope (M3 Task 25, #233)",
         ["src/Lms.Infrastructure/Messaging/Policy/RelationshipLookup.cs"] =

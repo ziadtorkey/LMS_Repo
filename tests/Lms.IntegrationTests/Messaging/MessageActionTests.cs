@@ -13,6 +13,7 @@ using Lms.Shared.Authorization;
 using Lms.Shared.Configuration;
 using Lms.Shared.Messaging;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using static Lms.IntegrationTests.AcademicYears.YearTestKit;
 
 namespace Lms.IntegrationTests.Messaging;
@@ -102,14 +103,14 @@ public sealed class MessageActionTests(LmsApiFactory factory)
         var s = await SetUpAsync("MA2");
 
         Assert.Equal(HttpStatusCode.BadRequest, (await SendAsync(factory, HttpMethod.Put, Routes.ConversationMute(s.ConversationId), s.B, new MuteConversationRequest(DateTime.UtcNow.AddMinutes(-1)))).StatusCode);
-        Assert.Equal(HttpStatusCode.NoContent, (await SendAsync(factory, HttpMethod.Put, Routes.ConversationMute(s.ConversationId), s.B, new MuteConversationRequest(null))).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await SendAsync(factory, HttpMethod.Put, Routes.ConversationMute(s.ConversationId), s.B, new MuteConversationRequest(null))).StatusCode);
         var inbox = (await (await SendAsync(factory, HttpMethod.Get, Routes.Conversations, s.B)).Content.ReadFromJsonAsync<List<ConversationListItemDto>>(Web))!;
         Assert.True(inbox.Single(c => c.Id == s.ConversationId).Muted);
-        Assert.Equal(HttpStatusCode.NoContent, (await SendAsync(factory, HttpMethod.Delete, Routes.ConversationMute(s.ConversationId), s.B)).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await SendAsync(factory, HttpMethod.Delete, Routes.ConversationMute(s.ConversationId), s.B)).StatusCode);
         Assert.False((await (await SendAsync(factory, HttpMethod.Get, Routes.Conversations, s.B)).Content.ReadFromJsonAsync<List<ConversationListItemDto>>(Web))!.Single(c => c.Id == s.ConversationId).Muted);
         Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(factory, HttpMethod.Put, Routes.ConversationMute(s.ConversationId), s.Outsider, new MuteConversationRequest(null))).StatusCode);
 
-        Assert.Equal(HttpStatusCode.BadRequest, (await SendAsync(factory, HttpMethod.Post, Routes.ConversationLeave(s.ConversationId), s.B)).StatusCode); // a direct conversation is muted, not left
+        Assert.Equal(HttpStatusCode.Conflict, (await SendAsync(factory, HttpMethod.Post, Routes.ConversationLeave(s.ConversationId), s.B)).StatusCode); // a direct conversation is muted, not left (409 conversation_closed)
 
         Guid group;
         await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
@@ -124,7 +125,7 @@ public sealed class MessageActionTests(LmsApiFactory factory)
 
         await SendTextAsync(s.A, group, "before");
         Assert.Equal(HttpStatusCode.NoContent, (await SendAsync(factory, HttpMethod.Post, Routes.ConversationLeave(group), s.B)).StatusCode);
-        Assert.Equal(HttpStatusCode.BadRequest, (await SendAsync(factory, HttpMethod.Post, Routes.ConversationLeave(group), s.B)).StatusCode);
+        Assert.Equal(HttpStatusCode.Conflict, (await SendAsync(factory, HttpMethod.Post, Routes.ConversationLeave(group), s.B)).StatusCode); // twice
         Assert.Equal(HttpStatusCode.Forbidden, (await SendAsync(factory, HttpMethod.Post, Routes.ConversationMessages(group), s.B, new SendMessageRequest("after leaving", null))).StatusCode);
     }
 
@@ -135,7 +136,7 @@ public sealed class MessageActionTests(LmsApiFactory factory)
 
         var upload = await UploadAsync(s.A, s.ConversationId, "notes.pdf", Pdf);
         Assert.Equal(HttpStatusCode.Created, upload.StatusCode);
-        var file = (await upload.Content.ReadFromJsonAsync<MessageAttachmentDto>(Web))!;
+        var file = (await upload.Content.ReadFromJsonAsync<PendingAttachmentDto>(Web))!;
         var sent = await SendTextAsync(s.A, s.ConversationId, "see attached", [file.FileId]);
         Assert.Equal(file.FileId, sent.Attachments.Single().FileId);
 
@@ -150,6 +151,58 @@ public sealed class MessageActionTests(LmsApiFactory factory)
         // Deleted for everyone: the files are no longer served.
         Assert.Equal(HttpStatusCode.NoContent, (await SendAsync(factory, HttpMethod.Delete, Routes.Message(s.ConversationId, sent.Id), s.A)).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(factory, HttpMethod.Get, MessageActionEndpointsRoutes.AttachmentUrl(s.ConversationId, sent.Id, file.FileId), s.B)).StatusCode);
+
+        // ...and the stored file is purged with the text: no attachment row is left, and the blob cannot be opened any more.
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        Assert.False(await db.Set<MessageAttachment>().AnyAsync(a => a.FileId == file.FileId));
+        using var scope = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.CreateScope(factory.Services);
+        await Assert.ThrowsAnyAsync<Exception>(() => Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<Lms.Domain.Files.IFileStorage>(scope.ServiceProvider).OpenReadAsync(file.FileId));
+    }
+
+    [Fact]
+    public async Task The_uploader_removes_their_own_pending_attachment_and_nobody_else_can()
+    {
+        var s = await SetUpAsync("MA6");
+        var file = (await (await UploadAsync(s.A, s.ConversationId, "draft.pdf", Pdf)).Content.ReadFromJsonAsync<PendingAttachmentDto>(Web))!;
+        Guid rowId;
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            rowId = (await db.Set<MessageAttachment>().SingleAsync(a => a.FileId == file.FileId)).Id;
+        }
+
+        var url = Routes.Conversation(s.ConversationId) + "/attachments/" + rowId;
+        Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(factory, HttpMethod.Delete, url, s.B)).StatusCode); // another participant
+        Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(factory, HttpMethod.Delete, url, s.Outsider)).StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, (await SendAsync(factory, HttpMethod.Delete, url, s.A)).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(factory, HttpMethod.Delete, url, s.A)).StatusCode); // already gone
+    }
+
+    private sealed class RefusingScanner : Lms.Domain.Files.IFileScanner
+    {
+        public Task<bool> IsCleanAsync(string fileName, Stream content, CancellationToken cancellationToken) => Task.FromResult(false);
+    }
+
+    [Fact]
+    public async Task A_failed_scan_is_400_and_nothing_is_stored()
+    {
+        var s = await SetUpAsync("MA5");
+        using var scanning = factory.WithWebHostBuilder(b => b.ConfigureServices(services =>
+        {
+            services.Replace(Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Singleton<Lms.Domain.Files.IFileScanner>(new RefusingScanner()));
+        }));
+        var form = new MultipartFormDataContent();
+        var file = new ByteArrayContent(Pdf);
+        file.Headers.ContentType = new MediaTypeHeaderValue("application/pdf");
+        form.Add(file, "file", "virus.pdf");
+        var request = new HttpRequestMessage(HttpMethod.Post, MessageActionEndpointsRoutes.Attachments(s.ConversationId)) { Content = form };
+        request.Headers.Add(TestAuthHandler.UserHeader, s.A.UserId.ToString());
+        request.Headers.Add(ContextHeader.Name, s.A.Id.ToString());
+
+        var response = await scanning.CreateClient().SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        Assert.False(await db.Set<MessageAttachment>().AnyAsync(a => a.ConversationId == s.ConversationId && a.FileName == "virus.pdf"));
     }
 
     [Fact]
@@ -157,13 +210,13 @@ public sealed class MessageActionTests(LmsApiFactory factory)
     {
         var s = await SetUpAsync("MA4");
 
-        Assert.Equal(HttpStatusCode.BadRequest, (await UploadAsync(s.A, s.ConversationId, "page.html", "<html></html>"u8.ToArray())).StatusCode);
-        Assert.Equal(HttpStatusCode.BadRequest, (await UploadAsync(s.A, s.ConversationId, "image.svg", "<svg/>"u8.ToArray())).StatusCode);
-        Assert.Equal(HttpStatusCode.BadRequest, (await UploadAsync(s.A, s.ConversationId, "bundle.zip", [0x50, 0x4B, 3, 4])).StatusCode);
-        Assert.Equal(HttpStatusCode.BadRequest, (await UploadAsync(s.A, s.ConversationId, "macro.xlsm", Pdf)).StatusCode);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, (await UploadAsync(s.A, s.ConversationId, "page.html", "<html></html>"u8.ToArray())).StatusCode);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, (await UploadAsync(s.A, s.ConversationId, "image.svg", "<svg/>"u8.ToArray())).StatusCode);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, (await UploadAsync(s.A, s.ConversationId, "bundle.zip", [0x50, 0x4B, 3, 4])).StatusCode);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, (await UploadAsync(s.A, s.ConversationId, "macro.xlsm", Pdf)).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await UploadAsync(s.Outsider, s.ConversationId, "notes.pdf", Pdf)).StatusCode);
 
-        var mine = (await (await UploadAsync(s.A, s.ConversationId, "mine.pdf", Pdf)).Content.ReadFromJsonAsync<MessageAttachmentDto>(Web))!;
+        var mine = (await (await UploadAsync(s.A, s.ConversationId, "mine.pdf", Pdf)).Content.ReadFromJsonAsync<PendingAttachmentDto>(Web))!;
         // Another participant cannot attach the file of A, and a file of another conversation is not found either.
         Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(factory, HttpMethod.Post, Routes.ConversationMessages(s.ConversationId), s.B, new SendMessageRequest("steal", [mine.FileId]))).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(factory, HttpMethod.Post, Routes.ConversationMessages(s.ConversationId), s.A, new SendMessageRequest("ghost", [Guid.NewGuid()]))).StatusCode);

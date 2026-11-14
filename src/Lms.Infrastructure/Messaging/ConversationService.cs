@@ -47,6 +47,9 @@ public sealed class ConversationService(LmsDbContext db, ICurrentContext context
         || await db.Set<StaffProfile>().AnyAsync(s => s.UserId == userId, ct)
         || await db.Set<GuardianProfile>().AnyAsync(g => g.UserId == userId, ct);
 
+    /// <summary>Only staff start groups (D74).</summary>
+    public Task<bool> IsStaffAsync(Guid userId, CancellationToken ct) => db.Set<StaffProfile>().AnyAsync(s => s.UserId == userId, ct);
+
     private async Task EnsureMemberAsync(Conversation conversation, Guid me, CancellationToken ct)
     {
         if (!await db.Set<ConversationParticipant>().AnyAsync(p => p.ConversationId == conversation.Id && p.UserId == me, ct))

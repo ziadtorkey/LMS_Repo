@@ -38,6 +38,9 @@ public sealed class Message : AuditableEntity, ITenantOwned
     /// <summary>A moderator removed it (M6 Task 15): participants see a tombstone (no text); the original stays in the row for moderators until the retention job purges it.</summary>
     public void RemoveByModerator() => State = RemovedState;
 
+    /// <summary>The retention job clears the original text of a removed message after its window (D71); the tombstone stays.</summary>
+    public void PurgeOriginal() => Body = string.Empty;
+
     /// <summary>Deletes for everyone: clears the text and keeps the row as a tombstone.</summary>
     public void DeleteForEveryone(DateTime atUtc)
     {
