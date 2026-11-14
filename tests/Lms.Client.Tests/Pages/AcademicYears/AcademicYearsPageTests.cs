@@ -48,6 +48,35 @@ public sealed class AcademicYearsPageTests : ClientTestContext
     private static string Id(string prefix, Guid id) => $"[data-testid={prefix}-{id}]";
 
     [Fact]
+    public async Task The_dashboard_row_describes_the_active_year_from_its_own_data()
+    {
+        Culture.Current = new CultureInfo("en");
+        await GrantAsync(Permissions.OrgUnits.View, Permissions.AcademicYears.View);
+        AroundToday(FakeUnits.SchoolId, AcademicYearStatuses.Active); // 61 days, 30 of them still ahead
+        var cut = RenderPage(FakeUnits.SchoolId);
+
+        cut.WaitForElement("[data-testid=years-stats]");
+
+        Assert.Contains("Test year", cut.Find("[data-testid=stat-year]").TextContent);
+        Assert.Equal("61", cut.Find("[data-testid=stat-days] .lms-stat-value").TextContent.Trim());
+        Assert.Equal("0", cut.Find("[data-testid=stat-terms] .lms-stat-value").TextContent.Trim());
+        Assert.Equal("30", cut.Find("[data-testid=stat-left] .lms-stat-value").TextContent.Trim());
+    }
+
+    [Fact]
+    public async Task A_planned_year_has_no_days_left_tile()
+    {
+        Culture.Current = new CultureInfo("en");
+        await GrantAsync(Permissions.OrgUnits.View, Permissions.AcademicYears.View);
+        AroundToday(FakeUnits.SchoolId, AcademicYearStatuses.Planned);
+        var cut = RenderPage(FakeUnits.SchoolId);
+
+        cut.WaitForElement("[data-testid=years-stats]");
+
+        Assert.Empty(cut.FindAll("[data-testid=stat-left]"));
+    }
+
+    [Fact]
     public async Task Inherited_years_are_read_only_and_name_source()
     {
         Culture.Current = new CultureInfo("en");
