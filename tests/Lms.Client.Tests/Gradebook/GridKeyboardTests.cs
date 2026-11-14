@@ -31,6 +31,7 @@ public sealed class GridKeyboardTests : ClientTestContext
     {
         Culture.Current = new CultureInfo("en");
         Services.AddSingleton<IGradebookApi>(_api);
+        Services.AddSingleton<IGradebookUnit>(new FakeGradebookUnit());
         Services.AddSingleton<IViewport>(new FakeViewport());
     }
 

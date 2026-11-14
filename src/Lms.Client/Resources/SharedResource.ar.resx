@@ -1777,4 +1777,7 @@
   <data name="Grd_Override_ReasonRequired" xml:space="preserve"><value>اكتب سبب التعديل.</value></data>
   <data name="Grd_Override_Apply" xml:space="preserve"><value>تعديل</value></data>
   <data name="Grd_Override_Short" xml:space="preserve"><value>تعديل</value></data>
+  <data name="Grd_Term_Label" xml:space="preserve"><value>الفصل</value></data>
+  <data name="Grd_Withdrew_On" xml:space="preserve"><value>انسحب في {0}</value></data>
+  <data name="Grd_Withdrawn" xml:space="preserve"><value>منسحب</value></data>
 </root>

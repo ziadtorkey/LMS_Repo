@@ -1777,4 +1777,7 @@
   <data name="Grd_Override_ReasonRequired" xml:space="preserve"><value>Give a reason for the override.</value></data>
   <data name="Grd_Override_Apply" xml:space="preserve"><value>Override</value></data>
   <data name="Grd_Override_Short" xml:space="preserve"><value>Override</value></data>
+  <data name="Grd_Term_Label" xml:space="preserve"><value>Term</value></data>
+  <data name="Grd_Withdrew_On" xml:space="preserve"><value>Withdrew on {0}</value></data>
+  <data name="Grd_Withdrawn" xml:space="preserve"><value>Withdrawn</value></data>
 </root>
