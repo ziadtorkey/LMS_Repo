@@ -1941,6 +1941,10 @@
   <data name="PermModule_Excuses" xml:space="preserve"><value>Excuses</value></data>
   <data name="AuditEntity_AttendanceRecordChange" xml:space="preserve"><value>Attendance change</value></data>
   <data name="AuditEntity_AbsenceExcuse" xml:space="preserve"><value>Absence excuse</value></data>
+  <data name="ClassCourse_TabGradebook" xml:space="preserve"><value>Gradebook</value></data>
+  <data name="Grd_Title" xml:space="preserve"><value>Gradebook</value></data>
+  <data name="Grd_GridSoonTitle" xml:space="preserve"><value>The gradebook grid is on its way</value></data>
+  <data name="Grd_GridSoonText" xml:space="preserve"><value>Categories, items and scores for this class course will appear here.</value></data>
   <data name="NavSection_Structure" xml:space="preserve"><value>Structure</value></data>
   <data name="NavSection_People" xml:space="preserve"><value>People</value></data>
   <data name="NavSection_Academic" xml:space="preserve"><value>Academic</value></data>
