@@ -72,7 +72,7 @@ public sealed class YearEndComponentTests : ClientTestContext
 
         Assert.Equal("10 of 10", cut.Find("[data-testid=done-card]").TextContent);
         Assert.Equal("Finished.", cut.Find("[data-testid=job-announcer]").TextContent);
-        Assert.NotNull(finished);
+        cut.WaitForAssertion(() => Assert.NotNull(finished)); // OnFinished follows the render of the result
         cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("[data-testid=done-card]"))); // still there after further renders
     }
 
