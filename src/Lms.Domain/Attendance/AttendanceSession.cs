@@ -70,6 +70,19 @@ public sealed class AttendanceSession : UnitOwnedEntity, ILiveKeyed
     /// <summary>"slotId:yyyyMMdd" for a timetable session, "a:classCourse:yyyyMMdd:period" for an ad hoc one, while live; unique, so a second live session at the same place is refused by the database.</summary>
     public string? SessionKey { get; private set; }
 
+    /// <summary>Marks the session Taken the first time attendance is saved; later saves only advance the version.</summary>
+    public void RecordSave(Guid userId, DateTime atUtc)
+    {
+        if (State != TakenState)
+        {
+            State = TakenState;
+            TakenByUserId = userId;
+            TakenAtUtc = atUtc;
+        }
+
+        Version++;
+    }
+
     /// <summary>The key of an ad hoc session: one per class course, date and period (a null period is its own token), so a double click creates one.</summary>
     public static string AdHocKey(Guid classCourseId, DateOnly date, Guid? periodId) => $"a:{classCourseId:N}:{date:yyyyMMdd}:{periodId?.ToString("N") ?? "-"}";
 
