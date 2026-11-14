@@ -197,6 +197,29 @@ public sealed class GradeEntryTests(LmsApiFactory factory)
     }
 
     [Fact]
+    public async Task Deleting_an_item_never_lets_a_stale_row_version_match_again()
+    {
+        var (host, w, student, _, manual, _) = await SetupAsync("GE13");
+        using var _h = host;
+        var second = await host.AddItemAsync(w, "Second", 10);
+        var row = await host.EntriesAsync(w, student, 0, Set(manual, 10), Set(second.Id, 4));
+        var stale = row.Version;
+
+        // another writer changes a cell, then an item with entries is deleted, then a third edit: a sum that fell would hit the stale version again
+        var afterEdit = await host.EntriesAsync(w, student, stale, Set(manual, 11));
+        Assert.Equal(HttpStatusCode.NoContent, (await host.SendAsync(w.Admin, HttpMethod.Delete, host.Url(w, "/items/" + second.Id))).StatusCode);
+        var afterDelete = RowOf(await host.GridAsync(w), student);
+        Assert.True(afterDelete.Version > afterEdit.Version, "the row version rises when an item is deleted");
+        await host.EntriesAsync(w, student, afterDelete.Version, Set(manual, 12));
+
+        var late = await host.PutEntriesAsync(w, w.Admin, student, stale, Set(manual, 3));
+
+        Assert.Equal(HttpStatusCode.Conflict, late.StatusCode);
+        Assert.Equal("concurrency_conflict", await CodeAsync(late));
+        Assert.Equal(12m, Cell(RowOf(await host.GridAsync(w), student), manual).Points);
+    }
+
+    [Fact]
     public async Task A_student_who_is_not_enrolled_is_404()
     {
         var (host, w, _, _, manual, _) = await SetupAsync("GE10");

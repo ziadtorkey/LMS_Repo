@@ -45,6 +45,8 @@ public sealed class IsolationBypassGuardTests
             "effective policies set on ancestors above the caller's scope (M1 Task 12, #94)",
         ["src/Lms.Infrastructure/Organizations/OrgPolicyReader.cs"] =
             "policies set on ancestors above the caller's scope, to show blocked permissions in the org tree (M1 Task 9, #99)",
+        ["src/Lms.Infrastructure/Grading/Gradebooks/GradeRowVersions.cs"] =
+            "the soft-deleted entries of a removed item still count towards a row version so it never falls; bound to one gradebook, its client and the students asked for, versions only (M5 Task 8, QA1 on #650)",
         ["src/Lms.Infrastructure/Grading/Scales/ScaleResolver.cs"] =
             "scales and weight templates of ancestor units sit above the caller scope; client-limited, live rows, bound to the unit's exact ancestor-or-self paths, names, kinds, bands and weights only (M5 Task 4, site 1)",
         ["src/Lms.Infrastructure/Grading/Scales/PresetReconciler.cs"] =

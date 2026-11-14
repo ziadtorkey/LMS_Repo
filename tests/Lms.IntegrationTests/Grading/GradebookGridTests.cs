@@ -287,6 +287,68 @@ public sealed class GradebookGridTests(LmsApiFactory factory)
     }
 
     [Fact]
+    public async Task Term_of_another_client_never_resolves()
+    {
+        using var host = new GradebookGridHost(factory);
+        var w = await host.SeedAsync("GG15");
+        var other = await host.SeedAsync("GG15B");
+
+        Assert.Equal(HttpStatusCode.NotFound, (await host.SendAsync(w.Admin, HttpMethod.Get, host.Url(w, term: other.Gb.First.Id))).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await host.SendAsync(w.Admin, HttpMethod.Put, host.Url(w, "/config", other.Gb.First.Id),
+            new SaveGradebookConfigRequest(null, 2, CategoryMethods.PointsWeighted, MissingPolicies.Normalise))).StatusCode);
+    }
+
+    [Fact]
+    public async Task Write_routes_take_the_term_and_default_to_the_current_term_of_the_class()
+    {
+        using var host = new GradebookGridHost(factory);
+        var w = await host.SeedAsync("GG16");
+        var cc = w.Gb.ClassCourse.Id;
+        var firstCategory = (await host.GridAsync(w)).Categories.Single().Id;
+
+        // an item written with ?termId= lands in that term's gradebook (the builder appends it)
+        var second = await host.SendAsync(w.Admin, HttpMethod.Post, Routes.ClassCourseGradebookItems(cc, w.Gb.Second.Id),
+            new CreateGradeItemRequest(Guid.Empty, "ا", "A", 10));
+        Assert.Equal(HttpStatusCode.BadRequest, second.StatusCode); // the category belongs to the first term's gradebook: a miss for the second
+        var secondGrid = await host.SendAsync(w.Admin, HttpMethod.Get, host.Url(w, term: w.Gb.Second.Id));
+        var secondBook = (await secondGrid.Content.ReadFromJsonAsync<GradebookDto>())!;
+        var made = await host.SendAsync(w.Admin, HttpMethod.Post, Routes.ClassCourseGradebookItems(cc, w.Gb.Second.Id),
+            new CreateGradeItemRequest(secondBook.Categories.Single().Id, "ب", "B", 10));
+        Assert.Equal(HttpStatusCode.Created, made.StatusCode);
+
+        Assert.Empty((await host.GridAsync(w)).Items); // the first term's gradebook has no item
+        Assert.Single((await (await host.SendAsync(w.Admin, HttpMethod.Get, host.Url(w, term: w.Gb.Second.Id))).Content.ReadFromJsonAsync<GradebookDto>())!.Items);
+        Assert.NotEqual(firstCategory, secondBook.Categories.Single().Id);
+
+        // without a term the current term of the class is used: the class year lies in the future, so the last term
+        var current = await host.SendAsync(w.Admin, HttpMethod.Post, Routes.ClassCourseGradebookItems(cc),
+            new CreateGradeItemRequest(secondBook.Categories.Single().Id, "ج", "C", 10));
+        Assert.Equal(HttpStatusCode.Created, current.StatusCode);
+        Assert.Equal(2, (await (await host.SendAsync(w.Admin, HttpMethod.Get, host.Url(w, term: w.Gb.Second.Id))).Content.ReadFromJsonAsync<GradebookDto>())!.Items.Count);
+    }
+
+    [Fact]
+    public async Task A_missing_body_is_400_not_a_server_error()
+    {
+        using var host = new GradebookGridHost(factory);
+        var w = await host.SeedAsync("GG17");
+        await host.GridAsync(w);
+
+        var seen = new List<string>();
+        foreach (var (method, suffix) in new[] { (HttpMethod.Put, "/config"), (HttpMethod.Put, "/categories"), (HttpMethod.Post, "/items"), (HttpMethod.Put, "/entries") })
+        {
+            using var request = new HttpRequestMessage(method, host.Url(w, suffix, w.Gb.First.Id))
+            {
+                Content = new StringContent(string.Empty, System.Text.Encoding.UTF8, "application/json"), // what a client sends when the body is missing
+            };
+            var response = await host.Host.SendRawAsync(request, w.Admin);
+            seen.Add($"{method} {suffix}: {(int)response.StatusCode} {await response.Content.ReadAsStringAsync()}");
+        }
+
+        Assert.True(seen.All(x => x.Contains(": 400 ")), string.Join(" | ", seen));
+    }
+
+    [Fact]
     public async Task Grid_of_40_students_and_60_items_computes_under_budget()
     {
         using var host = new GradebookGridHost(factory);
@@ -300,9 +362,11 @@ public sealed class GradebookGridTests(LmsApiFactory factory)
             {
                 var item = GradeItem.Manual(gradebook, category, "بند " + i, "Item " + i, 10, i + 1);
                 db.Add(item);
-                foreach (var student in w.Students.Take(20))
+                foreach (var student in w.Students)
                 {
-                    db.Add(new GradeEntry(item, student.Id, null, DateTime.UtcNow));
+                    var entry = new GradeEntry(item, student.Id, null, DateTime.UtcNow);
+                    entry.SetPoints(7, null, DateTime.UtcNow); // all 40 x 60 = 2400 cells filled
+                    db.Add(entry);
                 }
             }
 
@@ -310,11 +374,18 @@ public sealed class GradebookGridTests(LmsApiFactory factory)
         }
 
         await host.GridAsync(w); // warm up
-        var watch = Stopwatch.StartNew();
-        var big = await host.GridAsync(w);
-        watch.Stop();
+        var best = long.MaxValue;
+        GradebookDto? big = null;
+        for (var run = 0; run < 3; run++) // the best of three runs: CI noise must not fail a plan budget that holds with room
+        {
+            var watch = Stopwatch.StartNew();
+            big = await host.GridAsync(w);
+            watch.Stop();
+            best = Math.Min(best, watch.ElapsedMilliseconds);
+        }
 
-        Assert.Equal((40, 60), (big.Rows.Items.Count, big.Items.Count));
-        Assert.True(watch.ElapsedMilliseconds < 3000, $"the grid took {watch.ElapsedMilliseconds} ms");
+        Assert.Equal((40, 60), (big!.Rows.Items.Count, big.Items.Count));
+        Assert.All(big.Rows.Items, r => Assert.Equal(60, r.Cells.Count(c => c.State == GradeCellStates.Manual)));
+        Assert.True(best < 300, $"L17 budget: 40 students x 60 items in under 300 ms, the best run took {best} ms");
     }
 }

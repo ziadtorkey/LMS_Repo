@@ -19,7 +19,7 @@ public static class GradeEntryEndpoints
     }
 
     private static async Task<IResult> UpsertAsync(
-        Guid id, UpsertEntriesRequest request, Guid? termId, HttpContext http, GradebookReader reader, GradebookEditor editor,
+        Guid id, UpsertEntriesRequest? request, Guid? termId, HttpContext http, GradebookReader reader, GradebookEditor editor,
         ICurrentContext context, CancellationToken ct)
     {
         if (GradebookValidators.ValidateEntries(request) is { } invalid)
@@ -35,12 +35,12 @@ public static class GradeEntryEndpoints
 
         try
         {
-            await editor.ApplyEntriesAsync(target!.Gradebook, request.StudentId, request.Version, request.Changes, context.UserId, ct);
+            await editor.ApplyEntriesAsync(target!.Gradebook, request!.StudentId, request.Version, request.Changes, context.UserId, ct);
         }
         catch (GradebookRuleException rule) when (rule.Code == ProblemCodes.concurrency_conflict)
         {
             // the answer is the current row, so the page can show what the other teacher changed
-            return GradebookValidators.From(rule, await reader.RowAsync(target!.ClassCourse, target.Gradebook, request.StudentId, ct));
+            return GradebookValidators.From(rule, await reader.RowAsync(target!.ClassCourse, target.Gradebook, request!.StudentId, ct));
         }
         catch (GradebookRuleException rule)
         {
@@ -50,10 +50,10 @@ public static class GradeEntryEndpoints
         {
             return GradebookValidators.From(
                 new GradebookRuleException(ProblemCodes.concurrency_conflict),
-                await RereadAsync(reader, target!, request.StudentId, ct));
+                await RereadAsync(reader, target!, request!.StudentId, ct));
         }
 
-        return Results.Ok(await reader.RowAsync(target.ClassCourse, target.Gradebook, request.StudentId, ct));
+        return Results.Ok(await reader.RowAsync(target.ClassCourse, target.Gradebook, request!.StudentId, ct));
     }
 
     private static async Task<GradeRowDto?> RereadAsync(GradebookReader reader, GradebookTarget target, Guid studentId, CancellationToken ct) =>

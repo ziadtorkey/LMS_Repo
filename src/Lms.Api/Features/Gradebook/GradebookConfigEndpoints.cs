@@ -24,7 +24,7 @@ public static class GradebookConfigEndpoints
     }
 
     private static async Task<IResult> ConfigAsync(
-        Guid id, SaveGradebookConfigRequest request, Guid? termId, HttpContext http, GradebookReader reader, GradebookEditor editor,
+        Guid id, SaveGradebookConfigRequest? request, Guid? termId, HttpContext http, GradebookReader reader, GradebookEditor editor,
         IScaleResolver scales, LmsDbContext db, CancellationToken ct)
     {
         if (request is null)
@@ -56,7 +56,7 @@ public static class GradebookConfigEndpoints
     }
 
     private static async Task<IResult> CategoriesAsync(
-        Guid id, SaveGradeCategoriesRequest request, Guid? termId, HttpContext http, GradebookReader reader, GradebookEditor editor,
+        Guid id, SaveGradeCategoriesRequest? request, Guid? termId, HttpContext http, GradebookReader reader, GradebookEditor editor,
         LmsDbContext db, CancellationToken ct)
     {
         if (GradebookValidators.ValidateCategories(request) is { } invalid)
@@ -74,7 +74,7 @@ public static class GradebookConfigEndpoints
         {
             await editor.SaveCategoriesAsync(
                 target!.Gradebook,
-                [.. request.Categories.Select(c => new CategorySpec(c.Id, c.NameAr.Trim(), c.NameEn.Trim(), c.Weight, c.Order))], ct);
+                [.. request!.Categories.Select(c => new CategorySpec(c.Id, c.NameAr.Trim(), c.NameEn.Trim(), c.Weight, c.Order))], ct);
         }
         catch (GradebookRuleException rule)
         {
@@ -86,7 +86,7 @@ public static class GradebookConfigEndpoints
     }
 
     private static async Task<IResult> CreateItemAsync(
-        Guid id, CreateGradeItemRequest request, Guid? termId, HttpContext http, GradebookReader reader, GradebookEditor editor, CancellationToken ct)
+        Guid id, CreateGradeItemRequest? request, Guid? termId, HttpContext http, GradebookReader reader, GradebookEditor editor, CancellationToken ct)
     {
         if (request is null)
         {
@@ -116,7 +116,7 @@ public static class GradebookConfigEndpoints
     }
 
     private static async Task<IResult> UpdateItemAsync(
-        Guid id, Guid iid, UpdateGradeItemRequest request, HttpContext http, GradebookReader reader, GradebookEditor editor, LmsDbContext db,
+        Guid id, Guid iid, UpdateGradeItemRequest? request, HttpContext http, GradebookReader reader, GradebookEditor editor, LmsDbContext db,
         CancellationToken ct)
     {
         if (request is null)
@@ -154,7 +154,7 @@ public static class GradebookConfigEndpoints
     }
 
     private static async Task<IResult> DeleteItemAsync(
-        Guid id, Guid iid, HttpContext http, GradebookEditor editor, LmsDbContext db, CancellationToken ct)
+        Guid id, Guid iid, HttpContext http, GradebookEditor editor, LmsDbContext db, Lms.Domain.Abstractions.ICurrentContext context, CancellationToken ct)
     {
         var (cc, problem) = await http.CheckClassCourseAsync(Permissions.Grades.Manage, id, ct);
         if (problem is not null)
@@ -170,7 +170,7 @@ public static class GradebookConfigEndpoints
 
         try
         {
-            await editor.DeleteItemAsync(await db.Set<GradebookEntity>().SingleAsync(g => g.Id == item.GradebookId, ct), item, ct);
+            await editor.DeleteItemAsync(await db.Set<GradebookEntity>().SingleAsync(g => g.Id == item.GradebookId, ct), item, context.UserId, ct);
             return Results.NoContent();
         }
         catch (GradebookRuleException rule)

@@ -33,12 +33,9 @@ public static class GradeRowBuilder
             var code = band is null ? null : data.Bands.FirstOrDefault(b => b.Band.MinPercent == band.MinPercent)?.Code;
             return new GradeRowDto(
                 student.Id, student.NameAr, student.NameEn, student.Code, cells, categoryResults, calc?.FinalPercent,
-                code, band?.LabelAr, band?.LabelEn, band?.GpaPoints, RowVersion(own.Values), student.IsWithdrawn, student.WithdrawnOn);
+                code, band?.LabelAr, band?.LabelEn, band?.GpaPoints, data.RowVersions.GetValueOrDefault(student.Id), student.IsWithdrawn, student.WithdrawnOn);
         }).ToList();
     }
-
-    /// <summary>The version a write sends back: the sum of the row's entry versions (every change of any cell raises it).</summary>
-    public static long RowVersion(IEnumerable<GradeEntry> entries) => entries.Sum(e => (long)e.Version);
 
     private static GradeCellDto Cell(GradeItem item, GradeEntry? entry, GradeEvent? latest)
     {
