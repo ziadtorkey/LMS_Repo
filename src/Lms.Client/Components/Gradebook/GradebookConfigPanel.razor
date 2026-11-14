@@ -126,6 +126,9 @@
     [Parameter, EditorRequired] public GradebookDto Book { get; set; } = default!;
     [Parameter, EditorRequired] public Guid ClassCourseId { get; set; }
 
+    /// <summary>The term of the gradebook on screen: every write names it (the server would use the class's current term otherwise).</summary>
+    [Parameter] public Guid? TermId { get; set; }
+
     /// <summary>Raised after anything was saved: the page loads the gradebook again, so every number on screen is the server's.</summary>
     [Parameter] public EventCallback OnChanged { get; set; }
 
@@ -235,7 +238,7 @@
         }
 
         var request = new SaveGradeCategoriesRequest([.. _rows.Select((r, i) => new SaveGradeCategoryRequest(r.Id, r.NameAr.Trim(), r.NameEn.Trim(), r.Weight, i + 1))]);
-        if (await RunAsync(() => Api.SaveCategoriesAsync(ClassCourseId, request)))
+        if (await RunAsync(() => Api.SaveCategoriesAsync(ClassCourseId, request, TermId)))
         {
             Snackbar.Add(L["Grd_Config_Saved"], Severity.Success);
             await OnChanged.InvokeAsync();
@@ -244,7 +247,7 @@
 
     private async Task SaveSettingsAsync()
     {
-        if (await RunAsync(() => Api.SaveConfigAsync(ClassCourseId, new SaveGradebookConfigRequest(_scaleId, _places, _method, _missing))))
+        if (await RunAsync(() => Api.SaveConfigAsync(ClassCourseId, new SaveGradebookConfigRequest(_scaleId, _places, _method, _missing), TermId)))
         {
             Snackbar.Add(L["Grd_Config_Saved"], Severity.Success);
             await OnChanged.InvokeAsync();
@@ -268,7 +271,7 @@
     {
         var dialog = await Dialogs.ShowAsync<ItemDialog>(L[item is null ? "Grd_Item_AddTitle" : "Grd_Item_EditTitle"], new DialogParameters<ItemDialog>
         {
-            { x => x.ClassCourseId, ClassCourseId }, { x => x.Categories, RealCategories }, { x => x.Existing, item },
+            { x => x.ClassCourseId, ClassCourseId }, { x => x.TermId, TermId }, { x => x.Categories, RealCategories }, { x => x.Existing, item },
         }, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, CloseOnEscapeKey = true });
         if (await dialog.Result is { Canceled: false }) await OnChanged.InvokeAsync();
     }

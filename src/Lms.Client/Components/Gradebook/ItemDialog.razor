@@ -38,6 +38,9 @@
 
     [Parameter, EditorRequired] public Guid ClassCourseId { get; set; }
 
+    /// <summary>The term of the gradebook the item is added to.</summary>
+    [Parameter] public Guid? TermId { get; set; }
+
     /// <summary>The categories a manual item can sit in (the uncategorised bucket is not one of them).</summary>
     [Parameter, EditorRequired] public IReadOnlyList<GradeCategoryDto> Categories { get; set; } = [];
 
@@ -77,7 +80,7 @@
         try
         {
             var saved = Existing is null
-                ? await Api.CreateItemAsync(ClassCourseId, new CreateGradeItemRequest(_categoryId, _titleAr.Trim(), _titleEn.Trim(), max))
+                ? await Api.CreateItemAsync(ClassCourseId, new CreateGradeItemRequest(_categoryId, _titleAr.Trim(), _titleEn.Trim(), max), TermId)
                 : await Api.UpdateItemAsync(ClassCourseId, Existing.Id, new UpdateGradeItemRequest(_categoryId, _titleAr.Trim(), _titleEn.Trim(), max, Existing.Order));
             MudDialog.Close(DialogResult.Ok(saved));
         }

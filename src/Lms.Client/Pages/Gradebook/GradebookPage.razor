@@ -70,7 +70,7 @@ else
         }
         @if (_settingsOpen && CanManageBook)
         {
-            <GradebookConfigPanel Book="_book" ClassCourseId="Id" OnChanged="() => LoadAsync(_pageNo)" />
+            <GradebookConfigPanel Book="_book" ClassCourseId="Id" TermId="_book.TermId" OnChanged="() => LoadAsync(_pageNo)" />
         }
         <SectionCard Flush="true" TestId="gradebook-card">
             <div class="lms-gb-toolbar" role="toolbar" aria-label="@L["Grd_Toolbar"]">
