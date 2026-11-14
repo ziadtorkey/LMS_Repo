@@ -1,0 +1,53 @@
+@using Lms.Shared.YearEnd
+
+@* The counts per outcome and the issues of a run: blocking ones first (they stop the run), then warnings (they never do, D84). *@
+<div class="lms-stats" role="group" aria-label="@L["Promo_Summary"]" data-testid="promo-summary">
+    @foreach (var (outcome, count) in Counts)
+    {
+        <div class="lms-stat" data-testid="@($"promo-summary-{outcome}")">
+            <span class="lms-stat-value">@count</span>
+            <span class="lms-stat-label">@L[$"Promo_Outcome_{outcome}"]</span>
+        </div>
+    }
+</div>
+
+@if (Run.Blocking.Count > 0)
+{
+    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-3" data-testid="promo-blocking">
+        <p class="mb-1"><strong>@L["Promo_Blocking"]</strong></p>
+        <ul class="mb-0">
+            @foreach (var issue in Run.Blocking)
+            {
+                <li data-testid="@($"promo-issue-{issue.Code}")">@Text(issue) @if (issue.Code == YearEndIssueCodes.NoLevelMapping)
+                    {
+                        <MudLink Href="classes">@L["Promo_Fix_Level_Mapping"]</MudLink>
+                    }
+                </li>
+            }
+        </ul>
+    </MudAlert>
+}
+@if (Run.Warnings.Count > 0)
+{
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mb-3" data-testid="promo-warnings">
+        <p class="mb-1"><strong>@L["Promo_Warnings"]</strong></p>
+        <ul class="mb-0">
+            @foreach (var issue in Run.Warnings)
+            {
+                <li data-testid="@($"promo-issue-{issue.Code}")">@Text(issue)</li>
+            }
+        </ul>
+    </MudAlert>
+}
+
+@code {
+    [Parameter, EditorRequired] public PromotionRunDto Run { get; set; } = default!;
+
+    private IEnumerable<(string Outcome, int Count)> Counts =>
+    [
+        (PromotionOutcomes.Promote, Run.Counts.Promote), (PromotionOutcomes.Repeat, Run.Counts.Repeat),
+        (PromotionOutcomes.Graduate, Run.Counts.Graduate), (PromotionOutcomes.TransferOut, Run.Counts.TransferOut),
+    ];
+
+    private string Text(YearEndIssueDto issue) => issue.Count > 1 ? $"{L[$"YearIssue_{issue.Code}"].Value} ({issue.Count})" : L[$"YearIssue_{issue.Code}"].Value;
+}

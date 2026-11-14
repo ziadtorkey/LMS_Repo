@@ -1,0 +1,84 @@
+@using Lms.Client.Components.People
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.YearEnd
+@using Lms.Shared.AcademicYears
+@using Lms.Shared.YearEnd
+@inject IYearsApi Years
+@inject IPromotionApi Promotion
+@inject NavigationManager Navigation
+
+@* Step 1 of the promotion (FR-STU-07, D79): the unit, the closed year to promote from and the year to promote into. The server refuses a source year that is not closed. *@
+<SectionCard Title="@L["Promo_Step_Choose"]" TestId="promo-setup">
+    <div class="lms-form" data-testid="promo-form">
+        @if (_error is not null)
+        {
+            <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-3" data-testid="promo-error">@_error</MudAlert>
+        }
+        <div class="lms-form-grid">
+            <UnitPicker Value="_unitId" ValueChanged="OnUnitChanged" Label="@L["Promo_Source_Unit"]" Required="true" TestId="promo-source-unit" />
+            <MudSelect T="Guid?" Value="_sourceId" ValueChanged="v => _sourceId = v" Label="@L["Promo_Source_Year"]" Disabled="_unitId is null" Required="true"
+                       data-testid="promo-source-year">
+                @foreach (var year in SourceYears)
+                {
+                    <MudSelectItem T="Guid?" Value="@((Guid?)year.Id)">@CultureText.Pick(year.NameAr, year.NameEn)</MudSelectItem>
+                }
+            </MudSelect>
+            <MudSelect T="Guid?" Value="_targetId" ValueChanged="v => _targetId = v" Label="@L["Promo_Target_Year"]" Disabled="_unitId is null" Required="true"
+                       data-testid="promo-target-year">
+                @foreach (var year in TargetYears)
+                {
+                    <MudSelectItem T="Guid?" Value="@((Guid?)year.Id)">@CultureText.Pick(year.NameAr, year.NameEn)</MudSelectItem>
+                }
+            </MudSelect>
+        </div>
+        @if (_unitId is not null && _loaded && !SourceYears.Any())
+        {
+            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" Class="mt-2" data-testid="promo-no-closed-year">
+                @L["Promo_No_Closed_Year"] <MudLink Href="academic-years">@L["Nav_AcademicYears"]</MudLink>
+            </MudAlert>
+        }
+        <MudSwitch T="bool" @bind-Value="_includeSubUnits" Color="Color.Primary" Label="@L["Promo_Include_SubUnits"]" Class="mt-2" data-testid="promo-subunits" />
+        <p class="lms-picker-hint">@L["Promo_Choose_Help"]</p>
+    </div>
+    <div class="lms-dialog-actions mt-3">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="!CanCreate || _busy" OnClick="CreateAsync" data-testid="promo-create">@L["Promo_Create"]</MudButton>
+    </div>
+</SectionCard>
+
+@code {
+    private Guid? _unitId, _sourceId, _targetId;
+    private bool _includeSubUnits = true, _busy, _loaded;
+    private string? _error;
+    private IReadOnlyList<AcademicYearDto> _years = [];
+
+    private IEnumerable<AcademicYearDto> SourceYears => _years.Where(y => y.Status == AcademicYearStatuses.Closed);
+
+    private IEnumerable<AcademicYearDto> TargetYears => _years.Where(y => y.Status is AcademicYearStatuses.Planned or AcademicYearStatuses.Active);
+
+    private bool CanCreate => _unitId is not null && _sourceId is not null && _targetId is not null && _sourceId != _targetId;
+
+    private async Task OnUnitChanged(Guid? unitId)
+    {
+        _unitId = unitId;
+        _sourceId = _targetId = null;
+        _years = [];
+        _loaded = false;
+        _error = null;
+        if (unitId is null) return;
+        var (context, _) = await ApiCalls.RunAsync(() => Years.GetEffectiveAsync(unitId), Navigation);
+        _years = context?.Years ?? [];
+        _loaded = true;
+    }
+
+    private async Task CreateAsync()
+    {
+        if (!CanCreate) return;
+        _busy = true;
+        _error = null;
+        PromotionRunDto? run = null;
+        var ok = await ApiCalls.RunAsync(async () => run = await Promotion.CreateRunAsync(new CreatePromotionRunRequest(_sourceId!.Value, _unitId!.Value, _targetId!.Value, _includeSubUnits)),
+            Navigation, L, e => _error = e);
+        _busy = false;
+        if (ok && run is not null) Navigation.NavigateTo($"promotion/{run.Id}");
+    }
+}

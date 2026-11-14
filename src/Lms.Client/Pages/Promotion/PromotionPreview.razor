@@ -1,0 +1,229 @@
+@using Lms.Client.Components
+@using Lms.Client.Components.YearEnd
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.YearEnd
+@using Lms.Shared
+@using Lms.Shared.Classes
+@using Lms.Shared.YearEnd
+@inject IPromotionApi Promotion
+@inject IClassesApi Classes
+@inject IDialogService Dialogs
+@inject NavigationManager Navigation
+
+@* Step 2 of the promotion (FR-STU-07, D83): the preview of every student with an outcome and a target class. The server keeps the decisions as a draft, so a reload loses nothing; the table is
+   server-paged and filtered (X-09) and a bulk change sends a filter, never a list of ids. Issues are listed first: blocking ones stop the run, warnings never do (D84). *@
+@if (_run is null)
+{
+    @if (_failed)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="promo-load-error">@L["Error_Generic"]</MudAlert>
+    }
+    else
+    {
+        <LoadingState Lines="6" TestId="promo-preview-loading" />
+    }
+}
+else
+{
+    <PromotionSummary Run="_run" />
+
+    @if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-3" data-testid="promo-error">@_error</MudAlert>
+    }
+    @if (!Editable)
+    {
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-3" data-testid="promo-readonly">@L[$"Promo_State_{_run.State}"]</MudAlert>
+    }
+
+    <SectionCard Flush="true" TestId="promo-preview">
+        <div class="lms-filters" role="search" aria-label="@L["Common_Filters"]">
+            <div class="lms-filter lms-filter-search">
+                <MudTextField T="string" Value="_search" ValueChanged="OnSearchAsync" Label="@L["Common_Search"]" Immediate="true" DebounceInterval="300" Clearable="true"
+                              Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Rounded.Search" data-testid="promo-search" />
+            </div>
+            <div class="lms-filter">
+                <MudSelect T="string" Value="_outcomeFilter" ValueChanged="OnOutcomeFilterAsync" Label="@L["Promo_Outcome"]" Clearable="true" data-testid="promo-filter-outcome">
+                    @foreach (var outcome in PromotionOutcomes.All)
+                    {
+                        <MudSelectItem T="string" Value="@outcome">@L[$"Promo_Outcome_{outcome}"]</MudSelectItem>
+                    }
+                </MudSelect>
+            </div>
+            <div class="lms-filter">
+                <MudSelect T="Guid?" Value="_classFilter" ValueChanged="OnClassFilterAsync" Label="@L["Promo_Source_Class"]" Clearable="true" data-testid="promo-filter-class">
+                    @foreach (var c in _sourceClasses)
+                    {
+                        <MudSelectItem T="Guid?" Value="@((Guid?)c.Id)">@CultureText.Pick(c.NameAr, c.NameEn)</MudSelectItem>
+                    }
+                </MudSelect>
+            </div>
+            <div class="lms-filter">
+                <MudSwitch T="bool" Value="_problemsOnly" ValueChanged="OnProblemsAsync" Color="Color.Primary" Label="@L["Promo_Problems_Only"]" data-testid="promo-filter-problems" />
+            </div>
+        </div>
+
+        @if (Editable)
+        {
+            <div class="lms-filters" role="group" aria-label="@L["Promo_Bulk"]" data-testid="promo-bulk">
+                <div class="lms-filter">
+                    <MudSelect T="string" Value="_bulkOutcome" ValueChanged="v => _bulkOutcome = v" Label="@L["Promo_Bulk_Set"]" data-testid="promo-bulk-outcome">
+                        @foreach (var outcome in PromotionOutcomes.All)
+                        {
+                            <MudSelectItem T="string" Value="@outcome">@L[$"Promo_Outcome_{outcome}"]</MudSelectItem>
+                        }
+                    </MudSelect>
+                </div>
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Disabled="_bulkOutcome is null || _total == 0 || _busy" OnClick="() => BulkAsync(_bulkOutcome)"
+                           data-testid="promo-bulk-set">@string.Format(L["Promo_Bulk_Apply"].Value, _total)</MudButton>
+                <MudButton Variant="Variant.Text" Disabled="_total == 0 || _busy" OnClick="() => BulkAsync(null)" data-testid="promo-bulk-reset">@L["Promo_Bulk_Reset"]</MudButton>
+            </div>
+        }
+
+        <ServerTable @ref="_table" T="PromotionRowDto" ServerData="LoadAsync" EmptyTitle="@L["Promo_Empty_Title"]" EmptyText="@L["Promo_Empty_Text"]">
+            <HeaderContent>
+                <MudTh>@L["Promo_Student"]</MudTh>
+                <MudTh>@L["Promo_Source_Class"]</MudTh>
+                <MudTh>@L["Promo_Outcome"]</MudTh>
+                <MudTh>@L["Promo_Target_Class"]</MudTh>
+                <MudTh>@L["Promo_Problem"]</MudTh>
+            </HeaderContent>
+            <RowTemplate Context="row">
+                <MudTd DataLabel="@L["Promo_Student"]" data-testid="@($"promo-row-{row.StudentId}")">
+                    <div><bdi>@CultureText.Pick(row.NameAr, row.NameEn)</bdi></div>
+                    <div class="lms-muted" dir="ltr">@row.StudentCode</div>
+                </MudTd>
+                <MudTd DataLabel="@L["Promo_Source_Class"]">@CultureText.Pick(row.SourceClassNameAr, row.SourceClassNameEn)</MudTd>
+                <MudTd DataLabel="@L["Promo_Outcome"]">
+                    <MudSelect T="string" Value="row.Outcome" ValueChanged="v => ChangeOutcomeAsync(row, v)" Dense="true" Disabled="!Editable"
+                               aria-label="@string.Format(L["Promo_Outcome_For"].Value, CultureText.Pick(row.NameAr, row.NameEn))" data-testid="@($"promo-outcome-{row.StudentId}")">
+                        @foreach (var outcome in PromotionOutcomes.All)
+                        {
+                            <MudSelectItem T="string" Value="@outcome">@L[$"Promo_Outcome_{outcome}"]</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudTd>
+                <MudTd DataLabel="@L["Promo_Target_Class"]">
+                    @if (row.Outcome is PromotionOutcomes.Promote or PromotionOutcomes.Repeat)
+                    {
+                        <MudSelect T="Guid?" Value="row.TargetClassId" ValueChanged="v => ChangeTargetAsync(row, v)" Dense="true" Disabled="!Editable"
+                                   aria-label="@string.Format(L["Promo_Target_For"].Value, CultureText.Pick(row.NameAr, row.NameEn))" data-testid="@($"promo-target-{row.StudentId}")">
+                            <MudSelectItem T="Guid?" Value="@((Guid?)null)">@L["Promo_Target_Auto"]</MudSelectItem>
+                            @foreach (var c in _targetClasses)
+                            {
+                                <MudSelectItem T="Guid?" Value="@((Guid?)c.Id)">@CultureText.Pick(c.NameAr, c.NameEn)</MudSelectItem>
+                            }
+                        </MudSelect>
+                    }
+                    else
+                    {
+                        <span class="lms-muted">@L["Promo_Target_None"]</span>
+                    }
+                </MudTd>
+                <MudTd DataLabel="@L["Promo_Problem"]">
+                    @if (row.FailureCode is not null || row.ProblemCode is not null)
+                    {
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Warning" data-testid="@($"promo-problem-{row.StudentId}")">@L["Promo_Problem_Failed"]</MudChip>
+                    }
+                </MudTd>
+            </RowTemplate>
+        </ServerTable>
+    </SectionCard>
+
+    <div class="lms-visually-hidden" role="status" aria-live="polite" data-testid="promo-announcer">@_announcement</div>
+
+    <div class="lms-dialog-actions mt-3">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="!CanContinue" OnClick="ContinueAsync" data-testid="promo-continue">@L["Promo_Continue"]</MudButton>
+    </div>
+    @if (_run.Blocking.Count > 0)
+    {
+        <p class="lms-picker-hint" data-testid="promo-continue-hint">@L["Promo_Continue_Blocked"]</p>
+    }
+}
+
+@code {
+    [Parameter, EditorRequired] public Guid RunId { get; set; }
+
+    private ServerTable<PromotionRowDto> _table = default!;
+    private PromotionRunDto? _run;
+    private IReadOnlyList<ClassSummaryDto> _sourceClasses = [], _targetClasses = [];
+    private string? _search, _outcomeFilter, _bulkOutcome, _error, _announcement;
+    private Guid? _classFilter;
+    private bool _problemsOnly, _failed, _busy;
+    private int _total;
+
+    private bool Editable => _run is { State: PromotionRunStates.Draft };
+
+    private bool CanContinue => _run is { State: PromotionRunStates.Draft, Blocking.Count: 0 } && !_busy;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var (run, failed) = await ApiCalls.RunAsync(() => Promotion.GetRunAsync(RunId), Navigation);
+        _failed = failed || run is null;
+        _run = run;
+        if (run is null) return;
+        _sourceClasses = await ClassesOfAsync(run.SourceOrgUnitId, run.SourceYearId);
+        _targetClasses = await ClassesOfAsync(run.SourceOrgUnitId, run.TargetYearId);
+    }
+
+    private async Task<IReadOnlyList<ClassSummaryDto>> ClassesOfAsync(Guid unitId, Guid yearId)
+    {
+        var (page, _) = await ApiCalls.RunAsync(() => Classes.ListAsync(new ClassQuery(unitId, true, yearId, null, null, null, 1, Paging.MaxPageSize)), Navigation);
+        return page?.Items ?? [];
+    }
+
+    private PromotionRowsQuery Filter(int page = 1, int pageSize = Paging.DefaultPageSize) =>
+        new(_outcomeFilter, _classFilter, _problemsOnly, string.IsNullOrWhiteSpace(_search) ? null : _search.Trim(), page, pageSize);
+
+    private async Task<TableData<PromotionRowDto>> LoadAsync(TableState state, CancellationToken ct)
+    {
+        var page = await Promotion.GetRowsAsync(RunId, Filter(state.Page + 1, state.PageSize), ct);
+        _total = page.Total;
+        return new TableData<PromotionRowDto> { Items = page.Items, TotalItems = page.Total };
+    }
+
+    private Task OnSearchAsync(string? text) { _search = text; return _table.ReloadAsync(); }
+    private Task OnOutcomeFilterAsync(string? outcome) { _outcomeFilter = outcome; return _table.ReloadAsync(); }
+    private Task OnClassFilterAsync(Guid? id) { _classFilter = id; return _table.ReloadAsync(); }
+    private Task OnProblemsAsync(bool on) { _problemsOnly = on; return _table.ReloadAsync(); }
+
+    private Task ChangeOutcomeAsync(PromotionRowDto row, string outcome) =>
+        SaveAsync(row, new PromotionDecisionDto(row.StudentId, outcome, outcome is PromotionOutcomes.Promote or PromotionOutcomes.Repeat ? row.TargetClassId : null), outcome);
+
+    private Task ChangeTargetAsync(PromotionRowDto row, Guid? target) =>
+        SaveAsync(row, new PromotionDecisionDto(row.StudentId, row.Outcome, target), row.Outcome);
+
+    private async Task SaveAsync(PromotionRowDto row, PromotionDecisionDto decision, string outcome)
+    {
+        _error = null;
+        var ok = await ApiCalls.RunAsync(() => Promotion.SaveDecisionsAsync(RunId, new SavePromotionDecisionsRequest([decision])), Navigation, L, e => _error = e);
+        if (ok) _announcement = string.Format(L["Promo_Announce_Changed"].Value, CultureText.Pick(row.NameAr, row.NameEn), L[$"Promo_Outcome_{outcome}"].Value);
+        await RefreshAsync();
+    }
+
+    /// <summary>A bulk change by the current filter (never ids); <paramref name="outcome"/> null resets the filtered rows to the suggestion.</summary>
+    private async Task BulkAsync(string? outcome)
+    {
+        var effect = outcome is null ? L["Promo_Bulk_Reset_Effect"].Value : string.Format(L["Promo_Bulk_Effect"].Value, L[$"Promo_Outcome_{outcome}"].Value);
+        if (!await ConfirmEffectDialog.AskAsync(Dialogs, L["Promo_Bulk"], effect, string.Format(L["Promo_Count_Students"].Value, _total))) return;
+        _busy = true;
+        _error = null;
+        var ok = await ApiCalls.RunAsync(async () => await Promotion.SetOutcomeForFilterAsync(RunId, new SetPromotionOutcomeForFilterRequest(Filter(1, 1), outcome, null)), Navigation, L, e => _error = e);
+        _busy = false;
+        if (ok) _announcement = string.Format(L["Promo_Announce_Bulk"].Value, _total);
+        await RefreshAsync();
+    }
+
+    private async Task RefreshAsync()
+    {
+        var (run, _) = await ApiCalls.RunAsync(() => Promotion.GetRunAsync(RunId), Navigation);
+        if (run is not null) _run = run;
+        await _table.ReloadAsync();
+    }
+
+    private Task ContinueAsync()
+    {
+        Navigation.NavigateTo($"promotion/{RunId}/run");
+        return Task.CompletedTask;
+    }
+}

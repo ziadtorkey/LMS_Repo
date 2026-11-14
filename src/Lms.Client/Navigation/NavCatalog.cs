@@ -21,6 +21,7 @@ public static class NavCatalog
         new("Nav_LevelTypes", "level-types", Icons.Material.Rounded.Layers, Permissions.LevelTypes.View, Section: Structure),
         new("Nav_AcademicYears", "academic-years", Icons.Material.Rounded.CalendarMonth, Permissions.AcademicYears.View, Section: Structure),
         new("Nav_Templates", "templates", Icons.Material.Rounded.ContentCopy, Permissions.Templates.View, Section: Structure),
+        new("Nav_Promotion", "promotion", Icons.Material.Rounded.TrendingUp, Permissions.Promotion.Run, Section: Structure),
         new("Nav_Staff", "staff", Icons.Material.Rounded.Badge, Permissions.Staff.View, Section: People),
         new("Nav_Students", "students", Icons.Material.Rounded.School, Permissions.Students.View, Section: People),
         new("Nav_Guardians", "guardians", Icons.Material.Rounded.FamilyRestroom, Permissions.Students.View, Section: People),

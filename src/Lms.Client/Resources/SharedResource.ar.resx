@@ -1891,4 +1891,56 @@
   <data name="Job_Failed" xml:space="preserve"><value>لم تكتمل العملية. راجع النتيجة أدناه.</value></data>
   <data name="Job_PollFailed" xml:space="preserve"><value>تعذرت قراءة التقدم الآن. ستتم المحاولة مرة أخرى.</value></data>
   <data name="Confirm_TypeToConfirm" xml:space="preserve"><value>اكتب {0} للتأكيد</value></data>
+  <data name="Nav_Promotion" xml:space="preserve"><value>الترقية</value></data>
+  <data name="Promo_Title" xml:space="preserve"><value>الترقية</value></data>
+  <data name="Promo_Subtitle" xml:space="preserve"><value>انقل الطلاب إلى العام التالي بعد إغلاق العام.</value></data>
+  <data name="Promo_Steps" xml:space="preserve"><value>خطوات الترقية</value></data>
+  <data name="Promo_Step_Choose" xml:space="preserve"><value>الاختيار</value></data>
+  <data name="Promo_Step_Preview" xml:space="preserve"><value>المعاينة</value></data>
+  <data name="Promo_Step_Run" xml:space="preserve"><value>التنفيذ</value></data>
+  <data name="Promo_Source_Unit" xml:space="preserve"><value>الوحدة</value></data>
+  <data name="Promo_Source_Year" xml:space="preserve"><value>العام المراد الترقية منه</value></data>
+  <data name="Promo_Target_Year" xml:space="preserve"><value>العام المراد الترقية إليه</value></data>
+  <data name="Promo_No_Closed_Year" xml:space="preserve"><value>لا يوجد عام مغلق لهذه الوحدة بعد. يجب إغلاق العام قبل ترقية الطلاب.</value></data>
+  <data name="Promo_Include_SubUnits" xml:space="preserve"><value>تضمين الوحدات التابعة</value></data>
+  <data name="Promo_Choose_Help" xml:space="preserve"><value>لا يمكن ترقية إلا عام مغلق. يمكنك مراجعة كل طالب وتعديله قبل أن يحدث أي شيء.</value></data>
+  <data name="Promo_Create" xml:space="preserve"><value>معاينة الترقية</value></data>
+  <data name="Promo_State_Draft" xml:space="preserve"><value>هذه الترقية مسودة.</value></data>
+  <data name="Promo_State_Running" xml:space="preserve"><value>هذه الترقية قيد التنفيذ.</value></data>
+  <data name="Promo_State_Done" xml:space="preserve"><value>اكتملت هذه الترقية ولا يمكن تعديلها.</value></data>
+  <data name="Promo_State_PartiallyFailed" xml:space="preserve"><value>انتهت هذه الترقية مع بعض حالات الفشل ولا يمكن تعديلها.</value></data>
+  <data name="Promo_State_Undone" xml:space="preserve"><value>تم التراجع عن هذه الترقية.</value></data>
+  <data name="Promo_State_Failed" xml:space="preserve"><value>فشلت هذه الترقية.</value></data>
+  <data name="Promo_Outcome" xml:space="preserve"><value>النتيجة</value></data>
+  <data name="Promo_Outcome_Promote" xml:space="preserve"><value>ترقية</value></data>
+  <data name="Promo_Outcome_Repeat" xml:space="preserve"><value>إعادة</value></data>
+  <data name="Promo_Outcome_Graduate" xml:space="preserve"><value>تخرج</value></data>
+  <data name="Promo_Outcome_TransferOut" xml:space="preserve"><value>نقل خارجي</value></data>
+  <data name="Promo_Source_Class" xml:space="preserve"><value>الفصل الحالي</value></data>
+  <data name="Promo_Problems_Only" xml:space="preserve"><value>الطلاب الذين لديهم مشكلات فقط</value></data>
+  <data name="Promo_Bulk" xml:space="preserve"><value>تغيير عدد كبير دفعة واحدة</value></data>
+  <data name="Promo_Bulk_Set" xml:space="preserve"><value>تحديد النتيجة</value></data>
+  <data name="Promo_Bulk_Apply" xml:space="preserve"><value>تطبيق على {0} معروض</value></data>
+  <data name="Promo_Bulk_Reset" xml:space="preserve"><value>إعادة إلى المقترح</value></data>
+  <data name="Promo_Bulk_Effect" xml:space="preserve"><value>يحدد النتيجة {0} لكل طالب يطابق عوامل التصفية، وليس فقط من في هذه الصفحة.</value></data>
+  <data name="Promo_Bulk_Reset_Effect" xml:space="preserve"><value>يعيد كل طالب يطابق عوامل التصفية إلى النتيجة المقترحة.</value></data>
+  <data name="Promo_Count_Students" xml:space="preserve"><value>{0} طالب</value></data>
+  <data name="Promo_Empty_Title" xml:space="preserve"><value>لا يوجد طلاب مطابقون</value></data>
+  <data name="Promo_Empty_Text" xml:space="preserve"><value>غيّر عوامل التصفية لعرض المزيد من الطلاب.</value></data>
+  <data name="Promo_Student" xml:space="preserve"><value>الطالب</value></data>
+  <data name="Promo_Target_Class" xml:space="preserve"><value>الفصل التالي</value></data>
+  <data name="Promo_Problem" xml:space="preserve"><value>المشكلة</value></data>
+  <data name="Promo_Outcome_For" xml:space="preserve"><value>نتيجة {0}</value></data>
+  <data name="Promo_Target_For" xml:space="preserve"><value>الفصل التالي لـ {0}</value></data>
+  <data name="Promo_Target_Auto" xml:space="preserve"><value>تلقائي</value></data>
+  <data name="Promo_Target_None" xml:space="preserve"><value>لا يوجد</value></data>
+  <data name="Promo_Problem_Failed" xml:space="preserve"><value>يحتاج إلى معالجة</value></data>
+  <data name="Promo_Continue" xml:space="preserve"><value>متابعة</value></data>
+  <data name="Promo_Continue_Blocked" xml:space="preserve"><value>عالج المشكلات أعلاه للمتابعة.</value></data>
+  <data name="Promo_Announce_Changed" xml:space="preserve"><value>{0}: {1}</value></data>
+  <data name="Promo_Announce_Bulk" xml:space="preserve"><value>تم تغيير {0} طالب.</value></data>
+  <data name="Promo_Summary" xml:space="preserve"><value>الطلاب حسب النتيجة</value></data>
+  <data name="Promo_Blocking" xml:space="preserve"><value>عالج هذه المشكلات قبل المتابعة</value></data>
+  <data name="Promo_Warnings" xml:space="preserve"><value>للعلم</value></data>
+  <data name="Promo_Fix_Level_Mapping" xml:space="preserve"><value>تحديد المستوى التالي</value></data>
 </root>
