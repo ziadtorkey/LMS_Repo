@@ -21,6 +21,10 @@ public static class ClientCalendar
         }
     }
 
+    /// <summary>An instant as local wall-clock time.</summary>
+    public static DateTime ToLocal(DateTime utc, TimeZoneInfo? zone = null) =>
+        TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(utc, DateTimeKind.Utc), zone ?? Zone());
+
     /// <summary>The local day of an instant.</summary>
     public static DateOnly Today(DateTime utc, TimeZoneInfo? zone = null) =>
         DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(utc, DateTimeKind.Utc), zone ?? Zone()));

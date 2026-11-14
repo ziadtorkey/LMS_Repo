@@ -1,3 +1,4 @@
+using Bunit;
 using Lms.Client.Services;
 using Lms.Client.Tests.Support;
 using Lms.Shared.Me;
@@ -49,5 +50,16 @@ public sealed class ClientTimeZoneTests : ClientTestContext
         Api.Me = Api.Me with { Contexts = [] }; // a second read would now see no context
 
         Assert.Equal(new DateOnly(2026, 11, 15), await zone.TodayAsync(Instant)); // still Tokyo: cached for this context
+    }
+
+    [Fact]
+    public async Task LocalTime_shows_a_UTC_instant_in_the_client_zone_left_to_right()
+    {
+        await UseZoneAsync("Asia/Tokyo");
+
+        var cut = Render<Lms.Client.Components.Ui.LocalTime>(p => p.Add(x => x.Utc, Instant));
+
+        Assert.Equal("2026-11-15 01:00", cut.Find("span").TextContent); // 16:00 UTC is 01:00 on the 15th in Tokyo
+        Assert.Equal("ltr", cut.Find("span").GetAttribute("dir"));
     }
 }
