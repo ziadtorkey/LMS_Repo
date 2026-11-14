@@ -11,89 +11,106 @@
 @implements IDisposable
 
 <PageTitle>@L["Students_Title"]</PageTitle>
-<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4" Wrap="Wrap.Wrap">
-    <MudText Typo="Typo.h4" data-testid="students-title">@L["Students_Title"]</MudText>
-    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+<PageHeader Title="@L["Students_Title"]" Subtitle="@L["Students_Subtitle"]" TitleTestId="students-title">
+    <Actions>
         @if (PermState.Has(Permissions.Students.Import))
         {
-            <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.UploadFile" Href="students/import"
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.UploadFile" Href="students/import"
                        data-testid="student-import">@L["Import_Button"]</MudButton>
         }
         @if (PermState.Has(Permissions.Enrollment.Import))
         {
-            <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.GroupAdd" Href="classes/import"
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.GroupAdd" Href="classes/import"
                        data-testid="class-import">@L["ClassImport_Button"]</MudButton>
         }
         @if (PermState.Has(Permissions.Students.Create))
         {
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Href="students/new"
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Add" Href="students/new"
                        data-testid="student-new">@L["Students_New"]</MudButton>
         }
-    </MudStack>
-</MudStack>
+    </Actions>
+</PageHeader>
 
-<MudStack Row="true" Spacing="2" Class="mb-3" Wrap="Wrap.Wrap" AlignItems="AlignItems.Center">
-    <MudTextField T="string" Value="_searchText" ValueChanged="OnSearchChanged" Label="@L["Common_Search"]" Immediate="true"
-                  DebounceInterval="300" Clearable="true" data-testid="student-search" />
-    <MudItem xs="12" sm="3">
-        <UnitPicker Value="_unitId" ValueChanged="OnUnitChanged" Label="@L["Student_HomeUnit"]" Clearable="true" TestId="student-filter-unit" />
-    </MudItem>
-    <MudSelect T="string" Value="_status" ValueChanged="OnStatusChanged" Label="@L["Common_Status"]" Clearable="true"
-               data-testid="student-filter-status" Style="min-width: 10rem">
-        @foreach (var status in PersonStatuses.All)
-        {
-            <MudSelectItem T="string" Value="@status">@L[$"PersonStatus_{status}"]</MudSelectItem>
-        }
-    </MudSelect>
-    <MudSelect T="string" Value="_gender" ValueChanged="OnGenderChanged" Label="@L["Student_Gender"]" Clearable="true"
-               data-testid="student-filter-gender" Style="min-width: 10rem">
-        @foreach (var gender in Genders.All)
-        {
-            <MudSelectItem T="string" Value="@gender">@L[$"Gender_{gender}"]</MudSelectItem>
-        }
-    </MudSelect>
-    <MudCheckBox T="bool" Value="_unplaced" ValueChanged="OnUnplacedChanged" Label="@L["Student_Unplaced"]" data-testid="student-filter-unplaced" />
-</MudStack>
+<SectionCard Flush="true">
+    <div class="lms-filters" role="search" aria-label="@L["Common_Filters"]">
+        <div class="lms-filter lms-filter-search">
+            <MudTextField T="string" Value="_searchText" ValueChanged="OnSearchChanged" Label="@L["Common_Search"]" Immediate="true"
+                          DebounceInterval="300" Clearable="true" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Rounded.Search"
+                          data-testid="student-search" />
+        </div>
+        <div class="lms-filter">
+            <UnitPicker Value="_unitId" ValueChanged="OnUnitChanged" Label="@L["Student_HomeUnit"]" Clearable="true" TestId="student-filter-unit" />
+        </div>
+        <div class="lms-filter">
+            <MudSelect T="string" Value="_status" ValueChanged="OnStatusChanged" Label="@L["Common_Status"]" Clearable="true"
+                       data-testid="student-filter-status">
+                @foreach (var status in PersonStatuses.All)
+                {
+                    <MudSelectItem T="string" Value="@status">@L[$"PersonStatus_{status}"]</MudSelectItem>
+                }
+            </MudSelect>
+        </div>
+        <div class="lms-filter">
+            <MudSelect T="string" Value="_gender" ValueChanged="OnGenderChanged" Label="@L["Student_Gender"]" Clearable="true"
+                       data-testid="student-filter-gender">
+                @foreach (var gender in Genders.All)
+                {
+                    <MudSelectItem T="string" Value="@gender">@L[$"Gender_{gender}"]</MudSelectItem>
+                }
+            </MudSelect>
+        </div>
+        <div class="lms-filter">
+            <MudCheckBox T="bool" Value="_unplaced" ValueChanged="OnUnplacedChanged" Label="@L["Student_Unplaced"]" data-testid="student-filter-unplaced" />
+        </div>
+    </div>
 
-<ServerTable @ref="_table" T="StudentSummaryDto" ServerData="LoadAsync">
-    <HeaderContent>
-        <MudTh>@L["Person_Photo"]</MudTh>
-        <MudTh>@L["Student_Code"]</MudTh>
-        <MudTh>@L["Common_Name"]</MudTh>
-        <MudTh>@L["Student_Gender"]</MudTh>
-        <MudTh>@L["Student_DateOfBirth"]</MudTh>
-        <MudTh>@L["Student_HomeUnit"]</MudTh>
-        <MudTh>@L["Student_Class"]</MudTh>
-        <MudTh>@L["Student_PrimaryGuardian"]</MudTh>
-        <MudTh>@L["Common_Status"]</MudTh>
-    </HeaderContent>
-    <RowTemplate Context="student">
-        <MudTd><StaffAvatar PhotoFileId="student.PhotoFileId" Size="Size.Small" /></MudTd>
-        <MudTd><span dir="ltr">@student.StudentCode</span></MudTd>
-        <MudTd><MudLink Href="@($"students/{student.Id}")" data-testid="@($"student-link-{student.Id}")">@Culture.Pick(student.NameAr, student.NameEn)</MudLink></MudTd>
-        <MudTd>@L[$"Gender_{student.Gender}"]</MudTd>
-        <MudTd><span dir="ltr">@student.DateOfBirth.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)</span></MudTd>
-        <MudTd>@Culture.Pick(student.HomeOrgUnitNameAr, student.HomeOrgUnitNameEn)</MudTd>
-        <MudTd data-testid="@($"student-class-{student.Id}")">
-            @if (student.CurrentClassNameAr is not null)
-            {
-                @Culture.Pick(student.CurrentClassNameAr, student.CurrentClassNameEn ?? student.CurrentClassNameAr)
-            }
-            else
-            {
-                <MudChip T="string" Size="Size.Small" data-testid="@($"unplaced-chip-{student.Id}")">@L["Student_Unplaced"]</MudChip>
-            }
-        </MudTd>
-        <MudTd>
-            @if (student.PrimaryGuardianNameAr is not null)
-            {
-                <div>@Culture.Pick(student.PrimaryGuardianNameAr, student.PrimaryGuardianNameEn ?? student.PrimaryGuardianNameAr)</div>
-                <div dir="ltr" class="mud-typography-caption">@student.PrimaryGuardianMobile</div>
-            }
-        </MudTd>
-        <MudTd><PersonStatusChip Status="@student.Status" /></MudTd>
-    </RowTemplate>
-</ServerTable>
+    <ServerTable @ref="_table" T="StudentSummaryDto" ServerData="LoadAsync" EmptyTitle="@L["Students_EmptyTitle"]"
+                 EmptyText="@L["Students_EmptyText"]" EmptyIcon="@Icons.Material.Rounded.School">
+        <HeaderContent>
+            <MudTh>@L["Common_Name"]</MudTh>
+            <MudTh>@L["Student_Code"]</MudTh>
+            <MudTh>@L["Student_Gender"]</MudTh>
+            <MudTh>@L["Student_DateOfBirth"]</MudTh>
+            <MudTh>@L["Student_HomeUnit"]</MudTh>
+            <MudTh>@L["Student_Class"]</MudTh>
+            <MudTh>@L["Student_PrimaryGuardian"]</MudTh>
+            <MudTh>@L["Common_Status"]</MudTh>
+        </HeaderContent>
+        <RowTemplate Context="student">
+            <MudTd DataLabel="@L["Common_Name"]">
+                <div class="lms-person-cell">
+                    <StaffAvatar PhotoFileId="student.PhotoFileId" Name="@Culture.Pick(student.NameAr, student.NameEn)" Size="Size.Small" />
+                    <MudLink Href="@($"students/{student.Id}")" Typo="Typo.body2" Class="lms-person-link"
+                             data-testid="@($"student-link-{student.Id}")">@Culture.Pick(student.NameAr, student.NameEn)</MudLink>
+                </div>
+            </MudTd>
+            <MudTd DataLabel="@L["Student_Code"]"><span dir="ltr" class="lms-muted">@student.StudentCode</span></MudTd>
+            <MudTd DataLabel="@L["Student_Gender"]">@L[$"Gender_{student.Gender}"]</MudTd>
+            <MudTd DataLabel="@L["Student_DateOfBirth"]">
+                <span class="lms-date-cell"><span dir="ltr">@student.DateOfBirth.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)</span></span>
+            </MudTd>
+            <MudTd DataLabel="@L["Student_HomeUnit"]">@Culture.Pick(student.HomeOrgUnitNameAr, student.HomeOrgUnitNameEn)</MudTd>
+            <MudTd DataLabel="@L["Student_Class"]" data-testid="@($"student-class-{student.Id}")">
+                @if (student.CurrentClassNameAr is not null)
+                {
+                    @Culture.Pick(student.CurrentClassNameAr, student.CurrentClassNameEn ?? student.CurrentClassNameAr)
+                }
+                else
+                {
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Warning" data-testid="@($"unplaced-chip-{student.Id}")">@L["Student_Unplaced"]</MudChip>
+                }
+            </MudTd>
+            <MudTd DataLabel="@L["Student_PrimaryGuardian"]">
+                @if (student.PrimaryGuardianNameAr is not null)
+                {
+                    <div>@Culture.Pick(student.PrimaryGuardianNameAr, student.PrimaryGuardianNameEn ?? student.PrimaryGuardianNameAr)</div>
+                    <div dir="ltr" class="lms-muted">@student.PrimaryGuardianMobile</div>
+                }
+            </MudTd>
+            <MudTd DataLabel="@L["Common_Status"]"><PersonStatusChip Status="@student.Status" /></MudTd>
+        </RowTemplate>
+    </ServerTable>
+</SectionCard>
 
 @code {
     private ServerTable<StudentSummaryDto> _table = default!;

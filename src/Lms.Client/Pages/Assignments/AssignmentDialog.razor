@@ -1,0 +1,214 @@
+@using Lms.Client.Components.Assets
+@using Lms.Client.Components.Content
+@using Lms.Client.Components.Editors
+@using Lms.Client.Services.Api
+@using Lms.Shared
+@using Lms.Shared.Assignments
+@using Lms.Shared.Content
+@inject ICourseAssignmentsApi Api
+@inject IModulesApi Modules
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+@* Creates an assignment (and its lesson module) or edits one: instructions, attachments, due date, grade, late policy,
+   resubmission, target and publish/schedule (the module settings). *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="3">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" data-testid="assignment-error">@_error</MudAlert>
+            }
+            @if (Existing is null)
+            {
+                <MudSelect T="Guid?" @bind-Value="_model.LessonKey" Label="@L["Assignment_Lesson"]" Required="true" RequiredError="@L["Common_Required"]"
+                           Error="@(_lessonError is not null)" ErrorText="@_lessonError" data-testid="assignment-lesson">
+                    @foreach (var lesson in Lessons)
+                    {
+                        <MudSelectItem T="Guid?" Value="@((Guid?)lesson.Key)">@lesson.Title</MudSelectItem>
+                    }
+                </MudSelect>
+            }
+            <ModuleMetadataForm Model="_model.Module" Groups="Groups" Rules="_rules" VisibilityError="_visibilityError" TargetError="_targetError" />
+            @if (_model.Module.CompletionRule == CompletionRules.Score)
+            {
+                <MudNumericField T="decimal?" @bind-Value="_model.CompletionMinScore" Label="@L["Assignment_MinScore"]" Min="0m" Max="100m"
+                                 data-testid="assignment-minscore" />
+            }
+
+            <RichTextEditor Value="@_model.InstructionsAr" ValueChanged="v => _model.InstructionsAr = v" Label="@L["Assignment_InstructionsAr"]"
+                            ContentDir="rtl" TestId="assignment-instructions-ar" />
+            <RichTextEditor Value="@_model.InstructionsEn" ValueChanged="v => _model.InstructionsEn = v" Label="@L["Assignment_InstructionsEn"]"
+                            ContentDir="ltr" TestId="assignment-instructions-en" />
+
+            <MudStack Spacing="1" data-testid="assignment-attachments">
+                <MudText Typo="Typo.subtitle2">@L["Assignment_Attachments"]</MudText>
+                @foreach (var asset in _model.Attachments)
+                {
+                    var a = asset;
+                    <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                        <MudText Typo="Typo.body2" dir="auto">@a.FileName</MudText>
+                        <MudIconButton Icon="@Icons.Material.Rounded.Close" Size="Size.Small" aria-label="@L["Assignment_RemoveAttachment"]"
+                                       OnClick="() => _model.Attachments.Remove(a)" data-testid="@($"attachment-remove-{a.Id}")" />
+                    </MudStack>
+                }
+                @if (_model.Attachments.Count < MaxAttachments)
+                {
+                    <AssetUploader ClassCourseId="ClassCourseId" OnUploaded="OnUploaded" />
+                }
+            </MudStack>
+
+            <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                <MudDatePicker Date="_model.DueDate" DateChanged="d => _model.DueDate = d" Label="@L["Assignment_Due"]" Clearable="true"
+                               Error="@(_dueError is not null)" ErrorText="@_dueError" data-testid="assignment-due-date" />
+                <MudTimePicker Time="_model.DueTime" TimeChanged="t => _model.DueTime = t" Label="@L["Module_Time"]" data-testid="assignment-due-time" />
+            </MudStack>
+            <MudNumericField T="decimal" @bind-Value="_model.MaxGrade" Label="@L["Assignment_MaxGrade"]" Min="0.01m" Max="1000m"
+                             Error="@(_gradeError is not null)" ErrorText="@_gradeError" data-testid="assignment-maxgrade" />
+
+            <MudSelect T="string" Value="_model.LatePolicy" ValueChanged="OnLatePolicyChanged" Label="@L["Assignment_LatePolicy"]" data-testid="assignment-latepolicy">
+                @foreach (var p in LatePolicies.All)
+                {
+                    <MudSelectItem T="string" Value="@p">@L["LatePolicy_" + p]</MudSelectItem>
+                }
+            </MudSelect>
+            @if (_model.LatePolicy == LatePolicies.Penalty)
+            {
+                <MudNumericField T="int?" @bind-Value="_model.PenaltyPercent" Label="@L["Assignment_PenaltyPercent"]" Min="1" Max="100"
+                                 Required="true" Error="@(_penaltyError is not null)" ErrorText="@_penaltyError" data-testid="assignment-penalty" />
+            }
+            <MudSelect T="string" @bind-Value="_model.ResubmissionRule" Label="@L["Assignment_Resubmission"]" data-testid="assignment-resubmission">
+                @foreach (var r in ResubmissionRules.All)
+                {
+                    <MudSelectItem T="string" Value="@r">@L["ResubmissionRule_" + r]</MudSelectItem>
+                }
+            </MudSelect>
+            <MudStack Spacing="0">
+                <MudCheckBox T="bool" @bind-Value="_model.AllowText" Label="@L["Assignment_AllowText"]" data-testid="assignment-allow-text" />
+                <MudCheckBox T="bool" @bind-Value="_model.AllowFiles" Label="@L["Assignment_AllowFiles"]" data-testid="assignment-allow-files" />
+                @if (_submitTypeError is not null)
+                {
+                    <MudText Color="Color.Error" Typo="Typo.caption" role="alert" data-testid="assignment-submit-type-error">@_submitTypeError</MudText>
+                }
+            </MudStack>
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()">@L["Common_Cancel"]</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_saving" data-testid="assignment-save">@L["Common_Save"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private const int MaxAttachments = 10;
+    private static readonly IReadOnlyList<string> _rules = CompletionRules.ForActivity(ModuleKinds.Assignment);
+
+    private AssignmentFormModel _model = new();
+    private string? _error, _lessonError, _visibilityError, _targetError, _dueError, _gradeError, _penaltyError, _submitTypeError;
+    private bool _saving, _minScoreUnknown;
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter, EditorRequired] public Guid ClassCourseId { get; set; }
+    [Parameter] public CourseAssignmentDto? Existing { get; set; }
+    [Parameter] public IReadOnlyList<ModuleLessonOption> Lessons { get; set; } = [];
+    [Parameter] public IReadOnlyList<ModuleGroupOption> Groups { get; set; } = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Existing is null) return;
+        _model = AssignmentFormModel.From(Existing);
+        // The assignment carries no minimum score; it lives on the module. Read it so saving does not wipe it.
+        if (Existing.Module.CompletionRule == CompletionRules.Score)
+        {
+            try
+            {
+                _model.CompletionMinScore = (await Modules.GetAsync(Existing.Module.Id)).CompletionMinScore;
+            }
+            catch (Exception ex) when (ex is ApiProblemException or HttpRequestException)
+            {
+                _minScoreUnknown = true;
+                _error = L["Assignment_MinScoreUnknown"];
+            }
+        }
+    }
+
+    private void OnUploaded(AssetDto asset)
+    {
+        if (_model.Attachments.Count < MaxAttachments) _model.Attachments.Add(asset);
+    }
+
+    private void OnLatePolicyChanged(string policy)
+    {
+        _model.LatePolicy = policy;
+        if (policy != LatePolicies.Penalty) _model.PenaltyPercent = null;
+    }
+
+    private void ClearErrors() =>
+        _error = _lessonError = _visibilityError = _targetError = _dueError = _gradeError = _penaltyError = _submitTypeError = null;
+
+    // The same shape rules as the server, so the teacher sees them on the right field before anything is sent.
+    private bool Validate()
+    {
+        ClearErrors();
+        if (_minScoreUnknown) { _error = L["Assignment_MinScoreUnknown"]; return false; }
+        var ok = true;
+        if (string.IsNullOrWhiteSpace(_model.Module.TitleAr) || string.IsNullOrWhiteSpace(_model.Module.TitleEn)) { _error = L["Common_Required"]; ok = false; }
+        if (Existing is null && _model.LessonKey is null) { _lessonError = L["Common_Required"]; ok = false; }
+        if (_model.Module.Visibility == ModuleVisibilities.Scheduled)
+        {
+            var (from, to) = (_model.Module.FromUtc, _model.Module.ToUtcValue);
+            if ((from is null && to is null) || (from is { } f && to is { } t && f >= t)) { _visibilityError = L["Error_module_visibility_range_invalid"]; ok = false; }
+        }
+        if (_model.Module.Target == ModuleTargets.Group && _model.Module.GroupId is null) { _targetError = L["Error_module_target_invalid"]; ok = false; }
+        if (_model.MaxGrade is < 0.01m or > 1000m) { _gradeError = L["Assignment_MaxGradeInvalid"]; ok = false; }
+        if (_model.LatePolicy == LatePolicies.Penalty && _model.PenaltyPercent is not (>= 1 and <= 100)) { _penaltyError = L["Assignment_PenaltyRequired"]; ok = false; }
+        if (_model.LatePolicy == LatePolicies.Block && _model.DueUtc is null) { _dueError = L["Assignment_BlockNeedsDue"]; ok = false; }
+        if (!_model.AllowText && !_model.AllowFiles) { _submitTypeError = L["Assignment_NeedSubmitType"]; ok = false; }
+        return ok;
+    }
+
+    private async Task SaveAsync()
+    {
+        if (!Validate()) return;
+        _saving = true;
+        try
+        {
+            var m = _model;
+            var instructionsAr = RichTextHtml.IsEmpty(m.InstructionsAr) ? null : m.InstructionsAr;
+            var instructionsEn = RichTextHtml.IsEmpty(m.InstructionsEn) ? null : m.InstructionsEn;
+            CourseAssignmentDto saved = Existing is null
+                ? await Api.CreateAsync(ClassCourseId, new CreateCourseAssignmentRequest(m.LessonKey!.Value, m.ToModuleSettings(), instructionsAr, instructionsEn,
+                    m.AttachmentIds, m.DueUtc, m.MaxGrade, m.LatePolicy, m.PenaltyPercent, m.ResubmissionRule, m.AllowText, m.AllowFiles))
+                : await Api.UpdateAsync(Existing.Id, new UpdateCourseAssignmentRequest(m.ToModuleSettings(), instructionsAr, instructionsEn,
+                    m.AttachmentIds, m.DueUtc, m.MaxGrade, m.LatePolicy, m.PenaltyPercent, m.ResubmissionRule, m.AllowText, m.AllowFiles));
+            MudDialog.Close(DialogResult.Ok(saved));
+        }
+        catch (Exception ex) when (ApiCalls.TryRedirect(ex, Navigation))
+        {
+        }
+        catch (ApiProblemException ex) when (ex.Code == ProblemCodes.module_visibility_range_invalid)
+        {
+            _visibilityError = L["Error_module_visibility_range_invalid"];
+        }
+        catch (ApiProblemException ex) when (ex.Code == ProblemCodes.module_target_invalid)
+        {
+            _targetError = L["Error_module_target_invalid"];
+        }
+        catch (ApiProblemException ex) when (ex.Code == ProblemCodes.late_policy_invalid)
+        {
+            _penaltyError = L["Error_late_policy_invalid"];
+        }
+        catch (ApiProblemException ex)
+        {
+            _error = ProblemText.For(ex, L);
+        }
+        catch (HttpRequestException)
+        {
+            _error = L["Error_Generic"];
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+}

@@ -4,8 +4,8 @@
     {
         var n = i;
         var state = Failed && n == Current ? "failed" : n < Current ? "done" : n == Current ? "current" : "upcoming";
-        <li class="lms-step lms-step--@state" aria-current="@(n == Current ? "step" : null)" data-testid="@($"package-step-{n}")">
-            <span class="lms-step-dot" aria-hidden="true">
+        <li class="@StateClass(state)" aria-current="@(n == Current ? "step" : null)" data-testid="@($"package-step-{n}")">
+            <span class="lms-step-number" aria-hidden="true">
                 @if (state == "done")
                 {
                     <MudIcon Icon="@Icons.Material.Rounded.Check" Size="Size.Small" />
@@ -28,6 +28,9 @@
     /// <summary>The current step, 1 to 3.</summary>
     [Parameter] public int Current { get; set; } = 1;
     [Parameter] public bool Failed { get; set; }
+
+    /// <summary>The classes lms-activities.css defines for the steps: done and failed (the current one is styled by aria-current).</summary>
+    private static string? StateClass(string state) => state switch { "done" => "lms-step-done", "failed" => "lms-step-failed", _ => null };
 
     private static string Label(int step) => step switch { 1 => "Package_Step_Upload", 2 => "Package_Step_Check", _ => "Package_Step_Attach" };
 }
