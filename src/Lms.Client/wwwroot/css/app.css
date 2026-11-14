@@ -108,3 +108,9 @@ html:lang(ar), html:lang(ar) body { font-family: Cairo, "Segoe UI", Tahoma, Aria
 .lms-tt-dragging { user-select: none; touch-action: none; }
 .lms-tt-move-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-block-start: 8px; }
 @media (max-width: 599px) { .lms-tt-wrap { margin-inline: -4px; } }
+.lms-touch.mud-button-root, .lms-touch.mud-icon-button, .lms-touch { min-block-size: 44px; min-inline-size: 44px; }
+.lms-tt-menu-btn.lms-touch { min-block-size: 44px; min-inline-size: 44px; inset-block-start: 0; inset-inline-end: 0; }
+.lms-tt-add { display: grid; place-items: center; inline-size: 100%; block-size: 100%; min-block-size: 44px; border: 0; background: transparent; color: var(--mud-palette-text-secondary); border-radius: 6px; cursor: pointer; }
+.lms-tt-add:hover, .lms-tt-add:focus-visible { background: color-mix(in srgb, var(--mud-palette-primary) 8%, transparent); color: var(--mud-palette-primary); }
+.lms-tt-badges { display: flex; flex-wrap: wrap; gap: 4px; }
+.lms-tt-slot { padding-inline-end: 48px; }

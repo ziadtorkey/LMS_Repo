@@ -1,0 +1,250 @@
+@page "/classes/{ClassId:guid}/timetable"
+@attribute [Authorize]
+@using Lms.Client.Components
+@using Lms.Client.Components.Timetable
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.Timetable
+@using Lms.Shared.Authorization
+@using Lms.Shared.Classes
+@using Lms.Shared.Timetable
+@inject ITimetableApi Api
+@inject IClassCoursesApi CourseApi
+@inject IYearStore Years
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject IJSRuntime Js
+
+<PageTitle>@L["Tt_Page_Title"]</PageTitle>
+@if (!PermState.Loaded || _loading)
+{
+    <LoadingState Lines="6" TestId="tt-loading" />
+}
+else if (!PermState.Has(Permissions.Timetable.View))
+{
+    <Forbidden />
+}
+else if (_failed || _timetable is null)
+{
+    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="api-error">
+        @L["Api_Error"]
+        <MudButton Variant="Variant.Text" OnClick="LoadAsync">@L["Common_Retry"]</MudButton>
+    </MudAlert>
+}
+else
+{
+    <PageHeader Title="@L["Tt_Page_Title"]" Subtitle="@L["Tt_Page_Subtitle"]" TitleTestId="tt-title">
+        <Actions>
+            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.Download" Class="lms-touch" OnClick="ExportAsync" data-testid="tt-export">@L["Tt_Export"]</MudButton>
+            @if (CanManage)
+            {
+                <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.ContentCopy" Class="lms-touch" OnClick="CopyAsync" data-testid="tt-copy">@L["Tt_Copy_Open"]</MudButton>
+                <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.Rule" Class="lms-touch" OnClick="ValidateAsync" data-testid="tt-validate">@L["Tt_Validate"]</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Publish" Class="lms-touch" OnClick="PublishAsync"
+                           Disabled="@(_timetable.DraftCount == 0)" data-testid="tt-publish">@L["Tt_Publish"]</MudButton>
+            }
+        </Actions>
+    </PageHeader>
+
+    <div class="lms-filters mb-3" role="search" aria-label="@L["Common_Filters"]">
+        <div class="lms-filter">
+            <MudSelect T="Guid?" Value="_termId" ValueChanged="OnTermChanged" Label="@L["Tt_Term"]" Variant="Variant.Outlined" data-testid="tt-term">
+                @foreach (var t in Terms)
+                {
+                    <MudSelectItem T="Guid?" Value="@((Guid?)t.Id)">@Culture.Pick(t.NameAr, t.NameEn)</MudSelectItem>
+                }
+            </MudSelect>
+        </div>
+        <div class="lms-filter">
+            <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@(_timetable.DraftCount == 0 ? Color.Success : Color.Warning)" Class="lms-status-chip" data-testid="tt-state">
+                @(_timetable.DraftCount == 0 ? L["Tt_State_Published"].Value : string.Format(L["Tt_State_Drafts"], _timetable.DraftCount))
+            </MudChip>
+            <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" data-testid="tt-mode">@L[_timetable.ConflictMode == ConflictModes.Block ? "Tt_Mode_Block" : "Tt_Mode_Warn"]</MudChip>
+        </div>
+    </div>
+
+    @if (_validation is not null)
+    {
+        <SectionCard Title="@L["Tt_Conflicts_Title"]" TestId="tt-conflicts" Class="mb-3">
+            @if (_validation.Conflicts.Count == 0)
+            {
+                <MudText Typo="Typo.body2" data-testid="tt-conflicts-none">@L["Tt_Conflicts_None"]</MudText>
+            }
+            else
+            {
+                <ul class="lms-excuse-covered" data-testid="tt-conflicts-list">
+                    @foreach (var c in _validation.Conflicts)
+                    {
+                        <li>@TimetableConflictText.Describe([c], L, Culture)</li>
+                    }
+                </ul>
+            }
+        </SectionCard>
+    }
+
+    <SectionCard Title="@L["Tt_Grid_Label"]">
+        <TimetableGrid Timetable="_timetable" CanManage="CanManage" ClashSlotIds="_clashIds" ClashText="@_clashText" Announcement="@_announcement"
+                       OnMove="MoveAsync" OnAdd="AddAsync" OnEdit="EditAsync" OnDelete="DeleteAsync" />
+    </SectionCard>
+}
+
+@code {
+    private ClassTimetableDto? _timetable;
+    private IReadOnlyList<ClassCourseDto> _courses = [];
+    private TimetableValidationDto? _validation;
+    private HashSet<Guid> _clashIds = [];
+    private string? _clashText, _announcement;
+    private Guid? _termId;
+    private bool _loading = true, _failed;
+
+    [Parameter] public Guid ClassId { get; set; }
+
+    private bool CanManage => PermState.Has(Permissions.Timetable.Manage) && !Years.IsReadOnly;
+
+    private IReadOnlyList<Lms.Shared.AcademicYears.TermDto> Terms => Years.Selected?.Terms.OrderBy(t => t.Order).ToList() ?? [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        if (Years.Selected is null) await Years.LoadAsync();
+        _termId = Terms.FirstOrDefault(t => t.IsCurrent)?.Id ?? Terms.FirstOrDefault()?.Id;
+        if (PermState.Has(Permissions.Timetable.View)) await LoadAsync();
+        else _loading = false;
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _failed = false;
+        if (_termId is not { } term) { _failed = true; _loading = false; return; }
+        var (value, failed) = await ApiCalls.RunAsync(() => Api.GetClassTimetableAsync(ClassId, term), Navigation);
+        _timetable = value;
+        _failed = failed;
+        if (_courses.Count == 0 && CanManage)
+        {
+            var (courses, _) = await ApiCalls.RunAsync(() => CourseApi.ListForClassAsync(ClassId), Navigation);
+            _courses = courses ?? [];
+        }
+
+        _loading = false;
+    }
+
+    private Task OnTermChanged(Guid? term)
+    {
+        _termId = term;
+        _validation = null;
+        Forget();
+        return LoadAsync();
+    }
+
+    private void Forget()
+    {
+        _clashIds = [];
+        _clashText = null;
+        _announcement = null;
+    }
+
+    /// <summary>The one save path of a move: the answer of the server is shown as it is (refused, or saved with warnings).</summary>
+    private async Task MoveAsync(SlotMove move)
+    {
+        Forget();
+        var s = move.Slot;
+        if (s.DayOfWeek == move.Day && s.PeriodId == move.PeriodId) return;
+        var request = new SaveSlotRequest(s.ClassCourseId, s.TermId, s.TeacherUserId, move.Day, move.PeriodId, s.RoomName, s.Version);
+        try
+        {
+            var result = await Api.UpdateSlotAsync(ClassId, s.Id, request);
+            await ShowWarningsAsync(result);
+            _announcement = string.Format(L["Tt_Moved"], Culture.Pick(s.CourseNameAr, s.CourseNameEn), Culture.Current.DateTimeFormat.GetDayName(move.Day));
+            await LoadAsync();
+        }
+        catch (ApiProblemException ex) when (ex.Code == "timetable_conflict")
+        {
+            _clashIds = ex.Conflicts.Where(c => c.SlotId is not null).Select(c => c.SlotId!.Value).ToHashSet();
+            _clashText = TimetableConflictText.Describe(ex.Conflicts, L, Culture);
+            _announcement = L["Tt_Refused"];
+        }
+        catch (ApiProblemException ex) when (ex.Code == "concurrency_conflict")
+        {
+            _clashText = L["Error_concurrency_conflict"]; // someone changed it first: show the newer timetable
+            await LoadAsync();
+        }
+        catch (Exception ex) when (ex is ApiProblemException or HttpRequestException)
+        {
+            _clashText = L["Api_Error"];
+        }
+    }
+
+    private Task ShowWarningsAsync(SaveSlotResultDto result)
+    {
+        if (result.Warnings.Count == 0) return Task.CompletedTask;
+        _clashIds = result.Warnings.Where(w => w.SlotId is not null).Select(w => w.SlotId!.Value).Append(result.Slot.Id).ToHashSet();
+        _clashText = TimetableConflictText.Describe(result.Warnings, L, Culture); // Warn mode: saved, with its clashes shown
+        return Task.CompletedTask;
+    }
+
+    private async Task AddAsync((DayOfWeek Day, Guid PeriodId) cell) => await OpenSlotDialogAsync(null, cell.Day, cell.PeriodId);
+
+    private async Task EditAsync(SlotDto slot) => await OpenSlotDialogAsync(slot, slot.DayOfWeek, slot.PeriodId);
+
+    private async Task OpenSlotDialogAsync(SlotDto? existing, DayOfWeek day, Guid periodId)
+    {
+        if (_termId is not { } term) return;
+        var dialog = await Dialogs.ShowAsync<SlotDialog>(L[existing is null ? "Tt_Add_Title" : "Tt_Edit_Title"],
+            new DialogParameters<SlotDialog> { { x => x.ClassId, ClassId }, { x => x.TermId, term }, { x => x.Courses, _courses }, { x => x.Day, day }, { x => x.PeriodId, periodId }, { x => x.Existing, existing } },
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        if (await dialog.Result is { Canceled: false, Data: SaveSlotResultDto saved })
+        {
+            Forget();
+            await ShowWarningsAsync(saved);
+            await LoadAsync();
+        }
+    }
+
+    private async Task DeleteAsync(SlotDto slot)
+    {
+        if (!await ConfirmDialog.AskAsync(Dialogs, L["Tt_Delete_Title"], string.Format(L["Tt_Delete_Confirm"], Culture.Pick(slot.CourseNameAr, slot.CourseNameEn)), L["Common_Delete"])) return;
+        var ok = await ApiCalls.RunAsync(() => Api.DeleteSlotAsync(ClassId, slot.Id), Navigation, L, message => Snackbar.Add(message, Severity.Error));
+        if (ok) { Forget(); await LoadAsync(); }
+    }
+
+    private async Task PublishAsync()
+    {
+        if (_timetable is not { } t || _termId is not { } term) return;
+        var dialog = await Dialogs.ShowAsync<PublishTimetableDialog>(L["Tt_Publish"], new DialogParameters<PublishTimetableDialog> { { x => x.DraftCount, t.DraftCount } },
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        if (await dialog.Result is not { Canceled: false }) return;
+        var (result, failed) = await ApiCalls.RunAsync(() => Api.PublishAsync(ClassId, new PublishTimetableRequest(term)), Navigation);
+        if (failed || result is null) return;
+        Snackbar.Add(result.GenerationQueued ? string.Format(L["Tt_Published_Queued"], result.Published) : string.Format(L["Tt_Published"], result.Published), Severity.Success);
+        await LoadAsync();
+    }
+
+    private async Task CopyAsync()
+    {
+        if (_termId is not { } term) return;
+        var dialog = await Dialogs.ShowAsync<CopyTermDialog>(L["Tt_Copy_Open"], new DialogParameters<CopyTermDialog> { { x => x.ClassId, ClassId }, { x => x.TargetTermId, term }, { x => x.Terms, Terms } },
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        if (await dialog.Result is { Canceled: false }) await LoadAsync();
+    }
+
+    private async Task ValidateAsync()
+    {
+        if (_termId is not { } term) return;
+        var (result, _) = await ApiCalls.RunAsync(() => Api.ValidateAsync(ClassId, term), Navigation);
+        _validation = result;
+    }
+
+    private async Task ExportAsync()
+    {
+        if (_termId is not { } term) return;
+        await ApiCalls.RunAsync(async () =>
+        {
+            var (content, fileName) = await Api.ExportAsync(ClassId, term);
+            using var reference = new DotNetStreamReference(content);
+            await Js.InvokeVoidAsync("lmsDownloadFile", fileName, reference);
+        }, Navigation, L, message => Snackbar.Add(message, Severity.Error));
+    }
+}

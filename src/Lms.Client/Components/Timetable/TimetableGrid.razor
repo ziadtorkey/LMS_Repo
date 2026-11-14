@@ -1,60 +1,80 @@
 @using System.Globalization
-@using Lms.Client.Services.Timetable
+@using Lms.Shared.Timetable
 @implements IAsyncDisposable
 @inject IJSRuntime Js
 @inject ICultureService Culture
 
-@* Weekly timetable grid (spike S3, M5 Task 31). Rows are periods, columns the working days in reading order, so the week runs right to left
-   in Arabic (the table takes dir from the culture) while the times stay left to right. A lesson moves in three equivalent ways:
-   keyboard (M or Enter picks it up, arrows choose the place, Enter drops, Escape cancels), the "Move to" menu, and a pointer drag. *@
+@* The weekly timetable of a class (M5 Task 31). Rows are periods, columns the working days in reading order, so the week runs right to left in Arabic
+   (the table takes dir from the culture) while the times stay left to right. A lesson moves in three equivalent ways: the keyboard (M, or Enter, picks
+   it up; the arrows choose the place; Enter drops; Escape cancels), the "Move to" menu, and a pointer drag. Conflicts are shown from the server's answer
+   only: the parent passes the clashing lesson ids and the message. *@
 <div class="lms-tt-wrap" data-testid="tt-wrap">
-    <div class="lms-visually-hidden" role="status" aria-live="polite" data-testid="tt-live">@_announcement</div>
+    <div class="lms-visually-hidden" role="status" aria-live="polite" data-testid="tt-live">@(_announcement ?? Announcement)</div>
 
-    <table @ref="_grid" class="lms-tt" role="grid" dir="@(Culture.IsRightToLeft ? "rtl" : "ltr")" aria-label="@L["Tt_Grid_Label"]" data-testid="tt-grid">
+    <table @ref="_grid" class="lms-tt" role="grid" dir="@(Culture.IsRightToLeft ? "rtl" : "ltr")" aria-label="@L["Tt_Grid_Label"]" aria-describedby="tt-hint" data-testid="tt-grid">
         <thead>
             <tr>
                 <th scope="col" class="lms-tt-corner"><span class="lms-visually-hidden">@L["Tt_Period_Header"]</span></th>
-                @foreach (var day in Timetable.Days)
+                @foreach (var day in Days)
                 {
                     <th scope="col" data-testid="@($"tt-day-{(int)day}")">@DayName(day)</th>
                 }
             </tr>
         </thead>
         <tbody>
-            @for (var period = 1; period <= Timetable.Periods; period++)
+            @foreach (var period in Periods)
             {
                 var p = period;
                 <tr>
                     <th scope="row" class="lms-tt-period">
-                        <span class="lms-tt-period-name">@string.Format(L["Tt_Period_N"], p)</span>
-                        <span class="lms-tt-time" dir="ltr">@SpikeTimetable.StartOf(p)–@SpikeTimetable.EndOf(p)</span>
+                        <span class="lms-tt-period-name">@Culture.Pick(p.NameAr, p.NameEn)</span>
+                        <span class="lms-tt-time" dir="ltr">@p.StartTime.ToString("HH:mm")–@p.EndTime.ToString("HH:mm")</span>
                     </th>
-                    @foreach (var day in Timetable.Days)
+                    @foreach (var day in Days)
                     {
                         var d = (int)day;
-                        var slot = Timetable.At(d, p);
-                        <td role="gridcell" class="@CellClass(d, p, slot)" tabindex="@(IsFocus(d, p) ? 0 : -1)"
-                            data-cell data-day="@d" data-period="@p" data-testid="@($"tt-cell-{d}-{p}")"
-                            aria-label="@CellLabel(day, p, slot)">
-                            @if (slot is not null)
+                        var cellSlots = SlotsAt(day, p.Id);
+                        <td role="gridcell" class="@CellClass(d, p.Id, cellSlots)" tabindex="@(IsFocus(d, p.Id) ? 0 : -1)"
+                            data-cell data-day="@d" data-period="@p.Id" data-testid="@($"tt-cell-{d}-{p.Order}")"
+                            aria-label="@CellLabel(day, p, cellSlots.FirstOrDefault())">
+                            @foreach (var slot in cellSlots) // two lessons share a cell only in Warn mode, after a saved clash: both stay visible
                             {
                                 <div class="@SlotClass(slot)" data-slot="@slot.Id" data-testid="@($"tt-slot-{slot.Id}")">
-                                    <span class="lms-tt-course">@slot.Course</span>
-                                    <span class="lms-tt-meta">@slot.Teacher</span>
-                                    @if (!string.IsNullOrWhiteSpace(slot.Room))
+                                    <span class="lms-tt-course">@Culture.Pick(slot.CourseNameAr, slot.CourseNameEn)</span>
+                                    <span class="lms-tt-meta">@slot.TeacherName</span>
+                                    @if (!string.IsNullOrWhiteSpace(slot.RoomName))
                                     {
-                                        <span class="lms-tt-meta" data-testid="@($"tt-room-{slot.Id}")">@slot.Room</span>
+                                        <span class="lms-tt-meta" data-testid="@($"tt-room-{slot.Id}")">@slot.RoomName</span>
                                     }
-                                    @if (_warnings.Contains(slot.Id))
+                                    <span class="lms-tt-badges">
+                                        @if (slot.State == SlotStates.Draft)
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" data-testid="@($"tt-draft-{slot.Id}")">@L["Tt_State_Draft"]</MudChip>
+                                        }
+                                        @if (slot.Badges.Contains(SlotBadges.Conflict))
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Warning" Class="lms-status-chip" data-testid="@($"tt-warn-{slot.Id}")">@L["Tt_Warn_Chip"]</MudChip>
+                                        }
+                                        @if (slot.Badges.Contains(SlotBadges.HasException))
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Info" data-testid="@($"tt-exception-{slot.Id}")">@L["Tt_Has_Exception"]</MudChip>
+                                        }
+                                    </span>
+                                    @if (CanManage)
                                     {
-                                        <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Warning" Class="lms-status-chip"
-                                                 data-testid="@($"tt-warn-{slot.Id}")">@L["Tt_Warn_Chip"]</MudChip>
+                                        <button type="button" class="lms-tt-menu-btn lms-touch" data-menu @onclick="() => OpenMenu(slot)"
+                                                aria-label="@string.Format(L["Tt_Slot_Move"], Culture.Pick(slot.CourseNameAr, slot.CourseNameEn))" data-testid="@($"tt-menu-{slot.Id}")">
+                                            <MudIcon Icon="@Icons.Material.Rounded.OpenWith" Size="Size.Small" />
+                                        </button>
                                     }
-                                    <button type="button" class="lms-tt-menu-btn" data-menu @onclick="() => OpenMenu(slot)"
-                                            aria-label="@string.Format(L["Tt_Slot_Move"], slot.Course)" data-testid="@($"tt-menu-{slot.Id}")">
-                                        <MudIcon Icon="@Icons.Material.Rounded.OpenWith" Size="Size.Small" />
-                                    </button>
                                 </div>
+                            }
+                            @if (cellSlots.Count == 0 && CanManage)
+                            {
+                                <button type="button" class="lms-tt-add lms-touch" data-add @onclick="() => OnAdd.InvokeAsync((day, p.Id))"
+                                        aria-label="@string.Format(L["Tt_Add_Lesson"], DayName(day), Culture.Pick(p.NameAr, p.NameEn))" data-testid="@($"tt-add-{d}-{p.Order}")">
+                                    <MudIcon Icon="@Icons.Material.Rounded.Add" Size="Size.Small" />
+                                </button>
                             }
                         </td>
                     }
@@ -63,16 +83,16 @@
         </tbody>
     </table>
 
-    @if (_conflictText is not null)
+    @if (ClashText is not null)
     {
-        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mt-3" data-testid="tt-conflict">@_conflictText</MudAlert>
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mt-3" data-testid="tt-conflict">@ClashText</MudAlert>
     }
 
-    <p class="lms-muted mt-3" data-testid="tt-hint">@L["Tt_Hint"]</p>
+    <p id="tt-hint" class="lms-muted mt-3" data-testid="tt-hint">@L["Tt_Hint"]</p>
 
     @if (_menuFor is not null)
     {
-        <MoveToMenu Slot="_menuFor" Days="Timetable.Days" Periods="Timetable.Periods" OnMove="MoveToAsync" OnClose="CloseMenu" />
+        <MoveToMenu Slot="_menuFor" Days="Days" Periods="Periods" OnMove="MoveFromMenuAsync" OnEdit="EditAsync" OnDelete="DeleteAsync" OnClose="CloseMenu" />
     }
 </div>
 
@@ -81,17 +101,42 @@
     private IJSObjectReference? _module;
     private IJSObjectReference? _handle;
     private DotNetObjectReference<TimetableGrid>? _self;
-    private (int Day, int Period) _focus;
-    private SpikeSlot? _held, _menuFor;
-    private string _announcement = "";
-    private string? _conflictText;
-    private IReadOnlySet<Guid> _warnings = new HashSet<Guid>();
-    private HashSet<Guid> _clashing = [];
+    private (int Day, Guid Period) _focus;
+    private SlotDto? _held, _menuFor;
+    private string? _announcement;
     private bool _needFocus;
 
-    [Parameter, EditorRequired] public SpikeTimetable Timetable { get; set; } = default!;
+    [Parameter, EditorRequired] public ClassTimetableDto Timetable { get; set; } = default!;
+    [Parameter] public bool CanManage { get; set; }
 
-    protected override void OnInitialized() => _focus = ((int)Timetable.Days[0], 1);
+    /// <summary>The lessons the server named as clashing in its last answer.</summary>
+    [Parameter] public ISet<Guid> ClashSlotIds { get; set; } = new HashSet<Guid>();
+
+    /// <summary>The server's answer in words (a refusal or the clashes of a saved move).</summary>
+    [Parameter] public string? ClashText { get; set; }
+
+    /// <summary>What the live region says after the parent saved a move.</summary>
+    [Parameter] public string? Announcement { get; set; }
+
+    [Parameter] public EventCallback<SlotMove> OnMove { get; set; }
+    [Parameter] public EventCallback<(DayOfWeek Day, Guid PeriodId)> OnAdd { get; set; }
+    [Parameter] public EventCallback<SlotDto> OnEdit { get; set; }
+    [Parameter] public EventCallback<SlotDto> OnDelete { get; set; }
+
+    private IReadOnlyList<DayOfWeek> Days => Timetable.WorkingDays.Select(ToDay).Where(d => d is not null).Select(d => d!.Value).ToList();
+    private IReadOnlyList<PeriodDto> Periods => Timetable.Periods.OrderBy(p => p.Order).ToList();
+
+    private static DayOfWeek? ToDay(string name) => name switch
+    {
+        WorkingDayNames.Sunday => DayOfWeek.Sunday, WorkingDayNames.Monday => DayOfWeek.Monday, WorkingDayNames.Tuesday => DayOfWeek.Tuesday,
+        WorkingDayNames.Wednesday => DayOfWeek.Wednesday, WorkingDayNames.Thursday => DayOfWeek.Thursday, WorkingDayNames.Friday => DayOfWeek.Friday,
+        WorkingDayNames.Saturday => DayOfWeek.Saturday, _ => null,
+    };
+
+    protected override void OnInitialized()
+    {
+        if (Days.Count > 0 && Periods.Count > 0) _focus = ((int)Days[0], Periods[0].Id);
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -114,33 +159,38 @@
         }
     }
 
-    private bool IsFocus(int day, int period) => _focus.Day == day && _focus.Period == period;
+    private SlotDto? SlotAt(DayOfWeek day, Guid periodId) => Timetable.Slots.FirstOrDefault(s => s.DayOfWeek == day && s.PeriodId == periodId);
+
+    private List<SlotDto> SlotsAt(DayOfWeek day, Guid periodId) => Timetable.Slots.Where(s => s.DayOfWeek == day && s.PeriodId == periodId).ToList();
+
+    private bool IsFocus(int day, Guid period) => _focus.Day == day && _focus.Period == period;
 
     private string DayName(DayOfWeek day) => Culture.Current.DateTimeFormat.GetDayName(day);
 
-    private string CellLabel(DayOfWeek day, int period, SpikeSlot? slot) => slot is null
-        ? string.Format(L["Tt_Empty_Cell"], DayName(day), period)
-        : string.Format(L["Tt_Slot_Cell"], slot.Course, slot.Teacher, DayName(day), period);
+    private string CellLabel(DayOfWeek day, PeriodDto period, SlotDto? slot) => slot is null
+        ? string.Format(L["Tt_Empty_Cell"], DayName(day), Culture.Pick(period.NameAr, period.NameEn))
+        : string.Format(L["Tt_Slot_Cell"], Culture.Pick(slot.CourseNameAr, slot.CourseNameEn), slot.TeacherName, DayName(day), Culture.Pick(period.NameAr, period.NameEn));
 
-    private string CellClass(int day, int period, SpikeSlot? slot) =>
-        "lms-tt-cell" + (IsFocus(day, period) && _held is not null ? " lms-tt-target" : "") + (slot is not null && _clashing.Contains(slot.Id) ? " lms-tt-clash" : "");
+    private string CellClass(int day, Guid period, List<SlotDto> slots) =>
+        "lms-tt-cell" + (IsFocus(day, period) && _held is not null ? " lms-tt-target" : "") + (slots.Any(s => ClashSlotIds.Contains(s.Id)) ? " lms-tt-clash" : "");
 
-    private string SlotClass(SpikeSlot slot) => "lms-tt-slot" + (_held?.Id == slot.Id ? " lms-tt-held" : "");
-
-    private int DayIndex(int day) => Timetable.Days.ToList().IndexOf((DayOfWeek)day);
+    private string SlotClass(SlotDto slot) => "lms-tt-slot" + (_held?.Id == slot.Id ? " lms-tt-held" : "");
 
     private void Step(int dx, int dy)
     {
-        var days = Timetable.Days;
-        var di = Math.Clamp(DayIndex(_focus.Day) + dx, 0, days.Count - 1);
-        _focus = ((int)days[di], Math.Clamp(_focus.Period + dy, 1, Timetable.Periods));
+        var days = Days;
+        var periods = Periods;
+        var di = Math.Clamp(days.ToList().IndexOf((DayOfWeek)_focus.Day) + dx, 0, days.Count - 1);
+        var pi = Math.Clamp(periods.ToList().FindIndex(p => p.Id == _focus.Period) + dy, 0, periods.Count - 1);
+        _focus = ((int)days[di], periods[pi].Id);
     }
 
     /// <summary>A key pressed on the grid, forwarded by the JS module (it prevents the default for these keys only).</summary>
     [JSInvokable]
-    public async Task OnKey(string key, int day, int period)
+    public async Task OnKey(string key, string code, int day, string period)
     {
-        if (_held is null) _focus = (day, period); // while carrying a lesson the focus is the target and only the arrows move it
+        if (_held is null && Guid.TryParse(period, out var pid)) _focus = (day, pid); // while carrying a lesson the focus is the target
+        var pickUp = code == "KeyM" || key is "m" or "M"; // by physical key, so an Arabic layout works
         switch (key)
         {
             case "ArrowRight" or "ArrowLeft":
@@ -148,25 +198,16 @@
                 break;
             case "ArrowDown": Step(0, 1); break;
             case "ArrowUp": Step(0, -1); break;
-            case "Home": _focus = ((int)Timetable.Days[0], _focus.Period); break;
-            case "End": _focus = ((int)Timetable.Days[^1], _focus.Period); break;
-            case "m" or "M" or "Enter" or " ":
-                if (_held is not null)
-                {
-                    if (key is "Enter" or " ") await MoveToAsync(_held.Id, _focus.Day, _focus.Period);
-                }
-                else if (Timetable.At(_focus.Day, _focus.Period) is { } slot)
-                {
-                    _held = slot;
-                    _announcement = string.Format(L["Tt_Held"], slot.Course);
-                }
-
-                break;
-            case "F2":
-                if (Timetable.At(_focus.Day, _focus.Period) is { } menuSlot) _menuFor = menuSlot;
-                break;
+            case "Home": _focus = ((int)Days[0], _focus.Period); break;
+            case "End": _focus = ((int)Days[^1], _focus.Period); break;
             case "Escape":
                 if (_held is not null) { _held = null; _announcement = L["Tt_Cancelled"]; }
+                break;
+            case "F2":
+                if (CanManage && SlotAt((DayOfWeek)_focus.Day, _focus.Period) is { } menuSlot) _menuFor = menuSlot;
+                break;
+            default:
+                if (pickUp || key is "Enter" or " ") await PickUpOrDropAsync(key);
                 break;
         }
 
@@ -174,45 +215,59 @@
         StateHasChanged();
     }
 
-    /// <summary>A pointer drop, forwarded by the JS module.</summary>
-    [JSInvokable]
-    public Task OnDrop(string slotId, int day, int period) => MoveToAsync(Guid.Parse(slotId), day, period);
-
-    /// <summary>The one move path: keyboard drop, the menu and a drag all end here, and show the answer of the (mock) server.</summary>
-    public async Task MoveToAsync(Guid slotId, int day, int period)
+    private async Task PickUpOrDropAsync(string key)
     {
-        var slot = Timetable.Find(slotId);
-        if (slot is null) return;
-        var result = Timetable.Move(slotId, day, period);
-        _held = null;
-        _menuFor = null;
-        _clashing = [];
-        _conflictText = null;
-        _warnings = Timetable.Warnings();
-        if (result.Saved)
+        if (_held is not null)
         {
-            _focus = (day, period);
-            _announcement = string.Format(L["Tt_Moved"], slot.Course, DayName((DayOfWeek)day), period);
+            if (key is "Enter" or " ") await DropAsync(_held, (DayOfWeek)_focus.Day, _focus.Period);
         }
-        else
+        else if (!CanManage)
         {
-            _focus = (slot.Day, slot.Period);
-            _announcement = L["Tt_Refused"];
+            return;
         }
-
-        if (result.Conflicts.Count > 0)
+        else if (SlotAt((DayOfWeek)_focus.Day, _focus.Period) is { } slot)
         {
-            _clashing = result.Conflicts.Select(c => c.Other.Id).ToHashSet();
-            _conflictText = string.Join(" ", result.Conflicts.Select(c => c.Kind == SpikeConflict.ClassDoubleBooked
-                ? string.Format(L["Tt_Clash_Class"], c.Other.Course)
-                : string.Format(L["Tt_Clash_Teacher"], c.Other.Teacher, DayName((DayOfWeek)day))));
+            _held = slot;
+            _announcement = string.Format(L["Tt_Held"], Culture.Pick(slot.CourseNameAr, slot.CourseNameEn));
         }
-
-        _needFocus = true;
-        await InvokeAsync(StateHasChanged);
+        else if (key is "Enter" or " ")
+        {
+            await OnAdd.InvokeAsync(((DayOfWeek)_focus.Day, _focus.Period)); // Enter on an empty cell adds a lesson there
+        }
     }
 
-    private void OpenMenu(SpikeSlot slot) => _menuFor = slot;
+    /// <summary>A pointer drop, forwarded by the JS module.</summary>
+    [JSInvokable]
+    public async Task OnDrop(string slotId, int day, string period)
+    {
+        if (!CanManage || !Guid.TryParse(period, out var pid)) return;
+        if (Timetable.Slots.FirstOrDefault(s => s.Id == Guid.Parse(slotId)) is { } slot) await DropAsync(slot, (DayOfWeek)day, pid);
+    }
+
+    /// <summary>The one move path: keyboard drop, the menu and a drag all end here; the parent saves it and shows the server's answer.</summary>
+    public async Task DropAsync(SlotDto slot, DayOfWeek day, Guid periodId)
+    {
+        _held = null;
+        _menuFor = null;
+        _announcement = null;
+        _focus = ((int)day, periodId);
+        _needFocus = true;
+        await OnMove.InvokeAsync(new SlotMove(slot, day, periodId));
+    }
+
+    private Task MoveFromMenuAsync((DayOfWeek Day, Guid PeriodId) target) => _menuFor is { } slot ? DropAsync(slot, target.Day, target.PeriodId) : Task.CompletedTask;
+
+    private async Task EditAsync()
+    {
+        if (_menuFor is { } slot) { _menuFor = null; await OnEdit.InvokeAsync(slot); }
+    }
+
+    private async Task DeleteAsync()
+    {
+        if (_menuFor is { } slot) { _menuFor = null; await OnDelete.InvokeAsync(slot); }
+    }
+
+    private void OpenMenu(SlotDto slot) => _menuFor = slot;
 
     private void CloseMenu()
     {

@@ -1,0 +1,105 @@
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.Timetable
+@using Lms.Client.Components.Timetable
+@using Lms.Shared.Classes
+@using Lms.Shared.Timetable
+@inject ITimetableApi Api
+@inject ICultureService Culture
+
+@* Add or edit a lesson: the course of the class, its teacher and a room as plain text (D60: no room list, no room clash check). In Block mode the
+   server may refuse the save; its clashes are shown here and the dialog stays open. *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="3" Class="lms-form">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="slot-error">@_error</MudAlert>
+            }
+            <MudSelect T="Guid?" Value="_course" ValueChanged="OnCourse" Label="@L["Tt_Course"]" Variant="Variant.Outlined" Required="true" data-testid="slot-course">
+                @foreach (var c in Courses)
+                {
+                    <MudSelectItem T="Guid?" Value="@((Guid?)c.Id)">@Culture.Pick(c.CourseNameAr, c.CourseNameEn)</MudSelectItem>
+                }
+            </MudSelect>
+            <MudSelect T="Guid?" @bind-Value="_teacher" Label="@L["Tt_Teacher"]" Variant="Variant.Outlined" Required="true" data-testid="slot-teacher">
+                @foreach (var t in Teachers)
+                {
+                    <MudSelectItem T="Guid?" Value="@((Guid?)t.UserId)">@Culture.Pick(t.NameAr, t.NameEn)</MudSelectItem>
+                }
+            </MudSelect>
+            <MudTextField T="string" @bind-Value="_room" Label="@L["Tt_Room"]" HelperText="@L["Tt_Room_Help"]" MaxLength="TimetableLimits.MaxRoomLength" Variant="Variant.Outlined" data-testid="slot-room" />
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <div class="lms-dialog-actions">
+            <MudButton Variant="Variant.Text" OnClick="() => MudDialog.Cancel()" data-testid="slot-cancel">@L["Common_Cancel"]</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="@_saving" data-testid="slot-save">@L["Common_Save"]</MudButton>
+        </div>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired] public Guid ClassId { get; set; }
+    [Parameter, EditorRequired] public Guid TermId { get; set; }
+    [Parameter, EditorRequired] public IReadOnlyList<ClassCourseDto> Courses { get; set; } = [];
+    [Parameter] public DayOfWeek Day { get; set; }
+    [Parameter] public Guid PeriodId { get; set; }
+
+    /// <summary>The lesson being edited; empty when adding.</summary>
+    [Parameter] public SlotDto? Existing { get; set; }
+
+    private Guid? _course, _teacher;
+    private string? _room, _error;
+    private bool _saving;
+
+    private IEnumerable<Lms.Shared.Teaching.ClassCourseTeacherDto> Teachers => Courses.FirstOrDefault(c => c.Id == _course)?.CurrentTeachers.Where(t => t.IsCurrent) ?? [];
+
+    protected override void OnInitialized()
+    {
+        if (Existing is { } e)
+        {
+            _course = e.ClassCourseId;
+            _teacher = e.TeacherUserId;
+            _room = e.RoomName;
+            Day = e.DayOfWeek;
+            PeriodId = e.PeriodId;
+        }
+    }
+
+    private void OnCourse(Guid? course)
+    {
+        _course = course;
+        _teacher = Teachers.Count() == 1 ? Teachers.First().UserId : null; // the only current teacher is the obvious choice
+    }
+
+    private async Task SaveAsync()
+    {
+        _error = null;
+        if (_course is not { } course || _teacher is not { } teacher) { _error = L["Tt_Slot_Required"]; return; }
+        var request = new SaveSlotRequest(course, TermId, teacher, Day, PeriodId, string.IsNullOrWhiteSpace(_room) ? null : _room.Trim(), Existing?.Version);
+        _saving = true;
+        try
+        {
+            var result = Existing is { } e ? await Api.UpdateSlotAsync(ClassId, e.Id, request) : await Api.CreateSlotAsync(ClassId, request);
+            MudDialog.Close(DialogResult.Ok(result));
+        }
+        catch (ApiProblemException ex) when (ex.Code == "timetable_conflict")
+        {
+            _error = TimetableConflictText.Describe(ex.Conflicts, L, Culture); // the server's reason, in words
+        }
+        catch (ApiProblemException ex) when (ex.Code == "concurrency_conflict")
+        {
+            _error = L["Error_concurrency_conflict"];
+        }
+        catch (Exception ex) when (ex is ApiProblemException or HttpRequestException)
+        {
+            _error = L["Api_Error"];
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+}

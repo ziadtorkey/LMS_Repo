@@ -1,0 +1,73 @@
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.Timetable
+@using Lms.Shared.AcademicYears
+@using Lms.Shared.Timetable
+@inject ITimetableApi Api
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+
+@* Copies the lessons of another term as drafts. What could not be copied is listed with the reason (a course, teacher or period that no longer exists). *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="3">
+            @if (_result is null)
+            {
+                <MudSelect T="Guid?" @bind-Value="_source" Label="@L["Tt_Copy_From"]" Variant="Variant.Outlined" Required="true" data-testid="copy-source">
+                    @foreach (var t in Terms.Where(t => t.Id != TargetTermId))
+                    {
+                        <MudSelectItem T="Guid?" Value="@((Guid?)t.Id)">@Culture.Pick(t.NameAr, t.NameEn)</MudSelectItem>
+                    }
+                </MudSelect>
+                <MudText Typo="Typo.body2" Class="lms-muted">@L["Tt_Copy_Help"]</MudText>
+            }
+            else
+            {
+                <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" data-testid="copy-done">@string.Format(L["Tt_Copy_Done"], _result.Copied)</MudAlert>
+                @if (_result.Skipped.Count > 0)
+                {
+                    <MudText Typo="Typo.subtitle2">@L["Tt_Copy_Skipped"]</MudText>
+                    <ul class="lms-excuse-covered" data-testid="copy-skipped">
+                        @foreach (var s in _result.Skipped)
+                        {
+                            <li>@Culture.Pick(s.CourseNameAr, s.CourseNameEn): @L[$"Tt_CopySkip_{s.Reason}"]</li>
+                        }
+                    </ul>
+                }
+            }
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <div class="lms-dialog-actions">
+            @if (_result is null)
+            {
+                <MudButton Variant="Variant.Text" OnClick="() => MudDialog.Cancel()" data-testid="copy-cancel">@L["Common_Cancel"]</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CopyAsync" Disabled="@(_source is null || _busy)" data-testid="copy-run">@L["Tt_Copy_Run"]</MudButton>
+            }
+            else
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => MudDialog.Close(DialogResult.Ok(true))" data-testid="copy-close">@L["Common_Close"]</MudButton>
+            }
+        </div>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired] public Guid ClassId { get; set; }
+    [Parameter, EditorRequired] public Guid TargetTermId { get; set; }
+    [Parameter, EditorRequired] public IReadOnlyList<TermDto> Terms { get; set; } = [];
+
+    private Guid? _source;
+    private CopyTermResultDto? _result;
+    private bool _busy;
+
+    private async Task CopyAsync()
+    {
+        if (_source is not { } source) return;
+        _busy = true;
+        var (result, _) = await ApiCalls.RunAsync(() => Api.CopyTermAsync(ClassId, new CopyTermRequest(source, TargetTermId)), Navigation);
+        _result = result;
+        _busy = false;
+    }
+}

@@ -8,7 +8,7 @@ namespace Lms.Client.Services.Api;
 /// An RFC 7807 error answered by the API. <see cref="Code"/> is the ProblemCodes value
 /// (or the access-denial reason, e.g. BlockedByPolicy); <see cref="Detail"/> is server-localized text.
 /// </summary>
-public sealed class ApiProblemException(int status, string? code, string? detail, IReadOnlyDictionary<string, string[]>? errors, string? field = null, int? count = null, string? reason = null, IReadOnlyList<string>? codes = null)
+public sealed class ApiProblemException(int status, string? code, string? detail, IReadOnlyDictionary<string, string[]>? errors, string? field = null, int? count = null, string? reason = null, IReadOnlyList<string>? codes = null, IReadOnlyList<Lms.Shared.Timetable.SlotConflictDto>? conflicts = null)
     : HttpRequestException($"API error {status} {code}", null, (HttpStatusCode)status)
 {
     public const string InvalidContext = "invalid_context";
@@ -30,6 +30,9 @@ public sealed class ApiProblemException(int status, string? code, string? detail
     /// <summary>The problem's <c>codes</c> extension (e.g. which class codes collide in a bulk create), when present.</summary>
     public IReadOnlyList<string> Codes { get; } = codes ?? [];
 
+    /// <summary>The problem's <c>conflicts</c> extension: the clashes a timetable move or save ran into (409 <c>timetable_conflict</c>).</summary>
+    public IReadOnlyList<Lms.Shared.Timetable.SlotConflictDto> Conflicts { get; } = conflicts ?? [];
+
     /// <summary>True when the API says the active context is missing, expired, deleted or deactivated (bug #84, D15).</summary>
     public bool IsContextProblem => Status == 403 && Code is InvalidContext or ContextRequired;
 
@@ -39,6 +42,7 @@ public sealed class ApiProblemException(int status, string? code, string? detail
         string? code = null, detail = null, field = null, reason = null;
         int? count = null;
         List<string>? codes = null;
+        List<Lms.Shared.Timetable.SlotConflictDto>? conflicts = null;
         Dictionary<string, string[]>? errors = null;
         try
         {
@@ -55,6 +59,8 @@ public sealed class ApiProblemException(int status, string? code, string? detail
                 reason = Text(json, "reason");
                 if (json.TryGetProperty("codes", out var cs) && cs.ValueKind == JsonValueKind.Array)
                     codes = cs.EnumerateArray().Where(x => x.ValueKind == JsonValueKind.String).Select(x => x.GetString()!).ToList();
+                if (json.TryGetProperty("conflicts", out var cf) && cf.ValueKind == JsonValueKind.Array)
+                    conflicts = JsonSerializer.Deserialize<List<Lms.Shared.Timetable.SlotConflictDto>>(cf.GetRawText(), new JsonSerializerOptions(JsonSerializerDefaults.Web));
                 if (json.TryGetProperty("count", out var c) && c.ValueKind == JsonValueKind.Number && c.TryGetInt32(out var n)) count = n;
                 if (json.TryGetProperty("errors", out var e) && e.ValueKind == JsonValueKind.Object)
                     errors = e.EnumerateObject().ToDictionary(
@@ -67,7 +73,7 @@ public sealed class ApiProblemException(int status, string? code, string? detail
         catch (JsonException) { }
         catch (NotSupportedException) { }
         catch (InvalidOperationException) { }
-        return new ApiProblemException((int)response.StatusCode, code, detail, errors, field, count, reason, codes);
+        return new ApiProblemException((int)response.StatusCode, code, detail, errors, field, count, reason, codes, conflicts);
     }
 
     /// <summary>

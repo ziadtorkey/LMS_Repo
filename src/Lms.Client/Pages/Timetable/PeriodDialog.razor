@@ -1,0 +1,81 @@
+@using Lms.Client.Components
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.Timetable
+@using Lms.Shared.Timetable
+@inject ITimetableApi Api
+
+@* One period of a unit: bilingual name, start and end time (the end after the start, no overlap with another period: the server checks), order. *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="3" Class="lms-form">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="period-error">@_error</MudAlert>
+            }
+            <BilingualNameFields NameAr="@_nameAr" NameArChanged="v => _nameAr = v" NameEn="@_nameEn" NameEnChanged="v => _nameEn = v" IdPrefix="period-name" />
+            <div class="lms-form-grid">
+                <MudTimePicker Time="_start" TimeChanged="t => _start = t" Label="@L["Tt_Period_Start"]" Variant="Variant.Outlined" data-testid="period-start" />
+                <MudTimePicker Time="_end" TimeChanged="t => _end = t" Label="@L["Tt_Period_End"]" Variant="Variant.Outlined" data-testid="period-end" />
+            </div>
+            <MudNumericField T="int" @bind-Value="_order" Label="@L["Tt_Period_Order"]" Min="1" Max="TimetableLimits.MaxPeriodsPerUnit" Variant="Variant.Outlined" data-testid="period-order" />
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <div class="lms-dialog-actions">
+            <MudButton Variant="Variant.Text" OnClick="() => MudDialog.Cancel()" data-testid="period-cancel">@L["Common_Cancel"]</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="@_saving" data-testid="period-save">@L["Common_Save"]</MudButton>
+        </div>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired] public Guid UnitId { get; set; }
+    [Parameter] public PeriodDto? Existing { get; set; }
+    [Parameter] public int NextOrder { get; set; } = 1;
+
+    private string _nameAr = "", _nameEn = "";
+    private string? _error;
+    private TimeSpan? _start, _end;
+    private int _order;
+    private bool _saving;
+
+    protected override void OnInitialized()
+    {
+        _order = Existing?.Order ?? NextOrder;
+        if (Existing is { } e)
+        {
+            _nameAr = e.NameAr;
+            _nameEn = e.NameEn;
+            _start = e.StartTime.ToTimeSpan();
+            _end = e.EndTime.ToTimeSpan();
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        _error = null;
+        if (string.IsNullOrWhiteSpace(_nameAr) || string.IsNullOrWhiteSpace(_nameEn) || _start is null || _end is null) { _error = L["Tt_Period_Required"]; return; }
+        if (_start >= _end) { _error = L["Error_period_overlap"]; return; } // the end is after the start; an overlap with another period is the server's answer
+        var request = new SavePeriodRequest(_nameAr.Trim(), _nameEn.Trim(), TimeOnly.FromTimeSpan(_start.Value), TimeOnly.FromTimeSpan(_end.Value), _order);
+        _saving = true;
+        try
+        {
+            var period = Existing is { } e ? await Api.UpdatePeriodAsync(UnitId, e.Id, request) : await Api.CreatePeriodAsync(UnitId, request);
+            MudDialog.Close(DialogResult.Ok(period));
+        }
+        catch (ApiProblemException ex) when (ex.Code == "period_overlap")
+        {
+            _error = L["Error_period_overlap"];
+        }
+        catch (Exception ex) when (ex is ApiProblemException or HttpRequestException)
+        {
+            _error = L["Api_Error"];
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+}

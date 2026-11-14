@@ -1568,8 +1568,8 @@
   <data name="StudentImport_Subtitle" xml:space="preserve"><value>أضف عددًا كبيرًا من الطلاب دفعة واحدة من ملف إكسل.</value></data>
   <data name="ClassImport_Subtitle" xml:space="preserve"><value>وزّع الطلاب على الفصول من ملف إكسل.</value></data>
   <data name="Group_Subtitle" xml:space="preserve"><value>قسّم طلاب مقرر الفصل هذا إلى مجموعات.</value></data>
-  <data name="Tt_Page_Title" xml:space="preserve"><value>منشئ الجدول الدراسي (نموذج أولي)</value></data>
-  <data name="Tt_Page_Subtitle" xml:space="preserve"><value>تجربة S3: انقل الحصص بلوحة المفاتيح أو بالقائمة أو بالسحب. بيانات تجريبية فقط.</value></data>
+  <data name="Tt_Page_Title" xml:space="preserve"><value>الجدول الدراسي</value></data>
+  <data name="Tt_Page_Subtitle" xml:space="preserve"><value>الحصص الأسبوعية للفصل. انقل الحصة بلوحة المفاتيح أو بالقائمة أو بالسحب، وانشر الجدول عند اكتماله.</value></data>
   <data name="Tt_Mode_Block" xml:space="preserve"><value>منع التعارض</value></data>
   <data name="Tt_Mode_Warn" xml:space="preserve"><value>تنبيه عند التعارض</value></data>
   <data name="Tt_Grid_Label" xml:space="preserve"><value>الجدول الأسبوعي</value></data>
@@ -1580,15 +1580,15 @@
   <data name="Tt_Slot_Move" xml:space="preserve"><value>نقل {0} إلى…</value></data>
   <data name="Tt_Move_Confirm" xml:space="preserve"><value>نقل</value></data>
   <data name="Tt_Warn_Chip" xml:space="preserve"><value>تعارض</value></data>
-  <data name="Tt_Empty_Cell" xml:space="preserve"><value>فارغة، {0}، الحصة {1}</value></data>
-  <data name="Tt_Slot_Cell" xml:space="preserve"><value>{0}، {1}، {2}، الحصة {3}</value></data>
+  <data name="Tt_Empty_Cell" xml:space="preserve"><value>فارغة، {0}، {1}</value></data>
+  <data name="Tt_Slot_Cell" xml:space="preserve"><value>{0}، {1}، {2}، {3}</value></data>
   <data name="Tt_Held" xml:space="preserve"><value>تم التقاط {0}. استخدم مفاتيح الأسهم لاختيار المكان، وEnter للإفلات، وEscape للإلغاء.</value></data>
-  <data name="Tt_Moved" xml:space="preserve"><value>تم نقل {0} إلى {1}، الحصة {2}.</value></data>
+  <data name="Tt_Moved" xml:space="preserve"><value>تم نقل {0} إلى {1}.</value></data>
   <data name="Tt_Cancelled" xml:space="preserve"><value>أُلغي النقل.</value></data>
   <data name="Tt_Refused" xml:space="preserve"><value>لم يُحفظ النقل.</value></data>
   <data name="Tt_Clash_Class" xml:space="preserve"><value>هذا المكان مشغول بـ {0}.</value></data>
-  <data name="Tt_Clash_Teacher" xml:space="preserve"><value>{0} يدرّس فصلًا آخر يوم {1} في الوقت نفسه.</value></data>
-  <data name="Tt_Hint" xml:space="preserve"><value>لوحة المفاتيح: M أو Enter لالتقاط الحصة، مفاتيح الأسهم لاختيار المكان، Enter للإفلات، Escape للإلغاء. F2 يفتح قائمة النقل. يمكنك أيضًا سحب الحصة (باللمس: اضغط مطولًا).</value></data>
+  <data name="Tt_Clash_Teacher" xml:space="preserve"><value>{0} يدرّس {1} في ذلك الوقت.</value></data>
+  <data name="Tt_Hint" xml:space="preserve"><value>لوحة المفاتيح: M أو Enter لالتقاط الحصة، مفاتيح الأسهم لاختيار المكان، Enter للإفلات، Escape للإلغاء. F2 يفتح قائمة الحصة. يمكنك أيضًا سحب الحصة (باللمس: اضغط مطولًا).</value></data>
   <data name="Error_gradebook_locked" xml:space="preserve"><value>دفتر الدرجات مقفل ولا يمكن تغيير الدرجات بعد الآن.</value></data>
   <data name="Error_scale_provisional" xml:space="preserve"><value>لم يتم تأكيد سلّم التقدير بعد. أكّده أو أقرّ بأنك تنشر بسلّم غير مؤكَّد.</value></data>
   <data name="Error_scale_bands_invalid" xml:space="preserve"><value>يجب أن تغطي المستويات من 0 إلى 100 دون فجوات أو تداخل.</value></data>
@@ -1644,8 +1644,8 @@
   <data name="AuditEntity_GradeSnapshot" xml:space="preserve"><value>لقطة الدرجات</value></data>
   <data name="PermModule_Grades" xml:space="preserve"><value>الدرجات</value></data>
   <data name="Error_timetable_conflict" xml:space="preserve"><value>تتعارض هذه الحصة مع حصة أخرى: المعلم أو الفصل محجوز في الوقت نفسه.</value></data>
-  <data name="Error_period_overlap" xml:space="preserve"><value>تتداخل الفترة مع فترة أخرى في هذه المدرسة، أو لا تبدأ قبل نهايتها.</value></data>
-  <data name="Error_period_in_use" xml:space="preserve"><value>تستخدم إحدى حصص الجدول هذه الفترة، لذا لا يمكن حذفها.</value></data>
+  <data name="Error_period_overlap" xml:space="preserve"><value>تتداخل الحصة مع حصة أخرى أو لا تنتهي بعد بدايتها.</value></data>
+  <data name="Error_period_in_use" xml:space="preserve"><value>توجد حصة تستخدم هذه الحصة لذلك لا يمكن حذفها.</value></data>
   <data name="Error_timetable_not_published" xml:space="preserve"><value>هذه الحصة ما زالت مسودة. انشر الجدول أولاً.</value></data>
   <data name="Error_exception_date_invalid" xml:space="preserve"><value>يجب أن يكون التاريخ يوم دراسة لهذه الحصة داخل الفصل، وللحصة استثناء واحد فقط في اليوم الواحد.</value></data>
   <data name="Error_exception_substitute_invalid" xml:space="preserve"><value>يجب أن يكون البديل معلماً آخر في مجموعة المدارس ولا يكون مشغولاً في هذه الفترة في ذلك التاريخ.</value></data>
@@ -1670,10 +1670,10 @@
   <data name="Tt_SlotBadge_Conflict" xml:space="preserve"><value>تعارض</value></data>
   <data name="Tt_SlotBadge_HasException" xml:space="preserve"><value>فيها تغيير</value></data>
   <data name="Tt_SlotBadge_DraftChange" xml:space="preserve"><value>غير منشورة بعد التعديل</value></data>
-  <data name="Tt_CopySkip_ClassCourseMissing" xml:space="preserve"><value>المقرر غير مدرَّس في هذا الفصل الدراسي</value></data>
-  <data name="Tt_CopySkip_TeacherMissing" xml:space="preserve"><value>المعلم لم يعد مكلفاً</value></data>
-  <data name="Tt_CopySkip_PeriodMissing" xml:space="preserve"><value>الفترة لم تعد موجودة</value></data>
-  <data name="Tt_CopySkip_SlotExists" xml:space="preserve"><value>في الفصل الدراسي الهدف حصة في هذا الموضع</value></data>
+  <data name="Tt_CopySkip_ClassCourseMissing" xml:space="preserve"><value>المقرر لم يعد في هذا الفصل</value></data>
+  <data name="Tt_CopySkip_TeacherMissing" xml:space="preserve"><value>المعلم لم يعد متاحًا</value></data>
+  <data name="Tt_CopySkip_PeriodMissing" xml:space="preserve"><value>الحصة لم تعد موجودة</value></data>
+  <data name="Tt_CopySkip_SlotExists" xml:space="preserve"><value>توجد حصة في هذا المكان</value></data>
   <data name="Perm_Timetable_View" xml:space="preserve"><value>عرض الجداول والفترات</value></data>
   <data name="Perm_Timetable_Manage" xml:space="preserve"><value>بناء الجداول ونشرها</value></data>
   <data name="Perm_Timetable_Configure" xml:space="preserve"><value>ضبط الفترات</value></data>
@@ -1682,4 +1682,49 @@
   <data name="AuditEntity_TimetableSlot" xml:space="preserve"><value>حصة الجدول</value></data>
   <data name="AuditEntity_TimetableException" xml:space="preserve"><value>استثناء الجدول</value></data>
   <data name="PermModule_Timetable" xml:space="preserve"><value>الجدول الدراسي</value></data>
+  <data name="Tt_Clash_Hidden" xml:space="preserve"><value>حصة أخرى</value></data>
+  <data name="Tt_Add_Lesson" xml:space="preserve"><value>إضافة حصة، {0}، {1}</value></data>
+  <data name="Tt_State_Draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="Tt_Has_Exception" xml:space="preserve"><value>تغيير في تاريخ</value></data>
+  <data name="Tt_Course" xml:space="preserve"><value>المقرر</value></data>
+  <data name="Tt_Teacher" xml:space="preserve"><value>المعلم</value></data>
+  <data name="Tt_Room" xml:space="preserve"><value>القاعة</value></data>
+  <data name="Tt_Room_Help" xml:space="preserve"><value>نص حر مثل 101 أو معمل 2. لا يُتحقق من تعارض القاعات.</value></data>
+  <data name="Tt_Slot_Required" xml:space="preserve"><value>اختر مقررًا ومعلمًا.</value></data>
+  <data name="Tt_Copy_From" xml:space="preserve"><value>نسخ الحصص من</value></data>
+  <data name="Tt_Copy_Help" xml:space="preserve"><value>تُنسخ الحصص كمسودات. تُتخطى الحصص الموجودة أو التي لم يعد مقررها أو معلمها أو حصتها موجودًا.</value></data>
+  <data name="Tt_Copy_Done" xml:space="preserve"><value>تم نسخ {0} حصة كمسودات.</value></data>
+  <data name="Tt_Copy_Skipped" xml:space="preserve"><value>لم تُنسخ</value></data>
+  <data name="Tt_Copy_Run" xml:space="preserve"><value>نسخ</value></data>
+  <data name="Tt_Copy_Open" xml:space="preserve"><value>نسخ من فصل دراسي آخر</value></data>
+  <data name="Tt_Publish" xml:space="preserve"><value>نشر</value></data>
+  <data name="Tt_Publish_Confirm" xml:space="preserve"><value>نشر {0} حصة مسودة؟ سيراها الطلاب والمعلمون وتُنشأ جلسات الحضور للأيام القادمة.</value></data>
+  <data name="Tt_Export" xml:space="preserve"><value>تصدير إلى Excel</value></data>
+  <data name="Tt_Validate" xml:space="preserve"><value>فحص التعارضات</value></data>
+  <data name="Tt_Term" xml:space="preserve"><value>الفصل الدراسي</value></data>
+  <data name="Tt_State_Published" xml:space="preserve"><value>الكل منشور</value></data>
+  <data name="Tt_State_Drafts" xml:space="preserve"><value>{0} حصة مسودة بانتظار النشر</value></data>
+  <data name="Tt_Conflicts_Title" xml:space="preserve"><value>التعارضات</value></data>
+  <data name="Tt_Conflicts_None" xml:space="preserve"><value>لا توجد تعارضات في هذا الفصل الدراسي.</value></data>
+  <data name="Tt_Published" xml:space="preserve"><value>تم نشر {0} حصة.</value></data>
+  <data name="Tt_Published_Queued" xml:space="preserve"><value>تم نشر {0} حصة. تُنشأ جلسات الحضور الآن.</value></data>
+  <data name="Tt_Add_Title" xml:space="preserve"><value>إضافة حصة</value></data>
+  <data name="Tt_Edit_Title" xml:space="preserve"><value>تعديل الحصة</value></data>
+  <data name="Tt_Delete_Title" xml:space="preserve"><value>حذف الحصة</value></data>
+  <data name="Tt_Delete_Confirm" xml:space="preserve"><value>حذف {0} من الجدول؟</value></data>
+  <data name="Tt_Setup_Title" xml:space="preserve"><value>إعداد الجدول الدراسي</value></data>
+  <data name="Tt_Setup_Subtitle" xml:space="preserve"><value>حصص اليوم الدراسي.</value></data>
+  <data name="Tt_Setup_SettingsNote" xml:space="preserve"><value>أيام العمل وما يُفعل عند التعارض (منع أو تنبيه) من إعدادات الوحدة: غيّرها من تبويب الإعدادات في الوحدة.</value></data>
+  <data name="Tt_Periods" xml:space="preserve"><value>الحصص</value></data>
+  <data name="Tt_Periods_EmptyTitle" xml:space="preserve"><value>لا توجد حصص بعد</value></data>
+  <data name="Tt_Periods_EmptyText" xml:space="preserve"><value>أضف حصص اليوم (اسم ووقت بداية ونهاية) قبل بناء الجدول.</value></data>
+  <data name="Tt_Period_New" xml:space="preserve"><value>حصة جديدة</value></data>
+  <data name="Tt_Period_Edit" xml:space="preserve"><value>تعديل الحصة</value></data>
+  <data name="Tt_Period_Delete" xml:space="preserve"><value>حذف الحصة</value></data>
+  <data name="Tt_Period_DeleteConfirm" xml:space="preserve"><value>حذف {0}؟</value></data>
+  <data name="Tt_Period_Inherited" xml:space="preserve"><value>من وحدة أعلى</value></data>
+  <data name="Tt_Period_Start" xml:space="preserve"><value>تبدأ</value></data>
+  <data name="Tt_Period_End" xml:space="preserve"><value>تنتهي</value></data>
+  <data name="Tt_Period_Order" xml:space="preserve"><value>الترتيب</value></data>
+  <data name="Tt_Period_Required" xml:space="preserve"><value>أعطِ الحصة اسمًا بالعربية والإنجليزية ووقتي بداية ونهاية.</value></data>
 </root>
