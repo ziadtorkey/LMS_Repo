@@ -1,7 +1,7 @@
 @using Lms.Shared.Authorization
 @inject PermissionState PermState
 
-@* Plan · Forum · Announcements · Gradebook of one class course. The plan is always there; forum and announcements need Forums.View, the gradebook Grades.View or Grades.Manage. *@
+@* Plan · Forum · Announcements · Gradebook · Live sessions of one class course. The plan is always there; forum and announcements need Forums.View, the gradebook Grades.View or Grades.Manage, live sessions LiveSessions.Manage. *@
 <MudStack Row="true" Spacing="1" Class="lms-course-tabs mb-3" role="navigation" aria-label="@L["ClassCourse_Sections"]" data-testid="class-course-tabs">
     <MudButton Href="@($"class-courses/{ClassCourseId}/plan")" Variant="Variant.Text" aria-current="@CurrentOf("plan")" data-testid="tab-plan">@L["ClassCourse_TabPlan"]</MudButton>
     @if (PermState.Has(Permissions.Forums.View))
@@ -14,11 +14,15 @@
     {
         <MudButton Href="@($"class-courses/{ClassCourseId}/gradebook")" Variant="Variant.Text" aria-current="@CurrentOf("gradebook")" data-testid="tab-gradebook">@L["ClassCourse_TabGradebook"]</MudButton>
     }
+    @if (PermState.Has(Permissions.LiveSessions.Manage))
+    {
+        <MudButton Href="@($"class-courses/{ClassCourseId}/live-sessions")" Variant="Variant.Text" aria-current="@CurrentOf("live-sessions")" data-testid="tab-live-sessions">@L["ClassCourse_TabLive"]</MudButton>
+    }
 </MudStack>
 
 @code {
     [Parameter, EditorRequired] public Guid ClassCourseId { get; set; }
-    /// <summary>"plan", "forum", "announcements" or "gradebook".</summary>
+    /// <summary>"plan", "forum", "announcements", "gradebook" or "live-sessions".</summary>
     [Parameter, EditorRequired] public string Active { get; set; } = "plan";
 
     /// <summary>The raised pill of the Stitch tab track is drawn from <c>aria-current="page"</c>, which is also what a screen reader announces.</summary>
