@@ -16,12 +16,38 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-and-test:
+  # Unit and client tests, plus the full-solution build with warnings as errors (the only place the whole solution is built here).
+  unit-and-client:
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+          cache: true
+          cache-dependency-path: |
+            **/*.csproj
+            Directory.Packages.props
+      - name: Build
+        run: dotnet build LMS.slnx -c Release
+      - name: Unit tests
+        run: dotnet test tests/Lms.UnitTests -c Release --no-build
+      - name: Client tests
+        run: dotnet test tests/Lms.Client.Tests -c Release --no-build
+
+  # The integration suite is one xUnit collection on one pair of containers, so it is serial; it is split by test class over shards, each
+  # on its own runner and containers (see .github/scripts/shard_tests.py; weighted by test count until timings exist: run .github/scripts/trx_weights.py on the integration-trx artifacts).
+  integration:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
     env:
       # Each WebApplicationFactory host watches appsettings files; with many hosts the runner's default of
       # 128 inotify instances runs out ("The configured user limit (128) on the number of inotify instances").
       DOTNET_USE_POLLING_FILE_WATCHER: "true"
+      SHARD_COUNT: "4"
     steps:
       - name: Raise inotify limits
         run: |
@@ -31,29 +57,67 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
-      - name: Build
-        run: dotnet build LMS.slnx -c Release
-      - name: Unit tests
-        run: dotnet test tests/Lms.UnitTests -c Release --no-build
-      - name: Integration tests (Testcontainers)
+          cache: true
+          cache-dependency-path: |
+            **/*.csproj
+            Directory.Packages.props
+      - name: Build the integration tests
+        run: dotnet build tests/Lms.IntegrationTests -c Release
+      - name: Choose this shard's test classes
+        id: shard
+        run: |
+          python3 .github/scripts/shard_tests.py tests/Lms.IntegrationTests 0 "$SHARD_COUNT" -- -c Release --no-build
+          FILTER=$(python3 .github/scripts/shard_tests.py tests/Lms.IntegrationTests ${{ matrix.shard }} "$SHARD_COUNT" -- -c Release --no-build)
+          echo "filter=$FILTER" >> "$GITHUB_OUTPUT"
+      - name: Integration tests (Testcontainers), shard ${{ matrix.shard }}
+        # A hang used to eat the whole 6 h job limit with no output. The blame options name the test that did not finish within 15 minutes
+        # and write a dump of it; the step limit makes the shard fail fast instead of occupying a runner for hours.
+        timeout-minutes: 60
         env:
           LMS_PERF_BUDGET_FACTOR: "3" # shared runners are about 2x slower than a developer machine (X-09 budget scales)
           LMS_CONN_LOG: ${{ runner.temp }}/mysql-connections.log # #466: MySQL connections by user/query every 15 s
-        run: dotnet test tests/Lms.IntegrationTests -c Release --no-build
-      - name: Upload MySQL connection samples
-        if: failure()
+        run: >
+          dotnet test tests/Lms.IntegrationTests -c Release --no-build
+          --filter "${{ steps.shard.outputs.filter }}"
+          --logger "trx;LogFileName=integration-${{ matrix.shard }}.trx"
+          --blame-hang-timeout 15m --blame-hang-dump-type mini
+          --results-directory TestResults
+      - name: Upload MySQL connection samples and hang diagnostics
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: mysql-connections
-          path: ${{ runner.temp }}/mysql-connections.log
+          name: integration-diagnostics-${{ matrix.shard }}
+          path: |
+            ${{ runner.temp }}/mysql-connections.log
+            TestResults/**/*.dmp
+            TestResults/**/Sequence_*.xml
           if-no-files-found: ignore
           retention-days: 7
-      - name: Client tests
-        run: dotnet test tests/Lms.Client.Tests -c Release --no-build
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-trx-${{ matrix.shard }}
+          path: TestResults/*.trx
+          if-no-files-found: ignore
+          retention-days: 7
+
+  # The required check keeps its old name: it passes only when every part above passed.
+  build-and-test:
+    runs-on: ubuntu-latest
+    needs: [unit-and-client, integration]
+    if: always()
+    steps:
+      - name: All test jobs passed
+        run: |
+          echo "unit-and-client: ${{ needs.unit-and-client.result }}"
+          echo "integration: ${{ needs.integration.result }}"
+          [ "${{ needs.unit-and-client.result }}" = "success" ] && [ "${{ needs.integration.result }}" = "success" ]
 
   e2e:
     runs-on: ubuntu-latest
-    needs: build-and-test
+    # Starts with the integration shards instead of after them (it builds the API itself); a red unit run stops it first.
+    needs: unit-and-client
     # The 1 h E2E job runs for main and for PRs marked ready; drafts skip it to keep the runner queue short.
     if: github.event_name == 'push' || github.event.pull_request.draft == false
     env:
@@ -64,6 +128,10 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
+          cache: true
+          cache-dependency-path: |
+            **/*.csproj
+            Directory.Packages.props
       - name: Build API and E2E tests
         run: |
           dotnet build src/Lms.Api -c Release
@@ -90,6 +158,12 @@ jobs:
             sleep 1
           done
           echo "API did not become healthy"; cat api.log; exit 1
+      # The browser download is the slow part of the install; cached by the Playwright package version.
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('Directory.Packages.props') }}
       - name: Install Playwright Chromium
         # The runner's apt mirrors intermittently fail DNS ("Temporary failure resolving"), and apt can then hang.
         # Try with system deps twice (time-boxed); otherwise install the browser alone: ubuntu-latest images already
