@@ -80,7 +80,7 @@ else
                 </MudTd>
                 <MudTd DataLabel="@L["Exc_Col_Sessions"]">@e.Sessions.Count</MudTd>
                 <MudTd DataLabel="@L["Exc_Col_Submitted"]">
-                    <span dir="ltr" class="lms-date-cell">@e.SubmittedAtUtc.ToString("yyyy-MM-dd")</span>
+                    <LocalTime Utc="e.SubmittedAtUtc" Format="yyyy-MM-dd" Class="lms-date-cell" />
                     <span class="lms-muted">@(item.AgeDays == 0 ? L["Exc_Age_Today"].Value : string.Format(L["Exc_Age_Days"], item.AgeDays))</span>
                 </MudTd>
                 <MudTd DataLabel="@L["Common_Status"]"><ExcuseStatusChip Status="@e.Status" TestId="@($"review-status-{e.Id}")" /></MudTd>
