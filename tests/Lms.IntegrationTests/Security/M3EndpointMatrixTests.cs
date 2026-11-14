@@ -34,6 +34,9 @@ public sealed class M3EndpointMatrixTests(LmsApiFactory factory, ITestOutputHelp
         Routes.ClassCourseQuizzesPattern,
     ];
 
+    /// <summary>Routes under an M3 prefix that are the caller's own data (a guardian reads a child's published grades), so the M3 refusal rule does not apply.</summary>
+    private static readonly HashSet<string> M5OwnData = [Routes.StudentGradesPattern];
+
     private static IEnumerable<ProbeRow> M3Rows => M1ProbeRows.All.Where(r => IsM3(r.Pattern));
 
     public static TheoryData<string, M3Caller> Cases()
@@ -131,6 +134,7 @@ public sealed class M3EndpointMatrixTests(LmsApiFactory factory, ITestOutputHelp
     private static bool IsM3(string pattern) =>
         !M4aRoutes.Is(pattern)
         && !M4bRoutes.Is(pattern)
+        && !M5OwnData.Contains(pattern)
         && M3Prefixes.Any(p => pattern.Equals(p, StringComparison.OrdinalIgnoreCase)
                                || pattern.StartsWith(p + "/", StringComparison.OrdinalIgnoreCase));
 
