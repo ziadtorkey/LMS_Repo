@@ -112,6 +112,12 @@ public static partial class Routes
     /// <summary>GET → <c>ContactChannelDto[]</c> — authenticated; own, masked.</summary>
     public const string MyChannels = "/api/me/channels";
 
+    /// <summary>POST (<c>ChannelConsentRequest</c>) → 204 and DELETE (withdraws) — authenticated; own, <c>email</c> or <c>push</c> (404 another channel); audited as <c>ChannelConsent</c>.</summary>
+    public const string MyChannelConsentPattern = MyChannels + "/{channel}/consent";
+
+    /// <summary>GET → <c>VapidPublicKeyDto</c> — authenticated; 404 when Web Push has no key configured.</summary>
+    public const string MyVapidPublicKey = "/api/me/push/vapid-public-key";
+
     /// <summary>POST (no body) → <c>TestEmailResultDto</c> — authenticated; own address; 3 a day (429 <c>rate_limited</c>).</summary>
     public const string MyEmailTest = "/api/me/channels/email/test";
 
@@ -123,6 +129,9 @@ public static partial class Routes
 
     /// <summary>GET and PUT (<c>SaveCommsSettingsRequest</c> → <c>CommsSettingsDto</c>) — <c>Comms.Manage</c> at the client root.</summary>
     public const string CommsSettings = "/api/comms/settings";
+
+    /// <summary>GET → <c>DeliverySummaryDto</c> — <c>Comms.Manage</c> at the client root; counts for the client day only.</summary>
+    public const string CommsDeliverySummary = "/api/comms/delivery-summary";
 
     /// <summary>POST — anonymous, signature and timestamp verified: the email relay's bounce and complaint events (401 bad signature, 413 oversize, 429 repeats).</summary>
     public const string EmailEventsWebhook = "/api/integrations/email/events";
@@ -157,4 +166,5 @@ public static partial class Routes
     public static string OrgAnnouncementWithdraw(Guid id) => $"{OrgAnnouncement(id)}/withdraw";
     public static string MyAnnouncementRead(Guid id) => $"{MyAnnouncements}/{id}/read";
     public static string MyPushSubscription(Guid id) => $"{MyPushSubscriptions}/{id}";
+    public static string MyChannelConsent(string channel) => $"{MyChannels}/{channel}/consent";
 }

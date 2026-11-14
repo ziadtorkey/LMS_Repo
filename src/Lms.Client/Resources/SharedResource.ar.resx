@@ -2011,11 +2011,24 @@
   <data name="Comms_Delivery_Sent" xml:space="preserve"><value>تم الإرسال</value></data>
   <data name="Comms_Delivery_Failed" xml:space="preserve"><value>فشل</value></data>
   <data name="Comms_Delivery_Skipped" xml:space="preserve"><value>تم التخطي</value></data>
-  <data name="Comms_Delivery_Expired" xml:space="preserve"><value>انتهت صلاحيته</value></data>
   <data name="Comms_ChannelState_Active" xml:space="preserve"><value>نشط</value></data>
   <data name="Comms_ChannelState_NeedsSetup" xml:space="preserve"><value>يحتاج إلى إعداد</value></data>
   <data name="Comms_ChannelState_Blocked" xml:space="preserve"><value>محظور</value></data>
   <data name="Comms_ChannelState_Bounced" xml:space="preserve"><value>مرتد</value></data>
+  <data name="Comms_Delivery_Suppressed" xml:space="preserve"><value>لم يُرسل (العنوان محظور)</value></data>
+  <data name="Comms_Delivery_Held" xml:space="preserve"><value>مؤجل</value></data>
+  <data name="Comms_DeliverySkip_expired_while_held" xml:space="preserve"><value>انتهت صلاحيته أثناء التأجيل</value></data>
+  <data name="Comms_DeliverySkip_recipient_cap" xml:space="preserve"><value>بلغ المستلم حدّه اليومي</value></data>
+  <data name="Comms_DeliverySkip_no_contact" xml:space="preserve"><value>لا يوجد عنوان تواصل</value></data>
+  <data name="Comms_DeliverySkip_channel_off" xml:space="preserve"><value>القناة متوقفة</value></data>
+  <data name="Comms_Suppression_HardBounce" xml:space="preserve"><value>العنوان غير موجود</value></data>
+  <data name="Comms_Suppression_Complaint" xml:space="preserve"><value>تم الإبلاغ عنه كغير مرغوب</value></data>
+  <data name="Comms_Suppression_UserOptOut" xml:space="preserve"><value>ألغى الاشتراك</value></data>
+  <data name="Comms_ChannelState_Off" xml:space="preserve"><value>متوقفة</value></data>
+  <data name="Error_channel_not_allowed" xml:space="preserve"><value>أوقفت مدرستك هذه القناة.</value></data>
+  <data name="Error_comms_cap_above_ceiling" xml:space="preserve"><value>هذا الحد اليومي أعلى من الحد الأقصى للمنصة.</value></data>
+  <data name="AuditEntity_ChannelConsent" xml:space="preserve"><value>موافقة القناة</value></data>
+  <data name="AuditEntity_CommsSettings" xml:space="preserve"><value>إعدادات التواصل</value></data>
   <data name="Comms_PrefSource_Default" xml:space="preserve"><value>افتراضي</value></data>
   <data name="Comms_PrefSource_User" xml:space="preserve"><value>اختيارك</value></data>
   <data name="Comms_PrefSource_Mandatory" xml:space="preserve"><value>إلزامي</value></data>
