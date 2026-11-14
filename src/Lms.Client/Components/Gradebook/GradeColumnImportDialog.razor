@@ -1,0 +1,131 @@
+@using Lms.Client.Services
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.Grading
+@using Lms.Shared
+@using Lms.Shared.Grading
+@inject IGradebookApi Api
+@inject ICultureService Culture
+@inject IJSRuntime Js
+@inject NavigationManager Navigation
+
+@* Export a grade column to Excel, or import it back (FR-GRD-04, L9): upload an .xlsx, read the preview, then apply it with the preview token. The server
+   writes nothing before apply, re-checks on apply, and never touches scores that come from assignments or quizzes. *@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="3">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="import-error">@_error</MudAlert>
+            }
+            @if (_done is { } done)
+            {
+                <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" data-testid="import-done-text">
+                    @string.Format(Culture.Current, L["GradeImport_Done"].Value, done.Written, done.Skipped.Count)
+                </MudAlert>
+            }
+            else
+            {
+                <MudSelect T="Guid" Value="_itemId" ValueChanged="ItemChanged" Label="@L["GradeImport_Item"]" data-testid="import-item">
+                    @foreach (var item in Items)
+                    {
+                        <MudSelectItem T="Guid" Value="item.Id">@Culture.Pick(item.TitleAr, item.TitleEn)</MudSelectItem>
+                    }
+                </MudSelect>
+
+                <div class="d-flex flex-wrap gap-2 align-center">
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Download" OnClick="ExportAsync"
+                               Disabled="_busy" data-testid="import-export">@L["GradeImport_Export"]</MudButton>
+                    <label class="mud-button-root mud-button mud-button-outlined mud-button-outlined-primary mud-button-outlined-size-medium mud-ripple" data-testid="import-choose">
+                        @L["GradeImport_Choose"]
+                        <InputFile OnChange="OnFileAsync" accept=".xlsx" class="lms-visually-hidden" aria-label="@L["GradeImport_Choose"]" data-testid="import-file" />
+                    </label>
+                </div>
+                <MudText Typo="Typo.caption" Class="lms-muted">@L["GradeImport_XlsxOnly"]</MudText>
+
+                @if (_preview is not null)
+                {
+                    <ImportPreviewTable Preview="_preview" />
+                }
+            }
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        @if (_done is null)
+        {
+            <MudButton OnClick="() => MudDialog.Cancel()" data-testid="import-cancel">@L["Common_Cancel"]</MudButton>
+            @if (_preview is not null)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ApplyAsync" Disabled="_busy" data-testid="import-apply">@L["GradeImport_Apply"]</MudButton>
+            }
+        }
+        else
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => MudDialog.Close(DialogResult.Ok(true))" data-testid="import-close">@L["Common_Close"]</MudButton>
+        }
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private const long MaxBytes = 10 * 1024 * 1024;
+    private Guid _itemId;
+    private GradeImportPreviewDto? _preview;
+    private GradeImportResultDto? _done;
+    private string? _error;
+    private bool _busy;
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter, EditorRequired] public Guid ClassCourseId { get; set; }
+    [Parameter, EditorRequired] public IReadOnlyList<GradeItemDto> Items { get; set; } = [];
+    [Parameter] public Guid? ItemId { get; set; }
+
+    protected override void OnInitialized() => _itemId = ItemId ?? Items.FirstOrDefault()?.Id ?? Guid.Empty;
+
+    private void ItemChanged(Guid id)
+    {
+        _itemId = id;
+        _preview = null; // a preview belongs to one item
+        _error = null;
+    }
+
+    private async Task ExportAsync()
+    {
+        _busy = true;
+        _error = null;
+        await ApiCalls.RunAsync(async () =>
+        {
+            var (content, fileName) = await Api.ExportItemAsync(ClassCourseId, _itemId);
+            using var reference = new DotNetStreamReference(content);
+            await Js.InvokeVoidAsync("lmsDownloadFile", fileName, reference);
+        }, Navigation, L, m => _error = m);
+        _busy = false;
+    }
+
+    private async Task OnFileAsync(InputFileChangeEventArgs e)
+    {
+        _error = null;
+        _preview = null;
+        var file = e.File;
+        if (!file.Name.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
+        {
+            _error = L["GradeImport_XlsxOnly"]; // refused here, before anything is uploaded
+            return;
+        }
+
+        _busy = true;
+        var buffer = new MemoryStream();
+        await using (var input = file.OpenReadStream(MaxBytes)) await input.CopyToAsync(buffer);
+        buffer.Position = 0;
+        await ApiCalls.RunAsync(async () => _preview = await Api.PreviewImportAsync(ClassCourseId, _itemId, file.Name, buffer), Navigation, L, m => _error = m);
+        _busy = false;
+    }
+
+    private async Task ApplyAsync()
+    {
+        _busy = true;
+        _error = null;
+        var request = new ApplyGradeImportRequest(_preview!.Token);
+        var ok = await ApiCalls.RunAsync(async () => _done = await Api.ApplyImportAsync(ClassCourseId, _itemId, request), Navigation, L, m => _error = m);
+        if (!ok && _error == L["Error_grade_import_expired"].Value) _preview = null; // the token expired: upload the file again
+        _busy = false;
+    }
+}
