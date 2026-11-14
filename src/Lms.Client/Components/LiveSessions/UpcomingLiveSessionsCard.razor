@@ -1,0 +1,115 @@
+@using System.Globalization
+@using Lms.Client.Components.Ui
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.LiveSessions
+@using Lms.Shared.LiveSessions
+@implements IDisposable
+@inject ILiveSessionsApi Api
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+@inject TimeProvider Clock
+
+@* Upcoming live sessions of the caller (design spec M4b §3.3): at most five rows, each a link to the module (the join happens there), with
+   the status chip, or the short countdown for a Scheduled session in the next 24 h, and a plain "Join now" link inside the join window.
+   Times come from the server clock: the server time at the read plus what elapsed here. Never a join URL. *@
+@if (!_loading && !_hidden)
+{
+    <SectionCard Title="@L[Today ? "Home_TodaySessions" : "Home_UpcomingLive"]" TestId="@(Today ? "home-live-today" : "home-live-upcoming")" Class="mt-4">
+        @if (_rows.Count == 0)
+        {
+            <MudText Typo="Typo.body2" Class="lms-muted" data-testid="home-live-empty">@L[Today ? "Home_TodaySessions_Empty" : "Home_UpcomingLive_Empty"]</MudText>
+        }
+        else
+        {
+            <ul class="lms-item-list">
+                @foreach (var s in _rows)
+                {
+                    var local = Local(s.StartsAtUtc);
+                    <li class="lms-item" data-testid="@($"home-live-row-{s.SessionId}")">
+                        <div class="lms-item-main">
+                            <span class="lms-date-block" aria-hidden="true">
+                                <span class="lms-date-block-day">@local.Day.ToString(CultureInfo.InvariantCulture)</span>
+                                <span class="lms-date-block-month">@Culture.Current.DateTimeFormat.GetAbbreviatedMonthName(local.Month)</span>
+                            </span>
+                            <div>
+                                <a class="lms-cell-strong" href="@($"class-courses/{s.ClassCourseId}/modules/{s.ModuleId}")">@Culture.Pick(s.TitleAr, s.TitleEn)</a>
+                                <div class="lms-muted lms-item-caption">
+                                    @if (ClassCourseId is null)
+                                    {
+                                        @Culture.Pick(s.CourseNameAr, s.CourseNameEn)<span aria-hidden="true"> · </span>
+                                    }
+                                    <span class="lms-visually-hidden" dir="ltr" data-testid="home-live-date">@local.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) </span>
+                                    <span dir="ltr">@local.ToString("HH:mm", CultureInfo.InvariantCulture)</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="lms-item-actions">
+                            @if (CanJoin(s))
+                            {
+                                <MudButton Variant="Variant.Text" Size="Size.Small" Href="@($"class-courses/{s.ClassCourseId}/modules/{s.ModuleId}")"
+                                           data-testid="home-live-join">@L["Live_JoinNow"]</MudButton>
+                            }
+                            @if (ShowCountdown(s))
+                            {
+                                <span class="lms-muted" data-testid="home-live-countdown">@L["Live_InShort", LiveTimeFormat.Short(s.StartsAtUtc - ServerNow, L, Culture.IsRightToLeft)]</span>
+                            }
+                            else
+                            {
+                                <LiveSessionStatusChip Status="@ShownStatus(s)" />
+                            }
+                        </div>
+                    </li>
+                }
+            </ul>
+        }
+    </SectionCard>
+}
+
+@code {
+    private const int MaxRows = 5;
+
+    private List<UpcomingLiveSessionDto> _rows = [];
+    private bool _loading = true, _hidden;
+    private DateTime _serverNowAtLoad;
+    private DateTimeOffset _loadedAt;
+    private ITimer? _timer;
+
+    /// <summary>Only this class course (the course home); null = every course of the caller (Home).</summary>
+    [Parameter] public Guid? ClassCourseId { get; set; }
+
+    /// <summary>The teacher's "sessions today" (local date by the server clock) instead of the next few.</summary>
+    [Parameter] public bool Today { get; set; }
+
+    private DateTime ServerNow => _serverNowAtLoad + (Clock.GetUtcNow() - _loadedAt);
+
+    protected override async Task OnInitializedAsync()
+    {
+        // A failed read (feature off, no permission) hides the card: Home must not turn into an error page for a side feature.
+        var ok = await ApiCalls.RunAsync(async () =>
+        {
+            var all = await Api.ListUpcomingAsync();
+            _serverNowAtLoad = all.Count > 0 ? all[0].ServerNowUtc : Clock.GetUtcNow().UtcDateTime;
+            _loadedAt = Clock.GetUtcNow();
+            var rows = all.Where(s => ClassCourseId is null || s.ClassCourseId == ClassCourseId).OrderBy(s => s.StartsAtUtc).AsEnumerable();
+            if (Today) rows = rows.Where(s => Local(s.StartsAtUtc).Date == Local(_serverNowAtLoad).Date);
+            _rows = rows.Take(MaxRows).ToList();
+        }, Navigation, L, _ => { });
+        _hidden = !ok;
+        _loading = false;
+        if (ok) _timer = Clock.CreateTimer(_ => _ = InvokeAsync(StateHasChanged), null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+    }
+
+    private DateTime Local(DateTime utc) => TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(utc, DateTimeKind.Utc), Clock.LocalTimeZone);
+
+    private bool CanJoin(UpcomingLiveSessionDto s) =>
+        s.Status is LiveSessionStatuses.Scheduled or LiveSessionStatuses.Live && ServerNow >= s.JoinOpensAtUtc && ServerNow <= s.EndsAtUtc;
+
+    private bool ShowCountdown(UpcomingLiveSessionDto s) =>
+        s.Status == LiveSessionStatuses.Scheduled && ServerNow < s.StartsAtUtc && s.StartsAtUtc - ServerNow <= TimeSpan.FromHours(24);
+
+    /// <summary>The clock may have moved a Scheduled session on to Live since the read.</summary>
+    private string ShownStatus(UpcomingLiveSessionDto s) =>
+        s.Status == LiveSessionStatuses.Scheduled && ServerNow >= s.StartsAtUtc && ServerNow < s.EndsAtUtc ? LiveSessionStatuses.Live : s.Status;
+
+    public void Dispose() => _timer?.Dispose();
+}

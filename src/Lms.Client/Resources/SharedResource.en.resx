@@ -1732,6 +1732,13 @@
   <data name="Live_EveryWeeks_Many" xml:space="preserve"><value>Every {0} weeks</value></data>
   <data name="Live_ParticipantsIntro" xml:space="preserve"><value>Who joined this session, from Zoom's report. A guest is someone Zoom could not match to an enrolled student.</value></data>
   <data name="Live_NoParticipantsYet" xml:space="preserve"><value>Participants appear here after the session ends.</value></data>
+  <data name="Home_UpcomingLive" xml:space="preserve"><value>Upcoming live sessions</value></data>
+  <data name="Home_TodaySessions" xml:space="preserve"><value>Sessions today</value></data>
+  <data name="Home_UpcomingLive_Empty" xml:space="preserve"><value>No live sessions in the coming days.</value></data>
+  <data name="Home_TodaySessions_Empty" xml:space="preserve"><value>No sessions today.</value></data>
+  <data name="Home_Recordings" xml:space="preserve"><value>Recent recordings</value></data>
+  <data name="Live_InShort" xml:space="preserve"><value>in {0}</value></data>
+  <data name="Live_JoinNow" xml:space="preserve"><value>Join now</value></data>
   <data name="Students_Subtitle" xml:space="preserve"><value>Students of your organization, their class and guardians.</value></data>
   <data name="Students_EmptyTitle" xml:space="preserve"><value>No matching students</value></data>
   <data name="Students_EmptyText" xml:space="preserve"><value>Change the filters or add a new student.</value></data>

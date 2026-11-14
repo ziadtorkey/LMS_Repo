@@ -1732,6 +1732,13 @@
   <data name="Live_EveryWeeks_Many" xml:space="preserve"><value>كل {0} أسبوعاً</value></data>
   <data name="Live_ParticipantsIntro" xml:space="preserve"><value>من انضم إلى هذه الجلسة بحسب تقرير Zoom. الضيف هو من تعذّرت مطابقته مع طالب مسجّل.</value></data>
   <data name="Live_NoParticipantsYet" xml:space="preserve"><value>يظهر المشاركون هنا بعد انتهاء الجلسة.</value></data>
+  <data name="Home_UpcomingLive" xml:space="preserve"><value>الجلسات المباشرة القادمة</value></data>
+  <data name="Home_TodaySessions" xml:space="preserve"><value>جلسات اليوم</value></data>
+  <data name="Home_UpcomingLive_Empty" xml:space="preserve"><value>لا توجد جلسات مباشرة في الأيام القادمة.</value></data>
+  <data name="Home_TodaySessions_Empty" xml:space="preserve"><value>لا توجد جلسات اليوم.</value></data>
+  <data name="Home_Recordings" xml:space="preserve"><value>تسجيلات حديثة</value></data>
+  <data name="Live_InShort" xml:space="preserve"><value>بعد {0}</value></data>
+  <data name="Live_JoinNow" xml:space="preserve"><value>انضم الآن</value></data>
   <data name="Students_Subtitle" xml:space="preserve"><value>طلاب جهتك وفصولهم وأولياء أمورهم.</value></data>
   <data name="Students_EmptyTitle" xml:space="preserve"><value>لا يوجد طلاب مطابقون</value></data>
   <data name="Students_EmptyText" xml:space="preserve"><value>غيّر عوامل التصفية أو أضف طالبًا جديدًا.</value></data>

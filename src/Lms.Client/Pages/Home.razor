@@ -30,6 +30,11 @@ else if (_name is not null)
     {
         <ContinueLearningCards />
     }
+    @if (PermState.Has(Permissions.LiveSessions.View))
+    {
+        @if (PermState.Has(Permissions.LiveSessions.Manage)) { <Lms.Client.Components.LiveSessions.TodaySessionsCard /> }
+        else { <Lms.Client.Components.LiveSessions.UpcomingLiveSessionsCard /> }
+    }
     @if (PermState.Has(Lms.Shared.Authorization.Permissions.Students.ViewChildren))
     {
         <MudPaper Class="pa-4 mt-4" data-testid="home-children-card">
