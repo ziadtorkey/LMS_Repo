@@ -100,6 +100,12 @@ public static partial class Routes
     /// <summary>POST (<c>AudiencePreviewRequest</c> → <c>AudiencePreviewDto</c>) — <c>Announcements.Manage</c>: the count before publishing.</summary>
     public const string OrgAnnouncementAudiencePreview = OrgAnnouncements + "/audience-preview";
 
+    /// <summary>POST (multipart, one file → <c>AnnouncementAttachmentUploadDto</c>) — <c>Announcements.Manage</c>: uploads a pending attachment for a draft; the asset file rules, up to <c>Announcements.MaxAttachments</c>; 429 <c>rate_limited</c> (<c>Announcements.UploadsPerMinute</c>); 422 <c>attachment_invalid</c>.</summary>
+    public const string OrgAnnouncementAttachments = OrgAnnouncements + "/attachments";
+
+    /// <summary>DELETE — <c>Announcements.Manage</c>: removes a pending attachment the caller uploaded and no saved announcement uses yet (404 otherwise).</summary>
+    public const string OrgAnnouncementAttachmentPattern = OrgAnnouncementAttachments + "/{fileId:guid}";
+
     /// <summary>GET → <c>AnnouncementCapabilitiesDto</c> — <c>Announcements.View</c>: what the caller may author (unit-level targets, class-course targets, urgent); never inferred from another permission.</summary>
     public const string OrgAnnouncementCapabilities = OrgAnnouncements + "/capabilities";
 
@@ -165,6 +171,7 @@ public static partial class Routes
     public static string ModerationReport(Guid id) => $"{ModerationReports}/{id}";
     public static string ModerationReportResolve(Guid id) => $"{ModerationReport(id)}/resolve";
     public static string OrgAnnouncement(Guid id) => $"{OrgAnnouncements}/{id}";
+    public static string OrgAnnouncementAttachment(Guid fileId) => $"{OrgAnnouncementAttachments}/{fileId}";
     public static string OrgAnnouncementPublish(Guid id) => $"{OrgAnnouncement(id)}/publish";
     public static string OrgAnnouncementWithdraw(Guid id) => $"{OrgAnnouncement(id)}/withdraw";
     public static string MyAnnouncementRead(Guid id) => $"{MyAnnouncements}/{id}/read";

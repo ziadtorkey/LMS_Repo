@@ -1952,6 +1952,8 @@
   <data name="Setting_Messaging_MaxGroupSize" xml:space="preserve"><value>Largest group conversation</value></data>
   <data name="Setting_Messaging_UploadsPerMinute" xml:space="preserve"><value>Attachment uploads per minute</value></data>
   <data name="Setting_Announcements_MaxPerAuthorPerDay" xml:space="preserve"><value>Announcements per author per day</value></data>
+  <data name="Setting_Announcements_MaxAttachments" xml:space="preserve"><value>Attachments per announcement</value></data>
+  <data name="Setting_Announcements_UploadsPerMinute" xml:space="preserve"><value>Announcement uploads per minute</value></data>
   <data name="NotifEvent_Messages_NewMessage" xml:space="preserve"><value>New message</value></data>
   <data name="Notif_Messages_NewMessage" xml:space="preserve"><value>{SenderName} sent you a message.</value></data>
   <data name="NotifEvent_Announcements_Published" xml:space="preserve"><value>New announcement</value></data>
@@ -2009,7 +2011,7 @@
   <data name="Ann_TargetKind_ClassCourse" xml:space="preserve"><value>Course of a class</value></data>
   <data name="Ann_TargetKind_Group" xml:space="preserve"><value>Group</value></data>
   <data name="Ann_Source_CourseBoard" xml:space="preserve"><value>Course board</value></data>
-  <data name="Ann_Source_School" xml:space="preserve"><value>School</value></data>
+  <data name="Ann_Source_Announcement" xml:space="preserve"><value>Announcement</value></data>
   <data name="Ann_Status_Draft" xml:space="preserve"><value>Draft</value></data>
   <data name="Ann_Status_Scheduled" xml:space="preserve"><value>Scheduled</value></data>
   <data name="Ann_Status_Published" xml:space="preserve"><value>Published</value></data>

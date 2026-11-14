@@ -1952,6 +1952,8 @@
   <data name="Setting_Messaging_MaxGroupSize" xml:space="preserve"><value>أكبر حجم لمحادثة جماعية</value></data>
   <data name="Setting_Messaging_UploadsPerMinute" xml:space="preserve"><value>عدد رفع المرفقات في الدقيقة</value></data>
   <data name="Setting_Announcements_MaxPerAuthorPerDay" xml:space="preserve"><value>عدد الإعلانات لكل كاتب يوميًا</value></data>
+  <data name="Setting_Announcements_MaxAttachments" xml:space="preserve"><value>عدد المرفقات لكل إعلان</value></data>
+  <data name="Setting_Announcements_UploadsPerMinute" xml:space="preserve"><value>رفع مرفقات الإعلانات في الدقيقة</value></data>
   <data name="NotifEvent_Messages_NewMessage" xml:space="preserve"><value>رسالة جديدة</value></data>
   <data name="Notif_Messages_NewMessage" xml:space="preserve"><value>أرسل لك {SenderName} رسالة.</value></data>
   <data name="NotifEvent_Announcements_Published" xml:space="preserve"><value>إعلان جديد</value></data>
@@ -2009,7 +2011,7 @@
   <data name="Ann_TargetKind_ClassCourse" xml:space="preserve"><value>مقرر فصل</value></data>
   <data name="Ann_TargetKind_Group" xml:space="preserve"><value>مجموعة</value></data>
   <data name="Ann_Source_CourseBoard" xml:space="preserve"><value>مجلس المقرر</value></data>
-  <data name="Ann_Source_School" xml:space="preserve"><value>المدرسة</value></data>
+  <data name="Ann_Source_Announcement" xml:space="preserve"><value>إعلان</value></data>
   <data name="Ann_Status_Draft" xml:space="preserve"><value>مسودة</value></data>
   <data name="Ann_Status_Scheduled" xml:space="preserve"><value>مجدول</value></data>
   <data name="Ann_Status_Published" xml:space="preserve"><value>منشور</value></data>
