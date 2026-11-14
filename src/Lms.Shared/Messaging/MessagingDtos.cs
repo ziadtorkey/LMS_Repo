@@ -54,6 +54,9 @@ public sealed record CreateConversationRequest(string Kind, IReadOnlyList<Guid> 
 /// <summary>POST <c>…/messages</c>: text (1-<see cref="MessagingLimits.MaxBodyLength"/>) and up to <see cref="MessagingLimits.MaxAttachmentsPerMessage"/> uploaded files (same file rules as the assets).</summary>
 public sealed record SendMessageRequest(string Body, IReadOnlyList<Guid>? AttachmentFileIds);
 
+/// <summary>PUT <c>/api/conversations/{id}/mute</c>: <c>UntilUtc</c> null = until unmuted; a date must lie in the future (400 <c>validation_failed</c>).</summary>
+public sealed record MuteConversationRequest(DateTime? UntilUtc);
+
 /// <summary>GET <c>…/messages?beforeId=&amp;pageSize=</c>: keyset paging, newest first; <c>BeforeId</c> is the id of the oldest message already loaded.</summary>
 public sealed record MessageQuery(Guid? BeforeId = null, int PageSize = MessagingLimits.MessagePageSize);
 

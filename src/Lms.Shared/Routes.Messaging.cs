@@ -12,7 +12,7 @@ public static partial class Routes
     /// </summary>
     public const string Conversations = "/api/conversations";
 
-    /// <summary>GET → <c>ConversationDto</c> — <c>Messaging.Send</c>; participant only (404 otherwise); PUT/DELETE of own mute and leaving are by the participant.</summary>
+    /// <summary>GET → <c>ConversationDto</c> — <c>Messaging.Send</c>; participant only (404 otherwise); muting and leaving are their own routes below.</summary>
     public const string ConversationPattern = Conversations + "/{id:guid}";
 
     /// <summary>GET <c>?beforeId=&amp;pageSize=</c> → <c>MessagePageDto</c> and POST (<c>SendMessageRequest</c> → <c>MessageDto</c>) — <c>Messaging.Send</c>; participant who has not left; 403 restricted; 409 <c>conversation_closed</c>; 400 <c>message_too_long</c>; 429 <c>rate_limited</c>.</summary>
@@ -20,6 +20,12 @@ public static partial class Routes
 
     /// <summary>DELETE — <c>Messaging.Send</c>: the sender deletes their own message for everyone within <c>MessagingLimits.DeleteWindowMinutes</c> (409 <c>message_delete_window_closed</c> after); there is no edit.</summary>
     public const string MessagePattern = ConversationMessagesPattern + "/{mid:guid}";
+
+    /// <summary>PUT (<c>MuteConversationRequest</c> → <c>ConversationDto</c>) and DELETE — <c>Messaging.Send</c>; participant only (404 otherwise): mutes or unmutes the conversation for the caller (no new-message notice; the unread count still counts).</summary>
+    public const string ConversationMutePattern = ConversationPattern + "/mute";
+
+    /// <summary>POST (no body) — <c>Messaging.Send</c>; participant only: the caller leaves a group (history stays visible to the others); a direct conversation cannot be left (409 <c>conversation_closed</c>), it can be muted or blocked.</summary>
+    public const string ConversationLeavePattern = ConversationPattern + "/leave";
 
     /// <summary>POST (no body) — <c>Messaging.Send</c>: marks the conversation read up to its last message (<c>LastReadMessageId</c>).</summary>
     public const string ConversationReadPattern = ConversationPattern + "/read";
@@ -119,6 +125,8 @@ public static partial class Routes
 
     public static string Message(Guid conversationId, Guid messageId) => $"{ConversationMessages(conversationId)}/{messageId}";
     public static string ConversationRead(Guid id) => $"{Conversation(id)}/read";
+    public static string ConversationMute(Guid id) => $"{Conversation(id)}/mute";
+    public static string ConversationLeave(Guid id) => $"{Conversation(id)}/leave";
 
     public static string MessageSearchUrl(string query, Guid? conversationId = null, int page = 1) =>
         $"{MessageSearch}?q={Uri.EscapeDataString(query)}{(conversationId is { } c ? $"&conversationId={c}" : string.Empty)}&page={page}";

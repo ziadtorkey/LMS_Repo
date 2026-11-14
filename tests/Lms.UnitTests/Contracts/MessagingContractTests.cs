@@ -227,7 +227,7 @@ public sealed class MessagingContractTests
         var patterns = typeof(Routes).GetFields().Where(f => f.IsLiteral && f.FieldType == typeof(string)).Select(f => (string)f.GetRawConstantValue()!).ToList();
         var messaging = new[]
         {
-            Routes.Conversations, Routes.ConversationPattern, Routes.ConversationMessagesPattern, Routes.MessagePattern, Routes.ConversationReadPattern, Routes.MessageSearch,
+            Routes.Conversations, Routes.ConversationPattern, Routes.ConversationMessagesPattern, Routes.MessagePattern, Routes.ConversationReadPattern, Routes.ConversationMutePattern, Routes.ConversationLeavePattern, Routes.MessageSearch,
             Routes.MessageReportPattern, Routes.MyBlocks, Routes.MyBlockPattern, Routes.MessagingRecipients, Routes.MessagingRulesSummary, Routes.MessagingLimits,
             Routes.MyUnreadTotal, Routes.ModerationReports, Routes.ModerationReportPattern, Routes.ModerationReportResolvePattern, Routes.ModerationStats,
             Routes.OrgAnnouncements, Routes.OrgAnnouncementPattern, Routes.OrgAnnouncementPublishPattern, Routes.OrgAnnouncementWithdrawPattern,
@@ -245,6 +245,9 @@ public sealed class MessagingContractTests
         Assert.Equal($"/api/conversations/{c}/messages/{m}", Routes.Message(c, m));
         Assert.Equal($"/api/conversations/{c}/messages?pageSize=50", Routes.ConversationMessages(c, null));
         Assert.Equal($"/api/conversations/{c}/messages?beforeId={m}&pageSize=20", Routes.ConversationMessages(c, m, 20));
+        Assert.Equal($"/api/conversations/{c}/mute", Routes.ConversationMute(c));
+        Assert.Equal($"/api/conversations/{c}/leave", Routes.ConversationLeave(c));
+        Assert.Equal(new MuteConversationRequest(null), Round(new MuteConversationRequest(null)));
         Assert.Equal($"/api/messages/{m}/report", Routes.MessageReport(m));
         Assert.Equal($"/api/comms/announcements/{c}/publish", Routes.OrgAnnouncementPublish(c));
         Assert.Equal($"/api/moderation/reports/{c}/resolve", Routes.ModerationReportResolve(c));
@@ -259,7 +262,7 @@ public sealed class MessagingContractTests
         var matches = Regex.Matches(text, @"((?:\s*///[^\n]*\n)+)\s*public const string (\w+) =");
         var routes = matches.Select(m => (Name: m.Groups[2].Value, Doc: m.Groups[1].Value)).ToList();
 
-        Assert.True(routes.Count >= 34, $"found {routes.Count} documented route constants");
+        Assert.True(routes.Count >= 36, $"found {routes.Count} documented route constants");
         Assert.All(routes, r => Assert.Matches(@"Messaging\.\w+|Announcements\.\w+|Comms\.\w+|authenticated|anonymous|Development only|participant", r.Doc));
         Assert.Equal(Regex.Matches(text, @"public const string \w+ =").Count, routes.Count);
     }
