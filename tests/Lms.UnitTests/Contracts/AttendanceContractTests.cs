@@ -247,6 +247,17 @@ public sealed class AttendanceContractTests
     }
 
     [Fact]
+    public void A_live_session_list_item_links_to_its_attendance_session_when_it_exists()
+    {
+        var start = DateTime.UtcNow;
+        var without = new Lms.Shared.LiveSessions.LiveSessionListItemDto(Id, Other, null, null, "حصة", "Class", start, start.AddMinutes(45), "Ended", false, start);
+        var with = without with { AttendanceSessionId = Other };
+
+        Assert.Null(RoundTrip(without).AttendanceSessionId); // null until the attendance session exists
+        Assert.Equal(Other, RoundTrip(with).AttendanceSessionId);
+    }
+
+    [Fact]
     public void Every_timed_attendance_dto_carries_the_server_clock()
     {
         Type[] timed = [typeof(AttendanceSessionListItemDto), typeof(OwnAttendanceDto), typeof(AttendanceReportDto)];
