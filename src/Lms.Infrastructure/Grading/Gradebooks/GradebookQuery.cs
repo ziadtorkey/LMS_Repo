@@ -74,7 +74,7 @@ public sealed class GradebookReader(
     public async Task<GradebookDto> BuildAsync(
         ClassCourse classCourse, Gradebook gradebook, Term term, GridPaging paging, bool canManage, bool canPublish, CancellationToken ct)
     {
-        var (students, total) = await StudentsAsync(classCourse, paging, ct);
+        var (students, total) = await StudentsAsync(classCourse, gradebook.Id, paging, ct);
         var data = await LoadAsync(classCourse, gradebook, students, ct);
         var result = data.Calculate();
         var scale = data.Scale;
@@ -96,12 +96,14 @@ public sealed class GradebookReader(
     /// <summary>The recomputed row of one student (the answer of an entry write).</summary>
     public async Task<GradeRowDto?> RowAsync(ClassCourse classCourse, Gradebook gradebook, Guid studentId, CancellationToken ct)
     {
-        var student = await db.Set<StudentProfile>().Where(s => s.Id == studentId)
+        var profile = await db.Set<StudentProfile>().Where(s => s.Id == studentId)
             .Select(s => new GridStudent(s.Id, s.StudentCode, s.NameAr, s.NameEn)).FirstOrDefaultAsync(ct);
-        if (student is null)
+        if (profile is null)
         {
             return null;
         }
+
+        var student = (await WithEnrollmentStateAsync(classCourse, [profile], ct))[0];
 
         var data = await LoadAsync(classCourse, gradebook, [student], ct);
         return GradeRowBuilder.Build(data, data.Calculate()).Single();
@@ -112,17 +114,36 @@ public sealed class GradebookReader(
             i.MaxPoints, i.PublishState, i.PublishAtUtc, i.PublishedAtUtc, i.Order);
 
     private async Task<(IReadOnlyList<GridStudent> Students, int Total)> StudentsAsync(
-        ClassCourse classCourse, GridPaging paging, CancellationToken ct)
+        ClassCourse classCourse, Guid gradebookId, GridPaging paging, CancellationToken ct)
     {
-        var enrolled = db.Set<CourseEnrollment>()
-            .Where(e => e.ClassCourseId == classCourse.Id && e.Status == CourseEnrollment.ActiveStatus)
-            .Select(e => e.StudentId);
-        var query = db.Set<StudentProfile>().Where(s => enrolled.Contains(s.Id));
+        // Active students, and students who dropped mid-term but still have stored grades (they stay visible to staff, marked withdrawn).
+        var enrollments = db.Set<CourseEnrollment>().Where(e => e.ClassCourseId == classCourse.Id);
+        var active = enrollments.Where(e => e.Status == CourseEnrollment.ActiveStatus).Select(e => e.StudentId);
+        var dropped = enrollments.Where(e => e.Status != CourseEnrollment.ActiveStatus).Select(e => e.StudentId);
+        var withEntries = db.Set<GradeEntry>().Where(e => e.GradebookId == gradebookId).Select(e => e.StudentProfileId);
+        var withEvents = db.Set<GradeEvent>().Where(e => e.ClassCourseId == classCourse.Id).Select(e => e.StudentProfileId);
+        var query = db.Set<StudentProfile>().Where(s =>
+            active.Contains(s.Id) || (dropped.Contains(s.Id) && (withEntries.Contains(s.Id) || withEvents.Contains(s.Id))));
         var total = await query.CountAsync(ct);
         var page = await query.OrderBy(s => s.NameEn).ThenBy(s => s.Id)
             .Skip((paging.Page - 1) * paging.PageSize).Take(paging.PageSize)
             .Select(s => new GridStudent(s.Id, s.StudentCode, s.NameAr, s.NameEn)).ToListAsync(ct);
-        return (page, total);
+        return (await WithEnrollmentStateAsync(classCourse, page, ct), total);
+    }
+
+    /// <summary>Marks the students who have no active enrollment as withdrawn, with the day their last enrollment ended.</summary>
+    private async Task<IReadOnlyList<GridStudent>> WithEnrollmentStateAsync(ClassCourse classCourse, IReadOnlyList<GridStudent> students, CancellationToken ct)
+    {
+        var ids = students.Select(s => s.Id).ToList();
+        var rows = await db.Set<CourseEnrollment>().Where(e => e.ClassCourseId == classCourse.Id && ids.Contains(e.StudentId))
+            .Select(e => new { e.StudentId, e.Status, e.To }).ToListAsync(ct);
+        var byStudent = rows.ToLookup(r => r.StudentId);
+        return students.Select(s =>
+        {
+            var own = byStudent[s.Id].ToList();
+            var withdrawn = own.Count > 0 && own.All(r => r.Status != CourseEnrollment.ActiveStatus);
+            return withdrawn ? s with { IsWithdrawn = true, WithdrawnOn = own.Max(r => r.To) } : s;
+        }).ToList();
     }
 
     private async Task<GradebookData> LoadAsync(

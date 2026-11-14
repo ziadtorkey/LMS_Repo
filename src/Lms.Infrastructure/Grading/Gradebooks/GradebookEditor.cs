@@ -138,8 +138,8 @@ public sealed class GradebookEditor(LmsDbContext db, IGradebookWriter writer, IS
         Gradebook gradebook, Guid studentId, long version, IReadOnlyList<GradeEntryChange> changes, Guid? byUserId, CancellationToken ct)
     {
         await writer.EnsureWritableAsync(gradebook, ct);
-        var enrolled = await db.Set<CourseEnrollment>().AnyAsync(
-            e => e.ClassCourseId == gradebook.ClassCourseId && e.StudentId == studentId && e.Status == CourseEnrollment.ActiveStatus, ct);
+        // A student who left mid-term keeps a row staff can still grade or correct (marked withdrawn in the grid): any enrollment of the class course counts.
+        var enrolled = await db.Set<CourseEnrollment>().AnyAsync(e => e.ClassCourseId == gradebook.ClassCourseId && e.StudentId == studentId, ct);
         if (!enrolled)
         {
             throw new GradebookRuleException(ProblemCodes.not_found, 404);

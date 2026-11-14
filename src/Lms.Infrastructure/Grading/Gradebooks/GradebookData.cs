@@ -3,8 +3,8 @@ using Lms.Domain.Grading.Calculation;
 
 namespace Lms.Infrastructure.Grading.Gradebooks;
 
-/// <summary>A student of the grid.</summary>
-public sealed record GridStudent(Guid Id, string Code, string NameAr, string NameEn);
+/// <summary>A student of the grid. <c>WithdrawnOn</c> is set when the enrollment ended (the student left mid-term).</summary>
+public sealed record GridStudent(Guid Id, string Code, string NameAr, string NameEn, bool IsWithdrawn = false, DateOnly? WithdrawnOn = null);
 
 /// <summary>A band of the gradebook's scale with its code (the calculator's <see cref="CalcBand"/> has none).</summary>
 public sealed record GridBand(string Code, CalcBand Band);

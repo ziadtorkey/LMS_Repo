@@ -251,6 +251,42 @@ public sealed class GradebookGridTests(LmsApiFactory factory)
     }
 
     [Fact]
+    public async Task A_student_who_left_mid_term_stays_visible_to_staff_with_stored_grades_marked_withdrawn()
+    {
+        using var host = new GradebookGridHost(factory);
+        var w = await host.SeedAsync("GG14", students: 3);
+        var (graded, silent, stays) = (w.Students[0].Id, w.Students[1].Id, w.Students[2].Id);
+        var item = await host.AddItemAsync(w, "Paper", 20);
+        await host.EntriesAsync(w, graded, 0, new GradeEntryChange(item.Id, GradeEntryActions.Set, 12, null));
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            foreach (var e in db.Set<Lms.Domain.Enrollment.CourseEnrollment>().Where(e => e.StudentId == graded || e.StudentId == silent))
+            {
+                e.Drop(new DateOnly(2026, 10, 5), "left");
+            }
+
+            await db.SaveChangesAsync();
+        }
+
+        var grid = await host.GridAsync(w);
+
+        Assert.Equal(2, grid.Rows.Total); // the one who left with no stored grades is gone; the one with grades stays
+        var left = grid.Rows.Items.Single(r => r.StudentId == graded);
+        Assert.True(left.IsWithdrawn);
+        Assert.Equal(new DateOnly(2026, 10, 5), left.WithdrawnOn);
+        Assert.Equal(12m, GradebookGridHost.Cell(left, item.Id).Points);
+        var current = grid.Rows.Items.Single(r => r.StudentId == stays);
+        Assert.False(current.IsWithdrawn);
+        Assert.Null(current.WithdrawnOn);
+        Assert.DoesNotContain(grid.Rows.Items, r => r.StudentId == silent);
+
+        // staff can still correct the stored grades of a student who left
+        var corrected = await host.EntriesAsync(w, graded, left.Version, new GradeEntryChange(item.Id, GradeEntryActions.Set, 14, null));
+        Assert.True(corrected.IsWithdrawn);
+        Assert.Equal(14m, GradebookGridHost.Cell(corrected, item.Id).Points);
+    }
+
+    [Fact]
     public async Task Grid_of_40_students_and_60_items_computes_under_budget()
     {
         using var host = new GradebookGridHost(factory);

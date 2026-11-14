@@ -33,7 +33,7 @@ public static class GradeRowBuilder
             var code = band is null ? null : data.Bands.FirstOrDefault(b => b.Band.MinPercent == band.MinPercent)?.Code;
             return new GradeRowDto(
                 student.Id, student.NameAr, student.NameEn, student.Code, cells, categoryResults, calc?.FinalPercent,
-                code, band?.LabelAr, band?.LabelEn, band?.GpaPoints, RowVersion(own.Values));
+                code, band?.LabelAr, band?.LabelEn, band?.GpaPoints, RowVersion(own.Values), student.IsWithdrawn, student.WithdrawnOn);
         }).ToList();
     }
 
