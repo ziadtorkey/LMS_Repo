@@ -1842,4 +1842,48 @@
   <data name="Policies_CascadeNote" xml:space="preserve"><value>Policies you turn on here apply to this unit and every unit below it. A policy set higher up shows who set it and can only be changed there.</value></data>
   <data name="Policies_CardTitle" xml:space="preserve"><value>Delegation barriers</value></data>
   <data name="Policies_CardHelp" xml:space="preserve"><value>Block actions for this unit and the units below it.</value></data>
+  <data name="Perm_AcademicYears_Close" xml:space="preserve"><value>Close an academic year</value></data>
+  <data name="Perm_Grades_ChangeRequest" xml:space="preserve"><value>Ask for a grade change after the year closed</value></data>
+  <data name="Perm_Grades_ChangeApprove" xml:space="preserve"><value>Approve or reject grade changes after the year closed</value></data>
+  <data name="Perm_Promotion_Run" xml:space="preserve"><value>Run the year-end promotion</value></data>
+  <data name="Perm_Students_Withdraw" xml:space="preserve"><value>Withdraw or graduate students</value></data>
+  <data name="Perm_Students_Readmit" xml:space="preserve"><value>Re-admit students</value></data>
+  <data name="Perm_Students_ViewArchive" xml:space="preserve"><value>View the archive of students who left</value></data>
+  <data name="NotifEvent_Grades_ChangeRequested" xml:space="preserve"><value>Grade change requested</value></data>
+  <data name="Notif_Grades_ChangeRequested" xml:space="preserve"><value>A teacher asked for a grade change in {CourseName}.</value></data>
+  <data name="NotifEvent_Grades_ChangeDecided" xml:space="preserve"><value>Grade change decided</value></data>
+  <data name="Notif_Grades_ChangeDecided" xml:space="preserve"><value>Your grade change request in {CourseName} was {Decision}.</value></data>
+  <data name="NotifEvent_Promotion_Finished" xml:space="preserve"><value>Promotion run finished</value></data>
+  <data name="Notif_Promotion_Finished" xml:space="preserve"><value>The promotion from {SourceYearName} to {TargetYearName} ended: {State}.</value></data>
+  <data name="NotifEvent_Years_NextOpened" xml:space="preserve"><value>Next year opened</value></data>
+  <data name="Notif_Years_NextOpened" xml:space="preserve"><value>The year {YearName} was opened.</value></data>
+  <data name="Error_year_close_blocked" xml:space="preserve"><value>This year cannot be closed yet. Fix the problems listed and try again.</value></data>
+  <data name="Error_year_not_closed" xml:space="preserve"><value>The source year must be closed before a promotion can run.</value></data>
+  <data name="Error_grade_change_pending" xml:space="preserve"><value>This grade already has a change request waiting for a decision.</value></data>
+  <data name="Error_grade_change_not_allowed" xml:space="preserve"><value>You cannot decide your own request, or this grade is not in a closed year.</value></data>
+  <data name="Error_promotion_in_progress" xml:space="preserve"><value>Another promotion for this unit is still running.</value></data>
+  <data name="Error_promotion_conflict" xml:space="preserve"><value>This promotion can no longer be changed or has problems to fix first.</value></data>
+  <data name="Error_promotion_undo_window_over" xml:space="preserve"><value>The time to undo this promotion has passed.</value></data>
+  <data name="Error_promotion_undo_activity_exists" xml:space="preserve"><value>This promotion cannot be undone because the new year already has activity.</value></data>
+  <data name="Error_student_already_inactive" xml:space="preserve"><value>This student is already inactive.</value></data>
+  <data name="Error_effective_date_invalid" xml:space="preserve"><value>This effective date is not allowed.</value></data>
+  <data name="Error_readmit_class_full" xml:space="preserve"><value>This class has no room.</value></data>
+  <data name="Error_readmit_year_closed" xml:space="preserve"><value>This class belongs to a closed year.</value></data>
+  <data name="Error_copy_nothing_selected" xml:space="preserve"><value>Choose a year to copy from or a template.</value></data>
+  <data name="Error_provider_test_failed" xml:space="preserve"><value>The connection test failed. Check the settings and try again.</value></data>
+  <data name="YearIssue_NoLevelMapping" xml:space="preserve"><value>A level has no next level set.</value></data>
+  <data name="YearIssue_TargetClassMissing" xml:space="preserve"><value>The target year has no class for some students.</value></data>
+  <data name="YearIssue_AlreadyPlacedInTargetYear" xml:space="preserve"><value>Some students already have a class in the target year.</value></data>
+  <data name="YearIssue_TargetYearClosed" xml:space="preserve"><value>The target year is closed.</value></data>
+  <data name="YearIssue_SourceYearNotClosed" xml:space="preserve"><value>The source year is not closed.</value></data>
+  <data name="YearIssue_UnpublishedGradeItems" xml:space="preserve"><value>Some grade items are not published.</value></data>
+  <data name="YearIssue_OpenAssignments" xml:space="preserve"><value>Some assignments are still open.</value></data>
+  <data name="YearIssue_OpenTerms" xml:space="preserve"><value>Some terms are still open.</value></data>
+  <data name="YearIssue_PendingGradeChangeRequests" xml:space="preserve"><value>Some grade change requests are waiting.</value></data>
+  <data name="YearIssue_PendingExcuseRequests" xml:space="preserve"><value>Some absence excuses are waiting.</value></data>
+  <data name="YearIssue_OverCapacity" xml:space="preserve"><value>Some classes would be over capacity.</value></data>
+  <data name="PermModule_Promotion" xml:space="preserve"><value>Promotion</value></data>
+  <data name="AuditEntity_GradeChangeRequest" xml:space="preserve"><value>Grade change request</value></data>
+  <data name="AuditEntity_PromotionRun" xml:space="preserve"><value>Promotion run</value></data>
+  <data name="AuditEntity_StudentExit" xml:space="preserve"><value>Student exit</value></data>
 </root>

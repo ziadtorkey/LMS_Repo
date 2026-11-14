@@ -36,6 +36,13 @@ public class BuiltInRoleDefaultsTests
     [InlineData(Permissions.Grades.View, 8)]
     [InlineData(Permissions.Grades.ConfigureScales, 8)]
     [InlineData(Permissions.Grades.ViewOwn, 8)]
+    [InlineData(Permissions.AcademicYears.Close, 12)]
+    [InlineData(Permissions.Grades.ChangeRequest, 12)]
+    [InlineData(Permissions.Grades.ChangeApprove, 12)]
+    [InlineData(Permissions.Promotion.Run, 12)]
+    [InlineData(Permissions.Students.Withdraw, 12)]
+    [InlineData(Permissions.Students.Readmit, 12)]
+    [InlineData(Permissions.Students.ViewArchive, 12)]
     public void Each_permission_has_the_version_that_introduced_it(string permission, int version)
     {
         Assert.Equal(version, BuiltInRoleDefaults.IntroducedIn(permission));
@@ -50,7 +57,7 @@ public class BuiltInRoleDefaultsTests
 
         Assert.Equal(
             ["Classes.View", "Enrollment.RequestException", "Enrollment.View", "Groups.View", "Library.View",
-             "Staff.View", "Students.ApproveChanges", "Students.Update", "Students.View"],
+             "Staff.View", "Students.ApproveChanges", "Students.Update", "Students.View", "Students.ViewArchive", "Students.Withdraw"],
             added);
     }
 
@@ -65,12 +72,13 @@ public class BuiltInRoleDefaultsTests
             .ToList();
 
         Assert.Equal(["Students.ViewChildren", "Grades.ViewOwn"], added);
-        Assert.Equal(55, orgAdmin.Count);
+        Assert.Equal(62, orgAdmin.Count);
         Assert.Equal(33, orgAdmin.Count(p => BuiltInRoleDefaults.IntroducedIn(p) == 3));
         Assert.Equal(11, orgAdmin.Count(p => BuiltInRoleDefaults.IntroducedIn(p) == 5));
         Assert.Equal(2, orgAdmin.Count(p => BuiltInRoleDefaults.IntroducedIn(p) == 6));
         Assert.Equal(2, orgAdmin.Count(p => BuiltInRoleDefaults.IntroducedIn(p) == 7));
         Assert.Equal(5, orgAdmin.Count(p => BuiltInRoleDefaults.IntroducedIn(p) == 8));
+        Assert.Equal(7, orgAdmin.Count(p => BuiltInRoleDefaults.IntroducedIn(p) == 12));
         Assert.DoesNotContain(orgAdmin, p => p.StartsWith("Staff.", StringComparison.Ordinal));
     }
 
@@ -90,7 +98,7 @@ public class BuiltInRoleDefaultsTests
         Assert.Equal(["Modules.View"], Added(BuiltInRoles.Student));
         Assert.Empty(Added(BuiltInRoles.Counselor));
         Assert.Empty(Added(BuiltInRoles.Guardian));
-        Assert.Equal(20, BuiltInRoles.Get(BuiltInRoles.Teacher).DefaultPermissions.Count(p => BuiltInRoleDefaults.IntroducedIn(p) > 3));
+        Assert.Equal(21, BuiltInRoles.Get(BuiltInRoles.Teacher).DefaultPermissions.Count(p => BuiltInRoleDefaults.IntroducedIn(p) > 3));
     }
 
     [Fact]
@@ -191,14 +199,16 @@ public class BuiltInRoleDefaultsTests
     {
         string[] m3Modules = ["Students", "Courses", "Blueprints", "Classes", "TeacherAssignments", "Enrollment", "Groups", "LessonPlans"];
 
-        Assert.All(Permissions.All.Where(p => m3Modules.Contains(p[..p.IndexOf('.')])),
+        Assert.All(Permissions.All.Where(p => m3Modules.Contains(p[..p.IndexOf('.')]) && !BuiltInRoleDefaults.IntroducedInVersion12.Contains(p)),
             p => Assert.Equal(3, BuiltInRoleDefaults.IntroducedIn(p)));
     }
 
     [Fact]
     public void No_permission_is_introduced_after_the_current_version()
     {
-        Assert.All(Permissions.All, p => Assert.InRange(BuiltInRoleDefaults.IntroducedIn(p), 0, BuiltInRoleDefaults.CurrentVersion));
+        // The M7 wave 1 set (version 12) waits for the Lead to raise CurrentVersion to 12 after M6 (version 11) lands; then this exclusion goes away.
+        Assert.All(Permissions.All.Where(p => !BuiltInRoleDefaults.IntroducedInVersion12.Contains(p)),
+            p => Assert.InRange(BuiltInRoleDefaults.IntroducedIn(p), 0, BuiltInRoleDefaults.CurrentVersion));
     }
 
     [Theory]

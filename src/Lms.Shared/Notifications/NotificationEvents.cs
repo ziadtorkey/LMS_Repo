@@ -71,6 +71,12 @@ public static class NotificationEvents
     // batch. No grade value and no item title in any notification, log or error.
     public const string GradesPublished = "Grades.Published";
 
+    // M7 wave 1 (year end, FE proposal #808). No grade value and no student name beyond what the recipient may already read.
+    public const string GradesChangeRequested = "Grades.ChangeRequested";
+    public const string GradesChangeDecided = "Grades.ChangeDecided";
+    public const string PromotionFinished = "Promotion.Finished";
+    public const string YearsNextOpened = "Years.NextOpened";
+
     public static IReadOnlyList<NotificationEventDefinition> All { get; } =
     [
         new(AccessRoleAssigned, [], ["RoleNameAr", "RoleNameEn", "OrgUnitNameAr", "OrgUnitNameEn"]),
@@ -114,6 +120,14 @@ public static class NotificationEvents
         new(LiveReminder, [], ["TitleAr", "TitleEn", "CourseNameAr", "CourseNameEn", "StartsAtUtc"]),
         // Named recipients: the student and the linked guardians, once per publish batch. Course name only: never a score or an item title.
         new(GradesPublished, [], ["CourseNameAr", "CourseNameEn"]),
+        // Approvers (Manager and Org Admin of the unit subtree): a teacher asked for a change to a grade of a closed year. Course name only.
+        new(GradesChangeRequested, [BuiltInRoles.Manager, BuiltInRoles.OrgAdmin], ["CourseNameAr", "CourseNameEn"], RecipientScopes.AncestorsAndSelf),
+        // Named recipient: the requester. Decision is Approved or Rejected; never the grade value.
+        new(GradesChangeDecided, [], ["CourseNameAr", "CourseNameEn", "Decision"]),
+        // Named recipient: whoever ran the promotion. State is Done, PartiallyFailed, Failed or Undone.
+        new(PromotionFinished, [], ["SourceYearNameAr", "SourceYearNameEn", "TargetYearNameAr", "TargetYearNameEn", "State"]),
+        // Org Admins of the unit: the next year was opened (a Planned year from a copy or a template).
+        new(YearsNextOpened, [BuiltInRoles.OrgAdmin], ["YearNameAr", "YearNameEn"], RecipientScopes.AncestorsAndSelf),
     ];
 
     /// <summary>The definition with this exact (case-sensitive) key, or null.</summary>

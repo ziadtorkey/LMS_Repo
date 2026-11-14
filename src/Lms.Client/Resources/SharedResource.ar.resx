@@ -1842,4 +1842,48 @@
   <data name="Policies_CascadeNote" xml:space="preserve"><value>تُطبَّق السياسات التي تفعّلها هنا على هذه الوحدة وكل الوحدات التابعة لها. السياسة المعيّنة في مستوى أعلى تُظهر من عيّنها، ولا تُغيَّر إلا هناك.</value></data>
   <data name="Policies_CardTitle" xml:space="preserve"><value>قيود التفويض</value></data>
   <data name="Policies_CardHelp" xml:space="preserve"><value>امنع إجراءات في هذه الوحدة والوحدات التابعة لها.</value></data>
+  <data name="Perm_AcademicYears_Close" xml:space="preserve"><value>إغلاق عام دراسي</value></data>
+  <data name="Perm_Grades_ChangeRequest" xml:space="preserve"><value>طلب تعديل درجة بعد إغلاق العام</value></data>
+  <data name="Perm_Grades_ChangeApprove" xml:space="preserve"><value>الموافقة على تعديلات الدرجات بعد إغلاق العام أو رفضها</value></data>
+  <data name="Perm_Promotion_Run" xml:space="preserve"><value>تشغيل ترقية نهاية العام</value></data>
+  <data name="Perm_Students_Withdraw" xml:space="preserve"><value>سحب الطلاب أو تخريجهم</value></data>
+  <data name="Perm_Students_Readmit" xml:space="preserve"><value>إعادة قبول الطلاب</value></data>
+  <data name="Perm_Students_ViewArchive" xml:space="preserve"><value>عرض أرشيف الطلاب المغادرين</value></data>
+  <data name="NotifEvent_Grades_ChangeRequested" xml:space="preserve"><value>طلب تعديل درجة</value></data>
+  <data name="Notif_Grades_ChangeRequested" xml:space="preserve"><value>طلب معلم تعديل درجة في {CourseName}.</value></data>
+  <data name="NotifEvent_Grades_ChangeDecided" xml:space="preserve"><value>قرار بشأن تعديل درجة</value></data>
+  <data name="Notif_Grades_ChangeDecided" xml:space="preserve"><value>صدر قرار بشأن طلب تعديل الدرجة في {CourseName}: {Decision}.</value></data>
+  <data name="NotifEvent_Promotion_Finished" xml:space="preserve"><value>انتهاء تشغيل الترقية</value></data>
+  <data name="Notif_Promotion_Finished" xml:space="preserve"><value>انتهت الترقية من {SourceYearName} إلى {TargetYearName}: {State}.</value></data>
+  <data name="NotifEvent_Years_NextOpened" xml:space="preserve"><value>فتح العام التالي</value></data>
+  <data name="Notif_Years_NextOpened" xml:space="preserve"><value>تم فتح العام {YearName}.</value></data>
+  <data name="Error_year_close_blocked" xml:space="preserve"><value>لا يمكن إغلاق هذا العام بعد. عالج المشكلات المعروضة ثم حاول مرة أخرى.</value></data>
+  <data name="Error_year_not_closed" xml:space="preserve"><value>يجب إغلاق العام المصدر قبل تشغيل الترقية.</value></data>
+  <data name="Error_grade_change_pending" xml:space="preserve"><value>لهذه الدرجة طلب تعديل ينتظر القرار.</value></data>
+  <data name="Error_grade_change_not_allowed" xml:space="preserve"><value>لا يمكنك البت في طلبك، أو أن هذه الدرجة ليست في عام مغلق.</value></data>
+  <data name="Error_promotion_in_progress" xml:space="preserve"><value>هناك ترقية أخرى لهذه الوحدة قيد التشغيل.</value></data>
+  <data name="Error_promotion_conflict" xml:space="preserve"><value>لم يعد ممكنا تعديل هذه الترقية أو توجد مشكلات يجب معالجتها أولا.</value></data>
+  <data name="Error_promotion_undo_window_over" xml:space="preserve"><value>انتهى الوقت المتاح للتراجع عن هذه الترقية.</value></data>
+  <data name="Error_promotion_undo_activity_exists" xml:space="preserve"><value>لا يمكن التراجع عن هذه الترقية لأن العام الجديد يحتوي على نشاط.</value></data>
+  <data name="Error_student_already_inactive" xml:space="preserve"><value>هذا الطالب غير نشط بالفعل.</value></data>
+  <data name="Error_effective_date_invalid" xml:space="preserve"><value>تاريخ السريان هذا غير مسموح.</value></data>
+  <data name="Error_readmit_class_full" xml:space="preserve"><value>لا توجد أماكن في هذا الفصل.</value></data>
+  <data name="Error_readmit_year_closed" xml:space="preserve"><value>هذا الفصل يتبع عاما مغلقا.</value></data>
+  <data name="Error_copy_nothing_selected" xml:space="preserve"><value>اختر عاما للنسخ منه أو قالبا.</value></data>
+  <data name="Error_provider_test_failed" xml:space="preserve"><value>فشل اختبار الاتصال. راجع الإعدادات وحاول مرة أخرى.</value></data>
+  <data name="YearIssue_NoLevelMapping" xml:space="preserve"><value>لم يحدد المستوى التالي لأحد المستويات.</value></data>
+  <data name="YearIssue_TargetClassMissing" xml:space="preserve"><value>لا يوجد فصل في العام الهدف لبعض الطلاب.</value></data>
+  <data name="YearIssue_AlreadyPlacedInTargetYear" xml:space="preserve"><value>لدى بعض الطلاب فصل بالفعل في العام الهدف.</value></data>
+  <data name="YearIssue_TargetYearClosed" xml:space="preserve"><value>العام الهدف مغلق.</value></data>
+  <data name="YearIssue_SourceYearNotClosed" xml:space="preserve"><value>العام المصدر غير مغلق.</value></data>
+  <data name="YearIssue_UnpublishedGradeItems" xml:space="preserve"><value>بعض بنود الدرجات غير منشورة.</value></data>
+  <data name="YearIssue_OpenAssignments" xml:space="preserve"><value>بعض الواجبات ما زالت مفتوحة.</value></data>
+  <data name="YearIssue_OpenTerms" xml:space="preserve"><value>بعض الفصول الدراسية ما زالت مفتوحة.</value></data>
+  <data name="YearIssue_PendingGradeChangeRequests" xml:space="preserve"><value>بعض طلبات تعديل الدرجات تنتظر القرار.</value></data>
+  <data name="YearIssue_PendingExcuseRequests" xml:space="preserve"><value>بعض أعذار الغياب تنتظر القرار.</value></data>
+  <data name="YearIssue_OverCapacity" xml:space="preserve"><value>ستتجاوز بعض الفصول سعتها.</value></data>
+  <data name="PermModule_Promotion" xml:space="preserve"><value>الترقية</value></data>
+  <data name="AuditEntity_GradeChangeRequest" xml:space="preserve"><value>طلب تعديل درجة</value></data>
+  <data name="AuditEntity_PromotionRun" xml:space="preserve"><value>تشغيل ترقية</value></data>
+  <data name="AuditEntity_StudentExit" xml:space="preserve"><value>مغادرة طالب</value></data>
 </root>

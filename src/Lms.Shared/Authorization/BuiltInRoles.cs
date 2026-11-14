@@ -71,7 +71,10 @@ public static class BuiltInRoles
              Permissions.LiveSessions.View, Permissions.LiveSessions.Manage,
              // M5 wave 1 (D58): every grading permission except ViewOwn (they have no grades of their own).
              Permissions.Grades.View, Permissions.Grades.Manage, Permissions.Grades.Publish,
-             Permissions.Grades.ConfigureScales, Permissions.Grades.ViewReports]),
+             Permissions.Grades.ConfigureScales, Permissions.Grades.ViewReports,
+             // M7 wave 1 (D78-D82, D17): close year (Org Admin only), approve grade changes, run the promotion, withdraw, re-admit, read the archive.
+             Permissions.AcademicYears.Close, Permissions.Grades.ChangeRequest, Permissions.Grades.ChangeApprove, Permissions.Promotion.Run,
+             Permissions.Students.Withdraw, Permissions.Students.Readmit, Permissions.Students.ViewArchive]),
         new(Manager, RoleBaseKinds.Staff,
             new("مدير المدرسة", "School Manager"),
             new("العميد", "Dean"),
@@ -109,7 +112,10 @@ public static class BuiltInRoles
              Permissions.LiveSessions.View, Permissions.LiveSessions.Manage,
              // M5 wave 1 (D58): every grading permission except ViewOwn (they have no grades of their own).
              Permissions.Grades.View, Permissions.Grades.Manage, Permissions.Grades.Publish,
-             Permissions.Grades.ConfigureScales, Permissions.Grades.ViewReports]),
+             Permissions.Grades.ConfigureScales, Permissions.Grades.ViewReports,
+             // M7 wave 1 (D78-D82): the Manager approves grade changes, runs the promotion inside their units, withdraws, re-admits and reads the archive; closing a year is the Org Admin's (D17).
+             Permissions.Grades.ChangeRequest, Permissions.Grades.ChangeApprove, Permissions.Promotion.Run,
+             Permissions.Students.Withdraw, Permissions.Students.Readmit, Permissions.Students.ViewArchive]),
         new(Supervisor, RoleBaseKinds.Staff,
             new("المشرف الأكاديمي", "Academic Supervisor"),
             new("رئيس القسم", "Head of Department"),
@@ -135,7 +141,9 @@ public static class BuiltInRoles
              // M4b wave 3a: see sessions of the unit (join link only, never the start link).
              Permissions.LiveSessions.View,
              // M5 wave 1: read grades and reports of supervised courses (RelationshipRules).
-             Permissions.Grades.View, Permissions.Grades.ViewReports]),
+             Permissions.Grades.View, Permissions.Grades.ViewReports,
+             // M7 wave 1: the archive of supervised units.
+             Permissions.Students.ViewArchive]),
         new(Counselor, RoleBaseKinds.Staff,
             new("الأخصائي الاجتماعي", "Social Worker"),
             new("شؤون الطلاب", "Student Affairs"),
@@ -144,7 +152,9 @@ public static class BuiltInRoles
              Permissions.Classes.View, Permissions.Enrollment.View, Permissions.Enrollment.RequestException,
              Permissions.Groups.View,
              // M4a wave 2: every staff role reads the library.
-             Permissions.Library.View]),
+             Permissions.Library.View,
+             // M7 wave 1 (D82): the Counselor may withdraw a student and reads the archive; re-admission is the Manager's.
+             Permissions.Students.Withdraw, Permissions.Students.ViewArchive]),
         new(Teacher, RoleBaseKinds.Staff,
             new("المعلم", "Teacher"),
             new("عضو هيئة التدريس", "Instructor"),
@@ -166,7 +176,9 @@ public static class BuiltInRoles
              // M4b wave 3a: live sessions of own ClassCourses (RelationshipRules).
              Permissions.LiveSessions.View, Permissions.LiveSessions.Manage,
              // M5 wave 1: grades of own ClassCourses (RelationshipRules); scales and reports are not the Teacher's.
-             Permissions.Grades.View, Permissions.Grades.Manage, Permissions.Grades.Publish]),
+             Permissions.Grades.View, Permissions.Grades.Manage, Permissions.Grades.Publish,
+             // M7 wave 1 (FR-GRD-06): ask for a change to a grade of own ClassCourse after the year closed (RelationshipRules).
+             Permissions.Grades.ChangeRequest]),
         new(Student, RoleBaseKinds.Student,
             new("الطالب", "Student"),
             new("الطالب", "Student"),
