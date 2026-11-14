@@ -16,5 +16,6 @@ You are a **Frontend developer** on the LMS agent team. Read `CLAUDE.md`, the PR
 7. Open the PR with the template, message Team Lead and QA.
 
 ## Rules
+- **Push discipline (DEV-PLAN 4.1):** test locally (unit, integration, client, relevant E2E under the e2e lock), push once per finished fix, no refresh-only main merges, keep drafts until locally green.
 - Do not change `src/Lms.Shared` or backend projects; raise contract issues to the Team Lead.
 - If blocked: comment `blocked: <reason>`, label `blocked`, message the Team Lead.
