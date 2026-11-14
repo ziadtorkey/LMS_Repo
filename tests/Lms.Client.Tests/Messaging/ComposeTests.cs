@@ -352,4 +352,42 @@ public sealed class ComposeTests : ClientTestContext
         var l = Services.GetRequiredService<Microsoft.Extensions.Localization.IStringLocalizer<Lms.Client.Resources.SharedResource>>();
         Assert.False(l["MudInput_Clear"].ResourceNotFound);
     }
+
+    [Fact]
+    public async Task After_adding_members_the_picker_is_clean_and_no_longer_offers_them()
+    {
+        await SignInAsync(Huda);
+        MessagingApi.Related.Add((Huda.Id, Omar.Id));
+        MessagingApi.Related.Add((Huda.Id, Khaled.Id));
+        var g = await MessagingApi.CreateConversationAsync(new CreateConversationRequest(ConversationKinds.Group, [Sara.Id, Omar.Id], "Class 10-A", "Welcome"));
+        var cut = RenderPage(g.Id);
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("[data-testid=thread-members]")));
+        cut.Find("[data-testid=thread-members]").Click();
+        _dialogs.WaitForAssertion(() => Assert.NotEmpty(_dialogs.FindAll($"[data-testid=picker-{Khaled.Id}]")));
+        _dialogs.Find($"[data-testid=picker-{Khaled.Id}]").Click();
+
+        _dialogs.Find("[data-testid=members-add]").Click();
+
+        _dialogs.WaitForAssertion(() => Assert.NotEmpty(_dialogs.FindAll($"[data-testid=member-{Khaled.Id}]")));
+        Assert.Empty(_dialogs.FindAll("[data-testid=picker-to]")); // the chips of the people just added are gone
+        Assert.DoesNotContain($"picker-{Khaled.Id}", PickerIds(_dialogs)); // and they are not offered again
+        Assert.True(_dialogs.Find("[data-testid=members-add]").HasAttribute("disabled"));
+    }
+
+    [Fact]
+    public async Task Opening_the_new_message_link_again_reopens_the_form()
+    {
+        await SignInAsync(Sara);
+        _dialogs = Render<MudDialogProvider>();
+        var navigation = Services.GetRequiredService<Microsoft.AspNetCore.Components.NavigationManager>();
+        navigation.NavigateTo($"/messages/new?to={Huda.Id}");
+        Render<MessagesPage>();
+        _dialogs.WaitForAssertion(() => Assert.NotEmpty(_dialogs.FindAll("[data-testid=compose]")));
+        _dialogs.Find("[data-testid=compose-cancel]").Click();
+        _dialogs.WaitForAssertion(() => Assert.Empty(_dialogs.FindAll("[data-testid=compose]")));
+
+        navigation.NavigateTo($"/messages/new?to={Huda.Id}"); // the page instance is reused
+
+        _dialogs.WaitForAssertion(() => Assert.NotEmpty(_dialogs.FindAll("[data-testid=compose]")));
+    }
 }
