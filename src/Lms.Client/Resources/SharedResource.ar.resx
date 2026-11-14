@@ -1891,4 +1891,54 @@
   <data name="Job_Failed" xml:space="preserve"><value>لم تكتمل العملية. راجع النتيجة أدناه.</value></data>
   <data name="Job_PollFailed" xml:space="preserve"><value>تعذرت قراءة التقدم الآن. ستتم المحاولة مرة أخرى.</value></data>
   <data name="Confirm_TypeToConfirm" xml:space="preserve"><value>اكتب {0} للتأكيد</value></data>
+  <data name="Nav_GradeChanges" xml:space="preserve"><value>تعديلات الدرجات</value></data>
+  <data name="YearClose_Open" xml:space="preserve"><value>إغلاق السنة</value></data>
+  <data name="YearClose_Title" xml:space="preserve"><value>إغلاق {0}</value></data>
+  <data name="YearClose_Lead" xml:space="preserve"><value>يقفل الإغلاق هذه السنة للجميع ولا يمكن إعادة فتحها؛ وأي درجة تحتاج تعديلا لاحقا تمر بموافقة مدير.</value></data>
+  <data name="YearClose_WhatHappens" xml:space="preserve"><value>ما الذي سيحدث</value></data>
+  <data name="YearClose_Gradebooks" xml:space="preserve"><value>يصبح {0} دفتر درجات للقراءة فقط.</value></data>
+  <data name="YearClose_Sessions" xml:space="preserve"><value>تصبح {0} حصة حضور للقراءة فقط.</value></data>
+  <data name="YearClose_PromotionOpens" xml:space="preserve"><value>يفتح ترحيل الطلاب لهذه السنة (مدير المنظمة في أي مكان، والمديرون في وحداتهم).</value></data>
+  <data name="YearClose_Check" xml:space="preserve"><value>يستحق المراجعة أولا (لا يمنع الإغلاق)</value></data>
+  <data name="YearClose_Blocking" xml:space="preserve"><value>لا يمكن إغلاق هذه السنة بعد</value></data>
+  <data name="YearClose_Confirm" xml:space="preserve"><value>إغلاق السنة</value></data>
+  <data name="YearClose_Closed" xml:space="preserve"><value>تم إغلاق {0}.</value></data>
+  <data name="YearClose_Report" xml:space="preserve"><value>تقرير الإغلاق</value></data>
+  <data name="YearClose_ReportTitle" xml:space="preserve"><value>تقرير إغلاق {0}</value></data>
+  <data name="YearClose_ClosedAt" xml:space="preserve"><value>أُغلقت في {0}</value></data>
+  <data name="YearClose_Class" xml:space="preserve"><value>الفصل</value></data>
+  <data name="YearClose_Students" xml:space="preserve"><value>الطلاب</value></data>
+  <data name="YearClose_GradebooksCol" xml:space="preserve"><value>دفاتر الدرجات</value></data>
+  <data name="YearClose_Published" xml:space="preserve"><value>المنشورة</value></data>
+  <data name="YearClose_SessionsCol" xml:space="preserve"><value>حصص الحضور</value></data>
+  <data name="GradeChange_Title" xml:space="preserve"><value>تعديلات الدرجات</value></data>
+  <data name="GradeChange_Subtitle" xml:space="preserve"><value>طلبات تعديل درجة بعد إغلاق السنة.</value></data>
+  <data name="GradeChange_Filter" xml:space="preserve"><value>التصفية حسب الحالة</value></data>
+  <data name="GradeChange_State_Pending" xml:space="preserve"><value>بانتظار القرار</value></data>
+  <data name="GradeChange_State_Approved" xml:space="preserve"><value>موافق عليها</value></data>
+  <data name="GradeChange_State_Rejected" xml:space="preserve"><value>مرفوضة</value></data>
+  <data name="GradeChange_EmptyTitle" xml:space="preserve"><value>لا توجد طلبات هنا</value></data>
+  <data name="GradeChange_EmptyText" xml:space="preserve"><value>عندما يطلب معلم تعديل درجة في سنة مغلقة سيظهر الطلب هنا.</value></data>
+  <data name="GradeChange_YourRequest" xml:space="preserve"><value>طلبك</value></data>
+  <data name="GradeChange_Detail" xml:space="preserve"><value>تفاصيل الطلب</value></data>
+  <data name="GradeChange_History" xml:space="preserve"><value>السجل</value></data>
+  <data name="GradeChange_Requested" xml:space="preserve"><value>طلبها {0} في {1}</value></data>
+  <data name="GradeChange_Decided_Approved" xml:space="preserve"><value>وافق عليها في {0}</value></data>
+  <data name="GradeChange_Decided_Rejected" xml:space="preserve"><value>رفضها في {0}</value></data>
+  <data name="GradeChange_Note" xml:space="preserve"><value>ملاحظة</value></data>
+  <data name="GradeChange_NoteHelp" xml:space="preserve"><value>الملاحظة مطلوبة للرفض ويراها المعلم.</value></data>
+  <data name="GradeChange_OwnRequest" xml:space="preserve"><value>طلباتك تظهر باسم طلبك؛ ويقرر فيها مدير آخر أو مدير المنظمة.</value></data>
+  <data name="GradeChange_Approve" xml:space="preserve"><value>موافقة</value></data>
+  <data name="GradeChange_Reject" xml:space="preserve"><value>رفض</value></data>
+  <data name="GradeChange_Student" xml:space="preserve"><value>الطالب</value></data>
+  <data name="GradeChange_Item" xml:space="preserve"><value>البند</value></data>
+  <data name="GradeChange_Current" xml:space="preserve"><value>الدرجة الحالية</value></data>
+  <data name="GradeChange_New" xml:space="preserve"><value>الدرجة الجديدة</value></data>
+  <data name="GradeChange_Reason" xml:space="preserve"><value>السبب</value></data>
+  <data name="GradeChange_ReasonHelp" xml:space="preserve"><value>يراه المعتمد وسجل التدقيق ولا يراه الطالب.</value></data>
+  <data name="GradeChange_ReasonMin" xml:space="preserve"><value>{0} حرفا على الأقل.</value></data>
+  <data name="GradeChange_Rules" xml:space="preserve"><value>يقرر مدير أو مدير المنظمة. لا يمكنك الموافقة على طلبك، ويمكن أن يكون لديك طلب مفتوح واحد لكل درجة.</value></data>
+  <data name="GradeChange_Send" xml:space="preserve"><value>إرسال الطلب</value></data>
+  <data name="GradeChange_Locked" xml:space="preserve"><value>هذه السنة مغلقة. لا تتغير الدرجة إلا بموافقة مدير.</value></data>
+  <data name="GradeChange_Request" xml:space="preserve"><value>طلب تعديل</value></data>
 </root>

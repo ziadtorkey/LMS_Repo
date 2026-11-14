@@ -1,0 +1,11 @@
+@* The strip under the header of a grade or attendance page of a closed year (spec m7-year-end §5): the year is closed and a grade changes only with a manager's approval.
+   A status, not an alert: it does not interrupt. The page adds the Request a change entry where it applies (a teacher with Grades.ChangeRequest). *@
+<div class="lms-locked" role="status" data-testid="locked-notice">
+    <MudIcon Icon="@Icons.Material.Rounded.Lock" Size="Size.Small" aria-hidden="true" />
+    <span>@L["GradeChange_Locked"]</span>
+    @ChildContent
+</div>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

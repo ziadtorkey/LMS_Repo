@@ -1,0 +1,61 @@
+@using Lms.Client.Services.YearEnd
+@using Lms.Shared.YearEnd
+@inject IYearCloseApi Api
+@inject NavigationManager Navigation
+
+@* The closing report of a closed year (read only): one row per class with its students, gradebooks (and how many were published) and attendance sessions. *@
+<MudDialog Class="lms-dialog-fs">
+    <DialogContent>
+        <div class="lms-form" data-testid="closing-report">
+            @if (_loading)
+            {
+                <LoadingState Lines="4" TestId="closing-report-loading" />
+            }
+            else if (_report is null)
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="closing-report-error">@L["Error_Generic"]</MudAlert>
+            }
+            else
+            {
+                <p class="lms-muted" data-testid="closing-report-closed-at">@string.Format(L["YearClose_ClosedAt"].Value, IsoDates.Format(_report.ClosedAtUtc))</p>
+                <MudSimpleTable Dense="true" Elevation="0" Class="lms-simple-table lms-stack-table">
+                    <thead>
+                        <tr>
+                            <th>@L["YearClose_Class"]</th><th>@L["YearClose_Students"]</th><th>@L["YearClose_GradebooksCol"]</th><th>@L["YearClose_Published"]</th><th>@L["YearClose_SessionsCol"]</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var r in _report.Classes)
+                        {
+                            <tr data-testid="@($"closing-row-{r.ClassId}")">
+                                <td data-label="@L["YearClose_Class"]"><bdi>@CultureText.Pick(r.ClassNameAr, r.ClassNameEn)</bdi></td>
+                                <td data-label="@L["YearClose_Students"]">@r.Students</td>
+                                <td data-label="@L["YearClose_GradebooksCol"]">@r.Gradebooks</td>
+                                <td data-label="@L["YearClose_Published"]">@r.GradebooksPublished</td>
+                                <td data-label="@L["YearClose_SessionsCol"]">@r.AttendanceSessions</td>
+                            </tr>
+                        }
+                    </tbody>
+                </MudSimpleTable>
+            }
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" OnClick="() => MudDialog.Close()" data-testid="closing-report-close">@L["Common_Close"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter, EditorRequired] public Guid YearId { get; set; }
+
+    private ClosingReportDto? _report;
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var (report, failed) = await ApiCalls.RunAsync(() => Api.GetReportAsync(YearId), Navigation);
+        _report = failed ? null : report;
+        _loading = false;
+    }
+}

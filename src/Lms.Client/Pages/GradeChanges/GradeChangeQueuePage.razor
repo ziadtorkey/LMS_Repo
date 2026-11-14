@@ -1,0 +1,154 @@
+@page "/grade-changes"
+@attribute [Authorize]
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.YearEnd
+@using Lms.Shared.Authorization
+@using Lms.Shared.YearEnd
+@inject IGradeChangesApi Api
+@inject PermissionState PermState
+@inject NavigationManager Navigation
+
+@* Grade-change approvals (FR-GRD-06, D80; spec m7-year-end §6): the requests a manager or the org admin decides. A state filter, the list with the change as "old → new",
+   and the detail with the reason, the audit trail and Approve / Reject (a rejection needs a note). Nobody decides their own request: both buttons are off with the reason
+   (the server answers 403 grade_change_not_allowed). Two columns from 900 px, one below. *@
+<PageTitle>@L["GradeChange_Title"]</PageTitle>
+<PageHeader Title="@L["GradeChange_Title"]" Subtitle="@L["GradeChange_Subtitle"]" TitleTestId="gc-title" />
+
+@if (!PermState.Loaded || _loading)
+{
+    <LoadingState Lines="6" TestId="gc-loading" />
+}
+else if (!PermState.Has(Permissions.Grades.ChangeApprove))
+{
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" data-testid="gc-forbidden">@L["Forbidden_Title"]</MudAlert>
+}
+else
+{
+    <div class="lms-gc-filter" role="group" aria-label="@L["GradeChange_Filter"]" data-testid="gc-filter">
+        @foreach (var s in GradeChangeStates.All)
+        {
+            var state = s;
+            <button type="button" class="@($"lms-seg{(_state == state ? " on" : "")}")" aria-pressed="@(_state == state ? "true" : "false")" @onclick="() => FilterAsync(state)"
+                    data-testid="@($"gc-filter-{state}")">@L[$"GradeChange_State_{state}"]</button>
+        }
+    </div>
+
+    @if (_failed)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" data-testid="gc-error">
+            @L["Error_Generic"] <MudButton Variant="Variant.Text" OnClick="LoadAsync">@L["Common_Retry"]</MudButton>
+        </MudAlert>
+    }
+    else if (_items.Count == 0)
+    {
+        <EmptyState Title="@L["GradeChange_EmptyTitle"]" Text="@L["GradeChange_EmptyText"]" Icon="@Icons.Material.Rounded.EditNote" TestId="gc-empty" />
+    }
+    else
+    {
+        <div class="lms-gc" data-testid="gc-queue">
+            <div class="lms-gc-list" role="list" aria-label="@L["GradeChange_Title"]">
+                @foreach (var r in _items)
+                {
+                    var request = r;
+                    <button type="button" role="listitem" class="@($"lms-gc-row{(_selected?.Id == request.Id ? " current" : "")}")" aria-current="@(_selected?.Id == request.Id ? "true" : null)"
+                            @onclick="() => _selected = request" data-testid="@($"gc-row-{request.Id}")">
+                        <span class="lms-gc-student"><bdi>@CultureText.Pick(request.StudentNameAr, request.StudentNameEn)</bdi></span>
+                        <span class="lms-gc-course"><bdi>@CultureText.Pick(request.CourseNameAr, request.CourseNameEn)</bdi></span>
+                        <span class="lms-diff" dir="ltr" data-testid="@($"gc-diff-{request.Id}")">@Value(request.OldValue) → <strong>@Value(request.NewValue)</strong></span>
+                        <span class="lms-gc-by">@(IsMine(request) ? L["GradeChange_YourRequest"].Value : CultureText.Pick(request.RequestedByNameAr, request.RequestedByNameEn))</span>
+                        <span class="lms-gc-state" data-testid="@($"gc-state-{request.Id}")">@L[$"GradeChange_State_{request.State}"]</span>
+                    </button>
+                }
+            </div>
+
+            @if (_selected is { } sel)
+            {
+                <section class="lms-gc-detail" aria-label="@L["GradeChange_Detail"]" data-testid="gc-detail">
+                    @if (_error is not null)
+                    {
+                        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-3" data-testid="gc-detail-error">@_error</MudAlert>
+                    }
+                    <h2 class="lms-gc-title"><bdi>@CultureText.Pick(sel.StudentNameAr, sel.StudentNameEn)</bdi> · <bdi>@CultureText.Pick(sel.CourseNameAr, sel.CourseNameEn)</bdi></h2>
+                    <p class="lms-gc-big" dir="ltr" data-testid="gc-detail-diff">@Value(sel.OldValue) → <strong>@Value(sel.NewValue)</strong></p>
+                    <blockquote class="lms-gc-reason" dir="auto" data-testid="gc-reason">@sel.Reason</blockquote>
+                    <ul class="lms-timeline" aria-label="@L["GradeChange_History"]" data-testid="gc-history">
+                        <li>@string.Format(L["GradeChange_Requested"].Value, CultureText.Pick(sel.RequestedByNameAr, sel.RequestedByNameEn), IsoDates.Format(sel.RequestedAtUtc))</li>
+                        @if (sel.DecidedAtUtc is { } at)
+                        {
+                            <li>@string.Format(L[$"GradeChange_Decided_{sel.State}"].Value, IsoDates.Format(at))@(string.IsNullOrEmpty(sel.DecisionNote) ? "" : $" — {sel.DecisionNote}")</li>
+                        }
+                    </ul>
+
+                    @if (sel.State == GradeChangeStates.Pending)
+                    {
+                        <MudTextField T="string" @bind-Value="_note" Label="@L["GradeChange_Note"]" Lines="2" Immediate="true" Variant="Variant.Outlined" Class="mt-2"
+                                      MaxLength="GradeChangeLimits.NoteMaxLength" HelperText="@L["GradeChange_NoteHelp"]" Disabled="IsMine(sel)" data-testid="gc-reject-note" />
+                        @if (IsMine(sel))
+                        {
+                            <p class="lms-muted" data-testid="gc-own-reason">@L["GradeChange_OwnRequest"]</p>
+                        }
+                        <div class="lms-dialog-actions">
+                            <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="@(IsMine(sel) || string.IsNullOrWhiteSpace(_note) || _busy)" OnClick="() => DecideAsync(sel, false)"
+                                       data-testid="@($"gc-reject-{sel.Id}")">@L["GradeChange_Reject"]</MudButton>
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(IsMine(sel) || _busy)" OnClick="() => DecideAsync(sel, true)"
+                                       data-testid="@($"gc-approve-{sel.Id}")">@L["GradeChange_Approve"]</MudButton>
+                        </div>
+                    }
+                </section>
+            }
+        </div>
+    }
+}
+
+@code {
+    private IReadOnlyList<GradeChangeRequestDto> _items = [];
+    private GradeChangeRequestDto? _selected;
+    private string _state = GradeChangeStates.Pending;
+    private string? _note, _error;
+    private bool _loading = true, _failed, _busy;
+
+    private bool IsMine(GradeChangeRequestDto r) => r.RequestedByUserId == PermState.UserId;
+
+    private static string Value(decimal? v) => v?.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) ?? "—";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        await LoadAsync();
+    }
+
+    private async Task FilterAsync(string state)
+    {
+        _state = state;
+        _selected = null;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true; _failed = false;
+        if (PermState.Has(Permissions.Grades.ChangeApprove))
+        {
+            var (page, failed) = await ApiCalls.RunAsync(() => Api.ListAsync(new GradeChangeQuery(State: _state)), Navigation);
+            _failed = failed;
+            _items = failed || page is null ? [] : page.Items;
+            _selected = _items.FirstOrDefault(i => i.Id == _selected?.Id) ?? _items.FirstOrDefault();
+        }
+        _loading = false;
+    }
+
+    private async Task DecideAsync(GradeChangeRequestDto request, bool approve)
+    {
+        _busy = true; _error = null;
+        var note = string.IsNullOrWhiteSpace(_note) ? null : _note.Trim();
+        var ok = await ApiCalls.RunAsync(async () =>
+        {
+            if (approve) await Api.ApproveAsync(request.Id, new DecideGradeChangeRequest(note));
+            else await Api.RejectAsync(request.Id, new DecideGradeChangeRequest(note));
+        }, Navigation, L, e => _error = e);
+        _busy = false;
+        if (!ok) { await LoadAsync(); return; } // a stale or refused decision: the row is read again, the message stays
+        _note = null;
+        await LoadAsync();
+    }
+}

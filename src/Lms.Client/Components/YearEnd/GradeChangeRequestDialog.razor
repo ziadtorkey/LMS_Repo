@@ -1,0 +1,64 @@
+@using Lms.Client.Services.YearEnd
+@using Lms.Shared.YearEnd
+@inject IGradeChangesApi Api
+@inject NavigationManager Navigation
+
+@* Ask for a grade change after the year was closed (FR-GRD-06, D80; spec m7-year-end §5): the current grade is read only, the new grade and the reason (20 to 500
+   characters, counted live) are the teacher's. One open request per grade; the approver and the audit log see the reason, the student does not. *@
+<MudDialog Class="lms-dialog-fs">
+    <DialogContent>
+        <div class="lms-form" data-testid="grade-request">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-3" data-testid="grade-request-error">@_error</MudAlert>
+            }
+            <dl class="lms-details">
+                <div><dt>@L["GradeChange_Student"]</dt><dd><bdi>@StudentName</bdi></dd></div>
+                <div><dt>@L["GradeChange_Item"]</dt><dd><bdi>@ItemName</bdi></dd></div>
+                <div><dt>@L["GradeChange_Current"]</dt><dd dir="ltr" data-testid="grade-request-current">@(CurrentValue?.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) ?? "—")</dd></div>
+            </dl>
+            <MudNumericField T="decimal?" @bind-Value="_newValue" Label="@L["GradeChange_New"]" Min="0" Variant="Variant.Outlined" Margin="Margin.Dense" dir="ltr" HideSpinButtons="true"
+                             data-testid="grade-request-value" />
+            <MudTextField T="string" @bind-Value="_reason" Label="@L["GradeChange_Reason"]" Lines="4" Immediate="true" Variant="Variant.Outlined" Class="mt-2"
+                          MaxLength="GradeChangeLimits.ReasonMaxLength" Counter="GradeChangeLimits.ReasonMaxLength" HelperText="@L["GradeChange_ReasonHelp"]"
+                          Error="_tooShort" ErrorText="@string.Format(L["GradeChange_ReasonMin"].Value, GradeChangeLimits.ReasonMinLength)" data-testid="grade-request-reason" />
+            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" Class="mt-2">@L["GradeChange_Rules"]</MudAlert>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" OnClick="() => MudDialog.Cancel()" data-testid="grade-request-cancel">@L["Common_Cancel"]</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="!CanSend" OnClick="SendAsync" data-testid="grade-request-submit">@L["GradeChange_Send"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter, EditorRequired] public Guid ClassCourseId { get; set; }
+    [Parameter, EditorRequired] public Guid GradeItemId { get; set; }
+    [Parameter, EditorRequired] public Guid StudentId { get; set; }
+    [Parameter, EditorRequired] public string StudentName { get; set; } = "";
+    [Parameter, EditorRequired] public string ItemName { get; set; } = "";
+    [Parameter] public decimal? CurrentValue { get; set; }
+
+    /// <summary>The version of the grade the teacher saw: the server refuses a stale request (concurrency conflict).</summary>
+    [Parameter] public long Version { get; set; }
+
+    private decimal? _newValue;
+    private string? _reason, _error;
+    private bool _busy;
+
+    private int ReasonLength => _reason?.Trim().Length ?? 0;
+    private bool _tooShort => ReasonLength > 0 && ReasonLength < GradeChangeLimits.ReasonMinLength;
+    private bool CanSend => !_busy && ReasonLength >= GradeChangeLimits.ReasonMinLength && ReasonLength <= GradeChangeLimits.ReasonMaxLength;
+
+    private async Task SendAsync()
+    {
+        if (!CanSend) return;
+        _busy = true; _error = null;
+        GradeChangeRequestDto? created = null;
+        var ok = await ApiCalls.RunAsync(async () => created = await Api.CreateAsync(ClassCourseId,
+            new CreateGradeChangeRequest(GradeItemId, StudentId, _newValue, _reason!.Trim(), Version)), Navigation, L, e => _error = e);
+        _busy = false;
+        if (ok && created is not null) MudDialog.Close(DialogResult.Ok(created));
+    }
+}
