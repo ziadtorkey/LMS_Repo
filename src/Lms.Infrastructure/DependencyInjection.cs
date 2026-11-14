@@ -1,6 +1,7 @@
 using Lms.Domain.Abstractions;
 using Lms.Infrastructure.Access;
 using Lms.Infrastructure.AcademicYears;
+using Lms.Infrastructure.Timetable;
 using Lms.Infrastructure.Auditing;
 using Lms.Infrastructure.Packages;
 using Lms.Infrastructure.Content;
@@ -39,6 +40,7 @@ public static class DependencyInjection
         services.AddEmail(configuration);
         services.AddSettingsAndPolicies();
         services.AddAcademicYears();
+        services.AddTimetable();
         services.AddPeople();
         services.AddEnrollment();
         services.AddScoped<Lms.Domain.Grading.IGradeEvents, Lms.Infrastructure.Grading.GradeEventWriter>();
