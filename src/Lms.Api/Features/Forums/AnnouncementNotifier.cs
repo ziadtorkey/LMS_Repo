@@ -1,7 +1,7 @@
+using Lms.Domain.Announcements;
 using Lms.Domain.Classes;
 using Lms.Domain.Courses;
 using Lms.Domain.Enrollment;
-using Lms.Domain.Forums;
 using Lms.Domain.Notifications;
 using Lms.Domain.People;
 using Lms.Infrastructure.Persistence;
@@ -14,7 +14,7 @@ namespace Lms.Api.Features.Forums;
 /// <summary>Forums.Announcement to the students actively enrolled in the ClassCourse (FR-NOT-01). A failure never undoes the announcement.</summary>
 internal sealed class AnnouncementNotifier(LmsDbContext db, INotificationPublisher publisher, ILogger<AnnouncementNotifier> logger)
 {
-    public async Task NotifyAsync(CourseAnnouncement announcement, ClassCourse classCourse, CancellationToken ct)
+    public async Task NotifyAsync(Announcement announcement, string title, ClassCourse classCourse, CancellationToken ct)
     {
         try
         {
@@ -38,7 +38,7 @@ internal sealed class AnnouncementNotifier(LmsDbContext db, INotificationPublish
                 NotificationEvents.ForumsAnnouncement, announcement.OrganizationId, studentUsers,
                 new Dictionary<string, string>
                 {
-                    ["Title"] = announcement.Title, ["CourseNameAr"] = course?.NameAr ?? string.Empty, ["CourseNameEn"] = course?.NameEn ?? string.Empty,
+                    ["Title"] = title, ["CourseNameAr"] = course?.NameAr ?? string.Empty, ["CourseNameEn"] = course?.NameEn ?? string.Empty,
                 },
                 OrgUnitPath: announcement.OrgUnitPath,
                 DeepLink: AnnouncementsPage(classCourse.Id)), ct);

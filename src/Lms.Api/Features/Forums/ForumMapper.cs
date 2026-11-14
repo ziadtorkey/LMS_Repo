@@ -1,10 +1,12 @@
 using Lms.Domain.Abstractions;
+using Lms.Domain.Announcements;
 using Lms.Domain.Content;
 using Lms.Domain.Forums;
 using Lms.Domain.People;
 using Lms.Infrastructure.Persistence;
 using Lms.Shared.Content;
 using Lms.Shared.Forums;
+using Lms.Shared.Messaging;
 using Microsoft.EntityFrameworkCore;
 
 namespace Lms.Api.Features.Forums;
@@ -53,15 +55,26 @@ internal sealed class ForumMapper(LmsDbContext db, ICurrentContext context)
         }).ToList();
     }
 
-    public async Task<IReadOnlyList<CourseAnnouncementDto>> AnnouncementsAsync(IReadOnlyList<CourseAnnouncement> rows, CancellationToken ct)
+    /// <summary>
+    /// The board entries of one course page, read from the announcements store (M6 Task 17). The language picks the title and body the page shows (a board post carries one text in
+    /// both); <c>Source</c> is <c>CourseBoard</c> when this class course is the only target, <c>School</c> for an announcement that reaches it among others (read-only on the page).
+    /// </summary>
+    public async Task<IReadOnlyList<CourseAnnouncementDto>> AnnouncementsAsync(IReadOnlyList<Announcement> rows, Guid classCourseId, bool arabic, CancellationToken ct)
     {
         var names = await NamesAsync(rows.Select(a => a.AuthorUserId), ct);
+        var ids = rows.Select(a => a.Id).ToList();
+        var targetCounts = ids.Count == 0
+            ? []
+            : await db.Set<AnnouncementTarget>().Where(t => ids.Contains(t.AnnouncementId)).GroupBy(t => t.AnnouncementId)
+                .Select(g => new { g.Key, Count = g.Count() }).ToDictionaryAsync(x => x.Key, x => x.Count, ct);
         return rows.Select(a =>
         {
             var (ar, en) = names.GetValueOrDefault(a.AuthorUserId);
+            var title = arabic ? (a.TitleAr.Length > 0 ? a.TitleAr : a.TitleEn) : (a.TitleEn.Length > 0 ? a.TitleEn : a.TitleAr);
+            var body = arabic ? a.BodyAr ?? a.BodyEn : a.BodyEn ?? a.BodyAr;
+            var source = targetCounts.GetValueOrDefault(a.Id) == 1 ? AnnouncementSources.CourseBoard : AnnouncementSources.Announcement;
             return new CourseAnnouncementDto(
-                a.Id, a.ClassCourseId, a.Title, a.BodyHtml, a.IsPinned, a.AuthorUserId, ar ?? string.Empty, en ?? string.Empty,
-                a.CreatedAt, a.UpdatedAt);
+                a.Id, classCourseId, title, body ?? string.Empty, a.IsPinned, a.AuthorUserId, ar ?? string.Empty, en ?? string.Empty, a.CreatedAt, a.UpdatedAt, source);
         }).ToList();
     }
 
