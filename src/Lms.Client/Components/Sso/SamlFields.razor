@@ -1,0 +1,62 @@
+@using Lms.Client.Services.Sso
+@inject IJSRuntime Js
+
+@* SAML 2.0 (D85, spec section 10.1): the identity provider's metadata by URL or XML upload (XML only, with a size cap), the matching attributes, the certificate it brought
+   and, once saved, the values our side gives the identity team. Sign-in starts from the LMS (SP-initiated); signed assertions are always required and not a switch. *@
+<div data-testid="sso-saml-fields">
+    <div class="lms-seg-group mt-3" role="group" aria-label="@L["Sso_MetadataSource"]">
+        <button type="button" class="@($"lms-seg{(!Model.UseUpload ? " on" : "")}")" aria-pressed="@(!Model.UseUpload ? "true" : "false")" @onclick="() => Model.UseUpload = false" data-testid="sso-meta-url-mode">@L["Sso_MetadataUrl"]</button>
+        <button type="button" class="@($"lms-seg{(Model.UseUpload ? " on" : "")}")" aria-pressed="@(Model.UseUpload ? "true" : "false")" @onclick="() => Model.UseUpload = true" data-testid="sso-meta-upload-mode">@L["Sso_MetadataUpload"]</button>
+    </div>
+    @if (!Model.UseUpload)
+    {
+        <MudTextField T="string" @bind-Value="Model.MetadataUrl" Label="@L["Sso_MetadataUrl"]" InputType="InputType.Url" dir="ltr" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-2" data-testid="sso-metadata-url" />
+    }
+    else
+    {
+        <div class="mt-2">
+            <label class="mud-button-root mud-button mud-button-outlined mud-button-outlined-default mud-button-outlined-size-medium">
+                <span>@(Model.MetadataFileName ?? L["Sso_ChooseXml"].Value)</span>
+                <InputFile OnChange="OnFileAsync" accept=".xml,application/xml,text/xml" style="display:none" data-testid="sso-metadata-file" />
+            </label>
+            <p class="lms-muted mb-0">@string.Format(L["Sso_XmlHelp"].Value, SsoLimits.MetadataMaxBytes / 1024)</p>
+            @if (_fileError is not null)
+            {
+                <span class="lms-field-error" role="alert" data-testid="sso-metadata-error">@_fileError</span>
+            }
+        </div>
+    }
+    <MudTextField T="string" @bind-Value="Model.EntityId" Label="@L["Sso_IdpEntityId"]" dir="ltr" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-2" data-testid="sso-entity-id" />
+    <MudTextField T="string" @bind-Value="Model.SsoUrl" Label="@L["Sso_SsoUrl"]" InputType="InputType.Url" dir="ltr" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-2" data-testid="sso-sso-url" />
+    <CertificateExpiry Fingerprint="@Model.CertFingerprint" Expires="Model.CertExpires" />
+    <div class="lms-form-grid mt-2">
+        <MudTextField T="string" @bind-Value="Model.SamlEmailAttribute" Label="@L["Sso_EmailAttribute"]" dir="ltr" Variant="Variant.Outlined" Margin="Margin.Dense" data-testid="sso-saml-email" />
+        <MudTextField T="string" @bind-Value="Model.SamlNationalIdAttribute" Label="@L["Sso_NationalIdAttribute"]" dir="ltr" Variant="Variant.Outlined" Margin="Margin.Dense" data-testid="sso-saml-national" />
+    </div>
+    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" Class="mt-2">@L["Sso_SpInitiated"]</MudAlert>
+    @if (Sp is not null)
+    {
+        <h3 class="lms-dialog-h">@L["Sso_SpTitle"]</h3>
+        <CopyRow Label="@L["Sso_AcsUrl"]" Value="@Sp.AcsUrl" TestId="sso-sp-acs" />
+        <CopyRow Label="@L["Sso_SpEntityId"]" Value="@Sp.EntityId" TestId="sso-sp-entity" />
+        <CopyRow Label="@L["Sso_SpMetadataUrl"]" Value="@Sp.MetadataUrl" TestId="sso-sp-metadata" />
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public SsoFormModel Model { get; set; } = default!;
+    [Parameter] public SpValuesDto? Sp { get; set; }
+
+    private string? _fileError;
+
+    private async Task OnFileAsync(InputFileChangeEventArgs e)
+    {
+        _fileError = null;
+        var file = e.File;
+        if (!file.Name.EndsWith(".xml", StringComparison.OrdinalIgnoreCase)) { _fileError = L["Sso_Err_XmlOnly"]; return; } // refused on the device: nothing is sent
+        if (file.Size > SsoLimits.MetadataMaxBytes) { _fileError = string.Format(L["Sso_Err_TooBig"].Value, SsoLimits.MetadataMaxBytes / 1024); return; }
+        using var reader = new StreamReader(file.OpenReadStream(SsoLimits.MetadataMaxBytes));
+        Model.MetadataXml = await reader.ReadToEndAsync();
+        Model.MetadataFileName = file.Name;
+    }
+}

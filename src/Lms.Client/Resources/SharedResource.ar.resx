@@ -1891,4 +1891,53 @@
   <data name="Job_Failed" xml:space="preserve"><value>لم تكتمل العملية. راجع النتيجة أدناه.</value></data>
   <data name="Job_PollFailed" xml:space="preserve"><value>تعذرت قراءة التقدم الآن. ستتم المحاولة مرة أخرى.</value></data>
   <data name="Confirm_TypeToConfirm" xml:space="preserve"><value>اكتب {0} للتأكيد</value></data>
+  <data name="SsoKind_Saml" xml:space="preserve"><value>SAML 2.0</value></data>
+  <data name="SsoKind_Ldap" xml:space="preserve"><value>LDAP / Active Directory</value></data>
+  <data name="Sso_MetadataSource" xml:space="preserve"><value>بيانات وصف مزود الهوية</value></data>
+  <data name="Sso_MetadataUrl" xml:space="preserve"><value>رابط البيانات الوصفية</value></data>
+  <data name="Sso_MetadataUpload" xml:space="preserve"><value>رفع ملف XML</value></data>
+  <data name="Sso_ChooseXml" xml:space="preserve"><value>اختر ملف XML</value></data>
+  <data name="Sso_XmlHelp" xml:space="preserve"><value>ملفات XML فقط وبحد أقصى {0} كيلوبايت.</value></data>
+  <data name="Sso_Err_XmlOnly" xml:space="preserve"><value>تُقبل ملفات XML فقط.</value></data>
+  <data name="Sso_Err_TooBig" xml:space="preserve"><value>حجم الملف أكبر من {0} كيلوبايت.</value></data>
+  <data name="Sso_IdpEntityId" xml:space="preserve"><value>معرّف كيان مزود الهوية</value></data>
+  <data name="Sso_SsoUrl" xml:space="preserve"><value>رابط تسجيل الدخول</value></data>
+  <data name="Sso_CertExpires" xml:space="preserve"><value>تنتهي في {0}</value></data>
+  <data name="Sso_CertDays" xml:space="preserve"><value>متبقي {0} يوما</value></data>
+  <data name="Sso_CertExpired" xml:space="preserve"><value>منتهية</value></data>
+  <data name="Sso_EmailAttribute" xml:space="preserve"><value>سمة البريد الإلكتروني</value></data>
+  <data name="Sso_NationalIdAttribute" xml:space="preserve"><value>سمة الهوية الوطنية</value></data>
+  <data name="Sso_SpInitiated" xml:space="preserve"><value>يبدأ تسجيل الدخول من النظام. لا يُدعم البدء من بوابة مزود الهوية في هذا الإصدار.</value></data>
+  <data name="Sso_SpTitle" xml:space="preserve"><value>سلّم هذه القيم لفريق الهوية لديك</value></data>
+  <data name="Sso_AcsUrl" xml:space="preserve"><value>رابط الرد (ACS)</value></data>
+  <data name="Sso_SpEntityId" xml:space="preserve"><value>معرّف الكيان</value></data>
+  <data name="Sso_SpMetadataUrl" xml:space="preserve"><value>رابط بياناتنا الوصفية</value></data>
+  <data name="Sso_Host" xml:space="preserve"><value>الخادم</value></data>
+  <data name="Sso_Port" xml:space="preserve"><value>المنفذ</value></data>
+  <data name="Sso_Transport" xml:space="preserve"><value>الاتصال الآمن</value></data>
+  <data name="Sso_Transport_Ldaps" xml:space="preserve"><value>LDAPS</value></data>
+  <data name="Sso_Transport_StartTls" xml:space="preserve"><value>StartTLS</value></data>
+  <data name="Sso_NoPlainLdap" xml:space="preserve"><value>لا يُتاح LDAP غير المشفّر.</value></data>
+  <data name="Sso_BindDn" xml:space="preserve"><value>حساب الخدمة (bind DN)</value></data>
+  <data name="Sso_BindPassword" xml:space="preserve"><value>كلمة مرور حساب الخدمة</value></data>
+  <data name="Sso_PasswordStored" xml:space="preserve"><value>محفوظة. اتركها فارغة للإبقاء عليها.</value></data>
+  <data name="Sso_SearchBase" xml:space="preserve"><value>أساس البحث</value></data>
+  <data name="Sso_UserFilter" xml:space="preserve"><value>مرشح المستخدم</value></data>
+  <data name="Sso_NoGroupMapping" xml:space="preserve"><value>تُمنح الأدوار داخل النظام. لا تُربط مجموعات الدليل بالأدوار في هذا الإصدار.</value></data>
+  <data name="Sso_TestResult" xml:space="preserve"><value>نتيجة اختبار الاتصال</value></data>
+  <data name="SsoCheck_Reachable_Ok" xml:space="preserve"><value>استجاب الخادم.</value></data>
+  <data name="SsoCheck_Reachable_Fail" xml:space="preserve"><value>لم يستجب الخادم. تحقق من الخادم والمنفذ.</value></data>
+  <data name="SsoCheck_Encrypted_Ok" xml:space="preserve"><value>الاتصال مشفّر.</value></data>
+  <data name="SsoCheck_Encrypted_Fail" xml:space="preserve"><value>تعذّر إنشاء الاتصال الآمن.</value></data>
+  <data name="SsoCheck_Bind_Ok" xml:space="preserve"><value>سجّل حساب الخدمة الدخول.</value></data>
+  <data name="SsoCheck_Bind_Fail" xml:space="preserve"><value>تعذّر دخول حساب الخدمة. تحقق من bind DN وكلمة المرور.</value></data>
+  <data name="SsoCheck_Search_Ok" xml:space="preserve"><value>وجد البحث مستخدمين.</value></data>
+  <data name="SsoCheck_Search_Fail" xml:space="preserve"><value>لم يجد البحث مستخدما. تحقق من أساس البحث.</value></data>
+  <data name="SsoCheck_Metadata_Ok" xml:space="preserve"><value>قُرئت البيانات الوصفية.</value></data>
+  <data name="SsoCheck_Metadata_Fail" xml:space="preserve"><value>تعذّرت قراءة البيانات الوصفية. تحقق من الرابط أو الملف.</value></data>
+  <data name="SsoCheck_Certificate_Ok" xml:space="preserve"><value>شهادة التوقيع صالحة.</value></data>
+  <data name="SsoCheck_Certificate_Fail" xml:space="preserve"><value>شهادة التوقيع مفقودة أو منتهية.</value></data>
+  <data name="SsoCheck_SignedAssertions_Ok" xml:space="preserve"><value>التأكيدات الموقّعة مطلوبة.</value></data>
+  <data name="SsoCheck_SignedAssertions_Fail" xml:space="preserve"><value>التأكيدات الموقّعة غير مطلوبة.</value></data>
+  <data name="Sso_New" xml:space="preserve"><value>إضافة SAML أو LDAP</value></data>
 </root>
