@@ -66,7 +66,7 @@ public static class ClientServices
             services.AddSingleton<IModulesApi, FakeModulesApi>();
             services.AddSingleton<ILiveSessionsApi, FakeLiveSessionsApi>();
             services.AddSingleton<Lms.Client.Services.Grading.IGradingScalesApi, Lms.Client.Services.Grading.FakeGradingScalesApi>();
-            services.AddSingleton<Lms.Client.Services.Grading.IGradebookApi>(sp => new Lms.Client.Services.Grading.FakeGradebookApi((Lms.Client.Services.Grading.FakeGradingScalesApi)sp.GetRequiredService<Lms.Client.Services.Grading.IGradingScalesApi>()));
+            services.AddSingleton<Lms.Client.Services.Grading.IGradebookApi>(sp => new Lms.Client.Services.Grading.FakeGradebookApi((Lms.Client.Services.Grading.FakeGradingScalesApi)sp.GetRequiredService<Lms.Client.Services.Grading.IGradingScalesApi>()) { ShapeStudentGrades = Lms.Client.Services.Grading.FakeGradebookApi.DemoPublished });
             services.AddSingleton<IActivityOverviewApi, FakeActivityOverviewApi>();
             services.AddScoped<AuthenticationStateProvider, FakeAuthenticationStateProvider>();
             services.AddAuthorizationCore();

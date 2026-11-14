@@ -301,6 +301,35 @@ public sealed class FakeGradebookApi : IGradebookApi
             GradingLimits.DecimalPlacesDefault, items, categories, f.Percent, f.Code, f.LabelAr, f.LabelEn, f.Points, legend);
     }
 
+    /// <summary>
+    /// Demo data for the standalone dev server: when nothing is published yet, the student reads show a scored item, an excused one and one not graded yet,
+    /// with the course total and its band. Set as <see cref="ShapeStudentGrades"/> by the fake registration; tests do not use it.
+    /// </summary>
+    public static StudentGradesDto DemoPublished(StudentGradesDto data)
+    {
+        var course = data.Courses[0];
+        if (course.Items.Count > 0) return data;
+        var published = DateTime.UtcNow.AddDays(-2);
+        var cat1 = Guid.Parse("00000000-0000-0000-0000-0000000f0001");
+        var cat2 = Guid.Parse("00000000-0000-0000-0000-0000000f0002");
+        var items = new List<PublishedGradeItemDto>
+        {
+            new(Guid.Parse("00000000-0000-0000-0000-0000000f1001"), "اختبار قصير ١", "Quiz 1", cat1, 8m, 10m, false, published),
+            new(Guid.Parse("00000000-0000-0000-0000-0000000f1002"), "مشروع", "Project", cat1, null, 20m, true, published),
+            new(Guid.Parse("00000000-0000-0000-0000-0000000f1003"), "مقال", "Essay", cat2, null, 10m, false, published),
+        };
+        var band = course.Legend.Bands.FirstOrDefault(b => 80m >= b.MinPercent && 80m <= b.MaxPercent) ?? course.Legend.Bands[0];
+        return data with
+        {
+            Courses = [course with
+            {
+                Items = items,
+                Categories = [new(cat1, "الواجبات", "Homework", 60m, 80m), new(cat2, "المقالات", "Essays", 40m, null)],
+                FinalPercent = 80m, BandCode = band.Code, BandLabelAr = band.LabelAr, BandLabelEn = band.LabelEn, BandPoints = band.Points,
+            }],
+        };
+    }
+
     /// <summary>Lets a test reshape what the student and guardian reads answer (for example several courses).</summary>
     public Func<StudentGradesDto, StudentGradesDto>? ShapeStudentGrades { get; set; }
 

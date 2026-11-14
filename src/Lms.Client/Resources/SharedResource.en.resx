@@ -1650,4 +1650,5 @@
   <data name="StGrades_Range" xml:space="preserve"><value>Range</value></data>
   <data name="StGrades_Points" xml:space="preserve"><value>Points</value></data>
   <data name="StGrades_TotalWaits" xml:space="preserve"><value>The total appears when all published grades are in.</value></data>
+  <data name="StGrades_Children" xml:space="preserve"><value>Child</value></data>
 </root>

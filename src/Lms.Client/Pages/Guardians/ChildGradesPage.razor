@@ -2,7 +2,12 @@
 @attribute [Authorize]
 @using Lms.Client.Components.Grading
 @using Lms.Shared.Authorization
+@using Lms.Client.Services.Api
+@using Lms.Shared.People
 @inject PermissionState PermState
+@inject IGuardiansApi Guardians
+@inject ICultureService Culture
+@inject NavigationManager Navigation
 
 <PageTitle>@L["StGrades_Title"]</PageTitle>
 @if (!PermState.Loaded)
@@ -15,7 +20,20 @@ else if (!PermState.Has(Permissions.Students.ViewChildren) || !PermState.Has(Per
 }
 else
 {
-    <StudentGradesView StudentId="StudentId" />
+    @if (_children.Count > 1)
+    {
+        @* A guardian with several children switches here; the page opens on the child they came from. *@
+        <nav aria-label="@L["StGrades_Children"]" class="mb-3" data-testid="grades-children">
+            <MudSelect T="Guid" Value="StudentId" ValueChanged="OpenChild" Label="@L["StGrades_Children"]" Variant="Variant.Outlined" Dense="true"
+                       data-testid="grades-child-select">
+                @foreach (var child in _children)
+                {
+                    <MudSelectItem T="Guid" Value="child.StudentId">@Culture.Pick(child.NameAr, child.NameEn)</MudSelectItem>
+                }
+            </MudSelect>
+        </nav>
+    }
+    <StudentGradesView @key="StudentId" StudentId="StudentId" />
 }
 
 @code {
@@ -24,5 +42,13 @@ else
     protected override async Task OnInitializedAsync()
     {
         if (!PermState.Loaded) await PermState.RefreshAsync();
+        if (PermState.Has(Permissions.Students.ViewChildren))
+        {
+            await ApiCalls.RunAsync(async () => _children = await Guardians.GetMyChildrenAsync(), Navigation, L, _ => { });
+        }
     }
+
+    private IReadOnlyList<MyChildDto> _children = [];
+
+    private void OpenChild(Guid id) => Navigation.NavigateTo($"me/children/{id}/grades");
 }

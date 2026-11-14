@@ -8,6 +8,7 @@ using Lms.Client.Services.Grading;
 using Lms.Client.Tests.Support;
 using Lms.Shared.Authorization;
 using Lms.Shared.Grading;
+using Lms.Shared.People;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -19,7 +20,13 @@ public sealed class StudentGradesTests : StaffTestContext
     private static readonly Guid Course = FakeGradebookApi.DemoClassCourseId;
     private readonly FakeGradebookApi _api = new();
 
-    public StudentGradesTests() => Services.AddSingleton<IGradebookApi>(_api);
+    private readonly FakeGuardiansApi _guardians = new();
+
+    public StudentGradesTests()
+    {
+        Services.AddSingleton<IGradebookApi>(_api);
+        Services.AddSingleton<IGuardiansApi>(_guardians);
+    }
 
     private async Task<IRenderedComponent<TPage>> RenderAsync<TPage>(string culture = "en", Action<ComponentParameterCollectionBuilder<TPage>>? parameters = null, params string[] permissions)
         where TPage : IComponent
@@ -149,6 +156,30 @@ public sealed class StudentGradesTests : StaffTestContext
         page.WaitForElement("[data-testid=grades-student]");
 
         Assert.Equal((await _api.GetStudentGradesAsync(child)).StudentNameEn, page.Find("[data-testid=grades-student]").TextContent.Trim());
+    }
+
+    [Fact]
+    public async Task A_guardian_with_two_children_can_switch_between_them()
+    {
+        var page = await RenderAsync<ChildGradesPage>("en", p => p.Add(x => x.StudentId, FakeGradebookApi.StudentIds[0]));
+        page.WaitForElement("[data-testid=grades-child-select]");
+
+        var select = page.FindComponent<MudBlazor.MudSelect<Guid>>().Instance;
+
+        var other = _guardians.MyChildren[1].StudentId;
+        await page.InvokeAsync(() => select.ValueChanged.InvokeAsync(other));
+
+        Assert.EndsWith($"me/children/{other}/grades", Services.GetRequiredService<NavigationManager>().Uri);
+    }
+
+    [Fact]
+    public async Task A_guardian_with_one_child_sees_no_selector()
+    {
+        _guardians.MyChildren.RemoveRange(1, _guardians.MyChildren.Count - 1);
+        var page = await RenderAsync<ChildGradesPage>("en", p => p.Add(x => x.StudentId, FakeGradebookApi.StudentIds[0]));
+        page.WaitForElement("[data-testid=grades-student]");
+
+        Assert.Empty(page.FindAll("[data-testid=grades-children]"));
     }
 
     [Fact]
