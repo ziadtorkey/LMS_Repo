@@ -1924,6 +1924,7 @@
   <data name="Error_report_duplicate" xml:space="preserve"><value>سبق أن أبلغت عن هذه الرسالة.</value></data>
   <data name="Error_rate_limited" xml:space="preserve"><value>طلبات كثيرة جدًا. حاول لاحقًا.</value></data>
   <data name="Error_notification_mandatory" xml:space="preserve"><value>لا يمكن إيقاف هذا الإشعار.</value></data>
+  <data name="Error_attachment_invalid" xml:space="preserve"><value>المرفق غير مسموح به: تحقق من نوعه وحجمه وعدد المرفقات.</value></data>
   <data name="Error_announcement_target_invalid" xml:space="preserve"><value>جمهور الإعلان غير صالح.</value></data>
   <data name="Error_announcement_not_editable" xml:space="preserve"><value>الإعلان المنشور يسمح بتغيير انتهائه وتثبيته وسحبه فقط.</value></data>
   <data name="Error_rules_looser_than_default" xml:space="preserve"><value>يمكن للعميل تضييق قواعد المراسلة فقط وليس توسيعها.</value></data>

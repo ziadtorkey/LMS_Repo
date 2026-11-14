@@ -256,6 +256,9 @@ public static class ProblemCodes
     /// <summary>The announcement targets are not valid together, or a required target is missing (400).</summary>
     public const string announcement_target_invalid = nameof(announcement_target_invalid);
 
+    /// <summary>An uploaded attachment is refused: a type outside the asset allow-list, a size over the limit, a content sniff mismatch, or more than <c>Announcements.MaxAttachments</c> (400).</summary>
+    public const string attachment_invalid = nameof(attachment_invalid);
+
     /// <summary>A published announcement allows only its expiry, pin and withdrawal to change (409).</summary>
     public const string announcement_not_editable = nameof(announcement_not_editable);
 

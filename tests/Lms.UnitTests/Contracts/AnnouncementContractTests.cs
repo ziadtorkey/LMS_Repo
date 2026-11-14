@@ -97,6 +97,24 @@ public sealed class AnnouncementContractTests
         Assert.Equal($"{Routes.OrgAnnouncementAttachments}/{Id}", Routes.OrgAnnouncementAttachment(Id));
     }
 
+    [Theory]
+    [InlineData("ar")]
+    [InlineData("en")]
+    public void Every_problem_code_named_in_the_announcement_route_docs_exists_and_is_labelled(string culture)
+    {
+        var text = File.ReadAllText(Path.Combine(RepoRoot(), "src", "Lms.Shared", "Routes.Messaging.cs"));
+        var announcementDocs = text[text.IndexOf("string OrgAnnouncements =", StringComparison.Ordinal)..];
+        var named = System.Text.RegularExpressions.Regex.Matches(announcementDocs, "<c>([a-z]+(?:_[a-z]+)+)</c>").Select(m => m.Groups[1].Value).Distinct().ToList();
+        var codes = typeof(ProblemCodes).GetFields().Where(f => f.IsLiteral).Select(f => (string)f.GetRawConstantValue()!).ToHashSet();
+        var resx = XDocument.Load(Path.Combine(RepoRoot(), "src", "Lms.Client", "Resources", $"SharedResource.{culture}.resx"));
+        var labels = resx.Root!.Elements("data").Select(e => (string)e.Attribute("name")!).ToHashSet();
+
+        Assert.Contains("attachment_invalid", named);
+        Assert.Contains("rate_limited", named);
+        Assert.All(named, c => Assert.True(codes.Contains(c), "ProblemCodes lacks " + c));
+        Assert.All(named, c => Assert.True(labels.Contains("Error_" + c), $"{culture}: no label for {c}"));
+    }
+
     [Fact]
     public void Preview_delivery_summary_and_upload_shapes_round_trip()
     {

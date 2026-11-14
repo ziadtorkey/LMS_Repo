@@ -1924,6 +1924,7 @@
   <data name="Error_report_duplicate" xml:space="preserve"><value>You already reported this message.</value></data>
   <data name="Error_rate_limited" xml:space="preserve"><value>Too many requests. Try again later.</value></data>
   <data name="Error_notification_mandatory" xml:space="preserve"><value>This notification cannot be switched off.</value></data>
+  <data name="Error_attachment_invalid" xml:space="preserve"><value>The attachment is not allowed: check its type and size, and the number of attachments.</value></data>
   <data name="Error_announcement_target_invalid" xml:space="preserve"><value>The announcement audience is not valid.</value></data>
   <data name="Error_announcement_not_editable" xml:space="preserve"><value>A published announcement allows only its expiry, pin and withdrawal to change.</value></data>
   <data name="Error_rules_looser_than_default" xml:space="preserve"><value>A client may only narrow the messaging rules, not widen them.</value></data>
