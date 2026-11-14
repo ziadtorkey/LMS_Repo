@@ -49,6 +49,7 @@ public static class ClientServices
             services.AddSingleton<IStaffApi, FakeStaffApi>();
             services.AddSingleton<IStudentsApi, FakeStudentsApi>();
             services.AddSingleton<IEnrollmentApi, FakeEnrollmentApi>();
+            services.AddSingleton<IGroupsApi, FakeGroupsApi>();
             services.AddSingleton<IMyProfileApi, FakeMyProfileApi>();
             services.AddSingleton<IChangeRequestsApi, FakeChangeRequestsApi>();
             services.AddSingleton<IGuardiansApi, FakeGuardiansApi>();
@@ -105,6 +106,7 @@ public static class ClientServices
         services.AddScoped<IStaffApi, StaffApi>();
         services.AddScoped<IStudentsApi, StudentsApi>();
         services.AddScoped<IEnrollmentApi, EnrollmentApi>();
+        services.AddScoped<IGroupsApi, GroupsApi>();
         services.AddScoped<IMyProfileApi, MyProfileApi>();
         services.AddScoped<IChangeRequestsApi, ChangeRequestsApi>();
         services.AddScoped<IGuardiansApi, GuardiansApi>();

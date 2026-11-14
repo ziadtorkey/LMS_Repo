@@ -1019,6 +1019,22 @@
   <data name="Transfer_Restricted" xml:space="preserve"><value>Not added (restrictions)</value></data>
   <data name="Transfer_ConfirmOverCapacity" xml:space="preserve"><value>The new class goes over its capacity. Transfer anyway.</value></data>
   <data name="Transfer_History" xml:space="preserve"><value>Transfers</value></data>
+  <data name="Group_Title" xml:space="preserve"><value>Student groups</value></data>
+  <data name="Group_New" xml:space="preserve"><value>New group</value></data>
+  <data name="Group_Empty" xml:space="preserve"><value>No groups in this course yet.</value></data>
+  <data name="Group_Match" xml:space="preserve"><value>Match</value></data>
+  <data name="Group_MatchType" xml:space="preserve"><value>Suggest students by</value></data>
+  <data name="Group_MatchValue" xml:space="preserve"><value>Value</value></data>
+  <data name="Group_MemberCount" xml:space="preserve"><value>Members</value></data>
+  <data name="Group_ManageMembers" xml:space="preserve"><value>Members</value></data>
+  <data name="Group_DeleteConfirm" xml:space="preserve"><value>Delete the group {0}? Its students stay enrolled in the course.</value></data>
+  <data name="Group_Ungrouped" xml:space="preserve"><value>Not in a group ({0})</value></data>
+  <data name="Group_NoneUngrouped" xml:space="preserve"><value>Every enrolled student is in a group.</value></data>
+  <data name="Group_Members" xml:space="preserve"><value>In this group ({0})</value></data>
+  <data name="Group_NoMembers" xml:space="preserve"><value>No members yet.</value></data>
+  <data name="Group_AddSelected" xml:space="preserve"><value>Add selected</value></data>
+  <data name="Group_AddSuggested" xml:space="preserve"><value>Add suggested</value></data>
+  <data name="Group_RemoveSelected" xml:space="preserve"><value>Remove selected</value></data>
   <data name="StudentImport_Title" xml:space="preserve"><value>Import students</value></data>
   <data name="StudentImport_Help" xml:space="preserve"><value>Fill one row per student: names in both languages, date of birth, gender, religion and nationality. Guardians can be added to the same row.</value></data>
   <data name="StudentImport_HelpClassCode" xml:space="preserve"><value>optional. The code of an active class of the current academic year at the student's unit; the student is placed in it and enrolled in its courses.</value></data>
