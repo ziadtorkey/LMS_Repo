@@ -41,6 +41,9 @@ public static class MessagingRuleDefaults
         };
     }
 
+    /// <summary>The field name of a refused cell in the 400 <c>rules_looser_than_default</c> problem: <c>From&gt;To</c>, for example <c>Student&gt;Teacher</c>.</summary>
+    public static string CellField(string fromRole, string toRole) => $"{fromRole}>{toRole}";
+
     /// <summary>The whole default matrix, one cell per (sender, recipient) pair.</summary>
     public static IReadOnlyList<MessagingRuleCellDto> Matrix() =>
         [.. Roles.SelectMany(from => Roles.Select(to => new MessagingRuleCellDto(from, to, Default(from, to))))];

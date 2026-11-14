@@ -94,6 +94,15 @@ public static class AnnouncementTargetKinds
     public static IReadOnlyList<string> All { get; } = [Organization, Unit, Level, Class, ClassCourse, Group];
 }
 
+/// <summary>Where an entry of a course page's announcement list came from: the course board (M4a) or a school-level announcement that reaches the course (M6).</summary>
+public static class AnnouncementSources
+{
+    public const string CourseBoard = "CourseBoard";
+    public const string School = "School";
+
+    public static IReadOnlyList<string> All { get; } = [CourseBoard, School];
+}
+
 public static class AnnouncementStatuses
 {
     public const string Draft = "Draft";

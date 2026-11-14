@@ -1996,6 +1996,8 @@
   <data name="Ann_TargetKind_Class" xml:space="preserve"><value>فصل</value></data>
   <data name="Ann_TargetKind_ClassCourse" xml:space="preserve"><value>مقرر فصل</value></data>
   <data name="Ann_TargetKind_Group" xml:space="preserve"><value>مجموعة</value></data>
+  <data name="Ann_Source_CourseBoard" xml:space="preserve"><value>مجلس المقرر</value></data>
+  <data name="Ann_Source_School" xml:space="preserve"><value>المدرسة</value></data>
   <data name="Ann_Status_Draft" xml:space="preserve"><value>مسودة</value></data>
   <data name="Ann_Status_Scheduled" xml:space="preserve"><value>مجدول</value></data>
   <data name="Ann_Status_Published" xml:space="preserve"><value>منشور</value></data>

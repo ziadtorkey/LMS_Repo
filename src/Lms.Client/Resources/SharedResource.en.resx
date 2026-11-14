@@ -1996,6 +1996,8 @@
   <data name="Ann_TargetKind_Class" xml:space="preserve"><value>Class</value></data>
   <data name="Ann_TargetKind_ClassCourse" xml:space="preserve"><value>Course of a class</value></data>
   <data name="Ann_TargetKind_Group" xml:space="preserve"><value>Group</value></data>
+  <data name="Ann_Source_CourseBoard" xml:space="preserve"><value>Course board</value></data>
+  <data name="Ann_Source_School" xml:space="preserve"><value>School</value></data>
   <data name="Ann_Status_Draft" xml:space="preserve"><value>Draft</value></data>
   <data name="Ann_Status_Scheduled" xml:space="preserve"><value>Scheduled</value></data>
   <data name="Ann_Status_Published" xml:space="preserve"><value>Published</value></data>
