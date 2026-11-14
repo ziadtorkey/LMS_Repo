@@ -80,6 +80,9 @@ public static class AttendanceLimits
     /// <summary>The take page shows up to this many roster rows, with a search box and no virtualisation (L17).</summary>
     public const int RosterMaxRows = 200;
 
+    /// <summary>The widest date range of the unit-level session search.</summary>
+    public const int SearchMaxDays = 92;
+
     public const int EditWindowHoursMin = 1;
     public const int EditWindowHoursMax = 720;
     public const int EditWindowHoursDefault = 48;

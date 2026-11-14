@@ -8,6 +8,10 @@ public sealed class AttendanceApi(Api.ApiHttp http) : IAttendanceApi
     public async Task<IReadOnlyList<AttendanceSessionListItemDto>> GetSessionsAsync(DateOnly? date = null, CancellationToken ct = default) =>
         await http.GetAsync<List<AttendanceSessionListItemDto>>(Routes.AttendanceSessions(date), ct);
 
+    public Task<PagedResult<AttendanceSessionListItemDto>> SearchSessionsAsync(Guid unitId, AttendanceSessionSearchQuery query, CancellationToken ct = default) =>
+        http.GetAsync<PagedResult<AttendanceSessionListItemDto>>(Routes.OrgUnitAttendanceSessions(unitId, query.From, query.To, query.ClassId, query.ClassCourseId)
+            + (query.State is { } s ? $"&state={Uri.EscapeDataString(s)}" : "") + $"&page={query.Page}&pageSize={query.PageSize}", ct);
+
     public async Task<AttendanceSessionListItemDto> CreateAdHocAsync(Guid classCourseId, CreateAdHocAttendanceSessionRequest request, CancellationToken ct = default) =>
         (await http.SendAsync<AttendanceSessionListItemDto>(HttpMethod.Post, Routes.ClassCourseAttendanceSessions(classCourseId), request, ct))!;
 

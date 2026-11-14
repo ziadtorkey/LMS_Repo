@@ -64,10 +64,12 @@
 
     private bool CanEdit => PermState.Has(Permissions.Attendance.Edit);
 
+    private bool CanTake => PermState.Has(Permissions.Attendance.Take);
+
     /// <summary>One primary action: Take (open), Confirm (a proposal), Review (taken), Edit (taken after the window, with permission only).</summary>
     private string PrimaryKey =>
-        Session.IsProposal ? "Att_Action_Confirm"
-        : !Taken ? "Att_Action_Take"
+        Session.IsProposal ? (CanTake ? "Att_Action_Confirm" : "Att_Action_Review")
+        : !Taken ? (CanTake ? "Att_Action_Take" : "Att_Action_Review")
         : Locked && CanEdit ? "Att_Action_Edit" // the lock is for editing: without Attendance.Edit the session can still be read
         : "Att_Action_Review";
 }
