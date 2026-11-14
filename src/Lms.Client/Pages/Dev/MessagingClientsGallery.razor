@@ -1,0 +1,286 @@
+@page "/dev/messaging-live"
+@attribute [Authorize]
+@using Lms.Client.Components.Messaging
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.Messaging
+@using Lms.Shared.Authorization
+@using Lms.Shared.Messaging
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@inject ICultureService Culture
+@inject IMessagingApi Messaging
+@inject IAnnouncementsApi Announcements
+@inject ICommsApi Comms
+@inject NavigationManager Navigation
+
+@* The M6 components driven by the M6 API fakes (standalone dev server only): the inbox and thread read what the messaging fake allows its participants to
+   read, the announcement cards come from the announcements fake, and the preference grid and the rules matrix show the server rules (mandatory events,
+   narrow-only rules). The sample text is gallery-only, so it is not in resources. *@
+@if (!Configuration.GetValue<bool>("Lms:UseFakeApi"))
+{
+    <NotFound />
+}
+else
+{
+    <PageTitle>M6 clients</PageTitle>
+    <PageHeader Title="M6 clients" Subtitle="Messaging, announcements and preferences against the fakes. Standalone only." TitleTestId="live-title" />
+
+    @if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mb-3" data-testid="live-error">@_error</MudAlert>
+    }
+
+    <InboxLayout ShowThread="_current is not null">
+        <List>
+            <div class="lms-convs" data-testid="live-inbox">
+                @foreach (var c in _inbox)
+                {
+                    var conversation = c;
+                    <ConversationRow Href="dev/messaging-live" Name="@Title(conversation)" Preview="@(conversation.LastMessagePreview ?? string.Empty)"
+                                     TimeText="@(conversation.LastMessageAtUtc?.ToString("HH:mm") ?? string.Empty)" UnreadCount="conversation.UnreadCount"
+                                     IsGroup="conversation.Kind == ConversationKinds.Group" Current="_current?.Id == conversation.Id" TestId="@($"live-row-{conversation.Id}")" />
+                    <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="() => OpenAsync(conversation.Id)" data-testid="@($"live-open-{conversation.Id}")">@T("فتح", "Open")</MudButton>
+                }
+            </div>
+        </List>
+        <Thread>
+            @if (_current is not null)
+            {
+                <ThreadPane Label="@Title(_current)">
+                    <Header><ThreadHeader Name="@Title(_current)" OnBack="() => _current = null" /></Header>
+                    <ChildContent>
+                        @foreach (var m in _messages)
+                        {
+                            var message = m;
+                            <MessageBubble Mine="message.SenderUserId == Messenger.Me.Id" From="@Culture.Pick(message.SenderNameAr, message.SenderNameEn)"
+                                           Text="@(message.Body ?? string.Empty)" TimeText="@message.CreatedAtUtc.ToString("HH:mm")"
+                                           Removal="message.State == MessageStates.Deleted ? MessageRemoval.BySender : MessageRemoval.None" TestId="@($"live-msg-{message.Id}")">
+                                <Actions>
+                                    @if (message.CanDelete)
+                                    {
+                                        <MudIconButton Icon="@Icons.Material.Rounded.DeleteOutline" Size="Size.Small" aria-label="@T("حذف الرسالة", "Delete message")"
+                                                       OnClick="() => DeleteAsync(message)" data-testid="@($"live-delete-{message.Id}")" />
+                                    }
+                                </Actions>
+                            </MessageBubble>
+                        }
+                    </ChildContent>
+                    <Footer>
+                        @if (_current.IsLocked)
+                        {
+                            <ComposerOff Reason="@T("أُغلقت هذه المحادثة. يمكنك قراءتها فقط.", "This conversation was closed. You can only read it.")" />
+                        }
+                        else
+                        {
+                            <MessageComposer @bind-Value="_draft" OnSend="SendAsync" Sending="_sending" />
+                        }
+                    </Footer>
+                </ThreadPane>
+            }
+        </Thread>
+    </InboxLayout>
+
+    <div class="d-flex gap-2 flex-wrap my-3">
+        <MudButton Variant="Variant.Outlined" OnClick="StartWithTeacherAsync" data-testid="live-start-teacher">@T("محادثة مع هدى (علاقة)", "Message Huda (relationship)")</MudButton>
+        <MudButton Variant="Variant.Outlined" OnClick="StartWithStudentAsync" data-testid="live-start-student">@T("محادثة مع عمر (غير مسموح)", "Message Omar (not allowed)")</MudButton>
+        <MudButton Variant="Variant.Outlined" OnClick="ReceiveAsync" Disabled="_current is null" data-testid="live-receive">@T("استلام رسالة", "Receive a message")</MudButton>
+        <MudButton Variant="Variant.Outlined" OnClick="LockAsync" Disabled="_current is null" data-testid="live-lock">@T("إغلاق المحادثة", "Lock the conversation")</MudButton>
+        <MudChip T="string" Size="Size.Small" data-testid="live-unread">@T("غير مقروءة", "Unread"): @_unread</MudChip>
+    </div>
+
+    <SectionCard Title="@T("إعلاناتي", "My announcements")" TestId="live-announcements">
+        <div class="d-flex gap-2 mb-3">
+            <MudButton Variant="Variant.Outlined" OnClick="PublishDemoAsync" data-testid="live-publish-ann">@T("نشر إعلان تجريبي", "Publish a demo announcement")</MudButton>
+        </div>
+        <div class="lms-ann-list">
+            @foreach (var a in _mine)
+            {
+                var ann = a;
+                <AnnouncementCard Title="@Culture.Pick(ann.TitleAr, ann.TitleEn)" Body="@(Culture.Pick(ann.BodyAr ?? string.Empty, ann.BodyEn ?? string.Empty))" Pinned="ann.IsPinned"
+                                  TestId="@($"live-ann-{ann.Id}")">
+                    <Actions>
+                        @if (!ann.IsRead)
+                        {
+                            <MudButton Size="Size.Small" OnClick="() => ReadAnnouncementAsync(ann.Id)" data-testid="@($"live-ann-read-{ann.Id}")">@T("تعليم كمقروء", "Mark read")</MudButton>
+                        }
+                    </Actions>
+                </AnnouncementCard>
+            }
+        </div>
+    </SectionCard>
+
+    <SectionCard Title="@T("تفضيلات الإشعارات", "Notification preferences")" Flush="true" TestId="live-prefs">
+        <ChannelPreferences Columns="_columns" Rows="_rows" OnChanged="SavePreferencesAsync" />
+    </SectionCard>
+
+    <SectionCard Title="@T("قواعد المراسلة", "Messaging rules")" TestId="live-rules">
+        <MudSimpleTable Dense="true" Elevation="0" Class="lms-simple-table lms-stack-table">
+            <thead><tr><th>@T("من", "From")</th><th>@T("طالب", "Student")</th><th>@T("معلم", "Teacher")</th></tr></thead>
+            <tbody>
+                @foreach (var from in new[] { BuiltInRoles.Student, BuiltInRoles.Teacher })
+                {
+                    <tr>
+                        <td data-label="@T("من", "From")">@from</td>
+                        <td data-label="@T("طالب", "Student")"><MessagingRuleCell Via="Via(from, BuiltInRoles.Student)" TestId="@($"live-rule-{from}-Student")" /></td>
+                        <td data-label="@T("معلم", "Teacher")"><MessagingRuleCell Via="Via(from, BuiltInRoles.Teacher)" TestId="@($"live-rule-{from}-Teacher")" /></td>
+                    </tr>
+                }
+            </tbody>
+        </MudSimpleTable>
+        <div class="d-flex gap-2 flex-wrap mt-3">
+            <MudButton Variant="Variant.Outlined" OnClick="() => SetRuleAsync(BuiltInRoles.Teacher, BuiltInRoles.Student, MessagingRuleModes.Deny)" data-testid="live-rule-narrow">@T("تضييق: المعلم ← الطالب", "Narrow: Teacher to Student")</MudButton>
+            <MudButton Variant="Variant.Outlined" OnClick="() => SetRuleAsync(BuiltInRoles.Student, BuiltInRoles.Student, MessagingRuleModes.Allow)" data-testid="live-rule-loosen">@T("توسيع: الطالب ← الطالب (مرفوض)", "Loosen: Student to Student (refused)")</MudButton>
+        </div>
+    </SectionCard>
+}
+
+@code {
+    private FakeMessagingApi Messenger => (FakeMessagingApi)Messaging;
+
+    private IReadOnlyList<ConversationListItemDto> _inbox = [];
+    private ConversationListItemDto? _current;
+    private IReadOnlyList<MessageDto> _messages = [];
+    private IReadOnlyList<MyAnnouncementDto> _mine = [];
+    private MessagingRulesDto? _rules;
+    private readonly List<PreferenceRow> _rows = [];
+    private string? _draft, _error;
+    private bool _sending;
+    private int _unread;
+
+    private static readonly IReadOnlyList<ChannelColumn> ColumnsList =
+    [
+        new(NotificationChannel.InApp, "In-app"), new(NotificationChannel.Email, "Email"), new(NotificationChannel.Sms, "SMS"), new(NotificationChannel.Push, "Push"),
+    ];
+
+    private IReadOnlyList<ChannelColumn> _columns => ColumnsList;
+
+    private string T(string ar, string en) => Culture.IsRightToLeft ? ar : en;
+
+    private string Title(ConversationListItemDto c) => c.Title ?? string.Join(", ", c.Participants.Where(p => p.UserId != Messenger.Me.Id).Select(p => Culture.Pick(p.NameAr, p.NameEn)));
+
+    private MessagingVia Via(string from, string to) => _rules?.Cells.FirstOrDefault(c => c.FromRole == from && c.ToRole == to)?.Mode switch
+    {
+        MessagingRuleModes.Allow => MessagingVia.Anywhere,
+        MessagingRuleModes.SameUnit => MessagingVia.SameUnit,
+        MessagingRuleModes.Relationship => MessagingVia.Relationship,
+        _ => MessagingVia.NotAllowed,
+    };
+
+    private static string Label(string eventKey) => eventKey.Replace('.', ' ');
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Configuration.GetValue<bool>("Lms:UseFakeApi")) return;
+        await Messenger.CreateConversationAsync(new CreateConversationRequest(ConversationKinds.Direct, [FakeMessagingApi.Huda.Id], null, "Hello Huda"));
+        Messenger.Receive((await Messaging.ListConversationsAsync()).Items[0].Id, FakeMessagingApi.Huda, "Hello Sara, see you tomorrow.");
+        await Announcements.CreateAsync(new CreateAnnouncementRequest(FakeMessagingApi.UnitA, "أمسية أولياء الأمور", "Parents' evening", "ندعوكم يوم الخميس.", "Join us on Thursday.",
+            [new AnnouncementTargetDto(AnnouncementTargetKinds.Unit, FakeMessagingApi.UnitA, true)], null, null, null, true, true, null, true));
+        await RefreshAsync();
+    }
+
+    private async Task RefreshAsync()
+    {
+        _inbox = (await Messaging.ListConversationsAsync()).Items;
+        _unread = (await Messaging.GetUnreadTotalAsync()).Conversations;
+        _mine = (await Announcements.ListMineAsync()).Items;
+        _rules = await Comms.GetMessagingRulesAsync();
+        var prefs = await Comms.GetEffectivePreferencesAsync();
+        _rows.Clear();
+        foreach (var group in prefs.GroupBy(p => p.EventKey))
+        {
+            var row = new PreferenceRow { Key = group.Key, Label = Label(group.Key) };
+            foreach (var p in group.Where(p => Enum.TryParse<NotificationChannel>(p.Channel, out _)))
+            {
+                var channel = Enum.Parse<NotificationChannel>(p.Channel);
+                row.On[channel] = p.Enabled;
+                if (p.Mandatory) row.Locked.Add(channel);
+            }
+
+            _rows.Add(row);
+        }
+
+        if (_current is not null) _current = _inbox.FirstOrDefault(c => c.Id == _current.Id) ?? _current;
+    }
+
+    private async Task OpenAsync(Guid id)
+    {
+        _current = _inbox.First(c => c.Id == id);
+        _messages = [.. (await Messaging.GetMessagesAsync(id, new MessageQuery())).Items.Reverse()];
+        await Messaging.MarkReadAsync(id);
+        await RefreshAsync();
+    }
+
+    private async Task Guarded(Func<Task> action)
+    {
+        _error = null;
+        try { await action(); }
+        catch (ApiProblemException ex) { _error = ProblemText.For(ex, L); }
+    }
+
+    private Task SendAsync() => Guarded(async () =>
+    {
+        if (_current is null || string.IsNullOrWhiteSpace(_draft)) return;
+        _sending = true;
+        await Messaging.SendAsync(_current.Id, new SendMessageRequest(_draft, null));
+        _draft = null;
+        _sending = false;
+        await OpenAsync(_current.Id);
+    });
+
+    private Task DeleteAsync(MessageDto m) => Guarded(async () =>
+    {
+        await Messaging.DeleteMessageAsync(m.ConversationId, m.Id);
+        await OpenAsync(m.ConversationId);
+    });
+
+    private Task StartWithTeacherAsync() => Guarded(async () =>
+    {
+        var c = await Messaging.CreateConversationAsync(new CreateConversationRequest(ConversationKinds.Direct, [FakeMessagingApi.Huda.Id], null, null));
+        await RefreshAsync();
+        await OpenAsync(c.Id);
+    });
+
+    private Task StartWithStudentAsync() => Guarded(async () =>
+    {
+        await Messaging.CreateConversationAsync(new CreateConversationRequest(ConversationKinds.Direct, [FakeMessagingApi.Omar.Id], null, null));
+        await RefreshAsync();
+    });
+
+    private Task ReceiveAsync() => Guarded(async () =>
+    {
+        Messenger.Receive(_current!.Id, FakeMessagingApi.Huda, "Another message " + DateTime.UtcNow.ToString("ss"));
+        await RefreshAsync();
+    });
+
+    private Task LockAsync() => Guarded(async () =>
+    {
+        Messenger.Lock(_current!.Id);
+        await RefreshAsync();
+    });
+
+    private Task PublishDemoAsync() => Guarded(async () =>
+    {
+        var created = await Announcements.CreateAsync(new CreateAnnouncementRequest(FakeMessagingApi.UnitA, "إعلان", "Announcement " + DateTime.UtcNow.ToString("ss"), "نص", "Body",
+            [new AnnouncementTargetDto(AnnouncementTargetKinds.Unit, FakeMessagingApi.UnitA, true)], null, null, null, false, true, null, true));
+        _ = created;
+        await RefreshAsync();
+    });
+
+    private Task ReadAnnouncementAsync(Guid id) => Guarded(async () =>
+    {
+        await Announcements.MarkReadAsync(id);
+        await RefreshAsync();
+    });
+
+    private Task SavePreferencesAsync() => Guarded(async () =>
+    {
+        var request = new SavePreferencesRequest([.. _rows.SelectMany(r => r.On.Select(kv => new SavePreferenceRequest(r.Key, kv.Key.ToString(), kv.Value)))]);
+        await Comms.SavePreferencesAsync(request);
+        await RefreshAsync();
+    });
+
+    private Task SetRuleAsync(string from, string to, string mode) => Guarded(async () =>
+    {
+        await Comms.SaveMessagingRulesAsync(new SaveMessagingRulesRequest([new MessagingRuleCellDto(from, to, mode)]));
+        await RefreshAsync();
+    });
+}
