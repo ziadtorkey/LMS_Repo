@@ -18,10 +18,12 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Lms.IntegrationTests.Staff;
 
 [Collection(ApiCollection.Name)]
-public sealed class CreateStaffTests
+public sealed class CreateStaffTests : IDisposable
 {
     private readonly LmsApiFactory _factory;
     private readonly WebApplicationFactory<Program> _host;
+
+    public void Dispose() => _host.Dispose();
     private readonly FakeEmailSender _emails = new();
 
     public CreateStaffTests(LmsApiFactory factory)
