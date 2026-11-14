@@ -1,16 +1,15 @@
 namespace Lms.Client.Components.Messaging;
 
-/// <summary>The four delivery channels of the preferences page (spec #615 §6), in column order.</summary>
+/// <summary>The delivery channels of the preferences page (spec #615 §6), in column order. No SMS in v1 (D76).</summary>
 public enum NotificationChannel
 {
     InApp,
     Email,
-    Sms,
     Push,
 }
 
 /// <summary>A channel column: its caption is the address in use (masked) or the push state of this device; an unavailable channel disables its
-/// switches and says why (no mobile number, or a browser without push).</summary>
+/// switches and says why (a browser without push).</summary>
 public sealed record ChannelColumn(NotificationChannel Channel, string Caption, bool Available = true, string? UnavailableText = null, string? UnavailableHref = null);
 
 /// <summary>One event row: its label and, per channel, whether it is on and whether the school locked it (a mandatory event).</summary>

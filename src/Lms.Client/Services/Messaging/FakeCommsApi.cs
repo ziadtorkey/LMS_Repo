@@ -20,7 +20,7 @@ public sealed class FakeMessagingRules
 
     public void Save(IReadOnlyList<MessagingRuleCellDto> cells)
     {
-        if (MessagingRuleDefaults.Loosened(cells).Any()) throw new ApiProblemException(400, ProblemCodes.rules_looser_than_default, null, null);
+        if (MessagingRuleDefaults.Loosened(cells).FirstOrDefault() is { } loose) throw new ApiProblemException(400, ProblemCodes.rules_looser_than_default, null, null, $"{loose.FromRole}>{loose.ToRole}");
         foreach (var c in cells) _saved[(c.FromRole, c.ToRole)] = c.Mode;
     }
 }
@@ -120,8 +120,15 @@ public sealed class FakeCommsApi(FakeMessagingRules rules) : ICommsApi
 
     public Task<MessagingRulesDto> GetMessagingRulesAsync(CancellationToken ct = default) => Task.FromResult(rules.Get());
 
+    /// <summary>The cells of the last save request, and a failure the next save throws (tests simulate a refusal).</summary>
+    public SaveMessagingRulesRequest? LastRules { get; private set; }
+
+    public ApiProblemException? RulesFailure { get; set; }
+
     public Task<MessagingRulesDto> SaveMessagingRulesAsync(SaveMessagingRulesRequest request, CancellationToken ct = default)
     {
+        LastRules = request;
+        if (RulesFailure is { } failure) throw failure;
         rules.Save(request.Cells);
         return Task.FromResult(rules.Get());
     }

@@ -255,6 +255,22 @@ html[data-theme="dark"] .mud-button-outlined { border-color: #334155; }
     .lms-prefs td { justify-content: space-between; }
     .lms-prefs .lms-prefs-event { display: block; padding-block-end: 4px; }
 }
+.lms-compose { display: flex; flex-direction: column; gap: 16px; }
+.lms-recipient-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-block-end: 6px; }
+.lms-compose-actions .lms-compose-attach { margin-inline-end: auto; }
+.lms-rules-table th:not(:first-child), .lms-rules-table td { text-align: center; }
+.lms-rules-table .lms-rules-from { text-align: start; font-weight: 500; white-space: nowrap; }
+.lms-rules-table.mud-simple-table table th, .lms-rules-table.mud-simple-table table td { padding-inline: 4px; }
+.lms-rules-select { min-inline-size: 112px; }
+@media (min-width: 600px) { .lms-rules-pop { min-inline-size: 300px; } }
+.lms-composer-off .mud-alert-message { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.lms-rules-wider { font-size: .75rem; color: var(--mud-palette-text-secondary); }
+.lms-rules-select .mud-input { font-size: .875rem; }
+@media (min-width: 600px) {
+    /* When the matrix scrolls inside its card (narrow desktops), the From column stays in view. */
+    .lms-rules-table .lms-rules-from, .lms-rules-table thead th:first-child { position: sticky; inset-inline-start: 0; z-index: 1; background: var(--mud-palette-surface); }
+}
+@media (max-width: 599.98px) { .lms-rules-table td { justify-content: space-between; } .lms-rules-select { min-inline-size: 160px; } }
 @media (max-width: 1099.98px) { .lms-mod { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 899.98px) {
     .lms-inbox { grid-template-columns: minmax(0, 1fr); block-size: auto; min-block-size: 0; overflow: visible; }
