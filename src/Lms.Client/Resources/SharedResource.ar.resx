@@ -2166,4 +2166,5 @@
   <data name="Msg_Block_Text" xml:space="preserve"><value>حظر {0}؟ لن تصلك رسائل مباشرة من هذا الشخص ولن يستطيع مراسلتك، ولن يعلم بذلك. تبقيان معا في أي مجموعة.</value></data>
   <data name="Msg_Blocked_ByMe" xml:space="preserve"><value>لقد حظرت هذا الشخص. ألغِ الحظر لتكتب مجددا.</value></data>
   <data name="Msg_Blocked_Title" xml:space="preserve"><value>المحظورون</value></data>
+  <data name="Msg_Inbox_Capped" xml:space="preserve"><value>يظهر آخر {0} محادثة لديك.</value></data>
 </root>

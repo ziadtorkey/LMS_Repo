@@ -70,7 +70,7 @@ public sealed class FakeMessagingApi : IMessagingApi
     /// <summary>The caller of the fake (change it to read the same data as another participant).</summary>
     public FakeMessagingUser Me { get; set; }
 
-    /// <summary>Test and demo switch: sending and creating answer 429 <c>rate_limited</c> while it is on.</summary>
+    /// <summary>Test and demo switch: sending, creating and reporting answer 429 <c>rate_limited</c> while it is on.</summary>
     public bool RateLimited { get; set; }
 
     /// <summary>Pairs that satisfy the Relationship rule (teaches, is guardian of) in either direction.</summary>
@@ -284,6 +284,7 @@ public sealed class FakeMessagingApi : IMessagingApi
 
     public Task ReportAsync(Guid messageId, ReportMessageRequest request, CancellationToken ct = default)
     {
+        if (RateLimited) throw Problem(429, ProblemCodes.rate_limited);
         var c = _conversations.FirstOrDefault(x => x.Participants.Contains(Me.Id) && x.Messages.Any(m => m.Id == messageId)) ?? throw Problem(404, ProblemCodes.not_found);
         if (c.Messages.First(m => m.Id == messageId).SenderId == Me.Id) throw Problem(404, ProblemCodes.not_found); // a participant who is not the sender
         if (_reports.Any(r => r.MessageId == messageId)) throw Problem(409, ProblemCodes.report_duplicate);
@@ -324,10 +325,10 @@ public sealed class FakeMessagingApi : IMessagingApi
         return Task.FromResult(new UnreadTotalDto(page.Items.Count(i => i.UnreadCount > 0)));
     }
 
-    /// <summary>A moderator locked the conversation: sending is 409 <c>conversation_closed</c> from now on.</summary>
     /// <summary>Test and demo helper: the caller has read up to and including <paramref name="messageId"/> (the rest stays unread).</summary>
     public void MarkReadUpTo(Guid conversationId, Guid messageId) => Mine(conversationId).LastRead[Me.Id] = messageId;
 
+    /// <summary>A moderator locked the conversation: sending is 409 <c>conversation_closed</c> from now on.</summary>
     public void Lock(Guid conversationId) => _conversations.First(c => c.Id == conversationId).Locked = true;
 
     /// <summary>Test and demo helper: a message from <paramref name="sender"/> arrives in a conversation the caller is in.</summary>

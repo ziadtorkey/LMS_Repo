@@ -59,17 +59,26 @@ else
                 @if (lastDay != day)
                 {
                     lastDay = day;
-                    <DaySeparator Text="@MessageTimes.Day(message.CreatedAtUtc, Clock.GetUtcNow().UtcDateTime, L)" />
+                    <DaySeparator Text="@MessageTimes.Day(message.CreatedAtUtc, Clock.GetUtcNow().UtcDateTime, Clock.LocalTimeZone, L)" />
                 }
                 @if (message.Id == _dividerBefore)
                 {
                     <div class="lms-day lms-unread-divider" role="separator" data-testid="thread-divider"><span>@L["Msg_Unread_Divider"]</span></div>
                 }
                 <MessageBubble @key="message.Id" Mine="IsMine(message)" From="@(conversation.Kind == ConversationKinds.Group ? SenderName(message) : null)"
-                               Text="@(message.Body ?? string.Empty)" TimeText="@MessageTimes.Clock(message.CreatedAtUtc)" Removal="RemovalOf(message)"
+                               Text="@(message.Body ?? string.Empty)" TimeText="@MessageTimes.Clock(message.CreatedAtUtc, Clock.LocalTimeZone)" Removal="RemovalOf(message)"
                                TestId="@($"msg-{message.Id}")">
                     <Actions>
-                        @if (message.CanDelete)
+                        @if (_reported.Contains(message.Id))
+                        {
+                            <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Icon="@Icons.Material.Rounded.Flag" data-testid="@($"msg-reported-{message.Id}")">@L["Msg_Reported"]</MudChip>
+                        }
+                        else if (!IsMine(message) && message.State == MessageStates.Normal && message.SenderUserId is not null)
+                        {
+                            <MudIconButton Icon="@Icons.Material.Rounded.OutlinedFlag" Size="Size.Small" aria-label="@L["Msg_Report"]" OnClick="() => ReportAsync(message)"
+                                           data-testid="@($"msg-report-{message.Id}")" />
+                        }
+                        @if (message.CanDelete && CanSend)
                         {
                             <MudIconButton Icon="@Icons.Material.Rounded.DeleteOutline" Size="Size.Small" aria-label="@L["Msg_Delete"]" OnClick="() => DeleteAsync(message)"
                                            data-testid="@($"msg-delete-{message.Id}")" />
@@ -96,7 +105,13 @@ else
                     }
                 </ComposerOff>
             }
-            else
+            else if (_blockedByMe)
+            {
+                <ComposerOff Reason="@L["Msg_Blocked_ByMe"]">
+                    <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="UnblockAsync" data-testid="composer-unblock">@L["Msg_Unblock"]</MudButton>
+                </ComposerOff>
+            }
+            else if (CanSend)
             {
                 <MessageComposer @bind-Value="_draft" OnSend="SendAsync" Sending="_sending" />
             }
@@ -129,6 +144,8 @@ else
     /// <summary>The other person of a direct conversation (the one a block applies to).</summary>
     private ParticipantDto? Other => _conversation is { Kind: ConversationKinds.Direct } c ? c.Participants.FirstOrDefault(p => p.UserId != PermState.UserId) : null;
 
+    private bool CanSend => PermState.Has(Lms.Shared.Authorization.Permissions.Messaging.Send);
+
     private int Members => _conversation?.Participants.Count(p => !p.Left) ?? 0;
 
     /// <summary>A student in a group reads it and answers the teacher privately (D74).</summary>
@@ -145,7 +162,7 @@ else
         _ => MessageRemoval.None,
     };
 
-    private static DateTime DayOf(MessageDto m) => DateTime.SpecifyKind(m.CreatedAtUtc, DateTimeKind.Utc).ToLocalTime().Date;
+    private DateTime DayOf(MessageDto m) => MessageTimes.DayOf(m.CreatedAtUtc, Clock.LocalTimeZone);
 
     protected override async Task OnInitializedAsync()
     {
@@ -166,7 +183,7 @@ else
         _scrollDown = true;
         await LoadBlockAsync();
 
-        await ApiCalls.RunAsync(() => Messaging.MarkReadAsync(ConversationId), Navigation, L, e => _error = e);
+        await ApiCalls.RunAsync(() => Messaging.MarkReadAsync(ConversationId), Navigation, L, _ => { }); // a failed mark-read stays silent: the next visit marks it
         await OnChanged.InvokeAsync();
     }
 
