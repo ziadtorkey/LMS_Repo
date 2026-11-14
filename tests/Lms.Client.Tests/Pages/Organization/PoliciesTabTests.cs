@@ -90,4 +90,18 @@ public sealed class PoliciesTabTests : ClientTestContext
 
         cut.WaitForAssertion(() => Assert.Contains("set by a parent unit", cut.Find("[data-testid=policies-error]").TextContent));
     }
+
+    [Fact]
+    public void Policies_explain_the_cascade_and_sit_as_toggle_rows_in_one_card()
+    {
+        var cut = RenderTab();
+        cut.WaitForElement($"input[data-testid=policy-switch-{Key}]");
+
+        Assert.Contains("mud-alert-outlined-info", cut.Find("[data-testid=policies-cascade-note]").ClassName);
+        var card = cut.Find("[data-testid=policies-card]");
+        Assert.NotNull(card.QuerySelector("h2"));
+        var row = cut.Find($"[data-testid=policy-row-{Key}]");
+        Assert.Contains("lms-toggle-row", row.ClassName);
+        Assert.NotNull(row.QuerySelector(".lms-toggle-help"));
+    }
 }

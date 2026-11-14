@@ -242,4 +242,17 @@ public sealed class UnitSettingsTests : ClientTestContext
 
         page.WaitForAssertion(() => Assert.Contains(general, page.Find("[data-testid=unit-tabs]").TextContent));
     }
+
+    [Fact]
+    public async Task Academic_rules_are_two_cards_with_described_toggle_rows_and_a_save_bar()
+    {
+        var cut = await RenderTabAsync(_kgId);
+
+        var titles = cut.FindAll(".lms-section h2").Select(h => h.TextContent.Trim()).ToArray();
+        Assert.Equal(2, titles.Length);
+        var rows = cut.FindAll(".lms-toggle-row");
+        Assert.Equal(2, rows.Count);
+        Assert.All(rows, r => Assert.False(string.IsNullOrWhiteSpace(r.QuerySelector(".lms-toggle-help")!.TextContent)));
+        Assert.NotNull(cut.Find("[data-testid=academic-save-bar]").QuerySelector("[data-testid=academic-save]"));
+    }
 }
