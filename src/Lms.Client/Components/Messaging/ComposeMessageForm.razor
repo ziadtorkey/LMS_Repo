@@ -1,0 +1,47 @@
+@* New message (spec #615 §3), as a form the page puts in its dialog (full screen below 600 px; a dialog so the inbox stays behind it). To (the picker),
+   an optional Subject that becomes the group name, the message (5 lines), and for a group the note that replies go to everyone. Actions: Attach a file at
+   the inline start, then Cancel and Send. Starting from elsewhere, the page pre-fills To. *@
+<div class="lms-form lms-compose" data-testid="compose">
+    <RecipientPicker Value="Draft.To" ValueChanged="StateHasChanged" SearchFunc="SearchFunc" Error="@(_errors.Contains("to") ? L["Msg_Error_To"].Value : null)" />
+    <MudTextField T="string" @bind-Value="Draft.Subject" Label="@L["Msg_Subject"]" HelperText="@L["Msg_Subject_Help"]" MaxLength="200" Immediate="true" data-testid="compose-subject" />
+    <MudTextField T="string" @bind-Value="Draft.Body" Label="@L["Msg_Message"]" Placeholder="@L["Msg_Composer_Placeholder"]" Lines="5" Immediate="true"
+                  Error="@(_errors.Contains("body"))" ErrorText="@L["Msg_Error_Body"]" data-testid="compose-body" />
+    @if (Draft.IsGroup)
+    {
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" data-testid="compose-group-note">@L["Msg_Group_Note"]</MudAlert>
+    }
+    <div class="lms-dialog-actions lms-compose-actions">
+        @if (OnAttach.HasDelegate)
+        {
+            <MudButton Variant="Variant.Text" StartIcon="@Icons.Material.Rounded.AttachFile" OnClick="OnAttach" Class="lms-compose-attach" data-testid="compose-attach">@L["Msg_Attach"]</MudButton>
+        }
+        <MudButton Variant="Variant.Text" OnClick="OnCancel" Disabled="Busy" data-testid="compose-cancel">@L["Common_Cancel"]</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SendAsync" Disabled="Busy" StartIcon="@Icons.Material.Rounded.Send" IconClass="lms-icon-flip"
+                   data-testid="compose-send">@L["Msg_Send"]</MudButton>
+    </div>
+</div>
+
+@code {
+    private readonly HashSet<string> _errors = [];
+
+    [Parameter, EditorRequired] public MessageDraft Draft { get; set; } = default!;
+    [Parameter, EditorRequired] public Func<string, CancellationToken, Task<IEnumerable<RecipientChoice>>> SearchFunc { get; set; } = default!;
+    [Parameter] public bool Busy { get; set; }
+    [Parameter] public EventCallback OnAttach { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+    [Parameter] public EventCallback<MessageDraft> OnSend { get; set; }
+
+    public bool Validate()
+    {
+        _errors.Clear();
+        if (Draft.To.Count == 0) _errors.Add("to");
+        if (string.IsNullOrWhiteSpace(Draft.Body)) _errors.Add("body");
+        StateHasChanged();
+        return _errors.Count == 0;
+    }
+
+    private async Task SendAsync()
+    {
+        if (Validate()) await OnSend.InvokeAsync(Draft);
+    }
+}

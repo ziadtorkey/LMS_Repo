@@ -1,0 +1,151 @@
+@page "/settings/messaging-rules"
+@attribute [Authorize]
+@using Lms.Client.Components.Messaging
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.Messaging
+@using Lms.Shared
+@using Lms.Shared.Authorization
+@using Lms.Shared.Messaging
+@inject ICommsApi Api
+@inject PermissionState PermState
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+@* Who may message whom (M6 Task 27, FR-MSG-02, D69). The platform default of every cell is its ceiling: a school can only narrow a rule, never widen it, and
+   the safeguarding cells are locked chips. Only the cells that changed are saved; a refusal names the cell. Client root only: below it the server answers 403. *@
+<PageTitle>@L["RulesPage_Title"]</PageTitle>
+@if (!PermState.Loaded)
+{
+    <LoadingState Lines="4" TestId="rules-loading" />
+}
+else if (!PermState.Has(Permissions.Comms.Manage))
+{
+    <Forbidden />
+}
+else
+{
+    <PageHeader Title="@L["RulesPage_Title"]" Subtitle="@L["RulesPage_Subtitle"]" TitleTestId="rules-title" />
+    @if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-3" data-testid="rules-error">@_error</MudAlert>
+    }
+    @if (_refused.Count > 0)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mb-3" data-testid="rules-refused">
+            @L["RulesPage_Refused"]
+            <ul>
+                @foreach (var (from, to) in _refused)
+                {
+                    <li data-testid="@($"rules-refused-{from}-{to}")">@L[$"Rules_Role_{from}"] → @L[$"Rules_Role_{to}"]</li>
+                }
+            </ul>
+        </MudAlert>
+    }
+    @if (_loading)
+    {
+        <LoadingState Lines="6" TestId="rules-cells-loading" />
+    }
+    else
+    {
+        <SectionCard Flush="true">
+            <MessagingRulesMatrix Cells="_cells" OnChanged="Changed" />
+        </SectionCard>
+        @if (_dirty)
+        {
+            <div class="lms-save-bar" role="region" aria-label="@L["Common_UnsavedChanges"]" data-testid="rules-bar">
+                <span class="lms-save-bar-text">@L["Common_UnsavedChanges"]</span>
+                <MudButton Variant="Variant.Text" OnClick="LoadAsync" Disabled="_saving" data-testid="rules-discard">@L["Common_Discard"]</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_saving" data-testid="rules-save">@L["Common_Save"]</MudButton>
+            </div>
+        }
+    }
+}
+
+@code {
+    private Dictionary<(MessagingRole From, MessagingRole To), RuleCellValue> _cells = [];
+    private Dictionary<(MessagingRole, MessagingRole), MessagingVia> _saved = [];
+    private readonly List<(MessagingRole From, MessagingRole To)> _refused = [];
+    private string? _error;
+    private bool _loading = true, _saving, _dirty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        if (!PermState.Has(Permissions.Comms.Manage)) return;
+        await LoadAsync();
+    }
+
+    private static MessagingVia ViaOf(string mode) => mode switch
+    {
+        MessagingRuleModes.Allow => MessagingVia.Anywhere,
+        MessagingRuleModes.SameUnit => MessagingVia.SameUnit,
+        MessagingRuleModes.Relationship => MessagingVia.Relationship,
+        _ => MessagingVia.NotAllowed,
+    };
+
+    private static string ModeOf(MessagingVia via) => via switch
+    {
+        MessagingVia.Anywhere => MessagingRuleModes.Allow,
+        MessagingVia.SameUnit => MessagingRuleModes.SameUnit,
+        MessagingVia.Relationship => MessagingRuleModes.Relationship,
+        _ => MessagingRuleModes.Deny,
+    };
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _error = null;
+        _refused.Clear();
+        MessagingRulesDto? rules = null;
+        var ok = await ApiCalls.RunAsync(async () => rules = await Api.GetMessagingRulesAsync(), Navigation, L, m => _error = m);
+        _cells = [];
+        _saved = [];
+        if (ok && rules is not null)
+        {
+            var defaults = rules.Defaults.ToDictionary(c => (c.FromRole, c.ToRole), c => c.Mode);
+            foreach (var cell in rules.Cells)
+            {
+                if (!Enum.TryParse<MessagingRole>(cell.FromRole, out var from) || !Enum.TryParse<MessagingRole>(cell.ToRole, out var to)) continue;
+                var ceiling = ViaOf(defaults.GetValueOrDefault((cell.FromRole, cell.ToRole), cell.Mode));
+                // D69: a default of "not allowed" is a floor (a student never writes to a student); managers and org admins reach students through groups only.
+                var floor = ceiling == MessagingVia.NotAllowed;
+                var groupsOnly = floor && to == MessagingRole.Student && from is MessagingRole.Manager or MessagingRole.OrgAdmin;
+                var via = groupsOnly ? MessagingVia.GroupsOnly : ViaOf(cell.Mode);
+                _cells[(from, to)] = new RuleCellValue { Via = via, Ceiling = groupsOnly ? MessagingVia.GroupsOnly : ceiling, Locked = floor };
+                _saved[(from, to)] = via;
+            }
+        }
+
+        _dirty = false;
+        _loading = false;
+    }
+
+    private void Changed() => _dirty = _cells.Any(c => _saved.GetValueOrDefault(c.Key) != c.Value.Via);
+
+    private async Task SaveAsync()
+    {
+        _saving = true;
+        _error = null;
+        _refused.Clear();
+        var changed = _cells.Where(c => !c.Value.Locked && _saved.GetValueOrDefault(c.Key) != c.Value.Via)
+            .Select(c => new MessagingRuleCellDto(c.Key.From.ToString(), c.Key.To.ToString(), ModeOf(c.Value.Via))).ToList();
+        try
+        {
+            await Api.SaveMessagingRulesAsync(new SaveMessagingRulesRequest(changed)); // exactly the cells that changed
+            Snackbar.Add(L["Common_Saved"], Severity.Success);
+            await LoadAsync();
+        }
+        catch (ApiProblemException ex) when (ex.Code == ProblemCodes.rules_looser_than_default)
+        {
+            _error = L["Error_rules_looser_than_default"];
+            var parts = (ex.Field ?? string.Empty).Split('>');
+            if (parts.Length == 2 && Enum.TryParse<MessagingRole>(parts[0], out var f) && Enum.TryParse<MessagingRole>(parts[1], out var t)) _refused.Add((f, t));
+        }
+        catch (Exception ex) when (ex is ApiProblemException or HttpRequestException)
+        {
+            _error = ex is ApiProblemException problem ? ProblemText.For(problem, L) : L["Error_Generic"].Value;
+        }
+
+        _saving = false;
+    }
+}

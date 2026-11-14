@@ -1,0 +1,94 @@
+@* The messaging rules matrix (spec #615 §7a): "From" roles as rows and "To" roles as columns, each cell a select of #613 MessagingRule.Via (Anyone, Same
+   unit, Own classes, Not allowed). A school may only narrow a rule: each cell's default is its ceiling, wider values are shown disabled with the reason,
+   and a wider value is rejected even if it arrives some other way. D69 cells are locked chips that can't be loosened. A change marks the page dirty (it shows the save bar); saving is
+   audited server side. Below 600 px each "From" role is a block with one labelled row per recipient role (lms-stack-table). *@
+<div class="lms-rules" data-testid="rules-matrix">
+    <MudSimpleTable Elevation="0" Class="lms-simple-table lms-stack-table lms-rules-table">
+        <thead>
+            <tr>
+                <th scope="col">@L["Rules_From"]</th>
+                @foreach (var to in Roles)
+                {
+                    <th scope="col">@L[$"Rules_Role_{to}"]</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var from in Roles)
+            {
+                var f = from;
+                <tr data-testid="@($"rules-row-{f}")">
+                    <th scope="row" class="lms-rules-from">@L[$"Rules_Role_{f}"]</th>
+                    @foreach (var to in Roles)
+                    {
+                        var t = to;
+                        var cell = Cells[(f, t)];
+                        <td data-label="@L[$"Rules_Role_{t}"]" data-testid="@($"rules-{f}-{t}")">
+                            <MessagingRuleCell Via="cell.Via" Locked="cell.Locked">
+                                <MudSelect T="MessagingVia" Value="cell.Via" ValueChanged="v => SetAsync(cell, v)" Dense="true" Disabled="Disabled" PopoverClass="lms-rules-pop"
+                                           aria-label="@($"{L[$"Rules_Role_{f}"]} → {L[$"Rules_Role_{t}"]}")" Class="lms-rules-select">
+                                    @foreach (var via in Editable)
+                                    {
+                                        var allowed = cell.Allows(via);
+                                        <MudSelectItem T="MessagingVia" Value="via" Disabled="!allowed">
+                                            @L[$"Rules_Via_{via}"]
+                                            @if (!allowed)
+                                            {
+                                                <span class="lms-rules-wider"> · @L["Rules_Wider"]</span>
+                                            }
+                                        </MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MessagingRuleCell>
+                        </td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </MudSimpleTable>
+</div>
+
+@code {
+    private static readonly MessagingRole[] Roles = Enum.GetValues<MessagingRole>();
+    private static readonly MessagingVia[] Editable = [MessagingVia.Anywhere, MessagingVia.SameUnit, MessagingVia.Relationship, MessagingVia.NotAllowed];
+
+    /// <summary>Every (from, to) pair; the page fills it from the server, which also says which cells D69 locks.</summary>
+    [Parameter, EditorRequired] public Dictionary<(MessagingRole From, MessagingRole To), RuleCellValue> Cells { get; set; } = [];
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    /// <summary>The D69 floor (PRD D69, D74): students reach only their own teachers and counselor, guardians only their children's; managers and org
+    /// admins reach students only through groups. Each default is also the cell's ceiling. For the fake and the gallery; the server is the source of truth.</summary>
+    public static Dictionary<(MessagingRole, MessagingRole), RuleCellValue> D69Defaults()
+    {
+        var cells = new Dictionary<(MessagingRole, MessagingRole), RuleCellValue>();
+        foreach (var f in Roles)
+        {
+            foreach (var t in Roles)
+            {
+                cells[(f, t)] = (f, t) switch
+                {
+                    (MessagingRole.Student or MessagingRole.Guardian, MessagingRole.Teacher or MessagingRole.Counselor) => Cell(MessagingVia.Relationship),
+                    (MessagingRole.Student or MessagingRole.Guardian, _) => new() { Via = MessagingVia.NotAllowed, Locked = true },
+                    (MessagingRole.OrgAdmin or MessagingRole.Manager, MessagingRole.Student) => new() { Via = MessagingVia.GroupsOnly, Locked = true },
+                    (MessagingRole.Teacher, MessagingRole.Student or MessagingRole.Guardian) => Cell(MessagingVia.Relationship),
+                    (MessagingRole.OrgAdmin, _) => Cell(MessagingVia.Anywhere),
+                    _ => Cell(MessagingVia.SameUnit),
+                };
+            }
+        }
+
+        return cells;
+
+        static RuleCellValue Cell(MessagingVia via) => new() { Via = via, Ceiling = via };
+    }
+
+    /// <summary>Sets the cell only when it may narrow to <paramref name="via"/>; a locked cell or a wider value is ignored and nothing is raised.</summary>
+    public async Task<bool> SetAsync(RuleCellValue cell, MessagingVia via)
+    {
+        if (!cell.Allows(via)) return false; // D69: narrow only, never loosen
+        cell.Via = via;
+        await OnChanged.InvokeAsync();
+        return true;
+    }
+}
