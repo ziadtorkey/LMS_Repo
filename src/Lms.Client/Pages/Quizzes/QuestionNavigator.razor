@@ -1,0 +1,26 @@
+@using Lms.Shared.Quizzes
+
+@* Jump between questions; answered ones are marked. *@
+<nav aria-label="@L["Quiz_Questions"]" data-testid="question-navigator">
+    <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap">
+        @for (var i = 0; i < Questions.Count; i++)
+        {
+            var index = i;
+            var q = Questions[i];
+            var answered = Answered.Contains(q.QuestionId);
+            <MudButton Size="Size.Small" Variant="@(index == Current ? Variant.Filled : answered ? Variant.Outlined : Variant.Text)"
+                       Color="@(answered ? Color.Success : Color.Default)" OnClick="() => OnSelect.InvokeAsync(index)"
+                       aria-current="@(index == Current ? "step" : null)" aria-label="@Label(index, answered)"
+                       data-testid="@($"nav-q-{index + 1}")">@(index + 1)</MudButton>
+        }
+    </MudStack>
+</nav>
+
+@code {
+    private string Label(int index, bool answered) => L["Quiz_QuestionN", index + 1].Value + (answered ? " (" + L["Quiz_Answered"].Value + ")" : "");
+
+    [Parameter, EditorRequired] public IReadOnlyList<AttemptQuestionDto> Questions { get; set; } = [];
+    [Parameter] public int Current { get; set; }
+    [Parameter] public IReadOnlySet<Guid> Answered { get; set; } = new HashSet<Guid>();
+    [Parameter] public EventCallback<int> OnSelect { get; set; }
+}

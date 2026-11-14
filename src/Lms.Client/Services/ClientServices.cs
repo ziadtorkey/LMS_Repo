@@ -64,6 +64,7 @@ public static class ClientServices
             services.AddSingleton<IFileUploadApi, FakeFileUploadApi>();
             services.AddSingleton<ILibraryApi, FakeLibraryApi>();
             services.AddSingleton<IForumsApi, FakeForumsApi>();
+            services.AddSingleton<IQuizAttemptsApi, FakeQuizAttemptsApi>();
             services.AddSingleton<IAssetsApi, FakeAssetsApi>();
             services.AddSingleton<Lms.Client.Services.Packages.IPackagesApi, Lms.Client.Services.Packages.FakePackagesApi>();
             services.AddSingleton<IModulesApi, FakeModulesApi>();
@@ -120,6 +121,7 @@ public static class ClientServices
         services.AddScoped<IFileUploadApi, FileUploadApi>();
         services.AddScoped<ILibraryApi, LibraryApi>();
         services.AddScoped<IForumsApi, ForumsApi>();
+        services.AddScoped<IQuizAttemptsApi, QuizAttemptsApi>();
         services.AddScoped<IAssetsApi, AssetsApi>();
         services.AddScoped<Lms.Client.Services.Packages.IPackagesApi, Lms.Client.Services.Packages.PackagesApi>();
         services.AddScoped<IModulesApi, ModulesApi>();

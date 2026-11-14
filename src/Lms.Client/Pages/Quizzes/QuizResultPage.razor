@@ -1,0 +1,95 @@
+@page "/class-courses/{Id:guid}/quizzes/{QuizId:guid}/attempts/{AttemptId:guid}/result"
+@attribute [Authorize]
+@using Lms.Client.Services.Api
+@using Lms.Shared.Authorization
+@using Lms.Shared.Quizzes
+@inject IQuizAttemptsApi Quizzes
+@inject PermissionState PermState
+@inject NavigationManager Navigation
+
+<PageTitle>@L["Quiz_Result"]</PageTitle>
+@if (!PermState.Loaded || _loading)
+{
+    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+}
+else if (!PermState.Has(Permissions.Quizzes.View))
+{
+    <MudAlert Severity="Severity.Warning" data-testid="result-forbidden">@L["Forbidden_Title"]</MudAlert>
+}
+else if (_result is null)
+{
+    <MudAlert Severity="Severity.Error" data-testid="result-error">@(_error ?? L["Api_Error"].Value)</MudAlert>
+}
+else
+{
+    <MudStack Spacing="3" data-testid="quiz-result">
+        <MudLink Href="@($"class-courses/{Id}/quizzes/{QuizId}")" data-testid="result-back">@L["Quiz_BackToQuiz"]</MudLink>
+        <MudText Typo="Typo.h4">@L["Quiz_Result"] · @L["Quiz_AttemptN", _result.Number]</MudText>
+
+        @if (_result.Score is { } score)
+        {
+            <MudText Typo="Typo.h5" data-testid="result-score"><span dir="ltr">@score / @_result.MaxScore</span></MudText>
+        }
+        else if (_result.HasPendingEssays)
+        {
+            <MudAlert Severity="Severity.Info" data-testid="result-pending">@L["Quiz_ResultPendingEssays"]</MudAlert>
+        }
+        else
+        {
+            <MudAlert Severity="Severity.Info" data-testid="result-hidden">@L["Quiz_ResultHidden"]</MudAlert>
+        }
+
+        @if (_result.Questions is { } questions)
+        {
+            <MudStack Spacing="2" data-testid="result-review">
+                @foreach (var q in questions)
+                {
+                    <MudPaper Outlined="true" Class="pa-3" data-testid="@($"review-{q.QuestionId}")">
+                        <MudText Typo="Typo.subtitle1">@q.Order. @q.Text</MudText>
+                        @if (q.Type == QuestionTypes.Essay)
+                        {
+                            <MudText Typo="Typo.body2" Class="mud-text-secondary">@(q.EssayText ?? L["Quiz_NoAnswer"].Value)</MudText>
+                        }
+                        @foreach (var o in q.Options)
+                        {
+                            <MudText Typo="Typo.body2" data-testid="@($"review-option-{o.Id}")">
+                                @(o.Selected ? "☑" : "☐") @o.Text
+                                @if (o.IsCorrect == true) { <span class="mud-success-text"> ✓ @L["Quiz_CorrectOption"]</span> }
+                            </MudText>
+                        }
+                        <MudText Typo="Typo.caption">
+                            @(q.AwardedPoints is { } p ? $"{p} / {q.Points}" : L["Quiz_NotGradedYet"].Value)
+                        </MudText>
+                        @if (!string.IsNullOrWhiteSpace(q.Feedback))
+                        {
+                            <MudText Typo="Typo.body2" data-testid="@($"review-feedback-{q.QuestionId}")">@q.Feedback</MudText>
+                        }
+                    </MudPaper>
+                }
+            </MudStack>
+        }
+        else if (_result.Score is not null)
+        {
+            <MudText Typo="Typo.body2" Class="mud-text-secondary" data-testid="result-no-review">@L["Quiz_ResultNoReview"]</MudText>
+        }
+    </MudStack>
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+    [Parameter] public Guid QuizId { get; set; }
+    [Parameter] public Guid AttemptId { get; set; }
+
+    private AttemptResultDto? _result;
+    private string? _error;
+    private bool _loading = true;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        _loading = true;
+        if (PermState.Has(Permissions.Quizzes.View))
+            await ApiCalls.RunAsync(async () => _result = await Quizzes.GetResultAsync(AttemptId), Navigation, L, m => _error = m);
+        _loading = false;
+    }
+}
