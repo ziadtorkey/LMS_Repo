@@ -1494,6 +1494,110 @@
   <data name="Error_package_reason_compression_ratio" xml:space="preserve"><value>The package is compressed in an unsafe way. Export it again.</value></data>
   <data name="Error_package_reason_symlink" xml:space="preserve"><value>The package contains links to other files, which aren't allowed.</value></data>
   <data name="Error_package_reason_duplicate_name" xml:space="preserve"><value>Two files in the package have the same name.</value></data>
+  <data name="MyCourses_StatSupervised" xml:space="preserve"><value>Supervised courses</value></data>
+  <data name="MyCourses_StatAllocations" xml:space="preserve"><value>Class allocations</value></data>
+  <data name="MyCourses_StatPublished" xml:space="preserve"><value>Published blueprints</value></data>
+  <data name="MyCourses_StatPending" xml:space="preserve"><value>Without a blueprint</value></data>
+  <data name="MyCourses_Filter" xml:space="preserve"><value>Filter by name or code</value></data>
+  <data name="MyCourses_FilterUnit" xml:space="preserve"><value>Unit</value></data>
+  <data name="MyCourses_AllUnits" xml:space="preserve"><value>All units</value></data>
+  <data name="MyCourses_FilterBlueprint" xml:space="preserve"><value>Blueprint</value></data>
+  <data name="MyCourses_AllBlueprints" xml:space="preserve"><value>All blueprints</value></data>
+  <data name="MyCourses_View" xml:space="preserve"><value>View</value></data>
+  <data name="MyCourses_ViewGrid" xml:space="preserve"><value>Grid view</value></data>
+  <data name="MyCourses_ViewList" xml:space="preserve"><value>List view</value></data>
+  <data name="MyCourses_NoMatch" xml:space="preserve"><value>No course matches</value></data>
+  <data name="MyCourses_NoMatchText" xml:space="preserve"><value>Change or clear the filters.</value></data>
+  <data name="MyCourses_Periods" xml:space="preserve"><value>Periods per week: {0}</value></data>
+  <data name="MyCourses_AssignTitle" xml:space="preserve"><value>Assign or link a course</value></data>
+  <data name="MyCourses_AssignText" xml:space="preserve"><value>Ask an administrator to make you a course supervisor, or start from a template.</value></data>
+  <data name="MyCourses_ExploreTemplates" xml:space="preserve"><value>Explore templates</value></data>
+  <data name="MyCourses_ColCourse" xml:space="preserve"><value>Course</value></data>
+  <data name="MyCourses_ColUnit" xml:space="preserve"><value>Unit</value></data>
+  <data name="MyCourses_ColBlueprint" xml:space="preserve"><value>Blueprint</value></data>
+  <data name="MyCourses_ColPeriods" xml:space="preserve"><value>Periods per week</value></data>
+  <data name="Package_Start" xml:space="preserve"><value>Start</value></data>
+  <data name="Package_Resume" xml:space="preserve"><value>Resume</value></data>
+  <data name="Package_Preview" xml:space="preserve"><value>Preview</value></data>
+  <data name="Package_PreviewBanner" xml:space="preserve"><value>Preview: nothing is recorded.</value></data>
+  <data name="Package_ThirdParty" xml:space="preserve"><value>This activity comes from another provider. Some parts may not work with a keyboard or screen reader.</value></data>
+  <data name="Package_PhoneHint" xml:space="preserve"><value>Works best on a larger screen.</value></data>
+  <data name="Package_State_NotStarted" xml:space="preserve"><value>Not started</value></data>
+  <data name="Package_State_InProgress" xml:space="preserve"><value>In progress</value></data>
+  <data name="Package_State_Completed" xml:space="preserve"><value>Completed</value></data>
+  <data name="Package_Exit" xml:space="preserve"><value>Exit</value></data>
+  <data name="Package_Fullscreen" xml:space="preserve"><value>Full screen</value></data>
+  <data name="Package_ExitFullscreen" xml:space="preserve"><value>Exit full screen</value></data>
+  <data name="Package_Saving" xml:space="preserve"><value>Saving…</value></data>
+  <data name="Package_Saved" xml:space="preserve"><value>Saved</value></data>
+  <data name="Package_SaveFailed" xml:space="preserve"><value>Couldn't save. Retrying…</value></data>
+  <data name="Package_Retry" xml:space="preserve"><value>Retry</value></data>
+  <data name="Package_Expired" xml:space="preserve"><value>This activity timed out. Reload to continue where you left off.</value></data>
+  <data name="Package_Reload" xml:space="preserve"><value>Reload</value></data>
+  <data name="Package_OpenAgain" xml:space="preserve"><value>Open again</value></data>
+  <data name="Package_NotReady" xml:space="preserve"><value>This activity isn't ready yet. Try again later.</value></data>
+  <data name="Package_FrameTitle" xml:space="preserve"><value>{0} (interactive activity)</value></data>
+  <data name="Module_NotAvailableTitle" xml:space="preserve"><value>This activity isn't available</value></data>
+  <data name="Module_NotAvailableText" xml:space="preserve"><value>It may have been hidden or removed. Go back to the course to see what's open to you.</value></data>
+  <data name="Assignment_AllowFiles" xml:space="preserve"><value>Allow file uploads</value></data>
+  <data name="Assignment_AllowText" xml:space="preserve"><value>Allow written text</value></data>
+  <data name="Assignment_Attachments" xml:space="preserve"><value>Attachments</value></data>
+  <data name="Assignment_BlockNeedsDue" xml:space="preserve"><value>Set a due date when late hand-ins are not accepted.</value></data>
+  <data name="Assignment_Due" xml:space="preserve"><value>Due</value></data>
+  <data name="Assignment_Edit" xml:space="preserve"><value>Edit assignment</value></data>
+  <data name="Assignment_InstructionsAr" xml:space="preserve"><value>Instructions (Arabic)</value></data>
+  <data name="Assignment_InstructionsEn" xml:space="preserve"><value>Instructions (English)</value></data>
+  <data name="Assignment_LatePolicy" xml:space="preserve"><value>Late hand-ins</value></data>
+  <data name="Assignment_Lesson" xml:space="preserve"><value>Lesson</value></data>
+  <data name="Assignment_MaxGrade" xml:space="preserve"><value>Maximum grade</value></data>
+  <data name="Assignment_MaxGradeInvalid" xml:space="preserve"><value>The maximum grade must be between 0.01 and 1000.</value></data>
+  <data name="Assignment_MinScore" xml:space="preserve"><value>Minimum score (%)</value></data>
+  <data name="Assignment_NeedSubmitType" xml:space="preserve"><value>Allow text, files or both.</value></data>
+  <data name="Assignment_PenaltyPercent" xml:space="preserve"><value>Penalty (%)</value></data>
+  <data name="Assignment_PenaltyRequired" xml:space="preserve"><value>Enter a penalty from 1 to 100.</value></data>
+  <data name="Assignment_RemoveAttachment" xml:space="preserve"><value>Remove attachment</value></data>
+  <data name="Assignment_Resubmission" xml:space="preserve"><value>Resubmission</value></data>
+  <data name="Assignments_Counts" xml:space="preserve"><value>{0} submitted · {1} graded</value></data>
+  <data name="Assignments_Handed" xml:space="preserve"><value>Hand-ins</value></data>
+  <data name="Assignments_Name" xml:space="preserve"><value>Assignment</value></data>
+  <data name="Assignments_New" xml:space="preserve"><value>New assignment</value></data>
+  <data name="Assignments_Submissions" xml:space="preserve"><value>Submissions</value></data>
+  <data name="CompletionRule_Score" xml:space="preserve"><value>When a minimum score is reached</value></data>
+  <data name="CompletionRule_Submit" xml:space="preserve"><value>When submitted</value></data>
+  <data name="Grade_AboveMax" xml:space="preserve"><value>The grade cannot be above {0}.</value></data>
+  <data name="Grade_Annotated" xml:space="preserve"><value>Annotated file</value></data>
+  <data name="Grade_Feedback" xml:space="preserve"><value>Feedback</value></data>
+  <data name="Grade_NoWork" xml:space="preserve"><value>No text or files.</value></data>
+  <data name="Grade_Out" xml:space="preserve"><value>Grade (out of {0})</value></data>
+  <data name="Grade_Penalty" xml:space="preserve"><value>Late penalty {0}%: final grade {1}</value></data>
+  <data name="Grade_RemoveAnnotated" xml:space="preserve"><value>Remove annotated file</value></data>
+  <data name="Grade_Returned" xml:space="preserve"><value>Grade saved and returned to the student.</value></data>
+  <data name="Grade_Save" xml:space="preserve"><value>Save grade</value></data>
+  <data name="Grade_SaveReturn" xml:space="preserve"><value>Save and return to student</value></data>
+  <data name="Grade_Saved" xml:space="preserve"><value>Grade saved.</value></data>
+  <data name="Grade_Title" xml:space="preserve"><value>Grade submission</value></data>
+  <data name="Grade_Work" xml:space="preserve"><value>Student's work</value></data>
+  <data name="LatePolicy_Allow" xml:space="preserve"><value>Accepted, marked late</value></data>
+  <data name="LatePolicy_Block" xml:space="preserve"><value>Not accepted</value></data>
+  <data name="LatePolicy_Penalty" xml:space="preserve"><value>Accepted with a penalty</value></data>
+  <data name="ResubmissionRule_None" xml:space="preserve"><value>Not allowed</value></data>
+  <data name="ResubmissionRule_UntilDue" xml:space="preserve"><value>Until the due date</value></data>
+  <data name="ResubmissionRule_UntilGraded" xml:space="preserve"><value>Until graded</value></data>
+  <data name="SubmissionStatus_Draft" xml:space="preserve"><value>Draft</value></data>
+  <data name="SubmissionStatus_Graded" xml:space="preserve"><value>Graded</value></data>
+  <data name="SubmissionStatus_Late" xml:space="preserve"><value>Late</value></data>
+  <data name="SubmissionStatus_None" xml:space="preserve"><value>Not handed in</value></data>
+  <data name="SubmissionStatus_Returned" xml:space="preserve"><value>Returned</value></data>
+  <data name="SubmissionStatus_Submitted" xml:space="preserve"><value>Submitted</value></data>
+  <data name="Submissions_At" xml:space="preserve"><value>Handed in</value></data>
+  <data name="Submissions_Grade" xml:space="preserve"><value>Grade</value></data>
+  <data name="Submissions_GradeAction" xml:space="preserve"><value>Grade</value></data>
+  <data name="Submissions_Late" xml:space="preserve"><value>Late</value></data>
+  <data name="Submissions_OnlyLate" xml:space="preserve"><value>Late only</value></data>
+  <data name="Submissions_Status" xml:space="preserve"><value>Status</value></data>
+  <data name="Submissions_Student" xml:space="preserve"><value>Student</value></data>
+  <data name="Submissions_Title" xml:space="preserve"><value>Assignment submissions</value></data>
+  <data name="Assignment_MinScoreUnknown" xml:space="preserve"><value>The minimum score could not be read. Close the dialog and try again.</value></data>
   <data name="Nav_Eligibility" xml:space="preserve"><value>Teacher eligibility</value></data>
   <data name="Eligibility_Title" xml:space="preserve"><value>Teacher eligibility</value></data>
   <data name="Eligibility_Help" xml:space="preserve"><value>Say which teachers may teach which courses at a unit. Only eligible teachers can be assigned to a class course.</value></data>
@@ -1849,4 +1953,10 @@
   <data name="Error_channel_not_allowed" xml:space="preserve"><value>This channel is not used for this account.</value></data>
   <data name="Comms_ChannelState_NotAllowed" xml:space="preserve"><value>Not available for this account</value></data>
   <data name="Comms_PrefSource_Policy" xml:space="preserve"><value>Set by the platform</value></data>
+  <data name="NavSection_Structure" xml:space="preserve"><value>Structure</value></data>
+  <data name="NavSection_People" xml:space="preserve"><value>People</value></data>
+  <data name="NavSection_Academic" xml:space="preserve"><value>Academic</value></data>
+  <data name="NavSection_Security" xml:space="preserve"><value>Security and settings</value></data>
+  <data name="App_Subtitle" xml:space="preserve"><value>Academic platform</value></data>
+  <data name="Nav_Main" xml:space="preserve"><value>Main navigation</value></data>
 </root>

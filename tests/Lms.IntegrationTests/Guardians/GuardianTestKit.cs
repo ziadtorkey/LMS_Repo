@@ -16,8 +16,10 @@ using Microsoft.EntityFrameworkCore;
 namespace Lms.IntegrationTests.Guardians;
 
 /// <summary>Seeded students and guardian requests for the guardian tests (student endpoints arrive in a later task).</summary>
-internal sealed class GuardianTestKit(LmsApiFactory factory, WebApplicationFactory<Program> host)
+internal sealed class GuardianTestKit(LmsApiFactory factory, WebApplicationFactory<Program> host) : IDisposable
 {
+    public void Dispose() => host.Dispose();
+
     public static readonly JsonSerializerOptions Web = new(JsonSerializerDefaults.Web);
 
     public LmsApiFactory Factory => factory;
