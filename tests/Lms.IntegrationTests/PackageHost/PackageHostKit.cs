@@ -63,6 +63,9 @@ internal sealed class PackageHostKit : IDisposable
                     services.AddSingleton(asset);
                 }
 
+                // These tests are about the host, not about a package kind: only the transformer a test passes in is registered (the SCORM one would rewrite
+                // the HTML they compare byte for byte).
+                services.RemoveAll<IPackagePageTransformer>();
                 if (transformer is not null)
                 {
                     services.AddSingleton(transformer);

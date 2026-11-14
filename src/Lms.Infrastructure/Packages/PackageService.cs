@@ -75,7 +75,7 @@ public sealed class PackageService(LmsDbContext db, IFileStorage files, IPackage
 }
 
 /// <summary>Enqueues the package jobs as system jobs of one client (the organization id is the payload).</summary>
-internal sealed class HangfirePackageJobs(IBackgroundJobs jobs) : IPackageJobs
+public sealed class HangfirePackageJobs(IBackgroundJobs jobs) : IPackageJobs
 {
     public void ScheduleValidation(Guid organizationId, Guid packageId) =>
         jobs.EnqueueAsSystem<PackageValidationJob>(j => j.RunAsync(organizationId, packageId, CancellationToken.None));
@@ -139,6 +139,10 @@ public static class PackagesServiceCollectionExtensions
         });
         services.AddSingleton<PackageValidationGate>();
         services.AddScoped<IPackageScanner, NoOpPackageScanner>();
+        services.AddScoped<IPackageValidator, Scorm.ScormManifestValidator>();
+        services.AddSingleton<Scorm.ScormPreludeAsset>();
+        services.AddSingleton<IPackageHostAsset>(sp => sp.GetRequiredService<Scorm.ScormPreludeAsset>());
+        services.AddScoped<IPackagePageTransformer, Scorm.ScormPageTransformer>();
         services.AddScoped<IPackageJobs, HangfirePackageJobs>();
         services.AddScoped<PackageValidationJob>();
         services.AddScoped<PackagePurgeJob>();
@@ -147,6 +151,7 @@ public static class PackagesServiceCollectionExtensions
         services.AddScoped<PackageService>();
         services.AddScoped<Attempts.PackageAttemptService>();
         services.AddSingleton<IPackageTracker, Attempts.PlaceholderPackageTracker>();
+        services.AddSingleton<IPackageTracker, Scorm.ScormTracker>(); // the last registration of a kind wins
         return services;
     }
 }

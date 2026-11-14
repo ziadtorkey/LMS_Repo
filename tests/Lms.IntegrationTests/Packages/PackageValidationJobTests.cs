@@ -36,12 +36,13 @@ public sealed class PackageValidationJobTests(LmsApiFactory factory) : IDisposab
         _tempRoots.Where(Directory.Exists).ToList().ForEach(d => Directory.Delete(d, recursive: true));
     }
 
-    private sealed class FakeValidator(PackageValidationResult? result = null, bool hang = false) : IPackageValidator
+    private sealed class FakeValidator(PackageValidationResult? result = null, bool hang = false, TaskCompletionSource? started = null) : IPackageValidator
     {
         public string Kind => PackageKinds.Scorm;
 
         public async Task<PackageValidationResult> ValidateAsync(IPackageContent content, CancellationToken ct)
         {
+            started?.TrySetResult();
             if (hang)
             {
                 await Task.Delay(Timeout.Infinite, ct);
@@ -68,6 +69,21 @@ public sealed class PackageValidationJobTests(LmsApiFactory factory) : IDisposab
         public Task<IReadOnlyList<string>> ListAsync(string prefix, CancellationToken ct = default) => inner.ListAsync(prefix, ct);
 
         public Task<int> DeletePrefixAsync(string prefix, CancellationToken ct = default) => inner.DeletePrefixAsync(prefix, ct);
+    }
+
+    private sealed class SilentJobs : IPackageJobs
+    {
+        public void ScheduleValidation(Guid organizationId, Guid packageId)
+        {
+        }
+
+        public void ScheduleValidationLater(Guid organizationId, Guid packageId, TimeSpan delay)
+        {
+        }
+
+        public void SchedulePurge(Guid organizationId, Guid packageId)
+        {
+        }
     }
 
     private sealed class RecordingJobs : IPackageJobs
@@ -124,6 +140,11 @@ public sealed class PackageValidationJobTests(LmsApiFactory factory) : IDisposab
                 o.TempRoot = tempRoot;
                 o.Timeout = timeout ?? TimeSpan.FromMinutes(2);
             });
+            // The shared test factory may run a background job server: an upload must not be validated behind the test's back by the real validators.
+            // The tests that need queued jobs register their own (the recording scheduler below).
+            services.RemoveAll<IPackageJobs>();
+            services.AddSingleton<IPackageJobs, SilentJobs>();
+            services.RemoveAll<IPackageValidator>();
             if (withValidator)
             {
                 services.AddScoped<IPackageValidator>(_ => new FakeValidator());
@@ -220,6 +241,30 @@ public sealed class PackageValidationJobTests(LmsApiFactory factory) : IDisposab
     }
 
     [Fact]
+    public async Task The_registered_scorm_validator_decides_with_the_real_manifest()
+    {
+        var s = await SetUpAsync("PV3B", configure: services =>
+        {
+            services.RemoveAll<IPackageValidator>();
+            services.AddScoped<IPackageValidator, Lms.Infrastructure.Packages.Scorm.ScormManifestValidator>();
+        });
+        var ok = await UploadCorpusAsync(s, "scorm12_valid");
+        var multi = await UploadCorpusAsync(s, "multi_sco");
+        var frames = await UploadCorpusAsync(s, "launch_frameset");
+
+        await RunAsync(s, ok.OrganizationId, ok.Id);
+        await RunAsync(s, multi.OrganizationId, multi.Id);
+        await RunAsync(s, frames.OrganizationId, frames.Id);
+
+        var ready = await ReloadAsync(ok.Id);
+        Assert.Equal((PackageUploadStatuses.Ready, "SCO", ScormVersions.Scorm12), (ready.Status, ready.Title, ready.Version));
+        Assert.Equal("index.html", ready.LaunchPath);
+        Assert.Equal("multi_sco", (await ReloadAsync(multi.Id)).RejectReason);
+        Assert.Equal("needs_nested_frames", (await ReloadAsync(frames.Id)).RejectReason);
+        Assert.Empty(await StoredAsync(s, await ReloadAsync(multi.Id)));
+    }
+
+    [Fact]
     public async Task A_kind_without_a_validator_is_manifest_invalid()
     {
         var s = await SetUpAsync("PV3", withValidator: false);
@@ -311,19 +356,21 @@ public sealed class PackageValidationJobTests(LmsApiFactory factory) : IDisposab
     [Fact]
     public async Task Quota_and_job_timeout_stop_a_bomb()
     {
+        // No wall-clock assertion: the validator signals that it started and then waits for the job's own timeout to cancel it, so the test
+        // proves the order (validator reached, then cancelled, then rejected, nothing stored) whatever the load of the machine.
+        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var s = await SetUpAsync("PV8", configure: services =>
         {
             services.RemoveAll<IPackageValidator>();
-            services.AddScoped<IPackageValidator>(_ => new FakeValidator(hang: true));
-        }, timeout: TimeSpan.FromMilliseconds(400));
+            services.AddScoped<IPackageValidator>(_ => new FakeValidator(hang: true, started: started));
+        }, timeout: TimeSpan.FromSeconds(10));
         var upload = await UploadCorpusAsync(s, "scorm12_valid");
 
-        var started = DateTime.UtcNow;
         await RunAsync(s, upload.OrganizationId, upload.Id);
 
+        Assert.True(started.Task.IsCompletedSuccessfully, "the validator was never reached");
         var row = await ReloadAsync(upload.Id);
         Assert.Equal(("Rejected", "validation_timeout"), (row.Status, row.RejectReason));
-        Assert.True(DateTime.UtcNow - started < TimeSpan.FromSeconds(30));
         Assert.Empty(await StoredAsync(s, row));
         Assert.Equal(0, TempAreas(s));
     }
@@ -358,6 +405,58 @@ public sealed class PackageValidationJobTests(LmsApiFactory factory) : IDisposab
         Assert.Equal([(second.OrganizationId, second.Id)], jobs.Later.Select(l => (l.Org, l.Package)));
         Assert.True(jobs.Later[0].Delay > TimeSpan.Zero);
         Assert.Equal(PackageUploadStatuses.Ready, (await ReloadAsync(other.Id)).Status);
+    }
+
+    [Fact]
+    public async Task A_rescheduled_run_is_jittered_and_a_package_that_waits_too_long_is_rejected_as_validation_timeout()
+    {
+        var gate = new PackageValidationGate(Microsoft.Extensions.Options.Options.Create(new PackageValidationOptions { MaxConcurrent = 2 }));
+        var jobs = new RecordingJobs();
+        var retry = TimeSpan.FromSeconds(20);
+        var s = await SetUpAsync("PV15", services =>
+        {
+            services.RemoveAll<PackageValidationGate>();
+            services.AddSingleton(gate);
+            services.RemoveAll<IPackageJobs>();
+            services.AddSingleton<IPackageJobs>(jobs);
+            services.Configure<PackageValidationOptions>(o =>
+            {
+                o.RetryDelay = retry;
+                o.MaxWaitAge = TimeSpan.FromHours(1);
+            });
+        });
+        var upload = await UploadCorpusAsync(s, "scorm12_valid");
+        await using var busy = gate.TryEnter(upload.OrganizationId);
+
+        for (var i = 0; i < 12; i++)
+        {
+            await RunAsync(s, upload.OrganizationId, upload.Id);
+        }
+
+        Assert.Equal(12, jobs.Later.Count);
+        Assert.All(jobs.Later, l => Assert.InRange(l.Delay, retry, retry * 1.5));
+        Assert.True(jobs.Later.Select(l => l.Delay).Distinct().Count() > 1, "the delays are not jittered");
+        Assert.Equal(PackageUploadStatuses.Uploaded, (await ReloadAsync(upload.Id)).Status);
+
+        // Past the maximum age the next attempt gives up instead of waiting again.
+        var expired = await SetUpAsync("PV16", services =>
+        {
+            services.RemoveAll<PackageValidationGate>();
+            services.AddSingleton(gate);
+            services.RemoveAll<IPackageJobs>();
+            services.AddSingleton<IPackageJobs>(jobs);
+            services.Configure<PackageValidationOptions>(o => o.MaxWaitAge = TimeSpan.Zero);
+        });
+        var old = await UploadCorpusAsync(expired, "scorm12_valid");
+        await using var busy2 = gate.TryEnter(old.OrganizationId);
+        var before = jobs.Later.Count;
+        await Task.Delay(50);
+
+        await RunAsync(expired, old.OrganizationId, old.Id);
+
+        var row = await ReloadAsync(old.Id);
+        Assert.Equal(("Rejected", "validation_timeout"), (row.Status, row.RejectReason));
+        Assert.Equal(before, jobs.Later.Count);
     }
 
     [Fact]
@@ -440,6 +539,8 @@ public sealed class PackageValidationJobTests(LmsApiFactory factory) : IDisposab
         {
             services.RemoveAll<IBackgroundJobs>();
             services.AddScoped<IBackgroundJobs, RecordingBackgroundJobs>();
+            services.RemoveAll<IPackageJobs>();
+            services.AddScoped<IPackageJobs, HangfirePackageJobs>();
         });
         var upload = await UploadViaApiAsync(s);
         await RunQueuedAsync(s);

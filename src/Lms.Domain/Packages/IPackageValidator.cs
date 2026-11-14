@@ -12,7 +12,8 @@ public interface IPackageContent
 }
 
 /// <summary>What a format validator found: a reject reason (a <c>PackageRejectReasons</c> value), or the facts read from a valid package.</summary>
-public sealed record PackageValidationResult(string? RejectReason, string? Title = null, string? Version = null, string? MainLibrary = null)
+public sealed record PackageValidationResult(
+    string? RejectReason, string? Title = null, string? Version = null, string? MainLibrary = null, string? LaunchPath = null)
 {
     public bool Valid => RejectReason is null;
 

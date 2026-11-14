@@ -47,13 +47,17 @@ internal sealed class AttemptKit : IDisposable
 
     private readonly LmsApiFactory _factory;
 
-    public AttemptKit(LmsApiFactory factory, string? origin = ContentOrigin)
+    public AttemptKit(LmsApiFactory factory, string? origin = ContentOrigin, bool realScormTracker = false)
     {
         _factory = factory;
         Host = new ContentTestHost(factory, services =>
         {
             services.Configure<PackageHostOptions>(o => o.Origin = origin);
-            services.AddSingleton<IPackageTracker, TestScormTracker>();
+            if (!realScormTracker)
+            {
+                services.AddSingleton<IPackageTracker, TestScormTracker>();
+            }
+
         });
     }
 

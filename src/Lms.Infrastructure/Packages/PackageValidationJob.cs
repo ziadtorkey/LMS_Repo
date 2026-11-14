@@ -20,6 +20,9 @@ public sealed class PackageValidationOptions
     /// <summary>How long a job that finds the gate busy waits before it runs again (it never holds a worker).</summary>
     public TimeSpan RetryDelay { get; set; } = TimeSpan.FromSeconds(20);
 
+    /// <summary>How long after the upload a package may keep losing the slot race; past it the package is rejected as <c>validation_timeout</c>.</summary>
+    public TimeSpan MaxWaitAge { get; set; } = TimeSpan.FromMinutes(30);
+
     /// <summary>Validations that run at once on this server.</summary>
     public int MaxConcurrent { get; set; } = 2;
 
@@ -52,7 +55,16 @@ public sealed class PackageValidationJob(
         // Never wait here: a busy gate means "come back later", and the worker is free for other clients and other jobs.
         if (gate.TryEnter(organizationId) is not { } slot)
         {
-            jobs.ScheduleValidationLater(organizationId, packageId, options.Value.RetryDelay);
+            if (DateTime.UtcNow - upload.CreatedAt > options.Value.MaxWaitAge)
+            {
+                // It has lost the slot race for too long: give up with a reason the teacher can see, instead of waiting forever.
+                await RejectAsync(upload, PackageRejectReasons.validation_timeout, cancellationToken);
+                return;
+            }
+
+            // Jitter (up to +50 %) so two jobs that lost together do not collide again at the same moment.
+            var delay = options.Value.RetryDelay * (1 + Random.Shared.NextDouble() / 2);
+            jobs.ScheduleValidationLater(organizationId, packageId, delay);
             return;
         }
 
@@ -129,7 +141,7 @@ public sealed class PackageValidationJob(
             return;
         }
 
-        upload.MarkReady(result.Title ?? upload.FileName, result.Version, result.MainLibrary, prefix, area.WrittenBytes);
+        upload.MarkReady(result.Title ?? upload.FileName, result.Version, result.MainLibrary, prefix, area.WrittenBytes, result.LaunchPath);
         await db.SaveChangesAsync(CancellationToken.None);
     }
 

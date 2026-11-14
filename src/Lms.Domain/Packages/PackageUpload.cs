@@ -18,6 +18,9 @@ public sealed class PackageUpload : UnitOwnedEntity
     public const string ReadyStatus = "Ready";
     public const string RejectedStatus = "Rejected";
 
+    /// <summary>Longest launch path the column holds.</summary>
+    public const int MaxLaunchPathLength = 500;
+
     private PackageUpload()
     {
         Kind = FileName = Status = Sha256 = StorePrefix = string.Empty;
@@ -70,6 +73,9 @@ public sealed class PackageUpload : UnitOwnedEntity
     /// <summary>H5P only: the main library machine name.</summary>
     public string? MainLibrary { get; private set; }
 
+    /// <summary>The entry page of the package, relative to its root (SCORM: the launch file of the manifest); null for kinds that generate their own page.</summary>
+    public string? LaunchPath { get; private set; }
+
     /// <summary>The prefix of the extracted files in the package store (<c>{orgId}/{id}/</c>), empty until extracted.</summary>
     public string StorePrefix { get; private set; }
 
@@ -87,8 +93,9 @@ public sealed class PackageUpload : UnitOwnedEntity
         RejectReason = reason;
     }
 
-    public void MarkReady(string title, string? version, string? mainLibrary, string storePrefix, long extractedBytes = 0)
+    public void MarkReady(string title, string? version, string? mainLibrary, string storePrefix, long extractedBytes = 0, string? launchPath = null)
     {
+        LaunchPath = launchPath;
         ExtractedBytes = extractedBytes;
         Status = ReadyStatus;
         RejectReason = null;
