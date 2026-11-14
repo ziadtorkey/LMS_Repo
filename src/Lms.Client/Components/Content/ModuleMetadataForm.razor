@@ -3,8 +3,11 @@
 
 @* Fields common to every module: titles, visibility (with a schedule), target and completion rule. *@
 <MudStack Spacing="2">
-    <BilingualNameFields NameAr="@Model.TitleAr" NameArChanged="v => Model.TitleAr = v"
-                         NameEn="@Model.TitleEn" NameEnChanged="v => Model.TitleEn = v" IdPrefix="module-title" />
+    @if (ShowTitles)
+    {
+        <BilingualNameFields NameAr="@Model.TitleAr" NameArChanged="v => Model.TitleAr = v"
+                             NameEn="@Model.TitleEn" NameEnChanged="v => Model.TitleEn = v" IdPrefix="module-title" />
+    }
 
     <MudSelect T="string" Value="@Model.Visibility" ValueChanged="OnVisibilityChanged" Label="@L["Module_Visibility"]"
                data-testid="module-visibility">
@@ -53,7 +56,7 @@
     }
 
     <MudSelect T="string" @bind-Value="Model.CompletionRule" Label="@L["Module_Completion"]" data-testid="module-completion">
-        @foreach (var r in CompletionRules.ForContent)
+        @foreach (var r in Rules ?? CompletionRules.ForContent)
         {
             <MudSelectItem T="string" Value="@r">@L["CompletionRule_" + r]</MudSelectItem>
         }
@@ -66,6 +69,10 @@
     [Parameter] public IReadOnlyList<ModuleGroupOption> Groups { get; set; } = [];
     [Parameter] public string? VisibilityError { get; set; }
     [Parameter] public string? TargetError { get; set; }
+    /// <summary>The completion rules the module kind allows; null = the content rules (<c>CompletionRules.ForContent</c>).</summary>
+    [Parameter] public IReadOnlyList<string>? Rules { get; set; }
+    /// <summary>False when the host form asks for the title itself (a live session's title is also the Zoom topic).</summary>
+    [Parameter] public bool ShowTitles { get; set; } = true;
 
     private void OnVisibilityChanged(string value)
     {

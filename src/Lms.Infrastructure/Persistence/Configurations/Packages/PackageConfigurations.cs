@@ -22,6 +22,7 @@ internal sealed class PackageUploadConfiguration : IEntityTypeConfiguration<Pack
         builder.Property(x => x.Title).HasMaxLength(500);
         builder.Property(x => x.Version).HasMaxLength(20);
         builder.Property(x => x.MainLibrary).HasMaxLength(200);
+        builder.Property(x => x.ExtractedBytes).HasDefaultValue(0L);
         builder.Property(x => x.StorePrefix).HasMaxLength(100).IsRequired();
         builder.HasOne<ClassCourse>().WithMany().HasForeignKey(x => x.ClassCourseId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<StoredFile>().WithMany().HasForeignKey(x => x.ArchiveFileId).OnDelete(DeleteBehavior.Restrict);
