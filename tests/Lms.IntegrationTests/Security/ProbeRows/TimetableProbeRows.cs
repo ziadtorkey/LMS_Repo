@@ -54,10 +54,34 @@ public sealed class TimetableProbeRows : IProbeRowModule
                 return new ProbeRequest(Routes.ClassTimetablePublish(world.Class.Id), new PublishTimetableRequest(world.Term.Id));
             },
             Expect(Ok, Ok, NotFound, Forbidden, NotFound, Ok)),
+        new("class timetable copy term", HttpMethod.Post, Routes.ClassTimetableCopyTermPattern,
+            async (w, _) =>
+            {
+                var world = await NewWorldAsync(w);
+                var target = await AddSecondTermAsync(w, world);
+                return new ProbeRequest(Routes.ClassTimetableCopyTerm(world.Class.Id), new CopyTermRequest(world.Term.Id, target.Id));
+            },
+            Expect(Ok, Ok, NotFound, Forbidden, NotFound, Ok)),
+        new("class timetable export", HttpMethod.Get, Routes.ClassTimetableExportPattern,
+            async (w, _) =>
+            {
+                var world = await NewWorldAsync(w);
+                return new ProbeRequest(Routes.ClassTimetableExport(world.Class.Id, world.Term.Id));
+            },
+            Expect(Ok, Ok, NotFound, Ok, NotFound, Ok)),
     ];
 
     private static async Task<TimetableWorld> NewWorldAsync(M1ProbeWorld w) =>
         await TimetableKit.NewWorldAsync(w.Callers.Factory, w.Callers.A.School1);
+
+    private static async Task<Lms.Domain.AcademicYears.Term> AddSecondTermAsync(M1ProbeWorld w, TimetableWorld world)
+    {
+        await using var db = w.Callers.Factory.CreateDbContext(Infrastructure.TestCurrentContext.PlatformAdmin());
+        var term = new Lms.Domain.AcademicYears.Term(world.Year, "فصل ٢", "Term 2", world.Year.StartDate.AddMonths(5), world.Year.StartDate.AddMonths(9));
+        db.Add(term);
+        await db.SaveChangesAsync();
+        return term;
+    }
 
     private static async Task<(TimetableWorld World, SlotDto Slot)> NewSlotAsync(M1ProbeWorld w)
     {
