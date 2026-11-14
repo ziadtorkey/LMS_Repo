@@ -44,6 +44,13 @@ public sealed partial class StitchStylesheetTests
     }
 
     [Fact]
+    public void The_two_pane_inbox_fits_under_the_page_header_so_the_page_never_scrolls()
+    {
+        // Measured: the inbox starts 176 px down and the page keeps 48 px below it; 100dvh - 190px scrolled the page by 34 px at 1440 and 1024.
+        Assert.Matches(new Regex(@"\.lms-inbox \{[^}]*block-size: calc\(100dvh - 224px\)"), Css());
+    }
+
+    [Fact]
     public void Focus_is_a_visible_ring_not_only_a_glow() =>
         Assert.Matches(new Regex(@"--lms-focus-ring:\s*0 0 0 2px var\(--mud-palette-surface\), 0 0 0 4px var\(--mud-palette-primary\)"), Css());
 

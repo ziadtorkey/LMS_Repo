@@ -118,7 +118,8 @@ html[data-theme="dark"] .mud-button-outlined { border-color: #334155; }
 
 /* ---------- M6 communication (the M6 spec, PR 615, section 8): inbox, conversation rows, thread and messages, composer, recipient picker, announcements,
    notification items, moderation. Components: Components/Messaging. Logical properties only; one pane at a time below 900 px. ---------- */
-.lms-inbox { display: grid; grid-template-columns: 360px minmax(0, 1fr); block-size: calc(100dvh - 190px); min-block-size: 520px; overflow: hidden; }
+/* 224 px: the inbox starts 176 px down under the page header and the page keeps 48 px below it, so the page itself never scrolls. */
+.lms-inbox { display: grid; grid-template-columns: 360px minmax(0, 1fr); block-size: calc(100dvh - 224px); min-block-size: 520px; overflow: hidden; }
 .lms-inbox-list { min-inline-size: 0; min-block-size: 0; display: flex; flex-direction: column; border-inline-end: 1px solid var(--mud-palette-lines-default); }
 .lms-inbox-thread { min-inline-size: 0; min-block-size: 0; display: flex; flex-direction: column; }
 .lms-inbox-tools { display: flex; flex-direction: column; gap: 10px; padding: 12px; border-block-end: 1px solid var(--mud-palette-lines-default); }
