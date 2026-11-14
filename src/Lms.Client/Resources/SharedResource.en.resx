@@ -1719,4 +1719,7 @@
   <data name="Att_Today_EmptyTitle" xml:space="preserve"><value>No sessions on this day</value></data>
   <data name="Att_Today_EmptyText" xml:space="preserve"><value>Sessions appear here when the timetable is published. Pick another day to see earlier ones.</value></data>
   <data name="Att_Date" xml:space="preserve"><value>Date</value></data>
+  <data name="Att_Unit_Mode" xml:space="preserve"><value>Sessions of a unit</value></data>
+  <data name="Att_Unit_ChooseTitle" xml:space="preserve"><value>Choose a unit</value></data>
+  <data name="Att_Unit_ChooseText" xml:space="preserve"><value>Pick a unit and a day to see its attendance sessions, including closed ones.</value></data>
 </root>

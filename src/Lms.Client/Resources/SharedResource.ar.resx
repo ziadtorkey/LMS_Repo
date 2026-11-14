@@ -1719,4 +1719,7 @@
   <data name="Att_Today_EmptyTitle" xml:space="preserve"><value>لا توجد حصص في هذا اليوم</value></data>
   <data name="Att_Today_EmptyText" xml:space="preserve"><value>تظهر الحصص هنا عند نشر الجدول الدراسي. اختر يومًا آخر لرؤية الأيام السابقة.</value></data>
   <data name="Att_Date" xml:space="preserve"><value>التاريخ</value></data>
+  <data name="Att_Unit_Mode" xml:space="preserve"><value>حصص وحدة</value></data>
+  <data name="Att_Unit_ChooseTitle" xml:space="preserve"><value>اختر وحدة</value></data>
+  <data name="Att_Unit_ChooseText" xml:space="preserve"><value>اختر وحدة ويومًا لعرض حصص الحضور فيها، بما فيها المغلقة.</value></data>
 </root>
