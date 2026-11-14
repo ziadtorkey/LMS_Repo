@@ -112,6 +112,21 @@ public sealed class MessagingRulesPageTests : ClientTestContext
     }
 
     [Fact]
+    public async Task A_cell_error_clears_when_the_admin_picks_another_value()
+    {
+        var page = await OpenAsync();
+        var matrix = page.FindComponent<MessagingRulesMatrix>().Instance;
+        await page.InvokeAsync(() => matrix.SetAsync(Cell(page, MessagingRole.Teacher, MessagingRole.Student), MessagingVia.NotAllowed));
+        _comms.RulesFailure = new ApiProblemException(400, ProblemCodes.rules_looser_than_default, null, null, "Student>Teacher");
+        await page.Find("[data-testid=rules-save]").ClickAsync(new());
+        page.WaitForElement("[data-testid=rules-cell-error-Student-Teacher]");
+
+        await page.InvokeAsync(() => matrix.SetAsync(Cell(page, MessagingRole.Student, MessagingRole.Teacher), MessagingVia.NotAllowed));
+
+        page.WaitForAssertion(() => Assert.Empty(page.FindAll("[data-testid=rules-cell-error-Student-Teacher]")));
+    }
+
+    [Fact]
     public async Task Mobile_layout_is_one_block_per_sender_role()
     {
         var page = await OpenAsync();

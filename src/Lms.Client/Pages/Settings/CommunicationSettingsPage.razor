@@ -1,0 +1,246 @@
+@page "/settings/communication"
+@attribute [Authorize]
+@using Lms.Client.Components.Messaging
+@using Lms.Client.Services
+@using Lms.Client.Services.Api
+@using Lms.Client.Services.Messaging
+@using Lms.Shared
+@using Lms.Shared.Authorization
+@using Lms.Shared.Configuration
+@using Lms.Shared.Messaging
+@inject ICommsApi Api
+@inject PermissionState PermState
+@inject ClientTimeZone Zone
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+@* Communication settings (M6 Task 28, FR-NOT-03, D66, D76): which channels are on (email and push; there is no SMS), the daily caps and the per-person limits with their
+   ceilings, quiet hours in the client time zone, read receipts and the messaging limits, and the status of the providers. The status cards show state only, never
+   a secret or a setting. Client root only. *@
+<PageTitle>@L["CommsSet_Title"]</PageTitle>
+@if (!PermState.Loaded)
+{
+    <LoadingState Lines="4" TestId="comms-loading" />
+}
+else if (!PermState.Has(Permissions.Comms.Manage))
+{
+    <Forbidden />
+}
+else
+{
+    <PageHeader Title="@L["CommsSet_Title"]" Subtitle="@L["CommsSet_Subtitle"]" TitleTestId="comms-title" />
+    @if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-3" data-testid="comms-error">@_error</MudAlert>
+    }
+    @if (_loading)
+    {
+        <LoadingState Lines="8" TestId="comms-fields-loading" />
+    }
+    else if (_form is not null)
+    {
+        <SectionCard Title="@L["CommsSet_Channels"]" TestId="comms-channels">
+            <ToggleRow Title="@L["CommsSet_Email"]" Value="_form.EmailEnabled" ValueChanged="v => Set(() => _form.EmailEnabled = v)" TestId="comms-email" />
+            <ToggleRow Title="@L["CommsSet_Push"]" Value="_form.PushEnabled" ValueChanged="v => Set(() => _form.PushEnabled = v)" TestId="comms-push" />
+            <div class="lms-form-grid mt-3">
+                @Number("MaxEmailPerDay", "CommsSet_MaxEmailPerDay", _form.MaxEmailPerDay, v => _form.MaxEmailPerDay = v)
+                @Number("MaxPushPerDay", "CommsSet_MaxPushPerDay", _form.MaxPushPerDay, v => _form.MaxPushPerDay = v)
+                @Number("MaxEmailPerUserPerDay", "CommsSet_MaxEmailPerUserPerDay", _form.MaxEmailPerUserPerDay, v => _form.MaxEmailPerUserPerDay = v)
+                @Number("MaxPushPerUserPerDay", "CommsSet_MaxPushPerUserPerDay", _form.MaxPushPerUserPerDay, v => _form.MaxPushPerUserPerDay = v)
+                @Number("DeliveryRetentionDays", "CommsSet_Retention", _form.DeliveryRetentionDays, v => _form.DeliveryRetentionDays = v)
+            </div>
+        </SectionCard>
+
+        <SectionCard Title="@L["CommsSet_QuietHours"]" TestId="comms-quiet">
+            <ToggleRow Title="@L["CommsSet_QuietEnabled"]" Help="@L["CommsSet_QuietHelp"]" Value="_form.QuietHoursEnabled" ValueChanged="v => Set(() => _form.QuietHoursEnabled = v)" TestId="comms-quiet-on" />
+            @if (_form.QuietHoursEnabled)
+            {
+                <div class="lms-form-grid mt-2">
+                    <MudTextField T="string" Value="_form.QuietHoursStart" ValueChanged="v => Set(() => _form.QuietHoursStart = v)" Label="@L["CommsSet_QuietStart"]" Placeholder="21:00"
+                                  Error="@Errors.ContainsKey("QuietHoursStart")" ErrorText="@Errors.GetValueOrDefault("QuietHoursStart")" dir="ltr" data-testid="comms-quiet-start" />
+                    <MudTextField T="string" Value="_form.QuietHoursEnd" ValueChanged="v => Set(() => _form.QuietHoursEnd = v)" Label="@L["CommsSet_QuietEnd"]" Placeholder="07:00"
+                                  Error="@Errors.ContainsKey("QuietHoursEnd")" ErrorText="@Errors.GetValueOrDefault("QuietHoursEnd")" dir="ltr" data-testid="comms-quiet-end" />
+                </div>
+                <span class="lms-field-help" data-testid="comms-quiet-zone">@string.Format(System.Globalization.CultureInfo.CurrentCulture, L["CommsSet_QuietZone"].Value, _zone.Id)</span>
+            }
+        </SectionCard>
+
+        <SectionCard Title="@L["CommsSet_Messaging"]" TestId="comms-messaging">
+            <ToggleRow Title="@L["CommsSet_ReadReceipts"]" Value="_form.ReadReceipts" ValueChanged="v => Set(() => _form.ReadReceipts = v)" TestId="comms-receipts" />
+            <div class="lms-form-grid mt-3">
+                @Number("MaxMessagesPerMinute", "CommsSet_MaxPerMinute", _form.MaxMessagesPerMinute, v => _form.MaxMessagesPerMinute = v)
+                @Number("MaxNewConversationsPerDay", "CommsSet_MaxNewConversations", _form.MaxNewConversationsPerDay, v => _form.MaxNewConversationsPerDay = v)
+                @Number("MaxGroupSize", "CommsSet_MaxGroupSize", _form.MaxGroupSize, v => _form.MaxGroupSize = v)
+                @Number("MaxAnnouncementsPerAuthorPerDay", "CommsSet_MaxAnnouncements", _form.MaxAnnouncementsPerAuthorPerDay, v => _form.MaxAnnouncementsPerAuthorPerDay = v)
+            </div>
+        </SectionCard>
+
+        <SectionCard Title="@L["CommsSet_Providers"]" TestId="comms-providers">
+            <div class="lms-provider-cards">
+                @foreach (var p in _providers)
+                {
+                    var provider = p;
+                    <div class="lms-provider-card" data-testid="@($"provider-{provider.Channel}")">
+                        <span class="lms-cell-strong">@L[$"Prefs_Channel_{provider.Channel}"]</span>
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="@(provider.Configured ? Color.Success : Color.Warning)">
+                            @(provider.Configured ? L["CommsSet_Configured"] : L["CommsSet_NotConfigured"])
+                        </MudChip>
+                        @if (provider.IsFake) { <MudChip T="string" Size="Size.Small" Variant="Variant.Text">@L["CommsSet_Fake"]</MudChip> }
+                        @if (provider.LastSuccessUtc is { } at) { <span class="lms-muted">@L["CommsSet_LastSuccess"] <LocalTime Utc="at" /></span> }
+                        @if (provider.LastErrorCode is { } errorCode) { <span class="lms-muted" dir="ltr">@errorCode</span> }
+                    </div>
+                }
+            </div>
+        </SectionCard>
+
+        @if (_dirty)
+        {
+            <div class="lms-save-bar" role="region" aria-label="@L["Common_UnsavedChanges"]" data-testid="comms-bar">
+                <span class="lms-save-bar-text">@L["Common_UnsavedChanges"]</span>
+                <MudButton Variant="Variant.Text" OnClick="LoadAsync" Disabled="_saving" data-testid="comms-discard">@L["Common_Discard"]</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_saving" data-testid="comms-save">@L["Common_Save"]</MudButton>
+            </div>
+        }
+    }
+}
+
+@code {
+    /// <summary>A copy of the settings the page edits; the SMS fields stay as the server has them (D76: no SMS in v1, nothing is shown or sent for them).</summary>
+    private sealed class Form
+    {
+        public bool EmailEnabled, PushEnabled, QuietHoursEnabled, ReadReceipts;
+        public int MaxEmailPerDay, MaxPushPerDay, MaxEmailPerUserPerDay, MaxPushPerUserPerDay, DeliveryRetentionDays, MaxMessagesPerMinute, MaxNewConversationsPerDay, MaxGroupSize, MaxAnnouncementsPerAuthorPerDay;
+        public string QuietHoursStart = "", QuietHoursEnd = "";
+    }
+
+    private static readonly Dictionary<string, string> Keys = new()
+    {
+        ["MaxEmailPerDay"] = SettingKeys.CommsMaxEmailPerDay.Name,
+        ["MaxPushPerDay"] = SettingKeys.CommsMaxPushPerDay.Name,
+        ["MaxEmailPerUserPerDay"] = SettingKeys.CommsMaxEmailPerUserPerDay.Name,
+        ["MaxPushPerUserPerDay"] = SettingKeys.CommsMaxPushPerUserPerDay.Name,
+        ["DeliveryRetentionDays"] = SettingKeys.CommsDeliveryRetentionDays.Name,
+        ["MaxMessagesPerMinute"] = SettingKeys.MessagingMaxPerMinute.Name,
+        ["MaxNewConversationsPerDay"] = SettingKeys.MessagingMaxNewConversationsPerDay.Name,
+        ["MaxGroupSize"] = SettingKeys.MessagingMaxGroupSize.Name,
+        ["MaxAnnouncementsPerAuthorPerDay"] = SettingKeys.AnnouncementsMaxPerAuthorPerDay.Name,
+    };
+
+    private CommsSettingsDto? _loaded;
+    private Form? _form;
+    private IReadOnlyList<ProviderStatusDto> _providers = [];
+    private TimeZoneInfo _zone = ClientCalendar.Zone();
+    private Dictionary<string, string> Errors { get; set; } = [];
+    private string? _error;
+    private bool _loading = true, _saving, _dirty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        if (!PermState.Has(Permissions.Comms.Manage)) return;
+        _zone = await Zone.GetAsync();
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _error = null;
+        Errors = [];
+        var ok = await ApiCalls.RunAsync(async () =>
+        {
+            _loaded = await Api.GetSettingsAsync();
+            _providers = await Api.GetProviderStatusAsync();
+        }, Navigation, L, m => _error = m);
+        if (ok && _loaded is { } s)
+        {
+            _form = new Form
+            {
+                EmailEnabled = s.EmailEnabled, PushEnabled = s.PushEnabled, QuietHoursEnabled = s.QuietHoursEnabled, ReadReceipts = s.ReadReceipts,
+                MaxEmailPerDay = s.MaxEmailPerDay, MaxPushPerDay = s.MaxPushPerDay, MaxEmailPerUserPerDay = s.MaxEmailPerUserPerDay, MaxPushPerUserPerDay = s.MaxPushPerUserPerDay,
+                DeliveryRetentionDays = s.DeliveryRetentionDays, MaxMessagesPerMinute = s.MaxMessagesPerMinute, MaxNewConversationsPerDay = s.MaxNewConversationsPerDay,
+                MaxGroupSize = s.MaxGroupSize, MaxAnnouncementsPerAuthorPerDay = s.MaxAnnouncementsPerAuthorPerDay,
+                QuietHoursStart = s.QuietHoursStart, QuietHoursEnd = s.QuietHoursEnd,
+            };
+        }
+
+        _dirty = false;
+        _loading = false;
+    }
+
+    private static (int Min, int Max) Range(string field) =>
+        SettingCatalog.Find(Keys[field]) is { } d ? ((int)(d.Min ?? 0), (int)(d.Max ?? int.MaxValue)) : (0, int.MaxValue);
+
+    private RenderFragment Number(string field, string label, int value, Action<int> set) => __builder =>
+    {
+        var (min, max) = Range(field);
+        <MudNumericField T="int" Value="value" ValueChanged="v => Set(() => set(v))" Label="@L[label]" Min="int.MinValue" Max="int.MaxValue"
+                         HelperText="@string.Format(System.Globalization.CultureInfo.CurrentCulture, L["CommsSet_Ceiling"].Value, min, max)"
+                         Error="@Errors.ContainsKey(field)" ErrorText="@Errors.GetValueOrDefault(field)" data-testid="@($"comms-{field}")" />
+    };
+
+    private void Set(Action change)
+    {
+        change();
+        Errors = [];
+        _dirty = true;
+    }
+
+    private Dictionary<string, string> Validate()
+    {
+        var errors = new Dictionary<string, string>();
+        foreach (var (field, value) in new Dictionary<string, int>
+        {
+            ["MaxEmailPerDay"] = _form!.MaxEmailPerDay, ["MaxPushPerDay"] = _form.MaxPushPerDay, ["MaxEmailPerUserPerDay"] = _form.MaxEmailPerUserPerDay,
+            ["MaxPushPerUserPerDay"] = _form.MaxPushPerUserPerDay, ["DeliveryRetentionDays"] = _form.DeliveryRetentionDays, ["MaxMessagesPerMinute"] = _form.MaxMessagesPerMinute,
+            ["MaxNewConversationsPerDay"] = _form.MaxNewConversationsPerDay, ["MaxGroupSize"] = _form.MaxGroupSize, ["MaxAnnouncementsPerAuthorPerDay"] = _form.MaxAnnouncementsPerAuthorPerDay,
+        })
+        {
+            var (min, max) = Range(field);
+            if (value < 0) errors[field] = L["CommsSet_Negative"];
+            else if (value < min || value > max) errors[field] = string.Format(System.Globalization.CultureInfo.CurrentCulture, L["CommsSet_OutOfRange"].Value, min, max);
+        }
+
+        if (_form!.QuietHoursEnabled)
+        {
+            if (!TimeOnly.TryParseExact(_form.QuietHoursStart, "HH:mm", null, System.Globalization.DateTimeStyles.None, out _)) errors["QuietHoursStart"] = L["CommsSet_QuietNeeded"];
+            if (!TimeOnly.TryParseExact(_form.QuietHoursEnd, "HH:mm", null, System.Globalization.DateTimeStyles.None, out _)) errors["QuietHoursEnd"] = L["CommsSet_QuietNeeded"];
+        }
+
+        return errors;
+    }
+
+    private async Task SaveAsync()
+    {
+        Errors = Validate();
+        if (Errors.Count > 0) return;
+        _saving = true;
+        _error = null;
+        var f = _form!;
+        var dto = _loaded! with
+        {
+            EmailEnabled = f.EmailEnabled, PushEnabled = f.PushEnabled, QuietHoursEnabled = f.QuietHoursEnabled, ReadReceipts = f.ReadReceipts,
+            MaxEmailPerDay = f.MaxEmailPerDay, MaxPushPerDay = f.MaxPushPerDay, MaxEmailPerUserPerDay = f.MaxEmailPerUserPerDay, MaxPushPerUserPerDay = f.MaxPushPerUserPerDay,
+            DeliveryRetentionDays = f.DeliveryRetentionDays, MaxMessagesPerMinute = f.MaxMessagesPerMinute, MaxNewConversationsPerDay = f.MaxNewConversationsPerDay,
+            MaxGroupSize = f.MaxGroupSize, MaxAnnouncementsPerAuthorPerDay = f.MaxAnnouncementsPerAuthorPerDay,
+            QuietHoursStart = f.QuietHoursEnabled ? f.QuietHoursStart : _loaded!.QuietHoursStart, QuietHoursEnd = f.QuietHoursEnabled ? f.QuietHoursEnd : _loaded!.QuietHoursEnd,
+        };
+        try
+        {
+            await Api.SaveSettingsAsync(new SaveCommsSettingsRequest(dto));
+            Snackbar.Add(L["Common_Saved"], Severity.Success);
+            await LoadAsync();
+        }
+        catch (ApiProblemException ex) when (ex.Code == ProblemCodes.validation_failed && ex.Field is { Length: > 0 } field && Keys.ContainsKey(field))
+        {
+            var (min, max) = Range(field); // the server named the field: show its limits on that field
+            Errors = new() { [field] = string.Format(System.Globalization.CultureInfo.CurrentCulture, L["CommsSet_OutOfRange"].Value, min, max) };
+        }
+        catch (Exception ex) when (ex is ApiProblemException or HttpRequestException)
+        {
+            _error = ex is ApiProblemException problem ? ProblemText.For(problem, L) : L["Error_Generic"].Value;
+        }
+
+        _saving = false;
+    }
+}

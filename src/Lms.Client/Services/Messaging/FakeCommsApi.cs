@@ -135,9 +135,29 @@ public sealed class FakeCommsApi(FakeMessagingRules rules) : ICommsApi
 
     public Task<CommsSettingsDto> GetSettingsAsync(CancellationToken ct = default) => Task.FromResult(Settings);
 
+    /// <summary>A failure the next settings save throws (tests simulate the server naming a field).</summary>
+    public ApiProblemException? SettingsFailure { get; set; }
+
     public Task<CommsSettingsDto> SaveSettingsAsync(SaveCommsSettingsRequest request, CancellationToken ct = default)
     {
-        if (request.Settings.MaxGroupSize < 2 || request.Settings.MaxMessagesPerMinute < 1) throw Problem(400, ProblemCodes.validation_failed);
+        if (SettingsFailure is { } failure) throw failure;
+        // The server checks every cap against its ceiling and names the field (400 validation_failed).
+        var s = request.Settings;
+        foreach (var (field, key, value) in new (string, string, int)[]
+        {
+            ("MaxEmailPerDay", Lms.Shared.Configuration.SettingKeys.CommsMaxEmailPerDay.Name, s.MaxEmailPerDay), ("MaxPushPerDay", Lms.Shared.Configuration.SettingKeys.CommsMaxPushPerDay.Name, s.MaxPushPerDay),
+            ("MaxEmailPerUserPerDay", Lms.Shared.Configuration.SettingKeys.CommsMaxEmailPerUserPerDay.Name, s.MaxEmailPerUserPerDay),
+            ("MaxPushPerUserPerDay", Lms.Shared.Configuration.SettingKeys.CommsMaxPushPerUserPerDay.Name, s.MaxPushPerUserPerDay),
+            ("DeliveryRetentionDays", Lms.Shared.Configuration.SettingKeys.CommsDeliveryRetentionDays.Name, s.DeliveryRetentionDays),
+            ("MaxMessagesPerMinute", Lms.Shared.Configuration.SettingKeys.MessagingMaxPerMinute.Name, s.MaxMessagesPerMinute),
+            ("MaxNewConversationsPerDay", Lms.Shared.Configuration.SettingKeys.MessagingMaxNewConversationsPerDay.Name, s.MaxNewConversationsPerDay),
+            ("MaxGroupSize", Lms.Shared.Configuration.SettingKeys.MessagingMaxGroupSize.Name, s.MaxGroupSize),
+            ("MaxAnnouncementsPerAuthorPerDay", Lms.Shared.Configuration.SettingKeys.AnnouncementsMaxPerAuthorPerDay.Name, s.MaxAnnouncementsPerAuthorPerDay),
+        })
+        {
+            var def = Lms.Shared.Configuration.SettingCatalog.Find(key);
+            if (def is not null && (value < (def.Min ?? 0) || value > (def.Max ?? int.MaxValue))) throw new ApiProblemException(400, ProblemCodes.validation_failed, null, null, field);
+        }
         return Task.FromResult(Settings = request.Settings);
     }
 

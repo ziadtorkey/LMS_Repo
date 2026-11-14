@@ -2204,6 +2204,38 @@
   <data name="RulesPage_Subtitle" xml:space="preserve"><value>من يحق له مراسلة من في مدرستك. يمكن تضييق القاعدة عن الافتراضي ولا يمكن توسيعها.</value></data>
   <data name="RulesPage_Refused" xml:space="preserve"><value>هذه القواعد أوسع مما تسمح به المنصة:</value></data>
   <data name="Nav_MessagingRules" xml:space="preserve"><value>قواعد المراسلة</value></data>
+  <data name="CommsSet_Title" xml:space="preserve"><value>إعدادات التواصل</value></data>
+  <data name="CommsSet_Subtitle" xml:space="preserve"><value>أي القنوات مفعّلة، وكم يمكن إرساله، ومتى. تنطبق على مجموعة مدارسك كلها.</value></data>
+  <data name="CommsSet_Channels" xml:space="preserve"><value>القنوات والحدود اليومية</value></data>
+  <data name="CommsSet_Email" xml:space="preserve"><value>البريد الإلكتروني</value></data>
+  <data name="CommsSet_Push" xml:space="preserve"><value>إشعارات الدفع</value></data>
+  <data name="CommsSet_MaxEmailPerDay" xml:space="preserve"><value>عدد رسائل البريد في اليوم (للجميع)</value></data>
+  <data name="CommsSet_MaxPushPerDay" xml:space="preserve"><value>عدد إشعارات الدفع في اليوم (للجميع)</value></data>
+  <data name="CommsSet_MaxEmailPerUserPerDay" xml:space="preserve"><value>رسائل البريد لكل شخص في اليوم</value></data>
+  <data name="CommsSet_MaxPushPerUserPerDay" xml:space="preserve"><value>إشعارات الدفع لكل شخص في اليوم</value></data>
+  <data name="CommsSet_Retention" xml:space="preserve"><value>مدة حفظ سجلات الإرسال (أيام)</value></data>
+  <data name="CommsSet_Ceiling" xml:space="preserve"><value>بين {0} و{1}.</value></data>
+  <data name="CommsSet_Negative" xml:space="preserve"><value>لا يمكن أن يكون الحد سالبًا.</value></data>
+  <data name="CommsSet_OutOfRange" xml:space="preserve"><value>أدخل رقمًا من {0} إلى {1}.</value></data>
+  <data name="CommsSet_QuietHours" xml:space="preserve"><value>ساعات الهدوء</value></data>
+  <data name="CommsSet_QuietEnabled" xml:space="preserve"><value>تأجيل الإشعارات غير العاجلة ليلًا</value></data>
+  <data name="CommsSet_QuietHelp" xml:space="preserve"><value>تُرسل الإعلانات العاجلة فورًا.</value></data>
+  <data name="CommsSet_QuietStart" xml:space="preserve"><value>من (HH:mm)</value></data>
+  <data name="CommsSet_QuietEnd" xml:space="preserve"><value>إلى (HH:mm)</value></data>
+  <data name="CommsSet_QuietNeeded" xml:space="preserve"><value>أدخل وقتًا مثل 21:00.</value></data>
+  <data name="CommsSet_QuietZone" xml:space="preserve"><value>الأوقات بتوقيت المدرسة: {0}</value></data>
+  <data name="CommsSet_Messaging" xml:space="preserve"><value>المراسلة والإعلانات</value></data>
+  <data name="CommsSet_ReadReceipts" xml:space="preserve"><value>إظهار إيصالات القراءة في المحادثات</value></data>
+  <data name="CommsSet_MaxPerMinute" xml:space="preserve"><value>عدد الرسائل لكل شخص في الدقيقة</value></data>
+  <data name="CommsSet_MaxNewConversations" xml:space="preserve"><value>المحادثات الجديدة لكل شخص في اليوم</value></data>
+  <data name="CommsSet_MaxGroupSize" xml:space="preserve"><value>أكبر حجم لمجموعة</value></data>
+  <data name="CommsSet_MaxAnnouncements" xml:space="preserve"><value>الإعلانات لكل كاتب في اليوم</value></data>
+  <data name="CommsSet_Providers" xml:space="preserve"><value>المزوّدون</value></data>
+  <data name="CommsSet_Configured" xml:space="preserve"><value>مهيّأ</value></data>
+  <data name="CommsSet_NotConfigured" xml:space="preserve"><value>غير مهيّأ</value></data>
+  <data name="CommsSet_Fake" xml:space="preserve"><value>مزوّد تجريبي</value></data>
+  <data name="CommsSet_LastSuccess" xml:space="preserve"><value>آخر نجاح</value></data>
+  <data name="Nav_CommunicationSettings" xml:space="preserve"><value>إعدادات التواصل</value></data>
   <data name="Package_Start" xml:space="preserve"><value>ابدأ</value></data>
   <data name="Package_Resume" xml:space="preserve"><value>استئناف</value></data>
   <data name="Package_Preview" xml:space="preserve"><value>معاينة</value></data>
