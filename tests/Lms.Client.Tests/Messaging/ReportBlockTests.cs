@@ -232,9 +232,10 @@ public sealed class ReportBlockTests : ClientTestContext
 
         var cut = RenderThread(c.Id);
 
-        Assert.NotEmpty(cut.FindAll("[data-testid=composer]")); // Huda still sees an ordinary composer
-        Assert.Empty(cut.FindAll("[data-testid=composer-off]"));
+        Assert.Empty(cut.FindAll("[data-testid=composer-unblock]")); // no Unblock: it is not their block
         Assert.Empty(cut.FindAll("[data-testid=blocked-card]"));
+        var reason = cut.Find("[data-testid=composer-off]").TextContent; // L18: one generic sentence for a block and a rule
+        Assert.Contains("لا يمكنك الكتابة في هذه المحادثة", reason);
         Assert.DoesNotContain("حظر", cut.Find("[data-testid=thread]").TextContent);
     }
 

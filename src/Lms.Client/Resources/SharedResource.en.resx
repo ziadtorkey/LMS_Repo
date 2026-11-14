@@ -391,7 +391,6 @@
   <data name="Notif_Preferences" xml:space="preserve"><value>Notification preferences</value></data>
   <data name="Channel_InApp" xml:space="preserve"><value>In-app</value></data>
   <data name="Channel_Email" xml:space="preserve"><value>Email</value></data>
-  <data name="Channel_Sms" xml:space="preserve"><value>SMS</value></data>
   <data name="Channel_Push" xml:space="preserve"><value>Push</value></data>
   <data name="Notif_Access_RoleAssigned" xml:space="preserve"><value>You were given the role {RoleName} at {OrgUnitName}.</value></data>
   <data name="Notif_Access_RoleRemoved" xml:space="preserve"><value>Your role {RoleName} at {OrgUnitName} was removed.</value></data>
@@ -1790,13 +1789,10 @@
   <data name="PermModule_Announcements" xml:space="preserve"><value>Announcements</value></data>
   <data name="PermModule_Comms" xml:space="preserve"><value>Communication</value></data>
   <data name="Setting_Comms_EmailEnabled" xml:space="preserve"><value>Allow email notices</value></data>
-  <data name="Setting_Comms_SmsEnabled" xml:space="preserve"><value>Allow SMS notices</value></data>
   <data name="Setting_Comms_PushEnabled" xml:space="preserve"><value>Allow push notices</value></data>
   <data name="Setting_Comms_MaxEmailPerDay" xml:space="preserve"><value>Emails per day (client)</value></data>
-  <data name="Setting_Comms_MaxSmsPerDay" xml:space="preserve"><value>SMS per day (client)</value></data>
   <data name="Setting_Comms_MaxPushPerDay" xml:space="preserve"><value>Push notices per day (client)</value></data>
   <data name="Setting_Comms_MaxEmailPerUserPerDay" xml:space="preserve"><value>Emails per person per day</value></data>
-  <data name="Setting_Comms_MaxSmsPerUserPerDay" xml:space="preserve"><value>SMS per person per day</value></data>
   <data name="Setting_Comms_MaxPushPerUserPerDay" xml:space="preserve"><value>Push notices per person per day</value></data>
   <data name="Setting_Comms_QuietHours_Enabled" xml:space="preserve"><value>Quiet hours</value></data>
   <data name="Setting_Comms_QuietHours_Start" xml:space="preserve"><value>Quiet hours start</value></data>
@@ -1955,7 +1951,6 @@
   <data name="Prefs_Event" xml:space="preserve"><value>Event</value></data>
   <data name="Prefs_Channel_InApp" xml:space="preserve"><value>In-app</value></data>
   <data name="Prefs_Channel_Email" xml:space="preserve"><value>Email</value></data>
-  <data name="Prefs_Channel_Sms" xml:space="preserve"><value>SMS</value></data>
   <data name="Prefs_Channel_Push" xml:space="preserve"><value>Push</value></data>
   <data name="Prefs_Fix" xml:space="preserve"><value>Add it in your profile</value></data>
   <data name="Prefs_Locked" xml:space="preserve"><value>Set by your school: can’t be turned off.</value></data>
@@ -2167,4 +2162,56 @@
   <data name="Msg_Blocked_ByMe" xml:space="preserve"><value>You blocked this person. Unblock to write again.</value></data>
   <data name="Msg_Blocked_Title" xml:space="preserve"><value>Blocked people</value></data>
   <data name="Msg_Inbox_Capped" xml:space="preserve"><value>Showing your latest {0} conversations.</value></data>
+  <data name="Package_Start" xml:space="preserve"><value>Start</value></data>
+  <data name="Package_Resume" xml:space="preserve"><value>Resume</value></data>
+  <data name="Package_Preview" xml:space="preserve"><value>Preview</value></data>
+  <data name="Package_PreviewBanner" xml:space="preserve"><value>Preview: nothing is recorded.</value></data>
+  <data name="Package_ThirdParty" xml:space="preserve"><value>This activity comes from another provider. Some parts may not work with a keyboard or screen reader.</value></data>
+  <data name="Package_PhoneHint" xml:space="preserve"><value>Works best on a larger screen.</value></data>
+  <data name="Package_State_NotStarted" xml:space="preserve"><value>Not started</value></data>
+  <data name="Package_State_InProgress" xml:space="preserve"><value>In progress</value></data>
+  <data name="Package_State_Completed" xml:space="preserve"><value>Completed</value></data>
+  <data name="Package_Exit" xml:space="preserve"><value>Exit</value></data>
+  <data name="Package_Fullscreen" xml:space="preserve"><value>Full screen</value></data>
+  <data name="Package_ExitFullscreen" xml:space="preserve"><value>Exit full screen</value></data>
+  <data name="Package_Saving" xml:space="preserve"><value>Saving…</value></data>
+  <data name="Package_Saved" xml:space="preserve"><value>Saved</value></data>
+  <data name="Package_SaveFailed" xml:space="preserve"><value>Couldn't save. Retrying…</value></data>
+  <data name="Package_Retry" xml:space="preserve"><value>Retry</value></data>
+  <data name="Package_Expired" xml:space="preserve"><value>This activity timed out. Reload to continue where you left off.</value></data>
+  <data name="Package_Reload" xml:space="preserve"><value>Reload</value></data>
+  <data name="Package_OpenAgain" xml:space="preserve"><value>Open again</value></data>
+  <data name="Package_NotReady" xml:space="preserve"><value>This activity isn't ready yet. Try again later.</value></data>
+  <data name="Package_FrameTitle" xml:space="preserve"><value>{0} (interactive activity)</value></data>
+  <data name="Module_NotAvailableTitle" xml:space="preserve"><value>This activity isn't available</value></data>
+  <data name="Module_NotAvailableText" xml:space="preserve"><value>It may have been hidden or removed. Go back to the course to see what's open to you.</value></data>
+  <data name="NavSection_Structure" xml:space="preserve"><value>Structure</value></data>
+  <data name="NavSection_People" xml:space="preserve"><value>People</value></data>
+  <data name="NavSection_Academic" xml:space="preserve"><value>Academic</value></data>
+  <data name="NavSection_Security" xml:space="preserve"><value>Security and settings</value></data>
+  <data name="App_Subtitle" xml:space="preserve"><value>Academic platform</value></data>
+  <data name="Nav_Main" xml:space="preserve"><value>Main navigation</value></data>
+  <data name="Setting_Messaging_UploadsPerMinute" xml:space="preserve"><value>Attachment uploads per minute</value></data>
+  <data name="Msg_ReadOnly_group_students_read_only" xml:space="preserve"><value>Only the teacher and staff post in this group. You can reply to the teacher privately.</value></data>
+  <data name="Msg_ReadOnly_group_guardians_read_only" xml:space="preserve"><value>Only staff post in this group.</value></data>
+  <data name="Msg_ReadOnly_rule" xml:space="preserve"><value>This conversation is read-only because messaging rules changed.</value></data>
+  <data name="Msg_ReadOnly_blocked_or_rule" xml:space="preserve"><value>You cannot send messages in this conversation.</value></data>
+  <data name="Msg_ReadOnly_restricted" xml:space="preserve"><value>Your messaging is restricted for now.</value></data>
+  <data name="Msg_ReadOnly_locked" xml:space="preserve"><value>A moderator locked this conversation.</value></data>
+  <data name="Msg_Denied_rule" xml:space="preserve"><value>You cannot send messages to this person.</value></data>
+  <data name="Msg_Denied_relationship" xml:space="preserve"><value>You can only message people you share a class with.</value></data>
+  <data name="Msg_Denied_restricted" xml:space="preserve"><value>Your messaging is restricted for now.</value></data>
+  <data name="Msg_Denied_blocked_or_rule" xml:space="preserve"><value>You cannot send messages to this person.</value></data>
+  <data name="Msg_Denied_private_group_with_student" xml:space="preserve"><value>A group with a student needs at least three members.</value></data>
+  <data name="Msg_Denied_group_full" xml:space="preserve"><value>This group has reached its size limit.</value></data>
+  <data name="Ann_Source_CourseBoard" xml:space="preserve"><value>Course board</value></data>
+  <data name="Ann_Source_School" xml:space="preserve"><value>School</value></data>
+  <data name="Error_conversation_read_only" xml:space="preserve"><value>You cannot post in this conversation.</value></data>
+  <data name="Error_comms_cap_above_ceiling" xml:space="preserve"><value>This limit is above the maximum the platform allows.</value></data>
+  <data name="Error_attachment_invalid" xml:space="preserve"><value>The attachment is not allowed: check its type and size, and the number of attachments.</value></data>
+  <data name="NavSection_Communication" xml:space="preserve"><value>Communication</value></data>
+  <data name="Msg_ReadOnly_GroupStudents" xml:space="preserve"><value>Students read this group. To answer, reply privately to the teacher.</value></data>
+  <data name="Msg_ReadOnly_GroupGuardians" xml:space="preserve"><value>Only the teacher's group lets guardians write. You can read this one.</value></data>
+  <data name="Msg_ReadOnly_BlockedOrRule" xml:space="preserve"><value>You cannot write in this conversation.</value></data>
+  <data name="Msg_ReadOnly_Restricted" xml:space="preserve"><value>Your messaging is restricted for now. You can still read.</value></data>
 </root>

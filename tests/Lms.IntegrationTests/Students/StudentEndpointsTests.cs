@@ -29,11 +29,17 @@ namespace Lms.IntegrationTests.Students;
 
 /// <summary>M3 Task 21 (#229): student profiles: create with placement, list with relationship scope, edit, status, delete, flags, reset.</summary>
 [Collection(ApiCollection.Name)]
-public sealed class StudentEndpointsTests
+public sealed class StudentEndpointsTests : IDisposable
 {
     private readonly LmsApiFactory _factory;
     private readonly GuardianTestKit _kit;
     private readonly WebApplicationFactory<Program> _host;
+
+    public void Dispose()
+    {
+        _kit.Dispose();
+        _host.Dispose();
+    }
 
     public StudentEndpointsTests(LmsApiFactory factory)
     {

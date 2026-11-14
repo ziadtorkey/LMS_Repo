@@ -82,7 +82,7 @@ else
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (_newOpened || _loading || !PermState.Loaded || !Navigation.Uri.Contains("/messages/new", StringComparison.OrdinalIgnoreCase)) return;
+        if (_newOpened || _loading || !PermState.Loaded || !IsNewRoute) return;
         _newOpened = true;
         RecipientDto? person = null;
         if (To is { } to)
@@ -94,13 +94,15 @@ else
         await NewAsync(person);
     }
 
+    private bool IsNewRoute => new Uri(Navigation.Uri).AbsolutePath.EndsWith("/messages/new", StringComparison.OrdinalIgnoreCase);
+
     private async Task NewAsync(RecipientDto? person)
     {
         var dialog = await Dialogs.ShowAsync<NewConversationDialog>(L["Msg_New_Message"],
             new DialogParameters<NewConversationDialog> { { x => x.Preselected, person } }, new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
         var result = await dialog.Result;
         if (result is { Canceled: false, Data: Guid created }) Navigation.NavigateTo($"messages/{created}");
-        else if (Id is null && Navigation.Uri.Contains("/messages/new", StringComparison.OrdinalIgnoreCase)) Navigation.NavigateTo("messages");
+        else if (Id is null && IsNewRoute) Navigation.NavigateTo("messages");
     }
 
     /// <summary>The unread count of the conversation as the list showed it when it was opened; later refreshes (after it was marked read) do not move the divider.</summary>

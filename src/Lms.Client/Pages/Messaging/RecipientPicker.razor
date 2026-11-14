@@ -83,9 +83,13 @@
         await LoadAsync();
     }
 
+    private int _request;
+
     private async Task LoadAsync()
     {
+        var mine = ++_request;
         var (people, _) = await ApiCalls.RunAsync(() => Messaging.GetRecipientsAsync(string.IsNullOrEmpty(_search) ? null : _search), Navigation);
+        if (mine != _request) return; // a newer search was started: this answer is stale
         _results = [.. (people ?? []).Where(p => !Exclude.Contains(p.UserId))];
         _loaded = true;
     }

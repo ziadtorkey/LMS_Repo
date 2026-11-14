@@ -250,4 +250,37 @@ public sealed class ComposeTests : ClientTestContext
         Assert.True(Culture.IsRightToLeft);
         Assert.Contains("رسالة جديدة", _dialogs.Markup);
     }
+
+    [Fact]
+    public async Task Adding_members_never_offers_the_people_already_in_the_group()
+    {
+        await SignInAsync(Huda);
+        MessagingApi.Related.Add((Huda.Id, Omar.Id));
+        MessagingApi.Related.Add((Huda.Id, Khaled.Id));
+        var g = await MessagingApi.CreateConversationAsync(new CreateConversationRequest(ConversationKinds.Group, [Sara.Id, Omar.Id], "Class 10-A", "Welcome"));
+        var cut = RenderPage(g.Id);
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("[data-testid=thread-members]")));
+
+        cut.Find("[data-testid=thread-members]").Click();
+        _dialogs.WaitForAssertion(() => Assert.NotEmpty(_dialogs.FindAll($"[data-testid=picker-{Khaled.Id}]")));
+
+        var offered = PickerIds(_dialogs);
+        Assert.Contains($"picker-{Khaled.Id}", offered); // someone who is not in the group is offered
+        Assert.DoesNotContain($"picker-{Sara.Id}", offered);
+        Assert.DoesNotContain($"picker-{Omar.Id}", offered);
+    }
+
+    [Fact]
+    public async Task A_teacher_who_reaches_students_gets_no_safeguarding_row_and_a_manager_does()
+    {
+        await SignInAsync(Huda);
+        OpenNew();
+        _dialogs.WaitForAssertion(() => Assert.NotEmpty(_dialogs.FindAll($"[data-testid=picker-{Sara.Id}]"))); // the teacher reaches the student...
+        Assert.Empty(_dialogs.FindAll("[data-testid=picker-d69]")); // ...so the "no students here" row would be wrong
+
+        await DisposeComponentsAsync();
+        await SignInAsync(FakeMessagingApi.Admin);
+        OpenNew();
+        _dialogs.WaitForAssertion(() => Assert.NotEmpty(_dialogs.FindAll("[data-testid=picker-d69]")));
+    }
 }
