@@ -4,6 +4,7 @@
 @inject NavigationManager Navigation
 @inject PermissionState PermState
 @using Lms.Client.Components.Content
+@using Lms.Client.Components.YearEnd
 @using Lms.Shared.Authorization
 
 <PageTitle>@L["Home_Title"]</PageTitle>
@@ -22,6 +23,7 @@ else if (_failed)
 else if (_name is not null)
 {
     <MudText>@string.Format(L["Home_Welcome"].Value, _name)</MudText>
+    <YearEndChecklistCard />
     @if (PermState.Has(Permissions.CourseAssignments.View) || PermState.Has(Permissions.Quizzes.View) || PermState.Has(Permissions.CourseAssignments.Grade))
     {
         <HomeActivityCards />

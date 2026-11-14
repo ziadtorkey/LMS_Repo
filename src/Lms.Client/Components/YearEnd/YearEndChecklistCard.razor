@@ -1,0 +1,77 @@
+@using Lms.Client.Services.YearEnd
+@using Lms.Shared.Authorization
+@inject PermissionState PermState
+@inject IServiceProvider Services
+
+@* The year-end checklist of the home page (D86; spec m7-year-end section 2): shown to those who close a year or approve grade changes while an Active year is within 60 days of its
+   end (the server sends the flag and the step states). An ordered list, not a stepper: every step is a link and nothing blocks. The state of a step is always words. *@
+@if (_data is { Show: true } d && Visible)
+{
+    <section class="lms-section lms-yearend" aria-labelledby="yearend-title" data-testid="yearend-checklist">
+        <div class="lms-section-head">
+            <MudIcon Icon="@Icons.Material.Rounded.EventAvailable" Class="lms-section-icon" aria-hidden="true" />
+            <div class="lms-section-head-text">
+                <h2 id="yearend-title" class="lms-section-title">@string.Format(L["YearEnd_Title"].Value, CultureText.Pick(d.NameAr, d.NameEn))</h2>
+                <span class="lms-section-subtitle" data-testid="yearend-subtitle">
+                    @string.Format(L["YearEnd_Subtitle"].Value, "⁦" + d.EndDate.ToString("yyyy-MM-dd") + "⁩", d.DaysLeft)
+                </span>
+            </div>
+        </div>
+        <div class="lms-stats" data-testid="yearend-stats">
+            <div class="lms-stat"><span class="lms-stat-value">@d.ActiveStudents</span><span class="lms-stat-label">@L["YearEnd_Students"]</span></div>
+            <div class="lms-stat"><span class="lms-stat-value">@d.Classes</span><span class="lms-stat-label">@L["YearEnd_Classes"]</span></div>
+            <div class="lms-stat"><span class="lms-stat-value">@d.GradeChangesWaiting</span><span class="lms-stat-label">@L["YearEnd_GradeChanges"]</span></div>
+            <div class="lms-stat"><span class="lms-stat-value">@d.UnpublishedGradeItems</span><span class="lms-stat-label">@L["YearEnd_Unpublished"]</span></div>
+        </div>
+        <ol class="lms-checklist" data-testid="yearend-steps">
+            @for (var i = 0; i < d.Steps.Count; i++)
+            {
+                var step = d.Steps[i];
+                var n = i + 1;
+                <li class="@($"lms-check lms-check-{step.State.ToLowerInvariant()}")" data-state="@step.State" data-testid="@($"yearend-step-{n}")">
+                    <span class="lms-check-disc" aria-hidden="true">
+                        @if (step.State == YearEndStepStates.Done) { <MudIcon Icon="@Icons.Material.Rounded.Check" Size="Size.Small" /> }
+                        else if (step.State == YearEndStepStates.NeedsAttention) { <span>!</span> }
+                        else { <span>@n</span> }
+                    </span>
+                    <span class="lms-check-text">
+                        <span class="lms-check-title">@L[$"YearEnd_Step_{step.Key}"]</span>
+                        <span class="lms-check-state" data-testid="@($"yearend-state-{n}")">@StateText(step)</span>
+                    </span>
+                    <MudButton Variant="Variant.Text" Size="Size.Small" Href="@HrefOf(step.Key)" Disabled="@(step.State == YearEndStepStates.Blocked)"
+                               data-testid="@($"yearend-action-{n}")">@L[step.State == YearEndStepStates.NeedsAttention ? "YearEnd_Review" : "YearEnd_Open"]</MudButton>
+                </li>
+            }
+        </ol>
+    </section>
+}
+
+@code {
+    private YearEndChecklistDto? _data;
+
+    private bool Visible => PermState.Has(Permissions.AcademicYears.Close) || PermState.Has(Permissions.Grades.ChangeApprove);
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        // The route is not in the contract yet: when no client is registered the card simply does not show.
+        if (Services.GetService(typeof(IYearEndHomeApi)) is not IYearEndHomeApi api) return;
+        try { _data = await api.GetAsync(); }
+        catch (HttpRequestException) { _data = null; } // a guide, never a failure: the home page stays as it was
+    }
+
+    private string StateText(YearEndStepDto s) => s.State switch
+    {
+        YearEndStepStates.Done => s.DoneAtUtc is { } at ? string.Format(L["YearEnd_State_DoneAt"].Value, IsoDates.Format(at)) : L["YearEnd_State_Done"].Value,
+        YearEndStepStates.NeedsAttention => string.Format(L["YearEnd_State_Attention"].Value, s.Count ?? 0),
+        YearEndStepStates.Blocked => L[$"YearEnd_Blocked_{s.Key}"].Value,
+        _ => L["YearEnd_State_ToDo"].Value,
+    };
+
+    private static string HrefOf(string key) => key switch
+    {
+        YearEndStepKeys.PublishGrades => "classes",
+        YearEndStepKeys.RunPromotion => "promotion",
+        _ => "academic-years",
+    };
+}

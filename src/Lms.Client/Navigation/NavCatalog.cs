@@ -10,9 +10,10 @@ public static class NavCatalog
     public const string People = "NavSection_People";
     public const string Academic = "NavSection_Academic";
     public const string Security = "NavSection_Security";
+    public const string YearEnd = "NavSection_YearEnd";
 
     /// <summary>Section order in the sidebar.</summary>
-    public static readonly IReadOnlyList<string> Sections = [Structure, People, Academic, Security];
+    public static readonly IReadOnlyList<string> Sections = [Structure, People, Academic, YearEnd, Security];
 
     public static readonly IReadOnlyList<NavItem> Items =
     [
@@ -23,7 +24,6 @@ public static class NavCatalog
         new("Nav_Templates", "templates", Icons.Material.Rounded.ContentCopy, Permissions.Templates.View, Section: Structure),
         new("Nav_Staff", "staff", Icons.Material.Rounded.Badge, Permissions.Staff.View, Section: People),
         new("Nav_Students", "students", Icons.Material.Rounded.School, Permissions.Students.View, Section: People),
-        new("Nav_StudentArchive", "students/archive", Icons.Material.Rounded.Inventory2, Permissions.Students.ViewArchive, Section: People),
         new("Nav_Guardians", "guardians", Icons.Material.Rounded.FamilyRestroom, Permissions.Students.View, Section: People),
         new("Nav_MyChildren", "me/children", Icons.Material.Rounded.FamilyRestroom, Permissions.Students.ViewChildren, Section: People),
         new("Nav_ChangeRequests", "student-change-requests", Icons.Material.Rounded.RuleFolder, Permissions.Students.ApproveChanges, Section: People),
@@ -34,8 +34,11 @@ public static class NavCatalog
         new("Nav_Classes", "classes", Icons.Material.Rounded.Groups, Permissions.Classes.View, Section: Academic),
         new("Nav_Eligibility", "teaching/eligibility", Icons.Material.Rounded.HowToReg, Permissions.TeacherAssignments.View, Section: Academic),
         new("Nav_MyClassCourses", "me/class-courses", Icons.Material.Rounded.AutoStories, Permissions.LessonPlans.View, Section: Academic),
-        new("Nav_GradeChanges", "grade-changes", Icons.Material.Rounded.EditNote, Permissions.Grades.ChangeApprove, Section: Academic),
         new("Nav_Library", "library", Icons.Material.Rounded.LocalLibrary, Permissions.Library.View, Section: Academic),
+        new("Nav_YearEndClose", "academic-years", Icons.Material.Rounded.Lock, Permissions.AcademicYears.Close, Section: YearEnd),
+        new("Nav_GradeChanges", "grade-changes", Icons.Material.Rounded.EditNote, Permissions.Grades.ChangeApprove, Section: YearEnd),
+        new("Nav_Promotion", "promotion", Icons.Material.Rounded.TrendingUp, Permissions.Promotion.Run, Section: YearEnd),
+        new("Nav_StudentArchive", "students/archive", Icons.Material.Rounded.Inventory2, Permissions.Students.ViewArchive, Section: YearEnd),
         new("Nav_Roles", "roles", Icons.Material.Rounded.AdminPanelSettings, Permissions.Roles.View, Section: Security),
         new("Nav_Assignments", "assignments", Icons.Material.Rounded.GroupAdd, Permissions.Assignments.View, Section: Security),
         new("Nav_IdentityProviders", "identity-providers", Icons.Material.Rounded.Login, Permissions.IdentityProviders.View, Section: Security),

@@ -135,3 +135,13 @@ html:lang(ar), html:lang(ar) body { font-family: Cairo, "Segoe UI", Tahoma, Aria
 .lms-gc-big { font-size: 1.5rem; margin: 8px 0; font-variant-numeric: tabular-nums; }
 .lms-gc-reason { margin: 8px 0; padding: 12px; border-radius: var(--lms-radius-control); background: var(--mud-palette-background-gray); }
 .lms-timeline { margin: 8px 0; padding-inline-start: 20px; }
+
+/* ---------- Year-end checklist (M7 H8) ---------- */
+.lms-checklist { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.lms-check { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--mud-palette-lines-default); border-radius: var(--lms-radius-control); }
+.lms-check-disc { display: inline-grid; place-items: center; inline-size: 28px; block-size: 28px; border-radius: 50%; font-weight: 600; background: var(--mud-palette-background-gray); }
+.lms-check-done .lms-check-disc { background: var(--mud-palette-success); color: var(--mud-palette-success-text); }
+.lms-check-needsattention .lms-check-disc { background: var(--mud-palette-warning); color: var(--mud-palette-warning-text); }
+.lms-check-blocked .lms-check-title { color: var(--mud-palette-text-secondary); }
+.lms-check-text { display: grid; min-width: 0; }
+.lms-check-state { font-size: .8125rem; color: var(--mud-palette-text-secondary); overflow-wrap: anywhere; }

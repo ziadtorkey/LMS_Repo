@@ -1974,4 +1974,27 @@
   <data name="Archive_Reason" xml:space="preserve"><value>السبب</value></data>
   <data name="Archive_EmptyTitle" xml:space="preserve"><value>الأرشيف فارغ</value></data>
   <data name="Archive_EmptyText" xml:space="preserve"><value>يظهر هنا الطلاب الذين سُحبت ملفاتهم أو تخرجوا.</value></data>
+  <data name="NavSection_YearEnd" xml:space="preserve"><value>نهاية العام</value></data>
+  <data name="Nav_YearEndClose" xml:space="preserve"><value>إغلاق السنة</value></data>
+  <data name="Nav_Promotion" xml:space="preserve"><value>الترحيل</value></data>
+  <data name="YearEnd_Title" xml:space="preserve"><value>نهاية العام: {0}</value></data>
+  <data name="YearEnd_Subtitle" xml:space="preserve"><value>تنتهي السنة في {0}، بعد {1} يوما. كل خطوة رابط، ولا شيء هنا يمنعك.</value></data>
+  <data name="YearEnd_Students" xml:space="preserve"><value>الطلاب النشطون</value></data>
+  <data name="YearEnd_Classes" xml:space="preserve"><value>الفصول</value></data>
+  <data name="YearEnd_GradeChanges" xml:space="preserve"><value>تعديلات درجات بانتظار القرار</value></data>
+  <data name="YearEnd_Unpublished" xml:space="preserve"><value>بنود درجات غير منشورة</value></data>
+  <data name="YearEnd_Step_PublishGrades" xml:space="preserve"><value>نشر درجات الفصول الدراسية</value></data>
+  <data name="YearEnd_Step_CloseYear" xml:space="preserve"><value>إغلاق السنة</value></data>
+  <data name="YearEnd_Step_RunPromotion" xml:space="preserve"><value>تشغيل الترحيل</value></data>
+  <data name="YearEnd_Step_OpenNextYear" xml:space="preserve"><value>فتح السنة القادمة</value></data>
+  <data name="YearEnd_State_Done" xml:space="preserve"><value>تم</value></data>
+  <data name="YearEnd_State_DoneAt" xml:space="preserve"><value>تم في {0}</value></data>
+  <data name="YearEnd_State_Attention" xml:space="preserve"><value>يحتاج مراجعة: {0}</value></data>
+  <data name="YearEnd_State_ToDo" xml:space="preserve"><value>للتنفيذ</value></data>
+  <data name="YearEnd_Blocked_RunPromotion" xml:space="preserve"><value>متاح بعد إغلاق السنة.</value></data>
+  <data name="YearEnd_Blocked_OpenNextYear" xml:space="preserve"><value>متاح بعد الترحيل.</value></data>
+  <data name="YearEnd_Blocked_CloseYear" xml:space="preserve"><value>غير متاح بعد.</value></data>
+  <data name="YearEnd_Blocked_PublishGrades" xml:space="preserve"><value>غير متاح بعد.</value></data>
+  <data name="YearEnd_Review" xml:space="preserve"><value>مراجعة</value></data>
+  <data name="YearEnd_Open" xml:space="preserve"><value>فتح</value></data>
 </root>
