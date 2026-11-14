@@ -1,0 +1,53 @@
+@* Confirms a year-end action by saying what it does and how much it touches; a typed confirmation (the year name, the number of students) only where the action cannot be undone by the UI (M7 H1). *@
+<MudDialog>
+    <DialogContent>
+        <div class="lms-form" data-testid="confirm-effect">
+            <p data-testid="confirm-effect-text">@Effect</p>
+            @if (!string.IsNullOrEmpty(CountText))
+            {
+                <p class="lms-muted" data-testid="confirm-effect-count">@CountText</p>
+            }
+            @if (!string.IsNullOrEmpty(Expected))
+            {
+                <MudTextField T="string" @bind-Value="_typed" Immediate="true" Label="@string.Format(L["Confirm_TypeToConfirm"].Value, Expected)" Variant="Variant.Outlined" Margin="Margin.Dense"
+                              dir="auto" data-testid="confirm-effect-input" />
+            }
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" OnClick="() => MudDialog.Cancel()" data-testid="confirm-effect-cancel">@L["Common_Cancel"]</MudButton>
+        <MudButton Variant="Variant.Filled" Color="@(Danger ? Color.Error : Color.Primary)" Disabled="!Matches" OnClick="() => MudDialog.Close(DialogResult.Ok(true))"
+                   data-testid="confirm-effect-yes">@(ConfirmText ?? L["Common_Confirm"].Value)</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    /// <summary>What the action does, in plain words.</summary>
+    [Parameter, EditorRequired] public string Effect { get; set; } = "";
+
+    /// <summary>How much it touches ("120 students"), already localized.</summary>
+    [Parameter] public string? CountText { get; set; }
+
+    /// <summary>The text the person must type (a year name, a count); null = no typed confirmation.</summary>
+    [Parameter] public string? Expected { get; set; }
+
+    [Parameter] public string? ConfirmText { get; set; }
+    [Parameter] public bool Danger { get; set; }
+
+    private string? _typed;
+
+    private bool Matches => string.IsNullOrEmpty(Expected) || string.Equals(_typed?.Trim(), Expected.Trim(), StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>Shows the dialog; true only when the person confirms.</summary>
+    public static async Task<bool> AskAsync(IDialogService dialogs, string title, string effect, string? countText = null, string? expected = null, string? confirmText = null, bool danger = false)
+    {
+        var reference = await dialogs.ShowAsync<ConfirmEffectDialog>(title, new DialogParameters<ConfirmEffectDialog>
+        {
+            { x => x.Effect, effect }, { x => x.CountText, countText }, { x => x.Expected, expected }, { x => x.ConfirmText, confirmText }, { x => x.Danger, danger },
+        }, new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true });
+        var result = await reference.Result;
+        return result is { Canceled: false };
+    }
+}

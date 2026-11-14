@@ -1,0 +1,104 @@
+@implements IAsyncDisposable
+
+@* A job that is polled until it ends (promotion, undo, copy of a year). The bar is for the eyes; one polite status region says how far it is, not on every tick but when it has moved by at
+   least ten percent and the announce interval has passed, and always at the end, so a screen reader is not flooded (M7 H1). The result stays after the job ends. *@
+<div class="lms-job" data-testid="@TestId">
+    @if (!string.IsNullOrEmpty(Title))
+    {
+        <p class="lms-job-title" data-testid="job-title">@Title</p>
+    }
+    <MudProgressLinear Value="@(_snapshot?.Percent ?? 0)" Color="@(_snapshot is { Failed: true } ? Color.Error : Color.Primary)" Class="my-2" aria-hidden="true" data-testid="job-bar" />
+    <p class="lms-muted" aria-hidden="true" data-testid="job-text">@Text</p>
+    <div class="lms-visually-hidden" role="status" aria-live="polite" data-testid="job-announcer">@_announcement</div>
+    @if (_pollError)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Dense="true" data-testid="job-poll-error">@L["Job_PollFailed"]</MudAlert>
+    }
+    @if (_snapshot is { Finished: true } done && Result is not null)
+    {
+        <div data-testid="job-result">@Result(done)</div>
+    }
+</div>
+
+@code {
+    /// <summary>Reads the job once (the page calls the run route and maps the DTO).</summary>
+    [Parameter, EditorRequired] public Func<Task<JobSnapshot>> Poll { get; set; } = default!;
+
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string TestId { get; set; } = "job";
+    [Parameter] public TimeSpan Interval { get; set; } = TimeSpan.FromSeconds(2);
+
+    /// <summary>The least time between two polite announcements while the job runs.</summary>
+    [Parameter] public TimeSpan AnnounceEvery { get; set; } = TimeSpan.FromSeconds(10);
+
+    /// <summary>The result card, shown (and kept) after the job ended.</summary>
+    [Parameter] public RenderFragment<JobSnapshot>? Result { get; set; }
+
+    [Parameter] public EventCallback<JobSnapshot> OnFinished { get; set; }
+
+    private readonly CancellationTokenSource _cts = new();
+    private JobSnapshot? _snapshot;
+    private string? _announcement;
+    private bool _pollError, _started;
+    private int _announcedPercent = -10;
+    private DateTime _announcedAt = DateTime.MinValue;
+
+    private string Text => _snapshot is null ? L["Common_Loading"].Value : string.Format(L["Job_Progress"].Value, _snapshot.Processed, _snapshot.Total);
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (_started) return;
+        _started = true;
+        _ = LoopAsync();
+    }
+
+    private async Task LoopAsync()
+    {
+        while (!_cts.IsCancellationRequested)
+        {
+            try
+            {
+                var snapshot = await Poll();
+                _pollError = false;
+                _snapshot = snapshot;
+                Announce(snapshot);
+                await InvokeAsync(StateHasChanged);
+                if (snapshot.Finished)
+                {
+                    await InvokeAsync(() => OnFinished.InvokeAsync(snapshot));
+                    return;
+                }
+            }
+            catch (Exception ex) when (ex is HttpRequestException or TimeoutException)
+            {
+                _pollError = true; // the job goes on at the server; the next tick tries again
+                await InvokeAsync(StateHasChanged);
+            }
+
+            try { await Task.Delay(Interval, _cts.Token); }
+            catch (OperationCanceledException) { return; }
+        }
+    }
+
+    private void Announce(JobSnapshot s)
+    {
+        if (s.Finished)
+        {
+            _announcement = L[s.Failed ? "Job_Failed" : "Job_Done"].Value;
+            return;
+        }
+
+        var now = DateTime.UtcNow;
+        if (_announcedPercent >= 0 && (s.Percent < _announcedPercent + 10 || now - _announcedAt < AnnounceEvery)) return;
+        _announcedPercent = s.Percent;
+        _announcedAt = now;
+        _announcement = string.Format(L["Job_Progress"].Value, s.Processed, s.Total);
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        _cts.Cancel();
+        _cts.Dispose();
+        return ValueTask.CompletedTask;
+    }
+}

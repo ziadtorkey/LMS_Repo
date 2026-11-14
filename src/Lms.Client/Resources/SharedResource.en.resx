@@ -1886,4 +1886,9 @@
   <data name="AuditEntity_GradeChangeRequest" xml:space="preserve"><value>Grade change request</value></data>
   <data name="AuditEntity_PromotionRun" xml:space="preserve"><value>Promotion run</value></data>
   <data name="AuditEntity_StudentExit" xml:space="preserve"><value>Student exit</value></data>
+  <data name="Job_Progress" xml:space="preserve"><value>Processed {0} of {1}</value></data>
+  <data name="Job_Done" xml:space="preserve"><value>Finished.</value></data>
+  <data name="Job_Failed" xml:space="preserve"><value>The job did not finish. Check the result below.</value></data>
+  <data name="Job_PollFailed" xml:space="preserve"><value>Could not read the progress just now. Trying again.</value></data>
+  <data name="Confirm_TypeToConfirm" xml:space="preserve"><value>Type {0} to confirm</value></data>
 </root>

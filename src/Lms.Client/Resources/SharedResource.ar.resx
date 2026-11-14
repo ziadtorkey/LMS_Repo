@@ -1886,4 +1886,9 @@
   <data name="AuditEntity_GradeChangeRequest" xml:space="preserve"><value>طلب تعديل درجة</value></data>
   <data name="AuditEntity_PromotionRun" xml:space="preserve"><value>تشغيل ترقية</value></data>
   <data name="AuditEntity_StudentExit" xml:space="preserve"><value>مغادرة طالب</value></data>
+  <data name="Job_Progress" xml:space="preserve"><value>تمت معالجة {0} من {1}</value></data>
+  <data name="Job_Done" xml:space="preserve"><value>اكتملت العملية.</value></data>
+  <data name="Job_Failed" xml:space="preserve"><value>لم تكتمل العملية. راجع النتيجة أدناه.</value></data>
+  <data name="Job_PollFailed" xml:space="preserve"><value>تعذرت قراءة التقدم الآن. ستتم المحاولة مرة أخرى.</value></data>
+  <data name="Confirm_TypeToConfirm" xml:space="preserve"><value>اكتب {0} للتأكيد</value></data>
 </root>
