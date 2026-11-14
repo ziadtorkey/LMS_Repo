@@ -35,7 +35,7 @@ public static partial class Routes
     /// <summary>GET <c>?termId=</c> → an Excel file (.xlsx) of the grid — Timetable.View, <c>UnitAccess</c>; drafts only with Timetable.Manage; the export is audited.</summary>
     public const string ClassTimetableExportPattern = ClassTimetablePattern + "/export";
 
-    /// <summary>GET (Timetable.View) → exceptions of the slot; POST (<c>SaveTimetableExceptionRequest</c> → <c>TimetableExceptionDto</c>) — Timetable.Manage, <c>UnitAccess</c>; a date off the slot's weekday or outside the term is 400 <c>exception_date_invalid</c>; an exception on a draft slot is 409 <c>timetable_not_published</c>; teacher POST 403.</summary>
+    /// <summary>GET (Timetable.View) → exceptions of the slot; POST (<c>SaveTimetableExceptionRequest</c> → <c>TimetableExceptionDto</c>) — Timetable.Manage, <c>UnitAccess</c>; a date off the slot's weekday or outside the term is 400 <c>exception_date_invalid</c>, an unusable substitute 400 <c>exception_substitute_invalid</c>; an exception on a draft slot is 409 <c>timetable_not_published</c>; teacher POST 403.</summary>
     public const string TimetableSlotExceptionsPattern = "/api/timetable-slots/{id:guid}/exceptions";
 
     /// <summary>PUT (<c>SaveTimetableExceptionRequest</c>) and DELETE — Timetable.Manage, <c>UnitAccess</c>; a substitute is the teacher of record for that one session only (L15).</summary>
