@@ -7,7 +7,7 @@
 
 @* Who can read a group (spec #615 §2.5): everyone in it is listed, so nobody is surprised by who sees a message. The owner can add and remove people and
    set the group read-only (then only staff post, D74); everyone else only reads the list. *@
-<MudDialog>
+<MudDialog Class="lms-dialog-fs">
     <DialogContent>
         <div class="lms-form" data-testid="members">
             @if (_error is not null)
@@ -23,7 +23,15 @@
                         <span class="lms-member-name"><bdi>@CultureText.Pick(person.NameAr, person.NameEn)</bdi></span>
                         @if (person.RoleKey is { } role)
                         {
-                            <span class="lms-member-role">@L[$"Msg_Role_{role}"]</span>
+                            <span class="lms-member-role">@L[$"Msg_RoleOne_{role}"]</span>
+                        }
+                        @if (_conversation.OwnerUserId == person.UserId)
+                        {
+                            <span class="lms-member-role" data-testid="@($"member-owner-{person.UserId}")">· @L["Msg_Member_Owner"]</span>
+                        }
+                        @if (person.UserId == PermState.UserId)
+                        {
+                            <span class="lms-member-role" data-testid="@($"member-you-{person.UserId}")">· @L["Msg_Member_You"]</span>
                         }
                         @if (person.Left)
                         {
@@ -31,7 +39,7 @@
                         }
                         else if (IsOwner && person.UserId != PermState.UserId)
                         {
-                            <MudIconButton Icon="@Icons.Material.Rounded.PersonRemove" Size="Size.Small" aria-label="@L["Msg_Member_Remove"]" OnClick="() => RemoveAsync(person)"
+                            <MudIconButton Icon="@Icons.Material.Rounded.PersonRemove" Size="Size.Small" Class="lms-touch" aria-label="@L["Msg_Member_Remove"]" OnClick="() => RemoveAsync(person)"
                                            data-testid="@($"member-remove-{person.UserId}")" />
                         }
                     </li>
