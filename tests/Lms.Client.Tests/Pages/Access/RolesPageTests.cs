@@ -214,4 +214,41 @@ public sealed class RolesPageTests : ClientTestContext
         Assert.Contains("الأدوار والصلاحيات", cut.Markup);
         Assert.Contains(BuiltInRoles.All[0].SchoolGroupLabel.NameAr, cut.Markup);
     }
+
+    [Fact]
+    public async Task Role_editor_summarises_granted_permissions_and_updates_as_they_change()
+    {
+        var group = PermissionGroups.Assignable.First(g => g.Module == "Roles");
+        var total = PermissionGroups.Assignable.Sum(g => g.Permissions.Count);
+        var cut = Render<RoleEditor>(p => p.Add(e => e.Groups, PermissionGroups.Assignable));
+
+        Assert.Equal($"0 / {total}", cut.Find("[data-testid=role-stat-granted] .lms-stat-value").TextContent.Trim());
+        Assert.Equal("0", cut.Find("[data-testid=role-stat-modules] .lms-stat-value").TextContent.Trim());
+
+        await cut.Find("[data-testid=select-module-Roles]").ChangeAsync(new Microsoft.AspNetCore.Components.ChangeEventArgs { Value = true });
+
+        Assert.Equal($"{group.Permissions.Count} / {total}", cut.Find("[data-testid=role-stat-granted] .lms-stat-value").TextContent.Trim());
+        Assert.Equal("1", cut.Find("[data-testid=role-stat-modules] .lms-stat-value").TextContent.Trim());
+    }
+
+    [Fact]
+    public void Role_editor_saves_from_a_sticky_bar_with_the_granted_count()
+    {
+        var cut = Render<RoleEditor>(p => p.Add(e => e.Groups, PermissionGroups.Assignable));
+
+        var bar = cut.Find("[data-testid=role-save-bar]");
+        Assert.Contains("lms-save-bar", bar.ClassName);
+        Assert.NotNull(bar.QuerySelector("[data-testid=role-save]"));
+        Assert.NotNull(bar.QuerySelector("[data-testid=role-cancel]"));
+    }
+
+    [Fact]
+    public void Permission_rows_are_one_column_cards_per_module()
+    {
+        var cut = Render<PermissionMatrix>(p => p.Add(m => m.Groups, PermissionGroups.Assignable).Add(m => m.Selected, new HashSet<string>()));
+
+        var module = cut.Find("[data-testid=module-Roles]");
+        Assert.Contains("lms-perm-module", module.ClassName);
+        Assert.NotNull(module.QuerySelector(".lms-perm-list"));
+    }
 }

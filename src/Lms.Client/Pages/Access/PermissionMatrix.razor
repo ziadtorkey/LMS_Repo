@@ -11,9 +11,9 @@
                 <MudCheckBox T="bool" Value="AllSelected(g)" ValueChanged="v => ToggleModuleAsync(g, v)"
                              Label="@L[$"PermModule_{g.Module}"]" Disabled="ReadOnly" Class="lms-perm-module-check"
                              Color="Color.Primary" aria-label="@($"{L["Roles_SelectModule"]}: {L[$"PermModule_{g.Module}"]}")" data-testid="@($"select-module-{g.Module}")" />
-                <span class="lms-perm-count" aria-hidden="true">@count / @g.Permissions.Count</span>
+                <span class="lms-perm-count" aria-hidden="true"><span dir="ltr">@count / @g.Permissions.Count</span></span>
             </div>
-            <div class="lms-perm-grid">
+            <div class="lms-perm-grid lms-perm-list">
                 @foreach (var permission in g.Permissions)
                 {
                     var p = permission;

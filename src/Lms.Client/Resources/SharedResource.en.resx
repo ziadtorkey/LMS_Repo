@@ -1831,4 +1831,8 @@
   <data name="Policies_CascadeNote" xml:space="preserve"><value>Policies you turn on here apply to this unit and every unit below it. A policy set higher up shows who set it and can only be changed there.</value></data>
   <data name="Policies_CardTitle" xml:space="preserve"><value>Delegation barriers</value></data>
   <data name="Policies_CardHelp" xml:space="preserve"><value>Block actions for this unit and the units below it.</value></data>
+  <data name="Roles_Summary" xml:space="preserve"><value>Role summary</value></data>
+  <data name="Roles_StatGranted" xml:space="preserve"><value>Permissions granted</value></data>
+  <data name="Roles_StatModules" xml:space="preserve"><value>Modules fully granted</value></data>
+  <data name="Roles_GrantedCount" xml:space="preserve"><value>{0} of {1} permissions granted</value></data>
 </root>
