@@ -176,7 +176,7 @@ Other patterns:
 ## 5. Accessibility checklist (WCAG 2.1 AA, PRD X-10)
 
 - [ ] One h1 per page (`PageHeader`); sections are h2 (`SectionCard`).
-- [ ] Every input has a visible label. Helper text explains rules. Errors show at the field.
+- [ ] Every input has a visible label. Helper text explains rules. Errors show at the field. Labels keep 6 px of room below the line (`lms-stitch.css`), so Arabic dots and tails and English descenders are never cut off; do not reset label padding.
 - [ ] Icon-only buttons have an `aria-label`. Decorative icons and avatars are `aria-hidden`.
 - [ ] Every control is keyboard reachable, with a visible focus ring (the theme provides it; never remove an outline).
 - [ ] Text contrast is at least 4.5:1 in light and dark mode.
