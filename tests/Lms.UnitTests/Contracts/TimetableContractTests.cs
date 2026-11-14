@@ -212,6 +212,11 @@ public sealed class TimetableContractTests
         Assert.Equal(new DateOnly(2027, 2, 7), RoundTrip(exception).Date);
         Assert.Equal(Other, RoundTrip(saveException).NewPeriodId);
         Assert.Equal(ExceptionKinds.Cancelled, RoundTrip(card).ExceptionKind);
+        Assert.Null(RoundTrip(card).LiveSessionId); // no live session scheduled: both are null
+        Assert.Null(RoundTrip(card).JoinOpensAtUtc);
+        var opens = new DateTime(2027, 2, 7, 5, 25, 0, DateTimeKind.Utc);
+        var live = RoundTrip(card with { LiveSessionId = Other, JoinOpensAtUtc = opens });
+        Assert.Equal((Other, opens), (live.LiveSessionId, live.JoinOpensAtUtc));
         Assert.Equal(new DateOnly(2027, 2, 7), RoundTrip(view).To);
     }
 
