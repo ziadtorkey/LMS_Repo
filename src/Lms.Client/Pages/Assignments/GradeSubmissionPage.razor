@@ -1,0 +1,185 @@
+@page "/submissions/{Id:guid}/grade"
+@attribute [Authorize]
+@using System.Globalization
+@using Lms.Client.Components.Assets
+@using Lms.Client.Components.Editors
+@using Lms.Client.Services.Api
+@using Lms.Shared
+@using Lms.Shared.Assignments
+@using Lms.Shared.Authorization
+@using Lms.Shared.Content
+@inject ICourseAssignmentsApi Api
+@inject ISnackbar Snackbar
+@inject PermissionState PermState
+@inject ICultureService Culture
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<PageTitle>@L["Grade_Title"]</PageTitle>
+@if (!PermState.Loaded || _loading)
+{
+    <MudProgressLinear Indeterminate="true" aria-label="@L["Common_Loading"]" />
+}
+else if (!PermState.Has(Permissions.CourseAssignments.Grade))
+{
+    <MudAlert Severity="Severity.Warning" data-testid="grade-forbidden">@L["Forbidden_Title"]</MudAlert>
+}
+else if (_submission is null || _assignment is null)
+{
+    <MudAlert Severity="Severity.Error" data-testid="grade-error">@(_error ?? L["Api_Error"].Value)</MudAlert>
+}
+else
+{
+    <MudStack Spacing="1" Class="mb-4" data-testid="grade-header">
+        <MudText Typo="Typo.h4">@Culture.Pick(_submission.StudentNameAr, _submission.StudentNameEn)</MudText>
+        <MudText Typo="Typo.h6">@Culture.Pick(_assignment.Module.TitleAr, _assignment.Module.TitleEn)</MudText>
+        <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap" AlignItems="AlignItems.Center">
+            <MudChip T="string" Size="Size.Small" data-testid="grade-status">@L["SubmissionStatus_" + _submission.Status]</MudChip>
+            @if (_submission.IsLate)
+            {
+                <MudChip T="string" Size="Size.Small" Color="Color.Warning" data-testid="grade-late">@L["Submissions_Late"]</MudChip>
+            }
+            <MudText Typo="Typo.caption" Class="mud-text-secondary">@L["Submissions_At"]: <span dir="ltr">@(IsoDates.Format(_submission.SubmittedAtUtc) ?? "—")</span></MudText>
+        </MudStack>
+    </MudStack>
+
+    <MudGrid>
+        <MudItem xs="12" md="7">
+            <MudPaper Outlined="true" Class="pa-4" data-testid="grade-submission">
+                <MudText Typo="Typo.subtitle1" Class="mb-2">@L["Grade_Work"]</MudText>
+                @if (RichTextHtml.IsEmpty(_submission.TextHtml) && _submission.Files.Count == 0)
+                {
+                    <MudText Class="mud-text-secondary" data-testid="grade-nothing">@L["Grade_NoWork"]</MudText>
+                }
+                @if (!RichTextHtml.IsEmpty(_submission.TextHtml))
+                {
+                    <SanitizedHtml Html="@_submission.TextHtml" TestId="grade-text" />
+                }
+                @foreach (var file in _submission.Files)
+                {
+                    <AssetPreview @key="file.Id" Asset="file" />
+                }
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" md="5">
+            <MudPaper Outlined="true" Class="pa-4" data-testid="grade-form">
+                <MudStack Spacing="3">
+                    @if (_error is not null)
+                    {
+                        <MudAlert Severity="Severity.Error" data-testid="grade-save-error">@_error</MudAlert>
+                    }
+                    <MudNumericField T="decimal?" Value="_grade" ValueChanged="g => { _grade = g; _gradeError = null; }" Min="0m"
+                                     Label="@L["Grade_Out", Max(_assignment)]" Immediate="true"
+                                     Error="@(_gradeError is not null)" ErrorText="@_gradeError" data-testid="grade-input" />
+                    @if (PenaltyApplied is { } percent && _grade is { } raw)
+                    {
+                        <MudText Typo="Typo.body2" Class="mud-text-secondary" data-testid="grade-penalty">
+                            @L["Grade_Penalty", percent, Final(raw, percent).ToString("0.##", CultureInfo.InvariantCulture)]
+                        </MudText>
+                    }
+                    <RichTextEditor @ref="_feedbackEditor" Value="@_feedback" ValueChanged="v => _feedback = v" Label="@L["Grade_Feedback"]"
+                                    TestId="grade-feedback" />
+                    <MudStack Spacing="1" data-testid="grade-annotated">
+                        <MudText Typo="Typo.subtitle2">@L["Grade_Annotated"]</MudText>
+                        @if (_annotated is not null)
+                        {
+                            <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                                <MudText Typo="Typo.body2" dir="auto" data-testid="grade-annotated-name">@_annotated.FileName</MudText>
+                                <MudIconButton Icon="@Icons.Material.Rounded.Close" Size="Size.Small" aria-label="@L["Grade_RemoveAnnotated"]"
+                                               OnClick="() => _annotated = null" data-testid="grade-annotated-remove" />
+                            </MudStack>
+                        }
+                        else
+                        {
+                            <AssetUploader ClassCourseId="_assignment.ClassCourseId" OnUploaded="a => _annotated = a" />
+                        }
+                    </MudStack>
+                    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                        <MudButton Variant="Variant.Outlined" OnClick="() => SaveAsync(false)" Disabled="_saving" data-testid="grade-save">@L["Grade_Save"]</MudButton>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => SaveAsync(true)" Disabled="_saving"
+                                   data-testid="grade-return">@L["Grade_SaveReturn"]</MudButton>
+                    </MudStack>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private RichTextEditor? _feedbackEditor;
+    private SubmissionDto? _submission;
+    private CourseAssignmentDto? _assignment;
+    private AssetDto? _annotated;
+    private decimal? _grade;
+    private string? _feedback, _error, _gradeError;
+    private bool _loading = true, _saving;
+
+    private static string Max(CourseAssignmentDto a) => a.MaxGrade.ToString("0.##", CultureInfo.InvariantCulture);
+
+    // The server applies the penalty at grading for a late hand-in under the Penalty policy; this only previews it.
+    private int? PenaltyApplied => _submission is { IsLate: true } && _assignment is { LatePolicy: LatePolicies.Penalty, PenaltyPercent: { } p } ? p : null;
+    private static decimal Final(decimal grade, int percent) => Math.Round(grade * (100 - percent) / 100m, 2);
+
+    protected override async Task OnParametersSetAsync()
+    {
+        PermState.Changed -= OnPermissionsChanged;
+        PermState.Changed += OnPermissionsChanged;
+        if (!PermState.Loaded) await PermState.RefreshAsync();
+        _loading = true; _error = null; _submission = null; _assignment = null;
+        if (PermState.Has(Permissions.CourseAssignments.Grade))
+        {
+            await ApiCalls.RunAsync(async () =>
+            {
+                _submission = await Api.GetSubmissionAsync(Id);
+                _assignment = await Api.GetAsync(_submission.AssignmentId);
+            }, Navigation, L, m => _error = m);
+            if (_submission?.Grade is { } g)
+            {
+                _grade = g.Grade; _feedback = g.FeedbackHtml; _annotated = g.AnnotatedFile;
+            }
+        }
+        _loading = false;
+    }
+
+    private async Task SaveAsync(bool release)
+    {
+        if (_assignment is null || _submission is null) return;
+        _error = _gradeError = null;
+        if (_grade is not { } grade) { _gradeError = L["Common_Required"]; return; }
+        if (grade < 0 || grade > _assignment.MaxGrade) { _gradeError = L["Grade_AboveMax", Max(_assignment)]; return; }
+        _saving = true;
+        try
+        {
+            if (_feedbackEditor is not null) await _feedbackEditor.FlushAsync();
+            var feedback = RichTextHtml.IsEmpty(_feedback) ? null : _feedback;
+            _submission = await Api.GradeAsync(Id, new GradeSubmissionRequest(grade, feedback, _annotated?.Id));
+            if (release) _submission = await Api.ReturnAsync(Id);
+            Snackbar.Add(release ? L["Grade_Returned"] : L["Grade_Saved"], Severity.Success);
+        }
+        catch (Exception ex) when (ApiCalls.TryRedirect(ex, Navigation))
+        {
+        }
+        catch (ApiProblemException ex) when (ex.Code == ProblemCodes.validation_failed)
+        {
+            _gradeError = L["Grade_AboveMax", Max(_assignment)];
+        }
+        catch (ApiProblemException ex)
+        {
+            _error = ProblemText.For(ex, L);
+        }
+        catch (HttpRequestException)
+        {
+            _error = L["Error_Generic"];
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private void OnPermissionsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => PermState.Changed -= OnPermissionsChanged;
+}
