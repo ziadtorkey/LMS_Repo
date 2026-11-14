@@ -42,12 +42,15 @@ public sealed class DevSeeder(string connectionString, IHostEnvironment environm
         if (!string.IsNullOrWhiteSpace(options?.DefaultPassword))
         {
             await SeedUsersAsync(db, school, university, options!, cancellationToken);
+
+            // The people of the M6 messaging demo and E2E (students and guardians of two families), after the sample accounts they sit next to.
+            await M6DemoSeeder.SeedAsync(db, school, options!.DefaultPassword!, cancellationToken);
         }
 
         return true;
     }
 
-    private sealed record SeededClient(Organization Organization, Dictionary<string, OrgUnit> Units);
+    internal sealed record SeededClient(Organization Organization, Dictionary<string, OrgUnit> Units);
 
     private static async Task<SeededClient> SeedTreeAsync(LmsDbContext db, DevSeedData.ClientSeed seed, CancellationToken ct)
     {
@@ -180,7 +183,7 @@ public sealed class DevSeeder(string connectionString, IHostEnvironment environm
         }
     }
 
-    private static async Task<User> EnsureUserAsync(
+    internal static async Task<User> EnsureUserAsync(
         LmsDbContext db, string email, string nameAr, string nameEn, string password, bool isPlatformAdmin, CancellationToken ct)
     {
         var normalized = email.ToUpperInvariant();
@@ -234,4 +237,7 @@ public sealed class DevSeeder(string connectionString, IHostEnvironment environm
             await AddUnitsAsync(db, organization, levels, units, child, unit, ct);
         }
     }
+
+    internal static async Task<Guid?> UserIdAsync(LmsDbContext db, string email, CancellationToken ct) =>
+        await db.Users.Where(u => u.NormalizedEmail == email.ToUpperInvariant()).Select(u => (Guid?)u.Id).FirstOrDefaultAsync(ct);
 }

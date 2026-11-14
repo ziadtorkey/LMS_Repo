@@ -258,7 +258,7 @@ public sealed class DevSeederTests(LmsApiFactory factory)
         await using var second = Open(cs);
         Assert.Equal(users, await second.Users.CountAsync());
         Assert.Equal(assignments, await second.RoleAssignments.CountAsync());
-        Assert.Equal(15, users); // admin + 7 role users + multi + lockout-e2e + notify-e2e + dual-e2e + 3 blocked-status e2e users
+        Assert.Equal(19, users); // admin + 7 role users + multi + lockout-e2e + notify-e2e + dual-e2e + 3 blocked-status e2e users + student1/2 and guardian1/2 of the M6 demo
     }
 
     [Fact]
