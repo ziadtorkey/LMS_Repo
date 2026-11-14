@@ -64,6 +64,56 @@ public sealed class TimetableAttendanceTests(E2EFixture fixture) : E2ETestBase(f
         Assert.Equal(culture == "ar" ? "rtl" : "ltr", await new ShellPage(Page).HtmlDirAsync());
     }
 
+    /// <summary>
+    /// Keyboard move (FE2, #654): focus a lesson's cell, pick it up with M (also with an Arabic layout character: the key is matched by
+    /// <c>event.code</c>), arrows to an empty cell, Enter drops; the lesson sits in the new cell and the live region says it moved.
+    /// Escape mid-move leaves everything where it was.
+    /// </summary>
+    [Theory(Skip = NeedsTimetable)]
+    [InlineData("ar", "ئ")] // the character the physical M key gives on an Arabic layout
+    [InlineData("en", "m")]
+    public async Task Lesson_moves_with_the_keyboard_and_escape_cancels(string culture, string pickUpKey)
+    {
+        await StartAsync(culture: culture);
+        Page.SetDefaultTimeout(45_000);
+        var world = await SignInAsAdminAndBuildAsync(culture, withSlots: true);
+
+        var builder = new TimetableBuilderPage(Page);
+        await builder.OpenAsync(world.ClassAId);
+        var slotId = await builder.Slots.First.GetAttributeAsync("data-testid"); // tt-slot-{id}
+        var from = (period: 1, day: DayOfWeek.Sunday); // the first lesson of the world is at the first period of the first day (to be set by M5Kit)
+
+        // Escape mid-move: nothing moved, the card is still in its cell.
+        await builder.PickUpAsync(from.period, from.day, pickUpKey);
+        await Page.Keyboard.PressAsync("ArrowDown");
+        await Page.Keyboard.PressAsync("Escape");
+        await Expect(builder.Cell(from.period, from.day).GetByTestId(slotId!)).ToHaveCountAsync(1);
+
+        // Pick up, move one period down, drop.
+        await builder.PickUpAsync(from.period, from.day, pickUpKey);
+        await Page.Keyboard.PressAsync("ArrowDown");
+        await Page.Keyboard.PressAsync("Enter");
+        await Expect(builder.Cell(from.period + 1, from.day).GetByTestId(slotId!)).ToHaveCountAsync(1);
+        await Expect(builder.Cell(from.period, from.day).GetByTestId(slotId!)).ToHaveCountAsync(0);
+        await Expect(builder.Live).Not.ToBeEmptyAsync(); // the move is announced
+    }
+
+    /// <summary>Phone, 360 px: a quick swipe scrolls the grid, a 300 ms press-and-hold starts a drag (acceptance item of the S3 spike, Task 31).</summary>
+    [Fact(Skip = NeedsTimetable)]
+    public async Task Touch_hold_starts_a_drag_and_a_swipe_scrolls_at_360px()
+    {
+        await StartAsync(culture: "en"); // a touch context (HasTouch) is needed: add the option to StartAsync when un-skipping
+        await Page.SetViewportSizeAsync(360, 800);
+        Page.SetDefaultTimeout(45_000);
+        var world = await SignInAsAdminAndBuildAsync("en", withSlots: true);
+
+        var builder = new TimetableBuilderPage(Page);
+        await builder.OpenAsync(world.ClassAId);
+        // To drive with CDP touch events (Input.dispatchTouchEvent): a swipe under 300 ms must change the scroll position and not move the card;
+        // a hold of 300 ms or more followed by a move must move the card and not scroll. Needs the real builder (#654) and a touch context.
+        Assert.True(await builder.Grid.IsVisibleAsync());
+    }
+
     [Theory(Skip = NeedsSessions)]
     [InlineData("ar")]
     [InlineData("en")]

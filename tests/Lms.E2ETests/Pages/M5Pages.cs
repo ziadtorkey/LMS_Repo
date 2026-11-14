@@ -39,8 +39,8 @@ public sealed class TimetableSetupPage(IPage page)
 /// <summary>The weekly timetable builder and read-only views (<c>lms-tt</c>, <c>lms-slot</c>; spec section 4).</summary>
 public sealed class TimetableBuilderPage(IPage page)
 {
-    public ILocator Grid => page.Locator(".lms-tt"); // spec class
-    public ILocator Slots => page.Locator(".lms-slot:not(.empty)"); // spec classes
+    public ILocator Grid => page.GetByTestId("tt-grid"); // #654
+    public ILocator Slots => page.Locator("[data-testid^='tt-slot-']"); // #654 (tt-slot-{id})
     public ILocator EmptyCells => page.Locator(".lms-slot.empty"); // spec classes: "Add a lesson"
     public ILocator ConflictSlots => page.Locator(".lms-slot.conflict"); // spec class
     public ILocator StateChip => page.GetByTestId("tt-state"); // proposed: Draft / Published
@@ -64,7 +64,24 @@ public sealed class TimetableBuilderPage(IPage page)
     }
 
     /// <summary>The cell of a period row and a day column (periods are rows, working days are columns in reading order).</summary>
-    public ILocator Cell(int periodIndex, DayOfWeek day) => page.Locator($"[data-period='{periodIndex}'][data-day='{day}']"); // proposed
+    public ILocator Cell(int periodOrder, DayOfWeek day) => page.GetByTestId($"tt-cell-{(int)day}-{periodOrder}"); // #654: day 0 = Sunday
+
+    /// <summary>The polite live region that announces moves (#654).</summary>
+    public ILocator Live => page.GetByTestId("tt-live");
+
+    /// <summary>The conflict messages of the last move or save (#654).</summary>
+    public ILocator Conflict => page.GetByTestId("tt-conflict");
+
+    /// <summary>
+    /// Picks up the lesson in a cell with the keyboard: focus the cell, press the pick-up key (matched by <c>event.code</c>, so
+    /// <paramref name="key"/> may be an Arabic layout character), then move with the arrows. Enter drops, Escape cancels.
+    /// </summary>
+    public async Task PickUpAsync(int periodOrder, DayOfWeek day, string key = "m")
+    {
+        await Cell(periodOrder, day).FocusAsync();
+        // Playwright sends the physical key for a named code; the character is what an Arabic layout would produce.
+        await page.EvaluateAsync("([k]) => document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: k, code: 'KeyM', bubbles: true, cancelable: true }))", new object[] { key });
+    }
 
     /// <summary>Adds a lesson in a cell through the slot dialog (the "+" of an empty cell).</summary>
     public async Task AddLessonAsync(int periodIndex, DayOfWeek day, string course, string teacher, string room)
