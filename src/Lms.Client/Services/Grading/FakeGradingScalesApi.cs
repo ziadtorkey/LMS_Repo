@@ -21,14 +21,23 @@ public sealed class FakeGradingScalesApi : IGradingScalesApi
 
     public FakeGradingScalesApi()
     {
-        _scales.Add(Preset("sa-percentage", "نسبة مئوية", "Percentage", ScaleKinds.Percentage,
-            [("A", 90m, 100m, "ممتاز", "Excellent"), ("B", 80m, 89.99m, "جيد جدا", "Very good"), ("C", 70m, 79.99m, "جيد", "Good"),
-             ("D", 60m, 69.99m, "مقبول", "Pass"), ("F", 0m, 59.99m, "راسب", "Fail")]));
-        _scales.Add(Preset("sa-letter", "تقدير حرفي", "Letter grades", ScaleKinds.Letter,
-            [("A+", 95m, 100m, "ممتاز مرتفع", "Excellent +"), ("A", 90m, 94.99m, "ممتاز", "Excellent"), ("B", 80m, 89.99m, "جيد جدا", "Very good"),
-             ("C", 70m, 79.99m, "جيد", "Good"), ("D", 60m, 69.99m, "مقبول", "Pass"), ("F", 0m, 59.99m, "راسب", "Fail")]));
+        // Synthetic demo bands: the real preset numbers and descriptors are server data (the provisional seed), never part of a client release.
+        _scales.Add(Preset("sa-percentage", "نموذج النسبة المئوية", "Percentage preset", ScaleKinds.Percentage, Demo(5)));
+        _scales.Add(Preset("sa-letter", "نموذج التقدير الحرفي", "Letter preset", ScaleKinds.Letter, Demo(4)));
         _templates.Add(new WeightTemplateDto(Guid.NewGuid(), DemoUnitId, "توزيع قياسي", "Standard split", 100m, null,
             [new(Guid.NewGuid(), "أعمال الفصل", "Coursework", 40m, 1), new(Guid.NewGuid(), "الاختبارات", "Exams", 60m, 2)]));
+    }
+
+    /// <summary><paramref name="count"/> equal, clearly synthetic bands from 0 to 100 ("Band 1" is the highest).</summary>
+    private static (string Code, decimal Min, decimal Max, string Ar, string En)[] Demo(int count)
+    {
+        var size = 100m / count;
+        return [.. Enumerable.Range(0, count).Select(i =>
+        {
+            var from = Math.Round(100m - (i + 1) * size, 2);
+            var to = i == 0 ? 100m : Math.Round(100m - i * size - 0.01m, 2);
+            return ($"B{i + 1}", from, to, $"الفئة {i + 1}", $"Band {i + 1}");
+        })];
     }
 
     private static GradingScaleDto Preset(string seed, string nameAr, string nameEn, string kind, (string Code, decimal Min, decimal Max, string Ar, string En)[] bands) =>

@@ -46,4 +46,26 @@ public sealed class ClassCourseTabsTests : ClientTestContext
         Assert.NotEmpty(tabs.FindAll("[data-testid=tab-announcements]"));
         Assert.Empty(tabs.FindAll("[data-testid=tab-gradebook]"));
     }
+
+    [Fact]
+    public async Task A_holder_of_Grades_Manage_alone_also_sees_the_gradebook_tab()
+    {
+        var tabs = await RenderTabsAsync("plan", Permissions.Grades.Manage);
+
+        Assert.NotEmpty(tabs.FindAll("[data-testid=tab-gradebook]"));
+    }
+
+    [Theory]
+    [InlineData("plan")]
+    [InlineData("forum")]
+    [InlineData("gradebook")]
+    public async Task Only_the_active_tab_is_marked_current_and_the_track_is_the_stitch_pill_track(string active)
+    {
+        var tabs = await RenderTabsAsync(active, Permissions.Forums.View, Permissions.Grades.View);
+
+        var current = tabs.FindAll("[aria-current=page]");
+        Assert.Single(current);
+        Assert.Equal($"tab-{active}", current[0].GetAttribute("data-testid"));
+        Assert.Contains("lms-course-tabs", tabs.Find("[data-testid=class-course-tabs]").ClassList);
+    }
 }
