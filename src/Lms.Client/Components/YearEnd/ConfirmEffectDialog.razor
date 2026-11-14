@@ -1,10 +1,13 @@
+@implements IAsyncDisposable
+@inject IJSRuntime Js
+
 @* Confirms a year-end action by saying what it does and how much it touches; a typed confirmation (the year name, the number of students) only where the action cannot be undone by the UI (M7 H1).
    Drawn as the design spec's one pattern for actions with consequences (spec PR 814 §1, §4): the effect sentence, an optional "What will happen" list, optional "Worth checking
    first" warnings with Review links (they never block), optional blocking problems (the confirm button is disabled and says why), then the typed confirmation in its own
    tinted block. Full screen below 600 px (lms-dialog-sheet). *@
 <MudDialog Class="lms-dialog-sheet">
     <DialogContent>
-        <div class="lms-confirm-effect" data-testid="confirm-effect">
+        <div class="lms-confirm-effect" data-testid="confirm-effect" @ref="_root">
             <p data-testid="confirm-effect-text">@Effect</p>
             @if (!string.IsNullOrEmpty(CountText))
             {
@@ -95,6 +98,31 @@
 
     private readonly string _whyId = $"ce-{Guid.NewGuid():N}";
     private string? _typed;
+    private ElementReference _root;
+    private IJSObjectReference? _module, _handle;
+
+    /// <summary>Focus goes into the dialog, stays in it and returns to the opener on close (js/dialog-trap.js), so it does not depend on MudBlazor alone.</summary>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        try
+        {
+            _module = await Js.InvokeAsync<IJSObjectReference>("import", "./js/dialog-trap.js");
+            _handle = await _module.InvokeAsync<IJSObjectReference>("trap", _root);
+        }
+        catch (Exception ex) when (ex is JSException or InvalidOperationException or JSDisconnectedException) { }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_module is not null) await _module.InvokeVoidAsync("release", _handle);
+            if (_handle is not null) await _handle.DisposeAsync();
+            if (_module is not null) await _module.DisposeAsync();
+        }
+        catch (Exception ex) when (ex is JSException or InvalidOperationException or JSDisconnectedException) { }
+    }
 
     private bool Matches => string.IsNullOrEmpty(Expected) || string.Equals(_typed?.Trim(), Expected.Trim(), StringComparison.OrdinalIgnoreCase);
     private bool CanConfirm => Matches && Blocking is not { Count: > 0 };
