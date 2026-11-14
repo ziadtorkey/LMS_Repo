@@ -1,8 +1,11 @@
+using System.Net;
 using Lms.Domain.Announcements;
 using Lms.Domain.Forums;
 using Lms.Infrastructure.Announcements;
 using Lms.IntegrationTests.Forums;
 using Lms.IntegrationTests.Infrastructure;
+using Lms.Shared;
+using Lms.Shared.Forums;
 using Lms.Shared.Messaging;
 using Microsoft.EntityFrameworkCore;
 
@@ -132,5 +135,71 @@ public sealed class CourseBoardMigrationTests(LmsApiFactory factory)
         Assert.Equal(("<p>new</p>", true), (restored.BodyHtml, restored.IsPinned)); // the edit and the pin come back
         var added = await check.Set<CourseAnnouncement>().IgnoreQueryFilters().AsNoTracking().SingleAsync(c => c.Id == fresh);
         Assert.Equal((w.ClassCourseA, "Fresh"), (added.ClassCourseId, added.Title));
+    }
+
+    [Fact]
+    public async Task New_board_posts_are_announcements_with_guardians_off_and_a_recipient_snapshot()
+    {
+        using var w = await ForumTestWorld.CreateAsync(factory, "CB5");
+
+        var response = await w.SendAsync(w.TeacherA, HttpMethod.Post, Routes.ClassCourseAnnouncements(w.ClassCourseA), new CreateCourseAnnouncementRequest("Quiz Monday", "<p>Bring a pen</p>", true, false));
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var dto = await w.ReadAsync<CourseAnnouncementDto>(response);
+        Assert.Equal((AnnouncementSources.CourseBoard, "Quiz Monday", true), (dto.Source, dto.Title, dto.IsPinned));
+        var (announcement, targets) = await LoadAsync(dto.Id);
+        Assert.Equal(AnnouncementStates.Published, announcement!.Status);
+        Assert.Equal([AnnouncementRoleFilters.Staff, AnnouncementRoleFilters.Students], announcement.RoleFilters);
+        Assert.False(announcement.Notify);
+        Assert.Equal(w.ClassCourseA, Assert.Single(targets).TargetId);
+        await using var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        var recipients = await db.Set<AnnouncementRecipient>().Where(r => r.AnnouncementId == dto.Id).ToListAsync();
+        Assert.Contains(w.UserIdOf(w.StudentA), recipients.Select(r => r.UserId)); // the enrolled student reads it in the feed
+        Assert.DoesNotContain(w.UserIdOf(w.StudentB), recipients.Select(r => r.UserId)); // not a student of the other class course
+    }
+
+    [Fact]
+    public async Task Board_endpoints_answer_unchanged_for_a_migrated_post_by_its_old_id()
+    {
+        using var w = await ForumTestWorld.CreateAsync(factory, "CB6");
+        var post = await AddBoardPostAsync(w.ClassCourseA, "Old news", "<p>old</p>", false, w.UserIdOf(w.TeacherA));
+        await RunAsync(CourseBoardMigration.Up);
+
+        var list = await w.ReadAsync<PagedResult<CourseAnnouncementDto>>(await w.SendAsync(w.StudentA, HttpMethod.Get, Routes.ClassCourseAnnouncements(w.ClassCourseA)));
+        Assert.Equal(post.Id, Assert.Single(list.Items).Id);
+        Assert.Equal(AnnouncementSources.CourseBoard, list.Items[0].Source);
+
+        var edited = await w.SendAsync(w.TeacherA, HttpMethod.Put, Routes.Announcement(post.Id), new UpdateCourseAnnouncementRequest("New news", "<p>new</p>", true));
+        Assert.Equal(HttpStatusCode.OK, edited.StatusCode);
+        var dto = await w.ReadAsync<CourseAnnouncementDto>(edited);
+        Assert.Equal(("New news", "<p>new</p>", true), (dto.Title, dto.BodyHtml, dto.IsPinned));
+        Assert.Equal(HttpStatusCode.NoContent, (await w.SendAsync(w.TeacherA, HttpMethod.Delete, Routes.Announcement(post.Id))).StatusCode);
+        var after = await w.ReadAsync<PagedResult<CourseAnnouncementDto>>(await w.SendAsync(w.StudentA, HttpMethod.Get, Routes.ClassCourseAnnouncements(w.ClassCourseA)));
+        Assert.Empty(after.Items);
+    }
+
+    [Fact]
+    public async Task An_announcement_with_several_targets_is_listed_as_school_and_is_not_editable_on_the_board()
+    {
+        using var w = await ForumTestWorld.CreateAsync(factory, "CB7");
+        Guid id;
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            var classCourse = await db.Set<Lms.Domain.Classes.ClassCourse>().SingleAsync(c => c.Id == w.ClassCourseA);
+            var unit = await db.OrgUnits.IgnoreQueryFilters().SingleAsync(u => u.Id == classCourse.OrgUnitId);
+            var wide = new Announcement(unit, w.UserIdOf(w.Admin));
+            wide.SetContent("عام", "Wide", "<p>x</p>", "<p>y</p>", [AnnouncementRoleFilters.Students], null, null, false, false, false);
+            wide.MarkPublished(DateTime.UtcNow, 0);
+            db.Add(wide);
+            db.Add(new AnnouncementTarget(wide, AnnouncementTargetKinds.ClassCourse, w.ClassCourseA, false));
+            db.Add(new AnnouncementTarget(wide, AnnouncementTargetKinds.ClassCourse, w.ClassCourseB, false));
+            await db.SaveChangesAsync();
+            id = wide.Id;
+        }
+
+        var list = await w.ReadAsync<PagedResult<CourseAnnouncementDto>>(await w.SendAsync(w.StudentA, HttpMethod.Get, Routes.ClassCourseAnnouncements(w.ClassCourseA)));
+        Assert.Equal(AnnouncementSources.Announcement, Assert.Single(list.Items).Source);
+        Assert.Equal(HttpStatusCode.NotFound, (await w.SendAsync(w.TeacherA, HttpMethod.Put, Routes.Announcement(id), new UpdateCourseAnnouncementRequest("x", "<p>x</p>", false))).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await w.SendAsync(w.TeacherA, HttpMethod.Delete, Routes.Announcement(id))).StatusCode);
     }
 }

@@ -1,3 +1,4 @@
+using Lms.Domain.Announcements;
 using Lms.Domain.Classes;
 using Lms.Domain.Forums;
 using Lms.IntegrationTests.Academic;
@@ -5,6 +6,8 @@ using Lms.IntegrationTests.Infrastructure;
 using Lms.IntegrationTests.People;
 using Lms.Shared;
 using Lms.Shared.Forums;
+using Lms.Shared.Messaging;
+using Microsoft.EntityFrameworkCore;
 using static Lms.IntegrationTests.Security.ProbeExpect;
 
 namespace Lms.IntegrationTests.Security;
@@ -64,7 +67,7 @@ public sealed class ForumsProbeRows : IProbeRowModule
             Expect(NoContent, NoContent, NotFound, NotFound, NotFound, NoContent)) { Milestone = ProbeMilestones.M4a },
     ];
 
-    private sealed record Seeded(ClassCourse ClassCourse, ForumThread Thread, ForumPost Reply, CourseAnnouncement Announcement);
+    private sealed record Seeded(ClassCourse ClassCourse, ForumThread Thread, ForumPost Reply, Announcement Announcement);
 
     /// <summary>A class course at School1 with a thread (opening post and one reply by another author) and an announcement.</summary>
     private static async Task<Seeded> NewAsync(M1ProbeWorld w)
@@ -82,8 +85,12 @@ public sealed class ForumsProbeRows : IProbeRowModule
         await db.SaveChangesAsync();
         var opening = new ForumPost(thread, author.Id, "<p>seed</p>", true);
         var reply = new ForumPost(thread, author.Id, "<p>reply</p>", false);
-        var announcement = new CourseAnnouncement(classCourse, "Seed", "<p>seed</p>", false, author.Id);
-        db.AddRange(opening, reply, announcement);
+        // The course board answers from the announcements store (M6 Task 17): a published announcement with one ClassCourse target.
+        var unit = await db.OrgUnits.IgnoreQueryFilters().SingleAsync(u => u.Id == classCourse.OrgUnitId);
+        var announcement = new Announcement(unit, author.Id);
+        announcement.SetContent("Seed", "Seed", "<p>seed</p>", "<p>seed</p>", [AnnouncementRoleFilters.Staff, AnnouncementRoleFilters.Students], null, null, false, false, false);
+        announcement.MarkPublished(DateTime.UtcNow, 0);
+        db.AddRange(opening, reply, announcement, new AnnouncementTarget(announcement, AnnouncementTargetKinds.ClassCourse, classCourse.Id, false));
         await db.SaveChangesAsync();
         return new Seeded(classCourse, thread, reply, announcement);
     }
