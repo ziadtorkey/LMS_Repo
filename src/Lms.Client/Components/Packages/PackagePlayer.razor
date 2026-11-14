@@ -205,11 +205,16 @@
         _needsBridge = true;
     }
 
-    /// <summary>Sets the polite message. It is cleared first, so the same message twice in a row is still read by screen readers.</summary>
+    private bool _announceFlip;
+
+    /// <summary>
+    /// Sets the polite message. Blazor renders one synchronous method as a single diff, so clearing the text first would not change the markup; instead the text
+    /// alternates a trailing no-break space, so the same message twice in a row (Reload after Start: "The activity opened.") differs in the DOM and is read again.
+    /// </summary>
     private void Announce(string key)
     {
-        _announcement = null;
-        _announcement = L[key].Value;
+        _announceFlip = !_announceFlip;
+        _announcement = L[key].Value + (_announceFlip ? " " : string.Empty);
     }
 
     private async Task EnterRunningAsync()

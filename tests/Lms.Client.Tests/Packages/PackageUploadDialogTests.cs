@@ -271,7 +271,7 @@ public sealed class PackageUploadDialogTests : ClientTestContext
         Open(resume: uploaded.Id);
 
         _dialogs.WaitForAssertion(() => Assert.NotNull(_dialogs.Find("[data-testid=package-reject-reason]")), Wait);
-        Assert.Contains("lms-step--failed", _dialogs.Find("[data-testid=package-step-2]").ClassName);
+        Assert.Contains("lms-step-failed", _dialogs.Find("[data-testid=package-step-2]").ClassName);
         Assert.NotNull(_dialogs.Find("[data-testid=package-choose-another]"));
         Assert.Empty(_dialogs.FindAll("[data-testid=package-attach-form]"));
     }
