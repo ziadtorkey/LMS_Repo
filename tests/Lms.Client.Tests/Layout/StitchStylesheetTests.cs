@@ -51,6 +51,16 @@ public sealed partial class StitchStylesheetTests
     public void Vivid_emerald_is_never_a_text_colour() =>
         Assert.DoesNotMatch(new Regex(@"(?<![-\w])color:\s*var\(--lms-accent\)"), Css());
 
+    [Theory]
+    [InlineData(".lms-att-")]
+    [InlineData(".lms-session-")]
+    [InlineData(".lms-excuse-")]
+    public void Attendance_and_excuse_styles_live_in_the_stitch_layer_not_in_app_css(string prefix)
+    {
+        Assert.DoesNotContain(prefix, RepoFile("wwwroot", "css", "app.css"), StringComparison.Ordinal);
+        Assert.Contains(prefix, Css(), StringComparison.Ordinal);
+    }
+
     [GeneratedRegex(@"(?<![\w-])(margin|padding|border)-(left|right)\b|(?<![\w-])(left|right)\s*:|text-align:\s*(left|right)|float:\s*(left|right)")]
     private static partial Regex PhysicalProperty();
 
