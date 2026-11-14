@@ -100,18 +100,62 @@ public sealed class YearEndComponentTests : ClientTestContext
     }
 
     [Fact]
-    public async Task Job_panel_stops_polling_when_it_is_removed()
+    public async Task Job_panel_stops_polling_when_it_is_removed_even_while_it_waits_for_the_next_tick()
     {
         English();
         var calls = 0;
-        var cut = Render<JobProgressPanel>(p => p.Add(x => x.Poll, () => Task.FromResult(new JobSnapshot(++calls, 100, false))).Add(x => x.Interval, Fast));
-        cut.WaitForAssertion(() => Assert.True(calls >= 1));
+        var cut = Render<JobProgressPanel>(p => p.Add(x => x.Poll, () => Task.FromResult(new JobSnapshot(++calls, 100, false))).Add(x => x.Interval, TimeSpan.FromMilliseconds(100)));
+        cut.WaitForAssertion(() => Assert.Equal(1, calls));
+        await Task.Delay(30); // the loop is now inside its wait for the next tick
 
         await cut.Instance.DisposeAsync();
-        var after = calls;
-        await Task.Delay(60);
+        await Task.Delay(300); // three intervals
 
-        Assert.True(calls - after <= 1);
+        Assert.Equal(1, calls); // a wait that was not cancelled would poll once more when it ends
+    }
+
+    [Fact]
+    public void A_small_step_is_not_announced_but_a_ten_percent_step_is()
+    {
+        English();
+        var polls = 0;
+        var script = new[] { new JobSnapshot(1, 100, false), new JobSnapshot(5, 100, false), new JobSnapshot(10, 100, false), new JobSnapshot(11, 100, false), new JobSnapshot(12, 100, false) };
+        var cut = Render<JobProgressPanel>(p => p
+            .Add(x => x.Poll, () => Task.FromResult(script[Math.Min(polls++, script.Length - 1)]))
+            .Add(x => x.Interval, Fast).Add(x => x.AnnounceEvery, TimeSpan.Zero));
+
+        cut.WaitForAssertion(() => Assert.True(polls >= 5));
+
+        // 1 is announced (first); 5 and 10 are less than ten points on; 11 is exactly ten points on and is announced; 12 is one point past that
+        Assert.Equal("Processed 11 of 100", cut.Find("[data-testid=job-announcer]").TextContent);
+    }
+
+    [Fact]
+    public void A_big_step_inside_the_announce_interval_is_not_announced_either()
+    {
+        English();
+        var polls = 0;
+        var script = new[] { new JobSnapshot(1, 100, false), new JobSnapshot(60, 100, false), new JobSnapshot(80, 100, false) };
+        var cut = Render<JobProgressPanel>(p => p
+            .Add(x => x.Poll, () => Task.FromResult(script[Math.Min(polls++, script.Length - 1)]))
+            .Add(x => x.Interval, Fast).Add(x => x.AnnounceEvery, TimeSpan.FromMinutes(5)));
+
+        cut.WaitForAssertion(() => Assert.True(polls >= 3));
+        cut.WaitForAssertion(() => Assert.Equal("Processed 80 of 100", cut.Find("[data-testid=job-text]").TextContent));
+
+        Assert.Equal("Processed 1 of 100", cut.Find("[data-testid=job-announcer]").TextContent); // the interval holds the announcement back
+    }
+
+    [Fact]
+    public void The_end_is_announced_at_once_whatever_the_interval()
+    {
+        English();
+        var polls = 0;
+        var cut = Render<JobProgressPanel>(p => p
+            .Add(x => x.Poll, () => Task.FromResult(polls++ == 0 ? new JobSnapshot(1, 100, false) : new JobSnapshot(100, 100, true)))
+            .Add(x => x.Interval, Fast).Add(x => x.AnnounceEvery, TimeSpan.FromMinutes(5)));
+
+        cut.WaitForAssertion(() => Assert.Equal("Finished.", cut.Find("[data-testid=job-announcer]").TextContent));
     }
 
     [Theory]
@@ -173,6 +217,54 @@ public sealed class YearEndComponentTests : ClientTestContext
         await provider.Find("[data-testid=confirm-effect-cancel]").ClickAsync(new());
 
         Assert.False(await answer);
+    }
+
+    // --- ConfirmEffectDialog focus (explicit trap and return)
+
+    [Fact]
+    public async Task The_dialog_traps_focus_when_it_opens_and_releases_it_when_it_closes()
+    {
+        var module = JSInterop.SetupModule("./js/dialog-trap.js");
+        module.Mode = JSRuntimeMode.Loose;
+        var (provider, answer) = await OpenAsync();
+        provider.WaitForAssertion(() => Assert.Single(module.Invocations["trap"]));
+        Assert.Empty(module.Invocations["release"]); // still open
+
+        await provider.Find("[data-testid=confirm-effect-cancel]").ClickAsync(new());
+        Assert.False(await answer);
+
+        provider.WaitForAssertion(() => Assert.Single(module.Invocations["release"]));
+    }
+
+    [Fact]
+    public async Task Confirming_releases_the_focus_trap_too()
+    {
+        var module = JSInterop.SetupModule("./js/dialog-trap.js");
+        module.Mode = JSRuntimeMode.Loose;
+        var (provider, answer) = await OpenAsync();
+        provider.WaitForAssertion(() => Assert.Single(module.Invocations["trap"]));
+
+        await provider.Find("[data-testid=confirm-effect-yes]").ClickAsync(new());
+        Assert.True(await answer);
+
+        provider.WaitForAssertion(() => Assert.Single(module.Invocations["release"]));
+    }
+
+    [Fact]
+    public void The_trap_script_moves_focus_in_wraps_tab_and_gives_focus_back_to_the_opener()
+    {
+        var dir = AppContext.BaseDirectory;
+        while (dir is not null && !Directory.Exists(Path.Combine(dir, "src", "Lms.Client"))) dir = Path.GetDirectoryName(dir);
+        var js = File.ReadAllText(Path.Combine(dir!, "src", "Lms.Client", "wwwroot", "js", "dialog-trap.js"));
+
+        Assert.Contains("document.activeElement", js); // the opener is remembered
+        Assert.Contains("'Tab'", js);
+        Assert.Contains("shiftKey", js); // Shift+Tab wraps backwards
+        Assert.Contains("last.focus()", js);
+        Assert.Contains("first.focus()", js);
+        Assert.Contains("start.focus()", js); // focus moves into the dialog
+        Assert.Contains("removeEventListener", js);
+        Assert.Contains("target.focus()", js); // and goes back on release
     }
 
     // --- YearChip
