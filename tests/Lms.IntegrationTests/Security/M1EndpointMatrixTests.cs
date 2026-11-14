@@ -21,6 +21,8 @@ public sealed class M1EndpointMatrixTests(LmsApiFactory factory, ITestOutputHelp
         "/api/files",                   // M0 files (own probes in FileEndpointTests)
         "/api/files/{id:guid}/url",
         "/api/dev/jobs/quiz-close/{quizId:guid}", // Development-only quiz trigger (M4a Task 11); tested in AutoSubmitTests
+        "/api/dev/comms/outbox",        // Development-only comms triggers (M6 Task 18); tested in DevCommsEndpointTests (404 outside Development, 403 client admin, 401 anonymous)
+        "/api/dev/comms/script",
     ];
 
     public static TheoryData<string, Caller> Cases()

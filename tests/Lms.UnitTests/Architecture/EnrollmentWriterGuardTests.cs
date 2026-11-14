@@ -26,6 +26,9 @@ public sealed partial class EnrollmentWriterGuardTests
         var offenders = Sources()
             .Where(f => !f.RelativePath.StartsWith(EngineFolder, StringComparison.Ordinal))
             .Where(f => !f.RelativePath.StartsWith("src/Lms.Domain/", StringComparison.Ordinal)) // the entities' own constructors
+            // Development-only demo data (never runs outside Development): it places the sample students of the M6 messaging demo in a sample class on
+            // purpose, without the engine's restriction checks, because the seeder has no request context.
+            .Where(f => f.RelativePath != "src/Lms.Infrastructure/Seeding/M6DemoSeeder.cs")
             .Where(f => Write().IsMatch(File.ReadAllText(f.FullPath)))
             .Select(f => f.RelativePath)
             .ToList();
