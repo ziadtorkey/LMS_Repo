@@ -169,7 +169,7 @@ public sealed class GradebookReader(
         return new GradebookData
         {
             Gradebook = gradebook, Categories = categories, Items = items, Events = events, Entries = entries, Bands = bands,
-            Students = students, StudentIds = ids, Scale = scale,
+            Students = students, StudentIds = ids, Scale = scale, RowVersions = await GradeRowVersions.LoadAsync(db, gradebook, ids, ct),
         };
     }
 }

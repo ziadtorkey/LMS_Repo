@@ -24,6 +24,9 @@ public sealed class GradebookData
     public required IReadOnlyList<GridStudent> Students { get; init; }
     public required IReadOnlyList<Guid> StudentIds { get; init; }
 
+    /// <summary>The row version of each student (see <see cref="GradeRowVersions"/>).</summary>
+    public IReadOnlyDictionary<Guid, long> RowVersions { get; init; } = new Dictionary<Guid, long>();
+
     /// <summary>The gradebook's scale as its unit sees it; null until one is chosen.</summary>
     public VisibleScale? Scale { get; init; }
 

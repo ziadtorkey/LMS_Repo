@@ -116,7 +116,7 @@ public sealed class GradebookEditor(LmsDbContext db, IGradebookWriter writer, IS
     }
 
     /// <summary>Deletes a manual item with its entries. An item of a grade event source stays (400).</summary>
-    public async Task DeleteItemAsync(Gradebook gradebook, GradeItem item, CancellationToken ct)
+    public async Task DeleteItemAsync(Gradebook gradebook, GradeItem item, Guid? byUserId, CancellationToken ct)
     {
         await writer.EnsureWritableAsync(gradebook, ct);
         if (!item.IsManual)
@@ -124,7 +124,14 @@ public sealed class GradebookEditor(LmsDbContext db, IGradebookWriter writer, IS
             throw new GradebookRuleException(ProblemCodes.validation_failed, 400);
         }
 
-        db.RemoveRange(await db.Set<GradeEntry>().Where(e => e.GradeItemId == item.Id).ToListAsync(ct));
+        // each entry's version is raised before it goes, so the sum of a row's versions (deleted entries included) never falls
+        var entries = await db.Set<GradeEntry>().Where(e => e.GradeItemId == item.Id).ToListAsync(ct);
+        foreach (var entry in entries)
+        {
+            entry.Acknowledge(byUserId, clock.UtcNow);
+        }
+
+        db.RemoveRange(entries);
         db.Remove(item);
         await db.SaveChangesAsync(ct);
     }
@@ -148,7 +155,7 @@ public sealed class GradebookEditor(LmsDbContext db, IGradebookWriter writer, IS
         var items = (await db.Set<GradeItem>().Where(i => i.GradebookId == gradebook.Id).ToListAsync(ct)).ToDictionary(i => i.Id);
         var entries = (await db.Set<GradeEntry>().Where(e => e.GradebookId == gradebook.Id && e.StudentProfileId == studentId).ToListAsync(ct))
             .ToDictionary(e => e.GradeItemId);
-        if (GradeRowBuilder.RowVersion(entries.Values) != version)
+        if ((await GradeRowVersions.LoadAsync(db, gradebook, [studentId], ct)).GetValueOrDefault(studentId) != version)
         {
             throw new GradebookRuleException(ProblemCodes.concurrency_conflict);
         }
