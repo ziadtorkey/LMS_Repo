@@ -30,7 +30,7 @@ public enum ReportOutcome
 public sealed record ReportResult(ReportOutcome Outcome, Guid? ReportId = null);
 
 /// <summary>One message of the frozen context, stored in the report as JSON (names and text at the time of the report).</summary>
-public sealed record ReportContextItem(Guid MessageId, string SenderNameAr, string SenderNameEn, string? Body, List<string> AttachmentNames, DateTime CreatedAtUtc, bool IsReported);
+public sealed record ReportContextItem(Guid MessageId, string SenderNameAr, string SenderNameEn, string? Body, List<string> AttachmentNames, DateTime CreatedAtUtc, bool IsReported, List<ReportAttachmentRefDto>? Attachments = null);
 
 /// <summary>
 /// Reporting a message (M6 Task 15, FR-MSG-04, D66, L16). Only a participant who is not the sender may report (a miss is 404, so nothing tells whether a message exists), once per
@@ -131,13 +131,14 @@ public sealed class ReportService(
         var senders = messages.Select(m => m.SenderUserId).Distinct().ToList();
         var users = await db.Users.Where(u => senders.Contains(u.Id)).ToDictionaryAsync(u => u.Id, ct);
         var attachments = (await db.Set<MessageAttachment>().Where(a => a.MessageId != null && ids.Contains(a.MessageId.Value)).ToListAsync(ct))
-            .GroupBy(a => a.MessageId!.Value).ToDictionary(g => g.Key, g => g.Select(a => a.FileName).ToList());
+            .GroupBy(a => a.MessageId!.Value).ToDictionary(g => g.Key, g => g.ToList());
         return messages.Select(m =>
         {
             users.TryGetValue(m.SenderUserId, out var user);
             return new ReportContextItem(
                 m.Id, user?.DisplayNameAr ?? string.Empty, user?.DisplayNameEn ?? string.Empty, m.State == Message.NormalState ? m.Body : null,
-                attachments.GetValueOrDefault(m.Id) ?? [], m.SentAtUtc, m.Id == reported.Id);
+                (attachments.GetValueOrDefault(m.Id) ?? []).Select(a => a.FileName).ToList(), m.SentAtUtc, m.Id == reported.Id,
+                m.Id == reported.Id ? (attachments.GetValueOrDefault(m.Id) ?? []).Select(a => new ReportAttachmentRefDto(a.FileId, a.FileName, a.ContentType, a.SizeBytes)).ToList() : null);
         }).ToList();
     }
 

@@ -3,9 +3,13 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Lms.Domain.Access;
 using Lms.Domain.Auditing;
+using Lms.Domain.Files;
 using Lms.Domain.Messaging;
 using Lms.Domain.Moderation;
 using Lms.Domain.Notifications;
+using Lms.Infrastructure;
+using Lms.Infrastructure.Configuration;
+using Lms.Infrastructure.Files;
 using Lms.IntegrationTests.Access;
 using Lms.IntegrationTests.Enrollment;
 using Lms.IntegrationTests.Infrastructure;
@@ -16,6 +20,8 @@ using Lms.Shared.Configuration;
 using Lms.Shared.Messaging;
 using Lms.Shared.Notifications;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using static Lms.IntegrationTests.AcademicYears.YearTestKit;
 
 namespace Lms.IntegrationTests.Moderation;
@@ -239,6 +245,50 @@ public sealed class ModerationTests(LmsApiFactory factory)
         Assert.Equal(HttpStatusCode.NotFound, participantOnlyRoute.StatusCode); // Moderator_cannot_read_a_conversation_page
         Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(factory, HttpMethod.Get, Routes.Conversation(w.ConversationId), w.RootAdmin)).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(factory, HttpMethod.Get, Routes.ModerationReportAttachment(id, Guid.NewGuid()), w.RootAdmin)).StatusCode); // not an attachment of the reported message
+    }
+
+    [Fact]
+    public async Task Only_the_reported_message_offers_attachment_refs_and_any_other_file_is_404()
+    {
+        var w = await SetUpAsync("MD14");
+        var bytes = System.Text.Encoding.UTF8.GetBytes("%PDF-1.7 moderation sample");
+        var ctx = TestCurrentContext.For(w.Tree.Org.Id, w.Tree.Root.Path);
+        Guid reportedFile, contextFile;
+        await using (var db = factory.CreateDbContext(ctx))
+        {
+            var options = factory.Services.GetRequiredService<IOptions<StorageOptions>>();
+            var storage = new MinioFileStorage(db, new SettingsResolver(db, ctx), new MinioClients(options), options, new SystemClock());
+            reportedFile = (await storage.UploadAsync(new FileUploadRequest("proof.pdf", "application/pdf", bytes.Length, w.Tree.School1.Id), new MemoryStream(bytes))).Id;
+            contextFile = (await storage.UploadAsync(new FileUploadRequest("other.pdf", "application/pdf", bytes.Length, w.Tree.School1.Id), new MemoryStream(bytes))).Id;
+        }
+
+        await using (var db = factory.CreateDbContext(TestCurrentContext.PlatformAdmin()))
+        {
+            var conversation = await db.Set<Conversation>().SingleAsync(c => c.Id == w.ConversationId);
+            var reported = await db.Set<Message>().SingleAsync(m => m.Id == w.MessageIds[6]);
+            var neighbour = await db.Set<Message>().SingleAsync(m => m.Id == w.MessageIds[5]);
+            var a = new MessageAttachment(conversation, reported.SenderUserId, reportedFile, "proof.pdf", "application/pdf", bytes.Length, DateTime.UtcNow);
+            var b = new MessageAttachment(conversation, neighbour.SenderUserId, contextFile, "other.pdf", "application/pdf", bytes.Length, DateTime.UtcNow);
+            a.AttachTo(reported);
+            b.AttachTo(neighbour);
+            db.AddRange(a, b);
+            await db.SaveChangesAsync();
+        }
+
+        await ReportAsync(w, 6);
+        var id = await ReportIdAsync(w, 6);
+
+        var detail = await ReadAsync<MessageReportDto>(await SendAsync(factory, HttpMethod.Get, Routes.ModerationReport(id), w.RootAdmin));
+        var reportedItem = detail.Context.Single(c => c.IsReported);
+        var refItem = Assert.Single(reportedItem.Attachments!);
+        Assert.Equal((reportedFile, "proof.pdf", "application/pdf", (long)bytes.Length), (refItem.FileId, refItem.Name, refItem.ContentType, refItem.SizeBytes));
+        Assert.All(detail.Context.Where(c => !c.IsReported), c => Assert.Null(c.Attachments)); // context messages keep names only
+        Assert.Contains("other.pdf", detail.Context.Single(c => c.MessageId == w.MessageIds[5]).AttachmentNames);
+
+        Assert.Equal(HttpStatusCode.OK, (await SendAsync(factory, HttpMethod.Get, Routes.ModerationReportAttachment(id, reportedFile), w.RootAdmin)).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await SendAsync(factory, HttpMethod.Get, Routes.ModerationReportAttachment(id, contextFile), w.RootAdmin)).StatusCode); // a context message's file
+        await using var check = factory.CreateDbContext(TestCurrentContext.PlatformAdmin());
+        Assert.Equal(1, await check.Set<AuditEntry>().CountAsync(a => a.EntityType == "ModerationRead" && a.EntityId == id && a.AfterJson!.Contains("Attachment"))); // only the allowed read is audited
     }
 
     [Fact]

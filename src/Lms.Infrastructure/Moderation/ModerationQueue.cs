@@ -68,7 +68,7 @@ public sealed class ModerationQueue(LmsDbContext db, ICurrentContext context, IC
 
     public async Task<MessageReportDto> ToDtoAsync(MessageReport report, CancellationToken ct)
     {
-        var context = Context(report).Select(c => new ReportContextMessageDto(c.MessageId, c.SenderNameAr, c.SenderNameEn, c.Body, c.AttachmentNames, c.CreatedAtUtc, c.IsReported)).ToList();
+        var context = Context(report).Select(c => new ReportContextMessageDto(c.MessageId, c.SenderNameAr, c.SenderNameEn, c.Body, c.AttachmentNames, c.CreatedAtUtc, c.IsReported, c.IsReported ? c.Attachments ?? [] : null)).ToList();
         return new MessageReportDto(
             report.Id, report.MessageId, report.ConversationId, report.Reason, report.Note, report.Status, context, await SenderSummaryAsync(report, ct),
             report.ReviewDueUtc, report.Action, null, report.ResolvedAtUtc, clock.UtcNow);
