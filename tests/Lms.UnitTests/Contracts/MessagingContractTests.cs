@@ -156,7 +156,7 @@ public sealed class MessagingContractTests
         var commsSettings = SettingCatalog.All.Where(d => d.Name.StartsWith("Comms.") || d.Name.StartsWith("Messaging.") || d.Name.StartsWith("Announcements.")).ToList();
         Assert.Equal(18, commsSettings.Count);
         Assert.Equal((1, 180, 180), (SettingKeys.MessagingRetentionYearsAfterClose.Default, SettingKeys.MessagingRemovedOriginalRetentionDays.Default, SettingKeys.ModerationReportContextRetentionDays.Default));
-        Assert.Equal([(1, 10), (30, 730), (30, 730)], new[] { SettingKeys.MessagingRetentionYearsAfterClose.Name, SettingKeys.MessagingRemovedOriginalRetentionDays.Name, SettingKeys.ModerationReportContextRetentionDays.Name }
+        Assert.Equal([(0, 1), (30, 180), (30, 180)] /* D71: clients may only shorten, max == default */, new[] { SettingKeys.MessagingRetentionYearsAfterClose.Name, SettingKeys.MessagingRemovedOriginalRetentionDays.Name, SettingKeys.ModerationReportContextRetentionDays.Name }
             .Select(n => SettingCatalog.All.Single(d => d.Name == n)).Select(d => (d.Min!.Value, d.Max!.Value)));
         Assert.All(commsSettings, d => Assert.True(d.ClientLevelOnly, d.Name)); // only the Org Admin at the client root edits them
         Assert.All(SettingCatalog.All.Where(d => d.Kind == SettingValueKinds.Int), d => Assert.True(d.Min is not null && d.Max is not null, d.Name));

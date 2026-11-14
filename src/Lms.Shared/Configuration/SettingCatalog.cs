@@ -104,12 +104,14 @@ public static class SettingCatalog
         new(SettingKeys.MessagingMaxPerMinute.Name, SettingValueKinds.Int, SettingCategories.Features, "30", Min: 1, Max: 120, ClientLevelOnly: true),
         new(SettingKeys.MessagingMaxNewConversationsPerDay.Name, SettingValueKinds.Int, SettingCategories.Features, "20", Min: 1, Max: 200, ClientLevelOnly: true),
         new(SettingKeys.MessagingMaxGroupSize.Name, SettingValueKinds.Int, SettingCategories.Features, "50", Min: 3, Max: 200, ClientLevelOnly: true),
-        new(SettingKeys.ModerationReportContextRetentionDays.Name, SettingValueKinds.Int, SettingCategories.Features, "180", Min: 30, Max: 730, ClientLevelOnly: true),
+        new(SettingKeys.ModerationReportContextRetentionDays.Name, SettingValueKinds.Int, SettingCategories.Features, "180", Min: 30, Max: 180, ClientLevelOnly: true),
         new(SettingKeys.ModerationMaxReportsPerUserPerDay.Name, SettingValueKinds.Int, SettingCategories.Features, "20", Min: 1, Max: 200, ClientLevelOnly: true),
         new(SettingKeys.ModerationSafetyReviewHours.Name, SettingValueKinds.Int, SettingCategories.Features, "24", Min: 1, Max: 168, ClientLevelOnly: true),
         new(SettingKeys.MessagingUploadsPerMinute.Name, SettingValueKinds.Int, SettingCategories.Features, "10", Min: 1, Max: 60, ClientLevelOnly: true),
-        new(SettingKeys.MessagingRetentionYearsAfterClose.Name, SettingValueKinds.Int, SettingCategories.Features, "1", Min: 1, Max: 10, ClientLevelOnly: true),
-        new(SettingKeys.MessagingRemovedOriginalRetentionDays.Name, SettingValueKinds.Int, SettingCategories.Features, "180", Min: 30, Max: 730, ClientLevelOnly: true),
+        // D71: a client may only shorten retention, so each maximum equals the default (0 years = purge when the year closes).
+        // D71: a client may only shorten retention, so each maximum equals the default (0 years = purge when the year closes).
+        new(SettingKeys.MessagingRetentionYearsAfterClose.Name, SettingValueKinds.Int, SettingCategories.Features, "1", Min: 0, Max: 1, ClientLevelOnly: true),
+        new(SettingKeys.MessagingRemovedOriginalRetentionDays.Name, SettingValueKinds.Int, SettingCategories.Features, "180", Min: 30, Max: 180, ClientLevelOnly: true),
         new(SettingKeys.AnnouncementsMaxPerAuthorPerDay.Name, SettingValueKinds.Int, SettingCategories.Features, "10", Min: 1, Max: 100, ClientLevelOnly: true),
         // M5 wave 2: the school week and the conflict mode of the timetable builder.
         new(SettingKeys.TimetableWorkingDays.Name, SettingValueKinds.StringSet, SettingCategories.Academic,

@@ -161,7 +161,7 @@ public sealed class ModerationContractTests
             Assert.NotNull(definition.Max);
         }
 
-        Assert.Equal((30, 730), (SettingCatalog.All.Single(d => d.Name == SettingKeys.ModerationReportContextRetentionDays.Name).Min, SettingCatalog.All.Single(d => d.Name == SettingKeys.ModerationReportContextRetentionDays.Name).Max));
+        Assert.Equal((30, 180), (SettingCatalog.All.Single(d => d.Name == SettingKeys.ModerationReportContextRetentionDays.Name).Min, SettingCatalog.All.Single(d => d.Name == SettingKeys.ModerationReportContextRetentionDays.Name).Max));
     }
 
     [Fact]
