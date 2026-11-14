@@ -33,9 +33,9 @@
         }
         @if (Draft.Scope == AudienceScopeKind.Unit)
         {
-            <ToggleRow Title="@L["Ann_IncludeSubtree"]" Help="@L["Ann_IncludeSubtreeHelp"]" @bind-Value="Draft.IncludeSubtree" TestId="ann-subtree" />
+            <ToggleRow Title="@L["Ann_IncludeSubtree"]" Help="@L["Ann_IncludeSubtreeHelp"]" Value="Draft.IncludeSubtree" ValueChanged="SubtreeChangedAsync" TestId="ann-subtree" />
         }
-        <RoleFilterChips Selected="Draft.Roles" SelectedChanged="StateHasChanged" Error="@(_errors.Contains("roles") ? L["Ann_Error_Roles"].Value : null)" />
+        <RoleFilterChips Selected="Draft.Roles" SelectedChanged="RolesChangedAsync" Error="@(_errors.Contains("roles") ? L["Ann_Error_Roles"].Value : null)" />
         <ReachEstimate Count="ReachCount" />
     </fieldset>
 
@@ -102,6 +102,12 @@
     [Parameter] public DateTime NowLocal { get; set; } = DateTime.Now;
     [Parameter] public bool Busy { get; set; }
     [Parameter] public EventCallback<AudienceScopeKind> OnScopeChanged { get; set; }
+
+    /// <summary>Raised after a role chip changed, with the roles now chosen, so the page refreshes the reach estimate (no polling).</summary>
+    [Parameter] public EventCallback<IReadOnlySet<AudienceRole>> OnRolesChanged { get; set; }
+
+    /// <summary>Raised after Include the units below changed (it changes the reach too).</summary>
+    [Parameter] public EventCallback<bool> OnIncludeSubtreeChanged { get; set; }
     [Parameter] public EventCallback<AnnouncementDraft> OnSaveDraft { get; set; }
     [Parameter] public EventCallback<AnnouncementDraft> OnPublish { get; set; }
     [Parameter] public EventCallback OnCancel { get; set; }
@@ -110,6 +116,18 @@
 
     private void SetPublish(DateTime? date, TimeSpan? time) =>
         Draft.PublishAtLocal = date is { } d ? d.Date + (time ?? TimeSpan.Zero) : null;
+
+    private async Task RolesChangedAsync()
+    {
+        StateHasChanged();
+        await OnRolesChanged.InvokeAsync(Draft.Roles);
+    }
+
+    private async Task SubtreeChangedAsync(bool include)
+    {
+        Draft.IncludeSubtree = include;
+        await OnIncludeSubtreeChanged.InvokeAsync(include);
+    }
 
     private async Task ScopeChangedAsync(AudienceScopeKind kind)
     {
