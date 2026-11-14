@@ -19,6 +19,7 @@ public static class ClientServices
     {
         services.AddLocalization();
         services.AddMudServices();
+        services.AddScoped<Lms.Client.Services.Browser.IExternalLinkOpener, Lms.Client.Services.Browser.ExternalLinkOpener>();
         services.AddTransient<MudBlazor.MudLocalizer, LmsMudLocalizer>();
         services.AddScoped<ICultureService, CultureService>();
         // Singleton on purpose: IHttpClientFactory builds its message handlers in their own DI scope, and the

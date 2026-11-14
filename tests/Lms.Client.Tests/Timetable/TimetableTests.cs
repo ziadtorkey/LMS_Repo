@@ -38,11 +38,19 @@ public abstract class TimetableTestContext : StaffTestContext
 {
     protected FakeTimetableApi Api2 { get; } = new();
     protected Lms.Client.Services.LiveSessions.FakeLiveSessionsApi LiveApi { get; } = new();
+    protected RecordingOpener Opened { get; } = new();
+
+    protected sealed class RecordingOpener : Lms.Client.Services.Browser.IExternalLinkOpener
+    {
+        public List<string> Urls { get; } = [];
+        public ValueTask OpenAsync(string url) { Urls.Add(url); return ValueTask.CompletedTask; }
+    }
 
     protected TimetableTestContext()
     {
         Services.AddSingleton<ITimetableApi>(Api2);
         Services.AddSingleton<Lms.Client.Services.LiveSessions.ILiveSessionsApi>(LiveApi);
+        Services.AddSingleton<Lms.Client.Services.Browser.IExternalLinkOpener>(Opened);
         Services.AddSingleton<IYearStore, TermsYearStore>();
         Services.AddSingleton<IClassCoursesApi>(new FakeCourses());
     }

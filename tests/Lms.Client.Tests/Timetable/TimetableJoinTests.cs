@@ -1,7 +1,9 @@
 using System.Globalization;
 using Bunit;
 using Lms.Client.Components.Timetable;
+using Lms.Client.Services.LiveSessions;
 using Lms.Client.Tests.Support;
+using Lms.Shared.LiveSessions;
 using Lms.Shared.Timetable;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -64,5 +66,40 @@ public sealed class TimetableJoinTests : TimetableTestContext
         var page = RenderCard(Card(Guid.NewGuid(), Now.UtcDateTime, ExceptionKinds.Cancelled));
 
         Assert.Empty(page.FindAll($"[data-testid=tt-join-{Id}]"));
+    }
+
+    private Guid Seed(DateTime startsAtUtc, string status)
+    {
+        LiveApi.ServerNow = () => Now.UtcDateTime;
+        LiveApi.AsStudent = true; // students are held to the join window
+        return LiveApi.Seed(FakeLiveSessionsApi.DemoClassCourseId, Guid.NewGuid(), startsAtUtc, 45, status).Id;
+    }
+
+    [Fact]
+    public void Join_opens_the_link_the_server_returns_and_nothing_else()
+    {
+        var id = Seed(Now.UtcDateTime.AddMinutes(5), LiveSessionStatuses.Scheduled);
+        var page = RenderCard(Card(id, Now.UtcDateTime.AddMinutes(-5)));
+
+        page.Find($"[data-testid=tt-join-{Id}]").Click();
+
+        page.WaitForAssertion(() => Assert.Single(Opened.Urls));
+        Assert.Equal($"https://meet.example.test/j/{id:N}", Opened.Urls[0]);
+        Assert.Empty(page.FindAll($"[data-testid=tt-join-error-{Id}]"));
+    }
+
+    [Theory]
+    [InlineData(LiveSessionStatuses.Scheduled, 30)] // the card thinks the window is open, the server says not yet (clock skew, moved session)
+    [InlineData(LiveSessionStatuses.Scheduled, -120)] // already ended
+    public void A_409_shows_the_servers_message_and_opens_nothing(string status, int startsInMinutes)
+    {
+        var id = Seed(Now.UtcDateTime.AddMinutes(startsInMinutes), status);
+        var page = RenderCard(Card(id, Now.UtcDateTime.AddMinutes(-5)));
+
+        page.Find($"[data-testid=tt-join-{Id}]").Click();
+
+        page.WaitForAssertion(() => Assert.NotEmpty(page.Find($"[data-testid=tt-join-error-{Id}]").TextContent));
+        Assert.Empty(Opened.Urls);
+        Assert.False(page.Find($"[data-testid=tt-join-{Id}]").HasAttribute("disabled")); // can try again
     }
 }

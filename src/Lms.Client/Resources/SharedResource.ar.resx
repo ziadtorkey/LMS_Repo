@@ -1767,4 +1767,5 @@
   <data name="Tt_Print" xml:space="preserve"><value>طباعة</value></data>
   <data name="Timetable_Join" xml:space="preserve"><value>انضمام</value></data>
   <data name="Timetable_JoinOpensAt" xml:space="preserve"><value>يفتح الانضمام في</value></data>
+  <data name="Timetable_JoinFailed" xml:space="preserve"><value>تعذّر الانضمام إلى هذه الجلسة.</value></data>
 </root>
